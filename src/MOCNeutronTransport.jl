@@ -1,5 +1,5 @@
 module MOCNeutronTransport
 
-greet() = print("Hello World!")
+include("Point.jl")
 
 end # module
