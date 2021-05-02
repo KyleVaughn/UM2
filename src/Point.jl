@@ -1,3 +1,5 @@
+import Base: +, -, *, /
+
 # Constructors
 # -------------------------------------------------------------------------------------------------
 struct Point{T<:AbstractFloat}
@@ -9,6 +11,15 @@ end
 Point(x, y) = Point(x, y, zero(x))
 # 1D point constructor. y = z = 0
 Point(x) = Point(x, zero(x), zero(x))
+# zero
+Base.zero(::Point{T}) where {T<:AbstractFloat} = Point(zero(T), zero(T), zero(T))
+
+# Operators
+# -------------------------------------------------------------------------------------------------
++(p1::Point, p2::Point) = Point(p1.x + p2.x, p1.y + p2.y, p1.z + p2.z)
+-(p1::Point, p2::Point) = Point(p1.x - p2.x, p1.y - p2.y, p1.z - p2.z)
+*(n::Number, p::Point) = Point(n*p.x, n*p.y, n*p.z)
+/(p::Point, n::Number) = Point(p.x/n, p.y/n, p.z/n)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
