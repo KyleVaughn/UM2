@@ -1,6 +1,6 @@
 using MOCNeutronTransport
 using Test
-tests = ["Point", "Line"]
+tests = ["Point", "LineSegment"]
 for t in tests
   include("$(t).jl")
 end
