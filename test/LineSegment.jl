@@ -2,31 +2,31 @@ using MOCNeutronTransport
 @testset "LineSegment" begin
     # Constructors
     # ---------------------------------------------------------------------------------------------
-    p₁ = Point(1.0) 
-    p₂ = Point(2.0)
-    l = LineSegment(p₁,p₂)
-    @test l.p₁ == p₁
-    @test l.p₂ == p₂    
+    p⃗₁ = Point(1.0, 0.0) 
+    p⃗₂ = Point(2.0, 0.0)
+    l = LineSegment(p⃗₁,p⃗₂)
+    @test l.p⃗₁ == p⃗₁
+    @test l.p⃗₂ == p⃗₂    
 
     # Methods
     # ---------------------------------------------------------------------------------------------
-    # distance
-    p₁ = Point(1.0, 2.0, 3.0)
-    p₂ = Point(2.0, 4.0, 6.0)
-    l = LineSegment(p₁, p₂)
-    @test distance(l) == sqrt(14.0)
+    # segment_length
+    p⃗₁ = Point(1.0, 2.0, 3.0)
+    p⃗₂ = Point(2.0, 4.0, 6.0)
+    l = LineSegment(p⃗₁, p⃗₂)
+    @test arc_length(l) == sqrt(14.0)
 
     # evaluation
-    p₁ = Point(1.0, 1.0, 3.0)   
-    p₂ = Point(3.0, 3.0, 3.0)   
-    l = LineSegment(p₁, p₂)            
-    @test l(0.0) == p₁
-    @test l(1.0) == p₂
-    p₃ = Point(2.0, 2.0, 3.0)
-    @test l(0.5) == p₃
+    p⃗₁ = Point(1.0, 1.0, 3.0)   
+    p⃗₂ = Point(3.0, 3.0, 3.0)   
+    l = LineSegment(p⃗₁, p⃗₂)            
+    @test l(0.0) == p⃗₁
+    @test l(1.0) == p⃗₂
+    p⃗₃ = Point(2.0, 2.0, 3.0)
+    @test l(0.5) == p⃗₃
 
     # midpoint
-    @test midpoint(l) == p₃
+    @test midpoint(l) == p⃗₃
 
     # intersects
     # -------------------------------------------
@@ -71,21 +71,21 @@ using MOCNeutronTransport
     @test !bool
     @test p == Point(0.0, 0.0)
 
-    # on line, not segment (invalid t)
+    # line intersects, not segment (invalid t)
     l₁ = LineSegment(Point(0.0, 0.0), Point(2.0, 0.0))
     l₂ = LineSegment(Point(1.0, 2.0), Point(1.0, 0.1))
     bool, p = intersects(l₁, l₂)
     @test !bool
-    @test p ≈ Point(1.0) # the closest point on line 1
+    @test p ≈ Point(1.0, 0.0) # the closest point on line 1
 
-    # on line, not segment (invalid s)
+    # line intersects, not segment (invalid s)
     l₂ = LineSegment(Point(0.0, 0.0), Point(2.0, 0.0))
     l₁ = LineSegment(Point(1.0, 2.0), Point(1.0, 0.1))
     bool, p = intersects(l₁, l₂)
     @test !bool
-    @test p ≈ Point(1.0) # the closest point on line 1
+    @test p ≈ Point(1.0, 0.0) # the closest point on line 1
 
-    #isleft
+    # isleft
     # -------------------------------------------
     l = LineSegment(Point(0.0, 0.0), Point(0.0, 1.0))
     @test is_left(Point(-1.0, 0.0), l)

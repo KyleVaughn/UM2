@@ -2,14 +2,15 @@ module MOCNeutronTransport
 
 include("Point.jl")
 export  Point, 
-        distance,
+        atol,
         ×,
-        ⋅
+        ⋅,
+        distance
 
 include("LineSegment.jl")
 export  LineSegment, 
-        distance, 
-        midpoint, 
+        arc_length,
+        midpoint,
         intersects,
         is_left
 

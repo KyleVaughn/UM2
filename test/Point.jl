@@ -3,22 +3,26 @@ using MOCNeutronTransport
     # Constructors
     # ---------------------------------------------------------------------------------------------
     # 3D
+    p = Point((1.0, 2.0, 3.0))
+    @test p.coord[1] == 1.0
+    @test p.coord[2] == 2.0
+    @test p.coord[3] == 3.0
+
     p = Point(1.0, 2.0, 3.0)
-    @test p.x == 1.0
-    @test p.y == 2.0
-    @test p.z == 3.0
+    @test p.coord[1] == 1.0
+    @test p.coord[2] == 2.0
+    @test p.coord[3] == 3.0
 
     # 2D
-    p = Point(1.0, 2.0)
-    @test p.x == 1.0
-    @test p.y == 2.0
-    @test p.z == 0.0
+    p = Point((1.0, 2.0))
+    @test p.coord[1] == 1.0
+    @test p.coord[2] == 2.0
+    @test p.coord[3] == 0.0
 
-    # 1D
-    p = Point(1.0) 
-    @test p.x == 1.0
-    @test p.y == 0.0    
-    @test p.z == 0.0
+    p = Point(1.0, 2.0)
+    @test p.coord[1] == 1.0
+    @test p.coord[2] == 2.0
+    @test p.coord[3] == 0.0
 
     # Base methods
     # ---------------------------------------------------------------------------------------------
@@ -26,16 +30,14 @@ using MOCNeutronTransport
 
     # zero
     p₀ = zero(p)
-    @test p₀.x == 0.0
-    @test p₀.y == 0.0    
-    @test p₀.z == 0.0
-    @test p₀.x isa Float64
+    @test all(p₀.coord .== 0.0)
+    @test p₀.coord[1] isa Float64
 
     # getindex
     @test p[1] == 1.0
     @test p[2] == 2.0
     @test p[3] == 3.0
-    
+
     # broadcastable tested in operators due to reliance on operator correctness
     
     # Operators
@@ -53,15 +55,15 @@ using MOCNeutronTransport
 
     # Point addition
     p = p₁ + p₂
-    @test p.x == 3.0 
-    @test p.y == 6.0 
-    @test p.z == 9.0 
+    @test p.coord[1] == 3.0 
+    @test p.coord[2] == 6.0 
+    @test p.coord[3] == 9.0 
 
     # Point subtraction
     p = p₁ - p₂
-    @test p.x == -1.0 
-    @test p.y == -2.0 
-    @test p.z == -3.0 
+    @test p.coord[1] == -1.0 
+    @test p.coord[2] == -2.0 
+    @test p.coord[3] == -3.0 
 
     # Cross product
     p₁ = Point(2.0, 3.0, 4.0)
@@ -75,9 +77,9 @@ using MOCNeutronTransport
     p₁ = Point(1.0, 2.0, 3.0)
     p₂ = Point(2.0, 4.0, 6.0)
     p = p₁ + 1.0
-    @test p.x == 2.0 
-    @test p.y == 3.0 
-    @test p.z == 4.0 
+    @test p.coord[1] == 2.0 
+    @test p.coord[2] == 3.0 
+    @test p.coord[3] == 4.0 
 
     # Broadcast addition
     parray = [p₁, p₂]
@@ -87,21 +89,21 @@ using MOCNeutronTransport
 
     # Subtraction
     p = p₁ - 1.0
-    @test p.x == 0.0 
-    @test p.y == 1.0 
-    @test p.z == 2.0 
+    @test p.coord[1] == 0.0 
+    @test p.coord[2] == 1.0 
+    @test p.coord[3] == 2.0 
 
     # Multiplication
     p = 4*p₁
-    @test p.x == 4.0
-    @test p.y == 8.0 
-    @test p.z == 12.0 
+    @test p.coord[1] == 4.0
+    @test p.coord[2] == 8.0 
+    @test p.coord[3] == 12.0 
 
     # Division
     p = p₁/4
-    @test p.x == 0.25
-    @test p.y == 0.5 
-    @test p.z == 0.75 
+    @test p.coord[1] == 0.25
+    @test p.coord[2] == 0.5 
+    @test p.coord[3] == 0.75 
 
     # Methods
     # ---------------------------------------------------------------------------------------------

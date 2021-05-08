@@ -1,56 +1,51 @@
-import Base: +, -, *, /, ≈, eps
+import Base: +, -, *, /, ≈
+
+struct Point{T <: AbstractFloat}
+    coord::NTuple{3,T}
+end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-struct Point{T<:AbstractFloat}
-  x::T
-  y::T
-  z::T
-end
-# 2D point constructor. z = 0
-Point(x, y) = Point(x, y, zero(x))
-# 1D point constructor. y = z = 0
-Point(x) = Point(x, zero(x), zero(x))
+# 3D single constructor
+Point(x,y,z) = Point((x,y,z))
+# 2D constructor
+Point((x, y)) = Point((x, y, zero(x)))
+# 2D single constructor
+Point(x, y) = Point((x, y, zero(x)))
 
 # Base methods
 # -------------------------------------------------------------------------------------------------
-Base.broadcastable(p::Point) = Ref(p)
-Base.zero(::Point{T}) where {T<:AbstractFloat} = Point(zero(T), zero(T), zero(T))
-Base.firstindex(p::Point) = 1
-Base.lastindex(p::Point) = 3
-function Base.getindex(p::Point, i::Int)
-    1 ≤ i ≤ 3 || throw(BoundsError(p, i))
-    if i == 1
-        return p.x
-    elseif i == 2
-        return p.y
-    else
-        return p.z
-    end
-end
+Base.broadcastable(p⃗::Point) = Ref(p⃗)
+Base.zero(::Point{T}) where {T <: AbstractFloat} = Point((zero(T), zero(T), zero(T)))
+Base.firstindex(::Point) = 1
+Base.lastindex(::Point) = 3
+Base.getindex(p⃗::Point, i::Int) = p⃗.coord[i]
 
 # Operators
 # -------------------------------------------------------------------------------------------------
-eps(::Point) = 1.0e-6
-≈(p₁::Point, p₂::Point) = (isapprox(p₁.x, p₂.x, atol=eps(p₁)) && 
-                           isapprox(p₁.y, p₂.y, atol=eps(p₁)) && 
-                           isapprox(p₁.z, p₂.z, atol=eps(p₁))) 
-+(p₁::Point, p₂::Point) = Point(p₁.x + p₂.x, p₁.y + p₂.y, p₁.z + p₂.z)
--(p₁::Point, p₂::Point) = Point(p₁.x - p₂.x, p₁.y - p₂.y, p₁.z - p₂.z)
-# Cross product for points as vectors
-×(p₁::Point, p₂::Point) = Point(p₁.y*p₂.z - p₂.y*p₁.z, 
-                                p₁.z*p₂.x - p₂.z*p₁.x, 
-                                p₁.x*p₂.y - p₂.x*p₁.y, 
+atol(::Point) = 1.0e-6
+≈(p⃗₁::Point, p⃗₂::Point) = all(isapprox.(p⃗₁.coord, p⃗₂.coord, atol=atol(p⃗₁)))
++(p⃗₁::Point, p⃗₂::Point) = Point(p⃗₁.coord .+ p⃗₂.coord)
+-(p⃗₁::Point, p⃗₂::Point) = Point(p⃗₁.coord .- p⃗₂.coord)
+# Cross product
+×(p⃗₁::Point, p⃗₂::Point) = Point(p⃗₁[2]*p⃗₂[3] - p⃗₂[2]*p⃗₁[3], 
+                                p⃗₁[3]*p⃗₂[1] - p⃗₂[3]*p⃗₁[1], 
+                                p⃗₁[1]*p⃗₂[2] - p⃗₂[1]*p⃗₁[2], 
                                 )
-# Dot product for points as vectors
-⋅(p₁::Point, p₂::Point) = p₁.x*p₂.x + p₁.y*p₂.y + p₁.z*p₂.z
-+(p::Point, n::Number) = Point(p.x + n, p.y + n, p.z + n)
--(p::Point, n::Number) = Point(p.x - n, p.y - n, p.z - n)
-*(n::Number, p::Point) = Point(n*p.x, n*p.y, n*p.z)
-/(p::Point, n::Number) = Point(p.x/n, p.y/n, p.z/n)
+# Dot product
+⋅(p⃗₁::Point, p⃗₂::Point) = p⃗₁[1]*p⃗₂[1] + p⃗₁[2]*p⃗₂[2] + p⃗₁[3]*p⃗₂[3]
++(p⃗::Point, n::Number) = Point(p⃗.coord .+ n)
+-(p⃗::Point, n::Number) = Point(p⃗.coord .- n)
+*(n::Number, p⃗::Point) = Point(p⃗.coord .* n)
+/(p⃗::Point, n::Number) = Point(p⃗.coord ./ n)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function distance(p₁::Point, p₂::Point)
-  return √( (p₁.x - p₂.x)^2 + (p₁.y - p₂.y)^2 + (p₁.z - p₂.z)^2 )
+"""
+    distance(p⃗₁::Point, p⃗₂::Point)
+
+Returns the Euclidian distance from `p⃗₁` to `p⃗₂`.
+"""
+function distance(p⃗₁::Point, p⃗₂::Point)
+    return √( (p⃗₁[1] - p⃗₂[1])^2 + (p⃗₁[2] - p⃗₂[2])^2 + (p⃗₁[3] - p⃗₂[3])^2 )
 end
