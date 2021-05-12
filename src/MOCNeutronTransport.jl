@@ -14,4 +14,9 @@ export  LineSegment,
         intersects,
         is_left
 
+include("AngularQuadrature.jl")
+export AngularQuadrature,
+       GeneralAngularQuadrature,
+       ProductAngularQuadrature
+
 end # module

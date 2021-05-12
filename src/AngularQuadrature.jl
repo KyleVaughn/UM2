@@ -53,7 +53,7 @@ ProductAngularQuadrature((θ, w_θ), (γ,w_γ)) = ProductAngularQuadrature(θ, �
 function chebyshev_angular_quadrature(M::Int)
     # A Chebyshev-type quadrature for a given weight function is a quadrature formula with equal 
     # weights. This function produces evenly spaced angles with equal weights.
-    angles = [π*(2m-1)/4m for m = 1:M]
+    angles = [π*(2m-1)/4M for m = 1:M]
     weights = [1.0/M for m = 1:M]
     return angles, weights
 end
@@ -62,8 +62,10 @@ function AngularQuadrature(quadrature_type::String, M::Int, N::Int)
     if quadrature_type == "Chebyshev-Chebyshev"
         quadrature = ProductAngularQuadrature(chebyshev_angular_quadrature(M), 
                                               chebyshev_angular_quadrature(N))
+    else
+        ArgumentError("Unsupported quadrature type.")
     end
     return quadrature
 end
 
-# Add tests for construction, chebyshev angles, weights, integration 
+# TODO: Function to convert product into general quadrature
