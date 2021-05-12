@@ -30,8 +30,8 @@ function intersects(l₁::LineSegment, l₂::LineSegment)
     # solve for s as well.
     # x⃗₂ + su⃗ = x⃗₁ + tv⃗                                   subtracting x⃗₂ from both sides
     # su⃗ = (x⃗₁-x⃗₂) + tv⃗                                   we see that each element must satisfy
-    # suᵢ = (x⃗₁ᵢ-x⃗₂ᵢ) + tvᵢ for i = 1,2,3                 hence
-    # s = ((x⃗₁ᵢ-x⃗₂ᵢ) + tvᵢ)/uᵢ                            
+    # s(u⃗ ⋅ u⃗) = [(x⃗₁-x⃗₂) + tv⃗] ⋅ u⃗                       hence
+    # s = [(x⃗₁-x⃗₂) + tv⃗] ⋅ u⃗/(u⃗ ⋅ u⃗)                            
     x⃗₁ = l₁.p⃗₁  
     v⃗ = l₁.p⃗₂ - l₁.p⃗₁
     x⃗₂ = l₂.p⃗₁  
@@ -41,25 +41,13 @@ function intersects(l₁::LineSegment, l₂::LineSegment)
     end
     t = (((x⃗₂-x⃗₁) × u⃗) ⋅ (v⃗ × u⃗))/((v⃗ × u⃗) ⋅ (v⃗ × u⃗))
     p⃗ᵢ= l₁(t)
-    # if t is not valid, still return p⃗ᵢ, the closest point to intersection on line 1.
-    if !(0.0 ≤ t ≤ 1.0)
-        return false, p⃗ᵢ  
-    end
-    # Find a non-zero component of u⃗ to compute s
-    if !isapprox(u⃗[1], 0.0, atol=1.0e-6)
-        i = 1
-    elseif !isapprox(u⃗[2], 0.0, atol=1.0e-6) 
-        i = 2    
+    s = (((x⃗₁-x⃗₂) + t*v⃗) ⋅ u⃗ )/(u⃗ ⋅ u⃗)
+    if (0.0 ≤ s ≤ 1.0) && (0.0 ≤ t ≤ 1.0)
+        return true, p⃗ᵢ
     else
-        i = 3
+        # if t/s is not valid, still return p⃗ᵢ, the closest point to intersection on line 1.
+        return false, p⃗ᵢ
     end
-    s = ((x⃗₁[i]-x⃗₂[i]) + t*v⃗[i])/u⃗[i]
-    # if s is not valid, still return p⃗ᵢ
-    if !(0.0 ≤ s ≤ 1.0)
-        return false, p⃗ᵢ           
-    end
-    # All conditions satisfied
-    return true, p⃗ᵢ
 end
 function is_left(p⃗₃::Point, l::LineSegment)
     # It is assumed that the point p⃗₃ and the line l share the same z-coordinate. 
@@ -84,7 +72,8 @@ function is_left(p⃗₃::Point, l::LineSegment)
     #   /
     #  / θ
     # p⃗₁----------------> u⃗ 
-    l.p⃗₁[3] == l.p⃗₂[3] == p⃗₃[3] || throw(DomainError(p⃗₁[3], "Points don't share the same z-coordinate"))
+    @debug l.p⃗₁[3] == l.p⃗₂[3] == p⃗₃[3] || throw(DomainError(p⃗₁[3], 
+                                                "Points don't share the same z-coordinate"))
     u⃗ = l.p⃗₂-l.p⃗₁
     v⃗ = p⃗₃-l.p⃗₁ 
     if u⃗[1]*v⃗[2] - v⃗[1]*u⃗[2] > 0.0 
