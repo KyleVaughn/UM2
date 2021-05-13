@@ -3,5 +3,8 @@ uuid = "b01d8a8e-7766-460c-9f6b-9e1abe3a94ae"
 authors = ["Kyle Vaughn <kcvaughn@umich.edu>"]
 version = "0.1.0"
 
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
 [compat]
-julia = "1.4.1"
+julia = "1.6.1"

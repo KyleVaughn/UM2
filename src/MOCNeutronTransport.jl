@@ -1,14 +1,15 @@
 module MOCNeutronTransport
 
 include("Point.jl")
-export  Point, 
+export  Point,
         atol,
         ×,
         ⋅,
-        distance
+        distance,
+        norm
 
 include("LineSegment.jl")
-export  LineSegment, 
+export  LineSegment,
         arc_length,
         midpoint,
         intersects,
@@ -18,5 +19,8 @@ include("AngularQuadrature.jl")
 export AngularQuadrature,
        GeneralAngularQuadrature,
        ProductAngularQuadrature
+
+include("QuadraticSegment.jl")
+export QuadraticSegment
 
 end # module
