@@ -75,6 +75,10 @@ end
 
 # Base methods
 # -------------------------------------------------------------------------------------------------
+function (q::QuadraticSegment)(t)
+    u⃗ = q.x⃗[2] - q.x⃗[1]
+    return (q.a*norm(t*u⃗)^2 + q.b*norm(t*u⃗))*q.ŷ + t*u⃗ + q.x⃗[1]
+end
 # quad.c gives x1
 # evaluate as function of t, need u(t)
 
