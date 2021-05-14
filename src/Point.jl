@@ -49,8 +49,11 @@ end
 # Dot product
 ⋅(p⃗₁::Point, p⃗₂::Point) = p⃗₁[1]*p⃗₂[1] + p⃗₁[2]*p⃗₂[2] + p⃗₁[3]*p⃗₂[3]
 +(p⃗::Point, n::Number) = Point(p⃗.coord .+ n)
++(n::Number, p⃗::Point) = p⃗ + n
 -(p⃗::Point, n::Number) = Point(p⃗.coord .- n)
+-(n::Number, p⃗::Point) = p⃗ - n
 *(n::Number, p⃗::Point) = Point(p⃗.coord .* n)
+*(p⃗::Point, n::Number) = n*p⃗
 /(p⃗::Point, n::Number) = Point(p⃗.coord ./ n)
 # Unary -
 -(p⃗::Point) = -1*p⃗

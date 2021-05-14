@@ -9,75 +9,43 @@
 # x⃗₁--------------------------------------x⃗₂
 #
 # NOTE: x⃗₃ is between x⃗₁ and x⃗₂
-#
-# Let u⃗ = x⃗₂-x⃗₁. Then the parametric representation of the vector from x⃗₁ to x⃗₂
-# is u⃗(t) = x⃗₁ + tu⃗ , with t ∈ [0, 1].
-#
-# The parametric representation of the quadratic curve is
-# 𝐘(t) = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + x⃗₁
-# similar to the familiar y(x) = ax² + bx + c, where ŷ is the unit vector in the same plane as
-# x⃗₁, x⃗₂, and x⃗₃, such that ŷ ⟂ u⃗ and is pointing towards x⃗₃.
-# We also define v⃗ = x⃗₃-x⃗₁. We see the ŷ vector may be computed by:
-# ŷ = -((v⃗ × u⃗) × u⃗)/|(v⃗ × u⃗) × u⃗|
-# A diagram of these relations may be seen below:
-#                   x⃗₃
-#               /
-#       v⃗    /      ^
-#         /         | ŷ
-#      /            |
-#   /               |
-# x⃗₁--------------------------------------x⃗₂
-#                              u⃗
+# The parametric vector form of a quadratic segment is Q(t) = t²r⃗₂ + tr⃗₁ + r⃗₀
+# where t ∈ [0,1]. It is trivial to show that r⃗₀ = x⃗₁, hence only r⃗₁ and r⃗₂ are stored in addition
+# to the points x⃗₁, x⃗₂, and x⃗₃
 struct QuadraticSegment{T <: AbstractFloat}
-    x⃗::NTuple{3,Point{T}}
-    a::T
-    b::T
-    ŷ::Point{T}
+    x⃗::NTuple{3,Point{T}} # (x⃗₁, x⃗₂, x⃗₃)
+    r⃗::NTuple{2,Point{T}} # (r⃗₁, r⃗₂)
 end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
 function QuadraticSegment(x⃗₁::Point{T}, x⃗₂::Point{T}, x⃗₃::Point{T}) where {T <: AbstractFloat}
-    # Using 𝐘(1) = x⃗₂ gives b = -a|u⃗|.
-    # Using 𝐘(t₃) = x⃗₃, the following steps may be used to derive a
-    #   1) v⃗ = x⃗₃ - x⃗₁
-    #   2) b = -a|u⃗|
-    #   3) × u⃗ both sides, and u⃗ × u⃗ = 0⃗
-    #   4) |t₃u⃗| = u⃗ ⋅v⃗/|u⃗|
-    #   5) |u⃗|² = u⃗ ⋅u⃗
-    #   6) v⃗ × u⃗ = -v⃗ × u⃗
-    #   the result:
-    #
-    #             -(u⃗ ⋅ u⃗) (v⃗ × u⃗) ⋅ (v⃗ × u⃗)
-    # a = -------------------------------------------
-    #     (u⃗ ⋅ v⃗)[(u⃗ ⋅ v⃗) - (u⃗ ⋅ u⃗)](ŷ × u⃗) ⋅ (v⃗ × u⃗)
-    #
-    # We can construct ŷ with
-    #
-    #      -(v⃗ × u⃗) × u⃗
-    # ŷ =  -------------
-    #      |(v⃗ × u⃗) × u⃗|
-    #
+    # Q(t) = t²r⃗₂ + tr⃗₁ + r⃗₀
+    # Q(0) = x⃗₁ = r⃗₀
+    # Q(1) = x⃗₂ = r⃗₂ + r⃗₁ + x⃗₁
+    # Let, u⃗ = x⃗₂-x⃗₁, then
+    # u⃗ = r⃗₂ + r⃗₁ ⟹   r⃗₁ = u⃗ - r⃗₂
+    # Q(t₃) = x⃗₃ = (t₃)²r⃗₂ + t₃r⃗₁ + x⃗₁
+    # Let, v⃗ = x⃗₃-x⃗₁, then
+    # v⃗ = (t₃)²r⃗₂ + t₃r⃗₁
+    # using r⃗₁ = u⃗ - r⃗₂
+    # v⃗ = t₃((t₃-1)r⃗₂ + u⃗)
+    # r⃗₂ = (v⃗/t₃ - u⃗)/(t₃ - 1)
+    # Let, u⃗(t) = x⃗₁ + tu⃗, then knowing that u⃗(t₃) is equal to the projection of v⃗ onto u⃗,
+    # u⃗(t₃) = (v⃗ ⋅ u⃗)/(u⃗ ⋅u⃗) u⃗ = x⃗₁ + t₃u⃗
+    # t₃ = ((u⃗ ⋅ v⃗) - (x⃗₁ ⋅ u⃗))/(u⃗ ⋅ u⃗)
     u⃗ = x⃗₂-x⃗₁
     v⃗ = x⃗₃-x⃗₁
-    if v⃗ × u⃗ ≈ zero(v⃗)
-        # x⃗₃ is on u⃗
-        a = T(0)
-        b = T(0)
-        ŷ = zero(v⃗)
-    else
-        ŷ = -(v⃗ × u⃗) × u⃗/norm((v⃗ × u⃗) × u⃗)
-        a = ( (u⃗ ⋅ u⃗) * (v⃗ × u⃗) ⋅(v⃗ × u⃗) )/( (u⃗ ⋅v⃗)*((u⃗ ⋅ v⃗) - (u⃗ ⋅ u⃗)) * ((ŷ × u⃗) ⋅ (v⃗ × u⃗)) )
-        b = -a*norm(u⃗)
-    end
-    return QuadraticSegment((x⃗₁, x⃗₂, x⃗₃), a, b, ŷ)
+    t₃ = ((u⃗ ⋅ v⃗) - (x⃗₁ ⋅ u⃗))/(u⃗ ⋅ u⃗)
+    r⃗₂ = (v⃗/t₃ - u⃗)/(t₃ - 1)
+    r⃗₁ = u⃗ - r⃗₂
+    return QuadraticSegment((x⃗₁, x⃗₂, x⃗₃), (r⃗₁, r⃗₂))
 end
 
 # Base methods
 # -------------------------------------------------------------------------------------------------
 function (q::QuadraticSegment)(t)
-    u⃗ = q.x⃗[2] - q.x⃗[1]
-    return (q.a*norm(t*u⃗)^2 + q.b*norm(t*u⃗))*q.ŷ + t*u⃗ + q.x⃗[1]
+    return t^2*q.r⃗[2] + t*q.r⃗[1] + q.x⃗[1]
 end
 # quad.c gives x1
 # evaluate as function of t, need u(t)
