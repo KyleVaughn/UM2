@@ -44,11 +44,7 @@ end
 
 # Base methods
 # -------------------------------------------------------------------------------------------------
-function (q::QuadraticSegment)(t)
-    return t^2*q.r⃗[2] + t*q.r⃗[1] + q.x⃗[1]
-end
-# quad.c gives x1
-# evaluate as function of t, need u(t)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
+(q::QuadraticSegment)(t) = t^2*q.r⃗[2] + t*q.r⃗[1] + q.x⃗[1]
