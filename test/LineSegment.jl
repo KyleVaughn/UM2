@@ -73,14 +73,12 @@ using MOCNeutronTransport
         l₂ = LineSegment(Point( type.((0, 0)) ), Point(type.((1, 0))))
         bool, p = intersects(l₁, l₂)
         @test !bool
-        @test p == Point(Inf, Inf, Inf)
 
         # collinear
         l₁ = LineSegment(Point( type.((0, 0)) ), Point( type.((2, 0)) ))
         l₂ = LineSegment(Point( type.((0, 0)) ), Point( type.((1, 0)) ))
         bool, p = intersects(l₁, l₂)
         @test !bool
-        @test p == Point(Inf, Inf, Inf)
 
         # line intersects, not segment (invalid t)
         l₁ = LineSegment(Point( type.((0, 0)) ), Point(type.((2, 0)) ))
@@ -103,5 +101,11 @@ using MOCNeutronTransport
         @test  is_left(Point(type(-0.001), type(-10.0)), l)
         @test !is_left(Point(type(1.0   ), type(0.0)  ), l)
         @test !is_left(Point(type(0.001 ), type(-10.0)), l)
+
+        n̂ = Point( type.((1, 0, 0)))
+        @test  is_left(Point(type(0), type(0),      type(1)    ), l, n̂ = n̂)
+        @test  is_left(Point(type(0), type(-0.001), type(10.0) ), l, n̂ = n̂)
+        @test !is_left(Point(type(0), type(0),      type(-1)   ), l, n̂ = n̂)
+        @test !is_left(Point(type(0), type(0.001 ), type(-10.0)), l, n̂ = n̂)
     end
 end

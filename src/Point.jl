@@ -41,13 +41,12 @@ function ≈(p⃗₁::Point{T}, p⃗₂::Point{T}) where {T <: AbstractFloat}
 end
 +(p⃗₁::Point, p⃗₂::Point) = Point(p⃗₁.coord .+ p⃗₂.coord)
 -(p⃗₁::Point, p⃗₂::Point) = Point(p⃗₁.coord .- p⃗₂.coord)
-# Cross product
 ×(p⃗₁::Point, p⃗₂::Point) = Point(p⃗₁[2]*p⃗₂[3] - p⃗₂[2]*p⃗₁[3],
                                 p⃗₁[3]*p⃗₂[1] - p⃗₂[3]*p⃗₁[1],
                                 p⃗₁[1]*p⃗₂[2] - p⃗₂[1]*p⃗₁[2],
                                 )
-# Dot product
 ⋅(p⃗₁::Point, p⃗₂::Point) = p⃗₁[1]*p⃗₂[1] + p⃗₁[2]*p⃗₂[2] + p⃗₁[3]*p⃗₂[3]
+
 +(p⃗::Point, n::Number) = Point(p⃗.coord .+ n)
 +(n::Number, p⃗::Point) = p⃗ + n
 -(p⃗::Point, n::Number) = Point(p⃗.coord .- n)
@@ -55,7 +54,6 @@ end
 *(n::Number, p⃗::Point) = Point(p⃗.coord .* n)
 *(p⃗::Point, n::Number) = n*p⃗
 /(p⃗::Point, n::Number) = Point(p⃗.coord ./ n)
-# Unary -
 -(p⃗::Point) = -1*p⃗
 
 # Methods
@@ -69,6 +67,4 @@ function distance(p⃗₁::Point, p⃗₂::Point)
     return √( (p⃗₁[1] - p⃗₂[1])^2 + (p⃗₁[2] - p⃗₂[2])^2 + (p⃗₁[3] - p⃗₂[3])^2 )
 end
 
-function norm(p⃗::Point)
-    return norm(p⃗.coord)
-end
+norm(p⃗::Point) = norm(p⃗.coord)
