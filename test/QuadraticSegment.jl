@@ -79,6 +79,6 @@ using MOCNeutronTransport
         bool, npoints, points = intersects(l, q)
         @test !bool
         @test npoints == 0
-        @test points[1] ≈ Point(type.((Inf, Inf, Inf)))
+        @test points[1] ≈ Point(type.((1e9, 1e9, 1e9)))
     end
 end

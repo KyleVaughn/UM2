@@ -73,7 +73,7 @@ function intersects(l::LineSegment, q::QuadraticSegment)
     bool = false
     npoints = 0
     type = typeof(l.p⃗₁.coord[1])
-    p⃗_∞ = Point(type.((Inf, Inf, Inf))) 
+    p⃗_∞ = Point(type.((1e9, 1e9, 1e9))) 
     points = [p⃗_∞, p⃗_∞]
     w⃗ = l.p⃗₂ - l.p⃗₁
     A⃗ = q.r⃗[2] × w⃗
