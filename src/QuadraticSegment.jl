@@ -9,113 +9,141 @@
 # x⃗₁--------------------------------------x⃗₂
 #
 # NOTE: x⃗₃ is between x⃗₁ and x⃗₂
-# The parametric vector form of a quadratic segment is Q(t) = t²r⃗₂ + tr⃗₁ + r⃗₀
-# where t ∈ [0,1]. It is trivial to show that r⃗₀ = x⃗₁, hence only r⃗₁ and r⃗₂ are stored in addition
-# to the points x⃗₁, x⃗₂, and x⃗₃
+#
+# Let u⃗ = x⃗₂-x⃗₁. Then the parametric representation of the vector from x⃗₁ to x⃗₂
+# is u⃗(t) = x⃗₁ + tu⃗ , with t ∈ [0, 1].
+#
+# The parametric representation of the quadratic curve is
+# q(t) = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + x⃗₁
+# similar to the familiar y(x) = ax² + bx + c, where ŷ is the unit vector in the same plane as
+# x⃗₁, x⃗₂, and x⃗₃, such that ŷ ⟂ u⃗ and is pointing towards x⃗₃.
+# We also define v⃗ = x⃗₃-x⃗₁. We see the ŷ vector may be computed by:
+# ŷ = -((v⃗ × u⃗) × u⃗)/|(v⃗ × u⃗) × u⃗|
+# A diagram of these relations may be seen below:
+#                   x⃗₃
+#               /
+#       v⃗    /      ^
+#         /         | ŷ
+#      /            |
+#   /               |
+# x⃗₁--------------------------------------x⃗₂
+#                              u⃗
 struct QuadraticSegment{T <: AbstractFloat}
-    x⃗::NTuple{3,Point{T}} # (x⃗₁, x⃗₂, x⃗₃)
-    r⃗::NTuple{2,Point{T}} # (r⃗₁, r⃗₂)
+    x⃗::NTuple{3,Point{T}}
+    a::T
+    b::T
+    u⃗::Point{T}
+    ŷ::Point{T}
 end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
 function QuadraticSegment(x⃗₁::Point{T}, x⃗₂::Point{T}, x⃗₃::Point{T}) where {T <: AbstractFloat}
-    # Q(t) = t²r⃗₂ + tr⃗₁ + r⃗₀
-    # Q(0) = x⃗₁ = r⃗₀
-    # Q(1) = x⃗₂ = r⃗₂ + r⃗₁ + x⃗₁
-    # Let, u⃗ = x⃗₂-x⃗₁, then
-    # u⃗ = r⃗₂ + r⃗₁ ⟹   r⃗₁ = u⃗ - r⃗₂
-    # Q(t₃) = x⃗₃ = (t₃)²r⃗₂ + t₃r⃗₁ + x⃗₁
-    # Let, v⃗ = x⃗₃-x⃗₁, then
-    # v⃗ = (t₃)²r⃗₂ + t₃r⃗₁
-    # using r⃗₁ = u⃗ - r⃗₂
-    # v⃗ = t₃((t₃-1)r⃗₂ + u⃗)
-    # r⃗₂ = (v⃗/t₃ - u⃗)/(t₃ - 1)
-    # Let, u⃗(t) = x⃗₁ + tu⃗, then knowing that u⃗(t₃) is equal to the projection of v⃗ onto u⃗,
-    # u⃗(t₃) = (v⃗ ⋅ u⃗)/(u⃗ ⋅u⃗) u⃗ = x⃗₁ + t₃u⃗
-    # t₃ = ((u⃗ ⋅ v⃗) - (x⃗₁ ⋅ u⃗))/(u⃗ ⋅ u⃗)
+    # Using q(1) = x⃗₂ gives b = -a|u⃗|.
+    # Using q(t₃) = x⃗₃, the following steps may be used to derive a
+    #   1) v⃗ = x⃗₃ - x⃗₁
+    #   2) b = -a|u⃗|
+    #   3) × u⃗ both sides, and u⃗ × u⃗ = 0⃗
+    #   4) |t₃u⃗| = u⃗ ⋅v⃗/|u⃗|
+    #   5) |u⃗|² = u⃗ ⋅u⃗
+    #   6) v⃗ × u⃗ = -v⃗ × u⃗
+    #   the result:
+    #
+    #             -(u⃗ ⋅ u⃗) (v⃗ × u⃗) ⋅ (v⃗ × u⃗)
+    # a = -------------------------------------------
+    #     (u⃗ ⋅ v⃗)[(u⃗ ⋅ v⃗) - (u⃗ ⋅ u⃗)](ŷ × u⃗) ⋅ (v⃗ × u⃗)
+    #
+    # We can construct ŷ with
+    #
+    #      -(v⃗ × u⃗) × u⃗
+    # ŷ =  -------------
+    #      |(v⃗ × u⃗) × u⃗|
+    #
     u⃗ = x⃗₂-x⃗₁
     v⃗ = x⃗₃-x⃗₁
-    t₃ = ((u⃗ ⋅ v⃗) - (x⃗₁ ⋅ u⃗))/(u⃗ ⋅ u⃗)
-    r⃗₂ = (v⃗/t₃ - u⃗)/(t₃ - 1)
-    r⃗₁ = u⃗ - r⃗₂
-    return QuadraticSegment((x⃗₁, x⃗₂, x⃗₃), (r⃗₁, r⃗₂))
+    if v⃗ × u⃗ ≈ zero(v⃗)
+        # x⃗₃ is on u⃗
+        a = T(0)
+        b = T(0)
+        ŷ = zero(v⃗)
+    else
+        ŷ = -(v⃗ × u⃗) × u⃗/norm((v⃗ × u⃗) × u⃗)
+        a = ( (u⃗ ⋅ u⃗) * (v⃗ × u⃗) ⋅(v⃗ × u⃗) )/( (u⃗ ⋅v⃗)*((u⃗ ⋅ v⃗) - (u⃗ ⋅ u⃗)) * ((ŷ × u⃗) ⋅ (v⃗ × u⃗)) )
+        b = -a*norm(u⃗)
+    end
+    return QuadraticSegment((x⃗₁, x⃗₂, x⃗₃), a, b, u⃗, ŷ)
 end
 
 # Base methods
 # -------------------------------------------------------------------------------------------------
 
+
 # Methods
 # -------------------------------------------------------------------------------------------------
-(q::QuadraticSegment)(t) = t^2*q.r⃗[2] + t*q.r⃗[1] + q.x⃗[1]
-
+function (q::QuadraticSegment)(t)
+    u⃗ = q.x⃗[2] - q.x⃗[1]
+    return (q.a*norm(t*u⃗)^2 + q.b*norm(t*u⃗))*q.ŷ + t*u⃗ + q.x⃗[1]
+end
 function intersects(l::LineSegment, q::QuadraticSegment)
-    # q(t) = t²r⃗₂ + tr⃗₁ + r⃗₀ 
+    # q(t) = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + x⃗₁
     # l(s) = x⃗₄ + sw⃗
-    # If r⃗₂ ≢  0⃗
-    #   x⃗₄ + sw⃗ = t²r⃗₂ + tr⃗₁ + r⃗₀
-    #   sw⃗ = t²r⃗₂ + tr⃗₁ + r⃗₀ - x⃗₄
-    #   0⃗ = (t²r⃗₂ + tr⃗₁ + r⃗₀ - x⃗₄) × w⃗
-    #   A⃗ = (r⃗₂× w⃗), B⃗ = (r⃗₁× w⃗), C⃗ = (r⃗₀ - x⃗₄) × w⃗ 
+    # If a|u⃗|²ŷ × w⃗ ≢ 0⃗
+    #   x⃗₄ + sw⃗ = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + x⃗₁
+    #   sw⃗ = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + (x⃗₁ - x⃗₄)
+    #   For valid t (t ∈ [0,1])
+    #   0⃗ = (a|u⃗|²ŷ × w⃗)t² + ((b|u⃗|ŷ + u⃗) × w⃗)t + (x⃗₁ - x⃗₄) × w⃗
+    #   A⃗ = (a|u⃗|²ŷ × w⃗), B⃗ = ((b|u⃗|ŷ + u⃗) × w⃗), C⃗ = (x⃗₁ - x⃗₄) × w⃗
     #   0⃗ = t²A⃗ + tB⃗ + C⃗
-    #   0 = t²A⃗ᵢ + tB⃗ᵢ + C⃗ᵢ, i = 1, 2, 3
-    #   t = (-B⃗ᵢ- √(B⃗ᵢ²-4A⃗ᵢC⃗ᵢ))/2A⃗ᵢ, -B⃗ᵢ+ √(B⃗ᵢ²-4A⃗ᵢC⃗ᵢ))/2A⃗ᵢ)
-    #   s = (t²r⃗₂ + tr⃗₁ + r⃗₀ - x⃗₄)⋅w⃗/(w⃗ ⋅ w⃗)
+    #   0 = (A⃗ ⋅ A⃗)t² + (B⃗ ⋅ A⃗)t + (C⃗ ⋅ A⃗)
+    #   A = (A⃗ ⋅ A⃗), B = (B⃗ ⋅ A⃗), C = (C⃗ ⋅ A⃗)
+    #   0 = At² + Bt + B
+    #   t = (-B - √(B²-4AC))/2A, -B + √(B²-4AC))/2A)
+    #   s = ((q(t) - x⃗₄)⋅w⃗/(w⃗ ⋅ w⃗)
     #   t is invalid if:
-    #     1) A⃗ᵢ= 0            
-    #     2) B⃗ᵢ²< 4A⃗ᵢC⃗ᵢ       
+    #     1) A = 0            
+    #     2) B² < 4AC       
     #     3) t < 0 or 1 < t   (Line intersects, segment doesn't)
     #   s is invalid if:
     #     1) s < 0 or 1 < s   (Line intersects, segment doesn't)
-    # If A⃗ = (r⃗₂× w⃗) = 0⃗, we need to use line intersection instead.
-    # A⃗ = 0⃗ would give ±Inf for t, even if the intersection exists.
-    # See LineSegment intersects algorithm for derivation.
+    # If A = 0, we need to use line intersection instead.
     bool = false
     npoints = 0
     type = typeof(l.p⃗₁.coord[1])
-    p⃗_∞ = Point(type.((1e9, 1e9, 1e9))) 
-    points = [p⃗_∞, p⃗_∞]
+    points = [Point(type.((1e9, 1e9, 1e9))), Point(type.((1e9, 1e9, 1e9)))]
     w⃗ = l.p⃗₂ - l.p⃗₁
-    A⃗ = q.r⃗[2] × w⃗
-    B⃗ = q.r⃗[1] × w⃗
+    A⃗ = q.a*norm(q.u⃗)^2*q.ŷ × w⃗
+    B⃗ = (q.b*norm(q.u⃗)*q.ŷ + q.u⃗) × w⃗
     C⃗ = (q.x⃗[1] - l.p⃗₁) × w⃗
-    if A⃗ ≈ zero(q.r⃗[2])
+    A = A⃗ ⋅ A⃗
+    B = B⃗ ⋅ A⃗
+    C = C⃗ ⋅ A⃗
+    if isapprox(A, type(0), atol = √eps(type))
         # Line intersection
         t = (-C⃗ ⋅ B⃗)/(B⃗ ⋅ B⃗)
-        s = (t^2*q.r⃗[2] + t*q.r⃗[1] + q.x⃗[1] - l.p⃗₁) ⋅ w⃗/(w⃗ ⋅ w⃗)
+        s = (q(t)- l.p⃗₁) ⋅ w⃗/(w⃗ ⋅ w⃗)
         points[1] = q(t)
-        return (0.0 ≤ s ≤ 1.0) && (0.0 ≤ t ≤ 1.0) ? (true, 1, points) : (false, 0, points)
-    else
+        if (0.0 ≤ s ≤ 1.0) && (0.0 ≤ t ≤ 1.0)
+            bool = true
+            npoints = 1
+        end
+    elseif B^2 ≥ 4*A*C
         # Quadratic intersection
-        # Since we don't know which components of A⃗, B⃗, C⃗ are non-zero, we find both t and s
-        # pairs for all three vector components
-        t⃗ = type.([-1, -1, -1, -1, -1, -1])
-        s⃗ = type.([-1, -1, -1, -1, -1, -1])
-        # compute t
-        for i = 1:3
-            if B⃗[i]^2 ≥ 4A⃗[i]*C⃗[i]
-                t⃗[2i-1] = (-B⃗[i] - √(B⃗[i]^2 - 4A⃗[i]*C⃗[i]))/(2A⃗[i])   
-                t⃗[2i]   = (-B⃗[i] + √(B⃗[i]^2 - 4A⃗[i]*C⃗[i]))/(2A⃗[i])   
-            end
-        end
-        # compute s
-        for i = 1:6
-            s⃗[i] = (t⃗[i]^2*q.r⃗[2] + t⃗[i]*q.r⃗[1] + q.x⃗[1] - l.p⃗₁)⋅w⃗/(w⃗ ⋅ w⃗) 
-        end
+        t⃗ = [(-B - √(B^2-4*A*C))/(2A), (-B + √(B^2-4A*C))/(2A)]
+        s⃗ = [(q(t⃗[1]) - l.p⃗₁) ⋅ w⃗/(w⃗ ⋅ w⃗), (q(t⃗[2]) - l.p⃗₁) ⋅ w⃗/(w⃗ ⋅ w⃗)]
         # Check points to see if they are unique, valid intersections.
-        for i = 1:6
+        for i = 1:2
             p⃗ₜ = q(t⃗[i])
             p⃗ₛ = l(s⃗[i])
             if (0.0 ≤ s⃗[i] ≤ 1.0) && (0.0 ≤ t⃗[i] ≤ 1.0) && !(p⃗ₜ≈ points[1]) && (p⃗ₜ ≈ p⃗ₛ)
                 bool = true
                 points[npoints + 1] = p⃗ₜ
-                npoints += 1 
+                npoints += 1
                 if npoints == 2
                     break
                 end
             end
         end
-        return bool, npoints, points
     end
+    return bool, npoints, points
 end
 intersects(q::QuadraticSegment, l::LineSegment) = intersects(l, q)
