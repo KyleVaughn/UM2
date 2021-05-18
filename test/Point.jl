@@ -13,13 +13,14 @@ using MOCNeutronTransport
         @test typeof(p.coord) == typeof(type.((1, 2, 3)))
 
         # 2D
-        p = Point( type.((1, 2)) )
-        @test p.coord == type.((1, 2, 0))
-        @test typeof(p.coord) == typeof(type.((1, 2, 0)))
-
         p = Point(type(1), type(2))
         @test p.coord == type.((1, 2, 0))
         @test typeof(p.coord) == typeof(type.((1, 2, 0)))
+
+        # 1D
+        p = Point(type(1))
+        @test p.coord == type.((1, 0, 0))
+        @test typeof(p.coord) == typeof(type.((1, 0, 0)))
 
         # Base methods
         # ---------------------------------------------------------------------------------------------

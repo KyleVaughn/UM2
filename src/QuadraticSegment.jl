@@ -1,3 +1,4 @@
+import Base: intersect
 # A quadratic segment in 3D space that passes through three points: x⃗₁, x⃗₂, and x⃗₃
 # The assumed relation of the points may be seen in the diagram below:
 #                 ___x⃗₃___
@@ -28,7 +29,7 @@
 #   /               |
 # x⃗₁--------------------------------------x⃗₂
 #                              u⃗
-struct QuadraticSegment{T <: AbstractFloat}
+struct QuadraticSegment{T <: AbstractFloat} <: Edge
     x⃗::NTuple{3,Point{T}}
     a::T
     b::T
@@ -68,7 +69,7 @@ function QuadraticSegment(x⃗₁::Point{T}, x⃗₂::Point{T}, x⃗₃::Point{T
         ŷ = zero(v⃗)
     else
         ŷ = -(v⃗ × u⃗) × u⃗/norm((v⃗ × u⃗) × u⃗)
-        a = ( (u⃗ ⋅ u⃗) * (v⃗ × u⃗) ⋅(v⃗ × u⃗) )/( (u⃗ ⋅v⃗)*((u⃗ ⋅ v⃗) - (u⃗ ⋅ u⃗)) * ((ŷ × u⃗) ⋅ (v⃗ × u⃗)) )
+        a = ( (u⃗ ⋅ u⃗) * (v⃗ × u⃗) ⋅(v⃗ × u⃗) )/( (u⃗ ⋅v⃗)*((u⃗ ⋅ v⃗) - (u⃗ ⋅ u⃗) ) * ( (ŷ × u⃗) ⋅ (v⃗ × u⃗)) )
         b = -a*norm(u⃗)
     end
     return QuadraticSegment((x⃗₁, x⃗₂, x⃗₃), a, b, u⃗, ŷ)
@@ -80,11 +81,12 @@ end
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function (q::QuadraticSegment)(t)
+function (q::QuadraticSegment)(t::T) where {T <: AbstractFloat}
     u⃗ = q.x⃗[2] - q.x⃗[1]
     return (q.a*norm(t*u⃗)^2 + q.b*norm(t*u⃗))*q.ŷ + t*u⃗ + q.x⃗[1]
 end
-function intersects(l::LineSegment, q::QuadraticSegment)
+
+function intersect(l::LineSegment, q::QuadraticSegment)
     # q(t) = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + x⃗₁
     # l(s) = x⃗₄ + sw⃗
     # If a|u⃗|²ŷ × w⃗ ≢ 0⃗
@@ -108,19 +110,19 @@ function intersects(l::LineSegment, q::QuadraticSegment)
     # If A = 0, we need to use line intersection instead.
     bool = false
     npoints = 0
-    type = typeof(l.p⃗₁.coord[1])
+    type = typeof(l.p₁.coord[1])
     points = [Point(type.((1e9, 1e9, 1e9))), Point(type.((1e9, 1e9, 1e9)))]
-    w⃗ = l.p⃗₂ - l.p⃗₁
+    w⃗ = l.p₂ - l.p₁
     A⃗ = q.a*norm(q.u⃗)^2*q.ŷ × w⃗
     B⃗ = (q.b*norm(q.u⃗)*q.ŷ + q.u⃗) × w⃗
-    C⃗ = (q.x⃗[1] - l.p⃗₁) × w⃗
+    C⃗ = (q.x⃗[1] - l.p₁) × w⃗
     A = A⃗ ⋅ A⃗
     B = B⃗ ⋅ A⃗
     C = C⃗ ⋅ A⃗
     if isapprox(A, type(0), atol = √eps(type))
         # Line intersection
         t = (-C⃗ ⋅ B⃗)/(B⃗ ⋅ B⃗)
-        s = (q(t)- l.p⃗₁) ⋅ w⃗/(w⃗ ⋅ w⃗)
+        s = (q(t)- l.p₁) ⋅ w⃗/(w⃗ ⋅ w⃗)
         points[1] = q(t)
         if (0.0 ≤ s ≤ 1.0) && (0.0 ≤ t ≤ 1.0)
             bool = true
@@ -129,14 +131,14 @@ function intersects(l::LineSegment, q::QuadraticSegment)
     elseif B^2 ≥ 4*A*C
         # Quadratic intersection
         t⃗ = [(-B - √(B^2-4*A*C))/(2A), (-B + √(B^2-4A*C))/(2A)]
-        s⃗ = [(q(t⃗[1]) - l.p⃗₁) ⋅ w⃗/(w⃗ ⋅ w⃗), (q(t⃗[2]) - l.p⃗₁) ⋅ w⃗/(w⃗ ⋅ w⃗)]
+        s⃗ = [(q(t⃗[1]) - l.p₁) ⋅ w⃗/(w⃗ ⋅ w⃗), (q(t⃗[2]) - l.p₁) ⋅ w⃗/(w⃗ ⋅ w⃗)]
         # Check points to see if they are unique, valid intersections.
         for i = 1:2
-            p⃗ₜ = q(t⃗[i])
-            p⃗ₛ = l(s⃗[i])
-            if (0.0 ≤ s⃗[i] ≤ 1.0) && (0.0 ≤ t⃗[i] ≤ 1.0) && !(p⃗ₜ≈ points[1]) && (p⃗ₜ ≈ p⃗ₛ)
+            pₜ = q(t⃗[i])
+            pₛ = l(s⃗[i])
+            if (0.0 ≤ s⃗[i] ≤ 1.0) && (0.0 ≤ t⃗[i] ≤ 1.0) && !(pₜ≈ points[1]) && (pₜ ≈ pₛ)
                 bool = true
-                points[npoints + 1] = p⃗ₜ
+                points[npoints + 1] = pₜ
                 npoints += 1
                 if npoints == 2
                     break
@@ -146,4 +148,4 @@ function intersects(l::LineSegment, q::QuadraticSegment)
     end
     return bool, npoints, points
 end
-intersects(q::QuadraticSegment, l::LineSegment) = intersects(l, q)
+intersect(q::QuadraticSegment, l::LineSegment) = intersect(l, q)

@@ -62,7 +62,7 @@ using MOCNeutronTransport
             @test seg(t) ≈ Point(type(2t), type(-(2t)^2 + 4t))
         end
 
-        # intersects
+        # intersect
         x⃗₁ = Point( type.((0, 0, 0)) )
         x⃗₂ = Point( type.((2, 0, 0)) )
         x⃗₃ = Point( type.((1, 1, 0)) )
@@ -72,7 +72,7 @@ using MOCNeutronTransport
         # 1 intersection
         q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
         l = LineSegment(x⃗₄, x⃗₅)
-        bool, npoints, points = intersects(l, q)
+        bool, npoints, points = intersect(l, q)
         @test bool
         @test npoints == 1
         @test points[1] ≈ Point(type.((1, 1, 0)))
@@ -80,7 +80,7 @@ using MOCNeutronTransport
         x⃗₄ = Point( type.((0, 0.75, 0)) )
         x⃗₅ = Point( type.((2, 0.75, 0)) )
         l = LineSegment(x⃗₄, x⃗₅)
-        bool, npoints, points = intersects(l, q)
+        bool, npoints, points = l ∩ q
         @test bool
         @test npoints == 2
         @test points[1] ≈ Point(type.((0.5, 0.75, 0)))
@@ -89,7 +89,7 @@ using MOCNeutronTransport
         x⃗₄ = Point( type.((0, 3, 0)) )       
         x⃗₅ = Point( type.((2, 3, 0)) )
         l = LineSegment(x⃗₄, x⃗₅)
-        bool, npoints, points = intersects(l, q)
+        bool, npoints, points = intersect(l, q)
         @test !bool
         @test npoints == 0
         @test points[1] ≈ Point(type.((1e9, 1e9, 1e9)))

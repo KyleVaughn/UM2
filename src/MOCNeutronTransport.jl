@@ -8,19 +8,33 @@ export  Point,
         distance,
         norm
 
+include("Edge.jl")
+export Edge
+
+include("Cell.jl")
+export Cell
+
 include("LineSegment.jl")
 export  LineSegment,
         arc_length,
         midpoint,
-        intersects,
+        intersect,
         is_left
+
+include("QuadraticSegment.jl")
+export QuadraticSegment
+
+include("Triangle.jl")
+export Triangle,
+       area,
+       intersect
 
 include("AngularQuadrature.jl")
 export AngularQuadrature,
        GeneralAngularQuadrature,
        ProductAngularQuadrature
 
-include("QuadraticSegment.jl")
-export QuadraticSegment
+
+
 
 end # module

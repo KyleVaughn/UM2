@@ -9,11 +9,13 @@ end
 # Constructors
 # -------------------------------------------------------------------------------------------------
 # 3D single constructor
-Point(x,y,z) = Point((x,y,z))
-# 2D constructor
-Point((x, y)) = Point((x, y, zero(x)))
+Point(x::T, y::T, z::T) where {T <: AbstractFloat} = Point((x,y,z))
 # 2D single constructor
-Point(x, y) = Point((x, y, zero(x)))
+Point(x::T, y::T) where {T <: AbstractFloat} = Point((x, y, zero(x)))
+# 2D tuple constructor
+Point((x, y)) = Point((x, y, zero(x)))
+# 1D single constructor
+Point(x::T) where {T <: AbstractFloat} = Point((x, zero(x), zero(x)))
 
 # Base methods
 # -------------------------------------------------------------------------------------------------
