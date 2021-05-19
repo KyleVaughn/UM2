@@ -11,7 +11,6 @@ using MOCNeutronTransport
         @test seg.ŷ ≈ Point( type.((0, 1, 0)) )
         @test seg.a ≈ type(-1)
         @test seg.b ≈ type(2)
-        @test seg.u⃗ == x⃗₂ - x⃗₁
         @test typeof(seg.ŷ) == typeof(Point( type.((0, 1, 0)) ))
         @test typeof(seg.a) == typeof(type(-1))
         @test typeof(seg.b) == typeof(type(2))
@@ -22,7 +21,6 @@ using MOCNeutronTransport
         @test seg.ŷ ≈ Point( type(0), type(1)/sqrt(type(2)), type(1)/sqrt(type(2)) )
         @test seg.a ≈ type(-1)
         @test seg.b ≈ type(2)
-        @test seg.u⃗ == x⃗₂ - x⃗₁
         @test typeof(seg.ŷ) == typeof(Point( type(0), type(1)/sqrt(type(2)), type(1)/sqrt(type(2)) ))
         @test typeof(seg.a) == typeof(type(-1))
         @test typeof(seg.b) == typeof(type(2))      
@@ -33,7 +31,6 @@ using MOCNeutronTransport
         @test seg.ŷ ≈ Point( type.((0, 0, 0)) )
         @test seg.a ≈ type(0)
         @test seg.b ≈ type(0)
-        @test seg.u⃗ == x⃗₂ - x⃗₁
         @test typeof(seg.ŷ) == typeof(Point( type.((0, 0, 0)) ))
         @test typeof(seg.a) == typeof(type(0))
         @test typeof(seg.b) == typeof(type(0))
@@ -44,7 +41,6 @@ using MOCNeutronTransport
         @test seg.ŷ ≈ Point( type.((0, 0, 0)) )
         @test seg.a ≈ type(0)
         @test seg.b ≈ type(0)
-        @test seg.u⃗ == x⃗₂ - x⃗₁
         @test typeof(seg.ŷ) == typeof(Point( type.((0, 0, 0)) ))
         @test typeof(seg.a) == typeof(type(0))
         @test typeof(seg.b) == typeof(type(0))

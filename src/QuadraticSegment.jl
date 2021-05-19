@@ -33,7 +33,6 @@ struct QuadraticSegment{T <: AbstractFloat} <: Edge
     x⃗::NTuple{3,Point{T}}
     a::T
     b::T
-    u⃗::Point{T}
     ŷ::Point{T}
 end
 
@@ -47,10 +46,10 @@ function QuadraticSegment(x⃗₁::Point{T}, x⃗₂::Point{T}, x⃗₃::Point{T
     #   3) × u⃗ both sides, and u⃗ × u⃗ = 0⃗
     #   4) |t₃u⃗| = u⃗ ⋅v⃗/|u⃗|
     #   5) |u⃗|² = u⃗ ⋅u⃗
-    #   6) v⃗ × u⃗ = -v⃗ × u⃗
+    #   6) v⃗ × u⃗ = -(u⃗ × v⃗)
     #   the result:
     #
-    #             -(u⃗ ⋅ u⃗) (v⃗ × u⃗) ⋅ (v⃗ × u⃗)
+    #             (u⃗ ⋅ u⃗) (v⃗ × u⃗) ⋅ (v⃗ × u⃗)
     # a = -------------------------------------------
     #     (u⃗ ⋅ v⃗)[(u⃗ ⋅ v⃗) - (u⃗ ⋅ u⃗)](ŷ × u⃗) ⋅ (v⃗ × u⃗)
     #
@@ -72,7 +71,7 @@ function QuadraticSegment(x⃗₁::Point{T}, x⃗₂::Point{T}, x⃗₃::Point{T
         a = ( (u⃗ ⋅ u⃗) * (v⃗ × u⃗) ⋅(v⃗ × u⃗) )/( (u⃗ ⋅v⃗)*((u⃗ ⋅ v⃗) - (u⃗ ⋅ u⃗) ) * ( (ŷ × u⃗) ⋅ (v⃗ × u⃗)) )
         b = -a*norm(u⃗)
     end
-    return QuadraticSegment((x⃗₁, x⃗₂, x⃗₃), a, b, u⃗, ŷ)
+    return QuadraticSegment((x⃗₁, x⃗₂, x⃗₃), a, b, ŷ)
 end
 
 # Base methods
@@ -113,8 +112,9 @@ function intersect(l::LineSegment, q::QuadraticSegment)
     type = typeof(l.p₁.coord[1])
     points = [Point(type.((1e9, 1e9, 1e9))), Point(type.((1e9, 1e9, 1e9)))]
     w⃗ = l.p₂ - l.p₁
-    A⃗ = q.a*norm(q.u⃗)^2*q.ŷ × w⃗
-    B⃗ = (q.b*norm(q.u⃗)*q.ŷ + q.u⃗) × w⃗
+    u⃗ = q.x⃗[2] - q.x⃗[1]
+    A⃗ = q.a*norm(u⃗)^2*q.ŷ × w⃗
+    B⃗ = (q.b*norm(u⃗)*q.ŷ + u⃗) × w⃗
     C⃗ = (q.x⃗[1] - l.p₁) × w⃗
     A = A⃗ ⋅ A⃗
     B = B⃗ ⋅ A⃗
