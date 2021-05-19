@@ -39,9 +39,8 @@ function intersect(l₁::LineSegment, l₂::LineSegment)
     s = (((l₁.p₁-l₂.p₁) + t*v⃗) ⋅ u⃗ )/(u⃗ ⋅ u⃗)
     return (0.0 ≤ s ≤ 1.0) && (0.0 ≤ t ≤ 1.0) ? (true, p) : (false, p)
 end
-#∩ (l₁::LineSegment, l₂::LineSegment) = intersects(l₁, l₂) 
 
-function is_left(p₃::Point{T}, l::LineSegment; n̂::Point=Point(T(0), T(0), T(1))) where {T <: AbstractFloat} 
+function is_left(p₃::Point{T}, l::LineSegment{T}; n̂::Point=Point(T(0), T(0), T(1))) where {T <: AbstractFloat} 
     # The line segment is defined by the line from p₁ to p₂.
     #     p₃
     #

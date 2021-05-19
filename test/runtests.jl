@@ -1,7 +1,7 @@
 using MOCNeutronTransport
 using Test
-tests = ["Point", 
-         "LineSegment", 
+tests = ["Point",
+         "LineSegment",
          "QuadraticSegment",
          "AngularQuadrature", 
          "Triangle",

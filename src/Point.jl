@@ -3,19 +3,21 @@ import Base: +, -, *, /, ≈, ==
 import LinearAlgebra: norm
 
 struct Point{T <: AbstractFloat}
-    coord::NTuple{3,T}
+    coord::SVector{3,T}
 end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
 # 3D single constructor
-Point(x::T, y::T, z::T) where {T <: AbstractFloat} = Point((x,y,z))
+Point(x::T, y::T, z::T) where {T <: AbstractFloat} = Point(SVector(x,y,z))
 # 2D single constructor
-Point(x::T, y::T) where {T <: AbstractFloat} = Point((x, y, zero(x)))
-# 2D tuple constructor
-Point((x, y)) = Point((x, y, zero(x)))
+Point(x::T, y::T) where {T <: AbstractFloat} = Point(SVector(x, y, zero(x)))
 # 1D single constructor
-Point(x::T) where {T <: AbstractFloat} = Point((x, zero(x), zero(x)))
+Point(x::T) where {T <: AbstractFloat} = Point(SVector(x, zero(x), zero(x)))
+# 3D tuple constructor
+Point(x::T) where {T <: NTuple{3}} = Point(SVector(x))
+# 2D tuple constructor
+Point((x, y)::T) where {T <: NTuple{2}} = Point(SVector(x, y, zero(x)))
 
 # Base methods
 # -------------------------------------------------------------------------------------------------

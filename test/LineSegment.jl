@@ -35,11 +35,11 @@ using MOCNeutronTransport
         # -------------------------------------------
         # basic intersection
         l₁ = LineSegment(Point( type.((0, 1)) ), Point( type.((2, -1)) ))
-        l₂ = LineSegment(Point( type.((0, -1.)) ), Point( type.((2, 1)) ))
+        l₂ = LineSegment(Point( type.((0, -1)) ), Point( type.((2, 1)) ))
         bool, p = intersect(l₁, l₂)
         @test bool
         @test p == Point(type.((1, 0)))
-        @test typeof(p.coord) == typeof(type.((1, 0, 0)))
+        @test typeof(p.coord) == typeof(SVector(type.((1, 0, 0))))
 
         # vertex intersection
         l₂ = LineSegment(Point( type.((0, -1)) ), Point( type.((2, -1)) ))

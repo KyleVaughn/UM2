@@ -80,10 +80,17 @@ end
 
 # Methods
 # -------------------------------------------------------------------------------------------------
+# Points on the curve
 function (q::QuadraticSegment)(t::T) where {T <: AbstractFloat}
     u⃗ = q.x⃗[2] - q.x⃗[1]
     return (q.a*norm(t*u⃗)^2 + q.b*norm(t*u⃗))*q.ŷ + t*u⃗ + q.x⃗[1]
 end
+# Points within the curve, bounded by u⃗(t) on the bottom.
+function (q::QuadraticSegment)(s::T, t::T) where {T <: AbstractFloat}
+    u⃗ = q.x⃗[2] - q.x⃗[1]
+    return (q.a*norm(s*u⃗)^2 + q.b*norm(s*u⃗))*q.ŷ + t*u⃗ + q.x⃗[1]
+end
+
 
 function intersect(l::LineSegment, q::QuadraticSegment)
     # q(t) = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + x⃗₁
@@ -149,3 +156,30 @@ function intersect(l::LineSegment, q::QuadraticSegment)
     return bool, npoints, points
 end
 intersect(q::QuadraticSegment, l::LineSegment) = intersect(l, q)
+
+function is_left(p::Point{T}, q::QuadraticSegment; 
+                 n̂::Point=Point(T(0), T(0), T(1))) where {T <: AbstractFloat}
+    # Let w⃗ = p - q.x⃗₁, u⃗ = q.x⃗₂ - q.x⃗₁
+    # If p is in the plane of q, then w⃗ is a linear combination of u⃗ and ŷ. 
+    # w⃗ = tu⃗ + sŷ + vn̂, and v=0. Here we include n̂ to make a square system.
+    # Therefore, if A = [u⃗ ŷ n̂] and x = [t; s; v], then Ax=w⃗. 
+    # A is invertible since {u⃗, ŷ, n̂} are a basis for R³.
+    # If p is actually in the plane of q, then v = 0.
+    # If t ∉ (0, 1), then we can simply use the line check.
+    # If t ∈ (0, 1), then we need to see if the point is within the quad area.
+    # If 0 ≤ s ≤ (a|tu⃗|² + b|tu⃗|), then it is within the quad area.
+    # If the point is within the quad area, we need to reverse the linear result.
+    w⃗ = p - q.x⃗[1]
+    u⃗ = q.x⃗[2] - q.x⃗[1]
+    A = hcat(u⃗.coord, q.ŷ.coord, n̂.coord)
+    t, s, v = A\w⃗.coord
+    if !isapprox(t, T(0), atol=sqrt(eps(T)))
+        @warn "$p is not in the same plane as $q, v = $v"
+    end
+    l = LineSegment(q.x⃗[1], q.x⃗[2])
+    bool = isleft(p, l, n̂ = n̂)
+    smax = q.a*norm(u⃗)^2 + q.b*norm(u⃗)
+    # Point is outside quad area, just use is_left
+    # Point is inside quad area, return opposite of is_left
+    return (t ≤ 0) || (1 ≤ t) || (s ≤ 0) || (smax ≤ s) ? bool : !bool
+end

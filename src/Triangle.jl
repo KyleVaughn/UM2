@@ -18,6 +18,7 @@ Triangle(p₁::Point{T}, p₂::Point{T}, p₃::Point{T}) where {T <: AbstractFlo
 function (tri::Triangle)(u::T, v::T) where {T <: AbstractFloat}
     return (T(1) - u - v)*tri.vertices[1] + u*tri.vertices[2] + v*tri.vertices[3]
 end
+
 function area(tri::Triangle{T}) where {T <: AbstractFloat}
     # A = bh/2
     # Let u⃗ = |v₂ - v₁|, v⃗ = |v₃ - v₁|

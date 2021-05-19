@@ -1,4 +1,6 @@
 module MOCNeutronTransport
+using StaticArrays
+using LinearAlgebra
 
 include("Point.jl")
 export  Point,
