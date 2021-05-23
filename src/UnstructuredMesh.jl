@@ -1,16 +1,16 @@
-struct VertexMesh{V}
+struct UnstructuredMesh{V}
     vertices::NTuple{V, Point}
     edges::Vector{Vector{Int}}
     faces::Vector{Vector{Int}}
     cells::Vector{Vector{Int}}
     name::String
 end
-VertexMesh(vertices; 
+UnstructredMesh(vertices; 
                  edges::Vector{Vector{Int}} = [[0]], 
                  faces::Vector{Vector{Int}} = [[0]], 
                  cells::Vector{Vector{Int}} = [[0]],
                  name::String = "DefaultMeshName"
-                ) = VertexMesh(vertices, edges, faces, cells, name)
+                ) = UnstructuredMesh(vertices, edges, faces, cells, name)
 # hasEdges
 # hasFaces
 # hasCells

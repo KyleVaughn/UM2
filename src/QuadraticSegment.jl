@@ -165,9 +165,9 @@ function is_left(p::Point{T}, q::QuadraticSegment;
     # Therefore, if A = [u⃗ ŷ n̂] and x = [t; s; v], then Ax=w⃗. 
     # A is invertible since {u⃗, ŷ, n̂} are a basis for R³.
     # If p is actually in the plane of q, then v = 0.
-    # If t ∉ (0, 1), then we can simply use the line check.
+    # If t ∉ (0, 1), then we can simply use the line is_left check.
     # If t ∈ (0, 1), then we need to see if the point is within the quad area.
-    # If 0 ≤ s ≤ (a|tu⃗|² + b|tu⃗|), then it is within the quad area.
+    # If 0 ≤ s ≤ a|u⃗/2|² + b|u⃗/2|, then the point is within the quad area.
     # If the point is within the quad area, we need to reverse the linear result.
     w⃗ = p - q.x⃗[1]
     u⃗ = q.x⃗[2] - q.x⃗[1]
@@ -178,7 +178,7 @@ function is_left(p::Point{T}, q::QuadraticSegment;
     end
     l = LineSegment(q.x⃗[1], q.x⃗[2])
     bool = isleft(p, l, n̂ = n̂)
-    smax = q.a*norm(u⃗)^2 + q.b*norm(u⃗)
+    smax = q.a*norm(u⃗/2)^2 + q.b*norm(u⃗/2)
     # Point is outside quad area, just use is_left
     # Point is inside quad area, return opposite of is_left
     return (t ≤ 0) || (1 ≤ t) || (s ≤ 0) || (smax ≤ s) ? bool : !bool

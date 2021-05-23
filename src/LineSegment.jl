@@ -19,28 +19,34 @@ function intersect(l₁::LineSegment, l₂::LineSegment)
     #
     # Using the equation of a line in parametric form
     # For l₁ = x⃗₁ + tv⃗ and l₂ = x⃗₂ + su⃗
-    # x⃗₁ + tv⃗ = x⃗₂ + su⃗                                   subtracting x⃗₁ from both sides
-    # tv⃗ = (x⃗₂-x⃗₁) + su⃗                                   cross product with u⃗ (distributive)
-    # t(v⃗ × u⃗) = (x⃗₂-x⃗₁) × u⃗ + s(u⃗ × u⃗)                   u⃗ × u⃗ = 0
-    # t(v⃗ × u⃗) = (x⃗₂-x⃗₁) × u⃗                              dot product v⃗ × u⃗ to each side
-    # t(v⃗ × u⃗) ⋅(v⃗ × u⃗) = [(x⃗₂-x⃗₁) × u⃗] ⋅(v⃗ × u⃗)          divide by (v⃗ × u⃗) ⋅(v⃗ × u⃗)
-    # t = {[(x⃗₂-x⃗₁) × u⃗] ⋅(v⃗ × u⃗)}/{(v⃗ × u⃗) ⋅(v⃗ × u⃗)}
+    # x⃗₁ + tv⃗ = x⃗₂ + su⃗                             subtracting x⃗₁ from both sides
+    # tv⃗ = (x⃗₂-x⃗₁) + su⃗                             w⃗ = x⃗₂-x⃗₁                                   
+    # tv⃗ = w⃗ + su⃗                                   cross product with u⃗ (distributive)
+    # t(v⃗ × u⃗) = w⃗ × u⃗ + s(u⃗ × u⃗)                   u⃗ × u⃗ = 0
+    # t(v⃗ × u⃗) = w⃗ × u⃗                              dot product v⃗ × u⃗ to each side
+    # t(v⃗ × u⃗) ⋅(v⃗ × u⃗) = (w⃗ × u⃗) ⋅(v⃗ × u⃗)          divide by (v⃗ × u⃗) ⋅(v⃗ × u⃗)
+    # t = [(w⃗ × u⃗) ⋅(v⃗ × u⃗)]/[(v⃗ × u⃗) ⋅(v⃗ × u⃗)]
     # Note that if the lines are parallel or collinear, v⃗ × u⃗ = 0
     # We need to ensure t, s ∈ [0, 1]. Verifying this condition for t is simple, but we need to
     # solve for s as well.
-    # x⃗₂ + su⃗ = x⃗₁ + tv⃗                                   subtracting x⃗₂ from both sides
-    # su⃗ = (x⃗₁-x⃗₂) + tv⃗                                   we see that each element must satisfy
-    # s(u⃗ ⋅ u⃗) = [(x⃗₁-x⃗₂) + tv⃗] ⋅ u⃗                       hence
-    # s = [(x⃗₁-x⃗₂) + tv⃗] ⋅ u⃗/(u⃗ ⋅ u⃗)
+    # x⃗₂ + su⃗ = x⃗₁ + tv⃗                              subtracting x⃗₂ from both sides
+    # su⃗ = -w⃗ + tv⃗                                   we see that each element must satisfy
+    # s(u⃗ ⋅ u⃗) = (-w⃗ + tv⃗) ⋅ u⃗                       hence
+    # s = (tv⃗ - w⃗) ⋅ u⃗/(u⃗ ⋅ u⃗)
+    # "If the lines are skew, s and t represent the parameters of the points of closest 
+    # approach" - Intersection of two lines in three-space, Ronald Goldman, in Graphics
+    # Gems by Andrew S. Glassner.
     v⃗ = l₁.p₂ - l₁.p₁
     u⃗ = l₂.p₂ - l₂.p₁
-    t = (((l₂.p₁-l₁.p₁) × u⃗) ⋅ (v⃗ × u⃗))/((v⃗ × u⃗) ⋅ (v⃗ × u⃗))
+    w⃗ = l₂.p₁ - l₁.p₁
+    t = ((w⃗ × u⃗) ⋅ (v⃗ × u⃗))/((v⃗ × u⃗) ⋅ (v⃗ × u⃗))
     p = l₁(t)
-    s = (((l₁.p₁-l₂.p₁) + t*v⃗) ⋅ u⃗ )/(u⃗ ⋅ u⃗)
+    s = (t*v⃗ - w⃗) ⋅ u⃗/(u⃗ ⋅ u⃗)
     return (0.0 ≤ s ≤ 1.0) && (0.0 ≤ t ≤ 1.0) ? (true, p) : (false, p)
 end
 
-function is_left(p₃::Point{T}, l::LineSegment{T}; n̂::Point=Point(T(0), T(0), T(1))) where {T <: AbstractFloat} 
+function is_left(p₃::Point{T}, l::LineSegment{T}; 
+        n̂::Point=Point(T(0), T(0), T(1))) where {T <: AbstractFloat} 
     # The line segment is defined by the line from p₁ to p₂.
     #     p₃
     #
