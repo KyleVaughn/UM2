@@ -1,16 +1,10 @@
-struct UnstructuredMesh{V}
-    vertices::NTuple{V, Point}
-    edges::Vector{Vector{Int}}
-    faces::Vector{Vector{Int}}
-    cells::Vector{Vector{Int}}
-    name::String
+Base.@kwdef struct UnstructuredMesh
+    vertices::Vector{Point} = Point[] 
+    edges::Vector{Vector{Int64}} = Vector{Int64}[]
+    faces::Vector{Vector{Int64}} = Vector{Int64}[]
+    cells::Vector{Vector{Int64}} = Vector{Int64}[]
+    name::String = "DefaultMeshName"
 end
-UnstructredMesh(vertices; 
-                 edges::Vector{Vector{Int}} = [[0]], 
-                 faces::Vector{Vector{Int}} = [[0]], 
-                 cells::Vector{Vector{Int}} = [[0]],
-                 name::String = "DefaultMeshName"
-                ) = UnstructuredMesh(vertices, edges, faces, cells, name)
 # hasEdges
 # hasFaces
 # hasCells

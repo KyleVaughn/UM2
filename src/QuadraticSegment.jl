@@ -91,7 +91,6 @@ function (q::QuadraticSegment)(s::T, t::T) where {T <: AbstractFloat}
     return (q.a*norm(s*u⃗)^2 + q.b*norm(s*u⃗))*q.ŷ + t*u⃗ + q.x⃗[1]
 end
 
-
 function intersect(l::LineSegment, q::QuadraticSegment)
     # q(t) = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + x⃗₁
     # l(s) = x⃗₄ + sw⃗
@@ -173,9 +172,9 @@ function is_left(p::Point{T}, q::QuadraticSegment;
     u⃗ = q.x⃗[2] - q.x⃗[1]
     A = hcat(u⃗.coord, q.ŷ.coord, n̂.coord)
     t, s, v = A\w⃗.coord
-    if !isapprox(t, T(0), atol=sqrt(eps(T)))
-        @warn "$p is not in the same plane as $q, v = $v"
-    end
+#    if !isapprox(t, T(0), atol=sqrt(eps(T)))
+#        @warn "$p is not in the same plane as $q, v = $v"
+#    end
     l = LineSegment(q.x⃗[1], q.x⃗[2])
     bool = isleft(p, l, n̂ = n̂)
     smax = q.a*norm(u⃗/2)^2 + q.b*norm(u⃗/2)
