@@ -1,6 +1,6 @@
 import Base: intersect
 
-struct Triangle{T <: AbstractFloat} <: Cell
+struct Triangle{T <: AbstractFloat} <: Face
     vertices::NTuple{3, Point{T}}
 end
 

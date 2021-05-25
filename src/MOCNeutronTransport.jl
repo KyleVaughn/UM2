@@ -29,24 +29,24 @@ export  LineSegment,
 include("QuadraticSegment.jl")
 export QuadraticSegment
 
+
 include("Triangle.jl")
 export Triangle,
+       area,
+       intersect
+
+include("Quadrilateral.jl")
+export Quadrilateral,
+       triangulate,
        area,
        intersect
 
 include("UnstructuredMesh.jl")
 export UnstructuredMesh
 
-
-
-
-
 include("AngularQuadrature.jl")
 export AngularQuadrature,
        GeneralAngularQuadrature,
        ProductAngularQuadrature
-
-
-
 
 end # module
