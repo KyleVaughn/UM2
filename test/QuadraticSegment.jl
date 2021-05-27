@@ -8,7 +8,7 @@ using MOCNeutronTransport
             x⃗₃ = Point( type.((1, 1, 0)) )
 
             seg = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test seg.x⃗ == (x⃗₁, x⃗₂, x⃗₃)
+            @test seg.points == (x⃗₁, x⃗₂, x⃗₃)
             @test seg.ŷ ≈ Point( type.((0, 1, 0)) )
             @test seg.a ≈ type(-1)
             @test seg.b ≈ type(2)
@@ -18,7 +18,7 @@ using MOCNeutronTransport
 
             x⃗₃ = Point(type(1), type(1)/sqrt(type(2)), type(1)/sqrt(type(2))) 
             seg = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test seg.x⃗ == (x⃗₁, x⃗₂, x⃗₃)
+            @test seg.points == (x⃗₁, x⃗₂, x⃗₃)
             @test seg.ŷ ≈ Point( type(0), type(1)/sqrt(type(2)), type(1)/sqrt(type(2)) )
             @test seg.a ≈ type(-1)
             @test seg.b ≈ type(2)
@@ -28,7 +28,7 @@ using MOCNeutronTransport
 
             x⃗₃ = Point( type.((1, 0, 0)) )
             seg = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test seg.x⃗ == (x⃗₁, x⃗₂, x⃗₃)
+            @test seg.points == (x⃗₁, x⃗₂, x⃗₃)
             @test seg.ŷ ≈ Point( type.((0, 0, 0)) )
             @test seg.a ≈ type(0)
             @test seg.b ≈ type(0)
@@ -38,7 +38,7 @@ using MOCNeutronTransport
 
             x⃗₃ = Point( type.((1, eps(type)*100, 0)) )
             seg = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test seg.x⃗ == (x⃗₁, x⃗₂, x⃗₃)
+            @test seg.points == (x⃗₁, x⃗₂, x⃗₃)
             @test seg.ŷ ≈ Point( type.((0, 0, 0)) )
             @test seg.a ≈ type(0)
             @test seg.b ≈ type(0)
@@ -54,7 +54,7 @@ using MOCNeutronTransport
             x⃗₃ = Point( type.((1, 1, 0)) )
             
             seg = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test seg.x⃗ == (x⃗₁, x⃗₂, x⃗₃)
+            @test seg.points == (x⃗₁, x⃗₂, x⃗₃)
             for t = type.(LinRange(0, 1, 11))
                 @test seg(t) ≈ Point(type(2t), type(-(2t)^2 + 4t))
             end

@@ -1,10 +1,12 @@
 Base.@kwdef struct UnstructuredMesh
-    vertices::Vector{Point} = Point[] 
+    points::Vector{Point} = Point[] 
     edges::Vector{Vector{Int64}} = Vector{Int64}[]
     faces::Vector{Vector{Int64}} = Vector{Int64}[]
     cells::Vector{Vector{Int64}} = Vector{Int64}[]
     name::String = "DefaultMeshName"
 end
+
+function construct_edges_from_cells(points::Vector{Point}, cells::Vector{Vector{Int64}})
 # hasEdges
 # hasFaces
 # hasCells

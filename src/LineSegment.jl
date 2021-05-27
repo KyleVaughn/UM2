@@ -1,9 +1,12 @@
 import Base: intersect
 # A line segment in 3D space defined by its two endpoints.
 struct LineSegment{T <: AbstractFloat} <: Edge
-    p₁::Point{T}
-    p₂::Point{T}
+    points::NTuple{2, Point{T}}
 end
+
+# Constructors
+# -------------------------------------------------------------------------------------------------
+LineSegment(p₁::Point, p₂::Point) =LineSegment((p₁, p₂)) 
 
 # Base methods
 # -------------------------------------------------------------------------------------------------
@@ -11,8 +14,8 @@ Base.broadcastable(l::LineSegment) = Ref(l)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-arc_length(l::LineSegment) = distance(l.p₁, l.p₂)
-(l::LineSegment)(t::T) where {T <: AbstractFloat} = l.p₁ + t * (l.p₂ - l.p₁)
+arc_length(l::LineSegment) = distance(l.points[1], l.points[2])
+(l::LineSegment)(t::T) where {T <: AbstractFloat} = l.points[1] + t * (l.points[2] - l.points[1])
 midpoint(l::LineSegment) = l(0.5)
 function intersect(l₁::LineSegment, l₂::LineSegment)
     # NOTE: Doesn't work for colinear lines. (v⃗ × u⃗ = 0⃗)
@@ -36,9 +39,9 @@ function intersect(l₁::LineSegment, l₂::LineSegment)
     # "If the lines are skew, s and t represent the parameters of the points of closest 
     # approach" - Intersection of two lines in three-space, Ronald Goldman, in Graphics
     # Gems by Andrew S. Glassner.
-    v⃗ = l₁.p₂ - l₁.p₁
-    u⃗ = l₂.p₂ - l₂.p₁
-    w⃗ = l₂.p₁ - l₁.p₁
+    v⃗ = l₁.points[2] - l₁.points[1]
+    u⃗ = l₂.points[2] - l₂.points[1]
+    w⃗ = l₂.points[1] - l₁.points[1]
     t = ((w⃗ × u⃗) ⋅ (v⃗ × u⃗))/((v⃗ × u⃗) ⋅ (v⃗ × u⃗))
     p = l₁(t)
     s = (t*v⃗ - w⃗) ⋅ u⃗/(u⃗ ⋅ u⃗)
@@ -46,8 +49,8 @@ function intersect(l₁::LineSegment, l₂::LineSegment)
 end
 
 function is_left(p₃::Point{T}, l::LineSegment{T}; 
-        n̂::Point=Point(T(0), T(0), T(1))) where {T <: AbstractFloat} 
-    # The line segment is defined by the line from p₁ to p₂.
+        n̂::Point{T}=Point(T(0), T(0), T(1))) where {T <: AbstractFloat} 
+    # The line segment is defined by the line from points[1] to points[2].
     #     p₃
     #
     #
@@ -59,14 +62,14 @@ function is_left(p₃::Point{T}, l::LineSegment{T};
     #    /
     #   /
     #  / θ
-    # p₁----------------> u⃗    
+    # -----------------> u⃗    
     # u⃗ × v⃗ = |u⃗||v⃗| sin(θ)n⃗, where n⃗ is the unit vector perpendicular to the plane 
     # containing u⃗ and v⃗. However, the orientation of the plane is ambiguous, hence 
     # we need n̂ provided or assumed. For vectors in the x-y plane, we assume 
     # n̂ = (0, 0, 1). Since, |u⃗|, |v⃗| ≥ 0, then the point p₃ is left of the line if 
     # θ ∈ (0, π) -- equivalently if sin(θ) > 0. 
     # Hence our is_left condition is if the sign of the components of u⃗ × v⃗ and n̂ match
-    u⃗ = l.p₂-l.p₁
-    v⃗ = p₃-l.p₁
+    u⃗ = l.points[2]-l.points[1]
+    v⃗ = p₃-l.points[1]
     return sign.((u⃗ × v⃗).coord) == sign.(n̂.coord)
 end

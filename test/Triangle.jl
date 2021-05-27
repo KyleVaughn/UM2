@@ -6,14 +6,19 @@ using MOCNeutronTransport
             p₂ = Point( type(1) )
             p₃ = Point( type(1), type(1) )
             tri = Triangle((p₁, p₂, p₃))
-            @test tri.vertices == (p₁, p₂, p₃)
+            @test tri.points == (p₁, p₂, p₃)
 
             # single constructor
             tri = Triangle(p₁, p₂, p₃)
-            @test tri.vertices == (p₁, p₂, p₃)
+            @test tri.points == (p₁, p₂, p₃)
         end
 
         @testset "Methods" begin
+            p₁ = Point( type(0) )
+            p₂ = Point( type(1) )
+            p₃ = Point( type(1), type(1) )
+            tri = Triangle((p₁, p₂, p₃))
+
             # area
             a = area(tri)
             @test typeof(a) == typeof(type(1))

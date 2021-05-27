@@ -32,7 +32,7 @@ Base.getindex(p⃗::Point, i::Int) = p⃗.coord[i]
 ==(p⃗₁::Point, p⃗₂::Point) = (p⃗₁.coord == p⃗₂.coord)
 function ≈(p⃗₁::Point{T}, p⃗₂::Point{T}) where {T <: AbstractFloat}
     # If non-zero, use relative isapprox. If zero, use absolute isapprox.
-    # Otherwise, x ≈ 0 is false for every x ≢ 0
+    # Otherwise, x ≈ 0 is false for every x ≠ 0
     bool = [true, true, true]
     for i = 1:3
         if (p⃗₁[i] == T(0)) || (p⃗₂[i] == T(0))

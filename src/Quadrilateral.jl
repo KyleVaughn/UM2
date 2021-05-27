@@ -2,7 +2,7 @@ import Base: intersect
 
 struct Quadrilateral{T <: AbstractFloat} <: Face
     # Counter clockwise order
-    vertices::NTuple{4, Point{T}}
+    points::NTuple{4, Point{T}}
 end
 
 # Constructors
@@ -19,14 +19,14 @@ Quadrilateral(p₁::Point{T},
 # Methods
 # -------------------------------------------------------------------------------------------------
 function triangulate(quad::Quadrilateral{T}) where {T <: AbstractFloat}
-    A, B, C, D = quad.vertices
+    A, B, C, D = quad.points
     tri = (Triangle(A, B, C), Triangle(C, D, A), Triangle(B, C, D), Triangle(D, A, B))
     areas = area.(tri)
     return areas[1] + areas[2] <= areas[3] + areas[4] ? (tri[1], tri[2]) : (tri[1], tri[2])
 end
 
 function area(quad::Quadrilateral{T}) where {T <: AbstractFloat}
-    A, B, C, D = quad.vertices
+    A, B, C, D = quad.points
     areas = area.((Triangle(A, B, C), Triangle(C, D, A), Triangle(B, C, D), Triangle(D, A, B)))
     A₁ = areas[1] + areas[2]
     A₂ = areas[3] + areas[4]

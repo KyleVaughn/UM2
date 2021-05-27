@@ -5,8 +5,8 @@ using MOCNeutronTransport
             p₁ = Point( type(1) )
             p₂ = Point( type(2) )
             l = LineSegment(p₁,p₂)
-            @test l.p₁ == p₁
-            @test l.p₂ == p₂
+            @test l.points[1] == p₁
+            @test l.points[2] == p₂
         end
         @testset "Methods" begin
             # arc_length
