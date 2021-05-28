@@ -7,44 +7,35 @@ using MOCNeutronTransport
             x⃗₂ = Point( type.((2, 0, 0)) )
             x⃗₃ = Point( type.((1, 1, 0)) )
 
-            seg = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test seg.points == (x⃗₁, x⃗₂, x⃗₃)
-            @test seg.ŷ ≈ Point( type.((0, 1, 0)) )
-            @test seg.a ≈ type(-1)
-            @test seg.b ≈ type(2)
-            @test typeof(seg.ŷ) == typeof(Point( type.((0, 1, 0)) ))
-            @test typeof(seg.a) == typeof(type(-1))
-            @test typeof(seg.b) == typeof(type(2))
+            q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
+            @test q.points == (x⃗₁, x⃗₂, x⃗₃)
+            @test q.midpoint ≈ x⃗₃
+            @test typeof(q.midpoint) == typeof(Point( type.((0, 1, 0)) ))
 
             x⃗₃ = Point(type(1), type(1)/sqrt(type(2)), type(1)/sqrt(type(2))) 
-            seg = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test seg.points == (x⃗₁, x⃗₂, x⃗₃)
-            @test seg.ŷ ≈ Point( type(0), type(1)/sqrt(type(2)), type(1)/sqrt(type(2)) )
-            @test seg.a ≈ type(-1)
-            @test seg.b ≈ type(2)
-            @test typeof(seg.ŷ) == typeof(Point( type(0), type(1)/sqrt(type(2)), type(1)/sqrt(type(2)) ))
-            @test typeof(seg.a) == typeof(type(-1))
-            @test typeof(seg.b) == typeof(type(2))      
+            q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
+            @test q.points == (x⃗₁, x⃗₂, x⃗₃)
+            @test q.midpoint ≈ x⃗₃
+            @test typeof(q.midpoint) == typeof(Point( type.((0, 1, 0)) ))
 
             x⃗₃ = Point( type.((1, 0, 0)) )
-            seg = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test seg.points == (x⃗₁, x⃗₂, x⃗₃)
-            @test seg.ŷ ≈ Point( type.((0, 0, 0)) )
-            @test seg.a ≈ type(0)
-            @test seg.b ≈ type(0)
-            @test typeof(seg.ŷ) == typeof(Point( type.((0, 0, 0)) ))
-            @test typeof(seg.a) == typeof(type(0))
-            @test typeof(seg.b) == typeof(type(0))
+            q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
+            @test q.points == (x⃗₁, x⃗₂, x⃗₃)
+            @test q.midpoint ≈ x⃗₃
+            @test typeof(q.midpoint) == typeof(Point( type.((0, 1, 0)) ))
 
             x⃗₃ = Point( type.((1, eps(type)*100, 0)) )
-            seg = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test seg.points == (x⃗₁, x⃗₂, x⃗₃)
-            @test seg.ŷ ≈ Point( type.((0, 0, 0)) )
-            @test seg.a ≈ type(0)
-            @test seg.b ≈ type(0)
-            @test typeof(seg.ŷ) == typeof(Point( type.((0, 0, 0)) ))
-            @test typeof(seg.a) == typeof(type(0))
-            @test typeof(seg.b) == typeof(type(0))
+            q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
+            @test q.points == (x⃗₁, x⃗₂, x⃗₃)
+            @test q.midpoint ≈ x⃗₃
+            @test typeof(q.midpoint) == typeof(Point( type.((0, 1, 0)) ))
+
+            # non-midpoint x⃗₃
+            x⃗₃ = Point( type(1//2), type(3//4), type(0) )
+            q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
+            @test q.points == (x⃗₁, x⃗₂, x⃗₃)
+            @test q.midpoint ≈ Point( type.((1, 1, 0)) )                          
+            @test typeof(q.midpoint) == typeof(Point( type.((0, 1, 0)) ))            
         end
 
         @testset "Methods" begin
@@ -53,10 +44,10 @@ using MOCNeutronTransport
             x⃗₂ = Point( type.((2, 0, 0)) )
             x⃗₃ = Point( type.((1, 1, 0)) )
             
-            seg = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test seg.points == (x⃗₁, x⃗₂, x⃗₃)
+            q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
+            @test q.points == (x⃗₁, x⃗₂, x⃗₃)
             for t = type.(LinRange(0, 1, 11))
-                @test seg(t) ≈ Point(type(2t), type(-(2t)^2 + 4t))
+                @test q(t) ≈ Point(type(2t), type(-(2t)^2 + 4t))
             end
 
             # intersect
@@ -91,6 +82,22 @@ using MOCNeutronTransport
             @test npoints == 0
             @test points[1] ≈ Point(type.((1e9, 1e9, 1e9)))
             @test points[2] ≈ Point(type.((1e9, 1e9, 1e9)))
+
+            # in
+            @test x⃗₁ ∈  q
+            x⃗₄ = Point( type.((1//2, 3//4, 0)) )       
+            @test x⃗₄ ∈  q
+            x⃗₄ = Point( type.((1//2, 1, 0)) )       
+            @test x⃗₄ ∉ q
+
+            # in_area
+            @test in_area(x⃗₁, q)             
+            x⃗₄ = Point( type.((1//2, 3//4, 0)) )       
+            @test in_area(x⃗₄, q)             
+            x⃗₄ = Point( type.((1//2, 1, 0)) )       
+            @test !in_area(x⃗₄, q)             
+            x⃗₄ = Point( type.((1//2, 1//2, 0)) )                  
+            @test in_area(x⃗₄, q)             
         end
     end
 end

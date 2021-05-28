@@ -38,8 +38,7 @@ using MOCNeutronTransport
             p₅ = Point(type.((0.5, 2)))
             l = LineSegment(p₄, p₅)
             bool, point = intersect(l, tri)
-            @test bool
-            @test point ≈ Point(type.((0.5, 0.0, 0.0)))
+            @test !bool
 
             # no intersection non-coplanar
             p₄ = Point(type.((2.0, 0.1, -5)))

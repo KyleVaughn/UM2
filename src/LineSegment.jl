@@ -1,4 +1,4 @@
-import Base: intersect
+import Base: intersect, in
 # A line segment in 3D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and goes to points[2]
 struct LineSegment{T <: AbstractFloat} <: Edge
@@ -17,8 +17,8 @@ Base.broadcastable(l::LineSegment) = Ref(l)
 # -------------------------------------------------------------------------------------------------
 arc_length(l::LineSegment) = distance(l.points[1], l.points[2])
 (l::LineSegment)(r::T) where {T <: AbstractFloat} = l.points[1] + r * (l.points[2] - l.points[1])
-midpoint(l::LineSegment) = l(0.5)
-function intersect(l₁::LineSegment, l₂::LineSegment)
+midpoint(l::LineSegment{T}) where {T <: AbstractFloat} = l(T(1//2))
+function intersect(l₁::LineSegment{T}, l₂::LineSegment{T}) where {T <: AbstractFloat}
     # NOTE: Doesn't work for colinear lines. (v⃗ × u⃗ = 0⃗)
     #
     # Using the equation of a line in parametric form
@@ -46,7 +46,21 @@ function intersect(l₁::LineSegment, l₂::LineSegment)
     r = ((w⃗ × u⃗) ⋅ (v⃗ × u⃗))/((v⃗ × u⃗) ⋅ (v⃗ × u⃗))
     p = l₁(r)
     s = (r*v⃗ - w⃗) ⋅ u⃗/(u⃗ ⋅ u⃗)
-    return (0.0 ≤ s ≤ 1.0) && (0.0 ≤ r ≤ 1.0) ? (true, p) : (false, p)
+    return (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1) ? (true, p) : (false, p)
+end
+
+function in(p::Point{T}, l::LineSegment{T}) where {T <: AbstractFloat}
+    # if p⃗ is on the line then,
+    # l(r) = x⃗₁ + ru⃗, where u⃗ = x⃗₂ - x⃗₁
+    # p⃗ = x⃗₁ + ru⃗
+    # p⃗ - x⃗₁ = ru⃗
+    # r = (p⃗ - x⃗₁) ⋅ u⃗/(u⃗ ⋅ u⃗)
+    # If r ∈ [0, 1], then the point is within the infinite width cylinder aligned with
+    # l(r) and bounded by the points x⃗₁, x⃗₂. To see if the point is actually on the line,
+    # we need to check l(r) ≈ p
+    u⃗ = l.points[2] - l.points[1]
+    r = (p - l.points[1]) ⋅ u⃗/(u⃗ ⋅ u⃗)
+    return (0 ≤ r ≤ 1) && l(r) ≈  p
 end
 
 function is_left(p₃::Point{T}, l::LineSegment{T}; 

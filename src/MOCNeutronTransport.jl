@@ -4,7 +4,6 @@ using LinearAlgebra
 
 include("Point.jl")
 export  Point,
-        atol,
         ×,
         ⋅,
         distance,
@@ -27,7 +26,8 @@ export  LineSegment,
         is_left
 
 include("QuadraticSegment.jl")
-export QuadraticSegment
+export QuadraticSegment,
+       in_area
 
 
 include("Triangle.jl")

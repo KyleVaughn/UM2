@@ -8,6 +8,9 @@ end
 
 function construct_edges_from_cells(points::Vector{Point}, cells::Vector{Vector{Int64}})
     edges_unfiltered = Vector{Int64}[]
+    for cell in cells
+
+    end
 end
 
 function construct_edges_from_cell(cell::Vector{Int64})
@@ -18,7 +21,6 @@ function construct_edges_from_cell(cell::Vector{Int64})
                 [cell[3], cell[4]],  
                 [cell[4], cell[2]]
                ]
-
 #    elseif cell_type = 9 # Quadrilateral
 #
 #    elseif cell_type = 22 # Quadratic Triangle

@@ -92,6 +92,15 @@ using MOCNeutronTransport
             @test !bool
             @test p ≈ Point(type.((1, 0))) # the closest point on line 1
 
+            # in
+            l = LineSegment(Point( type.((0, 0)) ), Point( type.((2, 0)) ))
+            p = Point( type.((1, 0)) )
+            @test p ∈  l
+            p = Point( type.((-1, 0)) )
+            @test p ∉ l
+            p = Point( type.((1, 1)) )
+            @test p ∉ l
+
             # isleft
             l = LineSegment(Point( type.((0, 0)) ), Point( type.((0, 1))))
             @test  is_left(Point(type(-1    ), type(0)    ), l)

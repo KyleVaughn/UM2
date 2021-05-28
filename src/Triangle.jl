@@ -15,8 +15,8 @@ Triangle(p₁::Point{T}, p₂::Point{T}, p₃::Point{T}) where {T <: AbstractFlo
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Evaluation in Barycentric coordinates
-function (tri::Triangle)(u::T, v::T) where {T <: AbstractFloat}
-    return (T(1) - u - v)*tri.points[1] + u*tri.points[2] + v*tri.points[3]
+function (tri::Triangle)(r::T, s::T) where {T <: AbstractFloat}
+    return (1 - r - s)*tri.points[1] + r*tri.points[2] + s*tri.points[3]
 end
 
 function area(tri::Triangle{T}) where {T <: AbstractFloat}
@@ -34,8 +34,6 @@ end
 function intersect(l::LineSegment, tri::Triangle)
     # Algorithm is
     # Möller, T., & Trumbore, B. (1997). Fast, minimum storage ray-triangle intersection. 
-    # except modified to work for a line that is coplanar with the triangle.
-    # In the case of a coplanar triangle, the point nearest the
     type = typeof(l.points[1].coord[1])
     p = zero(l.points[1])
 
@@ -47,20 +45,7 @@ function intersect(l::LineSegment, tri::Triangle)
     Q = T × E₁
     det = P ⋅ E₁
     if isapprox(det, 0, atol = sqrt(eps(type))) 
-        edges = (LineSegment(tri.points[1], tri.points[2]),
-                 LineSegment(tri.points[1], tri.points[3]),
-                 LineSegment(tri.points[2], tri.points[3]))
-        bools = [false, false, false]
-        points = [p, p, p]
-        distances = [type(1e9), type(1e9), type(1e9)]
-        for i = 1:3
-            bools[i], points[i] = l ∩ edges[i]
-            if bools[i]
-                distances[i] = distance(l.points[1], points[i])
-            end
-        end
-        # Give the intersection point closest to the line origin
-        return any(bools), points[argmin(distances)]
+        return false, p
     else
         u = (P ⋅ T)/det
         v = (Q ⋅ D)/det
