@@ -1,6 +1,7 @@
 import Base: intersect
-# A quadratic segment in 3D space that passes through three points: x⃗₁, x⃗₂, and x⃗₃
-# The assumed relation of the points may be seen in the diagram below:
+# A quadratic segment in 3D space that passes through three points: x⃗₁, x⃗₂, and x⃗₃.
+# The assumed relation of the points may be seen in the diagram below, where x⃗₃ is not
+# necessarily the midpoint of the curve.
 #                 ___x⃗₃___
 #            ____/        \____
 #        ___/                  \___
@@ -9,15 +10,16 @@ import Base: intersect
 #  /                                     \
 # x⃗₁--------------------------------------x⃗₂
 #
-# NOTE: x⃗₃ is between x⃗₁ and x⃗₂
+# NOTE: x⃗₃ is between x⃗₁ and x⃗₂, but not necessarily the midpoint.
 #
 # Let u⃗ = x⃗₂-x⃗₁. Then the parametric representation of the vector from x⃗₁ to x⃗₂
-# is u⃗(t) = x⃗₁ + tu⃗ , with t ∈ [0, 1].
+# is u⃗(r) = x⃗₁ + ru⃗ , with r ∈ [0, 1].
 #
-# The parametric representation of the quadratic curve is
-# q(t) = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + x⃗₁
+# A general parametric representation of the quadratic curve is:
+# q(r) = (a|ru⃗|² + b|ru⃗|)ŷ + ru⃗ + x⃗₁
 # similar to the familiar y(x) = ax² + bx + c, where ŷ is the unit vector in the same plane as
 # x⃗₁, x⃗₂, and x⃗₃, such that ŷ ⟂ u⃗ and is pointing towards x⃗₃.
+#
 # We also define v⃗ = x⃗₃-x⃗₁. We see the ŷ vector may be computed by:
 # ŷ = -((v⃗ × u⃗) × u⃗)/|(v⃗ × u⃗) × u⃗|
 # A diagram of these relations may be seen below:
@@ -29,6 +31,14 @@ import Base: intersect
 #   /               |
 # x⃗₁--------------------------------------x⃗₂
 #                              u⃗
+#
+# A different parametric representation of the quadratic curve, for which x⃗₃ is the midpoint
+# of the curve is:
+# q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
+# See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+# Chapter 8, Advanced Data Representation, in the interpolation functions section
+
+# We use this form over the q(t) = w₁x⃗₁ + w₂x⃗₂ + w₃x⃗₃ form since storage of 
 struct QuadraticSegment{T <: AbstractFloat} <: Edge
     points::NTuple{3,Point{T}}
     a::T
@@ -82,33 +92,33 @@ end
 # -------------------------------------------------------------------------------------------------
 # Points on the curve
 function (q::QuadraticSegment)(t::T) where {T <: AbstractFloat}
-    # Parametric representation of the quadratic curve
+    # A different parametric representation of the quadratic curve
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     return (2t-1)*(t-1)*q.points[1] + t*(2t-1)*q.points[2] + 4t*(1-t)*q.points[3]
 end
 
-# Points within the curve, bounded by u⃗(t) on the bottom.
-function (q::QuadraticSegment)(s::T, t::T) where {T <: AbstractFloat}
-    u⃗ = q.points[2] - q.points[1]
-    return (q.a*norm(s*u⃗)^2 + q.b*norm(s*u⃗))*q.ŷ + t*u⃗ + q.points[1]
-end
+## Points within the curve, bounded by u⃗(t) on the bottom.
+#function (q::QuadraticSegment)(s::T, t::T) where {T <: AbstractFloat}
+#    u⃗ = q.points[2] - q.points[1]
+#    return (q.a*norm(s*u⃗)^2 + q.b*norm(s*u⃗))*q.ŷ + t*u⃗ + q.points[1]
+#end
 
 function intersect(l::LineSegment, q::QuadraticSegment)
-    # q(t) = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + points₁
-    # l(s) = points₄ + sw⃗
+    # q(t) = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + p₁
+    # l(s) = p₄ + sw⃗
     # If a|u⃗|²ŷ × w⃗ ≠ 0⃗
-    #   points₄ + sw⃗ = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + points₁
-    #   sw⃗ = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + (points₁ - points₄)
+    #   p₄ + sw⃗ = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + p₁
+    #   sw⃗ = (a|tu⃗|² + b|tu⃗|)ŷ + tu⃗ + (p₁ - p₄)
     #   For valid t (t ∈ [0,1])
-    #   0⃗ = (a|u⃗|²ŷ × w⃗)t² + ((b|u⃗|ŷ + u⃗) × w⃗)t + (points₁ - points₄) × w⃗
-    #   A⃗ = (a|u⃗|²ŷ × w⃗), B⃗ = ((b|u⃗|ŷ + u⃗) × w⃗), C⃗ = (points₁ - points₄) × w⃗
+    #   0⃗ = (a|u⃗|²ŷ × w⃗)t² + ((b|u⃗|ŷ + u⃗) × w⃗)t + (p₁ - p₄) × w⃗
+    #   A⃗ = (a|u⃗|²ŷ × w⃗), B⃗ = ((b|u⃗|ŷ + u⃗) × w⃗), C⃗ = (p₁ - p₄) × w⃗
     #   0⃗ = t²A⃗ + tB⃗ + C⃗
     #   0 = (A⃗ ⋅ A⃗)t² + (B⃗ ⋅ A⃗)t + (C⃗ ⋅ A⃗)
     #   A = (A⃗ ⋅ A⃗), B = (B⃗ ⋅ A⃗), C = (C⃗ ⋅ A⃗)
-    #   0 = At² + Bt + B
+    #   0 = At² + Bt + C
     #   t = (-B - √(B²-4AC))/2A, -B + √(B²-4AC))/2A)
-    #   s = ((q(t) - points₄)⋅w⃗/(w⃗ ⋅ w⃗)
+    #   s = ((q(t) - p₄)⋅w⃗/(w⃗ ⋅ w⃗)
     #   t is invalid if:
     #     1) A = 0            
     #     2) B² < 4AC       

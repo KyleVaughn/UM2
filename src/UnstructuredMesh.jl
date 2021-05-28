@@ -7,6 +7,27 @@ Base.@kwdef struct UnstructuredMesh
 end
 
 function construct_edges_from_cells(points::Vector{Point}, cells::Vector{Vector{Int64}})
+    edges_unfiltered = Vector{Int64}[]
+end
+
+function construct_edges_from_cell(cell::Vector{Int64})
+    cell_type = cell[1]
+    if cell_type == 5 # Triangle
+        return [
+                [cell[2], cell[3]],  
+                [cell[3], cell[4]],  
+                [cell[4], cell[2]]
+               ]
+
+#    elseif cell_type = 9 # Quadrilateral
+#
+#    elseif cell_type = 22 # Quadratic Triangle
+#
+#    elseif cell_type = 23 # Quadratic Quadrilaterial
+    else
+        error("Unsupported cell type.")
+    end
+end
 # hasEdges
 # hasFaces
 # hasCells

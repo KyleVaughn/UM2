@@ -33,6 +33,8 @@ function read_vtk(filepath::String)
     deleteat!(cell_types, delete_indices)
     deleteat!(cells, delete_indices)
 
+    # Construct edges
+    edges = construct_edges_from_cells(points, cells)
 
 
     return points, cells, cell_types
