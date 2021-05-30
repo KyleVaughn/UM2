@@ -28,6 +28,7 @@ function read_vtk(filepath::String)
             end
         end
     end
+    close(file)
 
     # Remove 0D, 1D cells
     delete_indices = findall(x->x ∉  cell_type_whitelist, cell_types)
@@ -118,4 +119,68 @@ function read_vtk_cell_types(
         push!(cell_types, cellID)
     end
     return cell_types
+end
+
+function write_vtk(filename::String, mesh::UnstructuredMesh)
+    file = open(filename, "w")
+    println(file, "# vtk DataFile Version 2.0")
+    println(file, mesh.name)
+    println(file, "ASCII")
+    println(file, "DATASET UNSTRUCTURED_GRID")
+
+    # Points
+    pointtype = typeof(mesh.points[1].coord[1])
+    if pointtype == Float64
+        type_points = "double"
+    elseif pointtype == Float32
+        type_points = "float"
+    else
+        error("Unrecognized point type.")
+    end
+    npoints = length(mesh.points)
+    println(file, "POINTS $npoints $type_points")
+    for i in 1:npoints
+        x, y, z = mesh.points[i].coord
+        println(file, "$x $y $z")
+    end
+    println(file, "")
+
+    # Cells
+    if mesh.dim == 2
+        ncells = 0
+        ncell_parts = 0
+        for cell in mesh.faces
+            ncells += 1
+            ncell_parts += length(cell)
+        end
+        println(file, "CELLS $ncells $ncell_parts")
+        for cell in mesh.faces
+            nverts = length(cell) - 1
+            write(file, "$nverts ")
+            for i in 1:nverts
+                vert = cell[i + 1] - 1 # 0 based index
+                if i < nverts
+                    write(file, "$vert ")
+                else
+                    println(file, "$vert")
+                end
+            end
+        end
+    else
+        error("Implement 3d")
+    end
+    println(file, "")
+
+    # Cell types
+    println(file, "CELL_TYPES $ncells")
+    if mesh.dim == 2
+        for cell in mesh.faces
+            cell_type = cell[1]
+            println(file, "$cell_type")
+        end
+    else
+        error("Implement 3d")
+    end
+
+    close(file)
 end

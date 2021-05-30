@@ -45,7 +45,8 @@ include("UnstructuredMesh.jl")
 export UnstructuredMesh
 
 include("vtk.jl")
-export read_vtk
+export read_vtk,
+       write_vtk
 
 include("AngularQuadrature.jl")
 export AngularQuadrature,

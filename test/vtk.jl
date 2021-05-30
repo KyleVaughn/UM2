@@ -1,7 +1,7 @@
 using MOCNeutronTransport
 include("../src/vtk.jl")
 @testset "VTK" begin
-    @testset "three_triangles" begin
+    @testset "Triangles" begin
         # Three triangles
         #      4---------5
         #     / \       / \
@@ -52,5 +52,16 @@ include("../src/vtk.jl")
         @test mesh.cells == Vector{Int64}[]
         @test mesh.dim == 2
         @test mesh.name == "three_triangles"
+
+        # write_vtk
+        write_vtk("write_three_triangle.vtk", mesh)
+        ref_file = open("./mesh_files/three_triangles.vtk", "r")
+        test_file = open("./write_three_triangle.vtk", "r")
+        while !eof(ref_file)
+            ref_line = readline(ref_file)
+            test_line = readline(test_file)
+            @test ref_line == test_line
+        end
+        rm(./write_three_triangle.vtk)
     end
 end
