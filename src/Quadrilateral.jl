@@ -35,18 +35,10 @@ end
 
 function intersect(l::LineSegment, quad::Quadrilateral)
     # Triangulate the quadrilateral, intersect the triangles.
-    # In the event that two intersection points are returned due to a planar intersection, return
-    # the closest one.
-    #
     # Check the line dividing the triangles if no intersection is returned?
     tri = triangulate(quad)
     intersections = l .∩ tri
     bools = (intersections[1][1], intersections[2][1])
     points = (intersections[1][2], intersections[2][2])
-    if all(bools)
-        distances = (distance(l.p₁, points[1]), distance(l.p₁, points[2]))
-        return true, points[argmin(distances)]
-    else
-        return any(bools), points[argmax(bools)]
-    end
+    return any(bools), points[argmax(bools)]
 end

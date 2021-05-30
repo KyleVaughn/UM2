@@ -1,0 +1,47 @@
+using MOCNeutronTransport, BenchmarkTools, Test, Printf
+
+N = Int(1E3)
+println("Triangle (N = $N)")
+
+# Intersection
+for type in [Float32, Float64]
+    p₁ = Point( type(0) )
+    p₂ = Point( type(1) )
+    p₃ = Point( type(1), type(1) )
+    p₄ = Point(type.((0.9, 0.1, -5)))
+    p₅ = Point(type.((0.9, 0.1, 5)))
+    tri = [Triangle((p₁, p₂, p₃)) for i = 1:N]
+    l = [LineSegment(p₄, p₅) for i = 1:N] 
+
+    time = @belapsed $l .∩ $tri
+    ns_time = (time/1e-9)/N
+    @printf("    Intersection - %-9s: ", "$type")
+    @printf("%10.2f ns\n", ns_time) 
+end
+
+# Area
+for type in [Float32, Float64]
+    p₁ = Point( type(0) )
+    p₂ = Point( type(1) )
+    p₃ = Point( type(1), type(1) )
+    tri = [Triangle((p₁, p₂, p₃)) for i = 1:N]
+
+    time = @belapsed area.($tri)
+    ns_time = (time/1e-9)/N
+    @printf("    Area - %-9s: ", "$type")
+    @printf("%10.2f ns\n", ns_time) 
+end
+
+# In
+for type in [Float32, Float64]
+    p₁ = Point( type(0) )
+    p₂ = Point( type(1) )
+    p₃ = Point( type(1), type(1) )
+    tri = [Triangle((p₁, p₂, p₃)) for i = 1:N]
+    p = Point( type(1//2), type(1//10))
+
+    time = @belapsed $p .∈ $tri
+    ns_time = (time/1e-9)/N
+    @printf("    In - %-9s: ", "$type")
+    @printf("%10.2f ns\n", ns_time) 
+end

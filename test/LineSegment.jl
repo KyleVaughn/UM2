@@ -101,18 +101,18 @@ using MOCNeutronTransport
             p = Point( type.((1, 1)) )
             @test p ∉ l
 
-            # isleft
-            l = LineSegment(Point( type.((0, 0)) ), Point( type.((0, 1))))
-            @test  is_left(Point(type(-1    ), type(0)    ), l)
-            @test  is_left(Point(type(-0.001), type(-10.0)), l)
-            @test !is_left(Point(type(1.0   ), type(0.0)  ), l)
-            @test !is_left(Point(type(0.001 ), type(-10.0)), l)
-
-            n̂ = Point( type.((1, 0, 0)))
-            @test  is_left(Point(type(0), type(0),      type(1)    ), l, n̂ = n̂)
-            @test  is_left(Point(type(0), type(-0.001), type(10.0) ), l, n̂ = n̂)
-            @test !is_left(Point(type(0), type(0),      type(-1)   ), l, n̂ = n̂)
-            @test !is_left(Point(type(0), type(0.001 ), type(-10.0)), l, n̂ = n̂)
+#            # isleft
+#            l = LineSegment(Point( type.((0, 0)) ), Point( type.((0, 1))))
+#            @test  is_left(Point(type(-1    ), type(0)    ), l)
+#            @test  is_left(Point(type(-0.001), type(-10.0)), l)
+#            @test !is_left(Point(type(1.0   ), type(0.0)  ), l)
+#            @test !is_left(Point(type(0.001 ), type(-10.0)), l)
+#
+#            n̂ = Point( type.((1, 0, 0)))
+#            @test  is_left(Point(type(0), type(0),      type(1)    ), l, n̂ = n̂)
+#            @test  is_left(Point(type(0), type(-0.001), type(10.0) ), l, n̂ = n̂)
+#            @test !is_left(Point(type(0), type(0),      type(-1)   ), l, n̂ = n̂)
+#            @test !is_left(Point(type(0), type(0.001 ), type(-10.0)), l, n̂ = n̂)
         end
     end
 end

@@ -205,8 +205,7 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
     # If A = 0, we need to use line intersection instead.
     bool = false
     npoints = 0
-    type = typeof(l.points[1].coord[1])
-    points = [Point(type.((1e9, 1e9, 1e9))), Point(type.((1e9, 1e9, 1e9)))]
+    points = [Point(T.((1e9, 1e9, 1e9))), Point(T.((1e9, 1e9, 1e9)))]
     D⃗ = 2*(q.points[1] + q.points[2] - 2*q.midpoint)
     E⃗ = 4*q.midpoint - 3*q.points[1] - q.points[2]
     w⃗ = l.points[2] - l.points[1]
@@ -216,7 +215,7 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
     A = A⃗ ⋅ A⃗
     B = B⃗ ⋅ A⃗
     C = C⃗ ⋅ A⃗
-    if isapprox(A, type(0), atol = √eps(type))
+    if isapprox(A, 0, atol = √eps(T))
         # Line intersection
         r = (-C⃗ ⋅ B⃗)/(B⃗ ⋅ B⃗)
         s = (q(r)- l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
@@ -237,9 +236,6 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
                 bool = true
                 points[npoints + 1] = pᵣ
                 npoints += 1
-                if npoints == 2
-                    break
-                end
             end
         end
     end
@@ -247,14 +243,14 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
 end
 intersect(q::QuadraticSegment, l::LineSegment) = intersect(l, q)
 
-function is_left(p::Point{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
-    # If the point is within the quad area, we need to reverse the linear result.
-    l = LineSegment(q.points[1], q.points[2])
-    u⃗ = q.points[2] - q.points[1]
-    v⃗ = q.points[3] - q.points[1]
-    n̂ = (u⃗ × v⃗)/norm(u⃗ × v⃗)
-    bool = isleft(p, l, n̂ = n̂)
-    # Point is outside quad area, just use is_left
-    # Point is inside quad area, return opposite of is_left
-    return in_area(p, q) ? !bool : bool
-end
+#function is_left(p::Point{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
+#    # If the point is within the quad area, we need to reverse the linear result.
+#    l = LineSegment(q.points[1], q.points[2])
+#    u⃗ = q.points[2] - q.points[1]
+#    v⃗ = q.points[3] - q.points[1]
+#    n̂ = (u⃗ × v⃗)/norm(u⃗ × v⃗)
+#    bool = isleft(p, l, n̂ = n̂)
+#    # Point is outside quad area, just use is_left
+#    # Point is inside quad area, return opposite of is_left
+#    return in_area(p, q) ? !bool : bool
+#end

@@ -62,6 +62,6 @@ include("../src/vtk.jl")
             test_line = readline(test_file)
             @test ref_line == test_line
         end
-        rm(./write_three_triangle.vtk)
+        rm("./write_three_triangle.vtk")
     end
 end

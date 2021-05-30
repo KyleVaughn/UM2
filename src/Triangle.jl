@@ -1,4 +1,4 @@
-import Base: intersect
+import Base: intersect, in
 
 struct Triangle{T <: AbstractFloat} <: Face
     points::NTuple{3, Point{T}}
@@ -28,13 +28,12 @@ function area(tri::Triangle{T}) where {T <: AbstractFloat}
     # A = |u⃗ × v⃗|/2 = bh/2
     u⃗ = tri.points[2] - tri.points[1] 
     v⃗ = tri.points[3] - tri.points[1] 
-    return norm(u⃗ × v⃗)/T(2)
+    return norm(u⃗ × v⃗)/2
 end
 
-function intersect(l::LineSegment, tri::Triangle)
-    # Algorithm is
+function intersect(l::LineSegment{type}, tri::Triangle{type}) where {type <: AbstractFloat}
+    # Algorithm is from
     # Möller, T., & Trumbore, B. (1997). Fast, minimum storage ray-triangle intersection. 
-    type = typeof(l.points[1].coord[1])
     p = zero(l.points[1])
 
     E₁ = tri.points[2] - tri.points[1]
@@ -51,5 +50,26 @@ function intersect(l::LineSegment, tri::Triangle)
         v = (Q ⋅ D)/det
         t = (Q ⋅ E₂)/det
         return (u < 0) || (v < 0) || (u + v > 1) || (t < 0) || (1 < t) ? (false, p) : (true, l(t))
+    end
+end
+
+function in(p::Point{T}, tri::Triangle{T}) where {T <: AbstractFloat}
+    # If the volume of the tetrahedron formed by the 4 points is 0, then point lies in the
+    # plane of the triangle. Division by 6 is dropped, since it doesn't change the computation.
+    u⃗ = tri.points[2] - tri.points[1]   
+    v⃗ = tri.points[3] - tri.points[1]    
+    w⃗ = p - tri.points[1]
+    V = norm(u⃗ ⋅ (v⃗ × w⃗))
+    if isapprox(V, 0, atol=sqrt(eps(T)))
+        # If the point is within the plane of the triangle, then the point is only within the triangle
+        # if the areas of the triangles formed by the point and each pair of two vertices sum to the 
+        # area of the triangle. Division by 2 is dropped, since it cancels
+        A₁ = norm((tri.points[1] - p) × (tri.points[2] - p))
+        A₂ = norm((tri.points[2] - p) × (tri.points[3] - p))
+        A₃ = norm((tri.points[3] - p) × (tri.points[1] - p))
+        A  = norm(u⃗ × v⃗)
+        return A₁ + A₂ + A₃ ≈ A
+    else
+        return false
     end
 end

@@ -63,28 +63,28 @@ function in(p::Point{T}, l::LineSegment{T}) where {T <: AbstractFloat}
     return (0 ≤ r ≤ 1) && l(r) ≈  p
 end
 
-function is_left(p₃::Point{T}, l::LineSegment{T}; 
-        n̂::Point{T}=Point(T(0), T(0), T(1))) where {T <: AbstractFloat} 
-    # The line segment is defined by the line from points[1] to points[2].
-    #     p₃
-    #
-    #
-    #
-    # p₁----------------p₂
-    # If we define u⃗ = p₂-p₁ and v⃗ = p₃-p₁ we may test if a point is_left of the 
-    # line using the cross product. See diagram below.
-    #     ^ v⃗
-    #    /
-    #   /
-    #  / θ
-    # -----------------> u⃗    
-    # u⃗ × v⃗ = |u⃗||v⃗| sin(θ)n⃗, where n⃗ is the unit vector perpendicular to the plane 
-    # containing u⃗ and v⃗. However, the orientation of the plane is ambiguous, hence 
-    # we need n̂ provided or assumed. For vectors in the x-y plane, we assume 
-    # n̂ = (0, 0, 1). Since, |u⃗|, |v⃗| ≥ 0, then the point p₃ is left of the line if 
-    # θ ∈ (0, π) -- equivalently if sin(θ) > 0. 
-    # Hence our is_left condition is if the sign of the components of u⃗ × v⃗ and n̂ match
-    u⃗ = l.points[2]-l.points[1]
-    v⃗ = p₃-l.points[1]
-    return sign.((u⃗ × v⃗).coord) == sign.(n̂.coord)
-end
+#function is_left(p₃::Point{T}, l::LineSegment{T}; 
+#        n̂::Point{T}=Point(T(0), T(0), T(1))) where {T <: AbstractFloat} 
+#    # The line segment is defined by the line from points[1] to points[2].
+#    #     p₃
+#    #
+#    #
+#    #
+#    # p₁----------------p₂
+#    # If we define u⃗ = p₂-p₁ and v⃗ = p₃-p₁ we may test if a point is_left of the 
+#    # line using the cross product. See diagram below.
+#    #     ^ v⃗
+#    #    /
+#    #   /
+#    #  / θ
+#    # -----------------> u⃗    
+#    # u⃗ × v⃗ = |u⃗||v⃗| sin(θ)n⃗, where n⃗ is the unit vector perpendicular to the plane 
+#    # containing u⃗ and v⃗. However, the orientation of the plane is ambiguous, hence 
+#    # we need n̂ provided or assumed. For vectors in the x-y plane, we assume 
+#    # n̂ = (0, 0, 1). Since, |u⃗|, |v⃗| ≥ 0, then the point p₃ is left of the line if 
+#    # θ ∈ (0, π) -- equivalently if sin(θ) > 0. 
+#    # Hence our is_left condition is if the sign of the components of u⃗ × v⃗ and n̂ match
+#    u⃗ = l.points[2]-l.points[1]
+#    v⃗ = p₃-l.points[1]
+#    return sign.((u⃗ × v⃗).coord) == sign.(n̂.coord)
+#end
