@@ -44,6 +44,9 @@ export Quadrilateral,
 include("UnstructuredMesh.jl")
 export UnstructuredMesh
 
+include("vtk.jl")
+export read_vtk
+
 include("AngularQuadrature.jl")
 export AngularQuadrature,
        GeneralAngularQuadrature,

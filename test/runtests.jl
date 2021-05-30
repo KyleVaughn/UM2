@@ -5,6 +5,8 @@ tests = ["Point",
          "QuadraticSegment",
          "AngularQuadrature", 
          "Triangle",
+         "UnstructuredMesh",
+         "vtk"
         ]
 for t in tests
   include("$(t).jl")

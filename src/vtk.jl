@@ -1,29 +1,30 @@
 function read_vtk(filepath::String)
-
     cell_type_whitelist = [5,  # Triangle 
                          9,  # Quadrilateral
                          22, # Triangle6 
                          23] # Quad8
+    cell_type_2D = [5]
+    cell_type_3D = [10]
 
-
+    name = "DefaultMeshName"
     file = open(filepath, "r")
     while !eof(file)
         line_split = split(readline(file))
         if length(line_split) > 0
-            if line_split[1] == "DATASET"
+            if line_split[1] == "#"
+                if line_split[2] == "vtk"
+                    name = readline(file)
+                end
+            elseif line_split[1] == "DATASET"
                 if line_split[2] != "UNSTRUCTURED_GRID"
                     error("DATASET type is $line_split[2]. Only UNSTRUCTURED_GRID is supported.")
                 end
-
             elseif line_split[1] == "POINTS"
                 global points = read_vtk_points(file, line_split[2], line_split[3])
-
             elseif line_split[1] == "CELLS"
                 global cells = read_vtk_cells(file, line_split[2])
-
             elseif line_split[1] == "CELL_TYPES"
                 global cell_types = read_vtk_cell_types(file, line_split[2])
-
             end
         end
     end
@@ -33,11 +34,41 @@ function read_vtk(filepath::String)
     deleteat!(cell_types, delete_indices)
     deleteat!(cells, delete_indices)
 
+    # Find the dimension based upon cell types
+    if all(x->x ∈  cell_type_2D, cell_types)
+        dim = 2
+    elseif all(x->x ∈  cell_type_3D, cell_types)
+        dim = 3
+    else
+        error("VTK file contains mixed dimension elements. The developer needs to address this.")
+        dim = 0
+    end
+
+    cells_combined = Vector{Int64}[]
+    for i in 1:length(cell_types)
+        push!(cells_combined, vcat(cell_types[i], cells[i]))
+    end
+
     # Construct edges
-    edges = construct_edges_from_cells(points, cells)
+    edges = construct_edges(cells_combined)
 
-
-    return points, cells, cell_types
+#    if dim == 2
+        return UnstructuredMesh(
+                                points = points,
+                                edges = edges,
+                                faces = cells_combined,
+                                dim = dim,
+                                name = name
+                                )
+#    else
+#        return UnstructuredMesh(
+#                                points = points,
+#                                edges = edges,
+#                                faces = faces,
+#                                cells = cells,
+#                                dim = dim
+#                                )
+#    end
 end
 
 function read_vtk_points(
@@ -88,14 +119,3 @@ function read_vtk_cell_types(
     end
     return cell_types
 end
-
-
-
-
-
-
-
-
-filepath = "../../sphere_surface_mod.vtk"
-read_vtk(filepath)
-
