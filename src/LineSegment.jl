@@ -49,6 +49,15 @@ function intersect(l₁::LineSegment{T}, l₂::LineSegment{T}) where {T <: Abstr
     return (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1) ? (true, p) : (false, p)
 end
 
+function AABB(l::LineSegment{T}) where {T <: AbstractFloat}
+    # Axis-aligned bounding box in xy-plane
+    xmin = min(l.points[1][1], l.points[2][1])
+    xmax = max(l.points[1][1], l.points[2][1])
+    ymin = min(l.points[1][2], l.points[2][2])
+    ymax = max(l.points[1][2], l.points[2][2])
+    return (xmin, ymin, xmax, ymax)
+end
+
 function in(p::Point{T}, l::LineSegment{T}) where {T <: AbstractFloat}
     # if p⃗ is on the line then,
     # l(r) = x⃗₁ + ru⃗, where u⃗ = x⃗₂ - x⃗₁

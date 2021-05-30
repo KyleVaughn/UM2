@@ -23,7 +23,7 @@ export  LineSegment,
         arc_length,
         midpoint,
         intersect,
-        is_left
+        AABB
 
 include("QuadraticSegment.jl")
 export QuadraticSegment,
@@ -42,7 +42,9 @@ export Quadrilateral,
        intersect
 
 include("UnstructuredMesh.jl")
-export UnstructuredMesh
+export UnstructuredMesh,
+       edges,
+       AABB
 
 include("vtk.jl")
 export read_vtk,

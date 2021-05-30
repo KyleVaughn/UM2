@@ -101,6 +101,12 @@ using MOCNeutronTransport
             p = Point( type.((1, 1)) )
             @test p ∉ l
 
+            # AABB
+            l = LineSegment(Point( type.((-1, 0)) ), Point( type.((2, 3)) ))
+            @test AABB(l) == type.((-1, 0, 2, 3))
+            l = LineSegment(Point( type.((-1, 0)) ), Point( type.((2, 0)) ))
+            @test AABB(l) == type.((-1, 0, 2, 0))
+
 #            # isleft
 #            l = LineSegment(Point( type.((0, 0)) ), Point( type.((0, 1))))
 #            @test  is_left(Point(type(-1    ), type(0)    ), l)

@@ -1,11 +1,4 @@
 function read_vtk(filepath::String)
-    cell_type_whitelist = [5,  # Triangle 
-                         9,  # Quadrilateral
-                         22, # Triangle6 
-                         23] # Quad8
-    cell_type_2D = [5]
-    cell_type_3D = [10]
-
     name = "DefaultMeshName"
     file = open(filepath, "r")
     while !eof(file)
@@ -31,14 +24,16 @@ function read_vtk(filepath::String)
     close(file)
 
     # Remove 0D, 1D cells
-    delete_indices = findall(x->x ∉  cell_type_whitelist, cell_types)
+    # UnstructuredMesh (UM) uses the same cell types as VTK.
+    UM_2D_3D_cell_types = vcat(UnstructuredMesh_2D_cell_types, UnstructuredMesh_3D_cell_types)
+    delete_indices = findall(x->x ∉  UM_2D_3D_cell_types, cell_types)
     deleteat!(cell_types, delete_indices)
     deleteat!(cells, delete_indices)
 
     # Find the dimension based upon cell types
-    if all(x->x ∈  cell_type_2D, cell_types)
+    if all(x->x ∈  UnstructuredMesh_2D_cell_types, cell_types)
         dim = 2
-    elseif all(x->x ∈  cell_type_3D, cell_types)
+    elseif all(x->x ∈  UnstructuredMesh_3D_cell_types, cell_types)
         dim = 3
     else
         error("VTK file contains mixed dimension elements. The developer needs to address this.")
@@ -46,17 +41,17 @@ function read_vtk(filepath::String)
     end
 
     cells_combined = Vector{Int64}[]
-    for i in 1:length(cell_types)
+    for i in eachindex(cell_types)
         push!(cells_combined, vcat(cell_types[i], cells[i]))
     end
 
     # Construct edges
-    edges = construct_edges(cells_combined)
+    cell_edges = edges(cells_combined)
 
 #    if dim == 2
         return UnstructuredMesh(
                                 points = points,
-                                edges = edges,
+                                edges = cell_edges,
                                 faces = cells_combined,
                                 dim = dim,
                                 name = name
@@ -172,6 +167,7 @@ function write_vtk(filename::String, mesh::UnstructuredMesh)
     println(file, "")
 
     # Cell types
+    # UnstructuredMesh uses the same cell types as VTK
     println(file, "CELL_TYPES $ncells")
     if mesh.dim == 2
         for cell in mesh.faces

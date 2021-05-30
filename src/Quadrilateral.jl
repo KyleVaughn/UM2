@@ -22,7 +22,7 @@ function triangulate(quad::Quadrilateral{T}) where {T <: AbstractFloat}
     A, B, C, D = quad.points
     tri = (Triangle(A, B, C), Triangle(C, D, A), Triangle(B, C, D), Triangle(D, A, B))
     areas = area.(tri)
-    return areas[1] + areas[2] <= areas[3] + areas[4] ? (tri[1], tri[2]) : (tri[1], tri[2])
+    return areas[1] + areas[2] <= areas[3] + areas[4] ? (tri[1], tri[2]) : (tri[3], tri[4])
 end
 
 function area(quad::Quadrilateral{T}) where {T <: AbstractFloat}

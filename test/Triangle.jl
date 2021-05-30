@@ -19,6 +19,12 @@ using MOCNeutronTransport
             p₃ = Point( type(1), type(1) )
             tri = Triangle((p₁, p₂, p₃))
 
+            # evaluation
+            tri( type(0), type(0)) ≈ p₁
+            tri( type(1), type(0)) ≈ p₂
+            tri( type(0), type(1)) ≈ p₃
+            tri( type(1//2), type(1//2)) ≈ Point(type(1//2), type(1//2))
+
             # area
             a = area(tri)
             @test typeof(a) == typeof(type(1))
@@ -53,6 +59,18 @@ using MOCNeutronTransport
             l = LineSegment(p₄, p₅)
             bool, point = intersect(l, tri)
             @test !bool
+
+            # in
+            p = Point(type.((0.5, 0.1)))
+            @test p ∈  tri
+            p = Point(type.((0.5, 0.0)))
+            @test p ∈  tri
+            p = Point(type.((0.5, 0.1, 0.1)))
+            @test p ∉ tri
+            p = Point(type.((0.5, -0.1, 0.1)))
+            @test p ∉ tri
+            p = Point(type.((0.5, -0.1, 0.0)))
+            @test p ∉ tri
         end
     end
 end
