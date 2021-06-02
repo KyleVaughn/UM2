@@ -52,31 +52,31 @@ function edges(cells::Vector{Vector{Int64}})
     return sort(collect(Set(edges_unfiltered)))
 end
 
-# Axis-aligned bounding box, a rectangle.
-function AABB(mesh::UnstructuredMesh)
-    # If the mesh does not have any quadratic cells/faces, the AABB may be determined entirely from the 
-    # points. If the mesh does have quadratic cells/faces, we need to find the bounding box of the edges
-    # that border the mesh. This algorithm naively performs the bounding box for each edge.
-    if mesh.dim == 2
-        if any(x->x ∈ UnstructuredMesh_quadratic_cell_types, getindex.(mesh.faces, 1))
-            for edge in mesh.edges
-                # construct the edge
-                # Check warntype
-#                AABB(
-            end
-        else # Can use points
-            x = map(p->p[1], points)
-            y = map(p->p[2], points)
-            xmin = minimum(x)
-            xmax = maximum(x)
-            ymin = minimum(y)
-            ymax = maximum(y)
-            return (xmin, ymin, xmax, ymax)
-        end
-    else
-
-    end
-end
+## Axis-aligned bounding box, a rectangle.
+#function AABB(mesh::UnstructuredMesh; tight::Bool=false)
+#    # If the mesh does not have any quadratic cells/faces, the AABB may be determined entirely from the 
+#    # points. If the mesh does have quadratic cells/faces, we need to find the bounding box of the edges
+#    # that border the mesh. This algorithm naively performs the bounding box for each edge.
+#    if mesh.dim == 2
+#        if any(x->x ∈ UnstructuredMesh_quadratic_cell_types, getindex.(mesh.faces, 1))
+#            for edge in mesh.edges
+#                # construct the edge
+#                # Check warntype
+##                AABB(
+#            end
+#        else # Can use points
+#            x = map(p->p[1], points)
+#            y = map(p->p[2], points)
+#            xmin = minimum(x)
+#            xmax = maximum(x)
+#            ymin = minimum(y)
+#            ymax = maximum(y)
+#            return (xmin, ymin, xmax, ymax)
+#        end
+#    else
+#
+#    end
+#end
 
 # function AABV (volume, cuboid)
 # hasEdges

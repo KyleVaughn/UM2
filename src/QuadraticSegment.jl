@@ -1,87 +1,27 @@
 import Base: intersect, in
 # A quadratic segment in 3D space that passes through three points: x⃗₁, x⃗₂, and x⃗₃.
-# The assumed relation of the points may be seen in the diagram below, where x⃗₃ is not
-# necessarily the midpoint of the curve.
+# The assumed relation of the points may be seen in the diagram below.
 #                 ___x⃗₃___
 #            ____/        \____
-#        ___/                  \___
-#     __/                          \__
-#   _/                                \__
-#  /                                     \
-# x⃗₁--------------------------------------x⃗₂
+#        ___/                  \
+#     __/                       x⃗₂   
+#   _/                                
+#  /                                     
+# x⃗₁                                        
 #
 # NOTE: x⃗₃ is between x⃗₁ and x⃗₂, but not necessarily the midpoint.
-#
-# Let u⃗ = x⃗₂-x⃗₁. Then the parametric representation of the vector from x⃗₁ to x⃗₂
-# is u⃗(r) = x⃗₁ + ru⃗ , with r ∈ [0, 1].
-#
-# A general parametric representation of the quadratic curve is:
-# q(r) = (a|ru⃗|² + b|ru⃗|)ŷ + ru⃗ + x⃗₁
-# similar to the familiar y(x) = ax² + bx + c, where ŷ is the unit vector in the same plane as
-# x⃗₁, x⃗₂, and x⃗₃, such that ŷ ⟂ u⃗ and is pointing towards x⃗₃.
-#
-# We also define v⃗ = x⃗₃-x⃗₁. We see the ŷ vector may be computed by:
-# ŷ = -((v⃗ × u⃗) × u⃗)/|(v⃗ × u⃗) × u⃗|
-# A diagram of these relations may be seen below:
-#                   x⃗₃
-#               /
-#       v⃗    /      ^
-#         /         | ŷ
-#      /            |
-#   /               |
-# x⃗₁--------------------------------------x⃗₂
-#                              u⃗
-#
-# A different parametric representation of the quadratic curve, for which x⃗₃ is the midpoint
-# of the curve is:
 # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
 # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
 # Chapter 8, Advanced Data Representation, in the interpolation functions section
-
-# We use this form over the general form due to the reduced storage requirements and computations
-# for many operations. (General formula requires many norm u⃗ operations.)
-# However, the general form is used to find the midpoint in the constructor.
 struct QuadraticSegment{T <: AbstractFloat} <: Edge
     points::NTuple{3,Point{T}}
-    midpoint::Point{T}
 end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-function QuadraticSegment(x⃗₁::Point{T}, x⃗₂::Point{T}, x⃗₃::Point{T}) where {T <: AbstractFloat}
-    # Using q(1) = x⃗₂ gives b = -a|u⃗|.
-    # Using q(r₃) = x⃗₃, the following steps may be used to derive a
-    #   1) v⃗ = x⃗₃ - x⃗₁
-    #   2) b = -a|u⃗|
-    #   3) × u⃗ both sides, and u⃗ × u⃗ = 0⃗
-    #   4) |r₃u⃗| = u⃗ ⋅v⃗/|u⃗|
-    #   5) |u⃗|² = u⃗ ⋅u⃗
-    #   6) v⃗ × u⃗ = -(u⃗ × v⃗)
-    #   the result:
-    #
-    #             (u⃗ ⋅ u⃗) (v⃗ × u⃗) ⋅ (v⃗ × u⃗)
-    # a = -------------------------------------------
-    #     (u⃗ ⋅ v⃗)[(u⃗ ⋅ v⃗) - (u⃗ ⋅ u⃗)](ŷ × u⃗) ⋅ (v⃗ × u⃗)
-    #
-    # We can construct ŷ with
-    #
-    #      -(v⃗ × u⃗) × u⃗
-    # ŷ =  -------------
-    #      |(v⃗ × u⃗) × u⃗|
-    #
-    u⃗ = x⃗₂-x⃗₁
-    v⃗ = x⃗₃-x⃗₁
-    if v⃗ × u⃗ ≈ zero(v⃗)
-        # x⃗₃ is on u⃗
-        midpoint = x⃗₁ + u⃗/T(2)
-    else
-        ŷ = -(v⃗ × u⃗) × u⃗/norm((v⃗ × u⃗) × u⃗)
-        a = ( (u⃗ ⋅ u⃗) * (v⃗ × u⃗) ⋅(v⃗ × u⃗) )/( (u⃗ ⋅v⃗)*((u⃗ ⋅ v⃗) - (u⃗ ⋅ u⃗) ) * ( (ŷ × u⃗) ⋅ (v⃗ × u⃗)) )
-        b = -a*norm(u⃗)
-        midpoint = (a*norm(u⃗/T(2))^2 + b*norm(u⃗/T(2)))*ŷ + u⃗/T(2) + x⃗₁
-    end
-    return QuadraticSegment((x⃗₁, x⃗₂, x⃗₃), midpoint)
-end
+QuadraticSegment(p₁::Point{T}, 
+                 p₂::Point{T}, 
+                 p₃::Point{T}) where {T <: AbstractFloat} = QuadraticSegment((p₁, p₂, p₃))
 
 # Base methods
 # -------------------------------------------------------------------------------------------------
@@ -93,7 +33,7 @@ end
 function (q::QuadraticSegment)(r::T) where {T <: AbstractFloat}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    return (2r-1)*(r-1)*q.points[1] + r*(2r-1)*q.points[2] + 4r*(1-r)*q.midpoint
+    return (2r-1)*(r-1)*q.points[1] + r*(2r-1)*q.points[2] + 4r*(1-r)*q.points[3]
 end
 
 function in(p::Point{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
@@ -103,83 +43,34 @@ function in(p::Point{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
     #   w⃗ = p⃗ - x⃗₁, 
     #   u⃗ = x⃗₂ - x⃗₁, 
     #   v⃗ = x⃗₃ - x⃗₁
-    #        
-    #         (u⃗ × v⃗)
-    #   n̂ =  ---------  perpendicular to the plane of q 
-    #        |(u⃗ × v⃗)|   
+    #   n⃗ = u⃗ × v⃗  perpendicular to the plane of q 
+    #   y⃗= n⃗ × u⃗  perpendicular to u⃗ in the plane of q
     #
-    #
-    #         n̂ × u⃗   
-    #   ŷ =  -------    perpendicular to u⃗ in the plane of q
-    #        |n̂ × u⃗|   
-    #
-    # If p⃗ is in the plane of q, then w⃗ is a linear combination of u⃗ and ŷ, since u⃗ ⟂ ŷ within the plane.
-    # w⃗ = ru⃗ + sŷ + tn̂, and t=0. Here we include n̂ to make a square system.
-    # Therefore, if A = [u⃗ ŷ n̂] and x = [r; s; t], then Ax=w⃗. 
-    # A is invertible since {u⃗, ŷ, n̂} are a basis for R³.
+    # If p⃗ is in the plane of q, then w⃗ is a linear combination of u⃗ and y⃗, since u⃗ ⟂ y⃗ within the plane.
+    # w⃗ = ru⃗ + sy⃗ + tn⃗, and t=0. Here we include n⃗ to make a square system.
+    # Therefore, if A = [u⃗ y⃗ n⃗] and x = [r; s; t], then Ax=w⃗. 
+    # A is invertible since {u⃗, y⃗, n⃗} are a basis for R³.
     # If p is actually in the plane of q, then t = 0.
     # If r ∉ (0, 1), then we the point is not in the curve. 
     # If r ∈ (0, 1), we test if q(r) ≈ p
+    # Note that if the quadratic segment is straight, we can simply use the LineSegment test.
+    # We determine if the quadratic is straight by the norm of y⃗
     w⃗ = p - q.points[1]
     u⃗ = q.points[2] - q.points[1]
     v⃗ = q.points[3] - q.points[1]
-    n̂ = (u⃗ × v⃗)/norm(u⃗ × v⃗)
-    ŷ = (n̂ × u⃗)/norm(n̂ × u⃗)
-    if ŷ ≈ 0*ŷ # quadratic is straight
+    n⃗ = u⃗ × v⃗
+    y⃗ = n⃗ × u⃗
+    if y⃗ ≈ 0*y⃗ # quadratic is straight
         l = LineSegment(q.points[1], q.points[2])
         return p ∈  l
     else
-        A = hcat(u⃗.coord, ŷ.coord, n̂.coord)
+        A = hcat(u⃗.coord, y⃗.coord, n⃗.coord)
         r, s, t = A\w⃗.coord
         return (0 ≤ r ≤ 1) && q(r) ≈ p ? true : false
     end
 end
 
-function in_area(p::Point{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
-    # Check to see if a point is in the area between u⃗ and the curve.
-    # q is defined by x⃗₁, x⃗₂, and x⃗₃, and the point in question is p⃗
-    # Let: 
-    #   w⃗ = p⃗ - x⃗₁, 
-    #   u⃗ = x⃗₂ - x⃗₁, 
-    #   v⃗ = x⃗₃ - x⃗₁
-    #        
-    #         (u⃗ × v⃗)
-    #   n̂ =  ---------  perpendicular to the plane of q 
-    #        |(u⃗ × v⃗)|   
-    #
-    #
-    #         n̂ × u⃗   
-    #   ŷ =  -------    perpendicular to u⃗ in the plane of q
-    #        |n̂ × u⃗|   
-    #
-    # If p⃗ is in the plane of q, then w⃗ is a linear combination of u⃗ and ŷ, since u⃗ ⟂ ŷ within the plane.
-    # w⃗ = ru⃗ + sŷ + tn̂, and t=0. Here we include n̂ to make a square system.
-    # Therefore, if A = [u⃗ ŷ n̂] and x = [r; s; t], then Ax=w⃗. 
-    # A is invertible since {u⃗, ŷ, n̂} are a basis for R³.
-    # If p is actually in the plane of q, then t = 0.
-    # If r ∉ (0, 1), then we the point is not in the curve. 
-    # If r ∈ (0, 1), then we need to see if the point is within the quadratic curve area.
-    # Let u(r) = x⃗₁ + ru⃗, then if distance(p, u(r)) ≤ distance(u(r), q(r)) and
-    # distance(p, q(r)) ≤ distance(u(r), q(r)), then the point is within the quad area.
-    w⃗ = p - q.points[1]
-    u⃗ = q.points[2] - q.points[1]
-    v⃗ = q.points[3] - q.points[1]
-    n̂ = (u⃗ × v⃗)/norm(u⃗ × v⃗)
-    ŷ = (n̂ × u⃗)/norm(n̂ × u⃗)
-    if ŷ ≈ 0*ŷ # quadratic is straight
-        l = LineSegment(q.points[1], q.points[2])
-        return p ∈  l
-    else
-        A = hcat(u⃗.coord, ŷ.coord, n̂.coord)
-        r, s, t = A\w⃗.coord
-        p_q = q(r)
-        p_u = q.points[1] + r*u⃗
-        return distance(p, p_q) ≤ distance(p_q, p_u) && distance(p, p_u) ≤ distance(p_q, p_u)
-    end
-end
-
 function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
-    # Here x⃗₃ is the midpoint of the curve.
     # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
     # q(r) = 2r²(x⃗₁ + x⃗₂ - 2x⃗₃) + r(-3x⃗₁ - x⃗₂ + 4x⃗₃) + x⃗₁
     # Let D⃗ = 2(x⃗₁ + x⃗₂ - 2x⃗₃), E⃗ = (-3x⃗₁ - x⃗₂ + 4x⃗₃), F⃗ = x₁ 
@@ -206,8 +97,8 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
     bool = false
     npoints = 0
     points = [Point(T.((1e9, 1e9, 1e9))), Point(T.((1e9, 1e9, 1e9)))]
-    D⃗ = 2*(q.points[1] + q.points[2] - 2*q.midpoint)
-    E⃗ = 4*q.midpoint - 3*q.points[1] - q.points[2]
+    D⃗ = 2*(q.points[1] + q.points[2] - 2*q.points[3])
+    E⃗ = 4*q.points[3] - 3*q.points[1] - q.points[2]
     w⃗ = l.points[2] - l.points[1]
     A⃗ = (D⃗ × w⃗)
     B⃗ = (E⃗ × w⃗)
@@ -253,4 +144,41 @@ intersect(q::QuadraticSegment, l::LineSegment) = intersect(l, q)
 #    # Point is outside quad area, just use is_left
 #    # Point is inside quad area, return opposite of is_left
 #    return in_area(p, q) ? !bool : bool
+#end
+#function in_area(p::Point{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
+#    # Check to see if a point is on or between the curve and the line segment 
+#    # connectring x⃗₁ and x⃗₂.
+#    # q is defined by x⃗₁, x⃗₂, and x⃗₃, and the point in question is p⃗
+#    # Let: 
+#    #   w⃗ = p⃗ - x⃗₁, 
+#    #   u⃗ = x⃗₂ - x⃗₁, 
+#    #   v⃗ = x⃗₃ - x⃗₁
+#    #   n⃗ = u⃗ × v⃗  perpendicular to the plane of q 
+#    #   y⃗= n⃗ × u⃗  perpendicular to u⃗ in the plane of q
+#    #
+#    # If p⃗ is in the plane of q, then w⃗ is a linear combination of u⃗ and y⃗, since u⃗ ⟂ y⃗ within the plane.
+#    # w⃗ = ru⃗ + sy⃗ + tn⃗, and t=0. Here we include n⃗ to make a square system.
+#    # Therefore, if A = [u⃗ y⃗ n⃗] and x = [r; s; t], then Ax=w⃗. 
+#    # A is invertible since {u⃗, y⃗, n⃗} are a basis for R³.
+#    # If p is actually in the plane of q, then t = 0.
+#    # If r ∉ (0, 1), then we the point is not in area. 
+#    # If r ∈ (0, 1), Let u(r) = x⃗₁ + ru⃗, then if distance(p, u(r)) ≤ distance(u(r), q(r)) and   
+#    # distance(p, q(r)) ≤ distance(u(r), q(r)), then the point is within the quad area.   
+#    # Note that if the quadratic segment is straight, we can simply use the LineSegment test.
+#    # We determine if the quadratic is straight by the norm of y⃗
+#    w⃗ = p - q.points[1]
+#    u⃗ = q.points[2] - q.points[1]
+#    v⃗ = q.points[3] - q.points[1]
+#    n⃗ = u⃗ × v⃗
+#    y⃗ = n⃗ × u⃗
+#    if y⃗ ≈ 0*y⃗ # quadratic is straight
+#        l = LineSegment(q.points[1], q.points[2])
+#        return p ∈  l
+#    else
+#        A = hcat(u⃗.coord, y⃗.coord, n⃗.coord)
+#        r, s, t = A\w⃗.coord
+#        p_q = q(r)
+#        p_u = q.points[1] + r*u⃗
+#        return distance(p, p_q) ≤ distance(p_q, p_u) && distance(p, p_u) ≤ distance(p_q, p_u)
+#    end
 #end

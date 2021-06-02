@@ -9,33 +9,10 @@ using MOCNeutronTransport
 
             q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
             @test q.points == (x⃗₁, x⃗₂, x⃗₃)
-            @test q.midpoint ≈ x⃗₃
-            @test typeof(q.midpoint) == typeof(Point( type.((0, 1, 0)) ))
 
             x⃗₃ = Point(type(1), type(1)/sqrt(type(2)), type(1)/sqrt(type(2))) 
             q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
             @test q.points == (x⃗₁, x⃗₂, x⃗₃)
-            @test q.midpoint ≈ x⃗₃
-            @test typeof(q.midpoint) == typeof(Point( type.((0, 1, 0)) ))
-
-            x⃗₃ = Point( type.((1, 0, 0)) )
-            q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test q.points == (x⃗₁, x⃗₂, x⃗₃)
-            @test q.midpoint ≈ x⃗₃
-            @test typeof(q.midpoint) == typeof(Point( type.((0, 1, 0)) ))
-
-            x⃗₃ = Point( type.((1, eps(type)*100, 0)) )
-            q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test q.points == (x⃗₁, x⃗₂, x⃗₃)
-            @test q.midpoint ≈ x⃗₃
-            @test typeof(q.midpoint) == typeof(Point( type.((0, 1, 0)) ))
-
-            # non-midpoint x⃗₃
-            x⃗₃ = Point( type(1//2), type(3//4), type(0) )
-            q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
-            @test q.points == (x⃗₁, x⃗₂, x⃗₃)
-            @test q.midpoint ≈ Point( type.((1, 1, 0)) )                          
-            @test typeof(q.midpoint) == typeof(Point( type.((0, 1, 0)) ))            
         end
 
         @testset "Methods" begin
@@ -90,14 +67,14 @@ using MOCNeutronTransport
             x⃗₄ = Point( type.((1//2, 1, 0)) )       
             @test x⃗₄ ∉ q
 
-            # in_area
-            @test in_area(x⃗₁, q)             
-            x⃗₄ = Point( type.((1//2, 3//4, 0)) )       
-            @test in_area(x⃗₄, q)             
-            x⃗₄ = Point( type.((1//2, 1, 0)) )       
-            @test !in_area(x⃗₄, q)             
-            x⃗₄ = Point( type.((1//2, 1//2, 0)) )                  
-            @test in_area(x⃗₄, q)             
+#            # in_area
+#            @test in_area(x⃗₁, q)             
+#            x⃗₄ = Point( type.((1//2, 3//4, 0)) )       
+#            @test in_area(x⃗₄, q)             
+#            x⃗₄ = Point( type.((1//2, 1, 0)) )       
+#            @test !in_area(x⃗₄, q)             
+#            x⃗₄ = Point( type.((1//2, 1//2, 0)) )                  
+#            @test in_area(x⃗₄, q)             
         end
     end
 end

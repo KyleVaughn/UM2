@@ -62,8 +62,5 @@ end
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function distance(p⃗₁::Point, p⃗₂::Point)
-    return √( (p⃗₁[1] - p⃗₂[1])^2 + (p⃗₁[2] - p⃗₂[2])^2 + (p⃗₁[3] - p⃗₂[3])^2 )
-end
-
 norm(p⃗::Point) = norm(p⃗.coord)
+distance(p⃗₁::Point, p⃗₂::Point) = norm(p⃗₁ - p⃗₂)
