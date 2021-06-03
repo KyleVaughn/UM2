@@ -6,7 +6,9 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-Triangle(p₁::Point{T}, p₂::Point{T}, p₃::Point{T}) where {T <: AbstractFloat} = Triangle((p₁, p₂, p₃))
+Triangle(p₁::Point{T}, 
+         p₂::Point{T}, 
+         p₃::Point{T}) where {T <: AbstractFloat} = Triangle((p₁, p₂, p₃))
 
 # Base methods
 # -------------------------------------------------------------------------------------------------

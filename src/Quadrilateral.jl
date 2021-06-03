@@ -15,8 +15,6 @@ Quadrilateral(p₁::Point{T},
 # Base methods
 # -------------------------------------------------------------------------------------------------
 
-# QUADRILATERAL MUST BE CONVEX APPARENTLY.
-
 # Methods
 # -------------------------------------------------------------------------------------------------
 function triangulate(quad::Quadrilateral{T}) where {T <: AbstractFloat}

@@ -36,39 +36,40 @@ function (q::QuadraticSegment)(r::T) where {T <: AbstractFloat}
     return (2r-1)*(r-1)*q.points[1] + r*(2r-1)*q.points[2] + 4r*(1-r)*q.points[3]
 end
 
-function in(p::Point{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
-    # Check to see if a point is on the curve.
-    # q is defined by x⃗₁, x⃗₂, and x⃗₃, and the point in question is p⃗
-    # Let: 
-    #   w⃗ = p⃗ - x⃗₁, 
-    #   u⃗ = x⃗₂ - x⃗₁, 
-    #   v⃗ = x⃗₃ - x⃗₁
-    #   n⃗ = u⃗ × v⃗  perpendicular to the plane of q 
-    #   y⃗= n⃗ × u⃗  perpendicular to u⃗ in the plane of q
-    #
-    # If p⃗ is in the plane of q, then w⃗ is a linear combination of u⃗ and y⃗, since u⃗ ⟂ y⃗ within the plane.
-    # w⃗ = ru⃗ + sy⃗ + tn⃗, and t=0. Here we include n⃗ to make a square system.
-    # Therefore, if A = [u⃗ y⃗ n⃗] and x = [r; s; t], then Ax=w⃗. 
-    # A is invertible since {u⃗, y⃗, n⃗} are a basis for R³.
-    # If p is actually in the plane of q, then t = 0.
-    # If r ∉ (0, 1), then we the point is not in the curve. 
-    # If r ∈ (0, 1), we test if q(r) ≈ p
-    # Note that if the quadratic segment is straight, we can simply use the LineSegment test.
-    # We determine if the quadratic is straight by the norm of y⃗
-    w⃗ = p - q.points[1]
-    u⃗ = q.points[2] - q.points[1]
-    v⃗ = q.points[3] - q.points[1]
-    n⃗ = u⃗ × v⃗
-    y⃗ = n⃗ × u⃗
-    if y⃗ ≈ 0*y⃗ # quadratic is straight
-        l = LineSegment(q.points[1], q.points[2])
-        return p ∈  l
-    else
-        A = hcat(u⃗.coord, y⃗.coord, n⃗.coord)
-        r, s, t = A\w⃗.coord
-        return (0 ≤ r ≤ 1) && q(r) ≈ p ? true : false
-    end
-end
+# This doesn't work for a segment that has a point3 outside the midpoint
+#function in(p::Point{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
+#    # Check to see if a point is on the curve.
+#    # q is defined by x⃗₁, x⃗₂, and x⃗₃, and the point in question is p⃗
+#    # Let: 
+#    #   w⃗ = p⃗ - x⃗₁, 
+#    #   u⃗ = x⃗₂ - x⃗₁, 
+#    #   v⃗ = x⃗₃ - x⃗₁
+#    #   n⃗ = u⃗ × v⃗  perpendicular to the plane of q 
+#    #   y⃗= n⃗ × u⃗  perpendicular to u⃗ in the plane of q
+#    #
+#    # If p⃗ is in the plane of q, then w⃗ is a linear combination of u⃗ and y⃗, since u⃗ ⟂ y⃗ within the plane.
+#    # w⃗ = ru⃗ + sy⃗ + tn⃗, and t=0. Here we include n⃗ to make a square system.
+#    # Therefore, if A = [u⃗ y⃗ n⃗] and x = [r; s; t], then Ax=w⃗. 
+#    # A is invertible since {u⃗, y⃗, n⃗} are a basis for R³.
+#    # If p is actually in the plane of q, then t = 0.
+#    # If r ∉ (0, 1), then we the point is not in the curve. 
+#    # If r ∈ (0, 1), we test if q(r) ≈ p
+#    # Note that if the quadratic segment is straight, we can simply use the LineSegment test.
+#    # We determine if the quadratic is straight by the norm of y⃗
+#    w⃗ = p - q.points[1]
+#    u⃗ = q.points[2] - q.points[1]
+#    v⃗ = q.points[3] - q.points[1]
+#    n⃗ = u⃗ × v⃗
+#    y⃗ = n⃗ × u⃗
+#    if y⃗ ≈ 0*y⃗ # quadratic is straight
+#        l = LineSegment(q.points[1], q.points[2])
+#        return p ∈  l
+#    else
+#        A = hcat(u⃗.coord, y⃗.coord, n⃗.coord)
+#        r, s, t = A\w⃗.coord
+#        return (0 ≤ r ≤ 1) && q(r) ≈ p ? true : false
+#    end
+#end
 
 function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
     # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
@@ -133,6 +134,16 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
     return bool, npoints, points
 end
 intersect(q::QuadraticSegment, l::LineSegment) = intersect(l, q)
+
+#function AABB(l::LineSegment{T}) where {T <: AbstractFloat}
+#    # Axis-aligned bounding box in xy-plane
+#    xmin = min(l.points[1][1], l.points[2][1])
+#    xmax = max(l.points[1][1], l.points[2][1])
+#    ymin = min(l.points[1][2], l.points[2][2])
+#    ymax = max(l.points[1][2], l.points[2][2])
+#    return (xmin, ymin, xmax, ymax)
+#end
+
 
 #function is_left(p::Point{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
 #    # If the point is within the quad area, we need to reverse the linear result.

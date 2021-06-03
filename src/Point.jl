@@ -64,3 +64,9 @@ end
 # -------------------------------------------------------------------------------------------------
 norm(p⃗::Point) = norm(p⃗.coord)
 distance(p⃗₁::Point, p⃗₂::Point) = norm(p⃗₁ - p⃗₂)
+
+# Plot recipe
+# -------------------------------------------------------------------------------------------------
+@recipe function plot_point(AP::AbstractArray{<:Point} )
+    return map(p->p[1], AP), map(p->p[2], AP), map(p->p[3], AP)
+end
