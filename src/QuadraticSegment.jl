@@ -1,13 +1,13 @@
-import Base: intersect, in
+import Base: intersect
 # A quadratic segment in 3D space that passes through three points: x⃗₁, x⃗₂, and x⃗₃.
 # The assumed relation of the points may be seen in the diagram below.
 #                 ___x⃗₃___
 #            ____/        \____
 #        ___/                  \
-#     __/                       x⃗₂   
-#   _/                                
-#  /                                     
-# x⃗₁                                        
+#     __/                       x⃗₂
+#   _/
+#  /
+# x⃗₁
 #
 # NOTE: x⃗₃ is between x⃗₁ and x⃗₂, but not necessarily the midpoint.
 # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
@@ -19,62 +19,26 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-QuadraticSegment(p₁::Point{T}, 
-                 p₂::Point{T}, 
+QuadraticSegment(p₁::Point{T},
+                 p₂::Point{T},
                  p₃::Point{T}) where {T <: AbstractFloat} = QuadraticSegment((p₁, p₂, p₃))
 
-# Base methods
+# Base
 # -------------------------------------------------------------------------------------------------
-
+Base.broadcastable(q::QuadraticSegment) = Ref(q)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-# Points on the curve
 function (q::QuadraticSegment)(r::T) where {T <: AbstractFloat}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     return (2r-1)*(r-1)*q.points[1] + r*(2r-1)*q.points[2] + 4r*(1-r)*q.points[3]
 end
 
-# This doesn't work for a segment that has a point3 outside the midpoint
-#function in(p::Point{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
-#    # Check to see if a point is on the curve.
-#    # q is defined by x⃗₁, x⃗₂, and x⃗₃, and the point in question is p⃗
-#    # Let: 
-#    #   w⃗ = p⃗ - x⃗₁, 
-#    #   u⃗ = x⃗₂ - x⃗₁, 
-#    #   v⃗ = x⃗₃ - x⃗₁
-#    #   n⃗ = u⃗ × v⃗  perpendicular to the plane of q 
-#    #   y⃗= n⃗ × u⃗  perpendicular to u⃗ in the plane of q
-#    #
-#    # If p⃗ is in the plane of q, then w⃗ is a linear combination of u⃗ and y⃗, since u⃗ ⟂ y⃗ within the plane.
-#    # w⃗ = ru⃗ + sy⃗ + tn⃗, and t=0. Here we include n⃗ to make a square system.
-#    # Therefore, if A = [u⃗ y⃗ n⃗] and x = [r; s; t], then Ax=w⃗. 
-#    # A is invertible since {u⃗, y⃗, n⃗} are a basis for R³.
-#    # If p is actually in the plane of q, then t = 0.
-#    # If r ∉ (0, 1), then we the point is not in the curve. 
-#    # If r ∈ (0, 1), we test if q(r) ≈ p
-#    # Note that if the quadratic segment is straight, we can simply use the LineSegment test.
-#    # We determine if the quadratic is straight by the norm of y⃗
-#    w⃗ = p - q.points[1]
-#    u⃗ = q.points[2] - q.points[1]
-#    v⃗ = q.points[3] - q.points[1]
-#    n⃗ = u⃗ × v⃗
-#    y⃗ = n⃗ × u⃗
-#    if y⃗ ≈ 0*y⃗ # quadratic is straight
-#        l = LineSegment(q.points[1], q.points[2])
-#        return p ∈  l
-#    else
-#        A = hcat(u⃗.coord, y⃗.coord, n⃗.coord)
-#        r, s, t = A\w⃗.coord
-#        return (0 ≤ r ≤ 1) && q(r) ≈ p ? true : false
-#    end
-#end
-
 function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
     # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
     # q(r) = 2r²(x⃗₁ + x⃗₂ - 2x⃗₃) + r(-3x⃗₁ - x⃗₂ + 4x⃗₃) + x⃗₁
-    # Let D⃗ = 2(x⃗₁ + x⃗₂ - 2x⃗₃), E⃗ = (-3x⃗₁ - x⃗₂ + 4x⃗₃), F⃗ = x₁ 
+    # Let D⃗ = 2(x⃗₁ + x⃗₂ - 2x⃗₃), E⃗ = (-3x⃗₁ - x⃗₂ + 4x⃗₃), F⃗ = x₁
     # q(r) = r²D⃗ + rE⃗ + F⃗
     # l(s) = x⃗₄ + sw⃗
     # If D⃗ × w⃗ ≠ 0⃗
@@ -89,8 +53,8 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
     #   r = (-B - √(B²-4AC))/2A, -B + √(B²-4AC))/2A)
     #   s = ((q(r) - p₄)⋅w⃗/(w⃗ ⋅ w⃗)
     #   r is invalid if:
-    #     1) A = 0            
-    #     2) B² < 4AC       
+    #     1) A = 0
+    #     2) B² < 4AC
     #     3) r < 0 or 1 < r   (Line intersects, segment doesn't)
     #   s is invalid if:
     #     1) s < 0 or 1 < s   (Line intersects, segment doesn't)
@@ -135,61 +99,136 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
 end
 intersect(q::QuadraticSegment, l::LineSegment) = intersect(l, q)
 
-#function AABB(l::LineSegment{T}) where {T <: AbstractFloat}
-#    # Axis-aligned bounding box in xy-plane
-#    xmin = min(l.points[1][1], l.points[2][1])
-#    xmax = max(l.points[1][1], l.points[2][1])
-#    ymin = min(l.points[1][2], l.points[2][2])
-#    ymax = max(l.points[1][2], l.points[2][2])
-#    return (xmin, ymin, xmax, ymax)
-#end
+function gauss_legendre_quadrature(q::QuadraticSegment{T}, N::Int64) where {T <: AbstractFloat}
+    # Default case first.
+    if N == 20
+        weights = T.([
+                        0.00880700356957606,
+                        0.02030071490019347,
+                        0.03133602416705453,
+                        0.04163837078835238,
+                        0.0509650599086202,
+                        0.0590972659807592,
+                        0.0658443192245883,
+                        0.07104805465919105,
+                        0.07458649323630186,
+                        0.07637669356536295,
+                        0.07637669356536295,
+                        0.07458649323630186,
+                        0.07104805465919105,
+                        0.0658443192245883,
+                        0.0590972659807592,
+                        0.0509650599086202,
+                        0.04163837078835238,
+                        0.03133602416705453,
+                        0.02030071490019347,
+                        0.00880700356957606
+                    ])
+        r = T.([
+                0.0034357004074525577,
+                0.018014036361043095,
+                0.04388278587433703,
+                0.08044151408889061,
+                0.1268340467699246,
+                0.1819731596367425,
+                0.24456649902458644,
+                0.3131469556422902,
+                0.38610707442917747,
+                0.46173673943325133,
+                0.5382632605667487,
+                0.6138929255708225,
+                0.6868530443577098,
+                0.7554335009754136,
+                0.8180268403632576,
+                0.8731659532300754,
+                0.9195584859111094,
+                0.956117214125663,
+                0.981985963638957,
+                0.9965642995925474
+               ])
+    elseif N == 1
+        weights = T.([1])
+        r = T.([0.5])
+    elseif N == 2
+        weights = T.([0.5, 0.5])
+        r = T.([0.21132486540518713, 0.7886751345948129])
+    elseif N == 3
+        weights = T.([
+                        0.2777777777777776,
+                        0.4444444444444444,
+                        0.2777777777777776
+                     ])
+        r = T.([
+                0.1127016653792583,
+                0.5,
+                0.8872983346207417
+               ])
+    elseif N == 4
+        weights = T.([
+                        0.17392742256872684,
+                        0.3260725774312732,
+                        0.3260725774312732,
+                        0.17392742256872684
+                    ])
+        r = T.([
+                0.06943184420297371,
+                0.33000947820757187,
+                0.6699905217924281,
+                0.9305681557970262
+               ])
+    elseif N == 5
+        weights = T.([
+                        0.1184634425280945,
+                        0.23931433524968326,
+                        0.28444444444444444,
+                        0.23931433524968326,
+                        0.1184634425280945
+                    ])
+        r = T.([
+                0.04691007703066802,
+                0.23076534494715845,
+                0.5,
+                0.7692346550528415,
+                0.9530899229693319,
+                ])
+    elseif N == 10
+        weights = T.([
+                        0.03333567215434387,
+                        0.07472567457529025,
+                        0.1095431812579911,
+                        0.1346333596549981,
+                        0.14776211235737646,
+                        0.14776211235737646,
+                        0.1346333596549981,
+                        0.1095431812579911,
+                        0.07472567457529025,
+                        0.03333567215434387
+                    ])
+        r = T.([
+                0.013046735741414184,
+                0.06746831665550773,
+                0.16029521585048778,
+                0.2833023029353764,
+                0.4255628305091844,
+                0.5744371694908156,
+                0.7166976970646236,
+                0.8397047841495122,
+                0.9325316833444923,
+                0.9869532642585859
+                ])
+    else
+        weights = T[]
+        r= T[]
+    end
+    return weights, r
+end
 
+function derivative(q::QuadraticSegment{T}, r::T) where {T <: AbstractFloat}
+    # Just dq/dr
+    return (4r - 3)*q.points[1] + (4r - 1)*q.points[2] + (4 - 8r)*q.points[3]
+end
 
-#function is_left(p::Point{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
-#    # If the point is within the quad area, we need to reverse the linear result.
-#    l = LineSegment(q.points[1], q.points[2])
-#    u⃗ = q.points[2] - q.points[1]
-#    v⃗ = q.points[3] - q.points[1]
-#    n̂ = (u⃗ × v⃗)/norm(u⃗ × v⃗)
-#    bool = isleft(p, l, n̂ = n̂)
-#    # Point is outside quad area, just use is_left
-#    # Point is inside quad area, return opposite of is_left
-#    return in_area(p, q) ? !bool : bool
-#end
-#function in_area(p::Point{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
-#    # Check to see if a point is on or between the curve and the line segment 
-#    # connectring x⃗₁ and x⃗₂.
-#    # q is defined by x⃗₁, x⃗₂, and x⃗₃, and the point in question is p⃗
-#    # Let: 
-#    #   w⃗ = p⃗ - x⃗₁, 
-#    #   u⃗ = x⃗₂ - x⃗₁, 
-#    #   v⃗ = x⃗₃ - x⃗₁
-#    #   n⃗ = u⃗ × v⃗  perpendicular to the plane of q 
-#    #   y⃗= n⃗ × u⃗  perpendicular to u⃗ in the plane of q
-#    #
-#    # If p⃗ is in the plane of q, then w⃗ is a linear combination of u⃗ and y⃗, since u⃗ ⟂ y⃗ within the plane.
-#    # w⃗ = ru⃗ + sy⃗ + tn⃗, and t=0. Here we include n⃗ to make a square system.
-#    # Therefore, if A = [u⃗ y⃗ n⃗] and x = [r; s; t], then Ax=w⃗. 
-#    # A is invertible since {u⃗, y⃗, n⃗} are a basis for R³.
-#    # If p is actually in the plane of q, then t = 0.
-#    # If r ∉ (0, 1), then we the point is not in area. 
-#    # If r ∈ (0, 1), Let u(r) = x⃗₁ + ru⃗, then if distance(p, u(r)) ≤ distance(u(r), q(r)) and   
-#    # distance(p, q(r)) ≤ distance(u(r), q(r)), then the point is within the quad area.   
-#    # Note that if the quadratic segment is straight, we can simply use the LineSegment test.
-#    # We determine if the quadratic is straight by the norm of y⃗
-#    w⃗ = p - q.points[1]
-#    u⃗ = q.points[2] - q.points[1]
-#    v⃗ = q.points[3] - q.points[1]
-#    n⃗ = u⃗ × v⃗
-#    y⃗ = n⃗ × u⃗
-#    if y⃗ ≈ 0*y⃗ # quadratic is straight
-#        l = LineSegment(q.points[1], q.points[2])
-#        return p ∈  l
-#    else
-#        A = hcat(u⃗.coord, y⃗.coord, n⃗.coord)
-#        r, s, t = A\w⃗.coord
-#        p_q = q(r)
-#        p_u = q.points[1] + r*u⃗
-#        return distance(p, p_q) ≤ distance(p_q, p_u) && distance(p, p_u) ≤ distance(p_q, p_u)
-#    end
-#end
+function arc_length(q::QuadraticSegment{T}; N::Int64=20) where {T <: AbstractFloat}
+    (w, r) = gauss_legendre_quadrature(q, N)
+    return sum(norm.(w .* derivative.(q, r)))
+end

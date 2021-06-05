@@ -1,7 +1,14 @@
 module MOCNeutronTransport
 using StaticArrays
 using LinearAlgebra
-using Plots
+using RecipesBase
+
+include("Edge.jl")
+export Edge
+include("Face.jl")
+export Face
+include("Cell.jl")
+export Cell
 
 include("Point.jl")
 export  Point,
@@ -10,37 +17,28 @@ export  Point,
         distance,
         norm
 
-include("Edge.jl")
-export Edge
-
-include("Face.jl")
-export Face
-
-include("Cell.jl")
-export Cell
-
 include("LineSegment.jl")
 export  LineSegment,
-        arc_length,
-        midpoint,
         intersect,
-        AABB
+        arc_length
 
 include("QuadraticSegment.jl")
 export QuadraticSegment,
-       in_area
-
+       intersect,
+       arc_length
 
 include("Triangle.jl")
 export Triangle,
        area,
-       intersect
+       intersect,
+       in
 
 include("Quadrilateral.jl")
 export Quadrilateral,
        triangulate,
        area,
-       intersect
+       intersect,
+       in
 
 include("UnstructuredMesh.jl")
 export UnstructuredMesh,

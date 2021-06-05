@@ -60,21 +60,8 @@ using MOCNeutronTransport
             @test points[1] ≈ Point(type.((1e9, 1e9, 1e9)))
             @test points[2] ≈ Point(type.((1e9, 1e9, 1e9)))
 
-            # in
-            @test x⃗₁ ∈  q
-            x⃗₄ = Point( type.((1//2, 3//4, 0)) )       
-            @test x⃗₄ ∈  q
-            x⃗₄ = Point( type.((1//2, 1, 0)) )       
-            @test x⃗₄ ∉ q
-
-#            # in_area
-#            @test in_area(x⃗₁, q)             
-#            x⃗₄ = Point( type.((1//2, 3//4, 0)) )       
-#            @test in_area(x⃗₄, q)             
-#            x⃗₄ = Point( type.((1//2, 1, 0)) )       
-#            @test !in_area(x⃗₄, q)             
-#            x⃗₄ = Point( type.((1//2, 1//2, 0)) )                  
-#            @test in_area(x⃗₄, q)             
+            # AABB
+            # arc_length
         end
     end
 end

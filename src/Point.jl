@@ -19,7 +19,7 @@ Point(x::T) where {T <: NTuple{3}} = Point(SVector(x))
 # 2D tuple constructor
 Point((x, y)::T) where {T <: NTuple{2}} = Point(SVector(x, y, zero(x)))
 
-# Base methods
+# Base
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(p⃗::Point) = Ref(p⃗)
 Base.zero(::Point{T}) where {T <: AbstractFloat} = Point((zero(T), zero(T), zero(T)))

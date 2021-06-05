@@ -3,10 +3,11 @@ using Test
 tests = ["Point",
          "LineSegment",
          "QuadraticSegment",
-         "AngularQuadrature", 
          "Triangle",
+         "Quadrilateral",
          "UnstructuredMesh",
-         "vtk"
+         "vtk",
+         "AngularQuadrature", 
         ]
 for t in tests
   include("$(t).jl")

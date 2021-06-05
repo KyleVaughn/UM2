@@ -1,4 +1,4 @@
-import Base: intersect, in
+import Base: intersect
 # A line segment in 3D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and goes to points[2]
 struct LineSegment{T <: AbstractFloat} <: Edge
@@ -9,15 +9,14 @@ end
 # -------------------------------------------------------------------------------------------------
 LineSegment(p₁::Point, p₂::Point) = LineSegment((p₁, p₂)) 
 
-# Base methods
+# Base
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(l::LineSegment) = Ref(l)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-arc_length(l::LineSegment) = distance(l.points[1], l.points[2])
 (l::LineSegment)(r::T) where {T <: AbstractFloat} = l.points[1] + r * (l.points[2] - l.points[1])
-midpoint(l::LineSegment{T}) where {T <: AbstractFloat} = l(T(1//2))
+
 function intersect(l₁::LineSegment{T}, l₂::LineSegment{T}) where {T <: AbstractFloat}
     # NOTE: Doesn't work for colinear lines. (v⃗ × u⃗ = 0⃗)
     #
@@ -49,51 +48,4 @@ function intersect(l₁::LineSegment{T}, l₂::LineSegment{T}) where {T <: Abstr
     return (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1) ? (true, p) : (false, p)
 end
 
-#function AABB(l::LineSegment{T}) where {T <: AbstractFloat}
-#    # Axis-aligned bounding box in xy-plane
-#    xmin = min(l.points[1][1], l.points[2][1])
-#    xmax = max(l.points[1][1], l.points[2][1])
-#    ymin = min(l.points[1][2], l.points[2][2])
-#    ymax = max(l.points[1][2], l.points[2][2])
-#    return (xmin, ymin, xmax, ymax)
-#end
-
-function in(p::Point{T}, l::LineSegment{T}) where {T <: AbstractFloat}
-    # if p⃗ is on the line then,
-    # l(r) = x⃗₁ + ru⃗, where u⃗ = x⃗₂ - x⃗₁
-    # p⃗ = x⃗₁ + ru⃗
-    # p⃗ - x⃗₁ = ru⃗
-    # r = (p⃗ - x⃗₁) ⋅ u⃗/(u⃗ ⋅ u⃗)
-    # If r ∈ [0, 1], then the point is within the infinite width cylinder aligned with
-    # l(r) and bounded by the points x⃗₁, x⃗₂. To see if the point is actually on the line,
-    # we need to check l(r) ≈ p
-    u⃗ = l.points[2] - l.points[1]
-    r = (p - l.points[1]) ⋅ u⃗/(u⃗ ⋅ u⃗)
-    return (0 ≤ r ≤ 1) && l(r) ≈  p
-end
-
-#function is_left(p₃::Point{T}, l::LineSegment{T}; 
-#        n̂::Point{T}=Point(T(0), T(0), T(1))) where {T <: AbstractFloat} 
-#    # The line segment is defined by the line from points[1] to points[2].
-#    #     p₃
-#    #
-#    #
-#    #
-#    # p₁----------------p₂
-#    # If we define u⃗ = p₂-p₁ and v⃗ = p₃-p₁ we may test if a point is_left of the 
-#    # line using the cross product. See diagram below.
-#    #     ^ v⃗
-#    #    /
-#    #   /
-#    #  / θ
-#    # -----------------> u⃗    
-#    # u⃗ × v⃗ = |u⃗||v⃗| sin(θ)n⃗, where n⃗ is the unit vector perpendicular to the plane 
-#    # containing u⃗ and v⃗. However, the orientation of the plane is ambiguous, hence 
-#    # we need n̂ provided or assumed. For vectors in the x-y plane, we assume 
-#    # n̂ = (0, 0, 1). Since, |u⃗|, |v⃗| ≥ 0, then the point p₃ is left of the line if 
-#    # θ ∈ (0, π) -- equivalently if sin(θ) > 0. 
-#    # Hence our is_left condition is if the sign of the components of u⃗ × v⃗ and n̂ match
-#    u⃗ = l.points[2]-l.points[1]
-#    v⃗ = p₃-l.points[1]
-#    return sign.((u⃗ × v⃗).coord) == sign.(n̂.coord)
-#end
+arc_length(l::LineSegment) = distance(l.points[1], l.points[2])

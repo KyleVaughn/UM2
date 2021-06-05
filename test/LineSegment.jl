@@ -26,9 +26,6 @@ using MOCNeutronTransport
             @test l(0.5) == p₃
             typeof(l(0.5).coord) == typeof(type.((2, 4, 6)))
 
-            # midpoint
-            @test midpoint(l) == p₃
-
             # intersect
             # -------------------------------------------
             # basic intersection
@@ -92,33 +89,11 @@ using MOCNeutronTransport
             @test !bool
             @test p ≈ Point(type.((1, 0))) # the closest point on line 1
 
-            # in
-            l = LineSegment(Point( type.((0, 0)) ), Point( type.((2, 0)) ))
-            p = Point( type.((1, 0)) )
-            @test p ∈  l
-            p = Point( type.((-1, 0)) )
-            @test p ∉ l
-            p = Point( type.((1, 1)) )
-            @test p ∉ l
-
             # AABB
             l = LineSegment(Point( type.((-1, 0)) ), Point( type.((2, 3)) ))
             @test AABB(l) == type.((-1, 0, 2, 3))
             l = LineSegment(Point( type.((-1, 0)) ), Point( type.((2, 0)) ))
             @test AABB(l) == type.((-1, 0, 2, 0))
-
-#            # isleft
-#            l = LineSegment(Point( type.((0, 0)) ), Point( type.((0, 1))))
-#            @test  is_left(Point(type(-1    ), type(0)    ), l)
-#            @test  is_left(Point(type(-0.001), type(-10.0)), l)
-#            @test !is_left(Point(type(1.0   ), type(0.0)  ), l)
-#            @test !is_left(Point(type(0.001 ), type(-10.0)), l)
-#
-#            n̂ = Point( type.((1, 0, 0)))
-#            @test  is_left(Point(type(0), type(0),      type(1)    ), l, n̂ = n̂)
-#            @test  is_left(Point(type(0), type(-0.001), type(10.0) ), l, n̂ = n̂)
-#            @test !is_left(Point(type(0), type(0),      type(-1)   ), l, n̂ = n̂)
-#            @test !is_left(Point(type(0), type(0.001 ), type(-10.0)), l, n̂ = n̂)
         end
     end
 end
