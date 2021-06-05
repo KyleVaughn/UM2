@@ -2,7 +2,8 @@ using MOCNeutronTransport
 benchmarks = ["Point",
          "LineSegment",
          "QuadraticSegment",
-         "Triangle"
+         "Triangle",
+         "Quadrilateral"
         ]
 for b in benchmarks
   include("$(b).jl")

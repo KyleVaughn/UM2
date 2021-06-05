@@ -88,12 +88,6 @@ using MOCNeutronTransport
             bool, p = intersect(l₁, l₂)
             @test !bool
             @test p ≈ Point(type.((1, 0))) # the closest point on line 1
-
-            # AABB
-            l = LineSegment(Point( type.((-1, 0)) ), Point( type.((2, 3)) ))
-            @test AABB(l) == type.((-1, 0, 2, 3))
-            l = LineSegment(Point( type.((-1, 0)) ), Point( type.((2, 0)) ))
-            @test AABB(l) == type.((-1, 0, 2, 0))
         end
     end
 end

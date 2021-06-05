@@ -7,15 +7,15 @@ Base.@kwdef struct UnstructuredMesh
     name::String = "DefaultMeshName"
 end
 # Cell types are the same as VTK
-UnstructuredMesh_cell_types = [5,     # Triangle
+const UnstructuredMesh_cell_types = [5,     # Triangle
                  9,     # Quadrilateral
                  22,    # Triangle6
                  23     # Quadrilateral8
                 ]
-UnstructuredMesh_linear_cell_types = [5, 9]
-UnstructuredMesh_quadratic_cell_types = [22, 23]
-UnstructuredMesh_2D_cell_types = [5, 9, 22, 23]
-UnstructuredMesh_3D_cell_types = [10]
+const UnstructuredMesh_linear_cell_types = [5, 9]
+const UnstructuredMesh_quadratic_cell_types = [22, 23]
+const UnstructuredMesh_2D_cell_types = [5, 9, 22, 23]
+const UnstructuredMesh_3D_cell_types = [10]
 
 function edges(cell::Vector{Int64})
     cell_type = cell[1]
