@@ -40,6 +40,13 @@ export Quadrilateral,
        intersect,
        in
 
+include("Triangle6.jl")
+export Triangle6,
+       area
+
+
+
+
 include("UnstructuredMesh.jl")
 export UnstructuredMesh,
        edges,

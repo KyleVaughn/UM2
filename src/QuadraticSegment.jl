@@ -84,25 +84,23 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
         # Quadratic intersection
         r = [(-B - √(B^2-4*A*C))/(2A), (-B + √(B^2-4A*C))/(2A)]
         s = [(q(r[1]) - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗), (q(r[2]) - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)]
-        # Check points to see if they are unique, valid intersections.
+        # Check points to see if they are valid intersections.
         pᵣ = q.(r)
         pₛ = l.(s)
         points = pᵣ
-        pt = 0
         # First r,s valid?
         if (0 ≤ r[1] ≤ 1) && (0 ≤ s[1] ≤ 1) && (pᵣ[1] ≈ pₛ[1])
             npoints += 1
         end
         # Second r,s valid?
         if (0 ≤ r[2] ≤ 1) && (0 ≤ s[2] ≤ 1) && (pᵣ[2] ≈ pₛ[2])
-            pt = 2
             npoints += 1
+            # If only point 2 is valid, return it in index 1 of points
+            if npoints == 1
+                points[1] = points[2]
+            end
         end
         bool = npoints > 0
-        # If only point 2 is valid, return it in index 1
-        if pt == 2
-            points[1] = points[2]
-        end
     end
     return bool, npoints, points
 end
@@ -111,7 +109,8 @@ intersect(q::QuadraticSegment, l::LineSegment) = intersect(l, q)
 function gauss_legendre_quadrature(q::QuadraticSegment{T}, N::Int64) where {T <: AbstractFloat}
     # The weights and points for Gauss-Legendre quadrature on the quadratic segment
     # ∑wᵢ= 1, rᵢ∈ [0, 1]
-    # Default case first.
+    #
+    # Default N first to avoid unnecessary conditional evaluations.
     if N == 20
         weights = T.([
                         0.00880700356957606,
@@ -275,13 +274,13 @@ function derivative(q::QuadraticSegment{T}, r::T) where {T <: AbstractFloat}
 end
 
 function arc_length(q::QuadraticSegment{T}; N::Int64=20) where {T <: AbstractFloat}
-    # Mathematica solution is pages long and can produce non-real results when the segment is
+    # Mathematica solution is pages long and can produce NaN/∞ results when the segment is
     # straight, so numerical integration is used. (Gauss-Legengre quadrature)
-    # 1                  N
-    # ∫ ||q⃗'(r)||dr  ≈   ∑ wᵢ||q⃗'(rᵢ)||
-    # 0                 i=1
+    #     1                  N
+    # L = ∫ ||q⃗'(r)||dr  ≈   ∑ wᵢ||q⃗'(rᵢ)||
+    #     0                 i=1
     # The default number of points is N = 20, since the timing difference is very small for
-    # additional accuracy when compared with N = 15 and small N give poor accuracy.
-    (w, r) = gauss_legendre_quadrature(q, N)
+    # additional accuracy when compared with N = 15, and small N give poor accuracy.
+    w, r = gauss_legendre_quadrature(q, N)
     return sum(norm.(w .* derivative.(q, r)))
 end
