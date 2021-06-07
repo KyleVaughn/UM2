@@ -44,8 +44,8 @@ include("Triangle6.jl")
 export Triangle6,
        area
 
-
-
+include("gauss_legendre_quadrature.jl")
+export gauss_legendre_quadrature
 
 include("UnstructuredMesh.jl")
 export UnstructuredMesh,

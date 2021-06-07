@@ -60,8 +60,18 @@ using MOCNeutronTransport
             @test points[1] ≈ Point(type.((1e9, 1e9, 1e9)))
             @test points[2] ≈ Point(type.((1e9, 1e9, 1e9)))
 
-            # AABB
             # arc_length
+            x⃗₁ = Point( type.((0, 0, 0)) )           
+            x⃗₂ = Point( type.((2, 0, 0)) )
+            x⃗₃ = Point( type.((1, 0, 0)) )
+            q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)
+
+            # straight edge
+            @test abs(arc_length(q) - type(2)) < 1.0e-6
+            # curved
+            x⃗₃ = Point( type.((1, 1, 0)) )
+            q = QuadraticSegment(x⃗₁, x⃗₂, x⃗₃)           
+            @test abs(arc_length(q) - type(2.9578857151786138)) < 1.0e-6
         end
     end
 end

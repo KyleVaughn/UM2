@@ -42,71 +42,16 @@ using MOCNeutronTransport
             p₅ = Point( type(3), type(1) )
             p₆ = Point( type(1), type(1) )
             tri6 = Triangle6((p₁, p₂, p₃, p₄, p₅, p₆))
-            #Integrates to 3.0
 
-            # quadrature for 2d and 3d
+            # 2D default
+            @test isapprox(area(tri6; N = 12), 3, atol=1.0e-6)
+            # 3D default
+            p₂ = Point( type(2), type(0), type(3) )
+            tri6 = Triangle6((p₁, p₂, p₃, p₄, p₅, p₆))
+            @test isapprox(area(tri6; N = 79), 6.328781460309, atol=1.0e-6)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#            # area
-#            a = area(tri)
-#            @test typeof(a) == typeof(type(1))
-#            @test a == type(1)/type(2)
-#
-#            # intersect
-#            # line is not coplanar with triangle
-#            p₄ = Point(type.((0.9, 0.1, -5)))
-#            p₅ = Point(type.((0.9, 0.1, 5)))
-#            l = LineSegment(p₄, p₅)
-#            bool, point = intersect(l, tri)
-#            @test bool
-#            @test point ≈ Point(type.((0.9, 0.1, 0.0)))
-#
-#            # line is coplanar with triangle
-#            p₄ = Point(type.((0.5, -1)))
-#            p₅ = Point(type.((0.5, 2)))
-#            l = LineSegment(p₄, p₅)
-#            bool, point = intersect(l, tri)
-#            @test !bool
-#
-#            # no intersection non-coplanar
-#            p₄ = Point(type.((2.0, 0.1, -5)))
-#            p₅ = Point(type.((2.0, 0.1, 5)))
-#            l = LineSegment(p₄, p₅)
-#            bool, point = intersect(l, tri)
-#            @test !bool
-#
-#            # no intersection coplanar
-#            p₄ = Point(type.((2.0, -1)))
-#            p₅ = Point(type.((2.0, 2)))
-#            l = LineSegment(p₄, p₅)
-#            bool, point = intersect(l, tri)
-#            @test !bool
-#
-#            # in
-#            p = Point(type.((0.5, 0.1)))
-#            @test p ∈  tri
-#            p = Point(type.((0.5, 0.0)))
-#            @test p ∈  tri
-#            p = Point(type.((0.5, 0.1, 0.1)))
-#            @test p ∉ tri
-#            p = Point(type.((0.5, -0.1, 0.1)))
-#            @test p ∉ tri
-#            p = Point(type.((0.5, -0.1, 0.0)))
-#            @test p ∉ tri
+            # intersect
+            # in
         end
     end
 end
