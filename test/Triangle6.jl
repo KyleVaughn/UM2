@@ -44,6 +44,8 @@ using MOCNeutronTransport
             tri6 = Triangle6((p₁, p₂, p₃, p₄, p₅, p₆))
             #Integrates to 3.0
 
+            # quadrature for 2d and 3d
+
 
 
 
