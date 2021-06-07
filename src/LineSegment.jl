@@ -1,4 +1,5 @@
 import Base: intersect
+import GLMakie: convert_arguments, LineSegments
 # A line segment in 3D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and goes to points[2]
 struct LineSegment{T <: AbstractFloat} <: Edge
@@ -49,3 +50,12 @@ function intersect(l₁::LineSegment{T}, l₂::LineSegment{T}) where {T <: Abstr
 end
 
 arc_length(l::LineSegment) = distance(l.points[1], l.points[2])
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+function convert_arguments(P::Type{<:LineSegments}, l::LineSegment)
+    return convert_arguments(P, [l.points[1].coord, l.points[2].coord])
+end
+function convert_arguments(P::Type{<:LineSegments}, AL::AbstractArray{<:LineSegment})
+    return convert_arguments(P, reduce(vcat, [[l.points[1].coord, l.points[2].coord] for l in AL]))
+end

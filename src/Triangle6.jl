@@ -55,6 +55,15 @@ function area(tri6::Triangle6{T}; N::Int64=12) where {T <: AbstractFloat}
     return sum(w .* norm.([dr × ds for (dr, ds) in [derivatives(tri6, r, s) for (r, s) in rs]]))
 end
 
+function triangulate(tri6::Triangle6{T}, N::Int64) where {T <: AbstractFloat}
+    triangles_up = Triangle{T}[]
+    triangles_down = Triangle{T}[]
+    for S = 1:N+1, R = 1:N+2-S
+        push!(triangles_up, Triangle(tri6(T(1/R), T(1/S)), tri6(T(1/(R+1)), T(1/S)), tri6(T(1/R), T(1/(S+1)))))
+    end
+#    for S = 2:N+1, R = 2:N+2-S 
+end
+
 # triangulate.
 # intersect
 # in
