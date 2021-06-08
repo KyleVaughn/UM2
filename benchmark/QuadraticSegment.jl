@@ -1,4 +1,4 @@
-using MOCNeutronTransport, BenchmarkTools, Test, Printf
+using MOCNeutronTransport, BenchmarkTools, Printf
 
 N = Int(1E3)
 println("QuadraticSegment (N = $N)")

@@ -3,7 +3,8 @@ benchmarks = ["Point",
          "LineSegment",
          "QuadraticSegment",
          "Triangle",
-         "Quadrilateral"
+         "Quadrilateral",
+         "Triangle6"
         ]
 for b in benchmarks
   include("$(b).jl")
