@@ -122,3 +122,12 @@ function arc_length(q::QuadraticSegment{T}; N::Int64=20) where {T <: AbstractFlo
     w, r = gauss_legendre_quadrature(q, N)
     return sum(norm.(w .* derivative.(q, r)))
 end
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+function convert_arguments(P::Type{<:LineSegments}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
+    rr = T.(LinRange(0, 1, 50))
+    points = q.(rr)
+    coords = reduce(vcat, [[points[i].coord, points[i+1].coord] for i = 1:length(points)-1])
+    return convert_arguments(P, coords)
+end

@@ -49,11 +49,10 @@ function read_vtk(filepath::String)
     cell_edges = edges(cells_combined)
 
 #    if dim == 2
-        return UnstructuredMesh(
+        return UnstructuredMesh2D(
                                 points = points,
                                 edges = cell_edges,
                                 faces = cells_combined,
-                                dim = dim,
                                 name = name
                                 )
 #    else
@@ -116,7 +115,7 @@ function read_vtk_cell_types(
     return cell_types
 end
 
-function write_vtk(filename::String, mesh::UnstructuredMesh)
+function write_vtk(filename::String, mesh::UnstructuredMesh2D)
     file = open(filename, "w")
     println(file, "# vtk DataFile Version 2.0")
     println(file, mesh.name)

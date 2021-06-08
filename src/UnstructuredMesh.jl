@@ -1,9 +1,7 @@
-Base.@kwdef struct UnstructuredMesh
+Base.@kwdef struct UnstructuredMesh2D
     points::Vector{Point} = Point[] 
     edges::Vector{Vector{Int64}} = Vector{Int64}[]
     faces::Vector{Vector{Int64}} = Vector{Int64}[]
-    cells::Vector{Vector{Int64}} = Vector{Int64}[]
-    dim::Int64 = 3
     name::String = "DefaultMeshName"
 end
 # Cell types are the same as VTK
