@@ -1,4 +1,5 @@
 import Base: intersect, in
+import GLMakie: convert_arguments, LineSegments
 
 struct Triangle{T <: AbstractFloat} <: Face
     points::NTuple{3, Point{T}}
@@ -70,4 +71,26 @@ function in(p::Point{T}, tri::Triangle{T}) where {T <: AbstractFloat}
     else
         return false
     end
+end
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+function convert_arguments(P::Type{<:LineSegments}, tri::Triangle)
+    return convert_arguments(P, [tri.points[1].coord, 
+                                 tri.points[2].coord,
+                                 tri.points[2].coord, 
+                                 tri.points[3].coord,
+                                 tri.points[3].coord, 
+                                 tri.points[1].coord,
+                                ])
+end
+
+function convert_arguments(P::Type{<:LineSegments}, AT::AbstractArray{<:Triangle})
+    return convert_arguments(P, reduce(vcat, [
+                                [tri.points[1].coord, 
+                                 tri.points[2].coord,
+                                 tri.points[2].coord, 
+                                 tri.points[3].coord,
+                                 tri.points[3].coord, 
+                                 tri.points[1].coord] for tri in AT]))
 end

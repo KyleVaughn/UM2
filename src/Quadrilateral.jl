@@ -21,11 +21,10 @@ Quadrilateral(p₁::Point{T},
 function (quad::Quadrilateral)(r::T, s::T) where {T <: AbstractFloat}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    p = (1 - r)*(1 - s)*quad.points[1] + 
-              r*(1 - s)*quad.points[2] + 
-                    r*s*quad.points[3] +
-              (1 - r)*s*quad.points[4]
-    return p
+    return (1 - r)*(1 - s)*quad.points[1] + 
+                 r*(1 - s)*quad.points[2] + 
+                       r*s*quad.points[3] +
+                 (1 - r)*s*quad.points[4]
 end
 
 function triangulate(quad::Quadrilateral{T}) where {T <: AbstractFloat}

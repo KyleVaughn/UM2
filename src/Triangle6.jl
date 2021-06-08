@@ -1,5 +1,10 @@
 import Base: intersect
 
+# NOTE: The N (number of edge subdivisions) used in triangulation for the intersection
+# algorithm and the ∈  algorithm must be the same.
+
+# Most of the intersection and in algorithm compute time is the triangulation. How can we speed that up?
+
 struct Triangle6{T <: AbstractFloat} <: Face
     points::NTuple{6, Point{T}}
 end
@@ -18,13 +23,12 @@ Triangle6(p₁::Point{T},
 # Methods
 # -------------------------------------------------------------------------------------------------
 function (tri6::Triangle6)(r::T, s::T) where {T <: AbstractFloat}
-    weights = [(1 - r - s)*(2(1 - r - s) - 1), 
-                                     r*(2r-1),
-                                     s*(2s-1),
-                               4r*(1 - r - s),
-                                         4r*s,
-                               4s*(1 - r - s)]
-    return sum(weights .* tri6.points) 
+    return (1 - r - s)*(2(1 - r - s) - 1)*tri6.points[1] +
+                                 r*(2r-1)*tri6.points[2] +
+                                 s*(2s-1)*tri6.points[3] +
+                           4r*(1 - r - s)*tri6.points[4] +
+                                   (4r*s)*tri6.points[5] +
+                           4s*(1 - r - s)*tri6.points[6]
 end
 
 function derivatives(tri6::Triangle6{T}, r::T, s::T) where {T <: AbstractFloat}
@@ -56,14 +60,50 @@ function area(tri6::Triangle6{T}; N::Int64=12) where {T <: AbstractFloat}
 end
 
 function triangulate(tri6::Triangle6{T}, N::Int64) where {T <: AbstractFloat}
-    triangles_up = Triangle{T}[]
-    triangles_down = Triangle{T}[]
-    for S = 1:N+1, R = 1:N+2-S
-        push!(triangles_up, Triangle(tri6(T(1/R), T(1/S)), tri6(T(1/(R+1)), T(1/S)), tri6(T(1/R), T(1/(S+1)))))
+    triangles = Vector{Triangle{T}}(undef, N*N + 2N + 1)
+    if N == 0
+        triangles[1] = Triangle(tri6.points[1], tri6.points[2], tri6.points[3])
+    else
+        i = 1
+        for S = 0:N, R = 0:N-S
+            triangles[i] = Triangle(tri6(T(    R/(N+1)), T(    S/(N+1))), 
+                                    tri6(T((R+1)/(N+1)), T(    S/(N+1))), 
+                                    tri6(T(    R/(N+1)), T((S+1)/(N+1))))
+            i += 1
+        end
+        j = 1 + ((N+1)*(N+2)) ÷ 2
+        for S = 1:N, R = 0:N-S
+            triangles[j] = Triangle(tri6(T(    R/(N+1)), T(    S/(N+1))), 
+                                    tri6(T((R+1)/(N+1)), T((S-1)/(N+1))), 
+                                    tri6(T((R+1)/(N+1)), T(    S/(N+1))))
+            j += 1
+        end
     end
-#    for S = 2:N+1, R = 2:N+2-S 
+    return triangles 
 end
 
-# triangulate.
-# intersect
-# in
+function intersect(l::LineSegment{T}, tri6::Triangle6{T}; N::Int64 = 12) where {T <: AbstractFloat}
+    triangles = triangulate(tri6, N)
+    intersections = l .∩ triangles
+    bools = map(x->x[1], intersections)
+    points = map(x->x[2], intersections)
+    npoints = count(bools)
+    ipoints = [points[1], points[1]]
+    if npoints == 0
+        return false, 0, ipoints
+    elseif npoints == 1
+        ipoints[1] = points[argmax(bools)]
+        return true, 1, ipoints
+    elseif npoints == 2
+        indices = findall(bools)
+        ipoints[1] = points[indices[1]]
+        ipoints[2] = points[indices[2]]
+        return true, 2, ipoints
+    else
+        return false, -1, ipoints
+    end
+end
+
+function in(p::Point{T}, tri6::Triangle6{T}; N::Int64 = 12) where {T <: AbstractFloat}
+    return any(p .∈  triangulate(tri6, N))
+end
