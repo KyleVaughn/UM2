@@ -74,3 +74,10 @@ function convert_arguments(P::Type{<:LineSegments}, AQ::AbstractArray{<:Quadrila
     point_sets = [convert_arguments(P, quad) for quad in AQ]
     return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
 end
+
+function convert_arguments(P::Type{<:Mesh}, quad::Quadrilateral)
+    points = [quad.points[i].coord for i = 1:4]
+    faces = [1 2 3;
+             3 4 1]
+    return convert_arguments(P, points, faces)
+end

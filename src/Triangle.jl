@@ -89,14 +89,13 @@ function convert_arguments(P::Type{<:LineSegments}, AT::AbstractArray{<:Triangle
 end
 
 function convert_arguments(P::Type{<:Mesh}, tri::Triangle)
-    stacktrace()
     points = [tri.points[i].coord for i = 1:3]
     face = [1 2 3]
     return convert_arguments(P, points, face)
 end
 
 function convert_arguments(MT::Type{Mesh{Tuple{Vector{Triangle{T}}}}}, 
-        AT::Vector{Triangle{T}}) where {T <: AbstractFloat}
+        AT::Vector{Triangle{T}}) where {T <: AbstractFloat} 
     points = reduce(vcat, [[tri.points[i].coord for i = 1:3] for tri in AT])
     faces = zeros(Int64, length(AT), 3) 
     k = 1
