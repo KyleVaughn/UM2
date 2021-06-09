@@ -1,5 +1,5 @@
 import Base: intersect, in
-import GLMakie: convert_arguments, LineSegments
+import GLMakie: convert_arguments, LineSegments, Mesh
 
 struct Triangle{T <: AbstractFloat} <: Face
     points::NTuple{3, Point{T}}
@@ -13,7 +13,7 @@ Triangle(p₁::Point{T},
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-# Evaluation in Barycentric coordinates
+# Interpolation in Barycentric coordinates
 function (tri::Triangle)(r::T, s::T) where {T <: AbstractFloat}
     return (1 - r - s)*tri.points[1] + r*tri.points[2] + s*tri.points[3]
 end
@@ -76,21 +76,33 @@ end
 # Plot
 # -------------------------------------------------------------------------------------------------
 function convert_arguments(P::Type{<:LineSegments}, tri::Triangle)
-    return convert_arguments(P, [tri.points[1].coord, 
-                                 tri.points[2].coord,
-                                 tri.points[2].coord, 
-                                 tri.points[3].coord,
-                                 tri.points[3].coord, 
-                                 tri.points[1].coord,
-                                ])
+    l₁ = LineSegment(tri.points[1], tri.points[2])
+    l₂ = LineSegment(tri.points[2], tri.points[3])
+    l₃ = LineSegment(tri.points[3], tri.points[1])
+    lines = [l₁, l₂, l₃]
+    return convert_arguments(P, lines)
 end
 
 function convert_arguments(P::Type{<:LineSegments}, AT::AbstractArray{<:Triangle})
-    return convert_arguments(P, reduce(vcat, [
-                                [tri.points[1].coord, 
-                                 tri.points[2].coord,
-                                 tri.points[2].coord, 
-                                 tri.points[3].coord,
-                                 tri.points[3].coord, 
-                                 tri.points[1].coord] for tri in AT]))
+    point_sets = [convert_arguments(P, tri) for tri in AT]
+    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
+end
+
+function convert_arguments(P::Type{<:Mesh}, tri::Triangle)
+    stacktrace()
+    points = [tri.points[i].coord for i = 1:3]
+    face = [1 2 3]
+    return convert_arguments(P, points, face)
+end
+
+function convert_arguments(MT::Type{Mesh{Tuple{Vector{Triangle{T}}}}}, 
+        AT::Vector{Triangle{T}}) where {T <: AbstractFloat}
+    points = reduce(vcat, [[tri.points[i].coord for i = 1:3] for tri in AT])
+    faces = zeros(Int64, length(AT), 3) 
+    k = 1
+    for i in 1:length(AT), j = 1:3
+        faces[i, j] = k
+        k += 1
+    end
+    return convert_arguments(MT, points, faces)
 end

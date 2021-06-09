@@ -112,32 +112,15 @@ end
 # Plot
 # -------------------------------------------------------------------------------------------------
 function convert_arguments(P::Type{<:LineSegments}, tri6::Triangle6{T}) where {T <: AbstractFloat}
-    rr = T.(LinRange(0, 1, 20))
-    ss = 1 .- rr
-    points1 = tri6.(rr, zero(T))
-    points2 = tri6.(zero(T), ss)
-    points3 = tri6.(rr, ss)
-    coords1 = reduce(vcat, [[points1[i].coord, points1[i+1].coord] for i = 1:length(points1)-1])
-    coords2 = reduce(vcat, [[points2[i].coord, points2[i+1].coord] for i = 1:length(points2)-1])
-    coords3 = reduce(vcat, [[points3[i].coord, points3[i+1].coord] for i = 1:length(points3)-1])
-    return convert_arguments(P, reduce(vcat, [coords1, coords2, coords3]))
+    q₁ = QuadraticSegment(tri6.points[1], tri6.points[2], tri6.points[4])
+    q₂ = QuadraticSegment(tri6.points[2], tri6.points[3], tri6.points[5])
+    q₃ = QuadraticSegment(tri6.points[3], tri6.points[1], tri6.points[6])
+    qsegs = [q₁, q₂, q₃]
+    return convert_arguments(P, qsegs)
 end
 
 function convert_arguments(P::Type{<:LineSegments}, 
         TA::AbstractArray{<:Triangle6{T}}) where {T <: AbstractFloat}
-    coords = StaticArrays.SVector{3, T}[]
-    rr = T.(LinRange(0, 1, 20))
-    ss = 1 .- rr
-    for tri6 in TA
-        points1 = tri6.(rr, zero(T))
-        points2 = tri6.(zero(T), ss)
-        points3 = tri6.(rr, ss)
-        coords1 = reduce(vcat, [[points1[i].coord, points1[i+1].coord] for i = 1:length(points1)-1])
-        coords2 = reduce(vcat, [[points2[i].coord, points2[i+1].coord] for i = 1:length(points2)-1])
-        coords3 = reduce(vcat, [[points3[i].coord, points3[i+1].coord] for i = 1:length(points3)-1])
-        for c in reduce(vcat, [coords1, coords2, coords3])
-            push!(coords, c)
-        end
-    end
-    return convert_arguments(P, coords)
+    point_sets = [convert_arguments(P, tri6) for tri6 in TA]
+    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
 end

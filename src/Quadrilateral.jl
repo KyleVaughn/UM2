@@ -1,6 +1,7 @@
 import Base: intersect, in
 
-# NOTE: Quadrilaterals are assumed to be convex and planar!
+# NOTE: Quadrilaterals are assumed to be convex and planar (all points in some plane, not 
+# necessarily xy, yx, etc.)!
 # Quadrilaterals must be convex to be valid finite elements. 
 # Since quadrilaterals are generated from finite element mesh software, it seems like a good 
 # assumption that the software generates valid elements.
@@ -56,4 +57,20 @@ end
 function in(p::Point, quad::Quadrilateral)
     tri = triangulate(quad)
     return any(p .∈ tri)
+end
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+function convert_arguments(P::Type{<:LineSegments}, quad::Quadrilateral)
+    l₁ = LineSegment(quad.points[1], quad.points[2])
+    l₂ = LineSegment(quad.points[2], quad.points[3])
+    l₃ = LineSegment(quad.points[3], quad.points[4])
+    l₄ = LineSegment(quad.points[4], quad.points[1])
+    lines = [l₁, l₂, l₃, l₄]
+    return convert_arguments(P, lines)
+end
+
+function convert_arguments(P::Type{<:LineSegments}, AQ::AbstractArray{<:Quadrilateral})
+    point_sets = [convert_arguments(P, quad) for quad in AQ]
+    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
 end

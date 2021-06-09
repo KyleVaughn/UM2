@@ -131,3 +131,8 @@ function convert_arguments(P::Type{<:LineSegments}, q::QuadraticSegment{T}) wher
     coords = reduce(vcat, [[points[i].coord, points[i+1].coord] for i = 1:length(points)-1])
     return convert_arguments(P, coords)
 end
+
+function convert_arguments(P::Type{<:LineSegments}, AQ::AbstractArray{<:QuadraticSegment})
+    point_sets = [convert_arguments(P, q) for q in AQ]
+    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
+end

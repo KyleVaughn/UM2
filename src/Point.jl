@@ -1,7 +1,7 @@
 # A 3D point in Cartesian coordinates.
 import Base: +, -, *, /, ≈, ==
 import LinearAlgebra: norm
-import GLMakie: convert_arguments
+import GLMakie: convert_arguments, Scatter
 
 struct Point{T <: AbstractFloat}
     coord::SVector{3,T}
@@ -68,11 +68,7 @@ distance(p⃗₁::Point, p⃗₂::Point) = norm(p⃗₁ - p⃗₂)
 
 # Plot
 # -------------------------------------------------------------------------------------------------
-@recipe function plot_point(p::Point)
-    return [p[1]], [p[2]], [p[3]]
+convert_arguments(P::Type{<:Scatter}, p::MOCNeutronTransport.Point) = convert_arguments(P, p.coord)
+function convert_arguments(P::Type{<:Scatter}, AP::AbstractArray{<:Point})
+    return convert_arguments(P, [p.coord for p in AP])
 end
-@recipe function plot_point(AP::AbstractArray{<:Point} )
-    return map(p->p[1], AP), map(p->p[2], AP), map(p->p[3], AP)
-end
-convert_arguments(p::Point) = convert_arguments(P, p.coord)
-convert_arguments(AP::AbstractArray{<:Point}) = convert_arguments(P, [p.coord for p in AP])

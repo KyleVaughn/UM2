@@ -56,6 +56,7 @@ arc_length(l::LineSegment) = distance(l.points[1], l.points[2])
 function convert_arguments(P::Type{<:LineSegments}, l::LineSegment)
     return convert_arguments(P, [l.points[1].coord, l.points[2].coord])
 end
+
 function convert_arguments(P::Type{<:LineSegments}, AL::AbstractArray{<:LineSegment})
     return convert_arguments(P, reduce(vcat, [[l.points[1].coord, l.points[2].coord] for l in AL]))
 end
