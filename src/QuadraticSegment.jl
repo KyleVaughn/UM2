@@ -119,7 +119,7 @@ function arc_length(q::QuadraticSegment{T}; N::Int64=20) where {T <: AbstractFlo
     #     0                 i=1
     # The default number of points is N = 20, since the timing difference is very small for
     # additional accuracy when compared with N = 15, and small N give poor accuracy.
-    w, r = gauss_legendre_quadrature(q, N)
+    w, r = gauss_legendre_quadrature(T, N)
     return sum(norm.(w .* derivative.(q, r)))
 end
 

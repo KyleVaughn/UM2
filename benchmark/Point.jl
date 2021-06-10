@@ -11,7 +11,7 @@ for type in [Float32, Float64]
     # Point addition
     time = @belapsed $p1 .+ $p2
     ns_time = (time/1e-9)/N
-    @printf("    Addition - %-9s: ", "$type")
+    @printf("    Addition     - %-9s: ", "$type")
     @printf("%10.2f ns\n", ns_time) 
 end
 

@@ -61,12 +61,12 @@ function area(tri6::Triangle6{T}; N::Int64=12) where {T <: AbstractFloat}
 end
 
 function triangulate(tri6::Triangle6{T}, N::Int64) where {T <: AbstractFloat}
-    triangles = Vector{Triangle{T}}(undef, N*N + 2N + 1)
+    triangles = Vector{Triangle{T}}(undef, (N+1)*(N+1))
     if N == 0
         triangles[1] = Triangle(tri6.points[1], tri6.points[2], tri6.points[3])
     else
-        R = T.(LinRange(0, 1, N + 2))
-        l_R = length(R)
+        l_R = N + 2
+        R = T.(LinRange(0, 1, l_R))
         m = 1
         for j = 1:l_R, i = 1:l_R-j
             triangles[m] = Triangle(tri6(R[i  ], R[j  ]), 
@@ -74,7 +74,7 @@ function triangulate(tri6::Triangle6{T}, N::Int64) where {T <: AbstractFloat}
                                     tri6(R[i  ], R[j+1]))
             m += 1
         end
-        n = 1
+        n = 1 + ((N+1)*(N+2)) ÷ 2
         for j = 2:l_R, i = 1:l_R-j
             triangles[n] = Triangle(tri6(R[i  ], R[j  ]),
                                     tri6(R[i+1], R[j-1]), 
@@ -85,7 +85,7 @@ function triangulate(tri6::Triangle6{T}, N::Int64) where {T <: AbstractFloat}
     return triangles 
 end
 
-function intersect(l::LineSegment{T}, tri6::Triangle6{T}; N::Int64 = 12) where {T <: AbstractFloat}
+function intersect(l::LineSegment{T}, tri6::Triangle6{T}; N::Int64 = 13) where {T <: AbstractFloat}
     triangles = triangulate(tri6, N)
     intersections = l .∩ triangles
     bools = map(x->x[1], intersections)
@@ -107,7 +107,7 @@ function intersect(l::LineSegment{T}, tri6::Triangle6{T}; N::Int64 = 12) where {
     end
 end
 
-function in(p::Point{T}, tri6::Triangle6{T}; N::Int64 = 12) where {T <: AbstractFloat}
+function in(p::Point{T}, tri6::Triangle6{T}; N::Int64 = 13) where {T <: AbstractFloat}
     return any(p .∈  triangulate(tri6, N))
 end
 
@@ -129,7 +129,7 @@ end
 
 function convert_arguments(P::Type{Mesh{Tuple{Triangle6{T}}}}, 
         tri6::Triangle6{T}) where {T <: AbstractFloat}
-    triangles = triangulate(tri6, 12)
+    triangles = triangulate(tri6, 13)
     return convert_arguments(P, triangles)
 end
 

@@ -2,6 +2,21 @@ using MOCNeutronTransport, BenchmarkTools, Printf
 
 N = Int(1E3)
 println("Triangle6 (N = $N)")
+# Triangulation
+for type in [Float32, Float64]
+    p₁ = Point( type(0) )
+    p₂ = Point( type(2) )
+    p₃ = Point( type(2), type(2) )
+    p₄ = Point( type(1), type(1)/type(4) )
+    p₅ = Point( type(3), type(1) )
+    p₆ = Point( type(1), type(1) )
+    tri = [Triangle6((p₁, p₂, p₃, p₄, p₅, p₆)) for i = 1:N]
+
+    time = @belapsed triangulate.($tri, 12)
+    us_time = (time/1e-6)/N
+    @printf("    Triangulation - %-9s: ", "$type")
+    @printf("%10.2f μs\n", us_time) 
+end
 
 # Intersection
 for type in [Float32, Float64]

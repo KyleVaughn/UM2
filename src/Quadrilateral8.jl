@@ -30,56 +30,72 @@ function (quad8::Quadrilateral8)(r::T, s::T) where {T <: AbstractFloat}
                       (1 - η^2)*(1 - ξ)/2*quad8.points[8]
 end
 
-#function derivatives(quad8::Quadrilateral8{T}, r::T, s::T) where {T <: AbstractFloat}
-#    # Return ( dquad8/dr(r, s), dquad8/ds(r, s) )
-#    d_dr = (4r + 4s - 3)*quad8.points[1] + 
-#                (4r - 1)*quad8.points[2] +
-#           4(1 - 2r - s)*quad8.points[4] +     
-#                    (4s)*quad8.points[5] +
-#                   (-4s)*quad8.points[6]
+function derivatives(quad8::Quadrilateral8{T}, r::T, s::T) where {T <: AbstractFloat}
+    # NOTE these are in ξ, η coordinates!
+    ξ = 2r - 1; η = 2s - 1
+    d_dξ = (1 - η)*(2ξ + η)/4*quad8.points[1] + 
+           (1 - η)*(2ξ - η)/4*quad8.points[2] +
+           (1 + η)*(2ξ + η)/4*quad8.points[3] +     
+           (1 + η)*(2ξ - η)/4*quad8.points[4] +     
+                   -ξ*(1 - η)*quad8.points[5] +     
+                  (1 - η^2)/2*quad8.points[6] +     
+                   -ξ*(1 + η)*quad8.points[7] +     
+                 -(1 - η^2)/2*quad8.points[8]     
+
+    d_dη = (1 - ξ)*( ξ + 2η)/4*quad8.points[1] + 
+           (1 + ξ)*(-ξ + 2η)/4*quad8.points[2] +
+           (1 + ξ)*( ξ + 2η)/4*quad8.points[3] +     
+           (1 - ξ)*(-ξ + 2η)/4*quad8.points[4] +     
+                  -(1 - ξ^2)/2*quad8.points[5] +   
+                    -η*(1 + ξ)*quad8.points[6] +     
+                   (1 - ξ^2)/2*quad8.points[7] +     
+                    -η*(1 - ξ)*quad8.points[8]     
+
+    return (d_dξ, d_dη) 
+end
+
+function area(quad8::Quadrilateral8{T}; N::Int64=4) where {T <: AbstractFloat}
+    # Numerical integration required. Gauss-Legendre quadrature over a quadrilateral is used.
+    # Let T(r,s) be the interpolation function for quad8,
+    #                             1  1                         
+    # A = ∬ ||∂T/∂r × ∂T/∂s||dA = ∫  ∫ ||∂T/∂r × ∂T/∂s|| ds dr 
+    #      D                      0  0                         
+    #
+    #     1  1                         
+    #   = ∫  ∫ ||∂T/∂ξ × ∂T/∂η|| |J| dξ dη, where |J| = Jacobian determinant = 4  
+    #    -1 -1                         
+    #
+    #       N   N  
+    #   = 4 ∑   ∑  wᵢwⱼ||∂T/∂ξ(ξᵢ,ηⱼ) × ∂T/∂η(ξᵢ,ηⱼ)||
+    #      i=1 j=1
+    # NOTE: for 2D, N =  appears to be sufficient. For 3D, N =  is preferred.
+    W, R = gauss_legendre_quadrature(T, N)
+    weights = [W[i]*W[j] for i = 1:N for j = 1:N]
+    # Input to derivatives is in (r,s) but outputs in ξ, η
+    derivative_vectors =  [derivatives(quad8, R[i], R[j]) for i = 1:N for j = 1:N]
+    norms = norm.([dξ × dη for (dξ, dη) in derivative_vectors])
+    return 4*sum(weights .* norms)
+end
 #
-#    d_ds = (4r + 4s - 3)*quad8.points[1] + 
-#                (4s - 1)*quad8.points[3] +
-#                   (-4r)*quad8.points[4] +
-#                    (4r)*quad8.points[5] +
-#           4(1 - r - 2s)*quad8.points[6]     
-#    return (d_dr, d_ds) 
-#end
-#
-#function area(quad8::Quadrilateral8{T}; N::Int64=12) where {T <: AbstractFloat}
-#    # Numerical integration required. Gauss-Legendre quadrature over a triangle is used.
-#    # Let T(r,s) be the interpolation function for quad8,
-#    #                             1 1-r                          N
-#    # A = ∬ ||∂T/∂r × ∂T/∂s||dA = ∫  ∫ ||∂T/∂r × ∂T/∂s|| ds dr = ∑ wᵢ||∂T/∂r(rᵢ,sᵢ) × ∂T/∂s(rᵢ,sᵢ)||
-#    #      D                      0  0                          i=1
-#    #
-#    # NOTE: for 2D, N = 12 appears to be sufficient. For 3D, N = 79 is preferred.
-#    w, rs = gauss_legendre_quadrature(quad8, N)
-#    return sum(w .* norm.([dr × ds for (dr, ds) in [derivatives(quad8, r, s) for (r, s) in rs]]))
-#end
-#
-#function triangulate(quad8::Quadrilateral8{T}, N::Int64) where {T <: AbstractFloat}
-#    triangles = Vector{Triangle{T}}(undef, N*N + 2N + 1)
-#    if N == 0
-#        triangles[1] = Triangle(quad8.points[1], quad8.points[2], quad8.points[3])
-#    else
-#        i = 1
-#        for S = 0:N, R = 0:N-S
-#            triangles[i] = Triangle(quad8(T(    R/(N+1)), T(    S/(N+1))), 
-#                                    quad8(T((R+1)/(N+1)), T(    S/(N+1))), 
-#                                    quad8(T(    R/(N+1)), T((S+1)/(N+1))))
-#            i += 1
-#        end
-#        j = 1 + ((N+1)*(N+2)) ÷ 2
-#        for S = 1:N, R = 0:N-S
-#            triangles[j] = Triangle(quad8(T(    R/(N+1)), T(    S/(N+1))), 
-#                                    quad8(T((R+1)/(N+1)), T((S-1)/(N+1))), 
-#                                    quad8(T((R+1)/(N+1)), T(    S/(N+1))))
-#            j += 1
-#        end
-#    end
-#    return triangles 
-#end
+function triangulate(quad8::Quadrilateral8{T}, N::Int64) where {T <: AbstractFloat}
+    triangles = Vector{Triangle{T}}(undef, 2*(N+1)*(N+1))
+    if N == 0
+        triangles[1] = Triangle(tri6.points[1], tri6.points[2], tri6.points[3])
+        triangles[2] = Triangle(tri6.points[3], tri6.points[4], tri6.points[1])
+    else
+        l_Rm1 = N + 1
+        R = T.(LinRange(0, 1, N + 2)) 
+        for j = 1:l_Rm1, i = 1:l_Rm1
+            triangles[2l_Rm1*(j-1) + 2*(i-1) + 1] = Triangle(quad8(R[i  ], R[j  ]), 
+                                                             quad8(R[i+1], R[j  ]), 
+                                                             quad8(R[i  ], R[j+1]))
+            triangles[2l_Rm1*(j-1) + 2*(i-1) + 2] = Triangle(quad8(R[i  ], R[j+1]), 
+                                                             quad8(R[i+1], R[j  ]), 
+                                                             quad8(R[i+1], R[j+1]))
+        end
+    end
+    return triangles
+end
 #
 #function intersect(l::LineSegment{T}, quad8::Quadrilateral8{T}; N::Int64 = 12) where {T <: AbstractFloat}
 #    triangles = triangulate(quad8, N)
