@@ -2,7 +2,7 @@ import Base: intersect
 using StaticArrays
 
 # NOTE: The N (number of edge subdivisions) used in triangulation for the intersection
-# algorithm and the ∈  algorithm must be the same.
+# algorithm and the ∈  algorithm must be the same for consistent ray tracing.
 
 # Most of the intersection and in algorithm compute time is the triangulation. How can we speed that up?
 
@@ -65,19 +65,21 @@ function triangulate(tri6::Triangle6{T}, N::Int64) where {T <: AbstractFloat}
     if N == 0
         triangles[1] = Triangle(tri6.points[1], tri6.points[2], tri6.points[3])
     else
-        i = 1
-        for S = 0:N, R = 0:N-S
-            triangles[i] = Triangle(tri6(T(    R/(N+1)), T(    S/(N+1))), 
-                                    tri6(T((R+1)/(N+1)), T(    S/(N+1))), 
-                                    tri6(T(    R/(N+1)), T((S+1)/(N+1))))
-            i += 1
+        R = T.(LinRange(0, 1, N + 2))
+        l_R = length(R)
+        m = 1
+        for j = 1:l_R, i = 1:l_R-j
+            triangles[m] = Triangle(tri6(R[i  ], R[j  ]), 
+                                    tri6(R[i+1], R[j  ]), 
+                                    tri6(R[i  ], R[j+1]))
+            m += 1
         end
-        j = 1 + ((N+1)*(N+2)) ÷ 2
-        for S = 1:N, R = 0:N-S
-            triangles[j] = Triangle(tri6(T(    R/(N+1)), T(    S/(N+1))), 
-                                    tri6(T((R+1)/(N+1)), T((S-1)/(N+1))), 
-                                    tri6(T((R+1)/(N+1)), T(    S/(N+1))))
-            j += 1
+        n = 1
+        for j = 2:l_R, i = 1:l_R-j
+            triangles[n] = Triangle(tri6(R[i  ], R[j  ]),
+                                    tri6(R[i+1], R[j-1]), 
+                                    tri6(R[i+1], R[j  ]))
+            n += 1
         end
     end
     return triangles 
@@ -123,4 +125,22 @@ function convert_arguments(P::Type{<:LineSegments},
         TA::AbstractArray{<:Triangle6{T}}) where {T <: AbstractFloat}
     point_sets = [convert_arguments(P, tri6) for tri6 in TA]
     return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
+end
+
+function convert_arguments(P::Type{Mesh{Tuple{Triangle6{T}}}}, 
+        tri6::Triangle6{T}) where {T <: AbstractFloat}
+    triangles = triangulate(tri6, 12)
+    return convert_arguments(P, triangles)
+end
+
+function convert_arguments(MT::Type{Mesh{Tuple{Triangle6{T}}}},
+        AT::Vector{Triangle{T}}) where {T <: AbstractFloat}
+    points = reduce(vcat, [[tri.points[i].coord for i = 1:3] for tri in AT])
+    faces = zeros(Int64, length(AT), 3)
+    k = 1
+    for i in 1:length(AT), j = 1:3
+        faces[i, j] = k
+        k += 1
+    end
+    return convert_arguments(MT, points, faces)
 end

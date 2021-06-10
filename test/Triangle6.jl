@@ -25,7 +25,7 @@ using MOCNeutronTransport
             p₆ = Point( type(1)/type(2), type(1)/type(2))
             tri6 = Triangle6((p₁, p₂, p₃, p₄, p₅, p₆))
 
-            # evaluation
+            # interpolation
             tri6( type(0), type(0)) ≈ p₁
             tri6( type(1), type(0)) ≈ p₂
             tri6( type(0), type(1)) ≈ p₃

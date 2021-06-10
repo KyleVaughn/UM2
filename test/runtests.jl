@@ -6,8 +6,9 @@ tests = ["Point",
          "Triangle",
          "Quadrilateral",
          "Triangle6",
-         "UnstructuredMesh",
-         "vtk",
+         "Quadrilateral8",
+#         "UnstructuredMesh",
+#         "vtk",
          "AngularQuadrature", 
         ]
 for t in tests

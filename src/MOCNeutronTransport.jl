@@ -1,7 +1,6 @@
 module MOCNeutronTransport
 using StaticArrays
 using LinearAlgebra
-using RecipesBase
 
 include("Edge.jl")
 export Edge
@@ -42,7 +41,13 @@ export Quadrilateral,
 
 include("Triangle6.jl")
 export Triangle6,
-       area
+       triangulate,
+       area,
+       intersect,
+       in
+
+include("Quadrilateral8.jl")
+export Quadrilateral8
 
 include("gauss_legendre_quadrature.jl")
 export gauss_legendre_quadrature
