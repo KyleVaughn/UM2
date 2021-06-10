@@ -81,3 +81,16 @@ function convert_arguments(P::Type{<:Mesh}, quad::Quadrilateral)
              3 4 1]
     return convert_arguments(P, points, faces)
 end
+
+function convert_arguments(MT::Type{Mesh{Tuple{Vector{Quadrilateral{T}}}}},
+        AQ::Vector{Quadrilateral{T}}) where {T <: AbstractFloat}
+    points = reduce(vcat, [[quad.points[i].coord for i = 1:4] for quad in AQ])
+    faces = zeros(Int64, 2*length(AQ), 3)
+    j = 0
+    for i in 1:2:2*length(AQ)
+        faces[i    , :] = [1 2 3] + [j j j]
+        faces[i + 1, :] = [3 4 1] + [j j j]
+        j += 4
+    end
+    return convert_arguments(MT, points, faces)
+end
