@@ -1,5 +1,4 @@
-import Base: intersect, in
-import GLMakie: convert_arguments, LineSegments, Mesh
+# Triangle defined by its 3 vertices.
 
 struct Triangle{T <: AbstractFloat} <: Face
     points::NTuple{3, Point{T}}
@@ -13,9 +12,8 @@ Triangle(p₁::Point{T},
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-# Interpolation in Barycentric coordinates
-function (tri::Triangle)(r::T, s::T) where {T <: AbstractFloat}
-    return (1 - r - s)*tri.points[1] + r*tri.points[2] + s*tri.points[3]
+function (tri::Triangle{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+    return (1 - T(r) - T(s))*tri.points[1] + T(r)*tri.points[2] + T(s)*tri.points[3]
 end
 
 function area(tri::Triangle{T}) where {T <: AbstractFloat}

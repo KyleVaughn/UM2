@@ -56,6 +56,9 @@ function area(tri6::Triangle6{T}; N::Int64=12) where {T <: AbstractFloat}
     #      D                      0  0                          i=1
     #
     # NOTE: for 2D, N = 12 appears to be sufficient. For 3D, N = 79 is preferred.
+    # This is to ensure error in area less that about 1e-6. This was determined
+    # experimentally, not mathematically, so more sophisticated analysis could be
+    # performed. For really strange 3D shapes, we need greater than 79
     w, rs = gauss_legendre_quadrature(tri6, N)
     return sum(w .* norm.([dr × ds for (dr, ds) in [derivatives(tri6, r, s) for (r, s) in rs]]))
 end
@@ -101,9 +104,17 @@ function intersect(l::LineSegment{T}, tri6::Triangle6{T}; N::Int64 = 13) where {
         indices = findall(bools)
         ipoints[1] = points[indices[1]]
         ipoints[2] = points[indices[2]]
-        return true, 2, ipoints
+        # Check uniqueness
+        if ipoints[1] ≈ ipoints[2]
+            return true, 1, ipoints
+        else
+            return true, 2, ipoints
+        end
     else
-        return false, -1, ipoints
+        # Account for 3 points and 4 points?
+        # If intersection is on edge shared by two triangles on entrance and/or exit 3/4 intersections
+        # can be detected
+        return true, -1, ipoints
     end
 end
 

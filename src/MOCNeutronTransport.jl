@@ -2,6 +2,11 @@ module MOCNeutronTransport
 using StaticArrays
 using LinearAlgebra
 
+import Base: +, -, *, /, ≈, ==, intersect, in
+import LinearAlgebra: norm
+import GLMakie: convert_arguments, LineSegments, Mesh, Scatter
+
+
 include("Edge.jl")
 export Edge
 include("Face.jl")

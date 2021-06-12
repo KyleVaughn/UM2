@@ -35,6 +35,23 @@ function (q::QuadraticSegment)(r::T) where {T <: AbstractFloat}
     return (2r-1)*(r-1)*q.points[1] + r*(2r-1)*q.points[2] + 4r*(1-r)*q.points[3]
 end
 
+function derivative(q::QuadraticSegment{T}, r::R) where {T <: AbstractFloat, R <: Real}
+    # dq⃗/dr
+    return (4T(r) - 3)*q.points[1] + (4T(r) - 1)*q.points[2] + (4 - 8T(r))*q.points[3]
+end
+
+function arc_length(q::QuadraticSegment{T}; N::Int64=20) where {T <: AbstractFloat}
+    # Mathematica solution is pages long and can produce NaN results when the segment is
+    # straight, so numerical integration is used. (Gauss-Legengre quadrature)
+    #     1                  N
+    # L = ∫ ||q⃗'(r)||dr  ≈   ∑ wᵢ||q⃗'(rᵢ)||
+    #     0                 i=1
+    # The default number of points is N = 20, since the timing difference is very small for
+    # additional accuracy when compared with N = 15, and small N give poor accuracy.
+    w, r = gauss_legendre_quadrature(T, N)
+    return sum(norm.(w .* derivative.(q, r)))
+end
+
 function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
     # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
     # q(r) = 2r²(x⃗₁ + x⃗₂ - 2x⃗₃) + r(-3x⃗₁ - x⃗₂ + 4x⃗₃) + x⃗₁
@@ -55,18 +72,18 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
     #   r is invalid if:
     #     1) A = 0
     #     2) B² < 4AC
-    #     3) r < 0 or 1 < r   (Line intersects, segment doesn't)
+    #     3) r < 0 or 1 < r   (Curve intersects, segment doesn't)
     #   s is invalid if:
     #     1) s < 0 or 1 < s   (Line intersects, segment doesn't)
-    # If A = 0, we need to use line intersection instead.
+    # If D⃗ × w⃗ = 0, we need to use line intersection instead.
     bool = false
     npoints = 0
-    points = [Point(T.((1e9, 1e9, 1e9))), Point(T.((1e9, 1e9, 1e9)))]
+    points = [Point(T, 1e9, 1e9, 1e9), Point(T, 1e9, 1e9, 1e9)]
     D⃗ = 2*(q.points[1] + q.points[2] - 2*q.points[3])
     E⃗ = 4*q.points[3] - 3*q.points[1] - q.points[2]
     w⃗ = l.points[2] - l.points[1]
-    A⃗ = (D⃗ × w⃗)
-    B⃗ = (E⃗ × w⃗)
+    A⃗ = D⃗ × w⃗
+    B⃗ = E⃗ × w⃗
     C⃗ = (q.points[1] - l.points[1]) × w⃗
     A = A⃗ ⋅ A⃗
     B = B⃗ ⋅ A⃗
@@ -80,9 +97,9 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
             bool = true
             npoints = 1
         end
-    elseif B^2 ≥ 4*A*C
+    elseif B^2 ≥ 4A*C
         # Quadratic intersection
-        r = [(-B - √(B^2-4*A*C))/(2A), (-B + √(B^2-4A*C))/(2A)]
+        r = [(-B - √(B^2-4A*C))/2A, (-B + √(B^2-4A*C))/2A]
         s = [(q(r[1]) - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗), (q(r[2]) - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)]
         # Check points to see if they are valid intersections.
         pᵣ = q.(r)
@@ -106,27 +123,10 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
 end
 intersect(q::QuadraticSegment, l::LineSegment) = intersect(l, q)
 
-function derivative(q::QuadraticSegment{T}, r::T) where {T <: AbstractFloat}
-    # dq⃗/dr
-    return (4r - 3)*q.points[1] + (4r - 1)*q.points[2] + (4 - 8r)*q.points[3]
-end
-
-function arc_length(q::QuadraticSegment{T}; N::Int64=20) where {T <: AbstractFloat}
-    # Mathematica solution is pages long and can produce NaN/∞ results when the segment is
-    # straight, so numerical integration is used. (Gauss-Legengre quadrature)
-    #     1                  N
-    # L = ∫ ||q⃗'(r)||dr  ≈   ∑ wᵢ||q⃗'(rᵢ)||
-    #     0                 i=1
-    # The default number of points is N = 20, since the timing difference is very small for
-    # additional accuracy when compared with N = 15, and small N give poor accuracy.
-    w, r = gauss_legendre_quadrature(T, N)
-    return sum(norm.(w .* derivative.(q, r)))
-end
-
 # Plot
 # -------------------------------------------------------------------------------------------------
 function convert_arguments(P::Type{<:LineSegments}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
-    rr = T.(LinRange(0, 1, 50))
+    rr = LinRange{T}(0, 1, 50)
     points = q.(rr)
     coords = reduce(vcat, [[points[i].coord, points[i+1].coord] for i = 1:length(points)-1])
     return convert_arguments(P, coords)

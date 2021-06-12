@@ -68,7 +68,10 @@ function area(quad8::Quadrilateral8{T}; N::Int64=4) where {T <: AbstractFloat}
     #       N   N  
     #   = 4 ∑   ∑  wᵢwⱼ||∂T/∂ξ(ξᵢ,ηⱼ) × ∂T/∂η(ξᵢ,ηⱼ)||
     #      i=1 j=1
-    # NOTE: for 2D, N =  appears to be sufficient. For 3D, N =  is preferred.
+    # NOTE: for 2D, N = 4  appears to be sufficient. For 3D, N = 15  is preferred.
+    # This is to ensure error in area less that about 1e-6. This was determined
+    # experimentally, not mathematically, so more sophisticated analysis could be 
+    # performed.
     W, R = gauss_legendre_quadrature(T, N)
     weights = [W[i]*W[j] for i = 1:N for j = 1:N]
     # Input to derivatives is in (r,s) but outputs in ξ, η
@@ -76,7 +79,7 @@ function area(quad8::Quadrilateral8{T}; N::Int64=4) where {T <: AbstractFloat}
     norms = norm.([dξ × dη for (dξ, dη) in derivative_vectors])
     return 4*sum(weights .* norms)
 end
-#
+
 function triangulate(quad8::Quadrilateral8{T}, N::Int64) where {T <: AbstractFloat}
     triangles = Vector{Triangle{T}}(undef, 2*(N+1)*(N+1))
     if N == 0
@@ -96,32 +99,40 @@ function triangulate(quad8::Quadrilateral8{T}, N::Int64) where {T <: AbstractFlo
     end
     return triangles
 end
-#
-#function intersect(l::LineSegment{T}, quad8::Quadrilateral8{T}; N::Int64 = 12) where {T <: AbstractFloat}
-#    triangles = triangulate(quad8, N)
-#    intersections = l .∩ triangles
-#    bools = map(x->x[1], intersections)
-#    points = map(x->x[2], intersections)
-#    npoints = count(bools)
-#    ipoints = [points[1], points[1]]
-#    if npoints == 0
-#        return false, 0, ipoints
-#    elseif npoints == 1
-#        ipoints[1] = points[argmax(bools)]
-#        return true, 1, ipoints
-#    elseif npoints == 2
-#        indices = findall(bools)
-#        ipoints[1] = points[indices[1]]
-#        ipoints[2] = points[indices[2]]
-#        return true, 2, ipoints
-#    else
-#        return false, -1, ipoints
-#    end
-#end
-#
-#function in(p::Point{T}, quad8::Quadrilateral8{T}; N::Int64 = 12) where {T <: AbstractFloat}
-#    return any(p .∈  triangulate(quad8, N))
-#end
+
+function intersect(l::LineSegment{T}, quad8::Quadrilateral8{T}; N::Int64 = 13) where {T <: AbstractFloat}
+    triangles = triangulate(quad8, N)
+    intersections = l .∩ triangles
+    bools = map(x->x[1], intersections)
+    points = map(x->x[2], intersections)
+    npoints = count(bools)
+    ipoints = [points[1], points[1]]
+    if npoints == 0
+        return false, 0, ipoints
+    elseif npoints == 1
+        ipoints[1] = points[argmax(bools)]
+        return true, 1, ipoints
+    elseif npoints == 2
+        indices = findall(bools)
+        ipoints[1] = points[indices[1]]
+        ipoints[2] = points[indices[2]]
+        # Check uniqueness
+        if ipoints[1] ≈ ipoints[2]
+            return true, 1, ipoints
+        else
+            return true, 2, ipoints
+        end 
+    else
+        # Account for 3 points and 4 points?
+        # If intersection is on edge shared by two triangles on entrance and/or exit 3/4 intersections
+        # can be detected
+        return true, -1, ipoints
+    end
+end
+
+function in(p::Point{T}, quad8::Quadrilateral8{T}; N::Int64 = 13) where {T <: AbstractFloat}
+    return any(p .∈  triangulate(quad8, N))
+end
 #
 ## Plot
 ## -------------------------------------------------------------------------------------------------

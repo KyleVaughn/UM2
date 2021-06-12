@@ -1,10 +1,10 @@
 using MOCNeutronTransport
 @testset "Triangle" begin
-    for type in [Float32, Float64, BigFloat]
+    for T in [Float32, Float64, BigFloat]
         @testset "Constructors" begin
-            p₁ = Point( type(0) )
-            p₂ = Point( type(1) )
-            p₃ = Point( type(1), type(1) )
+            p₁ = Point(T, 0)
+            p₂ = Point(T, 1)
+            p₃ = Point(T, 1, 1)
             tri = Triangle((p₁, p₂, p₃))
             @test tri.points == (p₁, p₂, p₃)
 
@@ -14,62 +14,62 @@ using MOCNeutronTransport
         end
 
         @testset "Methods" begin
-            p₁ = Point( type(0) )
-            p₂ = Point( type(1) )
-            p₃ = Point( type(1), type(1) )
+            p₁ = Point(T, 0)
+            p₂ = Point(T, 1)
+            p₃ = Point(T, 1, 1)
             tri = Triangle((p₁, p₂, p₃))
 
-            # evaluation
-            tri( type(0), type(0)) ≈ p₁
-            tri( type(1), type(0)) ≈ p₂
-            tri( type(0), type(1)) ≈ p₃
-            tri( type(1//2), type(1//2)) ≈ Point(type(1//2), type(1//2))
+            # interpolation
+            tri(0, 0) ≈ p₁
+            tri(1, 0) ≈ p₂
+            tri(0, 1) ≈ p₃
+            tri(1//2, 1//2) ≈ Point(T, 1//2, 1//2)
 
             # area
             a = area(tri)
-            @test typeof(a) == typeof(type(1))
-            @test a == type(1)/type(2)
+            @test typeof(a) == typeof(T(1))
+            @test a == T(1//2)
 
             # intersect
             # line is not coplanar with triangle
-            p₄ = Point(type.((0.9, 0.1, -5)))
-            p₅ = Point(type.((0.9, 0.1, 5)))
+            p₄ = Point(T, 9//10, 1//10, -5)
+            p₅ = Point(T, 9//10, 1//10,  5)
             l = LineSegment(p₄, p₅)
             bool, point = intersect(l, tri)
             @test bool
-            @test point ≈ Point(type.((0.9, 0.1, 0.0)))
+            @test point ≈ Point(T, 9//10, 1//10,  0)
 
             # line is coplanar with triangle
-            p₄ = Point(type.((0.5, -1)))
-            p₅ = Point(type.((0.5, 2)))
+            p₄ = Point(T, 1//2, -1)
+            p₅ = Point(T, 1//2,  2)
             l = LineSegment(p₄, p₅)
             bool, point = intersect(l, tri)
             @test !bool
 
             # no intersection non-coplanar
-            p₄ = Point(type.((2.0, 0.1, -5)))
-            p₅ = Point(type.((2.0, 0.1, 5)))
+            p₄ = Point(T.((2.0, 0.1, -5)))
+            p₅ = Point(T.((2.0, 0.1, 5)))
             l = LineSegment(p₄, p₅)
             bool, point = intersect(l, tri)
             @test !bool
 
             # no intersection coplanar
-            p₄ = Point(type.((2.0, -1)))
-            p₅ = Point(type.((2.0, 2)))
+            p₄ = Point(T.((2.0, -1)))
+            p₅ = Point(T.((2.0, 2)))
             l = LineSegment(p₄, p₅)
             bool, point = intersect(l, tri)
             @test !bool
 
             # in
-            p = Point(type.((0.5, 0.1)))
+            p = Point(T.((0.5, 0.1)))
             @test p ∈  tri
-            p = Point(type.((0.5, 0.0)))
+            p = Point(T.((0.5, 0.0)))
             @test p ∈  tri
-            p = Point(type.((0.5, 0.1, 0.1)))
+            p = Point(T.((0.5, 0.1, 0.1)))
             @test p ∉ tri
-            p = Point(type.((0.5, -0.1, 0.1)))
+            p = Point(T.((0.5, -0.1, 0.1)))
             @test p ∉ tri
-            p = Point(type.((0.5, -0.1, 0.0)))
+            p = Point(T.((0.5, -0.1, 0.0)))
             @test p ∉ tri
         end
     end

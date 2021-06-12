@@ -163,6 +163,7 @@ end
 function gauss_legendre_quadrature(tri6::Triangle6{T}, N::Int64) where {T <: AbstractFloat}
     # The weights and points for Gauss-Legendre quadrature on the parametric unit triangle
     # ∑wᵢ= 1/2, rᵢ∈ [0, 1], sᵢ∈ [0, 1], rᵢ + sᵢ ≤ 1
+    # N that have entries in this function: N = [12, 27, 48, 79]
     if N == 12
         # P6. 0 negative weights, 0 points outside of the triangle
         w = T.([0.058393137863189,

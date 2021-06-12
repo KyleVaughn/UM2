@@ -1,93 +1,93 @@
 using MOCNeutronTransport
 @testset "LineSegment" begin
-    for type in [Float32, Float64, BigFloat]
+    for T in [Float32, Float64, BigFloat]
         @testset "Constructors" begin
-            p₁ = Point( type(1) )
-            p₂ = Point( type(2) )
+            p₁ = Point( T(1) )
+            p₂ = Point( T(2) )
             l = LineSegment(p₁,p₂)
             @test l.points[1] == p₁
             @test l.points[2] == p₂
         end
         @testset "Methods" begin
-            # arc_length
-            p₁ = Point( type.((1, 2, 3)) )
-            p₂ = Point( type.((2, 4, 6)) )
+            # interpolation
+            p₁ = Point(T, 1, 1, 3)
+            p₂ = Point(T, 3, 3, 3)
             l = LineSegment(p₁, p₂)
-            @test arc_length(l) == sqrt(type(14))
-            @test typeof(arc_length(l)) == typeof(type(14))
+            @test l(0) == p₁
+            @test l(1) == p₂
+            p₃ = Point(T, 2, 2, 3)
+            @test l(1//2) == p₃
+            typeof(l(1//2).coord) == typeof(T.((2, 4, 6)))
 
-            # evaluation
-            p₁ = Point( type.((1, 1, 3)) )
-            p₂ = Point( type.((3, 3, 3)) )
+            # arc_length
+            p₁ = Point(T, 1, 2, 3)
+            p₂ = Point(T, 2, 4, 6)
             l = LineSegment(p₁, p₂)
-            @test l(0.0) == p₁
-            @test l(1.0) == p₂
-            p₃ = Point( type.((2, 2, 3)) )
-            @test l(0.5) == p₃
-            typeof(l(0.5).coord) == typeof(type.((2, 4, 6)))
+            @test arc_length(l) == sqrt(T(14))
+            @test typeof(arc_length(l)) == typeof(T(14))
 
             # intersect
             # -------------------------------------------
             # basic intersection
-            l₁ = LineSegment(Point( type.((0, 1)) ), Point( type.((2, -1)) ))
-            l₂ = LineSegment(Point( type.((0, -1)) ), Point( type.((2, 1)) ))
+            l₁ = LineSegment(Point(T, 0,  1), Point(T, 2, -1))
+            l₂ = LineSegment(Point(T, 0, -1), Point(T, 2,  1))
             bool, p = intersect(l₁, l₂)
             @test bool
-            @test p == Point(type.((1, 0)))
-            @test typeof(p.coord) == typeof(SVector(type.((1, 0, 0))))
+            @test p == Point(T, 1, 0)
+            @test typeof(p.coord) == typeof(SVector(T.((1, 0, 0))))
 
             # vertex intersection
-            l₂ = LineSegment(Point( type.((0, -1)) ), Point( type.((2, -1)) ))
+            l₂ = LineSegment(Point(T, 0, -1), Point(T, 2, -1))
             bool, p = l₁ ∩ l₂
             @test bool
-            @test p == Point(2.0, -1.0)
+            @test p == Point(T, 2, -1)
 
             # basic 3D intersection
-            l₁ = LineSegment(Point( type.((1, 0,  1)) ), Point( type.((1,  0, -1)) ))
-            l₂ = LineSegment(Point( type.((0, 1, -1)) ), Point( type.((2, -1,  1)) ))
+            l₁ = LineSegment(Point(T, 1, 0,  1), Point(T, 1,  0, -1))
+            l₂ = LineSegment(Point(T, 0, 1, -1), Point(T, 2, -1,  1))
             bool, p = l₁ ∩ l₂
             @test bool
-            @test p == Point(1.0, 0.0, 0.0)
+            @test p == Point(T, 1, 0, 0)
 
             # vertical
-            l₁ = LineSegment(Point( type.((0,  1)) ), Point(type.((2,   1))))
-            l₂ = LineSegment(Point( type.((1, 10)) ), Point(type.((1, -10))))
+            l₁ = LineSegment(Point(T, 0,  1), Point(T, 2,   1))
+            l₂ = LineSegment(Point(T, 1, 10), Point(T, 1, -10))
             bool, p = intersect(l₁, l₂)
             @test bool
-            @test p == Point(1.0, 1.0)
+            @test p == Point(T, 1, 1)
 
             # nearly vertical
-            l₁ = LineSegment(Point( type.((-1, -100000)) ), Point( type.((1,  100000)) ))
-            l₂ = LineSegment(Point( type.((-1,   10000)) ), Point( type.((1,  -10000)) ))
+            l₁ = LineSegment(Point(T, -1, -100000), Point(T, 1,  100000))
+            l₂ = LineSegment(Point(T, -1,   10000), Point(T, 1,  -10000))
             bool, p = l₁ ∩ l₂
             @test bool
-            @test p == Point(0.0, 0.0)
+            @test p == Point(T, 0, 0)
 
             # parallel
-            l₁ = LineSegment(Point( type.((0, 1)) ), Point(type.((1, 1))))
-            l₂ = LineSegment(Point( type.((0, 0)) ), Point(type.((1, 0))))
+            l₁ = LineSegment(Point(T, 0, 1), Point(T, 1, 1))
+            l₂ = LineSegment(Point(T, 0, 0), Point(T, 1, 0))
             bool, p = intersect(l₁, l₂)
             @test !bool
 
             # collinear
-            l₁ = LineSegment(Point( type.((0, 0)) ), Point( type.((2, 0)) ))
-            l₂ = LineSegment(Point( type.((0, 0)) ), Point( type.((1, 0)) ))
+            l₁ = LineSegment(Point(T, 0, 0), Point(T, 2, 0))
+            l₂ = LineSegment(Point(T, 0, 0), Point(T, 1, 0))
             bool, p = intersect(l₁, l₂)
             @test !bool
 
             # line intersects, not segment (invalid t)
-            l₁ = LineSegment(Point( type.((0, 0)) ), Point(type.((2, 0)) ))
-            l₂ = LineSegment(Point( type.((1, 2)) ), Point(type.((1, 0.1)) ))
+            l₁ = LineSegment(Point(T, 0, 0), Point(T, 2, 0    ))
+            l₂ = LineSegment(Point(T, 1, 2), Point(T, 1, 1//10))
             bool, p = l₁ ∩ l₂
             @test !bool
-            @test p ≈ Point(type.((1, 0))) # the closest point on line 1
+            @test p ≈ Point(T, 1, 0) # the closest point on line 1
 
             # line intersects, not segment (invalid s)
-            l₂ = LineSegment(Point( type.((0, 0)) ), Point( type.((2, 0)) ))
-            l₁ = LineSegment(Point( type.((1, 2)) ), Point( type.((1, 0.1)) ))
+            l₂ = LineSegment(Point(T, 0, 0), Point(T, 2, 0    ))
+            l₁ = LineSegment(Point(T, 1, 2), Point(T, 1, 1//10))
             bool, p = intersect(l₁, l₂)
             @test !bool
-            @test p ≈ Point(type.((1, 0))) # the closest point on line 1
+            @test p ≈ Point(T, 1, 0) # the closest point on line 1
         end
     end
 end
