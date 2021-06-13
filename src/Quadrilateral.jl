@@ -1,4 +1,4 @@
-import Base: intersect, in
+# Quadrilateral defined by its 4 vertices.
 
 # NOTE: Quadrilaterals are assumed to be convex and planar (all points in some plane, not 
 # necessarily xy, yx, etc.)!
@@ -19,20 +19,24 @@ Quadrilateral(p₁::Point{T},
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function (quad::Quadrilateral)(r::T, s::T) where {T <: AbstractFloat}
+function (quad::Quadrilateral{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    return (1 - r)*(1 - s)*quad.points[1] + 
-                 r*(1 - s)*quad.points[2] + 
-                       r*s*quad.points[3] +
-                 (1 - r)*s*quad.points[4]
+    r_T = T(r)
+    s_T = T(s)
+    return (1 - r_T)*(1 - s_T)*quad.points[1] + 
+                 r_T*(1 - s_T)*quad.points[2] + 
+                       r_T*s_T*quad.points[3] +
+                 (1 - r_T)*s_T*quad.points[4]
 end
 
 function triangulate(quad::Quadrilateral{T}) where {T <: AbstractFloat}
     A, B, C, D = quad.points
-    tri = (Triangle(A, B, C), Triangle(C, D, A), Triangle(B, C, D), Triangle(D, A, B))
-    areas = area.(tri)
-    return areas[1] + areas[2] <= areas[3] + areas[4] ? (tri[1], tri[2]) : (tri[3], tri[4])
+    # Using the convex quadrilateral assumption we can directly
+#    tri = (Triangle(A, B, C), Triangle(C, D, A), Triangle(B, C, D), Triangle(D, A, B))
+#    areas = area.(tri)
+#    return areas[1] + areas[2] <= areas[3] + areas[4] ? (tri[1], tri[2]) : (tri[3], tri[4])
+    return (Triangle(A, B, C), Triangle(C, D, A))
 end
 
 function area(quad::Quadrilateral{T}) where {T <: AbstractFloat}
@@ -55,8 +59,7 @@ function intersect(l::LineSegment, quad::Quadrilateral)
 end
 
 function in(p::Point, quad::Quadrilateral)
-    tri = triangulate(quad)
-    return any(p .∈ tri)
+    return any(p .∈  triangulate(quad))
 end
 
 # Plot

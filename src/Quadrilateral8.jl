@@ -1,6 +1,3 @@
-import Base: intersect
-using StaticArrays
-
 # NOTE: The N (number of edge subdivisions) used in triangulation for the intersection
 # algorithm and the ∈  algorithm must be the same for consistent ray tracing.
 
@@ -18,8 +15,8 @@ Quadrilateral8(p₁::Point{T}, p₂::Point{T}, p₃::Point{T}, p₄::Point{T},
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function (quad8::Quadrilateral8)(r::T, s::T) where {T <: AbstractFloat}
-    ξ = 2r - 1; η = 2s - 1
+function (quad8::Quadrilateral8{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+    ξ = 2T(r) - 1; η = 2T(s) - 1
     return (1 - ξ)*(1 - η)*(-ξ - η - 1)/4*quad8.points[1] +
            (1 + ξ)*(1 - η)*( ξ - η - 1)/4*quad8.points[2] +
            (1 + ξ)*(1 + η)*( ξ + η - 1)/4*quad8.points[3] +
@@ -30,9 +27,11 @@ function (quad8::Quadrilateral8)(r::T, s::T) where {T <: AbstractFloat}
                       (1 - η^2)*(1 - ξ)/2*quad8.points[8]
 end
 
-function derivatives(quad8::Quadrilateral8{T}, r::T, s::T) where {T <: AbstractFloat}
-    # NOTE these are in ξ, η coordinates!
-    ξ = 2r - 1; η = 2s - 1
+function derivatives(quad8::Quadrilateral8{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+    # NOTE these are in ξ, η coordinates, so the directions will be correct, but magnitudes
+    # will be wrong. Right now this is only used in the area calculation, so scaling by the
+    # Jacobian determinant fixes the magnitude issue.
+    ξ = 2T(r) - 1; η = 2T(s) - 1
     d_dξ = (1 - η)*(2ξ + η)/4*quad8.points[1] + 
            (1 - η)*(2ξ - η)/4*quad8.points[2] +
            (1 + η)*(2ξ + η)/4*quad8.points[3] +     
@@ -73,11 +72,12 @@ function area(quad8::Quadrilateral8{T}; N::Int64=4) where {T <: AbstractFloat}
     # experimentally, not mathematically, so more sophisticated analysis could be 
     # performed.
     W, R = gauss_legendre_quadrature(T, N)
-    weights = [W[i]*W[j] for i = 1:N for j = 1:N]
-    # Input to derivatives is in (r,s) but outputs in ξ, η
-    derivative_vectors =  [derivatives(quad8, R[i], R[j]) for i = 1:N for j = 1:N]
-    norms = norm.([dξ × dη for (dξ, dη) in derivative_vectors])
-    return 4*sum(weights .* norms)
+    a = T(0)
+    for i in 1:N, j = 1:N
+        (dξ, dη) = derivatives(quad8, R[i], R[j])
+        a += W[i]*W[j]*norm(dξ × dη)
+    end
+    return 4*a
 end
 
 function triangulate(quad8::Quadrilateral8{T}, N::Int64) where {T <: AbstractFloat}
@@ -133,32 +133,33 @@ end
 function in(p::Point{T}, quad8::Quadrilateral8{T}; N::Int64 = 13) where {T <: AbstractFloat}
     return any(p .∈  triangulate(quad8, N))
 end
-#
-## Plot
-## -------------------------------------------------------------------------------------------------
-#function convert_arguments(P::Type{<:LineSegments}, quad8::Quadrilateral8{T}) where {T <: AbstractFloat}
-#    q₁ = QuadraticSegment(quad8.points[1], quad8.points[2], quad8.points[4])
-#    q₂ = QuadraticSegment(quad8.points[2], quad8.points[3], quad8.points[5])
-#    q₃ = QuadraticSegment(quad8.points[3], quad8.points[1], quad8.points[6])
-#    qsegs = [q₁, q₂, q₃]
-#    return convert_arguments(P, qsegs)
-#end
-#
-#function convert_arguments(P::Type{<:LineSegments}, 
-#        TA::AbstractArray{<:Quadrilateral8{T}}) where {T <: AbstractFloat}
-#    point_sets = [convert_arguments(P, quad8) for quad8 in TA]
-#    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
-#end
-#
-#function convert_arguments(P::Type{Mesh{Tuple{Quadrilateral8{T}}}}, 
-#        quad8::Quadrilateral8{T}) where {T <: AbstractFloat}
-#    triangles = triangulate(quad8, 12)
-#    return convert_arguments(P, triangles)
-#end
-#
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+function convert_arguments(P::Type{<:LineSegments}, quad8::Quadrilateral8{T}) where {T <: AbstractFloat}
+    q₁ = QuadraticSegment(quad8.points[1], quad8.points[2], quad8.points[5])
+    q₂ = QuadraticSegment(quad8.points[2], quad8.points[3], quad8.points[6])
+    q₃ = QuadraticSegment(quad8.points[3], quad8.points[4], quad8.points[7])
+    q₄ = QuadraticSegment(quad8.points[4], quad8.points[1], quad8.points[8])
+    qsegs = [q₁, q₂, q₃, q₄]
+    return convert_arguments(P, qsegs)
+end
+
+function convert_arguments(P::Type{<:LineSegments}, 
+        QA::AbstractArray{<:Quadrilateral8{T}}) where {T <: AbstractFloat}
+    point_sets = [convert_arguments(P, quad8) for quad8 in QA]
+    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
+end
+
+function convert_arguments(P::Type{Mesh{Tuple{Quadrilateral8{T}}}}, 
+        quad8::Quadrilateral8{T}) where {T <: AbstractFloat}
+    triangles = triangulate(quad8, 13)
+    return convert_arguments(P, triangles)
+end
+
 #function convert_arguments(MT::Type{Mesh{Tuple{Quadrilateral8{T}}}},
-#        AT::Vector{Triangle{T}}) where {T <: AbstractFloat}
-#    points = reduce(vcat, [[tri.points[i].coord for i = 1:3] for tri in AT])
+#        AQ::Vector{Triangle{T}}) where {T <: AbstractFloat}
+#    points = reduce(vcat, [[quad8.points[i].coord for i = 1:4] for quad8 in AQ])
 #    faces = zeros(Int64, length(AT), 3)
 #    k = 1
 #    for i in 1:length(AT), j = 1:3

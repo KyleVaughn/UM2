@@ -23,28 +23,32 @@ Triangle6(p₁::Point{T},
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function (tri6::Triangle6)(r::T, s::T) where {T <: AbstractFloat}
-    return (1 - r - s)*(2(1 - r - s) - 1)*tri6.points[1] +
-                                 r*(2r-1)*tri6.points[2] +
-                                 s*(2s-1)*tri6.points[3] +
-                           4r*(1 - r - s)*tri6.points[4] +
-                                   (4r*s)*tri6.points[5] +
-                           4s*(1 - r - s)*tri6.points[6]
+function (tri6::Triangle6{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+    r_T = T(r)
+    s_T = T(s)
+    return (1 - r_T - s_T)*(2(1 - r_T - s_T) - 1)*tri6.points[1] +
+                                     r_T*(2r_T-1)*tri6.points[2] +
+                                     s_T*(2s_T-1)*tri6.points[3] +
+                             4r_T*(1 - r_T - s_T)*tri6.points[4] +
+                                       (4r_T*s_T)*tri6.points[5] +
+                             4s_T*(1 - r_T - s_T)*tri6.points[6]
 end
 
-function derivatives(tri6::Triangle6{T}, r::T, s::T) where {T <: AbstractFloat}
-    # Return ( dtri6/dr(r, s), dtri6/ds(r, s) )
-    d_dr = (4r + 4s - 3)*tri6.points[1] + 
-                (4r - 1)*tri6.points[2] +
-           4(1 - 2r - s)*tri6.points[4] +     
-                    (4s)*tri6.points[5] +
-                   (-4s)*tri6.points[6]
+function derivatives(tri6::Triangle6{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+    # Return ( ∂tri6/∂r, ∂tri6/∂s )
+    r_T = T(r)
+    s_T = T(s)
+    d_dr = (4r_T + 4s_T - 3)*tri6.points[1] + 
+                  (4r_T - 1)*tri6.points[2] +
+           4(1 - 2r_T - s_T)*tri6.points[4] +     
+                      (4s_T)*tri6.points[5] +
+                     (-4s_T)*tri6.points[6]
 
-    d_ds = (4r + 4s - 3)*tri6.points[1] + 
-                (4s - 1)*tri6.points[3] +
-                   (-4r)*tri6.points[4] +
-                    (4r)*tri6.points[5] +
-           4(1 - r - 2s)*tri6.points[6]     
+    d_ds = (4r_T + 4s_T - 3)*tri6.points[1] + 
+                  (4s_T - 1)*tri6.points[3] +
+                     (-4r_T)*tri6.points[4] +
+                      (4r_T)*tri6.points[5] +
+           4(1 - r_T - 2s_T)*tri6.points[6]     
     return (d_dr, d_ds) 
 end
 
@@ -60,7 +64,13 @@ function area(tri6::Triangle6{T}; N::Int64=12) where {T <: AbstractFloat}
     # experimentally, not mathematically, so more sophisticated analysis could be
     # performed. For really strange 3D shapes, we need greater than 79
     w, rs = gauss_legendre_quadrature(tri6, N)
-    return sum(w .* norm.([dr × ds for (dr, ds) in [derivatives(tri6, r, s) for (r, s) in rs]]))
+    a = T(0)
+    for i in 1:N
+        (r, s) = rs[i]
+        (dr, ds) = derivatives(tri6, r, s)
+        a += w[i] * norm(dr × ds)
+    end
+    return a
 end
 
 function triangulate(tri6::Triangle6{T}, N::Int64) where {T <: AbstractFloat}

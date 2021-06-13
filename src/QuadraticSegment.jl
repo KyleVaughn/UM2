@@ -29,15 +29,17 @@ Base.broadcastable(q::QuadraticSegment) = Ref(q)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function (q::QuadraticSegment)(r::T) where {T <: AbstractFloat}
+function (q::QuadraticSegment{T})(r::R) where {T <: AbstractFloat, R <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    return (2r-1)*(r-1)*q.points[1] + r*(2r-1)*q.points[2] + 4r*(1-r)*q.points[3]
+    r_T = T(r)
+    return (2r_T-1)*(r_T-1)*q.points[1] + r_T*(2r_T-1)*q.points[2] + 4r_T*(1-r_T)*q.points[3]
 end
 
 function derivative(q::QuadraticSegment{T}, r::R) where {T <: AbstractFloat, R <: Real}
     # dq⃗/dr
-    return (4T(r) - 3)*q.points[1] + (4T(r) - 1)*q.points[2] + (4 - 8T(r))*q.points[3]
+    r_T = T(r)
+    return (4r_T - 3)*q.points[1] + (4r_T - 1)*q.points[2] + (4 - 8r_T)*q.points[3]
 end
 
 function arc_length(q::QuadraticSegment{T}; N::Int64=20) where {T <: AbstractFloat}

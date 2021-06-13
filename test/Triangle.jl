@@ -47,29 +47,29 @@ using MOCNeutronTransport
             @test !bool
 
             # no intersection non-coplanar
-            p₄ = Point(T.((2.0, 0.1, -5)))
-            p₅ = Point(T.((2.0, 0.1, 5)))
+            p₄ = Point(T, 2, 1//10, -5)
+            p₅ = Point(T, 2, 1//10,  5)
             l = LineSegment(p₄, p₅)
             bool, point = intersect(l, tri)
             @test !bool
 
             # no intersection coplanar
-            p₄ = Point(T.((2.0, -1)))
-            p₅ = Point(T.((2.0, 2)))
+            p₄ = Point(T, 2.0, -1)
+            p₅ = Point(T, 2.0,  2)
             l = LineSegment(p₄, p₅)
             bool, point = intersect(l, tri)
             @test !bool
 
             # in
-            p = Point(T.((0.5, 0.1)))
+            p = Point(T, 1//2, 1//10)
             @test p ∈  tri
-            p = Point(T.((0.5, 0.0)))
+            p = Point(T, 1//2, 0)
             @test p ∈  tri
-            p = Point(T.((0.5, 0.1, 0.1)))
+            p = Point(T, 1//2, 1//10, 1/10)
             @test p ∉ tri
-            p = Point(T.((0.5, -0.1, 0.1)))
+            p = Point(T, 1//2, -1//10, -1//10)
             @test p ∉ tri
-            p = Point(T.((0.5, -0.1, 0.0)))
+            p = Point(T, 1//2, -1//10, -1//10)
             @test p ∉ tri
         end
     end
