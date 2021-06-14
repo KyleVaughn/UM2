@@ -12,19 +12,9 @@ include("QuadraticSegment_2D.jl")
 include("QuadraticSegment_3D.jl")
 include("Triangle_2D.jl")
 include("Triangle_3D.jl")
+include("Quadrilateral_2D.jl")
+include("Quadrilateral_3D.jl")
 include("gauss_legendre_quadrature.jl")
-#export Triangle,
-#       area,
-#       intersect,
-#       in
-#
-#include("Quadrilateral.jl")
-#export Quadrilateral,
-#       triangulate,
-#       area,
-#       intersect,
-#       in
-#
 #include("Triangle6.jl")
 #export Triangle6,
 #       triangulate,
@@ -59,6 +49,8 @@ export  Point_2D,
         QuadraticSegment_3D,
         Triangle_2D,
         Triangle_3D,
+        Quadrilateral_2D,
+        Quadrilateral_3D,
         ×,
         ⋅,
         arc_length,
@@ -66,7 +58,8 @@ export  Point_2D,
         distance,
         intersect,
         gauss_legendre_quadrature,
-        norm
+        norm,
+        triangulate
 
 
 

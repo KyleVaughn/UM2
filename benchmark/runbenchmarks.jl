@@ -6,8 +6,9 @@ benchmarks = ["Point_2D",
             "QuadraticSegment_2D",
             "QuadraticSegment_3D",
             "Triangle_2D",
-            "Triangle_3D"
-#         "Quadrilateral",
+            "Triangle_3D",
+            "Quadrilateral_2D",
+            "Quadrilateral_3D"
 #         "Triangle6"
         ]
 for b in benchmarks

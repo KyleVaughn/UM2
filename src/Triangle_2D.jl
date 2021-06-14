@@ -32,10 +32,10 @@ function in(p::Point_2D{T}, tri::Triangle_2D{T}) where {T <: AbstractFloat}
    # If the point is within the plane of the triangle, then the point is only within the triangle
    # if the areas of the triangles formed by the point and each pair of two vertices sum to the 
    # area of the triangle. Division by 2 is dropped, since it cancels
-   A₁ = (tri.points[1] - p) × (tri.points[2] - p)
-   A₂ = (tri.points[2] - p) × (tri.points[3] - p)
-   A₃ = (tri.points[3] - p) × (tri.points[1] - p)
-   A  = (tri.points[2] - tri.points[1]) × (tri.points[3] - tri.points[1])
+   A₁ = abs((tri.points[1] - p) × (tri.points[2] - p))
+   A₂ = abs((tri.points[2] - p) × (tri.points[3] - p))
+   A₃ = abs((tri.points[3] - p) × (tri.points[1] - p))
+   A  = abs((tri.points[2] - tri.points[1]) × (tri.points[3] - tri.points[1]))
    return A₁ + A₂ + A₃ ≈ A
 end
 
