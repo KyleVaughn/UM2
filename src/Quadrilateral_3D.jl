@@ -56,10 +56,6 @@ function intersect(l::LineSegment_3D{T}, quad::Quadrilateral_3D{T}) where {T <: 
     return false, Point_3D(T, 0)
 end
 
-function in(p::Point_3D, quad::Quadrilateral_3D)
-    return any(p .∈  triangulate(quad))
-end
-
 # Plot
 # -------------------------------------------------------------------------------------------------
 function convert_arguments(P::Type{<:LineSegments}, quad::Quadrilateral_3D)

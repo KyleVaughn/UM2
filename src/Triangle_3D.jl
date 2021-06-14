@@ -49,27 +49,6 @@ function intersect(l::LineSegment_3D{type}, tri::Triangle_3D{type}) where {type 
     end
 end
 
-function in(p::Point_3D{T}, tri::Triangle_3D{T}) where {T <: AbstractFloat}
-    # If the volume of the tetrahedron formed by the 4 points is 0, then point lies in the
-    # plane of the triangle. Division by 6 is dropped, since it doesn't change the computation.
-    u⃗ = tri.points[2] - tri.points[1]   
-    v⃗ = tri.points[3] - tri.points[1]    
-    w⃗ = p - tri.points[1]
-    V = abs(u⃗ ⋅ (v⃗ × w⃗))
-    if V < 1.0e-6
-        # If the point is within the plane of the triangle, then the point is only within the triangle
-        # if the areas of the triangles formed by the point and each pair of two vertices sum to the 
-        # area of the triangle. Division by 2 is dropped, since it cancels
-        A₁ = norm((tri.points[1] - p) × (tri.points[2] - p))
-        A₂ = norm((tri.points[2] - p) × (tri.points[3] - p))
-        A₃ = norm((tri.points[3] - p) × (tri.points[1] - p))
-        A  = norm(u⃗ × v⃗)
-        return A₁ + A₂ + A₃ ≈ A
-    else
-        return false
-    end
-end
-
 # Plot
 # -------------------------------------------------------------------------------------------------
 function convert_arguments(P::Type{<:LineSegments}, tri::Triangle_3D)

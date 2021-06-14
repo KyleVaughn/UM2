@@ -87,7 +87,7 @@ function triangulate(quad8::Quadrilateral8{T}, N::Int64) where {T <: AbstractFlo
         triangles[2] = Triangle(tri6.points[3], tri6.points[4], tri6.points[1])
     else
         l_Rm1 = N + 1
-        R = T.(LinRange(0, 1, N + 2)) 
+        R = LinRange{T}(0, 1, N + 2)
         for j = 1:l_Rm1, i = 1:l_Rm1
             triangles[2l_Rm1*(j-1) + 2*(i-1) + 1] = Triangle(quad8(R[i  ], R[j  ]), 
                                                              quad8(R[i+1], R[j  ]), 

@@ -62,18 +62,6 @@ using MOCNeutronTransport
             l = LineSegment_3D(p₄, p₅)
             bool, point = intersect(l, quad)
             @test !bool
-
-            # in
-            p = Point_3D(T, 1//2, 1//10)
-            @test p ∈  quad
-            p = Point_3D(T, 1//2, 0)
-            @test p ∈  quad
-            p = Point_3D(T, 1//2, 1//10, 1//10)
-            @test p ∉ quad
-            p = Point_3D(T, 1//2, -1//10, 1//10)
-            @test p ∉ quad
-            p = Point_3D(T, 1//2, -1//10, 0)
-            @test p ∉ quad
         end
     end
 end

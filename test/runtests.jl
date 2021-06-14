@@ -8,8 +8,9 @@ tests = ["Point_2D",
          "QuadraticSegment_3D",
          "Triangle_3D",
          "Quadrilateral_2D",
-         "Quadrilateral_3D"
-#         "Triangle6",
+         "Quadrilateral_3D",
+         "Triangle6_2D",
+         "Triangle6_3D"
 #         "Quadrilateral8",
 #         "UnstructuredMesh",
 #         "vtk",
