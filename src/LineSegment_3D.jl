@@ -1,26 +1,26 @@
 # A line segment in 3D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and goes to points[2]
-struct LineSegment{T <: AbstractFloat} <: Edge
-    points::NTuple{2, Point{T}}
+struct LineSegment_3D{T <: AbstractFloat}
+    points::NTuple{2, Point_3D{T}}
 end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-LineSegment(p₁::Point, p₂::Point) = LineSegment((p₁, p₂))
+LineSegment_3D(p₁::Point_3D, p₂::Point_3D) = LineSegment_3D((p₁, p₂))
 
 # Base
 # -------------------------------------------------------------------------------------------------
-Base.broadcastable(l::LineSegment) = Ref(l)
+Base.broadcastable(l::LineSegment_3D) = Ref(l)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function (l::LineSegment{T})(r::R) where {T <: AbstractFloat, R <: Real}
+function (l::LineSegment_3D{T})(r::R) where {T <: AbstractFloat, R <: Real}
     return l.points[1] + T(r) * (l.points[2] - l.points[1])
 end
 
-arc_length(l::LineSegment) = distance(l.points[1], l.points[2])
+arc_length(l::LineSegment_3D) = distance(l.points[1], l.points[2])
 
-function intersect(l₁::LineSegment{T}, l₂::LineSegment{T}) where {T <: AbstractFloat}
+function intersect(l₁::LineSegment_3D{T}, l₂::LineSegment_3D{T}) where {T <: AbstractFloat}
     # NOTE: Doesn't work for colinear lines. (v⃗ × u⃗ = 0⃗)
     #
     # Using the equation of a line in parametric form
@@ -53,10 +53,10 @@ end
 
 # Plot
 # -------------------------------------------------------------------------------------------------
-function convert_arguments(P::Type{<:LineSegments}, l::LineSegment)
+function convert_arguments(P::Type{<:LineSegments}, l::LineSegment_3D)
     return convert_arguments(P, [l.points[1].coord, l.points[2].coord])
 end
 
-function convert_arguments(P::Type{<:LineSegments}, AL::AbstractArray{<:LineSegment})
+function convert_arguments(P::Type{<:LineSegments}, AL::AbstractArray{<:LineSegment_3D})
     return convert_arguments(P, reduce(vcat, [[l.points[1].coord, l.points[2].coord] for l in AL]))
 end
