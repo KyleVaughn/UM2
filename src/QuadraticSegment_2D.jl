@@ -1,5 +1,4 @@
-import Base: intersect
-# A quadratic segment in 3D space that passes through three points: x⃗₁, x⃗₂, and x⃗₃.
+# A quadratic segment in 2D space that passes through three points: x⃗₁, x⃗₂, and x⃗₃.
 # The assumed relation of the points may be seen in the diagram below.
 #                 ___x⃗₃___
 #            ____/        \____
@@ -13,36 +12,36 @@ import Base: intersect
 # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
 # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
 # Chapter 8, Advanced Data Representation, in the interpolation functions section
-struct QuadraticSegment{T <: AbstractFloat} <: Edge
-    points::NTuple{3,Point{T}}
+struct QuadraticSegment_2D{T <: AbstractFloat}
+    points::NTuple{3, Point_2D{T}}
 end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-QuadraticSegment(p₁::Point{T},
-                 p₂::Point{T},
-                 p₃::Point{T}) where {T <: AbstractFloat} = QuadraticSegment((p₁, p₂, p₃))
+QuadraticSegment_2D(p₁::Point_2D{T},
+                 p₂::Point_2D{T},
+                 p₃::Point_2D{T}) where {T <: AbstractFloat} = QuadraticSegment_2D((p₁, p₂, p₃))
 
 # Base
 # -------------------------------------------------------------------------------------------------
-Base.broadcastable(q::QuadraticSegment) = Ref(q)
+Base.broadcastable(q::QuadraticSegment_2D) = Ref(q)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function (q::QuadraticSegment{T})(r::R) where {T <: AbstractFloat, R <: Real}
+function (q::QuadraticSegment_2D{T})(r::R) where {T <: AbstractFloat, R <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     r_T = T(r)
     return (2r_T-1)*(r_T-1)*q.points[1] + r_T*(2r_T-1)*q.points[2] + 4r_T*(1-r_T)*q.points[3]
 end
 
-function derivative(q::QuadraticSegment{T}, r::R) where {T <: AbstractFloat, R <: Real}
+function derivative(q::QuadraticSegment_2D{T}, r::R) where {T <: AbstractFloat, R <: Real}
     # dq⃗/dr
     r_T = T(r)
     return (4r_T - 3)*q.points[1] + (4r_T - 1)*q.points[2] + (4 - 8r_T)*q.points[3]
 end
 
-function arc_length(q::QuadraticSegment{T}; N::Int64=20) where {T <: AbstractFloat}
+function arc_length(q::QuadraticSegment_2D{T}; N::Int64=20) where {T <: AbstractFloat}
     # Mathematica solution is pages long and can produce NaN results when the segment is
     # straight, so numerical integration is used. (Gauss-Legengre quadrature)
     #     1                  N
@@ -54,20 +53,17 @@ function arc_length(q::QuadraticSegment{T}; N::Int64=20) where {T <: AbstractFlo
     return sum(norm.(w .* derivative.(q, r)))
 end
 
-function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
+function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: AbstractFloat}
     # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
     # q(r) = 2r²(x⃗₁ + x⃗₂ - 2x⃗₃) + r(-3x⃗₁ - x⃗₂ + 4x⃗₃) + x⃗₁
     # Let D⃗ = 2(x⃗₁ + x⃗₂ - 2x⃗₃), E⃗ = (-3x⃗₁ - x⃗₂ + 4x⃗₃), F⃗ = x₁
     # q(r) = r²D⃗ + rE⃗ + F⃗
     # l(s) = x⃗₄ + sw⃗
-    # If D⃗ × w⃗ ≠ 0⃗
+    # If D⃗ × w⃗ ≠ 0
     #   x⃗₄ + sw⃗ = r²D⃗ + rE⃗ + F⃗
     #   sw⃗ = r²D⃗ + rE⃗ + (F⃗ - x⃗₄)
-    #   0⃗ = r²(D⃗ × w⃗) + r(E⃗ × w⃗) + (F⃗ - x⃗₄) × w⃗
-    #   Let A⃗ = (D⃗ × w⃗), B⃗ = (E⃗ × w⃗), C⃗ = (F⃗ - x⃗₄) × w⃗
-    #   0⃗ = r²A⃗ + rB⃗ + C⃗
-    #   0 = (A⃗ ⋅ A⃗)r² + (B⃗ ⋅ A⃗)r + (C⃗ ⋅ A⃗)
-    #   A = (A⃗ ⋅ A⃗), B = (B⃗ ⋅ A⃗), C = (C⃗ ⋅ A⃗)
+    #   0 = r²(D⃗ × w⃗) + r(E⃗ × w⃗) + (F⃗ - x⃗₄) × w⃗
+    #   Let A = (D⃗ × w⃗), B = (E⃗ × w⃗), C = (F⃗ - x⃗₄) × w⃗
     #   0 = Ar² + Br + C
     #   r = (-B - √(B²-4AC))/2A, -B + √(B²-4AC))/2A)
     #   s = ((q(r) - p₄)⋅w⃗/(w⃗ ⋅ w⃗)
@@ -80,19 +76,17 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
     # If D⃗ × w⃗ = 0, we need to use line intersection instead.
     bool = false
     npoints = 0
-    points = [Point(T, 1e9, 1e9, 1e9), Point(T, 1e9, 1e9, 1e9)]
+    points = [Point_2D(T, 1e9, 1e9), Point_2D(T, 1e9, 1e9)]
     D⃗ = 2*(q.points[1] + q.points[2] - 2*q.points[3])
     E⃗ = 4*q.points[3] - 3*q.points[1] - q.points[2]
     w⃗ = l.points[2] - l.points[1]
-    A⃗ = D⃗ × w⃗
-    B⃗ = E⃗ × w⃗
-    C⃗ = (q.points[1] - l.points[1]) × w⃗
-    A = A⃗ ⋅ A⃗
-    B = B⃗ ⋅ A⃗
-    C = C⃗ ⋅ A⃗
+    A = D⃗ × w⃗
+    B = E⃗ × w⃗
+    C = (q.points[1] - l.points[1]) × w⃗
     if isapprox(A, 0, atol = √eps(T))
         # Line intersection
-        r = (-C⃗ ⋅ B⃗)/(B⃗ ⋅ B⃗)
+        r = -C/B
+        # Can B = 0 if A = 0 for non-trivial x?
         s = (q(r)- l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
         points[1] = q(r)
         if (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1)
@@ -123,18 +117,18 @@ function intersect(l::LineSegment{T}, q::QuadraticSegment{T}) where {T <: Abstra
     end
     return bool, npoints, points
 end
-intersect(q::QuadraticSegment, l::LineSegment) = intersect(l, q)
+intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 
 # Plot
 # -------------------------------------------------------------------------------------------------
-function convert_arguments(P::Type{<:LineSegments}, q::QuadraticSegment{T}) where {T <: AbstractFloat}
+function convert_arguments(P::Type{<:LineSegments}, q::QuadraticSegment_2D{T}) where {T <: AbstractFloat}
     rr = LinRange{T}(0, 1, 50)
     points = q.(rr)
     coords = reduce(vcat, [[points[i].coord, points[i+1].coord] for i = 1:length(points)-1])
     return convert_arguments(P, coords)
 end
 
-function convert_arguments(P::Type{<:LineSegments}, AQ::AbstractArray{<:QuadraticSegment})
+function convert_arguments(P::Type{<:LineSegments}, AQ::AbstractArray{<:QuadraticSegment_2D})
     point_sets = [convert_arguments(P, q) for q in AQ]
     return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
 end

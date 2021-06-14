@@ -10,11 +10,9 @@ include("Point_2D.jl")
 include("Point_3D.jl")
 include("LineSegment_2D.jl")
 include("LineSegment_3D.jl")
-#export  LineSegment,
-
-
-#
-#include("QuadraticSegment.jl")
+include("QuadraticSegment_2D.jl")
+include("QuadraticSegment_3D.jl")
+include("gauss_legendre_quadrature.jl")
 #export QuadraticSegment,
 #       intersect,
 #       arc_length
@@ -42,8 +40,6 @@ include("LineSegment_3D.jl")
 #include("Quadrilateral8.jl")
 #export Quadrilateral8
 #
-#include("gauss_legendre_quadrature.jl")
-#export gauss_legendre_quadrature
 #
 #include("UnstructuredMesh.jl")
 #export UnstructuredMesh,
@@ -64,12 +60,15 @@ export  Point_2D,
         Point_3D,
         LineSegment_2D,
         LineSegment_3D,
+        QuadraticSegment_2D,
+        QuadraticSegment_3D,
         ×,
         ⋅,
         distance,
         norm,
         intersect,
-        arc_length
+        arc_length,
+        gauss_legendre_quadrature
 
 
 
