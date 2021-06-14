@@ -39,38 +39,48 @@ Base.getindex(p⃗::Point_3D, i::Int) = p⃗.coord[i]
 # -------------------------------------------------------------------------------------------------
 ==(p⃗₁::Point_3D, p⃗₂::Point_3D) = (p⃗₁.coord == p⃗₂.coord)
 function ≈(p⃗₁::Point_3D{T}, p⃗₂::Point_3D{T}) where {T <: AbstractFloat}
-    # If non-zero, use relative isapprox. If zero, use absolute isapprox.
-    # Otherwise, x ≈ 0 is false for every x ≠ 0
-    bool = [true, true, true]
-    for i = 1:3
-        if (p⃗₁[i] == T(0)) || (p⃗₂[i] == T(0))
-            bool[i] = isapprox(p⃗₁[i], p⃗₂[i], atol=sqrt(eps(T)))
-        else
-            bool[i] = isapprox(p⃗₁[i], p⃗₂[i])
-        end
-    end
-    return all(bool)
+    return distance(p⃗₁, p⃗₂) < 5.0e-5 
 end
-+(p⃗₁::Point_3D, p⃗₂::Point_3D) = Point_3D(p⃗₁.coord .+ p⃗₂.coord)
--(p⃗₁::Point_3D, p⃗₂::Point_3D) = Point_3D(p⃗₁.coord .- p⃗₂.coord)
-×(p⃗₁::Point_3D, p⃗₂::Point_3D) = Point_3D(p⃗₁[2]*p⃗₂[3] - p⃗₂[2]*p⃗₁[3],
-                                p⃗₁[3]*p⃗₂[1] - p⃗₂[3]*p⃗₁[1],
-                                p⃗₁[1]*p⃗₂[2] - p⃗₂[1]*p⃗₁[2],
++(p⃗₁::Point_3D, p⃗₂::Point_3D) = Point_3D(p⃗₁.coord[1] + p⃗₂.coord[1],
+                                         p⃗₁.coord[2] + p⃗₂.coord[2],
+                                         p⃗₁.coord[3] + p⃗₂.coord[3]
+                                        )
+-(p⃗₁::Point_3D, p⃗₂::Point_3D) = Point_3D(p⃗₁.coord[1] - p⃗₂.coord[1],
+                                         p⃗₁.coord[2] - p⃗₂.coord[2],
+                                         p⃗₁.coord[3] - p⃗₂.coord[3]
+                                        )
+×(p⃗₁::Point_3D, p⃗₂::Point_3D) = Point_3D(p⃗₁.coord[2]*p⃗₂.coord[3] - p⃗₂.coord[2]*p⃗₁.coord[3],
+                                         p⃗₁.coord[3]*p⃗₂.coord[1] - p⃗₂.coord[3]*p⃗₁.coord[1],
+                                         p⃗₁.coord[1]*p⃗₂.coord[2] - p⃗₂.coord[1]*p⃗₁.coord[2],
                                 )
-⋅(p⃗₁::Point_3D, p⃗₂::Point_3D) = p⃗₁[1]*p⃗₂[1] + p⃗₁[2]*p⃗₂[2] + p⃗₁[3]*p⃗₂[3]
+⋅(p⃗₁::Point_3D, p⃗₂::Point_3D) = p⃗₁.coord[1]*p⃗₂.coord[1] + 
+                                p⃗₁.coord[2]*p⃗₂.coord[2] + 
+                                p⃗₁.coord[3]*p⃗₂.coord[3]
 
-+(p⃗::Point_3D, n::Real) = Point_3D(p⃗.coord .+ n)
++(p⃗::Point_3D, n::Real) = Point_3D(p⃗.coord[1] + n,
+                                   p⃗.coord[2] + n,
+                                   p⃗.coord[3] + n
+                                  )
 +(n::Real,  p⃗::Point_3D) = p⃗ + n
--(p⃗::Point_3D, n::Real) = Point_3D(p⃗.coord .- n)
+-(p⃗::Point_3D, n::Real) = Point_3D(p⃗.coord[1] - n,
+                                   p⃗.coord[2] - n,
+                                   p⃗.coord[3] - n
+                                  )
 -(n::Real,  p⃗::Point_3D) = p⃗ - n
-*(n::Real,  p⃗::Point_3D) = Point_3D(p⃗.coord .* n)
+*(n::Real,  p⃗::Point_3D) = Point_3D(p⃗.coord[1] * n,
+                                    p⃗.coord[2] * n,
+                                    p⃗.coord[3] * n
+                                   )
 *(p⃗::Point_3D, n::Real) = n*p⃗
-/(p⃗::Point_3D, n::Real) = Point_3D(p⃗.coord ./ n)
+/(p⃗::Point_3D, n::Real) = Point_3D(p⃗.coord[1] / n,
+                                   p⃗.coord[2] / n,
+                                   p⃗.coord[3] / n
+                                  )
 -(p⃗::Point_3D) = -1*p⃗
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-norm(p⃗::Point_3D) = norm(p⃗.coord)
+norm(p⃗::Point_3D) = sqrt(p⃗ ⋅ p⃗)
 distance(p⃗₁::Point_3D, p⃗₂::Point_3D) = norm(p⃗₁ - p⃗₂)
 
 # Plot

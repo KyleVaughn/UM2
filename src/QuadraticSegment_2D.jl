@@ -76,14 +76,14 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
     # If D⃗ × w⃗ = 0, we need to use line intersection instead.
     bool = false
     npoints = 0
-    points = [Point_2D(T, 1e9, 1e9), Point_2D(T, 1e9, 1e9)]
+    points = [Point_2D(T, 0), Point_2D(T, 0)]
     D⃗ = 2*(q.points[1] + q.points[2] - 2*q.points[3])
     E⃗ = 4*q.points[3] - 3*q.points[1] - q.points[2]
     w⃗ = l.points[2] - l.points[1]
     A = D⃗ × w⃗
     B = E⃗ × w⃗
     C = (q.points[1] - l.points[1]) × w⃗
-    if isapprox(A, 0, atol = √eps(T))
+    if abs(A) < 1.0e-6
         # Line intersection
         r = -C/B
         # Can B = 0 if A = 0 for non-trivial x?
@@ -95,18 +95,20 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
         end
     elseif B^2 ≥ 4A*C
         # Quadratic intersection
-        r = [(-B - √(B^2-4A*C))/2A, (-B + √(B^2-4A*C))/2A]
-        s = [(q(r[1]) - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗), (q(r[2]) - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)]
+        r₁ = (-B - √(B^2-4A*C))/2A
+        r₂ = (-B + √(B^2-4A*C))/2A
+        points[1] = q(r₁)
+        points[2] = q(r₂)
+        s₁ = (points[1] - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
+        s₂ = (points[2] - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
+        
         # Check points to see if they are valid intersections.
-        pᵣ = q.(r)
-        pₛ = l.(s)
-        points = pᵣ
         # First r,s valid?
-        if (0 ≤ r[1] ≤ 1) && (0 ≤ s[1] ≤ 1) && (pᵣ[1] ≈ pₛ[1])
+        if (0 ≤ r₁ ≤ 1) && (0 ≤ s₁ ≤ 1) && (points[1] ≈ l(s₁))
             npoints += 1
         end
         # Second r,s valid?
-        if (0 ≤ r[2] ≤ 1) && (0 ≤ s[2] ≤ 1) && (pᵣ[2] ≈ pₛ[2])
+        if (0 ≤ r₂ ≤ 1) && (0 ≤ s₂ ≤ 1) && (points[2] ≈ l(s₂))
             npoints += 1
             # If only point 2 is valid, return it in index 1 of points
             if npoints == 1

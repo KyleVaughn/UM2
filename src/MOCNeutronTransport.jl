@@ -1,9 +1,7 @@
 module MOCNeutronTransport
 using StaticArrays
-using LinearAlgebra
 
 import Base: +, -, *, /, ≈, ==, intersect, in
-import LinearAlgebra: norm
 import GLMakie: convert_arguments, LineSegments, Mesh, Scatter
 
 include("Point_2D.jl")
@@ -12,12 +10,9 @@ include("LineSegment_2D.jl")
 include("LineSegment_3D.jl")
 include("QuadraticSegment_2D.jl")
 include("QuadraticSegment_3D.jl")
+include("Triangle_2D.jl")
+include("Triangle_3D.jl")
 include("gauss_legendre_quadrature.jl")
-#export QuadraticSegment,
-#       intersect,
-#       arc_length
-#
-#include("Triangle.jl")
 #export Triangle,
 #       area,
 #       intersect,
@@ -62,13 +57,16 @@ export  Point_2D,
         LineSegment_3D,
         QuadraticSegment_2D,
         QuadraticSegment_3D,
+        Triangle_2D,
+        Triangle_3D,
         ×,
         ⋅,
-        distance,
-        norm,
-        intersect,
         arc_length,
-        gauss_legendre_quadrature
+        area,
+        distance,
+        intersect,
+        gauss_legendre_quadrature,
+        norm
 
 
 

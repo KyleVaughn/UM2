@@ -68,8 +68,8 @@ using MOCNeutronTransport
             bool, npoints, points = intersect(l, q)
             @test !bool
             @test npoints == 0
-            @test points[1] ≈ Point_2D(T, 1e9, 1e9)
-            @test points[2] ≈ Point_2D(T, 1e9, 1e9)
+            @test points[1] ≈ Point_2D(T, 0)
+            @test points[2] ≈ Point_2D(T, 0)
         end
     end
 end

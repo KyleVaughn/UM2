@@ -32,20 +32,7 @@ Base.getindex(p⃗::Point_2D, i::Int) = p⃗.coord[i]
 # -------------------------------------------------------------------------------------------------
 ==(p⃗₁::Point_2D, p⃗₂::Point_2D) = (p⃗₁.coord == p⃗₂.coord)
 function ≈(p⃗₁::Point_2D{T}, p⃗₂::Point_2D{T}) where {T <: AbstractFloat}
-    # If non-zero, use relative isapprox. If zero, use absolute isapprox.
-    # Otherwise, x ≈ 0 is false for every x ≠ 0
-    bool = [true, true]
-    if (p⃗₁[1] == T(0)) || (p⃗₂[1] == T(0))
-        bool[1] = isapprox(p⃗₁[1], p⃗₂[1], atol=sqrt(eps(T)))
-    else
-        bool[1] = isapprox(p⃗₁[1], p⃗₂[1])
-    end
-    if (p⃗₁[2] == T(0)) || (p⃗₂[2] == T(0))
-        bool[2] = isapprox(p⃗₁[2], p⃗₂[2], atol=sqrt(eps(T)))
-    else
-        bool[2] = isapprox(p⃗₁[2], p⃗₂[2])
-    end
-    return all(bool)
+    return distance(p⃗₁, p⃗₂) < 5.0e-5
 end
 +(p⃗₁::Point_2D, p⃗₂::Point_2D) = Point_2D(p⃗₁.coord[1] + p⃗₂.coord[1], p⃗₁.coord[2] + p⃗₂.coord[2])
 -(p⃗₁::Point_2D, p⃗₂::Point_2D) = Point_2D(p⃗₁.coord[1] - p⃗₂.coord[1], p⃗₁.coord[2] - p⃗₂.coord[2])
@@ -63,7 +50,7 @@ end
 # Methods
 # -------------------------------------------------------------------------------------------------
 norm(p⃗::Point_2D) = hypot(p⃗.coord[1], p⃗.coord[2])
-distance(p⃗₁::Point_2D, p⃗₂::Point_2D) = norm(p⃗₁ - p⃗₂)
+distance(p⃗₁::Point_2D, p⃗₂::Point_2D) = hypot(p⃗₁.coord[1] - p⃗₂.coord[1], p⃗₁.coord[2] - p⃗₂.coord[2])
 
 # Plot
 # -------------------------------------------------------------------------------------------------

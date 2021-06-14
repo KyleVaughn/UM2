@@ -4,8 +4,9 @@ benchmarks = ["Point_2D",
             "LineSegment_2D",
             "LineSegment_3D",
             "QuadraticSegment_2D",
-            "QuadraticSegment_3D"
-#         "Triangle",
+            "QuadraticSegment_3D",
+            "Triangle_2D",
+            "Triangle_3D"
 #         "Quadrilateral",
 #         "Triangle6"
         ]

@@ -45,10 +45,14 @@ function intersect(l₁::LineSegment_3D{T}, l₂::LineSegment_3D{T}) where {T <:
     v⃗ = l₁.points[2] - l₁.points[1]
     u⃗ = l₂.points[2] - l₂.points[1]
     w⃗ = l₂.points[1] - l₁.points[1]
-    r = ((w⃗ × u⃗) ⋅ (v⃗ × u⃗))/((v⃗ × u⃗) ⋅ (v⃗ × u⃗))
-    p = l₁(r)
-    s = (r*v⃗ - w⃗) ⋅ u⃗/(u⃗ ⋅ u⃗)
-    return (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1) ? (true, p) : (false, p)
+    if norm(v⃗ × u⃗) > 5.0e-5
+        r = ((w⃗ × u⃗) ⋅ (v⃗ × u⃗))/((v⃗ × u⃗) ⋅ (v⃗ × u⃗))
+        p = l₁(r)
+        s = (r*v⃗ - w⃗) ⋅ u⃗/(u⃗ ⋅ u⃗)
+        return (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1) ? (true, p) : (false, p)
+    else
+        return (false, Point_3D(T, 0))
+    end
 end
 
 # Plot
