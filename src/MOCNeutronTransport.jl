@@ -1,5 +1,4 @@
 module MOCNeutronTransport
-using StaticArrays
 
 import Base: +, -, *, /, ≈, ==, intersect, in
 import GLMakie: convert_arguments, LineSegments, Mesh, Scatter

@@ -131,7 +131,7 @@ end
 function convert_arguments(P::Type{<:LineSegments}, q::QuadraticSegment_3D{T}) where {T <: AbstractFloat}
     rr = LinRange{T}(0, 1, 50)
     points = q.(rr)
-    coords = reduce(vcat, [[points[i].coord, points[i+1].coord] for i = 1:length(points)-1])
+    coords = reduce(vcat, [[points[i].x, points[i+1].x] for i = 1:length(points)-1])
     return convert_arguments(P, coords)
 end
 

@@ -62,7 +62,7 @@ function convert_arguments(P::Type{<:LineSegments}, AQ::AbstractArray{<:Quadrila
 end
 
 function convert_arguments(P::Type{<:Mesh}, quad::Quadrilateral_2D)
-    points = [quad.points[i].coord for i = 1:4]
+    points = [quad.points[i].x for i = 1:4]
     faces = [1 2 3;
              3 4 1]
     return convert_arguments(P, points, faces)
@@ -70,7 +70,7 @@ end
 
 function convert_arguments(MT::Type{Mesh{Tuple{Vector{Quadrilateral_2D{T}}}}},
         AQ::Vector{Quadrilateral_2D{T}}) where {T <: AbstractFloat}
-    points = reduce(vcat, [[quad.points[i].coord for i = 1:4] for quad in AQ])
+    points = reduce(vcat, [[quad.points[i].x for i = 1:4] for quad in AQ])
     faces = zeros(Int64, 2*length(AQ), 3)
     j = 0
     for i in 1:2:2*length(AQ)

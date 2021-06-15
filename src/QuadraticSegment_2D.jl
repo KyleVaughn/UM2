@@ -76,7 +76,8 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
     # If D⃗ × w⃗ = 0, we need to use line intersection instead.
     bool = false
     npoints = 0
-    points = [Point_2D(T, 0), Point_2D(T, 0)]
+    p₁ = Point_2D(T, 0)
+    p₂ = Point_2D(T, 0)
     D⃗ = 2*(q.points[1] + q.points[2] - 2*q.points[3])
     E⃗ = 4*q.points[3] - 3*q.points[1] - q.points[2]
     w⃗ = l.points[2] - l.points[1]
@@ -88,7 +89,7 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
         r = -C/B
         # Can B = 0 if A = 0 for non-trivial x?
         s = (q(r)- l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
-        points[1] = q(r)
+        p₁ = q(r)
         if (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1)
             bool = true
             npoints = 1
@@ -97,27 +98,27 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
         # Quadratic intersection
         r₁ = (-B - √(B^2-4A*C))/2A
         r₂ = (-B + √(B^2-4A*C))/2A
-        points[1] = q(r₁)
-        points[2] = q(r₂)
-        s₁ = (points[1] - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
-        s₂ = (points[2] - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
+        p₁ = q(r₁)
+        p₂ = q(r₂)
+        s₁ = (p₁ - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
+        s₂ = (p₂ - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
         
         # Check points to see if they are valid intersections.
         # First r,s valid?
-        if (0 ≤ r₁ ≤ 1) && (0 ≤ s₁ ≤ 1) && (points[1] ≈ l(s₁))
+        if (0 ≤ r₁ ≤ 1) && (0 ≤ s₁ ≤ 1) && (p₁ ≈ l(s₁))
             npoints += 1
         end
         # Second r,s valid?
-        if (0 ≤ r₂ ≤ 1) && (0 ≤ s₂ ≤ 1) && (points[2] ≈ l(s₂))
+        if (0 ≤ r₂ ≤ 1) && (0 ≤ s₂ ≤ 1) && (p₂ ≈ l(s₂))
             npoints += 1
             # If only point 2 is valid, return it in index 1 of points
             if npoints == 1
-                points[1] = points[2]
+                p₁ = p₂
             end
         end
         bool = npoints > 0
     end
-    return bool, npoints, points
+    return bool, npoints, p₁, p₂
 end
 intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 
@@ -126,7 +127,7 @@ intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 function convert_arguments(P::Type{<:LineSegments}, q::QuadraticSegment_2D{T}) where {T <: AbstractFloat}
     rr = LinRange{T}(0, 1, 50)
     points = q.(rr)
-    coords = reduce(vcat, [[points[i].coord, points[i+1].coord] for i = 1:length(points)-1])
+    coords = reduce(vcat, [[points[i].x, points[i+1].x] for i = 1:length(points)-1])
     return convert_arguments(P, coords)
 end
 

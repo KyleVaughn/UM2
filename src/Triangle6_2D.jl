@@ -60,11 +60,10 @@ function area(tri6::Triangle6_2D{T}; N::Int64=12) where {T <: AbstractFloat}
     # This is to ensure error in area less that about 1e-6. This was determined
     # experimentally, not mathematically, so more sophisticated analysis could be
     # performed. For really strange 3D shapes, we need greater than 79
-    w, rs = gauss_legendre_quadrature(tri6, N)
+    w, r, s = gauss_legendre_quadrature(tri6, N)
     a = T(0)
     for i in 1:N
-        (r, s) = rs[i]
-        (dr, ds) = derivatives(tri6, r, s)
+        (dr, ds) = derivatives(tri6, r[i], s[i])
         a += w[i] * abs(dr × ds)
     end
     return a
@@ -121,7 +120,7 @@ end
 
 function convert_arguments(MT::Type{Mesh{Tuple{Triangle6_2D{T}}}},
         AT::Vector{Triangle_2D{T}}) where {T <: AbstractFloat}
-    points = reduce(vcat, [[tri.points[i].coord for i = 1:3] for tri in AT])
+    points = reduce(vcat, [[tri.points[i].x for i = 1:3] for tri in AT])
     faces = zeros(Int64, length(AT), 3)
     k = 1
     for i in 1:length(AT), j = 1:3

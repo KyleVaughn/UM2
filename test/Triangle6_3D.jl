@@ -63,7 +63,7 @@ using MOCNeutronTransport
             # 1 intersection
             @test intersection[1]
             @test intersection[2] == 1
-            @test intersection[3][1] ≈ Point_3D(T, 1, 1//2, 0)
+            @test intersection[3] ≈ Point_3D(T, 1, 1//2, 0)
 
             # 0 intersection
             l = LineSegment_3D(Point_3D(T, 1, 0, -2),
@@ -81,8 +81,8 @@ using MOCNeutronTransport
             intersection = l ∩ tri6
             @test intersection[1]
             @test intersection[2] == 2
-            @test norm(intersection[3][1] - Point_3D(T, 1, 0.766071428, -1//5)) < 1e-6
-            @test norm(intersection[3][2] - Point_3D(T, 1, 0.313186813, -1//5)) < 1e-6
+            @test norm(intersection[3] - Point_3D(T, 1, 0.766071428, -1//5)) < 1e-6
+            @test norm(intersection[4] - Point_3D(T, 1, 0.313186813, -1//5)) < 1e-6
         end
     end
 end

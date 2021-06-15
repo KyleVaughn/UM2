@@ -65,14 +65,14 @@ function convert_arguments(P::Type{<:LineSegments}, AT::AbstractArray{<:Triangle
 end
 
 function convert_arguments(P::Type{<:Mesh}, tri::Triangle_3D)
-    points = [tri.points[i].coord for i = 1:3]
+    points = [tri.points[i].x for i = 1:3]
     face = [1 2 3]
     return convert_arguments(P, points, face)
 end
 
 function convert_arguments(MT::Type{Mesh{Tuple{Vector{Triangle_3D{T}}}}}, 
         AT::Vector{Triangle_3D{T}}) where {T <: AbstractFloat} 
-    points = reduce(vcat, [[tri.points[i].coord for i = 1:3] for tri in AT])
+    points = reduce(vcat, [[tri.points[i].x for i = 1:3] for tri in AT])
     faces = zeros(Int64, length(AT), 3) 
     k = 1
     for i in 1:length(AT), j = 1:3

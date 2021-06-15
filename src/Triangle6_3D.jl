@@ -60,11 +60,11 @@ function area(tri6::Triangle6_3D{T}; N::Int64=79) where {T <: AbstractFloat}
     # This is to ensure error in area less that about 1e-6. This was determined
     # experimentally, not mathematically, so more sophisticated analysis could be
     # performed. For really strange 3D shapes, we need greater than 79
-    w, rs = gauss_legendre_quadrature(tri6, N)
+    w, r, s = gauss_legendre_quadrature(tri6, N)
+#    return mapreduce((w,r,s)->w*norm(×(derivatives(tri6, r, s))), +, w, r, s)
     a = T(0)
     for i in 1:N
-        (r, s) = rs[i]
-        (dr, ds) = derivatives(tri6, r, s)
+        (dr, ds) = derivatives(tri6, r[i], s[i])
         a += w[i] * norm(dr × ds)
     end
     return a
@@ -95,31 +95,35 @@ end
 
 function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; N::Int64 = 13) where {T <: AbstractFloat}
     triangles = triangulate(tri6, N)
+    npoints = 0
+    p₁ = Point_3D(T, 0)
+    p₂ = Point_3D(T, 0)
     intersections = l .∩ triangles
     bools = map(x->x[1], intersections)
     points = map(x->x[2], intersections)
     npoints = count(bools)
-    ipoints = [Point_3D(T, 0), Point_3D(T,0)]
+    p₁ = Point_3D(T, 0)
+    p₂ = Point_3D(T, 0)
     if npoints == 0
-        return false, 0, ipoints
+        return false, 0, p₁, p₂
     elseif npoints == 1
-        ipoints[1] = points[argmax(bools)]
-        return true, 1, ipoints
+        p₁ = points[argmax(bools)]
+        return true, 1, p₁, p₂
     elseif npoints == 2
         indices = findall(bools)
-        ipoints[1] = points[indices[1]]
-        ipoints[2] = points[indices[2]]
+        p₁ = points[indices[1]]
+        p₂ = points[indices[2]]
         # Check uniqueness
-        if ipoints[1] ≈ ipoints[2]
-            return true, 1, ipoints
+        if p₁ ≈ p₂
+            return true, 1, p₁, p₂
         else
-            return true, 2, ipoints
+            return true, 2, p₁, p₂
         end
     else
         # Account for 3 points and 4 points?
         # If intersection is on edge shared by two triangles on entrance and/or exit 3/4 intersections
         # can be detected
-        return true, -1, ipoints
+        return true, -1, p₁, p₂ 
     end
 end
 
@@ -147,7 +151,7 @@ end
 
 function convert_arguments(MT::Type{Mesh{Tuple{Triangle6_3D{T}}}},
         AT::Vector{Triangle_3D{T}}) where {T <: AbstractFloat}
-    points = reduce(vcat, [[tri.points[i].coord for i = 1:3] for tri in AT])
+    points = reduce(vcat, [[tri.points[i].x for i = 1:3] for tri in AT])
     faces = zeros(Int64, length(AT), 3)
     k = 1
     for i in 1:length(AT), j = 1:3
