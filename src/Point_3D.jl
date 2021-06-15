@@ -1,7 +1,7 @@
-# A 3D point in Cartesian coordinates.
+# A 3D point in Cartesian xinates.
 
 struct Point_3D{T <: AbstractFloat}
-    coord::SVector{3,T}
+    x::SVector{3,T}
 end
 
 # Constructors
@@ -32,49 +32,49 @@ Base.broadcastable(p⃗::Point_3D) = Ref(p⃗)
 Base.zero(::Point_3D{T}) where {T <: AbstractFloat} = Point_3D((T(0), T(0), T(0)))
 Base.firstindex(::Point_3D) = 1
 Base.lastindex(::Point_3D) = 3
-Base.getindex(p⃗::Point_3D, i::Int) = p⃗.coord[i]
-(::Type{T})(p⃗::Point_3D) where {T <: AbstractFloat} = Point_3D(T.(p⃗.coord))
+Base.getindex(p⃗::Point_3D, i::Int) = p⃗.x[i]
+(::Type{T})(p⃗::Point_3D) where {T <: AbstractFloat} = Point_3D(T.(p⃗.x))
 
 # Operators
 # -------------------------------------------------------------------------------------------------
-==(p⃗₁::Point_3D, p⃗₂::Point_3D) = (p⃗₁.coord == p⃗₂.coord)
+==(p⃗₁::Point_3D, p⃗₂::Point_3D) = (p⃗₁.x == p⃗₂.x)
 function ≈(p⃗₁::Point_3D{T}, p⃗₂::Point_3D{T}) where {T <: AbstractFloat}
     return distance(p⃗₁, p⃗₂) < 5.0e-5 
 end
-+(p⃗₁::Point_3D, p⃗₂::Point_3D) = Point_3D(p⃗₁.coord[1] + p⃗₂.coord[1],
-                                         p⃗₁.coord[2] + p⃗₂.coord[2],
-                                         p⃗₁.coord[3] + p⃗₂.coord[3]
++(p⃗₁::Point_3D, p⃗₂::Point_3D) = Point_3D(p⃗₁.x[1] + p⃗₂.x[1],
+                                         p⃗₁.x[2] + p⃗₂.x[2],
+                                         p⃗₁.x[3] + p⃗₂.x[3]
                                         )
--(p⃗₁::Point_3D, p⃗₂::Point_3D) = Point_3D(p⃗₁.coord[1] - p⃗₂.coord[1],
-                                         p⃗₁.coord[2] - p⃗₂.coord[2],
-                                         p⃗₁.coord[3] - p⃗₂.coord[3]
+-(p⃗₁::Point_3D, p⃗₂::Point_3D) = Point_3D(p⃗₁.x[1] - p⃗₂.x[1],
+                                         p⃗₁.x[2] - p⃗₂.x[2],
+                                         p⃗₁.x[3] - p⃗₂.x[3]
                                         )
-×(p⃗₁::Point_3D, p⃗₂::Point_3D) = Point_3D(p⃗₁.coord[2]*p⃗₂.coord[3] - p⃗₂.coord[2]*p⃗₁.coord[3],
-                                         p⃗₁.coord[3]*p⃗₂.coord[1] - p⃗₂.coord[3]*p⃗₁.coord[1],
-                                         p⃗₁.coord[1]*p⃗₂.coord[2] - p⃗₂.coord[1]*p⃗₁.coord[2],
+×(p⃗₁::Point_3D, p⃗₂::Point_3D) = Point_3D(p⃗₁.x[2]*p⃗₂.x[3] - p⃗₂.x[2]*p⃗₁.x[3],
+                                         p⃗₁.x[3]*p⃗₂.x[1] - p⃗₂.x[3]*p⃗₁.x[1],
+                                         p⃗₁.x[1]*p⃗₂.x[2] - p⃗₂.x[1]*p⃗₁.x[2],
                                 )
-⋅(p⃗₁::Point_3D, p⃗₂::Point_3D) = p⃗₁.coord[1]*p⃗₂.coord[1] + 
-                                p⃗₁.coord[2]*p⃗₂.coord[2] + 
-                                p⃗₁.coord[3]*p⃗₂.coord[3]
+⋅(p⃗₁::Point_3D, p⃗₂::Point_3D) = p⃗₁.x[1]*p⃗₂.x[1] + 
+                                p⃗₁.x[2]*p⃗₂.x[2] + 
+                                p⃗₁.x[3]*p⃗₂.x[3]
 
-+(p⃗::Point_3D, n::Real) = Point_3D(p⃗.coord[1] + n,
-                                   p⃗.coord[2] + n,
-                                   p⃗.coord[3] + n
++(p⃗::Point_3D, n::Real) = Point_3D(p⃗.x[1] + n,
+                                   p⃗.x[2] + n,
+                                   p⃗.x[3] + n
                                   )
 +(n::Real,  p⃗::Point_3D) = p⃗ + n
--(p⃗::Point_3D, n::Real) = Point_3D(p⃗.coord[1] - n,
-                                   p⃗.coord[2] - n,
-                                   p⃗.coord[3] - n
+-(p⃗::Point_3D, n::Real) = Point_3D(p⃗.x[1] - n,
+                                   p⃗.x[2] - n,
+                                   p⃗.x[3] - n
                                   )
 -(n::Real,  p⃗::Point_3D) = p⃗ - n
-*(n::Real,  p⃗::Point_3D) = Point_3D(p⃗.coord[1] * n,
-                                    p⃗.coord[2] * n,
-                                    p⃗.coord[3] * n
+*(n::Real,  p⃗::Point_3D) = Point_3D(p⃗.x[1] * n,
+                                    p⃗.x[2] * n,
+                                    p⃗.x[3] * n
                                    )
 *(p⃗::Point_3D, n::Real) = n*p⃗
-/(p⃗::Point_3D, n::Real) = Point_3D(p⃗.coord[1] / n,
-                                   p⃗.coord[2] / n,
-                                   p⃗.coord[3] / n
+/(p⃗::Point_3D, n::Real) = Point_3D(p⃗.x[1] / n,
+                                   p⃗.x[2] / n,
+                                   p⃗.x[3] / n
                                   )
 -(p⃗::Point_3D) = -1*p⃗
 
@@ -85,7 +85,7 @@ distance(p⃗₁::Point_3D, p⃗₂::Point_3D) = norm(p⃗₁ - p⃗₂)
 
 # Plot
 # -------------------------------------------------------------------------------------------------
-convert_arguments(P::Type{<:Scatter}, p::Point_3D) = convert_arguments(P, p.coord)
+convert_arguments(P::Type{<:Scatter}, p::Point_3D) = convert_arguments(P, p.x)
 function convert_arguments(P::Type{<:Scatter}, AP::AbstractArray{<:Point_3D})
-    return convert_arguments(P, [p.coord for p in AP])
+    return convert_arguments(P, [p.x for p in AP])
 end

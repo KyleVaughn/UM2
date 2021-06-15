@@ -58,9 +58,9 @@ end
 # Plot
 # -------------------------------------------------------------------------------------------------
 function convert_arguments(P::Type{<:LineSegments}, l::LineSegment_3D)
-    return convert_arguments(P, [l.points[1].coord, l.points[2].coord])
+    return convert_arguments(P, [l.points[1].x, l.points[2].x])
 end
 
 function convert_arguments(P::Type{<:LineSegments}, AL::AbstractArray{<:LineSegment_3D})
-    return convert_arguments(P, reduce(vcat, [[l.points[1].coord, l.points[2].coord] for l in AL]))
+    return convert_arguments(P, reduce(vcat, [[l.points[1].x, l.points[2].x] for l in AL]))
 end

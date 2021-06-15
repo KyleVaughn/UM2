@@ -17,7 +17,7 @@ using MOCNeutronTransport
             @test l(1) == p₂
             p₃ = Point_3D(T, 2, 2, 3)
             @test l(1//2) == p₃
-            typeof(l(1//2).coord) == typeof(T.((2, 4, 6)))
+            typeof(l(1//2).x) == typeof(T.((2, 4, 6)))
 
 #            # arc_length
 #            p₁ = Point_3D(T, 1, 2, 3)
@@ -34,7 +34,7 @@ using MOCNeutronTransport
 #            bool, p = intersect(l₁, l₂)
 #            @test bool
 #            @test p == Point_3D(T, 1, 0)
-#            @test typeof(p.coord) == typeof(SVector(T.((1, 0, 0))))
+#            @test typeof(p.x) == typeof(SVector(T.((1, 0, 0))))
 #
 #            # vertex intersection
 #            l₂ = LineSegment_3D(Point_3D(T, 0, -1), Point_3D(T, 2, -1))
