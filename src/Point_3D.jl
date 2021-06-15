@@ -30,9 +30,6 @@ Point_3D(type::Type{T}, x::X) where {T <: AbstractFloat,
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(p⃗::Point_3D) = Ref(p⃗)
 Base.zero(::Point_3D{T}) where {T <: AbstractFloat} = Point_3D((T(0), T(0), T(0)))
-Base.firstindex(::Point_3D) = 1
-Base.lastindex(::Point_3D) = 3
-Base.getindex(p⃗::Point_3D, i::Int) = p⃗.x[i]
 (::Type{T})(p⃗::Point_3D) where {T <: AbstractFloat} = Point_3D(T.(p⃗.x))
 
 # Operators

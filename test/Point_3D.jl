@@ -52,11 +52,6 @@ using StaticArrays
             @test all(p₀.x .== T(0))
             @test typeof(p.x[1]) == typeof(T(0))
 
-            # getindex
-            @test p[1] == T(1)
-            @test p[2] == T(2)
-            @test p[3] == T(3)
-
             # (::Type)
             q = Float64(p)
             @test q.x == SVector(Float64.((1, 2, 3)))

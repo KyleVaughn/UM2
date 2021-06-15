@@ -23,9 +23,6 @@ Point_2D(type::Type{T}, x::X) where {T <: AbstractFloat,
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(p⃗::Point_2D) = Ref(p⃗)
 Base.zero(::Point_2D{T}) where {T <: AbstractFloat} = Point_2D((T(0), T(0)))
-Base.firstindex(::Point_2D) = 1
-Base.lastindex(::Point_2D) = 2
-Base.getindex(p⃗::Point_2D, i::Int) = p⃗.x[i]
 (::Type{T})(p⃗::Point_2D) where {T <: AbstractFloat} = Point_2D(T.(p⃗.x))
 
 # Operators
