@@ -1,4 +1,4 @@
-# A 2D point in Cartesian xinates.
+# A 2D point in Cartesian coordinates.
 
 struct Point_2D{T <: AbstractFloat}
     x::SVector{2,T}
@@ -43,6 +43,7 @@ end
 *(p⃗::Point_2D, n::Real) = n*p⃗
 /(p⃗::Point_2D, n::Real) = Point_2D(p⃗.x[1]/n, p⃗.x[2]/n)
 -(p⃗::Point_2D) = -1*p⃗
+*(A::SMatrix{2, 2, T, 4}, p⃗::Point_2D{T}) where {T <: AbstractFloat} = Point_2D(A * p⃗.x)
 
 # Methods
 # -------------------------------------------------------------------------------------------------

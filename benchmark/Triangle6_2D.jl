@@ -46,7 +46,7 @@ for type in [Float32, Float64]
     p = Point_2D( type(1), type(1//2))
 
     time = @belapsed $p .∈ $tri
-    us_time = (time/1e-6)/N
+    ns_time = (time/1e-9)/N
     @printf("    In - %-9s: ", "$type")
-    @printf("%10.2f μs\n", us_time) 
+    @printf("%10.2f ns\n", ns_time) 
 end

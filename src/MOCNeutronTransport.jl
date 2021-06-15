@@ -1,4 +1,6 @@
 module MOCNeutronTransport
+using StaticArrays
+using LinearAlgebra
 
 import Base: +, -, *, /, ≈, ==, intersect, in
 import GLMakie: convert_arguments, LineSegments, Mesh, Scatter
@@ -52,9 +54,11 @@ export  Point_2D,
         ⋅,
         arc_length,
         area,
+        derivatives,
         distance,
-        intersect,
         gauss_legendre_quadrature,
+        intersect,
+        jacobian,
         norm,
         triangulate
 
