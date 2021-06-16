@@ -76,17 +76,20 @@ function triangulate(tri6::Triangle6_3D{T}, N::Int64) where {T <: AbstractFloat}
         triangles[1] = Triangle_3D(tri6.points[1], tri6.points[2], tri6.points[3])
     else
         i = 1
-        for S = 0:N, R = 0:N-S
+        for S = 1:N, R = 0:N-S
             triangles[i] = Triangle_3D(tri6(    R/(N+1),     S/(N+1)),
                                        tri6((R+1)/(N+1),     S/(N+1)),
                                        tri6(    R/(N+1), (S+1)/(N+1)))
-            i += 1
+            triangles[i+1] = Triangle_3D(tri6(    R/(N+1),     S/(N+1)),
+                                         tri6((R+1)/(N+1), (S-1)/(N+1)),
+                                         tri6((R+1)/(N+1),     S/(N+1)))
+            i += 2
         end
-        j = 1 + ((N+1)*(N+2)) ÷ 2
-        for S = 1:N, R = 0:N-S
+        j = (N+1)*N + 1
+        for S = 0:0, R = 0:N-S
             triangles[j] = Triangle_3D(tri6(    R/(N+1),     S/(N+1)),
-                                       tri6((R+1)/(N+1), (S-1)/(N+1)),
-                                       tri6((R+1)/(N+1),     S/(N+1)))
+                                       tri6((R+1)/(N+1),     S/(N+1)),
+                                       tri6(    R/(N+1), (S+1)/(N+1)))
             j += 1
         end
     end 
