@@ -46,36 +46,36 @@ function derivatives(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloa
     # Return ( ∂tri6/∂r, ∂tri6/∂s )
     r_T = T(r)
     s_T = T(s)
-    d_dr = (4r_T + 4s_T - 3)*tri6.points[1] + 
-                  (4r_T - 1)*tri6.points[2] +
-           4(1 - 2r_T - s_T)*tri6.points[4] +     
-                      (4s_T)*tri6.points[5] +
-                     (-4s_T)*tri6.points[6]
+    ∂T_∂r = (4r_T + 4s_T - 3)*tri6.points[1] +
+                   (4r_T - 1)*tri6.points[2] +
+            4(1 - 2r_T - s_T)*tri6.points[4] +
+                       (4s_T)*tri6.points[5] +
+                      (-4s_T)*tri6.points[6]
 
-    d_ds = (4r_T + 4s_T - 3)*tri6.points[1] + 
-                  (4s_T - 1)*tri6.points[3] +
-                     (-4r_T)*tri6.points[4] +
-                      (4r_T)*tri6.points[5] +
-           4(1 - r_T - 2s_T)*tri6.points[6]     
-    return (d_dr, d_ds) 
+    ∂T_∂s = (4r_T + 4s_T - 3)*tri6.points[1] +
+                   (4s_T - 1)*tri6.points[3] +
+                      (-4r_T)*tri6.points[4] +
+                       (4r_T)*tri6.points[5] +
+            4(1 - r_T - 2s_T)*tri6.points[6]
+    return (∂T_∂r, ∂T_∂s)
 end
 
 function derivatives(tri6::Triangle6_2D{T}, p::Point_2D{T}) where {T <: AbstractFloat}
     # Return ( ∂tri6/∂r, ∂tri6/∂s )
-    r_T = p.x[1]
-    s_T = p.x[2]
-    d_dr = (4r_T + 4s_T - 3)*tri6.points[1] + 
-                  (4r_T - 1)*tri6.points[2] +
-           4(1 - 2r_T - s_T)*tri6.points[4] +     
-                      (4s_T)*tri6.points[5] +
-                     (-4s_T)*tri6.points[6]
+    r = p.x[1]
+    s = p.x[2]
+    ∂T_∂r = (4r + 4s - 3)*tri6.points[1] +
+                 (4r - 1)*tri6.points[2] +
+            4(1 - 2r - s)*tri6.points[4] +
+                     (4s)*tri6.points[5] +
+                    (-4s)*tri6.points[6]
 
-    d_ds = (4r_T + 4s_T - 3)*tri6.points[1] + 
-                  (4s_T - 1)*tri6.points[3] +
-                     (-4r_T)*tri6.points[4] +
-                      (4r_T)*tri6.points[5] +
-           4(1 - r_T - 2s_T)*tri6.points[6]     
-    return (d_dr, d_ds) 
+    ∂T_∂s = (4r + 4s - 3)*tri6.points[1] +
+                 (4s - 1)*tri6.points[3] +
+                    (-4r)*tri6.points[4] +
+                     (4r)*tri6.points[5] +
+            4(1 - r - 2s)*tri6.points[6]
+    return (∂T_∂r, ∂T_∂s) 
 end
 
 function jacobian(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
@@ -115,17 +115,17 @@ function triangulate(tri6::Triangle6_2D{T}, N::Int64) where {T <: AbstractFloat}
     else
         i = 1
         for S = 1:N, R = 0:N-S
-            triangles[i] = Triangle_3D(tri6(    R/(N+1),     S/(N+1)),
+            triangles[i] = Triangle_2D(tri6(    R/(N+1),     S/(N+1)),
                                        tri6((R+1)/(N+1),     S/(N+1)),
                                        tri6(    R/(N+1), (S+1)/(N+1)))
-            triangles[i+1] = Triangle_3D(tri6(    R/(N+1),     S/(N+1)),
+            triangles[i+1] = Triangle_2D(tri6(    R/(N+1),     S/(N+1)),
                                          tri6((R+1)/(N+1), (S-1)/(N+1)),
                                          tri6((R+1)/(N+1),     S/(N+1)))
             i += 2
         end
         j = (N+1)*N + 1
         for S = 0:0, R = 0:N-S
-            triangles[j] = Triangle_3D(tri6(    R/(N+1),     S/(N+1)),
+            triangles[j] = Triangle_2D(tri6(    R/(N+1),     S/(N+1)),
                                        tri6((R+1)/(N+1),     S/(N+1)),
                                        tri6(    R/(N+1), (S+1)/(N+1)))
             j += 1
@@ -134,23 +134,26 @@ function triangulate(tri6::Triangle6_2D{T}, N::Int64) where {T <: AbstractFloat}
     return triangles 
 end
 
-function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64 = 13) where {T <: AbstractFloat}
+function in(p::Point_2D{T}, tri6::Triangle6_2D{T}) where {T <: AbstractFloat}
     p_local = Point_2D(T, 1//4, 1//4)
-    for i = 1:8
-        p_global = tri6(p_local)
-        J = jacobian(tri6, p_local) 
-        J⁻¹ = inv(J)
-        p_local = p_local + J⁻¹ * (p - p_global)
+    # 6 iterations appears to be sufficient for all cases.
+    # Inverstion of a 2 by 2 matrix is so fast, it doesn't make sense to check the norm of the error
+    # and exit conditionally.
+    for i = 1:6
+        err = p - tri6(p_local)
+        J⁻¹ = inv(jacobian(tri6, p_local)) 
+        p_local = p_local + J⁻¹ * err
     end
-    p_global = tri6(p_local)
-    if (-1.0e-4 ≤ p_local.x[1] ≤ 1 + 1.0e-4) && 
-        (-1.0e-4 ≤ p_local.x[2] ≤ 1 + 1.0e-4) && norm(p - p_global) < 5.0e-5  
+    err = p - tri6(p_local)
+    if (-1.0e-5 ≤ p_local.x[1] ≤ 1.00001) && 
+        (-1.0e-5 ≤ p_local.x[2] ≤ 1.00001) && norm(err) < 1.0e-5  
         return true
     else
         false
     end
 #    return any(p .∈  triangulate(tri6, N))
 end
+
 
 # Plot
 # -------------------------------------------------------------------------------------------------

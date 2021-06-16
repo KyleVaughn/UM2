@@ -74,7 +74,6 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
     #   s is invalid if:
     #     1) s < 0 or 1 < s   (Line intersects, segment doesn't)
     # If D⃗ × w⃗ = 0, we need to use line intersection instead.
-    bool = false
     npoints = 0
     p₁ = Point_2D(T, 0)
     p₂ = Point_2D(T, 0)
@@ -91,7 +90,6 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
         s = (q(r)- l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
         p₁ = q(r)
         if (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1)
-            bool = true
             npoints = 1
         end
     elseif B^2 ≥ 4A*C
@@ -116,9 +114,8 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
                 p₁ = p₂
             end
         end
-        bool = npoints > 0
     end
-    return bool, npoints, p₁, p₂
+    return npoints > 0, npoints, p₁, p₂
 end
 intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 

@@ -35,18 +35,18 @@ function derivatives(tri6::Triangle6_3D{T}, r::R, s::S) where {T <: AbstractFloa
     # Return ( ∂tri6/∂r, ∂tri6/∂s )
     r_T = T(r)
     s_T = T(s)
-    d_dr = (4r_T + 4s_T - 3)*tri6.points[1] + 
-                  (4r_T - 1)*tri6.points[2] +
-           4(1 - 2r_T - s_T)*tri6.points[4] +     
-                      (4s_T)*tri6.points[5] +
-                     (-4s_T)*tri6.points[6]
+    ∂T_∂r = (4r_T + 4s_T - 3)*tri6.points[1] + 
+                   (4r_T - 1)*tri6.points[2] +
+            4(1 - 2r_T - s_T)*tri6.points[4] +     
+                       (4s_T)*tri6.points[5] +
+                      (-4s_T)*tri6.points[6]
 
-    d_ds = (4r_T + 4s_T - 3)*tri6.points[1] + 
-                  (4s_T - 1)*tri6.points[3] +
-                     (-4r_T)*tri6.points[4] +
-                      (4r_T)*tri6.points[5] +
-           4(1 - r_T - 2s_T)*tri6.points[6]     
-    return (d_dr, d_ds) 
+    ∂T_∂s = (4r_T + 4s_T - 3)*tri6.points[1] + 
+                   (4s_T - 1)*tri6.points[3] +
+                      (-4r_T)*tri6.points[4] +
+                       (4r_T)*tri6.points[5] +
+            4(1 - r_T - 2s_T)*tri6.points[6]     
+    return (∂T_∂r, ∂T_∂s) 
 end
 
 function area(tri6::Triangle6_3D{T}; N::Int64=79) where {T <: AbstractFloat}
@@ -96,39 +96,76 @@ function triangulate(tri6::Triangle6_3D{T}, N::Int64) where {T <: AbstractFloat}
     return triangles 
 end
 
-function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; N::Int64 = 13) where {T <: AbstractFloat}
-    triangles = triangulate(tri6, N)
+#function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; N::Int64 = 13) where {T <: AbstractFloat}
+#    triangles = triangulate(tri6, N)
+#    npoints = 0
+#    p₁ = Point_3D(T, 0)
+#    p₂ = Point_3D(T, 0)
+#    intersections = l .∩ triangles
+#    bools = map(x->x[1], intersections)
+#    points = map(x->x[2], intersections)
+#    npoints = count(bools)
+#    p₁ = Point_3D(T, 0)
+#    p₂ = Point_3D(T, 0)
+#    if npoints == 0
+#        return false, 0, p₁, p₂
+#    elseif npoints == 1
+#        p₁ = points[argmax(bools)]
+#        return true, 1, p₁, p₂
+#    elseif npoints == 2
+#        indices = findall(bools)
+#        p₁ = points[indices[1]]
+#        p₂ = points[indices[2]]
+#        # Check uniqueness
+#        if p₁ ≈ p₂
+#            return true, 1, p₁, p₂
+#        else
+#            return true, 2, p₁, p₂
+#        end
+#    else
+#        # Account for 3 points and 4 points?
+#        # If intersection is on edge shared by two triangles on entrance and/or exit 3/4 intersections
+#        # can be detected
+#        return true, -1, p₁, p₂ 
+#    end
+#end
+
+function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}) where {T <: AbstractFloat}
+    p₁ = Point_3D(T, 0)
+    p₂ = Point_3D(T, 0)
     npoints = 0
-    p₁ = Point_3D(T, 0)
-    p₂ = Point_3D(T, 0)
-    intersections = l .∩ triangles
-    bools = map(x->x[1], intersections)
-    points = map(x->x[2], intersections)
-    npoints = count(bools)
-    p₁ = Point_3D(T, 0)
-    p₂ = Point_3D(T, 0)
-    if npoints == 0
-        return false, 0, p₁, p₂
-    elseif npoints == 1
-        p₁ = points[argmax(bools)]
-        return true, 1, p₁, p₂
-    elseif npoints == 2
-        indices = findall(bools)
-        p₁ = points[indices[1]]
-        p₂ = points[indices[2]]
-        # Check uniqueness
-        if p₁ ≈ p₂
-            return true, 1, p₁, p₂
+    u⃗ = l.points[2] - l.points[1]
+    p_local = Point_3D(T, 1//4, 1//4, 0) # Start on other side?
+    for i = 1:10
+        err = tri6(p_local[1], p_local[2]) - l(p_local[3])
+        println("global ", tri6(p_local[1], p_local[2]).x)
+        println("local  ", p_local.x)
+        println("error  ", norm(err))
+        println()
+        ∂r, ∂s = derivatives(tri6, p_local[1], p_local[2])
+        J = hcat(∂r.x, ∂s.x, u⃗.x)
+#        println(J)
+        # try catch?
+        if det(J) ≈ 0
+#            println("rand")
+            p_local = Point_3D(p_local.x + rand(3)/10)
         else
-            return true, 2, p₁, p₂
+            J⁻¹ = inv(hcat(∂r.x, ∂s.x, -u⃗.x))
+            p_local = p_local - J⁻¹ * err
         end
-    else
-        # Account for 3 points and 4 points?
-        # If intersection is on edge shared by two triangles on entrance and/or exit 3/4 intersections
-        # can be detected
-        return true, -1, p₁, p₂ 
     end
+
+    if (0 ≤ p_local.x[1] ≤ 1) && (0 ≤ p_local.x[2] ≤ 1) && (0 ≤ p_local.x[3] ≤ 1) &&
+            (l(p_local.x[3]) ≈ tri6(p_local[1], p_local[2]))
+        p₁ = l(p_local.x[3])
+        npoints += 1
+    end
+
+    return npoints > 0, npoints, p₁, p₂
 end
+
+
+
 
 # Plot
 # -------------------------------------------------------------------------------------------------
