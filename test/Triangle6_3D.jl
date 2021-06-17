@@ -81,8 +81,8 @@ using MOCNeutronTransport
             intersection = l ∩ tri6
             @test intersection[1]
             @test intersection[2] == 2
-            @test norm(intersection[3] - Point_3D(T, 1, 0.766071428, -1//5)) < 1e-6
-            @test norm(intersection[4] - Point_3D(T, 1, 0.313186813, -1//5)) < 1e-6
+            @test norm(intersection[3] - Point_3D(T, 1, 0.313186813, -1//5)) < 1e-6
+            @test norm(intersection[4] - Point_3D(T, 1, 0.766071428, -1//5)) < 1e-6
         end
     end
 end

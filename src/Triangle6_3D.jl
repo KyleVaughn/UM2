@@ -96,76 +96,110 @@ function triangulate(tri6::Triangle6_3D{T}, N::Int64) where {T <: AbstractFloat}
     return triangles 
 end
 
-#function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; N::Int64 = 13) where {T <: AbstractFloat}
-#    triangles = triangulate(tri6, N)
-#    npoints = 0
-#    p₁ = Point_3D(T, 0)
-#    p₂ = Point_3D(T, 0)
-#    intersections = l .∩ triangles
-#    bools = map(x->x[1], intersections)
-#    points = map(x->x[2], intersections)
-#    npoints = count(bools)
-#    p₁ = Point_3D(T, 0)
-#    p₂ = Point_3D(T, 0)
-#    if npoints == 0
-#        return false, 0, p₁, p₂
-#    elseif npoints == 1
-#        p₁ = points[argmax(bools)]
-#        return true, 1, p₁, p₂
-#    elseif npoints == 2
-#        indices = findall(bools)
-#        p₁ = points[indices[1]]
-#        p₂ = points[indices[2]]
-#        # Check uniqueness
-#        if p₁ ≈ p₂
-#            return true, 1, p₁, p₂
-#        else
-#            return true, 2, p₁, p₂
-#        end
-#    else
-#        # Account for 3 points and 4 points?
-#        # If intersection is on edge shared by two triangles on entrance and/or exit 3/4 intersections
-#        # can be detected
-#        return true, -1, p₁, p₂ 
-#    end
-#end
+# Triangulate then intersect
+function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; N::Int64 = 13) where {T <: AbstractFloat}
+    triangles = triangulate(tri6, N)
+    npoints = 0
+    p₁ = Point_3D(T, 0)
+    p₂ = Point_3D(T, 0)
+    intersections = l .∩ triangles
+    bools = map(x->x[1], intersections)
+    points = map(x->x[2], intersections)
+    npoints = count(bools)
+    p₁ = Point_3D(T, 0)
+    p₂ = Point_3D(T, 0)
+    if npoints == 0
+        return false, 0, p₁, p₂
+    elseif npoints == 1
+        p₁ = points[argmax(bools)]
+        return true, 1, p₁, p₂
+    elseif npoints == 2
+        indices = findall(bools)
+        p₁ = points[indices[1]]
+        p₂ = points[indices[2]]
+        # Check uniqueness
+        if p₁ ≈ p₂
+            return true, 1, p₁, p₂
+        else
+            return true, 2, p₁, p₂
+        end
+    else
+        # Account for 3 points and 4 points?
+        # If intersection is on edge shared by two triangles on entrance and/or exit 3/4 intersections
+        # can be detected
+        return true, -1, p₁, p₂ 
+    end
+end
 
-function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}) where {T <: AbstractFloat}
+function global_to_parametric(p::Point_3D{T}, tri6::Triangle6_3D{T}; N::Int64=10) where {T <: AbstractFloat}
+    r = T(1//4)
+    s = T(1//4)
+    # 10 iterations appears to be sufficient for all realistic use cases, even 100 units away.
+    for i = 1:N
+        err = p - tri6(r, s)
+        ∂T_∂r, ∂T_∂s = derivatives(tri6, r, s)
+        J = hcat(∂T_∂r.x, ∂T_∂s.x)
+        Δr, Δs = J \ err.x 
+        r = r + Δr
+        s = s + Δs 
+    end
+    return Point_2D(r, s)
+end
+
+# A more exact intersection algorithm that's about 7 times slower using Newton-Raphson
+function intersect_iterative(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}) where {T <: AbstractFloat}
     p₁ = Point_3D(T, 0)
     p₂ = Point_3D(T, 0)
     npoints = 0
     u⃗ = l.points[2] - l.points[1]
-    p_local = Point_3D(T, 1//4, 1//4, 0) # Start on other side?
-    for i = 1:10
-        err = tri6(p_local[1], p_local[2]) - l(p_local[3])
-        println("global ", tri6(p_local[1], p_local[2]).x)
-        println("local  ", p_local.x)
-        println("error  ", norm(err))
-        println()
-        ∂r, ∂s = derivatives(tri6, p_local[1], p_local[2])
-        J = hcat(∂r.x, ∂s.x, u⃗.x)
-#        println(J)
-        # try catch?
-        if det(J) ≈ 0
-#            println("rand")
-            p_local = Point_3D(p_local.x + rand(3)/10)
+    ray_start = global_to_parametric(l(0), tri6; N=6) # closest r,s to the ray start
+    ray_stop  = global_to_parametric(l(1), tri6; N=6) # closest r,s to the ray stop
+    # The parametric coordinates corresponding to the start of the line segment
+    r₁ = ray_start[1]
+    s₁ = ray_start[2]
+    t₁ = T(0)
+    # The parametric coordinates corresponding to the start of the line segment
+    r₂ = ray_stop[1]
+    s₂ = ray_stop[2]
+    t₂ = T(1)
+    for i = 1:6
+        err₁ = tri6(r₁, s₁) - l(t₁)
+        ∂r₁, ∂s₁ = derivatives(tri6, r₁, s₁)
+        J₁ = hcat(∂r₁.x, ∂s₁.x, -u⃗.x)
+        # If matrix is singular, it's probably bad luck. Just perturb it a bit.
+        if abs(det(J₁)) < 1e-5
+            r₁, s₁, t₁ = [r₁, s₁, t₁] + rand(3)/10
         else
-            J⁻¹ = inv(hcat(∂r.x, ∂s.x, -u⃗.x))
-            p_local = p_local - J⁻¹ * err
+            r₁, s₁, t₁ = [r₁, s₁, t₁] - inv(J₁) * err₁.x
+        end
+        err₂ = tri6(r₂, s₂) - l(t₂)
+        ∂r₂, ∂s₂ = derivatives(tri6, r₂, s₂)
+        J₂ = hcat(∂r₂.x, ∂s₂.x, -u⃗.x)
+        if abs(det(J₂)) < 1e-5
+            r₂, s₂, t₂ = [r₂, s₂, t₂] + rand(3)/10
+        else
+            r₂, s₂, t₂ = [r₂, s₂, t₂] - inv(J₂) * err₂.x
         end
     end
 
-    if (0 ≤ p_local.x[1] ≤ 1) && (0 ≤ p_local.x[2] ≤ 1) && (0 ≤ p_local.x[3] ≤ 1) &&
-            (l(p_local.x[3]) ≈ tri6(p_local[1], p_local[2]))
-        p₁ = l(p_local.x[3])
+    p₁ = l(t₁)
+    if (0 ≤ r₁ ≤ 1) && (0 ≤ s₁ ≤ 1) && (0 ≤ t₁ ≤ 1) && (p₁ ≈ tri6(r₁, s₁))
         npoints += 1
     end
 
+    p₂ = l(t₂)
+    if (0 ≤ r₂ ≤ 1) && (0 ≤ s₂ ≤ 1) && (0 ≤ t₂ ≤ 1) && (p₂ ≈ tri6(r₂, s₂))
+        npoints += 1
+        # If only point 2 is valid, return it as p₁
+        # If points are duplicate, reduce npoints
+        if npoints == 2 && p₁ ≈ p₂
+            npoints -= 1
+        elseif npoints == 1
+            p₁ = p₂
+        end
+    end
     return npoints > 0, npoints, p₁, p₂
 end
-
-
-
 
 # Plot
 # -------------------------------------------------------------------------------------------------
