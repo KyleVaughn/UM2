@@ -50,8 +50,8 @@ function derivatives(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloa
 end
 
 function jacobian(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
-    (d_dr, d_ds) = derivatives(tri6, r, s) 
-    return hcat(d_dr.x, d_ds.x)
+    (∂T_∂r, ∂T_∂s) = derivatives(tri6, r, s) 
+    return hcat(∂T_∂r.x, ∂T_∂s.x)
 end
 
 function area(tri6::Triangle6_2D{T}; N::Int64=12) where {T <: AbstractFloat}
@@ -68,8 +68,8 @@ function area(tri6::Triangle6_2D{T}; N::Int64=12) where {T <: AbstractFloat}
     w, r, s = gauss_legendre_quadrature(tri6, N)
     a = T(0)
     for i in 1:N
-        (dr, ds) = derivatives(tri6, r[i], s[i])
-        a += w[i] * abs(dr × ds)
+        (∂T_∂r, ∂T_∂s) = derivatives(tri6, r[i], s[i])
+        a += w[i] * abs(∂T_∂r × ∂T_∂s)
     end
     return a
 end

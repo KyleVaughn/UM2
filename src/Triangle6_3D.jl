@@ -64,8 +64,8 @@ function area(tri6::Triangle6_3D{T}; N::Int64=79) where {T <: AbstractFloat}
 #    return mapreduce((w,r,s)->w*norm(×(derivatives(tri6, r, s))), +, w, r, s)
     a = T(0)
     for i in 1:N
-        (dr, ds) = derivatives(tri6, r[i], s[i])
-        a += w[i] * norm(dr × ds)
+        (∂T_∂r, ∂T_∂s) = derivatives(tri6, r[i], s[i])
+        a += w[i] * norm(∂T_∂r × ∂T_∂s)
     end
     return a
 end
