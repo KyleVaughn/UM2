@@ -1,8 +1,3 @@
-# NOTE: The N (number of edge subdivisions) used in triangulation for the intersection
-# algorithm and the ∈  algorithm must be the same for consistent ray tracing.
-
-# Most of the intersection and in algorithm compute time is the triangulation. How can we speed that up?
-
 struct Triangle6_3D{T <: AbstractFloat}
     points::NTuple{6, Point_3D{T}}
 end
@@ -64,7 +59,7 @@ function area(tri6::Triangle6_3D{T}; N::Int64=79) where {T <: AbstractFloat}
 #    return mapreduce((w,r,s)->w*norm(×(derivatives(tri6, r, s))), +, w, r, s)
     a = T(0)
     for i in 1:N
-        (∂T_∂r, ∂T_∂s) = derivatives(tri6, r[i], s[i])
+        ∂T_∂r, ∂T_∂s = derivatives(tri6, r[i], s[i])
         a += w[i] * norm(∂T_∂r × ∂T_∂s)
     end
     return a
@@ -131,9 +126,9 @@ function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; N::Int64 = 13) w
     end
 end
 
-function global_to_parametric(p::Point_3D{T}, tri6::Triangle6_3D{T}; N::Int64=10) where {T <: AbstractFloat}
-    r = T(1//4)
-    s = T(1//4)
+function real_to_parametric(p::Point_3D{T}, tri6::Triangle6_3D{T}; N::Int64=10) where {T <: AbstractFloat}
+    r = T(1//3)
+    s = T(1//3)
     # 10 iterations appears to be sufficient for all realistic use cases, even 100 units away.
     for i = 1:N
         err = p - tri6(r, s)
@@ -146,14 +141,15 @@ function global_to_parametric(p::Point_3D{T}, tri6::Triangle6_3D{T}; N::Int64=10
     return Point_2D(r, s)
 end
 
-# A more exact intersection algorithm that's about 7 times slower using Newton-Raphson
+# A more exact intersection algorithm that's about 7 times slower than triangulation.
+# Uses Newton-Raphson
 function intersect_iterative(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}) where {T <: AbstractFloat}
     p₁ = Point_3D(T, 0)
     p₂ = Point_3D(T, 0)
     npoints = 0
     u⃗ = l.points[2] - l.points[1]
-    ray_start = global_to_parametric(l(0), tri6; N=6) # closest r,s to the ray start
-    ray_stop  = global_to_parametric(l(1), tri6; N=6) # closest r,s to the ray stop
+    ray_start = real_to_parametric(l(0), tri6; N=6) # closest r,s to the ray start
+    ray_stop  = real_to_parametric(l(1), tri6; N=6) # closest r,s to the ray stop
     # The parametric coordinates corresponding to the start of the line segment
     r₁ = ray_start[1]
     s₁ = ray_start[2]

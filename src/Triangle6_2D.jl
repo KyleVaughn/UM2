@@ -1,8 +1,3 @@
-# NOTE: The N (number of edge subdivisions) used in triangulation for the intersection
-# algorithm and the ∈  algorithm must be the same for consistent ray tracing.
-
-# Most of the intersection and in algorithm compute time is the triangulation. How can we speed that up?
-
 struct Triangle6_2D{T <: AbstractFloat}
     points::NTuple{6, Point_2D{T}}
 end
@@ -60,11 +55,6 @@ function area(tri6::Triangle6_2D{T}; N::Int64=12) where {T <: AbstractFloat}
     #                             1 1-r                          N
     # A = ∬ ||∂T/∂r × ∂T/∂s||dA = ∫  ∫ ||∂T/∂r × ∂T/∂s|| ds dr = ∑ wᵢ||∂T/∂r(rᵢ,sᵢ) × ∂T/∂s(rᵢ,sᵢ)||
     #      D                      0  0                          i=1
-    #
-    # NOTE: for 2D, N = 12 appears to be sufficient. For 3D, N = 79 is preferred.
-    # This is to ensure error in area less that about 1e-6. This was determined
-    # experimentally, not mathematically, so more sophisticated analysis could be
-    # performed. For really strange 3D shapes, we need greater than 79
     w, r, s = gauss_legendre_quadrature(tri6, N)
     a = T(0)
     for i in 1:N
@@ -100,15 +90,15 @@ function triangulate(tri6::Triangle6_2D{T}, N::Int64) where {T <: AbstractFloat}
     return triangles 
 end
 
-function in(p::Point_2D{T}, tri6::Triangle6_2D{T}) where {T <: AbstractFloat}
-    r = T(1//4)
-    s = T(1//4)
+function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=6) where {T <: AbstractFloat}
+    r = T(1//3)
+    s = T(1//3)
     # 6 iterations appears to be sufficient for all cases.
     # Inverstion of a 2 by 2 matrix is so fast, it doesn't make sense to check the norm of the error
     # and exit conditionally.
-    # Note the number of iterations here is less than global_to_local since if the point really is inside
+    # Note the number of iterations here is less than real_to_parametric since if the point really is inside
     # the triangle, then the convergence is very quick.
-    for i = 1:6
+    for i = 1:N
         err = p - tri6(r, s)
         # Inversion is faster for 2 by 2 than \
         Δr, Δs = inv(jacobian(tri6, r, s)) * err.x
@@ -123,14 +113,13 @@ function in(p::Point_2D{T}, tri6::Triangle6_2D{T}) where {T <: AbstractFloat}
     end
 end
 
-function global_to_parametric(p::Point_2D{T}, tri6::Triangle6_2D{T}) where {T <: AbstractFloat}
-    r = T(1//4)
-    s = T(1//4)
-
+function real_to_parametric(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=10) where {T <: AbstractFloat}
+    r = T(1//3)
+    s = T(1//3)
     # 10 iterations appears to be sufficient for all realistic use cases, even 100 units away.
     # Inverstion of a 2 by 2 matrix is so fast, it doesn't make sense to check the norm of the error
     # and exit conditionally.
-    for i = 1:10
+    for i = 1:N
         err = p - tri6(r, s)
         # Inversion is faster for 2 by 2 than \
         Δr, Δs = inv(jacobian(tri6, r, s)) * err.x
@@ -143,9 +132,9 @@ end
 # Plot
 # -------------------------------------------------------------------------------------------------
 function convert_arguments(P::Type{<:LineSegments}, tri6::Triangle6_2D{T}) where {T <: AbstractFloat}
-    q₁ = QuadraticSegment(tri6.points[1], tri6.points[2], tri6.points[4])
-    q₂ = QuadraticSegment(tri6.points[2], tri6.points[3], tri6.points[5])
-    q₃ = QuadraticSegment(tri6.points[3], tri6.points[1], tri6.points[6])
+    q₁ = QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4])
+    q₂ = QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5])
+    q₃ = QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6])
     qsegs = [q₁, q₂, q₃]
     return convert_arguments(P, qsegs)
 end

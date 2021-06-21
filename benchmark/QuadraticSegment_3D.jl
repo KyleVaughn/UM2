@@ -10,7 +10,7 @@ for type in [Float32, Float64]
     x⃗₃ = Point_3D( type.((1, 1, 0)) )
     x⃗₄ = Point_3D( type.((0, 3, 0)) )
     x⃗₅ = Point_3D( type.((2, 3, 0)) )
-    l = [LineSegment_3D(x⃗₄, x⃗₅) for i = 1:N]
+    l = LineSegment_3D(x⃗₄, x⃗₅)
     q = [QuadraticSegment_3D(x⃗₁, x⃗₂, x⃗₃) for i = 1:N] 
     time = @belapsed $l .∩ $q
     ns_time = (time/1e-9)/N

@@ -26,7 +26,7 @@ for type in [Float32, Float64]
     p₅ = Point_3D(type.((0.9, 0.1, 5)))
     p₆ = Point_3D(type.((0.9, 0.1, -5)))
     quad = [Quadrilateral_3D((p₁, p₂, p₃, p₄)) for i = 1:N]
-    l = [LineSegment_3D(p₄, p₅) for i = 1:N] 
+    l = LineSegment_3D(p₄, p₅)
 
     time = @belapsed $l .∩ $quad
     ns_time = (time/1e-9)/N

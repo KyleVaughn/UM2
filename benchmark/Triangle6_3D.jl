@@ -28,15 +28,15 @@ for type in [Float32, Float64]
     p₆ = Point_3D( type(1), type(1) )
     tri = [Triangle6_3D((p₁, p₂, p₃, p₄, p₅, p₆)) for i = 1:N]
 
-    l = [LineSegment_3D(Point_3D( type(1), type(0), type(-2)),
-                     Point_3D( type(1), type(0), type(2))) for i = 1:N]
+    l = LineSegment_3D(Point_3D( type(1), type(0), type(-2)),
+                       Point_3D( type(1), type(0), type(2)))
     time = @belapsed $l .∩ $tri
     us_time = (time/1e-6)/N
     @printf("    0 Intersection - %-9s: ", "$type")
     @printf("%10.2f μs\n", us_time) 
 
-    l = [LineSegment_3D(Point_3D( type(1), type(1)/type(2), type(-2)),
-                     Point_3D( type(1), type(1)/type(2), type(2))) for i = 1:N]
+    l = LineSegment_3D(Point_3D( type(1), type(1)/type(2), type(-2)),
+                       Point_3D( type(1), type(1)/type(2), type(2)))
     time = @belapsed $l .∩ $tri
     us_time = (time/1e-6)/N
     @printf("    1 Intersection - %-9s: ", "$type")
@@ -44,8 +44,8 @@ for type in [Float32, Float64]
 
     p₂ = Point_3D( type(2), type(0), type(3) )
     tri = [Triangle6_3D((p₁, p₂, p₃, p₄, p₅, p₆)) for i = 1:N]
-    l = [LineSegment_3D(Point_3D( type(1), type(-2), type(0.2)),
-                     Point_3D( type(1), type( 2), type(0.2))) for i = 1:N]
+    l = LineSegment_3D(Point_3D( type(1), type(-2), type(0.2)),
+                       Point_3D( type(1), type( 2), type(0.2)))
     time = @belapsed $l .∩ $tri
     us_time = (time/1e-6)/N
     @printf("    2 Intersection - %-9s: ", "$type")

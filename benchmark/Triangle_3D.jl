@@ -11,7 +11,7 @@ for type in [Float32, Float64]
     p₄ = Point_3D(type.((0.9, 0.1, -5)))
     p₅ = Point_3D(type.((0.9, 0.1, 5)))
     tri = [Triangle_3D((p₁, p₂, p₃)) for i = 1:N]
-    l = [LineSegment_3D(p₄, p₅) for i = 1:N] 
+    l = LineSegment_3D(p₄, p₅)
 
     time = @belapsed $l .∩ $tri
     ns_time = (time/1e-9)/N

@@ -41,14 +41,12 @@ function derivative(q::QuadraticSegment_2D{T}, r::R) where {T <: AbstractFloat, 
     return (4r_T - 3)*q.points[1] + (4r_T - 1)*q.points[2] + (4 - 8r_T)*q.points[3]
 end
 
-function arc_length(q::QuadraticSegment_2D{T}; N::Int64=20) where {T <: AbstractFloat}
+function arc_length(q::QuadraticSegment_2D{T}; N::Int64=15) where {T <: AbstractFloat}
     # Mathematica solution is pages long and can produce NaN results when the segment is
     # straight, so numerical integration is used. (Gauss-Legengre quadrature)
     #     1                  N
     # L = ∫ ||q⃗'(r)||dr  ≈   ∑ wᵢ||q⃗'(rᵢ)||
     #     0                 i=1
-    # The default number of points is N = 20, since the timing difference is very small for
-    # additional accuracy when compared with N = 15, and small N give poor accuracy.
     w, r = gauss_legendre_quadrature(T, N)
     return sum(norm.(w .* derivative.(q, r)))
 end

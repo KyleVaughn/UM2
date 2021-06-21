@@ -22,10 +22,6 @@ QuadraticSegment_3D(p₁::Point_3D{T},
                  p₂::Point_3D{T},
                  p₃::Point_3D{T}) where {T <: AbstractFloat} = QuadraticSegment_3D((p₁, p₂, p₃))
 
-# Base
-# -------------------------------------------------------------------------------------------------
-Base.broadcastable(q::QuadraticSegment_3D) = Ref(q)
-
 # Methods
 # -------------------------------------------------------------------------------------------------
 function (q::QuadraticSegment_3D{T})(r::R) where {T <: AbstractFloat, R <: Real}

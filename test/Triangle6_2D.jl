@@ -38,7 +38,7 @@ using MOCNeutronTransport
             p₁ = Point_2D(T, 0)
             p₂ = Point_2D(T, 2)
             p₃ = Point_2D(T, 2, 2)
-            p₄ = Point_2D(T, 1, 1//4)
+            p₄ = Point_2D(T, 3//2, 1//4)
             p₅ = Point_2D(T, 3, 1)
             p₆ = Point_2D(T, 1, 1)
             tri6 = Triangle6_2D((p₁, p₂, p₃, p₄, p₅, p₆))

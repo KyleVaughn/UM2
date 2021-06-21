@@ -1,6 +1,7 @@
 using MOCNeutronTransport
 using Plots
 Nmax = 1000
+Nsoln = 1000
 
 type = Float64
 p₁ = Point( type(0) )
@@ -13,7 +14,7 @@ tri6 = Triangle6((p₁, p₂, p₃, p₄, p₅, p₆))
 
 l = LineSegment(Point( type(1), type(1)/type(2), type(-2)), 
                  Point( type(1), type(1)/type(2), type(2)))
-p = intersect(l, tri6; N = Nmax)[3][1]
+p = intersect(l, tri6; N = Nsoln)[3][1]
 Nset = 1:Nmax
 perror = [norm(p - intersect(l, tri6; N = n)[3][1]) for n = Nset]
 plot(Nset[1:Nmax-1], 
