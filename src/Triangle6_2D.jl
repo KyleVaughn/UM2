@@ -26,6 +26,21 @@ function (tri6::Triangle6_2D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: R
                              4s_T*(1 - r_T - s_T)*tri6.points[6]
 end
 
+function (tri6::Triangle6_2D{T})(p::Point_2D{T}) where {T <: AbstractFloat, R,S <: Real}
+    r_T = p[1]
+    s_T = p[2]
+    return (1 - r_T - s_T)*(2(1 - r_T - s_T) - 1)*tri6.points[1] +
+                                     r_T*(2r_T-1)*tri6.points[2] +
+                                     s_T*(2s_T-1)*tri6.points[3] +
+                             4r_T*(1 - r_T - s_T)*tri6.points[4] +
+                                       (4r_T*s_T)*tri6.points[5] +
+                             4s_T*(1 - r_T - s_T)*tri6.points[6]
+end
+
+
+
+
+
 function derivatives(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
     # Return ( ∂tri6/∂r, ∂tri6/∂s )
     r_T = T(r)
@@ -113,7 +128,7 @@ function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=6) where {T <: Abstr
     end
 end
 
-function real_to_parametric(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=10) where {T <: AbstractFloat}
+function real_to_parametric(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=8) where {T <: AbstractFloat}
     r = T(1//3)
     s = T(1//3)
     # 10 iterations appears to be sufficient for all realistic use cases, even 100 units away.
