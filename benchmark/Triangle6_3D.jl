@@ -78,8 +78,8 @@ for type in [Float32, Float64]
 
     p₂ = Point_3D( type(2), type(0), type(3) )
     tri = [Triangle6_3D((p₁, p₂, p₃, p₄, p₅, p₆)) for i = 1:N]
-    l = LineSegment_3D(Point_3D( type(1), type(-10), type(0.2)),
-                       Point_3D( type(1), type( 10), type(0.2)))
+    l = LineSegment_3D(Point_3D( type(1), type(-2), type(0.2)),
+                       Point_3D( type(1), type( 2), type(0.2)))
     time = @belapsed intersect_iterative.($l, $tri)
     us_time = (time/1e-6)/N
     @printf("    2 Intersection (iterative) - %-9s: ", "$type")
