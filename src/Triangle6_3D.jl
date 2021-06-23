@@ -136,7 +136,7 @@ function triangulate(tri6::Triangle6_3D{T}, N::Int64) where {T <: AbstractFloat}
 end
 
 # Triangulate, then intersect
-function intersect_triangulate(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; 
+function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; 
         N::Int64 = 25) where {T <: AbstractFloat}
     triangles = triangulate(tri6, N)
     npoints = 0
@@ -193,7 +193,7 @@ function real_to_parametric(p::Point_3D{T}, tri6::Triangle6_3D{T}; N::Int64=30) 
 end
 
 # A more exact intersection algorithm that triangulation, uses Newton-Raphson.
-function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; 
+function intersect_iterative(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; 
         N::Int64=30) where {T <: AbstractFloat}
     p₁ = Point_3D(T, 0)
     p₂ = Point_3D(T, 0)

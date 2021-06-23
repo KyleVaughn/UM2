@@ -57,7 +57,7 @@ using MOCNeutronTransport
             p₆ = Point_3D(T, 1, 1)
             tri6 = Triangle6_3D((p₁, p₂, p₃, p₄, p₅, p₆))
             l = LineSegment_3D(Point_3D(T, 1, 1//2, -2),
-                            Point_3D(T, 1, 1//2,  2))
+                               Point_3D(T, 1, 1//2,  2))
             intersection = l ∩ tri6
 
             # 1 intersection
@@ -67,7 +67,7 @@ using MOCNeutronTransport
 
             # 0 intersection
             l = LineSegment_3D(Point_3D(T, 1, 0, -2),
-                            Point_3D(T, 1, 0,  2))
+                               Point_3D(T, 1, 0,  2))
             intersection = l ∩ tri6
             @test !intersection[1]
             @test intersection[2] == 0
@@ -81,8 +81,8 @@ using MOCNeutronTransport
             intersection = l ∩ tri6
             @test intersection[1]
             @test intersection[2] == 2
-            @test norm(intersection[3] - Point_3D(T, 1, 0.313186813, -1//5)) < 1e-6
-            @test norm(intersection[4] - Point_3D(T, 1, 0.766071428, -1//5)) < 1e-6
+            @test norm(intersection[3] - Point_3D(T, 1, 0.3116568318033659, -1//5)) < 1e-3
+            @test norm(intersection[4] - Point_3D(T, 1, 0.7706348348626366, -1//5)) < 1e-3
         end
     end
 end
