@@ -1,8 +1,9 @@
-# Quadrilateral defined by its 4 vertices.
+# Quadrilateral in 3D defined by its 4 vertices.
 
 # NOTE: Quadrilaterals are assumed to be convex and planar (all points in some plane, not 
 # necessarily xy, yx, etc.)!
-# Quadrilateral_3Ds must be convex to be valid finite elements. 
+# Quadrilaterals must be convex to be valid finite elements. See link below
+# https://math.stackexchange.com/questions/2430691/jacobian-determinant-for-bi-linear-quadrilaterals
 struct Quadrilateral_3D{T <: AbstractFloat}
     # Counter clockwise order
     points::NTuple{4, Point_3D{T}}
@@ -17,6 +18,7 @@ Quadrilateral_3D(p₁::Point_3D{T},
 
 # Methods
 # -------------------------------------------------------------------------------------------------
+# Interpolation
 function (quad::Quadrilateral_3D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section

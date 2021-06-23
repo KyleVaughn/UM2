@@ -1,4 +1,4 @@
-# Triangle_3D defined by its 3 vertices.
+# Triangle in 3D defined by its 3 vertices.
 
 struct Triangle_3D{T <: AbstractFloat}
     points::NTuple{3, Point_3D{T}}
@@ -12,6 +12,7 @@ Triangle_3D(p₁::Point_3D{T},
 
 # Methods
 # -------------------------------------------------------------------------------------------------
+# Interpolation
 function (tri::Triangle_3D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
     return (1 - T(r) - T(s))*tri.points[1] + T(r)*tri.points[2] + T(s)*tri.points[3]
 end

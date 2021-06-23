@@ -1,4 +1,4 @@
-# A 3D point in Cartesian xinates.
+# A 3D point in Cartesian coordinates.
 
 struct Point_3D{T <: AbstractFloat}
     x::SVector{3,T}

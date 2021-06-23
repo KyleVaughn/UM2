@@ -14,6 +14,7 @@ Base.broadcastable(l::LineSegment_2D) = Ref(l)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
+# Interpolation
 function (l::LineSegment_2D{T})(r::R) where {T <: AbstractFloat, R <: Real}
     return l.points[1] + T(r) * (l.points[2] - l.points[1])
 end
@@ -21,7 +22,8 @@ end
 arc_length(l::LineSegment_2D) = distance(l.points[1], l.points[2])
 
 function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <: AbstractFloat}
-    # NOTE: Doesn't work for colinear lines. (v⃗ × u⃗ = 0)
+    # NOTE: Doesn't work for colinear lines. (v⃗ × u⃗ = 0). Also, the cross product operator
+    # for 2D points returns a scalar (the norm of the cross product).
     #
     # Using the equation of a line in parametric form
     # For l₁ = x⃗₁ + rv⃗ and l₂ = x⃗₂ + su⃗
@@ -47,7 +49,7 @@ function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <:
     if abs(v⃗ × u⃗) > 5.0e-5 
         r = (w⃗ × u⃗)/(v⃗ × u⃗)
         p = l₁(r)
-        s = (r*v⃗ - w⃗) ⋅ u⃗/(u⃗ ⋅ u⃗)
+        s = ((r*v⃗ - w⃗) ⋅ u⃗)/(u⃗ ⋅ u⃗)
         return (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1) ? (true, p) : (false, p)
     else
         return (false, Point_2D(T, 0))

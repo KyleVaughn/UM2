@@ -23,9 +23,6 @@ function (quad8::Quadrilateral8_3D{T})(r::R, s::S) where {T <: AbstractFloat, R,
 end
 
 function derivatives(quad8::Quadrilateral8_3D{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
-    # NOTE these are in ξ, η coordinates, so the directions will be correct, but magnitudes
-    # will be wrong. Right now this is only used in the area calculation, so scaling by the
-    # Jacobian determinant fixes the magnitude issue.
     ξ = 2T(r) - 1; η = 2T(s) - 1
     d_dξ = (1 - η)*(2ξ + η)/4*quad8.points[1] + 
            (1 - η)*(2ξ - η)/4*quad8.points[2] +
@@ -45,7 +42,7 @@ function derivatives(quad8::Quadrilateral8_3D{T}, r::R, s::S) where {T <: Abstra
                    (1 - ξ^2)/2*quad8.points[7] +     
                     -η*(1 - ξ)*quad8.points[8]     
 
-    return d_dξ, d_dη 
+    return 2*d_dξ, 2*d_dη 
 end
 
 function area(quad8::Quadrilateral8_3D{T}; N::Int64=15) where {T <: AbstractFloat}
@@ -72,7 +69,7 @@ function area(quad8::Quadrilateral8_3D{T}; N::Int64=15) where {T <: AbstractFloa
         dξ, dη = derivatives(quad8, R[i], R[j])
         a += W[i]*W[j]*norm(dξ × dη)
     end
-    return 4*a
+    return a
 end
 
 function triangulate(quad8::Quadrilateral8_3D{T}, N::Int64) where {T <: AbstractFloat}

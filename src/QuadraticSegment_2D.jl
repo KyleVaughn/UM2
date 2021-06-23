@@ -42,11 +42,15 @@ function derivative(q::QuadraticSegment_2D{T}, r::R) where {T <: AbstractFloat, 
 end
 
 function arc_length(q::QuadraticSegment_2D{T}; N::Int64=15) where {T <: AbstractFloat}
-    # Mathematica solution is pages long and can produce NaN results when the segment is
-    # straight, so numerical integration is used. (Gauss-Legengre quadrature)
+    # This does have an analytric solution, but the Mathematica solution is pages long and can 
+    # produce NaN results when the segment is straight, so numerical integration is used. 
+    # (Gauss-Legengre quadrature)
     #     1                  N
     # L = ∫ ||q⃗'(r)||dr  ≈   ∑ wᵢ||q⃗'(rᵢ)||
     #     0                 i=1
+    #
+    # N is the number of points used in the quadrature.
+    # See tuning/QuadraticSegment_2D_arc_length.jl for more info on how N was chosen.
     w, r = gauss_legendre_quadrature(T, N)
     return sum(norm.(w .* derivative.(q, r)))
 end
@@ -83,9 +87,9 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
     C = (q.points[1] - l.points[1]) × w⃗
     if abs(A) < 1.0e-6
         # Line intersection
-        r = -C/B
         # Can B = 0 if A = 0 for non-trivial x?
-        s = (q(r)- l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
+        r = -C/B
+        s = ((q(r)- l.points[1]) ⋅ w⃗)/(w⃗ ⋅ w⃗)
         p₁ = q(r)
         if (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1)
             npoints = 1
@@ -96,8 +100,8 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
         r₂ = (-B + √(B^2-4A*C))/2A
         p₁ = q(r₁)
         p₂ = q(r₂)
-        s₁ = (p₁ - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
-        s₂ = (p₂ - l.points[1]) ⋅ w⃗/(w⃗ ⋅ w⃗)
+        s₁ = ((p₁ - l.points[1]) ⋅ w⃗)/(w⃗ ⋅ w⃗)
+        s₂ = ((p₂ - l.points[1]) ⋅ w⃗)/(w⃗ ⋅ w⃗)
         
         # Check points to see if they are valid intersections.
         # First r,s valid?

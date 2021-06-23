@@ -1,5 +1,15 @@
+# A quadratic triangle, defined in 2D.
+
 struct Triangle6_2D{T <: AbstractFloat}
+    # The points are assumed to be ordered as follows
+    # p₁ = vertex A
+    # p₂ = vertex B
+    # p₃ = vertex C
+    # p₄ = point on the quadratic segment from A to B
+    # p₅ = point on the quadratic segment from B to C
+    # p₆ = point on the quadratic segment from C to A
     points::NTuple{6, Point_2D{T}}
+
 end
 
 # Constructors
@@ -15,7 +25,10 @@ Triangle6_2D(p₁::Point_2D{T},
 
 # Methods
 # -------------------------------------------------------------------------------------------------
+# Interpolation
 function (tri6::Triangle6_2D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+    # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+    # Chapter 8, Advanced Data Representation, in the interpolation functions section
     r_T = T(r)
     s_T = T(s)
     return (1 - r_T - s_T)*(2(1 - r_T - s_T) - 1)*tri6.points[1] +
@@ -38,9 +51,6 @@ function (tri6::Triangle6_2D{T})(p::Point_2D{T}) where {T <: AbstractFloat, R,S 
 end
 
 
-
-
-
 function derivatives(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
     # Return ( ∂tri6/∂r, ∂tri6/∂s )
     r_T = T(r)
@@ -56,11 +66,12 @@ function derivatives(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloa
                       (-4r_T)*tri6.points[4] +
                        (4r_T)*tri6.points[5] +
             4(1 - r_T - 2s_T)*tri6.points[6]
-    return (∂T_∂r, ∂T_∂s)
+    return ∂T_∂r, ∂T_∂s
 end
 
 function jacobian(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
-    (∂T_∂r, ∂T_∂s) = derivatives(tri6, r, s) 
+    # Return the 2 x 2 Jacobian matrix
+    ∂T_∂r, ∂T_∂s = derivatives(tri6, r, s) 
     return hcat(∂T_∂r.x, ∂T_∂s.x)
 end
 
@@ -70,10 +81,13 @@ function area(tri6::Triangle6_2D{T}; N::Int64=12) where {T <: AbstractFloat}
     #                             1 1-r                          N
     # A = ∬ ||∂T/∂r × ∂T/∂s||dA = ∫  ∫ ||∂T/∂r × ∂T/∂s|| ds dr = ∑ wᵢ||∂T/∂r(rᵢ,sᵢ) × ∂T/∂s(rᵢ,sᵢ)||
     #      D                      0  0                          i=1
+    #
+    # N is the number of points used in the quadrature.
+    # See tuning/Triangle6_2D_area.jl for more info on how N = 12 was chosen.
     w, r, s = gauss_legendre_quadrature(tri6, N)
     a = T(0)
     for i in 1:N
-        (∂T_∂r, ∂T_∂s) = derivatives(tri6, r[i], s[i])
+        ∂T_∂r, ∂T_∂s = derivatives(tri6, r[i], s[i])
         a += w[i] * abs(∂T_∂r × ∂T_∂s)
     end
     return a
@@ -106,13 +120,16 @@ function triangulate(tri6::Triangle6_2D{T}, N::Int64) where {T <: AbstractFloat}
 end
 
 function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=6) where {T <: AbstractFloat}
-    r = T(1//3)
-    s = T(1//3)
+    # Determine if the point is in the triangle using the Newton-Raphson method
+    # N is the number of iterations of the method.
     # 6 iterations appears to be sufficient for all cases.
     # Inverstion of a 2 by 2 matrix is so fast, it doesn't make sense to check the norm of the error
     # and exit conditionally.
-    # Note the number of iterations here is less than real_to_parametric since if the point really is inside
-    # the triangle, then the convergence is very quick.
+    # Note the number of iterations here is less than real_to_parametric since if the point really is 
+    # inside the triangle, then the convergence is very quick.
+    # See tuning/Triangle6_2D_in.jl for more info on how N = 6 was chosen.
+    r = T(1//3) # Initial guess at triangle centroid 
+    s = T(1//3)
     for i = 1:N
         err = p - tri6(r, s)
         # Inversion is faster for 2 by 2 than \
@@ -121,6 +138,7 @@ function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=6) where {T <: Abstr
         s = s + Δs
     end
     err = p - tri6(r, s)
+    # fuzzy check with ϵ = 1.0e-5
     if (-1.0e-5 ≤ r ≤ 1.00001) && (-1.0e-5 ≤ s ≤ 1.00001) && norm(err) < 1.0e-5  
         return true
     else
@@ -128,18 +146,23 @@ function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=6) where {T <: Abstr
     end
 end
 
-function real_to_parametric(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=8) where {T <: AbstractFloat}
-    r = T(1//3)
+function real_to_parametric(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) where {T <: AbstractFloat}
+    # Convert from real coordinates to the triangle's local parametric coordinates using the
+    # the Newton-Raphson method. N is the max number of iterations
+    # If a conversion doesn't exist, the minimizer is returned.
+    r = T(1//3) # Initial guess at triangle centroid
     s = T(1//3)
-    # 10 iterations appears to be sufficient for all realistic use cases, even 100 units away.
-    # Inverstion of a 2 by 2 matrix is so fast, it doesn't make sense to check the norm of the error
-    # and exit conditionally.
+    err₁ = p - tri6(r, s)
     for i = 1:N
-        err = p - tri6(r, s)
         # Inversion is faster for 2 by 2 than \
-        Δr, Δs = inv(jacobian(tri6, r, s)) * err.x
+        Δr, Δs = inv(jacobian(tri6, r, s)) * err₁.x
         r = r + Δr
         s = s + Δs
+        err₂ = p - tri6(r, s)
+        if norm(err₂ - err₁) < 1.0e-6
+            break
+        end
+        err₁ = err₂
     end
     return Point_2D(r, s)
 end

@@ -1,7 +1,8 @@
-# Quadrilateral defined by its 4 vertices.
+# Quadrilateral in 2D defined by its 4 vertices.
 
-# NOTE: Quadrilaterals are assumed to be convex and planar.
-# Quadrilateral_2Ds must be convex to be valid finite elements. 
+# NOTE: Quadrilaterals are assumed to be convex. This is because quadrilaterals must be convex 
+# to be valid finite elements.
+# https://math.stackexchange.com/questions/2430691/jacobian-determinant-for-bi-linear-quadrilaterals
 struct Quadrilateral_2D{T <: AbstractFloat}
     # Counter clockwise order
     points::NTuple{4, Point_2D{T}}

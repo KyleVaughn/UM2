@@ -1,4 +1,39 @@
+# A quadratic triangle, defined in 3D.
+
+# Summary of intersection methods:
+#       Triangulation
+#           - Speed varies dramatically with accuracy
+#               - The faster method when accuracy at or below 2 decimal places is desired
+#           - Can provide false positives and false negatives due to approximation of the surface
+#           - Constant time for a given number of triangles
+#               - The only way to determine if two intersections exist is to test until two unique 
+#                 points are found. Since this happens infrequently, all points are tested, so time 
+#                 isn't wasted on control logic.
+#       Newton-Raphson (iterative)
+#           - Speed varies slightly based upon line segment length and orientation
+#               - A shorter line segment will converge faster
+#               - Converges based upon Jacobian matrix.
+#                   - If derivatives are small, the iteration can become slow
+#               - The faster method when accuracy beyond 2 decimal places is desired
+#           - May falsely give one intersection instead of two, but this has yet to be observed.
+#               - This is due to the point of convergence being dependent on the initial guess
+#                 point. The two starting points are placed close to the line segment start/stop 
+#                 to try to mitigate this.
+#           - Accurate to 6+ decimal places.
+#       Overall
+#           - Triangulation is predictable in speed, but slow for hig accuracy
+#           - Newton-Raphson is unpredictable in speed, but generally faster for high accuracy 
+#           - Consider the difference in timing between intersections for porting to GPU
+#               - Newton-Raphson may cause thread divergence
+
 struct Triangle6_3D{T <: AbstractFloat}
+    # The points are assumed to be ordered as follows
+    # p₁ = vertex A
+    # p₂ = vertex B
+    # p₃ = vertex C
+    # p₄ = point on the quadratic segment from A to B
+    # p₅ = point on the quadratic segment from B to C
+    # p₆ = point on the quadratic segment from C to A
     points::NTuple{6, Point_3D{T}}
 end
 
@@ -15,9 +50,21 @@ Triangle6_3D(p₁::Point_3D{T},
 
 # Methods
 # -------------------------------------------------------------------------------------------------
+# Interpolation
 function (tri6::Triangle6_3D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
     r_T = T(r)
     s_T = T(s)
+    return (1 - r_T - s_T)*(2(1 - r_T - s_T) - 1)*tri6.points[1] +
+                                     r_T*(2r_T-1)*tri6.points[2] +
+                                     s_T*(2s_T-1)*tri6.points[3] +
+                             4r_T*(1 - r_T - s_T)*tri6.points[4] +
+                                       (4r_T*s_T)*tri6.points[5] +
+                             4s_T*(1 - r_T - s_T)*tri6.points[6]
+end
+
+function (tri6::Triangle6_3D{T})(p::Point_2D{T}) where {T <: AbstractFloat, R,S <: Real}
+    r_T = p[1]
+    s_T = p[2]
     return (1 - r_T - s_T)*(2(1 - r_T - s_T) - 1)*tri6.points[1] +
                                      r_T*(2r_T-1)*tri6.points[2] +
                                      s_T*(2s_T-1)*tri6.points[3] +
@@ -41,7 +88,7 @@ function derivatives(tri6::Triangle6_3D{T}, r::R, s::S) where {T <: AbstractFloa
                       (-4r_T)*tri6.points[4] +
                        (4r_T)*tri6.points[5] +
             4(1 - r_T - 2s_T)*tri6.points[6]     
-    return (∂T_∂r, ∂T_∂s) 
+    return ∂T_∂r, ∂T_∂s
 end
 
 function area(tri6::Triangle6_3D{T}; N::Int64=79) where {T <: AbstractFloat}
@@ -51,12 +98,9 @@ function area(tri6::Triangle6_3D{T}; N::Int64=79) where {T <: AbstractFloat}
     # A = ∬ ||∂T/∂r × ∂T/∂s||dA = ∫  ∫ ||∂T/∂r × ∂T/∂s|| ds dr = ∑ wᵢ||∂T/∂r(rᵢ,sᵢ) × ∂T/∂s(rᵢ,sᵢ)||
     #      D                      0  0                          i=1
     #
-    # NOTE: for 2D, N = 12 appears to be sufficient. For 3D, N = 79 is preferred.
-    # This is to ensure error in area less that about 1e-6. This was determined
-    # experimentally, not mathematically, so more sophisticated analysis could be
-    # performed. For really strange 3D shapes, we need greater than 79
+    # N is the number of points used in the quadrature.
+    # See tuning/Triangle6_3D_area.jl for more info on how N = 79 was chosen.
     w, r, s = gauss_legendre_quadrature(tri6, N)
-#    return mapreduce((w,r,s)->w*norm(×(derivatives(tri6, r, s))), +, w, r, s)
     a = T(0)
     for i in 1:N
         ∂T_∂r, ∂T_∂s = derivatives(tri6, r[i], s[i])
@@ -91,8 +135,9 @@ function triangulate(tri6::Triangle6_3D{T}, N::Int64) where {T <: AbstractFloat}
     return triangles 
 end
 
-# Triangulate then intersect
-function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; N::Int64 = 13) where {T <: AbstractFloat}
+# Triangulate, then intersect
+function intersect_triangulate(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; 
+        N::Int64 = 25) where {T <: AbstractFloat}
     triangles = triangulate(tri6, N)
     npoints = 0
     p₁ = Point_3D(T, 0)
@@ -125,31 +170,37 @@ function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; N::Int64 = 13) w
         return true, -1, p₁, p₂ 
     end
 end
-
-function real_to_parametric(p::Point_3D{T}, tri6::Triangle6_3D{T}; N::Int64=10) where {T <: AbstractFloat}
-    r = T(1//3)
+function real_to_parametric(p::Point_3D{T}, tri6::Triangle6_3D{T}; N::Int64=30) where {T <: AbstractFloat}
+    # Convert from real coordinates to the triangle's local parametric coordinates using the
+    # the Newton-Raphson method. N is the max number of iterations
+    # If a conversion doesn't exist, the minimizer is returned. 
+    r = T(1//3) # Initial guess at triangle centroid
     s = T(1//3)
-    # 10 iterations appears to be sufficient for all realistic use cases, even 100 units away.
+    err₁ = p - tri6(r, s)
     for i = 1:N
-        err = p - tri6(r, s)
         ∂T_∂r, ∂T_∂s = derivatives(tri6, r, s)
         J = hcat(∂T_∂r.x, ∂T_∂s.x)
-        Δr, Δs = J \ err.x 
+        Δr, Δs = J \ err₁.x 
         r = r + Δr
-        s = s + Δs 
+        s = s + Δs
+        err₂ = p - tri6(r, s)
+        if norm(err₂ - err₁) < 1.0e-6
+            break
+        end
+        err₁ = err₂
     end
     return Point_2D(r, s)
 end
 
-# A more exact intersection algorithm that's about 7 times slower than triangulation.
-# Uses Newton-Raphson
-function intersect_iterative(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}) where {T <: AbstractFloat}
+# A more exact intersection algorithm that triangulation, uses Newton-Raphson.
+function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}; 
+        N::Int64=30) where {T <: AbstractFloat}
     p₁ = Point_3D(T, 0)
     p₂ = Point_3D(T, 0)
     npoints = 0
     u⃗ = l.points[2] - l.points[1]
-    ray_start = real_to_parametric(l(0), tri6; N=6) # closest r,s to the ray start
-    ray_stop  = real_to_parametric(l(1), tri6; N=6) # closest r,s to the ray stop
+    ray_start = real_to_parametric(l(0), tri6; N=10) # closest r,s to the ray start
+    ray_stop  = real_to_parametric(l(1), tri6; N=10) # closest r,s to the ray stop
     # The parametric coordinates corresponding to the start of the line segment
     r₁ = ray_start[1]
     s₁ = ray_start[2]
@@ -158,8 +209,9 @@ function intersect_iterative(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}) where 
     r₂ = ray_stop[1]
     s₂ = ray_stop[2]
     t₂ = T(1)
-    for i = 1:6
-        err₁ = tri6(r₁, s₁) - l(t₁)
+    # Iteration for point 1
+    err₁ = tri6(r₁, s₁) - l(t₁)
+    for i = 1:N
         ∂r₁, ∂s₁ = derivatives(tri6, r₁, s₁)
         J₁ = hcat(∂r₁.x, ∂s₁.x, -u⃗.x)
         # If matrix is singular, it's probably bad luck. Just perturb it a bit.
@@ -167,14 +219,27 @@ function intersect_iterative(l::LineSegment_3D{T}, tri6::Triangle6_3D{T}) where 
             r₁, s₁, t₁ = [r₁, s₁, t₁] + rand(3)/10
         else
             r₁, s₁, t₁ = [r₁, s₁, t₁] - inv(J₁) * err₁.x
+            errₙ = tri6(r₁, s₁) - l(t₁)
+            if norm(errₙ - err₁) < 5.0e-6
+                break
+            end
+            err₁ = errₙ
         end
-        err₂ = tri6(r₂, s₂) - l(t₂)
+    end
+    # Iteration for point 2
+    err₂ = tri6(r₂, s₂) - l(t₂)
+    for j = 1:N
         ∂r₂, ∂s₂ = derivatives(tri6, r₂, s₂)
         J₂ = hcat(∂r₂.x, ∂s₂.x, -u⃗.x)
         if abs(det(J₂)) < 1e-5
             r₂, s₂, t₂ = [r₂, s₂, t₂] + rand(3)/10
         else
             r₂, s₂, t₂ = [r₂, s₂, t₂] - inv(J₂) * err₂.x
+            errₘ = tri6(r₂, s₂) - l(t₂)
+            if norm(errₘ - err₂) < 5.0e-6
+                break
+            end
+            err₂ = errₘ
         end
     end
 
@@ -200,9 +265,9 @@ end
 # Plot
 # -------------------------------------------------------------------------------------------------
 function convert_arguments(P::Type{<:LineSegments}, tri6::Triangle6_3D{T}) where {T <: AbstractFloat}
-    q₁ = QuadraticSegment(tri6.points[1], tri6.points[2], tri6.points[4])
-    q₂ = QuadraticSegment(tri6.points[2], tri6.points[3], tri6.points[5])
-    q₃ = QuadraticSegment(tri6.points[3], tri6.points[1], tri6.points[6])
+    q₁ = QuadraticSegment_3D(tri6.points[1], tri6.points[2], tri6.points[4])
+    q₂ = QuadraticSegment_3D(tri6.points[2], tri6.points[3], tri6.points[5])
+    q₃ = QuadraticSegment_3D(tri6.points[3], tri6.points[1], tri6.points[6])
     qsegs = [q₁, q₂, q₃]
     return convert_arguments(P, qsegs)
 end
