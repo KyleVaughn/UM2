@@ -39,7 +39,7 @@ function (tri6::Triangle6_2D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: R
                              4s_T*(1 - r_T - s_T)*tri6.points[6]
 end
 
-function (tri6::Triangle6_2D{T})(p::Point_2D{T}) where {T <: AbstractFloat, R,S <: Real}
+function (tri6::Triangle6_2D{T})(p::Point_2D{T}) where {T <: AbstractFloat}
     r_T = p[1]
     s_T = p[2]
     return (1 - r_T - s_T)*(2(1 - r_T - s_T) - 1)*tri6.points[1] +
@@ -52,7 +52,8 @@ end
 
 
 function derivatives(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
-    # Return ( ∂tri6/∂r, ∂tri6/∂s )
+    # Let T(r,s) be the interpolation function for tri6
+    # Returns ∂T/∂r, ∂T/∂s
     r_T = T(r)
     s_T = T(s)
     ∂T_∂r = (4r_T + 4s_T - 3)*tri6.points[1] +

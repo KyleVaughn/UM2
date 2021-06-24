@@ -51,12 +51,9 @@ using MOCNeutronTransport
             p₈ = Point_3D(T, 0,    3//2)
             quad8 = Quadrilateral8_3D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
 
-            # 2D default
-            @test isapprox(area(quad8; N = 4), 17//3, atol=1.0e-6)
-            # 3D default
             p₈ = Point_3D(T, 0, 3//2, 2)
             quad8 = Quadrilateral8_3D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
-            @test isapprox(area(quad8; N = 15), 10.09431, atol=1.0e-4)
+            @test isapprox(area(quad8), 10.09431, atol=1.0e-4)
 
             # intersect
             p₁ = Point_3D(T, 0)
@@ -91,8 +88,8 @@ using MOCNeutronTransport
             intersection = l ∩ quad8
             @test intersection[1]
             @test intersection[2] == 2
-            @test norm(intersection[3] - Point_3D(T, 1, 0.61244509, 1//2)) < 1.0e-6
-            @test norm(intersection[4] - Point_3D(T, 1, 2.38737343, 1//2)) < 1.0e-6
+            @test norm(intersection[3] - Point_3D(T, 1, 0.6099032181207209, 1//2)) < 1.0e-3
+            @test norm(intersection[4] - Point_3D(T, 1, 2.390096778327549, 1//2)) < 1.0e-3
         end
     end
 end
