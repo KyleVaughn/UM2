@@ -12,7 +12,7 @@ for type in [Float32, Float64]
     p₆ = Point_3D( type(1), type(1) )
     tri = [Triangle6_3D((p₁, p₂, p₃, p₄, p₅, p₆)) for i = 1:N]
 
-    time = @belapsed triangulate.($tri, 13)
+    time = @belapsed triangulate.($tri, 25)
     us_time = (time/1e-6)/N
     @printf("    Triangulation - %-9s: ", "$type")
     @printf("%10.2f μs\n", us_time) 

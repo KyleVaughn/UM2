@@ -52,7 +52,7 @@ function arc_length(q::QuadraticSegment_2D{T}; N::Int64=15) where {T <: Abstract
     # N is the number of points used in the quadrature.
     # See tuning/QuadraticSegment_2D_arc_length.jl for more info on how N was chosen.
     w, r = gauss_legendre_quadrature(T, N)
-    return sum(norm.(w .* derivative.(q, r)))
+    return sum(w .* norm.(derivative.(q, r)))
 end
 
 function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: AbstractFloat}
@@ -89,8 +89,8 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
         # Line intersection
         # Can B = 0 if A = 0 for non-trivial x?
         r = -C/B
-        s = ((q(r)- l.points[1]) ⋅ w⃗)/(w⃗ ⋅ w⃗)
         p₁ = q(r)
+        s = ((p₁ - l.points[1]) ⋅ w⃗)/(w⃗ ⋅ w⃗)
         if (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1)
             npoints = 1
         end
@@ -106,7 +106,7 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
         # Check points to see if they are valid intersections.
         # First r,s valid?
         if (0 ≤ r₁ ≤ 1) && (0 ≤ s₁ ≤ 1) && (p₁ ≈ l(s₁))
-            npoints += 1
+            npoints = 1
         end
         # Second r,s valid?
         if (0 ≤ r₂ ≤ 1) && (0 ≤ s₂ ≤ 1) && (p₂ ≈ l(s₂))

@@ -31,6 +31,7 @@ function (quad::Quadrilateral_3D{T})(r::R, s::S) where {T <: AbstractFloat, R,S 
 end
 
 function triangulate(quad::Quadrilateral_3D{T}) where {T <: AbstractFloat}
+    # Return the two triangles that partition the domain
     A, B, C, D = quad.points
     return (Triangle_3D(A, B, C), Triangle_3D(C, D, A))
 end

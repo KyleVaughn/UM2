@@ -22,8 +22,8 @@ end
 arc_length(l::LineSegment_2D) = distance(l.points[1], l.points[2])
 
 function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <: AbstractFloat}
-    # NOTE: Doesn't work for colinear lines. (v⃗ × u⃗ = 0). Also, the cross product operator
-    # for 2D points returns a scalar (the norm of the cross product).
+    # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product 
+    # operator for 2D points returns a scalar (the 2-norm of the cross product).
     #
     # Using the equation of a line in parametric form
     # For l₁ = x⃗₁ + rv⃗ and l₂ = x⃗₂ + su⃗

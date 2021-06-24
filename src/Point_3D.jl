@@ -78,6 +78,7 @@ end
                                    p⃗.x[3] / n
                                   )
 -(p⃗::Point_3D) = -1*p⃗
+# 3 x 3 matrix multiplication, returns a point
 *(A::SMatrix{3, 3, T, 9}, p⃗::Point_3D{T}) where {T <: AbstractFloat} = Point_3D(A * p⃗.x)
 
 # Methods

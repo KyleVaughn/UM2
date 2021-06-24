@@ -37,7 +37,7 @@ end
 +(p⃗₁::Point_2D, p⃗₂::Point_2D) = Point_2D(p⃗₁.x[1] + p⃗₂.x[1], p⃗₁.x[2] + p⃗₂.x[2])
 -(p⃗₁::Point_2D, p⃗₂::Point_2D) = Point_2D(p⃗₁.x[1] - p⃗₂.x[1], p⃗₁.x[2] - p⃗₂.x[2])
 # Note the cross product of two 2D points returns a scalar. It is assumed that the 
-# desired quantity is actually the norm of the cross product, since the cross product of vectors
+# desired quantity is actually the 2-norm of the cross product, since the cross product of vectors
 # in the plane is a vector normal to the plane.
 ×(p⃗₁::Point_2D, p⃗₂::Point_2D) = p⃗₁.x[1]*p⃗₂.x[2] - p⃗₂.x[1]*p⃗₁.x[2]
 ⋅(p⃗₁::Point_2D, p⃗₂::Point_2D) = p⃗₁.x[1]*p⃗₂.x[1] + p⃗₁.x[2]*p⃗₂.x[2]

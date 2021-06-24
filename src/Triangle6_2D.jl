@@ -94,15 +94,16 @@ function area(tri6::Triangle6_2D{T}; N::Int64=12) where {T <: AbstractFloat}
 end
 
 function triangulate(tri6::Triangle6_2D{T}, N::Int64) where {T <: AbstractFloat}
+    # N is the number of divisions of each edge
     triangles = Vector{Triangle_2D{T}}(undef, (N+1)*(N+1))
     if N == 0
         triangles[1] = Triangle_2D(tri6.points[1], tri6.points[2], tri6.points[3])
     else
         i = 1
         for S = 1:N, R = 0:N-S
-            triangles[i] = Triangle_2D(tri6(    R/(N+1),     S/(N+1)),
-                                       tri6((R+1)/(N+1),     S/(N+1)),
-                                       tri6(    R/(N+1), (S+1)/(N+1)))
+            triangles[i]   = Triangle_2D(tri6(    R/(N+1),     S/(N+1)),
+                                         tri6((R+1)/(N+1),     S/(N+1)),
+                                         tri6(    R/(N+1), (S+1)/(N+1)))
             triangles[i+1] = Triangle_2D(tri6(    R/(N+1),     S/(N+1)),
                                          tri6((R+1)/(N+1), (S-1)/(N+1)),
                                          tri6((R+1)/(N+1),     S/(N+1)))
@@ -117,33 +118,6 @@ function triangulate(tri6::Triangle6_2D{T}, N::Int64) where {T <: AbstractFloat}
         end
     end
     return triangles 
-end
-
-function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=6) where {T <: AbstractFloat}
-    # Determine if the point is in the triangle using the Newton-Raphson method
-    # N is the number of iterations of the method.
-    # 6 iterations appears to be sufficient for all cases.
-    # Inverstion of a 2 by 2 matrix is so fast, it doesn't make sense to check the norm of the error
-    # and exit conditionally.
-    # Note the number of iterations here is less than real_to_parametric since if the point really is 
-    # inside the triangle, then the convergence is very quick.
-    # See tuning/Triangle6_2D_in.jl for more info on how N = 6 was chosen.
-    r = T(1//3) # Initial guess at triangle centroid 
-    s = T(1//3)
-    for i = 1:N
-        err = p - tri6(r, s)
-        # Inversion is faster for 2 by 2 than \
-        Δr, Δs = inv(jacobian(tri6, r, s)) * err.x
-        r = r + Δr
-        s = s + Δs
-    end
-    err = p - tri6(r, s)
-    # fuzzy check with ϵ = 1.0e-5
-    if (-1.0e-5 ≤ r ≤ 1.00001) && (-1.0e-5 ≤ s ≤ 1.00001) && norm(err) < 1.0e-5  
-        return true
-    else
-        return false
-    end
 end
 
 function real_to_parametric(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) where {T <: AbstractFloat}
@@ -165,6 +139,17 @@ function real_to_parametric(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) 
         err₁ = err₂
     end
     return Point_2D(r, s)
+end
+
+function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) where {T <: AbstractFloat}
+    # Determine if the point is in the triangle using the Newton-Raphson method
+    # N is the max number of iterations of the method.
+    p_rs = real_to_parametric(p, tri6; N=N)
+    if (0 ≤ p_rs[1] ≤ 1) && (0 ≤ p_rs[2] ≤ 1) && norm(p - tri6(p_rs)) < 1.0e-4 
+        return true
+    else
+        return false
+    end
 end
 
 # Plot

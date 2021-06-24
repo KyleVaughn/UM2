@@ -1,4 +1,15 @@
+# A quadratic quadrilateral in 3D space.
+
 struct Quadrilateral8_3D{T <: AbstractFloat}
+    # The points are assumed to be ordered  in counter clockwise order as follows
+    # p₁ = vertex A
+    # p₂ = vertex B
+    # p₃ = vertex C
+    # p₄ = vertex D
+    # p₅ = point on the quadratic segment from A to B
+    # p₆ = point on the quadratic segment from B to C
+    # p₇ = point on the quadratic segment from C to D
+    # p₈ = point on the quadratic segment from D to A
     points::NTuple{8, Point_3D{T}}
 end
 
@@ -11,6 +22,8 @@ Quadrilateral8_3D(p₁::Point_3D{T}, p₂::Point_3D{T}, p₃::Point_3D{T}, p₄:
 # Methods
 # -------------------------------------------------------------------------------------------------
 function (quad8::Quadrilateral8_3D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+    # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+    # Chapter 8, Advanced Data Representation, in the interpolation functions section
     ξ = 2T(r) - 1; η = 2T(s) - 1
     return (1 - ξ)*(1 - η)*(-ξ - η - 1)/4*quad8.points[1] +
            (1 + ξ)*(1 - η)*( ξ - η - 1)/4*quad8.points[2] +
@@ -23,56 +36,55 @@ function (quad8::Quadrilateral8_3D{T})(r::R, s::S) where {T <: AbstractFloat, R,
 end
 
 function derivatives(quad8::Quadrilateral8_3D{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+    # Chain rule
+    # ∂Q   ∂Q ∂ξ  ∂Q   ∂Q ∂η 
+    # -- = -- --, -- = -- --
+    # ∂r   ∂ξ ∂r  ∂s   ∂η ∂s
     ξ = 2T(r) - 1; η = 2T(s) - 1
-    d_dξ = (1 - η)*(2ξ + η)/4*quad8.points[1] + 
-           (1 - η)*(2ξ - η)/4*quad8.points[2] +
-           (1 + η)*(2ξ + η)/4*quad8.points[3] +     
-           (1 + η)*(2ξ - η)/4*quad8.points[4] +     
-                   -ξ*(1 - η)*quad8.points[5] +     
-                  (1 - η^2)/2*quad8.points[6] +     
-                   -ξ*(1 + η)*quad8.points[7] +     
-                 -(1 - η^2)/2*quad8.points[8]     
+    ∂Q_∂ξ = (1 - η)*(2ξ + η)/4*quad8.points[1] + 
+            (1 - η)*(2ξ - η)/4*quad8.points[2] +
+            (1 + η)*(2ξ + η)/4*quad8.points[3] +     
+            (1 + η)*(2ξ - η)/4*quad8.points[4] +     
+                    -ξ*(1 - η)*quad8.points[5] +     
+                   (1 - η^2)/2*quad8.points[6] +     
+                    -ξ*(1 + η)*quad8.points[7] +     
+                  -(1 - η^2)/2*quad8.points[8]     
 
-    d_dη = (1 - ξ)*( ξ + 2η)/4*quad8.points[1] + 
-           (1 + ξ)*(-ξ + 2η)/4*quad8.points[2] +
-           (1 + ξ)*( ξ + 2η)/4*quad8.points[3] +     
-           (1 - ξ)*(-ξ + 2η)/4*quad8.points[4] +     
-                  -(1 - ξ^2)/2*quad8.points[5] +   
-                    -η*(1 + ξ)*quad8.points[6] +     
-                   (1 - ξ^2)/2*quad8.points[7] +     
-                    -η*(1 - ξ)*quad8.points[8]     
+    ∂Q_∂η = (1 - ξ)*( ξ + 2η)/4*quad8.points[1] + 
+            (1 + ξ)*(-ξ + 2η)/4*quad8.points[2] +
+            (1 + ξ)*( ξ + 2η)/4*quad8.points[3] +     
+            (1 - ξ)*(-ξ + 2η)/4*quad8.points[4] +     
+                   -(1 - ξ^2)/2*quad8.points[5] +   
+                     -η*(1 + ξ)*quad8.points[6] +     
+                    (1 - ξ^2)/2*quad8.points[7] +     
+                     -η*(1 - ξ)*quad8.points[8]     
 
-    return 2*d_dξ, 2*d_dη 
+    return 2*∂Q_∂ξ, 2*∂Q_∂η 
 end
 
 function area(quad8::Quadrilateral8_3D{T}; N::Int64=15) where {T <: AbstractFloat}
     # Numerical integration required. Gauss-Legendre quadrature over a quadrilateral is used.
-    # Let T(r,s) be the interpolation function for quad8,
+    # Let Q(r,s) be the interpolation function for quad8,
     #                             1  1                         
-    # A = ∬ ||∂T/∂r × ∂T/∂s||dA = ∫  ∫ ||∂T/∂r × ∂T/∂s|| ds dr 
+    # A = ∬ ||∂Q/∂r × ∂Q/∂s||dA = ∫  ∫ ||∂Q/∂r × ∂Q/∂s|| ds dr 
     #      D                      0  0                         
     #
-    #     1  1                         
-    #   = ∫  ∫ ||∂T/∂ξ × ∂T/∂η|| |J| dξ dη, where |J| = Jacobian determinant = 4  
-    #    -1 -1                         
-    #
     #       N   N  
-    #   = 4 ∑   ∑  wᵢwⱼ||∂T/∂ξ(ξᵢ,ηⱼ) × ∂T/∂η(ξᵢ,ηⱼ)||
+    #   =   ∑   ∑  wᵢwⱼ||∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)||
     #      i=1 j=1
-    # NOTE: for 2D, N = 4  appears to be sufficient. For 3D, N = 15  is preferred.
-    # This is to ensure error in area less that about 1e-6. This was determined
-    # experimentally, not mathematically, so more sophisticated analysis could be 
-    # performed.
-    W, R = gauss_legendre_quadrature(T, N)
+    # N is the square root of the number of points used in the quadrature.
+    # See tuning/Quadrilateral8_3D_area.jl for more info on how N = 15 was chosen.    
+    w, r = gauss_legendre_quadrature(T, N)
     a = T(0)
-    for i in 1:N, j = 1:N
-        dξ, dη = derivatives(quad8, R[i], R[j])
-        a += W[i]*W[j]*norm(dξ × dη)
+    for i = 1:N, j = 1:N
+        ∂Q_∂r, ∂Q_∂s = derivatives(quad8, r[i], r[j])
+        a += w[i]*w[j]*norm(∂Q_∂r × ∂Q_∂s)
     end
     return a
 end
 
 function triangulate(quad8::Quadrilateral8_3D{T}, N::Int64) where {T <: AbstractFloat}
+    # N is the number of divisions of each edge
     triangles = Vector{Triangle_3D{T}}(undef, 2*(N+1)*(N+1))
     if N == 0
         triangles[1] = Triangle_3D(quad8.points[1], quad8.points[2], quad8.points[3])
@@ -90,7 +102,8 @@ function triangulate(quad8::Quadrilateral8_3D{T}, N::Int64) where {T <: Abstract
     return triangles
 end
 
-function intersect(l::LineSegment_3D{T}, quad8::Quadrilateral8_3D{T}; N::Int64 = 13) where {T <: AbstractFloat}
+function intersect(l::LineSegment_3D{T}, quad8::Quadrilateral8_3D{T}; N::Int64 = 20) where {T <: AbstractFloat}
+    # Triangulate and intersect each triangle
     triangles = triangulate(quad8, N)
     npoints = 0 
     p₁ = Point_3D(T, 0)

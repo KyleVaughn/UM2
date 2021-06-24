@@ -29,6 +29,7 @@ function (quad::Quadrilateral_2D{T})(r::R, s::S) where {T <: AbstractFloat, R,S 
 end
 
 function triangulate(quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}
+    # Return the two triangles that partition the domain
     A, B, C, D = quad.points
     return (Triangle_2D(A, B, C), Triangle_2D(C, D, A))
 end

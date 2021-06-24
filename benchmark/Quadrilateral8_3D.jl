@@ -14,7 +14,7 @@ for T in [Float32, Float64]
     p₈ = Point_3D(T, 0,    3//2)
     quad8 = [Quadrilateral8_3D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)) for i = 1:N]
 
-    time = @belapsed triangulate.($quad8, 13)
+    time = @belapsed triangulate.($quad8, 20)
     us_time = (time/1e-6)/N
     @printf("    Triangulation - %-9s: ", "$T")
     @printf("%10.2f μs\n", us_time) 
@@ -69,7 +69,7 @@ for T in [Float32, Float64]
     quad8 = [Quadrilateral8_3D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)) for i = 1:N]
 
     time = @belapsed area.($quad8)
-    ns_time = (time/1e-9)/N
+    us_time = (time/1e-6)/N
     @printf("    Area - %-9s: ", "$T")
-    @printf("%10.2f ns\n", ns_time) 
+    @printf("%10.2f μs\n", us_time) 
 end
