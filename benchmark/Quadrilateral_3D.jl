@@ -1,4 +1,4 @@
-using MOCNeutronTransport, BenchmarkTools, Printf
+using MOCNeutronTransport, BenchmarkTools, Printf, Test
 
 N = Int(1E3)
 println("Quadrilateral_3D (N = $N)")
@@ -12,7 +12,7 @@ for T in [Float32, Float64]
 
     time = @belapsed triangulate.($quad)
     ns_time = (time/1e-9)/N
-    @printf("    Triangulation - %-9s: ", "$T")
+    @printf("    Triangulation                  - %-9s: ", "$T")
     @printf("%10.2f ns\n", ns_time) 
 end
 
@@ -28,9 +28,11 @@ for T in [Float32, Float64]
     quad = [Quadrilateral_3D((p₁, p₂, p₃, p₄)) for i = 1:N]
     l = LineSegment_3D(p₄, p₅)
 
+    @test (l ∩ quad[1])[1]
+    @test (l ∩ quad[1])[2] ≈ Point_3D(T, 0, 1, 0)
     time = @belapsed $l .∩ $quad
     ns_time = (time/1e-9)/N
-    @printf("    Intersection - %-9s: ", "$T")
+    @printf("    Intersection                   - %-9s: ", "$T")
     @printf("%10.2f ns\n", ns_time) 
 end
 
@@ -42,8 +44,9 @@ for T in [Float32, Float64]
     p₄ = Point_3D(T, 0, 1)
     quad = [Quadrilateral_3D((p₁, p₂, p₃, p₄)) for i = 1:N]
 
+    @test area(quad[1]) ≈ 1 
     time = @belapsed area.($quad)
     ns_time = (time/1e-9)/N
-    @printf("    Area - %-9s: ", "$T")
+    @printf("    Area                           - %-9s: ", "$T")
     @printf("%10.2f ns\n", ns_time) 
 end
