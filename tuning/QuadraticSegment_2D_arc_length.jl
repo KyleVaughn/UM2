@@ -9,7 +9,7 @@ f = arc_length
 p₁ = Point_2D(T, 0)
 p₂ = Point_2D(T, 2)
 p₃ = Point_2D(T, 1.5, 1)
-q = QuadraticSegment_2D((p₁, p₂, p₃))
+q = QuadraticSegment_2D(p₁, p₂, p₃)
 
 soln = f(q; N=Nsoln)
 err = [abs(soln - f(q; N = n)) for n = Nset]

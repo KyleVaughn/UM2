@@ -146,43 +146,12 @@ function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) where {T <: Abst
     # Determine if the point is in the triangle using the Newton-Raphson method
     # N is the max number of iterations of the method.
     p_rs = real_to_parametric(p, tri6; N=N)
-    if (0 ≤ p_rs[1] ≤ 1) && (0 ≤ p_rs[2] ≤ 1) && norm(p - tri6(p_rs)) < 1.0e-4 
+    ϵ = 1.0e-6
+    if (0 - ϵ ≤ p_rs[1] ≤ 1 + ϵ) && 
+       (0 - ϵ ≤ p_rs[2] ≤ 1 + ϵ) && 
+       norm(p - tri6(p_rs)) < 1.0e-4 
         return true
     else
         return false
     end
-end
-
-# Plot
-# -------------------------------------------------------------------------------------------------
-function convert_arguments(P::Type{<:LineSegments}, tri6::Triangle6_2D{T}) where {T <: AbstractFloat}
-    q₁ = QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4])
-    q₂ = QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5])
-    q₃ = QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6])
-    qsegs = [q₁, q₂, q₃]
-    return convert_arguments(P, qsegs)
-end
-
-function convert_arguments(P::Type{<:LineSegments}, 
-        TA::AbstractArray{<:Triangle6_2D{T}}) where {T <: AbstractFloat}
-    point_sets = [convert_arguments(P, tri6) for tri6 in TA]
-    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
-end
-
-function convert_arguments(P::Type{Mesh{Tuple{Triangle6_2D{T}}}}, 
-        tri6::Triangle6_2D{T}) where {T <: AbstractFloat}
-    triangles = triangulate(tri6, 13)
-    return convert_arguments(P, triangles)
-end
-
-function convert_arguments(MT::Type{Mesh{Tuple{Triangle6_2D{T}}}},
-        AT::Vector{Triangle_2D{T}}) where {T <: AbstractFloat}
-    points = reduce(vcat, [[tri.points[i].x for i = 1:3] for tri in AT])
-    faces = zeros(Int64, length(AT), 3)
-    k = 1
-    for i in 1:length(AT), j = 1:3
-        faces[i, j] = k
-        k += 1
-    end
-    return convert_arguments(MT, points, faces)
 end

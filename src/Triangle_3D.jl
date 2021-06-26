@@ -49,36 +49,3 @@ function intersect(l::LineSegment_3D{type}, tri::Triangle_3D{type}) where {type 
         return (u < 0) || (v < 0) || (u + v > 1) || (t < 0) || (1 < t) ? (false, p) : (true, l(t))
     end
 end
-
-# Plot
-# -------------------------------------------------------------------------------------------------
-function convert_arguments(P::Type{<:LineSegments}, tri::Triangle_3D)
-    l₁ = LineSegment_3D(tri.points[1], tri.points[2])
-    l₂ = LineSegment_3D(tri.points[2], tri.points[3])
-    l₃ = LineSegment_3D(tri.points[3], tri.points[1])
-    lines = [l₁, l₂, l₃]
-    return convert_arguments(P, lines)
-end
-
-function convert_arguments(P::Type{<:LineSegments}, AT::AbstractArray{<:Triangle_3D})
-    point_sets = [convert_arguments(P, tri) for tri in AT]
-    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
-end
-
-function convert_arguments(P::Type{<:Mesh}, tri::Triangle_3D)
-    points = [tri.points[i].x for i = 1:3]
-    face = [1 2 3]
-    return convert_arguments(P, points, face)
-end
-
-function convert_arguments(MT::Type{Mesh{Tuple{Vector{Triangle_3D{T}}}}}, 
-        AT::Vector{Triangle_3D{T}}) where {T <: AbstractFloat} 
-    points = reduce(vcat, [[tri.points[i].x for i = 1:3] for tri in AT])
-    faces = zeros(Int64, length(AT), 3) 
-    k = 1
-    for i in 1:length(AT), j = 1:3
-        faces[i, j] = k
-        k += 1
-    end
-    return convert_arguments(MT, points, faces)
-end

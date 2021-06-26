@@ -36,8 +36,8 @@ for T in [Float32, Float64]
     @printf("    1 Intersection - %-9s: ", "$T")
     @printf("%10.2f ns\n", ns_time) 
 
-    x⃗₄ = Point_2D(T, 0, 0.75)
-    x⃗₅ = Point_2D(T, 2, 0.75)
+    x⃗₄ = Point_2D(T, 0, 3//4)
+    x⃗₅ = Point_2D(T, 2, 3//4)
     l = LineSegment_2D(x⃗₄, x⃗₅)
     time = @belapsed $l .∩ $q
     ns_time = (time/1e-9)/N

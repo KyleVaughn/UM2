@@ -121,17 +121,3 @@ end
 #    return bool, npoints, points
 #end
 #intersect(q::QuadraticSegment_3D, l::LineSegment_3D) = intersect(l, q)
-
-# Plot
-# -------------------------------------------------------------------------------------------------
-function convert_arguments(P::Type{<:LineSegments}, q::QuadraticSegment_3D{T}) where {T <: AbstractFloat}
-    rr = LinRange{T}(0, 1, 50)
-    points = q.(rr)
-    coords = reduce(vcat, [[points[i].x, points[i+1].x] for i = 1:length(points)-1])
-    return convert_arguments(P, coords)
-end
-
-function convert_arguments(P::Type{<:LineSegments}, AQ::AbstractArray{<:QuadraticSegment_3D})
-    point_sets = [convert_arguments(P, q) for q in AQ]
-    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
-end

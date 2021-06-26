@@ -267,37 +267,3 @@ function intersect_iterative(l::LineSegment_3D{T}, tri6::Triangle6_3D{T};
     end
     return npoints > 0, npoints, p₁, p₂
 end
-
-# Plot
-# -------------------------------------------------------------------------------------------------
-function convert_arguments(P::Type{<:LineSegments}, tri6::Triangle6_3D{T}) where {T <: AbstractFloat}
-    q₁ = QuadraticSegment_3D(tri6.points[1], tri6.points[2], tri6.points[4])
-    q₂ = QuadraticSegment_3D(tri6.points[2], tri6.points[3], tri6.points[5])
-    q₃ = QuadraticSegment_3D(tri6.points[3], tri6.points[1], tri6.points[6])
-    qsegs = [q₁, q₂, q₃]
-    return convert_arguments(P, qsegs)
-end
-
-function convert_arguments(P::Type{<:LineSegments}, 
-        TA::AbstractArray{<:Triangle6_3D{T}}) where {T <: AbstractFloat}
-    point_sets = [convert_arguments(P, tri6) for tri6 in TA]
-    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
-end
-
-function convert_arguments(P::Type{Mesh{Tuple{Triangle6_3D{T}}}}, 
-        tri6::Triangle6_3D{T}) where {T <: AbstractFloat}
-    triangles = triangulate(tri6, 13)
-    return convert_arguments(P, triangles)
-end
-
-function convert_arguments(MT::Type{Mesh{Tuple{Triangle6_3D{T}}}},
-        AT::Vector{Triangle_3D{T}}) where {T <: AbstractFloat}
-    points = reduce(vcat, [[tri.points[i].x for i = 1:3] for tri in AT])
-    faces = zeros(Int64, length(AT), 3)
-    k = 1
-    for i in 1:length(AT), j = 1:3
-        faces[i, j] = k
-        k += 1
-    end
-    return convert_arguments(MT, points, faces)
-end

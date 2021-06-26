@@ -3,7 +3,6 @@ using StaticArrays
 using LinearAlgebra
 
 import Base: +, -, *, /, ≈, ==, intersect, in
-import GLMakie: convert_arguments, LineSegments, Mesh, Scatter
 
 include("Point_2D.jl")
 include("Point_3D.jl")
@@ -61,10 +60,6 @@ export  Point_2D,
         norm,
         real_to_parametric,
         triangulate
-
-
-
-
 
 
 end # module

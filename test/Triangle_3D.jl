@@ -54,8 +54,8 @@ using MOCNeutronTransport
             @test !bool
 
             # no intersection coplanar
-            p₄ = Point_3D(T, 2.0, -1)
-            p₅ = Point_3D(T, 2.0,  2)
+            p₄ = Point_3D(T, 2, -1)
+            p₅ = Point_3D(T, 2,  2)
             l = LineSegment_3D(p₄, p₅)
             bool, point = intersect(l, tri)
             @test !bool

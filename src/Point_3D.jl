@@ -85,10 +85,3 @@ end
 # -------------------------------------------------------------------------------------------------
 norm(p⃗::Point_3D) = sqrt(p⃗ ⋅ p⃗)
 distance(p⃗₁::Point_3D, p⃗₂::Point_3D) = norm(p⃗₁ - p⃗₂)
-
-# Plot
-# -------------------------------------------------------------------------------------------------
-convert_arguments(P::Type{<:Scatter}, p::Point_3D) = convert_arguments(P, p.x)
-function convert_arguments(P::Type{<:Scatter}, AP::AbstractArray{<:Point_3D})
-    return convert_arguments(P, [p.x for p in AP])
-end
