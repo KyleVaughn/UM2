@@ -48,6 +48,27 @@ using MOCNeutronTransport
             tri6 = Triangle6_3D((p₁, p₂, p₃, p₄, p₅, p₆))
             @test isapprox(area(tri6; N = 79), 6.328781460309, atol=1.0e-6)
 
+            # real_to_parametric
+            p₁ = Point_3D(T, 0)
+            p₂ = Point_3D(T, 2)
+            p₃ = Point_3D(T, 2, 2)
+            p₄ = Point_3D(T, 1, 1//4)
+            p₅ = Point_3D(T, 3, 1)
+            p₆ = Point_3D(T, 1, 1)
+            tri6 = Triangle6_3D((p₁, p₂, p₃, p₄, p₅, p₆))
+            p = real_to_parametric(p₁, tri6)
+            @test tri6(p[1], p[2]) ≈ p₁
+            p = real_to_parametric(p₂, tri6)
+            @test tri6(p[1], p[2]) ≈ p₂
+            p = real_to_parametric(p₃, tri6)
+            @test tri6(p[1], p[2]) ≈ p₃
+            p = real_to_parametric(p₄, tri6)
+            @test tri6(p[1], p[2]) ≈ p₄
+            p = real_to_parametric(p₅, tri6)
+            @test tri6(p[1], p[2]) ≈ p₅
+            p = real_to_parametric(p₆, tri6)
+            @test tri6(p[1], p[2]) ≈ p₆
+
             # intersect
             p₁ = Point_3D(T, 0)
             p₂ = Point_3D(T, 2)

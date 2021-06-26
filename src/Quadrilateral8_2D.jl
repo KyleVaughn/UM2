@@ -81,7 +81,7 @@ function jacobian(quad8::Quadrilateral8_2D{T}, r::R, s::S) where {T <: AbstractF
     return hcat(∂Q_∂r.x, ∂Q_∂s.x)
 end
 
-function area(quad8::Quadrilateral8_2D{T}; N::Int64=15) where {T <: AbstractFloat}
+function area(quad8::Quadrilateral8_2D{T}; N::Int64=3) where {T <: AbstractFloat}
     # Numerical integration required. Gauss-Legendre quadrature over a quadrilateral is used.
     # Let Q(r,s) be the interpolation function for quad8,
     #                             1  1                         
@@ -92,12 +92,12 @@ function area(quad8::Quadrilateral8_2D{T}; N::Int64=15) where {T <: AbstractFloa
     #   =   ∑   ∑  wᵢwⱼ||∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)||
     #      i=1 j=1
     # N is the square root of the number of points used in the quadrature.
-    # See tuning/Quadrilateral8_2D_area.jl for more info on how N = 15 was chosen.    
+    # See tuning/Quadrilateral8_2D_area.jl for more info on how N = 3 was chosen.    
     w, r = gauss_legendre_quadrature(T, N)
     a = T(0)
     for i = 1:N, j = 1:N
         ∂Q_∂r, ∂Q_∂s = derivatives(quad8, r[i], r[j])
-        a += w[i]*w[j]*norm(∂Q_∂r × ∂Q_∂s)
+        a += w[i]*w[j]*abs(∂Q_∂r × ∂Q_∂s)
     end
     return a
 end
@@ -121,4 +121,38 @@ function triangulate(quad8::Quadrilateral8_2D{T}, N::Int64) where {T <: Abstract
     return triangles
 end
 
-# in, real_to_parametric
+function real_to_parametric(p::Point_2D{T}, 
+                            quad8::Quadrilateral8_2D{T}; N::Int64=30) where {T <: AbstractFloat}
+    # Convert from real coordinates to the triangle's local parametric coordinates using the
+    # the Newton-Raphson method. N is the max number of iterations
+    # If a conversion doesn't exist, the minimizer is returned.
+    r = T(1//2) # Initial guess at centroid
+    s = T(1//2)
+    err₁ = p - quad8(r, s)
+    for i = 1:N 
+        # Inversion is faster for 2 by 2 than \
+        Δr, Δs = inv(jacobian(quad8, r, s)) * err₁.x
+        r = r + Δr
+        s = s + Δs
+        err₂ = p - quad8(r, s)
+        if norm(err₂ - err₁) < 1.0e-6
+            break
+        end
+        err₁ = err₂
+    end 
+    return Point_2D(r, s)
+end
+
+function in(p::Point_2D{T}, quad8::Quadrilateral8_2D{T}; N::Int64=30) where {T <: AbstractFloat}
+    # Determine if the point is in the triangle using the Newton-Raphson method
+    # N is the max number of iterations of the method.
+    p_rs = real_to_parametric(p, quad8; N=N)
+    ϵ = 1.0e-6
+    if (0 - ϵ ≤ p_rs[1] ≤ 1 + ϵ) &&
+       (0 - ϵ ≤ p_rs[2] ≤ 1 + ϵ) &&
+       norm(p - quad8(p_rs)) < 1.0e-4
+        return true
+    else
+        return false
+    end
+end

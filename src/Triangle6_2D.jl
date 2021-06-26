@@ -134,7 +134,7 @@ function real_to_parametric(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) 
         r = r + Δr
         s = s + Δs
         err₂ = p - tri6(r, s)
-        if norm(err₂ - err₁) < 1.0e-6
+        if norm(err₂ - err₁) < 1e-6
             break
         end
         err₁ = err₂
@@ -146,10 +146,10 @@ function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) where {T <: Abst
     # Determine if the point is in the triangle using the Newton-Raphson method
     # N is the max number of iterations of the method.
     p_rs = real_to_parametric(p, tri6; N=N)
-    ϵ = 1.0e-6
+    ϵ = 1e-6
     if (0 - ϵ ≤ p_rs[1] ≤ 1 + ϵ) && 
        (0 - ϵ ≤ p_rs[2] ≤ 1 + ϵ) && 
-       norm(p - tri6(p_rs)) < 1.0e-4 
+       norm(p - tri6(p_rs)) < 1e-4 
         return true
     else
         return false

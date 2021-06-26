@@ -176,6 +176,7 @@ function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T};
         return true, -1, p₁, p₂ 
     end
 end
+
 function real_to_parametric(p::Point_3D{T}, tri6::Triangle6_3D{T}; N::Int64=30) where {T <: AbstractFloat}
     # Convert from real coordinates to the triangle's local parametric coordinates using the
     # the Newton-Raphson method. N is the max number of iterations
@@ -190,7 +191,7 @@ function real_to_parametric(p::Point_3D{T}, tri6::Triangle6_3D{T}; N::Int64=30) 
         r = r + Δr
         s = s + Δs
         err₂ = p - tri6(r, s)
-        if norm(err₂ - err₁) < 1.0e-6
+        if norm(err₂ - err₁) < 1e-6
             break
         end
         err₁ = err₂
@@ -226,7 +227,7 @@ function intersect_iterative(l::LineSegment_3D{T}, tri6::Triangle6_3D{T};
         else
             r₁, s₁, t₁ = [r₁, s₁, t₁] - inv(J₁) * err₁.x
             errₙ = tri6(r₁, s₁) - l(t₁)
-            if norm(errₙ - err₁) < 5.0e-6
+            if norm(errₙ - err₁) < 5e-6
                 break
             end
             err₁ = errₙ
@@ -242,7 +243,7 @@ function intersect_iterative(l::LineSegment_3D{T}, tri6::Triangle6_3D{T};
         else
             r₂, s₂, t₂ = [r₂, s₂, t₂] - inv(J₂) * err₂.x
             errₘ = tri6(r₂, s₂) - l(t₂)
-            if norm(errₘ - err₂) < 5.0e-6
+            if norm(errₘ - err₂) < 5e-6
                 break
             end
             err₂ = errₘ

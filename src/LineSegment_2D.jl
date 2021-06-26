@@ -46,7 +46,7 @@ function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <:
     v⃗ = l₁.points[2] - l₁.points[1]
     u⃗ = l₂.points[2] - l₂.points[1]
     w⃗ = l₂.points[1] - l₁.points[1]
-    if abs(v⃗ × u⃗) > 5.0e-5 
+    if abs(v⃗ × u⃗) > 5e-5 
         r = (w⃗ × u⃗)/(v⃗ × u⃗)
         p = l₁(r)
         s = ((r*v⃗ - w⃗) ⋅ u⃗)/(u⃗ ⋅ u⃗)

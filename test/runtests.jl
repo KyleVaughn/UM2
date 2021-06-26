@@ -12,6 +12,7 @@ tests = ["Point_2D",
          "Quadrilateral_3D",
          "Triangle6_2D",
          "Triangle6_3D",
+         "Quadrilateral8_2D",
          "Quadrilateral8_3D"
 #         "UnstructuredMesh",
 #         "vtk",

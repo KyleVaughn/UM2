@@ -32,7 +32,7 @@ Base.getindex(p⃗::Point_2D, i::Int) = p⃗.x[i]
 # -------------------------------------------------------------------------------------------------
 ==(p⃗₁::Point_2D, p⃗₂::Point_2D) = (p⃗₁.x == p⃗₂.x)
 function ≈(p⃗₁::Point_2D{T}, p⃗₂::Point_2D{T}) where {T <: AbstractFloat}
-    return distance(p⃗₁, p⃗₂) < 5.0e-5
+    return distance(p⃗₁, p⃗₂) < 5e-6
 end
 +(p⃗₁::Point_2D, p⃗₂::Point_2D) = Point_2D(p⃗₁.x[1] + p⃗₂.x[1], p⃗₁.x[2] + p⃗₂.x[2])
 -(p⃗₁::Point_2D, p⃗₂::Point_2D) = Point_2D(p⃗₁.x[1] - p⃗₂.x[1], p⃗₁.x[2] - p⃗₂.x[2])

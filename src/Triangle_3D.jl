@@ -40,7 +40,7 @@ function intersect(l::LineSegment_3D{type}, tri::Triangle_3D{type}) where {type 
     P = D × E₂   
     Q = T × E₁
     det = P ⋅ E₁
-    if abs(det) < 1.0e-6
+    if abs(det) < 5e-6
         return false, p
     else
         u = (P ⋅ T)/det

@@ -16,6 +16,7 @@ include("Quadrilateral_2D.jl")
 include("Quadrilateral_3D.jl")
 include("Triangle6_2D.jl")
 include("Triangle6_3D.jl")
+include("Quadrilateral8_2D.jl")
 include("Quadrilateral8_3D.jl")
 include("gauss_legendre_quadrature.jl")
 #
@@ -46,6 +47,7 @@ export  Point_2D,
         Quadrilateral_3D,
         Triangle6_2D,
         Triangle6_3D,
+        Quadrilateral8_2D,
         Quadrilateral8_3D,
         ×,
         ⋅,

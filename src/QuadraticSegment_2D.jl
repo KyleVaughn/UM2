@@ -85,7 +85,7 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
     A = D⃗ × w⃗
     B = E⃗ × w⃗
     C = (q.points[1] - l.points[1]) × w⃗
-    if abs(A) < 1.0e-6
+    if abs(A) < 5e-6
         # Line intersection
         # Can B = 0 if A = 0 for non-trivial x?
         r = -C/B
