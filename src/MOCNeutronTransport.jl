@@ -19,13 +19,14 @@ include("Triangle6_3D.jl")
 include("Quadrilateral8_2D.jl")
 include("Quadrilateral8_3D.jl")
 include("gauss_legendre_quadrature.jl")
+include("UnstructuredMesh.jl")
+include("vtk.jl")
+
 #
-#include("UnstructuredMesh.jl")
 #export UnstructuredMesh,
 #       edges,
 #       AABB
 #
-#include("vtk.jl")
 #export read_vtk,
 #       write_vtk
 #
@@ -55,13 +56,16 @@ export  Point_2D,
         area,
         derivatives,
         distance,
+        edges,
         gauss_legendre_quadrature,
         intersect,
         intersect_iterative,
         jacobian,
         norm,
+        read_vtk_2d,
         real_to_parametric,
-        triangulate
+        triangulate,
+        write_vtk_2d
 
 
 end # module

@@ -1,27 +1,27 @@
-Base.@kwdef struct UnstructuredMesh2D
-    points::Vector{Point} = Point[] 
+Base.@kwdef struct UnstructuredMesh_2D{T}
+    points::Vector{Point_2D{T}} = Point_2D{T}[]
     edges::Vector{Vector{Int64}} = Vector{Int64}[]
     faces::Vector{Vector{Int64}} = Vector{Int64}[]
     name::String = "DefaultMeshName"
 end
+
 # Cell types are the same as VTK
-const UnstructuredMesh_cell_types = [5,     # Triangle
-                 9,     # Quadrilateral
-                 22,    # Triangle6
-                 23     # Quadrilateral8
-                ]
 const UnstructuredMesh_linear_cell_types = [5, 9]
 const UnstructuredMesh_quadratic_cell_types = [22, 23]
-const UnstructuredMesh_2D_cell_types = [5, 9, 22, 23]
-const UnstructuredMesh_3D_cell_types = [10]
+const UnstructuredMesh_2D_cell_types = [5,     # Triangle
+                                        9,     # Quadrilateral
+                                        22,    # Triangle6
+                                        23     # Quadrilateral8
+                                       ]
 
-function edges(cell::Vector{Int64})
-    cell_type = cell[1]
+# Return each edge for a face
+function edges(face::Vector{Int64})
+    cell_type = face[1]
     if cell_type == 5 # Triangle
         return [
-                [cell[2], cell[3]],  
-                [cell[3], cell[4]],  
-                [cell[4], cell[2]]
+                [face[2], face[3]],  
+                [face[3], face[4]],  
+                [face[4], face[2]]
                ]
 #    elseif cell_type = 9 # Quadrilateral
 #
@@ -34,19 +34,24 @@ function edges(cell::Vector{Int64})
     end
 end
 
-function edges(cells::Vector{Vector{Int64}})
+# Create the edges for each face
+function edges(faces::Vector{Vector{Int64}})
     edges_unfiltered = Vector{Int64}[]
-    for cell in cells
-        cell_edges = edges(cell)
-        for edge in cell_edges 
+    for face in faces
+        # Get the edges for each face
+        face_edges = edges(face)
+        # Order the linear edge vertices by ID
+        for edge in face_edges 
             if edge[2] < edge[1]
                 e1 = edge[1]
                 edge[1] = edge[2]
                 edge[2] = e1
             end
+            # Add the edge to the list of edges
             push!(edges_unfiltered, edge)
         end
     end
+    # Filter the duplicate edges
     return sort(collect(Set(edges_unfiltered)))
 end
 
