@@ -149,6 +149,7 @@ function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) where {T <: Abst
     ϵ = 1e-6
     if (0 - ϵ ≤ p_rs[1] ≤ 1 + ϵ) && 
        (0 - ϵ ≤ p_rs[2] ≤ 1 + ϵ) && 
+       (p_rs[1] + p_rs[2] ≤ 1 + ϵ) && 
        norm(p - tri6(p_rs)) < 1e-4 
         return true
     else
