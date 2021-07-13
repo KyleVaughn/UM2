@@ -51,8 +51,8 @@ using StaticArrays
             @test p₁ == Point_2D(T, 1, 2)
 
             # Point_2D isapprox
-            p = Point_2D(T, 1, 2 - 100*eps(T))
-            @test T(2) ≈ T(2 - 100*eps(T))
+            p = Point_2D(T, 1, 2 - 10*eps(T))
+            @test T(2) ≈ T(2 - 10*eps(T))
             @test p ≈ p₁
 
             # Point_2D addition

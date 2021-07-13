@@ -1,6 +1,13 @@
 module MOCNeutronTransport
 using StaticArrays
 using LinearAlgebra
+try
+    # Use local gmsh install
+    using gmsh
+catch e
+    # Fall back on Gmsh package
+    using Gmsh: gmsh
+end
 
 import Base: +, -, *, /, ≈, ==, intersect, in
 
@@ -66,6 +73,8 @@ export  Point_2D,
         real_to_parametric,
         triangulate,
         write_vtk_2d
+
+export gmsh
 
 
 end # module

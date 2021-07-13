@@ -66,9 +66,9 @@ using StaticArrays
             @test p₁ == Point_3D(T, 1, 2, 0)
 
             # Point_3D isapprox
-            p = Point_3D(T, 1, 2 - 100*eps(T), 0 - 100*eps(T))
-            @test T(2) ≈ T(2 - 100*eps(T))
-            @test isapprox(T(0), T(0 - 100*eps(T)), atol=sqrt(eps(T)))
+            p = Point_3D(T, 1, 2 - 10*eps(T), 0 - 10*eps(T))
+            @test T(2) ≈ T(2 - 10*eps(T))
+            @test isapprox(T(0), T(0 - 10*eps(T)), atol=sqrt(eps(T)))
             @test p ≈ p₁
 
             # Point_3D addition
