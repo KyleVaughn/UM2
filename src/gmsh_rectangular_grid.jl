@@ -84,6 +84,7 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
                                 x::Vector{Vector{T}}, 
                                 y::Vector{Vector{T}}) where {T <: AbstractFloat} 
     @info "Generating rectangular grid in gmsh"
+    # Validate input
     x_full, y_full = _validate_gmsh_rectangular_grid_input(bb, x, y) 
 
     # Create the grid
@@ -102,9 +103,59 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
     gmsh.model.occ.synchronize()
 
     # Label the rectangles with the appropriate grid level and location
-    # Create a dictionary holding all the physical group names and tag IDs corresponding to
+    # Create a dictionary holding all the physical group names and tags corresponding to
     # each group name.
+    grid_levels_tags = Dict{String,Array{Int64,1}}()
+    max_grid_digits = max(length(string(length(x_small)-1)), 
+                          length(string(length(y_small)-1)))
+    # Create each grid name
+    for lvl in 1:nlevels
+        for j in 1:length(y_full[lvl])-1
+            for i in 1:length(y_full[lvl])-1
+                grid_str = string("GRID_L", lvl, "_", lpad(i, max_grid_digits, "0"), "_", 
+                                                      lpad(j, max_grid_digits, "0"))
+                grid_levels_tags[grid_str] = Int64[]
+            end
+        end
+    end
+    # For each rectangle, find which grid level/index it belongs to.
+    for (tag, x0, y0) in grid_tags_coords
+        for lvl in 1:nlevels
+            i = searchsortedlast(x_full[lvl], x0)
+            j = searchsortedlast(y_full[lvl], y0)
+            grid_str = string("GRID_L", lvl, "_", lpad(i, max_grid_digits, "0"), "_", 
+                                                  lpad(j, max_grid_digits, "0"))
+            push!(grid_levels_tags[grid_str], tag)
+        end
+    end
+    @debug "Setting rectangular grid physical groups"
+    for name in keys(grid_levels_tags)
+        output_tag = gmsh.model.addPhysicalGroup(2, grid_levels_tags[name])
+        gmsh.model.setPhysicalName(2, output_tag, name)
+    end
+    
+    # Return tags
+    return [ tag for (tag, x0, y0) in grid_tags_coords ]
+end
 
-
-
+function gmsh_rectangular_grid(bb::NTuple{4, T}, 
+                                nx::Vector{Int64}, 
+                                ny::Vector{Int64}) where {T <: AbstractFloat} 
+    if any(nx .<= 0) || any(ny .<= 0)
+       @error "Can only subdivide into positive, non-zero intervals!"
+    end
+    x_mult = 1
+    xvec = Vector{T}[]
+    for xv in nx 
+        push!(xvec, collect(LinRange{T}(bb[1], bb[2], xv*x_mult + 1)))
+        x_mult *= xv
+    end
+    y_mult = 1
+    yvec = Vector{T}[]
+    for yv in ny 
+        push!(yvec, collect(LinRange{T}(bb[3], bb[4], yv*y_mult + 1)))
+        y_mult *= yv
+    end
+    tags = gmsh_rectangular_grid(bb, xvec, yvec) 
+    return tags
 end

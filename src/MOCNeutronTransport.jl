@@ -28,6 +28,7 @@ include("Quadrilateral8_3D.jl")
 include("gauss_legendre_quadrature.jl")
 include("UnstructuredMesh.jl")
 include("vtk.jl")
+include("gmsh_rectangular_grid.jl")
 
 #
 #export UnstructuredMesh,
@@ -74,7 +75,8 @@ export  Point_2D,
         triangulate,
         write_vtk_2d
 
-export gmsh
+export gmsh,
+       gmsh_rectangular_grid
 
 
 end # module
