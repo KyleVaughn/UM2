@@ -89,7 +89,7 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
 
     # Create the grid
     # We only need to make the smallest rectangles and group them into larger ones
-    grid_tags_coords = Tuple{Int64,Float64,Float64}[]
+    grid_tags_coords = Tuple{Int32,Float64,Float64}[]
     nlevels = length(x_full)
     x_small = x_full[nlevels]
     y_small = y_full[nlevels]
@@ -105,7 +105,7 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
     # Label the rectangles with the appropriate grid level and location
     # Create a dictionary holding all the physical group names and tags corresponding to
     # each group name.
-    grid_levels_tags = Dict{String,Array{Int64,1}}()
+    grid_levels_tags = Dict{String,Array{Int32,1}}()
     max_grid_digits = max(length(string(length(x_small)-1)), 
                           length(string(length(y_small)-1)))
     # Create each grid name
@@ -114,7 +114,7 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
             for i in 1:length(y_full[lvl])-1
                 grid_str = string("GRID_L", lvl, "_", lpad(i, max_grid_digits, "0"), "_", 
                                                       lpad(j, max_grid_digits, "0"))
-                grid_levels_tags[grid_str] = Int64[]
+                grid_levels_tags[grid_str] = Int32[]
             end
         end
     end
@@ -139,8 +139,8 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
 end
 
 function gmsh_rectangular_grid(bb::NTuple{4, T}, 
-                                nx::Vector{Int64}, 
-                                ny::Vector{Int64}) where {T <: AbstractFloat} 
+                                nx::Vector{Int}, 
+                                ny::Vector{Int}) where {T <: AbstractFloat} 
     if any(nx .<= 0) || any(ny .<= 0)
        @error "Can only subdivide into positive, non-zero intervals!"
     end
