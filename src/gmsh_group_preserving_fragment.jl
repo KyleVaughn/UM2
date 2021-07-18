@@ -3,10 +3,10 @@ function group_preserving_fragment(object_dim_tags::Vector{Int},
                                    material_hierarchy = String[])
     # Get all the physical groups
     old_physical_groups = Dict{String,Array{Tuple{Int32,Int32},1}}()
-    groups = gmsh.model.getPhysicalGroups()
-    names = [gmsh.model.getPhysicalName(grp[1], grp[2]) for grp in groups]
+    groups = gmsh.model.get_physical_groups()
+    names = [gmsh.model.get_physical_name(grp[1], grp[2]) for grp in groups]
     for (i, name) in enumerate(names)
-        ents = gmsh.model.getEntitiesForPhysicalGroup(groups[i][1], groups[i][2])
+        ents = gmsh.model.get_entities_for_physical_group(groups[i][1], groups[i][2])
         dim = groups[i][1]
         old_physical_groups[name] = [(dim, ent) for ent in ents]
     end
@@ -44,13 +44,28 @@ function group_preserving_fragment(object_dim_tags::Vector{Int},
         end
     end
 
+    # Remove old groups and synchronize
+    for name in names
+        gmsh.model.remove_physical_name(name)
+    end
+    @info "Synchronizing model"
+    gmsh.model.occ.synchronize()
 
+#    # If overwriting materials
+#    if overwrite_material is not None:
+#        _overwrite_material(new_physical_groups, overwrite_material, names)
 
+    # Create new physical groups
+    for (i, name) in enumerate(names)
+        dim = groups[i][1]
+        tags = [dim_tag[2] for dim_tag in new_physical_groups[name]]
+        ptag = gmsh.model.add_physical_group(dim, tags)
+        gmsh.model.set_physical_name(dim, ptag, name)
+    end
+
+    return out_dim_tags
 
 
     # Check that no two entities has more than one MATERIAL_X tag
     # Make sure each material actually exists
-
-
-
 end

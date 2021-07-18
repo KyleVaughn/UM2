@@ -95,7 +95,7 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
     y_small = y_full[nlevels]
     for (yi, yv) in enumerate(y_small[1:length(y_small)-1])
         for (xi, xv) in enumerate(x_small[1:length(x_small)-1])
-            tag = gmsh.model.occ.addRectangle(xv, yv, 0, x_small[xi+1] - xv, y_small[yi+1] - yv)
+            tag = gmsh.model.occ.add_rectangle(xv, yv, 0, x_small[xi+1] - xv, y_small[yi+1] - yv)
             push!(grid_tags_coords, (tag, xv, yv))
         end                                      
     end
@@ -130,8 +130,8 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
     end
     @debug "Setting rectangular grid physical groups"
     for name in keys(grid_levels_tags)
-        output_tag = gmsh.model.addPhysicalGroup(2, grid_levels_tags[name])
-        gmsh.model.setPhysicalName(2, output_tag, name)
+        output_tag = gmsh.model.add_physical_group(2, grid_levels_tags[name])
+        gmsh.model.set_physical_name(2, output_tag, name)
     end
     
     # Return tags
