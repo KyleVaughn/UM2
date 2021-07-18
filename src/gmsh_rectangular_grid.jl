@@ -82,7 +82,8 @@ end
 
 function gmsh_rectangular_grid(bb::NTuple{4, T}, 
                                 x::Vector{Vector{T}}, 
-                                y::Vector{Vector{T}}) where {T <: AbstractFloat} 
+                                y::Vector{Vector{T}};
+                                material = "MATERIAL_WATER") where {T <: AbstractFloat} 
     @info "Generating rectangular grid in gmsh"
     # Validate input
     x_full, y_full = _validate_gmsh_rectangular_grid_input(bb, x, y) 
@@ -133,9 +134,12 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
         output_tag = gmsh.model.add_physical_group(2, grid_levels_tags[name])
         gmsh.model.set_physical_name(2, output_tag, name)
     end
-    
+    tags = [ tag for (tag, x0, y0) in grid_tags_coords ]
+    output_tag = gmsh.model.add_physical_group(2, tags)
+    gmsh.model.set_physical_name(2, output_tag, material)
+
     # Return tags
-    return [ tag for (tag, x0, y0) in grid_tags_coords ]
+    return tags 
 end
 
 function gmsh_rectangular_grid(bb::NTuple{4, T}, 

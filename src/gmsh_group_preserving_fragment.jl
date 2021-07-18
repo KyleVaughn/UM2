@@ -1,5 +1,38 @@
-function group_preserving_fragment(object_dim_tags::Vector{Int},
-                                   tool_dim_tags::Vector{Int};
+function process_material_hierarchy!(
+        new_physical_groups::Dict{String,Array{Tuple{Int32,Int32},1}}, 
+        material_hierarchy::Vector{String})
+    # Get the material groups and the entities in each group
+    groups = collect(keys(new_physical_groups))
+    material_indices = findall(x->occursin("MATERIAL", x), groups)
+    material_groups = groups[material_indices]
+    material_dict = Dict{String,Array{Tuple{Int32,Int32},1}}()
+    all_material_entities = Tuple{Int32,Int32}[]
+    for material in material_groups
+        material_dict[material] = new_physical_groups[material]
+        append!(all_material_entities, new_physical_groups[material])
+    end
+    # Remove duplicates
+    all_material_entities = collect(Set(all_material_entities))
+    # For each entity with a material, ensure that it only exists in one of material groups.
+    # If it exists in more than one material group, apply the material hierarchy so that the 
+    # entity only has one material.
+    for ent in all_material_entities
+        materials = String[]
+        for material in material_groups
+            if ent ∈  material_dict[material]
+                push!(materials, material)
+            end
+        end
+        if 1 < length(material)
+            # Apply hierarchy until the entity only has one material
+            # POP from dict and material vector
+        end
+        @assert length(materials) == 1 "Entity $ent should only have 1 material. Materials: $materials"
+    end
+end
+
+function gmsh_group_preserving_fragment(object_dim_tags:: Array{Tuple{Signed,Int32},1},
+                                   tool_dim_tags:: Array{Tuple{Signed,Int32},1};
                                    material_hierarchy = String[])
     # Get all the physical groups
     old_physical_groups = Dict{String,Array{Tuple{Int32,Int32},1}}()
@@ -51,9 +84,10 @@ function group_preserving_fragment(object_dim_tags::Vector{Int},
     @info "Synchronizing model"
     gmsh.model.occ.synchronize()
 
-#    # If overwriting materials
-#    if overwrite_material is not None:
-#        _overwrite_material(new_physical_groups, overwrite_material, names)
+    # Process the material hierarchy if it exists
+    if 0 < length(material_hierarchy)
+        process_material_hierarchy!(new_physical_groups, material_hierarchy)
+    end
 
     # Create new physical groups
     for (i, name) in enumerate(names)
@@ -64,8 +98,4 @@ function group_preserving_fragment(object_dim_tags::Vector{Int},
     end
 
     return out_dim_tags
-
-
-    # Check that no two entities has more than one MATERIAL_X tag
-    # Make sure each material actually exists
 end

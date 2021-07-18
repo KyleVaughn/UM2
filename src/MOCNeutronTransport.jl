@@ -29,6 +29,7 @@ include("gauss_legendre_quadrature.jl")
 include("UnstructuredMesh.jl")
 include("vtk.jl")
 include("gmsh_rectangular_grid.jl")
+include("gmsh_group_preserving_fragment.jl")
 
 #
 #export UnstructuredMesh,
@@ -76,7 +77,8 @@ export  Point_2D,
         write_vtk_2d
 
 export gmsh,
-       gmsh_rectangular_grid
+       gmsh_rectangular_grid,
+       gmsh_group_preserving_fragment
 
 
 end # module
