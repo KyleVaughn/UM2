@@ -5,9 +5,16 @@ function process_material_hierarchy!(
     groups = collect(keys(new_physical_groups))
     material_indices = findall(x->occursin("MATERIAL", x), groups)
     material_groups = groups[material_indices]
+    # Ensure each material group is present in the hierarchy and warn now if it's not. 
+    # Otherwise the error that occurs later is not as easy to decipher
+    for material in material_groups
+        @assert material ∈ material_hierarchy "material_hierarchy does not contain: '$material'"
+    end
     material_dict = Dict{String,Array{Tuple{Int32,Int32},1}}()
     all_material_entities = Tuple{Int32,Int32}[]
     for material in material_groups
+        # Note that this is assignment by reference. Changes to material_dict are reflected
+        # in new_physical_groups
         material_dict[material] = new_physical_groups[material]
         append!(all_material_entities, new_physical_groups[material])
     end
@@ -16,6 +23,12 @@ function process_material_hierarchy!(
     # For each entity with a material, ensure that it only exists in one of material groups.
     # If it exists in more than one material group, apply the material hierarchy so that the 
     # entity only has one material.
+    numerical_material_hierarchy = Dict{String,Int32}()
+    i = 1
+    for material in material_hierarchy
+        numerical_material_hierarchy[material] = i
+        i += 1
+    end
     for ent in all_material_entities
         materials = String[]
         for material in material_groups
@@ -23,11 +36,16 @@ function process_material_hierarchy!(
                 push!(materials, material)
             end
         end
-        if 1 < length(material)
-            # Apply hierarchy until the entity only has one material
-            # POP from dict and material vector
+        if 1 < length(materials)
+            # Get the highest priority material
+            mat_num = minimum([numerical_material_hierarchy[mat] for mat in materials])
+            priority_mat = material_hierarchy[mat_num]
+            # Pop ent from all other materials in dict
+            deleteat!(materials, materials .== priority_mat)
+            for material in materials
+                deleteat!(material_dict[material], findfirst(x-> x == ent, material_dict[material]))
+            end
         end
-        @assert length(materials) == 1 "Entity $ent should only have 1 material. Materials: $materials"
     end
 end
 
@@ -84,13 +102,15 @@ function gmsh_group_preserving_fragment(object_dim_tags:: Array{Tuple{Signed,Int
     @info "Synchronizing model"
     gmsh.model.occ.synchronize()
 
-    # Process the material hierarchy if it exists
+    # Process the material hierarchy if it exists so that each entity has one
+    # or less material physical groups
     if 0 < length(material_hierarchy)
         process_material_hierarchy!(new_physical_groups, material_hierarchy)
     end
 
     # Create new physical groups
     for (i, name) in enumerate(names)
+        println(name)
         dim = groups[i][1]
         tags = [dim_tag[2] for dim_tag in new_physical_groups[name]]
         ptag = gmsh.model.add_physical_group(dim, tags)
