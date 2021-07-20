@@ -30,6 +30,7 @@ include("UnstructuredMesh.jl")
 include("vtk.jl")
 include("gmsh_rectangular_grid.jl")
 include("gmsh_group_preserving_fragment.jl")
+include("gmsh_overlay_rectangular_grid.jl")
 
 #
 #export UnstructuredMesh,
@@ -78,7 +79,8 @@ export  Point_2D,
 
 export gmsh,
        gmsh_rectangular_grid,
-       gmsh_group_preserving_fragment
+       gmsh_group_preserving_fragment,
+       gmsh_overlay_rectangular_grid
 
 
 end # module

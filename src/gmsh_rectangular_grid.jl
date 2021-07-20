@@ -144,7 +144,8 @@ end
 
 function gmsh_rectangular_grid(bb::NTuple{4, T}, 
                                 nx::Vector{Int}, 
-                                ny::Vector{Int}) where {T <: AbstractFloat} 
+                                ny::Vector{Int};
+                                material = "MATERIAL_WATER") where {T <: AbstractFloat} 
     if any(nx .<= 0) || any(ny .<= 0)
        @error "Can only subdivide into positive, non-zero intervals!"
     end
@@ -160,6 +161,6 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
         push!(yvec, collect(LinRange{T}(bb[3], bb[4], yv*y_mult + 1)))
         y_mult *= yv
     end
-    tags = gmsh_rectangular_grid(bb, xvec, yvec) 
+    tags = gmsh_rectangular_grid(bb, xvec, yvec; material = material) 
     return tags
 end

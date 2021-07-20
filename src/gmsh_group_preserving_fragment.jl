@@ -110,7 +110,6 @@ function gmsh_group_preserving_fragment(object_dim_tags:: Array{Tuple{Signed,Int
 
     # Create new physical groups
     for (i, name) in enumerate(names)
-        println(name)
         dim = groups[i][1]
         tags = [dim_tag[2] for dim_tag in new_physical_groups[name]]
         ptag = gmsh.model.add_physical_group(dim, tags)
