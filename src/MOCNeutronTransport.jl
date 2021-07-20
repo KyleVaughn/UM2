@@ -26,8 +26,9 @@ include("Triangle6_3D.jl")
 include("Quadrilateral8_2D.jl")
 include("Quadrilateral8_3D.jl")
 include("gauss_legendre_quadrature.jl")
-include("UnstructuredMesh.jl")
-include("vtk.jl")
+include("UnstructuredMesh_2D.jl")
+include("abaqus.jl")
+#include("vtk.jl")
 include("gmsh_rectangular_grid.jl")
 include("gmsh_group_preserving_fragment.jl")
 include("gmsh_overlay_rectangular_grid.jl")
@@ -60,6 +61,7 @@ export  Point_2D,
         Triangle6_3D,
         Quadrilateral8_2D,
         Quadrilateral8_3D,
+        UnstructuredMesh_2D,
         ×,
         ⋅,
         arc_length,
@@ -72,10 +74,9 @@ export  Point_2D,
         intersect_iterative,
         jacobian,
         norm,
-        read_vtk_2d,
+        read_abaqus_2d,
         real_to_parametric,
-        triangulate,
-        write_vtk_2d
+        triangulate
 
 export gmsh,
        gmsh_rectangular_grid,
