@@ -1,4 +1,4 @@
-Base.@kwdef struct UnstructuredMesh_2D{P, F, T}
+struct UnstructuredMesh_2D{P, F, T}
     points::NTuple{P, Point_2D{T}}
     faces::NTuple{F, Tuple{Vararg{Int64}}}
 end
