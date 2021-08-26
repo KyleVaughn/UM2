@@ -35,8 +35,6 @@ include("gmsh_overlay_rectangular_grid.jl")
 
 #       AABB
 #
-#export read_vtk,
-#       write_vtk
 #
 #include("AngularQuadrature.jl")
 #export AngularQuadrature,

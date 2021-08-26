@@ -1,17 +1,17 @@
-struct UnstructuredMesh_2D{P, E, F, T}
+struct UnstructuredMesh_2D{P, F, T}
     points::NTuple{P, Point_2D{T}}
-    edges::NTuple{E, Tuple{Vararg{Int64}}}
     faces::NTuple{F, Tuple{Vararg{Int64}}}
     name::String
 end
 
-#Base.@kwdef struct UnstructuredMesh_2D{P, T}
-#    points::NTuple{Point_2D{T}} = Point_2D{T}[]
-#    edges::Vector{Vector{Int64}} = Vector{Int64}[]
-#    faces::Vector{Vector{Int64}} = Vector{Int64}[]
-#    face_connectivity
-#    name::String = "DefaultMeshName"
+#struct UnstructuredMesh_2D{P, E, F, T}
+#    points::NTuple{P, Point_2D{T}}
+#    edges::NTuple{E, Tuple{Vararg{Int64}}}
+#    faces::NTuple{F, Tuple{Vararg{Int64}}}
+#    name::String
 #end
+
+#Base.@kwdef struct UnstructuredMesh_2D{P, T}
 
 # Cell types are the same as VTK
 const UnstructuredMesh_2D_linear_cell_types = [5, # Triangle 

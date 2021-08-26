@@ -38,11 +38,11 @@ function read_vtk_2d(filepath::String)
 
     # Construct edges
     # edges = edges(faces) throws an error, interprets the edges function as a variable.
-    edges_2d = edges(faces) 
+#    edges_2d = edges(faces) 
 
     return UnstructuredMesh_2D(
                               points,
-                              edges_2d,
+#                              edges_2d,
                               faces,
                               name
                               )
