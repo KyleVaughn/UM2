@@ -13,9 +13,9 @@ tests = ["Point_2D",
          "Triangle6_2D",
          "Triangle6_3D",
          "Quadrilateral8_2D",
-         "Quadrilateral8_3D"
+         "Quadrilateral8_3D",
+         "vtk"
 #         "UnstructuredMesh",
-#         "vtk",
 #         "AngularQuadrature", 
         ]
 for t in tests

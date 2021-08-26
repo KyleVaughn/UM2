@@ -9,13 +9,13 @@ using MOCNeutronTransport
         #  /       \ /       \
         # 1---------2---------3
         filepath = "./mesh_files/three_triangles.vtk"
-        ref_points = [Point(0.0), Point(2.0), Point(4.0), Point(1.0, 1.0), Point(3.0, 1.0)]
-        ref_cells = [
-                 [5, 1, 2, 4],
-                 [5, 2, 5, 4],
-                 [5, 2, 3, 5]
-                ]
-        ref_edges = [[1, 2], [1, 4], [2, 3], [2, 4], [2, 5], [3, 5], [4, 5]]
+        ref_points = (Point_2D(0.0), Point_2D(2.0), Point_2D(4.0), Point_2D(1.0, 1.0), Point_2D(3.0, 1.0))
+        ref_cells = (
+                        (5, 1, 2, 4),
+                        (5, 2, 5, 4),
+                        (5, 2, 3, 5)
+                    )
+#        ref_edges = [[1, 2], [1, 4], [2, 3], [2, 4], [2, 5], [3, 5], [4, 5]]
         file = open(filepath, "r")
 
         # Test of non-public functions.
@@ -47,16 +47,16 @@ using MOCNeutronTransport
 #
 #        close(file)
         # read_vtk
-        mesh = read_vtk(filepath)
+        mesh = read_vtk_2d(filepath)
         @test mesh.points == ref_points
         @test mesh.faces == ref_cells
-        @test mesh.edges == ref_edges
-        @test mesh.cells == Vector{Int64}[]
-        @test mesh.dim == 2
+#        @test mesh.edges == ref_edges
+#        @test mesh.cells == Vector{Int64}[]
+#        @test mesh.dim == 2
         @test mesh.name == "three_triangles"
 
         # write_vtk
-        write_vtk("write_three_triangle.vtk", mesh)
+        write_vtk_2d("write_three_triangle.vtk", mesh)
         ref_file = open("./mesh_files/three_triangles.vtk", "r")
         test_file = open("./write_three_triangle.vtk", "r")
         while !eof(ref_file)

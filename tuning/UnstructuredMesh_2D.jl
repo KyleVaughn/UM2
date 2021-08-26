@@ -69,6 +69,7 @@ for N = Nset
     println("  Tuple: $time")
     global Nctr += 1
 end
+println("tuple_times ./ vector_times = ", tuple_times ./ vector_times)
 plot(Nset,
      vector_times,
      label = "Vector",

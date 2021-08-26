@@ -28,7 +28,7 @@ include("Quadrilateral8_3D.jl")
 include("gauss_legendre_quadrature.jl")
 include("UnstructuredMesh_2D.jl")
 include("abaqus.jl")
-#include("vtk.jl")
+include("vtk.jl")
 include("gmsh_rectangular_grid.jl")
 include("gmsh_group_preserving_fragment.jl")
 include("gmsh_overlay_rectangular_grid.jl")
@@ -75,8 +75,10 @@ export  Point_2D,
         jacobian,
         norm,
         read_abaqus_2d,
+        read_vtk_2d,
         real_to_parametric,
-        triangulate
+        triangulate,
+        write_vtk_2d
 
 export gmsh,
        gmsh_rectangular_grid,
