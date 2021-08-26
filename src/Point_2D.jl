@@ -36,9 +36,9 @@ function ≈(p⃗₁::Point_2D{T}, p⃗₂::Point_2D{T}) where {T <: AbstractFlo
 end
 +(p⃗₁::Point_2D, p⃗₂::Point_2D) = Point_2D(p⃗₁.x[1] + p⃗₂.x[1], p⃗₁.x[2] + p⃗₂.x[2])
 -(p⃗₁::Point_2D, p⃗₂::Point_2D) = Point_2D(p⃗₁.x[1] - p⃗₂.x[1], p⃗₁.x[2] - p⃗₂.x[2])
-# Note the cross product of two 2D points returns a scalar. It is assumed that the 
-# desired quantity is actually the 2-norm of the cross product, since the cross product of vectors
-# in the plane is a vector normal to the plane.
+# Note the cross product of two 2D points returns a scalar. It is assumed that this is the 
+# desired quantity, since the cross product of vectors in the plane is a vector normal to the plane.
+# Hence the z coordinate of the resultant vector is returned.
 ×(p⃗₁::Point_2D, p⃗₂::Point_2D) = p⃗₁.x[1]*p⃗₂.x[2] - p⃗₂.x[1]*p⃗₁.x[2]
 ⋅(p⃗₁::Point_2D, p⃗₂::Point_2D) = p⃗₁.x[1]*p⃗₂.x[1] + p⃗₁.x[2]*p⃗₂.x[2]
 +(p⃗::Point_2D, n::Real) = Point_2D(p⃗.x[1] + n, p⃗.x[2] + n)
@@ -54,5 +54,6 @@ end
 
 # Methods
 # -------------------------------------------------------------------------------------------------
+# note: hypot is the Julia recommended way to do sqrt of sum squared for 2 numbers
 norm(p⃗::Point_2D) = hypot(p⃗.x[1], p⃗.x[2])
 distance(p⃗₁::Point_2D, p⃗₂::Point_2D) = hypot(p⃗₁.x[1] - p⃗₂.x[1], p⃗₁.x[2] - p⃗₂.x[2])

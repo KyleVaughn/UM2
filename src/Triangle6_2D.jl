@@ -147,8 +147,12 @@ function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) where {T <: Abst
     # N is the max number of iterations of the method.
     p_rs = real_to_parametric(p, tri6; N=N)
     ϵ = 1e-6
-    if (0 - ϵ ≤ p_rs[1] ≤ 1 + ϵ) && 
-       (0 - ϵ ≤ p_rs[2] ≤ 1 + ϵ) && 
+    # Check that the r coordinate and s coordinate are in [-ϵ,  1 + ϵ] and
+    # r + s ≤ 1 + ϵ
+    # These are the conditions for a valid point in the triangle ± some ϵ
+    # Also check that the point is close to what the interpolation function produces
+    if (-ϵ ≤ p_rs[1] ≤ 1 + ϵ) && 
+       (-ϵ ≤ p_rs[2] ≤ 1 + ϵ) && 
        (p_rs[1] + p_rs[2] ≤ 1 + ϵ) && 
        norm(p - tri6(p_rs)) < 1e-4 
         return true
