@@ -29,7 +29,7 @@ function edges(face::Tuple{Vararg{Int64}})
     cell_type = face[1]
     n_vertices = length(face) - 1
     if face[1] ∈  UnstructuredMesh_2D_linear_cell_types 
-        edges = [ (face[i], face[i+1]) for i = 2:n_vertices]
+        edges = [ [face[i], face[i+1]] for i = 2:n_vertices]
         # Add the final edge that connects first and last vertices
         push!(edges, [face[n_vertices + 1], face[2]])
     elseif face[1] ∈  UnstructuredMesh_2D_quadratic_cell_types
@@ -46,7 +46,7 @@ function edges(face::Tuple{Vararg{Int64}})
 end
 
 # Create the edges for each face
-function edges(faces::NTuple{F, Tuple{Vararg{Int64}}}) where F <: Int
+function edges(faces::NTuple{F, Tuple{Vararg{Int64}}}) where F
     edges_unfiltered = Vector{Int64}[]
     for face in faces
         # Get the edges for each face
@@ -63,32 +63,10 @@ function edges(faces::NTuple{F, Tuple{Vararg{Int64}}}) where F <: Int
         end
     end
     # Filter the duplicate edges
-    return sort(collect(Set(edges_unfiltered)))
+    edges_filtered = sort(collect(Set(edges_unfiltered)))
+    return Tuple([ Tuple(v) for v in edges_filtered ])
 end
 
-
-
-
-# Create the edges for each face
-function edges(faces::Vector{Vector{Int64}})
-    edges_unfiltered = Vector{Int64}[]
-    for face in faces
-        # Get the edges for each face
-        face_edges = edges(face)
-        # Order the linear edge vertices by ID
-        for edge in face_edges 
-            if edge[2] < edge[1]
-                e1 = edge[1]
-                edge[1] = edge[2]
-                edge[2] = e1
-            end
-            # Add the edge to the list of edges
-            push!(edges_unfiltered, edge)
-        end
-    end
-    # Filter the duplicate edges
-    return sort(collect(Set(edges_unfiltered)))
-end
 #
 ### Axis-aligned bounding box, a rectangle.
 ##function AABB(mesh::UnstructuredMesh; tight::Bool=false)

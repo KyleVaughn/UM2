@@ -33,19 +33,17 @@ function read_vtk_2d(filepath::String)
     for i in eachindex(cell_types)
         cells_combined[i] = vcat(cell_types[i], cells[i])
     end
-    # Free up some memory
-    cell_types = Nothing
-    cells = Nothing
 
-    cells_tuples = Tuple([ Tuple(v) for v in cells_combined ])
-    cells_combined = Nothing
+    faces = Tuple([ Tuple(v) for v in cells_combined ])
 
     # Construct edges
-#    cell_edges = edges(cells_combined)
+    # edges = edges(faces) throws an error, interprets the edges function as a variable.
+    edges_2d = edges(faces) 
 
     return UnstructuredMesh_2D(
                               points,
-                              cells_tuples,
+                              edges_2d,
+                              faces,
                               name
                               )
 end

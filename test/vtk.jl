@@ -15,7 +15,7 @@ using MOCNeutronTransport
                         (5, 2, 5, 4),
                         (5, 2, 3, 5)
                     )
-#        ref_edges = [[1, 2], [1, 4], [2, 3], [2, 4], [2, 5], [3, 5], [4, 5]]
+        ref_edges = ((1, 2), (1, 4), (2, 3), (2, 4), (2, 5), (3, 5), (4, 5))
         file = open(filepath, "r")
 
         # Test of non-public functions.
@@ -50,9 +50,7 @@ using MOCNeutronTransport
         mesh = read_vtk_2d(filepath)
         @test mesh.points == ref_points
         @test mesh.faces == ref_cells
-#        @test mesh.edges == ref_edges
-#        @test mesh.cells == Vector{Int64}[]
-#        @test mesh.dim == 2
+        @test mesh.edges == ref_edges
         @test mesh.name == "three_triangles"
 
         # write_vtk
