@@ -7,7 +7,7 @@ pin_radius = 0.54 # cm
 grid_material = "MATERIAL_WATER"
 grid_nx = [1]
 grid_ny = [1]
-mesh_char_len = 0.2
+mesh_char_len = 1.0
 mesh_optimization_iters = 2
 mesh_filename = "c5g7_UO2_pin.inp"
 

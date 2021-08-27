@@ -14,7 +14,8 @@ tests = ["Point_2D",
          "Triangle6_3D",
          "Quadrilateral8_2D",
          "Quadrilateral8_3D",
-         "vtk"
+         "vtk",
+         "abaqus"
 #         "UnstructuredMesh",
 #         "AngularQuadrature", 
         ]

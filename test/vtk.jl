@@ -10,48 +10,51 @@ using MOCNeutronTransport
         # 1---------2---------3
         filepath = "./mesh_files/three_triangles.vtk"
         ref_points = (Point_2D(0.0), Point_2D(2.0), Point_2D(4.0), Point_2D(1.0, 1.0), Point_2D(3.0, 1.0))
-        ref_cells = (
+        ref_faces = (
                         (5, 1, 2, 4),
                         (5, 2, 5, 4),
                         (5, 2, 3, 5)
                     )
         ref_edges = ((1, 2), (1, 4), (2, 3), (2, 4), (2, 5), (3, 5), (4, 5))
-        file = open(filepath, "r")
+        ref_cell_sets = Dict{String, Tuple{Vararg{Int64}}}()
 
         # Test of non-public functions.
         # Need to find a way to do the includes correctly for this, since
         # just including vtk messes up the use of UnstructuresMesh_<x>_cell_types
+        #
+#        file = open(filepath, "r")
 #        # points
 #        readuntil(file, "POINTS")
 #        npoints_string, datatype_string = split(readline(file))
 #        points = read_vtk_points(file, npoints_string, datatype_string)
 #        @test points == ref_points
 #
-#        # cells
+#        # faces
 #        seekstart(file)
-#        readuntil(file, "CELLS")
-#        ncells_string = split(readline(file))[1]
-#        cells = read_vtk_cells(file, ncells_string)
-#        for (i, cell) in enumerate(cells)
-#            @test cell == ref_cells[i][2:4]
+#        readuntil(file, "faces")
+#        nfaces_string = split(readline(file))[1]
+#        faces = read_vtk_faces(file, nfaces_string)
+#        for (i, cell) in enumerate(faces)
+#            @test cell == ref_faces[i][2:4]
 #        end
 #
 #        # cell_types
 #        seekstart(file)
 #        readuntil(file, "CELL_TYPES")
-#        ncells_string = split(readline(file))[1]
-#        cell_types = read_vtk_cell_types(file, ncells_string)
+#        nfaces_string = split(readline(file))[1]
+#        cell_types = read_vtk_cell_types(file, nfaces_string)
 #        for (i, type) in enumerate(cell_types)
-#            @test type == ref_cells[i][1]
+#            @test type == ref_faces[i][1]
 #        end
 #
 #        close(file)
         # read_vtk
         mesh = read_vtk_2d(filepath)
         @test mesh.points == ref_points
-        @test mesh.faces == ref_cells
+        @test mesh.faces == ref_faces
 #        @test mesh.edges == ref_edges
         @test mesh.name == "three_triangles"
+        @test mesh.cell_sets = ref_cell_sets
 
         # write_vtk
         write_vtk_2d("write_three_triangle.vtk", mesh)

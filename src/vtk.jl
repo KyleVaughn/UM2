@@ -13,11 +13,11 @@ function read_vtk_2d(filepath::String)
                     error("DATASET type is $(line_split[2]). Only UNSTRUCTURED_GRID is supported.")
                 end
             elseif line_split[1] == "POINTS"
-                global points = read_vtk_points_2d(file, line_split[2], line_split[3])
+                global points = _read_vtk_points_2d(file, line_split[2], line_split[3])
             elseif line_split[1] == "CELLS"
-                global cells = read_vtk_cells(file, line_split[2])
+                global cells = _read_vtk_cells(file, line_split[2])
             elseif line_split[1] == "CELL_TYPES"
-                global cell_types = read_vtk_cell_types(file, line_split[2])
+                global cell_types = _read_vtk_cell_types(file, line_split[2])
             end
         end
     end
@@ -41,14 +41,14 @@ function read_vtk_2d(filepath::String)
 #    edges_2d = edges(faces) 
 
     return UnstructuredMesh_2D(
-                              points,
+                              points = points,
 #                              edges_2d,
-                              faces,
-                              name
+                              faces = faces,
+                              name = name
                               )
 end
 
-function read_vtk_points_2d(
+function _read_vtk_points_2d(
         file::IOStream, 
         npoints_string::SubString{String}, 
         datatype_string::SubString{String}
@@ -69,7 +69,7 @@ function read_vtk_points_2d(
     return Tuple(points)
 end
 
-function read_vtk_cells(
+function _read_vtk_cells(
         file::IOStream, 
         ncells_string::SubString{String}, 
     )
@@ -83,7 +83,7 @@ function read_vtk_cells(
     return cells
 end
 
-function read_vtk_cell_types(
+function _read_vtk_cell_types(
         file::IOStream, 
         ncells_string::SubString{String}, 
     )
