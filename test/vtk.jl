@@ -54,7 +54,7 @@ using MOCNeutronTransport
         @test mesh.faces == ref_faces
 #        @test mesh.edges == ref_edges
         @test mesh.name == "three_triangles"
-        @test mesh.cell_sets = ref_cell_sets
+        @test mesh.cell_sets == ref_cell_sets
 
         # write_vtk
         write_vtk_2d("write_three_triangle.vtk", mesh)
