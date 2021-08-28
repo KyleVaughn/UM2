@@ -38,10 +38,13 @@ for n in 1:mesh_optimization_iters
 end
 
 # Visualize the mesh
-gmsh.fltk.run()
+# gmsh.fltk.run()
 
 # Write the mesh to file 
 gmsh.write(mesh_filename)
 
 # Finalize gmsh
 gmsh.finalize()
+
+# Read the abaqus mesh into a 2D unstructured mesh data structure
+mesh = read_abaqus_2d(mesh_filename)
