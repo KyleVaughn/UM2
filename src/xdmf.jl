@@ -1,3 +1,14 @@
+const vtk_to_xdmf_type = Dict(
+    # triangle
+    5  => 4,
+    # triangle6
+    22 => 36, 
+    # quadrilateral
+    9 => 5,
+    # quad8
+    23 => 37
+   )  
+
 function write_xdmf_2d(filename::String, mesh::UnstructuredMesh_2D)
     # h5 filename
     h5_filename = replace(filename, ("xdmf" => "h5"))
@@ -21,7 +32,7 @@ function write_xdmf_2d(filename::String, mesh::UnstructuredMesh_2D)
     # Topology
     _write_xdmf_topology(xgrid, h5_filename, h5_mesh, mesh)
 
-    print(xdoc)
+    save_file(xdoc, filename)
     close(h5_file)
 end
 
@@ -61,5 +72,31 @@ function _write_xdmf_topology(xml::XMLElement,
                               h5_filename::String, 
                               h5_mesh::HDF5.Group, 
                               mesh::UnstructuredMesh_2D)
-
+    # Topology
+    xtopo = new_child(xml, "Topology")
+    set_attribute(xtopo, "TopologyType", "Mixed")
+    nelements = length(mesh.faces)
+    set_attribute(xtopo, "NumberOfElements", "$nelements")
+    # DataItem
+    xdataitem = new_child(xtopo, "DataItem")
+    set_attribute(xdataitem, "DataType", "Int")
+    topo_array = Int64[]
+    for face in mesh.faces
+        # convert face to vector for mutability
+        face_xdmf = [x for x in face]
+        # adjust vtk to xdmf type
+        face_xdmf[1] = vtk_to_xdmf_type[face_xdmf[1]]
+        # adjust 1-based to 0-based indexing
+        face_xdmf[2:length(face_xdmf)] = face_xdmf[2:length(face_xdmf)] .- 1
+        for value in face_xdmf
+            push!(topo_array, value) 
+        end
+    end
+    ndimensions = length(topo_array)
+    set_attribute(xdataitem, "Dimensions", "$ndimensions")
+    set_attribute(xdataitem, "Format", "HDF")
+    set_attribute(xdataitem, "Precision", "8")
+    add_text(xdataitem, string(h5_filename, ":/", mesh.name, "/cells"))
+    # Write the h5
+    h5_mesh["cells"] = topo_array
 end
