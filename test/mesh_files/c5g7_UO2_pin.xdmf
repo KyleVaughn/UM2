@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Xdmf Version="3.0">
+  <Domain>
+    <Information Name="MaterialNames">MATERIAL_WATER MATERIAL_UO2-3.3</Information>
+    <Grid Name="c5g7_UO2_pin" GridType="Uniform">
+      <Geometry GeometryType="XYZ">
+        <DataItem DataType="Float" Dimensions="16 3" Format="HDF" Precision="8">c5g7_UO2_pin.h5:/c5g7_UO2_pin/points</DataItem>
+      </Geometry>
+      <Topology TopologyType="Mixed" NumberOfElements="22">
+        <DataItem DataType="Int" Dimensions="88" Format="HDF" Precision="8">c5g7_UO2_pin.h5:/c5g7_UO2_pin/cells</DataItem>
+      </Topology>
+      <Set Name="test_set" SetType="Cell">
+        <DataItem DataType="Int" Dimensions="20" Format="HDF" Precision="8">c5g7_UO2_pin.h5:/c5g7_UO2_pin/test_set</DataItem>
+      </Set>
+      <Set Name="GRID_L1_1_1" SetType="Cell">
+        <DataItem DataType="Int" Dimensions="22" Format="HDF" Precision="8">c5g7_UO2_pin.h5:/c5g7_UO2_pin/GRID_L1_1_1</DataItem>
+      </Set>
+      <Attribute Center="Cell" Name="MaterialID">
+        <DataItem DataType="Int" Dimensions="22" Format="HDF" Precision="8">c5g7_UO2_pin.h5:/c5g7_UO2_pin/material_id</DataItem>
+      </Attribute>
+    </Grid>
+  </Domain>
+</Xdmf>

@@ -2,7 +2,7 @@ Base.@kwdef struct UnstructuredMesh_2D{P, F, T}
     points::NTuple{P, Point_2D{T}}
     faces::NTuple{F, Tuple{Vararg{Int64}}}
     name::String = "DefaultMeshName"
-    cell_sets::Dict{String, Tuple{Vararg{Int64}}} = Dict{String, Tuple{Vararg{Int64}}}()
+    face_sets::Dict{String, Tuple{Vararg{Int64}}} = Dict{String, Tuple{Vararg{Int64}}}()
 end
 
 #    edges::NTuple{E, Tuple{Vararg{Int64}}}

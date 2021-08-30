@@ -18,7 +18,7 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
     name = "DefaultMeshName"
     file = open(filepath, "r")
     faces = Tuple{Vararg{Int64}}[]
-    cell_sets = Dict{String, Tuple{Vararg{Int64}}}()
+    face_sets = Dict{String, Tuple{Vararg{Int64}}}()
     while !eof(file)
         line_split = split(readline(file))
         if length(line_split) > 0
@@ -37,7 +37,7 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
                 faces = vcat(faces, _read_abaqus_elements(file, element_type))
             elseif occursin("*ELSET", line_split[1])
                 set_name = String(replace(line_split[1], ("*ELSET,ELSET=" => "")))
-                cell_sets[set_name] = _read_abaqus_elset(file)
+                face_sets[set_name] = _read_abaqus_elset(file)
             end
         end
     end
@@ -46,7 +46,7 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
     return UnstructuredMesh_2D(points = points,
                                faces = Tuple(faces),
                                name = name,
-                               cell_sets = cell_sets
+                               face_sets = face_sets
                               )
 end
 

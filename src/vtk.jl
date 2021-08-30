@@ -97,6 +97,11 @@ function _read_vtk_cell_types(
 end
 
 function write_vtk_2d(filename::String, mesh::UnstructuredMesh_2D)
+    @info "Writing VTK file"
+    # Check valid filename
+    if !occursin(".vtk", filename)
+        error("Invalid filename. '.vtk' does not occur in $filename")
+    end
     file = open(filename, "w")
     println(file, "# vtk DataFile Version 2.0")
     println(file, mesh.name)

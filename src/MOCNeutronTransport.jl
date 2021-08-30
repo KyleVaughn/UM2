@@ -1,6 +1,8 @@
 module MOCNeutronTransport
-using StaticArrays
+using HDF5
+using LightXML
 using LinearAlgebra
+using StaticArrays
 try
     # Use local gmsh install
     using gmsh
@@ -29,6 +31,8 @@ include("gauss_legendre_quadrature.jl")
 include("UnstructuredMesh_2D.jl")
 include("abaqus.jl")
 include("vtk.jl")
+include("xdmf.jl")
+
 include("gmsh_rectangular_grid.jl")
 include("gmsh_group_preserving_fragment.jl")
 include("gmsh_overlay_rectangular_grid.jl")
@@ -70,7 +74,8 @@ export  Point_2D,
         read_vtk_2d,
         real_to_parametric,
         triangulate,
-        write_vtk_2d
+        write_vtk_2d,
+        write_xdmf_2d
 
 export gmsh,
        gmsh_rectangular_grid,

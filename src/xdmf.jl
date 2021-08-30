@@ -10,6 +10,18 @@ const vtk_to_xdmf_type = Dict(
    )  
 
 function write_xdmf_2d(filename::String, mesh::UnstructuredMesh_2D)
+    @info "Writing XDMF file" 
+    # Check valid filename
+    if !occursin(".xdmf", filename)
+        error("Invalid filename. '.xdmf' does not occur in $filename") 
+    end
+
+    # If there are materials, map all material names to an integer
+    material_map = Dict{String, Int64}()
+    if mesh.face_sets != Dict{String, Tuple{Vararg{Int64}}}()
+        material_map = _make_material_name_to_id_map(mesh)
+    end
+
     # h5 filename
     h5_filename = replace(filename, ("xdmf" => "h5"))
     h5_file = h5open(h5_filename, "w")
@@ -21,6 +33,12 @@ function write_xdmf_2d(filename::String, mesh::UnstructuredMesh_2D)
     set_attribute(xroot, "Version", "3.0")
     # Domain
     xdomain = new_child(xroot, "Domain")
+    # Material names
+    if material_map != Dict{String, Int64}()
+        xmaterials = new_child(xdomain, "Information")
+        set_attribute(xmaterials, "Name", "MaterialNames")
+        add_text(xmaterials, join(keys(material_map), " ")) 
+    end
     # Grid
     xgrid = new_child(xdomain, "Grid")
     set_attribute(xgrid, "Name", mesh.name)
@@ -31,6 +49,16 @@ function write_xdmf_2d(filename::String, mesh::UnstructuredMesh_2D)
 
     # Topology
     _write_xdmf_topology(xgrid, h5_filename, h5_mesh, mesh)
+
+    # Non-material face sets
+    if mesh.face_sets != Dict{String, Tuple{Vararg{Int64}}}()
+        _write_xdmf_face_sets(xgrid, h5_filename, h5_mesh, mesh)
+    end
+
+    # Materials
+    if material_map != Dict{String, Int64}()
+        _write_xdmf_materials(xgrid, h5_filename, h5_mesh, mesh, material_map)
+    end
 
     save_file(xdoc, filename)
     close(h5_file)
@@ -99,4 +127,77 @@ function _write_xdmf_topology(xml::XMLElement,
     add_text(xdataitem, string(h5_filename, ":/", mesh.name, "/cells"))
     # Write the h5
     h5_mesh["cells"] = topo_array
+end
+
+function _make_material_name_to_id_map(mesh::UnstructuredMesh_2D)
+    material_map = Dict{String, Int64}()
+    nmat = 0
+    for set_name in keys(mesh.face_sets)
+        if occursin("MATERIAL", uppercase(set_name))
+            material_map[set_name] = nmat 
+            nmat += 1
+        end
+    end
+    return material_map
+end
+
+function _write_xdmf_materials(xml::XMLElement, 
+                               h5_filename::String, 
+                               h5_mesh::HDF5.Group, 
+                               mesh::UnstructuredMesh_2D,
+                               material_map::Dict{String, Int64})
+    # MaterialID
+    xmaterial = new_child(xml, "Attribute")
+    set_attribute(xmaterial, "Center", "Cell")
+    set_attribute(xmaterial, "Name", "MaterialID")
+    nelements = length(mesh.faces)
+    mat_ID_array = zeros(Int64, nelements) .- 1
+    for material_name in keys(material_map)
+        material_ID = material_map[material_name]
+        for cell in mesh.face_sets[material_name]
+            if mat_ID_array[cell] == -1
+                mat_ID_array[cell] = material_ID
+            else
+                error("Mesh cell $cell has multiple materials assigned to it.")
+            end
+        end
+    end
+    if any(x->x==-1, mat_ID_array)
+        error("Some mesh cells do not have a material.")
+    end
+    # DataItem
+    xdataitem = new_child(xmaterial, "DataItem")
+    set_attribute(xdataitem, "DataType", "Int")
+    set_attribute(xdataitem, "Dimensions", "$nelements")
+    set_attribute(xdataitem, "Format", "HDF")
+    set_attribute(xdataitem, "Precision", "8")
+    add_text(xdataitem, string(h5_filename, ":/", mesh.name, "/material_id"))
+    # Write the h5
+    h5_mesh["material_id"] = mat_ID_array
+end
+
+function _write_xdmf_face_sets(xml::XMLElement, 
+                               h5_filename::String, 
+                               h5_mesh::HDF5.Group, 
+                               mesh::UnstructuredMesh_2D)
+    for set_name in keys(mesh.face_sets)
+        if occursin("MATERIAL", uppercase(set_name))
+            continue
+        end
+        # Set
+        xset = new_child(xml, "Set")
+        set_attribute(xset, "Name", "$set_name")
+        set_attribute(xset, "SetType", "Cell")
+        # DataItem
+        xdataitem = new_child(xset, "DataItem")
+        set_attribute(xdataitem, "DataType", "Int")
+        nelements = length(mesh.face_sets[set_name])
+        set_attribute(xdataitem, "Dimensions", "$nelements")
+        set_attribute(xdataitem, "Format", "HDF")
+        set_attribute(xdataitem, "Precision", "8")
+        add_text(xdataitem, string(h5_filename, ":/", mesh.name, "/$set_name"))
+        # Write the h5
+        ID_array = [ x - 1 for x in mesh.face_sets[set_name] ] 
+        h5_mesh["$set_name"] = ID_array
+    end
 end

@@ -16,7 +16,7 @@ using MOCNeutronTransport
                         (5, 2, 3, 5)
                     )
         ref_edges = ((1, 2), (1, 4), (2, 3), (2, 4), (2, 5), (3, 5), (4, 5))
-        ref_cell_sets = Dict{String, Tuple{Vararg{Int64}}}()
+        ref_face_sets = Dict{String, Tuple{Vararg{Int64}}}()
 
         # Test of non-public functions.
         # Need to find a way to do the includes correctly for this, since
@@ -54,7 +54,7 @@ using MOCNeutronTransport
         @test mesh.faces == ref_faces
 #        @test mesh.edges == ref_edges
         @test mesh.name == "three_triangles"
-        @test mesh.cell_sets == ref_cell_sets
+        @test mesh.face_sets == ref_face_sets
 
         # write_vtk
         write_vtk_2d("write_three_triangle.vtk", mesh)
@@ -65,6 +65,8 @@ using MOCNeutronTransport
             test_line = readline(test_file)
             @test ref_line == test_line
         end
+        close(ref_file)
+        close(test_file)
         rm("./write_three_triangle.vtk")
     end
 end

@@ -1,5 +1,7 @@
 using MOCNeutronTransport
 using Test
+using Logging
+Logging.disable_logging(Logging.Error)
 tests = ["Point_2D",
          "Point_3D",
          "LineSegment_2D",
@@ -15,7 +17,8 @@ tests = ["Point_2D",
          "Quadrilateral8_2D",
          "Quadrilateral8_3D",
          "vtk",
-         "abaqus"
+         "abaqus",
+         "xdmf"
 #         "UnstructuredMesh",
 #         "AngularQuadrature", 
         ]
