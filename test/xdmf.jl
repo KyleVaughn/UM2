@@ -79,6 +79,7 @@ using HDF5
         close(test_file)
         # check h5
         h5_file = h5open("c5g7_UO2_pin.h5","r")
+
         # points
         point_array = zeros(Float64, length(mesh.points), 3)
         npoints = length(mesh.points)
@@ -89,6 +90,7 @@ using HDF5
         point_array = copy(transpose(point_array))
         test_points = read(h5_file["c5g7_UO2_pin"]["points"])
         @test test_points == point_array
+
         # cells
         topo_array = Int64[]
         for face in mesh.faces
@@ -104,9 +106,20 @@ using HDF5
         end
         test_cells = read(h5_file["c5g7_UO2_pin"]["cells"])
         @test test_cells == topo_array 
+
         # Cell sets
+        test_grid_l1_1_1 = read(h5_file["c5g7_UO2_pin"]["GRID_L1_1_1"])
+        ref_grid_l1_1_1 = [ x - 1 for x in ref_face_sets["GRID_L1_1_1"]]
+        @test test_grid_l1_1_1 == ref_grid_l1_1_1
+        test_test_set = read(h5_file["c5g7_UO2_pin"]["test_set"])
+        ref_test_set = [ x - 1 for x in ref_face_sets["test_set"]]
+        @test test_test_set == ref_test_set
 
         # Materials
+        test_material_IDs = read(h5_file["c5g7_UO2_pin"]["material_id"])
+        ref_material_IDs = [ i <= 7 ? 1 : 0 for i = 1:22 ]
+        @test test_material_IDs == ref_material_IDs
+
         close(h5_file)
         rm("./c5g7_UO2_pin.xdmf")
         rm("./c5g7_UO2_pin.h5")
