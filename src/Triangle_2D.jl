@@ -13,7 +13,9 @@ Triangle_2D(p₁::Point_2D{T},
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
-function (tri::Triangle_2D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+function (tri::Triangle_2D{T})(r::R, s::S) where {T <: AbstractFloat, 
+                                                  R <: Real, 
+                                                  S <: Real}
     return (1 - T(r) - T(s))*tri.points[1] + T(r)*tri.points[2] + T(s)*tri.points[3]
 end
 

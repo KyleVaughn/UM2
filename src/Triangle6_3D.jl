@@ -53,7 +53,9 @@ Triangle6_3D(p₁::Point_3D{T},
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
-function (tri6::Triangle6_3D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+function (tri6::Triangle6_3D{T})(r::R, s::S) where {T <: AbstractFloat,
+                                                    R <: Real,
+                                                    S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     r_T = T(r)
@@ -66,7 +68,9 @@ function (tri6::Triangle6_3D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: R
                              4s_T*(1 - r_T - s_T)*tri6.points[6]
 end
 
-function (tri6::Triangle6_3D{T})(p::Point_2D{T}) where {T <: AbstractFloat, R,S <: Real}
+function (tri6::Triangle6_3D{T})(p::Point_2D{T}) where {T <: AbstractFloat, 
+                                                        R <: Real,
+                                                        S <: Real}
     r_T = p[1]
     s_T = p[2]
     return (1 - r_T - s_T)*(2(1 - r_T - s_T) - 1)*tri6.points[1] +
@@ -77,7 +81,9 @@ function (tri6::Triangle6_3D{T})(p::Point_2D{T}) where {T <: AbstractFloat, R,S 
                              4s_T*(1 - r_T - s_T)*tri6.points[6]
 end
 
-function derivatives(tri6::Triangle6_3D{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+function derivatives(tri6::Triangle6_3D{T}, r::R, s::S) where {T <: AbstractFloat, 
+                                                               R <: Real,
+                                                               S <: Real}
     # Let T(r,s) be the interpolation function for tri6
     # Returns ∂T/∂r, ∂T/∂s
     r_T = T(r)

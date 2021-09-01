@@ -26,7 +26,9 @@ Triangle6_2D(p₁::Point_2D{T},
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
-function (tri6::Triangle6_2D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+function (tri6::Triangle6_2D{T})(r::R, s::S) where {T <: AbstractFloat, 
+                                                    R <: Real,
+                                                    S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     r_T = T(r)
@@ -51,7 +53,9 @@ function (tri6::Triangle6_2D{T})(p::Point_2D{T}) where {T <: AbstractFloat}
 end
 
 
-function derivatives(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+function derivatives(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, 
+                                                               R <: Real,
+                                                               S <: Real}
     # Let T(r,s) be the interpolation function for tri6
     # Returns ∂T/∂r, ∂T/∂s
     r_T = T(r)
@@ -70,7 +74,9 @@ function derivatives(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloa
     return ∂T_∂r, ∂T_∂s
 end
 
-function jacobian(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+function jacobian(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, 
+                                                            R <: Real,
+                                                            S <: Real}
     # Return the 2 x 2 Jacobian matrix
     ∂T_∂r, ∂T_∂s = derivatives(tri6, r, s) 
     return hcat(∂T_∂r.x, ∂T_∂s.x)

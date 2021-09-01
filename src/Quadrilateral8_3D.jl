@@ -21,7 +21,9 @@ Quadrilateral8_3D(p₁::Point_3D{T}, p₂::Point_3D{T}, p₃::Point_3D{T}, p₄:
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function (quad8::Quadrilateral8_3D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+function (quad8::Quadrilateral8_3D{T})(r::R, s::S) where {T <: AbstractFloat, 
+                                                          R <: Real,
+                                                          S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     ξ = 2T(r) - 1; η = 2T(s) - 1
@@ -35,7 +37,9 @@ function (quad8::Quadrilateral8_3D{T})(r::R, s::S) where {T <: AbstractFloat, R,
                       (1 - η^2)*(1 - ξ)/2*quad8.points[8]
 end
 
-function derivatives(quad8::Quadrilateral8_3D{T}, r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+function derivatives(quad8::Quadrilateral8_3D{T}, r::R, s::S) where {T <: AbstractFloat, 
+                                                                     R <: Real,
+                                                                     S <: Real}
     # Chain rule
     # ∂Q   ∂Q ∂ξ  ∂Q   ∂Q ∂η 
     # -- = -- --, -- = -- --

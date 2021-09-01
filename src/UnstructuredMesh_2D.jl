@@ -1,4 +1,4 @@
-Base.@kwdef struct UnstructuredMesh_2D{P, F, T}
+Base.@kwdef struct UnstructuredMesh_2D{P, F, T <: AbstractFloat}
     points::NTuple{P, Point_2D{T}}
     faces::NTuple{F, Tuple{Vararg{Int64}}}
     name::String = "DefaultMeshName"

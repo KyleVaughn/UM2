@@ -19,7 +19,9 @@ Quadrilateral_3D(p₁::Point_3D{T},
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
-function (quad::Quadrilateral_3D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+function (quad::Quadrilateral_3D{T})(r::R, s::S) where {T <: AbstractFloat, 
+                                                        R <: Real,
+                                                        S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     r_T = T(r)

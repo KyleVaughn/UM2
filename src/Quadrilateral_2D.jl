@@ -17,7 +17,9 @@ Quadrilateral_2D(p₁::Point_2D{T},
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function (quad::Quadrilateral_2D{T})(r::R, s::S) where {T <: AbstractFloat, R,S <: Real}
+function (quad::Quadrilateral_2D{T})(r::R, s::S) where {T <: AbstractFloat, 
+                                                        R <: Real, 
+                                                        S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     r_T = T(r)
@@ -43,6 +45,6 @@ function area(quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}
     return sum(area.(triangulate(quad)))
 end
 
-function in(p::Point_2D, quad::Quadrilateral_2D)
+function in(p::Point_2D{T}, quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}
     return any(p .∈  triangulate(quad))
 end
