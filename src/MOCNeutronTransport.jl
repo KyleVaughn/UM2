@@ -12,6 +12,7 @@ catch e
 end
 
 import Base: +, -, *, /, ≈, ==, intersect, in
+include("Tree.jl")
 
 include("Point_2D.jl")
 include("Point_3D.jl")

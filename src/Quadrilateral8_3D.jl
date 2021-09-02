@@ -90,7 +90,7 @@ end
 function triangulate(quad8::Quadrilateral8_3D{T}, N::Int64) where {T <: AbstractFloat}
     # N is the number of divisions of each edge
     triangles = Vector{Triangle_3D{T}}(undef, 2*(N+1)*(N+1))
-    if N == 0
+    if N === 0
         triangles[1] = Triangle_3D(quad8.points[1], quad8.points[2], quad8.points[3])
         triangles[2] = Triangle_3D(quad8.points[3], quad8.points[4], quad8.points[1])
     else
@@ -116,12 +116,12 @@ function intersect(l::LineSegment_3D{T}, quad8::Quadrilateral8_3D{T}; N::Int64 =
     bools = map(x->x[1], intersections)
     points = map(x->x[2], intersections)
     npoints = count(bools)
-    if npoints == 0
+    if npoints === 0
         return false, 0, p₁, p₂
-    elseif npoints == 1
+    elseif npoints === 1
         p₁ = points[argmax(bools)]
         return true, 1, p₁, p₂
-    elseif npoints == 2
+    elseif npoints === 2
         indices = findall(bools)
         p₁ = points[indices[1]]
         p₂ = points[indices[2]]

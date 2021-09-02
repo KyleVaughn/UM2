@@ -3,13 +3,13 @@ function gauss_legendre_quadrature(type::Type{T}, N::Int64) where {T <: Abstract
     # ∑wᵢ= 1, rᵢ∈ [0, 1]
     #
     # N that have entries in this function: N = [ 1, 2, 3, 4, 5, 10, 15, 20].
-    if N == 1
+    if N === 1
         weights = T.([1])
         r = T.([0.5])
-    elseif N == 2
+    elseif N === 2
         weights = T.([0.5, 0.5])
         r = T.([0.21132486540518713, 0.7886751345948129])
-    elseif N == 3
+    elseif N === 3
         weights = T.([
                         0.2777777777777776,
                         0.4444444444444444,
@@ -20,7 +20,7 @@ function gauss_legendre_quadrature(type::Type{T}, N::Int64) where {T <: Abstract
                 0.5,
                 0.8872983346207417
                ])
-    elseif N == 4
+    elseif N === 4
         weights = T.([
                         0.17392742256872684,
                         0.3260725774312732,
@@ -33,7 +33,7 @@ function gauss_legendre_quadrature(type::Type{T}, N::Int64) where {T <: Abstract
                 0.6699905217924281,
                 0.9305681557970262
                ])
-    elseif N == 5
+    elseif N === 5
         weights = T.([
                         0.1184634425280945,
                         0.23931433524968326,
@@ -48,7 +48,7 @@ function gauss_legendre_quadrature(type::Type{T}, N::Int64) where {T <: Abstract
                 0.7692346550528415,
                 0.9530899229693319,
                 ])
-    elseif N == 10
+    elseif N === 10
         weights = T.([
                         0.03333567215434387,
                         0.07472567457529025,
@@ -73,7 +73,7 @@ function gauss_legendre_quadrature(type::Type{T}, N::Int64) where {T <: Abstract
                 0.9325316833444923,
                 0.9869532642585859
                 ])
-    elseif N == 15
+    elseif N === 15
         weights = T.([
                         0.015376620998058315,
                         0.03518302374405407,
@@ -108,7 +108,7 @@ function gauss_legendre_quadrature(type::Type{T}, N::Int64) where {T <: Abstract
                 0.968636696200353,
                 0.9939962590102427
                 ])
-    elseif N == 20
+    elseif N === 20
         weights = T.([
                         0.00880700356957606,
                         0.02030071490019347,
@@ -164,7 +164,7 @@ function gauss_legendre_quadrature(tri::Triangle6_3D{T}, N::Int64) where {T <: A
     # The weights and points for Gauss-Legendre quadrature on the parametric unit triangle
     # ∑wᵢ= 1/2, rᵢ∈ [0, 1], sᵢ∈ [0, 1], rᵢ + sᵢ ≤ 1
     # N that have entries in this function: N = [12, 27, 48, 79]
-    if N == 12
+    if N === 12
         # P6. 0 negative weights, 0 points outside of the triangle
         w = T.([0.058393137863189,
                 0.058393137863189,
@@ -205,7 +205,7 @@ function gauss_legendre_quadrature(tri::Triangle6_3D{T}, N::Int64) where {T <: A
                 0.310352451033785,
                 0.636502499121399])
 
-    elseif N == 27
+    elseif N === 27
         # P11. 0 negative weights, 3 points outside of the triangle
         w = T.([0.00046350316448,
                 0.00046350316448,
@@ -291,7 +291,7 @@ function gauss_legendre_quadrature(tri::Triangle6_3D{T}, N::Int64) where {T <: A
                 +0.8074890031600,
                 +0.0210220165362])
 
-    elseif N == 48
+    elseif N === 48
         # P15. 0 negative weights, 9 points outside of the triangle
         w = T.([0.000958437821425,
                 0.000958437821425,
@@ -440,7 +440,7 @@ function gauss_legendre_quadrature(tri::Triangle6_3D{T}, N::Int64) where {T <: A
                 +0.8839645740920,
                 +0.0124598093312])
 
-    elseif N == 79
+    elseif N === 79
         # P20. 3 negative weights, 9 points outside of the triangle
         w = T.([+0.016528527770800,
                 +0.000433509592831,
@@ -693,7 +693,7 @@ function gauss_legendre_quadrature(tri::Triangle6_2D{T}, N::Int64) where {T <: A
     # The weights and points for Gauss-Legendre quadrature on the parametric unit triangle
     # ∑wᵢ= 1/2, rᵢ∈ [0, 1], sᵢ∈ [0, 1], rᵢ + sᵢ ≤ 1
     # N that have entries in this function: N = [12, 27, 48, 79]
-    if N == 12
+    if N === 12
         # P6. 0 negative weights, 0 points outside of the triangle
         w = T.([0.058393137863189,
                 0.058393137863189,
@@ -734,7 +734,7 @@ function gauss_legendre_quadrature(tri::Triangle6_2D{T}, N::Int64) where {T <: A
                 0.310352451033785,
                 0.636502499121399])
 
-    elseif N == 27
+    elseif N === 27
         # P11. 0 negative weights, 3 points outside of the triangle
         w = T.([0.00046350316448,
                 0.00046350316448,
@@ -820,7 +820,7 @@ function gauss_legendre_quadrature(tri::Triangle6_2D{T}, N::Int64) where {T <: A
                 +0.8074890031600,
                 +0.0210220165362])
 
-    elseif N == 48
+    elseif N === 48
         # P15. 0 negative weights, 9 points outside of the triangle
         w = T.([0.000958437821425,
                 0.000958437821425,
@@ -969,7 +969,7 @@ function gauss_legendre_quadrature(tri::Triangle6_2D{T}, N::Int64) where {T <: A
                 +0.8839645740920,
                 +0.0124598093312])
 
-    elseif N == 79
+    elseif N === 79
         # P20. 3 negative weights, 9 points outside of the triangle
         w = T.([+0.016528527770800,
                 +0.000433509592831,

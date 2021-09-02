@@ -111,7 +111,7 @@ end
 function triangulate(quad8::Quadrilateral8_2D{T}, N::Int64) where {T <: AbstractFloat}
     # N is the number of divisions of each edge
     triangles = Vector{Triangle_2D{T}}(undef, 2*(N+1)*(N+1))
-    if N == 0
+    if N === 0
         triangles[1] = Triangle_2D(quad8.points[1], quad8.points[2], quad8.points[3])
         triangles[2] = Triangle_2D(quad8.points[3], quad8.points[4], quad8.points[1])
     else

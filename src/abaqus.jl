@@ -13,6 +13,7 @@ const abaqus_to_vtk_type = Dict(
    )
 
 function read_abaqus_2d(filepath::String; float_type=Float64)
+    @info "Reading $filepath"
     # NOTE: There is a crucial assumption here that elements and nodes are listed 1 to N,
     # not 8, 10, 9 or anything funky/out of order.
     name = "DefaultMeshName"
@@ -42,7 +43,7 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
         end
     end
     close(file)
-
+    @info "Finished reading $filepath"
     return UnstructuredMesh_2D(points = points,
                                faces = Tuple(faces),
                                name = name,

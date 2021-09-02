@@ -112,7 +112,7 @@ end
 #        if (0 ≤ r₂ ≤ 1) && (0 ≤ s₂ ≤ 1) && (points[2] ≈ l(s₂))
 #            npoints += 1
 #            # If only point 2 is valid, return it in index 1 of points
-#            if npoints == 1
+#            if npoints === 1
 #                points[1] = points[2]
 #            end
 #        end

@@ -10,7 +10,7 @@ const vtk_to_xdmf_type = Dict(
    )  
 
 function write_xdmf_2d(filename::String, mesh::UnstructuredMesh_2D)
-    @info "Writing XDMF file" 
+    @info "Writing $filename" 
     # Check valid filename
     if !occursin(".xdmf", filename)
         error("Invalid filename. '.xdmf' does not occur in $filename") 
@@ -79,7 +79,7 @@ function _write_xdmf_geometry(xml::XMLElement,
     set_attribute(xdataitem, "Format", "HDF")
     float_precision = 8
     float_type = Float64
-    if typeof(mesh.points[1]) == Point_2D{Float32}
+    if typeof(mesh.points[1]) === Point_2D{Float32}
         float_precision = 4
         float_type = Float32
     end
@@ -155,14 +155,14 @@ function _write_xdmf_materials(xml::XMLElement,
     for material_name in keys(material_map)
         material_ID = material_map[material_name]
         for cell in mesh.face_sets[material_name]
-            if mat_ID_array[cell] == -1
+            if mat_ID_array[cell] === -1
                 mat_ID_array[cell] = material_ID
             else
                 error("Mesh cell $cell has multiple materials assigned to it.")
             end
         end
     end
-    if any(x->x==-1, mat_ID_array)
+    if any(x->x === -1, mat_ID_array)
         error("Some mesh cells do not have a material.")
     end
     # DataItem

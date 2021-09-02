@@ -1,6 +1,10 @@
 function read_vtk_2d(filepath::String)
-    name = "DefaultMeshName"
+    @info "Reading $filepath"
     file = open(filepath, "r")
+    name = "DefaultMeshName"
+    cell_types = Vector{Int64}[]
+    cells = Vector{Int64}[]
+    points = nothing
     while !eof(file)
         line_split = split(readline(file))
         if length(line_split) > 0
@@ -13,11 +17,11 @@ function read_vtk_2d(filepath::String)
                     error("DATASET type is $(line_split[2]). Only UNSTRUCTURED_GRID is supported.")
                 end
             elseif line_split[1] == "POINTS"
-                global points = _read_vtk_points_2d(file, line_split[2], line_split[3])
+                points = _read_vtk_points_2d(file, line_split[2], line_split[3])
             elseif line_split[1] == "CELLS"
-                global cells = _read_vtk_cells(file, line_split[2])
+                cells = _read_vtk_cells(file, line_split[2])
             elseif line_split[1] == "CELL_TYPES"
-                global cell_types = _read_vtk_cell_types(file, line_split[2])
+                cell_types = _read_vtk_cell_types(file, line_split[2])
             end
         end
     end
@@ -39,7 +43,7 @@ function read_vtk_2d(filepath::String)
     # Construct edges
     # edges = edges(faces) throws an error, interprets the edges function as a variable.
 #    edges_2d = edges(faces) 
-
+    @info "Finished reading $filepath"
     return UnstructuredMesh_2D(
                               points = points,
 #                              edges_2d,
@@ -97,7 +101,7 @@ function _read_vtk_cell_types(
 end
 
 function write_vtk_2d(filename::String, mesh::UnstructuredMesh_2D)
-    @info "Writing VTK file"
+    @info "Writing $filename"
     # Check valid filename
     if !occursin(".vtk", filename)
         error("Invalid filename. '.vtk' does not occur in $filename")
@@ -110,9 +114,9 @@ function write_vtk_2d(filename::String, mesh::UnstructuredMesh_2D)
 
     # Points
     pointtype = typeof(mesh.points[1].x[1])
-    if pointtype == Float64
+    if pointtype === Float64
         type_points = "double"
-    elseif pointtype == Float32
+    elseif pointtype === Float32
         type_points = "float"
     else
         error("Unrecognized point type.")

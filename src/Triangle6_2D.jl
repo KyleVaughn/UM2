@@ -103,7 +103,7 @@ end
 function triangulate(tri6::Triangle6_2D{T}, N::Int64) where {T <: AbstractFloat}
     # N is the number of divisions of each edge
     triangles = Vector{Triangle_2D{T}}(undef, (N+1)*(N+1))
-    if N == 0
+    if N === 0
         triangles[1] = Triangle_2D(tri6.points[1], tri6.points[2], tri6.points[3])
     else
         i = 1

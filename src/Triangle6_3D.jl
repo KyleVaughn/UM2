@@ -123,7 +123,7 @@ end
 function triangulate(tri6::Triangle6_3D{T}, N::Int64) where {T <: AbstractFloat}
     # N is the number of divisions of each edge
     triangles = Vector{Triangle_3D{T}}(undef, (N+1)*(N+1))
-    if N == 0
+    if N === 0
         triangles[1] = Triangle_3D(tri6.points[1], tri6.points[2], tri6.points[3])
     else
         i = 1
@@ -160,12 +160,12 @@ function intersect(l::LineSegment_3D{T}, tri6::Triangle6_3D{T};
     npoints = count(bools)
     p₁ = Point_3D(T, 0)
     p₂ = Point_3D(T, 0)
-    if npoints == 0
+    if npoints === 0
         return false, 0, p₁, p₂
-    elseif npoints == 1
+    elseif npoints === 1
         p₁ = points[argmax(bools)]
         return true, 1, p₁, p₂
-    elseif npoints == 2
+    elseif npoints === 2
         indices = findall(bools)
         p₁ = points[indices[1]]
         p₂ = points[indices[2]]
@@ -266,9 +266,9 @@ function intersect_iterative(l::LineSegment_3D{T}, tri6::Triangle6_3D{T};
         npoints += 1
         # If only point 2 is valid, return it as p₁
         # If points are duplicate, reduce npoints
-        if npoints == 2 && p₁ ≈ p₂
+        if npoints === 2 && p₁ ≈ p₂
             npoints -= 1
-        elseif npoints == 1
+        elseif npoints === 1
             p₁ = p₂
         end
     end
