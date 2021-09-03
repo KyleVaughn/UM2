@@ -43,7 +43,6 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
         end
     end
     close(file)
-    @info "Finished reading $filepath"
     return UnstructuredMesh_2D(points = points,
                                faces = Tuple(faces),
                                name = name,
