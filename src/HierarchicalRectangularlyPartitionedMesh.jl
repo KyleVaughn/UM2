@@ -17,7 +17,9 @@ function partition_rectangularly(mesh::UnstructuredMesh_2D)
     root = _create_HRPM_tree(mesh, grid_names, max_level)
 
     # Construct the leaf meshes
-    leaf_meshes = _create_HRPM_leaf_meshes(mesh, set_names, grid_names, max_level)
+    leaf_meshes = _create_HRPM_leaf_meshes(mesh, grid_names, max_level)
+
+    # Construct the mesh hierarchy
 end
 
 # Extract set names, grid names, and max level
@@ -52,18 +54,19 @@ function _create_HRPM_tree(mesh::UnstructuredMesh_2D, grid_names::Vector{String}
     current_nodes = Tree[]
     next_nodes = Tree[]
     old_grid_names = copy(grid_names)
+    new_grid_names = copy(grid_names)
     # Do first level
     for grid_name in old_grid_names
         grid_level = parse(Int64, grid_name[7])
         if grid_level === 1
             # Add to appropriate node (root)
             push!(next_nodes, Tree(data = grid_name; parent=Ref(root)))
-            filter!(x->x ≠ grid_name, grid_names)
+            filter!(x->x ≠ grid_name, new_grid_names)
         end
     end
     # Do all other levels:
     for level in 2:max_level
-        old_grid_names = copy(grid_names)
+        old_grid_names = copy(new_grid_names)
         current_nodes = next_nodes
         next_nodes = []
         for grid_name in old_grid_names
@@ -75,7 +78,7 @@ function _create_HRPM_tree(mesh::UnstructuredMesh_2D, grid_names::Vector{String}
                     node_faces = Set(mesh.face_sets[node.data])
                     if grid_faces ⊆ node_faces
                         push!(next_nodes, Tree(data = grid_name, parent=Ref(node)))
-                        filter!(x->x ≠ grid_name, grid_names)
+                        filter!(x->x ≠ grid_name, new_grid_names)
                         break
                     end
                 end
@@ -87,37 +90,21 @@ end
 
 # Construct the leaf meshes
 function _create_HRPM_leaf_meshes(mesh::UnstructuredMesh_2D, 
-                                  set_names::Vector{String}, 
-                                  grid_names::Vector{String}, 
-                                  max_level::Int64)
+                                  grid_names::Vector{String},
+                                  max_level::Int64) 
     # Generate the leaf meshes (The smallest spatially)
     leaf_meshes = UnstructuredMesh_2D[]
+    leaf_names = String[]
     for name in grid_names
-        # Get the cells
-        face_indices = mesh.face_sets[name]
-        cells = _make_leaf_meshes_get_cells(mesh, face_indices)
-
-        # Get the vertices for all of these cells
-        vertices_set = set(np.concatenate(mesh.get_vertices_for_cells(cells_list)))
-        vertices = {}
-        for vertex in vertices_set:
-            vertices[vertex] = mesh.vertices[vertex]
-
-        # Get all the cell sets
-        cell_sets = {}
-        grid_cells_set = set(mesh.cell_sets[name])
-        for set_name in set_names:
-            # ignore the grid sets
-            if "GRID_" in set_name.upper():
-                continue
-            else:
-                cells_set = set(mesh.cell_sets[set_name])
-                intersection_cells = grid_cells_set.intersection(cells_set)
-                if intersection_cells:
-                    cell_sets[set_name] = np.array(list(intersection_cells))
-
-        # Initialize the mesh object
-        leaf_meshes.append(GridMesh(vertices, cells, cell_sets, name=name))
+        level = parse(Int64, name[7])
+        if level == max_level
+            push!(leaf_names, name)
+        end
     end
+    for name in leaf_names
+        push!(leaf_meshes, submesh(mesh, name))
+    end
+
+    # remove grid levels lower than max_level
     return leaf_meshes
 end

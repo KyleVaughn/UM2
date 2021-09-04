@@ -11,9 +11,9 @@ Base.@kwdef mutable struct Tree
     end
 end
 # The level of a node is defined by 1 + the number of connections between the node and the root
-function level(tree::Tree; current_level=1)
+function get_level(tree::Tree; current_level=1)
     if tree.parent !== nothing
-        return level(tree.parent[]; current_level = current_level + 1)
+        return get_level(tree.parent[]; current_level = current_level + 1)
     else
         return current_level
     end
