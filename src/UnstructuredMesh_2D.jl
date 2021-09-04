@@ -117,7 +117,7 @@ function submesh(mesh::UnstructuredMesh_2D,
 end
 
 function submesh(mesh::UnstructuredMesh_2D, set_name::String)
-    @info "Creating submesh for '$set_name'"
+    @debug "Creating submesh for '$set_name'"
     face_ids = mesh.face_sets[set_name]
     return submesh(mesh, face_ids, name = set_name) 
 end

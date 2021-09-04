@@ -29,6 +29,7 @@ include("Quadrilateral8_2D.jl")
 include("Quadrilateral8_3D.jl")
 include("gauss_legendre_quadrature.jl")
 include("UnstructuredMesh_2D.jl")
+include("HierarchicalRectangularlyPartitionedMesh.jl")
 include("abaqus.jl")
 include("vtk.jl")
 include("xdmf.jl")
@@ -73,6 +74,7 @@ export  Tree,
         intersect_iterative,
         jacobian,
         norm,
+        partition_rectangularly,
         read_abaqus_2d,
         read_vtk_2d,
         real_to_parametric,

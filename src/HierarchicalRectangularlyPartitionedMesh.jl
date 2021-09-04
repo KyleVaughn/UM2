@@ -34,7 +34,8 @@ function partition_rectangularly(mesh::UnstructuredMesh_2D)
     leaf_meshes = _create_HRPM_leaf_meshes(mesh, grid_names, max_level)
 
     # Construct the mesh hierarchy
-
+    HRPM = _create_HRPM(root, leaf_meshes)
+    return HRPM
 end
 
 # Extract set names, grid names, and max level
@@ -133,8 +134,101 @@ function _create_HRPM_leaf_meshes(mesh::UnstructuredMesh_2D,
     return leaf_meshes
 end
 
+function get_level(HRPM::HierarchicalRectangularlyPartitionedMesh,; current_level=1)
+    if HRPM.parent !== nothing
+        return get_level(HRPM.parent[]; current_level = current_level + 1)
+    else
+        return current_level
+    end
+end
+# Is this the last child in the parent's list of children?
+# offset determines if the nth-parent is the last child
+function _is_last_child(HRPM::HierarchicalRectangularlyPartitionedMesh; relative_offset=0)
+    if HRPM.parent == nothing
+        return true
+    end
+    if relative_offset > 0
+        return _is_last_child(HRPM.parent[]; relative_offset=relative_offset-1)
+    else
+        nsiblings = length(HRPM.parent[].children) - 1
+        return (HRPM.parent[].children[nsiblings + 1][] == HRPM)
+    end
+end
+function Base.show(io::IO, HRPM::HierarchicalRectangularlyPartitionedMesh; relative_offset=0)
+    nsiblings = 0
+    for i = relative_offset:-1:1
+        if i === 1 && _is_last_child(HRPM, relative_offset=i-1)
+            print("└─ ")
+        elseif i === 1
+            print("├─ ")
+        elseif _is_last_child(HRPM, relative_offset=i-1)
+            print("   ")
+        else
+            print("│  ")
+        end
+    end
+    println(HRPM.name)
+    for child in HRPM.children
+        show(io, child[]; relative_offset = relative_offset + 1)
+    end
+end
+
 # Construct the HRPM
 function _create_HRPM(tree::Tree, leaf_meshes::Vector{UnstructuredMesh_2D})
-    # construct the HRPM from the top down       
+    # Construct the HRPM from the top down       
     root = HierarchicalRectangularlyPartitionedMesh( name = tree.data )
+    _attach_HRPM_children(root, tree, leaf_meshes)
+    # Add the rectangles
+    AABB(root)
+    return root
+end
+
+function _attach_HRPM_children(HRPM::HierarchicalRectangularlyPartitionedMesh, 
+                               tree::Tree,
+                               leaf_meshes::Vector{UnstructuredMesh_2D})
+    for child in tree.children 
+        name = child[].data
+        child_mesh = HierarchicalRectangularlyPartitionedMesh(name = name, 
+                                                              parent = Ref(HRPM) )
+        for leaf_mesh in leaf_meshes
+            if name == leaf_mesh.name
+                child_mesh.mesh = leaf_mesh
+            end
+        end
+        _attach_HRPM_children(child_mesh, child[], leaf_meshes)
+    end
+end
+
+function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if HRPM.rect !== nothing
+        return HRPM.rect
+    elseif HRPM.mesh !== nothing
+        bb = AABB(HRPM.mesh)
+        HRPM.rect = bb
+        return bb
+    elseif length(HRPM.children) > 0
+        children_AABBs = Quadrilateral_2D[]
+        for child in HRPM.children
+            push!(children_AABBs, AABB(child[]))
+        end
+        point_tuples = [r.points for r in children_AABBs]
+        points = Vector{typeof(point_tuples[1][1])}()
+        for tuple in point_tuples
+            for p in tuple
+                push!(points, p)
+            end
+        end
+        x = map(p->p[1], points)
+        y = map(p->p[2], points)
+        xmin = minimum(x)
+        xmax = maximum(x)
+        ymin = minimum(y)
+        ymax = maximum(y)
+        bb = Quadrilateral_2D(Point_2D(xmin, ymin), 
+                              Point_2D(xmax, ymin),
+                              Point_2D(xmax, ymax),
+                              Point_2D(xmin, ymax))
+        HRPM.rect = bb
+        return bb
+    end
 end
