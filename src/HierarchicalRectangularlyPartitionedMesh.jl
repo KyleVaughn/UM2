@@ -1,4 +1,6 @@
 Base.@kwdef mutable struct HierarchicalRectangularlyPartitionedMesh
+    name::String
+    rect::Union{Nothing, Quadrilateral_2D} = nothing
     mesh::Union{Nothing, UnstructuredMesh_2D} = nothing
     parent::Union{
                   Nothing,
@@ -6,6 +8,18 @@ Base.@kwdef mutable struct HierarchicalRectangularlyPartitionedMesh
                  } = nothing
     children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh}
                     } = Ref{HierarchicalRectangularlyPartitionedMesh}[]
+    function HierarchicalRectangularlyPartitionedMesh(
+            name::String,
+            rect::Union{Nothing, Quadrilateral_2D}, 
+            mesh::Union{Nothing, UnstructuredMesh_2D},
+            parent::Union{Nothing, Ref{HierarchicalRectangularlyPartitionedMesh}},
+            children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh}})
+        this = new(name, rect, mesh, parent, children)
+        if parent !== nothing
+            push!(parent[].children, Ref(this))
+        end
+        return this
+    end 
 end
 
 function partition_rectangularly(mesh::UnstructuredMesh_2D)
@@ -20,6 +34,7 @@ function partition_rectangularly(mesh::UnstructuredMesh_2D)
     leaf_meshes = _create_HRPM_leaf_meshes(mesh, grid_names, max_level)
 
     # Construct the mesh hierarchy
+
 end
 
 # Extract set names, grid names, and max level
@@ -104,7 +119,22 @@ function _create_HRPM_leaf_meshes(mesh::UnstructuredMesh_2D,
     for name in leaf_names
         push!(leaf_meshes, submesh(mesh, name))
     end
-
     # remove grid levels lower than max_level
+    for leaf_mesh in leaf_meshes
+        for name in keys(leaf_mesh.face_sets)
+            if occursin("GRID_", uppercase(name))
+                level = parse(Int64, name[7])
+                if level != max_level
+                    delete!(leaf_mesh.face_sets, name)
+                end
+            end
+        end
+    end
     return leaf_meshes
+end
+
+# Construct the HRPM
+function _create_HRPM(tree::Tree, leaf_meshes::Vector{UnstructuredMesh_2D})
+    # construct the HRPM from the top down       
+    root = HierarchicalRectangularlyPartitionedMesh( name = tree.data )
 end

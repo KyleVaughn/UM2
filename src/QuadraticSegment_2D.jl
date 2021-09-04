@@ -19,8 +19,8 @@ end
 # Constructors
 # -------------------------------------------------------------------------------------------------
 QuadraticSegment_2D(p₁::Point_2D{T},
-                 p₂::Point_2D{T},
-                 p₃::Point_2D{T}) where {T <: AbstractFloat} = QuadraticSegment_2D((p₁, p₂, p₃))
+                    p₂::Point_2D{T},
+                    p₃::Point_2D{T}) where {T <: AbstractFloat} = QuadraticSegment_2D((p₁, p₂, p₃))
 
 # Base
 # -------------------------------------------------------------------------------------------------

@@ -13,7 +13,6 @@ end
 
 import Base: +, -, *, /, ≈, ==, intersect, in
 include("Tree.jl")
-
 include("Point_2D.jl")
 include("Point_3D.jl")
 include("LineSegment_2D.jl")
@@ -44,7 +43,8 @@ include("gmsh_overlay_rectangular_grid.jl")
 #       ProductAngularQuadrature
 #
 
-export  Point_2D,
+export  Tree,
+        Point_2D,
         Point_3D,
         LineSegment_2D,
         LineSegment_3D,
@@ -61,12 +61,14 @@ export  Point_2D,
         UnstructuredMesh_2D,
         ×,
         ⋅,
+        AABB,
         arc_length,
         area,
         derivatives,
         distance,
         edges,
         gauss_legendre_quadrature,
+        get_level,
         intersect,
         intersect_iterative,
         jacobian,
@@ -74,6 +76,7 @@ export  Point_2D,
         read_abaqus_2d,
         read_vtk_2d,
         real_to_parametric,
+        submesh,
         triangulate,
         write_vtk_2d,
         write_xdmf_2d

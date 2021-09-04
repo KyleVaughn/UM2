@@ -122,32 +122,27 @@ function submesh(mesh::UnstructuredMesh_2D, set_name::String)
     return submesh(mesh, face_ids, name = set_name) 
 end
 
-#
-### Axis-aligned bounding box, a rectangle.
-##function AABB(mesh::UnstructuredMesh; tight::Bool=false)
-##    # If the mesh does not have any quadratic cells/faces, the AABB may be determined entirely from the 
-##    # points. If the mesh does have quadratic cells/faces, we need to find the bounding box of the edges
-##    # that border the mesh. This algorithm naively performs the bounding box for each edge.
-##    if mesh.dim == 2
-##        if any(x->x ∈ UnstructuredMesh_quadratic_cell_types, getindex.(mesh.faces, 1))
-##            for edge in mesh.edges
-##                # construct the edge
-##                # Check warntype
-###                AABB(
-##            end
-##        else # Can use points
-##            x = map(p->p[1], points)
-##            y = map(p->p[2], points)
-##            xmin = minimum(x)
-##            xmax = maximum(x)
-##            ymin = minimum(y)
-##            ymax = maximum(y)
-##            return (xmin, ymin, xmax, ymax)
-##        end
-##    else
-##
-##    end
-##end
+# Axis-aligned bounding box, in 2d a rectangle.
+function AABB(mesh::UnstructuredMesh_2D; rectangular_boundary=false)
+    # If the mesh does not have any quadratic faces, the AABB may be determined entirely from the 
+    # points. If the mesh does have quadratic cells/faces, we need to find the bounding box of the edges
+    # that border the mesh.
+    if (any(x->x ∈  UnstructuredMesh_2D_quadratic_cell_types, getindex.(mesh.faces, 1)) && 
+        !rectangular_boundary)
+        error("Cannot find AABB for a mesh with quadratic faces that does not have a rectangular boundary")
+    else # Can use points
+        x = map(p->p[1], mesh.points)
+        y = map(p->p[2], mesh.points)
+        xmin = minimum(x)
+        xmax = maximum(x)
+        ymin = minimum(y)
+        ymax = maximum(y)
+        return Quadrilateral_2D(Point_2D(xmin, ymin), 
+                                Point_2D(xmax, ymin),
+                                Point_2D(xmax, ymax),
+                                Point_2D(xmin, ymax))
+    end
+end
 #
 ## function AABV (volume, cuboid)
 ## hasEdges

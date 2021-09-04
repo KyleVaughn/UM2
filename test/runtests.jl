@@ -2,7 +2,8 @@ using MOCNeutronTransport
 using Test
 using Logging
 Logging.disable_logging(Logging.Error)
-tests = ["Point_2D",
+tests = ["Tree",
+         "Point_2D",
          "Point_3D",
          "LineSegment_2D",
          "LineSegment_3D",

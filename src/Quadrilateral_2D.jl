@@ -11,9 +11,9 @@ end
 # Constructors
 # -------------------------------------------------------------------------------------------------
 Quadrilateral_2D(p₁::Point_2D{T}, 
-              p₂::Point_2D{T}, 
-              p₃::Point_2D{T},
-              p₄::Point_2D{T}) where {T <: AbstractFloat} = Quadrilateral_2D((p₁, p₂, p₃, p₄))
+                 p₂::Point_2D{T}, 
+                 p₃::Point_2D{T},
+                 p₄::Point_2D{T}) where {T <: AbstractFloat} = Quadrilateral_2D((p₁, p₂, p₃, p₄))
 
 # Methods
 # -------------------------------------------------------------------------------------------------
@@ -47,4 +47,31 @@ end
 
 function in(p::Point_2D{T}, quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}
     return any(p .∈  triangulate(quad))
+end
+
+function intersect(l::LineSegment_2D{T}, quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}
+    # Create the 4 line segments that make up the quadangle and intersect each one
+    line_segments = [LineSegment_2D(quad.points[1], quad.points[2]),
+                     LineSegment_2D(quad.points[2], quad.points[3]),
+                     LineSegment_2D(quad.points[3], quad.points[4]),
+                     LineSegment_2D(quad.points[4], quad.points[1])]
+    intersections = intersect.(l, line_segments)
+    p₁ = Point_2D(T, 0)
+    p₂ = Point_2D(T, 0)
+    have_p₁ = false
+    have_p₂ = false
+    for (bool, point) in intersections
+        if bool
+            if !have_p₁
+                p₁ = point
+                have_p₁ = true   
+            elseif !have_p₂   
+                p₂ = point
+                have_p₂ = true   
+            elseif p₁ ≈ p₂ && p₂ ≉ point
+                p₂ = point 
+            end
+        end
+    end
+    return (have_p₁ && have_p₂), LineSegment_2D(p₁, p₂)
 end
