@@ -45,7 +45,6 @@ function read_vtk_2d(filepath::String)
 #    edges_2d = edges(faces) 
     return UnstructuredMesh_2D(
                               points = points,
-#                              edges_2d,
                               faces = faces,
                               name = name
                               )

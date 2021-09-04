@@ -42,12 +42,12 @@ using MOCNeutronTransport
                     (5, 7, 13, 12),
                     (5, 11, 10, 9)
                     )
-        ref_face_sets = Dict{String, Tuple{Vararg{Int64}}}()
-        ref_face_sets["MATERIAL_UO2-3.3"] = (1, 2, 3, 4, 5, 6, 7)
-        ref_face_sets["GRID_L1_1_1"] = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-                                        11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22)
-        ref_face_sets["MATERIAL_WATER"] = (8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 
-                                           18, 19, 20, 21, 22)
+        ref_face_sets = Dict{String, Set{Int64}}()
+        ref_face_sets["MATERIAL_UO2-3.3"] = Set([1, 2, 3, 4, 5, 6, 7])
+        ref_face_sets["GRID_L1_1_1"] = Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                                            11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22])
+        ref_face_sets["MATERIAL_WATER"] = Set([8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 
+                                               18, 19, 20, 21, 22])
 
         # read_abaqus
         mesh = read_abaqus_2d(filepath)

@@ -19,7 +19,7 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
     name = "DefaultMeshName"
     file = open(filepath, "r")
     faces = Tuple{Vararg{Int64}}[]
-    face_sets = Dict{String, Tuple{Vararg{Int64}}}()
+    face_sets = Dict{String, Set{Int64}}()
     while !eof(file)
         line_split = split(readline(file))
         if length(line_split) > 0
@@ -85,5 +85,5 @@ end
 function _read_abaqus_elset(file::IOStream)
     line_split = strip.(split(readuntil(file, "*")), [','])
     seek(file, position(file)-1)
-    return Tuple(parse.(Int64, line_split))
+    return Set(parse.(Int64, line_split))
 end

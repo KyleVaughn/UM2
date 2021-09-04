@@ -15,6 +15,9 @@ function partition_rectangularly(mesh::UnstructuredMesh_2D)
 
     # Create a tree to store grid relationships.
     root = _create_HRPM_tree(mesh, grid_names, max_level)
+
+    # Construct the leaf meshes
+    leaf_meshes = _create_HRPM_leaf_meshes(mesh, set_names, grid_names, max_level)
 end
 
 # Extract set names, grid names, and max level
@@ -80,4 +83,41 @@ function _create_HRPM_tree(mesh::UnstructuredMesh_2D, grid_names::Vector{String}
         end
     end
     return root
+end
+
+# Construct the leaf meshes
+function _create_HRPM_leaf_meshes(mesh::UnstructuredMesh_2D, 
+                                  set_names::Vector{String}, 
+                                  grid_names::Vector{String}, 
+                                  max_level::Int64)
+    # Generate the leaf meshes (The smallest spatially)
+    leaf_meshes = UnstructuredMesh_2D[]
+    for name in grid_names
+        # Get the cells
+        face_indices = mesh.face_sets[name]
+        cells = _make_leaf_meshes_get_cells(mesh, face_indices)
+
+        # Get the vertices for all of these cells
+        vertices_set = set(np.concatenate(mesh.get_vertices_for_cells(cells_list)))
+        vertices = {}
+        for vertex in vertices_set:
+            vertices[vertex] = mesh.vertices[vertex]
+
+        # Get all the cell sets
+        cell_sets = {}
+        grid_cells_set = set(mesh.cell_sets[name])
+        for set_name in set_names:
+            # ignore the grid sets
+            if "GRID_" in set_name.upper():
+                continue
+            else:
+                cells_set = set(mesh.cell_sets[set_name])
+                intersection_cells = grid_cells_set.intersection(cells_set)
+                if intersection_cells:
+                    cell_sets[set_name] = np.array(list(intersection_cells))
+
+        # Initialize the mesh object
+        leaf_meshes.append(GridMesh(vertices, cells, cell_sets, name=name))
+    end
+    return leaf_meshes
 end

@@ -18,7 +18,7 @@ function write_xdmf_2d(filename::String, mesh::UnstructuredMesh_2D)
 
     # If there are materials, map all material names to an integer
     material_map = Dict{String, Int64}()
-    if mesh.face_sets != Dict{String, Tuple{Vararg{Int64}}}()
+    if mesh.face_sets != Dict{String, Set{Int64}}()
         material_map = _make_material_name_to_id_map(mesh)
     end
 
@@ -51,7 +51,7 @@ function write_xdmf_2d(filename::String, mesh::UnstructuredMesh_2D)
     _write_xdmf_topology(xgrid, h5_filename, h5_mesh, mesh)
 
     # Non-material face sets
-    if mesh.face_sets != Dict{String, Tuple{Vararg{Int64}}}()
+    if mesh.face_sets != Dict{String, Set{Int64}}()
         _write_xdmf_face_sets(xgrid, h5_filename, h5_mesh, mesh)
     end
 

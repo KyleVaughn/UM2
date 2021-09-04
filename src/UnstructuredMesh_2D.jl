@@ -2,7 +2,7 @@ Base.@kwdef struct UnstructuredMesh_2D{P, F, T <: AbstractFloat}
     points::NTuple{P, Point_2D{T}}
     faces::NTuple{F, Tuple{Vararg{Int64}}}
     name::String = "DefaultMeshName"
-    face_sets::Dict{String, Tuple{Vararg{Int64}}} = Dict{String, Tuple{Vararg{Int64}}}()
+    face_sets::Dict{String, Set{Int64}} = Dict{String, Set{Int64}}()
 end
 
 #    edges::NTuple{E, Tuple{Vararg{Int64}}}
@@ -59,6 +59,67 @@ function edges(faces::NTuple{F, Tuple{Vararg{Int64}}}) where F
     # Filter the duplicate edges
     edges_filtered = sort(collect(Set(edges_unfiltered)))
     return Tuple([ Tuple(v) for v in edges_filtered ])
+end
+
+function submesh(mesh::UnstructuredMesh_2D, 
+        face_ids::Set{Int64};
+        name::String = "DefaultMeshName")
+    # Setup faces and get all vertex ids
+    faces = Vector{Int64}[] 
+    vertex_ids = Set{Int64}()
+    for face_id in face_ids
+        face = [ x for x in mesh.faces[face_id] ]
+        push!(faces, face)
+        union!(vertex_ids, Set(face[2:length(face)]))
+    end
+    # Need to remap vertex ids in faces to new ids
+    vertex_ids_sorted = sort([ v for v in vertex_ids ])
+    vertex_map = Dict{Int64, Int64}()
+    for (i,v) in enumerate(vertex_ids_sorted)
+        vertex_map[v] = i
+    end
+    points = Point_2D{typeof(mesh.points[1].x[1])}[]
+    for v in vertex_ids_sorted
+        push!(points, mesh.points[v])
+    end
+    # remap vertex ids in faces
+    for face in faces
+        for (i, v) in enumerate(face[2:length(face)])
+            face[i + 1] = vertex_map[v] 
+        end
+    end
+    # At this point we have points, faces, & name.
+    # Just need to get the face sets
+    face_sets = Dict{String, Set{Int64}}()
+    for face_set_name in keys(mesh.face_sets)
+        set_intersection = intersect(mesh.face_sets[face_set_name], face_ids)
+        if length(set_intersection) !== 0
+            face_sets[face_set_name] = set_intersection
+        end
+    end
+    # Need to remap face ids in face sets
+    face_map = Dict{Int64, Int64}()
+    for (i,f) in enumerate(face_ids)
+        face_map[f] = i
+    end
+    for face_set_name in keys(face_sets)                                       
+        new_set = Set{Int64}()
+        for fid in face_sets[face_set_name]
+            union!(new_set, face_map[fid])
+        end
+        face_sets[face_set_name] = new_set
+    end
+    return UnstructuredMesh_2D(points = Tuple(points),
+                               faces = Tuple([Tuple(face) for face in faces]),
+                               name = name,
+                               face_sets = face_sets
+                              )
+end
+
+function submesh(mesh::UnstructuredMesh_2D, set_name::String)
+    @info "Creating submesh for '$set_name'"
+    face_ids = mesh.face_sets[set_name]
+    return submesh(mesh, face_ids, name = set_name) 
 end
 
 #

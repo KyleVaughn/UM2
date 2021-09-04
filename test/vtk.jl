@@ -16,7 +16,7 @@ using MOCNeutronTransport
                         (5, 2, 3, 5)
                     )
         ref_edges = ((1, 2), (1, 4), (2, 3), (2, 4), (2, 5), (3, 5), (4, 5))
-        ref_face_sets = Dict{String, Tuple{Vararg{Int64}}}()
+        ref_face_sets = Dict{String, Set{Int64}}()
 
         # Test of non-public functions.
         # Need to find a way to do the includes correctly for this, since
