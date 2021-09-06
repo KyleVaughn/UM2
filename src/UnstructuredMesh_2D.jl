@@ -1,6 +1,11 @@
 Base.@kwdef struct UnstructuredMesh_2D{P, F, T <: AbstractFloat}
     points::NTuple{P, Point_2D{T}}
-    faces::NTuple{F, Tuple{Vararg{Int64}}}
+    faces::NTuple{F, Union{
+                            NTuple{4, Int64},
+                            NTuple{5, Int64},
+                            NTuple{7, Int64},
+                            NTuple{9, Int64}
+                          }}
     name::String = "DefaultMeshName"
     face_sets::Dict{String, Set{Int64}} = Dict{String, Set{Int64}}()
 end
@@ -144,7 +149,13 @@ function AABB(mesh::UnstructuredMesh_2D; rectangular_boundary=false)
     end
 end
 
-function get_face_points(mesh::UnstructuredMesh_2D, face::Tuple{Vararg{Int64}})
+function get_face_points(mesh::UnstructuredMesh_2D, 
+        face::Union{
+                      NTuple{4, Int64},
+                      NTuple{5, Int64},
+                      NTuple{7, Int64},
+                      NTuple{9, Int64}
+                    })
     points = Vector{Point_2D{typeof(mesh.points[1].x[1])}}(undef, length(face) - 1)
     i = 1
     for pt in face[2:length(face)]
