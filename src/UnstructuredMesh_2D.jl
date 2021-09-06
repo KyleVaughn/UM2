@@ -143,17 +143,69 @@ function AABB(mesh::UnstructuredMesh_2D; rectangular_boundary=false)
                                 Point_2D(xmin, ymax))
     end
 end
-#
-## function AABV (volume, cuboid)
-## hasEdges
-## hasFaces
-## hasCells
-## setupFaces
-## setupCells
-## pointdata dict -> name of data -> data (array/array) cells over which it is defined and values 
-## edgedata
-## facedata
-## celldata
-## visualize
-## write
-## read
+
+function get_face_points(mesh::UnstructuredMesh_2D, face::Tuple{Vararg{Int64}})
+    points = Vector{Point_2D{typeof(mesh.points[1].x[1])}}(undef, length(face) - 1)
+    i = 1
+    for pt in face[2:length(face)]
+        points[i] = mesh.points[pt]
+        i += 1
+    end
+    return Tuple(points)
+end
+
+function area(mesh::UnstructuredMesh_2D, face_set::Set{Int64}) 
+    return mapreduce(x->area(mesh, mesh.faces[x]), +, face_set)
+end
+
+function area(mesh::UnstructuredMesh_2D, set_name::String)
+    return area(mesh, mesh.face_sets[set_name])
+end
+
+function area(mesh::UnstructuredMesh_2D, face::NTuple{4, Int64})
+    T = typeof(mesh.points[1].x[1])
+    the_area = T(0)
+    type_id = face[1]
+    if type_id == 5 # Triangle
+        the_area = area(Triangle_2D(get_face_points(mesh, face)))
+    else
+        @warn "Mesh element has unsupported type $type_id"
+    end
+    return the_area
+end
+
+function area(mesh::UnstructuredMesh_2D, face::NTuple{5, Int64})
+    T = typeof(mesh.points[1].x[1])
+    the_area = T(0)
+    type_id = face[1]
+    if type_id == 9 # Quadrilateral
+        the_area = area(Quadrilateral_2D(get_face_points(mesh, face)))
+    else
+        @warn "Mesh element has unsupported type $type_id"
+    end
+    return the_area
+end
+
+function area(mesh::UnstructuredMesh_2D, face::NTuple{7, Int64})
+    T = typeof(mesh.points[1].x[1])
+    the_area = T(0)
+    type_id = face[1]
+    if type_id == 22 # Triangle6
+        the_area = area(Triangle6_2D(get_face_points(mesh, face)))
+    else
+        @warn "Mesh element has unsupported type $type_id"
+    end
+    return the_area
+end
+
+function area(mesh::UnstructuredMesh_2D, face::NTuple{9, Int64})
+    T = typeof(mesh.points[1].x[1])
+    the_area = T(0)
+    type_id = face[1]
+    if type_id == 23 # Quadrilateral8
+        the_area = area(Quadrilateral8_2D(get_face_points(mesh, face)))
+    else
+        @warn "Mesh element has unsupported type $type_id"
+    end
+    return the_area
+end
