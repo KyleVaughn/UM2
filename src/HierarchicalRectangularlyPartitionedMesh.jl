@@ -40,7 +40,7 @@ end
 
 # Extract set names, grid names, and max level
 function _process_partition_rectangularly_input(mesh::UnstructuredMesh_2D)
-    set_names = [ key for key in keys(mesh.face_sets) ]
+    set_names = collect(keys(mesh.face_sets))
     grid_names = copy(set_names)
     for set_name in set_names
         if !occursin("GRID_", uppercase(set_name))

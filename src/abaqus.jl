@@ -20,6 +20,7 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
     file = open(filepath, "r")
     faces = Tuple{Vararg{Int64}}[]
     face_sets = Dict{String, Set{Int64}}()
+    points = Point_2D{float_type}[]
     while !eof(file)
         line_split = split(readline(file))
         if length(line_split) > 0
@@ -32,7 +33,7 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
                 end
                 name = String(name)
             elseif occursin("*NODE", line_split[1])
-                global points = _read_abaqus_nodes_2d(file, float_type)
+                points = _read_abaqus_nodes_2d(file, float_type)
             elseif occursin("*ELEMENT", line_split[1])
                 element_type = String(strip(replace(line_split[2], ("type=" => "")), ','))
                 faces = vcat(faces, _read_abaqus_elements(file, element_type))
@@ -43,7 +44,7 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
         end
     end
     close(file)
-    return UnstructuredMesh_2D(points = points,
+    return UnstructuredMesh_2D(points = Tuple(points),
                                faces = Tuple(faces),
                                name = name,
                                face_sets = face_sets
@@ -61,7 +62,7 @@ function _read_abaqus_nodes_2d(file::IOStream, type::Type{T}) where {T <: Abstra
         line_split = strip.(split(readline(file)), [','])
     end
     seek(file, line_position)
-    return Tuple(points)
+    return points
 end
 
 function _read_abaqus_elements(file::IOStream, element_type::String)

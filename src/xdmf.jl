@@ -1,14 +1,3 @@
-const vtk_to_xdmf_type = Dict(
-    # triangle
-    5  => 4,
-    # triangle6
-    22 => 36, 
-    # quadrilateral
-    9 => 5,
-    # quad8
-    23 => 37
-   )  
-
 function write_xdmf_2d(filename::String, mesh::UnstructuredMesh_2D)
     @info "Writing $filename" 
     # Check valid filename
@@ -68,6 +57,7 @@ function _write_xdmf_geometry(xml::XMLElement,
                               h5_filename::String, 
                               h5_mesh::HDF5.Group, 
                               mesh::UnstructuredMesh_2D)
+    @debug "Writing XDMF geometry"
     # Geometry
     xgeom = new_child(xml, "Geometry")
     set_attribute(xgeom, "GeometryType", "XYZ")
@@ -100,6 +90,7 @@ function _write_xdmf_topology(xml::XMLElement,
                               h5_filename::String, 
                               h5_mesh::HDF5.Group, 
                               mesh::UnstructuredMesh_2D)
+    @debug "Writing XDMF topology"
     # Topology
     xtopo = new_child(xml, "Topology")
     set_attribute(xtopo, "TopologyType", "Mixed")
@@ -108,18 +99,9 @@ function _write_xdmf_topology(xml::XMLElement,
     # DataItem
     xdataitem = new_child(xtopo, "DataItem")
     set_attribute(xdataitem, "DataType", "Int")
-    topo_array = Int64[]
-    for face in mesh.faces
-        # convert face to vector for mutability
-        face_xdmf = [x for x in face]
-        # adjust vtk to xdmf type
-        face_xdmf[1] = vtk_to_xdmf_type[face_xdmf[1]]
-        # adjust 1-based to 0-based indexing
-        face_xdmf[2:length(face_xdmf)] = face_xdmf[2:length(face_xdmf)] .- 1
-        for value in face_xdmf
-            push!(topo_array, value) 
-        end
-    end
+    topo_length = mapreduce(x->length(x), +, mesh.faces)
+    topo_array = Vector{Int64}(undef, topo_length)
+    _convert_xdmf_faces_to_array!(topo_array, mesh.faces)
     ndimensions = length(topo_array)
     set_attribute(xdataitem, "Dimensions", "$ndimensions")
     set_attribute(xdataitem, "Format", "HDF")
@@ -129,13 +111,61 @@ function _write_xdmf_topology(xml::XMLElement,
     h5_mesh["cells"] = topo_array
 end
 
+function _convert_xdmf_faces_to_array!(topo_array::Vector{Int64}, faces::NTuple{F, Union{
+                                                                                NTuple{4, Int64},
+                                                                                NTuple{5, Int64},
+                                                                                NTuple{7, Int64},
+                                                                                NTuple{9, Int64}
+                                                                               }}) where {F}
+    vtk_to_xdmf_type = Dict(
+        # triangle
+        5  => 4,
+        # triangle6
+        22 => 36, 
+        # quadrilateral
+        9 => 5,
+        # quad8
+        23 => 37
+       )  
+    topo_ctr = 1
+    for face in faces
+        # convert face to vector for mutability
+        face_xdmf = collect(face)
+        # adjust vtk to xdmf type
+        face_xdmf[1] = vtk_to_xdmf_type[face_xdmf[1]]
+        # adjust 1-based to 0-based indexing
+        face_length = length(face_xdmf)
+        for i in 2:face_length
+            face_xdmf[i] = face_xdmf[i] - 1
+        end
+        topo_array[topo_ctr:topo_ctr + face_length - 1] = face_xdmf
+        topo_ctr += face_length
+    end
+    return nothing
+end
+
 function _make_material_name_to_id_map(mesh::UnstructuredMesh_2D)
     material_map = Dict{String, Int64}()
     nmat = 0
+    max_length = 0
     for set_name in keys(mesh.face_sets)
         if occursin("MATERIAL", uppercase(set_name))
             material_map[set_name] = nmat 
+            if length(set_name) > max_length
+                max_length = length(set_name)
+            end
             nmat += 1
+        end
+    end
+    if max_length < 13
+        max_length = 13
+    end
+    @info string(rpad("Material Name", max_length, ' '), " : XDMF Material ID")
+    @info rpad("=", max_length + 19, '=')
+    for set_name in keys(mesh.face_sets)
+        if occursin("MATERIAL", uppercase(set_name))
+            id = material_map[set_name]
+            @info string(rpad(set_name, max_length, ' '), " : $id")   
         end
     end
     return material_map
@@ -146,6 +176,7 @@ function _write_xdmf_materials(xml::XMLElement,
                                h5_mesh::HDF5.Group, 
                                mesh::UnstructuredMesh_2D,
                                material_map::Dict{String, Int64})
+    @debug "Writing XDMF materials"
     # MaterialID
     xmaterial = new_child(xml, "Attribute")
     set_attribute(xmaterial, "Center", "Cell")
@@ -180,6 +211,7 @@ function _write_xdmf_face_sets(xml::XMLElement,
                                h5_filename::String, 
                                h5_mesh::HDF5.Group, 
                                mesh::UnstructuredMesh_2D)
+    @debug "Writing XDMF face_sets"
     for set_name in keys(mesh.face_sets)
         if occursin("MATERIAL", uppercase(set_name))
             continue

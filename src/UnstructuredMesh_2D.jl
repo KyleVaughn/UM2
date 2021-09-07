@@ -156,7 +156,8 @@ function get_face_points(mesh::UnstructuredMesh_2D,
                                        NTuple{7, Int64},
                                        NTuple{9, Int64}
                                      })
-    points = Vector{Point_2D{typeof(mesh.points[1].x[1])}}(undef, length(face) - 1)
+    T = typeof(mesh.points[1].x[1])
+    points = Vector{Point_2D{T}}(undef, length(face) - 1)
     i = 1
     for pt in face[2:length(face)]
         points[i] = mesh.points[pt]
@@ -223,6 +224,8 @@ end
 
 function Base.show(io::IO, mesh::UnstructuredMesh_2D)
     println(mesh.name)
+    size_MB = Base.summarysize(mesh)/1E6
+    println("  ├─ Size (MB) : $size_MB")
     type = typeof(mesh.points[1].x[1])
     println("  ├─ Type      : $type")
     npoints = length(mesh.points)
