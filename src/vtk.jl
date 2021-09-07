@@ -38,7 +38,15 @@ function read_vtk_2d(filepath::String)
         cells_combined[i] = vcat(cell_types[i], cells[i])
     end
 
-    faces = Tuple([ Tuple(v) for v in cells_combined ])
+    faces = Vector{Union{
+                    NTuple{4, Int64},
+                    NTuple{5, Int64},
+                    NTuple{7, Int64},
+                    NTuple{9, Int64}
+                   }}(undef, length(cells_combined))
+    for i in eachindex(cells_combined)
+        faces[i] = Tuple(cells_combined[i])
+    end
 
     # Construct edges
     # edges = edges(faces) throws an error, interprets the edges function as a variable.
@@ -68,7 +76,7 @@ function _read_vtk_points_2d(
         xyz = parse.(datatype, split(readline(file)))
         points[i] = Point_2D(xyz[1], xyz[2])
     end
-    return Tuple(points)
+    return points
 end
 
 function _read_vtk_cells(

@@ -111,12 +111,12 @@ function _write_xdmf_topology(xml::XMLElement,
     h5_mesh["cells"] = topo_array
 end
 
-function _convert_xdmf_faces_to_array!(topo_array::Vector{Int64}, faces::NTuple{F, Union{
+function _convert_xdmf_faces_to_array!(topo_array::Vector{Int64}, faces::Vector{Union{
                                                                                 NTuple{4, Int64},
                                                                                 NTuple{5, Int64},
                                                                                 NTuple{7, Int64},
                                                                                 NTuple{9, Int64}
-                                                                               }}) where {F}
+                                                                               }})
     vtk_to_xdmf_type = Dict(
         # triangle
         5  => 4,

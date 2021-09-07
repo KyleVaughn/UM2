@@ -9,13 +9,13 @@ using MOCNeutronTransport
         #  /       \ /       \
         # 1---------2---------3
         filepath = "./mesh_files/three_triangles.vtk"
-        ref_points = (Point_2D(0.0), Point_2D(2.0), Point_2D(4.0), Point_2D(1.0, 1.0), Point_2D(3.0, 1.0))
-        ref_faces = (
+        ref_points = [Point_2D(0.0), Point_2D(2.0), Point_2D(4.0), Point_2D(1.0, 1.0), Point_2D(3.0, 1.0)]
+        ref_faces = [
                         (5, 1, 2, 4),
                         (5, 2, 5, 4),
                         (5, 2, 3, 5)
-                    )
-        ref_edges = ((1, 2), (1, 4), (2, 3), (2, 4), (2, 5), (3, 5), (4, 5))
+                    ]
+        ref_edges = [(1, 2), (1, 4), (2, 3), (2, 4), (2, 5), (3, 5), (4, 5)]
         ref_face_sets = Dict{String, Set{Int64}}()
 
         # Test of non-public functions.

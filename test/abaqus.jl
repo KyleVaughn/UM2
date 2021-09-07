@@ -2,7 +2,7 @@ using MOCNeutronTransport
 @testset "Abaqus" begin
     @testset "c5g7 pin - triangles" begin
         filepath = "./mesh_files/c5g7_UO2_pin.inp"
-        ref_points = (Point_2D(0.0, 0.0),
+        ref_points = [Point_2D(0.0, 0.0),
                       Point_2D(1.26, 0.0),
                       Point_2D(0.0, 1.26),
                       Point_2D(1.26, 1.26),
@@ -17,8 +17,14 @@ using MOCNeutronTransport
                       Point_2D(0.14347681133269, 0.39570278087652),
                       Point_2D(0.50983869566359, 0.10353892742181),
                       Point_2D(0.96668449300372, 0.20781099946726),
-                      Point_2D(0.63, 0.63))
-        ref_faces = (
+                      Point_2D(0.63, 0.63)]
+        ref_faces = Vector{Union{
+                                NTuple{4, Int64},
+                                NTuple{5, Int64},
+                                NTuple{7, Int64},
+                                NTuple{9, Int64}
+                                }
+                          }([
                     (5, 12, 16, 11),
                     (5, 13, 16, 12),
                     (5, 14, 16, 13),
@@ -41,7 +47,7 @@ using MOCNeutronTransport
                     (5, 14, 6, 15),
                     (5, 7, 13, 12),
                     (5, 11, 10, 9)
-                    )
+                   ])
         ref_face_sets = Dict{String, Set{Int64}}()
         ref_face_sets["MATERIAL_UO2-3.3"] = Set([1, 2, 3, 4, 5, 6, 7])
         ref_face_sets["GRID_L1_1_1"] = Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10,

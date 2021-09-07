@@ -18,7 +18,12 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
     # not 8, 10, 9 or anything funky/out of order.
     name = "DefaultMeshName"
     file = open(filepath, "r")
-    faces = Tuple{Vararg{Int64}}[]
+    faces = Union{
+                   NTuple{4, Int64},
+                   NTuple{5, Int64},
+                   NTuple{7, Int64},
+                   NTuple{9, Int64}
+                  }[]
     face_sets = Dict{String, Set{Int64}}()
     points = Point_2D{float_type}[]
     while !eof(file)
@@ -44,8 +49,8 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
         end
     end
     close(file)
-    return UnstructuredMesh_2D(points = Tuple(points),
-                               faces = Tuple(faces),
+    return UnstructuredMesh_2D(points = points,
+                               faces = faces,
                                name = name,
                                face_sets = face_sets
                               )
@@ -70,7 +75,12 @@ function _read_abaqus_elements(file::IOStream, element_type::String)
         error("$element_type is not in the abaqus to vtk type conversion dictionary")
     end
     type = abaqus_to_vtk_type[element_type]
-    faces = Tuple{Vararg{Int64}}[]
+    faces = Union{
+                   NTuple{4, Int64},
+                   NTuple{5, Int64},
+                   NTuple{7, Int64},
+                   NTuple{9, Int64}
+                  }[]
     line_split = strip.(split(readline(file)), [','])
     line_position = position(file)
     while !occursin("*", line_split[1])

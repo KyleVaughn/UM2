@@ -1,11 +1,11 @@
-Base.@kwdef struct UnstructuredMesh_2D{P, F, T <: AbstractFloat}
-    points::NTuple{P, Point_2D{T}}
-    faces::NTuple{F, Union{
-                            NTuple{4, Int64},
-                            NTuple{5, Int64},
-                            NTuple{7, Int64},
-                            NTuple{9, Int64}
-                          }}
+Base.@kwdef struct UnstructuredMesh_2D{T <: AbstractFloat}
+    points::Vector{Point_2D{T}}
+    faces::Vector{Union{
+                        NTuple{4, Int64},
+                        NTuple{5, Int64},
+                        NTuple{7, Int64},
+                        NTuple{9, Int64}
+                       }}
     name::String = "DefaultMeshName"
     face_sets::Dict{String, Set{Int64}} = Dict{String, Set{Int64}}()
 end
