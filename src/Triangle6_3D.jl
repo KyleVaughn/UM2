@@ -42,12 +42,12 @@ end
 # Constructors
 # -------------------------------------------------------------------------------------------------
 Triangle6_3D(p₁::Point_3D{T}, 
-         p₂::Point_3D{T}, 
-         p₃::Point_3D{T},
-         p₄::Point_3D{T},
-         p₅::Point_3D{T},
-         p₆::Point_3D{T}
-        ) where {T <: AbstractFloat} = Triangle6_3D((p₁, p₂, p₃, p₄, p₅, p₆))
+             p₂::Point_3D{T}, 
+             p₃::Point_3D{T},
+             p₄::Point_3D{T},
+             p₅::Point_3D{T},
+             p₆::Point_3D{T}
+            ) where {T <: AbstractFloat} = Triangle6_3D((p₁, p₂, p₃, p₄, p₅, p₆))
 
 
 # Methods

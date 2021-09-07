@@ -18,13 +18,16 @@ Point_3D(x::Tuple{T,T,T}) where {T <: AbstractFloat} = Point_3D(SVector(x))
 Point_3D((x, y)::Tuple{T,T}) where {T <: AbstractFloat} = Point_3D(SVector(x, y, T(0)))
 # 3D single conversion constructor
 Point_3D(type::Type{T}, x::X, y::Y, z::Z) where {T <: AbstractFloat,
-                                              X,Y,Z <: Real} = Point_3D(SVector(T(x),T(y),T(z)))
+                                                 X <: Real,
+                                                 Y <: Real,
+                                                 Z <: Real} = Point_3D(SVector(T(x),T(y),T(z)))
 # 2D single conversion constructor
 Point_3D(type::Type{T}, x::X, y::Y) where {T <: AbstractFloat,
-                                       X,Y <: Real} = Point_3D(SVector(T(x),T(y),T(0)))
+                                           X <: Real,
+                                           Y <: Real} = Point_3D(SVector(T(x),T(y),T(0)))
 # 1D single conversion constructor
 Point_3D(type::Type{T}, x::X) where {T <: AbstractFloat,
-                                 X <: Real} = Point_3D(SVector(T(x),T(0),T(0)))
+                                     X <: Real} = Point_3D(SVector(T(x),T(0),T(0)))
 
 # Base
 # -------------------------------------------------------------------------------------------------

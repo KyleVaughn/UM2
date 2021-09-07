@@ -31,14 +31,14 @@ Base.broadcastable(q::QuadraticSegment_2D) = Ref(q)
 function (q::QuadraticSegment_2D{T})(r::R) where {T <: AbstractFloat, R <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    r_T = T(r)
-    return (2r_T-1)*(r_T-1)*q.points[1] + r_T*(2r_T-1)*q.points[2] + 4r_T*(1-r_T)*q.points[3]
+    rₜ = T(r)
+    return (2rₜ-1)*(rₜ-1)*q.points[1] + rₜ*(2rₜ-1)*q.points[2] + 4rₜ*(1-rₜ)*q.points[3]
 end
 
 function derivative(q::QuadraticSegment_2D{T}, r::R) where {T <: AbstractFloat, R <: Real}
     # dq⃗/dr
-    r_T = T(r)
-    return (4r_T - 3)*q.points[1] + (4r_T - 1)*q.points[2] + (4 - 8r_T)*q.points[3]
+    rₜ = T(r)
+    return (4rₜ - 3)*q.points[1] + (4rₜ - 1)*q.points[2] + (4 - 8rₜ)*q.points[3]
 end
 
 function arc_length(q::QuadraticSegment_2D{T}; N::Int64=15) where {T <: AbstractFloat}
@@ -117,6 +117,6 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
             end
         end
     end
-    return npoints > 0, npoints, p₁, p₂
+    return npoints, p₁, p₂
 end
 intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)

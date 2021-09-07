@@ -22,12 +22,12 @@ function (quad::Quadrilateral_2D{T})(r::R, s::S) where {T <: AbstractFloat,
                                                         S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    r_T = T(r)
-    s_T = T(s)
-    return (1 - r_T)*(1 - s_T)*quad.points[1] + 
-                 r_T*(1 - s_T)*quad.points[2] + 
-                       r_T*s_T*quad.points[3] +
-                 (1 - r_T)*s_T*quad.points[4]
+    rₜ = T(r)
+    sₜ = T(s)
+    return (1 - rₜ)*(1 - sₜ)*quad.points[1] + 
+                 rₜ*(1 - sₜ)*quad.points[2] + 
+                       rₜ*sₜ*quad.points[3] +
+                 (1 - rₜ)*sₜ*quad.points[4]
 end
 
 function triangulate(quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}

@@ -7,8 +7,8 @@ end
 # Constructors
 # -------------------------------------------------------------------------------------------------
 Triangle_3D(p₁::Point_3D{T}, 
-         p₂::Point_3D{T}, 
-         p₃::Point_3D{T}) where {T <: AbstractFloat} = Triangle_3D((p₁, p₂, p₃))
+            p₂::Point_3D{T}, 
+            p₃::Point_3D{T}) where {T <: AbstractFloat} = Triangle_3D((p₁, p₂, p₃))
 
 # Methods
 # -------------------------------------------------------------------------------------------------

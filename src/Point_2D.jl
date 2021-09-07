@@ -14,10 +14,11 @@ Point_2D(x::T) where {T <: AbstractFloat} = Point_2D(SVector(x, T(0)))
 Point_2D((x, y)::Tuple{T,T}) where {T <: AbstractFloat} = Point_2D(SVector(x, y))
 # 2D single conversion constructor
 Point_2D(type::Type{T}, x::X, y::Y) where {T <: AbstractFloat,
-                                       X,Y <: Real} = Point_2D(SVector(T(x),T(y)))
+                                           X <: Real,
+                                           Y <: Real} = Point_2D(SVector(T(x),T(y)))
 # 1D single conversion constructor
 Point_2D(type::Type{T}, x::X) where {T <: AbstractFloat,
-                                 X <: Real} = Point_2D(SVector(T(x),T(0)))
+                                     X <: Real} = Point_2D(SVector(T(x),T(0)))
 
 # Base
 # -------------------------------------------------------------------------------------------------

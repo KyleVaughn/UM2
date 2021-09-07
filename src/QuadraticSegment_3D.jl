@@ -19,22 +19,22 @@ end
 # Constructors
 # -------------------------------------------------------------------------------------------------
 QuadraticSegment_3D(p₁::Point_3D{T},
-                 p₂::Point_3D{T},
-                 p₃::Point_3D{T}) where {T <: AbstractFloat} = QuadraticSegment_3D((p₁, p₂, p₃))
+                    p₂::Point_3D{T},
+                    p₃::Point_3D{T}) where {T <: AbstractFloat} = QuadraticSegment_3D((p₁, p₂, p₃))
 
 # Methods
 # -------------------------------------------------------------------------------------------------
 function (q::QuadraticSegment_3D{T})(r::R) where {T <: AbstractFloat, R <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    r_T = T(r)
-    return (2r_T-1)*(r_T-1)*q.points[1] + r_T*(2r_T-1)*q.points[2] + 4r_T*(1-r_T)*q.points[3]
+    rₜ = T(r)
+    return (2rₜ-1)*(rₜ-1)*q.points[1] + rₜ*(2rₜ-1)*q.points[2] + 4rₜ*(1-rₜ)*q.points[3]
 end
 
 #function derivative(q::QuadraticSegment_3D{T}, r::R) where {T <: AbstractFloat, R <: Real}
 #    # dq⃗/dr
-#    r_T = T(r)
-#    return (4r_T - 3)*q.points[1] + (4r_T - 1)*q.points[2] + (4 - 8r_T)*q.points[3]
+#    rₜ = T(r)
+#    return (4rₜ - 3)*q.points[1] + (4rₜ - 1)*q.points[2] + (4 - 8rₜ)*q.points[3]
 #end
 #
 #function arc_length(q::QuadraticSegment_3D{T}; N::Int64=20) where {T <: AbstractFloat}

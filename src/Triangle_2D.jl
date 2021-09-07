@@ -7,8 +7,8 @@ end
 # Constructors
 # -------------------------------------------------------------------------------------------------
 Triangle_2D(p₁::Point_2D{T}, 
-         p₂::Point_2D{T}, 
-         p₃::Point_2D{T}) where {T <: AbstractFloat} = Triangle_2D((p₁, p₂, p₃))
+            p₂::Point_2D{T}, 
+            p₃::Point_2D{T}) where {T <: AbstractFloat} = Triangle_2D((p₁, p₂, p₃))
 
 # Methods
 # -------------------------------------------------------------------------------------------------

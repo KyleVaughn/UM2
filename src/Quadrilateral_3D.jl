@@ -24,12 +24,12 @@ function (quad::Quadrilateral_3D{T})(r::R, s::S) where {T <: AbstractFloat,
                                                         S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    r_T = T(r)
-    s_T = T(s)
-    return (1 - r_T)*(1 - s_T)*quad.points[1] + 
-                 r_T*(1 - s_T)*quad.points[2] + 
-                       r_T*s_T*quad.points[3] +
-                 (1 - r_T)*s_T*quad.points[4]
+    rₜ = T(r)
+    sₜ = T(s)
+    return (1 - rₜ)*(1 - sₜ)*quad.points[1] + 
+                 rₜ*(1 - sₜ)*quad.points[2] + 
+                       rₜ*sₜ*quad.points[3] +
+                 (1 - rₜ)*sₜ*quad.points[4]
 end
 
 function triangulate(quad::Quadrilateral_3D{T}) where {T <: AbstractFloat}
@@ -47,16 +47,16 @@ function area(quad::Quadrilateral_3D{T}) where {T <: AbstractFloat}
     return sum(area.(triangulate(quad)))
 end
 
-function intersect(l::LineSegment_3D{T}, quad::Quadrilateral_3D{T}) where {T <: AbstractFloat}
-    # Triangulate the quadrilateral, intersect the triangles.
-    tri = triangulate(quad)
-    intersection1 = l ∩ tri[1]
-    if intersection1[1]
-        return true, intersection1[2]
-    end
-    intersection2 = l ∩ tri[2]
-    if intersection2[1]
-        return true, intersection2[2]
-    end
-    return false, Point_3D(T, 0)
-end
+#function intersect(l::LineSegment_3D{T}, quad::Quadrilateral_3D{T}) where {T <: AbstractFloat}
+#    # Triangulate the quadrilateral, intersect the triangles.
+#    tri = triangulate(quad)
+#    intersection1 = l ∩ tri[1]
+#    if intersection1[1]
+#        return true, intersection1[2]
+#    end
+#    intersection2 = l ∩ tri[2]
+#    if intersection2[1]
+#        return true, intersection2[2]
+#    end
+#    return false, Point_3D(T, 0)
+#end

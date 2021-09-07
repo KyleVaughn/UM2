@@ -67,25 +67,25 @@ function edges(faces::NTuple{F, Tuple{Vararg{Int64}}}) where F
 end
 
 function submesh(mesh::UnstructuredMesh_2D, 
-        face_ids::Set{Int64};
-        name::String = "DefaultMeshName")
+                 face_ids::Set{Int64};
+                 name::String = "DefaultMeshName")
     # Setup faces and get all vertex ids
-    faces = Vector{Int64}[] 
+    faces = Vector{Vector{Int64}}(undef, length(face_ids))
     vertex_ids = Set{Int64}()
-    for face_id in face_ids
-        face = [ x for x in mesh.faces[face_id] ]
-        push!(faces, face)
+    for (i, face_id) in enumerate(face_ids)
+        face = collect(mesh.faces[face_id])
+        faces[i] = face
         union!(vertex_ids, Set(face[2:length(face)]))
     end
     # Need to remap vertex ids in faces to new ids
-    vertex_ids_sorted = sort([ v for v in vertex_ids ])
+    vertex_ids_sorted = sort(collect(vertex_ids))
     vertex_map = Dict{Int64, Int64}()
     for (i,v) in enumerate(vertex_ids_sorted)
         vertex_map[v] = i
     end
-    points = Point_2D{typeof(mesh.points[1].x[1])}[]
-    for v in vertex_ids_sorted
-        push!(points, mesh.points[v])
+    points = Vector{Point_2D{typeof(mesh.points[1].x[1])}}(undef, length(vertex_ids_sorted))
+    for (i, v) in enumerate(vertex_ids_sorted)
+        points[i] = mesh.points[v]
     end
     # remap vertex ids in faces
     for face in faces
@@ -150,12 +150,12 @@ function AABB(mesh::UnstructuredMesh_2D; rectangular_boundary=false)
 end
 
 function get_face_points(mesh::UnstructuredMesh_2D, 
-        face::Union{
-                      NTuple{4, Int64},
-                      NTuple{5, Int64},
-                      NTuple{7, Int64},
-                      NTuple{9, Int64}
-                    })
+                         face::Union{
+                                       NTuple{4, Int64},
+                                       NTuple{5, Int64},
+                                       NTuple{7, Int64},
+                                       NTuple{9, Int64}
+                                     })
     points = Vector{Point_2D{typeof(mesh.points[1].x[1])}}(undef, length(face) - 1)
     i = 1
     for pt in face[2:length(face)]
@@ -219,4 +219,24 @@ function area(mesh::UnstructuredMesh_2D, face::NTuple{9, Int64})
         @warn "Mesh element has unsupported type $type_id"
     end
     return the_area
+end
+
+function Base.show(io::IO, mesh::UnstructuredMesh_2D)
+    println(mesh.name)
+    type = typeof(mesh.points[1].x[1])
+    println("  ├─ Type      : $type")
+    npoints = length(mesh.points)
+    println("  ├─ Points    : $npoints")
+    nfaces = length(mesh.faces)
+    println("  ├─ Faces     : $nfaces")
+    ntri   = sum(x->x[1] == 5,  mesh.faces)
+    nquad  = sum(x->x[1] == 9,  mesh.faces)
+    ntri6  = sum(x->x[1] == 22, mesh.faces)
+    nquad8 = sum(x->x[1] == 23, mesh.faces)
+    println("  │  ├─ Triangle       : $ntri")
+    println("  │  ├─ Quadrilateral  : $nquad")
+    println("  │  ├─ Triangle6      : $ntri6")
+    println("  │  └─ Quadrilateral8 : $nquad8")
+    nface_sets = length(keys(mesh.face_sets))
+    println("  └─ Face sets : $nface_sets")
 end

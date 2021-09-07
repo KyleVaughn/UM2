@@ -50,8 +50,8 @@ function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <:
         r = (w⃗ × u⃗)/(v⃗ × u⃗)
         p = l₁(r)
         s = ((r*v⃗ - w⃗) ⋅ u⃗)/(u⃗ ⋅ u⃗)
-        return (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1) ? (true, p) : (false, p)
+        return (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1) ? (1, p, p) : (0, p, p)
     else
-        return (false, Point_2D(T, 0))
+        return (0, Point_2D(T, 0), Point_2D(T, 0))
     end
 end
