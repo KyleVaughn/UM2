@@ -233,3 +233,58 @@ function _write_xdmf_face_sets(xml::XMLElement,
         h5_mesh["$set_name"] = ID_array
     end
 end
+
+function write_xdmf_2d(filename::String, mesh::HierarchicalRectangularlyPartitionedMesh)
+    @info "Writing $filename" 
+    # Check valid filename
+    if !occursin(".xdmf", filename)
+        error("Invalid filename. '.xdmf' does not occur in $filename") 
+    end
+
+    # If there are materials, map all material names to an integer
+    material_map = Dict{String, Int64}()
+#    if mesh.face_sets != Dict{String, Set{Int64}}()
+#        material_map = _make_material_name_to_id_map(mesh)
+#    end
+#
+#    # h5 filename
+#    h5_filename = replace(filename, ("xdmf" => "h5"))
+#    h5_file = h5open(h5_filename, "w")
+#    h5_mesh = create_group(h5_file, mesh.name)
+#    # XML
+#    xdoc = XMLDocument()
+#    # Xdmf
+#    xroot = create_root(xdoc, "Xdmf")
+#    set_attribute(xroot, "Version", "3.0")
+#    # Domain
+#    xdomain = new_child(xroot, "Domain")
+#    # Material names
+#    if material_map != Dict{String, Int64}()
+#        xmaterials = new_child(xdomain, "Information")
+#        set_attribute(xmaterials, "Name", "MaterialNames")
+#        add_text(xmaterials, join(keys(material_map), " ")) 
+#    end
+#    # Grid
+#    xgrid = new_child(xdomain, "Grid")
+#    set_attribute(xgrid, "Name", mesh.name)
+#    set_attribute(xgrid, "GridType", "Uniform")
+#
+#    # Geometry
+#    _write_xdmf_geometry(xgrid, h5_filename, h5_mesh, mesh)
+#
+#    # Topology
+#    _write_xdmf_topology(xgrid, h5_filename, h5_mesh, mesh)
+#
+#    # Non-material face sets
+#    if mesh.face_sets != Dict{String, Set{Int64}}()
+#        _write_xdmf_face_sets(xgrid, h5_filename, h5_mesh, mesh)
+#    end
+#
+#    # Materials
+#    if material_map != Dict{String, Int64}()
+#        _write_xdmf_materials(xgrid, h5_filename, h5_mesh, mesh, material_map)
+#    end
+#
+#    save_file(xdoc, filename)
+#    close(h5_file)
+end

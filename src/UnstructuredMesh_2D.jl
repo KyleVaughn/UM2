@@ -114,8 +114,17 @@ function submesh(mesh::UnstructuredMesh_2D,
         end
         face_sets[face_set_name] = new_set
     end
-    return UnstructuredMesh_2D(points = Tuple(points),
-                               faces = Tuple([Tuple(face) for face in faces]),
+    faces_tuple = Vector{Union{
+                                NTuple{4, Int64},
+                                NTuple{5, Int64},
+                                NTuple{7, Int64},
+                                NTuple{9, Int64}
+                               }}(undef, length(faces))
+    for i in eachindex(faces)
+        faces_tuple[i] = Tuple(faces[i])
+    end
+    return UnstructuredMesh_2D(points = points,
+                               faces = faces_tuple,
                                name = name,
                                face_sets = face_sets
                               )

@@ -203,7 +203,7 @@ function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh)
     if HRPM.rect !== nothing
         return HRPM.rect
     elseif HRPM.mesh !== nothing
-        bb = AABB(HRPM.mesh)
+        bb = AABB(HRPM.mesh, rectangular_boundary=true)
         HRPM.rect = bb
         return bb
     elseif length(HRPM.children) > 0
@@ -214,9 +214,7 @@ function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh)
         point_tuples = [r.points for r in children_AABBs]
         points = Vector{typeof(point_tuples[1][1])}()
         for tuple in point_tuples
-            for p in tuple
-                push!(points, p)
-            end
+            append!(points, collect(tuple))
         end
         x = map(p->p[1], points)
         y = map(p->p[2], points)
