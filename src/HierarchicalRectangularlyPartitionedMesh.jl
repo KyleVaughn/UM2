@@ -120,14 +120,11 @@ function _create_HRPM_leaf_meshes(mesh::UnstructuredMesh_2D,
     for name in leaf_names
         push!(leaf_meshes, submesh(mesh, name))
     end
-    # remove grid levels lower than max_level
+    # remove grid levels
     for leaf_mesh in leaf_meshes
         for name in keys(leaf_mesh.face_sets)
             if occursin("GRID_", uppercase(name))
-                level = parse(Int64, name[7])
-                if level != max_level
-                    delete!(leaf_mesh.face_sets, name)
-                end
+                delete!(leaf_mesh.face_sets, name)
             end
         end
     end
