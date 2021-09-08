@@ -20,10 +20,10 @@ using MOCNeutronTransport
             tri = Triangle_2D((p₁, p₂, p₃))
 
             # interpolation
-            tri(0, 0) ≈ p₁
-            tri(1, 0) ≈ p₂
-            tri(0, 1) ≈ p₃
-            tri(1//2, 1//2) ≈ Point_2D(T, 1//2, 1//2)
+            @test tri(0, 0) ≈ p₁
+            @test tri(1, 0) ≈ p₂
+            @test tri(0, 1) ≈ p₃
+            @test tri(1//2, 1//2) ≈ Point_2D(T, 1, 1//2)
 
             # area
             a = area(tri)
@@ -37,6 +37,13 @@ using MOCNeutronTransport
             @test p ∈  tri
             p = Point_2D(T, 1//2, -1//10)
             @test p ∉ tri
+
+            # intersect
+            l = LineSegment_2D(Point_2D(T, 2, 1), p₁)
+            nsegments, l₁, l₂ = intersect(l, tri)
+            @test nsegments === 1 
+            @test l₁.points[1] ≈ p₁
+            @test l₁.points[2] ≈ Point_2D(T, 1, 1//2)
         end
     end
 end

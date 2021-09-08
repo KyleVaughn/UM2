@@ -50,7 +50,7 @@ function in(p::Point_2D{T}, quad::Quadrilateral_2D{T}) where {T <: AbstractFloat
 end
 
 function intersect(l::LineSegment_2D{T}, quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}
-    # Create the 4 line segments that make up the quadangle and intersect each one
+    # Create the 4 line segments that make up the quadrilateral and intersect each one
     line_segments = [LineSegment_2D(quad.points[1], quad.points[2]),
                      LineSegment_2D(quad.points[2], quad.points[3]),
                      LineSegment_2D(quad.points[3], quad.points[4]),
