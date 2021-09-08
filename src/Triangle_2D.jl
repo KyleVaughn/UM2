@@ -47,31 +47,30 @@ end
 
 function intersect(l::LineSegment_2D{T}, tri::Triangle_2D{T}) where {T <: AbstractFloat}
     # Create the 3 line segments that make up the triangle and intersect each one
-    line_segments = [LineSegment_2D(tri.points[1], tri.points[2]),
+    line_segments = (LineSegment_2D(tri.points[1], tri.points[2]),
                      LineSegment_2D(tri.points[2], tri.points[3]),
-                     LineSegment_2D(tri.points[3], tri.points[1])]
-    intersections = intersect.(l, line_segments)
+                     LineSegment_2D(tri.points[3], tri.points[1]))
+    intersections = l .∩ line_segments
     p₁ = Point_2D(T, 0)
     p₂ = Point_2D(T, 0)
     have_p₁ = false
     have_p₂ = false
+    # We need to account for 3 points returned due to vertex intersection
     for (npoints, point1, point2) in intersections
         if npoints === 1
             if !have_p₁
                 p₁ = point1
                 have_p₁ = true   
-            elseif !have_p₂   
+            elseif !have_p₂ && (point1 ≉ p₁)
                 p₂ = point1
                 have_p₂ = true   
-            elseif p₁ ≈ p₂ && p₂ ≉ point1
-                p₂ = point1 
             end
         end
     end
-    nsegments = 0
-    if have_p₁ && have_p₂
-        nsegments = 1
-    end
-    return nsegments, LineSegment_2D(p₁, p₂), LineSegment_2D(p₁, p₂)
+    nsegments = Int64(have_p₁ && have_p₂)
+    # Return points, since the final goal is a vector of points
+    # Return 4 points, since this is the max number of intersections for 2D finite elements,
+    # meaning all elements have the same return type for intersection.
+    return nsegments, (p₁, p₂, p₁, p₂)
 end
 intersect(tri::Triangle_2D, l::LineSegment_2D) = intersect(l, tri)

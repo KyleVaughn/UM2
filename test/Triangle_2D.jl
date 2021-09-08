@@ -40,10 +40,10 @@ using MOCNeutronTransport
 
             # intersect
             l = LineSegment_2D(Point_2D(T, 2, 1), p₁)
-            nsegments, l₁, l₂ = intersect(l, tri)
+            nsegments, points = intersect(l, tri)
             @test nsegments === 1 
-            @test l₁.points[1] ≈ p₁
-            @test l₁.points[2] ≈ Point_2D(T, 1, 1//2)
+            @test points[1] ≈ p₁
+            @test points[2] ≈ Point_2D(T, 1, 1//2)
         end
     end
 end
