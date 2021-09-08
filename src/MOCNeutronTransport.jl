@@ -8,6 +8,7 @@ try
     using gmsh
 catch e
     # Fall back on Gmsh package
+    @warn "Using Gmsh package instead of install from source"
     using Gmsh: gmsh
 end
 

@@ -38,7 +38,7 @@ for n in 1:mesh_optimization_iters
 end
 
 # Visualize the mesh
-# gmsh.fltk.run()
+gmsh.fltk.run()
 
 # Write the mesh to file 
 gmsh.write(mesh_filename)
