@@ -55,23 +55,24 @@ function intersect(l::LineSegment_2D{T}, quad::Quadrilateral_2D{T}) where {T <: 
                      LineSegment_2D(quad.points[2], quad.points[3]),
                      LineSegment_2D(quad.points[3], quad.points[4]),
                      LineSegment_2D(quad.points[4], quad.points[1])]
-    intersections = intersect.(l, line_segments)
+    intersections = l .∩ line_segments
     p₁ = Point_2D(T, 0)
     p₂ = Point_2D(T, 0)
-    have_p₁ = false
-    have_p₂ = false
-    for (bool, point) in intersections
-        if bool
-            if !have_p₁
-                p₁ = point
-                have_p₁ = true   
-            elseif !have_p₂   
-                p₂ = point
-                have_p₂ = true   
-            elseif p₁ ≈ p₂ && p₂ ≉ point
-                p₂ = point 
+    ipoints = 0
+    # We need to account for 3 or 4 points returned due to vertex intersection
+    for (npoints, point1, point2) in intersections
+        if npoints === 1
+            if ipoints === 0
+                p₁ = point1
+                ipoints = 1 
+            elseif ipoints === 1 && (point1 ≉ p₁) 
+                p₂ = point1
+                ipoints = 2 
             end
         end
-    end
-    return (have_p₁ && have_p₂), LineSegment_2D(p₁, p₂)
+    end 
+    # Return points, since the final goal is a vector of points
+    # Return 4 points, since this is the max number of intersections for 2D finite elements,
+    # meaning all elements have the same return type for intersection.
+    return ipoints, (p₁, p₂, p₁, p₂) 
 end
