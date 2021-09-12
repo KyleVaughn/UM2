@@ -15,7 +15,7 @@ end
 import Base: +, -, *, /, ≈, ==, intersect, in
 include("Tree.jl")
 include("Point_2D.jl")
-include("Point_3D.jl")
+#include("Point_3D.jl")
 include("LineSegment_2D.jl")
 #include("LineSegment_3D.jl")
 include("QuadraticSegment_2D.jl")
@@ -45,9 +45,10 @@ include("gmsh_overlay_rectangular_grid.jl")
 #       ProductAngularQuadrature
 #
 
+# Structs
 export  Tree,
         Point_2D,
-        Point_3D,
+#        Point_3D,
         LineSegment_2D,
 #        LineSegment_3D,
         QuadraticSegment_2D,
@@ -61,8 +62,9 @@ export  Tree,
         Quadrilateral8_2D,
 #        Quadrilateral8_3D,
         UnstructuredMesh_2D,
-        HierarchicalRectangularlyPartitionedMesh,
-        ×,
+        HierarchicalRectangularlyPartitionedMesh
+# Functions
+export  ×,
         ⋅,
         AABB,
         arc_length,
@@ -85,6 +87,7 @@ export  Tree,
         write_vtk_2d,
         write_xdmf_2d
 
+# Gmsh
 export gmsh,
        gmsh_rectangular_grid,
        gmsh_group_preserving_fragment,

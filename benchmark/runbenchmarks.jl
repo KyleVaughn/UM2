@@ -1,6 +1,6 @@
 using MOCNeutronTransport
 benchmarks = ["Point_2D",
-            "Point_3D",
+#            "Point_3D",
             "LineSegment_2D",
             "QuadraticSegment_2D",
             "Triangle_2D",
