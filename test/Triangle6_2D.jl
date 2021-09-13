@@ -19,10 +19,10 @@ using MOCNeutronTransport
         @testset "Methods" begin
             p₁ = Point_2D(T, 0)
             p₂ = Point_2D(T, 1)
-            p₃ = Point_2D(T, 1, 1)
+            p₃ = Point_2D(T, 0, 1)
             p₄ = Point_2D(T, 1//2)
-            p₅ = Point_2D(T, 1, 1//2)
-            p₆ = Point_2D(T, 1//2, 1//2)
+            p₅ = Point_2D(T, 1//2, 1//2)
+            p₆ = Point_2D(T, 0, 1//2)
             tri6 = Triangle6_2D((p₁, p₂, p₃, p₄, p₅, p₆))
 
             # interpolation
@@ -32,7 +32,20 @@ using MOCNeutronTransport
             @test tri6(1//2, 0) ≈ p₄
             @test tri6(1//2, 1//2) ≈ p₅
             @test tri6(0, 1//2) ≈ p₆
-            @test tri6(1//2, 1//2) ≈ Point_2D(T, 1, 1//2)
+
+            # derivative
+            r, s = derivative(tri6, 0, 0)
+            @test r ≈ Point_2D(T, 1, 0) 
+            @test s ≈ Point_2D(T, 0, 1) 
+            r, s = derivative(tri6, 1, 0)
+            @test r ≈ Point_2D(T, 1, 0) 
+            @test s ≈ Point_2D(T, 0, 1) 
+            r, s = derivative(tri6, 0, 1)
+            @test r ≈ Point_2D(T, 1, 0) 
+            @test s ≈ Point_2D(T, 0, 1) 
+            r, s = derivative(tri6, 1//2, 1//2)
+            @test r ≈ Point_2D(T, 1, 0) 
+            @test s ≈ Point_2D(T, 0, 1) 
 
             # area
             p₁ = Point_2D(T, 0)

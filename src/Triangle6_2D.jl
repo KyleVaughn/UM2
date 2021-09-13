@@ -52,7 +52,7 @@ function (tri6::Triangle6_2D{T})(p::Point_2D{T}) where {T <: AbstractFloat}
                            4s*(1 - r - s)*tri6.points[6]
 end
 
-function derivatives(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, 
+function derivative(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, 
                                                                R <: Real,
                                                                S <: Real}
     # Let T(r,s) be the interpolation function for tri6
@@ -77,7 +77,7 @@ function jacobian(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat,
                                                             R <: Real,
                                                             S <: Real}
     # Return the 2 x 2 Jacobian matrix
-    ∂T_∂r, ∂T_∂s = derivatives(tri6, r, s) 
+    ∂T_∂r, ∂T_∂s = derivative(tri6, r, s) 
     return hcat(∂T_∂r.x, ∂T_∂s.x)
 end
 
@@ -93,7 +93,7 @@ function area(tri6::Triangle6_2D{T}; N::Int64=12) where {T <: AbstractFloat}
     w, r, s = gauss_legendre_quadrature(tri6, N)
     a = T(0)
     for i in 1:N
-        ∂T_∂r, ∂T_∂s = derivatives(tri6, r[i], s[i])
+        ∂T_∂r, ∂T_∂s = derivative(tri6, r[i], s[i])
         a += w[i] * abs(∂T_∂r × ∂T_∂s)
     end
     return a

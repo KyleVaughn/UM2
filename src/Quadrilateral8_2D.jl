@@ -50,7 +50,7 @@ function (quad8::Quadrilateral8_2D{T})(p::Point_2D{T}) where {T <: AbstractFloat
                       (1 - η^2)*(1 - ξ)/2*quad8.points[8]
 end
 
-function derivatives(quad8::Quadrilateral8_2D{T}, r::R, s::S) where {T <: AbstractFloat, 
+function derivative(quad8::Quadrilateral8_2D{T}, r::R, s::S) where {T <: AbstractFloat, 
                                                                      R <: Real,
                                                                      S <: Real}
     # Chain rule
@@ -83,7 +83,7 @@ function jacobian(quad8::Quadrilateral8_2D{T}, r::R, s::S) where {T <: AbstractF
                                                                   R <: Real,
                                                                   S <: Real}
     # Return the 2 x 2 Jacobian matrix
-    ∂Q_∂r, ∂Q_∂s = derivatives(quad8, r, s)
+    ∂Q_∂r, ∂Q_∂s = derivative(quad8, r, s)
     return hcat(∂Q_∂r.x, ∂Q_∂s.x)
 end
 
@@ -102,7 +102,7 @@ function area(quad8::Quadrilateral8_2D{T}; N::Int64=3) where {T <: AbstractFloat
     w, r = gauss_legendre_quadrature(T, N)
     a = T(0)
     for i = 1:N, j = 1:N
-        ∂Q_∂r, ∂Q_∂s = derivatives(quad8, r[i], r[j])
+        ∂Q_∂r, ∂Q_∂s = derivative(quad8, r[i], r[j])
         a += w[i]*w[j]*abs(∂Q_∂r × ∂Q_∂s)
     end
     return a
