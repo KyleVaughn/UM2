@@ -165,3 +165,60 @@ function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) where {T <: Abst
         return false
     end
 end
+# l = LineSegment_2D(Point_2D(T, 0, 1), Point_2D(T, 4, 1))
+function intersect(l::LineSegment_2D{T}, tri6::Triangle6_2D{T}) where {T <: AbstractFloat}
+    # Create the 3 quadratic segments that make up the triangle and intersect each one
+    edges = (QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4]),
+             QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5]),
+             QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
+    intersections = l .∩ edges
+    points = [Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0)]
+    ipoints = 0
+    # We need to account for 4 points returned
+    for (npoints, point1, point2) in intersections
+        if npoints === 1
+            if ipoints === 0
+                points[1] = point1
+                ipoints = 1
+            else
+                # make sure we don't have duplicate points
+                duplicate = false
+                for i = 1:ipoints
+                    if point1 ≈ points[i] 
+                        duplicate = true
+                        break
+                    end
+                end  
+                if !duplicate
+                    ipoints += 1
+                    points[ipoints] = point1
+                end
+            end
+        elseif npoints === 2
+            for point in [point1, point2]
+                if ipoints === 0
+                    points[1] = point
+                    ipoints = 1
+                else
+                    # make sure we don't have duplicate points
+                    duplicate = false
+                    for i = 1:ipoints
+                        if point ≈ points[i] 
+                            duplicate = true
+                            break
+                        end
+                    end  
+                    if !duplicate
+                        ipoints += 1
+                        points[ipoints] = point
+                    end
+                end
+            end
+        end
+    end
+    # Return points, since the final goal is a vector of points
+    # Return 4 points, since this is the max number of intersections for 2D finite elements,
+    # meaning all elements have the same return type for intersection.
+    return ipoints, Tuple(points)
+end
+intersect(tri6::Triangle6_2D, l::LineSegment_2D) = intersect(l, tri6)
