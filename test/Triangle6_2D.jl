@@ -62,7 +62,7 @@ using MOCNeutronTransport
             p₁ = Point_2D(T, 0)
             p₂ = Point_2D(T, 2)
             p₃ = Point_2D(T, 2, 2)
-            p₄ = Point_2D(T, 1, 1//4)
+            p₄ = Point_2D(T, 3//2, 1//4)
             p₅ = Point_2D(T, 3, 1)
             p₆ = Point_2D(T, 1, 1)
             tri6 = Triangle6_2D((p₁, p₂, p₃, p₄, p₅, p₆))
@@ -77,7 +77,7 @@ using MOCNeutronTransport
             p₁ = Point_2D(T, 0)
             p₂ = Point_2D(T, 2)
             p₃ = Point_2D(T, 2, 2)
-            p₄ = Point_2D(T, 1, 1//4)
+            p₄ = Point_2D(T, 3//2, 1//4)
             p₅ = Point_2D(T, 3, 1)
             p₆ = Point_2D(T, 1, 1)
             tri6 = Triangle6_2D((p₁, p₂, p₃, p₄, p₅, p₆))
@@ -100,8 +100,8 @@ using MOCNeutronTransport
             l = LineSegment_2D(Point_2D(T, 0, 1//10), Point_2D(T, 4, 1//10))
             n, points = l ∩ tri6
             @test n === 4
-            @test points[1] ≈ Point_2D(T, 0.2254033307585166, 1//10)
-            @test points[2] ≈ Point_2D(T, 1.7745966692414834, 1//10)
+            @test points[1] ≈ Point_2D(T, 0.4254033307585166, 1//10)
+            @test points[2] ≈ Point_2D(T, 1.9745966692414834, 1//10)
             @test points[3] ≈ Point_2D(T, 2.1900000000000000, 1//10)
             @test points[4] ≈ Point_2D(T, 1//10,              1//10)
         end
