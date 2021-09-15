@@ -46,3 +46,28 @@ for T in [Float32, Float64]
     @printf("    In                             - %-9s: ", "$T")
     @printf("%10.2f ns\n", ns_time)
 end
+
+# Intersect
+for T in [Float32, Float64]
+    p₁ = Point_2D(T, 0)
+    p₂ = Point_2D(T, 1)
+    p₃ = Point_2D(T, 1, 1)
+    p₄ = Point_2D(T, 0, 1)
+    quad = [Quadrilateral_2D((p₁, p₂, p₃, p₄)) for i = 1:N]
+
+    l = LineSegment_2D(Point_2D(T, 0, -1), Point_2D(T, 4, -1))
+    @test (l ∩ quad[1])[1] === 0
+    time = @belapsed $l .∩ $quad
+    ns_time = (time/1e-9)/N
+    @printf("    0 Intersection                 - %-9s: ", "$T")
+    @printf("%10.2f ns\n", ns_time) 
+
+    l = LineSegment_2D(Point_2D(T, 0, 1//2), Point_2D(T, 4, 1//2))
+    @test (l ∩ quad[1])[1] === 2
+    @test (l ∩ quad[1])[2][1] ≈ Point_2D(T, 1, 1//2)
+    @test (l ∩ quad[1])[2][2] ≈ Point_2D(T, 0, 1//2)
+    time = @belapsed $l .∩ $quad
+    ns_time = (time/1e-9)/N
+    @printf("    2 Intersection                 - %-9s: ", "$T")
+    @printf("%10.2f ns\n", ns_time) 
+end

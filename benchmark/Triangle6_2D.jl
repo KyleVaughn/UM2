@@ -37,3 +37,42 @@ for T in [Float32, Float64]
     @printf("    In                             - %-9s: ", "$T")
     @printf("%10.2f ns\n", ns_time)
 end
+
+# Intersect
+for T in [Float32, Float64]
+    p₁ = Point_2D(T, 0)
+    p₂ = Point_2D(T, 2)
+    p₃ = Point_2D(T, 2, 2)
+    p₄ = Point_2D(T, 3//2, 1//4)
+    p₅ = Point_2D(T, 3, 1)
+    p₆ = Point_2D(T, 1, 1)
+    tri6 = [Triangle6_2D((p₁, p₂, p₃, p₄, p₅, p₆)) for i = 1:N]
+
+    l = LineSegment_2D(Point_2D(T, 0, -1), Point_2D(T, 4, -1))
+    @test (l ∩ tri6[1])[1] === 0
+    time = @belapsed $l .∩ $tri6
+    ns_time = (time/1e-9)/N
+    @printf("    0 Intersection                 - %-9s: ", "$T")
+    @printf("%10.2f ns\n", ns_time) 
+
+    l = LineSegment_2D(Point_2D(T, 0, 1), Point_2D(T, 4, 1))
+    @test (l ∩ tri6[1])[1] === 2
+    @test (l ∩ tri6[1])[2][1] ≈ Point_2D(T, 3, 1)
+    @test (l ∩ tri6[1])[2][2] ≈ Point_2D(T, 1, 1)
+    time = @belapsed $l .∩ $tri6
+    ns_time = (time/1e-9)/N
+    @printf("    2 Intersection                 - %-9s: ", "$T")
+    @printf("%10.2f ns\n", ns_time) 
+
+    l = LineSegment_2D(Point_2D(T, 0, 1//10), Point_2D(T, 4, 1//10))
+    n, points = l ∩ tri6[1]
+    @test n === 4
+    @test points[1] ≈ Point_2D(T, 0.4254033307585166, 1//10)
+    @test points[2] ≈ Point_2D(T, 1.9745966692414834, 1//10)
+    @test points[3] ≈ Point_2D(T, 2.1900000000000000, 1//10)
+    @test points[4] ≈ Point_2D(T, 1//10,              1//10)
+    time = @belapsed $l .∩ $tri6
+    ns_time = (time/1e-9)/N
+    @printf("    4 Intersection                 - %-9s: ", "$T")
+    @printf("%10.2f ns\n", ns_time) 
+end
