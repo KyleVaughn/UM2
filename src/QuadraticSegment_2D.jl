@@ -117,6 +117,6 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
             end
         end
     end
-    return npoints, p₁, p₂
+    return npoints, (p₁, p₂)
 end
 intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)

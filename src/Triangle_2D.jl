@@ -55,13 +55,13 @@ function intersect(l::LineSegment_2D{T}, tri::Triangle_2D{T}) where {T <: Abstra
     p₂ = Point_2D(T, 0)
     ipoints = 0
     # We need to account for 3 points returned due to vertex intersection
-    for (npoints, point1, point2) in intersections
+    for (npoints, points) in intersections
         if npoints === 1
             if ipoints === 0
-                p₁ = point1
+                p₁ = points[1]
                 ipoints = 1
-            elseif ipoints === 1 && (point1 ≉ p₁)
-                p₂ = point1
+            elseif ipoints === 1 && (points[1] ≉ p₁)
+                p₂ = points[1]
                 ipoints = 2
             end
         end

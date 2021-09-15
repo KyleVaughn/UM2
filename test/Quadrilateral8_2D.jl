@@ -83,6 +83,24 @@ using MOCNeutronTransport
             quad8 = Quadrilateral8_2D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
             @test Point_2D(T, 1, 1) ∈  quad8 
             @test Point_2D(T, 1, 0) ∉  quad8 
+
+            #intersect
+            l = LineSegment_2D(Point_2D(T, 0, -1), Point_2D(T, 4, -1))
+            npoints, points = l ∩ quad8 
+            @test npoints === 0
+
+            l = LineSegment_2D(Point_2D(T, 0, 0), Point_2D(T, 4, 0))
+            npoints, points = l ∩ quad8 
+            @test npoints === 2
+            @test points[1] ≈ Point_2D(T, 0, 0)
+            @test points[2] ≈ Point_2D(T, 2, 0)
+
+            l = LineSegment_2D(Point_2D(T, 0, 1//2), Point_2D(T, 4, 1//2))
+            npoints, points = l ∩ quad8 
+            @test npoints === 3
+            @test points[1] ≈ Point_2D(T, 3//2,     1//2)
+            @test points[2] ≈ Point_2D(T, 41//18,   1//2)
+            @test points[3] ≈ Point_2D(T, 0,        1//2)
         end
     end
 end

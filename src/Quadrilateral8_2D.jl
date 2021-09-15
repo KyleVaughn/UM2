@@ -162,3 +162,41 @@ function in(p::Point_2D{T}, quad8::Quadrilateral8_2D{T}; N::Int64=30) where {T <
         return false
     end
 end
+
+function intersect(l::LineSegment_2D{T}, quad8::Quadrilateral8_2D{T}) where {T <: AbstractFloat}
+    # Create the 3 quadratic segments that make up the triangle and intersect each one
+    edges = (QuadraticSegment_2D(quad8.points[1], quad8.points[2], quad8.points[5]),
+             QuadraticSegment_2D(quad8.points[2], quad8.points[3], quad8.points[6]),
+             QuadraticSegment_2D(quad8.points[3], quad8.points[4], quad8.points[7]),
+             QuadraticSegment_2D(quad8.points[4], quad8.points[1], quad8.points[8]))
+    intersections = l .∩ edges
+    ipoints = [Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0)]
+    n_ipoints = 0
+    # We need to account for 4 points returned
+    for (npoints, points) in intersections
+        for i = 1:npoints
+            if n_ipoints === 0
+                ipoints[1] = points[1]
+                n_ipoints = 1
+            else
+                # make sure we don't have duplicate points
+                duplicate = false
+                for j = 1:n_ipoints
+                    if points[i] ≈ ipoints[j] 
+                        duplicate = true
+                        break
+                    end
+                end  
+                if !duplicate
+                    n_ipoints += 1
+                    ipoints[n_ipoints] = points[i]
+                end
+            end
+        end
+    end
+    # Return points, since the final goal is a vector of points
+    # Return 4 points, since this is the max number of intersections for 2D finite elements,
+    # meaning all elements have the same return type for intersection.
+    return n_ipoints, Tuple(ipoints)
+end
+intersect(quad8::Quadrilateral8_2D, l::LineSegment_2D) = intersect(l, quad8)

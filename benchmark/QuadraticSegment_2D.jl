@@ -34,7 +34,7 @@ for T in [Float32, Float64]
     q = [QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃) for i = 1:N]
     l = LineSegment_2D(x⃗₄, x⃗₅)
     @test (l ∩ q[1])[1] == 1
-    @test (l ∩ q[1])[2] == Point_2D{Float64}([1.0, 1.0])
+    @test (l ∩ q[1])[2][1] == Point_2D(T, 1, 1)
     time = @belapsed $l .∩ $q
     ns_time = (time/1e-9)/N
     @printf("    1 Intersection                 - %-9s: ", "$T")
@@ -44,8 +44,8 @@ for T in [Float32, Float64]
     x⃗₅ = Point_2D(T, 2, 3//4)
     l = LineSegment_2D(x⃗₄, x⃗₅)
     @test (l ∩ q[1])[1] == 2
-    @test (l ∩ q[1])[2] == Point_2D{Float64}([0.5, 0.75])
-    @test (l ∩ q[1])[3] == Point_2D{Float64}([1.5, 0.75])
+    @test (l ∩ q[1])[2][1] == Point_2D(T, 1//2, 3//4)
+    @test (l ∩ q[1])[2][2] == Point_2D(T, 3//2, 3//4)
     time = @belapsed $l .∩ $q
     ns_time = (time/1e-9)/N
     @printf("    2 Intersection                 - %-9s: ", "$T")
