@@ -5,7 +5,8 @@ using MOCNeutronTransport
 grid_offset = 0.1 # Buffer between boundary of the model and the edge of the CMFD grid (cm)
 # Bounding box for the CMFD grid
 # xmin, xmax, ymin, ymax
-bb = (0.0, 7.46252 + 2*grid_offset, 0.0, 8.31535 + 2*grid_offset) 
+bb = (0.0, 7.46252 + 2*grid_offset, 
+      0.0, 8.31535 + 2*grid_offset) 
 
 
 # Model setup
@@ -14,7 +15,7 @@ gmsh.initialize()
 # Import CAD file
 gmsh.merge("xsec.step")
 # Visualize the model
-# gmsh.fltk.run()
+gmsh.fltk.run()
 
 # Shift the model to the origin of the xy-plane
 # Get the dim tags of all dimension 2 entites
@@ -32,7 +33,7 @@ gmsh.model.occ.dilate(dim_tags, 0, 0, 0, 1//10, 1//10, 0)
 # Synchronize the CAD and Gmsh models
 gmsh.model.occ.synchronize()
 # Verify results
-# gmsh.fltk.run()
+gmsh.fltk.run()
 
 # Assign materials
 # ------------------------------------------------------------------------------------------
@@ -47,7 +48,7 @@ gmsh.model.set_physical_name(2, p, "MATERIAL_UO2")
 p = gmsh.model.add_physical_group(2, clad_tags)
 gmsh.model.set_physical_name(2, p, "MATERIAL_CLAD")
 # Verify results
-# gmsh.fltk.run()
+gmsh.fltk.run()
 
 # Overlay CMFD/hierarchical grid
 # -------------------------------------------------------------------------------------------
@@ -88,7 +89,7 @@ gmsh.model.set_physical_name(2, p, "MATERIAL_CLAD")
 #          is equal to
 #          x = [[0.0, 0.5, 1.0], [0.0, 0.2, 0.5, 0.75, 1.0]] 
 #   Final tidbit:
-#       Any missing enties are assumed to be 1 division, where the last element in the input
+#       Any missing enities are assumed to be 1 division, where the last element in the input
 #           vector is assumed to be the coarse cells.
 #       Example:
 #           nx = [1, 1, 4, 3] gives the same output as [4, 3]
@@ -97,21 +98,21 @@ nx = [9, 1]
 ny = [10, 1]
 grid_tags = gmsh_overlay_rectangular_grid(bb, "MATERIAL_MODERATOR", nx, ny)
 # Verify results
-# gmsh.fltk.run()
+gmsh.fltk.run()
 
 # Mesh
 # ------------------------------------------------------------------------------------------------
 # Set the characteristic edge length of the mesh cells
-lc = 0.3
-gmsh.model.mesh.setSize(gmsh.model.getEntities(0), lc)
+lc = 0.3 # cm
+gmsh.model.mesh.set_size(gmsh.model.get_entities(0), lc)
 # Optional mesh optimization:
 niter = 2 # The optimization iterations
 
 # Triangles
-gmsh.model.mesh.generate(2) # 2 is dimension of mesh
-for () in 1:niter
-    gmsh.model.mesh.optimize("Laplace2D")
-end
+# gmsh.model.mesh.generate(2) # 2 is dimension of mesh
+# for () in 1:niter
+#     gmsh.model.mesh.optimize("Laplace2D")
+# end
 
 # Quadrilaterals
 # The default recombination algorithm might leave some triangles in the mesh, if
@@ -133,13 +134,13 @@ end
 # end
 
 # 2nd order triangles
-# gmsh.model.mesh.generate(2) # Triangles first for high order meshes.
-# gmsh.model.mesh.set_order(2)
-# for () in 1:niter
-#     gmsh.model.mesh.optimize("HighOrderElastic")
-#     gmsh.model.mesh.optimize("Relocate2D")
-#     gmsh.model.mesh.optimize("HighOrderElastic")
-# end
+gmsh.model.mesh.generate(2) # Triangles first for high order meshes.
+gmsh.model.mesh.set_order(2)
+for () in 1:niter
+    gmsh.model.mesh.optimize("HighOrderElastic")
+    gmsh.model.mesh.optimize("Relocate2D")
+    gmsh.model.mesh.optimize("HighOrderElastic")
+end
 
 
 # 2nd order quadrilaterals
