@@ -2,10 +2,10 @@ using MOCNeutronTransport
 
 # I can't remember if the bottom left corner of the CMFD grid needs to be (0, 0, 0)
 # To compensate, we do some extra math to ensure that happens.
-grid_offset = 0.12319 # Buffer between left boundary of the model and the edge of the CMFD grid
+grid_offset = 0.1 # Buffer between boundary of the model and the edge of the CMFD grid (cm)
 # Bounding box for the CMFD grid
 # xmin, xmax, ymin, ymax
-bb = (0.0, 7.7089, 0.0, 8.31535 + 2*grid_offset) 
+bb = (0.0, 7.46252 + 2*grid_offset, 0.0, 8.31535 + 2*grid_offset) 
 
 
 # Model setup
@@ -14,7 +14,7 @@ gmsh.initialize()
 # Import CAD file
 gmsh.merge("xsec.step")
 # Visualize the model
-gmsh.fltk.run()
+# gmsh.fltk.run()
 
 # Shift the model to the origin of the xy-plane
 # Get the dim tags of all dimension 2 entites
@@ -24,15 +24,15 @@ dim_tags = gmsh.model.get_entities(2)
 # gmsh.model.occ.rotate(dim_tags, x, y, z, ax, ay, az, angle)
 gmsh.model.occ.rotate(dim_tags, 0, 1, 0, 0, 1, 0, -π/2)
 # Translate it so that the corner is at the origin
-gmsh.model.occ.translate(dim_tags, 37.3225 - 0.0099 + grid_offset, 
-                                   44.09 - 0.00174209 + grid_offset, 
+gmsh.model.occ.translate(dim_tags, 37.3225 - 0.0099 + 10*grid_offset, 
+                                   44.09 - 0.00174209 + 10*grid_offset, 
                                    -436.5625)
 # Model is in mm. Convert to cm by shrinking everything by 1/10
 gmsh.model.occ.dilate(dim_tags, 0, 0, 0, 1//10, 1//10, 0)
 # Synchronize the CAD and Gmsh models
 gmsh.model.occ.synchronize()
 # Verify results
-gmsh.fltk.run()
+# gmsh.fltk.run()
 
 # Assign materials
 # ------------------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ gmsh.model.set_physical_name(2, p, "MATERIAL_UO2")
 p = gmsh.model.add_physical_group(2, clad_tags)
 gmsh.model.set_physical_name(2, p, "MATERIAL_CLAD")
 # Verify results
-gmsh.fltk.run()
+# gmsh.fltk.run()
 
 # Overlay CMFD/hierarchical grid
 # -------------------------------------------------------------------------------------------
@@ -96,3 +96,97 @@ gmsh.fltk.run()
 nx = [9, 1]
 ny = [10, 1]
 grid_tags = gmsh_overlay_rectangular_grid(bb, "MATERIAL_MODERATOR", nx, ny)
+# Verify results
+# gmsh.fltk.run()
+
+# Mesh
+# ------------------------------------------------------------------------------------------------
+# Set the characteristic edge length of the mesh cells
+lc = 0.3
+gmsh.model.mesh.setSize(gmsh.model.getEntities(0), lc)
+# Optional mesh optimization:
+niter = 2 # The optimization iterations
+
+# Triangles
+gmsh.model.mesh.generate(2) # 2 is dimension of mesh
+for () in 1:niter
+    gmsh.model.mesh.optimize("Laplace2D")
+end
+
+# Quadrilaterals
+# The default recombination algorithm might leave some triangles in the mesh, if
+# recombining all the triangles leads to badly shaped quads. In such cases, to
+# generate full-quad meshes, you can either subdivide the resulting hybrid mesh
+# (with `Mesh.SubdivisionAlgorithm' set to 1), or use the full-quad
+# recombination algorithm, which will automatically perform a coarser mesh
+# followed by recombination, smoothing and subdivision.
+# Mesh recombination algorithm (0: simple, 1: blossom, 2: simple full-quad, 3: blossom full-quad)
+# Default = 1
+# gmsh.option.set_number("Mesh.RecombineAll", 1) # recombine all triangles
+# gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads. Better 2D algorithm
+# gmsh.option.set_number("Mesh.RecombinationAlgorithm", 1)
+# gmsh.model.mesh.generate(2)
+# for () in 1:niter
+#     gmsh.model.mesh.optimize("Laplace2D")
+#     gmsh.model.mesh.optimize("Relocate2D")
+#     gmsh.model.mesh.optimize("Laplace2D")
+# end
+
+# 2nd order triangles
+# gmsh.model.mesh.generate(2) # Triangles first for high order meshes.
+# gmsh.model.mesh.set_order(2)
+# for () in 1:niter
+#     gmsh.model.mesh.optimize("HighOrderElastic")
+#     gmsh.model.mesh.optimize("Relocate2D")
+#     gmsh.model.mesh.optimize("HighOrderElastic")
+# end
+
+
+# 2nd order quadrilaterals
+# These can be problematic for large lc. They have trouble respecting CAD boundaries.
+# gmsh.option.set_number("Mesh.RecombineAll", 1) # recombine all triangles
+# gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads. Better 2D algorithm
+# gmsh.option.set_number("Mesh.RecombinationAlgorithm", 3)
+# gmsh.model.mesh.generate(2)
+# gmsh.model.mesh.set_order(2)
+# for () in 1:niter
+#     gmsh.model.mesh.optimize("HighOrderElastic")
+#     gmsh.model.mesh.optimize("Relocate2D")
+#     gmsh.model.mesh.optimize("HighOrderElastic")
+# end
+
+gmsh.fltk.run()
+
+# Mesh conversion
+# ----------------------------------------------------------------------------------------------------
+# We want to write an Abaqus file from Gmsh, read the Abaqus file into Julia, and convert that into
+# a rectangularly partitioned hierarchical XDMF file, the final input to MPACT
+#
+# Write Abaqus file
+gmsh.write("fnr.inp")
+gmsh.finalize() # done with Gmsh. Finalize
+mesh = read_abaqus_2d("fnr.inp")
+# write_vtk_2d("fnr.vtk", mesh) # Can print vtk for sanity check. No cell sets
+# write_xdmf_2d("fnr.xdmf", mesh) # Can print single grid XDMF
+# Convert mesh into Hierarchical Rectangularly Partitioned Mesh 
+HRPM = partition_rectangularly(mesh)
+write_xdmf_2d("fnr.xdmf", HRPM)
+
+# Mass conservation
+# ----------------------------------------------------------------------------------------------------
+# See how well your mesh conserves mass. Analytic solution not available, so fine tri6 mesh used as 
+# reference
+fuel_area = area(mesh, "MATERIAL_UO2")
+fuel_area_ref = 6.119632103711788
+println("Fuel area (reference): $fuel_area_ref")
+println("Fuel area ( computed): $fuel_area")
+err = 100*(fuel_area - fuel_area_ref)/fuel_area_ref
+println("Error (relative): $err %") 
+println("")
+
+clad_area = area(mesh, "MATERIAL_CLAD")
+clad_area_ref = 19.884367501087866
+println("Clad area (reference): $clad_area_ref")
+println("Clad area ( computed): $clad_area")
+err = 100*(clad_area - clad_area_ref)/clad_area_ref
+println("Error (relative): $err %") 

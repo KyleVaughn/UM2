@@ -248,12 +248,14 @@ function _write_xdmf_materials(xml::XMLElement,
     nelements = length(mesh.faces)
     mat_ID_array = zeros(Int64, nelements) .- 1
     for material_name in keys(material_map)
-        material_ID = material_map[material_name]
-        for cell in mesh.face_sets[material_name]
-            if mat_ID_array[cell] === -1
-                mat_ID_array[cell] = material_ID
-            else
-                error("Mesh cell $cell has multiple materials assigned to it.")
+        if material_name ∈  keys(mesh.face_sets)
+            material_ID = material_map[material_name]
+            for cell in mesh.face_sets[material_name]
+                if mat_ID_array[cell] === -1
+                    mat_ID_array[cell] = material_ID
+                else
+                    error("Mesh cell $cell has multiple materials assigned to it.")
+                end
             end
         end
     end

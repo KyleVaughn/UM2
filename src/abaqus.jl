@@ -85,7 +85,11 @@ function _read_abaqus_elements(file::IOStream, element_type::String)
     line_position = position(file)
     while !occursin("*", line_split[1])
         vertex_IDs = parse.(Int64, line_split[2:length(line_split)])
-        push!(faces, Tuple(vcat(type, vertex_IDs)))
+        if length(vertex_IDs) == 9
+            push!(faces, Tuple(vcat(type, vertex_IDs[1:8])))
+        else
+            push!(faces, Tuple(vcat(type, vertex_IDs)))
+        end
         line_position = position(file)
         line_split = strip.(split(readline(file)), [','])
     end
