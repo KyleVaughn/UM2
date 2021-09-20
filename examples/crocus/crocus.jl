@@ -1,7 +1,8 @@
 using MOCNeutronTransport
 # Reactor-Physics-Benchmarks-Handbook/2015/LWR/CROCUS-LWR-RESR-001
+# Model
+# ----------------------------------------------------------------------------------------------
 gmsh.initialize()
-
 uo2_fuel_entities = Int32[]
 um_fuel_entities = Int32[]
 gap_entities = Int32[]
@@ -10,9 +11,10 @@ absorber_entities = Int32[]
 # The external radius of the water is 65 cm
 # How much water is needed to count as infinite reflector?
 # What is the minimum distance from fuel to boundary?
-# Don't want to simulate what we don't have to. OR could make the mesh towards the problem
-# boundary really large.
-bb_apothem = 65.0
+# Don't want to simulate what we don't have to. Or could make the mesh towards the problem
+# boundary really large to minimize computations on a larger problem.
+# bb_apothem = 65.0
+bb_apothem = 11.2*5
 bb = (0.0, 2*bb_apothem, 0.0, 2*bb_apothem)
 
 # UO2 pins
@@ -20,7 +22,7 @@ bb = (0.0, 2*bb_apothem, 0.0, 2*bb_apothem)
 # Fuel diameter = 10.52 mm (pg. 34)
 # External cladding diameter = 12.6 mm (pg. 34)
 # Cladding thickness = 0.85 mm (pg. 34)
-# The document does not mention the gap thickness, so believe we are left to compute that quantity
+# The document does not mention the gap thickness, so I believe we are left to compute that quantity
 # Gap thickness = (External cladding diameter - 2(Clad thickness) - Fuel diameter)/2
 # Gap thickness = (12.6 - 2(0.85) - 10.52)/2 = 0.19 mm
 # Therefore 
@@ -31,6 +33,8 @@ r_fuel = 0.526
 r_gap = 0.545
 r_clad = 0.63
 pitch = 1.8370 # pg.34
+# Sweet from left to right for each column in the uo2 pins.
+# Place pins bottom to top for each row
 for i = -11:11
     if i == 0
         continue
@@ -151,44 +155,70 @@ gmsh_group_preserving_fragment(gmsh.model.get_entities(2),
 # Overlay Grid
 # ---------------------------------------------------------------------------------------------
 # The preferable locations to place a grid division are the horizontal or vertical lines that do
-# not intersect any pins.
-# If we define the center of the model at 0, 0
-# The valid x, y locations for the UO2 pins are 
+# not intersect any pins. This way, we can potentially capture one pin per coarse cell, and easily
+# show pin powers.
+#
+# If we define the center of the model at (0, 0)
+# The valid x or y locations for the UO2 pins in the positive x, y quadrant are:
 # [0, pitch/2 - r_clad)
 # ( [(2i-1)/2]pitch + r_clad, [(2(i+1)-1)/2]pitch - r_clad)
 # (23pitch/2 + r_clad, ∞)
 # i = 1, 2, ..., 11
-# The valid x, y locations for the U metal pins are 
+# The valid x or y locations for the U metal pins are 
 # [0, pitch_m/2 - r_clad_m)
 # ( [(2i-1)/2]pitch_m + r_clad_m, [(2(i+1)-1)/2]pitch_m - r_clad_m)
 # (21pitch_m/2 + r_clad_m, ∞)
 # i = 1, 2, ..., 10
+# Not that due to symmetry, -1*interval is also valid.
 # We may compute the intersections of these sets.
-# Sets multipled by -1 for other side.
-# Each x,y location is a permutation of one of the valid 1d intersections
 uo2_sets = [(0.0, pitch/2 - r_clad)]
 for i = 1:11
     push!(uo2_sets, ( ((2i-1)/2)pitch + r_clad, ((2(i+1)-1)/2)pitch - r_clad))
 end
 push!(uo2_sets, (23pitch/2 + r_clad, Inf))
+
 um_sets = [(0.0, pitch_m/2 - r_clad_m)]
 for i = 1:10
     push!(um_sets, ( ((2i-1)/2)pitch_m + r_clad_m, ((2(i+1)-1)/2)pitch_m - r_clad_m))
 end
 push!(um_sets, (21pitch_m/2 + r_clad_m, Inf))
+
 set_intersections = Tuple{Float64, Float64}[]
 for (uo2_min, uo2_max) in uo2_sets
     for (um_min, um_max) in um_sets
         # um set intersects on the left
-        if um_min ≤ uo2_min ≤ um_max
-            push!(set_intersections, (um_min, uo2_min))
+        if um_min ≤ uo2_min ≤ min(um_max, uo2_max)
+            push!(set_intersections, (uo2_min, min(um_max, uo2_max)))
         # um set intersects on the right
         elseif um_min ≤ uo2_max ≤ um_max
-            push!(set_intersections, (uo2_max, uo2_min))
-
-
-nx = [2]
-ny = [2]
+            push!(set_intersections, (max(um_min, uo2_min), uo2_max))
+        end
+    end
+end
+# Visualize the intervals in 1d
+#for (ymin, ymax) in set_intersections
+#    if ymax == Inf
+#        ymax = bb_apothem
+#    end
+#    gmsh.model.occ.add_rectangle(bb_apothem, ymin + bb_apothem, 0.0, 30.0, ymax - ymin)
+#end
+#gmsh.model.occ.synchronize()
+#
+# Note that we may also use intervals of length 2*value, and divide the problem using an odd
+# number of divisions
+#
+# Possible RT modules ± ϵ. Check the intervals for full range of valid values.
+# 1 x 1 - (-65, 65)
+# 2 x 2 - (-65, 0, 65)
+# 3 x 3 - (-60, -20,  20, 60)
+# 4 x 4 - (-65, -32.5, 0, 32.5, 65)
+# 5 x 5 - (-56, -33.6, -11.2, 11.2, 33.6, 56) & (-73, -43.8, -14.6, 14.6, 43.8, 73) 
+# 6 x 6 - None
+# 7 x 7 - None
+# 8 x 8 - None
+# ... None
+nx = [5]
+ny = [5]
 grid_tags = gmsh_overlay_rectangular_grid(bb, "MATERIAL_MODERATOR", nx, ny) 
 gmsh.fltk.run()
 
