@@ -40,6 +40,17 @@ using MOCNeutronTransport
             @test quad8(   0, 1//2) ≈ p₈
             @test quad8(1//2, 1//2) ≈ Point_2D(T, 1//2, 1//2)
 
+            # derivative
+            dr, ds = derivative(quad8, 0, 0)
+            @test dr == Point_2D(T, 1, 0)
+            @test ds == Point_2D(T, 0, 1)
+            dr, ds = derivative(quad8, 1, 0)
+            @test dr == Point_2D(T, 1, 0)
+            @test ds == Point_2D(T, 0, 1)
+            dr, ds = derivative(quad8, 1, 1)
+            @test dr == Point_2D(T, 1, 0)
+            @test ds == Point_2D(T, 0, 1)
+
             # area
             p₁ = Point_2D(T, 0)
             p₂ = Point_2D(T, 2)
@@ -79,7 +90,7 @@ using MOCNeutronTransport
             p₅ = Point_2D(T, 3//2, 1//2)
             p₆ = Point_2D(T, 5//2, 3//2)
             p₇ = Point_2D(T, 3//2, 5//2)
-            p₈ = Point_2D(T, 0, 3//2)
+            p₈ = Point_2D(T, 0, 1)
             quad8 = Quadrilateral8_2D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
             @test Point_2D(T, 1, 1) ∈  quad8 
             @test Point_2D(T, 1, 0) ∉  quad8 

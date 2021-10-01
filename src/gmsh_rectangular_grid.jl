@@ -135,6 +135,19 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
         gmsh.model.set_physical_name(2, output_tag, name)
     end
     tags = [ tag for (tag, x0, y0) in grid_tags_coords ]
+    # If there is already a physical group with this material name, then we need to erase it
+    # and make a new physical group with the same name, that contains the previous entities
+    # as well as the grid entities
+    groups = gmsh.model.get_physical_groups()
+    for grp in groups
+        name = gmsh.model.get_physical_name(grp[1], grp[2])
+        if material == name
+            old_tags = gmsh.model.get_entities_for_physical_group(grp[1], grp[2]) 
+            gmsh.model.remove_physical_groups([grp])
+            append!(tags, old_tags)
+            break
+        end
+    end
     output_tag = gmsh.model.add_physical_group(2, tags)
     gmsh.model.set_physical_name(2, output_tag, material)
 
