@@ -76,3 +76,12 @@ function intersect(l::LineSegment_2D{T}, quad::Quadrilateral_2D{T}) where {T <: 
     # meaning all elements have the same return type for intersection.
     return ipoints, (p₁, p₂, p₁, p₂) 
 end
+
+function Base.show(io::IO, quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}
+    println(io, "Quadrilateral_2D{$T}(")
+    for i = 1:4
+        p = quad.points[i]
+        println(io, "  $p,")
+    end
+    println(io, " )")
+end

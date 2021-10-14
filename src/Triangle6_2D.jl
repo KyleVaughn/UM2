@@ -202,3 +202,12 @@ function intersect(l::LineSegment_2D{T}, tri6::Triangle6_2D{T}) where {T <: Abst
     return n_ipoints, Tuple(ipoints)
 end
 intersect(tri6::Triangle6_2D, l::LineSegment_2D) = intersect(l, tri6)
+
+function Base.show(io::IO, tri6::Triangle6_2D{T}) where {T <: AbstractFloat}
+    println(io, "Triangle6_2D{$T}(")
+    for i = 1:6
+        p = tri6.points[i]
+        println(io, "  $p,")
+    end
+    println(io, " )")
+end

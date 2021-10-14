@@ -155,16 +155,16 @@ function Base.show(io::IO, HRPM::HierarchicalRectangularlyPartitionedMesh; relat
     nsiblings = 0
     for i = relative_offset:-1:1
         if i === 1 && _is_last_child(HRPM, relative_offset=i-1)
-            print("└─ ")
+            print(io, "└─ ")
         elseif i === 1
-            print("├─ ")
+            print(io, "├─ ")
         elseif _is_last_child(HRPM, relative_offset=i-1)
-            print("   ")
+            print(io, "   ")
         else
-            print("│  ")
+            print(io, "│  ")
         end
     end
-    println(HRPM.name)
+    println(io, HRPM.name)
     for child in HRPM.children
         show(io, child[]; relative_offset = relative_offset + 1)
     end

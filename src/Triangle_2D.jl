@@ -72,3 +72,12 @@ function intersect(l::LineSegment_2D{T}, tri::Triangle_2D{T}) where {T <: Abstra
     return ipoints, (p₁, p₂, p₁, p₂)
 end
 intersect(tri::Triangle_2D, l::LineSegment_2D) = intersect(l, tri)
+
+function Base.show(io::IO, tri::Triangle_2D{T}) where {T <: AbstractFloat}
+    println(io, "Triangle_2D{$T}(")
+    for i = 1:3
+        p = tri.points[i]
+        println(io, "  $p,")
+    end
+    println(io, " )")
+end

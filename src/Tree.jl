@@ -35,16 +35,16 @@ function Base.show(io::IO, tree::Tree; relative_offset=0)
     nsiblings = 0
     for i = relative_offset:-1:1
         if i === 1 && _is_last_child(tree, relative_offset=i-1)
-            print("└─ ")
+            print(io, "└─ ")
         elseif i === 1
-            print("├─ ")
+            print(io, "├─ ")
         elseif _is_last_child(tree, relative_offset=i-1)
-            print("   ")
+            print(io, "   ")
         else
-            print("│  ")
+            print(io, "│  ")
         end
     end
-    println(tree.data)
+    println(io, tree.data)
     for child in tree.children
         show(io, child[]; relative_offset = relative_offset + 1)
     end

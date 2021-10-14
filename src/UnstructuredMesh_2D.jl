@@ -24,6 +24,7 @@ Base.@kwdef struct UnstructuredMesh_2D{T <: AbstractFloat}
     face_sets::Dict{String, Set{Int64}} = Dict{String, Set{Int64}}()
 end
 
+Base.broadcastable(mesh::UnstructuredMesh_2D) = Ref(mesh)
 #    edges::NTuple{E, Tuple{Vararg{Int64}}}
 
 # Cell types are the same as VTK
@@ -237,7 +238,8 @@ function area(mesh::UnstructuredMesh_2D{T}, face::NTuple{9, Int64}) where {T <: 
     return the_area
 end
 
-function intersect_faces(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFloat}
+function intersect_faces(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
+                        ) where {T <: AbstractFloat}
     # An array to hold all of the intersection points
     intersection_points = Point_2D{T}[]
     # Check if any of the face types are unsupported
@@ -245,22 +247,34 @@ function intersect_faces(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}) whe
     if 0 < unsupported
         @warn "Mesh contains an unsupported face type"
     end
-    # Intersect the line with each of the faces
-    for face in mesh.faces              
-        type_id = face[1]
-        npoints = 0
-        if type_id == 5 # Triangle
-            npoints, points = l ∩ Triangle_2D(get_face_points(mesh, face))
-        elseif type_id == 9 # Quadrilateral
-            npoints, points = l ∩ Quadrilateral_2D(get_face_points(mesh, face))
-        elseif type_id == 22 # Triangle6
-            npoints, points = l ∩ Triangle6_2D(get_face_points(mesh, face))
-        elseif type_id == 23 # Quadrilateral8
-            npoints, points = l ∩ Quadrilateral8_2D(get_face_points(mesh, face))
+    if mesh.faces_materialized != nothing
+        intersections = l .∩ mesh.faces_materialized
+        for i in eachindex(intersections)
+            # If the intersections yields 1 or more points, push those points to the array of points
+            npoints = intersections[i][1]
+            if 0 < npoints 
+                append!(intersection_points, collect(intersections[i][2][1:npoints]))
+            end
         end
-        # If the intersections yields 1 or more points, push those points to the array of points
-        if 0 < npoints 
-            append!(intersection_points, collect(points[1:npoints]))
+        intersections = nothing
+    else
+        # Intersect the line with each of the faces
+        for face in mesh.faces              
+            type_id = face[1]
+            npoints = 0
+            if type_id == 5 # Triangle
+                npoints, points = l ∩ Triangle_2D(get_face_points(mesh, face))
+            elseif type_id == 9 # Quadrilateral
+                npoints, points = l ∩ Quadrilateral_2D(get_face_points(mesh, face))
+            elseif type_id == 22 # Triangle6
+                npoints, points = l ∩ Triangle6_2D(get_face_points(mesh, face))
+            elseif type_id == 23 # Quadrilateral8
+                npoints, points = l ∩ Quadrilateral8_2D(get_face_points(mesh, face))
+            end
+            # If the intersections yields 1 or more points, push those points to the array of points
+            if 0 < npoints 
+                append!(intersection_points, collect(points[1:npoints]))
+            end
         end
     end
     # Sort the points based upon their distance to the first point
@@ -278,24 +292,67 @@ function intersect_faces(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}) whe
     return intersection_points_reduced
 end
 
+function materialize_faces(mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFloat}
+    mat_faces = convert(Union{Nothing, Vector{Union{
+                                                    Quadrilateral8_2D{T}, 
+                                                    Quadrilateral_2D{T}, 
+                                                    Triangle6_2D{T}, 
+                                                    Triangle_2D{T}}
+                                                   }}, materialized_face.(mesh, mesh.faces))
+    return UnstructuredMesh_2D(points = mesh.points,
+                               edges = mesh.edges,
+                               edges_materialized = mesh.edges_materialized,
+                               faces = mesh.faces,
+                               faces_materialized = mat_faces,
+                               name = mesh.name,
+                               face_sets = mesh.face_sets
+                              )
+end
+
+function materialized_faces(mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFloat}
+    return materialize_face.(mesh, mesh.faces)
+end
+
+function materialized_face(mesh::UnstructuredMesh_2D{T},
+                          face:: Union{
+                                       NTuple{4, Int64},
+                                       NTuple{5, Int64},
+                                       NTuple{7, Int64},
+                                       NTuple{9, Int64}
+                                      }) where {T <: AbstractFloat}
+    type_id = face[1]
+    if type_id == 5 # Triangle
+        return Triangle_2D(get_face_points(mesh, face))
+    elseif type_id == 9 # Quadrilateral
+        return Quadrilateral_2D(get_face_points(mesh, face))
+    elseif type_id == 22 # Triangle6
+        return Triangle6_2D(get_face_points(mesh, face))
+    elseif type_id == 23 # Quadrilateral8
+        return Quadrilateral8_2D(get_face_points(mesh, face))
+    else
+        @error "Unsupported face type"
+        return Triangle_2D(get_face_points(mesh, face[2:4])) 
+    end
+end
+
 function Base.show(io::IO, mesh::UnstructuredMesh_2D)
-    println(mesh.name)
+    println(io, mesh.name)
     size_MB = Base.summarysize(mesh)/1E6
-    println("  ├─ Size (MB) : $size_MB")
+    println(io, "  ├─ Size (MB) : $size_MB")
     type = typeof(mesh.points[1].x[1])
-    println("  ├─ Type      : $type")
+    println(io, "  ├─ Type      : $type")
     npoints = length(mesh.points)
-    println("  ├─ Points    : $npoints")
+    println(io, "  ├─ Points    : $npoints")
     nfaces = length(mesh.faces)
-    println("  ├─ Faces     : $nfaces")
+    println(io, "  ├─ Faces     : $nfaces")
     ntri   = sum(x->x[1] == 5,  mesh.faces)
     nquad  = sum(x->x[1] == 9,  mesh.faces)
     ntri6  = sum(x->x[1] == 22, mesh.faces)
     nquad8 = sum(x->x[1] == 23, mesh.faces)
-    println("  │  ├─ Triangle       : $ntri")
-    println("  │  ├─ Quadrilateral  : $nquad")
-    println("  │  ├─ Triangle6      : $ntri6")
-    println("  │  └─ Quadrilateral8 : $nquad8")
+    println(io, "  │  ├─ Triangle       : $ntri")
+    println(io, "  │  ├─ Quadrilateral  : $nquad")
+    println(io, "  │  ├─ Triangle6      : $ntri6")
+    println(io, "  │  └─ Quadrilateral8 : $nquad8")
     nface_sets = length(keys(mesh.face_sets))
-    println("  └─ Face sets : $nface_sets")
+    println(io, "  └─ Face sets : $nface_sets")
 end

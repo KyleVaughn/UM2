@@ -15,7 +15,7 @@ gmsh.initialize()
 # Import CAD file
 gmsh.merge("xsec.step")
 # Visualize the model
-gmsh.fltk.run()
+# gmsh.fltk.run()
 
 # Shift the model to the origin of the xy-plane
 # Get the dim tags of all dimension 2 entites
@@ -33,7 +33,7 @@ gmsh.model.occ.dilate(dim_tags, 0, 0, 0, 1//10, 1//10, 0)
 # Synchronize the CAD and Gmsh models
 gmsh.model.occ.synchronize()
 # Verify results
-gmsh.fltk.run()
+# gmsh.fltk.run()
 
 # Assign materials
 # ------------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ gmsh.model.set_physical_name(2, p, "MATERIAL_UO2")
 p = gmsh.model.add_physical_group(2, clad_tags)
 gmsh.model.set_physical_name(2, p, "MATERIAL_CLAD")
 # Verify results
-gmsh.fltk.run()
+# gmsh.fltk.run()
 
 # Overlay CMFD/hierarchical grid
 # -------------------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ nx = [9, 1]
 ny = [10, 1]
 grid_tags = gmsh_overlay_rectangular_grid(bb, "MATERIAL_MODERATOR", nx, ny)
 # Verify results
-gmsh.fltk.run()
+# gmsh.fltk.run()
 
 # Mesh
 # ------------------------------------------------------------------------------------------------
@@ -156,7 +156,7 @@ end
 #     gmsh.model.mesh.optimize("HighOrderElastic")
 # end
 
-gmsh.fltk.run()
+# gmsh.fltk.run()
 
 # Mesh conversion
 # ----------------------------------------------------------------------------------------------------

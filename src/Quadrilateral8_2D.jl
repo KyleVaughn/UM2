@@ -200,3 +200,12 @@ function intersect(l::LineSegment_2D{T}, quad8::Quadrilateral8_2D{T}) where {T <
     return n_ipoints, Tuple(ipoints)
 end
 intersect(quad8::Quadrilateral8_2D, l::LineSegment_2D) = intersect(l, quad8)
+
+function Base.show(io::IO, quad8::Quadrilateral8_2D{T}) where {T <: AbstractFloat}
+    println(io, "Quadrilateral_2D{$T}(")
+    for i = 1:8
+        p = quad8.points[i]
+        println(io, "  $p,")
+    end
+    println(io, " )")
+end
