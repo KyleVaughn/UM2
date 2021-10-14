@@ -1,11 +1,25 @@
 Base.@kwdef struct UnstructuredMesh_2D{T <: AbstractFloat}
     points::Vector{Point_2D{T}}
+    edges::Union{Nothing, Vector{Union{
+                                       NTuple{2, Int64},
+                                       NTuple{3, Int64}
+                                      }}} = nothing
+    edges_materialized::Union{Nothing, Vector{Union{
+                                                    LineSegment_2D{T},
+                                                    QuadraticSegment_2D{T}
+                                                   }}} = nothing
     faces::Vector{Union{
                         NTuple{4, Int64},
                         NTuple{5, Int64},
                         NTuple{7, Int64},
                         NTuple{9, Int64}
                        }}
+    faces_materialized::Union{Nothing, Vector{Union{
+                                                    Triangle_2D{T},
+                                                    Quadrilateral_2D{T},
+                                                    Triangle6_2D{T},
+                                                    Quadrilateral8_2D{T}
+                                                    }}} = nothing
     name::String = "DefaultMeshName"
     face_sets::Dict{String, Set{Int64}} = Dict{String, Set{Int64}}()
 end
@@ -176,6 +190,10 @@ function get_face_points(mesh::UnstructuredMesh_2D,
 end
 
 function area(mesh::UnstructuredMesh_2D, face_set::Set{Int64}) 
+    unsupported = sum(x->x[1] ∉  UnstructuredMesh_2D_cell_types, mesh.faces)
+    if 0 < unsupported
+        @warn "Mesh contains an unsupported face type"
+    end
     return mapreduce(x->area(mesh, mesh.faces[x]), +, face_set)
 end
 
@@ -183,52 +201,81 @@ function area(mesh::UnstructuredMesh_2D, set_name::String)
     return area(mesh, mesh.face_sets[set_name])
 end
 
-function area(mesh::UnstructuredMesh_2D, face::NTuple{4, Int64})
-    T = typeof(mesh.points[1].x[1])
+function area(mesh::UnstructuredMesh_2D{T}, face::NTuple{4, Int64}) where {T <: AbstractFloat}
     the_area = T(0)
     type_id = face[1]
     if type_id == 5 # Triangle
         the_area = area(Triangle_2D(get_face_points(mesh, face)))
-    else
-        @warn "Mesh element has unsupported type $type_id"
     end
     return the_area
 end
 
-function area(mesh::UnstructuredMesh_2D, face::NTuple{5, Int64})
-    T = typeof(mesh.points[1].x[1])
+function area(mesh::UnstructuredMesh_2D{T}, face::NTuple{5, Int64}) where {T <: AbstractFloat}
     the_area = T(0)
     type_id = face[1]
     if type_id == 9 # Quadrilateral
         the_area = area(Quadrilateral_2D(get_face_points(mesh, face)))
-    else
-        @warn "Mesh element has unsupported type $type_id"
     end
     return the_area
 end
 
-function area(mesh::UnstructuredMesh_2D, face::NTuple{7, Int64})
-    T = typeof(mesh.points[1].x[1])
+function area(mesh::UnstructuredMesh_2D{T}, face::NTuple{7, Int64}) where {T <: AbstractFloat}
     the_area = T(0)
     type_id = face[1]
     if type_id == 22 # Triangle6
         the_area = area(Triangle6_2D(get_face_points(mesh, face)))
-    else
-        @warn "Mesh element has unsupported type $type_id"
     end
     return the_area
 end
 
-function area(mesh::UnstructuredMesh_2D, face::NTuple{9, Int64})
-    T = typeof(mesh.points[1].x[1])
+function area(mesh::UnstructuredMesh_2D{T}, face::NTuple{9, Int64}) where {T <: AbstractFloat}
     the_area = T(0)
     type_id = face[1]
     if type_id == 23 # Quadrilateral8
         the_area = area(Quadrilateral8_2D(get_face_points(mesh, face)))
-    else
-        @warn "Mesh element has unsupported type $type_id"
     end
     return the_area
+end
+
+function intersect_faces(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFloat}
+    # An array to hold all of the intersection points
+    intersection_points = Point_2D{T}[]
+    # Check if any of the face types are unsupported
+    unsupported = sum(x->x[1] ∉  UnstructuredMesh_2D_cell_types, mesh.faces)
+    if 0 < unsupported
+        @warn "Mesh contains an unsupported face type"
+    end
+    # Intersect the line with each of the faces
+    for face in mesh.faces              
+        type_id = face[1]
+        npoints = 0
+        if type_id == 5 # Triangle
+            npoints, points = l ∩ Triangle_2D(get_face_points(mesh, face))
+        elseif type_id == 9 # Quadrilateral
+            npoints, points = l ∩ Quadrilateral_2D(get_face_points(mesh, face))
+        elseif type_id == 22 # Triangle6
+            npoints, points = l ∩ Triangle6_2D(get_face_points(mesh, face))
+        elseif type_id == 23 # Quadrilateral8
+            npoints, points = l ∩ Quadrilateral8_2D(get_face_points(mesh, face))
+        end
+        # If the intersections yields 1 or more points, push those points to the array of points
+        if 0 < npoints 
+            append!(intersection_points, collect(points[1:npoints]))
+        end
+    end
+    # Sort the points based upon their distance to the first point
+    distances = distance.(l.points[1], intersection_points)
+    sorted_pairs = sort(collect(zip(distances, intersection_points)); by=first);
+    intersection_points = getindex.(sorted_pairs, 2)
+    # Remove duplicate points
+    intersection_points_reduced = Point_2D{T}[]
+    push!(intersection_points_reduced, intersection_points[1]) 
+    for i = 2:length(intersection_points)
+        if last(intersection_points_reduced) ≉ intersection_points[i]
+            push!(intersection_points_reduced, intersection_points[i])
+        end
+    end
+    return intersection_points_reduced
 end
 
 function Base.show(io::IO, mesh::UnstructuredMesh_2D)

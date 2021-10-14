@@ -128,7 +128,7 @@ gmsh_group_preserving_fragment(gmsh.model.get_entities(2),
 # ---------------------------------------------------------------------------------------------
 x = [[pitch*i + 0.04 for i = 1:16]]
 grid_tags = gmsh_overlay_rectangular_grid(bb, "MATERIAL_WATER", x, x) 
-gmsh.fltk.run()
+# gmsh.fltk.run()
 
 # Mesh
 # ------------------------------------------------------------------------------------------------
@@ -184,7 +184,7 @@ end
 #     gmsh.model.mesh.optimize("HighOrderElastic")
 # end
 
-gmsh.fltk.run()
+# gmsh.fltk.run()
 
 # Mesh conversion
 #---------------------------------------------------------------------------------------------------
