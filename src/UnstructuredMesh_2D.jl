@@ -100,6 +100,53 @@ function add_edges(mesh::UnstructuredMesh_2D)
                               )
 end
 
+function materialize_edges(mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFloat}
+    mat_edges = convert(Union{Nothing, Vector{Union{
+                                                    LineSegment_2D{T},
+                                                    QuadraticSegment_2D{T}
+                                                   }}}, materialized_edges(mesh))
+    return UnstructuredMesh_2D(points = mesh.points,
+                               edges = mesh.edges,
+                               edges_materialized = mat_edges,
+                               faces = mesh.faces,
+                               faces_materialized = mesh.faces_materialized,
+                               name = mesh.name,
+                               face_sets = mesh.face_sets
+                              )
+end
+
+function materialized_edges(mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFloat}
+    return materialized_edge.(mesh, mesh.edges)
+end
+
+function materialized_edge(mesh::UnstructuredMesh_2D{T},
+                           edge:: Union{
+                                        NTuple{2, Int64},
+                                        NTuple{3, Int64}
+                                       }) where {T <: AbstractFloat}
+    if length(edge) == 2
+        return LineSegment_2D(get_edge_points(mesh, edge))
+    else
+        return QuadraticSegment_2D(get_edge_points(mesh, edge))
+    end
+end
+
+function get_edge_points(mesh::UnstructuredMesh_2D{T}, 
+                         edge:: Union{
+                                      NTuple{2, Int64},
+                                      NTuple{3, Int64}
+                                     }) where {T <: AbstractFloat}
+    points = Vector{Point_2D{T}}(undef, length(edge))
+    for (i, pt) in enumerate(edge)
+        points[i] = mesh.points[pt]
+    end
+    return Tuple(points)
+end
+
+function materialize(mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFloat}
+    return materialize_faces(materialize_edges(add_edges(mesh)))
+end
+
 function submesh(mesh::UnstructuredMesh_2D, 
                  face_ids::Set{Int64};
                  name::String = "DefaultMeshName")
@@ -192,19 +239,16 @@ function AABB(mesh::UnstructuredMesh_2D; rectangular_boundary=false)
     end
 end
 
-function get_face_points(mesh::UnstructuredMesh_2D, 
+function get_face_points(mesh::UnstructuredMesh_2D{T}, 
                          face::Union{
                                        NTuple{4, Int64},
                                        NTuple{5, Int64},
                                        NTuple{7, Int64},
                                        NTuple{9, Int64}
-                                     })
-    T = typeof(mesh.points[1].x[1])
+                                     }) where {T <: AbstractFloat}
     points = Vector{Point_2D{T}}(undef, length(face) - 1)
-    i = 1
-    for pt in face[2:length(face)]
+    for (i, pt) in enumerate(face[2:length(face)])
         points[i] = mesh.points[pt]
-        i += 1
     end
     return Tuple(points)
 end
@@ -261,11 +305,6 @@ function intersect_faces(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
                         ) where {T <: AbstractFloat}
     # An array to hold all of the intersection points
     intersection_points = Point_2D{T}[]
-    # Check if any of the face types are unsupported
-    unsupported = sum(x->x[1] ∉  UnstructuredMesh_2D_cell_types, mesh.faces)
-    if 0 < unsupported
-        @warn "Mesh contains an unsupported face type"
-    end
     if mesh.faces_materialized != nothing
         for i in eachindex(mesh.faces_materialized)
             npoints, ipoints = l ∩ mesh.faces_materialized[i]
@@ -274,8 +313,12 @@ function intersect_faces(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
                 append!(intersection_points, collect(ipoints[1:npoints]))
             end
         end
-        intersections = nothing
     else
+        # Check if any of the face types are unsupported
+        unsupported = sum(x->x[1] ∉  UnstructuredMesh_2D_cell_types, mesh.faces)
+        if 0 < unsupported
+            @warn "Mesh contains an unsupported face type"
+        end
         # Intersect the line with each of the faces
         for face in mesh.faces              
             type_id = face[1]
@@ -310,13 +353,67 @@ function intersect_faces(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
     return intersection_points_reduced
 end
 
+function intersect_edges(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
+                        ) where {T <: AbstractFloat}
+    # An array to hold all of the intersection points
+    intersection_points = Point_2D{T}[]
+    if mesh.edges_materialized != nothing
+        for i in eachindex(mesh.edges_materialized)
+            npoints, ipoints = l ∩ mesh.edges_materialized[i]
+            # If the intersections yields 1 or more points, push those points to the array of points
+            if 0 < npoints 
+                append!(intersection_points, collect(ipoints[1:npoints]))
+            end
+        end
+    elseif mesh.edges != nothing
+        # Intersect the line with each of the faces
+        for edge in mesh.edges             
+            if length(edge) == 2
+                npoints, points = l ∩ LineSegment_2D(get_edge_points(mesh, edge))
+            else
+                npoints, points = l ∩ QuadraticSegment_2D(get_edge_points(mesh, edge))
+            end
+            # If the intersections yields 1 or more points, push those points to the array of points
+            if 0 < npoints 
+                append!(intersection_points, collect(points[1:npoints]))
+            end
+        end
+    end
+    # Sort the points based upon their distance to the first point
+    distances = distance.(l.points[1], intersection_points)
+    sorted_pairs = sort(collect(zip(distances, intersection_points)); by=first);
+    intersection_points = getindex.(sorted_pairs, 2)
+    # Remove duplicate points
+    intersection_points_reduced = Point_2D{T}[]
+    push!(intersection_points_reduced, intersection_points[1]) 
+    for i = 2:length(intersection_points)
+        if last(intersection_points_reduced) ≉ intersection_points[i]
+            push!(intersection_points_reduced, intersection_points[i])
+        end
+    end
+    return intersection_points_reduced
+end
+
+function intersect(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
+                   ) where {T <: AbstractFloat}
+    if mesh.edges_materialized != nothing
+        return intersect_edges(l, mesh)
+    elseif mesh.faces_materialized != nothing
+        return intersect_faces(l, mesh)
+    elseif mesh.edges != nothing
+        return intersect_edges(l, mesh)
+    else
+        return intersect_faces(l, mesh)
+    end
+end
+
 function materialize_faces(mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFloat}
     mat_faces = convert(Union{Nothing, Vector{Union{
                                                     Quadrilateral8_2D{T}, 
                                                     Quadrilateral_2D{T}, 
                                                     Triangle6_2D{T}, 
                                                     Triangle_2D{T}}
-                                                   }}, materialized_face.(mesh, mesh.faces))
+                                                   }}, materialized_faces(mesh))
     return UnstructuredMesh_2D(points = mesh.points,
                                edges = mesh.edges,
                                edges_materialized = mesh.edges_materialized,
@@ -328,7 +425,7 @@ function materialize_faces(mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFlo
 end
 
 function materialized_faces(mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFloat}
-    return materialize_face.(mesh, mesh.faces)
+    return materialized_face.(mesh, mesh.faces)
 end
 
 function materialized_face(mesh::UnstructuredMesh_2D{T},
@@ -381,7 +478,7 @@ function Base.show(io::IO, mesh::UnstructuredMesh_2D)
     nquad  = sum(x->x[1] == 9,  mesh.faces)
     ntri6  = sum(x->x[1] == 22, mesh.faces)
     nquad8 = sum(x->x[1] == 23, mesh.faces)
-    fmaterialized = mesh.faces != nothing
+    fmaterialized = mesh.faces_materialized != nothing
     println(io, "  │  ├─ Triangle       : $ntri")
     println(io, "  │  ├─ Quadrilateral  : $nquad")
     println(io, "  │  ├─ Triangle6      : $ntri6")
