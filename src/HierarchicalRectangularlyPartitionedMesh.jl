@@ -203,7 +203,7 @@ function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh)
         bb = AABB(HRPM.mesh, rectangular_boundary=true)
         HRPM.rect = bb
         return bb
-    elseif length(HRPM.children) > 0
+    elseif 0 < length(HRPM.children)
         children_AABBs = Quadrilateral_2D[]
         for child in HRPM.children
             push!(children_AABBs, AABB(child[]))
@@ -225,5 +225,46 @@ function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh)
                               Point_2D(xmin, ymax))
         HRPM.rect = bb
         return bb
+    end
+end
+
+function intersect(l::LineSegment_2D{T}, 
+                   HRPM::HierarchicalRectangularlyPartitionedMesh) where {T <: AbstractFloat}
+    # An array to hold all of the intersection points
+    intersection_points = Point_2D{T}[]
+    if 0 < (l ∩ HRPM.rect)[1]
+        if HRPM.mesh !== nothing
+            intersection_points = l ∩ HRPM.mesh
+        elseif 0 < length(HRPM.children)
+            for child in HRPM.children
+                append!(intersection_points, l ∩ child[])
+            end
+            # Sort the points based upon their distance to the first point
+            distances = distance.(l.points[1], intersection_points)
+            sorted_pairs = sort(collect(zip(distances, intersection_points)); by=first);
+            intersection_points = getindex.(sorted_pairs, 2)
+            if 0 < length(intersection_points)
+                # Remove duplicate points
+                intersection_points_reduced = Point_2D{T}[]
+                push!(intersection_points_reduced, intersection_points[1]) 
+                for i = 2:length(intersection_points)
+                    if last(intersection_points_reduced) ≉ intersection_points[i]
+                        push!(intersection_points_reduced, intersection_points[i])
+                    end
+                end
+                intersection_points = intersection_points_reduced
+            end
+        end
+    end
+    return intersection_points
+end
+
+function materialize(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if HRPM.mesh !== nothing
+        HRPM.mesh = materialize(HRPM.mesh)
+    elseif 0 < length(HRPM.children)
+        for child in HRPM.children
+            materialize(child[])
+        end
     end
 end

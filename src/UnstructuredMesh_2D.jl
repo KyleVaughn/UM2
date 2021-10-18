@@ -338,19 +338,22 @@ function intersect_faces(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
             end
         end
     end
-    # Sort the points based upon their distance to the first point
-    distances = distance.(l.points[1], intersection_points)
-    sorted_pairs = sort(collect(zip(distances, intersection_points)); by=first);
-    intersection_points = getindex.(sorted_pairs, 2)
-    # Remove duplicate points
-    intersection_points_reduced = Point_2D{T}[]
-    push!(intersection_points_reduced, intersection_points[1]) 
-    for i = 2:length(intersection_points)
-        if last(intersection_points_reduced) ≉ intersection_points[i]
-            push!(intersection_points_reduced, intersection_points[i])
+    if 0 < length(intersection_points)
+        # Sort the points based upon their distance to the first point
+        distances = distance.(l.points[1], intersection_points)
+        sorted_pairs = sort(collect(zip(distances, intersection_points)); by=first);
+        intersection_points = getindex.(sorted_pairs, 2)
+        # Remove duplicate points
+        intersection_points_reduced = Point_2D{T}[]
+        push!(intersection_points_reduced, intersection_points[1]) 
+        for i = 2:length(intersection_points)
+            if last(intersection_points_reduced) ≉ intersection_points[i]
+                push!(intersection_points_reduced, intersection_points[i])
+            end
         end
+        intersection_points = intersection_points_reduced
     end
-    return intersection_points_reduced
+    return intersection_points
 end
 
 function intersect_edges(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
@@ -383,15 +386,18 @@ function intersect_edges(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
     distances = distance.(l.points[1], intersection_points)
     sorted_pairs = sort(collect(zip(distances, intersection_points)); by=first);
     intersection_points = getindex.(sorted_pairs, 2)
-    # Remove duplicate points
-    intersection_points_reduced = Point_2D{T}[]
-    push!(intersection_points_reduced, intersection_points[1]) 
-    for i = 2:length(intersection_points)
-        if last(intersection_points_reduced) ≉ intersection_points[i]
-            push!(intersection_points_reduced, intersection_points[i])
+    if 0 < length(intersection_points)
+        # Remove duplicate points
+        intersection_points_reduced = Point_2D{T}[]
+        push!(intersection_points_reduced, intersection_points[1]) 
+        for i = 2:length(intersection_points)
+            if last(intersection_points_reduced) ≉ intersection_points[i]
+                push!(intersection_points_reduced, intersection_points[i])
+            end
         end
+        intersection_points = intersection_points_reduced
     end
-    return intersection_points_reduced
+    return intersection_points
 end
 
 function intersect(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
