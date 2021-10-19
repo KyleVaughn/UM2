@@ -232,7 +232,7 @@ function intersect(l::LineSegment_2D{T},
                    HRPM::HierarchicalRectangularlyPartitionedMesh) where {T <: AbstractFloat}
     # An array to hold all of the intersection points
     intersection_points = Point_2D{T}[]
-    if 0 < (l ∩ HRPM.rect)[1]
+    if (l ∩ HRPM.rect)[1] == 2
         if HRPM.mesh !== nothing
             intersection_points = l ∩ HRPM.mesh
         elseif 0 < length(HRPM.children)
