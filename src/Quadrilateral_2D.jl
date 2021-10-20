@@ -51,10 +51,10 @@ end
 
 function intersect(l::LineSegment_2D{T}, quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}
     # Create the 4 line segments that make up the quadrilateral and intersect each one
-    line_segments = [LineSegment_2D(quad.points[1], quad.points[2]),
+    line_segments = (LineSegment_2D(quad.points[1], quad.points[2]),
                      LineSegment_2D(quad.points[2], quad.points[3]),
                      LineSegment_2D(quad.points[3], quad.points[4]),
-                     LineSegment_2D(quad.points[4], quad.points[1])]
+                     LineSegment_2D(quad.points[4], quad.points[1]))
     intersections = l .∩ line_segments
     p₁ = Point_2D(T, 0)
     p₂ = Point_2D(T, 0)

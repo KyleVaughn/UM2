@@ -172,7 +172,7 @@ function intersect(l::LineSegment_2D{T}, tri6::Triangle6_2D{T}) where {T <: Abst
              QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5]),
              QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
     intersections = l .∩ edges
-    ipoints = [Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0)]
+    ipoints = MVector(Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0))
     n_ipoints = 0
     # We need to account for 4 points returned
     for (npoints, points) in intersections

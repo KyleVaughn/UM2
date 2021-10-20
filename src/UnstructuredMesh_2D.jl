@@ -60,13 +60,13 @@ function edges(face::Union{
         error("Unsupported cell type.")
         edges = [[-1, -1]]
     end
-    return edges
+    return edges::Vector{Vector{Int64}}
 end
 
 # Create the edges for each face
 function edges(mesh::UnstructuredMesh_2D)
     edges_unfiltered = Vector{Int64}[]
-    for face in mesh.faces
+    for face::NTuple in mesh.faces
         # Get the edges for each face
         face_edges = edges(face)
         # Order the linear edge vertices by ID
