@@ -1,27 +1,52 @@
-Base.@kwdef struct UnstructuredMesh_2D{T <: AbstractFloat}
+struct UnstructuredMesh_2D{T <: AbstractFloat}
     points::Vector{Point_2D{T}}
-    edges::Union{Nothing, Vector{Union{
-                                       NTuple{2, Int64},
-                                       NTuple{3, Int64}
-                                      }}} = nothing
-    edges_materialized::Union{Nothing, Vector{Union{
-                                                    LineSegment_2D{T},
-                                                    QuadraticSegment_2D{T}
-                                                   }}} = nothing
+    edges::Vector{Union{NTuple{2, Int64},
+                        NTuple{3, Int64}
+                       }} 
+    edges_materialized::Vector{Union{
+                                     LineSegment_2D{T},
+                                     QuadraticSegment_2D{T}
+                                    }} 
     faces::Vector{Union{
                         NTuple{4, Int64},
                         NTuple{5, Int64},
                         NTuple{7, Int64},
                         NTuple{9, Int64}
-                       }}
-    faces_materialized::Union{Nothing, Vector{Union{
-                                                    Triangle_2D{T},
-                                                    Quadrilateral_2D{T},
-                                                    Triangle6_2D{T},
-                                                    Quadrilateral8_2D{T}
-                                                    }}} = nothing
-    name::String = "DefaultMeshName"
-    face_sets::Dict{String, Set{Int64}} = Dict{String, Set{Int64}}()
+                       }} 
+    faces_materialized::Vector{Union{
+                                     Triangle_2D{T},
+                                     Quadrilateral_2D{T},
+                                     Triangle6_2D{T},
+                                     Quadrilateral8_2D{T}
+                                     }} 
+    name::String 
+    face_sets::Dict{String, Set{Int64}} 
+    function UnstructuredMesh_2D(points::Vector{Point_2D{T}};
+            edges = Union{NTuple{2, Int64}, 
+                          NTuple{3, Int64}
+                         }[],
+            edges_materialized = Union{
+                                       LineSegment_2D{T},
+                                       QuadraticSegment_2D{T}
+                                      }[],
+            faces = Union{
+                          NTuple{4, Int64},
+                          NTuple{5, Int64},
+                          NTuple{7, Int64},
+                          NTuple{9, Int64}
+                         }[],
+            faces_materialized = Union{
+                                       Triangle_2D{T},
+                                       Quadrilateral_2D{T},
+                                       Triangle6_2D{T},
+                                       Quadrilateral8_2D{T}
+                                      }[],
+            name = "DefaultMeshName",
+            face_sets = Dict{String, Set{Int64}}()
+        ) where {T<:AbstractFloat}
+            return new{T}(points, edges, edges_materialized, 
+                                faces, faces_materialized, name, face_sets)
+    end
 end
 
 Base.broadcastable(mesh::UnstructuredMesh_2D) = Ref(mesh)
@@ -38,12 +63,7 @@ const UnstructuredMesh_2D_cell_types = vcat(UnstructuredMesh_2D_linear_cell_type
 
 # Return each edge for a face
 # Note, this returns a vector of vectors because we want to mutate the elements of the edge vectors
-function edges(face::Union{
-                        NTuple{4, Int64},
-                        NTuple{5, Int64},
-                        NTuple{7, Int64},
-                        NTuple{9, Int64}
-                       })
+function edges(face::Tuple{Vararg{Int64, V}}) where {V}
     cell_type = face[1]
     n_vertices = length(face) - 1
     if face[1] ∈  UnstructuredMesh_2D_linear_cell_types 
@@ -60,13 +80,15 @@ function edges(face::Union{
         error("Unsupported cell type.")
         edges = [[-1, -1]]
     end
-    return edges::Vector{Vector{Int64}}
+    return edges
 end
 
 # Create the edges for each face
 function edges(mesh::UnstructuredMesh_2D)
     edges_unfiltered = Vector{Int64}[]
-    for face::NTuple in mesh.faces
+    for face in mesh.faces::Vector{Union{NTuple{2, Int64},
+                                         NTuple{3, Int64}
+                                        }}
         # Get the edges for each face
         face_edges = edges(face)
         # Order the linear edge vertices by ID
@@ -305,7 +327,7 @@ function intersect_faces(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
                         ) where {T <: AbstractFloat}
     # An array to hold all of the intersection points
     intersection_points = Point_2D{T}[]
-    if mesh.faces_materialized != nothing
+    if length(mesh.faces_materialized) !== 0
         for i in eachindex(mesh.faces_materialized)
             npoints, ipoints = l ∩ mesh.faces_materialized[i]
             # If the intersections yields 1 or more points, push those points to the array of points
@@ -360,7 +382,7 @@ function intersect_edges(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
                         ) where {T <: AbstractFloat}
     # An array to hold all of the intersection points
     intersection_points = Point_2D{T}[]
-    if mesh.edges_materialized != nothing
+    if length(mesh.edges_materialized) !== 0
         for i in eachindex(mesh.edges_materialized)
             npoints, ipoints = l ∩ mesh.edges_materialized[i]
             # If the intersections yields 1 or more points, push those points to the array of points
@@ -368,7 +390,7 @@ function intersect_edges(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
                 append!(intersection_points, collect(ipoints[1:npoints]))
             end
         end
-    elseif mesh.edges != nothing
+    elseif length(mesh.edges) !== 0
         # Intersect the line with each of the faces
         for edge in mesh.edges             
             if length(edge) == 2
@@ -402,11 +424,11 @@ end
 
 function intersect(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
                    ) where {T <: AbstractFloat}
-    if mesh.edges_materialized != nothing
+    if length(mesh.edges_materialized) !== 0
         return intersect_edges(l, mesh)
-    elseif mesh.faces_materialized != nothing
+    elseif length(mesh.faces_materialized) !== 0
         return intersect_faces(l, mesh)
-    elseif mesh.edges != nothing
+    elseif length(mesh.edges) !== 0
         return intersect_edges(l, mesh)
     else
         return intersect_faces(l, mesh)
@@ -464,7 +486,7 @@ function Base.show(io::IO, mesh::UnstructuredMesh_2D)
     println(io, "  ├─ Type      : $type")
     npoints = length(mesh.points)
     println(io, "  ├─ Points    : $npoints")
-    if mesh.edges == nothing
+    if length(mesh.edges) === 0
         nedges = 0
         nlin = 0
         nquad = 0
@@ -473,18 +495,25 @@ function Base.show(io::IO, mesh::UnstructuredMesh_2D)
         nlin   = sum(x->length(x) == 2,  mesh.edges)
         nquad  = sum(x->length(x) == 3,  mesh.edges)
     end
-    ematerialized = mesh.edges_materialized != nothing
+    ematerialized = length(mesh.edges_materialized) !== 0
     println(io, "  ├─ Edges     : $nedges")
     println(io, "  │  ├─ Linear         : $nlin")
     println(io, "  │  ├─ Quadratic      : $nquad")
     println(io, "  │  └─ Materialized?  : $ematerialized")
     nfaces = length(mesh.faces)
     println(io, "  ├─ Faces     : $nfaces")
-    ntri   = sum(x->x[1] == 5,  mesh.faces)
-    nquad  = sum(x->x[1] == 9,  mesh.faces)
-    ntri6  = sum(x->x[1] == 22, mesh.faces)
-    nquad8 = sum(x->x[1] == 23, mesh.faces)
-    fmaterialized = mesh.faces_materialized != nothing
+    if 0 < nfaces
+        ntri   = sum(x->x[1] == 5,  mesh.faces)
+        nquad  = sum(x->x[1] == 9,  mesh.faces)
+        ntri6  = sum(x->x[1] == 22, mesh.faces)
+        nquad8 = sum(x->x[1] == 23, mesh.faces)
+    else
+        ntri   = 0 
+        nquad  = 0 
+        ntri6  = 0 
+        nquad8 = 0 
+    end
+    fmaterialized = length(mesh.faces_materialized) !== 0
     println(io, "  │  ├─ Triangle       : $ntri")
     println(io, "  │  ├─ Quadrilateral  : $nquad")
     println(io, "  │  ├─ Triangle6      : $ntri6")
