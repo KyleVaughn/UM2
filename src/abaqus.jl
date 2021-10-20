@@ -49,7 +49,7 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
         end
     end
     close(file)
-    return UnstructuredMesh_2D(points = points,
+    return UnstructuredMesh_2D(points,
                                faces = faces,
                                name = name,
                                face_sets = face_sets
