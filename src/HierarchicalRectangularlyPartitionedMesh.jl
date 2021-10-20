@@ -1,28 +1,33 @@
-Base.@kwdef mutable struct HierarchicalRectangularlyPartitionedMesh
+mutable struct HierarchicalRectangularlyPartitionedMesh{T<:AbstractFloat}
     name::String
-    rect::Union{Nothing, Quadrilateral_2D} = nothing
-    mesh::Union{Nothing, UnstructuredMesh_2D} = nothing
+    rect::Quadrilateral_2D{T}
+    mesh::Union{Nothing, UnstructuredMesh_2D}
     parent::Union{
                   Nothing,
-                  Ref{HierarchicalRectangularlyPartitionedMesh}
-                 } = nothing
-    children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh}
-                    } = Ref{HierarchicalRectangularlyPartitionedMesh}[]
-    function HierarchicalRectangularlyPartitionedMesh(
-            name::String,
-            rect::Union{Nothing, Quadrilateral_2D}, 
-            mesh::Union{Nothing, UnstructuredMesh_2D},
-            parent::Union{Nothing, Ref{HierarchicalRectangularlyPartitionedMesh}},
-            children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh}})
-        this = new(name, rect, mesh, parent, children)
-        if parent !== nothing
-            push!(parent[].children, Ref(this))
-        end
-        return this
-    end 
+                  Ref{HierarchicalRectangularlyPartitionedMesh{T}}
+                 }
+    children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh{T}}}
 end
 
-function partition_rectangularly(mesh::UnstructuredMesh_2D)
+function HierarchicalRectangularlyPartitionedMesh{T}(;
+        name::String = "DefaultHRPMName",
+        rect::Quadrilateral_2D{T} = Quadrilateral_2D(Point_2D(T, 0), 
+                                                     Point_2D(T, 0), 
+                                                     Point_2D(T, 0), 
+                                                     Point_2D(T, 0)), 
+        mesh::Union{Nothing, UnstructuredMesh_2D{T}} = nothing,
+        parent::Union{Nothing, Ref{HierarchicalRectangularlyPartitionedMesh{T}}} = nothing,
+        children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh{T}}}
+            = Ref{HierarchicalRectangularlyPartitionedMesh{T}}[]
+        ) where {T<:AbstractFloat}
+    this = HierarchicalRectangularlyPartitionedMesh(name, rect, mesh, parent, children)
+    if parent !== nothing
+        push!(parent[].children, Ref(this))
+    end
+    return this
+end 
+
+function partition_rectangularly(mesh::UnstructuredMesh_2D{T}) where {T<:AbstractFloat}
     @info "Converting UnstructuredMesh_2D into HierarchicalRectangularlyPartitionedMesh"
     # Extract set names, grid names, and max level
     set_names, grid_names, max_level = _process_partition_rectangularly_input(mesh)
@@ -39,7 +44,7 @@ function partition_rectangularly(mesh::UnstructuredMesh_2D)
 end
 
 # Extract set names, grid names, and max level
-function _process_partition_rectangularly_input(mesh::UnstructuredMesh_2D)
+function _process_partition_rectangularly_input(mesh::UnstructuredMesh_2D{T}) where {T<:AbstractFloat}
     set_names = collect(keys(mesh.face_sets))
     grid_names = copy(set_names)
     for set_name in set_names
@@ -65,7 +70,7 @@ function _process_partition_rectangularly_input(mesh::UnstructuredMesh_2D)
 end
 
 # Create a tree to store grid relationships.
-function _create_HRPM_tree(mesh::UnstructuredMesh_2D, grid_names::Vector{String}, max_level::Int64)
+function _create_HRPM_tree(mesh::UnstructuredMesh_2D{T}, grid_names::Vector{String}, max_level::Int64) where {T<:AbstractFloat}
     root = Tree( data = mesh.name )
     current_nodes = Tree[]
     next_nodes = Tree[]
@@ -105,11 +110,11 @@ function _create_HRPM_tree(mesh::UnstructuredMesh_2D, grid_names::Vector{String}
 end
 
 # Construct the leaf meshes
-function _create_HRPM_leaf_meshes(mesh::UnstructuredMesh_2D, 
+function _create_HRPM_leaf_meshes(mesh::UnstructuredMesh_2D{T}, 
                                   grid_names::Vector{String},
-                                  max_level::Int64) 
+                                  max_level::Int64) where {T<:AbstractFloat}
     # Generate the leaf meshes (The smallest spatially)
-    leaf_meshes = UnstructuredMesh_2D[]
+    leaf_meshes = UnstructuredMesh_2D{T}[]
     leaf_names = String[]
     for name in grid_names
         level = parse(Int64, name[7])
@@ -171,21 +176,21 @@ function Base.show(io::IO, HRPM::HierarchicalRectangularlyPartitionedMesh; relat
 end
 
 # Construct the HRPM
-function _create_HRPM(tree::Tree, leaf_meshes::Vector{UnstructuredMesh_2D})
+function _create_HRPM(tree::Tree, leaf_meshes::Vector{UnstructuredMesh_2D{T}}) where {T<:AbstractFloat}
     # Construct the HRPM from the top down       
-    root = HierarchicalRectangularlyPartitionedMesh( name = tree.data )
+    root = HierarchicalRectangularlyPartitionedMesh{T}( name = tree.data )
     _attach_HRPM_children(root, tree, leaf_meshes)
     # Add the rectangles
     AABB(root)
     return root
 end
 
-function _attach_HRPM_children(HRPM::HierarchicalRectangularlyPartitionedMesh, 
+function _attach_HRPM_children(HRPM::HierarchicalRectangularlyPartitionedMesh{T}, 
                                tree::Tree,
-                               leaf_meshes::Vector{UnstructuredMesh_2D})
+                               leaf_meshes::Vector{UnstructuredMesh_2D{T}}) where {T<:AbstractFloat}
     for child in tree.children 
         name = child[].data
-        child_mesh = HierarchicalRectangularlyPartitionedMesh(name = name, 
+        child_mesh = HierarchicalRectangularlyPartitionedMesh{T}(name = name, 
                                                               parent = Ref(HRPM) )
         for leaf_mesh in leaf_meshes
             if name == leaf_mesh.name
@@ -196,8 +201,8 @@ function _attach_HRPM_children(HRPM::HierarchicalRectangularlyPartitionedMesh,
     end
 end
 
-function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh)
-    if HRPM.rect !== nothing
+function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T <: AbstractFloat}
+    if HRPM.rect !== Quadrilateral_2D(Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0))
         return HRPM.rect
     elseif HRPM.mesh !== nothing
         bb = AABB(HRPM.mesh, rectangular_boundary=true)
@@ -229,20 +234,20 @@ function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh)
 end
 
 function intersect(l::LineSegment_2D{T}, 
-                   HRPM::HierarchicalRectangularlyPartitionedMesh) where {T <: AbstractFloat}
+        HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T <: AbstractFloat}
     # An array to hold all of the intersection points
     intersection_points = Point_2D{T}[]
     if (l ∩ HRPM.rect)[1] == 2
         if HRPM.mesh !== nothing
-            intersection_points = l ∩ HRPM.mesh
+            append!(intersection_points, l ∩ HRPM.mesh::UnstructuredMesh_2D{T})
         elseif 0 < length(HRPM.children)
-            for child in HRPM.children
-                append!(intersection_points, l ∩ child[])
+            for child::Ref{HierarchicalRectangularlyPartitionedMesh{T}} in HRPM.children
+                append!(intersection_points, l ∩ child[]::HierarchicalRectangularlyPartitionedMesh{T})
             end
             # Sort the points based upon their distance to the first point
             distances = distance.(l.points[1], intersection_points)
             sorted_pairs = sort(collect(zip(distances, intersection_points)); by=first);
-            intersection_points = getindex.(sorted_pairs, 2)
+            intersection_points::Vector{Point_2D{T}} = getindex.(sorted_pairs, 2)
             if 0 < length(intersection_points)
                 # Remove duplicate points
                 intersection_points_reduced = Point_2D{T}[]
@@ -256,7 +261,7 @@ function intersect(l::LineSegment_2D{T},
             end
         end
     end
-    return intersection_points
+    return intersection_points::Vector
 end
 
 function materialize(HRPM::HierarchicalRectangularlyPartitionedMesh)
