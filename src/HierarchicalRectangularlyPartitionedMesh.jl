@@ -1,7 +1,7 @@
 mutable struct HierarchicalRectangularlyPartitionedMesh{T<:AbstractFloat}
     name::String
     rect::Quadrilateral_2D{T}
-    mesh::Union{Nothing, UnstructuredMesh_2D}
+    mesh::Ref{UnstructuredMesh_2D{T}}
     parent::Union{
                   Nothing,
                   Ref{HierarchicalRectangularlyPartitionedMesh{T}}
@@ -15,7 +15,7 @@ function HierarchicalRectangularlyPartitionedMesh{T}(;
                                                      Point_2D(T, 0), 
                                                      Point_2D(T, 0), 
                                                      Point_2D(T, 0)), 
-        mesh::Union{Nothing, UnstructuredMesh_2D{T}} = nothing,
+        mesh::Ref{UnstructuredMesh_2D{T}} = Ref{UnstructuredMesh_2D{T}}(),
         parent::Union{Nothing, Ref{HierarchicalRectangularlyPartitionedMesh{T}}} = nothing,
         children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh{T}}}
             = Ref{HierarchicalRectangularlyPartitionedMesh{T}}[]
@@ -194,7 +194,7 @@ function _attach_HRPM_children(HRPM::HierarchicalRectangularlyPartitionedMesh{T}
                                                               parent = Ref(HRPM) )
         for leaf_mesh in leaf_meshes
             if name == leaf_mesh.name
-                child_mesh.mesh = leaf_mesh
+                child_mesh.mesh[] = leaf_mesh
             end
         end
         _attach_HRPM_children(child_mesh, child[], leaf_meshes)
@@ -204,8 +204,8 @@ end
 function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T <: AbstractFloat}
     if HRPM.rect !== Quadrilateral_2D(Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0))
         return HRPM.rect
-    elseif HRPM.mesh !== nothing
-        bb = AABB(HRPM.mesh, rectangular_boundary=true)
+    elseif isassigned(HRPM.mesh)
+        bb = AABB(HRPM.mesh[], rectangular_boundary=true)
         HRPM.rect = bb
         return bb
     elseif 0 < length(HRPM.children)
@@ -238,8 +238,8 @@ function intersect(l::LineSegment_2D{T},
     # An array to hold all of the intersection points
     intersection_points = Point_2D{T}[]
     if (l ∩ HRPM.rect)[1] == 2
-        if HRPM.mesh !== nothing
-            append!(intersection_points, l ∩ HRPM.mesh::UnstructuredMesh_2D{T})
+        if isassigned(HRPM.mesh)
+            append!(intersection_points, l ∩ HRPM.mesh[])
         elseif 0 < length(HRPM.children)
             for child::Ref{HierarchicalRectangularlyPartitionedMesh{T}} in HRPM.children
                 append!(intersection_points, l ∩ child[]::HierarchicalRectangularlyPartitionedMesh{T})
@@ -265,8 +265,8 @@ function intersect(l::LineSegment_2D{T},
 end
 
 function materialize(HRPM::HierarchicalRectangularlyPartitionedMesh)
-    if HRPM.mesh !== nothing
-        HRPM.mesh = materialize(HRPM.mesh)
+    if isassigned(HRPM.mesh)
+        HRPM.mesh[] = materialize(HRPM.mesh[])
     elseif 0 < length(HRPM.children)
         for child in HRPM.children
             materialize(child[])

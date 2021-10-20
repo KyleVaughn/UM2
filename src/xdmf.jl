@@ -209,7 +209,7 @@ function _make_material_name_to_id_map(mesh::HierarchicalRectangularlyPartitione
     nmat = 0
     max_length = 0
     for leaf_mesh in mesh_children 
-        for set_name in keys(leaf_mesh.mesh.face_sets)
+        for set_name in keys(leaf_mesh.mesh[].face_sets)
             if occursin("MATERIAL", uppercase(set_name))
                 if set_name ∉  keys(material_map)
                     material_map[set_name] = nmat 
@@ -350,6 +350,6 @@ function _add_HRPM_xdmf(xml::XMLElement,
             _add_HRPM_xdmf(xgrid, h5_filename, h5_group, child[], material_map)
         end
     else
-        _add_uniform_grid_xdmf(xml, h5_filename, h5_mesh, HRPM.mesh, material_map)         
+        _add_uniform_grid_xdmf(xml, h5_filename, h5_mesh, HRPM.mesh[], material_map)         
     end
 end
