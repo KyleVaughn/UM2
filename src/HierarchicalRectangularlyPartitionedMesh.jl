@@ -2,10 +2,7 @@ mutable struct HierarchicalRectangularlyPartitionedMesh{T<:AbstractFloat}
     name::String
     rect::Quadrilateral_2D{T}
     mesh::Ref{UnstructuredMesh_2D{T}}
-    parent::Union{
-                  Nothing,
-                  Ref{HierarchicalRectangularlyPartitionedMesh{T}}
-                 }
+    parent::Ref{HierarchicalRectangularlyPartitionedMesh{T}}
     children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh{T}}}
 end
 
@@ -16,12 +13,13 @@ function HierarchicalRectangularlyPartitionedMesh{T}(;
                                                      Point_2D(T, 0), 
                                                      Point_2D(T, 0)), 
         mesh::Ref{UnstructuredMesh_2D{T}} = Ref{UnstructuredMesh_2D{T}}(),
-        parent::Union{Nothing, Ref{HierarchicalRectangularlyPartitionedMesh{T}}} = nothing,
+        parent::Ref{HierarchicalRectangularlyPartitionedMesh{T}}
+            = Ref{HierarchicalRectangularlyPartitionedMesh{T}}(),
         children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh{T}}}
             = Ref{HierarchicalRectangularlyPartitionedMesh{T}}[]
         ) where {T<:AbstractFloat}
     this = HierarchicalRectangularlyPartitionedMesh(name, rect, mesh, parent, children)
-    if parent !== nothing
+    if isassigned(parent)
         push!(parent[].children, Ref(this))
     end
     return this
@@ -137,7 +135,7 @@ function _create_HRPM_leaf_meshes(mesh::UnstructuredMesh_2D{T},
 end
 
 function get_level(HRPM::HierarchicalRectangularlyPartitionedMesh,; current_level=1)
-    if HRPM.parent !== nothing
+    if isassigned(HRPM.parent)
         return get_level(HRPM.parent[]; current_level = current_level + 1)
     else
         return current_level
@@ -146,7 +144,7 @@ end
 # Is this the last child in the parent's list of children?
 # offset determines if the nth-parent is the last child
 function _is_last_child(HRPM::HierarchicalRectangularlyPartitionedMesh; relative_offset=0)
-    if HRPM.parent == nothing
+    if !isassigned(HRPM.parent)
         return true
     end
     if relative_offset > 0
