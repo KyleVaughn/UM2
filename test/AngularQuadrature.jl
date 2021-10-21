@@ -1,7 +1,7 @@
 using MOCNeutronTransport
 include("../src/AngularQuadrature.jl")
 @testset "AngularQuadrature" begin
-    for type in [Float32, Float64, BigFloat]
+    for type in [Float32, Float64]
         @testset "Chebyshev" begin
             # chebyshev_angular_quadrature
             angles, weights = chebyshev_angular_quadrature(1, type)

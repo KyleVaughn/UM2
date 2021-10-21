@@ -1,6 +1,6 @@
 using MOCNeutronTransport
 @testset "Quadrilateral_3D" begin
-    for T in [Float32, Float64, BigFloat]
+    for T in [Float32, Float64]
         @testset "Constructors" begin
             p₁ = Point_3D(T, 0)
             p₂ = Point_3D(T, 1)

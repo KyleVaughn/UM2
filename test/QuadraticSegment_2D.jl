@@ -1,6 +1,6 @@
 using MOCNeutronTransport
 @testset "QuadraticSegment_2D" begin
-    for T in [Float32, Float64, BigFloat]
+    for T in [Float32, Float64]
         @testset "Constructors" begin
             # Constructor
             x⃗₁ = Point_2D(T, 0, 0)

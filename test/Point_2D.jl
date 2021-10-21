@@ -1,7 +1,7 @@
 using MOCNeutronTransport
 using StaticArrays
 @testset "Point_2D" begin
-    @testset "$T" for T in [Float32, Float64, BigFloat]
+    @testset "$T" for T in [Float32, Float64]
         @testset "Constructors" begin
             # 2D single constructor
             p = Point_2D(T(1), T(2))
