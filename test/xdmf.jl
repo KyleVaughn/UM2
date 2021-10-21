@@ -66,7 +66,7 @@ using HDF5
                                                18, 19, 20, 21, 22])
         ref_face_sets["test_set"] = Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
                                          13, 14, 15, 16, 17, 18, 19, 20, 21, 22])
-        mesh = UnstructuredMesh_2D(
+        mesh = UnstructuredMesh_2D{Float64}(
                                    points = ref_points, 
                                    faces = ref_faces, 
                                    face_sets = ref_face_sets, 
