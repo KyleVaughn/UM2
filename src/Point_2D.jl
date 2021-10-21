@@ -58,3 +58,4 @@ end
 # note: hypot is the Julia recommended way to do sqrt of sum squared for 2 numbers
 norm(p⃗::Point_2D) = hypot(p⃗.x[1], p⃗.x[2])
 distance(p⃗₁::Point_2D, p⃗₂::Point_2D) = hypot(p⃗₁.x[1] - p⃗₂.x[1], p⃗₁.x[2] - p⃗₂.x[2])
+midpoint(p⃗₁::Point_2D, p⃗₂::Point_2D) = (p⃗₁ + p⃗₂)/2

@@ -13,6 +13,7 @@ catch e
 end
 
 import Base: +, -, *, /, ≈, ==, intersect, in
+include("AngularQuadrature.jl")
 include("Tree.jl")
 include("Point_2D.jl")
 #include("Point_3D.jl")
@@ -32,6 +33,7 @@ include("gauss_legendre_quadrature.jl")
 include("UnstructuredMesh_2D.jl")
 include("HierarchicalRectangularlyPartitionedMesh.jl")
 include("abaqus.jl")
+include("segmentize.jl")
 include("vtk.jl")
 include("xdmf.jl")
 
@@ -39,30 +41,24 @@ include("gmsh_rectangular_grid.jl")
 include("gmsh_group_preserving_fragment.jl")
 include("gmsh_overlay_rectangular_grid.jl")
 #
-#include("AngularQuadrature.jl")
 #export AngularQuadrature,
 #       GeneralAngularQuadrature,
 #       ProductAngularQuadrature
 #
 
 # Structs
-export  Tree,
-        Point_2D,
-#        Point_3D,
+export  AngularQuadrature,
+        HierarchicalRectangularlyPartitionedMesh,
         LineSegment_2D,
-#        LineSegment_3D,
+        Point_2D,
+        ProductAngularQuadrature,
         QuadraticSegment_2D,
-#        QuadraticSegment_3D,
-        Triangle_2D,
-#        Triangle_3D,
         Quadrilateral_2D,
-#        Quadrilateral_3D,
-        Triangle6_2D,
-#        Triangle6_3D,
         Quadrilateral8_2D,
-#        Quadrilateral8_3D,
+        Triangle_2D,
+        Triangle6_2D,
         UnstructuredMesh_2D,
-        HierarchicalRectangularlyPartitionedMesh
+        Tree
 # Functions
 export  ×,
         ⋅,
@@ -72,6 +68,7 @@ export  ×,
         add_faces_materialized,
         add_edge_face_connectivity,
         add_face_edge_connectivity,
+        angular_quadrature,
         arc_length,
         area,
         derivative,
@@ -85,19 +82,23 @@ export  ×,
         face_materialized,
         gauss_legendre_quadrature,
         get_level,
+        height,
         intersect,
         intersect_edges,
         intersect_faces,
         intersect_iterative,
         jacobian,
         materialize,
+        midpoint,
         norm,
         partition_rectangularly,
         read_abaqus_2d,
         read_vtk_2d,
         real_to_parametric,
+        segmentize,
         submesh,
         triangulate,
+        width,
         write_vtk_2d,
         write_xdmf_2d
 

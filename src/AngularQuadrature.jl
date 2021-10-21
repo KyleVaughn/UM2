@@ -35,37 +35,39 @@
 #  k
 abstract type AngularQuadrature end
 
+
+# TODO: Function to convert product into general quadrature
 #struct GeneralAngularQuadrature{T <: AbstractFloat} <: AngularQuadrature
 #    Ω̂::Tuple{Point{T}} # Points on the unit sphere satisfying θ ∈ (0, π/2), γ ∈ (0, π/2)
 #    w::Tuple{T} # Weights for each point
 #end
 
 struct ProductAngularQuadrature{M, P, T <: AbstractFloat} <: AngularQuadrature
-    γ::NTuple{M, T}    # Azimuthal angles, γ ∈ (0, π/2)
+    γ::NTuple{M, T}    # Azimuthal angles, γ ∈ (0, π)
     w_γ::NTuple{M, T}  # Weights for the azimuthal angles
     θ::NTuple{P, T}    # Polar angles, θ ∈ (0, π/2)
     w_θ::NTuple{P, T}  # Weights for the polar angles
 end
 
-ProductAngularQuadrature((γ, w_γ), (θ, w_θ)) = ProductAngularQuadrature(γ, w_γ, θ, w_θ)
-
 function chebyshev_angular_quadrature(M::Int, T::DataType)
     # A Chebyshev-type quadrature for a given weight function is a quadrature formula with equal
     # weights. This function produces evenly spaced angles with equal weights.
-    angles = Tuple([T(π)*T(2m-1)/T(4M) for m = 1:M])
-    weights = Tuple([T(1)/T(M) for m = 1:M])
+    angles = [T(π*(2m-1)/(4M)) for m = 1:M]
+    weights = [T(1)/T(M) for m = 1:M]
     return angles, weights
 end
 
-function AngularQuadrature(quadrature_type::String, M::Int, P::Int; T::DataType=Float64)
+function angular_quadrature(quadrature_type::String, M::Int, P::Int; T::DataType=Float64)
     if quadrature_type == "Chebyshev-Chebyshev"
-        quadrature = ProductAngularQuadrature(chebyshev_angular_quadrature(M, T),
-                                              chebyshev_angular_quadrature(P, T),
-                                            )
+        (azi_angles, azi_weights) = chebyshev_angular_quadrature(M, T)
+        (pol_angles, pol_weights) = chebyshev_angular_quadrature(P, T)
+        append!(azi_angles, [π - azi_angles[i] for i = 1:M])
+        azi_weights = azi_weights./2
+        append!(azi_weights, azi_weights)
+        quadrature = ProductAngularQuadrature(Tuple(azi_angles), Tuple(azi_weights),
+                                              Tuple(pol_angles), Tuple(pol_weights))
     else
-        ArgumentError("Unsupported quadrature type.")
+        error("Unsupported quadrature type.")
     end
     return quadrature
 end
-
-# TODO: Function to convert product into general quadrature

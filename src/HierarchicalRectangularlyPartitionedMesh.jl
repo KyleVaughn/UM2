@@ -271,3 +271,11 @@ function materialize(HRPM::HierarchicalRectangularlyPartitionedMesh)
         end
     end
 end
+
+function height(HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T<:AbstractFloat}
+    return HRPM.rect.points[3].x[2] - HRPM.rect.points[1].x[2]
+end
+
+function width(HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T<:AbstractFloat}
+    return HRPM.rect.points[3].x[1] - HRPM.rect.points[1].x[1]
+end
