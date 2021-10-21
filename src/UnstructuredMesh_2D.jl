@@ -20,48 +20,58 @@ struct UnstructuredMesh_2D{T <: AbstractFloat}
                                      Triangle6_2D{T},
                                      Quadrilateral8_2D{T}
                                      }} 
+    edge_face_connectivity::Vector{NTuple{2, Int64}} 
     face_edge_connectivity::Vector{Union{
-                        NTuple{3, Int64},
-                        NTuple{4, Int64}
-                       }} 
-    face_face_connectivity::Vector{Union{
-                        NTuple{3, Int64},
-                        NTuple{4, Int64}
-                       }} 
+                                          NTuple{3, Int64},
+                                          NTuple{4, Int64}
+                                         }} 
     face_sets::Dict{String, Set{Int64}} 
 end
 
 function UnstructuredMesh_2D{T}(;
-        name = "DefaultMeshName",
-        points = Point_2D{T}[],
-        edges = Union{NTuple{2, Int64}, 
-                      NTuple{3, Int64}
-                     }[],
-        edges_materialized = Union{
-                                   LineSegment_2D{T},
-                                   QuadraticSegment_2D{T}
-                                  }[],
-        faces = Union{
-                      NTuple{4, Int64},
-                      NTuple{5, Int64},
-                      NTuple{7, Int64},
-                      NTuple{9, Int64}
-                     }[], 
-        faces_materialized = Union{
-                                   Triangle_2D{T},
-                                   Quadrilateral_2D{T},
-                                   Triangle6_2D{T},
-                                   Quadrilateral8_2D{T}
-                                  }[],
-        face_edge_connectivity = Vector{Union{
-                             NTuple{3, Int64},
-                             NTuple{4, Int64}
-                            }}[], 
-        face_face_connectivity = Vector{Union{
-                             NTuple{3, Int64},
-                             NTuple{4, Int64}
-                            }}[],
-        face_sets = Dict{String, Set{Int64}}()
+        name::String = "DefaultMeshName",
+        points::Vector{Point_2D{T}} = Point_2D{T}[],
+        edges::Vector{Union{NTuple{2, Int64},
+                            NTuple{3, Int64}
+                           }} = Union{NTuple{2, Int64}, 
+                                      NTuple{3, Int64}
+                                     }[],
+        edges_materialized::Vector{Union{
+                                         LineSegment_2D{T},
+                                         QuadraticSegment_2D{T}
+                                        }} = Union{
+                                                   LineSegment_2D{T},
+                                                   QuadraticSegment_2D{T}
+                                                  }[],
+        faces::Vector{Union{
+                            NTuple{4, Int64},
+                            NTuple{5, Int64},
+                            NTuple{7, Int64},
+                            NTuple{9, Int64}
+                           }} = Union{
+                                      NTuple{4, Int64},
+                                      NTuple{5, Int64},
+                                      NTuple{7, Int64},
+                                      NTuple{9, Int64}
+                                     }[], 
+        faces_materialized::Vector{Union{
+                                         Triangle_2D{T},
+                                         Quadrilateral_2D{T},
+                                         Triangle6_2D{T},
+                                         Quadrilateral8_2D{T}
+                                         }} = Union{
+                                                    Triangle_2D{T},
+                                                    Quadrilateral_2D{T},
+                                                    Triangle6_2D{T},
+                                                    Quadrilateral8_2D{T}
+                                                    }[],
+        edge_face_connectivity::Vector{NTuple{2, Int64}} = NTuple{2, Int64}[], 
+        face_edge_connectivity ::Vector{Union{
+                                               NTuple{3, Int64},
+                                               NTuple{4, Int64}
+                                              }} = Union{NTuple{3, Int64},
+                                                         NTuple{4, Int64}}[],
+        face_sets::Dict{String, Set{Int64}} = Dict{String, Set{Int64}}()
     ) where {T<:AbstractFloat}
         return UnstructuredMesh_2D{T}(name, 
                                       points, 
@@ -69,8 +79,8 @@ function UnstructuredMesh_2D{T}(;
                                       edges_materialized, 
                                       faces, 
                                       faces_materialized, 
+                                      edge_face_connectivity,
                                       face_edge_connectivity,
-                                      face_face_connectivity,
                                       face_sets, 
                                      )
 end
@@ -143,9 +153,9 @@ function add_edges(mesh::UnstructuredMesh_2D{T}) where {T<:AbstractFloat}
                                   edges_materialized = mesh.edges_materialized,
                                   faces = mesh.faces,
                                   faces_materialized = mesh.faces_materialized,
-                                  face_sets = mesh.face_sets,
+                                  edge_face_connectivity = mesh.edge_face_connectivity, 
                                   face_edge_connectivity = mesh.face_edge_connectivity, 
-                                  face_face_connectivity = mesh.face_face_connectivity 
+                                  face_sets = mesh.face_sets
                                  )
 end
 
@@ -156,9 +166,9 @@ function add_edges_materialized(mesh::UnstructuredMesh_2D{T}) where {T <: Abstra
                                   edges_materialized = materialized_edges(mesh),
                                   faces = mesh.faces,
                                   faces_materialized = mesh.faces_materialized,
-                                  face_sets = mesh.face_sets,
+                                  edge_face_connectivity = mesh.edge_face_connectivity, 
                                   face_edge_connectivity = mesh.face_edge_connectivity, 
-                                  face_face_connectivity = mesh.face_face_connectivity
+                                  face_sets = mesh.face_sets
                                  )
 end
 
@@ -470,9 +480,9 @@ function add_faces_materialized(mesh::UnstructuredMesh_2D{T}) where {T <: Abstra
                                   edges_materialized = mesh.edges_materialized,
                                   faces = mesh.faces,
                                   faces_materialized = mat_faces,
-                                  face_sets = mesh.face_sets,
+                                  edge_face_connectivity = mesh.edge_face_connectivity,
                                   face_edge_connectivity = mesh.face_edge_connectivity,
-                                  face_face_connectivity = mesh.face_face_connectivity
+                                  face_sets = mesh.face_sets
                                  )
 end
 
@@ -503,11 +513,12 @@ function face_materialized(mesh::UnstructuredMesh_2D{T},
 end
 
 function Base.show(io::IO, mesh::UnstructuredMesh_2D)
-    println(io, mesh.name)
+    type = typeof(mesh.points[1].x[1])
+    println(io, "UnstructuredMesh_2D{$type}")
+    name = mesh.name
+    println(io, "  ├─ Name      : $name")
     size_MB = Base.summarysize(mesh)/1E6
     println(io, "  ├─ Size (MB) : $size_MB")
-    type = typeof(mesh.points[1].x[1])
-    println(io, "  ├─ Type      : $type")
     npoints = length(mesh.points)
     println(io, "  ├─ Points    : $npoints")
     if length(mesh.edges) === 0
@@ -544,6 +555,11 @@ function Base.show(io::IO, mesh::UnstructuredMesh_2D)
     println(io, "  │  ├─ Quadrilateral8 : $nquad8")
     println(io, "  │  └─ Materialized?  : $fmaterialized")
     nface_sets = length(keys(mesh.face_sets))
+    ef_con = 0 < length(mesh.edge_face_connectivity)
+    fe_con = 0 < length(mesh.face_edge_connectivity)
+    println(io, "  ├─ Connectivity")
+    println(io, "  │  ├─ Edge/Face : $ef_con")
+    println(io, "  │  └─ Face/Edge : $fe_con")
     println(io, "  └─ Face sets : $nface_sets")
 end
 
@@ -563,7 +579,7 @@ function face_edge_connectivity(mesh::UnstructuredMesh_2D)
     # A vector of MVectors of zeros for each face
     # Each MVector is the length of the number of edges
     face_edge = [MVector{num_edges(face)}(zeros(Int64, num_edges(face))) for face in mesh.faces]
-    if length(mesh.edges) == 0
+    if length(mesh.edges) === 0
         error("Mesh does not have edges!")
     else
         # for each face in the mesh, generate the edges.
@@ -589,28 +605,63 @@ function add_face_edge_connectivity(mesh::UnstructuredMesh_2D{T}) where {T<:Abst
                                   edges_materialized = mesh.edges_materialized,
                                   faces = mesh.faces,
                                   faces_materialized = mesh.faces_materialized,
-                                  face_sets = mesh.face_sets,
+                                  edge_face_connectivity = mesh.edge_face_connectivity,
                                   face_edge_connectivity = face_edge_conn, 
-                                  face_face_connectivity = mesh.face_face_connectivity
+                                  face_sets = mesh.face_sets
                                  )
 end
 
+function edge_face_connectivity(mesh::UnstructuredMesh_2D)
+    # Each edge should only border 2 faces if it is an interior edge, and 1 face if it is
+    # a boundary edge.
+    # Loop through each face in the face_edge_connectivity vector and mark each edge with 
+    # the faces that it borders.
+    if length(mesh.edges) === 0
+        error("Mesh does not have edges!")
+        edge_face = [MVector{2}(zeros(Int64, 2)) for i = 1:2]
+    elseif length(mesh.face_edge_connectivity) === 0
+        edge_face = [MVector{2}(zeros(Int64, 2)) for i in eachindex(mesh.edges)]
+        face_edge_conn = face_edge_connectivity(mesh)
+        for (iface, edges) in enumerate(face_edge_conn)
+            for iedge in edges
+                # Add the face id in the first non-zero position of the edge_face conn. vec.
+                if edge_face[iedge][1] === 0
+                    edge_face[iedge][1] = iface
+                elseif edge_face[iedge][2] === 0
+                    edge_face[iedge][2] = iface                   
+                else
+                    error("Edge $iedge seems to have 3 faces associated with it!")
+                end
+            end
+        end
+    else # has face_edge connectivity
+        edge_face = [MVector{2}(zeros(Int64, 2)) for i in eachindex(mesh.edges)]
+        for (iface, edges) in enumerate(mesh.face_edge_connectivity)
+            for iedge in edges
+                # Add the face id in the first non-zero position of the edge_face conn. vec.
+                if edge_face[iedge][1] === 0
+                    edge_face[iedge][1] = iface
+                elseif edge_face[iedge][2] === 0
+                    edge_face[iedge][2] = iface                   
+                else
+                    error("Edge $iedge seems to have 3 faces associated with it!")
+                end
+            end
+        end
+    end
+    return [Tuple(sort(two_faces)) for two_faces in edge_face]
+end
 
-#function face_edge_connectivity(mesh::UnstructuredMesh_2D)
-#    # A vector of MVectors of zeros for each face
-#    # Each MVector is the length of the number of edges
-#    face_edge = [MVector{num_edges(face)}(zeros(Int64, num_edges(face))) for face in mesh.faces]
-#    if length(mesh.edges) == 0
-#        error("Mesh does not have edges!")
-#    else
-#        # for each face in the mesh, generate the edges.
-#        # Search for the index of the edge in the mesh.edges vector
-#        # Insert the index of the edge into the face_edge connectivity vector 
-#        for i in eachindex(mesh.faces)
-#            for (j, edge) in enumerate(edges(mesh.faces[i]))
-#                face_edge[i][j] = searchsortedfirst(mesh.edges, Tuple(edge))
-#            end
-#        end
-#    end
-#    return [Tuple(sort(conn)) for conn in face_edge]
-#end
+function add_edge_face_connectivity(mesh::UnstructuredMesh_2D{T}) where {T<:AbstractFloat}
+    edge_face_conn = convert(Vector{NTuple{2, Int64}}, edge_face_connectivity(mesh))
+    return UnstructuredMesh_2D{T}(name = mesh.name,
+                                  points = mesh.points,
+                                  edges = edges(mesh),
+                                  edges_materialized = mesh.edges_materialized,
+                                  faces = mesh.faces,
+                                  faces_materialized = mesh.faces_materialized,
+                                  edge_face_connectivity = edge_face_conn,
+                                  face_edge_connectivity = mesh.face_edge_connectivity, 
+                                  face_sets = mesh.face_sets
+                                 )
+end
