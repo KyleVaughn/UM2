@@ -49,11 +49,11 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
         end
     end
     close(file)
-    return UnstructuredMesh_2D(points,
-                               faces = faces,
-                               name = name,
-                               face_sets = face_sets
-                              )
+    return UnstructuredMesh_2D{float_type}(name = name,
+                                           points = points,
+                                           faces = faces,
+                                           face_sets = face_sets
+                                          )
 end
 
 function _read_abaqus_nodes_2d(file::IOStream, type::Type{T}) where {T <: AbstractFloat}
