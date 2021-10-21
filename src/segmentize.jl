@@ -22,8 +22,13 @@ function segmentize(tₛ::T,
         end
         # Effective ray spacing
         t_eff = w*sin(atan((h*n_x)/(w*n_y)))/n_x
-
         # Generate tracks
+        for ix = n_x:-1:1
+        
+        end
+        #for iy = 1:n_y
+
+        #end
         # Give info about which algorithm is being used
         # face, edge, implicit, explicit
     end
