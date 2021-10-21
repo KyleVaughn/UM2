@@ -416,7 +416,7 @@ function intersect_edges(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
         end
         intersection_points = intersection_points_reduced
     end
-    return intersection_points
+    return intersection_points::Vector{Point_2D{T}}
 end
 
 function intersect(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}

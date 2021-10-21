@@ -170,9 +170,15 @@ function intersect(l::LineSegment_2D{T}, quad8::Quadrilateral8_2D{T}) where {T <
              QuadraticSegment_2D(quad8.points[3], quad8.points[4], quad8.points[7]),
              QuadraticSegment_2D(quad8.points[4], quad8.points[1], quad8.points[8]))
     intersections = l .∩ edges
-    ipoints = MVector(Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0))
+    ipoints = MVector(Point_2D(T, 0), 
+                      Point_2D(T, 0), 
+                      Point_2D(T, 0), 
+                      Point_2D(T, 0),
+                      Point_2D(T, 0),
+                      Point_2D(T, 0)
+                     )
     n_ipoints = 0
-    # We need to account for 4 points returned
+    # We need to account for 6 points returned
     for (npoints, points) in intersections
         for i = 1:npoints
             if n_ipoints === 0
@@ -197,7 +203,7 @@ function intersect(l::LineSegment_2D{T}, quad8::Quadrilateral8_2D{T}) where {T <
     # Return points, since the final goal is a vector of points
     # Return 4 points, since this is the max number of intersections for 2D finite elements,
     # meaning all elements have the same return type for intersection.
-    return n_ipoints, Tuple(ipoints)::NTuple{4, Point_2D{T}}
+    return n_ipoints, Tuple(ipoints)
 end
 intersect(quad8::Quadrilateral8_2D, l::LineSegment_2D) = intersect(l, quad8)
 

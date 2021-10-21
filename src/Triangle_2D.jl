@@ -67,9 +67,9 @@ function intersect(l::LineSegment_2D{T}, tri::Triangle_2D{T}) where {T <: Abstra
         end
     end
     # Return points, since the final goal is a vector of points
-    # Return 4 points, since this is the max number of intersections for 2D finite elements,
+    # Return 6 points, since this is the max number of intersections for 2D finite elements,
     # meaning all elements have the same return type for intersection.
-    return ipoints, (p₁, p₂, p₁, p₂)
+    return ipoints, (p₁, p₂, p₁, p₁, p₁, p₁)  
 end
 intersect(tri::Triangle_2D, l::LineSegment_2D) = intersect(l, tri)
 
