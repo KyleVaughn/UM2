@@ -262,20 +262,60 @@ function intersect(l::LineSegment_2D{T},
     return intersection_points::Vector
 end
 
-function materialize(HRPM::HierarchicalRectangularlyPartitionedMesh)
-    if isassigned(HRPM.mesh)
-        HRPM.mesh[] = materialize(HRPM.mesh[])
-    elseif 0 < length(HRPM.children)
-        for child in HRPM.children
-            materialize(child[])
-        end
-    end
-end
-
 function height(HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T<:AbstractFloat}
     return HRPM.rect.points[3].x[2] - HRPM.rect.points[1].x[2]
 end
 
 function width(HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T<:AbstractFloat}
     return HRPM.rect.points[3].x[1] - HRPM.rect.points[1].x[1]
+end
+
+function get_intersection_algorithm(HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T<:AbstractFloat}
+    if isassigned(HRPM.mesh)
+        if length(HRPM.mesh[].edges_materialized) !== 0
+            return "Edges - Materialized"
+        elseif length(HRPM.mesh[].edges) !== 0
+            return "Edges - Implicit"
+        elseif length(HRPM.mesh[].faces_materialized) !== 0
+            return "Faces - Materialized"
+        else
+            return "Faces - Implicit"
+        end
+    else
+        return get_intersection_algorithm(HRPM.children[1][])
+    end
+end
+
+function add_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if isassigned(HRPM.mesh)
+        HRPM.mesh[] = add_edges(HRPM.mesh[])
+    elseif 0 < length(HRPM.children)
+        for child in HRPM.children
+            add_edges(child[])
+        end
+    end
+end
+
+function add_edges_materialized(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if isassigned(HRPM.mesh)
+        if 0 < length(HRPM.mesh[].edges)
+            HRPM.mesh[] = add_edges_materialized(HRPM.mesh[])
+        else
+            HRPM.mesh[] = add_edges_materialized(add_edges(HRPM.mesh[]))
+        end
+    elseif 0 < length(HRPM.children)
+        for child in HRPM.children
+            add_edges_materialized(child[])
+        end
+    end
+end
+
+function add_faces_materialized(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if isassigned(HRPM.mesh)
+        HRPM.mesh[] = add_faces_materialized(HRPM.mesh[])
+    elseif 0 < length(HRPM.children)
+        for child in HRPM.children
+            add_faces_materialized(child[])
+        end
+    end
 end

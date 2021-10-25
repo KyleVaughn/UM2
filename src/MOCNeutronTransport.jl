@@ -33,7 +33,7 @@ include("gauss_legendre_quadrature.jl")
 include("UnstructuredMesh_2D.jl")
 include("HierarchicalRectangularlyPartitionedMesh.jl")
 include("abaqus.jl")
-include("segmentize.jl")
+include("tracks_segmentize.jl")
 include("vtk.jl")
 include("xdmf.jl")
 
@@ -88,7 +88,6 @@ export  ×,
         intersect_faces,
         intersect_iterative,
         jacobian,
-        materialize,
         midpoint,
         norm,
         partition_rectangularly,
@@ -97,6 +96,7 @@ export  ×,
         real_to_parametric,
         segmentize,
         submesh,
+        tracks,
         triangulate,
         width,
         write_vtk_2d,

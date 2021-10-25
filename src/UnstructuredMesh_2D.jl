@@ -160,10 +160,14 @@ function add_edges(mesh::UnstructuredMesh_2D{T}) where {T<:AbstractFloat}
 end
 
 function add_edges_materialized(mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFloat}
+    mat_edges = convert(Vector{Union{LineSegment_2D{T},
+                                     QuadraticSegment_2D{T}}
+                                    }, edges_materialized(mesh))
+
     return UnstructuredMesh_2D{T}(name = mesh.name,
                                   points = mesh.points,
                                   edges = mesh.edges,
-                                  edges_materialized = materialized_edges(mesh),
+                                  edges_materialized = mat_edges,
                                   faces = mesh.faces,
                                   faces_materialized = mesh.faces_materialized,
                                   edge_face_connectivity = mesh.edge_face_connectivity, 
