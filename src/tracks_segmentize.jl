@@ -106,7 +106,7 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
     # index 2 = track
     # index 3 = point
     seg_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, length(tracks))
-    for iγ = 1:length(tracks)
+    Threads.@threads for iγ = 1:length(tracks)
         # Set up a vector of points for each track
         nt = length(tracks[iγ])
         seg_points[iγ] = Vector{Vector{Point_2D{T}}}(undef, nt)
