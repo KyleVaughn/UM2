@@ -43,6 +43,7 @@ function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <:
     # If the lines are skew, s and r represent the parameters of the points of closest
     # approach - Intersection of two lines in three-space, Ronald Goldman, in Graphics
     # Gems by Andrew S. Glassner.
+    ϵ = 1e-6
     v⃗ = l₁.points[2] - l₁.points[1]
     u⃗ = l₂.points[2] - l₂.points[1]
     w⃗ = l₂.points[1] - l₁.points[1]
@@ -50,7 +51,7 @@ function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <:
         r = (w⃗ × u⃗)/(v⃗ × u⃗)
         p = l₁(r)
         s = ((r*v⃗ - w⃗) ⋅ u⃗)/(u⃗ ⋅ u⃗)
-        return (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1) ? (1, (p, p)) : (0, (p, p))
+        return (-ϵ ≤ s ≤ 1 + ϵ) && (-ϵ ≤ r ≤ 1 + ϵ) ? (1, (p, p)) : (0, (p, p))
     else
         return (0, (Point_2D(T, 0), Point_2D(T, 0)))
     end

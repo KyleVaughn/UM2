@@ -118,10 +118,11 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
         for it = 1:nt
             seg_points[iγ][it] = tracks[iγ][it] ∩ HRPM
             npoints = length(seg_points[iγ][it])
+            seg_cells[iγ][it] = [MVector{nlevels, Int64}(zeros(Int64, nlevels)) for i = 1:npoints - 1] 
             midpoints = [midpoint(seg_points[iγ][it][ip], 
                                   seg_points[iγ][it][ip+1]) for ip = 1:npoints-1]
-            seg_cells[iγ][it] = [MVector{nlevels, Int64}(zeros(Int64, nlevels)) for i = 1:npoints - 1] 
             for iseg = 1:npoints-1
+#                p_midpoint = midpoint(seg_points[iγ][it][iseg], seg_points[iγ][it][iseg+1])
                 find_face(midpoints[iseg], HRPM, seg_cells[iγ][it][iseg])
             end
         end

@@ -160,10 +160,15 @@ function add_edges(mesh::UnstructuredMesh_2D{T}) where {T<:AbstractFloat}
 end
 
 function add_edges_materialized(mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFloat}
-    mat_edges = convert(Vector{Union{LineSegment_2D{T},
-                                     QuadraticSegment_2D{T}}
-                                    }, edges_materialized(mesh))
-
+    if 0 < length(mesh.edges)
+        mat_edges = convert(Vector{Union{LineSegment_2D{T},
+                                         QuadraticSegment_2D{T}}
+                                  }, edges_materialized(mesh))
+    else
+        mat_edges = convert(Vector{Union{LineSegment_2D{T},
+                                         QuadraticSegment_2D{T}}
+                                  }, edges_materialized(add_edges(mesh)))
+    end
     return UnstructuredMesh_2D{T}(name = mesh.name,
                                   points = mesh.points,
                                   edges = mesh.edges,
@@ -443,7 +448,7 @@ function intersect_edges(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
     # Sort the points based upon their distance to the first point
     distances = distance.(l.points[1], intersection_points)
     sorted_pairs = sort(collect(zip(distances, intersection_points)); by=first);
-    intersection_points = getindex.(sorted_pairs, 2)
+    intersection_points::Vector{Point_2D{T}} = getindex.(sorted_pairs, 2)
     if 0 < length(intersection_points)
         # Remove duplicate points
         intersection_points_reduced = Point_2D{T}[]
@@ -525,14 +530,18 @@ function Base.show(io::IO, mesh::UnstructuredMesh_2D)
     println(io, "  ├─ Size (MB) : $size_MB")
     npoints = length(mesh.points)
     println(io, "  ├─ Points    : $npoints")
-    if length(mesh.edges) === 0
-        nedges = 0
-        nlin = 0
-        nquad = 0
-    else
+    if 0 < length(mesh.edges_materialized)
+        nedges = length(mesh.edges_materialized)
+        nlin   = sum(x->x isa LineSegment_2D,  mesh.edges_materialized)       
+        nquad  = sum(x->x isa QuadraticSegment_2D,  mesh.edges_materialized)       
+    elseif 0 < length(mesh.edges)
         nedges = length(mesh.edges)
         nlin   = sum(x->length(x) == 2,  mesh.edges)
         nquad  = sum(x->length(x) == 3,  mesh.edges)
+    else
+        nedges = 0
+        nlin = 0
+        nquad = 0
     end
     ematerialized = length(mesh.edges_materialized) !== 0
     println(io, "  ├─ Edges     : $nedges")
