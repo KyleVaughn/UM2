@@ -669,3 +669,37 @@ function add_edge_face_connectivity(mesh::UnstructuredMesh_2D{T}) where {T<:Abst
                                   face_sets = mesh.face_sets
                                  )
 end
+
+function add_connectivity(mesh::UnstructuredMesh_2D{T}) where {T<:AbstractFloat}
+    return add_edge_face_connectivity(add_face_edge_connectivity(mesh))
+end
+
+function find_face(p::Point_2D{T}, mesh::UnstructuredMesh_2D{T}) where {T <: AbstractFloat}
+    nfaces = length(mesh.faces)
+    if 0 < length(mesh.faces_materialized)
+        for icell = 1:nfaces
+            if p ∈ mesh.faces_materialized[icell]
+                return icell
+            end
+        end
+    else
+        for icell = 1:nfaces
+            face = mesh.faces[icell]
+            type_id = face[1]
+            bool = false
+            if type_id == 5 # Triangle
+                bool = p ∈ Triangle_2D(get_face_points(mesh, face))
+            elseif type_id == 9 # Quadrilateral
+                bool = p ∈ Quadrilateral_2D(get_face_points(mesh, face))
+            elseif type_id == 22 # Triangle6
+                bool = p ∈ Triangle6_2D(get_face_points(mesh, face))
+            elseif type_id == 23 # Quadrilateral8
+                bool = p ∈ Quadrilateral8_2D(get_face_points(mesh, face))
+            end
+            if bool
+                return icell
+            end
+        end
+    end
+    return 0
+end

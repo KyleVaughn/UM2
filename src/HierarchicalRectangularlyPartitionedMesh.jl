@@ -319,3 +319,22 @@ function add_faces_materialized(HRPM::HierarchicalRectangularlyPartitionedMesh)
         end
     end
 end
+
+function find_face(p::Point_2D{T},
+                   HRPM::HierarchicalRectangularlyPartitionedMesh{T}
+    ) where {T <: AbstractFloat}
+    in_rect = p ∈  HRPM.rect
+    if !in_rect
+        return 0
+    elseif in_rect && (0 < length(HRPM.children))
+        for child in HRPM.children
+            face = find_face(p, child[])
+            if face !== 0
+                return face
+            end
+        end
+    elseif in_rect && isassigned(HRPM.mesh)
+        return find_face(p, HRPM.mesh[])
+    end
+    return 0
+end

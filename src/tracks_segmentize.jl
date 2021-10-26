@@ -104,15 +104,22 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
     @info "Segmentation using $int_alg"
     # index 1 = γ
     # index 2 = track
-    # index 3 = point
+    # index 3 = point/segment
     seg_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, length(tracks))
+    seg_cells  = Vector{Vector{Vector{Int64}}}(undef, length(tracks))
     Threads.@threads for iγ = 1:length(tracks)
         # Set up a vector of points for each track
         nt = length(tracks[iγ])
         seg_points[iγ] = Vector{Vector{Point_2D{T}}}(undef, nt)
+        seg_cells[iγ] = Vector{Vector{Int64}}(undef, nt)
         # for each track, intersect the track with the mesh
         for it = 1:nt
             seg_points[iγ][it] = tracks[iγ][it] ∩ HRPM
+            midpoints = [midpoint(points[i], points[i+1]) for i = 1:length(points)-1]
+#            seg_cells[iγ][it] = [
+#            for ip = 1:length(seg_points[iγ][it])
+#
+#            end
         end
     end
     return seg_points
