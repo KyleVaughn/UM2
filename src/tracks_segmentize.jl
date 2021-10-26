@@ -106,8 +106,10 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
     # index 2 = track
     # index 3 = point/segment
     seg_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, length(tracks))
-    seg_cells  = Vector{Vector{Vector{Int64}}}(undef, length(tracks))
-    Threads.@threads for iγ = 1:length(tracks)
+    nlevels = levels(HRPM)
+    seg_cells  = Vector{Vector{Vector{MVector{nlevels, Int64}}}}(undef, length(tracks))
+    #Threads.@threads
+    for iγ = 1:length(tracks)
         # Set up a vector of points for each track
         nt = length(tracks[iγ])
         seg_points[iγ] = Vector{Vector{Point_2D{T}}}(undef, nt)
@@ -115,12 +117,14 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
         # for each track, intersect the track with the mesh
         for it = 1:nt
             seg_points[iγ][it] = tracks[iγ][it] ∩ HRPM
-            midpoints = [midpoint(points[i], points[i+1]) for i = 1:length(points)-1]
-#            seg_cells[iγ][it] = [
-#            for ip = 1:length(seg_points[iγ][it])
-#
-#            end
+            npoints = length(seg_points[iγ][it])
+            midpoints = [midpoint(seg_points[iγ][it][ip], 
+                                  seg_points[iγ][it][ip+1]) for ip = 1:npoints-1]
+            seg_cells[iγ][it] = [MVector{nlevels, Int64}(zeros(Int64, nlevels)) for i = 1:npoints - 1] 
+            for iseg = 1:npoints-1
+                find_face(midpoints[iseg], HRPM, seg_cells[iγ][it][iseg])
+            end
         end
     end
-    return seg_points
+    return (seg_points, seg_cells)
 end

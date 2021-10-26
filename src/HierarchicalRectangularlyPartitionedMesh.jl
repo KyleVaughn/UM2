@@ -25,6 +25,13 @@ function HierarchicalRectangularlyPartitionedMesh{T}(;
     return this
 end 
 
+Base.broadcastable(HRPM::HierarchicalRectangularlyPartitionedMesh) = Ref(HRPM)
+
+#function Base.getindex(HRPM::HierarchicalRectangularlyPartitionedMesh{T}, 
+#         i::Int64) where {T <: AbstractFloat}
+#    if isassigned(mesh)
+#end
+
 function partition_rectangularly(mesh::UnstructuredMesh_2D{T}) where {T<:AbstractFloat}
     @info "Converting UnstructuredMesh_2D into HierarchicalRectangularlyPartitionedMesh"
     # Extract set names, grid names, and max level
@@ -321,20 +328,35 @@ function add_faces_materialized(HRPM::HierarchicalRectangularlyPartitionedMesh)
 end
 
 function find_face(p::Point_2D{T},
-                   HRPM::HierarchicalRectangularlyPartitionedMesh{T}
-    ) where {T <: AbstractFloat}
+                   HRPM::HierarchicalRectangularlyPartitionedMesh{T},
+                   coord::MVector{N, Int64}
+    ) where {T <: AbstractFloat, N}
     in_rect = p ∈  HRPM.rect
     if !in_rect
-        return 0
+        return false
     elseif in_rect && (0 < length(HRPM.children))
-        for child in HRPM.children
-            face = find_face(p, child[])
-            if face !== 0
-                return face
+        for (i, child) in enumerate(HRPM.children)
+            bool = find_face(p, child[], coord)
+            if bool
+                coord[findfirst(x->x==0, coord)] = i
+                return true
             end
         end
+        return false
     elseif in_rect && isassigned(HRPM.mesh)
-        return find_face(p, HRPM.mesh[])
+        face = find_face(p, HRPM.mesh[])
+        coord[findfirst(x->x==0, coord)] = face
+        reverse!(coord)
+        return face === 0 ? false : true
     end
-    return 0
+end
+
+function levels(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if length(HRPM.children) === 0
+        return 1
+    elseif 0 < length(HRPM.children)
+        return levels(HRPM.children[1][]) + 1
+    else
+        return -100
+    end
 end
