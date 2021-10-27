@@ -107,23 +107,72 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
     # index 3 = point/segment
     seg_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, length(tracks))
     nlevels = levels(HRPM)
-    seg_cells  = Vector{Vector{Vector{MVector{nlevels, Int64}}}}(undef, length(tracks))
-    #Threads.@threads
-    for iγ = 1:length(tracks)
+    seg_faces  = Vector{Vector{Vector{MVector{nlevels, Int64}}}}(undef, length(tracks))
+    Threads.@threads for iγ = 1:length(tracks)
         # Set up a vector of points for each track
         nt = length(tracks[iγ])
         seg_points[iγ] = Vector{Vector{Point_2D{T}}}(undef, nt)
-        seg_cells[iγ] = Vector{Vector{Int64}}(undef, nt)
+        seg_faces[iγ] = Vector{Vector{Int64}}(undef, nt)
         # for each track, intersect the track with the mesh
         for it = 1:nt
             seg_points[iγ][it] = tracks[iγ][it] ∩ HRPM
             npoints = length(seg_points[iγ][it])
-            seg_cells[iγ][it] = [MVector{nlevels, Int64}(zeros(Int64, nlevels)) for i = 1:npoints - 1] 
+            seg_faces[iγ][it] = [MVector{nlevels, Int64}(zeros(Int64, nlevels)) for i = 1:npoints - 1] 
             for iseg = 1:npoints-1
                 p_midpoint = midpoint(seg_points[iγ][it][iseg], seg_points[iγ][it][iseg+1])
-                find_face(p_midpoint, HRPM, seg_cells[iγ][it][iseg])
+                find_face(p_midpoint, HRPM, seg_faces[iγ][it][iseg])
             end
         end
     end
-    return (seg_points, seg_cells)
+    return (seg_points, seg_faces)
+end
+
+function segmentize_no_face_data(tracks::Vector{Vector{LineSegment_2D{T}}},
+                    HRPM::HierarchicalRectangularlyPartitionedMesh{T}
+                    ) where {T <: AbstractFloat}
+
+    # Give info about intersection algorithm being used
+    int_alg = get_intersection_algorithm(HRPM) 
+    @info "Segmentation using $int_alg"
+    # index 1 = γ
+    # index 2 = track
+    # index 3 = point/segment
+    seg_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, length(tracks))
+    Threads.@threads for iγ = 1:length(tracks)
+        # Set up a vector of points for each track
+        nt = length(tracks[iγ])
+        seg_points[iγ] = Vector{Vector{Point_2D{T}}}(undef, nt)
+        # for each track, intersect the track with the mesh
+        for it = 1:nt
+            seg_points[iγ][it] = tracks[iγ][it] ∩ HRPM
+            npoints = length(seg_points[iγ][it])
+            for iseg = 1:npoints-1
+                p_midpoint = midpoint(seg_points[iγ][it][iseg], seg_points[iγ][it][iseg+1])
+            end
+        end
+    end
+    return seg_points
+end
+
+function face_data(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
+                   HRPM::HierarchicalRectangularlyPartitionedMesh{T}
+                    ) where {T <: AbstractFloat}
+
+    println("Running face_data")
+    nlevels = levels(HRPM)
+    seg_faces  = Vector{Vector{Vector{MVector{nlevels, Int64}}}}(undef, length(seg_points))
+    Threads.@threads for iγ = 1:length(seg_points)
+        nt = length(seg_points[iγ])
+        seg_faces[iγ] = Vector{Vector{Int64}}(undef, nt)
+        # for each track, intersect the track with the mesh
+        for it = 1:nt
+            npoints = length(seg_points[iγ][it])
+            seg_faces[iγ][it] = [MVector{nlevels, Int64}(zeros(Int64, nlevels)) for i = 1:npoints - 1] 
+            for iseg = 1:npoints-1
+                p_midpoint = midpoint(seg_points[iγ][it][iseg], seg_points[iγ][it][iseg+1])
+                find_face(p_midpoint, HRPM, seg_faces[iγ][it][iseg])
+            end
+        end
+    end
+    return seg_faces
 end
