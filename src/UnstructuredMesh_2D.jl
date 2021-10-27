@@ -1,76 +1,79 @@
 struct UnstructuredMesh_2D{T <: AbstractFloat}
     name::String 
     points::Vector{Point_2D{T}}
-    edges::Vector{Union{NTuple{2, Int64},
-                        NTuple{3, Int64}
-                       }} 
-    edges_materialized::Vector{Union{
-                                     LineSegment_2D{T},
-                                     QuadraticSegment_2D{T}
-                                    }} 
-    faces::Vector{Union{
-                        NTuple{4, Int64},
-                        NTuple{5, Int64},
-                        NTuple{7, Int64},
-                        NTuple{9, Int64}
-                       }} 
-    faces_materialized::Vector{Union{
-                                     Triangle_2D{T},
-                                     Quadrilateral_2D{T},
-                                     Triangle6_2D{T},
-                                     Quadrilateral8_2D{T}
-                                     }} 
+    edges::Vector{<:Union{NTuple{2, Int64},
+                          NTuple{3, Int64}
+                         }} 
+#    edges::Vector{Union{NTuple{2, Int64},
+#                        NTuple{3, Int64}
+#                       }} 
+    edges_materialized::Vector{<:Union{
+                                       LineSegment_2D{T},
+                                       QuadraticSegment_2D{T}
+                                      }} 
+    faces::Vector{<:Union{
+                          NTuple{4, Int64},
+                          NTuple{5, Int64},
+                          NTuple{7, Int64},
+                          NTuple{9, Int64}
+                         }} 
+    faces_materialized::Vector{<:Union{
+                                       Triangle_2D{T},
+                                       Quadrilateral_2D{T},
+                                       Triangle6_2D{T},
+                                       Quadrilateral8_2D{T}
+                                       }} 
     edge_face_connectivity::Vector{NTuple{2, Int64}} 
-    face_edge_connectivity::Vector{Union{
-                                          NTuple{3, Int64},
-                                          NTuple{4, Int64}
-                                         }} 
+    face_edge_connectivity::Vector{<:Union{
+                                            NTuple{3, Int64},
+                                            NTuple{4, Int64}
+                                           }} 
     face_sets::Dict{String, Set{Int64}} 
 end
 
 function UnstructuredMesh_2D{T}(;
         name::String = "DefaultMeshName",
         points::Vector{Point_2D{T}} = Point_2D{T}[],
-        edges::Vector{Union{NTuple{2, Int64},
-                            NTuple{3, Int64}
-                           }} = Union{NTuple{2, Int64}, 
-                                      NTuple{3, Int64}
-                                     }[],
-        edges_materialized::Vector{Union{
-                                         LineSegment_2D{T},
-                                         QuadraticSegment_2D{T}
-                                        }} = Union{
-                                                   LineSegment_2D{T},
-                                                   QuadraticSegment_2D{T}
-                                                  }[],
-        faces::Vector{Union{
-                            NTuple{4, Int64},
-                            NTuple{5, Int64},
-                            NTuple{7, Int64},
-                            NTuple{9, Int64}
-                           }} = Union{
-                                      NTuple{4, Int64},
-                                      NTuple{5, Int64},
-                                      NTuple{7, Int64},
-                                      NTuple{9, Int64}
-                                     }[], 
-        faces_materialized::Vector{Union{
-                                         Triangle_2D{T},
-                                         Quadrilateral_2D{T},
-                                         Triangle6_2D{T},
-                                         Quadrilateral8_2D{T}
-                                         }} = Union{
-                                                    Triangle_2D{T},
-                                                    Quadrilateral_2D{T},
-                                                    Triangle6_2D{T},
-                                                    Quadrilateral8_2D{T}
+        edges::Vector{<:Union{NTuple{2, Int64},
+                              NTuple{3, Int64}
+                             }} = Union{NTuple{2, Int64}, 
+                                        NTuple{3, Int64}
+                                       }[],
+        edges_materialized::Vector{<:Union{
+                                           LineSegment_2D{T},
+                                           QuadraticSegment_2D{T}
+                                          }} = Union{
+                                                     LineSegment_2D{T},
+                                                     QuadraticSegment_2D{T}
                                                     }[],
+        faces::Vector{<:Union{
+                              NTuple{4, Int64},
+                              NTuple{5, Int64},
+                              NTuple{7, Int64},
+                              NTuple{9, Int64}
+                             }} = Union{
+                                        NTuple{4, Int64},
+                                        NTuple{5, Int64},
+                                        NTuple{7, Int64},
+                                        NTuple{9, Int64}
+                                       }[], 
+        faces_materialized::Vector{<:Union{
+                                           Triangle_2D{T},
+                                           Quadrilateral_2D{T},
+                                           Triangle6_2D{T},
+                                           Quadrilateral8_2D{T}
+                                           }} = Union{
+                                                      Triangle_2D{T},
+                                                      Quadrilateral_2D{T},
+                                                      Triangle6_2D{T},
+                                                      Quadrilateral8_2D{T}
+                                                      }[],
         edge_face_connectivity::Vector{NTuple{2, Int64}} = NTuple{2, Int64}[], 
-        face_edge_connectivity ::Vector{Union{
-                                               NTuple{3, Int64},
-                                               NTuple{4, Int64}
-                                              }} = Union{NTuple{3, Int64},
-                                                         NTuple{4, Int64}}[],
+        face_edge_connectivity ::Vector{<:Union{
+                                                 NTuple{3, Int64},
+                                                 NTuple{4, Int64}
+                                                }} = Union{NTuple{3, Int64},
+                                                           NTuple{4, Int64}}[],
         face_sets::Dict{String, Set{Int64}} = Dict{String, Set{Int64}}()
     ) where {T<:AbstractFloat}
         return UnstructuredMesh_2D{T}(name, 

@@ -18,12 +18,7 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
     # not 8, 10, 9 or anything funky/out of order.
     name = "DefaultMeshName"
     file = open(filepath, "r")
-    faces = Union{
-                   NTuple{4, Int64},
-                   NTuple{5, Int64},
-                   NTuple{7, Int64},
-                   NTuple{9, Int64}
-                  }[]
+    faces = Vector{Int64}[]
     face_sets = Dict{String, Set{Int64}}()
     points = Point_2D{float_type}[]
     while !eof(file)
@@ -41,7 +36,7 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
                 points = _read_abaqus_nodes_2d(file, float_type)
             elseif occursin("*ELEMENT", line_split[1])
                 element_type = String(strip(replace(line_split[2], ("type=" => "")), ','))
-                faces = vcat(faces, _read_abaqus_elements(file, element_type))
+                append!(faces, _read_abaqus_elements(file, element_type))
             elseif occursin("*ELSET", line_split[1])
                 set_name = String(replace(line_split[1], ("*ELSET,ELSET=" => "")))
                 face_sets[set_name] = _read_abaqus_elset(file)
@@ -51,7 +46,7 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
     close(file)
     return UnstructuredMesh_2D{float_type}(name = name,
                                            points = points,
-                                           faces = faces,
+                                           faces = [ Tuple(f) for f in faces],
                                            face_sets = face_sets
                                           )
 end
@@ -75,25 +70,20 @@ function _read_abaqus_elements(file::IOStream, element_type::String)
         error("$element_type is not in the abaqus to vtk type conversion dictionary")
     end
     type = abaqus_to_vtk_type[element_type]
-    faces = Union{
-                   NTuple{4, Int64},
-                   NTuple{5, Int64},
-                   NTuple{7, Int64},
-                   NTuple{9, Int64}
-                  }[]
+    faces = Vector{Int64}[]
     line_split = strip.(split(readline(file)), [','])
     line_position = position(file)
     while !occursin("*", line_split[1])
         vertex_IDs = parse.(Int64, line_split[2:length(line_split)])
         if length(vertex_IDs) == 9
-            push!(faces, Tuple(vcat(type, vertex_IDs[1:8])))
+            push!(faces, vcat(type, vertex_IDs[1:8]))
         else
-            push!(faces, Tuple(vcat(type, vertex_IDs)))
+            push!(faces, vcat(type, vertex_IDs))
         end
         line_position = position(file)
         line_split = strip.(split(readline(file)), [','])
     end
-    seek(file, line_position) 
+    seek(file, line_position)
     return faces
 end
 
