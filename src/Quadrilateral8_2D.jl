@@ -177,13 +177,13 @@ function intersect(l::LineSegment_2D{T}, quad8::Quadrilateral8_2D{T}) where {T <
                       Point_2D(T, 0),
                       Point_2D(T, 0)
                      )
-    n_ipoints = 0
+    n_ipoints = 0x00000000
     # We need to account for 6 points returned
     for (npoints, points) in intersections
         for i = 1:npoints
-            if n_ipoints === 0
+            if n_ipoints === 0x00000000
                 ipoints[1] = points[1]
-                n_ipoints = 1
+                n_ipoints = 0x00000001
             else
                 # make sure we don't have duplicate points
                 duplicate = false
@@ -194,7 +194,7 @@ function intersect(l::LineSegment_2D{T}, quad8::Quadrilateral8_2D{T}) where {T <
                     end
                 end  
                 if !duplicate
-                    n_ipoints += 1
+                    n_ipoints += 0x00000001
                     ipoints[n_ipoints] = points[i]
                 end
             end

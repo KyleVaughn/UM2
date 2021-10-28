@@ -44,8 +44,8 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
         end
     end
     close(file)
-    # If there are less than typemax(UInt32) vertices, convert to UInt32
-    if length(points) < typemax(UInt32)
+    # If 2*length(faces) < typemax(UInt32), convert to UInt32
+    if 2*length(faces) < typemax(UInt32)
         I = UInt32
         faces_32 = convert(Vector{Vector{UInt32}}, faces)
         face_sets_32 = convert(Dict{String, Set{UInt32}}, face_sets) 

@@ -110,7 +110,7 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
         end
         # Second r,s valid?
         if (0 ≤ r₂ ≤ 1) && (0 ≤ s₂ ≤ 1) && (p₂ ≈ l(s₂))
-            npoints += 1
+            npoints += 0x00000001
             # If only point 2 is valid, return it in index 1 of points
             if npoints === 0x00000001
                 p₁ = p₂

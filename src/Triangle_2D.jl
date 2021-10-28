@@ -53,16 +53,16 @@ function intersect(l::LineSegment_2D{T}, tri::Triangle_2D{T}) where {T <: Abstra
     intersections = l .∩ line_segments
     p₁ = Point_2D(T, 0)
     p₂ = Point_2D(T, 0)
-    ipoints = 0
+    ipoints = 0x00000000
     # We need to account for 3 points returned due to vertex intersection
     for (npoints, points) in intersections
-        if npoints === 1
-            if ipoints === 0
+        if npoints === 0x00000001
+            if ipoints === 0x00000000
                 p₁ = points[1]
-                ipoints = 1
-            elseif ipoints === 1 && (points[1] ≉ p₁)
+                ipoints = 0x00000001
+            elseif ipoints === 0x00000001 && (points[1] ≉ p₁)
                 p₂ = points[1]
-                ipoints = 2
+                ipoints = 0x00000002
             end
         end
     end
