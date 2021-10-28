@@ -1,4 +1,4 @@
-const abaqus_to_vtk_type = Dict(
+const abaqus_to_vtk_type = Dict{String, UInt64}(
     # 2D
     # triangle
     "CPS3"  => 5,
@@ -18,8 +18,8 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
     # not 8, 10, 9 or anything funky/out of order.
     name = "DefaultMeshName"
     file = open(filepath, "r")
-    faces = Vector{Int64}[]
-    face_sets = Dict{String, Set{Int64}}()
+    faces = Vector{UInt64}[]
+    face_sets = Dict{String, Set{UInt64}}()
     points = Point_2D{float_type}[]
     while !eof(file)
         line_split = split(readline(file))
@@ -44,11 +44,24 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
         end
     end
     close(file)
-    return UnstructuredMesh_2D{float_type}(name = name,
-                                           points = points,
-                                           faces = [ Tuple(f) for f in faces],
-                                           face_sets = face_sets
-                                          )
+    # If there are less than typemax(UInt32) vertices, convert to UInt32
+    if length(points) < typemax(UInt32)
+        I = UInt32
+        faces_32 = convert(Vector{Vector{UInt32}}, faces)
+        face_sets_32 = convert(Dict{String, Set{UInt32}}, face_sets) 
+        return UnstructuredMesh_2D{float_type, I}(name = name,
+                                                  points = points,
+                                                  faces = [ Tuple(f) for f in faces_32],
+                                                  face_sets = face_sets_32
+                                                 )
+    else
+        I = UInt64
+        return UnstructuredMesh_2D{float_type, I}(name = name,
+                                                  points = points,
+                                                  faces = [ Tuple(f) for f in faces],
+                                                  face_sets = face_sets
+                                                 )
+    end
 end
 
 function _read_abaqus_nodes_2d(file::IOStream, type::Type{T}) where {T <: AbstractFloat}
@@ -70,11 +83,11 @@ function _read_abaqus_elements(file::IOStream, element_type::String)
         error("$element_type is not in the abaqus to vtk type conversion dictionary")
     end
     type = abaqus_to_vtk_type[element_type]
-    faces = Vector{Int64}[]
+    faces = Vector{UInt64}[]
     line_split = strip.(split(readline(file)), [','])
     line_position = position(file)
     while !occursin("*", line_split[1])
-        vertex_IDs = parse.(Int64, line_split[2:length(line_split)])
+        vertex_IDs = parse.(UInt64, line_split[2:length(line_split)])
         if length(vertex_IDs) == 9
             push!(faces, vcat(type, vertex_IDs[1:8]))
         else
@@ -90,5 +103,5 @@ end
 function _read_abaqus_elset(file::IOStream)
     line_split = strip.(split(readuntil(file, "*")), [','])
     seek(file, position(file)-1)
-    return Set(parse.(Int64, line_split))
+    return Set(parse.(UInt64, line_split))
 end
