@@ -179,13 +179,13 @@ function intersect(l::LineSegment_2D{T}, tri6::Triangle6_2D{T}) where {T <: Abst
                       Point_2D(T, 0),
                       Point_2D(T, 0)
                      )
-    n_ipoints = 0x00000000
+    n_ipoints = 0x00
     # We need to account for 6 points returned
     for (npoints, points) in intersections
         for i = 1:npoints
-            if n_ipoints === 0x00000000
+            if n_ipoints === 0x00
                 ipoints[1] = points[1]
-                n_ipoints = 0x00000001
+                n_ipoints = 0x01
             else
                 # make sure we don't have duplicate points
                 duplicate = false
@@ -196,7 +196,7 @@ function intersect(l::LineSegment_2D{T}, tri6::Triangle6_2D{T}) where {T <: Abst
                     end
                 end  
                 if !duplicate
-                    n_ipoints += 0x00000001
+                    n_ipoints += 0x01
                     ipoints[n_ipoints] = points[i]
                 end
             end

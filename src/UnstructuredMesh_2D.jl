@@ -2,14 +2,9 @@ struct UnstructuredMesh_2D{T <: AbstractFloat, I <: Unsigned}
     name::String 
     points::Vector{Point_2D{T}}
     edges::Vector{<:Union{NTuple{2, I}, NTuple{3, I}}} 
-    edges_materialized::Vector{<:Union{LineSegment_2D{T}, QuadraticSegment_2D{T}}} 
+    edges_materialized::Vector{<:Edge{T}} 
     faces::Vector{<:Tuple{Vararg{I, N} where N}} 
-    faces_materialized::Vector{<:Union{
-                                       Triangle_2D{T},
-                                       Quadrilateral_2D{T},
-                                       Triangle6_2D{T},
-                                       Quadrilateral8_2D{T}
-                                       }} 
+    faces_materialized::Vector{<:Face{T}} 
     edge_face_connectivity::Vector{NTuple{2, I}} 
     face_edge_connectivity::Vector{<:Union{NTuple{3, I}, NTuple{4, I}}} 
     face_sets::Dict{String, Set{I}} 
@@ -19,12 +14,9 @@ function UnstructuredMesh_2D{T, I}(;
         name::String = "DefaultMeshName",
         points::Vector{Point_2D{T}} = Point_2D{T}[],
         edges::Vector{<:Union{NTuple{2, I}, NTuple{3, I}}} = NTuple{2, I}[],
-        edges_materialized::Vector{<:Union{
-                                           LineSegment_2D{T},
-                                           QuadraticSegment_2D{T}
-                                          }} = LineSegment_2D{T}[],
+        edges_materialized::Vector{<:Edge{T}} = LineSegment_2D{T}[],
         faces::Vector{<:Tuple{Vararg{I, N} where N}} = NTuple{4, I}[],
-        faces_materialized::Vector{<:Face} = Triangle_2D{T}[],
+        faces_materialized::Vector{<:Face{T}} = Triangle_2D{T}[],
         edge_face_connectivity::Vector{NTuple{2, I}} = NTuple{2, I}[], 
         face_edge_connectivity ::Vector{<:Union{NTuple{3, I}, NTuple{4, I}
                                                 }} = NTuple{3, I}[],
@@ -395,7 +387,7 @@ end
 
 function faces_materialized(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat,
                                                                     I <: Unsigned}
-    return face_materialized.(mesh, mesh.faces)
+    return face_materialized.(mesh, mesh.faces)::Vector{<:Face{T}}
 end
 
 function face_materialized(mesh::UnstructuredMesh_2D{T, I}, 
@@ -421,9 +413,9 @@ end
 function find_face(p::Point_2D{T}, mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat,
                                                                            I <: Unsigned}
     if 0 < length(mesh.faces_materialized)
-        return find_face_explicit(p, mesh.faces_materialized)
+        return I(find_face_explicit(p, mesh.faces_materialized))
     else
-        return find_face_implicit(p, mesh, mesh.faces)
+        return I(find_face_implicit(p, mesh, mesh.faces))
     end
 end
 
@@ -651,6 +643,22 @@ function intersect_faces_explicit(l::LineSegment_2D{T},
     return intersection_points
 end
 
+function intersect_faces_explicit(l::LineSegment_2D{T}, 
+                                  faces::Vector{<:Face{T}}
+                        ) where {T <: AbstractFloat}
+    # An array to hold all of the intersection points
+    intersection_points = Point_2D{T}[]
+    for face in faces
+        npoints, points = l ∩ face
+        # If the intersections yields 1 or more points, push those points to the array of points
+        if 0 < npoints 
+            append!(intersection_points, collect(points[1:npoints]))
+        end
+    end
+    return intersection_points
+end
+
+
 function intersect_faces_implicit(l::LineSegment_2D{T},
                                   mesh::UnstructuredMesh_2D{T, I},
                                   faces::Vector{<:Union{NTuple{4, I}, NTuple{5, I}}}
@@ -811,6 +819,7 @@ end
 
 function sort_intersection_points(l::LineSegment_2D{T},
                                   points::Vector{Point_2D{T}}) where {T <: AbstractFloat}
+    minimum_seg_length = 1e-4 # 1 μm
     if 0 < length(points)
         # Sort the points based upon their distance to the first point in the line
         distances = distance.(l.points[1], points)
@@ -820,7 +829,7 @@ function sort_intersection_points(l::LineSegment_2D{T},
         points_reduced::Vector{Point_2D{T}} = [points_sorted[1]]
         npoints::Int64 = length(points_sorted)
         for i = 2:npoints
-            if last(points_reduced) ≉ points_sorted[i]
+            if minimum_seg_length < distance(last(points_reduced), points_sorted[i])
                 push!(points_reduced, points_sorted[i])
             end
         end

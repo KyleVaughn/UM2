@@ -1,8 +1,8 @@
 # Follows https://mit-crpg.github.io/OpenMOC/methods/track_generation.html
 function tracks(tₛ::T,
                 ang_quad::ProductAngularQuadrature{nₐ, nₚ, T},
-                HRPM::HierarchicalRectangularlyPartitionedMesh{T}
-                ) where {nₐ, nₚ, T <: AbstractFloat}
+                HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
+                ) where {nₐ, nₚ, T <: AbstractFloat, I <: Unsigned}
     w = width(HRPM) 
     h = height(HRPM)
     # Fill the vectors using intersect
