@@ -3,7 +3,7 @@
 # NOTE: Quadrilaterals are assumed to be convex. This is because quadrilaterals must be convex 
 # to be valid finite elements.
 # https://math.stackexchange.com/questions/2430691/jacobian-determinant-for-bi-linear-quadrilaterals
-struct Quadrilateral_2D{T <: AbstractFloat}
+struct Quadrilateral_2D{T <: AbstractFloat} <: Face{T}
     # Counter clockwise order
     points::NTuple{4, Point_2D{T}}
 end

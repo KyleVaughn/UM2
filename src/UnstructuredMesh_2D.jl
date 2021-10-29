@@ -3,12 +3,7 @@ struct UnstructuredMesh_2D{T <: AbstractFloat, I <: Unsigned}
     points::Vector{Point_2D{T}}
     edges::Vector{<:Union{NTuple{2, I}, NTuple{3, I}}} 
     edges_materialized::Vector{<:Union{LineSegment_2D{T}, QuadraticSegment_2D{T}}} 
-    faces::Vector{<:Union{
-                          NTuple{4, I},
-                          NTuple{5, I},
-                          NTuple{7, I},
-                          NTuple{9, I}
-                         }} 
+    faces::Vector{<:Tuple{Vararg{I, N} where N}} 
     faces_materialized::Vector{<:Union{
                                        Triangle_2D{T},
                                        Quadrilateral_2D{T},
@@ -28,18 +23,8 @@ function UnstructuredMesh_2D{T, I}(;
                                            LineSegment_2D{T},
                                            QuadraticSegment_2D{T}
                                           }} = LineSegment_2D{T}[],
-        faces::Vector{<:Union{
-                              NTuple{4, I},
-                              NTuple{5, I},
-                              NTuple{7, I},
-                              NTuple{9, I}
-                             }} = NTuple{4, I}[], 
-        faces_materialized::Vector{<:Union{
-                                           Triangle_2D{T},
-                                           Quadrilateral_2D{T},
-                                           Triangle6_2D{T},
-                                           Quadrilateral8_2D{T}
-                                           }} = Triangle_2D{T}[],
+        faces::Vector{<:Tuple{Vararg{I, N} where N}} = NTuple{4, I}[],
+        faces_materialized::Vector{<:Face} = Triangle_2D{T}[],
         edge_face_connectivity::Vector{NTuple{2, I}} = NTuple{2, I}[], 
         face_edge_connectivity ::Vector{<:Union{NTuple{3, I}, NTuple{4, I}
                                                 }} = NTuple{3, I}[],
@@ -282,7 +267,7 @@ function edges(face::NTuple{7, I}) where {I <: Unsigned}
     return edges
 end
 
-function edges(face::NTuple{9, Int64}) where {I <: Unsigned}  
+function edges(face::NTuple{9, I}) where {I <: Unsigned}  
     cell_type = face[1]
     if cell_type ∈  UnstructuredMesh_2D_quadratic_cell_types
         edges = [ [face[2], face[3], face[6]],
@@ -318,6 +303,14 @@ function edges(faces::Vector{<:Union{NTuple{7, I}, NTuple{9, I}}}) where {I <: U
     # Filter the duplicate edges
     edges_filtered = sort(collect(Set{Vector{I}}(edges_unfiltered)))
     return [ Tuple(e) for e in edges_filtered ]::Vector{NTuple{3, I}}
+end
+
+function edges(faces::Vector{<:Tuple{Vararg{I, N} where N}}) where {I <: Unsigned}
+    edge_arr = edges.(faces)
+    edges_unfiltered = [ edge for edge_vec in edge_arr for edge in edge_vec ]
+    # Filter the duplicate edges
+    edges_filtered = sort(collect(Set{Vector{I}}(edges_unfiltered)))
+    return [ Tuple(e) for e in edges_filtered ]::Vector{<:Union{NTuple{2, I}, NTuple{3, I}}}
 end
 
 # Create the edges for each face
@@ -695,6 +688,45 @@ function intersect_faces_implicit(l::LineSegment_2D{T},
     for face in faces              
         type_id = face[1]
         if type_id == 22 # Triangle6
+            npoints, points = l ∩ Triangle6_2D(get_face_points(mesh, 
+                                                               face::NTuple{7, I})::NTuple{6, Point_2D{T}})
+            if 0 < npoints 
+                append!(intersection_points, collect(points[1:npoints]))
+            end
+        elseif type_id == 23 # Quadrilateral8
+            npoints, points = l ∩ Quadrilateral8_2D(get_face_points(mesh,
+                                                                    face::NTuple{9, I})::NTuple{8, Point_2D{T}})
+            if 0 < npoints 
+                append!(intersection_points, collect(points[1:npoints]))
+            end
+        end
+    end
+    return intersection_points
+end
+
+function intersect_faces_implicit(l::LineSegment_2D{T},
+                                  mesh::UnstructuredMesh_2D{T, I},
+                                  faces::Vector{<:Tuple{Vararg{I, N} where N}}
+                        ) where {T <: AbstractFloat, I <: Unsigned}
+    # An array to hold all of the intersection points
+    intersection_points = Point_2D{T}[]
+    # Intersect the line with each of the faces
+    for face in faces              
+        type_id = face[1]
+        if type_id == 5 # Triangle
+            npoints, points = l ∩ Triangle_2D(get_face_points(mesh, 
+                                                              face::NTuple{4, I})::NTuple{3, Point_2D{T}})
+            # If the intersections yields 1 or more points, push those points to the array of points
+            if 0 < npoints 
+                append!(intersection_points, collect(points[1:npoints]))
+            end
+        elseif type_id == 9 # Quadrilateral
+            npoints, points = l ∩ Quadrilateral_2D(get_face_points(mesh, 
+                                                                   face::NTuple{5, I})::NTuple{4, Point_2D{T}})
+            if 0 < npoints 
+                append!(intersection_points, collect(points[1:npoints]))
+            end
+        elseif type_id == 22 # Triangle6
             npoints, points = l ∩ Triangle6_2D(get_face_points(mesh, 
                                                                face::NTuple{7, I})::NTuple{6, Point_2D{T}})
             if 0 < npoints 

@@ -1,6 +1,6 @@
 # A quadratic quadrilateral in 2D space.
 
-struct Quadrilateral8_2D{T <: AbstractFloat}
+struct Quadrilateral8_2D{T <: AbstractFloat} <: Face{T}
     # The points are assumed to be ordered  in counter clockwise order as follows
     # p₁ = vertex A
     # p₂ = vertex B

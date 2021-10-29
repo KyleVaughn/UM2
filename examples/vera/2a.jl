@@ -163,26 +163,29 @@ niter = 2 # The optimization iterations
 # end
 
 # 2nd order triangles
-gmsh.model.mesh.generate(2) # Triangles first for high order meshes.
-gmsh.model.mesh.set_order(2)
-for () in 1:niter
-    gmsh.model.mesh.optimize("HighOrderElastic")
-    gmsh.model.mesh.optimize("Relocate2D")
-    gmsh.model.mesh.optimize("HighOrderElastic")
-end
+# gmsh.option.set_number("Mesh.HighOrderOptimize", 2)
+# gmsh.model.mesh.generate(2) # Triangles first for high order meshes.
+# gmsh.model.mesh.set_order(2)
+## for () in 1:niter
+##     gmsh.model.mesh.optimize("HighOrderElastic")
+##     gmsh.model.mesh.optimize("Relocate2D")
+##     gmsh.model.mesh.optimize("HighOrderElastic")
+## end
 
 # 2nd order quadrilaterals
 # These can be problematic for large lc. They have trouble respecting CAD boundaries.
-# gmsh.option.set_number("Mesh.RecombineAll", 1) # recombine all triangles
-# gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads. Better 2D algorithm
-# gmsh.option.set_number("Mesh.RecombinationAlgorithm", 3)
-# gmsh.model.mesh.generate(2)
-# gmsh.model.mesh.set_order(2)
-# for () in 1:niter
-#     gmsh.model.mesh.optimize("HighOrderElastic")
-#     gmsh.model.mesh.optimize("Relocate2D")
-#     gmsh.model.mesh.optimize("HighOrderElastic")
-# end
+
+gmsh.option.set_number("Mesh.RecombineAll", 1) # recombine all triangles
+gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads. Better 2D algorithm
+gmsh.option.set_number("Mesh.RecombinationAlgorithm", 1)
+gmsh.option.set_number("Mesh.HighOrderOptimize", 2)
+gmsh.model.mesh.generate(2)
+gmsh.model.mesh.set_order(2)
+## for () in 1:niter
+##     gmsh.model.mesh.optimize("HighOrderElastic")
+##     gmsh.model.mesh.optimize("Relocate2D")
+##     gmsh.model.mesh.optimize("HighOrderElastic")
+## end
 
 # gmsh.fltk.run()
 

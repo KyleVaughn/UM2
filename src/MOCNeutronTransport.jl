@@ -13,6 +13,7 @@ catch e
 end
 
 import Base: +, -, *, /, ≈, ==, intersect, in
+include("AbstractTypes.jl")
 include("AngularQuadrature.jl")
 include("Tree.jl")
 include("Point_2D.jl")

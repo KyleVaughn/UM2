@@ -53,7 +53,7 @@ function chebyshev_angular_quadrature(M::Int, T::DataType)
     # A Chebyshev-type quadrature for a given weight function is a quadrature formula with equal
     # weights. This function produces evenly spaced angles with equal weights.
     angles = [T(π*(2m-1)/(4M)) for m = M:-1:1]
-    weights = zeros(T, M) .+ 1/M
+    weights = zeros(T, M) .+ T(1/M)
     return angles, weights
 end
 

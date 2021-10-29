@@ -44,8 +44,31 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
         end
     end
     close(file)
-    # If 2*length(faces) < typemax(UInt32), convert to UInt32
-    if 2*length(faces) < typemax(UInt32)
+    # We can save a lot on memory and boost performance by choosing the smallest usable
+    # integer for our mesh. The relationship between faces, edges, and vertices is
+    # Triangle
+    #   F ≈ 2V
+    #   E ≈ 3F/2
+    # Quadrilateral
+    #   F ≈ V
+    #   E ≈ 2F
+    # Triangle6
+    #   2F ≈ V
+    #   E ≈ 3F/2
+    # Quadrilateral8
+    #   4F ≈ V 
+    #   E ≈ 2F
+    # If 2.2*length(faces) < typemax(UInt), convert to UInt
+    if ceil(2.2*length(faces)) < typemax(UInt16)
+        I = UInt16
+        faces_16 = convert(Vector{Vector{UInt16}}, faces)
+        face_sets_16 = convert(Dict{String, Set{UInt16}}, face_sets) 
+        return UnstructuredMesh_2D{float_type, I}(name = name,
+                                                  points = points,
+                                                  faces = [ Tuple(f) for f in faces_16],
+                                                  face_sets = face_sets_16
+                                                 )
+    elseif ceil(2.2*length(faces)) < typemax(UInt32)
         I = UInt32
         faces_32 = convert(Vector{Vector{UInt32}}, faces)
         face_sets_32 = convert(Dict{String, Set{UInt32}}, face_sets) 

@@ -1,23 +1,23 @@
-mutable struct HierarchicalRectangularlyPartitionedMesh{T<:AbstractFloat}
+mutable struct HierarchicalRectangularlyPartitionedMesh{T<:AbstractFloat, I<:Unsigned}
     name::String
     rect::Quadrilateral_2D{T}
-    mesh::Ref{UnstructuredMesh_2D{T}}
-    parent::Ref{HierarchicalRectangularlyPartitionedMesh{T}}
-    children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh{T}}}
+    mesh::Ref{UnstructuredMesh_2D{T,I}}
+    parent::Ref{HierarchicalRectangularlyPartitionedMesh{T,I}}
+    children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh{T,I}}}
 end
 
-function HierarchicalRectangularlyPartitionedMesh{T}(;
+function HierarchicalRectangularlyPartitionedMesh{T,I}(;
         name::String = "DefaultHRPMName",
         rect::Quadrilateral_2D{T} = Quadrilateral_2D(Point_2D(T, 0), 
                                                      Point_2D(T, 0), 
                                                      Point_2D(T, 0), 
                                                      Point_2D(T, 0)), 
-        mesh::Ref{UnstructuredMesh_2D{T}} = Ref{UnstructuredMesh_2D{T}}(),
-        parent::Ref{HierarchicalRectangularlyPartitionedMesh{T}}
-            = Ref{HierarchicalRectangularlyPartitionedMesh{T}}(),
-        children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh{T}}}
-            = Ref{HierarchicalRectangularlyPartitionedMesh{T}}[]
-        ) where {T<:AbstractFloat}
+        mesh::Ref{UnstructuredMesh_2D{T,I}} = Ref{UnstructuredMesh_2D{T,I}}(),
+        parent::Ref{HierarchicalRectangularlyPartitionedMesh{T,I}}
+            = Ref{HierarchicalRectangularlyPartitionedMesh{T,I}}(),
+        children::Vector{Ref{HierarchicalRectangularlyPartitionedMesh{T,I}}}
+            = Ref{HierarchicalRectangularlyPartitionedMesh{T,I}}[]
+        ) where {T<:AbstractFloat, I<:Unsigned}
     this = HierarchicalRectangularlyPartitionedMesh(name, rect, mesh, parent, children)
     if isassigned(parent)
         push!(parent[].children, Ref(this))
@@ -26,11 +26,6 @@ function HierarchicalRectangularlyPartitionedMesh{T}(;
 end 
 
 Base.broadcastable(HRPM::HierarchicalRectangularlyPartitionedMesh) = Ref(HRPM)
-
-#function Base.getindex(HRPM::HierarchicalRectangularlyPartitionedMesh{T}, 
-#         i::Int64) where {T <: AbstractFloat}
-#    if isassigned(mesh)
-#end
 
 function partition_rectangularly(mesh::UnstructuredMesh_2D{T}) where {T<:AbstractFloat}
     @info "Converting UnstructuredMesh_2D into HierarchicalRectangularlyPartitionedMesh"
