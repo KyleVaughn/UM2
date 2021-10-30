@@ -35,7 +35,7 @@ include("gauss_legendre_quadrature.jl")
 include("UnstructuredMesh_2D.jl")
 include("HierarchicalRectangularlyPartitionedMesh.jl")
 include("abaqus.jl")
-include("tracks_segmentize.jl")
+include("ray_trace.jl")
 include("vtk.jl")
 include("xdmf.jl")
 
@@ -84,7 +84,6 @@ export  ×,
         edge_materialized,        
         faces_materialized,
         face_edge_connectivity,
-        face_data,
         face_materialized,
         find_face,
         gauss_legendre_quadrature,
@@ -99,11 +98,12 @@ export  ×,
         midpoint,
         norm,
         partition_rectangularly,
+        ray_trace,
         read_abaqus_2d,
         read_vtk_2d,
         real_to_parametric,
         segmentize,
-        segmentize_no_face_data,
+        segment_face_indices,
         submesh,
         tracks,
         triangulate,

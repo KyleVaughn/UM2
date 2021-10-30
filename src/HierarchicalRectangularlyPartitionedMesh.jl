@@ -94,16 +94,28 @@ function add_faces_materialized(HRPM::HierarchicalRectangularlyPartitionedMesh)
     end
 end
 
+function are_faces_materialized(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if isassigned(HRPM.mesh)
+        if length(HRPM.mesh[].faces_materialized) !== 0
+            return true
+        else
+            return false
+        end
+    else
+        return are_faces_materialized(HRPM.children[1][])
+    end
+end
+
 function find_face(p::Point_2D{T},
-                   HRPM::HierarchicalRectangularlyPartitionedMesh{T, I},
-                   coord::MVector{N, I}
-    ) where {T <: AbstractFloat, I <: Unsigned, N}
+                   coord::MVector{N, I},
+                   HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
+                  ) where {T <: AbstractFloat, I <: Unsigned, N}
     in_rect = p ∈  HRPM.rect
     if !in_rect
         return false
     elseif in_rect && (0 < length(HRPM.children))
-        for (i, child) in enumerate(HRPM.children)
-            bool = find_face(p, child[], coord)
+        for (i, child::Ref{HierarchicalRectangularlyPartitionedMesh{T,I}}) in enumerate(HRPM.children)
+            bool = find_face(p, coord, child[]::HierarchicalRectangularlyPartitionedMesh{T, I})
             if bool
                 coord[findfirst(x->x==0, coord)] = I(i)
                 return true
@@ -111,11 +123,12 @@ function find_face(p::Point_2D{T},
         end
         return false
     elseif in_rect && isassigned(HRPM.mesh)
-        face = find_face(p, HRPM.mesh[])
+        face = find_face(p, HRPM.mesh[]::UnstructuredMesh_2D{T, I})
         coord[findfirst(x->x==0, coord)] = face
         reverse!(coord)
-        return face === 0 ? false : true
+        return face == 0 ? false : true
     end
+    return false
 end
 
 function get_intersection_algorithm(HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T<:AbstractFloat}
