@@ -819,7 +819,6 @@ end
 
 function sort_intersection_points(l::LineSegment_2D{T},
                                   points::Vector{Point_2D{T}}) where {T <: AbstractFloat}
-    minimum_seg_length = 1e-4 # 1 μm
     if 0 < length(points)
         # Sort the points based upon their distance to the first point in the line
         distances = distance.(l.points[1], points)
@@ -829,7 +828,7 @@ function sort_intersection_points(l::LineSegment_2D{T},
         points_reduced::Vector{Point_2D{T}} = [points_sorted[1]]
         npoints::Int64 = length(points_sorted)
         for i = 2:npoints
-            if minimum_seg_length < distance(last(points_reduced), points_sorted[i])
+            if minimum_segment_length < distance(last(points_reduced), points_sorted[i])
                 push!(points_reduced, points_sorted[i])
             end
         end
