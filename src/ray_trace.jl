@@ -4,7 +4,9 @@ function ray_trace(tₛ::T,
                    ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
     the_tracks = tracks(tₛ, ang_quad, HRPM)
     segment_points = segmentize(the_tracks, HRPM)
-    face_indices = segment_face_indices(segment_points, HRPM)
+    nlevels = levels(HRPM)
+    template_vec = MVector{nlevels, I}(zeros(I, nlevels))
+    face_indices = segment_face_indices(segment_points, HRPM, template_vec)
     return segment_points, face_indices
 end
 
@@ -27,26 +29,31 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
 end
 
 function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
-                              HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
-                             ) where {T <: AbstractFloat, I <: Unsigned}
+                              HRPM::HierarchicalRectangularlyPartitionedMesh{T, I},
+                              template_vec::MVector{N, I}
+                             ) where {T <: AbstractFloat, I <: Unsigned, N}
 
     @info "Finding face indices corresponding to each segment"
     if !are_faces_materialized(HRPM)
         @warn "Faces are not materialized for this mesh. This will be VERY slow"
     end
-    nlevels = levels(HRPM)
     nγ = length(seg_points)
+    bools = fill(false, nγ)
     # Preallocate indices in the most frustrating way
     indices =   [    
                     [ 
                         [ 
-                            MVector{nlevels, I}(zeros(I, nlevels)) 
+                            MVector{N, I}(zeros(I, N)) 
                                 for i = 1:length(seg_points[iγ][it])-1 # Segments
                         ] for it = 1:length(seg_points[iγ]) # Tracks
                     ] for iγ = 1:nγ # Angles
                 ]
     Threads.@threads for iγ = 1:nγ
-        segment_face_indices(iγ, seg_points[iγ], indices[iγ], HRPM)
+        bools[iγ] = segment_face_indices(iγ, seg_points[iγ], indices[iγ], HRPM)
+    end
+    if !all(bools)
+        it_bad = findall(x->!x, bools)
+        @warn "Failed to find indices for some points in seg_points[$iγ][$it_bad]"
     end
     return indices
 end
@@ -81,10 +88,6 @@ function segment_face_indices(iγ::Int64,
         npoints = length(points[it])
         # Returns true if indices were found for all segments in the track
         bools[it] = segment_face_indices(points[it], indices[it], HRPM)
-    end
-    if !all(bools)
-        it_bad = findall(x->!x, bools)
-        @warn "Failed to find indices for some points in seg_points[$iγ][$it_bad]"
     end
     return all(bools)
 end
