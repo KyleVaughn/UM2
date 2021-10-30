@@ -99,19 +99,19 @@ using MOCNeutronTransport
             # 0 intersections
             l = LineSegment_2D(Point_2D(T, 0, -1), Point_2D(T, 4, -1))
             npoints, points = l ∩ quad8 
-            @test npoints === 0
+            @test npoints == 0
 
             # 2 intersections
             l = LineSegment_2D(Point_2D(T, 0, 0), Point_2D(T, 4, 0))
             npoints, points = l ∩ quad8 
-            @test npoints === 2
+            @test npoints == 2
             @test points[1] ≈ Point_2D(T, 0, 0)
             @test points[2] ≈ Point_2D(T, 2, 0)
 
             # 3 intersections
             l = LineSegment_2D(Point_2D(T, 0, 1//2), Point_2D(T, 4, 1//2))
             npoints, points = l ∩ quad8 
-            @test npoints === 3
+            @test npoints == 3
             @test points[1] ≈ Point_2D(T, 3//2,     1//2)
             @test points[2] ≈ Point_2D(T, 41//18,   1//2)
             @test points[3] ≈ Point_2D(T, 0,        1//2)
@@ -119,7 +119,7 @@ using MOCNeutronTransport
             # 4 intersections
             l = LineSegment_2D(Point_2D(T, 0, 1//10), Point_2D(T, 4, 1//10))
             npoints, points = l ∩ quad8 
-            @test npoints === 4
+            @test npoints == 4
             @test points[1] ≈ Point_2D(T, 0.20557280900008415,       1//10)
             @test points[2] ≈ Point_2D(T, 1.9944271909999158,        1//10)
             @test points[3] ≈ Point_2D(T, 2.0644444444444447,        1//10)

@@ -18,13 +18,7 @@ using MOCNeutronTransport
                       Point_2D(0.50983869566359, 0.10353892742181),
                       Point_2D(0.96668449300372, 0.20781099946726),
                       Point_2D(0.63, 0.63)]
-        ref_faces = Vector{Union{
-                                NTuple{4, Int64},
-                                NTuple{5, Int64},
-                                NTuple{7, Int64},
-                                NTuple{9, Int64}
-                                }
-                          }([
+        ref_faces = Vector{NTuple{4, Int64}}([
                     (5, 12, 16, 11),
                     (5, 13, 16, 12),
                     (5, 14, 16, 13),

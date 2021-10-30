@@ -33,29 +33,48 @@ function read_vtk_2d(filepath::String)
     deleteat!(cell_types, delete_indices)
     deleteat!(cells, delete_indices)
 
-    cells_combined = Vector{Vector{Int64}}(undef, length(cells))
+    faces = Vector{Vector{Int64}}(undef, length(cells))
     for i in eachindex(cell_types)
-        cells_combined[i] = vcat(cell_types[i], cells[i])
+        faces[i] = vcat(cell_types[i], cells[i])
     end
 
-    faces = Vector{Union{
-                    NTuple{4, Int64},
-                    NTuple{5, Int64},
-                    NTuple{7, Int64},
-                    NTuple{9, Int64}
-                   }}(undef, length(cells_combined))
-    for i in eachindex(cells_combined)
-        faces[i] = Tuple(cells_combined[i])
+    # We can save a lot on memory and boost performance by choosing the smallest usable
+    # integer for our mesh. The relationship between faces, edges, and vertices is
+    # Triangle
+    #   F ≈ 2V
+    #   E ≈ 3F/2
+    # Quadrilateral
+    #   F ≈ V
+    #   E ≈ 2F
+    # Triangle6
+    #   2F ≈ V
+    #   E ≈ 3F/2
+    # Quadrilateral8
+    #   4F ≈ V 
+    #   E ≈ 2F
+    # If 2.2*length(faces) < typemax(UInt), convert to UInt
+    float_type = typeof(points[1].x[1])
+    if ceil(2.2*length(faces)) < typemax(UInt16)
+        I = UInt16
+        faces_16 = convert(Vector{Vector{UInt16}}, faces)
+        return UnstructuredMesh_2D{float_type, I}(name = name,
+                                                  points = points,
+                                                  faces = [ Tuple(f) for f in faces_16]
+                                                 )
+    elseif ceil(2.2*length(faces)) < typemax(UInt32)
+        I = UInt32
+        faces_32 = convert(Vector{Vector{UInt32}}, faces)
+        return UnstructuredMesh_2D{float_type, I}(name = name,
+                                                  points = points,
+                                                  faces = [ Tuple(f) for f in faces_32]
+                                                 )
+    else
+        I = UInt64
+        return UnstructuredMesh_2D{float_type, I}(name = name,
+                                                  points = points,
+                                                  faces = [ Tuple(f) for f in faces]
+                                                 )
     end
-
-    # Construct edges
-    # edges = edges(faces) throws an error, interprets the edges function as a variable.
-#    edges_2d = edges(faces) 
-    return UnstructuredMesh_2D{typeof(points[1].x[1])}(
-                              name = name,
-                              points = points,
-                              faces = faces
-                              )
 end
 
 function _read_vtk_points_2d(

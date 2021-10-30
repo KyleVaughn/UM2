@@ -16,45 +16,12 @@ using MOCNeutronTransport
                         (5, 2, 3, 5)
                     ]
         ref_edges = [(1, 2), (1, 4), (2, 3), (2, 4), (2, 5), (3, 5), (4, 5)]
-        ref_face_sets = Dict{String, Set{Int64}}()
 
-        # Test of non-public functions.
-        # Need to find a way to do the includes correctly for this, since
-        # just including vtk messes up the use of UnstructuresMesh_<x>_cell_types
-        #
-#        file = open(filepath, "r")
-#        # points
-#        readuntil(file, "POINTS")
-#        npoints_string, datatype_string = split(readline(file))
-#        points = read_vtk_points(file, npoints_string, datatype_string)
-#        @test points == ref_points
-#
-#        # faces
-#        seekstart(file)
-#        readuntil(file, "faces")
-#        nfaces_string = split(readline(file))[1]
-#        faces = read_vtk_faces(file, nfaces_string)
-#        for (i, cell) in enumerate(faces)
-#            @test cell == ref_faces[i][2:4]
-#        end
-#
-#        # cell_types
-#        seekstart(file)
-#        readuntil(file, "CELL_TYPES")
-#        nfaces_string = split(readline(file))[1]
-#        cell_types = read_vtk_cell_types(file, nfaces_string)
-#        for (i, type) in enumerate(cell_types)
-#            @test type == ref_faces[i][1]
-#        end
-#
-#        close(file)
         # read_vtk
         mesh = read_vtk_2d(filepath)
         @test mesh.points == ref_points
         @test mesh.faces == ref_faces
-#        @test mesh.edges == ref_edges
         @test mesh.name == "three_triangles"
-        @test mesh.face_sets == ref_face_sets
 
         # write_vtk
         write_vtk_2d("write_three_triangle.vtk", mesh)

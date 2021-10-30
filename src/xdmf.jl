@@ -1,4 +1,6 @@
-function write_xdmf_2d(filename::String, mesh::UnstructuredMesh_2D)
+function write_xdmf_2d(filename::String,
+                       mesh::UnstructuredMesh_2D{T, I}
+                      ) where {T <: AbstractFloat, I <: Unsigned}
     @info "Writing $filename" 
     # Check valid filename
     if !occursin(".xdmf", filename)
@@ -7,7 +9,7 @@ function write_xdmf_2d(filename::String, mesh::UnstructuredMesh_2D)
 
     # If there are materials, map all material names to an integer
     material_map = Dict{String, Int64}()
-    if mesh.face_sets != Dict{String, Set{Int64}}()
+    if mesh.face_sets != Dict{String, Set{I}}()
         material_map = _make_material_name_to_id_map(mesh)
     end
 
@@ -56,7 +58,7 @@ function _add_uniform_grid_xdmf(xml::XMLElement,
     _write_xdmf_topology(xgrid, h5_filename, h5_group, mesh)
  
     # Non-material face sets
-    if mesh.face_sets != Dict{String, Set{Int64}}()
+    if mesh.face_sets != Dict{String, Set{UInt64}}()
         _write_xdmf_face_sets(xgrid, h5_filename, h5_group, mesh)
     end
  
@@ -114,7 +116,7 @@ function _write_xdmf_topology(xml::XMLElement,
     xdataitem = new_child(xtopo, "DataItem")
     set_attribute(xdataitem, "DataType", "Int")
     topo_length = mapreduce(x->length(x), +, mesh.faces)
-    topo_array = Vector{Int64}(undef, topo_length)
+    topo_array = Vector{UInt64}(undef, topo_length)
     _convert_xdmf_faces_to_array!(topo_array, mesh.faces)
     ndimensions = length(topo_array)
     set_attribute(xdataitem, "Dimensions", "$ndimensions")
@@ -126,12 +128,9 @@ function _write_xdmf_topology(xml::XMLElement,
     h5_mesh["cells"] = topo_array
 end
 
-function _convert_xdmf_faces_to_array!(topo_array::Vector{Int64}, faces::Vector{<:Union{
-                                                                                  NTuple{4, Int64},
-                                                                                  NTuple{5, Int64},
-                                                                                  NTuple{7, Int64},
-                                                                                  NTuple{9, Int64}
-                                                                                 }})
+function _convert_xdmf_faces_to_array!(topo_array::Vector{I}, 
+                                      faces::Vector{<:Tuple{Vararg{I, N} where N}}
+                                      ) where {I <: Unsigned}
     vtk_to_xdmf_type = Dict(
         # triangle
         5  => 4,
@@ -302,7 +301,9 @@ function _write_xdmf_face_sets(xml::XMLElement,
     end
 end
 
-function write_xdmf_2d(filename::String, mesh::HierarchicalRectangularlyPartitionedMesh)
+function write_xdmf_2d(filename::String, 
+                       mesh::HierarchicalRectangularlyPartitionedMesh{T, I}
+                      ) where {T <: AbstractFloat, I <: Unsigned}
     @info "Writing $filename" 
     # Check valid filename
     if !occursin(".xdmf", filename)

@@ -94,6 +94,10 @@ function add_edge_face_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T<:A
                                    )
 end
 
+function add_everything(mesh::UnstructuredMesh_2D{T, I}) where {T<:AbstractFloat, I<:Unsigned}
+    return add_connectivity(add_faces_materialized(add_edges_materialized(add_edges(mesh))))
+end
+
 function add_face_edge_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, 
                                                                             I <: Unsigned}
     return UnstructuredMesh_2D{T, I}(name = mesh.name,

@@ -60,6 +60,16 @@ function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}) where {T <: 
     end
 end
 
+function add_connectivity(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if isassigned(HRPM.mesh)
+        HRPM.mesh[] = add_connectivity(HRPM.mesh[])
+    elseif 0 < length(HRPM.children)
+        for child in HRPM.children
+            add_connectivity(child[])
+        end
+    end
+end
+
 function add_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
     if isassigned(HRPM.mesh)
         HRPM.mesh[] = add_edges(HRPM.mesh[])
@@ -80,6 +90,16 @@ function add_edges_materialized(HRPM::HierarchicalRectangularlyPartitionedMesh)
     elseif 0 < length(HRPM.children)
         for child in HRPM.children
             add_edges_materialized(child[])
+        end
+    end
+end
+
+function add_everything(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if isassigned(HRPM.mesh)
+        HRPM.mesh[] = add_everything(HRPM.mesh[])
+    elseif 0 < length(HRPM.children)
+        for child in HRPM.children
+            add_everything(child[])
         end
     end
 end

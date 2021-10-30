@@ -88,25 +88,25 @@ using MOCNeutronTransport
             # 0 intersection
             l = LineSegment_2D(Point_2D(T, 0, -1), Point_2D(T, 4, -1))
             n, points = l ∩ tri6
-            @test n === 0
+            @test n == 0
 
             # 2 intersection
             l = LineSegment_2D(Point_2D(T, 0, 0), Point_2D(T, 4, 0))
             n, points = l ∩ tri6
-            @test n === 2
+            @test n == 2
             @test points[1] ≈ Point_2D(T, 0, 0)
             @test points[2] ≈ Point_2D(T, 2, 0)
 
             l = LineSegment_2D(Point_2D(T, 0, 1), Point_2D(T, 4, 1))
             n, points = l ∩ tri6
-            @test n === 2
+            @test n == 2
             @test points[1] ≈ Point_2D(T, 3, 1)
             @test points[2] ≈ Point_2D(T, 1, 1)
 
             # 4 intersection
             l = LineSegment_2D(Point_2D(T, 0, 1//10), Point_2D(T, 4, 1//10))
             n, points = l ∩ tri6
-            @test n === 4
+            @test n == 4
             @test points[1] ≈ Point_2D(T, 0.4254033307585166, 1//10)
             @test points[2] ≈ Point_2D(T, 1.9745966692414834, 1//10)
             @test points[3] ≈ Point_2D(T, 2.1900000000000000, 1//10)

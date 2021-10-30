@@ -28,13 +28,7 @@ using HDF5
                       Point_2D(0.50983869566359, 0.10353892742181),
                       Point_2D(0.96668449300372, 0.20781099946726),
                       Point_2D(0.63, 0.63)]
-        ref_faces = Vector{Union{
-                                NTuple{4, Int64},
-                                NTuple{5, Int64},
-                                NTuple{7, Int64},
-                                NTuple{9, Int64}
-                                }
-                          }([
+        ref_faces = Vector{NTuple{4, UInt64}}([
                     (5, 12, 16, 11),
                     (5, 13, 16, 12),
                     (5, 14, 16, 13),
@@ -58,7 +52,7 @@ using HDF5
                     (5, 7, 13, 12),
                     (5, 11, 10, 9)
                    ])
-        ref_face_sets = Dict{String, Set{Int64}}()
+        ref_face_sets = Dict{String, Set{UInt64}}()
         ref_face_sets["MATERIAL_UO2-3.3"] = Set([1, 2, 3, 4, 5, 6, 7])
         ref_face_sets["GRID_L1_1_1"] = Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
                                             11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22])
@@ -66,7 +60,7 @@ using HDF5
                                                18, 19, 20, 21, 22])
         ref_face_sets["test_set"] = Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
                                          13, 14, 15, 16, 17, 18, 19, 20, 21, 22])
-        mesh = UnstructuredMesh_2D{Float64}(
+        mesh = UnstructuredMesh_2D{Float64, UInt64}(
                                    points = ref_points, 
                                    faces = ref_faces, 
                                    face_sets = ref_face_sets, 
@@ -98,7 +92,7 @@ using HDF5
         @test test_points == point_array
 
         # cells
-        topo_array = Int64[]
+        topo_array = UInt64[]
         for face in mesh.faces
             # convert face to vector for mutability
             face_xdmf = [x for x in face]
