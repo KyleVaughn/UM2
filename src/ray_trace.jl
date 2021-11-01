@@ -49,7 +49,7 @@ function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
                     ] for iγ = 1:nγ # Angles
                 ]
     Threads.@threads for iγ = 1:nγ
-        bools[iγ] = segment_face_indices(iγ, seg_points[iγ], indices[iγ], HRPM)
+        bools[iγ] = segment_face_indices!(iγ, seg_points[iγ], indices[iγ], HRPM)
     end
     if !all(bools)
         it_bad = findall(x->!x, bools)
@@ -59,7 +59,7 @@ function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
 end
 
 # Get the face indices for all segments in a single track
-function segment_face_indices(points::Vector{Point_2D{T}},
+function segment_face_indices!(points::Vector{Point_2D{T}},
                               indices::Vector{MVector{N, I}},
                               HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
                              ) where {T <: AbstractFloat, I <: Unsigned, N}
@@ -75,7 +75,7 @@ function segment_face_indices(points::Vector{Point_2D{T}},
 end
 
 # Get the face indices for all tracks in a single angle
-function segment_face_indices(iγ::Int64,
+function segment_face_indices!(iγ::Int64,
                               points::Vector{Vector{Point_2D{T}}},
                               indices::Vector{Vector{MVector{N, I}}},
                               HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
@@ -87,7 +87,7 @@ function segment_face_indices(iγ::Int64,
         # Points in the track
         npoints = length(points[it])
         # Returns true if indices were found for all segments in the track
-        bools[it] = segment_face_indices(points[it], indices[it], HRPM)
+        bools[it] = segment_face_indices!(points[it], indices[it], HRPM)
     end
     return all(bools)
 end

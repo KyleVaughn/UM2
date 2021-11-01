@@ -7,6 +7,7 @@ struct UnstructuredMesh_2D{T <: AbstractFloat, I <: Unsigned}
     faces_materialized::Vector{<:Face{T}} 
     edge_face_connectivity::Vector{NTuple{2, I}} 
     face_edge_connectivity::Vector{<:Union{NTuple{3, I}, NTuple{4, I}}} 
+    boundary_edges::Vector{Vector{I}}
     face_sets::Dict{String, Set{I}} 
 end
 
@@ -20,6 +21,7 @@ function UnstructuredMesh_2D{T, I}(;
         edge_face_connectivity::Vector{NTuple{2, I}} = NTuple{2, I}[], 
         face_edge_connectivity ::Vector{<:Union{NTuple{3, I}, NTuple{4, I}
                                                 }} = NTuple{3, I}[],
+        boundary_edges::Vector{Vector{I}} = Vector{I}[],
         face_sets::Dict{String, Set{I}} = Dict{String, Set{I}}()
     ) where {T <: AbstractFloat, I <: Unsigned}
         return UnstructuredMesh_2D{T, I}(name, 
@@ -30,6 +32,7 @@ function UnstructuredMesh_2D{T, I}(;
                                          faces_materialized, 
                                          edge_face_connectivity,
                                          face_edge_connectivity,
+                                         boundary_edges,
                                          face_sets, 
                                         )
 end
@@ -47,7 +50,11 @@ const UnstructuredMesh_2D_cell_types = vcat(UnstructuredMesh_2D_linear_cell_type
                                             UnstructuredMesh_2D_quadratic_cell_types)
 
 function add_connectivity(mesh::UnstructuredMesh_2D{T}) where {T<:AbstractFloat}
-    return add_edge_face_connectivity(add_face_edge_connectivity(mesh))
+    if 0 < length(mesh.edges)  
+        return add_edge_face_connectivity(add_face_edge_connectivity(mesh))
+    else
+        return add_edge_face_connectivity(add_face_edge_connectivity(add_edges(mesh)))
+    end
 end
 
 function add_edges(mesh::UnstructuredMesh_2D{T, I}) where {T<:AbstractFloat, I <: Unsigned}
@@ -59,6 +66,7 @@ function add_edges(mesh::UnstructuredMesh_2D{T, I}) where {T<:AbstractFloat, I <
                                      faces_materialized = mesh.faces_materialized,
                                      edge_face_connectivity = mesh.edge_face_connectivity, 
                                      face_edge_connectivity = mesh.face_edge_connectivity, 
+                                     boundary_edges = mesh.boundary_edges,
                                      face_sets = mesh.face_sets
                                     )
 end
@@ -77,6 +85,7 @@ function add_edges_materialized(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abs
                                      faces_materialized = mesh.faces_materialized,
                                      edge_face_connectivity = mesh.edge_face_connectivity, 
                                      face_edge_connectivity = mesh.face_edge_connectivity, 
+                                     boundary_edges = mesh.boundary_edges,
                                      face_sets = mesh.face_sets
                                     )
 end
@@ -90,6 +99,7 @@ function add_edge_face_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T<:A
                                     faces_materialized = mesh.faces_materialized,
                                     edge_face_connectivity = edge_face_connectivity(mesh),
                                     face_edge_connectivity = mesh.face_edge_connectivity, 
+                                    boundary_edges = mesh.boundary_edges,
                                     face_sets = mesh.face_sets
                                    )
 end
@@ -108,6 +118,7 @@ function add_face_edge_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T <:
                                     faces_materialized = mesh.faces_materialized,
                                     edge_face_connectivity = mesh.edge_face_connectivity,
                                     face_edge_connectivity = face_edge_connectivity(mesh), 
+                                    boundary_edges = mesh.boundary_edges,
                                     face_sets = mesh.face_sets
                                    )
 end
@@ -122,6 +133,7 @@ function add_faces_materialized(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abs
                                      faces_materialized = faces_materialized(mesh),
                                      edge_face_connectivity = mesh.edge_face_connectivity,
                                      face_edge_connectivity = mesh.face_edge_connectivity,
+                                     boundary_edges = mesh.boundary_edges,
                                      face_sets = mesh.face_sets
                                     )
 end
@@ -194,6 +206,42 @@ function AABB(mesh::UnstructuredMesh_2D{T, I};
                                 Point_2D(xmax, ymin),
                                 Point_2D(xmax, ymax),
                                 Point_2D(xmin, ymax))
+    end
+end
+
+function boundary_edges(mesh::UnstructuredMesh_2D{T, I}; 
+                       bounding_shape="Rectangle") where {T<:AbstractFloat, I <: Unsigned}
+    # edges which have face 0 in their edge_face connectivity are boundary edges
+    boundary_edges = findall(x->x[1] == 0, mesh.edge_face_connectivity)
+    if bounding_shape == "Rectangle"
+        # Sort edges into NESW
+        bb = AABB(mesh, rectangular_boundary=true)
+        y_north = bb.points[3].x[2]
+        x_east  = bb.points[3].x[1]
+        y_south = bb.points[1].x[2]
+        x_west  = bb.points[1].x[1]
+        edges_north = I[]
+        edges_east = I[]
+        edges_south = I[]
+        edges_west = I[]
+        for i = 1:length(boundary_edges)
+            iedge = boundary_edges[i]
+            edge_points = get_edge_points(mesh, mesh.edges[iedge])
+            if all(x->abs(x[2] - y_north) < 1e-4, edge_points) 
+                push!(edges_north, iedge)
+            elseif all(x->abs(x[1] - x_east) < 1e-4, edge_points) 
+                push!(edges_east, iedge)
+            elseif all(x->abs(x[2] - y_south) < 1e-4, edge_points) 
+                push!(edges_south, iedge)
+            elseif all(x->abs(x[1] - x_west) < 1e-4, edge_points) 
+                push!(edges_west, iedge)
+            else
+                @error "Edge $iedge could not be classified as NSEW"
+            end
+        end
+        return [ edges_north, edges_east, edges_south, edges_west ]
+    else
+        return [ convert(Vector{I}, boundary_edges) ]
     end
 end
 
