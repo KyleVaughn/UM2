@@ -120,15 +120,9 @@ function ray_trace_edge_to_edge(l::LineSegment_2D{T},
     iedge = get_start_edge_NESW(start_point, mesh.boundary_edges[start_NESW], start_NESW, mesh)
     iface = mesh.edge_face_connectivity[iedge][2] # 1st entry should be 0
     iedge_old = iedge
-    println("iface: $iface")
-    println("iedge: $iedge")
     intersection_points = [start_point]
-    face_indices = [I(iface)]
+    face_indices = I[]
     end_reached = false
-    f = Figure()
-    ax = Axis(f[1, 1], aspect = 1)
-#    linesegments!(bb)
-    linesegments!(l)
     if 0 < length(mesh.edges_materialized)
         while !end_reached
            # For each edge in this face, intersect the track with the edge
@@ -136,31 +130,24 @@ function ray_trace_edge_to_edge(l::LineSegment_2D{T},
                 if edge_id == iedge_old
                     continue
                 end
-                linesegments!(mesh.edges_materialized[edge_id])
                 npoints, points = l ∩ mesh.edges_materialized[edge_id]
-                println("edge_id: $edge_id")
-                println("npoints: $npoints")
                 # If there was an intersection, move to the next face
                 if 0 < npoints
-                    scatter!(collect(points[1:npoints]))
                     append!(intersection_points, collect(points[1:npoints]))
                     push!(face_indices, I(iface))
-                    println("edge_face: ", mesh.edge_face_connectivity[edge_id][1], " ",
-                            mesh.edge_face_connectivity[edge_id][2])
                     if mesh.edge_face_connectivity[edge_id][1] == iface
                         iface = mesh.edge_face_connectivity[edge_id][2]
                     else
                         iface = mesh.edge_face_connectivity[edge_id][1]
                     end
-                    println("new iface: $iface")
                     iedge = edge_id
-                    println("new iedge: $iedge")
                 end
-                s = readline()
             end
             iedge_old = iedge
+            # If the most recent intersection is below the minimum segment length to the
+            # end point, end here.
             last_point = last(intersection_points)
-            if distance(last_point, end_point) < 1e-5
+            if distance(last_point, end_point) < minimum_segment_length
                 end_reached = true
                 if last_point != end_point
                     push!(intersection_points, end_point)
@@ -168,9 +155,55 @@ function ray_trace_edge_to_edge(l::LineSegment_2D{T},
             end
         end
     else # implicit
-
+        while !end_reached
+           # For each edge in this face, intersect the track with the edge
+            for edge_id in mesh.face_edge_connectivity[iface]             
+                if edge_id == iedge_old
+                    continue
+                end
+                edge = mesh.edges[edge_id]
+                npoints, points = l ∩ LineSegment_2D(get_edge_points(mesh, edge))
+                # If there was an intersection, move to the next face
+                if 0 < npoints
+                    append!(intersection_points, collect(points[1:npoints]))
+                    push!(face_indices, I(iface))
+                    if mesh.edge_face_connectivity[edge_id][1] == iface
+                        iface = mesh.edge_face_connectivity[edge_id][2]
+                    else
+                        iface = mesh.edge_face_connectivity[edge_id][1]
+                    end
+                    iedge = edge_id
+                end
+            end
+            iedge_old = iedge
+            # If the most recent intersection is below the minimum segment length to the
+            # end point, end here.
+            last_point = last(intersection_points)
+            if distance(last_point, end_point) < minimum_segment_length
+                end_reached = true
+                if last_point != end_point
+                    push!(intersection_points, end_point)
+                end
+            end
+        end
     end
-    return intersection_points
+    # The points should already be sorted. We will eliminate any points and face indices 
+    # for which the distance between consecutive points is less than the minimum segment length
+    if 0 < length(intersection_points)
+        # Remove duplicate points
+        points_reduced = [intersection_points[1]]
+        faces_reduced = I[]
+        npoints = length(intersection_points)
+        for i = 2:npoints
+            if minimum_segment_length < distance(last(points_reduced), intersection_points[i])
+                push!(points_reduced, intersection_points[i])
+                push!(faces_reduced, face_indices[i-1])
+            end
+        end
+        return (points_reduced, faces_reduced) 
+    else 
+        return (intersection_points, faces_indices)
+    end  
 end
 
 function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
