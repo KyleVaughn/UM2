@@ -254,21 +254,26 @@ function boundary_edges(mesh::UnstructuredMesh_2D{T, I};
         x_east  = bb.points[3].x[1]
         y_south = bb.points[1].x[2]
         x_west  = bb.points[1].x[1]
+        p_NW = bb.points[4]
+        p_NE = bb.points[3]
+        p_SE = bb.points[2]
+        p_SW = bb.points[1]
         edges_north = I[]
         edges_east = I[]
         edges_south = I[]
         edges_west = I[]
+        # Insert edges so that indices move from NW -> NE -> SE -> SW -> NW
         for i = 1:length(boundary_edges)
-            iedge = boundary_edges[i]
+            iedge = I(boundary_edges[i])
             edge_points = get_edge_points(mesh, mesh.edges[iedge])
             if all(x->abs(x[2] - y_north) < 1e-4, edge_points) 
-                push!(edges_north, iedge)
+                insert_boundary_edge!(iedge, edges_north, p_NW, mesh)
             elseif all(x->abs(x[1] - x_east) < 1e-4, edge_points) 
-                push!(edges_east, iedge)
+                insert_boundary_edge!(iedge, edges_east, p_NE, mesh)
             elseif all(x->abs(x[2] - y_south) < 1e-4, edge_points) 
-                push!(edges_south, iedge)
+                insert_boundary_edge!(iedge, edges_south, p_SE, mesh)
             elseif all(x->abs(x[1] - x_west) < 1e-4, edge_points) 
-                push!(edges_west, iedge)
+                insert_boundary_edge!(iedge, edges_west, p_SW, mesh)
             else
                 @error "Edge $iedge could not be classified as NSEW"
             end
@@ -599,6 +604,44 @@ function get_face_points(mesh::UnstructuredMesh_2D{T, I},
     return Tuple(mesh.points[collect(face[2:9])])::NTuple{8, Point_2D{T}}
 end
 
+function get_intersection_algorithm(mesh::UnstructuredMesh_2D)
+    if length(mesh.edges_materialized) !== 0
+        return "Edges - Materialized"
+    elseif length(mesh.edges) !== 0
+        return "Edges - Implicit"
+    elseif length(mesh.faces_materialized) !== 0
+        return "Faces - Materialized"
+    else
+        return "Faces - Implicit"
+    end
+end
+
+function insert_boundary_edge!(edge_index::I, edge_indices::Vector{I}, p_ref::Point_2D{T},
+        mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, I <: Unsigned}
+
+    # Compute the minimum distance from the edge to be inserted to the reference point
+    edge_points = get_edge_points(mesh, mesh.edges[edge_index])
+    println("New edge")
+    insertion_distance = minimum([ distance(p_ref, p_edge) for p_edge in edge_points ])
+    println(edge_index, " ", insertion_distance)
+    # Loop through the edge indices until an edge with greater distance from the reference point
+    # is found, then insert
+    nindices = length(edge_indices)
+    for i = 1:nindices
+        iedge = edge_indices[i]
+        iedge_points = get_edge_points(mesh, mesh.edges[iedge])
+        iedge_distance = minimum([ distance(p_ref, p_edge) for p_edge in iedge_points ])
+        println(i, " ", iedge_distance)
+        if insertion_distance < iedge_distance
+            println("insert here")
+            insert!(edge_indices, i, edge_index)
+            return
+        end
+    end
+    insert!(edge_indices, nindices+1, edge_index)    
+    println("insert at end")
+end
+
 function intersect(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
                    ) where {T <: AbstractFloat}
     if length(mesh.edges) !== 0 || length(mesh.edges_materialized) !== 0
@@ -900,7 +943,7 @@ function Base.show(io::IO, mesh::UnstructuredMesh_2D{T, I}) where {T <: Abstract
     println(io, "  ├─ Connectivity")
     println(io, "  │  ├─ Edge/Face : $ef_con")
     println(io, "  │  └─ Face/Edge : $fe_con")
-    if 0 < length(mesh.boundary_edges[1])
+    if 0 < length(mesh.boundary_edges)
         nbsides = length(mesh.boundary_edges)
         nbedges = 0
         for side in mesh.boundary_edges

@@ -10,6 +10,33 @@ function ray_trace(tₛ::T,
     return segment_points, face_indices
 end
 
+function ray_trace(tₛ::T,
+                   ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T}, 
+                   mesh::UnstructuredMesh_2D{T, I}
+                   ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
+    the_tracks = tracks(tₛ, ang_quad, mesh)
+    # If the mesh has boundary edges, assume you want to use the combined segmentize
+    # face index algorithm
+    if 0 < length(mesh.boundary_edges)
+        segment_points = segmentize(the_tracks, mesh)
+        face_indices = segment_face_indices(segment_points, mesh)
+        return segment_points, face_indices
+    else
+        segment_points = segmentize(the_tracks, mesh)
+        face_indices = segment_face_indices(segment_points, mesh)
+        return segment_points, face_indices
+    end
+end
+
+# Get the segment points and face indices for a single track using the
+# edge-to-edge ray tracing method. Assumes a rectangular boundary
+function ray_trace_edge_to_edge(l::LineSegment_2D{T},
+                                mesh::UnstructuredMesh_2D{T, I}
+                                ) where {T <: AbstractFloat, I <: Unsigned}
+    # Classify line as intersecting
+    return segment_points, face_indices
+end
+
 function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
                     HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
                     ) where {T <: AbstractFloat, I <: Unsigned}
@@ -24,6 +51,23 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
     Threads.@threads for iγ = 1:length(tracks)
         # for each track, intersect the track with the mesh
         seg_points[iγ] = tracks[iγ] .∩ HRPM
+    end
+    return seg_points
+end
+
+function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
+                    mesh::UnstructuredMesh_2D{T, I}
+                    ) where {T <: AbstractFloat, I <: Unsigned}
+    # Give info about intersection algorithm being used
+    int_alg = get_intersection_algorithm(mesh) 
+    @info "Segmentizing using the '$int_alg' algorithm"
+    # index 1 = γ
+    # index 2 = track
+    # index 3 = point/segment
+    seg_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, length(tracks))
+    Threads.@threads for iγ = 1:length(tracks)
+        # for each track, intersect the track with the mesh
+        seg_points[iγ] = tracks[iγ] .∩ mesh
     end
     return seg_points
 end
@@ -58,6 +102,24 @@ function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
     return indices
 end
 
+# Get the face indices for all tracks in a single angle
+function segment_face_indices!(iγ::Int64,
+                              points::Vector{Vector{Point_2D{T}}},
+                              indices::Vector{Vector{MVector{N, I}}},
+                              HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
+                             ) where {T <: AbstractFloat, I <: Unsigned, N}
+    nt = length(points)
+    bools = fill(false, nt)
+    # for each track, find the segment indices
+    for it = 1:nt
+        # Points in the track
+        npoints = length(points[it])
+        # Returns true if indices were found for all segments in the track
+        bools[it] = segment_face_indices!(points[it], indices[it], HRPM)
+    end
+    return all(bools)
+end
+
 # Get the face indices for all segments in a single track
 function segment_face_indices!(points::Vector{Point_2D{T}},
                               indices::Vector{MVector{N, I}},
@@ -74,12 +136,41 @@ function segment_face_indices!(points::Vector{Point_2D{T}},
     return all(bools)
 end
 
+function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
+                              mesh::UnstructuredMesh_2D{T, I}
+                             ) where {T <: AbstractFloat, I <: Unsigned, N}
+
+    @info "Finding face indices corresponding to each segment"
+    if !(0 < length(mesh.faces_materialized))
+        @warn "Faces are not materialized for this mesh. This will be VERY slow"
+    end
+    nγ = length(seg_points)
+    bools = fill(false, nγ)
+    # Preallocate indices in the most frustrating way
+    indices =   [    
+                    [ 
+                        [ 
+                            I(0) 
+                                for i = 1:length(seg_points[iγ][it])-1 # Segments
+                        ] for it = 1:length(seg_points[iγ]) # Tracks
+                    ] for iγ = 1:nγ # Angles
+                ]
+    Threads.@threads for iγ = 1:nγ
+        bools[iγ] = segment_face_indices!(iγ, seg_points[iγ], indices[iγ], mesh)
+    end
+    if !all(bools)
+        it_bad = findall(x->!x, bools)
+        @warn "Failed to find indices for some points in seg_points[$iγ][$it_bad]"
+    end
+    return indices
+end
+
 # Get the face indices for all tracks in a single angle
 function segment_face_indices!(iγ::Int64,
-                              points::Vector{Vector{Point_2D{T}}},
-                              indices::Vector{Vector{MVector{N, I}}},
-                              HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
-                             ) where {T <: AbstractFloat, I <: Unsigned, N}
+                               points::Vector{Vector{Point_2D{T}}},
+                               indices::Vector{Vector{I}},
+                               mesh::UnstructuredMesh_2D{T, I}
+                              ) where {T <: AbstractFloat, I <: Unsigned, N}
     nt = length(points)
     bools = fill(false, nt)
     # for each track, find the segment indices
@@ -87,7 +178,24 @@ function segment_face_indices!(iγ::Int64,
         # Points in the track
         npoints = length(points[it])
         # Returns true if indices were found for all segments in the track
-        bools[it] = segment_face_indices!(points[it], indices[it], HRPM)
+        bools[it] = segment_face_indices!(points[it], indices[it], mesh)
+    end
+    return all(bools)
+end
+
+# Get the face indices for all segments in a single track
+function segment_face_indices!(points::Vector{Point_2D{T}},
+                               indices::Vector{I},
+                               mesh::UnstructuredMesh_2D{T, I}
+                              ) where {T <: AbstractFloat, I <: Unsigned, N}
+    # Points in the track
+    npoints = length(points)
+    bools = fill(false, npoints-1)
+    # Test the midpoint of each segment to find the face
+    for iseg = 1:npoints-1
+        p_midpoint = midpoint(points[iseg], points[iseg+1])
+        indices[iseg] = find_face(p_midpoint, mesh)
+        bools[iseg] = 0 < indices[iseg] 
     end
     return all(bools)
 end
@@ -110,6 +218,32 @@ function tracks(tₛ::T,
         end
     end
     return the_tracks
+end
+
+function tracks(tₛ::T,
+                ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T},
+                mesh::UnstructuredMesh_2D{T, I};
+                boundary_shape="Rectangle"
+                ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
+
+    if boundary_shape == "Rectangle"
+        bb = AABB(mesh, rectangular_boundary=true)
+        w = bb.points[3].x[1] - bb.points[1].x[1]
+        h = bb.points[3].x[2] - bb.points[1].x[2]
+        # The tracks for each γ
+        the_tracks = [ tracks(tₛ, w, h, γ) for γ in ang_quad.γ ]  
+        # Shift all tracks if necessary, since the tracks are generated as if the HRPM has a 
+        # bottom left corner at (0,0)
+        offset = bb.points[1]
+        for angle in the_tracks
+            for track in angle
+                track = LineSegment_2D(track.points[1] + offset, track.points[2] + offset)
+            end
+        end
+        return the_tracks
+    else
+        @error "Unsupported boundary shape"
+    end
 end
 
 function tracks(tₛ::T, w::T, h::T, γ::T) where {T <: AbstractFloat}

@@ -60,6 +60,16 @@ function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}) where {T <: 
     end
 end
 
+function add_boundary_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if isassigned(HRPM.mesh)
+        HRPM.mesh[] = add_boundary_edges(HRPM.mesh[])
+    elseif 0 < length(HRPM.children)
+        for child in HRPM.children
+            add_boundary_edges(child[])
+        end
+    end
+end
+
 function add_connectivity(HRPM::HierarchicalRectangularlyPartitionedMesh)
     if isassigned(HRPM.mesh)
         HRPM.mesh[] = add_connectivity(HRPM.mesh[])
@@ -151,17 +161,9 @@ function find_face(p::Point_2D{T},
     return false
 end
 
-function get_intersection_algorithm(HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T<:AbstractFloat}
+function get_intersection_algorithm(HRPM::HierarchicalRectangularlyPartitionedMesh)
     if isassigned(HRPM.mesh)
-        if length(HRPM.mesh[].edges_materialized) !== 0
-            return "Edges - Materialized"
-        elseif length(HRPM.mesh[].edges) !== 0
-            return "Edges - Implicit"
-        elseif length(HRPM.mesh[].faces_materialized) !== 0
-            return "Faces - Materialized"
-        else
-            return "Faces - Implicit"
-        end
+        return get_intersection_algorithm(HRPM.mesh[])
     else
         return get_intersection_algorithm(HRPM.children[1][])
     end
