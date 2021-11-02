@@ -49,6 +49,36 @@ const UnstructuredMesh_2D_quadratic_cell_types = UInt32[22, # Triangle6
 const UnstructuredMesh_2D_cell_types = vcat(UnstructuredMesh_2D_linear_cell_types,
                                             UnstructuredMesh_2D_quadratic_cell_types)
 
+function add_boundary_edges(mesh::UnstructuredMesh_2D{T, I};
+                          bounding_shape="Rectangle") where {T<:AbstractFloat, I <: Unsigned}
+    if 0 < length(mesh.edge_face_connectivity)  
+        return UnstructuredMesh_2D{T, I}(name = mesh.name,
+                                         points = mesh.points,
+                                         edges = mesh.edges,
+                                         edges_materialized = mesh.edges_materialized,
+                                         faces = mesh.faces,
+                                         faces_materialized = mesh.faces_materialized,
+                                         edge_face_connectivity = mesh.edge_face_connectivity, 
+                                         face_edge_connectivity = mesh.face_edge_connectivity, 
+                                         boundary_edges = boundary_edges(mesh),
+                                         face_sets = mesh.face_sets
+                                        )
+    else
+        mesh_con = add_connectivity(mesh)
+        return UnstructuredMesh_2D{T, I}(name = mesh_con.name,
+                                         points = mesh_con.points,
+                                         edges = mesh_con.edges,
+                                         edges_materialized = mesh_con.edges_materialized,
+                                         faces = mesh_con.faces,
+                                         faces_materialized = mesh_con.faces_materialized,
+                                         edge_face_connectivity = mesh_con.edge_face_connectivity, 
+                                         face_edge_connectivity = mesh_con.face_edge_connectivity, 
+                                         boundary_edges = boundary_edges(mesh_con),
+                                         face_sets = mesh_con.face_sets
+                                        )
+    end
+end
+
 function add_connectivity(mesh::UnstructuredMesh_2D{T}) where {T<:AbstractFloat}
     if 0 < length(mesh.edges)  
         return add_edge_face_connectivity(add_face_edge_connectivity(mesh))
@@ -105,7 +135,11 @@ function add_edge_face_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T<:A
 end
 
 function add_everything(mesh::UnstructuredMesh_2D{T, I}) where {T<:AbstractFloat, I<:Unsigned}
-    return add_connectivity(add_faces_materialized(add_edges_materialized(add_edges(mesh))))
+    return add_boundary_edges(
+           add_connectivity(
+           add_faces_materialized(
+           add_edges_materialized(
+           add_edges(mesh)))))
 end
 
 function add_face_edge_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, 
@@ -866,6 +900,22 @@ function Base.show(io::IO, mesh::UnstructuredMesh_2D{T, I}) where {T <: Abstract
     println(io, "  ├─ Connectivity")
     println(io, "  │  ├─ Edge/Face : $ef_con")
     println(io, "  │  └─ Face/Edge : $fe_con")
+    if 0 < length(mesh.boundary_edges[1])
+        nbsides = length(mesh.boundary_edges)
+        nbedges = 0
+        for side in mesh.boundary_edges
+            nbedges += length(side)
+        end
+        println(io, "  ├─ Boundary edges")
+        println(io, "  │  ├─ Edges : $nbedges")
+        println(io, "  │  └─ Sides : $nbsides")
+    else
+        nbsides = 0 
+        nbedges = 0
+        println(io, "  ├─ Boundary edges")
+        println(io, "  │  ├─ Edges : $nbedges")
+        println(io, "  │  └─ Sides : $nbsides")
+    end
     println(io, "  └─ Face sets : $nface_sets")
 end
 
