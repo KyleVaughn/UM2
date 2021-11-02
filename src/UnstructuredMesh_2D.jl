@@ -621,9 +621,7 @@ function insert_boundary_edge!(edge_index::I, edge_indices::Vector{I}, p_ref::Po
 
     # Compute the minimum distance from the edge to be inserted to the reference point
     edge_points = get_edge_points(mesh, mesh.edges[edge_index])
-    println("New edge")
     insertion_distance = minimum([ distance(p_ref, p_edge) for p_edge in edge_points ])
-    println(edge_index, " ", insertion_distance)
     # Loop through the edge indices until an edge with greater distance from the reference point
     # is found, then insert
     nindices = length(edge_indices)
@@ -631,15 +629,12 @@ function insert_boundary_edge!(edge_index::I, edge_indices::Vector{I}, p_ref::Po
         iedge = edge_indices[i]
         iedge_points = get_edge_points(mesh, mesh.edges[iedge])
         iedge_distance = minimum([ distance(p_ref, p_edge) for p_edge in iedge_points ])
-        println(i, " ", iedge_distance)
         if insertion_distance < iedge_distance
-            println("insert here")
             insert!(edge_indices, i, edge_index)
             return
         end
     end
     insert!(edge_indices, nindices+1, edge_index)    
-    println("insert at end")
 end
 
 function intersect(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
