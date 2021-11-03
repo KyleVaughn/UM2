@@ -129,8 +129,8 @@ function _write_xdmf_topology(xml::XMLElement,
 end
 
 function _convert_xdmf_faces_to_array!(topo_array::Vector{I}, 
-                                      faces::Vector{<:Tuple{Vararg{I, N} where N}}
-                                      ) where {I <: Unsigned}
+                                       faces::Vector{<:Tuple{Vararg{J, N} where N}}
+                                      ) where {I <: Unsigned, J <: Unsigned}
     vtk_to_xdmf_type = Dict(
         # triangle
         5  => 4,
