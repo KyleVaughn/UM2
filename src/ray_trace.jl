@@ -104,15 +104,57 @@ function ray_trace(tₛ::T,
     end
 end
 
+# Get the segment points and face indices for all tracks in all angles using the
+# edge-to-edge ray tracing method. Assumes a rectangular boundary
+function ray_trace_edge_to_edge(the_tracks::Vector{Vector{LineSegment_2D{T}}},
+                                mesh::UnstructuredMesh_2D{T, I}
+                                ) where {T <: AbstractFloat, I <: Unsigned}
+    # index 1 = γ
+    # index 2 = track
+    # index 3 = point/segment
+    nγ = length(the_tracks)
+    seg_points =[
+                    [
+                        Point_2D{T}[] for it = 1:length(the_tracks[iγ]) # Tracks 
+                    ] for iγ = 1:nγ # Angles
+                ]
+    face_indices =  [
+                        [
+                            I[] for it = 1:length(the_tracks[iγ]) # Tracks 
+                        ] for iγ = 1:nγ # Angles
+                    ]
+    # For each angle, get the segments and face_indices for each track
+    Threads.@threads for iγ = 1:nγ
+        ray_trace_edge_to_edge!(the_tracks[iγ],
+                                seg_points[iγ],
+                                face_indices[iγ],
+                                mesh)
+    end
+    return seg_points, face_indices
+end
+
+
+# Get the segment points and face indices for all tracks in an angle using the
+# edge-to-edge ray tracing method. Assumes a rectangular boundary
+function ray_trace_edge_to_edge!(the_tracks::Vector{LineSegment_2D{T}},
+                                 intersection_points::Vector{Vector{Point_2D{T}}},
+                                 face_indices::Vector{Vector{I}},
+                                 mesh::UnstructuredMesh_2D{T, I}
+                                 ) where {T <: AbstractFloat, I <: Unsigned}
+    # For each track, get the intersection points and face_indices
+    for it = 1:length(the_tracks)
+        (intersection_points[it], face_indices[it]) = ray_trace_edge_to_edge(the_tracks[it], mesh)
+    end
+end
+
 # Get the segment points and face indices for a single track using the
 # edge-to-edge ray tracing method. Assumes a rectangular boundary
 function ray_trace_edge_to_edge(l::LineSegment_2D{T},
-                                mesh::UnstructuredMesh_2D{T, I},
-                                bb::Quadrilateral_2D{T}
+                                mesh::UnstructuredMesh_2D{T, I}
                                 ) where {T <: AbstractFloat, I <: Unsigned}
     # Classify line as intersecting NSEW
-    bb = AABB(mesh, rectangular_boundary=true)
-    npoints, (start_point, end_point) = l ∩ bb
+    start_point = l.points[1]
+    end_point = l.points[2]
     start_NESW = classify_NESW(start_point, mesh)
     if start_NESW == 0 
         @warn "Could not classify track start point $start_point"
@@ -154,6 +196,7 @@ function ray_trace_edge_to_edge(l::LineSegment_2D{T},
     end  
 end
 
+# Linear edges can exit loop after 1st intersection
 function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
                                           end_point::Point_2D{T},
                                           intersection_points::Vector{Point_2D{T}},
@@ -163,7 +206,54 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
                                           edge_face_connectivity::Vector{NTuple{2, I}},
                                           face_edge_connectivity::Vector{<:Union{NTuple{3, I}, 
                                                                                  NTuple{4, I}}}, 
-                                          edges_materialized::Vector{<:Edge{T}}
+                                          edges_materialized::Vector{LineSegment_2D{T}}
+                                          ) where {T <: AbstractFloat, I <: Unsigned}
+    iedge_old = iedge
+    end_reached = false
+    while !end_reached
+        # For each edge in this face, intersect the track with the edge
+        for edge_id in face_edge_connectivity[iface]             
+            if edge_id == iedge_old
+                continue
+            end
+            npoints, points = l ∩ edges_materialized[edge_id]
+            # If there was an intersection, move to the next face
+            if 0 < npoints
+                append!(intersection_points, collect(points[1:npoints]))
+                push!(face_indices, I(iface))
+                if edge_face_connectivity[edge_id][1] == iface
+                    iface = edge_face_connectivity[edge_id][2]
+                else
+                    iface = edge_face_connectivity[edge_id][1]
+                end
+                iedge = edge_id
+                break
+            end
+        end
+        iedge_old = iedge
+        # If the most recent intersection is below the minimum segment length to the
+        # end point, end here.
+        last_point = last(intersection_points)
+        if distance(last_point, end_point) < minimum_segment_length
+            end_reached = true
+            if last_point != end_point
+                push!(intersection_points, end_point)
+            end
+        end
+    end
+end
+
+# Quadratic edges need to go through every edge in the face except the entering one
+function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
+                                          end_point::Point_2D{T},
+                                          intersection_points::Vector{Point_2D{T}},
+                                          face_indices::Vector{I},
+                                          iedge::I,
+                                          iface::I,
+                                          edge_face_connectivity::Vector{NTuple{2, I}},
+                                          face_edge_connectivity::Vector{<:Union{NTuple{3, I}, 
+                                                                                 NTuple{4, I}}}, 
+                                          edges_materialized::Vector{QuadraticSegment_2D{T}}
                                           ) where {T <: AbstractFloat, I <: Unsigned}
     iedge_old = iedge
     end_reached = false
@@ -293,7 +383,7 @@ function ray_trace_edge_to_edge_implicit!(l::LineSegment_2D{T},
     end
 end
 
-function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
+function segmentize(the_tracks::Vector{Vector{LineSegment_2D{T}}},
                     HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
                     ) where {T <: AbstractFloat, I <: Unsigned}
 
@@ -303,15 +393,16 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
     # index 1 = γ
     # index 2 = track
     # index 3 = point/segment
-    seg_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, length(tracks))
-    Threads.@threads for iγ = 1:length(tracks)
+    nγ = length(the_tracks)
+    seg_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, nγ)
+    Threads.@threads for iγ = 1:nγ
         # for each track, intersect the track with the mesh
-        seg_points[iγ] = tracks[iγ] .∩ HRPM
+        seg_points[iγ] = the_tracks[iγ] .∩ HRPM
     end
     return seg_points
 end
 
-function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
+function segmentize(the_tracks::Vector{Vector{LineSegment_2D{T}}},
                     mesh::UnstructuredMesh_2D{T, I}
                     ) where {T <: AbstractFloat, I <: Unsigned}
     # Give info about intersection algorithm being used
@@ -320,10 +411,11 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
     # index 1 = γ
     # index 2 = track
     # index 3 = point/segment
-    seg_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, length(tracks))
-    Threads.@threads for iγ = 1:length(tracks)
+    nγ = length(the_tracks)
+    seg_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, nγ)
+    Threads.@threads for iγ = 1:nγ
         # for each track, intersect the track with the mesh
-        seg_points[iγ] = tracks[iγ] .∩ mesh
+        seg_points[iγ] = the_tracks[iγ] .∩ mesh
     end
     return seg_points
 end
@@ -349,7 +441,7 @@ function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
                     ] for iγ = 1:nγ # Angles
                 ]
     Threads.@threads for iγ = 1:nγ
-        bools[iγ] = segment_face_indices!(iγ, seg_points[iγ], indices[iγ], HRPM)
+        bools[iγ] = segment_face_indices!(seg_points[iγ], indices[iγ], HRPM)
     end
     if !all(bools)
         it_bad = findall(x->!x, bools)
@@ -359,8 +451,7 @@ function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
 end
 
 # Get the face indices for all tracks in a single angle
-function segment_face_indices!(iγ::Int64,
-                              points::Vector{Vector{Point_2D{T}}},
+function segment_face_indices!(points::Vector{Vector{Point_2D{T}}},
                               indices::Vector{Vector{MVector{N, I}}},
                               HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
                              ) where {T <: AbstractFloat, I <: Unsigned, N}
@@ -412,7 +503,7 @@ function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
                     ] for iγ = 1:nγ # Angles
                 ]
     Threads.@threads for iγ = 1:nγ
-        bools[iγ] = segment_face_indices!(iγ, seg_points[iγ], indices[iγ], mesh)
+        bools[iγ] = segment_face_indices!(seg_points[iγ], indices[iγ], mesh)
     end
     if !all(bools)
         it_bad = findall(x->!x, bools)
@@ -422,8 +513,7 @@ function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
 end
 
 # Get the face indices for all tracks in a single angle
-function segment_face_indices!(iγ::Int64,
-                               points::Vector{Vector{Point_2D{T}}},
+function segment_face_indices!(points::Vector{Vector{Point_2D{T}}},
                                indices::Vector{Vector{I}},
                                mesh::UnstructuredMesh_2D{T, I}
                               ) where {T <: AbstractFloat, I <: Unsigned, N}
