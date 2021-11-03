@@ -6,7 +6,7 @@ struct UnstructuredMesh_2D{T <: AbstractFloat, I <: Unsigned}
     faces::Vector{<:Tuple{Vararg{I, N} where N}} 
     faces_materialized::Vector{<:Face{T}} 
     edge_face_connectivity::Vector{NTuple{2, I}} 
-    face_edge_connectivity::Vector{<:Union{NTuple{3, I}, NTuple{4, I}}} 
+    face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}} 
     boundary_edges::Vector{Vector{I}}
     face_sets::Dict{String, Set{I}} 
 end
@@ -19,8 +19,7 @@ function UnstructuredMesh_2D{T, I}(;
         faces::Vector{<:Tuple{Vararg{I, N} where N}} = NTuple{4, I}[],
         faces_materialized::Vector{<:Face{T}} = Triangle_2D{T}[],
         edge_face_connectivity::Vector{NTuple{2, I}} = NTuple{2, I}[], 
-        face_edge_connectivity ::Vector{<:Union{NTuple{3, I}, NTuple{4, I}
-                                                }} = NTuple{3, I}[],
+        face_edge_connectivity ::Vector{<:Tuple{Vararg{I, M} where M}} = NTuple{3, I}[],
         boundary_edges::Vector{Vector{I}} = Vector{I}[],
         face_sets::Dict{String, Set{I}} = Dict{String, Set{I}}()
     ) where {T <: AbstractFloat, I <: Unsigned}
@@ -473,7 +472,7 @@ function face_edge_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abs
             end
         end
     end
-    return [Tuple(sort(conn)) for conn in face_edge]::Vector{<:Union{NTuple{2, I}, NTuple{3, I}}}
+    return [Tuple(sort(conn)) for conn in face_edge]::Vector{<:Tuple{Vararg{I, N} where N}}
 end
 
 function faces_materialized(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat,
@@ -532,6 +531,17 @@ function find_face_explicit(p::Point_2D{T},
     return 0
 end
 
+function find_face_explicit(p::Point_2D{T}, 
+                            faces::Vector{Face{T}}
+                           ) where {T <: AbstractFloat}
+    for i = 1:length(faces)
+        if p ∈  faces[i]
+            return i
+        end
+    end
+    return 0
+end
+
 function find_face_implicit(p::Point_2D{T}, 
                             mesh::UnstructuredMesh_2D{T, I},
                             faces::Vector{<:Union{NTuple{4, I}, NTuple{5, I}}}
@@ -559,6 +569,29 @@ function find_face_implicit(p::Point_2D{T},
         face = faces[i]
         bool = false
         if face isa NTuple{7, I} # Triangle6
+            bool = p ∈ Triangle6_2D(get_face_points(mesh, face))
+        else # Quadrilateral8
+            bool = p ∈ Quadrilateral8_2D(get_face_points(mesh, face))
+        end
+        if bool
+            return i
+        end
+    end
+    return 0
+end
+
+function find_face_implicit(p::Point_2D{T}, 
+                            mesh::UnstructuredMesh_2D{T, I},
+                            faces::Vector{<:Tuple{Vararg{I, N} where N}}
+                            ) where {T <: AbstractFloat, I <: Unsigned}
+    for i = 1:length(faces)
+        face = faces[i]
+        bool = false
+        if face isa NTuple{4, I} # Triangle
+            bool = p ∈ Triangle_2D(get_face_points(mesh, face))
+        elseif face isa NTuple{5, I} # Quadrilateral
+            bool = p ∈ Quadrilateral_2D(get_face_points(mesh, face))
+        elseif face isa NTuple{7, I} # Triangle6
             bool = p ∈ Triangle6_2D(get_face_points(mesh, face))
         else # Quadrilateral8
             bool = p ∈ Quadrilateral8_2D(get_face_points(mesh, face))

@@ -204,21 +204,28 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
                                           iedge::I,
                                           iface::I,
                                           edge_face_connectivity::Vector{NTuple{2, I}},
-                                          face_edge_connectivity::Vector{<:Union{NTuple{3, I}, 
-                                                                                 NTuple{4, I}}}, 
+                                          face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}, 
                                           edges_materialized::Vector{LineSegment_2D{T}}
                                           ) where {T <: AbstractFloat, I <: Unsigned}
     iedge_old = iedge
     end_reached = false
+    println("iedge_start: $iedge_old")
+    println("iface_start: $iface")
+    f = Figure()
+    ax = Axis(f[1, 1], aspect = 1)
+    linesegments!(l)
     while !end_reached
         # For each edge in this face, intersect the track with the edge
         for edge_id in face_edge_connectivity[iface]             
             if edge_id == iedge_old
                 continue
             end
+            linesegments!(edges_materialized[edge_id])
             npoints, points = l ∩ edges_materialized[edge_id]
+            println("edge_id: $edge_id, npoints: $npoints")
             # If there was an intersection, move to the next face
             if 0 < npoints
+                scatter!(collect(points[1:npoints]))
                 append!(intersection_points, collect(points[1:npoints]))
                 push!(face_indices, I(iface))
                 if edge_face_connectivity[edge_id][1] == iface
@@ -227,10 +234,14 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
                     iface = edge_face_connectivity[edge_id][1]
                 end
                 iedge = edge_id
+                println("iface: $iface")
+                println("iedge: $iedge")
                 break
             end
+            s = readline()
         end
         iedge_old = iedge
+        println("iedge_old: $iedge_old")
         # If the most recent intersection is below the minimum segment length to the
         # end point, end here.
         last_point = last(intersection_points)
@@ -251,8 +262,7 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
                                           iedge::I,
                                           iface::I,
                                           edge_face_connectivity::Vector{NTuple{2, I}},
-                                          face_edge_connectivity::Vector{<:Union{NTuple{3, I}, 
-                                                                                 NTuple{4, I}}}, 
+                                          face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}, 
                                           edges_materialized::Vector{QuadraticSegment_2D{T}}
                                           ) where {T <: AbstractFloat, I <: Unsigned}
     iedge_old = iedge
