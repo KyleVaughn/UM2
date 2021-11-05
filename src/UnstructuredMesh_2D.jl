@@ -905,7 +905,12 @@ function Base.show(io::IO, mesh::UnstructuredMesh_2D{T, I}) where {T <: Abstract
     name = mesh.name
     println(io, "  ├─ Name      : $name")
     size_MB = Base.summarysize(mesh)/1E6
-    println(io, "  ├─ Size (MB) : $size_MB")
+    if size_MB < 1
+        size_KB = size_MB*1000
+        println(io, "  ├─ Size (KB) : $size_KB")       
+    else
+        println(io, "  ├─ Size (MB) : $size_MB")
+    end
     npoints = length(mesh.points)
     println(io, "  ├─ Points    : $npoints")
     if 0 < length(mesh.edges_materialized)
