@@ -22,40 +22,40 @@ Point_2D(type::Type{T}, x::X) where {T <: AbstractFloat,
 
 # Base
 # -------------------------------------------------------------------------------------------------
-Base.broadcastable(p⃗::Point_2D) = Ref(p⃗)
+Base.broadcastable(p::Point_2D) = Ref(p)
 Base.zero(::Point_2D{T}) where {T <: AbstractFloat} = Point_2D((T(0), T(0)))
 Base.firstindex(::Point_2D) = 1
 Base.lastindex(::Point_2D) = 2
-Base.getindex(p⃗::Point_2D, i::Int) = p⃗.x[i]
-(::Type{T})(p⃗::Point_2D) where {T <: AbstractFloat} = Point_2D(T.(p⃗.x))
+Base.getindex(p::Point_2D, i::Int) = p.x[i]
+(::Type{T})(p::Point_2D) where {T <: AbstractFloat} = Point_2D(T.(p.x))
 
 # Operators
 # -------------------------------------------------------------------------------------------------
-==(p⃗₁::Point_2D, p⃗₂::Point_2D) = (p⃗₁.x == p⃗₂.x)
-function ≈(p⃗₁::Point_2D{T}, p⃗₂::Point_2D{T}) where {T <: AbstractFloat}
-    return distance(p⃗₁, p⃗₂) < 5e-6
+==(p₁::Point_2D, p₂::Point_2D) = (p₁.x == p₂.x)
+function ≈(p₁::Point_2D{T}, p₂::Point_2D{T}) where {T <: AbstractFloat}
+    return distance(p₁, p₂) < 5e-6
 end
-+(p⃗₁::Point_2D, p⃗₂::Point_2D) = Point_2D(p⃗₁.x[1] + p⃗₂.x[1], p⃗₁.x[2] + p⃗₂.x[2])
--(p⃗₁::Point_2D, p⃗₂::Point_2D) = Point_2D(p⃗₁.x[1] - p⃗₂.x[1], p⃗₁.x[2] - p⃗₂.x[2])
++(p₁::Point_2D, p₂::Point_2D) = Point_2D(p₁.x[1] + p₂.x[1], p₁.x[2] + p₂.x[2])
+-(p₁::Point_2D, p₂::Point_2D) = Point_2D(p₁.x[1] - p₂.x[1], p₁.x[2] - p₂.x[2])
 # Note the cross product of two 2D points returns a scalar. It is assumed that this is the 
 # desired quantity, since the cross product of vectors in the plane is a vector normal to the plane.
 # Hence the z coordinate of the resultant vector is returned.
-×(p⃗₁::Point_2D, p⃗₂::Point_2D) = p⃗₁.x[1]*p⃗₂.x[2] - p⃗₂.x[1]*p⃗₁.x[2]
-⋅(p⃗₁::Point_2D, p⃗₂::Point_2D) = p⃗₁.x[1]*p⃗₂.x[1] + p⃗₁.x[2]*p⃗₂.x[2]
-+(p⃗::Point_2D, n::Real) = Point_2D(p⃗.x[1] + n, p⃗.x[2] + n)
-+(n::Real, p⃗::Point_2D) = p⃗ + n
--(p⃗::Point_2D, n::Real) = Point_2D(p⃗.x[1] - n, p⃗.x[2] - n)
--(n::Real, p⃗::Point_2D) = p⃗ - n
-*(n::Real, p⃗::Point_2D) = Point_2D(n*p⃗.x[1], n*p⃗.x[2])
-*(p⃗::Point_2D, n::Real) = n*p⃗
-/(p⃗::Point_2D, n::Real) = Point_2D(p⃗.x[1]/n, p⃗.x[2]/n)
--(p⃗::Point_2D) = -1*p⃗
+×(p₁::Point_2D, p₂::Point_2D) = p₁.x[1]*p₂.x[2] - p₂.x[1]*p₁.x[2]
+⋅(p₁::Point_2D, p₂::Point_2D) = p₁.x[1]*p₂.x[1] + p₁.x[2]*p₂.x[2]
++(p::Point_2D, n::Real) = Point_2D(p.x[1] + n, p.x[2] + n)
++(n::Real, p::Point_2D) = p + n
+-(p::Point_2D, n::Real) = Point_2D(p.x[1] - n, p.x[2] - n)
+-(n::Real, p::Point_2D) = p - n
+*(n::Real, p::Point_2D) = Point_2D(n*p.x[1], n*p.x[2])
+*(p::Point_2D, n::Real) = n*p
+/(p::Point_2D, n::Real) = Point_2D(p.x[1]/n, p.x[2]/n)
+-(p::Point_2D) = -1*p
 # SMatrix multiplication, returns a point
-*(A::SMatrix{2, 2, T, 4}, p⃗::Point_2D{T}) where {T <: AbstractFloat} = Point_2D(A * p⃗.x)
+*(A::SMatrix{2, 2, T, 4}, p::Point_2D{T}) where {T <: AbstractFloat} = Point_2D(A * p.x)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
 # note: hypot is the Julia recommended way to do sqrt of sum squared for 2 numbers
-norm(p⃗::Point_2D) = hypot(p⃗.x[1], p⃗.x[2])
-distance(p⃗₁::Point_2D, p⃗₂::Point_2D) = hypot(p⃗₁.x[1] - p⃗₂.x[1], p⃗₁.x[2] - p⃗₂.x[2])
-midpoint(p⃗₁::Point_2D, p⃗₂::Point_2D) = (p⃗₁ + p⃗₂)/2
+norm(p::Point_2D) = hypot(p.x[1], p.x[2])
+distance(p₁::Point_2D, p₂::Point_2D) = hypot(p₁.x[1] - p₂.x[1], p₁.x[2] - p₂.x[2])
+midpoint(p₁::Point_2D, p₂::Point_2D) = (p₁ + p₂)/2

@@ -156,16 +156,19 @@ function ray_trace_edge_to_edge(l::LineSegment_2D{T},
     start_point = l.points[1]
     end_point = l.points[2]
     start_NESW = classify_NESW(start_point, mesh)
+    end_NESW = classify_NESW(end_point, mesh)
     if start_NESW == 0 
         @warn "Could not classify track start point $start_point"
     end
-    iedge = get_start_edge_NESW(start_point, mesh.boundary_edges[start_NESW], start_NESW, mesh)
-    iface = mesh.edge_face_connectivity[iedge][2] # 1st entry should be 0
+    start_iedge = get_start_edge_NESW(start_point, mesh.boundary_edges[start_NESW], start_NESW, mesh)
+    start_iface = mesh.edge_face_connectivity[start_iedge][2] # 1st entry should be 0
+    end_iedge = get_start_edge_NESW(end_point, mesh.boundary_edges[end_NESW], end_NESW, mesh)
+    end_iface = mesh.edge_face_connectivity[end_iedge][2] # 1st entry should be 0
     intersection_points = [start_point]
     face_indices = I[]
     if 0 < length(mesh.edges_materialized)
         ray_trace_edge_to_edge_explicit!(l, end_point, intersection_points, face_indices,
-                                         iedge, iface, 
+                                         start_iedge, start_iface, end_iface, 
                                          mesh.edge_face_connectivity,
                                          mesh.face_edge_connectivity,
                                          mesh.edges_materialized)
@@ -203,6 +206,7 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
                                           face_indices::Vector{I},
                                           iedge::I,
                                           iface::I,
+                                          end_iface::I,
                                           edge_face_connectivity::Vector{NTuple{2, I}},
                                           face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}, 
                                           edges_materialized::Vector{LineSegment_2D{T}}
@@ -224,7 +228,7 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
             # If there was an intersection, add the point
             # Edges are linear, so only one intersection point
             if 0 < npoints
-                append!(intersection_points, [points[1]])
+                push!(intersection_points, points[1])
                 push!(face_indices, I(iface))
                 # If the point is further than the current furthest point
                 # from the point the ray entered the face on, then we want to leave
@@ -249,8 +253,12 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
             end_reached = true
             if last_point != end_point
                 push!(intersection_points, end_point)
+                push!(face_indices, end_iface)
             end
         end
+    end
+    if max_iters ≤ iters
+        @error "Exceeded max iterations for $l"
     end
 end
 
