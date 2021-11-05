@@ -58,6 +58,8 @@ function read_abaqus_2d(filepath::String; float_type=Float64)
     # Quadrilateral8
     #   4F ≈ V 
     #   E ≈ 2F
+    # We see that V ≤ F ≤ 2E, so we use 2.2F as the max number of faces, edges, or vertices
+    # plus a fudge factor for small meshes, where the relationships become less accurate.
     # If 2.2*length(faces) < typemax(UInt), convert to UInt
     if ceil(2.2*length(faces)) < typemax(UInt16)
         I = UInt16

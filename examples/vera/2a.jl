@@ -5,6 +5,7 @@ using MOCNeutronTransport
 #
 # Model
 # ----------------------------------------------------------------------------------------------
+log_timestamps()
 gmsh.initialize()
 uo2_entities = Int32[]
 gap_entities = Int32[]
@@ -138,10 +139,10 @@ gmsh.model.mesh.set_size(gmsh.model.get_entities(0), lc)
 niter = 2 # The optimization iterations
 
 # Triangles
-# gmsh.model.mesh.generate(2) # 2 is dimension of mesh
-# for () in 1:niter
-#     gmsh.model.mesh.optimize("Laplace2D")
-# end
+gmsh.model.mesh.generate(2) # 2 is dimension of mesh
+for () in 1:niter
+    gmsh.model.mesh.optimize("Laplace2D")
+end
 
 # Quadrilaterals
 # The default recombination algorithm might leave some triangles in the mesh, if
@@ -163,9 +164,9 @@ niter = 2 # The optimization iterations
 # end
 
 # 2nd order triangles
-# gmsh.option.set_number("Mesh.HighOrderOptimize", 2)
-# gmsh.model.mesh.generate(2) # Triangles first for high order meshes.
-# gmsh.model.mesh.set_order(2)
+#gmsh.option.set_number("Mesh.HighOrderOptimize", 2)
+#gmsh.model.mesh.generate(2) # Triangles first for high order meshes.
+#gmsh.model.mesh.set_order(2)
 ## for () in 1:niter
 ##     gmsh.model.mesh.optimize("HighOrderElastic")
 ##     gmsh.model.mesh.optimize("Relocate2D")
@@ -175,12 +176,12 @@ niter = 2 # The optimization iterations
 # 2nd order quadrilaterals
 # These can be problematic for large lc. They have trouble respecting CAD boundaries.
 
-gmsh.option.set_number("Mesh.RecombineAll", 1) # recombine all triangles
-gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads. Better 2D algorithm
-gmsh.option.set_number("Mesh.RecombinationAlgorithm", 1)
-gmsh.option.set_number("Mesh.HighOrderOptimize", 2)
-gmsh.model.mesh.generate(2)
-gmsh.model.mesh.set_order(2)
+# gmsh.option.set_number("Mesh.RecombineAll", 1) # recombine all triangles
+# gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads. Better 2D algorithm
+# gmsh.option.set_number("Mesh.RecombinationAlgorithm", 1)
+# gmsh.option.set_number("Mesh.HighOrderOptimize", 2)
+# gmsh.model.mesh.generate(2)
+# gmsh.model.mesh.set_order(2)
 ## for () in 1:niter
 ##     gmsh.model.mesh.optimize("HighOrderElastic")
 ##     gmsh.model.mesh.optimize("Relocate2D")

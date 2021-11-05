@@ -1,7 +1,9 @@
 module MOCNeutronTransport
+using Dates
 using HDF5
 using LightXML
 using LinearAlgebra
+using LoggingExtras
 using StaticArrays
 try
     # Use local gmsh install
@@ -10,6 +12,17 @@ catch e
     # Fall back on Gmsh package
     @warn "Using Gmsh package instead of install from source"
     using Gmsh: gmsh
+end
+
+# Make logger give time stamps
+const date_format = "yyyy-mm-dd HH:MM:SS"
+timestamp_logger(logger) = TransformerLogger(logger) do log
+  merge(log, (; message = "$(Dates.format(now(), date_format)) $(log.message)"))
+end
+
+function log_timestamps()
+    logger = global_logger()
+    logger |> timestamp_logger |> global_logger
 end
 
 import Base: +, -, *, /, ≈, ==, intersect, in
@@ -86,6 +99,7 @@ export  ×,
         intersect_iterative,
         jacobian,
         levels,
+        log_timestamps,
         midpoint,
         norm,
         partition_rectangularly,
@@ -108,6 +122,5 @@ export gmsh,
        gmsh_rectangular_grid,
        gmsh_group_preserving_fragment,
        gmsh_overlay_rectangular_grid
-
 
 end # module
