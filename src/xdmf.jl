@@ -4,7 +4,7 @@ function write_xdmf_2d(filename::String,
     @info "Writing $filename" 
     # Check valid filename
     if !occursin(".xdmf", filename)
-        error("Invalid filename. '.xdmf' does not occur in $filename") 
+        @error "Invalid filename. '.xdmf' does not occur in $filename"
     end
 
     # If there are materials, map all material names to an integer
@@ -160,28 +160,33 @@ end
 
 function _make_material_name_to_id_map(mesh::UnstructuredMesh_2D)
     material_map = Dict{String, Int64}()
-    nmat = 0
+    mat_names = String[]
     max_length = 0
     for set_name in keys(mesh.face_sets)
         if occursin("MATERIAL", uppercase(set_name))
-            material_map[set_name] = nmat 
+            material_map[set_name] = 0
+            push!(mat_names, set_name)
             if length(set_name) > max_length
                 max_length = length(set_name)
             end
-            nmat += 1
         end
     end
+    # Adjust material IDs so that IDs are assigned alphabetically
+    sort!(mat_names)
+    for (i, set_name) in enumerate(mat_names)
+        material_map[set_name] = i - 1 
+    end 
     if max_length < 13
         max_length = 13
     end
-    @info string(rpad("Material Name", max_length, ' '), " : XDMF Material ID")
-    @info rpad("=", max_length + 19, '=')
-    for set_name in keys(material_map)
+    println(string(rpad("Material Name", max_length, ' '), " : XDMF Material ID"))
+    println(rpad("=", max_length + 19, '='))
+    for set_name in mat_names
         if occursin("MATERIAL", uppercase(set_name))
             id = material_map[set_name]
-            @info string(rpad(set_name, max_length, ' '), " : $id")   
-        end
-    end
+            println(string(rpad(set_name, max_length, ' '), " : $id"))  
+        end 
+    end 
     return material_map
 end
 
@@ -205,30 +210,35 @@ function _make_material_name_to_id_map(mesh::HierarchicalRectangularlyPartitione
         end
     end
     material_map = Dict{String, Int64}()
-    nmat = 0
+    mat_names = String[]
     max_length = 0
     for leaf_mesh in mesh_children 
         for set_name in keys(leaf_mesh.mesh[].face_sets)
             if occursin("MATERIAL", uppercase(set_name))
                 if set_name ∉  keys(material_map)
-                    material_map[set_name] = nmat 
+                    material_map[set_name] = 0 
+                    push!(mat_names, set_name)
                     if length(set_name) > max_length
                         max_length = length(set_name)
                     end
-                    nmat += 1
                 end
             end
         end
     end
+    # Adjust material IDs so that IDs are assigned alphabetically
+    sort!(mat_names)
+    for (i, set_name) in enumerate(mat_names)
+        material_map[set_name] = i - 1
+    end
     if max_length < 13
         max_length = 13
     end
-    @info string(rpad("Material Name", max_length, ' '), " : XDMF Material ID")
-    @info rpad("=", max_length + 19, '=')
-    for set_name in keys(material_map)
+    println(string(rpad("Material Name", max_length, ' '), " : XDMF Material ID"))
+    println(rpad("=", max_length + 19, '='))
+    for set_name in mat_names
         if occursin("MATERIAL", uppercase(set_name))
             id = material_map[set_name]
-            @info string(rpad(set_name, max_length, ' '), " : $id")   
+            println(string(rpad(set_name, max_length, ' '), " : $id"))  
         end
     end
     return material_map
@@ -253,13 +263,13 @@ function _write_xdmf_materials(xml::XMLElement,
                 if mat_ID_array[cell] === -1
                     mat_ID_array[cell] = material_ID
                 else
-                    error("Mesh cell $cell has multiple materials assigned to it.")
+                    @error "Mesh cell $cell has multiple materials assigned to it."
                 end
             end
         end
     end
     if any(x->x === -1, mat_ID_array)
-        error("Some mesh cells do not have a material.")
+        @error "Some mesh cells do not have a material."
     end
     # DataItem
     xdataitem = new_child(xmaterial, "DataItem")
@@ -307,7 +317,7 @@ function write_xdmf_2d(filename::String,
     @info "Writing $filename" 
     # Check valid filename
     if !occursin(".xdmf", filename)
-        error("Invalid filename. '.xdmf' does not occur in $filename") 
+        @error "Invalid filename. '.xdmf' does not occur in $filename"
     end
 
     # If there are materials, map all material names to an integer

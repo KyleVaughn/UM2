@@ -67,7 +67,7 @@ function angular_quadrature(quadrature_type::String, M::Int, P::Int; T::DataType
         quadrature = ProductAngularQuadrature(Tuple(azi_angles), Tuple(azi_weights),
                                               Tuple(pol_angles), Tuple(pol_weights))
     else
-        error("Unsupported quadrature type.")
+        @error "Unsupported quadrature type"
     end
     return quadrature
 end

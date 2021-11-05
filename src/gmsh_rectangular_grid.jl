@@ -6,24 +6,24 @@ function _validate_gmsh_rectangular_grid_input(bb::NTuple{4, T},
     dx = xmax - xmin
     dy = ymax - ymin
     if dx <= 0 || dy <= 0
-        error("Invalid bounding box. Must be of the form [xmin, xmax, ymin, ymax]")
+        @error "Invalid bounding box. Must be of the form [xmin, xmax, ymin, ymax]"
     end
     # x and y have same number of levels
     if length(x) != length(y)
-        error("x and y must have the same length") 
+        @error "x and y must have the same length"
     end
     # monotonic x, y
     for xvector in x
         for i = 1:length(xvector)-1 
             if xvector[i] > xvector[i+1]
-                error("x is not monotonically increasing.")
+                @error "x is not monotonically increasing."
             end
         end
     end
     for yvector in y
         for i = 1:length(yvector)-1 
             if yvector[i] > yvector[i+1]
-                error("y is not monotonically increasing.")
+                @error "y is not monotonically increasing."
             end
         end
     end
@@ -32,7 +32,7 @@ function _validate_gmsh_rectangular_grid_input(bb::NTuple{4, T},
         for i = 1:length(xvector)
             if !(xmin <= xvector[i] <= xmax)
                 errval = xvector[i]
-                error("x value ($errval) is not in the bounding box.")
+                @error "x value ($errval) is not in the bounding box."
             end
         end
     end
@@ -40,7 +40,7 @@ function _validate_gmsh_rectangular_grid_input(bb::NTuple{4, T},
         for i = 1:length(yvector)
             if !(ymin <= yvector[i] <= ymax)
                 errval = yvector[i]
-                error("y value ($errval) is not in the bounding box.")
+                @error "y value ($errval) is not in the bounding box."
             end
         end
     end
@@ -66,14 +66,14 @@ function _validate_gmsh_rectangular_grid_input(bb::NTuple{4, T},
         dy = y_full[nlevels-1][2] - y_full[nlevels-1][1]
         for i = 2:length(x_full[nlevels-1])-1
             if !(x_full[nlevels-1][i+1] - x_full[nlevels-1][i] ≈ dx)
-                error(string("Grid level $nlevels must have equal x-divisions so that all ",
-                             "modular geometry have the same size!"))
+                @error string("Grid level $nlevels must have equal x-divisions so that all ",
+                             "modular geometry have the same size!")
             end
         end
         for i = 2:length(y_full[nlevels-1])-1
             if !(y_full[nlevels-1][i+1] - y_full[nlevels-1][i] ≈ dy)
-                error(string("Grid level $nlevels must have equal y-divisions so that all ",
-                             "modular geometry have the same size!"))
+                @error string("Grid level $nlevels must have equal y-divisions so that all ",
+                             "modular geometry have the same size!")
             end
         end
     end
@@ -84,7 +84,7 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
                                 x::Vector{Vector{T}}, 
                                 y::Vector{Vector{T}};
                                 material = "MATERIAL_WATER") where {T <: AbstractFloat} 
-    @info "Generating rectangular grid in gmsh"
+    @debug "Generating rectangular grid in gmsh"
     # Validate input
     x_full, y_full = _validate_gmsh_rectangular_grid_input(bb, x, y) 
 
@@ -100,7 +100,7 @@ function gmsh_rectangular_grid(bb::NTuple{4, T},
             push!(grid_tags_coords, (tag, xv, yv))
         end                                      
     end
-    @info "Synchronizing model"
+    @debug "Synchronizing model"
     gmsh.model.occ.synchronize()
 
     # Label the rectangles with the appropriate grid level and location

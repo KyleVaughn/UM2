@@ -407,7 +407,7 @@ function _process_partition_rectangularly_input(mesh::UnstructuredMesh_2D{T, I})
     end
 
     if length(grid_names) === 0
-        error("No grid face sets in mesh.")
+        @error "No grid face sets in mesh"
     end
 
     # Get the number of grid levels

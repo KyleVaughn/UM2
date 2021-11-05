@@ -99,7 +99,7 @@ function gmsh_group_preserving_fragment(object_dim_tags::Vector{Tuple{Signed,Int
     for name in names
         gmsh.model.remove_physical_name(name)
     end
-    @info "Synchronizing model"
+    @debug "Synchronizing model"
     gmsh.model.occ.synchronize()
 
     # Process the material hierarchy if it exists so that each entity has one
@@ -169,7 +169,7 @@ function gmsh_group_preserving_fragment(object_dim_tags::Vector{Tuple{Int32,Int3
     for name in names
         gmsh.model.remove_physical_name(name)
     end
-    @info "Synchronizing model"
+    @debug "Synchronizing model"
     gmsh.model.occ.synchronize()
 
     # Process the material hierarchy if it exists so that each entity has one

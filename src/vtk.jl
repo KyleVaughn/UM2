@@ -14,7 +14,7 @@ function read_vtk_2d(filepath::String)
                 end
             elseif line_split[1] == "DATASET"
                 if line_split[2] != "UNSTRUCTURED_GRID"
-                    error("DATASET type is $(line_split[2]). Only UNSTRUCTURED_GRID is supported.")
+                    @error "DATASET type is $(line_split[2]). Only UNSTRUCTURED_GRID is supported."
                 end
             elseif line_split[1] == "POINTS"
                 points = _read_vtk_points_2d(file, line_split[2], line_split[3])
@@ -37,7 +37,6 @@ function read_vtk_2d(filepath::String)
     for i in eachindex(cell_types)
         faces[i] = vcat(cell_types[i], cells[i])
     end
-
     # We can save a lot on memory and boost performance by choosing the smallest usable
     # integer for our mesh. The relationship between faces, edges, and vertices is
     # Triangle
@@ -52,6 +51,8 @@ function read_vtk_2d(filepath::String)
     # Quadrilateral8
     #   4F ≈ V 
     #   E ≈ 2F
+    # We see that V ≤ F ≤ 2E, so we use 2.2F as the max number of faces, edges, or vertices
+    # plus a fudge factor for small meshes, where the relationships become less accurate.
     # If 2.2*length(faces) < typemax(UInt), convert to UInt
     float_type = typeof(points[1].x[1])
     if ceil(2.2*length(faces)) < typemax(UInt16)
@@ -88,7 +89,7 @@ function _read_vtk_points_2d(
     elseif datatype_string == "double"
         datatype = Float64
     else
-        error("Unable to identify POINTS data type.")
+        @error "Unable to identify POINTS data type."
     end
     points = Vector{Point_2D{datatype}}(undef, npoints)
     for i in 1:npoints 
@@ -129,7 +130,7 @@ function write_vtk_2d(filename::String, mesh::UnstructuredMesh_2D)
     @info "Writing $filename"
     # Check valid filename
     if !occursin(".vtk", filename)
-        error("Invalid filename. '.vtk' does not occur in $filename")
+        @error "Invalid filename. '.vtk' does not occur in $filename"
     end
     file = open(filename, "w")
     println(file, "# vtk DataFile Version 2.0")
@@ -144,7 +145,7 @@ function write_vtk_2d(filename::String, mesh::UnstructuredMesh_2D)
     elseif pointtype === Float32
         type_points = "float"
     else
-        error("Unrecognized point type.")
+        @error "Unrecognized point type."
     end
     npoints = length(mesh.points)
     println(file, "POINTS $npoints $type_points")

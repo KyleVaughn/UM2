@@ -105,7 +105,7 @@ end
 
 function _read_abaqus_elements(file::IOStream, element_type::String)
     if !(element_type ∈  keys(abaqus_to_vtk_type))
-        error("$element_type is not in the abaqus to vtk type conversion dictionary")
+        @error "$element_type is not in the abaqus to vtk type conversion dictionary"
     end
     type = abaqus_to_vtk_type[element_type]
     faces = Vector{UInt64}[]

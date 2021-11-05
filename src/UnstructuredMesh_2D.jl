@@ -174,7 +174,7 @@ end
 function area(mesh::UnstructuredMesh_2D{T, I}, face_set::Set{I}) where {T <: AbstractFloat, I <: Unsigned} 
     unsupported::Int64 = sum(x->x[1] ∉  UnstructuredMesh_2D_cell_types, mesh.faces)
     if 0 < unsupported
-        @warn "Mesh contains an unsupported face type"
+        @error "Mesh contains an unsupported face type"
     end
     return mapreduce(x->area(mesh, mesh.faces[x]), +, face_set)
 end
@@ -184,39 +184,19 @@ function area(mesh::UnstructuredMesh_2D{T, I}, set_name::String) where {T <: Abs
 end
 
 function area(mesh::UnstructuredMesh_2D{T, I}, face::NTuple{4, I}) where {T <: AbstractFloat, I <: Unsigned}
-    the_area = T(0)
-    type_id = face[1]
-    if type_id == 5 # Triangle
-        the_area = area(Triangle_2D(get_face_points(mesh, face)))
-    end
-    return the_area
+    return area(Triangle_2D(get_face_points(mesh, face)))
 end
 
 function area(mesh::UnstructuredMesh_2D{T, I}, face::NTuple{5, I}) where {T <: AbstractFloat, I <: Unsigned}
-    the_area = T(0)
-    type_id = face[1]
-    if type_id == 9 # Quadrilateral
-        the_area = area(Quadrilateral_2D(get_face_points(mesh, face)))
-    end
-    return the_area
+    return area(Quadrilateral_2D(get_face_points(mesh, face)))
 end
 
 function area(mesh::UnstructuredMesh_2D{T, I}, face::NTuple{7, I}) where {T <: AbstractFloat, I <: Unsigned}
-    the_area = T(0)
-    type_id = face[1]
-    if type_id == 22 # Triangle6
-        the_area = area(Triangle6_2D(get_face_points(mesh, face)))
-    end
-    return the_area
+    return area(Triangle6_2D(get_face_points(mesh, face)))
 end
 
 function area(mesh::UnstructuredMesh_2D{T, I}, face::NTuple{9, I}) where {T <: AbstractFloat, I <: Unsigned}
-    the_area = T(0)
-    type_id = face[1]
-    if type_id == 23 # Quadrilateral8
-        the_area = area(Quadrilateral8_2D(get_face_points(mesh, face)))
-    end
-    return the_area
+    return area(Quadrilateral8_2D(get_face_points(mesh, face)))
 end
 
 # Axis-aligned bounding box, in 2d a rectangle.
@@ -227,7 +207,7 @@ function AABB(mesh::UnstructuredMesh_2D{T, I};
     # that border the mesh.
     if (any(x->x ∈  UnstructuredMesh_2D_quadratic_cell_types, getindex.(mesh.faces, 1)) && 
         !rectangular_boundary)
-        error("Cannot find AABB for a mesh with quadratic faces that does not have a rectangular boundary")
+        @error "Cannot find AABB for a mesh with quadratic faces that does not have a rectangular boundary"
     else # Can use points
         x = map(p->p[1], mesh.points)
         y = map(p->p[2], mesh.points)
@@ -292,7 +272,7 @@ function edges(face::NTuple{4, I}) where {I <: Unsigned}
                   [face[3], face[4]],
                   [face[4], face[2]] ]
     else
-        error("Unsupported cell type.")
+        @error "Unsupported cell type"
         edges = [[I(0), I(0)]]
     end
     # Order the linear edge vertices by ID
@@ -314,7 +294,7 @@ function edges(face::NTuple{5, I}) where {I <: Unsigned}
                   [face[4], face[5]],
                   [face[5], face[2]] ]
     else
-        error("Unsupported cell type.")
+        @error "Unsupported cell type"
         edges = [[I(0), I(0)]]
     end
     # Order the linear edge vertices by ID
@@ -335,7 +315,7 @@ function edges(face::NTuple{7, I}) where {I <: Unsigned}
                   [face[3], face[4], face[6]],
                   [face[4], face[2], face[7]] ]
     else
-        error("Unsupported cell type.")
+        @error "Unsupported cell type."
         edges = [[I(0), I(0)]]
     end
     # Order the linear edge vertices by ID
@@ -357,7 +337,7 @@ function edges(face::NTuple{9, I}) where {I <: Unsigned}
                   [face[4], face[5], face[8]],
                   [face[5], face[2], face[9]] ]
     else
-        error("Unsupported cell type.")
+        @error "Unsupported cell type."
         edges = [[I(0), I(0)]]
     end
     # Order the linear edge vertices by ID
@@ -407,7 +387,7 @@ function edge_face_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abs
     # Loop through each face in the face_edge_connectivity vector and mark each edge with 
     # the faces that it borders.
     if length(mesh.edges) === 0
-        error("Mesh does not have edges!")
+        @error "Mesh does not have edges!"
         edge_face = [MVector{2, I}(zeros(I, 2)) for i = 1:2]
     elseif length(mesh.face_edge_connectivity) === 0
         edge_face = [MVector{2, I}(zeros(I, 2)) for i in eachindex(mesh.edges)]
@@ -420,7 +400,7 @@ function edge_face_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abs
                 elseif edge_face[iedge][2] == 0
                     edge_face[iedge][2] = iface                   
                 else
-                    error("Edge $iedge seems to have 3 faces associated with it!")
+                    @error "Edge $iedge seems to have 3 faces associated with it!"
                 end
             end
         end
@@ -434,7 +414,7 @@ function edge_face_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abs
                 elseif edge_face[iedge][2] == 0
                     edge_face[iedge][2] = iface                   
                 else
-                    error("Edge $iedge seems to have 3 faces associated with it!")
+                    @error "Edge $iedge seems to have 3 faces associated with it!"
                 end
             end
         end
@@ -461,7 +441,7 @@ function face_edge_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abs
     # Each MVector is the length of the number of edges
     face_edge = [MVector{Int64(num_edges(face)), I}(zeros(I, num_edges(face))) for face in mesh.faces]
     if length(mesh.edges) === 0
-        error("Mesh does not have edges!")
+        @error "Mesh does not have edges!"
     else
         # for each face in the mesh, generate the edges.
         # Search for the index of the edge in the mesh.edges vector
@@ -915,7 +895,7 @@ function num_edges(face::Tuple{Vararg{I}}) where {I <: Unsigned}
     elseif cell_type == 9 || cell_type == 23
         return I(4)
     else
-        error("Unsupported cell type.")
+        @error "Unsupported cell type."
         return I(0)
     end
 end
