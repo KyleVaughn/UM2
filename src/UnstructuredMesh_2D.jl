@@ -2,9 +2,9 @@ struct UnstructuredMesh_2D{T <: AbstractFloat, I <: Unsigned}
     name::String 
     points::Vector{Point_2D{T}}
     edges::Vector{<:Union{NTuple{2, I}, NTuple{3, I}}} 
-    edges_materialized::Vector{<:Edge{T}} 
+    edges_materialized::Vector{<:Edge_2D{T}} 
     faces::Vector{<:Tuple{Vararg{I, N} where N}} 
-    faces_materialized::Vector{<:Face{T}} 
+    faces_materialized::Vector{<:Face_2D{T}} 
     edge_face_connectivity::Vector{NTuple{2, I}} 
     face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}} 
     boundary_edges::Vector{Vector{I}}
@@ -15,9 +15,9 @@ function UnstructuredMesh_2D{T, I}(;
         name::String = "DefaultMeshName",
         points::Vector{Point_2D{T}} = Point_2D{T}[],
         edges::Vector{<:Union{NTuple{2, I}, NTuple{3, I}}} = NTuple{2, I}[],
-        edges_materialized::Vector{<:Edge{T}} = LineSegment_2D{T}[],
+        edges_materialized::Vector{<:Edge_2D{T}} = LineSegment_2D{T}[],
         faces::Vector{<:Tuple{Vararg{I, N} where N}} = NTuple{4, I}[],
-        faces_materialized::Vector{<:Face{T}} = Triangle_2D{T}[],
+        faces_materialized::Vector{<:Face_2D{T}} = Triangle_2D{T}[],
         edge_face_connectivity::Vector{NTuple{2, I}} = NTuple{2, I}[], 
         face_edge_connectivity ::Vector{<:Tuple{Vararg{I, M} where M}} = NTuple{3, I}[],
         boundary_edges::Vector{Vector{I}} = Vector{I}[],
@@ -477,7 +477,7 @@ end
 
 function faces_materialized(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat,
                                                                     I <: Unsigned}
-    return face_materialized.(mesh, mesh.faces)::Vector{<:Face{T}}
+    return face_materialized.(mesh, mesh.faces)::Vector{<:Face_2D{T}}
 end
 
 function face_materialized(mesh::UnstructuredMesh_2D{T, I}, 
@@ -532,7 +532,7 @@ function find_face_explicit(p::Point_2D{T},
 end
 
 function find_face_explicit(p::Point_2D{T}, 
-                            faces::Vector{Face{T}}
+                            faces::Vector{Face_2D{T}}
                            ) where {T <: AbstractFloat}
     for i = 1:length(faces)
         if p ∈  faces[i]
@@ -801,7 +801,7 @@ function intersect_faces_explicit(l::LineSegment_2D{T},
 end
 
 function intersect_faces_explicit(l::LineSegment_2D{T}, 
-                                  faces::Vector{<:Face{T}}
+                                  faces::Vector{<:Face_2D{T}}
                         ) where {T <: AbstractFloat}
     # An array to hold all of the intersection points
     intersection_points = Point_2D{T}[]

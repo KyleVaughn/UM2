@@ -51,8 +51,8 @@ include("gmsh_overlay_rectangular_grid.jl")
 
 # Structs/Types
 export  AngularQuadrature,
-        Edge,
-        Face,
+        Edge_2D,
+        Face_2D,
         HierarchicalRectangularlyPartitionedMesh,
         LineSegment_2D,
         Point_2D,

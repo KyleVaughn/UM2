@@ -16,11 +16,10 @@ function gmsh_overlay_rectangular_grid(bb::NTuple{4, T},
     grid_tags = gmsh_rectangular_grid(bb, x, y; material = material)
     grid_dim_tags = [(2, tag) for tag in grid_tags]
     union_of_dim_tags = vcat(model_dim_tags, grid_dim_tags)
-    # material hierarchy with the grid material at the bottom.
-    # TODO: update to allow the material to be an existing physical group
     groups = gmsh.model.get_physical_groups()
     names = [gmsh.model.get_physical_name(grp[1], grp[2]) for grp in groups]
     material_indices = findall(x->occursin("MATERIAL", x), names)
+    # material hierarchy with the grid material at the bottom.
     material_hierarchy = names[material_indices]
     push!(material_hierarchy, material)
     out_dim_tags = gmsh_group_preserving_fragment(
@@ -50,11 +49,10 @@ function gmsh_overlay_rectangular_grid(bb::NTuple{4, T},
     grid_tags = gmsh_rectangular_grid(bb, nx, ny; material = material)
     grid_dim_tags = [(2, tag) for tag in grid_tags]
     union_of_dim_tags = vcat(model_dim_tags, grid_dim_tags)
-    # material hierarchy with the grid material at the bottom.
-    # TODO: update to allow the material to be an existing physical group
     groups = gmsh.model.get_physical_groups()
     names = [gmsh.model.get_physical_name(grp[1], grp[2]) for grp in groups]
     material_indices = findall(x->occursin("MATERIAL", x), names)
+    # material hierarchy with the grid material at the bottom.
     material_hierarchy = names[material_indices]
     push!(material_hierarchy, material)
     out_dim_tags = gmsh_group_preserving_fragment(

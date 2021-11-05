@@ -1,6 +1,6 @@
 # Triangle in 2D defined by its 3 vertices.
 
-struct Triangle_2D{T <: AbstractFloat} <: Face{T}
+struct Triangle_2D{T <: AbstractFloat} <: Face_2D{T}
     points::NTuple{3, Point_2D{T}}
 end
 

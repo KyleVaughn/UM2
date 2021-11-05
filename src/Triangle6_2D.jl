@@ -1,6 +1,6 @@
 # A quadratic triangle, defined in 2D.
 
-struct Triangle6_2D{T <: AbstractFloat} <: Face{T}
+struct Triangle6_2D{T <: AbstractFloat} <: Face_2D{T}
     # The points are assumed to be ordered as follows
     # p₁ = vertex A
     # p₂ = vertex B

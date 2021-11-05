@@ -1,6 +1,6 @@
 # A line segment in 2D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and ends at points[2]
-struct LineSegment_2D{T <: AbstractFloat} <: Edge{T}
+struct LineSegment_2D{T <: AbstractFloat} <: Edge_2D{T}
     points::NTuple{2, Point_2D{T}}
 end
 

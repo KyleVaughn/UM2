@@ -1,5 +1,5 @@
 function process_material_hierarchy!(
-        new_physical_groups::Dict{String,Array{Tuple{Int32,Int32},1}}, 
+        new_physical_groups::Dict{String, Vector{Tuple{Int32,Int32}}}, 
         material_hierarchy::Vector{String})
     # Get the material groups and the entities in each group
     groups = collect(keys(new_physical_groups))
@@ -10,7 +10,7 @@ function process_material_hierarchy!(
     for material in material_groups
         @assert material ∈ material_hierarchy "material_hierarchy does not contain: '$material'"
     end
-    material_dict = Dict{String,Array{Tuple{Int32,Int32},1}}()
+    material_dict = Dict{String, Vector{Tuple{Int32,Int32}}}()
     all_material_entities = Tuple{Int32,Int32}[]
     for material in material_groups
         # Note that this is assignment by reference. Changes to material_dict are reflected
@@ -49,8 +49,8 @@ function process_material_hierarchy!(
     end
 end
 
-function gmsh_group_preserving_fragment(object_dim_tags:: Array{Tuple{Signed,Int32},1},
-                                   tool_dim_tags:: Array{Tuple{Signed,Int32},1};
+function gmsh_group_preserving_fragment(object_dim_tags::Vector{Tuple{Signed,Int32}},
+                                   tool_dim_tags::Vector{Tuple{Signed,Int32}};
                                    material_hierarchy = String[])
     # Get all the physical groups
     old_physical_groups = Dict{String,Array{Tuple{Int32,Int32},1}}()
@@ -70,11 +70,11 @@ function gmsh_group_preserving_fragment(object_dim_tags:: Array{Tuple{Signed,Int
     # Create a dictionary of new physical groups using the parent child relationship
     # between input_dim_tags and out_dim_tags_map. The parent at index i of input_dim_tags 
     # has children out_dim_tags_map[i]
-    new_physical_groups = Dict{String,Array{Tuple{Int32,Int32},1}}()
+    new_physical_groups = Dict{String, Vector{Tuple{Int32,Int32}}}()
     input_dim_tags = vcat(object_dim_tags, tool_dim_tags)
     # For each physical group
     for name in names
-        new_physical_groups[name] = Tuple{Int32,Int32}[]
+        new_physical_groups[name] = Tuple{Int32, Int32}[]
         # For each of the dim tags in the physical group
         for dim_tag in old_physical_groups[name]
             # If the dim_tag was one of the entities in the fragment
@@ -119,11 +119,11 @@ function gmsh_group_preserving_fragment(object_dim_tags:: Array{Tuple{Signed,Int
     return out_dim_tags
 end
 
-function gmsh_group_preserving_fragment(object_dim_tags:: Array{Tuple{Int32,Int32},1},
-                                   tool_dim_tags:: Array{Tuple{Int32,Int32},1};
+function gmsh_group_preserving_fragment(object_dim_tags::Vector{Tuple{Int32,Int32}},
+                                   tool_dim_tags::Vector{Tuple{Int32,Int32}};
                                    material_hierarchy = String[])
     # Get all the physical groups
-    old_physical_groups = Dict{String,Array{Tuple{Int32,Int32},1}}()
+    old_physical_groups = Dict{String, Vector{Tuple{Int32,Int32}}}()
     groups = gmsh.model.get_physical_groups()
     names = [gmsh.model.get_physical_name(grp[1], grp[2]) for grp in groups]
     for (i, name) in enumerate(names)
@@ -140,7 +140,7 @@ function gmsh_group_preserving_fragment(object_dim_tags:: Array{Tuple{Int32,Int3
     # Create a dictionary of new physical groups using the parent child relationship
     # between input_dim_tags and out_dim_tags_map. The parent at index i of input_dim_tags 
     # has children out_dim_tags_map[i]
-    new_physical_groups = Dict{String,Array{Tuple{Int32,Int32},1}}()
+    new_physical_groups = Dict{String, Vector{Tuple{Int32,Int32}}}()
     input_dim_tags = vcat(object_dim_tags, tool_dim_tags)
     # For each physical group
     for name in names

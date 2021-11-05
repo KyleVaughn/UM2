@@ -7,7 +7,7 @@ mutable struct HierarchicalRectangularlyPartitionedMesh{T<:AbstractFloat, I<:Uns
 end
 
 function HierarchicalRectangularlyPartitionedMesh{T,I}(;
-        name::String = "DefaultHRPMName",
+        name::String = "DefaultName",
         rect::Quadrilateral_2D{T} = Quadrilateral_2D(Point_2D(T, 0), 
                                                      Point_2D(T, 0), 
                                                      Point_2D(T, 0), 
