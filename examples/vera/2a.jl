@@ -7,6 +7,8 @@ using MOCNeutronTransport
 # ----------------------------------------------------------------------------------------------
 log_timestamps()
 gmsh.initialize()
+# Set gmsh log level to warnings and errors only
+gmsh.option.set_number("General.Verbosity", 3)
 uo2_entities = Int32[]
 gap_entities = Int32[]
 clad_entities = Int32[]
