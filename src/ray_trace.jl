@@ -13,6 +13,7 @@ function classify_NESW(p::Point_2D{T},
     elseif abs(p.x[1] - x_W) < 1e-4
         return 4 # West
     else
+        @error "Could not classify point"
         return 0 # Error
     end
 end
@@ -82,7 +83,7 @@ function ray_trace(tₛ::T,
     segment_points = segmentize(the_tracks, HRPM)
     nlevels = levels(HRPM)
     template_vec = MVector{nlevels, I}(zeros(I, nlevels))
-    face_indices = segment_face_indices(segment_points, HRPM, template_vec)
+    face_indices = find_segment_faces(segment_points, HRPM, template_vec)
     return segment_points, face_indices
 end
 
@@ -90,16 +91,20 @@ function ray_trace(tₛ::T,
                    ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T}, 
                    mesh::UnstructuredMesh_2D{T, I}
                    ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
+    @info "Ray tracing"
     the_tracks = tracks(tₛ, ang_quad, mesh)
+    if 0 == length(mesh.edges)
+        @warn "This mesh does not have edges, this may be  slow"
+    end
     # If the mesh has boundary edges, assume you want to use the combined segmentize
     # face index algorithm
     if 0 < length(mesh.boundary_edges)
         segment_points = segmentize(the_tracks, mesh)
-        face_indices = segment_face_indices(segment_points, mesh)
+        face_indices = find_segment_faces(segment_points, mesh)
         return segment_points, face_indices
     else
         segment_points = segmentize(the_tracks, mesh)
-        face_indices = segment_face_indices(segment_points, mesh)
+        face_indices = find_segment_faces(segment_points, mesh)
         return segment_points, face_indices
     end
 end
@@ -124,7 +129,8 @@ function ray_trace_edge_to_edge(the_tracks::Vector{Vector{LineSegment_2D{T}}},
                         ] for iγ = 1:nγ # Angles
                     ]
     # For each angle, get the segments and face_indices for each track
-    Threads.@threads for iγ = 1:nγ
+    #Threads.@threads 
+    for iγ = 1:nγ
         ray_trace_edge_to_edge!(the_tracks[iγ],
                                 seg_points[iγ],
                                 face_indices[iγ],
@@ -157,9 +163,7 @@ function ray_trace_edge_to_edge(l::LineSegment_2D{T},
     end_point = l.points[2]
     start_NESW = classify_NESW(start_point, mesh)
     end_NESW = classify_NESW(end_point, mesh)
-    if start_NESW == 0 
-        @warn "Could not classify track start point $start_point"
-    end
+    # Find the starting and ending edges and faces
     start_iedge = get_start_edge_NESW(start_point, mesh.boundary_edges[start_NESW], start_NESW, mesh)
     start_iface = mesh.edge_face_connectivity[start_iedge][2] # 1st entry should be 0
     end_iedge = get_start_edge_NESW(end_point, mesh.boundary_edges[end_NESW], end_NESW, mesh)
@@ -211,47 +215,69 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
                                           face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}, 
                                           edges_materialized::Vector{LineSegment_2D{T}}
                                           ) where {T <: AbstractFloat, I <: Unsigned}
+#    println("Start iedge: $iedge")
+#    println("Start iface: $iface")
+#    println("end_point: $end_point")
     max_iters = Int64(1E5)
     iedge_old = iedge
+    iface_old = iface
     end_reached = false
     iters = 0
+    start_point = l.points[1] 
+#    f = Figure()
+#    display(f)
+#    ax = Axis(f[1, 1], aspect = 1)
+#    linesegments!(edges_materialized)
+#    linesegments!(l)
     while !end_reached && iters < max_iters
         # For each edge in this face, intersect the track with the edge
-        last_point = last(intersection_points) 
-        furthest_point = last_point
-        for edge_id in face_edge_connectivity[iface]             
+        furthest_point = l.points[1]
+        for edge_id in face_edge_connectivity[iface_old]             
+#            println("iface: $iface")
+#            println("edge_id: $edge_id")
+#            println("furthest_point: ", furthest_point)
             # If we are testing the edge we came in on, skip
             if edge_id == iedge_old
+#                println("skip")
                 continue
             end
+#            linesegments!(edges_materialized[edge_id])
             npoints, points = l ∩ edges_materialized[edge_id]
             # If there was an intersection, add the point
             # Edges are linear, so only one intersection point
-            if 0 < npoints
+#            println("npoints, points: $npoints, ", points[1])
+            if 0 < npoints 
                 push!(intersection_points, points[1])
                 push!(face_indices, I(iface))
-                # If the point is further than the current furthest point
-                # from the point the ray entered the face on, then we want to leave
-                # the face from this edge
-                if distance(last_point, furthest_point) < distance(last_point, points[1])
+#                scatter!(points[1])
+                # If the point on this edge is further than the current furthest point
+                # from the start of the track, then we want to leave the face from this edge
+                if distance(l.points[1], furthest_point) ≤ distance(l.points[1], points[1])
                     furthest_point = points[1]
-                    if edge_face_connectivity[edge_id][1] == iface
+#                    println("new furthest point: ", furthest_point)
+                    if edge_face_connectivity[edge_id][1] == iface_old
                         iface = edge_face_connectivity[edge_id][2]
                     else
                         iface = edge_face_connectivity[edge_id][1]
                     end
                     iedge = edge_id
+#                    println("Now leaving this face on edge $iedge to face $iface a")
                 end
             end
+#            s = readline()
         end
+#        println("Iteration over")
+#        println("")
+#        println("")
+#        println("")
         iters += 1
         iedge_old = iedge
-        # If the most recent intersection is below the minimum segment length to the
+        iface_old = iface
+        # If the furthest intersection is below the minimum segment length to the
         # end point, end here.
-        last_point = last(intersection_points)
-        if distance(last_point, end_point) < minimum_segment_length
+        if distance(furthest_point, end_point) < minimum_segment_length
             end_reached = true
-            if last_point != end_point
+            if furthest_point != end_point
                 push!(intersection_points, end_point)
                 push!(face_indices, end_iface)
             end
@@ -261,6 +287,89 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
         @error "Exceeded max iterations for $l"
     end
 end
+
+#function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
+#                                          end_point::Point_2D{T},
+#                                          intersection_points::Vector{Point_2D{T}},
+#                                          face_indices::Vector{I},
+#                                          iedge::I,
+#                                          iface::I,
+#                                          end_iface::I,
+#                                          edge_face_connectivity::Vector{NTuple{2, I}},
+#                                          face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}, 
+#                                          edges_materialized::Vector{LineSegment_2D{T}}
+#                                          ) where {T <: AbstractFloat, I <: Unsigned}
+##    println("Start iedge: $iedge")
+##    println("Start iface: $iface")
+##    println("end_point: $end_point")
+#    max_iters = Int64(1E5)
+#    iedge_old = iedge
+#    iface_old = iface
+#    end_reached = false
+#    iters = 0
+##    f = Figure()
+##    display(f)
+##    ax = Axis(f[1, 1], aspect = 1)
+##    linesegments!(edges_materialized)
+##    linesegments!(l)
+#    while !end_reached && iters < max_iters
+#        # For each edge in this face, intersect the track with the edge
+#        furthest_point = l.points[1]
+#        for edge_id in face_edge_connectivity[iface_old]             
+##            println("iface: $iface")
+##            println("edge_id: $edge_id")
+##            println("furthest_point: ", furthest_point)
+#            # If we are testing the edge we came in on, skip
+#            if edge_id == iedge_old
+##                println("skip")
+#                continue
+#            end
+##            linesegments!(edges_materialized[edge_id])
+#            npoints, points = l ∩ edges_materialized[edge_id]
+#            # If there was an intersection, add the point
+#            # Edges are linear, so only one intersection point
+##            println("npoints, points: $npoints, ", points[1])
+#            if 0 < npoints
+#                push!(intersection_points, points[1])
+#                push!(face_indices, I(iface))
+##                scatter!(points[1])
+#                # If the point on this edge is further than the current furthest point
+#                # from the start of the track, then we want to leave the face from this edge
+#                if distance(l.points[1], furthest_point) ≤ distance(l.points[1], points[1])
+#                    furthest_point = points[1]
+##                    println("new furthest point: ", furthest_point)
+#                    if edge_face_connectivity[edge_id][1] == iface_old
+#                        iface = edge_face_connectivity[edge_id][2]
+#                    else
+#                        iface = edge_face_connectivity[edge_id][1]
+#                    end
+#                    iedge = edge_id
+##                    println("Now leaving this face on edge $iedge to face $iface a")
+#                end
+#            end
+##            s = readline()
+#        end
+##        println("Iteration over")
+##        println("")
+##        println("")
+##        println("")
+#        iters += 1
+#        iedge_old = iedge
+#        iface_old = iface
+#        # If the furthest intersection is below the minimum segment length to the
+#        # end point, end here.
+#        if distance(furthest_point, end_point) < minimum_segment_length
+#            end_reached = true
+#            if furthest_point != end_point
+#                push!(intersection_points, end_point)
+#                push!(face_indices, end_iface)
+#            end
+#        end
+#    end
+#    if max_iters ≤ iters
+#        @error "Exceeded max iterations for $l"
+#    end
+#end
 
 function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
                                           end_point::Point_2D{T},
@@ -419,7 +528,7 @@ function segmentize(the_tracks::Vector{Vector{LineSegment_2D{T}}},
 
     # Give info about intersection algorithm being used
     int_alg = get_intersection_algorithm(HRPM) 
-    @info "Segmentizing using the '$int_alg' algorithm"
+    @debug "Segmentizing using the '$int_alg' algorithm"
     # index 1 = γ
     # index 2 = track
     # index 3 = point/segment
@@ -437,7 +546,7 @@ function segmentize(the_tracks::Vector{Vector{LineSegment_2D{T}}},
                     ) where {T <: AbstractFloat, I <: Unsigned}
     # Give info about intersection algorithm being used
     int_alg = get_intersection_algorithm(mesh) 
-    @info "Segmentizing using the '$int_alg' algorithm"
+    @debug "Segmentizing using the '$int_alg' algorithm"
     # index 1 = γ
     # index 2 = track
     # index 3 = point/segment
@@ -450,12 +559,12 @@ function segmentize(the_tracks::Vector{Vector{LineSegment_2D{T}}},
     return seg_points
 end
 
-function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
+function find_segment_faces(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
                               HRPM::HierarchicalRectangularlyPartitionedMesh{T, I},
                               template_vec::MVector{N, I}
                              ) where {T <: AbstractFloat, I <: Unsigned, N}
 
-    @info "Finding face indices corresponding to each segment"
+    @debug "Finding faces corresponding to each segment"
     if !are_faces_materialized(HRPM)
         @warn "Faces are not materialized for this mesh. This will be VERY slow"
     end
@@ -471,17 +580,17 @@ function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
                     ] for iγ = 1:nγ # Angles
                 ]
     Threads.@threads for iγ = 1:nγ
-        bools[iγ] = segment_face_indices!(seg_points[iγ], indices[iγ], HRPM)
+        bools[iγ] = find_segment_faces!(seg_points[iγ], indices[iγ], HRPM)
     end
     if !all(bools)
-        it_bad = findall(x->!x, bools)
-        @warn "Failed to find indices for some points in seg_points[$it_bad]"
+        iγ_bad = findall(x->!x, bools)
+        @error "Failed to find indices for some points in seg_points$iγ_bad"
     end
     return indices
 end
 
 # Get the face indices for all tracks in a single angle
-function segment_face_indices!(points::Vector{Vector{Point_2D{T}}},
+function find_segment_faces!(points::Vector{Vector{Point_2D{T}}},
                               indices::Vector{Vector{MVector{N, I}}},
                               HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
                              ) where {T <: AbstractFloat, I <: Unsigned, N}
@@ -492,13 +601,13 @@ function segment_face_indices!(points::Vector{Vector{Point_2D{T}}},
         # Points in the track
         npoints = length(points[it])
         # Returns true if indices were found for all segments in the track
-        bools[it] = segment_face_indices!(points[it], indices[it], HRPM)
+        bools[it] = find_segment_faces!(points[it], indices[it], HRPM)
     end
     return all(bools)
 end
 
 # Get the face indices for all segments in a single track
-function segment_face_indices!(points::Vector{Point_2D{T}},
+function find_segment_faces!(points::Vector{Point_2D{T}},
                               indices::Vector{MVector{N, I}},
                               HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
                              ) where {T <: AbstractFloat, I <: Unsigned, N}
@@ -513,11 +622,11 @@ function segment_face_indices!(points::Vector{Point_2D{T}},
     return all(bools)
 end
 
-function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
+function find_segment_faces(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
                               mesh::UnstructuredMesh_2D{T, I}
                              ) where {T <: AbstractFloat, I <: Unsigned, N}
 
-    @info "Finding face indices corresponding to each segment"
+    @debug "Finding faces corresponding to each segment"
     if !(0 < length(mesh.faces_materialized))
         @warn "Faces are not materialized for this mesh. This will be VERY slow"
     end
@@ -533,17 +642,17 @@ function segment_face_indices(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
                     ] for iγ = 1:nγ # Angles
                 ]
     Threads.@threads for iγ = 1:nγ
-        bools[iγ] = segment_face_indices!(seg_points[iγ], indices[iγ], mesh)
+        bools[iγ] = find_segment_faces!(seg_points[iγ], indices[iγ], mesh)
     end
     if !all(bools)
-        it_bad = findall(x->!x, bools)
-        @warn "Failed to find indices for some points in seg_points[$it_bad]"
+        iγ_bad = findall(x->!x, bools)
+        @error "Failed to find indices for some points in seg_points$iγ_bad"
     end
     return indices
 end
 
 # Get the face indices for all tracks in a single angle
-function segment_face_indices!(points::Vector{Vector{Point_2D{T}}},
+function find_segment_faces!(points::Vector{Vector{Point_2D{T}}},
                                indices::Vector{Vector{I}},
                                mesh::UnstructuredMesh_2D{T, I}
                               ) where {T <: AbstractFloat, I <: Unsigned, N}
@@ -554,13 +663,13 @@ function segment_face_indices!(points::Vector{Vector{Point_2D{T}}},
         # Points in the track
         npoints = length(points[it])
         # Returns true if indices were found for all segments in the track
-        bools[it] = segment_face_indices!(points[it], indices[it], mesh)
+        bools[it] = find_segment_faces!(points[it], indices[it], mesh)
     end
     return all(bools)
 end
 
 # Get the face indices for all segments in a single track
-function segment_face_indices!(points::Vector{Point_2D{T}},
+function find_segment_faces!(points::Vector{Point_2D{T}},
                                indices::Vector{I},
                                mesh::UnstructuredMesh_2D{T, I}
                               ) where {T <: AbstractFloat, I <: Unsigned, N}

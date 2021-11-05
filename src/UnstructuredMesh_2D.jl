@@ -497,6 +497,7 @@ function find_face_explicit(p::Point_2D{T},
             return i
         end
     end
+    @error "Could not find face for point $p"
     return 0
 end
 
@@ -508,6 +509,7 @@ function find_face_explicit(p::Point_2D{T},
             return i
         end
     end
+    @error "Could not find face for point $p"
     return 0
 end
 
@@ -519,6 +521,7 @@ function find_face_explicit(p::Point_2D{T},
             return i
         end
     end
+    @error "Could not find face for point $p"
     return 0
 end
 
@@ -538,6 +541,7 @@ function find_face_implicit(p::Point_2D{T},
             return i
         end
     end
+    @error "Could not find face for point $p"
     return 0
 end
 
@@ -557,6 +561,7 @@ function find_face_implicit(p::Point_2D{T},
             return i
         end
     end
+    @error "Could not find face for point $p"
     return 0
 end
 
@@ -580,6 +585,7 @@ function find_face_implicit(p::Point_2D{T},
             return i
         end
     end
+    @error "Could not find face for point $p"
     return 0
 end
 
@@ -743,7 +749,7 @@ function intersect_faces(l::LineSegment_2D{T},
         # Check if any of the face types are unsupported
         unsupported = sum(x->x[1] ∉  UnstructuredMesh_2D_cell_types, mesh.faces)
         if 0 < unsupported
-            @warn "Mesh contains an unsupported face type"
+            @error "Mesh contains an unsupported face type"
         end
         intersection_points = intersect_faces_implicit(l, mesh, mesh.faces)
         return sort_intersection_points(l, intersection_points)
@@ -981,13 +987,12 @@ function sort_intersection_points(l::LineSegment_2D{T},
         # Sort the points based upon their distance to the first point in the line
         distances = distance.(l.points[1], points)
         sorted_pairs = sort(collect(zip(distances, points)); by=first)
-        points_sorted::Vector{Point_2D{T}} = getindex.(sorted_pairs, 2)
         # Remove duplicate points
-        points_reduced::Vector{Point_2D{T}} = [points_sorted[1]]
-        npoints::Int64 = length(points_sorted)
+        points_reduced::Vector{Point_2D{T}} = [sorted_pairs[1][2]]
+        npoints::Int64 = length(sorted_pairs)
         for i = 2:npoints
-            if minimum_segment_length < distance(last(points_reduced), points_sorted[i])
-                push!(points_reduced, points_sorted[i])
+            if minimum_segment_length < distance(last(points_reduced), sorted_pairs[i][2])
+                push!(points_reduced, sorted_pairs[i][2])
             end
         end
         return points_reduced::Vector{Point_2D{T}}

@@ -1,4 +1,7 @@
 using MOCNeutronTransport
+using StaticArrays
+using BenchmarkTools
+using MOCNeutronTransport_Vis
 # Model
 # ----------------------------------------------------------------------------------------------
 log_timestamps()
@@ -117,12 +120,16 @@ end
 
 # Mesh conversion
 #---------------------------------------------------------------------------------------------------
-gmsh.write("2a.inp")
+gmsh.write("2x2.inp")
 gmsh.finalize() # done with Gmsh. Finalize
-mesh = read_abaqus_2d("2a.inp")
-HRPM = partition_rectangularly(mesh)
 
 # Ray tracing
 #---------------------------------------------------------------------------------------------------
 T = Float64
 I = UInt16
+mesh = read_abaqus_2d("2x2.inp", float_type=T)
+HRPM = partition_rectangularly(mesh)
+tₛ =  T(0.001)
+ang_quad = angular_quadrature("Chebyshev-Chebyshev", 32, 3; T=T)
+template_vec = MVector{2, I}(zeros(I, 2))
+the_tracks = tracks(tₛ, ang_quad, HRPM)
