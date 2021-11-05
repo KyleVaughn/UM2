@@ -17,19 +17,12 @@ include("AbstractTypes.jl")
 include("AngularQuadrature.jl")
 include("Tree.jl")
 include("Point_2D.jl")
-#include("Point_3D.jl")
 include("LineSegment_2D.jl")
-#include("LineSegment_3D.jl")
 include("QuadraticSegment_2D.jl")
-#include("QuadraticSegment_3D.jl")
 include("Triangle_2D.jl")
-#include("Triangle_3D.jl")
 include("Quadrilateral_2D.jl")
-#include("Quadrilateral_3D.jl")
 include("Triangle6_2D.jl")
-#include("Triangle6_3D.jl")
 include("Quadrilateral8_2D.jl")
-#include("Quadrilateral8_3D.jl")
 include("constants.jl")
 include("gauss_legendre_quadrature.jl")
 include("UnstructuredMesh_2D.jl")
@@ -42,11 +35,6 @@ include("xdmf.jl")
 include("gmsh_rectangular_grid.jl")
 include("gmsh_group_preserving_fragment.jl")
 include("gmsh_overlay_rectangular_grid.jl")
-#
-#export AngularQuadrature,
-#       GeneralAngularQuadrature,
-#       ProductAngularQuadrature
-#
 
 # Structs/Types
 export  AngularQuadrature,
