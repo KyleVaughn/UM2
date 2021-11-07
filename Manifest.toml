@@ -17,9 +17,9 @@ version = "0.5.10"
 
 [[Blosc]]
 deps = ["Blosc_jll"]
-git-tree-sha1 = "84cf7d0f8fd46ca6f1b3e0305b4b4a37afe50fd6"
+git-tree-sha1 = "217da19d6f3a94753e580a8bc241c7cbefd9281f"
 uuid = "a74b3585-a348-5f62-a45c-50e91977d574"
-version = "0.7.0"
+version = "0.7.1"
 
 [[Blosc_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Lz4_jll", "Pkg", "Zlib_jll", "Zstd_jll"]
@@ -29,9 +29,9 @@ version = "1.21.0+0"
 
 [[Compat]]
 deps = ["Base64", "Dates", "DelimitedFiles", "Distributed", "InteractiveUtils", "LibGit2", "Libdl", "LinearAlgebra", "Markdown", "Mmap", "Pkg", "Printf", "REPL", "Random", "SHA", "Serialization", "SharedArrays", "Sockets", "SparseArrays", "Statistics", "Test", "UUIDs", "Unicode"]
-git-tree-sha1 = "31d0151f5716b655421d9d75b7fa74cc4e744df2"
+git-tree-sha1 = "dce3e3fea680869eaa0b774b2e8343e9ff442313"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "3.39.0"
+version = "3.40.0"
 
 [[Dates]]
 deps = ["Printf"]
@@ -57,9 +57,9 @@ version = "0.1.1"
 
 [[HDF5]]
 deps = ["Blosc", "Compat", "HDF5_jll", "Libdl", "Mmap", "Random", "Requires"]
-git-tree-sha1 = "83173193dc242ce4b037f0263a7cc45afb5a0b85"
+git-tree-sha1 = "698c099c6613d7b7f151832868728f426abe698b"
 uuid = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
-version = "0.15.6"
+version = "0.15.7"
 
 [[HDF5_jll]]
 deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "OpenSSL_jll", "Pkg", "Zlib_jll"]
