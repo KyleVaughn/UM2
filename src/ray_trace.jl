@@ -212,7 +212,8 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
                                           end_iface::I,
                                           edge_face_connectivity::Vector{NTuple{2, I}},
                                           face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}, 
-                                          edges_materialized::Vector{LineSegment_2D{T}}
+                                          edges_materialized::Vector{LineSegment_2D{T}},
+                                          faces_materialized::Vector{<:Face_2D{T}}
                                           ) where {T <: AbstractFloat, I <: Unsigned}
     max_iters = Int64(1E5)
     iedge_old = iedge
@@ -247,6 +248,22 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
             end
         end
         iters += 1
+        if iface_old == iface
+            # Could not find the next face to go to!
+            # This is likely due to floating point error.
+            # Try all adjacent faces
+            adjacent_faces = get_adjacent_faces(mesh, iface)
+            for face in adjacent_faces
+                fnpoints, fpoints = l ∩ mesh.faces_materialized[face] 
+                # For each intersection point, if it is the furthest,
+                # iface = face
+                # iedge = get_shared_edge(face, iface)
+                # TODO: split RT explicit into component functions?
+
+
+            end
+        end
+
         iedge_old = iedge
         iface_old = iface
         # If the furthest intersection is below the minimum segment length to the
