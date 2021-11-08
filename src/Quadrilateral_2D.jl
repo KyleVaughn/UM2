@@ -1,5 +1,6 @@
-# Quadrilateral in 2D defined by its 4 vertices.
+# @code_warntype checked 2021/11/08
 
+# Quadrilateral in 2D defined by its 4 vertices.
 # NOTE: Quadrilaterals are assumed to be convex. This is because quadrilaterals must be convex 
 # to be valid finite elements.
 # https://math.stackexchange.com/questions/2430691/jacobian-determinant-for-bi-linear-quadrilaterals
