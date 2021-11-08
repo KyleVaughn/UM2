@@ -1,5 +1,6 @@
-# A 2D point in Cartesian coordinates.
+# @code_warntype checked 2021/11/08
 
+# A 2D point in Cartesian coordinates.
 struct Point_2D{T <: AbstractFloat}
     x::SVector{2,T}
 end
@@ -37,7 +38,7 @@ function ≈(p₁::Point_2D{T}, p₂::Point_2D{T}) where {T <: AbstractFloat}
 end
 +(p₁::Point_2D, p₂::Point_2D) = Point_2D(p₁.x[1] + p₂.x[1], p₁.x[2] + p₂.x[2])
 -(p₁::Point_2D, p₂::Point_2D) = Point_2D(p₁.x[1] - p₂.x[1], p₁.x[2] - p₂.x[2])
-# Note the cross product of two 2D points returns a scalar. It is assumed that this is the 
+# Note the cross product of two 2D points returns a scalar. It is assumed that this is the
 # desired quantity, since the cross product of vectors in the plane is a vector normal to the plane.
 # Hence the z coordinate of the resultant vector is returned.
 ×(p₁::Point_2D, p₂::Point_2D) = p₁.x[1]*p₂.x[2] - p₂.x[1]*p₁.x[2]
@@ -57,5 +58,7 @@ end
 # -------------------------------------------------------------------------------------------------
 # note: hypot is the Julia recommended way to do sqrt of sum squared for 2 numbers
 norm(p::Point_2D) = hypot(p.x[1], p.x[2])
-distance(p₁::Point_2D, p₂::Point_2D) = hypot(p₁.x[1] - p₂.x[1], p₁.x[2] - p₂.x[2])
-midpoint(p₁::Point_2D, p₂::Point_2D) = (p₁ + p₂)/2
+function distance(p₁::Point_2D{T}, p₂::Point_2D{T}) where {T <: AbstractFloat}
+    return hypot(p₁.x[1] - p₂.x[1], p₁.x[2] - p₂.x[2])
+end
+midpoint(p₁::Point_2D{T}, p₂::Point_2D{T}) where {T <: AbstractFloat} = (p₁ + p₂)/2

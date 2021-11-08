@@ -108,6 +108,14 @@ using StaticArrays
             p = -p₁
             @test p == Point_2D(T, -1, -2)
             @test typeof(p.x) == typeof(SVector(T.((4, 8))))
+
+            # Matrix multiplcation
+            A = SMatrix{2, 2, T, 4}(T(1), T(2), T(3), T(4))
+            p = Point_2D(T, 1, 2)
+            q = A*p
+            @test q[1] ≈ 7
+            @test q[2] ≈ 10
+            @test typeof(q[1]) == T
         end
 
         @testset "Methods" begin
@@ -122,6 +130,11 @@ using StaticArrays
             @test norm(p₁) == sqrt(T(5))
             @test norm(p₂) == sqrt(T(4 + 16))
             @test typeof(norm(p₁)) == typeof(T(1))
+
+            # midpoint
+            mp = midpoint(p₁, p₂)
+            @test mp[1] ≈ T(3//2)
+            @test mp[2] ≈ T(3)
         end
     end
 end
