@@ -42,22 +42,22 @@ using MOCNeutronTransport
             @test p ∉ quad
 
             # 2 intersections
-            l = LineSegment_2D(p₃, p₁) 
+            l = LineSegment_2D(p₃, p₁)
             ipoints, points = intersect(l, quad)
-            @test ipoints == 2 
+            @test ipoints == 2
             @test points[1] ≈ p₁
             @test points[2] ≈ p₃
 
             # 1 intersections
-            l = LineSegment_2D(Point_2D(T, -1, -1), p₁) 
+            l = LineSegment_2D(Point_2D(T, -1, -1), p₁)
             ipoints, points = intersect(l, quad)
-            @test ipoints == 1 
+            @test ipoints == 1
             @test points[1] ≈ p₁
 
             # 0 intersections
             l = LineSegment_2D(Point_2D(T, -1, -1), Point_2D(T, 2, -1))
-            ipoints, points = intersect(l, quad)    
-            @test ipoints == 0 
+            ipoints, points = intersect(l, quad)
+            @test ipoints == 0
         end
     end
 end

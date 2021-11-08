@@ -1,5 +1,6 @@
-# A quadratic triangle, defined in 2D.
+# @code_warntype checked 2021/11/08
 
+# A quadratic triangle, defined in 2D.
 struct Triangle6_2D{T <: AbstractFloat} <: Face_2D{T}
     # The points are assumed to be ordered as follows
     # p₁ = vertex A
@@ -14,8 +15,8 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-Triangle6_2D(p₁::Point_2D{T}, 
-             p₂::Point_2D{T}, 
+Triangle6_2D(p₁::Point_2D{T},
+             p₂::Point_2D{T},
              p₃::Point_2D{T},
              p₄::Point_2D{T},
              p₅::Point_2D{T},
@@ -26,7 +27,7 @@ Triangle6_2D(p₁::Point_2D{T},
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
-function (tri6::Triangle6_2D{T})(r::R, s::S) where {T <: AbstractFloat, 
+function (tri6::Triangle6_2D{T})(r::R, s::S) where {T <: AbstractFloat,
                                                     R <: Real,
                                                     S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
@@ -41,6 +42,7 @@ function (tri6::Triangle6_2D{T})(r::R, s::S) where {T <: AbstractFloat,
                             4sₜ*(1 - rₜ - sₜ)*tri6.points[6]
 end
 
+# Interpolation using a point instead of (r,s)
 function (tri6::Triangle6_2D{T})(p::Point_2D{T}) where {T <: AbstractFloat}
     r = p[1]
     s = p[2]
@@ -52,7 +54,7 @@ function (tri6::Triangle6_2D{T})(p::Point_2D{T}) where {T <: AbstractFloat}
                            4s*(1 - r - s)*tri6.points[6]
 end
 
-function derivative(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, 
+function derivative(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat,
                                                                R <: Real,
                                                                S <: Real}
     # Let T(r,s) be the interpolation function for tri6
@@ -73,11 +75,11 @@ function derivative(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat
     return ∂T_∂r, ∂T_∂s
 end
 
-function jacobian(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat, 
+function jacobian(tri6::Triangle6_2D{T}, r::R, s::S) where {T <: AbstractFloat,
                                                             R <: Real,
                                                             S <: Real}
     # Return the 2 x 2 Jacobian matrix
-    ∂T_∂r, ∂T_∂s = derivative(tri6, r, s) 
+    ∂T_∂r, ∂T_∂s = derivative(tri6, r, s)
     return hcat(∂T_∂r.x, ∂T_∂s.x)
 end
 
@@ -123,7 +125,7 @@ function triangulate(tri6::Triangle6_2D{T}, N::Int64) where {T <: AbstractFloat}
             j += 1
         end
     end
-    return triangles 
+    return triangles
 end
 
 function real_to_parametric(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) where {T <: AbstractFloat}
@@ -156,10 +158,10 @@ function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) where {T <: Abst
     # r + s ≤ 1 + ϵ
     # These are the conditions for a valid point in the triangle ± some ϵ
     # Also check that the point is close to what the interpolation function produces
-    if (-ϵ ≤ p_rs[1] ≤ 1 + ϵ) && 
-       (-ϵ ≤ p_rs[2] ≤ 1 + ϵ) && 
-       (p_rs[1] + p_rs[2] ≤ 1 + ϵ) && 
-       norm(p - tri6(p_rs)) < 1e-4 
+    if (-ϵ ≤ p_rs[1] ≤ 1 + ϵ) &&
+       (-ϵ ≤ p_rs[2] ≤ 1 + ϵ) &&
+       (p_rs[1] + p_rs[2] ≤ 1 + ϵ) &&
+       norm(p - tri6(p_rs)) < 1e-4
         return true
     else
         return false
@@ -172,9 +174,9 @@ function intersect(l::LineSegment_2D{T}, tri6::Triangle6_2D{T}) where {T <: Abst
              QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5]),
              QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
     intersections = l .∩ edges
-    ipoints = MVector(Point_2D(T, 0), 
-                      Point_2D(T, 0), 
-                      Point_2D(T, 0), 
+    ipoints = MVector(Point_2D(T, 0),
+                      Point_2D(T, 0),
+                      Point_2D(T, 0),
                       Point_2D(T, 0),
                       Point_2D(T, 0),
                       Point_2D(T, 0)
@@ -190,11 +192,11 @@ function intersect(l::LineSegment_2D{T}, tri6::Triangle6_2D{T}) where {T <: Abst
                 # make sure we don't have duplicate points
                 duplicate = false
                 for j = 1:n_ipoints
-                    if points[i] ≈ ipoints[j] 
+                    if points[i] ≈ ipoints[j]
                         duplicate = true
                         break
                     end
-                end  
+                end
                 if !duplicate
                     n_ipoints += 0x01
                     ipoints[n_ipoints] = points[i]
@@ -202,9 +204,6 @@ function intersect(l::LineSegment_2D{T}, tri6::Triangle6_2D{T}) where {T <: Abst
             end
         end
     end
-    # Return points, since the final goal is a vector of points
-    # Return 4 points, since this is the max number of intersections for 2D finite elements,
-    # meaning all elements have the same return type for intersection.
     return n_ipoints, Tuple(ipoints)
 end
 intersect(tri6::Triangle6_2D, l::LineSegment_2D) = intersect(l, tri6)

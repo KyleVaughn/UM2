@@ -61,13 +61,13 @@ function intersect(l::LineSegment_2D{T}, quad::Quadrilateral_2D{T}) where {T <: 
     p₂ = Point_2D(T, 0)
     ipoints = 0x00
     # We need to account for 3 or 4 points returned due to vertex intersection
-    for (npoints, points) in intersections
+    for (npoints, point) in intersections
         if npoints === 0x01
             if ipoints === 0x00
-                p₁ = points[1]
+                p₁ = point
                 ipoints = 0x01
-            elseif ipoints === 0x01 && (points[1] ≉ p₁)
-                p₂ = points[1]
+            elseif ipoints === 0x01 && (point ≉ p₁)
+                p₂ = point
                 ipoints = 0x02
             end
         end

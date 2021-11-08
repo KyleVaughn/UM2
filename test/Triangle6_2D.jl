@@ -35,17 +35,17 @@ using MOCNeutronTransport
 
             # derivative
             r, s = derivative(tri6, 0, 0)
-            @test r ≈ Point_2D(T, 1, 0) 
-            @test s ≈ Point_2D(T, 0, 1) 
+            @test r ≈ Point_2D(T, 1, 0)
+            @test s ≈ Point_2D(T, 0, 1)
             r, s = derivative(tri6, 1, 0)
-            @test r ≈ Point_2D(T, 1, 0) 
-            @test s ≈ Point_2D(T, 0, 1) 
+            @test r ≈ Point_2D(T, 1, 0)
+            @test s ≈ Point_2D(T, 0, 1)
             r, s = derivative(tri6, 0, 1)
-            @test r ≈ Point_2D(T, 1, 0) 
-            @test s ≈ Point_2D(T, 0, 1) 
+            @test r ≈ Point_2D(T, 1, 0)
+            @test s ≈ Point_2D(T, 0, 1)
             r, s = derivative(tri6, 1//2, 1//2)
-            @test r ≈ Point_2D(T, 1, 0) 
-            @test s ≈ Point_2D(T, 0, 1) 
+            @test r ≈ Point_2D(T, 1, 0)
+            @test s ≈ Point_2D(T, 0, 1)
 
             # area
             p₁ = Point_2D(T, 0)
@@ -111,6 +111,24 @@ using MOCNeutronTransport
             @test points[2] ≈ Point_2D(T, 1.9745966692414834, 1//10)
             @test points[3] ≈ Point_2D(T, 2.1900000000000000, 1//10)
             @test points[4] ≈ Point_2D(T, 1//10,              1//10)
+
+            # 6 intersection
+            p₁ = Point_2D(T,  1, 0)
+            p₂ = Point_2D(T,  0, 0)
+            p₃ = Point_2D(T, -1, 0)
+            p₄ = Point_2D(T,  1//2, -1//2)
+            p₅ = Point_2D(T, -1//2, -1//2)
+            p₆ = Point_2D(T,   0,    -2)
+            tri6 = Triangle6_2D((p₁, p₂, p₃, p₄, p₅, p₆))
+            l = LineSegment_2D(Point_2D(T, -2, -1//4), Point_2D(T, 2, -1//4))
+            n, points = l ∩ tri6
+            @test n == 6
+            @test points[1] ≈ Point_2D{T}(T[ 0.14644659, -1//4])
+            @test points[2] ≈ Point_2D{T}(T[ 0.8535534,  -1//4])
+            @test points[3] ≈ Point_2D{T}(T[-0.8535534,  -1//4])
+            @test points[4] ≈ Point_2D{T}(T[-0.14644665, -1//4])
+            @test points[5] ≈ Point_2D{T}(T[ 0.9354143,  -1//4])
+            @test points[6] ≈ Point_2D{T}(T[-0.9354143,  -1//4])
         end
     end
 end
