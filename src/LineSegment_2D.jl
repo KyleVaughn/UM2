@@ -1,3 +1,5 @@
+# @code_warntype checked 2021/11/08
+
 # A line segment in 2D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and ends at points[2]
 struct LineSegment_2D{T <: AbstractFloat} <: Edge_2D{T}
@@ -15,6 +17,7 @@ Base.broadcastable(l::LineSegment_2D) = Ref(l)
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
+# l(0) yields points[1], and l(1) yields points[2]
 function (l::LineSegment_2D{T})(r::R) where {T <: AbstractFloat, R <: Real}
     return l.points[1] + T(r) * (l.points[2] - l.points[1])
 end
@@ -22,7 +25,7 @@ end
 arc_length(l::LineSegment_2D) = distance(l.points[1], l.points[2])
 
 function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <: AbstractFloat}
-    # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product 
+    # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product
     # operator for 2D points returns a scalar (the 2-norm of the cross product).
     #
     # Using the equation of a line in parametric form
@@ -43,16 +46,16 @@ function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <:
     # If the lines are skew, s and r represent the parameters of the points of closest
     # approach - Intersection of two lines in three-space, Ronald Goldman, in Graphics
     # Gems by Andrew S. Glassner.
-    ϵ = 1e-6
+    ϵ = 5e-6
     v⃗ = l₁.points[2] - l₁.points[1]
     u⃗ = l₂.points[2] - l₂.points[1]
     w⃗ = l₂.points[1] - l₁.points[1]
-    if abs(v⃗ × u⃗) > 5e-5 
+    if abs(v⃗ × u⃗) > 5e-5
         r = (w⃗ × u⃗)/(v⃗ × u⃗)
         p = l₁(r)
         s = ((r*v⃗ - w⃗) ⋅ u⃗)/(u⃗ ⋅ u⃗)
-        return (-ϵ ≤ s ≤ 1 + ϵ) && (-ϵ ≤ r ≤ 1 + ϵ) ? (0x01, (p, p)) : (0x00, (p, p))
+        return (-ϵ ≤ s ≤ 1 + ϵ) && (-ϵ ≤ r ≤ 1 + ϵ) ? (0x01, p) : (0x00, p)
     else
-        return (0x00, (Point_2D(T, 0), Point_2D(T, 0)))
+        return (0x00, Point_2D(T, 0))
     end
 end
