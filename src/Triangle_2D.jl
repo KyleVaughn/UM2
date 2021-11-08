@@ -1,5 +1,6 @@
-# Triangle in 2D defined by its 3 vertices.
+# @code_warntype checked 2021/11/08
 
+# Triangle in 2D defined by its 3 vertices.
 struct Triangle_2D{T <: AbstractFloat} <: Face_2D{T}
     points::NTuple{3, Point_2D{T}}
 end
@@ -16,6 +17,8 @@ Triangle_2D(p₁::Point_2D{T},
 function (tri::Triangle_2D{T})(r::R, s::S) where {T <: AbstractFloat, 
                                                   R <: Real, 
                                                   S <: Real}
+    # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+    # Chapter 8, Advanced Data Representation, in the interpolation functions section
     return (1 - T(r) - T(s))*tri.points[1] + T(r)*tri.points[2] + T(s)*tri.points[3]
 end
 
@@ -55,13 +58,13 @@ function intersect(l::LineSegment_2D{T}, tri::Triangle_2D{T}) where {T <: Abstra
     p₂ = Point_2D(T, 0)
     ipoints = 0x00
     # We need to account for 3 points returned due to vertex intersection
-    for (npoints, points) in intersections
+    for (npoints, point) in intersections
         if npoints === 0x01
             if ipoints === 0x00
-                p₁ = points[1]
+                p₁ = point
                 ipoints = 0x01
-            elseif ipoints === 0x01 && (points[1] ≉ p₁)
-                p₂ = points[1]
+            elseif ipoints === 0x01 && (point ≉ p₁)
+                p₂ = point
                 ipoints = 0x02
             end
         end
