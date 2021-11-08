@@ -1,3 +1,5 @@
+# @code_warntype checked 2021/11/08
+
 # A quadratic segment in 2D space that passes through three points: x⃗₁, x⃗₂, and x⃗₃.
 # The assumed relation of the points may be seen in the diagram below.
 #                 ___x⃗₃___
@@ -28,6 +30,8 @@ Base.broadcastable(q::QuadraticSegment_2D) = Ref(q)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
+# Interpolation
+# q(0) = q.points[1], q(1) = q.points[2], q(1//2) = q.points[3]
 function (q::QuadraticSegment_2D{T})(r::R) where {T <: AbstractFloat, R <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
@@ -35,15 +39,15 @@ function (q::QuadraticSegment_2D{T})(r::R) where {T <: AbstractFloat, R <: Real}
     return (2rₜ-1)*(rₜ-1)*q.points[1] + rₜ*(2rₜ-1)*q.points[2] + 4rₜ*(1-rₜ)*q.points[3]
 end
 
+# Get the derivative dq⃗/dr evalutated at r
 function derivative(q::QuadraticSegment_2D{T}, r::R) where {T <: AbstractFloat, R <: Real}
-    # dq⃗/dr
     rₜ = T(r)
     return (4rₜ - 3)*q.points[1] + (4rₜ - 1)*q.points[2] + (4 - 8rₜ)*q.points[3]
 end
 
 function arc_length(q::QuadraticSegment_2D{T}; N::Int64=15) where {T <: AbstractFloat}
-    # This does have an analytric solution, but the Mathematica solution is pages long and can 
-    # produce NaN results when the segment is straight, so numerical integration is used. 
+    # This does have an analytic solution, but the Mathematica solution is pages long and can
+    # produce NaN results when the segment is straight, so numerical integration is used.
     # (Gauss-Legengre quadrature)
     #     1                  N
     # L = ∫ ||q⃗'(r)||dr  ≈   ∑ wᵢ||q⃗'(rᵢ)||
@@ -102,7 +106,7 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
         p₂ = q(r₂)
         s₁ = ((p₁ - l.points[1]) ⋅ w⃗)/(w⃗ ⋅ w⃗)
         s₂ = ((p₂ - l.points[1]) ⋅ w⃗)/(w⃗ ⋅ w⃗)
-        
+
         # Check points to see if they are valid intersections.
         # First r,s valid?
         if (0 ≤ r₁ ≤ 1) && (0 ≤ s₁ ≤ 1) && (p₁ ≈ l(s₁))
