@@ -12,37 +12,38 @@ include("../src/AngularQuadrature.jl")
 
             angles, weights = chebyshev_angular_quadrature(2, type)
             @test size(angles, 1) == size(weights, 1) == 2
-            @test angles  == Tuple([type(π)/type(8), type(3)*type(π)/type(8)])
-            @test weights == Tuple([type(1/2), type(1/2)])
+            @test angles  == type[3π/8, π/8]
+            @test weights == type[1//2, 1//2]
 
             angles, weights = chebyshev_angular_quadrature(3, type)
             @test size(angles, 1) == size(weights, 1) == 3
-            @test angles  == Tuple([type(π)/type(12), type(3)*type(π)/type(12), type(5)*type(π)/type(12)])
-            @test weights == Tuple([type(1)/type(3), type(1)/type(3), type(1)/type(3)])
+            @test angles  == type[5π/12, 3π/12, π/12]
+            @test weights == type[1/3,  1/3,   1/3]
         end
 
         @testset "Chebyshev-Chebyshev" begin
             # Default data type is Float64
-            quadrature = AngularQuadrature("Chebyshev-Chebyshev", 3, 2)
+            quadrature = angular_quadrature("Chebyshev-Chebyshev", 3, 2)
             @test quadrature isa ProductAngularQuadrature
-            @test size(quadrature.γ, 1) == size(quadrature.w_γ, 1) == 3
-            @test size(quadrature.θ, 1) == size(quadrature.w_θ, 1) == 2 
-            @test quadrature.γ   == Tuple([π/12, 3*π/12, 5*π/12])
-            @test quadrature.w_γ == Tuple([1/3, 1/3, 1/3])
-            @test quadrature.θ   == Tuple([π/8, 3*π/8])
-            @test quadrature.w_θ == Tuple([1/2, 1/2])
-            
-            # Specified data type
-            quadrature = AngularQuadrature("Chebyshev-Chebyshev", 3, 2, T=type)
-            @test quadrature isa ProductAngularQuadrature
-            @test size(quadrature.γ, 1) == size(quadrature.w_γ, 1) == 3
+            @test size(quadrature.γ, 1) == size(quadrature.w_γ, 1) == 6
             @test size(quadrature.θ, 1) == size(quadrature.w_θ, 1) == 2
-            @test quadrature.γ   == Tuple([type(π)/type(12), 
-                                           type(3)*type(π)/type(12), 
-                                           type(5)*type(π)/type(12)])
-            @test quadrature.w_γ == Tuple([type(1)/type(3), type(1)/type(3), type(1)/type(3)])
-            @test quadrature.θ   == Tuple([type(π)/type(8), type(3)*type(π)/type(8)])
-            @test quadrature.w_θ == Tuple([type(1)/type(2), type(1)/type(2)])
+            @test quadrature.γ   == Tuple([5π/12, 3π/12, π/12, 7π/12, 9π/12, 11π/12])
+            @test quadrature.w_γ == Tuple([1/6, 1/6, 1/6, 1/6, 1/6, 1/6])
+            @test quadrature.θ   == Tuple([3π/8, π/8])
+            @test quadrature.w_θ == Tuple([1/2, 1/2])
+
+            # Specified data type
+            quadrature = angular_quadrature("Chebyshev-Chebyshev", 3, 2, T=type)
+            @test quadrature isa ProductAngularQuadrature
+            @test size(quadrature.γ, 1) == size(quadrature.w_γ, 1) == 6
+            @test size(quadrature.θ, 1) == size(quadrature.w_θ, 1) == 2
+            γ_ref = Tuple(type[5π/12, 3π/12, π/12, 7π/12, 9π/12, 11π/12])
+            for i = 1:6
+                @test quadrature.γ[i] ≈ γ_ref[i]
+            end
+            @test quadrature.w_γ == Tuple(type[1/6, 1/6, 1/6, 1/6, 1/6, 1/6])
+            @test quadrature.θ   == Tuple(type[3π/8, π/8])
+            @test quadrature.w_θ == Tuple(type[1/2, 1/2])
         end
     end
 end
