@@ -1,3 +1,5 @@
+# @code_warntype checked 2021/11/08
+
 # Angular quadrature defined on the unit sphere octant in the upper right, closest to the viewer.
 # The angles and weights are transformed to the other octants by symmetry.
 #     +----+----+
