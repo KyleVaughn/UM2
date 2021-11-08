@@ -1,7 +1,7 @@
 # @code_warntype checked 2021/11/08
 
 # Quadrilateral in 2D defined by its 4 vertices.
-# NOTE: Quadrilaterals are assumed to be convex. This is because quadrilaterals must be convex 
+# NOTE: Quadrilaterals are assumed to be convex. This is because quadrilaterals must be convex
 # to be valid finite elements.
 # https://math.stackexchange.com/questions/2430691/jacobian-determinant-for-bi-linear-quadrilaterals
 struct Quadrilateral_2D{T <: AbstractFloat} <: Face_2D{T}
@@ -11,22 +11,22 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-Quadrilateral_2D(p₁::Point_2D{T}, 
-                 p₂::Point_2D{T}, 
+Quadrilateral_2D(p₁::Point_2D{T},
+                 p₂::Point_2D{T},
                  p₃::Point_2D{T},
                  p₄::Point_2D{T}) where {T <: AbstractFloat} = Quadrilateral_2D((p₁, p₂, p₃, p₄))
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function (quad::Quadrilateral_2D{T})(r::R, s::S) where {T <: AbstractFloat, 
-                                                        R <: Real, 
+function (quad::Quadrilateral_2D{T})(r::R, s::S) where {T <: AbstractFloat,
+                                                        R <: Real,
                                                         S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     rₜ = T(r)
     sₜ = T(s)
-    return (1 - rₜ)*(1 - sₜ)*quad.points[1] + 
-                 rₜ*(1 - sₜ)*quad.points[2] + 
+    return (1 - rₜ)*(1 - sₜ)*quad.points[1] +
+                 rₜ*(1 - sₜ)*quad.points[2] +
                        rₜ*sₜ*quad.points[3] +
                  (1 - rₜ)*sₜ*quad.points[4]
 end
@@ -66,13 +66,13 @@ function intersect(l::LineSegment_2D{T}, quad::Quadrilateral_2D{T}) where {T <: 
             if ipoints === 0x00
                 p₁ = points[1]
                 ipoints = 0x01
-            elseif ipoints === 0x01 && (points[1] ≉ p₁) 
+            elseif ipoints === 0x01 && (points[1] ≉ p₁)
                 p₂ = points[1]
                 ipoints = 0x02
             end
         end
-    end 
-    return ipoints, (p₁, p₂)  
+    end
+    return ipoints, (p₁, p₂)
 end
 
 function Base.show(io::IO, quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}

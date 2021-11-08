@@ -7,15 +7,15 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-Triangle_2D(p₁::Point_2D{T}, 
-            p₂::Point_2D{T}, 
+Triangle_2D(p₁::Point_2D{T},
+            p₂::Point_2D{T},
             p₃::Point_2D{T}) where {T <: AbstractFloat} = Triangle_2D((p₁, p₂, p₃))
 
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
-function (tri::Triangle_2D{T})(r::R, s::S) where {T <: AbstractFloat, 
-                                                  R <: Real, 
+function (tri::Triangle_2D{T})(r::R, s::S) where {T <: AbstractFloat,
+                                                  R <: Real,
                                                   S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
@@ -29,17 +29,17 @@ function area(tri::Triangle_2D{T}) where {T <: AbstractFloat}
     # h = |sin(θ) v⃗|, where θ is the angle between u⃗ and v⃗
     # u⃗ × v⃗ = |u⃗||v⃗| sin(θ), hence
     # A = |u⃗ × v⃗|/2 = bh/2
-    u⃗ = tri.points[2] - tri.points[1] 
-    v⃗ = tri.points[3] - tri.points[1] 
+    u⃗ = tri.points[2] - tri.points[1]
+    v⃗ = tri.points[3] - tri.points[1]
     # 2D cross product returns a scalar
     return abs(u⃗ × v⃗)/2
 end
 
 function in(p::Point_2D{T}, tri::Triangle_2D{T}) where {T <: AbstractFloat}
    # If the point is within the plane of the triangle, then the point is only within the triangle
-   # if the areas of the triangles formed by the point and each pair of two vertices sum to the 
+   # if the areas of the triangles formed by the point and each pair of two vertices sum to the
    # area of the triangle. Division by 2 is dropped, since it cancels
-   # If the vertices are A, B, and C, and the point is P, 
+   # If the vertices are A, B, and C, and the point is P,
    # P is inside ΔABC iff area(ΔABC) = area(ΔABP) + area(ΔBCP) + area(ΔACP)
    A₁ = abs((tri.points[1] - p) × (tri.points[2] - p))
    A₂ = abs((tri.points[2] - p) × (tri.points[3] - p))
