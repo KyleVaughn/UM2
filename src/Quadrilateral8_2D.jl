@@ -1,5 +1,6 @@
-# A quadratic quadrilateral in 2D space.
+# @code_warntype checked 2021/11/08
 
+# A quadratic quadrilateral in 2D space.
 struct Quadrilateral8_2D{T <: AbstractFloat} <: Face_2D{T}
     # The points are assumed to be ordered  in counter clockwise order as follows
     # p₁ = vertex A
@@ -21,7 +22,7 @@ Quadrilateral8_2D(p₁::Point_2D{T}, p₂::Point_2D{T}, p₃::Point_2D{T}, p₄:
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-function (quad8::Quadrilateral8_2D{T})(r::R, s::S) where {T <: AbstractFloat, 
+function (quad8::Quadrilateral8_2D{T})(r::R, s::S) where {T <: AbstractFloat,
                                                           R <: Real,
                                                           S <: Real}
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
@@ -37,6 +38,7 @@ function (quad8::Quadrilateral8_2D{T})(r::R, s::S) where {T <: AbstractFloat,
                       (1 - η^2)*(1 - ξ)/2*quad8.points[8]
 end
 
+# Interpolation with a point, instead of (r,s)
 function (quad8::Quadrilateral8_2D{T})(p::Point_2D{T}) where {T <: AbstractFloat}
     r = p[1]; s = p[2]
     ξ = 2r - 1; η = 2s - 1
@@ -50,36 +52,36 @@ function (quad8::Quadrilateral8_2D{T})(p::Point_2D{T}) where {T <: AbstractFloat
                       (1 - η^2)*(1 - ξ)/2*quad8.points[8]
 end
 
-function derivative(quad8::Quadrilateral8_2D{T}, r::R, s::S) where {T <: AbstractFloat, 
+function derivative(quad8::Quadrilateral8_2D{T}, r::R, s::S) where {T <: AbstractFloat,
                                                                      R <: Real,
                                                                      S <: Real}
     # Chain rule
-    # ∂Q   ∂Q ∂ξ  ∂Q   ∂Q ∂η 
-    # -- = -- --, -- = -- --
-    # ∂r   ∂ξ ∂r  ∂s   ∂η ∂s
+    # ∂Q   ∂Q ∂ξ     ∂Q      ∂Q   ∂Q ∂η     ∂Q
+    # -- = -- -- = 2 -- ,    -- = -- -- = 2 --
+    # ∂r   ∂ξ ∂r     ∂ξ      ∂s   ∂η ∂s     ∂η
     ξ = 2T(r) - 1; η = 2T(s) - 1
-    ∂Q_∂ξ = (1 - η)*(2ξ + η)/4*quad8.points[1] + 
+    ∂Q_∂ξ = (1 - η)*(2ξ + η)/4*quad8.points[1] +
             (1 - η)*(2ξ - η)/4*quad8.points[2] +
-            (1 + η)*(2ξ + η)/4*quad8.points[3] +     
-            (1 + η)*(2ξ - η)/4*quad8.points[4] +     
-                    -ξ*(1 - η)*quad8.points[5] +     
-                   (1 - η^2)/2*quad8.points[6] +     
-                    -ξ*(1 + η)*quad8.points[7] +     
-                  -(1 - η^2)/2*quad8.points[8]     
+            (1 + η)*(2ξ + η)/4*quad8.points[3] +
+            (1 + η)*(2ξ - η)/4*quad8.points[4] +
+                    -ξ*(1 - η)*quad8.points[5] +
+                   (1 - η^2)/2*quad8.points[6] +
+                    -ξ*(1 + η)*quad8.points[7] +
+                  -(1 - η^2)/2*quad8.points[8]
 
-    ∂Q_∂η = (1 - ξ)*( ξ + 2η)/4*quad8.points[1] + 
+    ∂Q_∂η = (1 - ξ)*( ξ + 2η)/4*quad8.points[1] +
             (1 + ξ)*(-ξ + 2η)/4*quad8.points[2] +
-            (1 + ξ)*( ξ + 2η)/4*quad8.points[3] +     
-            (1 - ξ)*(-ξ + 2η)/4*quad8.points[4] +     
-                   -(1 - ξ^2)/2*quad8.points[5] +   
-                     -η*(1 + ξ)*quad8.points[6] +     
-                    (1 - ξ^2)/2*quad8.points[7] +     
-                     -η*(1 - ξ)*quad8.points[8]     
+            (1 + ξ)*( ξ + 2η)/4*quad8.points[3] +
+            (1 - ξ)*(-ξ + 2η)/4*quad8.points[4] +
+                   -(1 - ξ^2)/2*quad8.points[5] +
+                     -η*(1 + ξ)*quad8.points[6] +
+                    (1 - ξ^2)/2*quad8.points[7] +
+                     -η*(1 - ξ)*quad8.points[8]
 
-    return 2*∂Q_∂ξ, 2*∂Q_∂η 
+    return 2*∂Q_∂ξ, 2*∂Q_∂η
 end
 
-function jacobian(quad8::Quadrilateral8_2D{T}, r::R, s::S) where {T <: AbstractFloat, 
+function jacobian(quad8::Quadrilateral8_2D{T}, r::R, s::S) where {T <: AbstractFloat,
                                                                   R <: Real,
                                                                   S <: Real}
     # Return the 2 x 2 Jacobian matrix
@@ -90,15 +92,15 @@ end
 function area(quad8::Quadrilateral8_2D{T}; N::Int64=3) where {T <: AbstractFloat}
     # Numerical integration required. Gauss-Legendre quadrature over a quadrilateral is used.
     # Let Q(r,s) be the interpolation function for quad8,
-    #                             1  1                         
-    # A = ∬ ||∂Q/∂r × ∂Q/∂s||dA = ∫  ∫ ||∂Q/∂r × ∂Q/∂s|| ds dr 
-    #      D                      0  0                         
+    #                             1  1
+    # A = ∬ ||∂Q/∂r × ∂Q/∂s||dA = ∫  ∫ ||∂Q/∂r × ∂Q/∂s|| ds dr
+    #      D                      0  0
     #
-    #       N   N  
+    #       N   N
     #   =   ∑   ∑  wᵢwⱼ||∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)||
     #      i=1 j=1
     # N is the square root of the number of points used in the quadrature.
-    # See tuning/Quadrilateral8_2D_area.jl for more info on how N = 3 was chosen.    
+    # See tuning/Quadrilateral8_2D_area.jl for more info on how N = 3 was chosen.
     w, r = gauss_legendre_quadrature(T, N)
     a = T(0)
     for i = 1:N, j = 1:N
@@ -116,18 +118,18 @@ function triangulate(quad8::Quadrilateral8_2D{T}, N::Int64) where {T <: Abstract
         triangles[2] = Triangle_2D(quad8.points[3], quad8.points[4], quad8.points[1])
     else
         for j = 0:N, i = 0:N
-            triangles[2*(N+1)*j + 2i + 1] = Triangle_2D(quad8(    i/(N+1),     j/(N+1)), 
-                                                        quad8((i+1)/(N+1),     j/(N+1)), 
+            triangles[2*(N+1)*j + 2i + 1] = Triangle_2D(quad8(    i/(N+1),     j/(N+1)),
+                                                        quad8((i+1)/(N+1),     j/(N+1)),
                                                         quad8(    i/(N+1), (j+1)/(N+1)))
-            triangles[2*(N+1)*j + 2i + 2] = Triangle_2D(quad8(    i/(N+1), (j+1)/(N+1)), 
-                                                        quad8((i+1)/(N+1),     j/(N+1)), 
+            triangles[2*(N+1)*j + 2i + 2] = Triangle_2D(quad8(    i/(N+1), (j+1)/(N+1)),
+                                                        quad8((i+1)/(N+1),     j/(N+1)),
                                                         quad8((i+1)/(N+1), (j+1)/(N+1)))
         end
     end
     return triangles
 end
 
-function real_to_parametric(p::Point_2D{T}, 
+function real_to_parametric(p::Point_2D{T},
                             quad8::Quadrilateral8_2D{T}; N::Int64=30) where {T <: AbstractFloat}
     # Convert from real coordinates to the triangle's local parametric coordinates using the
     # the Newton-Raphson method. N is the max number of iterations
@@ -135,7 +137,7 @@ function real_to_parametric(p::Point_2D{T},
     r = T(1//2) # Initial guess at centroid
     s = T(1//2)
     err₁ = p - quad8(r, s)
-    for i = 1:N 
+    for i = 1:N
         # Inversion is faster for 2 by 2 than \
         Δr, Δs = inv(jacobian(quad8, r, s)) * err₁.x
         r = r + Δr
@@ -145,7 +147,7 @@ function real_to_parametric(p::Point_2D{T},
             break
         end
         err₁ = err₂
-    end 
+    end
     return Point_2D(r, s)
 end
 
@@ -170,9 +172,9 @@ function intersect(l::LineSegment_2D{T}, quad8::Quadrilateral8_2D{T}) where {T <
              QuadraticSegment_2D(quad8.points[3], quad8.points[4], quad8.points[7]),
              QuadraticSegment_2D(quad8.points[4], quad8.points[1], quad8.points[8]))
     intersections = l .∩ edges
-    ipoints = MVector(Point_2D(T, 0), 
-                      Point_2D(T, 0), 
-                      Point_2D(T, 0), 
+    ipoints = MVector(Point_2D(T, 0),
+                      Point_2D(T, 0),
+                      Point_2D(T, 0),
                       Point_2D(T, 0),
                       Point_2D(T, 0),
                       Point_2D(T, 0)
@@ -188,11 +190,11 @@ function intersect(l::LineSegment_2D{T}, quad8::Quadrilateral8_2D{T}) where {T <
                 # make sure we don't have duplicate points
                 duplicate = false
                 for j = 1:n_ipoints
-                    if points[i] ≈ ipoints[j] 
+                    if points[i] ≈ ipoints[j]
                         duplicate = true
                         break
                     end
-                end  
+                end
                 if !duplicate
                     n_ipoints += 0x01
                     ipoints[n_ipoints] = points[i]
@@ -200,9 +202,6 @@ function intersect(l::LineSegment_2D{T}, quad8::Quadrilateral8_2D{T}) where {T <
             end
         end
     end
-    # Return points, since the final goal is a vector of points
-    # Return 4 points, since this is the max number of intersections for 2D finite elements,
-    # meaning all elements have the same return type for intersection.
     return n_ipoints, Tuple(ipoints)
 end
 intersect(quad8::Quadrilateral8_2D, l::LineSegment_2D) = intersect(l, quad8)
