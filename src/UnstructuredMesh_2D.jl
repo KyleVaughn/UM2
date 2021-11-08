@@ -589,6 +589,22 @@ function find_face_implicit(p::Point_2D{T},
     return 0
 end
 
+function get_adjacent_faces(mesh::UnstructuredMesh_2D{T, I},
+                            face::I) where {T <: AbstractFloat, I <: Unsigned}
+
+    edges = mesh.face_edge_connectivity[face]
+    adjacent_faces = I[]
+    for edge in edges
+        faces = mesh.edge_face_connectivity[edge]
+        for face_id in faces
+            if face_id != face && face_id != 0
+                push!(adjacent_faces, face_id)
+            end
+        end
+    end
+    return adjacent_faces
+end
+
 function get_edge_points(mesh::UnstructuredMesh_2D{T, I}, 
                          edge::NTuple{2, I}) where {T <: AbstractFloat, I <: Unsigned}
     return (mesh.points[edge[1]], mesh.points[edge[2]])
