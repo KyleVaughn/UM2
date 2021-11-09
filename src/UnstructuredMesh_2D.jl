@@ -1,3 +1,5 @@
+# @code_warntype checked 2021/11/09
+
 struct UnstructuredMesh_2D{T <: AbstractFloat, I <: Unsigned}
     name::String 
     points::Vector{Point_2D{T}}
@@ -692,9 +694,9 @@ function intersect_edges_implicit(l::LineSegment_2D{T},
     intersection_points = Point_2D{T}[]
     # Intersect the line with each of the faces
     for edge in edges              
-        npoints, points = l ∩ LineSegment_2D(get_edge_points(mesh, edge))
+        npoints, point = l ∩ LineSegment_2D(get_edge_points(mesh, edge))
         if 0 < npoints 
-            append!(intersection_points, collect(points[1:npoints]))
+            push!(intersection_points, point)
         end
     end
     return intersection_points
@@ -778,7 +780,6 @@ function intersect_faces_explicit(l::LineSegment_2D{T},
     end
     return intersection_points
 end
-
 
 function intersect_faces_implicit(l::LineSegment_2D{T},
                                   mesh::UnstructuredMesh_2D{T, I},
