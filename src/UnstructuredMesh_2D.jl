@@ -208,6 +208,10 @@ function AABB(mesh::UnstructuredMesh_2D{T, I};
     if (any(x->x ∈  UnstructuredMesh_2D_quadratic_cell_types, getindex.(mesh.faces, 1)) && 
         !rectangular_boundary)
         @error "Cannot find AABB for a mesh with quadratic faces that does not have a rectangular boundary"
+        return Quadrilateral_2D(Point_2D{T}(T[0, 0]),
+                                Point_2D{T}(T[0, 0]),
+                                Point_2D{T}(T[0, 0]),
+                                Point_2D{T}(T[0, 0]))
     else # Can use points
         x = map(p->p[1], mesh.points)
         y = map(p->p[2], mesh.points)
@@ -367,14 +371,6 @@ function edges(faces::Vector{<:Union{NTuple{7, I}, NTuple{9, I}}}) where {I <: U
     return [ Tuple(e) for e in edges_filtered ]::Vector{NTuple{3, I}}
 end
 
-function edges(faces::Vector{<:Tuple{Vararg{I, N} where N}}) where {I <: Unsigned}
-    edge_arr = edges.(faces)
-    edges_unfiltered = [ edge for edge_vec in edge_arr for edge in edge_vec ]
-    # Filter the duplicate edges
-    edges_filtered = sort(collect(Set{Vector{I}}(edges_unfiltered)))
-    return [ Tuple(e) for e in edges_filtered ]::Vector{<:Union{NTuple{2, I}, NTuple{3, I}}}
-end
-
 # Create the edges for each face
 function edges(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, I <: Unsigned}
     return edges(mesh.faces) 
@@ -388,7 +384,7 @@ function edge_face_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abs
     # the faces that it borders.
     if length(mesh.edges) === 0
         @error "Mesh does not have edges!"
-        edge_face = [MVector{2, I}(zeros(I, 2)) for i = 1:2]
+        edge_face = MVector{2, I}[]
     elseif length(mesh.face_edge_connectivity) === 0
         edge_face = [MVector{2, I}(zeros(I, 2)) for i in eachindex(mesh.edges)]
         face_edge_conn = face_edge_connectivity(mesh)
@@ -490,74 +486,10 @@ function find_face(p::Point_2D{T}, mesh::UnstructuredMesh_2D{T, I}) where {T <: 
 end
 
 function find_face_explicit(p::Point_2D{T}, 
-                            faces::Vector{<:Union{Triangle_2D{T}, Quadrilateral_2D{T}}}
+                            faces::Vector{<:Face_2D{T}}
                            ) where {T <: AbstractFloat}
     for i = 1:length(faces)
         if p ∈  faces[i]
-            return i
-        end
-    end
-    @error "Could not find face for point $p"
-    return 0
-end
-
-function find_face_explicit(p::Point_2D{T}, 
-                            faces::Vector{<:Union{Triangle6_2D{T}, Quadrilateral8_2D{T}}}
-                           ) where {T <: AbstractFloat}
-    for i = 1:length(faces)
-        if p ∈  faces[i]
-            return i
-        end
-    end
-    @error "Could not find face for point $p"
-    return 0
-end
-
-function find_face_explicit(p::Point_2D{T}, 
-                            faces::Vector{Face_2D{T}}
-                           ) where {T <: AbstractFloat}
-    for i = 1:length(faces)
-        if p ∈  faces[i]
-            return i
-        end
-    end
-    @error "Could not find face for point $p"
-    return 0
-end
-
-function find_face_implicit(p::Point_2D{T}, 
-                            mesh::UnstructuredMesh_2D{T, I},
-                            faces::Vector{<:Union{NTuple{4, I}, NTuple{5, I}}}
-                            ) where {T <: AbstractFloat, I <: Unsigned}
-    for i = 1:length(faces)
-        face = faces[i]
-        bool = false
-        if face isa NTuple{4, I} # Triangle
-            bool = p ∈ Triangle_2D(get_face_points(mesh, face))
-        else # Quadrilateral
-            bool = p ∈ Quadrilateral_2D(get_face_points(mesh, face))
-        end
-        if bool
-            return i
-        end
-    end
-    @error "Could not find face for point $p"
-    return 0
-end
-
-function find_face_implicit(p::Point_2D{T}, 
-                            mesh::UnstructuredMesh_2D{T, I},
-                            faces::Vector{<:Union{NTuple{7, I}, NTuple{9, I}}}
-                            ) where {T <: AbstractFloat, I <: Unsigned}
-    for i = 1:length(faces)
-        face = faces[i]
-        bool = false
-        if face isa NTuple{7, I} # Triangle6
-            bool = p ∈ Triangle6_2D(get_face_points(mesh, face))
-        else # Quadrilateral8
-            bool = p ∈ Quadrilateral8_2D(get_face_points(mesh, face))
-        end
-        if bool
             return i
         end
     end
@@ -589,13 +521,20 @@ function find_face_implicit(p::Point_2D{T},
     return 0
 end
 
-function get_adjacent_faces(mesh::UnstructuredMesh_2D{T, I},
-                            face::I) where {T <: AbstractFloat, I <: Unsigned}
+function get_adjacent_faces(face::I,
+                            mesh::UnstructuredMesh_2D{T, I}
+                            ) where {I <: Unsigned, T <: AbstractFloat}
+    return get_adjacent_faces(face, mesh.face_edge_connectivity, mesh.edge_face_connectivity) 
+end
 
-    edges = mesh.face_edge_connectivity[face]
+function get_adjacent_faces(face::I,
+                            face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}, 
+                            edge_face_connectivity::Vector{NTuple{2, I}} 
+                            )where {I <: Unsigned}
+    edges = face_edge_connectivity[face]
     adjacent_faces = I[]
     for edge in edges
-        faces = mesh.edge_face_connectivity[edge]
+        faces = edge_face_connectivity[edge]
         for face_id in faces
             if face_id != face && face_id != 0
                 push!(adjacent_faces, face_id)
@@ -651,9 +590,31 @@ function get_intersection_algorithm(mesh::UnstructuredMesh_2D)
     end
 end
 
+function get_shared_edge(face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}},
+                         face1::I, face2::I) where {T <: AbstractFloat, I <: Unsigned}
+    edges1 = face_edge_connectivity[face1]
+    edges2 = face_edge_connectivity[face1]
+    for edge1 in edges1
+        for edge2 in edges2
+            if edge1 == edge2
+                return edge1
+            end
+        end
+    end
+    return I(0)
+end
+
+function in(p::Point_2D{T}, mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, I <: Unsigned}
+    for point in mesh.points
+        if p ≈ point
+            return true
+        end
+    end
+    return false
+end
+
 function insert_boundary_edge!(edge_index::I, edge_indices::Vector{I}, p_ref::Point_2D{T},
         mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, I <: Unsigned}
-
     # Compute the minimum distance from the edge to be inserted to the reference point
     edge_points = get_edge_points(mesh, mesh.edges[edge_index])
     insertion_distance = minimum([ distance(p_ref, p_edge) for p_edge in edge_points ])
@@ -670,6 +631,7 @@ function insert_boundary_edge!(edge_index::I, edge_indices::Vector{I}, p_ref::Po
         end
     end
     insert!(edge_indices, nindices+1, edge_index)    
+    return nothing
 end
 
 function intersect(l::LineSegment_2D{T}, mesh::UnstructuredMesh_2D{T}
@@ -699,10 +661,10 @@ function intersect_edges_explicit(l::LineSegment_2D{T},
     # A vector to hold all of the intersection points
     intersection_points = Point_2D{T}[]
     for edge in edges
-        npoints, points = l ∩ edge
+        npoints, point = l ∩ edge
         # If the intersections yields 1 or more points, push those points to the array of points
         if 0 < npoints 
-            append!(intersection_points, collect(points[1:npoints]))
+            push!(intersection_points, point)
         end
     end
     return intersection_points
