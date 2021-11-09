@@ -1,3 +1,5 @@
+# @code_warntype checked 2021/11/09
+
 mutable struct Tree
     data::Any
     parent::Ref{Tree}

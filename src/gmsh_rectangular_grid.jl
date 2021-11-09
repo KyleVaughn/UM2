@@ -1,3 +1,5 @@
+# @code_warntype checked 2021/11/09
+
 function _validate_gmsh_rectangular_grid_input(bb::NTuple{4, T}, 
                                                 x::Vector{Vector{T}}, 
                                                 y::Vector{Vector{T}}) where {T <: AbstractFloat} 

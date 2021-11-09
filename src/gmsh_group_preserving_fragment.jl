@@ -1,3 +1,5 @@
+# @code_warntype checked 2021/11/09
+
 function process_material_hierarchy!(
         new_physical_groups::Dict{String, Vector{Tuple{Int32,Int32}}}, 
         material_hierarchy::Vector{String})

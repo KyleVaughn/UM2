@@ -1,3 +1,5 @@
+# @code_warntype checked 2021/11/09
+
 const abaqus_to_vtk_type = Dict{String, UInt64}(
     # 2D
     # triangle

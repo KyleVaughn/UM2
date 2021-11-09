@@ -1,3 +1,5 @@
+# @code_warntype checked 2021/11/09
+
 function gmsh_overlay_rectangular_grid(bb::NTuple{4, T},
                                        material::String,
                                        x::Vector{Vector{T}}, 

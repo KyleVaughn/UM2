@@ -1,3 +1,5 @@
+# @code_warntype checked 2021/11/09
+
 mutable struct HierarchicalRectangularlyPartitionedMesh{T<:AbstractFloat, I<:Unsigned}
     name::String
     rect::Quadrilateral_2D{T}
@@ -29,14 +31,14 @@ Base.broadcastable(HRPM::HierarchicalRectangularlyPartitionedMesh) = Ref(HRPM)
 
 function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}) where {T <: AbstractFloat,
                                                                            I<:Unsigned}
-    if HRPM.rect !== Quadrilateral_2D(Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0))
+    if HRPM.rect !== Quadrilateral_2D{T}((Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0)))
         return HRPM.rect
     elseif isassigned(HRPM.mesh)
         bb = AABB(HRPM.mesh[], rectangular_boundary=true)
         HRPM.rect = bb
         return bb
     elseif 0 < length(HRPM.children)
-        children_AABBs = Quadrilateral_2D[]
+        children_AABBs = Quadrilateral_2D{T}[]
         for child in HRPM.children
             push!(children_AABBs, AABB(child[]))
         end
@@ -51,12 +53,15 @@ function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}) where {T <: 
         xmax = maximum(x)
         ymin = minimum(y)
         ymax = maximum(y)
-        bb = Quadrilateral_2D(Point_2D(xmin, ymin), 
-                              Point_2D(xmax, ymin),
-                              Point_2D(xmax, ymax),
-                              Point_2D(xmin, ymax))
+        bb = Quadrilateral_2D{T}((Point_2D(xmin, ymin), 
+                                  Point_2D(xmax, ymin),
+                                  Point_2D(xmax, ymax),
+                                  Point_2D(xmin, ymax)))
         HRPM.rect = bb
         return bb
+    else
+        @error "Something went wrong"
+        return Quadrilateral_2D{T}((Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0)))
     end
 end
 
@@ -169,7 +174,7 @@ function get_intersection_algorithm(HRPM::HierarchicalRectangularlyPartitionedMe
     end
 end
 
-function get_level(HRPM::HierarchicalRectangularlyPartitionedMesh,; current_level=1)
+function get_level(HRPM::HierarchicalRectangularlyPartitionedMesh; current_level=1)
     if isassigned(HRPM.parent)
         return get_level(HRPM.parent[]; current_level = current_level + 1)
     else
@@ -219,6 +224,7 @@ function levels(HRPM::HierarchicalRectangularlyPartitionedMesh)
     elseif 0 < length(HRPM.children)
         return levels(HRPM.children[1][]) + 1
     else
+        @error "Something went wrong"
         return -100
     end
 end
@@ -262,22 +268,6 @@ function Base.show(io::IO, HRPM::HierarchicalRectangularlyPartitionedMesh{T, I};
     else
         println(io, "  └─ Parent    : None")
     end
-#    nsiblings = 0
-#    for i = relative_offset:-1:1
-#        if i === 1 && _is_last_child(HRPM, relative_offset=i-1)
-#            print(io, "└─ ")
-#        elseif i === 1
-#            print(io, "├─ ")
-#        elseif _is_last_child(HRPM, relative_offset=i-1)
-#            print(io, "   ")
-#        else
-#            print(io, "│  ")
-#        end
-#    end
-#    println(io, HRPM.name)
-#    for child in HRPM.children
-#        show(io, child[]; relative_offset = relative_offset + 1)
-#    end
 end
 
 function width(HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T<:AbstractFloat}
@@ -299,6 +289,7 @@ function _attach_HRPM_children(HRPM::HierarchicalRectangularlyPartitionedMesh{T,
         end
         _attach_HRPM_children(child_mesh, child[], leaf_meshes)
     end
+    return nothing
 end
 
 # Construct the HRPM
