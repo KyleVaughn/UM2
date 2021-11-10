@@ -198,24 +198,10 @@ function intersect(l::LineSegment_2D{T},
             for child::Ref{HierarchicalRectangularlyPartitionedMesh{T, I}} in HRPM.children
                 append!(intersection_points, l ∩ child[]::HierarchicalRectangularlyPartitionedMesh{T, I})
             end
-            # Sort the points based upon their distance to the first point
-            distances = distance.(l.points[1], intersection_points)
-            sorted_pairs = sort(collect(zip(distances, intersection_points)); by=first);
-            intersection_points::Vector{Point_2D{T}} = getindex.(sorted_pairs, 2)
-            if 0 < length(intersection_points)
-                # Remove duplicate points
-                intersection_points_reduced = Point_2D{T}[]
-                push!(intersection_points_reduced, intersection_points[1]) 
-                for i = 2:length(intersection_points)
-                    if last(intersection_points_reduced) ≉ intersection_points[i]
-                        push!(intersection_points_reduced, intersection_points[i])
-                    end
-                end
-                intersection_points = intersection_points_reduced
-            end
+            return sort_intersection_points(l, intersection_points)
         end
     end
-    return intersection_points::Vector
+    return intersection_points::Vector{Point_2D{T}}
 end
 
 function levels(HRPM::HierarchicalRectangularlyPartitionedMesh)
