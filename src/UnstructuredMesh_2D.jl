@@ -453,6 +453,24 @@ function face_edge_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abs
     return [Tuple(sort(conn)) for conn in face_edge]::Vector{<:Tuple{Vararg{I, N} where N}}
 end
 
+function faces_sharing_vertex(p::P, mesh::UnstructuredMesh_2D{T, I}) where {P <: Integer, 
+                                                                            T <: AbstractFloat, 
+                                                                            I <: Unsigned}
+    return faces_sharing_vertex(p, mesh.faces)
+end
+
+function faces_sharing_vertex(p::P, 
+        faces::Vector{<:Tuple{Vararg{I, N} where N}}) where {P <: Integer, I <: Unsigned}
+    shared_faces = Int64[]
+    for i = 1:length(faces)
+        N = length(faces[i])
+        if p ∈  faces[i][2:N]
+            push!(shared_faces, i)
+        end
+    end
+    return shared_faces
+end
+
 function faces_materialized(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat,
                                                                     I <: Unsigned}
     return face_materialized.(mesh, mesh.faces)::Vector{<:Face_2D{T}}
