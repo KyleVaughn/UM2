@@ -214,3 +214,32 @@ function Base.show(io::IO, quad8::Quadrilateral8_2D{T}) where {T <: AbstractFloa
     end
     println(io, " )")
 end
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+function convert_arguments(P::Type{<:LineSegments}, quad8::Quadrilateral8_2D{T}) where {T <: AbstractFloat}
+    q₁ = QuadraticSegment_2D(quad8.points[1], quad8.points[2], quad8.points[5])
+    q₂ = QuadraticSegment_2D(quad8.points[2], quad8.points[3], quad8.points[6])
+    q₃ = QuadraticSegment_2D(quad8.points[3], quad8.points[4], quad8.points[7])
+    q₄ = QuadraticSegment_2D(quad8.points[4], quad8.points[1], quad8.points[8])
+    qsegs = [q₁, q₂, q₃, q₄]
+    return convert_arguments(P, qsegs)
+end
+
+function convert_arguments(P::Type{<:LineSegments},
+        QA::AbstractArray{<:Quadrilateral8_2D{T}}) where {T <: AbstractFloat}
+    point_sets = [convert_arguments(P, quad8) for quad8 in QA]
+    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
+end
+
+function convert_arguments(P::Type{Mesh{Tuple{Quadrilateral8_2D{T}}}},
+        quad8::Quadrilateral8_2D{T}) where {T <: AbstractFloat}
+    triangles = triangulate(quad8, 13)
+    return convert_arguments(P, triangles)
+end
+
+function convert_arguments(MT::Type{Mesh{Tuple{Vector{Quadrilateral8_2D{T}}}}},
+        AQ::Vector{Quadrilateral8_2D{T}}) where {T <: AbstractFloat}
+    triangles = reduce(vcat, triangulate.(AQ, 13))
+    return convert_arguments(MT, triangles)
+end

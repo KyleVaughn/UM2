@@ -216,3 +216,31 @@ function Base.show(io::IO, tri6::Triangle6_2D{T}) where {T <: AbstractFloat}
     end
     println(io, " )")
 end
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+function convert_arguments(P::Type{<:LineSegments}, tri6::Triangle6_2D{T}) where {T <: AbstractFloat}
+    q₁ = QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4])
+    q₂ = QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5])
+    q₃ = QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6])
+    qsegs = [q₁, q₂, q₃]
+    return convert_arguments(P, qsegs)
+end
+
+function convert_arguments(P::Type{<:LineSegments},
+        TA::AbstractArray{<:Triangle6_2D{T}}) where {T <: AbstractFloat}
+    point_sets = [convert_arguments(P, tri6) for tri6 in TA]
+    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
+end
+
+function convert_arguments(P::Type{Mesh{Tuple{Triangle6_2D{T}}}},
+        tri6::Triangle6_2D{T}) where {T <: AbstractFloat}
+    triangles = triangulate(tri6, 13)
+    return convert_arguments(P, triangles)
+end
+
+function convert_arguments(MT::Type{Mesh{Tuple{Vector{Triangle6_2D{T}}}}},
+        AT::Vector{Triangle6_2D{T}}) where {T <: AbstractFloat}
+    triangles = reduce(vcat, triangulate.(AT, 13))
+    return convert_arguments(MT, triangles)
+end
