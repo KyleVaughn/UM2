@@ -232,8 +232,7 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
 #        println("Iteration over")
 #        println("")
 #        println("")
-#        println("")
-        s = readline()
+#        s = readline()
         iters += 1
     end
     if max_iters ≤ iters
@@ -264,12 +263,11 @@ function next_edge_and_face_explicit(start_iedge::I, start_iface::I, l::LineSegm
             continue
         end
         # Edges are linear, so 1 intersection point max
-#        linesegments!(edges_materialized[edge_id])       
         npoints, point = l ∩ edges_materialized[edge_id]
+#        linesegments!(edges_materialized[edge_id])       
 #        println("npoints, points: $npoints, ", point)
         # If there's an intersection
         if 0 < npoints 
-#            scatter!(point)
             # If the intersection point on this edge is further along the ray than the current 
             # furthest point, then we want to leave the face from this edge
             if distance(start_point, furthest_point) ≤ distance(start_point, point)
@@ -281,6 +279,7 @@ function next_edge_and_face_explicit(start_iedge::I, start_iface::I, l::LineSegm
                     iface_next = edge_face_connectivity[edge_id][1]
                 end
                 iedge_next = edge_id
+#                scatter!(point)
 #                println("new furthest point: ", furthest_point)
 #                println("Now leaving this face on edge $iedge_next to face $iface_next")
             end
@@ -299,7 +298,7 @@ function next_face_fallback_explicit(current_face::I, last_face::I,
     #       means the exiting edge did not register an intersection.
     # (2) You're supremely unlucky and a fallback method kicked you to another face
     #       where the next face couldn't be determined
-    @warn "fallback for $l"
+#    @warn "fallback for $l"
     iface_next = current_face
     start_point = l.points[1]
     # The furthest point along l intersected in this iteration
@@ -340,63 +339,6 @@ function next_face_fallback_explicit(current_face::I, last_face::I,
         end
     end
     return I(iface_next)
-end
-
-function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
-                                          end_point::Point_2D{T},
-                                          intersection_points::Vector{Point_2D{T}},
-                                          face_indices::Vector{I},
-                                          iedge::I,
-                                          iface::I,
-                                          edge_face_connectivity::Vector{NTuple{2, I}},
-                                          face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}, 
-                                          edges_materialized::Vector{QuadraticSegment_2D{T}}
-                                          ) where {T <: AbstractFloat, I <: Unsigned}
-    max_iters = Int64(1E5)
-    iedge_previous = iedge
-    end_reached = false
-    iters = 0
-    while !end_reached && iters < max_iters
-        # For each edge in this face, intersect the track with the edge
-        last_point = last(intersection_points) 
-        furthest_point = last_point
-        for edge_id in face_edge_connectivity[iface]             
-            # If we are testing the edge we came in on, skip
-            if edge_id == iedge_previous
-                continue
-            end
-            npoints, points = l ∩ edges_materialized[edge_id]
-            # If there was an intersection, add the point
-            # Edges are linear, so only one intersection point
-            if 0 < npoints
-                append!(intersection_points, [points[1]])
-                push!(face_indices, I(iface))
-                # If the point is further than the current furthest point
-                # from the point the ray entered the face on, then we want to leave
-                # the face from this edge
-                if distance(last_point, furthest_point) < distance(last_point, points[1])
-                    furthest_point = points[1]
-                    if edge_face_connectivity[edge_id][1] == iface
-                        iface = edge_face_connectivity[edge_id][2]
-                    else
-                        iface = edge_face_connectivity[edge_id][1]
-                    end
-                    iedge = edge_id
-                end
-            end
-        end
-        iters += 1
-        iedge_previous = iedge
-        # If the most recent intersection is below the minimum segment length to the
-        # end point, end here.
-        last_point = last(intersection_points)
-        if distance(last_point, end_point) < minimum_segment_length
-            end_reached = true
-            if last_point != end_point
-                push!(intersection_points, end_point)
-            end
-        end
-    end
 end
 
 function ray_trace_edge_to_edge_implicit!(l::LineSegment_2D{T},
