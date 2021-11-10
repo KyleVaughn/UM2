@@ -83,3 +83,39 @@ function Base.show(io::IO, quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}
     end
     println(io, " )")
 end
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+function convert_arguments(P::Type{<:LineSegments}, quad::Quadrilateral_2D)
+    l₁ = LineSegment_2D(quad.points[1], quad.points[2])
+    l₂ = LineSegment_2D(quad.points[2], quad.points[3])
+    l₃ = LineSegment_2D(quad.points[3], quad.points[4])
+    l₄ = LineSegment_2D(quad.points[4], quad.points[1])
+    lines = [l₁, l₂, l₃, l₄]
+    return convert_arguments(P, lines)
+end
+
+function convert_arguments(P::Type{<:LineSegments}, AQ::AbstractArray{<:Quadrilateral_2D})
+    point_sets = [convert_arguments(P, quad) for quad in AQ]
+    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
+end
+
+function convert_arguments(P::Type{<:Mesh}, quad::Quadrilateral_2D)
+    points = [quad.points[i].x for i = 1:4]
+    faces = [1 2 3;
+             3 4 1]
+    return convert_arguments(P, points, faces)
+end
+
+function convert_arguments(MT::Type{Mesh{Tuple{Vector{Quadrilateral_2D{T}}}}},
+        AQ::Vector{Quadrilateral_2D{T}}) where {T <: AbstractFloat}
+    points = reduce(vcat, [[quad.points[i].x for i = 1:4] for quad in AQ])
+    faces = zeros(Int64, 2*length(AQ), 3)
+    j = 0
+    for i in 1:2:2*length(AQ)
+        faces[i    , :] = [1 2 3] + [j j j]
+        faces[i + 1, :] = [3 4 1] + [j j j]
+        j += 4
+    end
+    return convert_arguments(MT, points, faces)
+end

@@ -1,5 +1,6 @@
 module MOCNeutronTransport
 using Dates
+using GLMakie
 using HDF5
 using LightXML
 using LinearAlgebra
@@ -26,6 +27,7 @@ function log_timestamps()
 end
 
 import Base: +, -, *, /, ≈, ==, intersect, in
+import GLMakie: convert_arguments, LineSegments, Mesh, Scatter
 include("AbstractTypes.jl")
 include("AngularQuadrature.jl")
 include("Tree.jl")
@@ -127,5 +129,10 @@ export gmsh,
        gmsh_rectangular_grid,
        gmsh_group_preserving_fragment,
        gmsh_overlay_rectangular_grid
+
+# Plot
+export Figure, Axis
+export scatter, linesegments, mesh,
+       scatter!, linesegments!, mesh!
 
 end # module

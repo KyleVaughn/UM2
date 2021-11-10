@@ -62,3 +62,10 @@ function distance(p₁::Point_2D{T}, p₂::Point_2D{T}) where {T <: AbstractFloa
     return hypot(p₁.x[1] - p₂.x[1], p₁.x[2] - p₂.x[2])
 end
 midpoint(p₁::Point_2D{T}, p₂::Point_2D{T}) where {T <: AbstractFloat} = (p₁ + p₂)/2
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+convert_arguments(P::Type{<:Scatter}, p::Point_2D) = convert_arguments(P, p.x)
+function convert_arguments(P::Type{<:Scatter}, AP::AbstractArray{<:Point_2D})
+    return convert_arguments(P, [p.x for p in AP])
+end

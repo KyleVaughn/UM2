@@ -59,3 +59,13 @@ function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <:
         return (0x00, Point_2D(T, 0))
     end
 end
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+function convert_arguments(P::Type{<:LineSegments}, l::LineSegment_2D)
+    return convert_arguments(P, [l.points[1].x, l.points[2].x])
+end
+
+function convert_arguments(P::Type{<:LineSegments}, AL::AbstractArray{<:LineSegment_2D})
+    return convert_arguments(P, reduce(vcat, [[l.points[1].x, l.points[2].x] for l in AL]))
+end

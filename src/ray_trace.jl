@@ -152,11 +152,7 @@ function ray_trace_edge_to_edge(l::LineSegment_2D{T},
     face_indices = I[]
     if 0 < length(mesh.edges_materialized)
         ray_trace_edge_to_edge_explicit!(l, mesh, intersection_points, face_indices,
-                                         start_iedge, start_iface, end_iface, 
-                                         mesh.edge_face_connectivity,
-                                         mesh.face_edge_connectivity,
-                                         mesh.edges_materialized,
-                                         mesh.faces_materialized)
+                                         start_iedge, start_iface, end_iface)
     else # implicit
         ray_trace_edge_to_edge_implicit!(l, end_point, intersection_points, face_indices,
                                          iedge, iface, 
@@ -204,40 +200,19 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
     iters = 0
     while !end_reached && iters < max_iters
         (iedge_next, iface_next, furthest_point) = next_edge_and_face_explicit(
-                                                      start_iedge, start_iface,
+                                                      iedge, iface,
                                                       l, mesh.edges_materialized,
                                                       mesh.edge_face_connectivity, 
                                                       mesh.face_edge_connectivity)
-        if iface_next == iface # Or if jumping back  
-            # If the next face could not be determined, or the ray is jumping back to the
-            # previous face, this means either:                           
-            # (1) The ray is entering or exiting through a vertex, and floating point error 
-            #       means the exiting edge did not register an intersection.
-            # (2) You're supremely unlucky and a fallback method kicked you to another face
-            #       where the next face couldn't be determined
+        # Could not find next face, or jumping back to last face
+        if iface_next == iface || (1 < length(face_indices) && iface_next == last(face_indices)) 
+            iface_next = next_face_fallback_explicit(iface, l, mesh)
+        else
+            push!(intersection_points, furthest_point)
+            push!(face_indices, iface_next)
         end
-#        if iface_previous == iface
-#            # Could not find the next face to go to!
-#            # This is likely due to floating point error.
-#            # Try all adjacent faces
-#            adjacent_faces = get_adjacent_faces(mesh, iface)
-#            for face in adjacent_faces
-#                fnpoints, fpoints = l ∩ mesh.faces_materialized[face] 
-#                if 0 < fnpoints
-#                    for point in fpoints[1:fnpoints]
-#                        if distance(l.points[1], furthest_point) ≤ distance(l.points[1], point)
-#                            furthest_point = point
-#                            iedge = get_shared_edge(mesh, iface_previous, face) 
-#                            iface = face 
-#                        end
-#                    end
-#                end
-#            end
-#        end
-        push!(intersection_points, furthest_point)
-        push!(face_indices, iface)
-        iedge_previous = iedge
-        iface_previous = iface
+        iedge = iedge_next 
+        iface = iface_next
         # If the furthest intersection is below the minimum segment length to the
         # end point, end here.
         if distance(furthest_point, end_point) < minimum_segment_length
@@ -293,6 +268,40 @@ function next_edge_and_face_explicit(start_iedge::I, start_iface::I, l::LineSegm
     return iedge_next, iface_next, furthest_point 
 end
 
+function next_face_fallback_explicit(face::I, l::LineSegment_2D{T},
+                                     mesh::UnstructuredMesh_2D{T, I},
+                                    ) where {T <: AbstractFloat, I <: Unsigned}
+    # If the next face could not be determined, or the ray is jumping back to the
+    # previous face, this means either:                           
+    # (1) The ray is entering or exiting through a vertex, and floating point error 
+    #       means the exiting edge did not register an intersection.
+    # (2) You're supremely unlucky and a fallback method kicked you to another face
+    #       where the next face couldn't be determined
+    @warn "fallback for $l"
+    iface_next = face
+    start_point = l.points[1]
+    # The furthest point along l intersected in this iteration
+    furthest_point = start_point
+    # Get the vertex ids for each vertex in the face
+    npoints = length(mesh.faces[face])
+    points = mesh.faces[face][2:npoints]
+    faces = Set{Int64}()
+    for point in points
+        union!(faces, faces_sharing_vertex(point, mesh))
+    end
+    for iface in faces
+        npoints, ipoints = l ∩ mesh.faces_materialized[iface]
+        if 0 < npoints
+            for point in ipoints[1:npoints]
+                if distance(start_point, furthest_point) ≤ distance(start_point, point)
+                    furthest_point = point
+                    iface_next = iface
+                end
+            end
+        end
+    end
+    return I(iface_next)
+end
 
 #function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
 #                                          mesh::UnstructuredMesh_2D{T, I},
