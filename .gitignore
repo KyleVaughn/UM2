@@ -25,3 +25,8 @@ Manifest.toml
 
 # vim
 *.swp
+
+# Mesh files generated in examples
+examples/*/*.h5
+examples/*/*.inp
+examples/*/*.xdmf
