@@ -722,3 +722,33 @@ function tracks(tₛ::T, w::T, h::T, γ::T) where {T <: AbstractFloat}
     end
     return the_tracks
 end
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+function linesegments!(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
+                       seg_faces::Vector{Vector{Vector{I}}}) where {T <: AbstractFloat, I <: Unsigned} 
+    println("Press enter to plot the segments in the next angle")
+    colormap = ColorSchemes.tab20.colors
+    lines_by_color = Vector{Vector{LineSegment_2D{T}}}(undef, 20)
+    nγ = length(seg_points)
+    for iγ = 1:nγ
+        for icolor = 1:20
+            lines_by_color[icolor] = LineSegment_2D{T}[]
+        end
+        for it = 1:length(seg_points[iγ])
+            for iseg = 1:length(seg_points[iγ][it])-1
+                l = LineSegment_2D(seg_points[iγ][it][iseg], seg_points[iγ][it][iseg+1]) 
+                face = seg_faces[iγ][it][iseg]
+                if face == 0
+                    @error "Segment [$iγ][$it][$iseg] has a face id of 0"
+                end
+                push!(lines_by_color[face % 20 + 1], l)
+            end
+        end
+        for icolor = 1:20
+            linesegments!(lines_by_color[icolor], color = colormap[icolor])
+        end
+        s = readline()
+        println(iγ)
+    end
+end

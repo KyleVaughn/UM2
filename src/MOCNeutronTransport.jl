@@ -1,11 +1,12 @@
 module MOCNeutronTransport
-using Dates
-using GLMakie
+using ColorSchemes
 using HDF5
 using LightXML
 using LinearAlgebra
-using LoggingExtras
 using StaticArrays
+using Dates: now, format
+using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter
+using LoggingExtras: TransformerLogger, global_logger
 try
     # Use local gmsh install
     using gmsh
@@ -18,7 +19,7 @@ end
 # Make logger give time stamps
 const date_format = "yyyy-mm-dd HH:MM:SS"
 timestamp_logger(logger) = TransformerLogger(logger) do log
-  merge(log, (; message = "$(Dates.format(now(), date_format)) $(log.message)"))
+  merge(log, (; message = "$(format(now(), date_format)) $(log.message)"))
 end
 
 function log_timestamps()
@@ -27,7 +28,7 @@ function log_timestamps()
 end
 
 import Base: +, -, *, /, ≈, ==, intersect, in
-import GLMakie: convert_arguments, LineSegments, Mesh, Scatter
+import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
 include("AbstractTypes.jl")
 include("AngularQuadrature.jl")
 include("Tree.jl")

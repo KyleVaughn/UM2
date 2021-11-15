@@ -373,6 +373,14 @@ function edges(faces::Vector{<:Union{NTuple{7, I}, NTuple{9, I}}}) where {I <: U
     return [ Tuple(e) for e in edges_filtered ]::Vector{NTuple{3, I}}
 end
 
+function edges(faces::Vector{<:Tuple{Vararg{I, N} where N}}) where {I <: Unsigned}
+    edge_arr = edges.(faces)
+    edges_unfiltered = [ edge for edge_vec in edge_arr for edge in edge_vec ]
+    # Filter the duplicate edges
+    edges_filtered = sort(collect(Set{Vector{I}}(edges_unfiltered)))
+    return [ Tuple(e) for e in edges_filtered ]
+end
+
 # Create the edges for each face
 function edges(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, I <: Unsigned}
     return edges(mesh.faces) 
