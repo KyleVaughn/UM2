@@ -150,7 +150,7 @@ function ray_trace_edge_to_edge(l::LineSegment_2D{T},
     end_iface = mesh.edge_face_connectivity[end_iedge][2] # 1st entry should be 0
     intersection_points = [start_point]
     face_indices = I[]
-    if 0 < length(mesh.edges_materialized)
+    if 0 < length(mesh.materialized_edges)
         ray_trace_edge_to_edge_explicit!(l, mesh, intersection_points, face_indices,
                                          start_iedge, start_iface, end_iface)
     else # implicit
@@ -199,12 +199,12 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
 #    f = Figure()
 #    display(f)
 #    ax = Axis(f[1, 1], aspect = 1)
-#    linesegments!(mesh.edges_materialized)
+#    linesegments!(mesh.materialized_edges)
 #    linesegments!(l)
     while !end_reached && iters < max_iters
         (iedge_next, iface_next, furthest_point) = next_edge_and_face_explicit(
                                                       iedge, iface,
-                                                      l, mesh.edges_materialized,
+                                                      l, mesh.materialized_edges,
                                                       mesh.edge_face_connectivity, 
                                                       mesh.face_edge_connectivity)
         # Could not find next face, or jumping back to last face
@@ -237,7 +237,7 @@ function ray_trace_edge_to_edge_explicit!(l::LineSegment_2D{T},
 end
 
 function next_edge_and_face_explicit(start_iedge::I, start_iface::I, l::LineSegment_2D{T},
-                                     edges_materialized::Vector{LineSegment_2D{T}},
+                                     materialized_edges::Vector{LineSegment_2D{T}},
                                      edge_face_connectivity::Vector{NTuple{2, I}}, 
                                      face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}
                                     ) where {T <: AbstractFloat, I <: Unsigned}
@@ -259,8 +259,8 @@ function next_edge_and_face_explicit(start_iedge::I, start_iface::I, l::LineSegm
             continue
         end
         # Edges are linear, so 1 intersection point max
-        npoints, point = l ∩ edges_materialized[edge_id]
-#        linesegments!(edges_materialized[edge_id])       
+        npoints, point = l ∩ materialized_edges[edge_id]
+#        linesegments!(materialized_edges[edge_id])       
 #        println("npoints, points: $npoints, ", point)
         # If there's an intersection
         if 0 < npoints 
@@ -302,7 +302,7 @@ function next_face_fallback_explicit(current_face::I, last_face::I,
     # Check adjacent faces first to see if that is sufficient to solve the problem
     adjacent_faces = get_adjacent_faces(current_face, mesh)
     for iface in adjacent_faces
-        npoints, ipoints = l ∩ mesh.faces_materialized[iface]
+        npoints, ipoints = l ∩ mesh.materialized_faces[iface]
         if 0 < npoints
             for point in ipoints[1:npoints]
                 if distance(start_point, furthest_point) ≤ distance(start_point, point)
@@ -323,7 +323,7 @@ function next_face_fallback_explicit(current_face::I, last_face::I,
             union!(faces, faces_sharing_vertex(point, mesh))
         end
         for iface in faces
-            npoints, ipoints = l ∩ mesh.faces_materialized[iface]
+            npoints, ipoints = l ∩ mesh.materialized_faces[iface]
             if 0 < npoints
                 for point in ipoints[1:npoints]
                     if distance(start_point, furthest_point) ≤ distance(start_point, point)
@@ -412,7 +412,7 @@ function next_edge_and_face_implicit(start_iedge::I, start_iface::I, l::LineSegm
         end
         # Edges are linear, so 1 intersection point max
         npoints, point = l ∩ LineSegment_2D(get_edge_points(points, edge_id))
-#        linesegments!(edges_materialized[edge_id])       
+#        linesegments!(materialized_edges[edge_id])       
 #        println("npoints, points: $npoints, ", point)
         # If there's an intersection
         if 0 < npoints 
@@ -495,7 +495,7 @@ function next_face_fallback_implicit(current_face::I, last_face::I,
             union!(faces, faces_sharing_vertex(point, mesh))
         end
         for iface in faces
-            npoints, ipoints = l ∩ mesh.faces_materialized[iface]
+            npoints, ipoints = l ∩ mesh.materialized_faces[iface]
             if 0 < npoints
                 for point in ipoints[1:npoints]
                     if distance(start_point, furthest_point) ≤ distance(start_point, point)
@@ -552,7 +552,7 @@ function find_segment_faces(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
                            ) where {T <: AbstractFloat, I <: Unsigned, N}
 
     @debug "Finding faces corresponding to each segment"
-    if !are_faces_materialized(HRPM)
+    if !are_materialized_faces(HRPM)
         @warn "Faces are not materialized for this mesh. This will be VERY slow"
     end
     nγ = length(seg_points)
@@ -614,7 +614,7 @@ function find_segment_faces(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
                            ) where {T <: AbstractFloat, I <: Unsigned, N}
 
     @debug "Finding faces corresponding to each segment"
-    if !(0 < length(mesh.faces_materialized))
+    if !(0 < length(mesh.materialized_faces))
         @warn "Faces are not materialized for this mesh. This will be VERY slow"
     end
     nγ = length(seg_points)

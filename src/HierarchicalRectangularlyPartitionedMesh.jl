@@ -95,16 +95,16 @@ function add_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
     end
 end
 
-function add_edges_materialized(HRPM::HierarchicalRectangularlyPartitionedMesh)
+function add_materialized_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
     if isassigned(HRPM.mesh)
         if 0 < length(HRPM.mesh[].edges)
-            HRPM.mesh[] = add_edges_materialized(HRPM.mesh[])
+            HRPM.mesh[] = add_materialized_edges(HRPM.mesh[])
         else
-            HRPM.mesh[] = add_edges_materialized(add_edges(HRPM.mesh[]))
+            HRPM.mesh[] = add_materialized_edges(add_edges(HRPM.mesh[]))
         end
     elseif 0 < length(HRPM.children)
         for child in HRPM.children
-            add_edges_materialized(child[])
+            add_materialized_edges(child[])
         end
     end
 end
@@ -119,25 +119,25 @@ function add_everything(HRPM::HierarchicalRectangularlyPartitionedMesh)
     end
 end
 
-function add_faces_materialized(HRPM::HierarchicalRectangularlyPartitionedMesh)
+function add_materialized_faces(HRPM::HierarchicalRectangularlyPartitionedMesh)
     if isassigned(HRPM.mesh)
-        HRPM.mesh[] = add_faces_materialized(HRPM.mesh[])
+        HRPM.mesh[] = add_materialized_faces(HRPM.mesh[])
     elseif 0 < length(HRPM.children)
         for child in HRPM.children
-            add_faces_materialized(child[])
+            add_materialized_faces(child[])
         end
     end
 end
 
-function are_faces_materialized(HRPM::HierarchicalRectangularlyPartitionedMesh)
+function are_materialized_faces(HRPM::HierarchicalRectangularlyPartitionedMesh)
     if isassigned(HRPM.mesh)
-        if length(HRPM.mesh[].faces_materialized) !== 0
+        if length(HRPM.mesh[].materialized_faces) !== 0
             return true
         else
             return false
         end
     else
-        return are_faces_materialized(HRPM.children[1][])
+        return are_materialized_faces(HRPM.children[1][])
     end
 end
 
