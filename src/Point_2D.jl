@@ -28,7 +28,6 @@ Base.zero(::Point_2D{T}) where {T <: AbstractFloat} = Point_2D((T(0), T(0)))
 Base.firstindex(::Point_2D) = 1
 Base.lastindex(::Point_2D) = 2
 Base.getindex(p::Point_2D, i::Int) = p.x[i]
-(::Type{T})(p::Point_2D) where {T <: AbstractFloat} = Point_2D(T.(p.x))
 
 # Operators
 # -------------------------------------------------------------------------------------------------

@@ -43,7 +43,7 @@ function area(quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}
     # need to verify that the triangle pair partitions the quadrilateral. Choosing the wrong
     # pair overestimates the area, so just get the areas of both pairs of valid triangles and use
     # the smaller area.
-    return sum(area.(triangulate(quad)))
+    return sum(area.(triangulate(quad)))::T
 end
 
 function in(p::Point_2D{T}, quad::Quadrilateral_2D{T}) where {T <: AbstractFloat}

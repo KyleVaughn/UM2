@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/09
-
 struct UnstructuredMesh_2D{T <: AbstractFloat, I <: Unsigned}
     name::String 
     points::Vector{Point_2D{T}}
@@ -40,16 +38,6 @@ end
 
 Base.broadcastable(mesh::UnstructuredMesh_2D) = Ref(mesh)
 
-# Cell types are the same as VTK
-const UnstructuredMesh_2D_linear_cell_types = UInt32[5, # Triangle 
-                                                     9  # Quadrilateral
-                                                    ]
-const UnstructuredMesh_2D_quadratic_cell_types = UInt32[22, # Triangle6
-                                                        23  # Quadrilateral8
-                                                       ]
-const UnstructuredMesh_2D_cell_types = vcat(UnstructuredMesh_2D_linear_cell_types,
-                                            UnstructuredMesh_2D_quadratic_cell_types)
-
 function add_boundary_edges(mesh::UnstructuredMesh_2D{T, I};
                           bounding_shape="Rectangle") where {T<:AbstractFloat, I <: Unsigned}
     if 0 < length(mesh.edge_face_connectivity)  
@@ -81,11 +69,7 @@ function add_boundary_edges(mesh::UnstructuredMesh_2D{T, I};
 end
 
 function add_connectivity(mesh::UnstructuredMesh_2D{T}) where {T<:AbstractFloat}
-    if 0 < length(mesh.edges)  
-        return add_edge_face_connectivity(add_face_edge_connectivity(mesh))
-    else
-        return add_edge_face_connectivity(add_face_edge_connectivity(add_edges(mesh)))
-    end
+    return add_edge_face_connectivity(add_face_edge_connectivity(mesh))
 end
 
 function add_edges(mesh::UnstructuredMesh_2D{T, I}) where {T<:AbstractFloat, I <: Unsigned}
@@ -106,7 +90,8 @@ function add_edges_materialized(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abs
     if 0 < length(mesh.edges)
         mat_edges = edges_materialized(mesh)
     else
-        mat_edges = edges_materialized(add_edges(mesh))
+        mesh = add_edges(mesh)
+        mat_edges = edges_materialized(mesh)
     end
     return UnstructuredMesh_2D{T, I}(name = mesh.name,
                                      points = mesh.points,
@@ -145,17 +130,33 @@ end
 
 function add_face_edge_connectivity(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, 
                                                                             I <: Unsigned}
-    return UnstructuredMesh_2D{T, I}(name = mesh.name,
-                                    points = mesh.points,
-                                    edges = edges(mesh),
-                                    edges_materialized = mesh.edges_materialized,
-                                    faces = mesh.faces,
-                                    faces_materialized = mesh.faces_materialized,
-                                    edge_face_connectivity = mesh.edge_face_connectivity,
-                                    face_edge_connectivity = face_edge_connectivity(mesh), 
-                                    boundary_edges = mesh.boundary_edges,
-                                    face_sets = mesh.face_sets
-                                   )
+    if 0 < length(mesh.edges)
+        return UnstructuredMesh_2D{T, I}(name = mesh.name,
+                                        points = mesh.points,
+                                        edges = mesh.edges,
+                                        edges_materialized = mesh.edges_materialized,
+                                        faces = mesh.faces,
+                                        faces_materialized = mesh.faces_materialized,
+                                        edge_face_connectivity = mesh.edge_face_connectivity,
+                                        face_edge_connectivity = face_edge_connectivity(mesh), 
+                                        boundary_edges = mesh.boundary_edges,
+                                        face_sets = mesh.face_sets
+                                       )
+
+    else
+        mesh_edges = add_edges(mesh)
+        return UnstructuredMesh_2D{T, I}(name = mesh_edges.name,
+                                        points = mesh_edges.points,
+                                        edges = mesh_edges.edges,
+                                        edges_materialized = mesh_edges.edges_materialized,
+                                        faces = mesh_edges.faces,
+                                        faces_materialized = mesh_edges.faces_materialized,
+                                        edge_face_connectivity = mesh_edges.edge_face_connectivity,
+                                        face_edge_connectivity = face_edge_connectivity(mesh_edges), 
+                                        boundary_edges = mesh_edges.boundary_edges,
+                                        face_sets = mesh_edges.face_sets
+                                       )
+    end
 end
 
 function add_faces_materialized(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat,
@@ -173,32 +174,16 @@ function add_faces_materialized(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abs
                                     )
 end
 
-function area(mesh::UnstructuredMesh_2D{T, I}, face_set::Set{I}) where {T <: AbstractFloat, I <: Unsigned} 
-    unsupported::Int64 = sum(x->x[1] ∉  UnstructuredMesh_2D_cell_types, mesh.faces)
-    if 0 < unsupported
-        @error "Mesh contains an unsupported face type"
-    end
-    return mapreduce(x->area(mesh, mesh.faces[x]), +, face_set)
-end
-
 function area(mesh::UnstructuredMesh_2D{T, I}, set_name::String) where {T <: AbstractFloat, I <: Unsigned}
     return area(mesh, mesh.face_sets[set_name])
 end
 
-function area(mesh::UnstructuredMesh_2D{T, I}, face::NTuple{4, I}) where {T <: AbstractFloat, I <: Unsigned}
-    return area(Triangle_2D(get_face_points(mesh, face)))
-end
-
-function area(mesh::UnstructuredMesh_2D{T, I}, face::NTuple{5, I}) where {T <: AbstractFloat, I <: Unsigned}
-    return area(Quadrilateral_2D(get_face_points(mesh, face)))
-end
-
-function area(mesh::UnstructuredMesh_2D{T, I}, face::NTuple{7, I}) where {T <: AbstractFloat, I <: Unsigned}
-    return area(Triangle6_2D(get_face_points(mesh, face)))
-end
-
-function area(mesh::UnstructuredMesh_2D{T, I}, face::NTuple{9, I}) where {T <: AbstractFloat, I <: Unsigned}
-    return area(Quadrilateral8_2D(get_face_points(mesh, face)))
+function area(mesh::UnstructuredMesh_2D{T, I}, face_set::Set{I}) where {T <: AbstractFloat, I <: Unsigned} 
+    unsupported = count(x->x[1] ∉  UnstructuredMesh_2D_cell_types, mesh.faces)
+    if 0 < unsupported
+        @error "Mesh contains an unsupported face type"
+    end
+    return mapreduce(x->area(mesh, mesh.faces[x]), +, face_set)::T
 end
 
 # Axis-aligned bounding box, in 2d a rectangle.
@@ -269,117 +254,6 @@ function boundary_edges(mesh::UnstructuredMesh_2D{T, I};
     end
 end
 
-# Return each edge for a face
-# Note, this returns a vector of vectors because we want to mutate the elements of the edge vectors
-function edges(face::NTuple{4, I}) where {I <: Unsigned} 
-    cell_type = face[1]
-    if cell_type ∈  UnstructuredMesh_2D_linear_cell_types 
-        edges = [ [face[2], face[3]],
-                  [face[3], face[4]],
-                  [face[4], face[2]] ]
-    else
-        @error "Unsupported cell type"
-        edges = [[I(0), I(0)]]
-    end
-    # Order the linear edge vertices by ID
-    for edge in edges 
-        if edge[2] < edge[1]
-            e1 = edge[1]
-            edge[1] = edge[2]
-            edge[2] = e1
-        end
-    end
-    return edges
-end
-
-function edges(face::NTuple{5, I}) where {I <: Unsigned}
-    cell_type = face[1]
-    if cell_type ∈  UnstructuredMesh_2D_linear_cell_types 
-        edges = [ [face[2], face[3]],
-                  [face[3], face[4]],
-                  [face[4], face[5]],
-                  [face[5], face[2]] ]
-    else
-        @error "Unsupported cell type"
-        edges = [[I(0), I(0)]]
-    end
-    # Order the linear edge vertices by ID
-    for edge in edges 
-        if edge[2] < edge[1]
-            e1 = edge[1]
-            edge[1] = edge[2]
-            edge[2] = e1
-        end
-    end
-    return edges
-end
-
-function edges(face::NTuple{7, I}) where {I <: Unsigned} 
-    cell_type = face[1]
-    if cell_type ∈  UnstructuredMesh_2D_quadratic_cell_types
-        edges = [ [face[2], face[3], face[5]],
-                  [face[3], face[4], face[6]],
-                  [face[4], face[2], face[7]] ]
-    else
-        @error "Unsupported cell type."
-        edges = [[I(0), I(0)]]
-    end
-    # Order the linear edge vertices by ID
-    for edge in edges 
-        if edge[2] < edge[1]
-            e1 = edge[1]
-            edge[1] = edge[2]
-            edge[2] = e1
-        end
-    end
-    return edges
-end
-
-function edges(face::NTuple{9, I}) where {I <: Unsigned}  
-    cell_type = face[1]
-    if cell_type ∈  UnstructuredMesh_2D_quadratic_cell_types
-        edges = [ [face[2], face[3], face[6]],
-                  [face[3], face[4], face[7]],
-                  [face[4], face[5], face[8]],
-                  [face[5], face[2], face[9]] ]
-    else
-        @error "Unsupported cell type."
-        edges = [[I(0), I(0)]]
-    end
-    # Order the linear edge vertices by ID
-    for edge in edges 
-        if edge[2] < edge[1]
-            e1 = edge[1]
-            edge[1] = edge[2]
-            edge[2] = e1
-        end
-    end
-    return edges
-end
-
-function edges(faces::Vector{<:Union{NTuple{4, I}, NTuple{5, I}}}) where {I <: Unsigned}
-    edge_arr = edges.(faces)
-    edges_unfiltered = [ edge for edge_vec in edge_arr for edge in edge_vec ]
-    # Filter the duplicate edges
-    edges_filtered = sort(collect(Set{Vector{I}}(edges_unfiltered)))
-    return [ Tuple(e) for e in edges_filtered ]::Vector{NTuple{2, I}}
-end
-
-function edges(faces::Vector{<:Union{NTuple{7, I}, NTuple{9, I}}}) where {I <: Unsigned}
-    edge_arr = edges.(faces)
-    edges_unfiltered = [ edge for edge_vec in edge_arr for edge in edge_vec ]
-    # Filter the duplicate edges
-    edges_filtered = sort(collect(Set{Vector{I}}(edges_unfiltered)))
-    return [ Tuple(e) for e in edges_filtered ]::Vector{NTuple{3, I}}
-end
-
-function edges(faces::Vector{<:Tuple{Vararg{I, N} where N}}) where {I <: Unsigned}
-    edge_arr = edges.(faces)
-    edges_unfiltered = [ edge for edge_vec in edge_arr for edge in edge_vec ]
-    # Filter the duplicate edges
-    edges_filtered = sort(collect(Set{Vector{I}}(edges_unfiltered)))
-    return [ Tuple(e) for e in edges_filtered ]
-end
 
 # Create the edges for each face
 function edges(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, I <: Unsigned}
@@ -479,31 +353,6 @@ function faces_sharing_vertex(p::P,
     return shared_faces
 end
 
-function faces_materialized(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat,
-                                                                    I <: Unsigned}
-    return face_materialized.(mesh, mesh.faces)::Vector{<:Face_2D{T}}
-end
-
-function face_materialized(mesh::UnstructuredMesh_2D{T, I}, 
-                           face::NTuple{4, I}) where {T <: AbstractFloat, I <: Unsigned}
-    return Triangle_2D(get_face_points(mesh, face))
-end
-
-function face_materialized(mesh::UnstructuredMesh_2D{T, I}, 
-                           face::NTuple{5, I}) where {T <: AbstractFloat, I <: Unsigned}
-    return Quadrilateral_2D(get_face_points(mesh, face))
-end
-
-function face_materialized(mesh::UnstructuredMesh_2D{T, I}, 
-                           face::NTuple{7, I}) where {T <: AbstractFloat, I <: Unsigned}
-    return Triangle6_2D(get_face_points(mesh, face))
-end
-
-function face_materialized(mesh::UnstructuredMesh_2D{T, I}, 
-                           face::NTuple{9, I}) where {T <: AbstractFloat, I <: Unsigned}
-    return Quadrilateral8_2D(get_face_points(mesh, face))
-end
-
 function find_face(p::Point_2D{T}, mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat,
                                                                            I <: Unsigned}
     if 0 < length(mesh.faces_materialized)
@@ -583,6 +432,18 @@ function get_edge_points(mesh::UnstructuredMesh_2D{T, I},
             mesh.points[edge[2]], 
             mesh.points[edge[3]]
            )
+end
+
+function get_edge_points(points::Vector{Point_2D{T}},  
+                         edge::NTuple{2, I}) where {T <: AbstractFloat, I <: Unsigned}
+    return (points[edge[1]], points[edge[2]])
+end
+
+function get_edge_points(points::Vector{Point_2D{T}},  
+                         edge::NTuple{3, I}) where {T <: AbstractFloat, I <: Unsigned}
+    return (points[edge[1]], 
+            points[edge[2]], 
+            points[edge[3]])
 end
 
 # This gets called enough that ugly code for optimization makes sense
@@ -744,6 +605,20 @@ function intersect_edges_implicit(l::LineSegment_2D{T},
     return intersection_points
 end
 
+function intersect_edge_implicit(l::LineSegment_2D{T}, 
+                                 mesh::UnstructuredMesh_2D{T, I},
+                                 edge::NTuple{2, I}
+                        ) where {T <: AbstractFloat, I <: Unsigned}
+    return l ∩ LineSegment_2D(get_edge_points(mesh, edge))
+end
+
+function intersect_edge_implicit(l::LineSegment_2D{T}, 
+                                 mesh::UnstructuredMesh_2D{T, I},
+                                 edge::NTuple{3, I}
+                        ) where {T <: AbstractFloat, I <: Unsigned}
+    return l ∩ QuadraticSegment_2D(get_edge_points(mesh, edge))
+end
+
 function intersect_faces(l::LineSegment_2D{T}, 
                          mesh::UnstructuredMesh_2D{T, I}
                         ) where {T <: AbstractFloat, I <: Unsigned}
@@ -899,16 +774,9 @@ function intersect_faces_implicit(l::LineSegment_2D{T},
     return intersection_points
 end
 
-function num_edges(face::Tuple{Vararg{I}}) where {I <: Unsigned}
-    cell_type = face[1]
-    if cell_type == 5 || cell_type == 22
-        return I(3)
-    elseif cell_type == 9 || cell_type == 23
-        return I(4)
-    else
-        @error "Unsupported cell type."
-        return I(0)
-    end
+function materialize_faces(mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat,
+                                                                    I <: Unsigned}
+    return materialize_face.(mesh, mesh.faces)::Vector{<:Face_2D{T}}
 end
 
 function Base.show(io::IO, mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, I <: Unsigned}

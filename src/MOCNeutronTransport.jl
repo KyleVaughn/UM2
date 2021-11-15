@@ -42,6 +42,7 @@ include("Quadrilateral8_2D.jl")
 include("constants.jl")
 include("gauss_legendre_quadrature.jl")
 include("UnstructuredMesh_2D.jl")
+include("UnstructuredMesh_2D-low_level_functions.jl")
 include("HierarchicalRectangularlyPartitionedMesh.jl")
 include("abaqus.jl")
 include("ray_trace.jl")
@@ -89,10 +90,8 @@ export  ×,
         edges_materialized,
         edge_face_connectivity,
         edge_materialized,        
-        faces_materialized,
         faces_sharing_vertex,
         face_edge_connectivity,
-        face_materialized,
         find_face,
         find_segment_faces,
         gauss_legendre_quadrature,
@@ -108,6 +107,8 @@ export  ×,
         jacobian,
         levels,
         log_timestamps,
+        materialize_edge,
+        materialize_face,
         midpoint,
         next_edge_and_face_explicit,
         next_face_fallback_explicit,

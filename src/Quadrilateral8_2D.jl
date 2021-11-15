@@ -107,7 +107,7 @@ function area(quad8::Quadrilateral8_2D{T}; N::Int64=3) where {T <: AbstractFloat
         ∂Q_∂r, ∂Q_∂s = derivative(quad8, r[i], r[j])
         a += w[i]*w[j]*abs(∂Q_∂r × ∂Q_∂s)
     end
-    return a
+    return a::T
 end
 
 function triangulate(quad8::Quadrilateral8_2D{T}, N::Int64) where {T <: AbstractFloat}
