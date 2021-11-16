@@ -48,7 +48,7 @@ struct ProductAngularQuadrature{M, P, T <: AbstractFloat} <: AngularQuadrature
     w_θ::NTuple{P, T}  # Weights for the polar angles
 end
 
-function chebyshev_angular_quadrature(M::Int, T::Type{F}) where {F <: AbstractFloat}
+function generate_chebyshev_angular_quadrature(M::Int, T::Type{F}) where {F <: AbstractFloat}
     # A Chebyshev-type quadrature for a given weight function is a quadrature formula with equal
     # weights. This function produces evenly spaced angles with equal weights.
     angles = T[(π*(2m-1)/(4M)) for m = M:-1:1]
@@ -57,11 +57,11 @@ function chebyshev_angular_quadrature(M::Int, T::Type{F}) where {F <: AbstractFl
 end
 
 # nγ and nθ are azimuthal and polar angles per octant
-function angular_quadrature(quadrature_type::String, nγ::Int, nθ::Int;
-                            T::Type{F}=Float64) where {F <: AbstractFloat}
+function generate_angular_quadrature(quadrature_type::String, nγ::Int, nθ::Int;
+                                     T::Type{F}=Float64) where {F <: AbstractFloat}
     if quadrature_type == "Chebyshev-Chebyshev"
-        (azi_angles, azi_weights) = chebyshev_angular_quadrature(nγ, T)
-        (pol_angles, pol_weights) = chebyshev_angular_quadrature(nθ, T)
+        (azi_angles, azi_weights) = generate_chebyshev_angular_quadrature(nγ, T)
+        (pol_angles, pol_weights) = generate_chebyshev_angular_quadrature(nθ, T)
         append!(azi_angles, [π - azi_angles[i] for i = 1:nγ])
         azi_weights = azi_weights./2
         append!(azi_weights, azi_weights)

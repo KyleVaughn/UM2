@@ -15,7 +15,7 @@ function gmsh_overlay_rectangular_grid(bb::NTuple{4, T},
     end
 
     model_dim_tags = gmsh.model.get_entities(2)
-    grid_tags = gmsh_rectangular_grid(bb, x, y; material = material)
+    grid_tags = gmsh_generate_rectangular_grid(bb, x, y; material = material)
     grid_dim_tags = [(2, tag) for tag in grid_tags]
     union_of_dim_tags = vcat(model_dim_tags, grid_dim_tags)
     groups = gmsh.model.get_physical_groups()
@@ -48,7 +48,7 @@ function gmsh_overlay_rectangular_grid(bb::NTuple{4, T},
     end
 
     model_dim_tags = gmsh.model.get_entities(2)
-    grid_tags = gmsh_rectangular_grid(bb, nx, ny; material = material)
+    grid_tags = gmsh_generate_rectangular_grid(bb, nx, ny; material = material)
     grid_dim_tags = [(2, tag) for tag in grid_tags]
     union_of_dim_tags = vcat(model_dim_tags, grid_dim_tags)
     groups = gmsh.model.get_physical_groups()

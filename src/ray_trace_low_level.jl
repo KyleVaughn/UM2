@@ -54,40 +54,6 @@ function get_start_edge_nesw(p::Point_2D{T},
     return I(0)
 end
 
-# Ray trace a HRPM given the ray spacing and angular quadrature
-function ray_trace(tₛ::T,
-                   ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T}, 
-                   HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
-                   ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
-    @info "Ray tracing"
-    the_tracks = tracks(tₛ, ang_quad, HRPM)
-    segment_points = segmentize(the_tracks, HRPM)
-    nlevels = levels(HRPM)
-    template_vec = MVector{nlevels, I}(zeros(I, nlevels))
-    face_indices = find_segment_faces(segment_points, HRPM, template_vec)
-    return segment_points, face_indices
-end
-
-# Ray trace a HRPM given the ray spacing and angular quadrature
-function ray_trace(tₛ::T,
-                   ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T}, 
-                   mesh::UnstructuredMesh_2D{T, I}
-                   ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
-    @info "Ray tracing"
-    the_tracks = tracks(tₛ, ang_quad, mesh)
-    # If the mesh has boundary edges, assume you want to use the combined segmentize
-    # face index algorithm
-    if 0 < length(mesh.boundary_edges)
-        segment_points = segmentize(the_tracks, mesh)
-        face_indices = find_segment_faces(segment_points, mesh)
-        return segment_points, face_indices
-    else
-        segment_points = segmentize(the_tracks, mesh)
-        face_indices = find_segment_faces(segment_points, mesh)
-        return segment_points, face_indices
-    end
-end
-
 # Get the segment points and face indices for all tracks in all angles using the
 # edge-to-edge ray tracing method. Assumes a rectangular boundary
 function ray_trace_edge_to_edge(the_tracks::Vector{Vector{LineSegment_2D{T}}},
@@ -673,14 +639,14 @@ function find_segment_faces!(points::Vector{Point_2D{T}},
 end
 
 # Follows https://mit-crpg.github.io/OpenMOC/methods/track_generation.html
-function tracks(tₛ::T,
-                ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T},
-                HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
-                ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
+function generate_tracks(tₛ::T,
+                         ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T},
+                         HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
+                         ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
     w = width(HRPM) 
     h = height(HRPM)
     # The tracks for each γ
-    the_tracks = [ tracks(tₛ, w, h, γ) for γ in ang_quad.γ ]  
+    the_tracks = [ generate_tracks(tₛ, w, h, γ) for γ in ang_quad.γ ]  
     # Shift all tracks if necessary, since the tracks are generated as if the HRPM has a 
     # bottom left corner at (0,0)
     offset = HRPM.rect.points[1]
@@ -692,18 +658,18 @@ function tracks(tₛ::T,
     return the_tracks
 end
 
-function tracks(tₛ::T,
-                ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T},
-                mesh::UnstructuredMesh_2D{T, I};
-                boundary_shape="Rectangle"
-                ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
+function generate_tracks(tₛ::T,
+                         ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T},
+                         mesh::UnstructuredMesh_2D{T, I};
+                         boundary_shape="Unknown"
+                         ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
 
     if boundary_shape == "Rectangle"
         bb = bounding_box(mesh, rectangular_boundary=true)
         w = bb.points[3].x[1] - bb.points[1].x[1]
         h = bb.points[3].x[2] - bb.points[1].x[2]
         # The tracks for each γ
-        the_tracks = [ tracks(tₛ, w, h, γ) for γ in ang_quad.γ ]  
+        the_tracks = [ generate_tracks(tₛ, w, h, γ) for γ in ang_quad.γ ]  
         # Shift all tracks if necessary, since the tracks are generated as if the HRPM has a 
         # bottom left corner at (0,0)
         offset = bb.points[1]
@@ -719,7 +685,7 @@ function tracks(tₛ::T,
     end
 end
 
-function tracks(tₛ::T, w::T, h::T, γ::T) where {T <: AbstractFloat}
+function generate_tracks(tₛ::T, w::T, h::T, γ::T) where {T <: AbstractFloat}
     # Number of tracks in y direction
     n_y = ceil(Int64, w*abs(sin(γ))/tₛ)
     # Number of tracks in x direction
@@ -795,34 +761,4 @@ function tracks(tₛ::T, w::T, h::T, γ::T) where {T <: AbstractFloat}
         end
     end
     return the_tracks
-end
-
-# Plot
-# -------------------------------------------------------------------------------------------------
-function linesegments!(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
-                       seg_faces::Vector{Vector{Vector{I}}}) where {T <: AbstractFloat, I <: Unsigned} 
-    println("Press enter to plot the segments in the next angle")
-    colormap = ColorSchemes.tab20.colors
-    lines_by_color = Vector{Vector{LineSegment_2D{T}}}(undef, 20)
-    nγ = length(seg_points)
-    for iγ = 1:nγ
-        for icolor = 1:20
-            lines_by_color[icolor] = LineSegment_2D{T}[]
-        end
-        for it = 1:length(seg_points[iγ])
-            for iseg = 1:length(seg_points[iγ][it])-1
-                l = LineSegment_2D(seg_points[iγ][it][iseg], seg_points[iγ][it][iseg+1]) 
-                face = seg_faces[iγ][it][iseg]
-                if face == 0
-                    @error "Segment [$iγ][$it][$iseg] has a face id of 0"
-                end
-                push!(lines_by_color[face % 20 + 1], l)
-            end
-        end
-        for icolor = 1:20
-            linesegments!(lines_by_color[icolor], color = colormap[icolor])
-        end
-        s = readline()
-        println(iγ)
-    end
 end

@@ -50,7 +50,7 @@ include("ray_trace_low_level.jl")
 include("vtk.jl")
 include("xdmf.jl")
 
-include("gmsh_rectangular_grid.jl")
+include("gmsh_generate_rectangular_grid.jl")
 include("gmsh_group_preserving_fragment.jl")
 include("gmsh_overlay_rectangular_grid.jl")
 
@@ -80,7 +80,6 @@ export  ×,
         add_face_edge_connectivity,
         add_materialized_edges,
         add_materialized_faces,
-        angular_quadrature,
         arc_length,
         area,
         boundary_edges,
@@ -96,9 +95,11 @@ export  ×,
         face_edge_connectivity,
         find_face,
         find_segment_faces,
-        gauss_legendre_quadrature,
+        generate_angular_quadrature,
+        generate_tracks,
         get_adjacent_faces,
         get_edge_points,
+        get_gauss_legendre_quadrature,
         get_height,
         get_level,
         get_shared_edge,
@@ -126,7 +127,6 @@ export  ×,
         real_to_parametric,
         segmentize,
         submesh,
-        tracks,
         triangulate,
         width,
         write_vtk_2d,
@@ -134,7 +134,7 @@ export  ×,
 
 # Gmsh
 export gmsh,
-       gmsh_rectangular_grid,
+       gmsh_generate_rectangular_grid,
        gmsh_group_preserving_fragment,
        gmsh_overlay_rectangular_grid
 

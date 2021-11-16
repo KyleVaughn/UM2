@@ -1,6 +1,6 @@
 # Routines for extracting segment/face data for tracks (rays) overlaid on a mesh
 
-# Ray trace a HRPM given the ray spacing and angular quadrature
+# Ray trace an HRPM given the ray spacing and angular quadrature
 function ray_trace(tₛ::T,
                    ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T}, 
                    HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
@@ -14,15 +14,14 @@ function ray_trace(tₛ::T,
     return segment_points, face_indices
 end
 
-# Ray trace a HRPM given the ray spacing and angular quadrature
+# Ray trace a mesh given the ray spacing and angular quadrature
 function ray_trace(tₛ::T,
                    ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T}, 
                    mesh::UnstructuredMesh_2D{T, I}
                    ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
     @info "Ray tracing"
     the_tracks = tracks(tₛ, ang_quad, mesh)
-    # If the mesh has boundary edges, assume you want to use the combined segmentize
-    # face index algorithm
+    # If the mesh has boundary edges, usue edge-to-edge ray tracing
     if 0 < length(mesh.boundary_edges)
         segment_points = segmentize(the_tracks, mesh)
         face_indices = find_segment_faces(segment_points, mesh)
@@ -618,133 +617,9 @@ function find_segment_faces!(points::Vector{Point_2D{T}},
     return all(bools)
 end
 
-# Follows https://mit-crpg.github.io/OpenMOC/methods/track_generation.html
-function tracks(tₛ::T,
-                ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T},
-                HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
-                ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
-    w = width(HRPM) 
-    h = height(HRPM)
-    # The tracks for each γ
-    the_tracks = [ tracks(tₛ, w, h, γ) for γ in ang_quad.γ ]  
-    # Shift all tracks if necessary, since the tracks are generated as if the HRPM has a 
-    # bottom left corner at (0,0)
-    offset = HRPM.rect.points[1]
-    for angle in the_tracks
-        for track in angle
-            track = LineSegment_2D(track.points[1] + offset, track.points[2] + offset)
-        end
-    end
-    return the_tracks
-end
-
-function tracks(tₛ::T,
-                ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T},
-                mesh::UnstructuredMesh_2D{T, I};
-                boundary_shape="Rectangle"
-                ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
-
-    if boundary_shape == "Rectangle"
-        bb = bounding_box(mesh, rectangular_boundary=true)
-        w = bb.points[3].x[1] - bb.points[1].x[1]
-        h = bb.points[3].x[2] - bb.points[1].x[2]
-        # The tracks for each γ
-        the_tracks = [ tracks(tₛ, w, h, γ) for γ in ang_quad.γ ]  
-        # Shift all tracks if necessary, since the tracks are generated as if the HRPM has a 
-        # bottom left corner at (0,0)
-        offset = bb.points[1]
-        for angle in the_tracks
-            for track in angle
-                track = LineSegment_2D(track.points[1] + offset, track.points[2] + offset)
-            end
-        end
-        return the_tracks
-    else
-        @error "Unsupported boundary shape"
-        return Vector{LineSegment_2D{T}}[]
-    end
-end
-
-function tracks(tₛ::T, w::T, h::T, γ::T) where {T <: AbstractFloat}
-    # Number of tracks in y direction
-    n_y = ceil(Int64, w*abs(sin(γ))/tₛ)
-    # Number of tracks in x direction
-    n_x = ceil(Int64, h*abs(cos(γ))/tₛ)  
-    # Total number of tracks
-    nₜ = n_y + n_x
-    # Allocate the tracks
-    the_tracks = Vector{LineSegment_2D{T}}(undef, nₜ)
-    # Effective angle to ensure cyclic tracks
-    γₑ = atan((h*n_x)/(w*n_y))
-    if π/2 < γ
-        γₑ = γₑ + T(π/2)
-    end
-    # Effective ray spacing for the cyclic tracks
-    t_eff = w*sin(atan((h*n_x)/(w*n_y)))/n_x
-    if γₑ ≤ π/2
-        # Generate tracks from the bottom edge of the rectangular domain
-        for ix = 1:n_x
-            x₀ = w - t_eff*T(ix - 0.5)/sin(γₑ)
-            y₀ = T(0)
-            # Segment either terminates at the right edge of the rectangle
-            # Or on the top edge of the rectangle
-            x₁ = min(w, h/tan(γₑ) + x₀)
-            y₁ = min((w - x₀)*tan(γₑ), h) 
-            l = LineSegment_2D(Point_2D(x₀, y₀), Point_2D(x₁, y₁))
-            if arc_length(l) < minimum_segment_length
-                @warn "Small track generated: $l"
-            end
-            the_tracks[ix] = l
-        end
-        # Generate tracks from the left edge of the rectangular domain
-        for iy = 1:n_y
-            x₀ = T(0) 
-            y₀ = t_eff*T(iy - 0.5)/cos(γₑ)
-            # Segment either terminates at the right edge of the rectangle
-            # Or on the top edge of the rectangle
-            x₁ = min(w, (h - y₀)/tan(γₑ))
-            y₁ = min(w*tan(γₑ) + y₀, h)
-            l = LineSegment_2D(Point_2D(x₀, y₀), Point_2D(x₁, y₁))
-            if arc_length(l) < minimum_segment_length
-                @warn "Small track generated: $l"
-            end
-            the_tracks[n_x + iy] = l
-        end
-    else
-        # Generate tracks from the bottom edge of the rectangular domain
-        for ix = n_y:-1:1
-            x₀ = w - t_eff*T(ix - 0.5)/sin(γₑ)
-            y₀ = T(0)
-            # Segment either terminates at the left edge of the rectangle
-            # Or on the top edge of the rectangle
-            x₁ = max(0, h/tan(γₑ) + x₀)
-            y₁ = min(x₀*abs(tan(γₑ)), h) 
-            l = LineSegment_2D(Point_2D(x₀, y₀), Point_2D(x₁, y₁))
-            if arc_length(l) < minimum_segment_length
-                @warn "Small track generated: $l"
-            end
-            the_tracks[ix] = l
-        end
-        # Generate tracks from the right edge of the rectangular domain
-        for iy = 1:n_x
-            x₀ = w
-            y₀ = t_eff*T(iy - 0.5)/abs(cos(γₑ))
-            # Segment either terminates at the left edge of the rectangle
-            # Or on the top edge of the rectangle
-            x₁ = max(0, w + (h - y₀)/tan(γₑ))
-            y₁ = min(w*abs(tan(γₑ)) + y₀, h)
-            l = LineSegment_2D(Point_2D(x₀, y₀), Point_2D(x₁, y₁))
-            if arc_length(l) < minimum_segment_length
-                @warn "Small track generated: $l"
-            end
-            the_tracks[n_y + iy] = l
-        end
-    end
-    return the_tracks
-end
-
 # Plot
 # -------------------------------------------------------------------------------------------------
+# Plot ray tracing data one angle at a time.
 function linesegments!(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
                        seg_faces::Vector{Vector{Vector{I}}}) where {T <: AbstractFloat, I <: Unsigned} 
     println("Press enter to plot the segments in the next angle")
