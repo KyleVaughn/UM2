@@ -160,6 +160,13 @@ function add_materialized_faces(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abs
                                     )
 end
 
+# Return a vector if the faces adjacent to the face of ID face
+function adjacent_faces(face::I,
+                            mesh::UnstructuredMesh_2D{T, I}
+                            ) where {I <: Unsigned, T <: AbstractFloat}
+    return adjacent_faces(face, mesh.face_edge_connectivity, mesh.edge_face_connectivity)
+end
+
 # Return the area of a face set, input by name
 function area(mesh::UnstructuredMesh_2D{T, I}, set_name::String) where {T <: AbstractFloat, I <: Unsigned}
     return area(mesh, mesh.face_sets[set_name])
@@ -285,13 +292,6 @@ function find_face(p::Point_2D{T}, mesh::UnstructuredMesh_2D{T, I}) where {T <: 
     else
         return I(find_face_implicit(p, mesh, mesh.faces))
     end
-end
-
-# Return a vector if the faces adjacent to the face of ID face
-function get_adjacent_faces(face::I,
-                            mesh::UnstructuredMesh_2D{T, I}
-                            ) where {I <: Unsigned, T <: AbstractFloat}
-    return get_adjacent_faces(face, mesh.face_edge_connectivity, mesh.edge_face_connectivity)
 end
 
 # Return the intersection algorithm that will be used for l ∩ mesh

@@ -17,9 +17,9 @@ function Tree(;data::Any = nothing,
 end
 
 # The level of a node is defined by 1 + the number of connections between the node and the root
-function get_level(tree::Tree; current_level=1)
+function node_level(tree::Tree; current_level=1)
     if isassigned(tree.parent)
-        return get_level(tree.parent[]; current_level = current_level + 1)
+        return node_level(tree.parent[]; current_level = current_level + 1)
     else
         return current_level
     end

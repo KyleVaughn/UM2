@@ -117,7 +117,7 @@ using HDF5
 
         # Materials
         test_material_IDs = read(h5_file["c5g7_UO2_pin"]["material_id"])
-        ref_material_IDs = [ i <= 7 ? 1 : 0 for i = 1:22 ]
+        ref_material_IDs = [ i <= 7 ? 0 : 1 for i = 1:22 ]
         @test test_material_IDs == ref_material_IDs
 
         close(h5_file)

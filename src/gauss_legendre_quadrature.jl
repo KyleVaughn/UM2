@@ -1,6 +1,6 @@
 # Weights and points for Gauss-Legendre quadrature for a variety of shapes
 
-function get_gauss_legendre_quadrature(type::Type{T}, N::Int64) where {T <: AbstractFloat}
+function gauss_legendre_quadrature(type::Type{T}, N::Int64) where {T <: AbstractFloat}
     # The weights and points for Gauss-Legendre quadrature on the interval [0,1]
     # ∑wᵢ= 1, rᵢ∈ [0, 1]
     #
@@ -12,9 +12,9 @@ function get_gauss_legendre_quadrature(type::Type{T}, N::Int64) where {T <: Abst
         weights = T[0.5, 0.5]
         r = T[0.21132486540518713, 0.7886751345948129]
     elseif N === 3
-        weights = [0.2777777777777776,
-                   0.4444444444444444,
-                   0.2777777777777776]
+        weights = T[0.2777777777777776,
+                    0.4444444444444444,
+                    0.2777777777777776]
         r = T[0.1127016653792583,
               0.5,
               0.8872983346207417]
@@ -158,7 +158,7 @@ function get_gauss_legendre_quadrature(type::Type{T}, N::Int64) where {T <: Abst
     return weights, r
 end
 
-function get_gauss_legendre_quadrature(tri::Triangle6_2D{T}, N::Int64) where {T <: AbstractFloat}
+function gauss_legendre_quadrature(tri::Triangle6_2D{T}, N::Int64) where {T <: AbstractFloat}
     # The weights and points for Gauss-Legendre quadrature on the parametric unit triangle
     # ∑wᵢ= 1/2, rᵢ∈ [0, 1], sᵢ∈ [0, 1], rᵢ + sᵢ ≤ 1
     # N that have entries in this function: N = [12, 27, 48, 79]

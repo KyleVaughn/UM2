@@ -36,11 +36,6 @@ using StaticArrays
             p₀ = zero(p)
             @test all(p₀.x .== T(0))
             @test typeof(p.x[1]) == typeof(T(0))
-
-            # (::Type)
-            q = Float64(p)
-            @test q.x == SVector(Float64.((1, 2)))
-            @test typeof(q.x) == typeof(SVector(Float64.((1, 2))))
         end
 
         @testset "Operators" begin

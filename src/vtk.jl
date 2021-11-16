@@ -1,4 +1,4 @@
-# @code_warntype checked 2021/11/09
+# Routines for reading and writing VTK files
 
 function read_vtk_2d(filepath::String)
     @info "Reading $filepath"

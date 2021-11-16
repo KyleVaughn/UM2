@@ -74,8 +74,8 @@ function apply_function_recursively_to_HRPM_meshes(f::Function,
 end
 
 # Return the axis-aligned bounding box of the HRPM
-function bounding_box(HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}) where {T <: AbstractFloat,
-                                                                           I<:Unsigned}
+function bounding_box(HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
+                         ) where {T <: AbstractFloat, I<:Unsigned}
     if HRPM.rect !== Quadrilateral_2D{T}((Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0)))
         return HRPM.rect
     elseif isassigned(HRPM.mesh)
@@ -143,33 +143,12 @@ function find_face(p::Point_2D{T},
     return false
 end
 
-# Return the height of the HRPM (number of edges between this node and the leaf)
-function get_height(HRPM::HierarchicalRectangularlyPartitionedMesh)
-    if length(HRPM.children) === 0
-        return 0
-    elseif 0 < length(HRPM.children)
-        return get_height(HRPM.children[1][]) + 1
-    else
-        @error "Something went wrong"
-        return -100
-    end
-end
-
 # Get the intersection algorithm that will be used for l ∩ HRPM
 function get_intersection_algorithm(HRPM::HierarchicalRectangularlyPartitionedMesh)
     if isassigned(HRPM.mesh)
         return get_intersection_algorithm(HRPM.mesh[])
     else
         return get_intersection_algorithm(HRPM.children[1][])
-    end
-end
-
-# Get the level (distance from current node to root + 1) of the HRPM
-function get_level(HRPM::HierarchicalRectangularlyPartitionedMesh; current_level=1)
-    if isassigned(HRPM.parent)
-        return get_level(HRPM.parent[]; current_level = current_level + 1)
-    else
-        return current_level
     end
 end
 
@@ -211,6 +190,27 @@ function intersect(l::LineSegment_2D{T},
         end
     end
     return intersection_points::Vector{Point_2D{T}}
+end
+
+# Return the height of the HRPM (number of edges between this node and the leaf)
+function node_height(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if length(HRPM.children) === 0
+        return 0
+    elseif 0 < length(HRPM.children)
+        return node_height(HRPM.children[1][]) + 1
+    else
+        @error "Something went wrong"
+        return -100
+    end
+end
+
+# Get the level (distance from current node to root + 1) of the HRPM
+function node_level(HRPM::HierarchicalRectangularlyPartitionedMesh; current_level=1)
+    if isassigned(HRPM.parent)
+        return node_level(HRPM.parent[]; current_level = current_level + 1)
+    else
+        return current_level
+    end
 end
 
 # Partition a mesh into an HRPM based upon the names of its face sets.

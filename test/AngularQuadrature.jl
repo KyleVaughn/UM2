@@ -4,18 +4,18 @@ include("../src/AngularQuadrature.jl")
     for type in [Float32, Float64]
         @testset "Chebyshev" begin
             # chebyshev_angular_quadrature
-            angles, weights = chebyshev_angular_quadrature(1, type)
+            angles, weights = generate_chebyshev_angular_quadrature(1, type)
             @test size(angles, 1) == size(weights, 1) == 1
             @test angles[1] == π/type(4)
             @test weights[1] == type(1)
             @test typeof(angles[1]) == typeof(weights[1]) == typeof(type(1))
 
-            angles, weights = chebyshev_angular_quadrature(2, type)
+            angles, weights = generate_chebyshev_angular_quadrature(2, type)
             @test size(angles, 1) == size(weights, 1) == 2
             @test angles  == type[3π/8, π/8]
             @test weights == type[1//2, 1//2]
 
-            angles, weights = chebyshev_angular_quadrature(3, type)
+            angles, weights = generate_chebyshev_angular_quadrature(3, type)
             @test size(angles, 1) == size(weights, 1) == 3
             @test angles  == type[5π/12, 3π/12, π/12]
             @test weights == type[1/3,  1/3,   1/3]
@@ -23,7 +23,7 @@ include("../src/AngularQuadrature.jl")
 
         @testset "Chebyshev-Chebyshev" begin
             # Default data type is Float64
-            quadrature = angular_quadrature("Chebyshev-Chebyshev", 3, 2)
+            quadrature = generate_angular_quadrature("Chebyshev-Chebyshev", 3, 2)
             @test quadrature isa ProductAngularQuadrature
             @test size(quadrature.γ, 1) == size(quadrature.w_γ, 1) == 6
             @test size(quadrature.θ, 1) == size(quadrature.w_θ, 1) == 2
@@ -33,7 +33,7 @@ include("../src/AngularQuadrature.jl")
             @test quadrature.w_θ == Tuple([1/2, 1/2])
 
             # Specified data type
-            quadrature = angular_quadrature("Chebyshev-Chebyshev", 3, 2, T=type)
+            quadrature = generate_angular_quadrature("Chebyshev-Chebyshev", 3, 2, T=type)
             @test quadrature isa ProductAngularQuadrature
             @test size(quadrature.γ, 1) == size(quadrature.w_γ, 1) == 6
             @test size(quadrature.θ, 1) == size(quadrature.w_θ, 1) == 2
