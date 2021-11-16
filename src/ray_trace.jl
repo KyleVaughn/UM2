@@ -140,39 +140,6 @@ function find_segment_faces(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
     return indices
 end
 
-# Get the face indices for all tracks in a single angle
-function find_segment_faces!(points::Vector{Vector{Point_2D{T}}},
-                             indices::Vector{Vector{MVector{N, I}}},
-                             HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
-                            ) where {T <: AbstractFloat, I <: Unsigned, N}
-    nt = length(points)
-    bools = fill(false, nt)
-    # for each track, find the segment indices
-    for it = 1:nt
-        # Points in the track
-        npoints = length(points[it])
-        # Returns true if indices were found for all segments in the track
-        bools[it] = find_segment_faces!(points[it], indices[it], HRPM)
-    end
-    return all(bools)
-end
-
-# Get the face indices for all segments in a single track
-function find_segment_faces!(points::Vector{Point_2D{T}},
-                             indices::Vector{MVector{N, I}},
-                             HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
-                            ) where {T <: AbstractFloat, I <: Unsigned, N}
-    # Points in the track
-    npoints = length(points)
-    bools = fill(false, npoints-1)
-    # Test the midpoint of each segment to find the face
-    for iseg = 1:npoints-1
-        p_midpoint = midpoint(points[iseg], points[iseg+1])
-        bools[iseg] = find_face(p_midpoint, indices[iseg], HRPM)
-    end
-    return all(bools)
-end
-
 function find_segment_faces(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
                             mesh::UnstructuredMesh_2D{T, I}
                            ) where {T <: AbstractFloat, I <: Unsigned, N}
@@ -200,40 +167,6 @@ function find_segment_faces(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
         @error "Failed to find indices for some points in seg_points$iγ_bad"
     end
     return indices
-end
-
-# Get the face indices for all tracks in a single angle
-function find_segment_faces!(points::Vector{Vector{Point_2D{T}}},
-                             indices::Vector{Vector{I}},
-                             mesh::UnstructuredMesh_2D{T, I}
-                            ) where {T <: AbstractFloat, I <: Unsigned, N}
-    nt = length(points)
-    bools = fill(false, nt)
-    # for each track, find the segment indices
-    for it = 1:nt
-        # Points in the track
-        npoints = length(points[it])
-        # Returns true if indices were found for all segments in the track
-        bools[it] = find_segment_faces!(points[it], indices[it], mesh)
-    end
-    return all(bools)
-end
-
-# Get the face indices for all segments in a single track
-function find_segment_faces!(points::Vector{Point_2D{T}},
-                             indices::Vector{I},
-                             mesh::UnstructuredMesh_2D{T, I}
-                            ) where {T <: AbstractFloat, I <: Unsigned, N}
-    # Points in the track
-    npoints = length(points)
-    bools = fill(false, npoints-1)
-    # Test the midpoint of each segment to find the face
-    for iseg = 1:npoints-1
-        p_midpoint = midpoint(points[iseg], points[iseg+1])
-        indices[iseg] = find_face(p_midpoint, mesh)
-        bools[iseg] = 0 < indices[iseg] 
-    end
-    return all(bools)
 end
 
 # Plot
