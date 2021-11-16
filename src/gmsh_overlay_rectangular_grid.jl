@@ -1,4 +1,4 @@
-# @code_warntype checked 2021/11/09
+# Routines for overlaying a hierarchical rectangular grid onto a gmsh CAD model
 
 function gmsh_overlay_rectangular_grid(bb::NTuple{4, T},
                                        material::String,

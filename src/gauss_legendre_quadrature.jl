@@ -1,4 +1,4 @@
-# @code_warntype checked 2021/11/08
+# Weights and points for Gauss-Legendre quadrature for a variety of shapes
 
 function gauss_legendre_quadrature(type::Type{T}, N::Int64) where {T <: AbstractFloat}
     # The weights and points for Gauss-Legendre quadrature on the interval [0,1]

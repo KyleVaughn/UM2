@@ -175,14 +175,14 @@ function area(mesh::UnstructuredMesh_2D{T, I}, face_set::Set{I}) where {T <: Abs
 end
 
 # Axis-aligned bounding box, in 2d a rectangle.
-function AABB(mesh::UnstructuredMesh_2D{T, I};
-              rectangular_boundary=false) where {T <: AbstractFloat, I <: Unsigned}
-    # If the mesh does not have any quadratic faces, the AABB may be determined entirely from the
+function bounding_box(mesh::UnstructuredMesh_2D{T, I};
+                      rectangular_boundary=false) where {T <: AbstractFloat, I <: Unsigned}
+    # If the mesh does not have any quadratic faces, the bounding_box may be determined entirely from the
     # points. If the mesh does have quadratic cells/faces, we need to find the bounding box of the edges
     # that border the mesh.
     if (any(x->x[1] ∈  UnstructuredMesh_2D_quadratic_cell_types, mesh.faces) &&
         !rectangular_boundary)
-        @error "Cannot find AABB for a mesh with quadratic faces that does not have a rectangular boundary"
+        @error "Cannot find bounding_box for a mesh with quadratic faces that does not have a rectangular boundary"
         return Quadrilateral_2D(Point_2D{T}(T[0, 0]),
                                 Point_2D{T}(T[0, 0]),
                                 Point_2D{T}(T[0, 0]),

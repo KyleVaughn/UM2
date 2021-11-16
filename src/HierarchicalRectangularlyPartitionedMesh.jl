@@ -1,5 +1,5 @@
-# @code_warntype checked 2021/11/09
-
+# Routines related to an unstructured mesh than is contained in a hierarchical, rectangularly
+# partitioned mesh data structure
 mutable struct HierarchicalRectangularlyPartitionedMesh{T<:AbstractFloat, I<:Unsigned}
     name::String
     rect::Quadrilateral_2D{T}
@@ -29,20 +29,65 @@ end
 
 Base.broadcastable(HRPM::HierarchicalRectangularlyPartitionedMesh) = Ref(HRPM)
 
-function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}) where {T <: AbstractFloat,
+# Add the boundary edges to each mesh in the HRPM
+function add_boundary_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    apply_function_recursively_to_HRPM_meshes(add_boundary_edges, HRPM)
+end
+
+# Add the connectivity to each mesh in the HRPM
+function add_connectivity(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    apply_function_recursively_to_HRPM_meshes(add_connectivity, HRPM)
+end
+
+# Add the edges to each mesh in the HRPM
+function add_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    apply_function_recursively_to_HRPM_meshes(add_edges, HRPM)
+end
+
+# Add every field to each mesh in the HRPM
+function add_everything(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    apply_function_recursively_to_HRPM_meshes(add_everything, HRPM)
+end
+
+# Add materialized edges to each mesh in the HRPM
+function add_materialized_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    apply_function_recursively_to_HRPM_meshes(add_materialized_edges, HRPM)
+end
+
+# Add materialized faces to each mesh in the HRPM
+function add_materialized_faces(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    apply_function_recursively_to_HRPM_meshes(add_materialized_faces, HRPM)
+end
+
+# Apply a function, f, to each of the meshes in the HRPM
+function apply_function_recursively_to_HRPM_meshes(f::Function, 
+                                                   HRPM::HierarchicalRectangularlyPartitionedMesh)
+    nchildren = length(HRPM.children)
+    if isassigned(HRPM.mesh)
+        HRPM.mesh[] = f(HRPM.mesh[])
+    elseif 0 < nchildren
+        for ichild = 1:nchildren
+            f(HRPM.children[ichild][])
+        end
+    end
+    return nothing
+end
+
+# Return the axis-aligned bounding box of the HRPM
+function bounding_box(HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}) where {T <: AbstractFloat,
                                                                            I<:Unsigned}
     if HRPM.rect !== Quadrilateral_2D{T}((Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0), Point_2D(T, 0)))
         return HRPM.rect
     elseif isassigned(HRPM.mesh)
-        bb = AABB(HRPM.mesh[], rectangular_boundary=true)
+        bb = bounding_box(HRPM.mesh[], rectangular_boundary=true)
         HRPM.rect = bb
         return bb
     elseif 0 < length(HRPM.children)
-        children_AABBs = Quadrilateral_2D{T}[]
+        children_bounding_boxs = Quadrilateral_2D{T}[]
         for child in HRPM.children
-            push!(children_AABBs, AABB(child[]))
+            push!(children_bounding_boxs, bounding_box(child[]))
         end
-        point_tuples = [r.points for r in children_AABBs]
+        point_tuples = [r.points for r in children_bounding_boxs]
         points = Vector{Point_2D{T}}()
         for tuple in point_tuples
             append!(points, collect(tuple))
@@ -65,82 +110,14 @@ function AABB(HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}) where {T <: 
     end
 end
 
-function add_boundary_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
-    if isassigned(HRPM.mesh)
-        HRPM.mesh[] = add_boundary_edges(HRPM.mesh[])
-    elseif 0 < length(HRPM.children)
-        for child in HRPM.children
-            add_boundary_edges(child[])
-        end
-    end
-end
-
-function add_connectivity(HRPM::HierarchicalRectangularlyPartitionedMesh)
-    if isassigned(HRPM.mesh)
-        HRPM.mesh[] = add_connectivity(HRPM.mesh[])
-    elseif 0 < length(HRPM.children)
-        for child in HRPM.children
-            add_connectivity(child[])
-        end
-    end
-end
-
-function add_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
-    if isassigned(HRPM.mesh)
-        HRPM.mesh[] = add_edges(HRPM.mesh[])
-    elseif 0 < length(HRPM.children)
-        for child in HRPM.children
-            add_edges(child[])
-        end
-    end
-end
-
-function add_materialized_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
-    if isassigned(HRPM.mesh)
-        if 0 < length(HRPM.mesh[].edges)
-            HRPM.mesh[] = add_materialized_edges(HRPM.mesh[])
-        else
-            HRPM.mesh[] = add_materialized_edges(add_edges(HRPM.mesh[]))
-        end
-    elseif 0 < length(HRPM.children)
-        for child in HRPM.children
-            add_materialized_edges(child[])
-        end
-    end
-end
-
-function add_everything(HRPM::HierarchicalRectangularlyPartitionedMesh)
-    if isassigned(HRPM.mesh)
-        HRPM.mesh[] = add_everything(HRPM.mesh[])
-    elseif 0 < length(HRPM.children)
-        for child in HRPM.children
-            add_everything(child[])
-        end
-    end
-end
-
-function add_materialized_faces(HRPM::HierarchicalRectangularlyPartitionedMesh)
-    if isassigned(HRPM.mesh)
-        HRPM.mesh[] = add_materialized_faces(HRPM.mesh[])
-    elseif 0 < length(HRPM.children)
-        for child in HRPM.children
-            add_materialized_faces(child[])
-        end
-    end
-end
-
-function are_materialized_faces(HRPM::HierarchicalRectangularlyPartitionedMesh)
-    if isassigned(HRPM.mesh)
-        if length(HRPM.mesh[].materialized_faces) !== 0
-            return true
-        else
-            return false
-        end
-    else
-        return are_materialized_faces(HRPM.children[1][])
-    end
-end
-
+# Fill a statically size, mutable vector, coord, with the necessary indices to navigate from the 
+# root HRPM, through the children, to the base mesh, and return the face ID to which the point p
+# may be found in.
+# Example:
+# For an HRPM with 4 levels:
+# [1, 2, 1, 16 ]
+# denotes HRPM.children[1][].children[2][].children[1][].mesh[].faces[16] contains p
+# If the face is found, return true. Otherwise, return false
 function find_face(p::Point_2D{T},
                    coord::MVector{N, I},
                    HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
@@ -166,6 +143,19 @@ function find_face(p::Point_2D{T},
     return false
 end
 
+# Return the height of the HRPM (number of edges between this node and the leaf)
+function get_height(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if length(HRPM.children) === 0
+        return 0
+    elseif 0 < length(HRPM.children)
+        return get_height(HRPM.children[1][]) + 1
+    else
+        @error "Something went wrong"
+        return -100
+    end
+end
+
+# Get the intersection algorithm that will be used for l ∩ HRPM
 function get_intersection_algorithm(HRPM::HierarchicalRectangularlyPartitionedMesh)
     if isassigned(HRPM.mesh)
         return get_intersection_algorithm(HRPM.mesh[])
@@ -174,6 +164,7 @@ function get_intersection_algorithm(HRPM::HierarchicalRectangularlyPartitionedMe
     end
 end
 
+# Get the level (distance from current node to root + 1) of the HRPM
 function get_level(HRPM::HierarchicalRectangularlyPartitionedMesh; current_level=1)
     if isassigned(HRPM.parent)
         return get_level(HRPM.parent[]; current_level = current_level + 1)
@@ -182,21 +173,39 @@ function get_level(HRPM::HierarchicalRectangularlyPartitionedMesh; current_level
     end
 end
 
+# Check if the HRPM's mesh faces are materialized
+function has_materialized_faces(HRPM::HierarchicalRectangularlyPartitionedMesh)
+    if isassigned(HRPM.mesh)
+        if length(HRPM.mesh[].materialized_faces) !== 0
+            return true
+        else
+            return false
+        end
+    else
+        return has_materialized_faces(HRPM.children[1][])
+    end
+end
+
+# Height of the HRPM in the y direction
 function height(HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T<:AbstractFloat}
     return HRPM.rect.points[3].x[2] - HRPM.rect.points[1].x[2]
 end
 
+# Intersection a line with the HRPM. Returns a vector of points, ordered by distance from
+# the line's start point
 function intersect(l::LineSegment_2D{T}, 
         HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}) where {T <: AbstractFloat,
                                                                      I <: Unsigned}
     # An array to hold all of the intersection points
     intersection_points = Point_2D{T}[]
+    nchildren = length(HRPM.children)
     if 0 < (l ∩ HRPM.rect)[1]
         if isassigned(HRPM.mesh)
             append!(intersection_points, l ∩ HRPM.mesh[]::UnstructuredMesh_2D{T,I})
-        elseif 0 < length(HRPM.children)
-            for child::Ref{HierarchicalRectangularlyPartitionedMesh{T, I}} in HRPM.children
-                append!(intersection_points, l ∩ child[]::HierarchicalRectangularlyPartitionedMesh{T, I})
+        elseif 0 < nchildren
+            for ichild = 1:nchildren
+                append!(intersection_points, 
+                        l ∩ HRPM.children[ichild][]::HierarchicalRectangularlyPartitionedMesh{T, I})
             end
             return sort_intersection_points(l, intersection_points)
         end
@@ -204,17 +213,10 @@ function intersect(l::LineSegment_2D{T},
     return intersection_points::Vector{Point_2D{T}}
 end
 
-function levels(HRPM::HierarchicalRectangularlyPartitionedMesh)
-    if length(HRPM.children) === 0
-        return 1
-    elseif 0 < length(HRPM.children)
-        return levels(HRPM.children[1][]) + 1
-    else
-        @error "Something went wrong"
-        return -100
-    end
-end
-
+# Partition a mesh into an HRPM based upon the names of its face sets.
+# Must contain face sets of the form "GRID_LN_X_Y" where N,X,Y are integers
+# N is the level of the node and X,Y are indices of the mesh's location in a rectangular
+# grid
 function partition_rectangularly(mesh::UnstructuredMesh_2D{T, I}) where {T<:AbstractFloat,
                                                                          I<:Unsigned}
     @info "Converting UnstructuredMesh_2D into HierarchicalRectangularlyPartitionedMesh"
@@ -232,6 +234,7 @@ function partition_rectangularly(mesh::UnstructuredMesh_2D{T, I}) where {T<:Abst
     return HRPM
 end
 
+# How to display the HRPM in the REPL
 function Base.show(io::IO, HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}; relative_offset=0) where
     {T <: AbstractFloat, I <: Unsigned}
     println(io, "HierarchicalRectangularlyPartitionedMesh{$T}{$I}")
@@ -256,9 +259,11 @@ function Base.show(io::IO, HRPM::HierarchicalRectangularlyPartitionedMesh{T, I};
     end
 end
 
+# Width of the HRPM in the x direction
 function width(HRPM::HierarchicalRectangularlyPartitionedMesh{T}) where {T<:AbstractFloat}
     return HRPM.rect.points[3].x[1] - HRPM.rect.points[1].x[1]
 end
+
 
 function _attach_HRPM_children(HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}, 
                                tree::Tree,
@@ -285,7 +290,7 @@ function _create_HRPM(tree::Tree, leaf_meshes::Vector{UnstructuredMesh_2D{T, I}}
     root = HierarchicalRectangularlyPartitionedMesh{T, I}( name = tree.data )
     _attach_HRPM_children(root, tree, leaf_meshes)
     # Add the rectangles
-    AABB(root)
+    bounding_box(root)
     return root
 end
 

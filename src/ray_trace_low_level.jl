@@ -1,5 +1,59 @@
 # Routines for extracting segment/face data for tracks (rays) overlaid on a mesh
 
+# Classify a point as on the North, East, South, or West edge of a rectangular mesh
+function classify_nesw(p::Point_2D{T}, 
+                       mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, I <: Unsigned}
+    y_N = mesh.points[mesh.edges[mesh.boundary_edges[1][1]][1]].x[2] 
+    x_E = mesh.points[mesh.edges[mesh.boundary_edges[2][1]][1]].x[1]
+    y_S = mesh.points[mesh.edges[mesh.boundary_edges[3][1]][1]].x[2]
+    x_W = mesh.points[mesh.edges[mesh.boundary_edges[4][1]][1]].x[1]
+    if abs(p.x[2] - y_N) < 1e-4
+        return 1 # North
+    elseif abs(p.x[1] - x_E) < 1e-4
+        return 2 # East
+    elseif abs(p.x[2] - y_S) < 1e-4
+        return 3 # South
+    elseif abs(p.x[1] - x_W) < 1e-4
+        return 4 # West
+    else
+        @error "Could not classify point"
+        return 0 # Error
+    end
+end
+
+# Get the boundary edge that a point lies on for a rectangular mesh
+function get_start_edge_nesw(p::Point_2D{T}, 
+                             boundary_edge_indices::Vector{I},
+                             nesw::Int64,
+                             mesh::UnstructuredMesh_2D{T, I}
+                             ) where {T <: AbstractFloat, I <: Unsigned}
+    if nesw == 1 || nesw == 3
+        # On North or South edge. Just check x coordinates
+        xₚ = p.x[1]
+        for iedge in boundary_edge_indices
+            edge_points = get_edge_points(mesh, mesh.edges[iedge])
+            x₁ = edge_points[1].x[1]
+            x₂ = edge_points[2].x[1]
+            if x₁ ≤ xₚ ≤ x₂ || x₂ ≤ xₚ ≤ x₁
+                return iedge
+            end
+        end
+    else # nesw == 2 || nesw == 4
+        # On East or West edge. Just check y coordinates
+        yₚ = p.x[2]                                      
+        for iedge in boundary_edge_indices
+            edge_points = get_edge_points(mesh, mesh.edges[iedge])
+            y₁ = edge_points[1].x[2]
+            y₂ = edge_points[2].x[2]
+            if y₁ ≤ yₚ ≤ y₂ || y₂ ≤ yₚ ≤ y₁
+                return iedge
+            end
+        end
+    end
+    @error "Could not find start edge"
+    return I(0)
+end
+
 # Ray trace a HRPM given the ray spacing and angular quadrature
 function ray_trace(tₛ::T,
                    ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T}, 

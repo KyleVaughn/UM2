@@ -46,6 +46,7 @@ include("UnstructuredMesh_2D_low_level.jl")
 include("HierarchicalRectangularlyPartitionedMesh.jl")
 include("abaqus.jl")
 include("ray_trace.jl")
+include("ray_trace_low_level.jl")
 include("vtk.jl")
 include("xdmf.jl")
 
@@ -71,7 +72,6 @@ export  AngularQuadrature,
 # Functions
 export  ×,
         ⋅,
-        AABB,
         add_boundary_edges,
         add_connectivity,
         add_edges,
@@ -84,6 +84,8 @@ export  ×,
         arc_length,
         area,
         boundary_edges,
+        bounding_box,
+        classify_nesw,
         derivative,
         distance,
         edges,
@@ -97,15 +99,15 @@ export  ×,
         gauss_legendre_quadrature,
         get_adjacent_faces,
         get_edge_points,
+        get_height,
         get_level,
         get_shared_edge,
+        get_start_edge_nesw,
         height,
         intersect,
         intersect_edges,
         intersect_faces,
-        intersect_iterative,
         jacobian,
-        levels,
         log_timestamps,
         materialize_edge,
         materialize_edges,

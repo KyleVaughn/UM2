@@ -1,4 +1,4 @@
-# @code_warntype checked 2021/11/09
+# Routines related to fragmenting CAD entities in gmsh, while preserving physical groups
 
 function process_material_hierarchy!(
         new_physical_groups::Dict{String, Vector{Tuple{Int32,Int32}}}, 

@@ -1,4 +1,4 @@
-# @code_warntype checked 2021/11/09
+# Routines to generate a hierarchical rectangular grid in gmsh
 
 function _validate_gmsh_rectangular_grid_input(bb::NTuple{4, T}, 
                                                 x::Vector{Vector{T}}, 

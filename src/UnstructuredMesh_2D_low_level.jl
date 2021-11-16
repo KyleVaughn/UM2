@@ -27,7 +27,7 @@ function boundary_edges(mesh::UnstructuredMesh_2D{T, I};
     boundary_edges = findall(x->x[1] == 0, mesh.edge_face_connectivity)
     if bounding_shape == "Rectangle"
         # Sort edges into NESW
-        bb = AABB(mesh, rectangular_boundary=true)
+        bb = bounding_box(mesh, rectangular_boundary=true)
         y_north = bb.points[3].x[2]
         x_east  = bb.points[3].x[1]
         y_south = bb.points[1].x[2]
