@@ -101,15 +101,25 @@ end
 function ray_trace_edge_to_edge(tracks::Vector{Vector{LineSegment_2D{T}}},
                                 mesh::UnstructuredMesh_2D{T, I}
                                 ) where {T <: AbstractFloat, I <: Unsigned}
+    # Algorithm info
+    alg_str = "    - Using "
+    if length(mesh.materialized_edges) != 0
+        alg_str = alg_str * "explicit edge intersection, and "
+    else
+        alg_str = alg_str * "implicit edge intersection, and "
+    end
+    if length(mesh.materialized_faces) != 0
+        alg_str = alg_str * "explicit face intersection in fallback methods"
+    else
+        alg_str = alg_str * "implicit face intersection in fallback methods"
+    end
+    @info alg_str
+
+    # Warnings/errors
     if length(mesh.boundary_edges) != 4
         @error "Mesh does not have 4 boundary edges needed for edge-to-edge ray tracing!"
     end
-    if length(mesh.materialized_faces) == 0
-        @warn "Mesh does not have materialized faces! Ray tracing may be slower."
-    end
-    if length(mesh.materialized_edges) != 0
-        @warn "Mesh has materialized edges! Ray tracing may be slower."
-    end
+
     # index 1 = γ
     # index 2 = track
     # index 3 = point/segment

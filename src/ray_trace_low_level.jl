@@ -330,7 +330,7 @@ function next_face_fallback_implicit(current_face::I, previous_face::I,
     # Check adjacent faces first to see if that is sufficient to solve the problem
     the_adjacent_faces = adjacent_faces(current_face, mesh)
     for face in the_adjacent_faces
-        npoints, ipoints = l ∩ materialize_face(mesh.faces[face])
+        npoints, ipoints = l ∩ materialize_face(mesh, mesh.faces[face])
         if 0 < npoints
             for point in ipoints[1:npoints]
                 if distance(start_point, furthest_point) ≤ distance(start_point, point)
@@ -351,7 +351,7 @@ function next_face_fallback_implicit(current_face::I, previous_face::I,
             union!(faces, faces_sharing_vertex(point, mesh))
         end
         for face in faces
-            npoints, ipoints = l ∩ materialize_face(mesh.faces[face])
+            npoints, ipoints = l ∩ materialize_face(mesh, mesh.faces[face])
             if 0 < npoints
                 for point in ipoints[1:npoints]
                     if distance(start_point, furthest_point) ≤ distance(start_point, point)

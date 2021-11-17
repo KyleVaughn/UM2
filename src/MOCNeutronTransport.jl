@@ -17,14 +17,18 @@ catch e
 end
 
 # Make logger give time stamps
-const date_format = "HH:MM:SS"
+const date_format = "HH:MM:SS.sss"
 timestamp_logger(logger) = TransformerLogger(logger) do log
   merge(log, (; message = "$(format(now(), date_format)) $(log.message)"))
 end
 
+MOCNeutronTransport_timestamps_on = false
 function log_timestamps()
-    logger = global_logger()
-    logger |> timestamp_logger |> global_logger
+    if !MOCNeutronTransport_timestamps_on
+        logger = global_logger()
+        logger |> timestamp_logger |> global_logger
+        global MOCNeutronTransport_timestamps_on = true
+    end
 end
 
 import Base: +, -, *, /, ≈, ==, intersect, in
