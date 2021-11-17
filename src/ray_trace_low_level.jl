@@ -1,5 +1,8 @@
 # Routines for extracting segment/face data for tracks (rays) overlaid on a mesh
 
+
+
+
 # Classify a point as on the North, East, South, or West boundary edge of a rectangular mesh
 function classify_nesw(p::Point_2D{T},
                        mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, I <: Unsigned}
@@ -319,6 +322,7 @@ function next_edge_and_face_fallback_explicit(current_face::I, segment_faces::Ve
     # (2) You're supremely unlucky and a fallback method kicked you to another face
     #       where the next face couldn't be determined
 #    println("Falling back")
+    global num_fallback_adjacent += 1
     next_face = current_face
     start_point = l.points[1]
     # The furthest point along l intersected in this iteration
@@ -341,6 +345,7 @@ function next_edge_and_face_fallback_explicit(current_face::I, segment_faces::Ve
     end
 #    s = readline()
     if next_face == current_face || next_face ∈  segment_faces
+        global num_fallback_vertices += 1
 #        println("  Faces sharing vertices")
         # If adjacent faces were not sufficient, try all faces sharing the vertices of
         # this face
@@ -353,6 +358,40 @@ function next_edge_and_face_fallback_explicit(current_face::I, segment_faces::Ve
         end
 #        println("  ", faces)
 #        linesegments!(mesh.materialized_faces[collect(faces)], color = :green)
+        for face in faces
+            npoints, ipoints = l ∩ mesh.materialized_faces[face]
+            if 0 < npoints
+                for point in ipoints[1:npoints]
+                    if distance(start_point, furthest_point) ≤ distance(start_point, point)
+                        furthest_point = point
+                        next_face = face
+                    end
+                end
+            end
+        end
+    end 
+#    s = readline()
+    # Truly a last resort, use the faces sharing a vertex approach above, but expand
+    # to the vertices of the faces sharing vertices of the current face
+    if next_face == current_face || next_face ∈  segment_faces
+        global num_fallback_last_resort += 1
+        # Get the vertex ids for each vertex in the face
+        npoints = length(mesh.faces[current_face])
+        points = mesh.faces[current_face][2:npoints]
+        faces_level1 = Set{Int64}()
+        for point in points
+            union!(faces_level1, faces_sharing_vertex(point, mesh))
+        end
+        faces = Set{Int64}()
+        for face in faces_level1
+            npoints = length(mesh.faces[face])
+            points = mesh.faces[face][2:npoints]
+            for point in points
+                union!(faces, faces_sharing_vertex(point, mesh))
+            end
+        end
+#        println("  ", faces)
+#        linesegments!(mesh.materialized_faces[collect(faces)], color = :black)
         for face in faces
             npoints, ipoints = l ∩ mesh.materialized_faces[face]
             if 0 < npoints

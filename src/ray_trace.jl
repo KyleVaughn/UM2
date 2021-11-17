@@ -1,4 +1,7 @@
 # Routines for extracting segment/face data for tracks (rays) overlaid on a mesh
+num_fallback_adjacent = 0
+num_fallback_vertices = 0
+num_fallback_last_resort = 0
 
 # Return the HRPM/face indices in which each segment resides
 function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
@@ -82,6 +85,9 @@ function ray_trace(tₛ::T,
                    mesh::UnstructuredMesh_2D{T, I}
                    ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
     @info "Ray tracing"
+    global num_fallback_adjacent = 0
+    global num_fallback_vertices = 0
+    global num_fallback_last_resort = 0
     tracks = generate_tracks(tₛ, ang_quad, mesh, boundary_shape = "Rectangle")
     # If the mesh has boundary edges, usue edge-to-edge ray tracing
     if 0 < length(mesh.boundary_edges)
@@ -91,6 +97,9 @@ function ray_trace(tₛ::T,
         @info "  - Using the naive segmentize + find face algorithm"
         segment_points = segmentize(tracks, mesh)
         segment_faces = find_segment_faces(segment_points, mesh)
+        @info "  - Adjacent faces fallback   : $num_fallback_adjacent"
+        @info "  - Shared vertices fallback  : $num_fallback_vertices"
+        @info "  - Shared vertices 2 fallback: $num_fallback_last_resort"
         return segment_points, segment_faces
     end
 end
