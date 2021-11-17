@@ -296,10 +296,10 @@ end
 
 # Return the intersection algorithm that will be used for l ∩ mesh
 function get_intersection_algorithm(mesh::UnstructuredMesh_2D)
-    if length(mesh.edges) !== 0
-        return "Edges - Implicit"
-    elseif length(mesh.materialized_edges) !== 0
+    if length(mesh.materialized_edges) !== 0
         return "Edges - Explicit"
+    elseif length(mesh.edges) !== 0
+        return "Edges - Implicit"
     elseif length(mesh.materialized_faces) !== 0
         return "Faces - Explicit"
     else

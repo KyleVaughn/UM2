@@ -108,7 +108,7 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{T},
     iters = 0
     # Find the segment points, faces
     # Since has_mat_edges and has_hat_faces are provided at compile time,
-    # the hope is the compiler will remove dead branches
+    # the hope is the compiler will remove dead branches through constant propagation
     while !end_reached && iters < max_iters
         if has_mat_edges
             (next_edge, next_face, intersection_point) = next_edge_and_face_explicit(
@@ -119,7 +119,7 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{T},
         else
             (next_edge, next_face, intersection_point) = next_edge_and_face_implicit(
                                                           current_edge, current_face, l,
-                                                          mesh.points, mesh.edges,
+                                                          mesh, mesh.edges,
                                                           mesh.edge_face_connectivity,
                                                           mesh.face_edge_connectivity)
         end
@@ -183,7 +183,7 @@ function next_edge_and_face_explicit(current_edge::I, current_face::I, l::LineSe
     # The furthest point along l intersected in this iteration
     furthest_point = current_point
     # For each edge in this face, intersect the track with the edge
-    for edge in face_edge_connectivity[face]
+    for edge in face_edge_connectivity[current_face]
         # If we used this edge to get to this face, skip it.
         if edge == current_edge
             continue
@@ -212,7 +212,7 @@ end
 # Return the next edge, next face, and intersection point on the next edge
 # This is for linear, implicit edges
 function next_edge_and_face_implicit(current_edge::I, current_face::I, l::LineSegment_2D{T},
-                                     points::Vector{Point_2D{T}},
+                                     mesh::UnstructuredMesh_2D{T, I},
                                      edges::Vector{NTuple{2, I}},
                                      edge_face_connectivity::Vector{NTuple{2, I}},
                                      face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}
@@ -223,13 +223,13 @@ function next_edge_and_face_implicit(current_edge::I, current_face::I, l::LineSe
     # The furthest point along l intersected in this iteration
     furthest_point = current_point
     # For each edge in this face, intersect the track with the edge
-    for edge in face_edge_connectivity[face]
+    for edge in face_edge_connectivity[current_face]
         # If we used this edge to get to this face, skip it.
         if edge == current_edge
             continue
         end
         # Edges are linear, so 1 intersection point max
-        npoints, point = l ∩ materialize_edge(edges[edge])
+        npoints, point = l ∩ materialize_edge(mesh, edges[edge])
         # If there's an intersection
         if 0 < npoints
             # If the intersection point on this edge is further along the ray than the current
@@ -399,35 +399,35 @@ function find_segment_faces!(points::Vector{Point_2D{T}},
 end
 
 # Get the face indices for all tracks in a single angle
-function find_segment_faces!(points::Vector{Vector{Point_2D{T}}},
-                             indices::Vector{Vector{I}},
-                             mesh::UnstructuredMesh_2D{T, I}
-                            ) where {T <: AbstractFloat, I <: Unsigned, N}
-    nt = length(points)
+function find_segment_faces_in_angle!(segment_points::Vector{Vector{Point_2D{T}}},
+                                      segment_faces::Vector{Vector{I}},
+                                      mesh::UnstructuredMesh_2D{T, I}
+                                     ) where {T <: AbstractFloat, I <: Unsigned, N}
+    nt = length(segment_points)
     bools = fill(false, nt)
     # for each track, find the segment indices
     for it = 1:nt
         # Points in the track
-        npoints = length(points[it])
+        npoints = length(segment_points[it])
         # Returns true if indices were found for all segments in the track
-        bools[it] = find_segment_faces!(points[it], indices[it], mesh)
+        bools[it] = find_segment_faces_in_track!(segment_points[it], segment_faces[it], mesh)
     end
     return all(bools)
 end
 
 # Get the face indices for all segments in a single track
-function find_segment_faces!(points::Vector{Point_2D{T}},
-                             indices::Vector{I},
-                             mesh::UnstructuredMesh_2D{T, I}
-                            ) where {T <: AbstractFloat, I <: Unsigned, N}
+function find_segment_faces_in_track!(segment_points::Vector{Point_2D{T}},
+                                      segment_faces::Vector{I},
+                                      mesh::UnstructuredMesh_2D{T, I}
+                                     ) where {T <: AbstractFloat, I <: Unsigned, N}
     # Points in the track
-    npoints = length(points)
+    npoints = length(segment_points)
     bools = fill(false, npoints-1)
     # Test the midpoint of each segment to find the face
     for iseg = 1:npoints-1
-        p_midpoint = midpoint(points[iseg], points[iseg+1])
-        indices[iseg] = find_face(p_midpoint, mesh)
-        bools[iseg] = 0 < indices[iseg]
+        p_midpoint = midpoint(segment_points[iseg], segment_points[iseg+1])
+        segment_faces[iseg] = find_face(p_midpoint, mesh)
+        bools[iseg] = 0 < segment_faces[iseg]
     end
     return all(bools)
 end
@@ -455,7 +455,7 @@ end
 function generate_tracks(tₛ::T,
                          ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T},
                          mesh::UnstructuredMesh_2D{T, I};
-                         boundary_shape="Unknown"
+                         boundary_shape::String="Unknown"
                          ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
 
     if boundary_shape == "Rectangle"

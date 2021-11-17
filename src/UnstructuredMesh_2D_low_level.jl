@@ -282,13 +282,12 @@ end
 function intersect_edges(l::LineSegment_2D{T},
                          mesh::UnstructuredMesh_2D{T, I}
                         ) where {T <: AbstractFloat, I <: Unsigned}
-
     # Implicit intersection has been faster in every test, so this is the default
-    if length(mesh.edges) !== 0
-        intersection_points = intersect_edges_implicit(l, mesh, mesh.edges)
+    if length(mesh.materialized_edges) !== 0
+        intersection_points = intersect_edges_explicit(l, mesh.materialized_edges)
         return sort_intersection_points(l, intersection_points)
     else
-        intersection_points = intersect_edges_explicit(l, mesh.materialized_edges)
+        intersection_points = intersect_edges_implicit(l, mesh, mesh.edges)
         return sort_intersection_points(l, intersection_points)
     end
 end

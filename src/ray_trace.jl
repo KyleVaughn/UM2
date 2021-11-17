@@ -1,5 +1,66 @@
 # Routines for extracting segment/face data for tracks (rays) overlaid on a mesh
 
+# Return the HRPM/face indices in which each segment resides
+function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
+                            HRPM::HierarchicalRectangularlyPartitionedMesh{T, I},
+                            template_vec::MVector{N, I}
+                           ) where {T <: AbstractFloat, I <: Unsigned, N}
+
+    @debug "Finding faces corresponding to each segment"
+    if !are_materialized_faces(HRPM)
+        @warn "Faces are not materialized for this mesh. This will be VERY slow"
+    end
+    nγ = length(segment_points)
+    bools = fill(false, nγ)
+    # Preallocate indices in the most frustrating way
+    indices =   [    
+                    [ 
+                        [ 
+                            MVector{N, I}(zeros(I, N)) 
+                                for i = 1:length(segment_points[iγ][it])-1 # Segments
+                        ] for it = 1:length(segment_points[iγ]) # Tracks
+                    ] for iγ = 1:nγ # Angles
+                ]
+    Threads.@threads for iγ = 1:nγ
+        bools[iγ] = find_segment_faces!(segment_points[iγ], indices[iγ], HRPM)
+    end
+    if !all(bools)
+        iγ_bad = findall(x->!x, bools)
+        @error "Failed to find indices for some points in segment_points$iγ_bad"
+    end
+    return indices
+end
+
+# Return the face id in which each segment resides
+function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
+                            mesh::UnstructuredMesh_2D{T, I}
+                           ) where {T <: AbstractFloat, I <: Unsigned, N}
+
+    @info "    - Finding faces for each segment"
+    if 0 == length(mesh.materialized_faces)
+        @warn "Faces are not materialized for this mesh. This will be VERY slow"
+    end
+    nγ = length(segment_points)
+    bools = fill(false, nγ)
+    # Preallocate indices in the most frustrating way
+    segment_faces =   [    
+                          [ 
+                              [ 
+                                  I(0) 
+                                      for i = 1:length(segment_points[iγ][it])-1 # Segments
+                              ] for it = 1:length(segment_points[iγ]) # Tracks
+                          ] for iγ = 1:nγ # Angles
+                      ]
+    Threads.@threads for iγ = 1:nγ
+        bools[iγ] = find_segment_faces_in_angle!(segment_points[iγ], segment_faces[iγ], mesh)
+    end
+    if !all(bools)
+        iγ_bad = findall(x->!x, bools)
+        @error "Failed to find segment faces for some points in angles: $iγ_bad"
+    end
+    return segment_faces
+end
+
 # Ray trace an HRPM given the ray spacing and angular quadrature
 function ray_trace(tₛ::T,
                    ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T}, 
@@ -21,7 +82,7 @@ function ray_trace(tₛ::T,
                    mesh::UnstructuredMesh_2D{T, I}
                    ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
     @info "Ray tracing"
-    tracks = generate_tracks(tₛ, ang_quad, mesh)
+    tracks = generate_tracks(tₛ, ang_quad, mesh, boundary_shape = "Rectangle")
     # If the mesh has boundary edges, usue edge-to-edge ray tracing
     if 0 < length(mesh.boundary_edges)
         @info "  - Using the edge-to-edge algorithm"
@@ -84,12 +145,12 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
     # index 2 = track
     # index 3 = point/segment
     nγ = length(tracks)
-    seg_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, nγ)
+    segment_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, nγ)
     Threads.@threads for iγ = 1:nγ
         # for each track, intersect the track with the mesh
-        seg_points[iγ] = tracks[iγ] .∩ HRPM
+        segment_points[iγ] = tracks[iγ] .∩ HRPM
     end
-    return seg_points
+    return segment_points
 end
 
 function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
@@ -97,94 +158,35 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
                     ) where {T <: AbstractFloat, I <: Unsigned}
     # Give info about intersection algorithm being used
     int_alg = get_intersection_algorithm(mesh) 
-    @info "Segmentizing using the '$int_alg' algorithm"
+    @info "    - Segmentizing using the '$int_alg' algorithm"
     # index 1 = γ
     # index 2 = track
     # index 3 = point/segment
     nγ = length(tracks)
-    seg_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, nγ)
+    segment_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, nγ)
     Threads.@threads for iγ = 1:nγ
         # for each track, intersect the track with the mesh
-        seg_points[iγ] = tracks[iγ] .∩ mesh
+        segment_points[iγ] = tracks[iγ] .∩ mesh
     end
-    return seg_points
-end
-
-function find_segment_faces(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
-                            HRPM::HierarchicalRectangularlyPartitionedMesh{T, I},
-                            template_vec::MVector{N, I}
-                           ) where {T <: AbstractFloat, I <: Unsigned, N}
-
-    @debug "Finding faces corresponding to each segment"
-    if !are_materialized_faces(HRPM)
-        @warn "Faces are not materialized for this mesh. This will be VERY slow"
-    end
-    nγ = length(seg_points)
-    bools = fill(false, nγ)
-    # Preallocate indices in the most frustrating way
-    indices =   [    
-                    [ 
-                        [ 
-                            MVector{N, I}(zeros(I, N)) 
-                                for i = 1:length(seg_points[iγ][it])-1 # Segments
-                        ] for it = 1:length(seg_points[iγ]) # Tracks
-                    ] for iγ = 1:nγ # Angles
-                ]
-    Threads.@threads for iγ = 1:nγ
-        bools[iγ] = find_segment_faces!(seg_points[iγ], indices[iγ], HRPM)
-    end
-    if !all(bools)
-        iγ_bad = findall(x->!x, bools)
-        @error "Failed to find indices for some points in seg_points$iγ_bad"
-    end
-    return indices
-end
-
-function find_segment_faces(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
-                            mesh::UnstructuredMesh_2D{T, I}
-                           ) where {T <: AbstractFloat, I <: Unsigned, N}
-
-    @debug "Finding faces corresponding to each segment"
-    if !(0 < length(mesh.materialized_faces))
-        @warn "Faces are not materialized for this mesh. This will be VERY slow"
-    end
-    nγ = length(seg_points)
-    bools = fill(false, nγ)
-    # Preallocate indices in the most frustrating way
-    indices =   [    
-                    [ 
-                        [ 
-                            I(0) 
-                                for i = 1:length(seg_points[iγ][it])-1 # Segments
-                        ] for it = 1:length(seg_points[iγ]) # Tracks
-                    ] for iγ = 1:nγ # Angles
-                ]
-    Threads.@threads for iγ = 1:nγ
-        bools[iγ] = find_segment_faces!(seg_points[iγ], indices[iγ], mesh)
-    end
-    if !all(bools)
-        iγ_bad = findall(x->!x, bools)
-        @error "Failed to find indices for some points in seg_points$iγ_bad"
-    end
-    return indices
+    return segment_points
 end
 
 # Plot
 # -------------------------------------------------------------------------------------------------
 # Plot ray tracing data one angle at a time.
-function linesegments!(seg_points::Vector{Vector{Vector{Point_2D{T}}}},
+function linesegments!(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
                        seg_faces::Vector{Vector{Vector{I}}}) where {T <: AbstractFloat, I <: Unsigned} 
     println("Press enter to plot the segments in the next angle")
     colormap = ColorSchemes.tab20.colors
     lines_by_color = Vector{Vector{LineSegment_2D{T}}}(undef, 20)
-    nγ = length(seg_points)
+    nγ = length(segment_points)
     for iγ = 1:nγ
         for icolor = 1:20
             lines_by_color[icolor] = LineSegment_2D{T}[]
         end
-        for it = 1:length(seg_points[iγ])
-            for iseg = 1:length(seg_points[iγ][it])-1
-                l = LineSegment_2D(seg_points[iγ][it][iseg], seg_points[iγ][it][iseg+1]) 
+        for it = 1:length(segment_points[iγ])
+            for iseg = 1:length(segment_points[iγ][it])-1
+                l = LineSegment_2D(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1]) 
                 face = seg_faces[iγ][it][iseg]
                 if face == 0
                     @error "Segment [$iγ][$it][$iseg] has a face id of 0"

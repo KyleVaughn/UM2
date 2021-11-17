@@ -17,7 +17,7 @@ catch e
 end
 
 # Make logger give time stamps
-const date_format = "yyyy-mm-dd HH:MM:SS"
+const date_format = "HH:MM:SS"
 timestamp_logger(logger) = TransformerLogger(logger) do log
   merge(log, (; message = "$(format(now(), date_format)) $(log.message)"))
 end
@@ -119,7 +119,12 @@ export  ×,
         partition_rectangularly,
         ray_trace,
         ray_trace_edge_to_edge,
-        ray_trace_edge_to_edge_explicit!,
+        ray_trace_angle_edge_to_edge!,
+        ray_trace_track_edge_to_edge,
+        next_edge_and_face_explicit,
+        next_edge_and_face_implicit,
+        next_face_fallback_explicit,
+        next_face_fallback_implicit,
         read_abaqus_2d,
         read_vtk_2d,
         real_to_parametric,
