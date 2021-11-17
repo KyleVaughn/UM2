@@ -42,16 +42,16 @@ function boundary_edges(mesh::UnstructuredMesh_2D{T, I};
         edges_west = I[]
         # Insert edges so that indices move from NW -> NE -> SE -> SW -> NW
         for i = 1:length(boundary_edges)
-            iedge = I(boundary_edges[i])
-            edge_points = edge_points(mesh, mesh.edges[iedge])
-            if all(x->abs(x[2] - y_north) < 1e-4, edge_points)
-                insert_boundary_edge!(iedge, edges_north, p_NW, mesh)
-            elseif all(x->abs(x[1] - x_east) < 1e-4, edge_points)
-                insert_boundary_edge!(iedge, edges_east, p_NE, mesh)
-            elseif all(x->abs(x[2] - y_south) < 1e-4, edge_points)
-                insert_boundary_edge!(iedge, edges_south, p_SE, mesh)
-            elseif all(x->abs(x[1] - x_west) < 1e-4, edge_points)
-                insert_boundary_edge!(iedge, edges_west, p_SW, mesh)
+            edge = I(boundary_edges[i])
+            epoints = edge_points(mesh, mesh.edges[edge])
+            if all(x->abs(x[2] - y_north) < 1e-4, epoints)
+                insert_boundary_edge!(edge, edges_north, p_NW, mesh)
+            elseif all(x->abs(x[1] - x_east) < 1e-4, epoints)
+                insert_boundary_edge!(edge, edges_east, p_NE, mesh)
+            elseif all(x->abs(x[2] - y_south) < 1e-4, epoints)
+                insert_boundary_edge!(edge, edges_south, p_SE, mesh)
+            elseif all(x->abs(x[1] - x_west) < 1e-4, epoints)
+                insert_boundary_edge!(edge, edges_west, p_SW, mesh)
             else
                 @error "Edge $iedge could not be classified as NSEW"
             end
@@ -189,7 +189,7 @@ function find_face_implicit(p::Point_2D{T},
                             faces::Vector{<:Tuple{Vararg{I, N} where N}}
                             ) where {T <: AbstractFloat, I <: Unsigned}
     for i = 1:length(faces)
-        bool = p ∈  materialize_face(mesh, face)
+        bool = p ∈  materialize_face(mesh, faces[i])
         if bool
             return i
         end
@@ -200,9 +200,9 @@ end
 
 # Return a vector if the faces adjacent to the face of ID face
 function adjacent_faces(face::I,
-                            face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}},
-                            edge_face_connectivity::Vector{NTuple{2, I}}
-                            )where {I <: Unsigned}
+                        face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}},
+                        edge_face_connectivity::Vector{NTuple{2, I}}
+                        )where {I <: Unsigned}
     edges = face_edge_connectivity[face]
     the_adjacent_faces = I[]
     for edge in edges
@@ -260,18 +260,18 @@ end
 function insert_boundary_edge!(edge_index::I, edge_indices::Vector{I}, p_ref::Point_2D{T},
         mesh::UnstructuredMesh_2D{T, I}) where {T <: AbstractFloat, I <: Unsigned}
     # Compute the minimum distance from the edge to be inserted to the reference point
-    edge_points = edge_points(mesh, mesh.edges[edge_index])
-    insertion_distance = minimum([ distance(p_ref, p_edge) for p_edge in edge_points ])
+    epoints = edge_points(mesh, mesh.edges[edge_index])
+    insertion_distance = minimum([ distance(p_ref, p_edge) for p_edge in epoints ])
     # Loop through the edge indices until an edge with greater distance from the reference point
     # is found, then insert
     nindices = length(edge_indices)
     for i = 1:nindices
-        iedge = edge_indices[i]
-        iedge_points = edge_points(mesh, mesh.edges[iedge])
-        iedge_distance = minimum([ distance(p_ref, p_edge) for p_edge in iedge_points ])
-        if insertion_distance < iedge_distance
+        edge = edge_indices[i]
+        epoints = edge_points(mesh, mesh.edges[edge])
+        edge_distance = minimum([ distance(p_ref, p_edge) for p_edge in epoints ])
+        if insertion_distance < edge_distance
             insert!(edge_indices, i, edge_index)
-            return
+            return nothing
         end
     end
     insert!(edge_indices, nindices+1, edge_index)

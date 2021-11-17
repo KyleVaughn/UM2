@@ -162,8 +162,8 @@ end
 
 # Return a vector if the faces adjacent to the face of ID face
 function adjacent_faces(face::I,
-                            mesh::UnstructuredMesh_2D{T, I}
-                            ) where {I <: Unsigned, T <: AbstractFloat}
+                        mesh::UnstructuredMesh_2D{T, I}
+                        ) where {I <: Unsigned, T <: AbstractFloat}
     return adjacent_faces(face, mesh.face_edge_connectivity, mesh.edge_face_connectivity)
 end
 
