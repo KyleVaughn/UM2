@@ -80,6 +80,7 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
     #   s is invalid if:
     #     1) s < 0 or 1 < s   (Line intersects, segment doesn't)
     # If D⃗ × w⃗ = 0, we need to use line intersection instead.
+    ϵ = 5e-6
     npoints = 0x00
     p₁ = Point_2D(T, 0)
     p₂ = Point_2D(T, 0)
@@ -95,7 +96,7 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
         r = -C/B
         p₁ = q(r)
         s = ((p₁ - l.points[1]) ⋅ w⃗)/(w⃗ ⋅ w⃗)
-        if (0 ≤ s ≤ 1) && (0 ≤ r ≤ 1)
+        if (-ϵ ≤ r ≤ 1 + ϵ) && (-ϵ ≤ s ≤ 1 + ϵ)
             npoints = 0x01
         end
     elseif B^2 ≥ 4A*C
@@ -109,11 +110,11 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
 
         # Check points to see if they are valid intersections.
         # First r,s valid?
-        if (0 ≤ r₁ ≤ 1) && (0 ≤ s₁ ≤ 1) && (p₁ ≈ l(s₁))
+        if (-ϵ ≤ r₁ ≤ 1 + ϵ) && (-ϵ ≤ s₁ ≤ 1 + ϵ)
             npoints = 0x01
         end
         # Second r,s valid?
-        if (0 ≤ r₂ ≤ 1) && (0 ≤ s₂ ≤ 1) && (p₂ ≈ l(s₂))
+        if (-ϵ ≤ r₂ ≤ 1 + ϵ) && (-ϵ ≤ s₂ ≤ 1 + ϵ)
             npoints += 0x01
             # If only point 2 is valid, return it in index 1 of points
             if npoints === 0x01
