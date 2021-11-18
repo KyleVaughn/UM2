@@ -85,7 +85,7 @@ end
 function gmsh_generate_rectangular_grid(bb::NTuple{4, T}, 
                                         x::Vector{Vector{T}}, 
                                         y::Vector{Vector{T}};
-                                        material = "MATERIAL_WATER") where {T <: AbstractFloat} 
+                                        material::String = "MATERIAL_WATER") where {T <: AbstractFloat} 
     @debug "Generating rectangular grid in gmsh"
     # Validate input
     x_full, y_full = _validate_gmsh_generate_rectangular_grid_input(bb, x, y) 
@@ -160,7 +160,7 @@ end
 function gmsh_generate_rectangular_grid(bb::NTuple{4, T}, 
                                         nx::Vector{Int}, 
                                         ny::Vector{Int};
-                                        material = "MATERIAL_WATER") where {T <: AbstractFloat} 
+                                        material::String = "MATERIAL_WATER") where {T <: AbstractFloat} 
     if any(nx .<= 0) || any(ny .<= 0)
        @error "Can only subdivide into positive, non-zero intervals!"
     end

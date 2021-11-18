@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/08
-
 # A quadratic triangle, defined in 2D.
 struct Triangle6_2D{T <: AbstractFloat} <: Face_2D{T}
     # The points are assumed to be ordered as follows
@@ -153,15 +151,13 @@ function in(p::Point_2D{T}, tri6::Triangle6_2D{T}; N::Int64=30) where {T <: Abst
     # Determine if the point is in the triangle using the Newton-Raphson method
     # N is the max number of iterations of the method.
     p_rs = real_to_parametric(p, tri6; N=N)
-    ϵ = 1e-6
+    ϵ = parametric_coordinate_ϵ 
     # Check that the r coordinate and s coordinate are in [-ϵ,  1 + ϵ] and
     # r + s ≤ 1 + ϵ
     # These are the conditions for a valid point in the triangle ± some ϵ
-    # Also check that the point is close to what the interpolation function produces
     if (-ϵ ≤ p_rs[1] ≤ 1 + ϵ) &&
        (-ϵ ≤ p_rs[2] ≤ 1 + ϵ) &&
-       (p_rs[1] + p_rs[2] ≤ 1 + ϵ) &&
-       norm(p - tri6(p_rs)) < 1e-4
+       (p_rs[1] + p_rs[2] ≤ 1 + ϵ)
         return true
     else
         return false

@@ -40,7 +40,7 @@ Base.broadcastable(mesh::UnstructuredMesh_2D) = Ref(mesh)
 
 # Return a mesh with boundary edges and all necessary prerequisites to find the boundary edges
 function add_boundary_edges(mesh::UnstructuredMesh_2D{T, I};
-                          bounding_shape="Rectangle") where {T<:AbstractFloat, I <: Unsigned}
+                          bounding_shape::String="Rectangle") where {T<:AbstractFloat, I <: Unsigned}
     if 0 == length(mesh.edge_face_connectivity)
         mesh = add_connectivity(mesh)
     end
@@ -183,7 +183,7 @@ end
 
 # Axis-aligned bounding box, in 2d a rectangle.
 function bounding_box(mesh::UnstructuredMesh_2D{T, I};
-                      rectangular_boundary=false) where {T <: AbstractFloat, I <: Unsigned}
+                      rectangular_boundary::Bool = false) where {T <: AbstractFloat, I <: Unsigned}
     # If the mesh does not have any quadratic faces, the bounding_box may be determined entirely from the
     # points. If the mesh does have quadratic cells/faces, we need to find the bounding box of the edges
     # that border the mesh.

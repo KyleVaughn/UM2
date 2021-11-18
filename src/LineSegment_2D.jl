@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/08
-
 # A line segment in 2D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and ends at points[2]
 struct LineSegment_2D{T <: AbstractFloat} <: Edge_2D{T}
@@ -57,7 +55,7 @@ function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <:
     #   --------- ≤ θₚ
     #     |v⃗||u⃗|
     # are parallel or collinear
-    ϵ = LineSegment_2D_ϵ
+    ϵ = parametric_coordinate_ϵ 
     θₚ = LineSegment_2D_parallel_θ
     v⃗ = l₁.points[2] - l₁.points[1]
     u⃗ = l₂.points[2] - l₂.points[1]

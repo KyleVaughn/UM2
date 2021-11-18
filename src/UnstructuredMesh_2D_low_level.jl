@@ -22,7 +22,7 @@ end
 # For a rectangular bounding shape the sides are North, East, South, West. Then the output would
 # be [ [e1, e2, e3, ...], [e17, e18, e18, ...], ..., [e100, e101, ...]]
 function boundary_edges(mesh::UnstructuredMesh_2D{T, I};
-                       bounding_shape="Rectangle") where {T<:AbstractFloat, I <: Unsigned}
+                       bounding_shape::String = "Rectangle") where {T<:AbstractFloat, I <: Unsigned}
     # edges which have face 0 in their edge_face connectivity are boundary edges
     boundary_edges = findall(x->x[1] == 0, mesh.edge_face_connectivity)
     if bounding_shape == "Rectangle"
@@ -63,9 +63,9 @@ function boundary_edges(mesh::UnstructuredMesh_2D{T, I};
 end
 
 # Vector of vector of point IDs representing the 3 edges of a triangle
-function edges(face::NTuple{4, I}) where {I <: Unsigned} 
+function edges(face::NTuple{4, I}) where {I <: Unsigned}
     cell_type = face[1]
-    if cell_type ∈  UnstructuredMesh_2D_linear_cell_types 
+    if cell_type ∈  UnstructuredMesh_2D_linear_cell_types
         edges = [ [face[2], face[3]],
                   [face[3], face[4]],
                   [face[4], face[2]] ]
@@ -74,7 +74,7 @@ function edges(face::NTuple{4, I}) where {I <: Unsigned}
         edges = [[I(0), I(0)]]
     end
     # Order the linear edge vertices by ID
-    for edge in edges 
+    for edge in edges
         if edge[2] < edge[1]
             e1 = edge[1]
             edge[1] = edge[2]
@@ -87,7 +87,7 @@ end
 # Vector of vector of point IDs representing the 4 edges of a quadrilateral
 function edges(face::NTuple{5, I}) where {I <: Unsigned}
     cell_type = face[1]
-    if cell_type ∈  UnstructuredMesh_2D_linear_cell_types 
+    if cell_type ∈  UnstructuredMesh_2D_linear_cell_types
         edges = [ [face[2], face[3]],
                   [face[3], face[4]],
                   [face[4], face[5]],
@@ -97,7 +97,7 @@ function edges(face::NTuple{5, I}) where {I <: Unsigned}
         edges = [[I(0), I(0)]]
     end
     # Order the linear edge vertices by ID
-    for edge in edges 
+    for edge in edges
         if edge[2] < edge[1]
             e1 = edge[1]
             edge[1] = edge[2]
@@ -108,18 +108,18 @@ function edges(face::NTuple{5, I}) where {I <: Unsigned}
 end
 
 # Vector of vector of point IDs representing the 4 edges of a quadratic quadrilateral
-function edges(face::NTuple{7, I}) where {I <: Unsigned} 
+function edges(face::NTuple{7, I}) where {I <: Unsigned}
     cell_type = face[1]
     if cell_type ∈  UnstructuredMesh_2D_quadratic_cell_types
         edges = [ [face[2], face[3], face[5]],
                   [face[3], face[4], face[6]],
-                  [face[4], face[2], face[7]] ]             
+                  [face[4], face[2], face[7]] ]
     else
         @error "Unsupported cell type"
         edges = [[I(0), I(0)]]
     end
     # Order the linear edge vertices by ID
-    for edge in edges 
+    for edge in edges
         if edge[2] < edge[1]
             e1 = edge[1]
             edge[1] = edge[2]
@@ -138,7 +138,7 @@ function edges(faces::Vector{<:Union{NTuple{4, I}, NTuple{5, I}}}) where {I <: U
     return [ Tuple(e) for e in edges_filtered ]::Vector{NTuple{2, I}}
 end
 
-# The unique edges from a vector of quadratic triangles or quadratic quadrilaterals 
+# The unique edges from a vector of quadratic triangles or quadratic quadrilaterals
 # represented by point IDs
 function edges(faces::Vector{<:Union{NTuple{7, I}, NTuple{9, I}}}) where {I <: Unsigned}
     edge_arr = edges.(faces)
@@ -231,25 +231,25 @@ function edge_points(mesh::UnstructuredMesh_2D{T, I},
            )
 end
 
-# Return a tuple of the points in the face 
+# Return a tuple of the points in the face
 function face_points(mesh::UnstructuredMesh_2D{T, I},
                      face::NTuple{4, I}) where {T <: AbstractFloat, I <: Unsigned}
     return Tuple(mesh.points[collect(face[2:4])])::NTuple{3, Point_2D{T}}
 end
 
-# Return a tuple of the points in the face 
+# Return a tuple of the points in the face
 function face_points(mesh::UnstructuredMesh_2D{T, I},
                      face::NTuple{5, I}) where {T <: AbstractFloat, I <: Unsigned}
     return Tuple(mesh.points[collect(face[2:5])])::NTuple{4, Point_2D{T}}
 end
 
-# Return a tuple of the points in the face 
+# Return a tuple of the points in the face
 function face_points(mesh::UnstructuredMesh_2D{T, I},
                      face::NTuple{7, I}) where {T <: AbstractFloat, I <: Unsigned}
     return Tuple(mesh.points[collect(face[2:7])])::NTuple{6, Point_2D{T}}
 end
 
-# Return a tuple of the points in the face 
+# Return a tuple of the points in the face
 function face_points(mesh::UnstructuredMesh_2D{T, I},
                      face::NTuple{9, I}) where {T <: AbstractFloat, I <: Unsigned}
     return Tuple(mesh.points[collect(face[2:9])])::NTuple{8, Point_2D{T}}
@@ -506,7 +506,7 @@ function materialize_edge(mesh::UnstructuredMesh_2D{T, I},
 end
 
 # Return a QuadraticSegment_2D from the point IDs in an edge
-function materialize_edge(mesh::UnstructuredMesh_2D{T, I}, 
+function materialize_edge(mesh::UnstructuredMesh_2D{T, I},
                           edge::NTuple{3, I}) where {T <: AbstractFloat, I <: Unsigned}
     return QuadraticSegment_2D(edge_points(mesh, edge))
 end
@@ -517,25 +517,25 @@ function materialize_edges(mesh::UnstructuredMesh_2D{T, I}) where {T <: Abstract
 end
 
 # Return a Triangle_2D from the point IDs in a face
-function materialize_face(mesh::UnstructuredMesh_2D{T, I}, 
+function materialize_face(mesh::UnstructuredMesh_2D{T, I},
                           face::NTuple{4, I}) where {T <: AbstractFloat, I <: Unsigned}
     return Triangle_2D(face_points(mesh, face))
 end
 
 # Return a Quadrilateral_2D from the point IDs in a face
-function materialize_face(mesh::UnstructuredMesh_2D{T, I}, 
+function materialize_face(mesh::UnstructuredMesh_2D{T, I},
                           face::NTuple{5, I}) where {T <: AbstractFloat, I <: Unsigned}
     return Quadrilateral_2D(face_points(mesh, face))
 end
 
 # Return a Triangle6_2D from the point IDs in a face
-function materialize_face(mesh::UnstructuredMesh_2D{T, I}, 
+function materialize_face(mesh::UnstructuredMesh_2D{T, I},
                           face::NTuple{7, I}) where {T <: AbstractFloat, I <: Unsigned}
     return Triangle6_2D(face_points(mesh, face))
 end
 
 # Return a Quadrilateral8_2D from the point IDs in a face
-function materialize_face(mesh::UnstructuredMesh_2D{T, I}, 
+function materialize_face(mesh::UnstructuredMesh_2D{T, I},
                           face::NTuple{9, I}) where {T <: AbstractFloat, I <: Unsigned}
     return Quadrilateral8_2D(face_points(mesh, face))
 end

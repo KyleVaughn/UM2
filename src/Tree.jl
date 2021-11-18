@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/09
-
 mutable struct Tree
     data::Any
     parent::Ref{Tree}
@@ -17,7 +15,7 @@ function Tree(;data::Any = nothing,
 end
 
 # The level of a node is defined by 1 + the number of connections between the node and the root
-function node_level(tree::Tree; current_level=1)
+function node_level(tree::Tree; current_level::Int64=1)
     if isassigned(tree.parent)
         return node_level(tree.parent[]; current_level = current_level + 1)
     else
@@ -26,7 +24,7 @@ function node_level(tree::Tree; current_level=1)
 end
 # Is this the last child in the parent's list of children?
 # offset determines if the nth-parent is the last child
-function _is_last_child(tree::Tree; relative_offset=0)
+function _is_last_child(tree::Tree; relative_offset::Int64=0)
     if !iassigned(tree.parent)
         return true
     end
@@ -37,7 +35,7 @@ function _is_last_child(tree::Tree; relative_offset=0)
         return (tree.parent[].children[nsiblings + 1][] == tree)
     end
 end
-function Base.show(io::IO, tree::Tree; relative_offset=0)
+function Base.show(io::IO, tree::Tree; relative_offset::Int64=0)
     nsiblings = 0
     for i = relative_offset:-1:1
         if i === 1 && _is_last_child(tree, relative_offset=i-1)

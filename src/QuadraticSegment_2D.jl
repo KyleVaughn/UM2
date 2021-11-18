@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/08
-
 # A quadratic segment in 2D space that passes through three points: x⃗₁, x⃗₂, and x⃗₃.
 # The assumed relation of the points may be seen in the diagram below.
 #                 ___x⃗₃___
@@ -83,7 +81,7 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
     #
     # Note that D⃗ is essentially a vector showing twice the displacement of x⃗₃ from the 
     # midpoint of the linear segment (x⃗₁, x⃗₂). So, if |D⃗| = 0, the segment is linear.
-    ϵ = QuadraticSegment_2D_ϵ
+    ϵ = parametric_coordinate_ϵ 
     ϵ₁ = QuadraticSegment_2D_1_intersection_ϵ
     npoints = 0x00
     p₁ = Point_2D(T, 0)

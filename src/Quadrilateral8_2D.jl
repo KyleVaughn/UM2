@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/08
-
 # A quadratic quadrilateral in 2D space.
 struct Quadrilateral8_2D{T <: AbstractFloat} <: Face_2D{T}
     # The points are assumed to be ordered  in counter clockwise order as follows
@@ -155,10 +153,9 @@ function in(p::Point_2D{T}, quad8::Quadrilateral8_2D{T}; N::Int64=30) where {T <
     # Determine if the point is in the triangle using the Newton-Raphson method
     # N is the max number of iterations of the method.
     p_rs = real_to_parametric(p, quad8; N=N)
-    ϵ = 1.0e-6
-    if (0 - ϵ ≤ p_rs[1] ≤ 1 + ϵ) &&
-       (0 - ϵ ≤ p_rs[2] ≤ 1 + ϵ) &&
-       norm(p - quad8(p_rs)) < 1.0e-4
+    ϵ = parametric_coordinate_ϵ
+    if (-ϵ ≤ p_rs[1] ≤ 1 + ϵ) &&
+       (-ϵ ≤ p_rs[2] ≤ 1 + ϵ)
         return true
     else
         return false

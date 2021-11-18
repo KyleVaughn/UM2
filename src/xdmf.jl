@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/09
-
 function write_xdmf_2d(filename::String,
                        mesh::UnstructuredMesh_2D{T, I}
                       ) where {T <: AbstractFloat, I <: Unsigned}

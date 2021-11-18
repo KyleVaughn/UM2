@@ -53,7 +53,7 @@ end
 
 function gmsh_group_preserving_fragment(object_dim_tags::Vector{Tuple{Signed,Int32}},
                                         tool_dim_tags::Vector{Tuple{Signed,Int32}};
-                                        material_hierarchy = String[])
+                                        material_hierarchy::Vector{String} = String[])
     # Get all the physical groups
     old_physical_groups = Dict{String,Array{Tuple{Int32,Int32},1}}()
     groups = gmsh.model.get_physical_groups()
@@ -123,7 +123,7 @@ end
 
 function gmsh_group_preserving_fragment(object_dim_tags::Vector{Tuple{Int32,Int32}},
                                         tool_dim_tags::Vector{Tuple{Int32,Int32}};
-                                        material_hierarchy = String[])
+                                        material_hierarchy::Vector{String} = String[])
     # Get all the physical groups
     old_physical_groups = Dict{String, Vector{Tuple{Int32,Int32}}}()
     groups = gmsh.model.get_physical_groups()

@@ -205,7 +205,7 @@ function node_height(HRPM::HierarchicalRectangularlyPartitionedMesh)
 end
 
 # Get the level (distance from current node to root + 1) of the HRPM
-function node_level(HRPM::HierarchicalRectangularlyPartitionedMesh; current_level=1)
+function node_level(HRPM::HierarchicalRectangularlyPartitionedMesh; current_level::Int64=1)
     if isassigned(HRPM.parent)
         return node_level(HRPM.parent[]; current_level = current_level + 1)
     else
@@ -235,8 +235,8 @@ function partition_rectangularly(mesh::UnstructuredMesh_2D{T, I}) where {T<:Abst
 end
 
 # How to display the HRPM in the REPL
-function Base.show(io::IO, HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}; relative_offset=0) where
-    {T <: AbstractFloat, I <: Unsigned}
+function Base.show(io::IO, HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}; 
+        relative_offset::Int64=0) where {T <: AbstractFloat, I <: Unsigned}
     println(io, "HierarchicalRectangularlyPartitionedMesh{$T}{$I}")
     name = HRPM.name
     println(io, "  ├─ Name      : $name")
@@ -365,7 +365,7 @@ end
 
 # Is this the last child in the parent's list of children?
 # offset determines if the nth-parent is the last child
-function _is_last_child(HRPM::HierarchicalRectangularlyPartitionedMesh; relative_offset=0)
+function _is_last_child(HRPM::HierarchicalRectangularlyPartitionedMesh; relative_offset::Int64=0)
     if !isassigned(HRPM.parent)
         return true
     end
