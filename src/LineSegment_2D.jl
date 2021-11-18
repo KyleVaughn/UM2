@@ -43,14 +43,26 @@ function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <:
     # su⃗ = -w⃗ + rv⃗                                   we see that each element must satisfy
     # s(u⃗ ⋅ u⃗) = (-w⃗ + rv⃗) ⋅ u⃗                       hence
     # s = (rv⃗ - w⃗) ⋅ u⃗/(u⃗ ⋅ u⃗)
-    # If the lines are skew, s and r represent the parameters of the points of closest
-    # approach - Intersection of two lines in three-space, Ronald Goldman, in Graphics
+    #
+    # Note that the same approach works in 3D and
+    # "If the lines are skew, s and r represent the parameters of the points of closest
+    # approach" - Intersection of two lines in three-space, Ronald Goldman, in Graphics
     # Gems by Andrew S. Glassner.
-    ϵ = 5e-6
+    #
+    # To determine if the lines are parallel or collinear, accounting got floating point error, 
+    # we declare that all lines with angle less that θₚ between them are parallel or collinear.
+    # Using v⃗ × u⃗ = |v⃗||u⃗|sin(θ), and knowing that for small θ, sin(θ) ≈ θ
+    # We say all vectors such that
+    #   abs(v⃗ × u⃗)
+    #   --------- ≤ θₚ
+    #     |v⃗||u⃗|
+    # are parallel or collinear
+    ϵ = LineSegment_2D_ϵ
+    θₚ = LineSegment_2D_parallel_θ
     v⃗ = l₁.points[2] - l₁.points[1]
     u⃗ = l₂.points[2] - l₂.points[1]
-    w⃗ = l₂.points[1] - l₁.points[1]
-    if abs(v⃗ × u⃗) > 5e-5
+    if abs(v⃗ × u⃗) > θₚ * norm(v⃗) * norm(u⃗)
+        w⃗ = l₂.points[1] - l₁.points[1]
         r = (w⃗ × u⃗)/(v⃗ × u⃗)
         p = l₁(r)
         s = ((r*v⃗ - w⃗) ⋅ u⃗)/(u⃗ ⋅ u⃗)

@@ -92,14 +92,15 @@ function ray_trace(tₛ::T,
     # If the mesh has boundary edges, usue edge-to-edge ray tracing
     if 0 < length(mesh.boundary_edges)
         @info "  - Using the edge-to-edge algorithm"
-        return ray_trace_edge_to_edge(tracks, mesh) 
+        segment_points, segment_faces = ray_trace_edge_to_edge(tracks, mesh) 
+        @info "    - Adjacent faces fallback   : $num_fallback_adjacent"
+        @info "    - Shared vertices fallback  : $num_fallback_vertices"
+        @info "    - Shared vertices 2 fallback: $num_fallback_last_resort"
+        return segment_points, segment_faces
     else
         @info "  - Using the naive segmentize + find face algorithm"
         segment_points = segmentize(tracks, mesh)
         segment_faces = find_segment_faces(segment_points, mesh)
-        @info "  - Adjacent faces fallback   : $num_fallback_adjacent"
-        @info "  - Shared vertices fallback  : $num_fallback_vertices"
-        @info "  - Shared vertices 2 fallback: $num_fallback_last_resort"
         return segment_points, segment_faces
     end
 end

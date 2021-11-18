@@ -80,7 +80,11 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
     #   s is invalid if:
     #     1) s < 0 or 1 < s   (Line intersects, segment doesn't)
     # If D⃗ × w⃗ = 0, we need to use line intersection instead.
-    ϵ = 5e-6
+    #
+    # Note that D⃗ is essentially a vector showing twice the displacement of x⃗₃ from the 
+    # midpoint of the linear segment (x⃗₁, x⃗₂). So, if |D⃗| = 0, the segment is linear.
+    ϵ = QuadraticSegment_2D_ϵ
+    ϵ₁ = QuadraticSegment_2D_1_intersection_ϵ
     npoints = 0x00
     p₁ = Point_2D(T, 0)
     p₂ = Point_2D(T, 0)
@@ -90,7 +94,7 @@ function intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T <: 
     A = D⃗ × w⃗
     B = E⃗ × w⃗
     C = (q.points[1] - l.points[1]) × w⃗
-    if abs(A) < 5e-6
+    if abs(A) < norm(w⃗) * ϵ₁
         # Line intersection
         # Can B = 0 if A = 0 for non-trivial x?
         r = -C/B
