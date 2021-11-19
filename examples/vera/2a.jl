@@ -1,6 +1,6 @@
 using MOCNeutronTransport
 using BenchmarkTools
-generate_mesh_file = fals
+generate_mesh_file = true
 if generate_mesh_file
     # VERA Core Physics Benchmark Progression Problem Specifications
     # Revision 4, August 29, 2014
@@ -138,7 +138,7 @@ if generate_mesh_file
     
     # Mesh
     # ------------------------------------------------------------------------------------------------
-    lc = 0.3 # cm
+    lc = 0.2 # cm
     gmsh.model.mesh.set_size(gmsh.model.get_entities(0), lc)
     # Optional mesh optimization:
     niter = 2 # The optimization iterations
@@ -211,48 +211,50 @@ write_xdmf_2d("2a.xdmf", HRPM)
 
 # Mass conservation
 # --------------------------------------------------------------------------------------------------
-total_area_ref = 21.5^2
-uo2_area_ref = π*(r_fuel^2)*(17^2 - 25)
-gap_area_ref = π*(r_gap^2 - r_fuel^2)*(17^2 - 25)
-clad_area_ref = π*( (r_clad^2 - r_gap^2)*(17^2 - 25) +
-                    (r_gt_outer^2 - r_gt_inner^2)*(24) +
-                    (r_it_outer^2 - r_it_inner^2)*(1) )
-h2o_area_ref = total_area_ref - uo2_area_ref - gap_area_ref - clad_area_ref
-
-uo2_area = area(mesh, "MATERIAL_UO2")
-println("UO₂ area (reference): $uo2_area_ref")
-println("UO₂ area  (computed): $uo2_area")
-err = 100*(uo2_area - uo2_area_ref)/uo2_area_ref
-println("Error     (relative): $err %") 
-println("")
-
-gap_area = area(mesh, "MATERIAL_GAP")
-println("Gap area (reference): $gap_area_ref")
-println("Gap area  (computed): $gap_area")
-err = 100*(gap_area - gap_area_ref)/gap_area_ref
-println("Error     (relative): $err %") 
-println("")
-
-clad_area = area(mesh, "MATERIAL_CLAD")
-println("Clad area (reference): $clad_area_ref")
-println("Clad area  (computed): $clad_area")
-err = 100*(clad_area - clad_area_ref)/clad_area_ref
-println("Error      (relative): $err %") 
-println("")
-
-h2o_area = area(mesh, "MATERIAL_WATER")
-println("H₂O area (reference): $h2o_area_ref")
-println("H₂O area  (computed): $h2o_area")
-err = 100*(h2o_area - h2o_area_ref)/h2o_area_ref
-println("Error     (relative): $err %") 
-println("")
-
-total_area = uo2_area + gap_area + clad_area + h2o_area 
-println("Total area (reference): $total_area_ref")
-println("Total area  (computed): $total_area")
-err = 100*(total_area - total_area_ref)/total_area_ref
-println("Error     (relative): $err %") 
-println("")
+if generate_mesh_file
+    total_area_ref = 21.5^2
+    uo2_area_ref = π*(r_fuel^2)*(17^2 - 25)
+    gap_area_ref = π*(r_gap^2 - r_fuel^2)*(17^2 - 25)
+    clad_area_ref = π*( (r_clad^2 - r_gap^2)*(17^2 - 25) +
+                        (r_gt_outer^2 - r_gt_inner^2)*(24) +
+                        (r_it_outer^2 - r_it_inner^2)*(1) )
+    h2o_area_ref = total_area_ref - uo2_area_ref - gap_area_ref - clad_area_ref
+    
+    uo2_area = area(mesh, "MATERIAL_UO2")
+    println("UO₂ area (reference): $uo2_area_ref")
+    println("UO₂ area  (computed): $uo2_area")
+    err = 100*(uo2_area - uo2_area_ref)/uo2_area_ref
+    println("Error     (relative): $err %") 
+    println("")
+    
+    gap_area = area(mesh, "MATERIAL_GAP")
+    println("Gap area (reference): $gap_area_ref")
+    println("Gap area  (computed): $gap_area")
+    err = 100*(gap_area - gap_area_ref)/gap_area_ref
+    println("Error     (relative): $err %") 
+    println("")
+    
+    clad_area = area(mesh, "MATERIAL_CLAD")
+    println("Clad area (reference): $clad_area_ref")
+    println("Clad area  (computed): $clad_area")
+    err = 100*(clad_area - clad_area_ref)/clad_area_ref
+    println("Error      (relative): $err %") 
+    println("")
+    
+    h2o_area = area(mesh, "MATERIAL_WATER")
+    println("H₂O area (reference): $h2o_area_ref")
+    println("H₂O area  (computed): $h2o_area")
+    err = 100*(h2o_area - h2o_area_ref)/h2o_area_ref
+    println("Error     (relative): $err %") 
+    println("")
+    
+    total_area = uo2_area + gap_area + clad_area + h2o_area 
+    println("Total area (reference): $total_area_ref")
+    println("Total area  (computed): $total_area")
+    err = 100*(total_area - total_area_ref)/total_area_ref
+    println("Error     (relative): $err %") 
+    println("")
+end
 
 # Ray tracing
 #---------------------------------------------------------------------------------------------------
@@ -260,5 +262,5 @@ T = Float64
 mesh = read_abaqus_2d("2a.inp", float_type=T)
 mesh = add_everything(mesh)
 tₛ =  T(0.007)
-ang_quad = angular_quadrature("Chebyshev-Chebyshev", 32, 3; T=T)
-the_tracks = tracks(tₛ, ang_quad, mesh)
+ang_quad = generate_angular_quadrature("Chebyshev-Chebyshev", 32, 3; T=T)
+tracks = generate_tracks(tₛ, ang_quad, mesh, boundary_shape = "Rectangle")

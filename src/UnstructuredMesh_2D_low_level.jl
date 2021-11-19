@@ -1,3 +1,21 @@
+# Return a vector if the faces adjacent to the face of ID face
+function adjacent_faces(face::I,
+                        face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}},
+                        edge_face_connectivity::Vector{NTuple{2, I}}
+                        )where {I <: Unsigned}
+    edges = face_edge_connectivity[face]
+    the_adjacent_faces = I[]
+    for edge in edges
+        faces = edge_face_connectivity[edge]
+        for face_id in faces
+            if face_id != face && face_id != 0
+                push!(the_adjacent_faces, face_id)
+            end
+        end
+    end
+    return the_adjacent_faces
+end
+
 # Area of a triangle
 function area(mesh::UnstructuredMesh_2D{T, I}, face::NTuple{4, I}) where {T <: AbstractFloat, I <: Unsigned}
     return area(materialize_face(mesh, face))
@@ -160,11 +178,11 @@ end
 # Find the faces which share the vertex of ID p.
 function faces_sharing_vertex(p::P,
         faces::Vector{<:Tuple{Vararg{I, N} where N}}) where {P <: Integer, I <: Unsigned}
-    shared_faces = Int64[]
+    shared_faces = I[]
     for i = 1:length(faces)
         N = length(faces[i])
         if p ∈  faces[i][2:N]
-            push!(shared_faces, i)
+            push!(shared_faces, I(i))
         end
     end
     return shared_faces
@@ -196,24 +214,6 @@ function find_face_implicit(p::Point_2D{T},
     end
     @error "Could not find face for point $p"
     return 0
-end
-
-# Return a vector if the faces adjacent to the face of ID face
-function adjacent_faces(face::I,
-                        face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}},
-                        edge_face_connectivity::Vector{NTuple{2, I}}
-                        )where {I <: Unsigned}
-    edges = face_edge_connectivity[face]
-    the_adjacent_faces = I[]
-    for edge in edges
-        faces = edge_face_connectivity[edge]
-        for face_id in faces
-            if face_id != face && face_id != 0
-                push!(the_adjacent_faces, face_id)
-            end
-        end
-    end
-    return the_adjacent_faces
 end
 
 # Return a tuple of the points in the edge
@@ -327,7 +327,7 @@ function intersect_edge_implicit(l::LineSegment_2D{T},
                                  mesh::UnstructuredMesh_2D{T, I},
                                  edge::NTuple{2, I}
                         ) where {T <: AbstractFloat, I <: Unsigned}
-    return l ∩ LineSegment_2D(edge_points(mesh, edge))
+    return l ∩ materialize_edge(mesh, edge)
 end
 
 # Intersect a line with an implicitly defined quadratic edge
@@ -335,7 +335,7 @@ function intersect_edge_implicit(l::LineSegment_2D{T},
                                  mesh::UnstructuredMesh_2D{T, I},
                                  edge::NTuple{3, I}
                         ) where {T <: AbstractFloat, I <: Unsigned}
-    return l ∩ QuadraticSegment_2D(edge_points(mesh, edge))
+    return l ∩ materialize_edge(mesh, edge) 
 end
 
 # Intersect a line with a vector of implicitly defined linear edges
@@ -350,23 +350,6 @@ function intersect_edges_implicit(l::LineSegment_2D{T},
         npoints, point = intersect_edge_implicit(l, mesh, edge)
         if 0 < npoints
             push!(intersection_points, point)
-        end
-    end
-    return intersection_points
-end
-
-# Intersect a line with a vector of implicitly defined quadratic edges
-function intersect_edges_implicit(l::LineSegment_2D{T},
-                                  mesh::UnstructuredMesh_2D{T, I},
-                                  edges::Vector{NTuple{3, I}}
-                        ) where {T <: AbstractFloat, I <: Unsigned}
-    # An array to hold all of the intersection points
-    intersection_points = Point_2D{T}[]
-    # Intersect the line with each of the faces
-    for edge in edges
-        npoints, points = l ∩ QuadraticSegment_2D(edge_points(mesh, edge))
-        if 0 < npoints
-            append!(intersection_points, collect(points[1:npoints]))
         end
     end
     return intersection_points

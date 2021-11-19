@@ -18,7 +18,7 @@ function classify_nesw(p::Point_2D{T},
     elseif abs(p.x[1] - x_W) < ϵ 
         return 4 # West
     else
-        @error "Could not classify point"
+        @error "Could not classify point: $p"
         return 0 # Error
     end
 end
@@ -76,7 +76,9 @@ function ray_trace_angle_edge_to_edge!(tracks::Vector{LineSegment_2D{T}},
         for it = 1:length(tracks)
             (segment_points[it], 
              segment_faces[it]) = ray_trace_track_edge_to_edge_linear(tracks[it],
-                                                                      mesh)
+                                                                      mesh,
+                                                                      mesh.materialized_edges,
+                                                                      mesh.materialized_faces)
         end
     end
 end
@@ -85,7 +87,9 @@ end
 # in a track, using the edge-to-edge ray tracing method.
 # Assumes a rectangular boundary
 function ray_trace_track_edge_to_edge_linear(l::LineSegment_2D{T},
-                                             mesh::UnstructuredMesh_2D{T, I}
+                                             mesh::UnstructuredMesh_2D{T, I},
+                                             materialized_edges::Vector{LineSegment_2D{T}},
+                                             materialized_faces::Vector{<:Face_2D{T}}
                                             ) where {T <: AbstractFloat, I <: Unsigned}
     # Classify line as intersecting north, east, south, or west boundary edge of the mesh
     start_point = l.points[1] # line start point
@@ -117,16 +121,16 @@ function ray_trace_track_edge_to_edge_linear(l::LineSegment_2D{T},
     while !end_reached && iters < max_iters
         (next_edge, 
          next_face, 
-         intersection_point) = next_edge_and_face_linear_explicit(
+         intersection_point) = next_edge_and_face_linear(
                                     current_edge, current_face, l,
-                                    mesh.materialized_edges::Vector{LineSegment_2D{T}},
+                                    materialized_edges,
                                     mesh.edge_face_connectivity,
                                     mesh.face_edge_connectivity)
         # Could not find next face, or jumping back to a previous face
         if next_face == current_face || next_face ∈  segment_faces
             next_edge, next_face = next_edge_and_face_fallback_linear(current_face, 
                                                                       segment_faces, l, mesh,
-                                                                      mesh.materialized_faces)
+                                                                      materialized_faces)
         else
             push!(segment_points, intersection_point)
             push!(segment_faces, current_face)
@@ -173,12 +177,12 @@ end
 
 # Return the next edge, next face, and intersection point on the next edge
 # This is for linear, materialized edges
-function next_edge_and_face_linear_explicit(current_edge::I, current_face::I, 
-                                     l::LineSegment_2D{T},
-                                     materialized_edges::Vector{LineSegment_2D{T}},
-                                     edge_face_connectivity::Vector{NTuple{2, I}},
-                                     face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}
-                                    ) where {T <: AbstractFloat, I <: Unsigned}
+function next_edge_and_face_linear(current_edge::I, current_face::I, 
+                                   l::LineSegment_2D{T},
+                                   materialized_edges::Vector{LineSegment_2D{T}},
+                                   edge_face_connectivity::Vector{NTuple{2, I}},
+                                   face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}
+                                  ) where {T <: AbstractFloat, I <: Unsigned}
     next_edge = current_edge
     next_face = current_face
     start_point = l.points[1]
@@ -299,9 +303,9 @@ function next_edge_and_face_fallback_linear(current_face::I,
     # If adjacent faces were not sufficient, try all faces sharing the vertices of this face
     if next_face == current_face || next_face ∈  segment_faces
         # Get the vertex ids for each vertex in the face
-        npoints = length(mesh.faces[current_face])
-        points = mesh.faces[current_face][2:npoints]
-        faces = Set{Int64}()
+        nfacepoints = length(mesh.faces[current_face])
+        points = mesh.faces[current_face][2:nfacepoints]
+        faces = Set{I}()
         for point in points
             union!(faces, faces_sharing_vertex(point, mesh))
         end
@@ -322,16 +326,16 @@ function next_edge_and_face_fallback_linear(current_face::I,
     # above, but expand to the vertices of the faces sharing vertices of the current face
     if next_face == current_face || next_face ∈  segment_faces
         # Get the vertex ids for each vertex in the face
-        npoints = length(mesh.faces[current_face])
-        points = mesh.faces[current_face][2:npoints]
-        faces_level1 = Set{Int64}()
+        nfacepoints = length(mesh.faces[current_face])
+        points = mesh.faces[current_face][2:nfacepoints]
+        faces_level1 = Set{I}()
         for point in points
             union!(faces_level1, faces_sharing_vertex(point, mesh))
         end
-        faces = Set{Int64}()
+        faces = Set{I}()
         for face in faces_level1
-            npoints = length(mesh.faces[face])
-            points = mesh.faces[face][2:npoints]
+            nfacepoints = length(mesh.faces[face])
+            points = mesh.faces[face][2:nfacepoints]
             for point in points
                 union!(faces, faces_sharing_vertex(point, mesh))
             end
