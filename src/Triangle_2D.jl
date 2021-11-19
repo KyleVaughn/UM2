@@ -30,7 +30,7 @@ function area(tri::Triangle_2D{T}) where {T <: AbstractFloat}
     u⃗ = tri.points[2] - tri.points[1]
     v⃗ = tri.points[3] - tri.points[1]
     # 2D cross product returns a scalar
-    return (abs(u⃗ × v⃗)/2)::T
+    return abs(u⃗ × v⃗)/2
 end
 
 function in(p::Point_2D{T}, tri::Triangle_2D{T}) where {T <: AbstractFloat}

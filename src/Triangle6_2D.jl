@@ -96,7 +96,7 @@ function area(tri6::Triangle6_2D{T}; N::Int64=12) where {T <: AbstractFloat}
         ∂T_∂r, ∂T_∂s = derivative(tri6, r[i], s[i])
         a += w[i] * abs(∂T_∂r × ∂T_∂s)
     end
-    return a::T
+    return a
 end
 
 function triangulate(tri6::Triangle6_2D{T}, N::Int64) where {T <: AbstractFloat}
