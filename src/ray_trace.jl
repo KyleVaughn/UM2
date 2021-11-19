@@ -85,17 +85,20 @@ function ray_trace(tₛ::T,
                    mesh::UnstructuredMesh_2D{T, I}
                    ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
     @info "Ray tracing"
-    global num_fallback_adjacent = 0
-    global num_fallback_vertices = 0
-    global num_fallback_last_resort = 0
+#    global num_fallback_adjacent = 0
+#    global num_fallback_vertices = 0
+#    global num_fallback_last_resort = 0
     tracks = generate_tracks(tₛ, ang_quad, mesh, boundary_shape = "Rectangle")
-    # If the mesh has boundary edges, usue edge-to-edge ray tracing
-    if 0 < length(mesh.boundary_edges)
+    has_mat_edges = 0 < length(mesh.materialized_edges)
+    has_mat_faces = 0 < length(mesh.materialized_faces)
+    # If the mesh has boundary edges and materialized edges and faces, 
+    # use edge-to-edge ray tracing
+    if 0 < length(mesh.boundary_edges) && has_mat_edges && has_mat_faces 
         @info "  - Using the edge-to-edge algorithm"
         segment_points, segment_faces = ray_trace_edge_to_edge(tracks, mesh) 
-        @info "    - Adjacent faces fallback   : $num_fallback_adjacent"
-        @info "    - Shared vertices fallback  : $num_fallback_vertices"
-        @info "    - Shared vertices 2 fallback: $num_fallback_last_resort"
+#        @info "    - Adjacent faces fallback   : $num_fallback_adjacent"
+#        @info "    - Shared vertices fallback  : $num_fallback_vertices"
+#        @info "    - Shared vertices 2 fallback: $num_fallback_last_resort"
         return segment_points, segment_faces
     else
         @info "  - Using the naive segmentize + find face algorithm"

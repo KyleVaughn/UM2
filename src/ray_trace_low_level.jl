@@ -64,27 +64,19 @@ function ray_trace_angle_edge_to_edge!(tracks::Vector{LineSegment_2D{T}},
                                        segment_faces::Vector{Vector{I}},
                                        mesh::UnstructuredMesh_2D{T, I}
                                        ) where {T <: AbstractFloat, I <: Unsigned}
-    has_mat_edges = 0 < length(mesh.materialized_edges)
-    has_mat_faces = 0 < length(mesh.materialized_faces)
     has_quadratic_edges = mesh.edges isa Vector{NTuple{3, I}}
     # For each track, get the segment points and segment faces
     if has_quadratic_edges
         for it = 1:length(tracks)
             (segment_points[it], 
              segment_faces[it]) = ray_trace_track_edge_to_edge_quadratic(tracks[it],
-                                                                         mesh,
-                                                                         has_mat_edges,
-                                                                         has_mat_faces
-                                                                        )
+                                                                         mesh)
         end
     else
         for it = 1:length(tracks)
             (segment_points[it], 
              segment_faces[it]) = ray_trace_track_edge_to_edge_linear(tracks[it],
-                                                                      mesh,
-                                                                      has_mat_edges,
-                                                                      has_mat_faces
-                                                                     )
+                                                                      mesh)
         end
     end
 end
@@ -93,10 +85,8 @@ end
 # in a track, using the edge-to-edge ray tracing method.
 # Assumes a rectangular boundary
 function ray_trace_track_edge_to_edge_linear(l::LineSegment_2D{T},
-                                             mesh::UnstructuredMesh_2D{T, I},
-                                             has_mat_edges::Bool,
-                                             has_mat_faces::Bool
-                                             ) where {T <: AbstractFloat, I <: Unsigned}
+                                             mesh::UnstructuredMesh_2D{T, I}
+                                            ) where {T <: AbstractFloat, I <: Unsigned}
     # Classify line as intersecting north, east, south, or west boundary edge of the mesh
     start_point = l.points[1] # line start point
     end_point = l.points[2] # line end point
@@ -125,48 +115,24 @@ function ray_trace_track_edge_to_edge_linear(l::LineSegment_2D{T},
     # Since Julia uses JIT, are has_mat_edges and has_hat_faces provided at compile time?
     # Will the compiler remove dead branches through constant propagation?
     while !end_reached && iters < max_iters
-#        println("Current edge and face: $current_edge, $current_face")
-        if has_mat_edges
-#            println("explicit edge")
-            (next_edge, 
-             next_face, 
-             intersection_point) = next_edge_and_face_linear_explicit(
-                                        current_edge, current_face, l,
-                                        mesh.materialized_edges::Vector{LineSegment_2D{T}},
-                                        mesh.edge_face_connectivity,
-                                        mesh.face_edge_connectivity)
-        else
-#            println("implicit edge")
-            (next_edge, 
-             next_face, 
-             intersection_point) = next_edge_and_face_linear_implicit(
-                                        current_edge, current_face, l,
-                                        mesh, mesh.edges,
-                                        mesh.edge_face_connectivity,
-                                        mesh.face_edge_connectivity)
-        end
-#        println("Done with edge")
+        (next_edge, 
+         next_face, 
+         intersection_point) = next_edge_and_face_linear_explicit(
+                                    current_edge, current_face, l,
+                                    mesh.materialized_edges::Vector{LineSegment_2D{T}},
+                                    mesh.edge_face_connectivity,
+                                    mesh.face_edge_connectivity)
         # Could not find next face, or jumping back to a previous face
         if next_face == current_face || next_face ∈  segment_faces
-#            println("fallback")
-#            if has_mat_faces
-                next_edge, next_face = next_edge_and_face_fallback_linear_explicit(current_face, 
-                                                                        segment_faces, l, mesh)
-#            else
-#                next_edge, next_face = next_edge_and_face_fallback_linear_implicit(current_face, 
-#                                                                        segment_faces, l, mesh)
-#            end
+            next_edge, next_face = next_edge_and_face_fallback_linear(current_face, 
+                                                                      segment_faces, l, mesh,
+                                                                      mesh.materialized_faces)
         else
-#            println("face ok")
             push!(segment_points, intersection_point)
             push!(segment_faces, current_face)
-#            scatter!(intersection_point)
-#            linesegments!(mesh.materialized_faces[current_face], color = :red)
-#            s = readline()
         end
-#        println("next edge and face in while: $next_edge, $next_face")
-        current_edge::I = next_edge
-        current_face::I = next_face
+        current_edge = next_edge
+        current_face = next_face
         # If the furthest intersection is below the minimum segment length to the
         # end point, end here.
         if distance(intersection_point, end_point) < minimum_segment_length
@@ -219,35 +185,20 @@ function next_edge_and_face_linear_explicit(current_edge::I, current_face::I,
     # The furthest point along l intersected in this iteration
     furthest_point = start_point
     # For each edge in this face, intersect the track with the edge
-#    eeee = collect(face_edge_connectivity[current_face])
-#    print("edges: ")
-#    for ee in eeee
-#        print(ee, " ")
-#    end
-#    print("\n")
     for edge in face_edge_connectivity[current_face]
-#        println("edge: $edge")
         # If we used this edge to get to this face, skip it.
         if edge == current_edge
-#            println("skip")
             continue
         end
         # Edges are linear, so 1 intersection point max
-#        ll = materialized_edges[edge]
-#        println("line: $ll")
         npoints, point = l ∩ materialized_edges[edge]
-#        println("npoints, point: $npoints, $point")
-#        linesegments!(materialized_edges[edge], color = :yellow)
         # If there's an intersection
         if 0 < npoints
-#            scatter!(point)
-#            println("distances ", distance(start_point, furthest_point)," ", distance(start_point, point))
             # If the intersection point on this edge is further along the ray than the current
             # furthest point, then we want to leave the face from this edge
             if distance(start_point, furthest_point) ≤ distance(start_point, point) &&
                     (point ≉ start_point)
                 furthest_point = point
-#                println("New furthest point: $furthest_point")
                 # Make sure not to pick the current face for the next face
                 if edge_face_connectivity[edge][1] == current_face
                     next_face = edge_face_connectivity[edge][2]
@@ -255,12 +206,9 @@ function next_edge_and_face_linear_explicit(current_edge::I, current_face::I,
                     next_face = edge_face_connectivity[edge][1]
                 end
                 next_edge = edge
-#                println("next edge,face: $next_edge, $next_face")
             end
         end
-#        s = readline()
     end
-#    println("next edge,face at end of routine: $next_edge, $next_face")
     return next_edge, next_face, furthest_point
 end
 
@@ -312,78 +260,32 @@ end
 #    return next_edge, next_face, closest_point
 #end
 
-# Return the next edge, next face, and intersection point on the next edge
-# This is for linear, implicit edges
-function next_edge_and_face_linear_implicit(current_edge::I, current_face::I, 
-                                     l::LineSegment_2D{T},
-                                     mesh::UnstructuredMesh_2D{T, I},
-                                     edges::Vector{NTuple{2, I}},
-                                     edge_face_connectivity::Vector{NTuple{2, I}},
-                                     face_edge_connectivity::Vector{<:Tuple{Vararg{I, M} where M}}
-                                    ) where {T <: AbstractFloat, I <: Unsigned}
-    next_edge = current_edge
-    next_face = current_face
-    start_point = l.points[1]
-    # The furthest point along l intersected in this iteration
-    furthest_point = start_point
-    # For each edge in this face, intersect the track with the edge
-    for edge in face_edge_connectivity[current_face]
-        # If we used this edge to get to this face, skip it.
-        if edge == current_edge
-            continue
-        end
-        # Edges are linear, so 1 intersection point max
-        npoints, point = l ∩ materialize_edge(mesh, edges[edge])
-        # If there's an intersection
-        if 0 < npoints
-            # If the intersection point on this edge is further along the ray than the current
-            # furthest point, then we want to leave the face from this edge
-            if distance(start_point, furthest_point) ≤ distance(start_point, point) &&
-                    (point ≉ start_point)
-                furthest_point = point
-                # Make sure not to pick the current face for the next face
-                if edge_face_connectivity[edge][1] == current_face
-                    next_face = edge_face_connectivity[edge][2]
-                else
-                    next_face = edge_face_connectivity[edge][1]
-                end
-                next_edge = edge
-            end
-        end
-    end
-    return next_edge, next_face, furthest_point
-end
-
 # Return the next face, and edge to skip, for the edge-to-edge algorithm to check in the event 
 # that they could not be determined simply by checking edges of the current face. This typically 
 # means there was an intersection around a vertex, and floating point error is
 # causing an intersection to erroneously return 0 points intersected.
 #
 # Requires materialized faces
-function next_edge_and_face_fallback_linear_explicit(current_face::I, 
-                                              segment_faces::Vector{I},
-                                              l::LineSegment_2D{T},
-                                              mesh::UnstructuredMesh_2D{T, I}
-                                             ) where {T <: AbstractFloat, I <: Unsigned}
+function next_edge_and_face_fallback_linear(current_face::I, 
+                                            segment_faces::Vector{I},
+                                            l::LineSegment_2D{T},
+                                            mesh::UnstructuredMesh_2D{T, I},
+                                            materialized_faces::Vector{<:Face_2D{T}}
+                                           ) where {T <: AbstractFloat, I <: Unsigned}
     # If the next face could not be determined, or the ray is jumping back to the
     # previous face, this means either:
     # (1) The ray is entering or exiting through a vertex, and floating point error
     #       means the exiting edge did not register an intersection.
     # (2) You're supremely unlucky and a fallback method kicked you to another face
     #       where the next face couldn't be determined
-#    println("Falling back")
-    global num_fallback_adjacent += 1
     next_face = current_face
     start_point = l.points[1]
     # The furthest point along l intersected in this iteration
     furthest_point = start_point
     # Check adjacent faces first to see if that is sufficient to solve the problem
     the_adjacent_faces = adjacent_faces(current_face, mesh)
-#    println("  Adjacent faces")
-#    println("  ",the_adjacent_faces)
-#    linesegments!(mesh.materialized_faces[the_adjacent_faces], color = :purple)
     for face in the_adjacent_faces
-        npoints, ipoints = l ∩ mesh.materialized_faces[face]
+        npoints, ipoints = l ∩ materialized_faces[face]
         if 0 < npoints
             for point in ipoints[1:npoints]
                 if distance(start_point, furthest_point) ≤ distance(start_point, point) &&
@@ -394,12 +296,8 @@ function next_edge_and_face_fallback_linear_explicit(current_face::I,
             end
         end
     end
-#    s = readline()
+    # If adjacent faces were not sufficient, try all faces sharing the vertices of this face
     if next_face == current_face || next_face ∈  segment_faces
-        global num_fallback_vertices += 1
-#        println("  Faces sharing vertices")
-        # If adjacent faces were not sufficient, try all faces sharing the vertices of
-        # this face
         # Get the vertex ids for each vertex in the face
         npoints = length(mesh.faces[current_face])
         points = mesh.faces[current_face][2:npoints]
@@ -407,10 +305,8 @@ function next_edge_and_face_fallback_linear_explicit(current_face::I,
         for point in points
             union!(faces, faces_sharing_vertex(point, mesh))
         end
-#        println("  ", faces)
-        linesegments!(mesh.materialized_faces[collect(faces)], color = :green)
         for face in faces
-            npoints, ipoints = l ∩ mesh.materialized_faces[face]
+            npoints, ipoints = l ∩ materialized_faces[face]
             if 0 < npoints
                 for point in ipoints[1:npoints]
                     if distance(start_point, furthest_point) ≤ distance(start_point, point) &&
@@ -422,11 +318,9 @@ function next_edge_and_face_fallback_linear_explicit(current_face::I,
             end
         end
     end 
-#    s = readline()
-    # Truly a last resort, use the faces sharing a vertex approach above, but expand
-    # to the vertices of the faces sharing vertices of the current face
+    # If faces sharing this face's vertices was not enough, try the faces sharing a vertex approach 
+    # above, but expand to the vertices of the faces sharing vertices of the current face
     if next_face == current_face || next_face ∈  segment_faces
-        global num_fallback_last_resort += 1
         # Get the vertex ids for each vertex in the face
         npoints = length(mesh.faces[current_face])
         points = mesh.faces[current_face][2:npoints]
@@ -442,10 +336,8 @@ function next_edge_and_face_fallback_linear_explicit(current_face::I,
                 union!(faces, faces_sharing_vertex(point, mesh))
             end
         end
-#        println("  ", faces)
-#        linesegments!(mesh.materialized_faces[collect(faces)], color = :black)
         for face in faces
-            npoints, ipoints = l ∩ mesh.materialized_faces[face]
+            npoints, ipoints = l ∩ materialized_faces[face]
             if 0 < npoints
                 for point in ipoints[1:npoints]
                     if distance(start_point, furthest_point) ≤ distance(start_point, point) &&
@@ -457,11 +349,11 @@ function next_edge_and_face_fallback_linear_explicit(current_face::I,
             end
         end
     end
+    # If the next face STILL couldn't be determined, you're screwed
     if next_face == current_face || next_face ∈  segment_faces
         @error "Could not find next face, even using fallback methods."  
         println("Error segment: $l")
         println("Current_face: $current_face")
-        @assert false
     end
     # Determine the edge that should be skipped by choosing the edge with intersection point 
     # closest to the start of the line.
@@ -469,28 +361,15 @@ function next_edge_and_face_fallback_linear_explicit(current_face::I,
     edges = mesh.face_edge_connectivity[next_face]
     next_edge = I(0)
     for iedge in edges
-        edge = mesh.materialized_edges[iedge]
-        if edge isa LineSegment_2D
-            npoints, point = l ∩ edge
-            if 0 < npoints                                                                         
-                if  distance(start_point, point) ≤ distance(start_point, closest_point) 
-                    closest_point = point
-                    next_edge = iedge
-                end
-            end
-        else
-            npoints, ipoints = l ∩ edge
-            if 0 < npoints                                                                         
-                for point in ipoints[1:npoints]
-                    if  distance(start_point, point) ≤ distance(start_point, closest_point) 
-                        closest_point = point
-                        next_edge = iedge
-                    end
-                end
+        edge::LineSegment_2D = mesh.materialized_edges[iedge]
+        npoints, point = l ∩ edge
+        if 0 < npoints                                                                         
+            if  distance(start_point, point) ≤ distance(start_point, closest_point) 
+                closest_point = point
+                next_edge = iedge
             end
         end
     end
-#    println("  next face is $next_face")
     return I(next_edge), I(next_face)
 end
 
