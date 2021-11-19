@@ -2,7 +2,7 @@ using MOCNeutronTransport
 using StaticArrays
 using BenchmarkTools
 
-generate_mesh_file = false
+generate_mesh_file = true
 # Model
 # ----------------------------------------------------------------------------------------------
 log_timestamps()
@@ -84,7 +84,7 @@ if generate_mesh_file
     
     # Mesh
     # ------------------------------------------------------------------------------------------------
-    lc = 0.3 # cm
+    lc = 0.2 # cm
     gmsh.model.mesh.set_size(gmsh.model.get_entities(0), lc)
     # Optional mesh optimization:
     niter = 2 # The optimization iterations
@@ -93,6 +93,8 @@ if generate_mesh_file
     gmsh.model.mesh.generate(2) # 2 is dimension of mesh
     for () in 1:niter
         gmsh.model.mesh.optimize("Laplace2D")
+        gmsh.model.mesh.optimize("Relocate2D")
+        gmsh.model.mesh.optimize("Laplace2D")
     end
     
     # Quadrilaterals
@@ -100,7 +102,7 @@ if generate_mesh_file
     # gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads. Better 2D algorithm
     # gmsh.option.set_number("Mesh.RecombinationAlgorithm", 1)
     # gmsh.model.mesh.generate(2)
-    # for () in 1:niter
+    # for () in 1:niter                            
     #     gmsh.model.mesh.optimize("Laplace2D")
     #     gmsh.model.mesh.optimize("Relocate2D")
     #     gmsh.model.mesh.optimize("Laplace2D")
@@ -110,6 +112,11 @@ if generate_mesh_file
     # gmsh.option.set_number("Mesh.HighOrderOptimize", 2)
     # gmsh.model.mesh.generate(2) # Triangles first for high order meshes.
     # gmsh.model.mesh.set_order(2)
+    # for () in 1:niter
+    #     gmsh.model.mesh.optimize("HighOrderElastic")
+    #     gmsh.model.mesh.optimize("Relocate2D")
+    #     gmsh.model.mesh.optimize("HighOrderElastic")
+    # end
     
     # 2nd order quadrilaterals
     # gmsh.option.set_number("Mesh.RecombineAll", 1) # recombine all triangles
@@ -132,9 +139,9 @@ T = Float64
 I = UInt16
 mesh = read_abaqus_2d("2x2.inp", float_type=T)
 mesh = add_everything(mesh)
-HRPM = partition_rectangularly(mesh)
+#HRPM = partition_rectangularly(mesh)
 tₛ =  T(0.001)
-ang_quad = angular_quadrature("Chebyshev-Chebyshev", 32, 3; T=T)
-template_vec = MVector{2, I}(zeros(I, 2))
-the_tracks = tracks(tₛ, ang_quad, HRPM)
+ang_quad = generate_angular_quadrature("Chebyshev-Chebyshev", 32, 3; T=T)
+#template_vec = MVector{2, I}(zeros(I, 2))
+#the_tracks = tracks(tₛ, ang_quad, HRPM)
 #the_points_E, the_faces_E = ray_trace_edge_to_edge(the_tracks, mesh)
