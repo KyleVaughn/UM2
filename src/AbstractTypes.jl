@@ -1,2 +1,2 @@
-abstract type Face_2D{T <: AbstractFloat} end
-abstract type Edge_2D{T <: AbstractFloat} end
+abstract type Face_2D{F <: AbstractFloat} end
+abstract type Edge_2D{F <: AbstractFloat} end

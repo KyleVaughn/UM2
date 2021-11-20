@@ -3,14 +3,22 @@ using ColorSchemes
 using HDF5
 using LightXML
 using LinearAlgebra
+using Logging
 using StaticArrays
 using Dates: now, format
 using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter
 using LoggingExtras: TransformerLogger, global_logger
+import Base: +, -, *, /, ≈, ==, intersect, in
+import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
+
+# Wish I knew a better way to check for/use a local gmsh install, as well as
+# to mute the warning about gmsh not being in the project dependencies
 try
     # Use local gmsh install
+    Logging.disable_logging(Logging.Error)
     using gmsh
-catch e
+    Logging.disable_logging(Logging.Info)
+catch
     # Fall back on Gmsh package
     @warn "Using Gmsh package instead of install from source"
     using Gmsh: gmsh
@@ -31,32 +39,36 @@ function log_timestamps()
     end
 end
 
-import Base: +, -, *, /, ≈, ==, intersect, in
-import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
 include("AbstractTypes.jl")
-include("AngularQuadrature.jl")
-include("Tree.jl")
 include("Point_2D.jl")
 include("LineSegment_2D.jl")
 include("QuadraticSegment_2D.jl")
 include("Triangle_2D.jl")
-include("Quadrilateral_2D.jl")
-include("Triangle6_2D.jl")
-include("Quadrilateral8_2D.jl")
-include("constants.jl")
-include("gauss_legendre_quadrature.jl")
-include("UnstructuredMesh_2D.jl")
-include("UnstructuredMesh_2D_low_level.jl")
-include("HierarchicalRectangularlyPartitionedMesh.jl")
-include("abaqus.jl")
-include("ray_trace.jl")
-include("ray_trace_low_level.jl")
-include("vtk.jl")
-include("xdmf.jl")
+#include("Quadrilateral_2D.jl")
+#include("Triangle6_2D.jl")
+#include("Quadrilateral8_2D.jl")
+#include("AngularQuadrature.jl")
+#include("Tree.jl")
+#include("UnstructuredMesh_2D.jl")
+#include("UnstructuredMesh_2D_low_level.jl")
+#include("HierarchicalRectangularlyPartitionedMesh.jl")
+#include("constants.jl")
+#include("gauss_legendre_quadrature.jl")
 
-include("gmsh_generate_rectangular_grid.jl")
-include("gmsh_group_preserving_fragment.jl")
-include("gmsh_overlay_rectangular_grid.jl")
+
+
+#include("abaqus.jl")
+#include("gmsh_generate_rectangular_grid.jl")
+#include("gmsh_group_preserving_fragment.jl")
+#include("gmsh_overlay_rectangular_grid.jl")
+#include("ray_trace.jl")
+#include("ray_trace_low_level.jl")
+#include("vtk.jl")
+#include("xdmf.jl")
+
+
+
+
 
 # Structs/Types
 export  AngularQuadrature,

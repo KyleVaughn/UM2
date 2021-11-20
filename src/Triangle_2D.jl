@@ -1,26 +1,26 @@
 # Triangle in 2D defined by its 3 vertices.
-struct Triangle_2D{T <: AbstractFloat} <: Face_2D{T}
-    points::NTuple{3, Point_2D{T}}
+struct Triangle_2D{F <: AbstractFloat} <: Face_2D{F}
+    points::NTuple{3, Point_2D{F}}
 end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-Triangle_2D(p₁::Point_2D{T},
-            p₂::Point_2D{T},
-            p₃::Point_2D{T}) where {T <: AbstractFloat} = Triangle_2D((p₁, p₂, p₃))
+Triangle_2D(p₁::Point_2D{F},
+            p₂::Point_2D{F},
+            p₃::Point_2D{F}) where {F <: AbstractFloat} = Triangle_2D((p₁, p₂, p₃))
 
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
-function (tri::Triangle_2D{T})(r::R, s::S) where {T <: AbstractFloat,
+function (tri::Triangle_2D{F})(r::R, s::S) where {F <: AbstractFloat,
                                                   R <: Real,
                                                   S <: Real}
-    # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+    # See Fhe Visualization Foolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    return (1 - T(r) - T(s))*tri.points[1] + T(r)*tri.points[2] + T(s)*tri.points[3]
+    return (1 - F(r) - F(s))*tri.points[1] + F(r)*tri.points[2] + F(s)*tri.points[3]
 end
 
-function area(tri::Triangle_2D{T}) where {T <: AbstractFloat}
+function area(tri::Triangle_2D)
     # A = bh/2
     # Let u⃗ = (v₂ - v₁), v⃗ = (v₃ - v₁)
     # b = |u⃗|
@@ -33,7 +33,7 @@ function area(tri::Triangle_2D{T}) where {T <: AbstractFloat}
     return abs(u⃗ × v⃗)/2
 end
 
-function in(p::Point_2D{T}, tri::Triangle_2D{T}) where {T <: AbstractFloat}
+function in(p::Point_2D{F}, tri::Triangle_2D{F}) where {F <: AbstractFloat}
    # If the point is within the plane of the triangle, then the point is only within the triangle
    # if the areas of the triangles formed by the point and each pair of two vertices sum to the
    # area of the triangle. Division by 2 is dropped, since it cancels
@@ -46,14 +46,14 @@ function in(p::Point_2D{T}, tri::Triangle_2D{T}) where {T <: AbstractFloat}
    return A₁ + A₂ + A₃ ≈ A
 end
 
-function intersect(l::LineSegment_2D{T}, tri::Triangle_2D{T}) where {T <: AbstractFloat}
+function intersect(l::LineSegment_2D{F}, tri::Triangle_2D{F}) where {F <: AbstractFloat}
     # Create the 3 line segments that make up the triangle and intersect each one
     line_segments = (LineSegment_2D(tri.points[1], tri.points[2]),
                      LineSegment_2D(tri.points[2], tri.points[3]),
                      LineSegment_2D(tri.points[3], tri.points[1]))
     intersections = l .∩ line_segments
-    p₁ = Point_2D(T, 0)
-    p₂ = Point_2D(T, 0)
+    p₁ = Point_2D(F, 0)
+    p₂ = Point_2D(F, 0)
     ipoints = 0x00
     # We need to account for 3 points returned due to vertex intersection
     for (npoints, point) in intersections
@@ -71,8 +71,8 @@ function intersect(l::LineSegment_2D{T}, tri::Triangle_2D{T}) where {T <: Abstra
 end
 intersect(tri::Triangle_2D, l::LineSegment_2D) = intersect(l, tri)
 
-function Base.show(io::IO, tri::Triangle_2D{T}) where {T <: AbstractFloat}
-    println(io, "Triangle_2D{$T}(")
+function Base.show(io::IO, tri::Triangle_2D{F}) where {F <: AbstractFloat}
+    println(io, "Triangle_2D{$F}(")
     for i = 1:3
         p = tri.points[i]
         println(io, "  $p,")
@@ -82,33 +82,33 @@ end
 
 # Plot
 # -------------------------------------------------------------------------------------------------
-function convert_arguments(P::Type{<:LineSegments}, tri::Triangle_2D)
+function convert_arguments(LS::Type{<:LineSegments}, tri::Triangle_2D)
     l₁ = LineSegment_2D(tri.points[1], tri.points[2])
     l₂ = LineSegment_2D(tri.points[2], tri.points[3])
     l₃ = LineSegment_2D(tri.points[3], tri.points[1])
     lines = [l₁, l₂, l₃]
-    return convert_arguments(P, lines)
+    return convert_arguments(LS, lines)
 end
 
-function convert_arguments(P::Type{<:LineSegments}, AT::AbstractArray{<:Triangle_2D})
-    point_sets = [convert_arguments(P, tri) for tri in AT]
-    return convert_arguments(P, reduce(vcat, [pset[1] for pset in point_sets]))
+function convert_arguments(LS::Type{<:LineSegments}, T::Vector{<:Triangle_2D})
+    point_sets = [convert_arguments(LS, tri) for tri in T]
+    return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
 end
 
-function convert_arguments(P::Type{<:Mesh}, tri::Triangle_2D)
+function convert_arguments(M::Type{<:Mesh}, tri::Triangle_2D)
     points = [tri.points[i].x for i = 1:3]
     face = [1 2 3]
-    return convert_arguments(P, points, face)
+    return convert_arguments(M, points, face)
 end
 
-function convert_arguments(MT::Type{<:Mesh},
-        AT::Vector{Triangle_2D{T}}) where {T <: AbstractFloat}
-    points = reduce(vcat, [[tri.points[i].x for i = 1:3] for tri in AT])
-    faces = zeros(Int64, length(AT), 3)
+function convert_arguments(M::Type{<:Mesh},
+                           T::Vector{<:Triangle_2D})
+    points = reduce(vcat, [[tri.points[i].x for i = 1:3] for tri in T])
+    faces = zeros(Int64, length(T), 3)
     k = 1
-    for i in 1:length(AT), j = 1:3
+    for i in 1:length(T), j = 1:3
         faces[i, j] = k
         k += 1
     end
-    return convert_arguments(MT, points, faces)
+    return convert_arguments(M, points, faces)
 end

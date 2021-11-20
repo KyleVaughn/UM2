@@ -1,7 +1,7 @@
 # A line segment in 2D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and ends at points[2]
-struct LineSegment_2D{T <: AbstractFloat} <: Edge_2D{T}
-    points::NTuple{2, Point_2D{T}}
+struct LineSegment_2D{F <: AbstractFloat} <: Edge_2D{F}
+    points::NTuple{2, Point_2D{F}}
 end
 
 # Constructors
@@ -16,13 +16,13 @@ Base.broadcastable(l::LineSegment_2D) = Ref(l)
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 # l(0) yields points[1], and l(1) yields points[2]
-function (l::LineSegment_2D{T})(r::R) where {T <: AbstractFloat, R <: Real}
-    return l.points[1] + T(r) * (l.points[2] - l.points[1])
+function (l::LineSegment_2D{F})(r::R) where {F <: AbstractFloat, R <: Real}
+    return l.points[1] + F(r) * (l.points[2] - l.points[1])
 end
 
 arc_length(l::LineSegment_2D) = distance(l.points[1], l.points[2])
 
-function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <: AbstractFloat}
+function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <: AbstractFloat}
     # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product
     # operator for 2D points returns a scalar (the 2-norm of the cross product).
     #
@@ -47,7 +47,7 @@ function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <:
     # approach" - Intersection of two lines in three-space, Ronald Goldman, in Graphics
     # Gems by Andrew S. Glassner.
     #
-    # To determine if the lines are parallel or collinear, accounting got floating point error, 
+    # Fo determine if the lines are parallel or collinear, accounting got floating point error, 
     # we declare that all lines with angle less that θₚ between them are parallel or collinear.
     # Using v⃗ × u⃗ = |v⃗||u⃗|sin(θ), and knowing that for small θ, sin(θ) ≈ θ
     # We say all vectors such that
@@ -66,16 +66,16 @@ function intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T <:
         s = ((r*v⃗ - w⃗) ⋅ u⃗)/(u⃗ ⋅ u⃗)
         return (-ϵ ≤ s ≤ 1 + ϵ) && (-ϵ ≤ r ≤ 1 + ϵ) ? (0x01, p) : (0x00, p)
     else
-        return (0x00, Point_2D(T, 0))
+        return (0x00, Point_2D(F, 0))
     end
 end
 
 # Plot
 # -------------------------------------------------------------------------------------------------
-function convert_arguments(P::Type{<:LineSegments}, l::LineSegment_2D)
-    return convert_arguments(P, [l.points[1].x, l.points[2].x])
+function convert_arguments(LS::Type{<:LineSegments}, l::LineSegment_2D)
+    return convert_arguments(LS, [l.points[1].x, l.points[2].x])
 end
 
-function convert_arguments(P::Type{<:LineSegments}, AL::AbstractArray{<:LineSegment_2D})
-    return convert_arguments(P, reduce(vcat, [[l.points[1].x, l.points[2].x] for l in AL]))
+function convert_arguments(LS::Type{<:LineSegments}, L::Vector{<:LineSegment_2D})
+    return convert_arguments(LS, reduce(vcat, [[l.points[1].x, l.points[2].x] for l in L]))
 end
