@@ -60,7 +60,11 @@ function arc_length(q::QuadraticSegment_2D{F}; N::Int64=15) where {F <: Abstract
     # N is the number of points used in the quadrature.
     # See tuning/QuadraticSegment_2D_arc_length.jl for more info on how N was chosen.
     w, r = gauss_legendre_quadrature(F, N)
-    return sum(w .* norm.(derivative.(q, r)))
+    length = F(0)
+    for i = 1:N
+        length += w[i] * norm(derivative(q, r[i]))
+    end
+    return length 
 end
 
 # @code_warntype checked 2021/11/19
