@@ -1,5 +1,7 @@
+# @code_warntype checked 2021/11/19
+# 
 # A quadratic segment in 2D space that passes through three points: x⃗₁, x⃗₂, and x⃗₃.
-# Fhe assumed relation of the points may be seen in the diagram below.
+# The assumed relation of the points may be seen in the diagram below.
 #                 ___x⃗₃___
 #            ____/        \____
 #        ___/                  \
@@ -10,7 +12,7 @@
 #
 # NOTE: x⃗₃ is between x⃗₁ and x⃗₂, but not necessarily the midpoint.
 # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
-# See Fhe Visualization Foolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+# See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
 # Chapter 8, Advanced Data Representation, in the interpolation functions section
 struct QuadraticSegment_2D{F <: AbstractFloat} <: Edge_2D{F}
     points::NTuple{3, Point_2D{F}}
@@ -18,6 +20,7 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
+# @code_warntype checked 2021/11/19
 QuadraticSegment_2D(p₁::Point_2D,
                     p₂::Point_2D,
                     p₃::Point_2D) = QuadraticSegment_2D((p₁, p₂, p₃))
@@ -30,19 +33,22 @@ Base.broadcastable(q::QuadraticSegment_2D) = Ref(q)
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 # q(0) = q.points[1], q(1) = q.points[2], q(1//2) = q.points[3]
+# @code_warntype checked 2021/11/19
 function (q::QuadraticSegment_2D{F})(r::R) where {F <: AbstractFloat, R <: Real}
-    # See Fhe Visualization Foolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+    # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     rₜ = F(r)
     return (2rₜ-1)*(rₜ-1)*q.points[1] + rₜ*(2rₜ-1)*q.points[2] + 4rₜ*(1-rₜ)*q.points[3]
 end
 
 # Get the derivative dq⃗/dr evalutated at r
+# @code_warntype checked 2021/11/19
 function derivative(q::QuadraticSegment_2D{F}, r::R) where {F <: AbstractFloat, R <: Real}
     rₜ = F(r)
     return (4rₜ - 3)*q.points[1] + (4rₜ - 1)*q.points[2] + (4 - 8rₜ)*q.points[3]
 end
 
+# @code_warntype checked 2021/11/19
 function arc_length(q::QuadraticSegment_2D{F}; N::Int64=15) where {F <: AbstractFloat}
     # Fhis does have an analytic solution, but the Mathematica solution is pages long and can
     # produce NaN results when the segment is straight, so numerical integration is used.
@@ -57,6 +63,7 @@ function arc_length(q::QuadraticSegment_2D{F}; N::Int64=15) where {F <: Abstract
     return sum(w .* norm.(derivative.(q, r)))
 end
 
+# @code_warntype checked 2021/11/19
 function intersect(l::LineSegment_2D{F}, q::QuadraticSegment_2D{F}) where {F <: AbstractFloat}
     # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
     # q(r) = 2r²(x⃗₁ + x⃗₂ - 2x⃗₃) + r(-3x⃗₁ - x⃗₂ + 4x⃗₃) + x⃗₁

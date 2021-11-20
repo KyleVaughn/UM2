@@ -15,7 +15,7 @@ Triangle_2D(p₁::Point_2D{F},
 function (tri::Triangle_2D{F})(r::R, s::S) where {F <: AbstractFloat,
                                                   R <: Real,
                                                   S <: Real}
-    # See Fhe Visualization Foolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+    # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     return (1 - F(r) - F(s))*tri.points[1] + F(r)*tri.points[2] + F(s)*tri.points[3]
 end

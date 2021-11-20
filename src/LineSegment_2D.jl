@@ -1,3 +1,5 @@
+# @code_warntype checked 2021/11/19
+
 # A line segment in 2D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and ends at points[2]
 struct LineSegment_2D{F <: AbstractFloat} <: Edge_2D{F}
@@ -6,6 +8,7 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
+# @code_warntype checked 2021/11/19
 LineSegment_2D(p₁::Point_2D, p₂::Point_2D) = LineSegment_2D((p₁, p₂))
 
 # Base
@@ -16,12 +19,15 @@ Base.broadcastable(l::LineSegment_2D) = Ref(l)
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 # l(0) yields points[1], and l(1) yields points[2]
+# @code_warntype checked 2021/11/19
 function (l::LineSegment_2D{F})(r::R) where {F <: AbstractFloat, R <: Real}
     return l.points[1] + F(r) * (l.points[2] - l.points[1])
 end
 
+# @code_warntype checked 2021/11/19
 arc_length(l::LineSegment_2D) = distance(l.points[1], l.points[2])
 
+# @code_warntype checked 2021/11/19
 function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <: AbstractFloat}
     # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product
     # operator for 2D points returns a scalar (the 2-norm of the cross product).
@@ -47,7 +53,7 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     # approach" - Intersection of two lines in three-space, Ronald Goldman, in Graphics
     # Gems by Andrew S. Glassner.
     #
-    # Fo determine if the lines are parallel or collinear, accounting got floating point error,
+    # To determine if the lines are parallel or collinear, accounting for floating point error,
     # we declare that all lines with angle less that θₚ between them are parallel or collinear.
     # Using v⃗ × u⃗ = |v⃗||u⃗|sin(θ), and knowing that for small θ, sin(θ) ≈ θ
     # We say all vectors such that
@@ -55,6 +61,8 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     #   --------- ≤ θₚ
     #     |v⃗||u⃗|
     # are parallel or collinear
+    # We need to consider the magnitudes of the vectors due to the large range of segment sized used,
+    # othersize just comparing abs(v⃗ × u⃗) to some fixed quantity causes problems
     ϵ = parametric_coordinate_ϵ
     θₚ = LineSegment_2D_parallel_θ
     v⃗ = l₁.points[2] - l₁.points[1]
