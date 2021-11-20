@@ -47,7 +47,7 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     # approach" - Intersection of two lines in three-space, Ronald Goldman, in Graphics
     # Gems by Andrew S. Glassner.
     #
-    # Fo determine if the lines are parallel or collinear, accounting got floating point error, 
+    # Fo determine if the lines are parallel or collinear, accounting got floating point error,
     # we declare that all lines with angle less that θₚ between them are parallel or collinear.
     # Using v⃗ × u⃗ = |v⃗||u⃗|sin(θ), and knowing that for small θ, sin(θ) ≈ θ
     # We say all vectors such that
@@ -55,7 +55,7 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     #   --------- ≤ θₚ
     #     |v⃗||u⃗|
     # are parallel or collinear
-    ϵ = parametric_coordinate_ϵ 
+    ϵ = parametric_coordinate_ϵ
     θₚ = LineSegment_2D_parallel_θ
     v⃗ = l₁.points[2] - l₁.points[1]
     u⃗ = l₂.points[2] - l₂.points[1]

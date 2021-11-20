@@ -79,9 +79,9 @@ function intersect(l::LineSegment_2D{F}, q::QuadraticSegment_2D{F}) where {F <: 
     #     1) s < 0 or 1 < s   (Line intersects, segment doesn't)
     # If D⃗ × w⃗ = 0, we need to use line intersection instead.
     #
-    # Note that D⃗ is essentially a vector showing twice the displacement of x⃗₃ from the 
+    # Note that D⃗ is essentially a vector showing twice the displacement of x⃗₃ from the
     # midpoint of the linear segment (x⃗₁, x⃗₂). So, if |D⃗| = 0, the segment is linear.
-    ϵ = parametric_coordinate_ϵ 
+    ϵ = parametric_coordinate_ϵ
     ϵ₁ = QuadraticSegment_2D_1_intersection_ϵ
     npoints = 0x00
     p₁ = Point_2D(F, 0)

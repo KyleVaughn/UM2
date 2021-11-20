@@ -8,7 +8,7 @@ using StaticArrays
 using Dates: now, format
 using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter
 using LoggingExtras: TransformerLogger, global_logger
-import Base: +, -, *, /, ≈, ==, intersect, in
+import Base: +, -, *, /, ≈, ≉, ==, intersect, in
 import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
 
 # Wish I knew a better way to check for/use a local gmsh install, as well as
@@ -44,7 +44,7 @@ include("Point_2D.jl")
 include("LineSegment_2D.jl")
 include("QuadraticSegment_2D.jl")
 include("Triangle_2D.jl")
-#include("Quadrilateral_2D.jl")
+include("Quadrilateral_2D.jl")
 #include("Triangle6_2D.jl")
 #include("Quadrilateral8_2D.jl")
 #include("AngularQuadrature.jl")
@@ -52,7 +52,7 @@ include("Triangle_2D.jl")
 #include("UnstructuredMesh_2D.jl")
 #include("UnstructuredMesh_2D_low_level.jl")
 #include("HierarchicalRectangularlyPartitionedMesh.jl")
-#include("constants.jl")
+include("constants.jl")
 #include("gauss_legendre_quadrature.jl")
 
 
