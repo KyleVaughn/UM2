@@ -13,9 +13,9 @@ include("../../src/mesh/UnstructuredMesh_2D.jl")
         # 1---------2---------3
         points = [Point_2D(0.0), Point_2D(2.0), Point_2D(4.0), Point_2D(1.0, 1.0), Point_2D(3.0, 1.0)]
         faces = [
-                 Tuple(UInt64[5, 1, 2, 4]),
-                 Tuple(UInt64[5, 2, 5, 4]),
-                 Tuple(UInt64[5, 2, 3, 5])
+                 SVector{4, UInt64}(UInt64[5, 1, 2, 4]),
+                 SVector{4, UInt64}(UInt64[5, 2, 5, 4]),
+                 SVector{4, UInt64}(UInt64[5, 2, 3, 5])
                 ]
 
         # edges
