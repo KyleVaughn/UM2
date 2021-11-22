@@ -189,8 +189,8 @@ function intersect(l::LineSegment_2D{F}, tri6::Triangle6_2D{F}) where {F <: Abst
                      )
     n_ipoints = 0x00
     # We need to account for 6 points returned
-    for i = 1:3
-        npoints, points = l ∩ edges[i]
+    for k = 1:3
+        npoints, points = l ∩ edges[k]
         for i = 1:npoints
             if n_ipoints === 0x00
                 ipoints[1] = points[1]
@@ -234,19 +234,17 @@ function convert_arguments(LS::Type{<:LineSegments}, tri6::Triangle6_2D)
     return convert_arguments(P, qsegs)
 end
 
-function convert_arguments(LS::Type{<:LineSegments}, T::Vector{<:Triangle6_2D})
+function convert_arguments(LS::Type{<:LineSegments}, T::Vector{Triangle6_2D})
     point_sets = [convert_arguments(LS, tri6) for tri6 in T]
     return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
 end
 
-function convert_arguments(P::Type{Mesh{Tuple{Triangle6_2D{F}}}},
-        tri6::Triangle6_2D{F}) where {F <: AbstractFloat}
+function convert_arguments(P::Type{<:Mesh}, tri6::Triangle6_2D)
     triangles = triangulate(tri6, 13)
     return convert_arguments(P, triangles)
 end
 
-function convert_arguments(MF::Type{Mesh{Tuple{Vector{Triangle6_2D{F}}}}},
-        AF::Vector{Triangle6_2D{F}}) where {F <: AbstractFloat}
-    triangles = reduce(vcat, triangulate.(AF, 13))
-    return convert_arguments(MF, triangles)
+function convert_arguments(M::Type{<:Mesh}, T::Vector{Triangle6_2D})
+    triangles = reduce(vcat, triangulate.(T, 13))
+    return convert_arguments(M, triangles)
 end

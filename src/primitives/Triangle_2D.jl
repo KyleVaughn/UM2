@@ -97,7 +97,7 @@ function convert_arguments(LS::Type{<:LineSegments}, tri::Triangle_2D)
     return convert_arguments(LS, lines)
 end
 
-function convert_arguments(LS::Type{<:LineSegments}, T::Vector{<:Triangle_2D})
+function convert_arguments(LS::Type{<:LineSegments}, T::Vector{Triangle_2D})
     point_sets = [convert_arguments(LS, tri) for tri in T]
     return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
 end
@@ -109,7 +109,7 @@ function convert_arguments(M::Type{<:Mesh}, tri::Triangle_2D)
 end
 
 function convert_arguments(M::Type{<:Mesh},
-                           T::Vector{<:Triangle_2D})
+                           T::Vector{Triangle_2D})
     points = reduce(vcat, [[tri.points[i].x for i = 1:3] for tri in T])
     faces = zeros(Int64, length(T), 3)
     k = 1
