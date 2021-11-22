@@ -225,26 +225,28 @@ end
 
 # Plot
 # -------------------------------------------------------------------------------------------------
-function convert_arguments(LS::Type{<:LineSegments}, quad8::Quadrilateral8_2D)
-    q₁ = QuadraticSegment_2D(quad8.points[1], quad8.points[2], quad8.points[5])
-    q₂ = QuadraticSegment_2D(quad8.points[2], quad8.points[3], quad8.points[6])
-    q₃ = QuadraticSegment_2D(quad8.points[3], quad8.points[4], quad8.points[7])
-    q₄ = QuadraticSegment_2D(quad8.points[4], quad8.points[1], quad8.points[8])
-    qsegs = [q₁, q₂, q₃, q₄]
-    return convert_arguments(LS, qsegs)
-end
-
-function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{Quadrilateral8_2D})
-    point_sets = [convert_arguments(LS, quad8) for quad8 in Q]
-    return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
-end
-
-function convert_arguments(M::Type{<:Mesh}, quad8::Quadrilateral8_2D)
-    triangles = triangulate(quad8, 13)
-    return convert_arguments(M, triangles)
-end
-
-function convert_arguments(M::Type{<:Mesh}, Q::Vector{Quadrilateral8_2D})
-    triangles = reduce(vcat, triangulate.(Q, 13))
-    return convert_arguments(M, triangles)
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, quad8::Quadrilateral8_2D)
+        q₁ = QuadraticSegment_2D(quad8.points[1], quad8.points[2], quad8.points[5])
+        q₂ = QuadraticSegment_2D(quad8.points[2], quad8.points[3], quad8.points[6])
+        q₃ = QuadraticSegment_2D(quad8.points[3], quad8.points[4], quad8.points[7])
+        q₄ = QuadraticSegment_2D(quad8.points[4], quad8.points[1], quad8.points[8])
+        qsegs = [q₁, q₂, q₃, q₄]
+        return convert_arguments(LS, qsegs)
+    end
+    
+    function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{Quadrilateral8_2D})
+        point_sets = [convert_arguments(LS, quad8) for quad8 in Q]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+    end
+    
+    function convert_arguments(M::Type{<:Mesh}, quad8::Quadrilateral8_2D)
+        triangles = triangulate(quad8, 13)
+        return convert_arguments(M, triangles)
+    end
+    
+    function convert_arguments(M::Type{<:Mesh}, Q::Vector{Quadrilateral8_2D})
+        triangles = reduce(vcat, triangulate.(Q, 13))
+        return convert_arguments(M, triangles)
+    end
 end

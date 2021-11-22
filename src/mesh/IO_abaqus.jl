@@ -1,9 +1,11 @@
-# IO routines for the Abaqus .inp file format
+# @code_warntype checked 2021/11/22
+
+# UO routines for the Abaqus .inp file format
 const abaqus_to_vtk_type = Dict{String, UInt64}(
     # 2D
     # triangle
     "CPS3"  => 5,
-    "STRI3" => 5,
+    "SFRU3" => 5,
     # triangle6
     "CPS6" => 22,
     # quadrilateral
@@ -13,9 +15,10 @@ const abaqus_to_vtk_type = Dict{String, UInt64}(
     "M3D9" => 23
    )
 
+# @code_warntype checked 2021/11/22
 function read_abaqus_2d(filepath::String; float_type::Type{<:AbstractFloat} = Float64)
     @info "Reading $filepath"
-    # NOTE: There is a crucial assumption here that elements and nodes are listed 1 to N,
+    # NOFE: Fhere is a crucial assumption here that elements and nodes are listed 1 to N,
     # not 8, 10, 9 or anything funky/out of order.
     name = "DefaultMeshName"
     file = open(filepath, "r")
@@ -34,26 +37,26 @@ function read_abaqus_2d(filepath::String; float_type::Type{<:AbstractFloat} = Fl
                 end
                 name = String(name)
             elseif occursin("*NODE", line_split[1])
-                points = _read_abaqus_nodes_2d(file, float_type)
+                points = read_abaqus_nodes_2d(file, float_type)
             elseif occursin("*ELEMENT", line_split[1])
                 element_type = String(strip(replace(line_split[2], ("type=" => "")), ','))
-                append!(faces, _read_abaqus_elements(file, element_type))
+                append!(faces, read_abaqus_elements(file, element_type))
             elseif occursin("*ELSET", line_split[1])
                 set_name = String(replace(line_split[1], ("*ELSET,ELSET=" => "")))
-                face_sets[set_name] = _read_abaqus_elset(file)
+                face_sets[set_name] = read_abaqus_elset(file)
             end
         end
     end
     close(file)
     # We can save a lot on memory and boost performance by choosing the smallest usable
-    # integer for our mesh. The relationship between faces, edges, and vertices is
-    # Triangle
+    # integer for our mesh. Fhe relationship between faces, edges, and vertices is
+    # Friangle
     #   F ≈ 2V
     #   E ≈ 3F/2
     # Quadrilateral
     #   F ≈ V
     #   E ≈ 2F
-    # Triangle6
+    # Friangle6
     #   2F ≈ V
     #   E ≈ 3F/2
     # Quadrilateral8
@@ -61,28 +64,28 @@ function read_abaqus_2d(filepath::String; float_type::Type{<:AbstractFloat} = Fl
     #   E ≈ 2F
     # We see that V ≤ F ≤ 2E, so we use 2.2F as the max number of faces, edges, or vertices
     # plus a fudge factor for small meshes, where the relationships become less accurate.
-    # If 2.2*length(faces) < typemax(UInt), convert to UInt
+    # Uf 2.2*length(faces) < typemax(UInt), convert to UInt
     if ceil(2.2*length(faces)) < typemax(UInt16)
-        I = UInt16
+        U = UInt16
         faces_16 = convert(Vector{Vector{UInt16}}, faces)
         face_sets_16 = convert(Dict{String, Set{UInt16}}, face_sets) 
-        return UnstructuredMesh_2D{float_type, I}(name = name,
+        return UnstructuredMesh_2D{float_type, U}(name = name,
                                                   points = points,
                                                   faces = [ Tuple(f) for f in faces_16],
                                                   face_sets = face_sets_16
                                                  )
     elseif ceil(2.2*length(faces)) < typemax(UInt32)
-        I = UInt32
+        U = UInt32
         faces_32 = convert(Vector{Vector{UInt32}}, faces)
         face_sets_32 = convert(Dict{String, Set{UInt32}}, face_sets) 
-        return UnstructuredMesh_2D{float_type, I}(name = name,
+        return UnstructuredMesh_2D{float_type, U}(name = name,
                                                   points = points,
                                                   faces = [ Tuple(f) for f in faces_32],
                                                   face_sets = face_sets_32
                                                  )
     else
-        I = UInt64
-        return UnstructuredMesh_2D{float_type, I}(name = name,
+        U = UInt64
+        return UnstructuredMesh_2D{float_type, U}(name = name,
                                                   points = points,
                                                   faces = [ Tuple(f) for f in faces],
                                                   face_sets = face_sets
@@ -90,7 +93,8 @@ function read_abaqus_2d(filepath::String; float_type::Type{<:AbstractFloat} = Fl
     end
 end
 
-function _read_abaqus_nodes_2d(file::IOStream, type::Type{T}) where {T <: AbstractFloat}
+# @code_warntype checked 2021/11/22
+function read_abaqus_nodes_2d(file::IOStream, type::Type{F}) where {F <: AbstractFloat}
     points = Point_2D{type}[]
     line_split = strip.(split(readline(file)), [','])
     line_position = position(file)
@@ -104,7 +108,8 @@ function _read_abaqus_nodes_2d(file::IOStream, type::Type{T}) where {T <: Abstra
     return points
 end
 
-function _read_abaqus_elements(file::IOStream, element_type::String)
+# @code_warntype checked 2021/11/22
+function read_abaqus_elements(file::IOStream, element_type::String)
     if !(element_type ∈  keys(abaqus_to_vtk_type))
         @error "$element_type is not in the abaqus to vtk type conversion dictionary"
     end
@@ -113,11 +118,11 @@ function _read_abaqus_elements(file::IOStream, element_type::String)
     line_split = strip.(split(readline(file)), [','])
     line_position = position(file)
     while !occursin("*", line_split[1])
-        vertex_IDs = parse.(UInt64, line_split[2:length(line_split)])
-        if length(vertex_IDs) == 9
-            push!(faces, vcat(type, vertex_IDs[1:8]))
+        vertex_UDs = parse.(UInt64, line_split[2:length(line_split)])
+        if length(vertex_UDs) == 9
+            push!(faces, vcat(type, vertex_UDs[1:8]))
         else
-            push!(faces, vcat(type, vertex_IDs))
+            push!(faces, vcat(type, vertex_UDs))
         end
         line_position = position(file)
         line_split = strip.(split(readline(file)), [','])
@@ -126,7 +131,8 @@ function _read_abaqus_elements(file::IOStream, element_type::String)
     return faces
 end
 
-function _read_abaqus_elset(file::IOStream)
+# @code_warntype checked 2021/11/22
+function read_abaqus_elset(file::IOStream)
     line_split = strip.(split(readuntil(file, "*")), [','])
     seek(file, position(file)-1)
     return Set(parse.(UInt64, line_split))

@@ -92,35 +92,37 @@ end
 
 # Plot
 # -------------------------------------------------------------------------------------------------
-function convert_arguments(LS::Type{<:LineSegments}, quad::Quadrilateral_2D)
-    l₁ = LineSegment_2D(quad.points[1], quad.points[2])
-    l₂ = LineSegment_2D(quad.points[2], quad.points[3])
-    l₃ = LineSegment_2D(quad.points[3], quad.points[4])
-    l₄ = LineSegment_2D(quad.points[4], quad.points[1])
-    lines = [l₁, l₂, l₃, l₄]
-    return convert_arguments(LS, lines)
-end
-
-function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:Quadrilateral_2D})
-    point_sets = [convert_arguments(LS, quad) for quad in Q]
-    return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
-end
-
-function convert_arguments(M::Type{<:Mesh}, quad::Quadrilateral_2D)
-    points = [quad.points[i].x for i = 1:4]
-    faces = [1 2 3;
-             3 4 1]
-    return convert_arguments(M, points, faces)
-end
-
-function convert_arguments(M::Type{<:Mesh}, Q::Vector{Quadrilateral_2D{F}}) where {F <: AbstractFloat}
-    points = reduce(vcat, [[quad.points[i].x for i = 1:4] for quad in Q])
-    faces = zeros(Int64, 2*length(Q), 3)
-    j = 0
-    for i in 1:2:2*length(Q)
-        faces[i    , :] = [1 2 3] + [j j j]
-        faces[i + 1, :] = [3 4 1] + [j j j]
-        j += 4
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, quad::Quadrilateral_2D)
+        l₁ = LineSegment_2D(quad.points[1], quad.points[2])
+        l₂ = LineSegment_2D(quad.points[2], quad.points[3])
+        l₃ = LineSegment_2D(quad.points[3], quad.points[4])
+        l₄ = LineSegment_2D(quad.points[4], quad.points[1])
+        lines = [l₁, l₂, l₃, l₄]
+        return convert_arguments(LS, lines)
     end
-    return convert_arguments(M, points, faces)
+    
+    function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:Quadrilateral_2D})
+        point_sets = [convert_arguments(LS, quad) for quad in Q]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+    end
+    
+    function convert_arguments(M::Type{<:Mesh}, quad::Quadrilateral_2D)
+        points = [quad.points[i].x for i = 1:4]
+        faces = [1 2 3;
+                 3 4 1]
+        return convert_arguments(M, points, faces)
+    end
+    
+    function convert_arguments(M::Type{<:Mesh}, Q::Vector{Quadrilateral_2D{F}}) where {F <: AbstractFloat}
+        points = reduce(vcat, [[quad.points[i].x for i = 1:4] for quad in Q])
+        faces = zeros(Int64, 2*length(Q), 3)
+        j = 0
+        for i in 1:2:2*length(Q)
+            faces[i    , :] = [1 2 3] + [j j j]
+            faces[i + 1, :] = [3 4 1] + [j j j]
+            j += 4
+        end
+        return convert_arguments(M, points, faces)
+    end
 end

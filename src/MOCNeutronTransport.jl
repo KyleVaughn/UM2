@@ -1,29 +1,46 @@
 module MOCNeutronTransport
+# Compilation options
+const enable_local_gmsh = true
+const enable_visualization = false
+
+# using
 using ColorSchemes
+using Logging
+if enable_local_gmsh
+    # Use local gmsh install
+    # Temporarily turn off warnings, since gmsh isn't in dependencies
+    try
+        Logging.disable_logging(Logging.Error)
+        using gmsh
+        Logging.disable_logging(Logging.Debug)
+        @info "MOCNeutronTransport is using the locally installed gmsh API instead of the Gmsh package"
+    catch
+        Logging.disable_logging(Logging.Debug)
+        @warn "MOCNeutronTransport is using the Gmsh package instead of the locally installed gmsh API"
+        using Gmsh: gmsh
+    end
+else
+    # Fallback on Gmsh package
+    @warn "MOCNeutronTransport is using the Gmsh package instead of the locally installed gmsh API"
+    using Gmsh: gmsh
+end
 using HDF5
 using LightXML
 using LinearAlgebra
-using Logging
 using StaticArrays
 using Dates: now, format
-using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter
+if enable_visualization 
+    using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter
+end
 using LoggingExtras: TransformerLogger, global_logger
-import Base: +, -, *, /, ≈, ≉, ==, intersect, in
-import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
 
-# Wish I knew a better way to check for/use a local gmsh install, as well as
-# to mute the warning about gmsh not being in the project dependencies
-try
-    # Use local gmsh install
-    Logging.disable_logging(Logging.Error)
-    using gmsh
-    Logging.disable_logging(Logging.Info)
-catch
-    # Fall back on Gmsh package
-    @warn "Using Gmsh package instead of install from source"
-    using Gmsh: gmsh
+# import
+import Base: +, -, *, /, ≈, ≉, ==, intersect, in
+if enable_visualization 
+    import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
 end
 
+# logging
 # Make logger give time stamps
 const date_format = "HH:MM:SS.sss"
 timestamp_logger(logger) = TransformerLogger(logger) do log
@@ -39,6 +56,7 @@ function log_timestamps()
     end
 end
 
+
 include("AbstractTypes.jl")
 include("./primitives/Point_2D.jl")
 include("./primitives/LineSegment_2D.jl")
@@ -47,17 +65,17 @@ include("./primitives/Triangle_2D.jl")
 include("./primitives/Quadrilateral_2D.jl")
 include("./primitives/Triangle6_2D.jl")
 include("./primitives/Quadrilateral8_2D.jl")
+include("./mesh/UnstructuredMesh_2D.jl")
+include("./mesh/UnstructuredMesh_2D_low_level.jl")
+include("./mesh/IO_abaqus.jl")
 #include("AngularQuadrature.jl")
 #include("Tree.jl")
-#include("UnstructuredMesh_2D.jl")
-#include("UnstructuredMesh_2D_low_level.jl")
 #include("HierarchicalRectangularlyPartitionedMesh.jl")
 include("constants.jl")
 include("gauss_legendre_quadrature.jl")
 
 
 
-#include("abaqus.jl")
 #include("gmsh_generate_rectangular_grid.jl")
 #include("gmsh_group_preserving_fragment.jl")
 #include("gmsh_overlay_rectangular_grid.jl")
@@ -155,8 +173,10 @@ export gmsh,
        gmsh_overlay_rectangular_grid
 
 # Plot
-export Figure, Axis
-export scatter, linesegments, mesh,
-       scatter!, linesegments!, mesh!
+if enable_visualization
+    export Figure, Axis
+    export scatter, linesegments, mesh,
+           scatter!, linesegments!, mesh!
+end
 
 end # module

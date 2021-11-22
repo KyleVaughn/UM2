@@ -9,12 +9,12 @@ tests = ["./primitives/Point_2D",
          "./primitives/Quadrilateral_2D",
          "./primitives/Triangle6_2D",
          "./primitives/Quadrilateral8_2D",
+         "./mesh/UnstructuredMesh_2D",
 #         "Tree",
 #         "AngularQuadrature", 
 #         "vtk",
 #         "abaqus",
 #         "xdmf"
-#         "UnstructuredMesh",
         ]
 for t in tests
   include("$(t).jl")

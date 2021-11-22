@@ -141,14 +141,16 @@ intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 
 # Plot
 # -------------------------------------------------------------------------------------------------
-function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment_2D{F}) where {F <: AbstractFloat}
-    rr = LinRange{F}(0, 1, 15)
-    points = q.(rr)
-    coords = reduce(vcat, [[points[i].x, points[i+1].x] for i = 1:length(points)-1])
-    return convert_arguments(LS, coords)
-end
-
-function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:QuadraticSegment_2D})
-    point_sets = [convert_arguments(P, q) for q in Q]
-    return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment_2D{F}) where {F <: AbstractFloat}
+        rr = LinRange{F}(0, 1, 15)
+        points = q.(rr)
+        coords = reduce(vcat, [[points[i].x, points[i+1].x] for i = 1:length(points)-1])
+        return convert_arguments(LS, coords)
+    end
+    
+    function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:QuadraticSegment_2D})
+        point_sets = [convert_arguments(P, q) for q in Q]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+    end
 end

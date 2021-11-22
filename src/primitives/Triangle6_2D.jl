@@ -226,25 +226,27 @@ end
 
 # Plot
 # -------------------------------------------------------------------------------------------------
-function convert_arguments(LS::Type{<:LineSegments}, tri6::Triangle6_2D)
-    q₁ = QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4])
-    q₂ = QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5])
-    q₃ = QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6])
-    qsegs = [q₁, q₂, q₃]
-    return convert_arguments(P, qsegs)
-end
-
-function convert_arguments(LS::Type{<:LineSegments}, T::Vector{Triangle6_2D})
-    point_sets = [convert_arguments(LS, tri6) for tri6 in T]
-    return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
-end
-
-function convert_arguments(P::Type{<:Mesh}, tri6::Triangle6_2D)
-    triangles = triangulate(tri6, 13)
-    return convert_arguments(P, triangles)
-end
-
-function convert_arguments(M::Type{<:Mesh}, T::Vector{Triangle6_2D})
-    triangles = reduce(vcat, triangulate.(T, 13))
-    return convert_arguments(M, triangles)
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, tri6::Triangle6_2D)
+        q₁ = QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4])
+        q₂ = QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5])
+        q₃ = QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6])
+        qsegs = [q₁, q₂, q₃]
+        return convert_arguments(P, qsegs)
+    end
+    
+    function convert_arguments(LS::Type{<:LineSegments}, T::Vector{Triangle6_2D})
+        point_sets = [convert_arguments(LS, tri6) for tri6 in T]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+    end
+    
+    function convert_arguments(P::Type{<:Mesh}, tri6::Triangle6_2D)
+        triangles = triangulate(tri6, 13)
+        return convert_arguments(P, triangles)
+    end
+    
+    function convert_arguments(M::Type{<:Mesh}, T::Vector{Triangle6_2D})
+        triangles = reduce(vcat, triangulate.(T, 13))
+        return convert_arguments(M, triangles)
+    end
 end
