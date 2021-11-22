@@ -3,13 +3,13 @@
 # A line segment in 2D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and ends at points[2]
 struct LineSegment_2D{F <: AbstractFloat} <: Edge_2D{F}
-    points::NTuple{2, Point_2D{F}}
+    points::SVector{2, Point_2D{F}}
 end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
 # @code_warntype checked 2021/11/19
-LineSegment_2D(p₁::Point_2D, p₂::Point_2D) = LineSegment_2D((p₁, p₂))
+LineSegment_2D(p₁::Point_2D, p₂::Point_2D) = LineSegment_2D(SVector(p₁, p₂))
 
 # Base
 # -------------------------------------------------------------------------------------------------

@@ -6,12 +6,12 @@ using MOCNeutronTransport
             p₂ = Point_2D(F, 1)
             p₃ = Point_2D(F, 1, 1)
             p₄ = Point_2D(F, 0, 1)
-            quad = Quadrilateral_2D((p₁, p₂, p₃, p₄))
-            @test quad.points == (p₁, p₂, p₃, p₄)
+            quad = Quadrilateral_2D(SVector(p₁, p₂, p₃, p₄))
+            @test quad.points == SVector(p₁, p₂, p₃, p₄)
 
             # single constructor
             quad = Quadrilateral_2D(p₁, p₂, p₃, p₄)
-            @test quad.points == (p₁, p₂, p₃, p₄)
+            @test quad.points == SVector(p₁, p₂, p₃, p₄)
         end
 
         @testset "Methods" begin
@@ -19,7 +19,7 @@ using MOCNeutronTransport
             p₂ = Point_2D(F, 1)
             p₃ = Point_2D(F, 1, 1)
             p₄ = Point_2D(F, 0, 1)
-            quad = Quadrilateral_2D((p₁, p₂, p₃, p₄))
+            quad = Quadrilateral_2D(SVector(p₁, p₂, p₃, p₄))
 
             # interpolation
             @test quad(0, 0) ≈ p₁
@@ -30,7 +30,7 @@ using MOCNeutronTransport
 
             # area
             a = area(quad)
-            @test typeof(a) == typeof(F(1))
+            @test typeof(a) == F
             @test a == F(1)
 
             # in

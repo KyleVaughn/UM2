@@ -9,7 +9,7 @@ struct Triangle6_2D{F <: AbstractFloat} <: Face_2D{F}
     # p₄ = point on the quadratic segment from A to B
     # p₅ = point on the quadratic segment from B to C
     # p₆ = point on the quadratic segment from C to A
-    points::NTuple{6, Point_2D{F}}
+    points::SVector{6, Point_2D{F}}
 
 end
 
@@ -22,7 +22,7 @@ Triangle6_2D(p₁::Point_2D,
              p₄::Point_2D,
              p₅::Point_2D,
              p₆::Point_2D
-            ) = Triangle6_2D((p₁, p₂, p₃, p₄, p₅, p₆))
+            ) = Triangle6_2D(SVector(p₁, p₂, p₃, p₄, p₅, p₆))
 
 
 # Methods

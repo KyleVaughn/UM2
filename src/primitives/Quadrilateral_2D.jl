@@ -7,7 +7,7 @@
 # https://math.stackexchange.com/questions/2430691/jacobian-determinant-for-bi-linear-quadrilaterals
 struct Quadrilateral_2D{F <: AbstractFloat} <: Face_2D{F}
     # Counter clockwise order
-    points::NTuple{4, Point_2D{F}}
+    points::SVector{4, Point_2D{F}}
 end
 
 # Constructors
@@ -16,7 +16,7 @@ end
 Quadrilateral_2D(p₁::Point_2D,
                  p₂::Point_2D,
                  p₃::Point_2D,
-                 p₄::Point_2D) = Quadrilateral_2D((p₁, p₂, p₃, p₄))
+                 p₄::Point_2D) = Quadrilateral_2D(SVector(p₁, p₂, p₃, p₄))
 
 # Methods
 # -------------------------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ end
 function triangulate(quad::Quadrilateral_2D)
     # Return the two triangles that partition the domain
     A, B, C, D = quad.points
-    return (Triangle_2D(A, B, C), Triangle_2D(C, D, A))
+    return SVector(Triangle_2D(A, B, C), Triangle_2D(C, D, A))
 end
 
 # @code_warntype checked 2021/11/20
@@ -58,10 +58,10 @@ end
 # @code_warntype checked 2021/11/20
 function intersect(l::LineSegment_2D{F}, quad::Quadrilateral_2D{F}) where {F <: AbstractFloat}
     # Create the 4 line segments that make up the quadrilateral and intersect each one
-    line_segments = (LineSegment_2D(quad.points[1], quad.points[2]),
-                     LineSegment_2D(quad.points[2], quad.points[3]),
-                     LineSegment_2D(quad.points[3], quad.points[4]),
-                     LineSegment_2D(quad.points[4], quad.points[1]))
+    line_segments = SVector(LineSegment_2D(quad.points[1], quad.points[2]),
+                            LineSegment_2D(quad.points[2], quad.points[3]),
+                            LineSegment_2D(quad.points[3], quad.points[4]),
+                            LineSegment_2D(quad.points[4], quad.points[1]))
     p₁ = Point_2D(F, 0)
     p₂ = Point_2D(F, 0)
     ipoints = 0x00

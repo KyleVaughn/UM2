@@ -5,19 +5,19 @@ using MOCNeutronTransport
             p₁ = Point_2D(F, 0)
             p₂ = Point_2D(F, 1)
             p₃ = Point_2D(F, 1, 1)
-            tri = Triangle_2D((p₁, p₂, p₃))
-            @test tri.points == (p₁, p₂, p₃)
+            tri = Triangle_2D(SVector(p₁, p₂, p₃))
+            @test tri.points == SVector(p₁, p₂, p₃)
 
             # single constructor
             tri = Triangle_2D(p₁, p₂, p₃)
-            @test tri.points == (p₁, p₂, p₃)
+            @test tri.points == SVector(p₁, p₂, p₃)
         end
 
         @testset "Methods" begin
             p₁ = Point_2D(F, 0)
             p₂ = Point_2D(F, 1)
             p₃ = Point_2D(F, 1, 1)
-            tri = Triangle_2D((p₁, p₂, p₃))
+            tri = Triangle_2D(SVector(p₁, p₂, p₃))
 
             # interpolation
             @test tri(0, 0) ≈ p₁
@@ -27,7 +27,7 @@ using MOCNeutronTransport
 
             # area
             a = area(tri)
-            @test typeof(a) == typeof(F(1))
+            @test typeof(a) == F
             @test a == F(1//2)
 
             # in

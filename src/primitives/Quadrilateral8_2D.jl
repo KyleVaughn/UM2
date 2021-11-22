@@ -11,7 +11,7 @@ struct Quadrilateral8_2D{F <: AbstractFloat} <: Face_2D{F}
     # p₆ = point on the quadratic segment from B to C
     # p₇ = point on the quadratic segment from C to D
     # p₈ = point on the quadratic segment from D to A
-    points::NTuple{8, Point_2D{F}}
+    points::SVector{8, Point_2D{F}}
 end
 
 # Constructors
@@ -19,7 +19,7 @@ end
 # @code_warntype checked 2021/11/22
 Quadrilateral8_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D, p₄::Point_2D,
                   p₅::Point_2D, p₆::Point_2D, p₇::Point_2D, p₈::Point_2D
-                 ) = Quadrilateral8_2D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
+                 ) = Quadrilateral8_2D(SVector(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
 
 # Methods
 # -------------------------------------------------------------------------------------------------

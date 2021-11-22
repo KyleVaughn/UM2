@@ -7,7 +7,7 @@ using MOCNeutronTransport
             x⃗₂ = Point_2D(F, 2, 0)
             x⃗₃ = Point_2D(F, 1, 1)
             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
-            @test q.points == (x⃗₁, x⃗₂, x⃗₃)
+            @test q.points == SVector(x⃗₁, x⃗₂, x⃗₃)
         end
 
         @testset "Methods" begin
@@ -17,7 +17,7 @@ using MOCNeutronTransport
             x⃗₃ = Point_2D(F, 1, 1)
 
             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
-            @test q.points == (x⃗₁, x⃗₂, x⃗₃)
+            @test q.points == SVector(x⃗₁, x⃗₂, x⃗₃)
             for t = LinRange{F}(0, 1, 11)
                 @test q(t) ≈ Point_2D(F, 2t, -(2t)^2 + 4t)
             end

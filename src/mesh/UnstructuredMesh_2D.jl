@@ -1,12 +1,12 @@
 struct UnstructuredMesh_2D{T <: AbstractFloat, U <: Unsigned}
     name::String
     points::Vector{Point_2D{T}}
-    edges::Vector{<:Union{NTuple{2, U}, NTuple{3, U}}}
+    edges::Vector{<:SVector{L, U} where {L}}
     materialized_edges::Vector{<:Edge_2D{T}}
-    faces::Vector{<:Tuple{Vararg{U, V} where V}}
+    faces::Vector{<:SVector{L, U} where {L}}
     materialized_faces::Vector{<:Face_2D{T}}
-    edge_face_connectivity::Vector{NTuple{2, U}}
-    face_edge_connectivity::Vector{<:Tuple{Vararg{U, E} where E}}
+    edge_face_connectivity::Vector{SVector{2, U}}
+    face_edge_connectivity::Vector{<:SVector{L, U} where {L}}
     boundary_edges::Vector{Vector{U}}
     face_sets::Dict{String, Set{U}}
 end
@@ -14,12 +14,12 @@ end
 function UnstructuredMesh_2D{T, U}(;
         name::String = "DefaultMeshName",
         points::Vector{Point_2D{T}} = Point_2D{T}[],
-        edges::Vector{<:Union{NTuple{2, U}, NTuple{3, U}}} = NTuple{2, U}[],
+        edges::Vector{<:SVector{L, U} where {L}} = SVector{2, U}[],
         materialized_edges::Vector{<:Edge_2D{T}} = LineSegment_2D{T}[],
-        faces::Vector{<:Tuple{Vararg{U, N} where N}} = NTuple{4, U}[],
+        faces::Vector{<:SVector{L, U} where {L}} = SVector{4, U}[],
         materialized_faces::Vector{<:Face_2D{T}} = Triangle_2D{T}[],
-        edge_face_connectivity::Vector{NTuple{2, U}} = NTuple{2, U}[],
-        face_edge_connectivity ::Vector{<:Tuple{Vararg{U, M} where M}} = NTuple{3, U}[],
+        edge_face_connectivity::Vector{SVector{2, U}} = SVector{2, U}[],
+        face_edge_connectivity ::Vector{<:SVector{L, U} where {L}} = SVector{3, U}[],
         boundary_edges::Vector{Vector{U}} = Vector{U}[],
         face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
     ) where {T <: AbstractFloat, U <: Unsigned}
@@ -63,20 +63,21 @@ Base.broadcastable(mesh::UnstructuredMesh_2D) = Ref(mesh)
 #    return add_edge_face_connectivity(add_face_edge_connectivity(mesh))
 #end
 #
-## Return a mesh with edges
-#function add_edges(mesh::UnstructuredMesh_2D{T, U}) where {T <: AbstractFloat, U <: Unsigned}
-#    return UnstructuredMesh_2D{T, U}(name = mesh.name,
-#                                     points = mesh.points,
-#                                     edges = edges(mesh),
-#                                     materialized_edges = mesh.materialized_edges,
-#                                     faces = mesh.faces,
-#                                     materialized_faces = mesh.materialized_faces,
-#                                     edge_face_connectivity = mesh.edge_face_connectivity,
-#                                     face_edge_connectivity = mesh.face_edge_connectivity,
-#                                     boundary_edges = mesh.boundary_edges,
-#                                     face_sets = mesh.face_sets
-#                                    )
-#end
+# Return a mesh with edges
+# @code_warntype checked 2021/11/22
+function add_edges(mesh::UnstructuredMesh_2D{T, U}) where {T <: AbstractFloat, U <: Unsigned}
+    return UnstructuredMesh_2D{T, U}(name = mesh.name,
+                                     points = mesh.points,
+                                     edges = edges(mesh.faces),
+                                     materialized_edges = mesh.materialized_edges,
+                                     faces = mesh.faces,
+                                     materialized_faces = mesh.materialized_faces,
+                                     edge_face_connectivity = mesh.edge_face_connectivity,
+                                     face_edge_connectivity = mesh.face_edge_connectivity,
+                                     boundary_edges = mesh.boundary_edges,
+                                     face_sets = mesh.face_sets
+                                    )
+end
 #
 ## Return a mesh with edge/face connectivity
 ## and all necessary prerequisites to find the boundary edges
@@ -143,22 +144,22 @@ Base.broadcastable(mesh::UnstructuredMesh_2D) = Ref(mesh)
 #                                     face_sets = mesh.face_sets
 #                                    )
 #end
-#
-## Return a mesh with materialized faces
-#function add_materialized_faces(mesh::UnstructuredMesh_2D{T, U}) where {T <: AbstractFloat,
-#                                                                        U <: Unsigned}
-#    return UnstructuredMesh_2D{T, U}(name = mesh.name,
-#                                     points = mesh.points,
-#                                     edges = mesh.edges,
-#                                     materialized_edges = mesh.materialized_edges,
-#                                     faces = mesh.faces,
-#                                     materialized_faces = materialize_faces(mesh),
-#                                     edge_face_connectivity = mesh.edge_face_connectivity,
-#                                     face_edge_connectivity = mesh.face_edge_connectivity,
-#                                     boundary_edges = mesh.boundary_edges,
-#                                     face_sets = mesh.face_sets
-#                                    )
-#end
+
+# Return a mesh with materialized faces
+function add_materialized_faces(mesh::UnstructuredMesh_2D{T, U}) where {T <: AbstractFloat,
+                                                                        U <: Unsigned}
+    return UnstructuredMesh_2D{T, U}(name = mesh.name,
+                                     points = mesh.points,
+                                     edges = mesh.edges,
+                                     materialized_edges = mesh.materialized_edges,
+                                     faces = mesh.faces,
+                                     materialized_faces = materialize_faces(mesh),
+                                     edge_face_connectivity = mesh.edge_face_connectivity,
+                                     face_edge_connectivity = mesh.face_edge_connectivity,
+                                     boundary_edges = mesh.boundary_edges,
+                                     face_sets = mesh.face_sets
+                                    )
+end
 #
 ## Return a vector if the faces adjacent to the face of ID face
 #function adjacent_faces(face::U,
@@ -208,10 +209,10 @@ Base.broadcastable(mesh::UnstructuredMesh_2D) = Ref(mesh)
 #    end
 #end
 #
-## Create the edges for each face
-#function edges(mesh::UnstructuredMesh_2D{T, U}) where {T <: AbstractFloat, U <: Unsigned}
-#    return edges(mesh.faces)
-#end
+
+
+
+
 #
 ## A vector of 2-tuples, denoting the face ID each edge is connected to. If the edge
 ## is a boundary edge, face ID 0 is returned

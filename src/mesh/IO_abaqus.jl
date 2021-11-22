@@ -71,7 +71,7 @@ function read_abaqus_2d(filepath::String; float_type::Type{<:AbstractFloat} = Fl
         face_sets_16 = convert(Dict{String, Set{UInt16}}, face_sets) 
         return UnstructuredMesh_2D{float_type, U}(name = name,
                                                   points = points,
-                                                  faces = [ Tuple(f) for f in faces_16],
+                                                  faces = [ SVector{length(f)}(f) for f in faces_16],
                                                   face_sets = face_sets_16
                                                  )
     elseif ceil(2.2*length(faces)) < typemax(UInt32)
@@ -80,14 +80,14 @@ function read_abaqus_2d(filepath::String; float_type::Type{<:AbstractFloat} = Fl
         face_sets_32 = convert(Dict{String, Set{UInt32}}, face_sets) 
         return UnstructuredMesh_2D{float_type, U}(name = name,
                                                   points = points,
-                                                  faces = [ Tuple(f) for f in faces_32],
+                                                  faces = [ SVector{length(f)}(f) for f in faces_32],
                                                   face_sets = face_sets_32
                                                  )
     else
         U = UInt64
         return UnstructuredMesh_2D{float_type, U}(name = name,
                                                   points = points,
-                                                  faces = [ Tuple(f) for f in faces],
+                                                  faces = [ SVector{length(f)}(f) for f in faces],
                                                   face_sets = face_sets
                                                  )
     end

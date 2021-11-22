@@ -180,6 +180,50 @@ function edges(faces::Vector{<:Tuple{Vararg{U, N} where N}}) where {U <: Unsigne
     edges_filtered = sort(unique(edges_unfiltered))
     return [ e.data for e in edges_filtered ]
 end
+
+# Return a tuple of the points in the edge
+# @code_warntype checked 2021/11/22
+function edge_points(edge::NTuple{2, U},
+                     points::Vector{Point_2D{F}}
+                    ) where {F <: AbstractFloat, U <: Unsigned}
+    return (points[edge[1]], points[edge[2]])
+end
+
+# Return a tuple of the points in the edge
+# @code_warntype checked 2021/11/22
+function edge_points(edge::NTuple{3, U},
+                     points::Vector{Point_2D{F}}
+                    ) where {F <: AbstractFloat, U <: Unsigned}
+    return (mesh.points[edge[1]],
+            mesh.points[edge[2]],
+            mesh.points[edge[3]]
+           )
+end
+
+# Return a tuple of the points in the face
+function face_points(face::NTuple{4, U}, points::Vector{Point_2D{F}}
+    ) where {F <: AbstractFloat, U <: Unsigned}
+    return points[SVector(face[2:N])]
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 ## Find the faces which share the vertex of UD p.
 #function faces_sharing_vertex(p::P,
@@ -222,47 +266,47 @@ end
 #    return 0
 #end
 #
-## Return a tuple of the points in the edge
-#function edge_points(edge::NTuple{2, U},
-#                     points::Vector{Point_2D{F}}
-#                    ) where {F <: AbstractFloat, U <: Unsigned}
-#    return (points[edge[1]], points[edge[2]])
-#end
-#
-## Return a tuple of the points in the edge
-#function edge_points(edge::NTuple{3, U},
-#                     points::Vector{Point_2D{F}}
-#                    ) where {F <: AbstractFloat, U <: Unsigned}
-#    return (mesh.points[edge[1]],
-#            mesh.points[edge[2]],
-#            mesh.points[edge[3]]
-#           )
-#end
-#
-## Return a tuple of the points in the face
-#function face_points(mesh::UnstructuredMesh_2D{F, U},
-#                     face::NTuple{4, U}) where {F <: AbstractFloat, U <: Unsigned}
-#    return Tuple(mesh.points[collect(face[2:4])])::NTuple{3, Point_2D{F}}
-#end
-#
-## Return a tuple of the points in the face
-#function face_points(mesh::UnstructuredMesh_2D{F, U},
-#                     face::NTuple{5, U}) where {F <: AbstractFloat, U <: Unsigned}
-#    return Tuple(mesh.points[collect(face[2:5])])::NTuple{4, Point_2D{F}}
-#end
-#
-## Return a tuple of the points in the face
-#function face_points(mesh::UnstructuredMesh_2D{F, U},
-#                     face::NTuple{7, U}) where {F <: AbstractFloat, U <: Unsigned}
-#    return Tuple(mesh.points[collect(face[2:7])])::NTuple{6, Point_2D{F}}
-#end
-#
-## Return a tuple of the points in the face
-#function face_points(mesh::UnstructuredMesh_2D{F, U},
-#                     face::NTuple{9, U}) where {F <: AbstractFloat, U <: Unsigned}
-#    return Tuple(mesh.points[collect(face[2:9])])::NTuple{8, Point_2D{F}}
-#end
-#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Unsert the boundary edge into the correct place in the vector of edge indices, based on
 ## the distance from some reference point
 #function insert_boundary_edge!(edge_index::U, edge_indices::Vector{U}, p_ref::Point_2D{F},
@@ -507,36 +551,36 @@ end
 #    return materialize_edge.(mesh, mesh.edges)
 #end
 #
-## Return a Triangle_2D from the point IDs in a face
-#function materialize_face(mesh::UnstructuredMesh_2D{F, U},
-#                          face::NTuple{4, U}) where {F <: AbstractFloat, U <: Unsigned}
-#    return Triangle_2D(face_points(mesh, face))
-#end
-#
-## Return a Quadrilateral_2D from the point IDs in a face
-#function materialize_face(mesh::UnstructuredMesh_2D{F, U},
-#                          face::NTuple{5, U}) where {F <: AbstractFloat, U <: Unsigned}
-#    return Quadrilateral_2D(face_points(mesh, face))
-#end
-#
-## Return a Triangle6_2D from the point IDs in a face
-#function materialize_face(mesh::UnstructuredMesh_2D{F, U},
-#                          face::NTuple{7, U}) where {F <: AbstractFloat, U <: Unsigned}
-#    return Triangle6_2D(face_points(mesh, face))
-#end
-#
-## Return a Quadrilateral8_2D from the point IDs in a face
-#function materialize_face(mesh::UnstructuredMesh_2D{F, U},
-#                          face::NTuple{9, U}) where {F <: AbstractFloat, U <: Unsigned}
-#    return Quadrilateral8_2D(face_points(mesh, face))
-#end
-#
-## Return a materialized face for each face in the mesh
-#function materialize_faces(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat,
-#                                                                    U <: Unsigned}
-#    return materialize_face.(mesh, mesh.faces)::Vector{<:Face_2D{F}}
-#end
-#
+# Return a Triangle_2D from the point IDs in a face
+function materialize_face(mesh::UnstructuredMesh_2D{F, U},
+                          face::NTuple{4, U}) where {F <: AbstractFloat, U <: Unsigned}
+    return Triangle_2D(face_points(mesh, face))
+end
+
+# Return a Quadrilateral_2D from the point IDs in a face
+function materialize_face(mesh::UnstructuredMesh_2D{F, U},
+                          face::NTuple{5, U}) where {F <: AbstractFloat, U <: Unsigned}
+    return Quadrilateral_2D(face_points(mesh, face))
+end
+
+# Return a Triangle6_2D from the point IDs in a face
+function materialize_face(mesh::UnstructuredMesh_2D{F, U},
+                          face::NTuple{7, U}) where {F <: AbstractFloat, U <: Unsigned}
+    return Triangle6_2D(face_points(mesh, face))
+end
+
+# Return a Quadrilateral8_2D from the point IDs in a face
+function materialize_face(mesh::UnstructuredMesh_2D{F, U},
+                          face::NTuple{9, U}) where {F <: AbstractFloat, U <: Unsigned}
+    return Quadrilateral8_2D(face_points(mesh, face))
+end
+
+# Return a materialized face for each face in the mesh
+function materialize_faces(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat,
+                                                                    U <: Unsigned}
+    return materialize_face.(mesh, mesh.faces)::Vector{<:Face_2D{F}}
+end
+
 ## Return the number of edges in a face type
 #function num_edges(face::Tuple{Vararg{U}}) where {U <: Unsigned}
 #    cell_type = face[1]

@@ -10,12 +10,12 @@ using MOCNeutronTransport
             p₆ = Point_2D(F,    1, 1//2)
             p₇ = Point_2D(F, 1//2,    1)
             p₈ = Point_2D(F,    0, 1//2)
-            quad8 = Quadrilateral8_2D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
-            @test quad8.points == (p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
+            quad8 = Quadrilateral8_2D(SVector(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
+            @test quad8.points == SVector(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
 
             # single constructor
-            quad8 = Quadrilateral8_2D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
-            @test quad8.points == (p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
+            quad8 = Quadrilateral8_2D(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
+            @test quad8.points == SVector(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
         end
 
         @testset "Methods" begin
@@ -27,7 +27,7 @@ using MOCNeutronTransport
             p₆ = Point_2D(F,    1, 1//2)
             p₇ = Point_2D(F, 1//2,    1)
             p₈ = Point_2D(F,    0, 1//2)
-            quad8 = Quadrilateral8_2D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
+            quad8 = Quadrilateral8_2D(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
 
             # interpolation
             @test quad8(0, 0) ≈ p₁
@@ -60,7 +60,7 @@ using MOCNeutronTransport
             p₆ = Point_2D(F, 5//2, 3//2)
             p₇ = Point_2D(F, 3//2, 5//2)
             p₈ = Point_2D(F, 0,    3//2)
-            quad8 = Quadrilateral8_2D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
+            quad8 = Quadrilateral8_2D(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
 
             # 2D default
             @test isapprox(area(quad8; N = 3), 17//3, atol=1.0e-6)
@@ -74,7 +74,7 @@ using MOCNeutronTransport
             p₆ = Point_2D(F, 5//2, 3//2)
             p₇ = Point_2D(F, 3//2, 5//2)
             p₈ = Point_2D(F, 0, 3//2)
-            quad8 = Quadrilateral8_2D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
+            quad8 = Quadrilateral8_2D(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
             @test quad8(real_to_parametric(p₁, quad8)) ≈ p₁
             @test quad8(real_to_parametric(p₂, quad8)) ≈ p₂
             @test quad8(real_to_parametric(p₃, quad8)) ≈ p₃
@@ -91,7 +91,7 @@ using MOCNeutronTransport
             p₆ = Point_2D(F, 5//2, 3//2)
             p₇ = Point_2D(F, 3//2, 5//2)
             p₈ = Point_2D(F, 0, 1)
-            quad8 = Quadrilateral8_2D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
+            quad8 = Quadrilateral8_2D(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
             @test Point_2D(F, 1, 1) ∈  quad8
             @test Point_2D(F, 1, 0) ∉  quad8
 
@@ -135,7 +135,7 @@ using MOCNeutronTransport
             p₆ = Point_2D(F, -1//2, -1//2)
             p₇ = Point_2D(F, -1//2, -3//2)
             p₈ = Point_2D(F,  1//2, -3//2)
-            quad8 = Quadrilateral8_2D((p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
+            quad8 = Quadrilateral8_2D(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
             l = LineSegment_2D(Point_2D(F, -2, -1//4), Point_2D(F, 2, -1//4))
             n, points = l ∩ quad8
             @test n == 6

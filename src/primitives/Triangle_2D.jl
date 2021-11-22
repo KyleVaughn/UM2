@@ -2,7 +2,7 @@
 
 # Triangle in 2D defined by its 3 vertices.
 struct Triangle_2D{F <: AbstractFloat} <: Face_2D{F}
-    points::NTuple{3, Point_2D{F}}
+    points::SVector{3, Point_2D{F}}
 end
 
 # Constructors
@@ -10,7 +10,7 @@ end
 # @code_warntype checked 2021/11/19
 Triangle_2D(p₁::Point_2D{F},
             p₂::Point_2D{F},
-            p₃::Point_2D{F}) where {F <: AbstractFloat} = Triangle_2D((p₁, p₂, p₃))
+            p₃::Point_2D{F}) where {F <: AbstractFloat} = Triangle_2D(SVector(p₁, p₂, p₃))
 
 # Methods
 # -------------------------------------------------------------------------------------------------
@@ -55,9 +55,9 @@ end
 # @code_warntype checked 2021/11/19
 function intersect(l::LineSegment_2D{F}, tri::Triangle_2D{F}) where {F <: AbstractFloat}
     # Create the 3 line segments that make up the triangle and intersect each one
-    line_segments = (LineSegment_2D(tri.points[1], tri.points[2]),
-                     LineSegment_2D(tri.points[2], tri.points[3]),
-                     LineSegment_2D(tri.points[3], tri.points[1]))
+    line_segments = SVector(LineSegment_2D(tri.points[1], tri.points[2]),
+                            LineSegment_2D(tri.points[2], tri.points[3]),
+                            LineSegment_2D(tri.points[3], tri.points[1]))
     p₁ = Point_2D(F, 0)
     p₂ = Point_2D(F, 0)
     ipoints = 0x00

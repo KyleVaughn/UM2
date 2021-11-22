@@ -15,7 +15,7 @@
 # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
 # Chapter 8, Advanced Data Representation, in the interpolation functions section
 struct QuadraticSegment_2D{F <: AbstractFloat} <: Edge_2D{F}
-    points::NTuple{3, Point_2D{F}}
+    points::SVector{3, Point_2D{F}}
 end
 
 # Constructors
@@ -23,7 +23,7 @@ end
 # @code_warntype checked 2021/11/19
 QuadraticSegment_2D(p₁::Point_2D,
                     p₂::Point_2D,
-                    p₃::Point_2D) = QuadraticSegment_2D((p₁, p₂, p₃))
+                    p₃::Point_2D) = QuadraticSegment_2D(SVector(p₁, p₂, p₃))
 
 # Base
 # -------------------------------------------------------------------------------------------------
