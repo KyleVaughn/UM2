@@ -1,7 +1,4 @@
 using MOCNeutronTransport
-include("../../src/constants.jl")
-include("../../src/mesh/UnstructuredMesh_2D_low_level.jl")
-include("../../src/mesh/UnstructuredMesh_2D.jl")
 @testset "UnstructuredMesh" begin
     @testset "Construct Edges" begin
         # Three triangles
@@ -18,12 +15,15 @@ include("../../src/mesh/UnstructuredMesh_2D.jl")
                  SVector{4, UInt64}(UInt64[5, 2, 3, 5])
                 ]
 
+        U = UInt64
         # edges
         cell_edges = edges(faces[1])
-        @test cell_edges == [[1, 2], [2, 4], [4, 1]]
+        @test cell_edges == SVector(MVector(U(1), U(2)), MVector(U(2), U(4)), MVector(U(1), U(4)))
         cell_edges = edges(faces[2])
-        @test cell_edges == [[2, 5], [5, 4], [4, 2]]
+        @test cell_edges == SVector(MVector(U(2), U(5)), MVector(U(4), U(5)), MVector(U(2), U(4)))
         cell_edges = edges(faces)
-        @test cell_edges == [ [1, 2], [1, 4], [2, 3], [2, 4], [2, 5], [3, 5], [4, 5] ]
+        @test cell_edges == SVector( MVector(U(1), U(2)), MVector(U(1), U(4)), MVector(U(2), U(3)), 
+                                     MVector(U(2), U(4)), MVector(U(2), U(5)), MVector(U(3), U(5)), 
+                                     MVector(U(4), U(5)) )
     end
 end
