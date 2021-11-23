@@ -186,7 +186,41 @@ function edges(faces::Vector{<:SVector{N, U} where N}) where {U <: Unsigned}
     return [ SVector(e.data) for e in edges_filtered ]
 end
 
-# Return a tuple of the points in the edge
+
+# A vector of length 2 SVectors, denoting the face ID each edge is connected to. If the edge
+# is a boundary edge, face ID 0 is returned
+# @code_warntype checked 2021/11/23
+function edge_face_connectivity(the_edges::Vector{<:SVector{L, U} where {L}},
+                                the_faces::Vector{<:SVector{L, U} where {L}},
+                                the_face_edge_connectivity::Vector{<:SVector{L, U} where {L}}
+                               ) where {U <: Unsigned}
+    # Each edge should only border 2 faces if it is an interior edge, and 1 face if it is
+    # a boundary edge.
+    # Loop through each face in the face_edge_connectivity vector and mark each edge with
+    # the faces that it borders.
+    if length(the_edges) === 0
+        @error "Does not have edges!"
+    end
+    if length(the_face_edge_connectivity) === 0
+        @error "Does not have face/edge connectivity!"
+    end
+    edge_face = [MVector{2, U}(zeros(U, 2)) for i in eachindex(the_edges)]
+    for (iface, edges) in enumerate(the_face_edge_connectivity)
+        for iedge in edges
+            # Add the face id in the first non-zero position of the edge_face conn. vec.
+            if edge_face[iedge][1] == 0
+                edge_face[iedge][1] = iface
+            elseif edge_face[iedge][2] == 0
+                edge_face[iedge][2] = iface
+            else
+                @error "Edge $iedge seems to have 3 faces associated with it!"
+            end
+        end
+    end
+    return [SVector(sort(two_faces).data) for two_faces in edge_face]
+end
+
+# Return an SVector of the points in the edge
 # @code_warntype checked 2021/11/22
 function edge_points(edge::SVector{2, U},
                      points::Vector{Point_2D{F}}
@@ -194,7 +228,7 @@ function edge_points(edge::SVector{2, U},
     return SVector(points[edge[1]], points[edge[2]])
 end
 
-# Return a tuple of the points in the edge
+# Return an SVector of the points in the edge
 # @code_warntype checked 2021/11/22
 function edge_points(edge::SVector{3, U},
                      points::Vector{Point_2D{F}}
@@ -205,7 +239,30 @@ function edge_points(edge::SVector{3, U},
                   )
 end
 
-# Return a tuple of the points in the face
+# A vector of SVectors, denoting the edge ID each face is connected to.
+# @code_warntype checked 2021/11/23
+function face_edge_connectivity(the_faces::Vector{<:SVector{L, U} where {L}},
+                                the_edges::Vector{<:SVector{L, U} where {L}}
+                               ) where {U <: Unsigned}
+    # A vector of MVectors of zeros for each face
+    # Each MVector is the length of the number of edges
+    face_edge = [MVector{Int64(num_edges(face)), U}(zeros(U, num_edges(face))) 
+                    for face in the_faces]::Vector{<:MVector{L, U} where {L}}
+    if length(the_edges) === 0
+        @error "Does not have edges!"
+    end
+    # for each face in the mesh, generate the edges.
+    # Search for the index of the edge in the mesh.edges vector
+    # Insert the index of the edge into the face_edge connectivity vector
+    for i in eachindex(the_faces)
+        for (j, edge) in enumerate(edges(the_faces[i]))
+            face_edge[i][j] = searchsortedfirst(the_edges, SVector(edge.data))
+        end
+    end
+    return [SVector(sort(conn).data) for conn in face_edge]::Vector{<:SVector{L, U} where {L}}
+end
+
+# Return an SVector of the points in the face
 # @code_warntype checked 2021/11/22
 function face_points(face::SVector{N, U}, points::Vector{Point_2D{F}}
     ) where {N, F <: AbstractFloat, U <: Unsigned}
@@ -536,18 +593,19 @@ function materialize_faces(mesh::UnstructuredMesh_2D{F, U}) where {F <: Abstract
     return materialize_face.(mesh.faces, (mesh.points,))::Vector{<:Face_2D{F}}
 end
 
-## Return the number of edges in a face type
-#function num_edges(face::Tuple{Vararg{U}}) where {U <: Unsigned}
-#    cell_type = face[1]
-#    if cell_type == 5 || cell_type == 22
-#        return U(3)
-#    elseif cell_type == 9 || cell_type == 23
-#        return U(4)
-#    else
-#        @error "Unsupported face type"
-#        return U(0)
-#    end
-#end
+# Return the number of edges in a face type
+# @code_warntype checked 2021/11/22
+function num_edges(face::SVector{L, U}) where {L, U <: Unsigned}
+    cell_type = face[1]
+    if cell_type == 5 || cell_type == 22
+        return U(3)
+    elseif cell_type == 9 || cell_type == 23
+        return U(4)
+    else
+        @error "Unsupported face type"
+        return U(0)
+    end
+end
 #
 ## Return the UD of the edge shared by two adjacent faces
 #function shared_edge(face_edge_connectivity::Vector{<:Tuple{Vararg{U, M} where M}},
