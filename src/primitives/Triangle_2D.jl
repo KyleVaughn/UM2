@@ -74,7 +74,7 @@ function intersect(l::LineSegment_2D{F}, tri::Triangle_2D{F}) where {F <: Abstra
             end
         end
     end
-    return ipoints, (p₁, p₂)
+    return ipoints, SVector(p₁, p₂)
 end
 intersect(tri::Triangle_2D, l::LineSegment_2D) = intersect(l, tri)
 

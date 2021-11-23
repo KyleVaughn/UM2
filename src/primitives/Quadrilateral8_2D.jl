@@ -210,7 +210,7 @@ function intersect(l::LineSegment_2D{F}, quad8::Quadrilateral8_2D{F}) where {F <
             end
         end
     end
-    return n_ipoints, Tuple(ipoints)
+    return n_ipoints, SVector(ipoints)
 end
 intersect(quad8::Quadrilateral8_2D, l::LineSegment_2D) = intersect(l, quad8)
 

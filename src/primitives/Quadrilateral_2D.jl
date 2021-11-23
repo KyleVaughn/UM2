@@ -78,7 +78,7 @@ function intersect(l::LineSegment_2D{F}, quad::Quadrilateral_2D{F}) where {F <: 
             end
         end
     end
-    return ipoints, (p₁, p₂)
+    return ipoints, SVector(p₁, p₂)
 end
 
 function Base.show(io::IO, quad::Quadrilateral_2D{F}) where {F <: AbstractFloat}

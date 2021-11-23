@@ -211,7 +211,7 @@ function intersect(l::LineSegment_2D{F}, tri6::Triangle6_2D{F}) where {F <: Abst
             end
         end
     end
-    return n_ipoints, Tuple(ipoints)
+    return n_ipoints, SVector(ipoints)
 end
 intersect(tri6::Triangle6_2D, l::LineSegment_2D) = intersect(l, tri6)
 
