@@ -15,15 +15,14 @@ using MOCNeutronTransport
                  SVector{4, UInt64}(UInt64[5, 2, 3, 5])
                 ]
 
-        U = UInt64
         # edges
         cell_edges = edges(faces[1])
-        @test cell_edges == SVector(MVector(U(1), U(2)), MVector(U(2), U(4)), MVector(U(1), U(4)))
+        @test cell_edges == SVector(MVector(1, 2), MVector(2, 4), MVector(1, 4))
         cell_edges = edges(faces[2])
-        @test cell_edges == SVector(MVector(U(2), U(5)), MVector(U(4), U(5)), MVector(U(2), U(4)))
+        @test cell_edges == SVector(MVector(2, 5), MVector(4, 5), MVector(2, 4))
         cell_edges = edges(faces)
-        @test cell_edges == SVector( MVector(U(1), U(2)), MVector(U(1), U(4)), MVector(U(2), U(3)), 
-                                     MVector(U(2), U(4)), MVector(U(2), U(5)), MVector(U(3), U(5)), 
-                                     MVector(U(4), U(5)) )
+        @test cell_edges == SVector( MVector(1, 2), MVector(1, 4), MVector(2, 3), 
+                                     MVector(2, 4), MVector(2, 5), MVector(3, 5), 
+                                     MVector(4, 5) )
     end
 end

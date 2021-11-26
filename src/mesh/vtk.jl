@@ -130,6 +130,7 @@ end
 
 function write_vtk_2d(filename::String, mesh::UnstructuredMesh_2D)
     @info "Writing $filename"
+    @warn "  - Face sets not currently supported for vtk files"
     # Check valid filename
     if !occursin(".vtk", filename)
         @error "Invalid filename. '.vtk' does not occur in $filename"

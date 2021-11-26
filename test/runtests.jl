@@ -10,10 +10,10 @@ tests = ["./primitives/Point_2D",
          "./primitives/Triangle6_2D",
          "./primitives/Quadrilateral8_2D",
          "./mesh/UnstructuredMesh_2D",
+         "./mesh/IO_abaqus",
 #         "Tree",
 #         "AngularQuadrature", 
 #         "vtk",
-#         "abaqus",
 #         "xdmf"
         ]
 for t in tests

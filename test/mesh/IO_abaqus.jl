@@ -1,7 +1,7 @@
 using MOCNeutronTransport
 @testset "Abaqus" begin
     @testset "c5g7 pin - triangles" begin
-        filepath = "./mesh_files/c5g7_UO2_pin.inp"
+        filepath = "./mesh/mesh_files/c5g7_UO2_pin.inp"
         ref_points = [Point_2D(0.0, 0.0),
                       Point_2D(1.26, 0.0),
                       Point_2D(0.0, 1.26),
@@ -18,30 +18,30 @@ using MOCNeutronTransport
                       Point_2D(0.50983869566359, 0.10353892742181),
                       Point_2D(0.96668449300372, 0.20781099946726),
                       Point_2D(0.63, 0.63)]
-        ref_faces = Vector{NTuple{4, Int64}}([
-                    (5, 12, 16, 11),
-                    (5, 13, 16, 12),
-                    (5, 14, 16, 13),
-                    (5, 11, 16, 10),
-                    (5, 10, 16, 5),
-                    (5, 15, 16, 14),
-                    (5, 5, 16, 15),
-                    (5, 7, 1, 13),
-                    (5, 7, 12, 3),
-                    (5, 1, 6, 14),
-                    (5, 1, 14, 13),
-                    (5, 6, 2, 15),
-                    (5, 15, 2, 8),
-                    (5, 3, 11, 9),
-                    (5, 3, 12, 11),
-                    (5, 10, 8, 4),
-                    (5, 9, 10, 4),
-                    (5, 10, 5, 8),
-                    (5, 15, 8, 5),
-                    (5, 14, 6, 15),
-                    (5, 7, 13, 12),
-                    (5, 11, 10, 9)
-                   ])
+        ref_faces = [
+                    SVector(5, 12, 16, 11),
+                    SVector(5, 13, 16, 12),
+                    SVector(5, 14, 16, 13),
+                    SVector(5, 11, 16, 10),
+                    SVector(5, 10, 16, 5),
+                    SVector(5, 15, 16, 14),
+                    SVector(5, 5, 16, 15),
+                    SVector(5, 7, 1, 13),
+                    SVector(5, 7, 12, 3),
+                    SVector(5, 1, 6, 14),
+                    SVector(5, 1, 14, 13),
+                    SVector(5, 6, 2, 15),
+                    SVector(5, 15, 2, 8),
+                    SVector(5, 3, 11, 9),
+                    SVector(5, 3, 12, 11),
+                    SVector(5, 10, 8, 4),
+                    SVector(5, 9, 10, 4),
+                    SVector(5, 10, 5, 8),
+                    SVector(5, 15, 8, 5),
+                    SVector(5, 14, 6, 15),
+                    SVector(5, 7, 13, 12),
+                    SVector(5, 11, 10, 9)
+                   ]
         ref_face_sets = Dict{String, Set{Int64}}()
         ref_face_sets["MATERIAL_UO2-3.3"] = Set([1, 2, 3, 4, 5, 6, 7])
         ref_face_sets["GRID_L1_1_1"] = Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
