@@ -58,6 +58,7 @@ end
 
 
 include("AbstractTypes.jl")
+include("Tree.jl")
 include("./primitives/Point_2D.jl")
 include("./primitives/LineSegment_2D.jl")
 include("./primitives/QuadraticSegment_2D.jl")
@@ -68,9 +69,8 @@ include("./primitives/Quadrilateral8_2D.jl")
 include("./mesh/UnstructuredMesh_2D.jl")
 include("./mesh/UnstructuredMesh_2D_low_level.jl")
 include("./mesh/IO_abaqus.jl")
+include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
 #include("AngularQuadrature.jl")
-#include("Tree.jl")
-#include("HierarchicalRectangularlyPartitionedMesh.jl")
 include("constants.jl")
 include("gauss_legendre_quadrature.jl")
 

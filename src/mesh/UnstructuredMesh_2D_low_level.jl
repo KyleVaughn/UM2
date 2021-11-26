@@ -594,7 +594,7 @@ end
 # Return a materialized edge for each edge in the mesh
 # @code_warntype checked 2021/11/22
 function materialize_edges(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat, U <: Unsigned}
-    return materialize_edge.(mesh.edges, (mesh.points,))::Vector{<:Edge_2D{F}}
+    return materialize_edge.(mesh.edges, Ref(mesh.points))::Vector{<:Edge_2D{F}}
 end
 
 # Return a Triangle_2D from the point IDs in a face
@@ -628,7 +628,7 @@ end
 # Return a materialized face for each face in the mesh
 # @code_warntype checked 2021/11/22
 function materialize_faces(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat, U <: Unsigned}
-    return materialize_face.(mesh.faces, (mesh.points,))::Vector{<:Face_2D{F}}
+    return materialize_face.(mesh.faces, Ref(mesh.points))::Vector{<:Face_2D{F}}
 end
 
 # Return the number of edges in a face type

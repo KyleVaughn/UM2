@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/19
-
 # A 2D point in Cartesian coordinates.
 struct Point_2D{F <: AbstractFloat}
     x::SVector{2, F}

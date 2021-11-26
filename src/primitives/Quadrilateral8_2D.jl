@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/22
-
 # A quadratic quadrilateral in 2D space.
 struct Quadrilateral8_2D{F <: AbstractFloat} <: Face_2D{F}
     # Fhe points are assumed to be ordered  in counter clockwise order as follows

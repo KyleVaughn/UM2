@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/19
-
 # A line segment in 2D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and ends at points[2]
 struct LineSegment_2D{F <: AbstractFloat} <: Edge_2D{F}

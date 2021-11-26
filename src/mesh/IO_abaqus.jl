@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/22
-
 # UO routines for the Abaqus .inp file format
 const abaqus_to_vtk_type = Dict{String, UInt64}(
     # 2D

@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/19
-# 
 # A quadratic segment in 2D space that passes through three points: x⃗₁, x⃗₂, and x⃗₃.
 # The assumed relation of the points may be seen in the diagram below.
 #                 ___x⃗₃___

@@ -24,25 +24,26 @@ function node_level(tree::Tree; current_level::Int64=1)
 end
 # Is this the last child in the parent's list of children?
 # offset determines if the nth-parent is the last child
-function _is_last_child(tree::Tree; relative_offset::Int64=0)
-    if !iassigned(tree.parent)
+function is_last_child(tree::Tree; relative_offset::Int64=0)
+    if !isassigned(tree.parent)
         return true
     end
     if relative_offset > 0
-        return _is_last_child(tree.parent[]; relative_offset=relative_offset-1)
+        return is_last_child(tree.parent[]; relative_offset=relative_offset-1)
     else
         nsiblings = length(tree.parent[].children) - 1
         return (tree.parent[].children[nsiblings + 1][] == tree)
     end
 end
+
 function Base.show(io::IO, tree::Tree; relative_offset::Int64=0)
     nsiblings = 0
     for i = relative_offset:-1:1
-        if i === 1 && _is_last_child(tree, relative_offset=i-1)
+        if i === 1 && is_last_child(tree, relative_offset=i-1)
             print(io, "└─ ")
         elseif i === 1
             print(io, "├─ ")
-        elseif _is_last_child(tree, relative_offset=i-1)
+        elseif is_last_child(tree, relative_offset=i-1)
             print(io, "   ")
         else
             print(io, "│  ")

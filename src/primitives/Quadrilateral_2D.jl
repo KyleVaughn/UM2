@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/20
-
 # Quadrilateral in 2D defined by its 4 vertices.
 # NOTE: Quadrilaterals are assumed to be convex. This is because quadrilaterals must be convex
 # to be valid finite elements, and we're generating meshes using a finite element mesh generator,

@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/19
-
 # Triangle in 2D defined by its 3 vertices.
 struct Triangle_2D{F <: AbstractFloat} <: Face_2D{F}
     points::SVector{3, Point_2D{F}}

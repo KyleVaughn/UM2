@@ -1,5 +1,3 @@
-# @code_warntype checked 2021/11/20
-
 # A quadratic triangle, defined in 2D.
 struct Triangle6_2D{F <: AbstractFloat} <: Face_2D{F}
     # The points are assumed to be ordered as follows
