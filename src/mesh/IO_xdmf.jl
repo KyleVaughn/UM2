@@ -1,6 +1,41 @@
+# @code_warntype checked 2021/11/27
+function write_xdmf_2d(filename::String, 
+                       HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
+                      ) where {F <: AbstractFloat, U <: Unsigned}
+    @info "Writing $filename" 
+    # Check valid filename
+    if !occursin(".xdmf", filename)
+        @error "Invalid filename. '.xdmf' does not occur in $filename"
+    end
+
+    # If there are materials, map all material names to an integer
+    material_map = make_material_name_to_id_map(HRPM)
+
+    # h5 filename
+    h5_filename = replace(filename, ("xdmf" => "h5"))
+    h5_file = h5open(h5_filename, "w")
+    # XML
+    xdoc = XMLDocument()
+    # Xdmf
+    xroot = create_root(xdoc, "Xdmf")
+    set_attribute(xroot, "Version", "3.0")
+    # Domain
+    xdomain = new_child(xroot, "Domain")
+    # Material names
+    if material_map != Dict{String, Int64}()
+        xmaterials = new_child(xdomain, "Information")
+        set_attribute(xmaterials, "Name", "MaterialNames")
+        add_text(xmaterials, join(keys(material_map), " ")) 
+    end
+    add_HRPM_xdmf!(xdomain, h5_filename, h5_file, HRPM, material_map)
+    save_file(xdoc, filename)
+    close(h5_file)
+end
+
+# @code_warntype checked 2021/11/27
 function write_xdmf_2d(filename::String,
-                       mesh::UnstructuredMesh_2D{T, I}
-                      ) where {T <: AbstractFloat, I <: Unsigned}
+                       mesh::UnstructuredMesh_2D{F, U}
+                      ) where {F <: AbstractFloat, U <: Unsigned}
     @info "Writing $filename" 
     # Check valid filename
     if !occursin(".xdmf", filename)
@@ -9,8 +44,8 @@ function write_xdmf_2d(filename::String,
 
     # If there are materials, map all material names to an integer
     material_map = Dict{String, Int64}()
-    if mesh.face_sets != Dict{String, Set{I}}()
-        material_map = _make_material_name_to_id_map(mesh)
+    if mesh.face_sets != Dict{String, Set{U}}()
+        material_map = make_material_name_to_id_map(mesh)
     end
 
     # h5 filename
@@ -31,13 +66,16 @@ function write_xdmf_2d(filename::String,
     end
 
     # Add uniform grid
-    _add_uniform_grid_xdmf(xdomain, h5_filename, h5_file, mesh, material_map)
+    add_uniform_grid_xdmf!(xdomain, h5_filename, h5_file, mesh, material_map)
 
     save_file(xdoc, filename)
     close(h5_file)
 end
 
-function _add_uniform_grid_xdmf(xml::XMLElement,
+# Helper functions for write_xdmf
+# -------------------------------------------------------------------------------------------------
+# @code_warntype checked 2021/11/27
+function add_uniform_grid_xdmf!(xml::XMLElement,
                                 h5_filename::String,
                                 h5_mesh::Union{HDF5.Group, HDF5.File},
                                 mesh::UnstructuredMesh_2D,
@@ -52,26 +90,29 @@ function _add_uniform_grid_xdmf(xml::XMLElement,
     h5_group = create_group(h5_mesh, mesh.name)
  
     # Geometry
-    _write_xdmf_geometry(xgrid, h5_filename, h5_group, mesh)
+    write_xdmf_geometry!(xgrid, h5_filename, h5_group, mesh)
  
     # Topology
-    _write_xdmf_topology(xgrid, h5_filename, h5_group, mesh)
+    write_xdmf_topology!(xgrid, h5_filename, h5_group, mesh)
  
     # Non-material face sets
     if mesh.face_sets != Dict{String, Set{UInt64}}()
-        _write_xdmf_face_sets(xgrid, h5_filename, h5_group, mesh)
+        write_xdmf_face_sets!(xgrid, h5_filename, h5_group, mesh)
     end
  
     # Materials
     if material_map != Dict{String, Int64}()
-        _write_xdmf_materials(xgrid, h5_filename, h5_group, mesh, material_map)
+        write_xdmf_materials!(xgrid, h5_filename, h5_group, mesh, material_map)
     end
+    return nothing
 end
 
-function _write_xdmf_geometry(xml::XMLElement, 
+# @code_warntype checked 2021/11/27
+function write_xdmf_geometry!(xml::XMLElement, 
                               h5_filename::String, 
                               h5_mesh::HDF5.Group, 
-                              mesh::UnstructuredMesh_2D)
+                              mesh::UnstructuredMesh_2D{F, U}
+                             ) where {F <: AbstractFloat, U <: Unsigned}
     @debug "Writing XDMF geometry"
     # Geometry
     xgeom = new_child(xml, "Geometry")
@@ -83,16 +124,14 @@ function _write_xdmf_geometry(xml::XMLElement,
     set_attribute(xdataitem, "Dimensions", "$npoints 3")
     set_attribute(xdataitem, "Format", "HDF")
     float_precision = 8
-    float_type = Float64
-    if typeof(mesh.points[1]) === Point_2D{Float32}
+    if F == Float32
         float_precision = 4
-        float_type = Float32
     end
     set_attribute(xdataitem, "Precision", "$float_precision")
     h5_text_item = split(string(h5_mesh))[2]
     add_text(xdataitem, string(h5_filename, ":", h5_text_item, "/points"))
     # Convert the points into an array
-    point_array = zeros(float_type, npoints, 3)
+    point_array = zeros(F, npoints, 3)
     for i = 1:npoints
         point_array[i, 1] = mesh.points[i][1]
         point_array[i, 2] = mesh.points[i][2]
@@ -100,12 +139,15 @@ function _write_xdmf_geometry(xml::XMLElement,
     point_array = copy(transpose(point_array))
     # Write the h5
     h5_mesh["points"] = point_array
+    return nothing
 end
 
-function _write_xdmf_topology(xml::XMLElement, 
+# @code_warntype checked 2021/11/27
+function write_xdmf_topology!(xml::XMLElement, 
                               h5_filename::String, 
                               h5_mesh::HDF5.Group, 
-                              mesh::UnstructuredMesh_2D)
+                              mesh::UnstructuredMesh_2D{F, U}
+                             ) where {F <: AbstractFloat, U <: Unsigned}
     @debug "Writing XDMF topology"
     # Topology
     xtopo = new_child(xml, "Topology")
@@ -117,7 +159,7 @@ function _write_xdmf_topology(xml::XMLElement,
     set_attribute(xdataitem, "DataType", "Int")
     topo_length = mapreduce(x->length(x), +, mesh.faces)
     topo_array = Vector{UInt64}(undef, topo_length)
-    _convert_xdmf_faces_to_array!(topo_array, mesh.faces)
+    convert_xdmf_faces_to_array!(topo_array, mesh.faces)
     ndimensions = length(topo_array)
     set_attribute(xdataitem, "Dimensions", "$ndimensions")
     set_attribute(xdataitem, "Format", "HDF")
@@ -126,12 +168,14 @@ function _write_xdmf_topology(xml::XMLElement,
     add_text(xdataitem, string(h5_filename, ":", h5_text_item, "/cells"))
     # Write the h5
     h5_mesh["cells"] = topo_array
+    return nothing
 end
 
-function _convert_xdmf_faces_to_array!(topo_array::Vector{I}, 
-                                       faces::Vector{<:Tuple{Vararg{J, N} where N}}
-                                      ) where {I <: Unsigned, J <: Unsigned}
-    vtk_to_xdmf_type = Dict(
+# @code_warntype checked 2021/11/27
+function convert_xdmf_faces_to_array!(topo_array::Vector{UInt64}, 
+                                      faces::Vector{<:SVector{N, U} where N}
+                                     ) where {U <: Unsigned}
+    vtk_to_xdmf_type = Dict{U,U}(
         # triangle
         5  => 4,
         # triangle6
@@ -158,7 +202,8 @@ function _convert_xdmf_faces_to_array!(topo_array::Vector{I},
     return nothing
 end
 
-function _make_material_name_to_id_map(mesh::UnstructuredMesh_2D)
+# @code_warntype checked 2021/11/27
+function make_material_name_to_id_map(mesh::UnstructuredMesh_2D)
     material_map = Dict{String, Int64}()
     mat_names = String[]
     max_length = 0
@@ -187,18 +232,20 @@ function _make_material_name_to_id_map(mesh::UnstructuredMesh_2D)
             println(string(rpad(set_name, max_length, ' '), " : $id"))  
         end 
     end 
-    return material_map
+    return material_map::Dict{String, Int64}
 end
 
-function _make_material_name_to_id_map(mesh::HierarchicalRectangularlyPartitionedMesh)
-    mesh_children = [mesh]
-    next_mesh_children = HierarchicalRectangularlyPartitionedMesh[]
+# @code_warntype checked 2021/11/27
+function make_material_name_to_id_map(HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
+    ) where {F <: AbstractFloat, U <: Unsigned}
+    mesh_children = [HRPM]
+    next_mesh_children = HierarchicalRectangularlyPartitionedMesh{F, U}[]
     leaves_reached = false
     while !leaves_reached
         for child_mesh in mesh_children
             if length(child_mesh.children) > 0
                 for child_ref in child_mesh.children
-                    push!(next_mesh_children, child_ref[])
+                    push!(next_mesh_children, child_ref[]::HierarchicalRectangularlyPartitionedMesh{F, U})
                 end
             else
                 leaves_reached = true
@@ -206,14 +253,15 @@ function _make_material_name_to_id_map(mesh::HierarchicalRectangularlyPartitione
         end
         if !leaves_reached
             mesh_children = next_mesh_children
-            next_mesh_children = HierarchicalRectangularlyPartitionedMesh[]
+            next_mesh_children = HierarchicalRectangularlyPartitionedMesh{F, U}[]
         end
     end
     material_map = Dict{String, Int64}()
     mat_names = String[]
     max_length = 0
-    for leaf_mesh in mesh_children 
-        for set_name in keys(leaf_mesh.mesh[].face_sets)
+    for leaf_mesh::HierarchicalRectangularlyPartitionedMesh{F, U} in mesh_children 
+        UM = leaf_mesh.mesh[]::UnstructuredMesh_2D{F, U}
+        for set_name in keys(UM.face_sets)
             if occursin("MATERIAL", uppercase(set_name))
                 if set_name ∉  keys(material_map)
                     material_map[set_name] = 0 
@@ -241,10 +289,11 @@ function _make_material_name_to_id_map(mesh::HierarchicalRectangularlyPartitione
             println(string(rpad(set_name, max_length, ' '), " : $id"))  
         end
     end
-    return material_map
+    return material_map::Dict{String, Int64}
 end
 
-function _write_xdmf_materials(xml::XMLElement, 
+# @code_warntype checked 2021/11/27
+function write_xdmf_materials!(xml::XMLElement, 
                                h5_filename::String, 
                                h5_mesh::HDF5.Group, 
                                mesh::UnstructuredMesh_2D,
@@ -281,9 +330,11 @@ function _write_xdmf_materials(xml::XMLElement,
     add_text(xdataitem, string(h5_filename, ":", h5_text_item, "/material_id"))
     # Write the h5
     h5_mesh["material_id"] = mat_ID_array
+    return nothing
 end
 
-function _write_xdmf_face_sets(xml::XMLElement, 
+# @code_warntype checked 2021/11/27
+function write_xdmf_face_sets!(xml::XMLElement, 
                                h5_filename::String, 
                                h5_mesh::HDF5.Group, 
                                mesh::UnstructuredMesh_2D)
@@ -309,42 +360,11 @@ function _write_xdmf_face_sets(xml::XMLElement,
         ID_array = [ x - 1 for x in mesh.face_sets[set_name] ] 
         h5_mesh["$set_name"] = ID_array
     end
+    return nothing
 end
 
-function write_xdmf_2d(filename::String, 
-                       mesh::HierarchicalRectangularlyPartitionedMesh{T, I}
-                      ) where {T <: AbstractFloat, I <: Unsigned}
-    @info "Writing $filename" 
-    # Check valid filename
-    if !occursin(".xdmf", filename)
-        @error "Invalid filename. '.xdmf' does not occur in $filename"
-    end
-
-    # If there are materials, map all material names to an integer
-    material_map = _make_material_name_to_id_map(mesh)
-
-    # h5 filename
-    h5_filename = replace(filename, ("xdmf" => "h5"))
-    h5_file = h5open(h5_filename, "w")
-    # XML
-    xdoc = XMLDocument()
-    # Xdmf
-    xroot = create_root(xdoc, "Xdmf")
-    set_attribute(xroot, "Version", "3.0")
-    # Domain
-    xdomain = new_child(xroot, "Domain")
-    # Material names
-    if material_map != Dict{String, Int64}()
-        xmaterials = new_child(xdomain, "Information")
-        set_attribute(xmaterials, "Name", "MaterialNames")
-        add_text(xmaterials, join(keys(material_map), " ")) 
-    end
-    _add_HRPM_xdmf(xdomain, h5_filename, h5_file, mesh, material_map)
-    save_file(xdoc, filename)
-    close(h5_file)
-end
-
-function _add_HRPM_xdmf(xml::XMLElement,
+# @code_warntype checked 2021/11/27
+function add_HRPM_xdmf!(xml::XMLElement,
                         h5_filename::String,
                         h5_mesh::Union{HDF5.Group, HDF5.File},
                         HRPM::HierarchicalRectangularlyPartitionedMesh,
@@ -358,9 +378,9 @@ function _add_HRPM_xdmf(xml::XMLElement,
         # h5_group
         h5_group = create_group(h5_mesh, HRPM.name)
         for child in HRPM.children
-            _add_HRPM_xdmf(xgrid, h5_filename, h5_group, child[], material_map)
+            add_HRPM_xdmf!(xgrid, h5_filename, h5_group, child[], material_map)
         end
     else
-        _add_uniform_grid_xdmf(xml, h5_filename, h5_mesh, HRPM.mesh[], material_map)         
+        add_uniform_grid_xdmf!(xml, h5_filename, h5_mesh, HRPM.mesh[], material_map)         
     end
 end

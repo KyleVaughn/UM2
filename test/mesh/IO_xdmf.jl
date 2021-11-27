@@ -28,30 +28,30 @@ using HDF5
                       Point_2D(0.50983869566359, 0.10353892742181),
                       Point_2D(0.96668449300372, 0.20781099946726),
                       Point_2D(0.63, 0.63)]
-        ref_faces = Vector{NTuple{4, UInt64}}([
-                    (5, 12, 16, 11),
-                    (5, 13, 16, 12),
-                    (5, 14, 16, 13),
-                    (5, 11, 16, 10),
-                    (5, 10, 16, 5), 
-                    (5, 15, 16, 14),
-                    (5, 5, 16, 15),
-                    (5, 7, 1, 13),
-                    (5, 7, 12, 3), 
-                    (5, 1, 6, 14),
-                    (5, 1, 14, 13),
-                    (5, 6, 2, 15),
-                    (5, 15, 2, 8), 
-                    (5, 3, 11, 9), 
-                    (5, 3, 12, 11),
-                    (5, 10, 8, 4), 
-                    (5, 9, 10, 4), 
-                    (5, 10, 5, 8), 
-                    (5, 15, 8, 5), 
-                    (5, 14, 6, 15),
-                    (5, 7, 13, 12),
-                    (5, 11, 10, 9)
-                   ])
+        ref_faces = [
+                     SVector{4, UInt64}(UInt64[5, 12, 16, 11]),
+                     SVector{4, UInt64}(UInt64[5, 13, 16, 12]),
+                     SVector{4, UInt64}(UInt64[5, 14, 16, 13]),
+                     SVector{4, UInt64}(UInt64[5, 11, 16, 10]),
+                     SVector{4, UInt64}(UInt64[5, 10, 16, 5]), 
+                     SVector{4, UInt64}(UInt64[5, 15, 16, 14]),
+                     SVector{4, UInt64}(UInt64[5, 5, 16, 15]),
+                     SVector{4, UInt64}(UInt64[5, 7, 1, 13]),
+                     SVector{4, UInt64}(UInt64[5, 7, 12, 3]), 
+                     SVector{4, UInt64}(UInt64[5, 1, 6, 14]),
+                     SVector{4, UInt64}(UInt64[5, 1, 14, 13]),
+                     SVector{4, UInt64}(UInt64[5, 6, 2, 15]),
+                     SVector{4, UInt64}(UInt64[5, 15, 2, 8]), 
+                     SVector{4, UInt64}(UInt64[5, 3, 11, 9]), 
+                     SVector{4, UInt64}(UInt64[5, 3, 12, 11]),
+                     SVector{4, UInt64}(UInt64[5, 10, 8, 4]), 
+                     SVector{4, UInt64}(UInt64[5, 9, 10, 4]), 
+                     SVector{4, UInt64}(UInt64[5, 10, 5, 8]), 
+                     SVector{4, UInt64}(UInt64[5, 15, 8, 5]), 
+                     SVector{4, UInt64}(UInt64[5, 14, 6, 15]),
+                     SVector{4, UInt64}(UInt64[5, 7, 13, 12]),
+                     SVector{4, UInt64}(UInt64[5, 11, 10, 9])
+                   ]
         ref_face_sets = Dict{String, Set{UInt64}}()
         ref_face_sets["MATERIAL_UO2-3.3"] = Set([1, 2, 3, 4, 5, 6, 7])
         ref_face_sets["GRID_L1_1_1"] = Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -68,7 +68,7 @@ using HDF5
         # write_xdmf
         write_xdmf_2d("c5g7_UO2_pin.xdmf", mesh)
         # check xdmf
-        ref_file = open("./mesh_files/c5g7_UO2_pin.xdmf", "r")
+        ref_file = open("./mesh/mesh_files/c5g7_UO2_pin.xdmf", "r")
         test_file = open("./c5g7_UO2_pin.xdmf", "r")
         while !eof(ref_file)
             ref_line = readline(ref_file)
