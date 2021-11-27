@@ -4,7 +4,7 @@ function read_vtk_2d(filepath::String)::UnstructuredMesh_2D
     @info "Reading $filepath"
     file = open(filepath, "r")
     name = "DefaultMeshName"
-    local F_type
+    local F
     local points
     local cells
     local cell_types
@@ -21,13 +21,13 @@ function read_vtk_2d(filepath::String)::UnstructuredMesh_2D
                 end
             elseif line_split[1] == "POINTS"
                 if line_split[3] == "float"
-                    F_type = Float32
+                    F = Float32
                 elseif line_split[3] == "double"
-                    F_type = Float64
+                    F = Float64
                 else
                     @error "Unable to identify POINTS data type."
                 end
-                points = read_vtk_points_2d(file, line_split[2], F_type)
+                points = read_vtk_points_2d(file, line_split[2], F)
             elseif line_split[1] == "CELLS"
                 cells = read_vtk_cells(file, line_split[2])
             elseif line_split[1] == "CELL_TYPES"
@@ -66,21 +66,21 @@ function read_vtk_2d(filepath::String)::UnstructuredMesh_2D
     # If 2.2*length(faces) < typemax(UInt), convert to UInt
     if ceil(2.2*length(faces)) < typemax(UInt16)
         faces_16 = convert(Vector{Vector{UInt16}}, faces)
-        return UnstructuredMesh_2D{F_type, UInt16}(name = name,
-                                                   points = points,
-                                                   faces = [ SVector{length(f), UInt16}(f) for f in faces_16]
-                                                  )
+        return UnstructuredMesh_2D{F, UInt16}(name = name,
+                                              points = points,
+                                              faces = [ SVector{length(f), UInt16}(f) for f in faces_16]
+                                             )
     elseif ceil(2.2*length(faces)) < typemax(UInt32)
         faces_32 = convert(Vector{Vector{UInt32}}, faces)
-        return UnstructuredMesh_2D{F_type, UInt32}(name = name,
-                                                   points = points,
-                                                   faces = [ SVector{length(f), UInt32}(f) for f in faces_32]
-                                                  )
+        return UnstructuredMesh_2D{F, UInt32}(name = name,
+                                              points = points,
+                                              faces = [ SVector{length(f), UInt32}(f) for f in faces_32]
+                                             )
     else
-        return UnstructuredMesh_2D{F_type, UInt64}(name = name,
-                                                   points = points,
-                                                   faces = [ SVector{length(f), UInt64}(f) for f in faces]
-                                                  )
+        return UnstructuredMesh_2D{F, UInt64}(name = name,
+                                              points = points,
+                                              faces = [ SVector{length(f), UInt64}(f) for f in faces]
+                                             )
     end
 end
 

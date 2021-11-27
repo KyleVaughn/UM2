@@ -14,7 +14,7 @@ const abaqus_to_vtk_type = Dict{String, UInt64}(
    )
 
 # @code_warntype checked 2021/11/22
-function read_abaqus_2d(filepath::String; float_type::Type{<:AbstractFloat} = Float64)
+function read_abaqus_2d(filepath::String; F::Type{<:AbstractFloat} = Float64)
     @info "Reading $filepath"
     # NOFE: Fhere is a crucial assumption here that elements and nodes are listed 1 to N,
     # not 8, 10, 9 or anything funky/out of order.
@@ -22,7 +22,7 @@ function read_abaqus_2d(filepath::String; float_type::Type{<:AbstractFloat} = Fl
     file = open(filepath, "r")
     faces = Vector{UInt64}[]
     face_sets = Dict{String, Set{UInt64}}()
-    points = Point_2D{float_type}[]
+    points = Point_2D{F}[]
     while !eof(file)
         line_split = split(readline(file))
         if length(line_split) > 0
@@ -35,7 +35,7 @@ function read_abaqus_2d(filepath::String; float_type::Type{<:AbstractFloat} = Fl
                 end
                 name = String(name)
             elseif occursin("*NODE", line_split[1])
-                points = read_abaqus_nodes_2d(file, float_type)
+                points = read_abaqus_nodes_2d(file, F)
             elseif occursin("*ELEMENT", line_split[1])
                 element_type = String(strip(replace(line_split[2], ("type=" => "")), ','))
                 append!(faces, read_abaqus_elements(file, element_type))
@@ -67,37 +67,37 @@ function read_abaqus_2d(filepath::String; float_type::Type{<:AbstractFloat} = Fl
         U = UInt16
         faces_16 = convert(Vector{Vector{UInt16}}, faces)
         face_sets_16 = convert(Dict{String, Set{UInt16}}, face_sets) 
-        return UnstructuredMesh_2D{float_type, U}(name = name,
-                                                  points = points,
-                                                  faces = [ SVector{length(f)}(f) for f in faces_16],
-                                                  face_sets = face_sets_16
-                                                 )
+        return UnstructuredMesh_2D{F, U}(name = name,
+                                         points = points,
+                                         faces = [ SVector{length(f)}(f) for f in faces_16],
+                                         face_sets = face_sets_16
+                                        )
     elseif ceil(2.2*length(faces)) < typemax(UInt32)
         U = UInt32
         faces_32 = convert(Vector{Vector{UInt32}}, faces)
         face_sets_32 = convert(Dict{String, Set{UInt32}}, face_sets) 
-        return UnstructuredMesh_2D{float_type, U}(name = name,
-                                                  points = points,
-                                                  faces = [ SVector{length(f)}(f) for f in faces_32],
-                                                  face_sets = face_sets_32
-                                                 )
+        return UnstructuredMesh_2D{F, U}(name = name,
+                                         points = points,
+                                         faces = [ SVector{length(f)}(f) for f in faces_32],
+                                         face_sets = face_sets_32
+                                        )
     else
         U = UInt64
-        return UnstructuredMesh_2D{float_type, U}(name = name,
-                                                  points = points,
-                                                  faces = [ SVector{length(f)}(f) for f in faces],
-                                                  face_sets = face_sets
-                                                 )
+        return UnstructuredMesh_2D{F, U}(name = name,
+                                         points = points,
+                                         faces = [ SVector{length(f)}(f) for f in faces],
+                                         face_sets = face_sets
+                                        )
     end
 end
 
 # @code_warntype checked 2021/11/22
-function read_abaqus_nodes_2d(file::IOStream, type::Type{F}) where {F <: AbstractFloat}
-    points = Point_2D{type}[]
+function read_abaqus_nodes_2d(file::IOStream, F::Type{<:AbstractFloat})
+    points = Point_2D{F}[]
     line_split = strip.(split(readline(file)), [','])
     line_position = position(file)
     while !occursin("*", line_split[1])
-        xyz = parse.(type, line_split[2:4])
+        xyz = parse.(F, line_split[2:4])
         push!(points, Point_2D(xyz[1], xyz[2]))
         line_position = position(file)
         line_split = strip.(split(readline(file)), [','])

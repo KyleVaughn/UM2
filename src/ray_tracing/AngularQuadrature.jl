@@ -48,7 +48,7 @@ struct ProductAngularQuadrature{nγ, nθ, F <: AbstractFloat} <: AngularQuadratu
 end
 
 # @code_warntype checked 2021/11/27
-function generate_chebyshev_angular_quadrature(M::Int, F::Type{T}) where {T <: AbstractFloat}
+function generate_chebyshev_angular_quadrature(M::Int, F::Type{<:AbstractFloat})
     # A Chebyshev-type quadrature for a given weight function is a quadrature formula with equal
     # weights. This function produces evenly spaced angles with equal weights.
     angles = F[(π*(2m-1)/(4M)) for m = M:-1:1]
@@ -59,7 +59,7 @@ end
 # nγ and nθ are azimuthal and polar angles per octant
 # @code_warntype checked 2021/11/27
 function generate_angular_quadrature(quadrature_type::String, nγ::Int, nθ::Int;
-                                     F::Type{T} = Float64) where {T <: AbstractFloat}
+                                     F::Type{<:AbstractFloat} = Float64)
     if quadrature_type == "Chebyshev-Chebyshev"
         (azi_angles, azi_weights) = generate_chebyshev_angular_quadrature(nγ, F)
         (pol_angles, pol_weights) = generate_chebyshev_angular_quadrature(nθ, F)

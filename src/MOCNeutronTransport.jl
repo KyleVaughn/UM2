@@ -78,8 +78,8 @@ include("./mesh/IO_xdmf.jl")
 include("constants.jl")
 include("gauss_legendre_quadrature.jl")
 include("./ray_tracing/AngularQuadrature.jl")
-#include("ray_trace.jl")
-#include("ray_trace_low_level.jl")
+include("./ray_tracing/ray_trace.jl")
+include("./ray_tracing/ray_trace_low_level.jl")
 
 
 
