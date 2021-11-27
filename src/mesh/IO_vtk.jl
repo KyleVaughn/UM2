@@ -1,12 +1,13 @@
 # Routines for reading and writing VTK files
-
-function read_vtk_2d(filepath::String)
+# @code_warntype checked on 2021/11/26
+function read_vtk_2d(filepath::String)::UnstructuredMesh_2D
     @info "Reading $filepath"
     file = open(filepath, "r")
     name = "DefaultMeshName"
-    cell_types = Vector{Int64}[]
-    cells = Vector{Int64}[]
-    points = nothing
+    local F_type
+    local points
+    local cells
+    local cell_types
     while !eof(file)
         line_split = split(readline(file))
         if length(line_split) > 0
@@ -19,11 +20,18 @@ function read_vtk_2d(filepath::String)
                     @error "DATASET type is $(line_split[2]). Only UNSTRUCTURED_GRID is supported."
                 end
             elseif line_split[1] == "POINTS"
-                points = _read_vtk_points_2d(file, line_split[2], line_split[3])
+                if line_split[3] == "float"
+                    F_type = Float32
+                elseif line_split[3] == "double"
+                    F_type = Float64
+                else
+                    @error "Unable to identify POINTS data type."
+                end
+                points = read_vtk_points_2d(file, line_split[2], F_type)
             elseif line_split[1] == "CELLS"
-                cells = _read_vtk_cells(file, line_split[2])
+                cells = read_vtk_cells(file, line_split[2])
             elseif line_split[1] == "CELL_TYPES"
-                cell_types = _read_vtk_cell_types(file, line_split[2])
+                cell_types::Vector{Int64} = read_vtk_cell_types(file, line_split[2])
             end
         end
     end
@@ -56,52 +64,43 @@ function read_vtk_2d(filepath::String)
     # We see that V ≤ F ≤ 2E, so we use 2.2F as the max number of faces, edges, or vertices
     # plus a fudge factor for small meshes, where the relationships become less accurate.
     # If 2.2*length(faces) < typemax(UInt), convert to UInt
-    float_type = typeof(points[1].x[1])
     if ceil(2.2*length(faces)) < typemax(UInt16)
-        I = UInt16
         faces_16 = convert(Vector{Vector{UInt16}}, faces)
-        return UnstructuredMesh_2D{float_type, I}(name = name,
-                                                  points = points,
-                                                  faces = [ Tuple(f) for f in faces_16]
-                                                 )
+        return UnstructuredMesh_2D{F_type, UInt16}(name = name,
+                                                   points = points,
+                                                   faces = [ SVector{length(f), UInt16}(f) for f in faces_16]
+                                                  )
     elseif ceil(2.2*length(faces)) < typemax(UInt32)
-        I = UInt32
         faces_32 = convert(Vector{Vector{UInt32}}, faces)
-        return UnstructuredMesh_2D{float_type, I}(name = name,
-                                                  points = points,
-                                                  faces = [ Tuple(f) for f in faces_32]
-                                                 )
+        return UnstructuredMesh_2D{F_type, UInt32}(name = name,
+                                                   points = points,
+                                                   faces = [ SVector{length(f), UInt32}(f) for f in faces_32]
+                                                  )
     else
-        I = UInt64
-        return UnstructuredMesh_2D{float_type, I}(name = name,
-                                                  points = points,
-                                                  faces = [ Tuple(f) for f in faces]
-                                                 )
+        return UnstructuredMesh_2D{F_type, UInt64}(name = name,
+                                                   points = points,
+                                                   faces = [ SVector{length(f), UInt64}(f) for f in faces]
+                                                  )
     end
 end
 
-function _read_vtk_points_2d(
+# @code_warntype checked 2021/11/27
+function read_vtk_points_2d(
         file::IOStream, 
         npoints_string::SubString{String}, 
-        datatype_string::SubString{String}
+        F::Type{<:AbstractFloat}
     )
     npoints = parse(Int64, npoints_string)
-    if datatype_string == "float"
-        datatype = Float32
-    elseif datatype_string == "double"
-        datatype = Float64
-    else
-        @error "Unable to identify POINTS data type."
-    end
-    points = Vector{Point_2D{datatype}}(undef, npoints)
+    points = Vector{Point_2D{F}}(undef, npoints)
     for i in 1:npoints 
-        xyz = parse.(datatype, split(readline(file)))
+        xyz = parse.(F, split(readline(file)))
         points[i] = Point_2D(xyz[1], xyz[2])
     end
     return points
 end
 
-function _read_vtk_cells(
+# @code_warntype checked 2021/11/27
+function read_vtk_cells(
         file::IOStream, 
         ncells_string::SubString{String}, 
     )
@@ -115,7 +114,8 @@ function _read_vtk_cells(
     return cells
 end
 
-function _read_vtk_cell_types(
+# @code_warntype checked 2021/11/27
+function read_vtk_cell_types(
         file::IOStream, 
         ncells_string::SubString{String}, 
     )
@@ -128,7 +128,8 @@ function _read_vtk_cell_types(
     return cell_types
 end
 
-function write_vtk_2d(filename::String, mesh::UnstructuredMesh_2D)
+function write_vtk_2d(filename::String, mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat,
+                                                                                U <: Unsigned}
     @info "Writing $filename"
     @warn "  - Face sets not currently supported for vtk files"
     # Check valid filename
@@ -142,16 +143,15 @@ function write_vtk_2d(filename::String, mesh::UnstructuredMesh_2D)
     println(file, "DATASET UNSTRUCTURED_GRID")
 
     # Points
-    pointtype = typeof(mesh.points[1].x[1])
-    if pointtype === Float64
-        type_points = "double"
-    elseif pointtype === Float32
-        type_points = "float"
+    if F === Float64
+        point_type = "double"
+    elseif F === Float32
+        point_type = "float"
     else
         @error "Unrecognized point type."
     end
     npoints = length(mesh.points)
-    println(file, "POINTS $npoints $type_points")
+    println(file, "POINTS $npoints $point_type")
     for i in 1:npoints
         x, y = mesh.points[i].x
         println(file, "$x $y 0.0")
