@@ -66,7 +66,10 @@ using HDF5
                                    face_sets = ref_face_sets, 
                                    name = "c5g7_UO2_pin")
         # write_xdmf
-        write_xdmf_2d("c5g7_UO2_pin.xdmf", mesh)
+        # redirect stdout to keep test results pretty
+        redirect_stdout(devnull) do
+            write_xdmf_2d("c5g7_UO2_pin.xdmf", mesh)
+        end
         # check xdmf
         ref_file = open("./mesh/mesh_files/c5g7_UO2_pin.xdmf", "r")
         test_file = open("./c5g7_UO2_pin.xdmf", "r")
