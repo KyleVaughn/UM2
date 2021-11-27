@@ -59,6 +59,9 @@ end
 
 include("AbstractTypes.jl")
 include("Tree.jl")
+include("./gmsh/gmsh_generate_rectangular_grid.jl")
+include("./gmsh/gmsh_group_preserving_fragment.jl")
+include("./gmsh/gmsh_overlay_rectangular_grid.jl")
 include("./primitives/Point_2D.jl")
 include("./primitives/LineSegment_2D.jl")
 include("./primitives/QuadraticSegment_2D.jl")
@@ -72,15 +75,9 @@ include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
 include("./mesh/IO_abaqus.jl")
 include("./mesh/IO_vtk.jl")
 include("./mesh/IO_xdmf.jl")
-#include("AngularQuadrature.jl")
 include("constants.jl")
 include("gauss_legendre_quadrature.jl")
-
-
-
-#include("gmsh_generate_rectangular_grid.jl")
-#include("gmsh_group_preserving_fragment.jl")
-#include("gmsh_overlay_rectangular_grid.jl")
+include("./ray_tracing/AngularQuadrature.jl")
 #include("ray_trace.jl")
 #include("ray_trace_low_level.jl")
 
