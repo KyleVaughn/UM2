@@ -4,13 +4,14 @@ num_fallback_vertices = 0
 num_fallback_last_resort = 0
 
 # Return the HRPM/face indices in which each segment resides
-function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
-                            HRPM::HierarchicalRectangularlyPartitionedMesh{T, I},
-                            template_vec::MVector{N, I}
-                           ) where {T <: AbstractFloat, I <: Unsigned, N}
+# @code_warntype checked 2021/11/27
+function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
+                            HRPM::HierarchicalRectangularlyPartitionedMesh{F, U},
+                            template_vec::MVector{N, U}
+                           ) where {F <: AbstractFloat, U <: Unsigned, N}
 
     @debug "Finding faces corresponding to each segment"
-    if !are_materialized_faces(HRPM)
+    if !has_materialized_faces(HRPM)
         @warn "Faces are not materialized for this mesh. This will be VERY slow"
     end
     nγ = length(segment_points)
@@ -19,13 +20,13 @@ function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
     indices =   [    
                     [ 
                         [ 
-                            MVector{N, I}(zeros(I, N)) 
+                            MVector{N, U}(zeros(U, N)) 
                                 for i = 1:length(segment_points[iγ][it])-1 # Segments
                         ] for it = 1:length(segment_points[iγ]) # Tracks
                     ] for iγ = 1:nγ # Angles
                 ]
     Threads.@threads for iγ = 1:nγ
-        bools[iγ] = find_segment_faces!(segment_points[iγ], indices[iγ], HRPM)
+        bools[iγ] = find_segment_faces_in_angle!(segment_points[iγ], indices[iγ], HRPM)
     end
     if !all(bools)
         iγ_bad = findall(x->!x, bools)
@@ -35,9 +36,10 @@ function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
 end
 
 # Return the face id in which each segment resides
-function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
-                            mesh::UnstructuredMesh_2D{T, I}
-                           ) where {T <: AbstractFloat, I <: Unsigned, N}
+# @code_warntype checked 2021/11/27
+function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
+                            mesh::UnstructuredMesh_2D{F, U}
+                           ) where {F <: AbstractFloat, U <: Unsigned}
 
     @info "    - Finding faces for each segment"
     if 0 == length(mesh.materialized_faces)
@@ -49,7 +51,7 @@ function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
     segment_faces =   [    
                           [ 
                               [ 
-                                  I(0) 
+                                  U(0) 
                                       for i = 1:length(segment_points[iγ][it])-1 # Segments
                               ] for it = 1:length(segment_points[iγ]) # Tracks
                           ] for iγ = 1:nγ # Angles
@@ -65,25 +67,26 @@ function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
 end
 
 # Ray trace an HRPM given the ray spacing and angular quadrature
-function ray_trace(tₛ::T,
-                   ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T}, 
-                   HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
-                   ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
+# @code_warntype checked 2021/11/27
+function ray_trace(tₛ::F,
+                   ang_quad::ProductAngularQuadrature{nᵧ, nₚ, F}, 
+                   HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
+                   ) where {nᵧ, nₚ, F <: AbstractFloat, U <: Unsigned}
     @info "Ray tracing"
     tracks = generate_tracks(tₛ, ang_quad, HRPM)
     segment_points = segmentize(tracks, HRPM)
-    nlevels = node_levels(HRPM)
+    ind_size = node_height(HRPM) + 1
     @info "  - Using the naive segmentize + find face algorithm"
-    template_vec = MVector{nlevels, I}(zeros(I, nlevels))
+    template_vec = MVector{ind_size, U}(zeros(U, ind_size))
     segment_faces = find_segment_faces(segment_points, HRPM, template_vec)
     return segment_points, segment_faces
 end
 
 # Ray trace a mesh given the ray spacing and angular quadrature
-function ray_trace(tₛ::T,
-                   ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T}, 
-                   mesh::UnstructuredMesh_2D{T, I}
-                   ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
+function ray_trace(tₛ::F,
+                   ang_quad::ProductAngularQuadrature{nᵧ, nₚ, F}, 
+                   mesh::UnstructuredMesh_2D{F, U}
+                   ) where {nᵧ, nₚ, F <: AbstractFloat, U <: Unsigned}
     @info "Ray tracing"
 #    global num_fallback_adjacent = 0
 #    global num_fallback_vertices = 0
@@ -157,9 +160,15 @@ function ray_trace_edge_to_edge(tracks::Vector{Vector{LineSegment_2D{T}}},
     return segment_points, segment_faces
 end
 
-function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
-                    HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
-                    ) where {T <: AbstractFloat, I <: Unsigned}
+# Return the points of intersection between the tracks and the mesh edges.
+# Returns a Vector{Vector{Vector{Point_2D{F}}}}.
+#   index 1 = γ
+#   index 2 = track
+#   index 3 = point/segment
+# @code_warntype checked 2021/11/27
+function segmentize(tracks::Vector{Vector{LineSegment_2D{F}}},
+                    HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
+                    ) where {F <: AbstractFloat, U <: Unsigned}
 
     # Give info about intersection algorithm being used
     int_alg = get_intersection_algorithm(HRPM) 
@@ -168,7 +177,7 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
     # index 2 = track
     # index 3 = point/segment
     nγ = length(tracks)
-    segment_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, nγ)
+    segment_points = Vector{Vector{Vector{Point_2D{F}}}}(undef, nγ)
     Threads.@threads for iγ = 1:nγ
         # for each track, intersect the track with the mesh
         segment_points[iγ] = tracks[iγ] .∩ HRPM
@@ -176,9 +185,15 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
     return segment_points
 end
 
-function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
-                    mesh::UnstructuredMesh_2D{T, I}
-                    ) where {T <: AbstractFloat, I <: Unsigned}
+# Return the points of intersection between the tracks and the mesh edges.
+# Returns a Vector{Vector{Vector{Point_2D{F}}}}.
+#   index 1 = γ
+#   index 2 = track
+#   index 3 = point/segment
+# @code_warntype checked 2021/11/27
+function segmentize(tracks::Vector{Vector{LineSegment_2D{F}}},
+                    mesh::UnstructuredMesh_2D{F, U}
+                    ) where {F <: AbstractFloat, U <: Unsigned}
     # Give info about intersection algorithm being used
     int_alg = get_intersection_algorithm(mesh) 
     @info "    - Segmentizing using the '$int_alg' algorithm"
@@ -186,7 +201,7 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{T}}},
     # index 2 = track
     # index 3 = point/segment
     nγ = length(tracks)
-    segment_points = Vector{Vector{Vector{Point_2D{T}}}}(undef, nγ)
+    segment_points = Vector{Vector{Vector{Point_2D{F}}}}(undef, nγ)
     Threads.@threads for iγ = 1:nγ
         # for each track, intersect the track with the mesh
         segment_points[iγ] = tracks[iγ] .∩ mesh

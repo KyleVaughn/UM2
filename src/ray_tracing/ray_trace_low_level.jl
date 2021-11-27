@@ -385,39 +385,40 @@ end
 # Cannot have materialized faces
 
 # Get the face indices for all tracks in a single angle
-function find_segment_faces!(points::Vector{Vector{Point_2D{T}}},
-                             indices::Vector{Vector{MVector{N, I}}},
-                             HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
-                            ) where {T <: AbstractFloat, I <: Unsigned, N}
-    nt = length(points)
+# @code_warntype checked 2021/11/27
+function find_segment_faces_in_angle!(segment_points::Vector{Vector{Point_2D{F}}},
+                                      indices::Vector{Vector{MVector{N, U}}},
+                                      HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
+                                     ) where {F <: AbstractFloat, U <: Unsigned, N}
+    nt = length(segment_points)
     bools = fill(false, nt)
     # for each track, find the segment indices
     for it = 1:nt
-        # Points in the track
-        npoints = length(points[it])
         # Returns true if indices were found for all segments in the track
-        bools[it] = find_segment_faces!(points[it], indices[it], HRPM)
+        bools[it] = find_segment_faces_in_track!(segment_points[it], indices[it], HRPM)
     end
     return all(bools)
 end
 
 # Get the face indices for all segments in a single track
-function find_segment_faces!(points::Vector{Point_2D{T}},
-                             indices::Vector{MVector{N, I}},
-                             HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
-                            ) where {T <: AbstractFloat, I <: Unsigned, N}
+# @code_warntype checked 2021/11/27
+function find_segment_faces_in_track!(segment_points::Vector{Point_2D{F}},
+                                      indices::Vector{MVector{N, U}},
+                                      HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
+                                     ) where {F <: AbstractFloat, U <: Unsigned, N}
     # Points in the track
-    npoints = length(points)
+    npoints = length(segment_points)
     bools = fill(false, npoints-1)
     # Test the midpoint of each segment to find the face
     for iseg = 1:npoints-1
-        p_midpoint = midpoint(points[iseg], points[iseg+1])
-        bools[iseg] = find_face(p_midpoint, indices[iseg], HRPM)
+        p_midpoint = midpoint(segment_points[iseg], segment_points[iseg+1])
+        bools[iseg] = find_face!(p_midpoint, indices[iseg], HRPM)
     end
     return all(bools)
 end
 
 # Get the face indices for all tracks in a single angle
+# @code_warntype checked 2021/11/27
 function find_segment_faces_in_angle!(segment_points::Vector{Vector{Point_2D{T}}},
                                       segment_faces::Vector{Vector{I}},
                                       mesh::UnstructuredMesh_2D{T, I}
@@ -435,6 +436,7 @@ function find_segment_faces_in_angle!(segment_points::Vector{Vector{Point_2D{T}}
 end
 
 # Get the face indices for all segments in a single track
+# @code_warntype checked 2021/11/27
 function find_segment_faces_in_track!(segment_points::Vector{Point_2D{T}},
                                       segment_faces::Vector{I},
                                       mesh::UnstructuredMesh_2D{T, I}
@@ -452,73 +454,85 @@ function find_segment_faces_in_track!(segment_points::Vector{Point_2D{T}},
 end
 
 # Follows https://mit-crpg.github.io/OpenMOC/methods/track_generation.html
-function generate_tracks(tₛ::T,
-                         ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T},
-                         HRPM::HierarchicalRectangularlyPartitionedMesh{T, I}
-                         ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
+# Generate tracks with track spacing tₛ for each azimuthal angle in the angular quadrature. 
+# These tracks lie within the domain of the mesh.
+# @code_warntype checked 2021/11/27
+function generate_tracks(tₛ::F,
+                         ang_quad::ProductAngularQuadrature{nᵧ, nₚ, F},
+                         HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
+                         ) where {nᵧ, nₚ, F <: AbstractFloat, U <: Unsigned}
     w = width(HRPM)
     h = height(HRPM)
     # The tracks for each γ
-    tracks = [ generate_tracks(tₛ, w, h, γ) for γ in ang_quad.γ ]
+    tracks = [ generate_tracks(γ, tₛ, w, h) for γ in ang_quad.γ ].data
     # Shift all tracks if necessary, since the tracks are generated as if the HRPM has a
     # bottom left corner at (0,0)
     offset = HRPM.rect.points[1]
-    for angle in tracks
-        for track in angle
-            track = LineSegment_2D(track.points[1] + offset, track.points[2] + offset)
+    for iγ = 1:nᵧ  
+        for it in 1:length(tracks[iγ])
+            tracks[iγ][it] = LineSegment_2D(tracks[iγ][it].points[1] + offset, 
+                                            tracks[iγ][it].points[2] + offset)
         end
     end
     return tracks
 end
 
-function generate_tracks(tₛ::T,
-                         ang_quad::ProductAngularQuadrature{nᵧ, nₚ, T},
-                         mesh::UnstructuredMesh_2D{T, I};
+# Generate tracks with track spacing tₛ for each azimuthal angle in the angular quadrature. 
+# These tracks lie within the domain of the mesh.
+# Follows https://mit-crpg.github.io/OpenMOC/methods/track_generation.html
+# @code_warntype checked 2021/11/27
+function generate_tracks(tₛ::F,
+                         ang_quad::ProductAngularQuadrature{nᵧ, nₚ, F},
+                         mesh::UnstructuredMesh_2D{F, U};
                          boundary_shape::String = "Unknown"
-                         ) where {nᵧ, nₚ, T <: AbstractFloat, I <: Unsigned}
+                         ) where {nᵧ, nₚ, F <: AbstractFloat, U <: Unsigned}
 
     if boundary_shape == "Rectangle"
-        bb = bounding_box(mesh, rectangular_boundary=true)
+        bb = bounding_box(mesh, rectangular_boundary = true)
         w = bb.points[3].x[1] - bb.points[1].x[1]
         h = bb.points[3].x[2] - bb.points[1].x[2]
         # The tracks for each γ
-        tracks = [ generate_tracks(tₛ, w, h, γ) for γ in ang_quad.γ ]
+        tracks = [ generate_tracks(γ, tₛ, w, h) for γ in ang_quad.γ ].data
         # Shift all tracks if necessary, since the tracks are generated as if the HRPM has a
         # bottom left corner at (0,0)
         offset = bb.points[1]
-        for angle in tracks
-            for track in angle
-                track = LineSegment_2D(track.points[1] + offset, track.points[2] + offset)
+        for iγ = 1:nᵧ  
+            for it in 1:length(tracks[iγ])
+                tracks[iγ][it] = LineSegment_2D(tracks[iγ][it].points[1] + offset, 
+                                                tracks[iγ][it].points[2] + offset)
             end
         end
         return tracks
     else
         @error "Unsupported boundary shape"
-        return Vector{LineSegment_2D{T}}[]
+        return Vector{LineSegment_2D{F}}[]
     end
 end
 
-function generate_tracks(tₛ::T, w::T, h::T, γ::T) where {T <: AbstractFloat}
+# Generate tracks for angle γ, with track spacing tₛ for a rectangular domain with width w, height h
+# Rectangle has bottom left corner at (0, 0)
+# @code_warntype checked 2021/11/27
+function generate_tracks(γ::F, tₛ::F, w::F, h::F) where {F <: AbstractFloat}
     # Number of tracks in y direction
     n_y = ceil(Int64, w*abs(sin(γ))/tₛ)
     # Number of tracks in x direction
     n_x = ceil(Int64, h*abs(cos(γ))/tₛ)
-    # Total number of tracks
+    # Fotal number of tracks
     nₜ = n_y + n_x
     # Allocate the tracks
-    tracks = Vector{LineSegment_2D{T}}(undef, nₜ)
+    tracks = Vector{LineSegment_2D{F}}(undef, nₜ)
     # Effective angle to ensure cyclic tracks
     γₑ = atan((h*n_x)/(w*n_y))
     if π/2 < γ
-        γₑ = γₑ + T(π/2)
+        γₑ = γₑ + F(π/2)
     end
     # Effective ray spacing for the cyclic tracks
     t_eff = w*sin(atan((h*n_x)/(w*n_y)))/n_x
     if γₑ ≤ π/2
         # Generate tracks from the bottom edge of the rectangular domain
         for ix = 1:n_x
-            x₀ = w - t_eff*T(ix - 0.5)/sin(γₑ)
-            y₀ = T(0)
+            x₀ = w - t_eff*F(ix - 0.5)/sin(γₑ)
+            y₀ = F(0)
             # Segment either terminates at the right edge of the rectangle
             # Or on the top edge of the rectangle
             x₁ = min(w, h/tan(γₑ) + x₀)
@@ -531,8 +545,8 @@ function generate_tracks(tₛ::T, w::T, h::T, γ::T) where {T <: AbstractFloat}
         end
         # Generate tracks from the left edge of the rectangular domain
         for iy = 1:n_y
-            x₀ = T(0)
-            y₀ = t_eff*T(iy - 0.5)/cos(γₑ)
+            x₀ = F(0)
+            y₀ = t_eff*F(iy - 0.5)/cos(γₑ)
             # Segment either terminates at the right edge of the rectangle
             # Or on the top edge of the rectangle
             x₁ = min(w, (h - y₀)/tan(γₑ))
@@ -546,8 +560,8 @@ function generate_tracks(tₛ::T, w::T, h::T, γ::T) where {T <: AbstractFloat}
     else
         # Generate tracks from the bottom edge of the rectangular domain
         for ix = n_y:-1:1
-            x₀ = w - t_eff*T(ix - 0.5)/sin(γₑ)
-            y₀ = T(0)
+            x₀ = w - t_eff*F(ix - 0.5)/sin(γₑ)
+            y₀ = F(0)
             # Segment either terminates at the left edge of the rectangle
             # Or on the top edge of the rectangle
             x₁ = max(0, h/tan(γₑ) + x₀)
@@ -561,7 +575,7 @@ function generate_tracks(tₛ::T, w::T, h::T, γ::T) where {T <: AbstractFloat}
         # Generate tracks from the right edge of the rectangular domain
         for iy = 1:n_x
             x₀ = w
-            y₀ = t_eff*T(iy - 0.5)/abs(cos(γₑ))
+            y₀ = t_eff*F(iy - 0.5)/abs(cos(γₑ))
             # Segment either terminates at the left edge of the rectangle
             # Or on the top edge of the rectangle
             x₁ = max(0, w + (h - y₀)/tan(γₑ))
