@@ -10,15 +10,13 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-# @code_warntype checked 2021/11/20
 Quadrilateral_2D(p₁::Point_2D,
                  p₂::Point_2D,
                  p₃::Point_2D,
                  p₄::Point_2D) = Quadrilateral_2D(SVector(p₁, p₂, p₃, p₄))
 
-# Methods
+# Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
-# @code_warntype checked 2021/11/20
 function (quad::Quadrilateral_2D{F})(r::R, s::S) where {F <: AbstractFloat,
                                                         R <: Real,
                                                         S <: Real}
@@ -32,14 +30,12 @@ function (quad::Quadrilateral_2D{F})(r::R, s::S) where {F <: AbstractFloat,
                  (1 - rₜ)*sₜ*quad.points[4]
 end
 
-# @code_warntype checked 2021/11/20
 function triangulate(quad::Quadrilateral_2D)
     # Return the two triangles that partition the domain
     A, B, C, D = quad.points
     return SVector(Triangle_2D(A, B, C), Triangle_2D(C, D, A))
 end
 
-# @code_warntype checked 2021/11/20
 function area(quad::Quadrilateral_2D{F}) where {F <: AbstractFloat}
     # Using the convex quadrilateral assumption, just return the sum of the areas of the two
     # triangles that partition the quadrilateral. If the convex assumption ever changes, you
@@ -48,12 +44,11 @@ function area(quad::Quadrilateral_2D{F}) where {F <: AbstractFloat}
     return sum(area.(triangulate(quad)))
 end
 
-# @code_warntype checked 2021/11/20
 function in(p::Point_2D, quad::Quadrilateral_2D)
-    return any(p .∈  triangulate(quad))
+    tris = triangulate(quad)
+    return p ∈ tris[1] || p ∈ tris[2]
 end
 
-# @code_warntype checked 2021/11/20
 function intersect(l::LineSegment_2D{F}, quad::Quadrilateral_2D{F}) where {F <: AbstractFloat}
     # Create the 4 line segments that make up the quadrilateral and intersect each one
     line_segments = SVector(LineSegment_2D(quad.points[1], quad.points[2]),
@@ -62,17 +57,17 @@ function intersect(l::LineSegment_2D{F}, quad::Quadrilateral_2D{F}) where {F <: 
                             LineSegment_2D(quad.points[4], quad.points[1]))
     p₁ = Point_2D(F, 0)
     p₂ = Point_2D(F, 0)
-    ipoints = 0x00
+    ipoints = 0x00000000
     # We need to account for 3 or 4 points returned due to vertex intersection
     for i = 1:4
         npoints, point = l ∩ line_segments[i]
-        if npoints === 0x01
-            if ipoints === 0x00
+        if npoints === 0x00000001
+            if ipoints === 0x00000000
                 p₁ = point
-                ipoints = 0x01
-            elseif ipoints === 0x01 && (point ≉ p₁)
+                ipoints = 0x00000001
+            elseif ipoints === 0x00000001 && (point ≉ p₁)
                 p₂ = point
-                ipoints = 0x02
+                ipoints = 0x00000002
             end
         end
     end

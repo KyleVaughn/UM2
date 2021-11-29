@@ -13,7 +13,6 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-# @code_warntype checked 2021/11/20
 Triangle6_2D(p₁::Point_2D,
              p₂::Point_2D,
              p₃::Point_2D,
@@ -23,10 +22,9 @@ Triangle6_2D(p₁::Point_2D,
             ) = Triangle6_2D(SVector(p₁, p₂, p₃, p₄, p₅, p₆))
 
 
-# Methods
+# Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
 # Interpolation
-# @code_warntype checked 2021/11/20
 function (tri6::Triangle6_2D{F})(r::R, s::S) where {F <: AbstractFloat,
                                                     R <: Real,
                                                     S <: Real}
@@ -43,7 +41,6 @@ function (tri6::Triangle6_2D{F})(r::R, s::S) where {F <: AbstractFloat,
 end
 
 # Interpolation using a point instead of (r,s)
-# @code_warntype checked 2021/11/20
 function (tri6::Triangle6_2D{F})(p::Point_2D{F}) where {F <: AbstractFloat}
     r = p[1]
     s = p[2]
@@ -55,7 +52,6 @@ function (tri6::Triangle6_2D{F})(p::Point_2D{F}) where {F <: AbstractFloat}
                            4s*(1 - r - s)*tri6.points[6]
 end
 
-# @code_warntype checked 2021/11/20
 function derivative(tri6::Triangle6_2D{F}, r::R, s::S) where {F <: AbstractFloat,
                                                               R <: Real,
                                                               S <: Real}
@@ -77,16 +73,19 @@ function derivative(tri6::Triangle6_2D{F}, r::R, s::S) where {F <: AbstractFloat
     return ∂F_∂r, ∂F_∂s
 end
 
-# @code_warntype checked 2021/11/20
 function jacobian(tri6::Triangle6_2D, r::R, s::S) where {R <: Real,
                                                          S <: Real}
     # Return the 2 x 2 Jacobian matrix
     ∂F_∂r, ∂F_∂s = derivative(tri6, r, s)
-    return hcat(∂F_∂r.x, ∂F_∂s.x)
+    return SMatrix{2, 2}(∂F_∂r.x, ∂F_∂s.x,
+                         ∂F_∂r.y, ∂F_∂s.y)
 end
 
-# @code_warntype checked 2021/11/20
-function area(tri6::Triangle6_2D{F}; N::Int64=12) where {F <: AbstractFloat}
+function area(tri6::Triangle6_2D{F}) where {F <: AbstractFloat}
+    return area(tri6, Val(12))
+end
+
+function area(tri6::Triangle6_2D{F}, ::Val{N}) where {N, F <: AbstractFloat}
     # Numerical integration required. Gauss-Legendre quadrature over a triangle is used.
     # Let F(r,s) be the interpolation function for tri6,
     #                             1 1-r                          N
@@ -95,7 +94,7 @@ function area(tri6::Triangle6_2D{F}; N::Int64=12) where {F <: AbstractFloat}
     #
     # N is the number of points used in the quadrature.
     # See tuning/Triangle6_2D_area.jl for more info on how N = 12 was chosen.
-    w, r, s = gauss_legendre_quadrature(tri6, N)
+    w, r, s = gauss_legendre_quadrature(tri6, Val(N))
     a = F(0)
     for i in 1:N
         ∂F_∂r, ∂F_∂s = derivative(tri6, r[i], s[i])
@@ -104,7 +103,6 @@ function area(tri6::Triangle6_2D{F}; N::Int64=12) where {F <: AbstractFloat}
     return a
 end
 
-# @code_warntype checked 2021/11/20
 function triangulate(tri6::Triangle6_2D{F}, N::Int64) where {F <: AbstractFloat}
     # N is the number of divisions of each edge
     triangles = Vector{Triangle_2D{F}}(undef, (N+1)*(N+1))
@@ -132,7 +130,6 @@ function triangulate(tri6::Triangle6_2D{F}, N::Int64) where {F <: AbstractFloat}
     return triangles
 end
 
-# @code_warntype checked 2021/11/20
 function real_to_parametric(p::Point_2D{F}, tri6::Triangle6_2D{F}; N::Int64=30) where {F <: AbstractFloat}
     # Convert from real coordinates to the triangle's local parametric coordinates using the
     # the Newton-Raphson method. N is the max number of iterations

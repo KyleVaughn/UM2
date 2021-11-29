@@ -5,24 +5,21 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-# @code_warntype checked 2021/11/19
 Triangle_2D(p₁::Point_2D{F},
             p₂::Point_2D{F},
             p₃::Point_2D{F}) where {F <: AbstractFloat} = Triangle_2D(SVector(p₁, p₂, p₃))
 
-# Methods
+# Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
 # Interpolation
-# @code_warntype checked 2021/11/19
 function (tri::Triangle_2D{F})(r::R, s::S) where {F <: AbstractFloat,
                                                   R <: Real,
                                                   S <: Real}
-    # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+    # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     return (1 - F(r) - F(s))*tri.points[1] + F(r)*tri.points[2] + F(s)*tri.points[3]
 end
 
-# @code_warntype checked 2021/11/19
 function area(tri::Triangle_2D)
     # A = bh/2
     # Let u⃗ = (v₂ - v₁), v⃗ = (v₃ - v₁)
@@ -36,7 +33,6 @@ function area(tri::Triangle_2D)
     return abs(u⃗ × v⃗)/2
 end
 
-# @code_warntype checked 2021/11/19
 function in(p::Point_2D{F}, tri::Triangle_2D{F}) where {F <: AbstractFloat}
    # If the point is within the plane of the triangle, then the point is only within the triangle
    # if the areas of the triangles formed by the point and each pair of two vertices sum to the
@@ -50,7 +46,6 @@ function in(p::Point_2D{F}, tri::Triangle_2D{F}) where {F <: AbstractFloat}
    return A₁ + A₂ + A₃ ≈ A
 end
 
-# @code_warntype checked 2021/11/19
 function intersect(l::LineSegment_2D{F}, tri::Triangle_2D{F}) where {F <: AbstractFloat}
     # Create the 3 line segments that make up the triangle and intersect each one
     line_segments = SVector(LineSegment_2D(tri.points[1], tri.points[2]),
@@ -58,17 +53,17 @@ function intersect(l::LineSegment_2D{F}, tri::Triangle_2D{F}) where {F <: Abstra
                             LineSegment_2D(tri.points[3], tri.points[1]))
     p₁ = Point_2D(F, 0)
     p₂ = Point_2D(F, 0)
-    ipoints = 0x00
+    ipoints = 0x00000000
     # We need to account for 3 points returned due to vertex intersection
     for i = 1:3
         npoints, point = l ∩ line_segments[i]
-        if npoints === 0x01
-            if ipoints === 0x00
+        if npoints === 0x00000001
+            if ipoints === 0x00000000
                 p₁ = point
-                ipoints = 0x01
-            elseif ipoints === 0x01 && (point ≉  p₁)
+                ipoints = 0x00000001
+            elseif ipoints === 0x00000001 && (point ≉  p₁)
                 p₂ = point
-                ipoints = 0x02
+                ipoints = 0x00000002
             end
         end
     end
