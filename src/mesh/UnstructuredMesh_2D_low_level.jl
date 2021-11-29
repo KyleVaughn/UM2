@@ -1,13 +1,5 @@
 # Return a vector of the faces adjacent to the face of ID face
-# @code_warntype checked 2021/11/22
-function adjacent_faces(face::U,
-                        mesh::UnstructuredMesh_2D{F, U}
-                        ) where {U <: Unsigned, F <: AbstractFloat}
-    return adjacent_faces(face, mesh.face_edge_connectivity, mesh.edge_face_connectivity)
-end
-
-# Return a vector of the faces adjacent to the face of ID face
-# @code_warntype checked 2021/11/22
+# Type-stable if all of the faces/edges are the same
 function adjacent_faces(face::U,
                         face_edge_connectivity::Vector{<:SVector{L, U} where {L}},
                         edge_face_connectivity::Vector{SVector{2, U}}
@@ -49,7 +41,7 @@ end
 # Return a vector containing vectors of the edges in each side of the mesh's bounding shape, e.g.
 # For a rectangular bounding shape the sides are North, East, South, West. Then the output would
 # be [ [e1, e2, e3, ...], [e17, e18, e18, ...], ..., [e100, e101, ...]]
-# @code_warntype checked 2021/11/23
+# Type-stable, shockingly enough
 function boundary_edges(mesh::UnstructuredMesh_2D{F, U};
                        bounding_shape::String = "Rectangle") where {F<:AbstractFloat, U <: Unsigned}
     # edges which have face 0 in their edge_face connectivity are boundary edges
@@ -57,10 +49,10 @@ function boundary_edges(mesh::UnstructuredMesh_2D{F, U};
     if bounding_shape == "Rectangle"
         # Sort edges into NESW
         bb = bounding_box(mesh, rectangular_boundary=true)
-        y_north = bb.points[3].x[2]
-        x_east  = bb.points[3].x[1]
-        y_south = bb.points[1].x[2]
-        x_west  = bb.points[1].x[1]
+        y_north = bb.points[3][2]
+        x_east  = bb.points[3][1]
+        y_south = bb.points[1][2]
+        x_west  = bb.points[1][1]
         p_NW = bb.points[4]
         p_NE = bb.points[3]
         p_SE = bb.points[2]
@@ -194,7 +186,7 @@ end
 
 # A vector of length 2 SVectors, denoting the face ID each edge is connected to. If the edge
 # is a boundary edge, face ID 0 is returned
-# @code_warntype checked 2021/11/23
+# Type-stable, other than the error messages.
 function edge_face_connectivity(the_edges::Vector{<:SVector{L, U} where {L}},
                                 the_faces::Vector{<:SVector{L, U} where {L}},
                                 the_face_edge_connectivity::Vector{<:SVector{L, U} where {L}}
@@ -249,6 +241,9 @@ end
 function face_edge_connectivity(the_faces::Vector{<:SVector{L, U} where {L}},
                                 the_edges::Vector{<:SVector{L, U} where {L}}
                                ) where {U <: Unsigned}
+    if length(the_edges) === 0
+        @error "Does not have edges!"
+    end
     # A vector of MVectors of zeros for each face
     # Each MVector is the length of the number of edges
     face_edge = [MVector{Int64(num_edges(face)), U}(zeros(U, num_edges(face)))
@@ -272,7 +267,7 @@ function face_points(face::SVector{N, U}, points::Vector{Point_2D{F}}
 end
 
 # Find the faces which share the vertex of ID v.
-# @code_warntype checked 2021/11/23
+# Type-stable
 function faces_sharing_vertex(v::I, faces::Vector{<:SVector{L, U} where L}) where {I <: Integer,
                                                                                    U <: Unsigned}
     shared_faces = U[]
@@ -285,16 +280,8 @@ function faces_sharing_vertex(v::I, faces::Vector{<:SVector{L, U} where L}) wher
     return shared_faces
 end
 
-# Return the faces which share the vertex of ID v.
-# @code_warntype checked 2021/11/23
-function faces_sharing_vertex(v::I, mesh::UnstructuredMesh_2D{F, U}) where {I <: Integer,
-                                                                            F <: AbstractFloat,
-                                                                            U <: Unsigned}
-    return faces_sharing_vertex(v, mesh.faces)
-end
-
 # Find the face containing the point p, with explicitly represented faces
-# @code_warntype checked 2021/11/23
+# Type-stable
 function find_face_explicit(p::Point_2D{F},
                             faces::Vector{<:Face_2D{F}}
                            ) where {F <: AbstractFloat}
@@ -303,12 +290,11 @@ function find_face_explicit(p::Point_2D{F},
             return i
         end
     end
-    @error "Could not find face for point $p"
     return 0
 end
 
 # Return the face containing the point p, with implicitly represented faces
-# @code_warntype checked 2021/11/23
+# Type-stable
 function find_face_implicit(p::Point_2D{F},
                             faces::Vector{<:SVector{N, U} where N},
                             points::Vector{Point_2D{F}}
@@ -319,7 +305,6 @@ function find_face_implicit(p::Point_2D{F},
             return i
         end
     end
-    @error "Could not find face for point $p"
     return 0
 end
 
@@ -559,7 +544,7 @@ function intersect_faces_implicit(l::LineSegment_2D{F},
 end
 
 # If a point is a vertex
-# @code_warntype checked 2021/11/23
+# Type-stable
 function is_vertex(p::Point_2D{F}, points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
     for point in points
         if p ≈ point
@@ -626,7 +611,7 @@ function materialize_faces(faces::Vector{<:SVector{L, U} where {L}},
 end
 
 # Return the number of edges in a face type
-# @code_warntype checked 2021/11/22
+# Type-stable other than the error message
 function num_edges(face::SVector{L, U}) where {L, U <: Unsigned}
     cell_type = face[1]
     if cell_type == 5 || cell_type == 22
@@ -640,7 +625,7 @@ function num_edges(face::SVector{L, U}) where {L, U <: Unsigned}
 end
 
 # Return the ID of the edge shared by two adjacent faces
-# @code_warntype checked 2021/11/23
+# Type-stable if all faces are the same type
 function shared_edge(face1::U, face2::U,
                      face_edge_connectivity::Vector{<:SVector{N, U} where N},
                     ) where {F <: AbstractFloat, U <: Unsigned}
