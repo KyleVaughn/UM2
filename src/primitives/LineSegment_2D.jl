@@ -6,26 +6,22 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-# @code_warntype checked 2021/11/19
 LineSegment_2D(p₁::Point_2D, p₂::Point_2D) = LineSegment_2D(SVector(p₁, p₂))
 
 # Base
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(l::LineSegment_2D) = Ref(l)
 
-# Methods
+# Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 # l(0) yields points[1], and l(1) yields points[2]
-# @code_warntype checked 2021/11/19
 function (l::LineSegment_2D{F})(r::R) where {F <: AbstractFloat, R <: Real}
     return l.points[1] + F(r) * (l.points[2] - l.points[1])
 end
 
-# @code_warntype checked 2021/11/19
 arc_length(l::LineSegment_2D) = distance(l.points[1], l.points[2])
 
-# @code_warntype checked 2021/11/19
 function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <: AbstractFloat}
     # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product
     # operator for 2D points returns a scalar (the 2-norm of the cross product).
@@ -70,9 +66,9 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
         r = (w⃗ × u⃗)/(v⃗ × u⃗)
         p = l₁(r)
         s = ((r*v⃗ - w⃗) ⋅ u⃗)/(u⃗ ⋅ u⃗)
-        return (-ϵ ≤ s ≤ 1 + ϵ) && (-ϵ ≤ r ≤ 1 + ϵ) ? (0x01, p) : (0x00, p)
+        return (-ϵ ≤ s ≤ 1 + ϵ) && (-ϵ ≤ r ≤ 1 + ϵ) ? (0x00000001, p) : (0x00000000, p)
     else
-        return (0x00, Point_2D(F, 0))
+        return (0x00000000, Point_2D(F, 0))
     end
 end
 

@@ -17,7 +17,7 @@ Point_2D(::Type{F}, x::X, y::Y) where {F <: AbstractFloat,
 Point_2D(::Type{F}, x::X) where {F <: AbstractFloat,
                                  X <: Real} = Point_2D(F(x), F(0))
 
-# Operators
+# Operators (All type-stable)
 # -------------------------------------------------------------------------------------------------
 ≈(p₁::Point_2D, p₂::Point_2D) = distance(p₁, p₂) < Point_2D_differentiation_distance
 ≉(p₁::Point_2D, p₂::Point_2D) = !(p₁ ≈ p₂)
@@ -33,13 +33,10 @@ Point_2D(::Type{F}, x::X) where {F <: AbstractFloat,
 *(n::Real, p::Point_2D) = Point_2D(n*p.x, n*p.y)
 *(p::Point_2D, n::Real) = n*p
 /(p::Point_2D, n::Real) = Point_2D(p.x/n, p.y/n)
--(p::Point_2D) = -1*p
 
-# Methods
+# Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
-# note: hypot is the Julia recommended way to do sqrt of sum squared for 2 numbers
-# @code_warntype checked 2021/11/19
-norm(p::Point_2D) = hypot(p.x, p.y)
+norm(p::Point_2D) = sqrt(p.x^2 + p.y^2)
 distance(p₁::Point_2D, p₂::Point_2D) = norm(p₁ - p₂)
 midpoint(p₁::Point_2D, p₂::Point_2D) = (p₁ + p₂)/2
 
