@@ -5,37 +5,19 @@ using StaticArrays
         @testset "Constructors" begin
             # 2D single constructor
             p = Point_2D(F(1), F(2))
-            @test p.x == SVector(F.((1, 2)))
-            @test typeof(p.x) == SVector{2, F}
+            @test p == [1, 2]
 
             # 1D single constructor
             p = Point_2D(F(1))
-            @test p.x == SVector(F.((1, 0)))
-            @test typeof(p.x) == SVector{2, F} 
-
-            # 2D tuple constructor
-            p = Point_2D( F.((1, 2)) )
-            @test p.x == SVector(F.((1, 2)))
-            @test typeof(p.x) == SVector{2, F} 
+            @test p == [1, 0]
 
             # 2D single conversion constructor
             p = Point_2D(F, 1, 2)
-            @test p.x == SVector(F.((1, 2)))
-            @test typeof(p.x) == SVector{2, F}
+            @test p == [1, 2]
 
             # 1D single conversion constructor
             p = Point_2D(F, 1)
-            @test p.x == SVector(F.((1, 0)))
-            @test typeof(p.x) == SVector{2, F} 
-        end
-
-        @testset "Base" begin
-            p = Point_2D(F, 1, 2)
-
-            # zero
-            p₀ = zero(p)
-            @test all(p₀.x .== F(0))
-            @test typeof(p.x[1]) == F
+            @test p == [1, 0]
         end
 
         @testset "Operators" begin
@@ -52,20 +34,17 @@ using StaticArrays
 
             # Point_2D addition
             p = p₁ + p₂
-            @test p.x == SVector(F.((3,6)))
-            @test typeof(p.x) == SVector{2, F} 
+            @test p == [3, 6]
 
             # Point_2D subtraction
             p = p₁ - p₂
-            @test p.x == SVector(F.((-1, -2)))
-            @test typeof(p.x) == SVector{2, F} 
+            @test p == [-1, -2]
 
             # Cross product
             p₁ = Point_2D(F, 2, 3)
             p₂ = Point_2D(F, 5, 6)
             v = p₁ × p₂
             @test v ≈ -3
-            @test typeof(p.x) == SVector{2, F} 
 
             # Dot product
             @test p₁ ⋅ p₂ ≈ 10 + 18
@@ -74,43 +53,37 @@ using StaticArrays
             p₁ = Point_2D(F, 1, 2)
             p₂ = Point_2D(F, 2, 4)
             p = p₁ + 1
-            @test p  ≈ Point_2D(F, 2, 3)
-            @test typeof(p.x) == SVector{2, F} 
+            @test p  ≈ [2, 3]
 
             # Broadcast addition
             parray = [p₁, p₂]
             parray = parray .+ 1
             @test parray[1] == p₁ + 1
             @test parray[2] == p₂ + 1
-            @test typeof(parray[1].x) == SVector{2, F} 
 
             # Subtraction
-            p = p₁ - F(1)
-            @test p == Point_2D(F, 0, 1)
-            @test typeof(p.x) == SVector{2, F} 
+            p = p₁ - 1
+            @test p == [0, 1]
 
             # Multiplication
             p = 4*p₁
-            @test p == Point_2D(F, 4, 8)
-            @test typeof(p.x) == SVector{2, F} 
+            @test p == [4, 8]
 
             # Division
             p = p₁/4
-            @test p == Point_2D(F, 1//4, 1//2)
-            @test typeof(p.x) == SVector{2, F}
+            @test p == [1//4, 1//2]
 
             # Unary -
             p = -p₁
-            @test p == Point_2D(F, -1, -2)
-            @test typeof(p.x) == SVector{2, F} 
+            @test p == [-1, -2]
 
             # Matrix multiplcation
-            A = SMatrix{2, 2, F, 4}(F(1), F(2), F(3), F(4))
+            A = SMatrix{2, 2, F, 4}(1, 2, 3, 4)
             p = Point_2D(F, 1, 2)
             q = A*p
             @test q[1] ≈ 7
             @test q[2] ≈ 10
-            @test typeof(q[1]) == F
+            @test typeof(q) == Point_2D{F}
         end
 
         @testset "Methods" begin

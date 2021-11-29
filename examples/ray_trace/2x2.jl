@@ -2,7 +2,7 @@ using MOCNeutronTransport
 using StaticArrays
 using BenchmarkTools
 
-generate_mesh_file = true
+generate_mesh_file = false
 # Model
 # ----------------------------------------------------------------------------------------------
 log_timestamps()
@@ -135,13 +135,13 @@ end
 
 # Ray tracing
 #---------------------------------------------------------------------------------------------------
-T = Float64
-I = UInt16
-mesh = read_abaqus_2d("2x2.inp", float_type=T)
+F = Float64
+U = UInt16
+mesh = read_abaqus_2d("2x2.inp", F=F)
 mesh = add_everything(mesh)
 #HRPM = partition_rectangularly(mesh)
-tₛ =  T(0.001)
-ang_quad = generate_angular_quadrature("Chebyshev-Chebyshev", 32, 3; T=T)
+tₛ =  F(0.007)
+ang_quad = generate_angular_quadrature("Chebyshev-Chebyshev", 32, 3; F=F)
 #template_vec = MVector{2, I}(zeros(I, 2))
-#the_tracks = tracks(tₛ, ang_quad, HRPM)
+tracks = generate_tracks(tₛ, ang_quad, mesh, boundary_shape = "Rectangle");
 #the_points_E, the_faces_E = ray_trace_edge_to_edge(the_tracks, mesh)
