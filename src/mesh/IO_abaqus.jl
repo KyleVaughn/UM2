@@ -90,7 +90,6 @@ function read_abaqus_2d(filepath::String; F::Type{<:AbstractFloat} = Float64)
     end
 end
 
-# @code_warntype checked 2021/11/22
 function read_abaqus_nodes_2d(file::IOStream, F::Type{<:AbstractFloat})
     points = Point_2D{F}[]
     line_split = strip.(split(readline(file)), [','])
@@ -105,7 +104,6 @@ function read_abaqus_nodes_2d(file::IOStream, F::Type{<:AbstractFloat})
     return points
 end
 
-# @code_warntype checked 2021/11/22
 function read_abaqus_elements(file::IOStream, element_type::String)
     if !(element_type ∈  keys(abaqus_to_vtk_type))
         @error "$element_type is not in the abaqus to vtk type conversion dictionary"
@@ -128,7 +126,6 @@ function read_abaqus_elements(file::IOStream, element_type::String)
     return faces
 end
 
-# @code_warntype checked 2021/11/22
 function read_abaqus_elset(file::IOStream)
     line_split = strip.(split(readuntil(file, "*")), [','])
     seek(file, position(file)-1)

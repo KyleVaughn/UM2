@@ -1,4 +1,3 @@
-# @code_warntype checked 2021/11/27
 function write_xdmf_2d(filename::String, 
                        HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
                       ) where {F <: AbstractFloat, U <: Unsigned}
@@ -32,7 +31,6 @@ function write_xdmf_2d(filename::String,
     close(h5_file)
 end
 
-# @code_warntype checked 2021/11/27
 function write_xdmf_2d(filename::String,
                        mesh::UnstructuredMesh_2D{F, U}
                       ) where {F <: AbstractFloat, U <: Unsigned}
@@ -74,7 +72,6 @@ end
 
 # Helper functions for write_xdmf
 # -------------------------------------------------------------------------------------------------
-# @code_warntype checked 2021/11/27
 function add_uniform_grid_xdmf!(xml::XMLElement,
                                 h5_filename::String,
                                 h5_mesh::Union{HDF5.Group, HDF5.File},
@@ -107,7 +104,6 @@ function add_uniform_grid_xdmf!(xml::XMLElement,
     return nothing
 end
 
-# @code_warntype checked 2021/11/27
 function write_xdmf_geometry!(xml::XMLElement, 
                               h5_filename::String, 
                               h5_mesh::HDF5.Group, 
@@ -142,7 +138,6 @@ function write_xdmf_geometry!(xml::XMLElement,
     return nothing
 end
 
-# @code_warntype checked 2021/11/27
 function write_xdmf_topology!(xml::XMLElement, 
                               h5_filename::String, 
                               h5_mesh::HDF5.Group, 
@@ -171,7 +166,6 @@ function write_xdmf_topology!(xml::XMLElement,
     return nothing
 end
 
-# @code_warntype checked 2021/11/27
 function convert_xdmf_faces_to_array!(topo_array::Vector{UInt64}, 
                                       faces::Vector{<:SVector{N, U} where N}
                                      ) where {U <: Unsigned}
@@ -202,7 +196,6 @@ function convert_xdmf_faces_to_array!(topo_array::Vector{UInt64},
     return nothing
 end
 
-# @code_warntype checked 2021/11/27
 function make_material_name_to_id_map(mesh::UnstructuredMesh_2D)
     material_map = Dict{String, Int64}()
     mat_names = String[]
@@ -235,7 +228,6 @@ function make_material_name_to_id_map(mesh::UnstructuredMesh_2D)
     return material_map::Dict{String, Int64}
 end
 
-# @code_warntype checked 2021/11/27
 function make_material_name_to_id_map(HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
     ) where {F <: AbstractFloat, U <: Unsigned}
     mesh_children = [HRPM]
@@ -292,7 +284,6 @@ function make_material_name_to_id_map(HRPM::HierarchicalRectangularlyPartitioned
     return material_map::Dict{String, Int64}
 end
 
-# @code_warntype checked 2021/11/27
 function write_xdmf_materials!(xml::XMLElement, 
                                h5_filename::String, 
                                h5_mesh::HDF5.Group, 
@@ -333,7 +324,6 @@ function write_xdmf_materials!(xml::XMLElement,
     return nothing
 end
 
-# @code_warntype checked 2021/11/27
 function write_xdmf_face_sets!(xml::XMLElement, 
                                h5_filename::String, 
                                h5_mesh::HDF5.Group, 
@@ -363,7 +353,6 @@ function write_xdmf_face_sets!(xml::XMLElement,
     return nothing
 end
 
-# @code_warntype checked 2021/11/27
 function add_HRPM_xdmf!(xml::XMLElement,
                         h5_filename::String,
                         h5_mesh::Union{HDF5.Group, HDF5.File},

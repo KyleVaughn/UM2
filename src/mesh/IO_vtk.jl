@@ -1,5 +1,4 @@
 # Routines for reading and writing VTK files
-# @code_warntype checked on 2021/11/26
 function read_vtk_2d(filepath::String)::UnstructuredMesh_2D
     @info "Reading $filepath"
     file = open(filepath, "r")
@@ -84,7 +83,6 @@ function read_vtk_2d(filepath::String)::UnstructuredMesh_2D
     end
 end
 
-# @code_warntype checked 2021/11/27
 function read_vtk_points_2d(
         file::IOStream, 
         npoints_string::SubString{String}, 
@@ -99,7 +97,6 @@ function read_vtk_points_2d(
     return points
 end
 
-# @code_warntype checked 2021/11/27
 function read_vtk_cells(
         file::IOStream, 
         ncells_string::SubString{String}, 
@@ -114,7 +111,6 @@ function read_vtk_cells(
     return cells
 end
 
-# @code_warntype checked 2021/11/27
 function read_vtk_cell_types(
         file::IOStream, 
         ncells_string::SubString{String}, 
