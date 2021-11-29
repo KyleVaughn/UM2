@@ -63,7 +63,7 @@ using MOCNeutronTransport
             quad8 = Quadrilateral8_2D(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
 
             # 2D default
-            @test isapprox(area(quad8; N = 3), 17//3, atol=1.0e-6)
+            @test isapprox(area(quad8), 17//3, atol=1.0e-6)
 
             # real_to_parametric
             p₁ = Point_2D(F, 0)

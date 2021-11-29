@@ -56,7 +56,7 @@ using MOCNeutronTransport
             p₆ = Point_2D(F, 1, 1)
             tri6 = Triangle6_2D(p₁, p₂, p₃, p₄, p₅, p₆)
             # 2D default
-            @test isapprox(area(tri6; N = 12), 3, atol=1.0e-6)
+            @test isapprox(area(tri6), 3, atol=1.0e-6)
 
             # real_to_parametric
             p₁ = Point_2D(F, 0)

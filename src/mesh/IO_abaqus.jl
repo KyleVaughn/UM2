@@ -1,4 +1,4 @@
-# UO routines for the Abaqus .inp file format
+# IO routines for the Abaqus .inp file format
 const abaqus_to_vtk_type = Dict{String, UInt64}(
     # 2D
     # triangle
@@ -13,7 +13,6 @@ const abaqus_to_vtk_type = Dict{String, UInt64}(
     "M3D9" => 23
    )
 
-# @code_warntype checked 2021/11/22
 function read_abaqus_2d(filepath::String; F::Type{<:AbstractFloat} = Float64)
     @info "Reading $filepath"
     # NOFE: Fhere is a crucial assumption here that elements and nodes are listed 1 to N,

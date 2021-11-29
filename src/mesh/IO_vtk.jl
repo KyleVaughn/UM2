@@ -153,7 +153,7 @@ function write_vtk_2d(filename::String, mesh::UnstructuredMesh_2D{F, U}) where {
     npoints = length(mesh.points)
     println(file, "POINTS $npoints $point_type")
     for i in 1:npoints
-        x, y = mesh.points[i].x
+        x, y = mesh.points[i]
         println(file, "$x $y 0.0")
     end
     println(file, "")

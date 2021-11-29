@@ -77,8 +77,8 @@ function jacobian(tri6::Triangle6_2D, r::R, s::S) where {R <: Real,
                                                          S <: Real}
     # Return the 2 x 2 Jacobian matrix
     ∂F_∂r, ∂F_∂s = derivative(tri6, r, s)
-    return SMatrix{2, 2}(∂F_∂r.x, ∂F_∂s.x,
-                         ∂F_∂r.y, ∂F_∂s.y)
+    return SMatrix{2, 2}(∂F_∂r.x, ∂F_∂r.y,
+                         ∂F_∂s.x, ∂F_∂s.y)
 end
 
 function area(tri6::Triangle6_2D{F}) where {F <: AbstractFloat}
@@ -130,7 +130,11 @@ function triangulate(tri6::Triangle6_2D{F}, N::Int64) where {F <: AbstractFloat}
     return triangles
 end
 
-function real_to_parametric(p::Point_2D{F}, tri6::Triangle6_2D{F}; N::Int64=30) where {F <: AbstractFloat}
+function real_to_parametric(p::Point_2D{F}, tri6::Triangle6_2D{F}) where {F <: AbstractFloat}
+    return real_to_parametric(p, tri6, 30)
+end
+
+function real_to_parametric(p::Point_2D{F}, tri6::Triangle6_2D{F}, N::Int64) where {F <: AbstractFloat}
     # Convert from real coordinates to the triangle's local parametric coordinates using the
     # the Newton-Raphson method. N is the max number of iterations
     # If a conversion doesn't exist, the minimizer is returned.
@@ -139,7 +143,7 @@ function real_to_parametric(p::Point_2D{F}, tri6::Triangle6_2D{F}; N::Int64=30) 
     err₁ = p - tri6(r, s)
     for i = 1:N
         # Inversion is faster for 2 by 2 than \
-        Δr, Δs = inv(jacobian(tri6, r, s)) * err₁.x
+        Δr, Δs = inv(jacobian(tri6, r, s)) * err₁
         r = r + Δr
         s = s + Δs
         err₂ = p - tri6(r, s)
@@ -151,11 +155,14 @@ function real_to_parametric(p::Point_2D{F}, tri6::Triangle6_2D{F}; N::Int64=30) 
     return Point_2D(r, s)
 end
 
-# @code_warntype checked 2021/11/20
-function in(p::Point_2D, tri6::Triangle6_2D; N::Int64=30)
+function in(p::Point_2D, tri6::Triangle6_2D)
+    return in(p, tri6, 30)
+end
+
+function in(p::Point_2D, tri6::Triangle6_2D, N::Int64)
     # Determine if the point is in the triangle using the Newton-Raphson method
     # N is the max number of iterations of the method.
-    p_rs = real_to_parametric(p, tri6; N=N)
+    p_rs = real_to_parametric(p, tri6, N)
     ϵ = parametric_coordinate_ϵ 
     # Check that the r coordinate and s coordinate are in [-ϵ,  1 + ϵ] and
     # r + s ≤ 1 + ϵ
@@ -169,12 +176,11 @@ function in(p::Point_2D, tri6::Triangle6_2D; N::Int64=30)
     end
 end
 
-# @code_warntype checked 2021/11/20
 function intersect(l::LineSegment_2D{F}, tri6::Triangle6_2D{F}) where {F <: AbstractFloat}
     # Create the 3 quadratic segments that make up the triangle and intersect each one
-    edges = (QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4]),
-             QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5]),
-             QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
+    edges = SVector(QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4]),
+                    QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5]),
+                    QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
     ipoints = MVector(Point_2D(F, 0),
                       Point_2D(F, 0),
                       Point_2D(F, 0),
@@ -182,14 +188,14 @@ function intersect(l::LineSegment_2D{F}, tri6::Triangle6_2D{F}) where {F <: Abst
                       Point_2D(F, 0),
                       Point_2D(F, 0)
                      )
-    n_ipoints = 0x00
+    n_ipoints = 0x00000000
     # We need to account for 6 points returned
     for k = 1:3
         npoints, points = l ∩ edges[k]
         for i = 1:npoints
-            if n_ipoints === 0x00
+            if n_ipoints === 0x00000000
                 ipoints[1] = points[1]
-                n_ipoints = 0x01
+                n_ipoints = 0x00000001
             else
                 # make sure we don't have duplicate points
                 duplicate = false
@@ -200,7 +206,7 @@ function intersect(l::LineSegment_2D{F}, tri6::Triangle6_2D{F}) where {F <: Abst
                     end
                 end
                 if !duplicate
-                    n_ipoints += 0x01
+                    n_ipoints += 0x00000001
                     ipoints[n_ipoints] = points[i]
                 end
             end
