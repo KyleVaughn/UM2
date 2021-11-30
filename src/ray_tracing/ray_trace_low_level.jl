@@ -5,17 +5,17 @@ function classify_nesw(p::Point_2D{T},
                        mesh::UnstructuredMesh_2D{T, I}; 
                        ϵ::Float64 = Point_2D_differentiation_distance
                 ) where {T <: AbstractFloat, I <: Unsigned}
-    y_N = mesh.points[mesh.edges[mesh.boundary_edges[1][1]][1]].x[2]
-    x_E = mesh.points[mesh.edges[mesh.boundary_edges[2][1]][1]].x[1]
-    y_S = mesh.points[mesh.edges[mesh.boundary_edges[3][1]][1]].x[2]
-    x_W = mesh.points[mesh.edges[mesh.boundary_edges[4][1]][1]].x[1]
-    if abs(p.x[2] - y_N) < ϵ
+    y_N = mesh.points[mesh.edges[mesh.boundary_edges[1][1]][1]][2]
+    x_E = mesh.points[mesh.edges[mesh.boundary_edges[2][1]][1]][1]
+    y_S = mesh.points[mesh.edges[mesh.boundary_edges[3][1]][1]][2]
+    x_W = mesh.points[mesh.edges[mesh.boundary_edges[4][1]][1]][1]
+    if abs(p[2] - y_N) < ϵ
         return 1 # North
-    elseif abs(p.x[1] - x_E) < ϵ
+    elseif abs(p[1] - x_E) < ϵ
         return 2 # East
-    elseif abs(p.x[2] - y_S) < ϵ 
+    elseif abs(p[2] - y_S) < ϵ 
         return 3 # South
-    elseif abs(p.x[1] - x_W) < ϵ 
+    elseif abs(p[1] - x_W) < ϵ 
         return 4 # West
     else
         @error "Could not classify point: $p"
@@ -31,22 +31,22 @@ function get_start_edge_nesw(p::Point_2D{T},
                              ) where {T <: AbstractFloat, I <: Unsigned}
     if nesw == 1 || nesw == 3
         # On North or South edge. Just check x coordinates
-        xₚ = p.x[1]
+        xₚ = p[1]
         for iedge in boundary_edge_indices
             epoints = edge_points(mesh, mesh.edges[iedge])
-            x₁ = epoints[1].x[1]
-            x₂ = epoints[2].x[1]
+            x₁ = epoints[1][1]
+            x₂ = epoints[2][1]
             if x₁ ≤ xₚ ≤ x₂ || x₂ ≤ xₚ ≤ x₁
                 return iedge
             end
         end
     else # nesw == 2 || nesw == 4
         # On East or West edge. Just check y coordinates
-        yₚ = p.x[2]
+        yₚ = p[2]
         for iedge in boundary_edge_indices
             epoints = edge_points(mesh, mesh.edges[iedge])
-            y₁ = epoints[1].x[2]
-            y₂ = epoints[2].x[2]
+            y₁ = epoints[1][2]
+            y₂ = epoints[2][2]
             if y₁ ≤ yₚ ≤ y₂ || y₂ ≤ yₚ ≤ y₁
                 return iedge
             end
@@ -489,8 +489,8 @@ function generate_tracks(tₛ::F,
 
     if boundary_shape == "Rectangle"
         bb = bounding_box(mesh, rectangular_boundary = true)
-        w = bb.points[3].x[1] - bb.points[1].x[1]
-        h = bb.points[3].x[2] - bb.points[1].x[2]
+        w = bb.points[3][1] - bb.points[1][1]
+        h = bb.points[3][2] - bb.points[1][2]
         # The tracks for each γ
         tracks = [ generate_tracks(γ, tₛ, w, h) for γ in ang_quad.γ ].data
         # Shift all tracks if necessary, since the tracks are generated as if the HRPM has a

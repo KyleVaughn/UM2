@@ -237,9 +237,17 @@ function intersect(l::LineSegment_2D{F},
                   ) where {F <: AbstractFloat}
     # Edges are faster, so they are the default
     if length(mesh.edges) !== 0 
-        return intersect_edges(l, mesh)
+        if 0 < length(mesh.materialized_edges)
+            return intersect_edges_explicit(l, mesh.materialized_edges)
+        else
+            return intersect_edges_implicit(l, mesh.edges, mesh.points)
+        end
     else
-        return intersect_faces(l, mesh)
+        if 0 < length(mesh.materialized_faces)
+            return intersect_faces_explicit(l, mesh.materialized_faces)
+        else
+            return intersect_faces_implicit(l, mesh.faces, mesh.points)
+        end
     end
 end
 
