@@ -40,8 +40,8 @@ Base.broadcastable(mesh::UnstructuredMesh_2D) = Ref(mesh)
 
 # Return a mesh with boundary edges and all necessary prerequisites to find the boundary edges
 # @code_warntype checked 2021/11/23
-function add_boundary_edges(mesh::UnstructuredMesh_2D{F, U};
-                          bounding_shape::String="Rectangle") where {F <: AbstractFloat, U <: Unsigned}
+function add_boundary_edges(mesh::UnstructuredMesh_2D{F, U}, 
+                            bounding_shape::String) where {F <: AbstractFloat, U <: Unsigned}
     if 0 == length(mesh.edge_face_connectivity)
         mesh = add_connectivity(mesh)
     end
@@ -53,7 +53,7 @@ function add_boundary_edges(mesh::UnstructuredMesh_2D{F, U};
                                      materialized_faces = mesh.materialized_faces,
                                      edge_face_connectivity = mesh.edge_face_connectivity,
                                      face_edge_connectivity = mesh.face_edge_connectivity,
-                                     boundary_edges = boundary_edges(mesh),
+                                     boundary_edges = boundary_edges(mesh, bounding_shape),
                                      face_sets = mesh.face_sets
                                     )
 end
@@ -106,7 +106,7 @@ end
 # Return a mesh with every field created
 # @code_warntype checked 2021/11/23
 function add_everything(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat, U <: Unsigned}
-    return add_boundary_edges(add_materialized_faces(add_materialized_edges(mesh)))
+    return add_boundary_edges(add_materialized_faces(add_materialized_edges(mesh)), "Rectangle")
 end
 
 # Return a mesh with face/edge connectivity
@@ -139,7 +139,7 @@ function add_materialized_edges(mesh::UnstructuredMesh_2D{F, U}) where {F <: Abs
     return UnstructuredMesh_2D{F, U}(name = mesh.name,
                                      points = mesh.points,
                                      edges = mesh.edges,
-                                     materialized_edges = materialize_edges(mesh),
+                                     materialized_edges = materialize_edges(mesh.edges, mesh.points),
                                      faces = mesh.faces,
                                      materialized_faces = mesh.materialized_faces,
                                      edge_face_connectivity = mesh.edge_face_connectivity,
@@ -158,7 +158,7 @@ function add_materialized_faces(mesh::UnstructuredMesh_2D{F, U}) where {F <: Abs
                                      edges = mesh.edges,
                                      materialized_edges = mesh.materialized_edges,
                                      faces = mesh.faces,
-                                     materialized_faces = materialize_faces(mesh),
+                                     materialized_faces = materialize_faces(mesh.faces, mesh.points),
                                      edge_face_connectivity = mesh.edge_face_connectivity,
                                      face_edge_connectivity = mesh.face_edge_connectivity,
                                      boundary_edges = mesh.boundary_edges,

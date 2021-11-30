@@ -19,31 +19,31 @@ end
 
 # Area of face
 # Type-stable
-function area(face::SVector{N, U}, points::Vector{Point_2D{F}}) where {N, F <: AbstractFloat, U <: Unsigned}
+function area(face::SVector{N, U}, 
+              points::Vector{Point_2D{F}}) where {N, F <: AbstractFloat, U <: Unsigned}
     return area(materialize_face(face, points))
 end
 
 # Return the area of a face set
 # Type-stable
 function area(materialized_faces::Vector{<:Face_2D{F}},
-        face_set::Set{U}) where {F <: AbstractFloat, U <: Unsigned}
+              face_set::Set{U}) where {F <: AbstractFloat, U <: Unsigned}
     return mapreduce(x->area(materialized_faces[x]), +, face_set)
 end
 
 # Return the area of a face set
 # Type-stable
 function area(faces::Vector{<:SVector{L, U} where {L}},
-              points::Vector{Point_2D{F}},
-              face_set::Set{U}) where {F <: AbstractFloat, U <: Unsigned}
+              points::Vector{Point_2D{F}}, face_set::Set{U}) where {F <: AbstractFloat, U <: Unsigned}
     return mapreduce(x->area(faces[x], points), +, face_set)
 end
 
 # Return a vector containing vectors of the edges in each side of the mesh's bounding shape, e.g.
 # For a rectangular bounding shape the sides are North, East, South, West. Then the output would
 # be [ [e1, e2, e3, ...], [e17, e18, e18, ...], ..., [e100, e101, ...]]
-# Type-stable, shockingly enough
-function boundary_edges(mesh::UnstructuredMesh_2D{F, U};
-                       bounding_shape::String = "Rectangle") where {F<:AbstractFloat, U <: Unsigned}
+# Not type-stable
+function boundary_edges(mesh::UnstructuredMesh_2D{F, U}, 
+                        bounding_shape::String) where {F <: AbstractFloat, U <: Unsigned}
     # edges which have face 0 in their edge_face connectivity are boundary edges
     the_boundary_edges = findall(x->x[1] == 0, mesh.edge_face_connectivity)
     if bounding_shape == "Rectangle"
@@ -154,29 +154,8 @@ function edges(face::SVector{9, U}) where {U <: Unsigned}
 end
 
 # The unique edges from a vector of triangles or quadrilaterals represented by point IDs
-# Type-stable
-function edges(faces::Vector{<:Union{SVector{4, U}, SVector{5, U}}}) where {U <: Unsigned}
-    edge_arr = edges.(faces)
-    edges_unfiltered = [ edge for edge_vec in edge_arr for edge in edge_vec ]
-    # Filter the duplicate edges
-    edges_filtered = sort(unique(edges_unfiltered))
-    return [ SVector(e.data) for e in edges_filtered ]
-end
-
-# The unique edges from a vector of quadratic triangles or quadratic quadrilaterals
-# represented by point IDs
-# Type-stable
-function edges(faces::Vector{<:Union{SVector{7, U}, SVector{9, U}}}) where {U <: Unsigned}
-    edge_arr = edges.(faces)
-    edges_unfiltered = [ edge for edge_vec in edge_arr for edge in edge_vec ]
-    # Filter the duplicate edges
-    edges_filtered::Vector{MVector{2, U}} = sort(unique(edges_unfiltered))
-    return [ SVector(e.data) for e in edges_filtered ]
-end
-
-# The unique edges from a vector of faces represented by point IDs
-# Not type-stable 
-function edges(faces::Vector{<:SVector{N, U} where N}) where {U <: Unsigned}
+# Type-stable if faces are the same type
+function edges(faces::Vector{<:Union{SVector{N, U}}}) where {N, U <: Unsigned}
     edge_arr = edges.(faces)
     edges_unfiltered = [ edge for edge_vec in edge_arr for edge in edge_vec ]
     # Filter the duplicate edges
@@ -310,7 +289,7 @@ end
 
 # Insert the boundary edge into the correct place in the vector of edge indices, based on
 # the distance from some reference point
-# @code_warntype checked 2021/11/23
+# Type-stable
 function insert_boundary_edge!(edge_index::U, edge_indices::Vector{U},
                                edges::Vector{<:SVector{L, U} where {L}},
                                p_ref::Point_2D{F}, points::Vector{Point_2D{F}}
@@ -334,23 +313,8 @@ function insert_boundary_edge!(edge_index::U, edge_indices::Vector{U},
     return nothing
 end
 
-# Intersect a line with the edges of a mesh
-# @code_warntype checked 2021/11/23
-function intersect_edges(l::LineSegment_2D{F},
-                         mesh::UnstructuredMesh_2D{F, U}
-                        ) where {F <: AbstractFloat, U <: Unsigned}
-    # Implicit intersection has been faster in every test, so this is the default
-    if length(mesh.materialized_edges) !== 0
-        intersection_points = intersect_edges_explicit(l, mesh.materialized_edges)
-        return sort_intersection_points(l, intersection_points)
-    else
-        intersection_points = intersect_edges_implicit(l, mesh.edges, mesh.points)
-        return sort_intersection_points(l, intersection_points)
-    end
-end
-
 # Intersect a line with materialized edges
-# @code_warntype checked 2021/11/23
+# Type-stable
 function intersect_edges_explicit(l::LineSegment_2D{F},
                                   edges::Vector{LineSegment_2D{F}}) where {F <: AbstractFloat}
     # A vector to hold all of the intersection points
@@ -362,11 +326,11 @@ function intersect_edges_explicit(l::LineSegment_2D{F},
             push!(intersection_points, point)
         end
     end
-    return intersection_points
+    return sort_intersection_points(l, intersection_points)
 end
 
 # Intersect a line with implicitly defined edges
-# @code_warntype checked 2021/11/23
+# Type-stable
 function intersect_edges_explicit(l::LineSegment_2D{F},
                                   edges::Vector{QuadraticSegment_2D{F}}) where {F <: AbstractFloat}
     # A vector to hold all of the intersection points
@@ -378,29 +342,20 @@ function intersect_edges_explicit(l::LineSegment_2D{F},
             append!(intersection_points, points[1:npoints])
         end
     end
-    return intersection_points
+    return sort_intersection_points(l, intersection_points)
 end
 
-# Intersect a line with an implicitly defined linear edge
-# @code_warntype checked 2021/11/23
+# Intersect a line with an implicitly defined edge
+# Type-stable
 function intersect_edge_implicit(l::LineSegment_2D{F},
-                                 edge::SVector{2, U},
-                                 points::Vector{Point_2D{F}}
-                        ) where {F <: AbstractFloat, U <: Unsigned}
-    return l ∩ materialize_edge(edge, points)
-end
-
-# Intersect a line with an implicitly defined quadratic edge
-# @code_warntype checked 2021/11/23
-function intersect_edge_implicit(l::LineSegment_2D{F},
-                                 edge::SVector{3, U},
+                                 edge::SVector{L, U} where {L},
                                  points::Vector{Point_2D{F}}
                         ) where {F <: AbstractFloat, U <: Unsigned}
     return l ∩ materialize_edge(edge, points)
 end
 
 # Intersect a line with a vector of implicitly defined linear edges
-# @code_warntype checked 2021/11/23
+# Type-stable if all edges are the same, which should be true
 function intersect_edges_implicit(l::LineSegment_2D{F},
                                   edges::Vector{<:Union{SVector{2, U}, SVector{3, U}}},
                                   points::Vector{Point_2D{F}}
@@ -414,70 +369,22 @@ function intersect_edges_implicit(l::LineSegment_2D{F},
             push!(intersection_points, point)
         end
     end
-    return intersection_points
+    return sort_intersection_points(l, intersection_points) 
 end
 
-# Intersect a line with an implicitly defined Triangle_2D
-# @code_warntype checked 2021/11/23
+# Intersect a line with an implicitly defined face 
+# Type-stable
 function intersect_face_implicit(l::LineSegment_2D{F},
-                                 face::SVector{4, U},
+                                 face::SVector{L, U} where {L},
                                  points::Vector{Point_2D{F}}
                         ) where {F <: AbstractFloat, U <: Unsigned}
     return l ∩ materialize_face(face, points)
-end
-
-# Intersect a line with an implicitly defined Quadrilateral_2D
-# @code_warntype checked 2021/11/23
-function intersect_face_implicit(l::LineSegment_2D{F},
-                                 face::SVector{5, U},
-                                 points::Vector{Point_2D{F}}
-                        ) where {F <: AbstractFloat, U <: Unsigned}
-    return l ∩ materialize_face(face, points)
-end
-
-# Intersect a line with an implicitly defined Triangle6_2D
-# @code_warntype checked 2021/11/23
-function intersect_face_implicit(l::LineSegment_2D{F},
-                                 face::SVector{7, U},
-                                 points::Vector{Point_2D{F}}
-                        ) where {F <: AbstractFloat, U <: Unsigned}
-    return l ∩ materialize_face(face, points)
-end
-
-# Intersect a line with an implicitly defined Quadrilateral8_2D
-# @code_warntype checked 2021/11/23
-function intersect_face_implicit(l::LineSegment_2D{F},
-                                 face::SVector{9, U},
-                                 points::Vector{Point_2D{F}}
-                        ) where {F <: AbstractFloat, U <: Unsigned}
-    return l ∩ materialize_face(face, points)
-end
-
-# Intersect a line with the faces of a mesh
-# @code_warntype checked 2021/11/23
-function intersect_faces(l::LineSegment_2D{F},
-                         mesh::UnstructuredMesh_2D{F, U}
-                        ) where {F <: AbstractFloat, U <: Unsigned}
-    # Explicit faces have been faster in every test, so this is the default
-    if length(mesh.materialized_faces) !== 0
-        intersection_points = intersect_faces_explicit(l, mesh.materialized_faces)
-        return sort_intersection_points(l, intersection_points)
-    else
-        # Check if any of the face types are unsupported
-        unsupported = count(x->x[1] ∉  UnstructuredMesh_2D_cell_types, mesh.faces)
-        if 0 < unsupported
-            @error "Mesh contains an unsupported face type"
-        end
-        intersection_points = intersect_faces_implicit(l, mesh.faces, mesh.points)
-        return sort_intersection_points(l, intersection_points)
-    end
 end
 
 # Intersect a line with explicitly defined linear faces
-# @code_warntype checked 2021/11/23
+# Type-stable if all faces are one of: linear or quadratic
 function intersect_faces_explicit(l::LineSegment_2D{F},
-                                  faces::Vector{<:Union{Triangle_2D{F}, Quadrilateral_2D{F}}}
-                        ) where {F <: AbstractFloat}
+                                  faces::Vector{<:Face_2D{F}} ) where {F <: AbstractFloat}
     # An array to hold all of the intersection points
     intersection_points = Point_2D{F}[]
     for face in faces
@@ -487,47 +394,13 @@ function intersect_faces_explicit(l::LineSegment_2D{F},
             append!(intersection_points, points[1:npoints])
         end
     end
-    return intersection_points
-end
-
-# Intersect a line with explicitly defined quadratic faces
-# @code_warntype checked 2021/11/23
-function intersect_faces_explicit(l::LineSegment_2D{F},
-                                  faces::Vector{<:Union{Triangle6_2D{F}, Quadrilateral8_2D{F}}}
-                        ) where {F <: AbstractFloat}
-    # An array to hold all of the intersection points
-    intersection_points = Point_2D{F}[]
-    for face in faces
-        npoints, points = l ∩ face
-        # If the intersections yields 1 or more points, push those points to the array of points
-        if 0 < npoints
-            append!(intersection_points, points[1:npoints])
-        end
-    end
-    return intersection_points
-end
-
-# Intersect a line with explicitly defined faces
-# @code_warntype checked 2021/11/23: going to be unstable
-function intersect_faces_explicit(l::LineSegment_2D{F},
-                                  faces::Vector{<:Face_2D{F}}
-                        ) where {F <: AbstractFloat}
-    # An array to hold all of the intersection points
-    intersection_points = Point_2D{F}[]
-    for face in faces
-        npoints, points = l ∩ face
-        # If the intersections yields 1 or more points, push those points to the array of points
-        if 0 < npoints
-            append!(intersection_points, points[1:npoints])
-        end
-    end
-    return intersection_points
+    return sort_intersection_points(l, intersection_points)
 end
 
 # Intersect a line with implicitly defined faces
-# @code_warntype checked 2021/11/23
+# Type-stable if all faces are one of: linear or quadratic
 function intersect_faces_implicit(l::LineSegment_2D{F},
-                                  faces::Vector{<:SVector{N, U} where N},
+                                  faces::Vector{<:SVector{L, U} where L},
                                   points::Vector{Point_2D{F}}
                         ) where {F <: AbstractFloat, U <: Unsigned}
     # An array to hold all of the intersection points
@@ -540,7 +413,7 @@ function intersect_faces_implicit(l::LineSegment_2D{F},
             append!(intersection_points, ipoints[1:npoints])
         end
     end
-    return intersection_points
+    return sort_intersection_points(l, intersection_points)
 end
 
 # If a point is a vertex
@@ -642,12 +515,12 @@ function shared_edge(face1::U, face2::U,
 end
 
 # Sort points based on their distance from the start of the line
-# @code_warntype checked 2021/11/23
+# Type-stable
 function sort_intersection_points(l::LineSegment_2D{F},
                                   points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
     if 0 < length(points)
         # Sort the points based upon their distance to the first point in the line
-        distances = distance.(l.points[1], points)
+        distances = distance.(Ref(l.points[1]), points)
         sorted_pairs = sort(collect(zip(distances, points)); by=first)
         # Remove duplicate points
         points_reduced = [sorted_pairs[1][2]]
@@ -664,17 +537,19 @@ function sort_intersection_points(l::LineSegment_2D{F},
 end
 
 # Return a mesh with name name, composed of the faces in the set face_ids
-# @code_warntype checked 2021/11/23
-function submesh(mesh::UnstructuredMesh_2D{F, U},
-                 face_ids::Set{U};
-                 name::String = "DefaultMeshName") where {F<:AbstractFloat, U <: Unsigned}
+# Not type-stable
+function submesh(name::String,
+                 points::Vector{Point_2D{F}},
+                 faces::Vector{<:SVector{L, U} where {L}},
+                 face_sets::Dict{String, Set{U}},
+                 face_ids::Set{U}) where {F <: AbstractFloat, U <: Unsigned}
     # Setup faces and get all vertex ids
-    faces = Vector{Vector{U}}(undef, length(face_ids))
+    submesh_faces = Vector{Vector{U}}(undef, length(face_ids))
     vertex_ids = Set{U}()
     for (i, face_id) in enumerate(face_ids)
-        face = collect(mesh.faces[face_id])
-        faces[i] = face
-        union!(vertex_ids, Set(face[2:length(face)]))
+        face_vec = collect(faces[face_id].data)
+        submesh_faces[i] = face_vec
+        union!(vertex_ids, Set(face_vec[2:length(face_vec)]))
     end
     # Need to remap vertex ids in faces to new ids
     vertex_ids_sorted = sort(collect(vertex_ids))
@@ -682,23 +557,23 @@ function submesh(mesh::UnstructuredMesh_2D{F, U},
     for (i,v) in enumerate(vertex_ids_sorted)
         vertex_map[v] = i
     end
-    points = Vector{Point_2D{F}}(undef, length(vertex_ids_sorted))
+    submesh_points = Vector{Point_2D{F}}(undef, length(vertex_ids_sorted))
     for (i, v) in enumerate(vertex_ids_sorted)
-        points[i] = mesh.points[v]
+        submesh_points[i] = points[v]
     end
     # remap vertex ids in faces
-    for face in faces
+    for face in submesh_faces
         for (i, v) in enumerate(face[2:length(face)])
             face[i + 1] = vertex_map[v]
         end
     end
     # At this point we have points, faces, & name.
     # Just need to get the face sets
-    face_sets = Dict{String, Set{U}}()
-    for face_set_name in keys(mesh.face_sets)
-        set_intersection = intersect(mesh.face_sets[face_set_name], face_ids)
+    submesh_face_sets = Dict{String, Set{U}}()
+    for face_set_name in keys(face_sets)
+        set_intersection = face_sets[face_set_name] ∩ face_ids
         if length(set_intersection) !== 0
-            face_sets[face_set_name] = set_intersection
+            submesh_face_sets[face_set_name] = set_intersection
         end
     end
     # Need to remap face ids in face sets
@@ -706,16 +581,16 @@ function submesh(mesh::UnstructuredMesh_2D{F, U},
     for (i,f) in enumerate(face_ids)
         face_map[f] = i
     end
-    for face_set_name in keys(face_sets)
+    for face_set_name in keys(submesh_face_sets)
         new_set = Set{U}()
-        for fid in face_sets[face_set_name]
+        for fid in submesh_face_sets[face_set_name]
             union!(new_set, face_map[fid])
         end
-        face_sets[face_set_name] = new_set
+        submesh_face_sets[face_set_name] = new_set
     end
     return UnstructuredMesh_2D{F, U}(name = name,
-                                     points = points,
-                                     faces = [SVector{length(f), U}(f) for f in faces],
-                                     face_sets = face_sets
+                                     points = submesh_points,
+                                     faces = [SVector{length(f), U}(f) for f in submesh_faces],
+                                     face_sets = submesh_face_sets
                                     )
 end
