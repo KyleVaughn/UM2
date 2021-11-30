@@ -178,7 +178,7 @@ end
 
 # Axis-aligned bounding box, in 2d a rectangle.
 # Type-stable, other than the error message
-function bounding_box(mesh::UnstructuredMesh_2D{F, U},
+function bounding_box(mesh::UnstructuredMesh_2D{F, U};
                       rectangular_boundary::Bool = false) where {F <: AbstractFloat, U <: Unsigned}
     # If the mesh does not have any quadratic faces, the bounding_box may be determined entirely from the
     # points. If the mesh does have quadratic cells/faces, we need to find the bounding box of the edges
