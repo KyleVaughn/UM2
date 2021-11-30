@@ -32,37 +32,37 @@ Base.broadcastable(HRPM::HierarchicalRectangularlyPartitionedMesh) = Ref(HRPM)
 
 # Add the boundary edges to each mesh in the HRPM
 # Type-stable
-function add_boundary_edges!(HRPM::HierarchicalRectangularlyPartitionedMesh)
+function add_boundary_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
     apply_function_recursively_to_HRPM_meshes!(add_boundary_edges, HRPM)
 end
 
 # Add the connectivity to each mesh in the HRPM
 # Type-stable
-function add_connectivity!(HRPM::HierarchicalRectangularlyPartitionedMesh)
+function add_connectivity(HRPM::HierarchicalRectangularlyPartitionedMesh)
     apply_function_recursively_to_HRPM_meshes!(add_connectivity, HRPM)
 end
 
 # Add the edges to each mesh in the HRPM
 # Type-stable
-function add_edges!(HRPM::HierarchicalRectangularlyPartitionedMesh)
+function add_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
     apply_function_recursively_to_HRPM_meshes!(add_edges, HRPM)
 end
 
 # Add every field to each mesh in the HRPM
 # Type-stable
-function add_everything!(HRPM::HierarchicalRectangularlyPartitionedMesh)
+function add_everything(HRPM::HierarchicalRectangularlyPartitionedMesh)
     apply_function_recursively_to_HRPM_meshes!(add_everything, HRPM)
 end
 
 # Add materialized edges to each mesh in the HRPM
 # Type-stable
-function add_materialized_edges!(HRPM::HierarchicalRectangularlyPartitionedMesh)
+function add_materialized_edges(HRPM::HierarchicalRectangularlyPartitionedMesh)
     apply_function_recursively_to_HRPM_meshes!(add_materialized_edges, HRPM)
 end
 
 # Add materialized faces to each mesh in the HRPM
 # Type-stable
-function add_materialized_faces!(HRPM::HierarchicalRectangularlyPartitionedMesh)
+function add_materialized_faces(HRPM::HierarchicalRectangularlyPartitionedMesh)
     apply_function_recursively_to_HRPM_meshes!(add_materialized_faces, HRPM)
 end
 

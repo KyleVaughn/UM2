@@ -28,7 +28,7 @@ function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
     Threads.@threads for iγ = 1:nγ
         bools[iγ] = find_segment_faces_in_angle!(segment_points[iγ], indices[iγ], HRPM)
     end
-    if !all(bools)
+    if any(bools)
         iγ_bad = findall(x->!x, bools)
         @error "Failed to find indices for some points in segment_points$iγ_bad"
     end
@@ -36,7 +36,7 @@ function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
 end
 
 # Return the face id in which each segment resides
-# @code_warntype checked 2021/11/27
+# Type-stable, other than the warning block
 function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
                             mesh::UnstructuredMesh_2D{F, U}
                            ) where {F <: AbstractFloat, U <: Unsigned}
@@ -59,7 +59,7 @@ function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
     Threads.@threads for iγ = 1:nγ
         bools[iγ] = find_segment_faces_in_angle!(segment_points[iγ], segment_faces[iγ], mesh)
     end
-    if !all(bools)
+    if any(bools)
         iγ_bad = findall(x->!x, bools)
         @error "Failed to find segment faces for some points in angles: $iγ_bad"
     end
@@ -165,7 +165,7 @@ end
 #   index 1 = γ
 #   index 2 = track
 #   index 3 = point/segment
-# @code_warntype checked 2021/11/27
+# Type-stable other than the error message
 function segmentize(tracks::Vector{Vector{LineSegment_2D{F}}},
                     HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
                     ) where {F <: AbstractFloat, U <: Unsigned}
@@ -190,7 +190,7 @@ end
 #   index 1 = γ
 #   index 2 = track
 #   index 3 = point/segment
-# @code_warntype checked 2021/11/27
+# Type-stable other than the error message
 function segmentize(tracks::Vector{Vector{LineSegment_2D{F}}},
                     mesh::UnstructuredMesh_2D{F, U}
                     ) where {F <: AbstractFloat, U <: Unsigned}
