@@ -39,7 +39,7 @@ end
 Base.broadcastable(mesh::UnstructuredMesh_2D) = Ref(mesh)
 
 # Return a mesh with boundary edges and all necessary prerequisites to find the boundary edges
-# @code_warntype checked 2021/11/23
+# Not type-stable
 function add_boundary_edges(mesh::UnstructuredMesh_2D{F, U}, 
                             bounding_shape::String) where {F <: AbstractFloat, U <: Unsigned}
     if 0 == length(mesh.edge_face_connectivity)
@@ -60,13 +60,13 @@ end
 
 # Return a mesh with face/edge connectivity, edge/face connectivity,
 # and all necessary prerequisites to find the boundary edges
-# @code_warntype checked 2021/11/23
+# Not type-stable
 function add_connectivity(mesh::UnstructuredMesh_2D)
     return add_edge_face_connectivity(add_face_edge_connectivity(mesh))
 end
 
 # Return a mesh with edges
-# @code_warntype checked 2021/11/22
+# Not type-stable
 function add_edges(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat, U <: Unsigned}
     return UnstructuredMesh_2D{F, U}(name = mesh.name,
                                      points = mesh.points,
@@ -83,7 +83,7 @@ end
 
 # Return a mesh with edge/face connectivity
 # and all necessary prerequisites to find the boundary edges
-# @code_warntype checked 2021/11/23
+# Not type-stable
 function add_edge_face_connectivity(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat, U <: Unsigned}
     if 0 == length(mesh.face_edge_connectivity)
         mesh = add_face_edge_connectivity(mesh)
@@ -104,14 +104,14 @@ function add_edge_face_connectivity(mesh::UnstructuredMesh_2D{F, U}) where {F <:
 end
 
 # Return a mesh with every field created
-# @code_warntype checked 2021/11/23
+# Not type-stable
 function add_everything(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat, U <: Unsigned}
     return add_boundary_edges(add_materialized_faces(add_materialized_edges(mesh)), "Rectangle")
 end
 
 # Return a mesh with face/edge connectivity
 # and all necessary prerequisites to find the boundary edges
-# @code_warntype checked 2021/11/23 
+# Not type-stable
 function add_face_edge_connectivity(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat,
                                                                             U <: Unsigned}
     if 0 == length(mesh.edges)
@@ -131,7 +131,7 @@ function add_face_edge_connectivity(mesh::UnstructuredMesh_2D{F, U}) where {F <:
 end
 
 # Return a mesh with materialized edges
-# @code_warntype checked 2021/11/22
+# Not type-stable
 function add_materialized_edges(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat, U <: Unsigned}
     if 0 == length(mesh.edges)
         mesh = add_edges(mesh)
@@ -150,7 +150,7 @@ function add_materialized_edges(mesh::UnstructuredMesh_2D{F, U}) where {F <: Abs
 end
 
 # Return a mesh with materialized faces
-# @code_warntype checked 2021/11/22
+# Not type-stable
 function add_materialized_faces(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat,
                                                                         U <: Unsigned}
     return UnstructuredMesh_2D{F, U}(name = mesh.name,
@@ -167,18 +167,18 @@ function add_materialized_faces(mesh::UnstructuredMesh_2D{F, U}) where {F <: Abs
 end
 
 # Return the area of a face set, input by name
-# @code_warntype checked 2021/11/22
+# Not type-stable
 function area(mesh::UnstructuredMesh_2D{F, U}, set_name::String) where {F <: AbstractFloat, U <: Unsigned}
     if 0 < length(mesh.materialized_faces)
-        return area(mesh.materialized_faces, mesh.face_sets[set_name])
+        return area(mesh.materialized_faces, mesh.face_sets[set_name])::F
     else
-        return area(mesh.faces, mesh.points, mesh.face_sets[set_name]) 
+        return area(mesh.faces, mesh.points, mesh.face_sets[set_name])::F
     end
 end
 
 # Axis-aligned bounding box, in 2d a rectangle.
-# @code_warntype checked 2021/11/22
-function bounding_box(mesh::UnstructuredMesh_2D{F, U};
+# Type-stable, other than the error message
+function bounding_box(mesh::UnstructuredMesh_2D{F, U},
                       rectangular_boundary::Bool = false) where {F <: AbstractFloat, U <: Unsigned}
     # If the mesh does not have any quadratic faces, the bounding_box may be determined entirely from the
     # points. If the mesh does have quadratic cells/faces, we need to find the bounding box of the edges
@@ -186,10 +186,10 @@ function bounding_box(mesh::UnstructuredMesh_2D{F, U};
     if (any(x->x[1] ∈  UnstructuredMesh_2D_quadratic_cell_types, mesh.faces) &&
         !rectangular_boundary)
         @error "Cannot find bounding_box for a mesh with quadratic faces that does not have a rectangular boundary"
-        return Quadrilateral_2D(Point_2D{F}(F[0, 0]),
-                                Point_2D{F}(F[0, 0]),
-                                Point_2D{F}(F[0, 0]),
-                                Point_2D{F}(F[0, 0]))
+        return Quadrilateral_2D(Point_2D(F, 0),
+                                Point_2D(F, 0),
+                                Point_2D(F, 0),
+                                Point_2D(F, 0))
     else # Can use points
         x = map(p->p[1], mesh.points)
         y = map(p->p[2], mesh.points)
@@ -205,7 +205,7 @@ function bounding_box(mesh::UnstructuredMesh_2D{F, U};
 end
 
 # Return the face containing point p.
-# @code_warntype checked 2021/11/23
+# Not type-stable
 function find_face(p::Point_2D{F}, mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat,
                                                                            U <: Unsigned}
     if 0 < length(mesh.materialized_faces)
@@ -216,7 +216,7 @@ function find_face(p::Point_2D{F}, mesh::UnstructuredMesh_2D{F, U}) where {F <: 
 end
 
 # Return the intersection algorithm that will be used for l ∩ mesh
-# @code_warntype checked 2021/11/23
+# Not type-stable
 function get_intersection_algorithm(mesh::UnstructuredMesh_2D)
     if length(mesh.materialized_edges) !== 0
         return "Edges - Explicit"
@@ -231,7 +231,7 @@ end
 
 # Intersect a line with the mesh. Returns a vector of intersection points, sorted based
 # upon distance from the line's start point
-# @code_warntype checked 2021/11/23
+# Not type-stable
 function intersect(l::LineSegment_2D{F}, 
                    mesh::UnstructuredMesh_2D{F}
                   ) where {F <: AbstractFloat}
@@ -328,10 +328,10 @@ function Base.show(io::IO, mesh::UnstructuredMesh_2D{F, U}) where {F <: Abstract
 end
 
 # Return a mesh composed of the faces in the face set set_name
-# @code_warntype checked 2021/11/23
+# Not type-stable
 function submesh(mesh::UnstructuredMesh_2D{F, U},
                  set_name::String) where {F <: AbstractFloat, U <: Unsigned}
     @debug "Creating submesh for '$set_name'"
     face_ids = mesh.face_sets[set_name]
-    return submesh(mesh, face_ids, name = set_name)
+    return submesh(set_name, mesh.points, mesh.faces, mesh.face_sets, face_ids)
 end
