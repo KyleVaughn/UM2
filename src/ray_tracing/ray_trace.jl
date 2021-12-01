@@ -156,14 +156,14 @@ function ray_trace_edge_to_edge(tracks::Vector{Vector{LineSegment_2D{F}}},
         ray_trace_angle_edge_to_edge!(tracks[iγ],
                                       segment_points[iγ],
                                       segment_faces[iγ],
-                                      points,
-                                      edges,
-                                      materialized_edges,
-                                      faces,
-                                      materialized_faces,
-                                      edge_face_connectivity,
-                                      face_edge_connectivity,
-                                      boundary_edges
+                                      mesh.points,
+                                      mesh.edges,
+                                      mesh.materialized_edges,
+                                      mesh.faces,
+                                      mesh.materialized_faces,
+                                      mesh.edge_face_connectivity,
+                                      mesh.face_edge_connectivity,
+                                      mesh.boundary_edges
                                       )
     end
     return segment_points, segment_faces
