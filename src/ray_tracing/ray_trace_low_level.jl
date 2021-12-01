@@ -21,6 +21,7 @@ function classify_nesw(p::Point_2D{F},
     elseif abs(p[1] - x_W) < ϵ 
         return 4 # West
     else
+        # Used as an index to boundary_edges, so error should be evident
         return 0 # Error
     end
 end
@@ -262,6 +263,7 @@ function get_start_edge_nesw(p::Point_2D{F},
             end
         end
     end
+    # Used as index to connectivity, so error should be evident
     return U(0)
 end
 
@@ -363,33 +365,14 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
         end
         iters += 1
     end
-###### ray_trace single ray
     if max_iters ≤ iters
         @warn "Exceeded max iterations for $l. Reverted to intersecting each edge."
         # Do it the old fashioned way
-        segment_points = intersect_edges_implicit(l, mesh, mesh.edges) 
+        segment_points = intersect_edges_implicit(l, edges, points) 
         segment_faces = [U(0) for i = 1:length(segment_points) - 1]
         find_segment_faces_in_track!(segment_points, segment_faces, mesh)
     end
-    # The segment points should already be sorted. We will eliminate any points and faces
-    # for which the distance between consecutive points is less than the minimum segment length
-################################# sort intersection points_edge_to_edge
-    if 2 < length(segment_points)
-        # Remove duplicate points
-        segment_points_reduced = [start_point]
-        segment_faces_reduced = U[]
-        npoints = length(segment_points)
-        for i = 2:npoints
-            # If the segment would be shorter than the minimum segment length, remove it.
-            if minimum_segment_length < distance(last(segment_points_reduced), segment_points[i])
-                push!(segment_points_reduced, segment_points[i])
-                push!(segment_faces_reduced, segment_faces[i-1])
-            end
-        end
-        return (segment_points_reduced, segment_faces_reduced)
-    else
-        return (segment_points, segment_faces)
-    end
+    return sort_intersection_points_E2E(l, segment_points, segment_faces)
 end
 
 # Return the next edge, next face, and intersection point on the next edge
@@ -551,4 +534,30 @@ function next_edge_and_face_fallback(current_face::U,
         end
     end
     return U(next_edge), U(next_face)
+end
+
+# Type-stable
+function sort_intersection_points_E2E(l::LineSegment_2D{F}, segment_points::Vector{Point_2D{F}},
+                                      segment_faces::Vector{U}) where {F <: AbstractFloat, U <: Unsigned}
+    if 2 < length(segment_points)
+        # Sort the points and faces basec upon distance from the line start point
+        start_point = l.points[1]
+        npoints = length(segment_points)
+        distances = distance.(Ref(start_point), segment_points[2:npoints])
+        sorted_pairs = sort(collect(zip(distances, segment_points[2:npoints], segment_faces)); by=first)
+        # Eliminate any points and faces for which the distance between consecutive points 
+        # is less than the minimum segment length
+        segment_points_reduced = [start_point]
+        segment_faces_reduced = U[]
+        for i = 1:npoints-1
+            # If the segment would be shorter than the minimum segment length, remove it.
+            if minimum_segment_length < distance(last(segment_points_reduced), sorted_pairs[i][2])
+                push!(segment_points_reduced, sorted_pairs[i][2])
+                push!(segment_faces_reduced,  sorted_pairs[i][3])
+            end
+        end
+        return (segment_points_reduced, segment_faces_reduced)
+    else
+        return (segment_points, segment_faces)
+    end
 end
