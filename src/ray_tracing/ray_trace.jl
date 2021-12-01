@@ -10,7 +10,7 @@ function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
                             template_vec::MVector{N, U}
                            ) where {F <: AbstractFloat, U <: Unsigned, N}
 
-    @debug "Finding faces corresponding to each segment"
+    @info "    - Finding faces for each segment"
     if !has_materialized_faces(HRPM)
         @warn "Faces are not materialized for this mesh. This will be VERY slow"
     end
@@ -118,21 +118,6 @@ end
 function ray_trace_edge_to_edge(tracks::Vector{Vector{LineSegment_2D{F}}},
                                 mesh::UnstructuredMesh_2D{F, U}
                                 ) where {F <: AbstractFloat, U <: Unsigned}
-    # Algorithm info
-    alg_str = "    - Using "
-    if length(mesh.materialized_edges) != 0
-        alg_str = alg_str * "explicit edge intersection, and "
-    else
-        alg_str = alg_str * "implicit edge intersection, and "
-    end
-    if length(mesh.materialized_faces) != 0
-        alg_str = alg_str * "explicit face intersection in fallback methods"
-    else
-        alg_str = alg_str * "implicit face intersection in fallback methods"
-    end
-    @info alg_str
-
-    # Warnings/errors
     if length(mesh.boundary_edges) != 4
         @error "Mesh does not have 4 boundary edges needed for edge-to-edge ray tracing!"
     end
@@ -181,7 +166,7 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{F}}},
 
     # Give info about intersection algorithm being used
     int_alg = get_intersection_algorithm(HRPM) 
-    @info "Segmentizing using the '$int_alg' algorithm"
+    @info "    - Segmentizing using the '$int_alg' algorithm"
     # index 1 = γ
     # index 2 = track
     # index 3 = point/segment
