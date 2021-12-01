@@ -37,6 +37,29 @@ function (q::QuadraticSegment_2D{F})(r::R) where {F <: AbstractFloat, R <: Real}
     return (2rₜ-1)*(rₜ-1)*q.points[1] + rₜ*(2rₜ-1)*q.points[2] + 4rₜ*(1-rₜ)*q.points[3]
 end
 
+# Return the closest point on the curve to point p
+function closest_point(p::Point_2D{F}, q::QuadraticSegment_2D{F}, N::Int64) where {F <: AbstractFloat}
+    # Newton raphson method
+    r = F(1//2)
+    err₁ = p - q(r)
+    Δr = F(0)
+    for i = 1:N
+        D = derivative(q, r)
+        if abs(D[1]) > abs(D[2])
+            Δr = err₁[1]/D[1]
+        else
+            Δr = err₁[2]/D[2]
+        end
+        r = r + Δr
+        err₂ = p - q(r)
+        if norm(err₂ - err₁) < 1e-6
+            break
+        end
+        err₁ = err₂
+    end 
+    return q(r)
+end
+
 # Get the derivative dq⃗/dr evalutated at r
 function derivative(q::QuadraticSegment_2D{F}, r::R) where {F <: AbstractFloat, R <: Real}
     rₜ = F(r)
@@ -136,6 +159,22 @@ function intersect(l::LineSegment_2D{F}, q::QuadraticSegment_2D{F}) where {F <: 
     return npoints, SVector(p₁, p₂)
 end
 intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
+
+# Return if the point is left of the quadratic segment
+#   p    ^
+#   ^   /
+# v⃗ |  / u⃗
+#   | / 
+#   o
+function is_left(p::Point_2D{F}, q::QuadraticSegment_2D{F}, N::Int64) where {F <: AbstractFloat}
+    # Find the closest point to p on the curve.
+    p_closest = closest_point(p, q, N)
+    # Vector from curve start to closest point
+    u⃗ = p_closest - q.points[1]
+    # Vector from curve start to the point of interest
+    v⃗ = p - q.points[1]
+    return u⃗ × v⃗ > 0
+end
 
 # Plot
 # -------------------------------------------------------------------------------------------------

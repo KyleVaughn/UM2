@@ -162,17 +162,32 @@ function in(p::Point_2D{F}, quad8::Quadrilateral8_2D{F}) where {F <: AbstractFlo
 end
 
 function in(p::Point_2D{F}, quad8::Quadrilateral8_2D{F}, N::Int64) where {F <: AbstractFloat}
-    # Determine if the point is in the triangle using the Newton-Raphson method
-    # N is the max number of iterations of the method.
-    p_rs = real_to_parametric(p, quad8, N)
-    ϵ = parametric_coordinate_ϵ
-    if (-ϵ ≤ p_rs[1] ≤ 1 + ϵ) &&
-       (-ϵ ≤ p_rs[2] ≤ 1 + ϵ)
-        return true
-    else
-        return false
-    end
+    # If the point is to the left of every edge
+    #  4<-----3
+    #  |      ^
+    #  | p    |
+    #  |      |
+    #  |      |
+    #  v----->2
+    #  1
+    return is_left(p, QuadraticSegment_2D(quad8.points[1], quad8.points[2], quad8.points[5]), N) &&
+           is_left(p, QuadraticSegment_2D(quad8.points[2], quad8.points[3], quad8.points[6]), N) &&
+           is_left(p, QuadraticSegment_2D(quad8.points[3], quad8.points[4], quad8.points[7]), N) &&
+           is_left(p, QuadraticSegment_2D(quad8.points[4], quad8.points[1], quad8.points[8]), N)
 end
+
+# function in(p::Point_2D{F}, quad8::Quadrilateral8_2D{F}, N::Int64) where {F <: AbstractFloat}
+#     # Determine if the point is in the triangle using the Newton-Raphson method
+#     # N is the max number of iterations of the method.
+#     p_rs = real_to_parametric(p, quad8, N)
+#     ϵ = parametric_coordinate_ϵ
+#     if (-ϵ ≤ p_rs[1] ≤ 1 + ϵ) &&
+#        (-ϵ ≤ p_rs[2] ≤ 1 + ϵ)
+#         return true
+#     else
+#         return false
+#     end
+# end
 
 function intersect(l::LineSegment_2D{F}, quad8::Quadrilateral8_2D{F}) where {F <: AbstractFloat}
     # Create the 3 quadratic segments that make up the triangle and intersect each one

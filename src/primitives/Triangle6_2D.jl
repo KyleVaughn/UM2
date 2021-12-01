@@ -159,22 +159,37 @@ function in(p::Point_2D, tri6::Triangle6_2D)
     return in(p, tri6, 30)
 end
 
-function in(p::Point_2D, tri6::Triangle6_2D, N::Int64)
-    # Determine if the point is in the triangle using the Newton-Raphson method
-    # N is the max number of iterations of the method.
-    p_rs = real_to_parametric(p, tri6, N)
-    ϵ = parametric_coordinate_ϵ 
-    # Check that the r coordinate and s coordinate are in [-ϵ,  1 + ϵ] and
-    # r + s ≤ 1 + ϵ
-    # These are the conditions for a valid point in the triangle ± some ϵ
-    if (-ϵ ≤ p_rs[1] ≤ 1 + ϵ) &&
-       (-ϵ ≤ p_rs[2] ≤ 1 + ϵ) &&
-       (p_rs[1] + p_rs[2] ≤ 1 + ϵ)
-        return true
-    else
-        return false
-    end
+function in(p::Point_2D{F}, tri6::Triangle6_2D{F}, N::Int64) where {F <: AbstractFloat}
+    # If the point is to the left of every edge
+    #  3<-----2
+    #  |     ^
+    #  | p  /
+    #  |   /
+    #  |  /
+    #  v /
+    #  1
+    return is_left(p, QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4]), N) &&
+           is_left(p, QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5]), N) &&
+           is_left(p, QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]), N)
 end
+
+# Slower method than above.
+# function in(p::Point_2D, tri6::Triangle6_2D, N::Int64)
+#     # Determine if the point is in the triangle using the Newton-Raphson method
+#     # N is the max number of iterations of the method.
+#     p_rs = real_to_parametric(p, tri6, N)
+#     ϵ = parametric_coordinate_ϵ 
+#     # Check that the r coordinate and s coordinate are in [-ϵ,  1 + ϵ] and
+#     # r + s ≤ 1 + ϵ
+#     # These are the conditions for a valid point in the triangle ± some ϵ
+#     if (-ϵ ≤ p_rs[1] ≤ 1 + ϵ) &&
+#        (-ϵ ≤ p_rs[2] ≤ 1 + ϵ) &&
+#        (p_rs[1] + p_rs[2] ≤ 1 + ϵ)
+#         return true
+#     else
+#         return false
+#     end
+# end
 
 function intersect(l::LineSegment_2D{F}, tri6::Triangle6_2D{F}) where {F <: AbstractFloat}
     # Create the 3 quadratic segments that make up the triangle and intersect each one
