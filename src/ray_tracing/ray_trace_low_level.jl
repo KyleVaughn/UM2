@@ -333,14 +333,14 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
     intersection_point = start_point
     end_reached = false
     iters = 0
-#    if visualize_ray_tracing # Compile time constant. Prune branch if not visualizing
-#        ax = current_axis() 
-#    end
+    if visualize_ray_tracing # Compile time constant. Prune branch if not visualizing
+        ax = current_axis() 
+    end
     # Find the segment points, faces
     while !end_reached && iters < max_iters
-#        if visualize_ray_tracing 
-#            mesh!(materialized_faces[current_face], color = (:yellow, 0.2))
-#        end
+        if visualize_ray_tracing 
+            mesh!(materialized_faces[current_face], color = (:yellow, 0.2))
+        end
         (next_edge, next_face, intersection_point) = next_edge_and_face(
                                                         current_edge, current_face, l,
                                                         materialized_edges,
@@ -355,13 +355,13 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
                                                                edge_face_connectivity,
                                                                face_edge_connectivity)
         else
-#            if visualize_ray_tracing 
-#                mesh!(materialized_faces[current_face], color = (:green, 0.15))
-#                scatter!(intersection_point, color = :green)
-#                linesegments!(materialized_edges[next_edge], color = :green)
-#                println("Intersection at point $intersection_point, on face $current_face," *
-#                        " over edge $next_edge")
-#            end
+            if visualize_ray_tracing 
+                mesh!(materialized_faces[current_face], color = (:green, 0.15))
+                scatter!(intersection_point, color = :green)
+                linesegments!(materialized_edges[next_edge], color = :green)
+                println("Intersection at point $intersection_point, on face $current_face," *
+                        " over edge $next_edge")
+            end
             push!(segment_points, intersection_point)
             push!(segment_faces, current_face)
         end
@@ -398,9 +398,9 @@ function next_edge_and_face(current_edge::U, current_face::U,
                             face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
                            ) where {F <: AbstractFloat, U <: Unsigned}
 
-#    if visualize_ray_tracing # Compile time constant. Prune branch if not visualizing
-#        ax = current_axis() 
-#    end
+    if visualize_ray_tracing # Compile time constant. Prune branch if not visualizing
+        ax = current_axis() 
+    end
     next_edge = current_edge
     next_face = current_face
     start_point = l.points[1]
@@ -412,9 +412,9 @@ function next_edge_and_face(current_edge::U, current_face::U,
         if edge == current_edge
             continue
         end
-#        if visualize_ray_tracing 
-#            lplot = linesegments!(materialized_edges[edge], color = :orange)
-#        end
+        if visualize_ray_tracing 
+            lplot = linesegments!(materialized_edges[edge], color = :orange)
+        end
         # Edges are linear, so 1 intersection point max
         npoints, point = l ∩ materialized_edges[edge]
         # If there's an intersection
@@ -433,10 +433,10 @@ function next_edge_and_face(current_edge::U, current_face::U,
                 next_edge = edge
             end
         end
-#        if visualize_ray_tracing 
-#            s = readline()
-#            delete!(ax.scene, lplot)
-#        end
+        if visualize_ray_tracing 
+            s = readline()
+            delete!(ax.scene, lplot)
+        end
     end
     return next_edge, next_face, furthest_point
 end

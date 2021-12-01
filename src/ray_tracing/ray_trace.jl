@@ -240,16 +240,15 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
                     p1 = segment_points[iγ][it][iseg]
                     p2 = segment_points[iγ][it][iseg + 1]
                     l = LineSegment_2D(p1, p2)
-                    if debug
+                    problem_length = 1e-3 < arc_length(l)
+                    if debug || problem_length 
                         @warn "Face mismatch for segment [$iγ][$it][$iseg]\n" * 
                               "   Reference face: $(find_face(p_midpoint, mesh)), Face: $face"
-                    end
-                    if 1e-3 < arc_length(l)
                         nsegs_problem += 1
                     end
                     # append the points, line if we want to plot them
                     # we only want to plot if actually a problem, or if debug is on.
-                    if enable_visualization && plot && (debug || 1e-3 < arc_length(l))
+                    if enable_visualization && plot && (debug || problem_length)
                         append!(plot_points, [p1, p2])
                         push!(plot_segs, l)
                     end
