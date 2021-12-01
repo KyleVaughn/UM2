@@ -4,7 +4,7 @@ num_fallback_vertices = 0
 num_fallback_last_resort = 0
 
 # Return the HRPM/face indices in which each segment resides
-# @code_warntype checked 2021/11/27
+# Type-stable, other than warning
 function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
                             HRPM::HierarchicalRectangularlyPartitionedMesh{F, U},
                             template_vec::MVector{N, U}
@@ -115,9 +115,9 @@ end
 # Get the segment points and the face which the segment lies in for all segments, 
 # in all tracks, in all angles, using the edge-to-edge ray tracing method. 
 # Assumes a rectangular boundary
-function ray_trace_edge_to_edge(tracks::Vector{Vector{LineSegment_2D{T}}},
-                                mesh::UnstructuredMesh_2D{T, I}
-                                ) where {T <: AbstractFloat, I <: Unsigned}
+function ray_trace_edge_to_edge(tracks::Vector{Vector{LineSegment_2D{F}}},
+                                mesh::UnstructuredMesh_2D{F, U}
+                                ) where {F <: AbstractFloat, U <: Unsigned}
     # Algorithm info
     alg_str = "    - Using "
     if length(mesh.materialized_edges) != 0
@@ -143,12 +143,12 @@ function ray_trace_edge_to_edge(tracks::Vector{Vector{LineSegment_2D{T}}},
     nγ = length(tracks)
     segment_points =[
                         [
-                            Point_2D{T}[] for it = 1:length(tracks[iγ]) # Tracks 
+                            Point_2D{F}[] for it = 1:length(tracks[iγ]) # Tracks 
                         ] for iγ = 1:nγ # Angles
                     ]
     segment_faces = [
                         [
-                            I[] for it = 1:length(tracks[iγ]) # Tracks 
+                            U[] for it = 1:length(tracks[iγ]) # Tracks 
                         ] for iγ = 1:nγ # Angles
                     ]
     # For each angle, get the segments and segment faces for each track
@@ -156,7 +156,15 @@ function ray_trace_edge_to_edge(tracks::Vector{Vector{LineSegment_2D{T}}},
         ray_trace_angle_edge_to_edge!(tracks[iγ],
                                       segment_points[iγ],
                                       segment_faces[iγ],
-                                      mesh)
+                                      points,
+                                      edges,
+                                      materialized_edges,
+                                      faces,
+                                      materialized_faces,
+                                      edge_face_connectivity,
+                                      face_edge_connectivity,
+                                      boundary_edges
+                                      )
     end
     return segment_points, segment_faces
 end
