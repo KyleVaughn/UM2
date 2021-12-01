@@ -103,8 +103,9 @@ if enable_visualization
         return convert_arguments(M, points, face)
     end
     
-    function convert_arguments(M::Type{<:Mesh},
-                               T::Vector{Triangle_2D})
+    # Yes, the type needs to be this specific, otherwise it tries to dispatch on a Makie routine
+    function convert_arguments(M::Type{Mesh{Tuple{Vector{Triangle_2D{F}}}}},
+                               T::Vector{Triangle_2D{F}}) where {F <: AbstractFloat}
         points = reduce(vcat, [[tri.points[i] for i = 1:3] for tri in T])
         faces = zeros(Int64, length(T), 3)
         k = 1

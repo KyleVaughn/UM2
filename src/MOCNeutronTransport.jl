@@ -30,7 +30,7 @@ using LinearAlgebra
 using StaticArrays
 using Dates: now, format
 if enable_visualization 
-    using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter
+    using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter, current_axis
 end
 using LoggingExtras: TransformerLogger, global_logger
 
@@ -80,10 +80,6 @@ include("gauss_legendre_quadrature.jl")
 include("./ray_tracing/AngularQuadrature.jl")
 include("./ray_tracing/ray_trace.jl")
 include("./ray_tracing/ray_trace_low_level.jl")
-
-
-
-
 
 # Structs/Types
 export  AngularQuadrature,
@@ -149,10 +145,11 @@ export  ×,
         node_level,
         norm,
         partition_rectangularly,
+        plot_track_edge_to_edge,
         ray_trace,
         ray_trace_edge_to_edge,
         ray_trace_angle_edge_to_edge!,
-        ray_trace_track_edge_to_edge_linear,
+        ray_trace_track_edge_to_edge,
         read_abaqus_2d,
         read_vtk_2d,
         real_to_parametric,
@@ -160,6 +157,7 @@ export  ×,
         shared_edge,
         submesh,
         triangulate,
+        validate_ray_tracing_data,
         width,
         write_vtk_2d,
         write_xdmf_2d

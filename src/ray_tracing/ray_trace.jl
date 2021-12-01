@@ -1,7 +1,8 @@
 # Routines for extracting segment/face data for tracks (rays) overlaid on a mesh
+num_fallback = 0
 num_fallback_adjacent = 0
-num_fallback_vertices = 0
-num_fallback_last_resort = 0
+num_fallback_vertex = 0
+num_fallback_vertex2 = 0
 
 # Return the HRPM/face indices in which each segment resides
 # Type-stable, other than warning
@@ -89,9 +90,10 @@ function ray_trace(tₛ::F,
                    mesh::UnstructuredMesh_2D{F, U}
                    ) where {nᵧ, nₚ, F <: AbstractFloat, U <: Unsigned}
     @info "Ray tracing"
-#    global num_fallback_adjacent = 0
-#    global num_fallback_vertices = 0
-#    global num_fallback_last_resort = 0
+    global num_fallback = 0
+    global num_fallback_adjacent = 0
+    global num_fallback_vertex = 0
+    global num_fallback_vertex2 = 0
     tracks = generate_tracks(tₛ, ang_quad, mesh, boundary_shape = "Rectangle")
     has_mat_edges = 0 < length(mesh.materialized_edges)
     has_mat_faces = 0 < length(mesh.materialized_faces)
@@ -100,14 +102,17 @@ function ray_trace(tₛ::F,
     if 0 < length(mesh.boundary_edges) && has_mat_edges && has_mat_faces 
         @info "  - Using the edge-to-edge algorithm"
         segment_points, segment_faces = ray_trace_edge_to_edge(tracks, mesh) 
-#        @info "    - Adjacent faces fallback   : $num_fallback_adjacent"
-#        @info "    - Shared vertices fallback  : $num_fallback_vertices"
-#        @info "    - Shared vertices 2 fallback: $num_fallback_last_resort"
+        @info "    - Segments needing fallback     : $num_fallback"
+        @info "      - Adjacent faces fallback     : $num_fallback_adjacent"
+        @info "      - Shared vertices fallback    : $num_fallback_vertex"
+        @info "      - Shared vertices 2 fallback  : $num_fallback_vertex2"
+        validate_ray_tracing_data(segment_points, segment_faces, mesh, plot = false)
         return segment_points, segment_faces
     else
         @info "  - Using the naive segmentize + find face algorithm"
         segment_points = segmentize(tracks, mesh)
         segment_faces = find_segment_faces(segment_points, mesh)
+        validate_ray_tracing_data(segment_points, segment_faces, mesh, plot = false)
         return segment_points, segment_faces
     end
 end
@@ -118,6 +123,9 @@ end
 function ray_trace_edge_to_edge(tracks::Vector{Vector{LineSegment_2D{F}}},
                                 mesh::UnstructuredMesh_2D{F, U}
                                 ) where {F <: AbstractFloat, U <: Unsigned}
+    if visualize_ray_tracing
+        @error "visualize_ray_tracing = true. Please reset to false in constants.jl"
+    end
     if length(mesh.boundary_edges) != 4
         @error "Mesh does not have 4 boundary edges needed for edge-to-edge ray tracing!"
     end
@@ -203,33 +211,109 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{F}}},
     return segment_points
 end
 
+function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
+                                   segment_faces::Vector{Vector{Vector{U}}},
+                                   mesh::UnstructuredMesh_2D{F, U};
+                                   plot::Bool = false,
+                                   print::Bool = false
+                                  ) where {F <: AbstractFloat, U <: Unsigned} 
+    @info "  - Validating ray tracing data"
+    nsegs = 0
+    nsegs_problem = 0
+    plot_segs = LineSegment_2D{F}[]
+    plot_points = Point_2D{F}[]
+    if enable_visualization && plot
+        f = Figure()
+        ax = Axis(f[1, 1], aspect = 1)
+        display(f)
+        linesegments!(mesh.materialized_edges, color = :blue)
+    end
+    nγ = length(segment_faces)   
+    for iγ = 1:nγ
+        for it = 1:length(segment_faces[iγ])
+            for iseg = 1:length(segment_faces[iγ][it])
+                p_midpoint = midpoint(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1])
+                face = segment_faces[iγ][it][iseg]
+                nsegs += 1
+                if p_midpoint ∉  mesh.materialized_faces[face]
+                    nsegs_problem += 1
+                    if print
+                        @warn "Face mismatch for segment [$iγ][$it][$iseg]\n" * 
+                              "   Reference face: $(find_face(p_midpoint, mesh)), Face: $face"
+                    end
+                    p1 = segment_points[iγ][it][iseg]
+                    p2 = segment_points[iγ][it][iseg + 1]
+                    append!(plot_points, [p1, p2])
+                    push!(plot_segs, LineSegment_2D(p1, p2))
+                end
+            end
+        end
+    end
+    if enable_visualization && plot
+        linesegments!(plot_segs, color = :red)
+        scatter!(plot_points, color = :red)
+    end
+    prob_percent = 100*nsegs_problem/nsegs
+    @info "    - Segments: $nsegs, Problem segments: $nsegs_problem"
+    @info "    - Problem %: $prob_percent, or approx 1 in $(Int64(ceil(100/prob_percent)))"
+
+    return nsegs_problem == 0
+end
+
 # Plot
 # -------------------------------------------------------------------------------------------------
 # Plot ray tracing data one angle at a time.
-function linesegments!(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
-                       seg_faces::Vector{Vector{Vector{I}}}) where {T <: AbstractFloat, I <: Unsigned} 
-    println("Press enter to plot the segments in the next angle")
-    colormap = ColorSchemes.tab20.colors
-    lines_by_color = Vector{Vector{LineSegment_2D{T}}}(undef, 20)
-    nγ = length(segment_points)
-    for iγ = 1:nγ
-        for icolor = 1:20
-            lines_by_color[icolor] = LineSegment_2D{T}[]
-        end
-        for it = 1:length(segment_points[iγ])
-            for iseg = 1:length(segment_points[iγ][it])-1
-                l = LineSegment_2D(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1]) 
-                face = seg_faces[iγ][it][iseg]
-                if face == 0
-                    @error "Segment [$iγ][$it][$iseg] has a face id of 0"
-                end
-                push!(lines_by_color[face % 20 + 1], l)
+if enable_visualization
+    function linesegments!(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
+                           seg_faces::Vector{Vector{Vector{I}}}) where {T <: AbstractFloat, I <: Unsigned} 
+        println("Press enter to plot the segments in the next angle")
+        colormap = ColorSchemes.tab20.colors
+        lines_by_color = Vector{Vector{LineSegment_2D{T}}}(undef, 20)
+        nγ = length(segment_points)
+        for iγ = 1:nγ
+            f = Figure()
+            ax = Axis(f[1, 1], aspect = 1)
+            display(f)
+            for icolor = 1:20
+                lines_by_color[icolor] = LineSegment_2D{T}[]
             end
+            for it = 1:length(segment_points[iγ])
+                for iseg = 1:length(segment_points[iγ][it])-1
+                    l = LineSegment_2D(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1]) 
+                    face = seg_faces[iγ][it][iseg]
+                    if face == 0
+                        @error "Segment [$iγ][$it][$iseg] has a face id of 0"
+                    end
+                    push!(lines_by_color[face % 20 + 1], l)
+                end
+            end
+            for icolor = 1:20
+                linesegments!(lines_by_color[icolor], color = colormap[icolor])
+            end
+            s = readline()
+            println(iγ)
         end
-        for icolor = 1:20
-            linesegments!(lines_by_color[icolor], color = colormap[icolor])
-        end
-        s = readline()
-        println(iγ)
+    end
+    
+    # Set visualize_ray_tracing = true in constants.jl to get this to work.
+    function plot_track_edge_to_edge(track::LineSegment_2D{F},
+                                      mesh::UnstructuredMesh_2D{F, U} 
+                                    ) where {F <: AbstractFloat, U <: Unsigned}
+        @info "Plotting ray tracing of track. Press enter to advance the ray"
+        f = Figure()
+        ax = Axis(f[1, 1], aspect = 1)
+        display(f)
+        linesegments!(mesh.materialized_edges, color = :blue)
+        linesegments!(track, color = :orange)
+        segment_points, segment_faces = ray_trace_track_edge_to_edge(track,
+                                                                mesh.points,
+                                                                mesh.edges,
+                                                                mesh.materialized_edges,
+                                                                mesh.faces,
+                                                                mesh.materialized_faces,
+                                                                mesh.edge_face_connectivity,
+                                                                mesh.face_edge_connectivity,
+                                                                mesh.boundary_edges)
+        return segment_points, segment_faces
     end
 end

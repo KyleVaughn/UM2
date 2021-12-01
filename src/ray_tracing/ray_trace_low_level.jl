@@ -333,8 +333,14 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
     intersection_point = start_point
     end_reached = false
     iters = 0
+#    if visualize_ray_tracing # Compile time constant. Prune branch if not visualizing
+#        ax = current_axis() 
+#    end
     # Find the segment points, faces
     while !end_reached && iters < max_iters
+#        if visualize_ray_tracing 
+#            mesh!(materialized_faces[current_face], color = (:yellow, 0.2))
+#        end
         (next_edge, next_face, intersection_point) = next_edge_and_face(
                                                         current_edge, current_face, l,
                                                         materialized_edges,
@@ -349,6 +355,13 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
                                                                edge_face_connectivity,
                                                                face_edge_connectivity)
         else
+#            if visualize_ray_tracing 
+#                mesh!(materialized_faces[current_face], color = (:green, 0.15))
+#                scatter!(intersection_point, color = :green)
+#                linesegments!(materialized_edges[next_edge], color = :green)
+#                println("Intersection at point $intersection_point, on face $current_face," *
+#                        " over edge $next_edge")
+#            end
             push!(segment_points, intersection_point)
             push!(segment_faces, current_face)
         end
@@ -373,7 +386,7 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
 #        # Need to dispatch on something that isn't mesh for this
 #        find_segment_faces_in_track!(segment_points, segment_faces, mesh)
     end
-    return sort_intersection_points_E2E(l, segment_points, segment_faces)
+    return sort_linear_intersection_points_E2E(l, segment_points, segment_faces)
 end
 
 # Return the next edge, next face, and intersection point on the next edge
@@ -384,6 +397,10 @@ function next_edge_and_face(current_edge::U, current_face::U,
                             edge_face_connectivity::Vector{SVector{2, U}},
                             face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
                            ) where {F <: AbstractFloat, U <: Unsigned}
+
+#    if visualize_ray_tracing # Compile time constant. Prune branch if not visualizing
+#        ax = current_axis() 
+#    end
     next_edge = current_edge
     next_face = current_face
     start_point = l.points[1]
@@ -395,6 +412,9 @@ function next_edge_and_face(current_edge::U, current_face::U,
         if edge == current_edge
             continue
         end
+#        if visualize_ray_tracing 
+#            lplot = linesegments!(materialized_edges[edge], color = :orange)
+#        end
         # Edges are linear, so 1 intersection point max
         npoints, point = l ∩ materialized_edges[edge]
         # If there's an intersection
@@ -413,6 +433,10 @@ function next_edge_and_face(current_edge::U, current_face::U,
                 next_edge = edge
             end
         end
+#        if visualize_ray_tracing 
+#            s = readline()
+#            delete!(ax.scene, lplot)
+#        end
     end
     return next_edge, next_face, furthest_point
 end
@@ -432,6 +456,7 @@ function next_edge_and_face_fallback(current_face::U,
                                      edge_face_connectivity::Vector{SVector{2, U}},
                                      face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
                                     ) where {F <: AbstractFloat, U <: Unsigned}
+    global num_fallback += 1
     # If the next face could not be determined, or the ray is jumping back to the
     # previous face, this means either:
     # (1) The ray is entering or exiting through a vertex, and floating point error
@@ -468,23 +493,47 @@ function next_edge_and_face_fallback(current_face::U,
 end
 
 # Type-stable
-function sort_intersection_points_E2E(l::LineSegment_2D{F}, segment_points::Vector{Point_2D{F}},
+#function sort_intersection_points_E2E(l::LineSegment_2D{F}, segment_points::Vector{Point_2D{F}},
+#                                      segment_faces::Vector{U}) where {F <: AbstractFloat, U <: Unsigned}
+#    if 2 < length(segment_points)
+#        # Sort the points and faces basec upon distance from the line start point
+#        start_point = l.points[1]
+#        npoints = length(segment_points)
+#        distances = distance.(Ref(start_point), segment_points[2:npoints])
+#        sorted_pairs = sort(collect(zip(distances, segment_points[2:npoints], segment_faces)); by=first)
+#        # Eliminate any points and faces for which the distance between consecutive points 
+#        # is less than the minimum segment length
+#        segment_points_reduced = [start_point]
+#        segment_faces_reduced = U[]
+#        for i = 1:npoints-1
+#            # If the segment would be shorter than the minimum segment length, remove it.
+#            if minimum_segment_length < distance(last(segment_points_reduced), sorted_pairs[i][2])
+#                push!(segment_points_reduced, sorted_pairs[i][2])
+#                push!(segment_faces_reduced,  sorted_pairs[i][3])
+#            end
+#        end
+#        return (segment_points_reduced, segment_faces_reduced)
+#    else
+#        return (segment_points, segment_faces)
+#    end
+#end
+
+function sort_linear_intersection_points_E2E(l::LineSegment_2D{F}, segment_points::Vector{Point_2D{F}},
                                       segment_faces::Vector{U}) where {F <: AbstractFloat, U <: Unsigned}
+    # The points should be sorted already, we just need to remove duplicates
     if 2 < length(segment_points)
-        # Sort the points and faces basec upon distance from the line start point
         start_point = l.points[1]
         npoints = length(segment_points)
         distances = distance.(Ref(start_point), segment_points[2:npoints])
-        sorted_pairs = sort(collect(zip(distances, segment_points[2:npoints], segment_faces)); by=first)
         # Eliminate any points and faces for which the distance between consecutive points 
         # is less than the minimum segment length
         segment_points_reduced = [start_point]
         segment_faces_reduced = U[]
-        for i = 1:npoints-1
+        for i = 2:npoints
             # If the segment would be shorter than the minimum segment length, remove it.
-            if minimum_segment_length < distance(last(segment_points_reduced), sorted_pairs[i][2])
-                push!(segment_points_reduced, sorted_pairs[i][2])
-                push!(segment_faces_reduced,  sorted_pairs[i][3])
+            if minimum_segment_length < distance(last(segment_points_reduced), segment_points[i])
+                push!(segment_points_reduced, segment_points[i])
+                push!(segment_faces_reduced,  segment_faces[i-1])
             end
         end
         return (segment_points_reduced, segment_faces_reduced)
@@ -500,6 +549,7 @@ function adjacent_faces_fallback(current_face::U,
                                  edge_face_connectivity::Vector{SVector{2, U}},
                                  face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
                                 ) where {F <: AbstractFloat, U <: Unsigned}
+    global num_fallback_adjacent += 1
     next_face = current_face
     start_point = l.points[1]
     furthest_point = start_point
@@ -526,6 +576,7 @@ function shared_vertex_fallback(current_face::U,
                                 faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}, 
                                 materialized_faces::Vector{<:Face_2D{F}}
                                ) where {F <: AbstractFloat, U <: Unsigned}
+    global num_fallback_vertex += 1
     next_face = current_face
     start_point = l.points[1]
     furthest_point = start_point
@@ -558,6 +609,7 @@ function shared_vertex_level2_fallback(current_face::U,
                                        faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}, 
                                        materialized_faces::Vector{<:Face_2D{F}}
                                       ) where {F <: AbstractFloat, U <: Unsigned}
+    global num_fallback_vertex2 += 1
     next_face = current_face
     start_point = l.points[1]
     furthest_point = start_point
@@ -593,7 +645,6 @@ function shared_vertex_level2_fallback(current_face::U,
     end
     return next_face, furthest_point
 end
-
 
 # Determine the edge that should be skipped by choosing the edge with intersection point 
 # closest to the start of the line.
