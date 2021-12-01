@@ -355,9 +355,9 @@ function intersect_edge_implicit(l::LineSegment_2D{F},
 end
 
 # Intersect a line with a vector of implicitly defined linear edges
-# Type-stable if all edges are the same, which should be true
+# Type-stable
 function intersect_edges_implicit(l::LineSegment_2D{F},
-                                  edges::Vector{<:Union{SVector{2, U}, SVector{3, U}}},
+                                  edges::Vector{SVector{2, U}},
                                   points::Vector{Point_2D{F}}
                         ) where {F <: AbstractFloat, U <: Unsigned}
     # An array to hold all of the intersection points
@@ -367,6 +367,24 @@ function intersect_edges_implicit(l::LineSegment_2D{F},
         npoints, point = intersect_edge_implicit(l, edge, points)
         if 0 < npoints
             push!(intersection_points, point)
+        end
+    end
+    return sort_intersection_points(l, intersection_points) 
+end
+
+# Intersect a line with a vector of implicitly defined quadratic edges
+# Type-stable
+function intersect_edges_implicit(l::LineSegment_2D{F},
+                                  edges::Vector{SVector{3, U}},
+                                  points::Vector{Point_2D{F}}
+                        ) where {F <: AbstractFloat, U <: Unsigned}
+    # An array to hold all of the intersection points
+    intersection_points = Point_2D{F}[]
+    # Intersect the line with each of the faces
+    for edge in edges
+        npoints, ipoints = intersect_edge_implicit(l, edge, points)
+        if 0 < npoints
+            append!(intersection_points, ipoints)
         end
     end
     return sort_intersection_points(l, intersection_points) 

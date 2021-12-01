@@ -39,12 +39,3 @@ Point_2D(::Type{F}, x::X) where {F <: AbstractFloat,
 norm(p::Point_2D) = sqrt(p.x^2 + p.y^2)
 distance(p₁::Point_2D, p₂::Point_2D) = norm(p₁ - p₂)
 midpoint(p₁::Point_2D, p₂::Point_2D) = (p₁ + p₂)/2
-
-# Plot
-# -------------------------------------------------------------------------------------------------
-if enable_visualization
-    convert_arguments(S::Type{<:Scatter}, p::Point_2D) = convert_arguments(S, p.x)
-    function convert_arguments(S::Type{<:Scatter}, P::Vector{<:Point_2D})
-        return convert_arguments(S, [p.x for p in P])
-    end
-end

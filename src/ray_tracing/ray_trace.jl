@@ -67,7 +67,7 @@ function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
 end
 
 # Ray trace an HRPM given the ray spacing and angular quadrature
-# @code_warntype checked 2021/11/27
+# Not type-stable
 function ray_trace(tₛ::F,
                    ang_quad::ProductAngularQuadrature{nᵧ, nₚ, F}, 
                    HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
@@ -83,6 +83,7 @@ function ray_trace(tₛ::F,
 end
 
 # Ray trace a mesh given the ray spacing and angular quadrature
+# Not type-stable
 function ray_trace(tₛ::F,
                    ang_quad::ProductAngularQuadrature{nᵧ, nₚ, F}, 
                    mesh::UnstructuredMesh_2D{F, U}

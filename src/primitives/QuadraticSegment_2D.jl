@@ -143,7 +143,7 @@ if enable_visualization
     function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment_2D{F}) where {F <: AbstractFloat}
         rr = LinRange{F}(0, 1, 15)
         points = q.(rr)
-        coords = reduce(vcat, [[points[i].x, points[i+1].x] for i = 1:length(points)-1])
+        coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])
         return convert_arguments(LS, coords)
     end
     

@@ -1,7 +1,7 @@
 module MOCNeutronTransport
 # Compilation options
 const enable_local_gmsh = true
-const enable_visualization = false
+const enable_visualization = true 
 
 # using
 using ColorSchemes

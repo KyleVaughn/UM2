@@ -26,7 +26,7 @@ function classify_nesw(p::Point_2D{F},
 end
 
 # Get the face indices for all tracks in a single angle
-# @code_warntype checked 2021/11/27
+# Type-stable
 function find_segment_faces_in_angle!(segment_points::Vector{Vector{Point_2D{F}}},
                                       indices::Vector{Vector{MVector{N, U}}},
                                       HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
@@ -42,7 +42,7 @@ function find_segment_faces_in_angle!(segment_points::Vector{Vector{Point_2D{F}}
 end
 
 # Get the face indices for all segments in a single track
-# @code_warntype checked 2021/11/27
+# Type-stable
 function find_segment_faces_in_track!(segment_points::Vector{Point_2D{F}},
                                       indices::Vector{MVector{N, U}},
                                       HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
@@ -232,16 +232,18 @@ function generate_tracks(γ::F, tₛ::F, w::F, h::F) where {F <: AbstractFloat}
 end
 
 # Get the boundary edge that a point lies on for a rectangular mesh
+# Type-stable
 function get_start_edge_nesw(p::Point_2D{F},
                              boundary_edge_indices::Vector{U},
                              nesw::Int64,
-                             mesh::UnstructuredMesh_2D{F, U}
+                             points::Vector{Point_2D{F}},
+                             edges::Vector{<:SVector{L, U} where {L}}
                              ) where {F <: AbstractFloat, U <: Unsigned}
     if nesw == 1 || nesw == 3
         # On North or South edge. Just check x coordinates
         xₚ = p[1]
         for iedge in boundary_edge_indices
-            epoints = edge_points(mesh, mesh.edges[iedge])
+            epoints = edge_points(edges[iedge], points)
             x₁ = epoints[1][1]
             x₂ = epoints[2][1]
             if x₁ ≤ xₚ ≤ x₂ || x₂ ≤ xₚ ≤ x₁
@@ -252,7 +254,7 @@ function get_start_edge_nesw(p::Point_2D{F},
         # On East or West edge. Just check y coordinates
         yₚ = p[2]
         for iedge in boundary_edge_indices
-            epoints = edge_points(mesh, mesh.edges[iedge])
+            epoints = edge_points(edges[iedge], points)
             y₁ = epoints[1][2]
             y₂ = epoints[2][2]
             if y₁ ≤ yₚ ≤ y₂ || y₂ ≤ yₚ ≤ y₁
@@ -260,7 +262,6 @@ function get_start_edge_nesw(p::Point_2D{F},
             end
         end
     end
-    @error "Could not find start edge"
     return U(0)
 end
 
