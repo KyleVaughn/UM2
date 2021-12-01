@@ -28,7 +28,7 @@ function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
     Threads.@threads for iγ = 1:nγ
         bools[iγ] = find_segment_faces_in_angle!(segment_points[iγ], indices[iγ], HRPM)
     end
-    if any(bools)
+    if !all(bools)
         iγ_bad = findall(x->!x, bools)
         @error "Failed to find indices for some points in segment_points$iγ_bad"
     end
@@ -59,7 +59,7 @@ function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
     Threads.@threads for iγ = 1:nγ
         bools[iγ] = find_segment_faces_in_angle!(segment_points[iγ], segment_faces[iγ], mesh)
     end
-    if any(bools)
+    if !all(bools)
         iγ_bad = findall(x->!x, bools)
         @error "Failed to find segment faces for some points in angles: $iγ_bad"
     end
