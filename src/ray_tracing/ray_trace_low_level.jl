@@ -366,11 +366,12 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
         iters += 1
     end
     if max_iters ≤ iters
-        @warn "Exceeded max iterations for $l. Reverted to intersecting each edge."
+        @error "Exceeded max iterations for $l."
         # Do it the old fashioned way
-        segment_points = intersect_edges_implicit(l, edges, points) 
-        segment_faces = [U(0) for i = 1:length(segment_points) - 1]
-        find_segment_faces_in_track!(segment_points, segment_faces, mesh)
+#        segment_points = intersect_edges_implicit(l, edges, points) 
+#        segment_faces = [U(0) for i = 1:length(segment_points) - 1]
+#        # Need to dispatch on something that isn't mesh for this
+#        find_segment_faces_in_track!(segment_points, segment_faces, mesh)
     end
     return sort_intersection_points_E2E(l, segment_points, segment_faces)
 end
@@ -421,7 +422,7 @@ end
 # means there was an intersection around a vertex, and floating point error is
 # causing an intersection to erroneously return 0 points intersected.
 # Requires materialized faces
-# LINEAR
+# Linear edges
 function next_edge_and_face_fallback(current_face::U, 
                                      segment_faces::Vector{U},
                                      l::LineSegment_2D{F},
@@ -441,98 +442,28 @@ function next_edge_and_face_fallback(current_face::U,
     start_point = l.points[1]
     # The furthest point along l intersected in this iteration
     furthest_point = start_point
+
     # Check adjacent faces first to see if that is sufficient to solve the problem
-################ func 1
-    the_adjacent_faces = adjacent_faces(current_face, face_edge_connectivity, edge_face_connectivity)
-    for face in the_adjacent_faces
-        npoints, ipoints = l ∩ materialized_faces[face]
-        if 0 < npoints
-            for point in ipoints[1:npoints]
-                if distance(start_point, furthest_point) ≤ distance(start_point, point) &&
-                        (point ≉ start_point)
-                    furthest_point = point
-                    next_face = face
-                end
-            end
-        end
-    end
-################## func 2
+    next_face, furthest_point = adjacent_faces_fallback(current_face, l, materialized_faces, 
+                                                         edge_face_connectivity, face_edge_connectivity)
     # If adjacent faces were not sufficient, try all faces sharing the vertices of this face
     if next_face == current_face || next_face ∈  segment_faces
-        # Get the vertex ids for each vertex in the face
-        nfacepoints = length(faces[current_face])
-        facepoints = faces[current_face][2:nfacepoints]
-        faces_OI = Set{U}()
-        for point in facepoints
-            union!(faces_OI, faces_sharing_vertex(point, faces))
-        end
-        for face in faces_OI
-            npoints, ipoints = l ∩ materialized_faces[face]
-            if 0 < npoints
-                for point in ipoints[1:npoints]
-                    if distance(start_point, furthest_point) ≤ distance(start_point, point) &&
-                            (point ≉ start_point)
-                        furthest_point = point
-                        next_face = face
-                    end
-                end
-            end
-        end
+        next_face, furthest_point = shared_vertex_fallback(current_face, l, faces,
+                                                           materialized_faces)
     end 
-#################### func3
     # If faces sharing this face's vertices was not enough, try the faces sharing a vertex approach 
     # above, but expand to the vertices of the faces sharing vertices of the current face
     if next_face == current_face || next_face ∈  segment_faces
-        # Get the vertex ids for each vertex in the face
-        nfacepoints = length(faces[current_face])
-        facepoints = faces[current_face][2:nfacepoints]
-        faces_level1 = Set{U}()
-        for point in facepoints
-            union!(faces_level1, faces_sharing_vertex(point, faces))
-        end
-        faces_OI = Set{U}()
-        for face in faces_level1
-            nfacepoints = length(mesh.faces[face])
-            facepoints = faces[face][2:nfacepoints]
-            for point in facepoints
-                union!(faces_OI, faces_sharing_vertex(point, faces))
-            end
-        end
-        for face in faces_OI
-            npoints, ipoints = l ∩ materialized_faces[face]
-            if 0 < npoints
-                for point in ipoints[1:npoints]
-                    if distance(start_point, furthest_point) ≤ distance(start_point, point) &&
-                            (point ≉ start_point)
-                        furthest_point = point
-                        next_face = face
-                    end
-                end
-            end
-        end
+        next_face, furthest_point = shared_vertex_level2_fallback(current_face, l, faces,
+                                                                  materialized_faces)
     end
     # If the next face STILL couldn't be determined, you're screwed
     if next_face == current_face || next_face ∈  segment_faces
-        @error "Could not find next face, even using fallback methods."  
-        println("Error segment: $l")
-        println("Current_face: $current_face")
+        @error "Could not find next face, even using fallback methods, for segment $l."  
     end
-################func 4
     # Determine the edge that should be skipped by choosing the edge with intersection point 
     # closest to the start of the line.
-    closest_point = Point_2D(F, 1.0e20, 1.0e20)
-    edges_OI = face_edge_connectivity[next_face]
-    next_edge = U(0)
-    for iedge in edges_OI
-        edge = materialized_edges[iedge]
-        npoints, point = l ∩ edge
-        if 0 < npoints                                                                         
-            if  distance(start_point, point) ≤ distance(start_point, closest_point) 
-                closest_point = point
-                next_edge = iedge
-            end
-        end
-    end
+    next_edge = skipped_edge_fallback(next_face, l, materialized_edges, face_edge_connectivity)
     return U(next_edge), U(next_face)
 end
 
@@ -560,4 +491,132 @@ function sort_intersection_points_E2E(l::LineSegment_2D{F}, segment_points::Vect
     else
         return (segment_points, segment_faces)
     end
+end
+
+# Check to see if one of the adjacent faces should be the next face in edge-to-edge ray tracing
+function adjacent_faces_fallback(current_face::U, 
+                                 l::LineSegment_2D{F},
+                                 materialized_faces::Vector{<:Face_2D{F}},
+                                 edge_face_connectivity::Vector{SVector{2, U}},
+                                 face_edge_connectivity::Vector{<:SVector{L, U} where {L}}
+                                ) where {F <: AbstractFloat, U <: Unsigned}
+    next_face = current_face
+    start_point = l.points[1]
+    furthest_point = start_point
+    the_adjacent_faces = adjacent_faces(current_face, face_edge_connectivity, edge_face_connectivity)
+    for face in the_adjacent_faces
+        npoints, ipoints = l ∩ materialized_faces[face]
+        if 0 < npoints
+            for point in ipoints[1:npoints]
+                if distance(start_point, furthest_point) ≤ distance(start_point, point) &&
+                        (point ≉ start_point)
+                    furthest_point = point
+                    next_face = face
+                end
+            end
+        end
+    end
+    return next_face, furthest_point
+end
+
+# Check to see if one of the faces sharing a vertex with the current face
+# should be the next face in edge-to-edge ray tracing
+function shared_vertex_fallback(current_face::U, 
+                                l::LineSegment_2D{F},
+                                faces::Vector{<:SVector{L, U} where {L}}, 
+                                materialized_faces::Vector{<:Face_2D{F}}
+                               ) where {F <: AbstractFloat, U <: Unsigned}
+    next_face = current_face
+    start_point = l.points[1]
+    furthest_point = start_point
+    # Get the vertex ids for each vertex in the face
+    nvertices = length(faces[current_face])
+    vertex_ids = faces[current_face][2:nvertices]
+    faces_OI = Set{U}() # faces of interest
+    for vertex in vertex_ids
+        union!(faces_OI, faces_sharing_vertex(vertex, faces))
+    end
+    for face in faces_OI
+        npoints, ipoints = l ∩ materialized_faces[face]
+        if 0 < npoints
+            for point in ipoints[1:npoints]
+                if distance(start_point, furthest_point) ≤ distance(start_point, point) &&
+                        (point ≉ start_point)
+                    furthest_point = point
+                    next_face = face
+                end
+            end
+        end
+    end
+    return next_face, furthest_point
+end
+
+# Check to see if one of the faces sharing a vertex with any of the faces which share a 
+# vertex with the current face should be the next face in edge-to-edge ray tracing
+function shared_vertex_level2_fallback(current_face::U, 
+                                       l::LineSegment_2D{F},
+                                       faces::Vector{<:SVector{L, U} where {L}}, 
+                                       materialized_faces::Vector{<:Face_2D{F}}
+                                      ) where {F <: AbstractFloat, U <: Unsigned}
+    next_face = current_face
+    start_point = l.points[1]
+    furthest_point = start_point
+    # Get the vertex ids for each vertex in the face
+    nvertices = length(faces[current_face])
+    vertex_ids = faces[current_face][2:nvertices]
+    faces_OI_L1 = Set{U}() # faces of interest
+    for vertex in vertex_ids
+        union!(faces_OI_L1, faces_sharing_vertex(vertex, faces))
+    end
+    faces_OI = Set{U}()
+    for face in faces_OI_L1
+        nvertices = length(faces[face])
+        vertex_ids = faces[current_face][2:nvertices]
+        for vertex in vertex_ids
+            union!(faces_OI_L1, faces_sharing_vertex(vertex, faces))
+        end
+    end
+    # If this function is being called, then all the faces in faces_OI_L1 have been tested.
+    # Remove them from the faces of interest
+    setdiff!(faces_OI, faces_OI_L1)
+    for face in faces_OI
+        npoints, ipoints = l ∩ materialized_faces[face]
+        if 0 < npoints
+            for point in ipoints[1:npoints]
+                if distance(start_point, furthest_point) ≤ distance(start_point, point) &&
+                        (point ≉ start_point)
+                    furthest_point = point
+                    next_face = face
+                end
+            end
+        end
+    end
+    return next_face, furthest_point
+end
+
+
+# Determine the edge that should be skipped by choosing the edge with intersection point 
+# closest to the start of the line.
+# Linear edges
+function skipped_edge_fallback(next_face::U, 
+                               l::LineSegment_2D{F},
+                               materialized_edges::Vector{LineSegment_2D{F}},
+                               face_edge_connectivity::Vector{<:SVector{L, U} where {L}},
+                              ) where {F <: AbstractFloat, U <: Unsigned}
+
+    start_point = l.points[1]
+    closest_point = Point_2D(F, 1.0e20, 1.0e20)
+    edges_OI = face_edge_connectivity[next_face]
+    next_edge = U(0)
+    for iedge in edges_OI
+        edge = materialized_edges[iedge]
+        npoints, point = l ∩ edge
+        if 0 < npoints                                                                         
+            if  distance(start_point, point) ≤ distance(start_point, closest_point) 
+                closest_point = point
+                next_edge = iedge
+            end
+        end
+    end
+    return next_edge
 end

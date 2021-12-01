@@ -137,7 +137,7 @@ function ray_trace_edge_to_edge(tracks::Vector{Vector{LineSegment_2D{F}}},
                         ] for iγ = 1:nγ # Angles
                     ]
     # For each angle, get the segments and segment faces for each track
-    Threads.@threads for iγ = 1:nγ
+    for iγ = 1:nγ
         ray_trace_angle_edge_to_edge!(tracks[iγ],
                                       segment_points[iγ],
                                       segment_faces[iγ],
