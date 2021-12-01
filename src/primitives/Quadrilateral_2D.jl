@@ -45,8 +45,18 @@ function area(quad::Quadrilateral_2D{F}) where {F <: AbstractFloat}
 end
 
 function in(p::Point_2D, quad::Quadrilateral_2D)
-    tris = triangulate(quad)
-    return p ∈ tris[1] || p ∈ tris[2]
+    # If the point is to the left of every edge
+    #  4<-----3
+    #  |      ^
+    #  | p    |
+    #  |      |
+    #  |      |
+    #  v----->2
+    #  1
+    return is_left(p, LineSegment_2D(quad.points[1], quad.points[2])) &&
+           is_left(p, LineSegment_2D(quad.points[2], quad.points[3])) &&
+           is_left(p, LineSegment_2D(quad.points[3], quad.points[4])) &&
+           is_left(p, LineSegment_2D(quad.points[4], quad.points[1]))
 end
 
 function intersect(l::LineSegment_2D{F}, quad::Quadrilateral_2D{F}) where {F <: AbstractFloat}

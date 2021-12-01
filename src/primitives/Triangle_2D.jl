@@ -34,16 +34,17 @@ function area(tri::Triangle_2D)
 end
 
 function in(p::Point_2D{F}, tri::Triangle_2D{F}) where {F <: AbstractFloat}
-   # If the point is within the plane of the triangle, then the point is only within the triangle
-   # if the areas of the triangles formed by the point and each pair of two vertices sum to the
-   # area of the triangle. Division by 2 is dropped, since it cancels
-   # If the vertices are A, B, and C, and the point is P,
-   # P is inside ΔABC iff area(ΔABC) = area(ΔABP) + area(ΔBCP) + area(ΔACP)
-   A₁ = abs((tri.points[1] - p) × (tri.points[2] - p))
-   A₂ = abs((tri.points[2] - p) × (tri.points[3] - p))
-   A₃ = abs((tri.points[3] - p) × (tri.points[1] - p))
-   A  = abs((tri.points[2] - tri.points[1]) × (tri.points[3] - tri.points[1]))
-   return A₁ + A₂ + A₃ ≈ A
+    # If the point is to the left of every edge
+    #  3<-----2
+    #  |     ^
+    #  | p  /
+    #  |   /
+    #  |  /
+    #  v /
+    #  1
+    return is_left(p, LineSegment_2D(tri.points[1], tri.points[2])) &&
+           is_left(p, LineSegment_2D(tri.points[2], tri.points[3])) &&
+           is_left(p, LineSegment_2D(tri.points[3], tri.points[1]))
 end
 
 function intersect(l::LineSegment_2D{F}, tri::Triangle_2D{F}) where {F <: AbstractFloat}

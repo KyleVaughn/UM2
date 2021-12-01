@@ -72,6 +72,18 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     end
 end
 
+# Return if the point is left of the line segment
+#     ^
+# p  /
+#   /
+#  /
+# o
+function is_left(p::Point_2D{F}, l::LineSegment_2D{F}) where {F <: AbstractFloat}
+    u⃗ = l.points[2] - l.points[1]
+    v⃗ = p - l.points[1]
+    return u⃗ × v⃗ > 0
+end
+
 # Plot
 # -------------------------------------------------------------------------------------------------
 if enable_visualization
