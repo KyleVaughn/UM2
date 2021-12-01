@@ -276,10 +276,10 @@ function ray_trace_angle_edge_to_edge!(tracks::Vector{LineSegment_2D{F}},
                                        points::Vector{Point_2D{F}},
                                        edges::Vector{<:SVector{L, U} where {L}},
                                        materialized_edges::Vector{<:Edge_2D{F}},
-                                       faces::Vector{<:SVector{L, U} where {L}},
+                                       faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
                                        materialized_faces::Vector{<:Face_2D{F}},
                                        edge_face_connectivity::Vector{SVector{2, U}},
-                                       face_edge_connectivity::Vector{<:SVector{L, U} where {L}},
+                                       face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
                                        boundary_edges::Vector{Vector{U}}
                                        ) where {F <: AbstractFloat, U <: Unsigned}
     for it = 1:length(tracks)
@@ -303,10 +303,10 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
                                       points::Vector{Point_2D{F}},
                                       edges::Vector{<:SVector{L, U} where {L}},
                                       materialized_edges::Vector{LineSegment_2D{F}},
-                                      faces::Vector{<:SVector{L, U} where {L}}, 
+                                      faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}, 
                                       materialized_faces::Vector{<:Face_2D{F}},
                                       edge_face_connectivity::Vector{SVector{2, U}},
-                                      face_edge_connectivity::Vector{<:SVector{L, U} where {L}},
+                                      face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
                                       boundary_edges::Vector{Vector{U}}
                                      ) where {F <: AbstractFloat, U <: Unsigned}
     # Classify line as intersecting north, east, south, or west boundary edge of the mesh
@@ -382,7 +382,7 @@ function next_edge_and_face(current_edge::U, current_face::U,
                             l::LineSegment_2D{F},
                             materialized_edges::Vector{LineSegment_2D{F}},
                             edge_face_connectivity::Vector{SVector{2, U}},
-                            face_edge_connectivity::Vector{<:SVector{L, U} where {L}}
+                            face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
                            ) where {F <: AbstractFloat, U <: Unsigned}
     next_edge = current_edge
     next_face = current_face
@@ -426,11 +426,11 @@ end
 function next_edge_and_face_fallback(current_face::U, 
                                      segment_faces::Vector{U},
                                      l::LineSegment_2D{F},
-                                     faces::Vector{<:SVector{L, U} where {L}}, 
+                                     faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}, 
                                      materialized_edges::Vector{LineSegment_2D{F}},
                                      materialized_faces::Vector{<:Face_2D{F}},
                                      edge_face_connectivity::Vector{SVector{2, U}},
-                                     face_edge_connectivity::Vector{<:SVector{L, U} where {L}}
+                                     face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
                                     ) where {F <: AbstractFloat, U <: Unsigned}
     # If the next face could not be determined, or the ray is jumping back to the
     # previous face, this means either:
@@ -498,7 +498,7 @@ function adjacent_faces_fallback(current_face::U,
                                  l::LineSegment_2D{F},
                                  materialized_faces::Vector{<:Face_2D{F}},
                                  edge_face_connectivity::Vector{SVector{2, U}},
-                                 face_edge_connectivity::Vector{<:SVector{L, U} where {L}}
+                                 face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
                                 ) where {F <: AbstractFloat, U <: Unsigned}
     next_face = current_face
     start_point = l.points[1]
@@ -523,7 +523,7 @@ end
 # should be the next face in edge-to-edge ray tracing
 function shared_vertex_fallback(current_face::U, 
                                 l::LineSegment_2D{F},
-                                faces::Vector{<:SVector{L, U} where {L}}, 
+                                faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}, 
                                 materialized_faces::Vector{<:Face_2D{F}}
                                ) where {F <: AbstractFloat, U <: Unsigned}
     next_face = current_face
@@ -555,7 +555,7 @@ end
 # vertex with the current face should be the next face in edge-to-edge ray tracing
 function shared_vertex_level2_fallback(current_face::U, 
                                        l::LineSegment_2D{F},
-                                       faces::Vector{<:SVector{L, U} where {L}}, 
+                                       faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}, 
                                        materialized_faces::Vector{<:Face_2D{F}}
                                       ) where {F <: AbstractFloat, U <: Unsigned}
     next_face = current_face
@@ -601,7 +601,7 @@ end
 function skipped_edge_fallback(next_face::U, 
                                l::LineSegment_2D{F},
                                materialized_edges::Vector{LineSegment_2D{F}},
-                               face_edge_connectivity::Vector{<:SVector{L, U} where {L}},
+                               face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
                               ) where {F <: AbstractFloat, U <: Unsigned}
 
     start_point = l.points[1]

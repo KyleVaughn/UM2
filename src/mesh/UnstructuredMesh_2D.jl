@@ -3,10 +3,10 @@ struct UnstructuredMesh_2D{F <: AbstractFloat, U <: Unsigned}
     points::Vector{Point_2D{F}}
     edges::Vector{<:SVector{L, U} where {L}}
     materialized_edges::Vector{<:Edge_2D{F}}
-    faces::Vector{<:SVector{L, U} where {L}}
+    faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
     materialized_faces::Vector{<:Face_2D{F}}
     edge_face_connectivity::Vector{SVector{2, U}}
-    face_edge_connectivity::Vector{<:SVector{L, U} where {L}}
+    face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
     boundary_edges::Vector{Vector{U}}
     face_sets::Dict{String, Set{U}}
 end
@@ -16,10 +16,10 @@ function UnstructuredMesh_2D{F, U}(;
         points::Vector{Point_2D{F}} = Point_2D{F}[],
         edges::Vector{<:SVector{L, U} where {L}} = SVector{2, U}[],
         materialized_edges::Vector{<:Edge_2D{F}} = LineSegment_2D{F}[],
-        faces::Vector{<:SVector{L, U} where {L}} = SVector{4, U}[],
+        faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}} = SVector{4, U}[],
         materialized_faces::Vector{<:Face_2D{F}} = Triangle_2D{F}[],
         edge_face_connectivity::Vector{SVector{2, U}} = SVector{2, U}[],
-        face_edge_connectivity ::Vector{<:SVector{L, U} where {L}} = SVector{3, U}[],
+        face_edge_connectivity ::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}} = SVector{3, U}[],
         boundary_edges::Vector{Vector{U}} = Vector{U}[],
         face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
     ) where {F <: AbstractFloat, U <: Unsigned}

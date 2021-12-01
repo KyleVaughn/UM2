@@ -1,7 +1,7 @@
 # Return a vector of the faces adjacent to the face of ID face
 # Type-stable if all of the faces/edges are the same
 function adjacent_faces(face::U,
-                        face_edge_connectivity::Vector{<:SVector{L, U} where {L}},
+                        face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
                         edge_face_connectivity::Vector{SVector{2, U}}
                        ) where {U <: Unsigned}
     edges = face_edge_connectivity[face]
@@ -155,7 +155,7 @@ end
 
 # The unique edges from a vector of triangles or quadrilaterals represented by point IDs
 # Type-stable if faces are the same type
-function edges(faces::Vector{<:Union{SVector{N, U}}}) where {N, U <: Unsigned}
+function edges(faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}) where {U <: Unsigned}
     edge_arr = edges.(faces)
     edges_unfiltered = [ edge for edge_vec in edge_arr for edge in edge_vec ]
     # Filter the duplicate edges
@@ -167,8 +167,8 @@ end
 # is a boundary edge, face ID 0 is returned
 # Type-stable, other than the error messages.
 function edge_face_connectivity(the_edges::Vector{<:SVector{L, U} where {L}},
-                                the_faces::Vector{<:SVector{L, U} where {L}},
-                                the_face_edge_connectivity::Vector{<:SVector{L, U} where {L}}
+                                the_faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
+                                the_face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
                                ) where {U <: Unsigned}
     # Each edge should only border 2 faces if it is an interior edge, and 1 face if it is
     # a boundary edge.
@@ -217,7 +217,7 @@ end
 
 # A vector of SVectors, denoting the edge ID each face is connected to.
 # Not type-stable
-function face_edge_connectivity(the_faces::Vector{<:SVector{L, U} where {L}},
+function face_edge_connectivity(the_faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
                                 the_edges::Vector{<:SVector{L, U} where {L}}
                                ) where {U <: Unsigned}
     if length(the_edges) === 0
@@ -226,7 +226,7 @@ function face_edge_connectivity(the_faces::Vector{<:SVector{L, U} where {L}},
     # A vector of MVectors of zeros for each face
     # Each MVector is the length of the number of edges
     face_edge = [MVector{Int64(num_edges(face)), U}(zeros(U, num_edges(face)))
-                    for face in the_faces]::Vector{<:MVector{L, U} where {L}}
+                    for face in the_faces]::Vector{<:MArray{S, U, 1, L} where {S<:Tuple, L}}
     # for each face in the mesh, generate the edges.
     # Search for the index of the edge in the mesh.edges vector
     # Insert the index of the edge into the face_edge connectivity vector
@@ -235,7 +235,7 @@ function face_edge_connectivity(the_faces::Vector{<:SVector{L, U} where {L}},
             face_edge[i][j] = searchsortedfirst(the_edges, SVector(edge.data))
         end
     end
-    return [SVector(sort(conn).data) for conn in face_edge]::Vector{<:SVector{L, U} where {L}}
+    return [SVector(sort(conn).data) for conn in face_edge]::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
 end
 
 # Return an SVector of the points in the face
@@ -247,8 +247,8 @@ end
 
 # Find the faces which share the vertex of ID v.
 # Type-stable
-function faces_sharing_vertex(v::I, faces::Vector{<:SVector{L, U} where L}) where {I <: Integer,
-                                                                                   U <: Unsigned}
+function faces_sharing_vertex(v::I, faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
+    ) where {I <: Integer, U <: Unsigned}
     shared_faces = U[]
     for i = 1:length(faces)
         N = length(faces[i])
@@ -275,7 +275,7 @@ end
 # Return the face containing the point p, with implicitly represented faces
 # Type-stable
 function find_face_implicit(p::Point_2D{F},
-                            faces::Vector{<:SVector{N, U} where N},
+                            faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
                             points::Vector{Point_2D{F}}
                             ) where {F <: AbstractFloat, U <: Unsigned}
     for i = 1:length(faces)
@@ -418,7 +418,7 @@ end
 # Intersect a line with implicitly defined faces
 # Type-stable if all faces are one of: linear or quadratic
 function intersect_faces_implicit(l::LineSegment_2D{F},
-                                  faces::Vector{<:SVector{L, U} where L},
+                                  faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
                                   points::Vector{Point_2D{F}}
                         ) where {F <: AbstractFloat, U <: Unsigned}
     # An array to hold all of the intersection points
@@ -496,7 +496,7 @@ end
 
 # Return a materialized face for each face in the mesh
 # Type-stable on the condition that the faces are all the same type
-function materialize_faces(faces::Vector{<:SVector{L, U} where {L}},
+function materialize_faces(faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
                            points::Vector{Point_2D{F}}) where {F <: AbstractFloat, U <: Unsigned}
     return materialize_face.(faces, Ref(points))
 end
@@ -518,7 +518,7 @@ end
 # Return the ID of the edge shared by two adjacent faces
 # Type-stable if all faces are the same type
 function shared_edge(face1::U, face2::U,
-                     face_edge_connectivity::Vector{<:SVector{N, U} where N},
+                     face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
                     ) where {F <: AbstractFloat, U <: Unsigned}
     edges1 = face_edge_connectivity[face1]
     edges2 = face_edge_connectivity[face1]
@@ -558,7 +558,7 @@ end
 # Not type-stable
 function submesh(name::String,
                  points::Vector{Point_2D{F}},
-                 faces::Vector{<:SVector{L, U} where {L}},
+                 faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
                  face_sets::Dict{String, Set{U}},
                  face_ids::Set{U}) where {F <: AbstractFloat, U <: Unsigned}
     # Setup faces and get all vertex ids
