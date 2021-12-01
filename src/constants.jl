@@ -47,4 +47,4 @@ const UnstructuredMesh_2D_cell_types = vcat(UnstructuredMesh_2D_linear_cell_type
 # Ray tracing
 # ---------------------------------------------------------------------------------------------------
 # Visualization of edge-to-edge ray tracing.
-const visualize_ray_tracing = true 
+const visualize_ray_tracing = false 

@@ -106,13 +106,13 @@ function ray_trace(tₛ::F,
         @info "      - Adjacent faces fallback     : $num_fallback_adjacent"
         @info "      - Shared vertices fallback    : $num_fallback_vertex"
         @info "      - Shared vertices 2 fallback  : $num_fallback_vertex2"
-        validate_ray_tracing_data(segment_points, segment_faces, mesh, plot = false)
+        validate_ray_tracing_data(segment_points, segment_faces, mesh)
         return segment_points, segment_faces
     else
         @info "  - Using the naive segmentize + find face algorithm"
         segment_points = segmentize(tracks, mesh)
         segment_faces = find_segment_faces(segment_points, mesh)
-        validate_ray_tracing_data(segment_points, segment_faces, mesh, plot = false)
+        validate_ray_tracing_data(segment_points, segment_faces, mesh)
         return segment_points, segment_faces
     end
 end
@@ -215,11 +215,12 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
                                    segment_faces::Vector{Vector{Vector{U}}},
                                    mesh::UnstructuredMesh_2D{F, U};
                                    plot::Bool = false,
-                                   print::Bool = false
+                                   debug::Bool = false
                                   ) where {F <: AbstractFloat, U <: Unsigned} 
     @info "  - Validating ray tracing data"
+    # Check that all segment faces are correct
     nsegs = 0
-    nsegs_problem = 0
+    nsegs_problem = 0 # Problem segment if the face doesn't match, and it's over 10 μm
     plot_segs = LineSegment_2D{F}[]
     plot_points = Point_2D{F}[]
     if enable_visualization && plot
@@ -228,34 +229,49 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
         display(f)
         linesegments!(mesh.materialized_edges, color = :blue)
     end
-    nγ = length(segment_faces)   
+    nγ = length(segment_faces)
     for iγ = 1:nγ
         for it = 1:length(segment_faces[iγ])
+            nsegs += length(segment_faces[iγ][it])
             for iseg = 1:length(segment_faces[iγ][it])
                 p_midpoint = midpoint(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1])
                 face = segment_faces[iγ][it][iseg]
-                nsegs += 1
                 if p_midpoint ∉  mesh.materialized_faces[face]
-                    nsegs_problem += 1
-                    if print
+                    p1 = segment_points[iγ][it][iseg]
+                    p2 = segment_points[iγ][it][iseg + 1]
+                    l = LineSegment_2D(p1, p2)
+                    if debug
                         @warn "Face mismatch for segment [$iγ][$it][$iseg]\n" * 
                               "   Reference face: $(find_face(p_midpoint, mesh)), Face: $face"
                     end
-                    p1 = segment_points[iγ][it][iseg]
-                    p2 = segment_points[iγ][it][iseg + 1]
-                    append!(plot_points, [p1, p2])
-                    push!(plot_segs, LineSegment_2D(p1, p2))
+                    if 1e-3 < arc_length(l)
+                        nsegs_problem += 1
+                    end
+                    # append the points, line if we want to plot them
+                    # we only want to plot if actually a problem, or if debug is on.
+                    if enable_visualization && plot && (debug || 1e-3 < arc_length(l))
+                        append!(plot_points, [p1, p2])
+                        push!(plot_segs, l)
+                    end
                 end
             end
         end
     end
     if enable_visualization && plot
-        linesegments!(plot_segs, color = :red)
-        scatter!(plot_points, color = :red)
+        if 0 < length(plot_segs)
+            linesegments!(plot_segs, color = :red)
+        end
+        if 0 < length(plot_points)
+            scatter!(plot_points, color = :red)
+        end
     end
     prob_percent = 100*nsegs_problem/nsegs
     @info "    - Segments: $nsegs, Problem segments: $nsegs_problem"
-    @info "    - Problem %: $prob_percent, or approx 1 in $(Int64(ceil(100/prob_percent)))"
+    if nsegs_problem == 0
+        @info "    - Problem %: $prob_percent, or approx 1 in ∞"
+    else
+        @info "    - Problem %: $prob_percent, or approx 1 in $(Int64(ceil(100/prob_percent)))"
+    end
 
     return nsegs_problem == 0
 end
