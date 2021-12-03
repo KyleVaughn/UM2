@@ -59,6 +59,7 @@ end
 
 include("AbstractTypes.jl")
 include("Tree.jl")
+include("L_system.jl")
 include("./gmsh/gmsh_generate_rectangular_grid.jl")
 include("./gmsh/gmsh_group_preserving_fragment.jl")
 include("./gmsh/gmsh_overlay_rectangular_grid.jl")
