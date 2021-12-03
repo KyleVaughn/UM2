@@ -84,6 +84,11 @@ function is_left(p::Point_2D{F}, l::LineSegment_2D{F}) where {F <: AbstractFloat
     return u⃗ × v⃗ > 0
 end
 
+# Convert a vector of points to a vector of line segments
+function to_lines(points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
+    return [LineSegment_2D(points[i], points[i+1]) for i = 1:length(points)-1]
+end
+
 # Plot
 # -------------------------------------------------------------------------------------------------
 if enable_visualization
