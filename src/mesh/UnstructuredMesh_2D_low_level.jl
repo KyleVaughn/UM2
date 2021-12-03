@@ -515,6 +515,18 @@ function num_edges(face::SVector{L, U}) where {L, U <: Unsigned}
     end
 end
 
+function reorder_points_to_hilbert(points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
+    # Bounding box
+    x = map(p->p[1], points)
+    y = map(p->p[2], points)
+    width = maximum(x) - minimum(x)
+    height = maximum(y) - minimum(y)
+
+    bb = 
+    npoints = length(points)
+    # Generate a Hilbert curve with approximately as man
+end
+
 # Return the ID of the edge shared by two adjacent faces
 # Type-stable if all faces are the same type
 function shared_edge(face1::U, face2::U,

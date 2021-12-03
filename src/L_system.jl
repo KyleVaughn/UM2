@@ -50,3 +50,24 @@ function generate_points(production_sequence::String, p₀::Point_2D{F},
     end
     return points
 end
+
+function hilbert_curve()
+    # Note Hilbert curve returns 2^(n^2-1) points
+    return L_System('A', Dict('A' => "+BF-AFA-FB+", 'B' => "-AF+BFB+FA-"))
+end
+
+# Generate the vector of points making up the Hilbert curve that fill a bounding box bb
+# npoints is the target number of points, where the number of points returned will always
+# be greater than or equal to npoints
+function hilbert_curve(bb::Quadrilateral_2D{F}, npoints::Int64) where{F <: AbstractFloat}
+    L = hilbert_curve() 
+    # Note Hilbert curve returns 2^(2n) points
+    n = ceil(Int64, log(npoints)/(2log(2)))
+    npoints_actual = 2^(2n)
+    width = bb.points[3][1] - bb.points[1][1]
+    height = bb.points[3][2] - bb.points[1][2]
+    Δx = width/(sqrt(npoints_actual) - 1)
+    Δy = height/(sqrt(npoints_actual) - 1)
+    production_sequence = apply_rules(L, n)
+    return generate_points(production_sequence, bb.points[1], 0, Δx, Δy) 
+end

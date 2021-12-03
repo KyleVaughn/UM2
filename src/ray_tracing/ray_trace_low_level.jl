@@ -103,8 +103,8 @@ function generate_tracks(tₛ::F,
                          ang_quad::ProductAngularQuadrature{nᵧ, nₚ, F},
                          HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
                          ) where {nᵧ, nₚ, F <: AbstractFloat, U <: Unsigned}
-    w = width(HRPM)
-    h = height(HRPM)
+    w = HRPM_width(HRPM)
+    h = HRPM_height(HRPM)
     # The tracks for each γ
     tracks = [ generate_tracks(γ, tₛ, w, h) for γ in ang_quad.γ ].data
     # Shift all tracks if necessary, since the tracks are generated as if the HRPM has a

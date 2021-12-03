@@ -179,7 +179,7 @@ end
 
 # Height of the HRPM in the y direction
 # Type-stable
-function height(HRPM::HierarchicalRectangularlyPartitionedMesh{F}) where {F <: AbstractFloat}
+function HRPM_height(HRPM::HierarchicalRectangularlyPartitionedMesh{F}) where {F <: AbstractFloat}
     return HRPM.rect.points[3][2] - HRPM.rect.points[1][2]
 end
 
@@ -290,7 +290,7 @@ end
 
 # Width of the HRPM in the x direction
 # Type-stable
-function width(HRPM::HierarchicalRectangularlyPartitionedMesh{F}) where {F <: AbstractFloat}
+function HRPM_width(HRPM::HierarchicalRectangularlyPartitionedMesh{F}) where {F <: AbstractFloat}
     return HRPM.rect.points[3][1] - HRPM.rect.points[1][1]
 end
 
