@@ -191,16 +191,7 @@ function bounding_box(mesh::UnstructuredMesh_2D{F, U};
                                 Point_2D(F, 0),
                                 Point_2D(F, 0))
     else # Can use points
-        x = map(p->p[1], mesh.points)
-        y = map(p->p[2], mesh.points)
-        xmin = minimum(x)
-        xmax = maximum(x)
-        ymin = minimum(y)
-        ymax = maximum(y)
-        return Quadrilateral_2D(Point_2D(xmin, ymin),
-                                Point_2D(xmax, ymin),
-                                Point_2D(xmax, ymax),
-                                Point_2D(xmin, ymax))
+        return bounding_box(mesh.points) 
     end
 end
 
@@ -249,6 +240,38 @@ function intersect(l::LineSegment_2D{F},
             return intersect_faces_implicit(l, mesh.faces, mesh.points)
         end
     end
+end
+
+function reorder_points_to_hilbert(mesh::UnstructuredMesh_2D{F, U}
+                           ) where {F <: AbstractFloat, U <: Unsigned}
+    # Points
+    point_map_Int64 = remap_points_to_hilbert(mesh.points) 
+    point_map = U.(point_map_Int64)
+    new_points = mesh.points[point_map] 
+    # Adjust face indices
+    nfaces = length(mesh.faces)
+    new_faces_vec = [ point_map[face] for face in mesh.faces]  
+    for i in 1:nfaces
+        new_faces_vec[i][1] = mesh.faces[i][1]
+    end
+    new_faces = SVector.(new_faces_vec)
+    # Adjust edge indices
+    if 0 < length(mesh.edges)
+        new_edges = [ SVector(point_map[edge]) for edge in mesh.edges ]
+    else
+        new_edges = mesh.edges
+    end
+    # Adjust face_sets
+    # This is done by reference
+    for key in keys(mesh.face_sets)
+        println(key)
+    end
+    return UnstructuredMesh_2D{F, U}(name = mesh.name,
+                                     points = new_points,
+                                     edges = new_edges,
+                                     faces = new_faces,
+                                     face_sets = mesh.face_sets
+                                    )
 end
 
 # How to display a mesh in REPL

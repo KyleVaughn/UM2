@@ -83,6 +83,20 @@ function boundary_edges(mesh::UnstructuredMesh_2D{F, U},
     end
 end
 
+
+function bounding_box(points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
+    x = map(p->p[1], points)
+    y = map(p->p[2], points)
+    xmin = minimum(x)
+    xmax = maximum(x)
+    ymin = minimum(y)
+    ymax = maximum(y)
+    return Quadrilateral_2D(Point_2D(xmin, ymin),
+                            Point_2D(xmax, ymin),
+                            Point_2D(xmax, ymax),
+                            Point_2D(xmin, ymax))
+end
+
 # SVector of MVectors of point IDs representing the 3 edges of a triangle
 # Type-stable
 function edges(face::SVector{4, U}) where {U <: Unsigned}
@@ -515,16 +529,27 @@ function num_edges(face::SVector{L, U}) where {L, U <: Unsigned}
     end
 end
 
-function reorder_points_to_hilbert(points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
-    # Bounding box
-    x = map(p->p[1], points)
-    y = map(p->p[2], points)
-    width = maximum(x) - minimum(x)
-    height = maximum(y) - minimum(y)
-
-    bb = 
+function remap_points_to_hilbert(points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
+    bb = bounding_box(points) 
     npoints = length(points)
-    # Generate a Hilbert curve with approximately as man
+    # Generate a Hilbert curve 
+    hilbert_points = hilbert_curve(bb, 10*npoints)
+    nhilbert_points = length(hilbert_points)
+    # For each point, get the index of the hilbert points that is closest
+    point_indices = Vector{Int64}(undef, npoints)
+    for i = 1:npoints
+        min_distance = F(1.0e20)
+        for j = 1:nhilbert_points
+            pdistance = distance(points[i], hilbert_points[j])
+            if pdistance < min_distance
+                min_distance = pdistance
+                point_indices[i] = j
+            end
+        end
+    end
+    # Sort the points based upon the closest hilber point index
+    old_indices = [ i for i = 1:npoints]
+    return getindex.(sort(collect(zip(point_indices, old_indices)); by=first), 2)
 end
 
 # Return the ID of the edge shared by two adjacent faces
