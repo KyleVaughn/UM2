@@ -245,8 +245,7 @@ end
 function reorder_points_to_hilbert(mesh::UnstructuredMesh_2D{F, U}
                            ) where {F <: AbstractFloat, U <: Unsigned}
     # Points
-    point_map_Int64 = remap_points_to_hilbert(mesh.points) 
-    point_map = U.(point_map_Int64)
+    point_map  = U.(remap_points_to_hilbert(mesh.points))
     new_points = mesh.points[point_map] 
     # Adjust face indices
     nfaces = length(mesh.faces)
@@ -262,15 +261,22 @@ function reorder_points_to_hilbert(mesh::UnstructuredMesh_2D{F, U}
         new_edges = mesh.edges
     end
     # Adjust face_sets
-    # This is done by reference
-    for key in keys(mesh.face_sets)
-        println(key)
+    # DONT USE POINT MAP. NEED TO REMAP WITH FACES
+    if 0 < length(mesh.face_sets)
+        new_face_sets = copy(mesh.face_sets)
+        for key in keys(new_face_sets)
+            println(key)
+            println(collect(mesh.face_sets[key]))
+            new_face_sets[key] = Set(point_map[collect(mesh.face_sets[key])])
+        end
+    else
+        new_face_sets = copy(mesh.face_sets)
     end
     return UnstructuredMesh_2D{F, U}(name = mesh.name,
                                      points = new_points,
                                      edges = new_edges,
                                      faces = new_faces,
-                                     face_sets = mesh.face_sets
+                                     face_sets = new_face_sets
                                     )
 end
 
