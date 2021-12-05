@@ -533,7 +533,7 @@ function remap_points_to_hilbert(points::Vector{Point_2D{F}}) where {F <: Abstra
     bb = bounding_box(points) 
     npoints = length(points)
     # Generate a Hilbert curve 
-    hilbert_points = hilbert_curve(bb, 10*npoints)
+    hilbert_points = hilbert_curve(bb, npoints)
     nhilbert_points = length(hilbert_points)
     # For each point, get the index of the hilbert points that is closest
     point_indices = Vector{Int64}(undef, npoints)

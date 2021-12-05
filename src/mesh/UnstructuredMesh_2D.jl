@@ -262,15 +262,8 @@ function reorder_points_to_hilbert(mesh::UnstructuredMesh_2D{F, U}
         new_faces_vec[i][1] = mesh.faces[i][1]
     end
     new_faces = SVector.(new_faces_vec)
-    # Adjust edge indices
-    if 0 < length(mesh.edges)
-        new_edges = [ SVector(point_map_inv[edge]) for edge in mesh.edges ]
-    else
-        new_edges = mesh.edges
-    end
     return UnstructuredMesh_2D{F, U}(name = mesh.name,
                                      points = new_points,
-                                     edges = new_edges,
                                      faces = new_faces,
                                      face_sets = mesh.face_sets
                                     )
