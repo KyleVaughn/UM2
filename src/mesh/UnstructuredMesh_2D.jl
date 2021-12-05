@@ -245,38 +245,34 @@ end
 function reorder_points_to_hilbert(mesh::UnstructuredMesh_2D{F, U}
                            ) where {F <: AbstractFloat, U <: Unsigned}
     # Points
+    # point_map     maps  new_points[i] == mesh.points[point_map[i]]
+    # point_map_inv maps mesh.points[i] == new_points[point_map_inv[i]]
     point_map  = U.(remap_points_to_hilbert(mesh.points))
+    npoints = length(mesh.points)
+    old_indices = [ i for i = 1:npoints]
+    point_map_inv = U.(getindex.(sort(collect(zip(point_map, old_indices)); by=first), 2))
+    # new_points is the reordered point vector, reordered to resemble a hilbert curve
     new_points = mesh.points[point_map] 
+
     # Adjust face indices
+    # Point IDs have changed, so we need to change the point IDs referenced by the faces
     nfaces = length(mesh.faces)
-    new_faces_vec = [ point_map[face] for face in mesh.faces]  
+    new_faces_vec = [ point_map_inv[face] for face in mesh.faces]  
     for i in 1:nfaces
         new_faces_vec[i][1] = mesh.faces[i][1]
     end
     new_faces = SVector.(new_faces_vec)
     # Adjust edge indices
     if 0 < length(mesh.edges)
-        new_edges = [ SVector(point_map[edge]) for edge in mesh.edges ]
+        new_edges = [ SVector(point_map_inv[edge]) for edge in mesh.edges ]
     else
         new_edges = mesh.edges
-    end
-    # Adjust face_sets
-    # DONT USE POINT MAP. NEED TO REMAP WITH FACES
-    if 0 < length(mesh.face_sets)
-        new_face_sets = copy(mesh.face_sets)
-        for key in keys(new_face_sets)
-            println(key)
-            println(collect(mesh.face_sets[key]))
-            new_face_sets[key] = Set(point_map[collect(mesh.face_sets[key])])
-        end
-    else
-        new_face_sets = copy(mesh.face_sets)
     end
     return UnstructuredMesh_2D{F, U}(name = mesh.name,
                                      points = new_points,
                                      edges = new_edges,
                                      faces = new_faces,
-                                     face_sets = new_face_sets
+                                     face_sets = mesh.face_sets
                                     )
 end
 
