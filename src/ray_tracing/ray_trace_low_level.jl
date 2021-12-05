@@ -349,7 +349,7 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
                                                         edge_face_connectivity,
                                                         face_edge_connectivity)
         # Could not find next face, or jumping back to a previous face
-        if next_face == current_face || next_face ∈  segment_faces
+        if next_face == current_face
             next_edge, next_face = next_edge_and_face_fallback(last_point,
                                                                current_face, 
                                                                segment_faces, l, faces,
@@ -367,6 +367,7 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
             end
             push!(segment_points, intersection_point)
             push!(segment_faces, current_face)
+            last_point = intersection_point
         end
         current_edge = next_edge
         current_face = next_face
@@ -482,16 +483,19 @@ function next_edge_and_face_fallback(last_point::Point_2D{F},
     # if next_face == current_face || next_face ∈  segment_faces
         next_face, closest_point = shared_vertex_fallback(last_point, current_face, l, faces,
                                                            materialized_faces)
+    readline()
     # end 
     # If faces sharing this face's vertices was not enough, try the faces sharing a vertex approach 
     # above, but expand to the vertices of the faces sharing vertices of the current face
-    if next_face == current_face || next_face ∈  segment_faces
+    if next_face == current_face
         next_face, closest_point = shared_vertex_level2_fallback(last_point, current_face, l, faces,
                                                                   materialized_faces)
+        readline()
     end
     # If the next face STILL couldn't be determined, you're screwed
-    if next_face == current_face || next_face ∈  segment_faces
+    if next_face == current_face
         @error "Could not find next face, even using fallback methods, for segment $l."  
+        @assert false
     end
     # Determine the edge that should be skipped by choosing the edge with intersection point 
     # closest to the start of the line.
@@ -561,10 +565,14 @@ function shared_vertex_fallback(last_point::Point_2D{F},
                                 materialized_faces::Vector{<:Face_2D{F}}
                                ) where {F <: AbstractFloat, U <: Unsigned}
     global num_fallback_vertex += 1
+    println("Shared vertex fallback")
     next_face = current_face
     start_point = l.points[1]
     min_distance = distance(start_point, last_point)
-    intersection_point = Point_2D(F, 1e20, 1e20)
+    intersection_point = Point_2D(F, 1e10, 1e10)
+
+    #CHANGE INTERSECTION POINT TO 1e10
+    #ensure last point is what u think it is
 
     # Get the vertex ids for each vertex in the face
     nvertices = length(faces[current_face])
@@ -575,10 +583,17 @@ function shared_vertex_fallback(last_point::Point_2D{F},
     end
     for face in faces_OI
         npoints, ipoints = l ∩ materialized_faces[face]
+        mesh!(materialized_faces[face], color = (:yellow, 0.2))
+        println("Face: $face")
         if 0 < npoints
             for point in ipoints[1:npoints]
+                println("distance: $(distance(start_point, point))")
+                scatter!(point)
+                println("$min_distance, $(distance(start_point, point)), $(distance(start_point, intersection_point))")
+                readline()
                 if min_distance < distance(start_point, point) < 
                          distance(start_point, intersection_point)
+                         println("New intersection point distance: $(distance(start_point, intersection_point))")
                      intersection_point = point
                      next_face = face
                  end
@@ -597,6 +612,8 @@ function shared_vertex_level2_fallback(last_point::Point_2D{F},
                                        materialized_faces::Vector{<:Face_2D{F}}
                                       ) where {F <: AbstractFloat, U <: Unsigned}
     global num_fallback_vertex2 += 1
+
+    println("Shared vertex fallback 2")
     next_face = current_face
     start_point = l.points[1]
     min_distance = distance(start_point, last_point)
@@ -611,6 +628,7 @@ function shared_vertex_level2_fallback(last_point::Point_2D{F},
     end
     faces_OI = Set{U}()
     for face in faces_OI_L1
+        mesh!(materialized_faces[face], color = (:yellow, 0.2))
         nvertices = length(faces[face])
         vertex_ids = faces[current_face][2:nvertices]
         for vertex in vertex_ids
