@@ -563,7 +563,7 @@ function shared_vertex_fallback(last_point::Point_2D{F},
                                 current_face::U, 
                                 l::LineSegment_2D{F},
                                 faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}, 
-                                materialized_faces::Vector{<:Face_2D{F}}
+                                materialized_faces::Vector{<:Face_2D{F}},
                                 edge_face_connectivity::Vector{SVector{2, U}},
                                 face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
 
@@ -592,7 +592,7 @@ function shared_vertex_fallback(last_point::Point_2D{F},
     for face in faces_OI
         npoints, ipoints = l ∩ materialized_faces[face]
         if visualize_ray_tracing 
-            push!(mesh_vec, mesh!(materialized_faces[face], color = (:yellow, 0.2)))
+            push!(mesh_vec, mesh!(materialized_faces[face], color = (:black, 0.2)))
         end
         println("Face: $face")
         if 0 < npoints
@@ -660,7 +660,7 @@ function shared_vertex_level2_fallback(last_point::Point_2D{F},
     end
     faces_OI = Set{U}()
     for face in faces_OI_L1
-        mesh!(materialized_faces[face], color = (:yellow, 0.2))
+        mesh!(materialized_faces[face], color = (:black, 0.2))
         nvertices = length(faces[face])
         vertex_ids = faces[current_face][2:nvertices]
         for vertex in vertex_ids
