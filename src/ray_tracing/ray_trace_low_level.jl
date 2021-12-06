@@ -479,7 +479,7 @@ function next_edge_and_face_fallback(last_point::Point_2D{F},
     # If adjacent faces were not sufficient, try all faces sharing the vertices of this face
     if next_face == current_face || next_face ∈  segment_faces
         next_face, closest_point = shared_vertex_fallback(last_point, current_face, l, faces,
-                                                           materialized_faces)
+                                                           materialized_faces, edge_face_connectivity, face_edge_connectivity)
         if visualize_ray_tracing 
             readline()
         end
@@ -564,6 +564,9 @@ function shared_vertex_fallback(last_point::Point_2D{F},
                                 l::LineSegment_2D{F},
                                 faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}, 
                                 materialized_faces::Vector{<:Face_2D{F}}
+                                edge_face_connectivity::Vector{SVector{2, U}},
+                                face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
+
                                ) where {F <: AbstractFloat, U <: Unsigned}
     global num_fallback_vertex += 1
     println("Shared vertex fallback")
@@ -580,6 +583,9 @@ function shared_vertex_fallback(last_point::Point_2D{F},
     for vertex in vertex_ids
         union!(faces_OI, faces_sharing_vertex(vertex, faces))
     end
+    # Remove faces we have already tested
+    the_adjacent_faces = adjacent_faces(current_face, face_edge_connectivity, edge_face_connectivity)
+    setdiff!(faces_OI, Set(the_adjacent_faces))
     if visualize_ray_tracing 
         mesh_vec = []
     end
