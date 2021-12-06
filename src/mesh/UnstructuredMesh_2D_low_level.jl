@@ -538,7 +538,7 @@ function remap_points_to_hilbert(points::Vector{Point_2D{F}}) where {F <: Abstra
     # For each point, get the index of the hilbert points that is closest
     point_indices = Vector{Int64}(undef, npoints)
     for i = 1:npoints
-        min_distance = F(1.0e20)
+        min_distance = F(1.0e10)
         for j = 1:nhilbert_points
             pdistance = distance(points[i], hilbert_points[j])
             if pdistance < min_distance

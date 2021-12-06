@@ -2,7 +2,11 @@ module MOCNeutronTransport
 # Compilation options
 const enable_local_gmsh = true
 const enable_visualization = true 
-
+if enable_visualization
+    const visualize_ray_tracing = true # <---- Modify this one. 
+else
+    const visualize_ray_tracing = false 
+end
 # using
 using ColorSchemes
 using Logging
@@ -162,6 +166,7 @@ export  ×,
         submesh,
         to_lines,
         triangulate,
+        validate_ray_tracing_data,
         write_vtk_2d,
         write_xdmf_2d
 
