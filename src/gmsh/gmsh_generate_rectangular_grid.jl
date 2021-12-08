@@ -114,7 +114,7 @@ function gmsh_generate_rectangular_grid(bb::NTuple{4, T},
     # Create each grid name
     for lvl in 1:nlevels
         for j in 1:length(y_full[lvl])-1
-            for i in 1:length(y_full[lvl])-1
+            for i in 1:length(x_full[lvl])-1
                 grid_str = string("GRID_L", lvl, "_", lpad(i, max_grid_digits, "0"), "_", 
                                                       lpad(j, max_grid_digits, "0"))
                 grid_levels_tags[grid_str] = Int32[]
