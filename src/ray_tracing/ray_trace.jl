@@ -211,15 +211,14 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D{F}}},
     return segment_points
 end
 
-function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
-                                   segment_faces::Vector{Vector{Vector{U}}},
+function validate_ray_tracing_data(segment_points::Vector{Point_2D{F}},
+                                   segment_faces::Vector{U},
                                    mesh::UnstructuredMesh_2D{F, U};
                                    plot::Bool = false,
                                    debug::Bool = false
                                   ) where {F <: AbstractFloat, U <: Unsigned} 
     @info "  - Validating ray tracing data"
     # Check that all segment faces are correct
-    nsegs = 0
     nsegs_problem = 0 # Problem segment if the face doesn't match, and it's over 10 μm
     plot_segs = LineSegment_2D{F}[]
     plot_points = Point_2D{F}[]
@@ -229,30 +228,25 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
         display(f)
         linesegments!(mesh.materialized_edges, color = :blue)
     end
-    nγ = length(segment_faces)
-    for iγ = 1:nγ
-        for it = 1:length(segment_faces[iγ])
-            nsegs += length(segment_faces[iγ][it])
-            for iseg = 1:length(segment_faces[iγ][it])
-                p_midpoint = midpoint(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1])
-                face = segment_faces[iγ][it][iseg]
-                if p_midpoint ∉  mesh.materialized_faces[face]
-                    p1 = segment_points[iγ][it][iseg]
-                    p2 = segment_points[iγ][it][iseg + 1]
-                    l = LineSegment_2D(p1, p2)
-                    problem_length = 1e-3 < arc_length(l)
-                    if debug || problem_length 
-                        @warn "Face mismatch for segment [$iγ][$it][$iseg]\n" * 
-                              "   Reference face: $(find_face(p_midpoint, mesh)), Face: $face"
-                        nsegs_problem += 1
-                    end
-                    # append the points, line if we want to plot them
-                    # we only want to plot if actually a problem, or if debug is on.
-                    if enable_visualization && plot && (debug || problem_length)
-                        append!(plot_points, [p1, p2])
-                        push!(plot_segs, l)
-                    end
-                end
+    nsegs = length(segment_faces) - 1
+    for iseg = 1:nsegs
+        p_midpoint = midpoint(segment_points[iseg], segment_points[iseg+1])
+        face = segment_faces[iseg]
+        if p_midpoint ∉  mesh.materialized_faces[face]
+            p1 = segment_points[iseg]
+            p2 = segment_points[iseg + 1]
+            l = LineSegment_2D(p1, p2)
+            problem_length = 1e-3 < arc_length(l)
+            if debug || problem_length 
+                @warn "Face mismatch for segment [$iseg]\n" * 
+                      "   Reference face: $(find_face(p_midpoint, mesh)), Face: $face"
+                nsegs_problem += 1
+            end
+            # append the points, line if we want to plot them
+            # we only want to plot if actually a problem, or if debug is on.
+            if enable_visualization && plot && (debug || problem_length)
+                append!(plot_points, [p1, p2])
+                push!(plot_segs, l)
             end
         end
     end
@@ -273,6 +267,75 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
     end
 
     return nsegs_problem == 0
+end
+
+function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
+                                   segment_faces::Vector{Vector{Vector{U}}},
+                                   mesh::UnstructuredMesh_2D{F, U};
+                                   plot::Bool = false,
+                                   debug::Bool = false
+                                  ) where {F <: AbstractFloat, U <: Unsigned} 
+    @info "  - Validating ray tracing data"
+    # Check that all segment faces are correct
+    nthreads = Threads.nthreads()
+    nsegs = zeros(Int64, nthreads)
+    nsegs_problem = zeros(Int64, nthreads) # Problem segment if the face doesn't match, and it's over 10 μm
+    plot_segs = [ LineSegment_2D{F}[] for i = 1:nthreads ] 
+    plot_points = [ Point_2D{F}[] for i = 1:nthreads ]
+    if enable_visualization && plot
+        f = Figure()
+        ax = Axis(f[1, 1], aspect = 1)
+        display(f)
+        linesegments!(mesh.materialized_edges, color = :blue)
+    end
+    nγ = length(segment_faces)
+    Threads.@threads for iγ = 1:nγ
+        for it = 1:length(segment_faces[iγ])
+            nsegs[Threads.threadid()] += length(segment_faces[iγ][it])
+            for iseg = 1:length(segment_faces[iγ][it])
+                p_midpoint = midpoint(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1])
+                face = segment_faces[iγ][it][iseg]
+                if p_midpoint ∉  mesh.materialized_faces[face]
+                    p1 = segment_points[iγ][it][iseg]
+                    p2 = segment_points[iγ][it][iseg + 1]
+                    l = LineSegment_2D(p1, p2)
+                    problem_length = 1e-3 < arc_length(l)
+                    if debug || problem_length 
+                        @warn "Face mismatch for segment [$iγ][$it][$iseg]\n" * 
+                              "   Reference face: $(find_face(p_midpoint, mesh)), Face: $face"
+                        nsegs_problem[Threads.threadid()] += 1
+                    end
+                    # append the points, line if we want to plot them
+                    # we only want to plot if actually a problem, or if debug is on.
+                    if enable_visualization && plot && (debug || problem_length)
+                        append!(plot_points[Threads.threadid()], [p1, p2])
+                        push!(plot_segs[Threads.threadid()], l)
+                    end
+                end
+            end
+        end
+    end
+    if enable_visualization && plot
+        for i = 1:nthreads
+            if 0 < length(plot_segs[i])
+                linesegments!(plot_segs[i], color = :red)
+            end
+            if 0 < length(plot_points[i])
+                scatter!(plot_points[i], color = :red)
+            end
+        end
+    end
+    problem_segs = sum(nsegs_problem)
+    nsegs_total = sum(nsegs)
+    prob_percent = 100*problem_segs/nsegs_total
+    @info "    - Segments: $nsegs_total, Problem segments: $problem_segs"
+    if problem_segs == 0
+        @info "    - Problem %: $prob_percent, or approx 1 in ∞"
+    else
+        @info "    - Problem %: $prob_percent, or approx 1 in $(Int64(ceil(100/prob_percent)))"
+    end
+
+    return problem_segs == 0
 end
 
 # Plot

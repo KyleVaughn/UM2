@@ -208,23 +208,8 @@ function intersect(l::LineSegment_2D{F}, tri6::Triangle6_2D{F}) where {F <: Abst
     for k = 1:3
         npoints, points = l ∩ edges[k]
         for i = 1:npoints
-            if n_ipoints === 0x00000000
-                ipoints[1] = points[1]
-                n_ipoints = 0x00000001
-            else
-                # make sure we don't have duplicate points
-                duplicate = false
-                for j = 1:n_ipoints
-                    if points[i] ≈ ipoints[j]
-                        duplicate = true
-                        break
-                    end
-                end
-                if !duplicate
-                    n_ipoints += 0x00000001
-                    ipoints[n_ipoints] = points[i]
-                end
-            end
+            n_ipoints += 0x00000001 
+            ipoints[n_ipoints] = points[i]
         end
     end
     return n_ipoints, SVector(ipoints)

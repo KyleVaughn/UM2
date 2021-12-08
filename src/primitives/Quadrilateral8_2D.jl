@@ -204,26 +204,11 @@ function intersect(l::LineSegment_2D{F}, quad8::Quadrilateral8_2D{F}) where {F <
                      )
     n_ipoints = 0x00000000
     # We need to account for 6 points returned
-    for k = 1:4
+    for k = 1:4                              
         npoints, points = l ∩ edges[k]
         for i = 1:npoints
-            if n_ipoints === 0x00000000
-                ipoints[1] = points[1]
-                n_ipoints = 0x00000001
-            else
-                # make sure we don't have duplicate points
-                duplicate = false
-                for j = 1:n_ipoints
-                    if points[i] ≈ ipoints[j]
-                        duplicate = true
-                        break
-                    end
-                end
-                if !duplicate
-                    n_ipoints += 0x00000001
-                    ipoints[n_ipoints] = points[i]
-                end
-            end
+            n_ipoints += 0x00000001 
+            ipoints[n_ipoints] = points[i]
         end
     end
     return n_ipoints, SVector(ipoints)

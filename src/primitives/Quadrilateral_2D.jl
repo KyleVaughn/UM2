@@ -61,27 +61,26 @@ end
 
 function intersect(l::LineSegment_2D{F}, quad::Quadrilateral_2D{F}) where {F <: AbstractFloat}
     # Create the 4 line segments that make up the quadrilateral and intersect each one
-    line_segments = SVector(LineSegment_2D(quad.points[1], quad.points[2]),
-                            LineSegment_2D(quad.points[2], quad.points[3]),
-                            LineSegment_2D(quad.points[3], quad.points[4]),
-                            LineSegment_2D(quad.points[4], quad.points[1]))
-    p₁ = Point_2D(F, 0)
-    p₂ = Point_2D(F, 0)
-    ipoints = 0x00000000
-    # We need to account for 3 or 4 points returned due to vertex intersection
-    for i = 1:4
-        npoints, point = l ∩ line_segments[i]
-        if npoints === 0x00000001
-            if ipoints === 0x00000000
-                p₁ = point
-                ipoints = 0x00000001
-            elseif ipoints === 0x00000001 && (point ≉ p₁)
-                p₂ = point
-                ipoints = 0x00000002
-            end
+    edges = SVector(LineSegment_2D(quad.points[1], quad.points[2]),
+                    LineSegment_2D(quad.points[2], quad.points[3]),
+                    LineSegment_2D(quad.points[3], quad.points[4]),
+                    LineSegment_2D(quad.points[4], quad.points[1]))
+    ipoints = MVector(Point_2D(F, 0),
+                      Point_2D(F, 0),
+                      Point_2D(F, 0))
+    n_ipoints = 0x00000000
+    # We need to account for 4 points returned due to vertex intersection
+    # The only way we get 4 points though, is if 2 are redundant.
+    # So, we return 3, which guarantees all unique points will be returned and the output
+    # matched with the triangle output
+    for k = 1:4
+        npoints, point = l ∩ edges[k]
+        if npoints === 0x00000001 && n_ipoints !== 0x00000003
+            n_ipoints += 0x00000001 
+            ipoints[n_ipoints] = point
         end
     end
-    return ipoints, SVector(p₁, p₂)
+    return n_ipoints, SVector(ipoints)
 end
 
 function Base.show(io::IO, quad::Quadrilateral_2D{F}) where {F <: AbstractFloat}

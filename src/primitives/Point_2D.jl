@@ -39,3 +39,13 @@ Point_2D(::Type{F}, x::X) where {F <: AbstractFloat,
 norm(p::Point_2D) = sqrt(p.x^2 + p.y^2)
 distance(p₁::Point_2D, p₂::Point_2D) = norm(p₁ - p₂)
 midpoint(p₁::Point_2D, p₂::Point_2D) = (p₁ + p₂)/2
+
+# Sort points based on their distance from a given point
+function sort_points(p::Point_2D{F}, points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
+    if 0 < length(points)
+        # Sort the points based upon their distance to the point
+        return points[sortperm(distance.(Ref(p), points))] 
+    else
+        return points
+    end
+end

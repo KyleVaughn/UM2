@@ -49,26 +49,22 @@ end
 
 function intersect(l::LineSegment_2D{F}, tri::Triangle_2D{F}) where {F <: AbstractFloat}
     # Create the 3 line segments that make up the triangle and intersect each one
-    line_segments = SVector(LineSegment_2D(tri.points[1], tri.points[2]),
-                            LineSegment_2D(tri.points[2], tri.points[3]),
-                            LineSegment_2D(tri.points[3], tri.points[1]))
-    p₁ = Point_2D(F, 0)
-    p₂ = Point_2D(F, 0)
-    ipoints = 0x00000000
+    edges = SVector(LineSegment_2D(tri.points[1], tri.points[2]),
+                    LineSegment_2D(tri.points[2], tri.points[3]),
+                    LineSegment_2D(tri.points[3], tri.points[1]))
+    ipoints = MVector(Point_2D(F, 0),
+                      Point_2D(F, 0),
+                      Point_2D(F, 0))
+    n_ipoints = 0x00000000
     # We need to account for 3 points returned due to vertex intersection
-    for i = 1:3
-        npoints, point = l ∩ line_segments[i]
+    for k = 1:3
+        npoints, point = l ∩ edges[k]
         if npoints === 0x00000001
-            if ipoints === 0x00000000
-                p₁ = point
-                ipoints = 0x00000001
-            elseif ipoints === 0x00000001 && (point ≉  p₁)
-                p₂ = point
-                ipoints = 0x00000002
-            end
+            n_ipoints += 0x00000001 
+            ipoints[n_ipoints] = point
         end
     end
-    return ipoints, SVector(p₁, p₂)
+    return n_ipoints, SVector(ipoints)
 end
 intersect(tri::Triangle_2D, l::LineSegment_2D) = intersect(l, tri)
 

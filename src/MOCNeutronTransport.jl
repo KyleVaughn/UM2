@@ -3,7 +3,7 @@ module MOCNeutronTransport
 const enable_local_gmsh = true
 const enable_visualization = true 
 if enable_visualization
-    const visualize_ray_tracing = true # <---- Modify this one. 
+    const visualize_ray_tracing = false # <---- Modify this one. 
 else
     const visualize_ray_tracing = false 
 end
