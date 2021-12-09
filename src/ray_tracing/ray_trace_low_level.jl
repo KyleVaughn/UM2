@@ -372,7 +372,7 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
         # end point, end here.
         if distance(intersection_point, end_point) < minimum_segment_length
             end_reached = true
-            if intersection_point != end_point
+            if intersection_point ≉  end_point
                 push!(segment_points, end_point)
                 push!(segment_faces, end_face)
             end
@@ -406,7 +406,6 @@ function next_edge_and_face(last_point::Point_2D{F}, current_edge::U,
     next_face = current_face
     start_point = l.points[1]
     min_distance = distance(start_point, last_point) + minimum_segment_length
-    max_distance = F(1e10)
     intersection_point = Point_2D(F, 1e10)
     # For each edge in this face, intersect the track with the edge
     for edge in face_edge_connectivity[current_face]
@@ -423,7 +422,7 @@ function next_edge_and_face(last_point::Point_2D{F}, current_edge::U,
         if 0 < npoints
             # If the intersection point on this edge is further along the ray than
             # the last_point, then we want to leave the face from this edge
-            if min_distance < distance(start_point, point) < max_distance
+            if min_distance < distance(start_point, point)
                 intersection_point = point
                 # Make sure not to pick the current face for the next face
                 if edge_face_connectivity[edge][1] == current_face
@@ -432,7 +431,7 @@ function next_edge_and_face(last_point::Point_2D{F}, current_edge::U,
                     next_face = edge_face_connectivity[edge][1]
                 end
                 next_edge = edge
-                max_distance = distance(start_point, point)
+                break
             end
         end
         if visualize_ray_tracing 
@@ -481,7 +480,6 @@ function next_edge_and_face_fallback(last_point::Point_2D{F},
     if next_face == current_face || next_face ∈  segment_faces
         next_face, closest_point = shared_vertex_fallback(last_point, current_face, l, faces,
                                                            materialized_faces, edge_face_connectivity, face_edge_connectivity)
-        next_edge = skipped_edge_fallback(next_face, l, materialized_edges, face_edge_connectivity)
         if visualize_ray_tracing 
             readline()
         end
@@ -503,7 +501,7 @@ function next_edge_and_face_fallback(last_point::Point_2D{F},
     end
     # Determine the edge that should be skipped by choosing the edge with intersection point 
     # closest to the start of the line.
-#    next_edge = skipped_edge_fallback(next_face, l, materialized_edges, face_edge_connectivity)
+    next_edge = skipped_edge_fallback(next_face, l, materialized_edges, face_edge_connectivity)
     return U(next_edge), U(next_face)
 end
 
