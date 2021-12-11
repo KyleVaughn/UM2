@@ -200,7 +200,7 @@ function intersect(l::LineSegment_2D{F},
                 append!(intersection_points, 
                         l ∩ HRPM.children[ichild][]::HierarchicalRectangularlyPartitionedMesh{F, U})
             end
-            return sort_intersection_points(l, intersection_points)
+            return sort_points(l.points[1], intersection_points)
         end
     end
     return intersection_points

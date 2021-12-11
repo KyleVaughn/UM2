@@ -387,7 +387,7 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
 #        # Need to dispatch on something that isn't mesh for this
 #        find_segment_faces_in_track!(segment_points, segment_faces, mesh)
     end
-    return sort_linear_intersection_points_E2E(l, segment_points, segment_faces)
+    return sort_intersection_points_E2E(l, segment_points, segment_faces)
 end
 
 # Return the next edge, next face, and intersection point on the next edge
@@ -485,15 +485,6 @@ function next_edge_and_face_fallback(last_point::Point_2D{F},
         end
     end 
 
-    # If faces sharing this face's vertices was not enough, try the faces sharing a vertex approach 
-    # above, but expand to the vertices of the faces sharing vertices of the current face
-#    if next_face == current_face
-#        next_face, closest_point = shared_vertex_level2_fallback(last_point, current_face, l, faces,
-#                                                                  materialized_faces)
-#        if visualize_ray_tracing 
-#            readline()
-#        end
-#    end
     # If the next face STILL couldn't be determined, you're screwed
     if next_face == current_face
         @error "Could not find next face, even using fallback methods, for segment $l."  
@@ -505,7 +496,7 @@ function next_edge_and_face_fallback(last_point::Point_2D{F},
     return U(next_edge), U(next_face)
 end
 
-function sort_linear_intersection_points_E2E(l::LineSegment_2D{F}, segment_points::Vector{Point_2D{F}},
+function sort_intersection_points_E2E(l::LineSegment_2D{F}, segment_points::Vector{Point_2D{F}},
                                       segment_faces::Vector{U}) where {F <: AbstractFloat, U <: Unsigned}
     # The points should be sorted already, we just need to remove duplicates
     if 2 < length(segment_points)
@@ -646,57 +637,6 @@ function shared_vertex_fallback(last_point::Point_2D{F},
         ax = current_axis() 
         for m in mesh_vec
             delete!(ax.scene, m)
-        end
-    end
-    return next_face, intersection_point
-end
-
-# Check to see if one of the faces sharing a vertex with any of the faces which share a 
-# vertex with the current face should be the next face in edge-to-edge ray tracing
-function shared_vertex_level2_fallback(last_point::Point_2D{F}, 
-                                       current_face::U, 
-                                       l::LineSegment_2D{F},
-                                       faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}, 
-                                       materialized_faces::Vector{<:Face_2D{F}}
-                                      ) where {F <: AbstractFloat, U <: Unsigned}
-    global num_fallback_vertex2 += 1
-
-#    println("Shared vertex fallback 2")
-    next_face = current_face
-    start_point = l.points[1]
-    min_distance = distance(start_point, last_point)
-    intersection_point = Point_2D(F, 1e10)
-
-    # Get the vertex ids for each vertex in the face
-    nvertices = length(faces[current_face])
-    vertex_ids = faces[current_face][2:nvertices]
-    faces_OI_L1 = Set{U}() # faces of interest
-    for vertex in vertex_ids
-        union!(faces_OI_L1, faces_sharing_vertex(vertex, faces))
-    end
-    faces_OI = Set{U}()
-    for face in faces_OI_L1
-        if visualize_ray_tracing
-            mesh!(materialized_faces[face], color = (:black, 0.2))
-        end
-        nvertices = length(faces[face])
-        vertex_ids = faces[current_face][2:nvertices]
-        for vertex in vertex_ids
-            union!(faces_OI_L1, faces_sharing_vertex(vertex, faces))
-        end
-    end
-    # If this function is being called, then all the faces in faces_OI_L1 have been tested.
-    # Remove them from the faces of interest
-    setdiff!(faces_OI, faces_OI_L1)
-    for face in faces_OI
-        npoints, ipoints = l ∩ materialized_faces[face]
-        if 0 < npoints
-            for point in ipoints[1:npoints]
-                if min_distance < distance(start_point, point) < distance(start_point, intersection_point)
-                     intersection_point = point
-                     next_face = face
-                 end
-            end
         end
     end
     return next_face, intersection_point

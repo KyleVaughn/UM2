@@ -280,12 +280,9 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
     nthreads = Threads.nthreads()
     nsegs = zeros(Int64, nthreads)
     nsegs_problem = zeros(Int64, nthreads) # Problem segment if the face doesn't match, and it's over 10 μm
-    nsegs_potential_problem = zeros(Int64, nthreads) # Might be a problem segment
     problem_indices = [ SVector{3, Int64}[] for i = 1:nthreads ]
     plot_segs_face = [ LineSegment_2D{F}[] for i = 1:nthreads ] 
     plot_points_face = [ Point_2D{F}[] for i = 1:nthreads ]
-    plot_segs_conn = [ LineSegment_2D{F}[] for i = 1:nthreads ] 
-    plot_points_conn = [ Point_2D{F}[] for i = 1:nthreads ]
     if enable_visualization && plot
         f = Figure()
         ax = Axis(f[1, 1], aspect = 1)
@@ -307,10 +304,9 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
                     p2 = segment_points[iγ][it][iseg + 1]
                     l = LineSegment_2D(p1, p2)
                     problem_length = 1e-3 < arc_length(l)
-                    if debug || problem_length 
-                        @warn "Face mismatch for segment [$iγ][$it][$iseg]\n" * 
-                              "   Reference face: $(find_face(p_midpoint, mesh)), Face: $face"
+                    if problem_length 
                         nsegs_problem[Threads.threadid()] += 1
+                        push!(problem_indices[Threads.threadid()], SVector(iγ, it, iseg))
                     end
                     # append the points, line if we want to plot them
                     # we only want to plot if actually a problem, or if debug is on.
@@ -323,36 +319,41 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
         end
     end
 
-    # Validate connectivity
-    @info "    - Validating segment faces"
-    Threads.@threads for iγ = 1:nγ
-        for it = 1:length(segment_faces[iγ])
-            for iseg = 1:length(segment_faces[iγ][it])-1
-                f1 = mesh.faces[segment_faces[iγ][it][iseg]]
-                f2 = mesh.faces[segment_faces[iγ][it][iseg + 1]]
-                has_shared_vertex = false
-                for i = 2:length(f1), j = 2:length(f2)
-                    if f1[i] === f2[j]
-                        has_shared_vertex = true
-                        break
+    # Attempt to fix problem segments
+    for i = 1:nthreads
+        for problem_index in problem_indices[i]
+            # Ray trace the track in reverse, then test to see if that fixed things
+            new_info_ok = true
+            iγ = problem_index[1]
+            it = problem_index[2]
+            npoints = length(segment_points[iγ][it])
+            problem_line = LineSegment_2D(segment_points[iγ][it][1], segment_points[iγ][it][npoints])
+            line_reversed = LineSegment_2D(problem_line.points[2], problem_line.points[1])            
+            reversed_points, reversed_faces = ray_trace_track_edge_to_edge(line_reversed, mesh.points, 
+                                                                           mesh.edges, 
+                                                                           mesh.materialized_edges,
+                                                                           mesh.faces, 
+                                                                           mesh.materialized_faces,
+                                                                           mesh.edge_face_connectivity, 
+                                                                           mesh.face_edge_connectivity,
+                                                                           mesh.boundary_edges) 
+            # Check
+            for iseg = 1:length(reversed_faces)                                                    
+                p_midpoint = midpoint(reversed_points[iseg], reversed_points[iseg+1])
+                face = reversed_faces[iseg]
+                if p_midpoint ∉  mesh.materialized_faces[face]
+                    l = LineSegment_2D(reversed_points[iseg], reversed_points[iseg + 1])
+                    problem_length = 1e-3 < arc_length(l)
+                    if problem_length 
+                        new_info_ok = false
+                        @warn "Face mismatch for segment [$iγ][$it][$(problem_indices[3])]" 
                     end
                 end
-                if !(has_shared_vertex)
-                    p1 = segment_points[iγ][it][iseg]
-                    p2 = segment_points[iγ][it][iseg + 1]
-                    p3 = segment_points[iγ][it][iseg + 2]
-                    l1 = LineSegment_2D(p1, p2)
-                    l2 = LineSegment_2D(p2, p3)
-                    if debug
-                        @warn "Potential connectivity problem for segments [$iγ][$it]([$iseg], [$(iseg + 1)])"
-                    end
-                    nsegs_potential_problem[Threads.threadid()] += 1
-                    # append the points, lines if we want to plot them
-                    if enable_visualization && plot
-                        append!(plot_points_conn[Threads.threadid()], [p1, p2, p3])
-                        append!(plot_segs_conn[Threads.threadid()], [l1, l2])
-                    end
-                end
+            end
+            if new_info_ok
+                nsegs_problem[i] -= 1
+                segment_points[iγ][it] = reverse(reversed_points)
+                segment_faces[iγ][it] = reverse(reversed_faces)
             end
         end
     end
@@ -360,12 +361,6 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
     # Visualize
     if enable_visualization && plot
         for i = 1:nthreads
-            if 0 < length(plot_segs_conn[i])
-                linesegments!(plot_segs_conn[i], color = :yellow)
-            end
-            if 0 < length(plot_points_conn[i])
-                scatter!(plot_points_conn[i], color = :yellow)
-            end
             if 0 < length(plot_segs_face[i])
                 linesegments!(plot_segs_face[i], color = :red)
             end
@@ -375,10 +370,8 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
         end
     end
     problem_segs = sum(nsegs_problem)
-    potential_problem_segs = sum(nsegs_potential_problem)
     nsegs_total = sum(nsegs)
     prob_percent = 100*problem_segs/nsegs_total
-    potential_prob_percent = 100*potential_problem_segs/nsegs_total
     @info "    - Total segments: $nsegs_total"
     @info "    - Problem segments: $problem_segs"
     if problem_segs == 0
@@ -386,14 +379,6 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
     else
         @info "    - Problem %: $prob_percent, or approx 1 in $(Int64(ceil(100/prob_percent)))"
     end
-    @info "    - Potential problem segments: $potential_problem_segs"
-    if potential_problem_segs == 0
-        @info "    - Potential problem %: $potential_prob_percent, or approx 1 in ∞"
-    else
-        @info "    - Potential problem %: $potential_prob_percent, or approx 1 in $(Int64(ceil(100/prob_percent)))"
-    end
-
-
     return problem_segs == 0
 end
 

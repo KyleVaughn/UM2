@@ -340,7 +340,7 @@ function intersect_edges_explicit(l::LineSegment_2D{F},
             push!(intersection_points, point)
         end
     end
-    return sort_intersection_points(l, intersection_points)
+    return sort_points(l.points[1], intersection_points)
 end
 
 # Intersect a line with implicitly defined edges
@@ -356,7 +356,7 @@ function intersect_edges_explicit(l::LineSegment_2D{F},
             append!(intersection_points, points[1:npoints])
         end
     end
-    return sort_intersection_points(l, intersection_points)
+    return sort_points(l.points[1], intersection_points)
 end
 
 # Intersect a line with an implicitly defined edge
@@ -383,7 +383,7 @@ function intersect_edges_implicit(l::LineSegment_2D{F},
             push!(intersection_points, point)
         end
     end
-    return sort_intersection_points(l, intersection_points) 
+    return sort_points(l.points[1], intersection_points) 
 end
 
 # Intersect a line with a vector of implicitly defined quadratic edges
@@ -401,7 +401,7 @@ function intersect_edges_implicit(l::LineSegment_2D{F},
             append!(intersection_points, ipoints)
         end
     end
-    return sort_intersection_points(l, intersection_points) 
+    return sort_points(l.points[1], intersection_points) 
 end
 
 # Intersect a line with an implicitly defined face 
@@ -426,7 +426,7 @@ function intersect_faces_explicit(l::LineSegment_2D{F},
             append!(intersection_points, points[1:npoints])
         end
     end
-    return sort_intersection_points(l, intersection_points)
+    return sort_points(l.points[1], intersection_points)
 end
 
 # Intersect a line with implicitly defined faces
@@ -445,7 +445,7 @@ function intersect_faces_implicit(l::LineSegment_2D{F},
             append!(intersection_points, ipoints[1:npoints])
         end
     end
-    return sort_intersection_points(l, intersection_points)
+    return sort_points(l.points[1], intersection_points)
 end
 
 # If a point is a vertex
@@ -567,28 +567,6 @@ function shared_edge(face1::U, face2::U,
         end
     end
     return U(0)
-end
-
-# Sort points based on their distance from the start of the line
-# Type-stable
-function sort_intersection_points(l::LineSegment_2D{F},
-                                  points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
-    if 0 < length(points)
-        # Sort the points based upon their distance to the first point in the line
-        distances = distance.(Ref(l.points[1]), points)
-        sorted_pairs = sort(collect(zip(distances, points)); by=first)
-        # Remove duplicate points
-        points_reduced = [sorted_pairs[1][2]]
-        npoints = length(sorted_pairs)
-        for i = 2:npoints
-            if minimum_segment_length < distance(last(points_reduced), sorted_pairs[i][2])
-                push!(points_reduced, sorted_pairs[i][2])
-            end
-        end
-        return points_reduced
-    else
-        return points
-    end
 end
 
 # Return a mesh with name name, composed of the faces in the set face_ids
