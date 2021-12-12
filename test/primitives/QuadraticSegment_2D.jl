@@ -35,6 +35,18 @@ using MOCNeutronTransport
             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
             @test abs(arc_length(q) - 2.9578857151786138) < 1.0e-6
 
+            # closest_point
+            x⃗₁ = Point_2D(F, 0, 0)           
+            x⃗₂ = Point_2D(F, 2, 0)
+            x⃗₃ = Point_2D(F, 1, 1)
+            q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+            p = Point_2D(F, 1, 1.1)
+            r, p_c = closest_point(p, q)
+            @test x⃗₃ ≈ p_c
+            p = Point_2D(F, -0.1, 0)
+            r, p_c = closest_point(p, q)
+            @test x⃗₁ ≈ p_c
+
             # intersect
             x⃗₁ = Point_2D(F, 0, 0)
             x⃗₂ = Point_2D(F, 2, 0)
@@ -66,6 +78,14 @@ using MOCNeutronTransport
             @test npoints == 0
             @test point1 ≈ Point_2D(F, 0)
             @test point2 ≈ Point_2D(F, 0)
+
+            # is_left
+            x⃗₁ = Point_2D(F, 0, 0)
+            x⃗₂ = Point_2D(F, 2, 0)
+            x⃗₃ = Point_2D(F, 1, 1)
+            q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+            @test !is_left(Point_2D(F, 1, 0), q)
+            @test is_left(Point_2D(F, 1, 2), q)
         end
     end
 end

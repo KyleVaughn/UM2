@@ -42,11 +42,6 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     # s(u⃗ ⋅ u⃗) = (-w⃗ + rv⃗) ⋅ u⃗                       hence
     # s = (rv⃗ - w⃗) ⋅ u⃗/(u⃗ ⋅ u⃗)
     #
-    # Note that the same approach works in 3D and
-    # "If the lines are skew, s and r represent the parameters of the points of closest
-    # approach" - Intersection of two lines in three-space, Ronald Goldman, in Graphics
-    # Gems by Andrew S. Glassner.
-    #
     # To determine if the lines are parallel or collinear, accounting for floating point error,
     # we declare that all lines with angle less that θₚ between them are parallel or collinear.
     # Using v⃗ × u⃗ = |v⃗||u⃗|sin(θ), and knowing that for small θ, sin(θ) ≈ θ
@@ -56,7 +51,8 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     #     |v⃗||u⃗|
     # are parallel or collinear
     # We need to consider the magnitudes of the vectors due to the large range of segment sized used,
-    # othersize just comparing abs(v⃗ × u⃗) to some fixed quantity causes problems
+    # otherwise just comparing abs(v⃗ × u⃗) to some fixed quantity causes problems. Hence, we keep
+    # |v⃗||u⃗|
     ϵ = parametric_coordinate_ϵ
     θₚ = LineSegment_2D_parallel_θ
     v⃗ = l₁.points[2] - l₁.points[1]
@@ -84,7 +80,7 @@ function is_left(p::Point_2D{F}, l::LineSegment_2D{F}) where {F <: AbstractFloat
     return u⃗ × v⃗ > 0
 end
 
-# Convert a vector of points to a vector of line segments
+# Convert a vector of points to a vector of line segments, typically for visualization
 function to_lines(points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
     return [LineSegment_2D(points[i], points[i+1]) for i = 1:length(points)-1]
 end

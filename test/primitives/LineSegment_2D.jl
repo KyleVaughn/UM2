@@ -81,6 +81,13 @@ using MOCNeutronTransport
             npoints, p₁ = intersect(l₁, l₂)
             @test npoints == 0
             @test p₁ ≈ Point_2D(F, 1, 0) # the closest point on line 1
+
+            # is_left
+            l = LineSegment_2D(Point_2D(F, 0, 0), Point_2D(F, 1, 0))
+            @test is_left(Point_2D(F, 0, 1) , l)
+            @test !is_left(Point_2D(F, 0, -1) , l)
+            @test !is_left(Point_2D(F, 0, -1e-6) , l)
+            @test is_left(Point_2D(F, 0, 1e-6) , l)
         end
     end
 end

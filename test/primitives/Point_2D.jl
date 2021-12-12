@@ -103,6 +103,15 @@ using StaticArrays
             mp = midpoint(p₁, p₂)
             @test mp[1] ≈ 3//2
             @test mp[2] ≈ 3
+
+            # sort_points
+            p₁ = Point_2D(F, 1)
+            p₂ = Point_2D(F, 2)
+            p₃ = Point_2D(F, 3)
+            points_sorted = sort_points(Point_2D(F, 0), [p₃, p₁, p₂])
+            @test points_sorted[1] == p₁
+            @test points_sorted[2] == p₂
+            @test points_sorted[3] == p₃
         end
     end
 end
