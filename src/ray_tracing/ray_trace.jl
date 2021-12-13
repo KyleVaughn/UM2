@@ -292,8 +292,13 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
                     l = LineSegment_2D(p1, p2)
                     problem_length = 1e-3 < arc_length(l)
                     if problem_length 
-                        nsegs_problem[Threads.threadid()] += 1
-                        push!(problem_indices[Threads.threadid()], SVector(iγ, it, iseg))
+                        # Is it just the midpoint that is slightly off?
+                        # If either of the points at l(1/3) or l(2/3) are also not in the face,
+                        # we have a problem.
+                        if !(l(1//3) ∈  mesh.materialized_faces[face] && l(2//3) ∈  mesh.materialized_faces[face])
+                            nsegs_problem[Threads.threadid()] += 1
+                            push!(problem_indices[Threads.threadid()], SVector(iγ, it, iseg))
+                        end
                     end
                     # append the points, line if we want to plot them
                     # we only want to plot if actually a problem, or if debug is on.
@@ -333,7 +338,6 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
                     problem_length = 1e-3 < arc_length(l)
                     if problem_length 
                         new_info_ok = false
-                        @warn "Face mismatch for segment [$iγ][$it][$(problem_indices[3])]" 
                     end
                 end
             end
@@ -341,6 +345,9 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
                 nsegs_problem[i] -= 1
                 segment_points[iγ][it] = reverse(reversed_points)
                 segment_faces[iγ][it] = reverse(reversed_faces)
+            else
+                @warn "Face mismatch for segment [$iγ][$it][$(problem_index[3])]" 
+                @assert false
             end
         end
     end

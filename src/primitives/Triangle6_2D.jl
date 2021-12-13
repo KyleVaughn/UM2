@@ -169,7 +169,12 @@ function in(p::Point_2D{F}, tri6::Triangle6_2D{F}) where {F <: AbstractFloat}
            is_left(p, QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
 end
 
-# Slower method than above.
+
+# # Slower method than above.
+# function in(p::Point_2D, tri6::Triangle6_2D)
+#     return in(p, tri6, 30)
+# end
+# 
 # function in(p::Point_2D, tri6::Triangle6_2D, N::Int64)
 #     # Determine if the point is in the triangle using the Newton-Raphson method
 #     # N is the max number of iterations of the method.
@@ -232,7 +237,7 @@ if enable_visualization
         return convert_arguments(P, qsegs)
     end
     
-    function convert_arguments(LS::Type{<:LineSegments}, T::Vector{Triangle6_2D})
+    function convert_arguments(LS::Type{<:LineSegments}, T::Vector{<:Triangle6_2D})
         point_sets = [convert_arguments(LS, tri6) for tri6 in T]
         return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
     end
@@ -242,8 +247,21 @@ if enable_visualization
         return convert_arguments(P, triangles)
     end
     
-    function convert_arguments(M::Type{<:Mesh}, T::Vector{Triangle6_2D})
+    function convert_arguments(M::Type{Mesh{Tuple{Vector{Triangle6_2D{F}}}}},
+                               T::Vector{Triangle6_2D{F}}) where {F <: AbstractFloat}
         triangles = reduce(vcat, triangulate.(T, 13))
         return convert_arguments(M, triangles)
+    end
+
+    function convert_arguments(M::Type{Mesh{Tuple{Triangle6_2D{F}}}},
+                               T::Vector{Triangle_2D{F}}) where {F <: AbstractFloat}
+        points = reduce(vcat, [[tri.points[i] for i = 1:3] for tri in T])
+        faces = zeros(Int64, length(T), 3)
+        k = 1
+        for i in 1:length(T), j = 1:3
+            faces[i, j] = k
+            k += 1
+        end
+        return convert_arguments(M, points, faces)
     end
 end

@@ -176,11 +176,7 @@ function is_left(p::Point_2D{F}, q::QuadraticSegment_2D{F}) where {F <: Abstract
     r, p_closest = closest_point(p, q)
     # If the r is invalid, take the closest end point.
     ϵ = parametric_coordinate_ϵ
-    if r < ϵ
-        # Not actually the closest point, but we want to avoid u⃗ = 0⃗,
-        # and maintain the vector's correct orientation
-        p_closest = q.points[1] - q.points[2]
-    elseif 1 + ϵ < r
+    if r < -ϵ || 1 + ϵ < r
         p_closest = q.points[2]
     end
     # Vector from curve start to closest point
@@ -201,7 +197,7 @@ if enable_visualization
     end
     
     function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:QuadraticSegment_2D})
-        point_sets = [convert_arguments(P, q) for q in Q]
+        point_sets = [convert_arguments(LS, q) for q in Q]
         return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
     end
 end
