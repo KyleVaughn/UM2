@@ -260,8 +260,7 @@ end
 function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
                                    segment_faces::Vector{Vector{Vector{U}}},
                                    mesh::UnstructuredMesh_2D{F, U};
-                                   plot::Bool = false,
-                                   debug::Bool = false
+                                   plot::Bool = false
                                   ) where {F <: AbstractFloat, U <: Unsigned} 
     @info "  - Validating ray tracing data"
     # Check that all segment faces are correct
@@ -292,17 +291,17 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
                     l = LineSegment_2D(p1, p2)
                     problem_length = 1e-3 < arc_length(l)
                     if problem_length 
-                        # Is it just the midpoint that is slightly off?
-                        # If either of the points at l(1/3) or l(2/3) are also not in the face,
-                        # we have a problem.
-                        if !(l(1//3) ∈  mesh.materialized_faces[face] && l(2//3) ∈  mesh.materialized_faces[face])
+#                        # Is it just the midpoint that is slightly off?
+#                        # If either of the points at l(1/3) or l(2/3) are also not in the face,
+#                        # we have a problem.
+#                        if !(l(1//3) ∈  mesh.materialized_faces[face] && l(2//3) ∈  mesh.materialized_faces[face])
                             nsegs_problem[Threads.threadid()] += 1
                             push!(problem_indices[Threads.threadid()], SVector(iγ, it, iseg))
-                        end
+#                        end
                     end
                     # append the points, line if we want to plot them
                     # we only want to plot if actually a problem, or if debug is on.
-                    if enable_visualization && plot && (debug || problem_length)
+                    if enable_visualization && plot && problem_length
                         append!(plot_points_face[Threads.threadid()], [p1, p2])
                         push!(plot_segs_face[Threads.threadid()], l)
                     end
@@ -347,7 +346,7 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
                 segment_faces[iγ][it] = reverse(reversed_faces)
             else
                 @warn "Face mismatch for segment [$iγ][$it][$(problem_index[3])]" 
-                @assert false
+#                @assert false
             end
         end
     end

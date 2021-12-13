@@ -7,7 +7,7 @@ function classify_nesw(p::Point_2D{F},
                        edges::Vector{<:SVector{L, U} where {L}},
                        boundary_edges::Vector{Vector{U}}
                       ) where {F <: AbstractFloat, U <: Unsigned}
-    ϵ = Point_2D_differentiation_distance
+    ϵ = 1e-3 
     y_N = points[edges[boundary_edges[1][1]][1]][2]
     x_E = points[edges[boundary_edges[2][1]][1]][1]
     y_S = points[edges[boundary_edges[3][1]][1]][2]
@@ -556,7 +556,7 @@ function next_face_E2E(last_point::Point_2D{F},
             point = ipoints[i]
             # If the intersection point on this edge is further along the ray than
             # the last_point, then we want to leave the face from this edge
-            if min_distance < distance(start_point, point)
+            if min_distance < distance(start_point, point) < distance(start_point, intersection_point)
                 intersection_point = point
                 # Make sure not to pick the current face for the next face
                 if edge_face_connectivity[edge][1] == current_face
@@ -564,7 +564,6 @@ function next_face_E2E(last_point::Point_2D{F},
                 else
                     next_face = edge_face_connectivity[edge][1]
                 end
-                next_edge = edge
             end
         end
         if visualize_ray_tracing 
@@ -650,17 +649,17 @@ function next_face_fallback(last_point::Point_2D{F},
     # The closest point along l intersected in this iteration
     closest_point = Point_2D(F, 1e10)
 
-    # Check adjacent faces first to see if that is sufficient to solve the problem
-    next_face, closest_point = adjacent_faces_fallback(last_point, current_face, l, materialized_faces, 
-                                                          edge_face_connectivity, face_edge_connectivity)
+#    # Check adjacent faces first to see if that is sufficient to solve the problem
+#    next_face, closest_point = adjacent_faces_fallback(last_point, current_face, l, materialized_faces, 
+#                                                          edge_face_connectivity, face_edge_connectivity)
     # If adjacent faces were not sufficient, try all faces sharing the vertices of this face
-    if next_face == current_face
-        next_face, closest_point = shared_vertex_fallback(last_point, current_face, l, faces,
+#    if next_face == current_face
+        next_face, closest_point = quadratic_shared_vertex_fallback(last_point, current_face, l, faces,
                                                            materialized_faces, edge_face_connectivity, face_edge_connectivity)
         if visualize_ray_tracing 
             readline()
         end
-    end 
+#    end 
 
     # If the next face STILL couldn't be determined, you're screwed
     if next_face == current_face
@@ -746,6 +745,73 @@ function shared_vertex_fallback(last_point::Point_2D{F},
     already_tested = adjacent_faces(current_face, face_edge_connectivity, edge_face_connectivity)
     push!(already_tested, current_face)
     setdiff!(faces_OI, Set(already_tested))
+    if visualize_ray_tracing 
+        mesh_vec = []
+    end
+    for face in faces_OI
+        npoints, ipoints = l ∩ materialized_faces[face]
+        if visualize_ray_tracing 
+            push!(mesh_vec, mesh!(materialized_faces[face], color = (:black, 0.2)))
+            readline()
+        end
+        if 1 < npoints
+            contains_last_point = false
+            for point in ipoints[1:npoints]
+                if distance(point, last_point) < minimum_segment_length
+                    contains_last_point = true
+                end
+            end
+            for point in ipoints[1:npoints]
+                distance_to_point = distance(start_point, point)
+                # If this is a valid intersection point
+                if min_distance < distance_to_point 
+                    # If this point is the closest point, use this
+                    if distance_to_point < distance(start_point, intersection_point) 
+                        intersection_point = point
+                        next_face = face
+                    # If this face contains the last point, we want to prioritize this face
+                    elseif contains_last_point
+                        next_face = face
+                    end
+                end
+                if visualize_ray_tracing 
+                    scatter!(point, color = :yellow)
+                    readline()
+                end
+            end
+        end
+    end
+
+    if visualize_ray_tracing 
+        ax = current_axis() 
+        for m in mesh_vec
+            delete!(ax.scene, m)
+        end
+    end
+    return next_face, intersection_point
+end
+# Check to see if one of the faces sharing a vertex with the current face
+# should be the next face in edge-to-edge ray tracing
+function quadratic_shared_vertex_fallback(last_point::Point_2D{F}, 
+                                current_face::U, 
+                                l::LineSegment_2D{F},
+                                faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}, 
+                                materialized_faces::Vector{<:Face_2D{F}},
+                                edge_face_connectivity::Vector{SVector{2, U}},
+                                face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
+
+                               ) where {F <: AbstractFloat, U <: Unsigned}
+    next_face = current_face
+    start_point = l.points[1]
+    min_distance = distance(start_point, last_point) + minimum_segment_length
+    intersection_point = Point_2D(F, 1e10)
+    # Get the vertex ids for each vertex in the face
+    nvertices = length(faces[current_face])
+    vertex_ids = faces[current_face][2:nvertices]
+    faces_OI = Set{U}() # faces of interest
+    for vertex in vertex_ids
+        union!(faces_OI, faces_sharing_vertex(vertex, faces))
+    end
     if visualize_ray_tracing 
         mesh_vec = []
     end
