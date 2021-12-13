@@ -381,11 +381,6 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
     end
     if max_iters ≤ iters
         @error "Exceeded max iterations for $l."
-        # Do it the old fashioned way
-#        segment_points = intersect_edges_implicit(l, edges, points) 
-#        segment_faces = [U(0) for i = 1:length(segment_points) - 1]
-#        # Need to dispatch on something that isn't mesh for this
-#        find_segment_faces_in_track!(segment_points, segment_faces, mesh)
     end
     return sort_intersection_points_E2E(l, segment_points, segment_faces)
 end
@@ -461,7 +456,6 @@ function next_edge_and_face_fallback(last_point::Point_2D{F},
                                      edge_face_connectivity::Vector{SVector{2, U}},
                                      face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
                                     ) where {F <: AbstractFloat, U <: Unsigned}
-    global num_fallback += 1
     # If the next face could not be determined, or the ray is jumping back to the
     # previous face, this means either:
     # (1) The ray is entering or exiting through a vertex, and floating point error
@@ -488,7 +482,6 @@ function next_edge_and_face_fallback(last_point::Point_2D{F},
     # If the next face STILL couldn't be determined, you're screwed
     if next_face == current_face
         @error "Could not find next face, even using fallback methods, for segment $l."  
-        @assert false
     end
     # Determine the edge that should be skipped by choosing the edge with intersection point 
     # closest to the start of the line.
@@ -528,7 +521,6 @@ function adjacent_faces_fallback(last_point::Point_2D{F},
                                  edge_face_connectivity::Vector{SVector{2, U}},
                                  face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
                                 ) where {F <: AbstractFloat, U <: Unsigned}
-    global num_fallback_adjacent += 1
     next_face = current_face
     start_point = l.points[1]
     min_distance = distance(start_point, last_point) + minimum_segment_length
@@ -559,8 +551,6 @@ function shared_vertex_fallback(last_point::Point_2D{F},
                                 face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
 
                                ) where {F <: AbstractFloat, U <: Unsigned}
-    global num_fallback_vertex += 1
-#    println("Shared vertex fallback")
     next_face = current_face
     start_point = l.points[1]
     min_distance = distance(start_point, last_point) + minimum_segment_length
@@ -585,50 +575,30 @@ function shared_vertex_fallback(last_point::Point_2D{F},
             push!(mesh_vec, mesh!(materialized_faces[face], color = (:black, 0.2)))
             readline()
         end
-#        println("Face: $face")
         if 1 < npoints
             contains_last_point = false
-#            println("Contains last point?")
             for point in ipoints[1:npoints]
-#                println(distance(point, last_point), " ", distance(point, last_point) < minimum_segment_length)
                 if distance(point, last_point) < minimum_segment_length
-#                    println("Contains last point")
                     contains_last_point = true
                 end
             end
             for point in ipoints[1:npoints]
-#                 println(point)
-#                 println("$min_distance, $(distance(start_point, point)), $(distance(start_point, intersection_point))")
-#                 println(min_distance < distance(start_point, point), " ",distance(start_point, point) < distance(start_point, intersection_point))
-
                 distance_to_point = distance(start_point, point)
                 # If this is a valid intersection point
                 if min_distance < distance_to_point 
                     # If this point is the closest point, use this
                     if distance_to_point < distance(start_point, intersection_point) 
-                        #&& point ≉ last_point
-
                         intersection_point = point
-#                        println("New intersection point distance: $(distance(start_point, intersection_point))")
-#                        println("New next face: $face")
                         next_face = face
                     # If this face contains the last point, we want to prioritize this face
                     elseif contains_last_point
-#                        println("New face via contains point: $face")
                         next_face = face
                     end
                 end
-
-
                 if visualize_ray_tracing 
                     scatter!(point, color = :yellow)
                     readline()
                 end
-
-
-
-
-
             end
         end
     end
