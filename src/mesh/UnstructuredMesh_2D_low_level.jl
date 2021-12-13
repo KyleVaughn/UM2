@@ -85,8 +85,8 @@ end
 
 
 function bounding_box(points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
-    x = map(p->p[1], points)
-    y = map(p->p[2], points)
+    x = getindex.(points, 1)
+    y = getindex.(points, 2)
     xmin = minimum(x)
     xmax = maximum(x)
     ymin = minimum(y)
@@ -310,14 +310,14 @@ function insert_boundary_edge!(edge_index::U, edge_indices::Vector{U},
                               ) where {F <: AbstractFloat, U <: Unsigned}
     # Compute the minimum distance from the edge to be inserted to the reference point
     epoints = edge_points(edges[edge_index], points)
-    insertion_distance = minimum([ distance(p_ref, p_edge) for p_edge in epoints ])
+    insertion_distance = minimum(distance.(Ref(p_ref), epoints))
     # Loop through the edge indices until an edge with greater distance from the reference point
     # is found, then insert
     nindices = length(edge_indices)
     for i = 1:nindices
         edge = edge_indices[i]
         epoints = edge_points(edges[edge], points)
-        edge_distance = minimum([ distance(p_ref, p_edge) for p_edge in epoints ])
+        edge_distance = minimum(distance.(Ref(p_ref), epoints))
         if insertion_distance < edge_distance
             insert!(edge_indices, i, edge_index)
             return nothing
@@ -547,9 +547,7 @@ function remap_points_to_hilbert(points::Vector{Point_2D{F}}) where {F <: Abstra
             end
         end
     end
-    # Sort the points based upon the closest hilber point index
-    old_indices = [ i for i = 1:npoints]
-    return getindex.(sort(collect(zip(point_indices, old_indices)); by=first), 2)
+    return sortperm(point_indices) 
 end
 
 # Return the ID of the edge shared by two adjacent faces

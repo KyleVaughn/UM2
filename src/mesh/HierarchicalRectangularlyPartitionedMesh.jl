@@ -101,8 +101,8 @@ function bounding_box(HRPM::HierarchicalRectangularlyPartitionedMesh{F, U}
         for tuple in point_tuples
             append!(points, collect(tuple))
         end
-        x = map(p->p[1], points)
-        y = map(p->p[2], points)
+        x = getindex.(points, 1) 
+        y = getindex.(points, 2) 
         xmin = minimum(x)
         xmax = maximum(x)
         ymin = minimum(y)

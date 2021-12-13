@@ -248,17 +248,14 @@ function reorder_points_to_hilbert(mesh::UnstructuredMesh_2D{F, U}
     # point_map     maps  new_points[i] == mesh.points[point_map[i]]
     # point_map_inv maps mesh.points[i] == new_points[point_map_inv[i]]
     point_map  = U.(remap_points_to_hilbert(mesh.points))
-    npoints = length(mesh.points)
-    old_indices = [ i for i = 1:npoints]
-    point_map_inv = U.(getindex.(sort(collect(zip(point_map, old_indices)); by=first), 2))
+    point_map_inv = U.(sortperm(point_map))
     # new_points is the reordered point vector, reordered to resemble a hilbert curve
     new_points = mesh.points[point_map] 
 
     # Adjust face indices
     # Point IDs have changed, so we need to change the point IDs referenced by the faces
-    nfaces = length(mesh.faces)
     new_faces_vec = [ point_map_inv[face] for face in mesh.faces]  
-    for i in 1:nfaces
+    for i in 1:length(mesh.faces)
         new_faces_vec[i][1] = mesh.faces[i][1]
     end
     new_faces = SVector.(new_faces_vec)
