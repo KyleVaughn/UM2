@@ -36,23 +36,23 @@ using MOCNeutronTransport
             # in
             p = Point_2D(F, 1//2, 1//10)
             @test p ∈  quad
-            p = Point_2D(F, 1//2, 0)
-            @test p ∈  quad
             p = Point_2D(F, 1//2, -1//10)
             @test p ∉ quad
 
-            # 2 intersections
+            # 3 intersections
             l = LineSegment_2D(p₃, p₁)
             ipoints, points = intersect(l, quad)
-            @test ipoints == 2
+            @test ipoints == 3
             @test points[1] ≈ p₁
             @test points[2] ≈ p₃
+            @test points[3] ≈ p₃
 
-            # 1 intersections
-            l = LineSegment_2D(Point_2D(F, -1, -1), p₁)
+            # 2 intersections
+            l = LineSegment_2D(Point_2D(F, 0, 1//2), Point_2D(F, 1, 1//2))
             ipoints, points = intersect(l, quad)
-            @test ipoints == 1
-            @test points[1] ≈ p₁
+            @test ipoints == 2
+            @test points[1] ≈ Point_2D(F, 1, 1//2)
+            @test points[2] ≈ Point_2D(F, 0, 1//2)
 
             # 0 intersections
             l = LineSegment_2D(Point_2D(F, -1, -1), Point_2D(F, 2, -1))

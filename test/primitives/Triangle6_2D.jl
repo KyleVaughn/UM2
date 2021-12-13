@@ -81,7 +81,7 @@ using MOCNeutronTransport
             p₅ = Point_2D(F, 3, 1)
             p₆ = Point_2D(F, 1, 1)
             tri6 = Triangle6_2D(p₁, p₂, p₃, p₄, p₅, p₆)
-            @test Point_2D(F, 1, 1//2) ∈ tri6
+            @test Point_2D(F, 1, 1//2) ∈  tri6
             @test Point_2D(F, 1, 0) ∉  tri6
 
             # intersect
@@ -91,12 +91,6 @@ using MOCNeutronTransport
             @test n == 0
 
             # 2 intersection
-            l = LineSegment_2D(Point_2D(F, 0, 0), Point_2D(F, 4, 0))
-            n, points = l ∩ tri6
-            @test n == 2
-            @test points[1] ≈ Point_2D(F, 0, 0)
-            @test points[2] ≈ Point_2D(F, 2, 0)
-
             l = LineSegment_2D(Point_2D(F, 0, 1), Point_2D(F, 4, 1))
             n, points = l ∩ tri6
             @test n == 2
@@ -123,12 +117,12 @@ using MOCNeutronTransport
             l = LineSegment_2D(Point_2D(F, -2, -1//4), Point_2D(F, 2, -1//4))
             n, points = l ∩ tri6
             @test n == 6
-            @test points[1] ≈ Point_2D{F}(F[ 0.14644659, -1//4])
-            @test points[2] ≈ Point_2D{F}(F[ 0.8535534,  -1//4])
-            @test points[3] ≈ Point_2D{F}(F[-0.8535534,  -1//4])
-            @test points[4] ≈ Point_2D{F}(F[-0.14644665, -1//4])
-            @test points[5] ≈ Point_2D{F}(F[ 0.9354143,  -1//4])
-            @test points[6] ≈ Point_2D{F}(F[-0.9354143,  -1//4])
+            @test points[1] ≈ Point_2D(F,  0.14644659, -1//4)
+            @test points[2] ≈ Point_2D(F,  0.8535534,  -1//4)
+            @test points[3] ≈ Point_2D(F, -0.8535534,  -1//4)
+            @test points[4] ≈ Point_2D(F, -0.14644665, -1//4)
+            @test points[5] ≈ Point_2D(F,  0.9354143,  -1//4)
+            @test points[6] ≈ Point_2D(F, -0.9354143,  -1//4)
         end
     end
 end

@@ -23,7 +23,7 @@ Quadrilateral8_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D, p₄::Point_2D
 function (quad8::Quadrilateral8_2D{F})(r::R, s::S) where {F <: AbstractFloat,
                                                           R <: Real,
                                                           S <: Real}
-    # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+    # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     ξ = 2F(r) - 1; η = 2F(s) - 1
     return (1 - ξ)*(1 - η)*(-ξ - η - 1)/4*quad8.points[1] +
@@ -158,10 +158,6 @@ function real_to_parametric(p::Point_2D{F},
 end
 
 function in(p::Point_2D{F}, quad8::Quadrilateral8_2D{F}) where {F <: AbstractFloat}
-    return in(p, quad8, 30)
-end
-
-function in(p::Point_2D{F}, quad8::Quadrilateral8_2D{F}, N::Int64) where {F <: AbstractFloat}
     # If the point is to the left of every edge
     #  4<-----3
     #  |      ^
@@ -170,10 +166,10 @@ function in(p::Point_2D{F}, quad8::Quadrilateral8_2D{F}, N::Int64) where {F <: A
     #  |      |
     #  v----->2
     #  1
-    return is_left(p, QuadraticSegment_2D(quad8.points[1], quad8.points[2], quad8.points[5]), N) &&
-           is_left(p, QuadraticSegment_2D(quad8.points[2], quad8.points[3], quad8.points[6]), N) &&
-           is_left(p, QuadraticSegment_2D(quad8.points[3], quad8.points[4], quad8.points[7]), N) &&
-           is_left(p, QuadraticSegment_2D(quad8.points[4], quad8.points[1], quad8.points[8]), N)
+    return is_left(p, QuadraticSegment_2D(quad8.points[1], quad8.points[2], quad8.points[5])) &&
+           is_left(p, QuadraticSegment_2D(quad8.points[2], quad8.points[3], quad8.points[6])) &&
+           is_left(p, QuadraticSegment_2D(quad8.points[3], quad8.points[4], quad8.points[7])) &&
+           is_left(p, QuadraticSegment_2D(quad8.points[4], quad8.points[1], quad8.points[8]))
 end
 
 # function in(p::Point_2D{F}, quad8::Quadrilateral8_2D{F}, N::Int64) where {F <: AbstractFloat}

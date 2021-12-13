@@ -95,26 +95,18 @@ using MOCNeutronTransport
             @test Point_2D(F, 1, 1) ∈  quad8
             @test Point_2D(F, 1, 0) ∉  quad8
 
-            #intersect
+            # intersect
             # 0 intersections
             l = LineSegment_2D(Point_2D(F, 0, -1), Point_2D(F, 4, -1))
             npoints, points = l ∩ quad8
             @test npoints == 0
 
             # 2 intersections
-            l = LineSegment_2D(Point_2D(F, 0, 0), Point_2D(F, 4, 0))
+            l = LineSegment_2D(Point_2D(F, -1, 1), Point_2D(F, 4, 1))
             npoints, points = l ∩ quad8
             @test npoints == 2
-            @test points[1] ≈ Point_2D(F, 0, 0)
-            @test points[2] ≈ Point_2D(F, 2, 0)
-
-            # 3 intersections
-            l = LineSegment_2D(Point_2D(F, 0, 1//2), Point_2D(F, 4, 1//2))
-            npoints, points = l ∩ quad8
-            @test npoints == 3
-            @test points[1] ≈ Point_2D(F, 3//2,     1//2)
-            @test points[2] ≈ Point_2D(F, 41//18,   1//2)
-            @test points[3] ≈ Point_2D(F, 0,        1//2)
+            @test points[1] ≈ Point_2D(F, 2.444444, 1)
+            @test points[2] ≈ Point_2D(F, 0, 1)
 
             # 4 intersections
             l = LineSegment_2D(Point_2D(F, 0, 1//10), Point_2D(F, 4, 1//10))
@@ -125,8 +117,7 @@ using MOCNeutronTransport
             @test points[3] ≈ Point_2D(F, 2.0644444444444447,        1//10)
             @test points[4] ≈ Point_2D(F, 0,                         1//10)
 
-
-
+            # 6 intersections
             p₁ = Point_2D(F,  1, 0)
             p₂ = Point_2D(F,  0, 0)
             p₃ = Point_2D(F, -1, 0)

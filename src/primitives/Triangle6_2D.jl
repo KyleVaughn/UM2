@@ -155,11 +155,7 @@ function real_to_parametric(p::Point_2D{F}, tri6::Triangle6_2D{F}, N::Int64) whe
     return Point_2D(r, s)
 end
 
-function in(p::Point_2D, tri6::Triangle6_2D)
-    return in(p, tri6, 30)
-end
-
-function in(p::Point_2D{F}, tri6::Triangle6_2D{F}, N::Int64) where {F <: AbstractFloat}
+function in(p::Point_2D{F}, tri6::Triangle6_2D{F}) where {F <: AbstractFloat}
     # If the point is to the left of every edge
     #  3<-----2
     #  |     ^
@@ -168,9 +164,9 @@ function in(p::Point_2D{F}, tri6::Triangle6_2D{F}, N::Int64) where {F <: Abstrac
     #  |  /
     #  v /
     #  1
-    return is_left(p, QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4]), N) &&
-           is_left(p, QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5]), N) &&
-           is_left(p, QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]), N)
+    return is_left(p, QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4])) &&
+           is_left(p, QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5])) &&
+           is_left(p, QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
 end
 
 # Slower method than above.
