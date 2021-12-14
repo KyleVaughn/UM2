@@ -416,9 +416,7 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
     segment_points = [start_point]
     segment_faces = U[]
     max_iters = Int64(1E3) # Max iterations of finding the next point before declaring an error
-    current_edge = start_edge
     current_face = start_face
-    next_edge = start_edge
     next_face = start_face
     intersection_point = start_point
     last_point = start_point
@@ -447,9 +445,7 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
             if visualize_ray_tracing 
                 mesh!(materialized_faces[current_face], color = (:green, 0.15))
                 scatter!(intersection_point, color = :green)
-                linesegments!(materialized_edges[next_edge], color = :green)
-                println("Intersection at point $intersection_point, on face $current_face," *
-                        " over edge $next_edge")
+                println("Intersection at point $intersection_point, on face $current_face")
             end
             push!(segment_points, intersection_point)
             push!(segment_faces, current_face)
@@ -766,7 +762,7 @@ function shared_vertex_fallback(last_point::Point_2D{F},
                 # If this is a valid intersection point
                 if min_distance < distance_to_point 
                     # If this point is the closest point, use this
-                    if distance_to_point < distance(start_point, intersection_point) 
+                    if distance_to_point ⪉  distance(start_point, intersection_point) 
                         intersection_point = point
                         next_face = face
                     # If this face contains the last point, we want to prioritize this face
@@ -812,12 +808,14 @@ function quadratic_shared_vertex_fallback(last_point::Point_2D{F},
     for vertex in vertex_ids
         union!(faces_OI, faces_sharing_vertex(vertex, faces))
     end
+    delete!(faces_OI, current_face)
     if visualize_ray_tracing 
         mesh_vec = []
     end
     for face in faces_OI
         npoints, ipoints = l ∩ materialized_faces[face]
         if visualize_ray_tracing 
+            println("Face: $face")
             push!(mesh_vec, mesh!(materialized_faces[face], color = (:black, 0.2)))
             readline()
         end
@@ -828,20 +826,32 @@ function quadratic_shared_vertex_fallback(last_point::Point_2D{F},
                     contains_last_point = true
                 end
             end
+            if visualize_ray_tracing 
+                println(contains_last_point ? "Contains last point" : "Does not contain last point")
+            end
             for point in ipoints[1:npoints]
                 distance_to_point = distance(start_point, point)
                 # If this is a valid intersection point
                 if min_distance < distance_to_point 
                     # If this point is the closest point, use this
-                    if distance_to_point < distance(start_point, intersection_point) 
+                    # Could be a problem for Float32.
+                    if distance_to_point ⪉ distance(start_point, intersection_point) 
+                        if visualize_ray_tracing                        
+                            println("New intersection point")
+                            println("New face: $face")
+                        end
                         intersection_point = point
                         next_face = face
                     # If this face contains the last point, we want to prioritize this face
                     elseif contains_last_point
                         next_face = face
+                        if visualize_ray_tracing                        
+                            println("New face: $face")
+                        end
                     end
                 end
                 if visualize_ray_tracing 
+                    println("Point: $point")
                     scatter!(point, color = :yellow)
                     readline()
                 end
@@ -854,6 +864,7 @@ function quadratic_shared_vertex_fallback(last_point::Point_2D{F},
         for m in mesh_vec
             delete!(ax.scene, m)
         end
+        println("Next face: $next_face, Intersection: $intersection_point")
     end
     return next_face, intersection_point
 end
@@ -875,7 +886,7 @@ function skipped_edge_fallback(next_face::U,
         edge = materialized_edges[iedge]
         npoints, point = l ∩ edge
         if 0 < npoints                                                                         
-            if  distance(start_point, point) ≤ distance(start_point, closest_point) 
+            if  distance(start_point, point) < distance(start_point, closest_point) 
                 closest_point = point
                 next_edge = iedge
             end

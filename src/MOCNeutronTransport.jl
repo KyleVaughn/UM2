@@ -1,8 +1,8 @@
 module MOCNeutronTransport
 # Compilation options
 const enable_local_gmsh = true
-const enable_visualization = false 
-const visualize_ray_tracing = false
+const enable_visualization = true 
+const visualize_ray_tracing = false 
 # using
 using ColorSchemes
 using Logging
@@ -59,6 +59,7 @@ end
 
 include("AbstractTypes.jl")
 include("Tree.jl")
+include("operators.jl")
 include("./gmsh/gmsh_generate_rectangular_grid.jl")
 include("./gmsh/gmsh_group_preserving_fragment.jl")
 include("./gmsh/gmsh_overlay_rectangular_grid.jl")
@@ -100,6 +101,8 @@ export  AngularQuadrature,
 # Functions
 export  ×,
         ⋅,
+        ⪇ ,
+        ⪉ ,
         add_boundary_edges,
         add_connectivity,
         add_edges,
