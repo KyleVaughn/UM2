@@ -175,8 +175,8 @@ function is_left(p::Point_2D{F}, q::QuadraticSegment_2D{F}) where {F <: Abstract
     # Find the closest point to p on the curve.
     r, p_closest = closest_point(p, q)
     # If the r is invalid, take the closest end point.
-    ϵ = parametric_coordinate_ϵ
-    if r < -ϵ || 1 + ϵ < r
+    # If r is small or beyond the valid range, just use the second point
+    if r < 1e-3 || 1 < r
         p_closest = q.points[2]
     end
     # Vector from curve start to closest point
