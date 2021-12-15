@@ -370,7 +370,8 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D{F},
         current_face = next_face
         # If the furthest intersection is below the minimum segment length to the
         # end point, end here.
-        if distance(intersection_point, end_point) < minimum_segment_length
+        if distance(intersection_point, end_point) < minimum_segment_length ||
+                current_face == end_face
             end_reached = true
             if intersection_point ≉  end_point
                 push!(segment_points, end_point)
