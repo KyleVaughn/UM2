@@ -295,6 +295,7 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
 #                        # If either of the points at l(1/3) or l(2/3) are also not in the face,
 #                        # we have a problem.
 #                        if !(l(1//3) ∈  mesh.materialized_faces[face] && l(2//3) ∈  mesh.materialized_faces[face])
+                            println("$iγ, $it, $iseg")
                             nsegs_problem[Threads.threadid()] += 1
                             push!(problem_indices[Threads.threadid()], SVector(iγ, it, iseg))
 #                        end
@@ -317,6 +318,15 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
             new_info_ok = true
             iγ = problem_index[1]
             it = problem_index[2]
+            iseg = problem_index[3]
+            p_midpoint = midpoint(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1])
+            face = segment_faces[iγ][it][iseg]
+            # Check to see if still a problem. May have been fixed by a previous segment updating the 
+            # points/faces
+            if p_midpoint ∈  mesh.materialized_faces[face]
+                nsegs_problem[i] -= 1
+                continue
+            end
             npoints = length(segment_points[iγ][it])
             problem_line = LineSegment_2D(segment_points[iγ][it][1], segment_points[iγ][it][npoints])
             line_reversed = LineSegment_2D(problem_line.points[2], problem_line.points[1])            

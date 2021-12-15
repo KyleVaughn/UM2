@@ -812,6 +812,7 @@ function quadratic_shared_vertex_fallback(last_point::Point_2D{F},
     if visualize_ray_tracing 
         mesh_vec = []
     end
+    next_face_contains_last_point = false
     for face in faces_OI
         npoints, ipoints = l ∩ materialized_faces[face]
         if visualize_ray_tracing 
@@ -842,8 +843,13 @@ function quadratic_shared_vertex_fallback(last_point::Point_2D{F},
                         end
                         intersection_point = point
                         next_face = face
-                    # If this face contains the last point, we want to prioritize this face
-                    elseif contains_last_point
+                        if contains_last_point
+                            next_face_contains_last_point = true
+                        end
+                    # If this face contains the last point, we want to prioritize this face,
+                    # but only if the face with the closest point doesn't also contain
+                    # the last point
+                    elseif contains_last_point && !next_face_contains_last_point
                         next_face = face
                         if visualize_ray_tracing                        
                             println("New face: $face")
