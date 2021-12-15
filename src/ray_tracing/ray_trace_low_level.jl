@@ -7,7 +7,7 @@ function classify_nesw(p::Point_2D{F},
                        edges::Vector{<:SVector{L, U} where {L}},
                        boundary_edges::Vector{Vector{U}}
                       ) where {F <: AbstractFloat, U <: Unsigned}
-    ϵ = 1e-3 
+    ϵ = 1e-4 
     y_N = points[edges[boundary_edges[1][1]][1]][2]
     x_E = points[edges[boundary_edges[2][1]][1]][1]
     y_S = points[edges[boundary_edges[3][1]][1]][2]
