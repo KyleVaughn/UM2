@@ -295,7 +295,6 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
 #                        # If either of the points at l(1/3) or l(2/3) are also not in the face,
 #                        # we have a problem.
 #                        if !(l(1//3) ∈  mesh.materialized_faces[face] && l(2//3) ∈  mesh.materialized_faces[face])
-                            println("$iγ, $it, $iseg")
                             nsegs_problem[Threads.threadid()] += 1
                             push!(problem_indices[Threads.threadid()], SVector(iγ, it, iseg))
 #                        end
@@ -355,8 +354,8 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
                 segment_points[iγ][it] = reverse(reversed_points)
                 segment_faces[iγ][it] = reverse(reversed_faces)
             else
-                @warn "Face mismatch for segment [$iγ][$it][$(problem_index[3])]" 
-#                @assert false
+                @warn "Face mismatch for segment [$iγ][$it][$iseg]. Searching for correct face." 
+                segment_faces[iγ][it][iseg] = find_face(p_midpoint, mesh)
             end
         end
     end
