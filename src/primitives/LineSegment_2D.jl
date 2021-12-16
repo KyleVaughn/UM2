@@ -1,7 +1,7 @@
 # A line segment in 2D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and ends at points[2]
-struct LineSegment_2D{F <: AbstractFloat} <: Edge_2D{F}
-    points::SVector{2, Point_2D{F}}
+struct LineSegment_2D <: Edge_2D
+    points::SVector{2, Point_2D}
 end
 
 # Constructors
@@ -16,13 +16,13 @@ Base.broadcastable(l::LineSegment_2D) = Ref(l)
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 # l(0) yields points[1], and l(1) yields points[2]
-function (l::LineSegment_2D{F})(r::R) where {F <: AbstractFloat, R <: Real}
-    return l.points[1] + F(r) * (l.points[2] - l.points[1])
+function (l::LineSegment_2D)(r::Real)
+    return l.points[1] + Float64(r) * (l.points[2] - l.points[1])
 end
 
 arc_length(l::LineSegment_2D) = distance(l.points[1], l.points[2])
 
-function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <: AbstractFloat}
+function intersect(l₁::LineSegment_2D, l₂::LineSegment_2D)
     # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product
     # operator for 2D points returns a scalar (the 2-norm of the cross product).
     #
@@ -64,7 +64,7 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
         s = ((r*v⃗ - w⃗) ⋅ u⃗)/(u⃗ ⋅ u⃗)
         return (-ϵ ≤ s ≤ 1 + ϵ) && (-ϵ ≤ r ≤ 1 + ϵ) ? (0x00000001, p) : (0x00000000, p)
     else
-        return (0x00000000, Point_2D(F, 0))
+        return (0x00000000, Point_2D(0))
     end
 end
 
@@ -72,17 +72,17 @@ end
 #   p    ^
 #   ^   /
 # v⃗ |  / u⃗
-#   | / 
+#   | /
 #   o
-function is_left(p::Point_2D{F}, l::LineSegment_2D{F}) where {F <: AbstractFloat}
+function is_left(p::Point_2D, l::LineSegment_2D)
     u⃗ = l.points[2] - l.points[1]
     v⃗ = p - l.points[1]
     return u⃗ × v⃗ > 0
 end
 
 # Convert a vector of points to a vector of line segments, typically for visualization
-function to_lines(points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
-    return [LineSegment_2D(points[i], points[i+1]) for i = 1:length(points)-1]
+function to_lines(points::Vector{Point_2D})
+    return [ LineSegment_2D(points[i], points[i+1]) for i = 1:length(points)-1 ]
 end
 
 # Plot
@@ -91,7 +91,7 @@ if enable_visualization
     function convert_arguments(LS::Type{<:LineSegments}, l::LineSegment_2D)
         return convert_arguments(LS, [l.points[1], l.points[2]])
     end
-    
+
     function convert_arguments(LS::Type{<:LineSegments}, L::Vector{<:LineSegment_2D})
         return convert_arguments(LS, reduce(vcat, [[l.points[1], l.points[2]] for l in L]))
     end
