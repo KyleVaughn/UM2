@@ -30,7 +30,7 @@ using LinearAlgebra
 using StaticArrays
 using Dates: now, format
 if enable_visualization 
-    using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter, current_axis
+    using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter, current_axis, record
 end
 using LoggingExtras: TransformerLogger, global_logger
 
