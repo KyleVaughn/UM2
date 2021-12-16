@@ -12,8 +12,8 @@
 # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
 # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
 # Chapter 8, Advanced Data Representation, in the interpolation functions section
-struct QuadraticSegment_2D{F <: AbstractFloat} <: Edge_2D{F}
-    points::SVector{3, Point_2D{F}}
+struct QuadraticSegment_2D <: Edge_2D
+    points::SVector{3, Point_2D}
 end
 
 # Constructors
@@ -30,18 +30,18 @@ Base.broadcastable(q::QuadraticSegment_2D) = Ref(q)
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 # q(0) = q.points[1], q(1) = q.points[2], q(1//2) = q.points[3]
-function (q::QuadraticSegment_2D{F})(r::R) where {F <: AbstractFloat, R <: Real}
+function (q::QuadraticSegment_2D)(r::Real)
     # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    rₜ = F(r)
-    return (2rₜ-1)*(rₜ-1)*q.points[1] + rₜ*(2rₜ-1)*q.points[2] + 4rₜ*(1-rₜ)*q.points[3]
+    rₜ = Float64(r)
+    return (2rₜ-1)*(rₜ-1)*q.points[1] + 
+               rₜ*(2rₜ-1)*q.points[2] + 
+               4rₜ*(1-rₜ)*q.points[3]
 end
 
-function arc_length(q::QuadraticSegment_2D{F}) where {F <: AbstractFloat}
-    return arc_length(q, Val(15)) 
-end
+arc_length(q::QuadraticSegment_2D) = arc_length(q, Val(15)) 
 
-function arc_length(q::QuadraticSegment_2D{F}, ::Val{N}) where {N, F <: AbstractFloat}
+function arc_length(q::QuadraticSegment_2D, ::Val{N}) where {N}
     # This does have an analytic solution, but the Mathematica solution is pages long and can
     # produce NaN results when the segment is straight, so numerical integration is used.
     # (Gauss-Legengre quadrature)
@@ -52,49 +52,42 @@ function arc_length(q::QuadraticSegment_2D{F}, ::Val{N}) where {N, F <: Abstract
     # N is the number of points used in the quadrature.
     # See tuning/QuadraticSegment_2D_arc_length.jl for more info on how N = 15 was chosen
     # as the default value.
-    w, r = gauss_legendre_quadrature(F, Val(N))
-    length = F(0)
-    for i = 1:N
-        length += w[i] * norm(derivative(q, r[i]))
-    end
-    return length 
+    w, r = gauss_legendre_quadrature(Val(N))
+    return sum(w .* norm.(derivative.(q, r))) 
 end
 
-function closest_point(p::Point_2D{F}, q::QuadraticSegment_2D{F}) where {F <: AbstractFloat}
-    return closest_point(p, q, 30)
-end
+closest_point(p::Point_2D, q::QuadraticSegment_2D) = closest_point(p, q, 30)
 
 # Return the closest point on the curve to point p and the value of r
 # Uses at most N iterations of Newton-Raphson
-function closest_point(p::Point_2D{F}, q::QuadraticSegment_2D{F}, N::Int64) where {F <: AbstractFloat}
-    ϵ = parametric_coordinate_ϵ 
-    r = F(1//2)
-    err₁ = p - q(r)
-    Δr = F(0)
+function closest_point(p::Point_2D, q::QuadraticSegment_2D, N::Int64)
+    r = 0.5
+    Δr = 0.0
     for i = 1:N
+        err₁ = p - q(r)
         D = derivative(q, r)
         if abs(D[1]) > abs(D[2])
             Δr = err₁[1]/D[1]
         else
             Δr = err₁[2]/D[2]
         end
-        r = r + Δr
-        err₂ = p - q(r)
-        if norm(err₂ - err₁) < 1e-6
+        r += Δr
+        if abs(Δr) < 1e-7
             break
         end
-        err₁ = err₂
     end 
     return r, q(r)
 end
 
 # Get the derivative dq⃗/dr evalutated at r
-function derivative(q::QuadraticSegment_2D{F}, r::R) where {F <: AbstractFloat, R <: Real}
-    rₜ = F(r)
-    return (4rₜ - 3)*q.points[1] + (4rₜ - 1)*q.points[2] + (4 - 8rₜ)*q.points[3]
+function derivative(q::QuadraticSegment_2D, r::Real)
+    rₜ = Float64(r)
+    return (4rₜ - 3)*q.points[1] + 
+           (4rₜ - 1)*q.points[2] + 
+           (4 - 8rₜ)*q.points[3]
 end
 
-function intersect(l::LineSegment_2D{F}, q::QuadraticSegment_2D{F}) where {F <: AbstractFloat}
+function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
     # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
     # q(r) = 2r²(x⃗₁ + x⃗₂ - 2x⃗₃) + r(-3x⃗₁ - x⃗₂ + 4x⃗₃) + x⃗₁
     # Let D⃗ = 2(x⃗₁ + x⃗₂ - 2x⃗₃), E⃗ = (-3x⃗₁ - x⃗₂ + 4x⃗₃), F⃗ = x₁
@@ -121,8 +114,8 @@ function intersect(l::LineSegment_2D{F}, q::QuadraticSegment_2D{F}) where {F <: 
     ϵ = parametric_coordinate_ϵ
     ϵ₁ = QuadraticSegment_2D_1_intersection_ϵ
     npoints = 0x00000000
-    p₁ = Point_2D(F, 0)
-    p₂ = Point_2D(F, 0)
+    p₁ = Point_2D(0, 0)
+    p₂ = Point_2D(0, 0)
     D⃗ = 2*(q.points[1] + q.points[2] - 2*q.points[3])
     E⃗ = 4*q.points[3] - 3*q.points[1] - q.points[2]
     w⃗ = l.points[2] - l.points[1]
@@ -171,7 +164,7 @@ intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 # v⃗ |  / u⃗
 #   | / 
 #   o
-function is_left(p::Point_2D{F}, q::QuadraticSegment_2D{F}) where {F <: AbstractFloat}
+function is_left(p::Point_2D, q::QuadraticSegment_2D)
     # Find the closest point to p on the curve.
     r, p_closest = closest_point(p, q)
     # If the r is invalid, take the closest end point.
@@ -185,19 +178,19 @@ function is_left(p::Point_2D{F}, q::QuadraticSegment_2D{F}) where {F <: Abstract
     v⃗ = p - q.points[1]
     return u⃗ × v⃗ > 0
 end
-
-# Plot
-# -------------------------------------------------------------------------------------------------
-if enable_visualization
-    function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment_2D{F}) where {F <: AbstractFloat}
-        rr = LinRange{F}(0, 1, 15)
-        points = q.(rr)
-        coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])
-        return convert_arguments(LS, coords)
-    end
-    
-    function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:QuadraticSegment_2D})
-        point_sets = [convert_arguments(LS, q) for q in Q]
-        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
-    end
-end
+# 
+# # Plot
+# # -------------------------------------------------------------------------------------------------
+# if enable_visualization
+#     function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment_2D{F}) where {F <: AbstractFloat}
+#         rr = LinRange{F}(0, 1, 15)
+#         points = q.(rr)
+#         coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])
+#         return convert_arguments(LS, coords)
+#     end
+#     
+#     function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:QuadraticSegment_2D})
+#         point_sets = [convert_arguments(LS, q) for q in Q]
+#         return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+#     end
+# end
