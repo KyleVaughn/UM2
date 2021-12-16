@@ -247,21 +247,8 @@ if enable_visualization
         return convert_arguments(P, triangles)
     end
     
-    function convert_arguments(M::Type{Mesh{Tuple{Vector{Triangle6_2D{F}}}}},
-                               T::Vector{Triangle6_2D{F}}) where {F <: AbstractFloat}
+    function convert_arguments(M::Type{<:Mesh}, T::Vector{<:Triangle6_2D})
         triangles = reduce(vcat, triangulate.(T, 13))
         return convert_arguments(M, triangles)
-    end
-
-    function convert_arguments(M::Type{Mesh{Tuple{Triangle6_2D{F}}}},
-                               T::Vector{Triangle_2D{F}}) where {F <: AbstractFloat}
-        points = reduce(vcat, [[tri.points[i] for i = 1:3] for tri in T])
-        faces = zeros(Int64, length(T), 3)
-        k = 1
-        for i in 1:length(T), j = 1:3
-            faces[i, j] = k
-            k += 1
-        end
-        return convert_arguments(M, points, faces)
     end
 end

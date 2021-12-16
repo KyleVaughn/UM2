@@ -116,7 +116,7 @@ if enable_visualization
         return convert_arguments(M, points, faces)
     end
 
-    function convert_arguments(M::Type{<:Mesh}, Q::Vector{Quadrilateral_2D{F}}) where {F <: AbstractFloat}
+    function convert_arguments(M::Type{<:Mesh}, Q::Vector{<:Quadrilateral_2D})
         points = reduce(vcat, [[quad.points[i] for i = 1:4] for quad in Q])
         faces = zeros(Int64, 2*length(Q), 3)
         j = 0
