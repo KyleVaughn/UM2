@@ -94,13 +94,13 @@ function ray_trace(tₛ::F,
     if 0 < length(mesh.boundary_edges) && has_mat_edges && has_mat_faces 
         @info "  - Using the edge-to-edge algorithm"
         segment_points, segment_faces = ray_trace_edge_to_edge(tracks, mesh) 
-        validate_ray_tracing_data(segment_points, segment_faces, mesh)
+        validate_ray_tracing_data(segment_points, segment_faces, mesh, plot = enable_visualization)
         return segment_points, segment_faces
     else
         @info "  - Using the naive segmentize + find face algorithm"
         segment_points = segmentize(tracks, mesh)
         segment_faces = find_segment_faces(segment_points, mesh)
-        validate_ray_tracing_data(segment_points, segment_faces, mesh)
+        validate_ray_tracing_data(segment_points, segment_faces, mesh, plot = enable_visualization)
         return segment_points, segment_faces
     end
 end
@@ -274,6 +274,7 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
         f = Figure()
         ax = Axis(f[1, 1], aspect = 1)
         display(f)
+        mesh!(mesh.materialized_faces, color = (:black, 0.15))
         linesegments!(mesh.materialized_edges, color = :blue)
     end
 
@@ -311,8 +312,9 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
     end
 
     # Attempt to fix problem segments
-    for i = 1:nthreads
-        for problem_index in problem_indices[i]
+    fixed = [ Int64[] for i = 1:nthreads ]
+    Threads.@threads for i = 1:nthreads
+        for (iprob, problem_index) in enumerate(problem_indices[i])
             # Ray trace the track in reverse, then test to see if that fixed things
             new_info_ok = true
             iγ = problem_index[1]
@@ -350,12 +352,18 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
                 end
             end
             if new_info_ok
+                push!(fixed[i], iprob)
                 nsegs_problem[i] -= 1
                 segment_points[iγ][it] = reverse(reversed_points)
                 segment_faces[iγ][it] = reverse(reversed_faces)
             else
-                @warn "Face mismatch for segment [$iγ][$it][$iseg]. Searching for correct face." 
-                segment_faces[iγ][it][iseg] = find_face(p_midpoint, mesh)
+                # @warn "Face mismatch for segment [$iγ][$it][$iseg]. Searching for correct face." 
+                new_face = find_face(p_midpoint, mesh)
+                if new_face == 0
+                    @warn "Could not find new segment face for segment $problem_index[i]"
+                else
+                    segment_faces[iγ][it][iseg] = new_face 
+                end
             end
         end
     end
@@ -363,8 +371,14 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
     # Visualize
     if enable_visualization && plot
         for i = 1:nthreads
+            if 0 < length(fixed[i])
+                deleteat!(plot_segs_face[i], fixed[i])
+            end
             if 0 < length(plot_segs_face[i])
                 linesegments!(plot_segs_face[i], color = :red)
+            end
+            if 0 < length(fixed[i])
+                deleteat!(plot_points_face[i], sort!(vcat(2 .* fixed[i], 2 .* fixed[i] .- 1)))
             end
             if 0 < length(plot_points_face[i])
                 scatter!(plot_points_face[i], color = :red)
@@ -375,6 +389,9 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
     nsegs_total = sum(nsegs)
     prob_percent = 100*problem_segs/nsegs_total
     @info "    - Problem segments: $problem_segs, Total segments: $nsegs_total"
+    if 0 < problem_segs
+        @info "      - Check for mesh overlap (darker gray) around areas of many problem segments." 
+    end
     return problem_segs == 0
 end
 
