@@ -7,14 +7,18 @@ end
 # -------------------------------------------------------------------------------------------------
 Triangle_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D) = Triangle_2D(SVector(p₁, p₂, p₃))
 
+# Base
+# -------------------------------------------------------------------------------------------------
+Base.broadcastable(tri::Triangle_2D) = Ref(tri)
+
 # Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 function (tri::Triangle_2D)(r::Real, s::Real)
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    r_F = Float64(r); s_F = Float64(s)
-    return (1 - r_F - s_F)*tri.points[1] + r_F*tri.points[2] + s_F*tri.points[3]
+    rₜ = Float64(r); sₜ = Float64(s)
+    return (1 - rₜ - sₜ)*tri.points[1] + rₜ*tri.points[2] + sₜ*tri.points[3]
 end
 
 function area(tri::Triangle_2D)
@@ -62,15 +66,6 @@ function intersect(l::LineSegment_2D, tri::Triangle_2D)
         end
     end
     return n_ipoints, SVector(ipoints)
-end
-
-function Base.show(io::IO, tri::Triangle_2D)
-    println(io, "Triangle_2D(")
-    for i = 1:3
-        p = tri.points[i]
-        println(io, "  $p,")
-    end
-    println(io, " )")
 end
 
 # Plot

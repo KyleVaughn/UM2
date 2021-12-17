@@ -3,9 +3,9 @@
 # to be valid finite elements, and we're generating meshes using a finite element mesh generator,
 # so this seems reasonable. See link below.
 # https://math.stackexchange.com/questions/2430691/jacobian-determinant-for-bi-linear-quadrilaterals
-struct Quadrilateral_2D{F <: AbstractFloat} <: Face_2D{F}
+struct Quadrilateral_2D <: Face_2D
     # Counter clockwise order
-    points::SVector{4, Point_2D{F}}
+    points::SVector{4, Point_2D}
 end
 
 # Constructors
@@ -15,15 +15,17 @@ Quadrilateral_2D(p₁::Point_2D,
                  p₃::Point_2D,
                  p₄::Point_2D) = Quadrilateral_2D(SVector(p₁, p₂, p₃, p₄))
 
+# Base
+# -------------------------------------------------------------------------------------------------
+Base.broadcastable(quad::Quadrilateral_2D) = Ref(quad)
+
 # Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
-function (quad::Quadrilateral_2D{F})(r::R, s::S) where {F <: AbstractFloat,
-                                                        R <: Real,
-                                                        S <: Real}
+function (quad::Quadrilateral_2D)(r::Real, s::Real)
     # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    rₜ = F(r)
-    sₜ = F(s)
+    rₜ = Float64(r)
+    sₜ = Float64(s)
     return (1 - rₜ)*(1 - sₜ)*quad.points[1] +
                  rₜ*(1 - sₜ)*quad.points[2] +
                        rₜ*sₜ*quad.points[3] +
@@ -36,7 +38,7 @@ function triangulate(quad::Quadrilateral_2D)
     return SVector(Triangle_2D(A, B, C), Triangle_2D(C, D, A))
 end
 
-function area(quad::Quadrilateral_2D{F}) where {F <: AbstractFloat}
+function area(quad::Quadrilateral_2D)
     # Using the convex quadrilateral assumption, just return the sum of the areas of the two
     # triangles that partition the quadrilateral. If the convex assumption ever changes, you
     # need to verify that the triangle pair partitions the quadrilateral. Choosing the wrong
@@ -59,15 +61,15 @@ function in(p::Point_2D, quad::Quadrilateral_2D)
            is_left(p, LineSegment_2D(quad.points[4], quad.points[1]))
 end
 
-function intersect(l::LineSegment_2D{F}, quad::Quadrilateral_2D{F}) where {F <: AbstractFloat}
+function intersect(l::LineSegment_2D, quad::Quadrilateral_2D)
     # Create the 4 line segments that make up the quadrilateral and intersect each one
     edges = SVector(LineSegment_2D(quad.points[1], quad.points[2]),
                     LineSegment_2D(quad.points[2], quad.points[3]),
                     LineSegment_2D(quad.points[3], quad.points[4]),
                     LineSegment_2D(quad.points[4], quad.points[1]))
-    ipoints = MVector(Point_2D(F, 0),
-                      Point_2D(F, 0),
-                      Point_2D(F, 0))
+    ipoints = MVector(Point_2D(0, 0),
+                      Point_2D(0, 0),
+                      Point_2D(0, 0))
     n_ipoints = 0x00000000
     # We need to account for 4 points returned due to vertex intersection
     # The only way we get 4 points though, is if 2 are redundant.
@@ -81,15 +83,6 @@ function intersect(l::LineSegment_2D{F}, quad::Quadrilateral_2D{F}) where {F <: 
         end
     end
     return n_ipoints, SVector(ipoints)
-end
-
-function Base.show(io::IO, quad::Quadrilateral_2D{F}) where {F <: AbstractFloat}
-    println(io, "Quadrilateral_2D{$F}(")
-    for i = 1:4
-        p = quad.points[i]
-        println(io, "  $p,")
-    end
-    println(io, " )")
 end
 
 # Plot
