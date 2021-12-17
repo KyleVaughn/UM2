@@ -18,9 +18,7 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-QuadraticSegment_2D(p₁::Point_2D,
-                    p₂::Point_2D,
-                    p₃::Point_2D) = QuadraticSegment_2D(SVector(p₁, p₂, p₃))
+QuadraticSegment_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D) = QuadraticSegment_2D(SVector(p₁, p₂, p₃))
 
 # Base
 # -------------------------------------------------------------------------------------------------
@@ -178,19 +176,19 @@ function is_left(p::Point_2D, q::QuadraticSegment_2D)
     v⃗ = p - q.points[1]
     return u⃗ × v⃗ > 0
 end
-# 
-# # Plot
-# # -------------------------------------------------------------------------------------------------
-# if enable_visualization
-#     function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment_2D{F}) where {F <: AbstractFloat}
-#         rr = LinRange{F}(0, 1, 15)
-#         points = q.(rr)
-#         coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])
-#         return convert_arguments(LS, coords)
-#     end
-#     
-#     function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:QuadraticSegment_2D})
-#         point_sets = [convert_arguments(LS, q) for q in Q]
-#         return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
-#     end
-# end
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment_2D)
+        rr = LinRange(0, 1, 15)
+        points = q.(rr)
+        coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])
+        return convert_arguments(LS, coords)
+    end
+    
+    function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:QuadraticSegment_2D})
+        point_sets = [convert_arguments(LS, q) for q in Q]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+    end
+end

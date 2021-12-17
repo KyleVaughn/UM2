@@ -1,23 +1,20 @@
 # Triangle in 2D defined by its 3 vertices.
-struct Triangle_2D{F <: AbstractFloat} <: Face_2D{F}
-    points::SVector{3, Point_2D{F}}
+struct Triangle_2D <: Face_2D
+    points::SVector{3, Point_2D}
 end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-Triangle_2D(p₁::Point_2D{F},
-            p₂::Point_2D{F},
-            p₃::Point_2D{F}) where {F <: AbstractFloat} = Triangle_2D(SVector(p₁, p₂, p₃))
+Triangle_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D) = Triangle_2D(SVector(p₁, p₂, p₃))
 
 # Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
 # Interpolation
-function (tri::Triangle_2D{F})(r::R, s::S) where {F <: AbstractFloat,
-                                                  R <: Real,
-                                                  S <: Real}
+function (tri::Triangle_2D)(r::Real, s::Real)
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    return (1 - F(r) - F(s))*tri.points[1] + F(r)*tri.points[2] + F(s)*tri.points[3]
+    r_F = Float64(r); s_F = Float64(s)
+    return (1 - r_F - s_F)*tri.points[1] + r_F*tri.points[2] + s_F*tri.points[3]
 end
 
 function area(tri::Triangle_2D)
@@ -33,7 +30,7 @@ function area(tri::Triangle_2D)
     return abs(u⃗ × v⃗)/2
 end
 
-function in(p::Point_2D{F}, tri::Triangle_2D{F}) where {F <: AbstractFloat}
+function in(p::Point_2D, tri::Triangle_2D)
     # If the point is to the left of every edge
     #  3<-----2
     #  |     ^
@@ -47,14 +44,14 @@ function in(p::Point_2D{F}, tri::Triangle_2D{F}) where {F <: AbstractFloat}
            is_left(p, LineSegment_2D(tri.points[3], tri.points[1]))
 end
 
-function intersect(l::LineSegment_2D{F}, tri::Triangle_2D{F}) where {F <: AbstractFloat}
+function intersect(l::LineSegment_2D, tri::Triangle_2D)
     # Create the 3 line segments that make up the triangle and intersect each one
     edges = SVector(LineSegment_2D(tri.points[1], tri.points[2]),
                     LineSegment_2D(tri.points[2], tri.points[3]),
                     LineSegment_2D(tri.points[3], tri.points[1]))
-    ipoints = MVector(Point_2D(F, 0),
-                      Point_2D(F, 0),
-                      Point_2D(F, 0))
+    ipoints = MVector(Point_2D(0, 0),
+                      Point_2D(0, 0),
+                      Point_2D(0, 0))
     n_ipoints = 0x00000000
     # We need to account for 3 points returned due to vertex intersection
     for k = 1:3
@@ -66,10 +63,9 @@ function intersect(l::LineSegment_2D{F}, tri::Triangle_2D{F}) where {F <: Abstra
     end
     return n_ipoints, SVector(ipoints)
 end
-intersect(tri::Triangle_2D, l::LineSegment_2D) = intersect(l, tri)
 
-function Base.show(io::IO, tri::Triangle_2D{F}) where {F <: AbstractFloat}
-    println(io, "Triangle_2D{$F}(")
+function Base.show(io::IO, tri::Triangle_2D)
+    println(io, "Triangle_2D(")
     for i = 1:3
         p = tri.points[i]
         println(io, "  $p,")
