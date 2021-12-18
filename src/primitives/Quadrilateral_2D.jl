@@ -97,7 +97,7 @@ if enable_visualization
         return convert_arguments(LS, lines)
     end
 
-    function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:Quadrilateral_2D})
+    function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{Quadrilateral_2D})
         point_sets = [convert_arguments(LS, quad) for quad in Q]
         return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
     end
@@ -109,7 +109,7 @@ if enable_visualization
         return convert_arguments(M, points, faces)
     end
 
-    function convert_arguments(M::Type{<:Mesh}, Q::Vector{<:Quadrilateral_2D})
+    function convert_arguments(M::Type{<:Mesh}, Q::Vector{Quadrilateral_2D})
         points = reduce(vcat, [[quad.points[i] for i = 1:4] for quad in Q])
         faces = zeros(Int64, 2*length(Q), 3)
         j = 0

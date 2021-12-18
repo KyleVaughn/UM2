@@ -34,6 +34,7 @@ Base.broadcastable(p::Point_2D) = Ref(p)
 norm(p::Point_2D) = sqrt(p.x^2 + p.y^2)
 distance(p₁::Point_2D, p₂::Point_2D) = norm(p₁ - p₂)
 midpoint(p₁::Point_2D, p₂::Point_2D) = (p₁ + p₂)/2
+×(points::Tuple{Point_2D, Point_2D}) = points[1] × points[2]
 
 # Sort points based on their distance from a given point
 function sort_points(p::Point_2D, points::Vector{Point_2D})

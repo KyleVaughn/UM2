@@ -62,12 +62,12 @@ function closest_point(p::Point_2D, q::QuadraticSegment_2D, N::Int64)
     r = 0.5
     Δr = 0.0
     for i = 1:N
-        err₁ = p - q(r)
+        err = p - q(r)
         D = derivative(q, r)
         if abs(D[1]) > abs(D[2])
-            Δr = err₁[1]/D[1]
+            Δr = err[1]/D[1]
         else
-            Δr = err₁[2]/D[2]
+            Δr = err[2]/D[2]
         end
         r += Δr
         if abs(Δr) < 1e-7
@@ -187,7 +187,7 @@ if enable_visualization
         return convert_arguments(LS, coords)
     end
     
-    function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:QuadraticSegment_2D})
+    function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{QuadraticSegment_2D})
         point_sets = [convert_arguments(LS, q) for q in Q]
         return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
     end

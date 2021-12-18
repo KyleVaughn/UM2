@@ -92,7 +92,7 @@ if enable_visualization
         return convert_arguments(LS, [l.points[1], l.points[2]])
     end
 
-    function convert_arguments(LS::Type{<:LineSegments}, L::Vector{<:LineSegment_2D})
+    function convert_arguments(LS::Type{<:LineSegments}, L::Vector{LineSegment_2D})
         return convert_arguments(LS, reduce(vcat, [[l.points[1], l.points[2]] for l in L]))
     end
 end

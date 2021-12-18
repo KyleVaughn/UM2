@@ -91,12 +91,7 @@ function area(tri6::Triangle6_2D, ::Val{N}) where {N}
     # N is the number of points used in the quadrature.
     # See tuning/Triangle6_2D_area.jl for more info on how N = 12 was chosen.
     w, r, s = gauss_legendre_quadrature(tri6, Val(N))
-    a = Float64(0)
-    for i in 1:N
-        ∂F_∂r, ∂F_∂s = derivative(tri6, r[i], s[i])
-        a += w[i] * abs(∂F_∂r × ∂F_∂s)
-    end
-    return a
+    return sum(w .* abs.( derivative.(Ref(tri6), r, s) .|> x->x[1] × x[2] ))
 end
 
 function triangulate(tri6::Triangle6_2D, N::Int64)
@@ -126,125 +121,112 @@ function triangulate(tri6::Triangle6_2D, N::Int64)
     return triangles
 end
 
-# function real_to_parametric(p::Point_2D, tri6::Triangle6_2D)
-#     return real_to_parametric(p, tri6, 30)
+function real_to_parametric(p::Point_2D, tri6::Triangle6_2D)
+    return real_to_parametric(p, tri6, 30)
+end
+
+function real_to_parametric(p::Point_2D, tri6::Triangle6_2D, N::Int64)
+    # Convert from real coordinates to the triangle's local parametric coordinates using the
+    # the Newton-Raphson method. N is the max number of iterations
+    # If a conversion doesn't exist, the minimizer is returned.
+    r = Float64(1//3) # Initial guess at triangle centroid
+    s = Float64(1//3)
+    for i = 1:N
+        err = p - tri6(r, s)
+        # Inversion is faster for 2 by 2 than \
+        Δr, Δs = inv(jacobian(tri6, r, s)) * err
+        r += Δr
+        s += Δs
+        if abs(Δr) + abs(Δs) < 1e-6
+            break
+        end
+    end
+    return Point_2D(r, s)
+end
+
+function in(p::Point_2D, tri6::Triangle6_2D)
+    # If the point is to the left of every edge
+    #  3<-----2
+    #  |     ^
+    #  | p  /
+    #  |   /
+    #  |  /
+    #  v /
+    #  1
+    return is_left(p, QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4])) &&
+           is_left(p, QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5])) &&
+           is_left(p, QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
+end
+
+# # Slower method than above.
+# function in(p::Point_2D, tri6::Triangle6_2D)
+#     return in(p, tri6, 30)
 # end
 # 
-# function real_to_parametric(p::Point_2D, tri6::Triangle6_2D, N::Int64)
-#     # Convert from real coordinates to the triangle's local parametric coordinates using the
-#     # the Newton-Raphson method. N is the max number of iterations
-#     # If a conversion doesn't exist, the minimizer is returned.
-#     r = Float64(1//3) # Initial guess at triangle centroid
-#     s = Float64(1//3)
-#     err₁ = p - tri6(r, s)
-#     for i = 1:N
-#         # Inversion is faster for 2 by 2 than \
-#         Δr, Δs = inv(jacobian(tri6, r, s)) * err₁
-#         r = r + Δr
-#         s = s + Δs
-#         err₂ = p - tri6(r, s)
-#         if norm(err₂ - err₁) < 1e-6
-#             break
-#         end
-#         err₁ = err₂
-#     end
-#     return Point_2D(r, s)
-# end
-# 
-# function in(p::Point_2D{F}, tri6::Triangle6_2D{F}) where {F <: AbstractFloat}
-#     # If the point is to the left of every edge
-#     #  3<-----2
-#     #  |     ^
-#     #  | p  /
-#     #  |   /
-#     #  |  /
-#     #  v /
-#     #  1
-#     return is_left(p, QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4])) &&
-#            is_left(p, QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5])) &&
-#            is_left(p, QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
-# end
-# 
-# 
-# # # Slower method than above.
-# # function in(p::Point_2D, tri6::Triangle6_2D)
-# #     return in(p, tri6, 30)
-# # end
-# # 
-# # function in(p::Point_2D, tri6::Triangle6_2D, N::Int64)
-# #     # Determine if the point is in the triangle using the Newton-Raphson method
-# #     # N is the max number of iterations of the method.
-# #     p_rs = real_to_parametric(p, tri6, N)
-# #     ϵ = parametric_coordinate_ϵ 
-# #     # Check that the r coordinate and s coordinate are in [-ϵ,  1 + ϵ] and
-# #     # r + s ≤ 1 + ϵ
-# #     # These are the conditions for a valid point in the triangle ± some ϵ
-# #     if (-ϵ ≤ p_rs[1] ≤ 1 + ϵ) &&
-# #        (-ϵ ≤ p_rs[2] ≤ 1 + ϵ) &&
-# #        (p_rs[1] + p_rs[2] ≤ 1 + ϵ)
-# #         return true
-# #     else
-# #         return false
-# #     end
-# # end
-# 
-# function intersect(l::LineSegment_2D{F}, tri6::Triangle6_2D{F}) where {F <: AbstractFloat}
-#     # Create the 3 quadratic segments that make up the triangle and intersect each one
-#     edges = SVector(QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4]),
-#                     QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5]),
-#                     QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
-#     ipoints = MVector(Point_2D(F, 0),
-#                       Point_2D(F, 0),
-#                       Point_2D(F, 0),
-#                       Point_2D(F, 0),
-#                       Point_2D(F, 0),
-#                       Point_2D(F, 0)
-#                      )
-#     n_ipoints = 0x00000000
-#     # We need to account for 6 points returned
-#     for k = 1:3
-#         npoints, points = l ∩ edges[k]
-#         for i = 1:npoints
-#             n_ipoints += 0x00000001 
-#             ipoints[n_ipoints] = points[i]
-#         end
-#     end
-#     return n_ipoints, SVector(ipoints)
-# end
-# intersect(tri6::Triangle6_2D, l::LineSegment_2D) = intersect(l, tri6)
-# 
-# function Base.show(io::IO, tri6::Triangle6_2D{F}) where {F <: AbstractFloat}
-#     println(io, "Triangle6_2D{$F}(")
-#     for i = 1:6
-#         p = tri6.points[i]
-#         println(io, "  $p,")
-#     end
-#     println(io, " )")
-# end
-# 
-# # Plot
-# # -------------------------------------------------------------------------------------------------
-# if enable_visualization
-#     function convert_arguments(LS::Type{<:LineSegments}, tri6::Triangle6_2D)
-#         q₁ = QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4])
-#         q₂ = QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5])
-#         q₃ = QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6])
-#         qsegs = [q₁, q₂, q₃]
-#         return convert_arguments(P, qsegs)
-#     end
-#     
-#     function convert_arguments(LS::Type{<:LineSegments}, T::Vector{<:Triangle6_2D})
-#         point_sets = [convert_arguments(LS, tri6) for tri6 in T]
-#         return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
-#     end
-#     
-#     function convert_arguments(P::Type{<:Mesh}, tri6::Triangle6_2D)
-#         triangles = triangulate(tri6, 13)
-#         return convert_arguments(P, triangles)
-#     end
-#     
-#     function convert_arguments(M::Type{<:Mesh}, T::Vector{<:Triangle6_2D})
-#         triangles = reduce(vcat, triangulate.(T, 13))
-#         return convert_arguments(M, triangles)
+# function in(p::Point_2D, tri6::Triangle6_2D, N::Int64)
+#     # Determine if the point is in the triangle using the Newton-Raphson method
+#     # N is the max number of iterations of the method.
+#     p_rs = real_to_parametric(p, tri6, N)
+#     ϵ = parametric_coordinate_ϵ 
+#     # Check that the r coordinate and s coordinate are in [-ϵ,  1 + ϵ] and
+#     # r + s ≤ 1 + ϵ
+#     # These are the conditions for a valid point in the triangle ± some ϵ
+#     if (-ϵ ≤ p_rs[1] ≤ 1 + ϵ) &&
+#        (-ϵ ≤ p_rs[2] ≤ 1 + ϵ) &&
+#        (p_rs[1] + p_rs[2] ≤ 1 + ϵ)
+#         return true
+#     else
+#         return false
 #     end
 # end
+
+function intersect(l::LineSegment_2D, tri6::Triangle6_2D)
+    # Create the 3 quadratic segments that make up the triangle and intersect each one
+    edges = SVector(QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4]),
+                    QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5]),
+                    QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
+    ipoints = MVector(Point_2D(0, 0),
+                      Point_2D(0, 0),
+                      Point_2D(0, 0),
+                      Point_2D(0, 0),
+                      Point_2D(0, 0),
+                      Point_2D(0, 0)
+                     )
+    n_ipoints = 0x00000000
+    # We need to account for 6 points returned
+    for k = 1:3
+        npoints, points = l ∩ edges[k]
+        for i = 1:npoints
+            n_ipoints += 0x00000001 
+            ipoints[n_ipoints] = points[i]
+        end
+    end
+    return n_ipoints, SVector(ipoints)
+end
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, tri6::Triangle6_2D)
+        q₁ = QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4])
+        q₂ = QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5])
+        q₃ = QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6])
+        qsegs = [q₁, q₂, q₃]
+        return convert_arguments(P, qsegs)
+    end
+    
+    function convert_arguments(LS::Type{<:LineSegments}, T::Vector{Triangle6_2D})
+        point_sets = [convert_arguments(LS, tri6) for tri6 in T]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+    end
+    
+    function convert_arguments(P::Type{<:Mesh}, tri6::Triangle6_2D)
+        triangles = triangulate(tri6, 13)
+        return convert_arguments(P, triangles)
+    end
+    
+    function convert_arguments(M::Type{<:Mesh}, T::Vector{Triangle6_2D})
+        triangles = reduce(vcat, triangulate.(T, 13))
+        return convert_arguments(M, triangles)
+    end
+end
