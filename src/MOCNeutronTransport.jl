@@ -1,7 +1,7 @@
 module MOCNeutronTransport
 # Compilation options
 const enable_local_gmsh = true
-const enable_visualization = true 
+const enable_visualization = false 
 const visualize_ray_tracing = false 
 # using
 using ColorSchemes
@@ -58,11 +58,11 @@ end
 
 
 include("AbstractTypes.jl")
-include("Tree.jl")
-include("operators.jl")
-include("./gmsh/gmsh_generate_rectangular_grid.jl")
-include("./gmsh/gmsh_group_preserving_fragment.jl")
-include("./gmsh/gmsh_overlay_rectangular_grid.jl")
+#include("Tree.jl")
+#include("operators.jl")
+#include("./gmsh/gmsh_generate_rectangular_grid.jl")
+#include("./gmsh/gmsh_group_preserving_fragment.jl")
+#include("./gmsh/gmsh_overlay_rectangular_grid.jl")
 include("./primitives/Point_2D.jl")
 include("./primitives/LineSegment_2D.jl")
 include("./primitives/QuadraticSegment_2D.jl")
@@ -70,18 +70,18 @@ include("./primitives/Triangle_2D.jl")
 include("./primitives/Quadrilateral_2D.jl")
 include("./primitives/Triangle6_2D.jl")
 include("./primitives/Quadrilateral8_2D.jl")
-include("L_system.jl")
-include("./mesh/UnstructuredMesh_2D.jl")
-include("./mesh/UnstructuredMesh_2D_low_level.jl")
-include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
-include("./mesh/IO_abaqus.jl")
-include("./mesh/IO_vtk.jl")
-include("./mesh/IO_xdmf.jl")
+#include("L_system.jl")
+#include("./mesh/UnstructuredMesh_2D.jl")
+#include("./mesh/UnstructuredMesh_2D_low_level.jl")
+#include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
+#include("./mesh/IO_abaqus.jl")
+#include("./mesh/IO_vtk.jl")
+#include("./mesh/IO_xdmf.jl")
 include("constants.jl")
 include("gauss_legendre_quadrature.jl")
-include("./ray_tracing/AngularQuadrature.jl")
-include("./ray_tracing/ray_trace.jl")
-include("./ray_tracing/ray_trace_low_level.jl")
+#include("./ray_tracing/AngularQuadrature.jl")
+#include("./ray_tracing/ray_trace.jl")
+#include("./ray_tracing/ray_trace_low_level.jl")
 
 # Structs/Types
 export  AngularQuadrature,
