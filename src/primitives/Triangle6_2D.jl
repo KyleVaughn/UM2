@@ -91,7 +91,7 @@ function area(tri6::Triangle6_2D, ::Val{N}) where {N}
     # N is the number of points used in the quadrature.
     # See tuning/Triangle6_2D_area.jl for more info on how N = 12 was chosen.
     w, r, s = gauss_legendre_quadrature(tri6, Val(N))
-    return sum(w .* abs.( derivative.(Ref(tri6), r, s) .|> x->x[1] × x[2] ))
+    return sum(w .* abs.( derivative.(tri6, r, s) .|> x->x[1] × x[2] ))
 end
 
 function triangulate(tri6::Triangle6_2D, N::Int64)
