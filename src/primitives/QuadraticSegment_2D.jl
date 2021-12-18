@@ -183,12 +183,11 @@ if enable_visualization
     function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment_2D)
         rr = LinRange(0, 1, 15)
         points = q.(rr)
-        coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])
-        return convert_arguments(LS, coords)
+        return convert_arguments(LS, points)
     end
     
     function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{QuadraticSegment_2D})
         point_sets = [convert_arguments(LS, q) for q in Q]
-        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+        return convert_arguments(LS, reduce(vcat, [pset for pset in point_sets]))
     end
 end

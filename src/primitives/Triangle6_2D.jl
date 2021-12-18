@@ -217,7 +217,7 @@ if enable_visualization
     
     function convert_arguments(LS::Type{<:LineSegments}, T::Vector{Triangle6_2D})
         point_sets = [convert_arguments(LS, tri6) for tri6 in T]
-        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+        return convert_arguments(LS, reduce(vcat, [pset for pset in point_sets]))
     end
     
     function convert_arguments(P::Type{<:Mesh}, tri6::Triangle6_2D)
