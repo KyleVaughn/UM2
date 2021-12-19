@@ -17,27 +17,6 @@ function adjacent_faces(face::U,
     return the_adjacent_faces
 end
 
-# Area of face
-# Type-stable
-function area(face::SVector{N, U}, 
-              points::Vector{Point_2D{F}}) where {N, F <: AbstractFloat, U <: Unsigned}
-    return area(materialize_face(face, points))
-end
-
-# Return the area of a face set
-# Type-stable
-function area(materialized_faces::Vector{<:Face_2D{F}},
-              face_set::Set{U}) where {F <: AbstractFloat, U <: Unsigned}
-    return mapreduce(x->area(materialized_faces[x]), +, face_set)
-end
-
-# Return the area of a face set
-# Type-stable
-function area(faces::Vector{<:SVector{L, U} where {L}},
-              points::Vector{Point_2D{F}}, face_set::Set{U}) where {F <: AbstractFloat, U <: Unsigned}
-    return mapreduce(x->area(faces[x], points), +, face_set)
-end
-
 # Return a vector containing vectors of the edges in each side of the mesh's bounding shape, e.g.
 # For a rectangular bounding shape the sides are North, East, South, West. Then the output would
 # be [ [e1, e2, e3, ...], [e17, e18, e18, ...], ..., [e100, e101, ...]]
@@ -81,20 +60,6 @@ function boundary_edges(mesh::UnstructuredMesh_2D{F, U},
     else
         return [ convert(Vector{U}, the_boundary_edges) ]
     end
-end
-
-
-function bounding_box(points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
-    x = getindex.(points, 1)
-    y = getindex.(points, 2)
-    xmin = minimum(x)
-    xmax = maximum(x)
-    ymin = minimum(y)
-    ymax = maximum(y)
-    return Quadrilateral_2D(Point_2D(xmin, ymin),
-                            Point_2D(xmax, ymin),
-                            Point_2D(xmax, ymax),
-                            Point_2D(xmin, ymax))
 end
 
 # A vector of length 2 SVectors, denoting the face ID each edge is connected to. If the edge
@@ -351,76 +316,6 @@ function is_vertex(p::Point_2D{F}, points::Vector{Point_2D{F}}) where {F <: Abst
         end
     end
     return false
-end
-
-# Return a LineSegment_2D from the point IDs in an edge
-# Type-stable
-function materialize_edge(edge::SVector{2, U},
-                          points::Vector{Point_2D{F}}) where {F <: AbstractFloat, U <: Unsigned}
-    return LineSegment_2D(edge_points(edge, points))
-end
-
-# Return a QuadraticSegment_2D from the point IDs in an edge
-# Type-stable
-function materialize_edge(edge::SVector{3, U},
-                          points::Vector{Point_2D{F}}) where {F <: AbstractFloat, U <: Unsigned}
-    return QuadraticSegment_2D(edge_points(edge, points))
-end
-
-# Return a materialized edge for each edge in the mesh
-# Type-stable if all the edges are the same type
-function materialize_edges(edges::Vector{<:SVector{L, U} where {L}},
-                           points::Vector{Point_2D{F}}) where {F <: AbstractFloat, U <: Unsigned}
-    return materialize_edge.(edges, Ref(points))
-end
-
-# Return a Triangle_2D from the point IDs in a face
-# Type-stable
-function materialize_face(face::SVector{4, U},
-                          points::Vector{Point_2D{F}}) where {F <: AbstractFloat, U <: Unsigned}
-    return Triangle_2D(face_points(face, points))
-end
-
-# Return a Quadrilateral_2D from the point IDs in a face
-# Type-stable
-function materialize_face(face::SVector{5, U},
-                          points::Vector{Point_2D{F}}) where {F <: AbstractFloat, U <: Unsigned}
-    return Quadrilateral_2D(face_points(face, points))
-end
-
-# Return a Triangle6_2D from the point IDs in a face
-# Type-stable
-function materialize_face(face::SVector{7, U},
-                          points::Vector{Point_2D{F}}) where {F <: AbstractFloat, U <: Unsigned}
-    return Triangle6_2D(face_points(face, points))
-end
-
-# Return a Quadrilateral8_2D from the point IDs in a face
-# Type-stable
-function materialize_face(face::SVector{9, U},
-                          points::Vector{Point_2D{F}}) where {F <: AbstractFloat, U <: Unsigned}
-    return Quadrilateral8_2D(face_points(face, points))
-end
-
-# Return a materialized face for each face in the mesh
-# Type-stable on the condition that the faces are all the same type
-function materialize_faces(faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
-                           points::Vector{Point_2D{F}}) where {F <: AbstractFloat, U <: Unsigned}
-    return materialize_face.(faces, Ref(points))
-end
-
-# Return the number of edges in a face type
-# Type-stable other than the error message
-function num_edges(face::SVector{L, U}) where {L, U <: Unsigned}
-    cell_type = face[1]
-    if cell_type == 5 || cell_type == 22
-        return U(3)
-    elseif cell_type == 9 || cell_type == 23
-        return U(4)
-    else
-        @error "Unsupported face type"
-        return U(0)
-    end
 end
 
 function remap_points_to_hilbert(points::Vector{Point_2D{F}}) where {F <: AbstractFloat}

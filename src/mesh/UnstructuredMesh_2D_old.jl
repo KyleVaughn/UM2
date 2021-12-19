@@ -166,16 +166,6 @@ function add_materialized_faces(mesh::UnstructuredMesh_2D{F, U}) where {F <: Abs
                                     )
 end
 
-# Return the area of a face set, input by name
-# Not type-stable
-function area(mesh::UnstructuredMesh_2D{F, U}, set_name::String) where {F <: AbstractFloat, U <: Unsigned}
-    if 0 < length(mesh.materialized_faces)
-        return area(mesh.materialized_faces, mesh.face_sets[set_name])::F
-    else
-        return area(mesh.faces, mesh.points, mesh.face_sets[set_name])::F
-    end
-end
-
 # Axis-aligned bounding box, in 2d a rectangle.
 # Type-stable, other than the error message
 function bounding_box(mesh::UnstructuredMesh_2D{F, U};
