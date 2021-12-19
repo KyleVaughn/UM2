@@ -97,86 +97,6 @@ function bounding_box(points::Vector{Point_2D{F}}) where {F <: AbstractFloat}
                             Point_2D(xmin, ymax))
 end
 
-# SVector of MVectors of point IDs representing the 3 edges of a triangle
-# Type-stable
-function edges(face::SVector{4, U}) where {U <: Unsigned}
-    edges = SVector( MVector{2, U}(face[2], face[3]),
-                     MVector{2, U}(face[3], face[4]),
-                     MVector{2, U}(face[4], face[2]) )
-    # Order the linear edge vertices by ID
-    for edge in edges
-        if edge[2] < edge[1]
-            e1 = edge[1]
-            edge[1] = edge[2]
-            edge[2] = e1
-        end
-    end
-    return edges
-end
-
-# SVector of MVectors of point IDs representing the 4 edges of a quadrilateral
-# Type-stable
-function edges(face::SVector{5, U}) where {U <: Unsigned}
-    edges = SVector( MVector{2, U}(face[2], face[3]),
-                     MVector{2, U}(face[3], face[4]),
-                     MVector{2, U}(face[4], face[5]),
-                     MVector{2, U}(face[5], face[2]) )
-    # Order the linear edge vertices by ID
-    for edge in edges
-        if edge[2] < edge[1]
-            e1 = edge[1]
-            edge[1] = edge[2]
-            edge[2] = e1
-        end
-    end
-    return edges
-end
-
-# SVector of MVectors of point IDs representing the 3 edges of a quadratic triangle
-# Type-stable
-function edges(face::SVector{7, U}) where {U <: Unsigned}
-    edges = SVector( MVector{3, U}(face[2], face[3], face[5]),
-                     MVector{3, U}(face[3], face[4], face[6]),
-                     MVector{3, U}(face[4], face[2], face[7]) )
-    # Order the linear edge vertices by ID
-    for edge in edges
-        if edge[2] < edge[1]
-            e1 = edge[1]
-            edge[1] = edge[2]
-            edge[2] = e1
-        end
-    end
-    return edges
-end
-
-# SVector of MVectors of point IDs representing the 4 edges of a quadratic quadrilateral
-# Type-stable
-function edges(face::SVector{9, U}) where {U <: Unsigned}
-    edges = SVector( MVector{3, U}(face[2], face[3], face[6]),
-                     MVector{3, U}(face[3], face[4], face[7]),
-                     MVector{3, U}(face[4], face[5], face[8]),
-                     MVector{3, U}(face[5], face[2], face[9]) )
-    # Order th linear edge vertices by ID
-    for edge in edges
-        if edge[2] < edge[1]
-            e1 = edge[1]
-            edge[1] = edge[2]
-            edge[2] = e1
-        end
-    end
-    return edges
-end
-
-# The unique edges from a vector of triangles or quadrilaterals represented by point IDs
-# Type-stable if faces are the same type
-function edges(faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}) where {U <: Unsigned}
-    edge_arr = edges.(faces)
-    edges_unfiltered = [ edge for edge_vec in edge_arr for edge in edge_vec ]
-    # Filter the duplicate edges
-    edges_filtered = sort(unique(edges_unfiltered))
-    return [ SVector(e.data) for e in edges_filtered ]
-end
-
 # A vector of length 2 SVectors, denoting the face ID each edge is connected to. If the edge
 # is a boundary edge, face ID 0 is returned
 # Type-stable, other than the error messages.
@@ -210,25 +130,6 @@ function edge_face_connectivity(the_edges::Vector{<:SVector{L, U} where {L}},
     return [SVector(sort(two_faces).data) for two_faces in edge_face]
 end
 
-# Return an SVector of the points in the edge
-# Type-stable
-function edge_points(edge::SVector{2, U},
-                     points::Vector{Point_2D{F}}
-                    ) where {F <: AbstractFloat, U <: Unsigned}
-    return SVector(points[edge[1]], points[edge[2]])
-end
-
-# Return an SVector of the points in the edge
-# Type-stable
-function edge_points(edge::SVector{3, U},
-                     points::Vector{Point_2D{F}}
-                    ) where {F <: AbstractFloat, U <: Unsigned}
-    return SVector(points[edge[1]],
-                   points[edge[2]],
-                   points[edge[3]]
-                  )
-end
-
 # A vector of SVectors, denoting the edge ID each face is connected to.
 # Not type-stable
 function face_edge_connectivity(the_faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
@@ -250,13 +151,6 @@ function face_edge_connectivity(the_faces::Vector{<:SArray{S, U, 1, L} where {S<
         end
     end
     return [SVector(sort(conn).data) for conn in face_edge]::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
-end
-
-# Return an SVector of the points in the face
-# Type-stable
-function face_points(face::SVector{N, U}, points::Vector{Point_2D{F}}
-    ) where {N, F <: AbstractFloat, U <: Unsigned}
-    return SVector{N-1, Point_2D{F}}(points[face[2:N]])
 end
 
 # Find the faces which share the vertex of ID v.
