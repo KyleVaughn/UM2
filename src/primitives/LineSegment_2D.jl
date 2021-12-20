@@ -20,7 +20,7 @@ Base.lastindex(l::LineSegment_2D) = 2
 # Interpolation
 # l(0) yields points[1], and l(1) yields points[2]
 function (l::LineSegment_2D)(r::Real)
-    return l.points[1] + Float64(r) * (l.points[2] - l.points[1])
+    return l[1] + Float64(r) * (l[2] - l[1])
 end
 
 arc_length(l::LineSegment_2D) = distance(l.points[1], l.points[2])
