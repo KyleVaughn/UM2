@@ -1,7 +1,7 @@
 module MOCNeutronTransport
 # Compilation options
 const enable_local_gmsh = true
-const enable_visualization = false 
+const enable_visualization = true
 const visualize_ray_tracing = false 
 # using
 using ColorSchemes
@@ -65,6 +65,7 @@ include("AbstractTypes.jl")
 #include("./gmsh/gmsh_overlay_rectangular_grid.jl")
 include("./primitives/Point_2D.jl")
 include("./primitives/LineSegment_2D.jl")
+include("./primitives/Rectangle_2D.jl")
 include("./primitives/QuadraticSegment_2D.jl")
 include("./primitives/Triangle_2D.jl")
 include("./primitives/Quadrilateral_2D.jl")
@@ -94,10 +95,11 @@ export  AngularQuadrature,
         LineSegment_2D,
         QuadraticSegment_2D,
         Triangle_2D,
+        Rectangle_2D,
         Quadrilateral_2D,
         Triangle6_2D,
         Quadrilateral8_2D,
-        LinearTriangleMesh_2D,
+        TriangleMesh_2D,
         HierarchicalRectangularlyPartitionedMesh,
         Tree
 # Functions
@@ -120,6 +122,8 @@ export  ×,
         bounding_box,
         classify_nesw,
         closest_point,
+        D,
+        D²,
         derivative,
         distance,
         edges,
@@ -135,6 +139,7 @@ export  ×,
         generate_angular_quadrature,
         generate_tracks,
         get_start_edge_nesw,
+        height,
         hilbert_curve,
         HRPM_height,
         HRPM_width,
@@ -171,6 +176,7 @@ export  ×,
         to_lines,
         triangulate,
         validate_ray_tracing_data,
+        width,
         write_vtk_2d,
         write_xdmf_2d
 

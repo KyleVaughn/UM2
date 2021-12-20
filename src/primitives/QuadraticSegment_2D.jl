@@ -57,15 +57,58 @@ function arc_length(q::QuadraticSegment_2D, ::Val{N}) where {N}
     return sum(w .* norm.(derivative.(q, r))) 
 end
 
+
+# Find the AABB by finding the vector aligned BB.
 function bounding_box(q::QuadraticSegment_2D)
-    x = getindex.(q.points, 1)
-    y = getindex.(q.points, 2)
-    # A point is at most 0.25 (parametric distance) from one of the vertices,
-    # therefore, the maximum distance a point can be from any vertex is
-    # 0.25*max(|dq⃗'/dr|)
-    Δ_max = 0.25*derivative_magnitude_upperbound(q) 
-    return Rectangle_2D(minimum(x) - Δ_max, maximum(x) + Δ_max, 
-                        minimum(y) - Δ_max, maximum(y) + Δ_max)
+    # Find the vertex to vertex vector that is the longest
+    v⃗_12 = q[2] - q[1]
+    v⃗_13 = q[3] - q[1]
+    v⃗_23 = q[3] - q[2]
+    dsq_12 = v⃗_12 ⋅ v⃗_12
+    dsq_13 = v⃗_13 ⋅ v⃗_13
+    dsq_23 = v⃗_23 ⋅ v⃗_23
+    x⃗₁ = Point_2D(0)
+    x⃗₂ = Point_2D(0)
+    u⃗ = Point_2D(0)
+    v⃗ = Point_2D(0)
+    max_ind = 0
+    # Majority of the time, dsq_12 is the largest, so this is a fast acceptance
+    if (dsq_13 ≤ dsq_12) && (dsq_23 ≤ dsq_12)
+        max_ind = 1
+        u⃗ = v⃗_12
+        v⃗ = v⃗_13
+        x⃗₁ = q[1]
+        x⃗₂ = q[2]
+    elseif (dsq_12 ≤ dsq_13) && (dsq_23 ≤ dsq_13)
+        max_ind = 2
+        u⃗ = v⃗_13
+        v⃗ = v⃗_12
+        x⃗₁ = q[1]
+        x⃗₂ = q[3]
+    else
+        max_ind = 3
+        u⃗ = v⃗_23
+        v⃗ = -v⃗_12
+        x⃗₁ = q[2]
+        x⃗₂ = q[3]
+    end
+    # Example
+    #                 ___p₃___
+    #            ____/    .   \____
+    #        ___/          .       \
+    #     __/               .       p₂
+    #   _/                   p₁ + v⃗ᵤ
+    #  /
+    # p₁
+    v⃗ᵤ = (u⃗ ⋅v⃗)/(u⃗ ⋅u⃗) * u⃗ # Projection of v⃗ onto u⃗
+    h⃗ = v⃗ - v⃗ᵤ # vector aligned bounding box height
+    # Find the bounding box
+    x⃗₃ = x⃗₁ + h⃗
+    x⃗₄ = x⃗₂ + h⃗
+    x = SVector(x⃗₁.x, x⃗₂.x, x⃗₃.x, x⃗₄.x )
+    y = SVector(x⃗₁.y, x⃗₂.y, x⃗₃.y, x⃗₄.y )
+    return Rectangle_2D(minimum(x), maximum(x), 
+                        minimum(y), maximum(y))
 end
 
 closest_point(p::Point_2D, q::QuadraticSegment_2D) = closest_point(p, q, 30)
@@ -77,11 +120,11 @@ function closest_point(p::Point_2D, q::QuadraticSegment_2D, N::Int64)
     Δr = 0.0
     for i = 1:N
         err = p - q(r)
-        D = derivative(q, r)
-        if abs(D[1]) > abs(D[2])
-            Δr = err[1]/D[1]
+        D_r = D(q, r)
+        if abs(D_r[1]) > abs(D_r[2])
+            Δr = err[1]/D_r[1]
         else
-            Δr = err[2]/D[2]
+            Δr = err[2]/D_r[2]
         end
         r += Δr
         if abs(Δr) < 1e-7
@@ -97,6 +140,13 @@ function derivative(q::QuadraticSegment_2D, r::Real)
     return (4rₜ - 3)*(q[1] - q[3]) + 
            (4rₜ - 1)*(q[2] - q[3]) 
 end
+D(q::QuadraticSegment_2D, r::Real) = derivative(q, r)
+
+# Get the derivative d²q⃗/dr² evalutated at r
+function second_derivative(q::QuadraticSegment_2D, r::Real)
+    return 4*(q[1] + q[2] - 2*q[3]) 
+end
+D²(q::QuadraticSegment_2D, r::Real) = second_derivative(q, r)
 
 function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
     # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
@@ -198,20 +248,20 @@ function is_left(p::Point_2D, q::QuadraticSegment_2D)
 end
 
 
-# Get an upper bound on the derivative magnitude |dq⃗'/dr|
-function derivative_magnitude_upperbound(q::QuadraticSegment_2D)
-    # q'(r) = (4r-3)(q₁ - q₃) + (4r-1)(q₂ - q₃)
-    # |q'(r)| ≤ (4r-3)|(q₁ - q₃)| + (4r-1)|(q₂ - q₃)| ≤ 3Q₁ + Q₂
-    # Q₁ = max(|(q₁ - q₃)|, |(q₂ - q₃)|))
-    # Q₂ = min(|(q₁ - q₃)|, |(q₂ - q₃)|))
-    v_31 = norm(q[1] - q[3])
-    v_32 = norm(q[2] - q[3])
-    if v_31 > v_32
-        return 3v_31 +  v_32
-    else
-        return  v_31 + 3v_32
-    end
-end
+# # Get an upper bound on the derivative magnitude |dq⃗'/dr|
+# function derivative_magnitude_upperbound(q::QuadraticSegment_2D)
+#     # q'(r) = (4r-3)(q₁ - q₃) + (4r-1)(q₂ - q₃)
+#     # |q'(r)| ≤ (4r-3)|(q₁ - q₃)| + (4r-1)|(q₂ - q₃)| ≤ 3Q₁ + Q₂
+#     # Q₁ = max(|(q₁ - q₃)|, |(q₂ - q₃)|))
+#     # Q₂ = min(|(q₁ - q₃)|, |(q₂ - q₃)|))
+#     v_31 = norm(q[1] - q[3])
+#     v_32 = norm(q[2] - q[3])
+#     if v_31 > v_32
+#         return 3v_31 +  v_32
+#     else
+#         return  v_31 + 3v_32
+#     end
+# end
 
 # Plot
 # -------------------------------------------------------------------------------------------------
