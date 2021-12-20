@@ -60,12 +60,18 @@ function intersect(l₁::LineSegment_2D, l₂::LineSegment_2D)
     θₚ = LineSegment_2D_parallel_θ
     v⃗ = l₁[2] - l₁[1]
     u⃗ = l₂[2] - l₂[1]
-    if (v⃗ × u⃗)^2 > θₚ * (v⃗ ⋅ v⃗) * (u⃗ ⋅ u⃗)
+    u = u⃗ ⋅ u⃗
+    v = v⃗ ⋅ v⃗
+    vxu = v⃗ × u⃗
+    if vxu^2 > θₚ * v * u
         w⃗ = l₂[1] - l₁[1]
-        r = (w⃗ × u⃗)/(v⃗ × u⃗)
+        r = (w⃗ × u⃗)/vxu
+        if r < -ϵ || 1 + ϵ < r
+            return (0x00000000, Point_2D(0))
+        end
         p = l₁(r)
-        s = ((r*v⃗ - w⃗) ⋅ u⃗)/(u⃗ ⋅ u⃗)
-        return (-ϵ ≤ s ≤ 1 + ϵ) && (-ϵ ≤ r ≤ 1 + ϵ) ? (0x00000001, p) : (0x00000000, p)
+        s = ((r*v⃗ - w⃗) ⋅ u⃗)/u
+        return (-ϵ ≤ s ≤ 1 + ϵ) ? (0x00000001, p) : (0x00000000, p)
     else
         return (0x00000000, Point_2D(0))
     end

@@ -128,32 +128,36 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
         # Line intersection
         # Can B = 0 if A = 0 for non-trivial x?
         r = -C/B
+        if r < -ϵ || 1 + ϵ < r
+            return 0x00000000, SVector(p₁, p₂)
+        end
         p₁ = q(r)
         s = ((p₁ - l[1]) ⋅ w⃗)/w
-        if (-ϵ ≤ r ≤ 1 + ϵ) && (-ϵ ≤ s ≤ 1 + ϵ)
-            npoints = 0x00000001
+        if (-ϵ ≤ s ≤ 1 + ϵ)
+            return 0x00000001, SVector(p₁, p₂)           
         end
     elseif B^2 ≥ 4A*C
         # Quadratic intersection
         r₁ = (-B - √(B^2 - 4A*C))/2A
         r₂ = (-B + √(B^2 - 4A*C))/2A
-        p₁ = q(r₁)
-        p₂ = q(r₂)
-        s₁ = ((p₁ - l[1]) ⋅ w⃗)/w
-        s₂ = ((p₂ - l[1]) ⋅ w⃗)/w
-
-        # Check points to see if they are valid intersections.
-        # First r, s valid?
-        if (-ϵ ≤ r₁ ≤ 1 + ϵ) && (-ϵ ≤ s₁ ≤ 1 + ϵ)
-            npoints = 0x00000001
-        end
-        # Second r, s valid?
-        if (-ϵ ≤ r₂ ≤ 1 + ϵ) && (-ϵ ≤ s₂ ≤ 1 + ϵ)
-            npoints += 0x00000001
-            # If only point 2 is valid, return it in index 1
-            if npoints === 0x00000001
-                p₁ = p₂
+        if (-ϵ ≤ r₁ ≤ 1 + ϵ)
+            p = q(r₁)
+            s₁ = ((p - l[1]) ⋅ w⃗)/w
+            if (-ϵ ≤ s₁ ≤ 1 + ϵ)
+                p₁ = p
+                npoints += 0x00000001
             end
+        end
+        if (-ϵ ≤ r₂ ≤ 1 + ϵ)
+            p = q(r₂)
+            s₂ = ((p - l[1]) ⋅ w⃗)/w
+            if (-ϵ ≤ s₂ ≤ 1 + ϵ)
+                p₂ = p
+                npoints += 0x00000001
+            end
+        end
+        if npoints === 0x00000001 && p₁ === Point_2D(0, 0) 
+            p₁ = p₂
         end
     end
     return npoints, SVector(p₁, p₂)
