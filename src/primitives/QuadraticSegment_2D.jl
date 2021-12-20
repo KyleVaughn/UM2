@@ -173,11 +173,6 @@ intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 #   | / 
 #   o
 function is_left(p::Point_2D, q::QuadraticSegment_2D)
-    # If the point isn't to the left of the line segment, it won't be left of the curve.
-    v⃗ = p - q[1]
-    if (q[2] - q[1]) × v⃗ < 0
-        return false
-    end
     # Find the closest point to p on the curve.
     r, p_closest = closest_point(p, q)
     # If the r is invalid, take the closest end point.
@@ -185,7 +180,7 @@ function is_left(p::Point_2D, q::QuadraticSegment_2D)
     # but we already tested q[2] - q[1] × v⃗ < 0, and since it was not false,
     # it must be true
     if r < 1e-3 || 1 < r
-        return true
+        p_closest = q[2]
     end
     # Vector from curve start to closest point
     u⃗ = p_closest - q[1]
