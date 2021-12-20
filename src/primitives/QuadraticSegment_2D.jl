@@ -107,7 +107,7 @@ function bounding_box(q::QuadraticSegment_2D)
     x⃗₄ = x⃗₂ + h⃗
     x = SVector(x⃗₁.x, x⃗₂.x, x⃗₃.x, x⃗₄.x )
     y = SVector(x⃗₁.y, x⃗₂.y, x⃗₃.y, x⃗₄.y )
-    return Rectangle_2D(minimum(x), maximum(x), minimum(y), maximum(y))
+    return Rectangle_2D(minimum(x), minimum(y), maximum(x), maximum(y))
 end
 
 closest_point(p::Point_2D, q::QuadraticSegment_2D) = closest_point(p, q, 30)
@@ -232,12 +232,18 @@ intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 #   | / 
 #   o
 function is_left(p::Point_2D, q::QuadraticSegment_2D)
-    # Find the closest point to p on the curve.
-    r, p_closest = closest_point(p, q)
-    # If the r is invalid, take the closest end point.
-    # If r is small or beyond the valid range, just use the second point
-    if r < 1e-3 || 1 < r
+    bb = bounding_box(q)
+    p_closest = Point_2D(0)
+    if p ∉  bb || is_straight(q)
         p_closest = q[2]
+    else
+        # Find the closest point to p on the curve.
+        r, p_closest = closest_point(p, q)
+        # If the r is invalid, take the closest end point.
+        # If r is small or beyond the valid range, just use the second point
+        if r < 1e-3 || 1 < r
+            p_closest = q[2]
+        end
     end
     # Vector from curve start to closest point
     u⃗ = p_closest - q[1]
@@ -246,6 +252,9 @@ function is_left(p::Point_2D, q::QuadraticSegment_2D)
     return u⃗ × v⃗ > 0
 end
 
+function is_straight(q::QuadraticSegment_2D)
+    return distance(q[1], q[3]) + distance(q[3], q[2]) ≈ distance(q[1], q[2])
+end
 
 # # Get an upper bound on the derivative magnitude |dq⃗'/dr|
 # function derivative_magnitude_upperbound(q::QuadraticSegment_2D)

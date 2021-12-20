@@ -125,7 +125,7 @@ if enable_visualization
 
     function convert_arguments(LS::Type{<:LineSegments}, R::Vector{Rectangle_2D})
         point_sets = [convert_arguments(LS, rect) for rect in R]
-        return convert_arguments(LS, reduce(vcat, [pset for pset in point_sets]))
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
     end
 
     function convert_arguments(M::Type{<:Mesh}, rect::Rectangle_2D)

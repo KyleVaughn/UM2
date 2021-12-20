@@ -50,7 +50,7 @@ function (tri6::Triangle6_2D)(p::Point_2D)
                            4s*(1 - r - s)*tri6[6]
 end
 
-function bounding_box(tri6::Triangle6_2D, r::Real, s::Real)
+function bounding_box(tri6::Triangle6_2D)
     return bounding_box(QuadraticSegment_2D(tri6[1], tri6[2], tri6[4])) ∪
            bounding_box(QuadraticSegment_2D(tri6[2], tri6[3], tri6[5])) ∪
            bounding_box(QuadraticSegment_2D(tri6[3], tri6[1], tri6[6]))
@@ -158,16 +158,7 @@ function in(p::Point_2D, tri6::Triangle6_2D)
     #  |  /
     #  v /
     #  1
-    # Do a fast check to see if if point is within the circle of radius
-    # max(distance(p1, p2), distance(p1, p3), distance(p2, p3))
-    # centered arount tri6(1//3, 1//3).
-    p_12 = tri6[2] - tri6[1]
-    p_13 = tri6[3] - tri6[1]
-    p_23 = tri6[3] - tri6[2]
-    R² = max( p_12⋅p_12, p_13⋅p_13, p_23⋅p_23 )
-    p_r = tri6(Float64(1//3), Float64(1//3)) - p
-    return p_r ⋅ p_r ≤ R² &&
-           is_left(p, QuadraticSegment_2D(tri6[1], tri6[2], tri6[4])) &&
+    return is_left(p, QuadraticSegment_2D(tri6[1], tri6[2], tri6[4])) &&
            is_left(p, QuadraticSegment_2D(tri6[2], tri6[3], tri6[5])) &&
            is_left(p, QuadraticSegment_2D(tri6[3], tri6[1], tri6[6]))
 end
