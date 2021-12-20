@@ -135,6 +135,8 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
         s = ((p₁ - l[1]) ⋅ w⃗)/w
         if (-ϵ ≤ s ≤ 1 + ϵ)
             return 0x00000001, SVector(p₁, p₂)           
+        else
+            return 0x00000000, SVector(p₁, p₂)
         end
     elseif B^2 ≥ 4A*C
         # Quadratic intersection
@@ -171,17 +173,23 @@ intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 #   | / 
 #   o
 function is_left(p::Point_2D, q::QuadraticSegment_2D)
+    # If the point isn't to the left of the line segment, it won't be left of the curve.
+    v⃗ = p - q[1]
+    if (q[2] - q[1]) × v⃗ < 0
+        return false
+    end
     # Find the closest point to p on the curve.
     r, p_closest = closest_point(p, q)
     # If the r is invalid, take the closest end point.
     # If r is small or beyond the valid range, just use the second point
+    # but we already tested q[2] - q[1] × v⃗ < 0, and since it was not false,
+    # it must be true
     if r < 1e-3 || 1 < r
-        p_closest = q[2]
+        return true
     end
     # Vector from curve start to closest point
     u⃗ = p_closest - q[1]
     # Vector from curve start to the point of interest
-    v⃗ = p - q[1]
     return u⃗ × v⃗ > 0
 end
 
