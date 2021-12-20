@@ -57,6 +57,17 @@ function arc_length(q::QuadraticSegment_2D, ::Val{N}) where {N}
     return sum(w .* norm.(derivative.(q, r))) 
 end
 
+function bounding_box(q::QuadraticSegment_2D)
+    x = getindex.(q.points, 1)
+    y = getindex.(q.points, 2)
+    # A point is at most 0.25 (parametric distance) from one of the vertices,
+    # therefore, the maximum distance a point can be from any vertex is
+    # 0.25*max(|dq⃗'/dr|)
+    Δ_max = 0.25*derivative_magnitude_upperbound(q) 
+    return Rectangle_2D(minimum(x) - Δ_max, maximum(x) + Δ_max, 
+                        minimum(y) - Δ_max, maximum(y) + Δ_max)
+end
+
 closest_point(p::Point_2D, q::QuadraticSegment_2D) = closest_point(p, q, 30)
 
 # Return the closest point on the curve to point p and the value of r
@@ -208,7 +219,8 @@ if enable_visualization
     function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment_2D)
         rr = LinRange(0, 1, 15)
         points = q.(rr)
-        return convert_arguments(LS, points)
+        coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])
+        return convert_arguments(LS, coords)
     end
     
     function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{QuadraticSegment_2D})
