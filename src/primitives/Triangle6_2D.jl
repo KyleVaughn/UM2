@@ -19,9 +19,9 @@ Triangle6_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D,
 # Base
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(tri6::Triangle6_2D) = Ref(tri6)
-Base.getindex(tri6::Triangle_2D, i::Int64) = tri6.points[i]
-Base.firstindex(tri6::Triangle_2D) = 1
-Base.lastindex(tri6::Triangle_2D) = 6
+Base.getindex(tri6::Triangle6_2D, i::Int64) = tri6.points[i]
+Base.firstindex(tri6::Triangle6_2D) = 1
+Base.lastindex(tri6::Triangle6_2D) = 6
 
 # Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
