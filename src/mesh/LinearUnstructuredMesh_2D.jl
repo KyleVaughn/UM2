@@ -2,7 +2,7 @@ struct GeneralLinearUnstructuredMesh_2D <: LinearUnstructuredMesh_2D
     name::String
     points::Vector{Point_2D}
     edges::Vector{<:SVector{L, UInt32} where {L}}
-    materialized_edges::Vector{<:Edge_2D}
+    materialized_edges::Vector{LineSegment_2D}
     faces::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}}
     materialized_faces::Vector{<:Face_2D}
     edge_face_connectivity::Vector{SVector{2, UInt32}}
@@ -15,7 +15,7 @@ function GeneralUnstructuredMesh_2D(;
         name::String = "DefaultMeshName",
         points::Vector{Point_2D} = Point_2D[],
         edges::Vector{<:SVector{L, UInt32} where {L}} = SVector{2, UInt32}[],
-        materialized_edges::Vector{<:Edge_2D} = LineSegment_2D[],
+        materialized_edges::Vector{LineSegment_2D} = LineSegment_2D[],
         faces::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}} = SVector{4, UInt32}[],
         materialized_faces::Vector{<:Face_2D} = Triangle_2D[],
         edge_face_connectivity::Vector{SVector{2, UInt32}} = SVector{2, UInt32}[],
@@ -35,20 +35,6 @@ function GeneralUnstructuredMesh_2D(;
                                           face_sets,
                                          )
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 struct TriangleMesh_2D <: LinearUnstructuredMesh_2D
     name::String
@@ -91,7 +77,6 @@ end
 # Axis-aligned bounding box, in 2d a rectangle.
 # Type-stable
 function bounding_box(mesh::M) where {M <: LinearUnstructuredMesh_2D}
-                      
     # If the mesh does not have any quadratic faces, the bounding_box may be determined 
     # entirely from the points. 
     return bounding_box(mesh.points)

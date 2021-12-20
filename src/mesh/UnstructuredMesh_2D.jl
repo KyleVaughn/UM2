@@ -227,4 +227,3 @@ function num_edges(face::SVector{L, UInt32}) where {L}
         return 0x00000000
     end
 end
-
