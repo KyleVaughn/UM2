@@ -177,14 +177,13 @@ function is_left(p::Point_2D, q::QuadraticSegment_2D)
     r, p_closest = closest_point(p, q)
     # If the r is invalid, take the closest end point.
     # If r is small or beyond the valid range, just use the second point
-    # but we already tested q[2] - q[1] × v⃗ < 0, and since it was not false,
-    # it must be true
     if r < 1e-3 || 1 < r
         p_closest = q[2]
     end
     # Vector from curve start to closest point
     u⃗ = p_closest - q[1]
     # Vector from curve start to the point of interest
+    v⃗ = p - q[1]
     return u⃗ × v⃗ > 0
 end
 
