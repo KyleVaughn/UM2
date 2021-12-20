@@ -50,6 +50,12 @@ function (tri6::Triangle6_2D)(p::Point_2D)
                            4s*(1 - r - s)*tri6[6]
 end
 
+function bounding_box(tri6::Triangle6_2D, r::Real, s::Real)
+    return bounding_box(QuadraticSegment_2D(tri6[1], tri6[2], tri6[4])) ∪
+           bounding_box(QuadraticSegment_2D(tri6[2], tri6[3], tri6[5])) ∪
+           bounding_box(QuadraticSegment_2D(tri6[3], tri6[1], tri6[6]))
+end
+
 function derivative(tri6::Triangle6_2D, r::Real, s::Real)
     # Let F(r,s) be the interpolation function for tri6
     # Returns ∂F/∂r, ∂F/∂s
@@ -220,12 +226,12 @@ if enable_visualization
         q₂ = QuadraticSegment_2D(tri6[2], tri6[3], tri6[5])
         q₃ = QuadraticSegment_2D(tri6[3], tri6[1], tri6[6])
         qsegs = [q₁, q₂, q₃]
-        return convert_arguments(P, qsegs)
+        return convert_arguments(LS, qsegs)
     end
 
     function convert_arguments(LS::Type{<:LineSegments}, T::Vector{Triangle6_2D})
         point_sets = [convert_arguments(LS, tri6) for tri6 in T]
-        return convert_arguments(LS, reduce(vcat, [pset for pset in point_sets]))
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
     end
 
     function convert_arguments(P::Type{<:Mesh}, tri6::Triangle6_2D)

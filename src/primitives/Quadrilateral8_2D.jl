@@ -223,7 +223,7 @@ if enable_visualization
     
     function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{Quadrilateral8_2D})
         point_sets = [convert_arguments(LS, quad8) for quad8 in Q]
-        return convert_arguments(LS, reduce(vcat, [pset for pset in point_sets]))
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
     end
     
     function convert_arguments(M::Type{<:Mesh}, quad8::Quadrilateral8_2D)

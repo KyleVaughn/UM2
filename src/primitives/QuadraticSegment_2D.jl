@@ -274,6 +274,6 @@ if enable_visualization
     
     function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{QuadraticSegment_2D})
         point_sets = [convert_arguments(LS, q) for q in Q]
-        return convert_arguments(LS, reduce(vcat, [pset for pset in point_sets]))
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
     end
 end
