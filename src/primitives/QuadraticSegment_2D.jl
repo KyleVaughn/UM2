@@ -187,7 +187,7 @@ function is_left(p::Point_2D, q::QuadraticSegment_2D)
 end
 
 
-# Get an upper bound on the derivative magnitude
+# Get an upper bound on the derivative magnitude |dq⃗'/dr|
 function derivative_magnitude_upperbound(q::QuadraticSegment_2D)
     # q'(r) = (4r-3)(q₁ - q₃) + (4r-1)(q₂ - q₃)
     # |q'(r)| ≤ (4r-3)|(q₁ - q₃)| + (4r-1)|(q₂ - q₃)| ≤ 3Q₁ + Q₂
