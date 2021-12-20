@@ -107,8 +107,7 @@ function bounding_box(q::QuadraticSegment_2D)
     x⃗₄ = x⃗₂ + h⃗
     x = SVector(x⃗₁.x, x⃗₂.x, x⃗₃.x, x⃗₄.x )
     y = SVector(x⃗₁.y, x⃗₂.y, x⃗₃.y, x⃗₄.y )
-    return Rectangle_2D(minimum(x), maximum(x), 
-                        minimum(y), maximum(y))
+    return Rectangle_2D(minimum(x), maximum(x), minimum(y), maximum(y))
 end
 
 closest_point(p::Point_2D, q::QuadraticSegment_2D) = closest_point(p, q, 30)

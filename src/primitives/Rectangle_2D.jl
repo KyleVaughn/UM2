@@ -6,8 +6,8 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-Rectangle_2D(xmin::Float64, xmax::Float64,
-             ymin::Float64, ymax::Float64) = Rectangle_2D(Point_2D(xmin, ymin), 
+Rectangle_2D(xmin::Float64, ymin::Float64,
+             xmax::Float64, ymax::Float64) = Rectangle_2D(Point_2D(xmin, ymin), 
                                                           Point_2D(xmax, ymax))
 
 # Base
@@ -70,7 +70,6 @@ function intersect(l::LineSegment_2D, rect::Rectangle_2D)
         end
     end
 
-
     t₁ = q₁ / p₁
     t₂ = q₂ / p₂
     if (p₁ < 0)
@@ -100,6 +99,14 @@ function intersect(l::LineSegment_2D, rect::Rectangle_2D)
     end
 
     return 0x00000002, SVector(l(t_start), l(t_stop))
+end
+
+function union(r₁::Rectangle_2D, r₂::Rectangle_2D)
+    xmin = min(r₁.xmin, r₂.xmin)
+    ymin = min(r₁.ymin, r₂.ymin)
+    xmax = max(r₁.xmax, r₂.xmax)
+    ymax = max(r₁.ymax, r₂.ymax)
+    return Rectangle_2D(xmin, ymin, xmax, ymax)
 end
 
 # Plot
