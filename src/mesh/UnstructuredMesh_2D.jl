@@ -1,5 +1,3 @@
-abstract type UnstructuredMesh_2D end
-
 # Area of face
 # Type-stable
 function area(face::SVector{N, UInt32}, points::Vector{Point_2D}) where {N}
@@ -22,19 +20,13 @@ function area(mesh::M, set_name::String) where {M <: UnstructuredMesh_2D}
     return area(mesh, mesh.face_sets[set_name])
 end
 
-#function bounding_box(points::Vector{Point_2D})
-#    x = getindex.(points, 1)
-#    y = getindex.(points, 2)
-#    xmin = minimum(x)
-#    xmax = maximum(x)
-#    ymin = minimum(y)
-#    ymax = maximum(y)
-#    return Quadrilateral_2D(Point_2D(xmin, ymin),
-#                            Point_2D(xmax, ymin),
-#                            Point_2D(xmax, ymax),
-#                            Point_2D(xmin, ymax))
-#end
-
+# Bounding box of a vector of points
+# Type-stable
+function bounding_box(points::Vector{Point_2D})
+    x = getindex.(points, 1)
+    y = getindex.(points, 2)
+    return Rectangle_2D(minimum(x), maximum(x), minimum(y), maximum(y))
+end
 
 # SVector of MVectors of point IDs representing the 3 edges of a triangle
 # Type-stable

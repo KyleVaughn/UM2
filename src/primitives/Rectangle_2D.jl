@@ -4,6 +4,12 @@ struct Rectangle_2D <: Face_2D
     tr::Point_2D # Top right point
 end
 
+# Constructors
+# -------------------------------------------------------------------------------------------------
+Rectangle_2D(xmin::Float64, xmax::Float64,
+             ymin::Float64, ymax::Float64) = Rectangle_2D(Point_2D(xmin, ymin), 
+                                                          Point_2D(xmax, ymax))
+
 # Base
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(rect::Rectangle_2D) = Ref(rect)
