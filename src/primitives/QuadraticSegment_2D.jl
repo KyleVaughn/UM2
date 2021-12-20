@@ -83,9 +83,8 @@ end
 # Get the derivative dq⃗/dr evalutated at r
 function derivative(q::QuadraticSegment_2D, r::Real)
     rₜ = Float64(r)
-    return (4rₜ - 3)*q[1] + 
-           (4rₜ - 1)*q[2] + 
-           (4 - 8rₜ)*q[3]
+    return (4rₜ - 3)*(q[1] - q[3]) + 
+           (4rₜ - 1)*(q[2] - q[3]) 
 end
 
 function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
@@ -185,6 +184,22 @@ function is_left(p::Point_2D, q::QuadraticSegment_2D)
     # Vector from curve start to the point of interest
     v⃗ = p - q[1]
     return u⃗ × v⃗ > 0
+end
+
+
+# Get an upper bound on the derivative magnitude
+function derivative_magnitude_upperbound(q::QuadraticSegment_2D)
+    # q'(r) = (4r-3)(q₁ - q₃) + (4r-1)(q₂ - q₃)
+    # |q'(r)| ≤ (4r-3)|(q₁ - q₃)| + (4r-1)|(q₂ - q₃)| ≤ 3Q₁ + Q₂
+    # Q₁ = max(|(q₁ - q₃)|, |(q₂ - q₃)|))
+    # Q₂ = min(|(q₁ - q₃)|, |(q₂ - q₃)|))
+    v_31 = norm(q[1] - q[3])
+    v_32 = norm(q[2] - q[3])
+    if v_31 > v_32
+        return 3v_31 +  v_32
+    else
+        return  v_31 + 3v_32
+    end
 end
 
 # Plot

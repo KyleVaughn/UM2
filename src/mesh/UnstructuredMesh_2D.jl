@@ -28,6 +28,14 @@ function bounding_box(points::Vector{Point_2D})
     return Rectangle_2D(minimum(x), maximum(x), minimum(y), maximum(y))
 end
 
+# Bounding box of a vector of points
+# Type-stable
+function bounding_box(points::SVector{L, Point_2D}) where {L}
+    x = getindex.(points, 1)
+    y = getindex.(points, 2)
+    return Rectangle_2D(minimum(x), maximum(x), minimum(y), maximum(y))
+end
+
 # SVector of MVectors of point IDs representing the 3 edges of a triangle
 # Type-stable
 function edges(face::SVector{3, UInt32})

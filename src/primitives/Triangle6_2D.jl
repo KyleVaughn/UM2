@@ -152,7 +152,16 @@ function in(p::Point_2D, tri6::Triangle6_2D)
     #  |  /
     #  v /
     #  1
-    return is_left(p, QuadraticSegment_2D(tri6[1], tri6[2], tri6[4])) &&
+    # Do a fast check to see if if point is within the circle of radius
+    # max(distance(p1, p2), distance(p1, p3), distance(p2, p3))
+    # centered arount tri6(1//3, 1//3).
+    p_12 = tri6[2] - tri6[1]
+    p_13 = tri6[3] - tri6[1]
+    p_23 = tri6[3] - tri6[2]
+    R² = max( p_12⋅p_12, p_13⋅p_13, p_23⋅p_23 )
+    p_r = tri6(Float64(1//3), Float64(1//3)) - p
+    return p_r ⋅ p_r ≤ R² &&
+           is_left(p, QuadraticSegment_2D(tri6[1], tri6[2], tri6[4])) &&
            is_left(p, QuadraticSegment_2D(tri6[2], tri6[3], tri6[5])) &&
            is_left(p, QuadraticSegment_2D(tri6[3], tri6[1], tri6[6]))
 end
@@ -161,12 +170,12 @@ end
 # function in(p::Point_2D, tri6::Triangle6_2D)
 #     return in(p, tri6, 30)
 # end
-# 
+#
 # function in(p::Point_2D, tri6::Triangle6_2D, N::Int64)
 #     # Determine if the point is in the triangle using the Newton-Raphson method
 #     # N is the max number of iterations of the method.
 #     p_rs = real_to_parametric(p, tri6, N)
-#     ϵ = parametric_coordinate_ϵ 
+#     ϵ = parametric_coordinate_ϵ
 #     # Check that the r coordinate and s coordinate are in [-ϵ,  1 + ϵ] and
 #     # r + s ≤ 1 + ϵ
 #     # These are the conditions for a valid point in the triangle ± some ϵ
@@ -196,7 +205,7 @@ function intersect(l::LineSegment_2D, tri6::Triangle6_2D)
     for k = 1:3
         npoints, points = l ∩ edges[k]
         for i = 1:npoints
-            n_ipoints += 0x00000001 
+            n_ipoints += 0x00000001
             ipoints[n_ipoints] = points[i]
         end
     end
@@ -213,17 +222,17 @@ if enable_visualization
         qsegs = [q₁, q₂, q₃]
         return convert_arguments(P, qsegs)
     end
-    
+
     function convert_arguments(LS::Type{<:LineSegments}, T::Vector{Triangle6_2D})
         point_sets = [convert_arguments(LS, tri6) for tri6 in T]
         return convert_arguments(LS, reduce(vcat, [pset for pset in point_sets]))
     end
-    
+
     function convert_arguments(P::Type{<:Mesh}, tri6::Triangle6_2D)
         triangles = triangulate(tri6, 13)
         return convert_arguments(P, triangles)
     end
-    
+
     function convert_arguments(M::Type{<:Mesh}, T::Vector{Triangle6_2D})
         triangles = reduce(vcat, triangulate.(T, 13))
         return convert_arguments(M, triangles)
