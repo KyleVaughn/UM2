@@ -50,12 +50,6 @@ function (tri6::Triangle6_2D)(p::Point_2D)
                            4s*(1 - r - s)*tri6[6]
 end
 
-function bounding_box(tri6::Triangle6_2D)
-    return bounding_box(QuadraticSegment_2D(tri6[1], tri6[2], tri6[4])) ∪
-           bounding_box(QuadraticSegment_2D(tri6[2], tri6[3], tri6[5])) ∪
-           bounding_box(QuadraticSegment_2D(tri6[3], tri6[1], tri6[6]))
-end
-
 function derivative(tri6::Triangle6_2D, r::Real, s::Real)
     # Let F(r,s) be the interpolation function for tri6
     # Returns ∂F/∂r, ∂F/∂s

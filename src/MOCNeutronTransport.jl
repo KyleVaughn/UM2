@@ -35,7 +35,7 @@ end
 using LoggingExtras: TransformerLogger, global_logger
 
 # import
-import Base: +, -, *, /, ≈, ≉, ==, intersect, in
+import Base: +, -, *, /, ≈, ≉, ==, intersect, in, union
 if enable_visualization 
     import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
 end
@@ -147,6 +147,7 @@ export  ×,
         intersect_edges,
         intersect_faces,
         is_left,
+        is_straight,
         jacobian,
         log_timestamps,
         materialize_edge,
@@ -175,6 +176,7 @@ export  ×,
         submesh,
         to_lines,
         triangulate,
+        union,
         validate_ray_tracing_data,
         width,
         write_vtk_2d,
