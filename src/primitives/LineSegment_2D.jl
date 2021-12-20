@@ -57,7 +57,7 @@ function intersect(l₁::LineSegment_2D, l₂::LineSegment_2D)
     θₚ = LineSegment_2D_parallel_θ
     v⃗ = l₁.points[2] - l₁.points[1]
     u⃗ = l₂.points[2] - l₂.points[1]
-    if abs(v⃗ × u⃗) > θₚ * norm(v⃗) * norm(u⃗)
+    if (v⃗ × u⃗)^2 > θₚ * (v⃗ ⋅ v⃗) * (u⃗ ⋅ u⃗)
         w⃗ = l₂.points[1] - l₁.points[1]
         r = (w⃗ × u⃗)/(v⃗ × u⃗)
         p = l₁(r)
