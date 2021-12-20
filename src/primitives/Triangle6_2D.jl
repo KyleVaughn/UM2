@@ -12,17 +12,16 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-Triangle6_2D(p₁::Point_2D,
-             p₂::Point_2D,
-             p₃::Point_2D,
-             p₄::Point_2D,
-             p₅::Point_2D,
-             p₆::Point_2D
+Triangle6_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D,
+             p₄::Point_2D, p₅::Point_2D, p₆::Point_2D
             ) = Triangle6_2D(SVector(p₁, p₂, p₃, p₄, p₅, p₆))
 
 # Base
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(tri6::Triangle6_2D) = Ref(tri6)
+Base.getindex(tri6::Triangle_2D, i::Int64) = tri6.points[i]
+Base.firstindex(tri6::Triangle_2D) = 1
+Base.lastindex(tri6::Triangle_2D) = 6
 
 # Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
@@ -31,24 +30,24 @@ function (tri6::Triangle6_2D)(r::Real, s::Real)
     # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     rₜ = Float64(r); sₜ = Float64(s)
-    return (1 - rₜ - sₜ)*(2(1 - rₜ - sₜ) - 1)*tri6.points[1] +
-                                   rₜ*(2rₜ-1)*tri6.points[2] +
-                                   sₜ*(2sₜ-1)*tri6.points[3] +
-                            4rₜ*(1 - rₜ - sₜ)*tri6.points[4] +
-                                     (4rₜ*sₜ)*tri6.points[5] +
-                            4sₜ*(1 - rₜ - sₜ)*tri6.points[6]
+    return (1 - rₜ - sₜ)*(2(1 - rₜ - sₜ) - 1)*tri6[1] +
+                                   rₜ*(2rₜ-1)*tri6[2] +
+                                   sₜ*(2sₜ-1)*tri6[3] +
+                            4rₜ*(1 - rₜ - sₜ)*tri6[4] +
+                                     (4rₜ*sₜ)*tri6[5] +
+                            4sₜ*(1 - rₜ - sₜ)*tri6[6]
 end
 
 # Interpolation using a point instead of (r,s)
 function (tri6::Triangle6_2D)(p::Point_2D)
     r = p[1]
     s = p[2]
-    return (1 - r - s)*(2(1 - r - s) - 1)*tri6.points[1] +
-                                 r*(2r-1)*tri6.points[2] +
-                                 s*(2s-1)*tri6.points[3] +
-                           4r*(1 - r - s)*tri6.points[4] +
-                                   (4r*s)*tri6.points[5] +
-                           4s*(1 - r - s)*tri6.points[6]
+    return (1 - r - s)*(2(1 - r - s) - 1)*tri6[1] +
+                                 r*(2r-1)*tri6[2] +
+                                 s*(2s-1)*tri6[3] +
+                           4r*(1 - r - s)*tri6[4] +
+                                   (4r*s)*tri6[5] +
+                           4s*(1 - r - s)*tri6[6]
 end
 
 function derivative(tri6::Triangle6_2D, r::Real, s::Real)
@@ -56,17 +55,17 @@ function derivative(tri6::Triangle6_2D, r::Real, s::Real)
     # Returns ∂F/∂r, ∂F/∂s
     rₜ = Float64(r)
     sₜ = Float64(s)
-    ∂F_∂r = (4rₜ + 4sₜ - 3)*tri6.points[1] +
-                  (4rₜ - 1)*tri6.points[2] +
-            4(1 - 2rₜ - sₜ)*tri6.points[4] +
-                      (4sₜ)*tri6.points[5] +
-                     (-4sₜ)*tri6.points[6]
+    ∂F_∂r = (4rₜ + 4sₜ - 3)*tri6[1] +
+                  (4rₜ - 1)*tri6[2] +
+            4(1 - 2rₜ - sₜ)*tri6[4] +
+                      (4sₜ)*tri6[5] +
+                     (-4sₜ)*tri6[6]
 
-    ∂F_∂s = (4rₜ + 4sₜ - 3)*tri6.points[1] +
-                  (4sₜ - 1)*tri6.points[3] +
-                     (-4rₜ)*tri6.points[4] +
-                      (4rₜ)*tri6.points[5] +
-            4(1 - rₜ - 2sₜ)*tri6.points[6]
+    ∂F_∂s = (4rₜ + 4sₜ - 3)*tri6[1] +
+                  (4sₜ - 1)*tri6[3] +
+                     (-4rₜ)*tri6[4] +
+                      (4rₜ)*tri6[5] +
+            4(1 - rₜ - 2sₜ)*tri6[6]
     return ∂F_∂r, ∂F_∂s
 end
 
@@ -98,7 +97,7 @@ function triangulate(tri6::Triangle6_2D, N::Int64)
     # N is the number of divisions of each edge
     triangles = Vector{Triangle_2D}(undef, (N+1)*(N+1))
     if N === 0
-        triangles[1] = Triangle_2D(tri6.points[1], tri6.points[2], tri6.points[3])
+        triangles[1] = Triangle_2D(tri6[1], tri6[2], tri6[3])
     else
         i = 1
         for S = 1:N, R = 0:N-S
@@ -153,9 +152,9 @@ function in(p::Point_2D, tri6::Triangle6_2D)
     #  |  /
     #  v /
     #  1
-    return is_left(p, QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4])) &&
-           is_left(p, QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5])) &&
-           is_left(p, QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
+    return is_left(p, QuadraticSegment_2D(tri6[1], tri6[2], tri6[4])) &&
+           is_left(p, QuadraticSegment_2D(tri6[2], tri6[3], tri6[5])) &&
+           is_left(p, QuadraticSegment_2D(tri6[3], tri6[1], tri6[6]))
 end
 
 # # Slower method than above.
@@ -182,9 +181,9 @@ end
 
 function intersect(l::LineSegment_2D, tri6::Triangle6_2D)
     # Create the 3 quadratic segments that make up the triangle and intersect each one
-    edges = SVector(QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4]),
-                    QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5]),
-                    QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6]))
+    edges = SVector(QuadraticSegment_2D(tri6[1], tri6[2], tri6[4]),
+                    QuadraticSegment_2D(tri6[2], tri6[3], tri6[5]),
+                    QuadraticSegment_2D(tri6[3], tri6[1], tri6[6]))
     ipoints = MVector(Point_2D(0, 0),
                       Point_2D(0, 0),
                       Point_2D(0, 0),
@@ -208,9 +207,9 @@ end
 # -------------------------------------------------------------------------------------------------
 if enable_visualization
     function convert_arguments(LS::Type{<:LineSegments}, tri6::Triangle6_2D)
-        q₁ = QuadraticSegment_2D(tri6.points[1], tri6.points[2], tri6.points[4])
-        q₂ = QuadraticSegment_2D(tri6.points[2], tri6.points[3], tri6.points[5])
-        q₃ = QuadraticSegment_2D(tri6.points[3], tri6.points[1], tri6.points[6])
+        q₁ = QuadraticSegment_2D(tri6[1], tri6[2], tri6[4])
+        q₂ = QuadraticSegment_2D(tri6[2], tri6[3], tri6[5])
+        q₃ = QuadraticSegment_2D(tri6[3], tri6[1], tri6[6])
         qsegs = [q₁, q₂, q₃]
         return convert_arguments(P, qsegs)
     end

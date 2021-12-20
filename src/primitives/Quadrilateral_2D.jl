@@ -10,14 +10,15 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-Quadrilateral_2D(p₁::Point_2D,
-                 p₂::Point_2D,
-                 p₃::Point_2D,
-                 p₄::Point_2D) = Quadrilateral_2D(SVector(p₁, p₂, p₃, p₄))
+Quadrilateral_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D, p₄::Point_2D
+                ) = Quadrilateral_2D(SVector(p₁, p₂, p₃, p₄))
 
 # Base
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(quad::Quadrilateral_2D) = Ref(quad)
+Base.getindex(quad::Quadrilateral_2D, i::Int64) = quad.points[i]
+Base.firstindex(quad::Quadrilateral_2D) = 1
+Base.lastindex(quad::Quadrilateral_2D) = 4
 
 # Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
@@ -26,15 +27,15 @@ function (quad::Quadrilateral_2D)(r::Real, s::Real)
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     rₜ = Float64(r)
     sₜ = Float64(s)
-    return (1 - rₜ)*(1 - sₜ)*quad.points[1] +
-                 rₜ*(1 - sₜ)*quad.points[2] +
-                       rₜ*sₜ*quad.points[3] +
-                 (1 - rₜ)*sₜ*quad.points[4]
+    return (1 - rₜ)*(1 - sₜ)*quad[1] +
+                 rₜ*(1 - sₜ)*quad[2] +
+                       rₜ*sₜ*quad[3] +
+                 (1 - rₜ)*sₜ*quad[4]
 end
 
 function triangulate(quad::Quadrilateral_2D)
     # Return the two triangles that partition the domain
-    A, B, C, D = quad.points
+    A, B, C, D = quad
     return SVector(Triangle_2D(A, B, C), Triangle_2D(C, D, A))
 end
 
@@ -55,18 +56,18 @@ function in(p::Point_2D, quad::Quadrilateral_2D)
     #  |      |
     #  v----->2
     #  1
-    return is_left(p, LineSegment_2D(quad.points[1], quad.points[2])) &&
-           is_left(p, LineSegment_2D(quad.points[2], quad.points[3])) &&
-           is_left(p, LineSegment_2D(quad.points[3], quad.points[4])) &&
-           is_left(p, LineSegment_2D(quad.points[4], quad.points[1]))
+    return is_left(p, LineSegment_2D(quad[1], quad[2])) &&
+           is_left(p, LineSegment_2D(quad[2], quad[3])) &&
+           is_left(p, LineSegment_2D(quad[3], quad[4])) &&
+           is_left(p, LineSegment_2D(quad[4], quad[1]))
 end
 
 function intersect(l::LineSegment_2D, quad::Quadrilateral_2D)
     # Create the 4 line segments that make up the quadrilateral and intersect each one
-    edges = SVector(LineSegment_2D(quad.points[1], quad.points[2]),
-                    LineSegment_2D(quad.points[2], quad.points[3]),
-                    LineSegment_2D(quad.points[3], quad.points[4]),
-                    LineSegment_2D(quad.points[4], quad.points[1]))
+    edges = SVector(LineSegment_2D(quad[1], quad[2]),
+                    LineSegment_2D(quad[2], quad[3]),
+                    LineSegment_2D(quad[3], quad[4]),
+                    LineSegment_2D(quad[4], quad[1]))
     ipoints = MVector(Point_2D(0, 0),
                       Point_2D(0, 0),
                       Point_2D(0, 0))
@@ -89,10 +90,10 @@ end
 # -------------------------------------------------------------------------------------------------
 if enable_visualization
     function convert_arguments(LS::Type{<:LineSegments}, quad::Quadrilateral_2D)
-        l₁ = LineSegment_2D(quad.points[1], quad.points[2])
-        l₂ = LineSegment_2D(quad.points[2], quad.points[3])
-        l₃ = LineSegment_2D(quad.points[3], quad.points[4])
-        l₄ = LineSegment_2D(quad.points[4], quad.points[1])
+        l₁ = LineSegment_2D(quad[1], quad[2])
+        l₂ = LineSegment_2D(quad[2], quad[3])
+        l₃ = LineSegment_2D(quad[3], quad[4])
+        l₄ = LineSegment_2D(quad[4], quad[1])
         lines = [l₁, l₂, l₃, l₄]
         return convert_arguments(LS, lines)
     end
@@ -103,14 +104,14 @@ if enable_visualization
     end
 
     function convert_arguments(M::Type{<:Mesh}, quad::Quadrilateral_2D)
-        points = [quad.points[i] for i = 1:4]
+        points = [quad[i] for i = 1:4]
         faces = [1 2 3;
                  3 4 1]
         return convert_arguments(M, points, faces)
     end
 
     function convert_arguments(M::Type{<:Mesh}, Q::Vector{Quadrilateral_2D})
-        points = reduce(vcat, [[quad.points[i] for i = 1:4] for quad in Q])
+        points = reduce(vcat, [[quad[i] for i = 1:4] for quad in Q])
         faces = zeros(Int64, 2*length(Q), 3)
         j = 0
         for i in 1:2:2*length(Q)

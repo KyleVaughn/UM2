@@ -10,6 +10,10 @@ Triangle_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D) = Triangle_2D(SVecto
 # Base
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(tri::Triangle_2D) = Ref(tri)
+Base.getindex(tri::Triangle_2D, i::Int64) = tri.points[i]
+Base.firstindex(tri::Triangle_2D) = 1
+Base.lastindex(tri::Triangle_2D) = 3
+
 
 # Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
@@ -18,7 +22,7 @@ function (tri::Triangle_2D)(r::Real, s::Real)
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     rₜ = Float64(r); sₜ = Float64(s)
-    return (1 - rₜ - sₜ)*tri.points[1] + rₜ*tri.points[2] + sₜ*tri.points[3]
+    return (1 - rₜ - sₜ)*tri[1] + rₜ*tri[2] + sₜ*tri[3]
 end
 
 function area(tri::Triangle_2D)
@@ -28,8 +32,8 @@ function area(tri::Triangle_2D)
     # h = |sin(θ) v⃗|, where θ is the angle between u⃗ and v⃗
     # u⃗ × v⃗ = |u⃗||v⃗| sin(θ), hence
     # A = |u⃗ × v⃗|/2 = bh/2
-    u⃗ = tri.points[2] - tri.points[1]
-    v⃗ = tri.points[3] - tri.points[1]
+    u⃗ = tri[2] - tri[1]
+    v⃗ = tri[3] - tri[1]
     # 2D cross product returns a scalar
     return abs(u⃗ × v⃗)/2
 end
@@ -43,16 +47,16 @@ function in(p::Point_2D, tri::Triangle_2D)
     #  |  /
     #  v /
     #  1
-    return is_left(p, LineSegment_2D(tri.points[1], tri.points[2])) &&
-           is_left(p, LineSegment_2D(tri.points[2], tri.points[3])) &&
-           is_left(p, LineSegment_2D(tri.points[3], tri.points[1]))
+    return is_left(p, LineSegment_2D(tri[1], tri[2])) &&
+           is_left(p, LineSegment_2D(tri[2], tri[3])) &&
+           is_left(p, LineSegment_2D(tri[3], tri[1]))
 end
 
 function intersect(l::LineSegment_2D, tri::Triangle_2D)
     # Create the 3 line segments that make up the triangle and intersect each one
-    edges = SVector(LineSegment_2D(tri.points[1], tri.points[2]),
-                    LineSegment_2D(tri.points[2], tri.points[3]),
-                    LineSegment_2D(tri.points[3], tri.points[1]))
+    edges = SVector(LineSegment_2D(tri[1], tri[2]),
+                    LineSegment_2D(tri[2], tri[3]),
+                    LineSegment_2D(tri[3], tri[1]))
     ipoints = MVector(Point_2D(0, 0),
                       Point_2D(0, 0),
                       Point_2D(0, 0))
@@ -72,9 +76,9 @@ end
 # -------------------------------------------------------------------------------------------------
 if enable_visualization
     function convert_arguments(LS::Type{<:LineSegments}, tri::Triangle_2D)
-        l₁ = LineSegment_2D(tri.points[1], tri.points[2])
-        l₂ = LineSegment_2D(tri.points[2], tri.points[3])
-        l₃ = LineSegment_2D(tri.points[3], tri.points[1])
+        l₁ = LineSegment_2D(tri[1], tri[2])
+        l₂ = LineSegment_2D(tri[2], tri[3])
+        l₃ = LineSegment_2D(tri[3], tri[1])
         lines = [l₁, l₂, l₃]
         return convert_arguments(LS, lines)
     end
@@ -85,13 +89,13 @@ if enable_visualization
     end
     
     function convert_arguments(M::Type{<:Mesh}, tri::Triangle_2D)
-        points = [tri.points[i] for i = 1:3]
+        points = [tri[i] for i = 1:3]
         face = [1 2 3]
         return convert_arguments(M, points, face)
     end
     
     function convert_arguments(M::Type{<:Mesh}, T::Vector{Triangle_2D})
-        points = reduce(vcat, [[tri.points[i] for i = 1:3] for tri in T])
+        points = reduce(vcat, [[tri[i] for i = 1:3] for tri in T])
         faces = zeros(Int64, length(T), 3)
         k = 1
         for i in 1:length(T), j = 1:3

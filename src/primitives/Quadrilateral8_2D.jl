@@ -21,6 +21,9 @@ Quadrilateral8_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D, p₄::Point_2D
 # Base
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(quad8::Quadrilateral8_2D) = Ref(quad8)
+Base.getindex(quad8::Quadrilateral8_2D, i::Int64) = quad.points[i]
+Base.firstindex(quad8::Quadrilateral8_2D) = 1
+Base.lastindex(quad8::Quadrilateral8_2D) = 4
 
 # Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
@@ -28,28 +31,28 @@ function (quad8::Quadrilateral8_2D)(r::Real, s::Real)
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     ξ = 2Float64(r) - 1; η = 2Float64(s) - 1
-    return (1 - ξ)*(1 - η)*(-ξ - η - 1)/4*quad8.points[1] +
-           (1 + ξ)*(1 - η)*( ξ - η - 1)/4*quad8.points[2] +
-           (1 + ξ)*(1 + η)*( ξ + η - 1)/4*quad8.points[3] +
-           (1 - ξ)*(1 + η)*(-ξ + η - 1)/4*quad8.points[4] +
-                      (1 - ξ^2)*(1 - η)/2*quad8.points[5] +
-                      (1 - η^2)*(1 + ξ)/2*quad8.points[6] +
-                      (1 - ξ^2)*(1 + η)/2*quad8.points[7] +
-                      (1 - η^2)*(1 - ξ)/2*quad8.points[8]
+    return (1 - ξ)*(1 - η)*(-ξ - η - 1)/4*quad8[1] +
+           (1 + ξ)*(1 - η)*( ξ - η - 1)/4*quad8[2] +
+           (1 + ξ)*(1 + η)*( ξ + η - 1)/4*quad8[3] +
+           (1 - ξ)*(1 + η)*(-ξ + η - 1)/4*quad8[4] +
+                      (1 - ξ^2)*(1 - η)/2*quad8[5] +
+                      (1 - η^2)*(1 + ξ)/2*quad8[6] +
+                      (1 - ξ^2)*(1 + η)/2*quad8[7] +
+                      (1 - η^2)*(1 - ξ)/2*quad8[8]
 end
 
 # Interpolation with a point, instead of (r,s)
 function (quad8::Quadrilateral8_2D)(p::Point_2D)
     r = p[1]; s = p[2]
     ξ = 2r - 1; η = 2s - 1
-    return (1 - ξ)*(1 - η)*(-ξ - η - 1)/4*quad8.points[1] +
-           (1 + ξ)*(1 - η)*( ξ - η - 1)/4*quad8.points[2] +
-           (1 + ξ)*(1 + η)*( ξ + η - 1)/4*quad8.points[3] +
-           (1 - ξ)*(1 + η)*(-ξ + η - 1)/4*quad8.points[4] +
-                      (1 - ξ^2)*(1 - η)/2*quad8.points[5] +
-                      (1 - η^2)*(1 + ξ)/2*quad8.points[6] +
-                      (1 - ξ^2)*(1 + η)/2*quad8.points[7] +
-                      (1 - η^2)*(1 - ξ)/2*quad8.points[8]
+    return (1 - ξ)*(1 - η)*(-ξ - η - 1)/4*quad8[1] +
+           (1 + ξ)*(1 - η)*( ξ - η - 1)/4*quad8[2] +
+           (1 + ξ)*(1 + η)*( ξ + η - 1)/4*quad8[3] +
+           (1 - ξ)*(1 + η)*(-ξ + η - 1)/4*quad8[4] +
+                      (1 - ξ^2)*(1 - η)/2*quad8[5] +
+                      (1 - η^2)*(1 + ξ)/2*quad8[6] +
+                      (1 - ξ^2)*(1 + η)/2*quad8[7] +
+                      (1 - η^2)*(1 - ξ)/2*quad8[8]
 end
 
 function derivative(quad8::Quadrilateral8_2D, r::Real, s::Real)
@@ -58,23 +61,23 @@ function derivative(quad8::Quadrilateral8_2D, r::Real, s::Real)
     # -- = -- -- = 2 -- ,    -- = -- -- = 2 --
     # ∂r   ∂ξ ∂r     ∂ξ      ∂s   ∂η ∂s     ∂η
     ξ = 2Float64(r) - 1; η = 2Float64(s) - 1
-    ∂Q_∂ξ = (1 - η)*(2ξ + η)/4*quad8.points[1] +
-            (1 - η)*(2ξ - η)/4*quad8.points[2] +
-            (1 + η)*(2ξ + η)/4*quad8.points[3] +
-            (1 + η)*(2ξ - η)/4*quad8.points[4] +
-                    -ξ*(1 - η)*quad8.points[5] +
-                   (1 - η^2)/2*quad8.points[6] +
-                    -ξ*(1 + η)*quad8.points[7] +
-                  -(1 - η^2)/2*quad8.points[8]
+    ∂Q_∂ξ = (1 - η)*(2ξ + η)/4*quad8[1] +
+            (1 - η)*(2ξ - η)/4*quad8[2] +
+            (1 + η)*(2ξ + η)/4*quad8[3] +
+            (1 + η)*(2ξ - η)/4*quad8[4] +
+                    -ξ*(1 - η)*quad8[5] +
+                   (1 - η^2)/2*quad8[6] +
+                    -ξ*(1 + η)*quad8[7] +
+                  -(1 - η^2)/2*quad8[8]
 
-    ∂Q_∂η = (1 - ξ)*( ξ + 2η)/4*quad8.points[1] +
-            (1 + ξ)*(-ξ + 2η)/4*quad8.points[2] +
-            (1 + ξ)*( ξ + 2η)/4*quad8.points[3] +
-            (1 - ξ)*(-ξ + 2η)/4*quad8.points[4] +
-                   -(1 - ξ^2)/2*quad8.points[5] +
-                     -η*(1 + ξ)*quad8.points[6] +
-                    (1 - ξ^2)/2*quad8.points[7] +
-                     -η*(1 - ξ)*quad8.points[8]
+    ∂Q_∂η = (1 - ξ)*( ξ + 2η)/4*quad8[1] +
+            (1 + ξ)*(-ξ + 2η)/4*quad8[2] +
+            (1 + ξ)*( ξ + 2η)/4*quad8[3] +
+            (1 - ξ)*(-ξ + 2η)/4*quad8[4] +
+                   -(1 - ξ^2)/2*quad8[5] +
+                     -η*(1 + ξ)*quad8[6] +
+                    (1 - ξ^2)/2*quad8[7] +
+                     -η*(1 - ξ)*quad8[8]
 
     return 2*∂Q_∂ξ, 2*∂Q_∂η
 end
@@ -115,8 +118,8 @@ function triangulate(quad8::Quadrilateral8_2D, N::Int64)
     # N is the number of divisions of each edge
     triangles = Vector{Triangle_2D}(undef, 2*(N+1)*(N+1))
     if N === 0
-        triangles[1] = Triangle_2D(quad8.points[1], quad8.points[2], quad8.points[3])
-        triangles[2] = Triangle_2D(quad8.points[3], quad8.points[4], quad8.points[1])
+        triangles[1] = Triangle_2D(quad8[1], quad8[2], quad8[3])
+        triangles[2] = Triangle_2D(quad8[3], quad8[4], quad8[1])
     else
         for j = 0:N, i = 0:N
             triangles[2*(N+1)*j + 2i + 1] = Triangle_2D(quad8(    i/(N+1),     j/(N+1)),
@@ -162,10 +165,10 @@ function in(p::Point_2D, quad8::Quadrilateral8_2D)
     #  |      |
     #  v----->2
     #  1
-    return is_left(p, QuadraticSegment_2D(quad8.points[1], quad8.points[2], quad8.points[5])) &&
-           is_left(p, QuadraticSegment_2D(quad8.points[2], quad8.points[3], quad8.points[6])) &&
-           is_left(p, QuadraticSegment_2D(quad8.points[3], quad8.points[4], quad8.points[7])) &&
-           is_left(p, QuadraticSegment_2D(quad8.points[4], quad8.points[1], quad8.points[8]))
+    return is_left(p, QuadraticSegment_2D(quad8[1], quad8[2], quad8[5])) &&
+           is_left(p, QuadraticSegment_2D(quad8[2], quad8[3], quad8[6])) &&
+           is_left(p, QuadraticSegment_2D(quad8[3], quad8[4], quad8[7])) &&
+           is_left(p, QuadraticSegment_2D(quad8[4], quad8[1], quad8[8]))
 end
 
 # function in(p::Point_2D{F}, quad8::Quadrilateral8_2D{F}, N::Int64) where {F <: AbstractFloat}
@@ -183,10 +186,10 @@ end
 
 function intersect(l::LineSegment_2D, quad8::Quadrilateral8_2D)
     # Create the 3 quadratic segments that make up the triangle and intersect each one
-    edges = SVector(QuadraticSegment_2D(quad8.points[1], quad8.points[2], quad8.points[5]),
-                    QuadraticSegment_2D(quad8.points[2], quad8.points[3], quad8.points[6]),
-                    QuadraticSegment_2D(quad8.points[3], quad8.points[4], quad8.points[7]),
-                    QuadraticSegment_2D(quad8.points[4], quad8.points[1], quad8.points[8]))
+    edges = SVector(QuadraticSegment_2D(quad8[1], quad8[2], quad8[5]),
+                    QuadraticSegment_2D(quad8[2], quad8[3], quad8[6]),
+                    QuadraticSegment_2D(quad8[3], quad8[4], quad8[7]),
+                    QuadraticSegment_2D(quad8[4], quad8[1], quad8[8]))
     ipoints = MVector(Point_2D(0, 0),
                       Point_2D(0, 0),
                       Point_2D(0, 0),
@@ -210,10 +213,10 @@ end
 # -------------------------------------------------------------------------------------------------
 if enable_visualization
     function convert_arguments(LS::Type{<:LineSegments}, quad8::Quadrilateral8_2D)
-        q₁ = QuadraticSegment_2D(quad8.points[1], quad8.points[2], quad8.points[5])
-        q₂ = QuadraticSegment_2D(quad8.points[2], quad8.points[3], quad8.points[6])
-        q₃ = QuadraticSegment_2D(quad8.points[3], quad8.points[4], quad8.points[7])
-        q₄ = QuadraticSegment_2D(quad8.points[4], quad8.points[1], quad8.points[8])
+        q₁ = QuadraticSegment_2D(quad8[1], quad8[2], quad8[5])
+        q₂ = QuadraticSegment_2D(quad8[2], quad8[3], quad8[6])
+        q₃ = QuadraticSegment_2D(quad8[3], quad8[4], quad8[7])
+        q₄ = QuadraticSegment_2D(quad8[4], quad8[1], quad8[8])
         qsegs = [q₁, q₂, q₃, q₄]
         return convert_arguments(LS, qsegs)
     end

@@ -23,18 +23,21 @@ QuadraticSegment_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D) = QuadraticS
 # Base
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(q::QuadraticSegment_2D) = Ref(q)
+Base.getindex(q::QuadraticSegment_2D, i::Int64) = q.points[i]
+Base.firstindex(q::QuadraticSegment_2D) = 1
+Base.lastindex(q::QuadraticSegment_2D) = 3
 
 # Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
 # Interpolation
-# q(0) = q.points[1], q(1) = q.points[2], q(1//2) = q.points[3]
+# q(0) = q[1], q(1) = q[2], q(1//2) = q[3]
 function (q::QuadraticSegment_2D)(r::Real)
     # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     rₜ = Float64(r)
-    return (2rₜ-1)*(rₜ-1)*q.points[1] + 
-               rₜ*(2rₜ-1)*q.points[2] + 
-               4rₜ*(1-rₜ)*q.points[3]
+    return (2rₜ-1)*(rₜ-1)*q[1] + 
+               rₜ*(2rₜ-1)*q[2] + 
+               4rₜ*(1-rₜ)*q[3]
 end
 
 arc_length(q::QuadraticSegment_2D) = arc_length(q, Val(15)) 
@@ -80,9 +83,9 @@ end
 # Get the derivative dq⃗/dr evalutated at r
 function derivative(q::QuadraticSegment_2D, r::Real)
     rₜ = Float64(r)
-    return (4rₜ - 3)*q.points[1] + 
-           (4rₜ - 1)*q.points[2] + 
-           (4 - 8rₜ)*q.points[3]
+    return (4rₜ - 3)*q[1] + 
+           (4rₜ - 1)*q[2] + 
+           (4 - 8rₜ)*q[3]
 end
 
 function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
@@ -114,18 +117,19 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
     npoints = 0x00000000
     p₁ = Point_2D(0, 0)
     p₂ = Point_2D(0, 0)
-    D⃗ = 2*(q.points[1] + q.points[2] - 2*q.points[3])
-    E⃗ = 4*q.points[3] - 3*q.points[1] - q.points[2]
-    w⃗ = l.points[2] - l.points[1]
+    D⃗ = 2*(q[1] + q[2] - 2*q[3])
+    E⃗ = 4*q[3] - 3*q[1] - q[2]
+    w⃗ = l[2] - l[1]
     A = D⃗ × w⃗
     B = E⃗ × w⃗
-    C = (q.points[1] - l.points[1]) × w⃗
-    if abs(A) < norm(w⃗) * ϵ₁
+    C = (q[1] - l[1]) × w⃗
+    w = w⃗ ⋅ w⃗
+    if A^2 < w * ϵ₁^2
         # Line intersection
         # Can B = 0 if A = 0 for non-trivial x?
         r = -C/B
         p₁ = q(r)
-        s = ((p₁ - l.points[1]) ⋅ w⃗)/(w⃗ ⋅ w⃗)
+        s = ((p₁ - l[1]) ⋅ w⃗)/w
         if (-ϵ ≤ r ≤ 1 + ϵ) && (-ϵ ≤ s ≤ 1 + ϵ)
             npoints = 0x00000001
         end
@@ -135,8 +139,8 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
         r₂ = (-B + √(B^2 - 4A*C))/2A
         p₁ = q(r₁)
         p₂ = q(r₂)
-        s₁ = ((p₁ - l.points[1]) ⋅ w⃗)/(w⃗ ⋅ w⃗)
-        s₂ = ((p₂ - l.points[1]) ⋅ w⃗)/(w⃗ ⋅ w⃗)
+        s₁ = ((p₁ - l[1]) ⋅ w⃗)/w
+        s₂ = ((p₂ - l[1]) ⋅ w⃗)/w
 
         # Check points to see if they are valid intersections.
         # First r, s valid?
@@ -168,12 +172,12 @@ function is_left(p::Point_2D, q::QuadraticSegment_2D)
     # If the r is invalid, take the closest end point.
     # If r is small or beyond the valid range, just use the second point
     if r < 1e-3 || 1 < r
-        p_closest = q.points[2]
+        p_closest = q[2]
     end
     # Vector from curve start to closest point
-    u⃗ = p_closest - q.points[1]
+    u⃗ = p_closest - q[1]
     # Vector from curve start to the point of interest
-    v⃗ = p - q.points[1]
+    v⃗ = p - q[1]
     return u⃗ × v⃗ > 0
 end
 

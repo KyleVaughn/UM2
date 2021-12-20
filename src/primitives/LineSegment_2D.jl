@@ -11,6 +11,9 @@ LineSegment_2D(p₁::Point_2D, p₂::Point_2D) = LineSegment_2D(SVector(p₁, p�
 # Base
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(l::LineSegment_2D) = Ref(l)
+Base.getindex(l::LineSegment_2D, i::Int64) = l.points[i]
+Base.firstindex(l::LineSegment_2D) = 1
+Base.lastindex(l::LineSegment_2D) = 2
 
 # Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
@@ -55,10 +58,10 @@ function intersect(l₁::LineSegment_2D, l₂::LineSegment_2D)
     # |v⃗||u⃗|
     ϵ = parametric_coordinate_ϵ
     θₚ = LineSegment_2D_parallel_θ
-    v⃗ = l₁.points[2] - l₁.points[1]
-    u⃗ = l₂.points[2] - l₂.points[1]
+    v⃗ = l₁[2] - l₁[1]
+    u⃗ = l₂[2] - l₂[1]
     if (v⃗ × u⃗)^2 > θₚ * (v⃗ ⋅ v⃗) * (u⃗ ⋅ u⃗)
-        w⃗ = l₂.points[1] - l₁.points[1]
+        w⃗ = l₂[1] - l₁[1]
         r = (w⃗ × u⃗)/(v⃗ × u⃗)
         p = l₁(r)
         s = ((r*v⃗ - w⃗) ⋅ u⃗)/(u⃗ ⋅ u⃗)
@@ -75,8 +78,8 @@ end
 #   | /
 #   o
 function is_left(p::Point_2D, l::LineSegment_2D)
-    u⃗ = l.points[2] - l.points[1]
-    v⃗ = p - l.points[1]
+    u⃗ = l[2] - l[1]
+    v⃗ = p - l[1]
     return u⃗ × v⃗ > 0
 end
 
@@ -89,10 +92,10 @@ end
 # -------------------------------------------------------------------------------------------------
 if enable_visualization
     function convert_arguments(LS::Type{<:LineSegments}, l::LineSegment_2D)
-        return convert_arguments(LS, [l.points[1], l.points[2]])
+        return convert_arguments(LS, [l[1], l[2]])
     end
 
     function convert_arguments(LS::Type{<:LineSegments}, L::Vector{LineSegment_2D})
-        return convert_arguments(LS, reduce(vcat, [[l.points[1], l.points[2]] for l in L]))
+        return convert_arguments(LS, reduce(vcat, [[l[1], l[2]] for l in L]))
     end
 end
