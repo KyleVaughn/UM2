@@ -13,11 +13,11 @@ if [[ $(id -u) == 0 ]]; then
         echo "Installing to /usr/local"
         cd /usr/local
         echo "Fetching Julia"
-        curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.2-linux-x86_64.tar.gz
-        tar -xzvf julia-1.6.2-linux-x86_64.tar.gz
+        curl -O https://julialang-s3.julialang.org/bin/linux/x64/1.7/julia-1.7.0-linux-x86_64.tar.gz 
+        tar -xzvf julia-1.7.0-linux-x86_64.tar.gz
         rm -f /usr/local/bin/julia
-        ln -s /usr/local/julia-1.6.2/bin/julia /usr/local/bin/julia
-        rm julia-1.6.2-linux-x86_64.tar.gz
+        ln -s /usr/local/julia-1.7.0/bin/julia /usr/local/bin/julia
+        rm julia-1.7.0-linux-x86_64.tar.gz
         cd $start_dir
         break;;
       No ) 
