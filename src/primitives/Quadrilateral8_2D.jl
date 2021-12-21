@@ -21,7 +21,7 @@ Quadrilateral8_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D, p₄::Point_2D
 # Base
 # -------------------------------------------------------------------------------------------------
 Base.broadcastable(quad8::Quadrilateral8_2D) = Ref(quad8)
-Base.getindex(quad8::Quadrilateral8_2D, i::Int64) = quad.points[i]
+Base.getindex(quad8::Quadrilateral8_2D, i::Int64) = quad8.points[i]
 Base.firstindex(quad8::Quadrilateral8_2D) = 1
 Base.lastindex(quad8::Quadrilateral8_2D) = 4
 
@@ -90,7 +90,7 @@ function jacobian(quad8::Quadrilateral8_2D, r::Real, s::Real)
 end
 
 function area(quad8::Quadrilateral8_2D)
-    return area(quad8, Val(3))
+    return area(quad8, Val(2))
 end
 
 function area(quad8::Quadrilateral8_2D, ::Val{N}) where {N}
@@ -166,8 +166,8 @@ function in(p::Point_2D, quad8::Quadrilateral8_2D)
     #  v----->2
     #  1
     return is_left(p, QuadraticSegment_2D(quad8[1], quad8[2], quad8[5])) &&
-           is_left(p, QuadraticSegment_2D(quad8[2], quad8[3], quad8[6])) &&
            is_left(p, QuadraticSegment_2D(quad8[3], quad8[4], quad8[7])) &&
+           is_left(p, QuadraticSegment_2D(quad8[2], quad8[3], quad8[6])) &&
            is_left(p, QuadraticSegment_2D(quad8[4], quad8[1], quad8[8]))
 end
 
