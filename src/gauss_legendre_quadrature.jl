@@ -176,7 +176,76 @@ end
 
 # The weights and points for Gauss-Legendre quadrature on the parametric unit triangle
 # ∑wᵢ= 1/2, rᵢ∈ [0, 1], sᵢ∈ [0, 1], rᵢ + sᵢ ≤ 1
-# N that have entries in this function: N = [12, 27, 48, 79]
+# N that have entries in this function: N = [3, 4, 6, 12, 27, 48, 79]
+function gauss_legendre_quadrature(tri::Triangle6_2D, ::Val{1})
+    # P1. 0 negative weights, 0 points outside of the triangle
+    w = @SVector [0.500000000000000]
+
+    r = @SVector [0.333333333333333]
+
+    s = @SVector [0.333333333333333]
+    return w, r, s
+end
+
+function gauss_legendre_quadrature(tri::Triangle6_2D, ::Val{3})
+    # P2. 0 negative weights, 0 points outside of the triangle
+    w = @SVector [0.166666666666667,
+                  0.166666666666667,
+                  0.166666666666667]
+
+    r = @SVector [0.166666666666667,
+                  0.166666666666667,
+                  0.666666666666667]
+
+    s = @SVector [0.166666666666667, 
+                  0.666666666666667, 
+                  0.166666666666667] 
+    return w, r, s
+end
+
+function gauss_legendre_quadrature(tri::Triangle6_2D, ::Val{4})
+    # P3. 1 negative weights, 0 points outside of the triangle
+    w = @SVector[-0.281250000000000,
+                  0.260416666666667,   
+                  0.260416666666667,
+                  0.260416666666667]
+
+    r = @SVector [0.333333333333333, 
+                  0.200000000000000, 
+                  0.200000000000000, 
+                  0.600000000000000] 
+
+    s = @SVector[ 0.333333333333333,
+                  0.200000000000000,
+                  0.600000000000000,
+                  0.200000000000000]
+    return w, r, s
+end
+
+function gauss_legendre_quadrature(tri::Triangle6_2D, ::Val{6})
+    # P4. 0 negative weights, 0 points outside of the triangle
+    w = @SVector [0.111690794839005,
+                  0.111690794839005,
+                  0.111690794839005,
+                  0.054975871827661,
+                  0.054975871827661,
+                  0.054975871827661]
+    r = @SVector [0.445948490915965,
+                  0.445948490915965,
+                  0.108103018168070,
+                  0.091576213509771,
+                  0.091576213509771,
+                  0.816847572980459]
+
+    s = @SVector [0.445948490915965,
+                  0.108103018168070,
+                  0.445948490915965,
+                  0.091576213509771,
+                  0.816847572980459,
+                  0.091576213509771]
+    return w, r, s
+end
+
 function gauss_legendre_quadrature(tri::Triangle6_2D, ::Val{12})
     # P6. 0 negative weights, 0 points outside of the triangle
     w = @SVector [0.058393137863189,

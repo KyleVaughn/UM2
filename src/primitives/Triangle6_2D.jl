@@ -77,7 +77,7 @@ function jacobian(tri6::Triangle6_2D, r::Real, s::Real)
 end
 
 function area(tri6::Triangle6_2D)
-    return area(tri6, Val(12))
+    return area(tri6, Val(3))
 end
 
 function area(tri6::Triangle6_2D, ::Val{N}) where {N}
@@ -88,13 +88,12 @@ function area(tri6::Triangle6_2D, ::Val{N}) where {N}
     #      D                      0  0                          i=1
     #
     # N is the number of points used in the quadrature.
-    # See tuning/Triangle6_2D_area.jl for more info on how N = 12 was chosen.
     w, r, s = gauss_legendre_quadrature(tri6, Val(N))
     return sum(w .* abs.( derivative.(tri6, r, s) .|> x->x[1] × x[2] ))
 end
 
 function centroid(tri6::Triangle6_2D)
-    return centroid(tri6, Val(12))
+    return centroid(tri6, Val(6))
 end
 
 function centroid(tri6::Triangle6_2D, ::Val{N}) where {N}
