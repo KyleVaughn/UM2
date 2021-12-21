@@ -7,7 +7,7 @@ end
 # Constructors
 # -------------------------------------------------------------------------------------------------
 Rectangle_2D(xmin::Float64, ymin::Float64,
-             xmax::Float64, ymax::Float64) = Rectangle_2D(Point_2D(xmin, ymin), 
+             xmax::Float64, ymax::Float64) = Rectangle_2D(Point_2D(xmin, ymin),
                                                           Point_2D(xmax, ymax))
 
 # Base
@@ -45,7 +45,7 @@ function intersect(l::LineSegment_2D, rect::Rectangle_2D)
     p₁ = -p₂
     p₄ = l[2].y - l[1].y
     p₃ = -p₄
-    
+
     q₁ = l[1].x - rect.xmin
     q₂ = rect.xmax - l[1].x
     q₃ = l[1].y - rect.ymin
@@ -138,7 +138,7 @@ if enable_visualization
     end
 
     function convert_arguments(M::Type{<:Mesh}, R::Vector{Rectangle_2D})
-        points = reduce(vcat, [[rect.bl, Point_2D(rect.xmax, rect.ymin), 
+        points = reduce(vcat, [[rect.bl, Point_2D(rect.xmax, rect.ymin),
                                 rect.tr, Point_2D(rect.xmin, rect.ymax)] for rect in R])
         faces = zeros(Int64, 2*length(Q), 3)
         j = 0

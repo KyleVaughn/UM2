@@ -108,7 +108,7 @@ function centroid(tri6::Triangle6_2D, ::Val{N}) where {N}
     w, r, s = gauss_legendre_quadrature(tri6, Val(N))
     # We can reuse our computed weighted derivative cross products, since we need these
     # in the C_y, C_y, and A.
-    weighted_vals = w .* abs.( derivative.(tri6, r, s) .|> x->x[1] × x[2] ) 
+    weighted_vals = w .* abs.( derivative.(tri6, r, s) .|> x->x[1] × x[2] )
     points = tri6.(r, s)
     A = sum(weighted_vals)
     C_x = sum(getindex.(points, 1) .* weighted_vals)

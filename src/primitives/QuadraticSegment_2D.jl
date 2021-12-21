@@ -35,12 +35,12 @@ function (q::QuadraticSegment_2D)(r::Real)
     # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     rₜ = Float64(r)
-    return (2rₜ-1)*(rₜ-1)*q[1] + 
-               rₜ*(2rₜ-1)*q[2] + 
+    return (2rₜ-1)*(rₜ-1)*q[1] +
+               rₜ*(2rₜ-1)*q[2] +
                4rₜ*(1-rₜ)*q[3]
 end
 
-arc_length(q::QuadraticSegment_2D) = arc_length(q, Val(15)) 
+arc_length(q::QuadraticSegment_2D) = arc_length(q, Val(15))
 
 function arc_length(q::QuadraticSegment_2D, ::Val{N}) where {N}
     # This does have an analytic solution, but the Mathematica solution is pages long and can
@@ -54,9 +54,8 @@ function arc_length(q::QuadraticSegment_2D, ::Val{N}) where {N}
     # See tuning/QuadraticSegment_2D_arc_length.jl for more info on how N = 15 was chosen
     # as the default value.
     w, r = gauss_legendre_quadrature(Val(N))
-    return sum(w .* norm.(derivative.(q, r))) 
+    return sum(w .* norm.(derivative.(q, r)))
 end
-
 
 # Find the AABB by finding the vector aligned BB.
 function bounding_box(q::QuadraticSegment_2D)
@@ -129,21 +128,21 @@ function closest_point(p::Point_2D, q::QuadraticSegment_2D, N::Int64)
         if abs(Δr) < 1e-7
             break
         end
-    end 
+    end
     return r, q(r)
 end
 
 # Get the derivative dq⃗/dr evalutated at r
 function derivative(q::QuadraticSegment_2D, r::Real)
     rₜ = Float64(r)
-    return (4rₜ - 3)*(q[1] - q[3]) + 
-           (4rₜ - 1)*(q[2] - q[3]) 
+    return (4rₜ - 3)*(q[1] - q[3]) +
+           (4rₜ - 1)*(q[2] - q[3])
 end
 D(q::QuadraticSegment_2D, r::Real) = derivative(q, r)
 
 # Get the derivative d²q⃗/dr² evalutated at r
 function second_derivative(q::QuadraticSegment_2D, r::Real)
-    return 4*(q[1] + q[2] - 2*q[3]) 
+    return 4*(q[1] + q[2] - 2*q[3])
 end
 D²(q::QuadraticSegment_2D, r::Real) = second_derivative(q, r)
 
@@ -193,7 +192,7 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
         p₁ = q(r)
         s = ((p₁ - l[1]) ⋅ w⃗)/w
         if (-ϵ ≤ s ≤ 1 + ϵ)
-            return 0x00000001, SVector(p₁, p₂)           
+            return 0x00000001, SVector(p₁, p₂)
         else
             return 0x00000000, SVector(p₁, p₂)
         end
@@ -217,7 +216,7 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
                 npoints += 0x00000001
             end
         end
-        if npoints === 0x00000001 && p₁ === Point_2D(0, 0) 
+        if npoints === 0x00000001 && p₁ === Point_2D(0, 0)
             p₁ = p₂
         end
     end
@@ -229,7 +228,7 @@ intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 #   p    ^
 #   ^   /
 # v⃗ |  / u⃗
-#   | / 
+#   | /
 #   o
 function is_left(p::Point_2D, q::QuadraticSegment_2D)
     bb = bounding_box(q)
@@ -285,7 +284,7 @@ if enable_visualization
         coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])
         return convert_arguments(LS, coords)
     end
-    
+
     function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{QuadraticSegment_2D})
         point_sets = [convert_arguments(LS, q) for q in Q]
         return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))

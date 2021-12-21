@@ -36,7 +36,7 @@ midpoint(p₁::Point_2D, p₂::Point_2D) = (p₁ + p₂)/2
 function sort_points(p::Point_2D, points::Vector{Point_2D})
     if 0 < length(points)
         # Sort the points based upon their distance to the point
-        return points[sortperm(distance.(p, points))] 
+        return points[sortperm(distance.(p, points))]
     else
         return points
     end

@@ -65,7 +65,7 @@ function intersect(l::LineSegment_2D, tri::Triangle_2D)
     for k = 1:3
         npoints, point = l ∩ edges[k]
         if npoints === 0x00000001
-            n_ipoints += 0x00000001 
+            n_ipoints += 0x00000001
             ipoints[n_ipoints] = point
         end
     end
@@ -82,18 +82,18 @@ if enable_visualization
         lines = [l₁, l₂, l₃]
         return convert_arguments(LS, lines)
     end
-    
+
     function convert_arguments(LS::Type{<:LineSegments}, T::Vector{Triangle_2D})
         point_sets = [convert_arguments(LS, tri) for tri in T]
         return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
     end
-    
+
     function convert_arguments(M::Type{<:Mesh}, tri::Triangle_2D)
         points = [tri[i] for i = 1:3]
         face = [1 2 3]
         return convert_arguments(M, points, face)
     end
-    
+
     function convert_arguments(M::Type{<:Mesh}, T::Vector{Triangle_2D})
         points = reduce(vcat, [[tri[i] for i = 1:3] for tri in T])
         faces = zeros(Int64, length(T), 3)

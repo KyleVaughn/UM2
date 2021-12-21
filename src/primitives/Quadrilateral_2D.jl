@@ -35,7 +35,7 @@ end
 
 function triangulate(quad::Quadrilateral_2D)
     # Return the two triangles that partition the domain
-    A, B, C, D = quad
+    A, B, C, D = quad.points
     return SVector(Triangle_2D(A, B, C), Triangle_2D(C, D, A))
 end
 
