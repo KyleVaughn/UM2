@@ -233,23 +233,28 @@ intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 #   o
 function is_left(p::Point_2D, q::QuadraticSegment_2D)
     bb = bounding_box(q)
-    p_closest = Point_2D(0)
     if p ∉  bb || is_straight(q)
-        p_closest = q[2]
+        u⃗ = q[2] - q[1]
+        v⃗ = p - q[1]
+        return u⃗ × v⃗ > 0
     else
-        # Find the closest point to p on the curve.
         r, p_closest = closest_point(p, q)
-        # If the r is invalid, take the closest end point.
         # If r is small or beyond the valid range, just use the second point
         if r < 1e-3 || 1 < r
-            p_closest = q[2]
+            u⃗ = q[2] - q[1]
+            v⃗ = p - q[1]
+            return u⃗ × v⃗ > 0
+        # If the r is greater than 0.5, use q[3] as the start point
+        elseif 0.5 < r
+            u⃗ = p_closest - q[3]
+            v⃗ = p - q[3]
+            return u⃗ × v⃗ > 0
+        else
+            u⃗ = p_closest - q[1]
+            v⃗ = p - q[1]
+            return u⃗ × v⃗ > 0
         end
     end
-    # Vector from curve start to closest point
-    u⃗ = p_closest - q[1]
-    # Vector from curve start to the point of interest
-    v⃗ = p - q[1]
-    return u⃗ × v⃗ > 0
 end
 
 function is_straight(q::QuadraticSegment_2D)

@@ -93,6 +93,30 @@ function area(tri6::Triangle6_2D, ::Val{N}) where {N}
     return sum(w .* abs.( derivative.(tri6, r, s) .|> x->x[1] × x[2] ))
 end
 
+function centroid(tri6::Triangle6_2D)
+    return centroid(tri6, Val(12))
+end
+
+function centroid(tri6::Triangle6_2D, ::Val{N}) where {N}
+    # Numerical integration required. Gauss-Legendre quadrature over a triangle is used.
+    # Let F(r,s) be the interpolation function for tri6,
+    #                             1 1-r                          N
+    # A = ∬ ||∂F/∂r × ∂F/∂s||dA = ∫  ∫ ||∂F/∂r × ∂F/∂s|| ds dr = ∑ wᵢ||∂F/∂r(rᵢ,sᵢ) × ∂F/∂s(rᵢ,sᵢ)||
+    #      D                      0  0                          i=1
+    #
+    # C_x = (∫∫ x dA)/A, C_y = (∫∫ y dA)/A
+    #         D                  D
+    w, r, s = gauss_legendre_quadrature(tri6, Val(N))
+    # We can reuse our computed weighted derivative cross products, since we need these
+    # in the C_y, C_y, and A.
+    weighted_vals = w .* abs.( derivative.(tri6, r, s) .|> x->x[1] × x[2] ) 
+    points = tri6.(r, s)
+    A = sum(weighted_vals)
+    C_x = sum(getindex.(points, 1) .* weighted_vals)
+    C_y = sum(getindex.(points, 2) .* weighted_vals)
+    return Point_2D(C_x/A, C_y/A)
+end
+
 function triangulate(tri6::Triangle6_2D, N::Int64)
     # N is the number of divisions of each edge
     triangles = Vector{Triangle_2D}(undef, (N+1)*(N+1))
