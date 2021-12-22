@@ -1,29 +1,14 @@
 module MOCNeutronTransport
 # Compilation options
-const enable_local_gmsh = true
 const enable_visualization = true
 const visualize_ray_tracing = false 
-# using
+
 using ColorSchemes
 using Logging
-if enable_local_gmsh
-    # Use local gmsh install
-    # Temporarily turn off warnings, since gmsh isn't in dependencies
-    try
-        Logging.disable_logging(Logging.Error)
-        using gmsh
-        Logging.disable_logging(Logging.Debug)
-        @info "MOCNeutronTransport is using the locally installed gmsh API instead of the Gmsh package"
-    catch
-        Logging.disable_logging(Logging.Debug)
-        @warn "MOCNeutronTransport is using the Gmsh package instead of the locally installed gmsh API"
-        using Gmsh: gmsh
-    end
-else
-    # Fallback on Gmsh package
-    @warn "MOCNeutronTransport is using the Gmsh package instead of the locally installed gmsh API"
-    using Gmsh: gmsh
-end
+# Use local gmsh install
+Logging.disable_logging(Logging.Error)
+using gmsh
+Logging.disable_logging(Logging.Debug)
 using HDF5
 using LightXML
 using LinearAlgebra
@@ -35,7 +20,7 @@ end
 using LoggingExtras: TransformerLogger, global_logger
 
 # import
-import Base: +, -, *, /, ≈, ≉, ==, intersect, in, union
+import Base: +, -, *, /, ≈, ∩, ∪, ∈
 if enable_visualization 
     import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
 end

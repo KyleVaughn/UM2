@@ -53,12 +53,6 @@ version = "1.0.1"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
-[[deps.BinaryProvider]]
-deps = ["Libdl", "Logging", "SHA"]
-git-tree-sha1 = "ecdec412a9abc8db54c0efc5548c64dfce072058"
-uuid = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
-version = "0.5.10"
-
 [[deps.Blosc]]
 deps = ["Blosc_jll"]
 git-tree-sha1 = "575bdd70552dd9a7eaeba08ef2533226cdc50779"
@@ -327,12 +321,6 @@ deps = ["Artifacts", "Gettext_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libic
 git-tree-sha1 = "a32d672ac2c967f3deb8a81d828afc739c838a06"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
 version = "2.68.3+2"
-
-[[deps.Gmsh]]
-deps = ["BinaryProvider", "Libdl"]
-git-tree-sha1 = "1204b5592a195d71569889c29670c72ca9118a87"
-uuid = "705231aa-382f-11e9-3f0c-b7cb4346fdeb"
-version = "0.1.1"
 
 [[deps.Graphics]]
 deps = ["Colors", "LinearAlgebra", "NaNMath"]
