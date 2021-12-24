@@ -8,7 +8,7 @@
 #  /
 # x⃗₁
 #
-# NOTE: x⃗₃ is between x⃗₁ and x⃗₂, but not necessarily the midpoint.
+# NOTE: x⃗₃ is not necessarily the midpoint, or even between x⃗₁ and x⃗₂.
 # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
 # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
 # Chapter 8, Advanced Data Representation, in the interpolation functions section
@@ -27,22 +27,21 @@ Base.getindex(q::QuadraticSegment_2D, i::Int64) = q.points[i]
 Base.firstindex(q::QuadraticSegment_2D) = 1
 Base.lastindex(q::QuadraticSegment_2D) = 3
 
-# Methods (All type-stable)
+# Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 # q(0) = q[1], q(1) = q[2], q(1//2) = q[3]
 function (q::QuadraticSegment_2D)(r::Real)
     # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    rₜ = Float64(r)
-    return (2rₜ-1)*(rₜ-1)*q[1] +
-               rₜ*(2rₜ-1)*q[2] +
-               4rₜ*(1-rₜ)*q[3]
+    return (2r-1)*( r-1)q[1] +
+                r*(2r-1)q[2] +
+               4r*( 1-r)q[3]
 end
 
-arc_length(q::QuadraticSegment_2D) = arc_length(q, Val(15))
+arclength(q::QuadraticSegment_2D) = arclength(q, Val(15))
 
-function arc_length(q::QuadraticSegment_2D, ::Val{N}) where {N}
+function arclength(q::QuadraticSegment_2D, ::Val{N}) where {N}
     # This does have an analytic solution, but the Mathematica solution is pages long and can
     # produce NaN results when the segment is straight, so numerical integration is used.
     # (Gauss-Legengre quadrature)
@@ -54,11 +53,11 @@ function arc_length(q::QuadraticSegment_2D, ::Val{N}) where {N}
     # See tuning/QuadraticSegment_2D_arc_length.jl for more info on how N = 15 was chosen
     # as the default value.
     w, r = gauss_legendre_quadrature(Val(N))
-    return sum(w .* norm.(derivative.(q, r)))
+    return sum(@. w * norm(∇(q, r)))
 end
 
 # Find the AABB by finding the vector aligned BB.
-function bounding_box(q::QuadraticSegment_2D)
+function boundingbox(q::QuadraticSegment_2D)
     # Find the vertex to vertex vector that is the longest
     v⃗_12 = q[2] - q[1]
     v⃗_13 = q[3] - q[1]
@@ -66,10 +65,10 @@ function bounding_box(q::QuadraticSegment_2D)
     dsq_12 = v⃗_12 ⋅ v⃗_12
     dsq_13 = v⃗_13 ⋅ v⃗_13
     dsq_23 = v⃗_23 ⋅ v⃗_23
-    x⃗₁ = Point_2D(0)
-    x⃗₂ = Point_2D(0)
-    u⃗ = Point_2D(0)
-    v⃗ = Point_2D(0)
+    x⃗₁ = Point_2D()
+    x⃗₂ = Point_2D()
+    u⃗ = Point_2D()
+    v⃗ = Point_2D()
     max_ind = 0
     # Majority of the time, dsq_12 is the largest, so this is a fast acceptance
     if (dsq_13 ≤ dsq_12) && (dsq_23 ≤ dsq_12)
@@ -109,20 +108,20 @@ function bounding_box(q::QuadraticSegment_2D)
     return Rectangle_2D(minimum(x), minimum(y), maximum(x), maximum(y))
 end
 
-closest_point(p::Point_2D, q::QuadraticSegment_2D) = closest_point(p, q, 30)
+nearest_point(p::Point_2D, q::QuadraticSegment_2D) = nearest_point(p, q, 30)
 
 # Return the closest point on the curve to point p and the value of r
 # Uses at most N iterations of Newton-Raphson
-function closest_point(p::Point_2D, q::QuadraticSegment_2D, N::Int64)
+function nearest_point(p::Point_2D, q::QuadraticSegment_2D, N::Int64)
     r = 0.5
     Δr = 0.0
     for i = 1:N
         err = p - q(r)
-        D_r = D(q, r)
-        if abs(D_r[1]) > abs(D_r[2])
-            Δr = err[1]/D_r[1]
+        grad = ∇(q, r)
+        if abs(grad[1]) > abs(grad[2])
+            Δr = err[1]/grad[1]
         else
-            Δr = err[2]/D_r[2]
+            Δr = err[2]/grad[2]
         end
         r += Δr
         if abs(Δr) < 1e-7
@@ -132,19 +131,16 @@ function closest_point(p::Point_2D, q::QuadraticSegment_2D, N::Int64)
     return r, q(r)
 end
 
-# Get the derivative dq⃗/dr evalutated at r
-function derivative(q::QuadraticSegment_2D, r::Real)
-    rₜ = Float64(r)
-    return (4rₜ - 3)*(q[1] - q[3]) +
-           (4rₜ - 1)*(q[2] - q[3])
+# Return the gradient of q, evalutated at r
+function gradient(q::QuadraticSegment_2D, r::Real)
+    return (4r - 3)*(q[1] - q[3]) +
+           (4r - 1)*(q[2] - q[3])
 end
-D(q::QuadraticSegment_2D, r::Real) = derivative(q, r)
 
-# Get the derivative d²q⃗/dr² evalutated at r
-function second_derivative(q::QuadraticSegment_2D, r::Real)
-    return 4*(q[1] + q[2] - 2*q[3])
+# Return the Laplacian of q, evalutated at r
+function laplacian(q::QuadraticSegment_2D, r::Real)
+    return 4(q[1] + q[2] - 2q[3])
 end
-D²(q::QuadraticSegment_2D, r::Real) = second_derivative(q, r)
 
 function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
     # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
@@ -173,10 +169,10 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
     ϵ = parametric_coordinate_ϵ
     ϵ₁ = QuadraticSegment_2D_1_intersection_ϵ
     npoints = 0x00000000
-    p₁ = Point_2D(0, 0)
-    p₂ = Point_2D(0, 0)
-    D⃗ = 2*(q[1] + q[2] - 2*q[3])
-    E⃗ = 4*q[3] - 3*q[1] - q[2]
+    p₁ = Point_2D()
+    p₂ = Point_2D()
+    D⃗ = 2(q[1] +  q[2] - 2q[3])
+    E⃗ =  4q[3] - 3q[1] -  q[2]
     w⃗ = l[2] - l[1]
     A = D⃗ × w⃗
     B = E⃗ × w⃗
@@ -186,11 +182,9 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
         # Line intersection
         # Can B = 0 if A = 0 for non-trivial x?
         r = -C/B
-        if r < -ϵ || 1 + ϵ < r
-            return 0x00000000, SVector(p₁, p₂)
-        end
+        (-ϵ ≤ r ≤ 1 + ϵ) || return 0x00000000, SVector(p₁, p₂)
         p₁ = q(r)
-        s = ((p₁ - l[1]) ⋅ w⃗)/w
+        s = (p₁ - l[1]) ⋅ w⃗/w
         if (-ϵ ≤ s ≤ 1 + ϵ)
             return 0x00000001, SVector(p₁, p₂)
         else
@@ -202,7 +196,7 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
         r₂ = (-B + √(B^2 - 4A*C))/2A
         if (-ϵ ≤ r₁ ≤ 1 + ϵ)
             p = q(r₁)
-            s₁ = ((p - l[1]) ⋅ w⃗)/w
+            s₁ = (p - l[1]) ⋅ w⃗/w
             if (-ϵ ≤ s₁ ≤ 1 + ϵ)
                 p₁ = p
                 npoints += 0x00000001
@@ -210,19 +204,18 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
         end
         if (-ϵ ≤ r₂ ≤ 1 + ϵ)
             p = q(r₂)
-            s₂ = ((p - l[1]) ⋅ w⃗)/w
+            s₂ = (p - l[1]) ⋅ w⃗/w
             if (-ϵ ≤ s₂ ≤ 1 + ϵ)
                 p₂ = p
                 npoints += 0x00000001
             end
         end
-        if npoints === 0x00000001 && p₁ === Point_2D(0, 0)
+        if npoints === 0x00000001 && p₁ === Point_2D()
             p₁ = p₂
         end
     end
     return npoints, SVector(p₁, p₂)
 end
-intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 
 # Return if the point is left of the quadratic segment
 #   p    ^
@@ -230,33 +223,30 @@ intersect(q::QuadraticSegment_2D, l::LineSegment_2D) = intersect(l, q)
 # v⃗ |  / u⃗
 #   | /
 #   o
-function is_left(p::Point_2D, q::QuadraticSegment_2D)
-    bb = bounding_box(q)
-    if p ∉  bb || is_straight(q)
+function isleft(p::Point_2D, q::QuadraticSegment_2D)
+    if isstraight(q) || p ∉  boundingbox(q)
         u⃗ = q[2] - q[1]
         v⃗ = p - q[1]
         return u⃗ × v⃗ > 0
     else
-        r, p_closest = closest_point(p, q)
+        r, p_near = nearest_point(p, q)
         # If r is small or beyond the valid range, just use the second point
         if r < 1e-3 || 1 < r
             u⃗ = q[2] - q[1]
             v⃗ = p - q[1]
-            return u⃗ × v⃗ > 0
         # If the r is greater than 0.5, use q[3] as the start point
         elseif 0.5 < r
-            u⃗ = p_closest - q[3]
+            u⃗ = p_near - q[3]
             v⃗ = p - q[3]
-            return u⃗ × v⃗ > 0
         else
-            u⃗ = p_closest - q[1]
+            u⃗ = p_near - q[1]
             v⃗ = p - q[1]
-            return u⃗ × v⃗ > 0
         end
+        return u⃗ × v⃗ > 0
     end
 end
 
-function is_straight(q::QuadraticSegment_2D)
+function isstraight(q::QuadraticSegment_2D)
     return distance(q[1], q[3]) + distance(q[3], q[2]) ≈ distance(q[1], q[2])
 end
 

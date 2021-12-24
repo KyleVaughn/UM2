@@ -15,15 +15,12 @@ Base.getindex(l::LineSegment_2D, i::Int64) = l.points[i]
 Base.firstindex(l::LineSegment_2D) = 1
 Base.lastindex(l::LineSegment_2D) = 2
 
-# Methods (All type-stable)
+# Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 # l(0) yields points[1], and l(1) yields points[2]
-function (l::LineSegment_2D)(r::Real)
-    return l[1] + Float64(r) * (l[2] - l[1])
-end
-
-arc_length(l::LineSegment_2D) = distance(l.points[1], l.points[2])
+(l::LineSegment_2D)(r::Real) = l[1] + (l[2] - l[1])r
+arclength(l::LineSegment_2D) = distance(l[1], l[2])
 
 function intersect(l₁::LineSegment_2D, l₂::LineSegment_2D)
     # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product
@@ -65,15 +62,13 @@ function intersect(l₁::LineSegment_2D, l₂::LineSegment_2D)
     vxu = v⃗ × u⃗
     if vxu^2 > θₚ * v * u
         w⃗ = l₂[1] - l₁[1]
-        r = (w⃗ × u⃗)/vxu
-        if r < -ϵ || 1 + ϵ < r
-            return (0x00000000, Point_2D(0))
-        end
+        r = w⃗ × u⃗/vxu
+        (-ϵ ≤ r ≤ 1 + ϵ) || return (0x00000000, Point_2D())
         p = l₁(r)
-        s = ((r*v⃗ - w⃗) ⋅ u⃗)/u
+        s = (r*v⃗ - w⃗) ⋅ u⃗/u
         return (-ϵ ≤ s ≤ 1 + ϵ) ? (0x00000001, p) : (0x00000000, p)
     else
-        return (0x00000000, Point_2D(0))
+        return (0x00000000, Point_2D())
     end
 end
 
@@ -83,14 +78,14 @@ end
 # v⃗ |  / u⃗
 #   | /
 #   o
-function is_left(p::Point_2D, l::LineSegment_2D)
+function isleft(p::Point_2D, l::LineSegment_2D)
     u⃗ = l[2] - l[1]
     v⃗ = p - l[1]
     return u⃗ × v⃗ > 0
 end
 
 # Convert a vector of points to a vector of line segments, typically for visualization
-function to_lines(points::Vector{Point_2D})
+function tolines(points::Vector{Point_2D})
     return [ LineSegment_2D(points[i], points[i+1]) for i = 1:length(points)-1 ]
 end
 

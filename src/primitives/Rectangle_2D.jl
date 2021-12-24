@@ -6,9 +6,9 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-Rectangle_2D(xmin::Float64, ymin::Float64,
-             xmax::Float64, ymax::Float64) = Rectangle_2D(Point_2D(xmin, ymin),
-                                                          Point_2D(xmax, ymax))
+Rectangle_2D(xmin::Real, ymin::Real,
+             xmax::Real, ymax::Real) = Rectangle_2D(Point_2D(xmin, ymin),
+                                                    Point_2D(xmax, ymax))
 
 # Base
 # -------------------------------------------------------------------------------------------------
@@ -27,10 +27,10 @@ function Base.getproperty(rect::Rectangle_2D, sym::Symbol)
     end
 end
 
-# Methods (All type-stable)
+# Methods
 # -------------------------------------------------------------------------------------------------
-@inline width(rect::Rectangle_2D) = rect.tr.x - rect.bl.x
-@inline height(rect::Rectangle_2D) = rect.tr.y - rect.bl.y
+width(rect::Rectangle_2D) = rect.tr.x - rect.bl.x
+height(rect::Rectangle_2D) = rect.tr.y - rect.bl.y
 area(rect::Rectangle_2D) = height(rect) * width(rect)
 in(p::Point_2D, rect::Rectangle_2D) = rect.xmin ≤ p.x ≤ rect.xmax && rect.ymin ≤ p.y ≤ rect.ymax
 
@@ -57,14 +57,14 @@ function intersect(l::LineSegment_2D, rect::Rectangle_2D)
     # Line parallel to clipping window
     if p₁ == 0 # Vertical line
         if q₁ < 0 || q₂ < 0 # Outside boundaries
-            return 0x00000000, SVector(Point_2D(0, 0), Point_2D(0, 0))
+            return 0x00000000, SVector(Point_2D(), Point_2D())
         else # Inside boundaries
             return 0x00000002, SVector(Point_2D(l[1].x, rect.ymin), Point_2D(l[1].x, rect.ymax))
         end
     end
     if p₃ == 0 # Horizontal line
         if q₃ < 0 || q₄ < 0 # Outside boundaries
-            return 0x00000000, SVector(Point_2D(0, 0), Point_2D(0, 0))
+            return 0x00000000, SVector(Point_2D(), Point_2D())
         else # Inside boundaries
             return 0x00000002, SVector(Point_2D(rect.xmin, l[1].y), Point_2D(rect.xmax, l[1].y))
         end
@@ -94,9 +94,7 @@ function intersect(l::LineSegment_2D, rect::Rectangle_2D)
     t_stop = minimum(t_max)
 
     # Line outside clipping window
-    if t_start > t_stop
-        return 0x00000000, SVector(Point_2D(0, 0), Point_2D(0, 0))
-    end
+    t_start < t_stop || return 0x00000000, SVector(Point_2D(), Point_2D())
 
     return 0x00000002, SVector(l(t_start), l(t_stop))
 end
@@ -125,7 +123,7 @@ if enable_visualization
 
     function convert_arguments(LS::Type{<:LineSegments}, R::Vector{Rectangle_2D})
         point_sets = [convert_arguments(LS, rect) for rect in R]
-        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
     end
 
     function convert_arguments(M::Type{<:Mesh}, rect::Rectangle_2D)
@@ -139,7 +137,7 @@ if enable_visualization
 
     function convert_arguments(M::Type{<:Mesh}, R::Vector{Rectangle_2D})
         points = reduce(vcat, [[rect.bl, Point_2D(rect.xmax, rect.ymin),
-                                rect.tr, Point_2D(rect.xmin, rect.ymax)] for rect in R])
+                                rect.tr, Point_2D(rect.xmin, rect.ymax)] for rect ∈ R])
         faces = zeros(Int64, 2*length(Q), 3)
         j = 0
         for i in 1:2:2*length(Q)

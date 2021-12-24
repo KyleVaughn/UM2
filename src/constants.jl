@@ -1,11 +1,7 @@
-# Constants used in more than 1 file, very important constants, and constants that would be  
-
 # Parametric coordinate fudge factor
 const parametric_coordinate_ϵ = 5e-6
-
 # Minimum segment length for ray tracing
 const minimum_segment_length = 1e-4
-
 
 # Point_2D
 # ---------------------------------------------------------------------------------------------------

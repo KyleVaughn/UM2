@@ -20,7 +20,7 @@ end
 using LoggingExtras: TransformerLogger, global_logger
 
 # import
-import Base: +, -, *, /, ≈, ∩, ∪, ∈
+import Base: +, -, *, /, ≈, in, intersect, union
 if enable_visualization 
     import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
 end
@@ -44,6 +44,7 @@ end
 
 include("AbstractTypes.jl")
 #include("Tree.jl")
+include("constants.jl")
 #include("operators.jl")
 #include("./gmsh/gmsh_generate_rectangular_grid.jl")
 #include("./gmsh/gmsh_group_preserving_fragment.jl")
@@ -52,46 +53,44 @@ include("./primitives/Point_2D.jl")
 include("./primitives/LineSegment_2D.jl")
 include("./primitives/Rectangle_2D.jl")
 include("./primitives/QuadraticSegment_2D.jl")
-include("./primitives/Triangle_2D.jl")
-include("./primitives/Quadrilateral_2D.jl")
-include("./primitives/Triangle6_2D.jl")
-include("./primitives/Quadrilateral8_2D.jl")
-#include("L_system.jl")
-include("./mesh/UnstructuredMesh_2D.jl")
-include("./mesh/LinearUnstructuredMesh_2D.jl")
+#include("./primitives/Triangle_2D.jl")
+#include("./primitives/Quadrilateral_2D.jl")
+#include("./primitives/Triangle6_2D.jl")
+#include("./primitives/Quadrilateral8_2D.jl")
+##include("L_system.jl")
+#include("./mesh/UnstructuredMesh_2D.jl")
+#include("./mesh/LinearUnstructuredMesh_2D.jl")
 #include("./mesh/UnstructuredMesh_2D_low_level.jl")
 #include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
 #include("./mesh/IO_abaqus.jl")
 #include("./mesh/IO_vtk.jl")
 #include("./mesh/IO_xdmf.jl")
-include("constants.jl")
 include("gauss_legendre_quadrature.jl")
 #include("./ray_tracing/AngularQuadrature.jl")
 #include("./ray_tracing/ray_trace.jl")
 #include("./ray_tracing/ray_trace_low_level.jl")
 
+const ∇ = gradient
+const ∇² = laplacian
+
+
 # Structs/Types
-export  AngularQuadrature,
-        ProductAngularQuadrature,
-        Edge_2D,
-        Face_2D,
-        UnstructuredMesh_2D,
+export  LineSegment_2D,
         Point_2D,
-        LineSegment_2D,
         QuadraticSegment_2D,
-        Triangle_2D,
-        Rectangle_2D,
         Quadrilateral_2D,
-        Triangle6_2D,
         Quadrilateral8_2D,
-        TriangleMesh_2D,
-        HierarchicalRectangularlyPartitionedMesh,
-        Tree
+        Rectangle_2D,
+        Triangle_2D,
+        Triangle6_2D,
+        TriangleMesh_2D
 # Functions
 export  ×,
         ⋅,
         ⪇ ,
         ⪉ ,
+        ∇ ,
+        ∇²,
         add_boundary_edges,
         add_connectivity,
         add_edges,
@@ -100,17 +99,12 @@ export  ×,
         add_face_edge_connectivity,
         add_materialized_edges,
         add_materialized_faces,
-        adjacent_faces,
-        arc_length,
+        arclength,
         area,
         boundary_edges,
         bounding_box,
         centroid,
-        classify_nesw,
         closest_point,
-        D,
-        D²,
-        derivative,
         distance,
         edges,
         edge_face_connectivity,
@@ -119,32 +113,22 @@ export  ×,
         face_edge_connectivity,
         face_points,
         find_face,
-        find_face!,
         find_segment_faces,
-        gauss_legendre_quadrature,
         generate_angular_quadrature,
         generate_tracks,
-        get_start_edge_nesw,
         height,
         hilbert_curve,
-        HRPM_height,
-        HRPM_width,
         intersect,
         intersect_edges,
         intersect_faces,
-        is_left,
-        is_straight,
-        jacobian,
+        isleft,
+        isstraight,
         log_timestamps,
         materialize_edge,
         materialize_edges,
         materialize_face,
         materialize_faces,
         midpoint,
-        next_edge_and_face_linear,
-        next_edge_and_face_fallback_linear,
-        node_height,
-        node_level,
         norm,
         partition_rectangularly,
         plot_track_edge_to_edge,
@@ -158,7 +142,8 @@ export  ×,
         reorder_points_to_hilbert,
         segmentize,
         shared_edge,
-        sort_points,
+        sortpoints,
+        sortpoints!,
         submesh,
         to_lines,
         triangulate,
