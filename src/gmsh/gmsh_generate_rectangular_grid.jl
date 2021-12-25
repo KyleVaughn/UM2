@@ -1,8 +1,8 @@
 # Routines to generate a hierarchical rectangular grid in gmsh
 
-function _validate_gmsh_generate_rectangular_grid_input(bb::NTuple{4, T}, 
-                                                x::Vector{Vector{T}}, 
-                                                y::Vector{Vector{T}}) where {T <: AbstractFloat} 
+function _validate_gmsh_generate_rectangular_grid_input(bb::NTuple{4, Float64}, 
+                                                        x::Vector{Vector{Float64}}, 
+                                                        y::Vector{Vector{Float64}})
     # bb has valid values
     xmin, xmax, ymin, ymax = bb
     dx = xmax - xmin
@@ -57,8 +57,8 @@ function _validate_gmsh_generate_rectangular_grid_input(bb::NTuple{4, T},
         append!(y_full[i], y_full[i-1])
     end
     for i = 1:length(x_full)
-        x_full[i] = sort!(collect(Set(x_full[i])))
-        y_full[i] = sort!(collect(Set(y_full[i])))
+        sort!(unique!(x_full[i]))
+        sort!(unique!(y_full[i]))
     end
 
     # Check that all modular geometry sizes are the same (nlevels - 1)
@@ -82,10 +82,10 @@ function _validate_gmsh_generate_rectangular_grid_input(bb::NTuple{4, T},
     return x_full, y_full
 end
 
-function gmsh_generate_rectangular_grid(bb::NTuple{4, T}, 
-                                        x::Vector{Vector{T}}, 
-                                        y::Vector{Vector{T}};
-                                        material::String = "MATERIAL_WATER") where {T <: AbstractFloat} 
+function gmsh_generate_rectangular_grid(bb::NTuple{4, Float64}, 
+                                        x::Vector{Vector{Float64}}, 
+                                        y::Vector{Vector{Float64}};
+                                        material::String = "MATERIAL_WATER")
     @debug "Generating rectangular grid in gmsh"
     # Validate input
     x_full, y_full = _validate_gmsh_generate_rectangular_grid_input(bb, x, y) 
@@ -157,23 +157,23 @@ function gmsh_generate_rectangular_grid(bb::NTuple{4, T},
     return tags 
 end
 
-function gmsh_generate_rectangular_grid(bb::NTuple{4, T}, 
-                                        nx::Vector{Int}, 
-                                        ny::Vector{Int};
-                                        material::String = "MATERIAL_WATER") where {T <: AbstractFloat} 
+function gmsh_generate_rectangular_grid(bb::NTuple{4, Float64}, 
+                                        nx::Vector{Int64}, 
+                                        ny::Vector{Int64};
+                                        material::String = "MATERIAL_WATER")
     if any(nx .<= 0) || any(ny .<= 0)
        @error "Can only subdivide into positive, non-zero intervals!"
     end
     x_mult = 1
-    xvec = Vector{T}[]
+    xvec = Vector{Float64}[]
     for xv in nx 
-        push!(xvec, collect(LinRange{T}(bb[1], bb[2], xv*x_mult + 1)))
+        push!(xvec, collect(LinRange{Float64}(bb[1], bb[2], xv*x_mult + 1)))
         x_mult *= xv
     end
     y_mult = 1
-    yvec = Vector{T}[]
+    yvec = Vector{Float64}[]
     for yv in ny 
-        push!(yvec, collect(LinRange{T}(bb[3], bb[4], yv*y_mult + 1)))
+        push!(yvec, collect(LinRange{Float64}(bb[3], bb[4], yv*y_mult + 1)))
         y_mult *= yv
     end
     tags = gmsh_generate_rectangular_grid(bb, xvec, yvec; material = material) 

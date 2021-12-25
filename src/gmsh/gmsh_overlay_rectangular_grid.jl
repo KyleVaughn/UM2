@@ -1,9 +1,9 @@
 # Routines for overlaying a hierarchical rectangular grid onto a gmsh CAD model
 
-function gmsh_overlay_rectangular_grid(bb::NTuple{4, T},
+function gmsh_overlay_rectangular_grid(bb::NTuple{4, Float64},
                                        material::String,
-                                       x::Vector{Vector{T}}, 
-                                       y::Vector{Vector{T}}) where {T <: AbstractFloat}
+                                       x::Vector{Vector{Float64}}, 
+                                       y::Vector{Vector{Float64}})
 
     @info "Overlaying rectangular grid"
     # Ensure that the material is of the form "MATERIAL_xxxx"
@@ -33,10 +33,10 @@ function gmsh_overlay_rectangular_grid(bb::NTuple{4, T},
     return out_dim_tags    
 end
 
-function gmsh_overlay_rectangular_grid(bb::NTuple{4, T},
+function gmsh_overlay_rectangular_grid(bb::NTuple{4, Float64},
                                        material::String,
-                                       nx::Vector{Int}, 
-                                       ny::Vector{Int}) where {T <: AbstractFloat}
+                                       nx::Vector{Int64}, 
+                                       ny::Vector{Int64})
 
     @info "Overlaying rectangular grid"
     # Ensure that the material is of the form "MATERIAL_xxxx"
