@@ -20,7 +20,7 @@ Base.getindex(quad::Quadrilateral_2D, i::Int64) = quad.points[i]
 Base.firstindex(quad::Quadrilateral_2D) = 1
 Base.lastindex(quad::Quadrilateral_2D) = 4
 
-# Methods (All type-stable)
+# Methods
 # -------------------------------------------------------------------------------------------------
 function (quad::Quadrilateral_2D)(r::Real, s::Real)
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition

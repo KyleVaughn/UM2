@@ -23,7 +23,7 @@ Base.getindex(tri6::Triangle6_2D, i::Int64) = tri6.points[i]
 Base.firstindex(tri6::Triangle6_2D) = 1
 Base.lastindex(tri6::Triangle6_2D) = 6
 
-# Methods (All type-stable)
+# Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 function (tri6::Triangle6_2D)(r::Real, s::Real)

@@ -15,7 +15,7 @@ Base.firstindex(tri::Triangle_2D) = 1
 Base.lastindex(tri::Triangle_2D) = 3
 
 
-# Methods (All type-stable)
+# Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 function (tri::Triangle_2D)(r::Real, s::Real)
