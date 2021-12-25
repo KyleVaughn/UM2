@@ -1,6 +1,6 @@
 module MOCNeutronTransport
 # Compilation options
-const enable_visualization = true
+const enable_visualization = false
 const visualize_ray_tracing = false 
 
 using ColorSchemes
@@ -53,10 +53,10 @@ include("./primitives/Point_2D.jl")
 include("./primitives/LineSegment_2D.jl")
 include("./primitives/Rectangle_2D.jl")
 include("./primitives/QuadraticSegment_2D.jl")
-#include("./primitives/Triangle_2D.jl")
-#include("./primitives/Quadrilateral_2D.jl")
-#include("./primitives/Triangle6_2D.jl")
-#include("./primitives/Quadrilateral8_2D.jl")
+include("./primitives/Triangle_2D.jl")
+include("./primitives/Quadrilateral_2D.jl")
+include("./primitives/Triangle6_2D.jl")
+include("./primitives/Quadrilateral8_2D.jl")
 ##include("L_system.jl")
 #include("./mesh/UnstructuredMesh_2D.jl")
 #include("./mesh/LinearUnstructuredMesh_2D.jl")
@@ -72,6 +72,8 @@ include("gauss_legendre_quadrature.jl")
 
 const ∇ = gradient
 const ∇² = laplacian
+const J = jacobian
+
 
 
 # Structs/Types
@@ -123,6 +125,8 @@ export  ×,
         intersect_faces,
         isleft,
         isstraight,
+        jacobian,
+        J,
         log_timestamps,
         materialize_edge,
         materialize_edges,

@@ -34,9 +34,10 @@ Base.lastindex(q::QuadraticSegment_2D) = 3
 function (q::QuadraticSegment_2D)(r::Real)
     # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    return (2r-1)*( r-1)q[1] +
-                r*(2r-1)q[2] +
-               4r*( 1-r)q[3]
+    rₜ = Float64(r)
+    return (2rₜ-1)*( rₜ-1)q[1] +
+                rₜ*(2rₜ-1)q[2] +
+               4rₜ*( 1-rₜ)q[3]
 end
 
 arclength(q::QuadraticSegment_2D) = arclength(q, Val(15))
@@ -133,8 +134,9 @@ end
 
 # Return the gradient of q, evalutated at r
 function gradient(q::QuadraticSegment_2D, r::Real)
-    return (4r - 3)*(q[1] - q[3]) +
-           (4r - 1)*(q[2] - q[3])
+    rₜ = Float64(r)
+    return (4rₜ - 3)*(q[1] - q[3]) +
+           (4rₜ - 1)*(q[2] - q[3])
 end
 
 # Return the Laplacian of q, evalutated at r
@@ -247,7 +249,8 @@ function isleft(p::Point_2D, q::QuadraticSegment_2D)
 end
 
 function isstraight(q::QuadraticSegment_2D)
-    return distance(q[1], q[3]) + distance(q[3], q[2]) ≈ distance(q[1], q[2])
+    # u⃗ × v⃗ = |u⃗||v⃗|sinθ
+    return abs((q[3] - q[1]) × (q[2] - q[1])) < 1e-7
 end
 
 # # Get an upper bound on the derivative magnitude |dq⃗'/dr|

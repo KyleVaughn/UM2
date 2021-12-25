@@ -21,7 +21,8 @@ Base.lastindex(tri::Triangle_2D) = 3
 function (tri::Triangle_2D)(r::Real, s::Real)
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    return (1 - r - s)*tri[1] + r*tri[2] + s*tri[3]
+    rₜ = Float64(r); sₜ = Float64(s)
+    return (1 - rₜ - sₜ)*tri[1] + rₜ*tri[2] + sₜ*tri[3]
 end
 
 function area(tri::Triangle_2D)
@@ -56,9 +57,7 @@ function intersect(l::LineSegment_2D, tri::Triangle_2D)
     edges = SVector(LineSegment_2D(tri[1], tri[2]),
                     LineSegment_2D(tri[2], tri[3]),
                     LineSegment_2D(tri[3], tri[1]))
-    ipoints = MVector(Point_2D(),
-                      Point_2D(),
-                      Point_2D())
+    ipoints = MVector(Point_2D(), Point_2D(), Point_2D())
     n_ipoints = 0x00000000
     # We need to account for 3 points returned due to vertex intersection
     for k ∈ 1:3
@@ -84,7 +83,7 @@ if enable_visualization
 
     function convert_arguments(LS::Type{<:LineSegments}, T::Vector{Triangle_2D})
         point_sets = [convert_arguments(LS, tri) for tri ∈  T]
-        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
     end
 
     function convert_arguments(M::Type{<:Mesh}, tri::Triangle_2D)

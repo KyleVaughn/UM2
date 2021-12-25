@@ -23,10 +23,9 @@ Base.lastindex(quad::Quadrilateral_2D) = 4
 # Methods (All type-stable)
 # -------------------------------------------------------------------------------------------------
 function (quad::Quadrilateral_2D)(r::Real, s::Real)
-    # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+    # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    rₜ = Float64(r)
-    sₜ = Float64(s)
+    rₜ = Float64(r); sₜ = Float64(s)
     return (1 - rₜ)*(1 - sₜ)*quad[1] +
                  rₜ*(1 - sₜ)*quad[2] +
                        rₜ*sₜ*quad[3] +
@@ -68,15 +67,13 @@ function intersect(l::LineSegment_2D, quad::Quadrilateral_2D)
                     LineSegment_2D(quad[2], quad[3]),
                     LineSegment_2D(quad[3], quad[4]),
                     LineSegment_2D(quad[4], quad[1]))
-    ipoints = MVector(Point_2D(0, 0),
-                      Point_2D(0, 0),
-                      Point_2D(0, 0))
+    ipoints = MVector(Point_2D(), Point_2D(), Point_2D())
     n_ipoints = 0x00000000
     # We need to account for 4 points returned due to vertex intersection
     # The only way we get 4 points though, is if 2 are redundant.
     # So, we return 3, which guarantees all unique points will be returned and the output
     # matched with the triangle output
-    for k = 1:4
+    for k ∈  1:4
         npoints, point = l ∩ edges[k]
         if npoints === 0x00000001 && n_ipoints !== 0x00000003
             n_ipoints += 0x00000001 
@@ -99,8 +96,8 @@ if enable_visualization
     end
 
     function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{Quadrilateral_2D})
-        point_sets = [convert_arguments(LS, quad) for quad in Q]
-        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+        point_sets = [convert_arguments(LS, quad) for quad ∈  Q]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈  point_sets]))
     end
 
     function convert_arguments(M::Type{<:Mesh}, quad::Quadrilateral_2D)
@@ -111,7 +108,7 @@ if enable_visualization
     end
 
     function convert_arguments(M::Type{<:Mesh}, Q::Vector{Quadrilateral_2D})
-        points = reduce(vcat, [[quad[i] for i = 1:4] for quad in Q])
+        points = reduce(vcat, [[quad[i] for i = 1:4] for quad ∈  Q])
         faces = zeros(Int64, 2*length(Q), 3)
         j = 0
         for i in 1:2:2*length(Q)
