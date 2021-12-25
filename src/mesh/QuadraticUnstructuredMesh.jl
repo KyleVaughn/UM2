@@ -1,8 +1,8 @@
-struct GeneralLinearUnstructuredMesh_2D <: LinearUnstructuredMesh_2D
+struct GeneralQuadraticUnstructuredMesh_2D <: QuadraticUnstructuredMesh_2D
     name::String
     points::Vector{Point_2D}
-    edges::Vector{SVector{2, UInt32}}
-    materialized_edges::Vector{LineSegment_2D}
+    edges::Vector{SVector{3, UInt32}}
+    materialized_edges::Vector{QuadraticSegment_2D}
     faces::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}}
     materialized_faces::Vector{<:Face_2D}
     edge_face_connectivity::Vector{SVector{2, UInt32}}
@@ -11,13 +11,13 @@ struct GeneralLinearUnstructuredMesh_2D <: LinearUnstructuredMesh_2D
     face_sets::Dict{String, Set{UInt32}}
 end
 
-function GeneralLinearUnstructuredMesh_2D(;
+function GeneralQuadraticUnstructuredMesh_2D(;
         name::String = "DefaultMeshName",
         points::Vector{Point_2D} = Point_2D[],
-        edges::Vector{SVector{2, UInt32}} = SVector{2, UInt32}[],
-        materialized_edges::Vector{LineSegment_2D} = LineSegment_2D[],
-        faces::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}} = SVector{3, UInt32}[],
-        materialized_faces::Vector{<:Face_2D} = Triangle_2D[],
+        edges::Vector{SVector{3, UInt32}} = SVector{3, UInt32}[],
+        materialized_edges::Vector{QuadraticSegment_2D} = QuadraticSegment_2D[],
+        faces::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}} = SVector{6, UInt32}[],
+        materialized_faces::Vector{<:Face_2D} = Triangle6_2D[],
         edge_face_connectivity::Vector{SVector{2, UInt32}} = SVector{2, UInt32}[],
         face_edge_connectivity ::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}} = SVector{3, UInt32}[],
         boundary_edges::Vector{Vector{UInt32}} = Vector{UInt32}[],
@@ -36,32 +36,32 @@ function GeneralLinearUnstructuredMesh_2D(;
                                          )
 end
 
-struct TriangleMesh_2D <: LinearUnstructuredMesh_2D
+struct Triangle6Mesh_2D <: QuadraticUnstructuredMesh_2D
     name::String
     points::Vector{Point_2D}
-    edges::Vector{SVector{2, UInt32}}
-    materialized_edges::Vector{LineSegment_2D}
+    edges::Vector{SVector{3, UInt32}}
+    materialized_edges::Vector{QuadraticSegment_2D}
     faces::Vector{SVector{3, UInt32}}
-    materialized_faces::Vector{Triangle_2D}
+    materialized_faces::Vector{Triangle6_2D}
     edge_face_connectivity::Vector{SVector{2, UInt32}} 
     face_edge_connectivity::Vector{SVector{3, UInt32}} 
     boundary_edges::Vector{Vector{UInt32}}
     face_sets::Dict{String, Set{UInt32}}
 end
 
-function TriangleMesh_2D(;
+function Triangle6Mesh_2D(;
         name::String = "DefaultMeshName",
         points::Vector{Point_2D} = Point_2D[],
-        edges::Vector{SVector{2, UInt32}} = SVector{2, UInt32}[],
-        materialized_edges::Vector{LineSegment_2D} = LineSegment_2D[],
-        faces::Vector{SVector{3, UInt32}} = SVector{3, U}[],
-        materialized_faces::Vector{Triangle_2D} = Triangle_2D[],
+        edges::Vector{SVector{3, UInt32}} = SVector{3, UInt32}[],
+        materialized_edges::Vector{QuadraticSegment_2D} = QuadraticSegment_2D[],
+        faces::Vector{SVector{6, UInt32}} = SVector{6, U}[],
+        materialized_faces::Vector{Triangle6_2D} = Triangle6_D[],
         edge_face_connectivity::Vector{SVector{2, UInt32}} = SVector{2, UInt32}[],
         face_edge_connectivity ::Vector{SVector{3, UInt32}} = SVector{3, UInt32}[],
         boundary_edges::Vector{Vector{UInt32}} = Vector{UInt32}[],
         face_sets::Dict{String, Set{UInt32}} = Dict{String, Set{UInt32}}()
     )
-        return TriangleMesh_2D(name,
+        return Triangle6Mesh_2D(name,
                                points,
                                edges,
                                materialized_edges,
@@ -74,11 +74,11 @@ function TriangleMesh_2D(;
                               )
 end
 
-# Axis-aligned bounding box, in 2d a rectangle.
-# Type-stable
-function bounding_box(mesh::M) where {M <: LinearUnstructuredMesh_2D}
-    # If the mesh does not have any quadratic faces, the bounding_box may be determined 
-    # entirely from the points. 
-    return bounding_box(mesh.points)
-end
+## Axis-aligned bounding box, in 2d a rectangle.
+## Type-stable
+#function bounding_box(mesh::M) where {M <: QuadraticUnstructuredMesh_2D}
+#    # If the mesh does not have any quadratic faces, the bounding_box may be determined 
+#    # entirely from the points. 
+#    return bounding_box(mesh.points)
+#end
 
