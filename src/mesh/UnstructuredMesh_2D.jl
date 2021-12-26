@@ -260,46 +260,27 @@ function Base.show(io::IO, mesh::M) where {M <: UnstructuredMesh_2D}
         println(io, "  ├─ Size (MB) : $size_MB")
     end
     println(io, "  ├─ Points    : $(length(mesh.points))")
-    println(io, "  ├─ Edges     : $(length(mesh.edges))")
+    nedges = length(mesh.edges)
+    println(io, "  ├─ Edges     : $nedges")
+    println(io, "  │  ├─ Linear         : $(count(x->x isa SVector{2, UInt32},  mesh.edges))")
+    println(io, "  │  ├─ Quadratic      : $(count(x->x isa SVector{3, UInt32},  mesh.edges))")
     println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_edges) !== 0)")
     println(io, "  ├─ Faces     : $(length(mesh.faces))")
-#    if 0 < nfaces
-#        ntri   = count(x->x[1] == 5,  mesh.faces)
-#        nquad  = count(x->x[1] == 9,  mesh.faces)
-#        ntri6  = count(x->x[1] == 22, mesh.faces)
-#        nquad8 = count(x->x[1] == 23, mesh.faces)
-#    else
-#        ntri   = 0
-#        nquad  = 0
-#        ntri6  = 0
-#        nquad8 = 0
-#    end
-#    fmaterialized = length(mesh.materialized_faces) !== 0
-#    println(io, "  │  ├─ Triangle       : $ntri")
-#    println(io, "  │  ├─ Quadrilateral  : $nquad")
-#    println(io, "  │  ├─ Triangle6      : $ntri6")
-#    println(io, "  │  ├─ Quadrilateral8 : $nquad8")
-#    nface_sets = length(keys(mesh.face_sets))
-#    ef_con = 0 < length(mesh.edge_face_connectivity)
-#    fe_con = 0 < length(mesh.face_edge_connectivity)
-#    println(io, "  ├─ Connectivity")
-#    println(io, "  │  ├─ Edge/Face : $ef_con")
-#    println(io, "  │  └─ Face/Edge : $fe_con")
-#    if 0 < length(mesh.boundary_edges)
-#        nbsides = length(mesh.boundary_edges)
-#        nbedges = 0
-#        for side in mesh.boundary_edges
-#            nbedges += length(side)
-#        end
-#        println(io, "  ├─ Boundary edges")
-#        println(io, "  │  ├─ Edges : $nbedges")
-#        println(io, "  │  └─ Sides : $nbsides")
-#    else
-#        nbsides = 0
-#        nbedges = 0
-#        println(io, "  ├─ Boundary edges")
-#        println(io, "  │  ├─ Edges : $nbedges")
-#        println(io, "  │  └─ Sides : $nbsides")
-#    end
-#    println(io, "  └─ Face sets : $nface_sets")
+    println(io, "  │  ├─ Triangle       : $(count(x->x isa SVector{3, UInt32},  mesh.faces))")
+    println(io, "  │  ├─ Quadrilateral  : $(count(x->x isa SVector{4, UInt32},  mesh.faces))")
+    println(io, "  │  ├─ Triangle6      : $(count(x->x isa SVector{6, UInt32},  mesh.faces))")
+    println(io, "  │  ├─ Quadrilateral8 : $(count(x->x isa SVector{8, UInt32},  mesh.faces))")
+    println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_faces) !== 0)")
+    println(io, "  ├─ Connectivity")
+    println(io, "  │  ├─ Edge/Face : $(0 < length(mesh.edge_face_connectivity))")
+    println(io, "  │  └─ Face/Edge : $(0 < length(mesh.face_edge_connectivity))")
+    println(io, "  ├─ Boundary edges")
+    nsides = length(mesh.boundary_edges)
+    if nsides !== 0
+        println(io, "  │  ├─ Edges : $(mapreduce(x->length(x), +, mesh.boundary_edges))")
+    else
+        println(io, "  │  ├─ Edges : 0") 
+    end
+    println(io, "  │  └─ Sides : $nsides")
+    println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
 end
