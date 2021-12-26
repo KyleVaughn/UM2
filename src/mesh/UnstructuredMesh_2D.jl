@@ -1,3 +1,43 @@
+struct GeneralUnstructuredMesh_2D <: UnstructuredMesh_2D
+    name::String
+    points::Vector{Point_2D}
+    edges::Vector{<:SVector{L, UInt32} where {L}}
+    materialized_edges::Vector{<:Edge_2D}
+    faces::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}}
+    materialized_faces::Vector{<:Face_2D}
+    edge_face_connectivity::Vector{SVector{2, UInt32}}
+    face_edge_connectivity::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}}
+    boundary_edges::Vector{Vector{UInt32}}
+    face_sets::Dict{String, Set{UInt32}}
+end
+
+function GeneralUnstructuredMesh_2D(;
+        name::String = "DefaultMeshName",
+        points::Vector{Point_2D} = Point_2D[],
+        edges::Vector{<:SVector{L, UInt32} where {L}} = SVector{2, UInt32}[],
+        materialized_edges::Vector{<:Edge_2D} = LineSegment_2D[],
+        faces::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}} = SVector{4, UInt32}[],
+        materialized_faces::Vector{<:Face_2D} = Triangle_2D[],
+        edge_face_connectivity::Vector{SVector{2, UInt32}} = SVector{2, UInt32}[],
+        face_edge_connectivity ::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}} = SVector{3, UInt32}[],
+        boundary_edges::Vector{Vector{UInt32}} = Vector{UInt32}[],
+        face_sets::Dict{String, Set{UInt32}} = Dict{String, Set{UInt32}}()
+    ) where {F <: AbstractFloat, U <: Unsigned}
+        return GeneralUnstructuredMesh_2D(name,
+                                          points,
+                                          edges,
+                                          materialized_edges,
+                                          faces,
+                                          materialized_faces,
+                                          edge_face_connectivity,
+                                          face_edge_connectivity,
+                                          boundary_edges,
+                                          face_sets,
+                                         )
+end
+
+Base.broadcastable(mesh::GeneralUnstructuredMesh_2D) = Ref(mesh)
+
 # Area of face
 function area(face::SVector{N, UInt32}, points::Vector{Point_2D}) where {N}
     return area(materialize_face(face, points))
@@ -205,4 +245,61 @@ function num_edges(face::SVector{L, UInt32}) where {L}
         # Error
         return 0x00000000
     end
+end
+
+# How to display a mesh in REPL
+function Base.show(io::IO, mesh::M) where {M <: UnstructuredMesh_2D}
+    mesh_type = typeof(mesh)
+    println(io, mesh_type)
+    println(io, "  ├─ Name      : $(mesh.name)")
+    size_MB = Base.summarysize(mesh)/1E6
+    if size_MB < 1
+        size_KB = size_MB*1000
+        println(io, "  ├─ Size (KB) : $size_KB")
+    else
+        println(io, "  ├─ Size (MB) : $size_MB")
+    end
+    println(io, "  ├─ Points    : $(length(mesh.points))")
+    println(io, "  ├─ Edges     : $(length(mesh.edges))")
+    println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_edges) !== 0)")
+    println(io, "  ├─ Faces     : $(length(mesh.faces))")
+#    if 0 < nfaces
+#        ntri   = count(x->x[1] == 5,  mesh.faces)
+#        nquad  = count(x->x[1] == 9,  mesh.faces)
+#        ntri6  = count(x->x[1] == 22, mesh.faces)
+#        nquad8 = count(x->x[1] == 23, mesh.faces)
+#    else
+#        ntri   = 0
+#        nquad  = 0
+#        ntri6  = 0
+#        nquad8 = 0
+#    end
+#    fmaterialized = length(mesh.materialized_faces) !== 0
+#    println(io, "  │  ├─ Triangle       : $ntri")
+#    println(io, "  │  ├─ Quadrilateral  : $nquad")
+#    println(io, "  │  ├─ Triangle6      : $ntri6")
+#    println(io, "  │  ├─ Quadrilateral8 : $nquad8")
+#    nface_sets = length(keys(mesh.face_sets))
+#    ef_con = 0 < length(mesh.edge_face_connectivity)
+#    fe_con = 0 < length(mesh.face_edge_connectivity)
+#    println(io, "  ├─ Connectivity")
+#    println(io, "  │  ├─ Edge/Face : $ef_con")
+#    println(io, "  │  └─ Face/Edge : $fe_con")
+#    if 0 < length(mesh.boundary_edges)
+#        nbsides = length(mesh.boundary_edges)
+#        nbedges = 0
+#        for side in mesh.boundary_edges
+#            nbedges += length(side)
+#        end
+#        println(io, "  ├─ Boundary edges")
+#        println(io, "  │  ├─ Edges : $nbedges")
+#        println(io, "  │  └─ Sides : $nbsides")
+#    else
+#        nbsides = 0
+#        nbedges = 0
+#        println(io, "  ├─ Boundary edges")
+#        println(io, "  │  ├─ Edges : $nbedges")
+#        println(io, "  │  └─ Sides : $nbsides")
+#    end
+#    println(io, "  └─ Face sets : $nface_sets")
 end

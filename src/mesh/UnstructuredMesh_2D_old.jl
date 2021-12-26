@@ -256,81 +256,81 @@ function reorder_points_to_hilbert(mesh::UnstructuredMesh_2D{F, U}
                                     )
 end
 
-# How to display a mesh in REPL
-function Base.show(io::IO, mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat, U <: Unsigned}
-    println(io, "UnstructuredMesh_2D{$F}{$U}")
-    name = mesh.name
-    println(io, "  ├─ Name      : $name")
-    size_MB = Base.summarysize(mesh)/1E6
-    if size_MB < 1
-        size_KB = size_MB*1000
-        println(io, "  ├─ Size (KB) : $size_KB")
-    else
-        println(io, "  ├─ Size (MB) : $size_MB")
-    end
-    npoints = length(mesh.points)
-    println(io, "  ├─ Points    : $npoints")
-    if 0 < length(mesh.materialized_edges)
-        nedges = length(mesh.materialized_edges)
-        nlin   = count(x->x isa LineSegment_2D,  mesh.materialized_edges)
-        nquad  = count(x->x isa QuadraticSegment_2D,  mesh.materialized_edges)
-    elseif 0 < length(mesh.edges)
-        nedges = length(mesh.edges)
-        nlin   = count(x->length(x) == 2,  mesh.edges)
-        nquad  = count(x->length(x) == 3,  mesh.edges)
-    else
-        nedges = 0
-        nlin = 0
-        nquad = 0
-    end
-    ematerialized = length(mesh.materialized_edges) !== 0
-    println(io, "  ├─ Edges     : $nedges")
-    println(io, "  │  ├─ Linear         : $nlin")
-    println(io, "  │  ├─ Quadratic      : $nquad")
-    println(io, "  │  └─ Materialized?  : $ematerialized")
-    nfaces = length(mesh.faces)
-    println(io, "  ├─ Faces     : $nfaces")
-    if 0 < nfaces
-        ntri   = count(x->x[1] == 5,  mesh.faces)
-        nquad  = count(x->x[1] == 9,  mesh.faces)
-        ntri6  = count(x->x[1] == 22, mesh.faces)
-        nquad8 = count(x->x[1] == 23, mesh.faces)
-    else
-        ntri   = 0
-        nquad  = 0
-        ntri6  = 0
-        nquad8 = 0
-    end
-    fmaterialized = length(mesh.materialized_faces) !== 0
-    println(io, "  │  ├─ Triangle       : $ntri")
-    println(io, "  │  ├─ Quadrilateral  : $nquad")
-    println(io, "  │  ├─ Triangle6      : $ntri6")
-    println(io, "  │  ├─ Quadrilateral8 : $nquad8")
-    println(io, "  │  └─ Materialized?  : $fmaterialized")
-    nface_sets = length(keys(mesh.face_sets))
-    ef_con = 0 < length(mesh.edge_face_connectivity)
-    fe_con = 0 < length(mesh.face_edge_connectivity)
-    println(io, "  ├─ Connectivity")
-    println(io, "  │  ├─ Edge/Face : $ef_con")
-    println(io, "  │  └─ Face/Edge : $fe_con")
-    if 0 < length(mesh.boundary_edges)
-        nbsides = length(mesh.boundary_edges)
-        nbedges = 0
-        for side in mesh.boundary_edges
-            nbedges += length(side)
-        end
-        println(io, "  ├─ Boundary edges")
-        println(io, "  │  ├─ Edges : $nbedges")
-        println(io, "  │  └─ Sides : $nbsides")
-    else
-        nbsides = 0
-        nbedges = 0
-        println(io, "  ├─ Boundary edges")
-        println(io, "  │  ├─ Edges : $nbedges")
-        println(io, "  │  └─ Sides : $nbsides")
-    end
-    println(io, "  └─ Face sets : $nface_sets")
-end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Return a mesh composed of the faces in the face set set_name
 # Not type-stable
