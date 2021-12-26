@@ -6,9 +6,9 @@ end
 
 # Constructors
 # -------------------------------------------------------------------------------------------------
-Rectangle_2D(xmin::Real, ymin::Real,
-             xmax::Real, ymax::Real) = Rectangle_2D(Point_2D(xmin, ymin),
-                                                    Point_2D(xmax, ymax))
+Rectangle_2D(xmin::Real=0.0, ymin::Real=0.0,
+             xmax::Real=0.0, ymax::Real=0.0) = Rectangle_2D(Point_2D(xmin, ymin),
+                                                            Point_2D(xmax, ymax))
 
 # Base
 # -------------------------------------------------------------------------------------------------

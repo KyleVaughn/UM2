@@ -38,6 +38,73 @@ end
 
 Base.broadcastable(mesh::GeneralUnstructuredMesh_2D) = Ref(mesh)
 
+# Return a mesh with its edges
+function add_edges(mesh::M) where {M <: UnstructuredMesh_2D}
+    return M(name = mesh.name,
+             points = mesh.points,
+             edges = edges(mesh),
+             materialized_edges = mesh.materialized_edges,
+             faces = mesh.faces,
+             materialized_faces = mesh.materialized_faces,
+             edge_face_connectivity = mesh.edge_face_connectivity,
+             face_edge_connectivity = mesh.face_edge_connectivity,
+             boundary_edges = mesh.boundary_edges,
+             face_sets = mesh.face_sets
+            )
+end
+
+# Return a mesh with face/edge connectivity
+# and all necessary prerequisites to find the boundary edges
+function add_face_edge_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
+    if 0 == length(mesh.edges)
+        mesh = add_edges(mesh)
+    end
+    return M(name = mesh.name,
+             points = mesh.points,
+             edges = mesh.edges,
+             materialized_edges = mesh.materialized_edges,
+             faces = mesh.faces,
+             materialized_faces = mesh.materialized_faces,
+             edge_face_connectivity = mesh.edge_face_connectivity,
+             face_edge_connectivity = face_edge_connectivity(mesh),
+             boundary_edges = mesh.boundary_edges,
+             face_sets = mesh.face_sets
+            )
+end
+
+# Return a mesh with materialized edges
+function add_materialized_edges(mesh::M) where {M <: UnstructuredMesh_2D}
+    if 0 == length(mesh.edges)
+        mesh = add_edges(mesh)
+    end
+    return M(name = mesh.name,
+             points = mesh.points,
+             edges = mesh.edges,
+             materialized_edges = materialize_edges(mesh),
+             faces = mesh.faces,
+             materialized_faces = mesh.materialized_faces,
+             edge_face_connectivity = mesh.edge_face_connectivity,
+             face_edge_connectivity = mesh.face_edge_connectivity,
+             boundary_edges = mesh.boundary_edges,
+             face_sets = mesh.face_sets
+            )
+end
+
+# Return a mesh with materialized faces
+function add_materialized_faces(mesh::M) where {M <: UnstructuredMesh_2D}
+    return M(name = mesh.name,
+             points = mesh.points,
+             edges = mesh.edges,
+             materialized_edges = mesh.materialized_edges,
+             faces = mesh.faces,
+             materialized_faces = materialize_faces(mesh),
+             edge_face_connectivity = mesh.edge_face_connectivity,
+             face_edge_connectivity = mesh.face_edge_connectivity,
+             boundary_edges = mesh.boundary_edges,
+             face_sets = mesh.face_sets
+            )
+end
+
 # Area of face
 function area(face::SVector{N, UInt32}, points::Vector{Point_2D}) where {N}
     return area(materialize_face(face, points))
@@ -58,14 +125,14 @@ function area(mesh::M, set_name::String) where {M <: UnstructuredMesh_2D}
 end
 
 # Bounding box of a vector of points
-function bounding_box(points::Vector{Point_2D})
+function boundingbox(points::Vector{Point_2D})
     x = getindex.(points, 1)
     y = getindex.(points, 2)
     return Rectangle_2D(minimum(x), maximum(x), minimum(y), maximum(y))
 end
 
 # Bounding box of a vector of points
-function bounding_box(points::SVector{L, Point_2D}) where {L}
+function boundingbox(points::SVector{L, Point_2D}) where {L}
     x = getindex.(points, 1)
     y = getindex.(points, 2)
     return Rectangle_2D(minimum(x), maximum(x), minimum(y), maximum(y))
@@ -106,9 +173,9 @@ end
 
 # SVector of MVectors of point IDs representing the 3 edges of a quadratic triangle
 function edges(face::SVector{6, UInt32})
-    edges = SVector( MVector{3, UInt32}(face[2], face[3], face[5]),
-                     MVector{3, UInt32}(face[3], face[4], face[6]),
-                     MVector{3, UInt32}(face[4], face[2], face[7]) )
+    edges = SVector( MVector{3, UInt32}(face[1], face[2], face[4]),
+                     MVector{3, UInt32}(face[2], face[3], face[5]),
+                     MVector{3, UInt32}(face[3], face[1], face[6]) )
     # Order the linear edge vertices by ID
     for edge in edges
         if edge[2] < edge[1]
@@ -122,10 +189,10 @@ end
 
 # SVector of MVectors of point IDs representing the 4 edges of a quadratic quadrilateral
 function edges(face::SVector{8, UInt32})
-    edges = SVector( MVector{3, UInt32}(face[2], face[3], face[6]),
+    edges = SVector( MVector{3, UInt32}(face[1], face[2], face[5]),
+                     MVector{3, UInt32}(face[2], face[3], face[6]),
                      MVector{3, UInt32}(face[3], face[4], face[7]),
-                     MVector{3, UInt32}(face[4], face[5], face[8]),
-                     MVector{3, UInt32}(face[5], face[2], face[9]) )
+                     MVector{3, UInt32}(face[4], face[1], face[8]) )
     # Order th linear edge vertices by ID
     for edge in edges
         if edge[2] < edge[1]

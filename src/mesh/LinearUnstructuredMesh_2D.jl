@@ -113,10 +113,28 @@ function QuadrilateralMesh_2D(;
 end
 
 # Axis-aligned bounding box, in 2d a rectangle.
-# Type-stable
-function bounding_box(mesh::M) where {M <: LinearUnstructuredMesh_2D}
+function boundingbox(mesh::M) where {M <: LinearUnstructuredMesh_2D}
     # If the mesh does not have any quadratic faces, the bounding_box may be determined 
     # entirely from the points. 
-    return bounding_box(mesh.points)
+    return boundingbox(mesh.points)
 end
 
+# A vector of SVectors, denoting the edge ID each face is connected to.
+function face_edge_connectivity(mesh::TriangleMesh_2D)
+    if length(the_edges) === 0
+        @error "Does not have edges!"
+    end
+    # A vector of MVectors of zeros for each face
+    # Each MVector is the length of the number of edges
+    face_edge = [MVector{3, U}(zeros(U, num_edges(face)))
+                    for face in the_faces]::Vector{<:MArray{S, U, 1, L} where {S<:Tuple, L}}
+    # for each face in the mesh, generate the edges.
+    # Search for the index of the edge in the mesh.edges vector
+    # Insert the index of the edge into the face_edge connectivity vector
+    for i in eachindex(the_faces)
+        for (j, edge) in enumerate(edges(the_faces[i]))
+            face_edge[i][j] = searchsortedfirst(the_edges, SVector(edge.data))
+        end
+    end
+    return [SVector(sort(conn).data) for conn in face_edge]::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
+end

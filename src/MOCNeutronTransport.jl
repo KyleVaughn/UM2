@@ -1,6 +1,6 @@
 module MOCNeutronTransport
 # Compilation options
-const enable_visualization = false
+const enable_visualization = true
 const visualize_ray_tracing = false 
 
 using ColorSchemes
@@ -46,9 +46,9 @@ include("AbstractTypes.jl")
 #include("Tree.jl")
 include("constants.jl")
 #include("operators.jl")
-#include("./gmsh/gmsh_generate_rectangular_grid.jl")
-#include("./gmsh/gmsh_group_preserving_fragment.jl")
-#include("./gmsh/gmsh_overlay_rectangular_grid.jl")
+include("./gmsh/gmsh_generate_rectangular_grid.jl")
+include("./gmsh/gmsh_group_preserving_fragment.jl")
+include("./gmsh/gmsh_overlay_rectangular_grid.jl")
 include("./primitives/Point_2D.jl")
 include("./primitives/LineSegment_2D.jl")
 include("./primitives/Rectangle_2D.jl")
@@ -58,11 +58,12 @@ include("./primitives/Quadrilateral_2D.jl")
 include("./primitives/Triangle6_2D.jl")
 include("./primitives/Quadrilateral8_2D.jl")
 ##include("L_system.jl")
-#include("./mesh/UnstructuredMesh_2D.jl")
-#include("./mesh/LinearUnstructuredMesh_2D.jl")
+include("./mesh/UnstructuredMesh_2D.jl")
+include("./mesh/LinearUnstructuredMesh_2D.jl")
+include("./mesh/QuadraticUnstructuredMesh_2D.jl")
 #include("./mesh/UnstructuredMesh_2D_low_level.jl")
 #include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
-#include("./mesh/IO_abaqus.jl")
+include("./mesh/IO_abaqus.jl")
 #include("./mesh/IO_vtk.jl")
 #include("./mesh/IO_xdmf.jl")
 include("gauss_legendre_quadrature.jl")
@@ -85,7 +86,8 @@ export  LineSegment_2D,
         Rectangle_2D,
         Triangle_2D,
         Triangle6_2D,
-        TriangleMesh_2D
+        TriangleMesh_2D,
+        QuadrilateralMesh_2D
 # Functions
 export  ×,
         ⋅,
@@ -104,7 +106,7 @@ export  ×,
         arclength,
         area,
         boundary_edges,
-        bounding_box,
+        boundingbox,
         centroid,
         closest_point,
         distance,

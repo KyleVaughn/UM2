@@ -55,7 +55,7 @@ function Triangle6Mesh_2D(;
         edges::Vector{SVector{3, UInt32}} = SVector{3, UInt32}[],
         materialized_edges::Vector{QuadraticSegment_2D} = QuadraticSegment_2D[],
         faces::Vector{SVector{6, UInt32}} = SVector{6, U}[],
-        materialized_faces::Vector{Triangle6_2D} = Triangle6_D[],
+        materialized_faces::Vector{Triangle6_2D} = Triangle6_2D[],
         edge_face_connectivity::Vector{SVector{2, UInt32}} = SVector{2, UInt32}[],
         face_edge_connectivity ::Vector{SVector{3, UInt32}} = SVector{3, UInt32}[],
         boundary_edges::Vector{Vector{UInt32}} = Vector{UInt32}[],
@@ -114,10 +114,15 @@ end
 
 
 # Axis-aligned bounding box, in 2d a rectangle.
-# Type-stable
-# function bounding_box(mesh::M) where {M <: QuadraticUnstructuredMesh_2D}
-#     # If the mesh does not have any quadratic faces, the bounding_box may be determined 
-#     # entirely from the points. 
-#     return bounding_box(mesh.points)
+# function boundingbox(mesh::M) where {M <: QuadraticUnstructuredMesh_2D}
+#     nsides = length(mesh.boundary_edges)
+#     if nsides !== 0
+#         bb = Rectangle_2D()
+#         for iside ∈ 1:nsides
+#             bb ∪ boundingbox(materialize_edge(mesh.edges[ 
+#         end
+#     else
+#         return reduce(union, boundingbox.(materialize_edge.(edges(mesh), Ref(mesh.points))))
+#     end
 # end
-
+# 

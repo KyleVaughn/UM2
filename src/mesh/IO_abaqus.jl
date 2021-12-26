@@ -64,21 +64,33 @@ function read_abaqus_2d(filepath::String)
     if UInt32_max < 2.2*nfaces
         @error "Mesh may cause UInt32 overflow. Some poor dev now has to add UInt64 support"
     end
-    faces_total_length = mapreduce(x->length(x), +, faces)
-    if faces_total_length % 3 === 0
+    face_lengths = Int64[]
+    for face in faces
+        l = length(face)
+        if l ∉ face_lengths
+            push!(face_lengths, l)
+        end
+    end
+    if face_lengths == [3]
         return TriangleMesh_2D(name = name,
                                points = points,
                                faces = [ SVector{3, UInt32}(f) for f in faces],
                                face_sets = face_sets
                               )
-    elseif faces_total_length % 4 === 0
+    elseif face_lengths == [4]
         return QuadrilateralMesh_2D(name = name,
                                     points = points,
                                     faces = [ SVector{4, UInt32}(f) for f in faces],
                                     face_sets = face_sets
                                    )
+    elseif face_lengths == [6]
+        return Triangle6Mesh_2D(name = name,
+                                points = points,
+                                faces = [ SVector{6, UInt32}(f) for f in faces],
+                                face_sets = face_sets
+                               )
     else
-        @error "Could not identify mesh type"
+        @error "Could not identify mesh type. Faces of lengths: $face_lengths"
         return nothing
     end
 end

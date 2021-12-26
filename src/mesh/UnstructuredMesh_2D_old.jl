@@ -1,43 +1,3 @@
-struct UnstructuredMesh_2D{F <: AbstractFloat, U <: Unsigned}
-    name::String
-    points::Vector{Point_2D{F}}
-    edges::Vector{<:SVector{L, U} where {L}}
-    materialized_edges::Vector{<:Edge_2D{F}}
-    faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
-    materialized_faces::Vector{<:Face_2D{F}}
-    edge_face_connectivity::Vector{SVector{2, U}}
-    face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
-    boundary_edges::Vector{Vector{U}}
-    face_sets::Dict{String, Set{U}}
-end
-
-function UnstructuredMesh_2D{F, U}(;
-        name::String = "DefaultMeshName",
-        points::Vector{Point_2D{F}} = Point_2D{F}[],
-        edges::Vector{<:SVector{L, U} where {L}} = SVector{2, U}[],
-        materialized_edges::Vector{<:Edge_2D{F}} = LineSegment_2D{F}[],
-        faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}} = SVector{4, U}[],
-        materialized_faces::Vector{<:Face_2D{F}} = Triangle_2D{F}[],
-        edge_face_connectivity::Vector{SVector{2, U}} = SVector{2, U}[],
-        face_edge_connectivity ::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}} = SVector{3, U}[],
-        boundary_edges::Vector{Vector{U}} = Vector{U}[],
-        face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
-    ) where {F <: AbstractFloat, U <: Unsigned}
-        return UnstructuredMesh_2D{F, U}(name,
-                                         points,
-                                         edges,
-                                         materialized_edges,
-                                         faces,
-                                         materialized_faces,
-                                         edge_face_connectivity,
-                                         face_edge_connectivity,
-                                         boundary_edges,
-                                         face_sets,
-                                        )
-end
-
-Base.broadcastable(mesh::UnstructuredMesh_2D) = Ref(mesh)
-
 # Return a mesh with boundary edges and all necessary prerequisites to find the boundary edges
 # Not type-stable
 function add_boundary_edges(mesh::UnstructuredMesh_2D{F, U}, 
@@ -63,22 +23,6 @@ end
 # Not type-stable
 function add_connectivity(mesh::UnstructuredMesh_2D)
     return add_edge_face_connectivity(add_face_edge_connectivity(mesh))
-end
-
-# Return a mesh with edges
-# Not type-stable
-function add_edges(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat, U <: Unsigned}
-    return UnstructuredMesh_2D{F, U}(name = mesh.name,
-                                     points = mesh.points,
-                                     edges = edges(mesh.faces),
-                                     materialized_edges = mesh.materialized_edges,
-                                     faces = mesh.faces,
-                                     materialized_faces = mesh.materialized_faces,
-                                     edge_face_connectivity = mesh.edge_face_connectivity,
-                                     face_edge_connectivity = mesh.face_edge_connectivity,
-                                     boundary_edges = mesh.boundary_edges,
-                                     face_sets = mesh.face_sets
-                                    )
 end
 
 # Return a mesh with edge/face connectivity
@@ -128,42 +72,6 @@ function add_face_edge_connectivity(mesh::UnstructuredMesh_2D{F, U}) where {F <:
                                     boundary_edges = mesh.boundary_edges,
                                     face_sets = mesh.face_sets
                                    )
-end
-
-# Return a mesh with materialized edges
-# Not type-stable
-function add_materialized_edges(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat, U <: Unsigned}
-    if 0 == length(mesh.edges)
-        mesh = add_edges(mesh)
-    end
-    return UnstructuredMesh_2D{F, U}(name = mesh.name,
-                                     points = mesh.points,
-                                     edges = mesh.edges,
-                                     materialized_edges = materialize_edges(mesh.edges, mesh.points),
-                                     faces = mesh.faces,
-                                     materialized_faces = mesh.materialized_faces,
-                                     edge_face_connectivity = mesh.edge_face_connectivity,
-                                     face_edge_connectivity = mesh.face_edge_connectivity,
-                                     boundary_edges = mesh.boundary_edges,
-                                     face_sets = mesh.face_sets
-                                    )
-end
-
-# Return a mesh with materialized faces
-# Not type-stable
-function add_materialized_faces(mesh::UnstructuredMesh_2D{F, U}) where {F <: AbstractFloat,
-                                                                        U <: Unsigned}
-    return UnstructuredMesh_2D{F, U}(name = mesh.name,
-                                     points = mesh.points,
-                                     edges = mesh.edges,
-                                     materialized_edges = mesh.materialized_edges,
-                                     faces = mesh.faces,
-                                     materialized_faces = materialize_faces(mesh.faces, mesh.points),
-                                     edge_face_connectivity = mesh.edge_face_connectivity,
-                                     face_edge_connectivity = mesh.face_edge_connectivity,
-                                     boundary_edges = mesh.boundary_edges,
-                                     face_sets = mesh.face_sets
-                                    )
 end
 
 # Axis-aligned bounding box, in 2d a rectangle.
