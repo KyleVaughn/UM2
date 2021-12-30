@@ -38,6 +38,11 @@ end
 
 Base.broadcastable(mesh::GeneralUnstructuredMesh_2D) = Ref(mesh)
 
+# Return a mesh with face/edge connectivity and edge/face connectivity
+function add_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
+    return add_edge_face_connectivity(mesh)
+end
+
 # Return a mesh with its edges
 function add_edges(mesh::M) where {M <: UnstructuredMesh_2D}
     return M(name = mesh.name,
@@ -53,10 +58,27 @@ function add_edges(mesh::M) where {M <: UnstructuredMesh_2D}
             )
 end
 
+# Return a mesh with edge/face connectivity
+function add_edge_face_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
+    if 0 === length(mesh.face_edge_connectivity)
+        mesh = add_face_edge_connectivity(mesh)
+    end
+    return M(name = mesh.name,
+             points = mesh.points,
+             edges = mesh.edges,
+             materialized_edges = mesh.materialized_edges,
+             faces = mesh.faces,
+             materialized_faces = mesh.materialized_faces,
+             edge_face_connectivity = edge_face_connectivity(mesh),
+             face_edge_connectivity = mesh.face_edge_connectivity,
+             boundary_edges = mesh.boundary_edges,
+             face_sets = mesh.face_sets
+            )
+end
+
 # Return a mesh with face/edge connectivity
-# and all necessary prerequisites to find the boundary edges
 function add_face_edge_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
-    if 0 == length(mesh.edges)
+    if 0 === length(mesh.edges)
         mesh = add_edges(mesh)
     end
     return M(name = mesh.name,
@@ -74,7 +96,7 @@ end
 
 # Return a mesh with materialized edges
 function add_materialized_edges(mesh::M) where {M <: UnstructuredMesh_2D}
-    if 0 == length(mesh.edges)
+    if 0 === length(mesh.edges)
         mesh = add_edges(mesh)
     end
     return M(name = mesh.name,
@@ -156,10 +178,10 @@ end
 
 # SVector of MVectors of point IDs representing the 4 edges of a quadrilateral
 function edges(face::SVector{4, UInt32})
-    edges = SVector( MVector{2, UInt32}(face[2], face[3]),
+    edges = SVector( MVector{2, UInt32}(face[1], face[2]),
+                     MVector{2, UInt32}(face[2], face[3]),
                      MVector{2, UInt32}(face[3], face[4]),
-                     MVector{2, UInt32}(face[4], face[5]),
-                     MVector{2, UInt32}(face[5], face[2]) )
+                     MVector{2, UInt32}(face[4], face[1]) )
     # Order the linear edge vertices by ID
     for edge in edges
         if edge[2] < edge[1]
@@ -208,6 +230,35 @@ end
 function edges(mesh::M) where {M <: UnstructuredMesh_2D}
     edges_filtered = sort(unique(reduce(vcat, edges.(mesh.faces))))
     return [ SVector(e.data) for e in edges_filtered ]
+end
+
+# A vector of length 2 SVectors, denoting the face ID each edge is connected to. If the edge
+# is a boundary edge, face ID 0 is returned
+function edge_face_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
+    # Each edge should only border 2 faces if it is an interior edge, and 1 face if it is
+    # a boundary edge.
+    # Loop through each face in the face_edge_connectivity vector and mark each edge with
+    # the faces that it borders.
+    if length(mesh.edges) === 0
+        @error "Does not have edges!"
+    end
+    if length(mesh.face_edge_connectivity) === 0
+        @error "Does not have face/edge connectivity!"
+    end
+    edge_face = [MVector{2, UInt32}(0, 0) for _ in eachindex(mesh.edges)]
+    for (iface, edges) in enumerate(mesh.face_edge_connectivity)
+        for iedge in edges
+            # Add the face id in the first non-zero position of the edge_face conn. vec.
+            if edge_face[iedge][1] == 0
+                edge_face[iedge][1] = iface
+            elseif edge_face[iedge][2] == 0
+                edge_face[iedge][2] = iface
+            else
+                @error "Edge $iedge seems to have 3 faces associated with it!"
+            end
+        end
+    end
+    return [SVector(sort(two_faces).data) for two_faces in edge_face]
 end
 
 # Return an SVector of the points in the edge (Linear)

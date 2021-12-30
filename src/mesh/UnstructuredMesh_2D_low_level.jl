@@ -62,61 +62,6 @@ function boundary_edges(mesh::UnstructuredMesh_2D{F, U},
     end
 end
 
-# A vector of length 2 SVectors, denoting the face ID each edge is connected to. If the edge
-# is a boundary edge, face ID 0 is returned
-# Type-stable, other than the error messages.
-function edge_face_connectivity(the_edges::Vector{<:SVector{L, U} where {L}},
-                                the_faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
-                                the_face_edge_connectivity::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
-                               ) where {U <: Unsigned}
-    # Each edge should only border 2 faces if it is an interior edge, and 1 face if it is
-    # a boundary edge.
-    # Loop through each face in the face_edge_connectivity vector and mark each edge with
-    # the faces that it borders.
-    if length(the_edges) === 0
-        @error "Does not have edges!"
-    end
-    if length(the_face_edge_connectivity) === 0
-        @error "Does not have face/edge connectivity!"
-    end
-    edge_face = [MVector{2, U}(zeros(U, 2)) for i in eachindex(the_edges)]
-    for (iface, edges) in enumerate(the_face_edge_connectivity)
-        for iedge in edges
-            # Add the face id in the first non-zero position of the edge_face conn. vec.
-            if edge_face[iedge][1] == 0
-                edge_face[iedge][1] = iface
-            elseif edge_face[iedge][2] == 0
-                edge_face[iedge][2] = iface
-            else
-                @error "Edge $iedge seems to have 3 faces associated with it!"
-            end
-        end
-    end
-    return [SVector(sort(two_faces).data) for two_faces in edge_face]
-end
-
-# A vector of SVectors, denoting the edge ID each face is connected to.
-# Not type-stable
-function face_edge_connectivity(the_faces::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}},
-                                the_edges::Vector{<:SVector{L, U} where {L}}
-                               ) where {U <: Unsigned}
-    if length(the_edges) === 0
-        @error "Does not have edges!"
-    end
-    # A vector of MVectors of zeros for each face
-    # Each MVector is the length of the number of edges
-    face_edge = [MVector{Int64(num_edges(face)), U}(zeros(U, num_edges(face)))
-                    for face in the_faces]::Vector{<:MArray{S, U, 1, L} where {S<:Tuple, L}}
-    # for each face in the mesh, generate the edges.
-    # Search for the index of the edge in the mesh.edges vector
-    # Insert the index of the edge into the face_edge connectivity vector
-    for i in eachindex(the_faces)
-        for (j, edge) in enumerate(edges(the_faces[i]))
-            face_edge[i][j] = searchsortedfirst(the_edges, SVector(edge.data))
-        end
-    end
-    return [SVector(sort(conn).data) for conn in face_edge]::Vector{<:SArray{S, U, 1, L} where {S<:Tuple, L}}
-end
 
 # Find the faces which share the vertex of ID v.
 # Type-stable
