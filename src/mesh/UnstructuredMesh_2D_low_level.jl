@@ -17,51 +17,6 @@ function adjacent_faces(face::U,
     return the_adjacent_faces
 end
 
-# Return a vector containing vectors of the edges in each side of the mesh's bounding shape, e.g.
-# For a rectangular bounding shape the sides are North, East, South, West. Then the output would
-# be [ [e1, e2, e3, ...], [e17, e18, e18, ...], ..., [e100, e101, ...]]
-# Not type-stable
-function boundary_edges(mesh::UnstructuredMesh_2D{F, U}, 
-                        bounding_shape::String) where {F <: AbstractFloat, U <: Unsigned}
-    # edges which have face 0 in their edge_face connectivity are boundary edges
-    the_boundary_edges = findall(x->x[1] == 0, mesh.edge_face_connectivity)
-    if bounding_shape == "Rectangle"
-        # Sort edges into NESW
-        bb = bounding_box(mesh, rectangular_boundary=true)
-        y_north = bb.points[3][2]
-        x_east  = bb.points[3][1]
-        y_south = bb.points[1][2]
-        x_west  = bb.points[1][1]
-        p_NW = bb.points[4]
-        p_NE = bb.points[3]
-        p_SE = bb.points[2]
-        p_SW = bb.points[1]
-        edges_north = U[]
-        edges_east = U[]
-        edges_south = U[]
-        edges_west = U[]
-        # Unsert edges so that indices move from NW -> NE -> SE -> SW -> NW
-        for i = 1:length(the_boundary_edges)
-            edge = U(the_boundary_edges[i])
-            epoints = edge_points(mesh.edges[edge], mesh.points)
-            if all(x->abs(x[2] - y_north) < 1e-4, epoints)
-                insert_boundary_edge!(edge, edges_north, mesh.edges, p_NW, mesh.points)
-            elseif all(x->abs(x[1] - x_east) < 1e-4, epoints)
-                insert_boundary_edge!(edge, edges_east, mesh.edges, p_NE, mesh.points)
-            elseif all(x->abs(x[2] - y_south) < 1e-4, epoints)
-                insert_boundary_edge!(edge, edges_south, mesh.edges, p_SE, mesh.points)
-            elseif all(x->abs(x[1] - x_west) < 1e-4, epoints)
-                insert_boundary_edge!(edge, edges_west, mesh.edges, p_SW, mesh.points)
-            else
-                @error "Edge $iedge could not be classified as NSEW"
-            end
-        end
-        return [ edges_north, edges_east, edges_south, edges_west ]
-    else
-        return [ convert(Vector{U}, the_boundary_edges) ]
-    end
-end
-
 
 # Find the faces which share the vertex of ID v.
 # Type-stable
@@ -103,32 +58,6 @@ function find_face_implicit(p::Point_2D{F},
         end
     end
     return 0
-end
-
-# Insert the boundary edge into the correct place in the vector of edge indices, based on
-# the distance from some reference point
-# Type-stable
-function insert_boundary_edge!(edge_index::U, edge_indices::Vector{U},
-                               edges::Vector{<:SVector{L, U} where {L}},
-                               p_ref::Point_2D{F}, points::Vector{Point_2D{F}}
-                              ) where {F <: AbstractFloat, U <: Unsigned}
-    # Compute the minimum distance from the edge to be inserted to the reference point
-    epoints = edge_points(edges[edge_index], points)
-    insertion_distance = minimum(distance.(Ref(p_ref), epoints))
-    # Loop through the edge indices until an edge with greater distance from the reference point
-    # is found, then insert
-    nindices = length(edge_indices)
-    for i = 1:nindices
-        edge = edge_indices[i]
-        epoints = edge_points(edges[edge], points)
-        edge_distance = minimum(distance.(Ref(p_ref), epoints))
-        if insertion_distance < edge_distance
-            insert!(edge_indices, i, edge_index)
-            return nothing
-        end
-    end
-    insert!(edge_indices, nindices+1, edge_index)
-    return nothing
 end
 
 # Intersect a line with materialized edges

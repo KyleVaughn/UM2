@@ -114,17 +114,17 @@ end
 
 
 # Axis-aligned bounding box, in 2d a rectangle.
-# function boundingbox(mesh::M) where {M <: QuadraticUnstructuredMesh_2D}
-#     nsides = length(mesh.boundary_edges)
-#     if nsides !== 0
-#         bb = Rectangle_2D()
-#         for iside ∈ 1:nsides
-#             bb ∪ boundingbox(materialize_edge(mesh.edges[ 
-#         end
-#     else
-#         return reduce(union, boundingbox.(materialize_edge.(edges(mesh), Ref(mesh.points))))
-#     end
-# end
+function boundingbox(mesh::M) where {M <: QuadraticUnstructuredMesh_2D}
+#    nsides = length(mesh.boundary_edges)
+#    if nsides !== 0
+#        bb = Rectangle_2D()
+#        for iside ∈ 1:nsides
+#            bb ∪ boundingbox(materialize_edge(mesh.edges[ 
+#        end
+#    else
+        return reduce(union, boundingbox.(materialize_edge.(edges(mesh), Ref(mesh.points))))
+#    end
+end
 # 
 # A vector of SVectors, denoting the edge ID each face is connected to.
 function face_edge_connectivity(mesh::Quadrilateral8Mesh_2D)

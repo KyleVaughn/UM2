@@ -160,6 +160,49 @@ function boundingbox(points::SVector{L, Point_2D}) where {L}
     return Rectangle_2D(minimum(x), maximum(x), minimum(y), maximum(y))
 end
 
+# Return a vector containing vectors of the edges in each side of the mesh's bounding shape, e.g.
+# For a rectangular bounding shape the sides are North, East, South, West. Then the output would
+# be [ [e1, e2, e3, ...], [e17, e18, e18, ...], ..., [e100, e101, ...]]
+function boundary_edges(mesh::M, bounding_shape::String) where {M <: UnstructuredMesh_2D}
+    # edges which have face 0 in their edge_face connectivity are boundary edges
+    the_boundary_edges = UInt32.(findall(x->x[1] === 0x00000000, mesh.edge_face_connectivity))
+    if bounding_shape == "Rectangle"
+        # Sort edges into NESW
+        bb = boundingbox(mesh)
+        y_north = bb.ymax
+        x_east  = bb.xmax
+        y_south = bb.ymin
+        x_west  = bb.xmin
+        p_NW = Point_2D(x_west, y_north)
+        p_NE = bb.tr
+        p_SE = Point_2D(x_east, y_south)
+        p_SW = bb.bl
+        edges_north = UInt32[] 
+        edges_east = UInt32[] 
+        edges_south = UInt32[] 
+        edges_west = UInt32[] 
+        # Insert edges so that indices move from NW -> NE -> SE -> SW -> NW
+        for i ∈  eachindex(the_boudnary_edges)
+            edge = the_boundary_edges[i]
+            epoints = edge_points(mesh.edges[edge], mesh.points)
+            if all(x->abs(x[2] - y_north) < 1e-4, epoints)
+                insert_boundary_edge!(edge, p_NW, edges_north, mesh)
+            elseif all(x->abs(x[1] - x_east) < 1e-4, epoints)
+                insert_boundary_edge!(edge, p_NE, edges_east, mesh)
+            elseif all(x->abs(x[2] - y_south) < 1e-4, epoints)
+                insert_boundary_edge!(edge, p_SE, edges_south, mesh)
+            elseif all(x->abs(x[1] - x_west) < 1e-4, epoints)
+                insert_boundary_edge!(edge, p_SW, edges_west, mesh)
+            else
+                @error "Edge $iedge could not be classified as NSEW"
+            end
+        end
+        return [ edges_north, edges_east, edges_south, edges_west ]
+    else
+        return [ convert(Vector{UInt32}, the_boundary_edges) ]
+    end 
+end 
+
 # SVector of MVectors of point IDs representing the 3 edges of a triangle
 function edges(face::SVector{3, UInt32})
     edges = SVector( MVector{2, UInt32}(face[1], face[2]),
@@ -301,6 +344,28 @@ end
 # Return an SVector of the points in the face
 function face_points(edge_id::UInt32, mesh::M) where {M <: UnstructuredMesh_2D}
     return face_points(mesh.faces[edge_id], mesh.points)
+end
+
+# Insert the boundary edge into the correct place in the vector of edge indices, based on
+# the distance from some reference point
+function insert_boundary_edge!(edge_index::UInt32, p_ref::Point_2D, edge_indices::Vector{UInt32},
+                               mesh::M) where {M <: UnstructuredMesh_2D}
+    # Compute the minimum distance from the edge to be inserted to the reference point
+    insertion_distance = minimum(distance.(Ref(p_ref), 
+                                           edge_points(mesh.edges[edge_index], mesh.points)))
+    # Loop through the edge indices until an edge with greater distance from the reference point
+    # is found, then insert
+    nindices = length(edge_indices)
+    for i ∈ 1:nindices
+        epoints = edge_points(mesh.edges[edge_indices[i]], mesh.points)
+        edge_distance = minimum(distance.(Ref(p_ref), epoints))
+        if insertion_distance < edge_distance
+            insert!(edge_indices, i, edge_index)
+            return nothing
+        end
+    end
+    insert!(edge_indices, nindices+1, edge_index)
+    return nothing
 end
 
 # Return a LineSegment_2D from the point IDs in an edge
