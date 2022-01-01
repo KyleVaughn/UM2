@@ -38,6 +38,25 @@ end
 
 Base.broadcastable(mesh::GeneralUnstructuredMesh_2D) = Ref(mesh)
 
+# Return a mesh with boundary edges
+function add_boundary_edges(mesh::M; bounding_shape="None"
+    ) where {M <: UnstructuredMesh_2D}
+    if 0 === length(mesh.edge_face_connectivity)
+        mesh = add_connectivity(mesh)
+    end
+    return M(name = mesh.name,
+             points = mesh.points,
+             edges = mesh.edges,
+             materialized_edges = mesh.materialized_edges,
+             faces = mesh.faces,
+             materialized_faces = mesh.materialized_faces,
+             edge_face_connectivity = mesh.edge_face_connectivity,
+             face_edge_connectivity = mesh.face_edge_connectivity,
+             boundary_edges = boundary_edges(mesh, bounding_shape),
+             face_sets = mesh.face_sets
+            )
+end
+
 # Return a mesh with face/edge connectivity and edge/face connectivity
 function add_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
     return add_edge_face_connectivity(mesh)
@@ -75,6 +94,14 @@ function add_edge_face_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
              face_sets = mesh.face_sets
             )
 end
+
+# Return a mesh with every field created
+function add_everything(mesh::M) where {M <: UnstructuredMesh_2D}
+    return add_materialized_faces(
+             add_materialized_edges(
+               add_boundary_edges(mesh, bounding_shape = "Rectangle")))
+end
+
 
 # Return a mesh with face/edge connectivity
 function add_face_edge_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
@@ -150,14 +177,14 @@ end
 function boundingbox(points::Vector{Point_2D})
     x = getindex.(points, 1)
     y = getindex.(points, 2)
-    return Rectangle_2D(minimum(x), maximum(x), minimum(y), maximum(y))
+    return Rectangle_2D(minimum(x), minimum(y), maximum(x), maximum(y))
 end
 
 # Bounding box of a vector of points
 function boundingbox(points::SVector{L, Point_2D}) where {L}
     x = getindex.(points, 1)
     y = getindex.(points, 2)
-    return Rectangle_2D(minimum(x), maximum(x), minimum(y), maximum(y))
+    return Rectangle_2D(minimum(x), minimum(y), maximum(x), maximum(y))
 end
 
 # Return a vector containing vectors of the edges in each side of the mesh's bounding shape, e.g.
@@ -168,7 +195,7 @@ function boundary_edges(mesh::M, bounding_shape::String) where {M <: Unstructure
     the_boundary_edges = UInt32.(findall(x->x[1] === 0x00000000, mesh.edge_face_connectivity))
     if bounding_shape == "Rectangle"
         # Sort edges into NESW
-        bb = boundingbox(mesh)
+        bb = boundingbox(mesh.points)
         y_north = bb.ymax
         x_east  = bb.xmax
         y_south = bb.ymin
@@ -182,8 +209,7 @@ function boundary_edges(mesh::M, bounding_shape::String) where {M <: Unstructure
         edges_south = UInt32[] 
         edges_west = UInt32[] 
         # Insert edges so that indices move from NW -> NE -> SE -> SW -> NW
-        for i ∈  eachindex(the_boudnary_edges)
-            edge = the_boundary_edges[i]
+        for edge ∈  the_boundary_edges
             epoints = edge_points(mesh.edges[edge], mesh.points)
             if all(x->abs(x[2] - y_north) < 1e-4, epoints)
                 insert_boundary_edge!(edge, p_NW, edges_north, mesh)
@@ -194,7 +220,7 @@ function boundary_edges(mesh::M, bounding_shape::String) where {M <: Unstructure
             elseif all(x->abs(x[1] - x_west) < 1e-4, epoints)
                 insert_boundary_edge!(edge, p_SW, edges_west, mesh)
             else
-                @error "Edge $iedge could not be classified as NSEW"
+                @error "Edge $edge could not be classified as NSEW"
             end
         end
         return [ edges_north, edges_east, edges_south, edges_west ]
