@@ -23,28 +23,6 @@ function get_intersection_algorithm(mesh::UnstructuredMesh_2D)
     end
 end
 
-# Intersect a line with the mesh. Returns a vector of intersection points, sorted based
-# upon distance from the line's start point
-# Not type-stable
-function intersect(l::LineSegment_2D{F}, 
-                   mesh::UnstructuredMesh_2D{F}
-                  ) where {F <: AbstractFloat}
-    # Edges are faster, so they are the default
-    if length(mesh.edges) !== 0 
-        if 0 < length(mesh.materialized_edges)
-            return intersect_edges_explicit(l, mesh.materialized_edges)
-        else
-            return intersect_edges_implicit(l, mesh.edges, mesh.points)
-        end
-    else
-        if 0 < length(mesh.materialized_faces)
-            return intersect_faces_explicit(l, mesh.materialized_faces)
-        else
-            return intersect_faces_implicit(l, mesh.faces, mesh.points)
-        end
-    end
-end
-
 function reorder_points_to_hilbert(mesh::UnstructuredMesh_2D{F, U}
                            ) where {F <: AbstractFloat, U <: Unsigned}
     # Points
