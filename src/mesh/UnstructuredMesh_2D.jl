@@ -822,3 +822,25 @@ function submesh(name::String, mesh::M) where {M <: UnstructuredMesh_2D}
              face_sets = submesh_face_sets
             )
 end
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, mesh::UnstructuredMesh_2D)
+        if 0 < length(mesh.materialized_edges)
+            return convert_arguments(LS, mesh.materialized_edges)
+        elseif 0 < length(mesh.edges)
+            return convert_arguments(LS, materialize_edges(mesh))
+        else
+            return convert_arguments(LS, materialize_faces(mesh))
+        end
+    end
+
+    function convert_arguments(P::Type{<:Mesh}, mesh::UnstructuredMesh_2D)
+        if 0 < length(mesh.materialized_faces)
+            return convert_arguments(P, mesh.materialized_faces)
+        else
+            return convert_arguments(P, materialize_faces(mesh))
+        end
+    end
+end
