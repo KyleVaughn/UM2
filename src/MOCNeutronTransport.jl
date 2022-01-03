@@ -43,7 +43,7 @@ end
 
 
 include("AbstractTypes.jl")
-#include("Tree.jl")
+include("Tree.jl")
 include("constants.jl")
 #include("operators.jl")
 include("./gmsh/gmsh_generate_rectangular_grid.jl")
@@ -61,8 +61,7 @@ include("L_system.jl")
 include("./mesh/UnstructuredMesh_2D.jl")
 include("./mesh/LinearUnstructuredMesh_2D.jl")
 include("./mesh/QuadraticUnstructuredMesh_2D.jl")
-#include("./mesh/UnstructuredMesh_2D_low_level.jl")
-#include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
+include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
 include("./mesh/IO_abaqus.jl")
 #include("./mesh/IO_vtk.jl")
 #include("./mesh/IO_xdmf.jl")
@@ -98,13 +97,19 @@ export  ×,
         ∇ ,
         ∇²,
         add_boundary_edges,
+        add_boundary_edges!,
         add_connectivity,
+        add_connectivity!,
         add_edges,
+        add_edges!,
         add_everything,
+        add_everything!,
         add_edge_face_connectivity,
         add_face_edge_connectivity,
         add_materialized_edges,
+        add_materialized_edges!,
         add_materialized_faces,
+        add_materialized_faces!,
         arclength,
         area,
         boundary_edges,

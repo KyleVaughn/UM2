@@ -75,7 +75,7 @@ function QuadrilateralMesh_2D(;
 end
 
 # Axis-aligned bounding box, in 2d a rectangle.
-function boundingbox(mesh::LinearUnstructuredMesh_2D)
+function boundingbox(mesh::LinearUnstructuredMesh_2D; bounding_shape::String="None")
     # If the mesh does not have any quadratic faces, the bounding_box may be determined 
     # entirely from the points. 
     nsides = length(mesh.boundary_edges)
