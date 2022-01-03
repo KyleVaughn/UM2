@@ -14,7 +14,6 @@ Base.getindex(tri::Triangle_2D, i::Int64) = tri.points[i]
 Base.firstindex(tri::Triangle_2D) = 1
 Base.lastindex(tri::Triangle_2D) = 3
 
-
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
@@ -38,6 +37,8 @@ function area(tri::Triangle_2D)
     return abs(u⃗ × v⃗)/2
 end
 
+centroid(tri::Triangle_2D) = tri(0.3333333333333333, 0.3333333333333333)
+
 function in(p::Point_2D, tri::Triangle_2D)
     # If the point is to the left of every edge
     #  3<-----2
@@ -47,9 +48,9 @@ function in(p::Point_2D, tri::Triangle_2D)
     #  |  /
     #  v /
     #  1
-    return is_left(p, LineSegment_2D(tri[1], tri[2])) &&
-           is_left(p, LineSegment_2D(tri[2], tri[3])) &&
-           is_left(p, LineSegment_2D(tri[3], tri[1]))
+    return isleft(p, LineSegment_2D(tri[1], tri[2])) &&
+           isleft(p, LineSegment_2D(tri[2], tri[3])) &&
+           isleft(p, LineSegment_2D(tri[3], tri[1]))
 end
 
 function intersect(l::LineSegment_2D, tri::Triangle_2D)

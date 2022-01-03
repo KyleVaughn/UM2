@@ -57,7 +57,7 @@ include("./primitives/Triangle_2D.jl")
 include("./primitives/Quadrilateral_2D.jl")
 include("./primitives/Triangle6_2D.jl")
 include("./primitives/Quadrilateral8_2D.jl")
-##include("L_system.jl")
+include("L_system.jl")
 include("./mesh/UnstructuredMesh_2D.jl")
 include("./mesh/LinearUnstructuredMesh_2D.jl")
 include("./mesh/QuadraticUnstructuredMesh_2D.jl")
@@ -78,7 +78,9 @@ const J = jacobian
 
 
 # Structs/Types
-export  LineSegment_2D,
+export  Edge_2D,
+        Face_2D,
+        LineSegment_2D,
         Point_2D,
         QuadraticSegment_2D,
         Quadrilateral_2D,
@@ -145,7 +147,9 @@ export  ×,
         read_abaqus_2d,
         read_vtk_2d,
         real_to_parametric,
-        reorder_points_to_hilbert,
+        reorder_faces_to_hilbert!,
+        reorder_points_to_hilbert!,
+        reorder_to_hilbert!,
         segmentize,
         shared_edge,
         sortpoints,

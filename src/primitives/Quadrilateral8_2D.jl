@@ -55,6 +55,60 @@ function (quad8::Quadrilateral8_2D)(p::Point_2D)
                       (1 - η^2)*(1 - ξ)/2*quad8[8]
 end
 
+function area(quad8::Quadrilateral8_2D)
+    return area(quad8, Val(2))
+end
+
+function area(quad8::Quadrilateral8_2D, ::Val{N}) where {N}
+    # Numerical integration required. Gauss-Legendre quadrature over a quadrilateral is used.
+    # Let Q(r,s) be the interpolation function for quad8,
+    #                             1  1
+    # A = ∬ ||∂Q/∂r × ∂Q/∂s||dA = ∫  ∫ ||∂Q/∂r × ∂Q/∂s|| ds dr
+    #      D                      0  0
+    #
+    #       N   N
+    #   =   ∑   ∑  wᵢwⱼ||∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)||
+    #      i=1 j=1
+    # N is the square root of the number of points used in the quadrature.
+    # See tuning/Quadrilateral8_2D_area.jl for more info on how N = 3 was chosen.
+    w, r = gauss_legendre_quadrature(Val(N))
+    a = 0.0
+    for i = 1:N, j = 1:N
+        ∂Q_∂r, ∂Q_∂s = gradient(quad8, r[i], r[j])
+        a += w[i]*w[j]*abs(∂Q_∂r × ∂Q_∂s)
+    end
+    return a
+end
+
+function centroid(quad8::Quadrilateral8_2D)
+    return centroid(quad8, Val(3))
+end
+
+function centroid(quad8::Quadrilateral8_2D, ::Val{N}) where {N}
+    # Numerical integration required. Gauss-Legendre quadrature over a quadrilateral is used.
+    # Let Q(r,s) be the interpolation function for quad8,
+    #                             1  1
+    # A = ∬ ||∂Q/∂r × ∂Q/∂s||dA = ∫  ∫ ||∂Q/∂r × ∂Q/∂s|| ds dr
+    #      D                      0  0
+    #
+    #       N   N
+    #   =   ∑   ∑  wᵢwⱼ||∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)||
+    #      i=1 j=1
+    #
+    # C_x = (∫∫ x dA)/A, C_y = (∫∫ y dA)/A
+    #         D                  D
+    w, r = gauss_legendre_quadrature(Val(N))
+    A = 0.0
+    C = Point_2D()
+    for i = 1:N, j = 1:N
+        ∂Q_∂r, ∂Q_∂s = gradient(quad8, r[i], r[j])
+        weighted_val = w[i]*w[j]*abs(∂Q_∂r × ∂Q_∂s)
+        A += weighted_val 
+        C += weighted_val * quad8(r[i], r[j]) 
+    end
+    return C/A
+end
+
 function gradient(quad8::Quadrilateral8_2D, r::Real, s::Real)
     # Chain rule
     # ∂Q   ∂Q ∂ξ     ∂Q      ∂Q   ∂Q ∂η     ∂Q
@@ -82,80 +136,6 @@ function gradient(quad8::Quadrilateral8_2D, r::Real, s::Real)
     return 2*∂Q_∂ξ, 2*∂Q_∂η
 end
 
-function jacobian(quad8::Quadrilateral8_2D, r::Real, s::Real)
-    # Return the 2 x 2 Jacobian matrix
-    ∂Q_∂r, ∂Q_∂s = gradient(quad8, r, s)
-    return SMatrix{2, 2}(∂Q_∂r.x, ∂Q_∂r.y,
-                         ∂Q_∂s.x, ∂Q_∂s.y)
-end
-
-function area(quad8::Quadrilateral8_2D)
-    return area(quad8, Val(2))
-end
-
-function area(quad8::Quadrilateral8_2D, ::Val{N}) where {N}
-    # Numerical integration required. Gauss-Legendre quadrature over a quadrilateral is used.
-    # Let Q(r,s) be the interpolation function for quad8,
-    #                             1  1
-    # A = ∬ ||∂Q/∂r × ∂Q/∂s||dA = ∫  ∫ ||∂Q/∂r × ∂Q/∂s|| ds dr
-    #      D                      0  0
-    #
-    #       N   N
-    #   =   ∑   ∑  wᵢwⱼ||∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)||
-    #      i=1 j=1
-    # N is the square root of the number of points used in the quadrature.
-    # See tuning/Quadrilateral8_2D_area.jl for more info on how N = 3 was chosen.
-    w, r = gauss_legendre_quadrature(Val(N))
-    a = 0.0
-    for i = 1:N, j = 1:N
-        ∂Q_∂r, ∂Q_∂s = gradient(quad8, r[i], r[j])
-        a += w[i]*w[j]*abs(∂Q_∂r × ∂Q_∂s)
-    end
-    return a
-end
-
-function triangulate(quad8::Quadrilateral8_2D, N::Int64)
-    # N is the number of divisions of each edge
-    triangles = Vector{Triangle_2D}(undef, 2*(N+1)*(N+1))
-    if N === 0
-        triangles[1] = Triangle_2D(quad8[1], quad8[2], quad8[3])
-        triangles[2] = Triangle_2D(quad8[3], quad8[4], quad8[1])
-    else
-        for j = 0:N, i = 0:N
-            triangles[2*(N+1)*j + 2i + 1] = Triangle_2D(quad8(    i/(N+1),     j/(N+1)),
-                                                        quad8((i+1)/(N+1),     j/(N+1)),
-                                                        quad8(    i/(N+1), (j+1)/(N+1)))
-            triangles[2*(N+1)*j + 2i + 2] = Triangle_2D(quad8(    i/(N+1), (j+1)/(N+1)),
-                                                        quad8((i+1)/(N+1),     j/(N+1)),
-                                                        quad8((i+1)/(N+1), (j+1)/(N+1)))
-        end
-    end
-    return triangles
-end
-
-function real_to_parametric(p::Point_2D, quad8::Quadrilateral8_2D)
-    return real_to_parametric(p, quad8, 30)
-end
-
-function real_to_parametric(p::Point_2D, quad8::Quadrilateral8_2D, N::Int64)
-    # Convert from real coordinates to the triangle's local parametric coordinates using the
-    # the Newton-Raphson method. N is the max number of iterations
-    # If a conversion doesn't exist, the minimizer is returned.
-    r = 0.5 # Initial guess at centroid
-    s = 0.5
-    for i = 1:N
-        err = p - quad8(r, s)
-        # Inversion is faster for 2 by 2 than \
-        Δr, Δs = inv(jacobian(quad8, r, s)) * err
-        r += Δr
-        s += Δs
-        if abs(Δr) + abs(Δs) < 1e-6
-            break
-        end
-    end
-    return Point_2D(r, s)
-end
-
 function in(p::Point_2D, quad8::Quadrilateral8_2D)
     # If the point is to the left of every edge
     #  4<-----3
@@ -165,10 +145,10 @@ function in(p::Point_2D, quad8::Quadrilateral8_2D)
     #  |      |
     #  v----->2
     #  1
-    return is_left(p, QuadraticSegment_2D(quad8[1], quad8[2], quad8[5])) &&
-           is_left(p, QuadraticSegment_2D(quad8[3], quad8[4], quad8[7])) &&
-           is_left(p, QuadraticSegment_2D(quad8[2], quad8[3], quad8[6])) &&
-           is_left(p, QuadraticSegment_2D(quad8[4], quad8[1], quad8[8]))
+    return isleft(p, QuadraticSegment_2D(quad8[1], quad8[2], quad8[5])) &&
+           isleft(p, QuadraticSegment_2D(quad8[3], quad8[4], quad8[7])) &&
+           isleft(p, QuadraticSegment_2D(quad8[2], quad8[3], quad8[6])) &&
+           isleft(p, QuadraticSegment_2D(quad8[4], quad8[1], quad8[8]))
 end
 
 # function in(p::Point_2D{F}, quad8::Quadrilateral8_2D{F}, N::Int64) where {F <: AbstractFloat}
@@ -202,6 +182,55 @@ function intersect(l::LineSegment_2D, quad8::Quadrilateral8_2D)
         end
     end
     return n_ipoints, SVector(ipoints)
+end
+
+function jacobian(quad8::Quadrilateral8_2D, r::Real, s::Real)
+    # Return the 2 x 2 Jacobian matrix
+    ∂Q_∂r, ∂Q_∂s = gradient(quad8, r, s)
+    return SMatrix{2, 2}(∂Q_∂r.x, ∂Q_∂r.y,
+                         ∂Q_∂s.x, ∂Q_∂s.y)
+end
+
+function real_to_parametric(p::Point_2D, quad8::Quadrilateral8_2D)
+    return real_to_parametric(p, quad8, 30)
+end
+
+function real_to_parametric(p::Point_2D, quad8::Quadrilateral8_2D, N::Int64)
+    # Convert from real coordinates to the triangle's local parametric coordinates using the
+    # the Newton-Raphson method. N is the max number of iterations
+    # If a conversion doesn't exist, the minimizer is returned.
+    r = 0.5 # Initial guess at centroid
+    s = 0.5
+    for i = 1:N
+        err = p - quad8(r, s)
+        # Inversion is faster for 2 by 2 than \
+        Δr, Δs = inv(jacobian(quad8, r, s)) * err
+        r += Δr
+        s += Δs
+        if abs(Δr) + abs(Δs) < 1e-6
+            break
+        end
+    end
+    return Point_2D(r, s)
+end
+
+function triangulate(quad8::Quadrilateral8_2D, N::Int64)
+    # N is the number of divisions of each edge
+    triangles = Vector{Triangle_2D}(undef, 2*(N+1)*(N+1))
+    if N === 0
+        triangles[1] = Triangle_2D(quad8[1], quad8[2], quad8[3])
+        triangles[2] = Triangle_2D(quad8[3], quad8[4], quad8[1])
+    else
+        for j = 0:N, i = 0:N
+            triangles[2*(N+1)*j + 2i + 1] = Triangle_2D(quad8(    i/(N+1),     j/(N+1)),
+                                                        quad8((i+1)/(N+1),     j/(N+1)),
+                                                        quad8(    i/(N+1), (j+1)/(N+1)))
+            triangles[2*(N+1)*j + 2i + 2] = Triangle_2D(quad8(    i/(N+1), (j+1)/(N+1)),
+                                                        quad8((i+1)/(N+1),     j/(N+1)),
+                                                        quad8((i+1)/(N+1), (j+1)/(N+1)))
+        end
+    end
+    return triangles
 end
 
 # Plot

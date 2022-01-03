@@ -32,18 +32,21 @@ function (quad::Quadrilateral_2D)(r::Real, s::Real)
                  (1 - rₜ)*sₜ*quad[4]
 end
 
-function triangulate(quad::Quadrilateral_2D)
-    # Return the two triangles that partition the domain
-    A, B, C, D = quad.points
-    return SVector(Triangle_2D(A, B, C), Triangle_2D(C, D, A))
-end
-
 function area(quad::Quadrilateral_2D)
     # Using the convex quadrilateral assumption, just return the sum of the areas of the two
     # triangles that partition the quadrilateral. If the convex assumption ever changes, you
     # need to verify that the triangle pair partitions the quadrilateral. Choosing the wrong
     # pair overestimates the area, so just get the areas of both pairs of valid triangles and use
     return sum(area.(triangulate(quad)))
+end
+
+function centroid(quad::Quadrilateral_2D)
+    tris = triangulate(quad)
+    A₁ = area(tris[1])
+    A₂ = area(tris[2])
+    C₁ = centroid(tris[1])
+    C₂ = centroid(tris[2])
+    return (A₁*C₁ + A₂*C₂)/(A₁ + A₂)
 end
 
 function in(p::Point_2D, quad::Quadrilateral_2D)
@@ -55,10 +58,10 @@ function in(p::Point_2D, quad::Quadrilateral_2D)
     #  |      |
     #  v----->2
     #  1
-    return is_left(p, LineSegment_2D(quad[1], quad[2])) &&
-           is_left(p, LineSegment_2D(quad[2], quad[3])) &&
-           is_left(p, LineSegment_2D(quad[3], quad[4])) &&
-           is_left(p, LineSegment_2D(quad[4], quad[1]))
+    return isleft(p, LineSegment_2D(quad[1], quad[2])) &&
+           isleft(p, LineSegment_2D(quad[2], quad[3])) &&
+           isleft(p, LineSegment_2D(quad[3], quad[4])) &&
+           isleft(p, LineSegment_2D(quad[4], quad[1]))
 end
 
 function intersect(l::LineSegment_2D, quad::Quadrilateral_2D)
@@ -81,6 +84,12 @@ function intersect(l::LineSegment_2D, quad::Quadrilateral_2D)
         end
     end
     return n_ipoints, SVector(ipoints)
+end
+
+function triangulate(quad::Quadrilateral_2D)
+    # Return the two triangles that partition the domain
+    A, B, C, D = quad.points
+    return SVector(Triangle_2D(A, B, C), Triangle_2D(C, D, A))
 end
 
 # Plot

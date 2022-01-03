@@ -58,7 +58,7 @@ function add_boundary_edges(mesh::M; bounding_shape="None"
 end
 
 # Return a mesh with face/edge connectivity and edge/face connectivity
-function add_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
+function add_connectivity(mesh::UnstructuredMesh_2D)
     return add_edge_face_connectivity(mesh)
 end
 
@@ -96,12 +96,11 @@ function add_edge_face_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
 end
 
 # Return a mesh with every field created
-function add_everything(mesh::M) where {M <: UnstructuredMesh_2D}
+function add_everything(mesh::UnstructuredMesh_2D)
     return add_materialized_faces(
              add_materialized_edges(
                add_boundary_edges(mesh, bounding_shape = "Rectangle")))
 end
-
 
 # Return a mesh with face/edge connectivity
 function add_face_edge_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
@@ -154,13 +153,28 @@ function add_materialized_faces(mesh::M) where {M <: UnstructuredMesh_2D}
             )
 end
 
+# Return a vector of the faces adjacent to the face of ID face
+function adjacent_faces(face::UInt32, mesh::UnstructuredMesh_2D)
+    edges = mesh.face_edge_connectivity[face]
+    the_adjacent_faces = UInt32[]
+    for edge in edges
+        faces = mesh.edge_face_connectivity[edge]
+        for face_id in faces
+            if face_id != face && face_id != 0
+                push!(the_adjacent_faces, face_id)
+            end
+        end
+    end
+    return the_adjacent_faces
+end
+
 # Area of face
 function area(face::SVector{N, UInt32}, points::Vector{Point_2D}) where {N}
     return area(materialize_face(face, points))
 end
 
 # Return the area of a face set
-function area(mesh::M, face_set::Set{UInt32}) where {M <: UnstructuredMesh_2D} 
+function area(mesh::UnstructuredMesh_2D, face_set::Set{UInt32})
     if 0 < length(mesh.materialized_faces)
         return mapreduce(x->area(mesh.materialized_faces[x]), +, face_set)
     else
@@ -169,7 +183,7 @@ function area(mesh::M, face_set::Set{UInt32}) where {M <: UnstructuredMesh_2D}
 end
 
 # Return the area of a face set by name
-function area(mesh::M, set_name::String) where {M <: UnstructuredMesh_2D} 
+function area(mesh::UnstructuredMesh_2D, set_name::String)
     return area(mesh, mesh.face_sets[set_name])
 end
 
@@ -190,7 +204,7 @@ end
 # Return a vector containing vectors of the edges in each side of the mesh's bounding shape, e.g.
 # For a rectangular bounding shape the sides are North, East, South, West. Then the output would
 # be [ [e1, e2, e3, ...], [e17, e18, e18, ...], ..., [e100, e101, ...]]
-function boundary_edges(mesh::M, bounding_shape::String) where {M <: UnstructuredMesh_2D}
+function boundary_edges(mesh::UnstructuredMesh_2D, bounding_shape::String)
     # edges which have face 0 in their edge_face connectivity are boundary edges
     the_boundary_edges = UInt32.(findall(x->x[1] === 0x00000000, mesh.edge_face_connectivity))
     if bounding_shape == "Rectangle"
@@ -296,14 +310,14 @@ function edges(face::SVector{8, UInt32})
 end
 
 # The unique edges from a vector of triangles or quadrilaterals represented by point IDs
-function edges(mesh::M) where {M <: UnstructuredMesh_2D}
+function edges(mesh::UnstructuredMesh_2D)
     edges_filtered = sort(unique(reduce(vcat, edges.(mesh.faces))))
     return [ SVector(e.data) for e in edges_filtered ]
 end
 
 # A vector of length 2 SVectors, denoting the face ID each edge is connected to. If the edge
 # is a boundary edge, face ID 0 is returned
-function edge_face_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
+function edge_face_connectivity(mesh::UnstructuredMesh_2D)
     # Each edge should only border 2 faces if it is an interior edge, and 1 face if it is
     # a boundary edge.
     # Loop through each face in the face_edge_connectivity vector and mark each edge with
@@ -341,7 +355,7 @@ function edge_points(edge::SVector{3, UInt32}, points::Vector{Point_2D})
 end
 
 # Return an SVector of the points in the edge
-function edge_points(edge_id::UInt32, mesh::M) where {M <: UnstructuredMesh_2D}
+function edge_points(edge_id::UInt32, mesh::UnstructuredMesh_2D) 
     return edge_points(mesh.edges[edge_id], mesh.points)
 end
 
@@ -368,14 +382,70 @@ function face_points(face::SVector{8, UInt32}, points::Vector{Point_2D})
 end
 
 # Return an SVector of the points in the face
-function face_points(edge_id::UInt32, mesh::M) where {M <: UnstructuredMesh_2D}
+function face_points(edge_id::UInt32, mesh::UnstructuredMesh_2D)
     return face_points(mesh.faces[edge_id], mesh.points)
+end
+
+# Find the faces which share the vertex of ID v.
+function faces_sharing_vertex(v::Integer, mesh::UnstructuredMesh_2D)
+    shared_faces = UInt32[]
+    for i ∈ 1:length(faces)
+        if v ∈  faces[i]
+            push!(shared_faces, UInt32(i))
+        end
+    end
+    return shared_faces
+end
+
+# Return the face containing point p.
+function find_face(p::Point_2D, mesh::UnstructuredMesh_2D)
+    if 0 < length(mesh.materialized_faces)
+        return UInt32(find_face_explicit(p, mesh.materialized_faces))
+    else
+        return UInt32(find_face_implicit(p, mesh.faces, mesh.points))
+    end
+end
+
+# Find the face containing the point p, with explicitly represented faces
+function find_face_explicit(p::Point_2D, faces::Vector{<:Face_2D})
+    for i ∈ 1:length(faces)
+        if p ∈  faces[i]
+            return i
+        end
+    end
+    return 0
+end
+
+# Return the face containing the point p, with implicitly represented faces
+function find_face_implicit(p::Point_2D,
+                            faces::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}},
+                            points::Vector{Point_2D})
+    for i ∈ 1:length(faces)
+        bool = p ∈  materialize_face(faces[i], points)
+        if bool
+            return i
+        end
+    end
+    return 0
+end
+
+# Return the intersection algorithm that will be used for l ∩ mesh
+function get_intersection_algorithm(mesh::UnstructuredMesh_2D)
+    if length(mesh.materialized_edges) !== 0
+        return "Edges - Explicit"
+    elseif length(mesh.edges) !== 0
+        return "Edges - Implicit"
+    elseif length(mesh.materialized_faces) !== 0
+        return "Faces - Explicit"
+    else
+        return "Faces - Implicit"
+    end
 end
 
 # Insert the boundary edge into the correct place in the vector of edge indices, based on
 # the distance from some reference point
 function insert_boundary_edge!(edge_index::UInt32, p_ref::Point_2D, edge_indices::Vector{UInt32},
-                               mesh::M) where {M <: UnstructuredMesh_2D}
+                               mesh::UnstructuredMesh_2D)
     # Compute the minimum distance from the edge to be inserted to the reference point
     insertion_distance = minimum(distance.(Ref(p_ref), 
                                            edge_points(mesh.edges[edge_index], mesh.points)))
@@ -525,6 +595,15 @@ function intersect_faces_implicit(l::LineSegment_2D,
     return intersection_points
 end
 
+# If a point is a vertex
+function is_vertex(p::Point_2D, mesh::UnstructuredMesh_2D)
+    for point in mesh.points
+        if p ≈ point
+            return true
+        end
+    end
+    return false
+end
 
 # Return a LineSegment_2D from the point IDs in an edge
 function materialize_edge(edge::SVector{2, UInt32}, points::Vector{Point_2D})
@@ -537,12 +616,12 @@ function materialize_edge(edge::SVector{3, UInt32}, points::Vector{Point_2D})
 end
 
 # Return a LineSegment_2D or QuadraticSegment_2D
-function materialize_edge(edge_id::UInt32, mesh::M) where {M <: UnstructuredMesh_2D}
+function materialize_edge(edge_id::UInt32, mesh::UnstructuredMesh_2D)
     return materialize_edge(mesh.edges[edge_id], mesh.points)
 end
 
 # Return a materialized edge for each edge in the mesh
-function materialize_edges(mesh::M) where {M <: UnstructuredMesh_2D}
+function materialize_edges(mesh::UnstructuredMesh_2D)
     return materialize_edge.(mesh.edges, Ref(mesh.points))
 end
 
@@ -567,12 +646,12 @@ function materialize_face(face::SVector{8, UInt32}, points::Vector{Point_2D})
 end
 
 # Return an SVector of the points in the edge
-function materialize_face(face_id::UInt32, mesh::M) where {M <: UnstructuredMesh_2D}
+function materialize_face(face_id::UInt32, mesh::UnstructuredMesh_2D)
     return materialize_face(mesh.faces[face_id], mesh.points)
 end
 
 # Return a materialized face for each face in the mesh
-function materialize_faces(mesh::M) where {M <: UnstructuredMesh_2D}
+function materialize_faces(mesh::UnstructuredMesh_2D)
     return materialize_face.(mesh.faces, Ref(mesh.points))
 end
 
@@ -588,8 +667,71 @@ function num_edges(face::SVector{L, UInt32}) where {L}
     end
 end
 
+function remap_points_to_hilbert(points::Vector{Point_2D})
+    bb = boundingbox(points)
+    npoints = length(points)
+    # Generate a Hilbert curve
+    hilbert_points = hilbert_curve(bb, npoints)
+    nhilbert_points = length(hilbert_points)
+    # For each point, get the index of the hilbert points that is closest
+    point_indices = Vector{Int64}(undef, npoints)
+    for i ∈ 1:npoints
+        min_distance = 1.0e10
+        for j ∈ 1:nhilbert_points
+            pdistance = distance²(points[i], hilbert_points[j])
+            if pdistance < min_distance
+                min_distance = pdistance
+                point_indices[i] = j
+            end
+        end
+    end
+    return sortperm(point_indices)
+end
+
+function reorder_points_to_hilbert!(mesh::UnstructuredMesh_2D)
+    # Points
+    # point_map     maps  new_points[i] == mesh.points[point_map[i]]
+    # point_map_inv maps mesh.points[i] == new_points[point_map_inv[i]]
+    point_map  = remap_points_to_hilbert(mesh.points)
+    point_map_inv = UInt32.(sortperm(point_map))
+    # reordered to resemble a hilbert curve
+    permute!(mesh.points, point_map)
+
+    # Adjust face indices
+    # Point IDs have changed, so we need to change the point IDs referenced by the faces
+    new_faces_vec = [ point_map_inv[face] for face in mesh.faces]
+    for i in 1:length(mesh.faces)
+        mesh.faces[i] = SVector(point_map_inv[mesh.faces[i]])
+    end
+    return nothing 
+end
+
+function reorder_faces_to_hilbert!(mesh::UnstructuredMesh_2D)
+    face_map  = UInt32.(remap_points_to_hilbert(centroid.(materialize_faces(mesh))))
+    permute!(mesh.faces, face_map)
+    return nothing 
+end
+
+function reorder_to_hilbert!(mesh::UnstructuredMesh_2D)
+    reorder_points_to_hilbert!(mesh)
+    reorder_faces_to_hilbert!(mesh)
+    return nothing
+end
+
+# Return the ID of the edge shared by two adjacent faces
+function shared_edge(face1::UInt32, face2::UInt32, mesh::UnstructuredMesh_2D)
+    for edge1 in mesh.face_edge_connectivity[face1]
+        for edge2 in mesh.face_edge_connectivity[face2]
+            if edge1 == edge2
+                return edge1
+            end
+        end
+    end
+    return 0x00000000 
+end
+
 # How to display a mesh in REPL
-function Base.show(io::IO, mesh::M) where {M <: UnstructuredMesh_2D}
+function Base.show(io::IO, mesh::UnstructuredMesh_2D)
     mesh_type = typeof(mesh)
     println(io, mesh_type)
     println(io, "  ├─ Name      : $(mesh.name)")
@@ -624,4 +766,59 @@ function Base.show(io::IO, mesh::M) where {M <: UnstructuredMesh_2D}
     end
     println(io, "  │  └─ Sides : $nsides")
     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
+end
+
+# Return a mesh with name name, composed of the faces in the set face_ids
+function submesh(name::String, mesh::M) where {M <: UnstructuredMesh_2D}
+    # Setup faces and get all vertex ids
+    face_ids = mesh.face_sets[name]
+    submesh_faces = Vector{Vector{UInt32}}(undef, length(face_ids))
+    vertex_ids = Set{UInt32}()
+    for (i, face_id) in enumerate(face_ids)
+        face_vec = collect(mesh.faces[face_id].data)
+        submesh_faces[i] = face_vec
+        union!(vertex_ids, Set(face_vec))
+    end
+    # Need to remap vertex ids in faces to new ids
+    vertex_ids_sorted = sort(collect(vertex_ids))
+    vertex_map = Dict{UInt32, UInt32}()
+    for (i,v) in enumerate(vertex_ids_sorted)
+        vertex_map[v] = i
+    end
+    submesh_points = Vector{Point_2D}(undef, length(vertex_ids_sorted))
+    for (i, v) in enumerate(vertex_ids_sorted)
+        submesh_points[i] = mesh.points[v]
+    end
+    # remap vertex ids in faces
+    for face in submesh_faces
+        for (i, v) in enumerate(face)
+            face[i] = vertex_map[v]
+        end
+    end
+    # At this point we have points, faces, & name.
+    # Just need to get the face sets
+    submesh_face_sets = Dict{String, Set{UInt32}}()
+    for face_set_name in keys(mesh.face_sets)
+        set_intersection = mesh.face_sets[face_set_name] ∩ face_ids
+        if length(set_intersection) !== 0
+            submesh_face_sets[face_set_name] = set_intersection
+        end
+    end
+    # Need to remap face ids in face sets
+    face_map = Dict{UInt32, UInt32}()
+    for (i,f) in enumerate(face_ids)
+        face_map[f] = i
+    end
+    for face_set_name in keys(submesh_face_sets)
+        new_set = Set{UInt32}()
+        for fid in submesh_face_sets[face_set_name]
+            union!(new_set, face_map[fid])
+        end
+        submesh_face_sets[face_set_name] = new_set
+    end
+    return M(name = name,
+             points = submesh_points,
+             faces = [SVector{length(f), UInt32}(f) for f in submesh_faces],
+             face_sets = submesh_face_sets
+            )
 end

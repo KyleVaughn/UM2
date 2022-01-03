@@ -76,8 +76,7 @@ end
 
 
 # Axis-aligned bounding box, in 2d a rectangle.
-function boundingbox(mesh::M; bounding_shape::String="None"
-    ) where {M <: QuadraticUnstructuredMesh_2D}
+function boundingbox(mesh::QuadraticUnstructuredMesh_2D; bounding_shape::String="None")
     if bounding_shape == "Rectangle"
         return boundingbox(mesh.points)
     else

@@ -16,7 +16,7 @@ function apply_rules(L::L_System, N::Int64; production_sequence::String = "")
         return production_sequence
     else
         new_production_sequence = String[] 
-        for i in production_sequence
+        for i ∈  production_sequence
             if i ∈  L_system_instructions
                 push!(new_production_sequence, string(i))
             else
@@ -32,13 +32,12 @@ end
 # θ₀ = 1 ⟹    90°
 # θ₀ = 2 ⟹   180°
 # θ₀ = 3 ⟹   270°
-function generate_points(production_sequence::String, p₀::Point_2D{F}, 
-                         θ₀::Int64, Δx::F, Δy::F) where {F <: AbstractFloat}
-   
+function generate_points(production_sequence::String, p₀::Point_2D, 
+                         θ₀::Int64, Δx::Float64, Δy::Float64)
     points = [p₀]
     p = p₀
     θ = θ₀
-    for i in production_sequence
+    for i ∈  production_sequence
         if i == 'F'
             p = p + Point_2D(cos(θ*π/2)*Δx, sin(θ*π/2)*Δy)
             push!(points, p)
@@ -59,15 +58,13 @@ end
 # Generate the vector of points making up the Hilbert curve that fill a bounding box bb
 # npoints is the target number of points, where the number of points returned will always
 # be greater than or equal to npoints
-function hilbert_curve(bb::Quadrilateral_2D{F}, npoints::Int64) where{F <: AbstractFloat}
+function hilbert_curve(bb::Rectangle_2D, npoints::Int64)
     L = hilbert_curve() 
     # Note Hilbert curve returns 2^(2n) points
     n = ceil(Int64, log(npoints)/(2log(2)))
     npoints_actual = 2^(2n)
-    width = bb.points[3][1] - bb.points[1][1]
-    height = bb.points[3][2] - bb.points[1][2]
-    Δx = width/(sqrt(npoints_actual) - 1)
-    Δy = height/(sqrt(npoints_actual) - 1)
+    Δx = width(bb)/(sqrt(npoints_actual) - 1)
+    Δy = height(bb)/(sqrt(npoints_actual) - 1)
     production_sequence = apply_rules(L, n)
-    return generate_points(production_sequence, bb.points[1], 0, Δx, Δy) 
+    return generate_points(production_sequence, bb.bl, 0, Δx, Δy) 
 end
