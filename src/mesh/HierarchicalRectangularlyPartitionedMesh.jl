@@ -107,36 +107,36 @@ function boundingbox(HRPM::HierarchicalRectangularlyPartitionedMesh)
     end
 end
 
-# Fill a statically sized, mutable vector (coord) with the necessary indices to navigate from the 
-# root HRPM, through the children, to the base mesh, and return the face ID to which the point p
-# may be found in.
-# Example:
-# For an HRPM with 4 levels:
-# [1, 2, 1, 16]
-# denotes HRPM.children[1][].children[2][].children[1][].mesh[].faces[16] contains p
-# If the face is found, return true. Otherwise, return false
-function find_face!(p::Point_2D, coord::MVector{N, UInt32},
-                    HRPM::HierarchicalRectangularlyPartitionedMesh)
-    in_rect = p ∈  HRPM.rect
-    if !in_rect
-        return false
-    elseif in_rect && (0 < length(HRPM.children))
-        for (i, child) in enumerate(HRPM.children)
-            in_child = find_face!(p, coord, child[])
-            if in_child
-                coord[findfirst(x->x==0, coord)] = U(i)
-                return true
-            end
-        end
-        return false
-    elseif in_rect && isassigned(HRPM.mesh)
-        face = find_face(p, HRPM.mesh[]::UnstructuredMesh_2D{F, U})
-        coord[findfirst(x->x==0, coord)] = face
-        reverse!(coord)
-        return face == 0 ? false : true
-    end
-    return false
-end
+# # Fill a statically sized, mutable vector (coord) with the necessary indices to navigate from the 
+# # root HRPM, through the children, to the base mesh, and return the face ID to which the point p
+# # may be found in.
+# # Example:
+# # For an HRPM with 4 levels:
+# # [1, 2, 1, 16]
+# # denotes HRPM.children[1][].children[2][].children[1][].mesh[].faces[16] contains p
+# # If the face is found, return true. Otherwise, return false
+# function find_face!(p::Point_2D, coord::MVector{N, UInt32},
+#                     HRPM::HierarchicalRectangularlyPartitionedMesh)
+#     in_rect = p ∈  HRPM.rect
+#     if !in_rect
+#         return false
+#     elseif in_rect && (0 < length(HRPM.children))
+#         for (i, child) in enumerate(HRPM.children)
+#             in_child = find_face!(p, coord, child[])
+#             if in_child
+#                 coord[findfirst(x->x==0, coord)] = U(i)
+#                 return true
+#             end
+#         end
+#         return false
+#     elseif in_rect && isassigned(HRPM.mesh)
+#         face = find_face(p, HRPM.mesh[]::UnstructuredMesh_2D{F, U})
+#         coord[findfirst(x->x==0, coord)] = face
+#         reverse!(coord)
+#         return face == 0 ? false : true
+#     end
+#     return false
+# end
 # 
 # # Get the intersection algorithm that will be used for l ∩ HRPM
 # # Not type-stable
@@ -244,7 +244,6 @@ end
 function Base.show(io::IO, HRPM::HierarchicalRectangularlyPartitionedMesh; relative_offset::Int64 = 0)
     println(io, "HierarchicalRectangularlyPartitionedMesh")
     println(io, "  ├─ Name      : $(HRPM.name)")
-    println(io, "  ├─ Size (MB) : $(Base.summarysize(HRPM)/1E6)")
     println(io, "  ├─ Bounding Box : $(HRPM.rect)")
     println(io, "  ├─ Mesh      : $(isassigned(HRPM.mesh))")
     println(io, "  ├─ Children  : $(length(HRPM.children))")
