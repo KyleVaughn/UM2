@@ -36,6 +36,8 @@ function Triangle6Mesh_2D(;
                               )
 end
 
+Base.broadcastable(mesh::Triangle6Mesh_2D) = Ref(mesh)
+
 struct Quadrilateral8Mesh_2D <: QuadraticUnstructuredMesh_2D
     name::String
     points::Vector{Point_2D}
@@ -74,10 +76,12 @@ function Quadrilateral8Mesh_2D(;
                                     )
 end
 
+Base.broadcastable(mesh::Quadrilateral8Mesh_2D) = Ref(mesh)
+
 
 # Axis-aligned bounding box, in 2d a rectangle.
-function boundingbox(mesh::QuadraticUnstructuredMesh_2D; bounding_shape::String="None")
-    if bounding_shape == "Rectangle"
+function boundingbox(mesh::QuadraticUnstructuredMesh_2D; boundary_shape::String="Unknown")
+    if boundary_shape == "Rectangle"
         return boundingbox(mesh.points)
     else
         # Currently only polygons, so can use the points

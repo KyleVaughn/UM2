@@ -96,7 +96,7 @@ function boundingbox(HRPM::HierarchicalRectangularlyPartitionedMesh)
     if HRPM.rect !== Rectangle_2D() 
         return HRPM.rect
     elseif isassigned(HRPM.mesh)
-        HRPM.rect = boundingbox(HRPM.mesh[], bounding_shape="Rectangle")
+        HRPM.rect = boundingbox(HRPM.mesh[], boundary_shape="Rectangle")
         return HRPM.rect
     elseif 0 < length(HRPM.children)
         HRPM.rect = mapreduce(x->boundingbox(x[]), union, HRPM.children)

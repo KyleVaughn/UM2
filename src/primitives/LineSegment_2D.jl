@@ -21,6 +21,7 @@ Base.lastindex(l::LineSegment_2D) = 2
 # l(0) yields points[1], and l(1) yields points[2]
 (l::LineSegment_2D)(r::Real) = l[1] + (l[2] - l[1])r
 arclength(l::LineSegment_2D) = distance(l[1], l[2])
++(l::LineSegment_2D, p::Point_2D) = LineSegment_2D(l.points[1] + p, l.points[2] + p)
 
 function intersect(l₁::LineSegment_2D, l₂::LineSegment_2D)
     # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product

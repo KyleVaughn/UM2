@@ -39,7 +39,7 @@ end
 Base.broadcastable(mesh::GeneralUnstructuredMesh_2D) = Ref(mesh)
 
 # Return a mesh with boundary edges
-function add_boundary_edges(mesh::M; bounding_shape="None"
+function add_boundary_edges(mesh::M; boundary_shape="Unknown"
     ) where {M <: UnstructuredMesh_2D}
     if 0 === length(mesh.edge_face_connectivity)
         mesh = add_connectivity(mesh)
@@ -52,7 +52,7 @@ function add_boundary_edges(mesh::M; bounding_shape="None"
              materialized_faces = mesh.materialized_faces,
              edge_face_connectivity = mesh.edge_face_connectivity,
              face_edge_connectivity = mesh.face_edge_connectivity,
-             boundary_edges = boundary_edges(mesh, bounding_shape),
+             boundary_edges = boundary_edges(mesh, boundary_shape),
              face_sets = mesh.face_sets
             )
 end
@@ -99,7 +99,7 @@ end
 function add_everything(mesh::UnstructuredMesh_2D)
     return add_materialized_faces(
              add_materialized_edges(
-               add_boundary_edges(mesh, bounding_shape = "Rectangle")))
+               add_boundary_edges(mesh, boundary_shape = "Rectangle")))
 end
 
 # Return a mesh with face/edge connectivity
@@ -204,10 +204,10 @@ end
 # Return a vector containing vectors of the edges in each side of the mesh's bounding shape, e.g.
 # For a rectangular bounding shape the sides are North, East, South, West. Then the output would
 # be [ [e1, e2, e3, ...], [e17, e18, e18, ...], ..., [e100, e101, ...]]
-function boundary_edges(mesh::UnstructuredMesh_2D, bounding_shape::String)
+function boundary_edges(mesh::UnstructuredMesh_2D, boundary_shape::String)
     # edges which have face 0 in their edge_face connectivity are boundary edges
     the_boundary_edges = UInt32.(findall(x->x[1] === 0x00000000, mesh.edge_face_connectivity))
-    if bounding_shape == "Rectangle"
+    if boundary_shape == "Rectangle"
         # Sort edges into NESW
         bb = boundingbox(mesh.points)
         y_north = bb.ymax

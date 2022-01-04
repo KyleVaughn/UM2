@@ -36,6 +36,8 @@ function TriangleMesh_2D(;
                               )
 end
 
+Base.broadcastable(mesh::TriangleMesh_2D) = Ref(mesh)
+
 struct QuadrilateralMesh_2D <: LinearUnstructuredMesh_2D
     name::String
     points::Vector{Point_2D}
@@ -74,8 +76,10 @@ function QuadrilateralMesh_2D(;
                                    )
 end
 
+Base.broadcastable(mesh::QuadrilateralMesh_2D) = Ref(mesh)
+
 # Axis-aligned bounding box, in 2d a rectangle.
-function boundingbox(mesh::LinearUnstructuredMesh_2D; bounding_shape::String="None")
+function boundingbox(mesh::LinearUnstructuredMesh_2D; boundary_shape::String="Unknown")
     # If the mesh does not have any quadratic faces, the bounding_box may be determined 
     # entirely from the points. 
     nsides = length(mesh.boundary_edges)

@@ -40,34 +40,31 @@
 #    w::Tuple{T} # Weights for each point
 #end
 
-struct ProductAngularQuadrature{nγ, nθ, F <: AbstractFloat} <: AngularQuadrature{F}
-    γ::SVector{nγ, F}    # Azimuthal angles, γ ∈ (0, π)
-    w_γ::SVector{nγ, F}  # Weights for the azimuthal angles
-    θ::SVector{nθ, F}    # Polar angles, θ ∈ (0, π/2)
-    w_θ::SVector{nθ, F}  # Weights for the polar angles
+struct ProductAngularQuadrature{nγ, nθ} <: AngularQuadrature
+    γ::SVector{nγ, Float64}    # Azimuthal angles, γ ∈ (0, π)
+    w_γ::SVector{nγ, Float64}  # Weights for the azimuthal angles
+    θ::SVector{nθ, Float64}    # Polar angles, θ ∈ (0, π/2)
+    w_θ::SVector{nθ, Float64}  # Weights for the polar angles
 end
 
-# Type-stable
-function generate_chebyshev_angular_quadrature(M::Int, F::Type{<:AbstractFloat})
+function generate_chebyshev_angular_quadrature(M::Int64)
     # A Chebyshev-type quadrature for a given weight function is a quadrature formula with equal
     # weights. This function produces evenly spaced angles with equal weights.
-    angles = F[(π*(2m-1)/(4M)) for m = M:-1:1]
-    weights = zeros(F, M) .+ F(1/M)
+    angles = [(π*(2m-1)/(4M)) for m = M:-1:1]
+    weights = zeros(M) .+ 1/M
     return angles, weights
 end
 
 # nγ and nθ are azimuthal and polar angles per octant
-# Not type-stable
-function generate_angular_quadrature(quadrature_type::String, nγ::Int, nθ::Int;
-                                     F::Type{<:AbstractFloat} = Float64)
+function generate_angular_quadrature(quadrature_type::String, nγ::Int, nθ::Int)
     if quadrature_type == "Chebyshev-Chebyshev"
-        (azi_angles, azi_weights) = generate_chebyshev_angular_quadrature(nγ, F)
-        (pol_angles, pol_weights) = generate_chebyshev_angular_quadrature(nθ, F)
-        append!(azi_angles, [π - azi_angles[i] for i = 1:nγ])
+        (azi_angles, azi_weights) = generate_chebyshev_angular_quadrature(nγ)
+        (pol_angles, pol_weights) = generate_chebyshev_angular_quadrature(nθ)
+        append!(azi_angles, π .- azi_angles)
         azi_weights = azi_weights./2
         append!(azi_weights, azi_weights)
-        quadrature = ProductAngularQuadrature(SVector{2*nγ, F}(azi_angles), SVector{2*nγ, F}(azi_weights),
-                                              SVector{nθ, F}(pol_angles), SVector{nθ, F}(pol_weights))
+        quadrature = ProductAngularQuadrature(SVector{2nγ}(azi_angles), SVector{2nγ}(azi_weights),
+                                              SVector{nθ}(pol_angles), SVector{nθ}(pol_weights))
     else
         @error "Unsupported quadrature type"
     end
