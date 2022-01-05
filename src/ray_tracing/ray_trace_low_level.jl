@@ -54,7 +54,7 @@
 #     # Test the midpoint of each segment to find the face
 #     for iseg = 1:npoints-1
 #         p_midpoint = midpoint(segment_points[iseg], segment_points[iseg+1])
-#         nfaces_found += Int64(find_face!(p_midpoint, indices[iseg], HRPM))
+#         nfaces_found += Int64(findface!(p_midpoint, indices[iseg], HRPM))
 #     end
 #     return nfaces_found == npoints - 1
 # end
@@ -79,7 +79,7 @@ function find_segment_faces_in_track!(segment_points::Vector{Point_2D},
     # Test the midpoint of each segment to find the face
     for iseg = 1:npoints-1
         p_midpoint = midpoint(segment_points[iseg], segment_points[iseg+1])
-        segment_faces[iseg] = find_face(p_midpoint, mesh)
+        segment_faces[iseg] = findface(p_midpoint, mesh)
     end
     return nothing 
 end
@@ -235,7 +235,7 @@ end
 #         # On North or South edge. Just check x coordinates
 #         xₚ = p[1]
 #         for iedge in boundary_edge_indices
-#             epoints = edge_points(edges[iedge], points)
+#             epoints = edgepoints(edges[iedge], points)
 #             x₁ = epoints[1][1]
 #             x₂ = epoints[2][1]
 #             if x₁ ≤ xₚ ≤ x₂ || x₂ ≤ xₚ ≤ x₁
@@ -246,7 +246,7 @@ end
 #         # On East or West edge. Just check y coordinates
 #         yₚ = p[2]
 #         for iedge in boundary_edge_indices
-#             epoints = edge_points(edges[iedge], points)
+#             epoints = edgepoints(edges[iedge], points)
 #             y₁ = epoints[1][2]
 #             y₂ = epoints[2][2]
 #             if y₁ ≤ yₚ ≤ y₂ || y₂ ≤ yₚ ≤ y₁

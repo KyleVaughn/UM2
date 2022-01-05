@@ -233,7 +233,7 @@ end
 # #             problem_length = 1e-3 < arc_length(l)
 # #             if debug || problem_length 
 # #                 @warn "Face mismatch for segment [$iseg]\n" * 
-# #                       "   Reference face: $(find_face(p_midpoint, mesh)), Face: $face"
+# #                       "   Reference face: $(findface(p_midpoint, mesh)), Face: $face"
 # #                 nsegs_problem += 1
 # #             end
 # #             # append the points, line if we want to plot them
@@ -364,7 +364,7 @@ end
 #                 segment_faces[iγ][it] = reverse(reversed_faces)
 #             else
 #                 # @warn "Face mismatch for segment [$iγ][$it][$iseg]. Searching for correct face." 
-#                 new_face = find_face(p_midpoint, mesh)
+#                 new_face = findface(p_midpoint, mesh)
 #                 if new_face == 0
 #                     @warn "Could not find new segment face for segment $problem_index[i]"
 #                 else

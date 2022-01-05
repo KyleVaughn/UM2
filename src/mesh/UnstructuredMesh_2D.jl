@@ -224,7 +224,7 @@ function boundary_edges(mesh::UnstructuredMesh_2D, boundary_shape::String)
         edges_west = UInt32[] 
         # Insert edges so that indices move from NW -> NE -> SE -> SW -> NW
         for edge ∈  the_boundary_edges
-            epoints = edge_points(mesh.edges[edge], mesh.points)
+            epoints = edgepoints(mesh.edges[edge], mesh.points)
             if all(x->abs(x[2] - y_north) < 1e-4, epoints)
                 insert_boundary_edge!(edge, p_NW, edges_north, mesh)
             elseif all(x->abs(x[1] - x_east) < 1e-4, epoints)
@@ -345,45 +345,45 @@ function edge_face_connectivity(mesh::UnstructuredMesh_2D)
 end
 
 # Return an SVector of the points in the edge (Linear)
-function edge_points(edge::SVector{2, UInt32}, points::Vector{Point_2D})
+function edgepoints(edge::SVector{2, UInt32}, points::Vector{Point_2D})
     return SVector(points[edge[1]], points[edge[2]])
 end
 
 # Return an SVector of the points in the edge (Quadratic)
-function edge_points(edge::SVector{3, UInt32}, points::Vector{Point_2D})
+function edgepoints(edge::SVector{3, UInt32}, points::Vector{Point_2D})
     return SVector(points[edge[1]], points[edge[2]], points[edge[3]])
 end
 
 # Return an SVector of the points in the edge
-function edge_points(edge_id::UInt32, mesh::UnstructuredMesh_2D) 
-    return edge_points(mesh.edges[edge_id], mesh.points)
+function edgepoints(edge_id::UInt32, mesh::UnstructuredMesh_2D) 
+    return edgepoints(mesh.edges[edge_id], mesh.points)
 end
 
 # Return an SVector of the points in the face (Triangle)
-function face_points(face::SVector{3, UInt32}, points::Vector{Point_2D})
+function facepoints(face::SVector{3, UInt32}, points::Vector{Point_2D})
     return SVector(points[face[1]], points[face[2]], points[face[3]])
 end
 
 # Return an SVector of the points in the face (Quadrilateral)
-function face_points(face::SVector{4, UInt32}, points::Vector{Point_2D})
+function facepoints(face::SVector{4, UInt32}, points::Vector{Point_2D})
     return SVector(points[face[1]], points[face[2]], points[face[3]], points[face[4]])
 end
 
 # Return an SVector of the points in the face (Triangle6)
-function face_points(face::SVector{6, UInt32}, points::Vector{Point_2D})
+function facepoints(face::SVector{6, UInt32}, points::Vector{Point_2D})
     return SVector(points[face[1]], points[face[2]], points[face[3]],
                    points[face[4]], points[face[5]], points[face[6]])
 end
 
 # Return an SVector of the points in the face (Quadrilateral8)
-function face_points(face::SVector{8, UInt32}, points::Vector{Point_2D})
+function facepoints(face::SVector{8, UInt32}, points::Vector{Point_2D})
     return SVector(points[face[1]], points[face[2]], points[face[3]], points[face[4]],
                    points[face[5]], points[face[6]], points[face[7]], points[face[8]])
 end
 
 # Return an SVector of the points in the face
-function face_points(edge_id::UInt32, mesh::UnstructuredMesh_2D)
-    return face_points(mesh.faces[edge_id], mesh.points)
+function facepoints(edge_id::UInt32, mesh::UnstructuredMesh_2D)
+    return facepoints(mesh.faces[edge_id], mesh.points)
 end
 
 # Find the faces which share the vertex of ID v.
@@ -398,16 +398,16 @@ function faces_sharing_vertex(v::Integer, mesh::UnstructuredMesh_2D)
 end
 
 # Return the face containing point p.
-function find_face(p::Point_2D, mesh::UnstructuredMesh_2D)
+function findface(p::Point_2D, mesh::UnstructuredMesh_2D)
     if 0 < length(mesh.materialized_faces)
-        return UInt32(find_face_explicit(p, mesh.materialized_faces))
+        return UInt32(findface_explicit(p, mesh.materialized_faces))
     else
-        return UInt32(find_face_implicit(p, mesh.faces, mesh.points))
+        return UInt32(findface_implicit(p, mesh.faces, mesh.points))
     end
 end
 
 # Find the face containing the point p, with explicitly represented faces
-function find_face_explicit(p::Point_2D, faces::Vector{<:Face_2D})
+function findface_explicit(p::Point_2D, faces::Vector{<:Face_2D})
     for i ∈ 1:length(faces)
         if p ∈  faces[i]
             return i
@@ -417,7 +417,7 @@ function find_face_explicit(p::Point_2D, faces::Vector{<:Face_2D})
 end
 
 # Return the face containing the point p, with implicitly represented faces
-function find_face_implicit(p::Point_2D,
+function findface_implicit(p::Point_2D,
                             faces::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}},
                             points::Vector{Point_2D})
     for i ∈ 1:length(faces)
@@ -448,12 +448,12 @@ function insert_boundary_edge!(edge_index::UInt32, p_ref::Point_2D, edge_indices
                                mesh::UnstructuredMesh_2D)
     # Compute the minimum distance from the edge to be inserted to the reference point
     insertion_distance = minimum(distance.(Ref(p_ref), 
-                                           edge_points(mesh.edges[edge_index], mesh.points)))
+                                           edgepoints(mesh.edges[edge_index], mesh.points)))
     # Loop through the edge indices until an edge with greater distance from the reference point
     # is found, then insert
     nindices = length(edge_indices)
     for i ∈ 1:nindices
-        epoints = edge_points(mesh.edges[edge_indices[i]], mesh.points)
+        epoints = edgepoints(mesh.edges[edge_indices[i]], mesh.points)
         edge_distance = minimum(distance.(Ref(p_ref), epoints))
         if insertion_distance < edge_distance
             insert!(edge_indices, i, edge_index)
@@ -596,7 +596,7 @@ function intersect_faces_implicit(l::LineSegment_2D,
 end
 
 # If a point is a vertex
-function is_vertex(p::Point_2D, mesh::UnstructuredMesh_2D)
+function isvertex(p::Point_2D, mesh::UnstructuredMesh_2D)
     for point in mesh.points
         if p ≈ point
             return true
@@ -607,12 +607,12 @@ end
 
 # Return a LineSegment_2D from the point IDs in an edge
 function materialize_edge(edge::SVector{2, UInt32}, points::Vector{Point_2D})
-    return LineSegment_2D(edge_points(edge, points))
+    return LineSegment_2D(edgepoints(edge, points))
 end
 
 # Return a QuadraticSegment_2D from the point IDs in an edge
 function materialize_edge(edge::SVector{3, UInt32}, points::Vector{Point_2D})
-    return QuadraticSegment_2D(edge_points(edge, points))
+    return QuadraticSegment_2D(edgepoints(edge, points))
 end
 
 # Return a LineSegment_2D or QuadraticSegment_2D
@@ -627,22 +627,22 @@ end
 
 # Return a Triangle_2D from the point IDs in a face
 function materialize_face(face::SVector{3, UInt32}, points::Vector{Point_2D})
-    return Triangle_2D(face_points(face, points))
+    return Triangle_2D(facepoints(face, points))
 end
 
 # Return a Quadrilateral_2D from the point IDs in a face
 function materialize_face(face::SVector{4, UInt32}, points::Vector{Point_2D})
-    return Quadrilateral_2D(face_points(face, points))
+    return Quadrilateral_2D(facepoints(face, points))
 end
 
 # Return a Triangle6_2D from the point IDs in a face
 function materialize_face(face::SVector{6, UInt32}, points::Vector{Point_2D})
-    return Triangle6_2D(face_points(face, points))
+    return Triangle6_2D(facepoints(face, points))
 end
 
 # Return a Quadrilateral8_2D from the point IDs in a face
 function materialize_face(face::SVector{8, UInt32}, points::Vector{Point_2D})
-    return Quadrilateral8_2D(face_points(face, points))
+    return Quadrilateral8_2D(facepoints(face, points))
 end
 
 # Return an SVector of the points in the edge
