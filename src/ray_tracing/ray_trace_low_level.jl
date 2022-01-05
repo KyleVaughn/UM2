@@ -145,11 +145,11 @@ function generate_tracks(γ::Float64, tₛ::Float64, w::Float64, h::Float64)
     tracks = Vector{LineSegment_2D}(undef, nₜ)
     # Effective angle to ensure cyclic tracks
     γₑ = atan((h*n_x)/(w*n_y))
+    t_eff = w*sin(γₑ)/n_x
     if π/2 < γ
         γₑ = γₑ + π/2
     end
     # Effective ray spacing for the cyclic tracks
-    t_eff = w*sin(atan((h*n_x)/(w*n_y)))/n_x
     if γₑ ≤ π/2
         # Generate tracks from the bottom edge of the rectangular domain
         for ix = 1:n_x
@@ -189,6 +189,8 @@ function generate_tracks(γ::Float64, tₛ::Float64, w::Float64, h::Float64)
             x₁ = max(0, h/tan(γₑ) + x₀)
             y₁ = min(x₀*abs(tan(γₑ)), h)
             l = LineSegment_2D(Point_2D(x₀, y₀), Point_2D(x₁, y₁))
+            linesegments!(l)
+            readline()
             if arclength(l) < minimum_segment_length
                 @warn "Small track generated: $l"
             end
@@ -203,6 +205,8 @@ function generate_tracks(γ::Float64, tₛ::Float64, w::Float64, h::Float64)
             x₁ = max(0, w + (h - y₀)/tan(γₑ))
             y₁ = min(w*abs(tan(γₑ)) + y₀, h)
             l = LineSegment_2D(Point_2D(x₀, y₀), Point_2D(x₁, y₁))
+            linesegments!(l)
+            readline()
             if arclength(l) < minimum_segment_length
                 @warn "Small track generated: $l"
             end
