@@ -233,17 +233,23 @@ function isleft(p::Point_2D, q::QuadraticSegment_2D)
     else
         r, p_near = nearest_point(p, q)
         # If r is small or beyond the valid range, just use the second point
+        # Otherwise use a point on the curve that is close to p_near
         if r < 1e-6 || 1 < r
             u⃗ = q[2] - q[1]
             v⃗ = p - q[1]
-        # If the r is greater than 0.5, use q[3] as the start point
-        elseif 0.5 < r
-            u⃗ = p_near - q[3]
-            v⃗ = p - q[3]
         else
-            u⃗ = p_near - q[1]
-            v⃗ = p - q[1]
+            q_base = q(0.95r)
+            u⃗ = p_near - q_base
+            v⃗ = p - q_base
         end
+#        # If the r is greater than 0.5, use q[3] as the start point
+#        elseif 0.5 < r
+#            u⃗ = p_near - q[3]
+#            v⃗ = p - q[3]
+#        else
+#            u⃗ = p_near - q[1]
+#            v⃗ = p - q[1]
+#        end
         return u⃗ × v⃗ > 0
     end
 end

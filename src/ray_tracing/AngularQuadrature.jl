@@ -50,7 +50,7 @@ end
 function generate_chebyshev_angular_quadrature(M::Int64)
     # A Chebyshev-type quadrature for a given weight function is a quadrature formula with equal
     # weights. This function produces evenly spaced angles with equal weights.
-    angles = [(π*(2m-1)/(4M)) for m = M:-1:1]
+    angles = [(π*(2m-1)/(4M)) for m = 1:M]
     weights = zeros(M) .+ 1/M
     return angles, weights
 end
@@ -60,7 +60,7 @@ function generate_angular_quadrature(quadrature_type::String, nγ::Int, nθ::Int
     if quadrature_type == "Chebyshev-Chebyshev"
         (azi_angles, azi_weights) = generate_chebyshev_angular_quadrature(nγ)
         (pol_angles, pol_weights) = generate_chebyshev_angular_quadrature(nθ)
-        append!(azi_angles, π .- azi_angles)
+        append!(azi_angles, reverse(π .- azi_angles))
         azi_weights = azi_weights./2
         append!(azi_weights, azi_weights)
         quadrature = ProductAngularQuadrature(SVector{2nγ}(azi_angles), SVector{2nγ}(azi_weights),

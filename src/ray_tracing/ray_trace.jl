@@ -50,7 +50,7 @@ function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D}}}, me
         find_segment_faces_in_angle!(segment_points[iγ], segment_faces[iγ], mesh)
         for it = 1:length(segment_points[iγ])
             if any(x->x == 0x00000000, segment_faces[iγ][it]) 
-                @error "Segment face not found for face in [$iγ][$it]"
+                @warn "Segment face not found for face in [$iγ][$it]"
             end
         end
     end

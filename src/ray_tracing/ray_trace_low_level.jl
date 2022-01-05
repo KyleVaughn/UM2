@@ -133,27 +133,24 @@ end
 
 # Generate tracks for angle γ, with track spacing tₛ for a rectangular domain with width w, height h
 # Rectangle has bottom left corner at (0, 0)
-# Type-stable other than error messages
 function generate_tracks(γ::Float64, tₛ::Float64, w::Float64, h::Float64)
-    # Number of tracks in y direction
-    n_y = ceil(Int64, w*abs(sin(γ))/tₛ)
-    # Number of tracks in x direction
-    n_x = ceil(Int64, h*abs(cos(γ))/tₛ)
-    # Total number of tracks
-    nₜ = n_y + n_x
-    # Allocate the tracks
-    tracks = Vector{LineSegment_2D}(undef, nₜ)
-    # Effective angle to ensure cyclic tracks
-    γₑ = atan((h*n_x)/(w*n_y))
-    t_eff = w*sin(γₑ)/n_x
-    if π/2 < γ
-        γₑ = γₑ + π/2
-    end
-    # Effective ray spacing for the cyclic tracks
-    if γₑ ≤ π/2
+    if γ ≤ π/2
+        n_y = ceil(Int64, h*cos(γ)/tₛ)
+        # Number of tracks in x direction
+        n_x = ceil(Int64, w*sin(γ)/tₛ)
+        # Total number of tracks
+        nₜ = n_y + n_x
+        # Allocate the tracks
+        tracks = Vector{LineSegment_2D}(undef, nₜ)
+        # Effective angle to ensure cyclic tracks
+        γₑ = atan((h*n_x)/(w*n_y))
+        t_eff = w*sin(γₑ)/n_x
+        Δx = t_eff/sin(γₑ) 
+        Δy = t_eff/cos(γₑ) 
+        # Number of tracks in y direction
         # Generate tracks from the bottom edge of the rectangular domain
         for ix = 1:n_x
-            x₀ = w - t_eff*(ix - 0.5)/sin(γₑ)
+            x₀ = w - (ix - 0.5)*Δx
             y₀ = 0.0
             # Segment either terminates at the right edge of the rectangle
             # Or on the top edge of the rectangle
@@ -168,7 +165,7 @@ function generate_tracks(γ::Float64, tₛ::Float64, w::Float64, h::Float64)
         # Generate tracks from the left edge of the rectangular domain
         for iy = 1:n_y
             x₀ = 0.0
-            y₀ = t_eff*(iy - 0.5)/cos(γₑ)
+            y₀ = (iy - 0.5)*Δy
             # Segment either terminates at the right edge of the rectangle
             # Or on the top edge of the rectangle
             x₁ = min(w, (h - y₀)/tan(γₑ))
@@ -180,39 +177,49 @@ function generate_tracks(γ::Float64, tₛ::Float64, w::Float64, h::Float64)
             tracks[n_x + iy] = l
         end
     else
+        γᶜ = π - γ # Compliment
+        # Number of tracks in y direction
+        n_y = ceil(Int64, h*cos(γᶜ)/tₛ)
+        # Number of tracks in x direction
+        n_x = ceil(Int64, w*sin(γᶜ)/tₛ)
+        # Total number of tracks
+        nₜ = n_y + n_x
+        # Allocate the tracks
+        tracks = Vector{LineSegment_2D}(undef, nₜ)
+        # Effective angle to ensure cyclic tracks
+        γₑ = atan((h*n_x)/(w*n_y))
+        t_eff = w*sin(γₑ)/n_x
+        Δx = t_eff/sin(γₑ) 
+        Δy = t_eff/cos(γₑ) 
         # Generate tracks from the bottom edge of the rectangular domain
-        for ix = n_y:-1:1
-            x₀ = w - t_eff*(ix - 0.5)/sin(γₑ)
+        for ix = 1:n_x
+            x₀ = (ix - 0.5)*Δx
             y₀ = 0.0
             # Segment either terminates at the left edge of the rectangle
             # Or on the top edge of the rectangle
-            x₁ = max(0, h/tan(γₑ) + x₀)
-            y₁ = min(x₀*abs(tan(γₑ)), h)
+            x₁ = max(0, -h/tan(γₑ) + x₀)
+            y₁ = min(x₀*tan(γₑ), h)
             l = LineSegment_2D(Point_2D(x₀, y₀), Point_2D(x₁, y₁))
-            linesegments!(l)
-            readline()
             if arclength(l) < minimum_segment_length
                 @warn "Small track generated: $l"
             end
             tracks[ix] = l
         end
         # Generate tracks from the right edge of the rectangular domain
-        for iy = 1:n_x
+        for iy = 1:n_y
             x₀ = w
-            y₀ = t_eff*(iy - 0.5)/abs(cos(γₑ))
+            y₀ = (iy - 0.5)*Δy
             # Segment either terminates at the left edge of the rectangle
             # Or on the top edge of the rectangle
-            x₁ = max(0, w + (h - y₀)/tan(γₑ))
-            y₁ = min(w*abs(tan(γₑ)) + y₀, h)
+            x₁ = max(0, w - (h - y₀)/tan(γₑ))
+            y₁ = min(w*tan(γₑ) + y₀, h)
             l = LineSegment_2D(Point_2D(x₀, y₀), Point_2D(x₁, y₁))
-            linesegments!(l)
-            readline()
             if arclength(l) < minimum_segment_length
                 @warn "Small track generated: $l"
             end
-            tracks[n_y + iy] = l
+            tracks[n_x + iy] = l
         end
-    end
+     end
     return tracks
 end
 # 
