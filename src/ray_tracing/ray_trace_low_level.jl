@@ -59,42 +59,31 @@
 #     return nfaces_found == npoints - 1
 # end
 # 
-# # Get the face indices for all tracks in a single angle
-# # Type-stable
-# function find_segment_faces_in_angle!(segment_points::Vector{Vector{Point_2D{F}}},
-#                                       segment_faces::Vector{Vector{U}},
-#                                       mesh::UnstructuredMesh_2D{F, U}
-#                                      ) where {F <: AbstractFloat, U <: Unsigned, N}
-#     nt = length(segment_points)
-#     nfaces_found = 0
-#     # for each track, find the segment indices
-#     for it = 1:nt
-#         # Points in the track
-#         npoints = length(segment_points[it])
-#         # Returns true if indices were found for all segments in the track
-#         nfaces_found += Int64(find_segment_faces_in_track!(segment_points[it], segment_faces[it], mesh))
-#     end
-#     return nfaces_found == nt
-# end
-# 
-# # Get the face indices for all segments in a single track
-# # Type-stable
-# function find_segment_faces_in_track!(segment_points::Vector{Point_2D{F}},
-#                                       segment_faces::Vector{U},
-#                                       mesh::UnstructuredMesh_2D{F, U}
-#                                      ) where {F <: AbstractFloat, U <: Unsigned, N}
-#     # Points in the track
-#     npoints = length(segment_points)
-#     nfaces_found = 0 
-#     # Test the midpoint of each segment to find the face
-#     for iseg = 1:npoints-1
-#         p_midpoint = midpoint(segment_points[iseg], segment_points[iseg+1])
-#         segment_faces[iseg] = find_face(p_midpoint, mesh)
-#         nfaces_found += Int64(0 < segment_faces[iseg])
-#     end
-#     return nfaces_found == npoints - 1
-# end
-# 
+# Get the face indices for all tracks in a single angle
+function find_segment_faces_in_angle!(segment_points::Vector{Vector{Point_2D}},
+                                      segment_faces::Vector{Vector{UInt32}},
+                                      mesh::UnstructuredMesh_2D)
+    # for each track, find the segment indices
+    for it = 1:length(segment_points)
+        # Returns true if indices were found for all segments in the track
+        find_segment_faces_in_track!(segment_points[it], segment_faces[it], mesh)
+    end
+    return nothing 
+end
+
+# Get the face indices for all segments in a single track
+function find_segment_faces_in_track!(segment_points::Vector{Point_2D},
+                                      segment_faces::Vector{UInt32},
+                                      mesh::UnstructuredMesh_2D)
+    npoints = length(segment_points)
+    # Test the midpoint of each segment to find the face
+    for iseg = 1:npoints-1
+        p_midpoint = midpoint(segment_points[iseg], segment_points[iseg+1])
+        segment_faces[iseg] = find_face(p_midpoint, mesh)
+    end
+    return nothing 
+end
+
 # # Follows https://mit-crpg.github.io/OpenMOC/methods/track_generation.html
 # # Generate tracks with track spacing tₛ for each azimuthal angle in the angular quadrature. 
 # # These tracks lie within the domain of the mesh.

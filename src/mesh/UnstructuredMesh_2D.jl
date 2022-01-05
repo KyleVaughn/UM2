@@ -501,7 +501,7 @@ function intersect_edges_explicit(l::LineSegment_2D, edges::Vector{LineSegment_2
             push!(intersection_points, point)
         end
     end
-    sortpoints!(l[1], intersection_points)
+    sort_intersection_points!(l[1], intersection_points)
     return intersection_points
 end
 
@@ -516,7 +516,7 @@ function intersect_edges_explicit(l::LineSegment_2D, edges::Vector{QuadraticSegm
             append!(intersection_points, points[1:npoints])
         end
     end
-    sortpoints!(l[1], intersection_points)
+    sort_intersection_points!(l[1], intersection_points)
     return intersection_points
 end
 
@@ -534,7 +534,7 @@ function intersect_edges_implicit(l::LineSegment_2D,
             push!(intersection_points, point)
         end
     end
-    sortpoints!(l[1], intersection_points)
+    sort_intersection_points!(l[1], intersection_points)
     return intersection_points
 end
 
@@ -551,7 +551,7 @@ function intersect_edges_implicit(l::LineSegment_2D,
             append!(intersection_points, ipoints[1:npoints])
         end
     end
-    sortpoints!(l[1], intersection_points)
+    sort_intersection_points!(l[1], intersection_points)
     return intersection_points
 end
 
@@ -573,7 +573,7 @@ function intersect_faces_explicit(l::LineSegment_2D, faces::Vector{<:Face_2D} )
             append!(intersection_points, points[1:npoints])
         end
     end
-    sortpoints!(l[1], intersection_points)
+    sort_intersection_points!(l[1], intersection_points)
     return intersection_points
 end
 
@@ -591,7 +591,7 @@ function intersect_faces_implicit(l::LineSegment_2D,
             append!(intersection_points, ipoints[1:npoints])
         end
     end
-    sortpoints!(l[1], intersection_points)
+    sort_intersection_points!(l[1], intersection_points)
     return intersection_points
 end
 
@@ -766,6 +766,27 @@ function Base.show(io::IO, mesh::UnstructuredMesh_2D)
     end
     println(io, "  │  └─ Sides : $nsides")
     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
+end
+
+# Sort intersection points, deleting points that are less than minimum_segment_length apart
+function sort_intersection_points!(p::Point_2D, points::Vector{Point_2D})
+    if 2 <= length(points)
+        sortpoints!(p, points)
+        # Eliminate any points and faces for which the distance between consecutive points 
+        # is less than the minimum segment length
+        delete_ids = Int64[]
+        id_start = 1
+        for id_stop ∈ 2:length(points)
+            if distance²(points[id_start], points[id_stop]) < minimum_segment_length^2
+                push!(delete_ids, id_stop)
+            else
+                id_start = id_stop
+            end
+        end
+        deleteat!(points, delete_ids)
+    else
+        return points
+    end
 end
 
 # Return a mesh with name name, composed of the faces in the set face_ids

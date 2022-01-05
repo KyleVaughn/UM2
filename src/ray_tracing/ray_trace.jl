@@ -32,37 +32,31 @@
 #     return indices
 # end
 # 
-# # Return the face id in which each segment resides
-# # Type-stable, other than the warning block
-# function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
-#                             mesh::UnstructuredMesh_2D{F, U}
-#                            ) where {F <: AbstractFloat, U <: Unsigned}
-# 
-#     @info "    - Finding faces for each segment"
-#     if 0 == length(mesh.materialized_faces)
-#         @warn "Faces are not materialized for this mesh. This will be VERY slow"
-#     end
-#     nγ = length(segment_points)
-#     bools = fill(false, nγ)
-#     # Preallocate indices in the most frustrating way
-#     segment_faces =   [    
-#                           [ 
-#                               [ 
-#                                   U(0) 
-#                                       for i = 1:length(segment_points[iγ][it])-1 # Segments
-#                               ] for it = 1:length(segment_points[iγ]) # Tracks
-#                           ] for iγ = 1:nγ # Angles
-#                       ]
-#     Threads.@threads for iγ = 1:nγ
-#         bools[iγ] = find_segment_faces_in_angle!(segment_points[iγ], segment_faces[iγ], mesh)
-#     end
-#     if !all(bools)
-#         iγ_bad = findall(x->!x, bools)
-#         @error "Failed to find segment faces for some points in angles: $iγ_bad"
-#     end
-#     return segment_faces
-# end
-# 
+# Return the face id in which each segment resides
+function find_segment_faces(segment_points::Vector{Vector{Vector{Point_2D}}}, mesh::UnstructuredMesh_2D)
+    @info "    - Finding faces for each segment"
+    if 0 == length(mesh.materialized_faces)
+        @warn "Faces are not materialized for this mesh. This will be VERY slow"
+    end
+    nγ = length(segment_points)
+    # Preallocate indices in the most frustrating way
+    segment_faces =   [    
+                          [ 
+                            fill(UInt32(0), length(segment_points[iγ][it])-1) # Segments
+                            for it = 1:length(segment_points[iγ]) # Tracks
+                          ] for iγ = 1:nγ # Angles
+                      ]
+    Threads.@threads for iγ = 1:nγ
+        find_segment_faces_in_angle!(segment_points[iγ], segment_faces[iγ], mesh)
+        for it = 1:length(segment_points[iγ])
+            if any(x->x == 0x00000000, segment_faces[iγ][it]) 
+                @error "Segment face not found for face in [$iγ][$it]"
+            end
+        end
+    end
+    return segment_faces
+end
+
 # # Ray trace an HRPM given the ray spacing and angular quadrature
 # # Not type-stable
 # function ray_trace(tₛ::F,

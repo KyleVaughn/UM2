@@ -29,15 +29,16 @@ Base.broadcastable(p::Point_2D) = Ref(p)
 # Methods
 # -------------------------------------------------------------------------------------------------
 norm(p::Point_2D) = sqrt(p.x^2 + p.y^2)
+norm²(p::Point_2D) = p.x^2 + p.y^2
 distance(p₁::Point_2D, p₂::Point_2D) = norm(p₁ - p₂)
 distance²(p₁::Point_2D, p₂::Point_2D) = (p₁ - p₂) ⋅(p₁ - p₂)
 midpoint(p₁::Point_2D, p₂::Point_2D) = (p₁ + p₂)/2
 
 # Sort points based on their distance from a given point
 function sortpoints(p::Point_2D, points::Vector{Point_2D})
-    0 < length(points) ? points[sortperm(distance.(p, points))] : points
+    0 < length(points) ? points[sortperm(distance².(p, points))] : points
 end
 function sortpoints!(p::Point_2D, points::Vector{Point_2D})
-    0 === length(points) || permute!(points, sortperm(distance.(p, points)))
+    0 === length(points) || permute!(points, sortperm(distance².(p, points)))
     return nothing
 end
