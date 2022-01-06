@@ -73,77 +73,60 @@ end
 #     return segment_points, segment_faces
 # end
 # 
-# # Ray trace a mesh given the ray spacing and angular quadrature
-# # Not type-stable
-# function ray_trace(tₛ::F,
-#                    ang_quad::ProductAngularQuadrature{nᵧ, nₚ, F}, 
-#                    mesh::UnstructuredMesh_2D{F, U}
-#                    ) where {nᵧ, nₚ, F <: AbstractFloat, U <: Unsigned}
-#     @info "Ray tracing"
-#     tracks = generate_tracks(tₛ, ang_quad, mesh, boundary_shape = "Rectangle")
-#     has_mat_edges = 0 < length(mesh.materialized_edges)
-#     has_mat_faces = 0 < length(mesh.materialized_faces)
-#     # If the mesh has boundary edges and materialized edges and faces, 
-#     # use edge-to-edge ray tracing
-#     if 0 < length(mesh.boundary_edges) && has_mat_edges && has_mat_faces 
-#         @info "  - Using the edge-to-edge algorithm"
-#         segment_points, segment_faces = ray_trace_edge_to_edge(tracks, mesh) 
-#         validate_ray_tracing_data(segment_points, segment_faces, mesh, plot = enable_visualization)
-#         return segment_points, segment_faces
-#     else
-#         @info "  - Using the naive segmentize + find face algorithm"
-#         segment_points = segmentize(tracks, mesh)
-#         segment_faces = find_segment_faces(segment_points, mesh)
-#         validate_ray_tracing_data(segment_points, segment_faces, mesh, plot = enable_visualization)
-#         return segment_points, segment_faces
-#     end
-# end
-# 
-# # Get the segment points and the face which the segment lies in for all segments, 
-# # in all tracks, in all angles, using the edge-to-edge ray tracing method. 
-# # Assumes a rectangular boundary
-# function ray_trace_edge_to_edge(tracks::Vector{Vector{LineSegment_2D{F}}},
-#                                 mesh::UnstructuredMesh_2D{F, U}
-#                                 ) where {F <: AbstractFloat, U <: Unsigned}
-#     if visualize_ray_tracing
-#         @error "visualize_ray_tracing = true. Please reset to false in constants.jl"
-#     end
-#     if length(mesh.boundary_edges) != 4
-#         @error "Mesh does not have 4 boundary edges needed for edge-to-edge ray tracing!"
-#     end
-# 
-#     # index 1 = γ
-#     # index 2 = track
-#     # index 3 = point/segment
-#     nγ = length(tracks)
-#     segment_points =[
-#                         [
-#                             Point_2D{F}[] for it = 1:length(tracks[iγ]) # Tracks 
-#                         ] for iγ = 1:nγ # Angles
-#                     ]
-#     segment_faces = [
-#                         [
-#                             U[] for it = 1:length(tracks[iγ]) # Tracks 
-#                         ] for iγ = 1:nγ # Angles
-#                     ]
-#     # For each angle, get the segments and segment faces for each track
-#     Threads.@threads for iγ = 1:nγ
-#         ray_trace_angle_edge_to_edge!(tracks[iγ],
-#                                       segment_points[iγ],
-#                                       segment_faces[iγ],
-#                                       mesh.points,
-#                                       mesh.edges,
-#                                       mesh.materialized_edges,
-#                                       mesh.faces,
-#                                       mesh.materialized_faces,
-#                                       mesh.edge_face_connectivity,
-#                                       mesh.face_edge_connectivity,
-#                                       mesh.boundary_edges
-#                                       )
-#     end
-#     return segment_points, segment_faces
-# end
-# 
+# Ray trace a mesh given the ray spacing and angular quadrature
+function ray_trace(tₛ::Float64,
+                   ang_quad::ProductAngularQuadrature{nᵧ, nₚ}, 
+                   mesh::UnstructuredMesh_2D) where {nᵧ, nₚ}
+    @info "Ray tracing"
+    tracks = generate_tracks(tₛ, ang_quad, mesh, boundary_shape = "Rectangle")
+    if use_E2E_raytracing(mesh) 
+        @info "  - Using the edge-to-edge algorithm"
+        segment_points, segment_faces = ray_trace_edge_to_edge(tracks, mesh) 
+        validate_ray_tracing_data(segment_points, segment_faces, mesh, plot = enable_visualization)
+        return segment_points, segment_faces
+    else
+        @info "  - Using the naive segmentize + find face algorithm"
+        segment_points = segmentize(tracks, mesh)
+        segment_faces = find_segment_faces(segment_points, mesh)
+        validate_ray_tracing_data(segment_points, segment_faces, mesh, plot = enable_visualization)
+        return segment_points, segment_faces
+    end
+end
+
+# Get the segment points and the face which the segment lies in for all segments, 
+# in all tracks, in all angles, using the edge-to-edge ray tracing method. 
+# Assumes a rectangular boundary
+function ray_trace_edge_to_edge(tracks::Vector{Vector{LineSegment_2D}}, mesh::UnstructuredMesh_2D)
+    if visualize_ray_tracing
+        @error "visualize_ray_tracing = true. Please reset to false in constants.jl"
+    end
+    if length(mesh.boundary_edges) != 4
+        @error "Mesh does not have 4 boundary edges needed for edge-to-edge ray tracing!"
+    end
+    # index 1 = γ
+    # index 2 = track
+    # index 3 = point/segment
+    nγ = length(tracks)
+    segment_points =[
+                        [
+                            Point_2D[] for it = 1:length(tracks[iγ]) # Tracks 
+                        ] for iγ = 1:nγ # Angles
+                    ]
+    segment_faces = [
+                        [
+                            UInt32[] for it = 1:length(tracks[iγ]) # Tracks 
+                        ] for iγ = 1:nγ # Angles
+                    ]
+    # For each angle, get the segments and segment faces for each track
+    Threads.@threads for iγ = 1:nγ
+        ray_trace_angle_edge_to_edge!(tracks[iγ],
+                                      segment_points[iγ],
+                                      segment_faces[iγ],
+                                      mesh)
+    end
+    return segment_points, segment_faces
+end
+
 # # Return the points of intersection between the tracks and the mesh edges.
 # # Returns a Vector{Vector{Vector{Point_2D{F}}}}.
 # #   index 1 = γ
@@ -205,202 +188,133 @@ function segmentize(tracks::Vector{Vector{LineSegment_2D}}, mesh::UnstructuredMe
     return segment_points
 end
 
-# # function validate_ray_tracing_data(segment_points::Vector{Point_2D{F}},
-# #                                    segment_faces::Vector{U},
-# #                                    mesh::UnstructuredMesh_2D{F, U};
-# #                                    plot::Bool = false,
-# #                                    debug::Bool = false
-# #                                   ) where {F <: AbstractFloat, U <: Unsigned} 
-# #     @info "  - Validating ray tracing data"
-# #     # Check that all segment faces are correct
-# #     nsegs_problem = 0 # Problem segment if the face doesn't match, and it's over 10 μm
-# #     plot_segs = LineSegment_2D{F}[]
-# #     plot_points = Point_2D{F}[]
-# #     if enable_visualization && plot
-# #         f = Figure()
-# #         ax = Axis(f[1, 1], aspect = 1)
-# #         display(f)
-# #         linesegments!(mesh.materialized_edges, color = :blue)
-# #     end
-# #     nsegs = length(segment_faces) - 1
-# #     for iseg = 1:nsegs
-# #         p_midpoint = midpoint(segment_points[iseg], segment_points[iseg+1])
-# #         face = segment_faces[iseg]
-# #         if p_midpoint ∉  mesh.materialized_faces[face]
-# #             p1 = segment_points[iseg]
-# #             p2 = segment_points[iseg + 1]
-# #             l = LineSegment_2D(p1, p2)
-# #             problem_length = 1e-3 < arc_length(l)
-# #             if debug || problem_length 
-# #                 @warn "Face mismatch for segment [$iseg]\n" * 
-# #                       "   Reference face: $(findface(p_midpoint, mesh)), Face: $face"
-# #                 nsegs_problem += 1
-# #             end
-# #             # append the points, line if we want to plot them
-# #             # we only want to plot if actually a problem, or if debug is on.
-# #             if enable_visualization && plot && (debug || problem_length)
-# #                 append!(plot_points, [p1, p2])
-# #                 push!(plot_segs, l)
-# #             end
-# #         end
-# #     end
-# #     if enable_visualization && plot
-# #         if 0 < length(plot_segs)
-# #             linesegments!(plot_segs, color = :red)
-# #         end
-# #         if 0 < length(plot_points)
-# #             scatter!(plot_points, color = :red)
-# #         end
-# #     end
-# #     prob_percent = 100*nsegs_problem/nsegs
-# #     @info "    - Segments: $nsegs, Problem segments: $nsegs_problem"
-# #     if nsegs_problem == 0
-# #         @info "    - Problem %: $prob_percent, or approx 1 in ∞"
-# #     else
-# #         @info "    - Problem %: $prob_percent, or approx 1 in $(Int64(ceil(100/prob_percent)))"
-# #     end
-# # 
-# #     return nsegs_problem == 0
-# # end
-# 
-# function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D{F}}}},
-#                                    segment_faces::Vector{Vector{Vector{U}}},
-#                                    mesh::UnstructuredMesh_2D{F, U};
-#                                    plot::Bool = false
-#                                   ) where {F <: AbstractFloat, U <: Unsigned} 
-#     @info "  - Validating ray tracing data"
-#     # Check that all segment faces are correct
-#     nthreads = Threads.nthreads()
-#     nsegs = zeros(Int64, nthreads)
-#     nsegs_problem = zeros(Int64, nthreads) # Problem segment if the face doesn't match, and it's over 10 μm
-#     problem_indices = [ SVector{3, Int64}[] for i = 1:nthreads ]
-#     plot_segs_face = [ LineSegment_2D{F}[] for i = 1:nthreads ] 
-#     plot_points_face = [ Point_2D{F}[] for i = 1:nthreads ]
-#     if enable_visualization && plot
-#         f = Figure()
-#         ax = Axis(f[1, 1], aspect = 1)
-#         display(f)
-#         mesh!(mesh.materialized_faces, color = (:black, 0.15))
-#         linesegments!(mesh.materialized_edges, color = :blue)
-#     end
-# 
-#     # Validate faces
-#     nγ = length(segment_faces)
-#     Threads.@threads for iγ = 1:nγ
-#         for it = 1:length(segment_faces[iγ])
-#             nsegs[Threads.threadid()] += length(segment_faces[iγ][it])
-#             for iseg = 1:length(segment_faces[iγ][it])
-#                 p_midpoint = midpoint(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1])
-#                 face = segment_faces[iγ][it][iseg]
-#                 if p_midpoint ∉  mesh.materialized_faces[face]
-#                     p1 = segment_points[iγ][it][iseg]
-#                     p2 = segment_points[iγ][it][iseg + 1]
-#                     l = LineSegment_2D(p1, p2)
-#                     problem_length = 1e-3 < arc_length(l)
-#                     if problem_length 
-# #                        # Is it just the midpoint that is slightly off?
-# #                        # If either of the points at l(1/3) or l(2/3) are also not in the face,
-# #                        # we have a problem.
-# #                        if !(l(1//3) ∈  mesh.materialized_faces[face] && l(2//3) ∈  mesh.materialized_faces[face])
-#                             nsegs_problem[Threads.threadid()] += 1
-#                             push!(problem_indices[Threads.threadid()], SVector(iγ, it, iseg))
-# #                        end
-#                     end
-#                     # append the points, line if we want to plot them
-#                     # we only want to plot if actually a problem, or if debug is on.
-#                     if enable_visualization && plot && problem_length
-#                         append!(plot_points_face[Threads.threadid()], [p1, p2])
-#                         push!(plot_segs_face[Threads.threadid()], l)
-#                     end
-#                 end
-#             end
-#         end
-#     end
-# 
-#     # Attempt to fix problem segments
-#     fixed = [ Int64[] for i = 1:nthreads ]
-#     Threads.@threads for i = 1:nthreads
-#         for (iprob, problem_index) in enumerate(problem_indices[i])
-#             # Ray trace the track in reverse, then test to see if that fixed things
-#             new_info_ok = true
-#             iγ = problem_index[1]
-#             it = problem_index[2]
-#             iseg = problem_index[3]
-#             p_midpoint = midpoint(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1])
-#             face = segment_faces[iγ][it][iseg]
-#             # Check to see if still a problem. May have been fixed by a previous segment updating the 
-#             # points/faces
-#             if p_midpoint ∈  mesh.materialized_faces[face]
-#                 nsegs_problem[i] -= 1
-#                 continue
-#             end
-#             npoints = length(segment_points[iγ][it])
-#             problem_line = LineSegment_2D(segment_points[iγ][it][1], segment_points[iγ][it][npoints])
-#             line_reversed = LineSegment_2D(problem_line.points[2], problem_line.points[1])            
-#             reversed_points, reversed_faces = ray_trace_track_edge_to_edge(line_reversed, mesh.points, 
-#                                                                            mesh.edges, 
-#                                                                            mesh.materialized_edges,
-#                                                                            mesh.faces, 
-#                                                                            mesh.materialized_faces,
-#                                                                            mesh.edge_face_connectivity, 
-#                                                                            mesh.face_edge_connectivity,
-#                                                                            mesh.boundary_edges) 
-#             # Check
-#             for iseg = 1:length(reversed_faces)                                                    
-#                 p_midpoint = midpoint(reversed_points[iseg], reversed_points[iseg+1])
-#                 face = reversed_faces[iseg]
-#                 if p_midpoint ∉  mesh.materialized_faces[face]
-#                     l = LineSegment_2D(reversed_points[iseg], reversed_points[iseg + 1])
-#                     problem_length = 1e-3 < arc_length(l)
-#                     if problem_length 
-#                         new_info_ok = false
-#                     end
-#                 end
-#             end
-#             if new_info_ok
-#                 push!(fixed[i], iprob)
-#                 nsegs_problem[i] -= 1
-#                 segment_points[iγ][it] = reverse(reversed_points)
-#                 segment_faces[iγ][it] = reverse(reversed_faces)
-#             else
-#                 # @warn "Face mismatch for segment [$iγ][$it][$iseg]. Searching for correct face." 
-#                 new_face = findface(p_midpoint, mesh)
-#                 if new_face == 0
-#                     @warn "Could not find new segment face for segment $problem_index[i]"
-#                 else
-#                     segment_faces[iγ][it][iseg] = new_face 
-#                 end
-#             end
-#         end
-#     end
-# 
-#     # Visualize
-#     if enable_visualization && plot
-#         for i = 1:nthreads
-#             if 0 < length(fixed[i])
-#                 deleteat!(plot_segs_face[i], fixed[i])
-#             end
-#             if 0 < length(plot_segs_face[i])
-#                 linesegments!(plot_segs_face[i], color = :red)
-#             end
-#             if 0 < length(fixed[i])
-#                 deleteat!(plot_points_face[i], sort!(vcat(2 .* fixed[i], 2 .* fixed[i] .- 1)))
-#             end
-#             if 0 < length(plot_points_face[i])
-#                 scatter!(plot_points_face[i], color = :red)
-#             end
-#         end
-#     end
-#     problem_segs = sum(nsegs_problem)
-#     nsegs_total = sum(nsegs)
-#     prob_percent = 100*problem_segs/nsegs_total
-#     @info "    - Problem segments: $problem_segs, Total segments: $nsegs_total"
-#     if 0 < problem_segs
-#         @info "      - Check for mesh overlap (darker gray) around areas of many problem segments." 
-#     end
-#     return problem_segs == 0
-# end
-# 
+# Assumes materialized faces
+function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D}}},
+                                   segment_faces::Vector{Vector{Vector{UInt32}}},
+                                   mesh::UnstructuredMesh_2D;
+                                   plot::Bool = false)
+    @info "  - Validating ray tracing data"
+    nthreads = Threads.nthreads()
+    nsegs = zeros(Int64, nthreads)
+    nsegs_problem = zeros(Int64, nthreads) # Problem segment if the face doesn't match, and it's over 10 μm
+    problem_indices = [ SVector{3, Int64}[] for i = 1:nthreads ]
+    plot_segs_face = [ LineSegment_2D[] for i = 1:nthreads ] 
+    plot_points_face = [ Point_2D[] for i = 1:nthreads ]
+    if enable_visualization && plot
+        f = Figure()
+        ax = Axis(f[1, 1], aspect = 1)
+        display(f)
+        mesh!(mesh.materialized_faces, color = (:black, 0.15))
+        if 0 < length(mesh.materialized_edges)
+            linesegments!(mesh.materialized_edges, color = :blue)
+        else
+            linesegments!(materialize_edges(mesh), color = :blue)
+        end
+    end
+
+    # Validate faces
+    Threads.@threads for iγ = 1:length(segment_faces)
+        for it = 1:length(segment_faces[iγ])
+            nsegs[Threads.threadid()] += length(segment_faces[iγ][it])
+            for iseg = 1:length(segment_faces[iγ][it])
+                p_midpoint = midpoint(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1])
+                face = segment_faces[iγ][it][iseg]
+                if p_midpoint ∉  mesh.materialized_faces[face]
+                    p1 = segment_points[iγ][it][iseg]
+                    p2 = segment_points[iγ][it][iseg + 1]
+                    l = LineSegment_2D(p1, p2)
+                    problem_length = 1e-3 < arc_length(l)
+                    if problem_length 
+                        nsegs_problem[Threads.threadid()] += 1
+                        push!(problem_indices[Threads.threadid()], SVector(iγ, it, iseg))
+                    end
+                    # Append the points and line if we want to plot them.
+                    # We only want to plot if actually a problem.
+                    if enable_visualization && plot && problem_length
+                        append!(plot_points_face[Threads.threadid()], [p1, p2])
+                        push!(plot_segs_face[Threads.threadid()], l)
+                    end
+                end
+            end
+        end
+    end
+
+    # Attempt to fix problem segments if used E2E ray tracing
+    if use_E2E_raytracing(mesh) 
+        fixed = [ Int64[] for i = 1:nthreads ]
+        Threads.@threads for i = 1:nthreads
+            for (iprob, problem_index) in enumerate(problem_indices[i])
+                # Ray trace the track in reverse, then test to see if that fixed things
+                new_info_ok = true
+                iγ, it, iseg = problem_index
+                p_midpoint = midpoint(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1])
+                face = segment_faces[iγ][it][iseg]
+                # Check to see if still a problem. May have been fixed by a previous segment updating the 
+                # points/faces
+                if p_midpoint ∈  mesh.materialized_faces[face]
+                    nsegs_problem[i] -= 1
+                    continue
+                end
+                npoints = length(segment_points[iγ][it])
+                problem_line = LineSegment_2D(segment_points[iγ][it][1], segment_points[iγ][it][npoints])
+                line_reversed = LineSegment_2D(problem_line.points[2], problem_line.points[1])            
+                reversed_points, reversed_faces = ray_trace_track_edge_to_edge(line_reversed,  mesh)
+                # Check
+                for iseg = 1:length(reversed_faces)                                                    
+                    p_midpoint = midpoint(reversed_points[iseg], reversed_points[iseg+1])
+                    face = reversed_faces[iseg]
+                    if p_midpoint ∉  mesh.materialized_faces[face]
+                        l = LineSegment_2D(reversed_points[iseg], reversed_points[iseg + 1])
+                        problem_length = 1e-3 < arc_length(l)
+                        if problem_length 
+                            new_info_ok = false
+                        end
+                    end
+                end
+                if new_info_ok
+                    push!(fixed[i], iprob)
+                    nsegs_problem[i] -= 1
+                    segment_points[iγ][it] = reverse(reversed_points)
+                    segment_faces[iγ][it] = reverse(reversed_faces)
+                else
+                    new_face = findface(p_midpoint, mesh)
+                    if new_face == 0
+                        @warn "Could not find new segment face for segment $(problem_index[i])"
+                    else
+                        segment_faces[iγ][it][iseg] = new_face 
+                    end
+                end
+            end
+        end
+    end
+
+    # Visualize
+    if enable_visualization && plot
+        for i = 1:nthreads
+            if 0 < length(fixed[i])
+                deleteat!(plot_segs_face[i], fixed[i])
+            end
+            if 0 < length(plot_segs_face[i])
+                linesegments!(plot_segs_face[i], color = :red)
+            end
+            if 0 < length(fixed[i])
+                deleteat!(plot_points_face[i], sort!(vcat(2 .* fixed[i], 2 .* fixed[i] .- 1)))
+            end
+            if 0 < length(plot_points_face[i])
+                scatter!(plot_points_face[i], color = :red)
+            end
+        end
+    end
+    problem_segs = sum(nsegs_problem)
+    nsegs_total = sum(nsegs)
+    prob_percent = 100*problem_segs/nsegs_total
+    @info "    - Problem segments: $problem_segs, Total segments: $nsegs_total"
+    if 0 < problem_segs
+        @info "      - Check for mesh overlap (darker gray) around areas of many problem segments." 
+    end
+    return problem_segs == 0
+end
+
 # # Plot
 # # -------------------------------------------------------------------------------------------------
 # # Plot ray tracing data one angle at a time.

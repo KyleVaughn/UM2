@@ -45,7 +45,7 @@ end
 include("AbstractTypes.jl")
 include("Tree.jl")
 include("constants.jl")
-#include("operators.jl")
+include("operators.jl")
 include("./gmsh/gmsh_generate_rectangular_grid.jl")
 include("./gmsh/gmsh_group_preserving_fragment.jl")
 include("./gmsh/gmsh_overlay_rectangular_grid.jl")
@@ -79,9 +79,11 @@ const J = jacobian
 # Structs/Types
 export  Edge_2D,
         Face_2D,
+        LinearUnstructuredMesh_2D,
         LineSegment_2D,
         Point_2D,
         QuadraticSegment_2D,
+        QuadraticUnstructuredMesh_2D,
         Quadrilateral_2D,
         Quadrilateral8_2D,
         QuadrilateralMesh_2D,
