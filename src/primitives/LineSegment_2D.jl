@@ -55,13 +55,12 @@ function intersect(l₁::LineSegment_2D, l₂::LineSegment_2D)
     # otherwise just comparing abs(v⃗ × u⃗) to some fixed quantity causes problems. Hence, we keep
     # |v⃗||u⃗|
     ϵ = parametric_coordinate_ϵ
-    θₚ = LineSegment_2D_parallel_θ
     v⃗ = l₁[2] - l₁[1]
     u⃗ = l₂[2] - l₂[1]
     u = u⃗ ⋅ u⃗
     v = v⃗ ⋅ v⃗
     vxu = v⃗ × u⃗
-    if vxu^2 > θₚ * v * u
+    if vxu^2 > LineSegment_2D_parallel_θ² * v * u
         w⃗ = l₂[1] - l₁[1]
         r = w⃗ × u⃗/vxu
         (-ϵ ≤ r ≤ 1 + ϵ) || return (0x00000000, Point_2D())

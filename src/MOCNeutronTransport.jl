@@ -1,6 +1,6 @@
 module MOCNeutronTransport
 # Compilation options
-const enable_visualization = true
+const enable_visualization = false
 const visualize_ray_tracing = false 
 
 using ColorSchemes

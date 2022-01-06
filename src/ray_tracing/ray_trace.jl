@@ -201,17 +201,6 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
     plot_segs_face = [ LineSegment_2D[] for i = 1:nthreads ] 
     plot_points_face = [ Point_2D[] for i = 1:nthreads ]
 
-
-
-
-
-
-
-
-
-
-
-
     # Validate faces
     Threads.@threads for iγ = 1:length(segment_faces)
         for it = 1:length(segment_faces[iγ])
@@ -241,6 +230,7 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
 
     # Attempt to fix problem segments if used E2E ray tracing
     if use_E2E_raytracing(mesh) 
+        @info "    - Attempting to fix $(sum(nsegs_problem)) segments with incorrect faces"
         fixed = [ Int64[] for i = 1:nthreads ]
         Threads.@threads for i = 1:nthreads
             for (iprob, problem_index) in enumerate(problem_indices[i])

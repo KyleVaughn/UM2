@@ -391,7 +391,7 @@ end
 # Return the next edge, next face, and intersection point on the next edge
 # This is for linear, materialized edges
 function next_edge_and_face(last_point::Point_2D, current_edge::UInt32, current_face::UInt32, 
-                            l::LineSegment_2D, mesh::UnstructuredMesh_2D)
+                            l::LineSegment_2D, mesh::LinearUnstructuredMesh_2D)
     if visualize_ray_tracing # Compile time constant. Compiler will prune branch if not visualizing
         ax = current_axis() 
     end
@@ -485,7 +485,7 @@ end
 # Requires materialized faces
 function next_edge_and_face_fallback(last_point::Point_2D, current_face::UInt32, 
                                      segment_faces::Vector{UInt32}, l::LineSegment_2D,
-                                     mesh::UnstructuredMesh_2D)
+                                     mesh::LinearUnstructuredMesh_2D)
     # If the next face could not be determined, or the ray is jumping back to the
     # previous face, this means either:
     # (1) The ray is entering or exiting through a vertex, and floating point error
@@ -593,6 +593,7 @@ function shared_vertex_fallback(last_point::Point_2D, current_face::UInt32,
     for face in faces_OI
         npoints, ipoints = l ∩ mesh.materialized_faces[face]
         if visualize_ray_tracing 
+            println("Face: $face")
             push!(mesh_vec, mesh!(mesh.materialized_faces[face], color = (:black, 0.2)))
             readline()
         end
