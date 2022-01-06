@@ -200,17 +200,17 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
     problem_indices = [ SVector{3, Int64}[] for i = 1:nthreads ]
     plot_segs_face = [ LineSegment_2D[] for i = 1:nthreads ] 
     plot_points_face = [ Point_2D[] for i = 1:nthreads ]
-    if enable_visualization && plot
-        f = Figure()
-        ax = Axis(f[1, 1], aspect = 1)
-        display(f)
-        mesh!(mesh.materialized_faces, color = (:black, 0.15))
-        if 0 < length(mesh.materialized_edges)
-            linesegments!(mesh.materialized_edges, color = :blue)
-        else
-            linesegments!(materialize_edges(mesh), color = :blue)
-        end
-    end
+
+
+
+
+
+
+
+
+
+
+
 
     # Validate faces
     Threads.@threads for iγ = 1:length(segment_faces)
@@ -223,7 +223,7 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
                     p1 = segment_points[iγ][it][iseg]
                     p2 = segment_points[iγ][it][iseg + 1]
                     l = LineSegment_2D(p1, p2)
-                    problem_length = 1e-3 < arc_length(l)
+                    problem_length = 1e-3 < arclength(l)
                     if problem_length 
                         nsegs_problem[Threads.threadid()] += 1
                         push!(problem_indices[Threads.threadid()], SVector(iγ, it, iseg))
@@ -265,7 +265,7 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
                     face = reversed_faces[iseg]
                     if p_midpoint ∉  mesh.materialized_faces[face]
                         l = LineSegment_2D(reversed_points[iseg], reversed_points[iseg + 1])
-                        problem_length = 1e-3 < arc_length(l)
+                        problem_length = 1e-3 < arclength(l)
                         if problem_length 
                             new_info_ok = false
                         end
@@ -289,7 +289,17 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
     end
 
     # Visualize
-    if enable_visualization && plot
+    problem_segs = sum(nsegs_problem)
+    if enable_visualization && plot && 0 < problem_segs
+        f = Figure()
+        ax = Axis(f[1, 1], aspect = 1)
+        display(f)
+        mesh!(mesh.materialized_faces, color = (:black, 0.15))
+        if 0 < length(mesh.materialized_edges)
+            linesegments!(mesh.materialized_edges, color = :blue)
+        else
+            linesegments!(materialize_edges(mesh), color = :blue)
+        end
         for i = 1:nthreads
             if 0 < length(fixed[i])
                 deleteat!(plot_segs_face[i], fixed[i])
@@ -305,7 +315,6 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
             end
         end
     end
-    problem_segs = sum(nsegs_problem)
     nsegs_total = sum(nsegs)
     prob_percent = 100*problem_segs/nsegs_total
     @info "    - Problem segments: $problem_segs, Total segments: $nsegs_total"
@@ -315,60 +324,50 @@ function validate_ray_tracing_data(segment_points::Vector{Vector{Vector{Point_2D
     return problem_segs == 0
 end
 
-# # Plot
-# # -------------------------------------------------------------------------------------------------
-# # Plot ray tracing data one angle at a time.
-# if enable_visualization
-#     function linesegments!(segment_points::Vector{Vector{Vector{Point_2D{T}}}},
-#                            seg_faces::Vector{Vector{Vector{I}}}) where {T <: AbstractFloat, I <: Unsigned} 
-#         println("Press enter to plot the segments in the next angle")
-#         colormap = ColorSchemes.tab20.colors
-#         lines_by_color = Vector{Vector{LineSegment_2D{T}}}(undef, 20)
-#         nγ = length(segment_points)
-#         for iγ = 1:nγ
-#             f = Figure()
-#             ax = Axis(f[1, 1], aspect = 1)
-#             display(f)
-#             for icolor = 1:20
-#                 lines_by_color[icolor] = LineSegment_2D{T}[]
-#             end
-#             for it = 1:length(segment_points[iγ])
-#                 for iseg = 1:length(segment_points[iγ][it])-1
-#                     l = LineSegment_2D(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1]) 
-#                     face = seg_faces[iγ][it][iseg]
-#                     if face == 0
-#                         @error "Segment [$iγ][$it][$iseg] has a face id of 0"
-#                     end
-#                     push!(lines_by_color[face % 20 + 1], l)
-#                 end
-#             end
-#             for icolor = 1:20
-#                 linesegments!(lines_by_color[icolor], color = colormap[icolor])
-#             end
-#             s = readline()
-#             println(iγ)
-#         end
-#     end
-#     
-#     # Set visualize_ray_tracing = true in constants.jl to get this to work.
-#     function plot_track_edge_to_edge(track::LineSegment_2D{F},
-#                                       mesh::UnstructuredMesh_2D{F, U} 
-#                                     ) where {F <: AbstractFloat, U <: Unsigned}
-#         @info "Plotting ray tracing of track. Press enter to advance the ray"
-#         f = Figure()
-#         ax = Axis(f[1, 1], aspect = 1)
-#         display(f)
-#         linesegments!(mesh.materialized_edges, color = :blue)
-#         linesegments!(track, color = :orange)
-#         segment_points, segment_faces = ray_trace_track_edge_to_edge(track,
-#                                                                 mesh.points,
-#                                                                 mesh.edges,
-#                                                                 mesh.materialized_edges,
-#                                                                 mesh.faces,
-#                                                                 mesh.materialized_faces,
-#                                                                 mesh.edge_face_connectivity,
-#                                                                 mesh.face_edge_connectivity,
-#                                                                 mesh.boundary_edges)
-#         return segment_points, segment_faces
-#     end
-# end
+# Plot
+# -------------------------------------------------------------------------------------------------
+# Plot ray tracing data one angle at a time.
+if enable_visualization
+#    function linesegments!(segment_points::Vector{Vector{Vector{Point_2D}}},
+#                           segment_faces::Vector{Vector{Vector{UInt32}}})
+#        println("Press enter to plot the segments in the next angle")
+#        colormap = ColorSchemes.tab20.colors
+#        lines_by_color = Vector{Vector{LineSegment_2D{T}}}(undef, 20)
+#        nγ = length(segment_points)
+#        for iγ = 1:nγ
+#            f = Figure()
+#            ax = Axis(f[1, 1], aspect = 1)
+#            display(f)
+#            for icolor = 1:20
+#                lines_by_color[icolor] = LineSegment_2D{T}[]
+#            end
+#            for it = 1:length(segment_points[iγ])
+#                for iseg = 1:length(segment_points[iγ][it])-1
+#                    l = LineSegment_2D(segment_points[iγ][it][iseg], segment_points[iγ][it][iseg+1]) 
+#                    face = segment_faces[iγ][it][iseg]
+#                    if face == 0
+#                        @error "Segment [$iγ][$it][$iseg] has a face id of 0"
+#                    end
+#                    push!(lines_by_color[face % 20 + 1], l)
+#                end
+#            end
+#            for icolor = 1:20
+#                linesegments!(lines_by_color[icolor], color = colormap[icolor])
+#            end
+#            s = readline()
+#            println(iγ)
+#        end
+#    end
+    
+    # Set visualize_ray_tracing = true in constants.jl to get this to work.
+    function plot_track_edge_to_edge(track::LineSegment_2D, mesh::UnstructuredMesh_2D) 
+        @info "Plotting ray tracing of track. Press enter to advance the ray"
+        f = Figure()
+        ax = Axis(f[1, 1], aspect = 1)
+        display(f)
+        linesegments!(mesh.materialized_edges, color = :blue)
+        linesegments!(track, color = :orange)
+        segment_points, segment_faces = ray_trace_track_edge_to_edge(track, mesh)
+        return segment_points, segment_faces
+    end
+end

@@ -19,7 +19,7 @@ const Point_2D_differentiation_distance = 5e-6
 #    \ 
 #     v
 #      v⃗
-const LineSegment_2D_parallel_θ = π/180000 # ≈ 0.001°
+const LineSegment_2D_parallel_θ = 1e-6
 
 # QuadraticSegment_2D
 # ---------------------------------------------------------------------------------------------------

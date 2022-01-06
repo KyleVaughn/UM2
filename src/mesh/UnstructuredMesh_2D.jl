@@ -389,8 +389,8 @@ end
 # Find the faces which share the vertex of ID v.
 function faces_sharing_vertex(v::Integer, mesh::UnstructuredMesh_2D)
     shared_faces = UInt32[]
-    for i ∈ 1:length(faces)
-        if v ∈  faces[i]
+    for i ∈ 1:length(mesh.faces)
+        if v ∈  mesh.faces[i]
             push!(shared_faces, UInt32(i))
         end
     end
@@ -772,7 +772,7 @@ end
 function sort_intersection_points!(p::Point_2D, points::Vector{Point_2D})
     if 2 <= length(points)
         sortpoints!(p, points)
-        # Eliminate any points and faces for which the distance between consecutive points 
+        # Eliminate any points for which the distance between consecutive points 
         # is less than the minimum segment length
         delete_ids = Int64[]
         id_start = 1
