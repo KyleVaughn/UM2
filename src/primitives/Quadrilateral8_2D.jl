@@ -18,13 +18,6 @@ Quadrilateral8_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D, p₄::Point_2D
                   p₅::Point_2D, p₆::Point_2D, p₇::Point_2D, p₈::Point_2D
                  ) = Quadrilateral8_2D(SVector(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈))
 
-# Base
-# -------------------------------------------------------------------------------------------------
-Base.broadcastable(quad8::Quadrilateral8_2D) = Ref(quad8)
-Base.getindex(quad8::Quadrilateral8_2D, i::Int64) = quad8.points[i]
-Base.firstindex(quad8::Quadrilateral8_2D) = 1
-Base.lastindex(quad8::Quadrilateral8_2D) = 4
-
 # Methods
 # -------------------------------------------------------------------------------------------------
 function (quad8::Quadrilateral8_2D)(r::Real, s::Real)
@@ -55,9 +48,7 @@ function (quad8::Quadrilateral8_2D)(p::Point_2D)
                       (1 - η^2)*(1 - ξ)/2*quad8[8]
 end
 
-function area(quad8::Quadrilateral8_2D)
-    return area(quad8, Val(2))
-end
+area(quad8::Quadrilateral8_2D) = area(quad8, Val(2))
 
 function area(quad8::Quadrilateral8_2D, ::Val{N}) where {N}
     # Numerical integration required. Gauss-Legendre quadrature over a quadrilateral is used.
@@ -80,10 +71,7 @@ function area(quad8::Quadrilateral8_2D, ::Val{N}) where {N}
     return a
 end
 
-function centroid(quad8::Quadrilateral8_2D)
-    return centroid(quad8, Val(3))
-end
-
+centroid(quad8::Quadrilateral8_2D) = centroid(quad8, Val(3))
 function centroid(quad8::Quadrilateral8_2D, ::Val{N}) where {N}
     # Numerical integration required. Gauss-Legendre quadrature over a quadrilateral is used.
     # Let Q(r,s) be the interpolation function for quad8,

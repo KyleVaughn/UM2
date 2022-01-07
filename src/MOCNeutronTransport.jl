@@ -20,7 +20,8 @@ end
 using LoggingExtras: TransformerLogger, global_logger
 
 # import
-import Base: +, -, *, /, ≈, in, intersect, union
+import Base: @propagate_inbounds
+import Base: broadcastable, getindex, getproperty, +, -, *, /, ≈, in, intersect, union
 if enable_visualization 
     import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
 end
@@ -49,6 +50,8 @@ include("operators.jl")
 include("./gmsh/gmsh_generate_rectangular_grid.jl")
 include("./gmsh/gmsh_group_preserving_fragment.jl")
 include("./gmsh/gmsh_overlay_rectangular_grid.jl")
+include("./primitives/Edge_2D.jl")
+include("./primitives/Face_2D.jl")
 include("./primitives/Point_2D.jl")
 include("./primitives/LineSegment_2D.jl")
 include("./primitives/Rectangle_2D.jl")

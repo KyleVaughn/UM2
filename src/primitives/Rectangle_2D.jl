@@ -12,8 +12,7 @@ Rectangle_2D(xmin::Real=0.0, ymin::Real=0.0,
 
 # Base
 # -------------------------------------------------------------------------------------------------
-Base.broadcastable(rect::Rectangle_2D) = Ref(rect)
-function Base.getproperty(rect::Rectangle_2D, sym::Symbol)
+function getproperty(rect::Rectangle_2D, sym::Symbol)
     if sym === :xmin
         return rect.bl.x
     elseif sym === :ymin
@@ -29,10 +28,10 @@ end
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-width(rect::Rectangle_2D) = rect.tr.x - rect.bl.x
-height(rect::Rectangle_2D) = rect.tr.y - rect.bl.y
-area(rect::Rectangle_2D) = height(rect) * width(rect)
-in(p::Point_2D, rect::Rectangle_2D) = rect.xmin ≤ p.x ≤ rect.xmax && rect.ymin ≤ p.y ≤ rect.ymax
+@inline width(rect::Rectangle_2D) = rect.tr.x - rect.bl.x
+@inline height(rect::Rectangle_2D) = rect.tr.y - rect.bl.y
+@inline area(rect::Rectangle_2D) = height(rect) * width(rect)
+@inline in(p::Point_2D, rect::Rectangle_2D) = rect.xmin ≤ p.x ≤ rect.xmax && rect.ymin ≤ p.y ≤ rect.ymax
 
 # Liang-Barsky line clipping algorithm
 # pₖ = 0	            parallel to the clipping boundaries

@@ -13,13 +13,6 @@ end
 Quadrilateral_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D, p₄::Point_2D
                 ) = Quadrilateral_2D(SVector(p₁, p₂, p₃, p₄))
 
-# Base
-# -------------------------------------------------------------------------------------------------
-Base.broadcastable(quad::Quadrilateral_2D) = Ref(quad)
-Base.getindex(quad::Quadrilateral_2D, i::Int64) = quad.points[i]
-Base.firstindex(quad::Quadrilateral_2D) = 1
-Base.lastindex(quad::Quadrilateral_2D) = 4
-
 # Methods
 # -------------------------------------------------------------------------------------------------
 function (quad::Quadrilateral_2D)(r::Real, s::Real)

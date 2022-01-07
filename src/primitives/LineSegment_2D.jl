@@ -8,22 +8,18 @@ end
 # -------------------------------------------------------------------------------------------------
 LineSegment_2D(p₁::Point_2D, p₂::Point_2D) = LineSegment_2D(SVector(p₁, p₂))
 
-# Base
-# -------------------------------------------------------------------------------------------------
-Base.broadcastable(l::LineSegment_2D) = Ref(l)
-Base.getindex(l::LineSegment_2D, i::Int64) = l.points[i]
-Base.firstindex(l::LineSegment_2D) = 1
-Base.lastindex(l::LineSegment_2D) = 2
-
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 # l(0) yields points[1], and l(1) yields points[2]
 (l::LineSegment_2D)(r::Real) = l[1] + (l[2] - l[1])r
 arclength(l::LineSegment_2D) = distance(l[1], l[2])
-+(l::LineSegment_2D, p::Point_2D) = LineSegment_2D(l.points[1] + p, l.points[2] + p)
++(l::LineSegment_2D, p::Point_2D) = LineSegment_2D(l[1] + p, l[2] + p)
 
-function intersect(l₁::LineSegment_2D, l₂::LineSegment_2D)
+# Note the flip of the input argument subscripts. Since the first argument l₂ is usually
+# a long ray, it will more likely produce a valid s. l₁ is typically short, and more likely
+# to produce an invalid r, which will be caught first and allow a fast fail.
+function intersect(l₂::LineSegment_2D, l₁::LineSegment_2D)
     # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product
     # operator for 2D points returns a scalar (the 2-norm of the cross product).
     #
@@ -78,7 +74,7 @@ end
 # v⃗ |  / u⃗
 #   | /
 #   o
-function isleft(p::Point_2D, l::LineSegment_2D)
+@inline function isleft(p::Point_2D, l::LineSegment_2D)
     u⃗ = l[2] - l[1]
     v⃗ = p - l[1]
     return u⃗ × v⃗ > 0

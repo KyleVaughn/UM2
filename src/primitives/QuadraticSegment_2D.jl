@@ -20,13 +20,6 @@ end
 # -------------------------------------------------------------------------------------------------
 QuadraticSegment_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D) = QuadraticSegment_2D(SVector(p₁, p₂, p₃))
 
-# Base
-# -------------------------------------------------------------------------------------------------
-Base.broadcastable(q::QuadraticSegment_2D) = Ref(q)
-Base.getindex(q::QuadraticSegment_2D, i::Int64) = q.points[i]
-Base.firstindex(q::QuadraticSegment_2D) = 1
-Base.lastindex(q::QuadraticSegment_2D) = 3
-
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
@@ -169,7 +162,6 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
     # Note that D⃗ is essentially a vector showing twice the displacement of x⃗₃ from the
     # midpoint of the linear segment (x⃗₁, x⃗₂). So, if |D⃗| = 0, the segment is linear.
     ϵ = parametric_coordinate_ϵ
-    ϵ₁ = QuadraticSegment_2D_1_intersection_ϵ
     npoints = 0x00000000
     p₁ = Point_2D()
     p₂ = Point_2D()
@@ -180,7 +172,7 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
     B = E⃗ × w⃗
     C = (q[1] - l[1]) × w⃗
     w = w⃗ ⋅ w⃗
-    if A^2 < w * ϵ₁^2
+    if A^2 < w * QuadraticSegment_2D_1_intersection_ϵ^2
         # Line intersection
         # Can B = 0 if A = 0 for non-trivial x?
         r = -C/B
@@ -188,9 +180,7 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
         p₁ = q(r)
         s = (p₁ - l[1]) ⋅ w⃗/w
         if (-ϵ ≤ s ≤ 1 + ϵ)
-            return 0x00000001, SVector(p₁, p₂)
-        else
-            return 0x00000000, SVector(p₁, p₂)
+            npoints = 0x00000001
         end
     elseif B^2 ≥ 4A*C
         # Quadratic intersection
@@ -242,19 +232,11 @@ function isleft(p::Point_2D, q::QuadraticSegment_2D)
             u⃗ = p_near - q_base
             v⃗ = p - q_base
         end
-#        # If the r is greater than 0.5, use q[3] as the start point
-#        elseif 0.5 < r
-#            u⃗ = p_near - q[3]
-#            v⃗ = p - q[3]
-#        else
-#            u⃗ = p_near - q[1]
-#            v⃗ = p - q[1]
-#        end
         return u⃗ × v⃗ > 0
     end
 end
 
-function isstraight(q::QuadraticSegment_2D)
+@inline function isstraight(q::QuadraticSegment_2D)
     # u⃗ × v⃗ = |u⃗||v⃗|sinθ
     return abs((q[3] - q[1]) × (q[2] - q[1])) < 1e-7
 end

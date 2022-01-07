@@ -16,13 +16,6 @@ Triangle6_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D,
              p₄::Point_2D, p₅::Point_2D, p₆::Point_2D
             ) = Triangle6_2D(SVector(p₁, p₂, p₃, p₄, p₅, p₆))
 
-# Base
-# -------------------------------------------------------------------------------------------------
-Base.broadcastable(tri6::Triangle6_2D) = Ref(tri6)
-Base.getindex(tri6::Triangle6_2D, i::Int64) = tri6.points[i]
-Base.firstindex(tri6::Triangle6_2D) = 1
-Base.lastindex(tri6::Triangle6_2D) = 6
-
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
@@ -49,10 +42,7 @@ function (tri6::Triangle6_2D)(p::Point_2D)
                            4s*(1 - r - s)*tri6[6]
 end
 
-function area(tri6::Triangle6_2D)
-    return area(tri6, Val(3))
-end
-
+area(tri6::Triangle6_2D) = area(tri6, Val(3))
 function area(tri6::Triangle6_2D, ::Val{N}) where {N}
     # Numerical integration required. Gauss-Legendre quadrature over a triangle is used.
     # Let F(r,s) be the interpolation function for tri6,
@@ -65,10 +55,7 @@ function area(tri6::Triangle6_2D, ::Val{N}) where {N}
     return sum(@. w * abs( ∇(tri6, r, s) |> x->x[1] × x[2] ))
 end
 
-function centroid(tri6::Triangle6_2D)
-    return centroid(tri6, Val(6))
-end
-
+centroid(tri6::Triangle6_2D) = centroid(tri6, Val(6))
 function centroid(tri6::Triangle6_2D, ::Val{N}) where {N}
     # Numerical integration required. Gauss-Legendre quadrature over a triangle is used.
     # Let F(r,s) be the interpolation function for tri6,

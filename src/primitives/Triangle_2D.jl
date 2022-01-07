@@ -7,13 +7,6 @@ end
 # -------------------------------------------------------------------------------------------------
 Triangle_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D) = Triangle_2D(SVector(p₁, p₂, p₃))
 
-# Base
-# -------------------------------------------------------------------------------------------------
-Base.broadcastable(tri::Triangle_2D) = Ref(tri)
-Base.getindex(tri::Triangle_2D, i::Int64) = tri.points[i]
-Base.firstindex(tri::Triangle_2D) = 1
-Base.lastindex(tri::Triangle_2D) = 3
-
 # Methods
 # -------------------------------------------------------------------------------------------------
 # Interpolation
