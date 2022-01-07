@@ -138,6 +138,25 @@ function laplacian(q::QuadraticSegment_2D, r::Real)
 end
 
 function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
+    ϵ = parametric_coordinate_ϵ
+    if isstraight(q) # Use line segment intersection.
+        # A
+        v⃗ = q[2] - q[1]
+        u⃗ = l[2] - l[1]
+        u = u⃗ ⋅ u⃗ 
+        v = v⃗ ⋅ v⃗ 
+        vxu = v⃗ × u⃗ 
+        if vxu^2 > LineSegment_2D_parallel_θ² * v * u 
+            w⃗ = l[1] - q[1]
+            r = w⃗ × u⃗/vxu
+            (-ϵ ≤ r ≤ 1 + ϵ) || return (0x00000000, SVector(Point_2D(), Point_2D()))
+            p = q[1] + (q[2] - q[1])r
+            s = (r*v⃗ - w⃗) ⋅ u⃗/u 
+            return (-ϵ ≤ s ≤ 1 + ϵ) ? (0x00000001, SVector(p, Point_2D())) : (0x00000000, SVector(p, Point_2D()))
+        else
+            return (0x00000000, SVector(Point_2D(), Point_2D()))
+        end 
+    else
     # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
     # q(r) = 2r²(x⃗₁ + x⃗₂ - 2x⃗₃) + r(-3x⃗₁ - x⃗₂ + 4x⃗₃) + x⃗₁
     # Let D⃗ = 2(x⃗₁ + x⃗₂ - 2x⃗₃), E⃗ = (-3x⃗₁ - x⃗₂ + 4x⃗₃), F⃗ = x₁
@@ -161,7 +180,6 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
     #
     # Note that D⃗ is essentially a vector showing twice the displacement of x⃗₃ from the
     # midpoint of the linear segment (x⃗₁, x⃗₂). So, if |D⃗| = 0, the segment is linear.
-    ϵ = parametric_coordinate_ϵ
     npoints = 0x00000000
     p₁ = Point_2D()
     p₂ = Point_2D()
@@ -207,6 +225,7 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
         end
     end
     return npoints, SVector(p₁, p₂)
+    end
 end
 
 # Return if the point is left of the quadratic segment
