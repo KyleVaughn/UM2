@@ -47,81 +47,31 @@ end
 
 # Find the axis-aligned bounding box of the segment.
 function boundingbox(q::QuadraticSegment_2D)
-    # Find the vertex to vertex vector that is the longest
-    v⃗_12 = q[2] - q[1] # Vector from p₁ to p₂
-    v⃗_13 = q[3] - q[1] # Vector from p₁ to p₃
-    v⃗_23 = q[3] - q[2] # Vector from p₂ to p₃
-    dsq_12 = v⃗_12 ⋅ v⃗_12 # Distance from p₁ to p₂ squared 
-    dsq_13 = v⃗_13 ⋅ v⃗_13
-    dsq_23 = v⃗_23 ⋅ v⃗_23
-    x⃗₁ = Point_2D()
-    x⃗₂ = Point_2D()
-    u⃗ = Point_2D()
-    v⃗ = Point_2D()
-    # Majority of the time, dsq_12 is the largest, so this is tested first 
-    if (dsq_13 ≤ dsq_12) && (dsq_23 ≤ dsq_12)
-        u⃗ = v⃗_12
-        v⃗ = v⃗_13
-        u = dsq_12
-        x⃗₁ = q[1]
-        x⃗₂ = q[2]
-    elseif (dsq_12 ≤ dsq_13) && (dsq_23 ≤ dsq_13)
-        u⃗ = v⃗_13
-        v⃗ = v⃗_12
-        u = dsq_13
-        x⃗₁ = q[1]
-        x⃗₂ = q[3]
+    # Find the r coordinates where ∂x/∂r = 0, ∂y/∂r = 0
+    # We know ∇ q, so we can directly compute these values
+    r_x = 0.25*(3q[1].x + q[2].x - 4q[3].x)/(q[1].x + q[2].x - 2q[3].x)
+    if 0 < r_x < 1
+        x_extreme = (2r_x-1)*(r_x-1)q[1].x + r_x*(2r_x-1)q[2].x + 4r_x*(1-r_x)q[3].x
+        xmin = min(q[1].x, q[2].x, x_extreme)
+        xmax = max(q[1].x, q[2].x, x_extreme)
     else
-        u⃗ = v⃗_23
-        v⃗ = -v⃗_12
-        u = dsq_23
-        x⃗₁ = q[2]
-        x⃗₂ = q[3]
+        xmin = min(q[1].x, q[2].x)
+        xmax = max(q[1].x, q[2].x)
     end
-    # u⃗ is the longest vextex to vertex vector
-    # v⃗ is the vector from u⃗[1] to the vertex not in u⃗
-    # Example
-    #                 ___p₃___
-    #            ____/        \____
-    #        ___/                  \
-    #     __/                       p₂
-    #   _/                   
-    #  /
-    # p₁
-    # --------------------------------------- 
-    # u⃗ = p₂ - p₁, v⃗ = p₃ - p₁
-    #                    p₃
-    #                 .
-    #        v⃗     . 
-    #           .                    p₂
-    #        .              .   
-    #     .       .    
-    # p₁.               u⃗
-    #------------------------------------------
-    # We want to obtain the vector perpendicular to u⃗
-    # from u⃗ to p₃. We call this h⃗. We obtain h⃗ using
-    # a projection of v⃗ onto u⃗ (v⃗ᵤ). Then we see h⃗ = v⃗ - v⃗ᵤ
-    #                 ___p₃___
-    #            ____/    .   \____
-    #        ___/          .       \
-    #     __/               .       p₂
-    #   _/                   p₁ + v⃗ᵤ
-    #  /
-    # p₁
-    #
-    v⃗ᵤ = (u⃗ ⋅v⃗/u) * u⃗ # Projection of v⃗ onto u⃗
-    h⃗ = v⃗ - v⃗ᵤ # vector aligned bounding box height
-    # We can now construct the bounding box using the quadrilateral (p₁, p₂, p₂ + h⃗, p₁ + h⃗)
-    # This is the segment aligned bounding box. To get the axis-aligned bounding box,
-    # we find the min and max x and y
-    x⃗₃ = x⃗₁ + h⃗
-    x⃗₄ = x⃗₂ + h⃗
-    x = SVector(x⃗₁.x, x⃗₂.x, x⃗₃.x, x⃗₄.x )
-    y = SVector(x⃗₁.y, x⃗₂.y, x⃗₃.y, x⃗₄.y )
-    return Rectangle_2D(minimum(x), minimum(y), maximum(x), maximum(y))
+
+    r_y = 0.25*(3q[1].y + q[2].y - 4q[3].y)/(q[1].y + q[2].y - 2q[3].y)
+    if 0 < r_y < 1
+        y_extreme = (2r_y-1)*(r_y-1)q[1].y + r_y*(2r_y-1)q[2].y + 4r_y*(1-r_y)q[3].y
+        ymin = min(q[1].y, q[2].y, y_extreme)
+        ymax = max(q[1].y, q[2].y, y_extreme)
+    else
+        ymin = min(q[1].y, q[2].y)
+        ymax = max(q[1].y, q[2].y)
+    end
+    return Rectangle_2D(Point_2D(xmin, ymin), Point_2D(xmax, ymax))
 end
 
-nearest_point(p::Point_2D, q::QuadraticSegment_2D) = nearest_point(p, q, 30)
+nearest_point(p::Point_2D, q::QuadraticSegment_2D) = nearest_point(p, q, 15)
 # Return the closest point on the curve to point p and the value of r such that q(r) = p_nearest
 # Uses at most N iterations of Newton-Raphson
 function nearest_point(p::Point_2D, q::QuadraticSegment_2D, N::Int64)
@@ -159,22 +109,24 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
     ϵ = parametric_coordinate_ϵ
     if isstraight(q) # Use line segment intersection.
         # See LineSegment_2D for the math behind this.
-        v⃗ = q[2] - q[1]
-        u⃗ = l[2] - l[1]
-        u = u⃗ ⋅ u⃗ 
-        v = v⃗ ⋅ v⃗ 
+        v⃗ = l[2] - l[1]
+        u⃗ = q[2] - q[1]
         vxu = v⃗ × u⃗ 
-        if vxu^2 > LineSegment_2D_parallel_θ² * v * u 
-            w⃗ = l[1] - q[1]
-            r = w⃗ × u⃗/vxu
-            (-ϵ ≤ r ≤ 1 + ϵ) || return (0x00000000, SVector(Point_2D(), Point_2D()))
-            p = q[1] + (q[2] - q[1])r
-            s = (r*v⃗ - w⃗) ⋅ u⃗/u 
-            if (-ϵ ≤ s ≤ 1 + ϵ)
-                return (0x00000001, SVector(p, Point_2D()))
-            else
-                (0x00000000, SVector(p, Point_2D()))
-            end
+        # Parallel or collinear lines, return.
+        1e-8 < abs(vxu) || return (0x00000000, SVector(Point_2D(), Point_2D()))
+        w⃗ = q[1] - l[1]
+        # Delay division until r,s are verified
+        if 0 <= vxu 
+            lowerbound = (-ϵ)vxu
+            upperbound = (1 + ϵ)vxu
+        else
+            upperbound = (-ϵ)vxu
+            lowerbound = (1 + ϵ)vxu
+        end 
+        r_numerator = w⃗ × u⃗ 
+        s_numerator = w⃗ × v⃗ 
+        if (lowerbound ≤ r_numerator ≤ upperbound) && (lowerbound ≤ s_numerator ≤ upperbound) 
+            return (0x00000001, SVector(l(s_numerator/vxu), Point_2D()))
         else
             return (0x00000000, SVector(Point_2D(), Point_2D()))
         end 
@@ -210,7 +162,7 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
         B = E⃗ × w⃗
         C = (q[1] - l[1]) × w⃗
         w = w⃗ ⋅ w⃗
-        if A^2 < w * QuadraticSegment_2D_1_intersection_ϵ^2
+        if abs(A) < 1e-8 
             # Line intersection
             # Can B = 0 if A = 0 for non-trivial x⃗?
             r = -C/B
@@ -284,23 +236,8 @@ end
 # If the quadratic segment is effectively linear
 @inline function isstraight(q::QuadraticSegment_2D)
     # u⃗ × v⃗ = |u⃗||v⃗|sinθ
-    return abs((q[3] - q[1]) × (q[2] - q[1])) < 1e-7
+    return abs((q[3] - q[1]) × (q[2] - q[1])) < 1e-8
 end
-
-# # Get an upper bound on the derivative magnitude |∇ q⃗|
-# function gradient_magnitude_upperbound(q::QuadraticSegment_2D)
-#     # q'(r) = (4r-3)(q₁ - q₃) + (4r-1)(q₂ - q₃)
-#     # |q'(r)| ≤ (4r-3)|(q₁ - q₃)| + (4r-1)|(q₂ - q₃)| ≤ 3Q₁ + Q₂
-#     # Q₁ = max(|(q₁ - q₃)|, |(q₂ - q₃)|))
-#     # Q₂ = min(|(q₁ - q₃)|, |(q₂ - q₃)|))
-#     v_31 = norm(q[1] - q[3])
-#     v_32 = norm(q[2] - q[3])
-#     if v_31 > v_32
-#         return 3v_31 +  v_32
-#     else
-#         return  v_31 + 3v_32
-#     end
-# end
 
 # Plot
 # -------------------------------------------------------------------------------------------------

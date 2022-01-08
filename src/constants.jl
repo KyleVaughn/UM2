@@ -8,19 +8,6 @@ const minimum_segment_length = 1e-4
 # Minimum distance between two points to be considered different
 const Point_2D_differentiation_distance = 5e-6
 
-# LineSegment_2D
-# ---------------------------------------------------------------------------------------------------
-# θ ∈ [0, π/2] between two lines, each translated to share a point, beneath which the lines
-# are declared to be parallel
-# -------------> u⃗
-# \θ)
-#  \
-#   \
-#    \ 
-#     v
-#      v⃗
-const LineSegment_2D_parallel_θ² = (1e-4)^2 # θ squared.
-
 # QuadraticSegment_2D
 # ---------------------------------------------------------------------------------------------------
 # Threshold beneath which the segment is treated as linear.

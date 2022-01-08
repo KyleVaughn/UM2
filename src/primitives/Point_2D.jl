@@ -21,6 +21,7 @@ broadcastable(p::Point_2D) = Ref(p)
 # Hence the z coordinate of the resultant vector is returned.
 @inline ×(p₁::Point_2D, p₂::Point_2D) = p₁.x*p₂.y - p₂.x*p₁.y
 @inline ⋅(p₁::Point_2D, p₂::Point_2D) = p₁.x*p₂.x + p₁.y*p₂.y
+@inline /(p₁::Point_2D, p₂::Point_2D) = Point_2D(p₁.x/p₂.x, p₁.y/p₂.y)
 @inline +(p::Point_2D, n::Real) = Point_2D(p.x + n, p.y + n)
 @inline +(n::Real, p::Point_2D) = Point_2D(p.x + n, p.y + n)
 @inline -(p::Point_2D, n::Real) = Point_2D(p.x - n, p.y - n)
