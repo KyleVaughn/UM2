@@ -12,11 +12,11 @@ LineSegment_2D(p₁::Point_2D, p₂::Point_2D) = LineSegment_2D(SVector(p₁, p�
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 # l(0) yields points[1], and l(1) yields points[2]
-(l::LineSegment_2D)(r::Real) = l[1] + (l[2] - l[1])r
-arclength(l::LineSegment_2D) = distance(l[1], l[2])
-+(l::LineSegment_2D, p::Point_2D) = LineSegment_2D(l[1] + p, l[2] + p)
+@inline (l::LineSegment_2D)(r::Real) = l[1] + (l[2] - l[1])r
+@inline arclength(l::LineSegment_2D) = distance(l[1], l[2])
+@inline +(l::LineSegment_2D, p::Point_2D) = LineSegment_2D(l[1] + p, l[2] + p)
 
-function intersect(l₂::LineSegment_2D, l₁::LineSegment_2D)
+function intersect(l₁::LineSegment_2D, l₂::LineSegment_2D)
     # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product
     # operator for 2D points returns a scalar (the 2-norm of the cross product).
     #
@@ -29,41 +29,36 @@ function intersect(l₂::LineSegment_2D, l₁::LineSegment_2D)
     # r(v⃗ × u⃗) = w⃗ × u⃗                              dot product v⃗ × u⃗ to each side
     # r = (w⃗ × u⃗)/(v⃗ × u⃗)
     # Note that if the lines are parallel or collinear, v⃗ × u⃗ = 0
-    # We need to ensure r, s ∈ [0, 1]. Verifying this condition for r is simple, but we need to
-    # solve for s as well.
-    # x⃗₂ + su⃗ = x⃗₁ + rv⃗                              subtracting x⃗₂ from both sides
-    # su⃗ = -w⃗ + rv⃗                                   we see that each element must satisfy
-    # s(u⃗ ⋅ u⃗) = (-w⃗ + rv⃗) ⋅ u⃗                       hence
-    # s = (rv⃗ - w⃗) ⋅ u⃗/(u⃗ ⋅ u⃗)
+    # We need to ensure r, s ∈ [0, 1].
+    # x⃗₂ + su⃗ = x⃗₁ + rv⃗                             subtracting x⃗₂ from both sides
+    # su⃗ = -w⃗ + rv⃗                                  cross product with w⃗
+    # s(u⃗ × w⃗) = -w⃗ × w⃗ + r(v⃗ × w⃗)                  w⃗ × w⃗ = 0 & substituting for r
+    # s(u⃗ × w⃗) =  (v⃗ × w⃗)(w⃗ × u⃗)/(v⃗ × u⃗)            -(u⃗ × w⃗) = w⃗ × u⃗
+    # s = -(v⃗ × w⃗)/(v⃗ × u⃗)                          -(v⃗ × w⃗) = w⃗ × v⃗
+    # s = (w⃗ × v⃗)/(v⃗ × u⃗)
     #
-    # To determine if the lines are parallel or collinear, accounting for floating point error,
-    # we declare that all lines with angle less that θₚ between them are parallel or collinear.
-    # Using v⃗ × u⃗ = |v⃗||u⃗|sin(θ), and knowing that for small θ, sin(θ) ≈ θ
-    # We say all vectors such that
-    #   abs(v⃗ × u⃗)
-    #   --------- ≤ θₚ
-    #     |v⃗||u⃗|
-    # are parallel or collinear
-    # We need to consider the magnitudes of the vectors due to the large range of segment sized used,
-    # otherwise just comparing abs(v⃗ × u⃗) to some fixed quantity causes problems. Hence, we keep
-    # |v⃗||u⃗|
-    #
-    # Note the flip of the input argument subscripts, (l₂, l₁) vs (l₁, l₂). Since the first argument 
+    # Note the flip of the input argument subscripts, (l₂, l₁) vs (l₁, l₂). Since the first argument
     # l₂ is usually a long ray, it will more likely produce a valid s. l₁ is typically short, and is
     # more likely to produce an invalid r, which will be caught first and allow a fast fail.
     ϵ = parametric_coordinate_ϵ
     v⃗ = l₁[2] - l₁[1]
     u⃗ = l₂[2] - l₂[1]
-    u = u⃗ ⋅ u⃗
-    v = v⃗ ⋅ v⃗
     vxu = v⃗ × u⃗
-    if vxu^2 > LineSegment_2D_parallel_θ² * v * u
-        w⃗ = l₂[1] - l₁[1]
-        r = w⃗ × u⃗/vxu
-        (-ϵ ≤ r ≤ 1 + ϵ) || return (0x00000000, Point_2D())
-        p = l₁(r)
-        s = (r*v⃗ - w⃗) ⋅ u⃗/u
-        return (-ϵ ≤ s ≤ 1 + ϵ) ? (0x00000001, p) : (0x00000000, p)
+    # Parallel or collinear lines, return.
+    1e-8 < abs(vxu) || return (0x00000000, Point_2D())
+    w⃗ = l₂[1] - l₁[1]
+    # Delay division until r,s are verified
+    if 0 <= vxu
+        lowerbound = (-ϵ)vxu
+        upperbound = (1 + ϵ)vxu
+    else
+        upperbound = (-ϵ)vxu
+        lowerbound = (1 + ϵ)vxu
+    end
+    r_numerator = w⃗ × u⃗
+    s_numerator = w⃗ × v⃗
+    if (lowerbound ≤ r_numerator ≤ upperbound) && (lowerbound ≤ s_numerator ≤ upperbound) 
+        return (0x00000001, l₂(s_numerator/vxu))
     else
         return (0x00000000, Point_2D())
     end
