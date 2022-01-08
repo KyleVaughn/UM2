@@ -31,7 +31,7 @@ broadcastable(p::Point_2D) = Ref(p)
 @inline norm(p::Point_2D) = sqrt(p.x^2 + p.y^2)
 @inline norm²(p::Point_2D) = p.x^2 + p.y^2
 @inline distance(p₁::Point_2D, p₂::Point_2D) = norm(p₁ - p₂)
-@inline distance²(p₁::Point_2D, p₂::Point_2D) = (p₁ - p₂) ⋅(p₁ - p₂)
+@inline distance²(p₁::Point_2D, p₂::Point_2D) = norm²(p₁ - p₂)
 @inline midpoint(p₁::Point_2D, p₂::Point_2D) = (p₁ + p₂)/2
 
 # Sort points based on their distance from a given point

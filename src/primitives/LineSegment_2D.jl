@@ -16,9 +16,6 @@ LineSegment_2D(p₁::Point_2D, p₂::Point_2D) = LineSegment_2D(SVector(p₁, p�
 arclength(l::LineSegment_2D) = distance(l[1], l[2])
 +(l::LineSegment_2D, p::Point_2D) = LineSegment_2D(l[1] + p, l[2] + p)
 
-# Note the flip of the input argument subscripts. Since the first argument l₂ is usually
-# a long ray, it will more likely produce a valid s. l₁ is typically short, and more likely
-# to produce an invalid r, which will be caught first and allow a fast fail.
 function intersect(l₂::LineSegment_2D, l₁::LineSegment_2D)
     # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product
     # operator for 2D points returns a scalar (the 2-norm of the cross product).
@@ -50,6 +47,10 @@ function intersect(l₂::LineSegment_2D, l₁::LineSegment_2D)
     # We need to consider the magnitudes of the vectors due to the large range of segment sized used,
     # otherwise just comparing abs(v⃗ × u⃗) to some fixed quantity causes problems. Hence, we keep
     # |v⃗||u⃗|
+    #
+    # Note the flip of the input argument subscripts, (l₂, l₁) vs (l₁, l₂). Since the first argument 
+    # l₂ is usually a long ray, it will more likely produce a valid s. l₁ is typically short, and is
+    # more likely to produce an invalid r, which will be caught first and allow a fast fail.
     ϵ = parametric_coordinate_ϵ
     v⃗ = l₁[2] - l₁[1]
     u⃗ = l₂[2] - l₂[1]
@@ -74,6 +75,7 @@ end
 # v⃗ |  / u⃗
 #   | /
 #   o
+#   We rely on v⃗ × u⃗ = |v⃗||u⃗|sin(θ). We may determine if θ ∈ (0, π] based on the sign of v⃗ × u⃗
 @inline function isleft(p::Point_2D, l::LineSegment_2D)
     u⃗ = l[2] - l[1]
     v⃗ = p - l[1]

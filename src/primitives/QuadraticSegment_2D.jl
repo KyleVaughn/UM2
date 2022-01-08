@@ -25,7 +25,7 @@ QuadraticSegment_2D(p₁::Point_2D, p₂::Point_2D, p₃::Point_2D) = QuadraticS
 # Interpolation
 # q(0) = q[1], q(1) = q[2], q(1//2) = q[3]
 function (q::QuadraticSegment_2D)(r::Real)
-    # See Fhe Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+    # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     rₜ = Float64(r)
     return (2rₜ-1)*( rₜ-1)q[1] +
@@ -34,57 +34,73 @@ function (q::QuadraticSegment_2D)(r::Real)
 end
 
 arclength(q::QuadraticSegment_2D) = arclength(q, Val(15))
-
 function arclength(q::QuadraticSegment_2D, ::Val{N}) where {N}
-    # This does have an analytic solution, but the Mathematica solution is pages long and can
-    # produce NaN results when the segment is straight, so numerical integration is used.
+    # Numerical integration is used.
     # (Gauss-Legengre quadrature)
     #     1                  N
-    # L = ∫ ||q⃗'(r)||dr  ≈   ∑ wᵢ||q⃗'(rᵢ)||
+    # L = ∫ ||∇ q⃗(r)||dr  ≈  ∑ wᵢ||∇ q⃗(rᵢ)||
     #     0                 i=1
     #
-    # N is the number of points used in the quadrature.
-    # See tuning/QuadraticSegment_2D_arc_length.jl for more info on how N = 15 was chosen
-    # as the default value.
     w, r = gauss_legendre_quadrature(Val(N))
     return sum(@. w * norm(∇(q, r)))
 end
 
-# Find the AABB by finding the vector aligned BB.
+# Find the axis-aligned bounding box of the segment.
 function boundingbox(q::QuadraticSegment_2D)
     # Find the vertex to vertex vector that is the longest
-    v⃗_12 = q[2] - q[1]
-    v⃗_13 = q[3] - q[1]
-    v⃗_23 = q[3] - q[2]
-    dsq_12 = v⃗_12 ⋅ v⃗_12
+    v⃗_12 = q[2] - q[1] # Vector from p₁ to p₂
+    v⃗_13 = q[3] - q[1] # Vector from p₁ to p₃
+    v⃗_23 = q[3] - q[2] # Vector from p₂ to p₃
+    dsq_12 = v⃗_12 ⋅ v⃗_12 # Distance from p₁ to p₂ squared 
     dsq_13 = v⃗_13 ⋅ v⃗_13
     dsq_23 = v⃗_23 ⋅ v⃗_23
     x⃗₁ = Point_2D()
     x⃗₂ = Point_2D()
     u⃗ = Point_2D()
     v⃗ = Point_2D()
-    max_ind = 0
-    # Majority of the time, dsq_12 is the largest, so this is a fast acceptance
+    # Majority of the time, dsq_12 is the largest, so this is tested first 
     if (dsq_13 ≤ dsq_12) && (dsq_23 ≤ dsq_12)
-        max_ind = 1
         u⃗ = v⃗_12
         v⃗ = v⃗_13
+        u = dsq_12
         x⃗₁ = q[1]
         x⃗₂ = q[2]
     elseif (dsq_12 ≤ dsq_13) && (dsq_23 ≤ dsq_13)
-        max_ind = 2
         u⃗ = v⃗_13
         v⃗ = v⃗_12
+        u = dsq_13
         x⃗₁ = q[1]
         x⃗₂ = q[3]
     else
-        max_ind = 3
         u⃗ = v⃗_23
         v⃗ = -v⃗_12
+        u = dsq_23
         x⃗₁ = q[2]
         x⃗₂ = q[3]
     end
+    # u⃗ is the longest vextex to vertex vector
+    # v⃗ is the vector from u⃗[1] to the vertex not in u⃗
     # Example
+    #                 ___p₃___
+    #            ____/        \____
+    #        ___/                  \
+    #     __/                       p₂
+    #   _/                   
+    #  /
+    # p₁
+    # --------------------------------------- 
+    # u⃗ = p₂ - p₁, v⃗ = p₃ - p₁
+    #                    p₃
+    #                 .
+    #        v⃗     . 
+    #           .                    p₂
+    #        .              .   
+    #     .       .    
+    # p₁.               u⃗
+    #------------------------------------------
+    # We want to obtain the vector perpendicular to u⃗
+    # from u⃗ to p₃. We call this h⃗. We obtain h⃗ using
+    # a projection of v⃗ onto u⃗ (v⃗ᵤ). Then we see h⃗ = v⃗ - v⃗ᵤ
     #                 ___p₃___
     #            ____/    .   \____
     #        ___/          .       \
@@ -92,9 +108,12 @@ function boundingbox(q::QuadraticSegment_2D)
     #   _/                   p₁ + v⃗ᵤ
     #  /
     # p₁
-    v⃗ᵤ = (u⃗ ⋅v⃗)/(u⃗ ⋅u⃗) * u⃗ # Projection of v⃗ onto u⃗
+    #
+    v⃗ᵤ = (u⃗ ⋅v⃗/u) * u⃗ # Projection of v⃗ onto u⃗
     h⃗ = v⃗ - v⃗ᵤ # vector aligned bounding box height
-    # Find the bounding box
+    # We can now construct the bounding box using the quadrilateral (p₁, p₂, p₂ + h⃗, p₁ + h⃗)
+    # This is the segment aligned bounding box. To get the axis-aligned bounding box,
+    # we find the min and max x and y
     x⃗₃ = x⃗₁ + h⃗
     x⃗₄ = x⃗₂ + h⃗
     x = SVector(x⃗₁.x, x⃗₂.x, x⃗₃.x, x⃗₄.x )
@@ -103,8 +122,7 @@ function boundingbox(q::QuadraticSegment_2D)
 end
 
 nearest_point(p::Point_2D, q::QuadraticSegment_2D) = nearest_point(p, q, 30)
-
-# Return the closest point on the curve to point p and the value of r
+# Return the closest point on the curve to point p and the value of r such that q(r) = p_nearest
 # Uses at most N iterations of Newton-Raphson
 function nearest_point(p::Point_2D, q::QuadraticSegment_2D, N::Int64)
     r = 0.5
@@ -140,7 +158,7 @@ end
 function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
     ϵ = parametric_coordinate_ϵ
     if isstraight(q) # Use line segment intersection.
-        # A
+        # See LineSegment_2D for the math behind this.
         v⃗ = q[2] - q[1]
         u⃗ = l[2] - l[1]
         u = u⃗ ⋅ u⃗ 
@@ -152,79 +170,83 @@ function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
             (-ϵ ≤ r ≤ 1 + ϵ) || return (0x00000000, SVector(Point_2D(), Point_2D()))
             p = q[1] + (q[2] - q[1])r
             s = (r*v⃗ - w⃗) ⋅ u⃗/u 
-            return (-ϵ ≤ s ≤ 1 + ϵ) ? (0x00000001, SVector(p, Point_2D())) : (0x00000000, SVector(p, Point_2D()))
+            if (-ϵ ≤ s ≤ 1 + ϵ)
+                return (0x00000001, SVector(p, Point_2D()))
+            else
+                (0x00000000, SVector(p, Point_2D()))
+            end
         else
             return (0x00000000, SVector(Point_2D(), Point_2D()))
         end 
     else
-    # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
-    # q(r) = 2r²(x⃗₁ + x⃗₂ - 2x⃗₃) + r(-3x⃗₁ - x⃗₂ + 4x⃗₃) + x⃗₁
-    # Let D⃗ = 2(x⃗₁ + x⃗₂ - 2x⃗₃), E⃗ = (-3x⃗₁ - x⃗₂ + 4x⃗₃), F⃗ = x₁
-    # q(r) = r²D⃗ + rE⃗ + F⃗
-    # l(s) = x⃗₄ + sw⃗
-    # If D⃗ × w⃗ ≠ 0
-    #   x⃗₄ + sw⃗ = r²D⃗ + rE⃗ + F⃗
-    #   sw⃗ = r²D⃗ + rE⃗ + (F⃗ - x⃗₄)
-    #   0 = r²(D⃗ × w⃗) + r(E⃗ × w⃗) + (F⃗ - x⃗₄) × w⃗
-    #   Let A = (D⃗ × w⃗), B = (E⃗ × w⃗), C = (F⃗ - x⃗₄) × w⃗
-    #   0 = Ar² + Br + C
-    #   r = (-B - √(B²-4AC))/2A, -B + √(B²-4AC))/2A)
-    #   s = ((q(r) - p₄)⋅w⃗/(w⃗ ⋅ w⃗)
-    #   r is invalid if:
-    #     1) A = 0
-    #     2) B² < 4AC
-    #     3) r < 0 or 1 < r   (Curve intersects, segment doesn't)
-    #   s is invalid if:
-    #     1) s < 0 or 1 < s   (Line intersects, segment doesn't)
-    # If D⃗ × w⃗ = 0, we need to use line intersection instead.
-    #
-    # Note that D⃗ is essentially a vector showing twice the displacement of x⃗₃ from the
-    # midpoint of the linear segment (x⃗₁, x⃗₂). So, if |D⃗| = 0, the segment is linear.
-    npoints = 0x00000000
-    p₁ = Point_2D()
-    p₂ = Point_2D()
-    D⃗ = 2(q[1] +  q[2] - 2q[3])
-    E⃗ =  4q[3] - 3q[1] -  q[2]
-    w⃗ = l[2] - l[1]
-    A = D⃗ × w⃗
-    B = E⃗ × w⃗
-    C = (q[1] - l[1]) × w⃗
-    w = w⃗ ⋅ w⃗
-    if A^2 < w * QuadraticSegment_2D_1_intersection_ϵ^2
-        # Line intersection
-        # Can B = 0 if A = 0 for non-trivial x?
-        r = -C/B
-        (-ϵ ≤ r ≤ 1 + ϵ) || return 0x00000000, SVector(p₁, p₂)
-        p₁ = q(r)
-        s = (p₁ - l[1]) ⋅ w⃗/w
-        if (-ϵ ≤ s ≤ 1 + ϵ)
-            npoints = 0x00000001
-        end
-    elseif B^2 ≥ 4A*C
-        # Quadratic intersection
-        r₁ = (-B - √(B^2 - 4A*C))/2A
-        r₂ = (-B + √(B^2 - 4A*C))/2A
-        if (-ϵ ≤ r₁ ≤ 1 + ϵ)
-            p = q(r₁)
-            s₁ = (p - l[1]) ⋅ w⃗/w
-            if (-ϵ ≤ s₁ ≤ 1 + ϵ)
-                p₁ = p
-                npoints += 0x00000001
+        # q(r) = (2r-1)(r-1)x⃗₁ + r(2r-1)x⃗₂ + 4r(1-r)x⃗₃
+        # q(r) = 2r²(x⃗₁ + x⃗₂ - 2x⃗₃) + r(-3x⃗₁ - x⃗₂ + 4x⃗₃) + x⃗₁
+        # Let D⃗ = 2(x⃗₁ + x⃗₂ - 2x⃗₃), E⃗ = (-3x⃗₁ - x⃗₂ + 4x⃗₃), F⃗ = x₁
+        # q(r) = r²D⃗ + rE⃗ + F⃗
+        # l(s) = x⃗₄ + sw⃗
+        # If D⃗ × w⃗ ≠ 0
+        #   x⃗₄ + sw⃗ = r²D⃗ + rE⃗ + F⃗
+        #   sw⃗ = r²D⃗ + rE⃗ + (F⃗ - x⃗₄)
+        #   0 = r²(D⃗ × w⃗) + r(E⃗ × w⃗) + (F⃗ - x⃗₄) × w⃗
+        #   Let A = (D⃗ × w⃗), B = (E⃗ × w⃗), C = (F⃗ - x⃗₄) × w⃗
+        #   0 = Ar² + Br + C
+        #   r = (-B - √(B²-4AC))/2A, -B + √(B²-4AC))/2A)
+        #   s = ((q(r) - p₄)⋅w⃗/(w⃗ ⋅ w⃗)
+        #   r is invalid if:
+        #     1) A = 0
+        #     2) B² < 4AC
+        #     3) r < 0 or 1 < r   (Curve intersects, segment doesn't)
+        #   s is invalid if:
+        #     1) s < 0 or 1 < s   (Line intersects, segment doesn't)
+        # If D⃗ × w⃗ = 0, there is only one intersection and the equation reduces to line
+        # intersection.
+        npoints = 0x00000000
+        p₁ = Point_2D()
+        p₂ = Point_2D()
+        D⃗ = 2(q[1] +  q[2] - 2q[3])
+        E⃗ =  4q[3] - 3q[1] -  q[2]
+        w⃗ = l[2] - l[1]
+        A = D⃗ × w⃗
+        B = E⃗ × w⃗
+        C = (q[1] - l[1]) × w⃗
+        w = w⃗ ⋅ w⃗
+        if A^2 < w * QuadraticSegment_2D_1_intersection_ϵ^2
+            # Line intersection
+            # Can B = 0 if A = 0 for non-trivial x⃗?
+            r = -C/B
+            (-ϵ ≤ r ≤ 1 + ϵ) || return 0x00000000, SVector(p₁, p₂)
+            p₁ = q(r)
+            s = (p₁ - l[1]) ⋅ w⃗/w
+            if (-ϵ ≤ s ≤ 1 + ϵ)
+                npoints = 0x00000001
+            end
+        elseif B^2 ≥ 4A*C
+            # Quadratic intersection
+            # The compiler seem seems to catch the √(B^2 - 4A*C), for common subexpression 
+            # elimination, so leaving for readability
+            r₁ = (-B - √(B^2 - 4A*C))/2A
+            r₂ = (-B + √(B^2 - 4A*C))/2A
+            if (-ϵ ≤ r₁ ≤ 1 + ϵ)
+                p = q(r₁)
+                s₁ = (p - l[1]) ⋅ w⃗/w
+                if (-ϵ ≤ s₁ ≤ 1 + ϵ)
+                    p₁ = p
+                    npoints += 0x00000001
+                end
+            end
+            if (-ϵ ≤ r₂ ≤ 1 + ϵ)
+                p = q(r₂)
+                s₂ = (p - l[1]) ⋅ w⃗/w
+                if (-ϵ ≤ s₂ ≤ 1 + ϵ)
+                    p₂ = p
+                    npoints += 0x00000001
+                end
+            end
+            if npoints === 0x00000001 && p₁ === Point_2D()
+                p₁ = p₂
             end
         end
-        if (-ϵ ≤ r₂ ≤ 1 + ϵ)
-            p = q(r₂)
-            s₂ = (p - l[1]) ⋅ w⃗/w
-            if (-ϵ ≤ s₂ ≤ 1 + ϵ)
-                p₂ = p
-                npoints += 0x00000001
-            end
-        end
-        if npoints === 0x00000001 && p₁ === Point_2D()
-            p₁ = p₂
-        end
-    end
-    return npoints, SVector(p₁, p₂)
+        return npoints, SVector(p₁, p₂)
     end
 end
 
@@ -236,17 +258,21 @@ end
 #   o
 function isleft(p::Point_2D, q::QuadraticSegment_2D)
     if isstraight(q) || p ∉  boundingbox(q)
+        # We don't need to account for the curve if q is straight or p is outside
+        # q's bounding box
         u⃗ = q[2] - q[1]
         v⃗ = p - q[1]
         return u⃗ × v⃗ > 0
     else
+        # Get the nearest point on q to p.
+        # Construct vectors from a point on q, close to p_near, to p_near and p. 
+        # Use the cross product of these vectors to determine if p isleft.
         r, p_near = nearest_point(p, q)
-        # If r is small or beyond the valid range, just use the second point
-        # Otherwise use a point on the curve that is close to p_near
-        if r < 1e-6 || 1 < r
+        
+        if r < 1e-6 || 1 < r # If r is small or beyond the valid range, just use q[2]
             u⃗ = q[2] - q[1]
             v⃗ = p - q[1]
-        else
+        else # otherwise use a point on q, close to p_near
             q_base = q(0.95r)
             u⃗ = p_near - q_base
             v⃗ = p - q_base
@@ -255,13 +281,14 @@ function isleft(p::Point_2D, q::QuadraticSegment_2D)
     end
 end
 
+# If the quadratic segment is effectively linear
 @inline function isstraight(q::QuadraticSegment_2D)
     # u⃗ × v⃗ = |u⃗||v⃗|sinθ
     return abs((q[3] - q[1]) × (q[2] - q[1])) < 1e-7
 end
 
-# # Get an upper bound on the derivative magnitude |dq⃗'/dr|
-# function derivative_magnitude_upperbound(q::QuadraticSegment_2D)
+# # Get an upper bound on the derivative magnitude |∇ q⃗|
+# function gradient_magnitude_upperbound(q::QuadraticSegment_2D)
 #     # q'(r) = (4r-3)(q₁ - q₃) + (4r-1)(q₂ - q₃)
 #     # |q'(r)| ≤ (4r-3)|(q₁ - q₃)| + (4r-1)|(q₂ - q₃)| ≤ 3Q₁ + Q₂
 #     # Q₁ = max(|(q₁ - q₃)|, |(q₂ - q₃)|))
