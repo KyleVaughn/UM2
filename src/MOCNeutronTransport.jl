@@ -2,7 +2,7 @@ module MOCNeutronTransport
 
 # Compilation options
 const path_to_gmsh_api = "/usr/local/lib/gmsh.jl"
-const enable_visualization = false
+const enable_visualization = true
 const visualize_ray_tracing = false 
 
 # using
@@ -47,11 +47,11 @@ include("Tree.jl")
 #include("./gmsh/gmsh_generate_rectangular_grid.jl")
 #include("./gmsh/gmsh_group_preserving_fragment.jl")
 #include("./gmsh/gmsh_overlay_rectangular_grid.jl")
-#include("./primitives/Edge_2D.jl")
-#include("./primitives/Face_2D.jl")
+include("./primitives/Edge_2D.jl")
+include("./primitives/Face_2D.jl")
 include("./primitives/Point_2D.jl")
-#include("./primitives/LineSegment_2D.jl")
-#include("./primitives/Rectangle_2D.jl")
+include("./primitives/LineSegment_2D.jl")
+include("./primitives/Rectangle_2D.jl")
 #include("./primitives/QuadraticSegment_2D.jl")
 #include("./primitives/Triangle_2D.jl")
 #include("./primitives/Quadrilateral_2D.jl")
@@ -77,8 +77,6 @@ include("./primitives/Point_2D.jl")
 #const J = jacobian
 const × = cross
 const ⋅ = dot
-
-
 
 # Structs/Types
 export  Edge_2D,

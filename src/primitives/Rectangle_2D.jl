@@ -45,52 +45,52 @@ function intersect(l::LineSegment_2D{F}, rect::Rectangle_2D{F}) where {F <: Abst
     q₃ = l[1].y - rect.ymin
     q₄ = rect.ymax - l[1].y
 
-    t_max = MVector{3, F}(1, 0, 0)
-    t_min = MVector{3, F}(0, 0, 0)
+    t_max1 = F(1)
+    t_min1 = F(0)
 
     # Line parallel to clipping window
     if p₁ == 0 # Vertical line
         if q₁ < 0 || q₂ < 0 # Outside boundaries
-            return 0x00000000, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
+            return false, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
         else # Inside boundaries
-            return 0x00000002, SVector(Point_2D(l[1].x, rect.ymin), Point_2D(l[1].x, rect.ymax))
+            return true, SVector(Point_2D(l[1].x, rect.ymin), Point_2D(l[1].x, rect.ymax))
         end
     end
     if p₃ == 0 # Horizontal line
         if q₃ < 0 || q₄ < 0 # Outside boundaries
-            return 0x00000000, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
+            return false, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
         else # Inside boundaries
-            return 0x00000002, SVector(Point_2D(rect.xmin, l[1].y), Point_2D(rect.xmax, l[1].y))
+            return true, SVector(Point_2D(rect.xmin, l[1].y), Point_2D(rect.xmax, l[1].y))
         end
     end
 
     t₁ = q₁ / p₁
     t₂ = q₂ / p₂
     if (p₁ < 0)
-        t_min[2] = t₁
-        t_max[2] = t₂
+        t_min2 = t₁
+        t_max2 = t₂
     else
-        t_min[2] = t₂
-        t_max[2] = t₁
+        t_min2 = t₂
+        t_max2 = t₁
     end
 
     t₃ = q₃ / p₃
     t₄ = q₄ / p₄
     if (p₃ < 0)
-        t_min[3] = t₃
-        t_max[3] = t₄
+        t_min3 = t₃
+        t_max3 = t₄
     else
-        t_min[3] = t₄
-        t_max[3] = t₃
+        t_min3 = t₄
+        t_max3 = t₃
     end
 
-    t_start = maximum(t_min)
-    t_stop = minimum(t_max)
+    t_start = max(t_min1, t_min2, t_min3)
+    t_stop = min(t_max1, t_max2, t_max3)
 
     # Line outside clipping window
-    t_start < t_stop || return 0x00000000, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
+    t_start < t_stop || return false, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
 
-    return 0x00000002, SVector(l(t_start), l(t_stop))
+    return true, SVector(l(t_start), l(t_stop))
 end
 
 function union(r₁::Rectangle_2D, r₂::Rectangle_2D)

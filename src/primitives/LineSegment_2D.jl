@@ -1,5 +1,4 @@
 # A line segment in 2D space defined by its two endpoints.
-# For ray tracing purposes, the line starts at points[1] and ends at points[2]
 struct LineSegment_2D{F <: AbstractFloat} <: Edge_2D{F}
     points::SVector{2, Point_2D{F}}
 end
@@ -37,15 +36,12 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     # s = -(v⃗ × w⃗)/(v⃗ × u⃗)                          -(v⃗ × w⃗) = w⃗ × v⃗
     # s = (w⃗ × v⃗)/(v⃗ × u⃗)
     #
-    # Note the flip of the input argument subscripts, (l₂, l₁) vs (l₁, l₂). Since the first argument
-    # l₂ is usually a long ray, it will more likely produce a valid s. l₁ is typically short, and is
-    # more likely to produce an invalid r, which will be caught first and allow a fast fail.
-    ϵ = F(parametric_coordinate_ϵ)
+    ϵ = F(Edge_2D_coordinate_ϵ)
     v⃗ = l₁[2] - l₁[1]
     u⃗ = l₂[2] - l₂[1]
     vxu = v⃗ × u⃗
     # Parallel or collinear lines, return.
-    1e-8 < abs(vxu) || return (0x00000000, Point_2D())
+    1e-8 < abs(vxu) || return (false, Point_2D{F}(0, 0))
     w⃗ = l₂[1] - l₁[1]
     # Delay division until r,s are verified
     if 0 <= vxu
@@ -58,9 +54,9 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     r_numerator = w⃗ × u⃗
     s_numerator = w⃗ × v⃗
     if (lowerbound ≤ r_numerator ≤ upperbound) && (lowerbound ≤ s_numerator ≤ upperbound) 
-        return (0x00000001, l₂(s_numerator/vxu))
+        return (true, l₂(s_numerator/vxu))
     else
-        return (0x00000000, Point_2D())
+        return (false, Point_2D{F}(0, 0))
     end
 end
 
@@ -74,7 +70,7 @@ end
 @inline function isleft(p::Point_2D, l::LineSegment_2D)
     u⃗ = l[2] - l[1]
     v⃗ = p - l[1]
-    return u⃗ × v⃗ > 0
+    return u⃗ × v⃗ >= 0
 end
 
 # Convert a vector of points to a vector of line segments, typically for visualization

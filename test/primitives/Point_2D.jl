@@ -1,7 +1,7 @@
 using MOCNeutronTransport
 using StaticArrays
 @testset "Point_2D" begin
-    @testset "$F" for F in [Float32, Float64]
+    @testset "$F" for F in [Float32, Float64, BigFloat]
         @testset "Operators" begin
             p₁ = Point_2D{F}(1, 2)
             p₂ = Point_2D{F}(2, 4)
