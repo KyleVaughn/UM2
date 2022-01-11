@@ -2,20 +2,16 @@ mutable struct Tree{T}
     data::Union{Nothing, T}
     parent::Union{Nothing, Tree{T}}
     children::Union{Nothing, Vector{Tree{T}}}
-end
-
-function Tree{T}(;data::Union{Nothing, T} = nothing, 
-                 parent::Union{Nothing, Tree{T}} = nothing, 
-                 children::Union{Nothing, Vector{Tree{T}}} = nothing) where T
-    this = Tree{T}(data, parent, children)
-    if !isnothing(parent)
+    Tree(data::T) where T = new{T}(data, nothing, nothing)
+    function Tree(data::T, parent::Tree{T}) where T
+        this = new{T}(data, parent, nothing)
         if isnothing(parent.children)
             parent.children = [this]
         else
             push!(parent.children, this)
-        end
+        end 
+        return this
     end
-    return this
 end
 
 function is_parents_last_child(tree::Tree)
