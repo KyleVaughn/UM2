@@ -1,17 +1,12 @@
 # Axis-aligned rectangle in 2D
-struct Rectangle_2D <: Face_2D
-    bl::Point_2D # Bottom left point
-    tr::Point_2D # Top right point
+struct Rectangle_2D{F <: AbstractFloat} <: Face_2D{F}
+    bl::Point_2D{F} # Bottom left point
+    tr::Point_2D{F} # Top right point
 end
-
-# Constructors
-# -------------------------------------------------------------------------------------------------
-Rectangle_2D(xmin::Real=0.0, ymin::Real=0.0,
-             xmax::Real=0.0, ymax::Real=0.0) = Rectangle_2D(Point_2D(xmin, ymin),
-                                                            Point_2D(xmax, ymax))
 
 # Base
 # -------------------------------------------------------------------------------------------------
+# Note: all branches but the correct one are pruned by the compiler
 function getproperty(rect::Rectangle_2D, sym::Symbol)
     if sym === :xmin
         return rect.bl.x
@@ -39,7 +34,7 @@ end
 # pₖ = 0 and qₖ ≥ 0	    inside the parallel clipping boundary
 # pₖ < 0	            line proceeds from outside to inside
 # pₖ > 0	            line proceeds from inside to outside
-function intersect(l::LineSegment_2D, rect::Rectangle_2D)
+function intersect(l::LineSegment_2D{F}, rect::Rectangle_2D{F}) where {F <: AbstractFloat}
     p₂ = l[2].x - l[1].x
     p₁ = -p₂
     p₄ = l[2].y - l[1].y
@@ -50,20 +45,20 @@ function intersect(l::LineSegment_2D, rect::Rectangle_2D)
     q₃ = l[1].y - rect.ymin
     q₄ = rect.ymax - l[1].y
 
-    t_max = MVector(1., 0., 0.)
-    t_min = MVector(0., 0., 0.)
+    t_max = MVector{3, F}(1, 0, 0)
+    t_min = MVector{3, F}(0, 0, 0)
 
     # Line parallel to clipping window
     if p₁ == 0 # Vertical line
         if q₁ < 0 || q₂ < 0 # Outside boundaries
-            return 0x00000000, SVector(Point_2D(), Point_2D())
+            return 0x00000000, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
         else # Inside boundaries
             return 0x00000002, SVector(Point_2D(l[1].x, rect.ymin), Point_2D(l[1].x, rect.ymax))
         end
     end
     if p₃ == 0 # Horizontal line
         if q₃ < 0 || q₄ < 0 # Outside boundaries
-            return 0x00000000, SVector(Point_2D(), Point_2D())
+            return 0x00000000, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
         else # Inside boundaries
             return 0x00000002, SVector(Point_2D(rect.xmin, l[1].y), Point_2D(rect.xmax, l[1].y))
         end
@@ -93,7 +88,7 @@ function intersect(l::LineSegment_2D, rect::Rectangle_2D)
     t_stop = minimum(t_max)
 
     # Line outside clipping window
-    t_start < t_stop || return 0x00000000, SVector(Point_2D(), Point_2D())
+    t_start < t_stop || return 0x00000000, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
 
     return 0x00000002, SVector(l(t_start), l(t_stop))
 end
@@ -103,7 +98,7 @@ function union(r₁::Rectangle_2D, r₂::Rectangle_2D)
     ymin = min(r₁.ymin, r₂.ymin)
     xmax = max(r₁.xmax, r₂.xmax)
     ymax = max(r₁.ymax, r₂.ymax)
-    return Rectangle_2D(xmin, ymin, xmax, ymax)
+    return Rectangle_2D(Point_2D(xmin, ymin), Point_2D(xmax, ymax))
 end
 
 # Plot

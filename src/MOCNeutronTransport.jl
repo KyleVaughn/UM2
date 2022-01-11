@@ -21,7 +21,7 @@ using LoggingExtras: TransformerLogger, global_logger
 
 # import
 import Base: @propagate_inbounds
-import Base: broadcastable, getindex, getproperty, +, -, *, /, ≈, in, intersect, union
+import Base: broadcastable, getindex, getproperty, +, -, *, /, in, intersect, isapprox, union
 if enable_visualization 
     import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
 end
@@ -55,27 +55,27 @@ include("./primitives/Face_2D.jl")
 include("./primitives/Point_2D.jl")
 include("./primitives/LineSegment_2D.jl")
 include("./primitives/Rectangle_2D.jl")
-include("./primitives/QuadraticSegment_2D.jl")
-include("./primitives/Triangle_2D.jl")
-include("./primitives/Quadrilateral_2D.jl")
-include("./primitives/Triangle6_2D.jl")
-include("./primitives/Quadrilateral8_2D.jl")
-include("L_system.jl")
-include("./mesh/UnstructuredMesh_2D.jl")
-include("./mesh/LinearUnstructuredMesh_2D.jl")
-include("./mesh/QuadraticUnstructuredMesh_2D.jl")
-include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
-include("./mesh/IO_abaqus.jl")
-#include("./mesh/IO_vtk.jl")
-include("./mesh/IO_xdmf.jl")
-include("gauss_legendre_quadrature.jl")
-include("./ray_tracing/AngularQuadrature.jl")
-include("./ray_tracing/ray_trace.jl")
-include("./ray_tracing/ray_trace_low_level.jl")
-
-const ∇ = gradient
-const ∇² = laplacian
-const J = jacobian
+#include("./primitives/QuadraticSegment_2D.jl")
+#include("./primitives/Triangle_2D.jl")
+#include("./primitives/Quadrilateral_2D.jl")
+#include("./primitives/Triangle6_2D.jl")
+#include("./primitives/Quadrilateral8_2D.jl")
+#include("L_system.jl")
+#include("./mesh/UnstructuredMesh_2D.jl")
+#include("./mesh/LinearUnstructuredMesh_2D.jl")
+#include("./mesh/QuadraticUnstructuredMesh_2D.jl")
+#include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
+#include("./mesh/IO_abaqus.jl")
+##include("./mesh/IO_vtk.jl")
+#include("./mesh/IO_xdmf.jl")
+#include("gauss_legendre_quadrature.jl")
+#include("./ray_tracing/AngularQuadrature.jl")
+#include("./ray_tracing/ray_trace.jl")
+#include("./ray_tracing/ray_trace_low_level.jl")
+#
+#const ∇ = gradient
+#const ∇² = laplacian
+#const J = jacobian
 
 
 
@@ -96,9 +96,7 @@ export  Edge_2D,
         TriangleMesh_2D,
         UnstructuredMesh_2D
 # Functions
-export  ×,
-        ⋅,
-        ⪇ ,
+export  ⪇ ,
         ⪉ ,
         ∇ ,
         ∇²,
@@ -122,7 +120,9 @@ export  ×,
         boundingbox,
         centroid,
         closest_point,
+        cross,
         distance,
+        dot,
         edges,
         edge_face_connectivity,
         edge_points,

@@ -1,7 +1,7 @@
 # A line segment in 2D space defined by its two endpoints.
 # For ray tracing purposes, the line starts at points[1] and ends at points[2]
-struct LineSegment_2D <: Edge_2D
-    points::SVector{2, Point_2D}
+struct LineSegment_2D{F <: AbstractFloat} <: Edge_2D{F}
+    points::SVector{2, Point_2D{F}}
 end
 
 # Constructors
@@ -12,11 +12,11 @@ LineSegment_2D(p₁::Point_2D, p₂::Point_2D) = LineSegment_2D(SVector(p₁, p�
 # -------------------------------------------------------------------------------------------------
 # Interpolation
 # l(0) yields points[1], and l(1) yields points[2]
-@inline (l::LineSegment_2D)(r::Real) = l[1] + (l[2] - l[1])r
+@inline (l::LineSegment_2D{F})(r::Real) where {F <: AbstractFloat} = l[1] + (l[2] - l[1])F(r)
 @inline arclength(l::LineSegment_2D) = distance(l[1], l[2])
 @inline +(l::LineSegment_2D, p::Point_2D) = LineSegment_2D(l[1] + p, l[2] + p)
 
-function intersect(l₁::LineSegment_2D, l₂::LineSegment_2D)
+function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <: AbstractFloat}
     # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product
     # operator for 2D points returns a scalar (the 2-norm of the cross product).
     #
@@ -40,7 +40,7 @@ function intersect(l₁::LineSegment_2D, l₂::LineSegment_2D)
     # Note the flip of the input argument subscripts, (l₂, l₁) vs (l₁, l₂). Since the first argument
     # l₂ is usually a long ray, it will more likely produce a valid s. l₁ is typically short, and is
     # more likely to produce an invalid r, which will be caught first and allow a fast fail.
-    ϵ = parametric_coordinate_ϵ
+    ϵ = F(parametric_coordinate_ϵ)
     v⃗ = l₁[2] - l₁[1]
     u⃗ = l₂[2] - l₂[1]
     vxu = v⃗ × u⃗
@@ -78,7 +78,7 @@ end
 end
 
 # Convert a vector of points to a vector of line segments, typically for visualization
-function tolines(points::Vector{Point_2D})
+function tolines(points::Vector{<:Point_2D})
     return [ LineSegment_2D(points[i], points[i+1]) for i = 1:length(points)-1 ]
 end
 
@@ -89,7 +89,7 @@ if enable_visualization
         return convert_arguments(LS, [l[1], l[2]])
     end
 
-    function convert_arguments(LS::Type{<:LineSegments}, L::Vector{LineSegment_2D})
+    function convert_arguments(LS::Type{<:LineSegments}, L::Vector{<:LineSegment_2D})
         return convert_arguments(LS, reduce(vcat, [[l[1], l[2]] for l in L]))
     end
 end
