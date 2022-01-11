@@ -42,14 +42,14 @@ function log_timestamps()
 end
 
 include("Tree.jl")
-#include("constants.jl")
+# include("constants.jl")
 #include("operators.jl")
 #include("./gmsh/gmsh_generate_rectangular_grid.jl")
 #include("./gmsh/gmsh_group_preserving_fragment.jl")
 #include("./gmsh/gmsh_overlay_rectangular_grid.jl")
 #include("./primitives/Edge_2D.jl")
 #include("./primitives/Face_2D.jl")
-#include("./primitives/Point_2D.jl")
+include("./primitives/Point_2D.jl")
 #include("./primitives/LineSegment_2D.jl")
 #include("./primitives/Rectangle_2D.jl")
 #include("./primitives/QuadraticSegment_2D.jl")
@@ -70,9 +70,13 @@ include("Tree.jl")
 #include("./ray_tracing/ray_trace.jl")
 #include("./ray_tracing/ray_trace_low_level.jl")
 #
+#
+# Convenience operators
 #const ∇ = gradient
 #const ∇² = laplacian
 #const J = jacobian
+const × = cross
+const ⋅ = dot
 
 
 
@@ -94,10 +98,7 @@ export  Edge_2D,
         TriangleMesh_2D,
         UnstructuredMesh_2D
 # Functions
-export  ⪇ ,
-        ⪉ ,
-        ∇ ,
-        ∇²,
+export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
         add_boundary_edges,
         add_boundary_edges!,
         add_connectivity,
@@ -120,6 +121,7 @@ export  ⪇ ,
         closest_point,
         cross,
         distance,
+        distance²,
         dot,
         edges,
         edge_face_connectivity,

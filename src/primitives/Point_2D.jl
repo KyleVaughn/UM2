@@ -4,6 +4,9 @@ struct Point_2D{F <: AbstractFloat} <: FieldVector{2, F}
     y::F
 end
 
+# Minimum distance between two points to be considered different
+const Point_2D_differentiation_distance = 5e-6 # 5e-6 cm
+
 # Base
 # -------------------------------------------------------------------------------------------------
 broadcastable(p::Point_2D) = Ref(p)
@@ -11,6 +14,10 @@ similar_type(::Type{<:Point_2D}, ::Type{F}, s::Size{(2,)}) where {F} = Point_2D{
 
 # Operators
 # -------------------------------------------------------------------------------------------------
+@inline +(p::Point_2D, n::Real) = Point_2D(p.x + n, p.y + n)
+@inline +(n::Real, p::Point_2D) = Point_2D(p.x + n, p.y + n)
+@inline -(p::Point_2D, n::Real) = Point_2D(p.x - n, p.y - n)
+@inline -(n::Real, p::Point_2D) = Point_2D(n - p.x, n - p.y)
 
 # Methods
 # -------------------------------------------------------------------------------------------------

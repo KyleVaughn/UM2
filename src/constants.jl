@@ -3,11 +3,6 @@ const parametric_coordinate_ϵ = 5e-6
 # Minimum segment length for ray tracing
 const minimum_segment_length = 1e-4
 
-# Point_2D
-# ---------------------------------------------------------------------------------------------------
-# Minimum distance between two points to be considered different
-const Point_2D_differentiation_distance = 5e-6
-
 # QuadraticSegment_2D
 # ---------------------------------------------------------------------------------------------------
 # Threshold beneath which the segment is treated as linear.
