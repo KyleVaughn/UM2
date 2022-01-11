@@ -1,56 +1,49 @@
-mutable struct Tree
-    data::Any
-    parent::Ref{Tree}
-    children::Vector{Ref{Tree}}
+mutable struct Tree{T}
+    data::Union{Nothing, T}
+    parent::Union{Nothing, Tree{T}}
+    children::Union{Nothing, Vector{Tree{T}}}
 end
 
-function Tree(;data::Any = nothing, 
-               parent::Ref{Tree} = Ref{Tree}(), 
-               children::Vector{Ref{Tree}} = Ref{Tree}[])
-    this = Tree(data, parent, children)
-    if isassigned(parent)
-        push!(parent[].children, Ref(this))
+function Tree{T}(;data::Union{Nothing, T} = nothing, 
+                 parent::Union{Nothing, Tree{T}} = nothing, 
+                 children::Union{Nothing, Vector{Tree{T}}} = nothing) where T
+    this = Tree{T}(data, parent, children)
+    if !isnothing(parent)
+        if isnothing(parent.children)
+            parent.children = [this]
+        else
+            push!(parent.children, this)
+        end
     end
     return this
 end
 
-# The level of a node is defined by 1 + the number of connections between the node and the root
-function node_level(tree::Tree; current_level::Int64=1)
-    if isassigned(tree.parent)
-        return node_level(tree.parent[]; current_level = current_level + 1)
-    else
-        return current_level
-    end
-end
-# Is this the last child in the parent's list of children?
-# offset determines if the nth-parent is the last child
-function is_last_child(tree::Tree; relative_offset::Int64=0)
-    if !isassigned(tree.parent)
+function is_parents_last_child(tree::Tree)
+    if isnothing(tree.parent) || tree.parent.children[end] === tree
         return true
-    end
-    if relative_offset > 0
-        return is_last_child(tree.parent[]; relative_offset=relative_offset-1)
     else
-        nsiblings = length(tree.parent[].children) - 1
-        return (tree.parent[].children[nsiblings + 1][] == tree)
+        return false
     end
 end
 
-function Base.show(io::IO, tree::Tree; relative_offset::Int64=0)
-    nsiblings = 0
-    for i = relative_offset:-1:1
-        if i === 1 && is_last_child(tree, relative_offset=i-1)
-            print(io, "└─ ")
-        elseif i === 1
-            print(io, "├─ ")
-        elseif is_last_child(tree, relative_offset=i-1)
-            print(io, "   ")
+Base.show(io::IO, tree::Tree) = Base.show(io::IO, tree::Tree, "")
+function Base.show(io::IO, tree::Tree, predecessor_string::String)
+    if predecessor_string !== ""
+        last_child = is_parents_last_child(tree)
+        if last_child
+            print(io, predecessor_string * "└─ ")
+            next_predecessor_string = predecessor_string * "   "
         else
-            print(io, "│  ")
+            print(io, predecessor_string * "├─ ")
+            next_predecessor_string = predecessor_string * "│  "
         end
+    else
+        next_predecessor_string = "   "
     end
     println(io, tree.data)
-    for child in tree.children
-        show(io, child[]; relative_offset = relative_offset + 1)
+    if !isnothing(tree.children)
+        for child in tree.children
+            show(io, child, next_predecessor_string)
+        end
     end
 end

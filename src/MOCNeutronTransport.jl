@@ -1,33 +1,32 @@
 module MOCNeutronTransport
+
 # Compilation options
+const path_to_gmsh_api = "/usr/local/lib/gmsh.jl"
 const enable_visualization = false
 const visualize_ray_tracing = false 
 
+# using
 using ColorSchemes
 using Logging
-# Use local gmsh install
-Logging.disable_logging(Logging.Error)
-using gmsh
-Logging.disable_logging(Logging.Debug)
 using HDF5
 using LightXML
 using LinearAlgebra
 using StaticArrays
 using Dates: now, format
-if enable_visualization 
-    using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter, current_axis, record
-end
 using LoggingExtras: TransformerLogger, global_logger
 
 # import
 import Base: @propagate_inbounds
 import Base: broadcastable, getindex, getproperty, +, -, *, /, in, intersect, isapprox, union
+
+# Optional compilation/local dependencies
 if enable_visualization 
+    using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter, current_axis, record
     import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
+    include(path_to_gmsh_api)
 end
 
-# logging
-# Make logger give time stamps
+# Setup logger to have time stamps 
 const date_format = "HH:MM:SS.sss"
 timestamp_logger(logger) = TransformerLogger(logger) do log
   merge(log, (; message = "$(format(now(), date_format)) $(log.message)"))
@@ -42,19 +41,17 @@ function log_timestamps()
     end
 end
 
-
-include("AbstractTypes.jl")
 include("Tree.jl")
-include("constants.jl")
-include("operators.jl")
-include("./gmsh/gmsh_generate_rectangular_grid.jl")
-include("./gmsh/gmsh_group_preserving_fragment.jl")
-include("./gmsh/gmsh_overlay_rectangular_grid.jl")
-include("./primitives/Edge_2D.jl")
-include("./primitives/Face_2D.jl")
-include("./primitives/Point_2D.jl")
-include("./primitives/LineSegment_2D.jl")
-include("./primitives/Rectangle_2D.jl")
+#include("constants.jl")
+#include("operators.jl")
+#include("./gmsh/gmsh_generate_rectangular_grid.jl")
+#include("./gmsh/gmsh_group_preserving_fragment.jl")
+#include("./gmsh/gmsh_overlay_rectangular_grid.jl")
+#include("./primitives/Edge_2D.jl")
+#include("./primitives/Face_2D.jl")
+#include("./primitives/Point_2D.jl")
+#include("./primitives/LineSegment_2D.jl")
+#include("./primitives/Rectangle_2D.jl")
 #include("./primitives/QuadraticSegment_2D.jl")
 #include("./primitives/Triangle_2D.jl")
 #include("./primitives/Quadrilateral_2D.jl")
@@ -91,6 +88,7 @@ export  Edge_2D,
         Quadrilateral8_2D,
         QuadrilateralMesh_2D,
         Rectangle_2D,
+        Tree,
         Triangle_2D,
         Triangle6_2D,
         TriangleMesh_2D,
