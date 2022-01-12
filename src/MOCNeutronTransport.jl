@@ -53,7 +53,7 @@ include("./primitives/Face_2D.jl")
 include("./primitives/Point_2D.jl")
 include("./primitives/LineSegment_2D.jl")
 include("./primitives/Rectangle_2D.jl")
-#include("./primitives/QuadraticSegment_2D.jl")
+include("./primitives/QuadraticSegment_2D.jl")
 #include("./primitives/Triangle_2D.jl")
 #include("./primitives/Quadrilateral_2D.jl")
 #include("./primitives/Triangle6_2D.jl")
@@ -66,14 +66,14 @@ include("./primitives/Rectangle_2D.jl")
 #include("./mesh/IO_abaqus.jl")
 ##include("./mesh/IO_vtk.jl")
 #include("./mesh/IO_xdmf.jl")
-#include("gauss_legendre_quadrature.jl")
+include("gauss_legendre_quadrature.jl")
 #include("./ray_tracing/AngularQuadrature.jl")
 #include("./ray_tracing/ray_trace.jl")
 #include("./ray_tracing/ray_trace_low_level.jl")
 #
 #
 # Convenience operators
-#const ∇ = gradient
+const ∇ = gradient
 #const ∇² = laplacian
 #const J = jacobian
 const × = cross
