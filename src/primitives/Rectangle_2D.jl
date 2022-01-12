@@ -91,7 +91,12 @@ end
 # end
 
 # Credit to Tavian Barnes (https://tavianator.com/2011/ray_box.html)
-# Assumes the line passes through the rectangle if it does intersect
+# Assumes the line passes all the way through the rectangle if it intersects, which is a 
+# valid assumption for this ray tracing application. 
+#
+# Note that Liang-Barsky (above) performs better on a single-threaded CPU. The multithreaded 
+# performance is approximately the same, but since this is branchless it tends to perform better
+# than LB on GPUs.
 function intersect(l::LineSegment_2D{F}, rect::Rectangle_2D{F}) where {F <: AbstractFloat}
     u⃗ = l[2] - l[1]
     t1 = (rect.bl - l[1])/u⃗
@@ -101,6 +106,23 @@ function intersect(l::LineSegment_2D{F}, rect::Rectangle_2D{F}) where {F <: Abst
     tmax = min(max(t1.x, t2.x), max(t1.y, t2.y))
 
     return (tmax >= tmin, SVector(l(tmin), l(tmax)))
+end
+
+# A random rectangle within [0, 1] × [0, 1]
+# What does the distribution of rectangles look like? I have a hunch it's not particularly
+# uniform...
+function rand(::Type{Rectangle_2D{F}}) where {F <: AbstractFloat}
+    x₁ = rand(F)
+    x₂ = rand(F)
+    y₁ = rand(F)
+    y₂ = rand(F)
+    return Rectangle_2D(Point_2D(min(x₁, x₂), min(y₁, y₂)), 
+                        Point_2D(max(x₁, x₂), max(y₁, y₂)))
+end
+
+# N random rectangles within [0, 1] × [0, 1]
+function rand(::Type{Rectangle_2D{F}}, N::Int64) where {F <: AbstractFloat}
+    return [ rand(Rectangle_2D{F}) for i ∈ 1:N ]
 end
 
 function union(r₁::Rectangle_2D, r₂::Rectangle_2D)
@@ -142,9 +164,9 @@ if enable_visualization
     function convert_arguments(M::Type{<:Mesh}, R::Vector{<:Rectangle_2D})
         points = reduce(vcat, [[rect.bl, Point_2D(rect.xmax, rect.ymin),
                                 rect.tr, Point_2D(rect.xmin, rect.ymax)] for rect ∈ R])
-        faces = zeros(Int64, 2*length(Q), 3)
+        faces = zeros(Int64, 2*length(R), 3)
         j = 0
-        for i in 1:2:2*length(Q)
+        for i in 1:2:2*length(R)
             faces[i    , :] = [1 2 3] .+ j
             faces[i + 1, :] = [3 4 1] .+ j
             j += 4

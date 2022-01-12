@@ -2,10 +2,11 @@ using CUDA
 using MOCNeutronTransport
 using BenchmarkTools
 using Test
+using StaticArrays
 
-# Number of lines to use in vectors
+# Number of rects to use in vectors
 N = 2^20
-println("Using LineSegment_2D vectors of length $N")
+println("Using a Rectangle_2D vector of length $N")
 
 # Check num threads and give warning
 nthreads = Threads.nthreads()
@@ -16,88 +17,88 @@ else
 end
 
 # Single threads CPU intersection
-function sequential_intersection!(out, l, lines)
-    for i in eachindex(lines)
-        @inbounds out[i] = l ∩ lines[i]
+function sequential_intersection!(out, l, rects)
+    for i in eachindex(rects)
+        @inbounds out[i] = l ∩ rects[i]
     end
     return nothing
 end
 
 # Multithreaded CPU intersection
-function parallel_intersection!(out, l, lines)
-    Threads.@threads for i in eachindex(lines)
-        @inbounds out[i] = l ∩ lines[i]
+function parallel_intersection!(out, l, rects)
+    Threads.@threads for i in eachindex(rects)
+        @inbounds out[i] = l ∩ rects[i]
     end
     return nothing
 end
 
 # Single threaded GPU intersection
-function gpu_1_thread_intersection!(out, l, lines)
-    for i = 1:length(lines)
-        @inbounds out[i] = l ∩ lines[i]
+function gpu_1_thread_intersection!(out, l, rects)
+    for i = 1:length(rects)
+        @inbounds out[i] = l ∩ rects[i]
     end
     return nothing
 end
 
-function bench_gpu_1_thread_intersection!(out, l, lines)
+function bench_gpu_1_thread_intersection!(out, l, rects)
     CUDA.@sync begin
-        @cuda gpu_1_thread_intersection!(out, l, lines)
+        @cuda gpu_1_thread_intersection!(out, l, rects)
     end
 end
 
 # Single block GPU intersection
-function gpu_1_block_intersection!(out, l, lines)
+function gpu_1_block_intersection!(out, l, rects)
     index = threadIdx().x    # this example only requires linear indexing, so just use `x`
     stride = blockDim().x
-    for i = index:stride:length(lines)
-        @inbounds out[i] = l ∩ lines[i]
+    for i = index:stride:length(rects)
+        @inbounds out[i] = l ∩ rects[i]
     end
     return nothing
 end
 
-function bench_gpu_1_block_intersection!(out, l, lines)
+function bench_gpu_1_block_intersection!(out, l, rects)
     CUDA.@sync begin
-        @cuda threads=512 gpu_1_block_intersection!(out, l, lines)
+        @cuda threads=512 gpu_1_block_intersection!(out, l, rects)
     end
 end
 
 # Multiple blocks GPU intersection
-function gpu_multiblock_intersection!(out, l, lines)
+function gpu_multiblock_intersection!(out, l, rects)
     index = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     stride = gridDim().x * blockDim().x
-    for i = index:stride:length(lines)
-        @inbounds out[i] = l ∩ lines[i]
+    for i = index:stride:length(rects)
+        @inbounds out[i] = l ∩ rects[i]
     end
     return nothing
 end
 
-function bench_gpu_multiblock_intersection!(out, l, lines)
-    numblocks = ceil(Int64, length(lines)/512)
+function bench_gpu_multiblock_intersection!(out, l, rects)
+    numblocks = ceil(Int64, length(rects)/512)
     CUDA.@sync begin
-        @cuda threads=512 blocks=numblocks gpu_multiblock_intersection!(out, l, lines)
+        @cuda threads=512 blocks=numblocks gpu_multiblock_intersection!(out, l, rects)
     end
 end
 
 # Use the occupancy API to determine threads and blocks to saturate the GPU
-function bench_gpu_multiblock_autooccupancy!(out, l, lines)
-    kernel = @cuda launch=false gpu_multiblock_intersection!(out, l, lines)
+function bench_gpu_multiblock_autooccupancy!(out, l, rects)
+    kernel = @cuda launch=false gpu_multiblock_intersection!(out, l, rects)
     config = launch_configuration(kernel.fun)
-    threads = min(length(lines), config.threads)
-    blocks = cld(length(lines), threads)
+    threads = min(length(rects), config.threads)
+    blocks = cld(length(rects), threads)
 
     CUDA.@sync begin
-        kernel(out, l, lines; threads, blocks)
+        kernel(out, l, rects; threads, blocks)
     end
 end
 
 cpu_time = 0.0
 for T = [Float64, Float32]
-    println("Using LineSegment_2D of type $T")
+    println("Using Rectangle_2D of type $T")
     l = LineSegment_2D(Point_2D{T}(0, 0.2), Point_2D{T}(1, 0.8))
-    lines = rand(LineSegment_2D{T}, N)
-    out = fill((false, Point_2D{T}(0, 0)), N)
-    ref = l .∩ lines
-    time = @belapsed sequential_intersection!($out, $l, $lines)
+    rects = rand(Rectangle_2D{T}, N)
+    out = fill((false, SVector(Point_2D{T}(0, 0), Point_2D{T}(0, 0))), N)
+    ref = l .∩ rects
+    time = @belapsed sequential_intersection!($out, $l, $rects)
     μs = 1e6*time
     if T == Float64 
         global cpu_time = μs
@@ -107,34 +108,34 @@ for T = [Float64, Float32]
     println("         Speed up compared to single-thread CPU & Float64 = $speedup")
     @test out == ref
 
-    fill!(out, (false, Point_2D{T}(0, 0)))
-    time = @belapsed parallel_intersection!($out, $l, $lines)
+    fill!(out, (false, SVector(Point_2D{T}(0, 0), Point_2D{T}(0, 0))))
+    time = @belapsed parallel_intersection!($out, $l, $rects)
     μs = 1e6*time
     speedup = cpu_time/μs
     println("    CPU: $nthreads threads = $μs μs.")
     println("         Speed up compared to single-thread CPU & Float64 = $speedup")
     @test out == ref
     
-    lines_d = CuArray(lines)
-    out_d = CUDA.fill((false, Point_2D{T}(0, 0)), N)
+    rects_d = CuArray(rects)
+    out_d = CUDA.fill((false, SVector(Point_2D{T}(0, 0), Point_2D{T}(0, 0))), N)
      
-    time = @belapsed bench_gpu_1_thread_intersection!($out_d, $l, $lines_d)
+    time = @belapsed bench_gpu_1_thread_intersection!($out_d, $l, $rects_d)
     μs = 1e6*time
     speedup = cpu_time/μs
     println("    GPU: single-thread/block, 1 blocks = $μs μs.")
     println("         Speed up compared to single-thread CPU & Float64 = $speedup")
     @test Array(out_d) == ref
     
-    fill!(out_d, (false, Point_2D{T}(0, 0)))
-    time = @belapsed bench_gpu_1_block_intersection!($out_d, $l, $lines_d)
+    fill!(out_d, (false, SVector(Point_2D{T}(0, 0), Point_2D{T}(0, 0))))
+    time = @belapsed bench_gpu_1_block_intersection!($out_d, $l, $rects_d)
     μs = 1e6*time
     speedup = cpu_time/μs
     println("    GPU: 512 threads/block, 1 blocks = $μs μs.")
     println("         Speed up compared to single-thread CPU & Float64 = $speedup")
     @test Array(out_d) == ref
 
-    fill!(out_d, (false, Point_2D{T}(0, 0)))
-    time = @belapsed bench_gpu_multiblock_intersection!($out_d, $l, $lines_d)
+    fill!(out_d, (false, SVector(Point_2D{T}(0, 0), Point_2D{T}(0, 0))))
+    time = @belapsed bench_gpu_multiblock_intersection!($out_d, $l, $rects_d)
     μs = 1e6*time
     speedup = cpu_time/μs
     numblocks = ceil(Int64, N/512)
@@ -142,11 +143,11 @@ for T = [Float64, Float32]
     println("         Speed up compared to single-thread CPU & Float64 = $speedup")
     @test Array(out_d) == ref
 
-    fill!(out_d, (false, Point_2D{T}(0, 0)))
-    time = @belapsed bench_gpu_multiblock_autooccupancy!($out_d, $l, $lines_d)
+    fill!(out_d, (false, SVector(Point_2D{T}(0, 0), Point_2D{T}(0, 0))))
+    time = @belapsed bench_gpu_multiblock_autooccupancy!($out_d, $l, $rects_d)
     μs = 1e6*time
     speedup = cpu_time/μs
-    kernel = @cuda launch=false gpu_multiblock_intersection!(out_d, l, lines_d)
+    kernel = @cuda launch=false gpu_multiblock_intersection!(out_d, l, rects_d)
     config = launch_configuration(kernel.fun)
     threads = min(N, config.threads)
     blocks = cld(N, threads)
