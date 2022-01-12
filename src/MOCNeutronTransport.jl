@@ -42,18 +42,18 @@ function log_timestamps()
     end
 end
 
-include("Tree.jl")
+# include("Tree.jl")
 # include("constants.jl")
 #include("operators.jl")
 #include("./gmsh/gmsh_generate_rectangular_grid.jl")
 #include("./gmsh/gmsh_group_preserving_fragment.jl")
 #include("./gmsh/gmsh_overlay_rectangular_grid.jl")
-include("./primitives/Edge_2D.jl")
-include("./primitives/Face_2D.jl")
-include("./primitives/Point_2D.jl")
-include("./primitives/LineSegment_2D.jl")
-include("./primitives/Rectangle_2D.jl")
-include("./primitives/QuadraticSegment_2D.jl")
+#include("./primitives/Edge_2D.jl")
+#include("./primitives/Face_2D.jl")
+include("./primitives/Point.jl")
+# include("./primitives/LineSegment_2D.jl")
+# include("./primitives/Rectangle_2D.jl")
+# include("./primitives/QuadraticSegment_2D.jl")
 #include("./primitives/Triangle_2D.jl")
 #include("./primitives/Quadrilateral_2D.jl")
 #include("./primitives/Triangle6_2D.jl")
@@ -73,18 +73,20 @@ include("gauss_legendre_quadrature.jl")
 #
 #
 # Convenience operators
-const ∇ = gradient
+#const ∇ = gradient
 #const ∇² = laplacian
-#const J = jacobian
-const × = cross
-const ⋅ = dot
+#const 𝐉 = jacobian
+#const × = cross
+#const ⋅ = dot
 
 # Structs/Types
 export  Edge_2D,
         Face_2D,
         LinearUnstructuredMesh_2D,
         LineSegment_2D,
+        Point,
         Point_2D,
+        Point_3D,
         QuadraticSegment_2D,
         QuadraticUnstructuredMesh_2D,
         Quadrilateral_2D,

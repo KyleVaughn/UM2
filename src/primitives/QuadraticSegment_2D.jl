@@ -69,39 +69,50 @@ function boundingbox(q::QuadraticSegment_2D)
     return Rectangle_2D(Point_2D(xmin, ymin), Point_2D(xmax, ymax))
 end
 
-# nearest_point(p::Point_2D, q::QuadraticSegment_2D) = nearest_point(p, q, 15)
-# # Return the closest point on the curve to point p and the value of r such that q(r) = p_nearest
-# # Uses at most N iterations of Newton-Raphson
-# function nearest_point(p::Point_2D, q::QuadraticSegment_2D, N::Int64)
-#     r = 0.5
-#     Δr = 0.0
-#     for i = 1:N
-#         err = p - q(r)
-#         grad = ∇(q, r)
-#         if abs(grad[1]) > abs(grad[2])
-#             Δr = err[1]/grad[1]
-#         else
-#             Δr = err[2]/grad[2]
-#         end
-#         r += Δr
-#         if abs(Δr) < 1e-7
-#             break
-#         end
-#     end
-#     return r, q(r)
-# end
-# 
 # Return the gradient of q, evalutated at r
 function gradient(q::QuadraticSegment_2D{F}, r::Real) where {F <: AbstractFloat}
+    #∇q = 
     rₜ = F(r)
     return (4rₜ - 3)*(q[1] - q[3]) + (4rₜ - 1)*(q[2] - q[3])
 end
 
-# # Return the Laplacian of q, evalutated at r
-# function laplacian(q::QuadraticSegment_2D, r::Real)
-#     return 4(q[1] + q[2] - 2q[3])
+# Return if the point is left of the quadratic segment
+#   p    ^
+#   ^   /
+# v⃗ |  / u⃗
+#   | /
+#   o
+# function isleft(p::Point_2D, q::QuadraticSegment_2D)
+#     if isstraight(q) || p ∉  boundingbox(q)
+#         # We don't need to account for the curve if q is straight or p is outside
+#         # q's bounding box
+#         u⃗ = q[2] - q[1]
+#         v⃗ = p - q[1]
+#         return u⃗ × v⃗ > 0
+#     else
+#         # Get the nearest point on q to p.
+#         # Construct vectors from a point on q, close to p_near, to p_near and p. 
+#         # Use the cross product of these vectors to determine if p isleft.
+#         r, p_near = nearest_point(p, q)
+#         
+#         if r < 1e-6 || 1 < r # If r is small or beyond the valid range, just use q[2]
+#             u⃗ = q[2] - q[1]
+#             v⃗ = p - q[1]
+#         else # otherwise use a point on q, close to p_near
+#             q_base = q(0.95r)
+#             u⃗ = p_near - q_base
+#             v⃗ = p - q_base
+#         end
+#         return u⃗ × v⃗ > 0
+#     end
 # end
-# 
+
+# If the quadratic segment is effectively linear
+@inline function isstraight(q::QuadraticSegment_2D)
+    # u⃗ × v⃗ = |u⃗||v⃗|sinθ
+    return abs((q[3] - q[1]) × (q[2] - q[1])) < 1e-8
+end
+
 # function intersect(l::LineSegment_2D, q::QuadraticSegment_2D)
 #     ϵ = parametric_coordinate_ϵ
 #     if isstraight(q) # Use line segment intersection.
@@ -198,56 +209,61 @@ end
 #         return npoints, SVector(p₁, p₂)
 #     end
 # end
-# 
-# # Return if the point is left of the quadratic segment
-# #   p    ^
-# #   ^   /
-# # v⃗ |  / u⃗
-# #   | /
-# #   o
-# function isleft(p::Point_2D, q::QuadraticSegment_2D)
-#     if isstraight(q) || p ∉  boundingbox(q)
-#         # We don't need to account for the curve if q is straight or p is outside
-#         # q's bounding box
-#         u⃗ = q[2] - q[1]
-#         v⃗ = p - q[1]
-#         return u⃗ × v⃗ > 0
-#     else
-#         # Get the nearest point on q to p.
-#         # Construct vectors from a point on q, close to p_near, to p_near and p. 
-#         # Use the cross product of these vectors to determine if p isleft.
-#         r, p_near = nearest_point(p, q)
-#         
-#         if r < 1e-6 || 1 < r # If r is small or beyond the valid range, just use q[2]
-#             u⃗ = q[2] - q[1]
-#             v⃗ = p - q[1]
-#         else # otherwise use a point on q, close to p_near
-#             q_base = q(0.95r)
-#             u⃗ = p_near - q_base
-#             v⃗ = p - q_base
-#         end
-#         return u⃗ × v⃗ > 0
-#     end
-# end
-# 
-# # If the quadratic segment is effectively linear
-# @inline function isstraight(q::QuadraticSegment_2D)
-#     # u⃗ × v⃗ = |u⃗||v⃗|sinθ
-#     return abs((q[3] - q[1]) × (q[2] - q[1])) < 1e-8
-# end
-# 
-# # Plot
-# # -------------------------------------------------------------------------------------------------
-# if enable_visualization
-#     function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment_2D)
-#         rr = LinRange(0, 1, 15)
-#         points = q.(rr)
-#         coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])
-#         return convert_arguments(LS, coords)
-#     end
-# 
-#     function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{QuadraticSegment_2D})
-#         point_sets = [convert_arguments(LS, q) for q in Q]
-#         return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
-#     end
-# end
+
+# Return the Laplacian of q, evalutated at r
+function laplacian(q::QuadraticSegment_2D, r::Real)
+    return 4(q[1] + q[2] - 2q[3])
+end
+
+nearest_point(p::Point_2D, q::QuadraticSegment_2D) = nearest_point(p, q, 15)
+# Return the closest point on the curve to point p and the value of r such that q(r) = p_nearest
+# Uses at most N iterations of Newton-Raphson
+function nearest_point(p::Point_2D, q::QuadraticSegment_2D, N::Int64)
+    r = 0.5
+    Δr = 0.0
+    for i = 1:N
+        err = p - q(r)
+        grad = ∇(q, r)
+        if abs(grad[1]) > abs(grad[2])
+            Δr = err[1]/grad[1]
+        else
+            Δr = err[2]/grad[2]
+        end
+        r += Δr
+        if abs(Δr) < 1e-7
+            break
+        end
+    end
+    return r, q(r)
+end
+
+#function newton_raphson(f::Function, J⁻¹::Function, x)
+#    xₙ₊₁ = xₙ - J⁻¹(xₙ)f
+#end
+
+
+
+
+
+
+
+
+
+
+
+
+# Plot
+# -------------------------------------------------------------------------------------------------
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment_2D)
+        rr = LinRange(0, 1, 15)
+        points = q.(rr)
+        coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])
+        return convert_arguments(LS, coords)
+    end
+
+    function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:QuadraticSegment_2D})
+        point_sets = [convert_arguments(LS, q) for q in Q]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+    end
+end
