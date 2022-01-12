@@ -81,8 +81,8 @@ function intersect(l::LineSegment_2D{F}, rect::Rectangle_2D{F}) where {F <: Abst
         t_max3 = t₃
     end
 
-    t_start = max(F(1), t_min2, t_min3)
-    t_stop = min(F(0), t_max2, t_max3)
+    t_start = max(F(0), t_min2, t_min3)
+    t_stop = min(F(1), t_max2, t_max3)
 
     # Line outside clipping window
     t_start < t_stop || return false, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))

@@ -38,7 +38,7 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     #
     # Code is branchless, which is faster than failing early with 1e-8 < abs(wxu) or delaying division
     # by vxu and testing against r and s's numerators. This has been tested.
-    ϵ = F(Edge_2D_coordinate_ϵ)
+    ϵ = F(5e-6)
     v⃗ = l₁[2] - l₁[1]
     u⃗ = l₂[2] - l₂[1]
     w⃗ = l₂[1] - l₁[1]
