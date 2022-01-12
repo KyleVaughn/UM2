@@ -45,9 +45,6 @@ function intersect(l::LineSegment_2D{F}, rect::Rectangle_2D{F}) where {F <: Abst
     q₃ = l[1].y - rect.ymin
     q₄ = rect.ymax - l[1].y
 
-    t_max1 = F(1)
-    t_min1 = F(0)
-
     # Line parallel to clipping window
     if p₁ == 0 # Vertical line
         if q₁ < 0 || q₂ < 0 # Outside boundaries
@@ -84,8 +81,8 @@ function intersect(l::LineSegment_2D{F}, rect::Rectangle_2D{F}) where {F <: Abst
         t_max3 = t₃
     end
 
-    t_start = max(t_min1, t_min2, t_min3)
-    t_stop = min(t_max1, t_max2, t_max3)
+    t_start = max(F(1), t_min2, t_min3)
+    t_stop = min(F(0), t_max2, t_max3)
 
     # Line outside clipping window
     t_start < t_stop || return false, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
@@ -115,7 +112,7 @@ if enable_visualization
         return convert_arguments(LS, lines)
     end
 
-    function convert_arguments(LS::Type{<:LineSegments}, R::Vector{Rectangle_2D})
+    function convert_arguments(LS::Type{<:LineSegments}, R::Vector{<:Rectangle_2D})
         point_sets = [convert_arguments(LS, rect) for rect in R]
         return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
     end
@@ -129,7 +126,7 @@ if enable_visualization
         return convert_arguments(M, points, faces)
     end
 
-    function convert_arguments(M::Type{<:Mesh}, R::Vector{Rectangle_2D})
+    function convert_arguments(M::Type{<:Mesh}, R::Vector{<:Rectangle_2D})
         points = reduce(vcat, [[rect.bl, Point_2D(rect.xmax, rect.ymin),
                                 rect.tr, Point_2D(rect.xmin, rect.ymax)] for rect ∈ R])
         faces = zeros(Int64, 2*length(Q), 3)

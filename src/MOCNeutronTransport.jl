@@ -17,7 +17,8 @@ using LoggingExtras: TransformerLogger, global_logger
 
 # import
 import Base: @propagate_inbounds
-import Base: broadcastable, getindex, getproperty, +, -, *, /, in, intersect, isapprox, union
+import Base: broadcastable, getindex, getproperty, +, -, *, /, in, intersect, 
+             isapprox, rand, union
 
 # Optional compilation/local dependencies
 if enable_visualization 
@@ -150,6 +151,7 @@ export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
         norm²,
         partition_rectangularly,
         plot_track_edge_to_edge,
+        rand,
         ray_trace,
         ray_trace_edge_to_edge,
         ray_trace_angle_edge_to_edge!,

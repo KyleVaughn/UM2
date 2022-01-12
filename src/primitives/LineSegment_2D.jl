@@ -73,9 +73,14 @@ end
     return u⃗ × v⃗ >= 0
 end
 
-# Convert a vector of points to a vector of line segments, typically for visualization
-function tolines(points::Vector{<:Point_2D})
-    return [ LineSegment_2D(points[i], points[i+1]) for i = 1:length(points)-1 ]
+# A random line within [0, 1] × [0, 1]
+function rand(::Type{LineSegment_2D{F}}) where {F <: AbstractFloat}
+    return LineSegment_2D(rand(Point_2D{F}), rand(Point_2D{F}))
+end
+
+# N random lines within [0, 1] × [0, 1]
+function rand(::Type{LineSegment_2D{F}}, N::Int64) where {F <: AbstractFloat}
+    return [ LineSegment_2D(rand(Point_2D{F}), rand(Point_2D{F})) for i ∈ 1:N ]
 end
 
 # Plot
