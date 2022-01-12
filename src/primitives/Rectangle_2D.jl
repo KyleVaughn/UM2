@@ -28,66 +28,79 @@ end
 @inline area(rect::Rectangle_2D) = height(rect) * width(rect)
 @inline in(p::Point_2D, rect::Rectangle_2D) = rect.xmin ≤ p.x ≤ rect.xmax && rect.ymin ≤ p.y ≤ rect.ymax
 
-# Liang-Barsky line clipping algorithm
-# pₖ = 0	            parallel to the clipping boundaries
-# pₖ = 0 and qₖ < 0	    completely outside the boundary
-# pₖ = 0 and qₖ ≥ 0	    inside the parallel clipping boundary
-# pₖ < 0	            line proceeds from outside to inside
-# pₖ > 0	            line proceeds from inside to outside
+# # Liang-Barsky line clipping algorithm
+# # pₖ = 0	            parallel to the clipping boundaries
+# # pₖ = 0 and qₖ < 0	    completely outside the boundary
+# # pₖ = 0 and qₖ ≥ 0	    inside the parallel clipping boundary
+# # pₖ < 0	            line proceeds from outside to inside
+# # pₖ > 0	            line proceeds from inside to outside
+# function intersect(l::LineSegment_2D{F}, rect::Rectangle_2D{F}) where {F <: AbstractFloat}
+#     p₂ = l[2].x - l[1].x
+#     p₁ = -p₂
+#     p₄ = l[2].y - l[1].y
+#     p₃ = -p₄
+# 
+#     q₁ = l[1].x - rect.xmin
+#     q₂ = rect.xmax - l[1].x
+#     q₃ = l[1].y - rect.ymin
+#     q₄ = rect.ymax - l[1].y
+# 
+#     # Line parallel to clipping window
+#     if p₁ == 0 # Vertical line
+#         if q₁ < 0 || q₂ < 0 # Outside boundaries
+#             return false, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
+#         else # Inside boundaries
+#             return true, SVector(Point_2D(l[1].x, rect.ymin), Point_2D(l[1].x, rect.ymax))
+#         end
+#     end
+#     if p₃ == 0 # Horizontal line
+#         if q₃ < 0 || q₄ < 0 # Outside boundaries
+#             return false, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
+#         else # Inside boundaries
+#             return true, SVector(Point_2D(rect.xmin, l[1].y), Point_2D(rect.xmax, l[1].y))
+#         end
+#     end
+# 
+#     t₁ = q₁ / p₁
+#     t₂ = q₂ / p₂
+#     if (p₁ < 0)
+#         t_min2 = t₁
+#         t_max2 = t₂
+#     else
+#         t_min2 = t₂
+#         t_max2 = t₁
+#     end
+# 
+#     t₃ = q₃ / p₃
+#     t₄ = q₄ / p₄
+#     if (p₃ < 0)
+#         t_min3 = t₃
+#         t_max3 = t₄
+#     else
+#         t_min3 = t₄
+#         t_max3 = t₃
+#     end
+# 
+#     t_start = max(F(0), t_min2, t_min3)
+#     t_stop = min(F(1), t_max2, t_max3)
+# 
+#     # Line outside clipping window
+#     t_start < t_stop || return false, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
+# 
+#     return true, SVector(l(t_start), l(t_stop))
+# end
+
+# Credit to Tavian Barnes (https://tavianator.com/2011/ray_box.html)
+# Assumes the line passes through the rectangle if it does intersect
 function intersect(l::LineSegment_2D{F}, rect::Rectangle_2D{F}) where {F <: AbstractFloat}
-    p₂ = l[2].x - l[1].x
-    p₁ = -p₂
-    p₄ = l[2].y - l[1].y
-    p₃ = -p₄
+    u⃗ = l[2] - l[1]
+    t1 = (rect.bl - l[1])/u⃗
+    t2 = (rect.tr - l[1])/u⃗
 
-    q₁ = l[1].x - rect.xmin
-    q₂ = rect.xmax - l[1].x
-    q₃ = l[1].y - rect.ymin
-    q₄ = rect.ymax - l[1].y
+    tmin = max(min(t1.x, t2.x), min(t1.y, t2.y))
+    tmax = min(max(t1.x, t2.x), max(t1.y, t2.y))
 
-    # Line parallel to clipping window
-    if p₁ == 0 # Vertical line
-        if q₁ < 0 || q₂ < 0 # Outside boundaries
-            return false, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
-        else # Inside boundaries
-            return true, SVector(Point_2D(l[1].x, rect.ymin), Point_2D(l[1].x, rect.ymax))
-        end
-    end
-    if p₃ == 0 # Horizontal line
-        if q₃ < 0 || q₄ < 0 # Outside boundaries
-            return false, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
-        else # Inside boundaries
-            return true, SVector(Point_2D(rect.xmin, l[1].y), Point_2D(rect.xmax, l[1].y))
-        end
-    end
-
-    t₁ = q₁ / p₁
-    t₂ = q₂ / p₂
-    if (p₁ < 0)
-        t_min2 = t₁
-        t_max2 = t₂
-    else
-        t_min2 = t₂
-        t_max2 = t₁
-    end
-
-    t₃ = q₃ / p₃
-    t₄ = q₄ / p₄
-    if (p₃ < 0)
-        t_min3 = t₃
-        t_max3 = t₄
-    else
-        t_min3 = t₄
-        t_max3 = t₃
-    end
-
-    t_start = max(F(0), t_min2, t_min3)
-    t_stop = min(F(1), t_max2, t_max3)
-
-    # Line outside clipping window
-    t_start < t_stop || return false, SVector(Point_2D{F}(0, 0), Point_2D{F}(0, 0))
-
-    return true, SVector(l(t_start), l(t_stop))
+    return (tmax >= tmin, SVector(l(tmin), l(tmax)))
 end
 
 function union(r₁::Rectangle_2D, r₂::Rectangle_2D)

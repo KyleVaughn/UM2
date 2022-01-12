@@ -36,8 +36,9 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     # s = -(v⃗ × w⃗)/(v⃗ × u⃗)                          -(v⃗ × w⃗) = w⃗ × v⃗
     # s = (w⃗ × v⃗)/(v⃗ × u⃗)
     #
-    # Code is branchless, which is faster than failing early with 1e-8 < abs(wxu) or delaying division
-    # by vxu and testing against r and s's numerators. This has been tested.
+    # Simply evaluating everything removes branches and is faster than failing early with 
+    # 1e-8 < abs(wxu) or delaying division by vxu and testing against r and s's numerators. 
+    # This has been tested.
     ϵ = F(5e-6)
     v⃗ = l₁[2] - l₁[1]
     u⃗ = l₂[2] - l₂[1]
@@ -45,9 +46,8 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     vxu = v⃗ × u⃗
     r = w⃗ × u⃗/vxu
     s = w⃗ × v⃗/vxu
-    p = l₂(s)
-    hit = 1e-8 < abs(vxu) && (-ϵ ≤ r ≤ 1 + ϵ) && (-ϵ ≤ s ≤ 1 + ϵ) 
-    return (hit, p)
+    # -ϵ ≤ r ≤ 1 + ϵ introduces a branch, but -ϵ ≤ r && r ≤ 1 + ϵ doesn't for some reason.
+    return (1e-8 < abs(vxu) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ  , l₂(s)) # (hit, point)
 end
 
 # Return if the point is left of the line segment

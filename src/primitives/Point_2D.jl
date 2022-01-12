@@ -18,6 +18,7 @@ similar_type(::Type{<:Point_2D}, ::Type{F}, s::Size{(2,)}) where {F} = Point_2D{
 @inline +(n::Real, p::Point_2D) = Point_2D(p.x + n, p.y + n)
 @inline -(p::Point_2D, n::Real) = Point_2D(p.x - n, p.y - n)
 @inline -(n::Real, p::Point_2D) = Point_2D(n - p.x, n - p.y)
+@inline /(p₁::Point_2D, p₂::Point_2D) = Point_2D(p₁.x/p₂.x, p₁.y/p₂.y)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
