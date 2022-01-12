@@ -36,28 +36,18 @@ function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <:
     # s = -(v⃗ × w⃗)/(v⃗ × u⃗)                          -(v⃗ × w⃗) = w⃗ × v⃗
     # s = (w⃗ × v⃗)/(v⃗ × u⃗)
     #
+    # Code is branchless, which is faster than failing early with 1e-8 < abs(wxu) or delaying division
+    # by vxu and testing against r and s's numerators. This has been tested.
     ϵ = F(Edge_2D_coordinate_ϵ)
     v⃗ = l₁[2] - l₁[1]
     u⃗ = l₂[2] - l₂[1]
-    vxu = v⃗ × u⃗
-    # Parallel or collinear lines, return.
-    1e-8 < abs(vxu) || return (false, Point_2D{F}(0, 0))
     w⃗ = l₂[1] - l₁[1]
-    # Delay division until r,s are verified
-    if 0 <= vxu
-        lowerbound = (-ϵ)vxu
-        upperbound = (1 + ϵ)vxu
-    else
-        upperbound = (-ϵ)vxu
-        lowerbound = (1 + ϵ)vxu
-    end
-    r_numerator = w⃗ × u⃗
-    s_numerator = w⃗ × v⃗
-    if (lowerbound ≤ r_numerator ≤ upperbound) && (lowerbound ≤ s_numerator ≤ upperbound) 
-        return (true, l₂(s_numerator/vxu))
-    else
-        return (false, Point_2D{F}(0, 0))
-    end
+    vxu = v⃗ × u⃗
+    r = w⃗ × u⃗/vxu
+    s = w⃗ × v⃗/vxu
+    p = l₂(s)
+    hit = 1e-8 < abs(vxu) && (-ϵ ≤ r ≤ 1 + ϵ) && (-ϵ ≤ s ≤ 1 + ϵ) 
+    return (hit, p)
 end
 
 # Return if the point is left of the line segment
