@@ -37,6 +37,58 @@ using MOCNeutronTransport
             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
             @test abs(arclength(q) - 2.9578857151786138) < 1.0e-6
 
+            # boundingbox
+            x⃗₁ = Point_2D{F}(0, 0)
+            x⃗₂ = Point_2D{F}(2, 0)
+            x⃗₃ = Point_2D{F}(1, 1)
+            q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+            bb = boundingbox(q)
+            @test bb.xmin ≈ 0
+            @test bb.ymin ≈ 0
+            @test bb.xmax ≈ 2
+            @test bb.ymax ≈ 1
+            x⃗₁ = Point_2D{F}(0, 0)
+            x⃗₂ = Point_2D{F}(2, 2)
+            x⃗₃ = Point_2D{F}(1, 1)
+            q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+            bb = boundingbox(q)
+            @test bb.xmin ≈ 0
+            @test bb.ymin ≈ 0
+            @test bb.xmax ≈ 2
+            @test bb.ymax ≈ 2
+            x⃗₁ = Point_2D{F}(0, 0)
+            x⃗₂ = Point_2D{F}(2, 0)
+            x⃗₃ = Point_2D{F}(2.1, 1)
+            q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+            bb = boundingbox(q)
+            @test bb.xmin ≈ 0
+            @test bb.ymin ≈ 0
+            @test bb.xmax ≈ 2.3272727272727276
+            @test bb.ymax ≈ 1
+
+            # isstraight
+            x⃗₁ = Point_2D{F}(0, 0)
+            x⃗₂ = Point_2D{F}(2, 0)
+            x⃗₃ = Point_2D{F}(1, 0)
+            q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+            @test isstraight(q)
+            x⃗₂ = Point_2D{F}(2, 0.0001)
+            q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+            @test !isstraight(q)
+
+            # laplacian
+            x⃗₁ = Point_2D{F}(0, 0)
+            x⃗₂ = Point_2D{F}(2, 0)
+            x⃗₃ = Point_2D{F}(1, 1)
+            q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+            p = ∇²(q, 0)
+            @test p.x ≈ 0
+            @test p.y ≈ -8
+            p = ∇²(q, 1)
+            @test p.x ≈ 0
+            @test p.y ≈ -8
+
+
 #            # closest_point
 #            x⃗₁ = Point_2D{F}(0, 0)           
 #            x⃗₂ = Point_2D{F}(2, 0)

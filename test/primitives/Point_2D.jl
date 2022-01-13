@@ -6,9 +6,6 @@ using StaticArrays
             p₁ = Point_2D{F}(1, 2)
             p₂ = Point_2D{F}(2, 4)
 
-            # Point_2D equivalence
-            @test p₁ == Point_2D{F}(1, 2)
-
             # Point_2D isapprox
             p = Point_2D{F}(1, 2 - 10*eps(F))
             @test F(2) ≈ 2 - 10*eps(F)
@@ -34,17 +31,11 @@ using StaticArrays
             # Number addition
             p₁ = Point_2D{F}(1, 2)
             p₂ = Point_2D{F}(2, 4)
-            p = p₁ + 1
+            p = p₁ .+ 1
             @test p  ≈ [2, 3]
 
-            # Broadcast addition
-            parray = [p₁, p₂]
-            parray = parray .+ 1
-            @test parray[1] == p₁ + 1
-            @test parray[2] == p₂ + 1
-
             # Subtraction
-            p = p₁ - 1
+            p = p₁ .- 1
             @test p == [0, 1]
 
             # Multiplication
