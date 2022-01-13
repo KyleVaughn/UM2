@@ -54,10 +54,10 @@ include("Tree.jl")
 #include("./gmsh/gmsh_group_preserving_fragment.jl")
 #include("./gmsh/gmsh_overlay_rectangular_grid.jl")
 include("./primitives/Edge.jl")
-#include("./primitives/Face_2D.jl")
+include("./primitives/Face.jl")
 include("./primitives/Point.jl")
 include("./primitives/LineSegment.jl")
-# include("./primitives/Rectangle_2D.jl")
+include("./primitives/AABB.jl")
 # include("./primitives/QuadraticSegment_2D.jl")
 #include("./primitives/Triangle_2D.jl")
 #include("./primitives/Quadrilateral_2D.jl")
@@ -85,7 +85,8 @@ include("./primitives/LineSegment.jl")
 #const ⋅ = dot
 
 # Structs/Types
-export Edge, LineSegment, LineSegment_2D, LineSegment_3D, Point, Point_2D, Point_3D, Tree
+export AABB, AABB_2D, AABB_3D, Edge, Face, LineSegment, LineSegment_2D, LineSegment_3D, Point, 
+       Point_2D, Point_3D, Tree
 # export  Edge_2D,
 #         Face_2D,
 #         LinearUnstructuredMesh_2D,
@@ -103,8 +104,8 @@ export Edge, LineSegment, LineSegment_2D, LineSegment_3D, Point, Point_2D, Point
 #         TriangleMesh_2D,
 #         UnstructuredMesh_2D
 # Methods
-export +, -, ⋅, ×, arclength, distance, distance², dot, intersect, isapprox, isleft, midpoint, 
-       norm, norm², rand, sortpoints, sortpoints!
+export +, -, ⋅, ×, arclength, area, depth, distance, distance², dot, height, intersect, isapprox, 
+       isleft, midpoint, norm, norm², rand, sortpoints, sortpoints!, width
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,
 #         add_boundary_edges!,

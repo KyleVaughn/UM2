@@ -81,8 +81,8 @@ function Base.intersect(𝐥₁::LineSegment_2D{T}, 𝐥₂::LineSegment_2D{T}) 
     𝐯 = 𝐥₁[2] - 𝐥₁[1]
     𝐮 = 𝐥₂[2] - 𝐥₂[1]
     c = 𝐯 × 𝐮
-    r = 𝐰 × 𝐯/c
-    s = 𝐯 × 𝐮/c
+    r = 𝐰 × 𝐮/c
+    s = 𝐰 × 𝐯/c
     # -ϵ ≤ r ≤ 1 + ϵ introduces a branch, but -ϵ ≤ r && r ≤ 1 + ϵ doesn't for some reason.
     return (T(1e-8) < abs(c) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ  , 𝐥₂(s)) # (hit, point)
 end

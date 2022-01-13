@@ -24,11 +24,6 @@ using MOCNeutronTransport
             @test arclength(l) ≈ sqrt(5)
             @test typeof(arclength(l)) == F
 
-            # Point addition
-            l_shift = l + p₁
-            @test l_shift[1] ≈ Point_2D{F}(2, 4)
-            @test l_shift[2] ≈ Point_2D{F}(3, 6)
-
             # intersect
             # -------------------------------------------
             # basic intersection
