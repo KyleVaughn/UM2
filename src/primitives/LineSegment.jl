@@ -51,7 +51,10 @@ function Base.intersect(𝐥₁::LineSegment_3D{T}, 𝐥₂::LineSegment_3D{T}) 
     𝐯 = 𝐥₁[2] - 𝐥₁[1]
     𝐮 = 𝐥₂[2] - 𝐥₂[1]
     𝐜 = 𝐯 × 𝐮
-    abs(𝐜 ⋅𝐰 ) ≤ T(1e-8) || return (false, Point_3D{T}(0,0,0))
+    # Note: 0 ≤ 𝐜 ⋅ 𝐰, and the minimum distance between two lines is d = (𝐜 ⋅ 𝐰 )/‖𝐜‖.
+    # Hence 𝐜 ⋅𝐰 ≈ 0 for the lines to intersect
+    # (https://math.stackexchange.com/questions/2213165/find-shortest-distance-between-lines-in-3d)
+    𝐜 ⋅𝐰  ≤ T(1e-8) || return (false, Point_3D{T}(0,0,0))
     𝐚 = 𝐰 × 𝐮
     𝐛 = 𝐰 × 𝐯
     r = (𝐚 ⋅ 𝐜)/(𝐜 ⋅ 𝐜)
