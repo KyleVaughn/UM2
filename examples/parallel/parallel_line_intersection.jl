@@ -123,7 +123,9 @@ for T = [Float64, Float32]
     speedup = cpu_time/μs
     println("    GPU: single-thread/block, 1 blocks = $μs μs.")
     println("         Speed up compared to single-thread CPU & Float64 = $speedup")
-    @test Array(out_d) == ref
+    out_arr = Array(out_d)
+    @test getindex.(out_arr, 1) == getindex.(ref, 1)
+    @test getindex.(out_arr, 2) ≈ getindex.(ref, 2)
     
     fill!(out_d, (false, Point_2D{T}(0, 0)))
     time = @belapsed bench_gpu_1_block_intersection!($out_d, $l, $lines_d)
@@ -131,7 +133,9 @@ for T = [Float64, Float32]
     speedup = cpu_time/μs
     println("    GPU: 512 threads/block, 1 blocks = $μs μs.")
     println("         Speed up compared to single-thread CPU & Float64 = $speedup")
-    @test Array(out_d) == ref
+    out_arr = Array(out_d)
+    @test getindex.(out_arr, 1) == getindex.(ref, 1)
+    @test getindex.(out_arr, 2) ≈ getindex.(ref, 2)
 
     fill!(out_d, (false, Point_2D{T}(0, 0)))
     time = @belapsed bench_gpu_multiblock_intersection!($out_d, $l, $lines_d)
@@ -140,7 +144,9 @@ for T = [Float64, Float32]
     numblocks = ceil(Int64, N/512)
     println("    GPU: 512 threads/block, $numblocks blocks = $μs μs.")
     println("         Speed up compared to single-thread CPU & Float64 = $speedup")
-    @test Array(out_d) == ref
+    out_arr = Array(out_d)
+    @test getindex.(out_arr, 1) == getindex.(ref, 1)
+    @test getindex.(out_arr, 2) ≈ getindex.(ref, 2)
 
     fill!(out_d, (false, Point_2D{T}(0, 0)))
     time = @belapsed bench_gpu_multiblock_autooccupancy!($out_d, $l, $lines_d)
@@ -152,5 +158,7 @@ for T = [Float64, Float32]
     blocks = cld(N, threads)
     println("    GPU: $threads threads/block, $blocks blocks = $μs μs.")
     println("         Speed up compared to single-thread CPU & Float64 Points = $speedup")
-    @test Array(out_d) == ref
+    out_arr = Array(out_d)
+    @test getindex.(out_arr, 1) == getindex.(ref, 1)
+    @test getindex.(out_arr, 2) ≈ getindex.(ref, 2)
 end

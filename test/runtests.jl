@@ -3,8 +3,8 @@ using Test
 using Logging
 Logging.disable_logging(Logging.Error)
 tests = ["Tree",
-         "./primitives/Point_2D",
-#         "./primitives/LineSegment_2D",
+         "./primitives/Point",
+         "./primitives/LineSegment",
 #         "./primitives/Rectangle_2D",
 #         "./primitives/QuadraticSegment_2D",
 #         "./primitives/Triangle_2D",

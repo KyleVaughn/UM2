@@ -22,43 +22,8 @@ end
 @inline (l::LineSegment{N,T})(r) where {N,T} = l[1] + (l[2] - l[1])T(r)
 @inline arclength(l::LineSegment_2D) = distance(l[1], l[2])
 
-# function intersect(l₁::LineSegment_2D{F}, l₂::LineSegment_2D{F}) where {F <: AbstractFloat}
-#     # NOTE: Doesn't work for colinear/parallel lines. (v⃗ × u⃗ = 0). Also, the cross product
-#     # operator for 2D points returns a scalar (the 2-norm of the cross product).
-#     #
-#     # Using the equation of a line in parametric form
-#     # For l₁ = x⃗₁ + rv⃗ and l₂ = x⃗₂ + su⃗
-#     # x⃗₁ + rv⃗ = x⃗₂ + su⃗                             subtracting x⃗₁ from both sides
-#     # rv⃗ = (x⃗₂-x⃗₁) + su⃗                             w⃗ = x⃗₂-x⃗₁
-#     # rv⃗ = w⃗ + su⃗                                   cross product with u⃗ (distributive)
-#     # r(v⃗ × u⃗) = w⃗ × u⃗ + s(u⃗ × u⃗)                   u⃗ × u⃗ = 0
-#     # r(v⃗ × u⃗) = w⃗ × u⃗                              dot product v⃗ × u⃗ to each side
-#     # r = (w⃗ × u⃗)/(v⃗ × u⃗)
-#     # Note that if the lines are parallel or collinear, v⃗ × u⃗ = 0
-#     # We need to ensure r, s ∈ [0, 1].
-#     # x⃗₂ + su⃗ = x⃗₁ + rv⃗                             subtracting x⃗₂ from both sides
-#     # su⃗ = -w⃗ + rv⃗                                  cross product with w⃗
-#     # s(u⃗ × w⃗) = -w⃗ × w⃗ + r(v⃗ × w⃗)                  w⃗ × w⃗ = 0 & substituting for r
-#     # s(u⃗ × w⃗) =  (v⃗ × w⃗)(w⃗ × u⃗)/(v⃗ × u⃗)            -(u⃗ × w⃗) = w⃗ × u⃗
-#     # s = -(v⃗ × w⃗)/(v⃗ × u⃗)                          -(v⃗ × w⃗) = w⃗ × v⃗
-#     # s = (w⃗ × v⃗)/(v⃗ × u⃗)
-#     #
-#     # Simply evaluating everything removes branches and is faster than failing early with
-#     # 1e-8 < abs(wxu) or delaying division by vxu and testing against r and s's numerators.
-#     # This has been tested.
-#     ϵ = F(5e-6)
-#     v⃗ = l₁[2] - l₁[1]
-#     u⃗ = l₂[2] - l₂[1]
-#     w⃗ = l₂[1] - l₁[1]
-#     vxu = v⃗ × u⃗
-#     r = w⃗ × u⃗/vxu
-#     s = w⃗ × v⃗/vxu
-#     # -ϵ ≤ r ≤ 1 + ϵ introduces a branch, but -ϵ ≤ r && r ≤ 1 + ϵ doesn't for some reason.
-#     return (1e-8 < abs(vxu) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ  , l₂(s)) # (hit, point)
-# end
-
-
-function Base.intersect(𝐥₁::LineSegment_2D, 𝐥₂::LineSegment_2D)
+function Base.intersect(𝐥₁::LineSegment_3D{T}, 𝐥₂::LineSegment_3D{T}) where {T}
+    # NOTE: Doesn't work for colinear/parallel lines. (𝐯 × 𝐮 = 0⃗).
     # Using the equation of a line in parametric form
     # For 𝐥₁ = 𝐱₁ + r𝐯 and 𝐥₂ = 𝐱₂ + s𝐮
     # 1) 𝐱₁ + r𝐯 = 𝐱₂ + s𝐮                  subtracting 𝐱₁ from both sides
@@ -81,31 +46,57 @@ function Base.intersect(𝐥₁::LineSegment_2D, 𝐥₂::LineSegment_2D)
     # s(𝐚 ⋅ 𝐚) = (𝐛 ⋅ 𝐚)[𝐚 ⋅ 𝐜/‖𝐜‖]         definition of 2-norm and divide
     # s = (𝐚 ⋅ 𝐛)(𝐚 ⋅ 𝐜)/(‖𝐚‖‖𝐜‖)           substitute for r
     # s = r𝐚 ⋅ 𝐛/‖𝐚‖
-    ϵ = 5e-6
+    ϵ = T(5e-6)
     𝐰 = 𝐥₂[1] - 𝐥₁[1]
     𝐯 = 𝐥₁[2] - 𝐥₁[1]
     𝐮 = 𝐥₂[2] - 𝐥₂[1]
+    𝐜 = 𝐯 × 𝐮
+    abs(𝐜 ⋅𝐰 ) ≤ T(1e-8) || return (false, Point_3D{T}(0,0,0))
     𝐚 = 𝐰 × 𝐮
     𝐛 = 𝐰 × 𝐯
-    𝐜 = 𝐯 × 𝐮
     r = (𝐚 ⋅ 𝐜)/(𝐜 ⋅ 𝐜)
     s = r*(𝐚 ⋅ 𝐛)/(𝐚 ⋅ 𝐚)
-    return (1e-8 < abs(𝐜 ⋅ 𝐜) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ  , 𝐥₂(s)) # (hit, point)
+    return (T(1e-8)^2 < abs(𝐜 ⋅ 𝐜) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ  , 𝐥₂(s)) # (hit, point)
 end
 
-# # Return if the point is left of the line segment
-# #   p    ^
-# #   ^   /
-# # v⃗ |  / u⃗
-# #   | /
-# #   o
-# #   We rely on v⃗ × u⃗ = |v⃗||u⃗|sin(θ). We may determine if θ ∈ (0, π] based on the sign of v⃗ × u⃗
-# @inline function isleft(p::Point_2D, l::LineSegment_2D)
-#     u⃗ = l[2] - l[1]
-#     v⃗ = p - l[1]
-#     return u⃗ × v⃗ >= 0
-# end
-#
+function Base.intersect(𝐥₁::LineSegment_2D{T}, 𝐥₂::LineSegment_2D{T}) where {T}
+    # NOTE: Doesn't work for colinear/parallel lines. (𝐯 × 𝐮 = 0⃗). Also, the cross product
+    # operator for 2D points returns a scalar (the 2-norm of the cross product).
+    # 
+    # From the 3D intersection routine we know:
+    # r = 𝐚 ⋅ 𝐜/𝐜 ⋅ 𝐜 
+    # s = (𝐚 ⋅ 𝐛)(𝐚 ⋅ 𝐜)/(‖𝐚‖‖𝐜‖) 
+    # Since the 2D cross product returns a scalar
+    # r = 𝐚 ⋅ 𝐜/𝐜 ⋅ 𝐜 = 𝐚/𝐜 = a/c 
+    # s = (𝐚 ⋅ 𝐛)(𝐚 ⋅ 𝐜)/(‖𝐚‖‖𝐜‖) = 𝐛/𝐜 = b/c 
+    #
+    # Simply evaluating everything removes branches and is faster than failing early with
+    # 1e-8 < abs(c) or delaying division by vxu and testing against r and s's numerators.
+    # This has been tested.
+    ϵ = T(5e-6)
+    𝐰 = 𝐥₂[1] - 𝐥₁[1]
+    𝐯 = 𝐥₁[2] - 𝐥₁[1]
+    𝐮 = 𝐥₂[2] - 𝐥₂[1]
+    c = 𝐯 × 𝐮
+    r = 𝐰 × 𝐯/c
+    s = 𝐯 × 𝐮/c
+    # -ϵ ≤ r ≤ 1 + ϵ introduces a branch, but -ϵ ≤ r && r ≤ 1 + ϵ doesn't for some reason.
+    return (T(1e-8) < abs(c) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ  , 𝐥₂(s)) # (hit, point)
+end
+
+# Return if the point is left of the line segment
+#   p    ^
+#   ^   /
+# v⃗ |  / u⃗
+#   | /
+#   o
+#   We rely on v⃗ × u⃗ = |v⃗||u⃗|sin(θ). We may determine if θ ∈ (0, π] based on the sign of v⃗ × u⃗
+@inline function isleft(p::Point_2D, l::LineSegment_2D)
+    u⃗ = l[2] - l[1]
+    v⃗ = p - l[1]
+    return u⃗ × v⃗ >= 0
+end
+
 # A random line within [0, 1] × [0, 1]
 function Base.rand(::Type{LineSegment{N,F}}) where {N,F} 
     return LineSegment{N,F}(rand(Point{N,F}, 2))

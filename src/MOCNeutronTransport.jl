@@ -103,8 +103,8 @@ export Edge, LineSegment, LineSegment_2D, LineSegment_3D, Point, Point_2D, Point
 #         TriangleMesh_2D,
 #         UnstructuredMesh_2D
 # Methods
-export +, -, ⋅, ×, arclength, distance, distance², dot, intersect, isapprox, midpoint, norm, 
-       norm², rand, sortpoints, sortpoints!
+export +, -, ⋅, ×, arclength, distance, distance², dot, intersect, isapprox, isleft, midpoint, 
+       norm, norm², rand, sortpoints, sortpoints!
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,
 #         add_boundary_edges!,
