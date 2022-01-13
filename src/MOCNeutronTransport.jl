@@ -53,10 +53,10 @@ include("Tree.jl")
 #include("./gmsh/gmsh_generate_rectangular_grid.jl")
 #include("./gmsh/gmsh_group_preserving_fragment.jl")
 #include("./gmsh/gmsh_overlay_rectangular_grid.jl")
-#include("./primitives/Edge_2D.jl")
+include("./primitives/Edge.jl")
 #include("./primitives/Face_2D.jl")
 include("./primitives/Point.jl")
-# include("./primitives/LineSegment_2D.jl")
+include("./primitives/LineSegment.jl")
 # include("./primitives/Rectangle_2D.jl")
 # include("./primitives/QuadraticSegment_2D.jl")
 #include("./primitives/Triangle_2D.jl")
@@ -85,7 +85,7 @@ include("./primitives/Point.jl")
 #const ⋅ = dot
 
 # Structs/Types
-export Point, Point_2D, Point_3D, Tree
+export Edge, LineSegment, LineSegment_2D, LineSegment_3D, Point, Point_2D, Point_3D, Tree
 # export  Edge_2D,
 #         Face_2D,
 #         LinearUnstructuredMesh_2D,
@@ -103,7 +103,8 @@ export Point, Point_2D, Point_3D, Tree
 #         TriangleMesh_2D,
 #         UnstructuredMesh_2D
 # Methods
-export +, -, ⋅, ×, distance, distance², dot, isapprox, midpoint, norm, norm², sortpoints, sortpoints!
+export +, -, ⋅, ×, arclength, distance, distance², dot, intersect, isapprox, midpoint, norm, 
+       norm², rand, sortpoints, sortpoints!
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,
 #         add_boundary_edges!,
