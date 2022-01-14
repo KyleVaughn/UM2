@@ -11,7 +11,6 @@ const AABB_3D = AABB{3}
 
 # Constructors & Conversions
 # -------------------------------------------------------------------------------------------------
-AABB(p₁::Point{N,T}, p₂::Point{N,T}) where {N,T} = AABB{N,T}(p₁, p₂)
 AABB{N}(p₁::Point{N,T}, p₂::Point{N,T}) where {N,T} = AABB{N,T}(p₁, p₂)
 
 # Base
@@ -118,15 +117,15 @@ end
 # Note that Liang-Barsky (above) performs better on a single-threaded CPU than this
 # algorithm. But, the multithreaded performance is approximately the same, and since this is 
 # algorithm is branchless it tends to perform better than LB on GPUs.
-function Base.intersect(l::LineSegment_2D, aabb::AABB_2D)
-    𝐮 = l[2] - l[1]
-    𝐭₁ = (aabb.origin - l[1]) ./ 𝐮 
-    𝐭₂ = (aabb.corner - l[1]) ./ 𝐮 
+function Base.intersect(𝗹::LineSegment_2D, aabb::AABB_2D)
+    𝘂 = 𝗹[2] - 𝗹[1]
+    𝘁₁ = (aabb.origin - 𝗹[1]) ./ 𝘂 
+    𝘁₂ = (aabb.corner - 𝗹[1]) ./ 𝘂 
 
-    tmin = max(min(𝐭₁[1], 𝐭₂[1]), min(𝐭₁[2], 𝐭₂[2]))
-    tmax = min(max(𝐭₁[1], 𝐭₂[1]), max(𝐭₁[2], 𝐭₂[2]))
+    tmin = max(min(𝘁₁[1], 𝘁₂[1]), min(𝘁₁[2], 𝘁₂[2]))
+    tmax = min(max(𝘁₁[1], 𝘁₂[1]), max(𝘁₁[2], 𝘁₂[2]))
 
-    return (tmax >= tmin, SVector(l(tmin), l(tmax)))
+    return (tmax >= tmin, SVector(𝗹(tmin), 𝗹(tmax)))
 end
 
 # A random AABB within [0, 1]ᴺ
@@ -142,7 +141,6 @@ end
 function Base.rand(::Type{AABB{N,T}}, NB::Int64) where {N,T}
     return [ rand(AABB{N,T}) for i ∈ 1:NB ]
 end
-
 
 # Find the AABB which contains both bb₁ and bb₂
 function Base.union(bb₁::AABB{N,T}, bb₂::AABB{N,T}) where {N,T}

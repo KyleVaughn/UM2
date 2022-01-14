@@ -22,82 +22,82 @@ end
 @inline (l::LineSegment{N,T})(r) where {N,T} = l[1] + (l[2] - l[1])T(r)
 @inline arclength(l::LineSegment_2D) = distance(l[1], l[2])
 
-function Base.intersect(𝐥₁::LineSegment_3D{T}, 𝐥₂::LineSegment_3D{T}) where {T}
-    # NOTE: Doesn't work for colinear/parallel lines. (𝐯 × 𝐮 = 0⃗).
+function Base.intersect(𝗹₁::LineSegment_3D{T}, 𝗹₂::LineSegment_3D{T}) where {T}
+    # NOTE: Doesn't work for colinear/parallel lines. (𝘃 × 𝘂 = 𝟬).
     # Using the equation of a line in parametric form
-    # For 𝐥₁ = 𝐱₁ + r𝐯 and 𝐥₂ = 𝐱₂ + s𝐮
-    # 1) 𝐱₁ + r𝐯 = 𝐱₂ + s𝐮                  subtracting 𝐱₁ from both sides
-    # 2) r𝐯 = (𝐱₂-𝐱₁) + s𝐮                  𝐰 = 𝐱₂-𝐱₁
-    # 3) r𝐯 = 𝐰 + s𝐮                        cross product with 𝐮 (distributive)
-    # 4) r(𝐯 × 𝐮) = 𝐰 × 𝐮 + s(𝐮 × 𝐮)        𝐮 × 𝐮 = 0
-    # 5) r(𝐯 × 𝐮) = 𝐰 × 𝐮                   let 𝐰 × 𝐮 = 𝐚 and 𝐯 × 𝐮 = 𝐜
-    # 6) r𝐜 = 𝐚                             dot product 𝐜 to each side
-    # 7) r𝐜 ⋅ 𝐜 = 𝐚 ⋅ 𝐜                     divide by 𝐜 ⋅ 𝐜
-    # 8) r = 𝐚 ⋅ 𝐜/𝐜 ⋅ 𝐜                    definition of 2-norm
-    # 9) r = 𝐚 ⋅ 𝐜/‖𝐜‖
-    # Note that if the lines are parallel or collinear, 𝐜 = 𝐯 × 𝐮 = 0⃗
+    # For 𝗹₁ = 𝘅₁ + r𝘃 and 𝗹₂ = 𝘅₂ + s𝘂
+    # 1) 𝘅₁ + r𝘃 = 𝘅₂ + s𝘂                  subtracting 𝘅₁ from both sides
+    # 2) r𝘃 = (𝘅₂-𝘅₁) + s𝘂                  𝘄 = 𝘅₂-𝘅₁
+    # 3) r𝘃 = 𝘄 + s𝘂                        cross product with 𝘂 (distributive)
+    # 4) r(𝘃 × 𝘂 ) = 𝘄  × 𝘂 + s(𝘂 × 𝘂)      𝘂 × 𝘂 = 𝟬
+    # 5) r(𝘃 × 𝘂 ) = 𝘄  × 𝘂                 let 𝘄  × 𝘂 = 𝗮 and 𝘃 × 𝘂 = 𝗰
+    # 6) r𝗰 = 𝗮                             dot product 𝗰 to each side
+    # 7) r𝗰 ⋅ 𝗰 = 𝗮 ⋅ 𝗰                     divide by 𝗰 ⋅ 𝗰
+    # 8) r = 𝗮 ⋅ 𝗰/𝗰 ⋅ 𝗰                    definition of 2-norm
+    # 9) r = 𝗮 ⋅ 𝗰/‖𝗰‖
+    # Note that if the lines are parallel or collinear, 𝗰 = 𝘃 × 𝘂 = 𝟬
     # We need to ensure r, s ∈ [0, 1].
-    # 𝐱₂ + s𝐮 = 𝐱₁ + r𝐯                     subtracting 𝐱₂ from both sides
-    # s𝐮 = -𝐰 + r𝐯                          cross product with 𝐰
-    # s(𝐮 × 𝐰) = -𝐰 × 𝐰 + r(𝐯 × 𝐰)          𝐰 × 𝐰 = 0 and substituting for r
-    # s(𝐮 × 𝐰) = (𝐯 × 𝐰)[𝐚 ⋅ 𝐜/‖𝐜‖]         using 𝐮 × 𝐰 = -(𝐰 × 𝐮), likewise for 𝐯 × 𝐰
-    # s(𝐰 × 𝐮) = (𝐰 × 𝐯)[𝐚 ⋅ 𝐜/‖𝐜‖]         let 𝐰 × 𝐯 = 𝐛. use 𝐰 × 𝐮 = 𝐚
-    # s𝐚 = 𝐛[𝐚 ⋅ 𝐜/‖𝐜]                      dot product 𝐚 to each side
-    # s(𝐚 ⋅ 𝐚) = (𝐛 ⋅ 𝐚)[𝐚 ⋅ 𝐜/‖𝐜‖]         definition of 2-norm and divide
-    # s = (𝐚 ⋅ 𝐛)(𝐚 ⋅ 𝐜)/(‖𝐚‖‖𝐜‖)           substitute for r
-    # s = r𝐚 ⋅ 𝐛/‖𝐚‖
+    # 𝘅₂ + s𝘂 = 𝘅₁ + r𝘃                     subtracting 𝘅₂ from both sides
+    # s𝘂 = -𝘄 + r𝘃                          cross product with 𝘄
+    # s(𝘂 × 𝘄 ) = -𝘄 × 𝘄 + r(𝘃 × 𝘄 )        𝘄 × 𝘄 = 𝟬 and substituting for r
+    # s(𝘂 × 𝘄 ) = (𝘃 × 𝘄 )[𝗮 ⋅ 𝗰/‖𝗰‖]       using 𝘂 × 𝘄 = -(𝘄 × 𝘂), likewise for 𝘃 × 𝘄
+    # s(𝘄  × 𝘂 ) = (𝘄  × 𝘃)[𝗮 ⋅ 𝗰/‖𝗰‖]      let 𝘄 × 𝘃 = 𝗯. use 𝘄 × 𝘂 = 𝗮
+    # s𝗮 = 𝗯 [𝗮 ⋅ 𝗰/‖𝗰]                     dot product 𝗮 to each side
+    # s(𝗮 ⋅ 𝗮) = (𝗯 ⋅ 𝗮)[𝗮 ⋅ 𝗰/‖𝗰‖]         definition of 2-norm and divide
+    # s = (𝗮 ⋅ 𝗯)(𝗮 ⋅ 𝗰)/(‖𝗮‖‖𝗰‖)           substitute for r
+    # s = r𝗮 ⋅ 𝗯/‖𝗮‖
     ϵ = T(5e-6)
-    𝐰 = 𝐥₂[1] - 𝐥₁[1]
-    𝐯 = 𝐥₁[2] - 𝐥₁[1]
-    𝐮 = 𝐥₂[2] - 𝐥₂[1]
-    𝐜 = 𝐯 × 𝐮
-    # Note: 0 ≤ 𝐜 ⋅ 𝐰, and the minimum distance between two lines is d = (𝐜 ⋅ 𝐰 )/‖𝐜‖.
-    # Hence 𝐜 ⋅𝐰 ≈ 0 for the lines to intersect
+    𝘄 = 𝗹₂[1] - 𝗹₁[1]
+    𝘃 = 𝗹₁[2] - 𝗹₁[1]
+    𝘂 = 𝗹₂[2] - 𝗹₂[1]
+    𝗰 = 𝘃 × 𝘂
+    # Note: 0 ≤ 𝗰 ⋅𝘄, and the minimum distance between two lines is d = (𝗰 ⋅ 𝘄 )/‖𝗰‖.
+    # Hence 𝗰 ⋅𝘄 ≈ 0 for the lines to intersect
     # (https://math.stackexchange.com/questions/2213165/find-shortest-distance-between-lines-in-3d)
-    𝐜 ⋅𝐰  ≤ T(1e-8) || return (false, Point_3D{T}(0,0,0))
-    𝐚 = 𝐰 × 𝐮
-    𝐛 = 𝐰 × 𝐯
-    r = (𝐚 ⋅ 𝐜)/(𝐜 ⋅ 𝐜)
-    s = r*(𝐚 ⋅ 𝐛)/(𝐚 ⋅ 𝐚)
-    return (T(1e-8)^2 < abs(𝐜 ⋅ 𝐜) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ  , 𝐥₂(s)) # (hit, point)
+    𝗰 ⋅ 𝘄  ≤ T(1e-8) || return (false, Point_3D{T}(0,0,0))
+    𝗮 = 𝘄  × 𝘂
+    𝗯 = 𝘄  × 𝘃
+    r = (𝗮 ⋅ 𝗰)/(𝗰 ⋅ 𝗰)
+    s = r*(𝗮 ⋅ 𝗯)/(𝗮 ⋅ 𝗮)
+    return (T(1e-8)^2 < abs(𝗰 ⋅ 𝗰) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ, 𝗹₂(s)) # (hit, point)
 end
 
-function Base.intersect(𝐥₁::LineSegment_2D{T}, 𝐥₂::LineSegment_2D{T}) where {T}
-    # NOTE: Doesn't work for colinear/parallel lines. (𝐯 × 𝐮 = 0⃗). Also, the cross product
+function Base.intersect(𝗹₁::LineSegment_2D{T}, 𝗹₂::LineSegment_2D{T}) where {T}
+    # NOTE: Doesn't work for colinear/parallel lines. (𝘃 × 𝘂 = 𝟬). Also, the cross product
     # operator for 2D points returns a scalar (the 2-norm of the cross product).
     # 
     # From the 3D intersection routine we know:
-    # r = 𝐚 ⋅ 𝐜/𝐜 ⋅ 𝐜 
-    # s = (𝐚 ⋅ 𝐛)(𝐚 ⋅ 𝐜)/(‖𝐚‖‖𝐜‖) 
+    # r = 𝗮 ⋅ 𝗰/𝗰 ⋅ 𝗰 
+    # s = (𝗮 ⋅ 𝗯)(𝗮 ⋅ 𝗰)/(‖𝗮‖‖𝗰‖) 
     # Since the 2D cross product returns a scalar
-    # r = 𝐚 ⋅ 𝐜/𝐜 ⋅ 𝐜 = 𝐚/𝐜 = a/c 
-    # s = (𝐚 ⋅ 𝐛)(𝐚 ⋅ 𝐜)/(‖𝐚‖‖𝐜‖) = 𝐛/𝐜 = b/c 
+    # r = 𝗮 ⋅ 𝗰/𝗰 ⋅ 𝗰 = 𝗮/𝗰 = a/c 
+    # s = (𝗮 ⋅ 𝗯)(𝗮 ⋅ 𝗰)/(‖𝗮‖‖𝗰‖) = 𝗯/𝗰 = b/c 
     #
     # Simply evaluating everything removes branches and is faster than failing early with
     # 1e-8 < abs(c) or delaying division by vxu and testing against r and s's numerators.
     # This has been tested.
     ϵ = T(5e-6)
-    𝐰 = 𝐥₂[1] - 𝐥₁[1]
-    𝐯 = 𝐥₁[2] - 𝐥₁[1]
-    𝐮 = 𝐥₂[2] - 𝐥₂[1]
-    c = 𝐯 × 𝐮
-    r = 𝐰 × 𝐮/c
-    s = 𝐰 × 𝐯/c
+    𝘄 = 𝗹₂[1] - 𝗹₁[1]
+    𝘃 = 𝗹₁[2] - 𝗹₁[1]
+    𝘂 = 𝗹₂[2] - 𝗹₂[1]
+    c = 𝘃 × 𝘂
+    r = 𝘄  × 𝘂/c
+    s = 𝘄  × 𝘃/c
     # -ϵ ≤ r ≤ 1 + ϵ introduces a branch, but -ϵ ≤ r && r ≤ 1 + ϵ doesn't for some reason.
-    return (T(1e-8) < abs(c) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ  , 𝐥₂(s)) # (hit, point)
+    return (T(1e-8) < abs(c) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ, 𝗹₂(s)) # (hit, point)
 end
 
 # Return if the point is left of the line segment
-#   p    ^
+#   𝗽    ^
 #   ^   /
-# v⃗ |  / u⃗
+# 𝘃 |  / 𝘂
 #   | /
 #   o
-#   We rely on v⃗ × u⃗ = |v⃗||u⃗|sin(θ). We may determine if θ ∈ (0, π] based on the sign of v⃗ × u⃗
+#   We rely on 𝘃 × 𝘂 = ‖𝘃‖‖𝘂‖sin(θ). We may determine if θ ∈ (0, π] based on the sign of𝘃 × 𝘂
 @inline function isleft(p::Point_2D, l::LineSegment_2D)
-    u⃗ = l[2] - l[1]
-    v⃗ = p - l[1]
-    return u⃗ × v⃗ >= 0
+    u = l[2] - l[1]
+    v = p - l[1]
+    return u × v >= 0
 end
 
 # A random line within [0, 1] × [0, 1]

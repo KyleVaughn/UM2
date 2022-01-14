@@ -85,11 +85,11 @@ Base.Tuple(p::Point) = p.data
 
 # Methods
 # -------------------------------------------------------------------------------------------------
-@inline distance(𝐩₁::Point, 𝐩₂::Point) = norm(𝐩₁ - 𝐩₂)
-@inline distance²(𝐩₁::Point, 𝐩₂::Point) = norm²(𝐩₁ - 𝐩₂)
-@inline Base.isapprox(𝐩₁::Point, 𝐩₂::Point) = distance²(𝐩₁, 𝐩₂) < (1e-5)^2 # 100 nm
-@inline midpoint(𝐩₁::Point, 𝐩₂::Point) = (𝐩₁ + 𝐩₂)/2
-@inline norm²(𝐩::Point) = 𝐩 ⋅ 𝐩
+@inline distance(p₁::Point, p₂::Point) = norm(p₁ - p₂)
+@inline distance²(p₁::Point, p₂::Point) = norm²(p₁ - p₂)
+@inline Base.isapprox(p₁::Point, p₂::Point) = distance²(p₁, p₂) < (1e-5)^2 # 100 nm
+@inline midpoint(p₁::Point, p₂::Point) = (p₁ + p₂)/2
+@inline norm²(p::Point) = p ⋅ p
 
 # Sort points based on their distance from a given point
 sortpoints(p::Point, points::Vector{<:Point}) = points[sortperm(distance².(Ref(p), points))]
