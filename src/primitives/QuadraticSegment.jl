@@ -1,47 +1,55 @@
-# A quadratic segment in passes through three points: 𝐱₁, 𝐱₂, and 𝐱₃.
+# A quadratic segment that passes through three points: 𝘅₁, 𝘅₂, and 𝘅₃.
 # The assumed relation of the points may be seen in the diagram below.
-#                 ___𝐱₃___
+#                 ___𝘅₃___
 #            ____/        \____
 #        ___/                  \
-#     __/                       𝐱₂
+#     __/                       𝘅₂
 #   _/
 #  /
-# 𝐱₁
+# 𝘅₁
 #
-# NOTE: 𝐱₃ is not necessarily the midpoint, or even between 𝐱₁ and 𝐱₂.
-# q(r) = (2r-1)(r-1)𝐱₁ + r(2r-1)𝐱₂ + 4r(1-r)𝐱₃
+# NOTE: 𝘅₃ is not necessarily the midpoint, or even between 𝘅₁ and 𝘅₂.
+# 𝗾(r) = (2r-1)(r-1)𝘅₁ + r(2r-1)𝘅₂ + 4r(1-r)𝘅₃
 # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
 # Chapter 8, Advanced Data Representation, in the interpolation functions section
-struct QuadraticSegment{F <: AbstractFloat} <: Edge{F}
-    points::SVector{3, Point{F}}
+struct QuadraticSegment{N,T} <: Edge{N,T}
+    points::SVector{3, Point{N,T}}
 end
 
-# # Constructors
-# # -------------------------------------------------------------------------------------------------
-# QuadraticSegment(p₁::Point, p₂::Point, p₃::Point) = QuadraticSegment(SVector(p₁, p₂, p₃))
-# 
-# # Methods
-# # -------------------------------------------------------------------------------------------------
-# # Interpolation
-# # q(0) = q[1], q(1) = q[2], q(1//2) = q[3]
-# function (q::QuadraticSegment{F})(r::Real) where {F <: AbstractFloat}
-#     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
-#     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-#     rₜ = F(r)
-#     return (2rₜ-1)*( rₜ-1)q[1] + rₜ*(2rₜ-1)q[2] + 4rₜ*( 1-rₜ)q[3]
-# end
-# 
-# arclength(q::QuadraticSegment) = arclength(q, Val(15))
-# function arclength(q::QuadraticSegment{F}, ::Val{N}) where {F <: AbstractFloat, N}
-#     # Numerical integration is used.
-#     # (Gauss-Legengre quadrature)
-#     #     1                  N
-#     # L = ∫ ||∇ q⃗(r)||dr  ≈  ∑ wᵢ||∇ q⃗(rᵢ)||
-#     #     0                 i=1
-#     #
-#     w, r = gauss_legendre_quadrature(F, Val(N))
-#     return sum(@. w * norm(∇(q, r)))
-# end
+const QuadraticSegment_2D = QuadraticSegment{2}
+const QuadraticSegment_3D = QuadraticSegment{3}
+
+# Constructors
+# -------------------------------------------------------------------------------------------------
+function QuadraticSegment(p₁::Point{N,T}, p₂::Point{N,T}, p₃::Point{N,T}) where {N,T}
+    return QuadraticSegment{N,T}(SVector{3, Point{N,T}}(p₁, p₂, p₃))
+end
+function QuadraticSegment{N}(p₁::Point{N,T}, p₂::Point{N,T}, p₃::Point{N,T}) where {N,T}
+    return QuadraticSegment{N,T}(SVector{3, Point{N,T}}(p₁, p₂, p₃))
+end
+
+# Methods
+# -------------------------------------------------------------------------------------------------
+# Interpolation
+# q(0) = q[1], q(1) = q[2], q(1//2) = q[3]
+function (q::QuadraticSegment{N,T})(r) where {N,T}
+    # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+    # Chapter 8, Advanced Data Representation, in the interpolation functions section
+    rₜ = T(r)
+    return (2rₜ-1)*(rₜ-1)q[1] + rₜ*(2rₜ-1)q[2] + 4rₜ*(1-rₜ)q[3]
+end
+
+arclength(q::QuadraticSegment) = arclength(q, Val(15))
+function arclength(q::QuadraticSegment{N,T}, ::Val{NP}) where {N,T,NP}
+    # Numerical integration is used.
+    # (Gauss-Legengre quadrature)
+    #     1                   NP
+    # L = ∫ ‖(𝗗 ∘ 𝗾)(r)‖dr ≈ ∑ wᵢ‖(𝗗 ∘ 𝗾)(r)‖
+    #     0                  i=1
+    #
+    w, r = gauss_legendre_quadrature(F, Val(N))
+    return sum(@. w * norm(∇(q, r)))
+end
 # 
 # # Find the axis-aligned bounding box of the segment.
 # function boundingbox(q::QuadraticSegment)
@@ -68,14 +76,13 @@ end
 #     end
 #     return Rectangle(Point(xmin, ymin), Point(xmax, ymax))
 # end
-# 
-# # Return the gradient of q, evalutated at r
-# function gradient(q::QuadraticSegment{F}, r::Real) where {F <: AbstractFloat}
-#     #∇q = 
-#     rₜ = F(r)
-#     return (4rₜ - 3)*(q[1] - q[3]) + (4rₜ - 1)*(q[2] - q[3])
-# end
-# 
+
+# Return the derivative of q, evalutated at r
+function derivative(q::QuadraticSegment{N,T}, r) where {N,T}
+    rₜ = T(r)
+    return (4rₜ - 3)*(q[1] - q[3]) + (4rₜ - 1)*(q[2] - q[3])
+end
+
 # # Return if the point is left of the quadratic segment
 # #   p    ^
 # #   ^   /
@@ -139,16 +146,16 @@ end
 # #             return (0x00000000, SVector(Point(), Point()))
 # #         end 
 # #     else
-# #         # q(r) = (2r-1)(r-1)𝐱₁ + r(2r-1)𝐱₂ + 4r(1-r)𝐱₃
-# #         # q(r) = 2r²(𝐱₁ + 𝐱₂ - 2𝐱₃) + r(-3𝐱₁ - 𝐱₂ + 4𝐱₃) + 𝐱₁
-# #         # Let D⃗ = 2(𝐱₁ + 𝐱₂ - 2𝐱₃), E⃗ = (-3𝐱₁ - 𝐱₂ + 4𝐱₃), F⃗ = x₁
+# #         # q(r) = (2r-1)(r-1)𝘅₁ + r(2r-1)𝘅₂ + 4r(1-r)𝘅₃
+# #         # q(r) = 2r²(𝘅₁ + 𝘅₂ - 2𝘅₃) + r(-3𝘅₁ - 𝘅₂ + 4𝘅₃) + 𝘅₁
+# #         # Let D⃗ = 2(𝘅₁ + 𝘅₂ - 2𝘅₃), E⃗ = (-3𝘅₁ - 𝘅₂ + 4𝘅₃), F⃗ = x₁
 # #         # q(r) = r²D⃗ + rE⃗ + F⃗
-# #         # l(s) = 𝐱₄ + sw⃗
+# #         # l(s) = 𝘅₄ + sw⃗
 # #         # If D⃗ × w⃗ ≠ 0
-# #         #   𝐱₄ + sw⃗ = r²D⃗ + rE⃗ + F⃗
-# #         #   sw⃗ = r²D⃗ + rE⃗ + (F⃗ - 𝐱₄)
-# #         #   0 = r²(D⃗ × w⃗) + r(E⃗ × w⃗) + (F⃗ - 𝐱₄) × w⃗
-# #         #   Let A = (D⃗ × w⃗), B = (E⃗ × w⃗), C = (F⃗ - 𝐱₄) × w⃗
+# #         #   𝘅₄ + sw⃗ = r²D⃗ + rE⃗ + F⃗
+# #         #   sw⃗ = r²D⃗ + rE⃗ + (F⃗ - 𝘅₄)
+# #         #   0 = r²(D⃗ × w⃗) + r(E⃗ × w⃗) + (F⃗ - 𝘅₄) × w⃗
+# #         #   Let A = (D⃗ × w⃗), B = (E⃗ × w⃗), C = (F⃗ - 𝘅₄) × w⃗
 # #         #   0 = Ar² + Br + C
 # #         #   r = (-B - √(B²-4AC))/2A, -B + √(B²-4AC))/2A)
 # #         #   s = ((q(r) - p₄)⋅w⃗/(w⃗ ⋅ w⃗)
@@ -172,7 +179,7 @@ end
 # #         w = w⃗ ⋅ w⃗
 # #         if abs(A) < 1e-8 
 # #             # Line intersection
-# #             # Can B = 0 if A = 0 for non-trivial 𝐱?
+# #             # Can B = 0 if A = 0 for non-trivial 𝘅?
 # #             r = -C/B
 # #             (-ϵ ≤ r ≤ 1 + ϵ) || return 0x00000000, SVector(p₁, p₂)
 # #             p₁ = q(r)

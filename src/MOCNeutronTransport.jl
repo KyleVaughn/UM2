@@ -78,6 +78,7 @@ include("./primitives/QuadraticSegment.jl")
 #
 #
 # Convenience operators
+const 𝗗 = derivative
 #const ∇ = gradient
 #const ∇² = laplacian
 #const 𝐉 = jacobian
@@ -86,7 +87,7 @@ include("./primitives/QuadraticSegment.jl")
 
 # Structs/Types
 export AABB, AABB_2D, AABB_3D, Edge, Face, LineSegment, LineSegment_2D, LineSegment_3D, Point, 
-       Point_2D, Point_3D, Tree
+       Point_2D, Point_3D, QuadraticSegment, QuadraticSegment_2D, QuadraticSegment_3D, Tree
 #         LinearUnstructuredMesh_2D,
 #         QuadraticSegment_2D,
 #         QuadraticUnstructuredMesh_2D,
@@ -98,8 +99,11 @@ export AABB, AABB_2D, AABB_3D, Edge, Face, LineSegment, LineSegment_2D, LineSegm
 #         Triangle6_2D,
 #         TriangleMesh_2D,
 #         UnstructuredMesh_2D
+# Operators
+export +, -, ⋅, ×, 𝗗 
+
 # Methods
-export +, -, ⋅, ×, arclength, area, depth, distance, distance², dot, height, intersect, isapprox, 
+export arclength, area, depth, derivative, distance, distance², dot, height, intersect, isapprox, 
        isleft, midpoint, norm, norm², rand, sortpoints, sortpoints!, width
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,

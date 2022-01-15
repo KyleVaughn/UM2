@@ -1,6 +1,6 @@
 # Axis-aligned bounding box.
 # An N-dimensional box requires 2 N-dimensional points to specify the boundary:
-#   One point to specify the box origin, and on to specify the opposite (furthest corner)
+#   One point to specify the box origin, and one to specify the opposite (furthest corner)
 struct AABB{N,T} <: Face{N,T}
     origin::Point{N,T}
     corner::Point{N,T}
@@ -113,10 +113,6 @@ end
 # Credit to Tavian Barnes (https://tavianator.com/2011/ray_box.html)
 # Assumes the line passes all the way through the AABB if it intersects, which is a 
 # valid assumption for this ray tracing application. 
-#
-# Note that Liang-Barsky (above) performs better on a single-threaded CPU than this
-# algorithm. But, the multithreaded performance is approximately the same, and since this is 
-# algorithm is branchless it tends to perform better than LB on GPUs.
 function Base.intersect(𝗹::LineSegment_2D, aabb::AABB_2D)
     𝘂 = 𝗹[2] - 𝗹[1]
     𝘁₁ = (aabb.origin - 𝗹[1]) ./ 𝘂 
@@ -128,7 +124,7 @@ function Base.intersect(𝗹::LineSegment_2D, aabb::AABB_2D)
     return (tmax >= tmin, SVector(𝗹(tmin), 𝗹(tmax)))
 end
 
-# A random AABB within [0, 1]ᴺ
+# A random AABB within [0, 1]ᴺ ⊂ ℝᴺ
 # What does the distribution of AABBs look like? Is this uniform? 
 function Base.rand(::Type{AABB{N,T}}) where {N,T}
     coord₁ = rand(T, N)
@@ -137,7 +133,7 @@ function Base.rand(::Type{AABB{N,T}}) where {N,T}
                      Point{N,T}(max.(coord₁, coord₂)))  
 end
 
-# NB random AABB within [0, 1]ᴺ
+# NB random AABB within [0, 1]ᴺ ⊂ ℝᴺ
 function Base.rand(::Type{AABB{N,T}}, NB::Int64) where {N,T}
     return [ rand(AABB{N,T}) for i ∈ 1:NB ]
 end

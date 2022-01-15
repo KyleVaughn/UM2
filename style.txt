@@ -1,0 +1,1 @@
+Recommended font for better \bsans characters: Noto Mono Regular 

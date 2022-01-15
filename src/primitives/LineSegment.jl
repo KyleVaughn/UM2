@@ -25,64 +25,66 @@ end
 function Base.intersect(𝗹₁::LineSegment_3D{T}, 𝗹₂::LineSegment_3D{T}) where {T}
     # NOTE: Doesn't work for colinear/parallel lines. (𝘃 × 𝘂 = 𝟬).
     # Using the equation of a line in parametric form
-    # For 𝗹₁ = 𝘅₁ + r𝘃 and 𝗹₂ = 𝘅₂ + s𝘂
-    # 1) 𝘅₁ + r𝘃 = 𝘅₂ + s𝘂                  subtracting 𝘅₁ from both sides
-    # 2) r𝘃 = (𝘅₂-𝘅₁) + s𝘂                  𝘄 = 𝘅₂-𝘅₁
+    # For 𝗹₁ = 𝗽₁ + r𝘃 and 𝗹₂ = 𝗽₂ + s𝘂
+    # 1) 𝗽₁ + r𝘃 = 𝗽₂ + s𝘂                  subtracting 𝗽₁ from both sides
+    # 2) r𝘃 = (𝗽₂-𝗽₁) + s𝘂                  𝘄 = 𝗽₂-𝗽₁
     # 3) r𝘃 = 𝘄 + s𝘂                        cross product with 𝘂 (distributive)
-    # 4) r(𝘃 × 𝘂 ) = 𝘄  × 𝘂 + s(𝘂 × 𝘂)      𝘂 × 𝘂 = 𝟬
-    # 5) r(𝘃 × 𝘂 ) = 𝘄  × 𝘂                 let 𝘄  × 𝘂 = 𝗮 and 𝘃 × 𝘂 = 𝗰
-    # 6) r𝗰 = 𝗮                             dot product 𝗰 to each side
-    # 7) r𝗰 ⋅ 𝗰 = 𝗮 ⋅ 𝗰                     divide by 𝗰 ⋅ 𝗰
-    # 8) r = 𝗮 ⋅ 𝗰/𝗰 ⋅ 𝗰                    definition of 2-norm
-    # 9) r = 𝗮 ⋅ 𝗰/‖𝗰‖
-    # Note that if the lines are parallel or collinear, 𝗰 = 𝘃 × 𝘂 = 𝟬
+    # 4) r(𝘃 × 𝘂) = 𝘄 × 𝘂 + s(𝘂 × 𝘂)        𝘂 × 𝘂 = 𝟬
+    # 5) r(𝘃 × 𝘂) = 𝘄 × 𝘂                   let 𝘄 × 𝘂 = 𝘅 and 𝘃 × 𝘂 = 𝘇
+    # 6) r𝘇 = 𝘅                             dot product 𝘇 to each side
+    # 7) r𝘇 ⋅ 𝘇 = 𝘅 ⋅ 𝘇                     divide by 𝘇 ⋅ 𝘇
+    # 8) r = 𝘅 ⋅ 𝘇/𝘇 ⋅ 𝘇                    definition of 2-norm
+    # 9) r = 𝘅 ⋅ 𝘇/‖𝘇‖
+    # Note that if the lines are parallel or collinear, 𝘇 = 𝘃 × 𝘂 = 𝟬
     # We need to ensure r, s ∈ [0, 1].
-    # 𝘅₂ + s𝘂 = 𝘅₁ + r𝘃                     subtracting 𝘅₂ from both sides
+    # 𝗽₂ + s𝘂 = 𝗽₁ + r𝘃                     subtracting 𝗽₂ from both sides
     # s𝘂 = -𝘄 + r𝘃                          cross product with 𝘄
-    # s(𝘂 × 𝘄 ) = -𝘄 × 𝘄 + r(𝘃 × 𝘄 )        𝘄 × 𝘄 = 𝟬 and substituting for r
-    # s(𝘂 × 𝘄 ) = (𝘃 × 𝘄 )[𝗮 ⋅ 𝗰/‖𝗰‖]       using 𝘂 × 𝘄 = -(𝘄 × 𝘂), likewise for 𝘃 × 𝘄
-    # s(𝘄  × 𝘂 ) = (𝘄  × 𝘃)[𝗮 ⋅ 𝗰/‖𝗰‖]      let 𝘄 × 𝘃 = 𝗯. use 𝘄 × 𝘂 = 𝗮
-    # s𝗮 = 𝗯 [𝗮 ⋅ 𝗰/‖𝗰]                     dot product 𝗮 to each side
-    # s(𝗮 ⋅ 𝗮) = (𝗯 ⋅ 𝗮)[𝗮 ⋅ 𝗰/‖𝗰‖]         definition of 2-norm and divide
-    # s = (𝗮 ⋅ 𝗯)(𝗮 ⋅ 𝗰)/(‖𝗮‖‖𝗰‖)           substitute for r
-    # s = r𝗮 ⋅ 𝗯/‖𝗮‖
+    # s(𝘂 × 𝘄) = -𝘄 × 𝘄 + r(𝘃 × 𝘄)          𝘄 × 𝘄 = 𝟬 and substituting for r
+    # s(𝘂 × 𝘄) = (𝘅 ⋅ 𝘇/‖𝘇‖)(𝘃 × 𝘄)         using 𝘂 × 𝘄 = -(𝘄 × 𝘂), likewise for 𝘃 × 𝘄
+    # s(𝘄 × 𝘂) = (𝘅 ⋅ 𝘇/‖𝘇‖)(𝘄 × 𝘃)         let 𝘄 × 𝘃 = 𝘆. use 𝘄 × 𝘂 = 𝘅
+    # s𝘅 = (𝘅 ⋅ 𝘇/‖𝘇‖)𝘆                     dot product 𝘅 to each side
+    # s(𝘅 ⋅ 𝘅) = (𝘅 ⋅ 𝘇/‖𝘇‖)(𝘆 ⋅ 𝘅)         definition of 2-norm and divide
+    # s = (𝘅 ⋅ 𝘆)(𝘅 ⋅ 𝘇)/(‖𝘅‖‖𝘇‖)           substitute for r
+    # s = r𝘅 ⋅ 𝘆/‖𝘅‖
     ϵ = T(5e-6)
     𝘄 = 𝗹₂[1] - 𝗹₁[1]
     𝘃 = 𝗹₁[2] - 𝗹₁[1]
     𝘂 = 𝗹₂[2] - 𝗹₂[1]
-    𝗰 = 𝘃 × 𝘂
-    # Note: 0 ≤ 𝗰 ⋅𝘄, and the minimum distance between two lines is d = (𝗰 ⋅ 𝘄 )/‖𝗰‖.
-    # Hence 𝗰 ⋅𝘄 ≈ 0 for the lines to intersect
+    𝘇 = 𝘃 × 𝘂
+    # Note: 0 ≤ 𝘇 ⋅𝘄, and the minimum distance between two lines is d = (𝘇 ⋅ 𝘄 )/‖𝘇‖.
+    # Hence 𝘇 ⋅𝘄 ≈ 0 for the lines to intersect
     # (https://math.stackexchange.com/questions/2213165/find-shortest-distance-between-lines-in-3d)
-    𝗰 ⋅ 𝘄  ≤ T(1e-8) || return (false, Point_3D{T}(0,0,0))
-    𝗮 = 𝘄  × 𝘂
-    𝗯 = 𝘄  × 𝘃
-    r = (𝗮 ⋅ 𝗰)/(𝗰 ⋅ 𝗰)
-    s = r*(𝗮 ⋅ 𝗯)/(𝗮 ⋅ 𝗮)
-    return (T(1e-8)^2 < abs(𝗰 ⋅ 𝗰) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ, 𝗹₂(s)) # (hit, point)
+    𝘇 ⋅ 𝘄 ≤ T(1e-8) || return (false, Point_3D{T}(0,0,0))
+    𝘅 = 𝘄 × 𝘂
+    𝘆 = 𝘄 × 𝘃
+    r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇)
+    s = r*(𝘅 ⋅ 𝘆)/(𝘅 ⋅ 𝘅)
+    return (T(1e-8)^2 < abs(𝘇 ⋅ 𝘇) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ, 𝗹₂(s)) # (hit, point)
 end
 
 function Base.intersect(𝗹₁::LineSegment_2D{T}, 𝗹₂::LineSegment_2D{T}) where {T}
     # NOTE: Doesn't work for colinear/parallel lines. (𝘃 × 𝘂 = 𝟬). Also, the cross product
-    # operator for 2D points returns a scalar (the 2-norm of the cross product).
+    # operator for 2D points returns a scalar, since the cross product of two vectors in the
+    # plane is a vector of the form (0, 0, z).
     # 
     # From the 3D intersection routine we know:
-    # r = 𝗮 ⋅ 𝗰/𝗰 ⋅ 𝗰 
-    # s = (𝗮 ⋅ 𝗯)(𝗮 ⋅ 𝗰)/(‖𝗮‖‖𝗰‖) 
-    # Since the 2D cross product returns a scalar
-    # r = 𝗮 ⋅ 𝗰/𝗰 ⋅ 𝗰 = 𝗮/𝗰 = a/c 
-    # s = (𝗮 ⋅ 𝗯)(𝗮 ⋅ 𝗰)/(‖𝗮‖‖𝗰‖) = 𝗯/𝗰 = b/c 
+    # r = 𝘅 ⋅ 𝘇/𝘇 ⋅ 𝘇 
+    # s = (𝘅 ⋅ 𝘆)(𝘅 ⋅ 𝘇)/(‖𝘅‖‖𝘇‖) 
+    # Since the 2D cross product returns a vector of the form (0, 0, z), the dot products are 
+    # essentially scalar multiplication
+    # r = 𝘅 ⋅ 𝘇/𝘇 ⋅ 𝘇 = x₃/z₃ 
+    # s = (𝘅 ⋅ 𝘆)(𝘅 ⋅ 𝘇)/(‖𝘅‖‖𝘇‖) = y₃/z₃ 
     #
     # Simply evaluating everything removes branches and is faster than failing early with
-    # 1e-8 < abs(c) or delaying division by vxu and testing against r and s's numerators.
+    # 1e-8 < abs(c) or delaying division by (𝘃 × 𝘂) ⋅𝗸̂ and testing against r and s's numerators.
     # This has been tested.
     ϵ = T(5e-6)
     𝘄 = 𝗹₂[1] - 𝗹₁[1]
     𝘃 = 𝗹₁[2] - 𝗹₁[1]
     𝘂 = 𝗹₂[2] - 𝗹₂[1]
-    c = 𝘃 × 𝘂
-    r = 𝘄  × 𝘂/c
-    s = 𝘄  × 𝘃/c
+    z = 𝘃 × 𝘂
+    r = 𝘄  × 𝘂/z
+    s = 𝘄  × 𝘃/z
     # -ϵ ≤ r ≤ 1 + ϵ introduces a branch, but -ϵ ≤ r && r ≤ 1 + ϵ doesn't for some reason.
     return (T(1e-8) < abs(c) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ, 𝗹₂(s)) # (hit, point)
 end

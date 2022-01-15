@@ -3,63 +3,63 @@ using MOCNeutronTransport
     for F in [Float32, Float64, BigFloat]
         @testset "Constructors" begin
             # Constructor
-            x⃗₁ = Point_2D{F}(0, 0)
-            x⃗₂ = Point_2D{F}(2, 0)
-            x⃗₃ = Point_2D{F}(1, 1)
-            q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
-            @test q.points == SVector(x⃗₁, x⃗₂, x⃗₃)
+            𝘅₁ = Point_2D{F}(0, 0)
+            𝘅₂ = Point_2D{F}(2, 0)
+            𝘅₃ = Point_2D{F}(1, 1)
+            q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
+            @test q.points == SVector(𝘅₁, 𝘅₂, 𝘅₃)
         end
 
         @testset "Methods" begin
             # interpolation
-#             x⃗₁ = Point_2D{F}(0, 0)
-#             x⃗₂ = Point_2D{F}(2, 0)
-#             x⃗₃ = Point_2D{F}(1, 1)
-#             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
-#             for r = LinRange{F}(0, 1, 11)
-#                 @test q(r) ≈ Point_2D{F}(2r, -(2r)^2 + 4r)
-#             end
-# 
-#             # gradient
-#             for r = LinRange{F}(0, 1, 11)
-#                 @test ∇(q, r) ≈ Point_2D{F}(2, -(8r) + 4)
-#             end
+            𝘅₁ = Point_2D{F}(0, 0)
+            𝘅₂ = Point_2D{F}(2, 0)
+            𝘅₃ = Point_2D{F}(1, 1)
+            q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
+            for r = LinRange{F}(0, 1, 11)
+                @test q(r) ≈ Point_2D{F}(2r, -(2r)^2 + 4r)
+            end
+
+             # derivative
+             for r = LinRange{F}(0, 1, 11)
+                 @test 𝗗(q, r) ≈ Point_2D{F}(2, -(8r) + 4)
+             end
 # 
 #             # arclength
-#             x⃗₁ = Point_2D{F}(0, 0)
-#             x⃗₂ = Point_2D{F}(2, 0)
-#             x⃗₃ = Point_2D{F}(1, 0)
-#             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+#             𝘅₁ = Point_2D{F}(0, 0)
+#             𝘅₂ = Point_2D{F}(2, 0)
+#             𝘅₃ = Point_2D{F}(1, 0)
+#             q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
 #             # straight edge
 #             @test abs(arclength(q) - 2) < 1.0e-6
 #             # curved
-#             x⃗₃ = Point_2D{F}(1, 1)
-#             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+#             𝘅₃ = Point_2D{F}(1, 1)
+#             q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
 #             @test abs(arclength(q) - 2.9578857151786138) < 1.0e-6
 # 
 #             # boundingbox
-#             x⃗₁ = Point_2D{F}(0, 0)
-#             x⃗₂ = Point_2D{F}(2, 0)
-#             x⃗₃ = Point_2D{F}(1, 1)
-#             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+#             𝘅₁ = Point_2D{F}(0, 0)
+#             𝘅₂ = Point_2D{F}(2, 0)
+#             𝘅₃ = Point_2D{F}(1, 1)
+#             q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
 #             bb = boundingbox(q)
 #             @test bb.xmin ≈ 0
 #             @test bb.ymin ≈ 0
 #             @test bb.xmax ≈ 2
 #             @test bb.ymax ≈ 1
-#             x⃗₁ = Point_2D{F}(0, 0)
-#             x⃗₂ = Point_2D{F}(2, 2)
-#             x⃗₃ = Point_2D{F}(1, 1)
-#             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+#             𝘅₁ = Point_2D{F}(0, 0)
+#             𝘅₂ = Point_2D{F}(2, 2)
+#             𝘅₃ = Point_2D{F}(1, 1)
+#             q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
 #             bb = boundingbox(q)
 #             @test bb.xmin ≈ 0
 #             @test bb.ymin ≈ 0
 #             @test bb.xmax ≈ 2
 #             @test bb.ymax ≈ 2
-#             x⃗₁ = Point_2D{F}(0, 0)
-#             x⃗₂ = Point_2D{F}(2, 0)
-#             x⃗₃ = Point_2D{F}(2.1, 1)
-#             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+#             𝘅₁ = Point_2D{F}(0, 0)
+#             𝘅₂ = Point_2D{F}(2, 0)
+#             𝘅₃ = Point_2D{F}(2.1, 1)
+#             q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
 #             bb = boundingbox(q)
 #             @test bb.xmin ≈ 0
 #             @test bb.ymin ≈ 0
@@ -67,20 +67,20 @@ using MOCNeutronTransport
 #             @test bb.ymax ≈ 1
 # 
 #             # isstraight
-#             x⃗₁ = Point_2D{F}(0, 0)
-#             x⃗₂ = Point_2D{F}(2, 0)
-#             x⃗₃ = Point_2D{F}(1, 0)
-#             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+#             𝘅₁ = Point_2D{F}(0, 0)
+#             𝘅₂ = Point_2D{F}(2, 0)
+#             𝘅₃ = Point_2D{F}(1, 0)
+#             q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
 #             @test isstraight(q)
-#             x⃗₂ = Point_2D{F}(2, 0.0001)
-#             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+#             𝘅₂ = Point_2D{F}(2, 0.0001)
+#             q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
 #             @test !isstraight(q)
 # 
 #             # laplacian
-#             x⃗₁ = Point_2D{F}(0, 0)
-#             x⃗₂ = Point_2D{F}(2, 0)
-#             x⃗₃ = Point_2D{F}(1, 1)
-#             q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+#             𝘅₁ = Point_2D{F}(0, 0)
+#             𝘅₂ = Point_2D{F}(2, 0)
+#             𝘅₃ = Point_2D{F}(1, 1)
+#             q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
 #             p = ∇²(q, 0)
 #             @test p.x ≈ 0
 #             @test p.y ≈ -8
@@ -90,54 +90,54 @@ using MOCNeutronTransport
 # 
 # 
 # #            # closest_point
-# #            x⃗₁ = Point_2D{F}(0, 0)           
-# #            x⃗₂ = Point_2D{F}(2, 0)
-# #            x⃗₃ = Point_2D{F}(1, 1)
-# #            q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+# #            𝘅₁ = Point_2D{F}(0, 0)           
+# #            𝘅₂ = Point_2D{F}(2, 0)
+# #            𝘅₃ = Point_2D{F}(1, 1)
+# #            q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
 # #            p = Point_2D{F}(1, 1.1)
 # #            r, p_c = closest_point(p, q)
-# #            @test x⃗₃ ≈ p_c
+# #            @test 𝘅₃ ≈ p_c
 # #            p = Point_2D{F}(-0.1, 0)
 # #            r, p_c = closest_point(p, q)
-# #            @test x⃗₁ ≈ p_c
+# #            @test 𝘅₁ ≈ p_c
 # #
 # #            # intersect
-# #            x⃗₁ = Point_2D{F}(0, 0)
-# #            x⃗₂ = Point_2D{F}(2, 0)
-# #            x⃗₃ = Point_2D{F}(1, 1)
-# #            x⃗₄ = Point_2D{F}(1, 0)
-# #            x⃗₅ = Point_2D{F}(1, 2)
+# #            𝘅₁ = Point_2D{F}(0, 0)
+# #            𝘅₂ = Point_2D{F}(2, 0)
+# #            𝘅₃ = Point_2D{F}(1, 1)
+# #            𝘅₄ = Point_2D{F}(1, 0)
+# #            𝘅₅ = Point_2D{F}(1, 2)
 # #
 # #            # 1 intersection
-# #            q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
-# #            l = LineSegment_2D(x⃗₄, x⃗₅)
+# #            q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
+# #            l = LineSegment_2D(𝘅₄, 𝘅₅)
 # #            npoints, (point1, point2) = intersect(l, q)
 # #            @test npoints == 1
 # #            @test point1 ≈ Point_2D{F}(1, 1)
 # #
 # #            # 2 intersections
-# #            x⃗₄ = Point_2D{F}(0, 3//4)
-# #            x⃗₅ = Point_2D{F}(2, 3//4)
-# #            l = LineSegment_2D(x⃗₄, x⃗₅)
+# #            𝘅₄ = Point_2D{F}(0, 3//4)
+# #            𝘅₅ = Point_2D{F}(2, 3//4)
+# #            l = LineSegment_2D(𝘅₄, 𝘅₅)
 # #            npoints, (point1, point2) = l ∩ q
 # #            @test npoints == 2
 # #            @test point1 ≈ Point_2D{F}(1//2, 3//4)
 # #            @test point2 ≈ Point_2D{F}(3//2, 3//4)
 # #
 # #            # 0 intersections
-# #            x⃗₄ = Point_2D{F}(0, 3)
-# #            x⃗₅ = Point_2D{F}(2, 3)
-# #            l = LineSegment_2D(x⃗₄, x⃗₅)
+# #            𝘅₄ = Point_2D{F}(0, 3)
+# #            𝘅₅ = Point_2D{F}(2, 3)
+# #            l = LineSegment_2D(𝘅₄, 𝘅₅)
 # #            npoints, (point1, point2) = intersect(l, q)
 # #            @test npoints == 0
 # #            @test point1 ≈ Point_2D{F}(0)
 # #            @test point2 ≈ Point_2D{F}(0)
 # #
 # #            # is_left
-# #            x⃗₁ = Point_2D{F}(0, 0)
-# #            x⃗₂ = Point_2D{F}(2, 0)
-# #            x⃗₃ = Point_2D{F}(1, 1)
-# #            q = QuadraticSegment_2D(x⃗₁, x⃗₂, x⃗₃)
+# #            𝘅₁ = Point_2D{F}(0, 0)
+# #            𝘅₂ = Point_2D{F}(2, 0)
+# #            𝘅₃ = Point_2D{F}(1, 1)
+# #            q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
 # #            @test !is_left(Point_2D{F}(1, 0), q)
 # #            @test is_left(Point_2D{F}(1, 2), q)
         end
