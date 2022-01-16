@@ -12,13 +12,13 @@ Base.@propagate_inbounds function Base.getindex(p::Point, i::Int)
 end
 
 # Constructors
-# -------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 Point{N,T}(x...) where {N,T}= Point{N,T}(SVector{N,T}(x))
 Point{N}(x...) where {N}= Point(SVector(x))
 Point(x...) = Point(SVector(x))
 
 # Operators
-# -------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 @inline -(p::Point) = Point(-p.coord)
 @inline +(p::Point, n::Number) = Point(p.coord .+ n)
 @inline +(n::Number, p::Point) = Point(n .+ p.coord)
@@ -40,7 +40,7 @@ Point(x...) = Point(SVector(x))
 @inline ≈(p₁::Point, p₂::Point) = distance²(p₁, p₂) < (1e-5)^2 # 100 nm
 
 # Methods
-# -------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 @inline distance(p₁::Point, p₂::Point) = norm(p₁ - p₂)
 @inline distance(p₁::Point, v::Vector) = norm(p - v)
 @inline distance(v::Vector, p::Point) = norm(v - p)
@@ -48,10 +48,34 @@ Point(x...) = Point(SVector(x))
 @inline midpoint(p₁::Point{N,T}, p₂::Point{N,T}) where {N,T} = Point{N,T}((p₁ + p₂)/2)
 @inline norm(p::Point) = √(p.coord ⋅ p.coord)
 @inline norm²(p::Point) = p.coord ⋅ p.coord
+Base.rand(::Type{Point{N,T}}) where {N,T} = Point{N,T}(rand(SVector{N,T}))
+function Base.rand(::Type{Point{N,T}}, NP::Int64) where {N,T}
+    return [ Point{N,T}(rand(SVector{N,T})) for i = 1:NP ]
+end
 
 # Sort points based on their distance from a given point
 sortpoints(p::Point, points::Vector{<:Point}) = points[sortperm(distance².(Ref(p), points))]
 function sortpoints!(p::Point_2D, points::Vector{<:Point_2D})
     permute!(points, sortperm(distance².(Ref(p), points)))
     return nothing
+end
+
+# Plot
+# ---------------------------------------------------------------------------------------------
+if enable_visualization
+    function convert_arguments(T::Type{<:Scatter}, p::Point)
+        return convert_arguments(T, p.coord)
+    end
+
+    function convert_arguments(T::Type{<:Scatter}, P::Vector{<:Point})
+        return convert_arguments(T, [p.coord for p in P])
+    end
+
+    function convert_arguments(T::Type{<:LineSegments}, p::Point)
+        return convert_arguments(T, p.coord)
+    end
+
+    function convert_arguments(T::Type{<:LineSegments}, P::Vector{<:Point})
+        return convert_arguments(T, [p.coord for p in P])
+    end
 end

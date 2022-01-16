@@ -1,13 +1,13 @@
 module MOCNeutronTransport
 
 # Compilation Options
-# -------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 const path_to_gmsh_api = "/usr/local/lib/gmsh.jl"
-const enable_visualization = false
+const enable_visualization = true
 const visualize_ray_tracing = false 
 
 # using
-# -------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 using Logging
 using HDF5
 using LightXML
@@ -17,7 +17,7 @@ using Dates: now, format
 using LoggingExtras: TransformerLogger, global_logger
 
 # import
-# -------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 import Base: +, -, *, /, ==, ≈
 import LinearAlgebra: ×, ⋅, norm
 # import Base: @propagate_inbounds
@@ -25,16 +25,16 @@ import LinearAlgebra: ×, ⋅, norm
 #              isapprox, rand, union
 
 # Optional compilation/local dependencies
-# -------------------------------------------------------------------------------------------------
-# if enable_visualization 
-#     using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter, current_axis, record
-#     import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
-# end
+# ---------------------------------------------------------------------------------------------
+if enable_visualization 
+    using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter, current_axis, record
+    import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
+end
 # Gmsh
 include(path_to_gmsh_api)
 
 # Setup logger to have time stamps 
-# -------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 const date_format = "HH:MM:SS.sss"
 timestamp_logger(logger) = TransformerLogger(logger) do log
   merge(log, (; message = "$(format(now(), date_format)) $(log.message)"))
@@ -78,14 +78,6 @@ include("./primitives/LineSegment.jl")
 #include("./ray_tracing/AngularQuadrature.jl")
 #include("./ray_tracing/ray_trace.jl")
 #include("./ray_tracing/ray_trace_low_level.jl")
-#
-#
-
-
-
-
-
-
 
 
 # Structs/Types
@@ -201,11 +193,11 @@ export arclength, area, depth, derivative, distance, distance², height, interse
 #        gmsh_group_preserving_fragment,
 #        gmsh_overlay_rectangular_grid
 # 
-# # Plot
-# if enable_visualization
-#     export Figure, Axis
-#     export scatter, linesegments, mesh,
-#            scatter!, linesegments!, mesh!
-# end
+# Plot
+if enable_visualization
+    export Figure, Axis
+    export scatter, linesegments, mesh,
+           scatter!, linesegments!, mesh!
+end
 
 end # module
