@@ -119,6 +119,6 @@ if enable_visualization
     end
 
     function convert_arguments(LS::Type{<:LineSegments}, L::Vector{<:LineSegment_2D})
-        return convert_arguments(LS, reduce(vcat, [[l[1], l[2]] for l in L]))
+        return convert_arguments(LS, reduce(vcat, [[l.𝘅₁, l.𝘅₂] for l in L]))
     end
 end

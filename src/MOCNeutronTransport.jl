@@ -56,11 +56,11 @@ include("Tree.jl")
 #include("./gmsh/gmsh_group_preserving_fragment.jl")
 #include("./gmsh/gmsh_overlay_rectangular_grid.jl")
 include("./primitives/Edge.jl")
-#include("./primitives/Face.jl")
+include("./primitives/Face.jl")
 include("./primitives/Vector_ND.jl")
 include("./primitives/Point.jl")
 include("./primitives/LineSegment.jl")
-#include("./primitives/AABB.jl")
+include("./primitives/AABB.jl")
 #include("./primitives/QuadraticSegment.jl")
 #include("./primitives/Triangle_2D.jl")
 #include("./primitives/Quadrilateral_2D.jl")
@@ -107,7 +107,7 @@ export +, -, ⋅, ×, ==, ≈
 
 # Methods
 export arclength, area, depth, derivative, distance, distance², height, intersect, 
-       isleft, midpoint, norm, norm², rand, sortpoints, sortpoints!, width
+       isleft, midpoint, norm, norm², rand, sortpoints, sortpoints!, union, width
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,
 #         add_boundary_edges!,

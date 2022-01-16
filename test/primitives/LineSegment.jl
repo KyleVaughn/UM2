@@ -78,13 +78,13 @@ using MOCNeutronTransport
             hit, p₁ = intersect(l₁, l₂)
             @test !hit
 
-#            # isleft
-#            l = LineSegment_2D(Point_2D{F}(0, 0), Point_2D{F}(1, 0))
-#            @test isleft(Point_2D{F}(0, 1) , l)
-#            @test !isleft(Point_2D{F}(0, -1) , l)
-#            @test !isleft(Point_2D{F}(0, -1e-6) , l)
-#            @test isleft(Point_2D{F}(0, 1e-6) , l)
-#            @test isleft(Point_2D{F}(0.5, 0) , l)
+            # isleft
+            l = LineSegment_2D(Point_2D{F}(0, 0), Point_2D{F}(1, 0))
+            @test isleft(Point_2D{F}(0, 1) , l)
+            @test !isleft(Point_2D{F}(0, -1) , l)
+            @test !isleft(Point_2D{F}(0, -1e-6) , l)
+            @test isleft(Point_2D{F}(0, 1e-6) , l)
+            @test isleft(Point_2D{F}(0.5, 0) , l)
         end
     end
 end

@@ -9,13 +9,7 @@ end
 const AABB_2D = AABB{2}
 const AABB_3D = AABB{3}
 
-# Constructors & Conversions
-# -------------------------------------------------------------------------------------------------
-AABB{N}(p₁::Point{N,T}, p₂::Point{N,T}) where {N,T} = AABB{N,T}(p₁, p₂)
-
-# Base
-# -------------------------------------------------------------------------------------------------
-# Note: all branches but the coraabb one are pruned by the compiler
+# Note: all branches but the correct one are pruned by the compiler
 function Base.getproperty(aabb::AABB, sym::Symbol)
     if sym === :xmin
         return aabb.origin[1]
@@ -33,6 +27,11 @@ function Base.getproperty(aabb::AABB, sym::Symbol)
         return getfield(aabb, sym)
     end
 end
+
+# Constructors
+# ---------------------------------------------------------------------------------------------
+AABB{N}(p₁::Point{N,T}, p₂::Point{N,T}) where {N,T} = AABB{N,T}(p₁, p₂)
+AABB(p₁::Point{N,T}, p₂::Point{N,T}) where {N,T} = AABB{N,T}(p₁, p₂)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
@@ -113,15 +112,14 @@ end
 # Credit to Tavian Barnes (https://tavianator.com/2011/ray_box.html)
 # Assumes the line passes all the way through the AABB if it intersects, which is a 
 # valid assumption for this ray tracing application. 
-function Base.intersect(𝗹::LineSegment_2D, aabb::AABB_2D)
-    𝘂 = 𝗹[2] - 𝗹[1]
-    𝘁₁ = (aabb.origin - 𝗹[1]) ./ 𝘂 
-    𝘁₂ = (aabb.corner - 𝗹[1]) ./ 𝘂 
+function Base.intersect(l::LineSegment_2D, aabb::AABB_2D)
+    𝘁₁ = (aabb.origin - l.𝘅₁) ./ l.𝘂
+    𝘁₂ = (aabb.corner - l.𝘅₁) ./ l.𝘂
 
     tmin = max(min(𝘁₁[1], 𝘁₂[1]), min(𝘁₁[2], 𝘁₂[2]))
     tmax = min(max(𝘁₁[1], 𝘁₂[1]), max(𝘁₁[2], 𝘁₂[2]))
 
-    return (tmax >= tmin, SVector(𝗹(tmin), 𝗹(tmax)))
+    return (tmax >= tmin, SVector(l(tmin), l(tmax)))
 end
 
 # A random AABB within [0, 1]ᴺ ⊂ ℝᴺ
@@ -138,50 +136,52 @@ function Base.rand(::Type{AABB{N,T}}, NB::Int64) where {N,T}
     return [ rand(AABB{N,T}) for i ∈ 1:NB ]
 end
 
-# Find the AABB which contains both bb₁ and bb₂
+# Return the AABB which contains both bb₁ and bb₂
 function Base.union(bb₁::AABB{N,T}, bb₂::AABB{N,T}) where {N,T}
-    return AABB(Point{N,T}(min.(bb₁.origin, bb₂.origin)),
-                Point{N,T}(max.(bb₁.corner, bb₂.corner)))
+    return AABB(Point{N,T}(min.(bb₁.origin.coord, bb₂.origin.coord)),
+                Point{N,T}(max.(bb₁.corner.coord, bb₂.corner.coord)))
 end
 
-# # Plot
-# # -------------------------------------------------------------------------------------------------
-# if enable_visualization
-#     function convert_arguments(LS::Type{<:LineSegments}, aabb::aabbangle_2D)
-#         p₂ = Point_2D(aabb.xmax, aabb.ymin)
-#         p₄ = Point_2D(aabb.xmin, aabb.ymax)
-#         l₁ = LineSegment_2D(aabb.bl, p₂)
-#         l₂ = LineSegment_2D(p₂, aabb.tr)
-#         l₃ = LineSegment_2D(aabb.tr, p₄)
-#         l₄ = LineSegment_2D(p₄, aabb.bl)
-#         lines = [l₁, l₂, l₃, l₄]
-#         return convert_arguments(LS, lines)
-#     end
-# 
-#     function convert_arguments(LS::Type{<:LineSegments}, R::Vector{<:aabbangle_2D})
-#         point_sets = [convert_arguments(LS, aabb) for aabb in R]
-#         return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
-#     end
-# 
-#     function convert_arguments(M::Type{<:Mesh}, aabb::aabbangle_2D)
-#         p₂ = Point_2D(aabb.xmax, aabb.ymin)
-#         p₄ = Point_2D(aabb.xmin, aabb.ymax)
-#         points = [aabb.bl, p₂, aabb.tr, p₄]
-#         faces = [1 2 3;
-#                  3 4 1]
-#         return convert_arguments(M, points, faces)
-#     end
-# 
-#     function convert_arguments(M::Type{<:Mesh}, R::Vector{<:aabbangle_2D})
-#         points = reduce(vcat, [[aabb.bl, Point_2D(aabb.xmax, aabb.ymin),
-#                                 aabb.tr, Point_2D(aabb.xmin, aabb.ymax)] for aabb ∈ R])
-#         faces = zeros(Int64, 2*length(R), 3)
-#         j = 0
-#         for i in 1:2:2*length(R)
-#             faces[i    , :] = [1 2 3] .+ j
-#             faces[i + 1, :] = [3 4 1] .+ j
-#             j += 4
-#         end
-#         return convert_arguments(M, points, faces)
-#     end
-# end
+# Plot
+# ---------------------------------------------------------------------------------------------
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, aabb::AABB_2D)
+        p₂ = Point_2D(aabb.xmax, aabb.ymin)
+        p₄ = Point_2D(aabb.xmin, aabb.ymax)
+        l₁ = LineSegment_2D(aabb.origin, p₂)
+        l₂ = LineSegment_2D(p₂, aabb.corner)
+        l₃ = LineSegment_2D(aabb.corner, p₄)
+        l₄ = LineSegment_2D(p₄, aabb.origin)
+        lines = [l₁, l₂, l₃, l₄]
+        return convert_arguments(LS, lines)
+    end
+
+    function convert_arguments(LS::Type{<:LineSegments}, R::Vector{<:AABB_2D})
+        point_sets = [convert_arguments(LS, aabb) for aabb in R]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
+    end
+
+    function convert_arguments(M::Type{<:Mesh}, aabb::AABB_2D)
+        p₂ = Point_2D(aabb.xmax, aabb.ymin)
+        p₄ = Point_2D(aabb.xmin, aabb.ymax)
+        points = [aabb.origin.coord, p₂.coord, aabb.corner.coord, p₄.coord]
+        faces = [1 2 3;
+                 3 4 1]
+        return convert_arguments(M, points, faces)
+    end
+
+    function convert_arguments(M::Type{<:Mesh}, R::Vector{<:AABB_2D})
+        points = reduce(vcat, [[aabb.origin.coord, 
+                                Point_2D(aabb.xmax, aabb.ymin).coord,
+                                aabb.corner.coord, 
+                                Point_2D(aabb.xmin, aabb.ymax).coord] for aabb ∈ R])
+        faces = zeros(Int64, 2*length(R), 3)
+        j = 0
+        for i in 1:2:2*length(R)
+            faces[i    , :] = [1 2 3] .+ j
+            faces[i + 1, :] = [3 4 1] .+ j
+            j += 4
+        end
+        return convert_arguments(M, points, faces)
+    end
+end

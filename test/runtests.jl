@@ -5,7 +5,7 @@ Logging.disable_logging(Logging.Error)
 tests = ["Tree",
          "./primitives/Point",
          "./primitives/LineSegment",
-#         "./primitives/AABB",
+         "./primitives/AABB",
 #         "./primitives/QuadraticSegment",
 #         "./primitives/Triangle_2D",
 #         "./primitives/Quadrilateral_2D",
