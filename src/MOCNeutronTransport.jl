@@ -18,6 +18,8 @@ using LoggingExtras: TransformerLogger, global_logger
 
 # import
 # -------------------------------------------------------------------------------------------------
+import Base: +, -, *, /
+import LinearAlgebra: cross, dot, norm
 # import Base: @propagate_inbounds
 # import Base: broadcastable, getindex, getproperty, +, -, *, /, in, intersect, 
 #              isapprox, rand, union
@@ -54,11 +56,12 @@ include("Tree.jl")
 #include("./gmsh/gmsh_group_preserving_fragment.jl")
 #include("./gmsh/gmsh_overlay_rectangular_grid.jl")
 include("./primitives/Edge.jl")
-include("./primitives/Face.jl")
+#include("./primitives/Face.jl")
+include("./primitives/Vector_ND.jl")
 include("./primitives/Point.jl")
-include("./primitives/LineSegment.jl")
-include("./primitives/AABB.jl")
-include("./primitives/QuadraticSegment.jl")
+#include("./primitives/LineSegment.jl")
+#include("./primitives/AABB.jl")
+#include("./primitives/QuadraticSegment.jl")
 #include("./primitives/Triangle_2D.jl")
 #include("./primitives/Quadrilateral_2D.jl")
 #include("./primitives/Triangle6_2D.jl")
@@ -77,17 +80,18 @@ include("./primitives/QuadraticSegment.jl")
 #include("./ray_tracing/ray_trace_low_level.jl")
 #
 #
-# Convenience operators
-const 𝗗 = derivative
-#const ∇ = gradient
-#const ∇² = laplacian
-#const 𝐉 = jacobian
-#const × = cross
-#const ⋅ = dot
+
+
+
+
+
+
+
 
 # Structs/Types
 export AABB, AABB_2D, AABB_3D, Edge, Face, LineSegment, LineSegment_2D, LineSegment_3D, Point, 
-       Point_2D, Point_3D, QuadraticSegment, QuadraticSegment_2D, QuadraticSegment_3D, Tree
+       Point_2D, Point_3D, QuadraticSegment, QuadraticSegment_2D, QuadraticSegment_3D, Tree,
+       Vector_2D, Vector_3D
 #         LinearUnstructuredMesh_2D,
 #         QuadraticSegment_2D,
 #         QuadraticUnstructuredMesh_2D,
@@ -99,12 +103,21 @@ export AABB, AABB_2D, AABB_3D, Edge, Face, LineSegment, LineSegment_2D, LineSegm
 #         Triangle6_2D,
 #         TriangleMesh_2D,
 #         UnstructuredMesh_2D
+
+# Convenience operators
+#const 𝗗 = derivative
+#const ∇ = gradient
+#const ∇² = laplacian
+#const 𝐉 = jacobian
+#const × = cross
+#const ⋅ = dot
+
 # Operators
-export +, -, ⋅, ×, 𝗗 
+export +, -, ⋅, ×
 
 # Methods
-export arclength, area, depth, derivative, distance, distance², dot, height, intersect, isapprox, 
-       isleft, midpoint, norm, norm², rand, sortpoints, sortpoints!, width
+export arclength, area, cross, depth, derivative, distance, distance², dot, height, intersect, 
+       isapprox, isleft, midpoint, norm, norm², rand, sortpoints, sortpoints!, width
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,
 #         add_boundary_edges!,

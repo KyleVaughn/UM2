@@ -1,95 +1,41 @@
 # An N-dimensional point
-struct Point{N,T} <: StaticVector{N,T}
-    data::NTuple{N,T}
-
-    function Point{N,T}(x::NTuple{N,T}) where {N,T}
-        return new{N,T}(x)
-    end
-
-    function Point{N,T}(x::NTuple{N,Any}) where {N,T}
-        return new{N,T}(StaticArrays.convert_ntuple(T, x))
-    end
+struct Point{N,T}
+    coord::SVector{N,T}
 end
 
 const Point_2D = Point{2}
 const Point_3D = Point{3}
 
-# NOTE: This is pretty much an exact copy of the Point in GeometryBasics. 
-# (https://github.com/JuliaGeometry/GeometryBasics.jl/blob/master/src/fixed_arrays.jl)
-
-# Constructors & Conversions
+# Constructors
 # -------------------------------------------------------------------------------------------------
-# Construct from vector with known size 
-function Point{N}(x::AbstractVector{T}) where {N,T}
-    @assert N <= length(x)
-    return Point{N,T}(ntuple(i -> x[i], Val(N)))
-end
+Point{N,T}(x...) where {N,T}= Point{N,T}(SVector{N,T}(x))
+Point{N}(x...) where {N}= Point(SVector(x))
+Point(x...) = Point(SVector(x))
 
-# Construct from vector with known size, and convert to type T₁
-function Point{N,T₁}(x::AbstractVector{T₂}) where {N,T₁,T₂}
-    @assert N <= length(x)
-    return Point{N,T₁}(ntuple(i -> convert(T₁, x[i]), Val(N)))
-end
-
-# Construct from a Tuple
-function Point(x::T) where {N,T <: Tuple{Vararg{Any,N}}}
-    return Point{N,StaticArrays.promote_tuple_eltype(T)}(x)
-end
- 
-# Construct from a Tuple with known size 
-function Point{N}(x::T) where {N,T <: Tuple}
-    return Point{N,StaticArrays.promote_tuple_eltype(T)}(x)
-end
- 
-# Construct from a Point
-@generated function (::Type{Point{N,T}})(p::Point) where {N,T}
-    idx = [:(p[$i]) for i in 1:N]
-    return quote
-        $(Point){N,T}($(idx...))
-    end
-end
-
-# Convert from a Point
-@generated function Base.convert(::Type{Point{N,T}}, p::Point) where {N,T}
-    idx = [:(p[$i]) for i in 1:N]
-    return quote
-        $(Point){N,T}($(idx...))
-    end
-end
-
-# Convert Tuple to Point
-function Base.convert(::Type{Point{N,T}}, x::NTuple{N,T}) where {N,T}
-    return Point{N,T}(x)
-end
-function Base.convert(::Type{Point{N,T}}, x::Tuple) where {N,T}
-    return Point{N,T}(convert(NTuple{N,T}, x))
-end
-
-# Base (and similar_type)
+# Operators
 # -------------------------------------------------------------------------------------------------
-@generated function StaticArrays.similar_type(::Type{SV}, ::Type{T},
-                                              s::Size{N}) where {SV <: Point,T,N}
-    return if length(N) === 1
-        Point{N[1],T}
-    else
-        StaticArrays.default_similar_type(T, s(), Val{length(N)})
-    end
-end
-function Base.broadcasted(f, a::AbstractArray{T}, b::Point) where {T <: Point}
-    return Base.broadcasted(f, a, (b,))
-end
-Base.@propagate_inbounds function Base.getindex(p::Point{N,T}, i::Int) where {N,T}
-    return p.data[i]
-end
-Base.Tuple(p::Point) = p.data
+@inline -(p::Point) = Point(-p.coord)
+@inline +(p::Point, n::Number) = Point(p.coord .+ n)
+@inline +(n::Number, p::Point) = Point(n .+ p.coord)
+@inline -(p::Point, n::Number) = Point(p.coord .- n)
+@inline -(n::Number, p::Point) = Point(n .- p.coord)
+@inline *(n::Number, p::Point) = Point(n * p.coord) 
+@inline *(p::Point, n::Number) = Point(p.coord * n)
+@inline /(n::Number, p::Point) = Point(n / p.coord) 
+@inline /(p::Point, n::Number) = Point(p.coord / n)
+@inline +(p₁::Point, p₂::Point) = p₁.coord + p₂.coord
+@inline -(p₁::Point, p₂::Point) = p₁.coord - p₂.coord
+@inline ⋅(p₁::Point, p₂::Point) = dot(p₁.coord, p₂.coord)
+@inline ×(p₁::Point, p₂::Point) = cross(p₁.coord, p₂.coord)
 
 # Methods
 # -------------------------------------------------------------------------------------------------
 @inline distance(p₁::Point, p₂::Point) = norm(p₁ - p₂)
 @inline distance²(p₁::Point, p₂::Point) = norm²(p₁ - p₂)
 @inline Base.isapprox(p₁::Point, p₂::Point) = distance²(p₁, p₂) < (1e-5)^2 # 100 nm
-@inline midpoint(p₁::Point, p₂::Point) = (p₁ + p₂)/2
-@inline norm²(p::Point) = p ⋅ p
+@inline midpoint(p₁::Point{N,T}, p₂::Point{N,T}) where {N,T} = Point{N,T}((p₁ + p₂)/2)
+@inline norm(p::Point) = √(p.coord ⋅ p.coord)
+@inline norm²(p::Point) = p.coord ⋅ p.coord
 
 # Sort points based on their distance from a given point
 sortpoints(p::Point, points::Vector{<:Point}) = points[sortperm(distance².(Ref(p), points))]
