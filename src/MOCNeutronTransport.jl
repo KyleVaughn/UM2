@@ -19,7 +19,7 @@ using LoggingExtras: TransformerLogger, global_logger
 # import
 # ---------------------------------------------------------------------------------------------
 import Base: +, -, *, /, ==, ≈
-import LinearAlgebra: ×, ⋅, norm
+import LinearAlgebra: ×, ⋅, norm, inv
 # import Base: @propagate_inbounds
 # import Base: broadcastable, getindex, getproperty, +, -, *, /, in, intersect, 
 #              isapprox, rand, union
@@ -61,7 +61,7 @@ include("./primitives/Vector_ND.jl")
 include("./primitives/Point.jl")
 include("./primitives/LineSegment.jl")
 include("./primitives/AABB.jl")
-#include("./primitives/QuadraticSegment.jl")
+include("./primitives/QuadraticSegment.jl")
 #include("./primitives/Triangle_2D.jl")
 #include("./primitives/Quadrilateral_2D.jl")
 #include("./primitives/Triangle6_2D.jl")
@@ -74,7 +74,7 @@ include("./primitives/AABB.jl")
 #include("./mesh/IO_abaqus.jl")
 ##include("./mesh/IO_vtk.jl")
 #include("./mesh/IO_xdmf.jl")
-# include("gauss_legendre_quadrature.jl")
+include("gauss_legendre_quadrature.jl")
 #include("./ray_tracing/AngularQuadrature.jl")
 #include("./ray_tracing/ray_trace.jl")
 #include("./ray_tracing/ray_trace_low_level.jl")
@@ -97,17 +97,18 @@ export AABB, AABB_2D, AABB_3D, Edge, Face, LineSegment, LineSegment_2D, LineSegm
 #         UnstructuredMesh_2D
 
 # Convenience operators
-#const 𝗗 = derivative
+const 𝗗 = derivative
 #const ∇ = gradient
 #const ∇² = laplacian
-#const 𝐉 = jacobian
+const 𝗝= jacobian
 
 # Operators
-export +, -, ⋅, ×, ==, ≈
+export +, -, ⋅, ×, ==, ≈, 𝗗, 𝗝
 
 # Methods
-export arclength, area, depth, derivative, distance, distance², height, intersect, 
-       isleft, midpoint, norm, norm², rand, sortpoints, sortpoints!, union, width
+export arclength, area, depth, boundingbox, derivative, distance, distance², 
+       gauss_legendre_quadrature, height, intersect, inv, isleft, isstraight, jacobian, 
+       midpoint, nearest_point, norm, norm², rand, sortpoints, sortpoints!, union, width
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,
 #         add_boundary_edges!,

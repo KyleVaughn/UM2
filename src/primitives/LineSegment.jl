@@ -28,7 +28,7 @@ LineSegment(𝘅₁::Point{N,T}, 𝘅₂::Point{N,T}) where {N,T} = LineSegment{
 # Methods
 # ---------------------------------------------------------------------------------------------
 # Interpolation
-@inline (l::LineSegment{N,T})(r) where {N,T} = Point{N,T}(l.𝘅₁.coord + T(r)*l.𝘂)
+@inline (l::LineSegment)(r) = Point(l.𝘅₁.coord + r*l.𝘂)
 @inline arclength(l::LineSegment) = distance(l.𝘅₁.coord, l.𝘅₁.coord + l.𝘂)
 
 function Base.intersect(𝗹₁::LineSegment_3D{T}, 𝗹₂::LineSegment_3D{T}) where {T}
