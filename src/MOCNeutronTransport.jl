@@ -18,8 +18,8 @@ using LoggingExtras: TransformerLogger, global_logger
 
 # import
 # -------------------------------------------------------------------------------------------------
-import Base: +, -, *, /
-import LinearAlgebra: cross, dot, norm
+import Base: +, -, *, /, ==, ≈
+import LinearAlgebra: ×, ⋅, norm
 # import Base: @propagate_inbounds
 # import Base: broadcastable, getindex, getproperty, +, -, *, /, in, intersect, 
 #              isapprox, rand, union
@@ -109,15 +109,13 @@ export AABB, AABB_2D, AABB_3D, Edge, Face, LineSegment, LineSegment_2D, LineSegm
 #const ∇ = gradient
 #const ∇² = laplacian
 #const 𝐉 = jacobian
-#const × = cross
-#const ⋅ = dot
 
 # Operators
-export +, -, ⋅, ×
+export +, -, ⋅, ×, ==, ≈
 
 # Methods
-export arclength, area, cross, depth, derivative, distance, distance², dot, height, intersect, 
-       isapprox, isleft, midpoint, norm, norm², rand, sortpoints, sortpoints!, width
+export arclength, area, depth, derivative, distance, distance², height, intersect, 
+       isleft, midpoint, norm, norm², rand, sortpoints, sortpoints!, width
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,
 #         add_boundary_edges!,
