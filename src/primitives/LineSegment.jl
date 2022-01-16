@@ -5,30 +5,22 @@
 # nearly every method.
 struct LineSegment{N,T} <: Edge{N,T}
     𝘅₁::Point{N,T} 
-    𝘂::Point{N,T}
-    
-    LineSegment{N,T}(𝘅₁::Point{N,T}, 𝘅₂::Point{N,T}) = new(𝘅₁, 𝘅₂ - 𝘅₁) 
+    𝘂::SVector{N,T}
 end
 
 const LineSegment_2D = LineSegment{2}
 const LineSegment_3D = LineSegment{3}
 
-# Constructors & Conversions
+# Constructors
 # -------------------------------------------------------------------------------------------------
-LineSegment{N,T}(𝘅₁::Point{N,T}, 𝘅₂::Point{N,T}) = new(𝘅₁, 𝘅₂ - 𝘅₁) 
-# LineSegment(p₁::Point{N,T}, p₂::Point{N,T}) where {N,T} = LineSegment{N,T}(SVector(p₁, p₂))
-# LineSegment{N}(p₁::Point{N,T}, p₂::Point{N,T}) where {N,T} = LineSegment{N,T}(SVector(p₁, p₂))
-# LineSegment{N,T}(p₁::Point{N,T}, p₂::Point{N,T}) where {N,T} = LineSegment{N,T}(SVector(p₁, p₂))
-# function LineSegment{N,T₁}(p₁::Point{N,T₂}, p₂::Point{N,T₂}) where {N,T₁,T₂}
-#     return LineSegment{N,T₁}(SVector(Point{N, T₁}(p₁), Point{N, T₁}(p₂)))
-# end
-# 
-# # Methods
-# # -------------------------------------------------------------------------------------------------
-# # Interpolation
-# # l(0) yields points[1], and l(1) yields points[2]
-# @inline (l::LineSegment{N,T})(r) where {N,T} = l[1] + (l[2] - l[1])T(r)
-# @inline arclength(l::LineSegment_2D) = distance(l[1], l[2])
+LineSegment{N,T}(𝘅₁::Point{N,T}, 𝘅₂::Point{N,T}) where {N,T} = LineSegment{N,T}(𝘅₁, 𝘅₂ - 𝘅₁) 
+LineSegment{N}(𝘅₁::Point{N,T}, 𝘅₂::Point{N,T}) where {N,T} = LineSegment{N,T}(𝘅₁, 𝘅₂ - 𝘅₁) 
+LineSegment(𝘅₁::Point{N,T}, 𝘅₂::Point{N,T}) where {N,T} = LineSegment{N,T}(𝘅₁, 𝘅₂ - 𝘅₁) 
+# Methods
+# -------------------------------------------------------------------------------------------------
+# Interpolation
+@inline (l::LineSegment{N,T})(r) where {N,T} = Point{N,T}(l.𝘅₁.coord + T(r)*l.𝘂)
+@inline arclength(l::LineSegment) = distance(l.𝘅₁.coord, l.𝘅₁.coord + l.𝘂)
 # 
 # function Base.intersect(𝗹₁::LineSegment_3D{T}, 𝗹₂::LineSegment_3D{T}) where {T}
 #     # NOTE: Doesn't work for colinear/parallel lines. (𝘃 × 𝘂 = 𝟬).

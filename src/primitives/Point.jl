@@ -29,7 +29,11 @@ Point(x...) = Point(SVector(x))
 @inline /(n::Number, p::Point) = Point(n / p.coord) 
 @inline /(p::Point, n::Number) = Point(p.coord / n)
 @inline +(p₁::Point, p₂::Point) = p₁.coord + p₂.coord
+@inline +(p::Point, v::SVector) = p.coord + v
+@inline +(v::SVector, p::Point) = v + p.coord
 @inline -(p₁::Point, p₂::Point) = p₁.coord - p₂.coord
+@inline -(p::Point, v::SVector) = p.coord - v
+@inline -(v::SVector, p::Point) = v - p.coord
 @inline ⋅(p₁::Point, p₂::Point) = dot(p₁.coord, p₂.coord)
 @inline ×(p₁::Point, p₂::Point) = cross(p₁.coord, p₂.coord)
 @inline ==(p::Point, v::Vector) = p.coord == v
@@ -38,6 +42,8 @@ Point(x...) = Point(SVector(x))
 # Methods
 # -------------------------------------------------------------------------------------------------
 @inline distance(p₁::Point, p₂::Point) = norm(p₁ - p₂)
+@inline distance(p₁::Point, v::Vector) = norm(p - v)
+@inline distance(v::Vector, p::Point) = norm(v - p)
 @inline distance²(p₁::Point, p₂::Point) = norm²(p₁ - p₂)
 @inline midpoint(p₁::Point{N,T}, p₂::Point{N,T}) where {N,T} = Point{N,T}((p₁ + p₂)/2)
 @inline norm(p::Point) = √(p.coord ⋅ p.coord)

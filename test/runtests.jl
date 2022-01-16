@@ -4,7 +4,7 @@ using Logging
 Logging.disable_logging(Logging.Error)
 tests = ["Tree",
          "./primitives/Point",
-#         "./primitives/LineSegment",
+         "./primitives/LineSegment",
 #         "./primitives/AABB",
 #         "./primitives/QuadraticSegment",
 #         "./primitives/Triangle_2D",
