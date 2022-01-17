@@ -104,6 +104,13 @@ using MOCNeutronTransport
             𝘅₄ = Point_2D{F}(1, 0)
             𝘅₅ = Point_2D{F}(1, 2)
 
+            # 1 intersection, straight
+            q = QuadraticSegment_2D(𝘅₁, 𝘅₂, Point_2D{F}(1//2, 0))
+            l = LineSegment_2D(Point_2D{F}(1,-1), Point_2D{F}(1,1))
+            npoints, (point1, point2) = intersect(l, q)
+            @test npoints == 1
+            @test point1 ≈ Point_2D{F}(1, 0)
+
             # 1 intersection
             q = QuadraticSegment_2D(𝘅₁, 𝘅₂, 𝘅₃)
             l = LineSegment_2D(𝘅₄, 𝘅₅)
@@ -126,8 +133,8 @@ using MOCNeutronTransport
             l = LineSegment_2D(𝘅₄, 𝘅₅)
             npoints, (point1, point2) = intersect(l, q)
             @test npoints == 0
-            @test point1 ≈ Point_2D{F}(0)
-            @test point2 ≈ Point_2D{F}(0)
+            @test point1 ≈ Point_2D{F}(0, 0)
+            @test point2 ≈ Point_2D{F}(0, 0)
         end
     end
 end

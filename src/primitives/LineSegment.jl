@@ -31,10 +31,10 @@ LineSegment(𝘅₁::Point{N,T}, 𝘅₂::Point{N,T}) where {N,T} = LineSegment{
 @inline (l::LineSegment)(r) = Point(l.𝘅₁.coord + r*l.𝘂)
 @inline arclength(l::LineSegment) = distance(l.𝘅₁.coord, l.𝘅₁.coord + l.𝘂)
 
-function Base.intersect(𝗹₁::LineSegment_3D{T}, 𝗹₂::LineSegment_3D{T}) where {T}
+function Base.intersect(l₁::LineSegment_3D{T}, l₂::LineSegment_3D{T}) where {T}
     # NOTE: Doesn't work for colinear/parallel lines. (𝘂 × 𝘃 = 𝟬).
     # Using the equation of a line in parametric form
-    # For 𝗹₁ = 𝘅₁ + r𝘂 and 𝗹₂ = 𝘅₂ + s𝘃
+    # For l₁ = 𝘅₁ + r𝘂 and l₂ = 𝘅₂ + s𝘃
     # 1) 𝘅₁ + r𝘂 = 𝘅₂ + s𝘃                  subtracting 𝘅₁ from both sides
     # 2) r𝘂 = (𝘅₂-𝘅₁) + s𝘃                  𝘄 = 𝘅₂-𝘅₁
     # 3) r𝘂 = 𝘄 + s𝘃                        cross product with 𝘃 (distributive)
@@ -54,20 +54,20 @@ function Base.intersect(𝗹₁::LineSegment_3D{T}, 𝗹₂::LineSegment_3D{T}) 
     # 7) s(𝘅 ⋅ 𝘅) = r(𝘆 ⋅ 𝘅)                   definition of 2-norm and divide
     # 9) s = r𝘅 ⋅ 𝘆/‖𝘅‖
     ϵ = T(5e-6)
-    𝘄 = 𝗹₂.𝘅₁ - 𝗹₁.𝘅₁
-    𝘇 = 𝗹₁.𝘂 × 𝗹₂.𝘂
+    𝘄 = l₂.𝘅₁ - l₁.𝘅₁
+    𝘇 = l₁.𝘂 × l₂.𝘂
     # Note: 0 ≤ 𝘄 ⋅ 𝘇, and the minimum distance between two lines is d = (𝘄 ⋅𝘇)/‖𝘇‖.
     # Hence 𝘄 ⋅ 𝘇 = 0 for the lines to intersect
     # (https://math.stackexchange.com/questions/2213165/find-shortest-distance-between-lines-in-3d)
     𝘄 ⋅ 𝘇 ≤ T(1e-8) || return (false, Point_3D{T}(0,0,0))
-    𝘅 = 𝘄 × 𝗹₂.𝘂
-    𝘆 = 𝘄 × 𝗹₁.𝘂
+    𝘅 = 𝘄 × l₂.𝘂
+    𝘆 = 𝘄 × l₁.𝘂
     r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇)
     s = r*(𝘅 ⋅ 𝘆)/(𝘅 ⋅ 𝘅)
-    return (T(1e-8)^2 < 𝘇 ⋅ 𝘇 && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ, 𝗹₂(s)) # (hit, point)
+    return (T(1e-8)^2 < 𝘇 ⋅ 𝘇 && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ, l₂(s)) # (hit, point)
 end
 
-function Base.intersect(𝗹₁::LineSegment_2D{T}, 𝗹₂::LineSegment_2D{T}) where {T}
+function Base.intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T}
     # NOTE: Doesn't work for colinear/parallel lines. (𝘂 × 𝘃 = 𝟬).
     # The cross product operator for 2D vectors returns a scalar, since the cross product 
     # of two vectors in the plane is a vector of the form (0, 0, z).
@@ -81,12 +81,12 @@ function Base.intersect(𝗹₁::LineSegment_2D{T}, 𝗹₂::LineSegment_2D{T}) 
     # r = 𝘅 ⋅ 𝘇/𝘇 ⋅ 𝘇 = x₃/z₃ 
     # s = (𝘅 ⋅ 𝘆)(𝘅 ⋅ 𝘇)/(‖𝘅‖‖𝘇‖) = y₃/z₃ 
     ϵ = T(5e-6)
-    𝘄 = 𝗹₂.𝘅₁ - 𝗹₁.𝘅₁
-    z = 𝗹₁.𝘂 × 𝗹₂.𝘂
-    r = (𝘄 × 𝗹₂.𝘂)/z
-    s = (𝘄 × 𝗹₁.𝘂)/z
+    𝘄 = l₂.𝘅₁ - l₁.𝘅₁
+    z = l₁.𝘂 × l₂.𝘂
+    r = (𝘄 × l₂.𝘂)/z
+    s = (𝘄 × l₁.𝘂)/z
     # -ϵ ≤ r ≤ 1 + ϵ introduces a branch, but -ϵ ≤ r && r ≤ 1 + ϵ doesn't for some reason.
-    return (T(1e-8) < abs(z) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ, 𝗹₂(s)) # (hit, point)
+    return (T(1e-8) < abs(z) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ, l₂(s)) # (hit, point)
 end
 
 # Return if the point is left of the line segment

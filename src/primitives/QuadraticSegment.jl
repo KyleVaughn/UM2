@@ -47,9 +47,9 @@ arclength(q::QuadraticSegment) = arclength(q, Val(15))
 function arclength(q::QuadraticSegment{N,T}, ::Val{NP}) where {N,T,NP}
     # Numerical integration is used.
     # (Gauss-Legengre quadrature)
-    #     1                   NP
-    # L = ∫ ‖(𝗗 ∘ 𝗾)(r)‖dr ≈ ∑ wᵢ‖(𝗗 ∘ 𝗾)(r)‖
-    #     0                  i=1
+    #     1             NP
+    # L = ∫ ‖𝗾′(r)‖dr ≈ ∑ wᵢ‖𝗾′(r)‖
+    #     0            i=1
     #
     w, r = gauss_legendre_quadrature(T, Val(NP))
     return sum(@. w * norm(𝗗(q, r)))
@@ -123,96 +123,88 @@ end
     return abs((q[3] - q[1]) × (q[2] - q[1])) < 1e-8
 end
 
-function intersect(l::LineSegment, q::QuadraticSegment)
-    ϵ = parametric_coordinate_ϵ
+function Base.intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T}
+    ϵ = T(5e-6)
+    npoints = 0x0000
+    p₁ = Point_2D{T}(0,0)
+    p₂ = Point_2D{T}(0,0)
     if isstraight(q) # Use line segment intersection.
         # See LineSegment for the math behind this.
-        v⃗ = l[2] - l[1]
-        u⃗ = q[2] - q[1]
-        vxu = v⃗ × u⃗ 
-        # Parallel or collinear lines, return.
-        1e-8 < abs(vxu) || return (0x00000000, SVector(Point(), Point()))
-        w⃗ = q[1] - l[1]
-        # Delay division until r,s are verified
-        if 0 <= vxu 
-            lowerbound = (-ϵ)vxu
-            upperbound = (1 + ϵ)vxu
-        else
-            upperbound = (-ϵ)vxu
-            lowerbound = (1 + ϵ)vxu
-        end 
-        r_numerator = w⃗ × u⃗ 
-        s_numerator = w⃗ × v⃗ 
-        if (lowerbound ≤ r_numerator ≤ upperbound) && (lowerbound ≤ s_numerator ≤ upperbound) 
-            return (0x00000001, SVector(l(s_numerator/vxu), Point()))
-        else
-            return (0x00000000, SVector(Point(), Point()))
-        end 
+        𝘄 = q[1] - l.𝘅₁
+        𝘃 = q[2] - q[1]
+        z = l.𝘂 × 𝘃
+        r = (𝘄 × 𝘃)/z
+        s = (𝘄 × l.𝘂)/z
+        if T(1e-8) < abs(z) && ϵ ≤ r && r ≤ 1 + ϵ && ϵ ≤ s && s ≤ 1 + ϵ
+            npoints += 0x0001
+        end
+        return npoints, SVector(l(r), p₂)
     else
         # q(r) = (2r-1)(r-1)𝘅₁ + r(2r-1)𝘅₂ + 4r(1-r)𝘅₃
         # q(r) = 2r²(𝘅₁ + 𝘅₂ - 2𝘅₃) + r(-3𝘅₁ - 𝘅₂ + 4𝘅₃) + 𝘅₁
-        # Let D⃗ = 2(𝘅₁ + 𝘅₂ - 2𝘅₃), E⃗ = (-3𝘅₁ - 𝘅₂ + 4𝘅₃), F⃗ = x₁
-        # q(r) = r²D⃗ + rE⃗ + F⃗
-        # l(s) = 𝘅₄ + sw⃗
-        # If D⃗ × w⃗ ≠ 0
-        #   𝘅₄ + sw⃗ = r²D⃗ + rE⃗ + F⃗
-        #   sw⃗ = r²D⃗ + rE⃗ + (F⃗ - 𝘅₄)
-        #   0 = r²(D⃗ × w⃗) + r(E⃗ × w⃗) + (F⃗ - 𝘅₄) × w⃗
-        #   Let A = (D⃗ × w⃗), B = (E⃗ × w⃗), C = (F⃗ - 𝘅₄) × w⃗
-        #   0 = Ar² + Br + C
-        #   r = (-B - √(B²-4AC))/2A, -B + √(B²-4AC))/2A)
-        #   s = ((q(r) - p₄)⋅w⃗/(w⃗ ⋅ w⃗)
+        # Let 𝘂 = 2(𝘅₁ + 𝘅₂ - 2𝘅₃), 𝘃 = (-3𝘅₁ - 𝘅₂ + 4𝘅₃)
+        # q(r) = r²𝘂 + r𝘃 + 𝘅₁
+        # l(s) = 𝘅₄ + s𝘄
+        # If 𝘂 × 𝘄 ≠ 𝟬
+        #   𝘅₄ + s𝘄 = r²𝘂 + r𝘃 + 𝘅₁
+        #   s𝘄 = r²𝘂 + r𝘃 + (𝘅₁ - 𝘅₄)
+        #   0 = r²(𝘂 × 𝘄) + r(𝘃 × 𝘄) + (𝘅₁ - 𝘅₄) × 𝘄
+        #   # In 2D the cross product yields a scalar
+        #   Let a = (𝘂 × 𝘄), b = (𝘃 × 𝘄), c = (𝘅₁ - 𝘅₄) × 𝘄
+        #   0 = ar² + br + c
+        #   r = (-b ± √(b²-4ac))/2a
+        #   # We must also solve for s
+        #   r²𝘂 + r𝘃 + 𝘅₁ = 𝘅₄ + s𝘄 
+        #   s𝘄 = r²𝘂 + r𝘃 + (𝘅₁ - 𝘅₄)
+        #   s(𝘄 × 𝘂) = r²(𝘂 × 𝘂) + r(𝘃 × 𝘂) + (𝘅₁ - 𝘅₄) × 𝘂
+        #   -as = r(𝘃 × 𝘂) + c
+        #   s = ((𝘂 × 𝘃)r - c)/a
+        #   or
+        #   s = ((q(r) - 𝘅₄)⋅𝘄/(𝘄 ⋅ 𝘄)
         #   r is invalid if:
-        #     1) A = 0
-        #     2) B² < 4AC
+        #     1) a = 0
+        #     2) b² < 4ac
         #     3) r < 0 or 1 < r   (Curve intersects, segment doesn't)
         #   s is invalid if:
         #     1) s < 0 or 1 < s   (Line intersects, segment doesn't)
-        # If D⃗ × w⃗ = 0, there is only one intersection and the equation reduces to line
+        # If a = 0, there is only one intersection and the equation reduces to line
         # intersection.
-        npoints = 0x00000000
-        p₁ = Point()
-        p₂ = Point()
-        D⃗ = 2(q[1] +  q[2] - 2q[3])
-        E⃗ =  4q[3] - 3q[1] -  q[2]
-        w⃗ = l[2] - l[1]
-        A = D⃗ × w⃗
-        B = E⃗ × w⃗
-        C = (q[1] - l[1]) × w⃗
-        w = w⃗ ⋅ w⃗
-        if abs(A) < 1e-8 
+        𝘂 = 2(q[1] +  q[2] - 2q[3])
+        𝘃 =  4q[3] - 3q[1] -  q[2]
+        𝘄 = l.𝘂
+        a = 𝘂 × 𝘄 
+        b = 𝘃 × 𝘄
+        c = (q[1] - l.𝘅₁) × 𝘄
+        d = 𝘂 × 𝘃
+        if abs(a) < 1e-8 
             # Line intersection
-            # Can B = 0 if A = 0 for non-trivial 𝘅?
-            r = -C/B
-            (-ϵ ≤ r ≤ 1 + ϵ) || return 0x00000000, SVector(p₁, p₂)
-            p₁ = q(r)
-            s = (p₁ - l[1]) ⋅ w⃗/w
+            r = -c/b
+            (-ϵ ≤ r ≤ 1 + ϵ) || return 0x0000, SVector(p₁, p₂)
+            s = (q(r) - l.𝘅₁)⋅𝘄 /(𝘄 ⋅ 𝘄)
+            p₁ = l(s)
             if (-ϵ ≤ s ≤ 1 + ϵ)
-                npoints = 0x00000001
+                npoints = 0x0001
             end
-        elseif B^2 ≥ 4A*C
+        elseif b^2 ≥ 4a*c
             # Quadratic intersection
-            # The compiler seem seems to catch the √(B^2 - 4A*C), for common subexpression 
-            # elimination, so leaving for readability
-            r₁ = (-B - √(B^2 - 4A*C))/2A
-            r₂ = (-B + √(B^2 - 4A*C))/2A
+            disc = √(b^2 - 4a*c)
+            r₁ = (-b - disc)/2a
+            r₂ = (-b + disc)/2a
             if (-ϵ ≤ r₁ ≤ 1 + ϵ)
-                p = q(r₁)
-                s₁ = (p - l[1]) ⋅ w⃗/w
+                p₁ = q(r₁)
+                s₁ = (d*r₁ - c)/a
                 if (-ϵ ≤ s₁ ≤ 1 + ϵ)
-                    p₁ = p
-                    npoints += 0x00000001
+                    npoints += 0x0001
                 end
             end
             if (-ϵ ≤ r₂ ≤ 1 + ϵ)
-                p = q(r₂)
-                s₂ = (p - l[1]) ⋅ w⃗/w
+                p₂ = q(r₂)
+                s₂ = (d*r₂ - c)/a
                 if (-ϵ ≤ s₂ ≤ 1 + ϵ)
-                    p₂ = p
-                    npoints += 0x00000001
+                    npoints += 0x0001
                 end
             end
-            if npoints === 0x00000001 && p₁ === Point()
+            if npoints === 0x0001 && p₁ === Point_2D{T}(0,0)
                 p₁ = p₂
             end
         end
