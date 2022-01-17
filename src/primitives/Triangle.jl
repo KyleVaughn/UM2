@@ -69,9 +69,9 @@ function Base.intersect(l::LineSegment_2D{T}, tri::Triangle_2D{T}) where {T}
     p₂ = Point_2D{T}(0,0)
     p₃ = Point_2D{T}(0,0)
     npoints = 0x0000
-    for i ∈ 0x0001:0x0003
-        hit, point = l ∩ LineSegment_2D(tri[(i - 0x0001) % 0x0003 + 0x0001], 
-                                        tri[           i % 0x0003 + 0x0001])
+    for i ∈ 1:3
+        hit, point = l ∩ LineSegment_2D(tri[(i - 1) % 3 + 1], 
+                                        tri[      i % 3 + 1])
         if hit
             npoints += 0x0001
             if npoints === 0x0001
