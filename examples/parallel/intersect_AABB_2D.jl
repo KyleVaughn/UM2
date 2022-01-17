@@ -6,7 +6,7 @@ using StaticArrays
 
 # Number of rects to use in vectors
 N = 2^20
-println("Using a Rectangle_2D vector of length $N")
+println("Using a AABB_2D vector of length $N")
 
 # Check num threads and give warning
 nthreads = Threads.nthreads()
@@ -93,9 +93,9 @@ end
 
 cpu_time = 0.0
 for T = [Float64, Float32]
-    println("Using Rectangle_2D of type $T")
+    println("Using AABB_2D of type $T")
     l = LineSegment_2D(Point_2D{T}(0, 0.2), Point_2D{T}(1, 0.8))
-    rects = rand(Rectangle_2D{T}, N)
+    rects = rand(AABB_2D{T}, N)
     out = fill((false, SVector(Point_2D{T}(0, 0), Point_2D{T}(0, 0))), N)
     ref = l .∩ rects
     time = @belapsed sequential_intersection!($out, $l, $rects)

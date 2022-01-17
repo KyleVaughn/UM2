@@ -228,6 +228,18 @@ function nearest_point(p::Point, q::QuadraticSegment{N,T}, max_iters::Int64) whe
     return r, q(r)
 end
 
+# A random quadratic segment within [0, 1] × [0, 1]
+function Base.rand(::Type{QuadraticSegment{N,F}}) where {N,F} 
+    points = rand(Point{N,F}, 3)
+    return QuadraticSegment(points[1], points[2], points[3])
+end
+
+# N random quadratic segments within [0, 1] × [0, 1]
+function Base.rand(::Type{QuadraticSegment{N,F}}, NS::Int64) where {N,F}
+    return [ rand(QuadraticSegment{N,F}) for i ∈ 1:NS ]
+end
+
+
 # Plot
 # ---------------------------------------------------------------------------------------------
 if enable_visualization
