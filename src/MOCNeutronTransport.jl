@@ -62,7 +62,7 @@ include("./primitives/Point.jl")
 include("./primitives/LineSegment.jl")
 include("./primitives/AABB.jl")
 include("./primitives/QuadraticSegment.jl")
-#include("./primitives/Triangle_2D.jl")
+include("./primitives/Triangle.jl")
 #include("./primitives/Quadrilateral_2D.jl")
 #include("./primitives/Triangle6_2D.jl")
 #include("./primitives/Quadrilateral8_2D.jl")
@@ -83,7 +83,7 @@ include("gauss_legendre_quadrature.jl")
 # Structs/Types
 export AABB, AABB_2D, AABB_3D, Edge, Face, LineSegment, LineSegment_2D, LineSegment_3D, Point, 
        Point_2D, Point_3D, QuadraticSegment, QuadraticSegment_2D, QuadraticSegment_3D, Tree,
-       Vector_2D, Vector_3D
+       Triangle, Triangle_2D, Triangle_3D, Vector_2D, Vector_3D
 #         LinearUnstructuredMesh_2D,
 #         QuadraticSegment_2D,
 #         QuadraticUnstructuredMesh_2D,

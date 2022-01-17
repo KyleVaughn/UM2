@@ -20,7 +20,7 @@ end
 const QuadraticSegment_2D = QuadraticSegment{2}
 const QuadraticSegment_3D = QuadraticSegment{3}
 
-Base.@propagate_inbounds function Base.getindex(q::QuadraticSegment, i::Int)
+Base.@propagate_inbounds function Base.getindex(q::QuadraticSegment, i::Integer)
     getfield(q, :points)[i]
 end
 

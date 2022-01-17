@@ -7,7 +7,7 @@ const Point_2D = Point{2}
 const Point_3D = Point{3}
 
 Base.broadcastable(p::Point) = Ref(p)
-Base.@propagate_inbounds function Base.getindex(p::Point, i::Int)
+Base.@propagate_inbounds function Base.getindex(p::Point, i::Integer)
     getfield(p, :coord)[i]
 end
 
