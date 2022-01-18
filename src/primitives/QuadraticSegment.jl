@@ -43,19 +43,19 @@ function (q::QuadraticSegment)(r)
     return Point((2r-1)*(r-1)q[1] + r*(2r-1)q[2] + 4r*(1-r)q[3])
 end
 
-#arclength(q::QuadraticSegment) = arclength(q, Val(25))
-# function arclength(q::QuadraticSegment{N,T}, ::Val{NP}) where {N,T,NP}
-#     # Numerical integration is used.
-#     # (Gauss-Legengre quadrature)
-#     #     1             NP
-#     # L = ∫ ‖𝗾′(r)‖dr ≈ ∑ wᵢ‖𝗾′(r)‖
-#     #     0            i=1
-#     #
-#     w, r = gauss_legendre_quadrature(T, Val(NP))
-#     return sum(@. w * norm(𝗗(q, r)))
-# end
+arclength(q::QuadraticSegment) = arclength(q, Val(25))
+function arclength(q::QuadraticSegment{N,T}, ::Val{NP}) where {N,T,NP}
+    # Numerical integration is used.
+    # (Gauss-Legengre quadrature)
+    #     1             NP
+    # L = ∫ ‖𝗾′(r)‖dr ≈ ∑ wᵢ‖𝗾′(r)‖
+    #     0            i=1
+    #
+    w, r = gauss_legendre_quadrature(T, Val(NP))
+    return sum(@. w * norm(𝗗(q, r)))
+end
 
-function arclength(q::QuadraticSegment)
+function arclength(q::QuadraticSegment_2D{T}) where {T}
     if isstraight(q)
         return distance(q[1], q[2])
     else
@@ -262,7 +262,7 @@ end
 # Plot
 # ---------------------------------------------------------------------------------------------
 if enable_visualization
-    function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment_2D)
+    function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment)
         rr = LinRange(0, 1, 15)
         points = q.(rr)
         coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])

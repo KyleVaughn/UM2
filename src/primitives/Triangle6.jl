@@ -44,7 +44,7 @@ end
 
 area(tri6::Triangle6_2D) = area(tri6, Val(3))
 function area(tri6::Triangle6_2D, ::Val{N}) where {N}
-    # Numerical integration required. Gauss-Legendre quadrature over a triangle is used.
+    # Gauss-Legendre quadrature over a triangle is used.
     # Let F(r,s) be the interpolation function for tri6, and 𝗝(r,s) be the Jacobian of F 
     # at (r,s). |𝗝| is the Jacobian determinant 
     #                    1 1-r                N
