@@ -109,8 +109,8 @@ export +, -, ⋅, ×, ==, ≈, 𝗗, 𝗝
 # Methods
 export arclength, area, centroid, depth, boundingbox, derivative, distance, distance², 
        gauss_legendre_quadrature, height, intersect, inv, isleft, isstraight, jacobian, 
-       midpoint, nearest_point, norm, norm², rand, sortpoints, sortpoints!, triangulate,
-       union, width
+       midpoint, nearest_point, norm, norm², rand, real_to_parametric, sortpoints, 
+       sortpoints!, triangulate, union, width
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,
 #         add_boundary_edges!,

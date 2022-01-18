@@ -198,11 +198,12 @@ function Base.intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {
         b = 𝘃 × 𝘄
         c = (q[1] - l.𝘅₁) × 𝘄
         d = 𝘂 × 𝘃
+        w² = 𝘄 ⋅ 𝘄 
         if abs(a) < 1e-8 
             # Line intersection
             r = -c/b
             (-ϵ ≤ r ≤ 1 + ϵ) || return 0x0000, SVector(p₁, p₂)
-            s = (q(r) - l.𝘅₁)⋅𝘄 /(𝘄 ⋅ 𝘄)
+            s = (q(r) - l.𝘅₁)⋅𝘄 /w²
             p₁ = l(s)
             if (-ϵ ≤ s ≤ 1 + ϵ)
                 npoints = 0x0001
@@ -214,15 +215,15 @@ function Base.intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {
             r₂ = (-b + disc)/2a
             if (-ϵ ≤ r₁ ≤ 1 + ϵ)
                 p₁ = q(r₁)
-                s₁ = (d*r₁ - c)/a
-                if (-ϵ ≤ s₁ ≤ 1 + ϵ)
+                s₁ = (p₁ - l.𝘅₁)⋅𝘄
+                if (-ϵ*w² ≤ s₁ ≤ (1 + ϵ)w²)
                     npoints += 0x0001
                 end
             end
             if (-ϵ ≤ r₂ ≤ 1 + ϵ)
                 p₂ = q(r₂)
-                s₂ = (d*r₂ - c)/a
-                if (-ϵ ≤ s₂ ≤ 1 + ϵ)
+                s₂ = (p₂ - l.𝘅₁)⋅𝘄
+                if (-ϵ*w² ≤ s₂ ≤ (1 + ϵ)w²)
                     npoints += 0x0001
                 end
             end
@@ -242,7 +243,7 @@ function nearest_point(p::Point, q::QuadraticSegment{N,T}, max_iters::Int64) whe
     r = 1//2 + inv(𝗝(q, 1//2))*(p - q(1//2)) 
     for i ∈ 1:max_iters-1
         Δr = inv(𝗝(q, r))*(p - q(r)) 
-        if abs(Δr) < 1e-7
+        if abs(Δr) < T(1e-7)
             break
         end
         r += Δr
