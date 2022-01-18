@@ -43,16 +43,35 @@ function (q::QuadraticSegment)(r)
     return Point((2r-1)*(r-1)q[1] + r*(2r-1)q[2] + 4r*(1-r)q[3])
 end
 
-arclength(q::QuadraticSegment) = arclength(q, Val(25))
-function arclength(q::QuadraticSegment{N,T}, ::Val{NP}) where {N,T,NP}
-    # Numerical integration is used.
-    # (Gauss-Legengre quadrature)
-    #     1             NP
-    # L = ∫ ‖𝗾′(r)‖dr ≈ ∑ wᵢ‖𝗾′(r)‖
-    #     0            i=1
-    #
-    w, r = gauss_legendre_quadrature(T, Val(NP))
-    return sum(@. w * norm(𝗗(q, r)))
+#arclength(q::QuadraticSegment) = arclength(q, Val(25))
+# function arclength(q::QuadraticSegment{N,T}, ::Val{NP}) where {N,T,NP}
+#     # Numerical integration is used.
+#     # (Gauss-Legengre quadrature)
+#     #     1             NP
+#     # L = ∫ ‖𝗾′(r)‖dr ≈ ∑ wᵢ‖𝗾′(r)‖
+#     #     0            i=1
+#     #
+#     w, r = gauss_legendre_quadrature(T, Val(NP))
+#     return sum(@. w * norm(𝗗(q, r)))
+# end
+
+function arclength(q::QuadraticSegment)
+    if isstraight(q)
+        return distance(q[1], q[2])
+    else
+        # Mathematica for this algebraic nightmare
+        d = q[1][1] - q[3][1]; e = q[2][1] - q[3][1]
+        f = q[1][2] - q[3][2]; g = q[2][2] - q[3][2]
+        a = 16((d + e)^2 + (f + g)^2)
+        b = -8((3d + e)*(d + e) + (3f + g)*(f + g))
+        c = (3d + e)^2 + (3f + g)^2
+        l = (
+                (b^2 - 4a*c)*(log(2sqrt(a)*sqrt(c) + b) - 
+                              log(2sqrt(a)*sqrt(a + b + c) + 2a + b)) + 
+                2sqrt(a)*(2a*sqrt(a + b + c) + b*(sqrt(a + b + c) - sqrt(c)))
+            )/(8*a^(3//2))
+        return l 
+    end
 end
 
 # Find the axis-aligned bounding box of the segment.
