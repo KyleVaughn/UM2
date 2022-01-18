@@ -42,20 +42,39 @@ function (tri6::Triangle6)(r, s)
                                  4s*(1 - r - s)*tri6[6] )
 end
 
-area(tri6::Triangle6_2D) = area(tri6, Val(3))
-function area(tri6::Triangle6_2D, ::Val{N}) where {N}
-    # Gauss-Legendre quadrature over a triangle is used.
+function area(tri6::Triangle6_2D)
     # Let F(r,s) be the interpolation function for tri6, and 𝗝(r,s) be the Jacobian of F 
     # at (r,s). |𝗝| is the Jacobian determinant 
     #                    1 1-r                N
     # A = ∬ |𝗝(r,s)|dA = ∫  ∫ |𝗝(r,s)|ds dr = ∑ wᵢ|𝗝(rᵢ,sᵢ)|
     #     D              0  0                i=1
-    #
-    # N is the number of points used in the quadrature.
-    w, r, s = gauss_legendre_quadrature(tri6, Val(N))
-    return sum(@. w * det(𝗝(tri6, r, s)))
+    # Mathematica for this algebraic nightmare
+    a = tri6[1][1]; g = tri6[1][2]
+    b = tri6[2][1]; h = tri6[2][2]
+    c = tri6[3][1]; i = tri6[3][2]
+    d = tri6[4][1]; j = tri6[4][2]
+    e = tri6[5][1]; k = tri6[5][2]
+    f = tri6[6][1]; l = tri6[6][2]
+    return (-4d*g + 4f*g -a*h + 4d*h - 4e*h + a*i + 4e*i - 4f*i + 
+            4a*j + b*(g-i-4j+4k) - 4a*l + c*(-g+h-4k+4l))/6
 end
-# 
+
+
+# Determine 3D Val(N) in the future. to resurrect this method. For now, leave it be. 
+# area(tri6::Triangle6_2D) = area(tri6, Val(3))
+# function area(tri6::Triangle6, ::Val{N}) where {N}
+#     # Gauss-Legendre quadrature over a triangle is used.
+#     # Let F(r,s) be the interpolation function for tri6, and 𝗝(r,s) be the Jacobian of F 
+#     # at (r,s). |𝗝| is the Jacobian determinant 
+#     #                           1 1-r                       N
+#     # A = ∬ ‖∂F/∂r × ∂F/∂s‖dA = ∫  ∫ ‖∂F/∂r × ∂F/∂s‖ds dr = ∑ wᵢ‖∂F/∂r(rᵢ,sᵢ) × ∂F/∂s(rᵢ, sᵢ)‖
+#     #     D                     0  0                       i=1
+#     #
+#     # N is the number of points used in the quadrature.
+#     w, r, s = gauss_legendre_quadrature(tri6, Val(N))
+#     return sum(@. w * norm( 𝗝(tri6, r, s) |> x->x[:,1] × x[:,2]))
+# end
+
 # centroid(tri6::Triangle6_2D) = centroid(tri6, Val(6))
 # function centroid(tri6::Triangle6_2D, ::Val{N}) where {N}
 #     # Numerical integration required. Gauss-Legendre quadrature over a triangle is used.
@@ -94,20 +113,20 @@ function jacobian(tri6::Triangle6, r, s)
     return hcat(∂F_∂r, ∂F_∂s)
 end
 
-# function in(p::Point_2D, tri6::Triangle6_2D)
-#     # If the point is to the left of every edge
-#     #  3<-----2
-#     #  |     ^
-#     #  | p  /
-#     #  |   /
-#     #  |  /
-#     #  v /
-#     #  1
-#     return isleft(p, QuadraticSegment_2D(tri6[1], tri6[2], tri6[4])) &&
-#            isleft(p, QuadraticSegment_2D(tri6[2], tri6[3], tri6[5])) &&
-#            isleft(p, QuadraticSegment_2D(tri6[3], tri6[1], tri6[6]))
-# end
-# 
+function Base.in(p::Point_2D, tri6::Triangle6_2D)
+    # If the point is to the left of every edge
+    #  3<-----2
+    #  |     ^
+    #  | p  /
+    #  |   /
+    #  |  /
+    #  v /
+    #  1
+    return isleft(p, QuadraticSegment_2D(tri6[1], tri6[2], tri6[4])) &&
+           isleft(p, QuadraticSegment_2D(tri6[2], tri6[3], tri6[5])) &&
+           isleft(p, QuadraticSegment_2D(tri6[3], tri6[1], tri6[6]))
+end
+
 # # # Slower method than above.
 # # function in(p::Point_2D, tri6::Triangle6_2D)
 # #     return in(p, tri6, 30)
@@ -147,13 +166,6 @@ end
 #         end
 #     end
 #     return n_ipoints, SVector(ipoints)
-# end
-# 
-# function jacobian(tri6::Triangle6_2D, r::Real, s::Real)
-#     # Return the 2 x 2 Jacobian matrix
-#     ∂F_∂r, ∂F_∂s = ∇(tri6, r, s)
-#     return SMatrix{2, 2}(∂F_∂r.x, ∂F_∂r.y,
-#                          ∂F_∂s.x, ∂F_∂s.y)
 # end
 # 
 # function real_to_parametric(p::Point_2D, tri6::Triangle6_2D)

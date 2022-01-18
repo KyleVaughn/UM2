@@ -65,10 +65,13 @@ function arclength(q::QuadraticSegment_2D{T}) where {T}
         a = 16((d + e)^2 + (f + g)^2)
         b = -8((3d + e)*(d + e) + (3f + g)*(f + g))
         c = (3d + e)^2 + (3f + g)^2
+        sqrt_abc = sqrt(a + b + c)
+        sqrt_a = sqrt(a)
+        sqrt_c = sqrt(c)
         l = (
-                (b^2 - 4a*c)*(log(2sqrt(a)*sqrt(c) + b) - 
-                              log(2sqrt(a)*sqrt(a + b + c) + 2a + b)) + 
-                2sqrt(a)*(2a*sqrt(a + b + c) + b*(sqrt(a + b + c) - sqrt(c)))
+                (b^2 - 4a*c)*(log(2sqrt_a*sqrt_c + b) - 
+                              log(2sqrt_a*sqrt_abc + 2a + b)) + 
+                2sqrt_a*(2a*sqrt_abc + b*(sqrt_abc - sqrt_c))
             )/(8*a^(3//2))
         return l 
     end
