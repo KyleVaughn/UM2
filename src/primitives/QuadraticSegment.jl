@@ -118,9 +118,9 @@ function isleft(p::Point, q::QuadraticSegment)
 end
 
 # If the quadratic segment is effectively linear
-@inline function isstraight(q::QuadraticSegment_2D)
+@inline function isstraight(q::QuadraticSegment)
     # u⃗ × v⃗ = |u⃗||v⃗|sinθ
-    return abs((q[3] - q[1]) × (q[2] - q[1])) < 1e-8
+    return norm((q[3] - q[1]) × (q[2] - q[1])) < 1e-8
 end
 
 function Base.intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T}

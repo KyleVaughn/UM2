@@ -40,13 +40,6 @@ function area(tri::Triangle)
     return norm(𝘂 × 𝘃)/2
 end
 
-function area(tri::Triangle_2D)
-    𝘂 = tri[2] - tri[1]
-    𝘃 = tri[3] - tri[1]
-    # 2D cross product returns a scalar
-    return abs(𝘂 × 𝘃)/2
-end
-
 centroid(tri::Triangle) = tri(1//3, 1//3)
 
 function Base.in(p::Point_2D, tri::Triangle_2D)
