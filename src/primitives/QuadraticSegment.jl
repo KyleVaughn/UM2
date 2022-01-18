@@ -43,7 +43,7 @@ function (q::QuadraticSegment)(r)
     return Point((2r-1)*(r-1)q[1] + r*(2r-1)q[2] + 4r*(1-r)q[3])
 end
 
-arclength(q::QuadraticSegment) = arclength(q, Val(15))
+arclength(q::QuadraticSegment) = arclength(q, Val(25))
 function arclength(q::QuadraticSegment{N,T}, ::Val{NP}) where {N,T,NP}
     # Numerical integration is used.
     # (Gauss-Legengre quadrature)
