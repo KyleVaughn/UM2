@@ -6,8 +6,8 @@ end
 const Triangle_2D = Triangle{2}
 const Triangle_3D = Triangle{3}
 
-Base.@propagate_inbounds function Base.getindex(q::Triangle, i::Integer)
-    getfield(q, :points)[i]
+Base.@propagate_inbounds function Base.getindex(tri::Triangle, i::Integer)
+    getfield(tri, :points)[i]
 end
 
 # Constructors

@@ -1,6 +1,6 @@
 using MOCNeutronTransport
 @testset "Quadrilateral_2D" begin
-    for F in [Float32, Float64]
+    for F in [Float32, Float64, BigFloat]
         @testset "Constructors" begin
             p₁ = Point_2D{F}(0, 0)
             p₂ = Point_2D{F}(1, 0)
