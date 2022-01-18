@@ -1,4 +1,4 @@
-# Triangle defined by its 3 vertices.
+# A triangle defined by its 3 vertices.
 struct Triangle{N,T} <: Face{N,T}
     points::SVector{3, Point{N,T}}
 end

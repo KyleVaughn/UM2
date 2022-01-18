@@ -63,7 +63,7 @@ include("./primitives/LineSegment.jl")
 include("./primitives/AABB.jl")
 include("./primitives/QuadraticSegment.jl")
 include("./primitives/Triangle.jl")
-#include("./primitives/Quadrilateral_2D.jl")
+include("./primitives/Quadrilateral.jl")
 #include("./primitives/Triangle6_2D.jl")
 #include("./primitives/Quadrilateral8_2D.jl")
 #include("L_system.jl")
@@ -82,8 +82,9 @@ include("gauss_legendre_quadrature.jl")
 
 # Structs/Types
 export AABB, AABB_2D, AABB_3D, Edge, Face, LineSegment, LineSegment_2D, LineSegment_3D, Point, 
-       Point_2D, Point_3D, QuadraticSegment, QuadraticSegment_2D, QuadraticSegment_3D, Tree,
-       Triangle, Triangle_2D, Triangle_3D, Vector_2D, Vector_3D
+       Point_2D, Point_3D, QuadraticSegment, QuadraticSegment_2D, QuadraticSegment_3D, 
+       Quadrilateral, Quadrilateral_2D, Quadrilateral_3D, Tree, Triangle, Triangle_2D, 
+       Triangle_3D, Vector_2D, Vector_3D
 #         LinearUnstructuredMesh_2D,
 #         QuadraticSegment_2D,
 #         QuadraticUnstructuredMesh_2D,
@@ -106,9 +107,10 @@ const 𝗝= jacobian
 export +, -, ⋅, ×, ==, ≈, 𝗗, 𝗝
 
 # Methods
-export arclength, area, depth, boundingbox, derivative, distance, distance², 
+export arclength, area, centroid, depth, boundingbox, derivative, distance, distance², 
        gauss_legendre_quadrature, height, intersect, inv, isleft, isstraight, jacobian, 
-       midpoint, nearest_point, norm, norm², rand, sortpoints, sortpoints!, union, width
+       midpoint, nearest_point, norm, norm², rand, sortpoints, sortpoints!, triangulate,
+       union, width
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,
 #         add_boundary_edges!,
