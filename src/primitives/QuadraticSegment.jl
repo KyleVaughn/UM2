@@ -202,7 +202,7 @@ function Base.intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {
         if abs(a) < 1e-8 
             # Line intersection
             r = -c/b
-            (-ϵ ≤ r ≤ 1 + ϵ) || return 0x0000, SVector(p₁, p₂)
+            -ϵ ≤ r ≤ 1 + ϵ || return 0x0000, SVector(p₁, p₂)
             s = (q(r) - l.𝘅₁)⋅𝘄 /w²
             p₁ = l(s)
             if (-ϵ ≤ s ≤ 1 + ϵ)
@@ -213,21 +213,23 @@ function Base.intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {
             disc = √(b^2 - 4a*c)
             r₁ = (-b - disc)/2a
             r₂ = (-b + disc)/2a
-            if (-ϵ ≤ r₁ ≤ 1 + ϵ)
+            valid_p₁ = false
+            if -ϵ ≤ r₁ ≤ 1 + ϵ
                 p₁ = q(r₁)
                 s₁ = (p₁ - l.𝘅₁)⋅𝘄
-                if (-ϵ*w² ≤ s₁ ≤ (1 + ϵ)w²)
+                if -ϵ*w² ≤ s₁ ≤ (1 + ϵ)w²
                     npoints += 0x0001
+                    valid_p₁ = true
                 end
             end
-            if (-ϵ ≤ r₂ ≤ 1 + ϵ)
+            if -ϵ ≤ r₂ ≤ 1 + ϵ
                 p₂ = q(r₂)
                 s₂ = (p₂ - l.𝘅₁)⋅𝘄
-                if (-ϵ*w² ≤ s₂ ≤ (1 + ϵ)w²)
+                if -ϵ*w² ≤ s₂ ≤ (1 + ϵ)w²
                     npoints += 0x0001
                 end
             end
-            if npoints === 0x0001 && p₁ === Point_2D{T}(0,0)
+            if npoints === 0x0001 && !valid_p₁ 
                 p₁ = p₂
             end
         end

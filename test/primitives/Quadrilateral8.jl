@@ -119,25 +119,25 @@ using MOCNeutronTransport
              @test points[3] ≈ Point_2D{F}(2.0644444444444447,        1//10)
              @test points[4] ≈ Point_2D{F}(0,                         1//10)
  
-#             # 6 intersections
-#             p₁ = Point_2D{F}( 1, 0)
-#             p₂ = Point_2D{F}( 0, 0)
-#             p₃ = Point_2D{F}(-1, 0)
-#             p₄ = Point_2D{F}( 0, -2)
-#             p₅ = Point_2D{F}( 1//2, -1//2)
-#             p₆ = Point_2D{F}(-1//2, -1//2)
-#             p₇ = Point_2D{F}(-1//2, -3//2)
-#             p₈ = Point_2D{F}( 1//2, -3//2)
-#             quad8 = Quadrilateral8_2D(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
-#             l = LineSegment_2D(Point_2D{F}(-2, -1//4), Point_2D{F}(2, -1//4))
-#             n, points = l ∩ quad8
-#             @test n == 6
-#             @test points[1] ≈ Point_2D{F}(F[ 0.14644659, -1//4])
-#             @test points[2] ≈ Point_2D{F}(F[ 0.8535534,  -1//4])
-#             @test points[3] ≈ Point_2D{F}(F[-0.8535534,  -1//4])
-#             @test points[4] ≈ Point_2D{F}(F[-0.14644665, -1//4])
-#             @test points[5] ≈ Point_2D{F}(F[-0.9354143,  -1//4])
-#             @test points[6] ≈ Point_2D{F}(F[ 0.9354143,  -1//4])
+             # 6 intersections
+             p₁ = Point_2D{F}( 1, 0)
+             p₂ = Point_2D{F}( 0, 0)
+             p₃ = Point_2D{F}(-1, 0)
+             p₄ = Point_2D{F}( 0, -2)
+             p₅ = Point_2D{F}( 1//2, -1//2)
+             p₆ = Point_2D{F}(-1//2, -1//2)
+             p₇ = Point_2D{F}(-1//2, -3//2)
+             p₈ = Point_2D{F}( 1//2, -3//2)
+             quad8 = Quadrilateral8_2D(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
+             l = LineSegment_2D(Point_2D{F}(-2, -1//4), Point_2D{F}(2, -1//4))
+             n, points = l ∩ quad8
+             @test n == 6
+             @test points[1] ≈ Point_2D{F}(F[ 0.14644659, -1//4])
+             @test points[2] ≈ Point_2D{F}(F[ 0.8535534,  -1//4])
+             @test points[3] ≈ Point_2D{F}(F[-0.8535534,  -1//4])
+             @test points[4] ≈ Point_2D{F}(F[-0.14644665, -1//4])
+             @test points[5] ≈ Point_2D{F}(F[-0.9354143,  -1//4])
+             @test points[6] ≈ Point_2D{F}(F[ 0.9354143,  -1//4])
         end
     end
 end
