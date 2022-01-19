@@ -61,7 +61,7 @@ function read_abaqus_2d(filepath::String)
     # plus a fudge factor for small meshes, where the relationships become less accurate.
     UInt32_max = 4294967295
     nfaces = length(faces)
-    if UInt32_max < 2.2*nfaces
+    if UInt32_max < 2.2*nfaces + 1000
         @error "Mesh may cause UInt32 overflow. Some poor dev now has to add UInt64 support"
     end
     face_lengths = Int64[]
