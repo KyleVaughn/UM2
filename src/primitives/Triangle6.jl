@@ -1,4 +1,4 @@
-# A quadratic triangle, defined in 2D.
+# A triangle with quadratic edges.
 struct Triangle6{N,T} <: Face{N,T}
     # The points are assumed to be ordered as follows
     # p₁ = vertex A
@@ -234,9 +234,9 @@ function triangulate(tri6::Triangle6{N,T}, D::Int64) where {N,T}
         end
         j = (D+1)*D + 1
         for s = 0:0, r = 0:D-s
-            triangles[j] = Triangle_2D(tri6(    r/(D+1),     s/(D+1)),
-                                       tri6((r+1)/(D+1),     s/(D+1)),
-                                       tri6(    r/(D+1), (s+1)/(D+1)))
+            triangles[j] = Triangle(tri6(    r/(D+1),     s/(D+1)),
+                                    tri6((r+1)/(D+1),     s/(D+1)),
+                                    tri6(    r/(D+1), (s+1)/(D+1)))
             j += 1
         end
     end

@@ -157,7 +157,7 @@ function Base.intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {
         z = l.𝘂 × 𝘃
         r = (𝘄 × 𝘃)/z
         s = (𝘄 × l.𝘂)/z
-        if T(1e-8) < abs(z) && ϵ ≤ r && r ≤ 1 + ϵ && ϵ ≤ s && s ≤ 1 + ϵ
+        if T(1e-8) < abs(z) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ
             npoints += 0x0001
         end
         return npoints, SVector(l(r), p₂)
