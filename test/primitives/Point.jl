@@ -13,10 +13,14 @@ using StaticArrays
             # Addition
             p = p₁ + 1
             @test p == [2, 3]
+            p = p₁ + p₂
+            @test p == [3, 6]
 
             # Subtraction
             p = p₁ - 1
             @test p == [0, 1]
+            p = p₁ - p₂
+            @test p == [-1, -2]
 
             # Multiplication
             p = 4*p₁
@@ -25,14 +29,6 @@ using StaticArrays
             # Division
             p = p₁/4
             @test p == [1//4, 1//2]
-
-            # Point addition
-            p = p₁ + p₂
-            @test p == [3, 6]
-
-            # Point subtraction
-            p = p₁ - p₂
-            @test p == [-1, -2]
 
             # Dot product
             p₁ = Point_2D{F}(2, 3)       
@@ -71,25 +67,15 @@ using StaticArrays
             @test mp[1] ≈ 3//2
             @test mp[2] ≈ 3
 
-
-
-
-
-#
-#            # sort_points
-#            p₁ = Point_2D{F}(1, 0)
-#            p₂ = Point_2D{F}(2, 0)
-#            p₃ = Point_2D{F}(3, 0)
-#            points = [p₃, p₁, p₂]
-#            points_sorted = sortpoints(Point_2D{F}(0, 0), points)
-#            @test points_sorted[1] == p₁
-#            @test points_sorted[2] == p₂
-#            @test points_sorted[3] == p₃
-#            # mutating
-#            sortpoints!(Point_2D{F}(0, 0), points)
-#            @test points[1] == p₁
-#            @test points[2] == p₂
-#            @test points[3] == p₃
+            # sort_points
+            p₁ = Point_2D{F}(1, 0)
+            p₂ = Point_2D{F}(2, 0)
+            p₃ = Point_2D{F}(3, 0)
+            points = [p₃, p₁, p₂]
+            sortpoints!(Point_2D{F}(0, 0), points)
+            @test points[1] == p₁
+            @test points[2] == p₂
+            @test points[3] == p₃
         end
     end
 end

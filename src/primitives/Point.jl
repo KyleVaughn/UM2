@@ -19,21 +19,25 @@ Point(x...) = Point(SVector(x))
 
 # Operators
 # ---------------------------------------------------------------------------------------------
-@inline -(p::Point) = Point(-p.coord)
 @inline +(p::Point, n::Number) = Point(p.coord .+ n)
 @inline +(n::Number, p::Point) = Point(n .+ p.coord)
-@inline -(p::Point, n::Number) = Point(p.coord .- n)
-@inline -(n::Number, p::Point) = Point(n .- p.coord)
-@inline *(n::Number, p::Point) = Point(n * p.coord) 
-@inline *(p::Point, n::Number) = Point(p.coord * n)
-@inline /(n::Number, p::Point) = Point(n / p.coord) 
-@inline /(p::Point, n::Number) = Point(p.coord / n)
 @inline +(p₁::Point, p₂::Point) = p₁.coord + p₂.coord
 @inline +(p::Point, v::SVector) = p.coord + v
 @inline +(v::SVector, p::Point) = v + p.coord
+
 @inline -(p₁::Point, p₂::Point) = p₁.coord - p₂.coord
 @inline -(p::Point, v::SVector) = p.coord - v
 @inline -(v::SVector, p::Point) = v - p.coord
+@inline -(p::Point) = Point(-p.coord)
+@inline -(p::Point, n::Number) = Point(p.coord .- n)
+@inline -(n::Number, p::Point) = Point(n .- p.coord)
+
+@inline *(n::Number, p::Point) = Point(n * p.coord) 
+@inline *(p::Point, n::Number) = Point(p.coord * n)
+
+@inline /(n::Number, p::Point) = Point(n / p.coord) 
+@inline /(p::Point, n::Number) = Point(p.coord / n)
+
 @inline ⋅(p₁::Point, p₂::Point) = dot(p₁.coord, p₂.coord)
 @inline ×(p₁::Point, p₂::Point) = cross(p₁.coord, p₂.coord)
 @inline ==(p::Point, v::Vector) = p.coord == v
