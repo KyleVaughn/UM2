@@ -1,5 +1,3 @@
-abstract type UnstructuredMesh_2D end
-
 struct GeneralUnstructuredMesh_2D{T,U} <: UnstructuredMesh_2D{T,U}
     name::String
     points::Vector{Point_2D{T}}

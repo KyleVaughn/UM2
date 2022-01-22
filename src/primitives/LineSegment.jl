@@ -1,8 +1,7 @@
 # A parametric line segment, defined as the set of all points such that
 # 𝘅(r) = 𝘅₁ + r𝘂, where r ∈ [0, 1]. We also define 𝘅₂ = 𝘅₁ + 𝘂 for convenience.
 #
-# We store 𝘂 instead of 𝘅₂, since 𝘅₂ is needed infrequently, but 𝘂 is needed in
-# nearly every method.
+# We store 𝘂 instead of 𝘅₂, since 𝘅₂ is needed infrequently, but 𝘂 is needed often.
 struct LineSegment{N,T} <: Edge{N,T}
     𝘅₁::Point{N,T} 
     𝘂::SVector{N,T}
@@ -97,7 +96,7 @@ end
 #   o
 #   We rely on 𝘂 × 𝘃 = ‖𝘂‖‖𝘃‖sin(θ). We may determine if θ ∈ (0, π] based on the sign of 𝘂 × 𝘃
 @inline function isleft(p::Point_2D, l::LineSegment_2D)
-    return l.𝘂 × (p - l.𝘅₁) >= 0
+    return 0 <= l.𝘂 × (p - l.𝘅₁) 
 end
 
 # A random line within [0, 1] × [0, 1]

@@ -34,24 +34,24 @@ end
 function (tri6::Triangle6)(r, s)
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    return Point((1 - r - s)*(2(1 - r - s) - 1)*tri6[1] +
-                                     r*(2r - 1)*tri6[2] +
-                                     s*(2s - 1)*tri6[3] +
-                                 4r*(1 - r - s)*tri6[4] +
-                                         (4r*s)*tri6[5] +
-                                 4s*(1 - r - s)*tri6[6] )
+    return Point(((1 - r - s)*(2(1 - r - s) - 1))*tri6[1] +
+                                     (r*(2r - 1))*tri6[2] +
+                                     (s*(2s - 1))*tri6[3] +
+                                 (4r*(1 - r - s))*tri6[4] +
+                                           (4r*s)*tri6[5] +
+                                 (4s*(1 - r - s))*tri6[6] )
 end
 
 function (tri6::Triangle6)(p::Point_2D)
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     r = p[1]; s = p[2]
-    return Point((1 - r - s)*(2(1 - r - s) - 1)*tri6[1] +
-                                     r*(2r - 1)*tri6[2] +
-                                     s*(2s - 1)*tri6[3] +
-                                 4r*(1 - r - s)*tri6[4] +
-                                         (4r*s)*tri6[5] +
-                                 4s*(1 - r - s)*tri6[6] )
+    return Point(((1 - r - s)*(2(1 - r - s) - 1))*tri6[1] +
+                                     (r*(2r - 1))*tri6[2] +
+                                     (s*(2s - 1))*tri6[3] +
+                                 (4r*(1 - r - s))*tri6[4] +
+                                           (4r*s)*tri6[5] +
+                                 (4s*(1 - r - s))*tri6[6] )
 end
 
 

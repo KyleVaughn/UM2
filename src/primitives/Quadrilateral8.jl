@@ -38,14 +38,14 @@ function (quad8::Quadrilateral8)(r, s)
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     ξ = 2r - 1; η = 2s - 1
-    return Point((1 - ξ)*(1 - η)*(-ξ - η - 1)/4*quad8[1] +
-                 (1 + ξ)*(1 - η)*( ξ - η - 1)/4*quad8[2] +
-                 (1 + ξ)*(1 + η)*( ξ + η - 1)/4*quad8[3] +
-                 (1 - ξ)*(1 + η)*(-ξ + η - 1)/4*quad8[4] +
-                            (1 - ξ^2)*(1 - η)/2*quad8[5] +
-                            (1 - η^2)*(1 + ξ)/2*quad8[6] +
-                            (1 - ξ^2)*(1 + η)/2*quad8[7] +
-                            (1 - η^2)*(1 - ξ)/2*quad8[8] )
+    return Point(((1 - ξ)*(1 - η)*(-ξ - η - 1)/4)*quad8[1] +
+                 ((1 + ξ)*(1 - η)*( ξ - η - 1)/4)*quad8[2] +
+                 ((1 + ξ)*(1 + η)*( ξ + η - 1)/4)*quad8[3] +
+                 ((1 - ξ)*(1 + η)*(-ξ + η - 1)/4)*quad8[4] +
+                            ((1 - ξ^2)*(1 - η)/2)*quad8[5] +
+                            ((1 - η^2)*(1 + ξ)/2)*quad8[6] +
+                            ((1 - ξ^2)*(1 + η)/2)*quad8[7] +
+                            ((1 - η^2)*(1 - ξ)/2)*quad8[8] )
 end
 
 function (quad8::Quadrilateral8)(p::Point_2D)
@@ -53,14 +53,14 @@ function (quad8::Quadrilateral8)(p::Point_2D)
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
     r = p[1]; s = p[2]
     ξ = 2r - 1; η = 2s - 1
-    return Point((1 - ξ)*(1 - η)*(-ξ - η - 1)/4*quad8[1] +
-                 (1 + ξ)*(1 - η)*( ξ - η - 1)/4*quad8[2] +
-                 (1 + ξ)*(1 + η)*( ξ + η - 1)/4*quad8[3] +
-                 (1 - ξ)*(1 + η)*(-ξ + η - 1)/4*quad8[4] +
-                            (1 - ξ^2)*(1 - η)/2*quad8[5] +
-                            (1 - η^2)*(1 + ξ)/2*quad8[6] +
-                            (1 - ξ^2)*(1 + η)/2*quad8[7] +
-                            (1 - η^2)*(1 - ξ)/2*quad8[8] )
+    return Point(((1 - ξ)*(1 - η)*(-ξ - η - 1)/4)*quad8[1] +
+                 ((1 + ξ)*(1 - η)*( ξ - η - 1)/4)*quad8[2] +
+                 ((1 + ξ)*(1 + η)*( ξ + η - 1)/4)*quad8[3] +
+                 ((1 - ξ)*(1 + η)*(-ξ + η - 1)/4)*quad8[4] +
+                            ((1 - ξ^2)*(1 - η)/2)*quad8[5] +
+                            ((1 - η^2)*(1 + ξ)/2)*quad8[6] +
+                            ((1 - ξ^2)*(1 + η)/2)*quad8[7] +
+                            ((1 - η^2)*(1 - ξ)/2)*quad8[8] )
 end
 
 # This can surely be turned into an algebraic equation using Mathematica
@@ -116,7 +116,7 @@ function jacobian(quad8::Quadrilateral8, r, s)
     # ∂Q   ∂Q ∂ξ     ∂Q      ∂Q   ∂Q ∂η     ∂Q
     # -- = -- -- = 2 -- ,    -- = -- -- = 2 --
     # ∂r   ∂ξ ∂r     ∂ξ      ∂s   ∂η ∂s     ∂η
-    ξ = 2Float64(r) - 1; η = 2Float64(s) - 1
+    ξ = 2r - 1; η = 2s - 1
     ∂Q_∂ξ = (1 - η)*(2ξ + η)/4*quad8[1] +
             (1 - η)*(2ξ - η)/4*quad8[2] +
             (1 + η)*(2ξ + η)/4*quad8[3] +
