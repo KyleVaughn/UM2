@@ -1,10 +1,10 @@
 using MOCNeutronTransport
 using StaticArrays
-@testset "Point_2D" begin
+@testset "Point2D" begin
     @testset "$F" for F in [Float32, Float64, BigFloat]
         @testset "Operators" begin
-            p₁ = Point_2D{F}(1, 2)
-            p₂ = Point_2D{F}(2, 4)
+            p₁ = Point2D{F}(1, 2)
+            p₂ = Point2D{F}(2, 4)
 
             # Unary -
             p = -p₁
@@ -31,8 +31,8 @@ using StaticArrays
             @test p == [1//4, 1//2]
 
             # Dot product
-            p₁ = Point_2D{F}(2, 3)       
-            p₂ = Point_2D{F}(5, 6)
+            p₁ = Point2D{F}(2, 3)       
+            p₂ = Point2D{F}(5, 6)
             @test p₁ ⋅ p₂ ≈ 10 + 18
 
             # Cross product
@@ -41,12 +41,12 @@ using StaticArrays
 
             # ≈
             @test F(2) ≈ 2 - 10*eps(F)
-            @test Point_2D{F}(1, 2 - 10*eps(F)) ≈ Point_2D{F}(1, 2)
+            @test Point2D{F}(1, 2 - 10*eps(F)) ≈ Point2D{F}(1, 2)
         end
 
         @testset "Methods" begin
-            p₁ = Point_2D{F}(1, 2)
-            p₂ = Point_2D{F}(2, 4)
+            p₁ = Point2D{F}(1, 2)
+            p₂ = Point2D{F}(2, 4)
 
             # distance
             @test distance(p₁, p₂) ≈ sqrt(5)
@@ -68,11 +68,11 @@ using StaticArrays
             @test mp[2] ≈ 3
 
             # sort_points
-            p₁ = Point_2D{F}(1, 0)
-            p₂ = Point_2D{F}(2, 0)
-            p₃ = Point_2D{F}(3, 0)
+            p₁ = Point2D{F}(1, 0)
+            p₂ = Point2D{F}(2, 0)
+            p₃ = Point2D{F}(3, 0)
             points = [p₃, p₁, p₂]
-            sortpoints!(Point_2D{F}(0, 0), points)
+            sortpoints!(Point2D{F}(0, 0), points)
             @test points[1] == p₁
             @test points[2] == p₂
             @test points[3] == p₃

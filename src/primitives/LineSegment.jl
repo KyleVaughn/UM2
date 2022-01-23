@@ -2,13 +2,13 @@
 # 𝘅(r) = 𝘅₁ + r𝘂, where r ∈ [0, 1]. We also define 𝘅₂ = 𝘅₁ + 𝘂 for convenience.
 #
 # We store 𝘂 instead of 𝘅₂, since 𝘅₂ is needed infrequently, but 𝘂 is needed often.
-struct LineSegment{N,T} <: Edge{N,T}
-    𝘅₁::Point{N,T} 
-    𝘂::SVector{N,T}
+struct LineSegment{Dim,T} <: Edge{Dim,1,T}
+    𝘅₁::Point{Dim,T} 
+    𝘂::SVector{Dim,T}
 end
 
-const LineSegment_2D = LineSegment{2}
-const LineSegment_3D = LineSegment{3}
+const LineSegment2D = LineSegment{2}
+const LineSegment3D = LineSegment{3}
 
 function Base.getproperty(l::LineSegment, sym::Symbol)
     if sym === :𝘅₂
@@ -20,9 +20,12 @@ end
 
 # Constructors
 # ---------------------------------------------------------------------------------------------
-LineSegment{N,T}(𝘅₁::Point{N,T}, 𝘅₂::Point{N,T}) where {N,T} = LineSegment{N,T}(𝘅₁, 𝘅₂ - 𝘅₁) 
-LineSegment{N}(𝘅₁::Point{N,T}, 𝘅₂::Point{N,T}) where {N,T} = LineSegment{N,T}(𝘅₁, 𝘅₂ - 𝘅₁) 
-LineSegment(𝘅₁::Point{N,T}, 𝘅₂::Point{N,T}) where {N,T} = LineSegment{N,T}(𝘅₁, 𝘅₂ - 𝘅₁) 
+LineSegment{Dim,T}(𝘅₁::Point{Dim,T}, 
+                   𝘅₂::Point{Dim,T}) where {Dim,T} = LineSegment{Dim,T}(𝘅₁, 𝘅₂ - 𝘅₁) 
+LineSegment{Dim}(𝘅₁::Point{Dim,T}, 
+                 𝘅₂::Point{Dim,T}) where {Dim,T} = LineSegment{Dim,T}(𝘅₁, 𝘅₂ - 𝘅₁) 
+LineSegment(𝘅₁::Point{Dim,T}, 
+            𝘅₂::Point{Dim,T}) where {Dim,T} = LineSegment{Dim,T}(𝘅₁, 𝘅₂ - 𝘅₁) 
 
 # Methods
 # ---------------------------------------------------------------------------------------------
@@ -30,7 +33,7 @@ LineSegment(𝘅₁::Point{N,T}, 𝘅₂::Point{N,T}) where {N,T} = LineSegment{
 @inline (l::LineSegment)(r) = Point(l.𝘅₁.coord + r*l.𝘂)
 @inline arclength(l::LineSegment) = distance(l.𝘅₁.coord, l.𝘅₁.coord + l.𝘂)
 
-function Base.intersect(l₁::LineSegment_3D{T}, l₂::LineSegment_3D{T}) where {T}
+function Base.intersect(l₁::LineSegment3D{T}, l₂::LineSegment3D{T}) where {T}
     # NOTE: Doesn't work for colinear/parallel lines. (𝘂 × 𝘃 = 𝟬).
     # Using the equation of a line in parametric form
     # For l₁ = 𝘅₁ + r𝘂 and l₂ = 𝘅₂ + s𝘃
@@ -58,7 +61,7 @@ function Base.intersect(l₁::LineSegment_3D{T}, l₂::LineSegment_3D{T}) where 
     # Note: 0 ≤ 𝘄 ⋅ 𝘇, and the minimum distance between two lines is d = (𝘄 ⋅𝘇)/‖𝘇‖.
     # Hence 𝘄 ⋅ 𝘇 = 0 for the lines to intersect
     # (https://math.stackexchange.com/questions/2213165/find-shortest-distance-between-lines-in-3d)
-    𝘄 ⋅ 𝘇 ≤ T(1e-8) || return (false, Point_3D{T}(0,0,0))
+    𝘄 ⋅ 𝘇 ≤ T(1e-8) || return (false, Point3D{T}(0,0,0))
     𝘅 = 𝘄 × l₂.𝘂
     𝘆 = 𝘄 × l₁.𝘂
     r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇)
@@ -66,7 +69,7 @@ function Base.intersect(l₁::LineSegment_3D{T}, l₂::LineSegment_3D{T}) where 
     return (T(1e-8)^2 < 𝘇 ⋅ 𝘇 && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ, l₂(s)) # (hit, point)
 end
 
-function Base.intersect(l₁::LineSegment_2D{T}, l₂::LineSegment_2D{T}) where {T}
+function Base.intersect(l₁::LineSegment2D{T}, l₂::LineSegment2D{T}) where {T}
     # NOTE: Doesn't work for colinear/parallel lines. (𝘂 × 𝘃 = 𝟬).
     # The cross product operator for 2D vectors returns a scalar, since the cross product 
     # of two vectors in the plane is a vector of the form (0, 0, z).
@@ -95,19 +98,19 @@ end
 #   | /
 #   o
 #   We rely on 𝘂 × 𝘃 = ‖𝘂‖‖𝘃‖sin(θ). We may determine if θ ∈ (0, π] based on the sign of 𝘂 × 𝘃
-@inline function isleft(p::Point_2D, l::LineSegment_2D)
-    return 0 <= l.𝘂 × (p - l.𝘅₁) 
+@inline function isleft(p::Point2D, l::LineSegment2D)
+    return 0 ≤ l.𝘂 × (p - l.𝘅₁) 
 end
 
 # A random line within [0, 1] × [0, 1]
-function Base.rand(::Type{LineSegment{N,F}}) where {N,F} 
-    points = rand(Point{N,F}, 2)
-    return LineSegment{N,F}(points[1], points[2])
+function Base.rand(::Type{LineSegment{Dim,F}}) where {Dim,F} 
+    points = rand(Point{Dim,F}, 2)
+    return LineSegment{Dim,F}(points[1], points[2])
 end
 
 # N random lines within [0, 1] × [0, 1]
-function Base.rand(::Type{LineSegment{N,F}}, NL::Int64) where {N,F}
-    return [ rand(LineSegment{N,F}) for i ∈ 1:NL ]
+function Base.rand(::Type{LineSegment{Dim,F}}, N::Int64) where {Dim,F}
+    return [ rand(LineSegment{Dim,F}) for i ∈ 1:N ]
 end
 
 # Plot
@@ -117,7 +120,7 @@ if enable_visualization
         return convert_arguments(LS, [l.𝘅₁, l.𝘅₂])
     end
 
-    function convert_arguments(LS::Type{<:LineSegments}, L::Vector{<:LineSegment_2D})
+    function convert_arguments(LS::Type{<:LineSegments}, L::Vector{<:LineSegment})
         return convert_arguments(LS, reduce(vcat, [[l.𝘅₁, l.𝘅₂] for l in L]))
     end
 end

@@ -57,43 +57,54 @@ include("Tree.jl")
 #include("./gmsh/gmsh_overlay_rectangular_grid.jl")
 include("./primitives/Edge.jl")
 include("./primitives/Face.jl")
-include("./primitives/Vector_ND.jl")
+include("./primitives/VectorND.jl")
 include("./primitives/Point.jl")
 include("./primitives/LineSegment.jl")
 include("./primitives/AABB.jl")
 include("./primitives/QuadraticSegment.jl")
-include("./primitives/Triangle.jl")
-include("./primitives/Quadrilateral.jl")
-include("./primitives/Triangle6.jl")
-include("./primitives/Quadrilateral8.jl")
-#include("L_system.jl")
-include("./mesh/UnstructuredMesh.jl")
-include("./mesh/UnstructuredMesh_2D.jl")
-#include("./mesh/LinearUnstructuredMesh_2D.jl")
-#include("./mesh/QuadraticUnstructuredMesh_2D.jl")
+include("./primitives/Polygon.jl")
+#include("./primitives/Triangle.jl")
+#include("./primitives/Quadrilateral.jl")
+#include("./primitives/Triangle6.jl")
+#include("./primitives/Quadrilateral8.jl")
+##include("L_system.jl")
+#include("./mesh/UnstructuredMesh.jl")
+#include("./mesh/UnstructuredMesh2D.jl")
+#include("./mesh/LinearUnstructuredMesh2D.jl")
+#include("./mesh/QuadraticUnstructuredMesh2D.jl")
 #include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
 #include("./mesh/IO_abaqus.jl")
 ##include("./mesh/IO_vtk.jl")
 #include("./mesh/IO_xdmf.jl")
-include("gauss_legendre_quadrature.jl")
+#include("gauss_legendre_quadrature.jl")
 #include("./ray_tracing/AngularQuadrature.jl")
 #include("./ray_tracing/ray_trace.jl")
 #include("./ray_tracing/ray_trace_low_level.jl")
 
 
 # Structs/Types
-export AABB, AABB_2D, AABB_3D, Edge, Edge_2D, Edge_3d, Face, Face_2D, Face_3D, LineSegment, 
-       LineSegment_2D, LineSegment_3D, Point, Point_2D, Point_3D, QuadraticSegment, 
-       QuadraticSegment_2D, QuadraticSegment_3D, 
-       Quadrilateral, Quadrilateral_2D, Quadrilateral_3D, Quadrilateral8, Quadrilateral8_2D,
-       Quadrilateral8_3D, Tree, Triangle, Triangle_2D, Triangle_3D, Triangle6, Triangle6_2D, 
-       Triangle6_3D, UnstructuredMesh, UnstructuredMesh_2D, UnstructuredMesh_3D, Vector_2D, 
-       Vector_3D
-#         LinearUnstructuredMesh_2D,
-#         QuadraticUnstructuredMesh_2D,
-#         QuadrilateralMesh_2D,
-#         TriangleMesh_2D,
-#         UnstructuredMesh_2D
+export AABB, AABB2D, AABB3D,
+       Decagon,
+       Edge, Edge2D, Edge3D, 
+       Face, Face2D, Face3D, 
+       Heptagon, Hexagon,
+       LineSegment, LineSegment2D, LineSegment3D,
+       Octagon, Nonagon,
+       Pentagon,
+       Point, Point2D, Point3D, 
+       Polygon,
+       QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, 
+       Quadrilateral, Quadrilateral2D, Quadrilateral3D, 
+       Quadrilateral8, Quadrilateral82D, Quadrilateral83D, 
+       Tree, Triangle, Triangle2D, Triangle3D, 
+       Triangle6, Triangle62D, Triangle63D, 
+       UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D, 
+       Vector2D, Vector3D
+#         LinearUnstructuredMesh2D,
+#         QuadraticUnstructuredMesh2D,
+#         QuadrilateralMesh2D,
+#         TriangleMesh2D,
+#         UnstructuredMesh2D
 
 # Convenience operators
 const 𝗗 = derivative

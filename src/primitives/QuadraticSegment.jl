@@ -13,12 +13,12 @@
 # 𝗾(r) = (2r-1)(r-1)𝘅₁ + r(2r-1)𝘅₂ + 4r(1-r)𝘅₃
 # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
 # Chapter 8, Advanced Data Representation, in the interpolation functions section
-struct QuadraticSegment{N,T} <: Edge{N,T}
-    points::SVector{3, Point{N,T}}
+struct QuadraticSegment{Dim,T} <: Edge{Dim,2,T}
+    points::SVector{3, Point{Dim,T}}
 end
 
-const QuadraticSegment_2D = QuadraticSegment{2}
-const QuadraticSegment_3D = QuadraticSegment{3}
+const QuadraticSegment2D = QuadraticSegment{2}
+const QuadraticSegment3D = QuadraticSegment{3}
 
 Base.@propagate_inbounds function Base.getindex(q::QuadraticSegment, i::Integer)
     getfield(q, :points)[i]
@@ -26,11 +26,15 @@ end
 
 # Constructors
 # ---------------------------------------------------------------------------------------------
-function QuadraticSegment(p₁::Point{N,T}, p₂::Point{N,T}, p₃::Point{N,T}) where {N,T}
-    return QuadraticSegment{N,T}(SVector{3, Point{N,T}}(p₁, p₂, p₃))
+function QuadraticSegment(p₁::Point{Dim,T}, 
+                          p₂::Point{Dim,T}, 
+                          p₃::Point{Dim,T}) where {Dim,T}
+    return QuadraticSegment{Dim,T}(SVector{3, Point{Dim,T}}(p₁, p₂, p₃))
 end
-function QuadraticSegment{N}(p₁::Point{N,T}, p₂::Point{N,T}, p₃::Point{N,T}) where {N,T}
-    return QuadraticSegment{N,T}(SVector{3, Point{N,T}}(p₁, p₂, p₃))
+function QuadraticSegment{Dim}(p₁::Point{Dim,T}, 
+                               p₂::Point{Dim,T}, 
+                               p₃::Point{Dim,T}) where {Dim,T}
+    return QuadraticSegment{Dim,T}(SVector{3, Point{Dim,T}}(p₁, p₂, p₃))
 end
 
 # Methods
@@ -40,11 +44,11 @@ end
 function (q::QuadraticSegment)(r)
     # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
     # Chapter 8, Advanced Data Representation, in the interpolation functions section
-    return Point((2r-1)*(r-1)q[1] + r*(2r-1)q[2] + 4r*(1-r)q[3])
+    return Point(((2r-1)*(r-1))q[1] + (r*(2r-1))q[2] + (4r*(1-r))q[3])
 end
 
 arclength(q::QuadraticSegment) = arclength(q, Val(25))
-function arclength(q::QuadraticSegment{N,T}, ::Val{NP}) where {N,T,NP}
+function arclength(q::QuadraticSegment{Dim,T}, ::Val{NP}) where {Dim,T,NP}
     # Numerical integration is used.
     # (Gauss-Legengre quadrature)
     #     1             NP
@@ -55,7 +59,7 @@ function arclength(q::QuadraticSegment{N,T}, ::Val{NP}) where {N,T,NP}
     return sum(@. w * norm(𝗗(q, r)))
 end
 
-function arclength(q::QuadraticSegment_2D{T}) where {T}
+function arclength(q::QuadraticSegment2D{T}) where {T}
     if isstraight(q)
         return distance(q[1], q[2])
     else
@@ -78,7 +82,7 @@ function arclength(q::QuadraticSegment_2D{T}) where {T}
 end
 
 # Find the axis-aligned bounding box of the segment.
-function boundingbox(q::QuadraticSegment_2D)
+function boundingbox(q::QuadraticSegment2D)
     # Find the r coordinates where ∂x/∂r = 0, ∂y/∂r = 0
     # We know derivaitve(q), so we can directly compute these values
     r_x = (3q[1][1] + q[2][1] - 4q[3][1])/(4(q[1][1] + q[2][1] - 2q[3][1]))
@@ -100,7 +104,7 @@ function boundingbox(q::QuadraticSegment_2D)
         ymin = min(q[1][2], q[2][2])
         ymax = max(q[1][2], q[2][2])
     end
-    return AABB_2D(Point_2D(xmin, ymin), Point_2D(xmax, ymax))
+    return AABB2D(Point2D(xmin, ymin), Point2D(xmax, ymax))
 end
 
 # Return the derivative of q, evalutated at r
@@ -145,11 +149,11 @@ end
     return norm((q[3] - q[1]) × (q[2] - q[1])) < 1e-8
 end
 
-function Base.intersect(l::LineSegment_2D{T}, q::QuadraticSegment_2D{T}) where {T}
+function Base.intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
     ϵ = T(5e-6)
     npoints = 0x0000
-    p₁ = Point_2D{T}(0,0)
-    p₂ = Point_2D{T}(0,0)
+    p₁ = Point2D{T}(0,0)
+    p₂ = Point2D{T}(0,0)
     if isstraight(q) # Use line segment intersection.
         # See LineSegment for the math behind this.
         𝘄 = q[1] - l.𝘅₁
@@ -241,7 +245,7 @@ nearest_point(p::Point, q::QuadraticSegment) = nearest_point(p, q, 15)
 # Return the closest point on the curve to point p, along with the value of r such that 
 # q(r) = p_nearest
 # Uses at most max_iters iterations of Newton-Raphson
-function nearest_point(p::Point, q::QuadraticSegment{N,T}, max_iters::Int64) where {N,T}
+function nearest_point(p::Point, q::QuadraticSegment{Dim,T}, max_iters::Int64) where {Dim,T}
     r = 1//2 + inv(𝗝(q, 1//2))*(p - q(1//2)) 
     for i ∈ 1:max_iters-1
         Δr = inv(𝗝(q, r))*(p - q(r)) 
@@ -254,14 +258,14 @@ function nearest_point(p::Point, q::QuadraticSegment{N,T}, max_iters::Int64) whe
 end
 
 # A random quadratic segment within [0, 1] × [0, 1]
-function Base.rand(::Type{QuadraticSegment{N,F}}) where {N,F} 
-    points = rand(Point{N,F}, 3)
+function Base.rand(::Type{QuadraticSegment{Dim,F}}) where {Dim,F} 
+    points = rand(Point{Dim,F}, 3)
     return QuadraticSegment(points[1], points[2], points[3])
 end
 
 # N random quadratic segments within [0, 1] × [0, 1]
-function Base.rand(::Type{QuadraticSegment{N,F}}, NS::Int64) where {N,F}
-    return [ rand(QuadraticSegment{N,F}) for i ∈ 1:NS ]
+function Base.rand(::Type{QuadraticSegment{Dim,F}}, N::Int64) where {Dim,F}
+    return [ rand(QuadraticSegment{Dim,F}) for i ∈ 1:N ]
 end
 
 
