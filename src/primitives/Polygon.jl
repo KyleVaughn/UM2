@@ -29,19 +29,34 @@ Polygon(x...) = Polygon(SVector(x))
 # Shoelace formula (https://en.wikipedia.org/wiki/Shoelace_formula)
 function area(poly::Polygon{N,Dim,T}) where {N,Dim,T}
     # This can be done with mapreduce, but mapreduce is substantially slower
-    # Set a equal to the scalar or vector 0
-    a = Base.zero(Point{Dim,T}) × Base.zero(Point{Dim,T}) 
+    if Dim === 2
+        a = T(0) # Scalar
+    else
+        a = Base.zero(Point{Dim,T}) # Vector
+    end
     for i = 1:N-1
         a += poly[i] × poly[i+1]
     end
     a += poly[N] × poly[1]
-    return a/2
+    return norm(a)/2
 end
 # We can go faster on triangles with the simplification below
 function area(tri::Triangle)
     𝘂 = tri[2] - tri[1]
     𝘃 = tri[3] - tri[1]
-    return (𝘂 × 𝘃)/2
+    return norm(𝘂 × 𝘃)/2
+end
+
+# Centroid for polygons in the 2D plane
+function centroid(poly::Polygon{N,2,T}) where {N,T}
+    c = SVector{2,T}(0,0)
+    a = T(0)
+    for i = 1:N-1
+        subarea = poly[i] × poly[i+1]
+        c += subarea*(poly[i] + poly[i+1])
+        a += subarea
+    end
+    return Point(c/(3a))
 end
 # centroid(tri::Triangle) = tri(1//3, 1//3)
 # 
