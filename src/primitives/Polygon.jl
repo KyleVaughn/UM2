@@ -4,14 +4,17 @@ struct Polygon{N,Dim,T} <: Face{Dim,1,T}
 end
 
 # Aliases for convenience
-const Triangle      = Polygon{3}
-const Quadrilateral = Polygon{4}
-const Pentagon      = Polygon{5}
-const Hexagon       = Polygon{6}
-const Heptagon      = Polygon{7}
-const Octagon       = Polygon{8}
-const Nonagon       = Polygon{9}
-const Decagon       = Polygon{10}
+const Triangle        = Polygon{3}
+const Quadrilateral   = Polygon{4}
+const Pentagon        = Polygon{5}
+const Hexagon         = Polygon{6}
+const Heptagon        = Polygon{7}
+const Octagon         = Polygon{8}
+const Nonagon         = Polygon{9}
+const Decagon         = Polygon{10}
+# When the time comes for 3D, use metaprogramming/eval to export 2D/3D consts
+const Triangle2D      = Polygon{3,2}
+const Quadrilateral2D = Polygon{4,2}
 
 Base.@propagate_inbounds function Base.getindex(poly::Polygon, i::Integer)
     getfield(poly, :points)[i]
@@ -40,12 +43,6 @@ function area(poly::Polygon{N,Dim,T}) where {N,Dim,T}
     a += poly[N] × poly[1]
     return norm(a)/2
 end
-# We can go faster on triangles with the simplification below
-function area(tri::Triangle)
-    𝘂 = tri[2] - tri[1]
-    𝘃 = tri[3] - tri[1]
-    return norm(𝘂 × 𝘃)/2
-end
 
 # Centroid for polygons in the 2D plane
 function centroid(poly::Polygon{N,2,T}) where {N,T}
@@ -58,75 +55,65 @@ function centroid(poly::Polygon{N,2,T}) where {N,T}
     end
     return Point(c/(3a))
 end
-# centroid(tri::Triangle) = tri(1//3, 1//3)
-# 
-# function Base.in(p::Point_2D, tri::Triangle_2D)
-#     # If the point is to the left of every edge
-#     #  3<-----2
-#     #  |     ^
-#     #  | p  /
-#     #  |   /
-#     #  |  /
-#     #  v /
-#     #  1
-#     return isleft(p, LineSegment_2D(tri[1], tri[2])) &&
-#            isleft(p, LineSegment_2D(tri[2], tri[3])) &&
-#            isleft(p, LineSegment_2D(tri[3], tri[1]))
-# end
-# 
-# function Base.intersect(l::LineSegment_2D{T}, tri::Triangle_2D{T}) where {T}
-#     # Create the 3 line segments that make up the triangle and intersect each one
-#     p₁ = Point_2D{T}(0,0)
-#     p₂ = Point_2D{T}(0,0)
-#     p₃ = Point_2D{T}(0,0)
-#     npoints = 0x0000
-#     for i ∈ 1:3
-#         hit, point = l ∩ LineSegment_2D(tri[(i - 1) % 3 + 1], 
-#                                         tri[      i % 3 + 1])
-#         if hit
-#             npoints += 0x0001
-#             if npoints === 0x0001
-#                 p₁ = point
-#             elseif npoints === 0x0002
-#                 p₂ = point
-#             else
-#                 p₃ = point
-#             end
-#         end
-#     end
-#     return npoints, SVector(p₁, p₂, p₃) 
-# end
-# 
-# # Plot
-# # ---------------------------------------------------------------------------------------------
-# if enable_visualization
-#     function convert_arguments(LS::Type{<:LineSegments}, tri::Triangle)
-#         l₁ = LineSegment(tri[1], tri[2])
-#         l₂ = LineSegment(tri[2], tri[3])
-#         l₃ = LineSegment(tri[3], tri[1])
-#         lines = [l₁, l₂, l₃]
-#         return convert_arguments(LS, lines)
-#     end
-# 
-#     function convert_arguments(LS::Type{<:LineSegments}, T::Vector{<:Triangle})
-#         point_sets = [convert_arguments(LS, tri) for tri ∈  T]
-#         return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
-#     end
-# 
-#     function convert_arguments(M::Type{<:Mesh}, tri::Triangle)
-#         points = [tri[i].coord for i = 1:3]
-#         face = [1 2 3]
-#         return convert_arguments(M, points, face)
-#     end
-# 
-#     function convert_arguments(M::Type{<:Mesh}, T::Vector{<:Triangle})
-#         points = reduce(vcat, [[tri[i].coord for i = 1:3] for tri ∈  T])
-#         faces = zeros(Int64, length(T), 3)
-#         k = 1
-#         for i in 1:length(T), j = 1:3
-#             faces[i, j] = k
-#             k += 1
-#         end
-#         return convert_arguments(M, points, faces)
-#     end
-# end
+
+# Test if a point is in a polygon for 2D points/polygons
+function Base.in(p::Point2D, poly::Polygon{N,2,T}) where {N,T}
+    # Test if the point is to the left of each edge. 
+    bool = true
+    for i = 1:N-1
+        if !isleft(p, LineSegment2D(poly[i], poly[i+1]))
+            bool = false
+            break
+        end
+    end
+    if bool
+        return isleft(p, LineSegment2D(poly[N], poly[1]))
+    else
+        return false
+    end
+end
+
+function Base.intersect(l::LineSegment2D{T}, 
+        poly::Polygon{N,2,T}) where {N,T <: Union{Float32, Float64}} 
+    # Create the line segments that make up the triangle and intersect each one
+    points = zeros(MVector{N,Point2D{T}})
+    npoints = 0x0000
+    for i ∈ 1:N
+        hit, point = l ∩ LineSegment2D(poly[(i-1) % N + 1],
+                                       poly[    i % N + 1]) 
+        if hit
+            npoints += 0x0001
+            points[npoints] = point
+        end
+    end
+    return npoints, SVector(points)
+end
+
+# Plot
+# ---------------------------------------------------------------------------------------------
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, poly::Polygon{N}) where {N}
+        lines = [LineSegment2D(poly[(i-1) % N + 1],
+                               poly[    i % N + 1]) for i = 1:N] 
+        return convert_arguments(LS, lines)
+    end
+
+    function convert_arguments(LS::Type{<:LineSegments}, P::Vector{<:Polygon})
+        point_sets = [convert_arguments(LS, poly) for poly ∈  P]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
+    end
+
+    # Need to implement triangulation before this can be done for a general polygon
+    # function convert_arguments(M::Type{<:Mesh}, poly::)
+    # end
+    #function convert_arguments(M::Type{<:Mesh}, T::Vector{<:Triangle})
+    #    points = reduce(vcat, [[tri[i].coord for i = 1:3] for tri ∈  T])
+    #    faces = zeros(Int64, length(T), 3)
+    #    k = 1
+    #    for i in 1:length(T), j = 1:3
+    #        faces[i, j] = k
+    #        k += 1
+    #    end
+    #    return convert_arguments(M, points, faces)
+    #end
+end
