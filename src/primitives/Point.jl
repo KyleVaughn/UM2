@@ -57,8 +57,8 @@ Base.zero(::Type{Point{Dim,T}}) where {Dim,T} = Point{Dim,T}(@SVector zeros(T, D
 
 # Random points
 Base.rand(::Type{Point{Dim,T}}) where {Dim,T} = Point{Dim,T}(rand(SVector{Dim,T}))
-function Base.rand(::Type{Point{Dim,T}}, DimP::Int64) where {Dim,T}
-    return [ Point{Dim,T}(rand(SVector{Dim,T})) for i = 1:DimP ]
+function Base.rand(::Type{Point{Dim,T}}, NP::Int64) where {Dim,T}
+    return [ Point{Dim,T}(rand(SVector{Dim,T})) for i = 1:NP ]
 end
 
 # Sort points based on their distance from a given point using insertion sort

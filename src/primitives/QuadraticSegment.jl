@@ -130,7 +130,6 @@ function isleft(p::Point, q::QuadraticSegment)
         # Construct vectors from a point on q (close to p_near) to p_near and p. 
         # Use the cross product of these vectors to determine if p isleft.
         r, p_near = nearest_point(p, q)
-        
         if r < 1e-6 || 1 < r # If r is small or beyond the valid range, just use q[2]
             𝘂 = q[2] - q[1]
             𝘃 = p - q[1]
@@ -246,7 +245,7 @@ nearest_point(p::Point, q::QuadraticSegment) = nearest_point(p, q, 15)
 # q(r) = p_nearest
 # Uses at most max_iters iterations of Newton-Raphson
 function nearest_point(p::Point, q::QuadraticSegment{Dim,T}, max_iters::Int64) where {Dim,T}
-    r = 1//2 + inv(𝗝(q, 1//2))*(p - q(1//2)) 
+    r = T(1//2) + inv(𝗝(q, 1//2))*(p - q(1//2)) 
     for i ∈ 1:max_iters-1
         Δr = inv(𝗝(q, r))*(p - q(r)) 
         if abs(Δr) < T(1e-7)

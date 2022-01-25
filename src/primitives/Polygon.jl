@@ -57,6 +57,8 @@ function centroid(poly::Polygon{N,2,T}) where {N,T}
     end
     return Point(c/(3a))
 end
+# Use a faster method for triangles
+centroid(tri::Triangle) = tri(1//3, 1//3)
 
 # Test if a point is in a polygon for 2D points/polygons
 function Base.in(p::Point2D, poly::Polygon{N,2,T}) where {N,T}
@@ -80,17 +82,13 @@ function Base.intersect(l::LineSegment2D{T}, poly::Polygon{N,2,T}
     # Create the line segments that make up the triangle and intersect each one
     points = zeros(MVector{N,Point2D{T}})
     npoints = 0x0000
-    for i ∈ 1:N-1
-        hit, point = l ∩ LineSegment2D(poly[i], poly[i+1])
+    for i ∈ 1:N
+        hit, point = l ∩ LineSegment2D(poly[(i-1) % N + 1],
+                                       poly[    i % N + 1]) 
         if hit
             npoints += 0x0001
             points[npoints] = point
         end
-    end
-    hit, point = l ∩ LineSegment2D(poly[N], poly[1])
-    if hit
-        npoints += 0x0001
-        points[npoints] = point
     end
     return npoints, SVector(points)
 end
