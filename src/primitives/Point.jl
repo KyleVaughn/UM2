@@ -61,11 +61,44 @@ function Base.rand(::Type{Point{Dim,T}}, DimP::Int64) where {Dim,T}
     return [ Point{Dim,T}(rand(SVector{Dim,T})) for i = 1:DimP ]
 end
 
-# Sort points based on their distance from a given point
-sortpoints(p::Point, points::Vector{<:Point}) = points[sortperm(distance².(Ref(p), points))]
+# Sort points based on their distance from a given point using insertion sort
+# The points should be nearly sorted or sorted, so insertion sort is quick
 function sortpoints!(p::Point, points::Vector{<:Point})
-    permute!(points, sortperm(distance².(Ref(p), points)))
+    npts = length(points)
+    for i ∈ 2:npts
+        j = i - 1
+        dist = distance²(p, points[i])
+        pt = points[i]
+        while 0 < j 
+            if dist < distance²(p, points[j]) 
+                points[j+1] = points[j]
+                j -= 1
+                continue
+            end
+            break
+        end
+        points[j+1] = pt
+    end
     return nothing
+end
+function sortpoints(p::Point, points::Vector{<:Point})
+    points_sorted = deepcopy(points)
+    npts = length(points)
+    for i ∈ 2:npts
+        j = i - 1
+        dist = distance²(p, points_sorted[i])
+        pt = points[i]
+        while 0 < j 
+            if dist < distance²(p, points_sorted[j]) 
+                points_sorted[j+1] = points_sorted[j]
+                j -= 1
+                continue
+            end
+            break
+        end
+        points_sorted[j+1] = pt
+    end
+    return points_sorted
 end
 
 # Plot
