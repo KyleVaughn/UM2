@@ -45,69 +45,6 @@ AABB{Dim}(p₁::Point{Dim,T}, p₂::Point{Dim,T}) where {Dim,T} = AABB{Dim,T}(p�
                                             aabb.ymin ≤ p[2] ≤ aabb.ymax &&
                                             aabb.zmin ≤ p[3] ≤ aabb.zmax
 
-# DEPRECATED. Leaving because there is potential future use
-# # Liang-Barsky line clipping algorithm
-# # pₖ = 0	            parallel to the clipping boundaries
-# # pₖ = 0 and qₖ < 0	    completely outside the boundary
-# # pₖ = 0 and qₖ ≥ 0	    inside the parallel clipping boundary
-# # pₖ < 0	            line proceeds from outside to inside
-# # pₖ > 0	            line proceeds from inside to outside
-# function intersect(l::LineSegment2D{F}, aabb::AABB2D{F}) where {F <: AbstractFloat}
-#     p₂ = l[2].x - l[1].x
-#     p₁ = -p₂
-#     p₄ = l[2].y - l[1].y
-#     p₃ = -p₄
-# 
-#     q₁ = l[1].x - aabb.xmin
-#     q₂ = aabb.xmax - l[1].x
-#     q₃ = l[1].y - aabb.ymin
-#     q₄ = aabb.ymax - l[1].y
-# 
-#     # Line parallel to clipping window
-#     if p₁ == 0 # Vertical line
-#         if q₁ < 0 || q₂ < 0 # Outside boundaries
-#             return false, SVector(Point2D{F}(0, 0), Point2D{F}(0, 0))
-#         else # Inside boundaries
-#             return true, SVector(Point2D(l[1].x, aabb.ymin), Point2D(l[1].x, aabb.ymax))
-#         end
-#     end
-#     if p₃ == 0 # Horizontal line
-#         if q₃ < 0 || q₄ < 0 # Outside boundaries
-#             return false, SVector(Point2D{F}(0, 0), Point2D{F}(0, 0))
-#         else # Inside boundaries
-#             return true, SVector(Point2D(aabb.xmin, l[1].y), Point2D(aabb.xmax, l[1].y))
-#         end
-#     end
-# 
-#     t₁ = q₁ / p₁
-#     t₂ = q₂ / p₂
-#     if (p₁ < 0)
-#         t_min2 = t₁
-#         t_max2 = t₂
-#     else
-#         t_min2 = t₂
-#         t_max2 = t₁
-#     end
-# 
-#     t₃ = q₃ / p₃
-#     t₄ = q₄ / p₄
-#     if (p₃ < 0)
-#         t_min3 = t₃
-#         t_max3 = t₄
-#     else
-#         t_min3 = t₄
-#         t_max3 = t₃
-#     end
-# 
-#     t_start = max(F(0), t_min2, t_min3)
-#     t_stop = min(F(1), t_max2, t_max3)
-# 
-#     # Line outside clipping window
-#     t_start < t_stop || return false, SVector(Point2D{F}(0, 0), Point2D{F}(0, 0))
-# 
-#     return true, SVector(l(t_start), l(t_stop))
-# end
-# 
 # Credit to Tavian Barnes (https://tavianator.com/2011/ray_box.html)
 # Assumes the line passes all the way through the AABB if it intersects, which is a 
 # valid assumption for this ray tracing application. 

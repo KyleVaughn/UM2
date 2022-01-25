@@ -13,7 +13,7 @@
 # 𝗾(r) = (2r-1)(r-1)𝘅₁ + r(2r-1)𝘅₂ + 4r(1-r)𝘅₃
 # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
 # Chapter 8, Advanced Data Representation, in the interpolation functions section
-struct QuadraticSegment{Dim,T} <: Edge{Dim,2,T}
+struct QuadraticSegment{Dim,T} <:Edge{Dim,2,T}
     points::SVector{3, Point{Dim,T}}
 end
 

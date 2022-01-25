@@ -2,7 +2,6 @@ const L_system_instructions = @SVector ['F', # Go forward
                                         '-', # Turn right 90°
                                         '+'  # Turn left 90°
                                        ]
-
 struct L_System
     axiom::Char
     rules::Dict{Char, String}

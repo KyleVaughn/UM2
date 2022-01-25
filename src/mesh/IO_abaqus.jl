@@ -1,44 +1,45 @@
 # IO routines for the Abaqus .inp file format
-const abaqus_to_vtk_type = Dict{String, UInt64}(
+const valid_abaqus_types = (
     # 2D
     # triangle
-    "CPS3"  => 5,
-    "SFRU3" => 5,
+    "CPS3", "SFRU3",
     # triangle6
-    "CPS6" => 22,
+    "CPS6",
     # quadrilateral
-    "CPS4" => 9,
+    "CPS4", 
     # quad8
-    "CPS8" => 23,
-    "M3D9" => 23
+    "CPS8",
+    "M3D9"
    )
 
-function read_abaqus_2d(filepath::String)
-    @info "Reading $filepath"
-    # NOFE: Fhere is a crucial assumption here that elements and nodes are listed 1 to N,
+function read_abaqus2d(filepath::String, floattype::Type{T}=Float64) where {T<:AbstractFloat}
+    @info "Reading "*filepath
+    # NOTE: There is a critical assumption here that elements and nodes are listed 1 to N,
     # not 8, 10, 9 or anything funky/out of order.
-    name = "DefaultMeshName"
     file = open(filepath, "r")
-    faces = Vector{UInt32}[]
-    face_sets = Dict{String, Set{UInt32}}()
-    points = Point_2D[]
+    name = "default_name"
+    faces = [] 
+    face_sets = Dict{String, Set{UInt64}}()
+    points = Point2D{floattype}[]
     while !eof(file)
-        line_split = split(readline(file))
-        if length(line_split) > 0
-            if occursin("**", line_split[1]) # Comment
+        line = readline(file)
+        if length(line) > 0
+            if "**" == @view line[1:2] # Comment
                 continue
-            elseif occursin("*Heading", line_split[1])
+            elseif "*Heading" == line
                 name = String(strip(readline(file)))
                 if occursin(".inp", name)
                     name = name[1:length(name)-4]
                 end
-            elseif occursin("*NODE", line_split[1])
-                points = read_abaqus_nodes_2d(file)
-            elseif occursin("*ELEMENT", line_split[1])
-                element_type = String(strip(replace(line_split[2], ("type=" => "")), ','))
+            elseif "*NODE" == line
+                points = read_abaqus_nodes_2d(file, floattype)
+            elseif occursin("*ELEMENT", line)
+                linesplit = split(line)
+                element_type = String(strip(replace(linesplit[2], ("type=" => "")), ','))
                 append!(faces, read_abaqus_elements(file, element_type))
-            elseif occursin("*ELSET", line_split[1])
-                set_name = String(replace(line_split[1], ("*ELSET,ELSET=" => "")))
+            elseif occursin("*ELSET", line)
+                linesplit = split(line)
+                set_name = String(replace(linesplit[1], ("*ELSET,ELSET=" => "")))
                 face_sets[set_name] = read_abaqus_elset(file)
             end
         end
@@ -59,79 +60,105 @@ function read_abaqus_2d(filepath::String)
     #   E ≈ 2F
     # We see that V ≤ 2F ≤ E, so we use 2.2F as the max number of faces, edges, or vertices
     # plus a fudge factor for small meshes, where the relationships become less accurate.
+    UInt16_max = 65535
     UInt32_max = 4294967295
     nfaces = length(faces)
-    if UInt32_max < 2.2*nfaces + 1000
-        @error "Mesh may cause UInt32 overflow. Some poor dev now has to add UInt64 support"
-    end
-    face_lengths = Int64[]
-    for face in faces
-        l = length(face)
-        if l ∉ face_lengths
-            push!(face_lengths, l)
-        end
-    end
-    if face_lengths == [3]
-        return TriangleMesh_2D(name = name,
-                               points = points,
-                               faces = [ SVector{3, UInt32}(f) for f in faces],
-                               face_sets = face_sets
-                              )
-    elseif face_lengths == [4]
-        return QuadrilateralMesh_2D(name = name,
-                                    points = points,
-                                    faces = [ SVector{4, UInt32}(f) for f in faces],
-                                    face_sets = face_sets
-                                   )
-    elseif face_lengths == [6]
-        return Triangle6Mesh_2D(name = name,
-                                points = points,
-                                faces = [ SVector{6, UInt32}(f) for f in faces],
-                                face_sets = face_sets
-                               )
+    if 2.2*nfaces + 1000 < UInt16_max
+        U = UInt16
+    elseif 2.2*nfaces + 1000 < UInt32_max 
+        U = UInt32
     else
-        @error "Could not identify mesh type. Faces of lengths: $face_lengths"
-        return nothing
+        U = UInt64
     end
+    face_sets_U = Dict{String, Set{U}}()
+    for key in keys(face_sets)
+        face_sets_U[key] = convert(Set{U}, face_sets[key])
+    end
+    return PolygonMesh{2,floattype, U}(name = name,
+                                       points = points,
+                                       faces = [ SVector{length(f), U}(f) for f in faces],
+                                       face_sets = face_sets_U)
+#    face_lengths = Int64[]
+#    for face in faces
+#        l = length(face)
+#        if l ∉ face_lengths
+#            push!(face_lengths, l)
+#        end
+#    end
+#    if face_lengths == [3]
+#        return TriangleMesh_2D(name = name,
+#                               points = points,
+#                               faces = [ SVector{3, UInt32}(f) for f in faces],
+#                               face_sets = face_sets
+#                              )
+#    elseif face_lengths == [4]
+#        return QuadrilateralMesh_2D(name = name,
+#                                    points = points,
+#                                    faces = [ SVector{4, UInt32}(f) for f in faces],
+#                                    face_sets = face_sets
+#                                   )
+#    elseif face_lengths == [6]
+#        return Triangle6Mesh_2D(name = name,
+#                                points = points,
+#                                faces = [ SVector{6, UInt32}(f) for f in faces],
+#                                face_sets = face_sets
+#                               )
+#    else
+#        @error "Could not identify mesh type. Faces of lengths: $face_lengths"
+#        return nothing
+#    end
+#
 end
 
-function read_abaqus_nodes_2d(file::IOStream)
-    points = Point_2D[]
-    line_split = strip.(split(readline(file)), [','])
-    line_position = position(file)
-    while !occursin("*", line_split[1])
-        xyz = parse.(Float64, line_split[2:4])
-        push!(points, Point_2D(xyz[1], xyz[2]))
-        line_position = position(file)
-        line_split = strip.(split(readline(file)), [','])
+function read_abaqus_nodes_2d(file::IOStream, floattype::Type{T}) where {T<:AbstractFloat} 
+    # Count the number of nodes
+    file_position = position(file)
+    npoints = 0
+    line = readline(file) 
+    while !('*' == line[1])
+        npoints += 1
+        line = readline(file)
     end
-    seek(file, line_position)
+    seek(file, file_position)
+    # Allocate and populate a vector of points
+    points = Vector{Point2D{floattype}}(undef, npoints)
+    line = readline(file)
+    ipt = 0
+    while !('*' == line[1])
+        ipt += 1
+        xy = parse.(floattype, strip.(view(split(line),2:3), [',']))
+        points[ipt] = Point2D(xy[1], xy[2])
+        file_position = position(file)
+        line = readline(file)
+    end
+    seek(file, file_position)
     return points
 end
 
 function read_abaqus_elements(file::IOStream, element_type::String)
-    if !(element_type ∈  keys(abaqus_to_vtk_type))
-        @error "$element_type is not in the abaqus to vtk type conversion dictionary"
+    if !(element_type ∈ valid_abaqus_types)  
+        @error "$element_type is not in the valid abaqus types"
     end
-    faces = Vector{UInt32}[]
-    line_split = strip.(split(readline(file)), [','])
-    line_position = position(file)
-    while !occursin("*", line_split[1])
-        vertex_IDs = parse.(UInt32, line_split[2:length(line_split)])
-        if length(vertex_IDs) == 9
-            push!(faces, vertex_IDs[1:8])
+    faces = []
+    line = readline(file)
+    file_position = position(file)
+    while !('*' == line[1] || eof(file))
+        linesplit = split(line)
+        vertexIDs = parse.(UInt64, strip.(view(linesplit, 2:length(linesplit)), [',']))
+        if length(vertexIDs) == 9
+            push!(faces, vertexIDs[1:8])
         else
-            push!(faces, vertex_IDs)
+            push!(faces, vertexIDs)
         end
-        line_position = position(file)
-        line_split = strip.(split(readline(file)), [','])
+        file_position = position(file)
+        line = readline(file)
     end
-    seek(file, line_position)
+    seek(file, file_position)
     return faces
 end
 
 function read_abaqus_elset(file::IOStream)
-    line_split = strip.(split(readuntil(file, "*")), [','])
+    linesplit = strip.(split(readuntil(file, "*")), [','])
     seek(file, position(file)-1)
-    return Set(parse.(UInt32, line_split))
+    return Set(parse.(UInt64, linesplit))
 end

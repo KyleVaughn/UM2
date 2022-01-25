@@ -68,12 +68,13 @@ include("./primitives/Polygon.jl")
 #include("./primitives/Triangle6.jl")
 #include("./primitives/Quadrilateral8.jl")
 ##include("L_system.jl")
-#include("./mesh/UnstructuredMesh.jl")
+include("./mesh/UnstructuredMesh.jl")
+include("./mesh/PolygonMesh.jl")
 #include("./mesh/UnstructuredMesh2D.jl")
 #include("./mesh/LinearUnstructuredMesh2D.jl")
 #include("./mesh/QuadraticUnstructuredMesh2D.jl")
 #include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
-#include("./mesh/IO_abaqus.jl")
+include("./mesh/IO_abaqus.jl")
 ##include("./mesh/IO_vtk.jl")
 #include("./mesh/IO_xdmf.jl")
 #include("gauss_legendre_quadrature.jl")
@@ -92,19 +93,15 @@ export AABB, AABB2D, AABB3D,
        Octagon, Nonagon,
        Pentagon,
        Point, Point2D, Point3D, 
-       Polygon,
+       Polygon, PolygonMesh, 
        QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, 
-       Quadrilateral, Quadrilateral2D, Quadrilateral3D, 
-       Quadrilateral8, Quadrilateral82D, Quadrilateral83D, 
-       Tree, Triangle, Triangle2D, Triangle3D, 
-       Triangle6, Triangle62D, Triangle63D, 
-       UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D, 
+       Quadrilateral, Quadrilateral2D,
+#       Quadrilateral8, Quadrilateral82D, Quadrilateral83D, 
+       Tree, Triangle, Triangle2D, TriangleMesh,
+#       Triangle6, Triangle62D, Triangle63D, 
        Vector2D, Vector3D
-#         LinearUnstructuredMesh2D,
-#         QuadraticUnstructuredMesh2D,
 #         QuadrilateralMesh2D,
 #         TriangleMesh2D,
-#         UnstructuredMesh2D
 
 # Convenience operators
 const 𝗗 = derivative
@@ -118,8 +115,8 @@ export +, -, ⋅, ×, ==, ≈, 𝗗, 𝗝
 # Methods
 export arclength, area, centroid, depth, boundingbox, derivative, distance, distance², 
        gauss_legendre_quadrature, height, intersect, inv, isleft, isstraight, jacobian, 
-       midpoint, nearest_point, norm, norm², rand, real_to_parametric, sortpoints, 
-       sortpoints!, triangulate, union, width
+       midpoint, nearest_point, norm, norm², rand, read_abaqus2d, real_to_parametric, 
+       sortpoints, sortpoints!, triangulate, union, width
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,
 #         add_boundary_edges!,

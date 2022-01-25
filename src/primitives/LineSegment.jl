@@ -2,7 +2,7 @@
 # 𝘅(r) = 𝘅₁ + r𝘂, where r ∈ [0, 1]. We also define 𝘅₂ = 𝘅₁ + 𝘂 for convenience.
 #
 # We store 𝘂 instead of 𝘅₂, since 𝘅₂ is needed infrequently, but 𝘂 is needed often.
-struct LineSegment{Dim,T} <: Edge{Dim,1,T}
+struct LineSegment{Dim,T} <:Edge{Dim,1,T}
     𝘅₁::Point{Dim,T} 
     𝘂::SVector{Dim,T}
 end

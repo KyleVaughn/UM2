@@ -1,5 +1,5 @@
 # A polygon defined by its vertices in counterclockwise order 
-struct Polygon{N,Dim,T} <: Face{Dim,1,T}
+struct Polygon{N,Dim,T} <:Face{Dim,1,T}
     points::SVector{N, Point{Dim,T}}
 end
 
@@ -43,6 +43,8 @@ function area(poly::Polygon{N,Dim,T}) where {N,Dim,T}
     a += poly[N] × poly[1]
     return norm(a)/2
 end
+# We can simplify the above for triangles
+area(tri::Triangle) = norm(tri[2] - tri[1] × tri[3] - tri[1])/2
 
 # Centroid for polygons in the 2D plane
 function centroid(poly::Polygon{N,2,T}) where {N,T}
@@ -73,10 +75,30 @@ function Base.in(p::Point2D, poly::Polygon{N,2,T}) where {N,T}
     end
 end
 
-function Base.intersect(l::LineSegment2D{T}, 
-        poly::Polygon{N,2,T}) where {N,T <: Union{Float32, Float64}} 
+function Base.intersect(l::LineSegment2D{T}, poly::Polygon{N,2,T}
+                       ) where {N,T <:Union{Float32, Float64}} 
     # Create the line segments that make up the triangle and intersect each one
     points = zeros(MVector{N,Point2D{T}})
+    npoints = 0x0000
+    for i ∈ 1:N-1
+        hit, point = l ∩ LineSegment2D(poly[i], poly[i+1])
+        if hit
+            npoints += 0x0001
+            points[npoints] = point
+        end
+    end
+    hit, point = l ∩ LineSegment2D(poly[N], poly[1])
+    if hit
+        npoints += 0x0001
+        points[npoints] = point
+    end
+    return npoints, SVector(points)
+end
+
+# Cannot mutate BigFloats in an MVector, so we use a regular Vector
+function Base.intersect(l::LineSegment2D{BigFloat}, poly::Polygon{N,2,BigFloat}) where {N} 
+    # Create the line segments that make up the triangle and intersect each one
+    points = zeros(Point2D{BigFloat}, N)
     npoints = 0x0000
     for i ∈ 1:N
         hit, point = l ∩ LineSegment2D(poly[(i-1) % N + 1],
@@ -86,7 +108,19 @@ function Base.intersect(l::LineSegment2D{T},
             points[npoints] = point
         end
     end
-    return npoints, SVector(points)
+    return npoints, SVector{N,Point2D{BigFloat}}(points)
+end
+
+# Interpolation
+# ---------------------------------------------------------------------------------------------
+# See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+# Chapter 8, Advanced Data Representation, in the interpolation functions section
+function (tri::Triangle)(r, s)
+    return Point((1 - r - s)*tri[1] + r*tri[2] + s*tri[3])
+end
+
+function (quad::Quadrilateral)(r, s)
+    return Point((1 - r)*(1 - s)*quad[1] + r*(1 - s)*quad[2] + r*s*quad[3] + (1 - r)*s*quad[4])
 end
 
 # Plot
