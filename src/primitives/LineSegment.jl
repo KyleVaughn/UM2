@@ -1,5 +1,6 @@
 # A parametric line segment, defined as the set of all points such that
-# 𝘅(r) = 𝘅₁ + r𝘂, where r ∈ [0, 1]. We also define 𝘅₂ = 𝘅₁ + 𝘂 for convenience.
+# 𝘅(r) = 𝘅₁ + r𝘂, where r ∈ [0, 1]. We see 𝘅₁ is the line segment start and 𝘅₂ = 𝘅₁ + 𝘂 
+# is the line segment end.
 #
 # We store 𝘂 instead of 𝘅₂, since 𝘅₂ is needed infrequently, but 𝘂 is needed often.
 struct LineSegment{Dim,T} <:Edge{Dim,1,T}

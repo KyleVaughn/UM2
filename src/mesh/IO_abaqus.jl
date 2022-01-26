@@ -84,44 +84,20 @@ function read_abaqus2d(filepath::String, floattype::Type{T}=Float64) where {T<:A
     if face_lengths == [3]
         return TriangleMesh{2,floattype, U}(name = name,
                                            points = points,
-                                           faces = [ SVector{length(f), U}(f) for f in faces],
+                                           faces = [ SVector{3, U}(f) for f in faces],
                                            face_sets = face_sets_U)
+    elseif face_lengths == [4]
+        return QuadrilateralMesh{2,floattype, U}(name = name,
+                                           points = points,
+                                           faces = [ SVector{4, U}(f) for f in faces],
+                                           face_sets = face_sets_U)
+    
     else
         return PolygonMesh{2,floattype, U}(name = name,
                                            points = points,
                                            faces = [ SVector{length(f), U}(f) for f in faces],
                                            face_sets = face_sets_U)
     end
-
-
-
-
-
-
-
-#    if face_lengths == [3]
-#        return TriangleMesh_2D(name = name,
-#                               points = points,
-#                               faces = [ SVector{3, UInt32}(f) for f in faces],
-#                               face_sets = face_sets
-#                              )
-#    elseif face_lengths == [4]
-#        return QuadrilateralMesh_2D(name = name,
-#                                    points = points,
-#                                    faces = [ SVector{4, UInt32}(f) for f in faces],
-#                                    face_sets = face_sets
-#                                   )
-#    elseif face_lengths == [6]
-#        return Triangle6Mesh_2D(name = name,
-#                                points = points,
-#                                faces = [ SVector{6, UInt32}(f) for f in faces],
-#                                face_sets = face_sets
-#                               )
-#    else
-#        @error "Could not identify mesh type. Faces of lengths: $face_lengths"
-#        return nothing
-#    end
-#
 end
 
 function read_abaqus_nodes_2d(file::IOStream, floattype::Type{T}) where {T<:AbstractFloat} 

@@ -1,5 +1,5 @@
 # Axis-aligned bounding box.
-# An Dim-dimensional box requires 2 Dim-dimensional points to specify the boundary:
+# A Dim-dimensional box requires 2 Dim-dimensional points to specify the boundary:
 #   One point to specify the box origin, and one to specify the opposite (furthest corner)
 struct AABB{Dim,T}
     origin::Point{Dim,T}
@@ -9,7 +9,7 @@ end
 const AABB2D = AABB{2}
 const AABB3D = AABB{3}
 
-# Dimote: all branches but the correct one are pruned by the compiler
+# Note: all branches but the correct one are pruned by the compiler
 function Base.getproperty(aabb::AABB, sym::Symbol)
     if sym === :xmin
         return aabb.origin[1]

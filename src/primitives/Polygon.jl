@@ -38,10 +38,9 @@ function area(poly::Polygon{N,Dim,T}) where {N,Dim,T}
     else
         a = Base.zero(Point{Dim,T}) # Vector
     end
-    for i = 1:N-1
-        a += poly[i] × poly[i+1]
+    for i ∈ 1:N
+        @inbounds a += poly[(i - 1) % N + 1] × poly[i % N + 1]
     end
-    a += poly[N] × poly[1]
     return norm(a)/2
 end
 # We can simplify the above for triangles
@@ -51,9 +50,9 @@ area(tri::Triangle) = norm(tri[2] - tri[1] × tri[3] - tri[1])/2
 function centroid(poly::Polygon{N,2,T}) where {N,T}
     c = SVector{2,T}(0,0)
     a = T(0)
-    for i = 1:N-1
-        subarea = poly[i] × poly[i+1]
-        c += subarea*(poly[i] + poly[i+1])
+    for i ∈ 1:N-1
+        subarea = @inbounds poly[i] × poly[i+1]
+        c += @inbounds subarea*(poly[i] + poly[i+1])
         a += subarea
     end
     return Point(c/(3a))
@@ -65,17 +64,13 @@ centroid(tri::Triangle) = tri(1//3, 1//3)
 function Base.in(p::Point2D, poly::Polygon{N,2,T}) where {N,T}
     # Test if the point is to the left of each edge. 
     bool = true
-    for i = 1:N-1
-        if !isleft(p, LineSegment2D(poly[i], poly[i+1]))
+    for i ∈ 1:N
+        if !isleft(p, @inbounds LineSegment2D(poly[(i - 1) % N + 1], poly[i % N + 1]))
             bool = false
             break
         end
     end
-    if bool
-        return isleft(p, LineSegment2D(poly[N], poly[1]))
-    else
-        return false
-    end
+    return bool
 end
 
 function Base.intersect(l::LineSegment2D{T}, poly::Polygon{N,2,T}
@@ -84,11 +79,10 @@ function Base.intersect(l::LineSegment2D{T}, poly::Polygon{N,2,T}
     points = zeros(MVector{N,Point2D{T}})
     npoints = 0x0000
     for i ∈ 1:N
-        hit, point = l ∩ LineSegment2D(poly[(i-1) % N + 1],
-                                       poly[    i % N + 1]) 
+        hit, point = l ∩ @inbounds LineSegment2D(poly[(i - 1) % N + 1], poly[i % N + 1]) 
         if hit
             npoints += 0x0001
-            points[npoints] = point
+            @inbounds points[npoints] = point
         end
     end
     return npoints, SVector(points)
@@ -100,8 +94,7 @@ function Base.intersect(l::LineSegment2D{BigFloat}, poly::Polygon{N,2,BigFloat})
     points = zeros(Point2D{BigFloat}, N)
     npoints = 0x0000
     for i ∈ 1:N
-        hit, point = l ∩ LineSegment2D(poly[(i-1) % N + 1],
-                                       poly[    i % N + 1]) 
+        hit, point = l ∩ @inbounds LineSegment2D(poly[(i - 1) % N + 1], poly[i % N + 1]) 
         if hit
             npoints += 0x0001
             points[npoints] = point

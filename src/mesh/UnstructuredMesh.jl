@@ -57,74 +57,44 @@ end
 
 # SVector of MVectors of point IDs representing the 3 edges of a triangle
 function edges(face::SVector{3,U}) where {U <:Unsigned}
-    edges = SVector( MVector{2,U}(face[1], face[2]),
-                     MVector{2,U}(face[2], face[3]),
-                     MVector{2,U}(face[3], face[1]) )
-    # Order the linear edge vertices by ID
-    for edge in edges
-        if edge[2] < edge[1]
-            e1 = edge[1]
-            edge[1] = edge[2]
-            edge[2] = e1
-        end
-    end
+    edges = SVector(SVector{2,U}(min(face[1], face[2]), max(face[1], face[2])),  
+                    SVector{2,U}(min(face[2], face[3]), max(face[2], face[3])),  
+                    SVector{2,U}(min(face[3], face[1]), max(face[3], face[1]))) 
     return edges
 end
 
 # SVector of MVectors of point IDs representing the 4 edges of a quadrilateral
 function edges(face::SVector{4,U}) where {U <:Unsigned}
-    edges = SVector( MVector{2,U}(face[1], face[2]),
-                     MVector{2,U}(face[2], face[3]),
-                     MVector{2,U}(face[3], face[4]),
-                     MVector{2,U}(face[4], face[1]) )
-    # Order the linear edge vertices by ID
-    for edge in edges
-        if edge[2] < edge[1]
-            e1 = edge[1]
-            edge[1] = edge[2]
-            edge[2] = e1
-        end
-    end
+    edges = SVector(SVector{2,U}(min(face[1], face[2]), max(face[1], face[2])),  
+                    SVector{2,U}(min(face[2], face[3]), max(face[2], face[3])),  
+                    SVector{2,U}(min(face[3], face[4]), max(face[3], face[4])),  
+                    SVector{2,U}(min(face[4], face[1]), max(face[4], face[1])))  
     return edges
 end
 
 # SVector of MVectors of point IDs representing the 3 edges of a quadratic triangle
 function edges(face::SVector{6,U}) where {U <:Unsigned}
-    edges = SVector( MVector{3,U}(face[1], face[2], face[4]),
-                     MVector{3,U}(face[2], face[3], face[5]),
-                     MVector{3,U}(face[3], face[1], face[6]) )
-    # Order the linear edge vertices by ID
-    for edge in edges
-        if edge[2] < edge[1]
-            e1 = edge[1]
-            edge[1] = edge[2]
-            edge[2] = e1
-        end
-    end
+    edges = SVector(SVector{3,U}(min(face[1], face[2]), max(face[1], face[2]), face[4]),  
+                    SVector{3,U}(min(face[2], face[3]), max(face[2], face[3]), face[5]),  
+                    SVector{3,U}(min(face[3], face[1]), max(face[3], face[1]), face[6])) 
     return edges
 end
 
 # SVector of MVectors of point IDs representing the 4 edges of a quadratic quadrilateral
 function edges(face::SVector{8,U}) where {U <:Unsigned}
-    edges = SVector( MVector{3,U}(face[1], face[2], face[5]),
-                     MVector{3,U}(face[2], face[3], face[6]),
-                     MVector{3,U}(face[3], face[4], face[7]),
-                     MVector{3,U}(face[4], face[1], face[8]) )
-    # Order th linear edge vertices by ID
-    for edge in edges
-        if edge[2] < edge[1]
-            e1 = edge[1]
-            edge[1] = edge[2]
-            edge[2] = e1
-        end
-    end
+    edges = SVector(SVector{3,U}(min(face[1], face[2]), max(face[1], face[2]), face[5]),  
+                    SVector{3,U}(min(face[2], face[3]), max(face[2], face[3]), face[6]),  
+                    SVector{3,U}(min(face[3], face[4]), max(face[3], face[4]), face[7]),  
+                    SVector{3,U}(min(face[4], face[1]), max(face[4], face[1]), face[8]))  
     return edges
 end
 
 # The unique edges of a mesh 
 function edges(mesh::UnstructuredMesh2D)
-    mesh_edges = sort(unique(reduce(vcat, edges.(mesh.faces))))
-    return [ SVector(e.data) for e in mesh_edges ]
+    edge_vecs = edges.(mesh.faces)
+    num_edges = mapreduce(x->length(x),+,edge_vecs)
+    edges_unfiltered = Vector{typeof(edge_vecs[1][1])}(undef, num_edges)
+    return sort!(unique!(edges_unfiltered))
 end
 
 # Return an SVector of the points in the edge (Linear)

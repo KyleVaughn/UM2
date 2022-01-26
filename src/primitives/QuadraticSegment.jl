@@ -83,8 +83,8 @@ end
 
 # Find the axis-aligned bounding box of the segment.
 function boundingbox(q::QuadraticSegment2D)
-    # Find the r coordinates where ∂x/∂r = 0, ∂y/∂r = 0
-    # We know derivaitve(q), so we can directly compute these values
+    # Find the r coordinates where dx/dr = 0, dy/∂r = 0
+    # We know dq/dr, so we can directly compute these values
     r_x = (3q[1][1] + q[2][1] - 4q[3][1])/(4(q[1][1] + q[2][1] - 2q[3][1]))
     if 0 < r_x < 1
         x_extreme = (2r_x-1)*(r_x-1)q[1][1] + r_x*(2r_x-1)q[2][1] + 4r_x*(1-r_x)q[3][1]
@@ -266,7 +266,6 @@ end
 function Base.rand(::Type{QuadraticSegment{Dim,F}}, N::Int64) where {Dim,F}
     return [ rand(QuadraticSegment{Dim,F}) for i ∈ 1:N ]
 end
-
 
 # Plot
 # ---------------------------------------------------------------------------------------------

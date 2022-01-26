@@ -62,7 +62,8 @@ function Base.rand(::Type{Point{Dim,T}}, NP::Int64) where {Dim,T}
 end
 
 # Sort points based on their distance from a given point using insertion sort
-# The points should be nearly sorted or sorted, so insertion sort is quick
+# The intended use is points from ray tracing, which should be nearly sorted or sorted, 
+# so insertion sort is quick
 function sortpoints!(p::Point, points::Vector{<:Point})
     npts = length(points)
     for i ∈ 2:npts

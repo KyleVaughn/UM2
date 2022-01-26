@@ -56,7 +56,6 @@ function TriangleMesh{Dim,T,U}(;
                         edge_face_connectivity, face_edge_connectivity, boundary_edges, face_sets)
 end
 
-# Quadrilateral
 struct QuadrilateralMesh{Dim,T,U} <:LinearUnstructuredMesh{Dim,T,U}
     name::String
     points::Vector{Point{Dim,T}}
