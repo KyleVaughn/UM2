@@ -54,6 +54,24 @@ function add_materialized_faces(mesh::M) where {M <: UnstructuredMesh2D}
             )
 end
 
+# Area of face
+function area(face::SVector, points::Vector{<:Point})
+    return area(materialize_face(face, points))
+end
+
+# Return the area of a face set
+function area(mesh::UnstructuredMesh, face_set::Set)
+    if 0 < length(mesh.materialized_faces)
+        return mapreduce(x->area(mesh.materialized_faces[x]), +, face_set)
+    else
+        return mapreduce(x->area(mesh.faces[x], mesh.points), +, face_set)
+    end
+end
+
+# Return the area of a face set by name
+function area(mesh::UnstructuredMesh, set_name::String)
+    return area(mesh, mesh.face_sets[set_name])
+end
 
 # SVector of MVectors of point IDs representing the 3 edges of a triangle
 function edges(face::SVector{3,U}) where {U <:Unsigned}

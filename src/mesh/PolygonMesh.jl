@@ -185,24 +185,6 @@ end
 #     return the_adjacent_faces
 # end
 # 
-# # Area of face
-# function area(face::SVector{N, UInt32}, points::Vector{Point_2D}) where {N}
-#     return area(materialize_face(face, points))
-# end
-# 
-# # Return the area of a face set
-# function area(mesh::UnstructuredMesh_2D, face_set::Set{UInt32})
-#     if 0 < length(mesh.materialized_faces)
-#         return mapreduce(x->area(mesh.materialized_faces[x]), +, face_set)
-#     else
-#         return mapreduce(x->area(mesh.faces[x], mesh.points), +, face_set)
-#     end 
-# end
-# 
-# # Return the area of a face set by name
-# function area(mesh::UnstructuredMesh_2D, set_name::String)
-#     return area(mesh, mesh.face_sets[set_name])
-# end
 # 
 # # Bounding box of a vector of points
 # function boundingbox(points::Vector{Point_2D})
