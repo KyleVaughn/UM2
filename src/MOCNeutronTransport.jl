@@ -50,11 +50,11 @@ function log_timestamps()
 end
 
 include("Tree.jl")
-# include("constants.jl")
+include("constants.jl")
 #include("operators.jl")
-#include("./gmsh/gmsh_generate_rectangular_grid.jl")
-#include("./gmsh/gmsh_group_preserving_fragment.jl")
-#include("./gmsh/gmsh_overlay_rectangular_grid.jl")
+include("./gmsh/gmsh_generate_rectangular_grid.jl")
+include("./gmsh/gmsh_group_preserving_fragment.jl")
+include("./gmsh/gmsh_overlay_rectangular_grid.jl")
 include("./primitives/Edge.jl")
 include("./primitives/Face.jl")
 include("./primitives/VectorND.jl")
@@ -77,7 +77,7 @@ include("./mesh/IO_abaqus.jl")
 #include("./mesh/IO_xdmf.jl")
 #include("gauss_legendre_quadrature.jl")
 #include("./ray_tracing/AngularQuadrature.jl")
-#include("./ray_tracing/ray_trace.jl")
+#include("./raytracing/raytrace.jl")
 #include("./ray_tracing/ray_trace_low_level.jl")
 
 
@@ -114,11 +114,15 @@ export +, -, ⋅, ×, ==, ≈, 𝗗, 𝗝
 export arclength, add_edges, add_materialized_edges, add_materialized_faces, 
        area, boundingbox, centroid, depth, derivative, distance, 
        distance², 
-       edgepoints, edges, facepoints, 
-       gauss_legendre_quadrature, height, intersect, inv, isleft, isstraight, 
-       jacobian, materialize_edge, materialize_edges, materialize_face, materialize_faces,
+       edgepoints, edges, facepoints, findface, findface_implicit, findface_explicit, 
+       gauss_legendre_quadrature, height, intersect, 
+       intersect_face_implicit, intersect_faces_implicit, intersect_faces_explicit,
+       inv, isleft, isstraight, 
+       jacobian, log_timestamps, materialize_edge, materialize_edges, 
+       materialize_face, materialize_faces,
        midpoint, nearest_point, norm, norm², num_edges, rand, read_abaqus2d, 
-       real_to_parametric, sortpoints, sortpoints!, triangulate, union, width
+       real_to_parametric, sortpoints, sortpoints!, sort_intersection_points!,
+       triangulate, union, width
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,
 #         add_boundary_edges!,
@@ -198,12 +202,12 @@ export arclength, add_edges, add_materialized_edges, add_materialized_faces,
 #         write_vtk_2d,
 #         write_xdmf_2d
 # 
-# # Gmsh
-# export gmsh,
-#        gmsh_generate_rectangular_grid,
-#        gmsh_group_preserving_fragment,
-#        gmsh_overlay_rectangular_grid
-# 
+ # Gmsh
+ export gmsh,
+        gmsh_generate_rectangular_grid,
+        gmsh_group_preserving_fragment,
+        gmsh_overlay_rectangular_grid
+ 
 # Plot
 if enable_visualization
     export Figure, Axis

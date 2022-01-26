@@ -33,7 +33,7 @@ end
 AABB{Dim}(p₁::Point{Dim,T}, p₂::Point{Dim,T}) where {Dim,T} = AABB{Dim,T}(p₁, p₂)
 
 # Methods
-# -------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------
 @inline width(aabb::AABB) = aabb.xmax - aabb.xmin
 @inline height(aabb::AABB) = aabb.ymax - aabb.ymin
 @inline depth(aabb::AABB) = aabb.ymax - aabb.ymin
@@ -76,6 +76,40 @@ end
 function Base.union(bb₁::AABB{Dim,T}, bb₂::AABB{Dim,T}) where {Dim,T}
     return AABB(Point{Dim,T}(min.(bb₁.origin.coord, bb₂.origin.coord)),
                 Point{Dim,T}(max.(bb₁.corner.coord, bb₂.corner.coord)))
+end
+
+# Bounding box
+# ---------------------------------------------------------------------------------------------
+# Bounding box of a vector of points
+function boundingbox(points::Vector{<:Point2D})
+    x = getindex.(points, 1)
+    y = getindex.(points, 2)
+    return AABB2D(Point2D(minimum(x), minimum(y)), Point2D(maximum(x), maximum(y)))
+end
+
+# Bounding box of a vector of points
+function boundingbox(points::Vector{<:Point3D})
+    x = getindex.(points, 1)
+    y = getindex.(points, 2)
+    z = getindex.(points, 3)
+    return AABB3D(Point3D(minimum(x), minimum(y), minimum(z)), 
+                  Point3D(maximum(x), maximum(y), maximum(z)))
+end
+
+# Bounding box of a vector of points
+function boundingbox(points::SVector{L, Point2D}) where {L} 
+    x = getindex.(points, 1)
+    y = getindex.(points, 2)
+    return AABB2D(Point2D(minimum(x), minimum(y)), Point2D(maximum(x), maximum(y)))
+end
+
+# Bounding box of a vector of points
+function boundingbox(points::SVector{L, Point3D}) where {L}
+    x = getindex.(points, 1)
+    y = getindex.(points, 2)
+    z = getindex.(points, 3)
+    return AABB3D(Point3D(minimum(x), minimum(y), minimum(z)), 
+                  Point3D(maximum(x), maximum(y), maximum(z)))
 end
 
 # Plot

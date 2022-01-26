@@ -86,7 +86,6 @@ function QuadrilateralMesh{Dim,T,U}(;
                              face_sets)
 end
 
-
 # 
 # # Return a mesh with boundary edges
 # function add_boundary_edges(mesh::M; boundary_shape="Unknown"
@@ -185,21 +184,6 @@ end
 #     return the_adjacent_faces
 # end
 # 
-# 
-# # Bounding box of a vector of points
-# function boundingbox(points::Vector{Point_2D})
-#     x = getindex.(points, 1)
-#     y = getindex.(points, 2)
-#     return Rectangle_2D(minimum(x), minimum(y), maximum(x), maximum(y))
-# end
-# 
-# # Bounding box of a vector of points
-# function boundingbox(points::SVector{L, Point_2D}) where {L}
-#     x = getindex.(points, 1)
-#     y = getindex.(points, 2)
-#     return Rectangle_2D(minimum(x), minimum(y), maximum(x), maximum(y))
-# end
-# 
 # # Return a vector containing vectors of the edges in each side of the mesh's bounding shape, e.g.
 # # For a rectangular bounding shape the sides are North, East, South, West. Then the output would
 # # be [ [e1, e2, e3, ...], [e17, e18, e18, ...], ..., [e100, e101, ...]]
@@ -286,38 +270,6 @@ end
 #         end
 #     end
 #     return shared_faces
-# end
-# 
-# # Return the face containing point p.
-# function findface(p::Point_2D, mesh::UnstructuredMesh_2D)
-#     if 0 < length(mesh.materialized_faces)
-#         return UInt32(findface_explicit(p, mesh.materialized_faces))
-#     else
-#         return UInt32(findface_implicit(p, mesh.faces, mesh.points))
-#     end
-# end
-# 
-# # Find the face containing the point p, with explicitly represented faces
-# function findface_explicit(p::Point_2D, faces::Vector{<:Face_2D})
-#     for i ∈ 1:length(faces)
-#         if p ∈  faces[i]
-#             return i
-#         end
-#     end
-#     return 0
-# end
-# 
-# # Return the face containing the point p, with implicitly represented faces
-# function findface_implicit(p::Point_2D,
-#                             faces::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}},
-#                             points::Vector{Point_2D})
-#     for i ∈ 1:length(faces)
-#         bool = p ∈  materialize_face(faces[i], points)
-#         if bool
-#             return i
-#         end
-#     end
-#     return 0
 # end
 # 
 # # Return the intersection algorithm that will be used for l ∩ mesh
@@ -446,46 +398,8 @@ end
 #     return intersection_points
 # end
 # 
-# # Intersect a line with an implicitly defined face
-# function intersect_face_implicit(l::LineSegment_2D,
-#                                  face::SVector{L, UInt32} where {L},
-#                                  points::Vector{Point_2D})
-#     return l ∩ materialize_face(face, points)
-# end
 # 
-# # Intersect a line with explicitly defined linear faces
-# function intersect_faces_explicit(l::LineSegment_2D, faces::Vector{<:Face_2D} )
-#     # An array to hold all of the intersection points
-#     intersection_points = Point_2D[]
-#     for face in faces
-#         npoints, points = l ∩ face
-#         # If the intersections yields 1 or more points, push those points to the array of points
-#         if 0 < npoints
-#             append!(intersection_points, points[1:npoints])
-#         end
-#     end
-#     sort_intersection_points!(l[1], intersection_points)
-#     return intersection_points
-# end
-# 
-# # Intersect a line with implicitly defined faces
-# function intersect_faces_implicit(l::LineSegment_2D,
-#                                   faces::Vector{<:SArray{S, UInt32, 1, L} where {S<:Tuple, L}},
-#                                   points::Vector{Point_2D})
-#     # An array to hold all of the intersection points
-#     intersection_points = Point_2D[]
-#     # Intersect the line with each of the faces
-#     for face in faces
-#         npoints, ipoints = intersect_face_implicit(l, face, points)
-#         # If the intersections yields 1 or more points, push those points to the array of points
-#         if 0 < npoints
-#             append!(intersection_points, ipoints[1:npoints])
-#         end
-#     end
-#     sort_intersection_points!(l[1], intersection_points)
-#     return intersection_points
-# end
-# 
+
 # # If a point is a vertex
 # function isvertex(p::Point_2D, mesh::UnstructuredMesh_2D)
 #     for point in mesh.points
@@ -623,27 +537,6 @@ function Base.show(io::IO, mesh::QuadrilateralMesh)
     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
 end
 
-
-# # Sort intersection points, deleting points that are less than minimum_segment_length apart
-# function sort_intersection_points!(p::Point_2D, points::Vector{Point_2D})
-#     if 2 <= length(points)
-#         sortpoints!(p, points)
-#         # Eliminate any points for which the distance between consecutive points 
-#         # is less than the minimum segment length
-#         delete_ids = Int64[]
-#         id_start = 1
-#         for id_stop ∈ 2:length(points)
-#             if distance²(points[id_start], points[id_stop]) < minimum_segment_length^2
-#                 push!(delete_ids, id_stop)
-#             else
-#                 id_start = id_stop
-#             end
-#         end
-#         deleteat!(points, delete_ids)
-#     else
-#         return points
-#     end
-# end
 # 
 # # Return a mesh with name name, composed of the faces in the set face_ids
 # function submesh(name::String, mesh::M) where {M <: UnstructuredMesh_2D}

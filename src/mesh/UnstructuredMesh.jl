@@ -157,6 +157,73 @@ function facepoints(edge_id, mesh::UnstructuredMesh)
     return facepoints(mesh.faces[edge_id], mesh.points)
 end
 
+# Return the face containing point p.
+function findface(p::Point2D, mesh::UnstructuredMesh2D{Dim,T,U}) where {Dim,T,U}
+    if 0 < length(mesh.materialized_faces)
+        return U(findface_explicit(p, mesh.materialized_faces))
+    else
+        return U(findface_implicit(p, mesh.faces, mesh.points))
+    end
+end
+
+# Find the face containing the point p, with explicitly represented faces
+function findface_explicit(p::Point2D, faces::Vector{<:Face2D})
+    for i ∈ 1:length(faces)
+        if @inbounds p ∈ faces[i]
+            return i
+        end
+    end
+    return 0
+end
+
+# Return the face containing the point p, with implicitly represented faces
+function findface_implicit(p::Point2D, faces::Vector{<:SArray}, points::Vector{<:Point2D})
+    for i ∈ 1:length(faces)
+        bool = @inbounds p ∈ materialize_face(faces[i], points)
+        if bool
+            return i
+        end
+    end
+    return 0
+end
+
+# Intersect a line with an implicitly defined face
+function intersect_face_implicit(l::LineSegment2D, face::SVector, points::Vector{<:Point2D})
+    return l ∩ materialize_face(face, points)
+end
+
+# Intersect a line with explicitly defined linear faces
+function intersect_faces_explicit(l::LineSegment2D{T}, faces::Vector{<:Face2D} ) where {T}
+    # An array to hold all of the intersection points
+    intersection_points = Point2D{T}[]
+    for face in faces
+        npoints, points = l ∩ face
+        # If the intersections yields 1 or more points, push those points to the array of points
+        if 0 < npoints
+            append!(intersection_points, @inbounds points[1:npoints])
+        end
+    end
+    sort_intersection_points!(l.𝘅₁, intersection_points)
+    return intersection_points
+end
+
+# Intersect a line with implicitly defined faces
+function intersect_faces_implicit(l::LineSegment2D{T}, faces::Vector{<:SArray}, 
+                                  points::Vector{<:Point2D}) where {T}
+    # An array to hold all of the intersection points
+    intersection_points = Point2D{T}[]
+    # Intersect the line with each of the faces
+    for face in faces
+        npoints, ipoints = intersect_face_implicit(l, face, points)
+        # If the intersections yields 1 or more points, push those points to the array of points
+        if 0 < npoints
+            append!(intersection_points, @inbounds ipoints[1:npoints])
+        end
+    end
+    sort_intersection_points!(l.𝘅₁, intersection_points)
+    return intersection_points
+end
+
 # Return a LineSegment from the point IDs in an edge
 function materialize_edge(edge::SVector{2}, points::Vector{<:Point})
     return LineSegment(edgepoints(edge, points))

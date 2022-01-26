@@ -102,6 +102,25 @@ function sortpoints(p::Point, points::Vector{<:Point})
     return points_sorted
 end
 
+# Sort intersection points, deleting points that are less than minimum_segment_length apart
+function sort_intersection_points!(p::Point, points::Vector{<:Point})
+    sortpoints!(p, points)
+    # Eliminate any points for which the distance between consecutive points
+    # is less than the minimum segment length
+    id_start = 1
+    id_stop = 2
+    npoints = length(points)
+    while id_stop <= npoints
+        if distance²(points[id_start], points[id_stop]) < minimum_segment_length^2
+            deleteat!(points, id_stop)
+            npoints -= 1
+        else
+            id_start = id_stop
+            id_stop += 1
+        end
+    end
+end
+
 # Plot
 # ---------------------------------------------------------------------------------------------
 if enable_visualization

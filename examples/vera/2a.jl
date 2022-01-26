@@ -138,16 +138,16 @@ if generate_mesh_file
     
     # Mesh
     # ------------------------------------------------------------------------------------------------
-    lc = 0.2 # cm
+    lc = 0.12 # cm
     gmsh.model.mesh.set_size(gmsh.model.get_entities(0), lc)
     # Optional mesh optimization:
     niter = 2 # The optimization iterations
     
     # Triangles
-    gmsh.model.mesh.generate(2) # 2 is dimension of mesh
-    for () in 1:niter
-        gmsh.model.mesh.optimize("Laplace2D")
-    end
+    # gmsh.model.mesh.generate(2) # 2 is dimension of mesh
+    # for () in 1:niter
+    #     gmsh.model.mesh.optimize("Laplace2D")
+    # end
     
     # Quadrilaterals
     # The default recombination algorithm might leave some triangles in the mesh, if
@@ -158,15 +158,15 @@ if generate_mesh_file
     # followed by recombination, smoothing and subdivision.
     # Mesh recombination algorithm (0: simple, 1: blossom, 2: simple full-quad, 3: blossom full-quad)
     # Default = 1
-    # gmsh.option.set_number("Mesh.RecombineAll", 1) # recombine all triangles
-    # gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads. Better 2D algorithm
-    # gmsh.option.set_number("Mesh.RecombinationAlgorithm", 1)
-    # gmsh.model.mesh.generate(2)
-    # for () in 1:niter
-    #     gmsh.model.mesh.optimize("Laplace2D")
-    #     gmsh.model.mesh.optimize("Relocate2D")
-    #     gmsh.model.mesh.optimize("Laplace2D")
-    # end
+    gmsh.option.set_number("Mesh.RecombineAll", 1) # recombine all triangles
+    gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads. Better 2D algorithm
+    gmsh.option.set_number("Mesh.RecombinationAlgorithm", 2)
+    gmsh.model.mesh.generate(2)
+    for () in 1:niter
+        gmsh.model.mesh.optimize("Laplace2D")
+        gmsh.model.mesh.optimize("Relocate2D")
+        gmsh.model.mesh.optimize("Laplace2D")
+    end
     
     # 2nd order triangles
     #gmsh.option.set_number("Mesh.HighOrderOptimize", 2)
@@ -204,10 +204,10 @@ if generate_mesh_file
     gmsh.write("2a.inp")
     gmsh.finalize() # done with Gmsh. Finalize
 end
-mesh = read_abaqus_2d("2a.inp")
+mesh = read_abaqus2d("2a.inp")
 # Convert mesh into Hierarchical Rectangularly Partitioned Mesh 
-HRPM = partition_rectangularly(mesh)
-write_xdmf_2d("2a.xdmf", HRPM)
+#HRPM = partition_rectangularly(mesh)
+#write_xdmf_2d("2a.xdmf", HRPM)
 
 # Mass conservation
 # --------------------------------------------------------------------------------------------------
@@ -259,8 +259,8 @@ end
 # Ray tracing
 #---------------------------------------------------------------------------------------------------
 T = Float64
-mesh = read_abaqus_2d("2a.inp", float_type=T)
-mesh = add_everything(mesh)
-tₛ =  T(0.007)
-ang_quad = generate_angular_quadrature("Chebyshev-Chebyshev", 32, 3; T=T)
-tracks = generate_tracks(tₛ, ang_quad, mesh, boundary_shape = "Rectangle")
+mesh = read_abaqus2d("2a.inp", T)
+# mesh = add_everything(mesh)
+# tₛ =  T(0.007)
+# ang_quad = generate_angular_quadrature("Chebyshev-Chebyshev", 32, 3; T=T)
+# tracks = generate_tracks(tₛ, ang_quad, mesh, boundary_shape = "Rectangle")
