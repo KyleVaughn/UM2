@@ -26,6 +26,12 @@ LineSegment{Dim}(𝘅₁::Point{Dim,T},
                  𝘅₂::Point{Dim,T}) where {Dim,T} = LineSegment{Dim,T}(𝘅₁, 𝘅₂ - 𝘅₁) 
 LineSegment(𝘅₁::Point{Dim,T}, 
             𝘅₂::Point{Dim,T}) where {Dim,T} = LineSegment{Dim,T}(𝘅₁, 𝘅₂ - 𝘅₁) 
+LineSegment{Dim,T}(pts::SVector{2, Point{Dim,T}}
+                  ) where {Dim,T} = LineSegment{Dim,T}(pts[1], pts[2] - pts[1]) 
+LineSegment{Dim}(pts::SVector{2, Point{Dim,T}}
+                ) where {Dim,T} = LineSegment{Dim,T}(pts[1], pts[2] - pts[1]) 
+LineSegment(pts::SVector{2, Point{Dim,T}}
+           ) where {Dim,T} = LineSegment{Dim,T}(pts[1], pts[2] - pts[1]) 
 
 # Methods
 # ---------------------------------------------------------------------------------------------

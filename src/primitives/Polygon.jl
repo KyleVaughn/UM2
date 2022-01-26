@@ -22,9 +22,10 @@ end
 
 # Constructors
 # ---------------------------------------------------------------------------------------------
-Polygon{N,Dim,T}(x...) where {N,Dim,T} = Polygon{N,Dim,T}(SVector{N, Point{Dim,T}}(x))
-Polygon{Dim,T}(x...) where {Dim,T} = Polygon(SVector(x))
-Polygon{Dim}(x...) where {Dim} = Polygon(SVector(x))
+function Polygon{N}(v::SVector{N, Point{Dim,T}}) where {N,Dim,T}
+    return Polygon{N,Dim,T}(v)
+end
+Polygon{N}(x...) where {N} = Polygon(SVector(x))
 Polygon(x...) = Polygon(SVector(x))
 
 # Methods

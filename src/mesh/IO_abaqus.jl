@@ -74,17 +74,31 @@ function read_abaqus2d(filepath::String, floattype::Type{T}=Float64) where {T<:A
     for key in keys(face_sets)
         face_sets_U[key] = convert(Set{U}, face_sets[key])
     end
-    return PolygonMesh{2,floattype, U}(name = name,
-                                       points = points,
-                                       faces = [ SVector{length(f), U}(f) for f in faces],
-                                       face_sets = face_sets_U)
-#    face_lengths = Int64[]
-#    for face in faces
-#        l = length(face)
-#        if l ∉ face_lengths
-#            push!(face_lengths, l)
-#        end
-#    end
+    face_lengths = Int64[]
+    for face in faces
+        l = length(face)
+        if l ∉ face_lengths
+            push!(face_lengths, l)
+        end
+    end
+    if face_lengths == [3]
+        return TriangleMesh{2,floattype, U}(name = name,
+                                           points = points,
+                                           faces = [ SVector{length(f), U}(f) for f in faces],
+                                           face_sets = face_sets_U)
+    else
+        return PolygonMesh{2,floattype, U}(name = name,
+                                           points = points,
+                                           faces = [ SVector{length(f), U}(f) for f in faces],
+                                           face_sets = face_sets_U)
+    end
+
+
+
+
+
+
+
 #    if face_lengths == [3]
 #        return TriangleMesh_2D(name = name,
 #                               points = points,

@@ -40,16 +40,52 @@ struct TriangleMesh{Dim,T,U} <:LinearUnstructuredMesh{Dim,T,U}
     face_sets::Dict{String, Set{U}}
 end
 
+function TriangleMesh{Dim,T,U}(;
+    name::String = "default_name",
+    points::Vector{Point{Dim,T}} = Point{Dim,T}[],
+    edges::Vector{SVector{2,U}} = SVector{2,U}[],
+    materialized_edges::Vector{LineSegment{Dim,T}} = LineSegment{Dim,T}[],
+    faces::Vector{SVector{3,U}} = SVector{3,U}[],
+    materialized_faces::Vector{Polygon{3,Dim,T}} = Polygon{3,Dim,T}[],
+    edge_face_connectivity::Vector{SVector{2,U}} = SVector{2,U}[],
+    face_edge_connectivity::Vector{SVector{3,U}} = SVector{3,U}[],
+    boundary_edges::Vector{Vector{U}} = Vector{U}[],
+    face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
+    ) where {Dim,T,U}
+    return TriangleMesh(name, points, edges, materialized_edges, faces, materialized_faces, 
+                        edge_face_connectivity, face_edge_connectivity, boundary_edges, face_sets)
+end
 
+# Quadrilateral
+struct QuadrilateralMesh{Dim,T,U} <:LinearUnstructuredMesh{Dim,T,U}
+    name::String
+    points::Vector{Point{Dim,T}}
+    edges::Vector{SVector{2,U}}
+    materialized_edges::Vector{LineSegment{Dim,T}}
+    faces::Vector{SVector{4,U}}
+    materialized_faces::Vector{Polygon{4,Dim,T}}
+    edge_face_connectivity::Vector{SVector{2,U}}
+    face_edge_connectivity::Vector{SVector{4,U}}
+    boundary_edges::Vector{Vector{U}}
+    face_sets::Dict{String, Set{U}}
+end
 
-
-
-
-
-
-
-
-
+function QuadrilateralMesh{Dim,T,U}(;
+    name::String = "default_name",
+    points::Vector{Point{Dim,T}} = Point{Dim,T}[],
+    edges::Vector{SVector{2,U}} = SVector{2,U}[],
+    materialized_edges::Vector{LineSegment{Dim,T}} = LineSegment{Dim,T}[],
+    faces::Vector{SVector{4,U}} = SVector{4,U}[],
+    materialized_faces::Vector{Polygon{4,Dim,T}} = Polygon{4,Dim,T}[],
+    edge_face_connectivity::Vector{SVector{2,U}} = SVector{2,U}[],
+    face_edge_connectivity::Vector{SVector{4,U}} = SVector{4,U}[],
+    boundary_edges::Vector{Vector{U}} = Vector{U}[],
+    face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
+    ) where {Dim,T,U}
+    return QuadrilateralMesh(name, points, edges, materialized_edges, faces, materialized_faces, 
+                             edge_face_connectivity, face_edge_connectivity, boundary_edges, 
+                             face_sets)
+end
 
 
 # 
@@ -77,20 +113,20 @@ end
 #     return add_edge_face_connectivity(mesh)
 # end
 # 
-# # Return a mesh with its edges
-# function add_edges(mesh::M) where {M <: UnstructuredMesh_2D}
-#     return M(name = mesh.name,
-#              points = mesh.points,
-#              edges = edges(mesh),
-#              materialized_edges = mesh.materialized_edges,
-#              faces = mesh.faces,
-#              materialized_faces = mesh.materialized_faces,
-#              edge_face_connectivity = mesh.edge_face_connectivity,
-#              face_edge_connectivity = mesh.face_edge_connectivity,
-#              boundary_edges = mesh.boundary_edges,
-#              face_sets = mesh.face_sets
-#             )
-# end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 
 # # Return a mesh with edge/face connectivity
 # function add_edge_face_connectivity(mesh::M) where {M <: UnstructuredMesh_2D}
@@ -134,40 +170,7 @@ end
 #              face_sets = mesh.face_sets
 #             )
 # end
-# 
-# # Return a mesh with materialized edges
-# function add_materialized_edges(mesh::M) where {M <: UnstructuredMesh_2D}
-#     if 0 === length(mesh.edges)
-#         mesh = add_edges(mesh)
-#     end
-#     return M(name = mesh.name,
-#              points = mesh.points,
-#              edges = mesh.edges,
-#              materialized_edges = materialize_edges(mesh),
-#              faces = mesh.faces,
-#              materialized_faces = mesh.materialized_faces,
-#              edge_face_connectivity = mesh.edge_face_connectivity,
-#              face_edge_connectivity = mesh.face_edge_connectivity,
-#              boundary_edges = mesh.boundary_edges,
-#              face_sets = mesh.face_sets
-#             )
-# end
-# 
-# # Return a mesh with materialized faces
-# function add_materialized_faces(mesh::M) where {M <: UnstructuredMesh_2D}
-#     return M(name = mesh.name,
-#              points = mesh.points,
-#              edges = mesh.edges,
-#              materialized_edges = mesh.materialized_edges,
-#              faces = mesh.faces,
-#              materialized_faces = materialize_faces(mesh),
-#              edge_face_connectivity = mesh.edge_face_connectivity,
-#              face_edge_connectivity = mesh.face_edge_connectivity,
-#              boundary_edges = mesh.boundary_edges,
-#              face_sets = mesh.face_sets
-#             )
-# end
-# 
+
 # # Return a vector of the faces adjacent to the face of ID face
 # function adjacent_faces(face::UInt32, mesh::UnstructuredMesh_2D)
 #     edges = mesh.face_edge_connectivity[face]
@@ -258,77 +261,11 @@ end
 #     end 
 # end 
 # 
-# # SVector of MVectors of point IDs representing the 3 edges of a triangle
-# function edges(face::SVector{3, UInt32})
-#     edges = SVector( MVector{2, UInt32}(face[1], face[2]),
-#                      MVector{2, UInt32}(face[2], face[3]),
-#                      MVector{2, UInt32}(face[3], face[1]) )
-#     # Order the linear edge vertices by ID
-#     for edge in edges
-#         if edge[2] < edge[1]
-#             e1 = edge[1]
-#             edge[1] = edge[2]
-#             edge[2] = e1
-#         end
-#     end
-#     return edges
-# end
-# 
-# # SVector of MVectors of point IDs representing the 4 edges of a quadrilateral
-# function edges(face::SVector{4, UInt32})
-#     edges = SVector( MVector{2, UInt32}(face[1], face[2]),
-#                      MVector{2, UInt32}(face[2], face[3]),
-#                      MVector{2, UInt32}(face[3], face[4]),
-#                      MVector{2, UInt32}(face[4], face[1]) )
-#     # Order the linear edge vertices by ID
-#     for edge in edges
-#         if edge[2] < edge[1]
-#             e1 = edge[1]
-#             edge[1] = edge[2]
-#             edge[2] = e1
-#         end
-#     end
-#     return edges
-# end
-# 
-# # SVector of MVectors of point IDs representing the 3 edges of a quadratic triangle
-# function edges(face::SVector{6, UInt32})
-#     edges = SVector( MVector{3, UInt32}(face[1], face[2], face[4]),
-#                      MVector{3, UInt32}(face[2], face[3], face[5]),
-#                      MVector{3, UInt32}(face[3], face[1], face[6]) )
-#     # Order the linear edge vertices by ID
-#     for edge in edges
-#         if edge[2] < edge[1]
-#             e1 = edge[1]
-#             edge[1] = edge[2]
-#             edge[2] = e1
-#         end
-#     end
-#     return edges
-# end
-# 
-# # SVector of MVectors of point IDs representing the 4 edges of a quadratic quadrilateral
-# function edges(face::SVector{8, UInt32})
-#     edges = SVector( MVector{3, UInt32}(face[1], face[2], face[5]),
-#                      MVector{3, UInt32}(face[2], face[3], face[6]),
-#                      MVector{3, UInt32}(face[3], face[4], face[7]),
-#                      MVector{3, UInt32}(face[4], face[1], face[8]) )
-#     # Order th linear edge vertices by ID
-#     for edge in edges
-#         if edge[2] < edge[1]
-#             e1 = edge[1]
-#             edge[1] = edge[2]
-#             edge[2] = e1
-#         end
-#     end
-#     return edges
-# end
-# 
-# # The unique edges from a vector of triangles or quadrilaterals represented by point IDs
-# function edges(mesh::UnstructuredMesh_2D)
-#     edges_filtered = sort(unique(reduce(vcat, edges.(mesh.faces))))
-#     return [ SVector(e.data) for e in edges_filtered ]
-# end
+
+
+
+
+
 # 
 # # A vector of length 2 SVectors, denoting the face ID each edge is connected to. If the edge
 # # is a boundary edge, face ID 0 is returned
@@ -358,49 +295,7 @@ end
 #     end
 #     return [SVector(sort(two_faces).data) for two_faces in edge_face]
 # end
-# 
-# # Return an SVector of the points in the edge (Linear)
-# function edgepoints(edge::SVector{2, UInt32}, points::Vector{Point_2D})
-#     return SVector(points[edge[1]], points[edge[2]])
-# end
-# 
-# # Return an SVector of the points in the edge (Quadratic)
-# function edgepoints(edge::SVector{3, UInt32}, points::Vector{Point_2D})
-#     return SVector(points[edge[1]], points[edge[2]], points[edge[3]])
-# end
-# 
-# # Return an SVector of the points in the edge
-# function edgepoints(edge_id::UInt32, mesh::UnstructuredMesh_2D) 
-#     return edgepoints(mesh.edges[edge_id], mesh.points)
-# end
-# 
-# # Return an SVector of the points in the face (Triangle)
-# function facepoints(face::SVector{3, UInt32}, points::Vector{Point_2D})
-#     return SVector(points[face[1]], points[face[2]], points[face[3]])
-# end
-# 
-# # Return an SVector of the points in the face (Quadrilateral)
-# function facepoints(face::SVector{4, UInt32}, points::Vector{Point_2D})
-#     return SVector(points[face[1]], points[face[2]], points[face[3]], points[face[4]])
-# end
-# 
-# # Return an SVector of the points in the face (Triangle6)
-# function facepoints(face::SVector{6, UInt32}, points::Vector{Point_2D})
-#     return SVector(points[face[1]], points[face[2]], points[face[3]],
-#                    points[face[4]], points[face[5]], points[face[6]])
-# end
-# 
-# # Return an SVector of the points in the face (Quadrilateral8)
-# function facepoints(face::SVector{8, UInt32}, points::Vector{Point_2D})
-#     return SVector(points[face[1]], points[face[2]], points[face[3]], points[face[4]],
-#                    points[face[5]], points[face[6]], points[face[7]], points[face[8]])
-# end
-# 
-# # Return an SVector of the points in the face
-# function facepoints(edge_id::UInt32, mesh::UnstructuredMesh_2D)
-#     return facepoints(mesh.faces[edge_id], mesh.points)
-# end
-# 
+
 # # Find the faces which share the vertex of ID v.
 # function faces_sharing_vertex(v::Integer, mesh::UnstructuredMesh_2D)
 #     shared_faces = UInt32[]
@@ -620,67 +515,7 @@ end
 #     return false
 # end
 # 
-# # Return a LineSegment_2D from the point IDs in an edge
-# function materialize_edge(edge::SVector{2, UInt32}, points::Vector{Point_2D})
-#     return LineSegment_2D(edgepoints(edge, points))
-# end
-# 
-# # Return a QuadraticSegment_2D from the point IDs in an edge
-# function materialize_edge(edge::SVector{3, UInt32}, points::Vector{Point_2D})
-#     return QuadraticSegment_2D(edgepoints(edge, points))
-# end
-# 
-# # Return a LineSegment_2D or QuadraticSegment_2D
-# function materialize_edge(edge_id::UInt32, mesh::UnstructuredMesh_2D)
-#     return materialize_edge(mesh.edges[edge_id], mesh.points)
-# end
-# 
-# # Return a materialized edge for each edge in the mesh
-# function materialize_edges(mesh::UnstructuredMesh_2D)
-#     return materialize_edge.(mesh.edges, Ref(mesh.points))
-# end
-# 
-# # Return a Triangle_2D from the point IDs in a face
-# function materialize_face(face::SVector{3, UInt32}, points::Vector{Point_2D})
-#     return Triangle_2D(facepoints(face, points))
-# end
-# 
-# # Return a Quadrilateral_2D from the point IDs in a face
-# function materialize_face(face::SVector{4, UInt32}, points::Vector{Point_2D})
-#     return Quadrilateral_2D(facepoints(face, points))
-# end
-# 
-# # Return a Triangle6_2D from the point IDs in a face
-# function materialize_face(face::SVector{6, UInt32}, points::Vector{Point_2D})
-#     return Triangle6_2D(facepoints(face, points))
-# end
-# 
-# # Return a Quadrilateral8_2D from the point IDs in a face
-# function materialize_face(face::SVector{8, UInt32}, points::Vector{Point_2D})
-#     return Quadrilateral8_2D(facepoints(face, points))
-# end
-# 
-# # Return an SVector of the points in the edge
-# function materialize_face(face_id::UInt32, mesh::UnstructuredMesh_2D)
-#     return materialize_face(mesh.faces[face_id], mesh.points)
-# end
-# 
-# # Return a materialized face for each face in the mesh
-# function materialize_faces(mesh::UnstructuredMesh_2D)
-#     return materialize_face.(mesh.faces, Ref(mesh.points))
-# end
-# 
-# # Return the number of edges in a face
-# function num_edges(face::SVector{L, UInt32}) where {L}
-#     if L % 3 === 0 
-#         return 0x00000003
-#     elseif L % 4 === 0
-#         return 0x00000004
-#     else
-#         # Error
-#         return 0x00000000
-#     end
-# end
+
 # 
 # function remap_points_to_hilbert(points::Vector{Point_2D})
 #     bb = boundingbox(points)
@@ -745,44 +580,69 @@ end
 #     return 0x00000000 
 # end
 # 
-# # How to display a mesh in REPL
-# function Base.show(io::IO, mesh::UnstructuredMesh_2D)
-#     mesh_type = typeof(mesh)
-#     println(io, mesh_type)
-#     println(io, "  ├─ Name      : $(mesh.name)")
-#     size_MB = Base.summarysize(mesh)/1E6
-#     if size_MB < 1
-#         size_KB = size_MB*1000
-#         println(io, "  ├─ Size (KB) : $size_KB")
-#     else
-#         println(io, "  ├─ Size (MB) : $size_MB")
-#     end
-#     println(io, "  ├─ Points    : $(length(mesh.points))")
-#     nedges = length(mesh.edges)
-#     println(io, "  ├─ Edges     : $nedges")
-#     println(io, "  │  ├─ Linear         : $(count(x->x isa SVector{2, UInt32},  mesh.edges))")
-#     println(io, "  │  ├─ Quadratic      : $(count(x->x isa SVector{3, UInt32},  mesh.edges))")
-#     println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_edges) !== 0)")
-#     println(io, "  ├─ Faces     : $(length(mesh.faces))")
-#     println(io, "  │  ├─ Triangle       : $(count(x->x isa SVector{3, UInt32},  mesh.faces))")
-#     println(io, "  │  ├─ Quadrilateral  : $(count(x->x isa SVector{4, UInt32},  mesh.faces))")
-#     println(io, "  │  ├─ Triangle6      : $(count(x->x isa SVector{6, UInt32},  mesh.faces))")
-#     println(io, "  │  ├─ Quadrilateral8 : $(count(x->x isa SVector{8, UInt32},  mesh.faces))")
-#     println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_faces) !== 0)")
-#     println(io, "  ├─ Connectivity")
-#     println(io, "  │  ├─ Edge/Face : $(0 < length(mesh.edge_face_connectivity))")
-#     println(io, "  │  └─ Face/Edge : $(0 < length(mesh.face_edge_connectivity))")
-#     println(io, "  ├─ Boundary edges")
-#     nsides = length(mesh.boundary_edges)
-#     if nsides !== 0
-#         println(io, "  │  ├─ Edges : $(mapreduce(x->length(x), +, mesh.boundary_edges))")
-#     else
-#         println(io, "  │  ├─ Edges : 0") 
-#     end
-#     println(io, "  │  └─ Sides : $nsides")
-#     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
-# end
-# 
+function Base.show(io::IO, mesh::TriangleMesh)
+    mesh_type = typeof(mesh)
+    println(io, mesh_type)
+    println(io, "  ├─ Name      : $(mesh.name)")
+    size_MB = Base.summarysize(mesh)/1E6
+    if size_MB < 1
+        size_KB = size_MB*1000
+        println(io, "  ├─ Size (KB) : $size_KB")
+    else
+        println(io, "  ├─ Size (MB) : $size_MB")
+    end
+    println(io, "  ├─ Points    : $(length(mesh.points))")
+    nedges = length(mesh.edges)
+    println(io, "  ├─ Edges     : $nedges")
+    println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_edges) !== 0)")
+    println(io, "  ├─ Faces     : $(length(mesh.faces))")
+    println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_faces) !== 0)")
+    println(io, "  ├─ Connectivity")
+    println(io, "  │  ├─ Edge/Face : $(0 < length(mesh.edge_face_connectivity))")
+    println(io, "  │  └─ Face/Edge : $(0 < length(mesh.face_edge_connectivity))")
+    println(io, "  ├─ Boundary edges")
+    nsides = length(mesh.boundary_edges)
+    if nsides !== 0
+        println(io, "  │  ├─ Edges : $(mapreduce(x->length(x), +, mesh.boundary_edges))")
+    else
+        println(io, "  │  ├─ Edges : 0") 
+    end
+    println(io, "  │  └─ Sides : $nsides")
+    println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
+end
+
+function Base.show(io::IO, mesh::QuadrilateralMesh)
+    mesh_type = typeof(mesh)
+    println(io, mesh_type)
+    println(io, "  ├─ Name      : $(mesh.name)")
+    size_MB = Base.summarysize(mesh)/1E6
+    if size_MB < 1
+        size_KB = size_MB*1000
+        println(io, "  ├─ Size (KB) : $size_KB")
+    else
+        println(io, "  ├─ Size (MB) : $size_MB")
+    end
+    println(io, "  ├─ Points    : $(length(mesh.points))")
+    nedges = length(mesh.edges)
+    println(io, "  ├─ Edges     : $nedges")
+    println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_edges) !== 0)")
+    println(io, "  ├─ Faces     : $(length(mesh.faces))")
+    println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_faces) !== 0)")
+    println(io, "  ├─ Connectivity")
+    println(io, "  │  ├─ Edge/Face : $(0 < length(mesh.edge_face_connectivity))")
+    println(io, "  │  └─ Face/Edge : $(0 < length(mesh.face_edge_connectivity))")
+    println(io, "  ├─ Boundary edges")
+    nsides = length(mesh.boundary_edges)
+    if nsides !== 0
+        println(io, "  │  ├─ Edges : $(mapreduce(x->length(x), +, mesh.boundary_edges))")
+    else
+        println(io, "  │  ├─ Edges : 0") 
+    end
+    println(io, "  │  └─ Sides : $nsides")
+    println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
+end
+
+
 # # Sort intersection points, deleting points that are less than minimum_segment_length apart
 # function sort_intersection_points!(p::Point_2D, points::Vector{Point_2D})
 #     if 2 <= length(points)

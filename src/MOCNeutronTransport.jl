@@ -111,10 +111,14 @@ const 𝗝= jacobian
 export +, -, ⋅, ×, ==, ≈, 𝗗, 𝗝
 
 # Methods
-export arclength, area, centroid, depth, boundingbox, derivative, distance, distance², 
-       gauss_legendre_quadrature, height, intersect, inv, isleft, isstraight, jacobian, 
-       midpoint, nearest_point, norm, norm², rand, read_abaqus2d, real_to_parametric, 
-       sortpoints, sortpoints!, triangulate, union, width
+export arclength, add_edges, add_materialized_edges, add_materialized_faces, 
+       area, boundingbox, centroid, depth, derivative, distance, 
+       distance², 
+       edgepoints, edges, facepoints, 
+       gauss_legendre_quadrature, height, intersect, inv, isleft, isstraight, 
+       jacobian, materialize_edge, materialize_edges, materialize_face, materialize_faces,
+       midpoint, nearest_point, norm, norm², num_edges, rand, read_abaqus2d, 
+       real_to_parametric, sortpoints, sortpoints!, triangulate, union, width
 # export  +, -, *, /, ×, ⋅, ⪇ , ⪉ , ∇ , ∇²,
 #         add_boundary_edges,
 #         add_boundary_edges!,
