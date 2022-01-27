@@ -21,6 +21,47 @@ function add_edges(mesh::M) where {M <:UnstructuredMesh2D}
             )
 end
 
+# Return a mesh with face/edge connectivity and edge/face connectivity
+function add_connectivity(mesh::UnstructuredMesh2D)
+    return add_edge_face_connectivity(mesh)
+end
+
+# Return a mesh with edge/face connectivity
+function add_edge_face_connectivity(mesh::M) where {M <: UnstructuredMesh2D}
+    if 0 === length(mesh.face_edge_connectivity)
+        mesh = add_face_edge_connectivity(mesh)
+    end
+    return M(name = mesh.name,
+             points = mesh.points,
+             edges = mesh.edges,
+             materialized_edges = mesh.materialized_edges,
+             faces = mesh.faces,
+             materialized_faces = mesh.materialized_faces,
+             edge_face_connectivity = edge_face_connectivity(mesh),
+             face_edge_connectivity = mesh.face_edge_connectivity,
+             boundary_edges = mesh.boundary_edges,
+             face_sets = mesh.face_sets
+            )
+end
+
+# Return a mesh with face/edge connectivity
+function add_face_edge_connectivity(mesh::M) where {M <: UnstructuredMesh2D}
+    if 0 === length(mesh.edges)
+        mesh = add_edges(mesh)
+    end
+    return M(name = mesh.name,
+             points = mesh.points,
+             edges = mesh.edges,
+             materialized_edges = mesh.materialized_edges,
+             faces = mesh.faces,
+             materialized_faces = mesh.materialized_faces,
+             edge_face_connectivity = mesh.edge_face_connectivity,
+             face_edge_connectivity = face_edge_connectivity(mesh),
+             boundary_edges = mesh.boundary_edges,
+             face_sets = mesh.face_sets
+            )
+end
+
 # Return a mesh with materialized edges
 function add_materialized_edges(mesh::M) where {M <: UnstructuredMesh2D}
     if 0 === length(mesh.edges)
@@ -73,6 +114,20 @@ function area(mesh::UnstructuredMesh, set_name::String)
     return area(mesh, mesh.face_sets[set_name])
 end
 
+# Axis-aligned bounding box
+function boundingbox(mesh::LinearUnstructuredMesh2D)
+    # If the mesh does not have any quadratic faces, the bounding_box may be determined
+    # entirely from the points.
+    nsides = length(mesh.boundary_edges)
+    if nsides !== 0
+        boundary_edge_IDs = reduce(vcat, mesh.boundary_edges)
+        point_IDs = reduce(vcat, mesh.edges[boundary_edge_IDs])
+        return boundingbox(mesh.points[point_IDs])
+    else
+        return boundingbox(mesh.points)
+    end
+end
+
 # SVector of MVectors of point IDs representing the 3 edges of a triangle
 function edges(face::SVector{3,U}) where {U <:Unsigned}
     edges = SVector(SVector{2,U}(min(face[1], face[2]), max(face[1], face[2])),  
@@ -112,6 +167,13 @@ function edges(mesh::UnstructuredMesh2D)
     edge_vecs = edges.(mesh.faces)
     num_edges = mapreduce(x->length(x),+,edge_vecs)
     edges_unfiltered = Vector{typeof(edge_vecs[1][1])}(undef, num_edges)
+    iedge = 1
+    for edge in edge_vecs
+        for i in eachindex(edge)
+            edges_unfiltered[iedge] = edge[i]
+            iedge += 1
+        end
+    end
     return sort!(unique!(edges_unfiltered))
 end
 
@@ -128,6 +190,35 @@ end
 # Return an SVector of the points in the edge
 function edgepoints(edge_id, mesh::UnstructuredMesh)
     return edgepoints(mesh.edges[edge_id], mesh.points)
+end
+
+# A vector of length 2 SVectors, denoting the face ID each edge is connected to. If the edge
+# is a boundary edge, face ID 0 is returned
+function edge_face_connectivity(mesh::UnstructuredMesh{Dim,Ord,T,U}) where {Dim,Ord,T,U}
+    # Each edge should only border 2 faces if it is an interior edge, and 1 face if it is
+    # a boundary edge.
+    # Loop through each face in the face_edge_connectivity vector and mark each edge with
+    # the faces that it borders.
+    if length(mesh.edges) === 0
+        @error "Does not have edges!"
+    end
+    if length(mesh.face_edge_connectivity) === 0
+        @error "Does not have face/edge connectivity!"
+    end
+    edge_face = [MVector{2, U}(0, 0) for _ in eachindex(mesh.edges)]
+    for (iface, edges) in enumerate(mesh.face_edge_connectivity)
+        for iedge in edges
+            # Add the face id in the first non-zero position of the edge_face conn. vec.
+            if edge_face[iedge][1] === U(0)
+                edge_face[iedge][1] = iface
+            elseif edge_face[iedge][2] === U(0)
+                edge_face[iedge][2] = iface
+            else
+                @error "Edge $iedge seems to have 3 faces associated with it!"
+            end
+        end
+    end
+    return [SVector(sort!(two_faces).data) for two_faces in edge_face]
 end
 
 # Return an SVector of the points in the face (Triangle)
@@ -185,6 +276,70 @@ function findface_implicit(p::Point2D, faces::Vector{<:SArray}, points::Vector{<
         end
     end
     return 0
+end
+
+# Return the intersection algorithm that will be used for l ∩ mesh
+function get_intersection_algorithm(mesh::UnstructuredMesh2D)
+    if length(mesh.materialized_edges) !== 0
+        return "Edges - Explicit"
+    elseif length(mesh.edges) !== 0
+        return "Edges - Implicit"
+    elseif length(mesh.materialized_faces) !== 0
+        return "Faces - Explicit"
+    else
+        return "Faces - Implicit"
+    end
+end
+
+# Intersect a line with the mesh. Returns a vector of intersection points, sorted based
+# upon distance from the line's start point
+function intersect(l::LineSegment2D, mesh::UnstructuredMesh2D)
+    # Edges are faster, so they are the default
+    if length(mesh.edges) !== 0
+        if 0 < length(mesh.materialized_edges)
+            return intersect_edges_explicit(l, mesh.materialized_edges)
+        else
+            return intersect_edges_implicit(l, mesh.edges, mesh.points)
+        end
+    else
+        if 0 < length(mesh.materialized_faces)
+            return intersect_faces_explicit(l, mesh.materialized_faces)
+        else
+            return intersect_faces_implicit(l, mesh.faces, mesh.points)
+        end
+    end
+end
+
+# Intersect a line with an implicitly defined edge
+function intersect_edge_implicit(l::LineSegment2D, edge::SVector, points::Vector{<:Point2D})
+    return l ∩ materialize_edge(edge, points)
+end
+
+# Intersect a line with linear edges 
+function intersect_edges_explicit(l::LineSegment2D{T}, edges::Vector{LineSegment2D{T}}) where {T}
+    intersection_points = Point2D{T}[]
+    for edge in edges
+        hit, point = l ∩ edge
+        if hit
+            push!(intersection_points, point)
+        end
+    end
+    sort_intersection_points!(l.𝘅₁, intersection_points)
+    return intersection_points
+end
+
+# Intersect a line with a vector of implicitly defined linear edges
+function intersect_edges_implicit(l::LineSegment2D{T}, edges::Vector{<:SVector{2}},
+                                  points::Vector{Point2D{T}}) where {T}
+    intersection_points = Point2D{T}[]
+    for edge in edges
+        npoints, point = intersect_edge_implicit(l, edge, points)
+        if 0 < npoints
+            push!(intersection_points, point)
+        end
+    end
+    sort_intersection_points!(l.𝘅₁, intersection_points)
+    return intersection_points
 end
 
 # Intersect a line with an implicitly defined face

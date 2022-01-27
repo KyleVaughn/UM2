@@ -111,11 +111,15 @@ const 𝗝= jacobian
 export +, -, ⋅, ×, ==, ≈, 𝗗, 𝗝
 
 # Methods
-export arclength, add_edges, add_materialized_edges, add_materialized_faces, 
+export arclength, add_connectivity, add_edges, add_edge_face_connectivity, 
+       add_face_edge_connectivity, 
+       add_materialized_edges, add_materialized_faces, 
        area, boundingbox, centroid, depth, derivative, distance, 
        distance², 
-       edgepoints, edges, facepoints, findface, findface_implicit, findface_explicit, 
-       gauss_legendre_quadrature, height, intersect, 
+       edgepoints, edges, edge_face_connectivity, facepoints, face_edge_connectivity, 
+       findface, findface_implicit, findface_explicit, 
+       gauss_legendre_quadrature, height, intersect, intersect_edge_implicit, 
+       intersect_edges_explicit, intersect_edges_implicit, 
        intersect_face_implicit, intersect_faces_implicit, intersect_faces_explicit,
        inv, isleft, isstraight, 
        jacobian, log_timestamps, materialize_edge, materialize_edges, 
