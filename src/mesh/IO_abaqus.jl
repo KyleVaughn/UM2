@@ -81,22 +81,40 @@ function read_abaqus2d(filepath::String, floattype::Type{T}=Float64) where {T<:A
             push!(face_lengths, l)
         end
     end
-    if face_lengths == [3]
-        return TriangleMesh{2,floattype, U}(name = name,
-                                           points = points,
-                                           faces = [ SVector{3, U}(f) for f in faces],
-                                           face_sets = face_sets_U)
-    elseif face_lengths == [4]
-        return QuadrilateralMesh{2,floattype, U}(name = name,
-                                           points = points,
-                                           faces = [ SVector{4, U}(f) for f in faces],
-                                           face_sets = face_sets_U)
-    
-    else
-        return PolygonMesh{2,floattype, U}(name = name,
-                                           points = points,
-                                           faces = [ SVector{length(f), U}(f) for f in faces],
-                                           face_sets = face_sets_U)
+    if all(x->x < 6, face_lengths) # Linear mesh
+        if face_lengths == [3]
+            return TriangleMesh{2,floattype, U}(name = name,
+                                          points = points,
+                                          faces = [ SVector{3, U}(f) for f in faces],
+                                          face_sets = face_sets_U)
+        elseif face_lengths == [4]
+            return QuadrilateralMesh{2,floattype, U}(name = name,
+                                          points = points,
+                                          faces = [ SVector{4, U}(f) for f in faces],
+                                          face_sets = face_sets_U)
+        else
+            return PolygonMesh{2,floattype, U}(name = name,
+                                          points = points,
+                                          faces = [ SVector{length(f), U}(f) for f in faces],
+                                          face_sets = face_sets_U)
+        end
+    else # Quadratic Mesh
+        if face_lengths == [6]
+            return QuadraticTriangleMesh{2,floattype, U}(name = name,
+                                          points = points,
+                                          faces = [ SVector{6, U}(f) for f in faces],
+                                          face_sets = face_sets_U)
+        elseif face_lengths == [8]
+            return QuadraticQuadrilateralMesh{2,floattype, U}(name = name,
+                                          points = points,
+                                          faces = [ SVector{8, U}(f) for f in faces],
+                                          face_sets = face_sets_U)
+        else
+            return QuadraticPolygonMesh{2,floattype, U}(name = name,
+                                          points = points,
+                                          faces = [ SVector{length(f), U}(f) for f in faces],
+                                          face_sets = face_sets_U)
+        end
     end
 end
 

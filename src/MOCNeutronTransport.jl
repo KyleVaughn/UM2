@@ -68,9 +68,9 @@ include("./primitives/Polygon.jl")
 ##include("L_system.jl")
 include("./mesh/UnstructuredMesh.jl")
 include("./mesh/PolygonMesh.jl")
+include("./mesh/QuadraticPolygonMesh.jl")
 #include("./mesh/UnstructuredMesh2D.jl")
 #include("./mesh/LinearUnstructuredMesh2D.jl")
-#include("./mesh/QuadraticUnstructuredMesh2D.jl")
 #include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
 include("./mesh/IO_abaqus.jl")
 ##include("./mesh/IO_vtk.jl")
@@ -92,7 +92,9 @@ export AABB, AABB2D, AABB3D,
        Pentagon,
        Point, Point2D, Point3D, 
        Polygon, PolygonMesh, 
+       QuadraticPolygonMesh,
        QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, 
+       QuadraticTriangleMesh, QuadraticQuadrilateralMesh,
        Quadrilateral, Quadrilateral2D,
 #       Quadrilateral8, Quadrilateral82D, Quadrilateral83D, 
        Tree, Triangle, Triangle2D, TriangleMesh,

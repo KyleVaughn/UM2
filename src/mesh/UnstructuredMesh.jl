@@ -425,7 +425,6 @@ function num_edges(face::SVector{L,U}) where {L,U}
     end
 end
 
-# How to display a mesh in REPL
 function Base.show(io::IO, mesh::UnstructuredMesh)
     mesh_type = typeof(mesh)
     println(io, mesh_type)
@@ -440,14 +439,8 @@ function Base.show(io::IO, mesh::UnstructuredMesh)
     println(io, "  ├─ Points    : $(length(mesh.points))")
     nedges = length(mesh.edges)
     println(io, "  ├─ Edges     : $nedges")
-    println(io, "  │  ├─ Linear         : $(count(x->x isa SVector{2},  mesh.edges))")
-    println(io, "  │  ├─ Quadratic      : $(count(x->x isa SVector{3},  mesh.edges))")
     println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_edges) !== 0)")
     println(io, "  ├─ Faces     : $(length(mesh.faces))")
-    println(io, "  │  ├─ Triangle       : $(count(x->x isa SVector{3},  mesh.faces))")
-    println(io, "  │  ├─ Quadrilateral  : $(count(x->x isa SVector{4},  mesh.faces))")
-    println(io, "  │  ├─ Triangle6      : $(count(x->x isa SVector{6},  mesh.faces))")
-    println(io, "  │  ├─ Quadrilateral8 : $(count(x->x isa SVector{8},  mesh.faces))")
     println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_faces) !== 0)")
     println(io, "  ├─ Connectivity")
     println(io, "  │  ├─ Edge/Face : $(0 < length(mesh.edge_face_connectivity))")

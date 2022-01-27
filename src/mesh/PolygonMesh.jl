@@ -362,39 +362,9 @@ end
 #     end
 #     return 0x00000000 
 # end
-# 
-function Base.show(io::IO, mesh::TriangleMesh)
-    mesh_type = typeof(mesh)
-    println(io, mesh_type)
-    println(io, "  ├─ Name      : $(mesh.name)")
-    size_MB = Base.summarysize(mesh)/1E6
-    if size_MB < 1
-        size_KB = size_MB*1000
-        println(io, "  ├─ Size (KB) : $size_KB")
-    else
-        println(io, "  ├─ Size (MB) : $size_MB")
-    end
-    println(io, "  ├─ Points    : $(length(mesh.points))")
-    nedges = length(mesh.edges)
-    println(io, "  ├─ Edges     : $nedges")
-    println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_edges) !== 0)")
-    println(io, "  ├─ Faces     : $(length(mesh.faces))")
-    println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_faces) !== 0)")
-    println(io, "  ├─ Connectivity")
-    println(io, "  │  ├─ Edge/Face : $(0 < length(mesh.edge_face_connectivity))")
-    println(io, "  │  └─ Face/Edge : $(0 < length(mesh.face_edge_connectivity))")
-    println(io, "  ├─ Boundary edges")
-    nsides = length(mesh.boundary_edges)
-    if nsides !== 0
-        println(io, "  │  ├─ Edges : $(mapreduce(x->length(x), +, mesh.boundary_edges))")
-    else
-        println(io, "  │  ├─ Edges : 0") 
-    end
-    println(io, "  │  └─ Sides : $nsides")
-    println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
-end
 
-function Base.show(io::IO, mesh::QuadrilateralMesh)
+# How to display a mesh in REPL
+function Base.show(io::IO, mesh::PolygonMesh)
     mesh_type = typeof(mesh)
     println(io, mesh_type)
     println(io, "  ├─ Name      : $(mesh.name)")
@@ -410,6 +380,8 @@ function Base.show(io::IO, mesh::QuadrilateralMesh)
     println(io, "  ├─ Edges     : $nedges")
     println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_edges) !== 0)")
     println(io, "  ├─ Faces     : $(length(mesh.faces))")
+    println(io, "  │  ├─ Triangle       : $(count(x->x isa SVector{3},  mesh.faces))")
+    println(io, "  │  ├─ Quadrilateral  : $(count(x->x isa SVector{4},  mesh.faces))")
     println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_faces) !== 0)")
     println(io, "  ├─ Connectivity")
     println(io, "  │  ├─ Edge/Face : $(0 < length(mesh.edge_face_connectivity))")
@@ -419,7 +391,7 @@ function Base.show(io::IO, mesh::QuadrilateralMesh)
     if nsides !== 0
         println(io, "  │  ├─ Edges : $(mapreduce(x->length(x), +, mesh.boundary_edges))")
     else
-        println(io, "  │  ├─ Edges : 0") 
+        println(io, "  │  ├─ Edges : 0")
     end
     println(io, "  │  └─ Sides : $nsides")
     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
