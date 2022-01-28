@@ -42,7 +42,6 @@ LineSegment(pts::SVector{2, Point{Dim, T}}
 @inline arclength(l::LineSegment) = distance(l.𝘅₁.coord, l.𝘅₁.coord + l.𝘂)
 
 # Intersection of two 2D line segments
-#
 # Doesn't work for colinear/parallel lines. (𝘂 × 𝘃 = 𝟬).
 # Using the equation of a line in parametric form
 # For l₁ = 𝘅₁ + r𝘂 and l₂ = 𝘅₂ + s𝘃
