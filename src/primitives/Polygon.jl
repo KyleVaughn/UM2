@@ -41,7 +41,7 @@ end
 area(tri::Triangle) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
 
 # Centroid for polygons in the 2D plane
-function centroid(poly::Polygon{N, 2, T}) where {N,T}
+function centroid(poly::Polygon{N, 2, T}) where {N, T}
     c = SVector{2,T}(0,0)
     a = T(0)
     for i ∈ 1:N-1
@@ -99,7 +99,7 @@ end
 
 # Using the ear clipping method. (https://en.wikipedia.org/wiki/Polygon_triangulation)
 # The implementation of this algorithm is slower than it needs to be for simplicity
-function triangulate(poly::Polygon{N,2,T}) where {N,T}
+function triangulate(poly::Polygon{N, 2, T}) where {N, T}
     triangles = Triangle2D{T}[]
     V = [ i for i = 1:N ]
     nverts = N
