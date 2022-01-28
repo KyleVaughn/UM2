@@ -24,6 +24,8 @@ end
 
 # Constructors
 # ---------------------------------------------------------------------------------------------
+Point{Dim}(v::SVector{Dim, T}) where {Dim, T}= Point{Dim,T}(v)
+Point(v::SVector{Dim, T}) where {Dim, T}= Point{Dim,T}(v)
 Point{Dim, T}(x...) where {Dim, T}= Point{Dim, T}(SVector{Dim, T}(x))
 Point{Dim}(x...) where {Dim}= Point(SVector(x))
 Point(x...) = Point(SVector(x))

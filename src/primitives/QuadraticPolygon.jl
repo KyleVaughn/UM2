@@ -10,16 +10,16 @@
 # p₅ = point on the quadratic segment from B to C
 # p₆ = point on the quadratic segment from C to A
 
-struct QuadraticPolygon{N,Dim,T} <:Face{Dim,2,T}
-    points::SVector{N, Point{Dim,T}}
+struct QuadraticPolygon{N, Dim, T} <:Face{Dim, 2, T}
+    points::SVector{N, Point{Dim, T}}
 end
 
 # Aliases for convenience
-const QuadraticTriangle        = Polygon{6}
-const QuadraticQuadrilateral   = Polygon{8}
+const QuadraticTriangle        = QuadraticPolygon{6}
+const QuadraticQuadrilateral   = QuadraticPolygon{8}
 # When the time comes for 3D, use metaprogramming/eval to export 2D/3D consts
-const QuadraticTriangle2D      = Polygon{6,2}
-const QuadraticQuadrilateral2D = Polygon{8,2}
+const QuadraticTriangle2D      = QuadraticPolygon{6,2}
+const QuadraticQuadrilateral2D = QuadraticPolygon{8,2}
 
 Base.@propagate_inbounds function Base.getindex(poly::QuadraticPolygon, i::Integer)
     getfield(poly, :points)[i]
@@ -27,8 +27,8 @@ end
 
 # Constructors
 # ---------------------------------------------------------------------------------------------
-function QuadraticPolygon{N}(v::SVector{N, Point{Dim,T}}) where {N,Dim,T}
-    return QuadraticPolygon{N,Dim,T}(v)
+function QuadraticPolygon{N}(v::SVector{N, Point{Dim, T}}) where {N, Dim, T}
+    return QuadraticPolygon{N, Dim, T}(v)
 end
 QuadraticPolygon{N}(x...) where {N} = QuadraticPolygon(SVector(x))
 QuadraticPolygon(x...) = QuadraticPolygon(SVector(x))
@@ -42,17 +42,22 @@ function area(tri6::QuadraticTriangle2D)
     # A = ∬ |𝗝(r,s)|dA = ∫  ∫ |𝗝(r,s)|ds dr = ∑ wᵢ|𝗝(rᵢ,sᵢ)|
     #     D              0  0                i=1
     # Mathematica for this algebraic nightmare
-    a = tri6[1][1]; g = tri6[1][2]
-    b = tri6[2][1]; h = tri6[2][2]
-    c = tri6[3][1]; i = tri6[3][2]
-    d = tri6[4][1]; j = tri6[4][2]
-    e = tri6[5][1]; k = tri6[5][2]
-    f = tri6[6][1]; l = tri6[6][2]
-    return (-4d*g + 4f*g -a*h + 4d*h - 4e*h + a*i + 4e*i - 4f*i + 
-            4a*j + b*(g-i-4j+4k) - 4a*l + c*(-g+h-4k+4l))/6
+#    a = tri6[1].x; g = tri6[1].y 
+#    b = tri6[2].x; h = tri6[2].y
+#    c = tri6[3].x; i = tri6[3].y
+#    d = tri6[4].x; j = tri6[4].y
+#    e = tri6[5].x; k = tri6[5].y
+#    f = tri6[6].x; l = tri6[6].y
+#    return (4g*(f - d) + 4h*(d - e) + 4i*(e - f) + 4a*(j - l) + 4b*(k - j) + 4c*(l - k)
+#            + a*(i - h) + b*(g - i) + c*(h - g))/6
+return (4(((tri6[6] - tri6[4]) × tri6[1].coord)  + 
+          ((tri6[4] - tri6[5]) × tri6[2].coord)  +
+          ((tri6[5] - tri6[6]) × tri6[3].coord)) +
+          ((tri6[1] - tri6[2]) × tri6[3].coord)  +
+                      tri6[2]  × tri6[1])/6
 end
 #area(quad8::QuadraticQuadrilateral2D) = area(quad8, Val(2))
-# function area(quad8::QuadraticQuadrilateral{Dim,T}, ::Val{P}) where {N,T,P}
+# function area(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{P}) where {N,T,P}
 #     # Gauss-Legendre quadrature over a quadrilateral is used.
 #     # Let Q(r,s) be the interpolation function for quad8,
 #     #                           1  1
@@ -71,26 +76,26 @@ end
 #     return a
 # end
 
-# centroid(tri6::QuadraticTriangle2D) = centroid(tri6, Val(6))
-# function centroid(tri6::QuadraticTriangle, ::Val{N}) where {N} 
-#     # Gauss-Legendre quadrature over a triangle is used.
-#     # Let F(r,s) be the interpolation function for tri6,
-#     #                    1 1-r                N                
-#     # A = ∬ |𝗝(r,s)|dA = ∫  ∫ |𝗝(r,s)|ds dr = ∑ wᵢ|𝗝(rᵢ,sᵢ)|
-#     #     D              0  0                i=1
-#     #   
-#     # C_x = (∫∫ x dA)/A, C_y = (∫∫ y dA)/A
-#     #         D                  D
-#     w, r, s = gauss_legendre_quadrature(tri6, Val(N))
-#     # We can reuse our computed weighted Jacobian determinants, since we need these
-#     # in the C_y, C_y, and A.
-#     weighted_vals = @. w * det(𝗝(tri6, r, s)) 
-#     points = tri6.(r, s)
-#     A = sum(weighted_vals)
-#     C_x = sum(getindex.(points, 1) .* weighted_vals)
-#     C_y = sum(getindex.(points, 2) .* weighted_vals)
-#     return Point_2D(C_x/A, C_y/A)
-# end
+centroid(tri6::QuadraticTriangle2D) = centroid(tri6, Val(6))
+function centroid(tri6::QuadraticTriangle, ::Val{N}) where {N} 
+    # Gauss-Legendre quadrature over a triangle is used.
+    # Let F(r,s) be the interpolation function for tri6,
+    #                    1 1-r                N                
+    # A = ∬ |𝗝(r,s)|dA = ∫  ∫ |𝗝(r,s)|ds dr = ∑ wᵢ|𝗝(rᵢ,sᵢ)|
+    #     D              0  0                i=1
+    #   
+    # C_x = (∫∫ x dA)/A, C_y = (∫∫ y dA)/A
+    #         D                  D
+    w, r, s = gauss_legendre_quadrature(tri6, Val(N))
+    # We can reuse our computed weighted Jacobian determinants, since we need these
+    # in the C_y, C_y, and A.
+    weighted_vals = @. w * det(𝗝(tri6, r, s)) 
+    points = tri6.(r, s)
+    A = sum(weighted_vals)
+    C_x = sum(getindex.(points, 1) .* weighted_vals)
+    C_y = sum(getindex.(points, 2) .* weighted_vals)
+    return Point2D(C_x/A, C_y/A)
+end
 
 function jacobian(tri6::QuadraticTriangle, r, s)
     # Let F(r,s) be the interpolation function for tri6
@@ -108,61 +113,21 @@ function jacobian(tri6::QuadraticTriangle, r, s)
     return hcat(∂F_∂r, ∂F_∂s)
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 
-# # Centroid for polygons in the 2D plane
-# function centroid(poly::Polygon{N,2,T}) where {N,T}
-#     c = SVector{2,T}(0,0)
-#     a = T(0)
-#     for i ∈ 1:N-1
-#         subarea = poly[i] × poly[i+1]
-#         c += subarea*(poly[i] + poly[i+1])
-#         a += subarea
-#     end
-#     return Point(c/(3a))
-# end
-# # Use a faster method for triangles
-# centroid(tri::Triangle) = tri(1//3, 1//3)
-# 
-# # Test if a point is in a polygon for 2D points/polygons
-# function Base.in(p::Point2D, poly::Polygon{N,2,T}) where {N,T}
-#     # Test if the point is to the left of each edge. 
-#     bool = true
-#     for i ∈ 1:N
-#         if !isleft(p, LineSegment2D(poly[(i - 1) % N + 1], poly[i % N + 1]))
-#             bool = false
-#             break
-#         end
-#     end
-#     return bool
-# end
+# Test if a point is in a polygon for 2D points/polygons
+function Base.in(p::Point2D, poly::QuadraticPolygon{N,2,T}) where {N,T}
+    # Test if the point is to the left of each edge. 
+    bool = true
+    M = N ÷ 2
+    for i ∈ 1:M
+        if !isleft(p, QuadraticSegment2D(poly[(i - 1) % M + 1], 
+                                         poly[      i % M + 1],
+                                         poly[          i + M]))
+            bool = false
+            break
+        end
+    end
+    return bool
+end
 # 
 # function Base.intersect(l::LineSegment2D{T}, poly::Polygon{N,2,T}
 #                        ) where {N,T <:Union{Float32, Float64}} 

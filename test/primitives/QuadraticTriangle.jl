@@ -50,29 +50,41 @@ using MOCNeutronTransport
             @test abs(J[2]) < 1e-6
             @test abs(J[3]) < 1e-6
             @test J[4] ≈ 1
-#
-#            # area
-#            p₁ = Point_2D{F}(0, 0)
-#            p₂ = Point_2D{F}(2, 0)
-#            p₃ = Point_2D{F}(2, 2)
-#            p₄ = Point_2D{F}(3//2, 1//4)
-#            p₅ = Point_2D{F}(3, 1)
-#            p₆ = Point_2D{F}(1, 1)
-#            tri6 = Triangle6_2D(p₁, p₂, p₃, p₄, p₅, p₆)
-#            # 2D default
-#            @test isapprox(area(tri6), 3, atol=1.0e-6)
-#
-#            # in
-#            p₁ = Point_2D{F}(0, 0)
-#            p₂ = Point_2D{F}(2, 0)
-#            p₃ = Point_2D{F}(2, 2)
-#            p₄ = Point_2D{F}(3//2, 1//4)
-#            p₅ = Point_2D{F}(3, 1)
-#            p₆ = Point_2D{F}(1, 1)
-#            tri6 = Triangle6_2D(p₁, p₂, p₃, p₄, p₅, p₆)
-#            @test Point_2D{F}(1, 1//2) ∈  tri6
-#            @test Point_2D{F}(1, 0) ∉  tri6
-#
+
+            # area
+            p₀ = Point2D{F}(1,1)
+            p₁ = Point2D(Point2D{F}(0, 0) + p₀)
+            p₂ = Point2D(Point2D{F}(2, 0) + p₀)
+            p₃ = Point2D(Point2D{F}(2, 2) + p₀)
+            p₄ = Point2D(Point2D{F}(3//2, 1//4) + p₀)
+            p₅ = Point2D(Point2D{F}(3, 1) + p₀)
+            p₆ = Point2D(Point2D{F}(1, 1) + p₀)
+            tri6 = QuadraticTriangle(p₁, p₂, p₃, p₄, p₅, p₆)
+            # 2D default
+            @test isapprox(area(tri6), 3, atol=1.0e-6)
+
+
+            # centroid
+            p₁ = Point2D{F}(0, 0)
+            p₂ = Point2D{F}(1, 0)
+            p₃ = Point2D{F}(0, 1)
+            p₄ = Point2D{F}(1//2, 0)
+            p₅ = Point2D{F}(1//2, 1//2)
+            p₆ = Point2D{F}(0, 1//2)
+            tri6 = QuadraticTriangle(p₁, p₂, p₃, p₄, p₅, p₆)
+            @test centroid(tri6) ≈ tri6(1//3, 1//3)
+
+            # in
+            p₁ = Point2D{F}(0, 0)
+            p₂ = Point2D{F}(2, 0)
+            p₃ = Point2D{F}(2, 2)
+            p₄ = Point2D{F}(3//2, 1//4)
+            p₅ = Point2D{F}(3, 1)
+            p₆ = Point2D{F}(1, 1)
+            tri6 = QuadraticTriangle(p₁, p₂, p₃, p₄, p₅, p₆)
+            @test Point2D{F}(1, 1//2) ∈  tri6
+            @test Point2D{F}(1, 0) ∉  tri6
+
 #
 #            # real_to_parametric
 #            p₁ = Point_2D{F}(0, 0)

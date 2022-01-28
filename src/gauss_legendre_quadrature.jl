@@ -235,7 +235,7 @@ end
 # The weights and points for Gauss-Legendre quadrature on the parametric unit triangle
 # ∑wᵢ= 1/2, rᵢ∈ F[0, 1], sᵢ∈ F[0, 1], rᵢ + sᵢ ≤ 1
 # N that have entries in this function: N = F[3, 4, 6, 12, 27, 48, 79]
-function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{1}) where {N,F}
+function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{1}) where {N,F}
     # P1. 0 negative weights, 0 points outside of the triangle
     w = @SVector F[0.500000000000000]
 
@@ -245,7 +245,7 @@ function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{1}) where {N,F}
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{3}) where {N,F}
+function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{3}) where {N,F}
     # P2. 0 negative weights, 0 points outside of the triangle
     w = @SVector F[0.166666666666667,
                   0.166666666666667,
@@ -261,7 +261,7 @@ function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{3}) where {N,F}
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{4}) where {N,F}
+function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{4}) where {N,F}
     # P3. 1 negative weights, 0 points outside of the triangle
     w = @SVector F[-0.281250000000000,
                     0.260416666666667,   
@@ -280,7 +280,7 @@ function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{4}) where {N,F}
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{6}) where {N,F}
+function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{6}) where {N,F}
     # P4. 0 negative weights, 0 points outside of the triangle
     w = @SVector F[0.111690794839005,
                   0.111690794839005,
@@ -304,7 +304,7 @@ function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{6}) where {N,F}
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{12}) where {N,F}
+function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{12}) where {N,F}
     # P6. 0 negative weights, 0 points outside of the triangle
     w = @SVector F[0.058393137863189,
           0.058393137863189,
@@ -347,7 +347,7 @@ function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{12}) where {N,F}
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{27}) where {N,F}
+function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{27}) where {N,F}
     # P11. 0 negative weights, 3 points outside of the triangle
     w = @SVector F[0.00046350316448,
           0.00046350316448,
@@ -435,7 +435,7 @@ function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{27}) where {N,F}
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{48}) where {N,F}
+function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{48}) where {N,F}
     # P15. 0 negative weights, 9 points outside of the triangle
     w = @SVector F[0.000958437821425,
           0.000958437821425,
@@ -586,7 +586,7 @@ function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{48}) where {N,F}
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::Triangle6{N,F}, ::Val{79}) where {N,F}
+function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{79}) where {N,F}
     # P20. 3 negative weights, 9 points outside of the triangle
     w = @SVector F[+0.016528527770800,
           +0.000433509592831,
