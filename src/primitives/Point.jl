@@ -24,7 +24,7 @@ end
 
 # Constructors
 # ---------------------------------------------------------------------------------------------
-Point{Dim,T}(x...) where {Dim,T}= Point{Dim,T}(SVector{Dim,T}(x))
+Point{Dim, T}(x...) where {Dim, T}= Point{Dim, T}(SVector{Dim, T}(x))
 Point{Dim}(x...) where {Dim}= Point(SVector(x))
 Point(x...) = Point(SVector(x))
 
@@ -63,11 +63,11 @@ Point(x...) = Point(SVector(x))
 @inline midpoint(p₁::Point, p₂::Point) = (p₁ + p₂)/2
 @inline norm(p::Point) = √(p.coord ⋅ p.coord)
 @inline norm²(p::Point) = p.coord ⋅ p.coord
-Base.zero(::Type{Point{Dim,T}}) where {Dim,T} = Point{Dim,T}(@SVector zeros(T, Dim))
+Base.zero(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector zeros(T, Dim))
 # Random point in the Dim-dimensional unit hypercube
-Base.rand(::Type{Point{Dim,T}}) where {Dim,T} = Point{Dim,T}(rand(SVector{Dim,T}))
-function Base.rand(::Type{Point{Dim,T}}, num_points::Int64) where {Dim,T}
-    return [ Point{Dim,T}(rand(SVector{Dim,T})) for i = 1:num_points ]
+Base.rand(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(rand(SVector{Dim, T}))
+function Base.rand(::Type{Point{Dim, T}}, num_points::Int64) where {Dim, T}
+    return [ Point{Dim, T}(rand(SVector{Dim, T})) for i = 1:num_points ]
 end
 
 # Plot
