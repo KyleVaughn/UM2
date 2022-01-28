@@ -97,6 +97,59 @@ function Base.intersect(l::LineSegment2D{BigFloat}, poly::Polygon{N, 2, BigFloat
     return npoints, SVector{N,Point2D{BigFloat}}(points)
 end
 
+# Using the ear clipping method. (https://en.wikipedia.org/wiki/Polygon_triangulation)
+# The implementation of this algorithm is slower than it needs to be for simplicity
+function triangulate(poly::Polygon{N,2,T}) where {N,T}
+    triangles = Triangle2D{T}[]
+    V = [ i for i = 1:N ]
+    nverts = N
+    i = 1
+    while 2 < nverts
+        if _vertex_is_convex(i, V, poly)
+            if _vertex_is_ear(i, V, poly)
+                ear = _get_ear(i, V, poly)
+                push!(triangles, ear)
+                deleteat!(V, i)
+                nverts -= 1
+                i -= 1
+            end
+        end
+        i = mod(i, nverts) + 1
+    end
+    return triangles
+end
+
+function _vertex_is_convex(i::Integer, V::Vector{<:Integer}, poly::Polygon)
+    N = length(V)
+    vₙ₋₁ = poly[V[mod(i - 2, N) + 1]]
+    vₙ   = poly[V[i]]
+    vₙ₊₁ = poly[V[mod(i, N) + 1]]
+    # 𝘂 × 𝘃 = ‖𝘂‖‖𝘃‖sin(θ), so when θ ∈ [0, π], 0 ≤ sin(θ), hence 0 ≤ 𝘂 × 𝘃
+    𝘂 = vₙ₊₁ - vₙ
+    𝘃 = vₙ₋₁ - vₙ
+    return 0 ≤ 𝘂 × 𝘃 
+end
+
+function _get_ear(i::Integer, V::Vector{<:Integer}, poly::Polygon)
+    N = length(V)
+    T = SVector(V[mod(i - 2, N) + 1], V[i], V[mod(i, N) + 1])
+    return Triangle(getindex.(poly, T))
+end
+
+function _vertex_is_ear(i::Integer, V::Vector{<:Integer}, poly::Polygon)
+    bool = true
+    N = length(V)
+    T = SVector(V[mod(i - 2, N) + 1], V[i], V[mod(i, N) + 1])
+    ear = Triangle(getindex.(poly, T)) 
+    for v in V
+        if v ∉ T && poly[v] ∈ ear
+            bool = false
+            break
+        end
+    end
+    return bool
+end
+
 # Interpolation
 # ---------------------------------------------------------------------------------------------
 # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
@@ -126,17 +179,28 @@ if enable_visualization
         return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
     end
 
-    # Need to implement triangulation before this can be done for a general polygon
-    # function convert_arguments(M::Type{<:Mesh}, poly::)
-    # end
-    #function convert_arguments(M::Type{<:Mesh}, T::Vector{<:Triangle})
-    #    points = reduce(vcat, [[tri[i].coord for i = 1:3] for tri ∈  T])
-    #    faces = zeros(Int64, length(T), 3)
-    #    k = 1
-    #    for i in 1:length(T), j = 1:3
-    #        faces[i, j] = k
-    #        k += 1
-    #    end
-    #    return convert_arguments(M, points, faces)
-    #end
+    function convert_arguments(M::Type{<:Mesh}, tri::Triangle)
+        points = [tri[i].coord for i = 1:3]
+        face = [1 2 3]
+        return convert_arguments(M, points, face)
+    end
+
+    function convert_arguments(M::Type{<:Mesh}, T::Vector{<:Triangle})
+        points = reduce(vcat, [[tri[i].coord for i = 1:3] for tri ∈  T])
+        faces = zeros(Int64, length(T), 3)
+        k = 1
+        for i in 1:length(T), j = 1:3
+            faces[i, j] = k
+            k += 1
+        end
+        return convert_arguments(M, points, faces)
+    end
+
+    function convert_arguments(M::Type{<:Mesh}, poly::Polygon)
+        return convert_arguments(M, triangulate(poly)) 
+    end
+
+    function convert_arguments(M::Type{<:Mesh}, P::Vector{<:Polygon})
+        return convert_arguments(M, reduce(vcat, triangulate.(P)))            
+    end
 end
