@@ -5,7 +5,7 @@ using MOCNeutronTransport
             p₁ = Point2D{F}(0, 0)
             p₂ = Point2D{F}(1, 0)
             p₃ = Point2D{F}(1, 1)
-            tri = Triangle2D(p₁, p₂, p₃)
+            tri = Triangle(p₁, p₂, p₃)
             @test tri.points == SVector(p₁, p₂, p₃)
         end
 
@@ -13,7 +13,7 @@ using MOCNeutronTransport
             p₁ = Point2D{F}(0, 0)
             p₂ = Point2D{F}(1, 0)
             p₃ = Point2D{F}(0, 1)
-            tri = Triangle2D(p₁, p₂, p₃)
+            tri = Triangle(p₁, p₂, p₃)
 
             # interpolation
             @test tri(0, 0) ≈ p₁

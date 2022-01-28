@@ -6,7 +6,7 @@ using MOCNeutronTransport
             p₂ = Point2D{F}(1, 0)
             p₃ = Point2D{F}(1, 1)
             p₄ = Point2D{F}(0, 1)
-            quad = Quadrilateral2D(p₁, p₂, p₃, p₄)
+            quad = Quadrilateral(p₁, p₂, p₃, p₄)
             @test quad.points == SVector(p₁, p₂, p₃, p₄)
         end
 
@@ -15,7 +15,7 @@ using MOCNeutronTransport
             p₂ = Point2D{F}(1, 0)
             p₃ = Point2D{F}(1, 1)
             p₄ = Point2D{F}(0, 1)
-            quad = Quadrilateral2D(p₁, p₂, p₃, p₄)
+            quad = Quadrilateral(p₁, p₂, p₃, p₄)
 
             # interpolation
             @test quad(0, 0) ≈ p₁

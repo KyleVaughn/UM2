@@ -1,5 +1,4 @@
 # Routines to generate a hierarchical rectangular grid in gmsh
-
 function _validate_gmsh_generate_rectangular_grid_input(bb::NTuple{4, Float64}, 
                                                         x::Vector{Vector{Float64}}, 
                                                         y::Vector{Vector{Float64}})

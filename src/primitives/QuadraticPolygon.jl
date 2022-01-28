@@ -33,23 +33,109 @@ end
 QuadraticPolygon{N}(x...) where {N} = QuadraticPolygon(SVector(x))
 QuadraticPolygon(x...) = QuadraticPolygon(SVector(x))
 
-# # Methods
-# # ---------------------------------------------------------------------------------------------
-# # Shoelace formula (https://en.wikipedia.org/wiki/Shoelace_formula)
-# function area(poly::Polygon{N,Dim,T}) where {N,Dim,T}
-#     # This can be done with mapreduce, but mapreduce is substantially slower
-#     if Dim === 2
-#         a = T(0) # Scalar
-#     else
-#         a = Base.zero(Point{Dim,T}) # Vector
-#     end
-#     for i ∈ 1:N
-#         a += poly[(i - 1) % N + 1] × poly[i % N + 1]
-#     end
-#     return norm(a)/2
+# Methods
+# ---------------------------------------------------------------------------------------------
+function area(tri6::QuadraticTriangle2D)
+    # Let F(r,s) be the interpolation function for tri6, and 𝗝(r,s) be the Jacobian of F 
+    # at (r,s). |𝗝| is the Jacobian determinant 
+    #                    1 1-r                N
+    # A = ∬ |𝗝(r,s)|dA = ∫  ∫ |𝗝(r,s)|ds dr = ∑ wᵢ|𝗝(rᵢ,sᵢ)|
+    #     D              0  0                i=1
+    # Mathematica for this algebraic nightmare
+    a = tri6[1][1]; g = tri6[1][2]
+    b = tri6[2][1]; h = tri6[2][2]
+    c = tri6[3][1]; i = tri6[3][2]
+    d = tri6[4][1]; j = tri6[4][2]
+    e = tri6[5][1]; k = tri6[5][2]
+    f = tri6[6][1]; l = tri6[6][2]
+    return (-4d*g + 4f*g -a*h + 4d*h - 4e*h + a*i + 4e*i - 4f*i + 
+            4a*j + b*(g-i-4j+4k) - 4a*l + c*(-g+h-4k+4l))/6
+end
+#area(quad8::QuadraticQuadrilateral2D) = area(quad8, Val(2))
+# function area(quad8::QuadraticQuadrilateral{Dim,T}, ::Val{P}) where {N,T,P}
+#     # Gauss-Legendre quadrature over a quadrilateral is used.
+#     # Let Q(r,s) be the interpolation function for quad8,
+#     #                           1  1
+#     # A = ∬ ‖∂Q/∂r × ∂Q/∂s‖dA = ∫  ∫ ‖∂Q/∂r × ∂Q/∂s‖ ds dr
+#     #      D                    0  0
+#     #   
+#     #       P   P
+#     #   =   ∑   ∑  wᵢwⱼ‖∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)‖
+#     #      i=1 j=1
+#     w, r = gauss_legendre_quadrature(T, Val(P))
+#     a = T(0)
+#     for j = 1:P, i = 1:P 
+#         J = 𝗝(quad8, r[i], r[j]) 
+#         a += w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2)) 
+#     end 
+#     return a
 # end
-# # We can simplify the above for triangles
-# area(tri::Triangle) = norm(tri[2] - tri[1] × tri[3] - tri[1])/2
+
+# centroid(tri6::QuadraticTriangle2D) = centroid(tri6, Val(6))
+# function centroid(tri6::QuadraticTriangle, ::Val{N}) where {N} 
+#     # Gauss-Legendre quadrature over a triangle is used.
+#     # Let F(r,s) be the interpolation function for tri6,
+#     #                    1 1-r                N                
+#     # A = ∬ |𝗝(r,s)|dA = ∫  ∫ |𝗝(r,s)|ds dr = ∑ wᵢ|𝗝(rᵢ,sᵢ)|
+#     #     D              0  0                i=1
+#     #   
+#     # C_x = (∫∫ x dA)/A, C_y = (∫∫ y dA)/A
+#     #         D                  D
+#     w, r, s = gauss_legendre_quadrature(tri6, Val(N))
+#     # We can reuse our computed weighted Jacobian determinants, since we need these
+#     # in the C_y, C_y, and A.
+#     weighted_vals = @. w * det(𝗝(tri6, r, s)) 
+#     points = tri6.(r, s)
+#     A = sum(weighted_vals)
+#     C_x = sum(getindex.(points, 1) .* weighted_vals)
+#     C_y = sum(getindex.(points, 2) .* weighted_vals)
+#     return Point_2D(C_x/A, C_y/A)
+# end
+
+function jacobian(tri6::QuadraticTriangle, r, s)
+    # Let F(r,s) be the interpolation function for tri6
+    ∂F_∂r = (4r + 4s - 3)*tri6[1] +
+                 (4r - 1)*tri6[2] +
+            4(1 - 2r - s)*tri6[4] +
+                     (4s)*tri6[5] +
+                    (-4s)*tri6[6]
+
+    ∂F_∂s = (4r + 4s - 3)*tri6[1] +
+                 (4s - 1)*tri6[3] +
+                    (-4r)*tri6[4] +
+                     (4r)*tri6[5] +
+            4(1 - r - 2s)*tri6[6]
+    return hcat(∂F_∂r, ∂F_∂s)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 
 # # Centroid for polygons in the 2D plane
 # function centroid(poly::Polygon{N,2,T}) where {N,T}
@@ -108,18 +194,56 @@ QuadraticPolygon(x...) = QuadraticPolygon(SVector(x))
 #     return npoints, SVector{N,Point2D{BigFloat}}(points)
 # end
 # 
-# # Interpolation
-# # ---------------------------------------------------------------------------------------------
-# # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
-# # Chapter 8, Advanced Data Representation, in the interpolation functions section
-# function (tri::Triangle)(r, s)
-#     return Point((1 - r - s)*tri[1] + r*tri[2] + s*tri[3])
-# end
-# 
-# function (quad::Quadrilateral)(r, s)
-#     return Point((1 - r)*(1 - s)*quad[1] + r*(1 - s)*quad[2] + r*s*quad[3] + (1 - r)*s*quad[4])
-# end
-# 
+# Interpolation
+# ---------------------------------------------------------------------------------------------
+# See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+# Chapter 8, Advanced Data Representation, in the interpolation functions section
+function (tri6::QuadraticTriangle)(r, s)
+    return Point(((1 - r - s)*(2(1 - r - s) - 1))*tri6[1] +
+                                     (r*(2r - 1))*tri6[2] +
+                                     (s*(2s - 1))*tri6[3] +
+                                 (4r*(1 - r - s))*tri6[4] +
+                                           (4r*s)*tri6[5] +
+                                 (4s*(1 - r - s))*tri6[6] )
+end
+
+function (tri6::QuadraticTriangle)(p::Point2D)
+    r = p[1]; s = p[2]
+    return Point(((1 - r - s)*(2(1 - r - s) - 1))*tri6[1] +
+                                     (r*(2r - 1))*tri6[2] +
+                                     (s*(2s - 1))*tri6[3] +
+                                 (4r*(1 - r - s))*tri6[4] +
+                                           (4r*s)*tri6[5] +
+                                 (4s*(1 - r - s))*tri6[6] )
+end
+
+function (quad8::QuadraticQuadrilateral)(r, s)
+    ξ = 2r - 1; η = 2s - 1
+    return Point(((1 - ξ)*(1 - η)*(-ξ - η - 1)/4)*quad8[1] +
+                 ((1 + ξ)*(1 - η)*( ξ - η - 1)/4)*quad8[2] +
+                 ((1 + ξ)*(1 + η)*( ξ + η - 1)/4)*quad8[3] +
+                 ((1 - ξ)*(1 + η)*(-ξ + η - 1)/4)*quad8[4] +
+                            ((1 - ξ^2)*(1 - η)/2)*quad8[5] +
+                            ((1 - η^2)*(1 + ξ)/2)*quad8[6] +
+                            ((1 - ξ^2)*(1 + η)/2)*quad8[7] +
+                            ((1 - η^2)*(1 - ξ)/2)*quad8[8] )
+end
+
+function (quad8::QuadraticQuadrilateral)(p::Point2D)
+    r = p[1]; s = p[2]
+    ξ = 2r - 1; η = 2s - 1
+    return Point(((1 - ξ)*(1 - η)*(-ξ - η - 1)/4)*quad8[1] +
+                 ((1 + ξ)*(1 - η)*( ξ - η - 1)/4)*quad8[2] +
+                 ((1 + ξ)*(1 + η)*( ξ + η - 1)/4)*quad8[3] +
+                 ((1 - ξ)*(1 + η)*(-ξ + η - 1)/4)*quad8[4] +
+                            ((1 - ξ^2)*(1 - η)/2)*quad8[5] +
+                            ((1 - η^2)*(1 + ξ)/2)*quad8[6] +
+                            ((1 - ξ^2)*(1 + η)/2)*quad8[7] +
+                            ((1 - η^2)*(1 - ξ)/2)*quad8[8] )
+end
+
+
+
 # # Plot
 # # ---------------------------------------------------------------------------------------------
 # if enable_visualization

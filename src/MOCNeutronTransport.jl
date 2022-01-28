@@ -18,7 +18,7 @@ using LoggingExtras: TransformerLogger, global_logger
 
 # import
 # ---------------------------------------------------------------------------------------------
-import Base: +, -, *, /, ==, ≈
+import Base: +, -, *, /, ==, ≈, intersect
 import LinearAlgebra: ×, ⋅, norm, inv
 # import Base: @propagate_inbounds
 # import Base: broadcastable, getindex, getproperty, +, -, *, /, in, intersect, 
@@ -63,6 +63,7 @@ include("./primitives/LineSegment.jl")
 include("./primitives/AABB.jl")
 include("./primitives/QuadraticSegment.jl")
 include("./primitives/Polygon.jl")
+include("./primitives/QuadraticPolygon.jl")
 #include("./primitives/Triangle6.jl")
 #include("./primitives/Quadrilateral8.jl")
 ##include("L_system.jl")
@@ -82,8 +83,7 @@ include("./mesh/IO_abaqus.jl")
 
 
 # Structs/Types
-export AABB, AABB2D, AABB3D,
-       Decagon,
+export AABB, AABB2D,
        Edge, Edge2D, Edge3D, 
        Face, Face2D, Face3D, 
        Heptagon, Hexagon,
@@ -92,8 +92,10 @@ export AABB, AABB2D, AABB3D,
        Pentagon,
        Point, Point2D, Point3D, 
        Polygon, PolygonMesh, 
-       QuadraticPolygonMesh,
+       QuadraticPolygon, QuadraticPolygonMesh,
        QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, 
+       QuadraticTriangle, QuadraticTriangle2D, QuadraticQuadrilateral,
+       QuadraticQuadrilateral2D,
        QuadraticTriangleMesh, QuadraticQuadrilateralMesh,
        Quadrilateral, Quadrilateral2D,
 #       Quadrilateral8, Quadrilateral82D, Quadrilateral83D, 

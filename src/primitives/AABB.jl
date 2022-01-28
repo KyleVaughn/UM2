@@ -38,12 +38,8 @@ AABB{Dim}(p₁::Point{Dim,T}, p₂::Point{Dim,T}) where {Dim,T} = AABB{Dim,T}(p�
 @inline height(aabb::AABB) = aabb.ymax - aabb.ymin
 @inline depth(aabb::AABB) = aabb.ymax - aabb.ymin
 @inline area(aabb::AABB2D) = height(aabb) * width(aabb)
-@inline volume(aabb::AABB3D) = height(aabb) * width(aabb) * depth(aabb)
 @inline Base.in(p::Point2D, aabb::AABB2D) = aabb.xmin ≤ p[1] ≤ aabb.xmax && 
                                             aabb.ymin ≤ p[2] ≤ aabb.ymax
-@inline Base.in(p::Point3D, aabb::AABB3D) = aabb.xmin ≤ p[1] ≤ aabb.xmax && 
-                                            aabb.ymin ≤ p[2] ≤ aabb.ymax &&
-                                            aabb.zmin ≤ p[3] ≤ aabb.zmax
 
 # Credit to Tavian Barnes (https://tavianator.com/2011/ray_box.html)
 # Assumes the line passes all the way through the AABB if it intersects, which is a 
@@ -88,28 +84,10 @@ function boundingbox(points::Vector{<:Point2D})
 end
 
 # Bounding box of a vector of points
-function boundingbox(points::Vector{<:Point3D})
-    x = getindex.(points, 1)
-    y = getindex.(points, 2)
-    z = getindex.(points, 3)
-    return AABB3D(Point3D(minimum(x), minimum(y), minimum(z)), 
-                  Point3D(maximum(x), maximum(y), maximum(z)))
-end
-
-# Bounding box of a vector of points
 function boundingbox(points::SVector{L, Point2D}) where {L} 
     x = getindex.(points, 1)
     y = getindex.(points, 2)
     return AABB2D(Point2D(minimum(x), minimum(y)), Point2D(maximum(x), maximum(y)))
-end
-
-# Bounding box of a vector of points
-function boundingbox(points::SVector{L, Point3D}) where {L}
-    x = getindex.(points, 1)
-    y = getindex.(points, 2)
-    z = getindex.(points, 3)
-    return AABB3D(Point3D(minimum(x), minimum(y), minimum(z)), 
-                  Point3D(maximum(x), maximum(y), maximum(z)))
 end
 
 # Plot
