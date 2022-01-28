@@ -1,17 +1,12 @@
 # A polygon defined by its vertices in counterclockwise order 
-struct Polygon{N,Dim,T} <:Face{Dim,1,T}
-    points::SVector{N, Point{Dim,T}}
+struct Polygon{N, Dim, T} <:Face{Dim, 1, T}
+    points::SVector{N, Point{Dim, T}}
 end
 
 # Aliases for convenience
 const Triangle        = Polygon{3}
 const Quadrilateral   = Polygon{4}
-const Pentagon        = Polygon{5}
 const Hexagon         = Polygon{6}
-const Heptagon        = Polygon{7}
-const Octagon         = Polygon{8}
-const Nonagon         = Polygon{9}
-const Decagon         = Polygon{10}
 # When the time comes for 3D, use metaprogramming/eval to export 2D/3D consts
 const Triangle2D      = Polygon{3,2}
 const Quadrilateral2D = Polygon{4,2}
@@ -22,8 +17,8 @@ end
 
 # Constructors
 # ---------------------------------------------------------------------------------------------
-function Polygon{N}(v::SVector{N, Point{Dim,T}}) where {N,Dim,T}
-    return Polygon{N,Dim,T}(v)
+function Polygon{N}(v::SVector{N, Point{Dim, T}}) where {N, Dim, T}
+    return Polygon{N, Dim, T}(v)
 end
 Polygon{N}(x...) where {N} = Polygon(SVector(x))
 Polygon(x...) = Polygon(SVector(x))
@@ -31,12 +26,11 @@ Polygon(x...) = Polygon(SVector(x))
 # Methods
 # ---------------------------------------------------------------------------------------------
 # Shoelace formula (https://en.wikipedia.org/wiki/Shoelace_formula)
-function area(poly::Polygon{N,Dim,T}) where {N,Dim,T}
-    # This can be done with mapreduce, but mapreduce is substantially slower
+function area(poly::Polygon{N, Dim, T}) where {N, Dim, T}
     if Dim === 2
         a = T(0) # Scalar
     else
-        a = Base.zero(Point{Dim,T}) # Vector
+        a = Base.zero(Point{Dim, T}) # Vector
     end
     for i ∈ 1:N
         a += poly[(i - 1) % N + 1] × poly[i % N + 1]
@@ -44,10 +38,10 @@ function area(poly::Polygon{N,Dim,T}) where {N,Dim,T}
     return norm(a)/2
 end
 # We can simplify the above for triangles
-area(tri::Triangle) = norm(tri[2] - tri[1] × tri[3] - tri[1])/2
+area(tri::Triangle) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
 
 # Centroid for polygons in the 2D plane
-function centroid(poly::Polygon{N,2,T}) where {N,T}
+function centroid(poly::Polygon{N, 2, T}) where {N,T}
     c = SVector{2,T}(0,0)
     a = T(0)
     for i ∈ 1:N-1
@@ -61,7 +55,7 @@ end
 centroid(tri::Triangle) = tri(1//3, 1//3)
 
 # Test if a point is in a polygon for 2D points/polygons
-function Base.in(p::Point2D, poly::Polygon{N,2,T}) where {N,T}
+function Base.in(p::Point2D, poly::Polygon{N, 2, T}) where {N, T}
     # Test if the point is to the left of each edge. 
     bool = true
     for i ∈ 1:N
@@ -73,7 +67,7 @@ function Base.in(p::Point2D, poly::Polygon{N,2,T}) where {N,T}
     return bool
 end
 
-function Base.intersect(l::LineSegment2D{T}, poly::Polygon{N,2,T}
+function Base.intersect(l::LineSegment2D{T}, poly::Polygon{N, 2, T}
                        ) where {N,T <:Union{Float32, Float64}} 
     # Create the line segments that make up the triangle and intersect each one
     points = zeros(MVector{N,Point2D{T}})
@@ -89,7 +83,7 @@ function Base.intersect(l::LineSegment2D{T}, poly::Polygon{N,2,T}
 end
 
 # Cannot mutate BigFloats in an MVector, so we use a regular Vector
-function Base.intersect(l::LineSegment2D{BigFloat}, poly::Polygon{N,2,BigFloat}) where {N} 
+function Base.intersect(l::LineSegment2D{BigFloat}, poly::Polygon{N, 2, BigFloat}) where {N} 
     # Create the line segments that make up the triangle and intersect each one
     points = zeros(Point2D{BigFloat}, N)
     npoints = 0x0000
@@ -112,7 +106,10 @@ function (tri::Triangle)(r, s)
 end
 
 function (quad::Quadrilateral)(r, s)
-    return Point((1 - r)*(1 - s)*quad[1] + r*(1 - s)*quad[2] + r*s*quad[3] + (1 - r)*s*quad[4])
+    return Point(((1 - r)*(1 - s))*quad[1] + 
+                       (r*(1 - s))*quad[2] + 
+                             (r*s)*quad[3] + 
+                       ((1 - r)*s)*quad[4])
 end
 
 # Plot

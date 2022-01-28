@@ -1,15 +1,13 @@
 # Axis-aligned bounding box.
 # A Dim-dimensional box requires 2 Dim-dimensional points to specify the boundary:
 #   One point to specify the box origin, and one to specify the opposite (furthest corner)
-struct AABB{Dim,T}
-    origin::Point{Dim,T}
-    corner::Point{Dim,T}
+struct AABB{Dim, T}
+    origin::Point{Dim, T}
+    corner::Point{Dim, T}
 end
 
 const AABB2D = AABB{2}
-const AABB3D = AABB{3}
 
-# Note: all branches but the correct one are pruned by the compiler
 function Base.getproperty(aabb::AABB, sym::Symbol)
     if sym === :xmin
         return aabb.origin[1]
@@ -30,7 +28,7 @@ end
 
 # Constructors
 # ---------------------------------------------------------------------------------------------
-AABB{Dim}(p₁::Point{Dim,T}, p₂::Point{Dim,T}) where {Dim,T} = AABB{Dim,T}(p₁, p₂)
+AABB{Dim}(p₁::Point{Dim, T}, p₂::Point{Dim, T}) where {Dim, T} = AABB{Dim, T}(p₁, p₂)
 
 # Methods
 # ---------------------------------------------------------------------------------------------
@@ -54,24 +52,24 @@ function Base.intersect(l::LineSegment2D, aabb::AABB2D)
     return (tmax >= tmin, SVector(l(tmin), l(tmax)))
 end
 
-# A random AABB within [0, 1]ᴺ ⊂ ℝᴺ
+# A random AABB within the Dim-dimensional unit hypercube 
 # What does the distribution of AABBs look like? Is this uniform? 
-function Base.rand(::Type{AABB{Dim,T}}) where {Dim,T}
+function Base.rand(::Type{AABB{Dim, T}}) where {Dim, T}
     coord₁ = rand(T, Dim)
     coord₂ = rand(T, Dim)
-    return AABB{Dim,T}(Point{Dim,T}(min.(coord₁, coord₂)), 
-                       Point{Dim,T}(max.(coord₁, coord₂)))  
+    return AABB{Dim, T}(Point{Dim, T}(min.(coord₁, coord₂)), 
+                       Point{Dim, T}(max.(coord₁, coord₂)))  
 end
 
-# N random AABB within [0, 1]ᴺ ⊂ ℝᴺ
-function Base.rand(::Type{AABB{Dim,T}}, N::Int64) where {Dim,T}
-    return [ rand(AABB{Dim,T}) for i ∈ 1:N ]
+# N random AABBs within the Dim-dimensional unit hypercube 
+function Base.rand(::Type{AABB{Dim, T}}, num_boxes::Int64) where {Dim, T}
+    return [ rand(AABB{Dim, T}) for i ∈ 1:num_boxes ]
 end
 
 # Return the AABB which contains both bb₁ and bb₂
-function Base.union(bb₁::AABB{Dim,T}, bb₂::AABB{Dim,T}) where {Dim,T}
-    return AABB(Point{Dim,T}(min.(bb₁.origin.coord, bb₂.origin.coord)),
-                Point{Dim,T}(max.(bb₁.corner.coord, bb₂.corner.coord)))
+function Base.union(bb₁::AABB{Dim, T}, bb₂::AABB{Dim, T}) where {Dim, T}
+    return AABB(Point{Dim, T}(min.(bb₁.origin.coord, bb₂.origin.coord)),
+                Point{Dim, T}(max.(bb₁.corner.coord, bb₂.corner.coord)))
 end
 
 # Bounding box
