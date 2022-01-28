@@ -9,6 +9,18 @@ Base.broadcastable(p::Point) = Ref(p)
 Base.@propagate_inbounds function Base.getindex(p::Point, i::Integer)
     getfield(p, :coord)[i]
 end
+# all branches but the correct one are pruned by the compiler, so this is fast.
+function Base.getproperty(p::Point, sym::Symbol)
+    if sym === :x
+        return p.coord[1]
+    elseif sym === :y
+        return p.coord[2]
+    elseif sym === :z
+        return p.coord[3]
+    else # fallback to getfield
+        return getfield(p, sym)
+    end
+end
 
 # Constructors
 # ---------------------------------------------------------------------------------------------
