@@ -1,4 +1,9 @@
 # A quadratic segment that passes through three points: 𝘅₁, 𝘅₂, and 𝘅₃.
+# The segment satisfies:
+# 𝗾(r) = (2r-1)(r-1)𝘅₁ + r(2r-1)𝘅₂ + 4r(1-r)𝘅₃, r ∈ [0,1]
+# or
+# 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁, r ∈ [0,1] where
+# 𝘂 = 2( 𝘅₁ + 𝘅₂ - 2𝘅₃) and 𝘃 = -(3𝘅₁ + 𝘅₂ - 4𝘅₃)
 # The assumed relation of the points may be seen in the diagram below.
 #                 ___𝘅₃___
 #            ____/        \____
@@ -8,11 +13,8 @@
 #  /
 # 𝘅₁
 #
-# NOTE: 𝘅₃ is not necessarily the midpoint, or even between 𝘅₁ and 𝘅₂, but the curve starts
-# and ends and 𝘅₁ and 𝘅₂.
-# See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
-# Chapter 8, Advanced Data Representation, in the interpolation functions section
-# 𝗾(r) = (2r-1)(r-1)𝘅₁ + r(2r-1)𝘅₂ + 4r(1-r)𝘅₃
+# NOTE: 𝘅₃ is not necessarily the midpoint in real space, or even between 𝘅₁ and 𝘅₂, 
+# but the curve starts at 𝘅₁, passes through 𝘅₃ at q(1/2), and ends at 𝘅₂.
 struct QuadraticSegment{Dim, T} <:Edge{Dim, 2, T}
     points::SVector{3, Point{Dim, T}}
 end
@@ -21,6 +23,15 @@ const QuadraticSegment2D = QuadraticSegment{2}
 
 Base.@propagate_inbounds function Base.getindex(q::QuadraticSegment, i::Integer)
     getfield(q, :points)[i]
+end
+function Base.getproperty(q::QuadraticSegment, sym::Symbol)
+    if sym === :𝘂
+        return 2(q[1] + q[2] - 2q[3])
+    elseif sym === :𝘃
+        return 4q[3] - 3q[1] - q[2]
+    else # fallback to getfield
+        return getfield(l, sym)
+    end
 end
 
 # Constructors
@@ -46,36 +57,26 @@ function (q::QuadraticSegment)(r)
     return Point(((2r-1)*(r-1))q[1] + (r*(2r-1))q[2] + (4r*(1-r))q[3])
 end
 
-arclength(q::QuadraticSegment) = arclength(q, Val(25))
-function arclength(q::QuadraticSegment{Dim, T}, ::Val{NP}) where {Dim, T,NP}
-    # Numerical integration is used.
-    # (Gauss-Legengre quadrature)
-    #     1             NP
-    # L = ∫ ‖𝗾′(r)‖dr ≈ ∑ wᵢ‖𝗾′(r)‖
-    #     0            i=1
-    #
-    w, r = gauss_legendre_quadrature(T, Val(NP))
-    return sum(@. w * norm(𝗗(q, r)))
-end
-
+# Return the arc length of the quadratic segment
+#     1             1
+# L = ∫ ‖𝗾′(r)‖dr = ∫ √(ar² + br + c) dr , which has the solution below
+#     0             0
 function arclength(q::QuadraticSegment2D{T}) where {T}
     if isstraight(q)
         return distance(q[1], q[2])
     else
-        # Mathematica for this algebraic nightmare
-        d = q[1][1] - q[3][1]; e = q[2][1] - q[3][1]
-        f = q[1][2] - q[3][2]; g = q[2][2] - q[3][2]
-        a = 16((d + e)^2 + (f + g)^2)
-        b = -8((3d + e)*(d + e) + (3f + g)*(f + g))
-        c = (3d + e)^2 + (3f + g)^2
+        𝘂 = q.𝘂; 𝘃 = q.𝘃
+        a = 4(𝘂 ⋅ 𝘂)
+        b = 4(𝘂 ⋅ 𝘃)
+        c = 𝘃 ⋅ 𝘃
         sqrt_abc = sqrt(a + b + c)
-        sqrt_a = sqrt(a)
+        twosqrt_a = 2sqrt(a)
         sqrt_c = sqrt(c)
-        l = (
-                (b^2 - 4a*c)*(log(2sqrt_a*sqrt_c + b) - 
-                              log(2sqrt_a*sqrt_abc + 2a + b)) + 
-                2sqrt_a*(2a*sqrt_abc + b*(sqrt_abc - sqrt_c))
-            )/(8*a^(3//2))
+        l = ((2a + b)*sqrt_abc - b*sqrt_c)/4a -
+            (b^2 - 4a*c)/(twosqrt_a^3)*log(
+                                            (twosqrt_a*sqrt_abc + (2a + b))/
+                                            (twosqrt_a*sqrt_c + b)
+                                        ) 
         return l 
     end
 end
