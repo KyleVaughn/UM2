@@ -52,8 +52,7 @@ LineSegment(pts::SVector{2, Point{Dim, T}}
 # 5) r(𝘂 × 𝘃) = 𝘄 × 𝘃                   let 𝘄 × 𝘃 = 𝘅 and 𝘂 × 𝘃 = 𝘇
 # 6) r𝘇 = 𝘅                             dot product 𝘇 to each side
 # 7) r𝘇 ⋅ 𝘇 = 𝘅 ⋅ 𝘇                     divide by 𝘇 ⋅ 𝘇
-# 8) r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇)                definition of 2-norm
-# 9) r = 𝘅 ⋅ 𝘇/‖𝘇‖
+# 8) r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇)
 # We need to ensure r, s ∈ [0, 1], hence we need to solve for s too.
 # 1) 𝘅₂ + s𝘃 = 𝘅₁ + r𝘂                     subtracting 𝘅₂ from both sides
 # 2) s𝘃 = -𝘄 + r𝘂                          cross product with 𝘄
@@ -61,21 +60,20 @@ LineSegment(pts::SVector{2, Point{Dim, T}}
 # 4) s(𝘃 × 𝘄) = r(𝘂 × 𝘄)                   using 𝘂 × 𝘄 = -(𝘄 × 𝘂), likewise for 𝘃 × 𝘄
 # 5) s(𝘄 × 𝘃) = r(𝘄 × 𝘂)                   let 𝘄 × 𝘂 = 𝘆. use 𝘄 × 𝘃 = 𝘅
 # 6) s𝘅 = r𝘆                               dot product 𝘅 to each side
-# 7) s(𝘅 ⋅ 𝘅) = r(𝘆 ⋅ 𝘅)                   definition of 2-norm and divide
-# 9) s = r𝘅 ⋅ 𝘆/‖𝘅‖
-# The cross product operator for 2D vectors returns a scalar, since the cross product 
-# of two vectors in the plane is a vector of the form (0, 0, z).
-# r = 𝘅 ⋅ 𝘇/𝘇 ⋅ 𝘇 = x₃/z₃ 
-# s = (𝘅 ⋅ 𝘆)(𝘅 ⋅ 𝘇)/(‖𝘅‖‖𝘇‖) = y₃/z₃ 
+# 7) s(𝘅 ⋅ 𝘅) = r(𝘆 ⋅ 𝘅)                   divide by (𝘅 ⋅ 𝘅)
+# 9) s = r(𝘅 ⋅ 𝘆)/(𝘅 ⋅ 𝘅)
+# The cross product of two vectors in the plane is a vector of the form (0, 0, k),
+# hence:
+# r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇) = x₃/z₃ 
+# s = r(𝘅 ⋅ 𝘆)/(𝘅 ⋅ 𝘅) = y₃/z₃ 
 function Base.intersect(l₁::LineSegment2D{T}, l₂::LineSegment2D{T}) where {T}
     ϵ = T(5e-6) # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
     𝘄 = l₂.𝘅₁ - l₁.𝘅₁
     z = l₁.𝘂 × l₂.𝘂
     r = (𝘄 × l₂.𝘂)/z
     s = (𝘄 × l₁.𝘂)/z
-    # -ϵ ≤ r ≤ 1 + ϵ introduces a branch, but -ϵ ≤ r && r ≤ 1 + ϵ doesn't for some reason.
-    return (T(1e-8) < abs(z) && -ϵ ≤ r && r ≤ 1 + ϵ 
-                             && -ϵ ≤ s && s ≤ 1 + ϵ, l₂(s)) # (hit, point)
+    return (T(1e-8) < abs(z) && -ϵ ≤ r ≤ 1 + ϵ 
+                             && -ϵ ≤ s ≤ 1 + ϵ, l₂(s)) # (hit, point)
 end
 
 # If the point is left of the line segment in the 2D plane. 
@@ -85,7 +83,7 @@ end
 # 𝘃 |  / 𝘂
 #   | /
 #   o
-# We may determine if the angle between the point and segment θ ∈ (0, π] based on the 
+# We may determine if the angle between the point and segment θ ∈ [0, π] based on the 
 # sign of 𝘂 × 𝘃, since 𝘂 × 𝘃 = ‖𝘂‖‖𝘃‖sin(θ). 
 @inline function isleft(p::Point2D, l::LineSegment2D)
     return 0 ≤ l.𝘂 × (p - l.𝘅₁) 
@@ -103,8 +101,9 @@ function Base.rand(::Type{LineSegment{Dim,F}}, N::Int64) where {Dim,F}
 end
 
 # Sort points on a line segment based on their distance from the segment's start point. 
-# Uses insertion sort. The intended use is on points produced from ray tracing, which 
-# should be nearly sorted or completely sorted, so insertion sort is quick
+# Uses insertion sort. 
+# The intended use is on points produced from ray tracing, which should be nearly 
+# sorted or completely sorted, so insertion sort is quick
 function sortpoints!(l::LineSegment, points::Vector{<:Point})
     # Insertion sort
     npts = length(points)

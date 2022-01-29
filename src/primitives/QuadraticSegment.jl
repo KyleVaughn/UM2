@@ -50,10 +50,10 @@ end
 # Methods
 # ---------------------------------------------------------------------------------------------
 # Interpolation
-# q(0) = q[1], q(1) = q[2], q(1//2) = q[3]
+# See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
+# Chapter 8, Advanced Data Representation, in the interpolation functions section
+# Note: q(0) = q[1], q(1) = q[2], q(1/2) = q[3]
 function (q::QuadraticSegment)(r)
-    # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
-    # Chapter 8, Advanced Data Representation, in the interpolation functions section
     return Point(((2r-1)*(r-1))q[1] + (r*(2r-1))q[2] + (4r*(1-r))q[3])
 end
 
@@ -65,18 +65,16 @@ function arclength(q::QuadraticSegment2D{T}) where {T}
     if isstraight(q)
         return distance(q[1], q[2])
     else
-        𝘂 = q.𝘂; 𝘃 = q.𝘃
+        𝘂 = q.𝘂
+        𝘃 = q.𝘃
         a = 4(𝘂 ⋅ 𝘂)
         b = 4(𝘂 ⋅ 𝘃)
         c = 𝘃 ⋅ 𝘃
-        sqrt_abc = sqrt(a + b + c)
-        twosqrt_a = 2sqrt(a)
-        sqrt_c = sqrt(c)
-        l = ((2a + b)*sqrt_abc - b*sqrt_c)/4a -
-            (b^2 - 4a*c)/(twosqrt_a^3)*log(
-                                            (twosqrt_a*sqrt_abc + (2a + b))/
-                                            (twosqrt_a*sqrt_c + b)
-                                        ) 
+        # Compiler seems to catch the reused sqrt quantities for common subexpression
+        # elimination, or computation is as quick as storage in variable, so we leave 
+        # the sqrts for readability
+        l = ((2a + b)√(a + b + c) - b√c)/4a -
+            (b^2 - 4a*c)/((2√a)^3)*log((2√a√(a + b + c) + (2a + b))/(2√a√c + b)) 
         return l 
     end
 end
@@ -108,6 +106,7 @@ function boundingbox(q::QuadraticSegment2D)
 end
 
 # Return the derivative of q, evalutated at r
+# Note: 𝗾′(r) = 2r𝘂 + 𝘃. This is used a couple places.  
 derivative(q::QuadraticSegment, r) = (4r - 3)*(q[1] - q[3]) + (4r - 1)*(q[2] - q[3])
 
 # Return the Jacobian of q, evalutated at r
