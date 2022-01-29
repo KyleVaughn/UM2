@@ -1,5 +1,5 @@
 # A parametric line segment, defined as the set of all points such that
-# 𝘅(r) = 𝘅₁ + r𝘂, where r ∈ [0, 1]. 𝘅₁ is the line segment start and 𝘅₂ = 𝘅₁ + 𝘂 
+# 𝗹(r) = 𝘅₁ + r𝘂, where r ∈ [0, 1]. 𝘅₁ is the line segment start and 𝘅₂ = 𝘅₁ + 𝘂 
 # is the line segment end.
 #
 # We store 𝘂 instead of 𝘅₂, since 𝘅₂ is needed infrequently, but 𝘂 is needed often.
@@ -42,9 +42,10 @@ LineSegment(pts::SVector{2, Point{Dim, T}}
 @inline arclength(l::LineSegment) = distance(l.𝘅₁.coord, l.𝘅₁.coord + l.𝘂)
 
 # Intersection of two 2D line segments
+#
 # Doesn't work for colinear/parallel lines. (𝘂 × 𝘃 = 𝟬).
 # Using the equation of a line in parametric form
-# For l₁ = 𝘅₁ + r𝘂 and l₂ = 𝘅₂ + s𝘃
+# For 𝗹₁(r) = 𝘅₁ + r𝘂 and 𝗹₂(s) = 𝘅₂ + s𝘃
 # 1) 𝘅₁ + r𝘂 = 𝘅₂ + s𝘃                  subtracting 𝘅₁ from both sides
 # 2) r𝘂 = (𝘅₂-𝘅₁) + s𝘃                  𝘄 = 𝘅₂-𝘅₁
 # 3) r𝘂 = 𝘄 + s𝘃                        cross product with 𝘃 (distributive)
@@ -77,14 +78,15 @@ function Base.intersect(l₁::LineSegment2D{T}, l₂::LineSegment2D{T}) where {T
 end
 
 # If the point is left of the line segment in the 2D plane. 
-# The segment's direction is from 𝘅₁ to 𝘅₂.
+#
+# The segment's direction is from 𝘅₁ to 𝘅₂. Let 𝘂 = 𝘅₂ - 𝘅₁ and 𝘃 = 𝗽 - 𝘅₁ 
+# We may determine if the angle between the point and segment θ ∈ [0, π] based on the 
+# sign of 𝘂 × 𝘃, since 𝘂 × 𝘃 = ‖𝘂‖‖𝘃‖sin(θ). 
 #   𝗽    ^
 #   ^   /
 # 𝘃 |  / 𝘂
 #   | /
 #   o
-# We may determine if the angle between the point and segment θ ∈ [0, π] based on the 
-# sign of 𝘂 × 𝘃, since 𝘂 × 𝘃 = ‖𝘂‖‖𝘃‖sin(θ). 
 @inline function isleft(p::Point2D, l::LineSegment2D)
     return 0 ≤ l.𝘂 × (p - l.𝘅₁) 
 end
@@ -101,6 +103,7 @@ function Base.rand(::Type{LineSegment{Dim,F}}, N::Int64) where {Dim,F}
 end
 
 # Sort points on a line segment based on their distance from the segment's start point. 
+#
 # Uses insertion sort. 
 # The intended use is on points produced from ray tracing, which should be nearly 
 # sorted or completely sorted, so insertion sort is quick

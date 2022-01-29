@@ -1,9 +1,8 @@
 # A quadratic segment that passes through three points: 𝘅₁, 𝘅₂, and 𝘅₃.
 # The segment satisfies:
-# 𝗾(r) = (2r-1)(r-1)𝘅₁ + r(2r-1)𝘅₂ + 4r(1-r)𝘅₃, r ∈ [0,1]
-# or
-# 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁, r ∈ [0,1] where
-# 𝘂 = 2( 𝘅₁ + 𝘅₂ - 2𝘅₃) and 𝘃 = -(3𝘅₁ + 𝘅₂ - 4𝘅₃)
+# 𝗾(r) = (2r-1)(r-1)𝘅₁ + r(2r-1)𝘅₂ + 4r(1-r)𝘅₃, r ∈ [0,1] or
+# 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁, r ∈ [0,1] where:
+# 𝘂 = 2(𝘅₁ + 𝘅₂ - 2𝘅₃) and 𝘃 = -(3𝘅₁ + 𝘅₂ - 4𝘅₃)
 # The assumed relation of the points may be seen in the diagram below.
 #                 ___𝘅₃___
 #            ____/        \____
@@ -24,13 +23,14 @@ const QuadraticSegment2D = QuadraticSegment{2}
 Base.@propagate_inbounds function Base.getindex(q::QuadraticSegment, i::Integer)
     getfield(q, :points)[i]
 end
+# Easily fetch 𝘂, 𝘃 in 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁
 function Base.getproperty(q::QuadraticSegment, sym::Symbol)
     if sym === :𝘂
         return 2(q[1] + q[2] - 2q[3])
     elseif sym === :𝘃
         return 4q[3] - 3q[1] - q[2]
     else # fallback to getfield
-        return getfield(l, sym)
+        return getfield(q, sym)
     end
 end
 
@@ -50,16 +50,20 @@ end
 # Methods
 # ---------------------------------------------------------------------------------------------
 # Interpolation
+#
 # See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
 # Chapter 8, Advanced Data Representation, in the interpolation functions section
-# Note: q(0) = q[1], q(1) = q[2], q(1/2) = q[3]
+# Note: 𝗾(0) = 𝘅₁, 𝗾(1) = 𝘅₂, 𝗾(1/2) = 𝘅₃
 function (q::QuadraticSegment)(r)
     return Point(((2r-1)*(r-1))q[1] + (r*(2r-1))q[2] + (4r*(1-r))q[3])
 end
 
 # Return the arc length of the quadratic segment
+#
+# The arc length integral may be reduced to an integral over the square root of a 
+# quadratic polynomial using ‖𝘅‖ = √(𝘅 ⋅ 𝘅)
 #     1             1
-# L = ∫ ‖𝗾′(r)‖dr = ∫ √(ar² + br + c) dr , which has the solution below
+# L = ∫ ‖𝗾′(r)‖dr = ∫ √(ar² + br + c) dr 
 #     0             0
 function arclength(q::QuadraticSegment2D{T}) where {T}
     if isstraight(q)
@@ -71,8 +75,8 @@ function arclength(q::QuadraticSegment2D{T}) where {T}
         b = 4(𝘂 ⋅ 𝘃)
         c = 𝘃 ⋅ 𝘃
         # Compiler seems to catch the reused sqrt quantities for common subexpression
-        # elimination, or computation is as quick as storage in variable, so we leave 
-        # the sqrts for readability
+        # elimination, or computation is as quick as storage in a variable, so we 
+        # leave the sqrts for readability
         l = ((2a + b)√(a + b + c) - b√c)/4a -
             (b^2 - 4a*c)/((2√a)^3)*log((2√a√(a + b + c) + (2a + b))/(2√a√c + b)) 
         return l 
@@ -80,24 +84,29 @@ function arclength(q::QuadraticSegment2D{T}) where {T}
 end
 
 # Find the axis-aligned bounding box of the segment.
+#
+# Find the extrema for x and y by finding the r_x such that dx/dr = 0 
+# and r_y such that dy/dr = 0
+# 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁
+# 𝗾′(r) = 2r𝘂 + 𝘃 ⟹  r_x, r_y = -𝘃 ./ 2𝘂
+# Compare the extrema with the segment's endpoints to find the AABB
 function boundingbox(q::QuadraticSegment2D)
-    # Find the r coordinates where dx/dr = 0, dy/dr = 0
-    # We know dq/dr, so we can directly compute these values
-    r_x = (3q[1].x + q[2].x - 4q[3].x)/(4(q[1].x + q[2].x - 2q[3].x))
+    𝘂 = q.𝘂
+    𝘃 = q.𝘃
+    r_x, r_y = 𝘃 ./ -2𝘂
     if 0 < r_x < 1
-        x_extreme = (2r_x-1)*(r_x-1)q[1].x + r_x*(2r_x-1)q[2].x + 4r_x*(1-r_x)q[3].x
-        xmin = min(q[1].x, q[2].x, x_extreme)
-        xmax = max(q[1].x, q[2].x, x_extreme)
+        x_stationary = (r_x^2)𝘂[1] + r_x*𝘃[1] + q[1].x
+        xmin = min(q[1].x, q[2].x, x_stationary)
+        xmax = max(q[1].x, q[2].x, x_stationary)
     else
         xmin = min(q[1].x, q[2].x)
         xmax = max(q[1].x, q[2].x)
     end
 
-    r_y = (3q[1].y + q[2].y - 4q[3].y)/(4(q[1].y + q[2].y - 2q[3].y))
     if 0 < r_y < 1
-        y_extreme = (2r_y-1)*(r_y-1)q[1].y + r_y*(2r_y-1)q[2].y + 4r_y*(1-r_y)q[3].y
-        ymin = min(q[1].y, q[2].y, y_extreme)
-        ymax = max(q[1].y, q[2].y, y_extreme)
+        y_stationary = (r_y^2)𝘂[2] + r_y*𝘃[2] + q[1].y
+        ymin = min(q[1].y, q[2].y, y_stationary)
+        ymax = max(q[1].y, q[2].y, y_stationary)
     else
         ymin = min(q[1].y, q[2].y)
         ymax = max(q[1].y, q[2].y)
@@ -106,7 +115,7 @@ function boundingbox(q::QuadraticSegment2D)
 end
 
 # Return the derivative of q, evalutated at r
-# Note: 𝗾′(r) = 2r𝘂 + 𝘃. This is used a couple places.  
+# 𝗾′(r) = 2r𝘂 + 𝘃, which is simplified to below.
 derivative(q::QuadraticSegment, r) = (4r - 3)*(q[1] - q[3]) + (4r - 1)*(q[2] - q[3])
 
 # Return the Jacobian of q, evalutated at r
@@ -118,10 +127,21 @@ jacobian(q::QuadraticSegment, r) = derivative(q, r)
 # 𝘃 |  / 𝘂
 #   | /
 #   o
+# If the segment is straight, or if the point is not within the bounding box of
+# the segment, we can perform the isleft check with the straight line from the 
+# segment's start point to the segment's stop point.
+# If these conditions don't hold we need to account for the segment's curve.
+# We find the nearest point on the curve to the point of interest. Call this
+# q_nearest. We need another point on q, q_base, to draw the vectors to p and 
+# q_nearest from. This point must be close to q_nearest
+#
+#
+# Can we use the derivative at q_nearest???
+#
+# Then we perform the isleft check
+# with the vectors 𝗾_nearest - 𝗾₀
 function isleft(p::Point, q::QuadraticSegment)
     if isstraight(q) || p ∉  boundingbox(q)
-        # We don't need to account for curvature if q is straight or p is outside
-        # q's bounding box
         𝘂 = q[2] - q[1]
         𝘃 = p - q[1]
     else
@@ -142,26 +162,39 @@ function isleft(p::Point, q::QuadraticSegment)
 end
 
 # If the quadratic segment is effectively linear
+# Check the sign of the cross product of the vectors 𝘅₃ - 𝘅₁ and 𝘅₂ - 𝘅₁
+# If the line is straight, 𝘅₃ - 𝘅₁ = c(𝘅₂ - 𝘅₁) where c ∈ (0, 1), hence
+# (𝘅₃ - 𝘅₁) × (𝘅₂ - 𝘅₁) = 𝟬
 @inline function isstraight(q::QuadraticSegment)
-    # 𝘂 × 𝘃 = ‖𝘂‖‖𝘃‖sin(θ)
     return norm((q[3] - q[1]) × (q[2] - q[1])) < 1e-8
 end
 
 # Intersection between a linesegment and quadratic segment
-# q(r) = (2r-1)(r-1)𝘅₁ + r(2r-1)𝘅₂ + 4r(1-r)𝘅₃
-# q(r) = 2r²(𝘅₁ + 𝘅₂ - 2𝘅₃) + r(-3𝘅₁ - 𝘅₂ + 4𝘅₃) + 𝘅₁
-# Let 𝘂 = 2(𝘅₁ + 𝘅₂ - 2𝘅₃), 𝘃 = (-3𝘅₁ - 𝘅₂ + 4𝘅₃)
-# q(r) = r²𝘂 + r𝘃 + 𝘅₁
-# l(s) = 𝘅₄ + s𝘄
-# If 𝘂 × 𝘄 ≠ 𝟬
-#   𝘅₄ + s𝘄 = r²𝘂 + r𝘃 + 𝘅₁
-#   s𝘄 = r²𝘂 + r𝘃 + (𝘅₁ - 𝘅₄)
-#   0 = r²(𝘂 × 𝘄) + r(𝘃 × 𝘄) + (𝘅₁ - 𝘅₄) × 𝘄
-#   # In 2D the cross product yields a scalar
-#   Let a = (𝘂 × 𝘄), b = (𝘃 × 𝘄), c = (𝘅₁ - 𝘅₄) × 𝘄
-#   0 = ar² + br + c
+#
+# The quadratic segment: 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁
+# The line segment: 𝗹(s) = 𝘅₄ + s𝘄
+# 𝘅₄ + s𝘄 = r²𝘂 + r𝘃 + 𝘅₁
+# s𝘄 = r²𝘂 + r𝘃 + (𝘅₁ - 𝘅₄)
+# 𝟬 = r²(𝘂 × 𝘄) + r(𝘃 × 𝘄) + (𝘅₁ - 𝘅₄) × 𝘄
+# The cross product of two vectors in the plane is a vector of the form (0, 0, k).
+# Let a = (𝘂 × 𝘄), b = (𝘃 × 𝘄), c = (𝘅₁ - 𝘅₄) × 𝘄
+# 0 = ar² + br + c
+# If a = 0 
+#   r = -c/b
+#    
+# else
 #   r = (-b ± √(b²-4ac))/2a
 #   # We must also solve for s
+#   
+#
+#
+#
+#
+#
+#
+#
+#
+#
 #   r²𝘂 + r𝘃 + 𝘅₁ = 𝘅₄ + s𝘄 
 #   s𝘄 = r²𝘂 + r𝘃 + (𝘅₁ - 𝘅₄)
 #   s(𝘄 × 𝘂) = r²(𝘂 × 𝘂) + r(𝘃 × 𝘂) + (𝘅₁ - 𝘅₄) × 𝘂
