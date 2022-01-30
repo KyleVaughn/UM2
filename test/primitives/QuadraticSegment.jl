@@ -35,7 +35,7 @@ using MOCNeutronTransport
             # curved
             𝘅₃ = Point2D{F}(1, 1)
             q = QuadraticSegment2D(𝘅₁, 𝘅₂, 𝘅₃)
-            @test abs(arclength(q) - 2.9578857151786138) < 1.0e-6
+            @test abs(arclength(q) - 2.957885715089195) < 1.0e-6
  
             # boundingbox
             𝘅₁ = Point2D{F}(0, 0)

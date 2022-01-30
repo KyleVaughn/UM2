@@ -65,7 +65,7 @@ end
 #     1             1
 # L = ∫ ‖𝗾′(r)‖dr = ∫ √(ar² + br + c) dr 
 #     0             0
-function arclength(q::QuadraticSegment2D{T}) where {T}
+function arclength(q::QuadraticSegment)
     if isstraight(q)
         return distance(q[1], q[2])
     else
@@ -132,36 +132,22 @@ jacobian(q::QuadraticSegment, r) = derivative(q, r)
 # segment's start point to the segment's stop point.
 # If these conditions don't hold we need to account for the segment's curve.
 # We find the nearest point on the curve to the point of interest. Call this
-# q_nearest. We need another point on q, q_base, to draw the vectors to p and 
-# q_nearest from. This point must be close to q_nearest
-#
-#
-# Can we use the derivative at q_nearest???
-#
-# Then we perform the isleft check
-# with the vectors 𝗾_nearest - 𝗾₀
-function isleft(p::Point, q::QuadraticSegment)
+# q_near. We then perform the isleft check with the tangent vector of q at q_near
+# and p - q_near.
+function isleft(p::Point2D, q::QuadraticSegment2D)
     if isstraight(q) || p ∉  boundingbox(q)
         𝘂 = q[2] - q[1]
         𝘃 = p - q[1]
     else
-        # Get the nearest point on q to p.
-        # Construct vectors from a point on q (close to p_near) to p_near and p. 
-        # Use the cross product of these vectors to determine if p isleft.
-        r, p_near = nearest_point(p, q)
-        if r < 1e-6 || 1 < r # If r is small or beyond the valid range, just use q[2]
-            𝘂 = q[2] - q[1]
-            𝘃 = p - q[1]
-        else # otherwise use a point on q, close to p_near
-            q_base = q(0.95r)
-            𝘂 = p_near - q_base
-            𝘃 = p - q_base
-        end
+        r, q_near = nearest_point(p, q)
+        𝘂 = 𝗗(q, r)
+        𝘃 = p - q_near
     end
     return 𝘂 × 𝘃 > 0
 end
 
 # If the quadratic segment is effectively linear
+#
 # Check the sign of the cross product of the vectors 𝘅₃ - 𝘅₁ and 𝘅₂ - 𝘅₁
 # If the line is straight, 𝘅₃ - 𝘅₁ = c(𝘅₂ - 𝘅₁) where c ∈ (0, 1), hence
 # (𝘅₃ - 𝘅₁) × (𝘅₂ - 𝘅₁) = 𝟬
@@ -181,40 +167,23 @@ end
 # 0 = ar² + br + c
 # If a = 0 
 #   r = -c/b
-#    
 # else
 #   r = (-b ± √(b²-4ac))/2a
-#   # We must also solve for s
-#   
+# We must also solve for s
+# 𝘅₄ + s𝘄 = 𝗾(r)
+# s𝘄 = 𝗾(r) - 𝘅₄
+# s = ((𝗾(r) - 𝘅₄) ⋅𝘄 )/(𝘄 ⋅ 𝘄)
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#   r²𝘂 + r𝘃 + 𝘅₁ = 𝘅₄ + s𝘄 
-#   s𝘄 = r²𝘂 + r𝘃 + (𝘅₁ - 𝘅₄)
-#   s(𝘄 × 𝘂) = r²(𝘂 × 𝘂) + r(𝘃 × 𝘂) + (𝘅₁ - 𝘅₄) × 𝘂
-#   -as = r(𝘃 × 𝘂) + c
-#   s = ((𝘂 × 𝘃)r - c)/a
-#   or
-#   s = ((q(r) - 𝘅₄)⋅𝘄/(𝘄 ⋅ 𝘄)
-#   r is invalid if:
-#     1) a = 0
-#     2) b² < 4ac
-#     3) r < 0 or 1 < r   (Curve intersects, segment doesn't)
-#   s is invalid if:
-#     1) s < 0 or 1 < s   (Line intersects, segment doesn't)
-# If a = 0, there is only one intersection and the equation reduces to line
-# intersection.
+# r is invalid if:
+#   1) b² < 4ac
+#   2) r < 0 or 1 < r   (Curve intersects, segment doesn't)
+# s is invalid if:
+#   1) s < 0 or 1 < s   (Line intersects, segment doesn't)
 function Base.intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
     ϵ = T(5e-6) # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
     npoints = 0x0000
-    p₁ = Point2D{T}(0,0)
-    p₂ = Point2D{T}(0,0)
+    p₁ = zero(Point2D{T})
+    p₂ = zero(Point2D{T})
     if isstraight(q) # Use line segment intersection.
         # See LineSegment for the math behind this.
         𝘄 = q[1] - l.𝘅₁
@@ -222,33 +191,31 @@ function Base.intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
         z = l.𝘂 × 𝘃
         r = (𝘄 × 𝘃)/z
         s = (𝘄 × l.𝘂)/z
-        if T(1e-8) < abs(z) && -ϵ ≤ r && r ≤ 1 + ϵ && -ϵ ≤ s && s ≤ 1 + ϵ
+        if T(1e-8) < abs(z) && -ϵ ≤ r ≤ 1 + ϵ && -ϵ ≤ s ≤ 1 + ϵ
             npoints += 0x0001
         end
         return npoints, SVector(l(r), p₂)
     else
-        𝘂 = 2(q[1] +  q[2] - 2q[3])
-        𝘃 =  4q[3] - 3q[1] -  q[2]
+        𝘂 = q.𝘂 
+        𝘃 = q.𝘃 
         𝘄 = l.𝘂
         a = 𝘂 × 𝘄 
         b = 𝘃 × 𝘄
         c = (q[1] - l.𝘅₁) × 𝘄
-        d = 𝘂 × 𝘃
         w² = 𝘄 ⋅ 𝘄 
         if abs(a) < T(1e-8)
             # Line intersection
             r = -c/b
             -ϵ ≤ r ≤ 1 + ϵ || return 0x0000, SVector(p₁, p₂)
-            s = (q(r) - l.𝘅₁)⋅𝘄 /w²
-            p₁ = l(s)
-            if (-ϵ ≤ s ≤ 1 + ϵ)
+            p₁ = q(r)
+            s = (p₁ - l.𝘅₁)⋅𝘄 
+            if -ϵ*w² ≤ s ≤ (1 + ϵ)w²
                 npoints = 0x0001
             end
         elseif b^2 ≥ 4a*c
             # Quadratic intersection
-            disc = √(b^2 - 4a*c)
-            r₁ = (-b - disc)/2a
-            r₂ = (-b + disc)/2a
+            r₁ = (-b - √(b^2 - 4a*c))/2a
+            r₂ = (-b + √(b^2 - 4a*c))/2a
             valid_p₁ = false
             if -ϵ ≤ r₁ ≤ 1 + ϵ
                 p₁ = q(r₁)
@@ -274,7 +241,7 @@ function Base.intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
 end
 
 nearest_point(p::Point, q::QuadraticSegment) = nearest_point(p, q, 15)
-# Return the closest point on the curve to point p, along with the value of r such that 
+# Return the closest point on the curve q to point p, along with the value of r such that 
 # q(r) = p_nearest
 # Uses at most max_iters iterations of Newton-Raphson
 function nearest_point(p::Point, q::QuadraticSegment{Dim, T}, max_iters::Int64) where {Dim, T}
@@ -289,15 +256,15 @@ function nearest_point(p::Point, q::QuadraticSegment{Dim, T}, max_iters::Int64) 
     return r, q(r)
 end
 
-# Random line in the Dim-dimensional unit hypercube
-function Base.rand(::Type{QuadraticSegment{Dim,F}}) where {Dim,F} 
-    points = rand(Point{Dim,F}, 3)
+# Random quadratic segment in the Dim-dimensional unit hypercube
+function Base.rand(::Type{QuadraticSegment{Dim, F}}) where {Dim, F} 
+    points = rand(Point{Dim, F}, 3)
     return QuadraticSegment(points[1], points[2], points[3])
 end
 
-# N random lines in the Dim-dimensional unit hypercube
-function Base.rand(::Type{QuadraticSegment{Dim,F}}, N::Int64) where {Dim,F}
-    return [ rand(QuadraticSegment{Dim,F}) for i ∈ 1:N ]
+# N random quadratic segments in the Dim-dimensional unit hypercube
+function Base.rand(::Type{QuadraticSegment{Dim, F}}, N::Int64) where {Dim, F}
+    return [ rand(QuadraticSegment{Dim, F}) for i ∈ 1:N ]
 end
 
 # Plot
