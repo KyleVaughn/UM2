@@ -77,7 +77,7 @@ using MOCNeutronTransport
             @test !isstraight(q)
 
 
-            # closest_point
+            # nearest_point
             𝘅₁ = Point2D{F}(0, 0)           
             𝘅₂ = Point2D{F}(2, 0)
             𝘅₃ = Point2D{F}(1, 1)

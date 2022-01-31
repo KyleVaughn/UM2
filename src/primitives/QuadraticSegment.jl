@@ -147,12 +147,51 @@ function isleft(p::Point2D, q::QuadraticSegment2D)
         𝘂 = q.𝘅₂ - q.𝘅₁
         𝘃 = p - q.𝘅₁
     else
-        r, q_near = nearest_point(p, q)
+        check_curve, r, q_near = _is_left_nearest_point(p, q)
+        if check_curve
+            return (q.𝘅₂ - q.𝘅₁) × (q.𝘅₃ - q.𝘅₁) < 0
+        end
         𝘂 = 𝗗(q, r)
         𝘃 = p - q_near
     end
     return 𝘂 × 𝘃 > 0
 end
+
+# A nearest point function that exits quickly in the case that the cubic equation 
+# has 3 real roots. When the cubic has 3 real roots, the point must be inside the
+# curve of the segment. Meaning: 
+#   If the segment curves left, the point is right.
+#   If the segment curves right, the point is left.
+# This way we save substantial time by bypassing the complex number arithmetic
+function _is_left_nearest_point(p::Point2D{T}, q::QuadraticSegment) where {T}
+    𝘂 = q.𝘂
+    𝘃 = q.𝘃
+    𝘄 = p - q.𝘅₁
+    # f′(r) = ar³ + br² + cr + d = 0
+    a = 4(𝘂 ⋅ 𝘂)
+    b = 6(𝘂 ⋅ 𝘃)
+    c = 2((𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄))   
+    d = -2(𝘃 ⋅ 𝘄)
+    # Lagrange's method
+    e₁ = s₀ = -b/a
+    e₂ = c/a
+    e₃ = -d/a
+    A = 2e₁^3 - 9e₁*e₂ + 27e₃
+    B = e₁^2 - 3e₂
+    if A^2 - 4B^3 > 0 # one real root
+        s₁ = ∛((A + √(A^2 - 4B^3))/2)
+        if s₁ == 0
+            s₂ = s₁
+        else
+            s₂ = B/s₁
+        end
+        r = (s₀ + s₁ + s₂)/3
+        return false, r, q(r)
+    else # three real roots
+        return true, zero(T), zero(Point2D{T})
+    end 
+end
+
 
 # If the quadratic segment is effectively linear
 #
@@ -256,32 +295,58 @@ end
 # ‖𝘆 - 𝗾(r)‖² = f(r) = a₄r⁴ + a₃r³ + a₂r² + a₁r + a₀
 # The minimum of f(r) occurs when f′(r) = ar³ + br² + cr + d = 0, where
 # 𝘄 = 𝘆 - 𝘅₁, a = 4(𝘂 ⋅ 𝘂), b = 6(𝘂 ⋅ 𝘃), c = 2[(𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄)], d = -2(𝘃 ⋅ 𝘄)
-# A cubic function is guaranteed to have at least 1 real root, which may be found using
 # Lagrange's method (https://en.wikipedia.org/wiki/Cubic_equation#Lagrange's_method)
-# Any of the 3 roots are sufficient.
-function nearest_point(pt::Point, qseg::QuadraticSegment)
-    𝘂 = qseg.𝘂
-    𝘃 = qseg.𝘃
-    𝘄 = pt - qseg.𝘅₁
+function nearest_point(p::Point{Dim,T}, q::QuadraticSegment) where {Dim,T}
+    𝘂 = q.𝘂
+    𝘃 = q.𝘃
+    𝘄 = p - q.𝘅₁
     # f′(r) = ar³ + br² + cr + d = 0
     a = 4(𝘂 ⋅ 𝘂)
     b = 6(𝘂 ⋅ 𝘃)
     c = 2((𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄))   
     d = -2(𝘃 ⋅ 𝘄)
     # Lagrange's method
-    e1 = s0 = -b/a
-    e2 =  c/a
-    e3 = -d/a
-    A = 2*e1^3 - 9*e1*e2 + 27*e3
-    B = e1^2 - 3*e2
-    s1 = ∛((A + √(A^2 - 4B^3))/2)
-    if s1 == 0
-        s2 = s1
-    else
-        s2 = B / s1
-    end
-    r = (s0 + s1 + s2)/3
-    return r, qseg(r)
+    e₁ = s₀ = -b/a
+    e₂ = c/a
+    e₃ = -d/a
+    A = 2e₁^3 - 9e₁*e₂ + 27e₃
+    B = e₁^2 - 3e₂
+    if A^2 - 4B^3 > 0 # one real root
+        s₁ = ∛((A + √(A^2 - 4B^3))/2)
+        if s₁ == 0
+            s₂ = s₁
+        else
+            s₂ = B/s₁
+        end
+        r = (s₀ + s₁ + s₂)/3
+        return r, q(r)
+    else # three real roots
+        # Complex cube root
+        t₁ = exp(log((A + √(complex(A^2 - 4B^3)))/2)/3)
+        if t₁ == 0
+            t₂ = t₁
+        else
+            t₂ = B/t₁
+        end
+        ζ₁ = Complex{T}(-1/2, √3/2)
+        ζ₂ = conj(ζ₁)
+        dist_min = typemax(T)
+        r_near = zero(T)
+        p_near = zero(Point{Dim,T})
+        # Use the real part of each root
+        for rᵢ in (real((s₀ +    t₁ +    t₂)/3), 
+                   real((s₀ + ζ₂*t₁ + ζ₁*t₂)/3), 
+                   real((s₀ + ζ₁*t₁ + ζ₂*t₂)/3))
+            pᵢ = q(rᵢ)
+            dist = distance²(pᵢ, p)
+            if dist < dist_min
+                dist_min = dist
+                r_near = rᵢ
+                p_near = pᵢ
+            end
+        end
+        return r_near, p_near
+    end 
 end
 
 # Random quadratic segment in the Dim-dimensional unit hypercube
