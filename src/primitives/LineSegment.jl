@@ -1,6 +1,6 @@
-# A parametric line segment, defined as the set of all points such that
-# 𝗹(r) = 𝘅₁ + r𝘂, where r ∈ [0, 1]. 𝘅₁ is the line segment start and 𝘅₂ = 𝘅₁ + 𝘂 
-# is the line segment end.
+# A line segment, defined as the set of all points such that 𝗹(r) = 𝘅₁ + r𝘂, 
+# where r ∈ [0, 1]. 𝘅₁ is the line segment start and 𝘅₂ = 𝘅₁ + 𝘂 is the line 
+# segment end.
 #
 # We store 𝘂 instead of 𝘅₂, since 𝘅₂ is needed infrequently, but 𝘂 is needed often.
 struct LineSegment{Dim, T} <:Edge{Dim, 1, T}
@@ -38,13 +38,13 @@ LineSegment(pts::SVector{2, Point{Dim, T}}
 # Methods
 # ---------------------------------------------------------------------------------------------
 # Interpolation
+# Note: 𝗹(0) = 𝘅₁, 𝗹(1) = 𝘅₂
 @inline (l::LineSegment)(r) = Point(l.𝘅₁.coord + r*l.𝘂)
 @inline arclength(l::LineSegment) = distance(l.𝘅₁.coord, l.𝘅₁.coord + l.𝘂)
 
 # Intersection of two 2D line segments
 #
 # Doesn't work for colinear/parallel lines. (𝘂 × 𝘃 = 𝟬).
-# Using the equation of a line in parametric form
 # For 𝗹₁(r) = 𝘅₁ + r𝘂 and 𝗹₂(s) = 𝘅₂ + s𝘃
 # 1) 𝘅₁ + r𝘂 = 𝘅₂ + s𝘃                  subtracting 𝘅₁ from both sides
 # 2) r𝘂 = (𝘅₂-𝘅₁) + s𝘃                  𝘄 = 𝘅₂-𝘅₁
@@ -80,13 +80,17 @@ end
 # If the point is left of the line segment in the 2D plane. 
 #
 # The segment's direction is from 𝘅₁ to 𝘅₂. Let 𝘂 = 𝘅₂ - 𝘅₁ and 𝘃 = 𝗽 - 𝘅₁ 
-# We may determine if the angle between the point and segment θ ∈ [0, π] based on the 
+# We may determine if the angle θ between the point and segment is in [0, π] based on the 
 # sign of 𝘂 × 𝘃, since 𝘂 × 𝘃 = ‖𝘂‖‖𝘃‖sin(θ). 
 #   𝗽    ^
 #   ^   /
 # 𝘃 |  / 𝘂
 #   | /
 #   o
+# We allow points on the line (𝘂 × 𝘃 = 0) to be left, since this test is primarily 
+# used to determine if a point is inside a polygon. A mesh is supposed to partition
+# its domain, so if we do not allow points on the line, there will exist points in the 
+# mesh which will not be in any face, violating that rule.
 @inline function isleft(p::Point2D, l::LineSegment2D)
     return 0 ≤ l.𝘂 × (p - l.𝘅₁) 
 end
