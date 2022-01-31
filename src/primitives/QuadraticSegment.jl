@@ -257,40 +257,32 @@ end
 # The minimum of f(r) occurs when f′(r) = ar³ + br² + cr + d = 0, where
 # 𝘄 = 𝘆 - 𝘅₁, a = 4(𝘂 ⋅ 𝘂), b = 6(𝘂 ⋅ 𝘃), c = 2[(𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄)], d = -2(𝘃 ⋅ 𝘄)
 # A cubic function is guaranteed to have at least 1 real root, which may be found using
-# Cardano's formula (https://en.wikipedia.org/wiki/Cubic_equation#Cardano's_formula)
+# Lagrange's method (https://en.wikipedia.org/wiki/Cubic_equation#Lagrange's_method)
+# Any of the 3 roots are sufficient.
 function nearest_point(pt::Point, qseg::QuadraticSegment)
     𝘂 = qseg.𝘂
     𝘃 = qseg.𝘃
-    𝘄 = pt - qseg[1]
+    𝘄 = pt - qseg.𝘅₁
     # f′(r) = ar³ + br² + cr + d = 0
     a = 4(𝘂 ⋅ 𝘂)
     b = 6(𝘂 ⋅ 𝘃)
     c = 2((𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄))   
     d = -2(𝘃 ⋅ 𝘄)
-    # t³ + pt + q = 0
-    # t = r - b/3a
-    p = (3a*c - b^2)/3a^2
-    q = (2b^3 - 9a*c*b + 27a^2*d)/27a^3
-    R = (p/3)^3 + (q/2)^3 
-    r = ∛(-q/2 + √(R)) + ∛(-q/2 - √(R)) - b/3a
+    # Lagrange's method
+    e1 = s0 = -b/a
+    e2 =  c/a
+    e3 = -d/a
+    A = 2*e1^3 - 9*e1*e2 + 27*e3
+    B = e1^2 - 3*e2
+    s1 = ∛((A + √(A^2 - 4B^3))/2)
+    if s1 == 0
+        s2 = s1
+    else
+        s2 = B / s1
+    end
+    r = (s0 + s1 + s2)/3
     return r, qseg(r)
 end
-
-# nearest_point(p::Point, q::QuadraticSegment) = nearest_point(p, q, 15)
-# # Return the closest point on the curve q to point p, along with the value of r such that 
-# # q(r) = p_nearest
-# # Uses at most max_iters iterations of Newton-Raphson
-# function nearest_point(p::Point, q::QuadraticSegment{Dim, T}, max_iters::Int64) where {Dim, T}
-#     r = T(1//2) + inv(𝗝(q, 1//2))*(p - q(1//2)) 
-#     for i ∈ 1:max_iters-1
-#         Δr = inv(𝗝(q, r))*(p - q(r)) 
-#         if abs(Δr) < T(1e-7)
-#             break
-#         end
-#         r += Δr
-#     end
-#     return r, q(r)
-# end
 
 # Random quadratic segment in the Dim-dimensional unit hypercube
 function Base.rand(::Type{QuadraticSegment{Dim, F}}) where {Dim, F} 
