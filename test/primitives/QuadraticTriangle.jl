@@ -60,9 +60,7 @@ using MOCNeutronTransport
             p₅ = Point2D(Point2D{F}(3, 1) + p₀)
             p₆ = Point2D(Point2D{F}(1, 1) + p₀)
             tri6 = QuadraticTriangle(p₁, p₂, p₃, p₄, p₅, p₆)
-            # 2D default
             @test isapprox(area(tri6), 3, atol=1.0e-6)
-
 
             # centroid
             p₁ = Point2D{F}(0, 0)

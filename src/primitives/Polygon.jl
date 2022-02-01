@@ -29,9 +29,9 @@ Polygon(x...) = Polygon(SVector(x))
 # Uses the shoelace formula (https://en.wikipedia.org/wiki/Shoelace_formula)
 function area(poly::Polygon{N, Dim, T}) where {N, Dim, T}
     if Dim === 2
-        a = T(0) # Scalar
+        a = zero(T) # Scalar
     else
-        a = Base.zero(Point{Dim, T}) # Vector
+        a = zero(Point{Dim, T}) # Vector
     end
     for i ∈ 1:N
         a += poly[(i - 1) % N + 1] × poly[i % N + 1]
@@ -44,7 +44,7 @@ area(tri::Triangle) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
 # Centroid for polygons in the 2D plane
 function centroid(poly::Polygon{N, 2, T}) where {N, T}
     c = SVector{2,T}(0,0)
-    a = T(0)
+    a = zero(T)
     for i ∈ 1:N-1
         subarea = poly[i] × poly[i+1]
         c += subarea*(poly[i] + poly[i+1])
@@ -175,8 +175,8 @@ end
 # ---------------------------------------------------------------------------------------------
 if enable_visualization
     function convert_arguments(LS::Type{<:LineSegments}, poly::Polygon{N}) where {N}
-        lines = [LineSegment2D(poly[(i-1) % N + 1],
-                               poly[    i % N + 1]) for i = 1:N] 
+        lines = [LineSegment(poly[(i-1) % N + 1],
+                             poly[    i % N + 1]) for i = 1:N] 
         return convert_arguments(LS, lines)
     end
 

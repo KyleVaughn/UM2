@@ -53,21 +53,43 @@ function area(tri6::QuadraticTriangle2D)
 end
 
 # This likely has a simple analytic solution that should be worked out
-# area(quad8::QuadraticQuadrilateral2D) = area(quad8, Val(2))
-# function area(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{P}) where {Dim, T, P}
-#     # Gauss-Legendre quadrature over a quadrilateral is used.
-#     # Let Q(r,s) be the interpolation function for quad8,
-#     #     1 1                          P   P
-#     # A = ∫ ∫ ‖∂Q/∂r × ∂Q/∂s‖ ds dr =  ∑   ∑  wᵢwⱼ‖∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)‖
-#     #     0 0                         i=1 j=1
-#     w, r = gauss_legendre_quadrature(T, Val(P))
-#     a = T(0)
-#     for j = 1:P, i = 1:P 
-#         J = 𝗝(quad8, r[i], r[j]) 
-#         a += w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2)) 
-#     end 
-#     return a
-# end
+area(quad8::QuadraticQuadrilateral2D) = area(quad8, Val(2))
+function area(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{P}) where {Dim, T, P}
+    # Gauss-Legendre quadrature over a quadrilateral is used.
+    # Let Q(r,s) be the interpolation function for quad8,
+    #     1 1                          P   P
+    # A = ∫ ∫ ‖∂Q/∂r × ∂Q/∂s‖ ds dr =  ∑   ∑  wᵢwⱼ‖∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)‖
+    #     0 0                         i=1 j=1
+    w, r = gauss_legendre_quadrature(T, Val(P))
+    a = zero(T)
+    for j = 1:P, i = 1:P 
+        J = 𝗝(quad8, r[i], r[j]) 
+        a += w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2)) 
+    end 
+    return a
+end
+
+centroid(quad8::QuadraticQuadrilateral2D) = centroid(quad8, Val(3))
+function centroid(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{N}) where {Dim, T, N}
+    # Gauss-Legendre quadrature over a quadrilateral is used.
+    # Let Q(r,s) be the interpolation function for quad8,
+    #            1  1                        N   N               
+    # A = ∬ dA = ∫  ∫ ‖∂Q/∂r × ∂Q/∂s‖ds dr = ∑   ∑ wᵢwⱼ‖∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)‖
+    #     S      0  0                       j=1 i=1
+    #                  1  N   N               
+    # 𝗖 = (∬ 𝘅 dA)/A = -  ∑   ∑ 𝘅ᵢⱼwᵢwⱼ‖∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)‖
+    #      S           A j=1 i=1
+    w, r = gauss_legendre_quadrature(T, Val(N))
+    A = zero(T)
+    𝗖 = @SVector zeros(T, Dim)
+    for j = 1:N, i = 1:N
+        J = 𝗝(quad8, r[i], r[j])
+        weighted_val = w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2))
+        𝗖 += weighted_val * quad8(r[i], r[j])
+        A += weighted_val
+    end
+    return Point(𝗖)/A
+end
 
 centroid(tri6::QuadraticTriangle2D) = centroid(tri6, Val(6))
 function centroid(tri6::QuadraticTriangle{Dim, T}, ::Val{N}) where {Dim, T, N} 
@@ -79,7 +101,6 @@ function centroid(tri6::QuadraticTriangle{Dim, T}, ::Val{N}) where {Dim, T, N}
     #                  1  N                                 
     # 𝗖 = (∬ 𝘅 dA)/A = -  ∑ 𝘅 wᵢ‖∂F/∂r(rᵢ,sᵢ) × ∂F/∂s(rᵢ,sᵢ)‖ 
     #      S           A i=1
-    #
     w, r, s = gauss_legendre_quadrature(tri6, Val(N))
     A = zero(T)
     𝗖 = @SVector zeros(T, Dim)
@@ -90,6 +111,33 @@ function centroid(tri6::QuadraticTriangle{Dim, T}, ::Val{N}) where {Dim, T, N}
         A += weighted_val
     end
     return Point(𝗖)/A
+end
+
+function jacobian(quad8::QuadraticQuadrilateral, r, s)
+    # Chain rule
+    # ∂Q   ∂Q ∂ξ     ∂Q      ∂Q   ∂Q ∂η     ∂Q
+    # -- = -- -- = 2 -- ,    -- = -- -- = 2 --
+    # ∂r   ∂ξ ∂r     ∂ξ      ∂s   ∂η ∂s     ∂η
+    ξ = 2r - 1; η = 2s - 1
+    ∂Q_∂ξ = ((1 - η)*(2ξ + η)/4)quad8[1] +
+            ((1 - η)*(2ξ - η)/4)quad8[2] +
+            ((1 + η)*(2ξ + η)/4)quad8[3] +
+            ((1 + η)*(2ξ - η)/4)quad8[4] +
+                    (-ξ*(1 - η))quad8[5] +
+                   ((1 - η^2)/2)quad8[6] +
+                    (-ξ*(1 + η))quad8[7] +
+                  (-(1 - η^2)/2)quad8[8]
+
+    ∂Q_∂η = ((1 - ξ)*( ξ + 2η)/4)quad8[1] +
+            ((1 + ξ)*(-ξ + 2η)/4)quad8[2] +
+            ((1 + ξ)*( ξ + 2η)/4)quad8[3] +
+            ((1 - ξ)*(-ξ + 2η)/4)quad8[4] +
+                   (-(1 - ξ^2)/2)quad8[5] +
+                     (-η*(1 + ξ))quad8[6] +
+                    ((1 - ξ^2)/2)quad8[7] +
+                     (-η*(1 - ξ))quad8[8]
+
+    return 2*hcat(∂Q_∂ξ, ∂Q_∂η)
 end
 
 function jacobian(tri6::QuadraticTriangle, r, s)
@@ -161,24 +209,54 @@ function Base.intersect(l::LineSegment2D{BigFloat}, poly::QuadraticPolygon{N, 2,
     return npoints, SVector{N, Point2D{BigFloat}}(points)
 end
 
-function real_to_parametric(p::Point2D, tri6::QuadraticTriangle2D)
-    return real_to_parametric(p, tri6, 30)
+function real_to_parametric(p::Point2D, poly::QuadraticPolygon{N, 2, T}) where {N, T} 
+    return real_to_parametric(p, poly, 30)
 end
 # Convert from real coordinates to the triangle's local parametric coordinates using
 # Newton-Raphson.
 # If a conversion doesn't exist, the minimizer is returned.
 # Initial guess at triangle centroid
-function real_to_parametric(p::Point2D{T}, tri6::QuadraticTriangle2D{T}, 
-                            max_iters::Int64) where {T}
-    rs = SVector{2,T}(1//3, 1//3) + inv(𝗝(tri6, 1//3, 1//3))*(p - tri6(1//3, 1//3))
-    for i ∈ 1:max_iters-1
-        Δrs = inv(𝗝(tri6, rs[1], rs[2]))*(p - tri6(rs[1], rs[2]))
-        if Δrs ⋅ Δrs < T((1e-6)^2)
+function real_to_parametric(p::Point2D{T}, poly::QuadraticPolygon{N, 2, T}, 
+                            max_iters::Int64) where {N, T}
+    if N === 6 # Triangle
+        rs = SVector{2,T}(1//3, 1//3)
+    else # Quadrilateral
+        rs = SVector{2,T}(1//2, 1//2)
+    end
+    for i ∈ 1:max_iters
+        Δrs = inv(𝗝(poly, rs[1], rs[2]))*(p - poly(rs[1], rs[2]))
+        if Δrs ⋅ Δrs < T((1e-8)^2)
             break
         end
         rs += Δrs
     end
     return Point2D{T}(rs[1], rs[2])
+end
+
+function triangulate(quad8::QuadraticQuadrilateral{Dim, T}, ND::Int64) where {Dim, T}
+    # D is the number of divisions of each edge
+    ND1 = ND + 1
+    triangles = Vector{Triangle{Dim, T}}(undef, 2ND1^2)
+    if ND === 0
+        triangles[1] = Triangle(quad8[1], quad8[2], quad8[3])
+        triangles[2] = Triangle(quad8[3], quad8[4], quad8[1])
+    else
+        for j = 0:ND
+            s₀ = j/ND1 
+            s₁ = (j + 1)/ND1
+            for i = 0:ND
+                r₀ = i/ND1 
+                r₁ = (i + 1)/ND1
+                triangles[2ND1*j + 2i + 1] = Triangle(quad8(r₀, s₀),
+                                                      quad8(r₁, s₀),
+                                                      quad8(r₀, s₁))
+                triangles[2ND1*j + 2i + 2] = Triangle(quad8(r₀, s₁),
+                                                      quad8(r₁, s₀),
+                                                      quad8(r₁, s₁))
+            end
+        end
+    end
+    return triangles
 end
 
 function triangulate(tri6::QuadraticTriangle{Dim, T}, ND::Int64) where {Dim, T}
@@ -189,15 +267,17 @@ function triangulate(tri6::QuadraticTriangle{Dim, T}, ND::Int64) where {Dim, T}
     else
         i = 1
         ND1 = ND + 1
-        for s ∈ 1:ND, r ∈ 0:ND-s
-            r₀ = r/ND1
-            r₁ = (r + 1)/ND1
+        for s ∈ 1:ND
             s₋₁ = (s-1)/ND1
             s₀ = s/ND1
             s₁ = (s + 1)/ND1
-            triangles[i]   = Triangle(tri6(r₀, s₀), tri6(r₁, s₀ ), tri6(r₀, s₁))
-            triangles[i+1] = Triangle(tri6(r₀, s₀), tri6(r₁, s₋₁), tri6(r₁, s₀))
-            i += 2
+            for r ∈ 0:ND-s
+                r₀ = r/ND1
+                r₁ = (r + 1)/ND1
+                triangles[i]   = Triangle(tri6(r₀, s₀), tri6(r₁, s₀ ), tri6(r₀, s₁))
+                triangles[i+1] = Triangle(tri6(r₀, s₀), tri6(r₁, s₋₁), tri6(r₁, s₀))
+                i += 2
+            end
         end
         j = ND1*ND + 1
         s₀ = zero(T)
@@ -263,26 +343,26 @@ end
 # Plot
 # ---------------------------------------------------------------------------------------------
 if enable_visualization
-    function convert_arguments(LS::Type{<:LineSegments}, tri6::QuadraticTriangle)
-        q₁ = QuadraticSegment(tri6[1], tri6[2], tri6[4])
-        q₂ = QuadraticSegment(tri6[2], tri6[3], tri6[5])
-        q₃ = QuadraticSegment(tri6[3], tri6[1], tri6[6])
-        qsegs = [q₁, q₂, q₃]
+    function convert_arguments(LS::Type{<:LineSegments}, poly::QuadraticPolygon{N}) where {N}
+        M = N ÷ 2
+        qsegs = [QuadraticSegment(poly[(i - 1) % M + 1],  
+                                  poly[      i % M + 1],
+                                  poly[          i + M]) for i = 1:M]
         return convert_arguments(LS, qsegs)
     end
 
-    function convert_arguments(LS::Type{<:LineSegments}, T::Vector{<:QuadraticTriangle})
-        point_sets = [convert_arguments(LS, tri6) for tri6 ∈ T]
+    function convert_arguments(LS::Type{<:LineSegments}, P::Vector{<:QuadraticPolygon})
+        point_sets = [convert_arguments(LS, poly) for poly ∈ P]
         return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
     end
 
-    function convert_arguments(P::Type{<:Mesh}, tri6::QuadraticTriangle)
-        triangles = triangulate(tri6, 13)
+    function convert_arguments(P::Type{<:Mesh}, poly::QuadraticPolygon)
+        triangles = triangulate(poly, 7)
         return convert_arguments(P, triangles)
     end
 
-    function convert_arguments(M::Type{<:Mesh}, T::Vector{<:QuadraticTriangle})
-        triangles = reduce(vcat, triangulate.(T, 13))
+    function convert_arguments(M::Type{<:Mesh}, P::Vector{<:QuadraticPolygon})
+        triangles = reduce(vcat, triangulate.(P, 7))
         return convert_arguments(M, triangles)
     end
 end
