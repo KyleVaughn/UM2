@@ -29,6 +29,9 @@ using MOCNeutronTransport
             @test typeof(a) == F
             @test a ≈ F(1)
 
+            # centroid
+            @test centroid(quad) ≈ Point2D{F}(1//2, 1//2)
+
             # in
             p = Point2D{F}(1//2, 1//10)
             @test p ∈  quad

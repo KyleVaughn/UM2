@@ -58,7 +58,7 @@ function Base.rand(::Type{AABB{Dim, T}}) where {Dim, T}
     coord₁ = rand(T, Dim)
     coord₂ = rand(T, Dim)
     return AABB{Dim, T}(Point{Dim, T}(min.(coord₁, coord₂)), 
-                       Point{Dim, T}(max.(coord₁, coord₂)))  
+                        Point{Dim, T}(max.(coord₁, coord₂)))  
 end
 
 # N random AABBs within the Dim-dimensional unit hypercube 

@@ -26,6 +26,9 @@ using MOCNeutronTransport
             @test typeof(a) == F
             @test a == F(1//2)
 
+            # centroid
+            @test centroid(tri) ≈ Point2D{F}(1//3, 1//3)
+
             # in
             p = Point2D{F}(1//2, 1//10)
             @test p ∈ tri
