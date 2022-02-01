@@ -192,7 +192,6 @@ function _is_left_nearest_point(p::Point2D{T}, q::QuadraticSegment) where {T}
     end 
 end
 
-
 # If the quadratic segment is effectively linear
 #
 # Check the sign of the cross product of the vectors (𝘅₃ - 𝘅₁) and (𝘅₂ - 𝘅₁)

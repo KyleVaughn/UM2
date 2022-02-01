@@ -165,10 +165,10 @@ function (tri::Triangle)(r, s)
 end
 
 function (quad::Quadrilateral)(r, s)
-    return Point(((1 - r)*(1 - s))*quad[1] + 
-                       (r*(1 - s))*quad[2] + 
-                             (r*s)*quad[3] + 
-                       ((1 - r)*s)*quad[4])
+    return Point(((1 - r)*(1 - s))quad[1] + 
+                       (r*(1 - s))quad[2] + 
+                             (r*s)quad[3] + 
+                       ((1 - r)*s)quad[4])
 end
 
 # Plot
