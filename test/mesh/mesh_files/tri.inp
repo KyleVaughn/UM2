@@ -1,0 +1,15 @@
+*Heading
+ tri.inp
+*NODE
+1, 0, 0, 0
+2, 1, 0, 0
+3, 0.5, 1, 0
+4, 1.5, 1, 0
+******* E L E M E N T S *************
+*ELEMENT, type=CPS3, ELSET=Surface1
+1, 1, 2, 3
+2, 2, 4, 3
+*ELSET,ELSET=A
+1,
+*ELSET,ELSET=B
+2,

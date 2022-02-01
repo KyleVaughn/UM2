@@ -1,91 +1,55 @@
-struct QuadraticPolygonMesh{Dim,T,U} <:QuadraticUnstructuredMesh{Dim,T,U}
+struct QuadraticPolygonMesh{Dim, T, U} <:QuadraticUnstructuredMesh{Dim, T, U}
     name::String
-    points::Vector{Point{Dim,T}}
-    edges::Vector{SVector{3,U}}
-    materialized_edges::Vector{QuadraticSegment{Dim,T}}
-    faces::Vector{<:SArray{S,U,1} where {S<:Tuple}}
-    materialized_faces::Vector{<:QuadraticPolygon{N,Dim,T} where {N}}
-    edge_face_connectivity::Vector{SVector{2,U}}
-    face_edge_connectivity::Vector{<:SArray{S,U,1} where {S<:Tuple}}
-    boundary_edges::Vector{Vector{U}}
+    points::Vector{Point{Dim, T}}
+    edges::Vector{SVector{3, U}}
+    faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
     face_sets::Dict{String, Set{U}}
 end
 
-function QuadraticPolygonMesh{Dim,T,U}(;
+function QuadraticPolygonMesh{Dim, T, U}(;
     name::String = "default_name",
-    points::Vector{Point{Dim,T}} = Point{Dim,T}[],
-    edges::Vector{SVector{3,U}} = SVector{3,U}[],
-    materialized_edges::Vector{QuadraticSegment{Dim,T}} = QuadraticSegment{Dim,T}[],
-    faces::Vector{<:SArray{S,U,1} where {S<:Tuple}} = SVector{6,U}[],
-    materialized_faces::Vector{<:QuadraticPolygon{N,Dim,T} where {N}} = QuadraticPolygon{6,Dim,T}[],
-    edge_face_connectivity::Vector{SVector{2,U}} = SVector{2,U}[],
-    face_edge_connectivity::Vector{<:SArray{S,U,1} where {S<:Tuple}} = SVector{3,U}[],
-    boundary_edges::Vector{Vector{U}} = Vector{U}[],
+    points::Vector{Point{Dim, T}} = Point{Dim, T}[],
+    edges::Vector{SVector{3, U}} = SVector{3, U}[],
+    faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{6, U}[],
     face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
-    ) where {Dim,T,U}
-    return QuadraticPolygonMesh(name, points, edges, materialized_edges, faces, 
-                                materialized_faces, edge_face_connectivity, 
-                                face_edge_connectivity, boundary_edges, face_sets)
+    ) where {Dim, T, U}
+    return QuadraticPolygonMesh(name, points, edges, faces, face_sets)
 end
 
-struct QuadraticTriangleMesh{Dim,T,U} <:QuadraticUnstructuredMesh{Dim,T,U}
+struct QuadraticTriangleMesh{Dim, T, U} <:QuadraticUnstructuredMesh{Dim, T, U}
     name::String
-    points::Vector{Point{Dim,T}}
-    edges::Vector{SVector{3,U}}
-    materialized_edges::Vector{QuadraticSegment{Dim,T}}
-    faces::Vector{SVector{6,U}}
-    materialized_faces::Vector{QuadraticPolygon{6,Dim,T}}
-    edge_face_connectivity::Vector{SVector{2,U}}
-    face_edge_connectivity::Vector{SVector{3,U}}
-    boundary_edges::Vector{Vector{U}}
+    points::Vector{Point{Dim, T}}
+    edges::Vector{SVector{3, U}}
+    faces::Vector{SVector{6, U}}
     face_sets::Dict{String, Set{U}}
 end
 
-function QuadraticTriangleMesh{Dim,T,U}(;
+function QuadraticTriangleMesh{Dim, T, U}(;
     name::String = "default_name",
-    points::Vector{Point{Dim,T}} = Point{Dim,T}[],
-    edges::Vector{SVector{3,U}} = SVector{3,U}[],
-    materialized_edges::Vector{QuadraticSegment{Dim,T}} = QuadraticSegment{Dim,T}[],
-    faces::Vector{SVector{6,U}} = SVector{6,U}[],
-    materialized_faces::Vector{QuadraticPolygon{6,Dim,T}} = QuadraticPolygon{6,Dim,T}[],
-    edge_face_connectivity::Vector{SVector{2,U}} = SVector{2,U}[],
-    face_edge_connectivity::Vector{SVector{3,U}} = SVector{3,U}[],
-    boundary_edges::Vector{Vector{U}} = Vector{U}[],
+    points::Vector{Point{Dim, T}} = Point{Dim, T}[],
+    edges::Vector{SVector{3, U}} = SVector{3, U}[],
+    faces::Vector{SVector{6, U}} = SVector{6, U}[],
     face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
-    ) where {Dim,T,U}
-    return QuadraticTriangleMesh(name, points, edges, materialized_edges, faces, 
-                                 materialized_faces, edge_face_connectivity, 
-                                 face_edge_connectivity, boundary_edges, face_sets)
+    ) where {Dim, T, U}
+    return QuadraticTriangleMesh(name, points, edges, faces, face_sets)
 end
  
-struct QuadraticQuadrilateralMesh{Dim,T,U} <:QuadraticUnstructuredMesh{Dim,T,U}
+struct QuadraticQuadrilateralMesh{Dim, T, U} <:QuadraticUnstructuredMesh{Dim, T, U}
     name::String
-    points::Vector{Point{Dim,T}}
-    edges::Vector{SVector{3,U}}
-    materialized_edges::Vector{QuadraticSegment{Dim,T}}
-    faces::Vector{SVector{8,U}}
-    materialized_faces::Vector{QuadraticPolygon{8,Dim,T}}
-    edge_face_connectivity::Vector{SVector{2,U}}
-    face_edge_connectivity::Vector{SVector{4,U}}
-    boundary_edges::Vector{Vector{U}}
+    points::Vector{Point{Dim, T}}
+    edges::Vector{SVector{3, U}}
+    faces::Vector{SVector{8, U}}
     face_sets::Dict{String, Set{U}}
 end
 
-function QuadraticQuadrilateralMesh{Dim,T,U}(;
+function QuadraticQuadrilateralMesh{Dim, T, U}(;
     name::String = "default_name",
-    points::Vector{Point{Dim,T}} = Point{Dim,T}[],
-    edges::Vector{SVector{3,U}} = SVector{3,U}[],
-    materialized_edges::Vector{QuadraticSegment{Dim,T}} = QuadraticSegment{Dim,T}[],
-    faces::Vector{SVector{8,U}} = SVector{8,U}[],
-    materialized_faces::Vector{QuadraticPolygon{8,Dim,T}} = QuadraticPolygon{8,Dim,T}[],
-    edge_face_connectivity::Vector{SVector{2,U}} = SVector{2,U}[],
-    face_edge_connectivity::Vector{SVector{4,U}} = SVector{4,U}[],
-    boundary_edges::Vector{Vector{U}} = Vector{U}[],
+    points::Vector{Point{Dim, T}} = Point{Dim, T}[],
+    edges::Vector{SVector{3, U}} = SVector{3, U}[],
+    faces::Vector{SVector{8, U}} = SVector{8, U}[],
     face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
-    ) where {Dim,T,U}
-    return QuadraticQuadrilateralMesh(name, points, edges, materialized_edges, faces, 
-                                      materialized_faces, edge_face_connectivity, 
-                                      face_edge_connectivity, boundary_edges, face_sets)
+    ) where {Dim, T, U}
+    return QuadraticQuadrilateralMesh(name, points, edges, faces, face_sets)
 end
 
 # # Axis-aligned bounding box, in 2d a rectangle.

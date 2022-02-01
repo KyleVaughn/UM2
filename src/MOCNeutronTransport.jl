@@ -20,9 +20,6 @@ using LoggingExtras: TransformerLogger, global_logger
 # ---------------------------------------------------------------------------------------------
 import Base: +, -, *, /, ==, ≈, intersect
 import LinearAlgebra: ×, ⋅, norm, inv
-# import Base: @propagate_inbounds
-# import Base: broadcastable, getindex, getproperty, +, -, *, /, in, intersect, 
-#              isapprox, rand, union
 
 # Optional compilation/local dependencies
 # ---------------------------------------------------------------------------------------------
@@ -106,8 +103,7 @@ const 𝗝= jacobian
 export +, -, ⋅, ×, ==, ≈, 𝗗, 𝗝
 
 # Methods
-export arclength, add_connectivity, add_edges, add_edge_face_connectivity, 
-       add_face_edge_connectivity, add_materialized_edges, add_materialized_faces, area, 
+export arclength, area, 
        boundingbox, 
        centroid, 
        depth, derivative, distance, distance², 
