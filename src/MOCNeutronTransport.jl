@@ -61,14 +61,10 @@ include("./primitives/AABB.jl")
 include("./primitives/QuadraticSegment.jl")
 include("./primitives/Polygon.jl")
 include("./primitives/QuadraticPolygon.jl")
-#include("./primitives/Triangle6.jl")
-#include("./primitives/Quadrilateral8.jl")
 ##include("L_system.jl")
 include("./mesh/UnstructuredMesh.jl")
 include("./mesh/PolygonMesh.jl")
 include("./mesh/QuadraticPolygonMesh.jl")
-#include("./mesh/UnstructuredMesh2D.jl")
-#include("./mesh/LinearUnstructuredMesh2D.jl")
 #include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
 include("./mesh/IO_abaqus.jl")
 ##include("./mesh/IO_vtk.jl")
@@ -107,7 +103,7 @@ export arclength, area,
        boundingbox, 
        centroid, 
        depth, derivative, distance, distance², 
-       edgepoints, edges, edge_face_connectivity, 
+       edgepoints, edge_face_connectivity, 
        facepoints, face_edge_connectivity, findface, findface_implicit, findface_explicit, 
        gauss_legendre_quadrature, 
        height, 
@@ -115,21 +111,22 @@ export arclength, area,
        intersect_edges_implicit, intersect_face_implicit, intersect_faces_implicit, 
        intersect_faces_explicit, inv, isleft, isstraight, 
        jacobian, 
-       log_timestamps, 
+       linear_edges,log_timestamps, 
        materialize_edge, materialize_edges, materialize_face, materialize_faces,
        midpoint, 
        nearest_point, norm, norm², num_edges, 
+       quadratic_edges,
        rand, read_abaqus2d, real_to_parametric, 
        sortpoints, sortpoints!, sort_intersection_points!,
        triangulate, 
        union, 
        width
 
- # Gmsh
- export gmsh,
-        gmsh_generate_rectangular_grid,
-        gmsh_group_preserving_fragment,
-        gmsh_overlay_rectangular_grid
+# Gmsh
+export gmsh,
+       gmsh_generate_rectangular_grid,
+       gmsh_group_preserving_fragment,
+       gmsh_overlay_rectangular_grid
  
 # Plot
 if enable_visualization

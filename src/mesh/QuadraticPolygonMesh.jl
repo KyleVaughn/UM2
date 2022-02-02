@@ -52,6 +52,19 @@ function QuadraticQuadrilateralMesh{Dim, T, U}(;
     return QuadraticQuadrilateralMesh(name, points, edges, faces, face_sets)
 end
 
+@generated function quadratic_edges(face::SVector{N, U}) where {N, U <:Unsigned}
+    M = N ÷ 2
+    edges_string = "SVector{$M, SVector{3, U}}("
+    for i ∈ 1:M
+        id₁ = (i - 1) % M + 1
+        id₂ = i % M + 1
+        id₃ = i + M
+        edges_string *= "SVector{3, U}(face[$id₁], face[$id₂], face[$id₃]), "
+    end
+    edges_string *= ")"
+    return Meta.parse(edges_string)
+end
+
 # # Axis-aligned bounding box, in 2d a rectangle.
 # function boundingbox(mesh::QuadraticUnstructuredMesh_2D; boundary_shape::String="Unknown")
 #     if boundary_shape == "Rectangle"

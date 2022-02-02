@@ -52,6 +52,18 @@ function QuadrilateralMesh{Dim, T, U}(;
     return QuadrilateralMesh(name, points, edges, faces, face_sets)
 end
 
+# Point IDs representing the edges of a polygon.
+@generated function linear_edges(face::SVector{N, U}) where {N, U <:Unsigned}
+    edges_string = "SVector{N, SVector{2, U}}("
+    for i ∈ 1:N
+        id₁ = (i - 1) % N + 1
+        id₂ = i % N + 1
+        edges_string *= "SVector{2, U}(face[$id₁], face[$id₂]), "
+    end
+    edges_string *= ")"
+    return Meta.parse(edges_string)
+end
+
 # # A vector of SVectors, denoting the edge ID each face is connected to.
 # function face_edge_connectivity(mesh::QuadrilateralMesh{Dim,T,U}) where {Dim,T,U}
 #     if length(mesh.edges) === 0

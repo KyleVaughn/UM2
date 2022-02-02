@@ -6,95 +6,6 @@ const QuadraticUnstructuredMesh = UnstructuredMesh{Dim, 2} where {Dim}
 const QuadraticUnstructuredMesh2D = UnstructuredMesh{2, 2}
 Base.broadcastable(mesh::UnstructuredMesh) = Ref(mesh)
 
-# # Return a mesh with its edges
-# function add_edges(mesh::M) where {M <:UnstructuredMesh2D}
-#     return M(name = mesh.name,
-#              points = mesh.points,
-#              edges = edges(mesh),
-#              materialized_edges = mesh.materialized_edges,
-#              faces = mesh.faces,
-#              materialized_faces = mesh.materialized_faces,
-#              edge_face_connectivity = mesh.edge_face_connectivity,
-#              face_edge_connectivity = mesh.face_edge_connectivity,
-#              boundary_edges = mesh.boundary_edges,
-#              face_sets = mesh.face_sets
-#             )
-# end
-# 
-# # Return a mesh with face/edge connectivity and edge/face connectivity
-# function add_connectivity(mesh::UnstructuredMesh2D)
-#     return add_edge_face_connectivity(mesh)
-# end
-# 
-# # Return a mesh with edge/face connectivity
-# function add_edge_face_connectivity(mesh::M) where {M <: UnstructuredMesh2D}
-#     if 0 === length(mesh.face_edge_connectivity)
-#         mesh = add_face_edge_connectivity(mesh)
-#     end
-#     return M(name = mesh.name,
-#              points = mesh.points,
-#              edges = mesh.edges,
-#              materialized_edges = mesh.materialized_edges,
-#              faces = mesh.faces,
-#              materialized_faces = mesh.materialized_faces,
-#              edge_face_connectivity = edge_face_connectivity(mesh),
-#              face_edge_connectivity = mesh.face_edge_connectivity,
-#              boundary_edges = mesh.boundary_edges,
-#              face_sets = mesh.face_sets
-#             )
-# end
-# 
-# # Return a mesh with face/edge connectivity
-# function add_face_edge_connectivity(mesh::M) where {M <: UnstructuredMesh2D}
-#     if 0 === length(mesh.edges)
-#         mesh = add_edges(mesh)
-#     end
-#     return M(name = mesh.name,
-#              points = mesh.points,
-#              edges = mesh.edges,
-#              materialized_edges = mesh.materialized_edges,
-#              faces = mesh.faces,
-#              materialized_faces = mesh.materialized_faces,
-#              edge_face_connectivity = mesh.edge_face_connectivity,
-#              face_edge_connectivity = face_edge_connectivity(mesh),
-#              boundary_edges = mesh.boundary_edges,
-#              face_sets = mesh.face_sets
-#             )
-# end
-# 
-# # Return a mesh with materialized edges
-# function add_materialized_edges(mesh::M) where {M <: UnstructuredMesh2D}
-#     if 0 === length(mesh.edges)
-#         mesh = add_edges(mesh)
-#     end
-#     return M(name = mesh.name,
-#              points = mesh.points,
-#              edges = mesh.edges,
-#              materialized_edges = materialize_edges(mesh),
-#              faces = mesh.faces,
-#              materialized_faces = mesh.materialized_faces,
-#              edge_face_connectivity = mesh.edge_face_connectivity,
-#              face_edge_connectivity = mesh.face_edge_connectivity,
-#              boundary_edges = mesh.boundary_edges,
-#              face_sets = mesh.face_sets
-#             )
-# end
-# 
-# # Return a mesh with materialized faces
-# function add_materialized_faces(mesh::M) where {M <: UnstructuredMesh2D}
-#     return M(name = mesh.name,
-#              points = mesh.points,
-#              edges = mesh.edges,
-#              materialized_edges = mesh.materialized_edges,
-#              faces = mesh.faces,
-#              materialized_faces = materialize_faces(mesh),
-#              edge_face_connectivity = mesh.edge_face_connectivity,
-#              face_edge_connectivity = mesh.face_edge_connectivity,
-#              boundary_edges = mesh.boundary_edges,
-#              face_sets = mesh.face_sets
-#             )
-# end
-# 
 # # Area of face
 # function area(face::SVector, points::Vector{<:Point})
 #     return area(materialize_face(face, points))
@@ -127,41 +38,10 @@ Base.broadcastable(mesh::UnstructuredMesh) = Ref(mesh)
 #         return boundingbox(mesh.points)
 #     end
 # end
-# 
-# # SVector of MVectors of point IDs representing the 3 edges of a triangle
-# function edges(face::SVector{3,U}) where {U <:Unsigned}
-#     edges = SVector(SVector{2,U}(min(face[1], face[2]), max(face[1], face[2])),  
-#                     SVector{2,U}(min(face[2], face[3]), max(face[2], face[3])),  
-#                     SVector{2,U}(min(face[3], face[1]), max(face[3], face[1]))) 
-#     return edges
-# end
-# 
-# # SVector of MVectors of point IDs representing the 4 edges of a quadrilateral
-# function edges(face::SVector{4,U}) where {U <:Unsigned}
-#     edges = SVector(SVector{2,U}(min(face[1], face[2]), max(face[1], face[2])),  
-#                     SVector{2,U}(min(face[2], face[3]), max(face[2], face[3])),  
-#                     SVector{2,U}(min(face[3], face[4]), max(face[3], face[4])),  
-#                     SVector{2,U}(min(face[4], face[1]), max(face[4], face[1])))  
-#     return edges
-# end
-# 
-# # SVector of MVectors of point IDs representing the 3 edges of a quadratic triangle
-# function edges(face::SVector{6,U}) where {U <:Unsigned}
-#     edges = SVector(SVector{3,U}(min(face[1], face[2]), max(face[1], face[2]), face[4]),  
-#                     SVector{3,U}(min(face[2], face[3]), max(face[2], face[3]), face[5]),  
-#                     SVector{3,U}(min(face[3], face[1]), max(face[3], face[1]), face[6])) 
-#     return edges
-# end
-# 
-# # SVector of MVectors of point IDs representing the 4 edges of a quadratic quadrilateral
-# function edges(face::SVector{8,U}) where {U <:Unsigned}
-#     edges = SVector(SVector{3,U}(min(face[1], face[2]), max(face[1], face[2]), face[5]),  
-#                     SVector{3,U}(min(face[2], face[3]), max(face[2], face[3]), face[6]),  
-#                     SVector{3,U}(min(face[3], face[4]), max(face[3], face[4]), face[7]),  
-#                     SVector{3,U}(min(face[4], face[1]), max(face[4], face[1]), face[8]))  
-#     return edges
-# end
-# 
+
+
+
+
 # # The unique edges of a mesh 
 # function edges(mesh::UnstructuredMesh2D)
 #     edge_vecs = edges.(mesh.faces)
@@ -425,33 +305,20 @@ Base.broadcastable(mesh::UnstructuredMesh) = Ref(mesh)
 #     end
 # end
 # 
-# function Base.show(io::IO, mesh::UnstructuredMesh)
-#     mesh_type = typeof(mesh)
-#     println(io, mesh_type)
-#     println(io, "  ├─ Name      : $(mesh.name)")
-#     size_MB = Base.summarysize(mesh)/1E6
-#     if size_MB < 1
-#         size_KB = size_MB*1000
-#         println(io, "  ├─ Size (KB) : $size_KB")
-#     else
-#         println(io, "  ├─ Size (MB) : $size_MB")
-#     end
-#     println(io, "  ├─ Points    : $(length(mesh.points))")
-#     nedges = length(mesh.edges)
-#     println(io, "  ├─ Edges     : $nedges")
-#     println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_edges) !== 0)")
-#     println(io, "  ├─ Faces     : $(length(mesh.faces))")
-#     println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_faces) !== 0)")
-#     println(io, "  ├─ Connectivity")
-#     println(io, "  │  ├─ Edge/Face : $(0 < length(mesh.edge_face_connectivity))")
-#     println(io, "  │  └─ Face/Edge : $(0 < length(mesh.face_edge_connectivity))")
-#     println(io, "  ├─ Boundary edges")
-#     nsides = length(mesh.boundary_edges)
-#     if nsides !== 0
-#         println(io, "  │  ├─ Edges : $(mapreduce(x->length(x), +, mesh.boundary_edges))")
-#     else
-#         println(io, "  │  ├─ Edges : 0")
-#     end
-#     println(io, "  │  └─ Sides : $nsides")
-#     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
-# end
+function Base.show(io::IO, mesh::UnstructuredMesh)
+    mesh_type = typeof(mesh)
+    println(io, mesh_type)
+    println(io, "  ├─ Name      : $(mesh.name)")
+    size_MB = Base.summarysize(mesh)/1E6
+    if size_MB < 1
+        size_KB = size_MB*1000
+        println(io, "  ├─ Size (KB) : $size_KB")
+    else
+        println(io, "  ├─ Size (MB) : $size_MB")
+    end
+    println(io, "  ├─ Points    : $(length(mesh.points))")
+    nedges = length(mesh.edges)
+    println(io, "  ├─ Edges     : $nedges")
+    println(io, "  ├─ Faces     : $(length(mesh.faces))")
+    println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
+end
