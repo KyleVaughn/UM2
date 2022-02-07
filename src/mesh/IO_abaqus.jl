@@ -85,24 +85,42 @@ function read_abaqus2d(filepath::String, floattype::Type{T}=Float64) where {T<:A
             return PolygonMesh{2,floattype, U}(name = name,
                                           points = points,
                                           edges = edges_U,
-                                          faces = [ SVector{length(f), U}(f) for f in faces],
+                                          faces = faces_U, 
                                           face_sets = face_sets_U)
         end
     else # Quadratic Mesh
         if face_lengths == [6]
+            faces = [ SVector{6, UInt64}(f) for f in faces_vecs]
+            edges = _create_quadratic_edges_from_faces(faces)
+            U = _select_mesh_UInt_type(length(edges))
+            faces_U, edges_U, face_sets_U = _convert_faces_edges_facesets(U, faces, edges, 
+                                                                          face_sets)
             return QuadraticTriangleMesh{2,floattype, U}(name = name,
                                           points = points,
-                                          faces = [ SVector{6, U}(f) for f in faces],
+                                          edges = edges_U,
+                                          faces = faces_U, 
                                           face_sets = face_sets_U)
         elseif face_lengths == [8]
+            faces = [ SVector{8, UInt64}(f) for f in faces_vecs]
+            edges = _create_quadratic_edges_from_faces(faces)
+            U = _select_mesh_UInt_type(length(edges))
+            faces_U, edges_U, face_sets_U = _convert_faces_edges_facesets(U, faces, edges, 
+                                                                          face_sets)
             return QuadraticQuadrilateralMesh{2,floattype, U}(name = name,
                                           points = points,
-                                          faces = [ SVector{8, U}(f) for f in faces],
+                                          edges = edges_U,
+                                          faces = faces_U, 
                                           face_sets = face_sets_U)
         else
+            faces = [ SVector{length(f), UInt64}(f) for f in faces_vecs]
+            edges = _create_quadratic_edges_from_faces(faces)
+            U = _select_mesh_UInt_type(length(edges))
+            faces_U, edges_U, face_sets_U = _convert_faces_edges_facesets(U, faces, edges, 
+                                                                          face_sets)
             return QuadraticPolygonMesh{2,floattype, U}(name = name,
                                           points = points,
-                                          faces = [ SVector{length(f), U}(f) for f in faces],
+                                          edges = edges_U,
+                                          faces = faces_U, 
                                           face_sets = face_sets_U)
         end
     end
@@ -162,8 +180,6 @@ function read_abaqus_elset(file::IOStream)
     return Set(parse.(UInt64, linesplit))
 end
 
-
-
 function _create_linear_edges_from_faces(faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
                                         ) where {U<:Unsigned}
     edge_vecs = linear_edges.(faces)
@@ -176,6 +192,25 @@ function _create_linear_edges_from_faces(faces::Vector{<:SArray{S, U, 1} where {
                 edges_unfiltered[iedge] = edge[i]
             else
                 edges_unfiltered[iedge] = SVector(edge[i][2], edge[i][1])
+            end
+            iedge += 1
+        end
+    end
+    return sort!(unique!(edges_unfiltered))
+end
+
+function _create_quadratic_edges_from_faces(faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
+                                        ) where {U<:Unsigned}
+    edge_vecs = quadratic_edges.(faces)
+    num_edges = mapreduce(x->length(x), +, edge_vecs)
+    edges_unfiltered = Vector{SVector{3, UInt64}}(undef, num_edges)
+    iedge = 1
+    for edge in edge_vecs
+        for i in eachindex(edge)
+            if edge[i][1] < edge[i][2]
+                edges_unfiltered[iedge] = edge[i]
+            else
+                edges_unfiltered[iedge] = SVector(edge[i][2], edge[i][1], edge[i][3])
             end
             iedge += 1
         end
