@@ -18,7 +18,7 @@ using LoggingExtras: TransformerLogger, global_logger
 
 # import
 # ---------------------------------------------------------------------------------------------
-import Base: +, -, *, /, ==, ≈, intersect
+import Base: +, -, *, /, ==, ≈, intersect, sort, sort!
 import LinearAlgebra: ×, ⋅, norm, inv
 
 # Optional compilation/local dependencies
@@ -117,7 +117,7 @@ export arclength, area,
        nearest_point, norm, norm², num_edges, 
        quadratic_edges,
        rand, read_abaqus2d, real_to_parametric, 
-       sortpoints, sortpoints!, sort_intersection_points!,
+       sort, sort_intersection_points!,
        triangulate, 
        union, 
        width

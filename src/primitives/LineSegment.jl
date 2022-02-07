@@ -107,67 +107,128 @@ function Base.rand(::Type{LineSegment{Dim, F}}, N::Int64) where {Dim, F}
 end
 
 # Sort points on a line segment based on their distance from the segment's start point. 
+#function sort!(l::LineSegment, points::Vector{<:Point})
 #
-# Uses insertion sort. 
-# The intended use is on points produced from ray tracing, which should be nearly 
-# sorted or completely sorted, so insertion sort is quick
-function sortpoints!(l::LineSegment, points::Vector{<:Point})
-    # Insertion sort
-    npts = length(points)
-    for i ∈ 2:npts
-        j = i - 1
-        dist = distance²(l.𝘅₁, points[i])
-        pt = points[i]
-        while 0 < j
-            if dist < distance²(l.𝘅₁, points[j])
-                points[j+1] = points[j]
+#end
+
+#defalg(v::Vector{<:Point}) = Base.Sort.InsertionSort
+#function sort!(l::LineSegment, points::Vector{<:Point}; alg::Base.Sort.Algorithm=defalg(points))
+#    sort!(l, points, firstindex(points), lastindex(points), alg)
+#end
+#
+#function sort(l::LineSegment, points::Vector{<:Point})
+#    # Insertion sort
+#    points_copy = similar(points)
+#    @. points_copy = points
+#    sort!(l, points_copy)
+#    return points_copy
+#end
+#
+function sort!(p::Point, v::Vector{<:Point}, lo::Integer, hi::Integer, 
+               ::Base.Sort.InsertionSortAlg, o::Base.Ordering)
+    @inbounds for i ∈ lo+1:hi
+        j = i
+        dist = distance²(p, v[i])
+        pt = v[i]
+        while j > lo
+            if Base.lt(o, dist, distance²(p, v[j-1]))
+                v[j] = v[j-1]
                 j -= 1
                 continue
             end
             break
         end
-        points[j+1] = pt
+        v[j] = pt
     end
-    return nothing
-end
-function sortpoints(l::LineSegment, points::Vector{<:Point})
-    # Insertion sort
-    points_sorted = deepcopy(points)
-    npts = length(points)
-    for i ∈ 2:npts
-        j = i - 1
-        dist = distance²(l.𝘅₁, points_sorted[i])
-        pt = points[i]
-        while 0 < j
-            if dist < distance²(l.𝘅₁, points_sorted[j])
-                points_sorted[j+1] = points_sorted[j]
-                j -= 1
-                continue
-            end
-            break
-        end
-        points_sorted[j+1] = pt
-    end
-    return points_sorted
+    return v
 end
 
-# Sort intersection points along a line segment, deleting points that are less than 
-# the minimum_segment_length apart
-function sort_intersection_points!(l::LineSegment, points::Vector{<:Point})
-    sortpoints!(l, points)
-    id_start = 1 
-    id_stop = 2 
-    npoints = length(points)
-    while id_stop <= npoints
-        if distance²(points[id_start], points[id_stop]) < minimum_segment_length^2
-            deleteat!(points, id_stop)
-            npoints -= 1
-        else
-            id_start = id_stop
-            id_stop += 1
+@inline function selectpivot!(p::Point, v::Vector{<:Point}, lo::Integer, hi::Integer,
+    o::Base.Ordering)
+    @inbounds begin
+        mi = Base.Sort.midpoint(lo, hi)
+
+        # sort v[mi] <= v[lo] <= v[hi] such that the pivot is immediately in place
+        dlo = distance²(p, v[lo])
+        dmi = distance²(p, v[mi])
+        dhi = distance²(p, v[hi])
+        if Base.lt(o, dlo, dmi)
+            v[mi], v[lo] = v[lo], v[mi]
+            dmi, dlo = dlo, dmi
         end
+
+        if Base.lt(o, dhi, dlo)
+            if Base.lt(o, dhi, dmi)
+                v[hi], v[lo], v[mi] = v[lo], v[mi], v[hi]
+            else
+                v[hi], v[lo] = v[lo], v[hi]
+            end
+        end
+
+        # return the pivot
+        return v[lo]
     end
 end
+
+function partition!(p::Point, v::Vector{<:Point}, lo::Integer, hi::Integer, o::Base.Ordering)
+    pivot = selectpivot!(p, v, lo, hi, o)
+    dpivot = distance²(p, pivot)
+    # pivot == v[lo], v[hi] > pivot
+    i, j = lo, hi
+    @inbounds while true
+        i += 1; j -= 1
+        while Base.lt(o, distance²(p, v[i]), dpivot); i += 1; end;
+        while Base.lt(o, dpivot, distance²(p, v[j])); j -= 1; end;
+        i >= j && break
+        v[i], v[j] = v[j], v[i]
+    end
+    v[j], v[lo] = pivot, v[j]
+
+    # v[j] == pivot
+    # v[k] >= pivot for k > j
+    # v[i] <= pivot for i < j
+    return j
+end
+
+#function sort!(p::Point, points::Vector{<:Point}, lo::Integer, hi::Integer,
+#               a::Base.Sort.QuickSort, o::Base.Ordering)
+#    @inbounds while lo < hi
+#        if hi-lo ≤ Base.Sort.SMALL_THRESHOLD
+#            return sort!(l, points, lo, hi, Base.Sort.SMALL_ALGORITHM)
+#        end
+#        j = partition!(v, lo, hi, o)
+#        if j-lo < hi-j
+#            # recurse on the smaller chunk
+#            # this is necessary to preserve O(log(n))
+#            # stack space in the worst case (rather than O(n))
+#            lo < (j-1) && sort!(l, points, lo, j-1, a)
+#            lo = j+1
+#        else
+#            j+1 < hi && sort!(l, points, j+1, hi, a)
+#            hi = j-1
+#        end
+#    end
+#    return points
+#end
+
+
+## Sort intersection points along a line segment, deleting points that are less than 
+## the minimum_segment_length apart
+#function sort_intersection_points!(l::LineSegment, points::Vector{<:Point})
+#    sortpoints!(l, points)
+#    id_start = 1 
+#    id_stop = 2 
+#    npoints = length(points)
+#    while id_stop <= npoints
+#        if distance²(points[id_start], points[id_stop]) < minimum_segment_length^2
+#            deleteat!(points, id_stop)
+#            npoints -= 1
+#        else
+#            id_start = id_stop
+#            id_stop += 1
+#        end
+#    end
+#end
 
 # Plot
 # ---------------------------------------------------------------------------------------------
