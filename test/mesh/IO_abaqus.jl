@@ -201,16 +201,5 @@ using MOCNeutronTransport
             @test mesh.name == "tri6_quad8"
             @test mesh.face_sets == ref_face_sets
         end
-
-
-
-
-
-
-
-
-
-
-
     end
 end
