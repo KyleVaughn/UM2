@@ -141,21 +141,8 @@ function Base.show(io::IO, mesh::QuadraticPolygonMesh)
     println(io, "  ├─ Points    : $(length(mesh.points))")
     nedges = length(mesh.edges)
     println(io, "  ├─ Edges     : $nedges")
-    println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_edges) !== 0)")
     println(io, "  ├─ Faces     : $(length(mesh.faces))")
     println(io, "  │  ├─ Triangle       : $(count(x->x isa SVector{6},  mesh.faces))")
-    println(io, "  │  ├─ Quadrilateral  : $(count(x->x isa SVector{8},  mesh.faces))")
-    println(io, "  │  └─ Materialized?  : $(length(mesh.materialized_faces) !== 0)")
-    println(io, "  ├─ Connectivity")
-    println(io, "  │  ├─ Edge/Face : $(0 < length(mesh.edge_face_connectivity))")
-    println(io, "  │  └─ Face/Edge : $(0 < length(mesh.face_edge_connectivity))")
-    println(io, "  ├─ Boundary edges")
-    nsides = length(mesh.boundary_edges)
-    if nsides !== 0
-        println(io, "  │  ├─ Edges : $(mapreduce(x->length(x), +, mesh.boundary_edges))")
-    else
-        println(io, "  │  ├─ Edges : 0")
-    end
-    println(io, "  │  └─ Sides : $nsides")
+    println(io, "  │  └─ Quadrilateral  : $(count(x->x isa SVector{8},  mesh.faces))")
     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
 end

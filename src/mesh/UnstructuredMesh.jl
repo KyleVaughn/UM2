@@ -39,39 +39,20 @@ Base.broadcastable(mesh::UnstructuredMesh) = Ref(mesh)
 #     end
 # end
 
+@generated function edgepoints(edge::SVector{N}, points::Vector{<:Point}) where {N}
+    points_string = "SVector("
+    for i ∈ 1:N
+        points_string *= "points[edge[$i]], "
+    end
+    points_string *= ")"
+    return Meta.parse(points_string)
+end
 
+# Return an SVector of the points in the edge
+function edgepoints(edge_id, mesh::UnstructuredMesh)
+    return edgepoints(mesh.edges[edge_id], mesh.points)
+end
 
-
-# # The unique edges of a mesh 
-# function edges(mesh::UnstructuredMesh2D)
-#     edge_vecs = edges.(mesh.faces)
-#     num_edges = mapreduce(x->length(x),+,edge_vecs)
-#     edges_unfiltered = Vector{typeof(edge_vecs[1][1])}(undef, num_edges)
-#     iedge = 1
-#     for edge in edge_vecs
-#         for i in eachindex(edge)
-#             edges_unfiltered[iedge] = edge[i]
-#             iedge += 1
-#         end
-#     end
-#     return sort!(unique!(edges_unfiltered))
-# end
-# 
-# # Return an SVector of the points in the edge (Linear)
-# function edgepoints(edge::SVector{2}, points::Vector{<:Point})
-#     return SVector(points[edge[1]], points[edge[2]])
-# end
-# 
-# # Return an SVector of the points in the edge (Quadratic)
-# function edgepoints(edge::SVector{3}, points::Vector{<:Point})
-#     return SVector(points[edge[1]], points[edge[2]], points[edge[3]])
-# end
-# 
-# # Return an SVector of the points in the edge
-# function edgepoints(edge_id, mesh::UnstructuredMesh)
-#     return edgepoints(mesh.edges[edge_id], mesh.points)
-# end
-# 
 # # A vector of length 2 SVectors, denoting the face ID each edge is connected to. If the edge
 # # is a boundary edge, face ID 0 is returned
 # function edge_face_connectivity(mesh::UnstructuredMesh{Dim,Ord,T,U}) where {Dim,Ord,T,U}
@@ -100,33 +81,20 @@ Base.broadcastable(mesh::UnstructuredMesh) = Ref(mesh)
 #     end
 #     return [SVector(sort!(two_faces).data) for two_faces in edge_face]
 # end
-# 
-# # Return an SVector of the points in the face (Triangle)
-# function facepoints(face::SVector{3}, points::Vector{<:Point})
-#     return SVector(points[face[1]], points[face[2]], points[face[3]])
-# end
-# 
-# # Return an SVector of the points in the face (Quadrilateral)
-# function facepoints(face::SVector{4}, points::Vector{<:Point})
-#     return SVector(points[face[1]], points[face[2]], points[face[3]], points[face[4]])
-# end
-# 
-# # Return an SVector of the points in the face (Triangle6)
-# function facepoints(face::SVector{6}, points::Vector{<:Point})
-#     return SVector(points[face[1]], points[face[2]], points[face[3]],
-#                    points[face[4]], points[face[5]], points[face[6]])
-# end
-# 
-# # Return an SVector of the points in the face (Quadrilateral8)
-# function facepoints(face::SVector{8}, points::Vector{<:Point})
-#     return SVector(points[face[1]], points[face[2]], points[face[3]], points[face[4]],
-#                    points[face[5]], points[face[6]], points[face[7]], points[face[8]])
-# end
-# 
-# # Return an SVector of the points in the face
-# function facepoints(edge_id, mesh::UnstructuredMesh)
-#     return facepoints(mesh.faces[edge_id], mesh.points)
-# end
+
+@generated function facepoints(face::SVector{N}, points::Vector{<:Point}) where {N}
+    points_string = "SVector("
+    for i ∈ 1:N
+        points_string *= "points[face[$i]], "
+    end
+    points_string *= ")"
+    return Meta.parse(points_string)
+end
+
+# Return an SVector of the points in the face
+function facepoints(face_id, mesh::UnstructuredMesh)
+    return facepoints(mesh.faces[face_id], mesh.points)
+end
 # 
 # # Return the face containing point p.
 # function findface(p::Point2D, mesh::UnstructuredMesh2D{Dim,T,U}) where {Dim,T,U}
