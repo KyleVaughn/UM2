@@ -62,7 +62,7 @@ function area(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{P}) where {Dim, T, P}
     #     0 0                         i=1 j=1
     w, r = gauss_legendre_quadrature(T, Val(P))
     a = zero(T)
-    for j = 1:P, i = 1:P 
+    for j ∈ 1:P, i ∈ 1:P 
         J = 𝗝(quad8, r[i], r[j]) 
         a += w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2)) 
     end 
@@ -82,7 +82,7 @@ function centroid(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{N}) where {Dim, T
     w, r = gauss_legendre_quadrature(T, Val(N))
     A = zero(T)
     𝗖 = @SVector zeros(T, Dim)
-    for j = 1:N, i = 1:N
+    for j ∈ 1:N, i ∈ 1:N
         J = 𝗝(quad8, r[i], r[j])
         weighted_val = w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2))
         𝗖 += weighted_val * quad8(r[i], r[j])
@@ -104,7 +104,7 @@ function centroid(tri6::QuadraticTriangle{Dim, T}, ::Val{N}) where {Dim, T, N}
     w, r, s = gauss_legendre_quadrature(tri6, Val(N))
     A = zero(T)
     𝗖 = @SVector zeros(T, Dim)
-    for i = 1:N
+    for i ∈ 1:N
         J = 𝗝(tri6, r[i], s[i])
         weighted_val = w[i] * norm(view(J, :, 1) × view(J, :, 2)) 
         𝗖 += weighted_val * tri6(r[i], s[i])
@@ -212,10 +212,10 @@ end
 function real_to_parametric(p::Point2D, poly::QuadraticPolygon{N, 2, T}) where {N, T} 
     return real_to_parametric(p, poly, 30)
 end
-# Convert from real coordinates to the triangle's local parametric coordinates using
+# Convert from real coordinates to the polygon's local parametric coordinates using
 # Newton-Raphson.
 # If a conversion doesn't exist, the minimizer is returned.
-# Initial guess at triangle centroid
+# Initial guess at polygon centroid
 function real_to_parametric(p::Point2D{T}, poly::QuadraticPolygon{N, 2, T}, 
                             max_iters::Int64) where {N, T}
     if N === 6 # Triangle
@@ -233,58 +233,58 @@ function real_to_parametric(p::Point2D{T}, poly::QuadraticPolygon{N, 2, T},
     return Point2D{T}(rs[1], rs[2])
 end
 
-function triangulate(quad8::QuadraticQuadrilateral{Dim, T}, ND::Int64) where {Dim, T}
-    # D is the number of divisions of each edge
-    ND1 = ND + 1
-    triangles = Vector{Triangle{Dim, T}}(undef, 2ND1^2)
-    if ND === 0
+function triangulate(quad8::QuadraticQuadrilateral{Dim, T}, N::Int64) where {Dim, T}
+    # N is the number of divisions of each edge
+    N1 = N + 1
+    triangles = Vector{Triangle{Dim, T}}(undef, 2N1^2)
+    if N === 0
         triangles[1] = Triangle(quad8[1], quad8[2], quad8[3])
         triangles[2] = Triangle(quad8[3], quad8[4], quad8[1])
     else
-        for j = 0:ND
-            s₀ = j/ND1 
-            s₁ = (j + 1)/ND1
-            for i = 0:ND
-                r₀ = i/ND1 
-                r₁ = (i + 1)/ND1
-                triangles[2ND1*j + 2i + 1] = Triangle(quad8(r₀, s₀),
-                                                      quad8(r₁, s₀),
-                                                      quad8(r₀, s₁))
-                triangles[2ND1*j + 2i + 2] = Triangle(quad8(r₀, s₁),
-                                                      quad8(r₁, s₀),
-                                                      quad8(r₁, s₁))
+        for j = 0:N
+            s₀ = j/N1 
+            s₁ = (j + 1)/N1
+            for i = 0:N
+                r₀ = i/N1 
+                r₁ = (i + 1)/N1
+                triangles[2N1*j + 2i + 1] = Triangle(quad8(r₀, s₀),
+                                                     quad8(r₁, s₀),
+                                                     quad8(r₀, s₁))
+                triangles[2N1*j + 2i + 2] = Triangle(quad8(r₀, s₁),
+                                                     quad8(r₁, s₀),
+                                                     quad8(r₁, s₁))
             end
         end
     end
     return triangles
 end
 
-function triangulate(tri6::QuadraticTriangle{Dim, T}, ND::Int64) where {Dim, T}
-    # ND is the number of divisions of each edge
-    triangles = Vector{Triangle{Dim, T}}(undef, (ND + 1)*(ND + 1))
-    if ND === 0
+function triangulate(tri6::QuadraticTriangle{Dim, T}, N::Int64) where {Dim, T}
+    # N is the number of divisions of each edge
+    triangles = Vector{Triangle{Dim, T}}(undef, (N + 1)^2)
+    if N === 0
         triangles[1] = Triangle(tri6[1], tri6[2], tri6[3])
     else
         i = 1
-        ND1 = ND + 1
-        for s ∈ 1:ND
-            s₋₁ = (s-1)/ND1
-            s₀ = s/ND1
-            s₁ = (s + 1)/ND1
-            for r ∈ 0:ND-s
-                r₀ = r/ND1
-                r₁ = (r + 1)/ND1
+        N1 = N + 1
+        for s ∈ 1:N
+            s₋₁ = (s-1)/N1
+            s₀ = s/N1
+            s₁ = (s + 1)/N1
+            for r ∈ 0:N-s
+                r₀ = r/N1
+                r₁ = (r + 1)/N1
                 triangles[i]   = Triangle(tri6(r₀, s₀), tri6(r₁, s₀ ), tri6(r₀, s₁))
                 triangles[i+1] = Triangle(tri6(r₀, s₀), tri6(r₁, s₋₁), tri6(r₁, s₀))
                 i += 2
             end
         end
-        j = ND1*ND + 1
+        j = N1*N + 1
         s₀ = zero(T)
-        s₁ = 1/ND1
-        for r ∈ 0:ND
-            r₀ = r/ND1
-            r₁ = (r + 1)/ND1
+        s₁ = 1/N1
+        for r ∈ 0:N
+            r₀ = r/N1
+            r₁ = (r + 1)/N1
             triangles[j] = Triangle(tri6(r₀, s₀), tri6(r₁, s₀), tri6(r₀, s₁))
             j += 1
         end

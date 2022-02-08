@@ -72,6 +72,9 @@ function Base.rand(::Type{Point{Dim, T}}, num_points::Int64) where {Dim, T}
     return [ Point{Dim, T}(rand(SVector{Dim, T})) for i = 1:num_points ]
 end
 
+# Sort points based on their distance prom another point.
+# Default algorithm is quicksort. If the vector is less than 20 elements, insertion sort
+# is used instead.
 defalg(v::Vector{<:Point}) = Base.Sort.QuickSort
 function sort!(p::Point, v::Vector{<:Point}; 
                alg::Base.Sort.Algorithm=defalg(v), order::Base.Ordering=Base.Forward)
@@ -90,10 +93,10 @@ function sort!(p::Point, v::Vector{<:Point}, lo::Integer, hi::Integer,
                ::Base.Sort.InsertionSortAlg, o::Base.Ordering)
     @inbounds for i ∈ lo+1:hi
         j = i
-        dist = distance²(p, v[i])
+        d = distance²(p, v[i])
         pt = v[i]
         while j > lo
-            if Base.lt(o, dist, distance²(p, v[j-1]))
+            if Base.lt(o, d, distance²(p, v[j-1]))
                 v[j] = v[j-1]
                 j -= 1
                 continue
@@ -130,13 +133,13 @@ end
 
 function partition!(p::Point, v::Vector{<:Point}, lo::Integer, hi::Integer, o::Base.Ordering)
     pivot = selectpivot!(p, v, lo, hi, o)
-    dpivot = distance²(p, pivot)
+    d = distance²(p, pivot)
     # pivot == v[lo], v[hi] > pivot
     i, j = lo, hi
     @inbounds while true
         i += 1; j -= 1
-        while Base.lt(o, distance²(p, v[i]), dpivot); i += 1; end;
-        while Base.lt(o, dpivot, distance²(p, v[j])); j -= 1; end;
+        while Base.lt(o, distance²(p, v[i]), d); i += 1; end;
+        while Base.lt(o, d, distance²(p, v[j])); j -= 1; end;
         i >= j && break
         v[i], v[j] = v[j], v[i]
     end

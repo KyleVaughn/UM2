@@ -201,7 +201,7 @@ end
     return norm((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-8
 end
 
-# Intersection between a linesegment and quadratic segment
+# Intersection between a line segment and quadratic segment
 #
 # The quadratic segment: 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁
 # The line segment: 𝗹(s) = 𝘅₄ + s𝘄

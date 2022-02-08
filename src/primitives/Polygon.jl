@@ -42,6 +42,7 @@ end
 area(tri::Triangle) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
 
 # Centroid for polygons in the 2D plane
+# (https://en.wikipedia.org/wiki/Centroid#Of_a_polygon)
 function centroid(poly::Polygon{N, 2, T}) where {N, T}
     c = SVector{2,T}(0,0)
     a = zero(T)

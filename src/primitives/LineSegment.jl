@@ -106,42 +106,23 @@ function Base.rand(::Type{LineSegment{Dim, F}}, N::Int64) where {Dim, F}
     return [ rand(LineSegment{Dim, F}) for i ∈ 1:N ]
 end
 
-# Sort points on a line segment based on their distance from the segment's start point. 
-#function sort!(l::LineSegment, points::Vector{<:Point})
-#
-#end
-
-#defalg(v::Vector{<:Point}) = Base.Sort.InsertionSort
-#function sort!(l::LineSegment, points::Vector{<:Point}; alg::Base.Sort.Algorithm=defalg(points))
-#    sort!(l, points, firstindex(points), lastindex(points), alg)
-#end
-#
-#function sort(l::LineSegment, points::Vector{<:Point})
-#    # Insertion sort
-#    points_copy = similar(points)
-#    @. points_copy = points
-#    sort!(l, points_copy)
-#    return points_copy
-#end
-#
-
-## Sort intersection points along a line segment, deleting points that are less than 
-## the minimum_segment_length apart
-#function sort_intersection_points!(l::LineSegment, points::Vector{<:Point})
-#    sortpoints!(l, points)
-#    id_start = 1 
-#    id_stop = 2 
-#    npoints = length(points)
-#    while id_stop <= npoints
-#        if distance²(points[id_start], points[id_stop]) < minimum_segment_length^2
-#            deleteat!(points, id_stop)
-#            npoints -= 1
-#        else
-#            id_start = id_stop
-#            id_stop += 1
-#        end
-#    end
-#end
+# Sort intersection points along a line segment, deleting points that are less than 
+# the minimum_segment_length apart
+function sort_intersection_points!(l::LineSegment, points::Vector{<:Point})
+    sort!(l.𝘅₁, points)
+    id_start = 1 
+    id_stop = 2 
+    n = length(points)
+    while id_stop <= n
+        if distance²(points[id_start], points[id_stop]) < minimum_segment_length^2
+            deleteat!(points, id_stop)
+            n -= 1
+        else
+            id_start = id_stop
+            id_stop += 1
+        end
+    end
+end
 
 # Plot
 # ---------------------------------------------------------------------------------------------
