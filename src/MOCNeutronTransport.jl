@@ -88,6 +88,7 @@ export AAB, AAB2D,
        QuadraticQuadrilateral2D, QuadraticTriangleMesh, QuadraticQuadrilateralMesh,
        Quadrilateral, Quadrilateral2D,
        Tree, Triangle, Triangle2D, TriangleMesh,
+       UnstructureMesh, UnstructuredMesh2D,
        Vector2D, Vector3D
 
 # Convenience operators
