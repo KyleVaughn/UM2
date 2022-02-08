@@ -1,10 +1,10 @@
-mutable struct Tree{T}
-    data::Union{Nothing, T}
-    parent::Union{Nothing, Tree{T}}
-    children::Union{Nothing, Vector{Tree{T}}}
-    Tree(data::T) where T = new{T}(data, nothing, nothing)
-    function Tree(data::T, parent::Tree{T}) where T
-        this = new{T}(data, parent, nothing)
+mutable struct Tree
+    data::Union{Nothing, Any}
+    parent::Union{Nothing, Tree}
+    children::Union{Nothing, Vector{Tree}}
+    Tree(data) = new(data, nothing, nothing)
+    function Tree(data, parent::Tree)
+        this = new(data, parent, nothing)
         if isnothing(parent.children)
             parent.children = [this]
         else

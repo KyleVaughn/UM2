@@ -2,10 +2,10 @@ using MOCNeutronTransport
 using Test
 using Logging
 Logging.disable_logging(Logging.Error)
-tests = ["Tree",
+tests = ["./trees/Tree",
          "./primitives/Point",
          "./primitives/LineSegment",
-         "./primitives/AABB",
+         "./primitives/AAB",
          "./primitives/QuadraticSegment",
          "./primitives/Triangle",
          "./primitives/Quadrilateral",

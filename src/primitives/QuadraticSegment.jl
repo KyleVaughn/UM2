@@ -97,7 +97,7 @@ end
 # and r_y such that dy/dr = 0
 # 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁
 # 𝗾′(r) = 2r𝘂 + 𝘃 ⟹  r_x, r_y = -𝘃 ./ 2𝘂
-# Compare the extrema with the segment's endpoints to find the AABB
+# Compare the extrema with the segment's endpoints to find the AAB
 function boundingbox(q::QuadraticSegment2D)
     𝘂 = q.𝘂
     𝘃 = q.𝘃
@@ -119,7 +119,7 @@ function boundingbox(q::QuadraticSegment2D)
         ymin = min(q.𝘅₁.y, q.𝘅₂.y)
         ymax = max(q.𝘅₁.y, q.𝘅₂.y)
     end
-    return AABB2D(Point2D(xmin, ymin), Point2D(xmax, ymax))
+    return AAB2D(Point2D(xmin, ymin), Point2D(xmax, ymax))
 end
 
 # Return the derivative of q, evalutated at r

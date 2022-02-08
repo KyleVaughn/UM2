@@ -46,7 +46,7 @@ function log_timestamps()
     end
 end
 
-include("Tree.jl")
+include("trees/Tree.jl")
 include("constants.jl")
 #include("operators.jl")
 include("./gmsh/gmsh_generate_rectangular_grid.jl")
@@ -57,7 +57,7 @@ include("./primitives/Face.jl")
 include("./primitives/VectorND.jl")
 include("./primitives/Point.jl")
 include("./primitives/LineSegment.jl")
-include("./primitives/AABB.jl")
+include("./primitives/AAB.jl")
 include("./primitives/QuadraticSegment.jl")
 include("./primitives/Polygon.jl")
 include("./primitives/QuadraticPolygon.jl")
@@ -65,7 +65,7 @@ include("./primitives/QuadraticPolygon.jl")
 include("./mesh/UnstructuredMesh.jl")
 include("./mesh/PolygonMesh.jl")
 include("./mesh/QuadraticPolygonMesh.jl")
-#include("./mesh/HierarchicalRectangularlyPartitionedMesh.jl")
+include("./mesh/MeshPartition.jl")
 include("./mesh/IO_abaqus.jl")
 ##include("./mesh/IO_vtk.jl")
 #include("./mesh/IO_xdmf.jl")
@@ -76,11 +76,12 @@ include("gauss_legendre_quadrature.jl")
 
 
 # Structs/Types
-export AABB, AABB2D,
+export AAB, AAB2D,
        Edge, Edge2D,
        Face, Face2D,
        Hexagon,
        LineSegment, LineSegment2D,
+       MeshPartition,
        Point, Point2D, Polygon, PolygonMesh, 
        QuadraticPolygon, QuadraticPolygonMesh, QuadraticSegment, QuadraticSegment2D,
        QuadraticTriangle, QuadraticTriangle2D, QuadraticQuadrilateral,
