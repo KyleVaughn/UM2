@@ -86,27 +86,16 @@ using MOCNeutronTransport
             @test isleft(Point2D{F}(0, 1e-6) , l)
             @test isleft(Point2D{F}(0.5, 0) , l)
 
-#            # sortpoints
-#            l = LineSegment2D(Point2D{F}(0,0), Point2D{F}(10,0))
-#            p₁ = Point2D{F}(1, 0)
-#            p₂ = Point2D{F}(2, 0)
-#            p₃ = Point2D{F}(3, 0)
-#            points = [p₃, p₁, p₂]
-#            sortpoints!(l, points)
-#            @test points[1] == p₁
-#            @test points[2] == p₂
-#            @test points[3] == p₃
-#
-#            # sort_intersection_points
-#            l = LineSegment2D(Point2D{F}(0,0), Point2D{F}(10,0))
-#            p₁ = Point2D{F}(1, 0)
-#            p₂ = Point2D{F}(2, 0)
-#            p₃ = Point2D{F}(3, 0)
-#            points = [p₃, p₁, p₂, Point2D{F}(1 + 1//1000000, 0)]
-#            sort_intersection_points!(l, points)
-#            @test points[1] == p₁
-#            @test points[2] == p₂
-#            @test points[3] == p₃
+            # sort_intersection_points
+            l = LineSegment2D(Point2D{F}(0,0), Point2D{F}(10,0))
+            p₁ = Point2D{F}(1, 0)
+            p₂ = Point2D{F}(2, 0)
+            p₃ = Point2D{F}(3, 0)
+            points = [p₃, p₁, p₂, Point2D{F}(1 + 1//1000000, 0)]
+            sort_intersection_points!(l, points)
+            @test points[1] == p₁
+            @test points[2] == p₂
+            @test points[3] == p₃
         end
     end
 end
