@@ -66,6 +66,28 @@ using StaticArrays
             mp = midpoint(p₁, p₂)
             @test mp[1] ≈ 3//2
             @test mp[2] ≈ 3
+
+            # sort!
+            p = Point2D{F}(0, 0)
+            p₁ = Point2D{F}(1, 0)
+            p₂ = Point2D{F}(2, 0)
+            p₃ = Point2D{F}(3, 0)
+            points = [p₃, p₁, p₂]
+            sort!(p, points)
+            @test points[1] == p₁
+            @test points[2] == p₂
+            @test points[3] == p₃
+
+            # sort
+            p = Point2D{F}(0, 0)
+            p₁ = Point2D{F}(1, 0)
+            p₂ = Point2D{F}(2, 0)
+            p₃ = Point2D{F}(3, 0)
+            points = [p₃, p₁, p₂]
+            points_sorted = sort(p, points)
+            @test points_sorted[1] == p₁
+            @test points_sorted[2] == p₂
+            @test points_sorted[3] == p₃
         end
     end
 end
