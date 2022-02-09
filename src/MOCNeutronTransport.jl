@@ -68,7 +68,7 @@ include("./mesh/QuadraticPolygonMesh.jl")
 include("./mesh/MeshPartition.jl")
 include("./mesh/IO_abaqus.jl")
 ##include("./mesh/IO_vtk.jl")
-#include("./mesh/IO_xdmf.jl")
+include("./mesh/IO_xdmf.jl")
 include("gauss_legendre_quadrature.jl")
 #include("./ray_tracing/AngularQuadrature.jl")
 #include("./raytracing/raytrace.jl")
@@ -123,7 +123,7 @@ export arclength, area,
        sort, sort!, sort_intersection_points!, submesh,
        triangulate, 
        union, 
-       width
+       width, write_xdmf2d
 
 # Gmsh
 export gmsh,

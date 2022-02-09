@@ -21,10 +21,10 @@ function partition_mesh(mesh::UnstructuredMesh2D; by::String="GRID_L")
     set_names, partition_names, max_level = _process_partition_mesh_input(mesh, by)
 
     # Create a tree to store the partition hierarchy.
-    root = _create_partition_tree(mesh, by, partition_names, max_level)
+    root, leaf_meshes = _create_partition_tree_and_leaf_meshes(mesh, by, partition_names, max_level)
 
-    # Construct the leaf meshes
-    leaf_meshes = _create_leaf_meshes(mesh, by, partition_names, max_level)
+#    # Construct the leaf meshes
+#    leaf_meshes = _create_leaf_meshes(mesh, by, partition_names, max_level)
 
     return MeshPartition(root, leaf_meshes)
 end
@@ -59,9 +59,12 @@ function _create_leaf_meshes(mesh::M, by::String,
 end
 
 # Create a tree to store grid relationships.
-function _create_partition_tree(mesh::UnstructuredMesh2D, by::String, 
-                                partition_names::Vector{String}, max_level::Int64)
+function _create_partition_tree_and_leaf_meshes(mesh::M, 
+                                                by::String, 
+                                                partition_names::Vector{String}, 
+                                                max_level::Int64) where {M<:UnstructuredMesh2D}
     root = Tree(mesh.name)
+    leaf_meshes = M[]
     current_nodes = Tree[]
     next_nodes = Tree[]
     old_partition_names = copy(partition_names)
@@ -75,8 +78,12 @@ function _create_partition_tree(mesh::UnstructuredMesh2D, by::String,
             partition_level = 1
         end
         if partition_level === 1
-            # Add to appropriate node (root)
-            push!(next_nodes, Tree(partition_name, root))
+            if partition_level == max_level # is a leaf    
+                push!(leaf_meshes, submesh(partition_name, mesh))
+                push!(next_nodes, Tree((partition_name, length(leaf_meshes)), root))
+            else
+                push!(next_nodes, Tree(partition_name, root))
+            end
             filter!(x->x ≠ partition_name, new_partition_names)
         end
     end
@@ -93,7 +100,12 @@ function _create_partition_tree(mesh::UnstructuredMesh2D, by::String,
                 for node in current_nodes
                     node_faces = mesh.face_sets[node.data]
                     if partition_faces ⊆ node_faces
-                        push!(next_nodes, Tree(partition_name, node))
+                        if level == max_level # is a leaf    
+                            push!(leaf_meshes, submesh(partition_name, mesh))
+                            push!(next_nodes, Tree((partition_name, length(leaf_meshes)), node))
+                        else
+                            push!(next_nodes, Tree(partition_name, node))
+                        end
                         filter!(x->x ≠ partition_name, new_partition_names)
                         break
                     end
@@ -101,7 +113,14 @@ function _create_partition_tree(mesh::UnstructuredMesh2D, by::String,
             end
         end
     end
-    return root
+    for leaf_mesh in leaf_meshes
+        for name in keys(leaf_mesh.face_sets)
+            if occursin(by, uppercase(name))
+                delete!(leaf_mesh.face_sets, name)
+            end
+        end
+    end
+    return root, leaf_meshes
 end
 
 # Extract set names, partition names, and max partition level
