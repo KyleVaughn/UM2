@@ -218,8 +218,10 @@ function _make_material_name_to_id_map(mesh::UnstructuredMesh2D)
     if max_length < 13
         max_length = 13
     end
-    println(string(rpad("Material Name", max_length, ' '), " : XDMF Material ID"))
-    println(rpad("=", max_length + 19, '='))
+    if length(mat_names) > 0
+        println(string(rpad("Material Name", max_length, ' '), " : XDMF Material ID"))
+        println(rpad("=", max_length + 19, '='))
+    end
     for set_name in mat_names
         if occursin("MATERIAL", uppercase(set_name))
             id = material_map[set_name]
@@ -254,8 +256,10 @@ function _make_material_name_to_id_map(MP::MeshPartition)
     if max_length < 13
         max_length = 13
     end
-    println(string(rpad("Material Name", max_length, ' '), " : XDMF Material ID"))
-    println(rpad("=", max_length + 19, '='))
+    if length(mat_names) > 0
+        println(string(rpad("Material Name", max_length, ' '), " : XDMF Material ID"))
+        println(rpad("=", max_length + 19, '='))
+    end
     for set_name in mat_names
         if occursin("MATERIAL", uppercase(set_name))
             id = material_map[set_name]
