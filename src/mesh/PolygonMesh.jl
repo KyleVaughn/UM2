@@ -362,62 +362,6 @@ function Base.show(io::IO, mesh::PolygonMesh)
     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
 end
 
-# # 
-# # # Return a mesh with name name, composed of the faces in the set face_ids
-# # function submesh(name::String, mesh::M) where {M <: UnstructuredMesh_2D}
-# #     # Setup faces and get all vertex ids
-# #     face_ids = mesh.face_sets[name]
-# #     submesh_faces = Vector{Vector{UInt32}}(undef, length(face_ids))
-# #     vertex_ids = Set{UInt32}()
-# #     for (i, face_id) in enumerate(face_ids)
-# #         face_vec = collect(mesh.faces[face_id].data)
-# #         submesh_faces[i] = face_vec
-# #         union!(vertex_ids, Set(face_vec))
-# #     end
-# #     # Need to remap vertex ids in faces to new ids
-# #     vertex_ids_sorted = sort(collect(vertex_ids))
-# #     vertex_map = Dict{UInt32, UInt32}()
-# #     for (i,v) in enumerate(vertex_ids_sorted)
-# #         vertex_map[v] = i
-# #     end
-# #     submesh_points = Vector{Point_2D}(undef, length(vertex_ids_sorted))
-# #     for (i, v) in enumerate(vertex_ids_sorted)
-# #         submesh_points[i] = mesh.points[v]
-# #     end
-# #     # remap vertex ids in faces
-# #     for face in submesh_faces
-# #         for (i, v) in enumerate(face)
-# #             face[i] = vertex_map[v]
-# #         end
-# #     end
-# #     # At this point we have points, faces, & name.
-# #     # Just need to get the face sets
-# #     submesh_face_sets = Dict{String, Set{UInt32}}()
-# #     for face_set_name in keys(mesh.face_sets)
-# #         set_intersection = mesh.face_sets[face_set_name] ∩ face_ids
-# #         if length(set_intersection) !== 0
-# #             submesh_face_sets[face_set_name] = set_intersection
-# #         end
-# #     end
-# #     # Need to remap face ids in face sets
-# #     face_map = Dict{UInt32, UInt32}()
-# #     for (i,f) in enumerate(face_ids)
-# #         face_map[f] = i
-# #     end
-# #     for face_set_name in keys(submesh_face_sets)
-# #         new_set = Set{UInt32}()
-# #         for fid in submesh_face_sets[face_set_name]
-# #             union!(new_set, face_map[fid])
-# #         end
-# #         submesh_face_sets[face_set_name] = new_set
-# #     end
-# #     return M(name = name,
-# #              points = submesh_points,
-# #              faces = [SVector{length(f), UInt32}(f) for f in submesh_faces],
-# #              face_sets = submesh_face_sets
-# #             )
-# # end
-# # 
 # # # Plot
 # # # -------------------------------------------------------------------------------------------------
 # # if enable_visualization

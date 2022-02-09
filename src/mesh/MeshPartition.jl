@@ -10,6 +10,10 @@ struct MeshPartition{M <: UnstructuredMesh}
     leaf_meshes::Vector{M}
 end
 
+# Assumes all leaf nodes of the hierarchical partition occur in the same level
+# For a hierarchical partition, all partitions in the hierarchy must contain face sets 
+# of the form "name_LN" where name is a string, and N is an integer.
+# N is the level of the node
 function partition_mesh(mesh::UnstructuredMesh2D; by::String="GRID_L")
     @info "Partitioning mesh"
     by = uppercase(by)
@@ -19,81 +23,36 @@ function partition_mesh(mesh::UnstructuredMesh2D; by::String="GRID_L")
     # Create a tree to store the partition hierarchy.
     root = _create_partition_tree(mesh, by, partition_names, max_level)
 
+    # Construct the leaf meshes
+    leaf_meshes = _create_leaf_meshes(mesh, by, partition_names, max_level)
+
+    return MeshPartition(root, leaf_meshes)
 end
 
-#partition mesh
-# by = type, face_set
-# Partition a mesh into an HRPM based upon the names of its face sets.
-# Must contain face sets of the form "GRID_LN_X_Y" where N,X,Y are integers
-# N is the level of the node and X,Y are indices of the mesh's location in a rectangular
-# grid
-# function partition_rectangularly(mesh::UnstructuredMesh_2D)
-#     @info "Converting $(typeof(mesh)) into HierarchicalRectangularlyPartitionedMesh"
-#     # Extract set names, grid names, and max level
-#     set_names, grid_names, max_level = process_partition_rectangularly_input(mesh)
-# 
-#     # Create a tree to store grid relationships.
-#     root = create_HRPM_tree(mesh, grid_names, max_level)
-# 
-#     # Construct the leaf meshes
-#     leaf_meshes = create_HRPM_leaf_meshes(mesh, grid_names, max_level)
-# 
-#     # Construct the mesh hierarchy
-#     HRPM = create_HRPM(root, leaf_meshes)
-#     return HRPM
-# end
+function _create_leaf_meshes(mesh::M, by::String, 
+                             partition_names::Vector{String}, 
+                             max_level::Int64) where {M<:UnstructuredMesh2D}
+    leaf_meshes = M[]
+    leaf_names = String[]
+    for name in partition_names
+        level = parse(Int64, name[length(by) + 1])
+        if level == max_level
+            push!(leaf_names, name)
+        end
+    end
+    for name in leaf_names
+        push!(leaf_meshes, submesh(name, mesh))
+    end
+    for leaf_mesh in leaf_meshes
+        for name in keys(leaf_mesh.face_sets)
+            if occursin(by, uppercase(name))
+                delete!(leaf_mesh.face_sets, name)
+            end
+        end
+    end
+    return leaf_meshes
+end
 
-# function attach_HRPM_children!(HRPM::HierarchicalRectangularlyPartitionedMesh,
-#                                tree::Tree,
-#                                leaf_meshes::Vector{<:UnstructuredMesh_2D})
-#     for child in tree.children
-#         name = child[].data
-#         child_mesh = HierarchicalRectangularlyPartitionedMesh(name = name,
-#                                                               parent = Ref(HRPM) )
-#         for leaf_mesh in leaf_meshes
-#             if name == leaf_mesh.name
-#                 child_mesh.mesh[] = leaf_mesh
-#             end
-#         end
-#         attach_HRPM_children!(child_mesh, child[], leaf_meshes)
-#     end
-#     return nothing
-# end
-# 
-# # Construct the HRPM
-# function create_HRPM(tree::Tree, leaf_meshes::Vector{UnstructuredMesh_2D})
-#     # Construct the HRPM from the top down
-#     root = HierarchicalRectangularlyPartitionedMesh( name = tree.data )
-#     attach_HRPM_children!(root, tree, leaf_meshes)
-#     # Add the rectangles
-#     boundingbox(root)
-#     return root
-# end
-# 
-# function create_HRPM_leaf_meshes(mesh::UnstructuredMesh_2D, grid_names::Vector{String}, max_level::Int64)
-#     # Generate the leaf meshes (The smallest spatially)
-#     leaf_meshes = UnstructuredMesh_2D[]
-#     leaf_names = String[]
-#     for name in grid_names
-#         level = parse(Int64, name[7])
-#         if level == max_level
-#             push!(leaf_names, name)
-#         end
-#     end
-#     for name in leaf_names
-#         push!(leaf_meshes, submesh(name, mesh))
-#     end
-#     # remove grid levels
-#     for leaf_mesh in leaf_meshes
-#         for name in keys(leaf_mesh.face_sets)
-#             if occursin("GRID_", uppercase(name))
-#                 delete!(leaf_mesh.face_sets, name)
-#             end
-#         end
-#     end
-#     return leaf_meshes
-# end
-# 
 # Create a tree to store grid relationships.
 function _create_partition_tree(mesh::UnstructuredMesh2D, by::String, 
                                 partition_names::Vector{String}, max_level::Int64)

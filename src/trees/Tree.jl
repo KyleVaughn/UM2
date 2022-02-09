@@ -14,6 +14,8 @@ mutable struct Tree
     end
 end
 
+is_root(tree::Tree) = isnothing(tree.parent)
+
 function is_parents_last_child(tree::Tree)
     if isnothing(tree.parent) || tree.parent.children[end] === tree
         return true
@@ -24,7 +26,9 @@ end
 
 Base.show(io::IO, tree::Tree) = Base.show(io::IO, tree::Tree, "")
 function Base.show(io::IO, tree::Tree, predecessor_string::String)
-    if predecessor_string !== ""
+    if is_root(tree)
+        next_predecessor_string = ""
+    elseif !is_root(tree) || next_predecessor_string != ""
         last_child = is_parents_last_child(tree)
         if last_child
             print(io, predecessor_string * "└─ ")

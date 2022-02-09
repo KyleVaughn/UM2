@@ -227,25 +227,20 @@ end
 #     return intersection_points
 # end
 # 
-# # Return a LineSegment from the point IDs in an edge
-# function materialize_edge(edge::SVector{2}, points::Vector{<:Point})
-#     return LineSegment(edgepoints(edge, points))
-# end
-# 
-# # Return a QuadraticSegment from the point IDs in an edge
-# function materialize_edge(edge::SVector{3}, points::Vector{<:Point})
-#     return QuadraticSegment(edgepoints(edge, points))
-# end
-# 
-# # Return a LineSegment or QuadraticSegment
-# function materialize_edge(edge_id, mesh::UnstructuredMesh)
-#     return materialize_edge(mesh.edges[edge_id], mesh.points)
-# end
-# 
-# # Return a materialized edge for each edge in the mesh
-# function materialize_edges(mesh::UnstructuredMesh)
-#     return materialize_edge.(mesh.edges, Ref(mesh.points))
-# end
+# Return a LineSegment from the point IDs in an edge
+function materialize_edge(edge::SVector{2}, points::Vector{<:Point})
+    return LineSegment(edgepoints(edge, points))
+end
+ 
+# Return a QuadraticSegment from the point IDs in an edge
+function materialize_edge(edge::SVector{3}, points::Vector{<:Point})
+    return QuadraticSegment(edgepoints(edge, points))
+end
+
+# Return a materialized edge for each edge in the mesh
+function materialize_edges(mesh::UnstructuredMesh)
+    return materialize_edge.(mesh.edges, Ref(mesh.points))
+end
 # 
 # # Return a materialized face from the point IDs in a face
 # function materialize_face(face::SVector{N}, points::Vector{<:Point}) where {N}
@@ -289,4 +284,133 @@ function Base.show(io::IO, mesh::UnstructuredMesh)
     println(io, "  ├─ Edges     : $nedges")
     println(io, "  ├─ Faces     : $(length(mesh.faces))")
     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
+end
+
+function submesh(name::String, mesh::UnstructuredMesh2D{Ord, T, U}) where {Ord, T, U}
+    # Setup faces and get all vertex ids
+    face_ids = mesh.face_sets[name]
+    submesh_faces = Vector{Vector{U}}(undef, length(face_ids))
+    vertex_ids = Set{U}()
+    for (i, face_id) in enumerate(face_ids)
+        face_vec = collect(mesh.faces[face_id].data)
+        submesh_faces[i] = face_vec
+        union!(vertex_ids, Set(face_vec))
+    end
+    # Need to remap vertex ids in faces to new ids
+    vertex_ids_sorted = sort(collect(vertex_ids))
+    vertex_map = Dict{U, U}()
+    for (i, v) in enumerate(vertex_ids_sorted)
+        vertex_map[v] = i
+    end
+    points = Vector{Point2D{T}}(undef, length(vertex_ids_sorted))
+    for (i, v) in enumerate(vertex_ids_sorted)
+        points[i] = mesh.points[v]
+    end
+    # remap vertex ids in faces
+    for face in submesh_faces
+        for (i, v) in enumerate(face)
+            face[i] = vertex_map[v]
+        end
+    end
+    # At this point we have points, faces, & name.
+    # Just need to get the face sets
+    face_sets = Dict{String, Set{U}}()
+    for face_set_name in keys(mesh.face_sets)
+        set_intersection = mesh.face_sets[face_set_name] ∩ face_ids
+        if length(set_intersection) !== 0
+            face_sets[face_set_name] = set_intersection
+        end
+    end
+    # Need to remap face ids in face sets
+    face_map = Dict{U, U}()
+    for (i, f) in enumerate(face_ids)
+        face_map[f] = i
+    end
+    for face_set_name in keys(face_sets)
+        new_set = Set{U}()
+        for fid in face_sets[face_set_name]
+            union!(new_set, face_map[fid])
+        end
+        face_sets[face_set_name] = new_set
+    end
+    faces = [SVector{length(f), U}(f) for f in submesh_faces]
+    if mesh isa LinearUnstructuredMesh 
+        edges = [convert(SVector{2, U}, edge) for edge in _create_linear_edges_from_faces(faces)]
+    else # QuadraticUnstructuredMesh
+        edges = [convert(SVector{3, U}, edge) for edge in _create_quadratic_edges_from_faces(faces)]
+    end
+    return typeof(mesh)(name = name,
+             points = points,
+             edges= edges,
+             faces = faces, 
+             face_sets = face_sets
+            )
+end
+
+function _create_linear_edges_from_faces(faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
+                                        ) where {U<:Unsigned}
+    edge_vecs = linear_edges.(faces)
+    num_edges = mapreduce(x->length(x), +, edge_vecs)
+    edges_unfiltered = Vector{SVector{2, UInt64}}(undef, num_edges)
+    iedge = 1
+    for edge in edge_vecs
+        for i in eachindex(edge)
+            if edge[i][1] < edge[i][2]
+                edges_unfiltered[iedge] = edge[i]
+            else
+                edges_unfiltered[iedge] = SVector(edge[i][2], edge[i][1])
+            end
+            iedge += 1
+        end
+    end
+    return sort!(unique!(edges_unfiltered))
+end
+
+function _create_quadratic_edges_from_faces(faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
+                                        ) where {U<:Unsigned}
+    edge_vecs = quadratic_edges.(faces)
+    num_edges = mapreduce(x->length(x), +, edge_vecs)
+    edges_unfiltered = Vector{SVector{3, UInt64}}(undef, num_edges)
+    iedge = 1
+    for edge in edge_vecs
+        for i in eachindex(edge)
+            if edge[i][1] < edge[i][2]
+                edges_unfiltered[iedge] = edge[i]
+            else
+                edges_unfiltered[iedge] = SVector(edge[i][2], edge[i][1], edge[i][3])
+            end
+            iedge += 1
+        end
+    end
+    return sort!(unique!(edges_unfiltered))
+end
+
+function _select_mesh_UInt_type(N::Int64)
+    if N ≤ typemax(UInt16) 
+        U = UInt16
+    elseif N ≤ typemax(UInt32) 
+        U = UInt32
+    elseif N ≤ typemax(UInt64) 
+        U = UInt64
+    else 
+        @error "How cow, that's a big mesh! Number of edges exceeds typemax(UInt64)"
+        U = UInt64
+    end
+    return U
+end
+
+function _convert_faces_edges_facesets(::Type{U}, 
+                                       faces::Vector{<:SArray{S, UInt64, 1} where {S<:Tuple}}, 
+                                       edges::Vector{<:SVector{N, UInt64}}, 
+                                       face_sets::Dict{String, Set{UInt64}}
+                                      ) where {U, N}
+    faces_U = [ convert(SVector{length(face), U}, face) for face in faces ]
+    edges_U = [ convert(SVector{length(edge), U}, edge) for edge in edges ] 
+    face_sets_U = Dict{String, Set{U}}()
+    for key in keys(face_sets)
+        face_sets_U[key] = convert(Set{U}, face_sets[key])
+    end
+    face_sets = nothing
+    return faces_U, edges_U, face_sets_U 
+
 end
