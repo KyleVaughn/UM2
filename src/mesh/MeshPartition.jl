@@ -35,7 +35,12 @@ function _create_leaf_meshes(mesh::M, by::String,
     leaf_meshes = M[]
     leaf_names = String[]
     for name in partition_names
-        level = parse(Int64, name[length(by) + 1])
+        level = 1
+        try
+            level = parse(Int64, name[length(by) + 1])
+        catch
+            level = 1
+        end
         if level == max_level
             push!(leaf_names, name)
         end
@@ -63,7 +68,12 @@ function _create_partition_tree(mesh::UnstructuredMesh2D, by::String,
     new_partition_names = copy(partition_names)
     # Do first level
     for partition_name in old_partition_names
-        partition_level = parse(Int64, partition_name[length(by) + 1])
+        partition_level = 1
+        try
+            partition_level = parse(Int64, partition_name[length(by) + 1])
+        catch
+            partition_level = 1
+        end
         if partition_level === 1
             # Add to appropriate node (root)
             push!(next_nodes, Tree(partition_name, root))
