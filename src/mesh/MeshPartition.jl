@@ -62,8 +62,8 @@ end
 function _create_partition_tree(mesh::UnstructuredMesh2D, by::String, 
                                 partition_names::Vector{String}, max_level::Int64)
     root = Tree(mesh.name)
-    current_nodes = []
-    next_nodes = []
+    current_nodes = Tree[]
+    next_nodes = Tree[]
     old_partition_names = copy(partition_names)
     new_partition_names = copy(partition_names)
     # Do first level
@@ -84,7 +84,7 @@ function _create_partition_tree(mesh::UnstructuredMesh2D, by::String,
     for level in 2:max_level
         old_partition_names = copy(new_partition_names)
         current_nodes = next_nodes
-        next_nodes = []
+        next_nodes = Tree[]
         for partition_name in old_partition_names
             partition_level = parse(Int64, partition_name[length(by) + 1])
             if partition_level == level
