@@ -42,6 +42,10 @@ QuadraticPolygon(x...) = QuadraticPolygon(SVector(x))
 #     S      T
 function area(tri6::QuadraticTriangle2D)
     # Mathematica for this algebraic nightmare
+    a = (tri6[6] - tri6[4]) × tri6[1].coord
+    b = (tri6[4] - tri6[5]) × tri6[2].coord
+    c = (tri6[5] - tri6[6]) × tri6[3].coord)
+    @error "fix me"
     return (
             4(
               ((tri6[6] - tri6[4]) × tri6[1].coord) + 
@@ -54,6 +58,14 @@ end
 
 # This likely has a simple analytic solution that should be worked out
 area(quad8::QuadraticQuadrilateral2D) = area(quad8, Val(2))
+# 
+#   1/12 (4 Cy Dx - 4 Cx Dy + Ay Ex + Cy Ex + Dy Ex - Ax Ey - Cx Ey - 
+#   Dx Ey + 7 Ay Fx + 35 Cy Fx + 7 Dy Fx - 12 Ey Fx - 7 Ax Fy - 
+#   35 Cx Fy - 7 Dx Fy + 12 Ex Fy - 7 Ay Gx - 35 Cy Gx - 3 Dy Gx + 
+#   12 Ey Gx + 28 Fy Gx + 7 Ax Gy + 35 Cx Gy + 3 Dx Gy - 12 Ex Gy - 
+#   28 Fx Gy + By (4 Cx + Ex + 3 Fx - 7 Gx - Hx) - Ay Hx - Cy Hx - 
+#   Dy Hx + 4 Ey Hx + 12 Fy Hx - 12 Gy Hx + Ax Hy + Cx Hy + Dx Hy - 
+#   4 Ex Hy - 12 Fx Hy + 12 Gx Hy + Bx (-4 Cy - Ey - 3 Fy + 7 Gy + Hy))
 function area(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{P}) where {Dim, T, P}
     # Gauss-Legendre quadrature over a quadrilateral is used.
     # Let Q(r,s) be the interpolation function for quad8,
