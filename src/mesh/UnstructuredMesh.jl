@@ -289,21 +289,25 @@ end
 function submesh(name::String, mesh::UnstructuredMesh2D{Ord, T, U}) where {Ord, T, U}
     # Setup faces and get all vertex ids
     face_ids = mesh.face_sets[name]
-    submesh_faces = Vector{Vector{U}}(undef, length(face_ids))
-    vertex_ids = Set{U}()
-    for (i, face_id) in enumerate(face_ids)
-        face_vec = collect(mesh.faces[face_id].data)
-        submesh_faces[i] = face_vec
-        union!(vertex_ids, Set(face_vec))
+    submesh_faces = [MVector(mesh.faces[id].data) for id ∈ face_ids]
+    vertex_ids = U[]
+    # This can be sped up substantially by keeping vertex_ids sorted and 
+    # checking membership using binary search
+    for face in submesh_faces
+        for id in face
+            if id ∉ vertex_ids
+                push!(vertex_ids, id)
+            end
+        end
     end
     # Need to remap vertex ids in faces to new ids
-    vertex_ids_sorted = sort(collect(vertex_ids))
+    sort!(vertex_ids)
     vertex_map = Dict{U, U}()
-    for (i, v) in enumerate(vertex_ids_sorted)
+    for (i, v) in enumerate(vertex_ids)
         vertex_map[v] = i
     end
-    points = Vector{Point2D{T}}(undef, length(vertex_ids_sorted))
-    for (i, v) in enumerate(vertex_ids_sorted)
+    points = Vector{Point2D{T}}(undef, length(vertex_ids))
+    for (i, v) in enumerate(vertex_ids)
         points[i] = mesh.points[v]
     end
     # remap vertex ids in faces
