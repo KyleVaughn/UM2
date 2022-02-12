@@ -7,6 +7,7 @@ struct AAB{Dim, T}
 end
 
 const AAB2D = AAB{2}
+const AAB3D = AAB{3}
 
 function Base.getproperty(aab::AAB, sym::Symbol)
     if sym === :xmin

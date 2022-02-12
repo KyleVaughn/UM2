@@ -25,10 +25,14 @@ using StaticArrays
             # Multiplication
             p = 4*p₁
             @test p == [4, 8]
+            p = Point2D{F}(1,2) * Point2D{F}(3,4)
+            @test p == [3, 8]
 
             # Division
             p = p₁/4
             @test p == [1//4, 1//2]
+            p = Point2D{F}(8,4) / Point2D{F}(2,4)
+            @test p == [4, 1]
 
             # Dot product
             p₁ = Point2D{F}(2, 3)       

@@ -48,9 +48,11 @@ Point(x...) = Point(SVector(x))
 
 @inline *(n::Number, p::Point) = Point(n * p.coord) 
 @inline *(p::Point, n::Number) = Point(p.coord * n)
+@inline *(p₁::Point, p₂::Point) = Point(p₁.coord .* p₂.coord)
 
 @inline /(n::Number, p::Point) = Point(n / p.coord) 
 @inline /(p::Point, n::Number) = Point(p.coord / n)
+@inline /(p₁::Point, p₂::Point) = Point(p₁.coord ./ p₂.coord)
 
 @inline ⋅(p₁::Point, p₂::Point) = dot(p₁.coord, p₂.coord)
 @inline ×(p₁::Point, p₂::Point) = cross(p₁.coord, p₂.coord)

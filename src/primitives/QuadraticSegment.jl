@@ -99,28 +99,42 @@ end
 # 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁
 # 𝗾′(r) = 2r𝘂 + 𝘃 ⟹  r_x, r_y = -𝘃 ./ 2𝘂
 # Compare the extrema with the segment's endpoints to find the AAB
-function boundingbox(q::QuadraticSegment2D)
+function boundingbox(q::QuadraticSegment{N}) where {N}
     𝘂 = q.𝘂
     𝘃 = q.𝘃
-    r_x, r_y = 𝘃 ./ -2𝘂
-    if 0 < r_x < 1
-        x_stationary = (r_x^2)𝘂[1] + r_x*𝘃[1] + q.𝘅₁[1]
-        xmin = min(q.𝘅₁.x, q.𝘅₂.x, x_stationary)
-        xmax = max(q.𝘅₁.x, q.𝘅₂.x, x_stationary)
-    else
-        xmin = min(q.𝘅₁.x, q.𝘅₂.x)
-        xmax = max(q.𝘅₁.x, q.𝘅₂.x)
+    𝗿 = 𝘃 ./ -2𝘂
+    𝗽_stationary = 𝗿*𝗿*𝘂 + 𝗿*𝘃 + q.𝘅₁
+    𝗽_min = min.(q.𝘅₁.coord, q.𝘅₂.coord)
+    𝗽_max = max.(q.𝘅₁.coord, q.𝘅₂.coord)
+    if N === 2
+        x_min, y_min = 𝗽_min
+        x_max, y_max = 𝗽_max
+        if 0 < 𝗿[1] < 1
+            x_min = min(𝗽_min[1], 𝗽_stationary[1])
+            x_max = max(𝗽_max[1], 𝗽_stationary[1])
+        end
+        if 0 < 𝗿[2] < 1
+            y_min = min(𝗽_min[2], 𝗽_stationary[2])
+            y_max = max(𝗽_max[2], 𝗽_stationary[2])
+        end
+        return AAB2D(Point2D(x_min, y_min), Point2D(x_max,y_max))
+    else # N === 3
+        x_min, y_min, z_min = 𝗽_min
+        x_max, y_max, z_max = 𝗽_max
+        if 0 < 𝗿[1] < 1
+            x_min = min(𝗽_min[1], 𝗽_stationary[1])
+            x_max = max(𝗽_max[1], 𝗽_stationary[1])
+        end
+        if 0 < 𝗿[2] < 1
+            y_min = min(𝗽_min[2], 𝗽_stationary[2])
+            y_max = max(𝗽_max[2], 𝗽_stationary[2])
+        end
+        if 0 < 𝗿[3] < 1
+            z_min = min(𝗽_min[3], 𝗽_stationary[3])
+            z_max = max(𝗽_max[3], 𝗽_stationary[3])
+        end
+        return AAB3D(Point3D(x_min, y_min, z_min), Point3D(x_max, y_max, z_max))
     end
-
-    if 0 < r_y < 1
-        y_stationary = (r_y^2)𝘂[2] + r_y*𝘃[2] + q.𝘅₁[2]
-        ymin = min(q.𝘅₁.y, q.𝘅₂.y, y_stationary)
-        ymax = max(q.𝘅₁.y, q.𝘅₂.y, y_stationary)
-    else
-        ymin = min(q.𝘅₁.y, q.𝘅₂.y)
-        ymax = max(q.𝘅₁.y, q.𝘅₂.y)
-    end
-    return AAB2D(Point2D(xmin, ymin), Point2D(xmax, ymax))
 end
 
 # Return the derivative of q, evalutated at r
@@ -145,52 +159,45 @@ jacobian(q::QuadraticSegment, r) = derivative(q, r)
 # of q at q_near and the vector from q_near to p, p - q_near.
 function isleft(p::Point2D, q::QuadraticSegment2D)
     if isstraight(q) || p ∉  boundingbox(q)
-        𝘂 = q.𝘅₂ - q.𝘅₁
-        𝘃 = p - q.𝘅₁
+        𝘃₁ = q.𝘅₂ - q.𝘅₁
+        𝘃₂ = p - q.𝘅₁
+        return 𝘃₁ × 𝘃₂ > 0
     else
-        check_curve, r, q_near = _is_left_nearest_point(p, q)
-        if check_curve
+        # See nearest_point for an explanation of the math.
+        # When the cubic has 3 real roots, the point must be inside the
+        # curve of the segment. Meaning: 
+        #   If the segment curves left, the point is right.
+        #   If the segment curves right, the point is left.
+        # This way we save substantial time by bypassing the complex number arithmetic
+        𝘂 = q.𝘂
+        𝘃 = q.𝘃
+        𝘄 = p - q.𝘅₁
+        # f′(r) = ar³ + br² + cr + d = 0
+        a = 4(𝘂 ⋅ 𝘂)
+        b = 6(𝘂 ⋅ 𝘃)
+        c = 2((𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄))
+        d = -2(𝘃 ⋅ 𝘄)
+        # Lagrange's method
+        e₁ = s₀ = -b/a
+        e₂ = c/a
+        e₃ = -d/a
+        A = 2e₁^3 - 9e₁*e₂ + 27e₃
+        B = e₁^2 - 3e₂
+        if A^2 - 4B^3 > 0 # one real root
+            s₁ = ∛((A + √(A^2 - 4B^3))/2)
+            if s₁ == 0
+                s₂ = s₁
+            else
+                s₂ = B/s₁
+            end
+            r = (s₀ + s₁ + s₂)/3
+            𝘃₁ = 𝗗(q, r)
+            𝘃₂ = p - q(r)
+            return 𝘃₁ × 𝘃₂ > 0
+        else # three real roots
             return (q.𝘅₂ - q.𝘅₁) × (q.𝘅₃ - q.𝘅₁) < 0
         end
-        𝘂 = 𝗗(q, r)
-        𝘃 = p - q_near
     end
-    return 𝘂 × 𝘃 > 0
-end
-
-# A nearest point function that exits quickly in the case that the cubic equation 
-# has 3 real roots. When the cubic has 3 real roots, the point must be inside the
-# curve of the segment. Meaning: 
-#   If the segment curves left, the point is right.
-#   If the segment curves right, the point is left.
-# This way we save substantial time by bypassing the complex number arithmetic
-function _is_left_nearest_point(p::Point2D{T}, q::QuadraticSegment) where {T}
-    𝘂 = q.𝘂
-    𝘃 = q.𝘃
-    𝘄 = p - q.𝘅₁
-    # f′(r) = ar³ + br² + cr + d = 0
-    a = 4(𝘂 ⋅ 𝘂)
-    b = 6(𝘂 ⋅ 𝘃)
-    c = 2((𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄))   
-    d = -2(𝘃 ⋅ 𝘄)
-    # Lagrange's method
-    e₁ = s₀ = -b/a
-    e₂ = c/a
-    e₃ = -d/a
-    A = 2e₁^3 - 9e₁*e₂ + 27e₃
-    B = e₁^2 - 3e₂
-    if A^2 - 4B^3 > 0 # one real root
-        s₁ = ∛((A + √(A^2 - 4B^3))/2)
-        if s₁ == 0
-            s₂ = s₁
-        else
-            s₂ = B/s₁
-        end
-        r = (s₀ + s₁ + s₂)/3
-        return false, r, q(r)
-    else # three real roots
-        return true, zero(T), zero(Point2D{T})
-    end 
 end
 
 # If the quadratic segment is effectively linear
@@ -198,9 +205,13 @@ end
 # Check the sign of the cross product of the vectors (𝘅₃ - 𝘅₁) and (𝘅₂ - 𝘅₁)
 # If the line is straight, 𝘅₃ - 𝘅₁ = c(𝘅₂ - 𝘅₁) where c ∈ (0, 1), hence
 # (𝘅₃ - 𝘅₁) × (𝘅₂ - 𝘅₁) = 𝟬
-@inline function isstraight(q::QuadraticSegment)
-    return norm((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-8
+@inline function isstraight(q::QuadraticSegment2D)
+    return abs((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-8
 end
+@inline function isstraight(q::QuadraticSegment3D)
+    return norm²((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-16
+end
+
 
 # Intersection between a line segment and quadratic segment
 #
@@ -296,6 +307,7 @@ end
 # The minimum of f(r) occurs when f′(r) = ar³ + br² + cr + d = 0, where
 # 𝘄 = 𝘆 - 𝘅₁, a = 4(𝘂 ⋅ 𝘂), b = 6(𝘂 ⋅ 𝘃), c = 2[(𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄)], d = -2(𝘃 ⋅ 𝘄)
 # Lagrange's method (https://en.wikipedia.org/wiki/Cubic_equation#Lagrange's_method)
+# is used to find the roots.
 function nearest_point(p::Point{Dim,T}, q::QuadraticSegment) where {Dim,T}
     𝘂 = q.𝘂
     𝘃 = q.𝘃

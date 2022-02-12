@@ -51,7 +51,6 @@ function centroid(poly::Polygon{N, Dim, T}) where {N, Dim, T}
         a = zero(Point{Dim, T}) # Vector
         c = SVector{2,T}(0,0,0)
     end
-    @error
     for i ∈ 1:N-1
         subarea = poly[i] × poly[i+1]
         c += subarea*(poly[i] + poly[i+1])
