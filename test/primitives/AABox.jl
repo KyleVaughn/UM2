@@ -1,9 +1,9 @@
 using MOCNeutronTransport
-@testset "AAB2D" begin
+@testset "AABox2D" begin
     @testset "$F" for F in [Float32, Float64, BigFloat]
         @testset "Methods" begin
             # getproperty
-            aab = AAB2D(Point2D{F}(1, 0), Point2D{F}(3, 2))
+            aab = AABox2D(Point2D{F}(1, 0), Point2D{F}(3, 2))
             @test aab.xmin ≈ 1
             @test aab.ymin ≈ 0
             @test aab.xmax ≈ 3
@@ -52,8 +52,8 @@ using MOCNeutronTransport
             @test !hit
 
             # union
-            r1 = AAB2D(Point2D{F}(0, 0), Point2D{F}(2, 2)) 
-            r2 = AAB2D(Point2D{F}(1, 1), Point2D{F}(4, 4)) 
+            r1 = AABox2D(Point2D{F}(0, 0), Point2D{F}(2, 2)) 
+            r2 = AABox2D(Point2D{F}(1, 1), Point2D{F}(4, 4)) 
             r3 = r1 ∪ r2
             @test r3.xmin ≈ 0
             @test r3.ymin ≈ 0

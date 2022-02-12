@@ -9,6 +9,8 @@ const Quadrilateral   = Polygon{4}
 const Hexagon         = Polygon{6}
 const Triangle2D      = Polygon{3,2}
 const Quadrilateral2D = Polygon{4,2}
+const Triangle3D      = Polygon{3,3}
+const Quadrilateral3D = Polygon{4,3}
 
 Base.@propagate_inbounds function Base.getindex(poly::Polygon, i::Integer)
     getfield(poly, :points)[i]
@@ -73,18 +75,18 @@ function Base.in(p::Point2D, poly::Polygon{N, 2, T}) where {N, T}
     end
     return bool
 end
-# Test if a point is in a polygon for 2D points/polygons
-function Base.in(p::Point2D, poly::Polygon{N, 2, T}) where {N, T}
-    # Test if the point is to the left of each edge.
-    bool = true
-    for i ∈ 1:N
-        if !isleft(p, LineSegment2D(poly[(i - 1) % N + 1], poly[i % N + 1]))
-            bool = false
-            break
-        end
-    end
-    return bool
-end
+## Test if a point is in a polygon for 2D points/polygons
+#function Base.in(p::Point2D, poly::Polygon{N, 2, T}) where {N, T}
+#    # Test if the point is to the left of each edge.
+#    bool = true
+#    for i ∈ 1:N
+#        if !isleft(p, LineSegment2D(poly[(i - 1) % N + 1], poly[i % N + 1]))
+#            bool = false
+#            break
+#        end
+#    end
+#    return bool
+#end
 
 
 # Intersection of a line segment and polygon in 2D

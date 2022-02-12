@@ -19,6 +19,8 @@ const QuadraticTriangle        = QuadraticPolygon{6}
 const QuadraticQuadrilateral   = QuadraticPolygon{8}
 const QuadraticTriangle2D      = QuadraticPolygon{6,2}
 const QuadraticQuadrilateral2D = QuadraticPolygon{8,2}
+const QuadraticTriangle3D      = QuadraticPolygon{6,3}
+const QuadraticQuadrilateral3D = QuadraticPolygon{8,3}
 
 Base.@propagate_inbounds function Base.getindex(poly::QuadraticPolygon, i::Integer)
     getfield(poly, :points)[i]

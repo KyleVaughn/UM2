@@ -57,7 +57,7 @@ include("./primitives/Face.jl")
 include("./primitives/VectorND.jl")
 include("./primitives/Point.jl")
 include("./primitives/LineSegment.jl")
-include("./primitives/AAB.jl")
+include("./primitives/AABox.jl")
 include("./primitives/QuadraticSegment.jl")
 include("./primitives/Polygon.jl")
 include("./primitives/QuadraticPolygon.jl")
@@ -76,19 +76,20 @@ include("gauss_legendre_quadrature.jl")
 
 
 # Structs/Types
-export AAB, AAB2D,
-       Edge, Edge2D,
-       Face, Face2D,
+export AABox, AABox2D, AABox3D,
+       Edge, Edge2D, Edge3D,
+       Face, Face2D, Face3D,
        Hexagon,
-       LineSegment, LineSegment2D,
+       LineSegment, LineSegment2D, LineSegment3D,
        MeshPartition,
-       Point, Point2D, Polygon, PolygonMesh, 
+       Point, Point2D, Point3D, Polygon, PolygonMesh, 
        QuadraticPolygon, QuadraticPolygonMesh, QuadraticSegment, QuadraticSegment2D,
-       QuadraticTriangle, QuadraticTriangle2D, QuadraticQuadrilateral,
-       QuadraticQuadrilateral2D, QuadraticTriangleMesh, QuadraticQuadrilateralMesh,
-       Quadrilateral, Quadrilateral2D,
-       Tree, Triangle, Triangle2D, TriangleMesh,
-       UnstructureMesh, UnstructuredMesh2D,
+       QuadraticSegment3D, QuadraticTriangle, QuadraticTriangle2D, QuadraticTriangle3D,
+       QuadraticQuadrilateral, QuadraticQuadrilateral2D, QuadraticQuadrilateral2D, 
+       QuadraticTriangleMesh, QuadraticQuadrilateralMesh, Quadrilateral, Quadrilateral2D,
+       Quadrilateral3D,
+       Tree, Triangle, Triangle2D, Triangle3D, TriangleMesh,
+       UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D,
        Vector2D, Vector3D
 
 # Convenience operators

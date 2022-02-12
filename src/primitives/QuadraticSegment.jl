@@ -98,7 +98,7 @@ end
 # and r_y such that dy/dr = 0
 # 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁
 # 𝗾′(r) = 2r𝘂 + 𝘃 ⟹  r_x, r_y = -𝘃 ./ 2𝘂
-# Compare the extrema with the segment's endpoints to find the AAB
+# Compare the extrema with the segment's endpoints to find the AABox
 function boundingbox(q::QuadraticSegment{N}) where {N}
     𝘂 = q.𝘂
     𝘃 = q.𝘃
@@ -107,33 +107,33 @@ function boundingbox(q::QuadraticSegment{N}) where {N}
     𝗽_min = min.(q.𝘅₁.coord, q.𝘅₂.coord)
     𝗽_max = max.(q.𝘅₁.coord, q.𝘅₂.coord)
     if N === 2
-        x_min, y_min = 𝗽_min
-        x_max, y_max = 𝗽_max
+        xmin, ymin = 𝗽_min
+        xmax, ymax = 𝗽_max
         if 0 < 𝗿[1] < 1
-            x_min = min(𝗽_min[1], 𝗽_stationary[1])
-            x_max = max(𝗽_max[1], 𝗽_stationary[1])
+            xmin = min(𝗽_min[1], 𝗽_stationary[1])
+            xmax = max(𝗽_max[1], 𝗽_stationary[1])
         end
         if 0 < 𝗿[2] < 1
-            y_min = min(𝗽_min[2], 𝗽_stationary[2])
-            y_max = max(𝗽_max[2], 𝗽_stationary[2])
+            ymin = min(𝗽_min[2], 𝗽_stationary[2])
+            ymax = max(𝗽_max[2], 𝗽_stationary[2])
         end
-        return AAB2D(Point2D(x_min, y_min), Point2D(x_max,y_max))
+        return AABox2D(Point2D(xmin, ymin), Point2D(xmax, ymax))
     else # N === 3
-        x_min, y_min, z_min = 𝗽_min
-        x_max, y_max, z_max = 𝗽_max
+        xmin, ymin, zmin = 𝗽_min
+        xmax, ymax, zmax = 𝗽_max
         if 0 < 𝗿[1] < 1
-            x_min = min(𝗽_min[1], 𝗽_stationary[1])
-            x_max = max(𝗽_max[1], 𝗽_stationary[1])
+            xmin = min(𝗽_min[1], 𝗽_stationary[1])
+            xmax = max(𝗽_max[1], 𝗽_stationary[1])
         end
         if 0 < 𝗿[2] < 1
-            y_min = min(𝗽_min[2], 𝗽_stationary[2])
-            y_max = max(𝗽_max[2], 𝗽_stationary[2])
+            ymin = min(𝗽_min[2], 𝗽_stationary[2])
+            ymax = max(𝗽_max[2], 𝗽_stationary[2])
         end
         if 0 < 𝗿[3] < 1
-            z_min = min(𝗽_min[3], 𝗽_stationary[3])
-            z_max = max(𝗽_max[3], 𝗽_stationary[3])
+            zmin = min(𝗽_min[3], 𝗽_stationary[3])
+            zmax = max(𝗽_max[3], 𝗽_stationary[3])
         end
-        return AAB3D(Point3D(x_min, y_min, z_min), Point3D(x_max, y_max, z_max))
+        return AABox3D(Point3D(xmin, ymin, zmin), Point3D(xmax, ymax, zmax))
     end
 end
 
