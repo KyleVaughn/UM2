@@ -24,7 +24,7 @@ import LinearAlgebra: ×, ⋅, norm, inv
 # Optional compilation/local dependencies
 # ---------------------------------------------------------------------------------------------
 if enable_visualization 
-    using GLMakie: Axis, Figure, LineSegments, Mesh, Scatter, current_axis, record
+    using GLMakie: Axis, Axis3, Figure, LineSegments, Mesh, Scatter, current_axis, record
     import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
 end
 # Gmsh
@@ -133,7 +133,7 @@ export gmsh,
  
 # Plot
 if enable_visualization
-    export Figure, Axis
+    export Figure, Axis, Axis3
     export scatter, linesegments, mesh,
            scatter!, linesegments!, mesh!
 end

@@ -9,6 +9,7 @@ struct LineSegment{Dim, T} <:Edge{Dim, 1, T}
 end
 
 const LineSegment2D = LineSegment{2}
+const LineSegment3D = LineSegment{3}
 
 function Base.getproperty(l::LineSegment, sym::Symbol)
     if sym === :𝘅₂
@@ -75,6 +76,19 @@ function Base.intersect(l₁::LineSegment2D{T}, l₂::LineSegment2D{T}) where {T
     s = (𝘄 × l₁.𝘂)/z
     return (T(1e-8) < abs(z) && -ϵ ≤ r ≤ 1 + ϵ 
                              && -ϵ ≤ s ≤ 1 + ϵ, l₂(s)) # (hit, point)
+end
+function Base.intersect(l₁::LineSegment3D{T}, l₂::LineSegment3D{T}) where {T}
+    ϵ = T(5e-6) # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
+    𝘂 = l₁.𝘂
+    𝘃 = l₂.𝘂
+    𝘇 = 𝘂 × 𝘃
+    𝘄 = l₂.𝘅₁ - l₁.𝘅₁
+    𝘅 = 𝘄 × 𝘃 
+    𝘆 = 𝘄 × 𝘂
+    r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇)
+    s = r*(𝘅 ⋅ 𝘆)/(𝘅 ⋅ 𝘅)
+    return (T(1e-16) < norm²(𝘇) && -ϵ ≤ r ≤ 1 + ϵ 
+                                && -ϵ ≤ s ≤ 1 + ϵ, l₂(s)) # (hit, point)
 end
 
 # If the point is left of the line segment in the 2D plane. 

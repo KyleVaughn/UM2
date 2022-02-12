@@ -4,6 +4,7 @@ struct Point{Dim, T}
 end
 
 const Point2D = Point{2}
+const Point3D = Point{3}
 
 Base.broadcastable(p::Point) = Ref(p)
 Base.@propagate_inbounds function Base.getindex(p::Point, i::Integer)

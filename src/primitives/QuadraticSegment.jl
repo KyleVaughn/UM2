@@ -19,6 +19,7 @@ struct QuadraticSegment{Dim, T} <:Edge{Dim, 2, T}
 end
 
 const QuadraticSegment2D = QuadraticSegment{2}
+const QuadraticSegment3D = QuadraticSegment{3}
 
 Base.@propagate_inbounds function Base.getindex(q::QuadraticSegment, i::Integer)
     getfield(q, :points)[i]

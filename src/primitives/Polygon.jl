@@ -1,4 +1,4 @@
-# A polygon defined by its vertices in counterclockwise order 
+# A planar polygon defined by its vertices in counterclockwise order 
 struct Polygon{N, Dim, T} <:Face{Dim, 1, T}
     points::SVector{N, Point{Dim, T}}
 end
@@ -30,7 +30,7 @@ Polygon(x...) = Polygon(SVector(x))
 function area(poly::Polygon{N, Dim, T}) where {N, Dim, T}
     if Dim === 2
         a = zero(T) # Scalar
-    else
+    else # Dim === 3
         a = zero(Point{Dim, T}) # Vector
     end
     for i ∈ 1:N
@@ -41,11 +41,17 @@ end
 # We can simplify the above for triangles
 area(tri::Triangle) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
 
-# Centroid for polygons in the 2D plane
+# Centroid for polygons
 # (https://en.wikipedia.org/wiki/Centroid#Of_a_polygon)
-function centroid(poly::Polygon{N, 2, T}) where {N, T}
-    c = SVector{2,T}(0,0)
-    a = zero(T)
+function centroid(poly::Polygon{N, Dim, T}) where {N, Dim, T}
+    if Dim === 2
+        a = zero(T) # Scalar
+        c = SVector{2,T}(0,0)
+    else
+        a = zero(Point{Dim, T}) # Vector
+        c = SVector{2,T}(0,0,0)
+    end
+    @error
     for i ∈ 1:N-1
         subarea = poly[i] × poly[i+1]
         c += subarea*(poly[i] + poly[i+1])
@@ -54,7 +60,7 @@ function centroid(poly::Polygon{N, 2, T}) where {N, T}
     return Point(c/(3a))
 end
 # Use a faster method for triangles
-centroid(tri::Triangle{2}) = Point2D((tri[1] + tri[2] + tri[3])/3)
+centroid(tri::Triangle) = Point((tri[1] + tri[2] + tri[3])/3)
 
 # Test if a point is in a polygon for 2D points/polygons
 function Base.in(p::Point2D, poly::Polygon{N, 2, T}) where {N, T}
@@ -68,6 +74,19 @@ function Base.in(p::Point2D, poly::Polygon{N, 2, T}) where {N, T}
     end
     return bool
 end
+# Test if a point is in a polygon for 2D points/polygons
+function Base.in(p::Point2D, poly::Polygon{N, 2, T}) where {N, T}
+    # Test if the point is to the left of each edge.
+    bool = true
+    for i ∈ 1:N
+        if !isleft(p, LineSegment2D(poly[(i - 1) % N + 1], poly[i % N + 1]))
+            bool = false
+            break
+        end
+    end
+    return bool
+end
+
 
 # Intersection of a line segment and polygon in 2D
 function Base.intersect(l::LineSegment2D{T}, poly::Polygon{N, 2, T}

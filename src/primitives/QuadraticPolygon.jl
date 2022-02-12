@@ -44,20 +44,28 @@ function area(tri6::QuadraticTriangle2D)
     # Mathematica for this algebraic nightmare
     a = (tri6[6] - tri6[4]) × tri6[1].coord
     b = (tri6[4] - tri6[5]) × tri6[2].coord
-    c = (tri6[5] - tri6[6]) × tri6[3].coord)
-    @error "fix me"
-    return (
-            4(
-              ((tri6[6] - tri6[4]) × tri6[1].coord) + 
-              ((tri6[4] - tri6[5]) × tri6[2].coord) +
-              ((tri6[5] - tri6[6]) × tri6[3].coord)
-             ) +
-              ((tri6[1] - tri6[2]) × tri6[3].coord) + tri6[2]  × tri6[1]
-           )/6
+    c = (tri6[5] - tri6[6]) × tri6[3].coord
+    d = (tri6[1] - tri6[2]) × tri6[3].coord
+    e = tri6[2]  × tri6[1]
+    return (4(a + b + c) + d + e)/6
 end
 
 # This likely has a simple analytic solution that should be worked out
 area(quad8::QuadraticQuadrilateral2D) = area(quad8, Val(2))
+#Integrate[n, {r, 0, 1}, {s, 0, 1},
+# Assumptions ->
+#  Im[Subscript[a, x]] == 0 && Im[Subscript[a, y]] == 0 &&
+#   Im[Subscript[b, x]] == 0 && Im[Subscript[b, y]] == 0 &&
+#   Im[Subscript[c, x]] == 0 && Im[Subscript[c, y]] == 0 &&
+#   Im[Subscript[d, x]] == 0 &&
+#   Im[Subscript[d, y]] ==
+#    0 &&
+#                                                             \
+#
+#   Im[Subscript[e, x]] == 0 && Im[Subscript[e, y]] == 0 &&
+#   Im[Subscript[f, x]] == 0 && Im[Subscript[f, y]] == 0 &&
+#   Im[Subscript[g, x]] == 0 && Im[Subscript[g, y]] == 0 &&
+#   Im[Subscript[h, x]] == 0 && Im[Subscript[h, y]] == 0]
 # 
 #   1/12 (4 Cy Dx - 4 Cx Dy + Ay Ex + Cy Ex + Dy Ex - Ax Ey - Cx Ey - 
 #   Dx Ey + 7 Ay Fx + 35 Cy Fx + 7 Dy Fx - 12 Ey Fx - 7 Ax Fy - 
