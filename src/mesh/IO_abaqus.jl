@@ -32,95 +32,23 @@ function read_abaqus2d(filepath::String, floattype::Type{T}=Float64) where {T<:A
                     name = name[1:length(name)-4]
                 end
             elseif "*NODE" == line
-                read_abaqus_nodes_2d!(file, points)
+                _read_abaqus_nodes_2d!(file, points)
             elseif occursin("*ELEMENT", line)
                 linesplit = split(line)
                 element_type = String(strip(replace(linesplit[2], ("type=" => "")), ','))
-                read_abaqus_elements!(file, faces_vecs, element_type)
+                _read_abaqus_elements!(file, faces_vecs, element_type)
             elseif occursin("*ELSET", line)
                 linesplit = split(line)
                 set_name = String(replace(linesplit[1], ("*ELSET,ELSET=" => "")))
-                face_sets[set_name] = read_abaqus_elset(file)
+                face_sets[set_name] = _read_abaqus_elset(file)
             end
         end
     end
     close(file)
-    # Determine face types
-    face_lengths = Int64[]
-    for face in faces_vecs  
-        l = length(face)
-        if l ∉ face_lengths
-            push!(face_lengths, l)
-        end
-    end
-    if all(x->x < 6, face_lengths) # Linear mesh  
-        if face_lengths == [3]
-            faces = [ SVector{3, UInt64}(f) for f in faces_vecs]
-            edges = _create_linear_edges_from_faces(faces)
-            U = _select_mesh_UInt_type(length(edges))
-            faces_U, edges_U = _convert_faces_edges(U, faces, edges)
-            return TriangleMesh{2,floattype, U}(name = name,
-                                          points = points,
-                                          edges = edges_U,
-                                          faces = faces_U,
-                                          face_sets = face_sets)
-        elseif face_lengths == [4]
-            faces = [ SVector{4, UInt64}(f) for f in faces_vecs]
-            edges = _create_linear_edges_from_faces(faces)
-            U = _select_mesh_UInt_type(length(edges))
-            faces_U, edges_U = _convert_faces_edges(U, faces, edges)
-            return QuadrilateralMesh{2,floattype, U}(name = name,
-                                          points = points,
-                                          edges = edges_U,
-                                          faces = faces_U, 
-                                          face_sets = face_sets)
-        else
-            faces = [ SVector{length(f), UInt64}(f) for f in faces_vecs]
-            edges = _create_linear_edges_from_faces(faces)
-            U = _select_mesh_UInt_type(length(edges))
-            faces_U, edges_U = _convert_faces_edges(U, faces, edges) 
-            return PolygonMesh{2,floattype, U}(name = name,
-                                          points = points,
-                                          edges = edges_U,
-                                          faces = faces_U, 
-                                          face_sets = face_sets)
-        end
-    else # Quadratic Mesh
-        if face_lengths == [6]
-            faces = [ SVector{6, UInt64}(f) for f in faces_vecs]
-            edges = _create_quadratic_edges_from_faces(faces)
-            U = _select_mesh_UInt_type(length(edges))
-            faces_U, edges_U = _convert_faces_edges(U, faces, edges) 
-            return QuadraticTriangleMesh{2,floattype, U}(name = name,
-                                          points = points,
-                                          edges = edges_U,
-                                          faces = faces_U, 
-                                          face_sets = face_sets)
-        elseif face_lengths == [8]
-            faces = [ SVector{8, UInt64}(f) for f in faces_vecs]
-            edges = _create_quadratic_edges_from_faces(faces)
-            U = _select_mesh_UInt_type(length(edges))
-            faces_U, edges_U = _convert_faces_edges(U, faces, edges) 
-            return QuadraticQuadrilateralMesh{2,floattype, U}(name = name,
-                                          points = points,
-                                          edges = edges_U,
-                                          faces = faces_U, 
-                                          face_sets = face_sets)
-        else
-            faces = [ SVector{length(f), UInt64}(f) for f in faces_vecs]
-            edges = _create_quadratic_edges_from_faces(faces)
-            U = _select_mesh_UInt_type(length(edges))
-            faces_U, edges_U = _convert_faces_edges(U, faces, edges) 
-            return QuadraticPolygonMesh{2,floattype, U}(name = name,
-                                          points = points,
-                                          edges = edges_U,
-                                          faces = faces_U, 
-                                          face_sets = face_sets)
-        end
-    end
+    return _create_2d_mesh_from_vector_faces(name, points, faces_vecs, face_sets)
 end
 
-function read_abaqus_nodes_2d!(file::IOStream, points::Vector{Point2D{T}}) where {T}
+function _read_abaqus_nodes_2d!(file::IOStream, points::Vector{Point2D{T}}) where {T}
     # Count the number of nodes
     file_position = position(file)
     npoints = 0
@@ -146,8 +74,8 @@ function read_abaqus_nodes_2d!(file::IOStream, points::Vector{Point2D{T}}) where
     return nothing
 end
 
-function read_abaqus_elements!(file::IOStream, faces::Vector{Vector{UInt64}}, 
-                               element_type::String)
+function _read_abaqus_elements!(file::IOStream, faces::Vector{Vector{UInt64}}, 
+                                element_type::String)
     if !(element_type ∈ valid_abaqus_types)  
         @error "$element_type is not in the valid abaqus types"
     end
@@ -168,7 +96,7 @@ function read_abaqus_elements!(file::IOStream, faces::Vector{Vector{UInt64}},
     return faces
 end
 
-function read_abaqus_elset(file::IOStream)
+function _read_abaqus_elset(file::IOStream)
     linesplit = strip.(split(readuntil(file, "*")), [','])
     seek(file, position(file)-1)
     return BitSet(parse.(Int64, linesplit))
