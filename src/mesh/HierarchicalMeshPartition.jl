@@ -1,4 +1,5 @@
-# A tree representing a hierarchical mesh partition.
+# A tree representing a hierarchical mesh partition. 
+# Used in the HierarchicalMeshPartition type
 #
 # Each node has the name of the partition and an ID.
 # If the node is an internal node, it has id = 0.
@@ -11,7 +12,7 @@ mutable struct MeshPartitionTree <: Tree
     children::Union{Nothing, Vector{MeshPartitionTree}}
     MeshPartitionTree(name) = new(name, 0, nothing, nothing)
     function MeshPartitionTree(name, parent::MeshPartitionTree)
-        this = new(data, 0, parent, nothing)
+        this = new(name, 0, parent, nothing)
         if isnothing(parent.children)
             parent.children = [this]
         else
@@ -22,9 +23,9 @@ mutable struct MeshPartitionTree <: Tree
 end
 
 function Base.show(io::IO, tree::MeshPartitionTree, predecessor_string::String)
-    if is_root(tree)
+    if isroot(tree)
         next_predecessor_string = ""
-    elseif !is_root(tree) || next_predecessor_string != ""
+    elseif !isroot(tree) || next_predecessor_string != ""
         last_child = is_parents_last_child(tree)
         if last_child
             print(io, predecessor_string * "└─ ")
@@ -36,13 +37,13 @@ function Base.show(io::IO, tree::MeshPartitionTree, predecessor_string::String)
     else
         next_predecessor_string = "   "
     end
-    if id === 0 # non-leaf node
+    if tree.id === 0 # internal node
         println(io, tree.name)
     else
         println(io, tree.name*", ID: "*string(tree.id) )
     end 
     if !isnothing(tree.children)
-        for child in tree.children
+        for child ∈ tree.children
             show(io, child, next_predecessor_string)
         end 
     end 
@@ -64,39 +65,29 @@ end
 function partition_mesh(mesh::UnstructuredMesh2D; by::String="GRID_L")
     @info "Partitioning mesh"
     by = uppercase(by)
-    # Extract set names, partition names, and max level
-    partition_names, max_level = _get_partition_names(mesh, by)
+    # Extract the names of all face sets that contain 'by' (the variable)
+    partition_names = _get_partition_names(mesh, by)
 
     # Create a tree to store the partition hierarchy.
-    root, leaf_meshes = _create_partition_tree_and_leaf_meshes(mesh, by, partition_names, max_level)
+    root = _create_mesh_partition_tree(mesh, partition_names)
 
-#    # Construct the leaf meshes
-#    leaf_meshes = _create_leaf_meshes(mesh, by, partition_names, max_level)
+    # Construct the leaf meshes
+    leaf_meshes = _create_leaf_meshes(mesh, by, root)
 
     return HierarchicalMeshPartition(root, leaf_meshes)
 end
 
-function _create_leaf_meshes(mesh::M, by::String, 
-                             partition_names::Vector{String}, 
-                             max_level::Int64) where {M<:UnstructuredMesh2D}
+function _create_leaf_meshes(mesh::M, by::String, root::MeshPartitionTree) where {M<:UnstructuredMesh2D}
+    leaf_nodes = leaves(root)
+    mesh_counter = 0
     leaf_meshes = M[]
-    leaf_names = String[]
-    for name in partition_names
-        level = 1
-        try
-            level = parse(Int64, name[length(by) + 1])
-        catch
-            level = 1
-        end
-        if level == max_level
-            push!(leaf_names, name)
-        end
+    for node ∈ leaf_nodes
+        mesh_counter += 1
+        node.id = mesh_counter
+        push!(leaf_meshes, submesh(node.name, mesh))
     end
-    for name in leaf_names
-        push!(leaf_meshes, submesh(name, mesh))
-    end
-    for leaf_mesh in leaf_meshes
-        for name in keys(leaf_mesh.face_sets)
+    for leaf_mesh ∈ leaf_meshes
+        for name ∈ keys(leaf_mesh.face_sets)
             if occursin(by, uppercase(name))
                 delete!(leaf_mesh.face_sets, name)
             end
@@ -106,78 +97,59 @@ function _create_leaf_meshes(mesh::M, by::String,
 end
 
 # Create a tree to store grid relationships.
-function _create_partition_tree_and_leaf_meshes(mesh::M, 
-                                                by::String, 
-                                                partition_names::Vector{String}, 
-                                                max_level::Int64) where {M<:UnstructuredMesh2D}
+function _create_mesh_partition_tree(mesh::UnstructuredMesh, partition_names::Vector{String}) 
     root = MeshPartitionTree(mesh.name)
-    leaf_meshes = M[]
-    current_nodes = MeshPartitionTree[]
-    next_nodes = MeshPartitionTree[]
-    old_partition_names = copy(partition_names)
-    new_partition_names = copy(partition_names)
-    # Do first level
-    for partition_name in old_partition_names
-        partition_level = 1
-        try
-            partition_level = parse(Int64, partition_name[length(by) + 1])
-        catch
-            partition_level = 1
-        end
-        if partition_level === 1
-            if partition_level == max_level # is a leaf    
-                push!(leaf_meshes, submesh(partition_name, mesh))
-                push!(next_nodes, MeshParitionTree((partition_name, 
-                                                    length(leaf_meshes)), root))
-            else
-                push!(next_nodes, MeshPartitionTree(partition_name, root))
-            end
-            filter!(x->x ≠ partition_name, new_partition_names)
-        end
-    end
-    # Do all other levels, determining the face set's position in the tree by
-    # determining for which face sets it is a subset.
-    for level in 2:max_level
-        old_partition_names = copy(new_partition_names)
-        current_nodes = next_nodes
-        next_nodes = MeshPartitionTree[]
-        for partition_name in old_partition_names
-            partition_level = parse(Int64, partition_name[length(by) + 1])
-            if partition_level == level
-                # find the parent for this partition
-                partition_faces = mesh.face_sets[partition_name]
-                for node in current_nodes
-                    node_faces = mesh.face_sets[node.data]
-                    if partition_faces ⊆ node_faces
-                        if level == max_level # is a leaf    
-                            push!(leaf_meshes, submesh(partition_name, mesh))
-                            push!(next_nodes, MeshPartitionTree((partition_name, 
-                                                                 length(leaf_meshes)), node))
-                        else
-                            push!(next_nodes, MeshPartitionTree(partition_name, node))
-                        end
-                        filter!(x->x ≠ partition_name, new_partition_names)
-                        break
+    remaining_names = copy(partition_names)
+    LN_partition_names = copy(partition_names)
+    LN⁺_partition_names = String[]
+    LN⁻_nodes = MeshPartitionTree[root]
+    LN_nodes = MeshPartitionTree[]
+    while length(LN_partition_names) > 0
+        # Determine the names of nodes at this level
+        N = length(remaining_names)
+        for i ∈ 1:N
+            name_i = remaining_names[i] 
+            for j ∈ 1:N
+                if i === j
+                    continue
+                end
+                name_j = remaining_names[j]
+                if mesh.face_sets[name_i] ⊆ mesh.face_sets[name_j]
+                    if name_i ∈ LN_partition_names
+                        filter!(x->x ≠ name_i, LN_partition_names)
+                        push!(LN⁺_partition_names, name_i)
                     end
                 end
             end
         end
-    end
-    for leaf_mesh in leaf_meshes
-        for name in keys(leaf_mesh.face_sets)
-            if occursin(by, uppercase(name))
-                delete!(leaf_mesh.face_sets, name)
+        # For each name at level N, attach it to its level N-1 parent
+        for parent_node ∈ LN⁻_nodes
+            if isroot(parent_node) # All partition names are a subset
+                for child_name ∈ LN_partition_names
+                    push!(LN_nodes, MeshPartitionTree(child_name, parent_node))
+                end
+            else
+                for child_name ∈ LN_partition_names
+                    if mesh.face_sets[child_name] ⊆ mesh.face_sets[parent_node.name]
+                        push!(LN_nodes, MeshPartitionTree(child_name, parent_node))
+                    end
+                end
             end
         end
+        # Swap the old with the new
+        LN_partition_names = LN⁺_partition_names
+        LN⁺_partition_names = String[]
+        LN⁻_nodes = LN_nodes
+        LN_nodes = MeshPartitionTree[]
     end
-    return root, leaf_meshes
+    return root
 end
 
-# Extract set names, partition names, and max partition level
-function _process_partition_mesh_input(mesh::UnstructuredMesh2D, by::String)
+# Extract partition names
+function _get_partition_names(mesh::UnstructuredMesh2D, by::String)
     set_names = collect(keys(mesh.face_sets))
     partition_names = copy(set_names)
-    for set_name in set_names
+    for set_name ∈ set_names
         if !occursin(by, uppercase(set_name))
             filter!(x->x ≠ set_name, partition_names)
         end
@@ -185,20 +157,5 @@ function _process_partition_mesh_input(mesh::UnstructuredMesh2D, by::String)
     if length(partition_names) === 0
         @error "No partition face sets in mesh"
     end
-
-    # Get the number of partition levels
-    max_level = 1
-    try
-        for partition_name in partition_names
-            # No 10+ level hierarchy
-            level = parse(Int64, partition_name[length(by) + 1])
-            if max_level < level
-                max_level = level
-            end
-        end
-    catch
-        max_level = 1
-    end
-
-    return partition_names, max_level
+    return sort!(partition_names)
 end

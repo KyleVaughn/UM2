@@ -345,19 +345,19 @@ function _add_mesh_partition_xdmf!(xml::XMLElement,
                         node::Tree,
                         material_map::Dict{String, Int64})
     @debug "Adding HierarchicalMeshPartition"
-    if typeof(node.data) == String # Not a leaf
+    if node.id === 0 # Internal node
         # Grid
         xgrid = new_child(xml, "Grid")
-        set_attribute(xgrid, "Name", node.data)
+        set_attribute(xgrid, "Name", node.name)
         set_attribute(xgrid, "GridType", "Tree")
         # h5_group
-        h5_group = create_group(h5_mesh, node.data)
+        h5_group = create_group(h5_mesh, node.name)
         for child in node.children
             _add_mesh_partition_xdmf!(xgrid, h5_filename, h5_group, MP, 
                                       child, material_map)
         end
-    else # Node data is (name, leaf_mesh_index)
+    else # Leaf node 
         _add_uniform_grid_xdmf!(xml, h5_filename, h5_mesh, 
-                                MP.leaf_meshes[node.data[2]], material_map)
+                                MP.leaf_meshes[node.id], material_map)
     end
 end
