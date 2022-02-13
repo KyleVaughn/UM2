@@ -321,7 +321,7 @@ function submesh(name::String, mesh::UnstructuredMesh2D{Ord, T, U}) where {Ord, 
     end
     # At this point we have points, faces, & name.
     # Just need to get the face sets
-    face_sets = Dict{String, Set{U}}()
+    face_sets = Dict{String, BitSet}()
     for face_set_name in keys(mesh.face_sets)
         set_intersection = mesh.face_sets[face_set_name] ∩ face_ids
         if length(set_intersection) !== 0
@@ -329,22 +329,19 @@ function submesh(name::String, mesh::UnstructuredMesh2D{Ord, T, U}) where {Ord, 
         end
     end
     # Need to remap face ids in face sets
-    face_map = Dict{U, U}()
+    face_map = Dict{Int64, Int64}()
     for (i, f) in enumerate(face_ids)
         face_map[f] = i
     end
     for face_set_name in keys(face_sets)
-        new_set = Set{U}()
-        for fid in face_sets[face_set_name]
-            union!(new_set, face_map[fid])
-        end
-        face_sets[face_set_name] = new_set
+        face_sets[face_set_name] = BitSet(map(x->face_map[x], 
+                                              collect(face_sets[face_set_name])))
     end
     faces = [SVector{length(f), U}(f) for f in submesh_faces]
     if mesh isa LinearUnstructuredMesh 
-        edges = [convert(SVector{2, U}, edge) for edge in _create_linear_edges_from_faces(faces)]
+        edges = _create_linear_edges_from_faces(faces)
     else # QuadraticUnstructuredMesh
-        edges = [convert(SVector{3, U}, edge) for edge in _create_quadratic_edges_from_faces(faces)]
+        edges = _create_quadratic_edges_from_faces(faces)
     end
     return typeof(mesh)(name = name,
              points = points,
@@ -358,7 +355,7 @@ function _create_linear_edges_from_faces(faces::Vector{<:SArray{S, U, 1} where {
                                         ) where {U<:Unsigned}
     edge_vecs = linear_edges.(faces)
     num_edges = mapreduce(x->length(x), +, edge_vecs)
-    edges_unfiltered = Vector{SVector{2, UInt64}}(undef, num_edges)
+    edges_unfiltered = Vector{SVector{2, U}}(undef, num_edges)
     iedge = 1
     for edge in edge_vecs
         for i in eachindex(edge)
@@ -377,7 +374,7 @@ function _create_quadratic_edges_from_faces(faces::Vector{<:SArray{S, U, 1} wher
                                         ) where {U<:Unsigned}
     edge_vecs = quadratic_edges.(faces)
     num_edges = mapreduce(x->length(x), +, edge_vecs)
-    edges_unfiltered = Vector{SVector{3, UInt64}}(undef, num_edges)
+    edges_unfiltered = Vector{SVector{3, U}}(undef, num_edges)
     iedge = 1
     for edge in edge_vecs
         for i in eachindex(edge)
@@ -406,18 +403,11 @@ function _select_mesh_UInt_type(N::Int64)
     return U
 end
 
-function _convert_faces_edges_facesets(::Type{U}, 
-                                       faces::Vector{<:SArray{S, UInt64, 1} where {S<:Tuple}}, 
-                                       edges::Vector{<:SVector{N, UInt64}}, 
-                                       face_sets::Dict{String, Set{UInt64}}
-                                      ) where {U, N}
+function _convert_faces_edges(::Type{U}, 
+                              faces::Vector{<:SArray{S, UInt64, 1} where {S<:Tuple}}, 
+                              edges::Vector{<:SVector{N, UInt64}}, 
+                             ) where {U, N}
     faces_U = [ convert(SVector{length(face), U}, face) for face in faces ]
     edges_U = [ convert(SVector{length(edge), U}, edge) for edge in edges ] 
-    face_sets_U = Dict{String, Set{U}}()
-    for key in keys(face_sets)
-        face_sets_U[key] = convert(Set{U}, face_sets[key])
-    end
-    face_sets = nothing
-    return faces_U, edges_U, face_sets_U 
-
+    return faces_U, edges_U
 end

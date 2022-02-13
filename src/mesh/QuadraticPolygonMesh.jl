@@ -3,7 +3,7 @@ struct QuadraticPolygonMesh{Dim, T, U} <:QuadraticUnstructuredMesh{Dim, T, U}
     points::Vector{Point{Dim, T}}
     edges::Vector{SVector{3, U}}
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
-    face_sets::Dict{String, Set{U}}
+    face_sets::Dict{String, BitSet}
 end
 
 function QuadraticPolygonMesh{Dim, T, U}(;
@@ -11,7 +11,7 @@ function QuadraticPolygonMesh{Dim, T, U}(;
     points::Vector{Point{Dim, T}} = Point{Dim, T}[],
     edges::Vector{SVector{3, U}} = SVector{3, U}[],
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{6, U}[],
-    face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
+    face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {Dim, T, U}
     return QuadraticPolygonMesh(name, points, edges, faces, face_sets)
 end
@@ -21,7 +21,7 @@ struct QuadraticTriangleMesh{Dim, T, U} <:QuadraticUnstructuredMesh{Dim, T, U}
     points::Vector{Point{Dim, T}}
     edges::Vector{SVector{3, U}}
     faces::Vector{SVector{6, U}}
-    face_sets::Dict{String, Set{U}}
+    face_sets::Dict{String, BitSet}
 end
 
 function QuadraticTriangleMesh{Dim, T, U}(;
@@ -29,7 +29,7 @@ function QuadraticTriangleMesh{Dim, T, U}(;
     points::Vector{Point{Dim, T}} = Point{Dim, T}[],
     edges::Vector{SVector{3, U}} = SVector{3, U}[],
     faces::Vector{SVector{6, U}} = SVector{6, U}[],
-    face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
+    face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {Dim, T, U}
     return QuadraticTriangleMesh(name, points, edges, faces, face_sets)
 end
@@ -39,7 +39,7 @@ struct QuadraticQuadrilateralMesh{Dim, T, U} <:QuadraticUnstructuredMesh{Dim, T,
     points::Vector{Point{Dim, T}}
     edges::Vector{SVector{3, U}}
     faces::Vector{SVector{8, U}}
-    face_sets::Dict{String, Set{U}}
+    face_sets::Dict{String, BitSet}
 end
 
 function QuadraticQuadrilateralMesh{Dim, T, U}(;
@@ -47,7 +47,7 @@ function QuadraticQuadrilateralMesh{Dim, T, U}(;
     points::Vector{Point{Dim, T}} = Point{Dim, T}[],
     edges::Vector{SVector{3, U}} = SVector{3, U}[],
     faces::Vector{SVector{8, U}} = SVector{8, U}[],
-    face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
+    face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {Dim, T, U}
     return QuadraticQuadrilateralMesh(name, points, edges, faces, face_sets)
 end

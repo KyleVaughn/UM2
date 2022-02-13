@@ -47,6 +47,7 @@ function log_timestamps()
 end
 
 include("trees/Tree.jl")
+include("trees/AnyTree.jl")
 include("constants.jl")
 #include("operators.jl")
 include("./gmsh/gmsh_generate_rectangular_grid.jl")
@@ -65,7 +66,7 @@ include("./primitives/QuadraticPolygon.jl")
 include("./mesh/UnstructuredMesh.jl")
 include("./mesh/PolygonMesh.jl")
 include("./mesh/QuadraticPolygonMesh.jl")
-include("./mesh/MeshPartition.jl")
+include("./mesh/HierarchicalMeshPartition.jl")
 include("./mesh/IO_abaqus.jl")
 ##include("./mesh/IO_vtk.jl")
 include("./mesh/IO_xdmf.jl")
@@ -76,12 +77,12 @@ include("gauss_legendre_quadrature.jl")
 
 
 # Structs/Types
-export AABox, AABox2D, AABox3D,
+export AABox, AABox2D, AABox3D, AnyTree,
        Edge, Edge2D, Edge3D,
        Face, Face2D, Face3D,
-       Hexagon,
+       Hexagon, HierarchicalMeshPartition,
        LineSegment, LineSegment2D, LineSegment3D,
-       MeshPartition,
+       MeshPartitionTree,
        Point, Point2D, Point3D, Polygon, PolygonMesh, 
        QuadraticPolygon, QuadraticPolygonMesh, QuadraticSegment, QuadraticSegment2D,
        QuadraticSegment3D, QuadraticTriangle, QuadraticTriangle2D, QuadraticTriangle3D,

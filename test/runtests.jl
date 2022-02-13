@@ -2,7 +2,7 @@ using MOCNeutronTransport
 using Test
 using Logging
 Logging.disable_logging(Logging.Error)
-tests = ["./trees/Tree",
+tests = ["./trees/AnyTree",
          "./primitives/Point",
          "./primitives/LineSegment",
          "./primitives/AABox",

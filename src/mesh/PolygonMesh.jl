@@ -3,7 +3,7 @@ struct PolygonMesh{Dim, T, U} <:LinearUnstructuredMesh{Dim, T, U}
     points::Vector{Point{Dim, T}}
     edges::Vector{SVector{2, U}}
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
-    face_sets::Dict{String, Set{U}}
+    face_sets::Dict{String, BitSet}
 end
 
 function PolygonMesh{Dim, T, U}(;
@@ -11,7 +11,7 @@ function PolygonMesh{Dim, T, U}(;
     points::Vector{Point{Dim, T}} = Point{Dim, T}[],
     edges::Vector{SVector{2, U}} = SVector{2, U}[],
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{3, U}[],
-    face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
+    face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {Dim, T, U}
     return PolygonMesh(name, points, edges, faces, face_sets)
 end
@@ -21,7 +21,7 @@ struct TriangleMesh{Dim, T, U} <:LinearUnstructuredMesh{Dim, T, U}
     points::Vector{Point{Dim, T}}
     edges::Vector{SVector{2, U}}
     faces::Vector{SVector{3, U}}
-    face_sets::Dict{String, Set{U}}
+    face_sets::Dict{String, BitSet}
 end
 
 function TriangleMesh{Dim, T, U}(;
@@ -29,7 +29,7 @@ function TriangleMesh{Dim, T, U}(;
     points::Vector{Point{Dim, T}} = Point{Dim, T}[],
     edges::Vector{SVector{2, U}} = SVector{2, U}[],
     faces::Vector{SVector{3, U}} = SVector{3, U}[],
-    face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
+    face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {Dim, T, U}
     return TriangleMesh(name, points, edges, faces, face_sets)
 end
@@ -39,7 +39,7 @@ struct QuadrilateralMesh{Dim, T, U} <:LinearUnstructuredMesh{Dim, T, U}
     points::Vector{Point{Dim, T}}
     edges::Vector{SVector{2, U}}
     faces::Vector{SVector{4, U}}
-    face_sets::Dict{String, Set{U}}
+    face_sets::Dict{String, BitSet}
 end
 
 function QuadrilateralMesh{Dim, T, U}(;
@@ -47,7 +47,7 @@ function QuadrilateralMesh{Dim, T, U}(;
     points::Vector{Point{Dim, T}} = Point{Dim, T}[],
     edges::Vector{SVector{2, U}} = SVector{2, U}[],
     faces::Vector{SVector{4, U}} = SVector{4, U}[],
-    face_sets::Dict{String, Set{U}} = Dict{String, Set{U}}()
+    face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {Dim, T, U}
     return QuadrilateralMesh(name, points, edges, faces, face_sets)
 end

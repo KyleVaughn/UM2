@@ -1,4 +1,4 @@
-function write_xdmf2d(filename::String, MP::MeshPartition)
+function write_xdmf2d(filename::String, MP::HierarchicalMeshPartition)
     @info "Writing $filename" 
     # Check valid filename
     if !occursin(".xdmf", filename)
@@ -231,7 +231,7 @@ function _make_material_name_to_id_map(mesh::UnstructuredMesh2D)
     return material_map
 end
 
-function _make_material_name_to_id_map(MP::MeshPartition)
+function _make_material_name_to_id_map(MP::HierarchicalMeshPartition)
     material_map = Dict{String, Int64}()
     mat_names = String[]
     max_length = 0
@@ -341,10 +341,10 @@ end
 function _add_mesh_partition_xdmf!(xml::XMLElement,
                         h5_filename::String,
                         h5_mesh::Union{HDF5.Group, HDF5.File},
-                        MP::MeshPartition,
+                        MP::HierarchicalMeshPartition,
                         node::Tree,
                         material_map::Dict{String, Int64})
-    @debug "Adding MeshPartition"
+    @debug "Adding HierarchicalMeshPartition"
     if typeof(node.data) == String # Not a leaf
         # Grid
         xgrid = new_child(xml, "Grid")
