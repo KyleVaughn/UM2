@@ -42,6 +42,8 @@ QuadraticPolygon(x...) = QuadraticPolygon(SVector(x))
 # Let 𝗳(r,s) be a parameterization of surface S
 # A = ∬ dS = ∬ ‖∂𝗳/∂r × ∂𝗳/∂s‖dr ds
 #     S      T
+#
+# NOTE: Assumes (∂𝗳/∂r × ∂𝗳/∂s)ₖ ≥ 0, but it is not clear this is always true
 function area(tri6::QuadraticTriangle2D)
     # Mathematica for this algebraic nightmare
     a = (tri6[6] - tri6[4]) × tri6[1].coord
@@ -52,31 +54,20 @@ function area(tri6::QuadraticTriangle2D)
     return (4(a + b + c) + d + e)/6
 end
 
-# This likely has a simple analytic solution that should be worked out
-area(quad8::QuadraticQuadrilateral2D) = area(quad8, Val(2))
-#Integrate[n, {r, 0, 1}, {s, 0, 1},
-# Assumptions ->
-#  Im[Subscript[a, x]] == 0 && Im[Subscript[a, y]] == 0 &&
-#   Im[Subscript[b, x]] == 0 && Im[Subscript[b, y]] == 0 &&
-#   Im[Subscript[c, x]] == 0 && Im[Subscript[c, y]] == 0 &&
-#   Im[Subscript[d, x]] == 0 &&
-#   Im[Subscript[d, y]] ==
-#    0 &&
-#                                                             \
-#
-#   Im[Subscript[e, x]] == 0 && Im[Subscript[e, y]] == 0 &&
-#   Im[Subscript[f, x]] == 0 && Im[Subscript[f, y]] == 0 &&
-#   Im[Subscript[g, x]] == 0 && Im[Subscript[g, y]] == 0 &&
-#   Im[Subscript[h, x]] == 0 && Im[Subscript[h, y]] == 0]
-# 
-#   1/12 (4 Cy Dx - 4 Cx Dy + Ay Ex + Cy Ex + Dy Ex - Ax Ey - Cx Ey - 
-#   Dx Ey + 7 Ay Fx + 35 Cy Fx + 7 Dy Fx - 12 Ey Fx - 7 Ax Fy - 
-#   35 Cx Fy - 7 Dx Fy + 12 Ex Fy - 7 Ay Gx - 35 Cy Gx - 3 Dy Gx + 
-#   12 Ey Gx + 28 Fy Gx + 7 Ax Gy + 35 Cx Gy + 3 Dx Gy - 12 Ex Gy - 
-#   28 Fx Gy + By (4 Cx + Ex + 3 Fx - 7 Gx - Hx) - Ay Hx - Cy Hx - 
-#   Dy Hx + 4 Ey Hx + 12 Fy Hx - 12 Gy Hx + Ax Hy + Cx Hy + Dx Hy - 
-#   4 Ex Hy - 12 Fx Hy + 12 Gx Hy + Bx (-4 Cy - Ey - 3 Fy + 7 Gy + Hy))
-function area(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{P}) where {Dim, T, P}
+function area(q::QuadraticQuadrilateral2D)
+    a = ((q[5] - q[8]) + 7*(q[6] - q[7])) × (q[1] + q[2] + q[3] + q[4])
+    b = (q[6] - q[7]) × q[3].coord 
+    c = (q[7] - q[3]) × q[4].coord 
+    d = (q[5] + q[8]) × q[6].coord
+    e = q[2].coord × (q[6] - q[3])
+    f = q[7] × q[5]
+    g = q[7] × q[6]
+    h = q[7] × q[8]
+    i = q[8] × q[5]
+    return  (a + 28b + 4c + 12d + 4e + 12f + 28g + 12h + 4i)/12
+end
+
+function area(quad8::QuadraticQuadrilateral3D{T}, ::Val{P}) where {T, P}
     # Gauss-Legendre quadrature over a quadrilateral is used.
     # Let Q(r,s) be the interpolation function for quad8,
     #     1 1                          P   P
@@ -103,7 +94,7 @@ function centroid(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{N}) where {Dim, T
     #      S           A j=1 i=1
     w, r = gauss_legendre_quadrature(T, Val(N))
     A = zero(T)
-    𝗖 = @SVector zeros(T, Dim)
+    𝗖 = @SVector zeros(T, 3)
     for j ∈ 1:N, i ∈ 1:N
         J = 𝗝(quad8, r[i], r[j])
         weighted_val = w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2))
