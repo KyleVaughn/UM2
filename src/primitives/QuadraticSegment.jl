@@ -294,7 +294,7 @@ function intersect_edges_CUDA!(intersection_points, lines, edges)
             end                                                                 
         end
     end
-    sort!(lines[index].𝘅₁, intersection_points[:, index], )
+#    sort!(lines[index].𝘅₁, intersection_points[:, index])
     return nothing
 end
 
