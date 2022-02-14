@@ -260,6 +260,45 @@ function intersect_edges(lines::Vector{LineSegment{Dim, T}},
     return intersection_points
 end
 
+function zero_intersection(::Type{Tuple{U, SVector{N, Point{Dim, T}}}}) where {U, N, Dim, T}
+    return (U(0), zeros(SVector{N, Point{Dim, T}})) 
+end
+
+# Want lines to 
+function intersect_edges_CUDA(lines::CuArray{<:LineSegment{2, T}}, 
+                              edges::CuArray{<:QuadraticSegment{2, T}}) where {T} 
+    nlines = length(lines)
+    nedges = length(edges)
+    nintersections = nlines*nedges
+    intersections = CUDA.fill(zero_intersection(typeof(lines[1] ∩ edges[1])), nlines, nedges)
+    kernel = @cuda launch=false intersect_edges_CUDA!(intersections, lines, edges)
+    config = launch_configuration(kernel.fun)
+    threads = min(nintersections, config.threads)
+    blocks = cld(nintersections, threads)
+    blocks = 150 
+    CUDA.@sync begin
+        kernel(intersections, lines, edges; threads, blocks) 
+    end 
+    return intersections
+end
+# Intersect a vector of lines with a quadratic edge
+function intersect_edges_CUDA!(intersections, lines, edges)
+    nlines = length(lines)
+    nedges = length(edges)
+    nintersections = nlines*nedges
+    index = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+    stride = gridDim().x * blockDim().x
+    @inbounds for i = index:stride:nintersections
+        l = (i - 1) % nlines + 1
+        e = (i - 1) ÷ nlines + 1
+        intersections[l, e] = lines[l] ∩ edges[e]
+    end
+    #for i = 1:nlines
+    #    sort_intersection_points!(lines[i], intersection_points[i])
+    #end
+    return nothing
+end
+
 # If the point is left of the quadratic segment in the 2D plane. 
 #   𝗽    ^
 #   ^   /
