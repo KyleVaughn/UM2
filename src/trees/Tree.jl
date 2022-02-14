@@ -15,7 +15,7 @@ leaves(tree::Tree) = leaves!(tree, typeof(tree)[])
 function leaves!(node::T, leaf_nodes::Vector{T}) where {T <: Tree}
     if isnothing(node.children)
         push!(leaf_nodes, node)
-        return nothing 
+        return T[] 
     else
         for child in node.children
             leaves!(child, leaf_nodes)

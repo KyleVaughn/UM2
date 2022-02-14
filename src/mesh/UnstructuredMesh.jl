@@ -440,11 +440,11 @@ function _create_2d_mesh_from_vector_faces(name::String, points::Vector{Point2D{
             edges = _create_quadratic_edges_from_faces(faces)
             U = _select_mesh_UInt_type(length(edges))
             faces_U, edges_U = _convert_faces_edges(U, faces, edges)
-            return QuadraticQuadrilateralMesh{2,floattype, U}(name = name,
-                                          points = points,
-                                          edges = edges_U,
-                                          faces = faces_U,
-                                          face_sets = face_sets)
+            return QuadraticQuadrilateralMesh{2, T, U}(name = name,
+                                                       points = points,
+                                                       edges = edges_U,
+                                                       faces = faces_U,
+                                                       face_sets = face_sets)
         elseif face_lengths == [6, 8]
             faces = [ SVector{length(f), UInt64}(f) for f in faces_vecs]
             edges = _create_quadratic_edges_from_faces(faces)
