@@ -8,6 +8,7 @@ const visualize_ray_tracing = false
 
 # using
 # ---------------------------------------------------------------------------------------------
+using CUDA
 using Logging
 using HDF5
 using LightXML
@@ -111,13 +112,11 @@ export arclength, area,
        facepoints, face_edge_connectivity, findface, findface_implicit, findface_explicit, 
        gauss_legendre_quadrature, 
        height, 
-       intersect, intersect_edge_implicit, intersect_edges_explicit, 
-       intersect_edges_implicit, intersect_face_implicit, intersect_faces_implicit, 
-       intersect_faces_explicit, inv, isleft, isstraight, isroot, 
+       intersect, intersect_edges, inv, isleft, isstraight, isroot, 
        jacobian, 
        leaves, linear_edges,log_timestamps, 
        materialize_edge, materialize_edges, materialize_face, materialize_faces,
-       midpoint, 
+       materialize_polygon, materialize_quadratic_polygon, midpoint, 
        nearest_point, norm, norm², num_edges, 
        partition_mesh,
        quadratic_edges,

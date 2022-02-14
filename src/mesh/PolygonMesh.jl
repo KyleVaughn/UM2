@@ -64,6 +64,27 @@ end
     return Meta.parse(edges_string)
 end
 
+# Return a materialized triangle 
+function materialize_face(face_id, mesh::TriangleMesh)
+    return materialize_polygon(mesh.faces[face_id], mesh.points)
+end
+
+# Return a materialized quadrilateral
+function materialize_face(face_id, mesh::QuadrilateralMesh)
+    return materialize_polygon(mesh.faces[face_id], mesh.points)
+end
+
+# Return a materialized polygon 
+function materialize_face(face_id, mesh::PolygonMesh)
+    return materialize_polygon(mesh.faces[face_id], mesh.points)
+end
+
+# Return a materialized face from the point IDs in a face
+function materialize_polygon(face::SVector{N}, points::Vector{<:Point}) where {N}
+    return Polygon{N}(facepoints(face, points))
+end
+
+
 # # A vector of SVectors, denoting the edge ID each face is connected to.
 # function face_edge_connectivity(mesh::QuadrilateralMesh{Dim,T,U}) where {Dim,T,U}
 #     if length(mesh.edges) === 0

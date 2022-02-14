@@ -52,6 +52,26 @@ function QuadraticQuadrilateralMesh{Dim, T, U}(;
     return QuadraticQuadrilateralMesh(name, points, edges, faces, face_sets)
 end
 
+# Return a materialized quadratic triangle
+function materialize_face(face_id, mesh::QuadraticTriangleMesh)
+    return materialize_quadratic_polygon(mesh.faces[face_id], mesh.points)
+end
+
+# Return a materialized quadratic quadrilateral 
+function materialize_face(face_id, mesh::QuadraticQuadrilateralMesh)
+    return materialize_quadratic_polygon(mesh.faces[face_id], mesh.points)
+end
+
+# Return a materialized quadratic polygon 
+function materialize_face(face_id, mesh::QuadraticPolygonMesh)
+    return materialize_quadratic_polygon(mesh.faces[face_id], mesh.points)
+end
+
+# Return a materialized face from the point IDs in a face
+function materialize_quadratic_polygon(face::SVector{N}, points::Vector{<:Point}) where {N}
+    return QuadraticPolygon{N}(facepoints(face, points))
+end
+
 @generated function quadratic_edges(face::SVector{N, U}) where {N, U <:Unsigned}
     M = N ÷ 2
     edges_string = "SVector{$M, SVector{3, U}}("

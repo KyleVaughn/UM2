@@ -125,17 +125,17 @@ end
 function sort_intersection_points!(l::LineSegment, points::Vector{<:Point})
     sort!(l.𝘅₁, points)
     id_start = 1 
-    id_stop = 2 
     n = length(points)
-    while id_stop <= n
+    deletion_indices = Int64[]
+    for id_stop ∈ 2:n
         if distance²(points[id_start], points[id_stop]) < minimum_segment_length^2
-            deleteat!(points, id_stop)
-            n -= 1
+            push!(deletion_indices, id_stop)
         else
             id_start = id_stop
-            id_stop += 1
         end
     end
+    deleteat!(points, deletion_indices)
+    return points
 end
 
 # Plot

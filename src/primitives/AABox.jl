@@ -80,6 +80,24 @@ function Base.union(bb₁::AABox{Dim, T}, bb₂::AABox{Dim, T}) where {Dim, T}
                  Point{Dim, T}(max.(bb₁.corner.coord, bb₂.corner.coord)))
 end
 
+# Return the AABox bounding all boxes in the vector 
+function Base.union(bbs::Vector{AABox{Dim, T}}) where {Dim, T}
+    return Base.union(bbs, 1, length(bbs))
+end
+
+function Base.union(bbs::Vector{AABox{Dim, T}}, lo::Int64, hi::Int64) where {Dim, T}
+    if hi-lo === 1
+        return Base.union(bbs[lo], bbs[hi])
+    elseif hi-lo === 0
+        return bbs[lo]
+    else
+        mi = Base.Sort.midpoint(lo, hi) 
+        bb_lo = Base.union(bbs, lo, mi)
+        bb_hi = Base.union(bbs, mi, hi)
+        return Base.union(bb_lo, bb_hi)
+    end
+end
+
 # Bounding box
 # ---------------------------------------------------------------------------------------------
 # Bounding box of a vector of points
@@ -89,11 +107,27 @@ function boundingbox(points::Vector{<:Point2D})
     return AABox2D(Point2D(minimum(x), minimum(y)), Point2D(maximum(x), maximum(y)))
 end
 
-# Bounding box of a vector of points
 function boundingbox(points::SVector{L, Point2D}) where {L} 
     x = getindex.(points, 1)
     y = getindex.(points, 2)
     return AABox2D(Point2D(minimum(x), minimum(y)), Point2D(maximum(x), maximum(y)))
+end
+
+# Bounding box of a vector of points
+function boundingbox(points::Vector{<:Point3D})
+    x = getindex.(points, 1)
+    y = getindex.(points, 2)
+    z = getindex.(points, 3)
+    return AABox3D(Point3D(minimum(x), minimum(y), minimum(z)), 
+                   Point3D(maximum(x), maximum(y), maximum(z)))
+end
+
+function boundingbox(points::SVector{L, Point3D}) where {L} 
+    x = getindex.(points, 1)
+    y = getindex.(points, 2)
+    z = getindex.(points, 3)
+    return AABox3D(Point3D(minimum(x), minimum(y), minimum(z)), 
+                   Point3D(maximum(x), maximum(y), maximum(z)))
 end
 
 # Plot

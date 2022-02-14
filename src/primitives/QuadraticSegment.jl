@@ -144,75 +144,6 @@ derivative(q::QuadraticSegment, r) = (4r - 3)*(q.𝘅₁ - q.𝘅₃) + (4r - 1)
 # Return the Jacobian of q, evalutated at r
 jacobian(q::QuadraticSegment, r) = derivative(q, r) 
 
-# If the point is left of the quadratic segment in the 2D plane. 
-#   𝗽    ^
-#   ^   /
-# 𝘃 |  / 𝘂
-#   | /
-#   o
-# If the segment is straight, or if the point is not within the bounding box of
-# the segment, we can perform the isleft check with the straight line from the 
-# segment's start point to the segment's end point.
-# If these conditions aren't met, the segment's curvature must be accounted for.
-# We find the point on the curve q that is nearest point to the point of interest. 
-# Call this point q_near. We then perform the isleft check with the tangent vector 
-# of q at q_near and the vector from q_near to p, p - q_near.
-function isleft(p::Point2D, q::QuadraticSegment2D)
-    if isstraight(q) || p ∉  boundingbox(q)
-        𝘃₁ = q.𝘅₂ - q.𝘅₁
-        𝘃₂ = p - q.𝘅₁
-        return 𝘃₁ × 𝘃₂ > 0
-    else
-        # See nearest_point for an explanation of the math.
-        # When the cubic has 3 real roots, the point must be inside the
-        # curve of the segment. Meaning: 
-        #   If the segment curves left, the point is right.
-        #   If the segment curves right, the point is left.
-        # This way we save substantial time by bypassing the complex number arithmetic
-        𝘂 = q.𝘂
-        𝘃 = q.𝘃
-        𝘄 = p - q.𝘅₁
-        # f′(r) = ar³ + br² + cr + d = 0
-        a = 4(𝘂 ⋅ 𝘂)
-        b = 6(𝘂 ⋅ 𝘃)
-        c = 2((𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄))
-        d = -2(𝘃 ⋅ 𝘄)
-        # Lagrange's method
-        e₁ = s₀ = -b/a
-        e₂ = c/a
-        e₃ = -d/a
-        A = 2e₁^3 - 9e₁*e₂ + 27e₃
-        B = e₁^2 - 3e₂
-        if A^2 - 4B^3 > 0 # one real root
-            s₁ = ∛((A + √(A^2 - 4B^3))/2)
-            if s₁ == 0
-                s₂ = s₁
-            else
-                s₂ = B/s₁
-            end
-            r = (s₀ + s₁ + s₂)/3
-            𝘃₁ = 𝗗(q, r)
-            𝘃₂ = p - q(r)
-            return 𝘃₁ × 𝘃₂ > 0
-        else # three real roots
-            return (q.𝘅₂ - q.𝘅₁) × (q.𝘅₃ - q.𝘅₁) < 0
-        end
-    end
-end
-
-# If the quadratic segment is effectively linear
-#
-# Check the sign of the cross product of the vectors (𝘅₃ - 𝘅₁) and (𝘅₂ - 𝘅₁)
-# If the line is straight, 𝘅₃ - 𝘅₁ = c(𝘅₂ - 𝘅₁) where c ∈ (0, 1), hence
-# (𝘅₃ - 𝘅₁) × (𝘅₂ - 𝘅₁) = 𝟬
-@inline function isstraight(q::QuadraticSegment2D)
-    return abs((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-8
-end
-@inline function isstraight(q::QuadraticSegment3D)
-    return norm²((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-16
-end
-
-
 # Intersection between a line segment and quadratic segment
 #
 # The quadratic segment: 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁
@@ -295,6 +226,190 @@ function Base.intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
         return npoints, SVector(p₁, p₂)
     end
 end
+
+# Intersect a line with a vector of quadratic edges
+function intersect_edges(l::LineSegment{Dim, T}, edges::Vector{QuadraticSegment{Dim, T}}
+                        ) where {Dim, T} 
+    intersection_points = Point{Dim, T}[]
+    for edge in edges 
+        npoints, points = l ∩ edge 
+        if 0 < npoints
+            append!(intersection_points, view(points, 1:npoints))
+        end
+    end
+    sort_intersection_points!(l, intersection_points)
+    return intersection_points
+end
+
+# Intersect a vector of lines with a vector of quadratic edges
+function intersect_edges(lines::Vector{LineSegment{Dim, T}}, 
+                         edges::Vector{QuadraticSegment{Dim, T}}) where {Dim, T} 
+    nlines = length(lines)
+    intersection_points = [Point{Dim, T}[] for _ = 1:nlines]
+    Threads.@threads for edge in edges 
+        @inbounds for i = 1:nlines
+            npoints, points = lines[i] ∩ edge 
+            if 0 < npoints
+                append!(intersection_points[i], view(points, 1:npoints))
+            end
+        end
+    end
+    Threads.@threads for i = 1:nlines
+        sort_intersection_points!(lines[i], intersection_points[i])
+    end
+    return intersection_points
+end
+
+# If the point is left of the quadratic segment in the 2D plane. 
+#   𝗽    ^
+#   ^   /
+# 𝘃 |  / 𝘂
+#   | /
+#   o
+# If the segment is straight, or if the point is not within the bounding box of
+# the segment, we can perform the isleft check with the straight line from the 
+# segment's start point to the segment's end point.
+# If these conditions aren't met, the segment's curvature must be accounted for.
+# We find the point on the curve q that is nearest point to the point of interest. 
+# Call this point q_near. We then perform the isleft check with the tangent vector 
+# of q at q_near and the vector from q_near to p, p - q_near.
+function isleft(p::Point2D, q::QuadraticSegment2D)
+    if isstraight(q) || p ∉  boundingbox(q)
+        𝘃₁ = q.𝘅₂ - q.𝘅₁
+        𝘃₂ = p - q.𝘅₁
+        return 𝘃₁ × 𝘃₂ > 0
+    else
+        # See nearest_point for an explanation of the math.
+        # When the cubic has 3 real roots, the point must be inside the
+        # curve of the segment. Meaning: 
+        #   If the segment curves left, the point is right.
+        #   If the segment curves right, the point is left.
+        # This way we save substantial time by bypassing the complex number arithmetic
+        𝘂 = q.𝘂
+        𝘃 = q.𝘃
+        𝘄 = p - q.𝘅₁
+        # f′(r) = ar³ + br² + cr + d = 0
+        a = 4(𝘂 ⋅ 𝘂)
+        b = 6(𝘂 ⋅ 𝘃)
+        c = 2((𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄))
+        d = -2(𝘃 ⋅ 𝘄)
+        # Lagrange's method
+        e₁ = s₀ = -b/a
+        e₂ = c/a
+        e₃ = -d/a
+        A = 2e₁^3 - 9e₁*e₂ + 27e₃
+        B = e₁^2 - 3e₂
+        if A^2 - 4B^3 > 0 # one real root
+            s₁ = ∛((A + √(A^2 - 4B^3))/2)
+            if s₁ == 0
+                s₂ = s₁
+            else
+                s₂ = B/s₁
+            end
+            r = (s₀ + s₁ + s₂)/3
+            𝘃₁ = 𝗗(q, r)
+            𝘃₂ = p - q(r)
+            return 𝘃₁ × 𝘃₂ > 0
+        else # three real roots
+            return (q.𝘅₂ - q.𝘅₁) × (q.𝘅₃ - q.𝘅₁) < 0
+        end
+    end
+end
+
+# If the quadratic segment is effectively linear
+#
+# Check the sign of the cross product of the vectors (𝘅₃ - 𝘅₁) and (𝘅₂ - 𝘅₁)
+# If the line is straight, 𝘅₃ - 𝘅₁ = c(𝘅₂ - 𝘅₁) where c ∈ (0, 1), hence
+# (𝘅₃ - 𝘅₁) × (𝘅₂ - 𝘅₁) = 𝟬
+function isstraight(q::QuadraticSegment2D)
+    return abs((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-8
+end
+function isstraight(q::QuadraticSegment3D)
+    return norm²((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-16
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Find the point on 𝗾(r) closest to the point of interest 𝘆. 
 #

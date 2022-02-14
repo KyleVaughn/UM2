@@ -9,38 +9,37 @@ const QuadraticUnstructuredMesh2D = UnstructuredMesh{2, 2}
 const QuadraticUnstructuredMesh3D = UnstructuredMesh{3, 2}
 Base.broadcastable(mesh::UnstructuredMesh) = Ref(mesh)
 
-# # Area of face
-# function area(face::SVector, points::Vector{<:Point})
-#     return area(materialize_face(face, points))
-# end
-# 
-# # Return the area of a face set
-# function area(mesh::UnstructuredMesh, face_set::Set)
-#     if 0 < length(mesh.materialized_faces)
-#         return mapreduce(x->area(mesh.materialized_faces[x]), +, face_set)
-#     else
-#         return mapreduce(x->area(mesh.faces[x], mesh.points), +, face_set)
-#     end
-# end
-# 
-# # Return the area of a face set by name
-# function area(mesh::UnstructuredMesh, set_name::String)
-#     return area(mesh, mesh.face_sets[set_name])
-# end
-# 
-# # Axis-aligned bounding box
-# function boundingbox(mesh::LinearUnstructuredMesh2D)
-#     # If the mesh does not have any quadratic faces, the bounding_box may be determined
-#     # entirely from the points.
-#     nsides = length(mesh.boundary_edges)
-#     if nsides !== 0
-#         boundary_edge_IDs = reduce(vcat, mesh.boundary_edges)
-#         point_IDs = reduce(vcat, mesh.edges[boundary_edge_IDs])
-#         return boundingbox(mesh.points[point_IDs])
-#     else
-#         return boundingbox(mesh.points)
-#     end
-# end
+
+# Return the area of face id
+function area(id, mesh::UnstructuredMesh)
+    return area(materialize_face(id, mesh))
+end
+
+# Return the area of the entire mesh
+function area(mesh::UnstructuredMesh)
+    return mapreduce(x->area(x, mesh), +, 1:length(mesh.faces))
+end
+
+# Return the area of a face set
+function area(face_set::BitSet, mesh::UnstructuredMesh)
+    return mapreduce(x->area(x, mesh), +, face_set)
+end
+
+# Return the area of a face set by name
+function area(set_name::String, mesh::UnstructuredMesh)
+    return area(mesh.face_sets[set_name], mesh)
+end
+
+# Axis-aligned bounding box
+function boundingbox(mesh::LinearUnstructuredMesh)
+    # The bounding box may be determined entirely from the points.
+    return boundingbox(mesh.points)
+end
+
+# Axis-aligned bounding box
+function boundingbox(mesh::QuadraticUnstructuredMesh)
+    return union(boundingbox.(materialize_edges(mesh)))
+end
 
 @generated function edgepoints(edge::SVector{N}, points::Vector{<:Point}) where {N}
     points_string = "SVector("
@@ -179,20 +178,51 @@ end
 #     return intersection_points
 # end
 # 
-# # Intersect a line with a vector of implicitly defined linear edges
-# function intersect_edges_implicit(l::LineSegment2D{T}, edges::Vector{<:SVector{2}},
-#                                   points::Vector{Point2D{T}}) where {T}
-#     intersection_points = Point2D{T}[]
-#     for edge in edges
-#         npoints, point = intersect_edge_implicit(l, edge, points)
-#         if 0 < npoints
-#             push!(intersection_points, point)
-#         end
-#     end
-#     sort_intersection_points!(l.𝘅₁, intersection_points)
-#     return intersection_points
-# end
-# 
+# Intersect a line with a vector of implicitly defined linear edges
+function intersect_edges(l::LineSegment{Dim, T}, mesh::LinearUnstructuredMesh) where {Dim, T} 
+    intersection_points = Point{Dim, T}[]
+    for i ∈ 1:length(mesh.edges)
+        hit, point = l ∩ materialize_edge(i, mesh)
+        if hit
+            push!(intersection_points, point)
+        end
+    end
+    sort_intersection_points!(l, intersection_points)
+    return intersection_points
+end
+
+# Intersect a line with a vector of implicitly defined quadratic edges
+function intersect_edges(l::LineSegment{Dim, T}, mesh::QuadraticUnstructuredMesh) where {Dim, T} 
+    intersection_points = Point{Dim, T}[]
+    for i ∈ 1:length(mesh.edges)
+        hits, points = l ∩ materialize_edge(i, mesh)
+        if 0 < hits
+            append!(intersection_points, view(points, 1:hits))
+        end
+    end
+    sort_intersection_points!(l, intersection_points)
+    return intersection_points
+end
+
+# Intersect a vector of lines with a vector of quadratic edges
+function intersect_edges(lines::Vector{LineSegment{Dim, T}}, 
+                         mesh::QuadraticUnstructuredMesh) where {Dim, T} 
+    nlines = length(lines)
+    intersection_points = [Point{Dim, T}[] for _ = 1:nlines]
+    Threads.@threads for j ∈ 1:length(mesh.edges)
+        @inbounds for i = 1:nlines
+            npoints, points = lines[i] ∩ materialize_edge(j, mesh)
+            if 0 < npoints
+                append!(intersection_points[i], view(points, 1:npoints))
+            end
+        end
+    end
+    Threads.@threads for i = 1:nlines
+        sort_intersection_points!(lines[i], intersection_points[i])
+    end
+    return intersection_points
+end
+
 # # Intersect a line with an implicitly defined face
 # function intersect_face_implicit(l::LineSegment2D, face::SVector, points::Vector{<:Point2D})
 #     return l ∩ materialize_face(face, points)
@@ -234,43 +264,27 @@ end
 function materialize_edge(edge::SVector{2}, points::Vector{<:Point})
     return LineSegment(edgepoints(edge, points))
 end
- 
+
 # Return a QuadraticSegment from the point IDs in an edge
 function materialize_edge(edge::SVector{3}, points::Vector{<:Point})
     return QuadraticSegment(edgepoints(edge, points))
 end
 
+# Return a materialized edge
+function materialize_edge(edge_id, mesh::UnstructuredMesh)
+    return materialize_edge(mesh.edges[edge_id], mesh.points)
+end
+
 # Return a materialized edge for each edge in the mesh
 function materialize_edges(mesh::UnstructuredMesh)
-    return materialize_edge.(mesh.edges, Ref(mesh.points))
+    return materialize_edge.(1:length(mesh.edges), mesh)
 end
-# 
-# # Return a materialized face from the point IDs in a face
-# function materialize_face(face::SVector{N}, points::Vector{<:Point}) where {N}
-#     return Polygon{N}(facepoints(face, points))
-# end
-# 
-# # Return an SVector of the points in the edge
-# function materialize_face(face_id, mesh::UnstructuredMesh)
-#     return materialize_face(mesh.faces[face_id], mesh.points)
-# end
-# 
-# # Return a materialized face for each face in the mesh
-# function materialize_faces(mesh::UnstructuredMesh)
-#     return materialize_face.(mesh.faces, Ref(mesh.points))
-# end
-# 
-# # Return the number of edges in a face
-# function num_edges(face::SVector{L,U}) where {L,U}
-#     if L === 3 || L === 6
-#         return U(3)
-#     elseif L === 4 || L === 8
-#         return U(4)
-#     else
-#         return U(0)
-#     end
-# end
-# 
+
+# Return a materialized facee for each facee in the mesh
+function materialize_faces(mesh::UnstructuredMesh)
+    return materialize_face.(1:length(mesh.faces), mesh)
+end
+
 function Base.show(io::IO, mesh::UnstructuredMesh)
     mesh_type = typeof(mesh)
     println(io, mesh_type)
@@ -351,6 +365,7 @@ function submesh(name::String, mesh::UnstructuredMesh2D{Ord, T, U}) where {Ord, 
             )
 end
 
+#########################################################################################
 function _convert_faces_edges(::Type{U}, 
                               faces::Vector{<:SArray{S, UInt64, 1} where {S<:Tuple}}, 
                               edges::Vector{<:SVector{N, UInt64}}, 
