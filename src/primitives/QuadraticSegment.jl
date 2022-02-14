@@ -233,8 +233,8 @@ function intersect_edges(l::LineSegment{Dim, T}, edges::Vector{QuadraticSegment{
     intersection_points = Point{Dim, T}[]
     for edge in edges 
         npoints, points = l ∩ edge 
-        if 0 < npoints
-            append!(intersection_points, view(points, 1:npoints))
+        if 0 < hits
+            append!(intersection_points, view(points, 1:hits))
         end
     end
     sort_intersection_points!(l, intersection_points)
@@ -248,9 +248,9 @@ function intersect_edges(lines::Vector{LineSegment{Dim, T}},
     intersection_points = [Point{Dim, T}[] for _ = 1:nlines]
     Threads.@threads for edge in edges 
         @inbounds for i = 1:nlines
-            npoints, points = lines[i] ∩ edge 
-            if 0 < npoints
-                append!(intersection_points[i], view(points, 1:npoints))
+            hits, points = lines[i] ∩ edge 
+            if 0 < hits
+                append!(intersection_points[i], view(points, 1:hits))
             end
         end
     end
@@ -260,42 +260,41 @@ function intersect_edges(lines::Vector{LineSegment{Dim, T}},
     return intersection_points
 end
 
-function zero_intersection(::Type{Tuple{U, SVector{N, Point{Dim, T}}}}) where {U, N, Dim, T}
-    return (U(0), zeros(SVector{N, Point{Dim, T}})) 
-end
 
-# Want lines to 
 function intersect_edges_CUDA(lines::CuArray{<:LineSegment{2, T}}, 
                               edges::CuArray{<:QuadraticSegment{2, T}}) where {T} 
     nlines = length(lines)
     nedges = length(edges)
-    nintersections = nlines*nedges
-    intersections = CUDA.fill(zero_intersection(typeof(lines[1] ∩ edges[1])), nlines, nedges)
-    kernel = @cuda launch=false intersect_edges_CUDA!(intersections, lines, edges)
+    # 2√nedges is a good guess for a square domain with even mesh distrubution, but what
+    # about rectangular domains?
+    intersection_points = CUDA.fill(Point2D(NaN, NaN), ceil(Int64, 2sqrt(nedges)), nlines)
+    kernel = @cuda launch=false intersect_edges_CUDA!(intersection_points, lines, edges)
     config = launch_configuration(kernel.fun)
-    threads = min(nintersections, config.threads)
-    blocks = cld(nintersections, threads)
-    blocks = 150 
+    threads = min(nlines, config.threads)
+    blocks = cld(nlines, threads)
     CUDA.@sync begin
-        kernel(intersections, lines, edges; threads, blocks) 
+        kernel(intersection_points, lines, edges; threads, blocks) 
     end 
-    return intersections
+    return intersection_points
 end
 # Intersect a vector of lines with a quadratic edge
-function intersect_edges_CUDA!(intersections, lines, edges)
+function intersect_edges_CUDA!(intersection_points, lines, edges)
     nlines = length(lines)
-    nedges = length(edges)
-    nintersections = nlines*nedges
     index = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     stride = gridDim().x * blockDim().x
-    @inbounds for i = index:stride:nintersections
-        l = (i - 1) % nlines + 1
-        e = (i - 1) ÷ nlines + 1
-        intersections[l, e] = lines[l] ∩ edges[e]
+    ipt = 1
+    if index ≤ nlines
+        for edge in edges 
+            hits, points = lines[index] ∩ edge
+            if hits > 0
+                for i = 1:hits
+                    @inbounds intersection_points[ipt, index] = points[i]
+                    ipt += 1
+                end
+            end                                                                 
+        end
     end
-    #for i = 1:nlines
-    #    sort_intersection_points!(lines[i], intersection_points[i])
-    #end
+    sort!(lines[index].𝘅₁, intersection_points[:, index], )
     return nothing
 end
 
@@ -366,89 +365,6 @@ end
 function isstraight(q::QuadraticSegment3D)
     return norm²((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-16
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # Find the point on 𝗾(r) closest to the point of interest 𝘆. 
 #
