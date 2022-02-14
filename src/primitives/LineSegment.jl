@@ -65,7 +65,7 @@ LineSegment(pts::SVector{2, Point{Dim, T}}
 # 7) s(𝘅 ⋅ 𝘅) = r(𝘆 ⋅ 𝘅)                   divide by (𝘅 ⋅ 𝘅)
 # 9) s = r(𝘅 ⋅ 𝘆)/(𝘅 ⋅ 𝘅)
 # The cross product of two vectors in the plane is a vector of the form (0, 0, k),
-# hence:
+# hence, in 2D:
 # r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇) = x₃/z₃ 
 # s = r(𝘅 ⋅ 𝘆)/(𝘅 ⋅ 𝘅) = y₃/z₃ 
 function Base.intersect(l₁::LineSegment2D{T}, l₂::LineSegment2D{T}) where {T}
