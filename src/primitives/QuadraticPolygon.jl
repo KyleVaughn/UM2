@@ -42,8 +42,16 @@ QuadraticPolygon(x...) = QuadraticPolygon(SVector(x))
 # Let 𝗳(r,s) be a parameterization of surface S
 # A = ∬ dS = ∬ ‖∂𝗳/∂r × ∂𝗳/∂s‖dr ds
 #     S      T
-#
-# NOTE: Assumes (∂𝗳/∂r × ∂𝗳/∂s)ₖ ≥ 0, but it is not clear this is always true
+function area(quad8::QuadraticQuadrilateral2D)
+    # Mathematica for this algebraic nightmare
+    a = (quad8[2] - quad8[4]) × quad8[1].coord
+    b = (quad8[2] - quad8[4]) × quad8[3].coord
+    c = (quad8[8] - quad8[5]) × quad8[1].coord
+    d = (quad8[6] - quad8[5]) × quad8[2].coord
+    e = (quad8[6] - quad8[7]) × quad8[3].coord
+    f = (quad8[8] - quad8[7]) × quad8[4].coord
+    return (a - b + 4(c - d + e - f))/6
+end
 function area(tri6::QuadraticTriangle2D)
     # Mathematica for this algebraic nightmare
     a = (tri6[6] - tri6[4]) × tri6[1].coord
@@ -53,20 +61,6 @@ function area(tri6::QuadraticTriangle2D)
     e = tri6[2]  × tri6[1]
     return (4(a + b + c) + d + e)/6
 end
-
-function area(q::QuadraticQuadrilateral2D)
-    a = ((q[5] - q[8]) + 7*(q[6] - q[7])) × (q[1] + q[2] + q[3] + q[4])
-    b = (q[6] - q[7]) × q[3].coord 
-    c = (q[7] - q[3]) × q[4].coord 
-    d = (q[5] + q[8]) × q[6].coord
-    e = q[2].coord × (q[6] - q[3])
-    f = q[7] × q[5]
-    g = q[7] × q[6]
-    h = q[7] × q[8]
-    i = q[8] × q[5]
-    return  (a + 28b + 4c + 12d + 4e + 12f + 28g + 12h + 4i)/12
-end
-
 function area(quad8::QuadraticQuadrilateral3D{T}, ::Val{P}) where {T, P}
     # Gauss-Legendre quadrature over a quadrilateral is used.
     # Let Q(r,s) be the interpolation function for quad8,
@@ -81,7 +75,6 @@ function area(quad8::QuadraticQuadrilateral3D{T}, ::Val{P}) where {T, P}
     end 
     return a
 end
-
 centroid(quad8::QuadraticQuadrilateral2D) = centroid(quad8, Val(3))
 function centroid(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{N}) where {Dim, T, N}
     # Gauss-Legendre quadrature over a quadrilateral is used.
