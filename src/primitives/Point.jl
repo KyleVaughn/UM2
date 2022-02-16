@@ -3,6 +3,7 @@ struct Point{Dim, T}
     coord::SVector{Dim, T}
 end
 
+const Point1D = Point{1}
 const Point2D = Point{2}
 const Point3D = Point{3}
 
@@ -26,7 +27,7 @@ end
 
 # Constructors
 # ---------------------------------------------------------------------------------------------
-Point{Dim}(v::SVector{Dim, T}) where {Dim, T}= Point{Dim,T}(v)
+Point{Dim}(v::SVector{Dim, T}) where {Dim, T}= Point{Dim, T}(v)
 Point{Dim, T}(x...) where {Dim, T}= Point{Dim, T}(SVector{Dim, T}(x))
 Point{Dim}(x...) where {Dim}= Point(SVector(x))
 Point(x...) = Point(SVector(x))
