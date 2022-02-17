@@ -61,19 +61,41 @@ function area(tri6::QuadraticTriangle2D)
     e = tri6[2]  × tri6[1]
     return (4(a + b + c) + d + e)/6
 end
-function area(quad8::QuadraticQuadrilateral3D{T}, ::Val{P}) where {T, P}
+
+# The area integral for 3D quadratic triangles and quadrilaterals appears to have an
+# analytic solution, but it involves finding the roots of a quartic polynomial, then 
+# integrating over the square root of the factored quartic polynomial. 
+# This has a solution in the form of elliptic integrals (See Byrd and Friedman's
+# Handbook of Elliptic Integrals for Engineers and Scientists, 2nd edition, 
+# equation 251.38), but it's absolutely massive. Numerical integration is 
+# quicker.
+function area(quad8::QuadraticQuadrilateral3D{T}, ::Val{N}) where {T, N}
     # Gauss-Legendre quadrature over a quadrilateral is used.
     # Let Q(r,s) be the interpolation function for quad8,
-    #     1 1                          P   P
+    #     1 1                          N   N
     # A = ∫ ∫ ‖∂Q/∂r × ∂Q/∂s‖ ds dr =  ∑   ∑  wᵢwⱼ‖∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)‖
     #     0 0                         i=1 j=1
-    w, r = gauss_legendre_quadrature(T, Val(P))
-    a = zero(T)
-    for j ∈ 1:P, i ∈ 1:P 
+    w, r = gauss_legendre_quadrature(T, Val(N))
+    A = zero(T)
+    for j ∈ 1:N, i ∈ 1:N 
         J = 𝗝(quad8, r[i], r[j]) 
-        a += w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2)) 
+        A += w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2)) 
     end 
-    return a
+    return A
+end
+function area(tri6::QuadraticTriangle3D{T}, ::Val{N}) where {T, N} 
+    # Gauss-Legendre quadrature over a triangle is used.
+    # Let F(r,s) be the interpolation function for tri6,
+    #            1 1-r                       N                
+    # A = ∬ dA = ∫  ∫ ‖∂F/∂r × ∂F/∂s‖ds dr = ∑ wᵢ‖∂F/∂r(rᵢ,sᵢ) × ∂F/∂s(rᵢ,sᵢ)‖
+    #     S      0  0                       i=1
+    w, r, s = gauss_legendre_quadrature(tri6, Val(N))
+    A = zero(T)
+    for i ∈ 1:N
+        J = 𝗝(tri6, r[i], s[i])
+        A += w[i] * norm(view(J, :, 1) × view(J, :, 2)) 
+    end
+    return A
 end
 centroid(quad8::QuadraticQuadrilateral2D) = centroid(quad8, Val(3))
 function centroid(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{N}) where {Dim, T, N}
