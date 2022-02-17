@@ -144,7 +144,49 @@ if enable_visualization
         return convert_arguments(LS, lines)
     end
 
-    function convert_arguments(LS::Type{<:LineSegments}, R::Vector{<:AABox2D})
+    function convert_arguments(LS::Type{<:LineSegments}, aab::AABox3D{T}) where {T}
+        #   7----6
+        #  /    /|
+        # 4----3 |
+        # |    | 5
+        # |    |/
+        # 1----2
+        Δx = (aab.xmax - aab.xmin)
+        Δy = (aab.ymax - aab.ymin)
+        Δz = (aab.zmax - aab.zmin)
+        p₁ = aab.origin
+        p₂ = Point3D(p₁ + Point3D{T}(Δx,  0,  0)) 
+        p₃ = Point3D(p₂ + Point3D{T}( 0, Δy,  0)) 
+        p₄ = Point3D(p₁ + Point3D{T}( 0, Δy,  0))
+        p₅ = Point3D(p₂ + Point3D{T}( 0,  0, Δz))
+        p₆ = aab.corner
+        p₇ = Point3D(p₆ - Point3D{T}(Δx,  0,  0))
+        p₈ = Point3D(p₁ + Point3D{T}( 0,  0, Δz))
+        #       10
+        #     +----+
+        #   8/   7/|9
+        #   +----+ |
+        #  4| 3  | +
+        #   |   2|/ 5
+        #   +----+
+        #     1
+        l₁  = LineSegment(p₁, p₂)
+        l₂  = LineSegment(p₂, p₃)
+        l₃  = LineSegment(p₃, p₄)
+        l₄  = LineSegment(p₄, p₁)
+        l₅  = LineSegment(p₂, p₅)
+        l₆  = LineSegment(p₁, p₈)
+        l₇  = LineSegment(p₃, p₆)
+        l₈  = LineSegment(p₄, p₇)
+        l₉  = LineSegment(p₅, p₆)
+        l₁₀ = LineSegment(p₆, p₇)
+        l₁₁ = LineSegment(p₇, p₈)
+        l₁₂ = LineSegment(p₅, p₈)
+        lines = [l₁, l₂, l₃, l₄, l₅, l₆, l₇, l₈, l₉, l₁₀, l₁₁, l₁₂]
+        return convert_arguments(LS, lines)
+    end
+
+    function convert_arguments(LS::Type{<:LineSegments}, R::Vector{<:AABox})
         point_sets = [convert_arguments(LS, aab) for aab in R]
         return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
     end
@@ -156,6 +198,28 @@ if enable_visualization
         faces = [1 2 3;
                  3 4 1]
         return convert_arguments(M, points, faces)
+    end
+
+    function convert_arguments(M::Type{<:Mesh}, aab::AABox3D{T}) where {T}
+        Δx = (aab.xmax - aab.xmin)
+        Δy = (aab.ymax - aab.ymin)
+        Δz = (aab.zmax - aab.zmin)
+        p₁ = aab.origin
+        p₂ = Point3D(p₁ + Point3D{T}(Δx,  0,  0)) 
+        p₃ = Point3D(p₂ + Point3D{T}( 0, Δy,  0)) 
+        p₄ = Point3D(p₁ + Point3D{T}( 0, Δy,  0))
+        p₅ = Point3D(p₂ + Point3D{T}( 0,  0, Δz))
+        p₆ = aab.corner
+        p₇ = Point3D(p₆ - Point3D{T}(Δx,  0,  0))
+        p₈ = Point3D(p₁ + Point3D{T}( 0,  0, Δz))
+
+        f₁ = Quadrilateral(p₁, p₂, p₃, p₄)
+        f₂ = Quadrilateral(p₅, p₆, p₇, p₈)
+        f₃ = Quadrilateral(p₂, p₅, p₆, p₃)
+        f₄ = Quadrilateral(p₁, p₈, p₇, p₄)
+        f₅ = Quadrilateral(p₄, p₃, p₆, p₇)
+        f₆ = Quadrilateral(p₁, p₂, p₅, p₈)
+        return convert_arguments(M, [f₁, f₂, f₃, f₄, f₅, f₆])
     end
 
     function convert_arguments(M::Type{<:Mesh}, R::Vector{<:AABox2D})
@@ -171,5 +235,31 @@ if enable_visualization
             j += 4
         end
         return convert_arguments(M, points, faces)
+    end
+
+    function convert_arguments(M::Type{<:Mesh}, R::Vector{AABox3D{T}}) where {T}
+        faces = Quadrilateral3D{T}[]
+        for aab ∈ R
+            Δx = (aab.xmax - aab.xmin)
+            Δy = (aab.ymax - aab.ymin)
+            Δz = (aab.zmax - aab.zmin)
+            p₁ = aab.origin
+            p₂ = Point3D(p₁ + Point3D{T}(Δx,  0,  0)) 
+            p₃ = Point3D(p₂ + Point3D{T}( 0, Δy,  0)) 
+            p₄ = Point3D(p₁ + Point3D{T}( 0, Δy,  0))
+            p₅ = Point3D(p₂ + Point3D{T}( 0,  0, Δz))
+            p₆ = aab.corner
+            p₇ = Point3D(p₆ - Point3D{T}(Δx,  0,  0))
+            p₈ = Point3D(p₁ + Point3D{T}( 0,  0, Δz))
+    
+            f₁ = Quadrilateral(p₁, p₂, p₃, p₄)
+            f₂ = Quadrilateral(p₅, p₆, p₇, p₈)
+            f₃ = Quadrilateral(p₂, p₅, p₆, p₃)
+            f₄ = Quadrilateral(p₁, p₈, p₇, p₄)
+            f₅ = Quadrilateral(p₄, p₃, p₆, p₇)
+            f₆ = Quadrilateral(p₁, p₂, p₅, p₈)
+            append!(faces, [f₁, f₂, f₃, f₄, f₅, f₆])
+        end
+        return convert_arguments(M, faces)
     end
 end

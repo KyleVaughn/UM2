@@ -122,7 +122,7 @@ export arclength, area,
        quadratic_edges,
        rand, read_abaqus2d, real_to_parametric, 
        sort, sort!, sort_intersection_points!, submesh,
-       triangulate, 
+       triangulate, triangulate_nonconvex,
        union, 
        width, write_xdmf2d
 

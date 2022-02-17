@@ -24,10 +24,8 @@ end
 Polygon{N}(x...) where {N} = Polygon(SVector(x))
 Polygon(x...) = Polygon(SVector(x))
 
-# Methods
+# Area
 # ---------------------------------------------------------------------------------------------
-# Area of the polygon
-#
 # Uses the shoelace formula (https://en.wikipedia.org/wiki/Shoelace_formula)
 function area(poly::Polygon{N, Dim, T}) where {N, Dim, T}
     if Dim === 2
@@ -43,7 +41,8 @@ end
 # We can simplify the above for triangles
 area(tri::Triangle) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
 
-# Centroid for polygons
+# Centroid
+# ---------------------------------------------------------------------------------------------
 # (https://en.wikipedia.org/wiki/Centroid#Of_a_polygon)
 function centroid(poly::Polygon{N, Dim, T}) where {N, Dim, T}
     if Dim === 2
@@ -63,6 +62,8 @@ end
 # Use a faster method for triangles
 centroid(tri::Triangle) = Point((tri[1] + tri[2] + tri[3])/3)
 
+# Point inside polygon
+# ---------------------------------------------------------------------------------------------
 # Test if a point is in a polygon for 2D points/polygons
 function Base.in(p::Point2D, poly::Polygon{N, 2, T}) where {N, T}
     # Test if the point is to the left of each edge. 
@@ -88,7 +89,8 @@ end
 #    return bool
 #end
 
-
+# Intersect
+# ---------------------------------------------------------------------------------------------
 # Intersection of a line segment and polygon in 2D
 function Base.intersect(l::LineSegment2D{T}, poly::Polygon{N, 2, T}
                        ) where {N,T <:Union{Float32, Float64}} 
@@ -120,22 +122,62 @@ function Base.intersect(l::LineSegment2D{BigFloat}, poly::Polygon{N, 2, BigFloat
     return npoints, SVector{N,Point2D{BigFloat}}(points)
 end
 
-# Return the vector of 2D triangles corresponding to the 2D polygon's triangulation
+# Möller, T., & Trumbore, B. (1997). Fast, minimum storage ray-triangle intersection.
+function intersect(l::LineSegment3D{T}, tri::Triangle3D{T}) where {T}
+    p = Point3D{T}(0, 0, 0)
+    𝗲₁ = tri[2] - tri[1]
+    𝗲₂ = tri[3] - tri[1]
+    𝗱 = l.𝘂
+    𝗽 = 𝗱 × 𝗲₂
+    det = 𝗽 ⋅ 𝗲₁
+    (det > -1e-8 && det < 1e-8) && return (false, p) 
+    inv_det = 1/det
+    𝘁 = l.𝘅₁ - tri[1]
+    u = (𝘁 ⋅ 𝗽)*inv_det
+    (u < 0 || u > 1) && return (false, p)
+    𝗾 = 𝘁 × 𝗲₁
+    v = (𝗾 ⋅ 𝗱)*inv_det
+    (v < 0 || u + v > 1) && return (false, p)
+    t = (𝗾 ⋅ 𝗲₂)*inv_det
+    (t < 0 || t > 1) && return (false, p)
+    return (true, l(t))
+end
+
+# Triangulate
+# ---------------------------------------------------------------------------------------------
+# Return the vector of triangles corresponding to the polygon's triangulation
 #
+# Assumes polygon is convex
+function triangulate(poly::Polygon{N, 3, T}) where {N, T}
+    triangles = Vector{Triangle3D{T}}(undef, N-2)
+    if N === 3
+        return [poly]
+    end
+    for i = 1:N-2
+        triangles[i] = Triangle(poly[1], poly[i+1], poly[i+2])
+    end
+    return triangles
+end
+
 # Uses the ear clipping method. 
 # (https://en.wikipedia.org/wiki/Polygon_triangulation#Ear_clipping_method)
 # This implementation of the ear clipping method is not efficient, but it is 
 # very simple.
-function triangulate(poly::Polygon{N, 2, T}) where {N, T}
-    triangles = Triangle2D{T}[]
+function triangulate_nonconvex(poly::Polygon{N, 2, T}) where {N, T}
+    if N === 3
+        return [poly]
+    end
+    triangles = Vector{Triangle2D{T}}(undef, N-2)
     V = [ i for i = 1:N ]
     nverts = N
+    nt = 0
     i = 1
     while 2 < nverts
         if _vertex_is_convex(i, V, poly)
             if _vertex_is_ear(i, V, poly)
                 ear = _get_ear(i, V, poly)
-                push!(triangles, ear)
+                nt += 1
+                triangles[nt] = ear
                 deleteat!(V, i)
                 nverts -= 1
                 i -= 1
