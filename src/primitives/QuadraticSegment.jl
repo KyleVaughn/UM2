@@ -260,24 +260,31 @@ function intersect_edges(lines::Vector{LineSegment{Dim, T}},
     return intersection_points
 end
 
-
-function intersect_edges_CUDA(lines::CuArray{<:LineSegment{2, T}}, 
-                              edges::CuArray{<:QuadraticSegment{2, T}}) where {T} 
+function intersect_edges_CUDA(lines::Vector{LineSegment{2, T}}, 
+                              edges::Vector{QuadraticSegment{2, T}}) where {T} 
     nlines = length(lines)
     nedges = length(edges)
-    # 2√nedges is a good guess for a square domain with even mesh distrubution, but what
+    # √(2*nedges) is a good guess for a square domain with even mesh distrubution, but what
     # about rectangular domains?
-    intersection_points = CUDA.fill(Point2D(NaN, NaN), ceil(Int64, 2sqrt(nedges)), nlines)
-    kernel = @cuda launch=false intersect_edges_CUDA!(intersection_points, lines, edges)
+    lines_gpu = CuArray(lines)
+    edges_gpu = CuArray(edges)
+    intersection_array_gpu = CUDA.fill(Point2D{T}(NaN, NaN), ceil(Int64, 2sqrt(nedges)), nlines)
+    kernel = @cuda launch=false intersect_edges_CUDA!(intersection_array_gpu, 
+                                                      lines_gpu, edges_gpu)
     config = launch_configuration(kernel.fun)
     threads = min(nlines, config.threads)
     blocks = cld(nlines, threads)
     CUDA.@sync begin
-        kernel(intersection_points, lines, edges; threads, blocks) 
+        kernel(intersection_array_gpu, lines_gpu, edges_gpu; threads, blocks) 
     end 
+    intersection_array = collect(intersection_array_gpu) 
+    intersection_points = [ filter!(x->!isnan(x[1]), collect(intersection_array[:, i])) for i ∈ 1:nlines]
+    Threads.@threads for i = 1:nlines
+        sort_intersection_points!(lines[i], intersection_points[i])
+    end
     return intersection_points
 end
-# Intersect a vector of lines with a quadratic edge
+
 function intersect_edges_CUDA!(intersection_points, lines, edges)
     nlines = length(lines)
     index = (blockIdx().x - 1) * blockDim().x + threadIdx().x
@@ -294,7 +301,6 @@ function intersect_edges_CUDA!(intersection_points, lines, edges)
             end                                                                 
         end
     end
-#    sort!(lines[index].𝘅₁, intersection_points[:, index])
     return nothing
 end
 
