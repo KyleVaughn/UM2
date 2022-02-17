@@ -76,7 +76,7 @@ function Base.rand(::Type{Point{Dim, T}}, num_points::Int64) where {Dim, T}
     return [ Point{Dim, T}(rand(SVector{Dim, T})) for i = 1:num_points ]
 end
 
-# Sort points based on their distance prom another point.
+# Sort points based on their distance from another point.
 # Default algorithm is quicksort. If the vector is less than 20 elements, insertion sort
 # is used instead.
 defalg(v::Vector{<:Point}) = Base.Sort.QuickSort
