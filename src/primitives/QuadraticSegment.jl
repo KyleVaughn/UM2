@@ -269,8 +269,8 @@ function intersect_edges_CUDA(lines::Vector{LineSegment{2, T}},
     lines_gpu = CuArray(lines)
     edges_gpu = CuArray(edges)
     intersection_array_gpu = CUDA.fill(Point2D{T}(NaN, NaN), ceil(Int64, 2sqrt(nedges)), nlines)
-    kernel = @cuda launch=false intersect_edges_CUDA!(intersection_array_gpu, 
-                                                      lines_gpu, edges_gpu)
+    kernel = @cuda launch=false intersect_quadratic_edges_CUDA!(intersection_array_gpu, 
+                                                                lines_gpu, edges_gpu)
     config = launch_configuration(kernel.fun)
     threads = min(nlines, config.threads)
     blocks = cld(nlines, threads)
@@ -285,7 +285,7 @@ function intersect_edges_CUDA(lines::Vector{LineSegment{2, T}},
     return intersection_points
 end
 
-function intersect_edges_CUDA!(intersection_points, lines, edges)
+function intersect_quadratic_edges_CUDA!(intersection_points, lines, edges)
     nlines = length(lines)
     index = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     stride = gridDim().x * blockDim().x
