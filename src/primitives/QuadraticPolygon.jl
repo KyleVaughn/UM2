@@ -42,24 +42,19 @@ QuadraticPolygon(x...) = QuadraticPolygon(SVector(x))
 # Let 𝗳(r,s) be a parameterization of surface S
 # A = ∬ dS = ∬ ‖∂𝗳/∂r × ∂𝗳/∂s‖dr ds
 #     S      T
-function area(quad8::QuadraticQuadrilateral2D)
+function area(tri6::QuadraticPolygon{N,T}) where {N,T}
+    # A = (4Aₕ - Aₗ)/6      
+    # Area of convex hull - Area of the base, linear shape
     # Mathematica for this algebraic nightmare
-    a = (quad8[2] - quad8[4]) × quad8[1].coord
-    b = (quad8[2] - quad8[4]) × quad8[3].coord
-    c = (quad8[8] - quad8[5]) × quad8[1].coord
-    d = (quad8[6] - quad8[5]) × quad8[2].coord
-    e = (quad8[6] - quad8[7]) × quad8[3].coord
-    f = (quad8[8] - quad8[7]) × quad8[4].coord
-    return (a - b + 4(c - d + e - f))/6
-end
-function area(tri6::QuadraticTriangle2D)
-    # Mathematica for this algebraic nightmare
-    a = (tri6[6] - tri6[4]) × tri6[1].coord
-    b = (tri6[4] - tri6[5]) × tri6[2].coord
-    c = (tri6[5] - tri6[6]) × tri6[3].coord
-    d = (tri6[1] - tri6[2]) × tri6[3].coord
-    e = tri6[2]  × tri6[1]
-    return (4(a + b + c) + d + e)/6
+    q = zero(T)
+    l = zero(T)
+    M = N ÷ 2
+    for i ∈ 1:3
+        q += tri6[(i - 1) % M + 1] × tri6[i + M]
+        q -= tri6[      i % M + 1] × tri6[i + M]
+        l += tri6[(i - 1) % M + 1] × tri6[      i % M + 1]
+    end
+    return (4q - l)/6
 end
 
 # The area integral for 3D quadratic triangles and quadrilaterals appears to have an
