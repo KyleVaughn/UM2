@@ -58,3 +58,69 @@ using MOCNeutronTransport
         end
     end
 end
+
+@testset "Triangle3D" begin
+    for F in [Float32, Float64, BigFloat]
+        @testset "Constructors" begin
+            p₁ = Point3D{F}(0, 0, 0)
+            p₂ = Point3D{F}(0, 1, 0)
+            p₃ = Point3D{F}(0, 0, 1)
+            tri = Triangle(p₁, p₂, p₃)
+            @test tri.points == SVector(p₁, p₂, p₃)
+        end
+
+        @testset "Methods" begin
+            p₁ = Point3D{F}(0, 0, 0)
+            p₂ = Point3D{F}(0, 1, 0)
+            p₃ = Point3D{F}(0, 1, 1)
+            tri = Triangle(p₁, p₂, p₃)
+
+            # interpolation
+            tri(0, 0) ≈ p₁
+            tri(1, 0) ≈ p₂
+            tri(0, 1) ≈ p₃
+            tri(1//2, 1//2) ≈ Point3D{F}(0, 1//2, 1//2)
+
+            # area
+            @test area(tri) ≈ 1//2
+
+            # intersect
+            # line is not coplanar with triangle
+            p₄ = Point3D{F}(-1, 1//10, 1//10)
+            p₅ = Point3D{F}( 1, 1//10, 1//10)
+            l = LineSegment(p₄, p₅)
+            hit, point = intersect(l, tri)
+            @test hit
+            @test point ≈ Point3D{F}(0, 1//10,  1//10)
+
+            # line is coplanar with triangle
+            p₄ = Point3D{F}(0, -1, 1//10)
+            p₅ = Point3D{F}(0,  2, 1//10)
+            l = LineSegment(p₄, p₅)
+            hit, point = intersect(l, tri)
+            @test !hit
+
+            # no intersection non-coplanar
+            p₄ = Point3D{F}(-1, 1//10, -1//10)
+            p₅ = Point3D{F}( 1, 1//10, -1//10)
+            l = LineSegment(p₄, p₅)
+            hit, point = intersect(l, tri)
+            @test !hit
+
+            # no intersection coplanar
+            p₄ = Point3D{F}(0, -1, 1)
+            p₅ = Point3D{F}(0, -1, 0)
+            l = LineSegment(p₄, p₅)
+            hit, point = intersect(l, tri)
+            @test !hit
+
+            # intersects on boundary of triangle
+            p₄ = Point3D{F}(-1, 0, 0)
+            p₅ = Point3D{F}( 1, 0, 0)
+            l = LineSegment(p₄, p₅)
+            hit, point = intersect(l, tri)
+            @test hit
+            @test point ≈ Point3D{F}(0, 0, 0)
+        end
+    end
+end

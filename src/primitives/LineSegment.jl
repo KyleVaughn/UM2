@@ -37,13 +37,15 @@ LineSegment{Dim}(pts::SVector{2, Point{Dim, T}}
 LineSegment(pts::SVector{2, Point{Dim, T}}
            ) where {Dim, T} = LineSegment{Dim, T}(pts[1], pts[2] - pts[1]) 
 
-# Methods
+# Short methods
 # ---------------------------------------------------------------------------------------------
-# Interpolation
-# Note: 𝗹(0) = 𝘅₁, 𝗹(1) = 𝘅₂
 @inline (l::LineSegment)(r) = Point(l.𝘅₁.coord + r*l.𝘂)
 @inline arclength(l::LineSegment) = distance(l.𝘅₁.coord, l.𝘅₁.coord + l.𝘂)
-function Base.intersect(l₁::LineSegment1D{T}, l₂::LineSegment1D{T}) where {T}
+
+# Intersect
+# ---------------------------------------------------------------------------------------------
+# Intersection of two 1D linesegments
+function intersect(l₁::LineSegment1D{T}, l₂::LineSegment1D{T}) where {T}
     l₁_start = l₁.𝘅₁[1]
     l₁_stop  = l₁_start + l₁.𝘂[1]
     l₂_start = l₂.𝘅₁[1]
@@ -91,7 +93,7 @@ end
 # hence, in 2D:
 # r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇) = x₃/z₃ 
 # s = r(𝘅 ⋅ 𝘆)/(𝘅 ⋅ 𝘅) = y₃/z₃ 
-function Base.intersect(l₁::LineSegment2D{T}, l₂::LineSegment2D{T}) where {T}
+function intersect(l₁::LineSegment2D{T}, l₂::LineSegment2D{T}) where {T}
     ϵ = T(5e-6) # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
     𝘄 = l₂.𝘅₁ - l₁.𝘅₁
     z = l₁.𝘂 × l₂.𝘂
@@ -100,7 +102,7 @@ function Base.intersect(l₁::LineSegment2D{T}, l₂::LineSegment2D{T}) where {T
     return (T(1e-8) < abs(z) && -ϵ ≤ r ≤ 1 + ϵ 
                              && -ϵ ≤ s ≤ 1 + ϵ, l₂(s)) # (hit, point)
 end
-function Base.intersect(l₁::LineSegment3D{T}, l₂::LineSegment3D{T}) where {T}
+function intersect(l₁::LineSegment3D{T}, l₂::LineSegment3D{T}) where {T}
     ϵ = T(5e-6) # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
     𝘂 = l₁.𝘂
     𝘃 = l₂.𝘂
@@ -147,6 +149,7 @@ function intersect_edges(lines::Vector{LineSegment{Dim, T}},
     return intersection_points
 end
 
+# Intersect a vector of lines with a vector of linear edges, using CUDA
 function intersect_edges_CUDA(lines::Vector{LineSegment{2, T}}, 
                               edges::Vector{LineSegment{2, T}}) where {T} 
     nlines = length(lines)
@@ -156,8 +159,8 @@ function intersect_edges_CUDA(lines::Vector{LineSegment{2, T}},
     lines_gpu = CuArray(lines)
     edges_gpu = CuArray(edges)
     intersection_array_gpu = CUDA.fill(Point2D{T}(NaN, NaN), ceil(Int64, 2sqrt(nedges)), nlines)
-    kernel = @cuda launch=false intersect_linear_edges_CUDA!(intersection_array_gpu, 
-                                                             lines_gpu, edges_gpu)
+    kernel = @cuda launch=false _intersect_linear_edges_CUDA!(intersection_array_gpu, 
+                                                              lines_gpu, edges_gpu)
     config = launch_configuration(kernel.fun)
     threads = min(nlines, config.threads)
     blocks = cld(nlines, threads)
@@ -173,7 +176,7 @@ function intersect_edges_CUDA(lines::Vector{LineSegment{2, T}},
     return intersection_points
 end
 
-function intersect_linear_edges_CUDA!(intersection_points, lines, edges)
+function _intersect_linear_edges_CUDA!(intersection_points, lines, edges)
     nlines = length(lines)
     index = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     stride = gridDim().x * blockDim().x
@@ -190,6 +193,8 @@ function intersect_linear_edges_CUDA!(intersection_points, lines, edges)
     return nothing
 end
 
+# Is left 
+# ---------------------------------------------------------------------------------------------
 # If the point is left of the line segment in the 2D plane. 
 #
 # The segment's direction is from 𝘅₁ to 𝘅₂. Let 𝘂 = 𝘅₂ - 𝘅₁ and 𝘃 = 𝗽 - 𝘅₁ 
@@ -203,11 +208,13 @@ end
 # We allow points on the line (𝘂 × 𝘃 = 0) to be left, since this test is primarily 
 # used to determine if a point is inside a polygon. A mesh is supposed to partition
 # its domain, so if we do not allow points on the line, there will exist points in the 
-# mesh which will not be in any face, violating that rule.
+# mesh which will not be in any face.
 @inline function isleft(p::Point2D, l::LineSegment2D)
     return 0 ≤ l.𝘂 × (p - l.𝘅₁) 
 end
 
+# Random
+# ---------------------------------------------------------------------------------------------
 # Random line in the Dim-dimensional unit hypercube
 function Base.rand(::Type{LineSegment{Dim, F}}) where {Dim, F} 
     points = rand(Point{Dim, F}, 2)
@@ -219,6 +226,8 @@ function Base.rand(::Type{LineSegment{Dim, F}}, N::Int64) where {Dim, F}
     return [ rand(LineSegment{Dim, F}) for i ∈ 1:N ]
 end
 
+# Sort
+# ---------------------------------------------------------------------------------------------
 # Sort intersection points along a line segment, deleting points that are less than 
 # the minimum_segment_length apart
 function sort_intersection_points!(l::LineSegment, points::Vector{<:Point})

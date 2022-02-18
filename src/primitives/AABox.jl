@@ -31,7 +31,7 @@ end
 # ---------------------------------------------------------------------------------------------
 AABox{Dim}(p₁::Point{Dim, T}, p₂::Point{Dim, T}) where {Dim, T} = AABox{Dim, T}(p₁, p₂)
 
-# Methods
+# Short methods
 # ---------------------------------------------------------------------------------------------
 @inline width(aab::AABox)  = aab.xmax - aab.xmin
 @inline height(aab::AABox) = aab.ymax - aab.ymin
@@ -47,11 +47,12 @@ AABox{Dim}(p₁::Point{Dim, T}, p₂::Point{Dim, T}) where {Dim, T} = AABox{Dim,
 @inline Base.in(p::Point3D, aab::AABox3D) = aab.xmin ≤ p[1] ≤ aab.xmax && 
                                             aab.ymin ≤ p[2] ≤ aab.ymax &&
                                             aab.zmin ≤ p[3] ≤ aab.zmax
-
+# Intersect
+# ---------------------------------------------------------------------------------------------
 # Using the slab method
 # Assumes the line passes all the way through the AABox if it intersects, which is a 
 # valid assumption for this ray tracing application. 
-function Base.intersect(l::LineSegment, aab::AABox)
+function intersect(l::LineSegment, aab::AABox)
     𝘂⁻¹= 1 ./ l.𝘂   
     𝘁₁ = 𝘂⁻¹*(aab.origin - l.𝘅₁)
     𝘁₂ = 𝘂⁻¹*(aab.corner - l.𝘅₁)
@@ -60,6 +61,8 @@ function Base.intersect(l::LineSegment, aab::AABox)
     return (tmax >= tmin, SVector(l(tmin), l(tmax)))
 end
 
+# Random
+# ---------------------------------------------------------------------------------------------
 # A random AABox within the Dim-dimensional unit hypercube 
 # What does the distribution of AABoxs look like? Is this uniform? 
 function Base.rand(::Type{AABox{Dim, T}}) where {Dim, T}
@@ -74,6 +77,8 @@ function Base.rand(::Type{AABox{Dim, T}}, num_boxes::Int64) where {Dim, T}
     return [ rand(AABox{Dim, T}) for i ∈ 1:num_boxes ]
 end
 
+# Union
+# ---------------------------------------------------------------------------------------------
 # Return the AABox which contains both bb₁ and bb₂
 function Base.union(bb₁::AABox{Dim, T}, bb₂::AABox{Dim, T}) where {Dim, T}
     return AABox(Point{Dim, T}(min.(bb₁.origin.coord, bb₂.origin.coord)),
@@ -102,32 +107,104 @@ end
 # ---------------------------------------------------------------------------------------------
 # Bounding box of a vector of points
 function boundingbox(points::Vector{<:Point2D})
-    x = getindex.(points, 1)
-    y = getindex.(points, 2)
-    return AABox2D(Point2D(minimum(x), minimum(y)), Point2D(maximum(x), maximum(y)))
+    xmin = ymin = typemax(T)
+    xmax = ymax = typemin(T)
+    for i = 1:length(points)
+        x,y = points[i].coord  
+        if x < xmin
+            xmin = x
+        end
+        if xmax < x
+            xmax = x
+        end
+        if y < ymin
+            ymin = y
+        end
+        if ymax < y
+            ymax = y
+        end
+    end
+    return AABox2D(Point2D(xmin, ymin), 
+                   Point2D(xmax, ymax))
 end
 
-function boundingbox(points::SVector{L, Point2D}) where {L} 
-    x = getindex.(points, 1)
-    y = getindex.(points, 2)
-    return AABox2D(Point2D(minimum(x), minimum(y)), Point2D(maximum(x), maximum(y)))
+function boundingbox(points::SVector{L, Point2D{T}}) where {L,T} 
+    xmin = ymin = typemax(T)
+    xmax = ymax = typemin(T)
+    for i = 1:L
+        x,y = points[i].coord  
+        if x < xmin
+            xmin = x
+        end
+        if xmax < x
+            xmax = x
+        end
+        if y < ymin
+            ymin = y
+        end
+        if ymax < y
+            ymax = y
+        end
+    end
+    return AABox2D(Point2D(xmin, ymin), 
+                   Point2D(xmax, ymax))
 end
 
 # Bounding box of a vector of points
 function boundingbox(points::Vector{<:Point3D})
-    x = getindex.(points, 1)
-    y = getindex.(points, 2)
-    z = getindex.(points, 3)
-    return AABox3D(Point3D(minimum(x), minimum(y), minimum(z)), 
-                   Point3D(maximum(x), maximum(y), maximum(z)))
+    xmin = ymin = zmin = typemax(T)
+    xmax = ymax = zmax = typemin(T)
+    for i = 1:length(points)
+        x,y,z = points[i].coord  
+        if x < xmin
+            xmin = x
+        end
+        if xmax < x
+            xmax = x
+        end
+        if y < ymin
+            ymin = y
+        end
+        if ymax < y
+            ymax = y
+        end
+        if z < zmin
+            zmin = z
+        end
+        if zmax < z
+            zmax = z
+        end
+    end
+    return AABox3D(Point3D(xmin, ymin, zmin), 
+                   Point3D(xmax, ymax, zmax))
 end
 
-function boundingbox(points::SVector{L, Point3D}) where {L} 
-    x = getindex.(points, 1)
-    y = getindex.(points, 2)
-    z = getindex.(points, 3)
-    return AABox3D(Point3D(minimum(x), minimum(y), minimum(z)), 
-                   Point3D(maximum(x), maximum(y), maximum(z)))
+function boundingbox(points::SVector{L, Point3D{T}}) where {L,T} 
+    xmin = ymin = zmin = typemax(T)
+    xmax = ymax = zmax = typemin(T)
+    for i = 1:L
+        x,y,z = points[i].coord  
+        if x < xmin
+            xmin = x
+        end
+        if xmax < x
+            xmax = x
+        end
+        if y < ymin
+            ymin = y
+        end
+        if ymax < y
+            ymax = y
+        end
+        if z < zmin
+            zmin = z
+        end
+        if zmax < z
+            zmax = z
+        end
+    end
+    return AABox3D(Point3D(xmin, ymin, zmin), 
+                   Point3D(xmax, ymax, zmax))
 end
 
 # Plot

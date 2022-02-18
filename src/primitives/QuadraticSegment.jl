@@ -1,4 +1,5 @@
 # A quadratic segment that passes through three points: 𝘅₁, 𝘅₂, and 𝘅₃.
+#
 # The segment satisfies:
 # 𝗾(r) = (2r-1)(r-1)𝘅₁ + r(2r-1)𝘅₂ + 4r(1-r)𝘅₃, r ∈ [0,1]
 # Equivalently, 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁, r ∈ [0,1] where:
@@ -56,17 +57,19 @@ function QuadraticSegment{Dim}(p₁::Point{Dim, T},
     return QuadraticSegment{Dim, T}(SVector{3, Point{Dim, T}}(p₁, p₂, p₃))
 end
 
-# Methods
+# Small methods
 # ---------------------------------------------------------------------------------------------
 # Interpolation
-#
-# See The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th Edition
-# Chapter 8, Advanced Data Representation, in the interpolation functions section
 # Note: 𝗾(0) = 𝘅₁, 𝗾(1) = 𝘅₂, 𝗾(1/2) = 𝘅₃
-function (q::QuadraticSegment)(r)
-    return Point(((2r-1)*(r-1))q.𝘅₁ + (r*(2r-1))q.𝘅₂ + (4r*(1-r))q.𝘅₃)
-end
+(q::QuadraticSegment)(r) = Point(((2r-1)*(r-1))q.𝘅₁ + (r*(2r-1))q.𝘅₂ + (4r*(1-r))q.𝘅₃)
+# Return the derivative of q, evalutated at r
+# 𝗾′(r) = 2r𝘂 + 𝘃, which is simplified to below.
+derivative(q::QuadraticSegment, r) = (4r - 3)*(q.𝘅₁ - q.𝘅₃) + (4r - 1)*(q.𝘅₂ - q.𝘅₃)
+# Return the Jacobian of q, evalutated at r
+jacobian(q::QuadraticSegment, r) = derivative(q, r) 
 
+# Arc length
+# ---------------------------------------------------------------------------------------------
 # Return the arc length of the quadratic segment
 #
 # The arc length integral may be reduced to an integral over the square root of a 
@@ -92,6 +95,8 @@ function arclength(q::QuadraticSegment)
     end
 end
 
+# Axis-aligned bounding box
+# ---------------------------------------------------------------------------------------------
 # Find the axis-aligned bounding box of the segment
 #
 # Find the extrema for x and y by finding the r_x such that dx/dr = 0 
@@ -137,13 +142,8 @@ function boundingbox(q::QuadraticSegment{N}) where {N}
     end
 end
 
-# Return the derivative of q, evalutated at r
-# 𝗾′(r) = 2r𝘂 + 𝘃, which is simplified to below.
-derivative(q::QuadraticSegment, r) = (4r - 3)*(q.𝘅₁ - q.𝘅₃) + (4r - 1)*(q.𝘅₂ - q.𝘅₃)
-
-# Return the Jacobian of q, evalutated at r
-jacobian(q::QuadraticSegment, r) = derivative(q, r) 
-
+# Intersect
+# ---------------------------------------------------------------------------------------------
 # Intersection between a line segment and quadratic segment
 #
 # The quadratic segment: 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁
@@ -168,7 +168,7 @@ jacobian(q::QuadraticSegment, r) = derivative(q, r)
 #   2) r ∉ [0, 1]   (Curve intersects, segment doesn't)
 # s is invalid if:
 #   1) s ∉ [0, 1]   (Line intersects, segment doesn't)
-function Base.intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
+function intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
     ϵ = T(5e-6) # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
     npoints = 0x0000
     p₁ = zero(Point2D{T})
@@ -304,6 +304,8 @@ function intersect_quadratic_edges_CUDA!(intersection_points, lines, edges)
     return nothing
 end
 
+# Is left 
+# ---------------------------------------------------------------------------------------------
 # If the point is left of the quadratic segment in the 2D plane. 
 #   𝗽    ^
 #   ^   /
@@ -360,6 +362,8 @@ function isleft(p::Point2D, q::QuadraticSegment2D)
     end
 end
 
+# Is straight
+# ---------------------------------------------------------------------------------------------
 # If the quadratic segment is effectively linear
 #
 # Check the sign of the cross product of the vectors (𝘅₃ - 𝘅₁) and (𝘅₂ - 𝘅₁)
@@ -372,6 +376,8 @@ function isstraight(q::QuadraticSegment3D)
     return norm²((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-16
 end
 
+# Nearest point
+# ---------------------------------------------------------------------------------------------
 # Find the point on 𝗾(r) closest to the point of interest 𝘆. 
 #
 # Note: r ∈ [0, 1] is not necessarily true for this function, since it finds the minimizer
@@ -437,6 +443,8 @@ function nearest_point(p::Point{Dim,T}, q::QuadraticSegment) where {Dim,T}
     end 
 end
 
+# Random
+# ---------------------------------------------------------------------------------------------
 # Random quadratic segment in the Dim-dimensional unit hypercube
 function Base.rand(::Type{QuadraticSegment{Dim, F}}) where {Dim, F} 
     points = rand(Point{Dim, F}, 3)

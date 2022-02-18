@@ -60,7 +60,7 @@ Point(x...) = Point(SVector(x))
 @inline ==(p::Point, v::Vector) = p.coord == v
 @inline ≈(p₁::Point, p₂::Point) = distance²(p₁, p₂) < (1e-5)^2 # 100 nm
 
-# Methods
+# Short methods
 # ---------------------------------------------------------------------------------------------
 @inline distance(p₁::Point, p₂::Point) = norm(p₁ - p₂)
 @inline distance(p₁::Point, v::Vector) = norm(p - v)
@@ -76,6 +76,8 @@ function Base.rand(::Type{Point{Dim, T}}, num_points::Int64) where {Dim, T}
     return [ Point{Dim, T}(rand(SVector{Dim, T})) for i = 1:num_points ]
 end
 
+# Sort
+# ---------------------------------------------------------------------------------------------
 # Sort points based on their distance from another point.
 # Default algorithm is quicksort. If the vector is less than 20 elements, insertion sort
 # is used instead.
