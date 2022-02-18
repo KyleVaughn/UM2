@@ -1,12 +1,25 @@
 # Specialized methods for a Triangle, aka Polygon{3}
-
 (tri::Triangle)(r, s) = Point((1 - r - s)*tri[1] + r*tri[2] + s*tri[3])
-area(tri::Triangle) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
-centroid(tri::Triangle) = Point((tri[1] + tri[2] + tri[3])/3)
+area(tri::Triangle2D) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
+area(tri::Triangle3D) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
+centroid(tri::Triangle2D) = Point((tri[1] + tri[2] + tri[3])/3)
+centroid(tri::Triangle3D) = Point((tri[1] + tri[2] + tri[3])/3)
 
 # Point inside polygon
 # ---------------------------------------------------------------------------------------------
-#
+# Section 5.4.3 in Ericson, C. (2004). Real-time collision detection
+function Base.in(p::Point3D, tri::Triangle3D)
+    𝗮 = tri[1] - p
+    𝗯 = tri[2] - p
+    𝗰 = tri[3] - p
+    # Use sign to ensure this works in 3D
+    𝘂 = 𝗯 × 𝗰
+    𝘃 = 𝗰 × 𝗮
+    𝘂 ⋅ 𝘃 < 0 && return false
+    𝘄 = 𝗮 × 𝗯
+    return 𝘂 ⋅𝘄  < 0 ? false : true
+end
+
 # Intersect
 # ---------------------------------------------------------------------------------------------
 function intersect(l::LineSegment2D{T}, tri::Triangle2D{T}

@@ -180,7 +180,7 @@ function intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
         z = l.𝘂 × 𝘃
         r = (𝘄 × 𝘃)/z
         s = (𝘄 × l.𝘂)/z
-        if T(1e-8) < abs(z) && -ϵ ≤ r ≤ 1 + ϵ && -ϵ ≤ s ≤ 1 + ϵ
+        if 1e-8 < abs(z) && -ϵ ≤ r ≤ 1 + ϵ && -ϵ ≤ s ≤ 1 + ϵ
             npoints += 0x0001
         end
         return npoints, SVector(l(r), p₂)
@@ -192,7 +192,7 @@ function intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
         b = 𝘃 × 𝘄
         c = (q.𝘅₁ - l.𝘅₁) × 𝘄
         w² = 𝘄 ⋅ 𝘄 
-        if abs(a) < T(1e-8)
+        if abs(a) < 1e-8
             r = -c/b
             -ϵ ≤ r ≤ 1 + ϵ || return 0x0000, SVector(p₁, p₂)
             p₁ = q(r)

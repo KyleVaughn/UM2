@@ -72,7 +72,7 @@ end
         @testset "Methods" begin
             p₁ = Point3D{F}(0, 0, 0)
             p₂ = Point3D{F}(0, 1, 0)
-            p₃ = Point3D{F}(0, 1, 1)
+            p₃ = Point3D{F}(0, 0, 1)
             tri = Triangle(p₁, p₂, p₃)
 
             # interpolation
@@ -83,6 +83,9 @@ end
 
             # area
             @test area(tri) ≈ 1//2
+
+            # centroid
+            @test centroid(tri) ≈ Point3D{F}(0, 1//3, 1//3)
 
             # intersect
             # line is not coplanar with triangle

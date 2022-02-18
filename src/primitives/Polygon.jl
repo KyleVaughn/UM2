@@ -1,4 +1,4 @@
-# A planar polygon defined by its vertices in counterclockwise order 
+# A convex, planar polygon defined by its vertices in counterclockwise order 
 struct Polygon{N, Dim, T} <:Face{Dim, 1, T}
     points::SVector{N, Point{Dim, T}}
 end
@@ -49,7 +49,7 @@ boundingbox(poly::Polygon) = boundingbox(poly.points)
 # Centroid
 # ---------------------------------------------------------------------------------------------
 # (https://en.wikipedia.org/wiki/Centroid#Of_a_polygon)
-function centroid(poly::Polygon{N, Dim, T}) where {N, Dim, T}
+function centroid(poly::Polygon{N, 2, T}) where {N, T}
     a = zero(T) # Scalar
     c = SVector{2,T}(0,0)
     for i ∈ 1:N-1
@@ -86,16 +86,14 @@ end
 # Point inside polygon
 # ---------------------------------------------------------------------------------------------
 # Test if a point is in a polygon for 2D points/polygons
-function Base.in(p::Point2D, poly::Polygon{N, 2, T}) where {N, T}
+function Base.in(p::Point2D, poly::Polygon{N, 2}) where {N}
     # Test if the point is to the left of each edge. 
-    bool = true
-    for i ∈ 1:N
-        if !isleft(p, LineSegment2D(poly[(i - 1) % N + 1], poly[i % N + 1]))
-            bool = false
-            break
+    for i ∈ 1:N-1
+        if !isleft(p, LineSegment2D(poly[i], poly[i + 1]))
+            return false
         end
     end
-    return bool
+    return isleft(p, LineSegment2D(poly[N], poly[1]))
 end
 ## Test if a point is in a polygon for 2D points/polygons
 #function Base.in(p::Point2D, poly::Polygon{N, 2, T}) where {N, T}
@@ -157,66 +155,6 @@ function triangulate(poly::Polygon{N, 3, T}) where {N, T}
         triangles[i] = Triangle(poly[1], poly[i+1], poly[i+2])
     end
     return triangles
-end
-
-# Uses the ear clipping method. 
-# (https://en.wikipedia.org/wiki/Polygon_triangulation#Ear_clipping_method)
-# This implementation of the ear clipping method is not efficient, but it is 
-# very simple.
-function triangulate_nonconvex(poly::Polygon{N, 2, T}) where {N, T}
-    if N === 3
-        return [poly]
-    end
-    triangles = Vector{Triangle2D{T}}(undef, N-2)
-    V = [ i for i = 1:N ]
-    nverts = N
-    nt = 0
-    i = 1
-    while 2 < nverts
-        if _vertex_is_convex(i, V, poly)
-            if _vertex_is_ear(i, V, poly)
-                ear = _get_ear(i, V, poly)
-                nt += 1
-                triangles[nt] = ear
-                deleteat!(V, i)
-                nverts -= 1
-                i -= 1
-            end
-        end
-        i = mod(i, nverts) + 1
-    end
-    return triangles
-end
-
-function _vertex_is_convex(i::Integer, V::Vector{<:Integer}, poly::Polygon{L, 2}) where {L}
-    N = length(V)
-    vₙ₋₁ = poly[V[mod(i - 2, N) + 1]]
-    vₙ   = poly[V[i]]
-    vₙ₊₁ = poly[V[mod(i, N) + 1]]
-    # 𝘂 × 𝘃 = ‖𝘂‖‖𝘃‖sin(θ), so when θ ∈ [0, π], 0 ≤ sin(θ), hence 0 ≤ 𝘂 × 𝘃
-    𝘂 = vₙ₊₁ - vₙ
-    𝘃 = vₙ₋₁ - vₙ
-    return 0 ≤ 𝘂 × 𝘃 
-end
-
-function _get_ear(i::Integer, V::Vector{<:Integer}, poly::Polygon{L, 2}) where {L}
-    N = length(V)
-    T = SVector(V[mod(i - 2, N) + 1], V[i], V[mod(i, N) + 1])
-    return Triangle(getindex.(poly, T))
-end
-
-function _vertex_is_ear(i::Integer, V::Vector{<:Integer}, poly::Polygon{L, 2}) where {L}
-    bool = true
-    N = length(V)
-    T = SVector(V[mod(i - 2, N) + 1], V[i], V[mod(i, N) + 1])
-    ear = Triangle(getindex.(poly, T)) 
-    for v in V
-        if v ∉ T && poly[v] ∈ ear
-            bool = false
-            break
-        end
-    end
-    return bool
 end
 
 # Plot

@@ -94,16 +94,29 @@ end
 # r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇) = x₃/z₃ 
 # s = r(𝘅 ⋅ 𝘆)/(𝘅 ⋅ 𝘅) = y₃/z₃ 
 function intersect(l₁::LineSegment2D{T}, l₂::LineSegment2D{T}) where {T}
-    ϵ = T(5e-6) # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
+    ϵ = 5e-6 # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
     𝘄 = l₂.𝘅₁ - l₁.𝘅₁
     z = l₁.𝘂 × l₂.𝘂
     r = (𝘄 × l₂.𝘂)/z
     s = (𝘄 × l₁.𝘂)/z
-    return (T(1e-8) < abs(z) && -ϵ ≤ r ≤ 1 + ϵ 
-                             && -ϵ ≤ s ≤ 1 + ϵ, l₂(s)) # (hit, point)
+    return (1e-8 < abs(z) && -ϵ ≤ r ≤ 1 + ϵ 
+                          && -ϵ ≤ s ≤ 1 + ϵ, l₂(s)) # (hit, point)
 end
+
+# This version is branchless, but about 8% slower in basic CPU benchmarking
+#function intersect(l₁::LineSegment2D{T}, l₂::LineSegment2D{T}) where {T}
+#    ϵ = 5e-6 # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
+#    𝘄 = l₂.𝘅₁ - l₁.𝘅₁
+#    z = l₁.𝘂 × l₂.𝘂
+#    r = (𝘄 × l₂.𝘂)/z
+#    s = (𝘄 × l₁.𝘂)/z
+#    return (1e-8 < abs(z) && -ϵ ≤ r && r ≤ 1 + ϵ 
+#                          && -ϵ ≤ s && r ≤ 1 + ϵ, l₂(s)) # (hit, point)
+#end
+
+# Consider branchless version of this code too
 function intersect(l₁::LineSegment3D{T}, l₂::LineSegment3D{T}) where {T}
-    ϵ = T(5e-6) # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
+    ϵ = 5e-6 # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
     𝘂 = l₁.𝘂
     𝘃 = l₂.𝘂
     𝘇 = 𝘂 × 𝘃
@@ -112,8 +125,8 @@ function intersect(l₁::LineSegment3D{T}, l₂::LineSegment3D{T}) where {T}
     𝘆 = 𝘄 × 𝘂
     r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇)
     s = r*(𝘅 ⋅ 𝘆)/(𝘅 ⋅ 𝘅)
-    return (T(1e-16) < norm²(𝘇) && -ϵ ≤ r ≤ 1 + ϵ 
-                                && -ϵ ≤ s ≤ 1 + ϵ, l₂(s)) # (hit, point)
+    return (1e-16 < norm²(𝘇) && -ϵ ≤ r ≤ 1 + ϵ 
+                             && -ϵ ≤ s ≤ 1 + ϵ, l₂(s)) # (hit, point)
 end
 
 # Intersect a line with a vector of linear edges

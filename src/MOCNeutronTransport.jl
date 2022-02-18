@@ -26,7 +26,8 @@ import LinearAlgebra: ×, ⋅, norm, inv
 # ---------------------------------------------------------------------------------------------
 if enable_visualization 
     using GLMakie: Axis, Axis3, Figure, LineSegments, Mesh, Scatter, current_axis, record
-    import GLMakie: linesegments!, mesh!, scatter!, convert_arguments
+    import GLMakie: linesegments, linesegments!, mesh, mesh!, scatter, scatter!, 
+                    convert_arguments
 end
 # Gmsh
 include(path_to_gmsh_api)
@@ -118,7 +119,7 @@ export arclength, area,
        leaves, linear_edges,log_timestamps, 
        materialize_edge, materialize_edges, materialize_face, materialize_faces,
        materialize_polygon, materialize_quadratic_polygon, midpoint, 
-       nearest_point, norm, norm², num_edges, 
+       nan_point, nearest_point, norm, norm², num_edges, 
        partition_mesh,
        quadratic_edges,
        rand, read_abaqus2d, real_to_parametric, 
