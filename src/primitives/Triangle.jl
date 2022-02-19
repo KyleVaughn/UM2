@@ -7,17 +7,32 @@ centroid(tri::Triangle3D) = Point((tri[1] + tri[2] + tri[3])/3)
 
 # Point inside polygon
 # ---------------------------------------------------------------------------------------------
-# Section 5.4.3 in Ericson, C. (2004). Real-time collision detection
 function Base.in(p::Point3D, tri::Triangle3D)
+    # Translate triangle coordinate system such that p is the origin
     𝗮 = tri[1] - p
     𝗯 = tri[2] - p
     𝗰 = tri[3] - p
-    # Use sign to ensure this works in 3D
-    𝘂 = 𝗯 × 𝗰
+    # We may check that p is within the 3 half-spaces that bound the triangle ABC
+    # by ensuring that PAB, PBC, and PCA are all counter-clockwise oriented. 
+    # This can be tested by ensuring that 𝗯 × 𝗰, 𝗰 × 𝗮, 𝗮 × 𝗯 all have the same sign.
+    # C
+    # | \
+    # |   \
+    # |   P \
+    # |       \
+    # A---------B
+    𝘂 = 𝗯 × 𝗰 
     𝘃 = 𝗰 × 𝗮
     𝘂 ⋅ 𝘃 < 0 && return false
     𝘄 = 𝗮 × 𝗯
-    return 𝘂 ⋅𝘄  < 0 ? false : true
+    𝘂 ⋅ 𝘄 < 0 && return false
+    # If we have reached this point, p is within the 3 half-spaces that bound ABC.
+    # To ensure that p is on the same plane as ABC, and hence in ABC, we check that
+    # the sign of each component of the normals is the same.
+    #
+    #
+    # IS it faster just to compute the normals and check it all out the gate?
+    # that would def be branchless.
 end
 
 # Intersect
