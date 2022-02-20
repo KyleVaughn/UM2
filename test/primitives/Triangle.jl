@@ -87,6 +87,14 @@ end
             # centroid
             @test centroid(tri) ≈ Point3D{F}(0, 1//3, 1//3)
 
+            # in
+            p = Point3D{F}(0, 1//2, 1//10)
+            @test p ∈ tri
+            p = Point3D{F}(0, 1//2, -1//10)
+            @test p ∉ tri
+            p = Point3D{F}(1//100, 1//2, 1//10)
+            @test p ∉ tri
+
             # intersect
             # line is not coplanar with triangle
             p₄ = Point3D{F}(-1, 1//10, 1//10)

@@ -73,7 +73,6 @@ function intersect(l::LineSegment{N,T}, aab::AABox{N,T}) where {N,T}
     p_nan = nan_point(typeof(l.𝘅₁)) 
     for i = 1:N
         if abs(l.𝘂[i]) < 1e-6
-            # Ray is parallel to slab. No hit if origin not within slab
             if l.𝘅₁[i] < aab.origin[i] || aab.corner[i] < l.𝘅₁[i]
                 return (false, SVector(p_nan, p_nan))
             end

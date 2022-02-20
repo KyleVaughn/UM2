@@ -5,34 +5,25 @@ area(tri::Triangle3D) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
 centroid(tri::Triangle2D) = Point((tri[1] + tri[2] + tri[3])/3)
 centroid(tri::Triangle3D) = Point((tri[1] + tri[2] + tri[3])/3)
 
-# Point inside polygon
+# Point inside triangle 
 # ---------------------------------------------------------------------------------------------
 function Base.in(p::Point3D, tri::Triangle3D)
-    # Translate triangle coordinate system such that p is the origin
+    # P ∈ ABC iff the surface normals of CCW triangles PAB, PBC, & PCA are equal.
     𝗮 = tri[1] - p
     𝗯 = tri[2] - p
     𝗰 = tri[3] - p
-    # We may check that p is within the 3 half-spaces that bound the triangle ABC
-    # by ensuring that PAB, PBC, and PCA are all counter-clockwise oriented. 
-    # This can be tested by ensuring that 𝗯 × 𝗰, 𝗰 × 𝗮, 𝗮 × 𝗯 all have the same sign.
-    # C
-    # | \
-    # |   \
-    # |   P \
-    # |       \
-    # A---------B
-    𝘂 = 𝗯 × 𝗰 
-    𝘃 = 𝗰 × 𝗮
-    𝘂 ⋅ 𝘃 < 0 && return false
-    𝘄 = 𝗮 × 𝗯
-    𝘂 ⋅ 𝘄 < 0 && return false
-    # If we have reached this point, p is within the 3 half-spaces that bound ABC.
-    # To ensure that p is on the same plane as ABC, and hence in ABC, we check that
-    # the sign of each component of the normals is the same.
-    #
-    #
-    # IS it faster just to compute the normals and check it all out the gate?
-    # that would def be branchless.
+    𝗻₁= 𝗮 × 𝗯 
+    𝗻₂= 𝗯 × 𝗰
+    d₁₂ = 𝗻₁ ⋅ 𝗻₂
+    # Test the normals point the same direction relative to each other
+    (d₁₂ > 0) || return false
+    n₂ = norm(𝗻₂)
+    # Assert that surface normals are equivalent without division
+    (d₁₂ ≈ norm(𝗻₁)*n₂) || return false
+    𝗻₃= 𝗰 × 𝗮
+    d₂₃ = 𝗻₂ ⋅ 𝗻₃
+    (d₂₃ > 0) || return false
+    return (d₂₃ ≈ norm(𝗻₃)*n₂)
 end
 
 # Intersect
