@@ -83,24 +83,20 @@ end
 function Base.in(p::Point2D, poly::Polygon{N, 2}) where {N}
     # Test if the point is to the left of each edge. 
     for i ∈ 1:N-1
-        if !isleft(p, LineSegment2D(poly[i], poly[i + 1]))
-            return false
-        end
+        isleft(p, LineSegment2D(poly[i], poly[i + 1])) || return false
     end
     return isleft(p, LineSegment2D(poly[N], poly[1]))
 end
-## Test if a point is in a polygon for 2D points/polygons
-#function Base.in(p::Point2D, poly::Polygon{N, 2, T}) where {N, T}
-#    # Test if the point is to the left of each edge.
-#    bool = true
-#    for i ∈ 1:N
-#        if !isleft(p, LineSegment2D(poly[(i - 1) % N + 1], poly[i % N + 1]))
-#            bool = false
-#            break
-#        end
-#    end
-#    return bool
-#end
+function Base.in(p::Point3D, poly::Polygon{N, 3}) where {N}
+    # Check if the point is even in the same plane as the polygon
+    plane = Hyperplane(poly[1], poly[2], poly[3])
+    p ∈ plane || return false
+    # Test that the point is to the left of each edge, oriented to the plane
+    for i = 1:N-1
+        isleft(p, LineSegment3D(poly[i], poly[i + 1]), plane) || return false
+    end
+    return isleft(p, LineSegment3D(poly[N], poly[1]), plane) 
+end
 
 # Intersect
 # ---------------------------------------------------------------------------------------------

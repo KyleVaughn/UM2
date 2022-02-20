@@ -10,7 +10,6 @@ const Hyperplane3D = Hyperplane{3}
 # Constructors
 # ---------------------------------------------------------------------------------------------
 function Hyperplane(a::Point3D, b::Point3D, c::Point3D)
-
     𝗻 = normalize((b - a) × (c - a))
     isnan(𝗻[1]) && error("Points are collinear") 
     return Hyperplane(𝗻, a.coord ⋅ 𝗻) 
@@ -31,4 +30,12 @@ function intersect(l::LineSegment{Dim, T}, plane::Hyperplane{Dim, T}) where {Dim
     r = (plane.d - (plane.𝗻 ⋅ l.𝘅₁.coord))/(plane.𝗻 ⋅l.𝘂)
     (r ≥ 0 && r ≤ 1) && return true, l(r)
     return false, nan_point(Point{Dim,T}) 
+end
+
+# Given a point p and line l that lie in the plane. Check that the point is left of the line
+function isleft(p::Point3D, l::LineSegment3D, plane::Hyperplane3D)
+    # Since p and l ∈ plane, l.𝘂 × (p - l.𝘅₁) must either by in the exact same direction
+    # as plane.𝗻 or the exact opposite direction. If the direction is the same, the point
+    # is left of the line.
+    return 0 ≤ (l.𝘂 × (p - l.𝘅₁)) ⋅ plane.𝗻
 end

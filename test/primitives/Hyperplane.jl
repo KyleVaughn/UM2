@@ -74,6 +74,12 @@ end
             # Plane is before segment
             hit, point = LineSegment(Point3D{F}(1, 2, 1), Point3D{F}(1, 2, 0)) ∩ plane
             @test !hit
+
+            #isleft
+            l = LineSegment(Point3D{F}(0, 0, 2), Point3D{F}(1, 0, 2))
+            @test isleft(Point3D{F}(1,1,2), l, plane)
+            @test isleft(Point3D{F}(1,0,2), l, plane)
+            @test !isleft(Point3D{F}(1,-1,2), l, plane)
         end
     end
 end
