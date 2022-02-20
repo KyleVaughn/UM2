@@ -48,9 +48,9 @@ function log_timestamps()
     end
 end
 
+include("constants.jl")
 include("trees/Tree.jl")
 include("trees/AnyTree.jl")
-include("constants.jl")
 #include("operators.jl")
 include("./gmsh/gmsh_generate_rectangular_grid.jl")
 include("./gmsh/gmsh_group_preserving_fragment.jl")
@@ -60,10 +60,12 @@ include("./primitives/Face.jl")
 include("./primitives/VectorND.jl")
 include("./primitives/Point.jl")
 include("./primitives/LineSegment.jl")
+include("./primitives/Hyperplane.jl")
 include("./primitives/AABox.jl")
 include("./primitives/QuadraticSegment.jl")
 include("./primitives/Polygon.jl")
 include("./primitives/Triangle.jl")
+include("./primitives/Quadrilateral.jl")
 include("./primitives/QuadraticPolygon.jl")
 ##include("L_system.jl")
 include("./mesh/UnstructuredMesh.jl")
@@ -83,8 +85,8 @@ include("gauss_legendre_quadrature.jl")
 export AABox, AABox2D, AABox3D, AnyTree,
        Edge, Edge2D, Edge3D,
        Face, Face2D, Face3D,
-       Hexagon, HierarchicalMeshPartition,
-       LineSegment, LineSegment1D, LineSegment2D, LineSegment3D,
+       Hexagon, HierarchicalMeshPartition, Hyperplane, Hyperplane2D, Hyperplane3D, 
+       LineSegment, LineSegment2D, LineSegment3D,
        MeshPartitionTree,
        Point, Point1D, Point2D, Point3D, Polygon, PolygonMesh, 
        QuadraticPolygon, QuadraticPolygonMesh, QuadraticSegment, QuadraticSegment2D,
@@ -115,6 +117,7 @@ export arclength, area,
        gauss_legendre_quadrature, 
        height, 
        intersect, intersect_edges, intersect_edges_CUDA, inv, isleft, isstraight, isroot, 
+       in_halfspace,
        jacobian, 
        leaves, linear_edges,log_timestamps, 
        materialize_edge, materialize_edges, materialize_face, materialize_faces,

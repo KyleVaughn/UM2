@@ -29,16 +29,18 @@ Polygon(x...) = Polygon(SVector(x))
 # Uses the shoelace formula (https://en.wikipedia.org/wiki/Shoelace_formula)
 function area(poly::Polygon{N, 2, T}) where {N, T}
     a = zero(T) # Scalar
-    for i ∈ 1:N
-        a += poly[(i - 1) % N + 1] × poly[i % N + 1]
+    for i ∈ 1:N-1
+        a += poly[i] × poly[i + 1]
     end
+    a += poly[N] × poly[1]
     return norm(a)/2
 end
 function area(poly::Polygon{N, 3, T}) where {N, T}
     a = zero(SVector{3, T}) # Vector
-    for i ∈ 1:N
-        a += (poly[(i - 1) % N + 1] × poly[i % N + 1])
+    for i ∈ 1:N-1
+        a += (poly[i] × poly[i + 1])
     end
+    a += poly[N] × poly[1]
     return norm(a)/2
 end
 
@@ -57,31 +59,23 @@ function centroid(poly::Polygon{N, 2, T}) where {N, T}
         c += subarea*(poly[i] + poly[i+1])
         a += subarea
     end
+    subarea = poly[N] × poly[1]
+    c += subarea*(poly[N] + poly[1])
+    a += subarea
     return Point(c/(3a))
 end
-#function centroid(poly::Polygon{N, Dim, T}) where {N, Dim, T}
-#    if Dim === 2
-#        a = zero(T) # Scalar
-#        c = SVector{2,T}(0,0)
-#    else
-#        a = zero(Point{Dim, T}) # Vector
-#        c = SVector{2,T}(0,0,0)
-#    end
-#    for i ∈ 1:N-1
-#        subarea = poly[i] × poly[i+1]
-#        c += subarea*(poly[i] + poly[i+1])
-#        a += subarea
-#    end
-#    return Point(c/(3a))
-#end
-
-
-
-
-
-
-
-
+# (https://en.wikipedia.org/wiki/Centroid#By_geometric_decomposition)
+function centroid(poly::Polygon{N, 3, T}) where {N, T}
+    # Decompose into triangles
+    a = zero(T)
+    c = SVector{3,T}(0,0,0)
+    for i ∈ 1:N-2
+        subarea = norm((poly[i+1] - poly[1]) × (poly[i+2] - poly[1]))
+        c += subarea*(poly[1] + poly[i+1] + poly[i+2])
+        a += subarea
+    end
+    return Point(c/(3a))
+end
 
 # Point inside polygon
 # ---------------------------------------------------------------------------------------------
@@ -147,14 +141,15 @@ end
 #
 # Assumes polygon is convex
 function triangulate(poly::Polygon{N, 3, T}) where {N, T}
-    triangles = Vector{Triangle3D{T}}(undef, N-2)
+    triangles = MVector{N-2, Triangle3D{T}}(undef)
     if N === 3
-        return [poly]
+        triangles[1] = poly
+        return triangles
     end
     for i = 1:N-2
         triangles[i] = Triangle(poly[1], poly[i+1], poly[i+2])
     end
-    return triangles
+    return SVector(triangles.data)
 end
 
 # Plot

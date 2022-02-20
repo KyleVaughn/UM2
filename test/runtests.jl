@@ -5,6 +5,7 @@ Logging.disable_logging(Logging.Error)
 tests = ["./trees/AnyTree",
          "./primitives/Point",
          "./primitives/LineSegment",
+         "./primitives/Hyperplane",
          "./primitives/AABox",
          "./primitives/QuadraticSegment",
          "./primitives/Triangle",

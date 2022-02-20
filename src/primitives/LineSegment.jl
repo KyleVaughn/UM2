@@ -8,7 +8,6 @@ struct LineSegment{Dim, T} <:Edge{Dim, 1, T}
     𝘂::SVector{Dim, T}
 end
 
-const LineSegment1D = LineSegment{1}
 const LineSegment2D = LineSegment{2}
 const LineSegment3D = LineSegment{3}
 
@@ -44,30 +43,6 @@ LineSegment(pts::SVector{2, Point{Dim, T}}
 
 # Intersect
 # ---------------------------------------------------------------------------------------------
-# Intersection of two 1D linesegments
-function intersect(l₁::LineSegment1D{T}, l₂::LineSegment1D{T}) where {T}
-    l₁_start = l₁.𝘅₁[1]
-    l₁_stop  = l₁_start + l₁.𝘂[1]
-    l₂_start = l₂.𝘅₁[1]
-    l₂_stop  = l₂_start + l₂.𝘂[1]
-    min₁ = min(l₁_start, l₁_stop) 
-    max₁ = max(l₁_start, l₁_stop) 
-    min₂ = min(l₂_start, l₂_stop) 
-    max₂ = max(l₂_start, l₂_stop) 
-    if min₂ ≤ min₁ ≤ max₂     # (₂--(₁------₂) 
-        if max₁ ≤ max₂        # (₂--(₁--₁)--₂) 
-            return (true, l₁)
-        else                  # (₂--(₁------₂)--₁) 
-            return (true, LineSegment1D(Point(min₁), Point(max₂)))
-        end
-    elseif min₂ ≤ max₁ ≤ max₂ # (₁--(₂------₁)--₂)  
-        return (true, LineSegment1D(Point(min₂), Point(max₁)))
-    elseif min₁ ≤ min₂ && max₂ ≤ max₁ # (₁--(₂--₂)--₁) 
-        return (true, l₂)
-    else # disjoint
-        return (false, l₁)
-    end
-end
 # Intersection of two 2D or 3D line segments
 #
 # Doesn't work for colinear/parallel lines. (𝘂 × 𝘃 = 𝟬).
