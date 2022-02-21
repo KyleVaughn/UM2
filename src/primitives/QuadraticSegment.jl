@@ -171,8 +171,8 @@ end
 function intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
     ϵ = T(5e-6) # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
     npoints = 0x0000
-    p₁ = zero(Point2D{T})
-    p₂ = zero(Point2D{T})
+    p₁ = nan_point(Point2D{T})
+    p₂ = nan_point(Point2D{T})
     if isstraight(q) # Use line segment intersection.
         # See LineSegment for the math behind this.
         𝘄 = q.𝘅₁ - l.𝘅₁
@@ -426,7 +426,7 @@ function nearest_point(p::Point{Dim,T}, q::QuadraticSegment) where {Dim,T}
         ζ₂ = conj(ζ₁)
         dist_min = typemax(T)
         r_near = zero(T)
-        p_near = zero(Point{Dim,T})
+        p_near = nan_point(Point{Dim,T})
         # Use the real part of each root
         for rᵢ in (real((s₀ +    t₁ +    t₂)/3), 
                    real((s₀ + ζ₂*t₁ + ζ₁*t₂)/3), 

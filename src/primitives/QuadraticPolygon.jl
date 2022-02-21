@@ -42,18 +42,20 @@ QuadraticPolygon(x...) = QuadraticPolygon(SVector(x))
 # Let 𝗳(r,s) be a parameterization of surface S
 # A = ∬ dS = ∬ ‖∂𝗳/∂r × ∂𝗳/∂s‖dr ds
 #     S      T
-function area(tri6::QuadraticPolygon{N,T}) where {N,T}
+function area(poly::QuadraticPolygon{N,Dim,T}) where {N,Dim,T}
     # A = (4Aₕ - Aₗ)/6      
-    # Area of convex hull - Area of the base, linear shape
-    # Mathematica for this algebraic nightmare
+    # 4(Area of convex hull) - Area of the base linear shape
     q = zero(T)
     l = zero(T)
     M = N ÷ 2
-    for i ∈ 1:3
-        q += tri6[(i - 1) % M + 1] × tri6[i + M]
-        q -= tri6[      i % M + 1] × tri6[i + M]
-        l += tri6[(i - 1) % M + 1] × tri6[      i % M + 1]
+    for i ∈ 1:M-1
+        q += poly[i    ] × poly[i + M]
+        q -= poly[i + 1] × poly[i + M]
+        l += poly[i] × poly[i + 1]
     end
+    q += poly[M] × poly[N]
+    q -= poly[1] × poly[N]
+    l += poly[M] × poly[1]
     return (4q - l)/6
 end
 
@@ -184,15 +186,12 @@ function Base.in(p::Point2D, poly::QuadraticPolygon{N, 2, T}) where {N, T}
     # Test if the point is to the left of each edge. 
     bool = true
     M = N ÷ 2
-    for i ∈ 1:M
-        if !isleft(p, QuadraticSegment2D(poly[(i - 1) % M + 1], 
-                                         poly[      i % M + 1],
-                                         poly[          i + M]))
-            bool = false
-            break
+    for i ∈ 1:M-1
+        if !isleft(p, QuadraticSegment2D(poly[i], poly[i + 1], poly[i + M]))
+            return false
         end
     end
-    return bool
+    return isleft(p, QuadraticSegment2D(poly[M], poly[1], poly[N]))
 end
 
 function Base.intersect(l::LineSegment2D{T}, poly::QuadraticPolygon{N, 2, T}
@@ -201,14 +200,17 @@ function Base.intersect(l::LineSegment2D{T}, poly::QuadraticPolygon{N, 2, T}
     points = zeros(MVector{N, Point2D{T}})
     npoints = 0x0000
     M = N ÷ 2
-    for i ∈ 1:M
-        hits, ipoints = l ∩ QuadraticSegment2D(poly[(i - 1) % M + 1],  
-                                               poly[      i % M + 1],
-                                               poly[          i + M])
+    for i ∈ 1:M-1
+        hits, ipoints = l ∩ QuadraticSegment2D(poly[i], poly[i + 1], poly[i + M])
         for j in 1:hits
             npoints += 0x0001
             points[npoints] = ipoints[j]
         end
+    end
+    hits, ipoints = l ∩ QuadraticSegment2D(poly[M], poly[1], poly[N])
+    for j in 1:hits
+        npoints += 0x0001
+        points[npoints] = ipoints[j]
     end
     return npoints, SVector(points)
 end
@@ -220,14 +222,17 @@ function Base.intersect(l::LineSegment2D{BigFloat}, poly::QuadraticPolygon{N, 2,
     points = zeros(Point2D{BigFloat}, N)
     npoints = 0x0000
     M = N ÷ 2
-    for i ∈ 1:M
-        hits, ipoints = l ∩ QuadraticSegment2D(poly[(i - 1) % M + 1],  
-                                               poly[      i % M + 1],
-                                               poly[          i + M])
+    for i ∈ 1:M-1
+        hits, ipoints = l ∩ QuadraticSegment2D(poly[i], poly[i + 1], poly[i + M])
         for j in 1:hits
             npoints += 0x0001
             points[npoints] = ipoints[j]
         end
+    end
+    hits, ipoints = l ∩ QuadraticSegment2D(poly[M], poly[1], poly[N])
+    for j in 1:hits
+        npoints += 0x0001
+        points[npoints] = ipoints[j]
     end
     return npoints, SVector{N, Point2D{BigFloat}}(points)
 end

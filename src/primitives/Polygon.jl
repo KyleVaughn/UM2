@@ -106,12 +106,17 @@ function intersect(l::LineSegment2D{T}, poly::Polygon{N, 2, T}
     # Create the line segments that make up the polygon and intersect each one
     points = zeros(MVector{N, Point2D{T}})
     npoints = 0x0000
-    for i ∈ 1:N
-        hit, point = l ∩ LineSegment2D(poly[(i - 1) % N + 1], poly[i % N + 1]) 
+    for i ∈ 1:N-1
+        hit, point = l ∩ LineSegment2D(poly[i], poly[i + 1]) 
         if hit
             npoints += 0x0001
             @inbounds points[npoints] = point
         end
+    end
+    hit, point = l ∩ LineSegment2D(poly[N], poly[1]) 
+    if hit
+        npoints += 0x0001
+        @inbounds points[npoints] = point
     end
     return npoints, SVector(points)
 end
@@ -121,12 +126,17 @@ function intersect(l::LineSegment2D{BigFloat}, poly::Polygon{N, 2, BigFloat}) wh
     # Create the line segments that make up the polygon and intersect each one
     points = zeros(Point2D{BigFloat}, N)
     npoints = 0x0000
-    for i ∈ 1:N
-        hit, point = l ∩ LineSegment2D(poly[(i - 1) % N + 1], poly[i % N + 1]) 
+    for i ∈ 1:N-1
+        hit, point = l ∩ LineSegment2D(poly[i], poly[i + 1]) 
         if hit
             npoints += 0x0001
             @inbounds points[npoints] = point
         end
+    end
+    hit, point = l ∩ LineSegment2D(poly[N], poly[1]) 
+    if hit
+        npoints += 0x0001
+        @inbounds points[npoints] = point
     end
     return npoints, SVector{N,Point2D{BigFloat}}(points)
 end
