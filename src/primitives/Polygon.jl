@@ -100,45 +100,35 @@ end
 
 # Intersect
 # ---------------------------------------------------------------------------------------------
+#
 # Intersection of a line segment and polygon in 2D
 function intersect(l::LineSegment2D{T}, poly::Polygon{N, 2, T}
                        ) where {N,T <:Union{Float32, Float64}} 
     # Create the line segments that make up the polygon and intersect each one
-    points = zeros(MVector{N, Point2D{T}})
+    # until 2 unique points have been found
+    p₁ = nan(Point2D{T}) 
     npoints = 0x0000
     for i ∈ 1:N-1
         hit, point = l ∩ LineSegment2D(poly[i], poly[i + 1]) 
         if hit
-            npoints += 0x0001
-            @inbounds points[npoints] = point
+            if npoints === 0x0000 
+                npoints = 0x0001
+                p₁ = point
+            elseif !(p₁ ≈ point)
+                return true, SVector(p₁, point)
+            end
         end
     end
     hit, point = l ∩ LineSegment2D(poly[N], poly[1]) 
     if hit
-        npoints += 0x0001
-        @inbounds points[npoints] = point
-    end
-    return npoints, SVector(points)
-end
-
-# Cannot mutate BigFloats in an MVector, so we use a regular Vector
-function intersect(l::LineSegment2D{BigFloat}, poly::Polygon{N, 2, BigFloat}) where {N} 
-    # Create the line segments that make up the polygon and intersect each one
-    points = zeros(Point2D{BigFloat}, N)
-    npoints = 0x0000
-    for i ∈ 1:N-1
-        hit, point = l ∩ LineSegment2D(poly[i], poly[i + 1]) 
-        if hit
-            npoints += 0x0001
-            @inbounds points[npoints] = point
+        if npoints === 0x0000 
+            npoints = 0x0001
+            p₁ = point
+        elseif !(p₁ ≈ point)
+            return true, SVector(p₁, point)
         end
     end
-    hit, point = l ∩ LineSegment2D(poly[N], poly[1]) 
-    if hit
-        npoints += 0x0001
-        @inbounds points[npoints] = point
-    end
-    return npoints, SVector{N,Point2D{BigFloat}}(points)
+    return false, SVector(p₁, point)
 end
 
 # Triangulate
