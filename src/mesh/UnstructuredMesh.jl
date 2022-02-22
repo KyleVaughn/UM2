@@ -97,36 +97,22 @@ end
 function facepoints(face_id, mesh::UnstructuredMesh)
     return facepoints(mesh.faces[face_id], mesh.points)
 end
-# 
-# # Return the face containing point p.
-# function findface(p::Point2D, mesh::UnstructuredMesh2D{Dim,T,U}) where {Dim,T,U}
-#     if 0 < length(mesh.materialized_faces)
-#         return U(findface_explicit(p, mesh.materialized_faces))
-#     else
-#         return U(findface_implicit(p, mesh.faces, mesh.points))
-#     end
-# end
-# 
-# # Find the face containing the point p, with explicitly represented faces
-# function findface_explicit(p::Point2D, faces::Vector{<:Face2D})
-#     for i ∈ 1:length(faces)
-#         if @inbounds p ∈ faces[i]
-#             return i
-#         end
-#     end
-#     return 0
-# end
-# 
-# # Return the face containing the point p, with implicitly represented faces
-# function findface_implicit(p::Point2D, faces::Vector{<:SArray}, points::Vector{<:Point2D})
-#     for i ∈ 1:length(faces)
-#         bool = @inbounds p ∈ materialize_face(faces[i], points)
-#         if bool
-#             return i
-#         end
-#     end
-#     return 0
-# end
+
+# Find the face containing the point p
+function findface(p::Point, faces::Vector{<:Face})
+    @inbounds for i ∈ 1:length(faces)
+        p ∈ faces[i] && return i
+    end
+    return 0
+end
+
+# Return the face containing the point p
+function findface(p::Point, mesh::UnstructuredMesh) 
+    @inbounds for i ∈ 1:length(mesh.faces)
+        p ∈ materialize_face(i, mesh) && return i
+    end
+    return 0
+end
 # 
 # # Return the intersection algorithm that will be used for l ∩ mesh
 # function get_intersection_algorithm(mesh::UnstructuredMesh2D)
