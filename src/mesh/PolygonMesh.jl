@@ -150,14 +150,6 @@ end
 # # end
 # # 
 # 
-# # # Return a mesh with every field created
-# # function add_everything(mesh::UnstructuredMesh_2D)
-# #     return add_materialized_faces(
-# #              add_materialized_edges(
-# #                add_boundary_edges(mesh, boundary_shape = "Rectangle")))
-# # end
-# # 
-# 
 # # # Return a vector of the faces adjacent to the face of ID face
 # # function adjacent_faces(face::UInt32, mesh::UnstructuredMesh_2D)
 # #     edges = mesh.face_edge_connectivity[face]
@@ -249,40 +241,6 @@ end
 # #     end
 # #     insert!(edge_indices, nindices+1, edge_index)
 # #     return nothing
-# # end
-# # 
-# # 
-# # # Intersect a line with implicitly defined edges
-# # function intersect_edges_explicit(l::LineSegment_2D, edges::Vector{QuadraticSegment_2D})
-# #     # A vector to hold all of the intersection points
-# #     intersection_points = Point_2D[]
-# #     for edge in edges
-# #         npoints, points = l ∩ edge
-# #         # If the intersections yields 1 or more points, push those points to the array of points
-# #         if 0 < npoints
-# #             append!(intersection_points, points[1:npoints])
-# #         end
-# #     end
-# #     sort_intersection_points!(l[1], intersection_points)
-# #     return intersection_points
-# # end
-# # 
-# # 
-# # # Intersect a line with a vector of implicitly defined quadratic edges
-# # function intersect_edges_implicit(l::LineSegment_2D,
-# #                                   edges::Vector{SVector{3, UInt32}},
-# #                                   points::Vector{Point_2D})
-# #     # An array to hold all of the intersection points
-# #     intersection_points = Point_2D[]
-# #     # Intersect the line with each of the faces
-# #     for edge in edges
-# #         npoints, ipoints = intersect_edge_implicit(l, edge, points)
-# #         if 0 < npoints
-# #             append!(intersection_points, ipoints[1:npoints])
-# #         end
-# #     end
-# #     sort_intersection_points!(l[1], intersection_points)
-# #     return intersection_points
 # # end
 # # 
 # # 

@@ -85,23 +85,6 @@ end
     return Meta.parse(edges_string)
 end
 
-# # Axis-aligned bounding box, in 2d a rectangle.
-# function boundingbox(mesh::QuadraticUnstructuredMesh_2D; boundary_shape::String="Unknown")
-#     if boundary_shape == "Rectangle"
-#         return boundingbox(mesh.points)
-#     else
-#         # Currently only polygons, so can use the points
-#         nsides = length(mesh.boundary_edges)
-#         if nsides !== 0
-#             boundary_edge_IDs = reduce(vcat, mesh.boundary_edges)
-#             point_IDs = reduce(vcat, mesh.edges[boundary_edge_IDs])
-#             return boundingbox(mesh.points[point_IDs]) 
-#         else
-#             return reduce(union, boundingbox.(materialize_edge.(edges(mesh), Ref(mesh.points))))
-#         end
-#     end
-# end
-#  
 # # A vector of SVectors, denoting the edge ID each face is connected to.
 # function face_edge_connectivity(mesh::Quadrilateral8Mesh_2D)
 #     if length(mesh.edges) === 0
