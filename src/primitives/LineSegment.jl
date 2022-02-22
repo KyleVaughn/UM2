@@ -110,9 +110,7 @@ function intersect_edges(l::LineSegment{Dim, T}, edges::Vector{LineSegment{Dim, 
     intersection_points = Point{Dim, T}[]
     for edge in edges 
         hit, point = l ∩ edge 
-        if hit
-            push!(intersection_points, point)
-        end
+        hit && push!(intersection_points, point)
     end
     sort_intersection_points!(l, intersection_points)
     return intersection_points
@@ -126,9 +124,7 @@ function intersect_edges(lines::Vector{LineSegment{Dim, T}},
     Threads.@threads for edge in edges 
         @inbounds for i = 1:nlines
             hit, point = lines[i] ∩ edge 
-            if hit
-                push!(intersection_points[i], point)
-            end
+            hit && push!(intersection_points[i], point)
         end
     end
     Threads.@threads for i = 1:nlines

@@ -19,11 +19,11 @@ function Base.in(p::Point3D, tri::Triangle3D)
     (d₁₂ > 0) || return false
     n₂ = norm(𝗻₂)
     # Assert that surface normals are equivalent without division
+    # If so, the point is in the same plane as the triangle. We need only check the 
+    # direction of the norm of the last triangle to prove that the point is in the 
+    # triangle
     (d₁₂ ≈ norm(𝗻₁)*n₂) || return false
-    𝗻₃= 𝗰 × 𝗮
-    d₂₃ = 𝗻₂ ⋅ 𝗻₃
-    (d₂₃ > 0) || return false
-    return (d₂₃ ≈ norm(𝗻₃)*n₂)
+    return 𝗻₂ ⋅(𝗰 × 𝗮) > 0 
 end
 
 # Intersect

@@ -9,7 +9,6 @@ const QuadraticUnstructuredMesh2D = UnstructuredMesh{2, 2}
 const QuadraticUnstructuredMesh3D = UnstructuredMesh{3, 2}
 Base.broadcastable(mesh::UnstructuredMesh) = Ref(mesh)
 
-
 # Return the area of face id
 function area(id, mesh::UnstructuredMesh)
     return area(materialize_face(id, mesh))
@@ -113,107 +112,7 @@ function findface(p::Point, mesh::UnstructuredMesh)
     end
     return 0
 end
-# 
-# # Return the intersection algorithm that will be used for l ∩ mesh
-# function get_intersection_algorithm(mesh::UnstructuredMesh2D)
-#     if length(mesh.materialized_edges) !== 0
-#         return "Edges - Explicit"
-#     elseif length(mesh.edges) !== 0
-#         return "Edges - Implicit"
-#     elseif length(mesh.materialized_faces) !== 0
-#         return "Faces - Explicit"
-#     else
-#         return "Faces - Implicit"
-#     end
-# end
-# 
-# # Intersect a line with the mesh. Returns a vector of intersection points, sorted based
-# # upon distance from the line's start point
-# function intersect(l::LineSegment2D, mesh::UnstructuredMesh2D)
-#     # Edges are faster, so they are the default
-#     if length(mesh.edges) !== 0
-#         if 0 < length(mesh.materialized_edges)
-#             return intersect_edges_explicit(l, mesh.materialized_edges)
-#         else
-#             return intersect_edges_implicit(l, mesh.edges, mesh.points)
-#         end
-#     else
-#         if 0 < length(mesh.materialized_faces)
-#             return intersect_faces_explicit(l, mesh.materialized_faces)
-#         else
-#             return intersect_faces_implicit(l, mesh.faces, mesh.points)
-#         end
-#     end
-# end
-# 
-# # Intersect a line with an implicitly defined edge
-# function intersect_edge_implicit(l::LineSegment2D, edge::SVector, points::Vector{<:Point2D})
-#     return l ∩ materialize_edge(edge, points)
-# end
-# 
-# # Intersect a line with linear edges 
-# function intersect_edges_explicit(l::LineSegment2D{T}, edges::Vector{LineSegment2D{T}}) where {T}
-#     intersection_points = Point2D{T}[]
-#     for edge in edges
-#         hit, point = l ∩ edge
-#         if hit
-#             push!(intersection_points, point)
-#         end
-#     end
-#     sort_intersection_points!(l.𝘅₁, intersection_points)
-#     return intersection_points
-# end
-# 
-# Intersect a line with a vector of implicitly defined linear edges
-function intersect_edges(l::LineSegment{Dim, T}, mesh::LinearUnstructuredMesh) where {Dim, T} 
-    intersection_points = Point{Dim, T}[]
-    for i ∈ 1:length(mesh.edges)
-        hit, point = l ∩ materialize_edge(i, mesh)
-        if hit
-            push!(intersection_points, point)
-        end
-    end
-    sort_intersection_points!(l, intersection_points)
-    return intersection_points
-end
 
-# Intersect a line with a vector of implicitly defined quadratic edges
-function intersect_edges(l::LineSegment{Dim, T}, mesh::QuadraticUnstructuredMesh) where {Dim, T} 
-    intersection_points = Point{Dim, T}[]
-    for i ∈ 1:length(mesh.edges)
-        hits, points = l ∩ materialize_edge(i, mesh)
-        if 0 < hits
-            append!(intersection_points, view(points, 1:hits))
-        end
-    end
-    sort_intersection_points!(l, intersection_points)
-    return intersection_points
-end
-
-# Intersect a vector of lines with a vector of quadratic edges
-function intersect_edges(lines::Vector{LineSegment{Dim, T}}, 
-                         mesh::QuadraticUnstructuredMesh) where {Dim, T} 
-    nlines = length(lines)
-    intersection_points = [Point{Dim, T}[] for _ = 1:nlines]
-    Threads.@threads for j ∈ 1:length(mesh.edges)
-        @inbounds for i = 1:nlines
-            npoints, points = lines[i] ∩ materialize_edge(j, mesh)
-            if 0 < npoints
-                append!(intersection_points[i], view(points, 1:npoints))
-            end
-        end
-    end
-    Threads.@threads for i = 1:nlines
-        sort_intersection_points!(lines[i], intersection_points[i])
-    end
-    return intersection_points
-end
-
-# # Intersect a line with an implicitly defined face
-# function intersect_face_implicit(l::LineSegment2D, face::SVector, points::Vector{<:Point2D})
-#     return l ∩ materialize_face(face, points)
-# end
-# 
 # # Intersect a line with explicitly defined linear faces
 # function intersect_faces_explicit(l::LineSegment2D{T}, faces::Vector{<:Face2D} ) where {T}
 #     # An array to hold all of the intersection points

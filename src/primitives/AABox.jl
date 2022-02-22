@@ -70,7 +70,7 @@ AABox{Dim}(p₁::Point{Dim, T}, p₂::Point{Dim, T}) where {Dim, T} = AABox{Dim,
 function intersect(l::LineSegment{N,T}, aab::AABox{N,T}) where {N,T}
     tmin = typemin(T)
     tmax = typemax(T)
-    p_nan = nan_point(typeof(l.𝘅₁)) 
+    p_nan = nan(typeof(l.𝘅₁)) 
     for i = 1:N
         if abs(l.𝘂[i]) < 1e-6
             if l.𝘅₁[i] < aab.origin[i] || aab.corner[i] < l.𝘅₁[i]

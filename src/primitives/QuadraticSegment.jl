@@ -171,8 +171,8 @@ end
 function intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
     ϵ = T(5e-6) # Tolerance on r,s ∈ [-ϵ, 1 + ϵ]
     npoints = 0x0000
-    p₁ = nan_point(Point2D{T})
-    p₂ = nan_point(Point2D{T})
+    p₁ = nan(Point2D{T})
+    p₂ = nan(Point2D{T})
     if isstraight(q) # Use line segment intersection.
         # See LineSegment for the math behind this.
         𝘄 = q.𝘅₁ - l.𝘅₁
@@ -233,9 +233,7 @@ function intersect_edges(l::LineSegment{Dim, T}, edges::Vector{QuadraticSegment{
     intersection_points = Point{Dim, T}[]
     for edge in edges 
         npoints, points = l ∩ edge 
-        if 0 < hits
-            append!(intersection_points, view(points, 1:hits))
-        end
+        0 < hits && append!(intersection_points, view(points, 1:hits))
     end
     sort_intersection_points!(l, intersection_points)
     return intersection_points
@@ -249,9 +247,7 @@ function intersect_edges(lines::Vector{LineSegment{Dim, T}},
     Threads.@threads for edge in edges 
         @inbounds for i = 1:nlines
             hits, points = lines[i] ∩ edge 
-            if 0 < hits
-                append!(intersection_points[i], view(points, 1:hits))
-            end
+            0 < hits && append!(intersection_points[i], view(points, 1:hits))
         end
     end
     Threads.@threads for i = 1:nlines
@@ -268,7 +264,7 @@ function intersect_edges_CUDA(lines::Vector{LineSegment{2, T}},
     # about rectangular domains?
     lines_gpu = CuArray(lines)
     edges_gpu = CuArray(edges)
-    intersection_array_gpu = CUDA.fill(Point2D{T}(NaN, NaN), ceil(Int64, 2sqrt(nedges)), nlines)
+    intersection_array_gpu = CUDA.fill(nan(Point2D{T}), ceil(Int64, 2sqrt(nedges)), nlines)
     kernel = @cuda launch=false intersect_quadratic_edges_CUDA!(intersection_array_gpu, 
                                                                 lines_gpu, edges_gpu)
     config = launch_configuration(kernel.fun)
@@ -312,15 +308,14 @@ end
 # 𝘃 |  / 𝘂
 #   | /
 #   o
-# If the segment is straight, or if the point is not within the bounding box of
-# the segment, we can perform the isleft check with the straight line from the 
-# segment's start point to the segment's end point.
-# If these conditions aren't met, the segment's curvature must be accounted for.
+# If the segment is straight, we can perform the isleft check with the straight 
+# line from the  segment's start point to the segment's end point.
+# If this condition isn't met, the segment's curvature must be accounted for.
 # We find the point on the curve q that is nearest point to the point of interest. 
 # Call this point q_near. We then perform the isleft check with the tangent vector 
 # of q at q_near and the vector from q_near to p, p - q_near.
 function isleft(p::Point2D, q::QuadraticSegment2D)
-    if isstraight(q) || p ∉  boundingbox(q)
+    if isstraight(q)
         𝘃₁ = q.𝘅₂ - q.𝘅₁
         𝘃₂ = p - q.𝘅₁
         return 𝘃₁ × 𝘃₂ > 0
@@ -370,10 +365,10 @@ end
 # If the line is straight, 𝘅₃ - 𝘅₁ = c(𝘅₂ - 𝘅₁) where c ∈ (0, 1), hence
 # (𝘅₃ - 𝘅₁) × (𝘅₂ - 𝘅₁) = 𝟬
 function isstraight(q::QuadraticSegment2D)
-    return abs((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-8
+    return abs((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-5
 end
 function isstraight(q::QuadraticSegment3D)
-    return norm²((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-16
+    return norm²((q.𝘅₃ - q.𝘅₁) × (q.𝘅₂ - q.𝘅₁)) < 1e-10
 end
 
 # Nearest point
@@ -426,7 +421,7 @@ function nearest_point(p::Point{Dim,T}, q::QuadraticSegment) where {Dim,T}
         ζ₂ = conj(ζ₁)
         dist_min = typemax(T)
         r_near = zero(T)
-        p_near = nan_point(Point{Dim,T})
+        p_near = nan(Point{Dim,T})
         # Use the real part of each root
         for rᵢ in (real((s₀ +    t₁ +    t₂)/3), 
                    real((s₀ + ζ₂*t₁ + ζ₁*t₂)/3), 

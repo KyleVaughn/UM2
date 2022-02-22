@@ -133,8 +133,6 @@ using MOCNeutronTransport
             l = LineSegment2D(𝘅₄, 𝘅₅)
             npoints, (point1, point2) = intersect(l, q)
             @test npoints == 0
-            @test point1 ≈ Point2D{F}(0, 0)
-            @test point2 ≈ Point2D{F}(0, 0)
         end
     end
 end

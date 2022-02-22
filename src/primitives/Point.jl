@@ -70,7 +70,7 @@ Point(x...) = Point(SVector(x))
 @inline norm(p::Point) = √(p.coord ⋅ p.coord)
 @inline norm²(p::Point) = p.coord ⋅ p.coord
 Base.zero(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector zeros(T, Dim))
-nan_point(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector fill(T(NaN), Dim))
+nan(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector fill(T(NaN), Dim))
 # Random point in the Dim-dimensional unit hypercube
 Base.rand(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(rand(SVector{Dim, T}))
 function Base.rand(::Type{Point{Dim, T}}, num_points::Int64) where {Dim, T}
