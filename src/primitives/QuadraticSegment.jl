@@ -174,16 +174,11 @@ function intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
     p₁ = nan(Point2D{T})
     p₂ = nan(Point2D{T})
     if isstraight(q) # Use line segment intersection.
-        # See LineSegment for the math behind this.
-        𝘄 = q.𝘅₁ - l.𝘅₁
-        𝘃 = q.𝘅₂ - q.𝘅₁
-        z = l.𝘂 × 𝘃
-        r = (𝘄 × 𝘃)/z
-        s = (𝘄 × l.𝘂)/z
-        if 1e-8 < abs(z) && -ϵ ≤ r ≤ 1 + ϵ && -ϵ ≤ s ≤ 1 + ϵ
-            npoints += 0x0001
+        hit, point = LineSegment2D(q[1], q[2]) ∩ l
+        if hit
+            npoints = 0x0001
         end
-        return npoints, SVector(l(r), p₂)
+        return npoints, SVector(point, p₂)
     else
         𝘂 = q.𝘂 
         𝘃 = q.𝘃 
@@ -200,6 +195,7 @@ function intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
             if -ϵ*w² ≤ s ≤ (1 + ϵ)w²
                 npoints = 0x0001
             end
+            return npoints, SVector(p₁, p₂)
         elseif b^2 ≥ 4a*c
             r₁ = (-b - √(b^2 - 4a*c))/2a
             r₂ = (-b + √(b^2 - 4a*c))/2a
@@ -222,8 +218,8 @@ function intersect(l::LineSegment2D{T}, q::QuadraticSegment2D{T}) where {T}
             if npoints === 0x0001 && !valid_p₁ 
                 p₁ = p₂
             end
+            return npoints, SVector(p₁, p₂)
         end
-        return npoints, SVector(p₁, p₂)
     end
 end
 
