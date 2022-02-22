@@ -136,8 +136,8 @@ end
 # Return the vector of triangles corresponding to the polygon's triangulation
 #
 # Assumes polygon is convex
-function triangulate(poly::Polygon{N, 3, T}) where {N, T}
-    triangles = MVector{N-2, Triangle3D{T}}(undef)
+function triangulate(poly::Polygon{N, Dim, T}) where {N, Dim, T}
+    triangles = MVector{N-2, Triangle{Dim, T}}(undef)
     if N === 3
         triangles[1] = poly
         return triangles

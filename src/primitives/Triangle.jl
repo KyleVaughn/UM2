@@ -19,7 +19,7 @@ function Base.in(p::Point3D, tri::Triangle3D)
     # and that surface normals are equivalent using 𝗻̂ ⋅ 𝗻̂ = 1
     # d₁₂ > 0 is redundant if the point is in the triangle, but it is a very 
     # fast check that the point is in the plane of the triangle.
-    ((d₁₂ > 0) && (d₁₂ ≈ norm(𝗻₁)*norm(𝗻₂))) || return false
+    (d₁₂ > 0 && d₁₂ ≈ norm(𝗻₁)*norm(𝗻₂)) || return false
     # We need only check the direction of the norm of the last triangle to 
     # prove that the point is in the triangle
     return 𝗻₂ ⋅(𝗰 × 𝗮) > 0 
