@@ -40,20 +40,6 @@ function boundingbox(mesh::QuadraticUnstructuredMesh)
     return union(boundingbox.(materialize_edges(mesh)))
 end
 
-@generated function edgepoints(edge::SVector{N}, points::Vector{<:Point}) where {N}
-    points_string = "SVector("
-    for i ∈ 1:N
-        points_string *= "points[edge[$i]], "
-    end
-    points_string *= ")"
-    return Meta.parse(points_string)
-end
-
-# Return an SVector of the points in the edge
-function edgepoints(edge_id, mesh::UnstructuredMesh)
-    return edgepoints(mesh.edges[edge_id], mesh.points)
-end
-
 # # A vector of length 2 SVectors, denoting the face ID each edge is connected to. If the edge
 # # is a boundary edge, face ID 0 is returned
 # function edge_face_connectivity(mesh::UnstructuredMesh{Dim,Ord,T,U}) where {Dim,Ord,T,U}
@@ -83,86 +69,14 @@ end
 #     return [SVector(sort!(two_faces).data) for two_faces in edge_face]
 # end
 
-@generated function facepoints(face::SVector{N}, points::Vector{<:Point}) where {N}
-    points_string = "SVector("
-    for i ∈ 1:N
-        points_string *= "points[face[$i]], "
-    end
-    points_string *= ")"
-    return Meta.parse(points_string)
-end
-
 # Return an SVector of the points in the face
 function facepoints(face_id, mesh::UnstructuredMesh)
     return facepoints(mesh.faces[face_id], mesh.points)
 end
 
-# Find the face containing the point p
-function findface(p::Point, faces::Vector{<:Face})
-    @inbounds for i ∈ 1:length(faces)
-        p ∈ faces[i] && return i
-    end
-    return 0
-end
-
-# Return the face containing the point p
-function findface(p::Point, mesh::UnstructuredMesh) 
-    @inbounds for i ∈ 1:length(mesh.faces)
-        p ∈ materialize_face(i, mesh) && return i
-    end
-    return 0
-end
-
-# # Intersect a line with explicitly defined linear faces
-# function intersect_faces_explicit(l::LineSegment2D{T}, faces::Vector{<:Face2D} ) where {T}
-#     # An array to hold all of the intersection points
-#     intersection_points = Point2D{T}[]
-#     for face in faces
-#         npoints, points = l ∩ face
-#         # If the intersections yields 1 or more points, push those points to the array of points
-#         if 0 < npoints
-#             append!(intersection_points, @inbounds points[1:npoints])
-#         end
-#     end
-#     sort_intersection_points!(l.𝘅₁, intersection_points)
-#     return intersection_points
-# end
-# 
-# # Intersect a line with implicitly defined faces
-# function intersect_faces_implicit(l::LineSegment2D{T}, faces::Vector{<:SArray}, 
-#                                   points::Vector{<:Point2D}) where {T}
-#     # An array to hold all of the intersection points
-#     intersection_points = Point2D{T}[]
-#     # Intersect the line with each of the faces
-#     for face in faces
-#         npoints, ipoints = intersect_face_implicit(l, face, points)
-#         # If the intersections yields 1 or more points, push those points to the array of points
-#         if 0 < npoints
-#             append!(intersection_points, @inbounds ipoints[1:npoints])
-#         end
-#     end
-#     sort_intersection_points!(l.𝘅₁, intersection_points)
-#     return intersection_points
-# end
-# 
-# Return a LineSegment from the point IDs in an edge
-function materialize_edge(edge::SVector{2}, points::Vector{<:Point})
-    return LineSegment(edgepoints(edge, points))
-end
-
-# Return a QuadraticSegment from the point IDs in an edge
-function materialize_edge(edge::SVector{3}, points::Vector{<:Point})
-    return QuadraticSegment(edgepoints(edge, points))
-end
-
-# Return a materialized edge
-function materialize_edge(edge_id, mesh::UnstructuredMesh)
-    return materialize_edge(mesh.edges[edge_id], mesh.points)
-end
-
 # Return a materialized edge for each edge in the mesh
 function materialize_edges(mesh::UnstructuredMesh)
-    return materialize_edge.(1:length(mesh.edges), mesh)
+    return materialize_edge.(edges(mesh), Ref(mesh.points))
 end
 
 # Return a materialized facee for each facee in the mesh
@@ -182,8 +96,6 @@ function Base.show(io::IO, mesh::UnstructuredMesh)
         println(io, "  ├─ Size (MB) : $size_MB")
     end
     println(io, "  ├─ Points    : $(length(mesh.points))")
-    nedges = length(mesh.edges)
-    println(io, "  ├─ Edges     : $nedges")
     println(io, "  ├─ Faces     : $(length(mesh.faces))")
     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
 end
@@ -237,48 +149,14 @@ function submesh(name::String, mesh::UnstructuredMesh2D{Ord, T, U}) where {Ord, 
                                               collect(face_sets[face_set_name])))
     end
     faces = [SVector{length(f), U}(f) for f in submesh_faces]
-    if mesh isa LinearUnstructuredMesh 
-        edges = _create_linear_edges_from_faces(faces)
-    else # QuadraticUnstructuredMesh
-        edges = _create_quadratic_edges_from_faces(faces)
-    end
     return typeof(mesh)(name = name,
              points = points,
-             edges= edges,
              faces = faces, 
              face_sets = face_sets
             )
 end
 
 #########################################################################################
-function _convert_faces_edges(::Type{U}, 
-                              faces::Vector{<:SArray{S, UInt64, 1} where {S<:Tuple}}, 
-                              edges::Vector{<:SVector{N, UInt64}}, 
-                             ) where {U, N}
-    faces_U = [ convert(SVector{length(face), U}, face) for face in faces ]
-    edges_U = [ convert(SVector{length(edge), U}, edge) for edge in edges ] 
-    return faces_U, edges_U
-end
-
-function _create_linear_edges_from_faces(faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
-                                        ) where {U<:Unsigned}
-    edge_vecs = linear_edges.(faces)
-    num_edges = mapreduce(x->length(x), +, edge_vecs)
-    edges_unfiltered = Vector{SVector{2, U}}(undef, num_edges)
-    iedge = 1
-    for edge in edge_vecs
-        for i in eachindex(edge)
-            if edge[i][1] < edge[i][2]
-                edges_unfiltered[iedge] = edge[i]
-            else
-                edges_unfiltered[iedge] = SVector(edge[i][2], edge[i][1])
-            end
-            iedge += 1
-        end
-    end
-    return sort!(unique!(edges_unfiltered))
-end
-
 function _create_2d_mesh_from_vector_faces(name::String, points::Vector{Point2D{T}},
                                            faces_vecs::Vector{Vector{UInt64}},
                                            face_sets::Dict{String, BitSet}
@@ -294,89 +172,52 @@ function _create_2d_mesh_from_vector_faces(name::String, points::Vector{Point2D{
     sort!(face_lengths)
     if all(x->x < 6, face_lengths) # Linear mesh
         if face_lengths == [3]
-            faces = [ SVector{3, UInt64}(f) for f in faces_vecs]
-            edges = _create_linear_edges_from_faces(faces)
-            U = _select_mesh_UInt_type(length(edges))
-            faces_U, edges_U = _convert_faces_edges(U, faces, edges)
-            return TriangleMesh{2, T, U}(name = name,
-                                         points = points,
-                                         edges = edges_U,
-                                         faces = faces_U,
-                                         face_sets = face_sets)
+            U = _select_mesh_UInt_type(max(length(points), length(faces_vecs)))
+            faces = [ SVector{3, U}(f) for f in faces_vecs]
+            return TriangleMesh{T, U}(name = name,
+                                      points = points,
+                                      faces = faces,
+                                      face_sets = face_sets)
         elseif face_lengths == [4]
-            faces = [ SVector{4, UInt64}(f) for f in faces_vecs]
-            edges = _create_linear_edges_from_faces(faces)
-            U = _select_mesh_UInt_type(length(edges))
-            faces_U, edges_U = _convert_faces_edges(U, faces, edges)
-            return QuadrilateralMesh{2, T, U}(name = name,
-                                              points = points,
-                                              edges = edges_U,
-                                              faces = faces_U,
-                                              face_sets = face_sets)
+            U = _select_mesh_UInt_type(max(length(points), length(faces_vecs)))
+            faces = [ SVector{4, U}(f) for f in faces_vecs]
+            return QuadrilateralMesh{T, U}(name = name,
+                                           points = points,
+                                           faces = faces,
+                                           face_sets = face_sets)
         elseif face_lengths == [3, 4]
-            faces = [ SVector{length(f), UInt64}(f) for f in faces_vecs]
-            edges = _create_linear_edges_from_faces(faces)
-            U = _select_mesh_UInt_type(length(edges))
-            faces_U, edges_U = _convert_faces_edges(U, faces, edges)
-            return PolygonMesh{2, T, U}(name = name,
-                                        points = points,
-                                        edges = edges_U,
-                                        faces = faces_U,
-                                        face_sets = face_sets)
+            U = _select_mesh_UInt_type(max(length(points), length(faces_vecs)))
+            faces = [ SVector{length(f), U}(f) for f in faces_vecs]
+            return PolygonMesh{T, U}(name = name,
+                                     points = points,
+                                     faces = faces,
+                                     face_sets = face_sets)
         end
     else # Quadratic Mesh
         if face_lengths == [6]
-            faces = [ SVector{6, UInt64}(f) for f in faces_vecs]
-            edges = _create_quadratic_edges_from_faces(faces)
-            U = _select_mesh_UInt_type(length(edges))
-            faces_U, edges_U = _convert_faces_edges(U, faces, edges)
-            return QuadraticTriangleMesh{2, T, U}(name = name,
-                                                  points = points,
-                                                  edges = edges_U,
-                                                  faces = faces_U,
-                                                  face_sets = face_sets)
+            U = _select_mesh_UInt_type(max(length(points), length(faces_vecs)))
+            faces = [ SVector{6, U}(f) for f in faces_vecs]
+            return QuadraticTriangleMesh{T, U}(name = name,
+                                               points = points,
+                                               faces = faces,
+                                               face_sets = face_sets)
         elseif face_lengths == [8]
-            faces = [ SVector{8, UInt64}(f) for f in faces_vecs]
-            edges = _create_quadratic_edges_from_faces(faces)
-            U = _select_mesh_UInt_type(length(edges))
-            faces_U, edges_U = _convert_faces_edges(U, faces, edges)
-            return QuadraticQuadrilateralMesh{2, T, U}(name = name,
-                                                       points = points,
-                                                       edges = edges_U,
-                                                       faces = faces_U,
-                                                       face_sets = face_sets)
+            U = _select_mesh_UInt_type(max(length(points), length(faces_vecs)))
+            faces = [ SVector{8, U}(f) for f in faces_vecs]
+            return QuadraticQuadrilateralMesh{T, U}(name = name,
+                                                    points = points,
+                                                    faces = faces,
+                                                    face_sets = face_sets)
         elseif face_lengths == [6, 8]
-            faces = [ SVector{length(f), UInt64}(f) for f in faces_vecs]
-            edges = _create_quadratic_edges_from_faces(faces)
-            U = _select_mesh_UInt_type(length(edges))
-            faces_U, edges_U = _convert_faces_edges(U, faces, edges)
-            return QuadraticPolygonMesh{2, T, U}(name = name,
-                                                 points = points,
-                                                 edges = edges_U,
-                                                 faces = faces_U,
-                                                 face_sets = face_sets)
+            U = _select_mesh_UInt_type(max(length(points), length(faces_vecs)))
+            faces = [ SVector{length(f), U}(f) for f in faces_vecs]
+            return QuadraticPolygonMesh{T, U}(name = name,
+                                              points = points,
+                                              faces = faces,
+                                              face_sets = face_sets)
         end
     end
-    @error "Could not determine mesh type"
-end
-
-function _create_quadratic_edges_from_faces(faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
-                                        ) where {U<:Unsigned}
-    edge_vecs = quadratic_edges.(faces)
-    num_edges = mapreduce(x->length(x), +, edge_vecs)
-    edges_unfiltered = Vector{SVector{3, U}}(undef, num_edges)
-    iedge = 1
-    for edge in edge_vecs
-        for i in eachindex(edge)
-            if edge[i][1] < edge[i][2]
-                edges_unfiltered[iedge] = edge[i]
-            else
-                edges_unfiltered[iedge] = SVector(edge[i][2], edge[i][1], edge[i][3])
-            end
-            iedge += 1
-        end
-    end
-    return sort!(unique!(edges_unfiltered))
+    error("Could not determine mesh type")
 end
 
 function _select_mesh_UInt_type(N::Int64)

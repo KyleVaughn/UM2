@@ -155,7 +155,7 @@ function _get_partition_names(mesh::UnstructuredMesh2D, by::String)
         end
     end
     if length(partition_names) === 0
-        @error "No partition face sets in mesh"
+        error("No partition face sets in mesh")
     end
     return sort!(partition_names)
 end

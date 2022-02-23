@@ -1,55 +1,68 @@
-struct PolygonMesh{Dim, T, U} <:LinearUnstructuredMesh{Dim, T, U}
+struct PolygonMesh{T, U} <:LinearUnstructuredMesh{2, T, U}
     name::String
-    points::Vector{Point{Dim, T}}
-    edges::Vector{SVector{2, U}}
+    points::Vector{Point2D{T}}
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
     face_sets::Dict{String, BitSet}
 end
 
-function PolygonMesh{Dim, T, U}(;
+function PolygonMesh{T, U}(;
     name::String = "default_name",
-    points::Vector{Point{Dim, T}} = Point{Dim, T}[],
-    edges::Vector{SVector{2, U}} = SVector{2, U}[],
+    points::Vector{Point2D{T}} = Point2D{T}[],
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{3, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
-    ) where {Dim, T, U}
-    return PolygonMesh(name, points, edges, faces, face_sets)
+    ) where {T, U}
+    return PolygonMesh(name, points, faces, face_sets)
 end
 
-struct TriangleMesh{Dim, T, U} <:LinearUnstructuredMesh{Dim, T, U}
+struct TriangleMesh{T, U} <:LinearUnstructuredMesh{2, T, U}
     name::String
-    points::Vector{Point{Dim, T}}
-    edges::Vector{SVector{2, U}}
+    points::Vector{Point2D{T}}
     faces::Vector{SVector{3, U}}
     face_sets::Dict{String, BitSet}
 end
 
-function TriangleMesh{Dim, T, U}(;
+function TriangleMesh{T, U}(;
     name::String = "default_name",
-    points::Vector{Point{Dim, T}} = Point{Dim, T}[],
-    edges::Vector{SVector{2, U}} = SVector{2, U}[],
+    points::Vector{Point2D{T}} = Point2D{T}[],
     faces::Vector{SVector{3, U}} = SVector{3, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
-    ) where {Dim, T, U}
-    return TriangleMesh(name, points, edges, faces, face_sets)
+    ) where {T, U}
+    return TriangleMesh(name, points, faces, face_sets)
 end
 
-struct QuadrilateralMesh{Dim, T, U} <:LinearUnstructuredMesh{Dim, T, U}
+struct QuadrilateralMesh{T, U} <:LinearUnstructuredMesh{2, T, U}
     name::String
-    points::Vector{Point{Dim, T}}
-    edges::Vector{SVector{2, U}}
+    points::Vector{Point2D{T}}
     faces::Vector{SVector{4, U}}
     face_sets::Dict{String, BitSet}
 end
 
-function QuadrilateralMesh{Dim, T, U}(;
+function QuadrilateralMesh{T, U}(;
     name::String = "default_name",
-    points::Vector{Point{Dim, T}} = Point{Dim, T}[],
-    edges::Vector{SVector{2, U}} = SVector{2, U}[],
+    points::Vector{Point2D{T}} = Point2D{T}[],
     faces::Vector{SVector{4, U}} = SVector{4, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
-    ) where {Dim, T, U}
-    return QuadrilateralMesh(name, points, edges, faces, face_sets)
+    ) where {T, U}
+    return QuadrilateralMesh(name, points, faces, face_sets)
+end
+
+# Return the edges of the mesh
+function edges(mesh::LinearUnstructuredMesh{2, T, U}) where {T, U}
+    edge_vecs = linear_edges.(mesh.faces)
+    num_edges = mapreduce(x->length(x), +, edge_vecs)
+    edges_unfiltered = Vector{SVector{2, U}}(undef, num_edges)
+    iedge = 1
+    for edge in edge_vecs
+        for i in eachindex(edge)
+            if edge[i][1] < edge[i][2]
+                edges_unfiltered[iedge] = edge[i]
+            else
+                edges_unfiltered[iedge] = SVector(edge[i][2], edge[i][1])
+            end
+            iedge += 1
+        end
+    end
+    return sort!(unique!(edges_unfiltered))
 end
 
 # Point IDs representing the edges of a polygon.
@@ -83,7 +96,6 @@ end
 function materialize_polygon(face::SVector{N}, points::Vector{<:Point}) where {N}
     return Polygon{N}(facepoints(face, points))
 end
-
 
 # # A vector of SVectors, denoting the edge ID each face is connected to.
 # function face_edge_connectivity(mesh::QuadrilateralMesh{Dim,T,U}) where {Dim,T,U}
@@ -333,8 +345,6 @@ function Base.show(io::IO, mesh::PolygonMesh)
         println(io, "  ├─ Size (MB) : $size_MB")
     end
     println(io, "  ├─ Points    : $(length(mesh.points))")
-    nedges = length(mesh.edges)
-    println(io, "  ├─ Edges     : $nedges")
     println(io, "  ├─ Faces     : $(length(mesh.faces))")
     println(io, "  │  ├─ Triangle       : $(count(x->x isa SVector{3},  mesh.faces))")
     println(io, "  │  └─ Quadrilateral  : $(count(x->x isa SVector{4},  mesh.faces))")

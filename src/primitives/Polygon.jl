@@ -105,8 +105,7 @@ end
 # ---------------------------------------------------------------------------------------------
 #
 # Intersection of a line segment and polygon in 2D
-function intersect(l::LineSegment2D{T}, poly::Polygon{N, 2, T}
-                       ) where {N,T <:Union{Float32, Float64}} 
+function intersect(l::LineSegment2D{T}, poly::Polygon{N, 2, T}) where {N,T} 
     # Create the line segments that make up the polygon and intersect each one
     # until 2 unique points have been found
     p₁ = nan(Point2D{T}) 

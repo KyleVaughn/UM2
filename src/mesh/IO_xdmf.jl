@@ -2,7 +2,7 @@ function write_xdmf2d(filename::String, MP::HierarchicalMeshPartition)
     @info "Writing $filename" 
     # Check valid filename
     if !occursin(".xdmf", filename)
-        @error "Invalid filename. '.xdmf' does not occur in $filename"
+        error("Invalid filename. '.xdmf' does not occur in file name")
     end
 
     # If there are materials, map all material names to an integer
@@ -33,7 +33,7 @@ function write_xdmf2d(filename::String, mesh::UnstructuredMesh2D)
     @info "Writing $filename" 
     # Check valid filename
     if !occursin(".xdmf", filename)
-        @error "Invalid filename. '.xdmf' does not occur in $filename"
+        error("Invalid filename. '.xdmf' does not occur in file name")
     end
 
     # If there are materials, map all material names to an integer
@@ -171,7 +171,7 @@ function _convert_xdmf_faces_to_array!(topo_array::Vector{UInt64},
             elseif face_length === 4
                 pushfirst!(face_xdmf, 5)
             else
-                @error "Unknown face type"
+                error("Unknown face type")
             end
             topo_array[topo_ctr:topo_ctr + face_length] = face_xdmf
             topo_ctr += face_length + 1
@@ -188,7 +188,7 @@ function _convert_xdmf_faces_to_array!(topo_array::Vector{UInt64},
             elseif face_length === 8
                 pushfirst!(face_xdmf, 37)
             else
-                @error "Unknown face type"
+                error("Unknown face type")
             end
             topo_array[topo_ctr:topo_ctr + face_length] = face_xdmf
             topo_ctr += face_length + 1
@@ -288,13 +288,13 @@ function _write_xdmf_materials!(xml::XMLElement,
                 if mat_ID_array[cell] === -1
                     mat_ID_array[cell] = material_ID
                 else
-                    @error "Mesh cell $cell has multiple materials assigned to it."
+                    error("Mesh cell $cell has multiple materials assigned to it.")
                 end
             end
         end
     end
     if any(x->x === -1, mat_ID_array)
-        @error "Some mesh cells do not have a material."
+        error("Some mesh cells do not have a material.")
     end
     # DataItem
     xdataitem = new_child(xmaterial, "DataItem")

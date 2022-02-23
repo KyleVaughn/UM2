@@ -109,11 +109,11 @@ function centroid(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{N}) where {Dim, T
     #      S           A j=1 i=1
     w, r = gauss_legendre_quadrature(T, Val(N))
     A = zero(T)
-    𝗖 = @SVector zeros(T, 3)
+    𝗖 = @SVector zeros(T, Dim)
     for j ∈ 1:N, i ∈ 1:N
         J = 𝗝(quad8, r[i], r[j])
         weighted_val = w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2))
-        𝗖 += weighted_val * quad8(r[i], r[j])
+        𝗖 += weighted_val * quad8(r[i], r[j]).coord
         A += weighted_val
     end
     return Point(𝗖)/A

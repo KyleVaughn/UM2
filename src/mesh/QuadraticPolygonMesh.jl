@@ -1,55 +1,68 @@
-struct QuadraticPolygonMesh{Dim, T, U} <:QuadraticUnstructuredMesh{Dim, T, U}
+struct QuadraticPolygonMesh{T, U} <:QuadraticUnstructuredMesh{2, T, U}
     name::String
-    points::Vector{Point{Dim, T}}
-    edges::Vector{SVector{3, U}}
+    points::Vector{Point2D{T}}
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
     face_sets::Dict{String, BitSet}
 end
 
-function QuadraticPolygonMesh{Dim, T, U}(;
+function QuadraticPolygonMesh{T, U}(;
     name::String = "default_name",
-    points::Vector{Point{Dim, T}} = Point{Dim, T}[],
-    edges::Vector{SVector{3, U}} = SVector{3, U}[],
+    points::Vector{Point2D{T}} = Point2D{T}[],
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{6, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
-    ) where {Dim, T, U}
-    return QuadraticPolygonMesh(name, points, edges, faces, face_sets)
+    ) where {T, U}
+    return QuadraticPolygonMesh(name, points, faces, face_sets)
 end
 
-struct QuadraticTriangleMesh{Dim, T, U} <:QuadraticUnstructuredMesh{Dim, T, U}
+struct QuadraticTriangleMesh{T, U} <:QuadraticUnstructuredMesh{2, T, U}
     name::String
-    points::Vector{Point{Dim, T}}
-    edges::Vector{SVector{3, U}}
+    points::Vector{Point2D{T}}
     faces::Vector{SVector{6, U}}
     face_sets::Dict{String, BitSet}
 end
 
-function QuadraticTriangleMesh{Dim, T, U}(;
+function QuadraticTriangleMesh{T, U}(;
     name::String = "default_name",
-    points::Vector{Point{Dim, T}} = Point{Dim, T}[],
-    edges::Vector{SVector{3, U}} = SVector{3, U}[],
+    points::Vector{Point2D{T}} = Point2D{T}[],
     faces::Vector{SVector{6, U}} = SVector{6, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
-    ) where {Dim, T, U}
-    return QuadraticTriangleMesh(name, points, edges, faces, face_sets)
+    ) where {T, U}
+    return QuadraticTriangleMesh(name, points, faces, face_sets)
 end
  
-struct QuadraticQuadrilateralMesh{Dim, T, U} <:QuadraticUnstructuredMesh{Dim, T, U}
+struct QuadraticQuadrilateralMesh{T, U} <:QuadraticUnstructuredMesh{2, T, U}
     name::String
-    points::Vector{Point{Dim, T}}
-    edges::Vector{SVector{3, U}}
+    points::Vector{Point2D{T}}
     faces::Vector{SVector{8, U}}
     face_sets::Dict{String, BitSet}
 end
 
-function QuadraticQuadrilateralMesh{Dim, T, U}(;
+function QuadraticQuadrilateralMesh{T, U}(;
     name::String = "default_name",
-    points::Vector{Point{Dim, T}} = Point{Dim, T}[],
-    edges::Vector{SVector{3, U}} = SVector{3, U}[],
+    points::Vector{Point2D{T}} = Point2D{T}[],
     faces::Vector{SVector{8, U}} = SVector{8, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
-    ) where {Dim, T, U}
-    return QuadraticQuadrilateralMesh(name, points, edges, faces, face_sets)
+    ) where {T, U}
+    return QuadraticQuadrilateralMesh(name, points, faces, face_sets)
+end
+
+# Return the edges of the mesh
+function edges(mesh::QuadraticUnstructuredMesh{2, T, U}) where {T, U}
+    edge_vecs = quadratic_edges.(mesh.faces)
+    num_edges = mapreduce(x->length(x), +, edge_vecs)
+    edges_unfiltered = Vector{SVector{3, U}}(undef, num_edges)
+    iedge = 1
+    for edge in edge_vecs
+        for i in eachindex(edge)
+            if edge[i][1] < edge[i][2]
+                edges_unfiltered[iedge] = edge[i]
+            else
+                edges_unfiltered[iedge] = SVector(edge[i][2], edge[i][1], edge[i][3])
+            end
+            iedge += 1
+        end
+    end
+    return sort!(unique!(edges_unfiltered))
 end
 
 # Return a materialized quadratic triangle
@@ -142,8 +155,6 @@ function Base.show(io::IO, mesh::QuadraticPolygonMesh)
         println(io, "  ├─ Size (MB) : $size_MB")
     end
     println(io, "  ├─ Points    : $(length(mesh.points))")
-    nedges = length(mesh.edges)
-    println(io, "  ├─ Edges     : $nedges")
     println(io, "  ├─ Faces     : $(length(mesh.faces))")
     println(io, "  │  ├─ Triangle       : $(count(x->x isa SVector{6},  mesh.faces))")
     println(io, "  │  └─ Quadrilateral  : $(count(x->x isa SVector{8},  mesh.faces))")

@@ -55,10 +55,10 @@ include("trees/AnyTree.jl")
 include("./gmsh/gmsh_generate_rectangular_grid.jl")
 include("./gmsh/gmsh_group_preserving_fragment.jl")
 include("./gmsh/gmsh_overlay_rectangular_grid.jl")
-include("./primitives/Edge.jl")
-include("./primitives/Face.jl")
 include("./primitives/VectorND.jl")
 include("./primitives/Point.jl")
+include("./primitives/Edge.jl")
+include("./primitives/Face.jl")
 include("./primitives/LineSegment.jl")
 include("./primitives/Hyperplane.jl")
 include("./primitives/AABox.jl")
@@ -112,14 +112,14 @@ export arclength, area,
        boundingbox, 
        centroid, 
        depth, derivative, distance, distance², 
-       edgepoints, edge_face_connectivity, 
-       facepoints, face_edge_connectivity, findface,
+       edgepoints, edges, edge_face_connectivity, 
+       facepoints, face_edge_connectivity,
        gauss_legendre_quadrature, 
        height, 
        intersect, intersect_edges, intersect_edges_CUDA, inv, isleft, isstraight, isroot, 
        in_halfspace,
        jacobian, 
-       leaves, linear_edges,log_timestamps, 
+       leaves, linear_edges, log_timestamps, 
        materialize_edge, materialize_edges, materialize_face, materialize_faces,
        materialize_polygon, materialize_quadratic_polygon, midpoint, 
        nan, nearest_point, norm, norm², num_edges, 

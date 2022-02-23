@@ -77,7 +77,7 @@ end
 function _read_abaqus_elements!(file::IOStream, faces::Vector{Vector{UInt64}}, 
                                 element_type::String)
     if !(element_type ∈ valid_abaqus_types)  
-        @error "$element_type is not in the valid abaqus types"
+        error("$element_type is not in the valid abaqus types")
     end
     line = readline(file)
     file_position = position(file)
