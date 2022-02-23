@@ -42,9 +42,11 @@ QuadraticPolygon(x...) = QuadraticPolygon(SVector(x))
 # Let 𝗳(r,s) be a parameterization of surface S
 # A = ∬ dS = ∬ ‖∂𝗳/∂r × ∂𝗳/∂s‖dr ds
 #     S      T
-function area(poly::QuadraticPolygon{N,Dim,T}) where {N,Dim,T}
-    # A = (4Aₕ - Aₗ)/6      
-    # 4(Area of convex hull) - Area of the base linear shape
+function area(poly::QuadraticPolygon{N,2,T}) where {N,T}
+    # It can be shown that the area of the quadratic polygon is the area of the base
+    # linear shape + the area filled by the quadratic curves outside/inside the linear
+    # shape. The area of the quadratic edge is 4/3 the area of the triangle formed by the
+    # 3 vertices.
     q = zero(T)
     l = zero(T)
     M = N ÷ 2
@@ -64,7 +66,8 @@ end
 # integrating over the square root of the factored quartic polynomial. 
 # This has a solution in the form of elliptic integrals (See Byrd and Friedman's
 # Handbook of Elliptic Integrals for Engineers and Scientists, 2nd edition, 
-# equation 251.38), but it's absolutely massive. Numerical integration is 
+# equation 251.38), but it's absolutely massive. There may be simplifications after
+# the fact that reduce the size of the expression, but for now numerical integration is 
 # quicker.
 function area(quad8::QuadraticQuadrilateral3D{T}, ::Val{N}) where {T, N}
     # Gauss-Legendre quadrature over a quadrilateral is used.

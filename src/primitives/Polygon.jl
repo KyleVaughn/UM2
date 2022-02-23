@@ -1,4 +1,4 @@
-# A convex, planar polygon defined by its vertices in counterclockwise order 
+# A convex polygon defined by its vertices in counterclockwise order 
 struct Polygon{N, Dim, T} <:Face{Dim, 1, T}
     points::SVector{N, Point{Dim, T}}
 end
@@ -35,14 +35,15 @@ function area(poly::Polygon{N, 2, T}) where {N, T}
     a += poly[N] × poly[1]
     return norm(a)/2
 end
-function area(poly::Polygon{N, 3, T}) where {N, T}
-    a = zero(SVector{3, T}) # Vector
-    for i ∈ 1:N-1
-        a += (poly[i] × poly[i + 1])
-    end
-    a += poly[N] × poly[1]
-    return norm(a)/2
-end
+# Not necessarily planar
+#function area(poly::Polygon{N, 3, T}) where {N, T}
+#    a = zero(SVector{3, T}) # Vector
+#    for i ∈ 1:N-1
+#        a += (poly[i] × poly[i + 1])
+#    end
+#    a += poly[N] × poly[1]
+#    return norm(a)/2
+#end
 
 # Bounding box
 # ---------------------------------------------------------------------------------------------
@@ -64,18 +65,19 @@ function centroid(poly::Polygon{N, 2, T}) where {N, T}
     a += subarea
     return Point(c/(3a))
 end
-# (https://en.wikipedia.org/wiki/Centroid#By_geometric_decomposition)
-function centroid(poly::Polygon{N, 3, T}) where {N, T}
-    # Decompose into triangles
-    a = zero(T)
-    c = SVector{3,T}(0,0,0)
-    for i ∈ 1:N-2
-        subarea = norm((poly[i+1] - poly[1]) × (poly[i+2] - poly[1]))
-        c += subarea*(poly[1] + poly[i+1] + poly[i+2])
-        a += subarea
-    end
-    return Point(c/(3a))
-end
+# Not necessarily planar
+## (https://en.wikipedia.org/wiki/Centroid#By_geometric_decomposition)
+#function centroid(poly::Polygon{N, 3, T}) where {N, T}
+#    # Decompose into triangles
+#    a = zero(T)
+#    c = SVector{3,T}(0,0,0)
+#    for i ∈ 1:N-2
+#        subarea = norm((poly[i+1] - poly[1]) × (poly[i+2] - poly[1]))
+#        c += subarea*(poly[1] + poly[i+1] + poly[i+2])
+#        a += subarea
+#    end
+#    return Point(c/(3a))
+#end
 
 # Point inside polygon
 # ---------------------------------------------------------------------------------------------
@@ -87,16 +89,17 @@ function Base.in(p::Point2D, poly::Polygon{N, 2}) where {N}
     end
     return isleft(p, LineSegment2D(poly[N], poly[1]))
 end
-function Base.in(p::Point3D, poly::Polygon{N, 3}) where {N}
-    # Check if the point is even in the same plane as the polygon
-    plane = Hyperplane(poly[1], poly[2], poly[3])
-    p ∈ plane || return false
-    # Test that the point is to the left of each edge, oriented to the plane
-    for i = 1:N-1
-        isleft(p, LineSegment3D(poly[i], poly[i + 1]), plane) || return false
-    end
-    return isleft(p, LineSegment3D(poly[N], poly[1]), plane) 
-end
+# Not necessarily planar
+#function Base.in(p::Point3D, poly::Polygon{N, 3}) where {N}
+#    # Check if the point is even in the same plane as the polygon
+#    plane = Hyperplane(poly[1], poly[2], poly[3])
+#    p ∈ plane || return false
+#    # Test that the point is to the left of each edge, oriented to the plane
+#    for i = 1:N-1
+#        isleft(p, LineSegment3D(poly[i], poly[i + 1]), plane) || return false
+#    end
+#    return isleft(p, LineSegment3D(poly[N], poly[1]), plane) 
+#end
 
 # Intersect
 # ---------------------------------------------------------------------------------------------
@@ -135,9 +138,9 @@ end
 # ---------------------------------------------------------------------------------------------
 # Return the vector of triangles corresponding to the polygon's triangulation
 #
-# Assumes polygon is convex
-function triangulate(poly::Polygon{N, Dim, T}) where {N, Dim, T}
-    triangles = MVector{N-2, Triangle{Dim, T}}(undef)
+# Assumes polygon is convex and planar
+function triangulate(poly::Polygon{N, 2, T}) where {N, T}
+    triangles = MVector{N-2, Triangle{2, T}}(undef)
     if N === 3
         triangles[1] = poly
         return triangles
