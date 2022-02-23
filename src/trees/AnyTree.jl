@@ -1,3 +1,9 @@
+"""
+    AnyTree(data)
+    AnyTree(data, parent)
+
+A tree data structure to hold arbitrary data, parent, and children.
+"""
 mutable struct AnyTree <: Tree
     data::Union{Nothing, Any}
     parent::Union{Nothing, Any}

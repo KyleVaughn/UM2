@@ -2,7 +2,7 @@
     LineSegment(𝘅₁::Point{Dim, T}, 𝘂::SVector{Dim, T})
     LineSegment(𝘅₁::Point{Dim, T}, 𝘅₂::Point{Dim, T})
 
-Construct a parametric line segment in `Dim`-dimentional space that starts at 
+Construct a parametric line segment in `Dim`-dimensional space that starts at 
 point 𝘅₁ and ends at point 𝘅₂. The line satisfies the equation 𝗹(r) = 𝘅₁ + r𝘂,
 where 𝘂 = 𝘅₂ - 𝘅₁ and r ∈ [0, 1].
 """
@@ -40,5 +40,4 @@ LineSegment{Dim}(pts::SVector{2, Point{Dim, T}}) where {Dim, T} =
 LineSegment(pts::SVector{2, Point{Dim, T}}) where {Dim, T} = 
     LineSegment{Dim, T}(pts[1], pts[2] - pts[1]) 
 
-# Interpolation function
 @inline (l::LineSegment)(r) = Point(l.𝘅₁.coord + r*l.𝘂)

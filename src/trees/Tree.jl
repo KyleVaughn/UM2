@@ -1,3 +1,7 @@
+# Routines for Trees that use a structure like below. 
+#    data::T
+#    parent::Union{Nothing, Tree}
+#    children::Union{Nothing, Vector{Tree}}
 abstract type Tree end
 
 isroot(tree::Tree) = isnothing(tree.parent)
