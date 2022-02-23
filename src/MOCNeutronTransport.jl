@@ -48,6 +48,10 @@ function log_timestamps()
     end
 end
 
+include("Edge.jl")
+include("Face.jl")
+include("SVector.jl")
+
 include("constants.jl")
 include("trees/Tree.jl")
 include("trees/AnyTree.jl")
@@ -55,30 +59,27 @@ include("trees/AnyTree.jl")
 include("./gmsh/gmsh_generate_rectangular_grid.jl")
 include("./gmsh/gmsh_group_preserving_fragment.jl")
 include("./gmsh/gmsh_overlay_rectangular_grid.jl")
-include("./primitives/VectorND.jl")
 include("./primitives/Point.jl")
-include("./primitives/Edge.jl")
-include("./primitives/Face.jl")
 include("./primitives/LineSegment.jl")
-include("./primitives/Hyperplane.jl")
-include("./primitives/AABox.jl")
-include("./primitives/QuadraticSegment.jl")
-include("./primitives/Polygon.jl")
-include("./primitives/Triangle.jl")
-include("./primitives/Quadrilateral.jl")
-include("./primitives/QuadraticPolygon.jl")
-##include("L_system.jl")
-include("./mesh/UnstructuredMesh.jl")
-include("./mesh/PolygonMesh.jl")
-include("./mesh/QuadraticPolygonMesh.jl")
-include("./mesh/HierarchicalMeshPartition.jl")
-include("./mesh/IO_abaqus.jl")
-##include("./mesh/IO_vtk.jl")
-include("./mesh/IO_xdmf.jl")
-include("gauss_legendre_quadrature.jl")
-#include("./ray_tracing/AngularQuadrature.jl")
-#include("./raytracing/raytrace.jl")
-#include("./ray_tracing/ray_trace_low_level.jl")
+#include("./primitives/Hyperplane.jl")
+#include("./primitives/AABox.jl")
+#include("./primitives/QuadraticSegment.jl")
+#include("./primitives/Polygon.jl")
+#include("./primitives/Triangle.jl")
+#include("./primitives/Quadrilateral.jl")
+#include("./primitives/QuadraticPolygon.jl")
+###include("L_system.jl")
+#include("./mesh/UnstructuredMesh.jl")
+#include("./mesh/PolygonMesh.jl")
+#include("./mesh/QuadraticPolygonMesh.jl")
+#include("./mesh/HierarchicalMeshPartition.jl")
+#include("./mesh/IO_abaqus.jl")
+###include("./mesh/IO_vtk.jl")
+#include("./mesh/IO_xdmf.jl")
+#include("gauss_legendre_quadrature.jl")
+##include("./ray_tracing/AngularQuadrature.jl")
+##include("./raytracing/raytrace.jl")
+##include("./ray_tracing/ray_trace_low_level.jl")
 
 
 # Structs/Types
@@ -99,13 +100,13 @@ export AABox, AABox2D, AABox3D, AnyTree,
        Vector2D, Vector3D
 
 # Convenience operators
-const 𝗗 = derivative
+#const 𝗗 = derivative
 #const ∇ = gradient
 #const ∇² = laplacian
-const 𝗝= jacobian
+#const 𝗝= jacobian
 
 # Operators
-export +, -, ⋅, ×, ==, ≈, 𝗗, 𝗝
+export +, -, ⋅, ×, ==, ≈#, 𝗗, 𝗝
 
 # Methods
 export arclength, area, 

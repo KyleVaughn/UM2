@@ -1,3 +1,5 @@
+# Methods to extend SVector functionality
+
 # Aliases for N-dimensional static vectors
 const Vector2D = SVector{2}
 const Vector3D = SVector{3}
