@@ -4,6 +4,7 @@ const path_to_gmsh_api = "/usr/local/lib/gmsh.jl"
 const enable_visualization = true
 const visualize_ray_tracing = false 
 
+using AbstractTrees
 using CUDA
 using Logging
 using HDF5
@@ -16,23 +17,21 @@ using LoggingExtras: TransformerLogger, global_logger
 import Base: +, -, *, /, ==, ≈, intersect, sort, sort!
 import LinearAlgebra: ×, ⋅, norm, inv
 
-
 include(path_to_gmsh_api)
 
 include("SVector.jl")
-include("./trees/Tree.jl")
-include("./trees/AnyTree.jl")
 include("./primitives/Edge.jl")
 include("./primitives/Face.jl")
 include("./primitives/Point.jl")
 include("./primitives/LineSegment.jl")
 include("./primitives/QuadraticSegment.jl")
 include("./primitives/Hyperplane.jl")
-include("./primitives/AABox.jl")
-include("./primitives/Polygon.jl")
-include("./primitives/QuadraticPolygon.jl")
-
-include("constants.jl")
+#include("./primitives/AABox.jl")
+#include("./primitives/Polygon.jl")
+#include("./primitives/QuadraticPolygon.jl")
+#
+#include("constants.jl")
+#include("log.jl")
 
 
 #include("operators.jl")
@@ -54,17 +53,29 @@ include("constants.jl")
 ##include("./raytracing/raytrace.jl")
 ##include("./ray_tracing/ray_trace_low_level.jl")
 
-
+# SVector.jl
+export distance, inv, norm², normalize
+# Edge.jl
+export Edge, Edge2D, Edge3D
+# Face.jl
+export Face, Face2D, Face3D
+# Point.jl
+export Point, Point1D, Point2D, Point3D, +, -, *, /, ⋅, ×, ==, ≈, distance,
+       distance², midpoint, nan, norm, norm²
+# LineSegment
+export LineSegment, LineSegment2D, LineSegment3D
+# QuadraticSegment
+export  QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, jacobian,
+        isstraight
+# Hyperplane
+export Hyperplane, Hyperplane2D, Hyperplane3D 
 # Structs/Types
 #export AABox, AABox2D, AABox3D, AnyTree,
-#       Edge, Edge2D, Edge3D,
-#       Face, Face2D, Face3D,
-#       Hexagon, HierarchicalMeshPartition, Hyperplane, Hyperplane2D, Hyperplane3D, 
-#       LineSegment, LineSegment2D, LineSegment3D,
+#       Hexagon, HierarchicalMeshPartition, 
 #       MeshPartitionTree,
-#       Point, Point1D, Point2D, Point3D, Polygon, PolygonMesh, 
-#       QuadraticPolygon, QuadraticPolygonMesh, QuadraticSegment, QuadraticSegment2D,
-#       QuadraticSegment3D, QuadraticTriangle, QuadraticTriangle2D, QuadraticTriangle3D,
+#       Polygon, PolygonMesh, 
+#       QuadraticPolygon, QuadraticPolygonMesh,
+#        QuadraticTriangle, QuadraticTriangle2D, QuadraticTriangle3D,
 #       QuadraticQuadrilateral, QuadraticQuadrilateral2D, QuadraticQuadrilateral2D, 
 #       QuadraticTriangleMesh, QuadraticQuadrilateralMesh, Quadrilateral, Quadrilateral2D,
 #       Quadrilateral3D,
@@ -75,10 +86,10 @@ include("constants.jl")
 #const 𝗗 = derivative
 #const ∇ = gradient
 #const ∇² = laplacian
-#const 𝗝= jacobian
+const 𝗝= jacobian
 
 # Operators
-#export +, -, ⋅, ×, ==, ≈#, 𝗗, 𝗝
+export 𝗝
 
 # Methods
 #export arclength, area, 

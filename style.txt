@@ -1,1 +1,20 @@
 Recommended font for better \bsans characters: Noto Mono Regular 
+
+coordinate system
+       y
+       ^
+       |
+       |
+       |
+       |
+       |
+       |
+       |
+       |--------------------> x
+      / 
+     / 
+    / 
+   / 
+  / 
+ 𝘷
+z

@@ -1,5 +1,4 @@
-# Setup logger to have time stamps 
-# ---------------------------------------------------------------------------------------------
+# Add timestamps to logger
 const date_format = "HH:MM:SS.sss"
 timestamp_logger(logger) = TransformerLogger(logger) do log 
   merge(log, (; message = "$(format(now(), date_format)) $(log.message)"))
@@ -13,4 +12,3 @@ function log_timestamps()
         global MOCNeutronTransport_timestamps_on = true
     end 
 end
-
