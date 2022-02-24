@@ -57,8 +57,11 @@ include("./primitives/Edge.jl")
 include("./primitives/Face.jl")
 include("./primitives/Point.jl")
 include("./primitives/LineSegment.jl")
+include("./primitives/QuadraticSegment.jl")
 include("./primitives/Hyperplane.jl")
 include("./primitives/AABox.jl")
+include("./primitives/Polygon.jl")
+include("./primitives/QuadraticPolygon.jl")
 include("constants.jl")
 
 
@@ -68,11 +71,6 @@ include("constants.jl")
 #include("./gmsh/gmsh_overlay_rectangular_grid.jl")
 
 
-#include("./primitives/QuadraticSegment.jl")
-#include("./primitives/Polygon.jl")
-#include("./primitives/Triangle.jl")
-#include("./primitives/Quadrilateral.jl")
-#include("./primitives/QuadraticPolygon.jl")
 ###include("L_system.jl")
 #include("./mesh/UnstructuredMesh.jl")
 #include("./mesh/PolygonMesh.jl")

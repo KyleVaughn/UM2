@@ -21,3 +21,9 @@ function materialize_edge(edge::SVector{2}, points::Vector{<:Point})
     return LineSegment(edgepoints(edge, points))
 end
 
+# Materialize edge 
+# ---------------------------------------------------------------------------------------------
+# Return a QuadraticSegment from the point IDs in an edge
+function materialize_edge(edge::SVector{3}, points::Vector{<:Point})
+    return QuadraticSegment(edgepoints(edge, points))
+end

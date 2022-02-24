@@ -26,8 +26,21 @@ function convert_arguments(LS::Type{<:LineSegments}, L::Vector{<:LineSegment})
 end
 
 
+# Plot
+# ---------------------------------------------------------------------------------------------
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment)
+        rr = LinRange(0, 1, 15) 
+        points = q.(rr)
+        coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])
+        return convert_arguments(LS, coords)
+    end 
 
-
+    function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:QuadraticSegment})
+        point_sets = [convert_arguments(LS, q) for q in Q]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset in point_sets]))
+    end
+end
 
 # Z-coordinate is in the wrong direction!!!!
 
@@ -163,3 +176,70 @@ if enable_visualization
     end
 end
 
+
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, poly::Polygon{N}) where {N} 
+        lines = [LineSegment(poly[(i-1) % N + 1], 
+                             poly[    i % N + 1]) for i = 1:N] 
+        return convert_arguments(LS, lines)
+    end 
+
+    function convert_arguments(LS::Type{<:LineSegments}, P::Vector{<:Polygon})
+        point_sets = [convert_arguments(LS, poly) for poly ∈  P]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
+    end 
+
+    function convert_arguments(M::Type{<:Mesh}, tri::Triangle)
+        points = [tri[i].coord for i = 1:3]
+        face = [1 2 3]
+        return convert_arguments(M, points, face)
+    end 
+
+    function convert_arguments(M::Type{<:Mesh}, T::Vector{<:Triangle})
+        points = reduce(vcat, [[tri[i].coord for i = 1:3] for tri ∈  T])
+        faces = zeros(Int64, length(T), 3)
+        k = 1 
+        for i in 1:length(T), j = 1:3 
+            faces[i, j] = k 
+            k += 1
+        end
+        return convert_arguments(M, points, faces)
+    end 
+
+    function convert_arguments(M::Type{<:Mesh}, poly::Polygon)
+        return convert_arguments(M, triangulate(poly)) 
+    end 
+
+    function convert_arguments(M::Type{<:Mesh}, P::Vector{<:Polygon})
+        return convert_arguments(M, reduce(vcat, triangulate.(P)))    
+    end 
+end
+
+
+
+# Plot
+# ---------------------------------------------------------------------------------------------
+if enable_visualization
+    function convert_arguments(LS::Type{<:LineSegments}, poly::QuadraticPolygon{N}) where {N}
+        M = N ÷ 2
+        qsegs = [QuadraticSegment(poly[(i - 1) % M + 1],  
+                                  poly[      i % M + 1],
+                                  poly[          i + M]) for i = 1:M]
+        return convert_arguments(LS, qsegs)
+    end
+
+    function convert_arguments(LS::Type{<:LineSegments}, P::Vector{<:QuadraticPolygon})
+        point_sets = [convert_arguments(LS, poly) for poly ∈ P]
+        return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
+    end
+
+    function convert_arguments(P::Type{<:Mesh}, poly::QuadraticPolygon)
+        triangles = triangulate(poly, 7)
+        return convert_arguments(P, triangles)
+    end
+
+    function convert_arguments(M::Type{<:Mesh}, P::Vector{<:QuadraticPolygon})
+        triangles = reduce(vcat, triangulate.(P, 7))
+        return convert_arguments(M, triangles)
+    end
+end
