@@ -152,3 +152,14 @@ end
 # Bounding box
 # ---------------------------------------------------------------------------------------------
 boundingbox(poly::Polygon) = boundingbox(poly.points)
+
+# Axis-aligned bounding box
+function boundingbox(mesh::LinearUnstructuredMesh)
+    # The bounding box may be determined entirely from the points.
+    return boundingbox(mesh.points)
+end
+
+# Axis-aligned bounding box
+function boundingbox(mesh::QuadraticUnstructuredMesh)
+    return union(boundingbox.(materialize_edges(mesh)))
+end

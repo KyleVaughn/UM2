@@ -113,3 +113,24 @@ function area(tri6::QuadraticTriangle3D{T}, ::Val{N}) where {T, N}
     return A
 end
 
+# Return the area of face id
+function area(id, mesh::UnstructuredMesh)
+    return area(materialize_face(id, mesh))
+end
+
+# Return the area of the entire mesh
+function area(mesh::UnstructuredMesh)
+    # use sum
+    return mapreduce(x->area(x, mesh), +, 1:length(mesh.faces))
+end
+
+# Return the area of a face set
+function area(face_set::BitSet, mesh::UnstructuredMesh)
+    # use sum
+    return mapreduce(x->area(x, mesh), +, face_set)
+end
+
+# Return the area of a face set by name
+function area(set_name::String, mesh::UnstructuredMesh)
+    return area(mesh.face_sets[set_name], mesh)
+end
