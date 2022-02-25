@@ -8,7 +8,7 @@
             @test aab.xmax ≈ 3
             @test aab.ymax ≈ 2
     
-            # Δx, Δy, measure
+            # Δx, Δy
             @test Δx(aab) ≈ 2
             @test Δy(aab) ≈ 2
         end
@@ -24,7 +24,7 @@
             @test aab.ymax ≈ 2
             @test aab.zmax ≈ 1
     
-            # Δx, Δy, measure
+            # Δx, Δy, Δz
             @test Δx(aab) ≈ 2
             @test Δy(aab) ≈ 2
             @test Δz(aab) ≈ 2

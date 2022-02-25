@@ -53,13 +53,6 @@ function QuadraticSegment{Dim}(p₁::Point{Dim, T},
     return QuadraticSegment{Dim, T}(SVector{3, Point{Dim, T}}(p₁, p₂, p₃))
 end
 
-# Note: 𝗾(0) = 𝘅₁, 𝗾(1) = 𝘅₂, 𝗾(1/2) = 𝘅₃
-(q::QuadraticSegment)(r) = Point(((2r-1)*(r-1))q.𝘅₁ + (r*(2r-1))q.𝘅₂ + (4r*(1-r))q.𝘅₃)
-
-# Return the Jacobian of q, evalutated at r
-# 𝗾′(r) = 2r𝘂 + 𝘃, which is simplified to below.
-jacobian(q::QuadraticSegment, r) = (4r - 3)*(q.𝘅₁ - q.𝘅₃) + (4r - 1)*(q.𝘅₂ - q.𝘅₃) 
-
 # If the line is straight, 𝘅₃ - 𝘅₁ = c(𝘅₂ - 𝘅₁) where c ∈ (0, 1), hence
 # (𝘅₃ - 𝘅₁) × (𝘅₂ - 𝘅₁) = 𝟬
 function isstraight(q::QuadraticSegment2D)

@@ -39,5 +39,3 @@ LineSegment{Dim}(pts::SVector{2, Point{Dim, T}}) where {Dim, T} =
     LineSegment{Dim, T}(pts[1], pts[2] - pts[1]) 
 LineSegment(pts::SVector{2, Point{Dim, T}}) where {Dim, T} = 
     LineSegment{Dim, T}(pts[1], pts[2] - pts[1]) 
-
-@inline (l::LineSegment)(r) = Point(l.𝘅₁.coord + r*l.𝘂)

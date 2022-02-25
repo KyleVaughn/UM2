@@ -337,3 +337,47 @@
             @test points[5] ≈ Point2D{T}( 0.9354143,  -1//4)
             @test points[6] ≈ Point2D{T}(-0.9354143,  -1//4)
 
+
+
+        # intersect
+        # 0 intersections
+        l = LineSegment2D(Point2D{T}(0, -1), Point2D{T}(4, -1))
+        npoints, points = l ∩ quad8
+        @test npoints == 0
+ 
+        # 2 intersections
+        l = LineSegment2D(Point2D{T}(-1, 1), Point2D{T}(4, 1)) 
+        npoints, points = l ∩ quad8
+        @test npoints == 2
+        @test points[1] ≈ Point2D{T}(2.44444444444, 1)
+        @test points[2] ≈ Point2D{T}(0, 1)
+ 
+        # 4 intersections
+        l = LineSegment2D(Point2D{T}(0, 1//10), Point2D{T}(4, 1//10))
+        npoints, points = l ∩ quad8
+        @test npoints == 4
+        @test points[1] ≈ Point2D{T}(0.20557280900008415,       1//10)
+        @test points[2] ≈ Point2D{T}(1.9944271909999158,        1//10)
+        @test points[3] ≈ Point2D{T}(2.0644444444444447,        1//10)
+        @test points[4] ≈ Point2D{T}(0,                         1//10)
+ 
+        # 6 intersections
+        p₁ = Point2D{T}( 1, 0)
+        p₂ = Point2D{T}( 0, 0)
+        p₃ = Point2D{T}(-1, 0)
+        p₄ = Point2D{T}( 0, -2) 
+        p₅ = Point2D{T}( 1//2, -1//2)
+        p₆ = Point2D{T}(-1//2, -1//2)
+        p₇ = Point2D{T}(-1//2, -3//2)
+        p₈ = Point2D{T}( 1//2, -3//2)
+        quad8 = QuadraticQuadrilateral(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈) 
+        l = LineSegment2D(Point2D{T}(-2, -1//4), Point2D{T}(2, -1//4))
+        n, points = l ∩ quad8
+        @test n == 6
+        @test points[1] ≈ Point2D{T}(T[ 0.14644659, -1//4])
+        @test points[2] ≈ Point2D{T}(T[ 0.8535534,  -1//4])
+        @test points[3] ≈ Point2D{T}(T[-0.8535534,  -1//4])
+        @test points[4] ≈ Point2D{T}(T[-0.14644665, -1//4])
+        @test points[5] ≈ Point2D{T}(T[-0.9354143,  -1//4])
+        @test points[6] ≈ Point2D{T}(T[ 0.9354143,  -1//4])
+

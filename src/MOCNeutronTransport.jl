@@ -75,16 +75,15 @@ export AABox, AABox2D, AABox3D, Δx, Δy, Δz
 export Polygon, Triangle, Triangle2D, Triangle3D, Quadrilateral, Quadrilateral2D,
        Quadrilateral3D
 # QuadraticPolygon
-export QuadraticPolygon
+export QuadraticPolygon, QuadraticTriangle, QuadraticTriangle2D, QuadraticTriangle3D,
+       QuadraticQuadrilateral, QuadraticQuadrilateral2D, QuadraticQuadrilateral3D
 
 # Structs/Types
 #export 
 #        HierarchicalMeshPartition, 
 #       MeshPartitionTree,
 #        PolygonMesh, 
-#       QuadraticPolygon, QuadraticPolygonMesh,
-#        QuadraticTriangle, QuadraticTriangle2D, QuadraticTriangle3D,
-#       QuadraticQuadrilateral, QuadraticQuadrilateral2D, QuadraticQuadrilateral2D, 
+#        QuadraticPolygonMesh,
 #       QuadraticTriangleMesh, QuadraticQuadrilateralMesh, 
 #       Tree,  TriangleMesh,
 #       UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D
@@ -93,10 +92,10 @@ export QuadraticPolygon
 #const 𝗗 = derivative
 #const ∇ = gradient
 #const ∇² = laplacian
-const 𝗝= jacobian
+#const 𝗝 = jacobian
 
 # Operators
-export 𝗝
+#export 𝗝
 
 # Methods
 #export arclength, area, 

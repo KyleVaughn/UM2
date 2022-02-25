@@ -48,3 +48,15 @@
             tri6 = QuadraticTriangle(p₁, p₂, p₃, p₄, p₅, p₆) 
             @test isapprox(area(tri6), 3, atol=1.0e-6)
 
+                # area
+        p₁ = Point2D{T}(0, 0)
+        p₂ = Point2D{T}(2, 0)
+        p₃ = Point2D{T}(2, 3)
+        p₄ = Point2D{T}(0, 3)
+        p₅ = Point2D{T}(3//2, 1//2)
+        p₆ = Point2D{T}(5//2, 3//2)
+        p₇ = Point2D{T}(3//2, 5//2)
+        p₈ = Point2D{T}(0,    3//2)
+        quad8 = QuadraticQuadrilateral(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈)
+        @test isapprox(area(quad8), 17//3, atol=1.0e-6)
+

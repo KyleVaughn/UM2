@@ -92,3 +92,16 @@
             @test Point2D{T}(1, 1//2) ∈  tri6
             @test Point2D{T}(1, 0) ∉  tri6
 
+
+        # in
+        p₁ = Point2D{T}(0, 0)
+        p₂ = Point2D{T}(2, 0)
+        p₃ = Point2D{T}(2, 3)
+        p₄ = Point2D{T}(0, 3)
+        p₅ = Point2D{T}(3//2, 1//2)
+        p₆ = Point2D{T}(5//2, 3//2)
+        p₇ = Point2D{T}(3//2, 5//2)
+        p₈ = Point2D{T}(0, 1)
+        quad8 = QuadraticQuadrilateral(p₁, p₂, p₃, p₄, p₅, p₆, p₇, p₈) 
+        @test Point2D{T}(1, 1) ∈  quad8
+        @test Point2D{T}(1, 0) ∉  quad8
