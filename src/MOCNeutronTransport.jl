@@ -26,9 +26,9 @@ include("./primitives/Point.jl")
 include("./primitives/LineSegment.jl")
 include("./primitives/QuadraticSegment.jl")
 include("./primitives/Hyperplane.jl")
-#include("./primitives/AABox.jl")
-#include("./primitives/Polygon.jl")
-#include("./primitives/QuadraticPolygon.jl")
+include("./primitives/AABox.jl")
+include("./primitives/Polygon.jl")
+include("./primitives/QuadraticPolygon.jl")
 #
 #include("constants.jl")
 #include("log.jl")
@@ -69,17 +69,24 @@ export  QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, jacobian,
         isstraight
 # Hyperplane
 export Hyperplane, Hyperplane2D, Hyperplane3D 
+# AABox
+export AABox, AABox2D, AABox3D, Δx, Δy, Δz
+# Polygon
+export Polygon, Triangle, Triangle2D, Triangle3D, Quadrilateral, Quadrilateral2D,
+       Quadrilateral3D
+# QuadraticPolygon
+export QuadraticPolygon
+
 # Structs/Types
-#export AABox, AABox2D, AABox3D, AnyTree,
-#       Hexagon, HierarchicalMeshPartition, 
+#export 
+#        HierarchicalMeshPartition, 
 #       MeshPartitionTree,
-#       Polygon, PolygonMesh, 
+#        PolygonMesh, 
 #       QuadraticPolygon, QuadraticPolygonMesh,
 #        QuadraticTriangle, QuadraticTriangle2D, QuadraticTriangle3D,
 #       QuadraticQuadrilateral, QuadraticQuadrilateral2D, QuadraticQuadrilateral2D, 
-#       QuadraticTriangleMesh, QuadraticQuadrilateralMesh, Quadrilateral, Quadrilateral2D,
-#       Quadrilateral3D,
-#       Tree, Triangle, Triangle2D, Triangle3D, TriangleMesh,
+#       QuadraticTriangleMesh, QuadraticQuadrilateralMesh, 
+#       Tree,  TriangleMesh,
 #       UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D
 
 # Convenience operators
