@@ -22,13 +22,15 @@ include(path_to_gmsh_api)
 include("SVector.jl")
 include("./primitives/Edge.jl")
 include("./primitives/Face.jl")
+include("./primitives/Cell.jl")
 include("./primitives/Point.jl")
 include("./primitives/LineSegment.jl")
 include("./primitives/QuadraticSegment.jl")
 include("./primitives/Hyperplane.jl")
 include("./primitives/AABox.jl")
-include("./primitives/Polygon.jl")
+include("./primitives/ConvexPolygon.jl")
 include("./primitives/QuadraticPolygon.jl")
+#include("./interpolation.jl")
 #
 #include("constants.jl")
 #include("log.jl")
@@ -59,20 +61,21 @@ export distance, inv, norm², normalize
 export Edge, Edge2D, Edge3D
 # Face.jl
 export Face, Face2D, Face3D
+# Cell.jl
+export Cell
 # Point.jl
 export Point, Point1D, Point2D, Point3D, +, -, *, /, ⋅, ×, ==, ≈, distance,
        distance², midpoint, nan, norm, norm²
 # LineSegment
 export LineSegment, LineSegment2D, LineSegment3D
 # QuadraticSegment
-export  QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, jacobian,
-        isstraight
+export  QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, isstraight
 # Hyperplane
 export Hyperplane, Hyperplane2D, Hyperplane3D 
 # AABox
 export AABox, AABox2D, AABox3D, Δx, Δy, Δz
 # Polygon
-export Polygon, Triangle, Triangle2D, Triangle3D, Quadrilateral, Quadrilateral2D,
+export ConvexPolygon, Triangle, Triangle2D, Triangle3D, Quadrilateral, Quadrilateral2D,
        Quadrilateral3D
 # QuadraticPolygon
 export QuadraticPolygon, QuadraticTriangle, QuadraticTriangle2D, QuadraticTriangle3D,

@@ -1,4 +1,4 @@
-@testset "Polygon" begin
+@testset "ConvexPolygon" begin
     @testset "Triangle2D" begin
         for T in [Float32, Float64, BigFloat]
             p₁ = Point2D{T}(0, 0)

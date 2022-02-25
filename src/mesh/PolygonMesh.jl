@@ -1,3 +1,4 @@
+#ALL polygons assumed to be complex
 struct PolygonMesh{T, U} <:LinearUnstructuredMesh{2, T, U}
     name::String
     points::Vector{Point2D{T}}
