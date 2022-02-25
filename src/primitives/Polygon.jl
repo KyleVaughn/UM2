@@ -28,8 +28,3 @@ function Polygon{N}(v::SVector{N, Point{Dim, T}}) where {N, Dim, T}
 end
 Polygon{N}(x...) where {N} = Polygon(SVector(x))
 Polygon(x...) = Polygon(SVector(x))
-
-
-(tri::Triangle)(r, s) = Point((1 - r - s)*tri[1] + r*tri[2] + s*tri[3])
-(quad::Quadrilateral)(r, s) = Point(((1 - r)*(1 - s))quad[1] + (r*(1 - s))quad[2] + 
-                                                (r*s)quad[3] + ((1 - r)*s)quad[4])
