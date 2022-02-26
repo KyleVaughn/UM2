@@ -30,6 +30,8 @@ include("./primitives/Hyperplane.jl")
 include("./primitives/AABox.jl")
 include("./primitives/ConvexPolygon.jl")
 include("./primitives/QuadraticPolygon.jl")
+include("./primitives/ConvexPolyhedron.jl")
+include("./primitives/QuadraticPolyhedron.jl")
 #include("./interpolation.jl")
 #
 #include("constants.jl")
@@ -74,12 +76,16 @@ export  QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, isstraight
 export Hyperplane, Hyperplane2D, Hyperplane3D 
 # AABox
 export AABox, AABox2D, AABox3D, Δx, Δy, Δz
-# Polygon
+# ConvexPolygon
 export ConvexPolygon, Triangle, Triangle2D, Triangle3D, Quadrilateral, Quadrilateral2D,
        Quadrilateral3D
 # QuadraticPolygon
 export QuadraticPolygon, QuadraticTriangle, QuadraticTriangle2D, QuadraticTriangle3D,
        QuadraticQuadrilateral, QuadraticQuadrilateral2D, QuadraticQuadrilateral3D
+# ConvexPolyhedron
+export ConvexPolyhedron, Tetrahedron, Hexahedron
+# QuadraticPolyhedron
+export QuadraticPolyhedron, QuadraticTetrahedron, QuadraticHexahedron
 
 # Structs/Types
 #export 

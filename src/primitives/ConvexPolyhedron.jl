@@ -1,6 +1,6 @@
 """
-    ConvexPolyhedron(SVector{N, Point{Dim, T}})
-    ConvexPolyhedron(p₁::Point{Dim, T}}, p₂::Point{Dim, T}}, ...)
+    ConvexPolyhedron(SVector{N, Point3D{T}})
+    ConvexPolyhedron(p₁::Point3D{T}}, p₂::Point3D{T}}, ...)
 
 Construct a convex polyhedron with `N` vertices. Note this struct only supports the
 polyhedra found in "The Visualization Toolkit: An Object-Oriented Approach to 3D 
@@ -20,8 +20,8 @@ Base.@propagate_inbounds function Base.getindex(poly::ConvexPolyhedron, i::Integ
     getfield(poly, :points)[i]
 end
 
-function ConvexPolyhedron{N}(v::SVector{N, Point{Dim, T}}) where {N, Dim, T}
-    return ConvexPolyhedron{N, Dim, T}(v)
+function ConvexPolyhedron{N}(v::SVector{N, Point3D{T}}) where {N, T}
+    return ConvexPolyhedron{N, T}(v)
 end
 ConvexPolyhedron{N}(x...) where {N} = ConvexPolyhedron(SVector(x))
 ConvexPolyhedron(x...) = ConvexPolyhedron(SVector(x))
