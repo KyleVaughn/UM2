@@ -33,6 +33,9 @@ include("./primitives/QuadraticPolygon.jl")
 include("./primitives/ConvexPolyhedron.jl")
 include("./primitives/QuadraticPolyhedron.jl")
 include("./interpolation.jl")
+include("./jacobian.jl")
+# only need to worry about dampening for intersection with 
+# quadratic faces in 3D
 #
 #include("constants.jl")
 #include("log.jl")
@@ -86,6 +89,9 @@ export QuadraticPolygon, QuadraticTriangle, QuadraticTriangle2D, QuadraticTriang
 export ConvexPolyhedron, Tetrahedron, Hexahedron
 # QuadraticPolyhedron
 export QuadraticPolyhedron, QuadraticTetrahedron, QuadraticHexahedron
+# jacobian
+const 𝗝 = jacobian
+export jacobian, 𝗝
 
 # Structs/Types
 #export 

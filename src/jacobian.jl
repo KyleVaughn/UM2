@@ -1,6 +1,20 @@
-# Return the Jacobian of q, evalutated at r
-# 𝗾′(r) = 2r𝘂 + 𝘃, which is simplified to below.
 jacobian(q::QuadraticSegment, r) = (4r - 3)*(q.𝘅₁ - q.𝘅₃) + (4r - 1)*(q.𝘅₂ - q.𝘅₃) 
+
+function jacobian(tri6::QuadraticTriangle, r, s)
+    ∂F_∂r = (4r + 4s - 3)tri6[1] +
+                 (4r - 1)tri6[2] +
+          (4(1 - 2r - s))tri6[4] +
+                     (4s)tri6[5] +
+                    (-4s)tri6[6]
+
+    ∂F_∂s = (4r + 4s - 3)tri6[1] +
+                 (4s - 1)tri6[3] +
+                    (-4r)tri6[4] +
+                     (4r)tri6[5] +
+          (4(1 - r - 2s))tri6[6]
+    return hcat(∂F_∂r, ∂F_∂s)
+end
+
 function jacobian(quad8::QuadraticQuadrilateral, r, s)
     # Chain rule
     # ∂Q   ∂Q ∂ξ     ∂Q      ∂Q   ∂Q ∂η     ∂Q
@@ -28,19 +42,4 @@ function jacobian(quad8::QuadraticQuadrilateral, r, s)
     return 2*hcat(∂Q_∂ξ, ∂Q_∂η)
 end
 
-function jacobian(tri6::QuadraticTriangle, r, s)
-    # Let F(r,s) be the interpolation function for tri6
-    ∂F_∂r = (4r + 4s - 3)tri6[1] +
-                 (4r - 1)tri6[2] +
-          (4(1 - 2r - s))tri6[4] +
-                     (4s)tri6[5] +
-                    (-4s)tri6[6]
-
-    ∂F_∂s = (4r + 4s - 3)tri6[1] +
-                 (4s - 1)tri6[3] +
-                    (-4r)tri6[4] +
-                     (4r)tri6[5] +
-          (4(1 - r - 2s))tri6[6]
-    return hcat(∂F_∂r, ∂F_∂s)
-end
-
+# TODO: quadratic tetrahedron, quadratic hexahedron
