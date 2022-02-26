@@ -32,7 +32,7 @@ include("./primitives/ConvexPolygon.jl")
 include("./primitives/QuadraticPolygon.jl")
 include("./primitives/ConvexPolyhedron.jl")
 include("./primitives/QuadraticPolyhedron.jl")
-#include("./interpolation.jl")
+include("./interpolation.jl")
 #
 #include("constants.jl")
 #include("log.jl")
