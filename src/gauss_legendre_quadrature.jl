@@ -1,39 +1,39 @@
-# Weights and points for Gauss-Legendre quadrature for a variety of shapes
+"""
+    gauss_legendre_quadrature(::Type{T}, ::Val{N})
 
-# The weights and points for Gauss-Legendre quadrature on the interval F[0,1]
-# ∑wᵢ= 1, rᵢ∈ F[0, 1]
-#
-# N that have entries in this function: N = F[ 1, 2, 3, 4, 5, 10, 15, 20].
-function gauss_legendre_quadrature(::Type{F}, ::Val{1}) where {F}
-    weights = @SVector F[1.0]
-    r = @SVector F[0.5]
+Return the `N` Gauss weights and points on the interval [0,1], with ∑wᵢ= 1, rᵢ∈ [0, 1]. 
+Valid `N` for this function are `N` ∈ [ 1, 2, 3, 4, 5, 10, 15, 20].
+"""
+function gauss_legendre_quadrature(::Type{T}, ::Val{1}) where {T}
+    weights = @SVector T[1.0]
+    r = @SVector T[0.5]
     return weights, r
 end
 
-function gauss_legendre_quadrature(::Type{F}, ::Val{2}) where {F}
-    weights = @SVector F[0.5, 0.5]
-    r = @SVector F[0.21132486540518713, 0.7886751345948129]
+function gauss_legendre_quadrature(::Type{T}, ::Val{2}) where {T}
+    weights = @SVector T[0.5, 0.5]
+    r = @SVector T[0.21132486540518713, 0.7886751345948129]
     return weights, r
 end
 
-function gauss_legendre_quadrature(::Type{F}, ::Val{3}) where {F}
-    weights = @SVector F[0.2777777777777776,
+function gauss_legendre_quadrature(::Type{T}, ::Val{3}) where {T}
+    weights = @SVector T[0.2777777777777776,
                         0.4444444444444444,
                         0.2777777777777776]
-    r = @SVector F[0.1127016653792583,
+    r = @SVector T[0.1127016653792583,
                   0.5,
                   0.8872983346207417]
     return weights, r
 end
 
-function gauss_legendre_quadrature(::Type{F}, ::Val{4}) where {F}
-    weights = @SVector F[
+function gauss_legendre_quadrature(::Type{T}, ::Val{4}) where {T}
+    weights = @SVector T[
                   0.17392742256872684,
                   0.3260725774312732,
                   0.3260725774312732,
                   0.17392742256872684
                ]
-    r = @SVector F[
+    r = @SVector T[
           0.06943184420297371,
           0.33000947820757187,
           0.6699905217924281,
@@ -42,15 +42,15 @@ function gauss_legendre_quadrature(::Type{F}, ::Val{4}) where {F}
     return weights, r
 end
 
-function gauss_legendre_quadrature(::Type{F}, ::Val{5}) where {F}
-    weights = @SVector F[
+function gauss_legendre_quadrature(::Type{T}, ::Val{5}) where {T}
+    weights = @SVector T[
                   0.1184634425280945,
                   0.23931433524968326,
                   0.28444444444444444,
                   0.23931433524968326,
                   0.1184634425280945
                ]
-    r = @SVector F[
+    r = @SVector T[
           0.04691007703066802,
           0.23076534494715845,
           0.5,
@@ -60,8 +60,8 @@ function gauss_legendre_quadrature(::Type{F}, ::Val{5}) where {F}
     return weights, r
 end
 
-function gauss_legendre_quadrature(::Type{F}, ::Val{10}) where {F}
-    weights = @SVector F[
+function gauss_legendre_quadrature(::Type{T}, ::Val{10}) where {T}
+    weights = @SVector T[
                   0.03333567215434387,
                   0.07472567457529025,
                   0.1095431812579911,
@@ -73,7 +73,7 @@ function gauss_legendre_quadrature(::Type{F}, ::Val{10}) where {F}
                   0.07472567457529025,
                   0.03333567215434387
                ]
-    r = @SVector F[
+    r = @SVector T[
           0.013046735741414184,
           0.06746831665550773,
           0.16029521585048778,
@@ -88,8 +88,8 @@ function gauss_legendre_quadrature(::Type{F}, ::Val{10}) where {F}
     return weights, r
 end
 
-function gauss_legendre_quadrature(::Type{F}, ::Val{15}) where {F}
-    weights = @SVector F[
+function gauss_legendre_quadrature(::Type{T}, ::Val{15}) where {T}
+    weights = @SVector T[
                     0.015376620998058315,
                     0.03518302374405407,
                     0.053579610233586,
@@ -106,7 +106,7 @@ function gauss_legendre_quadrature(::Type{F}, ::Val{15}) where {F}
                     0.03518302374405407,
                     0.015376620998058315
                 ]
-    r = @SVector F[
+    r = @SVector T[
           0.006003740989757311,
           0.031363303799647024,
           0.0758967082947864,
@@ -126,8 +126,8 @@ function gauss_legendre_quadrature(::Type{F}, ::Val{15}) where {F}
     return weights, r
 end
 
-function gauss_legendre_quadrature(::Type{F}, ::Val{20}) where {F}
-    weights = @SVector F[
+function gauss_legendre_quadrature(::Type{T}, ::Val{20}) where {T}
+    weights = @SVector T[
                   0.00880700356957606,
                   0.02030071490019347,
                   0.03133602416705453,
@@ -149,7 +149,7 @@ function gauss_legendre_quadrature(::Type{F}, ::Val{20}) where {F}
                   0.02030071490019347,
                   0.00880700356957606
                ]
-    r = @SVector F[
+    r = @SVector T[
           0.0034357004074525577,
           0.018014036361043095,
           0.04388278587433703,
@@ -174,8 +174,8 @@ function gauss_legendre_quadrature(::Type{F}, ::Val{20}) where {F}
     return weights, r
 end
 
-function gauss_legendre_quadrature(::Type{F}, ::Val{25}) where {F}
-    weights = @SVector F[
+function gauss_legendre_quadrature(::Type{T}, ::Val{25}) where {T}
+    weights = @SVector T[
                 0.0615880268633577,
                 0.061121221495155,
                 0.061121221495155,
@@ -203,7 +203,7 @@ function gauss_legendre_quadrature(::Type{F}, ::Val{25}) where {F}
                 0.00569689925051315
             ]
 
-    r = @SVector F[
+    r = @SVector T[
         0.5,
         0.4385676536946448,
         0.5614323463053552,
@@ -232,70 +232,75 @@ function gauss_legendre_quadrature(::Type{F}, ::Val{25}) where {F}
        ]
     return weights, r
 end
-# The weights and points for Gauss-Legendre quadrature on the parametric unit triangle
-# ∑wᵢ= 1/2, rᵢ∈ F[0, 1], sᵢ∈ F[0, 1], rᵢ + sᵢ ≤ 1
-# N that have entries in this function: N = F[3, 4, 6, 12, 27, 48, 79]
-function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{1}) where {N,F}
+
+"""
+    triangular_gauss_legendre_quadrature(::Type{T}, ::Val{N})
+
+Return the `N` Gauss weights and points on the parametric unit triangle, with ∑wᵢ= 1/2,
+rᵢ∈ [0, 1], sᵢ∈ [0, 1], rᵢ + sᵢ ≤ 1.
+Valid `N` for this function are `N` ∈ [3, 4, 6, 12, 27, 48, 79]
+"""
+function triangular_gauss_legendre_quadrature(::Type{T}, ::Val{1}) where {T}
     # P1. 0 negative weights, 0 points outside of the triangle
-    w = @SVector F[0.500000000000000]
+    w = @SVector T[0.500000000000000]
 
-    r = @SVector F[0.333333333333333]
+    r = @SVector T[0.333333333333333]
 
-    s = @SVector F[0.333333333333333]
+    s = @SVector T[0.333333333333333]
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{3}) where {N,F}
+function triangular_gauss_legendre_quadrature(::Type{T}, ::Val{3}) where {T}
     # P2. 0 negative weights, 0 points outside of the triangle
-    w = @SVector F[0.166666666666667,
+    w = @SVector T[0.166666666666667,
                   0.166666666666667,
                   0.166666666666667]
 
-    r = @SVector F[0.166666666666667,
+    r = @SVector T[0.166666666666667,
                   0.166666666666667,
                   0.666666666666667]
 
-    s = @SVector F[0.166666666666667, 
+    s = @SVector T[0.166666666666667, 
                   0.666666666666667, 
                   0.166666666666667] 
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{4}) where {N,F}
+function triangular_gauss_legendre_quadrature(::Type{T}, ::Val{4}) where {T}
     # P3. 1 negative weights, 0 points outside of the triangle
-    w = @SVector F[-0.281250000000000,
+    w = @SVector T[-0.281250000000000,
                     0.260416666666667,   
                     0.260416666666667,
                     0.260416666666667]
 
-    r = @SVector F[0.333333333333333, 
+    r = @SVector T[0.333333333333333, 
                    0.200000000000000, 
                    0.200000000000000, 
                    0.600000000000000] 
 
-    s = @SVector F[0.333333333333333,
+    s = @SVector T[0.333333333333333,
                    0.200000000000000,
                    0.600000000000000,
                    0.200000000000000]
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{6}) where {N,F}
+function triangular_gauss_legendre_quadrature(::Type{T}, ::Val{6}) where {T}
     # P4. 0 negative weights, 0 points outside of the triangle
-    w = @SVector F[0.111690794839005,
+    w = @SVector T[0.111690794839005,
                   0.111690794839005,
                   0.111690794839005,
                   0.054975871827661,
                   0.054975871827661,
                   0.054975871827661]
-    r = @SVector F[0.445948490915965,
+    r = @SVector T[0.445948490915965,
                   0.445948490915965,
                   0.108103018168070,
                   0.091576213509771,
                   0.091576213509771,
                   0.816847572980459]
 
-    s = @SVector F[0.445948490915965,
+    s = @SVector T[0.445948490915965,
                   0.108103018168070,
                   0.445948490915965,
                   0.091576213509771,
@@ -304,9 +309,9 @@ function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{6}) where 
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{12}) where {N,F}
+function triangular_gauss_legendre_quadrature(::Type{T}, ::Val{12}) where {T}
     # P6. 0 negative weights, 0 points outside of the triangle
-    w = @SVector F[0.058393137863189,
+    w = @SVector T[0.058393137863189,
           0.058393137863189,
           0.058393137863189,
           0.025422453185104,
@@ -319,7 +324,7 @@ function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{12}) where
           0.041425537809187,
           0.041425537809187]
 
-    r = @SVector F[0.249286745170910,
+    r = @SVector T[0.249286745170910,
           0.249286745170910,
           0.501426509658179,
           0.063089014491502,
@@ -332,7 +337,7 @@ function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{12}) where
           0.636502499121399,
           0.053145049844816]
 
-    s = @SVector F[0.249286745170910,
+    s = @SVector T[0.249286745170910,
           0.501426509658179,
           0.249286745170910,
           0.063089014491502,
@@ -347,9 +352,9 @@ function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{12}) where
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{27}) where {N,F}
+function triangular_gauss_legendre_quadrature(::Type{T}, ::Val{27}) where {T}
     # P11. 0 negative weights, 3 points outside of the triangle
-    w = @SVector F[0.00046350316448,
+    w = @SVector T[0.00046350316448,
           0.00046350316448,
           0.00046350316448,
           0.03857476745740,
@@ -377,7 +382,7 @@ function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{27}) where
           0.01035382981955,
           0.01035382981955]
 
-    r = @SVector F[+0.5346110482710,
+    r = @SVector T[+0.5346110482710,
           -0.0692220965415,
           +0.5346110482710,
           +0.3989693029660,
@@ -405,7 +410,7 @@ function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{27}) where
           +0.1714889803040,
           +0.8074890031600]
     
-    s = @SVector F[+0.5346110482710,
+    s = @SVector T[+0.5346110482710,
           +0.5346110482710,
           -0.0692220965415,
           +0.3989693029660,
@@ -435,9 +440,9 @@ function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{27}) where
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{48}) where {N,F}
+function triangular_gauss_legendre_quadrature(::Type{T}, ::Val{48}) where {T}
     # P15. 0 negative weights, 9 points outside of the triangle
-    w = @SVector F[0.000958437821425,
+    w = @SVector T[0.000958437821425,
           0.000958437821425,
           0.000958437821425,
           0.022124513635550,
@@ -486,7 +491,7 @@ function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{48}) where
           0.003836971315525,
           0.003836971315525]
 
-    r = @SVector F[+0.5069729168580,
+    r = @SVector T[+0.5069729168580,
           -0.0139458337165,
           +0.5069729168580,
           +0.4314063542830,
@@ -535,7 +540,7 @@ function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{48}) where
           +0.1035756165760,
           +0.8839645740920]
 
-    s = @SVector F[+0.5069729168580,
+    s = @SVector T[+0.5069729168580,
           +0.5069729168580,
           -0.0139458337165,
           +0.4314063542830,
@@ -586,9 +591,9 @@ function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{48}) where
     return w, r, s
 end
 
-function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{79}) where {N,F}
+function triangular_gauss_legendre_quadrature(::Type{T}, ::Val{79}) where {T}
     # P20. 3 negative weights, 9 points outside of the triangle
-    w = @SVector F[+0.016528527770800,
+    w = @SVector T[+0.016528527770800,
           +0.000433509592831,
           +0.000433509592831,
           +0.000433509592831,
@@ -668,7 +673,7 @@ function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{79}) where
           +0.001786954692975,
           +0.001786954692975]
 
-    r = @SVector F[+0.3333333333333,
+    r = @SVector T[+0.3333333333333,
           +0.5009504643520,
           -0.0019009287044,
           +0.5009504643520,
@@ -748,7 +753,7 @@ function gauss_legendre_quadrature(tri::QuadraticTriangle{N,F}, ::Val{79}) where
           +0.0596961091490,
           +0.9297561715570]
 
-    s = @SVector F[ +0.3333333333333,
+    s = @SVector T[ +0.3333333333333,
            +0.5009504643520,
            +0.5009504643520,
            -0.0019009287044,

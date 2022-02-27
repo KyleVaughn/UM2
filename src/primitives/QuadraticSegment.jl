@@ -2,7 +2,7 @@
     QuadraticSegment(SVector{3, Point{Dim, T}})
     QuadraticSegment(p₁::Point{Dim, T}, p₂::Point{Dim, T}, p₃::Point{Dim, T})
 
-Construct a parametric quadratic segment in `Dim`-dimensional space that starts at 
+Construct a parametric `QuadraticSegment` in `Dim`-dimensional space that starts at 
 point 𝘅₁, passes through 𝘅₃ at r=1//2, and ends at point 𝘅₂. The segment satisfies 
 𝗾(r) = (2r-1)(r-1)𝘅₁ + r(2r-1)𝘅₂ + 4r(1-r)𝘅₃ where r ∈ [0, 1]. Equivalently, 
 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁, where 𝘂 = 2(𝘅₁ + 𝘅₂ - 2𝘅₃) and 𝘃 = -(3𝘅₁ + 𝘅₂ - 4𝘅₃).

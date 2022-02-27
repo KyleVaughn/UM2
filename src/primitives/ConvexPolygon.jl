@@ -2,7 +2,7 @@
     ConvexPolygon(SVector{N, Point{Dim, T}})
     ConvexPolygon(p₁::Point{Dim, T}}, p₂::Point{Dim, T}}, ...)
 
-Construct a convex polygon with `N` counter-clockwise oriented vertices in 
+Construct a `ConvexPolygon` with `N` counter-clockwise oriented vertices in 
 `Dim`-dimensional space. Several aliases exist for convenience, e.g. Triangle (`N`=3),
 Quadrilateral (`N`=4), etc.
 """

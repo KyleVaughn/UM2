@@ -19,26 +19,29 @@ import LinearAlgebra: ×, ⋅, norm, inv
 
 include(path_to_gmsh_api)
 
+include("log.jl")
+include("constants.jl")
 include("SVector.jl")
-include("./primitives/Edge.jl")
-include("./primitives/Face.jl")
-include("./primitives/Cell.jl")
-include("./primitives/Point.jl")
-include("./primitives/LineSegment.jl")
-include("./primitives/QuadraticSegment.jl")
-include("./primitives/Hyperplane.jl")
-include("./primitives/AABox.jl")
-include("./primitives/ConvexPolygon.jl")
-include("./primitives/QuadraticPolygon.jl")
-include("./primitives/ConvexPolyhedron.jl")
-include("./primitives/QuadraticPolyhedron.jl")
-include("./interpolation.jl")
-include("./jacobian.jl")
+include("primitives/Edge.jl")
+include("primitives/Face.jl")
+include("primitives/Cell.jl")
+include("primitives/Point.jl")
+include("primitives/LineSegment.jl")
+include("primitives/QuadraticSegment.jl")
+include("primitives/Hyperplane.jl")
+include("primitives/AABox.jl")
+include("primitives/ConvexPolygon.jl")
+include("primitives/QuadraticPolygon.jl")
+include("primitives/ConvexPolyhedron.jl")
+include("primitives/QuadraticPolyhedron.jl")
+include("interpolation.jl")
+include("jacobian.jl")
+include("gauss_legendre_quadrature.jl")
+include("triangulate.jl")
+include("measure.jl")
 # only need to worry about dampening for intersection with 
 # quadratic faces in 3D
 #
-#include("constants.jl")
-#include("log.jl")
 
 
 #include("operators.jl")
@@ -60,15 +63,19 @@ include("./jacobian.jl")
 ##include("./raytracing/raytrace.jl")
 ##include("./ray_tracing/ray_trace_low_level.jl")
 
-# SVector.jl
+# log
+export log_timestamps
+# constants
+export minimum_ray_segment_length
+# SVector
 export distance, inv, norm², normalize
-# Edge.jl
+# Edge
 export Edge, Edge2D, Edge3D
-# Face.jl
+# Face
 export Face, Face2D, Face3D
-# Cell.jl
+# Cell
 export Cell
-# Point.jl
+# Point
 export Point, Point1D, Point2D, Point3D, +, -, *, /, ⋅, ×, ==, ≈, distance,
        distance², midpoint, nan, norm, norm²
 # LineSegment
@@ -92,6 +99,12 @@ export QuadraticPolyhedron, QuadraticTetrahedron, QuadraticHexahedron
 # jacobian
 const 𝗝 = jacobian
 export jacobian, 𝗝
+# gauss_legendre_quadrature
+export gauss_legendre_quadrature, triangular_gauss_legendre_quadrature
+# triangulate
+export triangulate
+# measure
+export measure
 
 # Structs/Types
 #export 

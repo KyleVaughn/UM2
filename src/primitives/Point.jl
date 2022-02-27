@@ -1,7 +1,7 @@
 """
     Point{Dim, T}(x...)
 
-Construct a `Dim`-dimensional point with data of type `T`. 
+Construct a `Dim`-dimensional `Point` with data of type `T`. 
 Constructors may drop the `Dim` and `T` parameters if they are inferrable from the
 input (e.g. `Point(1,2,3)` constructs an `Point{3, Int64}`).
 """

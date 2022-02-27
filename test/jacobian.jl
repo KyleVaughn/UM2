@@ -11,6 +11,30 @@
         end
     end
 
+    @testset "Quadrilateral" begin
+        for T in [Float32, Float64, BigFloat]
+            p₁ = Point3D{T}(0, 0, 0)
+            p₂ = Point3D{T}(0, 1, 0)
+            p₃ = Point3D{T}(0, 1, 1)
+            p₄ = Point3D{T}(0, 0, 1)
+            quad = Quadrilateral(p₁, p₂, p₃, p₄) 
+            J = jacobian(quad, 0, 0)
+            @test abs(J[1]) < 1e-6
+            @test J[2] ≈ 1
+            @test abs(J[3]) < 1e-6
+            @test abs(J[4]) < 1e-6
+            @test abs(J[5]) < 1e-6
+            @test J[6] ≈ 1
+            J = jacobian(quad, 1//2, 1//2)
+            @test abs(J[1]) < 1e-6
+            @test J[2] ≈ 1
+            @test abs(J[3]) < 1e-6
+            @test abs(J[4]) < 1e-6
+            @test abs(J[5]) < 1e-6
+            @test J[6] ≈ 1
+        end
+    end
+
     @testset "QuadraticTriangle" begin
         for T in [Float32, Float64, BigFloat]
             p₁ = Point2D{T}(0, 0)

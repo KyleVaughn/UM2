@@ -1,7 +1,7 @@
 """
     AABox(minima::Point{Dim, T}, maxima::Point{Dim, T})
 
-Construct a `Dim`-dimensional axis-aligned bounding box using two Dim`-dimensional
+Construct a `Dim`-dimensional axis-aligned bounding box using two `Dim`-dimensional
 points, representing the minima and maxima of the box. 
 """
 struct AABox{Dim, T}

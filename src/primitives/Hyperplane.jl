@@ -3,7 +3,7 @@
     Hyperplane(a::Point2D, b::Point2D)
     Hyperplane(a::Point3D, b::Point3D, c::Point3D)
 
-Construct a hyperplane in `Dim`-dimensional space that satisfies 𝘅 ⋅𝗻̂ = d, where 
+Construct a `Hyperplane` in `Dim`-dimensional space that satisfies 𝘅 ⋅𝗻̂ = d, where 
 𝘅 is a `Dim`-dimensional point and 𝗻̂ is the unit normal to the plane.
 """
 struct Hyperplane{Dim, T}

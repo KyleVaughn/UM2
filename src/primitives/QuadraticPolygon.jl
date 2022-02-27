@@ -2,7 +2,7 @@
     QuadraticPolygon(SVector{N, Point{Dim, T}})
     QuadraticPolygon(p₁::Point{Dim, T}}, p₂::Point{Dim, T}}, ...)
 
-Construct a quadratic polygon with `N` counter-clockwise oriented vertices in 
+Construct a `QuadraticPolygon` with `N` counter-clockwise oriented vertices in 
 `Dim`-dimensional space. Several aliases exist for convenience, e.g. 
 QuadraticTriangle (`N`=6), QuadraticQuadrilateral (`N`=8), etc.
 

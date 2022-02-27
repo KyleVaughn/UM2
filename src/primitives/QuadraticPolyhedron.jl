@@ -2,7 +2,7 @@
     QuadraticPolyhedron(SVector{N, Point3D{T}})
     QuadraticPolyhedron(p₁::Point3D{T}}, p₂::Point3D{T}}, ...)
 
-Construct a quadratic polyhedron with `N` vertices. Note this struct only supports the
+Construct a `QuadraticPolyhedron` with `N` vertices. Note this struct only supports the
 polyhedra found in "The Visualization Toolkit: An Object-Oriented Approach to 3D 
 Graphics, 4th Edition, Chapter 8, Advanced Data Representation". See this source for 
 the indexing of points as well. Several aliases exist for convenience, e.g. 
