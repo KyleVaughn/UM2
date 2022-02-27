@@ -53,6 +53,6 @@ end
 
 function unit_QuadraticTriangle3D(::Type{T}) where {T}
     return QuadraticTriangle(Point3D{T}(0,0,0), Point3D{T}(1,0,0), Point3D{T}(0,1,0),
-                             Point3D{T}(1//2,0,1//2), Point3D{T}(1//2,0,0), 
-                             Point3D{T}(0,1,1//2))
+                             Point3D{T}(1//2,0,1//2), Point3D{T}(1//2,1//2,0), 
+                             Point3D{T}(0,1//2,1//2))
 end
