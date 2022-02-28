@@ -15,7 +15,7 @@ using Dates: now, format
 using LoggingExtras: TransformerLogger, global_logger
 
 import AbstractTrees: Leaves, children, print_tree
-import Base: +, -, *, /, ==, ≈, intersect, sort, sort!
+import Base: +, -, *, /, ==, ≈, intersect, sort, sort!, split
 import LinearAlgebra: ×, ⋅, norm, inv
 
 include(path_to_gmsh_api)
@@ -92,7 +92,7 @@ export QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, isstraight
 # Hyperplane
 export Hyperplane, Hyperplane2D, Hyperplane3D 
 # AABox
-export AABox, AABox2D, AABox3D, Δx, Δy, Δz
+export AABox, AABox2D, AABox3D, Δx, Δy, Δz, split
 # ConvexPolygon
 export ConvexPolygon, Triangle, Triangle2D, Triangle3D, Quadrilateral, Quadrilateral2D,
        Quadrilateral3D
