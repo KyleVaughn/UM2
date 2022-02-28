@@ -175,7 +175,13 @@ if enable_visualization
                    record
     import GLMakie: linesegments, linesegments!, mesh, mesh!, scatter, scatter!, 
                     convert_arguments
-    include("plot.jl")
+    include("plot/Point.jl")
+    include("plot/LineSegment.jl")
+    include("plot/QuadraticSegment.jl")
+    include("plot/ConvexPolygon.jl")
+    include("plot/AABox.jl")
+    include("plot/QuadraticPolygon.jl")
+
     export Figure, Axis, Axis3
     export scatter, linesegments, mesh,
            scatter!, linesegments!, mesh!
