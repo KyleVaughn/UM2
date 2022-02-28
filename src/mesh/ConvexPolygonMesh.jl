@@ -1,52 +1,52 @@
-struct QuadraticPolygonMesh{T, U} <:QuadraticUnstructuredMesh2D{T, U}
+struct ConvexPolygonMesh{T, U} <:LinearUnstructuredMesh2D{T, U}
     name::String
     points::Vector{Point2D{T}}
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
     face_sets::Dict{String, BitSet}
 end
 
-function QuadraticPolygonMesh{T, U}(;
+function ConvexPolygonMesh{T, U}(;
     name::String = "default_name",
     points::Vector{Point2D{T}} = Point2D{T}[],
-    faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{6, U}[],
+    faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{3, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {T, U}
-    return QuadraticPolygonMesh(name, points, faces, face_sets)
+    return ConvexPolygonMesh(name, points, faces, face_sets)
 end
 
-struct QuadraticTriangleMesh{T, U} <:QuadraticUnstructuredMesh2D{T, U}
+struct TriangleMesh{T, U} <:LinearUnstructuredMesh2D{T, U}
     name::String
     points::Vector{Point2D{T}}
-    faces::Vector{SVector{6, U}}
+    faces::Vector{SVector{3, U}}
     face_sets::Dict{String, BitSet}
 end
 
-function QuadraticTriangleMesh{T, U}(;
+function TriangleMesh{T, U}(;
     name::String = "default_name",
     points::Vector{Point2D{T}} = Point2D{T}[],
-    faces::Vector{SVector{6, U}} = SVector{6, U}[],
+    faces::Vector{SVector{3, U}} = SVector{3, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {T, U}
-    return QuadraticTriangleMesh(name, points, faces, face_sets)
+    return TriangleMesh(name, points, faces, face_sets)
 end
- 
-struct QuadraticQuadrilateralMesh{T, U} <:QuadraticUnstructuredMesh2D{T, U}
+
+struct QuadrilateralMesh{T, U} <:LinearUnstructuredMesh2D{T, U}
     name::String
     points::Vector{Point2D{T}}
-    faces::Vector{SVector{8, U}}
+    faces::Vector{SVector{4, U}}
     face_sets::Dict{String, BitSet}
 end
 
-function QuadraticQuadrilateralMesh{T, U}(;
+function QuadrilateralMesh{T, U}(;
     name::String = "default_name",
     points::Vector{Point2D{T}} = Point2D{T}[],
-    faces::Vector{SVector{8, U}} = SVector{8, U}[],
+    faces::Vector{SVector{4, U}} = SVector{4, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {T, U}
-    return QuadraticQuadrilateralMesh(name, points, faces, face_sets)
+    return QuadrilateralMesh(name, points, faces, face_sets)
 end
 
-function Base.show(io::IO, mesh::QuadraticPolygonMesh)
+function Base.show(io::IO, mesh::ConvexPolygonMesh)
     mesh_type = typeof(mesh)
     println(io, mesh_type)
     println(io, "  ├─ Name      : $(mesh.name)")
@@ -59,7 +59,7 @@ function Base.show(io::IO, mesh::QuadraticPolygonMesh)
     end
     println(io, "  ├─ Points    : $(length(mesh.points))")
     println(io, "  ├─ Faces     : $(length(mesh.faces))")
-    println(io, "  │  ├─ Triangle       : $(count(x->x isa SVector{6},  mesh.faces))")
-    println(io, "  │  └─ Quadrilateral  : $(count(x->x isa SVector{8},  mesh.faces))")
+    println(io, "  │  ├─ Triangle       : $(count(x->x isa SVector{3},  mesh.faces))")
+    println(io, "  │  └─ Quadrilateral  : $(count(x->x isa SVector{4},  mesh.faces))")
     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
 end

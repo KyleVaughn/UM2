@@ -67,7 +67,7 @@
         end
     end
 
-    @testset "QuadraticTriangle" begin
+    @testset "QuadraticQuadrilateral" begin
         for T in [Float32, Float64, BigFloat]
             p₁ = Point2D{T}(0, 0)
             p₂ = Point2D{T}(1, 0)

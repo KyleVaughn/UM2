@@ -78,35 +78,21 @@ function measure(poly::QuadraticPolygon{N,2,T}) where {N,T}
     return (4h - l)/6
 end
  
-# # The area integral for 3D quadratic triangles and quadrilaterals appears to have an
-# # analytic solution, but it involves finding the roots of a quartic polynomial, then 
-# # integrating over the square root of the factored quartic polynomial. 
-# # This has a solution in the form of elliptic integrals (See Byrd and Friedman's
-# # Handbook of Elliptic Integrals for Engineers and Scientists, 2nd edition, 
-# # equation 251.38), but it's absolutely massive. There may be simplifications after
-# # the fact that reduce the size of the expression, but for now numerical integration is 
-# # quicker.
-# function area(quad8::QuadraticQuadrilateral3D{T}, ::Val{N}) where {T, N}
-#     # Gauss-Legendre quadrature over a quadrilateral is used.
-#     # Let Q(r,s) be the interpolation function for quad8,
-#     #     1 1                          N   N
-#     # A = ∫ ∫ ‖∂Q/∂r × ∂Q/∂s‖ ds dr =  ∑   ∑  wᵢwⱼ‖∂Q/∂r(rᵢ,sⱼ) × ∂Q/∂s(rᵢ,sⱼ)‖
-#     #     0 0                         i=1 j=1
-#     w, r = gauss_legendre_quadrature(T, Val(N))
-#     A = zero(T)
-#     for j ∈ 1:N, i ∈ 1:N 
-#         J = 𝗝(quad8, r[i], r[j]) 
-#         A += w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2)) 
-#     end 
-#     return A
-# end
+# The area integral for 3D quadratic triangles and quadrilaterals appears to have an
+# analytic solution, but it involves finding the roots of a quartic polynomial, then 
+# integrating over the square root of the factored quartic polynomial. 
+# This has a solution in the form of elliptic integrals (See Byrd and Friedman's
+# Handbook of Elliptic Integrals for Engineers and Scientists, 2nd edition, 
+# equation 251.38), but it's absolutely massive. There may be simplifications after
+# the fact that reduce the size of the expression, but for now numerical integration 
+# is used.
 function measure(tri6::QuadraticTriangle3D{T}) where {T} 
     # Gauss-Legendre quadrature over a triangle is used.
     # Let F(r,s) be the interpolation function for tri6,
     #            1 1-r                       N                
     # A = ∬ dA = ∫  ∫ ‖∂F/∂r × ∂F/∂s‖ds dr = ∑ wᵢ‖∂F/∂r(rᵢ,sᵢ) × ∂F/∂s(rᵢ,sᵢ)‖
     #     S      0  0                       i=1
-    N = 48
+    N = 79
     w, r, s = triangular_gauss_legendre_quadrature(T, Val(N))
     A = zero(T)
     for i ∈ 1:N
@@ -115,6 +101,23 @@ function measure(tri6::QuadraticTriangle3D{T}) where {T}
     end
     return A
 end
+
+function measure(quad8::QuadraticQuadrilateral3D{T}) where {T}
+    # Gauss-Legendre quadrature over a quadrilateral is used.
+    # Let F(r,s) be the interpolation function for quad8,
+    #     1 1                          N   N
+    # A = ∫ ∫ ‖∂F/∂r × ∂F/∂s‖ ds dr =  ∑   ∑  wᵢwⱼ‖∂F/∂r(rᵢ,sⱼ) × ∂F/∂s(rᵢ,sⱼ)‖
+    #     0 0                         i=1 j=1
+    N = 15
+    w, r = gauss_legendre_quadrature(T, Val(N))
+    A = zero(T)
+    for j ∈ 1:N, i ∈ 1:N 
+        J = 𝗝(quad8, r[i], r[j]) 
+        A += w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2)) 
+    end 
+    return A
+end
+
 # 
 # # Return the area of face id
 # function area(id, mesh::UnstructuredMesh)

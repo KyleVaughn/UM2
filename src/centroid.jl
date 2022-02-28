@@ -14,19 +14,6 @@ function centroid(poly::Polygon{N, 2, T}) where {N, T}
     a += subarea
     return Point(c/(3a))
 end
-# Not necessarily planar
-## (https://en.wikipedia.org/wiki/Centroid#By_geometric_decomposition)
-#function centroid(poly::Polygon{N, 3, T}) where {N, T}
-#    # Decompose into triangles
-#    a = zero(T)
-#    c = SVector{3,T}(0,0,0)
-#    for i ∈ 1:N-2
-#        subarea = norm((poly[i+1] - poly[1]) × (poly[i+2] - poly[1]))
-#        c += subarea*(poly[1] + poly[i+1] + poly[i+2])
-#        a += subarea
-#    end
-#    return Point(c/(3a))
-#end
 
 centroid(tri::Triangle2D) = Point((tri[1] + tri[2] + tri[3])/3)
 centroid(tri::Triangle3D) = Point((tri[1] + tri[2] + tri[3])/3)

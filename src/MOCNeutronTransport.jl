@@ -14,6 +14,7 @@ using StaticArrays
 using Dates: now, format
 using LoggingExtras: TransformerLogger, global_logger
 
+import AbstractTrees: Leaves, children, print_tree
 import Base: +, -, *, /, ==, ≈, intersect, sort, sort!
 import LinearAlgebra: ×, ⋅, norm, inv
 
@@ -34,6 +35,10 @@ include("primitives/ConvexPolygon.jl")
 include("primitives/QuadraticPolygon.jl")
 include("primitives/ConvexPolyhedron.jl")
 include("primitives/QuadraticPolyhedron.jl")
+include("mesh/UnstructuredMesh.jl")
+include("mesh/ConvexPolygonMesh.jl")
+include("mesh/QuadraticPolygonMesh.jl")
+include("MPACT/MPACTCoreGeomTree2D.jl")
 include("interpolation.jl")
 include("jacobian.jl")
 include("gauss_legendre_quadrature.jl")
@@ -42,7 +47,7 @@ include("measure.jl")
 # only need to worry about dampening for intersection with 
 # quadratic faces in 3D
 #
-
+# TODO: centroid.jl, boundingbox.jl, cartesian_to_parametric.jl
 
 #include("operators.jl")
 #include("./gmsh/gmsh_generate_rectangular_grid.jl")
@@ -63,6 +68,8 @@ include("measure.jl")
 ##include("./raytracing/raytrace.jl")
 ##include("./ray_tracing/ray_trace_low_level.jl")
 
+# AbstractTrees
+export Leaves, children, print_tree 
 # log
 export log_timestamps
 # constants
@@ -81,7 +88,7 @@ export Point, Point1D, Point2D, Point3D, +, -, *, /, ⋅, ×, ==, ≈, distance,
 # LineSegment
 export LineSegment, LineSegment2D, LineSegment3D
 # QuadraticSegment
-export  QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, isstraight
+export QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, isstraight
 # Hyperplane
 export Hyperplane, Hyperplane2D, Hyperplane3D 
 # AABox
@@ -96,6 +103,17 @@ export QuadraticPolygon, QuadraticTriangle, QuadraticTriangle2D, QuadraticTriang
 export ConvexPolyhedron, Tetrahedron, Hexahedron
 # QuadraticPolyhedron
 export QuadraticPolyhedron, QuadraticTetrahedron, QuadraticHexahedron
+# UnstructuredMesh
+export UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D, 
+       LinearUnstructuredMesh, LinearUnstructuredMesh2D, LinearUnstructuredMesh3D,
+       QuadraticUnstructuredMesh, QuadraticUnstructuredMesh2D, 
+       QuadraticUnstructuredMesh3D 
+# ConvexPolygonMesh
+export ConvexPolygonMesh, TriangleMesh, QuadrilateralMesh
+# QuadraticPolygonMesh
+export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
+# MPACTCoreGeomTree2D
+export MPACTCoreGeomTree2D
 # jacobian
 const 𝗝 = jacobian
 export jacobian, 𝗝
@@ -114,7 +132,7 @@ export measure
 #        QuadraticPolygonMesh,
 #       QuadraticTriangleMesh, QuadraticQuadrilateralMesh, 
 #       Tree,  TriangleMesh,
-#       UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D
+#       
 
 # Convenience operators
 #const 𝗗 = derivative
@@ -126,10 +144,6 @@ export measure
 #export 𝗝
 
 # Methods
-#export arclength, area, 
-#       boundingbox, 
-#       centroid, 
-#       depth, derivative, distance, distance², 
 #       edgepoints, edges, edge_face_connectivity, 
 #       facepoints, face_edge_connectivity,
 #       gauss_legendre_quadrature, 
@@ -155,17 +169,17 @@ export measure
 #       gmsh_group_preserving_fragment,
 #       gmsh_overlay_rectangular_grid
 # 
-## Plot
-#if enable_visualization
-#    export Figure, Axis, Axis3
-#    export scatter, linesegments, mesh,
-#           scatter!, linesegments!, mesh!
-#end
-#if enable_visualization 
-#    using GLMakie: Axis, Axis3, Figure, LineSegments, Mesh, Scatter, current_axis, record
-#    import GLMakie: linesegments, linesegments!, mesh, mesh!, scatter, scatter!, 
-#                    convert_arguments
-#end
+# Plot
+if enable_visualization
+    using GLMakie: Axis, Axis3, Figure, LineSegments, Mesh, Scatter, current_axis, 
+                   record
+    import GLMakie: linesegments, linesegments!, mesh, mesh!, scatter, scatter!, 
+                    convert_arguments
+    include("plot.jl")
+    export Figure, Axis, Axis3
+    export scatter, linesegments, mesh,
+           scatter!, linesegments!, mesh!
+end
 
 #
 end

@@ -1,7 +1,7 @@
 @testset "Triangulate" begin
     @testset "ConvexPolygon{2}" begin
         for T in [Float32, Float64, BigFloat]
-            quad = unit_Quadrilateral2D(T)
+            quad = setup_Quadrilateral2D(T)
             triangles = triangulate(quad)
             @test length(triangles) == 2
             @test triangles[1].points[1] ≈ quad[1] 
@@ -15,7 +15,7 @@
 
     @testset "Quadrilateral3D" begin
         for T in [Float32, Float64, BigFloat]
-            quad = unit_Quadrilateral3D(T)
+            quad = setup_Quadrilateral3D(T)
             triangles = triangulate(quad, Val(0))
             @test length(triangles) == 2
             @test triangles[1].points[1] ≈ quad[1] 
@@ -29,7 +29,7 @@
 
     @testset "QuadraticTriangle" begin
         for T in [Float32, Float64, BigFloat]
-            tri6 = unit_QuadraticTriangle3D(T)
+            tri6 = setup_QuadraticTriangle3D(T)
             triangles = triangulate(tri6, Val(0))
             @test length(triangles) == 1
             @test triangles[1].points[1] ≈ tri6[1] 
@@ -55,6 +55,18 @@
 
     @testset "QuadraticQuadrilateral" begin
         for T in [Float32, Float64, BigFloat]
+            quad8 = setup_QuadraticQuadrilateral3D(T)
+            triangles = triangulate(quad8, Val(0))
+            @test length(triangles) == 2
+            @test triangles[1].points[1] ≈ quad8[1] 
+            @test triangles[1].points[2] ≈ quad8[2] 
+            @test triangles[1].points[3] ≈ quad8[3] 
+            @test triangles[2].points[1] ≈ quad8[3] 
+            @test triangles[2].points[2] ≈ quad8[4] 
+            @test triangles[2].points[3] ≈ quad8[1] 
+
+            triangles = triangulate(quad8, Val(1))
+            @test length(triangles) == 8
         end
     end
 end
