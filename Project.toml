@@ -17,4 +17,4 @@ LoggingExtras = "e6f89c97-d47a-5376-807f-9c37f3926c36"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
-julia = "1.7.0"
+julia = "1.7.2"
