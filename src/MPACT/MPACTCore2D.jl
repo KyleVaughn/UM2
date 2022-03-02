@@ -22,3 +22,10 @@ struct MPACTCore2D{M, T}
     geomtree::MPACTCoreGeomTree2D{T}
     pinmeshes::Vector{M}
 end
+
+# Spit out the MPACT Core 2D into xdmf so that you can start from there next time
+
+function interactive_MPACTCore2D_generator()
+    # Assume CAD model has already been imported
+
+end

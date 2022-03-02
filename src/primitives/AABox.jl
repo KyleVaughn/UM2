@@ -31,6 +31,52 @@ function Base.getproperty(aab::AABox, sym::Symbol)
 end
 
 AABox{Dim}(p₁::Point{Dim, T}, p₂::Point{Dim, T}) where {Dim, T} = AABox{Dim, T}(p₁, p₂)
+# AABox3D from 2 NTuple{3} points
+function AABox{3, T}(p₁::NTuple{3}, p₂::NTuple{3}) where {T}
+    return AABox{3, T}(Point3D{T}(p₁[1], p₁[2], p₁[3]), 
+                       Point3D{T}(p₂[1], p₂[2], p₂[3]))
+end
+function AABox{3}(p₁::NTuple{3, T}, p₂::NTuple{3, T}) where {T}
+    return AABox{3, T}(Point3D{T}(p₁[1], p₁[2], p₁[3]), 
+                       Point3D{T}(p₂[1], p₂[2], p₂[3]))
+end
+function AABox(p₁::NTuple{3, T}, p₂::NTuple{3, T}) where {T}
+    return AABox{3, T}(Point3D{T}(p₁[1], p₁[2], p₁[3]), 
+                       Point3D{T}(p₂[1], p₂[2], p₂[3]))
+end
+# AABox2D from 2 NTuple{2} points
+function AABox{2, T}(p₁::NTuple{2}, p₂::NTuple{2}) where {T}
+    return AABox{2, T}(Point(p₁[1], p₁[2]), 
+                       Point(p₂[1], p₂[2]))
+end
+function AABox{2}(p₁::NTuple{2, T}, p₂::NTuple{2, T}) where {T}
+    return AABox{2, T}(Point(p₁[1], p₁[2]), 
+                       Point(p₂[1], p₂[2]))
+end
+function AABox(p₁::NTuple{2, T}, p₂::NTuple{2, T}) where {T}
+    return AABox{2, T}(Point(p₁[1], p₁[2]), 
+                       Point(p₂[1], p₂[2]))
+end
+# AABox from minima and maxima 
+function AABox{2, T}(xmin, ymin, xmax, ymax) where {T}
+    if xmax ≤ xmin || ymax ≤ ymin
+        error("Invalid AABox extrema")
+    end
+    return AABox{2, T}(Point2D{T}(xmin, ymin), Point2D{T}(xmax, ymax))
+end
+function AABox{2}(xmin::T, ymin::T, xmax::T, ymax::T) where {T}
+    if xmax ≤ xmin || ymax ≤ ymin
+        error("Invalid AABox extrema")
+    end
+    return AABox{2, T}(Point2D{T}(xmin, ymin), Point2D{T}(xmax, ymax))
+end
+function AABox(xmin::T, ymin::T, xmax::T, ymax::T) where {T}
+    if xmax ≤ xmin || ymax ≤ ymin
+        error("Invalid AABox extrema")
+    end
+    return AABox{2, T}(Point2D{T}(xmin, ymin), Point2D{T}(xmax, ymax))
+end
+
 
 @inline Δx(aab::AABox) = aab.xmax - aab.xmin
 @inline Δy(aab::AABox) = aab.ymax - aab.ymin
@@ -115,7 +161,6 @@ function split(aab::AABox2D{BigFloat}, xdiv::SVector{X, BigFloat},
         end
         return boxes
     else
-        Nbox = (X+1)*(Y+1)
         ibox = 0
         boxes = Matrix{AABox2D{BigFloat}}(undef, X+1, Y+1) 
         xdiv_sorted = sort(xdiv)
@@ -132,4 +177,8 @@ function split(aab::AABox2D{BigFloat}, xdiv::SVector{X, BigFloat},
         end
         return boxes
     end
+end
+
+function split(aab::AABox2D{T}, xdiv::Vector{T}, ydiv::Vector{T}) where {T}
+    return split(aab, SVector{length(xdiv), T}(xdiv), SVector{length(ydiv), T}(ydiv))
 end

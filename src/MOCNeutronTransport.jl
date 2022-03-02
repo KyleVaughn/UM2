@@ -38,6 +38,8 @@ include("primitives/QuadraticPolyhedron.jl")
 include("mesh/UnstructuredMesh.jl")
 include("mesh/ConvexPolygonMesh.jl")
 include("mesh/QuadraticPolygonMesh.jl")
+# gmsh
+
 include("MPACT/MPACTCoreGeomTree2D.jl")
 include("interpolation.jl")
 include("jacobian.jl")
@@ -112,7 +114,11 @@ export UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D,
 export ConvexPolygonMesh, TriangleMesh, QuadrilateralMesh
 # QuadraticPolygonMesh
 export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
+# Gmsh
+export gmsh
 # MPACTCoreGeomTree2D
+export MPACTCoreGeomTree2D
+# MPACTCore2D
 export MPACTCoreGeomTree2D
 # jacobian
 const 𝗝 = jacobian
@@ -163,8 +169,8 @@ export measure
 #       union, 
 #       width, write_xdmf2d
 #
-## Gmsh
-#export gmsh,
+
+
 #       gmsh_generate_rectangular_grid,
 #       gmsh_group_preserving_fragment,
 #       gmsh_overlay_rectangular_grid

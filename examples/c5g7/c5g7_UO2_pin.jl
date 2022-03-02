@@ -1,24 +1,23 @@
+# Lewis, E. E., et al. "Benchmark specification for Deterministic 2-D/3-D MOX fuel 
+# assembly transport calculations without spatial homogenization (C5G7 MOX)." 
+# NEA/NSC 280 (2001): 2001.
+
 using MOCNeutronTransport
 
-# Parameters
-bounding_box = (0.0, 1.26, 0.0, 1.26) # (xmin, xmax, ymin, ymax)
-pin_pitch = 1.26 # cm
-pin_radius = 0.54 # cm
-grid_material = "MATERIAL_WATER"
-grid_nx = [1]
-grid_ny = [1]
+pin_bb = AABox((0.0, 0.0), (1.0, 1.0)) # pg 3
+pin_pitch = 1.26 # pg 3
+pin_radius = 0.54 # pg 3
 mesh_char_len = 1.0
 mesh_optimization_iters = 2
 mesh_filename = "c5g7_UO2_pin.inp"
 
-# Initialize msh
-gmsh.initialize()
-
 # Geometry
-gmsh.model.occ.add_disk(pin_pitch/2.0, pin_pitch/2.0, 0.0, pin_radius, pin_radius)
+gmsh.initialize()
+gmsh.model.occ.add_disk(pin_pitch/2, pin_pitch/2, 0, pin_radius, pin_radius)
 gmsh.model.occ.synchronize()
 
 # Assign materials
+# TODO: Update to use name= optional arg when gmsh 4.10 comes out
 ptag = gmsh.model.add_physical_group(2, [1])
 gmsh.model.set_physical_name(2, ptag, "MATERIAL_UO2-3.3")
 
