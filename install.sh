@@ -39,61 +39,65 @@ if [[ $(id -u) == 0 ]]; then
         cd /usr/local
 
         # OCC
-        read -p "Do you wish to install Gmsh dependency: OpenCASCADE? " yn
-        case $yn in
-          Yes ) 
-            echo "Fetching Gmsh dependency: OpenCASCADE"
-            curl -L -o occt.tgz "http://git.dev.opencascade.org/gitweb/?p=occt.git;a=snapshot;h=refs/tags/$OCC_VERSION;sf=tgz" 
-            apt install software-properties-common libtool autoconf automake gfortran gdebi -y
-            apt install gcc-multilib libxmu-headers -y
-            apt install libx11-dev mesa-common-dev libglu1-mesa-dev -y
-            apt install libfontconfig1-dev -y
-            apt install tcllib tklib tcl-dev tk-dev libfreetype-dev libxt-dev libxmu-dev libxi-dev -y
-            apt install libgl1-mesa-dev libfreeimage-dev rapidjson-dev -y
-            apt install libtbb-dev libxi-dev libxmu-dev -y
-            apt install cmake -y
-            apt install doxygen -y
-            apt install libx11-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libxft-dev -y
-            apt install libomp-dev libalglib-dev -y
-            tar -xzvf occt.tgz
-            cd occt-$OCC_VERSION
-            mkdir build
-            cd build
-            cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TBB=1 -DBUILD_MODULE_Draw=0 \
-                  -DBUILD_MODULE_Visualization=0 -DBUILD_MODULE_ApplicationFramework=0 ..
-            make -j8
-            make install
-            cd /usr/local
-            rm occt.tgz
-            break;;
-          No )
-            break;;
-          * )
-            echo "Please answer Yes or No.";;
-        esac
+        while true; do
+          read -p "Do you wish to install Gmsh dependency: OpenCASCADE? " yn
+          case $yn in
+            Yes ) 
+              echo "Fetching Gmsh dependency: OpenCASCADE"
+              curl -L -o occt.tgz "http://git.dev.opencascade.org/gitweb/?p=occt.git;a=snapshot;h=refs/tags/$OCC_VERSION;sf=tgz" 
+              apt install software-properties-common libtool autoconf automake gfortran gdebi -y
+              apt install gcc-multilib libxmu-headers -y
+              apt install libx11-dev mesa-common-dev libglu1-mesa-dev -y
+              apt install libfontconfig1-dev -y
+              apt install tcllib tklib tcl-dev tk-dev libfreetype-dev libxt-dev libxmu-dev libxi-dev -y
+              apt install libgl1-mesa-dev libfreeimage-dev rapidjson-dev -y
+              apt install libtbb-dev libxi-dev libxmu-dev -y
+              apt install cmake -y
+              apt install doxygen -y
+              apt install libx11-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libxft-dev -y
+              apt install libomp-dev libalglib-dev -y
+              tar -xzvf occt.tgz
+              cd occt-$OCC_VERSION
+              mkdir build
+              cd build
+              cmake -DCMAKE_BUILD_TYPE=Release -DUSE_TBB=1 -DBUILD_MODULE_Draw=0 \
+                    -DBUILD_MODULE_Visualization=0 -DBUILD_MODULE_ApplicationFramework=0 ..
+              make -j8
+              make install
+              cd /usr/local
+              rm occt.tgz
+              break;;
+            No )
+              break;;
+            * )
+              echo "Please answer Yes or No.";;
+          esac
+        done
 
         # FLTK
-        read -p "Do you wish to install Gmsh dependency FLTK? " yn
-        case $yn in
-          Yes ) 
-            echo "Fetching Gmsh dependency: FLTK"
-            curl -O https://www.fltk.org/pub/fltk/$FLTK_VERSION/fltk-$FLTK_VERSION-source.tar.gz 
-            tar -xzvf fltk-$FLTK_VERSION-source.tar.gz
-            cd fltk-$FLTK_VERSION
-            mkdir build
-            cd build
-            cmake -DCMAKE_POSITION_INDEPENDENT_CODE=0 -DOPTION_BUILD_SHARED_LIBS=0 ..
-            #./configure --enable-shared --enable-threads
-            make -j8
-            make install
-            cd /usr/local
-            rm fltk-$FLTK_VERSION-source.tar.gz
-            break;;
-          No )
-            break;;
-          * )
-            echo "Please answer Yes or No.";;
-        esac
+        while true; do
+          read -p "Do you wish to install Gmsh dependency: FLTK? " yn
+          case $yn in
+            Yes ) 
+              echo "Fetching Gmsh dependency: FLTK"
+              curl -O https://www.fltk.org/pub/fltk/$FLTK_VERSION/fltk-$FLTK_VERSION-source.tar.gz 
+              tar -xzvf fltk-$FLTK_VERSION-source.tar.gz
+              cd fltk-$FLTK_VERSION
+              mkdir build
+              cd build
+              cmake -DCMAKE_POSITION_INDEPENDENT_CODE=0 -DOPTION_BUILD_SHARED_LIBS=0 ..
+              #./configure --enable-shared --enable-threads
+              make -j8
+              make install
+              cd /usr/local
+              rm fltk-$FLTK_VERSION-source.tar.gz
+              break;;
+            No )
+              break;;
+            * )
+              echo "Please answer Yes or No.";;
+          esac
+        done
 
         # Gmsh
         echo "Fetching Gmsh"
@@ -108,7 +112,8 @@ if [[ $(id -u) == 0 ]]; then
         cd /usr/local
         rm gmsh-$GMSH_VERSION-source.tgz
         # Append the Gmsh julia API install location to bashrc
-        echo ""export JULIA_LOAD_PATH=\$\{JULIA_LOAD_PATH\}:/usr/local/lib"" >> ~/.bashrc
+        echo "Be sure to add the following to your .bashrc:"
+        echo ""export JULIA_LOAD_PATH=\$\{JULIA_LOAD_PATH\}:/usr/local/lib""
         cd $start_dir
         break;;
       No ) 
@@ -122,7 +127,7 @@ if [[ $(id -u) == 0 ]]; then
     read -p "Do you wish to install Paraview? " yn
     case $yn in
       Yes ) 
-        apt install paraview
+        apt install paraview -y
         break;;
       No ) 
         break;;
@@ -131,9 +136,9 @@ if [[ $(id -u) == 0 ]]; then
     esac
   done
   
-  echo "Adding package to Julia's path and precompiling"
-  julia -e 'using Pkg; Pkg.develop(PackageSpec(path = "/home/kcvaughn/Desktop/MOCNeutronTransport"))'
-  julia -e 'using MOCNeutronTransport'
+  echo "Remember to add the package to Julia's path and precompile with:"
+  echo "julia -e 'using Pkg; Pkg.develop(PackageSpec(path = \"$start_dir/MOCNeutronTransport\"))'"
+  echo "julia -e 'using MOCNeutronTransport'"
   echo "NOTE: You may need to source your ~/.bashrc in order for the Gmsh Julia API to work"
   echo "This may affect the next question."
   while true; do
