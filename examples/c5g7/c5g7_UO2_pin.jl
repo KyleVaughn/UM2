@@ -25,6 +25,7 @@ gmsh.model.set_physical_name(2, ptag, "MATERIAL_UO2")
 
 # Overlay grid
 # ---------------------------------------------------------------------------------------
+# Finemesh
 core_bb = lattice_bb = raytracing_module = pin_bb = AAB(pin_pitch, pin_pitch)
 # A single pin cell
 cell = MPACTCoarseCell(pin_bb) 

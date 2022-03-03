@@ -123,7 +123,7 @@ export MPACTRayTracingModule, MPACTRayTracingModules
 # MPACTLattice
 export MPACTLattice, MPACTLattices
 # MPACTCore2D
-export MPACTCore2D, validate_core
+export MPACTCore2D, validate_core_partition
 # jacobian
 const 𝗝 = jacobian
 export jacobian, 𝗝

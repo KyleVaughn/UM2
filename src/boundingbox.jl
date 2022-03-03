@@ -161,5 +161,5 @@ end
 
 # Axis-aligned bounding box
 function boundingbox(mesh::QuadraticUnstructuredMesh)
-    return union(boundingbox.(materialize_edges(mesh)))
+    return mapreduce(x->boundingbox(x), union, materialize_edges(mesh))
 end
