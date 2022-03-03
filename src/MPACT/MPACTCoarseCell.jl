@@ -4,11 +4,11 @@ struct MPACTCoarseCell
     id::UInt32 # global id
 end
 
-function MPACTCoarseCell(bb::AABox2D)
+const MPACTCoarseCells = MPACTCoarseCell[] 
+
+function MPACTCoarseCell(bb::AABox2D{F}, finemesh_id::UInt32=0x00000000)
     ncells = length(MPACTCoarseCells)
-    cell = MPACTCoarseCell(bb, 0x00000000, UInt32(ncells + 1))
+    cell = MPACTCoarseCell(bb, finemesh_id, UInt32(ncells + 1))
     push!(MPACTCoarseCells, cell)
     return MPACTCoarseCells[ncells + 1]
 end
-
-const MPACTCoarseCells = MPACTCoarseCell[] 

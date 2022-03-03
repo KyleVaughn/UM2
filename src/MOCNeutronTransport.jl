@@ -39,6 +39,8 @@ include("mesh/UnstructuredMesh.jl")
 include("mesh/ConvexPolygonMesh.jl")
 include("mesh/QuadraticPolygonMesh.jl")
 include("MPACT/MPACTCoarseCell.jl")
+include("MPACT/MPACTRayTracingModule.jl")
+include("MPACT/MPACTLattice.jl")
 
 
 # gmsh
@@ -119,6 +121,10 @@ export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
 export gmsh
 # MPACTCoarseCell
 export MPACTCoarseCell, MPACTCoarseCells
+# MPACTRayTracingModule
+export MPACTRayTracingModule, MPACTRayTracingModules
+# MPACTLattice
+export MPACTLattice, MPACTLattices
 # jacobian
 const 𝗝 = jacobian
 export jacobian, 𝗝
