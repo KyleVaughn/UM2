@@ -71,6 +71,8 @@ include("measure.jl")
 ##include("./raytracing/raytrace.jl")
 ##include("./ray_tracing/ray_trace_low_level.jl")
 
+# Float type
+export F
 # log
 export log_timestamps
 # constants
@@ -116,7 +118,7 @@ export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
 # Gmsh
 export gmsh
 # MPACTCoarseCell
-#export MPACTCoarseCell
+export MPACTCoarseCell, MPACTCoarseCells
 # jacobian
 const 𝗝 = jacobian
 export jacobian, 𝗝
