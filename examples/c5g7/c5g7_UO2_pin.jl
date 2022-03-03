@@ -4,7 +4,7 @@
 
 using MOCNeutronTransport
 
-const AAB = AABox2D{F}
+const AAB = AABox2D{Float64}
 const pin_pitch = 1.26 # pg 3
 const pin_radius = 0.54 # pg 3
 mesh_char_len = 1.0
@@ -32,14 +32,7 @@ cell = MPACTCoarseCell(pin_bb)
 rt_module = MPACTRayTracingModule(raytracing_module, [cell.id;;])
 # A single 1x1 lattice
 lattice = MPACTLattice(lattice_bb, [rt_module.id;;])
-
-coarse_cell_grid = [[pin_bb;;];;]
-MPACT_grid = MPACTGridOverlay2D(core_bb, 
-                                lattice_grid, 
-                                raytracing_module, 
-                                coarse_cell_grid) 
-
-
+core = MPACTCore2D(core_bb, [lattice.id;;])
 
 gmsh_overlay_rectangular_grid(bounding_box, grid_material, grid_nx, grid_ny)
 

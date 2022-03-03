@@ -97,6 +97,14 @@ function AABox(xmax::T, ymax::T) where {T<:Number}
     return AABox{2, T}(Point2D{T}(0, 0), Point2D{T}(xmax, ymax))
 end
 
+≈(box₁::AABox, box₂::AABox) = box₁.minima ≈ box₂.minima && box₁.maxima ≈ box₂.maxima 
+
+# Return the AABox which contains both bb₁ and bb₂
+function Base.union(bb₁::AABox{Dim, T}, bb₂::AABox{Dim, T}) where {Dim, T}
+    return AABox(Point{Dim, T}(min.(bb₁.minima.coord, bb₂.minima.coord)),
+                 Point{Dim, T}(max.(bb₁.maxima.coord, bb₂.maxima.coord)))
+end
+
 @inline Δx(aab::AABox) = aab.xmax - aab.xmin
 @inline Δy(aab::AABox) = aab.ymax - aab.ymin
 @inline Δz(aab::AABox) = aab.zmax - aab.zmin

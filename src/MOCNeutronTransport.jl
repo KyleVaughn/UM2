@@ -1,6 +1,6 @@
 module MOCNeutronTransport
 
-const F = Float64
+const minimum_ray_segment_length = 1e-4 # 1μm
 const path_to_gmsh_api = "/usr/local/lib/gmsh.jl"
 const enable_visualization = true
 const visualize_ray_tracing = false 
@@ -14,14 +14,12 @@ using StaticArrays
 using Dates: now, format
 using LoggingExtras: TransformerLogger, global_logger
 
-import AbstractTrees: Leaves, children, print_tree
 import Base: +, -, *, /, ==, ≈, intersect, sort, sort!, split
 import LinearAlgebra: ×, ⋅, norm, inv
 
 include(path_to_gmsh_api)
 
 include("log.jl")
-include("constants.jl")
 include("SVector.jl")
 include("primitives/Edge.jl")
 include("primitives/Face.jl")
@@ -41,9 +39,10 @@ include("mesh/QuadraticPolygonMesh.jl")
 include("MPACT/MPACTCoarseCell.jl")
 include("MPACT/MPACTRayTracingModule.jl")
 include("MPACT/MPACTLattice.jl")
-
+include("MPACT/MPACTCore2D.jl")
 
 # gmsh
+include("rand.jl")
 include("interpolation.jl")
 include("jacobian.jl")
 include("gauss_legendre_quadrature.jl")
@@ -73,8 +72,6 @@ include("measure.jl")
 ##include("./raytracing/raytrace.jl")
 ##include("./ray_tracing/ray_trace_low_level.jl")
 
-# Float type
-export F
 # log
 export log_timestamps
 # constants
@@ -125,6 +122,8 @@ export MPACTCoarseCell, MPACTCoarseCells
 export MPACTRayTracingModule, MPACTRayTracingModules
 # MPACTLattice
 export MPACTLattice, MPACTLattices
+# MPACTCore2D
+export MPACTCore2D, validate_core
 # jacobian
 const 𝗝 = jacobian
 export jacobian, 𝗝
