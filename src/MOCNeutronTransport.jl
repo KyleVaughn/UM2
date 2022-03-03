@@ -1,10 +1,10 @@
 module MOCNeutronTransport
 
+const F = Float64
 const path_to_gmsh_api = "/usr/local/lib/gmsh.jl"
 const enable_visualization = true
 const visualize_ray_tracing = false 
 
-using AbstractTrees
 using CUDA
 using Logging
 using HDF5
@@ -38,9 +38,10 @@ include("primitives/QuadraticPolyhedron.jl")
 include("mesh/UnstructuredMesh.jl")
 include("mesh/ConvexPolygonMesh.jl")
 include("mesh/QuadraticPolygonMesh.jl")
-# gmsh
+include("MPACT/MPACTCoarseCell.jl")
 
-include("MPACT/MPACTCoreGeomTree2D.jl")
+
+# gmsh
 include("interpolation.jl")
 include("jacobian.jl")
 include("gauss_legendre_quadrature.jl")
@@ -70,8 +71,6 @@ include("measure.jl")
 ##include("./raytracing/raytrace.jl")
 ##include("./ray_tracing/ray_trace_low_level.jl")
 
-# AbstractTrees
-export Leaves, children, print_tree 
 # log
 export log_timestamps
 # constants
@@ -116,10 +115,8 @@ export ConvexPolygonMesh, TriangleMesh, QuadrilateralMesh
 export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
 # Gmsh
 export gmsh
-# MPACTCoreGeomTree2D
-export MPACTCoreGeomTree2D
-# MPACTCore2D
-export MPACTCoreGeomTree2D
+# MPACTCoarseCell
+#export MPACTCoarseCell
 # jacobian
 const 𝗝 = jacobian
 export jacobian, 𝗝

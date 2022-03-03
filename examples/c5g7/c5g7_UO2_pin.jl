@@ -4,9 +4,9 @@
 
 using MOCNeutronTransport
 
-pin_bb = AABox((0.0, 0.0), (1.0, 1.0)) # pg 3
-pin_pitch = 1.26 # pg 3
-pin_radius = 0.54 # pg 3
+const AAB = AABox2D{Float64}
+const pin_pitch = 1.26 # pg 3
+const pin_radius = 0.54 # pg 3
 mesh_char_len = 1.0
 mesh_optimization_iters = 2
 mesh_filename = "c5g7_UO2_pin.inp"
@@ -19,9 +19,20 @@ gmsh.model.occ.synchronize()
 # Assign materials
 # TODO: Update to use name= optional arg when gmsh 4.10 comes out
 ptag = gmsh.model.add_physical_group(2, [1])
-gmsh.model.set_physical_name(2, ptag, "MATERIAL_UO2-3.3")
+gmsh.model.set_physical_name(2, ptag, "MATERIAL_UO2")
 
 # Overlay grid
+core_bb = lattice_bb = raytracing_module = pin_bb = AAB(pin_pitch, pin_pitch)
+cell = MPACTCoarseCell(pin_bb) 
+lattice = MPACTLattice
+coarse_cell_grid = [[pin_bb;;];;]
+MPACT_grid = MPACTGridOverlay2D(core_bb, 
+                                lattice_grid, 
+                                raytracing_module, 
+                                coarse_cell_grid) 
+
+
+
 gmsh_overlay_rectangular_grid(bounding_box, grid_material, grid_nx, grid_ny)
 
 # Visualize geometry prior to meshing

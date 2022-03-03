@@ -77,6 +77,25 @@ function AABox(xmin::T, ymin::T, xmax::T, ymax::T) where {T}
     return AABox{2, T}(Point2D{T}(xmin, ymin), Point2D{T}(xmax, ymax))
 end
 
+# AABox with minima at (0, 0)
+function AABox{2, T}(xmax::N1, ymax::N1) where {T, N1 <: Number, N2 <: Number}
+    if xmax ≤ 0 || ymax ≤ 0
+        error("Invalid AABox extrema")
+    end
+    return AABox{2, T}(Point2D{T}(0, 0), Point2D{T}(xmax, ymax))
+end
+function AABox{2}(xmax::T, ymax::T) where {T<:Number}
+    if xmax ≤ 0 || ymax ≤ 0
+        error("Invalid AABox extrema")
+    end
+    return AABox{2, T}(Point2D{T}(0, 0), Point2D{T}(xmax, ymax))
+end
+function AABox(xmax::T, ymax::T) where {T<:Number}
+    if xmax ≤ 0 || ymax ≤ 0
+        error("Invalid AABox extrema")
+    end
+    return AABox{2, T}(Point2D{T}(0, 0), Point2D{T}(xmax, ymax))
+end
 
 @inline Δx(aab::AABox) = aab.xmax - aab.xmin
 @inline Δy(aab::AABox) = aab.ymax - aab.ymin
