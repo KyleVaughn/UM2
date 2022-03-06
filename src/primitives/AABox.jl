@@ -99,18 +99,18 @@ end
 
 ≈(box₁::AABox, box₂::AABox) = box₁.minima ≈ box₂.minima && box₁.maxima ≈ box₂.maxima 
 
-# Return the AABox which contains both bb₁ and bb₂
-function Base.union(bb₁::AABox{Dim, T}, bb₂::AABox{Dim, T}) where {Dim, T}
-    return AABox(Point{Dim, T}(min.(bb₁.minima.coord, bb₂.minima.coord)),
-                 Point{Dim, T}(max.(bb₁.maxima.coord, bb₂.maxima.coord)))
-end
-
 @inline Δx(aab::AABox) = aab.xmax - aab.xmin
 @inline Δy(aab::AABox) = aab.ymax - aab.ymin
 @inline Δz(aab::AABox) = aab.zmax - aab.zmin
 
-function split(aab::AABox2D{T}, xdiv::SVector{X, T}, ydiv::SVector{Y, T}
-              ) where {T, X, Y}
+"""
+    partition(aab::AABox2D{T}, xdiv::SVector{X, T}, ydiv::SVector{Y, T})
+
+Partition an axis-aligned bounding box at the values in `xdiv` and `ydiv`.
+Empty SVectors are permitted.
+"""
+function partition(aab::AABox2D{T}, xdiv::SVector{X, T}, ydiv::SVector{Y, T}
+                  ) where {T, X, Y}
     if any(y->y < aab.ymin || aab.ymax < y, ydiv)
         error("y-coordinate divisions must be inside the AABox")
     end
@@ -156,7 +156,7 @@ function split(aab::AABox2D{T}, xdiv::SVector{X, T}, ydiv::SVector{Y, T}
     end
 end
 
-function split(aab::AABox2D{BigFloat}, xdiv::SVector{X, BigFloat}, 
+function partition(aab::AABox2D{BigFloat}, xdiv::SVector{X, BigFloat}, 
                                        ydiv::SVector{Y, BigFloat}) where {X, Y}
     if any(y->y < aab.ymin || aab.ymax < y, ydiv)
         error("y-coordinate divisions must be inside the AABox")
@@ -206,6 +206,12 @@ function split(aab::AABox2D{BigFloat}, xdiv::SVector{X, BigFloat},
     end
 end
 
-function split(aab::AABox2D{T}, xdiv::Vector{T}, ydiv::Vector{T}) where {T}
-    return split(aab, SVector{length(xdiv), T}(xdiv), SVector{length(ydiv), T}(ydiv))
+"""
+    partition(aab::AABox2D{T}, xdiv::Vector{T}, ydiv::Vector{T})
+
+Partition an axis-aligned bounding box at the values in `xdiv` and `ydiv`.
+Empty Vectors are permitted.
+"""
+function partition(aab::AABox2D{T}, xdiv::Vector{T}, ydiv::Vector{T}) where {T}
+    return partition(aab, SVector{length(xdiv), T}(xdiv), SVector{length(ydiv), T}(ydiv))
 end

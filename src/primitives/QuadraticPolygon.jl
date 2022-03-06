@@ -12,7 +12,7 @@ p₂ = vertex B
 p₃ = vertex C     
 p₄ = point on the quadratic segment from A to B
 p₅ = point on the quadratic segment from B to C
-p₆ = point on the quadratic segment from C to A
+p₆ = point on the quadratic segment from C to A 
 """
 struct QuadraticPolygon{N, Dim, T} <:Face{Dim, 2, T}
     points::SVector{N, Point{Dim, T}}

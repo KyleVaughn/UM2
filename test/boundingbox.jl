@@ -26,3 +26,8 @@
         @test bb.ymin ≈ 0
         @test bb.xmax ≈ 2.3272727272727276
         @test bb.ymax ≈ 1
+
+            # union
+            aab = union(AABox2D(Point2D{T}(0,0), Point2D{T}(2, 2)),
+                        AABox2D(Point2D{T}(1,1), Point2D{T}(3, 3)))
+            @test aab ≈ AABox2D(Point2D{T}(0,0), Point2D{T}(3, 3))

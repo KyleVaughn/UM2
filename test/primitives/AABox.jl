@@ -12,16 +12,11 @@
             @test Δx(aab) ≈ 2
             @test Δy(aab) ≈ 2
 
-            # union
-            aab = union(AABox2D(Point2D{T}(0,0), Point2D{T}(2, 2)),
-                        AABox2D(Point2D{T}(1,1), Point2D{T}(3, 3)))
-            @test aab ≈ AABox2D(Point2D{T}(0,0), Point2D{T}(3, 3))
-
-            # split
+            # partition
             aab = AABox2D(Point2D{T}(0,0), Point2D{T}(3, 2))
             xdiv = SVector{2, T}(2,1)
             ydiv = SVector{1, T}(1)
-            aabs = split(aab, xdiv, ydiv)
+            aabs = partition(aab, xdiv, ydiv)
             @test size(aabs) == (3,2)
             @test aabs[1].minima ≈ Point2D{T}(0, 0)
             @test aabs[1].maxima ≈ Point2D{T}(1, 1)
@@ -38,7 +33,7 @@
 
             xdiv = SVector{2, T}(2,1)
             ydiv = SVector{0, T}()
-            aabs = split(aab, xdiv, ydiv)
+            aabs = partition(aab, xdiv, ydiv)
             @test size(aabs) == (3,1)
             @test aabs[1].minima ≈ Point2D{T}(0, 0)
             @test aabs[1].maxima ≈ Point2D{T}(1, 2)
@@ -49,7 +44,7 @@
 
             xdiv = SVector{0, T}()
             ydiv = SVector{1, T}(1)
-            aabs = split(aab, xdiv, ydiv)
+            aabs = partition(aab, xdiv, ydiv)
             @test size(aabs) == (1,2)
             @test aabs[1].minima ≈ Point2D{T}(0, 0)
             @test aabs[1].maxima ≈ Point2D{T}(3, 1)

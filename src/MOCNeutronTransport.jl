@@ -45,6 +45,7 @@ include("MPACT/MPACTCore2D.jl")
 include("rand.jl")
 include("interpolation.jl")
 include("jacobian.jl")
+#include("boundingbox.jl")
 include("gauss_legendre_quadrature.jl")
 include("triangulate.jl")
 include("measure.jl")
@@ -94,7 +95,7 @@ export QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, isstraight
 # Hyperplane
 export Hyperplane, Hyperplane2D, Hyperplane3D 
 # AABox
-export AABox, AABox2D, AABox3D, Δx, Δy, Δz, split
+export AABox, AABox2D, AABox3D, Δx, Δy, Δz, partition
 # ConvexPolygon
 export ConvexPolygon, Triangle, Triangle2D, Triangle3D, Quadrilateral, Quadrilateral2D,
        Quadrilateral3D

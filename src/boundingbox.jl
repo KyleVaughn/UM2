@@ -149,6 +149,12 @@ function boundingbox(q::QuadraticSegment{N}) where {N}
     end
 end
 
+# Return the AABox which contains both bb₁ and bb₂
+function Base.union(bb₁::AABox{Dim, T}, bb₂::AABox{Dim, T}) where {Dim, T}
+    return AABox(Point{Dim, T}(min.(bb₁.minima.coord, bb₂.minima.coord)),
+                 Point{Dim, T}(max.(bb₁.maxima.coord, bb₂.maxima.coord)))
+end
+
 # Bounding box
 # ---------------------------------------------------------------------------------------------
 boundingbox(poly::Polygon) = boundingbox(poly.points)
