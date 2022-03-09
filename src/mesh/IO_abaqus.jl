@@ -1,5 +1,5 @@
 # IO routines for the Abaqus .inp file format
-const valid_abaqus_element_types = (
+const supported_abaqus_element_types = (
     # triangle
     "CPS3",
     # quadratic triangle
@@ -18,15 +18,19 @@ const valid_abaqus_element_types = (
     "C3D20"
    )
 
-function read_abaqus(filepath::String, floattype::Type{T}=Float64) where {T<:AbstractFloat}
-    @info "Reading "*filepath
-    # NOTE: There is a critical assumption here that elements and nodes are listed 1 to N,
-    # not 8, 10, 9 or anything funky/out of order.
+# TODO: 
+#   1) Read non 1:N nodes/elements and map them to the appropriate 1:N indices
+#   2) Read all element types and discard the unused lower dimensional elements
+#   3) Figure out if pushing to a vector every line, or if reading the file twice (once to
+#       determine vector size, and once to populate the vector) is faster for reading 
+#       nodes or elements
+function read_abaqus(filepath::String, ::Type{T}) where {T<:AbstractFloat}
     file = open(filepath, "r")
     name = "default_name"
     element_vecs = Vector{UInt64}[] 
     element_sets = Dict{String, BitSet}()
-    points = Point3D{floattype}[]
+    points = Point3D{T}[]
+    is2D = false
     is3D = false
     while !eof(file)
         line = readline(file)
@@ -41,21 +45,30 @@ function read_abaqus(filepath::String, floattype::Type{T}=Float64) where {T<:Abs
             elseif "*NODE" == line
                 _read_abaqus_nodes!(file, points)
             elseif occursin("*ELEMENT", line)
-                linesplit = split(line)
-                element_type = String(strip(replace(linesplit[2], ("type=" => "")), ','))
-                if element_type[1:2] == "C3"
-                    is2D = true
+                splitline = split(line)
+                element_type = String(strip(replace(splitline[2], ("type=" => "")), ','))
+                if element_type ∉ supported_abaqus_element_types
+                    error("$element_type is not a supported abaqus element type")
                 end
-                _read_abaqus_elements!(file, elements_vecs, element_type)
+                if element_type[1:2] == "CP"
+                    is2D = true
+                else
+                    is3D = true
+                end
+                _read_abaqus_elements!(file, element_vecs, element_type)
             elseif occursin("*ELSET", line)
-                linesplit = split(line)
-                set_name = String(replace(linesplit[1], ("*ELSET,ELSET=" => "")))
+                splitline = split(line)
+                set_name = String(replace(splitline[1], ("*ELSET,ELSET=" => "")))
                 element_sets[set_name] = _read_abaqus_elset(file)
             end
         end
     end
     close(file)
-    return _create_mesh_from_elements(is3D, name, points, elements_vecs, element_sets)
+    if is2D && is3D
+        error("File contains both surface (CPS) and volume (C3) elements."*
+              "Limit element types to be CPS or C3, so mesh dimension is inferrable") 
+    end
+    return _create_mesh_from_elements(is3D, name, points, element_vecs, element_sets)
 end
 
 function _read_abaqus_nodes!(file::IOStream, points::Vector{Point3D{T}}) where {T}
@@ -86,24 +99,21 @@ end
 
 function _read_abaqus_elements!(file::IOStream, elements::Vector{Vector{UInt64}}, 
                                 element_type::String)
-    if !(element_type ∈ valid_abaqus_types)  
-        error("$element_type is not in the valid abaqus types")
-    end
     line = readline(file)
     file_position = position(file)
     while !('*' == line[1] || eof(file))
-        linesplit = split(line)
-        vertex_ids = parse.(UInt64, strip.(view(linesplit, 2:length(linesplit)), [',']))
+        splitline = split(line)
+        vertex_ids = parse.(UInt64, strip.(view(splitline, 2:length(splitline)), [',']))
         push!(elements, vertex_ids)
         file_position = position(file)
         line = readline(file)
     end
     seek(file, file_position)
-    return faces
+    return elements
 end
 
 function _read_abaqus_elset(file::IOStream)
-    linesplit = strip.(split(readuntil(file, "*")), [','])
+    splitline = strip.(split(readuntil(file, "*")), [','])
     seek(file, position(file)-1)
-    return BitSet(parse.(Int64, linesplit))
+    return BitSet(parse.(Int64, splitline))
 end

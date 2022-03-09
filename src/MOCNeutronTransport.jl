@@ -36,6 +36,8 @@ include("primitives/QuadraticPolyhedron.jl")
 include("mesh/UnstructuredMesh.jl")
 include("mesh/ConvexPolygonMesh.jl")
 include("mesh/QuadraticPolygonMesh.jl")
+include("mesh/IO_abaqus.jl")
+include("mesh/mesh_IO.jl")
 include("MPACT/MPACTCoarseCell.jl")
 include("MPACT/MPACTRayTracingModule.jl")
 include("MPACT/MPACTLattice.jl")
@@ -115,6 +117,8 @@ export UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D,
 export ConvexPolygonMesh, TriangleMesh, QuadrilateralMesh
 # QuadraticPolygonMesh
 export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
+# mesh_IO
+export import_mesh
 # Gmsh
 export gmsh
 # MPACTCoarseCell

@@ -39,6 +39,10 @@ Point(x...) = Point(SVector(x))
 function Base.convert(::Type{Point{Dim, T2}}, p::Point{Dim, T1}) where {Dim, T1, T2}
     return Point{Dim, T2}(convert(SVector{Dim, T2}, p.coord))
 end
+function Base.convert(::Type{Point2D{T2}}, p::Point3D{T1}) where {T1, T2}
+    return Point{2, T2}(SVector{2, T2}(p[1], p[2]))
+end
+
 Base.zero(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector zeros(T, Dim))
 nan(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector fill(T(NaN), Dim))
 
