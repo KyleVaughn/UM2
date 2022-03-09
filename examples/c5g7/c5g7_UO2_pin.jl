@@ -40,6 +40,8 @@ gmsh_overlay_rectangular_grid(bounding_box, grid_material, grid_nx, grid_ny)
 # Visualize geometry prior to meshing
 # gmsh.fltk.run()
 
+# Use incomplete elements.
+# Use quad remesh experimental option?
 # Mesh
 gmsh.model.mesh.set_size(gmsh.model.get_entities(0), mesh_char_len)
 gmsh.model.mesh.generate(2)
