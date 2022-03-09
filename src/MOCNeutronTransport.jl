@@ -54,7 +54,6 @@ include("measure.jl")
 # only need to worry about dampening for intersection with 
 # quadratic faces in 3D
 #
-# TODO: centroid.jl, boundingbox.jl, cartesian_to_parametric.jl
 
 #include("operators.jl")
 #include("./gmsh/gmsh_generate_rectangular_grid.jl")

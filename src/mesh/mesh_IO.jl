@@ -47,27 +47,27 @@ function _create_mesh_from_elements(is3D::Bool,
             elseif element_lengths == [3, 4]
                 faces = [ SVector{length(f), U}(f) for f in element_vecs]
                 return ConvexPolygonMesh{T, U}(name = name,
-                                               points = points,
+                                               points = points2D,
                                                faces = faces,
                                                face_sets = element_sets)
             end
         else # Quadratic Mesh
             if element_lengths == [6]
-                faces = [ SVector{3, U}(f) for f in element_vecs]
+                faces = [ SVector{6, U}(f) for f in element_vecs]
                 return QuadraticTriangleMesh{T, U}(name = name,
                                                    points = points2D,
                                                    faces = faces, 
                                                    face_sets = element_sets)
 
             elseif element_lengths == [8]
-                faces = [ SVector{3, U}(f) for f in element_vecs]
+                faces = [ SVector{8, U}(f) for f in element_vecs]
                 return QuadraticQuadrilateralMesh{T, U}(name = name,
                                                         points = points2D,
                                                         faces = faces, 
                                                         face_sets = element_sets)
 
             elseif element_lengths == [6, 8]
-                faces = [ SVector{3, U}(f) for f in element_vecs]
+                faces = [ SVector{length(f), U}(f) for f in element_vecs]
                 return QuadraticPolygonMesh{T, U}(name = name,
                                                   points = points2D,
                                                   faces = faces, 

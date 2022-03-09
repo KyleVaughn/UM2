@@ -47,5 +47,3 @@ function jacobian(quad8::QuadraticQuadrilateral, r, s)
 
     return 2*hcat(∂F_∂ξ, ∂F_∂η)
 end
-
-# TODO: quadratic tetrahedron, quadratic hexahedron

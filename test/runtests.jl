@@ -1,9 +1,12 @@
 using MOCNeutronTransport
 using Test
+using Logging
 
 # TODO: centroid.jl, boundingbox.jl, cartesian_to_parametric.jl
 
+Logging.disable_logging(Logging.Info)
 include("setup/setup_primitives.jl")
+include("setup/setup_meshes.jl")
 tests = ["SVector",
          "primitives/Point",
          "primitives/LineSegment",
@@ -14,6 +17,7 @@ tests = ["SVector",
          "primitives/QuadraticPolygon",
          "primitives/ConvexPolyhedron",
          "primitives/QuadraticPolyhedron",
+         "mesh/mesh_IO",
          "interpolation",
          "jacobian",
          "triangulate",
