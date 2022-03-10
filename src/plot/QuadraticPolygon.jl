@@ -12,11 +12,16 @@ function convert_arguments(LS::Type{<:LineSegments}, P::Vector{<:QuadraticPolygo
 end
 
 function convert_arguments(P::Type{<:Mesh}, poly::QuadraticPolygon)
-    triangles = collect(triangulate(poly, Val(7)))
+    triangles = collect(triangulate(poly, Val(plot_nonlinear_subdivisions)))
     return convert_arguments(P, triangles)
 end
 
 function convert_arguments(M::Type{<:Mesh}, P::Vector{<:QuadraticPolygon})
-    triangles = reduce(vcat, [collect(triangulate(p, Val(7))) for p in P])
+    triangles = reduce(vcat, 
+                       [collect(
+                                triangulate(p, Val(plot_nonlinear_subdivisions)
+                                           )
+                               ) for p in P]
+                      )
     return convert_arguments(M, triangles)
 end

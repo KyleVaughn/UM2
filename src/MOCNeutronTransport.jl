@@ -1,6 +1,7 @@
 module MOCNeutronTransport
 
 const minimum_ray_segment_length = 1e-4 # 1μm
+const plot_nonlinear_subdivisions = 2
 const path_to_gmsh_api = "/usr/local/lib/gmsh.jl"
 const enable_visualization = true
 const visualize_ray_tracing = false 
@@ -195,7 +196,6 @@ if enable_visualization
     include("plot/ConvexPolygon.jl")
     include("plot/AABox.jl")
     include("plot/QuadraticPolygon.jl")
-
     export Figure, Axis, Axis3
     export scatter, linesegments, mesh,
            scatter!, linesegments!, mesh!

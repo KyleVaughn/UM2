@@ -30,6 +30,12 @@ function _create_mesh_from_elements(is3D::Bool,
     sort!(element_lengths)
     U = _select_mesh_UInt_type(max(length(points), length(element_vecs)))
     if !is3D # is2D
+        # Verify all points are approximately the same z-coordinate
+        for i ∈ 1:length(points)-1
+            if 1e-4 < abs(points[i].z - points[i+1].z)
+                error("Points of 2D mesh do not lie in the same plane")
+            end
+        end
         points2D = convert.(Point2D{T}, points) # convert to 2D
         if all(x->x < 6, element_lengths) # Linear mesh
             if element_lengths == [3]

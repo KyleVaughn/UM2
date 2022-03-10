@@ -1,5 +1,5 @@
 function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment)
-    rr = LinRange(0, 1, 15) 
+    rr = LinRange(0, 1, plot_nonlinear_subdivisions) 
     points = q.(rr)
     coords = reduce(vcat, [[points[i], points[i+1]] for i = 1:length(points)-1])
     return convert_arguments(LS, coords)

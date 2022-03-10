@@ -28,3 +28,10 @@ function ConvexPolygon{N}(v::SVector{N, Point{Dim, T}}) where {N, Dim, T}
 end
 ConvexPolygon{N}(x...) where {N} = ConvexPolygon(SVector(x))
 ConvexPolygon(x...) = ConvexPolygon(SVector(x))
+
+isconvex(tri::Triangle) = true
+function isconvex(poly::ConvexPolygon{N, 2}) where {N}
+    # If each of the
+    for i ∈ 1:N-2
+        
+end

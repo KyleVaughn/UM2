@@ -56,3 +56,49 @@ function setup_QuadraticTriangleMesh(::Type{T}, ::Type{U}) where {T, U}
     face_sets["B"] = BitSet([2])
     return QuadraticTriangleMesh{T, U}(name, points, faces, face_sets)
 end
+
+function setup_QuadraticQuadrilateralMesh(::Type{T}, ::Type{U}) where {T, U}
+    name = "quad8"
+    points = [Point2D{T}(0, 0),
+              Point2D{T}(1, 0),
+              Point2D{T}(1, 1),
+              Point2D{T}(0, 1),
+              Point2D{T}(2, 0),
+              Point2D{T}(2, 1),
+              Point2D{T}(0.5, 0),
+              Point2D{T}(0.7, 0.5),
+              Point2D{T}(0.5, 1),
+              Point2D{T}(0, 0.5),
+              Point2D{T}(1.5, 0),
+              Point2D{T}(2, 0.5),
+              Point2D{T}(1.5, 1),
+             ]
+    faces = [SVector{8,U}(1, 2, 3, 4, 7, 8, 9, 10),
+             SVector{8,U}(2, 5, 6, 3, 11, 12, 13, 8)]
+    face_sets = Dict{String, Set{Int64}}()
+    face_sets["A"] = Set([1])
+    face_sets["B"] = Set([2])
+    return QuadraticQuadrilateralMesh{T, U}(name, points, faces, face_sets)
+end
+
+function setup_QuadraticPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
+    name = "tri6_quad8"
+    points = [Point2D{T}(0, 0),
+              Point2D{T}(1, 0),
+              Point2D{T}(1, 1),
+              Point2D{T}(0, 1),
+              Point2D{T}(2, 0),
+              Point2D{T}(0.5, 0),
+              Point2D{T}(0.7, 0.5),
+              Point2D{T}(0.5, 1),
+              Point2D{T}(0, 0.5),
+              Point2D{T}(1.5, 0),
+              Point2D{T}(1.5, 0.5),
+             ]
+    faces = [SVector{8,U}(1, 2, 3, 4, 6, 7, 8, 9),
+             SVector{6,U}(2, 5, 3, 10, 11, 7)]
+    face_sets = Dict{String, Set{Int64}}()
+    face_sets["A"] = Set([1])
+    face_sets["B"] = Set([2])
+    return QuadraticPolygonMesh{T, U}(name, points, faces, face_sets)
+end

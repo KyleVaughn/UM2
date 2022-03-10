@@ -63,3 +63,7 @@ function Base.show(io::IO, mesh::ConvexPolygonMesh)
     println(io, "  │  └─ Quadrilateral  : $(count(x->x isa SVector{4},  mesh.faces))")
     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
 end
+
+function check_convexity(mesh::ConvexPolygonMesh)
+
+end

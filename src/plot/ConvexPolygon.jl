@@ -27,10 +27,25 @@ function convert_arguments(M::Type{<:Mesh}, T::Vector{<:Triangle})
     return convert_arguments(M, points, faces)
 end
 
-function convert_arguments(M::Type{<:Mesh}, quad::Quadrilateral)
+function convert_arguments(M::Type{<:Mesh}, quad::Quadrilateral2D)
     return convert_arguments(M, collect(triangulate(quad, Val(0))))
 end
 
-function convert_arguments(M::Type{<:Mesh}, P::Vector{<:Quadrilateral})
+function convert_arguments(M::Type{<:Mesh}, P::Vector{<:Quadrilateral2D})
     return convert_arguments(M, reduce(vcat, [collect(triangulate(quad, Val(0))) for quad in P]))
+end
+
+# 3D quadrilaterals can be non-planar, hence need more subdivisions
+function convert_arguments(M::Type{<:Mesh}, quad::Quadrilateral3D)
+    return convert_arguments(M, collect(triangulate(quad, Val(plot_nonlinear_subdivisions))))
+end
+
+function convert_arguments(M::Type{<:Mesh}, P::Vector{<:Quadrilateral3D})
+    return convert_arguments(M, reduce(vcat, 
+                                       [collect(
+                                            triangulate(quad, Val(plot_nonlinear_subdivisions)
+                                                       )
+                                               ) for quad in P]
+                                      )
+                            )
 end
