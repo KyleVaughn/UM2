@@ -1,6 +1,6 @@
 @testset "QuadraticSegment" begin
     @testset "QuadraticSegment2D" begin
-        for T in [Float32, Float64, BigFloat]
+        for T ∈ Floats
             # Constructor
             𝘅₁ = Point2D{T}(0, 0)
             𝘅₂ = Point2D{T}(2, 0)
@@ -21,7 +21,7 @@
     end
 
     @testset "QuadraticSegment3D" begin
-        for T in [Float32, Float64, BigFloat]
+        for T ∈ Floats
             # Constructor
             𝘅₁ = Point3D{T}(0, 0, 0)
             𝘅₂ = Point3D{T}(0, 2, 0)

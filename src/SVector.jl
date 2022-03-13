@@ -1,7 +1,6 @@
 # Methods to extend SVector functionality
-@inline *(v₁::SVector, v₂::SVector) = v₁ .* v₂
-@inline /(v₁::SVector, v₂::SVector) = v₁ ./ v₂
-@inline norm²(v::SVector) = v ⋅ v
-@inline normalize(v::SVector) = v/norm(v) 
-@inline distance(v₁::SVector, v₂::SVector) = norm(v₁ - v₂) 
-@inline inv(v::SVector) = v'/(v ⋅ v) # Samelson inverse
+@inline *(a::SVector, b::SVector) = map(*, a, b)
+@inline /(a::SVector, b::SVector) = map(/, a, b)
+@inline norm²(a::SVector) = a ⋅ a
+@inline distance(a::SVector, b::SVector) = norm(a - b) 
+@inline inv(a::SVector) = inv(a ⋅ a) * a' # Samelson inverse

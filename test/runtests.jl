@@ -1,27 +1,22 @@
-using MOCNeutronTransport
-using Test
 using Logging
+using MOCNeutronTransport
+using StaticArrays
+using Test
 
-# TODO: centroid.jl, boundingbox.jl, cartesian_to_parametric.jl
-
+# Turn of info, so we don't clutter up the test output
 Logging.disable_logging(Logging.Info)
-include("setup/setup_primitives.jl")
-include("setup/setup_meshes.jl")
+const Floats = [Float16, Float32, Float64, BigFloat]
+#include("setup/setup_primitives.jl")
+#include("setup/setup_meshes.jl")
 tests = ["SVector",
-         "primitives/Point",
-         "primitives/LineSegment",
-         "primitives/QuadraticSegment",
-         "primitives/Hyperplane",
-         "primitives/AABox",
-         "primitives/ConvexPolygon",
-         "primitives/QuadraticPolygon",
-         "primitives/ConvexPolyhedron",
-         "primitives/QuadraticPolyhedron",
-         "mesh/mesh_IO",
-         "interpolation",
-         "jacobian",
-         "triangulate",
-         "measure",
+         "primitives/primitives",
+#         "mesh/mesh",
+#         "mesh/PolygonMesh",
+#         "mesh/mesh_IO",
+#         "interpolation",
+#         "jacobian",
+#         "triangulate",
+#         "measure",
 #        # "./mesh/UnstructuredMesh_2D",
          #"./mesh/IO_abaqus",
 #         "./mesh/IO_vtk",

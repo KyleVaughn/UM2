@@ -6,7 +6,7 @@ struct QuadraticPolyhedronMesh{T, U} <:QuadraticUnstructuredMesh3D{T, U}
 end
 
 function QuadraticPolyhedronMesh{T, U}(;
-    name::String = "default_name",
+    name::String = "",
     points::Vector{Point3D{T}} = Point3D{T}[],
     cells::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{10, U}[],
     cell_sets::Dict{String, BitSet} = Dict{String, BitSet}()
@@ -22,7 +22,7 @@ struct QuadraticTetrahedronMesh{T, U} <:QuadraticUnstructuredMesh3D{T, U}
 end
 
 function QuadraticTetrahedronMesh{T, U}(;
-    name::String = "default_name",
+    name::String = "",
     points::Vector{Point3D{T}} = Point3D{T}[],
     cells::Vector{SVector{10, U}} = SVector{10, U}[],
     cell_sets::Dict{String, BitSet} = Dict{String, BitSet}()
@@ -38,7 +38,7 @@ struct QuadraticHexahedronMesh{T, U} <:QuadraticUnstructuredMesh3D{T, U}
 end
 
 function QuadraticHexahedronMesh{T, U}(;
-    name::String = "default_name",
+    name::String = "",
     points::Vector{Point3D{T}} = Point3D{T}[],
     cells::Vector{SVector{20, U}} = SVector{20, U}[],
     cell_sets::Dict{String, BitSet} = Dict{String, BitSet}()

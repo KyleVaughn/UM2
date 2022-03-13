@@ -36,18 +36,14 @@ Point{Dim, T}(x...) where {Dim, T}= Point{Dim, T}(SVector{Dim, T}(x))
 Point{Dim}(x...) where {Dim}= Point(SVector(x))
 Point(x...) = Point(SVector(x))
 
-function Base.convert(::Type{Point{Dim, T2}}, p::Point{Dim, T1}) where {Dim, T1, T2}
-    return Point{Dim, T2}(convert(SVector{Dim, T2}, p.coord))
-end
-function Base.convert(::Type{Point2D{T2}}, p::Point3D{T1}) where {T1, T2}
-    return Point{2, T2}(SVector{2, T2}(p[1], p[2]))
-end
+convert(::Type{P}, p::Point) where {P <: Point} = P(p.coord)
+convert(::Type{P}, p::Point) where {P <: Point2D} = P(p[1], p[2])
 
 Base.zero(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector zeros(T, Dim))
 nan(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector fill(T(NaN), Dim))
 
-# Operators of the form X(Point, Number) perform X.(p.coord, n)
-# Operators of the form X(Point, Point) or X(Point, SVector) perform element-wise 
+# Operators of the form f(Point, Number) perform f.(p.coord, n)
+# Operators of the form f(Point, Point) or f(Point, SVector) perform element-wise 
 # operations, except in the case of ⋅, ×, and ≈.
 @inline +(p::Point, n::Number) = Point(p.coord .+ n)
 @inline +(n::Number, p::Point) = Point(n .+ p.coord)
@@ -82,3 +78,14 @@ nan(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector fill(T(NaN), 
 @inline midpoint(p₁::Point, p₂::Point) = (p₁ + p₂)/2
 @inline norm(p::Point) = √(p.coord ⋅ p.coord)
 @inline norm²(p::Point) = p.coord ⋅ p.coord
+
+# Float16, be careful of overflow and underflow
+@inline ≈(p₁::Point{Dim, Float16}, 
+          p₂::Point{Dim, Float16}) where {Dim} = distance(p₁, p₂) < (1e-5) # 100 nm
+@inline norm(p::Point{Dim, Float16}) where {Dim} = hypot(p.coord)
+
+"""
+    isCCW(p₁::Point2D, p₂::Point2D, p₃::Point2D)
+If the triplet of points is counter-clockwise oriented from p₁ to p₂ to p₃.
+"""
+@inline isCCW(p₁::Point2D, p₂::Point2D, p₃::Point2D) = 0 ≤ (p₂ - p₁) × (p₃ - p₁)

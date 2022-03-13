@@ -3,7 +3,7 @@ module MOCNeutronTransport
 const minimum_ray_segment_length = 1e-4 # 1μm
 const plot_nonlinear_subdivisions = 2
 const path_to_gmsh_api = "/usr/local/lib/gmsh.jl"
-const enable_visualization = true
+const enable_visualization = false
 const visualize_ray_tracing = false 
 
 using CUDA
@@ -12,10 +12,11 @@ using HDF5
 using LightXML
 using LinearAlgebra
 using StaticArrays
+using LinearAlgebra
 using Dates: now, format
 using LoggingExtras: TransformerLogger, global_logger
 
-import Base: +, -, *, /, ==, ≈, intersect, sort, sort!, split
+import Base: +, -, *, /, ==, ≈, convert, hypot, intersect, sort, sort!, zero
 import LinearAlgebra: ×, ⋅, norm, inv
 
 include(path_to_gmsh_api)
@@ -30,28 +31,30 @@ include("primitives/LineSegment.jl")
 include("primitives/QuadraticSegment.jl")
 include("primitives/Hyperplane.jl")
 include("primitives/AABox.jl")
-include("primitives/ConvexPolygon.jl")
+include("primitives/Polygon.jl")
 include("primitives/QuadraticPolygon.jl")
-include("primitives/ConvexPolyhedron.jl")
+include("primitives/Polyhedron.jl")
 include("primitives/QuadraticPolyhedron.jl")
 include("mesh/UnstructuredMesh.jl")
-include("mesh/ConvexPolygonMesh.jl")
+include("mesh/PolygonMesh.jl")
 include("mesh/QuadraticPolygonMesh.jl")
-include("mesh/IO_abaqus.jl")
-include("mesh/mesh_IO.jl")
-include("MPACT/MPACTCoarseCell.jl")
-include("MPACT/MPACTRayTracingModule.jl")
-include("MPACT/MPACTLattice.jl")
-include("MPACT/MPACTCore2D.jl")
+include("mesh/PolyhedronMesh.jl")
+include("mesh/QuadraticPolyhedronMesh.jl")
+#include("mesh/IO_abaqus.jl")
+#include("mesh/mesh_IO.jl")
+#include("MPACT/MPACTCoarseCell.jl")
+#include("MPACT/MPACTRayTracingModule.jl")
+#include("MPACT/MPACTLattice.jl")
+#include("MPACT/MPACTCore2D.jl")
 
 # gmsh
-include("rand.jl")
-include("interpolation.jl")
-include("jacobian.jl")
-#include("boundingbox.jl")
-include("gauss_legendre_quadrature.jl")
-include("triangulate.jl")
-include("measure.jl")
+#include("rand.jl")
+#include("interpolation.jl")
+#include("jacobian.jl")
+##include("boundingbox.jl")
+#include("gauss_legendre_quadrature.jl")
+#include("triangulate.jl")
+#include("measure.jl")
 # only need to worry about dampening for intersection with 
 # quadratic faces in 3D
 #
@@ -77,10 +80,8 @@ include("measure.jl")
 
 # log
 export log_timestamps
-# constants
-export minimum_ray_segment_length
 # SVector
-export distance, inv, norm², normalize
+export distance, inv, norm², hypot
 # Edge
 export Edge, Edge2D, Edge3D
 # Face
@@ -89,7 +90,7 @@ export Face, Face2D, Face3D
 export Cell
 # Point
 export Point, Point1D, Point2D, Point3D, +, -, *, /, ⋅, ×, ==, ≈, distance,
-       distance², midpoint, nan, norm, norm²
+       distance², isCCW, midpoint, nan, norm, norm²
 # LineSegment
 export LineSegment, LineSegment2D, LineSegment3D
 # QuadraticSegment
@@ -97,15 +98,15 @@ export QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, isstraight
 # Hyperplane
 export Hyperplane, Hyperplane2D, Hyperplane3D 
 # AABox
-export AABox, AABox2D, AABox3D, Δx, Δy, Δz, partition
-# ConvexPolygon
-export ConvexPolygon, Triangle, Triangle2D, Triangle3D, Quadrilateral, Quadrilateral2D,
-       Quadrilateral3D
+export AABox, AABox2D, AABox3D, Δx, Δy, Δz
+# Polygon
+export Polygon, Polygon2D, Polygon3D, Triangle, Triangle2D, Triangle3D, Quadrilateral, 
+       Quadrilateral2D, Quadrilateral3D
 # QuadraticPolygon
 export QuadraticPolygon, QuadraticTriangle, QuadraticTriangle2D, QuadraticTriangle3D,
        QuadraticQuadrilateral, QuadraticQuadrilateral2D, QuadraticQuadrilateral3D
-# ConvexPolyhedron
-export ConvexPolyhedron, Tetrahedron, Hexahedron
+# Polyhedron
+export Polyhedron, Tetrahedron, Hexahedron
 # QuadraticPolyhedron
 export QuadraticPolyhedron, QuadraticTetrahedron, QuadraticHexahedron
 # UnstructuredMesh
@@ -113,31 +114,31 @@ export UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D,
        LinearUnstructuredMesh, LinearUnstructuredMesh2D, LinearUnstructuredMesh3D,
        QuadraticUnstructuredMesh, QuadraticUnstructuredMesh2D, 
        QuadraticUnstructuredMesh3D 
-# ConvexPolygonMesh
-export ConvexPolygonMesh, TriangleMesh, QuadrilateralMesh
+# PolygonMesh
+export PolygonMesh, TriangleMesh, QuadrilateralMesh
 # QuadraticPolygonMesh
 export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
-# mesh_IO
-export import_mesh
+## mesh_IO
+#export import_mesh
 # Gmsh
-export gmsh
-# MPACTCoarseCell
-export MPACTCoarseCell, MPACTCoarseCells
-# MPACTRayTracingModule
-export MPACTRayTracingModule, MPACTRayTracingModules
-# MPACTLattice
-export MPACTLattice, MPACTLattices
-# MPACTCore2D
-export MPACTCore2D, validate_core_partition
-# jacobian
-const 𝗝 = jacobian
-export jacobian, 𝗝
-# gauss_legendre_quadrature
-export gauss_legendre_quadrature, triangular_gauss_legendre_quadrature
-# triangulate
-export triangulate
-# measure
-export measure
+#export gmsh
+## MPACTCoarseCell
+#export MPACTCoarseCell, MPACTCoarseCells
+## MPACTRayTracingModule
+#export MPACTRayTracingModule, MPACTRayTracingModules
+## MPACTLattice
+#export MPACTLattice, MPACTLattices
+## MPACTCore2D
+#export MPACTCore2D, validate_core_partition
+## jacobian
+#const 𝗝 = jacobian
+#export jacobian, 𝗝
+## gauss_legendre_quadrature
+#export gauss_legendre_quadrature, triangular_gauss_legendre_quadrature
+## triangulate
+#export triangulate
+## measure
+#export measure
 
 # Structs/Types
 #export 
@@ -193,7 +194,7 @@ if enable_visualization
     include("plot/Point.jl")
     include("plot/LineSegment.jl")
     include("plot/QuadraticSegment.jl")
-    include("plot/ConvexPolygon.jl")
+    include("plot/Polygon.jl")
     include("plot/AABox.jl")
     include("plot/QuadraticPolygon.jl")
     export Figure, Axis, Axis3

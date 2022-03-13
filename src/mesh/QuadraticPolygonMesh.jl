@@ -6,7 +6,7 @@ struct QuadraticPolygonMesh{T, U} <:QuadraticUnstructuredMesh2D{T, U}
 end
 
 function QuadraticPolygonMesh{T, U}(;
-    name::String = "default_name",
+    name::String = "",
     points::Vector{Point2D{T}} = Point2D{T}[],
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{6, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
@@ -22,7 +22,7 @@ struct QuadraticTriangleMesh{T, U} <:QuadraticUnstructuredMesh2D{T, U}
 end
 
 function QuadraticTriangleMesh{T, U}(;
-    name::String = "default_name",
+    name::String = "",
     points::Vector{Point2D{T}} = Point2D{T}[],
     faces::Vector{SVector{6, U}} = SVector{6, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
@@ -38,7 +38,7 @@ struct QuadraticQuadrilateralMesh{T, U} <:QuadraticUnstructuredMesh2D{T, U}
 end
 
 function QuadraticQuadrilateralMesh{T, U}(;
-    name::String = "default_name",
+    name::String = "",
     points::Vector{Point2D{T}} = Point2D{T}[],
     faces::Vector{SVector{8, U}} = SVector{8, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()

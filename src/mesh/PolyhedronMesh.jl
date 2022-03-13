@@ -1,17 +1,17 @@
-struct ConvexPolyhedronMesh{T, U} <:LinearUnstructuredMesh3D{T, U}
+struct PolyhedronMesh{T, U} <:LinearUnstructuredMesh3D{T, U}
     name::String
     points::Vector{Point3D{T}}
     cells::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
     cell_sets::Dict{String, BitSet}
 end
 
-function ConvexPolyhedronMesh{T, U}(;
-    name::String = "default_name",
+function PolyhedronMesh{T, U}(;
+    name::String = "",
     points::Vector{Point3D{T}} = Point3D{T}[],
     cells::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{4, U}[],
     cell_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {T, U}
-    return ConvexPolyhedronMesh(name, points, cells, cell_sets)
+    return PolyhedronMesh(name, points, cells, cell_sets)
 end
 
 struct TetrahedronMesh{T, U} <:LinearUnstructuredMesh3D{T, U}
@@ -22,7 +22,7 @@ struct TetrahedronMesh{T, U} <:LinearUnstructuredMesh3D{T, U}
 end
 
 function TetrahedronMesh{T, U}(;
-    name::String = "default_name",
+    name::String = "",
     points::Vector{Point3D{T}} = Point3D{T}[],
     cells::Vector{SVector{4, U}} = SVector{4, U}[],
     cell_sets::Dict{String, BitSet} = Dict{String, BitSet}()
@@ -38,7 +38,7 @@ struct HexahedronMesh{T, U} <:LinearUnstructuredMesh3D{T, U}
 end
 
 function HexahedronMesh{T, U}(;
-    name::String = "default_name",
+    name::String = "",
     points::Vector{Point3D{T}} = Point3D{T}[],
     cells::Vector{SVector{8, U}} = SVector{8, U}[],
     cell_sets::Dict{String, BitSet} = Dict{String, BitSet}()
@@ -46,7 +46,7 @@ function HexahedronMesh{T, U}(;
     return HexahedronMesh(name, points, cells, cell_sets)
 end
 
-function Base.show(io::IO, mesh::ConvexPolyhedronMesh)
+function Base.show(io::IO, mesh::PolyhedronMesh)
     mesh_type = typeof(mesh)
     println(io, mesh_type)
     println(io, "  ├─ Name      : $(mesh.name)")

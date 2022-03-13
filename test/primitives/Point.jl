@@ -1,6 +1,6 @@
 @testset "Point" begin
     @testset "Point1D" begin
-        for T in [Float32, Float64, BigFloat]
+        for T ∈ Floats
             p₁ = Point(T(1))
             p₂ = Point(T(2))
     
@@ -38,8 +38,8 @@
             @test p₁ ⋅ p₂ ≈ 10
     
             # ≈
-            @test T(2) ≈ 2 - 10*eps(T)
-            @test Point(T(2 - 10*eps(T))) ≈ Point(T(2))
+            @test Point(T(2.000001)) ≈ Point(T(2))
+            @test Point(T(2.002)) ≉ Point(T(2))
     
             p₁ = Point(T(-1))
             p₂ = Point(T(4))
@@ -65,7 +65,7 @@
     end
     
     @testset "Point2D" begin
-        for T in [Float32, Float64, BigFloat]
+        for T ∈ Floats
             p₁ = Point2D{T}(1, 2)
             p₂ = Point2D{T}(2, 4)
     
@@ -107,8 +107,8 @@
             @test v ≈ -3
     
             # ≈
-            @test T(2) ≈ 2 - 10*eps(T)
-            @test Point2D{T}(1, 2 - 10*eps(T)) ≈ Point2D{T}(1, 2)
+            @test Point2D{T}(1, 2.000001) ≈ Point2D{T}(1,2)
+            @test Point2D{T}(1, 2.002) ≉ Point2D{T}(1,2)
             
             p₁ = Point2D{T}(1, 2)
             p₂ = Point2D{T}(2, 4)
@@ -131,11 +131,15 @@
             mp = midpoint(p₁, p₂)
             @test mp[1] ≈ 3//2
             @test mp[2] ≈ 3
+
+            # isCCW
+            @test isCCW(Point2D{T}(0,0), Point2D{T}(1,0), Point2D{T}(1,  1))
+            @test !isCCW(Point2D{T}(0,0), Point2D{T}(1,0), Point2D{T}(1, -1))
         end
     end
     
     @testset "Point3D" begin
-        for T in [Float32, Float64, BigFloat]
+        for T ∈ Floats
             p₁ = Point3D{T}(1, 1, 0)
             p₂ = Point3D{T}(1, 0, 1)
     
@@ -177,9 +181,8 @@
             @test v == [-3, 6, -3]
     
             # ≈
-            @test T(2) ≈ 2 - 10*eps(T)
-            @test Point3D{T}(1, 2 - 10*eps(T), 1) ≈ Point3D{T}(1, 2, 1)
-            
+            @test Point3D{T}(1, 1, T(2 - 1//1000000)) ≈ Point3D{T}(1,1,2)
+            @test Point3D{T}(1, 1, T(2 - 1//10000)) ≉ Point3D{T}(1,1,2)
     
             p₁ = Point3D{T}(1, 2, 1)
             p₂ = Point3D{T}(2, 4, 0)

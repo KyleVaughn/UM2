@@ -11,45 +11,6 @@
             # Δx, Δy
             @test Δx(aab) ≈ 2
             @test Δy(aab) ≈ 2
-
-            # partition
-            aab = AABox2D(Point2D{T}(0,0), Point2D{T}(3, 2))
-            xdiv = SVector{2, T}(2,1)
-            ydiv = SVector{1, T}(1)
-            aabs = partition(aab, xdiv, ydiv)
-            @test size(aabs) == (3,2)
-            @test aabs[1].minima ≈ Point2D{T}(0, 0)
-            @test aabs[1].maxima ≈ Point2D{T}(1, 1)
-            @test aabs[2].minima ≈ Point2D{T}(1, 0)
-            @test aabs[2].maxima ≈ Point2D{T}(2, 1)
-            @test aabs[3].minima ≈ Point2D{T}(2, 0)
-            @test aabs[3].maxima ≈ Point2D{T}(3, 1)
-            @test aabs[4].minima ≈ Point2D{T}(0, 1)
-            @test aabs[4].maxima ≈ Point2D{T}(1, 2)
-            @test aabs[5].minima ≈ Point2D{T}(1, 1)
-            @test aabs[5].maxima ≈ Point2D{T}(2, 2)
-            @test aabs[6].minima ≈ Point2D{T}(2, 1)
-            @test aabs[6].maxima ≈ Point2D{T}(3, 2)
-
-            xdiv = SVector{2, T}(2,1)
-            ydiv = SVector{0, T}()
-            aabs = partition(aab, xdiv, ydiv)
-            @test size(aabs) == (3,1)
-            @test aabs[1].minima ≈ Point2D{T}(0, 0)
-            @test aabs[1].maxima ≈ Point2D{T}(1, 2)
-            @test aabs[2].minima ≈ Point2D{T}(1, 0)
-            @test aabs[2].maxima ≈ Point2D{T}(2, 2)
-            @test aabs[3].minima ≈ Point2D{T}(2, 0)
-            @test aabs[3].maxima ≈ Point2D{T}(3, 2)
-
-            xdiv = SVector{0, T}()
-            ydiv = SVector{1, T}(1)
-            aabs = partition(aab, xdiv, ydiv)
-            @test size(aabs) == (1,2)
-            @test aabs[1].minima ≈ Point2D{T}(0, 0)
-            @test aabs[1].maxima ≈ Point2D{T}(3, 1)
-            @test aabs[2].minima ≈ Point2D{T}(0, 1)
-            @test aabs[2].maxima ≈ Point2D{T}(3, 2)
         end
     end
     @testset "AABox3D" begin
