@@ -47,6 +47,8 @@ include("mesh/QuadraticPolyhedronMesh.jl")
 #include("MPACT/MPACTLattice.jl")
 #include("MPACT/MPACTCore2D.jl")
 
+include("gmsh_extensions/add_cad_entity_names_to_physical_groups.jl")
+
 # gmsh
 #include("rand.jl")
 #include("interpolation.jl")
@@ -120,8 +122,10 @@ export PolygonMesh, TriangleMesh, QuadrilateralMesh
 export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
 ## mesh_IO
 #export import_mesh
-# Gmsh
-#export gmsh
+# gmsh
+export gmsh
+# add_cad_entity_names_to_physical_groups
+export add_cad_entity_names_to_physical_groups
 ## MPACTCoarseCell
 #export MPACTCoarseCell, MPACTCoarseCells
 ## MPACTRayTracingModule
