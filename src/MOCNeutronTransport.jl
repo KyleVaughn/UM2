@@ -48,6 +48,8 @@ include("mesh/QuadraticPolyhedronMesh.jl")
 #include("MPACT/MPACTCore2D.jl")
 
 include("gmsh_extensions/add_cad_entity_names_to_physical_groups.jl")
+include("gmsh_extensions/get_entities_by_color.jl")
+include("gmsh_extensions/add_materials_to_physical_groups_by_color.jl")
 
 # gmsh
 #include("rand.jl")

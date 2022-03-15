@@ -20,7 +20,7 @@
                 push!(physicals[ent_name], tag)
             end
         end
-        for (name, tags) in sort(physicals)
+        for (name, tags) in sort(collect(physicals))
             p = gmsh.model.add_physical_group(dim, tags)
             gmsh.model.set_physical_name(dim, p, name)
         end
