@@ -125,7 +125,7 @@ export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
 # gmsh
 export gmsh
 # add_cad_entity_names_to_physical_groups
-export add_cad_entity_names_to_physical_groups
+#export add_cad_entity_names_to_physical_groups
 ## MPACTCoarseCell
 #export MPACTCoarseCell, MPACTCoarseCells
 ## MPACTRayTracingModule

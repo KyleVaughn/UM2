@@ -1,6 +1,6 @@
 @eval gmsh.model begin
     """
-        add_cad_entity_names_to_physical_groups(dim::Int64=2)
+        gmsh.model.add_cad_entity_names_to_physical_groups(dim::Int64=2)
 
     Add the names of imported CAD entities of dimension `dim` to the model's
     physical groups. For an entity with name "Shapes/X/Y/Z", the physical group it
