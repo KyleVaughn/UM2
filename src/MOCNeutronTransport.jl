@@ -16,7 +16,8 @@ using LinearAlgebra
 using Dates: now, format
 using LoggingExtras: TransformerLogger, global_logger
 
-import Base: +, -, *, /, ==, ≈, convert, hypot, intersect, sort, sort!, zero
+import Base: +, -, *, /, ==, ≈, convert, hypot, intersect, issubset, sort, 
+             sort!, zero
 import LinearAlgebra: ×, ⋅, norm, inv
 
 include(path_to_gmsh_api)
@@ -43,12 +44,16 @@ include("mesh/PolyhedronMesh.jl")
 include("mesh/QuadraticPolyhedronMesh.jl")
 #include("mesh/IO_abaqus.jl")
 #include("mesh/mesh_IO.jl")
+include("MPACT/MPACTGridHierarchy.jl")
 #include("MPACT/MPACTGeometryHierarchy.jl")
 #include("MPACT/MPACTCoarseCell.jl")
 #include("MPACT/MPACTRayTracingModule.jl")
 #include("MPACT/MPACTLattice.jl")
 #include("MPACT/MPACTCore2D.jl")
-
+include("gmsh_extensions/add_cad_entity_names_to_physical_groups.jl")
+include("gmsh_extensions/get_entities_by_color.jl")
+include("gmsh_extensions/add_materials_to_physical_groups_by_color.jl")
+#include("gmsh_extensions/overlay_mpact_grid_hierarchy.jl")
 
 
 
@@ -125,7 +130,9 @@ export PolygonMesh, TriangleMesh, QuadrilateralMesh
 # QuadraticPolygonMesh
 export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
 # RectilinearGrid
-export RectilinearGrid2D
+export RectilinearGrid, RectilinearGrid2D, issubset
+# MPACTGridHierarchy
+export MPACTGridHierarchy
 ## mesh_IO
 #export import_mesh
 # gmsh

@@ -3,12 +3,12 @@
 # NEA/NSC 280 (2001): 2001.
 using MOCNeutronTransport
 
-# Geometry
+# Import geometry
 # ---------------------------------------------------------------------------------------
 gmsh.initialize()
 gmsh.merge("c5g7.step")
 
-# Physical groups (materials and labels)
+# Add physical groups (materials and labels)
 # ---------------------------------------------------------------------------------------
 gmsh.model.add_cad_entity_names_to_physical_groups(2)
 # Easy to determine using gmsh.fltk.run()
@@ -22,18 +22,21 @@ mat_to_color["MATERIAL_MOX-8.7"]         = (  0,  85, 255, 255)
 color_to_ent = gmsh.model.get_entities_by_color(2)
 gmsh.model.add_materials_to_physical_groups_by_color(mat_to_color, color_to_ent, 2)
 
-## Overlay grid
-## ---------------------------------------------------------------------------------------
-## Finemesh
-#core_bb = lattice_bb = raytracing_module = pin_bb = AAB(pin_pitch, pin_pitch)
-## A single pin cell
-#cell = MPACTCoarseCell(pin_bb) 
-## A single ray tracing module
-#rt_module = MPACTRayTracingModule(raytracing_module, [cell.id;;])
-## A single 1x1 lattice
-#lattice = MPACTLattice(lattice_bb, [rt_module.id;;])
-#core = MPACTCore2D(core_bb, [lattice.id;;])
-#
+# Construct overlay and overlay MPACT grid hierarchy
+# ---------------------------------------------------------------------------------------
+# Lattices
+boundingbox = AABox(64.26, 64.26)
+lattice_div = [21.42, 2*21.42]
+lattice_grid = RectilinearGrid(boundingbox, lattice_div, lattice_div)
+# RT modules
+module_grid = lattice_grid # assembly modular ray tracing
+# Coarse grid
+coarse_div = [1.26*i for i ∈ 1:17*3]
+coarse_grid = RectilinearGrid(boundingbox, coarse_div, coarse_div) 
+
+mpact_grid = MPACTGridHierarchy(lattice_grid, module_grid, coarse_grid)
+
+
 #gmsh_overlay_rectangular_grid(bounding_box, grid_material, grid_nx, grid_ny)
 #
 ## Visualize geometry prior to meshing
