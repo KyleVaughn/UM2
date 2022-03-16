@@ -35,6 +35,7 @@ include("primitives/Polygon.jl")
 include("primitives/QuadraticPolygon.jl")
 include("primitives/Polyhedron.jl")
 include("primitives/QuadraticPolyhedron.jl")
+include("mesh/RectilinearGrid.jl")
 include("mesh/UnstructuredMesh.jl")
 include("mesh/PolygonMesh.jl")
 include("mesh/QuadraticPolygonMesh.jl")
@@ -42,14 +43,15 @@ include("mesh/PolyhedronMesh.jl")
 include("mesh/QuadraticPolyhedronMesh.jl")
 #include("mesh/IO_abaqus.jl")
 #include("mesh/mesh_IO.jl")
+#include("MPACT/MPACTGeometryHierarchy.jl")
 #include("MPACT/MPACTCoarseCell.jl")
 #include("MPACT/MPACTRayTracingModule.jl")
 #include("MPACT/MPACTLattice.jl")
 #include("MPACT/MPACTCore2D.jl")
 
-include("gmsh_extensions/add_cad_entity_names_to_physical_groups.jl")
-include("gmsh_extensions/get_entities_by_color.jl")
-include("gmsh_extensions/add_materials_to_physical_groups_by_color.jl")
+
+
+
 
 # gmsh
 #include("rand.jl")
@@ -122,6 +124,8 @@ export UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D,
 export PolygonMesh, TriangleMesh, QuadrilateralMesh
 # QuadraticPolygonMesh
 export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
+# RectilinearGrid
+export RectilinearGrid2D
 ## mesh_IO
 #export import_mesh
 # gmsh

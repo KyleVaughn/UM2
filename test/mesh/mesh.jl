@@ -1,5 +1,5 @@
 @testset "mesh" begin
-    tests = ["./PolygonMesh"]
+    tests = ["./RectilinearGrid"]
     for t in tests
       include("$(t).jl")
     end

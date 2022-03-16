@@ -1,6 +1,6 @@
 @testset "AABox" begin
     @testset "AABox2D" begin
-        for T in [Float32, Float64, BigFloat]
+        for T in Floats
             # getproperty
             aab = AABox2D(Point2D{T}(1, 0), Point2D{T}(3, 2))
             @test aab.xmin ≈ 1
@@ -14,7 +14,7 @@
         end
     end
     @testset "AABox3D" begin
-        for T in [Float32, Float64, BigFloat]
+        for T in Floats
             # getproperty
             aab = AABox3D(Point3D{T}(1, 0, -1), Point3D{T}(3, 2, 1))
             @test aab.xmin ≈ 1

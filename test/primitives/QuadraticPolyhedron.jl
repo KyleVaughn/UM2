@@ -1,6 +1,6 @@
 @testset "QuadraticPolyhedron" begin
     @testset "QuadraticTetrahedron" begin
-        for T in [Float32, Float64, BigFloat]
+        for T in Floats
             p₁  = Point3D{T}(0, 0, 0)
             p₂  = Point3D{T}(1, 0, 0)
             p₃  = Point3D{T}(0, 1, 0)
@@ -17,7 +17,7 @@
     end
     
     @testset "QuadraticHexahedon" begin
-        for T in [Float32, Float64, BigFloat]
+        for T in Floats
             p₁  = Point3D{T}(0, 0, 0)
             p₂  = Point3D{T}(1, 0, 0)
             p₃  = Point3D{T}(0, 1, 0)

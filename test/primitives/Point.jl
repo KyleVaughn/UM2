@@ -39,7 +39,7 @@
     
             # ≈
             @test Point(T(2.000001)) ≈ Point(T(2))
-            @test Point(T(2.002)) ≉ Point(T(2))
+            @test Point(T(2.0001)) ≉ Point(T(2))
     
             p₁ = Point(T(-1))
             p₂ = Point(T(4))
@@ -108,7 +108,7 @@
     
             # ≈
             @test Point2D{T}(1, 2.000001) ≈ Point2D{T}(1,2)
-            @test Point2D{T}(1, 2.002) ≉ Point2D{T}(1,2)
+            @test Point2D{T}(1, 2.0001) ≉ Point2D{T}(1,2)
             
             p₁ = Point2D{T}(1, 2)
             p₂ = Point2D{T}(2, 4)
@@ -181,8 +181,8 @@
             @test v == [-3, 6, -3]
     
             # ≈
-            @test Point3D{T}(1, 1, T(2 - 1//1000000)) ≈ Point3D{T}(1,1,2)
-            @test Point3D{T}(1, 1, T(2 - 1//10000)) ≉ Point3D{T}(1,1,2)
+            @test Point3D{T}(1, 1, 2.000001) ≈ Point3D{T}(1,1,2)
+            @test Point3D{T}(1, 1, 2.0001) ≉ Point3D{T}(1,1,2)
     
             p₁ = Point3D{T}(1, 2, 1)
             p₂ = Point3D{T}(2, 4, 0)
