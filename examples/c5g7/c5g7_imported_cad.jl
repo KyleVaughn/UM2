@@ -22,21 +22,20 @@ mat_to_color["MATERIAL_MOX-8.7"]         = (  0,  85, 255, 255)
 color_to_ent = gmsh.model.get_entities_by_color(2)
 gmsh.model.add_materials_to_physical_groups_by_color(mat_to_color, color_to_ent, 2)
 
-# Construct overlay and overlay MPACT grid hierarchy
+# Construct and overlay MPACT grid hierarchy
 # ---------------------------------------------------------------------------------------
-# Lattices
 boundingbox = AABox(64.26, 64.26)
 lattice_div = [21.42, 2*21.42]
 lattice_grid = RectilinearGrid(boundingbox, lattice_div, lattice_div)
 # RT modules
 module_grid = lattice_grid # assembly modular ray tracing
 # Coarse grid
-coarse_div = [1.26*i for i ∈ 1:17*3]
+coarse_div = [1.26*i for i ∈ 1:17*3-1]
 coarse_grid = RectilinearGrid(boundingbox, coarse_div, coarse_div) 
 
 mpact_grid = MPACTGridHierarchy(lattice_grid, module_grid, coarse_grid)
 
-
+gmsh.model.overlay
 #gmsh_overlay_rectangular_grid(bounding_box, grid_material, grid_nx, grid_ny)
 #
 ## Visualize geometry prior to meshing
