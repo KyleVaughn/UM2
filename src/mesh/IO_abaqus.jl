@@ -24,8 +24,8 @@ const supported_abaqus_element_types = (
 #   3) Figure out if pushing to a vector every line, or if reading the file twice (once to
 #       determine vector size, and once to populate the vector) is faster for reading 
 #       nodes or elements
-function read_abaqus(filepath::String, ::Type{T}) where {T<:AbstractFloat}
-    file = open(filepath, "r")
+function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
+    file = open(path, "r")
     name = "default_name"
     element_vecs = Vector{UInt64}[] 
     element_sets = Dict{String, BitSet}()

@@ -1,14 +1,14 @@
 """
-    import_mesh(filepath::String)
-    import_mesh(filepath::String, ::Type{T}=Float64) where {T<:AbstractFloat}
+    import_mesh(path::String)
+    import_mesh(path::String, ::Type{T}=Float64) where {T<:AbstractFloat}
 
 Import a mesh from file. The float type of the mesh may be specified with a second argument.
 File type is inferred from the extension.
 """
-function import_mesh(filepath::String, ::Type{T}=Float64) where {T<:AbstractFloat}
-    @info "Reading "*filepath
-    if endswith(filepath, ".inp")
-        return read_abaqus(filepath, T)
+function import_mesh(path::String, ::Type{T}=Float64) where {T<:AbstractFloat}
+    @info "Reading "*path
+    if endswith(path, ".inp")
+        return read_abaqus(path, T)
     else
         error("Could not determine mesh file type from extension")
     end

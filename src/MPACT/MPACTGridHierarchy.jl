@@ -39,3 +39,7 @@ struct MPACTGridHierarchy
         return new(lattice_grid, module_grid, coarse_grid)
     end
 end
+
+#function MPACTGridHierarchy(grid::RectilinearGrid2D{T}) where {T}
+#
+#end

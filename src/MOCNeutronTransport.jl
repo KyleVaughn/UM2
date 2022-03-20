@@ -33,6 +33,7 @@ end
 
 include("log.jl")
 include("SVector.jl")
+include("Material.jl")
 include("primitives/Edge.jl")
 include("primitives/Face.jl")
 include("primitives/Cell.jl")
@@ -59,9 +60,11 @@ include("MPACT/MPACTGridHierarchy.jl")
 #include("MPACT/MPACTRayTracingModule.jl")
 #include("MPACT/MPACTLattice.jl")
 #include("MPACT/MPACTCore2D.jl")
-#include("gmsh_extensions/add_cad_entity_names_to_physical_groups.jl")
-#include("gmsh_extensions/get_entities_by_color.jl")
-#include("gmsh_extensions/add_materials_to_physical_groups_by_color.jl")
+#
+include("gmsh_extensions/model/add_cad_entity_names_to_physical_groups.jl")
+include("gmsh_extensions/model/get_entities_by_color.jl")
+include("gmsh_extensions/model/add_materials_to_physical_groups_by_color.jl")
+include("gmsh_extensions/model/import_model.jl")
 #include("gmsh_extensions/overlay_mpact_grid_hierarchy.jl")
 
 
@@ -102,6 +105,8 @@ include("MPACT/MPACTGridHierarchy.jl")
 export log_timestamps
 # SVector
 export distance, inv, norm², hypot
+# Material
+export Material
 # Edge
 export Edge, Edge2D, Edge3D
 # Face
@@ -146,6 +151,11 @@ export MPACTGridHierarchy
 #export import_mesh
 # gmsh
 export gmsh
+# import_model
+export import_model
+
+
+
 ## MPACTCoarseCell
 #export MPACTCoarseCell, MPACTCoarseCells
 ## MPACTRayTracingModule
