@@ -47,5 +47,9 @@ end
 
 RectilinearGrid(bb, xdiv, ydiv) = RectilinearGrid2D(bb, xdiv, ydiv)
 
+function RectilinearGrid(bb::AABox2D{T}) where {T}
+    return RectilinearGrid2D{T, 0, 0}(bb, SVector{0, T}(), SVector{0, T}())
+end
+
 issubset(g1::RectilinearGrid2D, g2::RectilinearGrid2D) = g1.xdiv ⊆ g2.xdiv && 
                                                          g1.ydiv ⊆ g2.ydiv

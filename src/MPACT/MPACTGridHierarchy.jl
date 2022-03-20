@@ -40,6 +40,14 @@ struct MPACTGridHierarchy
     end
 end
 
-#function MPACTGridHierarchy(grid::RectilinearGrid2D{T}) where {T}
-#
-#end
+function MPACTGridHierarchy(coarse_grid::RectilinearGrid2D)
+    module_grid = RectilinearGrid(coarse_grid.bb)
+    lattice_grid = module_grid
+    return MPACTGridHierarchy(lattice_grid, module_grid, coarse_grid)
+end
+
+function MPACTGridHierarchy(module_grid::RectilinearGrid2D,
+                            coarse_grid::RectilinearGrid2D)
+    lattice_grid = RectilinearGrid(coarse_grid.bb)
+    return MPACTGridHierarchy(lattice_grid, module_grid, coarse_grid)
+end

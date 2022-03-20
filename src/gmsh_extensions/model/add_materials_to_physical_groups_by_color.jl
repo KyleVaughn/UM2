@@ -22,4 +22,3 @@ function add_materials_to_physical_groups_by_color(
     end
     return nothing 
 end
-

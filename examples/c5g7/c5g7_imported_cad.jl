@@ -4,23 +4,28 @@
 using MOCNeutronTransport
 filename = "c5g7.step"
 
+# Import model and assign materials 
+# ---------------------------------------------------------------------------------------
 materials = import_model(filename, names = true)
 
 # Construct and overlay MPACT grid hierarchy
 # ---------------------------------------------------------------------------------------
 boundingbox = AABox(64.26, 64.26)
+
 # Lattices
 lattice_div = [21.42, 2*21.42]
 lattice_grid = RectilinearGrid(boundingbox, lattice_div, lattice_div)
+
 # RT modules
 module_grid = lattice_grid # assembly modular ray tracing
+
 # Coarse grid
 coarse_div = [1.26*i for i ∈ 1:17*3-1]
 coarse_grid = RectilinearGrid(boundingbox, coarse_div, coarse_div) 
+
 # Overlay grid
 mpact_grid = MPACTGridHierarchy(lattice_grid, module_grid, coarse_grid)
-#mpact_grid = MPACTGridHierarchy(coarse_grid)
-#gmsh.model.overlay_mpact_grid_hierarchy(mpact_grid, "MATERIAL_WATER")
+overlay_mpact_grid_hierarchy(mpact_grid, "MATERIAL_WATER")
 ## Get material areas
 #
 #
