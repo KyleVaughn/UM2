@@ -2,7 +2,6 @@ module MOCNeutronTransport
 
 const minimum_ray_segment_length = 1e-4 # 1μm
 const plot_nonlinear_subdivisions = 2
-const path_to_gmsh_api = "/usr/local/lib/gmsh.jl"
 const enable_visualization = false
 const visualize_ray_tracing = false 
 
@@ -20,7 +19,17 @@ import Base: +, -, *, /, ==, ≈, convert, hypot, intersect, issubset, sort,
              sort!, zero
 import LinearAlgebra: ×, ⋅, norm, inv
 
-include(path_to_gmsh_api)
+# Include gmsh
+for path in Base.load_path()
+    gmsh_api_path = path*"/gmsh.jl" 
+    if isfile(gmsh_api_path)
+        include(gmsh_api_path)
+        break
+    end
+end
+if !@isdefined(gmsh)
+    @warn "Gmsh API was not found"
+end
 
 include("log.jl")
 include("SVector.jl")
@@ -50,9 +59,9 @@ include("MPACT/MPACTGridHierarchy.jl")
 #include("MPACT/MPACTRayTracingModule.jl")
 #include("MPACT/MPACTLattice.jl")
 #include("MPACT/MPACTCore2D.jl")
-include("gmsh_extensions/add_cad_entity_names_to_physical_groups.jl")
-include("gmsh_extensions/get_entities_by_color.jl")
-include("gmsh_extensions/add_materials_to_physical_groups_by_color.jl")
+#include("gmsh_extensions/add_cad_entity_names_to_physical_groups.jl")
+#include("gmsh_extensions/get_entities_by_color.jl")
+#include("gmsh_extensions/add_materials_to_physical_groups_by_color.jl")
 #include("gmsh_extensions/overlay_mpact_grid_hierarchy.jl")
 
 
