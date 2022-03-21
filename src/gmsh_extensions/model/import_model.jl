@@ -1,4 +1,5 @@
 function import_model(path::String; names::Bool=false)
+    @info "Importing '"*path*"'"
     if !Bool(gmsh.is_initialized())
         gmsh.initialize()
         gmsh.option.set_number("General.Verbosity", 2)
