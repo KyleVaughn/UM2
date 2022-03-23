@@ -1,10 +1,5 @@
 function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy, material::String)
     @info "Overlaying MPACT grid hierarchy"
-    # Ensure that the material is of the form "Material: xxxx"
-    if !startswith(uppercase(material), "MATERIAL: ")
-        error("Material must be of the form 'Material: X'")
-    end
-
     model_dim_tags = gmsh.model.get_entities(2)
     grid_tags = gmsh_generate_rectangular_grid(bb, x, y; material = material)
     grid_dim_tags = [(2, tag) for tag in grid_tags]

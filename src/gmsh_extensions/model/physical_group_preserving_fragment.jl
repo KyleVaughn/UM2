@@ -2,7 +2,7 @@ function physical_group_preserving_fragment(object_dim_tags::Vector{Tuple{Int32,
                                             tool_dim_tags::Vector{Tuple{Int32, Int32}};
                                             material_hierarchy::Vector{String} = String[])
     # Get all the physical groups
-    old_physical_groups = Dict{String, Vector{Tuple{Int32,Int32}}}()
+    old_physical_groups = Dict{String, Vector{Tuple{Int32, Int32}}}()
     groups = gmsh.model.get_physical_groups()
     names = [gmsh.model.get_physical_name(grp[1], grp[2]) for grp in groups]
     for (i, name) in enumerate(names)
