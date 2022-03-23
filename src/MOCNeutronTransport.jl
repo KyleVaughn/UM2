@@ -160,6 +160,8 @@ export get_entities_by_color
 export add_materials_to_physical_groups_by_color
 # import_model
 export import_model
+# physical_group_preserving_fragment
+export physical_group_preserving_fragment
 
 
 

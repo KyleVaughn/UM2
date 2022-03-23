@@ -1,42 +1,41 @@
-function physical_group_preserving_fragment(object_dim_tags::Vector{Tuple{Int32, Int32}},
-                                            tool_dim_tags::Vector{Tuple{Int32, Int32}};
+function physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, Int32}},
+                                            tool_dtags::Vector{Tuple{Int32, Int32}};
                                             material_hierarchy::Vector{String} = String[])
+    # Only works on the highest dim entities, since that's all we get in the output of fragment
+    
     # Get all the physical groups
-    old_physical_groups = Dict{String, Vector{Tuple{Int32, Int32}}}()
+    max_dim = max(maxi
     groups = gmsh.model.get_physical_groups()
-    names = [gmsh.model.get_physical_name(grp[1], grp[2]) for grp in groups]
-    for (i, name) in enumerate(names)
-        ents = gmsh.model.get_entities_for_physical_group(groups[i][1], groups[i][2])
-        dim = groups[i][1]
-        old_physical_groups[name] = [(dim, ent) for ent in ents]
-    end
+    old_tags =  [gmsh.model.get_entities_for_physical_group(dtag[1], dtag[2]) for dtag in groups] 
+    names = [gmsh.model.get_physical_name(dtag[1], dtag[2]) for dtag in groups]
 
     # Fragment
-    nents = length(object_dim_tags) + length(tool_dim_tags)
+    nents = length(object_dtags) + length(tool_dtags)
     @info "Fragmenting $nents entities"
-    out_dim_tags, out_dim_tags_map = gmsh.model.occ.fragment(object_dim_tags, 
-                                                             tool_dim_tags)
+    output_dtags, output_dtags_map = gmsh.model.occ.fragment(object_dtags, tool_dtags)
 
     # Create a dictionary of new physical groups using the parent child relationship
     # between input_dim_tags and out_dim_tags_map. 
     # The parent at index i of input_dim_tags has children out_dim_tags_map[i]
     @info "Updating physical groups"
-    new_physical_groups = Dict{String, Vector{Tuple{Int32,Int32}}}()
-    input_dim_tags = vcat(object_dim_tags, tool_dim_tags)
+    input_dtags = vcat(object_dtags, tool_dtags)
+    new_tags = similar(old_tags)
     # For each physical group
-    for name in names
-        new_physical_groups[name] = Tuple{Int32, Int32}[]
+    for (i, group) in enumerate(groups)
+        dim, grp_num = group
+        new_tags[i] = Tuple{Int32, Int32}[]
         # For each of the dim tags in the physical group
-        for dim_tag in old_physical_groups[name]
-            # If the dim_tag was one of the entities in the fragment
-            if dim_tag ∈  input_dim_tags
+        for tag in old_tags[i]
+            dtag = (dim, tag)
+            # If the dim tag was one of the entities in the fragment
+            if dtag ∈ input_dtags
                 # Get its children
-                index = findfirst(x->x == dim_tag, input_dim_tags)
-                children = out_dim_tags_map[index]
+                index = findfirst(x->x == dtag, input_dtags)
+                children = output_dtags_map[index]
                 # Add the children to the new physical group
                 for child in children
-                    if child ∉  new_physical_groups[name]
-                        push!(new_physical_groups[name], child)
+                    if child ∉ new_tags[i]
+                        push!(new_tags[i], child)
                     end
                 end
             else

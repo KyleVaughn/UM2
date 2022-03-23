@@ -11,6 +11,11 @@ materials = import_model(filename, names = true)
 
 # Construct and overlay MPACT grid hierarchy
 # ---------------------------------------------------------------------------------------
+gmsh.model.occ.add_rectangle(0, 0, 0, 64.26, 64.26)
+gmsh.model.occ.synchronize()
+p = gmsh.model.add_physical_group(2, [1157])
+gmsh.model.set_physical_name(2, p, "Material: Moderator")
+
 boundingbox = AABox(64.26, 64.26)
 
 # Lattices
