@@ -67,7 +67,7 @@ include("gmsh_extensions/model/apply_material_colors.jl")
 include("gmsh_extensions/model/add_materials_to_physical_groups_by_color.jl")
 include("gmsh_extensions/model/import_model.jl")
 include("gmsh_extensions/model/physical_group_preserving_fragment.jl")
-#include("gmsh_extensions/overlay_mpact_grid_hierarchy.jl")
+include("gmsh_extensions/model/overlay_mpact_grid_hierarchy.jl")
 
 
 
@@ -165,7 +165,8 @@ export add_materials_to_physical_groups_by_color
 export import_model
 # physical_group_preserving_fragment
 export physical_group_preserving_fragment
-
+# overlay_mpact_grid_hierarchy
+export overlay_mpact_grid_hierarchy
 
 
 ## MPACTCoarseCell

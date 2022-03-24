@@ -11,11 +11,11 @@ function physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, In
 
     # Fragment
     nents = length(object_dtags) + length(tool_dtags)
-    @info "Fragmenting $nents entities"
+    @info "... Fragmenting $nents entities"
     output_dtags, output_dtags_map = gmsh.model.occ.fragment(object_dtags, tool_dtags)
 
     # The parent at index i of input_dim_tags has children out_dim_tags_map[i]
-    @info "Updating physical groups"
+    @info "... Updating physical groups"
     input_dtags = vcat(object_dtags, tool_dtags)
     new_tags = similar(old_tags)
     # For each physical group

@@ -3,6 +3,7 @@
 # NEA/NSC 280 (2001): 2001.
 using MOCNeutronTransport
 filename = "c5g7.step"
+log_timestamps()
 
 # Import model and assign materials 
 # ---------------------------------------------------------------------------------------
@@ -10,9 +11,7 @@ materials = import_model(filename, names = true)
 
 # Construct and overlay MPACT grid hierarchy
 # ---------------------------------------------------------------------------------------
-mod_material = Material("Moderator", (168, 50, 50, 255), 1.0)
-material = mod_material
-
+push!(materials, Material("Moderator", (168, 50, 50, 255), 1.0))
 boundingbox = AABox(64.26, 64.26)
 
 # Lattices
@@ -26,13 +25,11 @@ module_grid = lattice_grid # assembly modular ray tracing
 coarse_div = [1.26*i for i ∈ 1:17*3-1]
 coarse_grid = RectilinearGrid(boundingbox, coarse_div, coarse_div) 
 
-# Overlay grid
 mpact_grid = MPACTGridHierarchy(lattice_grid, module_grid, coarse_grid)
-grid = mpact_grid
-overlay_mpact_grid_hierarchy(mpact_grid, "MATERIAL_WATER")
-## Get material areas
-#
-#
+# Overlay grid
+# Use the material at the end of `materials` to fill empty space (the grid)
+overlay_mpact_grid_hierarchy(mpact_grid, materials)
+
 ## Mesh
 ## ---------------------------------------------------------------------------------------
 ## Set mesh size by materials
@@ -43,6 +40,8 @@ overlay_mpact_grid_hierarchy(mpact_grid, "MATERIAL_WATER")
 #mat_to_mesh_size["MATERIAL_MOX-4.3"]         = 0.1
 #mat_to_mesh_size["MATERIAL_MOX-7.0"]         = 0.1
 #mat_to_mesh_size["MATERIAL_MOX-8.7"]         = 0.1
+
+## Get material areas
 #gmsh.model.mesh.set_size_by_material(mat_to_mesh_size)
 #gmsh.model.mesh.generate(2)
 ## Optimize the mesh

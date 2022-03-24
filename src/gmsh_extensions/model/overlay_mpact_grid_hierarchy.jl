@@ -1,4 +1,5 @@
-function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy, material::Material)
+function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy, 
+        material_hierarchy::Vector{Material})
     @info "Overlaying MPACT grid hierarchy"
     model_dtags = gmsh.model.get_entities(2)
     grid_tags_coords = Tuple{Int32, Float64, Float64}[]
@@ -18,6 +19,7 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy, material::Materi
         end                                      
     end
     gmsh.model.occ.synchronize()
+    grid_dtags = [(Int32(2), gtc[1]) for gtc in grid_tags_coords]
 
     # Label the rectangles with the appropriate physical groups 
     # Create a dictionary holding all the physical group names and tags
@@ -63,58 +65,87 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy, material::Materi
 
     for (tag, x, y) in grid_tags_coords
         ix = searchsortedfirst(xvals, x)
+        if xvals[ix] == x
+            ix += 1
+        end
         iy = searchsortedfirst(yvals, y)
+        if xvals[iy] == y
+            iy += 1
+        end
         grid_str = string("Lattice (", lpad(ix, max_grid_digits, "0"), ", ", 
                                        lpad(iy, max_grid_digits, "0"), ")")
         push!(groups[grid_str], tag)
     end
 
+    # Modules
+    xvals = collect(grid.module_grid.xdiv)        
+    push!(xvals, grid.module_grid.bb.xmax)
+ 
+    yvals = collect(grid.module_grid.ydiv)
+    push!(yvals, grid.module_grid.bb.ymax)
 
+    for (tag, x, y) in grid_tags_coords
+        ix = searchsortedfirst(xvals, x)
+        if xvals[ix] == x
+            ix += 1
+        end
+        iy = searchsortedfirst(yvals, y)
+        if xvals[iy] == y
+            iy += 1
+        end
+        grid_str = string("Module (", lpad(ix, max_grid_digits, "0"), ", ", 
+                                      lpad(iy, max_grid_digits, "0"), ")")
+        push!(groups[grid_str], tag)
+    end
 
+    # Coarse cells
+    xvals = collect(grid.coarse_grid.xdiv)        
+    push!(xvals, grid.coarse_grid.bb.xmax)
+ 
+    yvals = collect(grid.coarse_grid.ydiv)
+    push!(yvals, grid.coarse_grid.bb.ymax)
 
+    for (tag, x, y) in grid_tags_coords
+        ix = searchsortedfirst(xvals, x)
+        if xvals[ix] == x
+            ix += 1
+        end
+        iy = searchsortedfirst(yvals, y)
+        if xvals[iy] == y
+            iy += 1
+        end
+        grid_str = string("Coarse Cell (", lpad(ix, max_grid_digits, "0"), ", ", 
+                                           lpad(iy, max_grid_digits, "0"), ")")
+        push!(groups[grid_str], tag)
+    end
 
+    # Setup material physical group
+    mat_name = "Material: "*material_hierarchy[end].name
+    groups[mat_name] = [dt[2] for dt in grid_dtags] 
+    old_groups = gmsh.model.get_physical_groups()
+    names = [gmsh.model.get_physical_name(grp[1], grp[2]) for grp in old_groups]
 
+    # If name already exists, delete it and keep current ents
+    if mat_name ∈ names
+        id = findfirst(x->x == mat_name, names)
+        dim, tag = old_groups[id]
+        tags = gmsh.model.get_entities_for_physical_group(dim, tag)
+        append!(groups[mat_name], tags)
+        gmsh.model.remove_physical_name(mat_name)
+    end
 
+    # Assign groups
+    for name in keys(groups)
+        ptag = gmsh.model.add_physical_group(2, groups[name])
+        gmsh.model.set_physical_name(2, ptag, name)
+    end
 
-
-
-
-
-
-
-    grid_tags = gmsh_generate_rectangular_grid(bb, x, y; material = material)
-    grid_dim_tags = [(2, tag) for tag in grid_tags]
-    union_of_dim_tags = vcat(model_dim_tags, grid_dim_tags)
-    groups = gmsh.model.get_physical_groups()
-    names = [gmsh.model.get_physical_name(grp[1], grp[2]) for grp in groups]
-    material_indices = findall(x->occursin("MATERIAL", x), names)
     # material hierarchy with the grid material at the bottom.
-    material_hierarchy = names[material_indices]
-    push!(material_hierarchy, material)
-    out_dim_tags = gmsh_group_preserving_fragment(
-                        union_of_dim_tags,
-                        union_of_dim_tags;
+    output_dtags, output_dtags_map = physical_group_preserving_fragment(
+                        model_dtags, grid_dtags,
                         material_hierarchy = material_hierarchy
                    )
 
     # Account for material already in model, and erase an add.
-    return out_dim_tags    
+    return output_dtags, output_dtags_map 
 end
-
-
-
-
-
-
-
-
-
-
-    @debug "Setting rectangular grid physical groups"
-    for name in keys(grid_levels_tags)
-        output_tag = gmsh.model.add_physical_group(2, grid_levels_tags[name])
-        gmsh.model.set_physical_name(2, output_tag, name)
-    end
-    tags = [ tag for (tag, x0, y0) in grid_tags_coords ]
-    # If there is already a physical group with this material name, then we need to erase it
-    # and make a new physical group with the same name, that contains the previous entities
