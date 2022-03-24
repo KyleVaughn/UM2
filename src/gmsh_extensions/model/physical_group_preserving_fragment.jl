@@ -1,12 +1,12 @@
 function physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, Int32}},
                                             tool_dtags::Vector{Tuple{Int32, Int32}};
-                                            material_hierarchy::Vector{String} = String[])
+                                            material_hierarchy::Vector{Material} = Material[])
     # Only works on the highest dim entities, since that's all we get in the output of fragment
     
     # Get all the physical groups
     dim = max(maximum(getindex.(object_dtags, 1)), maximum(getindex.(tool_dtags, 1)))
     groups = gmsh.model.get_physical_groups(dim)
-    old_tags =  [gmsh.model.get_entities_for_physical_group(dtag[1], dtag[2]) for dtag in groups] 
+    old_tags = [gmsh.model.get_entities_for_physical_group(dtag[1], dtag[2]) for dtag in groups] 
     names = [gmsh.model.get_physical_name(dtag[1], dtag[2]) for dtag in groups]
 
     # Fragment
@@ -62,14 +62,19 @@ function physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, In
         gmsh.model.set_physical_name(gdim, ptag, names[i])
     end
 
+    # Apply material colors
+    if 0 < length(material_hierarchy)
+        apply_material_colors(material_hierarchy)
+    end
+
     return output_dtags, output_dtags_map
 end
 
 function _process_material_hierarchy!(
         names::Vector{String},
         new_tags::Vector{Vector{Int32}},
-        material_hierarchy::Vector{String})
-    material_indices = findall(x->startswith(x, "Material:"), names) 
+        material_hierarchy::Vector{Material})
+    material_indices = findall(x->startswith(x, "Material: "), names) 
     material_names = names[material_indices]
     material_dict = Dict{String, BitSet}()
     for (i, name) in enumerate(material_names)
@@ -77,11 +82,13 @@ function _process_material_hierarchy!(
     end
     # Ensure each material group is present in the hierarchy and warn now if it's not. 
     # Otherwise the error that occurs later is not as easy to figure out
-    for material in material_names
-        if material ∉ material_hierarchy 
-            error("Material_hierarchy does not contain: '$material'")
+    for material_name in getfield.(material_hierarchy, :name)
+        if "Material: "*material_name ∉ material_names
+            error("Physical groups does not contain: 'Material: $material_name'")
         end
     end
+    # Order material names to the hierarchy
+    material_names = ["Material: "*mat.name for mat in material_hierarchy]
     # Use the hierarchy to ensure that no entity has more than 1 material by removing
     # all shared elements from sets lower than the current set
     nmats = length(material_hierarchy)
