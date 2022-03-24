@@ -4,7 +4,6 @@
 using MOCNeutronTransport
 filename = "c5g7.step"
 
-
 # Import model and assign materials 
 # ---------------------------------------------------------------------------------------
 materials = import_model(filename, names = true)
@@ -15,6 +14,8 @@ gmsh.model.occ.add_rectangle(0, 0, 0, 64.26, 64.26)
 gmsh.model.occ.synchronize()
 p = gmsh.model.add_physical_group(2, [1157])
 gmsh.model.set_physical_name(2, p, "Material: Moderator")
+material_hierarchy = ["Material: "*mat.name for mat in materials]
+push!(material_hierarchy, "Material: Moderator")
 
 boundingbox = AABox(64.26, 64.26)
 
