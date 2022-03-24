@@ -10,11 +10,8 @@ materials = import_model(filename, names = true)
 
 # Construct and overlay MPACT grid hierarchy
 # ---------------------------------------------------------------------------------------
-gmsh.model.occ.add_rectangle(0, 0, 0, 64.26, 64.26)
-gmsh.model.occ.synchronize()
-p = gmsh.model.add_physical_group(2, [1157])
-gmsh.model.set_physical_name(2, p, "Material: Moderator")
-push!(materials, Material("Moderator", (168, 50, 50, 255), 1.0))
+mod_material = Material("Moderator", (168, 50, 50, 255), 1.0)
+material = mod_material
 
 boundingbox = AABox(64.26, 64.26)
 
@@ -31,6 +28,7 @@ coarse_grid = RectilinearGrid(boundingbox, coarse_div, coarse_div)
 
 # Overlay grid
 mpact_grid = MPACTGridHierarchy(lattice_grid, module_grid, coarse_grid)
+grid = mpact_grid
 overlay_mpact_grid_hierarchy(mpact_grid, "MATERIAL_WATER")
 ## Get material areas
 #
