@@ -1,3 +1,11 @@
+"""
+    function import_model(path::String; names::Bool=false)
+
+Import a CAD model into gmsh. `path` is the path to the CAD file. `names` is an optional
+argument, which when set to `true` will add any named CAD groups to the model's physical groups.
+
+Returns a Vector{Material} containing material information that was gathered from the file.
+"""
 function import_model(path::String; names::Bool=false)
     @info "Importing '"*path*"'"
     if !Bool(gmsh.is_initialized())
@@ -18,7 +26,7 @@ function import_model(path::String; names::Bool=false)
     end
 
     if names
-        add_cad_entity_names_to_physical_groups()
+        add_cad_names_to_physical_groups()
     end
 
     upath = uppercase(path)
@@ -53,7 +61,6 @@ function add_materials_from_step(path::String)
         end
     end
     close(file)
-    color_to_ent = get_entities_by_color()
-    add_materials_to_physical_groups_by_color(materials, color_to_ent)
+    add_materials_to_physical_groups_by_color(materials)
     return materials
 end

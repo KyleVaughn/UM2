@@ -1,9 +1,21 @@
+"""
+    physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, Int32}},
+                                       tool_dtags::Vector{Tuple{Int32, Int32}};
+                                       material_hierarchy::Vector{Material} = Material[])
+
+The equivalent to performing `gmsh.model.occ.fragment(object_dtags, tool_dtags)`, but
+preserving the physical groups of the highest dimensional entities. Only highest dimensional
+physical groups can be preserved due to available parent-child relationships from 
+`gmsh.model.occ.fragment`
+
+In the event that two overlapping entities have material physical groups, the optional
+material hierarchy is used to choose a single material for the resultant overlapping entity.
+"""
 function physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, Int32}},
                                             tool_dtags::Vector{Tuple{Int32, Int32}};
                                             material_hierarchy::Vector{Material} = Material[])
-    # Only works on the highest dim entities, since that's all we get in the output of fragment
     
-    # Get all the physical groups
+    # Get all physical groups and their names
     dim = max(maximum(getindex.(object_dtags, 1)), maximum(getindex.(tool_dtags, 1)))
     groups = gmsh.model.get_physical_groups(dim)
     old_tags = [gmsh.model.get_entities_for_physical_group(dtag[1], dtag[2]) for dtag in groups] 
@@ -14,7 +26,8 @@ function physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, In
     @info "... Fragmenting $nents entities"
     output_dtags, output_dtags_map = gmsh.model.occ.fragment(object_dtags, tool_dtags)
 
-    # The parent at index i of input_dim_tags has children out_dim_tags_map[i]
+    # Update the physical groups
+    # The parent at index i of input_dtags has children out_dtags_map[i]
     @info "... Updating physical groups"
     input_dtags = vcat(object_dtags, tool_dtags)
     new_tags = similar(old_tags)
@@ -50,12 +63,12 @@ function physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, In
     gmsh.model.occ.synchronize()
 
     # Process the material hierarchy, if it exists, so that each entity has one
-    # or less material
+    # or fewer materials
     if 0 < length(material_hierarchy)
         _process_material_hierarchy!(names, new_tags, material_hierarchy)
     end
 
-    # Create new physical groups
+    # Create the new physical groups
     for (i, group) in enumerate(groups)
         gdim, gnum = group
         ptag = gmsh.model.add_physical_group(gdim, new_tags[i])
@@ -64,7 +77,7 @@ function physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, In
 
     # Apply material colors
     if 0 < length(material_hierarchy)
-        apply_material_colors(material_hierarchy)
+        color_material_physical_group_entities(material_hierarchy)
     end
 
     return output_dtags, output_dtags_map

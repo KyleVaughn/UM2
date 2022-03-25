@@ -1,7 +1,11 @@
 """
-    entities_by_color(dim::Int64=-1)
+    get_entities_by_color(dim::Int64=-1)
 
-Return a dictionary of entities of dimension `dim`, sorted by color.
+Return a dictionary of with NTuple{4, Int32} RGBA color keys and Vector{Tuple{Int32, Int32}} 
+values, representing the dim tags of the entities with that color.
+If `dim` == -1, return all entities, otherwise return only entities of dimension `dim`.
+
+Note, entities in gmsh have color (0, 0, 255, 0) by default, so these entities are excluded.
 """
 function get_entities_by_color(dim::Int64=-1)
     color_dict = Dict{NTuple{4, Int32}, Vector{Tuple{Int32, Int32}}}()

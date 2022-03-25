@@ -1,6 +1,9 @@
 function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy, 
-        material_hierarchy::Vector{Material})
+                                      material_hierarchy::Vector{Material})
     @info "Overlaying MPACT grid hierarchy"
+    # Generate all of the rectangles the make up the coarse grid, and save
+    # their (x,y) origin coordinates, so we can group them into their appropriate
+    # modules and lattices later
     model_dtags = gmsh.model.get_entities(2)
     grid_tags_coords = Tuple{Int32, Float64, Float64}[]
 
@@ -55,7 +58,7 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
         end
     end
 
-    # For each rectangle, find which grid/index it belongs to
+    # For each rectangle, find which lattice/module/coarse cell it belongs to
     # Lattices
     xvals = collect(grid.lattice_grid.xdiv)        
     push!(xvals, grid.lattice_grid.bb.xmax)
@@ -125,19 +128,9 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
     old_groups = gmsh.model.get_physical_groups()
     names = [gmsh.model.get_physical_name(grp[1], grp[2]) for grp in old_groups]
 
-    # If name already exists, delete it and keep current ents
-    if mat_name ∈ names
-        id = findfirst(x->x == mat_name, names)
-        dim, tag = old_groups[id]
-        tags = gmsh.model.get_entities_for_physical_group(dim, tag)
-        append!(groups[mat_name], tags)
-        gmsh.model.remove_physical_name(mat_name)
-    end
-
     # Assign groups
     for name in keys(groups)
-        ptag = gmsh.model.add_physical_group(2, groups[name])
-        gmsh.model.set_physical_name(2, ptag, name)
+        add_physical_group(name, [(Int32(2),t) for t in groups[name]])
     end
 
     # material hierarchy with the grid material at the bottom.

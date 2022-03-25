@@ -61,9 +61,10 @@ include("MPACT/MPACTGridHierarchy.jl")
 #include("MPACT/MPACTLattice.jl")
 #include("MPACT/MPACTCore2D.jl")
 #
-include("gmsh_extensions/model/add_cad_entity_names_to_physical_groups.jl")
+include("gmsh_extensions/model/add_physical_group.jl")
+include("gmsh_extensions/model/add_cad_names_to_physical_groups.jl")
 include("gmsh_extensions/model/get_entities_by_color.jl")
-include("gmsh_extensions/model/apply_material_colors.jl")
+include("gmsh_extensions/model/color_material_physical_group_entities.jl")
 include("gmsh_extensions/model/add_materials_to_physical_groups_by_color.jl")
 include("gmsh_extensions/model/import_model.jl")
 include("gmsh_extensions/model/physical_group_preserving_fragment.jl")
@@ -153,12 +154,14 @@ export MPACTGridHierarchy
 #export import_mesh
 # gmsh
 export gmsh
-# add_cad_entity_names_to_physical_groups
-export add_cad_entity_names_to_physical_groups
+# add_physical_group
+export add_physical_group
+# add_cad_names_to_physical_groups
+export add_cad_names_to_physical_groups
 # get_entities_by_color
 export get_entities_by_color
-# apply_material_colors
-export apply_material_colors
+# color_material_physical_group_entities
+export color_material_physical_group_entities
 # add_materials_to_physical_groups_by_color
 export add_materials_to_physical_groups_by_color
 # import_model
