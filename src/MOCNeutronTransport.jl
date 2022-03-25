@@ -6,7 +6,6 @@ const enable_visualization = false
 const visualize_ray_tracing = false 
 
 using CUDA
-using gmsh
 using HDF5
 using Logging
 using LightXML
@@ -19,6 +18,18 @@ using LoggingExtras: TransformerLogger, global_logger
 import Base: +, -, *, /, ==, ≈, convert, hypot, intersect, issubset, sort, 
              sort!, zero
 import LinearAlgebra: ×, ⋅, norm, inv
+
+for path in Base.load_path()
+    gmsh_api_path = path*"/gmsh.jl"
+    if isfile(gmsh_api_path)
+        include(gmsh_api_path)
+        break
+    end
+end
+if !@isdefined(gmsh)
+    error("Gmsh API was not found. Ensure you have set JULIA_LOAD_PATH to a directory"* 
+          " containing gmsh.jl, e.g. JULIA_LOAD_PATH=\${JULIA_LOAD_PATH}:/usr/local/lib")
+end
 
 include("log.jl")
 include("SVector.jl")
