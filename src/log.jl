@@ -5,7 +5,7 @@ timestamp_logger(logger) = TransformerLogger(logger) do log
 end
 
 MOCNeutronTransport_timestamps_on = false
-function log_timestamps()
+function add_timestamps_to_log()
     if !MOCNeutronTransport_timestamps_on
         logger = global_logger()
         logger |> timestamp_logger |> global_logger

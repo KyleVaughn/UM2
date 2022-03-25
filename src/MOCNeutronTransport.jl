@@ -6,8 +6,9 @@ const enable_visualization = false
 const visualize_ray_tracing = false 
 
 using CUDA
-using Logging
+using gmsh
 using HDF5
+using Logging
 using LightXML
 using LinearAlgebra
 using StaticArrays
@@ -18,18 +19,6 @@ using LoggingExtras: TransformerLogger, global_logger
 import Base: +, -, *, /, ==, ≈, convert, hypot, intersect, issubset, sort, 
              sort!, zero
 import LinearAlgebra: ×, ⋅, norm, inv
-
-# Include gmsh
-for path in Base.load_path()
-    gmsh_api_path = path*"/gmsh.jl" 
-    if isfile(gmsh_api_path)
-        include(gmsh_api_path)
-        break
-    end
-end
-if !@isdefined(gmsh)
-    @warn "Gmsh API was not found"
-end
 
 include("log.jl")
 include("SVector.jl")
@@ -104,7 +93,7 @@ include("gmsh_extensions/model/overlay_mpact_grid_hierarchy.jl")
 ##include("./ray_tracing/ray_trace_low_level.jl")
 
 # log
-export log_timestamps
+export add_timestamps_to_log
 # SVector
 export distance, inv, norm², hypot
 # Material

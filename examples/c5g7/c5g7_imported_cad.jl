@@ -3,7 +3,7 @@
 # NEA/NSC 280 (2001): 2001.
 using MOCNeutronTransport
 filename = "c5g7.step"
-log_timestamps()
+add_timestamps_to_log()
 
 # Import model and assign materials 
 # ---------------------------------------------------------------------------------------
@@ -30,8 +30,8 @@ mpact_grid = MPACTGridHierarchy(lattice_grid, module_grid, coarse_grid)
 # Use the material at the end of `materials` to fill empty space (the grid)
 overlay_mpact_grid_hierarchy(mpact_grid, materials)
 
-## Mesh
-## ---------------------------------------------------------------------------------------
+# Mesh
+# ---------------------------------------------------------------------------------------
 ## Set mesh size by materials
 #mat_to_mesh_size = Dict{String, Float32}()
 #mat_to_mesh_size["MATERIAL_UO2"]             = 0.1 
