@@ -8,9 +8,9 @@ function color_material_physical_group_entities(materials::Vector{Material})
     material_names = ["Material: "*mat.name for mat in materials]
     for group in gmsh.model.get_physical_groups()
         gdim, gnum = group
-        tags = gmsh.model.get_entities_for_physical_group(gdim, gnum)
         name = gmsh.model.get_physical_name(gdim, gnum)
         if startswith(name, "Material: ")
+            tags = gmsh.model.get_entities_for_physical_group(gdim, gnum)
             mat_id = findfirst(mat_name->name == mat_name, material_names)
             r,g,b,a = materials[mat_id].color
             dtags = [(gdim, tag) for tag in tags]

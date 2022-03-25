@@ -11,6 +11,7 @@ using Logging
 using LightXML
 using LinearAlgebra
 using StaticArrays
+using Statistics
 using LinearAlgebra
 using Dates: now, format
 using LoggingExtras: TransformerLogger, global_logger
@@ -69,6 +70,7 @@ include("gmsh_extensions/model/add_materials_to_physical_groups_by_color.jl")
 include("gmsh_extensions/model/import_model.jl")
 include("gmsh_extensions/model/physical_group_preserving_fragment.jl")
 include("gmsh_extensions/model/overlay_mpact_grid_hierarchy.jl")
+include("gmsh_extensions/mesh/set_mesh_field_using_materials.jl")
 
 
 
@@ -170,6 +172,8 @@ export import_model
 export physical_group_preserving_fragment
 # overlay_mpact_grid_hierarchy
 export overlay_mpact_grid_hierarchy
+# set_mesh_field_using_materials
+export set_mesh_field_using_materials
 
 
 ## MPACTCoarseCell
