@@ -33,6 +33,7 @@ if !@isdefined(gmsh)
 end
 
 include("log.jl")
+include("postfix_operators.jl")
 include("SVector_extensions.jl")
 include("Material.jl")
 include("primitives/Edge.jl")
@@ -106,10 +107,12 @@ include("gmsh_extensions/mesh/set_mesh_field_using_materials.jl")
 ##include("./raytracing/raytrace.jl")
 ##include("./ray_tracing/ray_trace_low_level.jl")
 
-# log
-export add_timestamps_to_logger
-# SVector
-export distance, inv, norm², hypot
+
+
+
+
+
+
 # Material
 export Material
 # Edge
@@ -174,6 +177,26 @@ export physical_group_preserving_fragment
 export overlay_mpact_grid_hierarchy
 # set_mesh_field_using_materials
 export set_mesh_field_using_materials
+
+
+
+
+
+# linalg
+export ⊙, ⊘, inv, norm²
+# log
+export add_timestamps_to_logger
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## MPACTCoarseCell
