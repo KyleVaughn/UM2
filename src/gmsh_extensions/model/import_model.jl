@@ -50,10 +50,11 @@ function add_materials_from_step(path::String)
                 splitline = split(line, ",")
             end
             name = String(split(splitline[1], "'")[2])
-            r = Int32(round(255*parse(Float64, splitline[2])))
-            g = Int32(round(255*parse(Float64, splitline[3])))
-            b = Int32(round(255*parse(Float64, splitline[4][1:end-2])))
-            mat = Material(name, (r, g, b, Int32(255)), 1.0)
+            r = convert(N0f8, parse(Float64, splitline[2]))
+            g = convert(N0f8, parse(Float64, splitline[3]))
+            b = convert(N0f8, parse(Float64, splitline[4][1:end-2]))
+            color = RGBA(r, g, b, N0f8(1))
+            mat = Material(name, color, 1.0)
             if mat ∉ materials
                 push!(materials, mat)
             end

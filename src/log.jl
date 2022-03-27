@@ -6,7 +6,7 @@ end
 
 MOCNeutronTransport_logger_timestamps_on = false
 function add_timestamps_to_logger()
-    if !MOCNeutronTransport_timestamps_on
+    if !MOCNeutronTransport_logger_timestamps_on
         logger = global_logger()
         logger |> timestamp_logger |> global_logger
         global MOCNeutronTransport_logger_timestamps_on = true

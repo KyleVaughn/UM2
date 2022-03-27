@@ -5,7 +5,7 @@ using MOCNeutronTransport
 using Statistics
 
 filename = "c5g7.step"
-add_timestamps_to_log()
+add_timestamps_to_logger()
 
 # Gmsh options (Will hide from use later)
 gmsh.initialize()
@@ -36,7 +36,7 @@ coarse_grid = RectilinearGrid(boundingbox, coarse_div, coarse_div)
 mpact_grid = MPACTGridHierarchy(lattice_grid, module_grid, coarse_grid)
 
 # Overlay grid and use the material at the end of `materials` to fill empty space (the grid)
-push!(materials, Material("Moderator", (168, 50, 50, 255), 1.0))
+push!(materials, Material(name="Moderator", color="sienna", mesh_size=1.0))
 overlay_mpact_grid_hierarchy(mpact_grid, materials)
 
 # Mesh

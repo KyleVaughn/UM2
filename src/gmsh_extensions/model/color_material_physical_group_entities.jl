@@ -12,7 +12,11 @@ function color_material_physical_group_entities(materials::Vector{Material})
         if startswith(name, "Material: ")
             tags = gmsh.model.get_entities_for_physical_group(gdim, gnum)
             mat_id = findfirst(mat_name->name == mat_name, material_names)
-            r,g,b,a = materials[mat_id].color
+            color = materials[mat_id].color
+            r = Int32(color.r.i)
+            g = Int32(color.g.i)
+            b = Int32(color.b.i)
+            a = Int32(color.alpha.i)
             dtags = [(gdim, tag) for tag in tags]
             gmsh.model.set_color(dtags, r, g, b, a)  
         end

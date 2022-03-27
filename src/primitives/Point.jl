@@ -42,9 +42,6 @@ convert(::Type{P}, p::Point) where {P <: Point2D} = P(p[1], p[2])
 Base.zero(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector zeros(T, Dim))
 nan(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector fill(T(NaN), Dim))
 
-# Operators of the form f(Point, Number) perform f.(p.coord, n)
-# Operators of the form f(Point, Point) or f(Point, SVector) perform element-wise 
-# operations, except in the case of ⋅, ×, and ≈.
 @inline +(p::Point, n::Number) = Point(p.coord .+ n)
 @inline +(n::Number, p::Point) = Point(n .+ p.coord)
 @inline +(p₁::Point, p₂::Point) = p₁.coord + p₂.coord
@@ -60,11 +57,11 @@ nan(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector fill(T(NaN), 
 
 @inline *(n::Number, p::Point) = Point(n * p.coord) 
 @inline *(p::Point, n::Number) = Point(p.coord * n)
-@inline *(p₁::Point, p₂::Point) = Point(p₁.coord .* p₂.coord)
+@inline ⊙(p₁::Point, p₂::Point) = Point(p₁.coord ⊙ p₂.coord)
 
 @inline /(n::Number, p::Point) = Point(n / p.coord) 
 @inline /(p::Point, n::Number) = Point(p.coord / n)
-@inline /(p₁::Point, p₂::Point) = Point(p₁.coord ./ p₂.coord)
+@inline ⊘(p₁::Point, p₂::Point) = Point(p₁.coord ⊘ p₂.coord)
 
 @inline ⋅(p₁::Point, p₂::Point) = dot(p₁.coord, p₂.coord)
 @inline ×(p₁::Point, p₂::Point) = cross(p₁.coord, p₂.coord)
@@ -76,16 +73,12 @@ nan(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector fill(T(NaN), 
 @inline distance(v::Vector, p::Point) = norm(v - p)
 @inline distance²(p₁::Point, p₂::Point) = norm²(p₁ - p₂)
 @inline midpoint(p₁::Point, p₂::Point) = (p₁ + p₂)/2
-@inline norm(p::Point) = √(p.coord ⋅ p.coord)
-@inline norm²(p::Point) = p.coord ⋅ p.coord
-
-# Float16, be careful of overflow and underflow
-@inline ≈(p₁::Point{Dim, Float16}, 
-          p₂::Point{Dim, Float16}) where {Dim} = distance(p₁, p₂) < (1e-5) # 100 nm
-@inline norm(p::Point{Dim, Float16}) where {Dim} = hypot(p.coord)
+@inline norm(p::Point) = norm(p.coord)
+@inline norm²(p::Point) = norm²(p.coord)
 
 """
     isCCW(p₁::Point2D, p₂::Point2D, p₃::Point2D)
+
 If the triplet of points is counter-clockwise oriented from p₁ to p₂ to p₃.
 """
 @inline isCCW(p₁::Point2D, p₂::Point2D, p₃::Point2D) = 0 ≤ (p₂ - p₁) × (p₃ - p₁)

@@ -2,17 +2,12 @@ module MOCNeutronTransport
 
 const minimum_ray_segment_length = 1e-4 # 1μm
 const plot_nonlinear_subdivisions = 2
-const enable_visualization = false
+const visualization_enabled = false
 const visualize_ray_tracing = false 
 
-using Colors
-using CUDA
-using HDF5
-using Logging
-using LightXML
-using LinearAlgebra
-using StaticArrays
-using Statistics
+using CUDA, Colors, FixedPointNumbers, HDF5, Logging, LightXML, LinearAlgebra, 
+      StaticArrays, Statistics
+using Pkg.Artifacts
 using Dates: now, format
 using LoggingExtras: TransformerLogger, global_logger
 
@@ -20,21 +15,15 @@ import Base: +, -, *, /, ==, ≈, convert, hypot, intersect, issubset, sort,
              sort!, zero
 import LinearAlgebra: ×, ⋅, norm, inv
 
-for path in Base.load_path()
-    gmsh_api_path = path*"/gmsh.jl"
-    if isfile(gmsh_api_path)
-        include(gmsh_api_path)
-        break
-    end
-end
-if !@isdefined(gmsh)
-    error("Gmsh API was not found. Ensure you have set JULIA_LOAD_PATH to a directory"* 
-          " containing gmsh.jl, e.g. JULIA_LOAD_PATH=\${JULIA_LOAD_PATH}:/usr/local/lib")
+# include gmsh
+gmsh_dir = readdir(artifact"gmsh", join=true)[1]
+gmsh_jl = joinpath(gmsh_dir, "lib", "gmsh.jl") 
+if isfile(gmsh_jl)
+    include(gmsh_jl)
+else
+    error("Could not find gmsh API.")
 end
 
-include("log.jl")
-include("postfix_operators.jl")
-include("SVector_extensions.jl")
 include("Material.jl")
 include("primitives/Edge.jl")
 include("primitives/Face.jl")
@@ -54,15 +43,9 @@ include("mesh/PolygonMesh.jl")
 include("mesh/QuadraticPolygonMesh.jl")
 include("mesh/PolyhedronMesh.jl")
 include("mesh/QuadraticPolyhedronMesh.jl")
-#include("mesh/IO_abaqus.jl")
-#include("mesh/mesh_IO.jl")
 include("MPACT/MPACTGridHierarchy.jl")
-#include("MPACT/MPACTGeometryHierarchy.jl")
-#include("MPACT/MPACTCoarseCell.jl")
-#include("MPACT/MPACTRayTracingModule.jl")
-#include("MPACT/MPACTLattice.jl")
-#include("MPACT/MPACTCore2D.jl")
-#
+##include("mesh/IO_abaqus.jl")
+##include("mesh/mesh_IO.jl")
 include("gmsh_extensions/model/add_physical_group.jl")
 include("gmsh_extensions/model/add_cad_names_to_physical_groups.jl")
 include("gmsh_extensions/model/get_entities_by_color.jl")
@@ -72,46 +55,8 @@ include("gmsh_extensions/model/import_model.jl")
 include("gmsh_extensions/model/physical_group_preserving_fragment.jl")
 include("gmsh_extensions/model/overlay_mpact_grid_hierarchy.jl")
 include("gmsh_extensions/mesh/set_mesh_field_using_materials.jl")
-
-
-
-
-# gmsh
-#include("rand.jl")
-#include("interpolation.jl")
-#include("jacobian.jl")
-##include("boundingbox.jl")
-#include("gauss_legendre_quadrature.jl")
-#include("triangulate.jl")
-#include("measure.jl")
-# only need to worry about dampening for intersection with 
-# quadratic faces in 3D
-#
-
-#include("operators.jl")
-#include("./gmsh/gmsh_generate_rectangular_grid.jl")
-#include("./gmsh/gmsh_group_preserving_fragment.jl")
-#include("./gmsh/gmsh_overlay_rectangular_grid.jl")
-
-
-###include("L_system.jl")
-#include("./mesh/UnstructuredMesh.jl")
-#include("./mesh/PolygonMesh.jl")
-#include("./mesh/QuadraticPolygonMesh.jl")
-#include("./mesh/HierarchicalMeshPartition.jl")
-#include("./mesh/IO_abaqus.jl")
-###include("./mesh/IO_vtk.jl")
-#include("./mesh/IO_xdmf.jl")
-#include("gauss_legendre_quadrature.jl")
-##include("./ray_tracing/AngularQuadrature.jl")
-##include("./raytracing/raytrace.jl")
-##include("./ray_tracing/ray_trace_low_level.jl")
-
-
-
-
-
-
+include("log.jl")
+include("linalg.jl")
 
 # Material
 export Material
@@ -122,7 +67,7 @@ export Face, Face2D, Face3D
 # Cell
 export Cell
 # Point
-export Point, Point1D, Point2D, Point3D, +, -, *, /, ⋅, ×, ==, ≈, distance,
+export Point, Point1D, Point2D, Point3D, +, -, *, /, ⋅, ×, ⊙, ⊘, ==, ≈, distance,
        distance², isCCW, midpoint, nan, norm, norm²
 # LineSegment
 export LineSegment, LineSegment2D, LineSegment3D
@@ -142,6 +87,8 @@ export QuadraticPolygon, QuadraticTriangle, QuadraticTriangle2D, QuadraticTriang
 export Polyhedron, Tetrahedron, Hexahedron
 # QuadraticPolyhedron
 export QuadraticPolyhedron, QuadraticTetrahedron, QuadraticHexahedron
+# RectilinearGrid
+export RectilinearGrid, RectilinearGrid2D, issubset
 # UnstructuredMesh
 export UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D, 
        LinearUnstructuredMesh, LinearUnstructuredMesh2D, LinearUnstructuredMesh3D,
@@ -151,12 +98,11 @@ export UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D,
 export PolygonMesh, TriangleMesh, QuadrilateralMesh
 # QuadraticPolygonMesh
 export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
-# RectilinearGrid
-export RectilinearGrid, RectilinearGrid2D, issubset
 # MPACTGridHierarchy
 export MPACTGridHierarchy
-## mesh_IO
-#export import_mesh
+### mesh_IO
+##export import_mesh
+
 # gmsh
 export gmsh
 # add_physical_group
@@ -177,11 +123,6 @@ export physical_group_preserving_fragment
 export overlay_mpact_grid_hierarchy
 # set_mesh_field_using_materials
 export set_mesh_field_using_materials
-
-
-
-
-
 # linalg
 export ⊙, ⊘, inv, norm²
 # log
@@ -191,79 +132,8 @@ export add_timestamps_to_logger
 
 
 
-
-
-
-
-
-
-
-
-## MPACTCoarseCell
-#export MPACTCoarseCell, MPACTCoarseCells
-## MPACTRayTracingModule
-#export MPACTRayTracingModule, MPACTRayTracingModules
-## MPACTLattice
-#export MPACTLattice, MPACTLattices
-## MPACTCore2D
-#export MPACTCore2D, validate_core_partition
-## jacobian
-#const 𝗝 = jacobian
-#export jacobian, 𝗝
-## gauss_legendre_quadrature
-#export gauss_legendre_quadrature, triangular_gauss_legendre_quadrature
-## triangulate
-#export triangulate
-## measure
-#export measure
-
-# Structs/Types
-#export 
-#        HierarchicalMeshPartition, 
-#       MeshPartitionTree,
-#        PolygonMesh, 
-#        QuadraticPolygonMesh,
-#       QuadraticTriangleMesh, QuadraticQuadrilateralMesh, 
-#       Tree,  TriangleMesh,
-#       
-
-# Convenience operators
-#const 𝗗 = derivative
-#const ∇ = gradient
-#const ∇² = laplacian
-#const 𝗝 = jacobian
-
-# Operators
-#export 𝗝
-
-# Methods
-#       edgepoints, edges, edge_face_connectivity, 
-#       facepoints, face_edge_connectivity,
-#       gauss_legendre_quadrature, 
-#       height, 
-#       intersect, intersect_edges, intersect_edges_CUDA, inv, isleft, isstraight, isroot, 
-#       in_halfspace,
-#       jacobian, 
-#       leaves, linear_edges, log_timestamps, 
-#       materialize_edge, materialize_edges, materialize_face, materialize_faces,
-#       materialize_polygon, materialize_quadratic_polygon, midpoint, 
-#       nan, nearest_point, norm, norm², num_edges, 
-#       partition_mesh,
-#       quadratic_edges,
-#       rand, read_abaqus2d, real_to_parametric, 
-#       sort, sort!, sort_intersection_points!, submesh,
-#       triangulate, triangulate_nonconvex,
-#       union, 
-#       width, write_xdmf2d
-#
-
-
-#       gmsh_generate_rectangular_grid,
-#       gmsh_group_preserving_fragment,
-#       gmsh_overlay_rectangular_grid
-# 
 # Plot
-if enable_visualization
+if visualization_enabled
     using GLMakie: Axis, Axis3, Figure, LineSegments, Mesh, Scatter, current_axis, 
                    record
     import GLMakie: linesegments, linesegments!, mesh, mesh!, scatter, scatter!, 
@@ -279,5 +149,4 @@ if enable_visualization
            scatter!, linesegments!, mesh!
 end
 
-#
 end
