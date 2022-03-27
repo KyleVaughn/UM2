@@ -5,6 +5,7 @@ const plot_nonlinear_subdivisions = 2
 const enable_visualization = false
 const visualize_ray_tracing = false 
 
+using Colors
 using CUDA
 using HDF5
 using Logging
@@ -12,7 +13,6 @@ using LightXML
 using LinearAlgebra
 using StaticArrays
 using Statistics
-using LinearAlgebra
 using Dates: now, format
 using LoggingExtras: TransformerLogger, global_logger
 
@@ -33,7 +33,7 @@ if !@isdefined(gmsh)
 end
 
 include("log.jl")
-include("SVector.jl")
+include("SVector_extensions.jl")
 include("Material.jl")
 include("primitives/Edge.jl")
 include("primitives/Face.jl")
@@ -107,7 +107,7 @@ include("gmsh_extensions/mesh/set_mesh_field_using_materials.jl")
 ##include("./ray_tracing/ray_trace_low_level.jl")
 
 # log
-export add_timestamps_to_log
+export add_timestamps_to_logger
 # SVector
 export distance, inv, norm², hypot
 # Material

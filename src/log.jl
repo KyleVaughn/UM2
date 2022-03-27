@@ -1,14 +1,14 @@
 # Add timestamps to logger
-const date_format = "HH:MM:SS.sss"
+const time_format = "HH:MM:SS.sss"
 timestamp_logger(logger) = TransformerLogger(logger) do log 
-  merge(log, (; message = "$(format(now(), date_format)) $(log.message)"))
+  merge(log, (; message = "$(format(now(), time_format)) $(log.message)"))
 end
 
-MOCNeutronTransport_timestamps_on = false
-function add_timestamps_to_log()
+MOCNeutronTransport_logger_timestamps_on = false
+function add_timestamps_to_logger()
     if !MOCNeutronTransport_timestamps_on
         logger = global_logger()
         logger |> timestamp_logger |> global_logger
-        global MOCNeutronTransport_timestamps_on = true
+        global MOCNeutronTransport_logger_timestamps_on = true
     end 
 end
