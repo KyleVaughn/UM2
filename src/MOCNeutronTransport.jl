@@ -25,7 +25,7 @@ for path in Base.load_path()
         break
     end
 end
-# Fallback on the SDK binary
+# Fallback on the SDK
 if !@isdefined(gmsh)
     gmsh_dir = readdir(artifact"gmsh", join=true)[1]
     gmsh_jl = joinpath(gmsh_dir, "lib", "gmsh.jl") 
