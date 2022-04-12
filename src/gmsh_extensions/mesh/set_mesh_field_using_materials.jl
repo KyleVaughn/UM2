@@ -47,5 +47,8 @@ function set_mesh_field_using_materials(materials::Vector{Material})
     fid = gmsh.model.mesh.field.add("Min")
     gmsh.model.mesh.field.set_numbers(fid, "FieldsList", field_ids)
     gmsh.model.mesh.field.set_as_background_mesh(fid)
+    gmsh.option.set_number("Mesh.MeshSizeExtendFromBoundary", 0)
+    gmsh.option.set_number("Mesh.MeshSizeFromPoints", 0)
+    gmsh.option.set_number("Mesh.MeshSizeFromCurvature", 0)
     return field_ids 
 end

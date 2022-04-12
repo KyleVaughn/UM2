@@ -15,10 +15,6 @@ gmsh.initialize()
 gmsh.option.set_number("General.NumThreads", 0) # 0 uses system default, i.e. OMP_NUM_THREADS)
 gmsh.option.set_number("Geometry.OCCParallel", 1) # Use parallel OCC boolean operations
 gmsh.option.set_number("General.Verbosity", 2) # Supress gmsh info
-gmsh.option.set_number("Mesh.SecondOrderIncomplete", 1)
-gmsh.option.set_number("Mesh.MeshSizeExtendFromBoundary", 0)
-gmsh.option.set_number("Mesh.MeshSizeFromPoints", 0)
-gmsh.option.set_number("Mesh.MeshSizeFromCurvature", 0)
 
 # Import model and assign materials 
 # ---------------------------------------------------------------------------------------
@@ -40,7 +36,7 @@ mpact_grid = MPACTGridHierarchy(lattice_grid, module_grid, coarse_grid)
 
 # Overlay grid and use the material at the end of `materials` to fill empty space (the grid)
 # See http://juliagraphics.github.io/Colors.jl/stable/namedcolors/ for named colors
-# if your don't care to find an RGB value you like.
+# if you don't care to find an RGB value you like.
 push!(materials, Material(name="Moderator", color="sienna", mesh_size=1.0))
 overlay_mpact_grid_hierarchy(mpact_grid, materials)
 
@@ -74,57 +70,7 @@ materials[6].mesh_size = 1 / 2Σₜ_UO2 # Uranium Oxide
 materials[7].mesh_size = 1 / 2Σₜ_Mod # Moderator
 
 set_mesh_field_using_materials(materials)
-
-# Generate mesh
-if  mesh_type == "Triangle"
-    # Delaunay (5) handles large element size gradients better
-    gmsh.option.set_number("Mesh.Algorithm", 5)
-    if mesh_order == 1
-        gmsh.model.mesh.generate(2)
-        for _ in 1:mesh_optimization_iters
-            gmsh.model.mesh.optimize("Laplace2D")
-        end
-    elseif mesh_order == 2
-        gmsh.option.set_number("Mesh.HighOrderOptimize", 2) # elastic + optimization
-        gmsh.model.mesh.generate(2)
-        gmsh.model.mesh.set_order(2)
-        for _ in 1:mesh_optimization_iters 
-            gmsh.model.mesh.optimize("HighOrderElastic")
-            gmsh.model.mesh.optimize("Relocate2D")
-            gmsh.model.mesh.optimize("HighOrderElastic")
-        end
-    else
-        error("Mesh order must be 1 or 2")
-    end
-elseif mesh_type == "Quadrilateral"
-    gmsh.option.set_number("Mesh.RecombineAll", 1)
-    gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads.
-    gmsh.option.set_number("Mesh.RecombinationAlgorithm", 2) # simple full-quad
-    gmsh.option.set_number("Mesh.SubdivisionAlgorithm", 1) # All quads
-    if mesh_order == 1
-        gmsh.model.mesh.generate(2)
-        for _ in 1:mesh_optimization_iters 
-            gmsh.model.mesh.optimize("Laplace2D")
-            gmsh.model.mesh.optimize("Relocate2D")
-            gmsh.model.mesh.optimize("Laplace2D")
-        end
-    elseif mesh_order == 2
-        gmsh.option.set_number("Mesh.HighOrderOptimize", 2)
-        gmsh.model.mesh.generate(2)
-        gmsh.model.mesh.set_order(2)
-        for _ in 1:mesh_optimization_iters 
-            gmsh.model.mesh.optimize("HighOrderElastic")
-            gmsh.model.mesh.optimize("Relocate2D")
-            gmsh.model.mesh.optimize("HighOrderElastic")
-        end
-    else
-        error("Mesh order must be 1 or 2")
-    end
-else
-    error("Could not identify mesh type")
-end
-
-# Write in Abaqus format
+generate_mesh(order = mesh_order, faces = mesh_type, opt_iters = mesh_optimization_iters)
 gmsh.write(filename[1:end-5]*".inp")
 
 # Get material areas
