@@ -34,7 +34,6 @@ function _select_mesh_UInt_type(N::Int64)
         U = UInt64
     else 
         error("That's a big mesh! Number of edges exceeds typemax(UInt64)")
-        U = UInt64
     end
     return U
 end

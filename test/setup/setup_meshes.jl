@@ -26,7 +26,7 @@ function setup_QuadrilateralMesh(::Type{T}, ::Type{U}) where {T, U}
     return QuadrilateralMesh{T, U}(name, points, faces, face_sets)
 end
 
-function setup_ConvexPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
+function setup_MixedPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
     name = "tri_quad"
     points = [Point2D{T}(0, 0),
               Point2D{T}(1, 0),
@@ -37,7 +37,7 @@ function setup_ConvexPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
     face_sets = Dict{String, BitSet}()
     face_sets["A"] = BitSet([1])
     face_sets["B"] = BitSet([2])
-    return ConvexPolygonMesh{T, U}(name, points, faces, face_sets)
+    return MixedPolygonMesh{T, U}(name, points, faces, face_sets)
 end
 
 function setup_QuadraticTriangleMesh(::Type{T}, ::Type{U}) where {T, U}
@@ -81,7 +81,7 @@ function setup_QuadraticQuadrilateralMesh(::Type{T}, ::Type{U}) where {T, U}
     return QuadraticQuadrilateralMesh{T, U}(name, points, faces, face_sets)
 end
 
-function setup_QuadraticPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
+function setup_MixedQuadraticPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
     name = "tri6_quad8"
     points = [Point2D{T}(0, 0),
               Point2D{T}(1, 0),
@@ -100,5 +100,5 @@ function setup_QuadraticPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
     face_sets = Dict{String, Set{Int64}}()
     face_sets["A"] = Set([1])
     face_sets["B"] = Set([2])
-    return QuadraticPolygonMesh{T, U}(name, points, faces, face_sets)
+    return MixedQuadraticPolygonMesh{T, U}(name, points, faces, face_sets)
 end

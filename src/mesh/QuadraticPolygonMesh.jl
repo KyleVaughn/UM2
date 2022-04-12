@@ -1,20 +1,22 @@
-struct QuadraticPolygonMesh{T, U} <:QuadraticUnstructuredMesh2D{T, U}
+abstract type QuadraticPolygonMesh{T, U} <: QuadraticUnstructuredMesh2D{T, U} end
+
+struct MixedQuadraticPolygonMesh{T, U} <:QuadraticPolygonMesh{T, U}
     name::String
     points::Vector{Point2D{T}}
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
     face_sets::Dict{String, BitSet}
 end
 
-function QuadraticPolygonMesh{T, U}(;
+function MixedQuadraticPolygonMesh{T, U}(;
     name::String = "",
     points::Vector{Point2D{T}} = Point2D{T}[],
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{6, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {T, U}
-    return QuadraticPolygonMesh(name, points, faces, face_sets)
+    return MixedQuadraticPolygonMesh(name, points, faces, face_sets)
 end
 
-struct QuadraticTriangleMesh{T, U} <:QuadraticUnstructuredMesh2D{T, U}
+struct QuadraticTriangleMesh{T, U} <:QuadraticPolygonMesh{T, U}
     name::String
     points::Vector{Point2D{T}}
     faces::Vector{SVector{6, U}}
@@ -30,7 +32,7 @@ function QuadraticTriangleMesh{T, U}(;
     return QuadraticTriangleMesh(name, points, faces, face_sets)
 end
  
-struct QuadraticQuadrilateralMesh{T, U} <:QuadraticUnstructuredMesh2D{T, U}
+struct QuadraticQuadrilateralMesh{T, U} <:QuadraticPolygonMesh{T, U}
     name::String
     points::Vector{Point2D{T}}
     faces::Vector{SVector{8, U}}
@@ -46,7 +48,7 @@ function QuadraticQuadrilateralMesh{T, U}(;
     return QuadraticQuadrilateralMesh(name, points, faces, face_sets)
 end
 
-function Base.show(io::IO, mesh::QuadraticPolygonMesh)
+function Base.show(io::IO, mesh::MixedQuadraticPolygonMesh)
     mesh_type = typeof(mesh)
     println(io, mesh_type)
     println(io, "  ├─ Name      : $(mesh.name)")

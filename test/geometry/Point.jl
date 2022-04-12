@@ -23,13 +23,13 @@
             # Multiplication
             p = 4*p₁
             @test p == [4]
-            p = Point(T(1)) * Point(T(3))
+            p = Point(T(1)) ⊙ Point(T(3))
             @test p == [3]
     
             # Division
             p = p₁/4
             @test p == [1//4]
-            p = Point(T(8)) / Point(T(2))
+            p = Point(T(8)) ⊘ Point(T(2))
             @test p == [4]
     
             # Dot product
@@ -88,13 +88,13 @@
             # Multiplication
             p = 4*p₁
             @test p == [4, 8]
-            p = Point2D{T}(1,2) * Point2D{T}(3,4)
+            p = Point2D{T}(1,2) ⊙ Point2D{T}(3,4)
             @test p == [3, 8]
     
             # Division
             p = p₁/4
             @test p == [1//4, 1//2]
-            p = Point2D{T}(8,4) / Point2D{T}(2,4)
+            p = Point2D{T}(8,4) ⊘ Point2D{T}(2,4)
             @test p == [4, 1]
     
             # Dot product
@@ -162,13 +162,13 @@
             # Multiplication
             p = 4*p₁
             @test p == [4, 4, 0]
-            p = Point3D{T}(1,2,3) * Point3D{T}(3,4,5)
+            p = Point3D{T}(1,2,3) ⊙ Point3D{T}(3,4,5)
             @test p == [3, 8, 15]
     
             # Division
             p = p₁/4
             @test p == [1//4, 1//4, 0]
-            p = Point3D{T}(8,4,2) / Point3D{T}(2,4,-1)
+            p = Point3D{T}(8,4,2) ⊘ Point3D{T}(2,4,-1)
             @test p == [4, 1, -2]
     
             # Dot product

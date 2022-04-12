@@ -6,7 +6,7 @@ using Statistics
 
 filename = "c5g7.step"
 mesh_type = "Quadrilateral" # Triangle or Quadrilateral
-mesh_order = 2 # 1 or 2
+mesh_order = 1 # 1 or 2
 mesh_optimization_iters = 2
 add_timestamps_to_logger()
 
@@ -14,7 +14,8 @@ add_timestamps_to_logger()
 gmsh.initialize()
 gmsh.option.set_number("General.NumThreads", 0) # 0 uses system default, i.e. OMP_NUM_THREADS)
 gmsh.option.set_number("Geometry.OCCParallel", 1) # Use parallel OCC boolean operations
-#gmsh.option.set_number("General.Verbosity", 2) # Supress gmsh info
+gmsh.option.set_number("General.Verbosity", 2) # Supress gmsh info
+gmsh.option.set_number("Mesh.SecondOrderIncomplete", 1)
 gmsh.option.set_number("Mesh.MeshSizeExtendFromBoundary", 0)
 gmsh.option.set_number("Mesh.MeshSizeFromPoints", 0)
 gmsh.option.set_number("Mesh.MeshSizeFromCurvature", 0)
@@ -45,6 +46,7 @@ overlay_mpact_grid_hierarchy(mpact_grid, materials)
 
 # Mesh
 # ---------------------------------------------------------------------------------------
+# Set the mesh size field
 # Using 1 / 2Σₜ for mesh size, with Σₜ taken as the average Σₜᵢ in Table 1
 # THIS IS NOT A PROPER 1-GROUP COLLAPSE
 Σₜᵢ_FC  = [1.90730E-01, 4.56520E-01, 6.40700E-01, 6.49840E-01, 6.70630E-01, 8.75060E-01, 1.43450E+00]
@@ -72,6 +74,8 @@ materials[6].mesh_size = 1 / 2Σₜ_UO2 # Uranium Oxide
 materials[7].mesh_size = 1 / 2Σₜ_Mod # Moderator
 
 set_mesh_field_using_materials(materials)
+
+# Generate mesh
 if  mesh_type == "Triangle"
     # Delaunay (5) handles large element size gradients better
     gmsh.option.set_number("Mesh.Algorithm", 5)
@@ -96,7 +100,7 @@ elseif mesh_type == "Quadrilateral"
     gmsh.option.set_number("Mesh.RecombineAll", 1)
     gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads.
     gmsh.option.set_number("Mesh.RecombinationAlgorithm", 2) # simple full-quad
-#    gmsh.option.set_number("Mesh.SubdivisionAlgorithm", 1) # All quads
+    gmsh.option.set_number("Mesh.SubdivisionAlgorithm", 1) # All quads
     if mesh_order == 1
         gmsh.model.mesh.generate(2)
         for _ in 1:mesh_optimization_iters 
@@ -120,15 +124,12 @@ else
     error("Could not identify mesh type")
 end
 
-gmsh.fltk.run()
+# Write in Abaqus format
+gmsh.write(filename[1:end-5]*".inp")
 
-## Get material areas
-## Optimize the mesh
-#for n in 1:mesh_optimization_iters
-#    gmsh.model.mesh.optimize("Laplace2D")
-#end
+# Get material areas
+
 ## Write the mesh to file 
-#gmsh.write(filename*"inp")
 ## Finalize gmsh
 #gmsh.finalize()
 #

@@ -7,7 +7,7 @@ File type is inferred from the extension.
 """
 function import_mesh(path::String, ::Type{T}=Float64) where {T<:AbstractFloat}
     @info "Reading "*path
-    if endswith(path, ".inp")
+    if endswith(uppercase(path), ".INP")
         return read_abaqus(path, T)
     else
         error("Could not determine mesh file type from extension")
@@ -53,7 +53,7 @@ function _create_mesh_from_elements(is3D::Bool,
                                                face_sets = element_sets)
             elseif element_lengths == [3, 4]
                 faces = [ SVector{length(f), U}(f) for f in element_vecs]
-                return PolygonMesh{T, U}(name = name,
+                return MixedPolygonMesh{T, U}(name = name,
                                                points = points2D,
                                                faces = faces,
                                                face_sets = element_sets)
@@ -76,7 +76,7 @@ function _create_mesh_from_elements(is3D::Bool,
 
             elseif element_lengths == [6, 8]
                 faces = [ SVector{length(f), U}(f) for f in element_vecs]
-                return QuadraticPolygonMesh{T, U}(name = name,
+                return MixedQuadraticPolygonMesh{T, U}(name = name,
                                                   points = points2D,
                                                   faces = faces, 
                                                   face_sets = element_sets)
@@ -98,7 +98,7 @@ function _create_mesh_from_elements(is3D::Bool,
                                            cell_sets = element_sets)
             elseif element_lengths == [4, 8]
                 cells = [ SVector{length(f), U}(f) for f in element_vecs]
-                return PolyhedronMesh{T, U}(name = name,
+                return MixedPolyhedronMesh{T, U}(name = name,
                                             points = points,
                                             cells = cells,
                                             cell_sets = element_sets)
@@ -120,7 +120,7 @@ function _create_mesh_from_elements(is3D::Bool,
 
             elseif element_lengths == [10, 20]
                 cells = [ SVector{3, U}(f) for f in element_vecs]
-                return QuadraticPolyhedronMesh{T, U}(name = name,
+                return MixedQuadraticPolyhedronMesh{T, U}(name = name,
                                                      points = points,
                                                      cells = cells, 
                                                      cell_sets = element_sets)
@@ -129,17 +129,3 @@ function _create_mesh_from_elements(is3D::Bool,
     end
     error("Invalid mesh type")
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-

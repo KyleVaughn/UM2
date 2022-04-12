@@ -1,20 +1,22 @@
-struct QuadraticPolyhedronMesh{T, U} <:QuadraticUnstructuredMesh3D{T, U}
+abstract type QuadraticPolyhedronMesh{T, U} <:QuadraticUnstructuredMesh3D{T, U} end
+
+struct MixedQuadraticPolyhedronMesh{T, U} <:QuadraticPolyhedronMesh{T, U}
     name::String
     points::Vector{Point3D{T}}
     cells::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
     cell_sets::Dict{String, BitSet}
 end
 
-function QuadraticPolyhedronMesh{T, U}(;
+function MixedQuadraticPolyhedronMesh{T, U}(;
     name::String = "",
     points::Vector{Point3D{T}} = Point3D{T}[],
     cells::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{10, U}[],
     cell_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {T, U}
-    return QuadraticPolyhedronMesh(name, points, cells, cell_sets)
+    return MixedQuadraticPolyhedronMesh(name, points, cells, cell_sets)
 end
 
-struct QuadraticTetrahedronMesh{T, U} <:QuadraticUnstructuredMesh3D{T, U}
+struct QuadraticTetrahedronMesh{T, U} <:QuadraticPolyhedronMesh{T, U}
     name::String
     points::Vector{Point3D{T}}
     cells::Vector{SVector{10, U}}
@@ -30,7 +32,7 @@ function QuadraticTetrahedronMesh{T, U}(;
     return QuadraticTetrahedronMesh(name, points, cells, cell_sets)
 end
  
-struct QuadraticHexahedronMesh{T, U} <:QuadraticUnstructuredMesh3D{T, U}
+struct QuadraticHexahedronMesh{T, U} <:QuadraticPolyhedronMesh{T, U}
     name::String
     points::Vector{Point3D{T}}
     cells::Vector{SVector{20, U}}
@@ -46,7 +48,7 @@ function QuadraticHexahedronMesh{T, U}(;
     return QuadraticHexahedronMesh(name, points, cells, cell_sets)
 end
 
-function Base.show(io::IO, mesh::QuadraticPolyhedronMesh)
+function Base.show(io::IO, mesh::MixedQuadraticPolyhedronMesh)
     mesh_type = typeof(mesh)
     println(io, mesh_type)
     println(io, "  ├─ Name      : $(mesh.name)")

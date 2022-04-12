@@ -1,4 +1,6 @@
-struct TriangleMesh{T, U} <:LinearUnstructuredMesh2D{T, U}
+abstract type PolygonMesh{T, U} <: LinearUnstructuredMesh2D{T, U} end
+
+struct TriangleMesh{T, U} <:PolygonMesh{T, U}
     name::String
     points::Vector{Point2D{T}}
     faces::Vector{SVector{3, U}}
@@ -14,7 +16,7 @@ function TriangleMesh{T, U}(;
     return TriangleMesh(name, points, faces, face_sets)
 end
 
-struct QuadrilateralMesh{T, U} <:LinearUnstructuredMesh2D{T, U}
+struct QuadrilateralMesh{T, U} <:PolygonMesh{T, U}
     name::String
     points::Vector{Point2D{T}}
     faces::Vector{SVector{4, U}}
@@ -30,23 +32,23 @@ function QuadrilateralMesh{T, U}(;
     return QuadrilateralMesh(name, points, faces, face_sets)
 end
 
-struct PolygonMesh{T, U} <:LinearUnstructuredMesh2D{T, U}
+struct MixedPolygonMesh{T, U} <:PolygonMesh{T, U}
     name::String
     points::Vector{Point2D{T}}
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
     face_sets::Dict{String, BitSet}
 end
 
-function PolygonMesh{T, U}(;
+function MixedPolygonMesh{T, U}(;
     name::String = "",
     points::Vector{Point2D{T}} = Point2D{T}[],
     faces::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{3, U}[],
     face_sets::Dict{String, BitSet} = Dict{String, BitSet}()
     ) where {T, U}
-    return PolygonMesh(name, points, faces, face_sets)
+    return MixedPolygonMesh(name, points, faces, face_sets)
 end
 
-function Base.show(io::IO, mesh::PolygonMesh)
+function Base.show(io::IO, mesh::MixedPolygonMesh)
     mesh_type = typeof(mesh)
     println(io, mesh_type)
     println(io, "  ├─ Name      : $(mesh.name)")

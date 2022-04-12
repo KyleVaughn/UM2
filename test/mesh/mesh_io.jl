@@ -1,4 +1,3 @@
-using MOCNeutronTransport
 mesh_files = [("Abaqus", ".inp")]
 for (file_type, ext) in mesh_files
     @testset "Import $file_type" begin
@@ -25,8 +24,8 @@ for (file_type, ext) in mesh_files
                 @test mesh.face_sets == ref_mesh.face_sets
             end
     
-            @testset "ConvexPolygonMesh" begin
-                ref_mesh = setup_ConvexPolygonMesh(T, UInt16)
+            @testset "MixedPolygonMesh" begin
+                ref_mesh = setup_MixedPolygonMesh(T, UInt16)
                 mesh = import_mesh("./mesh/mesh_files/tri_quad"*ext, T)
                 @test mesh.name == ref_mesh.name
                 for i in eachindex(ref_mesh.points)
@@ -58,8 +57,8 @@ for (file_type, ext) in mesh_files
                 @test mesh.face_sets == ref_mesh.face_sets
             end
     
-            @testset "QuadraticPolygonMesh" begin
-                ref_mesh = setup_QuadraticPolygonMesh(T, UInt16)
+            @testset "MixedQuadraticPolygonMesh" begin
+                ref_mesh = setup_MixedQuadraticPolygonMesh(T, UInt16)
                 mesh = import_mesh("./mesh/mesh_files/tri6_quad8"*ext, T)
                 @test mesh.name == ref_mesh.name
                 for i in eachindex(ref_mesh.points)

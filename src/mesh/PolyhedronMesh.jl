@@ -1,11 +1,13 @@
-struct PolyhedronMesh{T, U} <:LinearUnstructuredMesh3D{T, U}
+abstract type PolyhedronMesh{T, U} <:LinearUnstructuredMesh3D{T, U} end
+
+struct MixedPolyhedronMesh{T, U} <:PolyhedronMesh{T, U}
     name::String
     points::Vector{Point3D{T}}
     cells::Vector{<:SArray{S, U, 1} where {S<:Tuple}}
     cell_sets::Dict{String, BitSet}
 end
 
-function PolyhedronMesh{T, U}(;
+function MixedPolyhedronMesh{T, U}(;
     name::String = "",
     points::Vector{Point3D{T}} = Point3D{T}[],
     cells::Vector{<:SArray{S, U, 1} where {S<:Tuple}} = SVector{4, U}[],
@@ -14,7 +16,7 @@ function PolyhedronMesh{T, U}(;
     return PolyhedronMesh(name, points, cells, cell_sets)
 end
 
-struct TetrahedronMesh{T, U} <:LinearUnstructuredMesh3D{T, U}
+struct TetrahedronMesh{T, U} <:PolyhedronMesh{T, U}
     name::String
     points::Vector{Point3D{T}}
     cells::Vector{SVector{4, U}}
@@ -30,7 +32,7 @@ function TetrahedronMesh{T, U}(;
     return TetrahedronMesh(name, points, cells, cell_sets)
 end
 
-struct HexahedronMesh{T, U} <:LinearUnstructuredMesh3D{T, U}
+struct HexahedronMesh{T, U} <:PolyhedronMesh{T, U}
     name::String
     points::Vector{Point3D{T}}
     cells::Vector{SVector{8, U}}
@@ -46,7 +48,7 @@ function HexahedronMesh{T, U}(;
     return HexahedronMesh(name, points, cells, cell_sets)
 end
 
-function Base.show(io::IO, mesh::PolyhedronMesh)
+function Base.show(io::IO, mesh::MixedPolyhedronMesh)
     mesh_type = typeof(mesh)
     println(io, mesh_type)
     println(io, "  ├─ Name      : $(mesh.name)")

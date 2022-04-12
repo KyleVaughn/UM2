@@ -2,7 +2,7 @@ module MOCNeutronTransport
 
 const minimum_ray_segment_length = 1e-4 # 1μm
 const plot_nonlinear_subdivisions = 2
-const visualization_enabled = false
+const visualization_enabled = true
 const visualize_ray_tracing = false 
 
 using CUDA, Colors, FixedPointNumbers, HDF5, Logging, LightXML, LinearAlgebra, 
@@ -38,27 +38,36 @@ if !@isdefined(gmsh)
 end
 
 include("Material.jl")
-include("primitives/Edge.jl")
-include("primitives/Face.jl")
-include("primitives/Cell.jl")
-include("primitives/Point.jl")
-include("primitives/LineSegment.jl")
-include("primitives/QuadraticSegment.jl")
-include("primitives/Hyperplane.jl")
-include("primitives/AABox.jl")
-include("primitives/Polygon.jl")
-include("primitives/QuadraticPolygon.jl")
-include("primitives/Polyhedron.jl")
-include("primitives/QuadraticPolyhedron.jl")
+include("log.jl")
+include("linalg.jl")
+
+include("geometry/Edge.jl")
+include("geometry/Face.jl")
+include("geometry/Cell.jl")
+include("geometry/Point.jl")
+include("geometry/LineSegment.jl")
+include("geometry/QuadraticSegment.jl")
+include("geometry/Hyperplane.jl")
+include("geometry/AABox.jl")
+include("geometry/Polygon.jl")
+include("geometry/QuadraticPolygon.jl")
+include("geometry/Polyhedron.jl")
+include("geometry/QuadraticPolyhedron.jl")
+
 include("mesh/RectilinearGrid.jl")
 include("mesh/UnstructuredMesh.jl")
 include("mesh/PolygonMesh.jl")
 include("mesh/QuadraticPolygonMesh.jl")
 include("mesh/PolyhedronMesh.jl")
 include("mesh/QuadraticPolyhedronMesh.jl")
+include("mesh/submesh.jl")
+include("mesh/edges.jl")
+include("mesh/io_abaqus.jl")
+include("mesh/mesh_io.jl")
+include("mesh/materialize.jl")
+
 include("MPACT/MPACTGridHierarchy.jl")
-##include("mesh/IO_abaqus.jl")
-##include("mesh/mesh_IO.jl")
+
 include("gmsh_extensions/model/add_physical_group.jl")
 include("gmsh_extensions/model/add_cad_names_to_physical_groups.jl")
 include("gmsh_extensions/model/get_entities_by_color.jl")
@@ -68,11 +77,13 @@ include("gmsh_extensions/model/import_model.jl")
 include("gmsh_extensions/model/physical_group_preserving_fragment.jl")
 include("gmsh_extensions/model/overlay_mpact_grid_hierarchy.jl")
 include("gmsh_extensions/mesh/set_mesh_field_using_materials.jl")
-include("log.jl")
-include("linalg.jl")
 
 # Material
 export Material
+# linalg
+export ⊙, ⊘, inv, norm²
+# log
+export add_timestamps_to_logger
 # Edge
 export Edge, Edge2D, Edge3D
 # Face
@@ -100,6 +111,8 @@ export QuadraticPolygon, QuadraticTriangle, QuadraticTriangle2D, QuadraticTriang
 export Polyhedron, Tetrahedron, Hexahedron
 # QuadraticPolyhedron
 export QuadraticPolyhedron, QuadraticTetrahedron, QuadraticHexahedron
+
+
 # RectilinearGrid
 export RectilinearGrid, RectilinearGrid2D, issubset
 # UnstructuredMesh
@@ -108,13 +121,21 @@ export UnstructuredMesh, UnstructuredMesh2D, UnstructuredMesh3D,
        QuadraticUnstructuredMesh, QuadraticUnstructuredMesh2D, 
        QuadraticUnstructuredMesh3D 
 # PolygonMesh
-export PolygonMesh, TriangleMesh, QuadrilateralMesh
+export PolygonMesh, TriangleMesh, QuadrilateralMesh, MixedPolygonMesh
 # QuadraticPolygonMesh
-export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh
+export QuadraticPolygonMesh, QuadraticTriangleMesh, QuadraticQuadrilateralMesh,
+       MixedQuadraticPolygonMesh
+# edges
+export edges
+# submesh
+export submesh
+# mesh_io
+export import_mesh
+# materialize
+export getpoints, materialize_edge, materialize_edges, materialize_face, materialize_faces
+
 # MPACTGridHierarchy
 export MPACTGridHierarchy
-### mesh_IO
-##export import_mesh
 
 # gmsh
 export gmsh
@@ -136,13 +157,6 @@ export physical_group_preserving_fragment
 export overlay_mpact_grid_hierarchy
 # set_mesh_field_using_materials
 export set_mesh_field_using_materials
-# linalg
-export ⊙, ⊘, inv, norm²
-# log
-export add_timestamps_to_logger
-
-
-
 
 
 # Plot
@@ -154,8 +168,8 @@ if visualization_enabled
     include("plot/Point.jl")
     include("plot/LineSegment.jl")
     include("plot/QuadraticSegment.jl")
-    include("plot/Polygon.jl")
     include("plot/AABox.jl")
+    include("plot/Polygon.jl")
     include("plot/QuadraticPolygon.jl")
     export Figure, Axis, Axis3
     export scatter, linesegments, mesh,

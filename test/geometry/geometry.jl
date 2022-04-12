@@ -1,4 +1,4 @@
-@testset "primitives" begin
+@testset "geometry" begin
     tests = ["./Point",
              "./LineSegment",
              "./QuadraticSegment",

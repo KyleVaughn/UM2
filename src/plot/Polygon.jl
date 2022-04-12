@@ -1,11 +1,11 @@
-function convert_arguments(LS::Type{<:LineSegments}, poly::ConvexPolygon{N}
+function convert_arguments(LS::Type{<:LineSegments}, poly::Polygon{N}
                           ) where {N}
     lines = [LineSegment(poly[(i-1) % N + 1],
                          poly[    i % N + 1]) for i = 1:N]
     return convert_arguments(LS, lines)
 end
 
-function convert_arguments(LS::Type{<:LineSegments}, P::Vector{<:ConvexPolygon})
+function convert_arguments(LS::Type{<:LineSegments}, P::Vector{<:Polygon})
     point_sets = [convert_arguments(LS, poly) for poly ∈  P]
     return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
 end

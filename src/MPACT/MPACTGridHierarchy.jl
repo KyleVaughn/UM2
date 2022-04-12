@@ -10,6 +10,7 @@ struct MPACTGridHierarchy
         if !(lattice_grid.bb == module_grid.bb == coarse_grid.bb)
             error("Grids do not partition the same bounding box!")
         end
+
         X = length(module_grid.xdiv)
         Δx_previous = module_grid.xdiv[1] - module_grid.bb.xmin
         for i ∈ 1:X-1
@@ -23,6 +24,7 @@ struct MPACTGridHierarchy
         if !(Δx_previous ≈ Δx)
             error("All ray tracing module must be equal in size")
         end
+
         Y = length(module_grid.ydiv)
         Δy_previous = module_grid.ydiv[1] - module_grid.bb.ymin
         for i ∈ 1:Y-1
