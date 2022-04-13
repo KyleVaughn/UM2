@@ -55,6 +55,7 @@ include("geometry/Polyhedron.jl")
 include("geometry/QuadraticPolyhedron.jl")
 include("geometry/interpolation.jl")
 include("geometry/triangulate.jl")
+include("geometry/measure.jl")
 
 include("mesh/RectilinearGrid.jl")
 include("mesh/UnstructuredMesh.jl")
@@ -80,6 +81,7 @@ include("gmsh_extensions/model/physical_group_preserving_fragment.jl")
 include("gmsh_extensions/model/overlay_mpact_grid_hierarchy.jl")
 include("gmsh_extensions/mesh/set_mesh_field_using_materials.jl")
 include("gmsh_extensions/mesh/generate_mesh.jl")
+include("gmsh_extensions/mesh/get_cad_to_mesh_error.jl")
 
 # Material
 export Material
@@ -116,6 +118,8 @@ export Polyhedron, Tetrahedron, Hexahedron
 export QuadraticPolyhedron, QuadraticTetrahedron, QuadraticHexahedron
 # triangulate
 export triangulate
+# measure
+export measure
 
 
 # RectilinearGrid
@@ -164,12 +168,13 @@ export overlay_mpact_grid_hierarchy
 export set_mesh_field_using_materials
 # generate_mesh
 export generate_mesh
-
+# get_cad_to_mesh_error 
+export get_cad_to_mesh_error 
 
 # Plot
 if visualization_enabled
     using GLMakie: Axis, Axis3, Figure, LineSegments, Mesh, Scatter, current_axis, 
-                   record
+                   record, hist, hist!
     import GLMakie: linesegments, linesegments!, mesh, mesh!, scatter, scatter!, 
                     convert_arguments
     include("plot/Point.jl")
@@ -180,8 +185,8 @@ if visualization_enabled
     include("plot/QuadraticPolygon.jl")
     include("plot/UnstructuredMesh.jl")
     export Figure, Axis, Axis3
-    export scatter, linesegments, mesh,
-           scatter!, linesegments!, mesh!
+    export hist, scatter, linesegments, mesh,
+           hist!, scatter!, linesegments!, mesh!
 end
 
 end
