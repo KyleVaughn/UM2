@@ -1,7 +1,7 @@
 """
     Point{Dim, T}(x...)
 
-Construct a `Dim`-dimensional `Point` with data of type `T`. 
+Construct a `Dim`-dimensional `Point` in Euclidian space, with data of type `T`. 
 Constructors may drop the `Dim` and `T` parameters if they are inferrable from the
 input (e.g. `Point(1,2,3)` constructs an `Point{3, Int64}`).
 """
@@ -39,42 +39,25 @@ Point(x...) = Point(SVector(x))
 convert(::Type{P}, p::Point) where {P <: Point} = P(p.coord)
 convert(::Type{P}, p::Point) where {P <: Point2D} = P(p[1], p[2])
 
-Base.zero(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector zeros(T, Dim))
+zero(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector zeros(T, Dim))
 nan(::Type{Point{Dim, T}}) where {Dim, T} = Point{Dim, T}(@SVector fill(T(NaN), Dim))
 
-@inline +(p::Point, n::Number) = Point(p.coord .+ n)
-@inline +(n::Number, p::Point) = Point(n .+ p.coord)
-@inline +(p₁::Point, p₂::Point) = p₁.coord + p₂.coord
-@inline +(p::Point, v::SVector) = p.coord + v
-@inline +(v::SVector, p::Point) = v + p.coord
+# Ensure that resulting types make sense if more functions are added.
+# Points are not vectors! A negative point doesn't make sense!
+# A - B ≠ A + (-B)
+# See Affine Space or Euclidian Space wikipedia entries.
+@inline +(p::Point, v::SVector) = Point(p.coord + v)
+@inline +(v::SVector, p::Point) = Point(v + p.coord)
 
 @inline -(p₁::Point, p₂::Point) = p₁.coord - p₂.coord
-@inline -(p::Point, v::SVector) = p.coord - v
-@inline -(v::SVector, p::Point) = v - p.coord
-@inline -(p::Point) = Point(-p.coord)
-@inline -(p::Point, n::Number) = Point(p.coord .- n)
-@inline -(n::Number, p::Point) = Point(n .- p.coord)
+@inline -(p::Point, v::SVector) = Point(p.coord - v)
 
-@inline *(n::Number, p::Point) = Point(n * p.coord) 
-@inline *(p::Point, n::Number) = Point(p.coord * n)
-@inline ⊙(p₁::Point, p₂::Point) = Point(p₁.coord ⊙ p₂.coord)
-
-@inline /(n::Number, p::Point) = Point(n / p.coord) 
-@inline /(p::Point, n::Number) = Point(p.coord / n)
-@inline ⊘(p₁::Point, p₂::Point) = Point(p₁.coord ⊘ p₂.coord)
-
-@inline ⋅(p₁::Point, p₂::Point) = dot(p₁.coord, p₂.coord)
-@inline ×(p₁::Point, p₂::Point) = cross(p₁.coord, p₂.coord)
 @inline ==(p::Point, v::Vector) = p.coord == v
 @inline ≈(p₁::Point, p₂::Point) = distance²(p₁, p₂) < (1e-5)^2 # 100 nm
 
 @inline distance(p₁::Point, p₂::Point) = norm(p₁ - p₂)
-@inline distance(p₁::Point, v::Vector) = norm(p - v)
-@inline distance(v::Vector, p::Point) = norm(v - p)
 @inline distance²(p₁::Point, p₂::Point) = norm²(p₁ - p₂)
-@inline midpoint(p₁::Point, p₂::Point) = (p₁ + p₂)/2
-@inline norm(p::Point) = norm(p.coord)
-@inline norm²(p::Point) = norm²(p.coord)
+@inline midpoint(p₁::Point, p₂::Point) = Point((p₁.coord + p₂.coord)/2)
 
 """
     isCCW(p₁::Point2D, p₂::Point2D, p₃::Point2D)

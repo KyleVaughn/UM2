@@ -5,14 +5,14 @@
 
 Hadamard product (element-wise multiplication) of two equal size arrays.
 """
-@inline ⊙(a::SVector, b::SVector) = map(*, a, b)
+@inline ⊙(a::AbstractArray, b::AbstractArray) = map(*, a, b)
 
 """
     ⊘(a::AbstractArray, b::AbstractArray)
 
 Hadamard division (element-wise division) of two equal size arrays.
 """
-@inline ⊘(a::SVector, b::SVector) = map(/, a, b)
+@inline ⊘(a::AbstractArray, b::AbstractArray) = map(/, a, b)
 
 """
     inv(a::SVector) 
