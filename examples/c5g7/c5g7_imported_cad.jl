@@ -5,8 +5,8 @@ using MOCNeutronTransport
 using Statistics
 
 filename = "c5g7.step"
-mesh_type = "Quadrilateral" # Triangle or Quadrilateral
-mesh_order = 1 # 1 or 2
+mesh_type = "Triangle" # Triangle or Quadrilateral
+mesh_order = 2 # 1 or 2
 mesh_optimization_iters = 2
 add_timestamps_to_logger()
 

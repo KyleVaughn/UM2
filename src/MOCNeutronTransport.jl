@@ -1,9 +1,9 @@
 module MOCNeutronTransport
 
 const minimum_ray_segment_length = 1e-4 # 1μm
-const plot_nonlinear_subdivisions = 2
 const visualization_enabled = true
 const visualize_ray_tracing = false 
+const plot_nonlinear_subdivisions = 3
 
 using CUDA, Colors, FixedPointNumbers, HDF5, Logging, LightXML, LinearAlgebra, 
       StaticArrays, Statistics
@@ -53,6 +53,8 @@ include("geometry/Polygon.jl")
 include("geometry/QuadraticPolygon.jl")
 include("geometry/Polyhedron.jl")
 include("geometry/QuadraticPolyhedron.jl")
+include("geometry/interpolation.jl")
+include("geometry/triangulate.jl")
 
 include("mesh/RectilinearGrid.jl")
 include("mesh/UnstructuredMesh.jl")
@@ -77,6 +79,7 @@ include("gmsh_extensions/model/import_model.jl")
 include("gmsh_extensions/model/physical_group_preserving_fragment.jl")
 include("gmsh_extensions/model/overlay_mpact_grid_hierarchy.jl")
 include("gmsh_extensions/mesh/set_mesh_field_using_materials.jl")
+include("gmsh_extensions/mesh/generate_mesh.jl")
 
 # Material
 export Material
@@ -111,6 +114,8 @@ export QuadraticPolygon, QuadraticTriangle, QuadraticTriangle2D, QuadraticTriang
 export Polyhedron, Tetrahedron, Hexahedron
 # QuadraticPolyhedron
 export QuadraticPolyhedron, QuadraticTetrahedron, QuadraticHexahedron
+# triangulate
+export triangulate
 
 
 # RectilinearGrid
@@ -157,6 +162,8 @@ export physical_group_preserving_fragment
 export overlay_mpact_grid_hierarchy
 # set_mesh_field_using_materials
 export set_mesh_field_using_materials
+# generate_mesh
+export generate_mesh
 
 
 # Plot
@@ -171,6 +178,7 @@ if visualization_enabled
     include("plot/AABox.jl")
     include("plot/Polygon.jl")
     include("plot/QuadraticPolygon.jl")
+    include("plot/UnstructuredMesh.jl")
     export Figure, Axis, Axis3
     export scatter, linesegments, mesh,
            scatter!, linesegments!, mesh!

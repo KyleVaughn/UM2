@@ -1,10 +1,10 @@
 """
-    triangulate(poly::ConvexPolygon{N, 2, T}) where {N, T}
+    triangulate(poly::Polygon{N, 2, T}) where {N, T}
 
-Return an SVector of `N`-2 triangles that partition the `ConvexPolygon`. 
+Return an SVector of `N`-2 triangles that partition the `Polygon`. 
 Generated using fan triangulation.
 """
-function triangulate(poly::ConvexPolygon{N, 2, T}) where {N, T}
+function triangulate(poly::Polygon{N, 2, T}) where {N, T}
     triangles = MVector{N-2, Triangle{2, T}}(undef)
     for i = 1:N-2
         triangles[i] = Triangle(poly[1], poly[i+1], poly[i+2])
@@ -13,12 +13,12 @@ function triangulate(poly::ConvexPolygon{N, 2, T}) where {N, T}
 end
 
 """
-    triangulate(poly::ConvexPolygon{N, 2, BigFloat}) where {N}
+    triangulate(poly::Polygon{N, 2, BigFloat}) where {N}
 
-Return a Vector of `N`-2 triangles that partition the `ConvexPolygon`. 
+Return a Vector of `N`-2 triangles that partition the `Polygon`. 
 Generated using fan triangulation.
 """
-function triangulate(poly::ConvexPolygon{N, 2, BigFloat}) where {N}
+function triangulate(poly::Polygon{N, 2, BigFloat}) where {N}
     triangles = Vector{Triangle{2, BigFloat}}(undef, N-2)
     for i = 1:N-2
         triangles[i] = Triangle(poly[1], poly[i+1], poly[i+2])
