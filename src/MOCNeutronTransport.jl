@@ -41,21 +41,21 @@ include("Material.jl")
 include("log.jl")
 include("linalg.jl")
 
-include("geometry/Edge.jl")
-include("geometry/Face.jl")
-include("geometry/Cell.jl")
-include("geometry/Point.jl")
-include("geometry/LineSegment.jl")
-include("geometry/QuadraticSegment.jl")
-include("geometry/Hyperplane.jl")
-include("geometry/AABox.jl")
-include("geometry/Polygon.jl")
-include("geometry/QuadraticPolygon.jl")
-include("geometry/Polyhedron.jl")
-include("geometry/QuadraticPolyhedron.jl")
-include("geometry/interpolation.jl")
-include("geometry/triangulate.jl")
-include("geometry/measure.jl")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 include("mesh/RectilinearGrid.jl")
 include("mesh/UnstructuredMesh.jl")
