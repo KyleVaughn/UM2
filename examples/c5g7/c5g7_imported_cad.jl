@@ -5,10 +5,6 @@ using MOCNeutronTransport
 using Statistics
 
 filename = "c5g7.step"
-mesh_type = "Triangle" # Triangle or Quadrilateral
-mesh_order = 1 # 1 or 2
-mesh_optimization_iters = 2
-write_mesh_field = true
 add_timestamps_to_logger()
 
 gmsh.initialize()
@@ -47,22 +43,18 @@ materials[5].mesh_size = 1 / 2mean(Σₜᵢ_M87) # MOX-8.7% enriched
 materials[6].mesh_size = 1 / 2mean(Σₜᵢ_UO2) # Uranium Oxide
 materials[7].mesh_size = 1 / 2mean(Σₜᵢ_Mod) # Moderator
 
-if write_mesh_field 
-    gmsh.model.mesh.set_size(gmsh.model.get_entities(0), 0.05)
-    gmsh.model.mesh.generate(2)
-    println("Mesh->Define->Size fields. Then, new view of Min field.")
-end
+gmsh.model.mesh.set_size(gmsh.model.get_entities(0), 0.05)
+gmsh.model.mesh.generate(2)
 set_mesh_field_using_materials(materials)
-if mesh_statistics_on
-    gmsh.fltk.run()
-    gmsh.view.write(0, filename[1:end-5]*".pos")
-end
-
-generate_mesh(order = mesh_order, faces = mesh_type, opt_iters = mesh_optimization_iters)
+println("Mesh->Define->Size fields. Then, new view of Min field.")
+gmsh.fltk.run()
+#gmsh.view.write(0, filename[1:end-5]*".pos")
+field_data = gmsh.view.get_model_data(0, 0)
+generate_mesh(order = 1, faces = "Triangle", opt_iters = 2)
 gmsh.write(filename[1:end-5]*".inp")
 mesh_error = get_cad_to_mesh_error()
-gmsh.finalize()
-if mesh
+#gmsh.finalize()
+#if mesh
 
 
 #mesh = import_mesh(filename[1:end-5]*".inp")

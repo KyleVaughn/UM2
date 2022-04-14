@@ -28,7 +28,7 @@ end
 # @inline measure(aab::AABox2D) = Δx(aab) * Δy(aab)
 # @inline measure(aab::AABox3D) = Δx(aab) * Δy(aab) * Δz(aab)
 # 
-# measure(tri::Triangle2D) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
+measure(tri::Triangle2D) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
 # measure(tri::Triangle3D) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
 # 
 # function measure(poly::Polygon{N, 2, T}) where {N, T}
