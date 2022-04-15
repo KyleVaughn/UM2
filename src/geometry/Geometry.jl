@@ -4,18 +4,6 @@ using LinearAlgebra
 using StaticArrays
 
 import Base: -, +
-
-#export # Exported by parent
-#      Point, 
-#
-#export # Not exported by parent 
-#    Edge, Edge2D, Edge3D,
-#    Face, Face2D, Face3D,
-#    Cell
-#
-## Point
-#export  +, -, *, /, ⋅, ×, ⊙, ⊘, ==, ≈, distance,
-#       distance², isCCW, midpoint, nan, norm, norm²
 ## LineSegment
 #export LineSegment, LineSegment2D, LineSegment3D
 ## QuadraticSegment
@@ -39,11 +27,9 @@ import Base: -, +
 ## measure
 #export measure
 #
-#include("geometry/Edge.jl")
-#include("geometry/Face.jl")
-#include("geometry/Cell.jl")
-include("vectors.jl")
-include("points.jl")
+include("vector.jl")
+include("point.jl")
+include("linesegment.jl")
 
 #include("geometry/LineSegment.jl")
 #include("geometry/QuadraticSegment.jl")
