@@ -1,26 +1,31 @@
-# Additional linear algebra methods 
+export ⊙, ⊘, norm² 
 
 """
-    ⊙(a::AbstractArray, b::AbstractArray)
+    ⊙(A::AbstractArray, B::AbstractArray)
 
 Hadamard product (element-wise multiplication) of two equal size arrays.
 """
-@inline ⊙(a::AbstractArray, b::AbstractArray) = map(*, a, b)
+⊙(A::AbstractArray, B::AbstractArray) = map(*, A, B)
 
 """
     ⊘(a::AbstractArray, b::AbstractArray)
 
 Hadamard division (element-wise division) of two equal size arrays.
 """
-@inline ⊘(a::AbstractArray, b::AbstractArray) = map(/, a, b)
+⊘(A::AbstractArray, B::AbstractArray) = map(/, A, B)
 
 """
-    inv(a::SVector) 
+    inv(v::AbstractVector) 
 
 Return the Samelson inverse of a. 
 
 The returned vector, a⁻¹, satisfies a⁻¹ ⋅ a = 1.
 """
-@inline inv(a::SVector) = inv(a ⋅ a) * a'
+inv(a::AbstractVector) = inv(a ⋅ a) * a'
 
-@inline norm²(a::SVector{N, T}) where {N, T<:Real} = a ⋅ a
+"""
+    norm²(v::AbstractVector)
+
+Return the squared 2-norm of the vector.
+"""
+norm²(v::AbstractVector) = v ⋅ v
