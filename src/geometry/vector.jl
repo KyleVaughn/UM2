@@ -1,5 +1,5 @@
 export Vec, Vec1, Vec2, Vec3, Vec1f, Vec2f, Vec3f
-export ⊙, ⊘, norm² 
+export ⊙, ⊘, inv, norm²
 
 """
     Vec{Dim,T}

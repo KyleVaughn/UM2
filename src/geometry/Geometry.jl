@@ -3,11 +3,10 @@ module Geometry
 using LinearAlgebra
 using StaticArrays
 
-import Base: -, +
-## LineSegment
-#export LineSegment, LineSegment2D, LineSegment3D
-## QuadraticSegment
-#export QuadraticSegment, QuadraticSegment2D, QuadraticSegment3D, isstraight
+import Base: -, +, inv
+
+
+
 ## Hyperplane
 #export Hyperplane, Hyperplane2D, Hyperplane3D
 ## AABox
@@ -31,7 +30,7 @@ include("vector.jl")
 include("point.jl")
 include("linesegment.jl")
 include("quadraticsegment.jl")
-#include("geometry/Hyperplane.jl")
+include("plane.jl")
 #include("geometry/AABox.jl")
 #include("geometry/Polygon.jl")
 #include("geometry/QuadraticPolygon.jl")

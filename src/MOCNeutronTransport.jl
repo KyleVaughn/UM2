@@ -16,6 +16,9 @@ using Pkg.Artifacts
 #             sort!, zero
 #import LinearAlgebra: ×, ⋅, norm, inv
 
+@reexport using LinearAlgebra
+@reexport using StaticArrays
+
 # include gmsh
 # Check if there is a local install on JULIA_LOAD_PATH
 for path in Base.load_path()
