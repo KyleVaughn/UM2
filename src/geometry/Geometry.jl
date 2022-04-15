@@ -30,9 +30,7 @@ import Base: -, +
 include("vector.jl")
 include("point.jl")
 include("linesegment.jl")
-
-#include("geometry/LineSegment.jl")
-#include("geometry/QuadraticSegment.jl")
+include("quadraticsegment.jl")
 #include("geometry/Hyperplane.jl")
 #include("geometry/AABox.jl")
 #include("geometry/Polygon.jl")

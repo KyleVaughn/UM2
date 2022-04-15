@@ -96,6 +96,15 @@ Return the [`Vec`](@ref) displacement from point `B` to point `A`.
 -(A::Point, B::Point) = A.coords - B.coords
 
 """
+    +(A::Point, B::Point)
+
+A convenience function that returns the [`Vec`](@ref) which satisfies (`B` - O) + (`A` - O),
+where O is the origin.
+"""
++(A::Point, B::Point) = A.coords + B.coords
+
+
+"""
     +(A::Point, v::Vec)
     +(v::Vec, A::Point)
 

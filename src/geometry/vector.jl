@@ -24,12 +24,12 @@ v = B - A
 const Vec = SVector
 
 # type aliases for convenience
-const Vec1  = Vec{1,Float64}
-const Vec2  = Vec{2,Float64}
-const Vec3  = Vec{3,Float64}
-const Vec1f = Vec{1,Float32}
-const Vec2f = Vec{2,Float32}
-const Vec3f = Vec{3,Float32}
+const Vec1  = SVector{1,Float64}
+const Vec2  = SVector{2,Float64}
+const Vec3  = SVector{3,Float64}
+const Vec1f = SVector{1,Float32}
+const Vec2f = SVector{2,Float32}
+const Vec3f = SVector{3,Float32}
 
 """
     ⊙(A::AbstractArray, B::AbstractArray)
