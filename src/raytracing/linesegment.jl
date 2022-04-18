@@ -1,5 +1,5 @@
 export LineSegment
-export points
+export vertices 
 
 """
     LineSegment(P₁::Point{Dim,T}, 𝘂::Vec{Dim,T})
@@ -31,8 +31,8 @@ function Base.getproperty(l::LineSegment, sym::Symbol)
     end
 end
 
-points(l::LineSegment) = (l.P₁, l.P₂)
+vertices(l::LineSegment) = (l.P₁, l.P₂)
 
 function Base.show(io::IO, l::LineSegment)
-    print(io, "LineSegment$(points(l))")
+    print(io, "LineSegment$(vertices(l))")
 end

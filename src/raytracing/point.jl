@@ -40,6 +40,14 @@ struct Point{Dim,T} <:AbstractVector{T}
     Point{Dim,T}(coords::SVector{Dim,T}) where {Dim,T<:Integer} = new{Dim,Float64}(coords)
 end
 
+# type aliases
+const Point1  = Point{1,Float64}
+const Point2  = Point{2,Float64}
+const Point3  = Point{3,Float64}
+const Point1f = Point{1,Float32}
+const Point2f = Point{2,Float32}
+const Point3f = Point{3,Float32}
+
 # constructors
 Point{Dim,T}(coords...) where {Dim,T} = Point{Dim,T}(SVector{Dim,T}(coords...))
 Point(coords::SVector{Dim,T}) where {Dim,T} = Point{Dim,T}(coords)
@@ -49,14 +57,6 @@ Point(coords...) = Point(SVector(coords...))
 # conversions
 convert(::Type{Point{Dim,T}}, coords) where {Dim,T} = Point{Dim,T}(coords)
 convert(::Type{Point{Dim,T}}, P::Point) where {Dim,T} = Point{Dim,T}(P.coords)
-
-# type aliases
-const Point1  = Point{1,Float64}
-const Point2  = Point{2,Float64}
-const Point3  = Point{3,Float64}
-const Point1f = Point{1,Float32}
-const Point2f = Point{2,Float32}
-const Point3f = Point{3,Float32}
 
 # abstract array interface
 Base.size(P::Point) = Base.size(P.coords)
@@ -141,5 +141,5 @@ If the triplet of 2-dimensional points is counter-clockwise oriented from A to B
 isCCW(A::Point{2}, B::Point{2}, C::Point{2}) = 0 ≤ (B - A) × (C - A)
 
 function Base.show(io::IO, point::Point)
-    print(io, "Point$(point.coords.data)")
+  print(io, "Point$(point.coords.data)")
 end

@@ -1,5 +1,5 @@
 export QuadraticSegment
-export isstraight, points
+export isstraight, vertices 
 
 """
     QuadraticSegment(Vec{3, Point{Dim,T}})
@@ -49,12 +49,12 @@ function Base.getproperty(q::QuadraticSegment, sym::Symbol)
     end
 end
 
-points(q::QuadraticSegment) = (q.P₁, q.P₂, q.P₃)
+vertices(q::QuadraticSegment) = (q.P₁, q.P₂, q.P₃)
 
 function isstraight(q::QuadraticSegment)
     return norm²(q.𝘃) < 1e-6
 end
 
 function Base.show(io::IO, q::QuadraticSegment)
-    print(io, "QuadraticSegment$(points(q))")
+    print(io, "QuadraticSegment$(vertices(q))")
 end
