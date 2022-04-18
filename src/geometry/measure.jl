@@ -1,6 +1,9 @@
 # Lebesgue measure
+export measure
 
-@inline measure(l::LineSegment) = norm(l.𝘂)
+measure(l::LineSegment) = norm(l[2]-l[1])
+
+measure(aab::AABox) = prod(aab.maxima - aab.minima) 
 
 function measure(q::QuadraticSegment)
     # The arc length integral may be reduced to an integral over the square root of a
@@ -9,13 +12,12 @@ function measure(q::QuadraticSegment)
     # L = ∫ ‖𝗾′(r)‖dr = ∫ √(ar² + br + c) dr
     #     0             0
     if isstraight(q)
-        return distance(q.𝘅₁, q.𝘅₂)
+        return distance(q[1], q[2])
     else
-        𝘂 = q.𝘂
-        𝘃 = q.𝘃
-        a = 4(𝘂 ⋅ 𝘂)
+        (P₁, 𝘂, 𝘃) = polynomial_coeffs(q)
+        a = 4(𝘃 ⋅ 𝘃)
         b = 4(𝘂 ⋅ 𝘃)
-        c = 𝘃 ⋅ 𝘃
+        c = 𝘂 ⋅ 𝘂
         # Compiler seems to catch the reused sqrt quantities for common subexpression
         # elimination, or computation is as quick as storage in a variable, so we
         # leave the sqrts for readability
@@ -25,38 +27,34 @@ function measure(q::QuadraticSegment)
     end
 end
 
-# @inline measure(aab::AABox2D) = Δx(aab) * Δy(aab)
-# @inline measure(aab::AABox3D) = Δx(aab) * Δy(aab) * Δz(aab)
-# 
-measure(tri::Triangle2D) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
-# measure(tri::Triangle3D) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
-# 
-# function measure(poly::Polygon{N, 2, T}) where {N, T}
-#     # Uses the shoelace formula (https://en.wikipedia.org/wiki/Shoelace_formula)
-#     a = zero(T) # Scalar
-#     for i ∈ 1:N-1
-#         a += poly[i].coord × poly[i + 1].coord
-#     end
-#     a += poly[N].coord × poly[1].coord
-#     return norm(a)/2
-# end
-# 
-# function measure(quad::Quadrilateral3D{T}) where {T}
-#     # Hexahedron faces are not necessarily planar, hence we use numerical 
-#     # integration. Gauss-Legendre quadrature over a quadrilateral is used.
-#     # Let F(r,s) be the interpolation function for the shape. Then,
-#     #     1 1                          N   N
-#     # A = ∫ ∫ ‖∂F/∂r × ∂F/∂s‖ ds dr =  ∑   ∑  wᵢwⱼ‖∂F/∂r(rᵢ,sⱼ) × ∂F/∂s(rᵢ,sⱼ)‖
-#     #     0 0                         i=1 j=1
-#     N = 10
-#     w, r = gauss_legendre_quadrature(T, Val(N))
-#     A = zero(T)
-#     for j ∈ 1:N, i ∈ 1:N 
-#         J = 𝗝(quad, r[i], r[j]) 
-#         A += w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2)) 
-#     end 
-#     return A
-# end
+measure(tri::Triangle) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
+
+function measure(poly::Polygon{N,2,T}) where {N,T}
+    # Uses the shoelace formula (https://en.wikipedia.org/wiki/Shoelace_formula)
+    area = zero(T) # Scalar
+    for i ∈ 1:N-1
+        area += poly[i].coords × poly[i + 1].coords
+    end
+    area += poly[N].coords × poly[1].coords
+    return norm(area)/2
+end
+
+function measure(quad::Quadrilateral{3,T}) where {T}
+    # Hexahedron faces are not necessarily planar, hence we use numerical 
+    # integration. Gauss-Legendre quadrature over a quadrilateral is used.
+    # Let F(r,s) be the interpolation function for the shape. Then,
+    #     1 1                          N   N
+    # A = ∫ ∫ ‖∂F/∂r × ∂F/∂s‖ ds dr =  ∑   ∑  wᵢwⱼ‖∂F/∂r(rᵢ,sⱼ) × ∂F/∂s(rᵢ,sⱼ)‖
+    #     0 0                         i=1 j=1
+    N = 10
+    w, r = gauss_legendre_quadrature(T, Val(N))
+    A = zero(T)
+    for j ∈ 1:N, i ∈ 1:N 
+        J = 𝗝(quad, r[i], r[j]) 
+        A += w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2)) 
+    end 
+    return A
+end
 # 
 # function measure(poly::QuadraticPolygon{N,2,T}) where {N,T}
 #     # Let 𝗳(r,s) be a parameterization of surface S

@@ -49,6 +49,7 @@ Point(coords...) = Point(SVector(coords...))
 # conversions
 convert(::Type{Point{Dim,T}}, coords) where {Dim,T} = Point{Dim,T}(coords)
 convert(::Type{Point{Dim,T}}, P::Point) where {Dim,T} = Point{Dim,T}(P.coords)
+SVector(P::Point{Dim,T}) where {Dim,T} = P.coords
 
 # type aliases
 const Point1  = Point{1,Float64}

@@ -13,8 +13,8 @@ in `Dim`-dimensional space with coordinates of type `T`.
 ```julia
 # parametric dimension 1
 const Edge                      = Polytope{1}
-const LineSegment               = Edge{1,1}
-const QuadraticSegment          = Edge{1,2}
+const LineSegment               = Edge{1,2}
+const QuadraticSegment          = Edge{2,3}
 # parametric dimension 2
 const Face                      = Polytope{2}
 const Polygon                   = Face{1}
@@ -33,12 +33,14 @@ const QuadraticTetrahedron      = QuadraticPolyhedron{10}
 const QuadraticHexahedron       = QuadraticPolyhedron{20}
 ```
 ### Notes
+- These are Lagrangian finite elements.
 - This struct only supports the shapes found in "The Visualization Toolkit:
   An Object-Oriented Approach to 3D Graphics, 4th Edition, Chapter 8, Advanced
   Data Representation".
 - See the VTK book for specific vertex ordering info, but generally vertices are
   ordered in a counterclockwise fashion, with vertices of the linear shape given
   first.
+- See https://en.wikipedia.org/wiki/Polytope for help with terminology.
 """
 struct Polytope{K,P,N,Dim,T}
     vertices::Vec{N, Point{Dim,T}}
@@ -48,7 +50,7 @@ end
 # parametric dimension 1
 const Edge                      = Polytope{1}
 const LineSegment               = Edge{1,2}
-const QuadraticSegment          = Edge{1,3}
+const QuadraticSegment          = Edge{2,3}
 # parametric dimension 2
 const Face                      = Polytope{2}
 const Polygon                   = Face{1}
