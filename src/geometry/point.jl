@@ -1,5 +1,6 @@
-export Point, Point1, Point2, Point3, Point1f, Point2f, Point3f
-export distance, distance², coordinates, isCCW, midpoint, nan
+export Point, Point1, Point2, Point3, Point1f, Point2f, Point3f, Point1B,
+       Point2B, Point3B
+export coordinates, distance, distance², fast_isapprox, isCCW, midpoint, nan
 
 """
     Point{Dim, T}
@@ -58,6 +59,9 @@ const Point3  = Point{3,Float64}
 const Point1f = Point{1,Float32}
 const Point2f = Point{2,Float32}
 const Point3f = Point{3,Float32}
+const Point1B  = Point{1,BigFloat}
+const Point2B  = Point{2,BigFloat}
+const Point3B  = Point{3,BigFloat}
 
 # abstract array interface
 Base.size(P::Point) = Base.size(P.coords)
@@ -83,33 +87,30 @@ Return the [`Vec`](@ref) displacement from point `B` to point `A`.
 -(A::Point, B::Point) = A.coords - B.coords
 
 """
-    +(A::Point, B::Point)
-
-A convenience function that returns the [`Vec`](@ref) which satisfies (`B` - O) + (`A` - O),
-where O is the origin.
-"""
-+(A::Point, B::Point) = A.coords + B.coords
-
-
-"""
     +(A::Point, v::Vec)
-    +(v::Vec, A::Point)
 
 Return the point at the end of the vector `v` placed
 at a reference (or start) point `A`.
 """
 +(A::Point, v::Vec) = Point(A.coords + v)
-+(v::Vec, A::Point) = A + v
 
 """
     -(A::Point, v::Vec)
-    -(v::Vec, A::Point)
 
 Return the point at the end of the vector `-v` placed
 at a reference (or start) point `A`.
 """
 -(A::Point, v::Vec) = Point(A.coords - v)
--(v::Vec, A::Point) = A - v
+
+"""
+    fast(A::Point, v::Vec)
+
+Return if two points are approximately equal (less than 1e-4 cm apart), 
+using a quicker, less safe method than Base.isapprox.
+"""
+function fast_isapprox(A::Point{Dim,T}, B::Point{Dim,T}) where {Dim,T}
+    return norm²(A-B) < T(1e-8)
+end
 
 Base.isapprox(A::Point, B::Point; kwargs...) = isapprox(A.coords, B.coords; kwargs...)
 
