@@ -3,7 +3,7 @@
 
 function (poly::Polytope{K,P,N})(coords...) where {K,P,N}
     w = interpolation_weights(typeof(poly), coords...)
-    return Point(sum(w[i]*poly[i].coords for i ∈ 1:N)) 
+    return Point(mapreduce(i->w[i]*poly[i].coords, +, 1:N)) 
 end
 
 # parametric dimension 1

@@ -44,7 +44,6 @@ const QuadraticHexahedron       = QuadraticPolyhedron{20}
 """
 struct Polytope{K,P,N,Dim,T}
     vertices::Vec{N, Point{Dim,T}}
-    # Error checking
 end
 
 # type aliases

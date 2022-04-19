@@ -59,9 +59,9 @@ const Point3  = Point{3,Float64}
 const Point1f = Point{1,Float32}
 const Point2f = Point{2,Float32}
 const Point3f = Point{3,Float32}
-const Point1B  = Point{1,BigFloat}
-const Point2B  = Point{2,BigFloat}
-const Point3B  = Point{3,BigFloat}
+const Point1B = Point{1,BigFloat}
+const Point2B = Point{2,BigFloat}
+const Point3B = Point{3,BigFloat}
 
 # abstract array interface
 Base.size(P::Point) = Base.size(P.coords)

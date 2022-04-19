@@ -26,7 +26,8 @@ function AABox(minima::Point{Dim,T}, maxima::Point{Dim,T}) where {Dim,T}
 end
 AABox(minima, maxima) = AABox(Point(minima), Point(maxima))
 
-Base.isapprox(aab₁::AABox, aab₂::AABox) = aab₁.minima ≈ aab₂.minima && aab₁.maxima ≈ aab₂.maxima 
+Base.isapprox(aab₁::AABox, aab₂::AABox) = aab₁.minima ≈ aab₂.minima && 
+                                          aab₁.maxima ≈ aab₂.maxima 
 xmin(aab::AABox) = aab.minima[1] 
 ymin(aab::AABox) = aab.minima[2] 
 zmin(aab::AABox) = aab.minima[3] 
