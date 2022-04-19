@@ -1,8 +1,8 @@
 @testset "AABox" begin
     @testset "AABox{2}" begin
-        for T in Points2D
+        for T in Floats
             # getproperty
-            aab = AABox(T(1, 0), T(3, 2))
+            aab = AABox(Point{2,T}(1, 0), Point{2,T}(3, 2))
             @test xmin(aab) ≈ 1
             @test ymin(aab) ≈ 0
             @test xmax(aab) ≈ 3
@@ -14,9 +14,9 @@
         end
     end
     @testset "AABox{3}" begin
-        for T in Points3D 
+        for T in Floats 
             # getproperty
-            aab = AABox(T(1, 0, -1), T(3, 2, 1))
+            aab = AABox(Point{3,T}(1, 0, -1), Point{3,T}(3, 2, 1))
             @test xmin(aab) ≈ 1
             @test ymin(aab) ≈ 0
             @test zmin(aab) ≈ -1
