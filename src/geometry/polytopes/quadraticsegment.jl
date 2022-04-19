@@ -9,5 +9,12 @@ export isstraight
 Return if the quadratic segment is effectively straight.
 """
 function isstraight(q::QuadraticSegment)
-    return  1e4*norm²(q[1] - q[3] + q[2] - q[3]) < norm²(q[2] - q[1])
+    # Project P₃ onto the line from P₁ to P₂, call it P₄
+    𝘃₁₃ = q[3] - q[1] 
+    𝘃₁₂ = q[2] - q[1] 
+    v₁₂ = norm²(𝘃₁₂)
+    𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂)*inv(v₁₂)*𝘃₁₂
+    # Determine the distance from P₃ to P₄ (P₄ - P₃ = P₁ + 𝘃₁₄ - P₃ = 𝘃₁₄ - 𝘃₁₃)
+    d = norm(𝘃₁₄ - 𝘃₁₃) 
+    return d < ϵ_Point
 end

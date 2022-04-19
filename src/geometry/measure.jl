@@ -11,10 +11,19 @@ function measure(q::QuadraticSegment)
     #     1             1
     # L = ∫ ‖𝗾′(r)‖dr = ∫ √(ar² + br + c) dr
     #     0             0
-    if isstraight(q)
-        return distance(q[1], q[2])
+    P₁ = q[1]
+    𝘃₁₃ = q[3] - q[1]
+    𝘃₁₂ = q[2] - q[1]
+    𝘃₂₃ = q[3] - q[2]
+    v₁₂ = norm²(𝘃₁₂)
+    𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂)*inv(v₁₂)*𝘃₁₂
+    d = norm(𝘃₁₄ - 𝘃₁₃) 
+    # If segment is straight
+    if d < ϵ_Point
+        return √v₁₂ # Distance from P₁ to P₂ 
     else
-        (P₁, 𝘂, 𝘃) = polynomial_coeffs(q)
+        𝘂 = 3𝘃₁₃ + 𝘃₂₃
+        𝘃 = -2(𝘃₁₃ + 𝘃₂₃)
         a = 4(𝘃 ⋅ 𝘃)
         b = 4(𝘂 ⋅ 𝘃)
         c = 𝘂 ⋅ 𝘂

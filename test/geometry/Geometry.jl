@@ -1,6 +1,8 @@
 @testset "Geometry" begin
-    tests = ["./point",
-#             "./LineSegment",
+    tests = ["./vector",
+             "./point",
+             "./plane",
+             "./axisalignedbox",
 #             "./QuadraticSegment",
 #             "./Hyperplane",
 #             "./AABox",

@@ -103,16 +103,11 @@ at a reference (or start) point `A`.
 -(A::Point, v::Vec) = Point(A.coords - v)
 
 """
-    fast(A::Point, v::Vec)
+    isapprox(A::Point, B::Point)
 
-Return if two points are approximately equal (less than 1e-4 cm apart), 
-using a quicker, less safe method than Base.isapprox.
+Return if two points are approximately equal (less than 1e-4 cm apart). 
 """
-function fast_isapprox(A::Point{Dim,T}, B::Point{Dim,T}) where {Dim,T}
-    return norm²(A-B) < T(1e-8)
-end
-
-Base.isapprox(A::Point, B::Point; kwargs...) = isapprox(A.coords, B.coords; kwargs...)
+Base.isapprox(A::Point{Dim,T}, B::Point{Dim,T}) where {Dim,T} = norm²(A-B) < T(ϵ_Point^2)
 
 """
     distance(A::Point, B::Point)

@@ -1,7 +1,7 @@
-@testset "linalg" begin
+@testset "Vec" begin
     for T ∈ Floats
-        a = SVector{3, T}(1,2,3)
-        b = SVector{3, T}(2,4,6)
+        a = Vec{3,T}(1,2,3)
+        b = Vec{3,T}(2,4,6)
         @test a ⊙ b ≈ [2, 8, 18]
         @test b ⊘ a ≈ [2, 2, 2]
         @test inv(a)*a ≈ 1

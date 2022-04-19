@@ -5,6 +5,7 @@ using StaticArrays
 
 import Base: -, +, inv, zero
 
+include("constants.jl")
 include("vector.jl")
 include("point.jl")
 include("plane.jl")
