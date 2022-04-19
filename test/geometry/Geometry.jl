@@ -3,13 +3,7 @@
              "./point",
              "./plane",
              "./axisalignedbox",
-#             "./QuadraticSegment",
-#             "./Hyperplane",
-#             "./AABox",
-#             "./Polygon",
-#             "./QuadraticPolygon",
-#             "./Polyhedron",
-#             "./QuadraticPolyhedron"]
+             "./interpolation",
             ]
     for t in tests
       include("$(t).jl")

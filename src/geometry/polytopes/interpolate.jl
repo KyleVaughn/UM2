@@ -45,7 +45,7 @@ interpolation_weights(::Type{<:Hexahedron}, r, s, t) = Vec((1 - r)*(1 - s)*(1 - 
                                                          (    r)*(1 - s)*(    t),
                                                          (    r)*(    s)*(    t),
                                                          (1 - r)*(    s)*(    t))
-function interpolation_weights(::Tuple{<:QuadraticTetrahedron}, r, s, t)
+function interpolation_weights(::Type{<:QuadraticTetrahedron}, r, s, t)
     u = 1 - r - s - t
     return Vec((2u-1)u,
                (2r-1)r,
