@@ -55,23 +55,23 @@ function measure(poly::Polygon{N,2,T}) where {N,T}
     return norm(area)/2
 end
 
-#function measure(quad::Quadrilateral{3,T}) where {T}
-#    # Hexahedron faces are not necessarily planar, hence we use numerical 
-#    # integration. Gauss-Legendre quadrature over a quadrilateral is used.
-#    # Let F(r,s) be the interpolation function for the shape. Then,
-#    #     1 1                          N   N
-#    # A = ∫ ∫ ‖∂F/∂r × ∂F/∂s‖ ds dr =  ∑   ∑  wᵢwⱼ‖∂F/∂r(rᵢ,sⱼ) × ∂F/∂s(rᵢ,sⱼ)‖
-#    #     0 0                         i=1 j=1
-#    N = 10
-#    w, r = gauss_legendre_quadrature(T, Val(N))
-#    A = zero(T)
-#    for j ∈ 1:N, i ∈ 1:N 
-#        J = 𝗝(quad, r[i], r[j]) 
-#        A += w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2)) 
-#    end 
-#    return A
-#end
-# 
+function measure(quad::Quadrilateral{3,T}) where {T}
+    # Hexahedron faces are not necessarily planar, hence we use numerical 
+    # integration. Gauss-Legendre quadrature over a quadrilateral is used.
+    # Let F(r,s) be the interpolation function for the shape. Then,
+    #     1 1                          N   N
+    # A = ∫ ∫ ‖∂F/∂r × ∂F/∂s‖ ds dr =  ∑   ∑  wᵢwⱼ‖∂F/∂r(rᵢ,sⱼ) × ∂F/∂s(rᵢ,sⱼ)‖
+    #     0 0                         i=1 j=1
+    N = 5
+    weights, points = gauss_legendre_quadrature(T, Val(N))
+    area = zero(T)
+    for j ∈ 1:N, i ∈ 1:N 
+        J = 𝗝(quad, r[i], r[j]) 
+        A += w[i]*w[j]*norm(view(J, :, 1) × view(J, :, 2)) 
+    end 
+    return A
+end
+ 
 # function measure(poly::QuadraticPolygon{N,2,T}) where {N,T}
 #     # Let 𝗳(r,s) be a parameterization of surface S
 #     # A = ∬ dS = ∬ ‖∂𝗳/∂r × ∂𝗳/∂s‖dr ds
@@ -133,26 +133,3 @@ end
 #     end 
 #     return A
 # end
-# 
-# # 
-# # # Return the area of face id
-# # function area(id, mesh::UnstructuredMesh)
-# #     return area(materialize_face(id, mesh))
-# # end
-# # 
-# # # Return the area of the entire mesh
-# # function area(mesh::UnstructuredMesh)
-# #     # use sum
-# #     return mapreduce(x->area(x, mesh), +, 1:length(mesh.faces))
-# # end
-# # 
-# # # Return the area of a face set
-# # function area(face_set::BitSet, mesh::UnstructuredMesh)
-# #     # use sum
-# #     return mapreduce(x->area(x, mesh), +, face_set)
-# # end
-# # 
-# # # Return the area of a face set by name
-# # function area(set_name::String, mesh::UnstructuredMesh)
-# #     return area(mesh.face_sets[set_name], mesh)
-# # end
