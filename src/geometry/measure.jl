@@ -1,9 +1,16 @@
 # Lebesgue measure
-export measure
+export area, arclength, measure, perimeter, volume
 
-measure(l::LineSegment) = norm(l[2]-l[1])
+arclength(p::Polytope{1}) = measure(p)
+area(     p::Polytope{2}) = measure(p)
+volume(   p::Polytope{3}) = measure(p)
+
+perimeter(p::Polytope{2}) = mapreduce(f->measure(f), +, facets(p))
+area(     p::Polytope{3}) = mapreduce(f->measure(f), +, facets(p))
 
 measure(aab::AABox) = prod(aab.maxima - aab.minima) 
+
+measure(l::LineSegment) = norm(l[2]-l[1])
 
 function measure(q::QuadraticSegment)
     # The arc length integral may be reduced to an integral over the square root of a

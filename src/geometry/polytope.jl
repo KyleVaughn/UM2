@@ -2,6 +2,7 @@ export Polytope, Edge, LineSegment, QuadraticSegment, Face, Polygon, QuadraticPo
        Triangle, Quadrilateral, QuadraticTriangle, QuadraticQuadrilateral, Cell,
        Polyhedron, QuadraticPolyhedron, Tetrahedron, Hexahedron, QuadraticTetrahedron,
        QuadraticHexahedron
+export facets
 
 """
 
@@ -75,3 +76,7 @@ end
 Polytope{K,P,N}(vertices...) where {K,P,N} = Polytope{K,P,N}(Vec(vertices))
 
 Base.getindex(poly::Polytope, i::Int) = Base.getindex(poly.vertices, i)
+
+facets(p::Polytope{1}) = p.vertices
+facets(p::Polytope{2}) = edges(p)
+# facets(p::Polytope{3}) = faces(p)
