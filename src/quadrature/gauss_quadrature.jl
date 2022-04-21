@@ -13,7 +13,7 @@ const RefLine        = RefHypercube{1}
 const RefSquare      = RefHypercube{2}
 const RefCube        = RefHypercube{3}
 
-# Dispatch on values so the return Vec type/length can be inferred.
+# Dispatch on Val, so the return Vec type/length can be inferred.
 # Should implement a non-value based version which returns a Vector at some point.
 include("legendre_RefLine.jl")
 include("legendre_RefHyperCube.jl")
