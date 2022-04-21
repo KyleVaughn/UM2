@@ -1,4 +1,4 @@
-for quad_order = 1:25 # current max order on RefLine
+for quad_order = 1:30 # current max order on RefLine
     @eval begin
         # Square
         @generated function gauss_quadrature(form::Val{:legendre},
