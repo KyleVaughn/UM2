@@ -6,8 +6,9 @@ export facets
 
 """
 
-A `K`-polytope of order `P` with `N` vertices, where the vertices are points
-in `Dim`-dimensional space with coordinates of type `T`.
+    Polytope{K,P,N,T}
+
+A `K`-polytope of order `P` with `N` vertices of type `T`.
 
 ## Aliases
 
@@ -43,8 +44,8 @@ const QuadraticHexahedron       = QuadraticPolyhedron{20}
   first.
 - See https://en.wikipedia.org/wiki/Polytope for help with terminology.
 """
-struct Polytope{K,P,N,Dim,T}
-    vertices::Vec{N, Point{Dim,T}}
+struct Polytope{K,P,N,T}
+    vertices::Vec{N,T}
 end
 
 # type aliases
@@ -70,8 +71,8 @@ const QuadraticTetrahedron      = QuadraticPolyhedron{10}
 const QuadraticHexahedron       = QuadraticPolyhedron{20}
 
 # constructors
-function Polytope{K,P,N}(vertices::Vec{N, Point{Dim,T}}) where {K,P,N,Dim,T}
-    return Polytope{K,P,N,Dim,T}(vertices)
+function Polytope{K,P,N}(vertices::Vec{N,T}) where {K,P,N,T}
+    return Polytope{K,P,N,T}(vertices)
 end
 Polytope{K,P,N}(vertices...) where {K,P,N} = Polytope{K,P,N}(Vec(vertices))
 

@@ -1,23 +1,32 @@
 export edges
 
-function edges(p::Polygon{N}) where {N}
-    return map(i->begin
-                    id₁ = (i - 1) % N + 1
-                    id₂ = i % N + 1
-                    return LineSegment(p[id₁], p[id₂])
-                  end,
-                  StaticArrays.sacollect(SVector{N,Int}, i for i = 1:N)
-               )
+@generated function edges(p::Polygon{N,T}) where {N,T}
+    exprs = [begin
+                id₁ = (i - 1) % N + 1
+                id₂ = i % N + 1
+                :(LineSegment(p[$id₁], p[$id₂]))
+             end
+             for i in 1:N
+            ]
+    return quote
+        Base.@_inline_meta
+        @inbounds return Vec{$N, LineSegment{$T}}(tuple($(exprs...)))
+    end
 end
 
-function edges(p::QuadraticPolygon{N}) where {N}
+
+@generated function edges(p::QuadraticPolygon{N,T}) where {N,T}
     M = N ÷ 2
-    return map(i->begin
-                    id₁ = (i - 1) % M + 1
-                    id₂ = i % M + 1
-                    id₃ = i + M
-                    return QuadraticSegment(p[id₁], p[id₂], p[id₃])
-                  end,
-                  StaticArrays.sacollect(SVector{M,Int}, i for i = 1:M)
-               )
+    exprs = [begin
+                id₁ = (i - 1) % M + 1
+                id₂ = i % M + 1
+                id₃ = i + M
+                :(QuadraticSegment(p[$id₁], p[$id₂], p[$id₃]))
+             end
+             for i in 1:M
+            ]
+    return quote
+        Base.@_inline_meta
+        @inbounds return Vec{$M, QuadraticSegment{$T}}(tuple($(exprs...)))
+    end
 end

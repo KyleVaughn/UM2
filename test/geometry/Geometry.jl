@@ -5,7 +5,6 @@
              "./axisalignedbox",
              "./interpolation",
              "./triangulate",
-             "./facets",
             ]
     for t in tests
       include("$(t).jl")

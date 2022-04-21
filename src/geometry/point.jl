@@ -8,7 +8,7 @@ export coordinates, distance, distance², fast_isapprox, isCCW, midpoint, nan
 A point in `Dim`-dimensional space with coordinates of type `T`.
 
 The coordinates of the point are given with respect to the canonical
-Euclidean basis, and `Integer` coordinates are converted to `Float64`.
+Euclidean basis.
 
 ## Examples
 
@@ -16,29 +16,26 @@ Euclidean basis, and `Integer` coordinates are converted to `Float64`.
 # 2D points
 A = Point(0.0, 1.0) # double precision as expected
 B = Point(0f0, 1f0) # single precision as expected
-C = Point(0, 0) # Integer is converted to Float64 by design
-D = Point2(0, 1) # explicitly ask for double precision
-E = Point2f(0, 1) # explicitly ask for single precision
+C = Point2(0, 1)    # explicitly ask for double precision
+D = Point2f(0, 1)   # explicitly ask for single precision
+E = Point2B(0, 1)   # explicitly ask for BigFloat
 
 # 3D points
 F = Point(1.0, 2.0, 3.0) # double precision as expected
 G = Point(1f0, 2f0, 3f0) # single precision as expected
-H = Point(1, 2, 3) # Integer is converted to Float64 by design
-I = Point3(1, 2, 3) # explicitly ask for double precision
-J = Point3f(1, 2, 3) # explicitly ask for single precision
+H = Point3(1, 2, 3)      # explicitly ask for double precision
+I = Point3f(1, 2, 3)     # explicitly ask for single precision
+J = Point3B(1, 2, 3)     # explicitly ask for BigFloat 
 ```
 
 ### Notes
 
-- Type aliases are `Point1`, `Point2`, `Point3`, `Point1f`, `Point2f`, `Point3f`
-- `Integer` coordinates are not supported because most geometric processing
-  algorithms assume a continuous space. The conversion to `Float64` avoids
-  `InexactError` and other unexpected results.
+- Type aliases are `Point1`, `Point2`, `Point3`, `Point1f`, `Point2f`, `Point3f`,
+    `Point1B`, `Point2B`, `Point3B`.
 """
 struct Point{Dim,T} <:AbstractVector{T}
     coords::SVector{Dim,T}
     Point{Dim,T}(coords::SVector{Dim,T}) where {Dim,T} = new{Dim,T}(coords)
-    Point{Dim,T}(coords::SVector{Dim,T}) where {Dim,T<:Integer} = new{Dim,Float64}(coords)
 end
 
 # constructors

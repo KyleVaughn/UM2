@@ -8,7 +8,7 @@ export isstraight
 
 Return if the quadratic segment is effectively straight.
 """
-function isstraight(q::QuadraticSegment)
+function isstraight(q::QuadraticSegment{T}) where {T<:Point}
     # Project P₃ onto the line from P₁ to P₂, call it P₄
     𝘃₁₃ = q[3] - q[1] 
     𝘃₁₂ = q[2] - q[1] 
