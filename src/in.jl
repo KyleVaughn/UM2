@@ -165,10 +165,6 @@ end
 @inline Base.in(p::Point3D, aab::AABox3D) = aab.xmin ≤ p[1] ≤ aab.xmax && 
                                             aab.ymin ≤ p[2] ≤ aab.ymax &&
                                             aab.zmin ≤ p[3] ≤ aab.zmax
-
-
-
-
 # Point inside polygon
 # ---------------------------------------------------------------------------------------------
 # Test if a point is in a polygon for 2D points/polygons
