@@ -19,18 +19,18 @@ open("legendre_RefLine.jl", "w") do io
         w = weights(x)/2
         println("Error in sum of the weights for order $i: $(1-sum(w))")
         x = (x .+ 1)/2
-        println(io, "function gauss_quadrature(form::Val{:legendre},")
-        println(io, "                          shape::RefLine,")
-        println(io, "                          order::Val{$i},")
-        println(io, "                          type::Type{T}) where {T}")
-        println(io, "    weights = @SVector T[$(w[1]),")
+        println(io, "@generated function gauss_quadrature(form::Val{:legendre},")
+        println(io, "                                     shape::RefLine,")
+        println(io, "                                     order::Val{$i},")
+        println(io, "                                     type::Type{T}) where {T}")
+        println(io, """    weights = [:(\$(big"$(w[1])")),""")
         for j in 2:i 
-            println(io, "                         $(w[j]),")
+        println(io, """               :(\$(big"$(w[j])")),""")
         end
         println(io, "                        ]")
-        println(io, "    points  = @SVector [Point{1,T}($(x[1])),")
+        println(io, """    points  = [:(\$(Point{1,T}(big"$(x[1])"))),""")
         for j in 2:i 
-            println(io, "                        Point{1,T}($(x[j])),")
+        println(io, """               :(\$(Point{1,T}(big"$(x[j])"))),""")
         end
         println(io, "                       ]")
         println(io, "    return weights, points")

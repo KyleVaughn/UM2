@@ -1,3 +1,9 @@
+
+# TODO Implement Dunavant's algorithm in julia and compute these values to higher
+# precision
+# Dunavant, D. (1985). High degree efficient symmetrical Gaussian quadrature rules 
+# for the triangle. International journal for numerical methods in engineering, 21(6), 
+# 1129-1148.
 """
     triangular_gauss_legendre_quadrature(::Type{T}, ::Val{N})
 
