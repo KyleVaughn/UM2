@@ -15,6 +15,6 @@ include("polytopes/interpolate.jl")
 include("polytopes/polynomial.jl")
 include("polytopes/quadraticsegment.jl")
 include("polytopes/edges.jl")
-include("triangulate.jl")
-include("measure.jl")
+include("polytopes/measure.jl")
+include("polytopes/triangulate.jl")
 end

@@ -1,5 +1,5 @@
 export AABox
-export xmin, ymin, zmin, xmax, ymax, zmax, Δx, Δy, Δz  
+export measure, xmin, ymin, zmin, xmax, ymax, zmax, Δx, Δy, Δz  
 
 """
     AABox(minima::Point{Dim,T}, maxima::Point{Dim,T})
@@ -37,6 +37,8 @@ zmax(aab::AABox) = aab.maxima[3]
 Δx(aab::AABox) = xmax(aab) - xmin(aab) 
 Δy(aab::AABox) = ymax(aab) - ymin(aab)
 Δz(aab::AABox) = zmax(aab) - zmin(aab)
+
+measure(aab::AABox) = prod(aab.maxima - aab.minima) 
 
 function Base.show(io::IO, aab::AABox)
     print(io, "AABox($(aab.minima), $(aab.maxima))")

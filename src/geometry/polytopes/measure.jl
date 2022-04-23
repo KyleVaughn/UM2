@@ -8,8 +8,6 @@ volume(   p::Polytope{3}) = measure(p)
 perimeter(p::Polytope{2}) = mapreduce(f->measure(f), +, facets(p))
 area(     p::Polytope{3}) = mapreduce(f->measure(f), +, facets(p))
 
-measure(aab::AABox) = prod(aab.maxima - aab.minima) 
-
 measure(l::LineSegment{T}) where {T<:Point} = norm(l[2]-l[1])
 
 function measure(q::QuadraticSegment{T}) where {T<:Point}
