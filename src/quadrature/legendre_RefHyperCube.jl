@@ -1,19 +1,19 @@
-for quad_order = 1:30 # current max order on RefLine
+for quad_degree = 1:30 # current max degree on RefLine
     @eval begin
         # Square
         @generated function gauss_quadrature(form::Val{:legendre},
                                   shape::RefSquare,
-                                  order::Val{$quad_order},
+                                  degree::Val{$quad_degree},
                                   type::Type{T}) where {T}
-            # Is there a way to use form and order here instead?
+            # Is there a way to use form and degree here instead?
             line_weights, line_points = gauss_quadrature(Val(:legendre), 
                                                          RefLine(),
-                                                         Val($quad_order),
+                                                         Val($quad_degree),
                                                          T)
             weights = Expr[] 
             points = Expr[] 
-            for i = 1:$quad_order
-                for j = 1:$quad_order
+            for i = 1:$quad_degree
+                for j = 1:$quad_degree
                     push!(weights, :($(line_weights[i]) * $(line_weights[j])))
                     push!(points, :(Point($(line_points[i][1]), $(line_points[j][1]))))
                 end
@@ -26,18 +26,18 @@ for quad_order = 1:30 # current max order on RefLine
         # Cube
         @generated function gauss_quadrature(form::Val{:legendre},
                                   shape::RefCube,
-                                  order::Val{$quad_order},
+                                  degree::Val{$quad_degree},
                                   type::Type{T}) where {T}
-            # Is there a way to use form and order here instead?
+            # Is there a way to use form and degree here instead?
             line_weights, line_points = gauss_quadrature(Val(:legendre), 
                                                          RefLine(),
-                                                         Val($quad_order),
+                                                         Val($quad_degree),
                                                          T)
             weights = Expr[] 
             points = Expr[] 
-            for i = 1:$quad_order
-                for j = 1:$quad_order
-                    for k = 1:$quad_order
+            for i = 1:$quad_degree
+                for j = 1:$quad_degree
+                    for k = 1:$quad_degree
                         push!(weights, :($(line_weights[i]) * 
                                          $(line_weights[j]) *
                                          $(line_weights[k])
