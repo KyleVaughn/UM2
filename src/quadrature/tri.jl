@@ -8,11 +8,11 @@ using BenchmarkTools
 
 setprecision(BigFloat, 256)
 eps_128 = 1e-78
-const T = Float64
+const T = BigFloat 
 
 # Polynomial degree
-#const p = parse(Int64, ARGS[1])
-const p = 2
+const p = parse(Int64, ARGS[1])
+#const p = 2
 
 # m values from Table I.
 const m_all = SVector(1, 2, 3, 4, 5, 7, 8, 10, 12, 14, 16, 19, 21, 24, 27, 30, 33, 37, 40, 44)
@@ -103,7 +103,7 @@ const ng = n₀ + 3n₁ + 6n₂
 
 # The error in equation 22b for moment iM given 
 # x = {w₀ if n₀ = 1} ∪ {wᵢ, rᵢ for i = 1:n₁} ∪ {wᵢ, rᵢ, 3αᵢ for i = n₁+1:n₂}
-function moment_error(x::MVector{n, T}, iM::Int64)
+function moment_error(x::SizedVector{n, T, Vector{T}}, iM::Int64)
     err = -ν[iM]
     j = iν[iM, 1]
     k = iν[iM, 2]
@@ -120,7 +120,7 @@ function moment_error(x::MVector{n, T}, iM::Int64)
 end
 
 # The sum or the squared error in each unknown 
-function objective(x::MVector{n, T})
+function objective(x::SizedVector{n, T, Vector{T}})
     sum_err = zero(T)
     for iM = 1:m
         sum_err += moment_error(x, iM)^2
@@ -129,39 +129,27 @@ function objective(x::MVector{n, T})
 end
 
 # Guess weights as in equations 39a-c
-initial_guess = @MVector zeros(T, n)
+initial_guess = SizedVector{n, T}(ones(T, n)/10)
+if n₀ === 1
+    initial_guess[1] = 1/ng
+end
+for i = n₀+1 : 2 : n₀ + 2n₁
+    initial_guess[i] = 3/ng
+end
+for i = n₀ + 2n₁ + 1: 3 : n
+    initial_guess[i] = 6/ng
+end
 
-    if n₀ === 1 && iM === 1
-        err += x[1]
-    end
-    for i = n₀+1 : 2 : n₀ + 2n₁
-        err += x[i]*x[i+1]^j
-    end
-    for i = n₀ + 2n₁ + 1: 3 : n
-        err += x[i]*x[i+1]^j * cos(k*x[i+2])
-    end
-
-
-
-@time res = optimize(objective, ones(T, m+3)/10, SimulatedAnnealing(), 
-                         Optim.Options(f_tol=eps(T), 
-                                       iterations=Int64(1e7),
-                                       time_limit = 10))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+@time res = optimize(objective, 
+                     initial_guess, 
+                     Optim.Options(g_tol=0, 
+                                   iterations=Int64(1e7),
+                                   time_limit = 10
+                                  )
+                    )
+x = Optim.minimizer(res)
+println(res)
+println(x)
 
 
 ##
