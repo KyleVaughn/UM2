@@ -7,12 +7,10 @@ using StaticArrays
 using BenchmarkTools
 
 setprecision(BigFloat, 512)
-eps_256 = 1e-78
 const T = BigFloat 
 
 # Polynomial degree
-# const p = parse(Int64, ARGS[1])
-const p = 6
+const p = parse(Int64, ARGS[1])
 
 # m values from Table I.
 const m_all = SVector(1, 2, 3, 4, 5, 7, 8, 10, 12, 14, 16, 19, 21, 24, 27, 30, 33, 37, 40, 44)
@@ -147,6 +145,33 @@ elseif p === 9
       (0.6235929287620, 0.1882035356190, 0.03982386946360),
       (0.9105409732110, 0.0447295133945, 0.01278883782935),
       (0.0368384120547, 0.2219629891613, 0.02164176968865)]
+elseif p === 10
+    const αβw_Float64 = @SVector [
+      (0.3333333333330, 0.3333333333330, 0.04540899519140),
+      (0.0288447332327, 0.4855776333840, 0.01836297887825),
+      (0.7810368490300, 0.1094815754850, 0.02266052971775),
+      (0.1417072194150, 0.5503529418210, 0.03637895842270),
+      (0.0250035347627, 0.7283239045970, 0.01416362126555),
+      (0.0095408154003, 0.9236559335870, 0.00471083348185)]
+elseif p === 11
+    const αβw_Float64 = @SVector [
+      (-0.0692220965415, +0.5346110482710, 0.00046350316448),
+      (+0.2020613940680, +0.3989693029660, 0.03857476745740),
+      (+0.5933801991370, +0.2033099004310, 0.02966148869040),
+      (+0.7612981754350, +0.1193509122830, 0.01809227025170),
+      (+0.9352701037770, +0.0323649481113, 0.00682986550135),
+      (+0.0501781383105, +0.3566206482610, 0.02616855598110),
+      (+0.0210220165362, +0.1714889803040, 0.01035382981955)]
+elseif p === 12
+    const αβw_Float64 = @SVector [
+      (0.0235652204524, 0.4882173897740, 0.01286553322025),
+      (0.1205512154110, 0.4397243922940, 0.02184627226900),
+      (0.4575792299760, 0.2712103850120, 0.03142911210895),
+      (0.7448477089170, 0.1275761455420, 0.01739805646535),
+      (0.9573652990940, 0.0213173504532, 0.00308313052578),
+      (0.1153434945350, 0.2757132696860, 0.02018577888320),
+      (0.0228383322223, 0.6958360867880, 0.01117838660115),
+      (0.0257340505483, 0.1162519159080, 0.00865811555435)]
 else
     error("Unsupported polynomial order")
 end
@@ -184,8 +209,10 @@ function αβw_to_initial_guess()
                                      iterations=Int64(1e4),
                                     )
                       )
-        println("r, a from α, β")
-        println(res)
+        if !Optim.converged(res)
+            println("r, a from α, β")
+            println(res)
+        end
         x = Optim.minimizer(res)
         initial_guess[i+1] = x[1]
         initial_guess[i+2] = x[2]
@@ -255,24 +282,46 @@ function area(x)
     return [ (w[i], α[i], β[i], γ[i]) for i ∈ 1:nsum ]
 end
 
+function poly(wαβγ)
+    exact = 2*T(factorial(p))/T(factorial(p+2))
+    sum = zero(T)
+    if n₀ !== 0
+        w, α, β, γ = wαβγ[1]
+        sum += w*α^p
+    end
+    for i = n₀ + 1:n₀ + n₁
+        w, α, β, γ = wαβγ[i]
+        sum += w*(α^p + 2*β^p)
+    end
+    for i = n₀ + n₁ + 1: n₀ + n₁ + n₂
+        w, α, β, γ = wαβγ[i]
+        sum += w*2*(α^p + β^p + γ^p)
+    end 
+    approx = sum
+    err = (exact - approx)/approx
+    return err
+end
+
 initial_guess = αβw_to_initial_guess() 
 
 println("Polynomial degree: $p")
 println("nᵢ = $n₀, $n₁, $n₂")    
 @time res = optimize(objective, 
                      initial_guess, 
-                     Optim.Options(g_tol=1e-149,
+                     Optim.Options(g_tol=1e-200,
                                    iterations=Int64(1e7),
-                                   time_limit = 10
+                                   time_limit = 30
                                   )
                     )
 x = Optim.minimizer(res)
-println(res)
+if !Optim.converged(res)
+    println(res)
+end
 wαβγ = area(x)
 for t in wαβγ
     println(Float64.(t))
 end
-println("Errors")
+println("w, α, β, γ errors")
 for i = 1:length(wαβγ)
     α_ref,β_ref,w_ref = αβw_Float64[i]
     γ_ref = 1 - α_ref - β_ref
@@ -291,3 +340,5 @@ for i = 1:length(wαβγ)
     end
     println()
 end
+println("Integration error")
+println(poly(wαβγ))
