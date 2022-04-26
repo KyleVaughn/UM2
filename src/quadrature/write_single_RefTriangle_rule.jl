@@ -412,7 +412,7 @@ end
 
 # Integration error function from Appendix II
 function poly(wαβγ)
-    exact = 2*T(factorial(big(p)))/T(factorial(big(p+2)))
+    exact = 2/(T(p+1)*T(p+2))
     sum = zero(T)
     if n₀ !== 0
         w, α, β, γ = wαβγ[1]
