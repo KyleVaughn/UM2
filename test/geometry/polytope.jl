@@ -13,8 +13,8 @@
         
         @testset "LineSegment{3}" begin
             for T ∈ Floats
-                P₁ = Point{2,T}(1, 0, 1)
-                P₂ = Point{2,T}(2, 0, -1) 
+                P₁ = Point{3,T}(1, 0, 1)
+                P₂ = Point{3,T}(2, 0, -1) 
                 l = LineSegment(P₁, P₂) 
                 @test l.vertices[1] == P₁
                 @test l.vertices[2] == P₂

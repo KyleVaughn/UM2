@@ -17,3 +17,4 @@ const RefCube        = RefHypercube{3}
 # Should implement a non-value based version which returns a Vector at some point.
 include("legendre_RefLine.jl")
 include("legendre_RefHyperCube.jl")
+include("legendre_RefTriangle.jl")

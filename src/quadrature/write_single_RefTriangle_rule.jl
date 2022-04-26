@@ -437,7 +437,9 @@ println("nᵢ = $n₀, $n₁, $n₂")
 @time res = optimize(objective, 
                      initial_guess, 
                      Optim.Options(g_tol=1e-200,
-                                   iterations=Int64(1e6)
+                                   iterations=Int64(1e6),
+                                   show_trace=true,
+                                   show_every=10000
                                   )
                     )
 x = Optim.minimizer(res)
@@ -503,15 +505,15 @@ println(io, "@generated function gauss_quadrature(form::Val{:legendre},")
 println(io, "                                     shape::RefTriangle,")
 println(io, "                                     degree::Val{$p},")
 println(io, "                                     type::Type{T}) where {T}")
-println(io, """    weights = [:(\$(big"$(weights[1])")),""")
+println(io, """    weights = SVector(:(\$(T(big"$(weights[1])"))),""")
 for i = 2:ng
-println(io, """               :(\$(big"$(weights[i])")),""")
+println(io, """                      :(\$(T(big"$(weights[i])"))),""")
 end
-println(io, "                        ]")
-println(io, """    points  = [:(\$(Point{2,T}(big"$(points[1][1])", big"$(points[1][2])"))),""")
+println(io, "                       )")
+println(io, """    points = SVector(:(\$(Point{2,T}(big"$(points[1][1])", big"$(points[1][2])"))),""")
 for i in 2:ng
-println(io, """               :(\$(Point{2,T}(big"$(points[i][1])", big"$(points[i][2])"))),""")
+println(io, """                     :(\$(Point{2,T}(big"$(points[i][1])", big"$(points[i][2])"))),""")
 end
-println(io, "                       ]")
+println(io, "                      )")
 println(io, "    return weights, points")
 println(io, "end")

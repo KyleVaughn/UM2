@@ -1,4 +1,4 @@
-@testset "Interpolation" begin
+@testset "Interpolate" begin
     @testset "LineSegment" begin
         for T in Floats
             P₁ = Point{3,T}(1, 1, 1)

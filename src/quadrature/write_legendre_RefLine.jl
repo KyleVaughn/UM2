@@ -23,16 +23,16 @@ open("legendre_RefLine.jl", "w") do io
         println(io, "                                     shape::RefLine,")
         println(io, "                                     degree::Val{$i},")
         println(io, "                                     type::Type{T}) where {T}")
-        println(io, """    weights = [:(\$(big"$(w[1])")),""")
+        println(io, """    weights = SVector(:(\$(T(big"$(w[1])"))),""")
         for j in 2:i 
-        println(io, """               :(\$(big"$(w[j])")),""")
+        println(io, """                      :(\$(T(big"$(w[j])"))),""")
         end
-        println(io, "                        ]")
-        println(io, """    points  = [:(\$(Point{1,T}(big"$(x[1])"))),""")
+        println(io, "                       )")
+        println(io, """    points = SVector(:(\$(Point{1,T}(big"$(x[1])"))),""")
         for j in 2:i 
-        println(io, """               :(\$(Point{1,T}(big"$(x[j])"))),""")
+        println(io, """                     :(\$(Point{1,T}(big"$(x[j])"))),""")
         end
-        println(io, "                       ]")
+        println(io, "                      )")
         println(io, "    return weights, points")
         println(io, "end")
     end 
