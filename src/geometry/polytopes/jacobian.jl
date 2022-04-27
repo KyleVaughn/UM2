@@ -1,4 +1,7 @@
-jacobian(q::QuadraticSegment, r) = (4r - 3)*(q.𝘅₁ - q.𝘅₃) + (4r - 1)*(q.𝘅₂ - q.𝘅₃) 
+export jacobian
+
+jacobian(l::LineSegment, r) = l[2] - l[1]
+jacobian(q::QuadraticSegment, r) = (4r - 3)*(q[1] - q[3]) + (4r - 1)*(q[2] - q[3]) 
 
 #function jacobian(quad::Quadrilateral, r, s)
 #    ∂F_∂r = (1 - s)*(quad[2] - quad[1]) + s*(quad[3] - quad[4])

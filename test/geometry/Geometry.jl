@@ -5,7 +5,7 @@
              "axisalignedbox",
              "polytope",
              "polytopes/interpolate",
-             "polytopes/jacobian"
+             "polytopes/jacobian",
              "polytopes/edges"
 #             "polytopes/measure"
 #             "triangulate",

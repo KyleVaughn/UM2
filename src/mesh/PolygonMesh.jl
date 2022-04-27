@@ -1,5 +1,12 @@
 abstract type PolygonMesh{T, U} <: LinearUnstructuredMesh2D{T, U} end
 
+struct PolytopeMesh{T}
+    name::String
+    points::Vector{Point2D{T}}
+    faces::Vector{SVector{3, U}}
+    face_sets::Dict{String, BitSet}
+end
+
 struct TriangleMesh{T, U} <:PolygonMesh{T, U}
     name::String
     points::Vector{Point2D{T}}
