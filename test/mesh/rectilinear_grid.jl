@@ -1,29 +1,23 @@
 @testset "Rectilinear Grid" begin
     @testset "Rectilinear Grid - 2D" begin
         for T in Floats
-            bb = AABox(Point{2,T}(0, 0), Point{2,T}(1, 1))
-            xdiv = Vec{3,T}(1//4, 1//2, 3//4)
-            ydiv = Vec{2,T}(1//3, 2//3)
-            rg = RectilinearGrid(bb, xdiv, ydiv)
-
-            @test rg.bb == bb
-            @test rg.xdiv == xdiv
-            @test rg.ydiv == ydiv
+            x = Vec{5,T}(0, 1//4, 1//2, 3//4, 1)
+            y = Vec{4,T}(0, 1//3, 2//3, 1)
+            rg = RectilinearGrid(x, y)
+            @test rg.x == x
+            @test rg.y == y
         end
     end
 
     @testset "Rectilinear Grid - 3D" begin
         for T in Floats
-            bb = AABox(Point{3,T}(0, 0, 0), Point{3,T}(1, 1, 1))
-            xdiv = Vec{3,T}(1//4, 1//2, 3//4)
-            ydiv = Vec{2,T}(1//3, 2//3)
-            zdiv = Vec{2,T}(1//3, 2//3)
-            rg = RectilinearGrid(bb, xdiv, ydiv, zdiv)
-
-            @test rg.bb == bb
-            @test rg.xdiv == xdiv
-            @test rg.ydiv == ydiv
-            @test rg.zdiv == zdiv
+            x = Vec{5,T}(0, 1//4, 1//2, 3//4, 1)
+            y = Vec{4,T}(0, 1//3, 2//3, 1)
+            z = Vec{4,T}(0, 1//3, 2//3, 1)
+            rg = RectilinearGrid(x, y, z)
+            @test rg.x == x
+            @test rg.y == y
+            @test rg.z == z
         end
     end
 end
