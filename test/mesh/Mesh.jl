@@ -1,6 +1,7 @@
-@testset "mesh" begin
+@testset "Mesh" begin
     tests = ["./RectilinearGrid",
-             "./mesh_io"]
+             #"./mesh_io"
+            ]
     for t in tests
       include("$(t).jl")
     end

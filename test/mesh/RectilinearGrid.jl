@@ -1,4 +1,4 @@
-@testset "RectilinearGrid" begin
+@testset "Rectilinear Grid" begin
     @testset "RectilinearGrid2D" begin
         for T in Floats
             bb = AABox2D(Point2D{T}(0, 0), Point2D{T}(1, 1))
