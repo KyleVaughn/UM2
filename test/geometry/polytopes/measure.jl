@@ -37,14 +37,12 @@
         end
     end
 
-#    @testset "QuadraticPolygon" begin
-#        for T in Floats
-#            @test abs(measure(setup_QuadraticTriangle2(T)) - 0.4333333333) < 1e-6
-#            @test abs(measure(setup_QuadraticTriangle3(T)) - 0.9058066937) < 1e-6
-#            @test abs(measure(setup_QuadraticQuadrilateral2(T)) - 0.86666666) < 1e-6
-#            @test abs(measure(setup_QuadraticQuadrilateral3(T)) - 1.39710509) < 1e-6
-#        end
-#    end
-
-#    # TODO: Polyhedron, QuadraticPolyhedron
+    @testset "QuadraticPolygon" begin
+        for T in Floats
+            @test abs(measure(setup_QuadraticTriangle2(T)) - 0.4333333333) < 1e-6
+            @test abs(measure(setup_QuadraticTriangle3(T)) - 0.9058066937) < 1e-6
+            @test abs(measure(setup_QuadraticQuadrilateral2(T)) - 0.86666666) < 1e-6
+            @test abs(measure(setup_QuadraticQuadrilateral3(T)) - 1.39710509) < 1e-6
+        end
+    end
 end

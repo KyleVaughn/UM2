@@ -1,4 +1,4 @@
-for quad_degree = 1:30 # current max degree on RefLine
+for quad_degree = 1:20 # Exceeding degree 20 seems unnecessary at this time
     @eval begin
         # Square
         @generated function gauss_quadrature(form::Val{:legendre},

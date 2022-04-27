@@ -3,7 +3,7 @@ using Polynomials
 
 # Script for writing the legerdre_RefLine file with Legendre polynomials up to
 # a maximum degree of max_degree.
-max_degree = 30
+max_degree = 50
 
 setprecision(BigFloat, 512)
 

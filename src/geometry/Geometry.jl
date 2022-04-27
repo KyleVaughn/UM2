@@ -2,6 +2,7 @@ module Geometry
 
 using LinearAlgebra
 using StaticArrays
+using ..MOCNeutronTransport: RefLine, RefSquare, RefCube, RefTriangle, gauss_quadrature
 
 import Base: -, +, inv, zero
 
