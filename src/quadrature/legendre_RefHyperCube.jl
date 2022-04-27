@@ -15,12 +15,12 @@ for quad_degree = 1:30 # current max degree on RefLine
             for i = 1:$quad_degree
                 for j = 1:$quad_degree
                     push!(weights, :($(line_weights[i]) * $(line_weights[j])))
-                    push!(points, :(Point($(line_points[i][1]), $(line_points[j][1]))))
+                    push!(points, :(tuple($(line_points[i][1]), $(line_points[j][1]))))
                 end
             end
             return quote
-                return (Vec{$(length(line_weights)^2), $T}(tuple($(weights...))),
-                        Vec{$(length(line_weights)^2), Point{2,$T}}(tuple($(points...))))
+                return (SVector{$(length(line_weights)^2), $T}(tuple($(weights...))),
+                        SVector{$(length(line_weights)^2), NTuple{2,$T}}(tuple($(points...))))
             end
         end
         # Cube
@@ -42,7 +42,7 @@ for quad_degree = 1:30 # current max degree on RefLine
                                          $(line_weights[j]) *
                                          $(line_weights[k])
                                         ))
-                        push!(points, :(Point($(line_points[i][1]), 
+                        push!(points, :(tuple($(line_points[i][1]), 
                                               $(line_points[j][1]),
                                               $(line_points[k][1]),
                                              )))
@@ -50,8 +50,8 @@ for quad_degree = 1:30 # current max degree on RefLine
                 end
             end
             return quote
-                return (Vec{$(length(line_weights)^3), $T}(tuple($(weights...))),
-                        Vec{$(length(line_weights)^3), Point{3,$T}}(tuple($(points...))))
+                return (SVector{$(length(line_weights)^3), $T}(tuple($(weights...))),
+                        SVector{$(length(line_weights)^3), NTuple{3,$T}}(tuple($(points...))))
             end
         end
     end

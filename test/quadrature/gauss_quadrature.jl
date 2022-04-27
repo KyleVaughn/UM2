@@ -35,7 +35,7 @@
                 exact = big((5 + (-1)^q + 2q))/big((q+1)*(q+2))
                 approx = zero(T)
                 for i = 1:p^2
-                    r, s = points[i].coords
+                    r, s = points[i]
                     approx += weights[i]*(r^q + s^q + (1 - r - s)^q)
                 end
                 rel_err = T((approx - exact)/exact)
@@ -59,7 +59,7 @@
                 exact = 3/big(q + 1) 
                 approx = zero(T)
                 for i = 1:p^3
-                    r, s, t = points[i].coords
+                    r, s, t = points[i]
                     approx += weights[i]*(r^q + s^q + t^q)
                 end
                 rel_err = T((approx - exact)/exact)
@@ -82,7 +82,7 @@
                 exact = 3/big((p+1)*(p+2))
                 approx = zero(T)
                 for i = 1:length(weights)
-                    r, s = points[i].coords
+                    r, s = points[i]
                     approx += weights[i]*(r^p + s^p + (1 - r - s)^p)
                 end
                 rel_err = T((approx - exact)/exact)

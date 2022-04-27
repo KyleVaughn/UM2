@@ -14,12 +14,12 @@ function (poly::Polytope{K,P,N,T})(coords...) where {K,P,N,T<:Point}
 end
 
 # parametric dimension 1
-interpolation_weights(::Type{<:LineSegment}, r) = Vec(1-r, r)
+interpolation_weights(::Type{<:LineSegment},      r) = Vec(1-r, r)
 interpolation_weights(::Type{<:QuadraticSegment}, r) = Vec((2r - 1)*( r - 1),
                                                            ( r    )*(2r - 1),
                                                            (4r    )*( 1 - r))
 # parametric dimension 2
-interpolation_weights(::Type{<:Triangle}, r, s) = Vec((1 - r - s), r, s)
+interpolation_weights(::Type{<:Triangle},      r, s) = Vec((1 - r - s), r, s)
 interpolation_weights(::Type{<:Quadrilateral}, r, s) = Vec((1 - r)*(1 - s), 
                                                            (    r)*(1 - s), 
                                                            (    r)*(    s), 
@@ -44,14 +44,14 @@ end
 
 # parametric dimension 3
 interpolation_weights(::Type{<:Tetrahedron}, r, s, t) = Vec((1 - r - s - t), r, s, t)
-interpolation_weights(::Type{<:Hexahedron}, r, s, t) = Vec((1 - r)*(1 - s)*(1 - t),
-                                                           (    r)*(1 - s)*(1 - t),
-                                                           (    r)*(    s)*(1 - t),
-                                                           (1 - r)*(    s)*(1 - t),
-                                                           (1 - r)*(1 - s)*(    t),
-                                                           (    r)*(1 - s)*(    t),
-                                                           (    r)*(    s)*(    t),
-                                                           (1 - r)*(    s)*(    t))
+interpolation_weights(::Type{<:Hexahedron},  r, s, t) = Vec((1 - r)*(1 - s)*(1 - t),
+                                                            (    r)*(1 - s)*(1 - t),
+                                                            (    r)*(    s)*(1 - t),
+                                                            (1 - r)*(    s)*(1 - t),
+                                                            (1 - r)*(1 - s)*(    t),
+                                                            (    r)*(1 - s)*(    t),
+                                                            (    r)*(    s)*(    t),
+                                                            (1 - r)*(    s)*(    t))
 function interpolation_weights(::Type{<:QuadraticTetrahedron}, r, s, t)
     u = 1 - r - s - t
     return Vec((2u-1)u,

@@ -42,8 +42,8 @@ if !@isdefined(gmsh)
 end
 
 
-include("quadrature/gauss_quadrature.jl")
-export gauss_quadrature
+include("quadrature/Quadrature.jl")
+@reexport using .Quadrature
 include("geometry/Geometry.jl")
 @reexport using .Geometry
 #include("Material.jl")

@@ -510,9 +510,9 @@ for i = 2:ng
 println(io, """                      :(\$(T(big"$(weights[i])"))),""")
 end
 println(io, "                       )")
-println(io, """    points = SVector(:(\$(Point{2,T}(big"$(points[1][1])", big"$(points[1][2])"))),""")
+println(io, """    points = SVector(:(\$(tuple(T(big"$(points[1][1])"), T(big"$(points[1][2])")))),""")
 for i in 2:ng
-println(io, """                     :(\$(Point{2,T}(big"$(points[i][1])", big"$(points[i][2])"))),""")
+println(io, """                     :(\$(tuple(T(big"$(points[i][1])"), T(big"$(points[i][2])")))),""")
 end
 println(io, "                      )")
 println(io, "    return weights, points")

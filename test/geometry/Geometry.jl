@@ -6,8 +6,8 @@
              "polytope",
              "polytopes/interpolate",
              "polytopes/jacobian",
-             "polytopes/edges"
-#             "polytopes/measure"
+             "polytopes/edges",
+             "polytopes/measure"
 #             "triangulate",
             ]
     for t in tests

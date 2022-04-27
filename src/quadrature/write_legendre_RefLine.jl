@@ -28,9 +28,9 @@ open("legendre_RefLine.jl", "w") do io
         println(io, """                      :(\$(T(big"$(w[j])"))),""")
         end
         println(io, "                       )")
-        println(io, """    points = SVector(:(\$(Point{1,T}(big"$(x[1])"))),""")
+        println(io, """    points = SVector(:(\$(NTuple{1,T}(big"$(x[1])"))),""")
         for j in 2:i 
-        println(io, """                     :(\$(Point{1,T}(big"$(x[j])"))),""")
+        println(io, """                     :(\$(NTuple{1,T}(big"$(x[j])"))),""")
         end
         println(io, "                      )")
         println(io, "    return weights, points")
