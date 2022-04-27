@@ -7,8 +7,8 @@
              "polytopes/interpolate",
              "polytopes/jacobian",
              "polytopes/edges",
-             "polytopes/measure"
-#             "triangulate",
+             "polytopes/measure",
+             "polytopes/triangulate",
             ]
     for t in tests
       include("$(t).jl")

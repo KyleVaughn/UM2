@@ -47,21 +47,6 @@ include("geometry/Geometry.jl")
 @reexport using .Geometry
 include("mesh/Mesh.jl")
 @reexport using .Mesh
-## Plot
-#if visualization_enabled
-#    using GLMakie: Axis, Axis3, Figure, LineSegments, Mesh, Scatter, current_axis, 
-#                   record, hist, hist!
-#    import GLMakie: linesegments, linesegments!, mesh, mesh!, scatter, scatter!, 
-#                    convert_arguments
-#    include("plot/Point.jl")
-#    include("plot/LineSegment.jl")
-#    include("plot/QuadraticSegment.jl")
-#    include("plot/AABox.jl")
-#    include("plot/Polygon.jl")
-#    include("plot/QuadraticPolygon.jl")
-#    include("plot/UnstructuredMesh.jl")
-#    export Figure, Axis, Axis3
-#    export hist, scatter, linesegments, mesh,
-#           hist!, scatter!, linesegments!, mesh!
-#end
+include("plot/Plot.jl")
+@reexport using .Plot
 end

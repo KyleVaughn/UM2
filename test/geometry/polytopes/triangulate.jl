@@ -1,5 +1,5 @@
 @testset "Triangulate" begin
-    @testset "ConvexPolygon{2}" begin
+    @testset "Polygon - 2D" begin
         for T in Floats
             quad = setup_Quadrilateral2(T)
             triangles = triangulate(quad)
@@ -13,7 +13,7 @@
         end
     end
 
-    @testset "Quadrilateral3" begin
+    @testset "Quadrilateral - 3D" begin
         for T in Floats
             quad = setup_Quadrilateral3(T)
             triangles = triangulate(quad, Val(0))

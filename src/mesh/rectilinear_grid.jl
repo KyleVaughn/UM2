@@ -27,24 +27,28 @@ end
 
 # constructors
 function RectilinearGrid(x::Vec{X,T}, y::Vec{Y,T}) where {X,Y,T}
-    return RectilinearGrid{X,Y,0,T}(x, y, Vec{0,T})
+    return RectilinearGrid{X,Y,0,T}(x, y, Vec{0,T}())
 end
 
-function RectilinearGrid(x, y) where {T}
+function RectilinearGrid(x::Vec{X,T}, y::Vec{Y,T}, z::Vec{Z,T}) where {X,Y,Z,T}
+    return RectilinearGrid{X,Y,Z,T}(x, y, z)
+end
+
+function RectilinearGrid(x, y)
     X = length(x)
     Y = length(y)
-    sx = Vec{X,T}(x)
-    sy = Vec{Y,T}(y)
+    sx = Vec{X}(x)
+    sy = Vec{Y}(y)
     return RectilinearGrid(sx, sy)
 end
 
-function RectilinearGrid(x, y) where {T}
+function RectilinearGrid(x, y, z)
     X = length(x)
     Y = length(y)
     Z = length(z)
-    sx = Vec{X,T}(x)
-    sy = Vec{Y,T}(y)
-    sz = Vec{Z,T}(z)
+    sx = Vec{X}(x)
+    sy = Vec{Y}(y)
+    sz = Vec{Z}(z)
     return RectilinearGrid(sx, sy, sz)
 end
 
