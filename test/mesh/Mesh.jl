@@ -1,5 +1,5 @@
 @testset "Mesh" begin
-    tests = ["./RectilinearGrid",
+    tests = ["./rectilinear_grid",
              #"./mesh_io"
             ]
     for t in tests
