@@ -17,7 +17,7 @@
             bb = AABox(Point{3,T}(0, 0, 0), Point{3,T}(1, 1, 1))
             xdiv = Vec{3,T}(1//4, 1//2, 3//4)
             ydiv = Vec{2,T}(1//3, 2//3)
-            ydiv = Vec{2,T}(1//3, 2//3)
+            zdiv = Vec{2,T}(1//3, 2//3)
             rg = RectilinearGrid(bb, xdiv, ydiv, zdiv)
 
             @test rg.bb == bb

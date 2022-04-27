@@ -16,20 +16,18 @@ function PolytopeVertexMesh{Dim,T,P}(;
     return PolytopeVertexMesh(name, vertices, polytopes, polytope_sets)
 end
 
-# function Base.show(io::IO, mesh::MixedPolygonMesh)
-#     mesh_type = typeof(mesh)
-#     println(io, mesh_type)
-#     println(io, "  ├─ Name      : $(mesh.name)")
-#     size_MB = Base.summarysize(mesh)/1E6
-#     if size_MB < 1
-#         size_KB = size_MB*1000
-#         println(io, "  ├─ Size (KB) : $size_KB")
-#     else
-#         println(io, "  ├─ Size (MB) : $size_MB")
-#     end
-#     println(io, "  ├─ Points    : $(length(mesh.points))")
-#     println(io, "  ├─ Faces     : $(length(mesh.faces))")
-#     println(io, "  │  ├─ Triangle       : $(count(x->x isa SVector{3},  mesh.faces))")
-#     println(io, "  │  └─ Quadrilateral  : $(count(x->x isa SVector{4},  mesh.faces))")
-#     println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
-# end
+function Base.show(io::IO, mesh::PolytopeVertexMesh)
+    println(io, typeof(mesh))
+    println(io, "  ├─ Name      : ", mesh.name)
+    size_MB = Base.summarysize(mesh)/1E6
+    if size_MB < 1
+        println(io, "  ├─ Size (KB) : ", size_MB*1000)
+    else
+        println(io, "  ├─ Size (MB) : ", size_MB)
+    end
+    println(io, "  ├─ Vertices  : ", length(mesh.vertices))
+#    println(io, "  ├─ Faces     : $(length(mesh.faces))")
+#    println(io, "  │  ├─ Triangle       : $(count(x->x isa SVector{3},  mesh.faces))")
+#    println(io, "  │  └─ Quadrilateral  : $(count(x->x isa SVector{4},  mesh.faces))")
+#    println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
+end
