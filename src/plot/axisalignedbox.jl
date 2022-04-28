@@ -15,13 +15,13 @@ function convert_arguments(LS::Type{<:LineSegments}, R::SVector{N, <:AABox}) whe
     return convert_arguments(LS, collect(R))
 end
 
-function convert_arguments(M::Type{<:Mesh}, aab::AABox{2})
+function convert_arguments(M::Type{<:GLMakieMesh}, aab::AABox{2})
     vertices = [v.coords for v in ridges(aab)]
     faces = [1 2 3;
              3 4 1]
     return convert_arguments(M, vertices, faces)
 end
 
-function convert_arguments(M::Type{<:Mesh}, aab::AABox{3})
+function convert_arguments(M::Type{<:GLMakieMesh}, aab::AABox{3})
     return convert_arguments(M, facets(aab)) 
 end

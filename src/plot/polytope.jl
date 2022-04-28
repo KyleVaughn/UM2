@@ -7,13 +7,13 @@ function convert_arguments(LS::Type{<:LineSegments}, P::Vector{<:Polytope{2}})
     return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
 end
  
-function convert_arguments(M::Type{<:Mesh}, tri::Triangle)
+function convert_arguments(M::Type{<:GLMakieMesh}, tri::Triangle)
     vertices = [v.coords for v in ridges(tri)]
     face = [1 2 3]
     return convert_arguments(M, vertices, face)
 end
 
-function convert_arguments(M::Type{<:Mesh}, T::Vector{<:Triangle})
+function convert_arguments(M::Type{<:GLMakieMesh}, T::Vector{<:Triangle})
     points = reduce(vcat, [[v.coords for v ∈ ridges(tri)] for tri ∈  T])
     faces = zeros(Int64, length(T), 3)
     k = 1
@@ -26,15 +26,15 @@ end
 
 # 2D Polygons can be triangulated using fan triangulation.
 # All others need to be triangulated based on the number of non-linear subdivisions
-function convert_arguments(M::Type{<:Mesh}, poly::Polygon{N, Point{2,T}}) where {N,T}
+function convert_arguments(M::Type{<:GLMakieMesh}, poly::Polygon{N, Point{2,T}}) where {N,T}
     return convert_arguments(M, triangulate(poly))
 end
 
-function convert_arguments(M::Type{<:Mesh}, poly::Polytope{2})
+function convert_arguments(M::Type{<:GLMakieMesh}, poly::Polytope{2})
     return convert_arguments(M, triangulate(poly, Val(plot_nonlinear_subdivisions)))
 end
  
-function convert_arguments(M::Type{<:Mesh}, P::Vector{<:Polytope{2}})
+function convert_arguments(M::Type{<:GLMakieMesh}, P::Vector{<:Polytope{2}})
     triangles = [ begin
                      if poly isa Polygon{N, Point{2,T}} where {N,T}
                          triangulate(poly)

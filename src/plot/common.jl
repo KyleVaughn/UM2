@@ -4,7 +4,7 @@ function convert_arguments(T::Type{<:LineSegments},
     return convert_arguments(T, collect(V)) 
 end
 
-function convert_arguments(T::Type{<:Mesh}, 
+function convert_arguments(T::Type{<:GLMakieMesh}, 
                            V::SVector{NP, Polytope{K,P,N,PT}}) where {NP,K,P,N,PT}
     return convert_arguments(T, collect(V)) 
 end
