@@ -1,6 +1,6 @@
 export AABox
 export measure, xmin, ymin, zmin, xmax, ymax, zmax, Δx, Δy, Δz,
-       facets, ridges, peaks
+       facets, ridges, peaks, faces, edges, vertices
 
 """
     AABox(minima::Point{Dim,T}, maxima::Point{Dim,T})
@@ -57,6 +57,9 @@ function facets(aab::AABox{2})
                LineSegment(v[4], v[1])
               )
 end
+
+edges(aab::AABox{2}) = facets(aab)
+vertices(aab::AABox{2}) = ridges(aab)
 
 function peaks(aab::AABox{3})
     # in CCW order, low z then high z
@@ -123,6 +126,20 @@ function ridges(aab::AABox{3})
               )
 end
 
+function facets(aab::AABox{3})
+     v = peaks(aab)   
+     return Vec(Quadrilateral(v[1], v[2], v[3], v[4]),
+                Quadrilateral(v[5], v[6], v[7], v[8]),
+                Quadrilateral(v[1], v[2], v[6], v[5]),
+                Quadrilateral(v[2], v[3], v[7], v[6]),
+                Quadrilateral(v[3], v[4], v[8], v[7]),
+                Quadrilateral(v[4], v[1], v[5], v[8]),
+               )
+end
+
+faces(aab::AABox{3}) = facets(aab)
+edges(aab::AABox{3}) = ridges(aab)
+vertices(aab::AABox{3}) = peaks(aab)
 
 function Base.show(io::IO, aab::AABox)
     print(io, "AABox($(aab.minima), $(aab.maxima))")
