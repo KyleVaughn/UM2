@@ -6,6 +6,11 @@
             rg = RectilinearGrid(x, y)
             @test rg.x == x
             @test rg.y == y
+            @test xmin(rg) == 0
+            @test ymin(rg) == 0
+            @test xmax(rg) == 1
+            @test ymax(rg) == 1
+            @test RectilinearGrid(Vec{2,T}(3//4, 1), Vec{2,T}(0, 1//3)) ⊆ rg
         end
     end
 
@@ -18,6 +23,15 @@
             @test rg.x == x
             @test rg.y == y
             @test rg.z == z
+            @test xmin(rg) == 0
+            @test ymin(rg) == 0
+            @test zmin(rg) == 0
+            @test xmax(rg) == 1
+            @test ymax(rg) == 1
+            @test zmax(rg) == 1
+            @test RectilinearGrid(Vec{2,T}(3//4, 1), 
+                                  Vec{2,T}(0, 1//3),
+                                  Vec{2,T}(0,    1)) ⊆ rg
         end
     end
 end
