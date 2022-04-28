@@ -13,3 +13,12 @@ end
 function convert_arguments(T::Type{<:LineSegments}, P::Vector{<:Point})
     return convert_arguments(T, [p.coords for p in P]) 
 end
+
+# Makie seems to have trouble with SVectors, so just collect them into Vectors
+function convert_arguments(T::Type{<:Scatter}, V::SVector{N, <:Point}) where {N}
+    return convert_arguments(T, collect(V)) 
+end
+
+function convert_arguments(T::Type{<:LineSegments}, V::SVector{N, <:Point}) where {N}
+    return convert_arguments(T, collect(V)) 
+end
