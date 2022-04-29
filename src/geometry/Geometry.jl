@@ -4,7 +4,7 @@ using LinearAlgebra
 using StaticArrays
 using ..Quadrature: RefLine, RefSquare, RefCube, RefTriangle, gauss_quadrature
 
-import Base: -, +, inv, zero
+import Base: -, +, ==, inv, zero
 
 include("constants.jl")
 include("vector.jl")

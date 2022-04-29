@@ -2,7 +2,7 @@ export Polytope, Edge, LineSegment, QuadraticSegment, Face, Polygon, QuadraticPo
        Triangle, Quadrilateral, QuadraticTriangle, QuadraticQuadrilateral, Cell,
        Polyhedron, QuadraticPolyhedron, Tetrahedron, Hexahedron, QuadraticTetrahedron,
        QuadraticHexahedron
-export ridges, facets, alias_string
+export ==, ridges, facets, alias_string
 
 """
 
@@ -100,7 +100,19 @@ function alias_string(::Type{P}) where {P<:Polytope}
     return "$(P)"
 end
 
+# If we think of the polytopes as set, P₁ ∩ P₂ = P₁ and P₁ ∩ P₂ = P₂ implies P₁ = P₂
+# Can we say sort(P₁.vertices) == sort(P₂.vertices) is sufficient?
+function ==(P₁::LineSegment{T}, P₂::LineSegment{T}) where {T}
+    return (P₁[1] == P₂[1] && P₁[2] == P₂[2]) || (P₁[1] == P₂[2] && P₁[2] == P₂[1])
+end
+
+function ==(P₁::QuadraticSegment{T}, P₂::QuadraticSegment{T}) where {T}
+    return ((P₁[1] == P₂[1] && P₁[2] == P₂[2])  || 
+            (P₁[1] == P₂[2] && P₁[2] == P₂[1])
+           ) && P₁[3] == P₂[3]
+end
+
 # Show aliases when printing
 function Base.show(io::IO, poly::Polytope)
-    println(io, alias_string(typeof(poly)),"(",poly.vertices, ")")
+    print(io, alias_string(typeof(poly)),"(",poly.vertices, ")")
 end

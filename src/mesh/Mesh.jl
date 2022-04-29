@@ -9,4 +9,5 @@ import ..Geometry: xmin, ymin, zmin, xmax, ymax, zmax
 
 include("rectilinear_grid.jl")
 include("polytope_vertex_mesh.jl")
+include("materialize.jl")
 end
