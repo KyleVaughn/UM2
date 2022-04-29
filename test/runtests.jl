@@ -6,7 +6,7 @@ using Test
 Logging.disable_logging(Logging.Info)
 const Floats = [Float32, Float64, BigFloat]
 include("setup/setup_geometry.jl")
-#include("setup/setup_meshes.jl")
+include("setup/setup_mesh.jl")
 tests = ["quadrature/Quadrature",
          "geometry/Geometry",
          "mesh/Mesh",

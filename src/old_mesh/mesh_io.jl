@@ -129,3 +129,16 @@ function _create_mesh_from_elements(is3D::Bool,
     end
     error("Invalid mesh type")
 end
+
+function _select_mesh_UInt_type(N::Int64)
+    if N ≤ typemax(UInt16) 
+        U = UInt16
+    elseif N ≤ typemax(UInt32) 
+        U = UInt32
+    elseif N ≤ typemax(UInt64) 
+        U = UInt64
+    else 
+        error("That's a big mesh! Number of edges exceeds typemax(UInt64)")
+    end
+    return U
+end
