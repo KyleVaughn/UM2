@@ -13,12 +13,12 @@ function (poly::Polytope{K,P,N,T})(coords...) where {K,P,N,T<:Point}
     return Point(mapreduce(i->w[i]*poly[i].coords, +, 1:N)) 
 end
 
-# parametric dimension 1
+# 1-polytope
 interpolation_weights(::Type{<:LineSegment},      r) = Vec(1-r, r)
 interpolation_weights(::Type{<:QuadraticSegment}, r) = Vec((2r - 1)*( r - 1),
                                                            ( r    )*(2r - 1),
                                                            (4r    )*( 1 - r))
-# parametric dimension 2
+# 2-polytope
 interpolation_weights(::Type{<:Triangle},      r, s) = Vec((1 - r - s), r, s)
 interpolation_weights(::Type{<:Quadrilateral}, r, s) = Vec((1 - r)*(1 - s), 
                                                            (    r)*(1 - s), 
@@ -42,7 +42,7 @@ function interpolation_weights(::Type{<:QuadraticQuadrilateral}, r, s)
                           (1 - η^2)*(1 - ξ)/2) 
 end
 
-# parametric dimension 3
+# 3-polytope
 interpolation_weights(::Type{<:Tetrahedron}, r, s, t) = Vec((1 - r - s - t), r, s, t)
 interpolation_weights(::Type{<:Hexahedron},  r, s, t) = Vec((1 - r)*(1 - s)*(1 - t),
                                                             (    r)*(1 - s)*(1 - t),

@@ -1,104 +1,104 @@
 function setup_TriangleMesh(::Type{T}, ::Type{U}) where {T, U}
     name = "tri"
-    points = [Point2D{T}(0, 0), 
-              Point2D{T}(1, 0), 
-              Point2D{T}(0.5, 1), 
-              Point2D{T}(1.5, 1)] 
-    faces = [SVector{3, U}(1, 2, 3), SVector{3, U}(2, 4, 3)] 
-    face_sets = Dict{String, BitSet}()
-    face_sets["A"] = BitSet([1])
-    face_sets["B"] = BitSet([2])
-    return TriangleMesh{T, U}(name, points, faces, face_sets)
+    vertices = [Point{2,T}(   0, 0), 
+                Point{2,T}(   1, 0), 
+                Point{2,T}(1//2, 1), 
+                Point{2,T}(3//2, 1)] 
+    polytopes = [Triangle{U}(1, 2, 3), Triangle{U}(2, 4, 3)] 
+    groups = Dict{String, BitSet}()
+    groups["A"] = BitSet([1])
+    groups["B"] = BitSet([2])
+    return PolytopeVertexMesh(name, vertices, polytopes, groups)
 end
 
 function setup_QuadrilateralMesh(::Type{T}, ::Type{U}) where {T, U}
     name = "quad"
-    points = [Point2D{T}(0, 0),
-              Point2D{T}(1, 0),
-              Point2D{T}(1, 1),
-              Point2D{T}(0, 1),
-              Point2D{T}(2, 0),
-              Point2D{T}(2, 1)]
-    faces = [SVector{4,U}(1, 2, 3, 4), SVector{4,U}(2, 5, 6, 3)]
-    face_sets = Dict{String, BitSet}()
-    face_sets["A"] = BitSet([1])
-    face_sets["B"] = BitSet([2])
-    return QuadrilateralMesh{T, U}(name, points, faces, face_sets)
+    vertices = [Point{2,T}(0, 0),
+                Point{2,T}(1, 0),
+                Point{2,T}(1, 1),
+                Point{2,T}(0, 1),
+                Point{2,T}(2, 0),
+                Point{2,T}(2, 1)]
+    polytopes = [Quadrilateral{U}(1, 2, 3, 4), Quadrilateral{U}(2, 5, 6, 3)]
+    groups = Dict{String, BitSet}()
+    groups["A"] = BitSet([1])
+    groups["B"] = BitSet([2])
+    return PolytopeVertexMesh(name, vertices, polytopes, groups)
 end
 
 function setup_MixedPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
     name = "tri_quad"
-    points = [Point2D{T}(0, 0),
-              Point2D{T}(1, 0),
-              Point2D{T}(1, 1),
-              Point2D{T}(0, 1),
-              Point2D{T}(2, 0)]
-    faces = [SVector{4,U}(1, 2, 3, 4), SVector{3,U}(2, 5, 3)]
-    face_sets = Dict{String, BitSet}()
-    face_sets["A"] = BitSet([1])
-    face_sets["B"] = BitSet([2])
-    return MixedPolygonMesh{T, U}(name, points, faces, face_sets)
+    vertices = [Point{2,T}(0, 0),
+                Point{2,T}(1, 0),
+                Point{2,T}(1, 1),
+                Point{2,T}(0, 1),
+                Point{2,T}(2, 0)]
+    polytopes = [Quadrilateral{U}(1, 2, 3, 4), Triangle{U}(2, 5, 3)]
+    groups = Dict{String, BitSet}()
+    groups["A"] = BitSet([1])
+    groups["B"] = BitSet([2])
+    return PolytopeVertexMesh(name, vertices, polytopes, groups)
 end
 
-function setup_QuadraticTriangleMesh(::Type{T}, ::Type{U}) where {T, U}
-    name = "tri6"
-    points = [Point2D{T}(0, 0),
-              Point2D{T}(1, 0),
-              Point2D{T}(0, 1),
-              Point2D{T}(1, 1),
-              Point2D{T}(0.5, 0),
-              Point2D{T}(0.4, 0.4),
-              Point2D{T}(1, 0.5),
-              Point2D{T}(0.5, 1)]
-    faces = [SVector{6,U}(1, 2, 3, 4, 5, 6), SVector{6,U}(2, 4, 3, 7, 8, 5)]
-    face_sets = Dict{String, BitSet}()
-    face_sets["A"] = BitSet([1])
-    face_sets["B"] = BitSet([2])
-    return QuadraticTriangleMesh{T, U}(name, points, faces, face_sets)
-end
-
-function setup_QuadraticQuadrilateralMesh(::Type{T}, ::Type{U}) where {T, U}
-    name = "quad8"
-    points = [Point2D{T}(0, 0),
-              Point2D{T}(1, 0),
-              Point2D{T}(1, 1),
-              Point2D{T}(0, 1),
-              Point2D{T}(2, 0),
-              Point2D{T}(2, 1),
-              Point2D{T}(0.5, 0),
-              Point2D{T}(0.7, 0.5),
-              Point2D{T}(0.5, 1),
-              Point2D{T}(0, 0.5),
-              Point2D{T}(1.5, 0),
-              Point2D{T}(2, 0.5),
-              Point2D{T}(1.5, 1),
-             ]
-    faces = [SVector{8,U}(1, 2, 3, 4, 7, 8, 9, 10),
-             SVector{8,U}(2, 5, 6, 3, 11, 12, 13, 8)]
-    face_sets = Dict{String, Set{Int64}}()
-    face_sets["A"] = Set([1])
-    face_sets["B"] = Set([2])
-    return QuadraticQuadrilateralMesh{T, U}(name, points, faces, face_sets)
-end
-
-function setup_MixedQuadraticPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
-    name = "tri6_quad8"
-    points = [Point2D{T}(0, 0),
-              Point2D{T}(1, 0),
-              Point2D{T}(1, 1),
-              Point2D{T}(0, 1),
-              Point2D{T}(2, 0),
-              Point2D{T}(0.5, 0),
-              Point2D{T}(0.7, 0.5),
-              Point2D{T}(0.5, 1),
-              Point2D{T}(0, 0.5),
-              Point2D{T}(1.5, 0),
-              Point2D{T}(1.5, 0.5),
-             ]
-    faces = [SVector{8,U}(1, 2, 3, 4, 6, 7, 8, 9),
-             SVector{6,U}(2, 5, 3, 10, 11, 7)]
-    face_sets = Dict{String, Set{Int64}}()
-    face_sets["A"] = Set([1])
-    face_sets["B"] = Set([2])
-    return MixedQuadraticPolygonMesh{T, U}(name, points, faces, face_sets)
-end
+#function setup_QuadraticTriangleMesh(::Type{T}, ::Type{U}) where {T, U}
+#    name = "tri6"
+#    vertices = [Point{2,T}(0, 0),
+#              Point{2,T}(1, 0),
+#              Point{2,T}(0, 1),
+#              Point{2,T}(1, 1),
+#              Point{2,T}(0.5, 0),
+#              Point{2,T}(0.4, 0.4),
+#              Point{2,T}(1, 0.5),
+#              Point{2,T}(0.5, 1)]
+#    polytopes = [SVector{6,U}(1, 2, 3, 4, 5, 6), SVector{6,U}(2, 4, 3, 7, 8, 5)]
+#    groups = Dict{String, BitSet}()
+#    groups["A"] = BitSet([1])
+#    groups["B"] = BitSet([2])
+#    return QuadraticTriangleMesh{T, U}(name, vertices, polytopes, groups)
+#end
+#
+#function setup_QuadraticQuadrilateralMesh(::Type{T}, ::Type{U}) where {T, U}
+#    name = "quad8"
+#    vertices = [Point{2,T}(0, 0),
+#              Point{2,T}(1, 0),
+#              Point{2,T}(1, 1),
+#              Point{2,T}(0, 1),
+#              Point{2,T}(2, 0),
+#              Point{2,T}(2, 1),
+#              Point{2,T}(0.5, 0),
+#              Point{2,T}(0.7, 0.5),
+#              Point{2,T}(0.5, 1),
+#              Point{2,T}(0, 0.5),
+#              Point{2,T}(1.5, 0),
+#              Point{2,T}(2, 0.5),
+#              Point{2,T}(1.5, 1),
+#             ]
+#    polytopes = [SVector{8,U}(1, 2, 3, 4, 7, 8, 9, 10),
+#             SVector{8,U}(2, 5, 6, 3, 11, 12, 13, 8)]
+#    groups = Dict{String, Set{Int64}}()
+#    groups["A"] = Set([1])
+#    groups["B"] = Set([2])
+#    return QuadraticQuadrilateralMesh{T, U}(name, vertices, polytopes, groups)
+#end
+#
+#function setup_MixedQuadraticPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
+#    name = "tri6_quad8"
+#    vertices = [Point{2,T}(0, 0),
+#              Point{2,T}(1, 0),
+#              Point{2,T}(1, 1),
+#              Point{2,T}(0, 1),
+#              Point{2,T}(2, 0),
+#              Point{2,T}(0.5, 0),
+#              Point{2,T}(0.7, 0.5),
+#              Point{2,T}(0.5, 1),
+#              Point{2,T}(0, 0.5),
+#              Point{2,T}(1.5, 0),
+#              Point{2,T}(1.5, 0.5),
+#             ]
+#    polytopes = [SVector{8,U}(1, 2, 3, 4, 6, 7, 8, 9),
+#             SVector{6,U}(2, 5, 3, 10, 11, 7)]
+#    groups = Dict{String, Set{Int64}}()
+#    groups["A"] = Set([1])
+#    groups["B"] = Set([2])
+#    return MixedQuadraticPolygonMesh{T, U}(name, vertices, polytopes, groups)
+#end

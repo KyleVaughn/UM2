@@ -1,6 +1,6 @@
 export polynomial_coeffs
  
-# parametric dimension 1
+# 1-polytope
 # P(r) = P₁ + P₂r + P₃r² + ....
 polynomial_coeffs(l::LineSegment) = (l[1], l[2] - l[1])
 function polynomial_coeffs(q::QuadraticSegment)

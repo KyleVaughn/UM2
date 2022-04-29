@@ -135,5 +135,5 @@ If the triplet of 2-dimensional points is counter-clockwise oriented from A to B
 isCCW(A::Point{2}, B::Point{2}, C::Point{2}) = 0 ≤ (B - A) × (C - A)
 
 function Base.show(io::IO, point::Point)
-    print(io, "Point$(point.coords.data)")
+    print(io, point.coords.data)
 end

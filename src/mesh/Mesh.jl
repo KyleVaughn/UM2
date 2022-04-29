@@ -8,5 +8,5 @@ import Base: issubset
 import ..Geometry: xmin, ymin, zmin, xmax, ymax, zmax
 
 include("rectilinear_grid.jl")
-##include("polytopemesh.jl")
+include("polytope_vertex_mesh.jl")
 end

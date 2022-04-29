@@ -2,7 +2,7 @@ export Polytope, Edge, LineSegment, QuadraticSegment, Face, Polygon, QuadraticPo
        Triangle, Quadrilateral, QuadraticTriangle, QuadraticQuadrilateral, Cell,
        Polyhedron, QuadraticPolyhedron, Tetrahedron, Hexahedron, QuadraticTetrahedron,
        QuadraticHexahedron
-export ridges, facets
+export ridges, facets, alias_string
 
 """
 
@@ -13,11 +13,11 @@ A `K`-polytope of order `P` with `N` vertices of type `T`.
 ## Aliases
 
 ```julia
-# parametric dimension 1
+# 1-polytope
 const Edge                      = Polytope{1}
 const LineSegment               = Edge{1,2}
 const QuadraticSegment          = Edge{2,3}
-# parametric dimension 2
+# 2-polytope
 const Face                      = Polytope{2}
 const Polygon                   = Face{1}
 const QuadraticPolygon          = Face{2}
@@ -25,7 +25,7 @@ const Triangle                  = Polygon{3}
 const Quadrilateral             = Polygon{4}
 const QuadraticTriangle         = QuadraticPolygon{6}
 const QuadraticQuadrilateral    = QuadraticPolygon{8}
-# parametric dimension 3
+# 3-polytope
 const Cell                      = Polytope{3}
 const Polyhedron                = Cell{1}
 const QuadraticPolyhedron       = Cell{2}
@@ -46,14 +46,15 @@ const QuadraticHexahedron       = QuadraticPolyhedron{20}
 """
 struct Polytope{K,P,N,T}
     vertices::Vec{N,T}
+    Polytope{K,P,N,T}(vertices::Vec{N,T}) where {K,P,N,T} = new{K,P,N,T}(vertices)
 end
 
 # type aliases
-# parametric dimension 1
+# 1-polytope
 const Edge                      = Polytope{1}
 const LineSegment               = Edge{1,2}
 const QuadraticSegment          = Edge{2,3}
-# parametric dimension 2
+# 2-polytope
 const Face                      = Polytope{2}
 const Polygon                   = Face{1}
 const QuadraticPolygon          = Face{2}
@@ -61,7 +62,7 @@ const Triangle                  = Polygon{3}
 const Quadrilateral             = Polygon{4}
 const QuadraticTriangle         = QuadraticPolygon{6}
 const QuadraticQuadrilateral    = QuadraticPolygon{8}
-# parametric dimension 3
+# 3-polytope
 const Cell                      = Polytope{3}
 const Polyhedron                = Cell{1}
 const QuadraticPolyhedron       = Cell{2}
@@ -71,9 +72,8 @@ const QuadraticTetrahedron      = QuadraticPolyhedron{10}
 const QuadraticHexahedron       = QuadraticPolyhedron{20}
 
 # constructors
-function Polytope{K,P,N}(vertices::Vec{N,T}) where {K,P,N,T}
-    return Polytope{K,P,N,T}(vertices)
-end
+Polytope{K,P,N,T}(vertices...) where {K,P,N,T} = Polytope{K,P,N,T}(Vec{N,T}(vertices))
+Polytope{K,P,N}(vertices::Vec{N,T}) where {K,P,N,T} = Polytope{K,P,N,T}(vertices)
 Polytope{K,P,N}(vertices...) where {K,P,N} = Polytope{K,P,N}(Vec(vertices))
 
 Base.getindex(poly::Polytope, i::Int) = Base.getindex(poly.vertices, i)
@@ -84,3 +84,23 @@ facets(p::Polytope{2}) = edges(p)
 #
 ridges(p::Polytope{2}) = p.vertices
 #ridges(p::Polytope{3}) = # unique edges of the faces
+
+function alias_string(::Type{P}) where {P<:Polytope}
+    P <: LineSegment            && return "LineSegment"
+    P <: QuadraticSegment       && return "QuadraticSegment"
+    P <: Triangle               && return "Triangle"
+    P <: Quadrilateral          && return "Quadrilateral"
+    P <: QuadraticTriangle      && return "QuadraticTriangle"
+    P <: QuadraticQuadrilateral && return "QuadraticQuadrilateral"
+    P <: Tetrahedron            && return "Tetrahedron"
+    P <: Hexahedron             && return "Hexahedron"
+    P <: QuadraticTetrahedron   && return "QuadraticTetrahedron"
+    P <: QuadraticHexahedron    && return "QuadraticHexahedron"
+    # fallback on default
+    return "$(P)"
+end
+
+# Show aliases when printing
+function Base.show(io::IO, poly::Polytope)
+    println(io, alias_string(typeof(poly)),"(",poly.vertices, ")")
+end
