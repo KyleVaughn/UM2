@@ -6,7 +6,6 @@ using ..Quadrature: RefLine, RefSquare, RefCube, RefTriangle, gauss_quadrature
 
 import Base: -, +, ==, inv, zero
 
-include("constants.jl")
 include("vector.jl")
 include("point.jl")
 include("plane.jl")

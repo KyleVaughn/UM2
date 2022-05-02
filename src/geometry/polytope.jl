@@ -2,7 +2,7 @@ export Polytope, Edge, LineSegment, QuadraticSegment, Face, Polygon, QuadraticPo
        Triangle, Quadrilateral, QuadraticTriangle, QuadraticQuadrilateral, Cell,
        Polyhedron, QuadraticPolyhedron, Tetrahedron, Hexahedron, QuadraticTetrahedron,
        QuadraticHexahedron
-export ==, ridges, facets, alias_string
+export ==, facets, ridges, peaks, alias_string
 
 """
 
@@ -81,9 +81,11 @@ Base.getindex(poly::Polytope, i::Int) = Base.getindex(poly.vertices, i)
 facets(p::Polytope{1}) = p.vertices
 facets(p::Polytope{2}) = edges(p)
 # facets(p::Polytope{3}) = faces(p)
-#
+
 ridges(p::Polytope{2}) = p.vertices
 #ridges(p::Polytope{3}) = # unique edges of the faces
+
+peaks(p::Polytope{3}) = p.vertices
 
 function alias_string(::Type{P}) where {P<:Polytope}
     P <: LineSegment            && return "LineSegment"
