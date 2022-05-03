@@ -1,7 +1,8 @@
 @testset "Gaussian Quadrature" begin
+    # NOTE: It is assumed p = 1:5 is sufficient for testing
     @testset "RefLine" begin
         for T ∈ Floats
-            for p = 1:30
+            for p = 1:5
                 weights, points = gauss_quadrature(Val(:legendre), RefLine(), Val(p), T) 
                 @test abs(sum(weights) - 1) < 10*eps(T) 
                 # Test the integration of a polynomial of degree 2p-1, which should
@@ -22,7 +23,7 @@
 
     @testset "RefSquare" begin
         for T ∈ Floats
-            for p = 1:5 # Supported up to p=30, but gets too slow for tests
+            for p = 1:5 
                 weights, points = gauss_quadrature(Val(:legendre), RefSquare(), Val(p), T) 
                 @test abs(sum(weights) - 1) < 10*eps(T) 
                 # 
@@ -46,7 +47,7 @@
 
     @testset "RefCube" begin
         for T ∈ Floats
-            for p = 1:5 # Supported up to p=30, but gets too slow for tests
+            for p = 1:5 
                 weights, points = gauss_quadrature(Val(:legendre), RefCube(), Val(p), T) 
                 @test abs(sum(weights) - 1) < 10*eps(T) 
                 # 
@@ -70,7 +71,7 @@
     
     @testset  "RefTriangle" begin
         for T ∈ Floats
-            for p = 1:20 
+            for p = 1:5 
                 weights, points = gauss_quadrature(Val(:legendre), RefTriangle(), Val(p), T) 
                 @test abs(sum(weights) - 1//2) < 10*eps(T) 
                 # This quadrature is only exact to polynomial degree p, not 2p-1!

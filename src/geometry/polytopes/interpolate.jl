@@ -2,15 +2,17 @@
 # 4th Edition, Chapter 8, Advanced Data Representation
 
 # Function interpolation
+# length(w) == length(poly) == N, hence @inbounds is safe
 function (poly::Polytope{K,P,N})(coords...) where {K,P,N}
     w = interpolation_weights(typeof(poly), coords...)
-    return mapreduce(i->w[i]*poly[i], +, 1:N) 
+    @inbounds return mapreduce(i->w[i]*poly[i], +, 1:N) 
 end
 
 # Shape interpolation
+# length(w) == length(poly) == N, hence @inbounds is safe
 function (poly::Polytope{K,P,N,T})(coords...) where {K,P,N,T<:Point}
     w = interpolation_weights(typeof(poly), coords...)
-    return Point(mapreduce(i->w[i]*poly[i].coords, +, 1:N)) 
+    @inbounds return Point(mapreduce(i->w[i]*coordinates(poly[i]), +, 1:N)) 
 end
 
 # 1-polytope

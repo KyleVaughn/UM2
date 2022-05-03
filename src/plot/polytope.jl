@@ -1,12 +1,15 @@
-function convert_arguments(LS::Type{<:LineSegments}, poly::Polytope{2})
-    return convert_arguments(LS, facets(poly))
+# LineSegments
+function convert_arguments(LS::Type{<:LineSegments}, poly::Polytope)
+    return convert_arguments(LS, edges(poly))
 end
 
-function convert_arguments(LS::Type{<:LineSegments}, P::Vector{<:Polytope{2}})
+function convert_arguments(LS::Type{<:LineSegments}, P::Vector{<:Polytope})
     point_sets = [convert_arguments(LS, poly) for poly ∈  P]
-    return convert_arguments(LS, reduce(vcat, [pset[1] for pset ∈ point_sets]))
+    return convert_arguments(LS, vcat([pset[1] for pset ∈ point_sets]...))
 end
- 
+
+# Mesh 
+# Triangulate
 function convert_arguments(M::Type{<:GLMakieMesh}, tri::Triangle)
     vertices = [v.coords for v in ridges(tri)]
     face = [1 2 3]
@@ -14,7 +17,7 @@ function convert_arguments(M::Type{<:GLMakieMesh}, tri::Triangle)
 end
 
 function convert_arguments(M::Type{<:GLMakieMesh}, T::Vector{<:Triangle})
-    points = reduce(vcat, [[v.coords for v ∈ ridges(tri)] for tri ∈  T])
+    points = reduce(vcat, [[coordinates(v) for v ∈ vertices(tri)] for tri ∈  T]) 
     faces = zeros(Int64, length(T), 3)
     k = 1
     for i in 1:length(T), j = 1:3
@@ -38,11 +41,16 @@ function convert_arguments(M::Type{<:GLMakieMesh}, P::Vector{<:Polytope{2}})
     triangles = [ begin
                      if poly isa Polygon{N, Point{2,T}} where {N,T}
                          triangulate(poly)
+                     elseif poly isa Triangle
+                         Vec(poly)
                      else
                          triangulate(poly, Val(plot_nonlinear_subdivisions))
                      end
                   end
                   for poly in P]
-    return convert_arguments(M, 
-                             reduce(vcat, triangles))
+    return convert_arguments(M, reduce(vcat, triangles))
+end
+
+function convert_arguments(M::Type{<:GLMakieMesh}, poly::Polytope{3})
+    return convert_arguments(M, faces(poly)) 
 end

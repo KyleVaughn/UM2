@@ -1,5 +1,5 @@
 export AABox
-export measure, xmin, ymin, zmin, xmax, ymax, zmax, Δx, Δy, Δz,
+export measure, maxima, minima, xmin, ymin, zmin, xmax, ymax, zmax, Δx, Δy, Δz,
        facets, ridges, peaks, faces, edges, vertices
 
 """
@@ -27,21 +27,31 @@ function AABox(minima::Point{Dim,T}, maxima::Point{Dim,T}) where {Dim,T}
 end
 AABox(minima, maxima) = AABox(Point(minima), Point(maxima))
 
-Base.isapprox(aab₁::AABox, aab₂::AABox) = aab₁.minima ≈ aab₂.minima && 
-                                          aab₁.maxima ≈ aab₂.maxima 
-xmin(aab::AABox) = aab.minima[1] 
-ymin(aab::AABox) = aab.minima[2] 
-zmin(aab::AABox) = aab.minima[3] 
-xmax(aab::AABox) = aab.maxima[1] 
-ymax(aab::AABox) = aab.maxima[2] 
-zmax(aab::AABox) = aab.maxima[3] 
-Δx(aab::AABox) = xmax(aab) - xmin(aab) 
-Δy(aab::AABox) = ymax(aab) - ymin(aab)
-Δz(aab::AABox) = zmax(aab) - zmin(aab)
+maxima(aab::AABox) = aab.maxima
+minima(aab::AABox) = aab.minima
 
-measure(aab::AABox) = prod(aab.maxima - aab.minima) 
+Base.isapprox(aab₁::AABox, aab₂::AABox) = minima(aab₁) ≈ minima(aab₂) && 
+                                          maxima(aab₁) ≈ minima(aab₂)
+xmin(aab::AABox   ) = aab.minima[1] 
+ymin(aab::AABox   ) = aab.minima[2] 
+zmin(aab::AABox{3}) = aab.minima[3] 
+xmax(aab::AABox   ) = aab.maxima[1] 
+ymax(aab::AABox   ) = aab.maxima[2] 
+zmax(aab::AABox{3}) = aab.maxima[3] 
+Δx(aab::AABox   ) = xmax(aab) - xmin(aab) 
+Δy(aab::AABox   ) = ymax(aab) - ymin(aab)
+Δz(aab::AABox{3}) = zmax(aab) - zmin(aab)
 
-function ridges(aab::AABox{2})
+measure(aab::AABox) = prod(maxima(aab) - minima(aab)) 
+
+ridges(aab::AABox{2}) = vertices(aab)
+facets(aab::AABox{2}) = edges(aab)
+
+peaks( aab::AABox{3}) = vertices(aab)
+ridges(aab::AABox{3}) = edges(aab)
+facets(aab::AABox{3}) = faces(aab)
+
+function vertices(aab::AABox{2})
     # Ordered CCW
     return Vec(Point(xmin(aab), ymin(aab)),
                Point(xmax(aab), ymin(aab)),
@@ -49,8 +59,8 @@ function ridges(aab::AABox{2})
                Point(xmin(aab), ymax(aab))
               )
 end
-function facets(aab::AABox{2})
-    v = ridges(aab)
+function edges(aab::AABox{2})
+    v = vertices(aab)
     return Vec(LineSegment(v[1], v[2]),
                LineSegment(v[2], v[3]),
                LineSegment(v[3], v[4]),
@@ -58,10 +68,7 @@ function facets(aab::AABox{2})
               )
 end
 
-edges(aab::AABox{2}) = facets(aab)
-vertices(aab::AABox{2}) = ridges(aab)
-
-function peaks(aab::AABox{3})
+function vertices(aab::AABox{3})
     # in CCW order, low z then high z
     #      y
     #      ^
@@ -90,7 +97,7 @@ function peaks(aab::AABox{3})
               )
 end
 
-function ridges(aab::AABox{3})
+function edges(aab::AABox{3})
     # in CCW order, low z, then high z, then the segments that attach low and
     # high z in CCW order.
     #      y
@@ -110,7 +117,7 @@ function ridges(aab::AABox{3})
     #  |    |/ 9
     #  +----+
     #     5
-    v = peaks(aab)
+    v = vertices(aab)
     return Vec(LineSegment(v[1], v[2]), # lower z
                LineSegment(v[2], v[3]),
                LineSegment(v[3], v[4]),
@@ -126,8 +133,8 @@ function ridges(aab::AABox{3})
               )
 end
 
-function facets(aab::AABox{3})
-     v = peaks(aab)   
+function faces(aab::AABox{3})
+     v = vertices(aab)   
      return Vec(Quadrilateral(v[1], v[2], v[3], v[4]),
                 Quadrilateral(v[5], v[6], v[7], v[8]),
                 Quadrilateral(v[1], v[2], v[6], v[5]),
@@ -137,10 +144,6 @@ function facets(aab::AABox{3})
                )
 end
 
-faces(aab::AABox{3}) = facets(aab)
-edges(aab::AABox{3}) = ridges(aab)
-vertices(aab::AABox{3}) = peaks(aab)
-
 function Base.show(io::IO, aab::AABox)
-    print(io, "AABox($(aab.minima), $(aab.maxima))")
+    print(io, "AABox($(minima(aab)), $(maxima(aab)))")
 end

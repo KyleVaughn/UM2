@@ -29,16 +29,6 @@
                 P₃ = Point{2,T}(1, 1)
                 q = QuadraticSegment(P₁, P₂, P₃)
                 @test q.vertices == Vec(P₁, P₂, P₃)
-
-                # isstraight
-                P₁ = Point{2,T}(0, 0)
-                P₂ = Point{2,T}(2, 0)
-                P₃ = Point{2,T}(1, 0)
-                q = QuadraticSegment(P₁, P₂, P₃)
-                @test isstraight(q)
-                P₂ = Point{2,T}(2, 0.001)
-                q = QuadraticSegment(P₁, P₂, P₃)
-                @test !isstraight(q)
             end
         end
 
@@ -50,16 +40,6 @@
                 P₃ = Point{3,T}(0, 1, 1)
                 q = QuadraticSegment(P₁, P₂, P₃)
                 @test q.vertices == Vec(P₁, P₂, P₃)
-
-                # isstraight
-                P₁ = Point{3,T}(0, 0, 0)
-                P₂ = Point{3,T}(0, 2, 0)
-                P₃ = Point{3,T}(0, 1, 0)
-                q = QuadraticSegment(P₁, P₂, P₃)
-                @test isstraight(q)
-                P₂ = Point{3,T}(0, 2, 0.001)
-                q = QuadraticSegment(P₁, P₂, P₃)
-                @test !isstraight(q)
             end
         end
     end

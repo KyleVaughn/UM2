@@ -83,7 +83,7 @@ coordinates(p::Point) = p.coords
 
 Return the [`Vec`](@ref) displacement from point `B` to point `A`.
 """
--(A::Point, B::Point) = A.coords - B.coords
+-(A::Point, B::Point) = coordinates(A) - coordinates(B)
 
 """
     +(A::Point, v::Vec)
@@ -91,7 +91,7 @@ Return the [`Vec`](@ref) displacement from point `B` to point `A`.
 Return the point at the end of the vector `v` placed
 at a reference (or start) point `A`.
 """
-+(A::Point, v::Vec) = Point(A.coords + v)
++(A::Point, v::Vec) = Point(coordinates(A) + v)
 
 """
     -(A::Point, v::Vec)
@@ -99,12 +99,12 @@ at a reference (or start) point `A`.
 Return the point at the end of the vector `-v` placed
 at a reference (or start) point `A`.
 """
--(A::Point, v::Vec) = Point(A.coords - v)
+-(A::Point, v::Vec) = Point(coordinates(A) - v)
 
 """
     isapprox(A::Point, B::Point)
 
-Return if two points are approximately equal (less than 1e-4 cm apart). 
+Return if two points are approximately equal (less than ϵ_Point apart). 
 """
 Base.isapprox(A::Point{Dim,T}, B::Point{Dim,T}) where {Dim,T} = norm²(A-B) < T(ϵ_Point^2)
 
@@ -127,7 +127,7 @@ distance²(A::Point, B::Point) = norm²(B - A)
 
 Return the midpoint of the line segment from point `A` to point `B`.
 """
-midpoint(A::Point, B::Point) = Point((A.coords + B.coords)/2)
+midpoint(A::Point, B::Point) = Point((coordinates(A) + coordinates(B))/2)
 
 """
     isCCW(A::Point{2}, B::Point{2}, C::Point{2})

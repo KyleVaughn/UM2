@@ -2,7 +2,7 @@ export Polytope, Edge, LineSegment, QuadraticSegment, Face, Polygon, QuadraticPo
        Triangle, Quadrilateral, QuadraticTriangle, QuadraticQuadrilateral, Cell,
        Polyhedron, QuadraticPolyhedron, Tetrahedron, Hexahedron, QuadraticTetrahedron,
        QuadraticHexahedron
-export ==, facets, ridges, peaks, alias_string
+export ==, vertices, facets, ridges, peaks, alias_string
 
 """
 
@@ -78,14 +78,16 @@ Polytope{K,P,N}(vertices...) where {K,P,N} = Polytope{K,P,N}(Vec(vertices))
 
 Base.getindex(poly::Polytope, i::Int) = Base.getindex(poly.vertices, i)
 
-facets(p::Polytope{1}) = p.vertices
+vertices(p::Polytope) = p.vertices
+
+peaks(p::Polytope{3}) = vertices(p)
+
+ridges(p::Polytope{2}) = vertices(p)
+ridges(p::Polytope{3}) = edges(p) 
+
+facets(p::Polytope{1}) = vertices(p)
 facets(p::Polytope{2}) = edges(p)
-# facets(p::Polytope{3}) = faces(p)
-
-ridges(p::Polytope{2}) = p.vertices
-#ridges(p::Polytope{3}) = # unique edges of the faces
-
-peaks(p::Polytope{3}) = p.vertices
+facets(p::Polytope{3}) = faces(p)
 
 function alias_string(::Type{P}) where {P<:Polytope}
     P <: LineSegment            && return "LineSegment"
@@ -102,19 +104,25 @@ function alias_string(::Type{P}) where {P<:Polytope}
     return "$(P)"
 end
 
-# If we think of the polytopes as set, P₁ ∩ P₂ = P₁ and P₁ ∩ P₂ = P₂ implies P₁ = P₂
-# Can we say sort(P₁.vertices) == sort(P₂.vertices) is sufficient?
-function ==(P₁::LineSegment{T}, P₂::LineSegment{T}) where {T}
-    return (P₁[1] == P₂[1] && P₁[2] == P₂[2]) || (P₁[1] == P₂[2] && P₁[2] == P₂[1])
+# If we think of the polytopes as set, p₁ ∩ p₂ = p₁ and p₁ ∩ p₂ = p₂ implies p₁ = p₂
+# Simplices
+function ==(l₁::LineSegment, l₂::LineSegment)
+    return all(v->v ∈ l₂.vertices, l₁.vertices)
+end
+function ==(t₁::Triangle, t₂::Triangle)
+    return all(v->v ∈ t₂.vertices, t₁.vertices)
+end
+function ==(t₁::Tetrahedron, t₂::Tetrahedron)
+    return all(v->v ∈ t₂.vertices, t₁.vertices)
 end
 
-function ==(P₁::QuadraticSegment{T}, P₂::QuadraticSegment{T}) where {T}
-    return ((P₁[1] == P₂[1] && P₁[2] == P₂[2])  || 
-            (P₁[1] == P₂[2] && P₁[2] == P₂[1])
-           ) && P₁[3] == P₂[3]
+function ==(q₁::QuadraticSegment, q₂::QuadraticSegment)
+    return q₁[3] == q₂[3] && 
+          (q₁[1] == q₂[1] && q₁[2] == q₂[2])  || 
+          (q₁[1] == q₂[2] && q₁[2] == q₂[1])
 end
 
 # Show aliases when printing
 function Base.show(io::IO, poly::Polytope)
-    print(io, alias_string(typeof(poly)),"(",poly.vertices, ")")
+    print(io, alias_string(typeof(poly)),"(",vertices(poly), ")")
 end

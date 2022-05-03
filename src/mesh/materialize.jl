@@ -1,5 +1,5 @@
 export materialize, materialize_polytopes, materialize_facets,
-       materialize_faces, materialize_edges
+       materialize_cells, materialize_faces, materialize_edges
 
 @generated function materialize(poly::Polytope{K,P,N,T}, 
                                 vertices::Vector{Point{Dim,F}}) where {K,P,N,T,Dim,F}
@@ -9,16 +9,25 @@ export materialize, materialize_polytopes, materialize_facets,
     end
 end
 
-#materialize_faces(
+function materialize_cells(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Cell}
+    return materialize_polytopes(mesh) 
+end
+function materialize_faces(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Cell}
+    return materialize_facets(mesh)
+end
+function materialize_edges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Cell}
+    return materialize_edges(mesh)
+end
+
+
+
+
 
 function materialize_polytopes(mesh::PolytopeVertexMesh)
     return materialize.(mesh.polytopes, Ref(mesh.vertices))
 end
 
 function materialize_facets(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P}
-    if P <: Edge
-        return mesh.vertices
-    end
     return materialize.(
                 unique!(
                     x->sort(x.vertices),

@@ -6,6 +6,7 @@
              "polytope",
              "polytopes/interpolate",
              "polytopes/jacobian",
+             "polytopes/faces",
              "polytopes/edges",
              "polytopes/measure",
              "polytopes/triangulate",

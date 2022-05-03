@@ -1,17 +1,17 @@
 function convert_arguments(T::Type{<:Scatter}, p::Point)
-    return convert_arguments(T, p.coords)
+    return convert_arguments(T, coordinates(p))
 end 
 
 function convert_arguments(T::Type{<:Scatter}, P::Vector{<:Point})
-    return convert_arguments(T, [p.coords for p in P]) 
+    return convert_arguments(T, [coordinates(p) for p in P]) 
 end 
 
 function convert_arguments(T::Type{<:LineSegments}, p::Point)
-    return convert_arguments(T, p.coords)
+    return convert_arguments(T, coordinates(p))
 end 
 
 function convert_arguments(T::Type{<:LineSegments}, P::Vector{<:Point})
-    return convert_arguments(T, [p.coords for p in P]) 
+    return convert_arguments(T, [coordinates(p) for p in P]) 
 end
 
 # Makie seems to have trouble with SVectors, so just collect them into Vectors
