@@ -29,4 +29,6 @@
             @test tri6_edges[3] == QuadraticSegment(P₃, P₁, P₆)
         end
     end
+
+
 end
