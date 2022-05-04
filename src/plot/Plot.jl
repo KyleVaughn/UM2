@@ -18,7 +18,6 @@ module Plot
     const plot_nonlinear_subdivisions = 5
 
     # geometry
-    include("common.jl")
     include("point.jl")
     include("polytope.jl")
     include("axisalignedbox.jl")
