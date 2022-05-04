@@ -20,8 +20,6 @@ module Plot
     # geometry
     include("common.jl")
     include("point.jl")
-    include("linesegment.jl")
-    include("quadraticsegment.jl")
     include("polytope.jl")
     include("axisalignedbox.jl")
 

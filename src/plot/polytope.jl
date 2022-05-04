@@ -1,34 +1,82 @@
+# Makie seems to have trouble with SVectors, so just collect them into Vectors
+function convert_arguments(T::Type{<:LineSegments}, 
+                           V::SVector{NP, Polytope{K,P,N,PT}}) where {NP,K,P,N,PT}
+    return convert_arguments(T, collect(V)) 
+end
+
+function convert_arguments(T::Type{<:GLMakieMesh}, 
+                           V::SVector{NP, Polytope{K,P,N,PT}}) where {NP,K,P,N,PT}
+    return convert_arguments(T, collect(V)) 
+end
+
+# LineSegment
+function convert_arguments(LS::Type{<:LineSegments}, l::LineSegment)
+    return convert_arguments(LS, collect(vertices(l)))
+end
+
+function convert_arguments(LS::Type{<:LineSegments}, 
+                           L::Vector{LineSegment{T}}) where {T} 
+    points = Vector{T}(undef, 2length(L))
+    for i in eachindex(L)
+        points[2i-1] = L[i][1]
+        points[2i  ] = L[i][2]
+    end 
+    return convert_arguments(LS, points) 
+end
+
+# QuadraticSegment
+function convert_arguments(LS::Type{<:LineSegments}, q::QuadraticSegment{T}) where {T} 
+    points = Vector{T}(undef, 2*(plot_nonlinear_subdivisions-1))
+    r = LinRange(0, 1, plot_nonlinear_subdivisions) 
+    for i = 1:plot_nonlinear_subdivisions-1
+        points[2i-1] = q(r[i  ])  
+        points[2i  ] = q(r[i+1])
+    end 
+    return convert_arguments(LS, points)
+end
+
+function convert_arguments(LS::Type{<:LineSegments}, Q::Vector{<:QuadraticSegment})
+    return convert_arguments(LS, vcat([convert_arguments(LS, q)[1] for q in Q]...))
+end
+
+# General Polytopes
+#
 # LineSegments
 function convert_arguments(LS::Type{<:LineSegments}, poly::Polytope)
     return convert_arguments(LS, edges(poly))
 end
 
 function convert_arguments(LS::Type{<:LineSegments}, P::Vector{<:Polytope})
-    point_sets = [convert_arguments(LS, poly) for poly ∈  P]
-    return convert_arguments(LS, vcat([pset[1] for pset ∈ point_sets]...))
+    return convert_arguments(LS, vcat([convert_arguments(LS, p)[1] for p ∈  P]...))
 end
 
 # Mesh 
-# Triangulate
+# 2D Polygons can be triangulated using fan triangulation.
+# All others need to be triangulated based on the number of nonlinear subdivisions
 function convert_arguments(M::Type{<:GLMakieMesh}, tri::Triangle)
-    vertices = [v.coords for v in ridges(tri)]
+    vertices = [coordinates(v) for v in ridges(tri)]
     face = [1 2 3]
     return convert_arguments(M, vertices, face)
 end
 
-function convert_arguments(M::Type{<:GLMakieMesh}, T::Vector{<:Triangle})
-    points = reduce(vcat, [[coordinates(v) for v ∈ vertices(tri)] for tri ∈  T]) 
-    faces = zeros(Int64, length(T), 3)
+function convert_arguments(M::Type{<:GLMakieMesh}, 
+                           tris::Vector{Triangle{Point{Dim,T}}}) where {Dim,T}
+    points = Vector{Vec{Dim,T}}(undef, 3length(tris))
+    for i in eachindex(tris)
+        tri = tris[i]
+        points[3i-2] = coordinates(tri[1])
+        points[3i-1] = coordinates(tri[2])
+        points[3i  ] = coordinates(tri[3])
+    end
+    faces = zeros(Int64, length(tris), 3)
     k = 1
-    for i in 1:length(T), j = 1:3
+    for i in 1:length(tris), j = 1:3
         faces[i, j] = k
         k += 1
     end
     return convert_arguments(M, points, faces)
 end
 
-# 2D Polygons can be triangulated using fan triangulation.
-# All others need to be triangulated based on the number of non-linear subdivisions
 function convert_arguments(M::Type{<:GLMakieMesh}, poly::Polygon{N, Point{2,T}}) where {N,T}
     return convert_arguments(M, triangulate(poly))
 end

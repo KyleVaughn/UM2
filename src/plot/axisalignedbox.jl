@@ -3,8 +3,7 @@ function convert_arguments(LS::Type{<:LineSegments}, aab::AABox{2})
 end
 
 function convert_arguments(LS::Type{<:LineSegments}, R::Vector{<:AABox})
-    point_sets = [convert_arguments(LS, aab) for aab in R]
-    return convert_arguments(LS, vcat([pset[1] for pset ∈ point_sets]...))
+    return convert_arguments(LS, vcat([convert_arguments(LS, aab)[1] for aab ∈ R]...))
 end
 
 function convert_arguments(LS::Type{<:LineSegments}, R::SVector{N, <:AABox}) where {N}
@@ -12,7 +11,7 @@ function convert_arguments(LS::Type{<:LineSegments}, R::SVector{N, <:AABox}) whe
 end
 
 function convert_arguments(M::Type{<:GLMakieMesh}, aab::AABox{2})
-    vertices = [v.coords for v in vertices(aab)]
+    vertices = [coordinates(v) for v in vertices(aab)]
     faces = [1 2 3;
              3 4 1]
     return convert_arguments(M, vertices, faces)
