@@ -21,8 +21,13 @@ function PolytopeVertexMesh(vertices::Vector{Point{Dim,T}},
     return PolytopeVertexMesh("", vertices, polytopes, Dict{String,BitSet}())
 end
 
-function Base.show(io::IO, mesh::PolytopeVertexMesh)
-    println(io, typeof(mesh))
+function Base.show(io::IO, mesh::PolytopeVertexMesh{Dim, T, P}) where {Dim,T,P}
+    print(io, "PolytopeVertexMesh{Dim=",Dim,", T=",T,", P=")
+    if isconcretetype(P)
+        println(io, alias_string(P),"{",vertex_type(P),"}}")
+    else
+        println(io, P,"}")
+    end
     println(io, "  ├─ Name      : ", mesh.name)
     size_MB = Base.summarysize(mesh)/1E6
     if size_MB < 1

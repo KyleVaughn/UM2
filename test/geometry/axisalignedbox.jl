@@ -1,8 +1,11 @@
 @testset "AABox" begin
     @testset "AABox{2}" begin
         for T in Floats
+            P₁ = Point{2,T}(1, 0)
+            P₂ = Point{2,T}(3, 2)
+
             # getproperty
-            aab = AABox(Point{2,T}(1, 0), Point{2,T}(3, 2))
+            aab = AABox(P₁, P₂)
             @test xmin(aab) ≈ 1
             @test ymin(aab) ≈ 0
             @test xmax(aab) ≈ 3
@@ -11,6 +14,9 @@
             # Δx, Δy
             @test Δx(aab) ≈ 2
             @test Δy(aab) ≈ 2
+
+            # measure
+            @test measure(aab) ≈ 4
         end
     end
     @testset "AABox{3}" begin
@@ -28,6 +34,9 @@
             @test Δx(aab) ≈ 2
             @test Δy(aab) ≈ 2
             @test Δz(aab) ≈ 2
+
+            # measure
+            @test measure(aab) ≈ 8
         end
     end
 end

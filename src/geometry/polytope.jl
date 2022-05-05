@@ -2,7 +2,7 @@ export Polytope, Edge, LineSegment, QuadraticSegment, Face, Polygon, QuadraticPo
        Triangle, Quadrilateral, QuadraticTriangle, QuadraticQuadrilateral, Cell,
        Polyhedron, QuadraticPolyhedron, Tetrahedron, Hexahedron, QuadraticTetrahedron,
        QuadraticHexahedron
-export ==, vertices, facets, ridges, peaks, alias_string
+export ==, vertices, facets, ridges, peaks, alias_string, vertex_type
 
 """
 
@@ -75,8 +75,16 @@ const QuadraticHexahedron       = QuadraticPolyhedron{20}
 Polytope{K,P,N,T}(vertices...) where {K,P,N,T} = Polytope{K,P,N,T}(Vec{N,T}(vertices))
 Polytope{K,P,N}(vertices::Vec{N,T}) where {K,P,N,T} = Polytope{K,P,N,T}(vertices)
 Polytope{K,P,N}(vertices...) where {K,P,N} = Polytope{K,P,N}(Vec(vertices))
+function Polytope{K,P,N}(v::Vector{T}) where {K,P,N,T}
+    return Polytope{K,P,N}(Vec{length(v),T}(v))
+end
+function Polytope{K,P,N,T}(v::Vector) where {K,P,N,T}
+    return Polytope{K,P,N,T}(Vec{length(v),T}(v))
+end
 
 Base.getindex(poly::Polytope, i::Int) = Base.getindex(poly.vertices, i)
+
+vertex_type(::Type{Polytope{K,P,N,T}}) where {K,P,N,T} = T
 
 vertices(p::Polytope) = p.vertices
 
@@ -115,7 +123,6 @@ end
 function ==(t₁::Tetrahedron, t₂::Tetrahedron)
     return all(v->v ∈ t₂.vertices, t₁.vertices)
 end
-
 function ==(q₁::QuadraticSegment, q₂::QuadraticSegment)
     return q₁[3] == q₂[3] && 
           (q₁[1] == q₂[1] && q₁[2] == q₂[2])  || 

@@ -1,71 +1,73 @@
 mesh_files = [("Abaqus", ".inp")]
 for (file_type, ext) in mesh_files
     @testset "Import $file_type" begin
-        for T in [Float32, Float64, BigFloat]
-            @testset "TriangleMesh" begin
-                ref_mesh = setup_TriangleMesh(T, UInt16)
-                mesh = import_mesh("./mesh/mesh_files/tri"*ext, T)
-                @test mesh.name == ref_mesh.name
-                for i in eachindex(ref_mesh.points)
-                    @test mesh.points[i] ≈ ref_mesh.points[i]
+        for T in Floats 
+            @testset "$T" begin
+                @testset "TriangleMesh" begin
+                    ref_mesh = setup_TriangleMesh(T, UInt16)
+                    mesh = import_mesh("./mesh/mesh_files/tri"*ext, T)
+                    @test mesh.name == ref_mesh.name
+                    for i in eachindex(ref_mesh.vertices)
+                        @test mesh.vertices[i] ≈ ref_mesh.vertices[i]
+                    end
+                    @test mesh.polytopes == ref_mesh.polytopes
+                    @test mesh.groups == ref_mesh.groups
                 end
-                @test mesh.faces == ref_mesh.faces
-                @test mesh.face_sets == ref_mesh.face_sets
-            end
     
-            @testset "QuadrilateralMesh" begin
-                ref_mesh = setup_QuadrilateralMesh(T, UInt16)
-                mesh = import_mesh("./mesh/mesh_files/quad"*ext, T)
-                @test mesh.name == ref_mesh.name
-                for i in eachindex(ref_mesh.points)
-                    @test mesh.points[i] ≈ ref_mesh.points[i]
+                @testset "QuadrilateralMesh" begin
+                    ref_mesh = setup_QuadrilateralMesh(T, UInt16)
+                    mesh = import_mesh("./mesh/mesh_files/quad"*ext, T)
+                    @test mesh.name == ref_mesh.name
+                    for i in eachindex(ref_mesh.vertices)
+                        @test mesh.vertices[i] ≈ ref_mesh.vertices[i]
+                    end
+                    @test mesh.polytopes == ref_mesh.polytopes
+                    @test mesh.groups == ref_mesh.groups
                 end
-                @test mesh.faces == ref_mesh.faces
-                @test mesh.face_sets == ref_mesh.face_sets
-            end
     
-            @testset "MixedPolygonMesh" begin
-                ref_mesh = setup_MixedPolygonMesh(T, UInt16)
-                mesh = import_mesh("./mesh/mesh_files/tri_quad"*ext, T)
-                @test mesh.name == ref_mesh.name
-                for i in eachindex(ref_mesh.points)
-                    @test mesh.points[i] ≈ ref_mesh.points[i]
+                @testset "MixedPolygonMesh" begin
+                    ref_mesh = setup_MixedPolygonMesh(T, UInt16)
+                    mesh = import_mesh("./mesh/mesh_files/tri_quad"*ext, T)
+                    @test mesh.name == ref_mesh.name
+                    for i in eachindex(ref_mesh.vertices)
+                        @test mesh.vertices[i] ≈ ref_mesh.vertices[i]
+                    end
+                    @test mesh.polytopes == ref_mesh.polytopes
+                    @test mesh.groups == ref_mesh.groups
                 end
-                @test mesh.faces == ref_mesh.faces
-                @test mesh.face_sets == ref_mesh.face_sets
-            end
     
-            @testset "QuadraticTriangleMesh" begin
-                ref_mesh = setup_QuadraticTriangleMesh(T, UInt16)
-                mesh = import_mesh("./mesh/mesh_files/tri6"*ext, T)
-                @test mesh.name == ref_mesh.name
-                for i in eachindex(ref_mesh.points)
-                    @test mesh.points[i] ≈ ref_mesh.points[i]
+                @testset "QuadraticTriangleMesh" begin
+                    ref_mesh = setup_QuadraticTriangleMesh(T, UInt16)
+                    mesh = import_mesh("./mesh/mesh_files/tri6"*ext, T)
+                    @test mesh.name == ref_mesh.name
+                    for i in eachindex(ref_mesh.vertices)
+                        @test mesh.vertices[i] ≈ ref_mesh.vertices[i]
+                    end
+                    @test mesh.polytopes == ref_mesh.polytopes
+                    @test mesh.groups == ref_mesh.groups
                 end
-                @test mesh.faces == ref_mesh.faces
-                @test mesh.face_sets == ref_mesh.face_sets
-            end
     
-            @testset "QuadraticQuadrilateralMesh" begin
-                ref_mesh = setup_QuadraticQuadrilateralMesh(T, UInt16)
-                mesh = import_mesh("./mesh/mesh_files/quad8"*ext, T)
-                @test mesh.name == ref_mesh.name
-                for i in eachindex(ref_mesh.points)
-                    @test mesh.points[i] ≈ ref_mesh.points[i]
+                @testset "QuadraticQuadrilateralMesh" begin
+                    ref_mesh = setup_QuadraticQuadrilateralMesh(T, UInt16)
+                    mesh = import_mesh("./mesh/mesh_files/quad8"*ext, T)
+                    @test mesh.name == ref_mesh.name
+                    for i in eachindex(ref_mesh.vertices)
+                        @test mesh.vertices[i] ≈ ref_mesh.vertices[i]
+                    end
+                    @test mesh.polytopes == ref_mesh.polytopes
+                    @test mesh.groups == ref_mesh.groups
                 end
-                @test mesh.faces == ref_mesh.faces
-                @test mesh.face_sets == ref_mesh.face_sets
-            end
     
-            @testset "MixedQuadraticPolygonMesh" begin
-                ref_mesh = setup_MixedQuadraticPolygonMesh(T, UInt16)
-                mesh = import_mesh("./mesh/mesh_files/tri6_quad8"*ext, T)
-                @test mesh.name == ref_mesh.name
-                for i in eachindex(ref_mesh.points)
-                    @test mesh.points[i] ≈ ref_mesh.points[i]
+                @testset "MixedQuadraticPolygonMesh" begin
+                    ref_mesh = setup_MixedQuadraticPolygonMesh(T, UInt16)
+                    mesh = import_mesh("./mesh/mesh_files/tri6_quad8"*ext, T)
+                    @test mesh.name == ref_mesh.name
+                    for i in eachindex(ref_mesh.vertices)
+                        @test mesh.vertices[i] ≈ ref_mesh.vertices[i]
+                    end
+                    @test mesh.polytopes == ref_mesh.polytopes
+                    @test mesh.groups == ref_mesh.groups
                 end
-                @test mesh.faces == ref_mesh.faces
-                @test mesh.face_sets == ref_mesh.face_sets
             end
         end
     end

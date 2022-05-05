@@ -5,8 +5,8 @@ arclength(p::Polytope{1}) = measure(p)
 area(     p::Polytope{2}) = measure(p)
 volume(   p::Polytope{3}) = measure(p)
 
-perimeter(p::Polytope{2}) = mapreduce(f->measure(f), +, facets(p))
-area(     p::Polytope{3}) = mapreduce(f->measure(f), +, facets(p))
+perimeter(p::Polytope{2}) = mapreduce(measure, +, facets(p))
+area(     p::Polytope{3}) = mapreduce(measure, +, facets(p))
 
 measure(l::LineSegment{T}) where {T<:Point} = norm(l[2]-l[1])
 

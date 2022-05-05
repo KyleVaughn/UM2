@@ -1,22 +1,3 @@
-# Return a materialized triangle 
-function materialize_face(face_id, mesh::TriangleMesh)
-    return materialize_polygon(mesh.faces[face_id], mesh.points)
-end
-
-# Return a materialized quadrilateral
-function materialize_face(face_id, mesh::QuadrilateralMesh)
-    return materialize_polygon(mesh.faces[face_id], mesh.points)
-end
-
-# Return a materialized polygon 
-function materialize_face(face_id, mesh::PolygonMesh)
-    return materialize_polygon(mesh.faces[face_id], mesh.points)
-end
-
-# Return a materialized face from the point IDs in a face
-function materialize_polygon(face::SVector{N}, points::Vector{<:Point}) where {N}
-    return Polygon{N}(facepoints(face, points))
-end
 
 # # A vector of SVectors, denoting the edge ID each face is connected to.
 # function face_edge_connectivity(mesh::QuadrilateralMesh{Dim,T,U}) where {Dim,T,U}
@@ -251,45 +232,4 @@ end
 # #         end
 # #     end
 # #     return 0x00000000 
-# # end
-# 
-# How to display a mesh in REPL
-function Base.show(io::IO, mesh::PolygonMesh)
-    mesh_type = typeof(mesh)
-    println(io, mesh_type)
-    println(io, "  ├─ Name      : $(mesh.name)")
-    size_MB = Base.summarysize(mesh)/1E6
-    if size_MB < 1
-        size_KB = size_MB*1000
-        println(io, "  ├─ Size (KB) : $size_KB")
-    else
-        println(io, "  ├─ Size (MB) : $size_MB")
-    end
-    println(io, "  ├─ Points    : $(length(mesh.points))")
-    println(io, "  ├─ Faces     : $(length(mesh.faces))")
-    println(io, "  │  ├─ Triangle       : $(count(x->x isa SVector{3},  mesh.faces))")
-    println(io, "  │  └─ Quadrilateral  : $(count(x->x isa SVector{4},  mesh.faces))")
-    println(io, "  └─ Face sets : $(length(keys(mesh.face_sets)))")
-end
-
-# # # Plot
-# # # -------------------------------------------------------------------------------------------------
-# # if enable_visualization
-# #     function convert_arguments(LS::Type{<:LineSegments}, mesh::UnstructuredMesh_2D)
-# #         if 0 < length(mesh.materialized_edges)
-# #             return convert_arguments(LS, mesh.materialized_edges)
-# #         elseif 0 < length(mesh.edges)
-# #             return convert_arguments(LS, materialize_edges(mesh))
-# #         else
-# #             return convert_arguments(LS, materialize_faces(mesh))
-# #         end
-# #     end
-# # 
-# #     function convert_arguments(P::Type{<:Mesh}, mesh::UnstructuredMesh_2D)
-# #         if 0 < length(mesh.materialized_faces)
-# #             return convert_arguments(P, mesh.materialized_faces)
-# #         else
-# #             return convert_arguments(P, materialize_faces(mesh))
-# #         end
-# #     end
 # # end

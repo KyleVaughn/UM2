@@ -9,31 +9,34 @@ export materialize, materialize_polytopes, materialize_facets,
     end
 end
 
-function materialize_cells(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Cell}
-    return materialize_polytopes(mesh) 
-end
-function materialize_faces(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Cell}
-    return materialize_facets(mesh)
-end
-function materialize_edges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Cell}
-    return materialize_edges(mesh)
-end
-
-
-
-
-
 function materialize_polytopes(mesh::PolytopeVertexMesh)
     return materialize.(mesh.polytopes, Ref(mesh.vertices))
 end
 
-function materialize_facets(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P}
+# aliases
+function materialize_cells(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Cell}
+    return materialize_polytopes(mesh) 
+end
+function materialize_facets(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Cell}
+    return materialize_faces(mesh)
+end
+function materialize_ridges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Cell}
+    return materialize_edges(mesh)
+end
+function materialize_faces(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Polygon}
+    return materialize_polytopes(mesh) 
+end
+function materialize_facets(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Polygon}
+    return materialize_edges(mesh)
+end
+
+function materialize_faces(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P}
     return materialize.(
                 unique!(
                     x->sort(x.vertices),
                     sort!(
                         reduce(vcat, 
-                            facets.(mesh.polytopes)
+                            faces.(mesh.polytopes)
                         )
                         ,by=x->sort(x.vertices), 
                     )
@@ -42,8 +45,11 @@ function materialize_facets(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P}
             )   
 end
 
+# TODO:
+# Fast faces methods for Polyhedrons/quadratic polyhedrons where all elements are the same type
+
 # All edges are line segments
-function materialize_facets(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Polygon}
+function materialize_edges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Polygon}
     unique_edges = SVector{2,typeof(mesh.polytopes[1].vertices[1])}[]
     nedges = 0
     for face ∈ mesh.polytopes
@@ -69,7 +75,7 @@ function materialize_facets(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:P
 end 
 
 # All edges are quadratic segments
-function materialize_facets(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:QuadraticPolygon}
+function materialize_edges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:QuadraticPolygon}
     unique_edges = SVector{3,typeof(mesh.polytopes[1].vertices[1])}[]
     nedges = 0
     for face ∈ mesh.polytopes

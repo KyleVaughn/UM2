@@ -45,8 +45,8 @@ Point(coords::AbstractVector{T}) where {T} = Point{length(coords),T}(coords)
 Point(coords...) = Point(SVector(coords...))
 
 # conversions
-convert(::Type{Point{Dim,T}}, coords) where {Dim,T} = Point{Dim,T}(coords)
-convert(::Type{Point{Dim,T}}, P::Point) where {Dim,T} = Point{Dim,T}(P.coords)
+#Base.convert(::Type{Point{Dim,T}}, coords) where {Dim,T} = Point{Dim,T}(coords)
+Base.convert(::Type{Point{2,T}}, P::Point) where {T} = Point{2,T}(P[1], P[2])
 SVector(P::Point{Dim,T}) where {Dim,T} = P.coords
 
 # type aliases
