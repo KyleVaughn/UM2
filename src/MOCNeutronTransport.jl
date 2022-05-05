@@ -1,23 +1,17 @@
 module MOCNeutronTransport
 
 #const minimum_ray_segment_length = 1e-4 # 1μm
-#const visualization_enabled = true
 #const visualize_ray_tracing = false 
-#const plot_nonlinear_subdivisions = 3
 #
 #using CUDA, Colors, FixedPointNumbers, HDF5, Logging, LightXML, LinearAlgebra, 
-#      StaticArrays, Statistics
 using Reexport
 using Pkg.Artifacts
 #using Dates: now, format
 #using LoggingExtras: TransformerLogger, global_logger
 #
-#import Base: +, -, *, /, ==, ≈, convert, hypot, intersect, issubset, sort, 
-#             sort!, zero
-#import LinearAlgebra: ×, ⋅, norm, inv
-
 @reexport using LinearAlgebra
 @reexport using StaticArrays
+@reexport using Statistics
 
 # include gmsh
 # Check if there is a local install on JULIA_LOAD_PATH

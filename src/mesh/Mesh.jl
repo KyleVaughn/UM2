@@ -2,6 +2,7 @@ module Mesh
 
 using LinearAlgebra
 using StaticArrays
+using Printf
 using ..Geometry
 
 import Base: issubset
@@ -11,5 +12,6 @@ include("rectilinear_grid.jl")
 include("polytope_vertex_mesh.jl")
 include("materialize.jl")
 include("io_abaqus.jl")
-include("mesh_io.jl")
+include("io.jl")
+include("statistics.jl")
 end
