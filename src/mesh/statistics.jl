@@ -1,46 +1,46 @@
-function edge_statistics(mesh::PolytopeVertexMesh; plot::Bool = false)
+export show_statistics
+
+function show_statistics(mesh::PolytopeVertexMesh{Dim,T,P}; plot::Bool=false
+                        ) where {Dim,T,P}
     # Edges
     edges = materialize_edges(mesh)
+    nedges = length(edges)
+    nstraight = count(isstraight, edges)
+    percent_straight = string(@sprintf("%.2f", 100*nstraight/nedges))
+    println("Edges:")
+    println(" Of the ", nedges, " edges, ", nstraight, " are straight. (", 
+            percent_straight, " %)")
+    println("Edge lengths (cm)")
     edge_lengths = measure.(edges)
-    emed = median(edge_lengths)
-    eavg = mean(edge_lengths)
-    estd = std(edge_lengths)
-    emin = minimum(edge_lengths)
-    emax = maximum(edge_lengths)
+    print_histogram(edge_lengths)
+    edges = nothing
+    edge_lengths = nothing
 
-    emedstr = string(@sprintf("%.3f", emed))
-    eavgstr = string(@sprintf("%.3f", eavg))
-    estdstr = string(@sprintf("%.3f", estd))
-    eminstr = string(@sprintf("%.3f", emin))
-    emaxstr = string(@sprintf("%.3f", emax))
+    # Faces
+    println("\nFace areas (mm²)")
+    faces = materialize_faces(mesh)
+    face_areas = measure.(faces)
+    print_histogram(100*face_areas)
+    faces = nothing
+    face_ares = nothing
 
-    lmaxewidth = maximum(length.((emedstr, eavgstr, eminstr)))
-    rmaxewidth = maximum(length.((estdstr, emaxstr)))
-
-    print(" Range ")
-    printstyled("("; color=:light_black)
-    printstyled("min"; color=:cyan, bold=true)
-    print(" … ")
-    printstyled("max"; color=:magenta)
-    printstyled("):  "; color=:light_black)
-    printstyled(lpad(eminstr, lmaxewidth); color=:cyan, bold=true)
-    print(" … ")
-    printstyled(lpad(emaxstr, rmaxewidth); color=:magenta)
-    print("  ")
-
-    
-
+    # Cells
+    if polytope_k(P) === 3
+        # Cell volumes
+    end
+    return nothing
+end
 #    fig = Figure()
 #    aspect = 1
 #    ax1 = Axis(fig[1, 1])
 #    ax2 = Axis(fig[1, 2])
 #    ax3 = Axis(fig[2, 1:2])
-end
-# Straightness
-# Mesh area
+# Convexity
 # Length of edges compared to size field, need have the pos file somewhere.
 # Knudson number
-#
-# PLOT
-#   Edge stats and mesh field stats
-#   Knudson number?
+# Jacobian determinant?
+# Volume
+##
+## PLOT
+##   Edge stats and mesh field stats
+##   Knudson number?

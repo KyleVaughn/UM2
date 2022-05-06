@@ -4,8 +4,10 @@ module MOCNeutronTransport
 #const visualize_ray_tracing = false 
 #
 #using CUDA, Colors, FixedPointNumbers, HDF5, Logging, LightXML, LinearAlgebra, 
-using Reexport
+
 using Pkg.Artifacts
+using Printf
+using Reexport
 #using Dates: now, format
 #using LoggingExtras: TransformerLogger, global_logger
 #
@@ -34,6 +36,10 @@ if !@isdefined(gmsh)
         error("Could not find gmsh API.")
     end
 end
+
+# common
+include("common/print.jl")
+export print_histogram
 
 include("quadrature/Quadrature.jl")
 @reexport using .Quadrature

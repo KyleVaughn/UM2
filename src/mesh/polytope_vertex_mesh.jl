@@ -37,7 +37,7 @@ function Base.show(io::IO, mesh::PolytopeVertexMesh{Dim, T, P}) where {Dim,T,P}
     end
     println(io, "  ├─ Vertices  : ", length(mesh.vertices))
     println(io, "  ├─ Polytopes : ", length(mesh.polytopes))
-    poly_types = unique!(map(x->typeof(x), mesh.polytopes))
+    poly_types = unique!(map(typeof, mesh.polytopes))
     npoly_types = length(poly_types)
     for i = 1:npoly_types
         poly_type = poly_types[i]

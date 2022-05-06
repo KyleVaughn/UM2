@@ -2,7 +2,8 @@ export Polytope, Edge, LineSegment, QuadraticSegment, Face, Polygon, QuadraticPo
        Triangle, Quadrilateral, QuadraticTriangle, QuadraticQuadrilateral, Cell,
        Polyhedron, QuadraticPolyhedron, Tetrahedron, Hexahedron, QuadraticTetrahedron,
        QuadraticHexahedron
-export ==, vertices, facets, ridges, peaks, alias_string, vertex_type
+export ==, vertices, facets, ridges, peaks, alias_string, vertex_type, polytope_k,
+       isstraight
 
 """
 
@@ -84,6 +85,8 @@ end
 
 Base.getindex(poly::Polytope, i::Int) = Base.getindex(poly.vertices, i)
 
+
+polytope_k(::Type{<:Polytope{K}}) where {K} = K
 vertex_type(::Type{Polytope{K,P,N,T}}) where {K,P,N,T} = T
 
 vertices(p::Polytope) = p.vertices
@@ -127,6 +130,25 @@ function ==(q₁::QuadraticSegment, q₂::QuadraticSegment)
     return q₁[3] == q₂[3] && 
           (q₁[1] == q₂[1] && q₁[2] == q₂[2])  || 
           (q₁[1] == q₂[2] && q₁[2] == q₂[1])
+end
+
+isstraight(::LineSegment) = true
+
+"""
+    isstraight(q::QuadraticSegment)
+
+Return if the quadratic segment is effectively straight.
+(If P₃ is at most ϵ_Point distance from LineSegment(P₁,P₂))
+"""
+function isstraight(q::QuadraticSegment{T}) where {T<:Point}
+    # Project P₃ onto the line from P₁ to P₂, call it P₄
+    𝘃₁₃ = q[3] - q[1] 
+    𝘃₁₂ = q[2] - q[1] 
+    v₁₂ = norm²(𝘃₁₂)
+    𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂)*inv(v₁₂)*𝘃₁₂
+    # Determine the distance from P₃ to P₄ (P₄ - P₃ = P₁ + 𝘃₁₄ - P₃ = 𝘃₁₄ - 𝘃₁₃)
+    d = norm(𝘃₁₄ - 𝘃₁₃) 
+    return d < ϵ_Point
 end
 
 # Show aliases when printing
