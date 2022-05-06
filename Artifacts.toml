@@ -1,17 +1,17 @@
 [[gmsh]]
 arch = "x86_64"
-git-tree-sha1 = "1347455c97e8929be4e905ce8ad168035488e3e3"
+git-tree-sha1 = "0db17ce38250c5769ad87a3861e5f32372fdbf30"
 os = "linux"
 
     [[gmsh.download]]
-    sha256 = "7a3e022aa7d9319526bbac9793e51dbfabe62a8244afc58c2052fa201ff5893a"
-    url = "https://gmsh.info/bin/Linux/gmsh-4.9.5-Linux64-sdk.tgz"
+    sha256 = "7dae8b2af2da86c809481f89b8bbf178bcb263e322905200b80053c3b7c1b1fb"
+    url = "https://gmsh.info/bin/Linux/gmsh-4.10.1-Linux64-sdk.tgz"
 
 [[gmsh]]
 arch = "x86_64"
-git-tree-sha1 = "8a4ab680346a25422a2ce5ae6e07c978ed080bbd"
+git-tree-sha1 = "7615aa6af9b9ad900135a3281933539da71b6978"
 os = "macos"
 
     [[gmsh.download]]
-    sha256 = "7f0fed8b29abba333865eb880bfa9b3762200887ecaf23f386c80a62425d4377"
+    sha256 = "375864d169f2914294bd4027a8a0c4850e270b5e3a2578e8ebf1dbf0225b8878"
     url = "https://gmsh.info/bin/MacOSX/gmsh-4.9.5-MacOSX-sdk.tgz"
