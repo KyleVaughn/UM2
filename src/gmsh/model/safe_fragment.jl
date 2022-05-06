@@ -1,19 +1,23 @@
+export safe_fragement
+
 """
-    physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, Int32}},
-                                       tool_dtags::Vector{Tuple{Int32, Int32}};
-                                       material_hierarchy::Vector{Material} = Material[])
+    safe_fragment(object_dtags::Vector{NTuple{2,Int32}},
+                  tool_dtags::Vector{NTuple{2,Int32}};
+                  material_hierarchy::Vector{Material} = Material[])
 
 The equivalent to performing `gmsh.model.occ.fragment(object_dtags, tool_dtags)`, but
-preserving the physical groups of the highest dimensional entities. Only highest dimensional
-physical groups can be preserved due to available parent-child relationships from 
-`gmsh.model.occ.fragment`
+preserving the physical groups of the highest dimensional entities. 
+
+Only the highest dimensional physical groups can be preserved due to the available 
+parent-child relationships from `gmsh.model.occ.fragment`.
 
 In the event that two overlapping entities have material physical groups, the optional
-material hierarchy is used to choose a single material for the resultant overlapping entity.
+material hierarchy is used to choose a single material for the resultant overlapping 
+entity/entities.
 """
-function physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, Int32}},
-                                            tool_dtags::Vector{Tuple{Int32, Int32}};
-                                            material_hierarchy::Vector{Material} = Material[])
+function safe_fragment(object_dtags::Vector{NTuple{2,Int32}},
+                       tool_dtags::Vector{NTuple{2,Int32}};
+                       material_hierarchy::Vector{Material} = Material[])
     
     # Get all physical groups and their names
     dim = max(maximum(getindex.(object_dtags, 1)), maximum(getindex.(tool_dtags, 1)))
@@ -34,7 +38,7 @@ function physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, In
     # For each physical group
     for (i, group) in enumerate(groups)
         gdim, gnum = group
-        new_tags[i] = Tuple{Int32, Int32}[]
+        new_tags[i] = NTuple{2,Int32}[]
         # For each of the dim tags in the physical group
         for tag in old_tags[i]
             dtag = (gdim, tag)
@@ -83,10 +87,9 @@ function physical_group_preserving_fragment(object_dtags::Vector{Tuple{Int32, In
     return output_dtags, output_dtags_map
 end
 
-function _process_material_hierarchy!(
-        names::Vector{String},
-        new_tags::Vector{Vector{Int32}},
-        material_hierarchy::Vector{Material})
+function _process_material_hierarchy!(names::Vector{String},
+                                      new_tags::Vector{Vector{Int32}},
+                                      material_hierarchy::Vector{Material})
     material_indices = findall(x->startswith(x, "Material: "), names) 
     material_names = names[material_indices]
     material_dict = Dict{String, BitSet}()

@@ -1,3 +1,5 @@
+export Material
+
 mutable struct Material
     name::String
     color::RGBA{N0f8}
