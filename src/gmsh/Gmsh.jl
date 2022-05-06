@@ -2,17 +2,12 @@ module Gmsh
 
 using Pkg.Artifacts
 
-if !@isdefined(gmsh)
-    gmsh_dir = readdir(artifact"gmsh", join=true)[1]
-    gmsh_jl = joinpath(gmsh_dir, "lib", "gmsh.jl") 
-    if isfile(gmsh_jl)
-        @info "MOCNeutronTransport is using the gmsh API found at: "*gmsh_jl
-        include(gmsh_jl)
-    else
-        error("Could not find gmsh API.")
-    end
-end
-
+gmsh_dir = readdir(artifact"gmsh", join=true)[1]
+gmsh_jl = joinpath(gmsh_dir, "lib", "gmsh.jl") 
+include(gmsh_jl)
 export gmsh
+
+include("model/safe_add_physical_group.jl")
+include("model/get_entities_by_color.jl")
 
 end
