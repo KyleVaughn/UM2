@@ -35,7 +35,7 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
     while !eof(file)
         line = readline(file)
         if length(line) > 0
-            if "**" == @view line[1:2] # Comment
+            if startswith(line, "**") # Comment
                 continue
             elseif "*Heading" == line
                 name = String(strip(readline(file)))
@@ -50,7 +50,7 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
                 if element_type ∉ supported_abaqus_element_types
                     error("$element_type is not a supported abaqus element type")
                 end
-                if element_type[1:2] == "CP"
+                if startswith(element_type, "CP")
                     is2D = true
                 else
                     is3D = true

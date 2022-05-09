@@ -45,7 +45,6 @@ Point(coords::AbstractVector{T}) where {T} = Point{length(coords),T}(coords)
 Point(coords...) = Point(SVector(coords...))
 
 # conversions
-#Base.convert(::Type{Point{Dim,T}}, coords) where {Dim,T} = Point{Dim,T}(coords)
 Base.convert(::Type{Point{2,T}}, P::Point) where {T} = Point{2,T}(P[1], P[2])
 SVector(P::Point{Dim,T}) where {Dim,T} = P.coords
 
@@ -65,7 +64,7 @@ Base.size(P::Point) = Base.size(P.coords)
 Base.getindex(P::Point, i::Int) = Base.getindex(P.coords, i) 
 Base.IndexStyle(P::Point) = Base.IndexStyle(typeof(P.coords))
 
-zero(::Type{Point{Dim,T}}) where {Dim,T} = Point{Dim,T}(@SVector zeros(T, Dim))
+Base.zero(::Type{Point{Dim,T}}) where {Dim,T} = Point{Dim,T}(@SVector zeros(T, Dim))
 nan(::Type{Point{Dim,T}}) where {Dim,T} = Point{Dim,T}(@SVector fill(T(NaN), Dim))
 
 const ϵ_Point = 1e-4 # Points separated by 1e-4 cm = 1 micron are treated the same.
@@ -83,7 +82,7 @@ coordinates(p::Point) = p.coords
 
 Return the [`Vec`](@ref) displacement from point `B` to point `A`.
 """
--(A::Point, B::Point) = coordinates(A) - coordinates(B)
+Base.:-(A::Point, B::Point) = coordinates(A) - coordinates(B)
 
 """
     +(A::Point, v::Vec)
@@ -91,7 +90,7 @@ Return the [`Vec`](@ref) displacement from point `B` to point `A`.
 Return the point at the end of the vector `v` placed
 at a reference (or start) point `A`.
 """
-+(A::Point, v::Vec) = Point(coordinates(A) + v)
+Base.:+(A::Point, v::Vec) = Point(coordinates(A) + v)
 
 """
     -(A::Point, v::Vec)
@@ -99,7 +98,7 @@ at a reference (or start) point `A`.
 Return the point at the end of the vector `-v` placed
 at a reference (or start) point `A`.
 """
--(A::Point, v::Vec) = Point(coordinates(A) - v)
+Base.:-(A::Point, v::Vec) = Point(coordinates(A) - v)
 
 """
     isapprox(A::Point, B::Point)

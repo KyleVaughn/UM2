@@ -52,7 +52,7 @@ Return the Samelson inverse of a.
 
 The returned vector, a⁻¹, satisfies a⁻¹ ⋅ a = 1.
 """
-inv(a::AbstractVector) = inv(a ⋅ a) * a'
+Base.inv(a::AbstractVector) = inv(a ⋅ a) * a'
 
 """
     norm²(v::AbstractVector)

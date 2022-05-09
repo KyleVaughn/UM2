@@ -1,7 +1,3 @@
-module Quadrature
-
-using StaticArrays
-
 export AbstractRefShape, RefSimplex, RefHypercube, RefLine, RefTriangle, RefTetrahedron,
        RefSquare, RefCube 
 
@@ -17,4 +13,3 @@ const RefSquare      = RefHypercube{2}
 const RefCube        = RefHypercube{3}
 
 include("gauss_quadrature.jl")
-end

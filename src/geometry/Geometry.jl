@@ -1,11 +1,3 @@
-module Geometry
-
-using LinearAlgebra
-using StaticArrays
-using ..Quadrature: RefLine, RefSquare, RefCube, RefTriangle, gauss_quadrature
-
-import Base: -, +, ==, inv, zero
-
 include("vector.jl")
 include("point.jl")
 include("plane.jl")
@@ -18,4 +10,3 @@ include("polytopes/faces.jl")
 include("polytopes/edges.jl")
 include("polytopes/measure.jl")
 include("polytopes/triangulate.jl")
-end

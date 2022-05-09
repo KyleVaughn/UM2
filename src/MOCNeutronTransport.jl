@@ -5,32 +5,30 @@ module MOCNeutronTransport
 #
 #using CUDA, HDF5, Logging, LightXML,
 
+
+using Pkg.Artifacts
 using Printf
 using Reexport
+
 using Colors: RGBA
 using FixedPointNumbers: N0f8
-
 export RGBA, N0f8
+
 #using Dates: now, format
 #using LoggingExtras: TransformerLogger, global_logger
 @reexport using LinearAlgebra
 @reexport using StaticArrays
 @reexport using Statistics
 
-# common
-include("common/print.jl")
-include("common/Material.jl")
-export Material
-export print_histogram
+gmsh_dir = readdir(artifact"gmsh", join=true)[1]
+gmsh_jl = joinpath(gmsh_dir, "lib", "gmsh.jl")
+include(gmsh_jl)
+export gmsh
 
+include("common/Common.jl")
 include("quadrature/Quadrature.jl")
-@reexport using .Quadrature
 include("geometry/Geometry.jl")
-@reexport using .Geometry
 include("mesh/Mesh.jl")
-@reexport using .Mesh
 include("plot/Plot.jl")
-@reexport using .Plot
 include("gmsh/Gmsh.jl")
-@reexport using .Gmsh
 end
