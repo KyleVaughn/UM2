@@ -1,3 +1,5 @@
+export color_material_physical_group_entities
+
 """
     color_material_physical_group_entities(materials::Vector{Material})
 

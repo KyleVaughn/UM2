@@ -1,3 +1,5 @@
+export add_materials_to_physical_groups_by_color
+
 """
     add_materials_to_physical_groups_by_color(materials::Vector{Material})
 
@@ -13,7 +15,7 @@ function add_materials_to_physical_groups_by_color(materials::Vector{Material})
         a = Int32(mat.color.alpha.i)
         rgba = (r,g,b,a)
         ents = color_to_ent[rgba]
-        add_physical_group("Material: "*mat.name, ents)
+        safe_add_physical_group("Material: "*mat.name, ents)
     end
     return nothing 
 end

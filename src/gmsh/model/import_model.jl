@@ -1,3 +1,5 @@
+export import_model
+
 """
     function import_model(path::String; names::Bool=false)
 

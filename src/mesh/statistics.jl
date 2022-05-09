@@ -1,6 +1,6 @@
-export show_statistics
+export statistics
 
-function show_statistics(mesh::PolytopeVertexMesh{Dim,T,P}; plot::Bool=false
+function statistics(mesh::PolytopeVertexMesh{Dim,T,P}; plot::Bool=false
                         ) where {Dim,T,P}
     # Edges
     edges = materialize_edges(mesh)

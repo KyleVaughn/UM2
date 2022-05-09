@@ -1,3 +1,5 @@
+export overlay_mpact_grid_hierarchy
+
 function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy, 
                                       material_hierarchy::Vector{Material})
     @info "Overlaying MPACT grid hierarchy"
@@ -134,7 +136,7 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
     end
 
     # material hierarchy with the grid material at the bottom.
-    output_dtags, output_dtags_map = physical_group_preserving_fragment(
+    output_dtags, output_dtags_map = safe_fragment(
                         model_dtags, grid_dtags,
                         material_hierarchy = material_hierarchy
                    )
