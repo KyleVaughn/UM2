@@ -31,4 +31,5 @@ include("geometry/Geometry.jl")
 include("mesh/Mesh.jl")
 include("plot/Plot.jl")
 include("gmsh/Gmsh.jl")
+include("raytracing/Raytracing.jl")
 end
