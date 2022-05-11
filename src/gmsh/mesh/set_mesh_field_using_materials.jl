@@ -1,3 +1,5 @@
+export set_mesh_field_using_materials
+
 function set_mesh_field_using_materials(materials::Vector{Material})
     @info "Setting mesh size field using materials"
     # Setup a field with a constant mesh size material.mesh_size inside the 

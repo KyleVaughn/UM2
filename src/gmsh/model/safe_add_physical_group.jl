@@ -31,5 +31,5 @@ function safe_add_physical_group(name::String, entities::Vector{NTuple{2,I}}) wh
         end
         gmsh.model.set_physical_name(dim, p, name)
     end
-    return p
+    return nothing 
 end

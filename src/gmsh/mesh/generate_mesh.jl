@@ -1,3 +1,5 @@
+export generate_mesh
+
 function generate_mesh(;dim = 2, order = 1, faces = "Triangle", opt_iters = 2)
     @info "Generating a mesh of dimension $dim with $faces faces of order $order"
     gmsh.option.set_number("Mesh.SecondOrderIncomplete", 1)

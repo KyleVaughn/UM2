@@ -5,4 +5,7 @@ include("model/add_cad_names_to_physical_groups.jl")
 include("model/add_materials_to_physical_groups_by_color.jl")
 include("model/color_material_physical_group_entities.jl")
 include("model/import_model.jl")
-# include("model/overlay_mpact_grid_hierarchy.jl") # Fix MPACTHierarchy first
+include("model/overlay_mpact_grid_hierarchy.jl")
+
+include("mesh/set_mesh_field_using_materials.jl")
+include("mesh/generate_mesh.jl")

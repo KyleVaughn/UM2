@@ -1,3 +1,5 @@
+export add_timestamps_to_logger
+
 # Add timestamps to logger
 const time_format = "HH:MM:SS.sss"
 timestamp_logger(logger) = TransformerLogger(logger) do log 
