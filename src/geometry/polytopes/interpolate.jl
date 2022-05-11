@@ -3,16 +3,24 @@
 
 # Function interpolation
 # length(w) == length(poly) == N, hence @inbounds is safe
-function (poly::Polytope{K,P,N})(coords...) where {K,P,N}
+function (poly::Polytope{K,P,N,T})(coords...) where {K,P,N,T}
     w = interpolation_weights(typeof(poly), coords...)
-    @inbounds return mapreduce(i->w[i]*poly[i], +, 1:N) 
+    p = zero(T)
+    for i = 1:N
+        p += w[i]*poly[i]
+    end
+    return p 
 end
 
 # Shape interpolation
 # length(w) == length(poly) == N, hence @inbounds is safe
 function (poly::Polytope{K,P,N,T})(coords...) where {K,P,N,T<:Point}
     w = interpolation_weights(typeof(poly), coords...)
-    @inbounds return Point(mapreduce(i->w[i]*coordinates(poly[i]), +, 1:N)) 
+    p = zero(typeof(coordinates(poly[1])))
+    for i = 1:N
+        p += w[i]*coordinates(poly[i])
+    end
+    return Point(p)
 end
 
 # 1-polytope

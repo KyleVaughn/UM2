@@ -1,1 +1,1 @@
-include("intersect/LineSegment-LineSegment.jl")
+include("intersect/linesegment-linesegment.jl")

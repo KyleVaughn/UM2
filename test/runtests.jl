@@ -10,6 +10,7 @@ include("setup/setup_mesh.jl")
 tests = ["quadrature/Quadrature",
          "geometry/Geometry",
          "mesh/Mesh",
+         "raytracing/Raytracing"
         ]
 for t in tests
   include("$(t).jl")
