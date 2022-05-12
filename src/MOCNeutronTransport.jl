@@ -7,11 +7,10 @@ using Pkg.Artifacts
 using Printf
 using Reexport
 
-using Colors: RGBA
-using Dates: now, format
-using FixedPointNumbers: N0f8
-using LoggingExtras: TransformerLogger, global_logger
+using Colors: RGBA, N0f8
 export RGBA, N0f8
+using Dates: now, format
+using LoggingExtras: TransformerLogger, global_logger
 
 @reexport using LinearAlgebra
 @reexport using StaticArrays
