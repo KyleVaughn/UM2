@@ -7,13 +7,16 @@ struct RectilinearGrid{X,Y,Z,T}
     z::Vec{Z,T}
 
     function RectilinearGrid{X,Y,Z,T}(x, y, z) where {X,Y,Z,T}
-        if X === 0
-            error("Must have at least 1 X-division.")
+        if X < 2
+            error("Must have at least 2 X-divisions.")
         end
-        if Y === 0
-            error("Must have at least 1 Y-division.")
+        if Y < 2
+            error("Must have at least 2 Y-divisions.")
         end
         if Z !== 0
+            if Z < 2
+                error("Must have at least 2 Z-divisions.")
+            end
             if any(i->z[i+1] - z[i] < 0, 1:Z-1)
                 error("Divisions must be monotonically increasing.")
             end

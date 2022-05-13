@@ -1,12 +1,11 @@
 export materialize, materialize_polytopes, materialize_facets,
        materialize_cells, materialize_faces, materialize_edges
 
-@generated function materialize(poly::Polytope{K,P,N,T}, 
-                                vertices::Vector{Point{Dim,F}}) where {K,P,N,T,Dim,F}
-    exprs = [:(vertices[poly.vertices[$i]]) for i ∈ 1:N]
-    return quote
-        return Polytope{$K,$P,$N,Point{$Dim,$F}}(Vec($(exprs...))) 
-    end
+function materialize(poly::Polytope{K,P,N,T}, 
+                     vertices::Vector{Point{Dim,F}}) where {K,P,N,T,Dim,F}
+    return Polytope{K,P,N,Point{Dim,F}}(Vec(
+            ntuple(i->vertices[poly.vertices[i]], Val(N))
+    )) 
 end
 
 function materialize_polytopes(mesh::PolytopeVertexMesh)
