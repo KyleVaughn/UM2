@@ -9,8 +9,8 @@
 #end
 function Base.intersect(l::LineSegment{Point{2,T}}, 
                         g::RectilinearGrid{X,Y,0,T}) where {X,Y,T} 
-    error("Need to sort points and make unique. 
-          Time sort by = p->distance(p,l(0)) vs old implementation")
+    error("Need to sort points and make unique. Is it faster to do
+          that with sort and unique, or should I do so algorithmically?")
     𝘂 = l[2] - l[1] 
     𝘂⁻¹ = 1 ./ 𝘂
     X₁ = coordinates(l[1])
