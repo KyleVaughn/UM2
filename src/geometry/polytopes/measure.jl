@@ -32,11 +32,13 @@ function measure(q::QuadraticSegment{T}) where {T<:Point}
         a = 4(𝘃 ⋅ 𝘃)
         b = 4(𝘂 ⋅ 𝘃)
         c = 𝘂 ⋅ 𝘂
-        # Compiler seems to catch the reused sqrt quantities for common subexpression
-        # elimination, or computation is as quick as storage in a variable, so we
-        # leave the sqrts for readability
-        l = ((2a + b)√(a + b + c) - b√c)/4a -
-            (b^2 - 4a*c)/((2√a)^3)*log((2√a√(a + b + c) + (2a + b))/(2√a√c + b))
+        
+        d = √(a + b + c)
+        e = 2a + b
+        f = 2√a
+
+        l = (d*e - b*√c) / 4a -
+            (b*b - 4a*c) / (4a*f) * log( (d*f + e) / (√c*f + b) )
         return l
     end
 end

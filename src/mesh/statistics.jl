@@ -25,7 +25,7 @@ function statistics(mesh::PolytopeVertexMesh{Dim,T,P}; plot::Bool=false
     face_ares = nothing
 
     # Cells
-    if polytope_k(P) === 3
+    if paramdim(P) === 3
         # Cell volumes
     end
     return nothing

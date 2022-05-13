@@ -1,5 +1,8 @@
 export print_histogram
 
+# This is essentially Base.show(io::IO, ::MIME"text/plain", t::Trial)
+# in BenchmarkTools.jl
+
 function bindata(sorteddata, nbins, min, max)
     Δ = (max - min) / nbins
     bins = zeros(nbins)
@@ -26,8 +29,6 @@ function asciihist(bins, height=1)
 end
 
 function print_histogram(v::Vector{T}) where {T<:AbstractFloat}
-    # This is essentially Base.show(io::IO, ::MIME"text/plain", t::Trial)
-    # in BenchmarkTools.jl
     medv = median(v)  
     avgv = mean(v)
     stdv = std(v)

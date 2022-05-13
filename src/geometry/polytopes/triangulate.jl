@@ -7,12 +7,10 @@ Return a Vec of the `N`-2 triangles that partition the 2D `Polygon`.
 
 Generated using fan triangulation, which assumes the `Polygon` is convex.
 """
-@generated function triangulate(p::Polygon{N, Point{2,T}}) where {N,T}
-    exprs = [:(Triangle(p[1], p[$(i+1)], p[$(i+2)])) for i in 1:N-2 ]
-    return quote
-        Base.@_inline_meta
-        @inbounds return Vec{$(N-2), Triangle{Point{2,$T}}}(tuple($(exprs...)))
-    end
+function triangulate(p::Polygon{N, Point{2,T}}) where {N,T}
+    return Vec{N-2, Triangle{Point{2,T}}}(
+                ntuple(i->Triangle(p[1], p[i+1], p[i+2]), Val(N-2))
+               )
 end
 
 """

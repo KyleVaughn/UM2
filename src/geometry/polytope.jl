@@ -2,7 +2,7 @@ export Polytope, Edge, LineSegment, QuadraticSegment, Face, Polygon, QuadraticPo
        Triangle, Quadrilateral, QuadraticTriangle, QuadraticQuadrilateral, Cell,
        Polyhedron, QuadraticPolyhedron, Tetrahedron, Hexahedron, QuadraticTetrahedron,
        QuadraticHexahedron
-export vertices, facets, ridges, peaks, alias_string, vertex_type, polytope_k,
+export vertices, facets, ridges, peaks, alias_string, vertex_type, paramdim,
        isstraight
 
 """
@@ -85,7 +85,7 @@ end
 
 Base.getindex(poly::Polytope, i::Int) = Base.getindex(poly.vertices, i)
 
-polytope_k(::Type{<:Polytope{K}}) where {K} = K
+paramdim(::Type{<:Polytope{K}}) where {K} = K
 vertex_type(::Type{Polytope{K,P,N,T}}) where {K,P,N,T} = T
 
 vertices(p::Polytope) = p.vertices
@@ -114,15 +114,17 @@ function alias_string(::Type{P}) where {P<:Polytope}
     return "$(P)"
 end
 
-# If we think of the polytopes as set, p₁ ∩ p₂ = p₁ and p₁ ∩ p₂ = p₂ implies p₁ = p₂
-# Simplices
-Base.:(==)(l₁::LineSegment, l₂::LineSegment) = all(v->v ∈ l₂.vertices, l₁.vertices)
+# If we think of the polytopes as sets, p₁ ∩ p₂ = p₁ and p₁ ∩ p₂ = p₂ implies p₁ = p₂
+function Base.:(==)(l₁::LineSegment{T}, l₂::LineSegment{T}) where {T} 
+    return (l₁[1] === l₂[1] && l₁[2] === l₂[2]) || 
+           (l₁[1] === l₂[2] && l₁[2] === l₂[1]) 
+end
 Base.:(==)(t₁::Triangle, t₂::Triangle) = return all(v->v ∈ t₂.vertices, t₁.vertices)
 Base.:(==)(t₁::Tetrahedron, t₂::Tetrahedron) = return all(v->v ∈ t₂.vertices, t₁.vertices)
-function Base.:(==)(q₁::QuadraticSegment, q₂::QuadraticSegment)
-    return q₁[3] == q₂[3] && 
-          (q₁[1] == q₂[1] && q₁[2] == q₂[2])  || 
-          (q₁[1] == q₂[2] && q₁[2] == q₂[1])
+function Base.:(==)(q₁::QuadraticSegment{T}, q₂::QuadraticSegment{T}) where {T}
+    return q₁[3] === q₂[3] && 
+          (q₁[1] === q₂[1] && q₁[2] === q₂[2])  || 
+          (q₁[1] === q₂[2] && q₁[2] === q₂[1])
 end
 
 isstraight(::LineSegment) = true
