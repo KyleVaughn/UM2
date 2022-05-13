@@ -1,6 +1,7 @@
 include("rectilinear_grid.jl")
 include("polytope_vertex_mesh.jl")
 include("materialize.jl")
+include("hierarchical_mesh_partition.jl")
 include("io_abaqus.jl")
 include("io.jl")
 include("statistics.jl")
