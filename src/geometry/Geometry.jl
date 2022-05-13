@@ -1,5 +1,6 @@
 include("vector.jl")
-include("point.jl")
+include("points/point.jl")
+include("points/sort.jl")
 include("plane.jl")
 include("axisalignedbox.jl")
 include("polytope.jl")
