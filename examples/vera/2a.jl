@@ -8,7 +8,7 @@ add_timestamps_to_logger()
 gmsh.initialize()
 gmsh.option.set_number("General.NumThreads", 0) # 0 uses system default, i.e. OMP_NUM_THREADS)
 gmsh.option.set_number("Geometry.OCCParallel", 1) # use parallel OCC boolean operations
-gmsh.option.set_number("General.Verbosity", 4) # 1: +errors, 2: +warnings, 3: +direct, 4: +information, 5: +status, 99: +debug
+gmsh.option.set_number("General.Verbosity", 3) # 1: +errors, 2: +warnings, 3: +direct, 4: +information, 5: +status, 99: +debug
 
 #
 # Model
@@ -63,7 +63,6 @@ gmsh.model.occ.synchronize()
 
 # Materials
 # ----------------------------------------------------------------------------------------------
-gmsh.model.occ.synchronize()
 # http://juliagraphics.github.io/Colors.jl/stable/namedcolors/
 materials = Material[
                 Material(name="UO2", color="forestgreen"),
@@ -91,133 +90,23 @@ mpact_grid = MPACTGridHierarchy(coarse_grid)
 # so we need to swap H2O to the bottom of the materials hierarchy
 materials[3], materials[4] = materials[4], materials[3]
 overlay_mpact_grid_hierarchy(mpact_grid, materials)
-gmsh.fltk.run()
-# 
-# # Mesh
-# # ------------------------------------------------------------------------------------------------
-# lc = 0.12 # cm
-# gmsh.model.mesh.set_size(gmsh.model.get_entities(0), lc)
-# # Optional mesh optimization:
-# niter = 2 # The optimization iterations
-# 
-# # Triangles
-# # gmsh.model.mesh.generate(2) # 2 is dimension of mesh
-# # for () in 1:niter
-# #     gmsh.model.mesh.optimize("Laplace2D")
-# # end
-# 
-# # Quadrilaterals
-# # The default recombination algorithm might leave some triangles in the mesh, if
-# # recombining all the triangles leads to badly shaped quads. In such cases, to
-# # generate full-quad meshes, you can either subdivide the resulting hybrid mesh
-# # (with `Mesh.SubdivisionAlgorithm' set to 1), or use the full-quad
-# # recombination algorithm, which will automatically perform a coarser mesh
-# # followed by recombination, smoothing and subdivision.
-# # Mesh recombination algorithm (0: simple, 1: blossom, 2: simple full-quad, 3: blossom full-quad)
-# # Default = 1
-# # gmsh.option.set_number("Mesh.RecombineAll", 1) # recombine all triangles
-# # gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads. Better 2D algorithm
-# # gmsh.option.set_number("Mesh.RecombinationAlgorithm", 2)
-# # gmsh.model.mesh.generate(2)
-# # for () in 1:niter
-# #     gmsh.model.mesh.optimize("Laplace2D")
-# #     gmsh.model.mesh.optimize("Relocate2D")
-# #     gmsh.model.mesh.optimize("Laplace2D")
-# # end
-# 
-# # 2nd order triangles
-# # gmsh.option.set_number("Mesh.HighOrderOptimize", 2)
-# # gmsh.model.mesh.generate(2) # Triangles first for high order meshes.
-# # gmsh.model.mesh.set_order(2)
-# # # for () in 1:niter
-# # #     gmsh.model.mesh.optimize("HighOrderElastic")
-# # #     gmsh.model.mesh.optimize("Relocate2D")
-# # #     gmsh.model.mesh.optimize("HighOrderElastic")
-# # # end
-# 
-# # 2nd order quadrilaterals
-# # These can be problematic for large lc. They have trouble respecting CAD boundaries.
-# 
-# gmsh.option.set_number("Mesh.RecombineAll", 1) # recombine all triangles
-# gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads. Better 2D algorithm
-# gmsh.option.set_number("Mesh.RecombinationAlgorithm", 2)
-# gmsh.option.set_number("Mesh.HighOrderOptimize", 2)
-# gmsh.model.mesh.generate(2)
-# gmsh.model.mesh.set_order(2)
-# for () in 1:niter
-#     gmsh.model.mesh.optimize("HighOrderElastic")
-#     gmsh.model.mesh.optimize("Relocate2D")
-#     gmsh.model.mesh.optimize("HighOrderElastic")
-# end
-# 
-# # gmsh.fltk.run()
-# 
-# # Mesh conversion
-# #---------------------------------------------------------------------------------------------------
-# # We want to write an Abaqus file from Gmsh, read the Abaqus file into Julia, and convert that into
-# # a rectangularly partitioned hierarchical XDMF file, the final input to MPACT
-# #
-# # Write Abaqus file
-# gmsh.write("2a.inp")
+
+# Mesh
+# ------------------------------------------------------------------------------------------------
+lc = 0.3 # cm
+for mat in materials
+    mat.mesh_size = lc
+end
+set_mesh_field_using_materials(materials)
+generate_mesh(order = 2, faces = "Triangle", opt_iters = 2)
+gmsh.write("2a.inp")
+mesh_error = get_cad_to_mesh_error()
+for i in eachindex(mesh_error)
+    println(mesh_error[i])
+end
 gmsh.finalize()
-# 
-# mesh = read_abaqus2d("2a.inp")
+
+mesh = import_mesh("2a.inp")
 # # Convert mesh into Hierarchical Rectangularly Partitioned Mesh 
 # #HRPM = partition_rectangularly(mesh)
 # #write_xdmf_2d("2a.xdmf", HRPM)
-# 
-# # Mass conservation
-# # --------------------------------------------------------------------------------------------------
-# if generate_mesh_file
-#     total_area_ref = 21.5^2
-#     uo2_area_ref = π*(r_fuel^2)*(17^2 - 25)
-#     gap_area_ref = π*(r_gap^2 - r_fuel^2)*(17^2 - 25)
-#     clad_area_ref = π*( (r_clad^2 - r_gap^2)*(17^2 - 25) +
-#                         (r_gt_outer^2 - r_gt_inner^2)*(24) +
-#                         (r_it_outer^2 - r_it_inner^2)*(1) )
-#     h2o_area_ref = total_area_ref - uo2_area_ref - gap_area_ref - clad_area_ref
-#     
-#     uo2_area = area(mesh, "MATERIAL_UO2")
-#     println("UO₂ area (reference): $uo2_area_ref")
-#     println("UO₂ area  (computed): $uo2_area")
-#     err = 100*(uo2_area - uo2_area_ref)/uo2_area_ref
-#     println("Error     (relative): $err %") 
-#     println("")
-#     
-#     gap_area = area(mesh, "MATERIAL_GAP")
-#     println("Gap area (reference): $gap_area_ref")
-#     println("Gap area  (computed): $gap_area")
-#     err = 100*(gap_area - gap_area_ref)/gap_area_ref
-#     println("Error     (relative): $err %") 
-#     println("")
-#     
-#     clad_area = area(mesh, "MATERIAL_CLAD")
-#     println("Clad area (reference): $clad_area_ref")
-#     println("Clad area  (computed): $clad_area")
-#     err = 100*(clad_area - clad_area_ref)/clad_area_ref
-#     println("Error      (relative): $err %") 
-#     println("")
-#     
-#     h2o_area = area(mesh, "MATERIAL_WATER")
-#     println("H₂O area (reference): $h2o_area_ref")
-#     println("H₂O area  (computed): $h2o_area")
-#     err = 100*(h2o_area - h2o_area_ref)/h2o_area_ref
-#     println("Error     (relative): $err %") 
-#     println("")
-#     
-#     total_area = uo2_area + gap_area + clad_area + h2o_area 
-#     println("Total area (reference): $total_area_ref")
-#     println("Total area  (computed): $total_area")
-#     err = 100*(total_area - total_area_ref)/total_area_ref
-#     println("Error     (relative): $err %") 
-#     println("")
-# end
-# 
-# # Ray tracing
-# #---------------------------------------------------------------------------------------------------
-# T = Float64
-# mesh = read_abaqus2d("2a.inp", T)
-# # mesh = add_everything(mesh)
-# # tₛ =  T(0.007)
-# # ang_quad = generate_angular_quadrature("Chebyshev-Chebyshev", 32, 3; T=T)
-# # tracks = generate_tracks(tₛ, ang_quad, mesh, boundary_shape = "Rectangle")

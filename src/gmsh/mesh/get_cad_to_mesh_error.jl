@@ -1,8 +1,8 @@
 export get_cad_to_mesh_error
 
 function get_cad_to_mesh_error()
-    @warn "Mass estimates from gmsh have a relative error of approximately 1%"
-    errors = []
+    errors = NamedTuple{(:name, :cad_mass, :mesh_mass, :percent_error), 
+                        Tuple{String, Float64, Float64, Float64}}[]
     for group in gmsh.model.get_physical_groups()
         gdim, gnum = group
         name = gmsh.model.get_physical_name(gdim, gnum)
@@ -21,8 +21,6 @@ function get_cad_to_mesh_error()
             err_percent = 100*(mesh_mass - mass)/mass
             push!(errors, (name=name, cad_mass=mass, 
                            mesh_mass=mesh_mass, percent_error=err_percent))
-            println(name)
-            println("CAD Mass: $mass, Mesh Mass: $mesh_mass, Error: $err_percent %") 
         end
     end
     return errors 

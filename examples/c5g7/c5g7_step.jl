@@ -44,7 +44,7 @@ materials[7].mesh_size = frac_of_MFP*inv(mean(Σₜᵢ_Mod)) # Moderator
 
 #gmsh.model.mesh.set_size(gmsh.model.get_entities(0), 0.05)
 #gmsh.model.mesh.generate(2)
-#set_mesh_field_using_materials(materials)
+set_mesh_field_using_materials(materials)
 #println("Mesh->Define->Size fields. Then, new view of Min field.")
 #gmsh.fltk.run()
 ##gmsh.view.write(0, filename[1:end-5]*".pos")
@@ -52,6 +52,9 @@ materials[7].mesh_size = frac_of_MFP*inv(mean(Σₜᵢ_Mod)) # Moderator
 generate_mesh(order = 1, faces = "Triangle", opt_iters = 2)
 gmsh.write(filename[1:end-5]*".inp")
 mesh_error = get_cad_to_mesh_error()
+for i in eachindex(mesh_error)
+    println(mesh_error[i])
+end
 gmsh.finalize()
 
 mesh = import_mesh(filename[1:end-5]*".inp")
