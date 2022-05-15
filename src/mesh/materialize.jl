@@ -22,10 +22,10 @@ end
 function materialize_ridges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Cell}
     return materialize_edges(mesh)
 end
-function materialize_faces(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Polygon}
+function materialize_faces(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Face}
     return materialize_polytopes(mesh) 
 end
-function materialize_facets(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Polygon}
+function materialize_facets(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Face}
     return materialize_edges(mesh)
 end
 

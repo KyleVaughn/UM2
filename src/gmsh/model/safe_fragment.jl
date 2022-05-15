@@ -1,4 +1,4 @@
-export safe_fragement
+export safe_fragment
 
 """
     safe_fragment(object_dtags::Vector{NTuple{2,Int32}},
@@ -98,19 +98,18 @@ function _process_material_hierarchy!(names::Vector{String},
     end
     # Ensure each material group is present in the hierarchy and warn now if it's not. 
     # Otherwise the error that occurs later is not as easy to figure out
-    for material_name in getfield.(material_hierarchy, :name)
-        if "Material: "*material_name ∉ material_names
-            error("Physical groups does not contain: 'Material: $material_name'")
+    hierarchy_names = ["Material: "*mat.name for mat in material_hierarchy]
+    for hierarchy_name in hierarchy_names 
+        if hierarchy_name ∉ material_names
+            error("Physical groups does not contain: ", hierarchy_name)
         end
     end
-    # Order material names to the hierarchy
-    material_names = ["Material: "*mat.name for mat in material_hierarchy]
     # Use the hierarchy to ensure that no entity has more than 1 material by removing
     # all shared elements from sets lower than the current set
-    nmats = length(material_hierarchy)
+    nmats = length(hierarchy_names)
     for i ∈ 1:nmats 
         for j ∈ i+1:nmats
-            setdiff!(material_dict[material_names[j]], material_dict[material_names[i]])
+            setdiff!(material_dict[hierarchy_names[j]], material_dict[hierarchy_names[i]])
         end
     end
     for (mat_index, global_index) in enumerate(material_indices)

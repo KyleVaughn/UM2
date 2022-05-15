@@ -21,6 +21,7 @@ function statistics(mesh::PolytopeVertexMesh{Dim,T,P}; plot::Bool=false
     faces = materialize_faces(mesh)
     face_areas = measure.(faces)
     print_histogram(100*face_areas)
+    # If any negative, show if plot == true
     faces = nothing
     face_ares = nothing
 
