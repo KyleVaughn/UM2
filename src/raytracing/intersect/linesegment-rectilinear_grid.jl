@@ -1,3 +1,11 @@
+# Like find first, but returns length(v) + 1 in the event that no index
+function findsortedfirst(v::AbstractVector, x)
+    for i in eachindex(v)
+        x ≤ v[i] && return i
+    end
+    return length(v) + 1
+end
+
 function Base.intersect(l::LineSegment{Point{2,T}}, 
                         g::RectilinearGrid{X,Y,0,T}) where {X,Y,T} 
     # Intersect the bounding box
@@ -17,10 +25,20 @@ function Base.intersect(l::LineSegment{Point{2,T}},
         ylower, yupper = minmax(pstart[2], pend[2])
         # Get the start and stop indices for the range of grid lines
         # that need to be tested
-        xlower_ind = searchsortedfirst(g.x, xlower)
-        xupper_ind = searchsortedfirst(g.x, xupper)
-        ylower_ind = searchsortedfirst(g.y, ylower)
-        yupper_ind = searchsortedfirst(g.y, yupper)
+        if X ≥ sorted_array_findfirst_threshold
+            xlower_ind = searchsortedfirst(g.x, xlower)
+            xupper_ind = searchsortedfirst(g.x, xupper)
+        else
+            xlower_ind = findsortedfirst(g.x, xlower)
+            xupper_ind = findsortedfirst(g.x, xupper)
+        end
+        if Y ≥ sorted_array_findfirst_threshold
+            ylower_ind = searchsortedfirst(g.y, ylower)
+            yupper_ind = searchsortedfirst(g.y, yupper)
+        else
+            ylower_ind = findsortedfirst(g.y, ylower)
+            yupper_ind = findsortedfirst(g.y, yupper)
+        end
 
         xstart, xend = xlower_ind, xupper_ind
         xinc = 1
