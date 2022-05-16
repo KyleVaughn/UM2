@@ -82,6 +82,13 @@ end
 function Polytope{K,P,N,T}(v::Vector) where {K,P,N,T}
     return Polytope{K,P,N,T}(Vec{length(v),T}(v))
 end
+function Polytope{K,P,N,T}(v::SVector{N}) where {K,P,N,T}
+    return Polytope{K,P,N,T}(Vec{N,T}(v...))
+end
+
+function Base.convert(::Type{Polytope{K,P,N,T}}, v::SVector{N}) where {K,P,N,T}
+    return Polytope{K,P,N,T}(v...)
+end
 
 Base.getindex(poly::Polytope, i::Int) = Base.getindex(poly.vertices, i)
 

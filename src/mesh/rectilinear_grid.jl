@@ -1,5 +1,5 @@
 export RectilinearGrid
-export xmin, ymin, zmin, xmax, ymax, zmax
+export xvals, yvals, zvals, xmin, ymin, zmin, xmax, ymax, zmax
 
 struct RectilinearGrid{X,Y,Z,T}
     x::Vec{X,T}
@@ -59,6 +59,9 @@ end
 Base.issubset(g1::RectilinearGrid, g2::RectilinearGrid) = g1.x ⊆ g2.x && 
                                                           g1.y ⊆ g2.y &&
                                                           g1.z ⊆ g2.z 
+xvals(rg::RectilinearGrid) = rg.x
+yvals(rg::RectilinearGrid) = rg.y
+zvals(rg::RectilinearGrid) = rg.z
 xmin(rg::RectilinearGrid) = rg.x[1]
 ymin(rg::RectilinearGrid) = rg.y[1]
 zmin(rg::RectilinearGrid) = rg.z[1]

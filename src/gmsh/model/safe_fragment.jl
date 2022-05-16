@@ -45,7 +45,7 @@ function safe_fragment(object_dtags::Vector{NTuple{2,Int32}},
             # If the dim tag was one of the entities in the fragment
             if dtag ∈ input_dtags
                 # Get its children
-                index = findfirst(x->x == dtag, input_dtags)
+                index = findfirst(x->x==dtag, input_dtags)
                 children = output_dtags_map[index]
                 # Add the children to the new physical group
                 for child in children

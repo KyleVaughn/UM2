@@ -2,7 +2,6 @@
 # Revision 4, August 29, 2014
 # CASL-U-2012-0131-004
 using MOCNeutronTransport
-using BenchmarkTools
 
 add_timestamps_to_logger()
 gmsh.initialize()

@@ -1,4 +1,5 @@
 export PolytopeVertexMesh
+export name, vertices, polytopes, groups
 
 struct PolytopeVertexMesh{Dim,T,P<:Polytope}
     name::String
@@ -6,6 +7,11 @@ struct PolytopeVertexMesh{Dim,T,P<:Polytope}
     polytopes::Vector{P}
     groups::Dict{String,BitSet}
 end
+
+name(mesh::PolytopeVertexMesh) = mesh.name
+vertices(mesh::PolytopeVertexMesh) = mesh.vertices
+polytopes(mesh::PolytopeVertexMesh) = mesh.polytopes
+groups(mesh::PolytopeVertexMesh) = mesh.groups
 
 # constructors
 function PolytopeVertexMesh(name::String, 

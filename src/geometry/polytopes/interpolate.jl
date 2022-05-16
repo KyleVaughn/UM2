@@ -6,7 +6,7 @@
 function (poly::Polytope{K,P,N,T})(coords...) where {K,P,N,T}
     w = interpolation_weights(typeof(poly), coords...)
     p = zero(T)
-    for i = 1:N
+    for i in eachindex(w)
         p += w[i]*poly[i]
     end
     return p 
@@ -17,7 +17,7 @@ end
 function (poly::Polytope{K,P,N,T})(coords...) where {K,P,N,T<:Point}
     w = interpolation_weights(typeof(poly), coords...)
     p = zero(typeof(coordinates(poly[1])))
-    for i = 1:N
+    for i in eachindex(w)
         p += w[i]*coordinates(poly[i])
     end
     return Point(p)

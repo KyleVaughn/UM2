@@ -2,7 +2,8 @@ export jacobian
 
 # 1-polytopes
 jacobian(l::LineSegment, r) = l[2] - l[1]
-jacobian(q::QuadraticSegment, r) = (4r - 3)*(q[1] - q[3]) + (4r - 1)*(q[2] - q[3]) 
+jacobian(q::QuadraticSegment, r) = (4r - 3)*(q[1] - q[3]) + 
+                                   (4r - 1)*(q[2] - q[3]) 
 
 # 2-polytopes
 function jacobian(tri::Triangle, r, s)
