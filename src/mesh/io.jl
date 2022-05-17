@@ -1,4 +1,4 @@
-export import_mesh
+export import_mesh, export_mesh
 """
     import_mesh(path::String)
     import_mesh(path::String, ::Type{T}=Float64) where {T<:AbstractFloat}
@@ -16,6 +16,15 @@ function import_mesh(path::String, ::Type{T}) where {T<:AbstractFloat}
 end
 
 import_mesh(path::String) = import_mesh(path, Float64)
+
+function export_mesh(mesh::PolytopeVertexMesh, path::String)
+    @info "Writing "*path
+    if endswith(uppercase(path), ".XDMF")
+        return write_xdmf(mesh, path)
+    else
+        error("Could not determine mesh file type from extension")
+    end
+end
 
 function _create_mesh_from_elements(is3D::Bool, 
                                     name::String, 
