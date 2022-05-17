@@ -22,6 +22,7 @@ isroot(t::Tree) = t.parent === nothing
 is_parents_last_child(t::Tree) = t.parent.children[end] === t
 
 function Base.show(io::IO, tree::Tree)
+    @warn "Make sure if there are more than 5 or so children, to just print ..."
     println(io, tree.data)
     if !isnothing(tree.children)
         for child ∈ tree.children
