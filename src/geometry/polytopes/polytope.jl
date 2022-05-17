@@ -89,6 +89,10 @@ end
 function Base.convert(::Type{Polytope{K,P,N,T}}, v::SVector{N}) where {K,P,N,T}
     return Polytope{K,P,N,T}(v...)
 end
+function Base.convert(::Type{Polytope{K,P,N,T}}, 
+                          p::Polytope{K,P,N}) where {K,P,N,T}
+    return Polytope{K,P,N,T}(p.vertices...)
+end
 
 Base.getindex(poly::Polytope, i::Int) = Base.getindex(poly.vertices, i)
 

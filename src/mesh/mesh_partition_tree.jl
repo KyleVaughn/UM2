@@ -20,7 +20,6 @@ end
 ## Example: "Grid_L1_triangle", or "Partition_L3"
 function partition(mesh::PolytopeVertexMesh; by::String="MPACT")
     @info "Partitioning mesh"
-    by = uppercase(by)
     # Extract the names of all face sets that contain 'by' (the variable)
     partition_names = _get_partition_names(mesh, by)
 
@@ -56,19 +55,19 @@ function _create_mesh_partition_tree(mesh::PolytopeVertexMesh, partition_names::
     while length(remaining_names) > 0
         for i in eachindex(remaining_names)
             name_i = remaining_names[i] 
-            i_isa_lattice = occursin("LATTICE", uppercase(name_i))
-            i_isa_module = occursin("MODULE", uppercase(name_i))
+            i_isa_lattice = startswith(name_i, "Lattice")
+            i_isa_module = startswith(name_i, "Module")
             isa_subset = false
             for j in eachindex(remaining_names)
                 if i === j
                     continue
                 end
                 name_j = remaining_names[j]
-                j_isa_coarsecell = occursin("COARSE", uppercase(name_j))
+                j_isa_coarsecell = startswith(name_j, "Coarse")
                 if j_isa_coarsecell && (i_isa_module || i_isa_lattice)
                     continue
                 end
-                j_isa_module = occursin("MODULE", uppercase(name_j))
+                j_isa_module = startswith(name_j, "Module")
                 if j_isa_module && i_isa_lattice
                     continue
                 end
@@ -109,9 +108,9 @@ function _create_mesh_partition_tree(mesh::PolytopeVertexMesh, partition_names::
 end
 
 function isa_MPACT_partition_name(x::String)
-    return occursin("COARSE_CELL_(", x) ||
-           occursin("MODULE_(",      x) ||
-           occursin("LATTICE_(",     x) 
+    return startswith(x, "Coarse_Cell_(") ||
+           startswith(x, "Module_("     ) ||
+           startswith(x, "Lattice_("    ) 
 end
 # Extract partition names
 function _get_partition_names(mesh::PolytopeVertexMesh, by::String)
@@ -122,12 +121,12 @@ function _get_partition_names(mesh::PolytopeVertexMesh, by::String)
         error("The mesh does not have any groups.")
     end
     if by === "MPACT"
-        filter!(x->isa_MPACT_partition_name(uppercase(x)), partition_names)
+        filter!(x->isa_MPACT_partition_name(x), partition_names)
         if length(partition_names) === 0
             error("The mesh does not have any MPACT grid hierarchy groups.")
         end
     else
-        filter!(x->occursin(by, uppercase(x)), partition_names)
+        filter!(x->occursin(by, x), partition_names)
         if length(partition_names) === 0
             error("The mesh does not have any groups containing '", by, "'.")
         end

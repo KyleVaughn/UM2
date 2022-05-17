@@ -1,8 +1,7 @@
 module MOCNeutronTransport
 
-#
-#using CUDA, HDF5, Logging, LightXML,
-
+using HDF5
+using LightXML
 using Pkg.Artifacts
 using Printf
 using Reexport

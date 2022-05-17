@@ -26,49 +26,53 @@ const supported_abaqus_element_types = (
 #       nodes or elements
 function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
     file = open(path, "r")
-    name = "default_name"
-    element_vecs = Vector{UInt64}[] 
-    element_sets = Dict{String, BitSet}()
-    points = Point{3,T}[]
-    is2D = false
-    is3D = false
-    while !eof(file)
-        line = readline(file)
-        if length(line) > 0
-            if startswith(line, "**") # Comment
-                continue
-            elseif "*Heading" == line
-                name = String(strip(readline(file)))
-                if occursin(".inp", name)
-                    name = name[1:length(name)-4]
+    try
+        name = "default_name"
+        element_vecs = Vector{UInt64}[] 
+        element_sets = Dict{String, BitSet}()
+        points = Point{3,T}[]
+        is2D = false
+        is3D = false
+        while !eof(file)
+            line = readline(file)
+            if length(line) > 0
+                if startswith(line, "**") # Comment
+                    continue
+                elseif "*Heading" == line
+                    name = String(strip(readline(file)))
+                    if occursin(".inp", name)
+                        name = name[1:length(name)-4]
+                    end
+                elseif "*NODE" == line
+                    _read_abaqus_nodes!(file, points)
+                elseif occursin("*ELEMENT", line)
+                    splitline = split(line)
+                    element_type = String(strip(replace(splitline[2], ("type=" => "")), ','))
+                    if element_type ∉ supported_abaqus_element_types
+                        error("$element_type is not a supported abaqus element type")
+                    end
+                    if startswith(element_type, "CP")
+                        is2D = true
+                    else
+                        is3D = true
+                    end
+                    _read_abaqus_elements!(file, element_vecs, element_type)
+                elseif occursin("*ELSET", line)
+                    splitline = split(line)
+                    set_name = String(replace(splitline[1], ("*ELSET,ELSET=" => "")))
+                    element_sets[set_name] = _read_abaqus_elset(file)
                 end
-            elseif "*NODE" == line
-                _read_abaqus_nodes!(file, points)
-            elseif occursin("*ELEMENT", line)
-                splitline = split(line)
-                element_type = String(strip(replace(splitline[2], ("type=" => "")), ','))
-                if element_type ∉ supported_abaqus_element_types
-                    error("$element_type is not a supported abaqus element type")
-                end
-                if startswith(element_type, "CP")
-                    is2D = true
-                else
-                    is3D = true
-                end
-                _read_abaqus_elements!(file, element_vecs, element_type)
-            elseif occursin("*ELSET", line)
-                splitline = split(line)
-                set_name = String(replace(splitline[1], ("*ELSET,ELSET=" => "")))
-                element_sets[set_name] = _read_abaqus_elset(file)
             end
         end
+        if is2D && is3D
+            error("File contains both surface (CPS) and volume (C3) elements."*
+                  "Limit element types to be CPS or C3, so mesh dimension is inferrable") 
+        end
+        return _create_mesh_from_elements(is3D, name, points, element_vecs, element_sets)
+    finally
+        close(file)
     end
-    close(file)
-    if is2D && is3D
-        error("File contains both surface (CPS) and volume (C3) elements."*
-              "Limit element types to be CPS or C3, so mesh dimension is inferrable") 
-    end
-    return _create_mesh_from_elements(is3D, name, points, element_vecs, element_sets)
+    return nothing
 end
 
 function _read_abaqus_nodes!(file::IOStream, points::Vector{Point{3,T}}) where {T}

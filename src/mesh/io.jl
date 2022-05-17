@@ -8,7 +8,7 @@ File type is inferred from the extension.
 """
 function import_mesh(path::String, ::Type{T}) where {T<:AbstractFloat}
     @info "Reading "*path
-    if endswith(uppercase(path), ".INP")
+    if endswith(path, ".inp")
         return read_abaqus(path, T)
     else
         error("Could not determine mesh file type from extension")
@@ -19,7 +19,7 @@ import_mesh(path::String) = import_mesh(path, Float64)
 
 function export_mesh(mesh::PolytopeVertexMesh, path::String)
     @info "Writing "*path
-    if endswith(uppercase(path), ".XDMF")
+    if endswith(path, ".xdmf")
         return write_xdmf(mesh, path)
     else
         error("Could not determine mesh file type from extension")
@@ -40,7 +40,7 @@ function _create_mesh_from_elements(is3D::Bool,
         end
     end
     sort!(element_lengths)
-    U = _select_mesh_UInt_type(max(length(points), length(element_vecs)))
+    U = _select_mesh_UInt_type(length(points))
     if !is3D # is2D
         K = 2
         # Verify all points are approximately the same z-coordinate
@@ -71,17 +71,4 @@ function _create_mesh_from_elements(is3D::Bool,
         return PolytopeVertexMesh(name, points, polytopes, element_sets)
     end
     error("Invalid mesh type")
-end
-
-function _select_mesh_UInt_type(N::Int64)
-    if N ≤ typemax(UInt16) 
-        U = UInt16
-    elseif N ≤ typemax(UInt32) 
-        U = UInt32
-    elseif N ≤ typemax(UInt64) 
-        U = UInt64
-    else 
-        error("That's a big mesh! Number of edges exceeds typemax(UInt64)")
-    end
-    return U
 end

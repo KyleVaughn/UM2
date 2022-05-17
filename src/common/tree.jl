@@ -1,11 +1,14 @@
 export Tree
-export isroot, is_parents_last_child, leaves
+export isroot, is_parents_last_child, leaves, parent, children
 
 mutable struct Tree{T}
     data::T
     parent::Union{Nothing, Tree{T}}
     children::Union{Nothing, Vector{Tree{T}}}
 end
+
+parent(t::Tree) = t.parent
+children(t::Tree) = t.children
 
 Tree(data::T) where {T} = Tree{T}(data, nothing, nothing)
 function Tree(data::T, parent::Tree{T}) where{T}
@@ -18,8 +21,8 @@ function Tree(data::T, parent::Tree{T}) where{T}
     return this
 end 
 
-isroot(t::Tree) = t.parent === nothing
-is_parents_last_child(t::Tree) = t.parent.children[end] === t
+isroot(t::Tree) = parent(t) === nothing
+is_parents_last_child(t::Tree) = children(parent(t))[end] === t
 function leaves(tree::Tree{T}) where {T}
     leaf_nodes = Tree{T}[]
     if !isnothing(tree.children)
