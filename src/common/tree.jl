@@ -1,5 +1,5 @@
 export Tree
-export isroot, is_parents_last_child
+export isroot, is_parents_last_child, leaves
 
 mutable struct Tree{T}
     data::T
@@ -20,13 +20,44 @@ end
 
 isroot(t::Tree) = t.parent === nothing
 is_parents_last_child(t::Tree) = t.parent.children[end] === t
-
-function Base.show(io::IO, tree::Tree)
-    @warn "Make sure if there are more than 5 or so children, to just print ..."
-    println(io, tree.data)
+function leaves(tree::Tree{T}) where {T}
+    leaf_nodes = Tree{T}[]
     if !isnothing(tree.children)
         for child ∈ tree.children
-            show(io, child, "") 
+            get_leaves!(child, leaf_nodes)
+        end
+    else
+        push!(leaf_nodes, tree)
+    end
+    return leaf_nodes
+end
+function get_leaves!(tree::Tree{T}, leaf_nodes::Vector{Tree{T}}) where {T}
+    if !isnothing(tree.children)
+        for child ∈ tree.children
+            get_leaves!(child, leaf_nodes)
+        end
+    else
+        push!(leaf_nodes, tree)
+    end
+    return nothing
+end
+
+function Base.show(io::IO, tree::Tree)
+    println(io, tree.data)
+    if !isnothing(tree.children)
+        nchildren = length(tree.children)
+        if 7 < nchildren 
+            show(io, tree.children[1], "")
+            show(io, tree.children[2], "")
+            println(io, "│  ⋮") 
+            println(io, "│  ⋮ (", nchildren-4, " additional children)")
+            println(io, "│  ⋮")
+            show(io, tree.children[end-1], "") 
+            show(io, tree.children[end],   "") 
+        else
+            for child ∈ tree.children
+                show(io, child, "") 
+            end
         end
     end
 end
@@ -44,8 +75,20 @@ function Base.show(io::IO, tree::Tree, predecessor_string::String)
     end
     println(io, tree.data)
     if !isnothing(tree.children)
-        for child ∈ tree.children
-            show(io, child, next_predecessor_string)
+        nchildren = length(tree.children)
+        if 7 < nchildren 
+            show(io, tree.children[1], next_predecessor_string)
+            show(io, tree.children[2], next_predecessor_string)
+            println(io, next_predecessor_string * "│  ⋮") 
+            println(io, next_predecessor_string * "│  ⋮ (", nchildren-4, 
+                    " additional children)")
+            println(io, next_predecessor_string * "│  ⋮")
+            show(io, tree.children[end-1], next_predecessor_string)
+            show(io, tree.children[end], next_predecessor_string)
+        else
+            for child ∈ tree.children
+                show(io, child, next_predecessor_string)
+            end
         end
     end
 end

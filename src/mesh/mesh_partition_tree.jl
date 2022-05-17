@@ -26,32 +26,24 @@ function partition(mesh::PolytopeVertexMesh; by::String="MPACT")
 
     # Create a tree to store the partition hierarchy.
     root = _create_mesh_partition_tree(mesh, partition_names)
-#
-#    # Construct the leaf meshes
-#    leaf_meshes = _create_leaf_meshes(mesh, by, root)
-#
-#    return HierarchicalMeshPartition(root, leaf_meshes)
+
+    # Construct the leaf meshes
+    leaf_meshes = _create_leaf_meshes(mesh, root)
+
+    return MeshPartitionTree(root, leaf_meshes)
 end
 
-# function _create_leaf_meshes(mesh::M, by::String, root::MeshPartitionTree) where {M<:UnstructuredMesh2D}
-#     leaf_nodes = leaves(root)
-#     mesh_counter = 0
-#     leaf_meshes = M[]
-#     for node ∈ leaf_nodes
-#         mesh_counter += 1
-#         node.id = mesh_counter
-#         push!(leaf_meshes, submesh(node.name, mesh))
-#     end
-#     for leaf_mesh ∈ leaf_meshes
-#         for name ∈ keys(leaf_mesh.face_sets)
-#             if occursin(by, uppercase(name))
-#                 delete!(leaf_mesh.face_sets, name)
-#             end
-#         end
-#     end
-#     return leaf_meshes
-# end
-# 
+function _create_leaf_meshes(mesh::PolytopeVertexMesh, root::Tree)
+    leaf_nodes = sort!(leaves(root), by=x->x.data)
+    leaf_meshes = Vector{typeof(mesh)}(undef, length(leaf_nodes))
+    for (i, node) in enumerate(leaf_nodes)
+        name = node.data[2]
+        node.data = (i, name)
+        leaf_meshes[i] = submesh(mesh, name)
+    end
+    return leaf_meshes
+end
+ 
 # Create a tree to store grid relationships.
 function _create_mesh_partition_tree(mesh::PolytopeVertexMesh, partition_names::Vector{String}) 
     root = Tree((0, mesh.name))
@@ -62,8 +54,6 @@ function _create_mesh_partition_tree(mesh::PolytopeVertexMesh, partition_names::
     # Extract the sets that are not a subset of any other set.
     this_level = Int64[] 
     while length(remaining_names) > 0
-        println(remaining_names)
-        readline()
         for i in eachindex(remaining_names)
             name_i = remaining_names[i] 
             i_isa_lattice = occursin("LATTICE", uppercase(name_i))
@@ -83,7 +73,6 @@ function _create_mesh_partition_tree(mesh::PolytopeVertexMesh, partition_names::
                     continue
                 end
                 if mesh.groups[name_i] ⊆ mesh.groups[name_j]
-                    println(name_i, " is a subset of ", name_j)
                     isa_subset = true
                     break
                 end
@@ -92,8 +81,6 @@ function _create_mesh_partition_tree(mesh::PolytopeVertexMesh, partition_names::
                 push!(this_level, i)
             end
         end
-        println(this_level)
-        readline()
         # Add the groups that are not a subset to the tree
         # and next_parents
         for id in this_level
@@ -112,8 +99,6 @@ function _create_mesh_partition_tree(mesh::PolytopeVertexMesh, partition_names::
                 end
             end
         end
-        println(root)
-        readline()
         parents = next_parents
         next_parents = tree_type[]
         # Remove the groups added to the tree from the remaining names
@@ -122,49 +107,7 @@ function _create_mesh_partition_tree(mesh::PolytopeVertexMesh, partition_names::
     end
     return root
 end
-#3    LN_partition_names = copy(partition_names)
-#3    LN⁺_partition_names = String[]
-#3    LN⁻_nodes = [root]
-#3    LN_nodes = Tree{Tuple{Int64,String}}[]
-#3    while length(LN_partition_names) > 0
-#3        # Determine the names of nodes at this level
-#3        for i in eachindex(remaining_names)
-#3            name_i = remaining_names[i] 
-#3            for j in eachindex(remaining_names)
-#3                if i === j
-#3                    continue
-#3                end
-#3                name_j = remaining_names[j]
-#3                if mesh.groups[name_i] ⊆ mesh.groups[name_j]
-#3                    if name_i ∈ LN_partition_names
-#3                        filter!(x->x ≠ name_i, LN_partition_names)
-#3                        push!(LN⁺_partition_names, name_i)
-#3                    end
-#3                end
-#3            end
-#3        end
-#3        # For each name at level N, attach it to its level N-1 parent
-#3        for parent_node ∈ LN⁻_nodes
-#3            if isroot(parent_node) # All partition names are a subset
-#3                for child_name ∈ LN_partition_names
-#3                    push!(LN_nodes, Tree((0,child_name), parent_node))
-#3                end
-#3            else
-#3                for child_name ∈ LN_partition_names
-#3                    if mesh.groups[child_name] ⊆ mesh.groups[parent_node.data[2]]
-#3                        push!(LN_nodes, Tree((0,child_name), parent_node))
-#3                    end
-#3                end
-#3            end
-#3        end
-#3        # Swap the old with the new
-#3        LN_partition_names = LN⁺_partition_names
-#3        LN⁺_partition_names = String[]
-#3        LN⁻_nodes = LN_nodes
-#3        LN_nodes = Tree{Tuple{Int64,String}}[] 
-#3    end
-#    return root
-#end
+
 function isa_MPACT_partition_name(x::String)
     return occursin("COARSE_CELL_(", x) ||
            occursin("MODULE_(",      x) ||

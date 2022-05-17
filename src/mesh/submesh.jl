@@ -31,7 +31,7 @@ function submesh(mesh::PolytopeVertexMesh, name::String)
     groups = Dict{String,BitSet}()
     for group_name in keys(mesh.groups)
         set_intersection = mesh.groups[group_name] ∩ polytope_ids
-        if length(set_intersection) !== 0
+        if length(set_intersection) !== 0 && name !== group_name
             groups[group_name] = set_intersection
         end
     end
