@@ -17,7 +17,7 @@ end
 
 import_mesh(path::String) = import_mesh(path, Float64)
 
-function export_mesh(mesh::PolytopeVertexMesh, path::String)
+function export_mesh(mesh, path::String)
     @info "Writing "*path
     if endswith(path, ".xdmf")
         return write_xdmf(mesh, path)

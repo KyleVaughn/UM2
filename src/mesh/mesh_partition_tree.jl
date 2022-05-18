@@ -1,5 +1,5 @@
 export MeshPartitionTree
-export partition
+export partition, leaves
 # A data structure to hold a hierarchical partition of a mesh.
 # Since the mesh is partitioned, we only need to store the leaves of the partition
 # tree to reconstruct the mesh.
@@ -12,6 +12,8 @@ struct MeshPartitionTree{M <: PolytopeVertexMesh}
     partition_tree::Tree{Tuple{Int64, String}}
     leaf_meshes::Vector{M}
 end
+
+leaves(mpt::MeshPartitionTree) = mpt.leaf_meshes
 #
 ## Partitions a mesh based upon the names of its groups 
 ## For a hierarchical partition, all partitions in the hierarchy must contain face sets 
@@ -19,7 +21,7 @@ end
 ## N is the level of the node in the tree: 1, 2, 3, etc...
 ## Example: "Grid_L1_triangle", or "Partition_L3"
 function partition(mesh::PolytopeVertexMesh; by::String="MPACT")
-    @info "Partitioning mesh"
+    @info "Partitioning mesh: "*mesh.name
     # Extract the names of all face sets that contain 'by' (the variable)
     partition_names = _get_partition_names(mesh, by)
 
@@ -38,7 +40,14 @@ function _create_leaf_meshes(mesh::PolytopeVertexMesh, root::Tree)
     for (i, node) in enumerate(leaf_nodes)
         name = node.data[2]
         node.data = (i, name)
-        leaf_meshes[i] = submesh(mesh, name)
+        submesh_i = submesh(mesh, name)
+        # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
+        # be encoded in the tree
+        mpact_groups = filter(x->isa_MPACT_partition_name(x), keys(submesh_i.groups))
+        for grp in mpact_groups
+            pop!(submesh_i.groups, grp)
+        end
+        leaf_meshes[i] = submesh_i 
     end
     return leaf_meshes
 end

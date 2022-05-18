@@ -86,12 +86,20 @@ function Polytope{K,P,N,T}(v::SVector{N}) where {K,P,N,T}
     return Polytope{K,P,N,T}(Vec{N,T}(v...))
 end
 
+# Convert SVector vals
 function Base.convert(::Type{Polytope{K,P,N,T}}, v::SVector{N}) where {K,P,N,T}
     return Polytope{K,P,N,T}(v...)
 end
+# Convert Polytope vals
 function Base.convert(::Type{Polytope{K,P,N,T}}, 
                           p::Polytope{K,P,N}) where {K,P,N,T}
     return Polytope{K,P,N,T}(p.vertices...)
+end
+# Convert SVector to general polytope
+# Primarily for non-homogenous meshes
+function Base.convert(::Type{Polytope{K,P,N,T} where {N}},
+                      v::SVector{V}) where {K,P,T,V}
+    return Polytope{K,P,V,T}(v...)
 end
 
 Base.getindex(poly::Polytope, i::Int) = Base.getindex(poly.vertices, i)

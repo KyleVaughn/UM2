@@ -25,3 +25,12 @@ function get_cad_to_mesh_error()
     end
     return errors 
 end
+
+function Base.show(io::IO, 
+        err::NamedTuple{(:name, :cad_mass, :mesh_mass, :percent_error), 
+                        Tuple{String, Float64, Float64, Float64}})
+    print(io, err.name)
+    print(io, ", Error (%): "*string(@sprintf("%.4f", err.percent_error)))
+    print(io, ", CAD Mass: "*string(@sprintf("%.4f", err.cad_mass)))
+    print(io, ", Mesh Mass: "*string(@sprintf("%.4f", err.mesh_mass)))
+end

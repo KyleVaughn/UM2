@@ -1,6 +1,10 @@
 export generate_mesh
 
-function generate_mesh(;dim = 2, order = 1, faces = "Triangle", opt_iters = 2)
+function generate_mesh(;dim::Int64 = 2, 
+                        order::Int64 = 1, 
+                        faces::String = "Triangle", 
+                        opt_iters::Int64 = 0,
+                        force_quads::Bool = false)
     @info "Generating a mesh of dimension $dim with $faces faces of order $order"
     gmsh.option.set_number("Mesh.SecondOrderIncomplete", 1)
     if dim != 2
@@ -29,8 +33,10 @@ function generate_mesh(;dim = 2, order = 1, faces = "Triangle", opt_iters = 2)
     elseif faces == "Quadrilateral"
         gmsh.option.set_number("Mesh.RecombineAll", 1)
         gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads.
-        gmsh.option.set_number("Mesh.RecombinationAlgorithm", 2) # simple full-quad
-        gmsh.option.set_number("Mesh.SubdivisionAlgorithm", 1) # All quads
+        if force_quads
+            gmsh.option.set_number("Mesh.RecombinationAlgorithm", 2) # simple full-quad
+            gmsh.option.set_number("Mesh.SubdivisionAlgorithm", 1) # All quads
+        end
         if order == 1
             gmsh.model.mesh.generate(2)
             for _ in 1:opt_iters

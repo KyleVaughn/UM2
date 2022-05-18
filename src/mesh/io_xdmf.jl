@@ -1,33 +1,44 @@
-#function write_xdmf2d(filename::String, MP::HierarchicalMeshPartition)
-#    @info "Writing $filename" 
-#    # Check valid filename
-#    if !occursin(".xdmf", filename)
-#        error("Invalid filename. '.xdmf' does not occur in file name")
-#    end
-#
-#    # If there are materials, map all material names to an integer
-#    material_map = _make_material_name_to_id_map(MP)
-#
-#    # h5 filename
-#    h5_filename = replace(filename, ("xdmf" => "h5"))
-#    h5_file = h5open(h5_filename, "w")
-#    # XML
-#    xdoc = XMLDocument()
-#    # Xdmf
-#    xroot = create_root(xdoc, "Xdmf")
-#    set_attribute(xroot, "Version", "3.0")
-#    # Domain
-#    xdomain = new_child(xroot, "Domain")
-#    # Material names
-#    if material_map != Dict{String, Int64}()
-#        xmaterials = new_child(xdomain, "Information")
-#        set_attribute(xmaterials, "Name", "MaterialNames")
-#        add_text(xmaterials, join(keys(material_map), " ")) 
-#    end
-#    _add_mesh_partition_xdmf!(xdomain, h5_filename, h5_file, MP, MP.partition_tree, material_map)
-#    save_file(xdoc, filename)
-#    close(h5_file)
-#end
+function write_xdmf(mpt::MeshPartitionTree, filename::String)
+    # Check valid filename
+    if !endswith(filename, ".xdmf")
+        error("Invalid filename.")
+    end
+
+    material_groups = String[]
+    for mesh in leaves(mpt) 
+        for group_name in keys(mesh.groups)
+            if startswith(group_name, "Material") && group_name ∉ material_groups
+                push!(material_groups, group_name)
+            end
+        end
+    end
+    # h5 filename
+    h5_filename = filename[1:end-4]*"h5"
+    h5_file = h5open(h5_filename, "w")
+    # XML
+    xdoc = XMLDocument()
+
+    try
+        # Xdmf
+        xroot = create_root(xdoc, "Xdmf")
+        set_attribute(xroot, "Version", "3.0")
+        # Domain
+        xdomain = new_child(xroot, "Domain")
+        # Material names
+        materials = [ mat[11:end] for mat in material_groups ]
+        if materials !== String[] 
+            xmaterials = new_child(xdomain, "Information")
+            set_attribute(xmaterials, "Name", "Materials")
+            add_text(xmaterials, join(materials, " ")) 
+        end
+        _add_mesh_partition_xdmf!(xdomain, h5_filename, h5_file, 
+                                  mpt.partition_tree, mpt.leaf_meshes, material_groups)
+    finally
+        save_file(xdoc, filename)
+        close(h5_file)
+    end
+    return nothing
+end
 
 function write_xdmf(mesh::PolytopeVertexMesh, filename::String) 
     # Check valid filename
@@ -48,11 +59,11 @@ function write_xdmf(mesh::PolytopeVertexMesh, filename::String)
         # Domain
         xdomain = new_child(xroot, "Domain")
         
-        materials = sort!(filter!(x->startswith(uppercase(x), "MATERIAL"), 
-                                  collect(keys(mesh.groups))
-                                 )
-                         )
-        materials = [ mat[11:end] for mat in materials ]
+        material_groups = sort!(filter!(x->startswith(x, "Material"), 
+                                        collect(keys(mesh.groups))
+                                       )
+                               )
+        materials = [ mat[11:end] for mat in material_groups ]
 
         # Material names
         if materials !== String[] 
@@ -62,7 +73,7 @@ function write_xdmf(mesh::PolytopeVertexMesh, filename::String)
         end
 
     # Add uniform grid
-    _add_uniform_grid_xdmf!(xdomain, h5_filename, h5_file, mesh, materials)
+    _add_uniform_grid_xdmf!(xdomain, h5_filename, h5_file, mesh, material_groups)
 
     finally
         save_file(xdoc, filename)
@@ -96,11 +107,11 @@ function _add_uniform_grid_xdmf!(xml::XMLElement,
     if mesh.groups != Dict{String,BitSet}() 
         _write_xdmf_groups!(xgrid, h5_filename, h5_group, mesh)
     end
-# 
-#    # Materials
-#    if materials != String[] 
-#        _write_xdmf_materials!(xgrid, h5_filename, h5_group, mesh, material_map)
-#    end
+ 
+    # Materials
+    if materials != String[] 
+        _write_xdmf_materials!(xgrid, h5_filename, h5_group, mesh, materials)
+    end
     return nothing
 end
 
@@ -220,84 +231,69 @@ function _write_xdmf_topology!(xml::XMLElement,
     return nothing
 end
 
-#function _make_material_name_to_id_map(MP::HierarchicalMeshPartition)
-#    material_map = Dict{String, Int64}()
-#    mat_names = String[]
-#    max_length = 0
-#    for leaf_mesh in MP.leaf_meshes
-#        for set_name in keys(leaf_mesh.face_sets)
-#            if occursin("MATERIAL", uppercase(set_name))
-#                if set_name ∉  keys(material_map)
-#                    material_map[set_name] = 0 
-#                    push!(mat_names, set_name)
-#                    if length(set_name) > max_length
-#                        max_length = length(set_name)
-#                    end
-#                end
-#            end
-#        end
-#    end
-#    # Adjust material IDs so that IDs are assigned alphabetically
-#    sort!(mat_names)
-#    for (i, set_name) in enumerate(mat_names)
-#        material_map[set_name] = i - 1
-#    end
-#    if max_length < 13
-#        max_length = 13
-#    end
-#    if length(mat_names) > 0
-#        println(string(rpad("Material Name", max_length, ' '), " : XDMF Material ID"))
-#        println(rpad("=", max_length + 19, '='))
-#    end
-#    for set_name in mat_names
-#        if occursin("MATERIAL", uppercase(set_name))
-#            id = material_map[set_name]
-#            println(string(rpad(set_name, max_length, ' '), " : $id"))  
-#        end
-#    end
-#    return material_map
-#end
-#
-#function _write_xdmf_materials!(xml::XMLElement, 
-#                               h5_filename::String, 
-#                               h5_mesh::HDF5.Group, 
-#                               mesh::UnstructuredMesh2D,
-#                               material_map::Dict{String, Int64})
-#    @debug "Writing XDMF materials"
-#    # MaterialID
-#    xmaterial = new_child(xml, "Attribute")
-#    set_attribute(xmaterial, "Center", "Cell")
-#    set_attribute(xmaterial, "Name", "MaterialID")
-#    nelements = length(mesh.faces)
-#    mat_ID_array = fill(-1, nelements)
-#    for material_name in keys(material_map)
-#        if material_name ∈  keys(mesh.face_sets)
-#            material_ID = material_map[material_name]
-#            for cell in mesh.face_sets[material_name]
-#                if mat_ID_array[cell] === -1
-#                    mat_ID_array[cell] = material_ID
-#                else
-#                    error("Mesh cell $cell has multiple materials assigned to it.")
-#                end
-#            end
-#        end
-#    end
-#    if any(x->x === -1, mat_ID_array)
-#        error("Some mesh cells do not have a material.")
-#    end
-#    # DataItem
-#    xdataitem = new_child(xmaterial, "DataItem")
-#    set_attribute(xdataitem, "DataType", "Int")
-#    set_attribute(xdataitem, "Dimensions", "$nelements")
-#    set_attribute(xdataitem, "Format", "HDF")
-#    set_attribute(xdataitem, "Precision", "8")
-#    h5_text_item = split(string(h5_mesh))[2]
-#    add_text(xdataitem, string(h5_filename, ":", h5_text_item, "/material_id"))
-#    # Write the h5
-#    h5_mesh["material_id"] = mat_ID_array
-#    return nothing
-#end
-#
+function _write_xdmf_materials!(xml::XMLElement, 
+                               h5_filename::String, 
+                               h5_mesh::HDF5.Group, 
+                               mesh::PolytopeVertexMesh,
+                               materials::Vector{String})
+    # MaterialID
+    xmaterial = new_child(xml, "Attribute")
+    set_attribute(xmaterial, "Center", "Cell")
+    set_attribute(xmaterial, "Name", "Material")
+    nelements = length(mesh.polytopes)
+    mat_id_array = fill(-1, nelements)
+    mesh_group_names = keys(mesh.groups)
+    for (mat_id, material_name) in enumerate(materials)
+        if material_name in mesh_group_names 
+            for cell in mesh.groups[material_name]
+                if mat_id_array[cell] === -1
+                    mat_id_array[cell] = mat_id - 1 # 0 based indexing
+                else
+                    error("Mesh cell "*string(cell)*" has multiple materials assigned to it.")
+                end
+            end
+        end
+    end
+    if any(x->x === -1, mat_id_array)
+        error("Some mesh cells do not have a material.")
+    end
+    # DataItem
+    xdataitem = new_child(xmaterial, "DataItem")
+    set_attribute(xdataitem, "DataType", "UInt")
+    set_attribute(xdataitem, "Dimensions", string(nelements))
+    set_attribute(xdataitem, "Format", "HDF")
+    N = length(materials)
+    if N ≤ typemax(UInt8) 
+        uint_type = UInt8
+    elseif N ≤ typemax(UInt16) 
+        uint_type = UInt16
+    elseif N ≤ typemax(UInt32) 
+        uint_type = UInt32
+    elseif N ≤ typemax(UInt64) 
+        uint_type = UInt64
+    else
+        error("N is not representable by UInt64.")
+    end
+    if uint_type === UInt8
+        uint_precision = "1"
+    elseif uint_type === UInt16
+        uint_precision = "2"
+    elseif uint_type === UInt32
+        uint_precision = "4"
+    elseif uint_type === UInt64
+        uint_precision = "8"
+    else
+        error("Could not determine UInt type.")
+    end
+
+    set_attribute(xdataitem, "Precision", uint_precision)
+    h5_text_item = split(string(h5_mesh))[2]
+    add_text(xdataitem, string(h5_filename, ":", h5_text_item, "/material"))
+    # Write the h5
+    h5_mesh["material"] = mat_id_array
+    return nothing
+end
+
 function _write_xdmf_groups!(xml::XMLElement, 
                              h5_filename::String, 
                              h5_mesh::HDF5.Group, 
@@ -350,26 +346,28 @@ function _write_xdmf_groups!(xml::XMLElement,
     return nothing
 end
 
-#function _add_mesh_partition_xdmf!(xml::XMLElement,
-#                        h5_filename::String,
-#                        h5_mesh::Union{HDF5.Group, HDF5.File},
-#                        MP::HierarchicalMeshPartition,
-#                        node::Tree,
-#                        material_map::Dict{String, Int64})
-#    @debug "Adding HierarchicalMeshPartition"
-#    if node.id === 0 # Internal node
-#        # Grid
-#        xgrid = new_child(xml, "Grid")
-#        set_attribute(xgrid, "Name", node.name)
-#        set_attribute(xgrid, "GridType", "Tree")
-#        # h5_group
-#        h5_group = create_group(h5_mesh, node.name)
-#        for child in node.children
-#            _add_mesh_partition_xdmf!(xgrid, h5_filename, h5_group, MP, 
-#                                      child, material_map)
-#        end
-#    else # Leaf node 
-#        _add_uniform_grid_xdmf!(xml, h5_filename, h5_mesh, 
-#                                MP.leaf_meshes[node.id], material_map)
-#    end
-#end
+function _add_mesh_partition_xdmf!(xml::XMLElement,
+                                   h5_filename::String,
+                                   h5_mesh::Union{HDF5.Group, HDF5.File},
+                                   node::Tree{Tuple{Int64, String}},
+                                   leaf_meshes::Vector{<:PolytopeVertexMesh},
+                                   materials::Vector{String})
+    id = node.data[1]
+    if id === 0 # Internal node
+        name = node.data[2]
+        # Grid
+        xgrid = new_child(xml, "Grid")
+        set_attribute(xgrid, "Name", name)
+        set_attribute(xgrid, "GridType", "Tree")
+        # h5_group
+        h5_group = create_group(h5_mesh, name)
+        for child in node.children
+            _add_mesh_partition_xdmf!(xgrid, h5_filename, h5_group, child, 
+                                      leaf_meshes, materials)
+        end
+    else # Leaf node 
+        _add_uniform_grid_xdmf!(xml, h5_filename, h5_mesh, 
+                                leaf_meshes[id], materials)
+    end
+    return nothing
+end
