@@ -9,7 +9,7 @@ add_timestamps_to_logger()
 gmsh.initialize()
 gmsh.option.set_number("General.NumThreads", 0) # 0 uses system default, i.e. OMP_NUM_THREADS)
 gmsh.option.set_number("Geometry.OCCParallel", 1) # use parallel OCC boolean operations
-gmsh.option.set_number("General.Verbosity", 4) # 1: +errors, 2: +warnings, 3: +direct, 4: +information, 5: +status, 99: +debug
+gmsh.option.set_number("General.Verbosity", 2) # 1: +errors, 2: +warnings, 3: +direct, 4: +information, 5: +status, 99: +debug
 
 materials = import_model(filename, names = true)
 
@@ -33,7 +33,7 @@ overlay_mpact_grid_hierarchy(mpact_grid, materials)
 Σₜᵢ_UO2 = [2.12450E-01, 3.55470E-01, 4.85540E-01, 5.59400E-01, 3.18030E-01, 4.01460E-01, 5.70610E-01]
 Σₜᵢ_Mod = [2.30070E-01, 7.76460E-01, 1.48420E+00, 1.50520E+00, 1.55920E+00, 2.02540E+00, 3.30570E+00]
 
-frac_of_MFP = 1//2
+frac_of_MFP = 1//4
 materials[1].mesh_size = frac_of_MFP*inv(mean(Σₜᵢ_FC )) # Fission Chamber
 materials[2].mesh_size = frac_of_MFP*inv(mean(Σₜᵢ_GT )) # Guide Tube
 materials[3].mesh_size = frac_of_MFP*inv(mean(Σₜᵢ_M43)) # MOX-4.3% enriched
@@ -50,15 +50,16 @@ set_mesh_field_using_materials(materials)
 ##gmsh.view.write(0, filename[1:end-5]*".pos")
 #field_data = gmsh.view.get_model_data(0, 0)
 generate_mesh(order = 1, faces = "Triangle", opt_iters = 2)
-gmsh.write(filename[1:end-5]*".inp")
+gmsh.write("c5g7.inp")
 mesh_error = get_cad_to_mesh_error()
 for i in eachindex(mesh_error)
     println(mesh_error[i])
 end
+gmsh.fltk.run()
 gmsh.finalize()
 
-mesh = import_mesh(filename[1:end-5]*".inp")
-##
-## partition by grid, material, etc.
-##mesh_partition = partition_mesh(mesh)
-##export_mesh(mesh_partition, filename*".xdmf")
+mesh = import_mesh("c5g7.inp")
+statistics(mesh)
+# Partition mesh according to mpact grid hierarchy, and write as an xdmf file
+mpt = partition(mesh)
+export_mesh(mpt, "c5g7.xdmf")
