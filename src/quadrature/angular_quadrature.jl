@@ -1,3 +1,6 @@
+export ProductAngularQuadrature
+export
+
 # Angular quadrature defined on the unit sphere octant in the upper right, closest to the viewer.
 # The angles and weights are transformed to the other octants by symmetry.
 #     +----+----+
@@ -40,16 +43,16 @@
 #    w::Tuple{T} # Weights for each point
 #end
 
-struct ProductAngularQuadrature{nγ, nθ} <: AngularQuadrature
-    γ::SVector{nγ, Float64}    # Azimuthal angles, γ ∈ (0, π)
-    w_γ::SVector{nγ, Float64}  # Weights for the azimuthal angles
-    θ::SVector{nθ, Float64}    # Polar angles, θ ∈ (0, π/2)
-    w_θ::SVector{nθ, Float64}  # Weights for the polar angles
+struct ProductAngularQuadrature{nγ, nθ, T}
+    γ::SVector{nγ,T}    # Azimuthal angles, γ ∈ (0, π)
+    wγ::SVector{nγ,T}   # Weights for the azimuthal angles
+    θ::SVector{nθ,T}    # Polar angles, θ ∈ (0, π/2)
+    wθ::SVector{nθ,T}   # Weights for the polar angles
 end
 
-function generate_chebyshev_angular_quadrature(M::Int64)
-    # A Chebyshev-type quadrature for a given weight function is a quadrature formula with equal
-    # weights. This function produces evenly spaced angles with equal weights.
+function chebyshev_angular_quadrature(M::Int64)
+    # A Chebyshev-type quadrature for a given weight function is a quadrature formula 
+    # with equal weights. This function produces evenly spaced angles with equal weights.
     angles = [(π*(2m-1)/(4M)) for m = 1:M]
     weights = zeros(M) .+ 1/M
     return angles, weights

@@ -7,7 +7,7 @@ add_timestamps_to_logger()
 gmsh.initialize()
 gmsh.option.set_number("General.NumThreads", 0) # 0 uses system default, i.e. OMP_NUM_THREADS)
 gmsh.option.set_number("Geometry.OCCParallel", 1) # use parallel OCC boolean operations
-gmsh.option.set_number("General.Verbosity", 3) # 1: +errors, 2: +warnings, 3: +direct, 4: +information, 5: +status, 99: +debug
+gmsh.option.set_number("General.Verbosity", 2) # 1: +errors, 2: +warnings, 3: +direct, 4: +information, 5: +status, 99: +debug
 
 #
 # Model
@@ -92,12 +92,12 @@ overlay_mpact_grid_hierarchy(mpact_grid, materials)
 
 # Mesh
 # ------------------------------------------------------------------------------------------------
-lc = 0.15 # cm
+lc = 0.25 # cm
 for mat in materials
     mat.mesh_size = lc
 end
 set_mesh_field_using_materials(materials)
-generate_mesh(order = 1, faces = "Quadrilateral", opt_iters = 2)
+generate_mesh(order = 2, faces = "Triangle", opt_iters = 2)
 gmsh.write("2a.inp")
 mesh_error = get_cad_to_mesh_error()
 for i in eachindex(mesh_error)
