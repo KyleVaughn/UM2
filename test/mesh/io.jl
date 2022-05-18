@@ -4,7 +4,7 @@ for (file_type, ext) in mesh_files
         for T in Floats 
             @testset "$T" begin
                 @testset "TriangleMesh" begin
-                    ref_mesh = setup_TriangleMesh(T, UInt16)
+                    ref_mesh = setup_TriangleMesh(T, UInt8)
                     mesh = import_mesh("./mesh/mesh_files/tri"*ext, T)
                     @test mesh.name == ref_mesh.name
                     for i in eachindex(ref_mesh.vertices)
@@ -15,7 +15,7 @@ for (file_type, ext) in mesh_files
                 end
     
                 @testset "QuadrilateralMesh" begin
-                    ref_mesh = setup_QuadrilateralMesh(T, UInt16)
+                    ref_mesh = setup_QuadrilateralMesh(T, UInt8)
                     mesh = import_mesh("./mesh/mesh_files/quad"*ext, T)
                     @test mesh.name == ref_mesh.name
                     for i in eachindex(ref_mesh.vertices)
@@ -26,7 +26,7 @@ for (file_type, ext) in mesh_files
                 end
     
                 @testset "MixedPolygonMesh" begin
-                    ref_mesh = setup_MixedPolygonMesh(T, UInt16)
+                    ref_mesh = setup_MixedPolygonMesh(T, UInt8)
                     mesh = import_mesh("./mesh/mesh_files/tri_quad"*ext, T)
                     @test mesh.name == ref_mesh.name
                     for i in eachindex(ref_mesh.vertices)
@@ -37,7 +37,7 @@ for (file_type, ext) in mesh_files
                 end
     
                 @testset "QuadraticTriangleMesh" begin
-                    ref_mesh = setup_QuadraticTriangleMesh(T, UInt16)
+                    ref_mesh = setup_QuadraticTriangleMesh(T, UInt8)
                     mesh = import_mesh("./mesh/mesh_files/tri6"*ext, T)
                     @test mesh.name == ref_mesh.name
                     for i in eachindex(ref_mesh.vertices)
@@ -48,7 +48,7 @@ for (file_type, ext) in mesh_files
                 end
     
                 @testset "QuadraticQuadrilateralMesh" begin
-                    ref_mesh = setup_QuadraticQuadrilateralMesh(T, UInt16)
+                    ref_mesh = setup_QuadraticQuadrilateralMesh(T, UInt8)
                     mesh = import_mesh("./mesh/mesh_files/quad8"*ext, T)
                     @test mesh.name == ref_mesh.name
                     for i in eachindex(ref_mesh.vertices)
@@ -59,7 +59,7 @@ for (file_type, ext) in mesh_files
                 end
     
                 @testset "MixedQuadraticPolygonMesh" begin
-                    ref_mesh = setup_MixedQuadraticPolygonMesh(T, UInt16)
+                    ref_mesh = setup_MixedQuadraticPolygonMesh(T, UInt8)
                     mesh = import_mesh("./mesh/mesh_files/tri6_quad8"*ext, T)
                     @test mesh.name == ref_mesh.name
                     for i in eachindex(ref_mesh.vertices)

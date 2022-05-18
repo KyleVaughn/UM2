@@ -3,7 +3,7 @@
              "point",
              "plane",
              "axisalignedbox",
-             "polytope",
+             "polytopes/polytope",
              "polytopes/interpolate",
              "polytopes/jacobian",
              "polytopes/faces",
