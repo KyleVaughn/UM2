@@ -1,5 +1,5 @@
 export MeshPartitionTree
-export partition, leaves
+export partition_to_tree, leaves
 # A data structure to hold a hierarchical partition of a mesh.
 # Since the mesh is partitioned, we only need to store the leaves of the partition
 # tree to reconstruct the mesh.
@@ -20,7 +20,7 @@ leaves(mpt::MeshPartitionTree) = mpt.leaf_meshes
 ## of the form "<name>_L<N>" where name is a string, and N is an integer.
 ## N is the level of the node in the tree: 1, 2, 3, etc...
 ## Example: "Grid_L1_triangle", or "Partition_L3"
-function partition(mesh::PolytopeVertexMesh; by::String="MPACT")
+function partition_to_tree(mesh::PolytopeVertexMesh; by::String="MPACT")
     @info "Partitioning mesh: "*mesh.name
     # Extract the names of all face sets that contain 'by' (the variable)
     partition_names = _get_partition_names(mesh, by)
