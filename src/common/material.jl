@@ -1,3 +1,4 @@
+# FIX THIS. NEITHER ELEGANT NOT PERFORMANT
 export Material
 
 mutable struct Material

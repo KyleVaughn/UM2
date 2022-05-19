@@ -11,8 +11,7 @@ function findsortedfirst(v::AbstractVector, x)
 end
 
 function getsortedfirst(v::AbstractVector, x)
-    n = length(v)
-    if n ≥ sorted_array_findfirst_threshold
+    if sorted_array_findfirst_threshold ≤ length(v)
         return searchsortedfirst(v, x)
     else
         return findsortedfirst(v, x)

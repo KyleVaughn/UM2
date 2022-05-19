@@ -13,7 +13,7 @@ children(t::Tree) = t.children
 Tree(data::T) where {T} = Tree{T}(data, nothing, nothing)
 function Tree(data::T, parent::Tree{T}) where{T}
     this = Tree{T}(data, parent, nothing)
-    if isnothing(parent.children)
+    if isnothing(children(parent))
         parent.children = [this]
     else
         push!(parent.children, this)
@@ -25,7 +25,7 @@ isroot(t::Tree) = parent(t) === nothing
 is_parents_last_child(t::Tree) = children(parent(t))[end] === t
 function leaves(tree::Tree{T}) where {T}
     leaf_nodes = Tree{T}[]
-    if !isnothing(tree.children)
+    if !isnothing(children(tree))
         for child ∈ tree.children
             get_leaves!(child, leaf_nodes)
         end
