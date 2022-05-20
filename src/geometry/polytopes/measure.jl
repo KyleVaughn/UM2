@@ -159,8 +159,9 @@ function measure(quad8::QuadraticQuadrilateral{Point{3,T}}) where {T}
     area = zero(T)
     for j in Base.OneTo(N)
         @inbounds @simd for i in Base.OneTo(N) 
-        J = jacobian(quad8, points[i][1], points[j][1]) 
-        area += weights[i]*weights[j]*norm(J[:,1] × J[:,2]) 
+            J = jacobian(quad8, points[i][1], points[j][1]) 
+            area += weights[i]*weights[j]*norm(J[:,1] × J[:,2]) 
+        end
     end 
     return area
 end
