@@ -41,7 +41,7 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
                 elseif "*Heading" == line
                     name = String(strip(readline(file)))
                     if occursin(".inp", name)
-                        name = name[1:length(name)-4]
+                        name = name[1:end-4]
                     end
                 elseif "*NODE" == line
                     _read_abaqus_nodes!(file, points)
@@ -49,7 +49,7 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
                     splitline = split(line)
                     element_type = String(strip(replace(splitline[2], ("type=" => "")), ','))
                     if element_type ∉ supported_abaqus_element_types
-                        error("$element_type is not a supported abaqus element type")
+                        error(string(element_type)*" is not a supported abaqus element type")
                     end
                     if startswith(element_type, "CP")
                         is2D = true
