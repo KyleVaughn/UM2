@@ -13,3 +13,4 @@ const RefSquare      = RefHypercube{2}
 const RefCube        = RefHypercube{3}
 
 include("gauss_quadrature.jl")
+include("angular_quadrature.jl")

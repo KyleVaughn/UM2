@@ -8,9 +8,9 @@ volume(   p::Polytope{3}) = measure(p)
 perimeter(p::Polytope{2}) = mapreduce(measure, +, facets(p))
 area(     p::Polytope{3}) = mapreduce(measure, +, facets(p))
 
-measure(l::LineSegment{T}) where {T<:Point} = norm(l[2]-l[1])
+measure(l::LineSegment{<:Point}) = norm(l[2]-l[1])
 
-function measure(q::QuadraticSegment{T}) where {T<:Point}
+function measure(q::QuadraticSegment{<:Point})
     # The arc length integral may be reduced to an integral over the square root of a
     # quadratic polynomial using ‖𝘅‖ = √(𝘅 ⋅ 𝘅), which has an analytic solution.
     #     1             1
@@ -37,21 +37,20 @@ function measure(q::QuadraticSegment{T}) where {T<:Point}
         e = 2a + b
         f = 2√a
 
-        l = (d*e - b*√c) / 4a -
-            (b*b - 4a*c) / (4a*f) * log( (d*f + e) / (√c*f + b) )
+        l = (d*e - b*√c) / 4a - (b*b - 4a*c) / (4a*f) * log( (d*f + e) / (√c*f + b) )
         return l
     end
 end
 
-measure(tri::Triangle{T}) where {T<:Point} = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
+measure(tri::Triangle{<:Point}) = norm((tri[2] - tri[1]) × (tri[3] - tri[1]))/2
 
 function measure(poly::Polygon{N, Point{2,T}}) where {N,T}
     # Uses the shoelace formula (https://en.wikipedia.org/wiki/Shoelace_formula)
     area = zero(T) # Scalar
-    for i ∈ 1:N-1
-        area += poly[i].coords × poly[i + 1].coords
+    @inbounds @simd for i in Base.OneTo(N-1)
+        area += coordinates(poly[i]) × coordinates(poly[i + 1])
     end
-    area += poly[N].coords × poly[1].coords
+    @inbounds area += coordinates(poly[N]) × coordinates(poly[1])
     return norm(area)/2
 end
 
@@ -62,7 +61,7 @@ function measure(quad::Quadrilateral{Point{3,T}}) where {T}
     #     1 1                          N   N
     # A = ∫ ∫ ‖∂F/∂r × ∂F/∂s‖ ds dr =  ∑   ∑  wᵢwⱼ‖∂F/∂r(rᵢ,sⱼ) × ∂F/∂s(rᵢ,sⱼ)‖
     #     0 0                         i=1 j=1
-    # Dispatch on a polynomial order such that the error in computed value when compated to 
+    # Dispatch on a polynomial order such that the error in computed value when compared to 
     # the reference (BigFloat, P=50), yields error approximately equal to eps(T)
     if T === Float32
         N = 8
@@ -73,14 +72,13 @@ function measure(quad::Quadrilateral{Point{3,T}}) where {T}
     else
         error("Unsupported type.")
     end
-    weights, points = gauss_quadrature(Val(:legendre), 
-                                       RefLine(),
-                                       Val(N),
-                                       T)
+    weights, points = gauss_quadrature(Val(:legendre), RefLine(), Val(N), T)
     area = zero(T)
-    for j ∈ 1:N, i ∈ 1:N 
-        J = jacobian(quad, points[i][1], points[j][1]) 
-        area += weights[i]*weights[j]*norm(view(J, :, 1) × view(J, :, 2)) 
+    for j in Base.OneTo(N)
+        @inbounds @simd for i in Base.OneTo(N) 
+            J = jacobian(quad, points[i][1], points[j][1]) 
+            area += weights[i]*weights[j]*norm(J[:,1] × J[:,2]) 
+        end
     end 
     return area
 end
@@ -96,14 +94,14 @@ function measure(poly::QuadraticPolygon{N, Point{2,T}}) where {N,T}
     h = zero(T)
     l = zero(T)
     M = N ÷ 2
-    for i ∈ 1:M-1
-        h += poly[i    ].coords × poly[i + M].coords 
-        h -= poly[i + 1].coords × poly[i + M].coords
-        l += poly[i].coords × poly[i + 1].coords
+    @inbounds @simd for i in Base.OneTo(M-1)
+        h += coordinates(poly[i    ]) × coordinates(poly[i + M]) 
+        h -= coordinates(poly[i + 1]) × coordinates(poly[i + M])
+        l += coordinates(poly[i    ]) × coordinates(poly[i + 1])
     end
-    h += poly[M].coords × poly[N].coords 
-    h -= poly[1].coords × poly[N].coords
-    l += poly[M].coords × poly[1].coords
+    @inbounds h += coordinates(poly[M]) × coordinates(poly[N]) 
+    @inbounds h -= coordinates(poly[1]) × coordinates(poly[N])
+    @inbounds l += coordinates(poly[M]) × coordinates(poly[1])
     return (4h - l)/6
 end
  
@@ -121,25 +119,22 @@ function measure(tri6::QuadraticTriangle{Point{3,T}}) where {T}
     #            1 1-r                       N                
     # A = ∬ dA = ∫  ∫ ‖∂F/∂r × ∂F/∂s‖ds dr = ∑ wᵢ‖∂F/∂r(rᵢ,sᵢ) × ∂F/∂s(rᵢ,sᵢ)‖
     #     S      0  0                       i=1
-    # Dispatch on a polynomial order such that the error in computed value when compated to 
+    # Dispatch on a polynomial order such that the error in computed value when compared to 
     # the reference (BigFloat, P=20), yields error approximately equal to eps(T)
     if T === Float32
-        P = 18
+        N = 18
     elseif T === Float64
-        P = 20 # Would go higher if possible
+        N = 20 # Would go higher if possible
     elseif T === BigFloat
-        P = 20 # Would go higher if possible
+        N = 20 # Would go higher if possible
     else
         error("Unsupported type.")
     end
-    weights, points = gauss_quadrature(Val(:legendre), 
-                                       RefTriangle(),
-                                       Val(P),
-                                       T)
+    weights, points = gauss_quadrature(Val(:legendre), RefTriangle(), Val(N), T)
     area = zero(T)
-    for i ∈ 1:length(weights)
+    @inbounds @simd for i in eachindex(weights)
         J = jacobian(tri6, points[i][1], points[i][2])
-        area += weights[i] * norm(view(J, :, 1) × view(J, :, 2)) 
+        area += weights[i] * norm(J[:,1] × J[:,2]) 
     end
     return area
 end
@@ -149,7 +144,7 @@ function measure(quad8::QuadraticQuadrilateral{Point{3,T}}) where {T}
     #     1 1                          N   N
     # A = ∫ ∫ ‖∂F/∂r × ∂F/∂s‖ ds dr =  ∑   ∑  wᵢwⱼ‖∂F/∂r(rᵢ,sⱼ) × ∂F/∂s(rᵢ,sⱼ)‖
     #     0 0                         i=1 j=1
-    # Dispatch on a polynomial order such that the error in computed value when compated to 
+    # Dispatch on a polynomial order such that the error in computed value when compared to 
     # the reference (BigFloat, P=50), yields error approximately equal to eps(T)
     if T === Float32
         N = 15
@@ -160,14 +155,12 @@ function measure(quad8::QuadraticQuadrilateral{Point{3,T}}) where {T}
     else
         error("Unsupported type.")
     end
-    weights, points = gauss_quadrature(Val(:legendre), 
-                                       RefLine(),
-                                       Val(N),
-                                       T)
+    weights, points = gauss_quadrature(Val(:legendre), RefLine(), Val(N),T)
     area = zero(T)
-    for j ∈ 1:N, i ∈ 1:N 
+    for j in Base.OneTo(N)
+        @inbounds @simd for i in Base.OneTo(N) 
         J = jacobian(quad8, points[i][1], points[j][1]) 
-        area += weights[i]*weights[j]*norm(view(J, :, 1) × view(J, :, 2)) 
+        area += weights[i]*weights[j]*norm(J[:,1] × J[:,2]) 
     end 
     return area
 end

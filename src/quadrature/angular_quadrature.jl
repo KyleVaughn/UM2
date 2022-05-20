@@ -1,5 +1,5 @@
 export ProductAngularQuadrature
-export
+export angular_quadrature
 
 # Angular quadrature defined on the unit sphere octant in the upper right, closest to the viewer.
 # The angles and weights are transformed to the other octants by symmetry.
@@ -44,32 +44,39 @@ export
 #end
 
 struct ProductAngularQuadrature{nγ, nθ, T}
-    γ::SVector{nγ,T}    # Azimuthal angles, γ ∈ (0, π)
     wγ::SVector{nγ,T}   # Weights for the azimuthal angles
-    θ::SVector{nθ,T}    # Polar angles, θ ∈ (0, π/2)
+    γ::SVector{nγ,T}    # Azimuthal angles, γ ∈ (0, π)
     wθ::SVector{nθ,T}   # Weights for the polar angles
+    θ::SVector{nθ,T}    # Polar angles, θ ∈ (0, π/2)
 end
 
-function chebyshev_angular_quadrature(M::Int64)
+function angular_quadrature(azimuthal_form::Symbol,
+                            azimuthal_degree::Integer,
+                            polar_form::Symbol,
+                            polar_degree::Integer,
+                            type::Type{T}) where {T}
+    if azimuthal_form === :chebyshev
+        azi_weights_half, azi_angles_half = chebyshev_angular_quadrature(azimuthal_degree, T)
+        azi_weights = vcat(azi_weights_half, azi_weights_half)
+        azi_angles = vcat(azi_angles_half, reverse(π .- azi_angles_half))
+    else
+        error("Cannot identify azimuthal quadrature.")
+    end
+    if polar_form === :chebyshev
+        pol_weights, pol_angles = chebyshev_angular_quadrature(polar_degree, T)
+    else
+        error("Cannot identify azimuthal quadrature.")
+    end
+    return ProductAngularQuadrature{2azimuthal_degree, polar_degree, T}(
+                                       azi_weights, azi_angles,
+                                       pol_weights, pol_angles
+                                      )
+end
+
+function chebyshev_angular_quadrature(M::Integer, type::Type{T}) where {T}
     # A Chebyshev-type quadrature for a given weight function is a quadrature formula 
     # with equal weights. This function produces evenly spaced angles with equal weights.
-    angles = [(π*(2m-1)/(4M)) for m = 1:M]
-    weights = zeros(M) .+ 1/M
-    return angles, weights
-end
-
-# nγ and nθ are azimuthal and polar angles per octant
-function generate_angular_quadrature(quadrature_type::String, nγ::Int, nθ::Int)
-    if quadrature_type == "Chebyshev-Chebyshev"
-        (azi_angles, azi_weights) = generate_chebyshev_angular_quadrature(nγ)
-        (pol_angles, pol_weights) = generate_chebyshev_angular_quadrature(nθ)
-        append!(azi_angles, reverse(π .- azi_angles))
-        azi_weights = azi_weights./2
-        append!(azi_weights, azi_weights)
-        quadrature = ProductAngularQuadrature(SVector{2nγ}(azi_angles), SVector{2nγ}(azi_weights),
-                                              SVector{nθ}(pol_angles), SVector{nθ}(pol_weights))
-    else
-        @error "Unsupported quadrature type"
-    end
-    return quadrature
+    weights = SVector(ntuple(m->T(1)/M,           M))
+    angles  = SVector(ntuple(m->π*(2T(m) - 1)/4M, M))
+    return weights, angles
 end

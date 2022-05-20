@@ -14,23 +14,20 @@ struct MeshPartitionTree{M <: PolytopeVertexMesh}
 end
 
 leaves(mpt::MeshPartitionTree) = mpt.leaf_meshes
-#
-## Partitions a mesh based upon the names of its groups 
-## For a hierarchical partition, all partitions in the hierarchy must contain face sets 
-## of the form "<name>_L<N>" where name is a string, and N is an integer.
-## N is the level of the node in the tree: 1, 2, 3, etc...
-## Example: "Grid_L1_triangle", or "Partition_L3"
+
+# Partitions a mesh based upon the names of its groups 
+# For a hierarchical partition, all partitions in the hierarchy must contain face sets 
+# of the form "<name>_L<N>" where name is a string, and N is an integer.
+# N is the level of the node in the tree: 1, 2, 3, etc...
+# Example: "Grid_L1_triangle", or "Partition_L3"
 function partition_to_tree(mesh::PolytopeVertexMesh; by::String="MPACT")
     @info "Partitioning mesh: "*mesh.name
     # Extract the names of all face sets that contain 'by' (the variable)
     partition_names = _get_partition_names(mesh, by)
-
     # Create a tree to store the partition hierarchy.
     root = _create_mesh_partition_tree(mesh, partition_names)
-
     # Construct the leaf meshes
     leaf_meshes = _create_leaf_meshes(mesh, root)
-
     return MeshPartitionTree(root, leaf_meshes)
 end
 

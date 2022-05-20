@@ -53,3 +53,19 @@ function edges(p::QuadraticTetrahedron)
                QuadraticSegment(v[2], v[4], v[9]),
                QuadraticSegment(v[3], v[4], v[10]))
 end
+
+function edges(p::QuadraticHexahedron)
+    v = vertices(p)
+    return Vec(QuadraticSegment(v[1], v[2], v[ 9]), # lower z
+               QuadraticSegment(v[2], v[3], v[10]),
+               QuadraticSegment(v[3], v[4], v[11]),
+               QuadraticSegment(v[4], v[1], v[12]),
+               QuadraticSegment(v[5], v[6], v[13]), # upper z
+               QuadraticSegment(v[6], v[7], v[14]),
+               QuadraticSegment(v[7], v[8], v[15]),
+               QuadraticSegment(v[8], v[5], v[16]),
+               QuadraticSegment(v[1], v[5], v[17]), # lower, upper connections
+               QuadraticSegment(v[2], v[6], v[18]),
+               QuadraticSegment(v[3], v[7], v[19]),
+               QuadraticSegment(v[4], v[8], v[20])) 
+end
