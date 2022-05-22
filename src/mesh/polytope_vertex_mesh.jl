@@ -12,7 +12,6 @@ name(mesh::PolytopeVertexMesh) = mesh.name
 vertices(mesh::PolytopeVertexMesh) = mesh.vertices
 polytopes(mesh::PolytopeVertexMesh) = mesh.polytopes
 groups(mesh::PolytopeVertexMesh) = mesh.groups
-vertex_type(mesh::PolytopeVertexMesh) = vertex_type(mesh.polytopes[1])
 
 # constructors
 function PolytopeVertexMesh(name::String, 

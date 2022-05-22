@@ -31,23 +31,6 @@ function MeshPartitionTree(mesh::PolytopeVertexMesh; by::String="MPACT")
     return MeshPartitionTree(root, leaf_meshes)
 end
 
-#function _create_leaf_meshes(mesh::PolytopeVertexMesh, root::Tree)
-#    leaf_nodes = sort!(leaves(root), by=x->x.data)
-#    leaf_meshes = Vector{typeof(mesh)}(undef, length(leaf_nodes))
-#    for (i, node) in enumerate(leaf_nodes)
-#        name = node.data[2]
-#        node.data = (i, name)
-#        submesh_i = submesh(mesh, name)
-#        # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
-#        # be encoded in the tree
-#        mpact_groups = filter(x->isa_MPACT_partition_name(x), keys(submesh_i.groups))
-#        for grp in mpact_groups
-#            pop!(submesh_i.groups, grp)
-#        end
-#        leaf_meshes[i] = submesh_i 
-#    end
-#    return leaf_meshes
-#end
 function _create_leaf_meshes(mesh::PolytopeVertexMesh, root::Tree)
     leaf_nodes = sort!(leaves(root), by=x->x.data)
     leaf_meshes = Vector{typeof(mesh)}(undef, length(leaf_nodes))
@@ -58,6 +41,12 @@ function _create_leaf_meshes(mesh::PolytopeVertexMesh, root::Tree)
             leaf_ctr = _create_leaf_meshes!(child_mesh, child, leaf_meshes, leaf_ctr)
         end
     else
+        # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
+        # be encoded in the tree
+        mpact_groups = filter(x->isa_MPACT_partition_name(x), keys(mesh.groups))
+        for grp in mpact_groups
+            pop!(mesh.groups, grp)
+        end
         leaf_meshes[leaf_ctr] = mesh
     end
     return leaf_meshes
@@ -74,26 +63,16 @@ function _create_leaf_meshes!(mesh::PolytopeVertexMesh,
             leaf_ctr = _create_leaf_meshes!(child_mesh, child, leaf_meshes, leaf_ctr)
         end
     else
+        # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
+        # be encoded in the tree
+        mpact_groups = filter(x->isa_MPACT_partition_name(x), keys(mesh.groups))
+        for grp in mpact_groups
+            pop!(mesh.groups, grp)
+        end
         leaf_meshes[leaf_ctr] = mesh
         leaf_ctr += 1
     end
     return leaf_ctr
-end
-
-function _create_leaf_meshes(mesh::PolytopeVertexMesh, root::Tree)
-    for (i, node) in enumerate(leaf_nodes)
-        name = node.data[2]
-        node.data = (i, name)
-        submesh_i = submesh(mesh, name)
-        # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
-        # be encoded in the tree
-        mpact_groups = filter(x->isa_MPACT_partition_name(x), keys(submesh_i.groups))
-        for grp in mpact_groups
-            pop!(submesh_i.groups, grp)
-        end
-        leaf_meshes[i] = submesh_i 
-    end
-    return leaf_meshes
 end
 
 # Create a tree to store grid relationships.

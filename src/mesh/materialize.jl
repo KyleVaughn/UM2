@@ -52,7 +52,7 @@ end
 
 # All edges are line segments
 function materialize_edges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Polygon}
-    unique_edges = SVector{2,vertex_type(mesh.polytopes[1])}[]
+    unique_edges = SVector{2,vertex_type(P)}[]
     nedges = 0
     for face ∈ mesh.polytopes
         edge_vecs = edges(face)
@@ -78,7 +78,7 @@ end
 
 # All edges are quadratic segments
 function materialize_edges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:QuadraticPolygon}
-    unique_edges = SVector{3,vertex_type(mesh.polytopes[1])}[]
+    unique_edges = SVector{3,vertex_type(P)}[]
     nedges = 0
     for face ∈ mesh.polytopes
         edge_vecs = edges(face)
