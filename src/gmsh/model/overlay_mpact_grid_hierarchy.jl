@@ -7,14 +7,25 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
     # their (x,y) origin coordinates, so we can group them into their appropriate
     # modules and lattices later
     model_dtags = gmsh.model.get_entities(2)
-    xvals = collect(grid.coarse_grid.x)
-    yvals = collect(grid.coarse_grid.y)
-    grid_tags_coords = Vector{Tuple{Int32, Float64, Float64}}(
-                            undef, (length(xvals)-1)*(length(yvals)-1))
+    lg_x = grid.lattice_grid.x 
+    lg_y = grid.lattice_grid.y
+    lg_nx = length(lg_x)
+    lg_ny = length(lg_y)
+    mg_x = grid.module_grid.x 
+    mg_y = grid.module_grid.y
+    mg_nx = length(mg_x)
+    mg_ny = length(mg_y)
+    cg_x = grid.coarse_grid.x 
+    cg_y = grid.coarse_grid.y
+    cg_nx = length(cg_x)
+    cg_ny = length(cg_y)
+    grid_tags_coords = Vector{Tuple{Int32,Float64,Float64}}(undef, (cg_nx-1)*(cg_ny-1))
     gtctr = 1
-    for (iy, y) in enumerate(yvals[1:end-1])
-        for (ix, x) in enumerate(xvals[1:end-1])
-            tag = gmsh.model.occ.add_rectangle(x, y, 0, xvals[ix+1] - x, yvals[iy+1] - y)
+    for iy in 1:cg_ny - 1
+        y = cg_y[iy]
+        for ix in 1:cg_nx - 1
+            x = cg_x[ix]
+            tag = gmsh.model.occ.add_rectangle(x, y, 0, cg_x[ix+1] - x, cg_y[iy+1] - y)
             grid_tags_coords[gtctr] = (tag, x, y)
             gtctr += 1
         end                                      
@@ -25,13 +36,13 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
     # Label the rectangles with the appropriate physical groups 
     # Create a dictionary holding all the physical group names and tags
     groups = Dict{String, Vector{Int32}}()
-    max_grid_digits = max(length(string(length(xvals)-1)), 
-                          length(string(length(yvals)-1)))
+    max_grid_digits = max(length(string(cg_nx-1)), 
+                          length(string(cg_ny-1)))
 
     # Create each grid name
     # Lattices
-    for ix in 1:length(grid.lattice_grid.x) - 1
-        for iy in 1:length(grid.lattice_grid.y) - 1
+    for ix in 1:lg_nx - 1
+        for iy in 1:lg_ny - 1
             grid_str = string("Lattice (", lpad(ix, max_grid_digits, "0"), ", ", 
                                            lpad(iy, max_grid_digits, "0"), ")")
             groups[grid_str] = Int32[]
@@ -39,8 +50,8 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
     end
 
     # Modules
-    for ix in 1:length(grid.module_grid.x) - 1
-        for iy in 1:length(grid.module_grid.y) - 1
+    for ix in 1:mg_nx - 1
+        for iy in 1:mg_ny - 1
             grid_str = string("Module (", lpad(ix, max_grid_digits, "0"), ", ", 
                                           lpad(iy, max_grid_digits, "0"), ")")
             groups[grid_str] = Int32[]
@@ -48,8 +59,8 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
     end
 
     # Coarse Cells
-    for ix in 1:length(grid.coarse_grid.x) - 1
-        for iy in 1:length(grid.coarse_grid.y) - 1
+    for ix in 1:cg_nx - 1
+        for iy in 1:cg_ny - 1
             grid_str = string("Coarse Cell (", lpad(ix, max_grid_digits, "0"), ", ", 
                                                lpad(iy, max_grid_digits, "0"), ")")
             groups[grid_str] = Int32[]
@@ -58,53 +69,47 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
 
     # For each rectangle, find which lattice/module/coarse cell it belongs to
     # Lattices
-    xvals = collect(grid.lattice_grid.x[2:end])        
-    yvals = collect(grid.lattice_grid.y[2:end])
     for (tag, x, y) in grid_tags_coords
-        ix = searchsortedfirst(xvals, x)
-        if xvals[ix] == x
+        ix = searchsortedfirst(lg_x, x)
+        if x == lg_x[ix]
             ix += 1
         end
-        iy = searchsortedfirst(yvals, y)
-        if xvals[iy] == y
+        iy = searchsortedfirst(lg_y, y)
+        if y == lg_y[iy]
             iy += 1
         end
-        grid_str = string("Lattice (", lpad(ix, max_grid_digits, "0"), ", ", 
-                                       lpad(iy, max_grid_digits, "0"), ")")
+        grid_str = string("Lattice (", lpad(ix-1, max_grid_digits, "0"), ", ", 
+                                       lpad(iy-1, max_grid_digits, "0"), ")")
         push!(groups[grid_str], tag)
     end
 
     # Modules
-    xvals = collect(grid.module_grid.x[2:end])        
-    yvals = collect(grid.module_grid.y[2:end])
     for (tag, x, y) in grid_tags_coords
-        ix = searchsortedfirst(xvals, x)
-        if xvals[ix] == x
+        ix = searchsortedfirst(mg_x, x)
+        if x == mg_x[ix]
             ix += 1
         end
-        iy = searchsortedfirst(yvals, y)
-        if xvals[iy] == y
+        iy = searchsortedfirst(mg_y, y)
+        if y == mg_y[iy]
             iy += 1
         end
-        grid_str = string("Module (", lpad(ix, max_grid_digits, "0"), ", ", 
-                                      lpad(iy, max_grid_digits, "0"), ")")
+        grid_str = string("Module (", lpad(ix-1, max_grid_digits, "0"), ", ", 
+                                      lpad(iy-1, max_grid_digits, "0"), ")")
         push!(groups[grid_str], tag)
     end
 
     # Coarse cells
-    xvals = collect(grid.coarse_grid.x[2:end])        
-    yvals = collect(grid.coarse_grid.y[2:end])
     for (tag, x, y) in grid_tags_coords
-        ix = searchsortedfirst(xvals, x)
-        if xvals[ix] == x
+        ix = searchsortedfirst(cg_x, x)
+        if x == cg_x[ix]
             ix += 1
         end
-        iy = searchsortedfirst(yvals, y)
-        if xvals[iy] == y
+        iy = searchsortedfirst(cg_y, y)
+        if y == cg_y[iy]
             iy += 1
         end
-        grid_str = string("Coarse Cell (", lpad(ix, max_grid_digits, "0"), ", ", 
-                                           lpad(iy, max_grid_digits, "0"), ")")
+        grid_str = string("Coarse Cell (", lpad(ix-1, max_grid_digits, "0"), ", ", 
+                                           lpad(iy-1, max_grid_digits, "0"), ")")
         push!(groups[grid_str], tag)
     end
 

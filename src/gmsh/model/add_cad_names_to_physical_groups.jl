@@ -24,7 +24,7 @@ function add_cad_names_to_physical_groups(dim::Int64=-1)
         end
     end
     # For each of the groups, add them to the model
-    for (name, ents) in collect(physicals)
+    for (name, ents) in pairs(physicals)
         safe_add_physical_group(name, ents)
     end
     return sort!(collect(keys(physicals)))
