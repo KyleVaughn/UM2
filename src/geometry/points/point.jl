@@ -1,6 +1,6 @@
 export Point, Point1, Point2, Point3, Point1f, Point2f, Point3f, Point1B,
        Point2B, Point3B
-export coordinates, distance, distance², fast_isapprox, isCCW, midpoint, nan, ϵ_Point
+export coordinates, distance, distance², isCCW, midpoint, nan, ϵ_Point
 
 """
     Point{Dim, T}

@@ -27,7 +27,6 @@ AABox(minima, maxima) = AABox(Point(minima), Point(maxima))
 
 maxima(aab::AABox) = aab.maxima
 minima(aab::AABox) = aab.minima
-
 Base.isapprox(aab₁::AABox, aab₂::AABox) = minima(aab₁) ≈ minima(aab₂) && 
                                           maxima(aab₁) ≈ maxima(aab₂)
 xmin(aab::AABox   ) = aab.minima[1] 
@@ -39,12 +38,9 @@ zmax(aab::AABox{3}) = aab.maxima[3]
 Δx(aab::AABox   ) = xmax(aab) - xmin(aab) 
 Δy(aab::AABox   ) = ymax(aab) - ymin(aab)
 Δz(aab::AABox{3}) = zmax(aab) - zmin(aab)
-
 measure(aab::AABox) = prod(maxima(aab) - minima(aab)) 
-
 ridges(aab::AABox{2}) = vertices(aab)
 facets(aab::AABox{2}) = edges(aab)
-
 peaks( aab::AABox{3}) = vertices(aab)
 ridges(aab::AABox{3}) = edges(aab)
 facets(aab::AABox{3}) = faces(aab)
@@ -57,6 +53,7 @@ function vertices(aab::AABox{2})
                Point(xmin(aab), ymax(aab))
               )
 end
+
 function edges(aab::AABox{2})
     v = vertices(aab)
     return Vec(LineSegment(v[1], v[2]),

@@ -1,22 +1,32 @@
 # Sort points based on their distance from another point.
 # Default algorithm is quicksort. If the vector is less than 20 elements, insertion sort
 # is used instead.
+# This is essentially Julia's Base.Sort
+
 defalg(v::Vector{<:Point}) = Base.Sort.QuickSort
-function Base.sort!(p::Point, v::Vector{<:Point}; 
-                    alg::Base.Sort.Algorithm=defalg(v), order::Base.Ordering=Base.Forward)
+function Base.sort!(p::Point, 
+                    v::Vector{<:Point}; 
+                    alg::Base.Sort.Algorithm=defalg(v), 
+                    order::Base.Ordering=Base.Forward)
     sort!(p, v, firstindex(v), lastindex(v), alg, order)
 end
 
-function Base.sort(p::Point, v::Vector{<:Point};
-                   alg::Base.Sort.Algorithm=defalg(v), order::Base.Ordering=Base.Forward)
+function Base.sort(p::Point, 
+                   v::Vector{<:Point};
+                   alg::Base.Sort.Algorithm=defalg(v), 
+                   order::Base.Ordering=Base.Forward)
     v2 = similar(v)
     @. v2 = v
     sort!(p, v2, firstindex(v2), lastindex(v2), alg, order)
     return v2
 end
 
-function Base.sort!(p::Point, v::Vector{<:Point}, lo::Integer, hi::Integer,
-                    ::Base.Sort.InsertionSortAlg, o::Base.Ordering)
+function Base.sort!(p::Point, 
+                    v::Vector{<:Point}, 
+                    lo::Integer, 
+                    hi::Integer,
+                    ::Base.Sort.InsertionSortAlg, 
+                    o::Base.Ordering)
     @inbounds for i ∈ lo+1:hi
         j = i
         d = distance²(p, v[i])
@@ -34,8 +44,11 @@ function Base.sort!(p::Point, v::Vector{<:Point}, lo::Integer, hi::Integer,
     return v
 end
 
-@inline function selectpivot!(p::Point, v::Vector{<:Point}, lo::Integer, hi::Integer,
-    o::Base.Ordering)
+@inline function selectpivot!(p::Point, 
+                              v::Vector{<:Point}, 
+                              lo::Integer, 
+                              hi::Integer,
+                              o::Base.Ordering)
     @inbounds begin
         mi = Base.Sort.midpoint(lo, hi)
 
@@ -77,8 +90,12 @@ function partition!(p::Point, v::Vector{<:Point}, lo::Integer, hi::Integer, o::B
     return j
 end
 
-function Base.sort!(p::Point, v::Vector{<:Point}, lo::Integer, hi::Integer,
-                    a::Base.Sort.QuickSortAlg, o::Base.Ordering)
+function Base.sort!(p::Point, 
+                    v::Vector{<:Point}, 
+                    lo::Integer, 
+                    hi::Integer,
+                    a::Base.Sort.QuickSortAlg, 
+                    o::Base.Ordering)
     @inbounds while lo < hi
         if hi-lo ≤ Base.Sort.SMALL_THRESHOLD
             return sort!(p, v, lo, hi, Base.Sort.InsertionSort, o)

@@ -20,7 +20,7 @@ leaves(mpt::MeshPartitionTree) = mpt.leaf_meshes
 # of the form "<name>_L<N>" where name is a string, and N is an integer.
 # N is the level of the node in the tree: 1, 2, 3, etc...
 # Example: "Grid_L1_triangle", or "Partition_L3"
-function partition_to_tree(mesh::PolytopeVertexMesh; by::String="MPACT")
+function MeshPartitionTree(mesh::PolytopeVertexMesh; by::String="MPACT")
     @info "Partitioning mesh: "*mesh.name
     # Extract the names of all face sets that contain 'by' (the variable)
     partition_names = _get_partition_names(mesh, by)
@@ -31,9 +31,56 @@ function partition_to_tree(mesh::PolytopeVertexMesh; by::String="MPACT")
     return MeshPartitionTree(root, leaf_meshes)
 end
 
+#function _create_leaf_meshes(mesh::PolytopeVertexMesh, root::Tree)
+#    leaf_nodes = sort!(leaves(root), by=x->x.data)
+#    leaf_meshes = Vector{typeof(mesh)}(undef, length(leaf_nodes))
+#    for (i, node) in enumerate(leaf_nodes)
+#        name = node.data[2]
+#        node.data = (i, name)
+#        submesh_i = submesh(mesh, name)
+#        # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
+#        # be encoded in the tree
+#        mpact_groups = filter(x->isa_MPACT_partition_name(x), keys(submesh_i.groups))
+#        for grp in mpact_groups
+#            pop!(submesh_i.groups, grp)
+#        end
+#        leaf_meshes[i] = submesh_i 
+#    end
+#    return leaf_meshes
+#end
 function _create_leaf_meshes(mesh::PolytopeVertexMesh, root::Tree)
     leaf_nodes = sort!(leaves(root), by=x->x.data)
     leaf_meshes = Vector{typeof(mesh)}(undef, length(leaf_nodes))
+    leaf_ctr = 1
+    if !isnothing(root.children)
+        for child ∈ sort(root.children, by=x->x.data)
+            child_mesh = submesh(mesh, child.data[2])
+            leaf_ctr = _create_leaf_meshes!(child_mesh, child, leaf_meshes, leaf_ctr)
+        end
+    else
+        leaf_meshes[leaf_ctr] = mesh
+    end
+    return leaf_meshes
+end
+
+function _create_leaf_meshes!(mesh::PolytopeVertexMesh,
+                              node::Tree,
+                              leaf_meshes,
+                              leaf_ctr::Int64=1
+                             )
+    if !isnothing(node.children)
+        for child ∈ sort(node.children, by=x->x.data)
+            child_mesh = submesh(mesh, child.data[2])
+            leaf_ctr = _create_leaf_meshes!(child_mesh, child, leaf_meshes, leaf_ctr)
+        end
+    else
+        leaf_meshes[leaf_ctr] = mesh
+        leaf_ctr += 1
+    end
+    return leaf_ctr
+end
+
+function _create_leaf_meshes(mesh::PolytopeVertexMesh, root::Tree)
     for (i, node) in enumerate(leaf_nodes)
         name = node.data[2]
         node.data = (i, name)
@@ -48,7 +95,7 @@ function _create_leaf_meshes(mesh::PolytopeVertexMesh, root::Tree)
     end
     return leaf_meshes
 end
- 
+
 # Create a tree to store grid relationships.
 function _create_mesh_partition_tree(mesh::PolytopeVertexMesh, partition_names::Vector{String}) 
     root = Tree((0, mesh.name))

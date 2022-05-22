@@ -1,5 +1,5 @@
 export PolytopeVertexMesh
-export name, vertices, polytopes, groups, shrinkable, shrink
+export name, vertices, polytopes, groups, vertex_type
 
 struct PolytopeVertexMesh{Dim,T,P<:Polytope}
     name::String
@@ -8,33 +8,11 @@ struct PolytopeVertexMesh{Dim,T,P<:Polytope}
     groups::Dict{String,BitSet}
 end
 
-function _select_mesh_UInt_type(N::Int64)
-    if N ≤ typemax(UInt8) 
-        U = UInt8
-    elseif N ≤ typemax(UInt16) 
-        U = UInt16
-    elseif N ≤ typemax(UInt32) 
-        U = UInt32
-    elseif N ≤ typemax(UInt64) 
-        U = UInt64
-    else 
-        error("That's a big mesh! Number of edges exceeds typemax(UInt64)")
-    end
-    return U
-end
-
 name(mesh::PolytopeVertexMesh) = mesh.name
 vertices(mesh::PolytopeVertexMesh) = mesh.vertices
 polytopes(mesh::PolytopeVertexMesh) = mesh.polytopes
 groups(mesh::PolytopeVertexMesh) = mesh.groups
-function shrinkable(mesh::PolytopeVertexMesh)
-    U = vertex_type(typeof(mesh.polytopes[1]))
-    Umin = _select_mesh_UInt_type(length(mesh.vertices))
-    return !(Umin === U)
-end
-#function shrink(mesh::PolytopeVertexMesh)
-#
-#end
+vertex_type(mesh::PolytopeVertexMesh) = vertex_type(mesh.polytopes[1])
 
 # constructors
 function PolytopeVertexMesh(name::String, 

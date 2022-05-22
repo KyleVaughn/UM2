@@ -55,11 +55,11 @@ mesh_error = get_cad_to_mesh_error()
 for i in eachindex(mesh_error)
     println(mesh_error[i])
 end
-gmsh.fltk.run()
+#gmsh.fltk.run()
 gmsh.finalize()
 
 mesh = import_mesh("c5g7.inp")
 statistics(mesh)
 # Partition mesh according to mpact grid hierarchy, and write as an xdmf file
-mpt = partition(mesh)
+mpt = MeshPartitionTree(mesh)
 export_mesh(mpt, "c5g7.xdmf")

@@ -30,6 +30,9 @@ function materialize_facets(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:F
 end
 
 function materialize_faces(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P}
+    # Get the faces for each polytope, then reduce into a single vector.
+    # Sort the vector by each face's vertices, then get the unique faces.
+    # Materialize the faces.
     return materialize.(
                 unique!(
                     x->sort(x.vertices),
@@ -49,7 +52,7 @@ end
 
 # All edges are line segments
 function materialize_edges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Polygon}
-    unique_edges = SVector{2,typeof(mesh.polytopes[1].vertices[1])}[]
+    unique_edges = SVector{2,vertex_type(mesh.polytopes[1])}[]
     nedges = 0
     for face ∈ mesh.polytopes
         edge_vecs = edges(face)
@@ -59,7 +62,7 @@ function materialize_edges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Po
             else
                 sorted_edge = SVector(edge[2], edge[1])
             end
-            index = searchsortedfirst(unique_edges, sorted_edge)
+            index = getsortedfirst(unique_edges, sorted_edge)
             if nedges < index || unique_edges[index] !== sorted_edge
                 insert!(unique_edges, index, sorted_edge)
                 nedges += 1
@@ -75,7 +78,7 @@ end
 
 # All edges are quadratic segments
 function materialize_edges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:QuadraticPolygon}
-    unique_edges = SVector{3,typeof(mesh.polytopes[1].vertices[1])}[]
+    unique_edges = SVector{3,vertex_type(mesh.polytopes[1])}[]
     nedges = 0
     for face ∈ mesh.polytopes
         edge_vecs = edges(face)
@@ -85,7 +88,7 @@ function materialize_edges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Qu
             else
                 sorted_edge = SVector(edge[2], edge[1], edge[3])
             end
-            index = searchsortedfirst(unique_edges, sorted_edge)
+            index = getsortedfirst(unique_edges, sorted_edge)
             if nedges < index || unique_edges[index] !== sorted_edge
                 insert!(unique_edges, index, sorted_edge)
                 nedges += 1

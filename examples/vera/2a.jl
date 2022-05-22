@@ -97,7 +97,7 @@ for mat in materials
     mat.mesh_size = lc
 end
 set_mesh_field_using_materials(materials)
-generate_mesh(order = 2, faces = "Triangle", opt_iters = 2)
+generate_mesh(order = 1, faces = "Triangle", opt_iters = 2)
 gmsh.write("2a.inp")
 mesh_error = get_cad_to_mesh_error()
 for i in eachindex(mesh_error)
@@ -107,7 +107,7 @@ gmsh.fltk.run()
 gmsh.finalize()
 
 mesh = import_mesh("2a.inp")
-statistics(mesh)
-# Partition mesh according to mpact grid hierarchy, and write as an xdmf file 
-mpt = partition(mesh)
-export_mesh(mpt, "2a.xdmf")
+#statistics(mesh)
+## Partition mesh according to mpact grid hierarchy, and write as an xdmf file 
+#mpt = partition(mesh)
+#export_mesh(mpt, "2a.xdmf")
