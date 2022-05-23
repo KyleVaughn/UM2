@@ -1,3 +1,5 @@
+abstract type AbstractMesh end
+
 include("rectilinear_grid.jl")
 include("polytope_vertex_mesh.jl")
 include("materialize.jl")

@@ -1,7 +1,7 @@
 export UnstructuredMesh
 
 # See Figure 8-35 of the VTK book.
-struct UnstructuredMesh{Dim,T,U}
+struct UnstructuredMesh{Dim,T,U} <: AbstractMesh
     points::Vector{Point{Dim,T}}
     cell_array::Vector{U}
     cell_types::Vector{U}

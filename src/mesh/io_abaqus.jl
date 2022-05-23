@@ -18,12 +18,6 @@ const supported_abaqus_element_types = (
     "C3D20"
    )
 
-# TODO: 
-#   1) Read non 1:N nodes/elements and map them to the appropriate 1:N indices
-#   2) Read all element types and discard the unused lower dimensional elements
-#   3) Figure out if pushing to a vector every line, or if reading the file twice (once to
-#       determine vector size, and once to populate the vector) is faster for reading 
-#       nodes or elements
 function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
     file = open(path, "r")
     try

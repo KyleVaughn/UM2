@@ -47,6 +47,8 @@ function _create_leaf_meshes(mesh::PolytopeVertexMesh, root::Tree)
         for grp in mpact_groups
             pop!(mesh.groups, grp)
         end
+        name = root.data[2]
+        root.data = (leaf_ctr, name)
         leaf_meshes[leaf_ctr] = mesh
     end
     return leaf_meshes
@@ -70,6 +72,8 @@ function _create_leaf_meshes!(mesh::PolytopeVertexMesh,
             pop!(mesh.groups, grp)
         end
         leaf_meshes[leaf_ctr] = mesh
+        name = node.data[2]
+        node.data = (leaf_ctr, name)
         leaf_ctr += 1
     end
     return leaf_ctr
