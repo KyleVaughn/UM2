@@ -27,7 +27,7 @@ function PolytopeVertexMesh(vertices::Vector{Point{Dim,T}},
     return PolytopeVertexMesh("", vertices, polytopes, Dict{String,BitSet}())
 end
 
-function Base.show(io::IO, mesh::PolytopeVertexMesh{Dim, T, P}) where {Dim,T,P}
+function Base.show(io::IO, mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P}
     print(io, "PolytopeVertexMesh{Dim=",Dim,", T=",T,", P=")
     if isconcretetype(P)
         println(io, alias_string(P),"{",vertex_type(P),"}}")

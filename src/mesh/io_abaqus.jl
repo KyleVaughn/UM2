@@ -1,112 +1,142 @@
 # IO routines for the Abaqus .inp file format
-const supported_abaqus_element_types = (
-    # triangle
-    "CPS3",
-    # quadratic triangle
-    "CPS6",
-    # quadrilateral
-    "CPS4", 
-    # quadratic quadrilateral
-    "CPS8",
-    # tetrahedron
-    "C3D4",
-    # hexahedron
-    "C3D8",
-    # quadratic tetrahedron
-    "C3D10",
-    # quadratic hexahedron"
-    "C3D20"
-   )
+const ABAQUS_CPS3  = VTK_TRIANGLE
+const ABAQUS_CPS4  = VTK_QUAD
+const ABAQUS_CPS6  = VTK_QUADRATIC_TRIANGLE
+const ABAQUS_CPS8  = VTK_QUADRATIC_QUAD
+const ABAQUS_C3D4  = VTK_TETRA
+const ABAQUS_C3D8  = VTK_HEXAHEDRON
+const ABAQUS_C3D10 = VTK_QUADRATIC_TETRA
+const ABAQUS_C3D20 = VTK_QUADRATIC_HEXAHEDRON
+
+function _abaqus_element_string_to_int(x::String)
+    if x === "CPS3"
+        return ABAQUS_CPS3
+    elseif x === "CPS4"
+        return ABAQUS_CPS4
+    elseif x === "CPS6"
+        return ABAQUS_CPS6
+    elseif x === "CPS8"
+        return ABAQUS_CPS8
+    elseif x === "C3D4"
+        return ABAQUS_C3D4
+    elseif x === "C3D8"
+        return ABAQUS_C3D8
+    elseif x === "C3D10"
+        return ABAQUS_C3D10
+    elseif x === "C3D20"
+        return ABAQUS_C3D20
+    else
+        error("Invalid Abaqus element type.")
+        return nothing
+    end
+end
 
 function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
     file = open(path, "r")
     try
-        name = "default_name"
-        element_vecs = Vector{UInt64}[] 
-        element_sets = Dict{String, BitSet}()
-        points = Point{3,T}[]
-        is2D = false
-        is3D = false
-        while !eof(file)
-            line = readline(file)
+        name = ""
+        element_types = UInt64[] 
+        elements = UInt64[] 
+        elsets = Dict{String, BitSet}()
+        nodes = Point{3,T}[]
+        for line in eachline(file) 
             if length(line) > 0
                 if startswith(line, "**") # Comment
                     continue
-                elseif "*Heading" == line
-                    name = String(strip(readline(file)))
-                    if occursin(".inp", name)
-                        name = name[1:end-4]
-                    end
-                elseif "*NODE" == line
-                    _read_abaqus_nodes!(file, points)
-                elseif occursin("*ELEMENT", line)
-                    splitline = split(line)
-                    element_type = String(strip(replace(splitline[2], ("type=" => "")), ','))
-                    if element_type ∉ supported_abaqus_element_types
-                        error(string(element_type)*" is not a supported abaqus element type")
-                    end
-                    if startswith(element_type, "CP")
-                        is2D = true
+                elseif "*Heading" === line
+                    # Of the form " name.inp"
+                    name = readline(file)[2:end-4]
+                elseif "*NODE" === line
+                    _read_abaqus_nodes!(file, nodes)
+                elseif startswith(line, "*ELEMENT")
+                    m = match(r"type=(.*?), ELSET", line)
+                    if isnothing(m)
+                        error("Incorrectly formatted Abaqus file?")
                     else
-                        is3D = true
+                        element_type = UInt64(_abaqus_element_string_to_int(String(m.captures[1])))
                     end
-                    _read_abaqus_elements!(file, element_vecs, element_type)
-                elseif occursin("*ELSET", line)
-                    splitline = split(line)
-                    set_name = String(replace(splitline[1], ("*ELSET,ELSET=" => "")))
-                    element_sets[set_name] = _read_abaqus_elset(file)
+                    _read_abaqus_elements!(file, element_type, element_types, elements)
+                elseif startswith(line, "*ELSET")
+                    m = match(r"(?<=ELSET=).*", line)
+                    if isnothing(m)
+                        error("Incorrectly formatted Abaqus file?")
+                    else
+                        set_name = m.match 
+                    end
+                    elsets[set_name] = _read_abaqus_elset(file)
                 end
             end
         end
-        if is2D && is3D
-            error("File contains both surface (CPS) and volume (C3) elements."*
-                  "Limit element types to be CPS or C3, so mesh dimension is inferrable") 
+        abaqus_2d = (ABAQUS_CPS3, ABAQUS_CPS4, ABAQUS_CPS6, ABAQUS_CPS8)
+        abaqus_3d = (ABAQUS_C3D4, ABAQUS_C3D8, ABAQUS_C3D10, ABAQUS_C3D20)
+        is2d = any(x->x ∈ abaqus_2d, view(element_types, 1:2:lastindex(element_types)))
+        is3d = any(x->x ∈ abaqus_3d, view(element_types, 1:2:lastindex(element_types)))
+        if is2d && is3d
+            error("File contains both surface (CPS) and volume (C3D) elements."*
+                  "Limit element types to be CPS or C3D, so mesh dimension may be determined.") 
         end
-        return _create_mesh_from_elements(is3D, name, points, element_vecs, element_sets)
+        U = _select_UInt_type(max(maximum(elements), 
+                                  maximum(element_types)))
+        if is2d
+            return UnstructuredMesh{2,T,U}(nodes, elements, element_types, name, elsets)
+        else
+            return UnstructuredMesh{3,T,U}(nodes, elements, element_types, name, elsets)
+        end
     finally
         close(file)
     end
     return nothing
 end
 
-function _read_abaqus_nodes!(file::IOStream, points::Vector{Point{3,T}}) where {T}
+function _read_abaqus_nodes!(file::IOStream, nodes::Vector{Point{3,T}}) where {T<:AbstractFloat}
     # Count the number of nodes
-    file_position = position(file)
-    npoints = 0
+    mark(file)
+    nnodes = 0
     line = readline(file) 
-    while !('*' == line[1])
-        npoints += 1
+    while '*' !== line[1]
+        nnodes += 1
         line = readline(file)
     end
-    seek(file, file_position)
-    # Allocate and populate a vector of points
-    new_points = Vector{Point{3,T}}(undef, npoints)
-    line = readline(file)
-    ipt = 0
-    while !('*' == line[1])
-        ipt += 1
-        xyz = parse.(T, strip.(view(split(line),2:4), [',']))
-        new_points[ipt] = Point{3,T}(xyz[1], xyz[2], xyz[3])
-        file_position = position(file)
+    reset(file)
+    # Allocate and populate a vector of nodes
+    new_nodes = Vector{Point{3,T}}(undef, nnodes)
+    for i in 1:nnodes
         line = readline(file)
+        xyz = view(split(line, ','), 2:4)
+        new_nodes[i] = Point{3,T}(ntuple(i->parse(Float64, xyz[i]), Val(3)))
     end
-    seek(file, file_position)
-    append!(points, new_points)
+    append!(nodes, new_nodes)
     return nothing
 end
 
-function _read_abaqus_elements!(file::IOStream, elements::Vector{Vector{UInt64}}, 
-                                element_type::String)
+function _read_abaqus_elements!(file::IOStream, 
+                                element_type::UInt64,
+                                element_types::Vector{UInt64},
+                                elements::Vector{UInt64}) 
+    mark(file)
     line = readline(file)
-    file_position = position(file)
-    while !('*' == line[1] || eof(file))
-        splitline = split(line)
-        vertex_ids = parse.(UInt64, strip.(view(splitline, 2:length(splitline)), [',']))
-        push!(elements, vertex_ids)
-        file_position = position(file)
+    npts = npoints(element_type)
+    element_length = npts + 1
+    nelements = 0
+    while !('*' === line[1] || eof(file))
+        nelements += 1
         line = readline(file)
     end
-    seek(file, file_position)
+    reset(file)
+    new_element_types = Vector{UInt64}(undef, 2*nelements)
+    new_elements = Vector{UInt64}(undef, element_length*nelements)
+    ectr = 1
+    for i in 1:nelements 
+        line = readline(file)
+        new_element_types[2i - 1] = element_type
+        new_element_types[2i    ] = ectr
+        new_elements[ectr] = npts
+        vids = view(split(line, ','), 2:element_length)
+        @. new_elements[ectr + 1:ectr + npts] = parse(UInt64, vids)
+        ectr += element_length
+    end
+    append!(element_types, new_element_types)
+    append!(elements, new_elements)
     return elements
 end
 

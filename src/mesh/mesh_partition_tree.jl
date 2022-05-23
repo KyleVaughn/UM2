@@ -8,7 +8,7 @@ export partition_to_tree, leaves
 # If the node is an internal node, it has id = 0.
 # If the node is a leaf node, it has a non-zero id, corresponding to the index by 
 # which the mesh may be found in the MeshPartitionTree type's leaf_meshes.
-struct MeshPartitionTree{M <: PolytopeVertexMesh}
+struct MeshPartitionTree{M <: AbstractMesh} 
     partition_tree::Tree{Tuple{Int64, String}}
     leaf_meshes::Vector{M}
 end
