@@ -34,11 +34,12 @@ end
 function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
     file = open(path, "r")
     try
-        name = ""
-        element_types = UInt64[] 
-        elements = UInt64[] 
-        elsets = Dict{String, BitSet}()
         nodes = Point{3,T}[]
+        element_types = UInt64[] 
+        offsets = UInt64[]
+        elements = UInt64[] 
+        name = ""
+        elsets = Dict{String, BitSet}()
         for line in eachline(file) 
             if length(line) > 0
                 if startswith(line, "**") # Comment
@@ -55,7 +56,7 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
                     else
                         element_type = UInt64(_abaqus_element_string_to_int(String(m.captures[1])))
                     end
-                    _read_abaqus_elements!(file, element_type, element_types, elements)
+                    _read_abaqus_elements!(file, element_type, element_types, offsets, elements)
                 elseif startswith(line, "*ELSET")
                     m = match(r"(?<=ELSET=).*", line)
                     if isnothing(m)
@@ -69,18 +70,19 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
         end
         abaqus_2d = (ABAQUS_CPS3, ABAQUS_CPS4, ABAQUS_CPS6, ABAQUS_CPS8)
         abaqus_3d = (ABAQUS_C3D4, ABAQUS_C3D8, ABAQUS_C3D10, ABAQUS_C3D20)
-        is2d = any(x->x ∈ abaqus_2d, view(element_types, 1:2:lastindex(element_types)))
-        is3d = any(x->x ∈ abaqus_3d, view(element_types, 1:2:lastindex(element_types)))
+        is2d = any(x->x ∈ abaqus_2d, element_types)
+        is3d = any(x->x ∈ abaqus_3d, element_types)
         if is2d && is3d
             error("File contains both surface (CPS) and volume (C3D) elements."*
                   "Limit element types to be CPS or C3D, so mesh dimension may be determined.") 
         end
         U = _select_UInt_type(max(length(elements), 
-                                  length(element_types)))
+                                  length(nodes)))
+        push!(offsets, length(elements)+1)
         if is2d
-            return UnstructuredMesh{2,T,U}(nodes, elements, element_types, name, elsets)
+            return VolumeMesh{2,T,U}(nodes, offsets, elements, name, elsets)
         else
-            return UnstructuredMesh{3,T,U}(nodes, elements, element_types, name, elsets)
+            return VolumeMesh{3,T,U}(nodes, offsets, elements, name, elsets)
         end
     finally
         close(file)
@@ -112,30 +114,30 @@ end
 function _read_abaqus_elements!(file::IOStream, 
                                 element_type::UInt64,
                                 element_types::Vector{UInt64},
+                                offsets::Vector{UInt64},
                                 elements::Vector{UInt64}) 
     mark(file)
     line = readline(file)
     npts = npoints(element_type)
-    element_length = npts + 1
     nelements = 0
     while !('*' === line[1] || eof(file))
         nelements += 1
         line = readline(file)
     end
     reset(file)
-    new_element_types = Vector{UInt64}(undef, 2*nelements)
-    new_elements = Vector{UInt64}(undef, element_length*nelements)
+    append!(element_types, fill(element_type, nelements))
+    new_offsets = Vector{UInt64}(undef, nelements)
+    new_elements = Vector{UInt64}(undef, npts*nelements)
     ectr = 1
+    len_elements = length(elements)
     for i in 1:nelements 
         line = readline(file)
-        new_element_types[2i - 1] = element_type
-        new_element_types[2i    ] = ectr
-        new_elements[ectr] = npts
-        vids = view(split(line, ','), 2:element_length)
-        @. new_elements[ectr + 1:ectr + npts] = parse(UInt64, vids)
-        ectr += element_length
+        vids = view(split(line, ','), 2:npts+1)
+        @. new_elements[ectr:ectr + npts - 1] = parse(UInt64, vids)
+        new_offsets[i] = ectr + len_elements
+        ectr += npts 
     end
-    append!(element_types, new_element_types)
+    append!(offsets, new_offsets)
     append!(elements, new_elements)
     return elements
 end

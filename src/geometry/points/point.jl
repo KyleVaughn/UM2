@@ -67,7 +67,7 @@ Base.IndexStyle(P::Point) = Base.IndexStyle(typeof(P.coords))
 Base.zero(::Type{Point{Dim,T}}) where {Dim,T} = Point{Dim,T}(@SVector zeros(T, Dim))
 nan(::Type{Point{Dim,T}}) where {Dim,T} = Point{Dim,T}(@SVector fill(T(NaN), Dim))
 
-const ϵ_Point = 1e-4 # Points separated by 1e-4 cm = 1 micron are treated the same.
+const ϵ_Point = 1e-5 # Points separated by 1e-5 cm = 0.1 micron are treated the same.
 
 """
     coordinates(p::Point)
