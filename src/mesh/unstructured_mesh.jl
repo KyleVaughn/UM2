@@ -1,5 +1,14 @@
 export UnstructuredMesh
-export uint_cell_types
+export points, name, groups, uint_cell_types
+
+const VTK_TRIANGLE = 5
+const VTK_QUAD = 9
+const VTK_QUADRATIC_TRIANGLE = 22
+const VTK_QUADRATIC_QUAD = 23
+const VTK_TETRA = 10
+const VTK_HEXAHEDRON = 12
+const VTK_QUADRATIC_TETRA = 24
+const VTK_QUADRATIC_HEXAHEDRON = 25
 
 # Structure similar to Figure 8-35 of the VTK book.
 struct UnstructuredMesh{Dim,T,U} <: AbstractMesh
@@ -10,14 +19,10 @@ struct UnstructuredMesh{Dim,T,U} <: AbstractMesh
     groups::Dict{String,BitSet}
 end
 
-const VTK_TRIANGLE = 5
-const VTK_QUAD = 9
-const VTK_QUADRATIC_TRIANGLE = 22
-const VTK_QUADRATIC_QUAD = 23
-const VTK_TETRA = 10
-const VTK_HEXAHEDRON = 12
-const VTK_QUADRATIC_TETRA = 24
-const VTK_QUADRATIC_HEXAHEDRON = 25
+points(mesh::UnstructuredMesh) = mesh.points
+name(mesh::UnstructuredMesh) = mesh.name
+groups(mesh::UnstructuredMesh) = mesh.groups
+uint_cell_types(mesh::UnstructuredMesh) = view(mesh.cell_types, 1:2:lastindex(mesh.cell_types))
 
 function npoints(vtk_type::I) where {I<:Integer}
     if vtk_type == VTK_TRIANGLE
@@ -41,8 +46,6 @@ function npoints(vtk_type::I) where {I<:Integer}
         return nothing
     end
 end
-
-uint_cell_types(mesh::UnstructuredMesh) = mesh.cell_types[begin:2:end]
 
 function vtk_alias_string(vtk_type::I) where {I<:Integer}
     if vtk_type == VTK_TRIANGLE
@@ -76,8 +79,8 @@ function Base.show(io::IO, mesh::UnstructuredMesh{Dim,T,U}) where {Dim,T,U}
     else
         println(io, "  ├─ Size (MB) : ", size_MB)
     end
-    println(io, "  ├─ Points   : ", length(mesh.points))
-    println(io, "  ├─ Cells    : ", length(mesh.cell_types) ÷ 2)
+    println(io, "  ├─ Points    : ", length(mesh.points))
+    println(io, "  ├─ Cells     : ", length(mesh.cell_types) ÷ 2)
     types = uint_cell_types(mesh)
     unique_types = unique(types) 
     nunique_types = length(unique_types)

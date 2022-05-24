@@ -12,7 +12,7 @@ function weights(points)
     return [ 2/((1-x^2)*(dlegendre(x, N)^2)) for x in points ]
 end
 
-open("legendre_RefLine.jl", "w") do io
+open("legendre_line.jl", "w") do io
     for i = 1:max_degree
         # Legendre = Jacobi with α = β = 0
         x = jacobi_zeros(i, 0, 0, BigFloat)

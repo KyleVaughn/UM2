@@ -51,27 +51,26 @@ function submesh(mesh::UnstructuredMesh{Dim,T,U}, name::String) where {Dim,T,U}
         submesh_cell_array[i] = searchsortedfirst(point_ids_vec, vid)
     end
 
-#    # Submesh groups prior to cell id remap 
-#    groups = Dict{String,BitSet}()
-#    for group_name in keys(mesh.groups)
-#        set_intersection = mesh.groups[group_name] ∩ cell_ids
-#        if length(set_intersection) !== 0 && name !== group_name
-#            groups[group_name] = set_intersection
-#        end
-#    end
-#
-#    # Remap cell ids in groups
-#    cell_ids_vec = collect(cell_ids)
-#    for group_name in keys(groups)
-#        groups[group_name] = BitSet(
-#                                searchsortedfirst.(Ref(cell_ids_vec),
-#                                                   groups[group_name] 
-#                                )
-#                             )
-#    end
-#
+    # Submesh groups prior to cell id remap 
+    groups = Dict{String,BitSet}()
+    for group_name in keys(mesh.groups)
+        set_intersection = mesh.groups[group_name] ∩ cell_ids
+        if length(set_intersection) !== 0 && name !== group_name
+            groups[group_name] = set_intersection
+        end
+    end
+
+    # Remap cell ids in groups
+    cell_ids_vec = collect(cell_ids)
+    for group_name in keys(groups)
+        groups[group_name] = BitSet(
+                                searchsortedfirst.(Ref(cell_ids_vec),
+                                                   groups[group_name] 
+                                )
+                             )
+    end
     return UnstructuredMesh{Dim,T,U}(points, submesh_cell_array, submesh_cell_types,
-                                     name, Dict{String,BitSet}())
+                                     name, groups)
 end
 
 #function submesh(mesh::PolytopeVertexMesh, name::String)

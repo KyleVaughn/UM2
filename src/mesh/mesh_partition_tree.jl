@@ -1,5 +1,5 @@
 export MeshPartitionTree
-export partition_to_tree, leaves
+export tree, leaf_meshes
 # A data structure to hold a hierarchical partition of a mesh.
 # Since the mesh is partitioned, we only need to store the leaves of the partition
 # tree to reconstruct the mesh.
@@ -9,19 +9,20 @@ export partition_to_tree, leaves
 # If the node is a leaf node, it has a non-zero id, corresponding to the index by 
 # which the mesh may be found in the MeshPartitionTree type's leaf_meshes.
 struct MeshPartitionTree{M <: AbstractMesh} 
-    partition_tree::Tree{Tuple{Int64, String}}
+    partition_tree::Tree{Tuple{Int64,String}}
     leaf_meshes::Vector{M}
 end
 
-leaves(mpt::MeshPartitionTree) = mpt.leaf_meshes
+tree(mpt::MeshPartitionTree) = mpt.partition_tree
+leaf_meshes(mpt::MeshPartitionTree) = mpt.leaf_meshes
 
 # Partitions a mesh based upon the names of its groups 
 # For a hierarchical partition, all partitions in the hierarchy must contain face sets 
 # of the form "<name>_L<N>" where name is a string, and N is an integer.
 # N is the level of the node in the tree: 1, 2, 3, etc...
 # Example: "Grid_L1_triangle", or "Partition_L3"
-function MeshPartitionTree(mesh::PolytopeVertexMesh; by::String="MPACT")
-    @info "Partitioning mesh: "*mesh.name
+function MeshPartitionTree(mesh::AbstractMesh; by::String="MPACT")
+    @info "Partitioning mesh: "*name(mesh)
     # Extract the names of all face sets that contain 'by' (the variable)
     partition_names = _get_partition_names(mesh, by)
     # Create a tree to store the partition hierarchy.
@@ -31,48 +32,50 @@ function MeshPartitionTree(mesh::PolytopeVertexMesh; by::String="MPACT")
     return MeshPartitionTree(root, leaf_meshes)
 end
 
-function _create_leaf_meshes(mesh::PolytopeVertexMesh, root::Tree)
+function _create_leaf_meshes(mesh::AbstractMesh, root::Tree)
     leaf_nodes = sort!(leaves(root), by=x->x.data)
     leaf_meshes = Vector{typeof(mesh)}(undef, length(leaf_nodes))
     leaf_ctr = 1
-    if !isnothing(root.children)
-        for child ∈ sort(root.children, by=x->x.data)
-            child_mesh = submesh(mesh, child.data[2])
+    node_children = children(root)
+    if !isnothing(node_children)
+        for child ∈ sort(node_children, by=x->x.data)
+            child_mesh = submesh(mesh, data(child)[2])
             leaf_ctr = _create_leaf_meshes!(child_mesh, child, leaf_meshes, leaf_ctr)
         end
     else
         # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
         # be encoded in the tree
-        mpact_groups = filter(x->isa_MPACT_partition_name(x), keys(mesh.groups))
+        mpact_groups = filter(x->isa_MPACT_partition_name(x), keys(groups(mesh)))
         for grp in mpact_groups
-            pop!(mesh.groups, grp)
+            pop!(groups(mesh), grp)
         end
-        name = root.data[2]
+        name = data(root)[2]
         root.data = (leaf_ctr, name)
         leaf_meshes[leaf_ctr] = mesh
     end
     return leaf_meshes
 end
 
-function _create_leaf_meshes!(mesh::PolytopeVertexMesh,
+function _create_leaf_meshes!(mesh::AbstractMesh,
                               node::Tree,
                               leaf_meshes,
                               leaf_ctr::Int64=1
                              )
-    if !isnothing(node.children)
-        for child ∈ sort(node.children, by=x->x.data)
-            child_mesh = submesh(mesh, child.data[2])
+    node_children = children(node)
+    if !isnothing(node_children)
+        for child ∈ sort(node_children, by=x->x.data)
+            child_mesh = submesh(mesh, data(child)[2])
             leaf_ctr = _create_leaf_meshes!(child_mesh, child, leaf_meshes, leaf_ctr)
         end
     else
         # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
         # be encoded in the tree
-        mpact_groups = filter(x->isa_MPACT_partition_name(x), keys(mesh.groups))
+        mpact_groups = filter(x->isa_MPACT_partition_name(x), keys(groups(mesh)))
         for grp in mpact_groups
             pop!(mesh.groups, grp)
         end
         leaf_meshes[leaf_ctr] = mesh
-        name = node.data[2]
+        name = data(node)[2]
         node.data = (leaf_ctr, name)
         leaf_ctr += 1
     end
@@ -80,14 +83,15 @@ function _create_leaf_meshes!(mesh::PolytopeVertexMesh,
 end
 
 # Create a tree to store grid relationships.
-function _create_mesh_partition_tree(mesh::PolytopeVertexMesh, partition_names::Vector{String}) 
-    root = Tree((0, mesh.name))
+function _create_mesh_partition_tree(mesh::AbstractMesh, partition_names::Vector{String}) 
+    root = Tree((0, name(mesh)))
     parents = [root]
     tree_type = typeof(root)
     next_parents = tree_type[]
     remaining_names = copy(partition_names)
     # Extract the sets that are not a subset of any other set.
     this_level = Int64[] 
+    mesh_groups = groups(mesh)
     while length(remaining_names) > 0
         for i in eachindex(remaining_names)
             name_i = remaining_names[i] 
@@ -107,7 +111,7 @@ function _create_mesh_partition_tree(mesh::PolytopeVertexMesh, partition_names::
                 if j_isa_module && i_isa_lattice
                     continue
                 end
-                if mesh.groups[name_i] ⊆ mesh.groups[name_j]
+                if mesh_groups[name_i] ⊆ mesh_groups[name_j]
                     isa_subset = true
                     break
                 end
@@ -125,8 +129,8 @@ function _create_mesh_partition_tree(mesh::PolytopeVertexMesh, partition_names::
                     node = Tree((0, name), parent)
                     push!(next_parents, node)
                 else
-                    parent_name = parent.data[2]
-                    if mesh.groups[name] ⊆ mesh.groups[parent_name]
+                    parent_name = data(parent)[2]
+                    if mesh_groups[name] ⊆ mesh_groups[parent_name]
                         node = Tree((0, name), parent)
                         push!(next_parents, node)
                         break
@@ -149,10 +153,10 @@ function isa_MPACT_partition_name(x::String)
            startswith(x, "Lattice_("    ) 
 end
 # Extract partition names
-function _get_partition_names(mesh::PolytopeVertexMesh, by::String)
+function _get_partition_names(mesh::AbstractMesh, by::String)
     # If by === MPACT, then we will partition by Lattice, Module, and Coarse Cell
     # Otherwise, partition by the string contained in by
-    partition_names = collect(keys(mesh.groups))
+    partition_names = collect(keys(groups(mesh)))
     if length(partition_names) === 0
         error("The mesh does not have any groups.")
     end
@@ -168,4 +172,9 @@ function _get_partition_names(mesh::PolytopeVertexMesh, by::String)
         end
     end
     return sort!(partition_names)
+end
+
+function Base.show(io::IO, mpt::MeshPartitionTree{M}) where {M}
+    println("MeshPartitionTree{",M,"}")
+    println(tree(mpt))
 end

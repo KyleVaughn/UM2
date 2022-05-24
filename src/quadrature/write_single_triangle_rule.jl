@@ -500,7 +500,7 @@ for i = n₀ + n₁ + 1: n₀ + n₁ + n₂
     push!(points, (α, β))
 end
 
-io = open("legendre_RefTriangle.jl", "a")
+io = open("legendre_triangle.jl", "a")
 println(io, "@generated function gauss_quadrature(form::Val{:legendre},")
 println(io, "                                     shape::RefTriangle,")
 println(io, "                                     degree::Val{$p},")
