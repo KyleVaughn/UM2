@@ -1,37 +1,28 @@
 export submesh
 
-function submesh(mesh::UnstructuredMesh{Dim,T,U}, name::String) where {Dim,T,U}
-    # Submesh cells prior to point id remap 
-    cell_ids = mesh.groups[name]
-    ncells = length(cell_ids)
-    submesh_cell_types = Vector{U}(undef, 2*ncells)
-    cell_array_len = 1
-    for (i, id) in enumerate(cell_ids)
-        type   = mesh.cell_types[2id-1]
-        offset = mesh.cell_types[2id  ]
-        submesh_cell_types[2i-1] = type
-        submesh_cell_types[2i  ] = cell_array_len
-        npts = mesh.cell_array[offset]
-        cell_array_len += npts + 1 
+function submesh(mesh::VolumeMesh{Dim,T,U}, name::String) where {Dim,T,U}
+    # Submesh elements prior to point id remap 
+    element_ids = mesh.groups[name]
+    nelements = length(element_ids)
+    types = Vector{U}(undef, nelements)
+    offsets = Vector{U}(undef, nelements)
+    connectivity_len = 1
+    for (i, id) in enumerate(element_ids)
+        types[i] = mesh.types[id]
+        offsets[i] = connectivity_len
+        connectivity_len += points_in_vtk_type(types[i])
     end
-    submesh_cell_array = Vector{U}(undef, cell_array_len-1)
-    for (i, id) in enumerate(cell_ids)
-        offset = mesh.cell_types[2id]
-        npts = mesh.cell_array[offset]
-        submesh_offset = submesh_cell_types[2i]
-        submesh_cell_array[submesh_offset] = npts
-        submesh_cell_array[submesh_offset+1:submesh_offset+npts] = 
-            mesh.cell_array[offset+1:offset+npts]
+    connectivity = Vector{U}(undef, connectivity_len - 1)
+    for (i, id) in enumerate(element_ids)
+        npts = points_in_vtk_type(types[i])
+        sm_offset = offsets[i]
+        m_offset = mesh.offsets[id]
+        connectivity[sm_offset:sm_offset+npts-1] = mesh.connectivity[m_offset:m_offset+npts-1]
     end
 
     # Submesh points 
     point_ids = BitSet()
-    discard = 1
-    for (i, vid) in enumerate(submesh_cell_array)
-        if i == discard
-            discard += vid + 1
-            continue
-        end
+    for vid in connectivity
         push!(point_ids, vid)
     end
     npoints = length(point_ids)
@@ -40,35 +31,29 @@ function submesh(mesh::UnstructuredMesh{Dim,T,U}, name::String) where {Dim,T,U}
         points[i] = mesh.points[vid]
     end
 
-    # Remap point ids in cells
+    # Remap point ids in connectivity 
     point_ids_vec = collect(point_ids)
-    discard = 1
-    for (i, vid) in enumerate(submesh_cell_array)
-        if i == discard
-            discard += vid + 1
-            continue
-        end
-        submesh_cell_array[i] = searchsortedfirst(point_ids_vec, vid)
+    for (i, vid) in enumerate(connectivity)
+        connectivity[i] = searchsortedfirst(point_ids_vec, vid)
     end
 
-    # Submesh groups prior to cell id remap 
+    # Submesh groups prior to element id remap 
     groups = Dict{String,BitSet}()
     for group_name in keys(mesh.groups)
-        set_intersection = mesh.groups[group_name] ∩ cell_ids
+        set_intersection = mesh.groups[group_name] ∩ element_ids
         if length(set_intersection) !== 0 && name !== group_name
             groups[group_name] = set_intersection
         end
     end
 
-    # Remap cell ids in groups
-    cell_ids_vec = collect(cell_ids)
+    # Remap element ids in groups
+    element_ids_vec = collect(element_ids)
     for group_name in keys(groups)
         groups[group_name] = BitSet(
-                                searchsortedfirst.(Ref(cell_ids_vec),
+                                searchsortedfirst.(Ref(element_ids_vec),
                                                    groups[group_name] 
                                 )
                              )
     end
-    return UnstructuredMesh{Dim,T,U}(points, submesh_cell_array, submesh_cell_types,
-                                     name, groups)
+    return VolumeMesh{Dim,T,U}(points, types, offsets, connectivity, name, groups)
 end

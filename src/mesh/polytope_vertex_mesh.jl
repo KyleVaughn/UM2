@@ -2,30 +2,36 @@ export PolytopeVertexMesh
 export name, vertices, polytopes, groups, vertex_type
 
 struct PolytopeVertexMesh{Dim,T,P<:Polytope}
-    name::String
     vertices::Vector{Point{Dim,T}}
     polytopes::Vector{P}
+    name::String
     groups::Dict{String,BitSet}
 end
 
 name(mesh::PolytopeVertexMesh) = mesh.name
+points(mesh::PolytopeVertexMesh) = mesh.vertices
 vertices(mesh::PolytopeVertexMesh) = mesh.vertices
 polytopes(mesh::PolytopeVertexMesh) = mesh.polytopes
 groups(mesh::PolytopeVertexMesh) = mesh.groups
 
 # constructors
-function PolytopeVertexMesh(name::String, 
-                            vertices::Vector{Point{Dim,T}}, 
-                            polytopes::Vector{P}
+function PolytopeVertexMesh(vertices::Vector{Point{Dim,T}}, 
+                            polytopes::Vector{P},
+                            name::String
                            ) where {Dim,T,P}
-    return PolytopeVertexMesh(name, vertices, polytopes, Dict{String,BitSet}())
+    return PolytopeVertexMesh(vertices, polytopes, name, Dict{String,BitSet}())
 end
 
 function PolytopeVertexMesh(vertices::Vector{Point{Dim,T}}, 
                             polytopes::Vector{P}
                            ) where {Dim,T,P}
-    return PolytopeVertexMesh("", vertices, polytopes, Dict{String,BitSet}())
+    return PolytopeVertexMesh(vertices, polytopes, "", Dict{String,BitSet}())
 end
+
+#function PolytopeVertexMesh(mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U}
+#    polytopes =  
+#    PolytopeVertexMesh(mesh.points, mesh.name, mesh.groups)
+#end
 
 function Base.show(io::IO, mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P}
     print(io, "PolytopeVertexMesh{Dim=",Dim,", T=",T,", P=")

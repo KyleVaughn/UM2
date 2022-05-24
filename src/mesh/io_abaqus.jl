@@ -80,9 +80,9 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
                                   length(nodes)))
         push!(offsets, length(elements)+1)
         if is2d
-            return VolumeMesh{2,T,U}(nodes, offsets, elements, name, elsets)
+            return VolumeMesh{2,T,U}(nodes, element_types, offsets, elements, name, elsets)
         else
-            return VolumeMesh{3,T,U}(nodes, offsets, elements, name, elsets)
+            return VolumeMesh{3,T,U}(nodes, element_types, offsets, elements, name, elsets)
         end
     finally
         close(file)
