@@ -118,7 +118,7 @@ function _read_abaqus_elements!(file::IOStream,
                                 elements::Vector{UInt64}) 
     mark(file)
     line = readline(file)
-    npts = npoints(element_type)
+    npts = points_in_vtk_type(element_type)
     nelements = 0
     while !('*' === line[1] || eof(file))
         nelements += 1

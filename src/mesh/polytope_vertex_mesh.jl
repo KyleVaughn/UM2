@@ -28,13 +28,17 @@ function PolytopeVertexMesh(vertices::Vector{Point{Dim,T}},
     return PolytopeVertexMesh(vertices, polytopes, "", Dict{String,BitSet}())
 end
 
-#function PolytopeVertexMesh(mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U}
-#    polytopes =  
-#    PolytopeVertexMesh(mesh.points, mesh.name, mesh.groups)
-#end
+function PolytopeVertexMesh(mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U}
+    return PolytopeVertexMesh(
+             mesh.points, 
+             map(i->_materialize_face_connectivity(i, mesh), eachindex(mesh.types)),
+             mesh.name, 
+             mesh.groups
+            )
+end
 
 function Base.show(io::IO, mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P}
-    print(io, "PolytopeVertexMesh{Dim=",Dim,", T=",T,", P=")
+    print(io, "PolytopeVertexMesh{",Dim,", ",T,", ")
     if isconcretetype(P)
         println(io, alias_string(P),"{",vertex_type(P),"}}")
     else

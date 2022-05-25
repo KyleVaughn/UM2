@@ -1,21 +1,73 @@
 export materialize, 
+       materialize_face,
+       materialize_cell,
        materialize_polytopes, 
        materialize_facets,
        materialize_cells, 
        materialize_faces, 
        materialize_edges
 
-function materialize(poly::Polytope{K,P,N,T}, 
-                     vertices::Vector{Point{Dim,F}}
+# Not type-stable
+function materialize_face(i::Integer, mesh::VolumeMesh)
+    vtk_type = mesh.types[i]
+    Δ = mesh.offsets[i]
+    points = mesh.points
+    conn = mesh.connectivity
+    if vtk_type == VTK_TRIANGLE
+        vids = conn[Vec(ntuple(i->i+Δ-1, Val(3))...)]
+        return Triangle(points[convert(SVector{3,Int64}, vids)])
+    elseif vtk_type == VTK_QUAD
+        vids = conn[Vec(ntuple(i->i+Δ-1, Val(4))...)]
+        return Quadrilateral(points[convert(SVector{4,Int64}, vids)])
+    elseif vtk_type == VTK_QUADRATIC_TRIANGLE
+        vids = conn[Vec(ntuple(i->i+Δ-1, Val(6))...)]
+        return QuadraticTriangle(points[convert(SVector{6,Int64}, vids)])
+    elseif vtk_type == VTK_QUADRATIC_QUAD
+        vids = conn[Vec(ntuple(i->i+Δ-1, Val(8))...)]
+        return QuadraticQuadrilateral(points[convert(SVector{8,Int64}, vids)])
+    else
+        error("Unsupported type.")
+        return nothing
+    end
+end
+
+# Not type-stable
+function _materialize_face_connectivity(i::Integer, mesh::VolumeMesh)
+    vtk_type = mesh.types[i]
+    Δ = mesh.offsets[i]
+    conn = mesh.connectivity
+    if vtk_type == VTK_TRIANGLE
+        vids = conn[Vec(ntuple(i->i+Δ-1, Val(3))...)]
+        return Triangle(vids...)
+    elseif vtk_type == VTK_QUAD
+        vids = conn[Vec(ntuple(i->i+Δ-1, Val(4))...)]
+        return Quadrilateral(vids...)
+    elseif vtk_type == VTK_QUADRATIC_TRIANGLE
+        vids = conn[Vec(ntuple(i->i+Δ-1, Val(6))...)]
+        return QuadraticTriangle(vids...)
+    elseif vtk_type == VTK_QUADRATIC_QUAD
+        vids = conn[Vec(ntuple(i->i+Δ-1, Val(8))...)]
+        return QuadraticQuadrilateral(vids...)
+    else
+        error("Unsupported type.")
+        return nothing
+    end
+end
+
+function materialize_faces(mesh::VolumeMesh)
+    return map(i->materialize_face(i, mesh), eachindex(mesh.types))
+end
+
+function materialize(p::Polytope{K,P,N,T}, vertices::Vector{Point{Dim,F}}
                     ) where {K,P,N,T,Dim,F}
     return Polytope{K,P,N,Point{Dim,F}}(
-            Vec(ntuple(i->vertices[poly.vertices[i]], Val(N)))
+            Vec(ntuple(i->vertices[p.vertices[i]], Val(N)))
            ) 
 end
 
-#function materialize_polytopes(mesh::PolytopeVertexMesh)
-#    return materialize.(mesh.polytopes, Ref(mesh.vertices))
-#end
+function materialize_polytopes(mesh::PolytopeVertexMesh)
+    return materialize.(mesh.polytopes, Ref(mesh.vertices))
+end
 #
 ## aliases
 #function materialize_cells(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Cell}
