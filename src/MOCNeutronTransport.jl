@@ -1,7 +1,7 @@
 module MOCNeutronTransport
 
+using EzXML
 using HDF5
-using LightXML
 using Pkg.Artifacts
 using Printf
 using Reexport
@@ -27,5 +27,5 @@ include("mesh/Mesh.jl")
 #include("MPACT/MPACT.jl")
 #include("plot/Plot.jl")
 #include("gmsh/Gmsh.jl")
-#include("raytracing/Raytracing.jl")
+include("raytracing/Raytracing.jl")
 end

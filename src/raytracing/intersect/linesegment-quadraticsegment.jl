@@ -31,8 +31,8 @@ function Base.intersect(l::LineSegment{Point{2,T}},
     v₁₂ = norm²(𝘃₁₂)
     𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂)*inv(v₁₂)*𝘃₁₂
     # Determine the distance from P₃ to P₄ (P₄ - P₃ = P₁ + 𝘃₁₄ - P₃ = 𝘃₁₄ - 𝘃₁₃)
-    d = norm(𝘃₁₄ - 𝘃₁₃)
-    if d < ϵ_Point # Use line segment intersection, segment is effectively straight
+    d² = norm²(𝘃₁₄ - 𝘃₁₃)
+    if d² < ϵ_Point^2 # Use line segment intersection, segment is effectively straight
         # Line segment intersection looks like the following.
         # We want to reuse quantities we have already computed
         # Here l₁ = l, l₂ = LineSegment(q[1], q[2])
@@ -64,7 +64,7 @@ function Base.intersect(l::LineSegment{Point{2,T}},
             0 ≤ r ≤ 1 || return Vec(pmiss, pmiss) 
             p = q(r)
             s = (p - l[1]) ⋅ 𝘄 
-            # Since 0 ≤ w, we may test 0 ≤ s ≤ w², and avoid a division by
+            # Since 0 ≤ w², we may test 0 ≤ s ≤ w², and avoid a division by
             # w² in computing s
             return 0 ≤ s && s ≤ w² ? Vec(p, pmiss) : Vec(pmiss, pmiss)
         elseif b^2 ≥ 4a*c

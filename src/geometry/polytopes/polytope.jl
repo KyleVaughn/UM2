@@ -162,8 +162,8 @@ function isstraight(q::QuadraticSegment{T}) where {T<:Point}
     v₁₂ = norm²(𝘃₁₂)
     𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂)*inv(v₁₂)*𝘃₁₂
     # Determine the distance from P₃ to P₄ (P₄ - P₃ = P₁ + 𝘃₁₄ - P₃ = 𝘃₁₄ - 𝘃₁₃)
-    d = norm(𝘃₁₄ - 𝘃₁₃) 
-    return d < ϵ_Point
+    d² = norm²(𝘃₁₄ - 𝘃₁₃) 
+    return d² < ϵ_Point^2
 end
 
 # Show aliases when printing
