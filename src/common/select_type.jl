@@ -1,4 +1,4 @@
-function _select_UInt_type(N)
+function _select_uint_type(N)
     if N ≤ typemax(UInt8) 
         U = UInt8
     elseif N ≤ typemax(UInt16) 

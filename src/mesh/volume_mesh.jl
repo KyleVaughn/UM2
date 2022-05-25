@@ -74,11 +74,11 @@ end
 function Base.show(io::IO, mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U}
     println(io, "VolumeMesh{",Dim, ", ",T,", ",U,"}")
     println(io, "  ├─ Name      : ", mesh.name)
-    size_MB = Base.summarysize(mesh)/1E6
-    if size_MB < 1
-        println(io, "  ├─ Size (KB) : ", size_MB*1000)
+    size_B = Base.summarysize(mesh)
+    if size_B < 1e6
+        println(io, "  ├─ Size (KB) : ", string(@sprintf("%.3f", size_B/1000)))
     else
-        println(io, "  ├─ Size (MB) : ", size_MB)
+        println(io, "  ├─ Size (MB) : ", string(@sprintf("%.3f",size_B/1e6)))
     end
     println(io, "  ├─ Points    : ", length(mesh.points))
     if Dim === 3

@@ -76,7 +76,7 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
             error("File contains both surface (CPS) and volume (C3D) elements."*
                   "Limit element types to be CPS or C3D, so mesh dimension may be determined.") 
         end
-        U = _select_UInt_type(max(length(elements), 
+        U = _select_uint_type(max(length(elements), 
                                   length(nodes)))
         push!(offsets, length(elements)+1)
         if is2d

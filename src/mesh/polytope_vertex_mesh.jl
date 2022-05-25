@@ -1,5 +1,5 @@
 export PolytopeVertexMesh
-export name, vertices, polytopes, groups, vertex_type
+export name, vertices, polytopes, groups, vtk_type
 
 struct PolytopeVertexMesh{Dim,T,P<:Polytope} <: AbstractMesh
     vertices::Vector{Point{Dim,T}}
@@ -37,6 +37,15 @@ function PolytopeVertexMesh(mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U}
             )
 end
 
+vtk_type(::Type{<:Triangle})               = VTK_TRIANGLE
+vtk_type(::Type{<:Quadrilateral})          = VTK_QUAD
+vtk_type(::Type{<:QuadraticTriangle})      = VTK_QUADRATIC_TRIANGLE
+vtk_type(::Type{<:QuadraticQuadrilateral}) = VTK_QUADRATIC_QUAD
+vtk_type(::Type{<:Tetrahedron})            = VTK_TETRA
+vtk_type(::Type{<:Hexahedron})             = VTK_HEXAHEDRON
+vtk_type(::Type{<:QuadraticTetrahedron})   = VTK_QUADRATIC_TETRA
+vtk_type(::Type{<:QuadraticHexahedron})    = VTK_QUADRATIC_HEXAHEDRON
+
 function Base.show(io::IO, mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P}
     print(io, "PolytopeVertexMesh{",Dim,", ",T,", ")
     if isconcretetype(P)
@@ -45,11 +54,11 @@ function Base.show(io::IO, mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P}
         println(io, P,"}")
     end
     println(io, "  ├─ Name      : ", mesh.name)
-    size_MB = Base.summarysize(mesh)/1E6
-    if size_MB < 1
-        println(io, "  ├─ Size (KB) : ", size_MB*1000)
+    size_B = Base.summarysize(mesh)
+    if size_B < 1e6
+        println(io, "  ├─ Size (KB) : ", string(@sprintf("%.3f", size_B/1000)))
     else
-        println(io, "  ├─ Size (MB) : ", size_MB)
+        println(io, "  ├─ Size (MB) : ", string(@sprintf("%.3f",size_B/1e6)))
     end
     println(io, "  ├─ Vertices  : ", length(mesh.vertices))
     println(io, "  ├─ Polytopes : ", length(mesh.polytopes))

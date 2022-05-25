@@ -1,46 +1,78 @@
-#function write_xdmf(mpt::MeshPartitionTree, filename::String)
-#    # Check valid filename
-#    if !endswith(filename, ".xdmf")
-#        error("Invalid filename.")
-#    end
-#
-#    material_groups = String[]
-#    for mesh in leaves(mpt) 
-#        for group_name in keys(mesh.groups)
-#            if startswith(group_name, "Material") && group_name ∉ material_groups
-#                push!(material_groups, group_name)
-#            end
-#        end
-#    end
-#    # h5 filename
-#    h5_filename = filename[1:end-4]*"h5"
-#    h5_file = h5open(h5_filename, "w")
-#    # XML
-#    xdoc = XMLDocument()
-#
-#    try
-#        # Xdmf
-#        xroot = create_root(xdoc, "Xdmf")
-#        set_attribute(xroot, "Version", "3.0")
-#        # Domain
-#        xdomain = new_child(xroot, "Domain")
-#        # Material names
-#        materials = [ mat[11:end] for mat in material_groups ]
-#        if materials !== String[] 
-#            xmaterials = new_child(xdomain, "Information")
-#            set_attribute(xmaterials, "Name", "Materials")
-#            add_text(xmaterials, join(materials, " ")) 
-#        end
-#        _add_mesh_partition_xdmf!(xdomain, h5_filename, h5_file, 
-#                                  mpt.partition_tree, mpt.leaf_meshes, material_groups)
-#    finally
-#        save_file(xdoc, filename)
-#        close(h5_file)
-#    end
-#    return nothing
-#end
+const XDMF_TRIANGLE = 4 
+const XDMF_QUAD = 5 
+const XDMF_QUADRATIC_TRIANGLE = 36
+const XDMF_QUADRATIC_QUAD = 37
+const XDMF_TETRA = 6
+const XDMF_HEXAHEDRON = 9
+const XDMF_QUADRATIC_TETRA = 38
+const XDMF_QUADRATIC_HEXAHEDRON = 48
 
-function write_xdmf(mesh::PolytopeVertexMesh, filename::String) 
+function vtk2xdmf(vtk_type)
+    if vtk_type == VTK_TRIANGLE
+        return XDMF_TRIANGLE
+    elseif vtk_type == VTK_QUAD
+        return XDMF_QUAD
+    elseif vtk_type == VTK_QUADRATIC_TRIANGLE
+        return XDMF_QUADRATIC_TRIANGLE
+    elseif vtk_type == VTK_QUADRATIC_QUAD
+        return XDMF_QUADRATIC_QUAD
+    elseif vtk_type == VTK_TETRA 
+        return XDMF_TETRA
+    elseif vtk_type == VTK_HEXAHEDRON
+        return XDMF_HEXAHEDRON
+    elseif vtk_type == VTK_QUADRATIC_TETRA
+        return XDMF_QUADRATIC_TETRA
+    elseif vtk_type == VTK_QUADRATIC_HEXAHEDRON
+        return XDMF_QUADRATIC_HEXAHEDRON
+    else
+        error("Invalid VTK type.")
+        return nothing
+    end
+end
+
+function write_xdmf(filename::String, mpt::MeshPartitionTree)
+    # Check valid filename
+    if !endswith(filename, ".xdmf")
+        error("Invalid filename.")
+    end
+
+    material_groups = String[]
+    for mesh in leaf_meshes(mpt) 
+        for group_name in keys(mesh.groups)
+            if startswith(group_name, "Material") && group_name ∉ material_groups
+                push!(material_groups, group_name)
+            end
+        end
+    end
+    # h5 filename
+    h5_filename = filename[1:end-4]*"h5"
+    h5_file = h5open(h5_filename, "w")
+    # XML
+    xdoc = XMLDocument()
+
+    try
+        # Xdmf
+        xroot = create_root(xdoc, "Xdmf")
+        set_attribute(xroot, "Version", "3.0")
+        # Domain
+        xdomain = new_child(xroot, "Domain")
+        # Material names
+        materials = [ mat[11:end] for mat in material_groups ]
+        if materials != String[] 
+            xmaterials = new_child(xdomain, "Information")
+            set_attribute(xmaterials, "Name", "Materials")
+            add_text(xmaterials, join(materials, " ")) 
+        end
+        _add_mesh_partition_xdmf!(xdomain, h5_filename, h5_file, 
+                                  mpt.partition_tree, mpt.leaf_meshes, material_groups)
+    finally
+        save_file(xdoc, filename)
+        close(h5_file)
+    end
+    return nothing
+end
+
+function write_xdmf(filename::String, mesh::AbstractMesh) 
     # Check valid filename
     if !endswith(filename, ".xdmf")
         error("Invalid filename.")
@@ -66,7 +98,7 @@ function write_xdmf(mesh::PolytopeVertexMesh, filename::String)
         materials = [ mat[11:end] for mat in material_groups ]
 
         # Material names
-        if materials !== String[] 
+        if materials != String[] 
             xmaterials = new_child(xdomain, "Information")
             set_attribute(xmaterials, "Name", "Materials")
             add_text(xmaterials, join(materials, " ")) 
@@ -87,7 +119,7 @@ end
 function _add_uniform_grid_xdmf!(xml::XMLElement,
                                 h5_filename::String,
                                 h5_mesh::Union{HDF5.Group, HDF5.File},
-                                mesh::PolytopeVertexMesh,
+                                mesh::AbstractMesh,
                                 materials::Vector{String})
     # Grid                                                                       
     xgrid = new_child(xml, "Grid")
@@ -118,9 +150,9 @@ end
 function _write_xdmf_geometry!(xml::XMLElement, 
                               h5_filename::String, 
                               h5_mesh::HDF5.Group, 
-                              mesh::PolytopeVertexMesh)
+                              mesh::AbstractMesh)
 
-    verts = vertices(mesh)
+    verts = points(mesh)
     nverts = length(verts)
     nverts_str = string(nverts)
     point_dim = length(verts[1])
@@ -153,94 +185,97 @@ function _write_xdmf_geometry!(xml::XMLElement,
     set_attribute(xdataitem, "Precision", float_precision)
 
     h5_text_item = split(string(h5_mesh))[2]
-    add_text(xdataitem, string(h5_filename, ":", h5_text_item, "/vertices"))
+    add_text(xdataitem, string(h5_filename, ":", h5_text_item, "/points"))
     # Convert the points into an array
     vert_array = zeros(float_type, point_dim, nverts)
     for i in eachindex(verts)
         vert_array[:, i] = coordinates(verts[i])
     end
     # Write the h5
-    h5_mesh["vertices"] = vert_array
+    h5_mesh["points", compress = 3] = vert_array
     return nothing
 end
 
+_nelements_xdmf(mesh::VolumeMesh) = length(mesh.types)
+_nelements_xdmf(mesh::PolytopeVertexMesh) = length(mesh.polytopes)
+
+_topo_length_xdmf(mesh::VolumeMesh) = length(mesh.types) + length(mesh.connectivity)
+function _topo_length_xdmf(mesh::PolytopeVertexMesh)
+    return mapreduce(x->length(vertices(x)), +, polytopes(mesh)) + length(mesh.polytopes)
+end
+
+_uint_type_xdmf(mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U} = U
+_uint_type_xdmf(mesh::PolytopeVertexMesh) = typeof(mesh.polytopes[1][1])
+
+function _populate_topo_array_xdmf!(topo_array, mesh::VolumeMesh)
+    topo_ctr = 1
+    for i in eachindex(mesh.types)
+        topo_array[topo_ctr] = vtk2xdmf(mesh.types[i])
+        topo_ctr += 1
+        len_element = points_in_vtk_type(mesh.types[i])
+        offset = mesh.offsets[i]
+        # adjust 1-based to 0-based indexing
+        @. topo_array[topo_ctr:topo_ctr + len_element - 1] = 
+            mesh.connectivity[offset:offset + len_element - 1] - 1
+        topo_ctr += len_element
+    end
+    return nothing
+end
+
+function _populate_topo_array_xdmf!(topo_array, mesh::PolytopeVertexMesh)
+    ptopes = mesh.polytopes
+    topo_ctr = 1
+    for i in eachindex(ptopes)
+        p = ptopes[i]
+        topo_array[topo_ctr] = vtk2xdmf(vtk_type(typeof(p)))
+        topo_ctr += 1
+        len_element = length(vertices(p)) 
+        # adjust 1-based to 0-based indexing
+        @. topo_array[topo_ctr:topo_ctr + len_element - 1] = vertices(p) - 1 
+        topo_ctr += len_element
+    end
+    return nothing
+end
+    
 function _write_xdmf_topology!(xml::XMLElement, 
                               h5_filename::String, 
                               h5_mesh::HDF5.Group, 
-                              mesh::PolytopeVertexMesh)
+                              mesh::AbstractMesh)
     # Topology
     xtopo = new_child(xml, "Topology")
     set_attribute(xtopo, "TopologyType", "Mixed")
-    ptopes = polytopes(mesh)
-    nelements = length(ptopes)
+    nelements = _nelements_xdmf(mesh) 
     nelements_str = string(nelements)
     set_attribute(xtopo, "NumberOfElements", nelements_str)
     # DataItem
     xdataitem = new_child(xtopo, "DataItem")
     set_attribute(xdataitem, "DataType", "UInt")
-    topo_length = mapreduce(x->length(vertices(x)), +, polytopes(mesh)) + nelements
-    uint_type = typeof(ptopes[1][1])
-    if uint_type === UInt8
-        uint_precision = "1"
-    elseif uint_type === UInt16
-        uint_precision = "2"
-    elseif uint_type === UInt32
-        uint_precision = "4"
-    elseif uint_type === UInt64
-        uint_precision = "8"
-    else
-        error("Could not determine UInt type.")
-    end
+    topo_length = _topo_length_xdmf(mesh) 
+    uint_type = _uint_type_xdmf(mesh) 
     topo_array = Vector{uint_type}(undef, topo_length)
-    topo_ctr = 1
-    for i in eachindex(ptopes)
-        p = ptopes[i]
-        if p isa Triangle
-            topo_array[topo_ctr] = 4
-        elseif p isa Quadrilateral
-            topo_array[topo_ctr] = 5
-        elseif p isa Tetrahedron
-            topo_array[topo_ctr] = 6
-        elseif p isa Hexahedron
-            topo_array[topo_ctr] = 9
-        elseif p isa QuadraticTriangle
-            topo_array[topo_ctr] = 36
-        elseif p isa QuadraticQuadrilateral
-            topo_array[topo_ctr] = 37
-        elseif p isa QuadraticTetrahedron
-            topo_array[topo_ctr] = 38
-        elseif p isa QuadraticHexahedron
-            topo_array[topo_ctr] = 48
-        else
-            error("Could not determine topology type.")
-        end
-        topo_ctr += 1
-        len_p = length(vertices(p))
-        # adjust 1-based to 0-based indexing
-        topo_array[topo_ctr:topo_ctr + len_p - 1] = vertices(p) .- 1 
-        topo_ctr += len_p
-    end
+    _populate_topo_array_xdmf!(topo_array, mesh)
     ndims = string(length(topo_array))
     set_attribute(xdataitem, "Dimensions", ndims)
     set_attribute(xdataitem, "Format", "HDF")
+    uint_precision = string(sizeof(uint_type)) 
     set_attribute(xdataitem, "Precision", uint_precision)
     h5_text_item = split(string(h5_mesh))[2]
-    add_text(xdataitem, string(h5_filename, ":", h5_text_item, "/polytopes"))
+    add_text(xdataitem, string(h5_filename, ":", h5_text_item, "/connectivity"))
     # Write the h5
-    h5_mesh["polytopes"] = topo_array
+    h5_mesh["connectivity", compress = 3] = topo_array
     return nothing
 end
 
 function _write_xdmf_materials!(xml::XMLElement, 
                                h5_filename::String, 
                                h5_mesh::HDF5.Group, 
-                               mesh::PolytopeVertexMesh,
+                               mesh::AbstractMesh,
                                materials::Vector{String})
     # MaterialID
     xmaterial = new_child(xml, "Attribute")
     set_attribute(xmaterial, "Center", "Cell")
     set_attribute(xmaterial, "Name", "Material")
-    nelements = length(mesh.polytopes)
+    nelements = _nelements_xdmf(mesh) 
     mat_id_array = fill(-1, nelements)
     mesh_group_names = keys(mesh.groups)
     for (mat_id, material_name) in enumerate(materials)
@@ -263,41 +298,20 @@ function _write_xdmf_materials!(xml::XMLElement,
     set_attribute(xdataitem, "Dimensions", string(nelements))
     set_attribute(xdataitem, "Format", "HDF")
     N = length(materials)
-    if N ≤ typemax(UInt8) 
-        uint_type = UInt8
-    elseif N ≤ typemax(UInt16) 
-        uint_type = UInt16
-    elseif N ≤ typemax(UInt32) 
-        uint_type = UInt32
-    elseif N ≤ typemax(UInt64) 
-        uint_type = UInt64
-    else
-        error("N is not representable by UInt64.")
-    end
-    if uint_type === UInt8
-        uint_precision = "1"
-    elseif uint_type === UInt16
-        uint_precision = "2"
-    elseif uint_type === UInt32
-        uint_precision = "4"
-    elseif uint_type === UInt64
-        uint_precision = "8"
-    else
-        error("Could not determine UInt type.")
-    end
-
+    uint_type = _select_uint_type(N)
+    uint_precision= string(sizeof(uint_type)) 
     set_attribute(xdataitem, "Precision", uint_precision)
     h5_text_item = split(string(h5_mesh))[2]
     add_text(xdataitem, string(h5_filename, ":", h5_text_item, "/material"))
     # Write the h5
-    h5_mesh["material"] = mat_id_array
+    h5_mesh["material", compress = 3] = mat_id_array
     return nothing
 end
 
 function _write_xdmf_groups!(xml::XMLElement, 
                              h5_filename::String, 
                              h5_mesh::HDF5.Group, 
-                             mesh::PolytopeVertexMesh)
+                             mesh::AbstractMesh)
     for set_name in keys(mesh.groups)
         if startswith(set_name, "Material")
             continue
@@ -314,34 +328,14 @@ function _write_xdmf_groups!(xml::XMLElement,
         set_attribute(xdataitem, "Dimensions", nelements)
         set_attribute(xdataitem, "Format", "HDF")
         N = maximum(grp)
-        if N ≤ typemax(UInt8) 
-            uint_type = UInt8
-        elseif N ≤ typemax(UInt16) 
-            uint_type = UInt16
-        elseif N ≤ typemax(UInt32) 
-            uint_type = UInt32
-        elseif N ≤ typemax(UInt64) 
-            uint_type = UInt64
-        else
-            error("N is not representable by UInt64.")
-        end
-        if uint_type === UInt8
-            uint_precision = "1"
-        elseif uint_type === UInt16
-            uint_precision = "2"
-        elseif uint_type === UInt32
-            uint_precision = "4"
-        elseif uint_type === UInt64
-            uint_precision = "8"
-        else
-            error("Could not determine UInt type.")
-        end
+        uint_type = _select_uint_type(N)
+        uint_precision= string(sizeof(uint_type)) 
         set_attribute(xdataitem, "Precision", uint_precision)
         h5_text_item = split(string(h5_mesh))[2]
         add_text(xdataitem, string(h5_filename, ":", h5_text_item, "/", set_name))
         # Write the h5
         ID_array = collect(grp) .- 1 
-        h5_mesh[set_name] = ID_array
+        h5_mesh[set_name, compress = 3] = ID_array
     end
     return nothing
 end
@@ -350,7 +344,7 @@ function _add_mesh_partition_xdmf!(xml::XMLElement,
                                    h5_filename::String,
                                    h5_mesh::Union{HDF5.Group, HDF5.File},
                                    node::Tree{Tuple{Int64, String}},
-                                   leaf_meshes::Vector{<:PolytopeVertexMesh},
+                                   leaf_meshes::Vector{<:AbstractMesh},
                                    materials::Vector{String})
     id = node.data[1]
     if id === 0 # Internal node

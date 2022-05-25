@@ -17,11 +17,11 @@ end
 
 import_mesh(path::String) = import_mesh(path, Float64)
 
-#function export_mesh(mesh, path::String)
-#    @info "Writing "*path
-#    if endswith(path, ".xdmf")
-#        return write_xdmf(mesh, path)
-#    else
-#        error("Could not determine mesh file type from extension")
-#    end
-#end
+function export_mesh(path::String, mesh)
+    @info "Writing "*path
+    if endswith(path, ".xdmf")
+        return write_xdmf(path, mesh)
+    else
+        error("Could not determine mesh file type from extension")
+    end
+end
