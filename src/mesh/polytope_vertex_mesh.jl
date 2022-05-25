@@ -1,7 +1,7 @@
 export PolytopeVertexMesh
 export name, vertices, polytopes, groups, vertex_type
 
-struct PolytopeVertexMesh{Dim,T,P<:Polytope}
+struct PolytopeVertexMesh{Dim,T,P<:Polytope} <: AbstractMesh
     vertices::Vector{Point{Dim,T}}
     polytopes::Vector{P}
     name::String
