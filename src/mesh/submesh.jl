@@ -6,10 +6,12 @@ function submesh(mesh::VolumeMesh{Dim,T,U}, name::String) where {Dim,T,U}
     nelements = length(element_ids)
     types = Vector{U}(undef, nelements)
     offsets = Vector{U}(undef, nelements)
+    materials = Vector{UInt8}(undef, nelements)
     connectivity_len = 1
     for (i, id) in enumerate(element_ids)
         types[i] = mesh.types[id]
         offsets[i] = connectivity_len
+        materials[i] = mesh.materials[id]
         connectivity_len += points_in_vtk_type(types[i])
     end
     connectivity = Vector{U}(undef, connectivity_len - 1)
@@ -55,7 +57,8 @@ function submesh(mesh::VolumeMesh{Dim,T,U}, name::String) where {Dim,T,U}
                                 )
                              )
     end
-    return VolumeMesh{Dim,T,U}(points, types, offsets, connectivity, name, groups)
+    return VolumeMesh{Dim,T,U}(points, offsets, connectivity, types, 
+                               materials, mesh.material_names, name, groups)
 end
 
 function submesh(mesh::PolytopeVertexMesh, name::String)
@@ -102,5 +105,10 @@ function submesh(mesh::PolytopeVertexMesh, name::String)
                              )
     end
 
-    return typeof(mesh)(points, polytopes, name, groups)
+    materials = Vector{UInt8}(undef, length(polytope_ids_vec))
+    for (i, id) in enumerate(polytope_ids_vec)
+        materials[i] = mesh.materials[id]
+    end
+    return typeof(mesh)(points, polytopes, materials, 
+                        mesh.material_names, mesh.name, groups)
 end

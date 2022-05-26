@@ -10,7 +10,7 @@ function import_mesh(path::String, ::Type{T}) where {T<:AbstractFloat}
     @info "Reading "*path
     if endswith(path, ".inp")
         return read_abaqus(path, T)
-    elseif endswith(path, ".inp")
+    elseif endswith(path, ".xdmf")
         return read_xdmf(path, T)
     else
         error("Could not determine mesh file type from extension.")

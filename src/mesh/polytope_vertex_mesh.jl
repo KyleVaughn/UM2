@@ -1,9 +1,11 @@
 export PolytopeVertexMesh
-export name, vertices, polytopes, groups, vtk_type
+export name, vertices, polytopes, materials, material_names, groups, vtk_type
 
 struct PolytopeVertexMesh{Dim,T,P<:Polytope} <: AbstractMesh
     vertices::Vector{Point{Dim,T}}
     polytopes::Vector{P}
+    materials::Vector{UInt8}
+    material_names::Vector{String}
     name::String
     groups::Dict{String,BitSet}
 end
@@ -12,6 +14,8 @@ name(mesh::PolytopeVertexMesh) = mesh.name
 points(mesh::PolytopeVertexMesh) = mesh.vertices
 vertices(mesh::PolytopeVertexMesh) = mesh.vertices
 polytopes(mesh::PolytopeVertexMesh) = mesh.polytopes
+materials(mesh::PolytopeVertexMesh) = mesh.materials
+material_names(mesh::PolytopeVertexMesh) = mesh.material_names
 groups(mesh::PolytopeVertexMesh) = mesh.groups
 
 # constructors
@@ -32,6 +36,8 @@ function PolytopeVertexMesh(mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U}
     return PolytopeVertexMesh(
              mesh.points, 
              map(i->_materialize_face_connectivity(i, mesh), eachindex(mesh.types)),
+             mesh.materials,
+             mesh.material_names,
              mesh.name, 
              mesh.groups
             )
@@ -73,6 +79,7 @@ function Base.show(io::IO, mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P}
             println(io, "  │  ├─ ", rpad(alias_string(poly_type), 22), ": ", npoly) 
         end                 
     end
+    println(io, "  ├─ Materials : ", length(mesh.material_names))
     ngroups = length(mesh.groups)
     println(io, "  └─ Groups    : ", ngroups) 
     if 0 < ngroups ≤ 5

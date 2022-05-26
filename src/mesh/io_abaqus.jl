@@ -35,7 +35,7 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
     file = open(path, "r")
     try
         nodes = Point{3,T}[]
-        element_types = UInt64[] 
+        element_types = UInt8[] 
         offsets = UInt64[]
         elements = UInt64[] 
         name = ""
@@ -54,7 +54,7 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
                     if isnothing(m)
                         error("Incorrectly formatted Abaqus file?")
                     else
-                        element_type = UInt64(_abaqus_element_string_to_int(String(m.captures[1])))
+                        element_type = _abaqus_element_string_to_int(String(m.captures[1]))
                     end
                     _read_abaqus_elements!(file, element_type, element_types, offsets, elements)
                 elseif startswith(line, "*ELSET")
@@ -78,11 +78,37 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
         end
         U = _select_uint_type(max(length(elements), 
                                   length(nodes)))
+        # Add the final offset
         push!(offsets, length(elements)+1)
+        # Set materials if there are any
+        materials = zeros(UInt8, length(element_types)) 
+        material_names = String[]
+        for key in keys(elsets)
+            if startswith(key, "Material")
+                push!(material_names, key)
+            end
+        end
+        nmaterials = length(material_names)
+        if 0 < nmaterials 
+            sort!(material_names)
+            for (i, mat) in enumerate(material_names)
+                for element_id in elsets[mat]
+                    if materials[element_id] === UInt8(0)
+                        materials[element_id] = i
+                    else
+                        error("Attempting to assign two materials to the same element.")
+                    end
+                end    
+                pop!(elsets, mat)
+            end
+        end
+        trimmed_names = [mat[11:end] for mat in material_names]
         if is2d
-            return VolumeMesh{2,T,U}(nodes, element_types, offsets, elements, name, elsets)
+            return VolumeMesh{2,T,U}(nodes, offsets, elements, element_types,
+                                     materials, trimmed_names, name, elsets)
         else
-            return VolumeMesh{3,T,U}(nodes, element_types, offsets, elements, name, elsets)
+            return VolumeMesh{3,T,U}(nodes, offsets, elements, element_types,
+                                     materials, trimmed_names, name, elsets)
         end
     finally
         close(file)
@@ -112,8 +138,8 @@ function _read_abaqus_nodes!(file::IOStream, nodes::Vector{Point{3,T}}) where {T
 end
 
 function _read_abaqus_elements!(file::IOStream, 
-                                element_type::UInt64,
-                                element_types::Vector{UInt64},
+                                element_type::UInt8,
+                                element_types::Vector{UInt8},
                                 offsets::Vector{UInt64},
                                 elements::Vector{UInt64}) 
     mark(file)

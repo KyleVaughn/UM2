@@ -375,15 +375,25 @@ function _add_mesh_partition_xdmf!(xml::EzXML.Node,
     return nothing
 end
 
-##################################################################################
-##                                    READ
-##################################################################################
+#################################################################################
+#                                    READ
+#################################################################################
+#xdmf_read_error(x::String) = error("Error reading XDMF file.")
 #function read_xdmf(path::String, ::Type{T}) where {T<:AbstractFloat}
-#    xdoc = parse_file(path)
+#    xdoc = readxml(path)
 #    xroot = root(xdoc)
+#    nodename(xroot) != "Xdmf" && xdmf_read_error()
 #    try
+#        version = xroot["Version"]
+#        version != "3.0" && xdmf_read_error()
+#        xdomain = firstnode(xroot)
+#        nodename(xdomain) != "Domain" && xdmf_read_error()
+#        material_names = String[]
+#        if 1 < countnodes(xdomain) && nodename(firstnode(xdomain)) == "Information"
+#            append!(material_names, 
+#        end
 #
 #    finally
-#        free(xdoc)
+#
 #    end
 #end

@@ -1,47 +1,51 @@
 export VolumeMesh
-export points, name, groups, ishomogeneous, points_in_vtk_type 
+export points, name, groups, materials, material_names, ishomogeneous, points_in_vtk_type 
 
 struct VolumeMesh{Dim,T,U} <: AbstractMesh
     points::Vector{Point{Dim,T}}
-    types::Vector{U}
-    offsets::Vector{U}
-    connectivity::Vector{U}
+    offsets::Vector{U}              # First index in connectivity
+    connectivity::Vector{U}         # Point IDs that compose each element
+    types::Vector{UInt8}            # VTK integer type of the element
+    materials::Vector{UInt8}        # ID of the element's material
+    material_names::Vector{String}
     name::String
-    groups::Dict{String,BitSet}
+    groups::Dict{String,BitSet}     # "Label"=>{IDs of elements with this label} 
 end
 
 points(mesh::VolumeMesh) = mesh.points
 name(mesh::VolumeMesh) = mesh.name
 groups(mesh::VolumeMesh) = mesh.groups
+materials(mesh::VolumeMesh) = mesh.materials
+material_names(mesh::VolumeMesh) = mesh.material_names
 
-const VTK_TRIANGLE = 5
-const VTK_QUAD = 9
-const VTK_QUADRATIC_TRIANGLE = 22
-const VTK_QUADRATIC_QUAD = 23
-const VTK_TETRA = 10
-const VTK_HEXAHEDRON = 12
-const VTK_QUADRATIC_TETRA = 24
-const VTK_QUADRATIC_HEXAHEDRON = 25
+const VTK_TRIANGLE::UInt8 = 5
+const VTK_QUAD::UInt8 = 9
+const VTK_QUADRATIC_TRIANGLE::UInt8 = 22
+const VTK_QUADRATIC_QUAD::UInt8 = 23
+const VTK_TETRA::UInt8 = 10
+const VTK_HEXAHEDRON::UInt8 = 12
+const VTK_QUADRATIC_TETRA::UInt8 = 24
+const VTK_QUADRATIC_HEXAHEDRON::UInt8 = 25
 
 ishomogeneous(mesh::VolumeMesh) = all(i->mesh.types[1] === mesh.types[i], 2:length(mesh.types))
 
 function points_in_vtk_type(vtk_type::I) where {I<:Integer}
     if vtk_type == VTK_TRIANGLE
-        return I(3)
+        return 3
     elseif vtk_type == VTK_QUAD
-        return I(4)
+        return 4
     elseif vtk_type == VTK_QUADRATIC_TRIANGLE
-        return I(6)
+        return 6
     elseif vtk_type == VTK_QUADRATIC_QUAD
-        return I(8)
+        return 8
     elseif vtk_type == VTK_TETRA
-        return I(4)
+        return 4
     elseif vtk_type == VTK_HEXAHEDRON
-        return I(8)
+        return 8
     elseif vtk_type == VTK_QUADRATIC_TETRA
-        return I(10)
+        return 10
     elseif vtk_type == VTK_QUADRATIC_HEXAHEDRON
-        return I(12)
+        return 12
     else
         error("Unsupported type.")
         return nothing
@@ -97,6 +101,7 @@ function Base.show(io::IO, mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U}
             println(io, "  │  ├─ ", rpad(vtk_alias_string(type), 22), ": ", nelements)
         end
     end
+    println(io, "  ├─ Materials : ", length(mesh.material_names))
     ngroups = length(mesh.groups)
     println(io, "  └─ Groups    : ", ngroups)
     if 0 < ngroups ≤ 5
