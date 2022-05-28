@@ -38,15 +38,6 @@ function write_xdmf(filename::String, mpt::MeshPartitionTree)
         error("Invalid filename.")
     end
 
-    material_groups = String[]
-    for mesh in leaf_meshes(mpt) 
-        for group_name in keys(mesh.groups)
-            if startswith(group_name, "Material") && group_name ∉ material_groups
-                push!(material_groups, group_name)
-            end
-        end
-    end
-    sort!(material_groups)
     # h5 filename
     h5_filename = filename[1:end-4]*"h5"
     h5_file = h5open(h5_filename, "w")
@@ -61,22 +52,22 @@ function write_xdmf(filename::String, mpt::MeshPartitionTree)
         xdomain = ElementNode("Domain")
         link!(xroot, xdomain)  
         # Material names
-        materials = [ mat[11:end] for mat in material_groups ]
-        if materials != String[] 
-            xmaterials = ElementNode("Information")                         
+        # All leaf meshes should have same material_names
+        if 0 < length(mpt.leaf_meshes[1].material_names)
+            xmaterials = ElementNode("Information")
             link!(xdomain, xmaterials)
             link!(xmaterials, AttributeNode("Name", "Materials"))
-            link!(xmaterials, TextNode(join(materials, " ")))
+            link!(xmaterials, TextNode(join(mpt.leaf_meshes[1].material_names, " ")))
         end
         _add_mesh_partition_xdmf!(xdomain, h5_filename, h5_file, 
-                                  mpt.partition_tree, mpt.leaf_meshes, material_groups)
+                                  mpt.partition_tree, mpt.leaf_meshes)
     finally
         write(filename, xdoc)
         close(h5_file)
     end
     return nothing
 end
-
+ 
 function write_xdmf(filename::String, mesh::AbstractMesh) 
     # Check valid filename
     if !endswith(filename, ".xdmf")
@@ -98,23 +89,17 @@ function write_xdmf(filename::String, mesh::AbstractMesh)
         xdomain = ElementNode("Domain")
         link!(xroot, xdomain)  
         
-        material_groups = sort!(filter!(x->startswith(x, "Material"), 
-                                        collect(keys(mesh.groups))
-                                       )
-                               )
-        materials = [ mat[11:end] for mat in material_groups ]
 
         # Material names
-        if materials != String[] 
+        if 0 < length(mesh.material_names)
             xmaterials = ElementNode("Information")
             link!(xdomain, xmaterials)
             link!(xmaterials, AttributeNode("Name", "Materials"))
-            link!(xmaterials, TextNode(join(materials, " ")))
+            link!(xmaterials, TextNode(join(mesh.material_names, " ")))
         end
 
-    # Add uniform grid
-    _add_uniform_grid_xdmf!(xdomain, h5_filename, h5_file, mesh, material_groups)
-
+        # Add uniform grid
+        _add_uniform_grid_xdmf!(xdomain, h5_filename, h5_file, mesh)
     finally
         write(filename, xdoc)
         close(h5_file)
@@ -127,8 +112,7 @@ end
 function _add_uniform_grid_xdmf!(xml::EzXML.Node,
                                 h5_filename::String,
                                 h5_mesh::Union{HDF5.Group, HDF5.File},
-                                mesh::AbstractMesh,
-                                materials::Vector{String})
+                                mesh::AbstractMesh)
     # Grid                                                                       
     xgrid = ElementNode("Grid")
     link!(xml, xgrid)
@@ -145,13 +129,13 @@ function _add_uniform_grid_xdmf!(xml::EzXML.Node,
     _write_xdmf_topology!(xgrid, h5_filename, h5_group, mesh)
  
     # Non-material groups 
-    if mesh.groups != Dict{String,BitSet}() 
+    if 0 < length(mesh.groups)
         _write_xdmf_groups!(xgrid, h5_filename, h5_group, mesh)
     end
  
     # Materials
-    if materials != String[] 
-        _write_xdmf_materials!(xgrid, h5_filename, h5_group, mesh, materials)
+    if 0 < length(mesh.material_names)
+        _write_xdmf_materials!(xgrid, h5_filename, h5_group, mesh)
     end
     return nothing
 end
@@ -271,30 +255,11 @@ end
 function _write_xdmf_materials!(xml::EzXML.Node, 
                                h5_filename::String, 
                                h5_mesh::HDF5.Group, 
-                               mesh::AbstractMesh,
-                               materials::Vector{String})
-    nelements = _nelements_xdmf(mesh) 
-    mat_id_array = fill(-1, nelements)
-    mesh_group_names = keys(mesh.groups)
-    for (mat_id, material_name) in enumerate(materials)
-        if material_name in mesh_group_names 
-            for cell in mesh.groups[material_name]
-                if mat_id_array[cell] === -1
-                    mat_id_array[cell] = mat_id - 1 # 0 based indexing
-                else
-                    error("Mesh cell "*string(cell)*" has multiple materials assigned to it.")
-                end
-            end
-        end
-    end
-    if any(x->x === -1, mat_id_array)
-        error("Some mesh cells do not have a material.")
-    end
-    N = length(materials)
-    uint_type = _select_uint_type(N)
-    uint_precision= string(sizeof(uint_type)) 
+                               mesh::AbstractMesh)
+    N = length(mesh.materials)
+    uint_precision= string(sizeof(UInt8)) 
 
-    # MaterialID
+    # Material
     xmaterial = ElementNode("Attribute")
     link!(xml, xmaterial)
     link!(xmaterial, AttributeNode("Center", "Cell"))
@@ -303,13 +268,13 @@ function _write_xdmf_materials!(xml::EzXML.Node,
     xdataitem = ElementNode("DataItem")
     link!(xmaterial, xdataitem)
     link!(xdataitem, AttributeNode("DataType", "UInt"))
-    link!(xdataitem, AttributeNode("Dimensions", string(nelements)))
+    link!(xdataitem, AttributeNode("Dimensions", string(N)))
     link!(xdataitem, AttributeNode("Format", "HDF"))
     link!(xdataitem, AttributeNode("Precision", uint_precision))
     h5_text_item = split(string(h5_mesh))[2]
     link!(xdataitem, TextNode(string(h5_filename, ":", h5_text_item, "/material")))
     # Write the h5
-    h5_mesh["material", compress = 3] = mat_id_array
+    h5_mesh["material", compress = 3] = mesh.materials .- 1 # 0-based indexing
     return nothing
 end
 
@@ -318,9 +283,6 @@ function _write_xdmf_groups!(xml::EzXML.Node,
                              h5_mesh::HDF5.Group, 
                              mesh::AbstractMesh)
     for set_name in keys(mesh.groups)
-        if startswith(set_name, "Material")
-            continue
-        end
         grp = mesh.groups[set_name]
         N = maximum(grp)
         uint_type = _select_uint_type(N)
@@ -352,8 +314,7 @@ function _add_mesh_partition_xdmf!(xml::EzXML.Node,
                                    h5_filename::String,
                                    h5_mesh::Union{HDF5.Group, HDF5.File},
                                    node::Tree{Tuple{Int64, String}},
-                                   leaf_meshes::Vector{<:AbstractMesh},
-                                   materials::Vector{String})
+                                   leaf_meshes::Vector{<:AbstractMesh})
     id = node.data[1]
     if id === 0 # Internal node
         name = node.data[2]
@@ -365,35 +326,33 @@ function _add_mesh_partition_xdmf!(xml::EzXML.Node,
         # h5_group
         h5_group = create_group(h5_mesh, name)
         for child in node.children
-            _add_mesh_partition_xdmf!(xgrid, h5_filename, h5_group, child, 
-                                      leaf_meshes, materials)
+            _add_mesh_partition_xdmf!(xgrid, h5_filename, h5_group, child, leaf_meshes)
         end
     else # Leaf node 
-        _add_uniform_grid_xdmf!(xml, h5_filename, h5_mesh, 
-                                leaf_meshes[id], materials)
+        _add_uniform_grid_xdmf!(xml, h5_filename, h5_mesh, leaf_meshes[id])
     end
     return nothing
 end
 
-#################################################################################
-#                                    READ
-#################################################################################
-#xdmf_read_error(x::String) = error("Error reading XDMF file.")
-#function read_xdmf(path::String, ::Type{T}) where {T<:AbstractFloat}
-#    xdoc = readxml(path)
-#    xroot = root(xdoc)
-#    nodename(xroot) != "Xdmf" && xdmf_read_error()
-#    try
-#        version = xroot["Version"]
-#        version != "3.0" && xdmf_read_error()
-#        xdomain = firstnode(xroot)
-#        nodename(xdomain) != "Domain" && xdmf_read_error()
-#        material_names = String[]
-#        if 1 < countnodes(xdomain) && nodename(firstnode(xdomain)) == "Information"
-#            append!(material_names, 
-#        end
-#
-#    finally
-#
-#    end
-#end
+# #################################################################################
+# #                                    READ
+# #################################################################################
+# #xdmf_read_error(x::String) = error("Error reading XDMF file.")
+# #function read_xdmf(path::String, ::Type{T}) where {T<:AbstractFloat}
+# #    xdoc = readxml(path)
+# #    xroot = root(xdoc)
+# #    nodename(xroot) != "Xdmf" && xdmf_read_error()
+# #    try
+# #        version = xroot["Version"]
+# #        version != "3.0" && xdmf_read_error()
+# #        xdomain = firstnode(xroot)
+# #        nodename(xdomain) != "Domain" && xdmf_read_error()
+# #        material_names = String[]
+# #        if 1 < countnodes(xdomain) && nodename(firstnode(xdomain)) == "Information"
+# #            append!(material_names, 
+# #        end
+# #
+# #    finally
+# #
+# #    end
+# #end

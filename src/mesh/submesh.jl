@@ -110,5 +110,5 @@ function submesh(mesh::PolytopeVertexMesh, name::String)
         materials[i] = mesh.materials[id]
     end
     return typeof(mesh)(points, polytopes, materials, 
-                        mesh.material_names, mesh.name, groups)
+                        mesh.material_names, name, groups)
 end
