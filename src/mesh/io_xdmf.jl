@@ -29,6 +29,30 @@ function vtk2xdmf(vtk_type)
         return nothing
     end
 end
+
+function xdmf2vtk(xdmf_type)
+    if xdmf_type == XDMF_TRIANGLE
+        return VTK_TRIANGLE
+    elseif xdmf_type == XDMF_QUAD
+        return VTK_QUAD
+    elseif xdmf_type == XDMF_QUADRATIC_TRIANGLE
+        return VTK_QUADRATIC_TRIANGLE
+    elseif xdmf_type == XDMF_QUADRATIC_QUAD
+        return VTK_QUADRATIC_QUAD
+    elseif xdmf_type == XDMF_TETRA 
+        return VTK_TETRA
+    elseif xdmf_type == XDMF_HEXAHEDRON
+        return VTK_HEXAHEDRON
+    elseif xdmf_type == XDMF_QUADRATIC_TETRA
+        return VTK_QUADRATIC_TETRA
+    elseif xdmf_type == XDMF_QUADRATIC_HEXAHEDRON
+        return VTK_QUADRATIC_HEXAHEDRON
+    else
+        error("Invalid XDMF type.")
+        return nothing
+    end
+end
+
 #################################################################################
 #                                    WRITE
 #################################################################################
@@ -37,7 +61,6 @@ function write_xdmf(filename::String, mpt::MeshPartitionTree)
     if !endswith(filename, ".xdmf")
         error("Invalid filename.")
     end
-
     # h5 filename
     h5_filename = filename[1:end-4]*"h5"
     h5_file = h5open(h5_filename, "w")
@@ -73,11 +96,9 @@ function write_xdmf(filename::String, mesh::AbstractMesh)
     if !endswith(filename, ".xdmf")
         error("Invalid filename.")
     end
-
     # h5
     h5_filename = filename[1:end-4]*"h5"
     h5_file = h5open(h5_filename, "w")
-
     # XML
     xdoc = XMLDocument()
     try
@@ -88,8 +109,6 @@ function write_xdmf(filename::String, mesh::AbstractMesh)
         # Domain
         xdomain = ElementNode("Domain")
         link!(xroot, xdomain)  
-        
-
         # Material names
         if 0 < length(mesh.material_names)
             xmaterials = ElementNode("Information")
@@ -97,7 +116,6 @@ function write_xdmf(filename::String, mesh::AbstractMesh)
             link!(xmaterials, AttributeNode("Name", "Materials"))
             link!(xmaterials, TextNode(join(mesh.material_names, " ")))
         end
-
         # Add uniform grid
         _add_uniform_grid_xdmf!(xdomain, h5_filename, h5_file, mesh)
     finally
@@ -118,21 +136,16 @@ function _add_uniform_grid_xdmf!(xml::EzXML.Node,
     link!(xml, xgrid)
     link!(xgrid, AttributeNode("Name", mesh.name))
     link!(xgrid, AttributeNode("GridType", "Uniform"))
-
     # h5
     h5_group = create_group(h5_mesh, mesh.name)
- 
     # Geometry
     _write_xdmf_geometry!(xgrid, h5_filename, h5_group, mesh)
- 
     # Topology
     _write_xdmf_topology!(xgrid, h5_filename, h5_group, mesh)
- 
     # Non-material groups 
     if 0 < length(mesh.groups)
         _write_xdmf_groups!(xgrid, h5_filename, h5_group, mesh)
     end
- 
     # Materials
     if 0 < length(mesh.material_names)
         _write_xdmf_materials!(xgrid, h5_filename, h5_group, mesh)
@@ -173,7 +186,7 @@ function _write_xdmf_geometry!(xml::EzXML.Node,
     link!(xdataitem, AttributeNode("Dimensions", nverts_str*dim))
     link!(xdataitem, AttributeNode("Format", "HDF"))
     link!(xdataitem, AttributeNode("Precision", float_precision))
-    h5_text_item = split(string(h5_mesh))[2]
+    h5_text_item = HDF5.name(h5_mesh)
     link!(xdataitem, TextNode(string(h5_filename, ":", h5_text_item, "/points")))
     # Write the h5
     h5_mesh["points", compress = 3] = vert_array
@@ -245,7 +258,7 @@ function _write_xdmf_topology!(xml::EzXML.Node,
     link!(xdataitem, AttributeNode("Dimensions", ndims))
     link!(xdataitem, AttributeNode("Format", "HDF"))
     link!(xdataitem, AttributeNode("Precision", uint_precision))
-    h5_text_item = split(string(h5_mesh))[2]
+    h5_text_item = HDF5.name(h5_mesh) 
     link!(xdataitem, TextNode(string(h5_filename, ":", h5_text_item, "/connectivity")))
     # Write the h5
     h5_mesh["connectivity", compress = 3] = topo_array
@@ -271,7 +284,7 @@ function _write_xdmf_materials!(xml::EzXML.Node,
     link!(xdataitem, AttributeNode("Dimensions", string(N)))
     link!(xdataitem, AttributeNode("Format", "HDF"))
     link!(xdataitem, AttributeNode("Precision", uint_precision))
-    h5_text_item = split(string(h5_mesh))[2]
+    h5_text_item = HDF5.name(h5_mesh) 
     link!(xdataitem, TextNode(string(h5_filename, ":", h5_text_item, "/material")))
     # Write the h5
     h5_mesh["material", compress = 3] = mesh.materials .- 1 # 0-based indexing
@@ -302,7 +315,7 @@ function _write_xdmf_groups!(xml::EzXML.Node,
         link!(xdataitem, AttributeNode("Dimensions", nelements))
         link!(xdataitem, AttributeNode("Format", "HDF"))
         link!(xdataitem, AttributeNode("Precision", uint_precision))
-        h5_text_item = split(string(h5_mesh))[2]
+        h5_text_item = HDF5.name(h5_mesh) 
         link!(xdataitem, TextNode(string(h5_filename, ":", h5_text_item, "/", set_name)))
         # Write the h5
         h5_mesh[set_name, compress = 3] = id_array
@@ -334,25 +347,114 @@ function _add_mesh_partition_xdmf!(xml::EzXML.Node,
     return nothing
 end
 
-# #################################################################################
-# #                                    READ
-# #################################################################################
-# #xdmf_read_error(x::String) = error("Error reading XDMF file.")
-# #function read_xdmf(path::String, ::Type{T}) where {T<:AbstractFloat}
-# #    xdoc = readxml(path)
-# #    xroot = root(xdoc)
-# #    nodename(xroot) != "Xdmf" && xdmf_read_error()
-# #    try
-# #        version = xroot["Version"]
-# #        version != "3.0" && xdmf_read_error()
-# #        xdomain = firstnode(xroot)
-# #        nodename(xdomain) != "Domain" && xdmf_read_error()
-# #        material_names = String[]
-# #        if 1 < countnodes(xdomain) && nodename(firstnode(xdomain)) == "Information"
-# #            append!(material_names, 
-# #        end
-# #
-# #    finally
-# #
-# #    end
-# #end
+#################################################################################
+#                                    READ
+#################################################################################
+xdmf_read_error(x::String) = error("Error reading XDMF file.")
+function read_xdmf(path::String, ::Type{T}) where {T<:AbstractFloat}
+    xdoc = readxml(path)
+    xroot = root(xdoc)
+    nodename(xroot) != "Xdmf" && xdmf_read_error()
+    h5_file = h5open(path[1:end-4]*"h5", "r")
+    try
+        version = xroot["Version"]
+        version != "3.0" && xdmf_read_error()
+        xdomain = firstnode(xroot)
+        nodename(xdomain) != "Domain" && xdmf_read_error()
+        material_names = String[]
+        nnodes = countnodes(xdomain)
+        if 2 == nnodes && nodename(firstnode(xdomain)) == "Information"
+            append!(material_names, split(nodecontent(firstnode(xdomain)), " "))
+            xgrid = nodes(xdomain)[2]
+        elseif 1 == nnodes
+            xgrid = firstnode(xdomain)
+        else
+            xdmf_read_error()
+        end
+        grid_type = xgrid["GridType"]
+        if grid_type == "Uniform"
+            return _read_xdmf_uniform_grid(xgrid, h5_file, material_names)
+#        elseif grid_type == "Tree"
+#             
+        else
+            xdmf_read_error()
+        end
+    finally
+        close(h5_file)
+    end
+    return nothing
+end
+
+# Helper functions for read_xdmf
+# -------------------------------------------------------------------------------------------------
+function _read_xdmf_uniform_grid(xgrid::EzXML.Node, 
+                                 h5_file::HDF5.File, 
+                                 material_names::Vector{String})
+    # Get all the h5 file paths to relevant data
+    points_path = ""
+    connectivity_path = ""
+    material_path = ""
+    group_paths = String[]
+    group_names = String[]
+    for child in eachnode(xgrid)
+        child_name = nodename(child)
+        m = match(r"(?<=:/).*", nodecontent(child)) 
+        path = string(m.match)
+        if child_name == "Geometry"
+            points_path = path 
+        elseif child_name == "Topology"
+            connectivity_path = string(m.match) 
+        elseif child_name == "Attribute" && haskey(child, "Name") && child["Name"] == "Material"
+            material_path = path 
+        elseif child_name == "Set" && haskey(child, "SetType") && child["SetType"] == "Cell"
+            push!(group_paths, path)
+            push!(group_names, child["Name"])
+        else
+            warn("Unused XML node: "*child_name)
+        end
+    end
+    # Points
+    name = xgrid["Name"]
+    points_xyz = read(h5_file[points_path])
+    dim, npoints = size(points_xyz)
+    float_type = eltype(points_xyz)
+    points = collect(reinterpret(reshape, Point{dim,float_type}, points_xyz))
+    # Connectivity
+    connectivity = read(h5_file[connectivity_path])
+    uint_type = eltype(connectivity)
+    # count elements
+    conn_length = length(connectivity)
+    nelements = 0
+    offset = 1
+    while offset < conn_length
+        nelements += 1
+        xdmf_type = connectivity[offset]
+        vtk_type = xdmf2vtk(xdmf_type)
+        offset += points_in_vtk_type(vtk_type) + 1
+    end
+    # set offsets and types
+    offsets = Vector{uint_type}(undef, nelements)
+    types = Vector{UInt8}(undef, nelements)
+    offset = 1
+    for i in 1:nelements
+        offsets[i] = offset
+        xdmf_type = connectivity[offset]
+        vtk_type = xdmf2vtk(xdmf_type)
+        types[i] = vtk_type
+        offset += points_in_vtk_type(vtk_type) + 1
+    end
+    deleteat!(connectivity, offsets)
+    # Materials
+    materials = zeros(UInt8, nelements)
+    if material_path != ""
+        materials[begin:end] = read(h5_file[material_path])  
+    end
+    # Groups
+    groups = Dict{String,BitSet}() 
+    for i in 1:length(group_paths)
+        groups[group_names[i]] = BitSet(read(h5_file[group_paths[i]]))
+    end
+    return VolumeMesh{dim,float_type,uint_type}(points, offsets, connectivity,
+                                                types, materials, material_names,
+                                                name, groups)
+end
