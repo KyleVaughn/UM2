@@ -1,5 +1,5 @@
 export Tree
-export data, parent, children, isroot, is_parents_last_child, leaves
+export data, parent, children, isroot, is_parents_last_child, leaves, nleaves
 
 mutable struct Tree{T}
     data::T
@@ -46,6 +46,14 @@ function get_leaves!(node::Tree{T}, leaf_nodes::Vector{Tree{T}}) where {T}
         push!(leaf_nodes, node)
     end
     return nothing
+end
+function nleaves(node::Tree)
+    node_children = children(node)
+    if !isnothing(node_children)
+        return mapreduce(nleaves, +, node_children)
+    else
+        return 1
+    end
 end
 
 function Base.show(io::IO, node::Tree)

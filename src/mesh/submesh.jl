@@ -5,7 +5,7 @@ function submesh(mesh::VolumeMesh{Dim,T,U}, name::String) where {Dim,T,U}
     element_ids = mesh.groups[name]
     nelements = length(element_ids)
     types = Vector{U}(undef, nelements)
-    offsets = Vector{U}(undef, nelements)
+    offsets = Vector{U}(undef, nelements+1)
     materials = Vector{UInt8}(undef, nelements)
     connectivity_len = 1
     for (i, id) in enumerate(element_ids)
@@ -21,6 +21,8 @@ function submesh(mesh::VolumeMesh{Dim,T,U}, name::String) where {Dim,T,U}
         m_offset = mesh.offsets[id]
         connectivity[sm_offset:sm_offset+npts-1] = mesh.connectivity[m_offset:m_offset+npts-1]
     end
+    # Add the last offset
+    offsets[nelements + 1] = connectivity_len
 
     # Submesh points 
     point_ids = BitSet()
