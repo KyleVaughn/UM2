@@ -65,7 +65,7 @@ function angular_quadrature(azimuthal_form::Symbol,
     if polar_form === :chebyshev
         pol_weights, pol_angles = chebyshev_angular_quadrature(polar_degree, T)
     else
-        error("Cannot identify azimuthal quadrature.")
+        error("Cannot identify polar quadrature.")
     end
     return ProductAngularQuadrature{2azimuthal_degree, polar_degree, T}(
                                        azi_weights, azi_angles,
