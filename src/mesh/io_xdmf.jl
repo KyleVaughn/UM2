@@ -444,15 +444,22 @@ function _read_xdmf_uniform_grid(xgrid::EzXML.Node,
         offset += points_in_vtk_type(vtk_type) + 1
     end
     deleteat!(connectivity, offsets)
+    connectivity .+= 1 # convert 0-based to 1-based
+    # Account for deletion
+    for i in 1:nelements
+        offsets[i] -= i - 1    
+    end
+    # Add the final offset
+    push!(offsets, length(connectivity) + 1)
     # Materials
     materials = zeros(UInt8, nelements)
     if material_path != ""
-        materials[begin:end] = read(h5_file[material_path])  
+        materials[begin:end] = read(h5_file[material_path]) .+= 1 
     end
     # Groups
     groups = Dict{String,BitSet}() 
     for i in 1:length(group_paths)
-        groups[group_names[i]] = BitSet(read(h5_file[group_paths[i]]))
+        groups[group_names[i]] = BitSet(read(h5_file[group_paths[i]]) .+= 1)
     end
     return VolumeMesh{dim,float_type,uint_type}(points, offsets, connectivity,
                                                 types, materials, material_names,
