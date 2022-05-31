@@ -18,20 +18,6 @@ materials(mesh::PolytopeVertexMesh) = mesh.materials
 material_names(mesh::PolytopeVertexMesh) = mesh.material_names
 groups(mesh::PolytopeVertexMesh) = mesh.groups
 
-# constructors
-function PolytopeVertexMesh(vertices::Vector{Point{Dim,T}}, 
-                            polytopes::Vector{P},
-                            name::String
-                           ) where {Dim,T,P}
-    return PolytopeVertexMesh(vertices, polytopes, name, Dict{String,BitSet}())
-end
-
-function PolytopeVertexMesh(vertices::Vector{Point{Dim,T}}, 
-                            polytopes::Vector{P}
-                           ) where {Dim,T,P}
-    return PolytopeVertexMesh(vertices, polytopes, "", Dict{String,BitSet}())
-end
-
 function PolytopeVertexMesh(mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U}
     return PolytopeVertexMesh(
              mesh.points, 
