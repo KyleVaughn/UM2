@@ -43,7 +43,7 @@ export angular_quadrature
 #    w::Tuple{T} # Weights for each point
 #end
 
-struct ProductAngularQuadrature{nγ, nθ, T}
+struct ProductAngularQuadrature{nγ,nθ,T}
     wγ::SVector{nγ,T}   # Weights for the azimuthal angles
     γ::SVector{nγ,T}    # Azimuthal angles, γ ∈ (0, π)
     wθ::SVector{nθ,T}   # Weights for the polar angles

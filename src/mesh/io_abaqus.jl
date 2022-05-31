@@ -104,10 +104,10 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
         end
         trimmed_names = [mat[11:end] for mat in material_names]
         if is2d
-            return VolumeMesh{2,T,U}(nodes, offsets, elements, element_types,
+            return VolumeMesh{2,T,U}(nodes, offsets, elements, 
                                      materials, trimmed_names, name, elsets)
         else
-            return VolumeMesh{3,T,U}(nodes, offsets, elements, element_types,
+            return VolumeMesh{3,T,U}(nodes, offsets, elements,
                                      materials, trimmed_names, name, elsets)
         end
     finally

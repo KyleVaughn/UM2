@@ -8,23 +8,23 @@ export materialize,
        materialize_edges
 
 # Not type-stable
-function materialize_face(i::Integer, mesh::VolumeMesh)
-    vtk_type = mesh.types[i]
-    Δ = mesh.offsets[i]
+function materialize_face(i::Integer, mesh::VolumeMesh{2})
+    offset = mesh.offsets[i]
+    Δ = offset_diff(i, mesh) 
     points = mesh.points
     conn = mesh.connectivity
-    if vtk_type == VTK_TRIANGLE
-        vids = conn[Vec(ntuple(i->i+Δ-1, Val(3))...)]
-        return Triangle(points[convert(SVector{3,Int64}, vids)])
-    elseif vtk_type == VTK_QUAD
-        vids = conn[Vec(ntuple(i->i+Δ-1, Val(4))...)]
-        return Quadrilateral(points[convert(SVector{4,Int64}, vids)])
-    elseif vtk_type == VTK_QUADRATIC_TRIANGLE
-        vids = conn[Vec(ntuple(i->i+Δ-1, Val(6))...)]
-        return QuadraticTriangle(points[convert(SVector{6,Int64}, vids)])
-    elseif vtk_type == VTK_QUADRATIC_QUAD
-        vids = conn[Vec(ntuple(i->i+Δ-1, Val(8))...)]
-        return QuadraticQuadrilateral(points[convert(SVector{8,Int64}, vids)])
+    if Δ == 3 
+        vids = Vec{3,Int64}(conn[Vec(ntuple(i->i+offset-1, Val(3))...)])
+        return Triangle(points[vids])
+    elseif Δ == 4 
+        vids = Vec{4,Int64}(conn[Vec(ntuple(i->i+offset-1, Val(4))...)])
+        return Quadrilateral(points[vids])
+    elseif Δ == 6
+        vids = Vec{6,Int64}(conn[Vec(ntuple(i->i+offset-1, Val(6))...)])
+        return QuadraticTriangle(points[vids])
+    elseif Δ == 8 
+        vids = Vec{8,Int64}(conn[Vec(ntuple(i->i+offset-1, Val(8))...)])
+        return QuadraticQuadrilateral(points[vids])
     else
         error("Unsupported type.")
         return nothing
@@ -32,22 +32,22 @@ function materialize_face(i::Integer, mesh::VolumeMesh)
 end
 
 # Not type-stable
-function _materialize_face_connectivity(i::Integer, mesh::VolumeMesh)
-    vtk_type = mesh.types[i]
-    Δ = mesh.offsets[i]
+function _materialize_face_connectivity(i::Integer, mesh::VolumeMesh{2})
+    offset = mesh.offsets[i]
+    Δ = offset_diff(i, mesh) 
     conn = mesh.connectivity
-    if vtk_type == VTK_TRIANGLE
-        vids = conn[Vec(ntuple(i->i+Δ-1, Val(3))...)]
-        return Triangle(vids...)
-    elseif vtk_type == VTK_QUAD
-        vids = conn[Vec(ntuple(i->i+Δ-1, Val(4))...)]
-        return Quadrilateral(vids...)
-    elseif vtk_type == VTK_QUADRATIC_TRIANGLE
-        vids = conn[Vec(ntuple(i->i+Δ-1, Val(6))...)]
-        return QuadraticTriangle(vids...)
-    elseif vtk_type == VTK_QUADRATIC_QUAD
-        vids = conn[Vec(ntuple(i->i+Δ-1, Val(8))...)]
-        return QuadraticQuadrilateral(vids...)
+    if Δ == 3 
+        vids = conn[Vec(ntuple(i->i+offset-1, Val(3))...)]
+        return Triangle(vids)
+    elseif Δ == 4 
+        vids = conn[Vec(ntuple(i->i+offset-1, Val(4))...)]
+        return Quadrilateral(vids)
+    elseif Δ == 6
+        vids = conn[Vec(ntuple(i->i+offset-1, Val(6))...)]
+        return QuadraticTriangle(vids)
+    elseif Δ == 8 
+        vids = conn[Vec(ntuple(i->i+offset-1, Val(8))...)]
+        return QuadraticQuadrilateral(vids)
     else
         error("Unsupported type.")
         return nothing
@@ -55,7 +55,7 @@ function _materialize_face_connectivity(i::Integer, mesh::VolumeMesh)
 end
 
 function materialize_faces(mesh::VolumeMesh)
-    return map(i->materialize_face(i, mesh), eachindex(mesh.types))
+    return map(i->materialize_face(i, mesh), 1:nelements(mesh)) 
 end
 
 function materialize(p::Polytope{K,P,N,T}, vertices::Vector{Point{Dim,F}}
@@ -109,7 +109,7 @@ end
 #
 ## All edges are line segments
 #function materialize_edges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:Polygon}
-#    unique_edges = SVector{2,vertex_type(P)}[]
+#    unique_edges = Vec{2,vertex_type(P)}[]
 #    nedges = 0
 #    for face ∈ mesh.polytopes
 #        edge_vecs = edges(face)
@@ -117,7 +117,7 @@ end
 #            if edge[1] < edge[2]
 #                sorted_edge = edge.vertices
 #            else
-#                sorted_edge = SVector(edge[2], edge[1])
+#                sorted_edge = Vec(edge[2], edge[1])
 #            end
 #            index = getsortedfirst(unique_edges, sorted_edge)
 #            if nedges < index || unique_edges[index] !== sorted_edge
@@ -135,7 +135,7 @@ end
 #
 ## All edges are quadratic segments
 #function materialize_edges(mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P<:QuadraticPolygon}
-#    unique_edges = SVector{3,vertex_type(P)}[]
+#    unique_edges = Vec{3,vertex_type(P)}[]
 #    nedges = 0
 #    for face ∈ mesh.polytopes
 #        edge_vecs = edges(face)
@@ -143,7 +143,7 @@ end
 #            if edge[1] < edge[2]
 #                sorted_edge = edge.vertices
 #            else
-#                sorted_edge = SVector(edge[2], edge[1], edge[3])
+#                sorted_edge = Vec(edge[2], edge[1], edge[3])
 #            end
 #            index = getsortedfirst(unique_edges, sorted_edge)
 #            if nedges < index || unique_edges[index] !== sorted_edge

@@ -1,11 +1,10 @@
 export VolumeMesh
-export points, name, groups, materials, material_names, ishomogeneous, points_in_vtk_type 
+export points, name, groups, materials, material_names, nelements, ishomogeneous
 
 struct VolumeMesh{Dim,T,U} <: AbstractMesh
     points::Vector{Point{Dim,T}}
-    offsets::Vector{U}              # First index in connectivity
+    offsets::Vector{U}
     connectivity::Vector{U}         # Point IDs that compose each element
-    types::Vector{UInt8}            # VTK integer type of the element
     materials::Vector{UInt8}        # ID of the element's material
     material_names::Vector{String}
     name::String
@@ -18,61 +17,32 @@ groups(mesh::VolumeMesh) = mesh.groups
 materials(mesh::VolumeMesh) = mesh.materials
 material_names(mesh::VolumeMesh) = mesh.material_names
 
-const VTK_TRIANGLE::UInt8 = 5
-const VTK_QUAD::UInt8 = 9
-const VTK_QUADRATIC_TRIANGLE::UInt8 = 22
-const VTK_QUADRATIC_QUAD::UInt8 = 23
-const VTK_TETRA::UInt8 = 10
-const VTK_HEXAHEDRON::UInt8 = 12
-const VTK_QUADRATIC_TETRA::UInt8 = 24
-const VTK_QUADRATIC_HEXAHEDRON::UInt8 = 25
+nelements(mesh::VolumeMesh) = length(mesh.offsets) - 1
+offset_diff(i::Integer, mesh::VolumeMesh) = mesh.offsets[i+1] - mesh.offsets[i]
 
-ishomogeneous(mesh::VolumeMesh) = all(i->mesh.types[1] === mesh.types[i], 2:length(mesh.types))
-
-function points_in_vtk_type(vtk_type::I) where {I<:Integer}
-    if vtk_type == VTK_TRIANGLE
-        return 3
-    elseif vtk_type == VTK_QUAD
-        return 4
-    elseif vtk_type == VTK_QUADRATIC_TRIANGLE
-        return 6
-    elseif vtk_type == VTK_QUADRATIC_QUAD
-        return 8
-    elseif vtk_type == VTK_TETRA
-        return 4
-    elseif vtk_type == VTK_HEXAHEDRON
-        return 8
-    elseif vtk_type == VTK_QUADRATIC_TETRA
-        return 10
-    elseif vtk_type == VTK_QUADRATIC_HEXAHEDRON
-        return 12
+function _volume_mesh_points_to_vtk_type(dim::Integer, npt::Integer)
+    if dim == 2
+        if npt == 3
+            return VTK_TRIANGLE
+        elseif npt == 4
+            return VTK_QUAD
+        elseif npt == 6
+            return VTK_QUADRATIC_TRIANGLE
+        elseif npt == 8
+            return VTK_QUADRATIC_QUAD
+        else
+            error("Invalid number of points.")
+        end
+    elseif dim == 3
+        error("Not implemented yet.")
     else
-        error("Unsupported type.")
-        return nothing
+        error("Invalid dimension.")
     end
 end
 
-function vtk_alias_string(vtk_type::I) where {I<:Integer}
-    if vtk_type == VTK_TRIANGLE
-        return "Triangle"
-    elseif vtk_type == VTK_QUAD
-        return "Quadrilateral"
-    elseif vtk_type == VTK_QUADRATIC_TRIANGLE
-        return "QuadraticTriangle"
-    elseif vtk_type == VTK_QUADRATIC_QUAD
-        return "QuadraticQuadrilateral"
-    elseif vtk_type == VTK_TETRA
-        return "Tetrahedron"
-    elseif vtk_type == VTK_HEXAHEDRON
-        return "Hexahedron"
-    elseif vtk_type == VTK_QUADRATIC_TETRA
-        return "QuadraticTetrahedron"
-    elseif vtk_type == VTK_QUADRATIC_HEXAHEDRON
-        return "QuadraticHexahedron"
-    else
-        error("Unsupported type.")
-        return nothing
-    end
+function ishomogeneous(mesh::VolumeMesh)
+    Δ = mesh.offsets[2] - mesh.offsets[1]
+    return all(i->mesh.offsets[i+1] - mesh.offsets[i] === Δ, 2:nelements(mesh))
 end
 
 function Base.show(io::IO, mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U}
@@ -85,20 +55,23 @@ function Base.show(io::IO, mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U}
         println(io, "  ├─ Size (MB) : ", string(@sprintf("%.3f",size_B/1e6)))
     end
     println(io, "  ├─ Points    : ", length(mesh.points))
+    nel = nelements(mesh) 
     if Dim === 3
-        println(io, "  ├─ Faces     : ", length(mesh.offsets) - 1)
+        println(io, "  ├─ Faces     : ", nel) 
     else
-        println(io, "  ├─ Cells     : ", length(mesh.offsets) - 1)
+        println(io, "  ├─ Cells     : ", nel) 
     end
-    unique_types = unique(mesh.types)
-    nunique_types = length(unique_types)
-    for i = 1:nunique_types
-        type = unique_types[i]
-        nelements = count(x->x === type,  mesh.types)
-        if i === nunique_types
-            println(io, "  │  └─ ", rpad(vtk_alias_string(type), 22), ": ", nelements)
+    npt = [mesh.offsets[i+1] - mesh.offsets[i] for i = 1:nel]
+    unique_npt = unique(npt)
+    nunique_npt= length(unique_npt)
+    for i = 1:nunique_npt
+        npt = unique_npt[i]
+        nelements = count(x->x === npt,  npt)
+        vtk_alias = vtk_alias_string(_volume_mesh_points_to_vtk_type(Dim, npt))
+        if i === nunique_npt
+            println(io, "  │  └─ ", rpad(vtk_alias, 22), ": ", nel)
         else
-            println(io, "  │  ├─ ", rpad(vtk_alias_string(type), 22), ": ", nelements)
+            println(io, "  │  ├─ ", rpad(vtk_alias, 22), ": ", nel)
         end
     end
     println(io, "  ├─ Materials : ", length(mesh.material_names))

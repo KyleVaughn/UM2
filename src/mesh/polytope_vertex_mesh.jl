@@ -35,7 +35,7 @@ end
 function PolytopeVertexMesh(mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U}
     return PolytopeVertexMesh(
              mesh.points, 
-             map(i->_materialize_face_connectivity(i, mesh), eachindex(mesh.types)),
+             map(i->_materialize_face_connectivity(i, mesh), 1:nelements(mesh)),
              mesh.materials,
              mesh.material_names,
              mesh.name, 
@@ -55,7 +55,7 @@ vtk_type(::Type{<:QuadraticHexahedron})    = VTK_QUADRATIC_HEXAHEDRON
 function Base.show(io::IO, mesh::PolytopeVertexMesh{Dim,T,P}) where {Dim,T,P}
     print(io, "PolytopeVertexMesh{",Dim,", ",T,", ")
     if isconcretetype(P)
-        println(io, alias_string(P),"{",vertex_type(P),"}}")
+        println(io, alias_string(P),"{",vertextype(P),"}}")
     else
         println(io, P,"}")
     end

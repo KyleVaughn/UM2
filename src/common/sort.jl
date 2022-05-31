@@ -1,7 +1,7 @@
 # If a sorted array has length less than this value, findfirst will be the
 # quickest method to get the desired index. Otherwise, searchsortedfirst will be
 # the quickest.
-const sorted_array_findfirst_threshold = 60 
+const SORTED_ARRAY_THRESHOLD = 60 
 
 function findsortedfirst(v::AbstractVector, x)
     for i in eachindex(v)
@@ -11,7 +11,7 @@ function findsortedfirst(v::AbstractVector, x)
 end
 
 function getsortedfirst(v::AbstractVector, x)
-    if sorted_array_findfirst_threshold ≤ length(v)
+    if SORTED_ARRAY_THRESHOLD ≤ length(v)
         return searchsortedfirst(v, x)
     else
         return findsortedfirst(v, x)

@@ -2,7 +2,7 @@ export Polytope, Edge, LineSegment, QuadraticSegment, Face, Polygon, QuadraticPo
        Triangle, Quadrilateral, QuadraticTriangle, QuadraticQuadrilateral, Cell,
        Polyhedron, QuadraticPolyhedron, Tetrahedron, Hexahedron, QuadraticTetrahedron,
        QuadraticHexahedron
-export vertices, facets, ridges, peaks, alias_string, vertex_type, paramdim,
+export vertices, facets, ridges, peaks, alias_string, vertextype, paramdim,
        isstraight
 
 """
@@ -105,8 +105,8 @@ end
 Base.getindex(poly::Polytope, i::Int) = Base.getindex(poly.vertices, i)
 
 paramdim(::Type{<:Polytope{K}}) where {K} = K
-vertex_type(::Type{Polytope{K,P,N,T}}) where {K,P,N,T} = T
-vertex_type(::Polytope{K,P,N,T}) where {K,P,N,T} = T
+vertextype(::Type{Polytope{K,P,N,T}}) where {K,P,N,T} = T
+vertextype(::Polytope{K,P,N,T}) where {K,P,N,T} = T
 
 vertices(p::Polytope) = p.vertices
 

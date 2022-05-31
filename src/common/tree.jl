@@ -24,6 +24,7 @@ end
 
 isroot(node::Tree) = parent(node) === nothing
 is_parents_last_child(node::Tree) = children(parent(node))[end] === node
+
 function leaves(node::Tree{T}) where {T}
     leaf_nodes = Tree{T}[]
     node_children = children(node)
@@ -47,6 +48,7 @@ function get_leaves!(node::Tree{T}, leaf_nodes::Vector{Tree{T}}) where {T}
     end
     return nothing
 end
+
 function nleaves(node::Tree)
     node_children = children(node)
     if !isnothing(node_children)
