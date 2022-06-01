@@ -1,5 +1,5 @@
 export PolytopeVertexMesh
-export name, vertices, polytopes, materials, material_names, groups, vtk_type
+export name, vertices, polytopes, materials, material_names, groups, vtk_type, nelements
 
 struct PolytopeVertexMesh{Dim,T,P<:Polytope} <: AbstractMesh
     vertices::Vector{Point{Dim,T}}
@@ -17,6 +17,7 @@ polytopes(mesh::PolytopeVertexMesh) = mesh.polytopes
 materials(mesh::PolytopeVertexMesh) = mesh.materials
 material_names(mesh::PolytopeVertexMesh) = mesh.material_names
 groups(mesh::PolytopeVertexMesh) = mesh.groups
+nelements(mesh::PolytopeVertexMesh) = length(mesh.polytopes) - 1 
 
 function PolytopeVertexMesh(mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U}
     return PolytopeVertexMesh(

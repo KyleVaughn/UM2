@@ -4,19 +4,17 @@ function submesh(mesh::VolumeMesh{Dim,T,U}, name::String) where {Dim,T,U}
     # Submesh elements prior to point id remap 
     element_ids = mesh.groups[name]
     nelements = length(element_ids)
-    types = Vector{U}(undef, nelements)
     offsets = Vector{U}(undef, nelements+1)
     materials = Vector{UInt8}(undef, nelements)
     connectivity_len = 1
     for (i, id) in enumerate(element_ids)
-        types[i] = mesh.types[id]
         offsets[i] = connectivity_len
         materials[i] = mesh.materials[id]
-        connectivity_len += points_in_vtk_type(types[i])
+        connectivity_len += offset_diff(i, mesh) 
     end
     connectivity = Vector{U}(undef, connectivity_len - 1)
     for (i, id) in enumerate(element_ids)
-        npts = points_in_vtk_type(types[i])
+        npts = offset_diff(i, mesh) 
         sm_offset = offsets[i]
         m_offset = mesh.offsets[id]
         connectivity[sm_offset:sm_offset+npts-1] = mesh.connectivity[m_offset:m_offset+npts-1]
@@ -59,7 +57,7 @@ function submesh(mesh::VolumeMesh{Dim,T,U}, name::String) where {Dim,T,U}
                                 )
                              )
     end
-    return VolumeMesh{Dim,T,U}(points, offsets, connectivity, types, 
+    return VolumeMesh{Dim,T,U}(points, offsets, connectivity,
                                materials, mesh.material_names, name, groups)
 end
 

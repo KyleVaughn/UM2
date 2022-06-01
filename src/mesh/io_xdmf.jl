@@ -193,10 +193,7 @@ function _write_xdmf_geometry!(xml::EzXML.Node,
     return nothing
 end
 
-_nelements_xdmf(mesh::VolumeMesh) = length(mesh.types)
-_nelements_xdmf(mesh::PolytopeVertexMesh) = length(mesh.polytopes)
-
-_topo_length_xdmf(mesh::VolumeMesh) = length(mesh.types) + length(mesh.connectivity)
+_topo_length_xdmf(mesh::VolumeMesh) = nelements(mesh) + length(mesh.connectivity)
 function _topo_length_xdmf(mesh::PolytopeVertexMesh)
     return mapreduce(x->length(vertices(x)), +, polytopes(mesh)) + length(mesh.polytopes)
 end
@@ -204,17 +201,16 @@ end
 _uint_type_xdmf(mesh::VolumeMesh{Dim,T,U}) where {Dim,T,U} = U
 _uint_type_xdmf(mesh::PolytopeVertexMesh) = typeof(mesh.polytopes[1][1])
 
-function _populate_topo_array_xdmf!(topo_array, mesh::VolumeMesh)
+function _populate_topo_array_xdmf!(topo_array, mesh::VolumeMesh{Dim}) where {Dim}
     topo_ctr = 1
-    for i in eachindex(mesh.types)
-        topo_array[topo_ctr] = vtk2xdmf(mesh.types[i])
+    for i in 1:nelements(mesh) 
+        Δ = offset_diff(i, mesh)
+        topo_array[topo_ctr] = vtk2xdmf(_volume_mesh_points_to_vtk_type(Dim, Δ))
         topo_ctr += 1
-        len_element = points_in_vtk_type(mesh.types[i])
         offset = mesh.offsets[i]
         # adjust 1-based to 0-based indexing
-        @. topo_array[topo_ctr:topo_ctr + len_element - 1] = 
-            mesh.connectivity[offset:offset + len_element - 1] - 1
-        topo_ctr += len_element
+        @. topo_array[topo_ctr:topo_ctr + Δ - 1] = mesh.connectivity[offset:offset + Δ - 1] - 1
+        topo_ctr += Δ
     end
     return nothing
 end
@@ -238,8 +234,8 @@ function _write_xdmf_topology!(xml::EzXML.Node,
                               h5_filename::String, 
                               h5_mesh::HDF5.Group, 
                               mesh::AbstractMesh)
-    nelements = _nelements_xdmf(mesh) 
-    nelements_str = string(nelements)
+    nel = nelements(mesh) 
+    nelements_str = string(nel)
     topo_length = _topo_length_xdmf(mesh) 
     uint_type = _uint_type_xdmf(mesh) 
     uint_precision = string(sizeof(uint_type)) 
@@ -311,8 +307,8 @@ function _write_xdmf_groups!(xml::EzXML.Node,
         xdataitem = ElementNode("DataItem")
         link!(xset, xdataitem)
         link!(xdataitem, AttributeNode("DataType", "UInt"))
-        nelements = string(length(grp))
-        link!(xdataitem, AttributeNode("Dimensions", nelements))
+        nelems = string(length(grp))
+        link!(xdataitem, AttributeNode("Dimensions", nelems))
         link!(xdataitem, AttributeNode("Format", "HDF"))
         link!(xdataitem, AttributeNode("Precision", uint_precision))
         h5_text_item = HDF5.name(h5_mesh) 
@@ -355,7 +351,7 @@ function read_xdmf(path::String, ::Type{T}) where {T<:AbstractFloat}
     xdoc = readxml(path)
     xroot = root(xdoc)
     nodename(xroot) != "Xdmf" && xdmf_read_error()
-    h5_file = h5open(path[1:end-4]*"h5", "r")
+    h5_file = h5open(path[begin:end-4]*"h5", "r")
     try
         version = xroot["Version"]
         version != "3.0" && xdmf_read_error()
@@ -443,13 +439,11 @@ function _read_xdmf_uniform_grid(xgrid::EzXML.Node,
     end
     # set offsets and types
     offsets = Vector{uint_type}(undef, nelements + 1)
-    types = Vector{UInt8}(undef, nelements)
     offset = 1
     for i in 1:nelements
         offsets[i] = offset
         xdmf_type = connectivity[offset]
         vtk_type = xdmf2vtk(xdmf_type)
-        types[i] = vtk_type
         offset += points_in_vtk_type(vtk_type) + 1
     end
     deleteat!(connectivity, view(offsets, 1:nelements))
@@ -463,7 +457,7 @@ function _read_xdmf_uniform_grid(xgrid::EzXML.Node,
     # Materials
     materials = zeros(UInt8, nelements)
     if material_path != ""
-        materials[begin:end] = read(h5_file[material_path]) .+= 1 
+        materials[:] = read(h5_file[material_path]) .+= 1 
     end
     # Groups
     groups = Dict{String,BitSet}() 
@@ -471,8 +465,7 @@ function _read_xdmf_uniform_grid(xgrid::EzXML.Node,
         groups[group_names[i]] = BitSet(read(h5_file[group_paths[i]]) .+= 1)
     end
     return VolumeMesh{dim,float_type,uint_type}(points, offsets, connectivity,
-                                                types, materials, material_names,
-                                                name, groups)
+                                                materials, material_names, name, groups)
 end
 
 function _setup_xdmf_tree!(xmlnode::EzXML.Node,
