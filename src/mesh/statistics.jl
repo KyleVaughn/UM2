@@ -1,14 +1,14 @@
 export statistics
 
-function statistics(mesh::PolytopeVertexMesh{Dim,T,P}; plot::Bool=false
-                        ) where {Dim,T,P}
+function statistics(mesh::PolytopeVertexMesh{D, T, P};
+                    plot::Bool = false) where {D, T, P}
     # Edges
     edges = materialize_edges(mesh)
     nedges = length(edges)
     nstraight = count(isstraight, edges)
-    percent_straight = string(@sprintf("%.2f", 100*nstraight/nedges))
+    percent_straight = string(@sprintf("%.2f", 100 * nstraight/nedges))
     println("Edges:")
-    println(" Of the ", nedges, " edges, ", nstraight, " are straight. (", 
+    println(" Of the ", nedges, " edges, ", nstraight, " are straight. (",
             percent_straight, " %)")
     println("Edge lengths (cm)")
     edge_lengths = measure.(edges)
@@ -20,7 +20,7 @@ function statistics(mesh::PolytopeVertexMesh{Dim,T,P}; plot::Bool=false
     println("\nFace areas (mm²)")
     faces = materialize_faces(mesh)
     face_areas = measure.(faces)
-    print_histogram(100*face_areas)
+    print_histogram(100 * face_areas)
     # If any negative, show if plot == true
     faces = nothing
     face_ares = nothing

@@ -1,12 +1,12 @@
 export RectilinearGrid
 export xcoords, ycoords, zcoords, xmin, ymin, zmin, xmax, ymax, zmax
 
-struct RectilinearGrid{X,Y,Z,T}
-    x::Vec{X,T}
-    y::Vec{Y,T}
-    z::Vec{Z,T}
+struct RectilinearGrid{X, Y, Z, T}
+    x::Vec{X, T}
+    y::Vec{Y, T}
+    z::Vec{Z, T}
 
-    function RectilinearGrid{X,Y,Z,T}(x, y, z) where {X,Y,Z,T}
+    function RectilinearGrid{X, Y, Z, T}(x, y, z) where {X, Y, Z, T}
         if X < 2
             error("Must have at least 2 X-divisions.")
         end
@@ -17,25 +17,25 @@ struct RectilinearGrid{X,Y,Z,T}
             if Z < 2
                 error("Must have at least 2 Z-divisions.")
             end
-            if any(i->z[i+1] - z[i] < 0, 1:Z-1)
+            if any(i -> z[i + 1] - z[i] < 0, 1:(Z - 1))
                 error("Divisions must be monotonically increasing.")
             end
         end
-        if any(i->x[i+1] - x[i] < 0, 1:X-1) || 
-           any(i->y[i+1] - y[i] < 0, 1:Y-1)
+        if any(i -> x[i + 1] - x[i] < 0, 1:(X - 1)) ||
+           any(i -> y[i + 1] - y[i] < 0, 1:(Y - 1))
             error("Divisions must be monotonically increasing.")
         end
-        return new{X,Y,Z,T}(x, y, z)
+        return new{X, Y, Z, T}(x, y, z)
     end
 end
 
 # constructors
-function RectilinearGrid(x::Vec{X,T}, y::Vec{Y,T}) where {X,Y,T}
-    return RectilinearGrid{X,Y,0,T}(x, y, Vec{0,T}())
+function RectilinearGrid(x::Vec{X, T}, y::Vec{Y, T}) where {X, Y, T}
+    return RectilinearGrid{X, Y, 0, T}(x, y, Vec{0, T}())
 end
 
-function RectilinearGrid(x::Vec{X,T}, y::Vec{Y,T}, z::Vec{Z,T}) where {X,Y,Z,T}
-    return RectilinearGrid{X,Y,Z,T}(x, y, z)
+function RectilinearGrid(x::Vec{X, T}, y::Vec{Y, T}, z::Vec{Z, T}) where {X, Y, Z, T}
+    return RectilinearGrid{X, Y, Z, T}(x, y, z)
 end
 
 function RectilinearGrid(x, y)
@@ -56,9 +56,11 @@ function RectilinearGrid(x, y, z)
     return RectilinearGrid(sx, sy, sz)
 end
 
-Base.issubset(g1::RectilinearGrid, g2::RectilinearGrid) = g1.x ⊆ g2.x && 
-                                                          g1.y ⊆ g2.y &&
-                                                          g1.z ⊆ g2.z 
+function Base.issubset(g1::RectilinearGrid, g2::RectilinearGrid)
+    return g1.x ⊆ g2.x &&
+           g1.y ⊆ g2.y &&
+           g1.z ⊆ g2.z
+end
 xcoords(rg::RectilinearGrid) = rg.x
 ycoords(rg::RectilinearGrid) = rg.y
 zcoords(rg::RectilinearGrid) = rg.z

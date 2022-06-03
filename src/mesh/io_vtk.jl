@@ -1,13 +1,13 @@
-const VTK_TRIANGLE::UInt8 = 5
-const VTK_QUAD::UInt8 = 9
-const VTK_QUADRATIC_TRIANGLE::UInt8 = 22
-const VTK_QUADRATIC_QUAD::UInt8 = 23
-const VTK_TETRA::UInt8 = 10
-const VTK_HEXAHEDRON::UInt8 = 12
-const VTK_QUADRATIC_TETRA::UInt8 = 24
+const VTK_TRIANGLE::UInt8             = 5
+const VTK_QUAD::UInt8                 = 9
+const VTK_QUADRATIC_TRIANGLE::UInt8   = 22
+const VTK_QUADRATIC_QUAD::UInt8       = 23
+const VTK_TETRA::UInt8                = 10
+const VTK_HEXAHEDRON::UInt8           = 12
+const VTK_QUADRATIC_TETRA::UInt8      = 24
 const VTK_QUADRATIC_HEXAHEDRON::UInt8 = 25
 
-function points_in_vtk_type(vtk_type::I) where {I<:Integer}
+function points_in_vtk_type(vtk_type::I) where {I <: Integer}
     if vtk_type == VTK_TRIANGLE
         return 3
     elseif vtk_type == VTK_QUAD
@@ -30,7 +30,7 @@ function points_in_vtk_type(vtk_type::I) where {I<:Integer}
     end
 end
 
-function vtk_alias_string(vtk_type::I) where {I<:Integer}
+function vtk_alias_string(vtk_type::I) where {I <: Integer}
     if vtk_type == VTK_TRIANGLE
         return "Triangle"
     elseif vtk_type == VTK_QUAD

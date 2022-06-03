@@ -31,22 +31,22 @@ function _abaqus_element_string_to_int(x::String)
     end
 end
 
-function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
+function read_abaqus(path::String, ::Type{T}) where {T <: AbstractFloat}
     file = open(path, "r")
     try
-        nodes = Point{3,T}[]
-        element_types = UInt8[] 
+        nodes = Point{3, T}[]
+        element_types = UInt8[]
         offsets = UInt64[]
-        elements = UInt64[] 
+        elements = UInt64[]
         name = ""
         elsets = Dict{String, BitSet}()
-        for line in eachline(file) 
+        for line in eachline(file)
             if length(line) > 0
                 if startswith(line, "**") # Comment
                     continue
                 elseif "*Heading" === line
                     # Of the form " name.inp"
-                    name = readline(file)[2:end-4]
+                    name = readline(file)[2:(end - 4)]
                 elseif "*NODE" === line
                     _read_abaqus_nodes!(file, nodes)
                 elseif startswith(line, "*ELEMENT")
@@ -56,13 +56,14 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
                     else
                         element_type = _abaqus_element_string_to_int(String(m.captures[1]))
                     end
-                    _read_abaqus_elements!(file, element_type, element_types, offsets, elements)
+                    _read_abaqus_elements!(file, element_type, element_types, offsets,
+                                           elements)
                 elseif startswith(line, "*ELSET")
                     m = match(r"(?<=ELSET=).*", line)
                     if isnothing(m)
                         error("Incorrectly formatted Abaqus file?")
                     else
-                        set_name = m.match 
+                        set_name = m.match
                     end
                     elsets[set_name] = _read_abaqus_elset(file)
                 end
@@ -70,18 +71,18 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
         end
         abaqus_2d = (ABAQUS_CPS3, ABAQUS_CPS4, ABAQUS_CPS6, ABAQUS_CPS8)
         abaqus_3d = (ABAQUS_C3D4, ABAQUS_C3D8, ABAQUS_C3D10, ABAQUS_C3D20)
-        is2d = any(x->x ∈ abaqus_2d, element_types)
-        is3d = any(x->x ∈ abaqus_3d, element_types)
+        is2d = any(x -> x ∈ abaqus_2d, element_types)
+        is3d = any(x -> x ∈ abaqus_3d, element_types)
         if is2d && is3d
-            error("File contains both surface (CPS) and volume (C3D) elements."*
-                  "Limit element types to be CPS or C3D, so mesh dimension may be determined.") 
+            error("File contains both surface (CPS) and volume (C3D) elements." *
+                  "Limit element types to be CPS or C3D, so mesh dimension may be determined.")
         end
-        U = _select_uint_type(max(length(elements), 
+        U = _select_uint_type(max(length(elements),
                                   length(nodes)))
         # Add the final offset
-        push!(offsets, length(elements)+1)
+        push!(offsets, length(elements) + 1)
         # Set materials if there are any
-        materials = zeros(UInt8, length(element_types)) 
+        materials = zeros(UInt8, length(element_types))
         material_names = String[]
         for key in keys(elsets)
             if startswith(key, "Material")
@@ -89,7 +90,7 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
             end
         end
         nmaterials = length(material_names)
-        if 0 < nmaterials 
+        if 0 < nmaterials
             sort!(material_names)
             for (i, mat) in enumerate(material_names)
                 for element_id in elsets[mat]
@@ -98,17 +99,17 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
                     else
                         error("Attempting to assign two materials to the same element.")
                     end
-                end    
+                end
                 pop!(elsets, mat)
             end
         end
         trimmed_names = [mat[11:end] for mat in material_names]
         if is2d
-            return VolumeMesh{2,T,U}(nodes, offsets, elements, 
-                                     materials, trimmed_names, name, elsets)
+            return VolumeMesh{2, T, U}(nodes, offsets, elements,
+                                       materials, trimmed_names, name, elsets)
         else
-            return VolumeMesh{3,T,U}(nodes, offsets, elements,
-                                     materials, trimmed_names, name, elsets)
+            return VolumeMesh{3, T, U}(nodes, offsets, elements,
+                                       materials, trimmed_names, name, elsets)
         end
     finally
         close(file)
@@ -116,32 +117,33 @@ function read_abaqus(path::String, ::Type{T}) where {T<:AbstractFloat}
     return nothing
 end
 
-function _read_abaqus_nodes!(file::IOStream, nodes::Vector{Point{3,T}}) where {T<:AbstractFloat}
+function _read_abaqus_nodes!(file::IOStream,
+                             nodes::Vector{Point{3, T}}) where {T <: AbstractFloat}
     # Count the number of nodes
     mark(file)
     nnodes = 0
-    line = readline(file) 
+    line = readline(file)
     while '*' !== line[1]
         nnodes += 1
         line = readline(file)
     end
     reset(file)
     # Allocate and populate a vector of nodes
-    new_nodes = Vector{Point{3,T}}(undef, nnodes)
+    new_nodes = Vector{Point{3, T}}(undef, nnodes)
     for i in 1:nnodes
         line = readline(file)
         xyz = view(split(line, ','), 2:4)
-        new_nodes[i] = Point{3,T}(ntuple(i->parse(Float64, xyz[i]), Val(3)))
+        new_nodes[i] = Point{3, T}(ntuple(i -> parse(Float64, xyz[i]), Val(3)))
     end
     append!(nodes, new_nodes)
     return nothing
 end
 
-function _read_abaqus_elements!(file::IOStream, 
+function _read_abaqus_elements!(file::IOStream,
                                 element_type::UInt8,
                                 element_types::Vector{UInt8},
                                 offsets::Vector{UInt64},
-                                elements::Vector{UInt64}) 
+                                elements::Vector{UInt64})
     mark(file)
     line = readline(file)
     npts = points_in_vtk_type(element_type)
@@ -153,15 +155,15 @@ function _read_abaqus_elements!(file::IOStream,
     reset(file)
     append!(element_types, fill(element_type, nelements))
     new_offsets = Vector{UInt64}(undef, nelements)
-    new_elements = Vector{UInt64}(undef, npts*nelements)
+    new_elements = Vector{UInt64}(undef, npts * nelements)
     ectr = 1
     len_elements = length(elements)
-    for i in 1:nelements 
+    for i in 1:nelements
         line = readline(file)
-        vids = view(split(line, ','), 2:npts+1)
-        @. new_elements[ectr:ectr + npts - 1] = parse(UInt64, vids)
+        vids = view(split(line, ','), 2:(npts + 1))
+        @. new_elements[ectr:(ectr + npts - 1)] = parse(UInt64, vids)
         new_offsets[i] = ectr + len_elements
-        ectr += npts 
+        ectr += npts
     end
     append!(offsets, new_offsets)
     append!(elements, new_elements)
@@ -170,6 +172,6 @@ end
 
 function _read_abaqus_elset(file::IOStream)
     splitline = strip.(split(readuntil(file, "*")), [','])
-    seek(file, position(file)-1)
+    seek(file, position(file) - 1)
     return BitSet(parse.(Int64, splitline))
 end

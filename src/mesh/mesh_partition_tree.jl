@@ -8,8 +8,8 @@ export tree, leaf_meshes
 # If the node is an internal node, it has id = 0.
 # If the node is a leaf node, it has a non-zero id, corresponding to the index by 
 # which the mesh may be found in the MeshPartitionTree type's leaf_meshes.
-struct MeshPartitionTree{M <: AbstractMesh} 
-    partition_tree::Tree{Tuple{Int64,String}}
+struct MeshPartitionTree{M <: AbstractMesh}
+    partition_tree::Tree{Tuple{Int64, String}}
     leaf_meshes::Vector{M}
 end
 
@@ -21,8 +21,8 @@ leaf_meshes(mpt::MeshPartitionTree) = mpt.leaf_meshes
 # of the form "<name>_L<N>" where name is a string, and N is an integer.
 # N is the level of the node in the tree: 1, 2, 3, etc...
 # Example: "Grid_L1_triangle", or "Partition_L3"
-function MeshPartitionTree(mesh::AbstractMesh; by::String="MPACT")
-    @info "Partitioning mesh: "*name(mesh)
+function MeshPartitionTree(mesh::AbstractMesh; by::String = "MPACT")
+    @info "Partitioning mesh: " * name(mesh)
     # Extract the names of all face sets that contain 'by' (the variable)
     partition_names = _get_partition_names(mesh, by)
     # Create a tree to store the partition hierarchy.
@@ -33,19 +33,19 @@ function MeshPartitionTree(mesh::AbstractMesh; by::String="MPACT")
 end
 
 function _create_leaf_meshes(mesh::AbstractMesh, root::Tree)
-    leaf_nodes = sort!(leaves(root), by=x->x.data)
+    leaf_nodes = sort!(leaves(root), by = x -> x.data)
     leaf_meshes = Vector{typeof(mesh)}(undef, length(leaf_nodes))
     leaf_ctr = 1
     node_children = children(root)
     if !isnothing(node_children)
-        for child ∈ sort(node_children, by=x->x.data)
+        for child in sort(node_children, by = x -> x.data)
             child_mesh = submesh(mesh, data(child)[2])
             leaf_ctr = _create_leaf_meshes!(child_mesh, child, leaf_meshes, leaf_ctr)
         end
     else
         # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
         # be encoded in the tree
-        mpact_groups = filter(x->isa_MPACT_partition_name(x), keys(groups(mesh)))
+        mpact_groups = filter(x -> isa_MPACT_partition_name(x), keys(groups(mesh)))
         for grp in mpact_groups
             pop!(groups(mesh), grp)
         end
@@ -59,18 +59,17 @@ end
 function _create_leaf_meshes!(mesh::AbstractMesh,
                               node::Tree,
                               leaf_meshes,
-                              leaf_ctr::Int64=1
-                             )
+                              leaf_ctr::Int64 = 1)
     node_children = children(node)
     if !isnothing(node_children)
-        for child ∈ sort(node_children, by=x->x.data)
+        for child in sort(node_children, by = x -> x.data)
             child_mesh = submesh(mesh, data(child)[2])
             leaf_ctr = _create_leaf_meshes!(child_mesh, child, leaf_meshes, leaf_ctr)
         end
     else
         # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
         # be encoded in the tree
-        mpact_groups = filter(x->isa_MPACT_partition_name(x), keys(groups(mesh)))
+        mpact_groups = filter(x -> isa_MPACT_partition_name(x), keys(groups(mesh)))
         for grp in mpact_groups
             pop!(mesh.groups, grp)
         end
@@ -83,18 +82,18 @@ function _create_leaf_meshes!(mesh::AbstractMesh,
 end
 
 # Create a tree to store grid relationships.
-function _create_mesh_partition_tree(mesh::AbstractMesh, partition_names::Vector{String}) 
+function _create_mesh_partition_tree(mesh::AbstractMesh, partition_names::Vector{String})
     root = Tree((0, name(mesh)))
     parents = [root]
     tree_type = typeof(root)
     next_parents = tree_type[]
     remaining_names = copy(partition_names)
     # Extract the sets that are not a subset of any other set.
-    this_level = Int64[] 
+    this_level = Int64[]
     mesh_groups = groups(mesh)
     while length(remaining_names) > 0
         for i in eachindex(remaining_names)
-            name_i = remaining_names[i] 
+            name_i = remaining_names[i]
             i_isa_lattice = startswith(name_i, "Lattice")
             i_isa_module = startswith(name_i, "Module")
             isa_subset = false
@@ -149,8 +148,8 @@ end
 
 function isa_MPACT_partition_name(x::String)
     return startswith(x, "Coarse_Cell_(") ||
-           startswith(x, "Module_("     ) ||
-           startswith(x, "Lattice_("    ) 
+           startswith(x, "Module_(") ||
+           startswith(x, "Lattice_(")
 end
 # Extract partition names
 function _get_partition_names(mesh::AbstractMesh, by::String)
@@ -161,12 +160,12 @@ function _get_partition_names(mesh::AbstractMesh, by::String)
         error("The mesh does not have any groups.")
     end
     if by === "MPACT"
-        filter!(x->isa_MPACT_partition_name(x), partition_names)
+        filter!(x -> isa_MPACT_partition_name(x), partition_names)
         if length(partition_names) === 0
             error("The mesh does not have any MPACT grid hierarchy groups.")
         end
     else
-        filter!(x->occursin(by, x), partition_names)
+        filter!(x -> occursin(by, x), partition_names)
         if length(partition_names) === 0
             error("The mesh does not have any groups containing '", by, "'.")
         end
@@ -175,6 +174,7 @@ function _get_partition_names(mesh::AbstractMesh, by::String)
 end
 
 function Base.show(io::IO, mpt::MeshPartitionTree{M}) where {M}
-    println("MeshPartitionTree{",M,"}")
+    println("MeshPartitionTree{", M, "}")
     println(tree(mpt))
+    return nothing
 end

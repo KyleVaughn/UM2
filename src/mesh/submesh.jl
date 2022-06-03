@@ -1,23 +1,23 @@
 export submesh
 
-function submesh(mesh::VolumeMesh{Dim,T,U}, name::String) where {Dim,T,U}
+function submesh(mesh::VolumeMesh{D, T, U}, name::String) where {D, T, U}
     # Submesh elements prior to point id remap 
     element_ids = mesh.groups[name]
     nelements = length(element_ids)
-    offsets = Vector{U}(undef, nelements+1)
+    offsets = Vector{U}(undef, nelements + 1)
     materials = Vector{UInt8}(undef, nelements)
     connectivity_len = 1
     for (i, id) in enumerate(element_ids)
         offsets[i] = connectivity_len
         materials[i] = mesh.materials[id]
-        connectivity_len += offset_diff(i, mesh) 
+        connectivity_len += offset_diff(i, mesh)
     end
     connectivity = Vector{U}(undef, connectivity_len - 1)
     for (i, id) in enumerate(element_ids)
-        npts = offset_diff(i, mesh) 
+        npts = offset_diff(i, mesh)
         sm_offset = offsets[i]
         m_offset = mesh.offsets[id]
-        connectivity[sm_offset:sm_offset+npts-1] = mesh.connectivity[m_offset:m_offset+npts-1]
+        connectivity[sm_offset:(sm_offset + npts - 1)] = mesh.connectivity[m_offset:(m_offset + npts - 1)]
     end
     # Add the last offset
     offsets[nelements + 1] = connectivity_len
@@ -28,7 +28,7 @@ function submesh(mesh::VolumeMesh{Dim,T,U}, name::String) where {Dim,T,U}
         push!(point_ids, vid)
     end
     npoints = length(point_ids)
-    points = Vector{Point{Dim,T}}(undef, npoints)
+    points = Vector{Point{D, T}}(undef, npoints)
     for (i, vid) in enumerate(point_ids)
         points[i] = mesh.points[vid]
     end
@@ -40,7 +40,7 @@ function submesh(mesh::VolumeMesh{Dim,T,U}, name::String) where {Dim,T,U}
     end
 
     # Submesh groups prior to element id remap 
-    groups = Dict{String,BitSet}()
+    groups = Dict{String, BitSet}()
     for group_name in keys(mesh.groups)
         set_intersection = mesh.groups[group_name] ∩ element_ids
         if length(set_intersection) !== 0 && name !== group_name
@@ -51,13 +51,10 @@ function submesh(mesh::VolumeMesh{Dim,T,U}, name::String) where {Dim,T,U}
     # Remap element ids in groups
     element_ids_vec = collect(element_ids)
     for group_name in keys(groups)
-        groups[group_name] = BitSet(
-                                searchsortedfirst.(Ref(element_ids_vec),
-                                                   groups[group_name] 
-                                )
-                             )
+        groups[group_name] = BitSet(searchsortedfirst.(Ref(element_ids_vec),
+                                                       groups[group_name]))
     end
-    return VolumeMesh{Dim,T,U}(points, offsets, connectivity,
+    return VolumeMesh{D, T, U}(points, offsets, connectivity,
                                materials, mesh.material_names, name, groups)
 end
 
@@ -68,7 +65,7 @@ function submesh(mesh::PolytopeVertexMesh, name::String)
 
     # Submesh points 
     vertex_ids = BitSet()
-    for polytope in polytopes 
+    for polytope in polytopes
         for vid in vertices(polytope)
             push!(vertex_ids, vid)
         end
@@ -87,7 +84,7 @@ function submesh(mesh::PolytopeVertexMesh, name::String)
     end
 
     # Submesh groups prior to polytope id remap 
-    groups = Dict{String,BitSet}()
+    groups = Dict{String, BitSet}()
     for group_name in keys(mesh.groups)
         set_intersection = mesh.groups[group_name] ∩ polytope_ids
         if length(set_intersection) !== 0 && name !== group_name
@@ -98,17 +95,14 @@ function submesh(mesh::PolytopeVertexMesh, name::String)
     # Remap polytope ids in groups
     polytope_ids_vec = collect(polytope_ids)
     for group_name in keys(groups)
-        groups[group_name] = BitSet(
-                                searchsortedfirst.(Ref(polytope_ids_vec),
-                                                   groups[group_name] 
-                                )
-                             )
+        groups[group_name] = BitSet(searchsortedfirst.(Ref(polytope_ids_vec),
+                                                       groups[group_name]))
     end
 
     materials = Vector{UInt8}(undef, length(polytope_ids_vec))
     for (i, id) in enumerate(polytope_ids_vec)
         materials[i] = mesh.materials[id]
     end
-    return typeof(mesh)(points, polytopes, materials, 
+    return typeof(mesh)(points, polytopes, materials,
                         mesh.material_names, name, groups)
 end
