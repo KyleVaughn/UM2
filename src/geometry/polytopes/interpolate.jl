@@ -3,25 +3,28 @@
 
 # Function interpolation
 # length(w) == length(poly) == N, hence @inbounds is safe
-function (poly::Polytope{K,P,N,T})(coords...) where {K,P,N,T}
+function (poly::Polytope{K, P, N, T})(coords...) where {K, P, N, T}
     w = interpolation_weights(typeof(poly), coords...)
     p = zero(T)
     @inbounds @simd for i in eachindex(w)
-        p += w[i]*poly[i]
+        p += w[i] * poly[i]
     end
-    return p 
+    return p
 end
 
 # Shape interpolation
 # length(w) == length(poly) == N, hence @inbounds is safe
-function (poly::Polytope{K,P,N,T})(coords...) where {K,P,N,T<:Point}
+function (poly::Polytope{K, P, N, T})(coords...) where {K, P, N, T <: Point}
     w = interpolation_weights(typeof(poly), coords...)
     p = zero(typeof(coordinates(poly[1])))
     @inbounds @simd for i in eachindex(w)
-        p += w[i]*coordinates(poly[i])
+        p += w[i] * coordinates(poly[i])
     end
     return Point(p)
 end
+
+# Turn off the JuliaFormatter
+#! format: off
 
 # 1-polytope
 interpolation_weights(::Type{<:LineSegment},      r) = Vec(1-r, r)
@@ -36,10 +39,10 @@ interpolation_weights(::Type{<:Quadrilateral}, r, s) = Vec((1 - r)*(1 - s),
                                                            (1 - r)*(    s))
 interpolation_weights(::Type{<:QuadraticTriangle}, r, s) = Vec((2(1 - r - s) - 1)*(1 - r - s),
                                                                (      r         )*(2r - 1   ),
-                                                               (      s         )*(2s - 1   ),
+                                                               (          s     )*(2s - 1   ),
                                                                (     4r         )*(1 - r - s),
                                                                (     4r         )*(        s),
-                                                               (     4s         )*(1 - r - s))
+                                                               (         4s     )*(1 - r - s))
 function interpolation_weights(::Type{<:QuadraticQuadrilateral}, r, s)
     ξ = 2r - 1; η = 2s - 1
     return Vec((1 - ξ)*(1 - η)*(-ξ - η - 1)/4,

@@ -2,9 +2,9 @@ export Vec, Vec1, Vec2, Vec3, Vec1f, Vec2f, Vec3f
 export ⊙, ⊘, inv, norm²
 
 """
-    Vec{Dim,T}
+    Vec{D,T}
 
-A vector in `Dim`-dimensional space with coordinates of type `T`.
+A vector in `D`-dimensional space with coordinates of type `T`.
 
 A vector can be obtained by subtracting two [`Point`](@ref) objects.
 
@@ -24,12 +24,12 @@ v = B - A
 const Vec = SVector
 
 # type aliases for convenience
-const Vec1  = SVector{1,Float64}
-const Vec2  = SVector{2,Float64}
-const Vec3  = SVector{3,Float64}
-const Vec1f = SVector{1,Float32}
-const Vec2f = SVector{2,Float32}
-const Vec3f = SVector{3,Float32}
+const Vec1  = SVector{1, Float64}
+const Vec2  = SVector{2, Float64}
+const Vec3  = SVector{3, Float64}
+const Vec1f = SVector{1, Float32}
+const Vec2f = SVector{2, Float32}
+const Vec3f = SVector{3, Float32}
 
 """
     ⊙(A::AbstractArray, B::AbstractArray)

@@ -3,9 +3,9 @@ export Point, Point1, Point2, Point3, Point1f, Point2f, Point3f, Point1B,
 export coordinates, distance, distance², isCCW, midpoint, nan, ϵ_Point
 
 """
-    Point{Dim, T}
+    Point{D, T}
 
-A point in `Dim`-dimensional space with coordinates of type `T`.
+A point in `D`-dimensional space with coordinates of type `T`.
 
 The coordinates of the point are given with respect to the canonical
 Euclidean basis.
@@ -33,39 +33,39 @@ J = Point3B(1, 2, 3)     # explicitly ask for BigFloat
 - Type aliases are `Point1`, `Point2`, `Point3`, `Point1f`, `Point2f`, `Point3f`,
     `Point1B`, `Point2B`, `Point3B`.
 """
-struct Point{Dim,T} <:AbstractVector{T}
-    coords::SVector{Dim,T}
-    Point{Dim,T}(coords::SVector{Dim,T}) where {Dim,T} = new{Dim,T}(coords)
+struct Point{D, T} <: AbstractVector{T}
+    coords::SVector{D, T}
+    Point{D, T}(coords::SVector{D, T}) where {D, T} = new{D, T}(coords)
 end
 
 # constructors
-Point{Dim,T}(coords...) where {Dim,T} = Point{Dim,T}(SVector{Dim,T}(coords...))
-Point(coords::SVector{Dim,T}) where {Dim,T} = Point{Dim,T}(coords)
-Point(coords::AbstractVector{T}) where {T} = Point{length(coords),T}(coords)
+Point{D, T}(coords...) where {D, T} = Point{D, T}(SVector{D, T}(coords...))
+Point(coords::SVector{D, T}) where {D, T} = Point{D, T}(coords)
+Point(coords::AbstractVector{T}) where {T} = Point{length(coords), T}(coords)
 Point(coords...) = Point(SVector(coords...))
 
 # conversions
-Base.convert(::Type{Point{2,T}}, P::Point) where {T} = Point{2,T}(P[1], P[2])
-SVector(P::Point{Dim,T}) where {Dim,T} = P.coords
+Base.convert(::Type{Point{2, T}}, P::Point) where {T} = Point{2, T}(P[1], P[2])
+SVector(P::Point{D, T}) where {D, T} = P.coords
 
 # type aliases
-const Point1  = Point{1,Float64}
-const Point2  = Point{2,Float64}
-const Point3  = Point{3,Float64}
-const Point1f = Point{1,Float32}
-const Point2f = Point{2,Float32}
-const Point3f = Point{3,Float32}
-const Point1B = Point{1,BigFloat}
-const Point2B = Point{2,BigFloat}
-const Point3B = Point{3,BigFloat}
+const Point1  = Point{1, Float64}
+const Point2  = Point{2, Float64}
+const Point3  = Point{3, Float64}
+const Point1f = Point{1, Float32}
+const Point2f = Point{2, Float32}
+const Point3f = Point{3, Float32}
+const Point1B = Point{1, BigFloat}
+const Point2B = Point{2, BigFloat}
+const Point3B = Point{3, BigFloat}
 
 # abstract array interface
 Base.size(P::Point) = Base.size(P.coords)
-Base.getindex(P::Point, i::Int) = Base.getindex(P.coords, i) 
+Base.getindex(P::Point, i::Int) = Base.getindex(P.coords, i)
 Base.IndexStyle(P::Point) = Base.IndexStyle(typeof(P.coords))
 
-Base.zero(::Type{Point{Dim,T}}) where {Dim,T} = Point{Dim,T}(@SVector zeros(T, Dim))
-nan(::Type{Point{Dim,T}}) where {Dim,T} = Point{Dim,T}(@SVector fill(T(NaN), Dim))
+Base.zero(::Type{Point{D, T}}) where {D, T} = Point{D, T}(@SVector zeros(T, D))
+nan(::Type{Point{D, T}}) where {D, T} = Point{D, T}(@SVector fill(T(NaN), D))
 
 const ϵ_Point = 1e-5 # Points separated by 1e-5 cm = 0.1 micron are treated the same.
 
@@ -105,7 +105,9 @@ Base.:-(A::Point, v::Vec) = Point(coordinates(A) - v)
 
 Return if two points are approximately equal (less than ϵ_Point apart). 
 """
-Base.isapprox(A::Point{Dim,T}, B::Point{Dim,T}) where {Dim,T} = norm²(A-B) < T(ϵ_Point^2)
+function Base.isapprox(A::Point{D, T}, B::Point{D, T}) where {D, T}
+    return norm²(A - B) < T(ϵ_Point^2)
+end
 
 """
     distance(A::Point, B::Point)
@@ -126,7 +128,7 @@ distance²(A::Point, B::Point) = norm²(B - A)
 
 Return the midpoint of the line segment from point `A` to point `B`.
 """
-midpoint(A::Point, B::Point) = Point((coordinates(A) + coordinates(B))/2)
+midpoint(A::Point, B::Point) = Point((coordinates(A) + coordinates(B)) / 2)
 
 """
     isCCW(A::Point{2}, B::Point{2}, C::Point{2})
@@ -136,5 +138,5 @@ If the triplet of 2-dimensional points is counter-clockwise oriented from A to B
 isCCW(A::Point{2}, B::Point{2}, C::Point{2}) = 0 ≤ (B - A) × (C - A)
 
 function Base.show(io::IO, point::Point)
-    print(io, point.coords.data)
+    return print(io, point.coords.data)
 end

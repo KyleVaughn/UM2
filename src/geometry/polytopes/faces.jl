@@ -1,5 +1,8 @@
 export faces
 
+# Turn off the JuliaFormatter
+#! format: off
+
 function faces(p::Tetrahedron)
     v = vertices(p)
     return Vec(Triangle(v[1], v[2], v[3]),
@@ -20,10 +23,10 @@ end
 
 function faces(p::QuadraticTetrahedron)
     v = vertices(p)
-    return Vec(QuadraticTriangle(v[1], v[2], v[3], v[5],  v[6],  v[7]),
-               QuadraticTriangle(v[1], v[2], v[4], v[5],  v[9],  v[8]),
-               QuadraticTriangle(v[2], v[3], v[4], v[6], v[10],  v[9]),
-               QuadraticTriangle(v[3], v[1], v[4], v[7],  v[8], v[10]))
+    return Vec(QuadraticTriangle(v[1], v[2], v[3], v[5], v[ 6], v[ 7]),
+               QuadraticTriangle(v[1], v[2], v[4], v[5], v[ 9], v[ 8]),
+               QuadraticTriangle(v[2], v[3], v[4], v[6], v[10], v[ 9]),
+               QuadraticTriangle(v[3], v[1], v[4], v[7], v[ 8], v[10]))
 end
 
 function faces(p::QuadraticHexahedron)

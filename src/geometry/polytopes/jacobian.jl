@@ -1,5 +1,8 @@
 export jacobian
 
+# Turn off the JuliaFormatter
+#! format: off
+
 # 1-polytopes
 jacobian(l::LineSegment, r) = l[2] - l[1]
 jacobian(q::QuadraticSegment, r) = (4r - 3)*(q[1] - q[3]) + 
