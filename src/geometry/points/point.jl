@@ -1,6 +1,7 @@
 export Point, Point1, Point2, Point3, Point1f, Point2f, Point3f, Point1B,
        Point2B, Point3B
-export coordinates, distance, distance², isCCW, midpoint, nan, ϵ_Point
+export coordinates, distance, distance², isCCW, midpoint, nan, EPS_POINT,
+       INF_POINT
 
 """
     Point{D, T}
@@ -67,7 +68,11 @@ Base.IndexStyle(P::Point) = Base.IndexStyle(typeof(P.coords))
 Base.zero(::Type{Point{D, T}}) where {D, T} = Point{D, T}(@SVector zeros(T, D))
 nan(::Type{Point{D, T}}) where {D, T} = Point{D, T}(@SVector fill(T(NaN), D))
 
-const ϵ_Point = 1e-5 # Points separated by 1e-5 cm = 0.1 micron are treated the same.
+# Points separated by 1e-5 cm = 0.1 micron are treated the same.
+const EPS_POINT = 1e-5 
+# Default coordinate for a point that is essentially infinitely far away.
+# Used for when IEEE 754 may not be enforced, such as with fast math. 
+const INF_POINT = 1e6
 
 """
     coordinates(p::Point)
@@ -103,10 +108,10 @@ Base.:-(A::Point, v::Vec) = Point(coordinates(A) - v)
 """
     isapprox(A::Point, B::Point)
 
-Return if two points are approximately equal (less than ϵ_Point apart). 
+Return if two points are approximately equal (less than EPS_POINT apart). 
 """
 function Base.isapprox(A::Point{D, T}, B::Point{D, T}) where {D, T}
-    return norm²(A - B) < T(ϵ_Point^2)
+    return norm²(A - B) < T(EPS_POINT)^2
 end
 
 """

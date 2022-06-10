@@ -1,5 +1,11 @@
 function Base.intersect(l::LineSegment2D{T}, poly::QuadraticPolygon{N, 2, T}
                        ) where {N, T <:Union{Float32, Float64}} 
+    function edges(p::QuadraticPolygon{N, T}) where {N, T}
+    M = N ÷ 2
+    return Vec{M, QuadraticSegment{T}}(ntuple(i -> QuadraticSegment(p[(i - 1) % M + 1],
+                                                                    p[i % M + 1],
+                                                                    p[i + M]), Val(M)))
+    end
     # Create the quadratic segments that make up the polygon and intersect each one
     points = zeros(MVector{N, Point2D{T}})
     npoints = 0x0000

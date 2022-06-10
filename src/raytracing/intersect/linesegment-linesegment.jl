@@ -30,5 +30,5 @@ function Base.intersect(l₁::LineSegment{Point{2,T}},
     r = (𝘄 × 𝘂₂)/z
     s = (𝘄 × 𝘂₁)/z
     valid = 0 ≤ r && r ≤ 1 && 0 ≤ s && s ≤ 1
-    return valid ? l₂(s) : Point(T(1e6),T(1e6))
+    return valid ? l₂(s) : Point{2,T}(INF_POINT,INF_POINT)
 end

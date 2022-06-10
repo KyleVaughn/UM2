@@ -23,7 +23,7 @@
 #   1) s ∉ [0, 1]   (Line intersects, segment doesn't)
 function Base.intersect(l::LineSegment{Point{2,T}}, 
                         q::QuadraticSegment{Point{2,T}}) where {T}
-    pmiss = Point(T(1e6),T(1e6))
+    pmiss = Point{2,T}(INF_POINT,INF_POINT)
     # Check if the segment is effectively straight.
     # Project P₃ onto the line from P₁ to P₂, call it P₄
     𝘃₁₃ = q[3] - q[1] 
@@ -32,7 +32,7 @@ function Base.intersect(l::LineSegment{Point{2,T}},
     𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂)*inv(v₁₂)*𝘃₁₂
     # Determine the distance from P₃ to P₄ (P₄ - P₃ = P₁ + 𝘃₁₄ - P₃ = 𝘃₁₄ - 𝘃₁₃)
     d² = norm²(𝘃₁₄ - 𝘃₁₃)
-    if d² < ϵ_Point^2 # Use line segment intersection, segment is effectively straight
+    if d² < T(EPS_POINT)^2 # Use line segment intersection, segment is effectively straight
         # Line segment intersection looks like the following.
         # We want to reuse quantities we have already computed
         # Here l₁ = l, l₂ = LineSegment(q[1], q[2])

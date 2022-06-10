@@ -6,7 +6,7 @@ using Pkg.Artifacts
 using Printf
 using Random
 using Reexport
-#
+
 #using Colors: RGBA, N0f8
 #export RGBA, N0f8
 using LoggingExtras: TransformerLogger, global_logger
@@ -24,8 +24,8 @@ include("common/Common.jl")
 include("quadrature/Quadrature.jl")
 include("geometry/Geometry.jl")
 include("mesh/Mesh.jl")
+include("raytracing/Raytracing.jl")
 ##include("MPACT/MPACT.jl")
 #include("plot/Plot.jl")
 ##include("gmsh/Gmsh.jl")
-#include("raytracing/Raytracing.jl")
 end
