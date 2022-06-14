@@ -56,7 +56,7 @@ function Base.show(io::IO, mesh::VolumeMesh{D, T, U}) where {D, T, U}
     end
     println(io, "  ├─ Points    : ", length(mesh.points))
     nel = nelements(mesh)
-    if D === 3
+    if D === 2
         println(io, "  ├─ Faces     : ", nel)
     else
         println(io, "  ├─ Cells     : ", nel)

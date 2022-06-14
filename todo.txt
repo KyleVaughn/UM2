@@ -1,0 +1,23 @@
+create mesh edges
+materialize mesh edge/edges
+materialize mesh face/faces
+intersect volume mesh edges
+intersect volume mesh faces
+intersect polytope mesh edges
+intersect polytope mesh faces
+intersect mesh partition tree edges
+intersect mesh partition tree faces
+back to C program to intersect a line segment with a mesh
+test difference in line intersecting mesh using jl_function vs using cfunctioni + jl_function
+back to Fortran to intersect a line segment with a mesh
+
+point in face for polytope
+find face
+    May wish to consider an acceleration structure here
+        RECTILINEAR GRID
+        USE BOUNDING BOX OF THE POLYGONS TO MAKE THE TREE
+        This algorithm to do the splitting should be similar to the CMFD grid algorithm
+        computing a split plane in a spatial partitioning hierarchy
+        We can be smart and cache some values for the next point
+            
+
