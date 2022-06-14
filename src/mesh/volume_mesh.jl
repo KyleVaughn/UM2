@@ -1,5 +1,6 @@
 export VolumeMesh
-export points, name, groups, materials, material_names, nelements, ishomogeneous
+export points, name, groups, materials, material_names, nelements, ishomogeneous,
+       islinear, isquadratic
 
 struct VolumeMesh{D, T, U} <: AbstractMesh
     points::Vector{Point{D, T}}
@@ -20,6 +21,33 @@ material_names(mesh::VolumeMesh) = mesh.material_names
 nelements(mesh::VolumeMesh) = length(mesh.offsets) - 1
 offset_diff(i::Integer, mesh::VolumeMesh) = mesh.offsets[i + 1] - mesh.offsets[i]
 
+function typeof_face(i::Integer, mesh::VolumeMesh{2,T,U}) where {T, U}
+    npt = offset_diff(i, mesh)
+    if npt == 3
+        return Triangle{U}
+    elseif npt == 4
+        return Quadrilateral{U}
+    elseif npt == 6
+        return QuadraticTriangle{U} 
+    elseif npt == 8
+        return QuadraticQuadrilateral{U} 
+    else
+        error("Invalid number of points.")
+    end
+end
+
+function ishomogeneous(mesh::VolumeMesh)
+    # This can be fooled if there are 3 types of elements
+    return mod(length(mesh.connectivity), nelements(mesh)) == 0
+end
+
+function islinear(mesh::VolumeMesh{2})
+    # This can be fooled by mixing linear and quadratic elements, which
+    # is not supported
+    return length(mesh.connectivity)/nelements(mesh) ≤ 4.000001
+end
+isquadratic(mesh::VolumeMesh{2}) = !islinear(mesh) 
+
 function _volume_mesh_points_to_vtk_type(dim::Integer, npt::Integer)
     if dim == 2
         if npt == 3
@@ -38,11 +66,6 @@ function _volume_mesh_points_to_vtk_type(dim::Integer, npt::Integer)
     else
         error("Invalid dimension.")
     end
-end
-
-function ishomogeneous(mesh::VolumeMesh)
-    Δ = mesh.offsets[2] - mesh.offsets[1]
-    return all(i -> mesh.offsets[i + 1] - mesh.offsets[i] === Δ, 2:nelements(mesh))
 end
 
 function Base.show(io::IO, mesh::VolumeMesh{D, T, U}) where {D, T, U}

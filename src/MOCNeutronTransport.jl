@@ -26,6 +26,6 @@ include("geometry/Geometry.jl")
 include("mesh/Mesh.jl")
 include("raytracing/Raytracing.jl")
 ##include("MPACT/MPACT.jl")
-#include("plot/Plot.jl")
+include("plot/Plot.jl")
 ##include("gmsh/Gmsh.jl")
 end
