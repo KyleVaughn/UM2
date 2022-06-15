@@ -1,16 +1,3 @@
-
-# Intersect a line with a vector of linear edges
-function intersect_edges(l::LineSegment{Dim, T}, edges::Vector{LineSegment{Dim, T}}
-                        ) where {Dim, T} 
-    intersection_points = Point{Dim, T}[]
-    for edge in edges 
-        hit, point = l ∩ edge 
-        hit && push!(intersection_points, point)
-    end
-    sort_intersection_points!(l, intersection_points)
-    return intersection_points
-end
-
 # Intersect a vector of lines with a vector of linear edges
 function intersect_edges(lines::Vector{LineSegment{Dim, T}}, 
                          edges::Vector{LineSegment{Dim, T}}) where {Dim, T} 

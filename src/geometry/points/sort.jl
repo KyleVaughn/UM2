@@ -120,3 +120,37 @@ function Base.sort!(p::Point,
     end
     return v
 end
+
+# p is the reference point, x is being found in v
+function findsortedfirst(p::Point, v::Vector{<:Point}, x::Point)
+    d = distance²(p, x)
+    for i in eachindex(v)
+        d ≤ distance²(p, v[i]) && return i
+    end
+    return length(v) + 1
+end
+
+function searchsortedfirst(p::Point, v::Vector{<:Point}, x::Point, 
+                           lo::T, hi::T, o::Base.Ordering)::keytype(v) where T<:Integer
+    d = distance²(p, x)
+    u = T(1)
+    lo = lo - u
+    hi = hi + u
+    @inbounds while lo < hi - u
+        m = Base.Sort.midpoint(lo, hi)
+        if Base.lt(o, distance²(p, v[m]), d)
+            lo = m
+        else
+            hi = m
+        end
+    end
+    return hi
+end
+
+function getsortedfirst(p::Point, v::Vector{<:Point}, x::Point)
+    if SORTED_ARRAY_THRESHOLD ≤ length(v)
+        return searchsortedfirst(p, v, x, firstindex(v), lastindex(v), Base.Forward) 
+    else
+        return findsortedfirst(p, v, x)
+    end
+end

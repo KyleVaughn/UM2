@@ -1,10 +1,3 @@
-create mesh edges
-materialize mesh edge/edges
-materialize mesh face/faces
-intersect volume mesh edges
-intersect volume mesh faces
-intersect polytope mesh edges
-intersect polytope mesh faces
 intersect mesh partition tree edges
 intersect mesh partition tree faces
 back to C program to intersect a line segment with a mesh

@@ -26,51 +26,35 @@ function materialize_faces(mesh::VolumeMesh{2})
     return materialize.(face_connectivity(mesh), Ref(mesh.points))
 end
 
-#
-#function materialize_polytope(i::Integer, mesh::PolytopeVertexMesh)
-#    return materialize(mesh.polytopes[i], mesh.vertices)
-#end
-#
-#function materialize_polytopes(mesh::PolytopeVertexMesh)
-#    return materialize.(mesh.polytopes, Ref(mesh.vertices))
-#end
-#
-## aliases
-#function materialize_faces(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Face}
-#    return materialize_polytopes(mesh) 
-#end
-#function materialize_cells(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Cell}
-#    return materialize_polytopes(mesh) 
-#end
-#
-#function materialize_facets(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Cell}
-#    return materialize_faces(mesh)
-#end
-#function materialize_ridges(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Cell}
-#    return materialize_edges(mesh)
-#end
-#
-#
-#
-#function materialize_facets(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Face}
-#    return materialize_edges(mesh)
-#end
-#
-##function materialize_faces(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P}
-##    # Get the faces for each polytope, then reduce into a single vector.
-##    # Sort the vector by each face's vertices, then get the unique faces.
-##    # Materialize the faces.
-##    return materialize.(
-##                unique!(
-##                    x->sort(x.vertices),
-##                    sort!(
-##                        reduce(vcat, 
-##                            faces.(mesh.polytopes)
-##                        )
-##                        ,by=x->sort(x.vertices), 
-##                    )
-##                ),
-##                Ref(mesh.vertices)
-##            )   
-##end
-##
+function materialize_edges(mesh::PolytopeVertexMesh{2})
+    return materialize.(edge_connectivity(mesh), Ref(mesh.vertices))
+end
+
+function materialize_polytope(i::Integer, mesh::PolytopeVertexMesh)
+    return materialize(mesh.polytopes[i], mesh.vertices)
+end
+
+function materialize_polytopes(mesh::PolytopeVertexMesh)
+    return materialize.(mesh.polytopes, Ref(mesh.vertices))
+end
+
+# aliases
+function materialize_faces(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Face}
+    return materialize_polytopes(mesh) 
+end
+
+function materialize_cells(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Cell}
+    return materialize_polytopes(mesh) 
+end
+
+function materialize_facets(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Cell}
+    return materialize_faces(mesh)
+end
+
+function materialize_ridges(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Cell}
+    return materialize_edges(mesh)
+end
+
+function materialize_facets(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Face}
+    return materialize_edges(mesh)
+end

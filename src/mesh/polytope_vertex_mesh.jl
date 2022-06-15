@@ -1,5 +1,6 @@
 export PolytopeVertexMesh
-export name, vertices, polytopes, materials, material_names, groups, vtk_type, nelements
+export name, vertices, polytopes, materials, material_names, groups, vtk_type, nelements,
+       islinear
 
 struct PolytopeVertexMesh{D, T, P <: Polytope} <: AbstractMesh
     vertices::Vector{Point{D, T}}
@@ -18,11 +19,12 @@ materials(mesh::PolytopeVertexMesh) = mesh.materials
 material_names(mesh::PolytopeVertexMesh) = mesh.material_names
 groups(mesh::PolytopeVertexMesh) = mesh.groups
 nelements(mesh::PolytopeVertexMesh) = length(mesh.polytopes) - 1
+islinear(mesh::PolytopeVertexMesh{2}) = mesh.polytopes isa Vector{<:Polygon} 
+isquadratic(mesh::PolytopeVertexMesh{2}) = mesh.polytopes isa Vector{<:QuadraticPolygon} 
 
 function PolytopeVertexMesh(mesh::VolumeMesh{D, T, U}) where {D, T, U}
     return PolytopeVertexMesh(mesh.points,
-                              map(i -> _materialize_face_connectivity(i, mesh),
-                                  1:nelements(mesh)),
+                              face_connectivity(mesh),
                               mesh.materials,
                               mesh.material_names,
                               mesh.name,
