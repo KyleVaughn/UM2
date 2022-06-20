@@ -88,6 +88,11 @@ function Polytope{K, P, N, T}(v::SVector{N}) where {K, P, N, T}
     return Polytope{K, P, N, T}(Vec{N, T}(v...))
 end
 
+# Convenience constructor for LineSegment
+function LineSegment(x1::T, y1::T, x2::T, y2::T) where {T}
+    return LineSegment{Point{2, T}}(Point(x1, y1), Point(x2, y2))
+end
+
 # Convert SVector vals
 function Base.convert(::Type{Polytope{K, P, N, T}}, v::SVector{N}) where {K, P, N, T}
     return Polytope{K, P, N, T}(v...)
