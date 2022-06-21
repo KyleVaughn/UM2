@@ -1,82 +1,3 @@
-# Is left 
-# ---------------------------------------------------------------------------------------------
-# If the point is left of the line segment in the 2D plane. 
-#
-# The segment's direction is from 𝘅₁ to 𝘅₂. Let 𝘂 = 𝘅₂ - 𝘅₁ and 𝘃 = 𝗽 - 𝘅₁ 
-# We may determine if the angle θ between the point and segment is in [0, π] based on the 
-# sign of 𝘂 × 𝘃, since 𝘂 × 𝘃 = ‖𝘂‖‖𝘃‖sin(θ). 
-#   𝗽    ^
-#   ^   /
-# 𝘃 |  / 𝘂
-#   | /
-#   o
-# We allow points on the line (𝘂 × 𝘃 = 0) to be left, since this test is primarily 
-# used to determine if a point is inside a polygon. A mesh is supposed to partition
-# its domain, so if we do not allow points on the line, there will exist points in the 
-# mesh which will not be in any face.
-@inline function isleft(p::Point2D, l::LineSegment2D)
-    return 0 ≤ l.𝘂 × (p - l.𝘅₁)
-end
-
-# Is left
-# ---------------------------------------------------------------------------------------------
-# If the point is left of the quadratic segment in the 2D plane.
-#   𝗽    ^
-#   ^   /
-# 𝘃 |  / 𝘂
-#   | /
-#   o
-# If the segment is straight, we can perform the isleft check with the straight
-# line from the  segment's start point to the segment's end point.
-# If this condition isn't met, the segment's curvature must be accounted for.
-# We find the point on the curve q that is nearest point to the point of interest.
-# Call this point q_near. We then perform the isleft check with the tangent vector
-# of q at q_near and the vector from q_near to p, p - q_near.
-function isleft(p::Point2D, q::QuadraticSegment2D)
-    if isstraight(q)
-        𝘃₁ = q.𝘅₂ - q.𝘅₁
-        𝘃₂ = p - q.𝘅₁
-        return 𝘃₁ × 𝘃₂ > 0
-    else
-        # See nearest_point for an explanation of the math.
-        # When the cubic has 3 real roots, the point must be inside the
-        # curve of the segment. Meaning:
-        #   If the segment curves left, the point is right.
-        #   If the segment curves right, the point is left.
-        # This way we save substantial time by bypassing the complex number arithmetic
-        𝘂 = q.𝘂
-        𝘃 = q.𝘃
-        𝘄 = p - q.𝘅₁
-        # f′(r) = ar³ + br² + cr + d = 0
-        a = 4(𝘂 ⋅ 𝘂)
-        b = 6(𝘂 ⋅ 𝘃)
-        c = 2((𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄))
-        d = -2(𝘃 ⋅ 𝘄)
-        # Lagrange's method
-        e₁ = s₀ = -b/a
-        e₂ = c/a
-        e₃ = -d/a
-        A = 2e₁^3 - 9e₁*e₂ + 27e₃
-        B = e₁^2 - 3e₂
-        if A^2 - 4B^3 > 0 # one real root
-            s₁ = ∛((A + √(A^2 - 4B^3))/2)
-            if s₁ == 0
-                s₂ = s₁
-            else
-                s₂ = B/s₁
-            end
-            r = (s₀ + s₁ + s₂)/3
-            𝘃₁ = 𝗗(q, r)
-            𝘃₂ = p - q(r)
-            return 𝘃₁ × 𝘃₂ > 0
-        else # three real roots
-            return (q.𝘅₂ - q.𝘅₁) × (q.𝘅₃ - q.𝘅₁) < 0
-        end
-    end
-end
-
-
-
 # Nearest point
 # ---------------------------------------------------------------------------------------------
 # Find the point on 𝗾(r) closest to the point of interest 𝘆.
@@ -167,14 +88,6 @@ end
                                             aab.zmin ≤ p[3] ≤ aab.zmax
 # Point inside polygon
 # ---------------------------------------------------------------------------------------------
-# Test if a point is in a polygon for 2D points/polygons
-function Base.in(p::Point2D, poly::Polygon{N, 2}) where {N}
-    # Test if the point is to the left of each edge. 
-    for i ∈ 1:N-1
-        isleft(p, LineSegment2D(poly[i], poly[i + 1])) || return false
-    end
-    return isleft(p, LineSegment2D(poly[N], poly[1]))
-end
 # Not necessarily planar
 #function Base.in(p::Point3D, poly::Polygon{N, 3}) where {N}
 #    # Check if the point is even in the same plane as the polygon
@@ -209,27 +122,4 @@ function Base.in(p::Point3D, tri::Triangle3D)
     # We need only check the direction of the norm of the last triangle to 
     # prove that the point is in the triangle
     return 𝗻₂ ⋅(𝗰 × 𝗮) > 0 
-end
-
-# This performs much better than the default routine, which is logically equivalent.
-# Better simd this way? Chaining isleft doesn't have the same performance improvement for
-# triangles.
-function Base.in(p::Point2D, quad::Quadrilateral2D)
-    return isleft(p, LineSegment2D(quad[1], quad[2])) &&
-           isleft(p, LineSegment2D(quad[2], quad[3])) &&
-           isleft(p, LineSegment2D(quad[3], quad[4])) &&
-           isleft(p, LineSegment2D(quad[4], quad[1]))
-end
-
-# Test if a 2D point is in a 2D quadratic polygon
-function Base.in(p::Point2D, poly::QuadraticPolygon{N, 2, T}) where {N, T}
-    # Test if the point is to the left of each edge. 
-    bool = true
-    M = N ÷ 2
-    for i ∈ 1:M-1
-        if !isleft(p, QuadraticSegment2D(poly[i], poly[i + 1], poly[i + M]))
-            return false
-        end
-    end
-    return isleft(p, QuadraticSegment2D(poly[M], poly[1], poly[N]))
 end

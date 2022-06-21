@@ -16,7 +16,6 @@ function measure(q::QuadraticSegment{<:Point})
     #     1             1
     # L = ∫ ‖𝗾′(r)‖dr = ∫ √(ar² + br + c) dr
     #     0             0
-    P₁ = q[1]
     𝘃₁₃ = q[3] - q[1]
     𝘃₁₂ = q[2] - q[1]
     𝘃₂₃ = q[3] - q[2]
@@ -27,6 +26,7 @@ function measure(q::QuadraticSegment{<:Point})
     if d < ϵ_Point
         return √v₁₂ # Distance from P₁ to P₂ 
     else
+        # q(r) = P₁ + r𝘂 + r²𝘃
         𝘂 = 3𝘃₁₃ + 𝘃₂₃
         𝘃 = -2(𝘃₁₃ + 𝘃₂₃)
         a = 4(𝘃 ⋅ 𝘃)
