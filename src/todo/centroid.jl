@@ -1,23 +1,3 @@
-# Centroid
-# ---------------------------------------------------------------------------------------------
-# (https://en.wikipedia.org/wiki/Centroid#Of_a_polygon)
-function centroid(poly::Polygon{N, 2, T}) where {N, T}
-    a = zero(T) # Scalar
-    c = SVector{2,T}(0,0)
-    for i ∈ 1:N-1
-        subarea = poly[i] × poly[i+1]
-        c += subarea*(poly[i] + poly[i+1])
-        a += subarea
-    end
-    subarea = poly[N] × poly[1]
-    c += subarea*(poly[N] + poly[1])
-    a += subarea
-    return Point(c/(3a))
-end
-
-centroid(tri::Triangle2D) = Point((tri[1] + tri[2] + tri[3])/3)
-centroid(tri::Triangle3D) = Point((tri[1] + tri[2] + tri[3])/3)
-
 centroid(quad8::QuadraticQuadrilateral2D) = centroid(quad8, Val(3))
 function centroid(quad8::QuadraticQuadrilateral{Dim, T}, ::Val{N}) where {Dim, T, N}
     # Gauss-Legendre quadrature over a quadrilateral is used.

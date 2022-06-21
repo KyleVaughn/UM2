@@ -82,6 +82,9 @@ canonical Euclidean basis.
 """
 coordinates(p::Point) = p.coords
 
+# Disallow point addition. Leads to unwanted allocations, and is geometrically invalid.
+Base.:+(A::Point, B::Point) = error("Point addition is not defined, nor should it be.") 
+
 """
     -(A::Point, B::Point)
 
