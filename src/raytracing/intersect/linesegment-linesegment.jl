@@ -1,7 +1,7 @@
 # Doesn't work for colinear/parallel lines. (𝘂 × 𝘃 = 𝟬).
-# For 𝗹₁(r) = 𝘅₁ + r𝘂 and 𝗹₂(s) = 𝘅₂ + s𝘃
-# 1) 𝘅₁ + r𝘂 = 𝘅₂ + s𝘃                  subtracting 𝘅₁ from both sides
-# 2) r𝘂 = (𝘅₂-𝘅₁) + s𝘃                  𝘄 = 𝘅₂-𝘅₁
+# For l₁(r) = P₁ + r𝘂 and l₂(s) = P₂ + s𝘃
+# 1) P₁ + r𝘂 = P₂ + s𝘃                  subtracting P₁ from both sides
+# 2) r𝘂 = (P₂-P₁) + s𝘃                  𝘄 = P₂-P₁
 # 3) r𝘂 = 𝘄 + s𝘃                        cross product with 𝘃 (distributive)
 # 4) r(𝘂 × 𝘃) = 𝘄 × 𝘃 + s(𝘃 × 𝘃)        𝘃 × 𝘃 = 𝟬
 # 5) r(𝘂 × 𝘃) = 𝘄 × 𝘃                   let 𝘄 × 𝘃 = 𝘅 and 𝘂 × 𝘃 = 𝘇
@@ -9,7 +9,7 @@
 # 7) r𝘇 ⋅ 𝘇 = 𝘅 ⋅ 𝘇                     divide by 𝘇 ⋅ 𝘇
 # 8) r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇)
 # We need to ensure r, s ∈ [0, 1], hence we need to solve for s too.
-# 1) 𝘅₂ + s𝘃 = 𝘅₁ + r𝘂                     subtracting 𝘅₂ from both sides
+# 1) P₂ + s𝘃 = P₁ + r𝘂                     subtracting P₂ from both sides
 # 2) s𝘃 = -𝘄 + r𝘂                          cross product with 𝘄
 # 3) s(𝘃 × 𝘄) = -𝘄 × 𝘄 + r(𝘂 × 𝘄)          𝘄 × 𝘄 = 𝟬 
 # 4) s(𝘃 × 𝘄) = r(𝘂 × 𝘄)                   using 𝘂 × 𝘄 = -(𝘄 × 𝘂), likewise for 𝘃 × 𝘄

@@ -1,20 +1,20 @@
-# The quadratic segment: 𝗾(r) = r²𝘂 + r𝘃 + 𝘅₁
-# 𝘂 = 2(𝘅₁ + 𝘅₂ - 2𝘅₃) and 𝘃 = -(3𝘅₁ + 𝘅₂ - 4𝘅₃)
-# The line segment: 𝗹(s) = 𝘅₄ + s𝘄
-# 𝘅₄ + s𝘄 = r²𝘂 + r𝘃 + 𝘅₁
-# s𝘄 = r²𝘂 + r𝘃 + (𝘅₁ - 𝘅₄)
-# 𝟬 = r²(𝘂 × 𝘄) + r(𝘃 × 𝘄) + (𝘅₁ - 𝘅₄) × 𝘄
+# The quadratic segment: q(r) = P₁ + r𝘂 + r²𝘃
+# 𝘃 = 2(P₁ + P₂ - 2P₃) and 𝘂 = -(3P₁ + P₂ - 4P₃)
+# The line segment: 𝗹(s) = P₄ + s𝘄
+# P₄ + s𝘄 = r²𝘃 + r𝘂 + P₁
+# s𝘄 = r²𝘃 + r𝘂 + (P₁ - P₄)
+# 𝟬 = r²(𝘃 × 𝘄) + r(𝘂 × 𝘄) + (P₁ - P₄) × 𝘄
 # The cross product of two vectors in the plane is a vector of the form (0, 0, k).
-# Let a = (𝘂 × 𝘄)ₖ, b = (𝘃 × 𝘄)ₖ, c = ([𝘅₁ - 𝘅₄] × 𝘄)ₖ
+# Let a = (𝘃 × 𝘄)ₖ, b = (𝘂 × 𝘄)ₖ, c = ([P₁ - P₄] × 𝘄)ₖ
 # 0 = ar² + br + c
 # If a = 0 
 #   r = -c/b
 # else
 #   r = (-b ± √(b²-4ac))/2a
 # We must also solve for s
-# 𝘅₄ + s𝘄 = 𝗾(r)
-# s𝘄 = 𝗾(r) - 𝘅₄
-# s = ([𝗾(r) - 𝘅₄] ⋅𝘄 )/(𝘄 ⋅ 𝘄)
+# P₄ + s𝘄 = q(r)
+# s𝘄 = q(r) - P₄
+# s = ([q(r) - P₄] ⋅𝘄 )/(𝘄 ⋅ 𝘄)
 #
 # r is invalid if:
 #   1) b² < 4ac
@@ -23,7 +23,7 @@
 #   1) s ∉ [0, 1]   (Line intersects, segment doesn't)
 function Base.intersect(l::LineSegment{Point{2,T}}, 
                         q::QuadraticSegment{Point{2,T}}) where {T}
-    pmiss = Point{2,T}(INF_POINT,INF_POINT)
+    P_miss = Point{2,T}(INF_POINT,INF_POINT)
     # Check if the segment is effectively straight.
     # Project P₃ onto the line from P₁ to P₂, call it P₄
     𝘃₁₃ = q[3] - q[1] 
@@ -50,45 +50,45 @@ function Base.intersect(l::LineSegment{Point{2,T}},
         r = (𝘄 × 𝘃₁₂)/z
         s = (𝘄 × 𝘂₁)/z
         valid = 0 ≤ r && r ≤ 1 && 0 ≤ s && s ≤ 1
-        return valid ? Vec(l(r), pmiss) : Vec(pmiss, pmiss)
+        return valid ? Vec(l(r), P_miss) : Vec(P_miss, P_miss)
     else
-        𝘂 = 2𝘃₁₂ - 4𝘃₁₃ 
-        𝘃 = 4𝘃₁₃ - 𝘃₁₂  
+        𝘃 = 2𝘃₁₂ - 4𝘃₁₃ 
+        𝘂 = 4𝘃₁₃ - 𝘃₁₂  
         𝘄 = l[2] - l[1]
-        a = 𝘂 × 𝘄 
-        b = 𝘃 × 𝘄
+        a = 𝘃 × 𝘄 
+        b = 𝘂 × 𝘄
         c = (q[1] - l[1]) × 𝘄
         w² = 𝘄  ⋅ 𝘄  # 0 ≤ w² 
         if a == 0
             r = -c/b
-            0 ≤ r ≤ 1 || return Vec(pmiss, pmiss) 
-            p = q(r)
-            s = (p - l[1]) ⋅ 𝘄 
+            0 ≤ r ≤ 1 || return Vec(P_miss, P_miss) 
+            P = q(r)
+            s = (P - l[1]) ⋅ 𝘄 
             # Since 0 ≤ w², we may test 0 ≤ s ≤ w², and avoid a division by
             # w² in computing s
-            return 0 ≤ s && s ≤ w² ? Vec(p, pmiss) : Vec(pmiss, pmiss)
+            return 0 ≤ s && s ≤ w² ? Vec(P, P_miss) : Vec(P_miss, P_miss)
         elseif b^2 ≥ 4a*c
             r₁ = (-b - √(b^2 - 4a*c))/2a
             r₂ = (-b + √(b^2 - 4a*c))/2a
-            p₁ = pmiss
-            p₂ = pmiss
+            P₁ = P_miss
+            P₂ = P_miss
             if 0 ≤ r₁ ≤ 1
-                x = q(r₁)
-                s₁ = (x - l[1])⋅𝘄
+                Q₁ = q(r₁)
+                s₁ = (Q₁ - l[1])⋅𝘄
                 if 0 ≤ s₁ && s₁ ≤ w²
-                    p₁ = x
+                    P₁ = Q₁
                 end
             end
             if 0 ≤ r₂ ≤ 1
-                y = q(r₂)
-                s₂ = (y - l[1])⋅𝘄 
+                Q₂ = q(r₂)
+                s₂ = (Q₂ - l[1])⋅𝘄 
                 if 0 ≤ s₂ && s₂ ≤ w²
-                    p₂ = y
+                    P₂ = Q₂
                 end
             end
-            return Vec(p₁, p₂)
+            return Vec(P₁, P₂)
         else
-            return Vec(pmiss, pmiss)
+            return Vec(P_miss, P_miss)
         end
     end
 end
