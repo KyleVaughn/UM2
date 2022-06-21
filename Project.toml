@@ -1,6 +1,6 @@
-name = "MOCNeutronTransport"
-uuid = "b01d8a8e-7766-460c-9f6b-9e1abe3a94ae"
-authors = ["Kyle Vaughn <kcvaughn@umich.edu>"]
+name = "UM2"
+uuid = "c126d82d-a61d-48e1-9b6b-cad1c01a5d0e"
+authors = ["kcvaughn <kcvaughn@umich.edu>"]
 version = "0.1.0"
 
 [deps]
@@ -18,6 +18,3 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-
-[compat]
-julia = "1.8"
