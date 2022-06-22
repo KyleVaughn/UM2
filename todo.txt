@@ -1,3 +1,5 @@
+Make Volume/polytope mesh use Point{D,T}
+
 intersect mesh partition tree edges
 intersect mesh partition tree faces
 back to C program to intersect a line segment with a mesh

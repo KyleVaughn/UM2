@@ -13,10 +13,30 @@ function (poly::Polytope{K, P, N, T})(coords...) where {K, P, N, T}
 end
 
 # Shape interpolation
+# The compiler can't figure out the splatting here without allocations, so we
+# write it out explicitly.
 # length(w) == length(poly) == N, hence @inbounds is safe
-function (poly::Polytope{K, P, N, T})(coords...) where {K, P, N, T <: Point}
-    w = interpolation_weights(typeof(poly), coords...)
-    p = zero(typeof(coordinates(poly[1])))
+function (poly::Polytope{1, P, N, Point{D, T}})(r) where {P, N, D, T}
+    w = interpolation_weights(Polytope{1, P, N, Point{D, T}}, r)
+    p = zero(Vec{D, T})
+    @inbounds @simd for i in eachindex(w)
+        p += w[i] * coordinates(poly[i])
+    end
+    return Point(p)
+end
+
+function (poly::Polytope{2, P, N, Point{D, T}})(r, s) where {P, N, D, T}
+    w = interpolation_weights(Polytope{2, P, N, Point{D, T}}, r, s)
+    p = zero(Vec{D, T})
+    @inbounds @simd for i in eachindex(w)
+        p += w[i] * coordinates(poly[i])
+    end
+    return Point(p)
+end
+
+function (poly::Polytope{3, P, N, Point{3, T}})(r, s, t) where {P, N, T}
+    w = interpolation_weights(Polytope{3, P, N, Point{3, T}}, r, s, t)
+    p = zero(Vec{3, T})
     @inbounds @simd for i in eachindex(w)
         p += w[i] * coordinates(poly[i])
     end
