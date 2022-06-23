@@ -14,16 +14,16 @@ function isleft(P::Point{2, T}, q::QuadraticSegment{Point{2, T}}) where {T}
     # Call this point q_near. We then perform the isleft check with the tangent vector
     # of q at q_near and the vector from q_near to p, p - q_near.
     P₁ = q[1]
-    𝘃₁₃ = q[3] - P₁ 
-    𝘃₁₂ = q[2] - P₁ 
+    𝘃₁₃ = q[3] - P₁
+    𝘃₁₂ = q[2] - P₁
     𝘄 = P - P₁
     𝘃₂₃ = q[3] - q[2]
     v₁₂ = norm²(𝘃₁₂)
     𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂) * inv(v₁₂) * 𝘃₁₂
     d = norm(𝘃₁₄ - 𝘃₁₃)
     # If segment is straight
-    if d < EPS_POINT 
-        return 0 ≤ 𝘃₁₂ × 𝘄 
+    if d < EPS_POINT
+        return 0 ≤ 𝘃₁₂ × 𝘄
     else
         # See nearest_point for an explanation of the math.
         # q(r) = P₁ + r𝘂 + r²𝘃
@@ -32,36 +32,36 @@ function isleft(P::Point{2, T}, q::QuadraticSegment{Point{2, T}}) where {T}
         # f′(r) = ar³ + br² + cr + d = 0
         a = 4(𝘃 ⋅ 𝘃)
         b = 6(𝘂 ⋅ 𝘃)
-        c = 2((𝘂 ⋅ 𝘂) - 2(𝘃 ⋅𝘄))
+        c = 2((𝘂 ⋅ 𝘂) - 2(𝘃 ⋅ 𝘄))
         d = -2(𝘂 ⋅ 𝘄)
         # Lagrange's method
-        e₁ = s₀ = -b/a
-        e₂ = c/a
-        e₃ = -d/a
-        A = 2e₁^3 - 9e₁*e₂ + 27e₃
+        e₁ = s₀ = -b / a
+        e₂ = c / a
+        e₃ = -d / a
+        A = 2e₁^3 - 9e₁ * e₂ + 27e₃
         B = e₁^2 - 3e₂
         if A^2 - 4B^3 > 0 # one real root
-            s₁ = ∛((A + √(A^2 - 4B^3))/2)
+            s₁ = ∛((A + √(A^2 - 4B^3)) / 2)
             if s₁ == 0
                 s₂ = s₁
             else
-                s₂ = B/s₁
+                s₂ = B / s₁
             end
-            r = (s₀ + s₁ + s₂)/3
+            r = (s₀ + s₁ + s₂) / 3
             return 0 ≤ jacobian(q, r) × (P - q(r))
         else # three real roots
             # t₁ is complex cube root
-            t₁ = exp(log((A + √(complex(A^2 - 4B^3)))/2)/3)
+            t₁ = exp(log((A + √(complex(A^2 - 4B^3))) / 2) / 3)
             if t₁ == 0
                 t₂ = t₁
             else
-                t₂ = B/t₁
+                t₂ = B / t₁
             end
-            ζ₁ = Complex{T}(-1/2, √3/2)
+            ζ₁ = Complex{T}(-1 / 2, √3 / 2)
             ζ₂ = conj(ζ₁)
-            rr = SVector(real((s₀ +    t₁ +    t₂))/3,
-                         real((s₀ + ζ₂*t₁ + ζ₁*t₂))/3,
-                         real((s₀ + ζ₁*t₁ + ζ₂*t₂))/3)
+            rr = SVector(real((s₀ + t₁ + t₂)) / 3,
+                         real((s₀ + ζ₂ * t₁ + ζ₁ * t₂)) / 3,
+                         real((s₀ + ζ₁ * t₁ + ζ₂ * t₂)) / 3)
             minval, index = findmin(distance².(Ref(P), q.(rr)))
             r = rr[index]
             return 0 ≤ jacobian(q, r) × (P - q(r))
@@ -71,7 +71,7 @@ end
 
 # Test if a point is in a polygon for 2D points/polygons
 function Base.in(P::Point{2, T}, poly::Polygon{N, Point{2, T}}) where {N, T}
-    for i in Base.OneTo(N-1)
+    for i in Base.OneTo(N - 1)
         isleft(P, LineSegment(poly[i], poly[i + 1])) || return false
     end
     return isleft(P, LineSegment(poly[N], poly[1]))
@@ -80,7 +80,7 @@ end
 # Test if a point is in a polygon for 2D points/quadratic polygons
 function Base.in(P::Point{2, T}, poly::QuadraticPolygon{N, Point{2, T}}) where {N, T}
     M = N ÷ 2
-    for i in Base.OneTo(M-1)
+    for i in Base.OneTo(M - 1)
         isleft(P, QuadraticSegment(poly[i], poly[i + 1], poly[i + M])) || return false
     end
     return isleft(P, QuadraticSegment(poly[M], poly[1], poly[N]))

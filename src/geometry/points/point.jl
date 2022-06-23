@@ -69,7 +69,7 @@ Base.zero(::Type{Point{D, T}}) where {D, T} = Point{D, T}(@SVector zeros(T, D))
 nan(::Type{Point{D, T}}) where {D, T} = Point{D, T}(@SVector fill(T(NaN), D))
 
 # Points separated by 1e-5 cm = 0.1 micron are treated the same.
-const EPS_POINT = 1e-5 
+const EPS_POINT = 1e-5
 # Default coordinate for a point that is essentially infinitely far away.
 # Used for when IEEE 754 may not be enforced, such as with fast math. 
 const INF_POINT = 1e6
@@ -84,11 +84,11 @@ coordinates(p::Point) = p.coords
 
 # Disallow point addition, multiplication, and division. 
 # Leads to unwanted allocations, and is geometrically invalid.
-Base.:+(A::Point, B::Point) = error("Point addition is not defined, nor should it be.") 
-Base.:*(A::Point, B) = error("Point multiplication is not defined, nor should it be.") 
-Base.:*(A, B::Point) = error("Point multiplication is not defined, nor should it be.") 
-Base.:/(A::Point, B) = error("Point division is not defined, nor should it be.") 
-Base.:/(A, B::Point) = error("Point division is not defined, nor should it be.") 
+Base.:+(A::Point, B::Point) = error("Point addition is not defined, nor should it be.")
+Base.:*(A::Point, B) = error("Point multiplication is not defined, nor should it be.")
+Base.:*(A, B::Point) = error("Point multiplication is not defined, nor should it be.")
+Base.:/(A::Point, B) = error("Point division is not defined, nor should it be.")
+Base.:/(A, B::Point) = error("Point division is not defined, nor should it be.")
 """
     -(A::Point, B::Point)
 

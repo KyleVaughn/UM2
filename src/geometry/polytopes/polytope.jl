@@ -90,7 +90,7 @@ end
 
 # Convenience constructor for LineSegments
 function LineSegment(x₁::T, y₁::T, x₂::T, y₂::T) where {T}
-  return LineSegment{Point{2, T}}(Point(x₁, y₁), Point(x₂, y₂))
+    return LineSegment{Point{2, T}}(Point(x₁, y₁), Point(x₂, y₂))
 end
 
 # Convert SVector vals

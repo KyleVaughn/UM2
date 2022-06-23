@@ -130,8 +130,9 @@ function findsortedfirst(p::Point, v::Vector{<:Point}, x::Point)
     return length(v) + 1
 end
 
-function Base.searchsortedfirst(p::Point, v::Vector{<:Point}, x::Point, 
-                           lo::T, hi::T, o::Base.Ordering)::keytype(v) where T<:Integer
+function Base.searchsortedfirst(p::Point, v::Vector{<:Point}, x::Point,
+                                lo::T, hi::T,
+                                o::Base.Ordering)::keytype(v) where {T <: Integer}
     d = distance²(p, x)
     u = T(1)
     lo = lo - u
@@ -149,7 +150,7 @@ end
 
 function getsortedfirst(p::Point, v::Vector{<:Point}, x::Point)
     if SORTED_ARRAY_THRESHOLD ≤ length(v)
-        return searchsortedfirst(p, v, x, firstindex(v), lastindex(v), Base.Forward) 
+        return searchsortedfirst(p, v, x, firstindex(v), lastindex(v), Base.Forward)
     else
         return findsortedfirst(p, v, x)
     end
