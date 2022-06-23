@@ -1,7 +1,7 @@
 # Lewis, E. E., et al. "Benchmark specification for Deterministic 2-D/3-D MOX fuel 
 # assembly transport calculations without spatial homogenization (C5G7 MOX)." 
 # NEA/NSC 280 (2001): 2001.
-using MOCNeutronTransport
+using UM2 
 
 filename = "c5g7.step"
 add_timestamps_to_logger()
@@ -59,7 +59,7 @@ end
 gmsh.finalize()
 
 mesh = import_mesh("c5g7.inp")
-statistics(mesh)
+#statistics(mesh)
 # Partition mesh according to mpact grid hierarchy, and write as an xdmf file
 mpt = MeshPartitionTree(mesh)
-export_mesh(mpt, "c5g7.xdmf")
+export_mesh("c5g7.xdmf", mpt)

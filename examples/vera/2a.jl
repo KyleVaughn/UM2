@@ -1,7 +1,7 @@
 # VERA Core Physics Benchmark Progression Problem Specifications
 # Revision 4, August 29, 2014
 # CASL-U-2012-0131-004
-using MOCNeutronTransport
+using UM2 
 
 add_timestamps_to_logger()
 gmsh.initialize()
@@ -9,7 +9,6 @@ gmsh.option.set_number("General.NumThreads", 0) # 0 uses system default, i.e. OM
 gmsh.option.set_number("Geometry.OCCParallel", 1) # use parallel OCC boolean operations
 gmsh.option.set_number("General.Verbosity", 2) # 1: +errors, 2: +warnings, 3: +direct, 4: +information, 5: +status, 99: +debug
 
-#
 # Model
 # ----------------------------------------------------------------------------------------------
 uo2_entities = Int64[]; gap_entities = Int64[]; clad_entities = Int64[]; h2o_entities = Int64[]
@@ -28,7 +27,7 @@ coords_gt = [ (6, 15), (9, 15), (12, 15), (4, 14), (14, 14), (3, 12), (6, 12), (
 coords_it = [(9,9)]
 
 # Place UO₂ pins
-for i = 1:17, j = 1:17
+for i in 1:17, j in 1:17
     if (i, j) ∈  coords_gt || (i,j) ∈  coords_it
         continue
     end
@@ -103,11 +102,11 @@ mesh_error = get_cad_to_mesh_error()
 for i in eachindex(mesh_error)
     println(mesh_error[i])
 end
-# gmsh.fltk.run()
+#gmsh.fltk.run()
 gmsh.finalize()
 
 mesh = import_mesh("2a.inp")
-statistics(mesh)
+#statistics(mesh)
 # Partition mesh according to mpact grid hierarchy and write as an xdmf file 
 mpt = MeshPartitionTree(mesh)
 export_mesh(mpt, "2a.xdmf")

@@ -19,14 +19,14 @@ function Base.intersect(l::LineSegment{Point{2,T}},
         # that need to be tested
         # We keep the branches instead of using getsortedfirst, since
         # branched will be pruned at compile time.
-        if X ≥ sorted_array_findfirst_threshold
+        if X ≥ SORTED_ARRAY_THRESHOLD 
             xlower_ind = searchsortedfirst(g.x, xlower)
             xupper_ind = searchsortedfirst(g.x, xupper)
         else
             xlower_ind = findsortedfirst(g.x, xlower)
             xupper_ind = findsortedfirst(g.x, xupper)
         end
-        if Y ≥ sorted_array_findfirst_threshold
+        if Y ≥ SORTED_ARRAY_THRESHOLD 
             ylower_ind = searchsortedfirst(g.y, ylower)
             yupper_ind = searchsortedfirst(g.y, yupper)
         else

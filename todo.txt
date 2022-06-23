@@ -1,12 +1,7 @@
-Make Volume/polytope mesh use Point{D,T}
-
-intersect mesh partition tree edges
-intersect mesh partition tree faces
-back to C program to intersect a line segment with a mesh
-test difference in line intersecting mesh using jl_function vs using cfunctioni + jl_function
-back to Fortran to intersect a line segment with a mesh
-
-point in face for polytope
+Ensure functions are not allocating using @allocated
+intersect rect mesh edges
+intersect rect mesh faces
+test difference in line intersecting mesh using jl_function vs using cfunction
 find face
     May wish to consider an acceleration structure here
         RECTILINEAR GRID
@@ -14,5 +9,4 @@ find face
         This algorithm to do the splitting should be similar to the CMFD grid algorithm
         computing a split plane in a spatial partitioning hierarchy
         We can be smart and cache some values for the next point
-            
-
+multithreading for materialize edges & faces, submesh.

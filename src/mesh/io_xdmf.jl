@@ -208,9 +208,8 @@ function _populate_topo_array_xdmf!(topo_array, mesh::VolumeMesh{D}) where {D}
         topo_array[topo_ctr] = vtk2xdmf(_volume_mesh_points_to_vtk_type(D, Δ))
         topo_ctr += 1
         offset = mesh.offsets[i]
-        @. topo_array[topo_ctr:(topo_ctr + Δ - 1)] = mesh.connectivity[offset:(offset + Δ - 1)]
         # adjust 1-based to 0-based indexing
-        topo_array .-= 1
+        @. topo_array[topo_ctr:(topo_ctr + Δ - 1)] = mesh.connectivity[offset:(offset + Δ - 1)] - 1
         topo_ctr += Δ
     end
     return nothing

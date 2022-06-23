@@ -8,7 +8,8 @@ accounts for physical groups that already exist with name `name`.
 
 Returns the tag of the physical group.
 """
-function safe_add_physical_group(name::String, entities::Vector{NTuple{2,I}}) where {I<:Integer}
+function safe_add_physical_group(name::String, entities::Vector{NTuple{2, I}}
+                                ) where {I<:Integer}
     dims = unique!(getindex.(entities, 1))
     for dim in dims
         current_groups = gmsh.model.get_physical_groups(dim)

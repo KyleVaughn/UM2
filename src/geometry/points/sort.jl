@@ -130,7 +130,7 @@ function findsortedfirst(p::Point, v::Vector{<:Point}, x::Point)
     return length(v) + 1
 end
 
-function searchsortedfirst(p::Point, v::Vector{<:Point}, x::Point, 
+function Base.searchsortedfirst(p::Point, v::Vector{<:Point}, x::Point, 
                            lo::T, hi::T, o::Base.Ordering)::keytype(v) where T<:Integer
     d = distance²(p, x)
     u = T(1)

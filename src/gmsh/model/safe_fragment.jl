@@ -107,8 +107,8 @@ function _process_material_hierarchy!(names::Vector{String},
     # Use the hierarchy to ensure that no entity has more than 1 material by removing
     # all shared elements from sets lower than the current set
     nmats = length(hierarchy_names)
-    for i ∈ 1:nmats 
-        for j ∈ i+1:nmats
+    for i in 1:nmats 
+        for j in i+1:nmats
             setdiff!(material_dict[hierarchy_names[j]], material_dict[hierarchy_names[i]])
         end
     end
