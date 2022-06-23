@@ -21,14 +21,14 @@
 # hence, in 2D:
 # r = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇) = x₃/z₃ 
 # s = r(𝘅 ⋅ 𝘆)/(𝘅 ⋅ 𝘅) = y₃/z₃ 
-function Base.intersect(l₁::LineSegment{Point{2,T}}, 
-                        l₂::LineSegment{Point{2,T}}) where {T} 
+function Base.intersect(l₁::LineSegment{Point{2, T}},
+                        l₂::LineSegment{Point{2, T}}) where {T}
     𝘄 = l₂[1] - l₁[1]
-    𝘂₁= l₁[2] - l₁[1] 
-    𝘂₂= l₂[2] - l₂[1] 
+    𝘂₁ = l₁[2] - l₁[1]
+    𝘂₂ = l₂[2] - l₂[1]
     z = 𝘂₁ × 𝘂₂
-    r = (𝘄 × 𝘂₂)/z
-    s = (𝘄 × 𝘂₁)/z
+    r = (𝘄 × 𝘂₂) / z
+    s = (𝘄 × 𝘂₁) / z
     valid = 0 ≤ r && r ≤ 1 && 0 ≤ s && s ≤ 1
-    return valid ? l₂(s) : Point{2,T}(INF_POINT,INF_POINT)
+    return valid ? l₂(s) : Point{2, T}(INF_POINT, INF_POINT)
 end

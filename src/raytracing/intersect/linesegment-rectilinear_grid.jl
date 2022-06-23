@@ -1,5 +1,5 @@
-function Base.intersect(l::LineSegment{Point{2,T}}, 
-                        g::RectilinearGrid{X,Y,0,T}) where {X,Y,T} 
+function Base.intersect(l::LineSegment{Point{2, T}},
+                        g::RectilinearGrid{X, Y, 0, T}) where {X, Y, T}
     # Intersect the bounding box
     # https://tavianator.com/2011/ray_box.html
     𝘂⁻¹ = 1 ./ (l[2] - l[1])
@@ -19,14 +19,14 @@ function Base.intersect(l::LineSegment{Point{2,T}},
         # that need to be tested
         # We keep the branches instead of using getsortedfirst, since
         # branched will be pruned at compile time.
-        if X ≥ SORTED_ARRAY_THRESHOLD 
+        if X ≥ SORTED_ARRAY_THRESHOLD
             xlower_ind = searchsortedfirst(g.x, xlower)
             xupper_ind = searchsortedfirst(g.x, xupper)
         else
             xlower_ind = findsortedfirst(g.x, xlower)
             xupper_ind = findsortedfirst(g.x, xupper)
         end
-        if Y ≥ SORTED_ARRAY_THRESHOLD 
+        if Y ≥ SORTED_ARRAY_THRESHOLD
             ylower_ind = searchsortedfirst(g.y, ylower)
             yupper_ind = searchsortedfirst(g.y, yupper)
         else
@@ -55,9 +55,9 @@ function Base.intersect(l::LineSegment{Point{2,T}},
         nx = length(ixgen)
         ny = length(iygen)
         nmax = nx + ny
-        intersections = Vector{Point{2,T}}(undef, nmax) 
-        r = 𝘂⁻¹[1]*(g.x[xstart] - X₁[1])
-        s = 𝘂⁻¹[2]*(g.y[ystart] - X₁[2])
+        intersections = Vector{Point{2, T}}(undef, nmax)
+        r = 𝘂⁻¹[1] * (g.x[xstart] - X₁[1])
+        s = 𝘂⁻¹[2] * (g.y[ystart] - X₁[2])
         i = 2
         j = 2
         k = 1
@@ -69,14 +69,14 @@ function Base.intersect(l::LineSegment{Point{2,T}},
                     intersections[k] = l(r)
                     k += 1
                 end
-                r = 𝘂⁻¹[1]*(g.x[ixgen[i]] - X₁[1])
+                r = 𝘂⁻¹[1] * (g.x[ixgen[i]] - X₁[1])
                 i += 1
             else
                 if rmin ≤ s ≤ rmax
                     intersections[k] = l(s)
                     k += 1
                 end
-                s = 𝘂⁻¹[2]*(g.y[iygen[j]] - X₁[2])
+                s = 𝘂⁻¹[2] * (g.y[iygen[j]] - X₁[2])
                 j += 1
             end
         end
@@ -87,7 +87,7 @@ function Base.intersect(l::LineSegment{Point{2,T}},
                 intersections[k] = l(r)
                 k += 1
             end
-            r = 𝘂⁻¹[1]*(g.x[ixgen[i]] - X₁[1])
+            r = 𝘂⁻¹[1] * (g.x[ixgen[i]] - X₁[1])
             i += 1
         end
         if rmin ≤ r ≤ rmax
@@ -100,7 +100,7 @@ function Base.intersect(l::LineSegment{Point{2,T}},
                 intersections[k] = l(s)
                 k += 1
             end
-            s = 𝘂⁻¹[2]*(g.y[iygen[j]] - X₁[2])
+            s = 𝘂⁻¹[2] * (g.y[iygen[j]] - X₁[2])
             j += 1
         end
         if rmin ≤ s ≤ rmax
@@ -111,6 +111,6 @@ function Base.intersect(l::LineSegment{Point{2,T}},
         Base._deleteend!(intersections, nmax - k + 1)
         return intersections
     else
-        return Point{2,T}[]
+        return Point{2, T}[]
     end
 end

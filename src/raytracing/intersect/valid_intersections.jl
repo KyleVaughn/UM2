@@ -1,7 +1,6 @@
 function _insert_valid_intersections!(intersections::Vector{Point{D, T}},
                                       p0::Point{D, T},
-                                      points::Vec{N, Point{D, T}},
-                                      ) where {N, D, T}
+                                      points::Vec{N, Point{D, T}}) where {N, D, T}
     T_INF_POINT = T(INF_POINT)
     nintersections = length(intersections)
     for p in points

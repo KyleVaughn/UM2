@@ -1,6 +1,6 @@
 function Base.intersect(l::LineSegment{Point{2, T}},
-                        poly::QuadraticPolygon{N, Point{2, T}}) where {N, T} 
-    return mapreduce(edge->intersect(l, edge), vcat, edges(poly))
+                        poly::QuadraticPolygon{N, Point{2, T}}) where {N, T}
+    return mapreduce(edge -> intersect(l, edge), vcat, edges(poly))
 end
 
 #
