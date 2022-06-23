@@ -8,7 +8,7 @@ function face_connectivity(mesh::VolumeMesh{2, T, U}) where {T, U}
         faces[1:nelems] = reinterpret(facetype, mesh.connectivity)
         return faces
     else
-        return map(i->_materialize_face_connectivity(i, mesh), 1:nelements(mesh))
+        return map(i -> _materialize_face_connectivity(i, mesh), 1:nelements(mesh))
     end
 end
 

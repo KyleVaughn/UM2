@@ -21,16 +21,16 @@ material_names(mesh::VolumeMesh) = mesh.material_names
 nelements(mesh::VolumeMesh) = length(mesh.offsets) - 1
 offset_diff(i::Integer, mesh::VolumeMesh) = mesh.offsets[i + 1] - mesh.offsets[i]
 
-function typeof_face(i::Integer, mesh::VolumeMesh{2,T,U}) where {T, U}
+function typeof_face(i::Integer, mesh::VolumeMesh{2, T, U}) where {T, U}
     npt = offset_diff(i, mesh)
     if npt == 3
         return Triangle{U}
     elseif npt == 4
         return Quadrilateral{U}
     elseif npt == 6
-        return QuadraticTriangle{U} 
+        return QuadraticTriangle{U}
     elseif npt == 8
-        return QuadraticQuadrilateral{U} 
+        return QuadraticQuadrilateral{U}
     else
         error("Invalid number of points.")
     end
@@ -44,9 +44,9 @@ end
 function islinear(mesh::VolumeMesh{2})
     # This can be fooled by mixing linear and quadratic elements, which
     # is not supported
-    return length(mesh.connectivity)/nelements(mesh) ≤ 4.000001
+    return length(mesh.connectivity) / nelements(mesh) ≤ 4.000001
 end
-isquadratic(mesh::VolumeMesh{2}) = !islinear(mesh) 
+isquadratic(mesh::VolumeMesh{2}) = !islinear(mesh)
 
 function _volume_mesh_points_to_vtk_type(dim::Integer, npt::Integer)
     if dim == 2

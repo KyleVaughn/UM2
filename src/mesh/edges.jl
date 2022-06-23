@@ -29,7 +29,7 @@ function _volume_mesh_linear_edge_connectivity(mesh::VolumeMesh{2, T, U}) where 
     lines = Vector{LineSegment{U}}(undef, nedges)
     lines[1:nedges] = reinterpret(LineSegment{U}, unique_edges)
     return lines
-end 
+end
 
 function _volume_mesh_quadratic_edge_connectivity(mesh::VolumeMesh{2, T, U}) where {T, U}
     unique_edges = Vec{3, U}[]
@@ -52,7 +52,7 @@ function _volume_mesh_quadratic_edge_connectivity(mesh::VolumeMesh{2, T, U}) whe
     segs = Vector{QuadraticSegment{U}}(undef, nedges)
     segs[1:nedges] = reinterpret(QuadraticSegment{U}, unique_edges)
     return segs
-end 
+end
 
 function edge_connectivity(mesh::PolytopeVertexMesh{2})
     if islinear(mesh)
@@ -84,13 +84,13 @@ function _polytope_mesh_linear_edge_connectivity(mesh::PolytopeVertexMesh{2})
     lines = Vector{LineSegment{U}}(undef, nedges)
     lines[1:nedges] = reinterpret(LineSegment{U}, unique_edges)
     return lines
-end 
+end
 
 function _polytope_mesh_quadratic_edge_connectivity(mesh::PolytopeVertexMesh{2})
     U = vertextype(mesh.polytopes[1])
     unique_edges = Vec{3, U}[]
     nedges = 0
-    for face in mesh.polytopes 
+    for face in mesh.polytopes
         edge_vecs = edges(face)
         for edge in edge_vecs
             if edge[1] < edge[2]
@@ -108,4 +108,4 @@ function _polytope_mesh_quadratic_edge_connectivity(mesh::PolytopeVertexMesh{2})
     segs = Vector{QuadraticSegment{U}}(undef, nedges)
     segs[1:nedges] = reinterpret(QuadraticSegment{U}, unique_edges)
     return segs
-end 
+end

@@ -23,5 +23,5 @@ function centroid(i::Integer, mesh::VolumeMesh{2, T}) where {T}
 end
 
 function centroid(i::Integer, mesh::PolytopeVertexMesh{2})
-  return centroid(materialize(mesh.polytopes[i], mesh.vertices))
+    return centroid(materialize(mesh.polytopes[i], mesh.vertices))
 end

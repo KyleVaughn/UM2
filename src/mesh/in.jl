@@ -17,18 +17,18 @@ function Base.in(P::Point{2, T}, mesh::VolumeMesh{2, T}) where {T}
             bool = P ∈ materialize(QuadraticQuadrilateral(quad8_vids), mesh.points)
         else
             error("Unsupported type.")
-            return 0 
+            return 0
         end
         bool && return i
     end
-    error("Unable to find mesh element containing "*string(P))
+    error("Unable to find mesh element containing " * string(P))
     return 0
 end
 
 function Base.in(P::Point{2, T}, mesh::PolytopeVertexMesh{2, T}) where {T}
-    for i in 1:nelements(mesh) 
-        P ∈ materialize(mesh.polytopes[i], mesh.vertices) && return i 
+    for i in 1:nelements(mesh)
+        P ∈ materialize(mesh.polytopes[i], mesh.vertices) && return i
     end
-    error("Unable to find mesh element containing "*string(P))
-    return 0 
+    error("Unable to find mesh element containing " * string(P))
+    return 0
 end

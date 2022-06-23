@@ -1,5 +1,5 @@
 struct RectilinearMeshPartition{X, Y, T, M <: AbstractMesh}
-    grid::RectilinearGrid{X,Y,0,T}
+    grid::RectilinearGrid{X, Y, 0, T}
     meshes::Matrix{M} # size = (X, Y)
 end
 

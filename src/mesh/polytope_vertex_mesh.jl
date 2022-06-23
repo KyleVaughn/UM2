@@ -19,8 +19,8 @@ materials(mesh::PolytopeVertexMesh) = mesh.materials
 material_names(mesh::PolytopeVertexMesh) = mesh.material_names
 groups(mesh::PolytopeVertexMesh) = mesh.groups
 nelements(mesh::PolytopeVertexMesh) = length(mesh.polytopes)
-islinear(mesh::PolytopeVertexMesh{2}) = mesh.polytopes isa Vector{<:Polygon} 
-isquadratic(mesh::PolytopeVertexMesh{2}) = mesh.polytopes isa Vector{<:QuadraticPolygon} 
+islinear(mesh::PolytopeVertexMesh{2}) = mesh.polytopes isa Vector{<:Polygon}
+isquadratic(mesh::PolytopeVertexMesh{2}) = mesh.polytopes isa Vector{<:QuadraticPolygon}
 
 function PolytopeVertexMesh(mesh::VolumeMesh{D, T, U}) where {D, T, U}
     return PolytopeVertexMesh(mesh.points,

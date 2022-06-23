@@ -39,22 +39,22 @@ function materialize_polytopes(mesh::PolytopeVertexMesh)
 end
 
 # aliases
-function materialize_faces(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Face}
-    return materialize_polytopes(mesh) 
+function materialize_faces(mesh::PolytopeVertexMesh{D, T, P}) where {D, T, P <: Face}
+    return materialize_polytopes(mesh)
 end
 
-function materialize_cells(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Cell}
-    return materialize_polytopes(mesh) 
+function materialize_cells(mesh::PolytopeVertexMesh{D, T, P}) where {D, T, P <: Cell}
+    return materialize_polytopes(mesh)
 end
 
-function materialize_facets(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Cell}
+function materialize_facets(mesh::PolytopeVertexMesh{D, T, P}) where {D, T, P <: Cell}
     return materialize_faces(mesh)
 end
 
-function materialize_ridges(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Cell}
+function materialize_ridges(mesh::PolytopeVertexMesh{D, T, P}) where {D, T, P <: Cell}
     return materialize_edges(mesh)
 end
 
-function materialize_facets(mesh::PolytopeVertexMesh{D,T,P}) where {D,T,P<:Face}
+function materialize_facets(mesh::PolytopeVertexMesh{D, T, P}) where {D, T, P <: Face}
     return materialize_edges(mesh)
 end
