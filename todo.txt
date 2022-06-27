@@ -1,4 +1,4 @@
-Ensure functions are not allocating using @allocated
+rect mesh partition type
 intersect rect mesh edges
 intersect rect mesh faces
 test difference in line intersecting mesh using jl_function vs using cfunction
@@ -10,3 +10,7 @@ find face
         computing a split plane in a spatial partitioning hierarchy
         We can be smart and cache some values for the next point
 multithreading for materialize edges & faces, submesh.
+edge to edge RT
+
+OTF ray trace for effective optical thickness calculation.
+Ensure functions are not allocating using @allocated
