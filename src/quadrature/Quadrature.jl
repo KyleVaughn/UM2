@@ -6,7 +6,7 @@ struct RefSimplex{K} <: AbstractRefShape end
 struct RefHypercube{K} <: AbstractRefShape end
 
 # RefLine could be RefSimplex or RefHypercube. We use RefHypercube here for simplicity.
-const RefTriangle    = RefSimplex{2}
+const RefTriangle = RefSimplex{2}
 # const RefTetrahedron = RefSimplex{3}
 
 const RefLine   = RefHypercube{1}

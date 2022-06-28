@@ -1,10 +1,10 @@
 export generate_mesh
 
-function generate_mesh(;dim::Int64 = 2, 
-                        order::Int64 = 1, 
-                        faces::String = "Triangle", 
-                        opt_iters::Int64 = 0,
-                        force_quads::Bool = false)
+function generate_mesh(; dim::Int64 = 2,
+                       order::Int64 = 1,
+                       faces::String = "Triangle",
+                       opt_iters::Int64 = 0,
+                       force_quads::Bool = false)
     @info "Generating a mesh of dimension $dim with $faces faces of order $order"
     gmsh.option.set_number("Mesh.SecondOrderIncomplete", 1)
     if dim != 2
@@ -60,5 +60,5 @@ function generate_mesh(;dim::Int64 = 2,
         error("Could not identify face type.")
     end
 
-    return nothing 
+    return nothing
 end

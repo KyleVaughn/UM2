@@ -1,4 +1,4 @@
-module UM2 
+module UM2
 
 using EzXML
 using HDF5
@@ -16,7 +16,7 @@ using LoggingExtras: TransformerLogger, global_logger
 @reexport using StaticArrays
 @reexport using Statistics
 
-gmsh_dir = readdir(artifact"gmsh", join=true)[1]
+gmsh_dir = readdir(artifact"gmsh", join = true)[1]
 gmsh_jl = joinpath(gmsh_dir, "lib", "gmsh.jl")
 include(gmsh_jl)
 export gmsh

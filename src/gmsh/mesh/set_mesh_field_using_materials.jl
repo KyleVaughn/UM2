@@ -13,7 +13,7 @@ function set_mesh_field_using_materials(materials::Vector{Material})
     # Populate each of the fields with the highest dimensional entities in the material
     # physical group
     material_dict = Dict{String, Vector{Tuple{Int32, Int32}}}()
-    material_names = ["Material: "*mat.name for mat in materials]
+    material_names = ["Material: " * mat.name for mat in materials]
     for name in material_names
         material_dict[name] = Tuple{Int32, Int32}[]
     end
@@ -24,7 +24,7 @@ function set_mesh_field_using_materials(materials::Vector{Material})
             tags = gmsh.model.get_entities_for_physical_group(gdim, gnum)
             dtags = [(gdim, tag) for tag in tags]
             # Empty vector, or these ents are higher dim
-            if length(material_dict[name]) == 0 || gdim > material_dict[name][1][1] 
+            if length(material_dict[name]) == 0 || gdim > material_dict[name][1][1]
                 material_dict[name] = dtags
             end
         end
@@ -36,13 +36,13 @@ function set_mesh_field_using_materials(materials::Vector{Material})
         edim = dtags[1][1]
         tags = [dt[2] for dt in dtags]
         if edim == 0
-            gmsh.model.mesh.field.set_numbers(fid, "PointsList", tags) 
+            gmsh.model.mesh.field.set_numbers(fid, "PointsList", tags)
         elseif edim == 1
-            gmsh.model.mesh.field.set_numbers(fid, "CurvesList", tags) 
+            gmsh.model.mesh.field.set_numbers(fid, "CurvesList", tags)
         elseif edim == 2
-            gmsh.model.mesh.field.set_numbers(fid, "SurfacesList", tags) 
+            gmsh.model.mesh.field.set_numbers(fid, "SurfacesList", tags)
         else # edim == 3
-            gmsh.model.mesh.field.set_numbers(fid, "VolumesList", tags) 
+            gmsh.model.mesh.field.set_numbers(fid, "VolumesList", tags)
         end
     end
     # Create a field that takes the min of each and set as background mesh
@@ -52,5 +52,5 @@ function set_mesh_field_using_materials(materials::Vector{Material})
     gmsh.option.set_number("Mesh.MeshSizeExtendFromBoundary", 0)
     gmsh.option.set_number("Mesh.MeshSizeFromPoints", 0)
     gmsh.option.set_number("Mesh.MeshSizeFromCurvature", 0)
-    return field_ids 
+    return field_ids
 end

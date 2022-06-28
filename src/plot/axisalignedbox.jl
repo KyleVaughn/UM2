@@ -3,7 +3,7 @@ function convert_arguments(LS::Type{<:LineSegments}, aab::AABox{2})
 end
 
 function convert_arguments(LS::Type{<:LineSegments}, R::Vector{<:AABox})
-    return convert_arguments(LS, vcat([convert_arguments(LS, aab)[1] for aab ∈ R]...))
+    return convert_arguments(LS, vcat([convert_arguments(LS, aab)[1] for aab in R]...))
 end
 
 function convert_arguments(LS::Type{<:LineSegments}, R::SVector{N, <:AABox}) where {N}
@@ -18,5 +18,5 @@ function convert_arguments(M::Type{<:GLMakieMesh}, aab::AABox{2})
 end
 
 function convert_arguments(M::Type{<:GLMakieMesh}, aab::AABox{3})
-    return convert_arguments(M, faces(aab)) 
+    return convert_arguments(M, faces(aab))
 end

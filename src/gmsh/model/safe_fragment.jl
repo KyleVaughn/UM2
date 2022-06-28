@@ -15,14 +15,15 @@ In the event that two overlapping entities have material physical groups, the op
 material hierarchy is used to choose a single material for the resultant overlapping 
 entity/entities.
 """
-function safe_fragment(object_dtags::Vector{NTuple{2,Int32}},
-                       tool_dtags::Vector{NTuple{2,Int32}};
+function safe_fragment(object_dtags::Vector{NTuple{2, Int32}},
+                       tool_dtags::Vector{NTuple{2, Int32}};
                        material_hierarchy::Vector{Material} = Material[])
-    
+
     # Get all physical groups and their names
     dim = max(maximum(getindex.(object_dtags, 1)), maximum(getindex.(tool_dtags, 1)))
     groups = gmsh.model.get_physical_groups(dim)
-    old_tags = [gmsh.model.get_entities_for_physical_group(dtag[1], dtag[2]) for dtag in groups] 
+    old_tags = [gmsh.model.get_entities_for_physical_group(dtag[1], dtag[2])
+                for dtag in groups]
     names = [gmsh.model.get_physical_name(dtag[1], dtag[2]) for dtag in groups]
 
     # Fragment
@@ -38,14 +39,14 @@ function safe_fragment(object_dtags::Vector{NTuple{2,Int32}},
     # For each physical group
     for (i, group) in enumerate(groups)
         gdim, gnum = group
-        new_tags[i] = NTuple{2,Int32}[]
+        new_tags[i] = NTuple{2, Int32}[]
         # For each of the dim tags in the physical group
         for tag in old_tags[i]
             dtag = (gdim, tag)
             # If the dim tag was one of the entities in the fragment
             if dtag ∈ input_dtags
                 # Get its children
-                index = findfirst(x->x==dtag, input_dtags)
+                index = findfirst(x -> x == dtag, input_dtags)
                 children = output_dtags_map[index]
                 # Add the children to the new physical group
                 for child in children
@@ -90,7 +91,7 @@ end
 function _process_material_hierarchy!(names::Vector{String},
                                       new_tags::Vector{Vector{Int32}},
                                       material_hierarchy::Vector{Material})
-    material_indices = findall(x->startswith(x, "Material: "), names) 
+    material_indices = findall(x -> startswith(x, "Material: "), names)
     material_names = names[material_indices]
     material_dict = Dict{String, BitSet}()
     for (i, name) in enumerate(material_names)
@@ -98,8 +99,8 @@ function _process_material_hierarchy!(names::Vector{String},
     end
     # Ensure each material group is present in the hierarchy and warn now if it's not. 
     # Otherwise the error that occurs later is not as easy to figure out
-    hierarchy_names = ["Material: "*mat.name for mat in material_hierarchy]
-    for hierarchy_name in hierarchy_names 
+    hierarchy_names = ["Material: " * mat.name for mat in material_hierarchy]
+    for hierarchy_name in hierarchy_names
         if hierarchy_name ∉ material_names
             error("Physical groups does not contain: ", hierarchy_name)
         end
@@ -107,8 +108,8 @@ function _process_material_hierarchy!(names::Vector{String},
     # Use the hierarchy to ensure that no entity has more than 1 material by removing
     # all shared elements from sets lower than the current set
     nmats = length(hierarchy_names)
-    for i in 1:nmats 
-        for j in i+1:nmats
+    for i in 1:nmats
+        for j in (i + 1):nmats
             setdiff!(material_dict[hierarchy_names[j]], material_dict[hierarchy_names[i]])
         end
     end

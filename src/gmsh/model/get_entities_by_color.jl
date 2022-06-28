@@ -9,7 +9,7 @@ If `dim` == -1, return all entities, otherwise return only entities of dimension
 
 Note, entities in gmsh have color (0, 0, 255, 0) by default, so these entities are excluded.
 """
-function get_entities_by_color(dim::Int64=-1)
+function get_entities_by_color(dim::Int64 = -1)
     color_dict = Dict{NTuple{4, Int32}, Vector{NTuple{2, Int32}}}()
     for ent in gmsh.model.get_entities(dim)
         edim, tag = ent

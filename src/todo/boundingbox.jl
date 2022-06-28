@@ -4,8 +4,8 @@
 function boundingbox(points::Vector{<:Point2D})
     xmin = ymin = typemax(T)
     xmax = ymax = typemin(T)
-    for i = 1:length(points)
-        x,y = points[i].coord  
+    for i in 1:length(points)
+        x, y = points[i].coord
         if x < xmin
             xmin = x
         end
@@ -19,15 +19,15 @@ function boundingbox(points::Vector{<:Point2D})
             ymax = y
         end
     end
-    return AABox2D(Point2D(xmin, ymin), 
+    return AABox2D(Point2D(xmin, ymin),
                    Point2D(xmax, ymax))
 end
 
-function boundingbox(points::SVector{L, Point2D{T}}) where {L,T} 
+function boundingbox(points::SVector{L, Point2D{T}}) where {L, T}
     xmin = ymin = typemax(T)
     xmax = ymax = typemin(T)
-    for i = 1:L
-        x,y = points[i].coord  
+    for i in 1:L
+        x, y = points[i].coord
         if x < xmin
             xmin = x
         end
@@ -41,7 +41,7 @@ function boundingbox(points::SVector{L, Point2D{T}}) where {L,T}
             ymax = y
         end
     end
-    return AABox2D(Point2D(xmin, ymin), 
+    return AABox2D(Point2D(xmin, ymin),
                    Point2D(xmax, ymax))
 end
 
@@ -49,8 +49,8 @@ end
 function boundingbox(points::Vector{<:Point3D})
     xmin = ymin = zmin = typemax(T)
     xmax = ymax = zmax = typemin(T)
-    for i = 1:length(points)
-        x,y,z = points[i].coord  
+    for i in 1:length(points)
+        x, y, z = points[i].coord
         if x < xmin
             xmin = x
         end
@@ -70,15 +70,15 @@ function boundingbox(points::Vector{<:Point3D})
             zmax = z
         end
     end
-    return AABox3D(Point3D(xmin, ymin, zmin), 
+    return AABox3D(Point3D(xmin, ymin, zmin),
                    Point3D(xmax, ymax, zmax))
 end
 
-function boundingbox(points::SVector{L, Point3D{T}}) where {L,T} 
+function boundingbox(points::SVector{L, Point3D{T}}) where {L, T}
     xmin = ymin = zmin = typemax(T)
     xmax = ymax = zmax = typemin(T)
-    for i = 1:L
-        x,y,z = points[i].coord  
+    for i in 1:L
+        x, y, z = points[i].coord
         if x < xmin
             xmin = x
         end
@@ -98,7 +98,7 @@ function boundingbox(points::SVector{L, Point3D{T}}) where {L,T}
             zmax = z
         end
     end
-    return AABox3D(Point3D(xmin, ymin, zmin), 
+    return AABox3D(Point3D(xmin, ymin, zmin),
                    Point3D(xmax, ymax, zmax))
 end
 
@@ -115,7 +115,7 @@ function boundingbox(q::QuadraticSegment{N}) where {N}
     𝘂 = q.𝘂
     𝘃 = q.𝘃
     𝗿 = 𝘃 ./ -2𝘂
-    𝗽_stationary = 𝗿*𝗿*𝘂 + 𝗿*𝘃 + q.𝘅₁
+    𝗽_stationary = 𝗿 * 𝗿 * 𝘂 + 𝗿 * 𝘃 + q.𝘅₁
     𝗽_min = min.(q.𝘅₁.coord, q.𝘅₂.coord)
     𝗽_max = max.(q.𝘅₁.coord, q.𝘅₂.coord)
     if N === 2
@@ -167,5 +167,5 @@ end
 
 # Axis-aligned bounding box
 function boundingbox(mesh::QuadraticUnstructuredMesh)
-    return mapreduce(x->boundingbox(x), union, materialize_edges(mesh))
+    return mapreduce(x -> boundingbox(x), union, materialize_edges(mesh))
 end

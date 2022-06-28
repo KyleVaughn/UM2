@@ -1,7 +1,7 @@
 @testset "Common" begin
     tests = ["sort",
-             "select_type",
-             "tree"
+        "select_type",
+        "tree",
     ]
     for t in tests
         include("$(t).jl")

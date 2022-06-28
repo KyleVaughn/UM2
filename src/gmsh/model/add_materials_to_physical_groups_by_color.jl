@@ -13,9 +13,9 @@ function add_materials_to_physical_groups_by_color(materials::Vector{Material})
         g = Int32(mat.color.g.i)
         b = Int32(mat.color.b.i)
         a = Int32(mat.color.alpha.i)
-        rgba = (r,g,b,a)
+        rgba = (r, g, b, a)
         ents = color_to_ent[rgba]
-        safe_add_physical_group("Material: "*mat.name, ents)
+        safe_add_physical_group("Material: " * mat.name, ents)
     end
-    return nothing 
+    return nothing
 end

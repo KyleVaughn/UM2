@@ -1,7 +1,7 @@
 # Lewis, E. E., et al. "Benchmark specification for Deterministic 2-D/3-D MOX fuel 
 # assembly transport calculations without spatial homogenization (C5G7 MOX)." 
 # NEA/NSC 280 (2001): 2001.
-using UM2 
+using UM2
 
 filename = "c5g7.step"
 add_timestamps_to_logger()
@@ -13,16 +13,16 @@ gmsh.option.set_number("General.Verbosity", 2) # 1: +errors, 2: +warnings, 3: +d
 
 materials = import_model(filename, names = true)
 
-lat_div = Vec{4,Float64}([i*21.42 for i = 0:3])
+lat_div = Vec{4, Float64}([i * 21.42 for i in 0:3])
 lattice_grid = RectilinearGrid(lat_div, lat_div)
 module_grid = lattice_grid # assembly modular ray tracing
-coarse_div = Vec{52,Float64}([1.26*i for i ∈ 0:17*3])
-coarse_grid = RectilinearGrid(coarse_div, coarse_div) 
+coarse_div = Vec{52, Float64}([1.26 * i for i in 0:(17 * 3)])
+coarse_grid = RectilinearGrid(coarse_div, coarse_div)
 mpact_grid = MPACTGridHierarchy(lattice_grid, module_grid, coarse_grid)
 
 # See http://juliagraphics.github.io/Colors.jl/stable/namedcolors/ for named colors
 # or use an RGB tuple
-push!(materials, Material(name="Moderator", color="sienna", mesh_size=1.0))
+push!(materials, Material(name = "Moderator", color = "sienna", mesh_size = 1.0))
 overlay_mpact_grid_hierarchy(mpact_grid, materials)
 
 Σₜᵢ_FC  = [1.90730E-01, 4.56520E-01, 6.40700E-01, 6.49840E-01, 6.70630E-01, 8.75060E-01, 1.43450E+00]
@@ -33,14 +33,14 @@ overlay_mpact_grid_hierarchy(mpact_grid, materials)
 Σₜᵢ_UO2 = [2.12450E-01, 3.55470E-01, 4.85540E-01, 5.59400E-01, 3.18030E-01, 4.01460E-01, 5.70610E-01]
 Σₜᵢ_Mod = [2.30070E-01, 7.76460E-01, 1.48420E+00, 1.50520E+00, 1.55920E+00, 2.02540E+00, 3.30570E+00]
 
-frac_of_MFP = 1//4
-materials[1].mesh_size = frac_of_MFP*inv(mean(Σₜᵢ_FC )) # Fission Chamber
-materials[2].mesh_size = frac_of_MFP*inv(mean(Σₜᵢ_GT )) # Guide Tube
-materials[3].mesh_size = frac_of_MFP*inv(mean(Σₜᵢ_M43)) # MOX-4.3% enriched
-materials[4].mesh_size = frac_of_MFP*inv(mean(Σₜᵢ_M70)) # MOX-7.0% enriched
-materials[5].mesh_size = frac_of_MFP*inv(mean(Σₜᵢ_M87)) # MOX-8.7% enriched
-materials[6].mesh_size = frac_of_MFP*inv(mean(Σₜᵢ_UO2)) # Uranium Oxide
-materials[7].mesh_size = frac_of_MFP*inv(mean(Σₜᵢ_Mod)) # Moderator
+frac_of_MFP = 1 // 4
+materials[1].mesh_size = frac_of_MFP * inv(mean(Σₜᵢ_FC)) # Fission Chamber
+materials[2].mesh_size = frac_of_MFP * inv(mean(Σₜᵢ_GT)) # Guide Tube
+materials[3].mesh_size = frac_of_MFP * inv(mean(Σₜᵢ_M43)) # MOX-4.3% enriched
+materials[4].mesh_size = frac_of_MFP * inv(mean(Σₜᵢ_M70)) # MOX-7.0% enriched
+materials[5].mesh_size = frac_of_MFP * inv(mean(Σₜᵢ_M87)) # MOX-8.7% enriched
+materials[6].mesh_size = frac_of_MFP * inv(mean(Σₜᵢ_UO2)) # Uranium Oxide
+materials[7].mesh_size = frac_of_MFP * inv(mean(Σₜᵢ_Mod)) # Moderator
 
 #gmsh.model.mesh.set_size(gmsh.model.get_entities(0), 0.05)
 #gmsh.model.mesh.generate(2)

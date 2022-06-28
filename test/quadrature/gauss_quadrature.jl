@@ -16,8 +16,9 @@
             end
             rel_err = T((approx - exact) / exact)
             @test rel_err < 10 * eps(T)
-            if T != BigFloat 
-                @test @allocated(gauss_quadrature(LegendreType(), RefLine(), Val(p), T)) == 0
+            if T != BigFloat
+                @test @allocated(gauss_quadrature(LegendreType(), RefLine(), Val(p), T)) ==
+                      0
             end
         end
     end end
@@ -42,8 +43,9 @@
             rel_err = T((approx - exact) / exact)
             @test rel_err < 10 * eps(T)
             # Will allocate past p = 3
-            if T != BigFloat 
-                @test @allocated(gauss_quadrature(LegendreType(), RefSquare(), Val(p), T)) == 0
+            if T != BigFloat
+                @test @allocated(gauss_quadrature(LegendreType(), RefSquare(), Val(p), T)) ==
+                      0
             end
         end
     end end
@@ -89,8 +91,9 @@
             end
             rel_err = T((approx - exact) / exact)
             @test rel_err < 10 * eps(T)
-            if T != BigFloat 
-                @test @allocated(gauss_quadrature(LegendreType(), RefTriangle(), Val(p), T)) == 0
+            if T != BigFloat
+                @test @allocated(gauss_quadrature(LegendreType(), RefTriangle(), Val(p), T)) ==
+                      0
             end
         end
     end end

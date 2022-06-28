@@ -1,8 +1,8 @@
 # Routines for extracting segment/face data for tracks (rays) overlaid on a mesh
 
 # Classify a point as on the North, East, South, or West boundary edge of a rectangular mesh
-function classify_nesw(p::Point_2D, mesh::UnstructuredMesh_2D) 
-    ϵ = 1e-4 
+function classify_nesw(p::Point_2D, mesh::UnstructuredMesh_2D)
+    ϵ = 1e-4
     # First boundary edge ID -> get the first point in the edge -> Get the desired coordinate
     y_N = mesh.points[mesh.edges[mesh.boundary_edges[1][1]][1]][2]
     x_E = mesh.points[mesh.edges[mesh.boundary_edges[2][1]][1]][1]
@@ -12,9 +12,9 @@ function classify_nesw(p::Point_2D, mesh::UnstructuredMesh_2D)
         return 1 # North
     elseif abs(p[1] - x_E) < ϵ
         return 2 # East
-    elseif abs(p[2] - y_S) < ϵ 
+    elseif abs(p[2] - y_S) < ϵ
         return 3 # South
-    elseif abs(p[1] - x_W) < ϵ 
+    elseif abs(p[1] - x_W) < ϵ
         return 4 # West
     else
         # Used as an index to boundary_edges, so error should be evident
@@ -60,11 +60,11 @@ function find_segment_faces_in_angle!(segment_points::Vector{Vector{Point_2D}},
                                       segment_faces::Vector{Vector{UInt32}},
                                       mesh::UnstructuredMesh_2D)
     # for each track, find the segment indices
-    for it = 1:length(segment_points)
+    for it in 1:length(segment_points)
         # Returns true if indices were found for all segments in the track
         find_segment_faces_in_track!(segment_points[it], segment_faces[it], mesh)
     end
-    return nothing 
+    return nothing
 end
 
 # Get the face indices for all segments in a single track
@@ -73,11 +73,11 @@ function find_segment_faces_in_track!(segment_points::Vector{Point_2D},
                                       mesh::UnstructuredMesh_2D)
     npoints = length(segment_points)
     # Test the midpoint of each segment to find the face
-    for iseg = 1:npoints-1
-        p_midpoint = midpoint(segment_points[iseg], segment_points[iseg+1])
+    for iseg in 1:(npoints - 1)
+        p_midpoint = midpoint(segment_points[iseg], segment_points[iseg + 1])
         segment_faces[iseg] = findface(p_midpoint, mesh)
     end
-    return nothing 
+    return nothing
 end
 
 # # Follows https://mit-crpg.github.io/OpenMOC/methods/track_generation.html
@@ -110,19 +110,18 @@ end
 function generate_tracks(tₛ::Float64,
                          ang_quad::ProductAngularQuadrature{nᵧ, nₚ},
                          mesh::UnstructuredMesh_2D;
-                         boundary_shape::String = "Unknown"
-                        ) where {nᵧ, nₚ}
+                         boundary_shape::String = "Unknown") where {nᵧ, nₚ}
     if boundary_shape !== "Rectangle"
         @error "Unsupported boundary shape"
     end
     bb = boundingbox(mesh, boundary_shape = "Rectangle")
     # The tracks for each γ
-    tracks = [ generate_tracks(γ, tₛ, width(bb), height(bb)) for γ in ang_quad.γ ].data
+    tracks = [generate_tracks(γ, tₛ, width(bb), height(bb)) for γ in ang_quad.γ].data
     # Shift all tracks if necessary, since the tracks are generated as if the HRPM has a
     # bottom left corner at (0,0)
     offset = bb.bl
-    for iγ = 1:nᵧ  
-        tracks[iγ] .+= offset 
+    for iγ in 1:nᵧ
+        tracks[iγ] .+= offset
     end
     return tracks
 end
@@ -130,28 +129,28 @@ end
 # Generate tracks for angle γ, with track spacing tₛ for a rectangular domain with width w, height h
 # Rectangle has bottom left corner at (0, 0)
 function generate_tracks(γ::Float64, tₛ::Float64, w::Float64, h::Float64)
-    if γ ≤ π/2
-        n_y = ceil(Int64, h*cos(γ)/tₛ)
+    if γ ≤ π / 2
+        n_y = ceil(Int64, h * cos(γ) / tₛ)
         # Number of tracks in x direction
-        n_x = ceil(Int64, w*sin(γ)/tₛ)
+        n_x = ceil(Int64, w * sin(γ) / tₛ)
         # Total number of tracks
         nₜ = n_y + n_x
         # Allocate the tracks
         tracks = Vector{LineSegment_2D}(undef, nₜ)
         # Effective angle to ensure cyclic tracks
-        γₑ = atan((h*n_x)/(w*n_y))
-        t_eff = w*sin(γₑ)/n_x
-        Δx = t_eff/sin(γₑ) 
-        Δy = t_eff/cos(γₑ) 
+        γₑ = atan((h * n_x) / (w * n_y))
+        t_eff = w * sin(γₑ) / n_x
+        Δx = t_eff / sin(γₑ)
+        Δy = t_eff / cos(γₑ)
         # Number of tracks in y direction
         # Generate tracks from the bottom edge of the rectangular domain
-        for ix = 1:n_x
-            x₀ = w - (ix - 0.5)*Δx
+        for ix in 1:n_x
+            x₀ = w - (ix - 0.5) * Δx
             y₀ = 0.0
             # Segment either terminates at the right edge of the rectangle
             # Or on the top edge of the rectangle
-            x₁ = min(w, h/tan(γₑ) + x₀)
-            y₁ = min((w - x₀)*tan(γₑ), h)
+            x₁ = min(w, h / tan(γₑ) + x₀)
+            y₁ = min((w - x₀) * tan(γₑ), h)
             l = LineSegment_2D(Point_2D(x₀, y₀), Point_2D(x₁, y₁))
             if arclength(l) < minimum_segment_length
                 @warn "Small track generated: $l"
@@ -159,13 +158,13 @@ function generate_tracks(γ::Float64, tₛ::Float64, w::Float64, h::Float64)
             tracks[ix] = l
         end
         # Generate tracks from the left edge of the rectangular domain
-        for iy = 1:n_y
+        for iy in 1:n_y
             x₀ = 0.0
-            y₀ = (iy - 0.5)*Δy
+            y₀ = (iy - 0.5) * Δy
             # Segment either terminates at the right edge of the rectangle
             # Or on the top edge of the rectangle
-            x₁ = min(w, (h - y₀)/tan(γₑ))
-            y₁ = min(w*tan(γₑ) + y₀, h)
+            x₁ = min(w, (h - y₀) / tan(γₑ))
+            y₁ = min(w * tan(γₑ) + y₀, h)
             l = LineSegment_2D(Point_2D(x₀, y₀), Point_2D(x₁, y₁))
             if arclength(l) < minimum_segment_length
                 @warn "Small track generated: $l"
@@ -175,26 +174,26 @@ function generate_tracks(γ::Float64, tₛ::Float64, w::Float64, h::Float64)
     else
         γᶜ = π - γ # Compliment
         # Number of tracks in y direction
-        n_y = ceil(Int64, h*cos(γᶜ)/tₛ)
+        n_y = ceil(Int64, h * cos(γᶜ) / tₛ)
         # Number of tracks in x direction
-        n_x = ceil(Int64, w*sin(γᶜ)/tₛ)
+        n_x = ceil(Int64, w * sin(γᶜ) / tₛ)
         # Total number of tracks
         nₜ = n_y + n_x
         # Allocate the tracks
         tracks = Vector{LineSegment_2D}(undef, nₜ)
         # Effective angle to ensure cyclic tracks
-        γₑ = atan((h*n_x)/(w*n_y))
-        t_eff = w*sin(γₑ)/n_x
-        Δx = t_eff/sin(γₑ) 
-        Δy = t_eff/cos(γₑ) 
+        γₑ = atan((h * n_x) / (w * n_y))
+        t_eff = w * sin(γₑ) / n_x
+        Δx = t_eff / sin(γₑ)
+        Δy = t_eff / cos(γₑ)
         # Generate tracks from the bottom edge of the rectangular domain
-        for ix = 1:n_x
-            x₀ = (ix - 0.5)*Δx
+        for ix in 1:n_x
+            x₀ = (ix - 0.5) * Δx
             y₀ = 0.0
             # Segment either terminates at the left edge of the rectangle
             # Or on the top edge of the rectangle
-            x₁ = max(0, -h/tan(γₑ) + x₀)
-            y₁ = min(x₀*tan(γₑ), h)
+            x₁ = max(0, -h / tan(γₑ) + x₀)
+            y₁ = min(x₀ * tan(γₑ), h)
             l = LineSegment_2D(Point_2D(x₀, y₀), Point_2D(x₁, y₁))
             if arclength(l) < minimum_segment_length
                 @warn "Small track generated: $l"
@@ -202,20 +201,20 @@ function generate_tracks(γ::Float64, tₛ::Float64, w::Float64, h::Float64)
             tracks[ix] = l
         end
         # Generate tracks from the right edge of the rectangular domain
-        for iy = 1:n_y
+        for iy in 1:n_y
             x₀ = w
-            y₀ = (iy - 0.5)*Δy
+            y₀ = (iy - 0.5) * Δy
             # Segment either terminates at the left edge of the rectangle
             # Or on the top edge of the rectangle
-            x₁ = max(0, w - (h - y₀)/tan(γₑ))
-            y₁ = min(w*tan(γₑ) + y₀, h)
+            x₁ = max(0, w - (h - y₀) / tan(γₑ))
+            y₁ = min(w * tan(γₑ) + y₀, h)
             l = LineSegment_2D(Point_2D(x₀, y₀), Point_2D(x₁, y₁))
             if arclength(l) < minimum_segment_length
                 @warn "Small track generated: $l"
             end
             tracks[n_x + iy] = l
         end
-     end
+    end
     return tracks
 end
 
@@ -256,8 +255,9 @@ function ray_trace_angle_edge_to_edge!(tracks::Vector{LineSegment_2D},
                                        segment_points::Vector{Vector{Point_2D}},
                                        segment_faces::Vector{Vector{UInt32}},
                                        mesh::UnstructuredMesh_2D)
-    for it = 1:length(tracks)
-        segment_points[it], segment_faces[it] = ray_trace_track_edge_to_edge(tracks[it], mesh) 
+    for it in 1:length(tracks)
+        segment_points[it], segment_faces[it] = ray_trace_track_edge_to_edge(tracks[it],
+                                                                             mesh)
     end
     return nothing
 end
@@ -268,7 +268,8 @@ end
 # Linear edges
 function ray_trace_track_edge_to_edge(l::LineSegment_2D, mesh::LinearUnstructuredMesh_2D)
     # Classify line as intersecting north, east, south, or west boundary edge of the mesh
-    start_point = l.points[1]; end_point = l.points[2]
+    start_point = l.points[1]
+    end_point = l.points[2]
     # Find the edges and faces the line starts and ends the mesh on
     start_edge = get_start_edge_nesw(start_point, mesh)
     start_face = mesh.edge_face_connectivity[start_edge][2] # 1st entry should be 0
@@ -288,17 +289,18 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D, mesh::LinearUnstructure
     iters = 0
     # Find the segment points, faces
     while !end_reached && iters < max_iters
-        if visualize_ray_tracing 
+        if visualize_ray_tracing
             mesh!(mesh.materialized_faces[current_face], color = (:yellow, 0.2))
         end
-        next_edge, next_face, intersection_point = next_edge_and_face(last_point, current_edge, 
-                                                                        current_face, l, mesh)
+        next_edge, next_face, intersection_point = next_edge_and_face(last_point,
+                                                                      current_edge,
+                                                                      current_face, l, mesh)
         # Could not find next face, or jumping back to a previous face
         if next_face === current_face
-            next_edge, next_face = next_edge_and_face_fallback(last_point, current_face, 
+            next_edge, next_face = next_edge_and_face_fallback(last_point, current_face,
                                                                segment_faces, l, mesh)
         else
-            if visualize_ray_tracing 
+            if visualize_ray_tracing
                 mesh!(mesh.materialized_faces[current_face], color = (:green, 0.15))
                 scatter!(intersection_point, color = :green)
                 linesegments!(mesh.materialized_edges[next_edge], color = :green)
@@ -314,9 +316,9 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D, mesh::LinearUnstructure
         # If the furthest intersection is below the minimum segment length to the
         # end point, end here.
         if distance(intersection_point, end_point) < minimum_segment_length ||
-                current_face == end_face
+           current_face == end_face
             end_reached = true
-            if intersection_point ≉  end_point
+            if intersection_point ≉ end_point
                 push!(segment_points, end_point)
                 push!(segment_faces, end_face)
             end
@@ -335,7 +337,8 @@ end
 # Quadratic edges
 function ray_trace_track_edge_to_edge(l::LineSegment_2D, mesh::QuadraticUnstructuredMesh_2D)
     # Classify line as intersecting north, east, south, or west boundary edge of the mesh
-    start_point = l.points[1]; end_point = l.points[2]
+    start_point = l.points[1]
+    end_point = l.points[2]
     # Find the edges and faces the line starts and ends the mesh on
     start_edge = get_start_edge_nesw(start_point, mesh)
     start_face = mesh.edge_face_connectivity[start_edge][2] # 1st entry should be 0
@@ -353,15 +356,15 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D, mesh::QuadraticUnstruct
     iters = 0
     # Find the segment points, faces
     while !end_reached && iters < max_iters
-        if visualize_ray_tracing 
+        if visualize_ray_tracing
             mesh!(mesh.materialized_faces[current_face], color = (:yellow, 0.2))
         end
         next_face, intersection_point = next_face_E2E(last_point, current_face, l, mesh)
         # Could not find next face, or jumping back to a previous face
         if next_face === current_face
-            next_face = next_face_fallback(last_point, current_face, segment_faces, l, mesh) 
+            next_face = next_face_fallback(last_point, current_face, segment_faces, l, mesh)
         else
-            if visualize_ray_tracing 
+            if visualize_ray_tracing
                 mesh!(mesh.materialized_faces[current_face], color = (:green, 0.15))
                 scatter!(intersection_point, color = :green)
                 println("Intersection at point $intersection_point, on face $current_face")
@@ -375,7 +378,7 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D, mesh::QuadraticUnstruct
         # end point, end here.
         if distance(intersection_point, end_point) < minimum_segment_length
             end_reached = true
-            if intersection_point ≉  end_point
+            if intersection_point ≉ end_point
                 push!(segment_points, end_point)
                 push!(segment_faces, end_face)
             end
@@ -387,13 +390,14 @@ function ray_trace_track_edge_to_edge(l::LineSegment_2D, mesh::QuadraticUnstruct
     end
     return sort_intersection_points_E2E(l, segment_points, segment_faces)
 end
- 
+
 # Return the next edge, next face, and intersection point on the next edge
 # This is for linear, materialized edges
-function next_edge_and_face(last_point::Point_2D, current_edge::UInt32, current_face::UInt32, 
+function next_edge_and_face(last_point::Point_2D, current_edge::UInt32,
+                            current_face::UInt32,
                             l::LineSegment_2D, mesh::LinearUnstructuredMesh_2D)
     if visualize_ray_tracing # Compile time constant. Compiler will prune branch if not visualizing
-        ax = current_axis() 
+        ax = current_axis()
     end
     next_edge = current_edge
     next_face = current_face
@@ -406,7 +410,7 @@ function next_edge_and_face(last_point::Point_2D, current_edge::UInt32, current_
         if edge === current_edge
             continue
         end
-        if visualize_ray_tracing 
+        if visualize_ray_tracing
             lplot = linesegments!(mesh.materialized_edges[edge], color = :orange)
         end
         # Edges are linear, so 1 intersection point max
@@ -427,12 +431,12 @@ function next_edge_and_face(last_point::Point_2D, current_edge::UInt32, current_
                 break
             end
         end
-        if visualize_ray_tracing 
+        if visualize_ray_tracing
             readline()
             delete!(ax.scene, lplot)
         end
     end
-    if visualize_ray_tracing 
+    if visualize_ray_tracing
         readline()
     end
     return next_edge, next_face, intersection_point
@@ -443,7 +447,7 @@ end
 function next_face_E2E(last_point::Point_2D, current_face::UInt32, l::LineSegment_2D,
                        mesh::QuadraticUnstructuredMesh_2D)
     if visualize_ray_tracing # Compile time constant. Prune branch if not visualizing
-        ax = current_axis() 
+        ax = current_axis()
     end
     next_face = current_face
     start_point = l[1]
@@ -451,16 +455,17 @@ function next_face_E2E(last_point::Point_2D, current_face::UInt32, l::LineSegmen
     intersection_point = Point_2D(1e10)
     # For each edge in this face, intersect the track with the edge
     for edge in mesh.face_edge_connectivity[current_face]
-        if visualize_ray_tracing 
+        if visualize_ray_tracing
             lplot = linesegments!(mesh.materialized_edges[edge], color = :orange)
         end
         npoints, ipoints = l ∩ mesh.materialized_edges[edge]
         # If there's an intersection
-        for i = 1:npoints
+        for i in 1:npoints
             point = ipoints[i]
             # If the intersection point on this edge is further along the ray than
             # the last_point, then we want to leave the face from this edge
-            if min_distance < distance(start_point, point) < distance(start_point, intersection_point)
+            if min_distance < distance(start_point, point) <
+               distance(start_point, intersection_point)
                 intersection_point = point
                 # Make sure not to pick the current face for the next face
                 if mesh.edge_face_connectivity[edge][1] == current_face
@@ -470,7 +475,7 @@ function next_face_E2E(last_point::Point_2D, current_face::UInt32, l::LineSegmen
                 end
             end
         end
-        if visualize_ray_tracing 
+        if visualize_ray_tracing
             readline()
             delete!(ax.scene, lplot)
         end
@@ -483,7 +488,7 @@ end
 # means there was an intersection around a vertex, and floating point error is
 # causing an intersection to erroneously return 0 points intersected.
 # Requires materialized faces
-function next_edge_and_face_fallback(last_point::Point_2D, current_face::UInt32, 
+function next_edge_and_face_fallback(last_point::Point_2D, current_face::UInt32,
                                      segment_faces::Vector{UInt32}, l::LineSegment_2D,
                                      mesh::LinearUnstructuredMesh_2D)
     # If the next face could not be determined, or the ray is jumping back to the
@@ -498,22 +503,22 @@ function next_edge_and_face_fallback(last_point::Point_2D, current_face::UInt32,
     closest_point = Point_2D(1e10)
 
     # Check adjacent faces first to see if that is sufficient to solve the problem
-    next_face, closest_point = adjacent_faces_fallback(last_point, current_face, l, mesh) 
+    next_face, closest_point = adjacent_faces_fallback(last_point, current_face, l, mesh)
     # If adjacent faces were not sufficient, try all faces sharing the vertices of this face
-    if next_face === current_face || next_face ∈  segment_faces
-        next_face, closest_point = shared_vertex_fallback(last_point, current_face, l, mesh) 
-        if visualize_ray_tracing 
+    if next_face === current_face || next_face ∈ segment_faces
+        next_face, closest_point = shared_vertex_fallback(last_point, current_face, l, mesh)
+        if visualize_ray_tracing
             readline()
         end
-    end 
+    end
 
     # If the next face STILL couldn't be determined, you're screwed
     if next_face == current_face
-        @error "Could not find next face, even using fallback methods, for segment $l."  
+        @error "Could not find next face, even using fallback methods, for segment $l."
     end
     # Determine the edge that should be skipped by choosing the edge with intersection point 
     # closest to the start of the line.
-    next_edge = skipped_edge_fallback(next_face, l, mesh) 
+    next_edge = skipped_edge_fallback(next_face, l, mesh)
     return next_edge, next_face
 end
 
@@ -523,8 +528,9 @@ end
 # causing an intersection to erroneously return 0 points intersected.
 # Requires materialized faces
 # Quadratic edges
-function next_face_fallback(last_point::Point_2D, current_face::UInt32, segment_faces::Vector{UInt32},
-            l::LineSegment_2D, mesh::QuadraticUnstructuredMesh_2D)
+function next_face_fallback(last_point::Point_2D, current_face::UInt32,
+                            segment_faces::Vector{UInt32},
+                            l::LineSegment_2D, mesh::QuadraticUnstructuredMesh_2D)
     # If the next face could not be determined, this means either:
     # (1) The ray is entering or exiting through a vertex, and floating point error
     #       means the exiting edge did not register an intersection.
@@ -534,29 +540,31 @@ function next_face_fallback(last_point::Point_2D, current_face::UInt32, segment_
     start_point = l[1]
     # The closest point along l intersected in this iteration
     closest_point = Point_2D(1e10)
-    next_face, closest_point = quadratic_shared_vertex_fallback(last_point, current_face, l, mesh)
-    if visualize_ray_tracing 
+    next_face, closest_point = quadratic_shared_vertex_fallback(last_point, current_face, l,
+                                                                mesh)
+    if visualize_ray_tracing
         readline()
     end
     # If the next face STILL couldn't be determined, you're screwed
     if next_face === current_face
-        @error "Could not find next face, even using fallback methods, for segment $l."  
+        @error "Could not find next face, even using fallback methods, for segment $l."
     end
     return next_face
 end
 
 # Check to see if one of the adjacent faces should be the next face in edge-to-edge ray tracing
-function adjacent_faces_fallback(last_point::Point_2D, current_face::UInt32, 
+function adjacent_faces_fallback(last_point::Point_2D, current_face::UInt32,
                                  l::LineSegment_2D, mesh::UnstructuredMesh_2D)
     next_face = current_face
     start_point = l.points[1]
     min_distance = distance(start_point, last_point) + minimum_segment_length
     intersection_point = Point_2D(1e10)
-    for face in adjacent_faces(current_face, mesh) 
+    for face in adjacent_faces(current_face, mesh)
         npoints, ipoints = l ∩ mesh.materialized_faces[face]
         if 0 < npoints
             for point in ipoints[1:npoints]
-                if min_distance < distance(start_point, point) < distance(start_point, intersection_point)
+                if min_distance < distance(start_point, point) <
+                   distance(start_point, intersection_point)
                     intersection_point = point
                     next_face = face
                 end
@@ -568,7 +576,7 @@ end
 
 # Check to see if one of the faces sharing a vertex with the current face
 # should be the next face in edge-to-edge ray tracing
-function shared_vertex_fallback(last_point::Point_2D, current_face::UInt32, 
+function shared_vertex_fallback(last_point::Point_2D, current_face::UInt32,
                                 l::LineSegment_2D, mesh::UnstructuredMesh_2D)
     next_face = current_face
     start_point = l.points[1]
@@ -587,12 +595,12 @@ function shared_vertex_fallback(last_point::Point_2D, current_face::UInt32,
             end
         end
     end
-    if visualize_ray_tracing 
+    if visualize_ray_tracing
         mesh_vec = []
     end
     for face in faces_OI
         npoints, ipoints = l ∩ mesh.materialized_faces[face]
-        if visualize_ray_tracing 
+        if visualize_ray_tracing
             println("Face: $face")
             push!(mesh_vec, mesh!(mesh.materialized_faces[face], color = (:black, 0.2)))
             readline()
@@ -607,17 +615,17 @@ function shared_vertex_fallback(last_point::Point_2D, current_face::UInt32,
             for point in ipoints[1:npoints]
                 distance_to_point = distance(start_point, point)
                 # If this is a valid intersection point
-                if min_distance < distance_to_point 
+                if min_distance < distance_to_point
                     # If this point is the closest point, use this
-                    if distance_to_point ⪉  distance(start_point, intersection_point) 
+                    if distance_to_point ⪉ distance(start_point, intersection_point)
                         intersection_point = point
                         next_face = face
-                    # If this face contains the last point, we want to prioritize this face
+                        # If this face contains the last point, we want to prioritize this face
                     elseif contains_last_point
                         next_face = face
                     end
                 end
-                if visualize_ray_tracing 
+                if visualize_ray_tracing
                     scatter!(point, color = :yellow)
                     readline()
                 end
@@ -625,8 +633,8 @@ function shared_vertex_fallback(last_point::Point_2D, current_face::UInt32,
         end
     end
 
-    if visualize_ray_tracing 
-        ax = current_axis() 
+    if visualize_ray_tracing
+        ax = current_axis()
         for m in mesh_vec
             delete!(ax.scene, m)
         end
@@ -636,8 +644,9 @@ end
 
 # Check to see if one of the faces sharing a vertex with the current face
 # should be the next face in edge-to-edge ray tracing
-function quadratic_shared_vertex_fallback(last_point::Point_2D, current_face::UInt32, 
-                                          l::LineSegment_2D, mesh::QuadraticUnstructuredMesh_2D)
+function quadratic_shared_vertex_fallback(last_point::Point_2D, current_face::UInt32,
+                                          l::LineSegment_2D,
+                                          mesh::QuadraticUnstructuredMesh_2D)
     next_face = current_face
     start_point = l[1]
     min_distance = distance(start_point, last_point) + minimum_segment_length
@@ -653,13 +662,13 @@ function quadratic_shared_vertex_fallback(last_point::Point_2D, current_face::UI
             end
         end
     end
-    if visualize_ray_tracing 
+    if visualize_ray_tracing
         mesh_vec = []
     end
     next_face_contains_last_point = false
     for face in faces_OI
         npoints, ipoints = l ∩ mesh.materialized_faces[face]
-        if visualize_ray_tracing 
+        if visualize_ray_tracing
             println("Face: $face")
             push!(mesh_vec, mesh!(mesh.materialized_faces[face], color = (:black, 0.2)))
             readline()
@@ -671,17 +680,18 @@ function quadratic_shared_vertex_fallback(last_point::Point_2D, current_face::UI
                     contains_last_point = true
                 end
             end
-            if visualize_ray_tracing 
-                println(contains_last_point ? "Contains last point" : "Does not contain last point")
+            if visualize_ray_tracing
+                println(contains_last_point ? "Contains last point" :
+                        "Does not contain last point")
             end
             for point in ipoints[1:npoints]
                 distance_to_point = distance(start_point, point)
                 # If this is a valid intersection point
-                if min_distance < distance_to_point 
+                if min_distance < distance_to_point
                     # If this point is the closest point, use this
                     # Could be a problem for Float32.
-                    if distance_to_point ⪉ distance(start_point, intersection_point) 
-                        if visualize_ray_tracing                        
+                    if distance_to_point ⪉ distance(start_point, intersection_point)
+                        if visualize_ray_tracing
                             println("New intersection point")
                             println("New face: $face")
                         end
@@ -690,17 +700,17 @@ function quadratic_shared_vertex_fallback(last_point::Point_2D, current_face::UI
                         if contains_last_point
                             next_face_contains_last_point = true
                         end
-                    # If this face contains the last point, we want to prioritize this face,
-                    # but only if the face with the closest point doesn't also contain
-                    # the last point
+                        # If this face contains the last point, we want to prioritize this face,
+                        # but only if the face with the closest point doesn't also contain
+                        # the last point
                     elseif contains_last_point && !next_face_contains_last_point
                         next_face = face
-                        if visualize_ray_tracing                        
+                        if visualize_ray_tracing
                             println("New face: $face")
                         end
                     end
                 end
-                if visualize_ray_tracing 
+                if visualize_ray_tracing
                     println("Point: $point")
                     scatter!(point, color = :yellow)
                     readline()
@@ -709,8 +719,8 @@ function quadratic_shared_vertex_fallback(last_point::Point_2D, current_face::UI
         end
     end
 
-    if visualize_ray_tracing 
-        ax = current_axis() 
+    if visualize_ray_tracing
+        ax = current_axis()
         for m in mesh_vec
             delete!(ax.scene, m)
         end
@@ -722,15 +732,16 @@ end
 # Determine the edge that should be skipped by choosing the edge with intersection point 
 # closest to the start of the line.
 # Linear edges
-function skipped_edge_fallback(next_face::UInt32, l::LineSegment_2D, mesh::LinearUnstructuredMesh_2D)
+function skipped_edge_fallback(next_face::UInt32, l::LineSegment_2D,
+                               mesh::LinearUnstructuredMesh_2D)
     start_point = l.points[1]
     closest_point = Point_2D(1.0e10)
     edges_OI = mesh.face_edge_connectivity[next_face]
     next_edge = 0x00000000
     for iedge in edges_OI
         npoints, point = l ∩ mesh.materialized_edges[iedge]
-        if 0 < npoints                                                                         
-            if  distance(start_point, point) < distance(start_point, closest_point) 
+        if 0 < npoints
+            if distance(start_point, point) < distance(start_point, closest_point)
                 closest_point = point
                 next_edge = iedge
             end
@@ -750,8 +761,9 @@ function sort_intersection_points_E2E(l::LineSegment_2D, segment_points::Vector{
         # is less than the minimum segment length
         delete_ids = Int64[]
         id_start = 1
-        for id_stop ∈ 2:npoints
-            if distance²(segment_points[id_start], segment_points[id_stop]) < minimum_segment_length^2
+        for id_stop in 2:npoints
+            if distance²(segment_points[id_start], segment_points[id_stop]) <
+               minimum_segment_length^2
                 push!(delete_ids, id_stop)
             else
                 id_start = id_stop

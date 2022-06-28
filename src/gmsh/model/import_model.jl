@@ -8,8 +8,8 @@ argument, which when set to `true` will add any named CAD groups to the model's 
 
 Returns a Vector{Material} containing material information that was gathered from the file.
 """
-function import_model(path::String; names::Bool=false)
-    @info "Importing '"*path*"'"
+function import_model(path::String; names::Bool = false)
+    @info "Importing '" * path * "'"
     if !Bool(gmsh.is_initialized())
         gmsh.initialize()
     end
@@ -18,12 +18,12 @@ function import_model(path::String; names::Bool=false)
     # OCC converts everything to mm. We want cm, so we shrink by 1//10
     color_dict = get_entities_by_color()
     dim_tags = gmsh.model.get_entities()
-    gmsh.model.occ.dilate(dim_tags, 0, 0, 0, 1//10, 1//10, 1//10)
+    gmsh.model.occ.dilate(dim_tags, 0, 0, 0, 1 // 10, 1 // 10, 1 // 10)
     gmsh.model.occ.synchronize()
     # Reassign colors that we lost in dilation
     for color in keys(color_dict)
-        r,g,b,a = color
-        gmsh.model.set_color(color_dict[color], r, g, b, a) 
+        r, g, b, a = color
+        gmsh.model.set_color(color_dict[color], r, g, b, a)
     end
 
     if names
@@ -48,13 +48,13 @@ function add_materials_from_step(path::String)
             # Account for line continuation
             if splitline[3] == "" || splitline[4] == ""
                 line2 = readline(file)
-                line = line*line2
+                line = line * line2
                 splitline = split(line, ",")
             end
             name = String(split(splitline[1], "'")[2])
             r = convert(N0f8, parse(Float64, splitline[2]))
             g = convert(N0f8, parse(Float64, splitline[3]))
-            b = convert(N0f8, parse(Float64, splitline[4][1:end-2]))
+            b = convert(N0f8, parse(Float64, splitline[4][1:(end - 2)]))
             color = RGBA(r, g, b, N0f8(1))
             mat = Material(name, color, 1.0)
             if mat ∉ materials

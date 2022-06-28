@@ -4,5 +4,5 @@ function isplanar(quad::Quadrilateral3D)
     # face the same direction, the quad is planar
     𝗻₁ = (quad[2] - quad[1]) × (quad[3] - quad[1])
     𝗻₂ = (quad[4] - quad[1]) × (quad[3] - quad[1])
-    return norm(𝗻₁ ⋅ 𝗻₂) ≈ norm(𝗻₁)*norm(𝗻₂)
+    return norm(𝗻₁ ⋅ 𝗻₂) ≈ norm(𝗻₁) * norm(𝗻₂)
 end

@@ -3,5 +3,5 @@ function ⪇(x::F, y::F) where {F <: AbstractFloat}
 end
 
 function ⪉(x::F, y::F) where {F <: AbstractFloat}
-    return x < y && x ≉  y
+    return x < y && x ≉ y
 end

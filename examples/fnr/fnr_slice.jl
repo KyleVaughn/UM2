@@ -5,9 +5,8 @@ using MOCNeutronTransport
 grid_offset = 0.1 # Buffer between boundary of the model and the edge of the CMFD grid (cm)
 # Bounding box for the CMFD grid
 # xmin, xmax, ymin, ymax
-bb = (0.0, 80.62054 + 2*grid_offset, 
-      0.0, 46.2645 + 2*grid_offset) 
-
+bb = (0.0, 80.62054 + 2 * grid_offset,
+      0.0, 46.2645 + 2 * grid_offset)
 
 # Model setup
 # ----------------------------------------------------------------------------------------
@@ -23,11 +22,11 @@ gmsh.merge("fnr_core_slice.step")
 # Get the dim tags of all dimension 2 entites
 dim_tags = gmsh.model.get_entities(2)
 # Translate it so that the corner is at the origin
-gmsh.model.occ.translate(dim_tags, 407.51125 + 10*grid_offset, 
-                                   307.848 + 10*grid_offset, 
-                                   -300)
+gmsh.model.occ.translate(dim_tags, 407.51125 + 10 * grid_offset,
+                         307.848 + 10 * grid_offset,
+                         -300)
 # Model is in mm. Convert to cm by shrinking everything by 1/10
-gmsh.model.occ.dilate(dim_tags, 0, 0, 0, 1//10, 1//10, 0)
+gmsh.model.occ.dilate(dim_tags, 0, 0, 0, 1 // 10, 1 // 10, 0)
 # Synchronize the CAD and Gmsh models
 gmsh.model.occ.synchronize()
 # Verify results

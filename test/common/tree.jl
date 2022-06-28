@@ -1,4 +1,4 @@
-@testset "Tree" begin 
+@testset "Tree" begin
     root = Tree(0)
     child1 = Tree(1, root)
     child2 = Tree(2, root)
@@ -11,7 +11,7 @@
 
     @test parent(root) == nothing
     @test @allocated(parent(root)) == 0
-    
+
     @test children(root) == [child1, child2]
     @test @allocated(children(root)) == 0
 
@@ -24,7 +24,7 @@
 
     @test parent(child1) == root
     @test @allocated(parent(child1)) == 0
-    
+
     @test children(child1) == [child3, child4, child5]
     @test @allocated(children(child1)) == 0
 

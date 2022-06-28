@@ -14,8 +14,8 @@ absorber_entities = Int32[]
 # Don't want to simulate what we don't have to. Or could make the mesh towards the problem
 # boundary really large to minimize computations on a larger problem.
 # bb_apothem = 65.0
-bb_apothem = 11.2*5
-bb = (0.0, 2*bb_apothem, 0.0, 2*bb_apothem)
+bb_apothem = 11.2 * 5
+bb = (0.0, 2 * bb_apothem, 0.0, 2 * bb_apothem)
 
 # UO2 pins
 # ----------------------------------------------------------------------------------------------
@@ -35,23 +35,23 @@ r_clad = 0.63
 pitch = 1.8370 # pg.34
 # Sweet from left to right for each column in the uo2 pins.
 # Place pins bottom to top for each row
-for i = -11:11
+for i in -11:11
     if i == 0
         continue
     end
     j_max = [11, 11, 11, 9, 9, 9, 6, 6, 6, 3, 3]
-    for j = (-j_max[abs(i)] + 1):j_max[abs(i)]
-        push!(uo2_fuel_entities, 
-              gmsh.model.occ.add_disk(i*pitch - sign(i)*pitch/2 + bb_apothem, 
-                                      j*pitch - pitch/2 + bb_apothem, 
+    for j in (-j_max[abs(i)] + 1):j_max[abs(i)]
+        push!(uo2_fuel_entities,
+              gmsh.model.occ.add_disk(i * pitch - sign(i) * pitch / 2 + bb_apothem,
+                                      j * pitch - pitch / 2 + bb_apothem,
                                       0, r_fuel, r_fuel))
-        push!(gap_entities, 
-              gmsh.model.occ.add_disk(i*pitch - sign(i)*pitch/2 + bb_apothem, 
-                                      j*pitch - pitch/2 + bb_apothem, 
-                                      0, r_gap,  r_gap))
-        push!(clad_entities, 
-              gmsh.model.occ.add_disk(i*pitch - sign(i)*pitch/2 + bb_apothem, 
-                                      j*pitch - pitch/2 + bb_apothem, 
+        push!(gap_entities,
+              gmsh.model.occ.add_disk(i * pitch - sign(i) * pitch / 2 + bb_apothem,
+                                      j * pitch - pitch / 2 + bb_apothem,
+                                      0, r_gap, r_gap))
+        push!(clad_entities,
+              gmsh.model.occ.add_disk(i * pitch - sign(i) * pitch / 2 + bb_apothem,
+                                      j * pitch - pitch / 2 + bb_apothem,
                                       0, r_clad, r_clad))
     end
 end
@@ -71,56 +71,64 @@ r_fuel_m = 0.85
 r_gap_m = 0.8675
 r_clad_m = 0.965
 pitch_m = 2.917 # pg.34
-for i = -10:10
+for i in -10:10
     if i == 0
         continue
     end
     j_max = [10, 10, 10, 9, 9, 8, 8, 7, 5, 3]
-    j_min = [ 8,  8,  7, 7, 5, 5, 3, 1, 1, 1]
-    for j = j_min[abs(i)]:j_max[abs(i)]
-        push!(uo2_fuel_entities, 
-              gmsh.model.occ.add_disk(i*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
-                                      sign(i)*j*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
+    j_min = [8, 8, 7, 7, 5, 5, 3, 1, 1, 1]
+    for j in j_min[abs(i)]:j_max[abs(i)]
+        push!(uo2_fuel_entities,
+              gmsh.model.occ.add_disk(i * pitch_m - sign(i) * pitch_m / 2 + bb_apothem,
+                                      sign(i) * j * pitch_m - sign(i) * pitch_m / 2 +
+                                      bb_apothem,
                                       0, r_fuel_m, r_fuel_m))
-        push!(gap_entities, 
-              gmsh.model.occ.add_disk(i*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
-                                      sign(i)*j*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
-                                      0, r_gap_m,  r_gap_m))
-        push!(clad_entities, 
-              gmsh.model.occ.add_disk(i*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
-                                      sign(i)*j*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
+        push!(gap_entities,
+              gmsh.model.occ.add_disk(i * pitch_m - sign(i) * pitch_m / 2 + bb_apothem,
+                                      sign(i) * j * pitch_m - sign(i) * pitch_m / 2 +
+                                      bb_apothem,
+                                      0, r_gap_m, r_gap_m))
+        push!(clad_entities,
+              gmsh.model.occ.add_disk(i * pitch_m - sign(i) * pitch_m / 2 + bb_apothem,
+                                      sign(i) * j * pitch_m - sign(i) * pitch_m / 2 +
+                                      bb_apothem,
                                       0, r_clad_m, r_clad_m))
     end
 end
-for i = -10:10
+for i in -10:10
     if i == 0
         continue
     end
     j_max = [10, 10, 10, 9, 9, 9, 8, 7, 6, 4]
-    j_min = [ 8,  8,  7, 7, 5, 5, 3, 1, 1, 1]
-    for j = (j_min[abs(i)] - 1):(j_max[abs(i)] - 1)
+    j_min = [8, 8, 7, 7, 5, 5, 3, 1, 1, 1]
+    for j in (j_min[abs(i)] - 1):(j_max[abs(i)] - 1)
         # Empty tube
         if (i == 6 && j == 5) || (i == -6 && j == 5)
-            push!(gap_entities, 
-                  gmsh.model.occ.add_disk(i*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
-                                          -sign(i)*j*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
-                                          0, r_gap_m,  r_gap_m))
-            push!(clad_entities, 
-                  gmsh.model.occ.add_disk(i*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
-                                          -sign(i)*j*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
+            push!(gap_entities,
+                  gmsh.model.occ.add_disk(i * pitch_m - sign(i) * pitch_m / 2 + bb_apothem,
+                                          -sign(i) * j * pitch_m - sign(i) * pitch_m / 2 +
+                                          bb_apothem,
+                                          0, r_gap_m, r_gap_m))
+            push!(clad_entities,
+                  gmsh.model.occ.add_disk(i * pitch_m - sign(i) * pitch_m / 2 + bb_apothem,
+                                          -sign(i) * j * pitch_m - sign(i) * pitch_m / 2 +
+                                          bb_apothem,
                                           0, r_clad_m, r_clad_m))
         else
-            push!(uo2_fuel_entities, 
-                  gmsh.model.occ.add_disk(i*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
-                                          -sign(i)*j*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
+            push!(uo2_fuel_entities,
+                  gmsh.model.occ.add_disk(i * pitch_m - sign(i) * pitch_m / 2 + bb_apothem,
+                                          -sign(i) * j * pitch_m - sign(i) * pitch_m / 2 +
+                                          bb_apothem,
                                           0, r_fuel_m, r_fuel_m))
-            push!(gap_entities, 
-                  gmsh.model.occ.add_disk(i*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
-                                          -sign(i)*j*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
-                                          0, r_gap_m,  r_gap_m))
-            push!(clad_entities, 
-                  gmsh.model.occ.add_disk(i*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
-                                          -sign(i)*j*pitch_m - sign(i)*pitch_m/2 + bb_apothem, 
+            push!(gap_entities,
+                  gmsh.model.occ.add_disk(i * pitch_m - sign(i) * pitch_m / 2 + bb_apothem,
+                                          -sign(i) * j * pitch_m - sign(i) * pitch_m / 2 +
+                                          bb_apothem,
+                                          0, r_gap_m, r_gap_m))
+            push!(clad_entities,
+                  gmsh.model.occ.add_disk(i * pitch_m - sign(i) * pitch_m / 2 + bb_apothem,
+                                          -sign(i) * j * pitch_m - sign(i) * pitch_m / 2 +
+                                          bb_apothem,
                                           0, r_clad_m, r_clad_m))
         end
     end
@@ -129,9 +137,9 @@ end
 # ----------------------------------------------------------------------------------------------
 # Absorber diameter = 6.0 mm (pg. 32)
 # Clad diameter = 8.0 mm (pg. 32)
-push!(absorber_entities, 
+push!(absorber_entities,
       gmsh.model.occ.add_disk(bb_apothem, bb_apothem, 0, 0.3, 0.3))
-push!(clad_entities, 
+push!(clad_entities,
       gmsh.model.occ.add_disk(bb_apothem, bb_apothem, 0, 0.4, 0.4))
 
 # Materials
@@ -147,10 +155,10 @@ p = gmsh.model.add_physical_group(2, absorber_entities)
 gmsh.model.set_physical_name(2, p, "MATERIAL_ABSORBER")
 gmsh_group_preserving_fragment(gmsh.model.get_entities(2),
                                gmsh.model.get_entities(2);
-                               material_hierarchy = ["MATERIAL_UO2", 
-                                                     "MATERIAL_ABSORBER",
-                                                     "MATERIAL_GAP",
-                                                     "MATERIAL_CLAD"])
+                               material_hierarchy = ["MATERIAL_UO2",
+                                   "MATERIAL_ABSORBER",
+                                   "MATERIAL_GAP",
+                                   "MATERIAL_CLAD"])
 
 # Overlay Grid
 # ---------------------------------------------------------------------------------------------
@@ -171,17 +179,18 @@ gmsh_group_preserving_fragment(gmsh.model.get_entities(2),
 # i = 1, 2, ..., 10
 # Not that due to symmetry, -1*interval is also valid.
 # We may compute the intersections of these sets.
-uo2_sets = [(0.0, pitch/2 - r_clad)]
-for i = 1:11
-    push!(uo2_sets, ( ((2i-1)/2)pitch + r_clad, ((2(i+1)-1)/2)pitch - r_clad))
+uo2_sets = [(0.0, pitch / 2 - r_clad)]
+for i in 1:11
+    push!(uo2_sets, (((2i - 1) / 2)pitch + r_clad, ((2(i + 1) - 1) / 2)pitch - r_clad))
 end
-push!(uo2_sets, (23pitch/2 + r_clad, Inf))
+push!(uo2_sets, (23pitch / 2 + r_clad, Inf))
 
-um_sets = [(0.0, pitch_m/2 - r_clad_m)]
-for i = 1:10
-    push!(um_sets, ( ((2i-1)/2)pitch_m + r_clad_m, ((2(i+1)-1)/2)pitch_m - r_clad_m))
+um_sets = [(0.0, pitch_m / 2 - r_clad_m)]
+for i in 1:10
+    push!(um_sets,
+          (((2i - 1) / 2)pitch_m + r_clad_m, ((2(i + 1) - 1) / 2)pitch_m - r_clad_m))
 end
-push!(um_sets, (21pitch_m/2 + r_clad_m, Inf))
+push!(um_sets, (21pitch_m / 2 + r_clad_m, Inf))
 
 set_intersections = Tuple{Float64, Float64}[]
 for (uo2_min, uo2_max) in uo2_sets
@@ -189,7 +198,7 @@ for (uo2_min, uo2_max) in uo2_sets
         # um set intersects on the left
         if um_min ≤ uo2_min ≤ min(um_max, uo2_max)
             push!(set_intersections, (uo2_min, min(um_max, uo2_max)))
-        # um set intersects on the right
+            # um set intersects on the right
         elseif um_min ≤ uo2_max ≤ um_max
             push!(set_intersections, (max(um_min, uo2_min), uo2_max))
         end
@@ -219,7 +228,7 @@ end
 # ... None
 nx = [5]
 ny = [5]
-grid_tags = gmsh_overlay_rectangular_grid(bb, "MATERIAL_MODERATOR", nx, ny) 
+grid_tags = gmsh_overlay_rectangular_grid(bb, "MATERIAL_MODERATOR", nx, ny)
 gmsh.fltk.run()
 
 gmsh.finalize()

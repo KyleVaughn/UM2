@@ -12,47 +12,47 @@
 # 𝘄 = 𝘆 - 𝘅₁, a = 4(𝘂 ⋅ 𝘂), b = 6(𝘂 ⋅ 𝘃), c = 2[(𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄)], d = -2(𝘃 ⋅ 𝘄)
 # Lagrange's method (https://en.wikipedia.org/wiki/Cubic_equation#Lagrange's_method)
 # is used to find the roots.
-function nearest_point(p::Point{Dim,T}, q::QuadraticSegment) where {Dim,T}
+function nearest_point(p::Point{Dim, T}, q::QuadraticSegment) where {Dim, T}
     𝘂 = q.𝘂
     𝘃 = q.𝘃
     𝘄 = p - q.𝘅₁
     # f′(r) = ar³ + br² + cr + d = 0
     a = 4(𝘂 ⋅ 𝘂)
     b = 6(𝘂 ⋅ 𝘃)
-    c = 2((𝘃 ⋅ 𝘃) - 2(𝘂 ⋅𝘄))
+    c = 2((𝘃 ⋅ 𝘃) - 2(𝘂 ⋅ 𝘄))
     d = -2(𝘃 ⋅ 𝘄)
     # Lagrange's method
-    e₁ = s₀ = -b/a
-    e₂ = c/a
-    e₃ = -d/a
-    A = 2e₁^3 - 9e₁*e₂ + 27e₃
+    e₁ = s₀ = -b / a
+    e₂ = c / a
+    e₃ = -d / a
+    A = 2e₁^3 - 9e₁ * e₂ + 27e₃
     B = e₁^2 - 3e₂
     if A^2 - 4B^3 > 0 # one real root
-        s₁ = ∛((A + √(A^2 - 4B^3))/2)
+        s₁ = ∛((A + √(A^2 - 4B^3)) / 2)
         if s₁ == 0
             s₂ = s₁
         else
-            s₂ = B/s₁
+            s₂ = B / s₁
         end
-        r = (s₀ + s₁ + s₂)/3
+        r = (s₀ + s₁ + s₂) / 3
         return r, q(r)
     else # three real roots
         # Complex cube root
-        t₁ = exp(log((A + √(complex(A^2 - 4B^3)))/2)/3)
+        t₁ = exp(log((A + √(complex(A^2 - 4B^3))) / 2) / 3)
         if t₁ == 0
             t₂ = t₁
         else
-            t₂ = B/t₁
+            t₂ = B / t₁
         end
-        ζ₁ = Complex{T}(-1/2, √3/2)
+        ζ₁ = Complex{T}(-1 / 2, √3 / 2)
         ζ₂ = conj(ζ₁)
         dist_min = typemax(T)
         r_near = zero(T)
-        p_near = nan(Point{Dim,T})
+        p_near = nan(Point{Dim, T})
         # Use the real part of each root
-        for rᵢ in (real((s₀ +    t₁ +    t₂)/3),
-                   real((s₀ + ζ₂*t₁ + ζ₁*t₂)/3),
-                   real((s₀ + ζ₁*t₁ + ζ₂*t₂)/3))
+        for rᵢ in (real((s₀ + t₁ + t₂) / 3),
+                   real((s₀ + ζ₂ * t₁ + ζ₁ * t₂) / 3),
+                   real((s₀ + ζ₁ * t₁ + ζ₂ * t₂) / 3))
             pᵢ = q(rᵢ)
             dist = distance²(pᵢ, p)
             if dist < dist_min
@@ -64,7 +64,6 @@ function nearest_point(p::Point{Dim,T}, q::QuadraticSegment) where {Dim,T}
         return r_near, p_near
     end
 end
-
 
 # Hyperplane 
 # ---------------------------------------------------------------------------------------------
@@ -81,11 +80,15 @@ end
 
 # AABox 
 # ---------------------------------------------------------------------------------------------
-@inline Base.in(p::Point2D, aab::AABox2D) = aab.xmin ≤ p[1] ≤ aab.xmax && 
-                                            aab.ymin ≤ p[2] ≤ aab.ymax
-@inline Base.in(p::Point3D, aab::AABox3D) = aab.xmin ≤ p[1] ≤ aab.xmax && 
-                                            aab.ymin ≤ p[2] ≤ aab.ymax &&
-                                            aab.zmin ≤ p[3] ≤ aab.zmax
+@inline function Base.in(p::Point2D, aab::AABox2D)
+    return aab.xmin ≤ p[1] ≤ aab.xmax &&
+           aab.ymin ≤ p[2] ≤ aab.ymax
+end
+@inline function Base.in(p::Point3D, aab::AABox3D)
+    return aab.xmin ≤ p[1] ≤ aab.xmax &&
+           aab.ymin ≤ p[2] ≤ aab.ymax &&
+           aab.zmin ≤ p[3] ≤ aab.zmax
+end
 # Point inside polygon
 # ---------------------------------------------------------------------------------------------
 # Not necessarily planar
@@ -101,9 +104,6 @@ end
 #end
 #
 
-
-
-
 # Point inside triangle 
 # ---------------------------------------------------------------------------------------------
 function Base.in(p::Point3D, tri::Triangle3D)
@@ -111,15 +111,15 @@ function Base.in(p::Point3D, tri::Triangle3D)
     𝗮 = tri[1] - p
     𝗯 = tri[2] - p
     𝗰 = tri[3] - p
-    𝗻₁= 𝗮 × 𝗯 
-    𝗻₂= 𝗯 × 𝗰
+    𝗻₁ = 𝗮 × 𝗯
+    𝗻₂ = 𝗯 × 𝗰
     d₁₂ = 𝗻₁ ⋅ 𝗻₂
     # Test the normals point the same direction relative to each other
     # and that surface normals are equivalent using 𝗻̂ ⋅ 𝗻̂ = 1
     # d₁₂ > 0 is redundant if the point is in the triangle, but it is a very 
     # fast check that the point is in the plane of the triangle.
-    (d₁₂ > 0 && d₁₂ ≈ norm(𝗻₁)*norm(𝗻₂)) || return false
+    (d₁₂ > 0 && d₁₂ ≈ norm(𝗻₁) * norm(𝗻₂)) || return false
     # We need only check the direction of the norm of the last triangle to 
     # prove that the point is in the triangle
-    return 𝗻₂ ⋅(𝗰 × 𝗮) > 0 
+    return 𝗻₂ ⋅ (𝗰 × 𝗮) > 0
 end

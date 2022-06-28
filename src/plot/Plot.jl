@@ -2,7 +2,6 @@ export Figure, Axis, Axis3
 export hist, scatter, linesegments, mesh,
        hist!, scatter!, linesegments!, mesh!
 
-
 using GLMakie: Axis, Axis3, Figure, Scatter, LineSegments
 using GLMakie: Mesh as GLMakieMesh
 using GLMakie: current_axis, record, hist, hist!

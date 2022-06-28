@@ -1,6 +1,5 @@
 using MOCNeutronTransport
 
-
 # Model setup
 # ----------------------------------------------------------------------------------------
 gmsh.initialize()
@@ -15,7 +14,7 @@ dim_tags = gmsh.model.get_entities(3)
 # Rotate the entities in dim_tags in the built-in CAD representation by angle radians 
 # around the axis of revolution defined by the point (x, y, z) and the direction (ax, ay, az).
 # gmsh.model.occ.rotate(dim_tags, x, y, z, ax, ay, az, angle)
-gmsh.model.occ.rotate(dim_tags, 0, 0, 0, 1, 0, 0, π/2)
+gmsh.model.occ.rotate(dim_tags, 0, 0, 0, 1, 0, 0, π / 2)
 # Translate it so that the corner is at the origin
 #gmsh.model.occ.translate(dim_tags, 37.3225 - 0.0099 + 10*grid_offset, 
 #                                   44.09 - 0.00174209 + 10*grid_offset, 
