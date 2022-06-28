@@ -1,4 +1,4 @@
-function _select_uint_type(N)
+function _select_uint_type(N::Integer)
     if N ≤ typemax(UInt8)
         U = UInt8
     elseif N ≤ typemax(UInt16)
@@ -9,6 +9,7 @@ function _select_uint_type(N)
         U = UInt64
     else
         error(string(N) * " exceeds typemax(UInt64)")
+        return UInt64
     end
     return U
 end

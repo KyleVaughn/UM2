@@ -1,3 +1,0 @@
-What is the fastest way to ray cast?
-    Answer: Insert in a sorted array, using edge connectivity or Polytope Mesh
-        edge conn is about 3x faster, but is costly to generate.
