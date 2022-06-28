@@ -48,7 +48,7 @@ function Base.show(io::IO, mesh::PolytopeVertexMesh{D, T, P}) where {D, T, P}
         println(io, P, "}")
     end
     println(io, "  ├─ Name      : ", mesh.name)
-    size_B = Base.summarysize(mesh)
+    size_B = sizeof(mesh)
     if size_B < 1e6
         println(io, "  ├─ Size (KB) : ", string(@sprintf("%.3f", size_B/1000)))
     else

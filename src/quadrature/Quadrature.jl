@@ -1,5 +1,5 @@
 export AbstractRefShape, RefSimplex, RefHypercube, RefLine, RefTriangle, RefTetrahedron,
-       RefSquare, RefCube
+       RefSquare, RefCube, AbstractQuadratureType, LegendreType, ChebyshevType
 
 abstract type AbstractRefShape end
 struct RefSimplex{K} <: AbstractRefShape end
@@ -12,6 +12,10 @@ const RefTriangle    = RefSimplex{2}
 const RefLine   = RefHypercube{1}
 const RefSquare = RefHypercube{2}
 const RefCube   = RefHypercube{3}
+
+abstract type AbstractQuadratureType end
+struct LegendreType <: AbstractQuadratureType end
+struct ChebyshevType <: AbstractQuadratureType end
 
 include("gauss_quadrature.jl")
 include("angular_quadrature.jl")

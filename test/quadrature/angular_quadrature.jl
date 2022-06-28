@@ -1,5 +1,5 @@
 @testset "Angular Quadrature" begin @testset "Chebyshev-Chebyshev" begin for T in Floats
-    paq = angular_quadrature(:chebyshev, 4, :chebyshev, 1, T)
+    paq = angular_quadrature(ChebyshevType(), 4, ChebyshevType(), 1, T)
     @test all(w -> w ≈ 1 // 4, paq.wγ)
     @test paq.γ[1] ≈ π * 1 // 16
     @test paq.γ[2] ≈ π * 3 // 16

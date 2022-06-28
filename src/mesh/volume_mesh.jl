@@ -71,7 +71,7 @@ end
 function Base.show(io::IO, mesh::VolumeMesh{D, T, U}) where {D, T, U}
     println(io, "VolumeMesh{", D, ", ", T, ", ", U, "}")
     println(io, "  ├─ Name      : ", mesh.name)
-    size_B = Base.summarysize(mesh)
+    size_B = sizeof(mesh)
     if size_B < 1e6
         println(io, "  ├─ Size (KB) : ", string(@sprintf("%.3f", size_B/1000)))
     else

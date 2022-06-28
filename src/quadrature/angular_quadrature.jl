@@ -52,18 +52,18 @@ struct ProductAngularQuadrature{nγ, nθ, T}
     θ::SVector{nθ, T}    # Polar angles, θ ∈ (0, π/2)
 end
 
-function angular_quadrature(azimuthal_form::Symbol,
+function angular_quadrature(azimuthal_form::AbstractQuadratureType,
                             azimuthal_degree::Integer,
-                            polar_form::Symbol,
+                            polar_form::AbstractQuadratureType,
                             polar_degree::Integer,
                             ::Type{T}) where {T}
-    if azimuthal_form === :chebyshev
+    if azimuthal_form isa ChebyshevType
         azi_weights, azi_angles = chebyshev_angular_quadrature(azimuthal_degree, T)
     else
         error("Cannot identify azimuthal quadrature.")
     end
 
-    if polar_form === :chebyshev
+    if polar_form isa ChebyshevType
         pol_weights, pol_angles = chebyshev_angular_quadrature(polar_degree, T)
     else
         error("Cannot identify polar quadrature.")

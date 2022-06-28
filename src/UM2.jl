@@ -23,7 +23,7 @@ export gmsh
 
 include("common/Common.jl")
 include("quadrature/Quadrature.jl")
-#include("geometry/Geometry.jl")
+include("geometry/Geometry.jl")
 #include("mesh/Mesh.jl")
 #include("raytracing/Raytracing.jl")
 ##include("physics/Physics.jl")

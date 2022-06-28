@@ -1,4 +1,4 @@
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{1},
                                      type::Type{T}) where {T}
@@ -6,7 +6,7 @@
     points = SVector(:($(NTuple{1, T}(big"0.5"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{2},
                                      type::Type{T}) where {T}
@@ -16,7 +16,7 @@ end
                      :($(NTuple{1, T}(big"0.788675134594812882254574390250978727823800875635063438009301163241988836151466672846857697792874762612604356902567783838328324182499825413135275918682395611"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{3},
                                      type::Type{T}) where {T}
@@ -28,7 +28,7 @@ end
                      :($(NTuple{1, T}(big"0.88729833462074168851792653997823996108329217052915908265875737661134830919369790335192873768586735179163022068609496470131895404391636496156798917461212032"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{4},
                                      type::Type{T}) where {T}
@@ -42,7 +42,7 @@ end
                      :($(NTuple{1, T}(big"0.930568155797026287611973244446404752547862689814858818807860960453264735747524432852081169942239652605288460465989088162481871919557895988204246922930942793"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{5},
                                      type::Type{T}) where {T}
@@ -58,7 +58,7 @@ end
                      :($(NTuple{1, T}(big"0.953089922969331996398813439149696482562825955381265431436881143271885397458343423470571494776771130955791812408352558046601033004217486095768743478506270928"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{6},
                                      type::Type{T}) where {T}
@@ -76,7 +76,7 @@ end
                      :($(NTuple{1, T}(big"0.966234757101576013906150777246997304567382868856144912436274808263306750422100098138144369960962992523931839863286417053293985689755819202096089309037510518"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{7},
                                      type::Type{T}) where {T}
@@ -96,7 +96,7 @@ end
                      :($(NTuple{1, T}(big"0.974553956171379262263094842023925631200385468835308891774384551956531665177420070402865385013962862072150369833497608097097812905676776559138894957929905019"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{8},
                                      type::Type{T}) where {T}
@@ -118,7 +118,7 @@ end
                      :($(NTuple{1, T}(big"0.980144928248768115841780434284736495214117617150726019135819888686212448871709642219719479631656134155212196408647088105119479077608564273968682110245484952"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{9},
                                      type::Type{T}) where {T}
@@ -142,7 +142,7 @@ end
                      :($(NTuple{1, T}(big"0.984080119753813044917788101451836435024702400245962664775011655924540187198300376530936874613447055801243795561658907995326140598480125467054000305572857934"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{10},
                                      type::Type{T}) where {T}
@@ -168,7 +168,7 @@ end
                      :($(NTuple{1, T}(big"0.986953264258585860038982006042226026714134973346191059615606033348297601617318079812861782478134278129116521259387105607511084300717238889960270479362997151"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{11},
                                      type::Type{T}) where {T}
@@ -196,7 +196,7 @@ end
                      :($(NTuple{1, T}(big"0.989114329073028496401969000561428695385711204459892207712900532991831899690444994100159699083672384949673966499463936580798309086751299070608727334813007693"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{12},
                                      type::Type{T}) where {T}
@@ -226,7 +226,7 @@ end
                      :($(NTuple{1, T}(big"0.990780317123359625345274545074640411480077599906865755231341060903896622159126991112628633945226117892778246186420636592622728515223538583541384837443764409"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{13},
                                      type::Type{T}) where {T}
@@ -258,7 +258,7 @@ end
                      :($(NTuple{1, T}(big"0.99209152735929407473641472440355480553249528096293745434700366021429761893781342093028464363070929420065819788367598791585904180046149503044382822474158485"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{14},
                                      type::Type{T}) where {T}
@@ -292,7 +292,7 @@ end
                      :($(NTuple{1, T}(big"0.993141904348406169420798633352026400838045703619612940822035405888874777066245818955323119832575876380130628147067928934492630153372398724705986351623554522"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{15},
                                      type::Type{T}) where {T}
@@ -328,7 +328,7 @@ end
                      :($(NTuple{1, T}(big"0.993996259010242714244782859293306290573486408561880744999998757793694218684509712356361025184159572488337584219950396250969791183534602890349637928396039318"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{16},
                                      type::Type{T}) where {T}
@@ -366,7 +366,7 @@ end
                      :($(NTuple{1, T}(big"0.994700467495824966298077086725166313713137035828822565025611952365662068607912698469268215953399090506756717929948933254126511853939589867965191116220699975"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{17},
                                      type::Type{T}) where {T}
@@ -406,7 +406,7 @@ end
                      :($(NTuple{1, T}(big"0.995287737657208667837717009970332638253894925229782151391954393371171928735311016855679220324870989217988997797637857396916790891304750365235842032640848378"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{18},
                                      type::Type{T}) where {T}
@@ -448,7 +448,7 @@ end
                      :($(NTuple{1, T}(big"0.995782584210465473365008002353075385126289468422719846459837815119928546795889804875881734806300613576186553608988967793694065087029717962520781051604823747"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{19},
                                      type::Type{T}) where {T}
@@ -492,7 +492,7 @@ end
                      :($(NTuple{1, T}(big"0.996203421921792201594508835126630246794658200701605393339839719545615951479261441901837460436709400655989747916911804418207261349011923906677466390093721771"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{20},
                                      type::Type{T}) where {T}
@@ -538,7 +538,7 @@ end
                      :($(NTuple{1, T}(big"0.996564299592547462393061194235660139111323565450827948074092065608992358813876890419724701248286104637364470173622095069007430193699388835619206839645183596"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{21},
                                      type::Type{T}) where {T}
@@ -586,7 +586,7 @@ end
                      :($(NTuple{1, T}(big"0.996876085310194750130121017968970464596669227391164592790436927356548054511496403499064373567619538864418852668512072507199668194331605479567657416931912761"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{22},
                                      type::Type{T}) where {T}
@@ -636,7 +636,7 @@ end
                      :($(NTuple{1, T}(big"0.997147292741199646036515710580649490196527099198015767488511462483328248852039955910385962888135802135480657066298960207967961119857518595492373484967191379"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{23},
                                      type::Type{T}) where {T}
@@ -688,7 +688,7 @@ end
                      :($(NTuple{1, T}(big"0.997384667498776061761962857722787180286813686229435210463396942083537039882892635091994572108190067007764050066043006380513931078459991952884000551227700928"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{24},
                                      type::Type{T}) where {T}
@@ -742,7 +742,7 @@ end
                      :($(NTuple{1, T}(big"0.99759360999851068008999870485036840593729884629800143872080027255714191603472886894169864466855785443117267314894829269972486188728577992007046759020940951"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{25},
                                      type::Type{T}) where {T}
@@ -798,7 +798,7 @@ end
                      :($(NTuple{1, T}(big"0.997778484895249048954392473446950808628781324702404085605402465566466740671863967243644013176473503784341294352146277579911437244167819622372616023363868135"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{26},
                                      type::Type{T}) where {T}
@@ -856,7 +856,7 @@ end
                      :($(NTuple{1, T}(big"0.997942850572808464501608479661453012978428927559779833698263904702783148316638903225953294028418680974871693019479026813205046317488571568826468151596760518"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{27},
                                      type::Type{T}) where {T}
@@ -916,7 +916,7 @@ end
                      :($(NTuple{1, T}(big"0.99808963144449428346944360419061499513034402778293559385081824839410887278866290604438102336078731110625433974432800721348863032056341083324623874514071541"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{28},
                                      type::Type{T}) where {T}
@@ -978,7 +978,7 @@ end
                      :($(NTuple{1, T}(big"0.998221248786977224975218195241655495875065216048212952292836164745242109480534362660357703304200195326826251855954519005143127438709591308000111834299848721"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{29},
                                      type::Type{T}) where {T}
@@ -1042,7 +1042,7 @@ end
                      :($(NTuple{1, T}(big"0.9983397211302982930815957662746769428258867266254400010990786618783927929972098721687619817897076018074659221939579318397987535457583316739412601464646938"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{30},
                                      type::Type{T}) where {T}
@@ -1108,7 +1108,7 @@ end
                      :($(NTuple{1, T}(big"0.99844674203732477013581502545934764167044101905887539505404714890119384760508187040794100977903085870628702547981908415821890112301542262791808106157663829"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{31},
                                      type::Type{T}) where {T}
@@ -1176,7 +1176,7 @@ end
                      :($(NTuple{1, T}(big"0.99854374090973853702781327711155125412572266705853481539606185946332827236043021651117168560262347295557848991756797488652727302341180081666623173554705641"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{32},
                                      type::Type{T}) where {T}
@@ -1246,7 +1246,7 @@ end
                      :($(NTuple{1, T}(big"0.998631930924740781772490564332520363569268831864730579650559272893117954195870926006522834654271320823714024110046827582275534309818661570801756887066648416"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{33},
                                      type::Type{T}) where {T}
@@ -1318,7 +1318,7 @@ end
                      :($(NTuple{1, T}(big"0.998712347123227608633084008790202080539114505440680960358520066542722409756135740866429994551415468851337610417664722365919394668225803341205831118899423211"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{34},
                                      type::Type{T}) where {T}
@@ -1392,7 +1392,7 @@ end
                      :($(NTuple{1, T}(big"0.998785876895420959621686218727314615700254941342464886469972148276286064977540132608207198557503108030275600749152994197913481264565985042604597929014847302"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{35},
                                      type::Type{T}) where {T}
@@ -1468,7 +1468,7 @@ end
                      :($(NTuple{1, T}(big"0.998853284549800148630081569656047362596637318585506658296148856871259554363981871644378317003113649044814583309346359997441538479791542313187715175031197984"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{36},
                                      type::Type{T}) where {T}
@@ -1546,7 +1546,7 @@ end
                      :($(NTuple{1, T}(big"0.998915231242042918099414172790375119324908231198315656295270583899865680283529448729786657824830567901292150691654601479076923063755838321974984343528335408"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{37},
                                      type::Type{T}) where {T}
@@ -1626,7 +1626,7 @@ end
                      :($(NTuple{1, T}(big"0.998972291238956824470401537158681641834503924743364577034413387343166238887890984436382713161351491014051098041031431890264117306696178395256798180403516626"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{38},
                                      type::Type{T}) where {T}
@@ -1708,7 +1708,7 @@ end
                      :($(NTuple{1, T}(big"0.99902496526784380990642353827579049874523268513729404508037219700696742977575833504413204625630434241767663298125958021149440134296953496700906189243089009"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{39},
                                      type::Type{T}) where {T}
@@ -1792,7 +1792,7 @@ end
                      :($(NTuple{1, T}(big"0.99907369153321645300273615142591022091600487002483210588060895898250460607866527687858156929007171527879604518830598467827794248524276490850945551027911791"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{40},
                                      type::Type{T}) where {T}
@@ -1878,7 +1878,7 @@ end
                      :($(NTuple{1, T}(big"0.999118854855279600174811351210293246167885190797522953301668058548419431509863902538943093865604142173348598134406304807433948775299213290598747183122295073"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{41},
                                      type::Type{T}) where {T}
@@ -1966,7 +1966,7 @@ end
                      :($(NTuple{1, T}(big"0.999160794287385720759594254044188783965752175756835083215259499754121764622799053451726989530278191287506592763251685404449080943863417828196309987691518741"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{42},
                                      type::Type{T}) where {T}
@@ -2056,7 +2056,7 @@ end
                      :($(NTuple{1, T}(big"0.999199809495031207511434063423525138088938041761390625882427751272550844022926821861280106033509496710217000302910889993816193336141426465738668918271284596"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{43},
                                      type::Type{T}) where {T}
@@ -2148,7 +2148,7 @@ end
                      :($(NTuple{1, T}(big"0.999236166121253856758818093659196205981025358923804571646541718391690164515273432817914764177207850363595802301005800516069492148890420757106347765755389937"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{44},
                                      type::Type{T}) where {T}
@@ -2242,7 +2242,7 @@ end
                      :($(NTuple{1, T}(big"0.999270100318387112468028360303325174528015016587707298999424082841206774153632379027831981079710927482852413324465338189294553499440748320460691841916774188"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{45},
                                      type::Type{T}) where {T}
@@ -2338,7 +2338,7 @@ end
                      :($(NTuple{1, T}(big"0.999301822590968319078273838450410274046144263607237708444478199068392360574290778210048800803984441009650715331705324771679400297076146841815538232573497607"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{46},
                                      type::Type{T}) where {T}
@@ -2436,7 +2436,7 @@ end
                      :($(NTuple{1, T}(big"0.999331521066908990564134208695444387292077803717315863045552772501338829905732705853596117228919444058075417237739659526758366434565901993596026029201367412"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{47},
                                      type::Type{T}) where {T}
@@ -2536,7 +2536,7 @@ end
                      :($(NTuple{1, T}(big"0.999359364292106054591973857393554245813545325615745404607984081274289384609914664897728841251076692429724810644264225485916607042884116470414774488197656033"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{48},
                                      type::Type{T}) where {T}
@@ -2638,7 +2638,7 @@ end
                      :($(NTuple{1, T}(big"0.999385503626213059300270745781556820044468825138360519306470240687729421803745850007827902499072861416155569987871333355389184307338248971215096596060143246"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{49},
                                      type::Type{T}) where {T}
@@ -2742,7 +2742,7 @@ end
                      :($(NTuple{1, T}(big"0.999410075303317689680915636352055327561840498932250982056474588651420567769275872750326844662215692765627936197973697763831136500399391272081467699763131237"))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefLine,
                                      degree::Val{50},
                                      type::Type{T}) where {T}

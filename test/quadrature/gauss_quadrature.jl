@@ -2,7 +2,7 @@
     # NOTE: It is assumed p = 1:4 is sufficient for testing
     @testset "RefLine" begin for T in Floats
         for p in 1:4
-            weights, points = gauss_quadrature(Val(:legendre), RefLine(), Val(p), T)
+            weights, points = gauss_quadrature(LegendreType(), RefLine(), Val(p), T)
             @test abs(sum(weights) - 1) < 10 * eps(T)
             # Test the integration of a polynomial of degree 2p-1, which should
             # be exact for p integration points.
@@ -16,12 +16,15 @@
             end
             rel_err = T((approx - exact) / exact)
             @test rel_err < 10 * eps(T)
+            if T != BigFloat 
+                @test @allocated(gauss_quadrature(LegendreType(), RefLine(), Val(p), T)) == 0
+            end
         end
     end end
 
     @testset "RefSquare" begin for T in Floats
-        for p in 1:4
-            weights, points = gauss_quadrature(Val(:legendre), RefSquare(), Val(p), T)
+        for p in 1:3
+            weights, points = gauss_quadrature(LegendreType(), RefSquare(), Val(p), T)
             @test abs(sum(weights) - 1) < 10 * eps(T)
             # 
             # q = 2p-1
@@ -38,12 +41,16 @@
             end
             rel_err = T((approx - exact) / exact)
             @test rel_err < 10 * eps(T)
+            # Will allocate past p = 3
+            if T != BigFloat 
+                @test @allocated(gauss_quadrature(LegendreType(), RefSquare(), Val(p), T)) == 0
+            end
         end
     end end
 
     @testset "RefCube" begin for T in Floats
         for p in 1:4
-            weights, points = gauss_quadrature(Val(:legendre), RefCube(), Val(p), T)
+            weights, points = gauss_quadrature(LegendreType(), RefCube(), Val(p), T)
             @test abs(sum(weights) - 1) < 10 * eps(T)
             # 
             # q = 2p-1
@@ -60,12 +67,13 @@
             end
             rel_err = T((approx - exact) / exact)
             @test rel_err < 10 * eps(T)
+            # Allocates past p = 2
         end
     end end
 
     @testset "RefTriangle" begin for T in Floats
         for p in 1:4
-            weights, points = gauss_quadrature(Val(:legendre), RefTriangle(), Val(p), T)
+            weights, points = gauss_quadrature(LegendreType(), RefTriangle(), Val(p), T)
             @test abs(sum(weights) - 1 // 2) < 10 * eps(T)
             # This quadrature is only exact to polynomial degree p, not 2p-1!
             #
@@ -81,6 +89,9 @@
             end
             rel_err = T((approx - exact) / exact)
             @test rel_err < 10 * eps(T)
+            if T != BigFloat 
+                @test @allocated(gauss_quadrature(LegendreType(), RefTriangle(), Val(p), T)) == 0
+            end
         end
     end end
 end

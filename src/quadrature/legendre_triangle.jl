@@ -1,4 +1,4 @@
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{1},
                                      type::Type{T}) where {T}
@@ -9,7 +9,7 @@
     ]
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{2},
                                      type::Type{T}) where {T}
@@ -24,7 +24,7 @@ end
                                T(big"0.166666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666637603613078393561840365834113122473647575098720371970425")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{3},
                                      type::Type{T}) where {T}
@@ -42,7 +42,7 @@ end
                                T(big"0.200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000046882068910403189012859134356866207697657633933928284229")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{4},
                                      type::Type{T}) where {T}
@@ -66,7 +66,7 @@ end
                                T(big"0.0915762135097707434595714634022015078543252958998289688013668305276690050515858815670695285416708648348873014050157968782238047143074896833253840597284555145")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{5},
                                      type::Type{T}) where {T}
@@ -93,7 +93,7 @@ end
                                T(big"0.101286507323456338800987361915123828055575156890876627305353630185072233717286712689557743959110784734367374627002459768829588750174733543697208502653147444")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{6},
                                      type::Type{T}) where {T}
@@ -135,7 +135,7 @@ end
                                T(big"0.636502499121398647230142594412049699802993531513533761204427601179768539199048932847995933280949723136530444377310513579330022739807737755734967637470715501")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{7},
                                      type::Type{T}) where {T}
@@ -180,7 +180,7 @@ end
                                T(big"0.312865496004873861406644476768401892896582512116036533449126302836080174342786674113189047213509874015325109569632101751081693492017777545218637353703925193")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{8},
                                      type::Type{T}) where {T}
@@ -234,7 +234,7 @@ end
                                T(big"0.263112829634638113421785786284643587792203735363042306179552288183621836456284889849900782078782133851042273797862201868186088463550802756964071971451010299")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{9},
                                      type::Type{T}) where {T}
@@ -297,7 +297,7 @@ end
                                T(big"0.221962989160765695675102527693191070253009303609383194873041490046294832540712308198305028739785895229782240512189495487637328446830014734289873016698266614")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{10},
                                      type::Type{T}) where {T}
@@ -378,7 +378,7 @@ end
                                T(big"0.923655933587500276646306977615088431875307698530146035929011334943064882535416139487473781874211661398835546083742064104893164708143771579651410124181258237")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{11},
                                      type::Type{T}) where {T}
@@ -465,7 +465,7 @@ end
                                T(big"0.171488980304041549709636552558891148535005124432179428485908945784704696964064636962804210226866735876521023266890728390009647713345654016973505996649717573")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{12},
                                      type::Type{T}) where {T}
@@ -570,7 +570,7 @@ end
                                T(big"0.116251915907597141241354147842601821787979946540544639578026669763263747176376505571300731226868115476695121978449678150868146898043676606105866970803356002")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{13},
                                      type::Type{T}) where {T}
@@ -687,7 +687,7 @@ end
                                T(big"0.126357385491683310157389573334191183557157493560289181690340986117733571974892918000970659194604437686762409148634872963907471325331124279179741611536228367")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{14},
                                      type::Type{T}) where {T}
@@ -819,7 +819,7 @@ end
                                T(big"0.118974497696956845398181961929905481322775536851722586809977241759145255763710571443338278836323406527207041777920398702148477834691439928820878901961030642")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{15},
                                      type::Type{T}) where {T}
@@ -969,7 +969,7 @@ end
                                T(big"0.103575616576385751526880261591575683533122525809263909169546315928508917618158756289128451949907850063620317501689723521339887365034889137747178004144565626")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{16},
                                      type::Type{T}) where {T}
@@ -1131,7 +1131,7 @@ end
                                T(big"0.0852836156826572236654219480890006304671413158645368014570275913925117460385868811095654486966152750295818535314332962071971276912195097382113535370998811202")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{17},
                                      type::Type{T}) where {T}
@@ -1320,7 +1320,7 @@ end
                                T(big"0.0807113136795991034965471435461221505347597539443967863033396527345845245088819399874218996808713808853728022307919700290821372018182329151573483418827925087")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{18},
                                      type::Type{T}) where {T}
@@ -1536,7 +1536,7 @@ end
                                T(big"0.0208747552825616383080399730977054474743557395497367417203775441750766232526203727590779565137909806662097262526032578915050614265353286925177990503866460657")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{19},
                                      type::Type{T}) where {T}
@@ -1761,7 +1761,7 @@ end
                                T(big"0.0654946280829176364044972628775910031867696313515937427856512766212763734402216137077807284605493783587454739316426726000030910481526512052678777619334231726")))))
     return weights, points
 end
-@generated function gauss_quadrature(form::Val{:legendre},
+@generated function gauss_quadrature(form::LegendreType,
                                      shape::RefTriangle,
                                      degree::Val{20},
                                      type::Type{T}) where {T}

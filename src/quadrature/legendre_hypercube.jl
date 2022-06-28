@@ -1,12 +1,12 @@
 for quad_degree in 1:20 # Exceeding degree 20 seems unnecessary at this time
     @eval begin
         # Square
-        @generated function gauss_quadrature(form::Val{:legendre},
+        @generated function gauss_quadrature(form::LegendreType,
                                              shape::RefSquare,
                                              degree::Val{$quad_degree},
                                              type::Type{T}) where {T}
             # Is there a way to use form and degree here instead?
-            line_weights, line_points = gauss_quadrature(Val(:legendre),
+            line_weights, line_points = gauss_quadrature(LegendreType(),
                                                          RefLine(),
                                                          Val($quad_degree),
                                                          T)
@@ -24,12 +24,12 @@ for quad_degree in 1:20 # Exceeding degree 20 seems unnecessary at this time
             end
         end
         # Cube
-        @generated function gauss_quadrature(form::Val{:legendre},
+        @generated function gauss_quadrature(form::LegendreType,
                                              shape::RefCube,
                                              degree::Val{$quad_degree},
                                              type::Type{T}) where {T}
             # Is there a way to use form and degree here instead?
-            line_weights, line_points = gauss_quadrature(Val(:legendre),
+            line_weights, line_points = gauss_quadrature(LegendreType(),
                                                          RefLine(),
                                                          Val($quad_degree),
                                                          T)
