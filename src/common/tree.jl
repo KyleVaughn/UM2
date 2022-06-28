@@ -7,10 +7,7 @@ mutable struct Tree{T}
     children::Union{Nothing, Vector{Tree{T}}}
 end
 
-data(node::Tree) = node.data
-parent(node::Tree) = node.parent
-children(node::Tree) = node.children
-
+# constructors
 Tree(data::T) where {T} = Tree{T}(data, nothing, nothing)
 function Tree(data::T, parent::Tree{T}) where {T}
     this = Tree{T}(data, parent, nothing)
@@ -21,6 +18,11 @@ function Tree(data::T, parent::Tree{T}) where {T}
     end
     return this
 end
+
+# accessors
+data(node::Tree) = node.data
+Base.parent(node::Tree) = node.parent
+children(node::Tree) = node.children
 
 isroot(node::Tree) = parent(node) === nothing
 is_parents_last_child(node::Tree) = children(parent(node))[end] === node

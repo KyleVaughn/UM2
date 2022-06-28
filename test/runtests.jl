@@ -8,7 +8,7 @@ const Floats = [Float32, Float64, BigFloat]
 # include("setup/setup_geometry.jl")
 # include("setup/setup_mesh.jl")
 tests = ["common/Common",
-         "quadrature/Quadrature",
+         #"quadrature/Quadrature",
 #         "geometry/Geometry",
 #         "mesh/Mesh",
 #         "raytracing/Raytracing"
