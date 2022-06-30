@@ -24,5 +24,10 @@
         @test tri6_edges[1] == QuadraticSegment(P₁, P₂, P₄)
         @test tri6_edges[2] == QuadraticSegment(P₂, P₃, P₅)
         @test tri6_edges[3] == QuadraticSegment(P₃, P₁, P₆)
+        if T != BigFloat
+            @test @ballocated(edges($tri6), samples = 1, evals = 2) == 0
+        end
     end end
+
+    # TODO: implement quad, quad8, tet, tet10, hex, hex20
 end

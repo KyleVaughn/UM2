@@ -16,6 +16,9 @@
 
         # measure
         @test measure(aab) ≈ 4
+        if T != BigFloat
+            @test @ballocated(measure($aab), samples = 1, evals = 2) == 0
+        end
     end end
     @testset "AABox{3}" begin for T in Floats
         # getproperty

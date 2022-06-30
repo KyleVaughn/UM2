@@ -53,6 +53,9 @@
         @test tet_faces[2] == QuadraticTriangle(v[1], v[2], v[4], v[5], v[9], v[8])
         @test tet_faces[3] == QuadraticTriangle(v[2], v[3], v[4], v[6], v[10], v[9])
         @test tet_faces[4] == QuadraticTriangle(v[3], v[1], v[4], v[7], v[8], v[10])
+        if T != BigFloat
+            @test @ballocated(faces($tet), samples = 1, evals = 2) == 0
+        end
     end end
 
     @testset "QuadraticHexahedron" begin for T in Floats

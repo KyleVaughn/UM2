@@ -160,7 +160,7 @@ isstraight(::LineSegment) = true
     isstraight(q::QuadraticSegment)
 
 Return if the quadratic segment is effectively straight.
-(If P₃ is at most ϵ_Point distance from LineSegment(P₁,P₂))
+(If P₃ is at most EPS_POINT distance from LineSegment(P₁,P₂))
 """
 function isstraight(q::QuadraticSegment{T}) where {T <: Point}
     # Project P₃ onto the line from P₁ to P₂, call it P₄
@@ -170,7 +170,7 @@ function isstraight(q::QuadraticSegment{T}) where {T <: Point}
     𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂) * inv(v₁₂) * 𝘃₁₂
     # Determine the distance from P₃ to P₄ (P₄ - P₃ = P₁ + 𝘃₁₄ - P₃ = 𝘃₁₄ - 𝘃₁₃)
     d² = norm²(𝘃₁₄ - 𝘃₁₃)
-    return d² < ϵ_Point^2
+    return d² < T(EPS_POINT^2)
 end
 
 # Show aliases when printing

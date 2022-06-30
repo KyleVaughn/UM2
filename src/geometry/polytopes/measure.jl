@@ -23,7 +23,7 @@ function measure(q::QuadraticSegment{<:Point})
     𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂) * inv(v₁₂) * 𝘃₁₂
     d = norm(𝘃₁₄ - 𝘃₁₃)
     # If segment is straight
-    if d < ϵ_Point
+    if d < EPS_POINT
         return √v₁₂ # Distance from P₁ to P₂ 
     else
         # q(r) = P₁ + r𝘂 + r²𝘃
@@ -73,7 +73,7 @@ function measure(quad::Quadrilateral{Point{3, T}}) where {T}
     else
         error("Unsupported type.")
     end
-    weights, points = gauss_quadrature(Val(:legendre), RefLine(), Val(N), T)
+    weights, points = gauss_quadrature(LegendreType(), RefLine(), Val(N), T)
     area = zero(T)
     for j in Base.OneTo(N)
         @inbounds @simd for i in Base.OneTo(N)
@@ -134,7 +134,7 @@ function measure(tri6::QuadraticTriangle{Point{3, T}}) where {T}
     else
         error("Unsupported type.")
     end
-    weights, points = gauss_quadrature(Val(:legendre), RefTriangle(), Val(N), T)
+    weights, points = gauss_quadrature(LegendreType(), RefTriangle(), Val(N), T)
     area = zero(T)
     @inbounds @simd for i in eachindex(weights)
         J = jacobian(tri6, points[i][1], points[i][2])
@@ -159,7 +159,7 @@ function measure(quad8::QuadraticQuadrilateral{Point{3, T}}) where {T}
     else
         error("Unsupported type.")
     end
-    weights, points = gauss_quadrature(Val(:legendre), RefLine(), Val(N), T)
+    weights, points = gauss_quadrature(LegendreType(), RefLine(), Val(N), T)
     area = zero(T)
     for j in Base.OneTo(N)
         @inbounds @simd for i in Base.OneTo(N)

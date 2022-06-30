@@ -118,7 +118,7 @@ Base.:-(A::Point, v::Vec) = Point(coordinates(A) - v)
 Return if two points are approximately equal (less than EPS_POINT apart). 
 """
 function Base.isapprox(A::Point{D, T}, B::Point{D, T}) where {D, T}
-    return norm²(A - B) < T(EPS_POINT)^2
+    return norm²(A - B) < T(EPS_POINT^2)
 end
 
 """

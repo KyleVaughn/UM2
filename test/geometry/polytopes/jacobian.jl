@@ -129,5 +129,56 @@
         @test jacobian(tet, 0, 0, 1 // 2) == I
         @test jacobian(tet, 1 // 2, 0, 1 // 2) == I
         @test jacobian(tet, 0, 1 // 2, 1 // 2) == I
+        if T != BigFloat
+            @test @ballocated(jacobian($tet, 0, 0, 0), samples = 1, evals = 2) == 0
+        end
     end end
+
+    @testset "QuadraticHexahedon" begin for T in Floats
+        P₁ = Point{3, T}(0, 0, 0)
+        P₂ = Point{3, T}(1, 0, 0)
+        P₃ = Point{3, T}(1, 1, 0)
+        P₄ = Point{3, T}(0, 1, 0)
+        P₅ = Point{3, T}(0, 0, 1)
+        P₆ = Point{3, T}(1, 0, 1)
+        P₇ = Point{3, T}(1, 1, 1)
+        P₈ = Point{3, T}(0, 1, 1)
+        P₉ = Point{3, T}(1 // 2, 0, 0)
+        P₁₀ = Point{3, T}(1, 1 // 2, 0)
+        P₁₁ = Point{3, T}(1 // 2, 1, 0)
+        P₁₂ = Point{3, T}(0, 1 // 2, 0)
+        P₁₃ = Point{3, T}(1 // 2, 0, 1)
+        P₁₄ = Point{3, T}(1, 1 // 2, 1)
+        P₁₅ = Point{3, T}(1 // 2, 1, 1)
+        P₁₆ = Point{3, T}(0, 1 // 2, 1)
+        P₁₇ = Point{3, T}(0, 0, 1 // 2)
+        P₁₈ = Point{3, T}(1, 0, 1 // 2)
+        P₁₉ = Point{3, T}(1, 1, 1 // 2)
+        P₂₀ = Point{3, T}(0, 0, 1 // 2)
+        hex20 = QuadraticHexahedron(P₁, P₂, P₃, P₄, P₅, P₆, P₇, 
+                                    P₈, P₉, P₁₀, P₁₁, P₁₂, P₁₃, P₁₄,
+                                    P₁₅, P₁₆, P₁₇, P₁₈, P₁₉, P₂₀)
+        # jacobian for hex20 not yet implemented due to algebraic chore of deriving
+        # the jacobian.
+#        @test jacobian(hex20, 0, 0, 0) == I 
+#        @test jacobian(hex20, 1, 0, 0) == I 
+#        @test jacobian(hex20, 1, 1, 0) == I 
+#        @test jacobian(hex20, 0, 1, 0) == I 
+#        @test jacobian(hex20, 0, 0, 1) == I 
+#        @test jacobian(hex20, 1, 0, 1) == I 
+#        @test jacobian(hex20, 1, 1, 1) == I 
+#        @test jacobian(hex20, 0, 1, 1) == I 
+#        @test jacobian(hex20, 1 // 2, 0, 0) == I 
+#        @test jacobian(hex20, 1, 1 // 2, 0) == I 
+#        @test jacobian(hex20, 1 // 2, 1, 0) == I 
+#        @test jacobian(hex20, 0, 1 // 2, 0) == I 
+#        @test jacobian(hex20, 1 // 2, 0, 1) == I 
+#        @test jacobian(hex20, 1, 1 // 2, 1) == I 
+#        @test jacobian(hex20, 1 // 2, 1, 1) == I 
+#        @test jacobian(hex20, 0, 1 // 2, 1) == I 
+#        @test jacobian(hex20, 0, 0, 1 // 2) == I 
+#        @test jacobian(hex20, 1, 0, 1 // 2) == I 
+#        @test jacobian(hex20, 1, 1, 1 // 2) == I 
+#        @test jacobian(hex20, 0, 0, 1 // 2) == I 
+    end end 
 end

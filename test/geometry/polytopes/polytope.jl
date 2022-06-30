@@ -7,6 +7,10 @@
             l = LineSegment(P₁, P₂)
             @test l.vertices[1] == P₁
             @test l.vertices[2] == P₂
+
+            l = LineSegment(T(1), T(0), T(2), T(0))
+            @test l.vertices[1] == P₁
+            @test l.vertices[2] == P₂
         end end
 
         @testset "LineSegment{3}" begin for T in Floats
@@ -156,6 +160,9 @@
             P₁₀ = Point{3, T}(0, 1 // 2, 1 // 2)
             tet10 = QuadraticTetrahedron(P₁, P₂, P₃, P₄, P₅, P₆, P₇, P₈, P₉, P₁₀)
             @test tet10.vertices == Vec(P₁, P₂, P₃, P₄, P₅, P₆, P₇, P₈, P₉, P₁₀)
+            if T != BigFloat
+                @test @ballocated(QuadraticTetrahedron($P₁, $P₂, $P₃, $P₄, $P₅, $P₆, $P₇, $P₈, $P₉, $P₁₀), samples = 1, evals = 2) == 0
+            end
         end end
 
         @testset "QuadraticHexahedon" begin for T in Floats

@@ -1,7 +1,7 @@
-@testset "Interpolate" begin
-    @testset "LineSegment" begin for T in Floats
-        P₁ = Point{3, T}(1, 1, 1)
-        P₂ = Point{3, T}(3, 3, 3)
+@testset "In" begin
+    @testset "isleft" begin for T in Floats
+        P₁ = Point{2, T}(0, 0)
+        P₂ = Point{2, T}(2, 0)
         l = LineSegment(P₁, P₂)
         @test l(0) ≈ P₁
         @test l(1) ≈ P₂

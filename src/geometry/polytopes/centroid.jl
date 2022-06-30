@@ -31,7 +31,7 @@ function centroid(tri6::QuadraticTriangle{Point{D, T}}, ::Val{N}) where {D, T, N
     #                  1  N
     # C = (∬ 𝘅 dA)/A = -  ∑ 𝘅 wᵢ‖∂f/∂r(rᵢ,sᵢ) × ∂f/∂s(rᵢ,sᵢ)‖
     #      S           A i=1
-    wts, pts = gauss_quadrature(Val(:legendre), RefTriangle(), Val(N), T)
+    wts, pts = gauss_quadrature(LegendreType(), RefTriangle(), Val(N), T)
     a = zero(T)
     c = @SVector zeros(T, D)
     @inbounds @simd for i in Base.OneTo(length(wts))
@@ -53,7 +53,7 @@ function centroid(quad8::QuadraticQuadrilateral{Point{D, T}}, ::Val{N}) where {D
     #                  1  N   N
     # C = (∬ 𝘅 dA)/A = -  ∑   ∑ 𝘅ᵢⱼwᵢwⱼ‖∂f/∂r(rᵢ,sⱼ) × ∂f/∂s(rᵢ,sⱼ)‖
     #      S           A j=1 i=1
-    wts, pts = gauss_quadrature(Val(:legendre), RefSquare(), Val(N), T)
+    wts, pts = gauss_quadrature(LegendreType(), RefSquare(), Val(N), T)
     a = zero(T)
     c = @SVector zeros(T, D)
     @inbounds @simd for i in Base.OneTo(length(wts))
