@@ -2,7 +2,7 @@ export PolytopeVertexMesh
 export name, vertices, polytopes, materials, material_names, groups, vtk_type, nelements,
        islinear
 
-struct PolytopeVertexMesh{D, T, P <: Polytope} <: AbstractMesh
+struct PolytopeVertexMesh{D, T <: AbstractFloat, P <: Polytope} <: AbstractMesh
     vertices::Vector{Point{D, T}}
     polytopes::Vector{P}
     materials::Vector{UInt8}

@@ -1,4 +1,4 @@
-function setup_TriangleMesh(::Type{T}, ::Type{U}) where {T, U}
+function setup_PVM_TriangleMesh(::Type{T}, ::Type{U}) where {T, U}
     name = "tri"
     vertices = [Point{2, T}(0, 0),
         Point{2, T}(1, 0),
@@ -11,7 +11,7 @@ function setup_TriangleMesh(::Type{T}, ::Type{U}) where {T, U}
     return PolytopeVertexMesh(name, vertices, polytopes, groups)
 end
 
-function setup_QuadrilateralMesh(::Type{T}, ::Type{U}) where {T, U}
+function setup_PVM_QuadrilateralMesh(::Type{T}, ::Type{U}) where {T, U}
     name = "quad"
     vertices = [Point{2, T}(0, 0),
         Point{2, T}(1, 0),
@@ -26,7 +26,7 @@ function setup_QuadrilateralMesh(::Type{T}, ::Type{U}) where {T, U}
     return PolytopeVertexMesh(name, vertices, polytopes, groups)
 end
 
-function setup_MixedPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
+function setup_PVM_MixedPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
     name = "tri_quad"
     vertices = [Point{2, T}(0, 0),
         Point{2, T}(1, 0),
@@ -40,7 +40,7 @@ function setup_MixedPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
     return PolytopeVertexMesh(name, vertices, polytopes, groups)
 end
 
-function setup_QuadraticTriangleMesh(::Type{T}, ::Type{U}) where {T, U}
+function setup_PVM_QuadraticTriangleMesh(::Type{T}, ::Type{U}) where {T, U}
     name = "tri6"
     vertices = [Point{2, T}(0, 0),
         Point{2, T}(1, 0),
@@ -59,7 +59,7 @@ function setup_QuadraticTriangleMesh(::Type{T}, ::Type{U}) where {T, U}
     return PolytopeVertexMesh(name, vertices, polytopes, groups)
 end
 
-function setup_QuadraticQuadrilateralMesh(::Type{T}, ::Type{U}) where {T, U}
+function setup_PVM_QuadraticQuadrilateralMesh(::Type{T}, ::Type{U}) where {T, U}
     name = "quad8"
     vertices = [Point{2, T}(0, 0),
         Point{2, T}(1, 0),
@@ -79,11 +79,11 @@ function setup_QuadraticQuadrilateralMesh(::Type{T}, ::Type{U}) where {T, U}
         QuadraticQuadrilateral{U}(2, 5, 6, 3, 11, 12, 13, 8)]
     groups = Dict{String, BitSet}()
     groups["A"] = BitSet([1])
-    groups["B"] = BitSet([2])
+    groupPoint{2, T}(1//2, 1//2)s["B"] = BitSet([2])
     return PolytopeVertexMesh(name, vertices, polytopes, groups)
 end
 
-function setup_MixedQuadraticPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
+function setup_PVM_MixedQuadraticPolygonMesh(::Type{T}, ::Type{U}) where {T, U}
     name = "tri6_quad8"
     vertices = [Point{2, T}(0, 0),
         Point{2, T}(1, 0),

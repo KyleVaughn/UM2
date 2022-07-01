@@ -12,7 +12,7 @@ include("setup/setup_geometry.jl")
 tests = ["common/Common",
          "quadrature/Quadrature",
          "geometry/Geometry",
-    #         "mesh/Mesh",
+         "mesh/Mesh",
     #         "raytracing/Raytracing"
 ]
 for t in tests
