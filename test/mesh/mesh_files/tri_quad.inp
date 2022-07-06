@@ -15,3 +15,7 @@
 1,
 *ELSET,ELSET=B
 2,
+*ELSET,ELSET=Material:_UO2
+1,
+*ELSET,ELSET=Material:_H2O
+2,

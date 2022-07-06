@@ -3,69 +3,45 @@ for (file_type, ext) in mesh_files
     @testset "Import $file_type" begin for T in Floats
         @testset "$T" begin
             @testset "TriangleMesh" begin
-                ref_mesh = setup_TriangleMesh(T, UInt8)
+                ref_mesh = setup_Triangle_VM(T, UInt8)
                 mesh = import_mesh("./mesh/mesh_files/tri" * ext, T)
-                @test mesh.name == ref_mesh.name
-                for i in eachindex(ref_mesh.vertices)
-                    @test mesh.vertices[i] ≈ ref_mesh.vertices[i]
-                end
-                @test mesh.polytopes == ref_mesh.polytopes
-                @test mesh.groups == ref_mesh.groups
+                @test all(p -> getproperty(mesh, p) == getproperty(ref_mesh, p), 
+                          propertynames(mesh))
             end
 
             @testset "QuadrilateralMesh" begin
-                ref_mesh = setup_QuadrilateralMesh(T, UInt8)
+                ref_mesh = setup_Quadrilateral_VM(T, UInt8)
                 mesh = import_mesh("./mesh/mesh_files/quad" * ext, T)
-                @test mesh.name == ref_mesh.name
-                for i in eachindex(ref_mesh.vertices)
-                    @test mesh.vertices[i] ≈ ref_mesh.vertices[i]
-                end
-                @test mesh.polytopes == ref_mesh.polytopes
-                @test mesh.groups == ref_mesh.groups
+                @test all(p -> getproperty(mesh, p) == getproperty(ref_mesh, p), 
+                          propertynames(mesh))
             end
 
             @testset "MixedPolygonMesh" begin
-                ref_mesh = setup_MixedPolygonMesh(T, UInt8)
+                ref_mesh = setup_MixedPolygon_VM(T, UInt8)
                 mesh = import_mesh("./mesh/mesh_files/tri_quad" * ext, T)
-                @test mesh.name == ref_mesh.name
-                for i in eachindex(ref_mesh.vertices)
-                    @test mesh.vertices[i] ≈ ref_mesh.vertices[i]
-                end
-                @test mesh.polytopes == ref_mesh.polytopes
-                @test mesh.groups == ref_mesh.groups
+                @test all(p -> getproperty(mesh, p) == getproperty(ref_mesh, p), 
+                          propertynames(mesh))
             end
 
             @testset "QuadraticTriangleMesh" begin
-                ref_mesh = setup_QuadraticTriangleMesh(T, UInt8)
+                ref_mesh = setup_QuadraticTriangle_VM(T, UInt8)
                 mesh = import_mesh("./mesh/mesh_files/tri6" * ext, T)
-                @test mesh.name == ref_mesh.name
-                for i in eachindex(ref_mesh.vertices)
-                    @test mesh.vertices[i] ≈ ref_mesh.vertices[i]
-                end
-                @test mesh.polytopes == ref_mesh.polytopes
-                @test mesh.groups == ref_mesh.groups
+                @test all(p -> getproperty(mesh, p) == getproperty(ref_mesh, p), 
+                          propertynames(mesh))
             end
 
             @testset "QuadraticQuadrilateralMesh" begin
-                ref_mesh = setup_QuadraticQuadrilateralMesh(T, UInt8)
+                ref_mesh = setup_QuadraticQuadrilateral_VM(T, UInt8)
                 mesh = import_mesh("./mesh/mesh_files/quad8" * ext, T)
-                @test mesh.name == ref_mesh.name
-                for i in eachindex(ref_mesh.vertices)
-                    @test mesh.vertices[i] ≈ ref_mesh.vertices[i]
-                end
-                @test mesh.polytopes == ref_mesh.polytopes
-                @test mesh.groups == ref_mesh.groups
+                @test all(p -> getproperty(mesh, p) == getproperty(ref_mesh, p), 
+                          propertynames(mesh))
             end
 
             @testset "MixedQuadraticPolygonMesh" begin
-                ref_mesh = setup_MixedQuadraticPolygonMesh(T, UInt8)
+                ref_mesh = setup_MixedQuadraticPolygon_VM(T, UInt8)
                 mesh = import_mesh("./mesh/mesh_files/tri6_quad8" * ext, T)
-                @test mesh.name == ref_mesh.name
-                for i in eachindex(ref_mesh.vertices)
-                    @test mesh.vertices[i] ≈ ref_mesh.vertices[i]
-                end
-                @test mesh.polytopes == ref_mesh.polytopes
-                @test mesh.groups == ref_mesh.groups
+                @test all(p -> getproperty(mesh, p) == getproperty(ref_mesh, p), 
+                          propertynames(mesh))
             end
         end
     end end

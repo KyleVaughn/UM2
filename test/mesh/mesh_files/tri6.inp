@@ -5,7 +5,7 @@
 2, 1, 0, 0
 3, 0, 1, 0
 4, 0.5, 0, 0
-5, 0.4, 0.4, 0
+5, 0.4375, 0.4375, 0
 6, 0, 0.5, 0
 7, 1, 1, 0
 8, 1, 0.5, 0
@@ -17,4 +17,8 @@
 *ELSET,ELSET=A
 1,
 *ELSET,ELSET=B
+2,
+*ELSET,ELSET=Material:_UO2
+1,
+*ELSET,ELSET=Material:_H2O
 2,

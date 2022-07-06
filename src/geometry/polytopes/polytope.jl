@@ -47,7 +47,7 @@ const QuadraticHexahedron       = QuadraticPolyhedron{20}
 """
 struct Polytope{K, P, N, T}
     vertices::Vec{N, T}
-    Polytope{K, P, N, T}(vertices::Vec{N, T}) where {K, P, N, T} = new{K, P, N, T}(vertices)
+    @inline Polytope{K, P, N, T}(vertices::Vec{N, T}) where {K, P, N, T} = new{K, P, N, T}(vertices)
 end
 
 # type aliases

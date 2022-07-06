@@ -133,7 +133,7 @@ function _read_abaqus_nodes!(file::IOStream,
     for i in 1:nnodes
         line = readline(file)
         xyz = view(split(line, ','), 2:4)
-        new_nodes[i] = Point{3, T}(ntuple(i -> parse(Float64, xyz[i]), Val(3)))
+        new_nodes[i] = Point{3, T}(ntuple(i -> parse(T, xyz[i]), Val(3)))
     end
     append!(nodes, new_nodes)
     return nothing
