@@ -9,6 +9,10 @@
 *ELEMENT, type=CPS3, ELSET=Surface1
 1, 1, 2, 3
 2, 2, 4, 3
+*ELSET,ELSET=Material:_UO2
+1
+*ELSET,ELSET=Material:_H2O
+2
 *ELSET,ELSET=A
 1,
 *ELSET,ELSET=B
