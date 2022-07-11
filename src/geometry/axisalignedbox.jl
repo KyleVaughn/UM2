@@ -11,18 +11,9 @@ points, representing the `minima` and `maxima` of the box.
 struct AABox{D, T}
     minima::Point{D, T}
     maxima::Point{D, T}
-    function AABox{D, T}(minima::Point{D, T}, maxima::Point{D, T}) where {D, T}
-        if any(i -> maxima[i] ≤ minima[i], 1:D)
-            error("AABox maxima must be greater that the minima")
-        end
-        return new{D, T}(minima, maxima)
-    end
 end
 
 # constructors
-function AABox(minima::Point{D, T}, maxima::Point{D, T}) where {D, T}
-    return AABox{D, T}(minima, maxima)
-end
 AABox(minima, maxima) = AABox(Point(minima), Point(maxima))
 
 maxima(aab::AABox) = aab.maxima
@@ -31,6 +22,11 @@ function Base.isapprox(aab₁::AABox, aab₂::AABox)
     return minima(aab₁) ≈ minima(aab₂) &&
            maxima(aab₁) ≈ maxima(aab₂)
 end
+function Base.union(aab₁::AABox, aab₂::AABox)
+    return AABox(min.(coordinates(minima(aab₁)), coordinates(minima(aab₂))),
+                 max.(coordinates(maxima(aab₁)), coordinates(maxima(aab₂))))
+end
+
 xmin(aab::AABox) = aab.minima[1]
 ymin(aab::AABox) = aab.minima[2]
 zmin(aab::AABox{3}) = aab.minima[3]

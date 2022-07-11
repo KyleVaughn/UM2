@@ -38,7 +38,9 @@ end
 
 function ishomogeneous(mesh::VolumeMesh)
     # This can be fooled if there are 3 types of elements
-    return mod(length(mesh.connectivity), nelements(mesh)) == 0
+    nconn = length(mesh.connectivity)
+    nelem = nelements(mesh)
+    return mod(nconn, nelem) == 0 && mod(nconn ÷ nelem, 2) == 0
 end
 
 function islinear(mesh::VolumeMesh{2})

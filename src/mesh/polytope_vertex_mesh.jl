@@ -23,12 +23,22 @@ islinear(mesh::PolytopeVertexMesh{2}) = mesh.polytopes isa Vector{<:Polygon}
 isquadratic(mesh::PolytopeVertexMesh{2}) = mesh.polytopes isa Vector{<:QuadraticPolygon}
 
 function PolytopeVertexMesh(mesh::VolumeMesh{D, T, U}) where {D, T, U}
-    return PolytopeVertexMesh(mesh.points,
-                              face_connectivity(mesh),
-                              mesh.materials,
-                              mesh.material_names,
-                              mesh.name,
-                              mesh.groups)
+    if ishomogeneous(mesh)
+        return PolytopeVertexMesh(mesh.points,
+                                  face_connectivity(mesh),
+                                  mesh.materials,
+                                  mesh.material_names,
+                                  mesh.name,
+                                  mesh.groups)
+    else
+        return PolytopeVertexMesh(mesh.points,
+                                  map(i->_materialize_face_connectivity(i, mesh), 
+                                      1:nelements(mesh)),
+                                  mesh.materials,
+                                  mesh.material_names,
+                                  mesh.name,
+                                  mesh.groups)
+    end
 end
 
 vtk_type(::Type{<:Triangle})               = VTK_TRIANGLE

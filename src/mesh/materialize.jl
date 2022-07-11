@@ -14,6 +14,7 @@ function materialize(p::Polytope{K, P, N, T},
                                                      Val(N))))
 end
 
+# Volume materialization
 function materialize_edges(mesh::VolumeMesh{2})
     return materialize.(edge_connectivity(mesh), Ref(mesh.points))
 end
@@ -26,6 +27,7 @@ function materialize_faces(mesh::VolumeMesh{2})
     return materialize.(face_connectivity(mesh), Ref(mesh.points))
 end
 
+# Polytope materialization
 function materialize_edges(mesh::PolytopeVertexMesh{2})
     return materialize.(edge_connectivity(mesh), Ref(mesh.vertices))
 end
@@ -39,6 +41,10 @@ function materialize_polytopes(mesh::PolytopeVertexMesh)
 end
 
 # aliases
+function materialize_polytope(i::Integer, mesh::VolumeMesh{2})
+    return materialize_face(i, mesh)
+end
+
 function materialize_faces(mesh::PolytopeVertexMesh{D, T, P}) where {D, T, P <: Face}
     return materialize_polytopes(mesh)
 end
