@@ -3,38 +3,42 @@ export faces
 # Turn off the JuliaFormatter
 #! format: off
 
-function faces(p::Tetrahedron)
+function faces(p::Tetrahedron{T}) where T
     v = vertices(p)
-    return Vec(Triangle(v[1], v[2], v[3]),
-               Triangle(v[1], v[2], v[4]),
-               Triangle(v[2], v[3], v[4]),
-               Triangle(v[3], v[1], v[4]))
+    return Vec{4, Triangle{T}}(Triangle{T}(v[1], v[2], v[3]),
+                               Triangle{T}(v[1], v[2], v[4]),
+                               Triangle{T}(v[2], v[3], v[4]),
+                               Triangle{T}(v[3], v[1], v[4]))
 end
 
-function faces(p::Hexahedron)
+function faces(p::Hexahedron{T}) where T
     v = vertices(p)
-    return Vec(Quadrilateral(v[1], v[2], v[3], v[4]),
-               Quadrilateral(v[5], v[6], v[7], v[8]),
-               Quadrilateral(v[1], v[2], v[6], v[5]),
-               Quadrilateral(v[2], v[3], v[7], v[6]),
-               Quadrilateral(v[3], v[4], v[8], v[7]),
-               Quadrilateral(v[4], v[1], v[5], v[8]))
+    return Vec{6, Quadrilateral{T}}(Quadrilateral{T}(v[1], v[2], v[3], v[4]),
+                                    Quadrilateral{T}(v[5], v[6], v[7], v[8]),
+                                    Quadrilateral{T}(v[1], v[2], v[6], v[5]),
+                                    Quadrilateral{T}(v[2], v[3], v[7], v[6]),
+                                    Quadrilateral{T}(v[3], v[4], v[8], v[7]),
+                                    Quadrilateral{T}(v[4], v[1], v[5], v[8]))
 end
 
-function faces(p::QuadraticTetrahedron)
+function faces(p::QuadraticTetrahedron{T}) where T
     v = vertices(p)
-    return Vec(QuadraticTriangle(v[1], v[2], v[3], v[5], v[ 6], v[ 7]),
-               QuadraticTriangle(v[1], v[2], v[4], v[5], v[ 9], v[ 8]),
-               QuadraticTriangle(v[2], v[3], v[4], v[6], v[10], v[ 9]),
-               QuadraticTriangle(v[3], v[1], v[4], v[7], v[ 8], v[10]))
+    return Vec{4, QuadraticTriangle{T}}(
+                QuadraticTriangle{T}(v[1], v[2], v[3], v[5], v[ 6], v[ 7]),
+                QuadraticTriangle{T}(v[1], v[2], v[4], v[5], v[ 9], v[ 8]),
+                QuadraticTriangle{T}(v[2], v[3], v[4], v[6], v[10], v[ 9]),
+                QuadraticTriangle{T}(v[3], v[1], v[4], v[7], v[ 8], v[10])
+              )
 end
 
-function faces(p::QuadraticHexahedron)
+function faces(p::QuadraticHexahedron{T}) where T
     v = vertices(p)
-    return Vec(QuadraticQuadrilateral(v[1], v[2], v[3], v[4], v[ 9], v[10], v[11], v[12]),
-               QuadraticQuadrilateral(v[5], v[6], v[7], v[8], v[13], v[14], v[15], v[16]),
-               QuadraticQuadrilateral(v[1], v[2], v[6], v[5], v[ 9], v[18], v[13], v[17]),
-               QuadraticQuadrilateral(v[2], v[3], v[7], v[6], v[10], v[19], v[14], v[18]),
-               QuadraticQuadrilateral(v[3], v[4], v[8], v[7], v[11], v[20], v[15], v[19]),
-               QuadraticQuadrilateral(v[4], v[1], v[5], v[8], v[12], v[17], v[16], v[20]))
+    return Vec{6, QuadraticQuadrilateral{T}}(
+                QuadraticQuadrilateral{T}(v[1], v[2], v[3], v[4], v[ 9], v[10], v[11], v[12]),
+                QuadraticQuadrilateral{T}(v[5], v[6], v[7], v[8], v[13], v[14], v[15], v[16]),
+                QuadraticQuadrilateral{T}(v[1], v[2], v[6], v[5], v[ 9], v[18], v[13], v[17]),
+                QuadraticQuadrilateral{T}(v[2], v[3], v[7], v[6], v[10], v[19], v[14], v[18]),
+                QuadraticQuadrilateral{T}(v[3], v[4], v[8], v[7], v[11], v[20], v[15], v[19]),
+                QuadraticQuadrilateral{T}(v[4], v[1], v[5], v[8], v[12], v[17], v[16], v[20])
+               )
 end

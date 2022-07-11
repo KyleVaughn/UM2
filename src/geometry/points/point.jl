@@ -35,19 +35,27 @@ J = Point3B(1, 2, 3)     # explicitly ask for BigFloat
     `Point1B`, `Point2B`, `Point3B`.
 """
 struct Point{D, T} <: AbstractVector{T}
-    coords::SVector{D, T}
-    Point{D, T}(coords::SVector{D, T}) where {D, T} = new{D, T}(coords)
+    coords::Vec{D, T}
+    Point{D, T}(coords::Vec{D, T}) where {D, T} = new{D, T}(coords)
 end
 
 # constructors
-Point{D, T}(coords...) where {D, T} = Point{D, T}(SVector{D, T}(coords...))
-Point(coords::SVector{D, T}) where {D, T} = Point{D, T}(coords)
-Point(coords::AbstractVector{T}) where {T} = Point{length(coords), T}(coords)
-Point(coords...) = Point(SVector(coords...))
+Point{1, T}(x::X) where {X<:Number, T} = Point{1, T}(Vec{1, T}(x))
+Point{2, T}(x, y) where {T} = Point{2, T}(Vec{2, T}(x, y))
+Point{3, T}(x, y, z) where {T} = Point{3, T}(Vec{3, T}(x, y, z))
+Point{1, T}(c::NTuple{1, T}) where {T} = Point{1, T}(Vec{1, T}(c[1]))
+Point{2, T}(c::NTuple{2, T}) where {T} = Point{2, T}(Vec{2, T}(c[1], c[2]))
+Point{3, T}(c::NTuple{3, T}) where {T} = Point{3, T}(Vec{3, T}(c[1], c[2], c[3]))
+Point(c::Vec{1, T}) where {T} = Point{1, T}(c)
+Point(c::Vec{2, T}) where {T} = Point{2, T}(c)
+Point(c::Vec{3, T}) where {T} = Point{3, T}(c)
+Point(c::NTuple{1, T}) where {T} = Point{1, T}(Vec{1, T}(c[1]))
+Point(c::NTuple{2, T}) where {T} = Point{2, T}(Vec{2, T}(c[1], c[2]))
+Point(c::NTuple{3, T}) where {T} = Point{3, T}(Vec{3, T}(c[1], c[2], c[3]))
 
 # conversions
-Base.convert(::Type{Point{2, T}}, P::Point) where {T} = Point{2, T}(P[1], P[2])
-SVector(P::Point{D, T}) where {D, T} = P.coords
+Base.convert(::Type{Point{2, T}}, P::Point{3}) where {T} = Point{2, T}(P[1], P[2])
+Vec(P::Point{D, T}) where {D, T} = P.coords
 
 # type aliases
 const Point1  = Point{1, Float64}
@@ -150,5 +158,5 @@ If the triplet of 2-dimensional points is counter-clockwise oriented from A to B
 isCCW(A::Point{2}, B::Point{2}, C::Point{2}) = 0 ≤ (B - A) × (C - A)
 
 function Base.show(io::IO, point::Point)
-    return print(io, point.coords.data)
+    return print(io, coordinates(point).data)
 end
