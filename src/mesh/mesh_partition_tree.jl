@@ -1,5 +1,5 @@
 export MeshPartitionTree
-export tree, leaf_meshes
+export tree, leaf_meshes, getleaf
 # A data structure to hold a hierarchical partition of a mesh.
 # Since the mesh is partitioned, we only need to store the leaves of the partition
 # tree to reconstruct the mesh.
@@ -15,6 +15,7 @@ end
 
 tree(mpt::MeshPartitionTree) = mpt.partition_tree
 leaf_meshes(mpt::MeshPartitionTree) = mpt.leaf_meshes
+getleaf(mpt::MeshPartitionTree, id::Integer) = mpt.leaf_meshes[id]
 
 # Partitions a mesh based upon the names of its groups 
 # For a hierarchical partition, all partitions in the hierarchy must contain face sets 
