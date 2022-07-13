@@ -45,6 +45,10 @@ function materialize_polytope(i::Integer, mesh::VolumeMesh{2})
     return materialize_face(i, mesh)
 end
 
+function materialize_polytopes(mesh::VolumeMesh{2})
+    return materialize_faces(mesh)
+end
+
 function materialize_faces(mesh::PolytopeVertexMesh{D, T, P}) where {D, T, P <: Face}
     return materialize_polytopes(mesh)
 end

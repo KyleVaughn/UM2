@@ -4,7 +4,7 @@ function Base.intersect(l::LineSegment{Point{2, T}},
     # Create the line segments that make up the polygon and intersect each one
     # until 2 unique points have been found
     T_INF_POINT = T(INF_POINT)
-    P₁ = Point(T_INF_POINT, T_INF_POINT)
+    P₁ = Point{2, T}(T_INF_POINT, T_INF_POINT)
     one_hit = false
     for i in Base.OneTo(N)
         P = l ∩ LineSegment(poly[(i - 1) % N + 1], poly[i % N + 1])
@@ -17,7 +17,7 @@ function Base.intersect(l::LineSegment{Point{2, T}},
             end
         end
     end
-    return Vec(P₁, Point(T_INF_POINT, T_INF_POINT))
+    return Vec(P₁, Point{2, T}(T_INF_POINT, T_INF_POINT))
 end
 
 # # Möller, T., & Trumbore, B. (1997). Fast, minimum storage ray-triangle intersection.
