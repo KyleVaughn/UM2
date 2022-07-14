@@ -2,12 +2,12 @@ export set_mesh_field_using_materials
 
 function set_mesh_field_using_materials(materials::Vector{Material})
     @info "Setting mesh size field using materials"
-    # Setup a field with a constant mesh size material.mesh_size inside the 
+    # Setup a field with a constant mesh size (material.lc) inside the 
     # entities that make up that material
     field_ids = Vector{Int32}(undef, length(materials))
     for (i, material) in enumerate(materials)
         fid = gmsh.model.mesh.field.add("Constant")
-        gmsh.model.mesh.field.set_number(fid, "VIn", material.mesh_size)
+        gmsh.model.mesh.field.set_number(fid, "VIn", material.lc)
         field_ids[i] = fid
     end
     # Populate each of the fields with the highest dimensional entities in the material
