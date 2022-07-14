@@ -40,6 +40,8 @@ function read_abaqus(path::String, ::Type{T}) where {T <: AbstractFloat}
         elements = UInt64[]
         name = ""
         elsets = Dict{String, BitSet}()
+        material_pairs = Tuple{Int64, String}[]
+        global_mat_id = 1
         for line in eachline(file)
             if length(line) > 0
                 if startswith(line, "**") # Comment
@@ -66,6 +68,10 @@ function read_abaqus(path::String, ::Type{T}) where {T <: AbstractFloat}
                         set_name = m.match
                     end
                     elsets[set_name] = _read_abaqus_elset(file)
+                    if startswith(set_name, "Material:_")
+                        push!(material_pairs, (global_mat_id, set_name))
+                        global_mat_id += 1
+                    end
                 end
             end
         end
@@ -83,16 +89,9 @@ function read_abaqus(path::String, ::Type{T}) where {T <: AbstractFloat}
         push!(offsets, length(elements) + 1)
         # Set materials if there are any
         materials = zeros(UInt8, length(element_types))
-        material_names = String[]
-        for key in keys(elsets)
-            if startswith(key, "Material")
-                push!(material_names, key)
-            end
-        end
-        nmaterials = length(material_names)
+        nmaterials = length(material_pairs)
         if 0 < nmaterials
-            sort!(material_names)
-            for (i, mat) in enumerate(material_names)
+            for (i, mat) in material_pairs
                 for element_id in elsets[mat]
                     if materials[element_id] === UInt8(0)
                         materials[element_id] = i
@@ -103,7 +102,7 @@ function read_abaqus(path::String, ::Type{T}) where {T <: AbstractFloat}
                 pop!(elsets, mat)
             end
         end
-        trimmed_names = [mat[11:end] for mat in material_names]
+        trimmed_names = [pair[2][11:end] for pair in material_pairs]
         if is2d
             return VolumeMesh{2, T, U}(nodes, offsets, elements,
                                        materials, trimmed_names, name, elsets)

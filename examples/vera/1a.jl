@@ -38,7 +38,7 @@ safe_add_physical_group("Material: Fuel", [(2, i) for i in fuel_entities])
 safe_add_physical_group("Material: Gap", [(2, i) for i in gap_entities])
 safe_add_physical_group("Material: Clad", [(2, i) for i in clad_entities])
 ents = gmsh.model.get_entities(2)
-# Fragment the many disks, prioritizing Fuel > Gap > Water > Clad to fill space
+# Fragment the many disks, prioritizing Fuel > Gap > Clad to fill space
 safe_fragment(ents, ents, material_hierarchy = materials)
 
 # Overlay Grid
@@ -65,7 +65,7 @@ mesh_error = get_cad_to_mesh_error()
 for i in eachindex(mesh_error)
     println(mesh_error[i])
 end
-gmsh.fltk.run()
+#gmsh.fltk.run()
 gmsh.finalize()
 
 mesh = import_mesh(file_prefix*".inp")
