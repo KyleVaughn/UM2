@@ -1,5 +1,6 @@
 export Tree
-export data, parent, children, isroot, is_parents_last_child, leaves, nleaves
+export data, parent, children, isroot, is_parents_last_child, leaves, nleaves, isleaf,
+       nchildren
 
 mutable struct Tree{T}
     data::T
@@ -25,7 +26,17 @@ Base.parent(node::Tree) = node.parent
 children(node::Tree) = node.children
 
 isroot(node::Tree) = parent(node) === nothing
+isleaf(node::Tree) = children(node) === nothing
 is_parents_last_child(node::Tree) = children(parent(node))[end] === node
+
+function nchildren(node::Tree) 
+    node_children = children(node) 
+    if !isnothing(node_children)
+        return length(node_children)
+    else
+        return 0
+    end
+end
 
 function leaves(node::Tree{T}) where {T}
     leaf_nodes = Tree{T}[]

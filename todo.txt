@@ -1,3 +1,7 @@
+STORE EACH LEVEL IN PARTITION ACCORDING TO HILBERT CURVE
+
+
+
 rect mesh partition type
 intersect rect mesh edges
 intersect rect mesh faces

@@ -6,8 +6,8 @@ export tree, leaf_meshes, getleaf, nleaves, partition_array_size, lattice_array_
 # tree to reconstruct the mesh.
 #
 # Each node has the name of the partition and an ID.
-# If the node is an internal node, it has id = 0.
-# If the node is a leaf node, it has a non-zero id, corresponding to the index by 
+#### If the node is an internal node, it has id = 0.
+#### If the node is a leaf node, it has a non-zero id, corresponding to the index by 
 # which the mesh may be found in the MeshPartitionTree type's leaf_meshes.
 struct MeshPartitionTree{M <: AbstractMesh}
     partition_tree::Tree{Tuple{Int64, String}}
@@ -147,7 +147,7 @@ end
 
 # Create a tree to store grid relationships.
 function _create_mesh_partition_tree(mesh::AbstractMesh, partition_names::Vector{String})
-    root = Tree((0, name(mesh)))
+    root = Tree((1, name(mesh)))
     parents = [root]
     tree_type = typeof(root)
     next_parents = tree_type[]
@@ -185,16 +185,19 @@ function _create_mesh_partition_tree(mesh::AbstractMesh, partition_names::Vector
         end
         # Add the groups that are not a subset to the tree
         # and next_parents
+        node_id = 1 
         for id in this_level
             name = remaining_names[id]
             for parent in parents
                 if isroot(parent)
-                    node = Tree((0, name), parent)
+                    node = Tree((node_id, name), parent)
+                    node_id += 1
                     push!(next_parents, node)
                 else
                     parent_name = data(parent)[2]
                     if mesh_groups[name] ⊆ mesh_groups[parent_name]
-                        node = Tree((0, name), parent)
+                        node = Tree((node_id, name), parent)
+                        node_id += 1
                         push!(next_parents, node)
                         break
                     end
