@@ -106,7 +106,7 @@ function partition_array(mpt::MeshPartitionTree, str::String)
             x_y = split(xcomma_y, ",")
             x = parse(Int64, x_y[1])
             y = parse(Int64, x_y[2][begin+1:end])
-            arr[ny - y + 1, x] = id
+            arr[y, x] = id
         end
     elseif str == "Module_("
         lattices = children(node)
@@ -121,7 +121,7 @@ function partition_array(mpt::MeshPartitionTree, str::String)
                 y = parse(Int64, x_y[2][begin+1:end])
                 nx = max(nx, x)
                 ny = max(ny, y)
-                arr[ny - y + 1, x] = id
+                arr[y, x] = id
             end
         end
     elseif str == "Coarse_Cell_("
@@ -139,7 +139,7 @@ function partition_array(mpt::MeshPartitionTree, str::String)
                     y = parse(Int64, x_y[2][begin+1:end])
                     nx = max(nx, x)
                     ny = max(ny, y)
-                    arr[ny - y + 1, x] = id
+                    arr[y, x] = id
                 end
             end
         end
