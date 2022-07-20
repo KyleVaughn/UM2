@@ -1,6 +1,8 @@
 export MeshPartitionTree
-export tree, leaf_meshes, getleaf, nleaves, partition_array_size, lattice_array_size,
-       module_array_size, coarse_cell_array_size
+export tree, leaf_meshes, getleaf, nleaves, partition_array_size, 
+       lattice_array_size, module_array_size, coarse_cell_array_size,
+       lattice_array, module_array, coarse_cell_array
+
 # A data structure to hold a hierarchical partition of a mesh.
 # Since the mesh is partitioned, we only need to store the leaves of the partition
 # tree to reconstruct the mesh.
@@ -22,6 +24,11 @@ nleaves(mpt::MeshPartitionTree) = length(mpt.leaf_meshes)
 lattice_array_size(mpt::MeshPartitionTree) = partition_array_size(mpt, "Lattice_(")
 module_array_size(mpt::MeshPartitionTree) = partition_array_size(mpt, "Module_(")
 coarse_cell_array_size(mpt::MeshPartitionTree) = partition_array_size(mpt, "Coarse_Cell_(")
+
+lattice_array(mpt::MeshPartitionTree) = partition_array(mpt, "Lattice_(")
+module_array(mpt::MeshPartitionTree) = partition_array(mpt, "Module_(")
+coarse_cell_array(mpt::MeshPartitionTree) = partition_array(mpt, "Coarse_Cell_(")
+
 # For MPTs representing an MPACT grid hierarchy
 function partition_array_size(mpt::MeshPartitionTree, str::String)
     # str == "Lattice_(", "Module_(", or "Coarse_Cell_("
@@ -78,6 +85,68 @@ function partition_array_size(mpt::MeshPartitionTree, str::String)
         error("Unknown partition type")
     end
     return nx, ny
+end
+
+# For MPTs representing an MPACT grid hierarchy
+function partition_array(mpt::MeshPartitionTree, str::String)
+    # str == "Lattice_(", "Module_(", or "Coarse_Cell_("
+    #
+    # Julia is bad at recusive types, so we do this manually since
+    # it's only 3 levels deep.
+    nx, ny = partition_array_size(mpt, str)
+    head = length(str)
+    arr = zeros(Int64, ny, nx)
+    node = mpt.partition_tree
+    if str == "Lattice_("
+        lattices = children(node)
+        for lat in lattices
+            name = lat.data[2]  
+            id = lat.data[1]
+            xcomma_y = name[head+1:end-1]
+            x_y = split(xcomma_y, ",")
+            x = parse(Int64, x_y[1])
+            y = parse(Int64, x_y[2][begin+1:end])
+            arr[ny - y + 1, x] = id
+        end
+    elseif str == "Module_("
+        lattices = children(node)
+        for lattice in lattices
+            modules = children(lattice)
+            for mod in modules
+                name = mod.data[2]  
+                id = mod.data[1]
+                xcomma_y = name[head+1:end-1]
+                x_y = split(xcomma_y, ",")
+                x = parse(Int64, x_y[1])
+                y = parse(Int64, x_y[2][begin+1:end])
+                nx = max(nx, x)
+                ny = max(ny, y)
+                arr[ny - y + 1, x] = id
+            end
+        end
+    elseif str == "Coarse_Cell_("
+        lattices = children(node)
+        for lattice in lattices
+            modules = children(lattice)
+            for mod in modules
+                coarse_cells = children(mod)
+                for cc in coarse_cells
+                    name = cc.data[2]  
+                    id = cc.data[1]
+                    xcomma_y = name[head+1:end-1]
+                    x_y = split(xcomma_y, ",")
+                    x = parse(Int64, x_y[1])
+                    y = parse(Int64, x_y[2][begin+1:end])
+                    nx = max(nx, x)
+                    ny = max(ny, y)
+                    arr[ny - y + 1, x] = id
+                end
+            end
+        end
+    else
+        error("Unknown partition type")
+    end
+    return arr 
 end
 
 # Partitions a mesh based upon the names of its groups 
