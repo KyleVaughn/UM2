@@ -1,7 +1,9 @@
 export MeshPartitionTree
 export tree, leaf_meshes, getleaf, nleaves, partition_array_size, 
        lattice_array_size, module_array_size, coarse_cell_array_size,
-       lattice_array, module_array, coarse_cell_array
+       lattice_array, module_array, coarse_cell_array,
+       lattice_module_ids, module_cc_ids, partition_array_subset,
+       lattice_bb, module_bb
 
 # A data structure to hold a hierarchical partition of a mesh.
 # Since the mesh is partitioned, we only need to store the leaves of the partition
@@ -28,6 +30,22 @@ coarse_cell_array_size(mpt::MeshPartitionTree) = partition_array_size(mpt, "Coar
 lattice_array(mpt::MeshPartitionTree) = partition_array(mpt, "Lattice_(")
 module_array(mpt::MeshPartitionTree) = partition_array(mpt, "Module_(")
 coarse_cell_array(mpt::MeshPartitionTree) = partition_array(mpt, "Coarse_Cell_(")
+
+function lattice_module_ids(id::Integer, mpt::MeshPartitionTree)
+    return partition_array_subset(mpt, "Lattice_(", id)
+end
+
+function module_cc_ids(id::Integer, mpt::MeshPartitionTree)
+    return partition_array_subset(mpt, "Module_(", id)
+end
+
+function module_bb(id::Integer, mpt::MeshPartitionTree)
+    return mapreduce(i->boundingbox(mpt.leaf_meshes[i]), ∪, module_cc_ids(id, mpt))
+end
+ 
+function lattice_bb(id::Integer, mpt::MeshPartitionTree)
+    return mapreduce(i->module_bb(i, mpt), ∪, lattice_module_ids(id, mpt))
+end
 
 # For MPTs representing an MPACT grid hierarchy
 function partition_array_size(mpt::MeshPartitionTree, str::String)
@@ -148,6 +166,71 @@ function partition_array(mpt::MeshPartitionTree, str::String)
     end
     return arr 
 end
+
+# For MPTs representing an MPACT grid hierarchy    
+function partition_array_subset(mpt::MeshPartitionTree, str::String, id::Integer)
+    # str == "Lattice_(", "Module_(", or "Coarse_Cell_("    
+    #    
+    # Julia is bad at recusive types, so we do this manually since    
+    # it's only 3 levels deep.    
+    node = mpt.partition_tree    
+    children_vec = NTuple{3, Int64}[]    
+    if str == "Lattice_("    
+        head = length("Module_(")    
+        lattices = children(node)    
+        for lat in lattices    
+            latid = lat.data[1]    
+            if latid == id    
+                for child in children(lat)    
+                    name = child.data[2]      
+                    xcomma_y = name[head+1:end-1]    
+                    x_y = split(xcomma_y, ",")    
+                    x = parse(Int64, x_y[1])    
+                    y = parse(Int64, x_y[2][begin+1:end])    
+                    push!(children_vec, (x, y, child.data[1]))    
+                end    
+                break    
+            end    
+        end    
+    elseif str == "Module_("    
+        head = length("Coarse_Cell_(")
+        lattices = children(node)    
+        for lattice in lattices    
+            modules = children(lattice)    
+            for mod in modules    
+                modid = mod.data[1]    
+                if modid == id    
+                    for child in children(mod)    
+                        name = child.data[2]      
+                        xcomma_y = name[head+1:end-1]    
+                        x_y = split(xcomma_y, ",")    
+                        x = parse(Int64, x_y[1])    
+                        y = parse(Int64, x_y[2][begin+1:end])    
+                        push!(children_vec, (x, y, child.data[1]))    
+                    end    
+                    break    
+                end    
+            end    
+        end    
+    else    
+        error("Unknown partition type")    
+    end    
+    sort!(children_vec)    
+    yval = children_vec[1][1]
+    next_yval = children_vec[1][1]
+    cols = 0
+    nelements = length(children_vec)
+    while next_yval == yval && cols < nelements
+        cols += 1
+        next_yval = children_vec[cols][1]
+    end
+    rows = 1
+    if cols != 1
+        cols -= 1
+        rows = nelements ÷ cols
+    end
+    return reshape(getindex.(children_vec, 3), rows, cols)
+end 
 
 # Partitions a mesh based upon the names of its groups 
 # For a hierarchical partition, all partitions in the hierarchy must contain face sets 
