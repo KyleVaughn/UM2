@@ -31,5 +31,11 @@ function Base.intersect(l::LineSegment{Point{2, T}},
             return nothing
         end
     end
+#    if !issorted(intersections, by = x -> distance(P₀, x))
+#      for p in intersections
+#        println(p, distance²(P₀, p))
+#      end
+#      readline()
+#    end
     return intersections
 end
