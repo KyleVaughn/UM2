@@ -1,5 +1,9 @@
-for OPT_LEVEL in -O0 -O1 -O2 -O3
+FILES=("vector")
+for OPT_LEVEL in -O3
 do
+  for FILE in $FILES
+  do
     echo "$OPT_LEVEL"
-    julia $OPT_LEVEL ./benchmarks/vector.jl
+    julia $OPT_LEVEL ./benchmarks/$FILE.jl
+  done
 done

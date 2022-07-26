@@ -1,0 +1,8 @@
+-O3
+-std=c++20
+-Wall
+-pedantic
+-Werror
+-lbenchmark
+-fno-omit-frame-pointer
+-pthread

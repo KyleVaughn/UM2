@@ -3,8 +3,8 @@ For gcc and icc:
     For f16, f32, f64 time:
       Vectors
         - Addition, cross product, and dot product
-      Points
-        - Distance squared and midpoint
+      Rays
+        - As o,d or p1, p2
       Lines
         - Intersection
       Quadratic segments

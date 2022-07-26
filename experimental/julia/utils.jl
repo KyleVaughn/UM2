@@ -3,9 +3,9 @@ using LinearAlgebra
 using Printf
 using Test
 
-const line_padding = 64
+const LINE_PADDING = 64
 function format_string(s)
-    return lpad(s, line_padding, ' ')
+    return lpad(s, LINE_PADDING, ' ')
 end
 
 function format_time(x)
