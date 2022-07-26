@@ -1,0 +1,77 @@
+For each language:
+  - Julia
+  - C++
+  - Fortran
+
+Test:
+  - RT in rectangle.
+  - Transport sweep. 
+  - Separate RT and sweep.
+  - Combined RT and sweep.
+
+Test problems:
+  - C5G7 pin.
+  - C5G7 single assembly.
+  - C5G7 full problem.
+
+Measure:
+  - Impact of static vs dynamic memory allocation
+    - Test run time for static vs dynamic: 
+      - Vectors
+      - Points
+      - Polygons
+  - Impact of floating point precision
+    - Lower precision vs less memory and less cache misses, etc.
+    - Test accuracy, run time, and memory for float with X bits:
+      - 16
+      - 32
+      - 64
+  - Impact of SIMD/chunking
+    - Is -O3 or -Ofast vectorization sufficient, or is manual SIMD necessary?
+    - Test run time for SSE, AVX, etc. for: 
+      - Intersection and sweep algorithms, with AVX exponent on the sweep for sure
+    - Test run time for chunking for:
+      - Intersection algorithm with rays per chunk 
+      - Transport sweep algorithm with segments per chunk
+  - Impact of runtime polymorphism/compile time constants
+    - Test run time for compile time vs run time selection of:
+      - Mesh type
+      - Ray spacing
+      - Number of azi and polar angles per octant
+      - Or any other parameter that can be tuned at compile time, especially those in the
+        input file
+  - Impact of mesh data structure
+    - This tests the effects of inderection and cache misses vs extra memory usage
+    - Test the following data structures for run time and memory usage:
+      - F->E, E->V, V.
+      - Explicit F and E, no V. ( Extra 5V storage minimum due to E and F overlap.)
+      - F->E, Explicit E, no V. ( Extra 2V storage minimum due to E overlap.)
+      - TSFSL ?
+  - Impact of spatial partitioning structure and leaf size:
+    - Test run time for the following:
+      - Quadtree.
+      - KD-tree.
+      - Rectilinear grid.
+    - For each of the above, also test the impact of the leaf size.
+  - Impact of mesh type
+    - Test run time and accuracy (mesh scaling study) for the following:
+      - Triangle.
+      - Quadrilateral.
+      - Quadratic Triangle.
+      - Quadratic Quadrilateral.
+  - Impact of ray tracing algorithm.
+    - Test the run time for:
+      - Naive face intersection, then point in face test.
+      - Naive edge intersection, then point in face test.
+      - Edge intersection using E->F connectivity.
+      - Face intersection using F->F connectivity.
+  - Impact of acceleration method (with scaling/blocking study).
+    - Multithreaded.
+      - Standard concurrency.
+      - OpenMP.
+    - Multicore.
+    - GPU.
+      - Stdpar.
+      - CUDA.
+      - OpenACC.
+  - Impact of transport sweep algorithm ?
