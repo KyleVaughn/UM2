@@ -28,6 +28,6 @@ include("mesh/Mesh.jl")
 include("raytracing/Raytracing.jl")
 include("physics/Physics.jl")
 include("mpact/MPACT.jl")
-#include("plot/Plot.jl")
+include("plot/Plot.jl")
 include("gmsh/Gmsh.jl")
 end

@@ -4,6 +4,13 @@
 # k-eff = 1.187038 ± 0.000054 (pg. 23)
 using UM2
 file_prefix = "1a"
+mesh_order = 2
+mesh_faces = "Triangle"
+lc = 1.26/5 # cm, pitch = 1.26 cm
+lc_str = string(round(lc, digits = 4))
+full_file_prefix = file_prefix * "_" * lowercase(mesh_faces) * string(mesh_order) * 
+                   "_" * replace(lc_str, "."=>"_") 
+
 add_timestamps_to_logger()
 gmsh.initialize()
 gmsh.option.set_number("General.NumThreads", 0) # 0 uses system default, i.e. OMP_NUM_THREADS)
@@ -48,19 +55,17 @@ coarse_grid = RectilinearGrid(coarse_divs, coarse_divs)
 mpact_grid = MPACTGridHierarchy(coarse_grid)
 # We now want water to fill empty space, preserving all other materials,
 # so we need to add water to the bottom of the materials hierarchy
-#
 push!(materials, Material(name = "Water", color = "royalblue"))
 overlay_mpact_grid_hierarchy(mpact_grid, materials)
 
 # Mesh
 # ------------------------------------------------------------------------------------------------
-lc = pitch/5 # cm
 for mat in materials
     mat.lc = lc
 end
 set_mesh_field_using_materials(materials)
-generate_mesh(order = 1, faces = "Triangle", opt_iters = 2)
-gmsh.write(file_prefix*".inp")
+generate_mesh(order = mesh_order, faces = mesh_faces, opt_iters = 2)
+gmsh.write(full_file_prefix*".inp")
 mesh_error = get_cad_to_mesh_error()
 for i in eachindex(mesh_error)
     println(mesh_error[i])
@@ -68,7 +73,7 @@ end
 #gmsh.fltk.run()
 gmsh.finalize()
 
-mesh = import_mesh(file_prefix*".inp")
+mesh = import_mesh(full_file_prefix*".inp")
 # Partition mesh according to mpact grid hierarchy and write as an xdmf file 
 mpt = MeshPartitionTree(mesh)
-export_mesh(file_prefix*".xdmf", mpt)
+export_mesh(full_file_prefix*".xdmf", mpt)
