@@ -5,7 +5,7 @@
 using UM2
 file_prefix = "1a"
 mesh_order = 2
-mesh_faces = "Triangle"
+mesh_faces = "Quadrilateral"
 lc = 1.26/5 # cm, pitch = 1.26 cm
 lc_str = string(round(lc, digits = 4))
 full_file_prefix = file_prefix * "_" * lowercase(mesh_faces) * string(mesh_order) * 
@@ -64,13 +64,13 @@ for mat in materials
     mat.lc = lc
 end
 set_mesh_field_using_materials(materials)
-generate_mesh(order = mesh_order, faces = mesh_faces, opt_iters = 2)
+generate_mesh(order = mesh_order, faces = mesh_faces, opt_iters = 2, force_quads = false)
 gmsh.write(full_file_prefix*".inp")
 mesh_error = get_cad_to_mesh_error()
 for i in eachindex(mesh_error)
     println(mesh_error[i])
 end
-#gmsh.fltk.run()
+gmsh.fltk.run()
 gmsh.finalize()
 
 mesh = import_mesh(full_file_prefix*".inp")

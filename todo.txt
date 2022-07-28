@@ -20,3 +20,5 @@ OTF ray trace for effective optical thickness calculation.
 Ensure functions are not allocating using @allocated
 
 Do explicit typing where possible.
+
+Check meshes for overlapping faces.

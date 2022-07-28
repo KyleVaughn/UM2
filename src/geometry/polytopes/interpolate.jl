@@ -71,7 +71,7 @@ end
 interpolation_weights(::Type{<:LineSegment},      r) = Vec(1-r, r)
 interpolation_weights(::Type{<:QuadraticSegment}, r) = Vec((2r - 1)*( r - 1),
                                                            ( r    )*(2r - 1),
-                                                           (4r    )*( 1 - r))
+                                                          (-4r    )*( r - 1))
 # 2-polytope
 interpolation_weights(::Type{<:Triangle},      r, s) = Vec((1 - r - s), r, s)
 interpolation_weights(::Type{<:Quadrilateral}, r, s) = Vec((1 - r)*(1 - s), 
