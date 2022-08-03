@@ -43,6 +43,11 @@ peaks(aab::AABox{3}) = vertices(aab)
 ridges(aab::AABox{3}) = edges(aab)
 facets(aab::AABox{3}) = faces(aab)
 
+@inline function Base.in(p::Point{2}, aab::AABox{2})    
+    return xmin(aab) ≤ p[1] ≤ xmax(aab) &&    
+           ymin(aab) ≤ p[2] ≤ ymax(aab)    
+end  
+
 function vertices(aab::AABox{2})
     # Ordered CCW
     return Vec(Point(xmin(aab), ymin(aab)),

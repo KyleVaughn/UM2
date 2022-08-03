@@ -21,8 +21,8 @@ function isleft(P::Point{2, T}, q::QuadraticSegment{Point{2, T}}) where {T}
     v₁₂ = norm²(𝘃₁₂)
     𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂) * inv(v₁₂) * 𝘃₁₂
     d = norm(𝘃₁₄ - 𝘃₁₃)
-    # If segment is straight
-    if d < EPS_POINT
+    # If segment is straight, or outside the bounds of the segment
+    if d < EPS_POINT || P ∉ boundingbox(q)
         return 0 ≤ 𝘃₁₂ × 𝘄
     else
         # See nearest_point for an explanation of the math.
