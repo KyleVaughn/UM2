@@ -1,5 +1,14 @@
-export AbstractRefShape, RefSimplex, RefHypercube, RefLine, RefTriangle, RefTetrahedron,
-       RefSquare, RefCube, AbstractQuadratureType, LegendreType, ChebyshevType
+export AbstractRefShape, 
+       RefSimplex, 
+       RefHypercube, 
+       RefLine, 
+       RefTriangle, 
+       RefTetrahedron,
+       RefSquare, 
+       RefCube, 
+       AbstractQuadratureType, 
+       LegendreType, 
+       ChebyshevType
 
 abstract type AbstractRefShape end
 struct RefSimplex{K} <: AbstractRefShape end

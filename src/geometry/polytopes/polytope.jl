@@ -1,78 +1,91 @@
-export Polytope, Edge, LineSegment, QuadraticSegment, Face, Polygon, QuadraticPolygon,
-       Triangle, Quadrilateral, QuadraticTriangle, QuadraticQuadrilateral, Cell,
-       Polyhedron, QuadraticPolyhedron, Tetrahedron, Hexahedron, QuadraticTetrahedron,
+export Polytope, 
+       Edge, 
+       LineSegment, 
+       QuadraticSegment, 
+       Face, 
+       Polygon, 
+       QuadraticPolygon,
+       Triangle, 
+       Quadrilateral, 
+       QuadraticTriangle, 
+       QuadraticQuadrilateral, 
+       Cell,
+       Polyhedron, 
+       QuadraticPolyhedron, 
+       Tetrahedron, 
+       Hexahedron, 
+       QuadraticTetrahedron,
        QuadraticHexahedron
-export vertices, facets, ridges, peaks, alias_string, vertextype, paramdim,
+
+export vertices, 
+       facets, 
+       ridges, 
+       peaks, 
+       alias_string, vertextype, paramdim,
        isstraight
 
-"""
-
-    Polytope{K,P,N,T}
-
-A `K`-polytope of order `P` with `N` vertices of type `T`.
-
-## Aliases
-
-```julia
-# 1-polytope
-const Edge                      = Polytope{1}
-const LineSegment               = Edge{1,2}
-const QuadraticSegment          = Edge{2,3}
-# 2-polytope
-const Face                      = Polytope{2}
-const Polygon                   = Face{1}
-const QuadraticPolygon          = Face{2}
-const Triangle                  = Polygon{3}
-const Quadrilateral             = Polygon{4}
-const QuadraticTriangle         = QuadraticPolygon{6}
-const QuadraticQuadrilateral    = QuadraticPolygon{8}
-# 3-polytope
-const Cell                      = Polytope{3}
-const Polyhedron                = Cell{1}
-const QuadraticPolyhedron       = Cell{2}
-const Tetrahedron               = Polyhedron{4}
-const Hexahedron                = Polyhedron{8}
-const QuadraticTetrahedron      = QuadraticPolyhedron{10}
-const QuadraticHexahedron       = QuadraticPolyhedron{20}
-```
-### Notes
-- These are Lagrangian finite elements.
-- This struct only supports the shapes found in "The Visualization Toolkit:
-  An Object-Oriented Approach to 3D Graphics, 4th Edition, Chapter 8, Advanced
-  Data Representation".
-- See the VTK book for specific vertex ordering info, but generally vertices are
-  ordered in a counterclockwise fashion, with vertices of the linear shape given
-  first.
-- See https://en.wikipedia.org/wiki/Polytope for help with terminology.
-"""
-struct Polytope{K, P, N, T}
-    vertices::Vec{N, T}
-    @inline Polytope{K, P, N, T}(vertices::Vec{N, T}) where {K, P, N, T} = new{K, P, N, T}(vertices)
+struct Polytope{K, P, N, D, T <: AbstractFloat}
+    vertices::Vec{N, Point{D, T}}
 end
 
-# type aliases
-# 1-polytope
+# -- Type aliases --
+
+# 1-polytopes
 const Edge             = Polytope{1}
+
 const LineSegment      = Edge{1, 2}
+const LineSegment2     = LineSegment{2}
+const LineSegment2f    = LineSegment2{Float32}
+const LineSegment2d    = LineSegment2{Float64}
+const LineSegment2b    = LineSegment2{BigFloat}
+
 const QuadraticSegment = Edge{2, 3}
-# 2-polytope
+const QuadraticSegment2 = QuadraticSegment{2}
+const QuadraticSegment2f = QuadraticSegment2{Float32}
+const QuadraticSegment2d = QuadraticSegment2{Float64}
+const QuadraticSegment2b = QuadraticSegment2{BigFloat}
+
+# 2-polytopes
 const Face                   = Polytope{2}
 const Polygon                = Face{1}
 const QuadraticPolygon       = Face{2}
-const Triangle               = Polygon{3}
-const Quadrilateral          = Polygon{4}
-const QuadraticTriangle      = QuadraticPolygon{6}
-const QuadraticQuadrilateral = QuadraticPolygon{8}
-# 3-polytope
-const Cell                 = Polytope{3}
-const Polyhedron           = Cell{1}
-const QuadraticPolyhedron  = Cell{2}
-const Tetrahedron          = Polyhedron{4}
-const Hexahedron           = Polyhedron{8}
-const QuadraticTetrahedron = QuadraticPolyhedron{10}
-const QuadraticHexahedron  = QuadraticPolyhedron{20}
 
-# constructors
+const Triangle               = Polygon{3}
+const Triangle2              = Triangle{2}
+const Triangle2f             = Triangle2{Float32}
+const Triangle2d             = Triangle2{Float64}
+const Triangle2b             = Triangle2{BigFloat}
+
+const Quadrilateral          = Polygon{4}
+const Quadrilateral2         = Quadrilateral{2}
+const Quadrilateral2f        = Quadrilateral2{Float32}
+const Quadrilateral2d        = Quadrilateral2{Float64}
+const Quadrilateral2b        = Quadrilateral2{BigFloat}
+
+const QuadraticTriangle      = QuadraticPolygon{6}
+const QuadraticTriangle2     = QuadraticTriangle{2}
+const QuadraticTriangle2f    = QuadraticTriangle2{Float32}
+const QuadraticTriangle2d    = Quadrilateral2{Float64}
+const QuadraticTriangle2b    = Quadrilateral2{BigFloat}
+
+const QuadraticQuadrilateral = QuadraticPolygon{8}
+const QuadraticQuadrilateral2 = QuadraticQuadrilateral{2}
+const QuadraticQuadrilateral2f = QuadraticQuadrilateral2{Float32}
+const QuadraticQuadrilateral2d = Quadrilateral2{Float64}
+const QuadraticQuadrilateral2b = Quadrilateral2{BigFloat}
+
+# 3-polytopes
+# All with D = 3.
+# const Cell                 = Polytope{3}
+# const Polyhedron           = Cell{1}
+# const QuadraticPolyhedron  = Cell{2}
+# 
+# const Tetrahedron          = Polyhedron{4}
+# const Hexahedron           = Polyhedron{8}
+# const QuadraticTetrahedron = QuadraticPolyhedron{10}
+# const QuadraticHexahedron  = QuadraticPolyhedron{20}
+
+# Constructors
 function Polytope{K, P, N, T}(vertices...) where {K, P, N, T}
     return Polytope{K, P, N, T}(Vec{N, T}(vertices))
 end

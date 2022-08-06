@@ -10,6 +10,7 @@ end
 
 # constructors
 Tree(data::T) where {T} = Tree{T}(data, nothing, nothing)
+
 function Tree(data::T, parent::Tree{T}) where {T}
     this = Tree{T}(data, parent, nothing)
     if isnothing(children(parent))
@@ -50,6 +51,7 @@ function leaves(node::Tree{T}) where {T}
     end
     return leaf_nodes
 end
+
 function get_leaves!(node::Tree{T}, leaf_nodes::Vector{Tree{T}}) where {T}
     node_children = children(node)
     if !isnothing(node_children)
@@ -91,6 +93,7 @@ function Base.show(io::IO, node::Tree)
         end
     end
 end
+
 function Base.show(io::IO, node::Tree, predecessor_string::String)
     next_predecessor_string = ""
     if !isroot(node)

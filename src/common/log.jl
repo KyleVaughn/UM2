@@ -10,12 +10,12 @@ function timestamp_logger(logger)
     end
 end
 
-logger_timestamps_on::Bool = false
+LOGGER_TIMESTAMPS_ON::Bool = false
 function add_timestamps_to_logger()
     if !logger_timestamps_on
         logger = global_logger()
         logger |> timestamp_logger |> global_logger
-        global logger_timestamps_on = true
+        global LOGGER_TIMESTAMPS_ON = true
     end
-    return logger_timestamps_on
+    return LOGGER_TIMESTAMPS_ON
 end

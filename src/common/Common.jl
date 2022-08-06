@@ -1,5 +1,4 @@
+include("types.jl")
 include("log.jl")
-include("sort.jl")
 include("print_histogram.jl")
-include("select_type.jl")
 include("tree.jl")

@@ -1,0 +1,2 @@
+const UM2_MESH_INDEX_TYPE = Int32
+const UM2_MESH_FLOAT_TYPE = Float64
