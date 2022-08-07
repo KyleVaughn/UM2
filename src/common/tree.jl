@@ -1,5 +1,12 @@
 export Tree
-export data, parent, children, isroot, is_parents_last_child, leaves, nleaves, isleaf,
+export data, 
+       parent, 
+       children, 
+       isroot, 
+       is_parents_last_child, 
+       leaves, 
+       nleaves, 
+       isleaf,
        nchildren
 
 mutable struct Tree{T}
@@ -8,7 +15,8 @@ mutable struct Tree{T}
     children::Union{Nothing, Vector{Tree{T}}}
 end
 
-# constructors
+# -- Constructors --
+
 Tree(data::T) where {T} = Tree{T}(data, nothing, nothing)
 
 function Tree(data::T, parent::Tree{T}) where {T}
@@ -21,10 +29,13 @@ function Tree(data::T, parent::Tree{T}) where {T}
     return this
 end
 
-# accessors
+# -- Accessors --
+
 data(node::Tree) = node.data
 Base.parent(node::Tree) = node.parent
 children(node::Tree) = node.children
+
+# -- Methods --
 
 isroot(node::Tree) = parent(node) === nothing
 isleaf(node::Tree) = children(node) === nothing
@@ -72,6 +83,8 @@ function nleaves(node::Tree)
         return 1
     end
 end
+
+# -- IO --
 
 function Base.show(io::IO, node::Tree)
     println(io, data(node))

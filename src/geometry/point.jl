@@ -1,4 +1,5 @@
 export Point,
+       Point2,
        Point2f,
        Point2d,
        Point2b,
@@ -20,6 +21,7 @@ const INF_POINT = 1e10
 # -- Type aliases --
 
 const Point = Vec
+const Point2 = Vec{2}
 const Point2f = Vec2f
 const Point2d = Vec2d
 const Point2b = Vec2b

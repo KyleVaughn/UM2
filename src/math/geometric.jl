@@ -2,7 +2,8 @@ export norm2,
        reflect,
        distance2,
        distance,
-       midpoint
+       midpoint,
+       isCCW
 
 # -- Vectors --
 
