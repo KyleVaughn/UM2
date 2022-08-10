@@ -98,9 +98,8 @@ function measure(poly::QuadraticPolygon{N, 2, T}) where {N, T}
     l = zero(T)
     M = N ÷ 2
     @inbounds @simd for i in Base.OneTo(M - 1)
-        h += poly[i    ] × poly[i + M]
-        h -= poly[i + 1] × poly[i + M]
-        l += poly[i    ] × poly[i + 1]
+        h += (poly[i    ] - poly[i + 1]) × poly[i + M]
+        l +=  poly[i    ] × poly[i + 1]
     end
     @inbounds h += poly[M] × poly[N]
     @inbounds h -= poly[1] × poly[N]

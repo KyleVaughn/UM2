@@ -1,4 +1,5 @@
 export Tree
+
 export data, 
        parent, 
        children, 
