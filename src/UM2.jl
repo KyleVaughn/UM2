@@ -3,6 +3,7 @@ module UM2
 include("common/types.jl")
 include("math/vec.jl")
 include("math/mat.jl")
+include("geometry/point.jl")
 #include("quadrature/Quadrature.jl")
 #include("geometry/Geometry.jl")
 #include("math/Math.jl")
