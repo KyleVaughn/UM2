@@ -5,6 +5,12 @@ export Vec,
 
 export ⋅, ×, dot, cross, norm2, norm, normalize
 
+# VECTOR
+# --------------------------------------------------------------------------- 
+#
+# A D-dimenstional vector with data of type T
+#
+
 struct Vec{D, T} <: AbstractVector{T}
    coord::NTuple{D, T}
 end
@@ -31,6 +37,9 @@ Base.broadcastable(v::Vec) = Ref(v)
 # -- Constructors --
 
 Vec(xs::T...) where {T} = Vec{length(xs), T}(xs)
+Vec{D}(xs::T...) where {D, T} = Vec{D, T}(xs)
+Vec{D, T}(xs...) where {D, T} = Vec{D, T}(ntuple(i->T(xs[i]), Val(D)))
+
 Base.vec(f::F, ::Val{N}) where {F, N} = Vec(ntuple(f, Val(N)))
 
 # -- Unary operators --
@@ -39,14 +48,14 @@ Base.:-(v::Vec{D, T}) where {D, T} = vec(i -> -v[i], Val(D))
 
 # -- Binary operators --
 
-Base.:+(v::Vec{D, T}, scalar::X) where {D, T, X} = vec(i -> v[i] + T(scalar), Val(D))
-Base.:-(v::Vec{D, T}, scalar::X) where {D, T, X} = vec(i -> v[i] - T(scalar), Val(D))
-Base.:*(v::Vec{D, T}, scalar::X) where {D, T, X} = vec(i -> v[i] * T(scalar), Val(D))
-Base.:/(v::Vec{D, T}, scalar::X) where {D, T, X} = vec(i -> v[i] / T(scalar), Val(D))
-Base.:+(scalar::X, v::Vec{D, T}) where {D, T, X} = vec(i -> T(scalar) + v[i], Val(D))
-Base.:-(scalar::X, v::Vec{D, T}) where {D, T, X} = vec(i -> T(scalar) - v[i], Val(D))
-Base.:*(scalar::X, v::Vec{D, T}) where {D, T, X} = vec(i -> T(scalar) * v[i], Val(D))
-Base.:/(scalar::X, v::Vec{D, T}) where {D, T, X} = vec(i -> T(scalar) / v[i], Val(D))
+Base.:+(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = vec(i -> v[i] + T(scalar), Val(D))
+Base.:-(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = vec(i -> v[i] - T(scalar), Val(D))
+Base.:*(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = vec(i -> v[i] * T(scalar), Val(D))
+Base.:/(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = vec(i -> v[i] / T(scalar), Val(D))
+Base.:+(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = vec(i -> T(scalar) + v[i], Val(D))
+Base.:-(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = vec(i -> T(scalar) - v[i], Val(D))
+Base.:*(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = vec(i -> T(scalar) * v[i], Val(D))
+Base.:/(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = vec(i -> T(scalar) / v[i], Val(D))
 Base.:+(lhs::Vec{D, T}, rhs::Vec{D, T}) where {D, T} = vec(i -> lhs[i] + rhs[i], Val(D))
 Base.:-(lhs::Vec{D, T}, rhs::Vec{D, T}) where {D, T} = vec(i -> lhs[i] - rhs[i], Val(D))
 Base.:*(lhs::Vec{D, T}, rhs::Vec{D, T}) where {D, T} = vec(i -> lhs[i] * rhs[i], Val(D))

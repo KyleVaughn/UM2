@@ -13,9 +13,15 @@ const EPS_POINT2 = EPS_POINT * EPS_POINT
 # Used for when IEEE 754 may not be enforced, such as with fast math. 
 const INF_POINT = 1e10
 
+# POINT     
+# ---------------------------------------------------------------------------    
+#    
+# Alias for a vector    
+#
+const Point = Vec
+
 # -- Type aliases --
 
-const Point = Vec
 const Point2 = Vec{2}
 const Point2f = Vec2f
 const Point2d = Vec2d

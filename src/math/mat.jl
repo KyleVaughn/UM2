@@ -4,9 +4,13 @@ export Mat,
 
 export col
 
-# Do not declare as AbstractMatrix due to Julia's column-major storage
+# MATRIX    
+# ---------------------------------------------------------------------------    
+#    
+# An M x N matrix with data of type T    
+#  
+
 struct Mat{M, N, T}
-    # M rows of size N
     rows::Vec{M, Vec{N, T}}
 end
 
