@@ -3,7 +3,9 @@ export QuadraticSegment,
        QuadraticSegment2f,
        QuadraticSegment2d
 
-export interpolate_quadratic_segment
+export interpolate_quadratic_segment,
+       jacobian_quadratic_segment,
+       jacobian
 
 # QUADRATIC SEGMENT
 # -----------------------------------------------------------------------------
@@ -62,6 +64,22 @@ end
 
 function (q::QuadraticSegment{D, T})(r::T) where {D, T}
     return interpolate_quadratic_segment(q.vertices, r)
+end
+
+# -- Jacobian --
+
+function jacobian_quadratic_segment(p1::T, p2::T, p3::T, r) where {T}
+    return (4 * r - 3) * (p1 - p3) + 
+           (4 * r - 1) * (p2 - p3) 
+end
+
+function jacobian_quadratic_segment(vertices::Vec, r) where {T}
+    return (4 * r - 3) * (vertices[1] - vertices[3]) + 
+           (4 * r - 1) * (vertices[2] - vertices[3]) 
+end
+
+function jacobian(q::QuadraticSegment{D, T}, r::T) where {D, T}
+    return jacobian_quadratic_segment(q.vertices, r)
 end
 
 # -- IO --

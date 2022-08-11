@@ -3,7 +3,8 @@ export Triangle,
        Triangle2f,
        Triangle2d
 
-export interpolate_triangle
+export interpolate_triangle,
+       jacobian_triangle
 
 # TRIANGLE 
 # -----------------------------------------------------------------------------
@@ -37,16 +38,26 @@ end
 
 # -- Interpolation --
 
-function interpolate_triangle(p1::T, p2::T, p3::T, r) where {T}
+function interpolate_triangle(p1::T, p2::T, p3::T, r, s) where {T}
     return (1 - r - s) * p1 + r * p2 + s * p3
 end
 
-function interpolate_triangle(vertices::Vec, r)
+function interpolate_triangle(vertices::Vec, r, s)
     return (1 - r - s) * vertices[1] + r * vertices[2] + s * vertices[3]
 end
 
-function (t::Triangle{D, T})(r::T) where {D, T}
-    return interpolate_triangle(t.vertices, r)
+function (t::Triangle{D, T})(r::T, s::T) where {D, T}
+    return interpolate_triangle(t.vertices, r, s)
+end
+
+# -- Jacobian --
+
+function jacobian_triangle(p1::Point{D}, p2::Point{D}, p3::Point{D}, r, s) where {D}
+    ∂ᵣ = p2 - p1    
+    ∂ₛ = p3 - p1
+    # Interleave the components of the column vectors, since the matrix is
+    # row-major.
+    return Mat(vec(i -> Vec(∂ᵣ[i], ∂ₛ[i]), Val(D)))
 end
 
 # -- IO --

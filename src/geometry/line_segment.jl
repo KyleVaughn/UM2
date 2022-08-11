@@ -3,7 +3,9 @@ export LineSegment,
        LineSegment2f,
        LineSegment2d
 
-export interpolate_line_segment
+export interpolate_line_segment,
+       jacobian_line_segment,
+       jacobian
 
 # LINE SEGMENT
 # -----------------------------------------------------------------------------
@@ -45,6 +47,20 @@ end
 
 function (l::LineSegment{D, T})(r::T) where {D, T}
     return interpolate_line_segment(l.vertices, r)
+end
+
+# -- Jacobian --
+
+function jacobian_line_segment(p1::T, p2::T, r) where {T}    
+    return p2 - p1    
+end
+
+function jacobian_line_segment(vertices::Vec, r)
+    return vertices[2] - vertices[1]
+end
+
+function jacobian(l::LineSegment{D, T}, r::T) where {D, T}
+    return jacobian_line_segment(l.vertices, r)
 end
 
 # -- IO --
