@@ -1,0 +1,77 @@
+export Quadrilateral,
+       Quadrilateral2,
+       Quadrilateral2f,
+       Quadrilateral2d
+
+export interpolate_quadrilateral
+
+# QUADRILATERAL
+# -----------------------------------------------------------------------------
+#
+# A quadrilateral represented by its 4 vertices.
+# These vertices are D-dimensional points of type T.
+#
+# See chapter 8 of the VTK book for more info.
+#
+
+struct Quadrilateral{D, T} <: Polygon{D, T}
+    vertices::Vec{4, Point{D, T}}
+end
+
+# -- Type aliases --
+
+const Quadrilateral2  = Quadrilateral{2}
+const Quadrilateral2f = Quadrilateral2{Float32}
+const Quadrilateral2d = Quadrilateral2{Float64}
+
+# -- Base --
+
+Base.getindex(t::Quadrilateral, i) = t.vertices[i]
+Base.broadcastable(t::Quadrilateral) = Ref(t)
+
+# -- Constructors --
+
+function Quadrilateral(
+        p1::Point{D, T}, 
+        p2::Point{D, T}, 
+        p3::Point{D, T},
+        p4::Point{D, T}) where {D, T}
+    return Quadrilateral{D, T}(Vec(p1, p2, p3, p4))
+end
+
+# -- Interpolation --
+
+function interpolate_quadrilateral(p1::T, p2::T, p3::T, p4::T, r) where {T}
+    return ((1 - r) * (1 - s)) * p1 +    
+           (     r  * (1 - s)) * p2 +    
+           (     r  *      s ) * p3 +    
+           ((1 - r) *      s ) * p4
+end
+
+function interpolate_quadrilateral(vertices::Vec, r)
+    return ((1 - r) * (1 - s)) * vertices[1] +    
+           (     r  * (1 - s)) * vertices[2] +    
+           (     r  *      s ) * vertices[3] +    
+           ((1 - r) *      s ) * vertices[4]
+end
+
+function (q::Quadrilateral{D, T})(r::T) where {D, T}
+    return interpolate_quadrilateral(q.vertices, r)
+end
+
+# -- IO --
+
+function Base.show(io::IO, q::Quadrilateral{D, T}) where {D, T}
+    print(io, "Quadrilateral", D) 
+    if T === Float32
+        print(io, 'f')
+    elseif T === Float64
+        print(io, 'd')
+    else
+        print(io, '?')
+    end
+    print('(', q.vertices[1], ", ", 
+               q.vertices[2], ", ", 
+               q.vertices[3], ", ",
+               q.vertices[4], ")")
+end
