@@ -84,8 +84,8 @@ end
 
 # Assumes convex quadrilateral, so fan triangulation can be used.
 function area(q::Quadrilateral{2})
-    return abs((q[2] - q[1]) × (q[3] - q[1]) -
-               (q[4] - q[1]) × (q[3] - q[1]) ) / 2
+    return ((q[2] - q[1]) × (q[3] - q[1]) -
+            (q[4] - q[1]) × (q[3] - q[1]))  / 2
 end
 
 # -- IO --

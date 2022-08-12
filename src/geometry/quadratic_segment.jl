@@ -6,7 +6,9 @@ export QuadraticSegment,
 export interpolate_quadratic_segment,
        jacobian_quadratic_segment,
        jacobian,
-       arclength
+       arclength,
+       area_enclosed_by,
+       enclosed_area_quadratic_segment
 
 # QUADRATIC SEGMENT
 # -----------------------------------------------------------------------------
@@ -116,6 +118,15 @@ function arclength(q::QuadraticSegment)
             (b * b - 4a * c) / (4a * f) * log((d * f + e) / (√c * f + b))
         return l
     end
+end
+
+# The area bounded by q is 4/3 the area of the triangle formed by the vertices.
+function area_enclosed_by(q::QuadraticSegment{2, T}) where {T}
+    return T(2 // 3) * (q[2] - q[1]) × (q[3] - q[1])
+end
+
+function enclosed_area_quadratic_segment(p1::P, p2::P, p3::P) where {P <: Point{2}}
+    return T(2 // 3) * (p2 - p1) × (p3 - p1)
 end
 
 # -- IO --

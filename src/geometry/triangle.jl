@@ -6,7 +6,8 @@ export Triangle,
 export interpolate_triangle,
        jacobian_triangle,
        jacobian,
-       area
+       area,
+       triangle_area
 
 # TRIANGLE
 # -----------------------------------------------------------------------------
@@ -72,8 +73,11 @@ end
 
 # -- Measure --
 
-area(t::Triangle{2}) = abs((t[2] - t[1]) × (t[3] - t[1])) / 2
+area(t::Triangle{2}) = ((t[2] - t[1]) × (t[3] - t[1])) / 2
 area(t::Triangle{3}) = norm((t[2] - t[1]) × (t[3] - t[1])) / 2
+function triangle_area(p1::P, p2::P, p3::P) where {P <: Point{2}}
+    return ((p2 - p1) × (p3 - p1))/ 2
+end
 
 # -- IO --
 

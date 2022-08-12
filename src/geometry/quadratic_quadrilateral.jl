@@ -148,13 +148,18 @@ end
 
 # -- Measure --
 
-function area(q::QuadraticQuadrilateral{2})
-    h = (q[1] - q[2]) × q[5] +
-        (q[2] - q[3]) × q[6] +
-        (q[3] - q[4]) × q[7] +
-        (q[4] - q[1]) × q[8]
-    l = q[1] × q[2] + q[2] × q[3] + q[3] × q[4] + q[4] × q[1]
-    return (4 * h - l) / 6
+function area(q::QuadraticQuadrilateral{2, T}) where {T}
+    # The area enclosed by the 4 quadratic edges + the area enclosed
+    # by the quadrilateral (p1, p2, p3, p4)
+    edge_area = T(2//3) * ((q[5] - q[1]) × (q[2] - q[1])  +
+                           (q[6] - q[2]) × (q[3] - q[2])  +
+                           (q[7] - q[3]) × (q[4] - q[3])  +
+                           (q[8] - q[4]) × (q[1] - q[4]))
+
+    quad_area = ((q[2] - q[1]) × (q[3] - q[1]) -       
+                 (q[4] - q[1]) × (q[3] - q[1]))  / 2
+
+    return edge_area + quad_area
 end
 
 # -- IO --

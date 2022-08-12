@@ -102,12 +102,14 @@ end
 
 # -- Measure --
 
-function area(t::QuadraticTriangle{2})
-    h = (t[1] - t[2]) × t[4] +
-        (t[2] - t[3]) × t[5] +
-        (t[3] - t[1]) × t[6]
-    l = t[1] × t[2] + t[2] × t[3] + t[3] × t[1]
-    return (4 * h - l) / 6
+function area(t::QuadraticTriangle{2, T}) where {T}
+    # The area enclosed by the 3 quadratic edges + the area enclosed
+    # by the triangle (p1, p2, p3)
+    edge_area = T(2//3) * ((t[4] - t[1]) × (t[2] - t[1])  +
+                           (t[5] - t[2]) × (t[3] - t[2])  +
+                           (t[6] - t[3]) × (t[1] - t[3])) 
+    tri_area = ((t[2] - t[1]) × (t[3] - t[1])) / 2 
+    return edge_area + tri_area
 end
 
 # -- IO --
