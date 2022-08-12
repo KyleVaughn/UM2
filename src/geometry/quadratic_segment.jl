@@ -5,7 +5,8 @@ export QuadraticSegment,
 
 export interpolate_quadratic_segment,
        jacobian_quadratic_segment,
-       jacobian
+       jacobian,
+       arclength
 
 # QUADRATIC SEGMENT
 # -----------------------------------------------------------------------------
@@ -69,23 +70,58 @@ end
 # -- Jacobian --
 
 function jacobian_quadratic_segment(p1::T, p2::T, p3::T, r) where {T}
-    return (4 * r - 3) * (p1 - p3) + 
-           (4 * r - 1) * (p2 - p3) 
+    return (4 * r - 3) * (p1 - p3) +
+           (4 * r - 1) * (p2 - p3)
 end
 
-function jacobian_quadratic_segment(vertices::Vec{3}, r) where {T}
-    return (4 * r - 3) * (vertices[1] - vertices[3]) + 
-           (4 * r - 1) * (vertices[2] - vertices[3]) 
+function jacobian_quadratic_segment(vertices::Vec{3}, r)
+    return (4 * r - 3) * (vertices[1] - vertices[3]) +
+           (4 * r - 1) * (vertices[2] - vertices[3])
 end
 
 function jacobian(q::QuadraticSegment{D, T}, r::T) where {D, T}
     return jacobian_quadratic_segment(q.vertices, r)
 end
 
+# -- Measure --
+
+function arclength(q::QuadraticSegment)
+    # The arc length integral may be reduced to an integral over the square root of a
+    # quadratic polynomial using ‖𝘅‖ = √(𝘅 ⋅ 𝘅), which has an analytic solution.
+    #     1             1
+    # L = ∫ ‖𝗾′(r)‖dr = ∫ √(ar² + br + c) dr
+    #     0             0
+    𝘃₁₃ = q[3] - q[1]
+    𝘃₁₂ = q[2] - q[1]
+    𝘃₂₃ = q[3] - q[2]
+    v₁₂ = norm2(𝘃₁₂)
+    𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂) * inv(v₁₂) * 𝘃₁₂
+    d = norm(𝘃₁₄ - 𝘃₁₃)
+    # If segment is straight
+    if d < EPS_POINT
+        return √v₁₂ # Distance from P₁ to P₂
+    else
+        # q(r) = P₁ + r𝘂 + r²𝘃
+        𝘂 = 3𝘃₁₃ + 𝘃₂₃
+        𝘃 = -2(𝘃₁₃ + 𝘃₂₃)
+        a = 4(𝘃 ⋅ 𝘃)
+        b = 4(𝘂 ⋅ 𝘃)
+        c = 𝘂 ⋅ 𝘂
+
+        d = √(a + b + c)
+        e = 2a + b
+        f = 2√a
+
+        l = (d * e - b * √c) / 4a -
+            (b * b - 4a * c) / (4a * f) * log((d * f + e) / (√c * f + b))
+        return l
+    end
+end
+
 # -- IO --
 
 function Base.show(io::IO, q::QuadraticSegment{D, T}) where {D, T}
-    print(io, "QuadraticSegment", D) 
+    print(io, "QuadraticSegment", D)
     if T === Float32
         print(io, 'f')
     elseif T === Float64

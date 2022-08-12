@@ -5,7 +5,8 @@ export LineSegment,
 
 export interpolate_line_segment,
        jacobian_line_segment,
-       jacobian
+       jacobian,
+       arclength
 
 # LINE SEGMENT
 # -----------------------------------------------------------------------------
@@ -62,6 +63,10 @@ end
 function jacobian(l::LineSegment{D, T}, r::T) where {D, T}
     return jacobian_line_segment(l.vertices, r)
 end
+
+# -- Measure --
+
+arclength(l::LineSegment) = distance(l[1], l[2])
 
 # -- IO --
 

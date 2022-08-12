@@ -5,7 +5,8 @@ export QuadraticTriangle,
 
 export interpolate_quadratic_triangle,
        jacobian_quadratic_triangle,
-       jacobian
+       jacobian,
+       area
 
 # QUADRATIC TRIANGLE 
 # -----------------------------------------------------------------------------
@@ -97,6 +98,16 @@ end
 
 function jacobian(t::QuadraticTriangle{D, T}, r::T, s::T) where {D, T}
     return jacobian_quadratic_triangle(t.vertices, r, s)
+end
+
+# -- Measure --
+
+function area(t::QuadraticTriangle{2})
+    h = (t[1] - t[2]) × t[4] +
+        (t[2] - t[3]) × t[5] +
+        (t[3] - t[1]) × t[6]
+    l = t[1] × t[2] + t[2] × t[3] + t[3] × t[1]
+    return (4 * h - l) / 6
 end
 
 # -- IO --

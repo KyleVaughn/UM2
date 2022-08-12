@@ -5,7 +5,8 @@ export Triangle,
 
 export interpolate_triangle,
        jacobian_triangle,
-       jacobian
+       jacobian,
+       area
 
 # TRIANGLE
 # -----------------------------------------------------------------------------
@@ -68,6 +69,11 @@ end
 function jacobian(t::Triangle{D, T}, r::T, s::T) where {D, T}
     return jacobian_triangle(t.vertices, r, s)
 end
+
+# -- Measure --
+
+area(t::Triangle{2}) = abs((t[2] - t[1]) × (t[3] - t[1])) / 2
+area(t::Triangle{3}) = norm((t[2] - t[1]) × (t[3] - t[1])) / 2
 
 # -- IO --
 

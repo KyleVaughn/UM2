@@ -1,5 +1,7 @@
 export Polytope, Edge, Face, Cell
 
+export measure
+
 # POLYTOPE    
 # -----------------------------------------------------------------------------    
 #    
@@ -30,3 +32,8 @@ abstract type QuadraticPolygon{D, T} <: Face{D, T} end
 abstract type Cell{D, T} <: Polytope{3, D, T} end
 abstract type Polyhedron{D, T} <: Cell{D, T} end
 abstract type QuadraticPolyhedron{D, T} <: Cell{D, T} end
+
+# Measure
+measure(p::Edge) = arclength(p)
+measure(p::Face) = area(p)
+measure(p::Cell) = volume(p)

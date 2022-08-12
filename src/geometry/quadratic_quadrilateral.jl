@@ -5,7 +5,8 @@ export QuadraticQuadrilateral,
 
 export interpolate_quadratic_quadrilateral,
        jacobian_quadratic_quadrilateral,
-       jacobian
+       jacobian,
+       area
 
 # QUADRATIC QUADRILATERAL
 # -----------------------------------------------------------------------------
@@ -143,6 +144,17 @@ end
 
 function jacobian(q::QuadraticQuadrilateral{D, T}, r::T, s::T) where {D, T}
     return jacobian_quadratic_quadrilateral(q.vertices, r, s)
+end
+
+# -- Measure --
+
+function area(q::QuadraticQuadrilateral{2})
+    h = (q[1] - q[2]) × q[5] +
+        (q[2] - q[3]) × q[6] +
+        (q[3] - q[4]) × q[7] +
+        (q[4] - q[1]) × q[8]
+    l = q[1] × q[2] + q[2] × q[3] + q[3] × q[4] + q[4] × q[1]
+    return (4 * h - l) / 6
 end
 
 # -- IO --

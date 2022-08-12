@@ -1,59 +1,6 @@
-# Lebesgue measure
-export area, arclength, measure, perimeter, volume
-
-arclength(p::Polytope{1}) = measure(p)
-area(p::Polytope{2})      = measure(p)
-volume(p::Polytope{3})    = measure(p)
 
 perimeter(p::Polytope{2}) = mapreduce(measure, +, facets(p))
 area(p::Polytope{3})      = mapreduce(measure, +, facets(p))
-
-measure(l::LineSegment) = norm(l[2] - l[1])
-
-function measure(q::QuadraticSegment)
-    # The arc length integral may be reduced to an integral over the square root of a
-    # quadratic polynomial using ‖𝘅‖ = √(𝘅 ⋅ 𝘅), which has an analytic solution.
-    #     1             1
-    # L = ∫ ‖𝗾′(r)‖dr = ∫ √(ar² + br + c) dr
-    #     0             0
-    𝘃₁₃ = q[3] - q[1]
-    𝘃₁₂ = q[2] - q[1]
-    𝘃₂₃ = q[3] - q[2]
-    v₁₂ = norm2(𝘃₁₂)
-    𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂) * inv(v₁₂) * 𝘃₁₂
-    d = norm(𝘃₁₄ - 𝘃₁₃)
-    # If segment is straight
-    if d < EPS_POINT
-        return √v₁₂ # Distance from P₁ to P₂ 
-    else
-        # q(r) = P₁ + r𝘂 + r²𝘃
-        𝘂 = 3𝘃₁₃ + 𝘃₂₃
-        𝘃 = -2(𝘃₁₃ + 𝘃₂₃)
-        a = 4(𝘃 ⋅ 𝘃)
-        b = 4(𝘂 ⋅ 𝘃)
-        c = 𝘂 ⋅ 𝘂
-
-        d = √(a + b + c)
-        e = 2a + b
-        f = 2√a
-
-        l = (d * e - b * √c) / 4a -
-            (b * b - 4a * c) / (4a * f) * log((d * f + e) / (√c * f + b))
-        return l
-    end
-end
-
-measure(tri::Triangle) = norm((tri[2] - tri[1]) × (tri[3] - tri[1])) / 2
-
-function measure(poly::Polygon{N, 2, T}) where {N, T}
-    # Uses the shoelace formula (https://en.wikipedia.org/wiki/Shoelace_formula)
-    area = zero(T) # Scalar
-    @inbounds @simd for i in Base.OneTo(N - 1)
-        area += coordinates(poly[i]) × coordinates(poly[i + 1])
-    end
-    @inbounds area += coordinates(poly[N]) × coordinates(poly[1])
-    return norm(area) / 2
-end
 
 function measure(quad::Quadrilateral{3, T}) where {T}
     # Hexahedron faces are not necessarily planar, hence we use numerical 

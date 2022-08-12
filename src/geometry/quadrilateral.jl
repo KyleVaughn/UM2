@@ -5,7 +5,8 @@ export Quadrilateral,
 
 export interpolate_quadrilateral,
        jacobian_quadrilateral,
-       jacobian
+       jacobian,
+       area
 
 # QUADRILATERAL
 # -----------------------------------------------------------------------------
@@ -77,6 +78,14 @@ end
 
 function jacobian(q::Quadrilateral{D, T}, r::T, s::T) where {D, T}
     return jacobian_quadrilateral(q.vertices, r, s)
+end
+
+# -- Measure --
+
+# Assumes convex quadrilateral, so fan triangulation can be used.
+function area(q::Quadrilateral{2})
+    return abs((q[2] - q[1]) × (q[3] - q[1]) -
+               (q[4] - q[1]) × (q[3] - q[1]) ) / 2
 end
 
 # -- IO --
