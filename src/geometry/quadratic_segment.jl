@@ -73,7 +73,7 @@ function jacobian_quadratic_segment(p1::T, p2::T, p3::T, r) where {T}
            (4 * r - 1) * (p2 - p3) 
 end
 
-function jacobian_quadratic_segment(vertices::Vec, r) where {T}
+function jacobian_quadratic_segment(vertices::Vec{3}, r) where {T}
     return (4 * r - 3) * (vertices[1] - vertices[3]) + 
            (4 * r - 1) * (vertices[2] - vertices[3]) 
 end

@@ -41,7 +41,7 @@ function interpolate_line_segment(p1::T, p2::T, r) where {T}
     return p1 + r * (p2 - p1)
 end
 
-function interpolate_line_segment(vertices::Vec, r)
+function interpolate_line_segment(vertices::Vec{2}, r)
     return vertices[1] + r * (vertices[2] - vertices[1])
 end
 
@@ -55,7 +55,7 @@ function jacobian_line_segment(p1::T, p2::T, r) where {T}
     return p2 - p1    
 end
 
-function jacobian_line_segment(vertices::Vec, r)
+function jacobian_line_segment(vertices::Vec{2}, r)
     return vertices[2] - vertices[1]
 end
 

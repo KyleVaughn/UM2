@@ -3,7 +3,9 @@ export QuadraticTriangle,
        QuadraticTriangle2f,
        QuadraticTriangle2d
 
-export interpolate_quadratic_triangle
+export interpolate_quadratic_triangle,
+       jacobian_quadratic_triangle,
+       jacobian
 
 # QUADRATIC TRIANGLE 
 # -----------------------------------------------------------------------------
@@ -44,7 +46,7 @@ end
 # -- Interpolation --
 
 function interpolate_quadratic_triangle(
-        p1::T, p2::T, p3::T, p4::T, p5::T, p6::T, r) where {T}
+        p1::T, p2::T, p3::T, p4::T, p5::T, p6::T, r, s) where {T}
     return ((2 * (1 - r - s) - 1) * ( 1 - r - s)) * p1 +    
            (          r           * ( 2 * r - 1)) * p2 +    
            (              s       * ( 2 * s - 1)) * p3 +    
@@ -53,7 +55,7 @@ function interpolate_quadratic_triangle(
            (          4 * s       * ( 1 - r - s)) * p6
 end
 
-function interpolate_quadratic_triangle(vertices::Vec, r)
+function interpolate_quadratic_triangle(vertices::Vec{6}, r, s)
     return ((2 * (1 - r - s) - 1) * ( 1 - r - s)) * vertices[1] +    
            (          r           * ( 2 * r - 1)) * vertices[2] +    
            (              s       * ( 2 * s - 1)) * vertices[3] +    
@@ -62,8 +64,39 @@ function interpolate_quadratic_triangle(vertices::Vec, r)
            (          4 * s       * ( 1 - r - s)) * vertices[6]
 end
 
-function (t::QuadraticTriangle{D, T})(r::T) where {D, T}
+function (t::QuadraticTriangle{D, T})(r::T, s::T) where {D, T}
     return interpolate_quadratic_triangle(t.vertices, r)
+end
+
+# -- Jacobian --
+
+function jacobian_quadratic_triangle(
+        p1::T, p2::T, p3::T, p4::T, p5::T, p6::T, r, s) where {T}
+    ∂r = (4 * r + 4 * s - 3) * (p1 - p4) +    
+         (4 * r         - 1) * (p2 - p4) +    
+         (        4 * s    ) * (p5 - p6)
+    
+    ∂s = (4 * r + 4 * s - 3) * (p1 - p6) +
+         (        4 * s - 1) * (p3 - p6) +
+         (4 * r            ) * (p5 - p4)
+    
+    return Mat(∂r, ∂s)
+end
+
+function jacobian_quadratic_triangle(vertices::Vec{6}, r, s)
+    ∂r = (4 * r + 4 * s - 3) * (vertices[1] - vertices[4]) +    
+         (4 * r         - 1) * (vertices[2] - vertices[4]) +    
+         (        4 * s    ) * (vertices[5] - vertices[6])
+    
+    ∂s = (4 * r + 4 * s - 3) * (vertices[1] - vertices[6]) +
+         (        4 * s - 1) * (vertices[3] - vertices[6]) +
+         (4 * r            ) * (vertices[5] - vertices[4])
+    
+    return Mat(∂r, ∂s)
+end
+
+function jacobian(t::QuadraticTriangle{D, T}, r::T, s::T) where {D, T}
+    return jacobian_quadratic_triangle(t.vertices, r, s)
 end
 
 # -- IO --

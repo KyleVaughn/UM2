@@ -3,7 +3,9 @@ export Quadrilateral,
        Quadrilateral2f,
        Quadrilateral2d
 
-export interpolate_quadrilateral
+export interpolate_quadrilateral,
+       jacobian_quadrilateral,
+       jacobian
 
 # QUADRILATERAL
 # -----------------------------------------------------------------------------
@@ -41,14 +43,14 @@ end
 
 # -- Interpolation --
 
-function interpolate_quadrilateral(p1::T, p2::T, p3::T, p4::T, r) where {T}
+function interpolate_quadrilateral(p1::T, p2::T, p3::T, p4::T, r, s) where {T}
     return ((1 - r) * (1 - s)) * p1 +    
            (     r  * (1 - s)) * p2 +    
            (     r  *      s ) * p3 +    
            ((1 - r) *      s ) * p4
 end
 
-function interpolate_quadrilateral(vertices::Vec, r)
+function interpolate_quadrilateral(vertices::Vec{4}, r, s)
     return ((1 - r) * (1 - s)) * vertices[1] +    
            (     r  * (1 - s)) * vertices[2] +    
            (     r  *      s ) * vertices[3] +    
@@ -56,7 +58,25 @@ function interpolate_quadrilateral(vertices::Vec, r)
 end
 
 function (q::Quadrilateral{D, T})(r::T) where {D, T}
-    return interpolate_quadrilateral(q.vertices, r)
+    return interpolate_quadrilateral(q.vertices, r, s)
+end
+
+# -- Jacobian --
+
+function jacobian_quadrilateral(p1::T, p2::T, p3::T, p4::T, r, s) where {T}
+    ∂r = (1 - s) * (p2 - p1) - s * (p4 - p3)
+    ∂s = (1 - r) * (p4 - p1) - r * (p2 - p3)
+    return Mat(∂r, ∂s)
+end
+
+function jacobian_quadrilateral(vertices::Vec{4}, r, s)
+    ∂r = (1 - s) * (vertices[2] - vertices[1]) - s * (vertices[4] - vertices[3])
+    ∂s = (1 - r) * (vertices[4] - vertices[1]) - r * (vertices[2] - vertices[3])
+    return Mat(∂r, ∂s)
+end
+
+function jacobian(q::Quadrilateral{D, T}, r::T, s::T) where {D, T}
+    return jacobian_quadrilateral(q.vertices, r, s)
 end
 
 # -- IO --

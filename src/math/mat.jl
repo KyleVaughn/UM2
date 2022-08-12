@@ -11,7 +11,7 @@ export col
 #  
 
 struct Mat{M, N, T}
-    rows::Vec{M, Vec{N, T}}
+    cols::Vec{N, Vec{M, T}}
 end
 
 # -- Type aliases --
@@ -22,8 +22,8 @@ const Mat2x2d = Mat{2, 2, Float64}
 
 # -- Interface --
 
-Base.getindex(m::Mat, i) = m.rows[i]
-Base.getindex(m::Mat, i, j) = m.rows[i][j]
+Base.getindex(m::Mat, i) = m.cols[i]
+Base.getindex(m::Mat, i, j) = m.cols[j][i]
 Base.size(m::Mat{M, N}) where {M, N} = (M, N)
 Base.length(m::Mat{M, N}) where {M, N} = M * N 
 Base.eltype(m::Mat{M, N, T}) where {M, N, T} = T
@@ -32,11 +32,11 @@ Base.eltype(m::Mat{M, N, T}) where {M, N, T} = T
 
 function Mat{M, N}(xs::T...) where {M, N, T}
     @assert(length(xs) == M * N)
-    return Mat{M, N, T}(vec(i->Vec(xs[ (1 + (i - 1) * N) : (i * N) ]), Val(M)))
+    return Mat{M, N, T}(vec(i->Vec(xs[ (1 + (i - 1) * M) : (i * M) ]), Val(N)))
 end
 
-function col(m::Mat{M, N, T}, j) where {M, N, T}
-    return vec(i -> m[i, j], Val(M))
+function Mat(vecs::Vec...)
+    return Mat(Vec(vecs))
 end
 
 # -- Unary operators --
@@ -45,20 +45,38 @@ Base.:-(m::Mat{M, N, T}) where {M, N, T} = Mat{M, N, T}(vec(i -> -m[i], Val(M)))
 
 # -- Binary operators --
 
-Base.:*(m::Mat{M, N, T}, scalar::X) where {M, N, T, X} = Mat{M, N, T}(vec(i -> m[i] * T(scalar), Val(M)))
-Base.:/(m::Mat{M, N, T}, scalar::X) where {M, N, T, X} = Mat{M, N, T}(vec(i -> m[i] / T(scalar), Val(M)))
-Base.:*(scalar::X, m::Mat{M, N, T}) where {M, N, T, X} = Mat{M, N, T}(vec(i -> T(scalar) * m[i], Val(M)))
-Base.:/(scalar::X, m::Mat{M, N, T}) where {M, N, T, X} = Mat{M, N, T}(vec(i -> T(scalar) / m[i], Val(M)))
-Base.:+(lhs::Mat{M, N, T}, rhs::Mat{M, N, T}) where {M, N, T} = Mat{M, N, T}(vec(i -> lhs[i] + rhs[i], Val(M)))
-Base.:-(lhs::Mat{M, N, T}, rhs::Mat{M, N, T}) where {M, N, T} = Mat{M, N, T}(vec(i -> lhs[i] - rhs[i], Val(M)))
-Base.:*(m::Mat{M, N, T}, v::Vec{N, T}) where {M, N, T} = vec(i -> m[i] ⋅ v, Val(M))
-function Base.:*(lhs::Mat{M, N, T}, rhs::Mat{N, M, T}) where {M, N, T}
-    return Mat{M, N, T}(
-            vec(i -> 
-                vec(j -> 
-                    lhs[i] ⋅ col(rhs, j), 
-                Val(N)), 
-            Val(M)))
+function Base.:*(m::Mat{M, N, T}, scalar::X) where {M, N, T, X}
+    return Mat{M, N, T}(vec(i -> m[i] * T(scalar), Val(M)))
+end
+
+function Base.:/(m::Mat{M, N, T}, scalar::X) where {M, N, T, X}
+    return Mat{M, N, T}(vec(i -> m[i] / T(scalar), Val(M)))
+end
+    
+function Base.:*(scalar::X, m::Mat{M, N, T}) where {M, N, T, X}
+    return Mat{M, N, T}(vec(i -> T(scalar) * m[i], Val(M)))
+end
+
+function Base.:/(scalar::X, m::Mat{M, N, T}) where {M, N, T, X}
+    return Mat{M, N, T}(vec(i -> T(scalar) / m[i], Val(M)))
+end
+
+function Base.:+(lhs::Mat{M, N, T}, rhs::Mat{M, N, T}) where {M, N, T}
+    return Mat{M, N, T}(vec(i -> lhs[i] + rhs[i], Val(M)))
+end
+
+function Base.:-(lhs::Mat{M, N, T}, rhs::Mat{M, N, T}) where {M, N, T}
+    return Mat{M, N, T}(vec(i -> lhs[i] - rhs[i], Val(M)))
+end
+
+# -- 2x2 matrix --
+
+
+# Provide more opportunity for optimization by explicitly writing out the
+# matrix-vector multiplication.
+function Base.:*(m::Mat2x2, v::Vec2)
+    return Vec2(m[1,1] * v[1] + m[1,2] * v[2],
+                m[2,1] * v[1] + m[2,2] * v[2])
 end
 
 # -- IO --
@@ -67,7 +85,7 @@ function Base.show(io::IO, m::Mat{M, N, T}) where {M, N, T}
     println(io, M, '×', N, " Mat{", T, "}")
     for i = 1:M
         for j = 1:N
-            print(io,  " ", m.rows[i][j])
+            print(io,  " ", m[i, j])
         end
         println(io)
     end

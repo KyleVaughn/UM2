@@ -4,9 +4,10 @@ export Triangle,
        Triangle2d
 
 export interpolate_triangle,
-       jacobian_triangle
+       jacobian_triangle,
+       jacobian
 
-# TRIANGLE 
+# TRIANGLE
 # -----------------------------------------------------------------------------
 #
 # A triangle represented by its 3 vertices.
@@ -52,18 +53,26 @@ end
 
 # -- Jacobian --
 
-function jacobian_triangle(p1::Point{D}, p2::Point{D}, p3::Point{D}, r, s) where {D}
-    ∂ᵣ = p2 - p1    
-    ∂ₛ = p3 - p1
-    # Interleave the components of the column vectors, since the matrix is
-    # row-major.
-    return Mat(vec(i -> Vec(∂ᵣ[i], ∂ₛ[i]), Val(D)))
+function jacobian_triangle(p1::T, p2::T, p3::T, r, s) where {T}
+    ∂r = p2 - p1
+    ∂s = p3 - p1
+    return Mat(∂r, ∂s)
+end
+
+function jacobian_triangle(vertices::Vec{3}, r, s)
+    ∂r = vertices[2] - vertices[1]
+    ∂s = vertices[3] - vertices[1]
+    return Mat(∂r, ∂s)
+end
+
+function jacobian(t::Triangle{D, T}, r::T, s::T) where {D, T}
+    return jacobian_triangle(t.vertices, r, s)
 end
 
 # -- IO --
 
 function Base.show(io::IO, t::Triangle{D, T}) where {D, T}
-    print(io, "Triangle", D) 
+    print(io, "Triangle", D)
     if T === Float32
         print(io, 'f')
     elseif T === Float64
