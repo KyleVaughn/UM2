@@ -21,13 +21,8 @@ export interpolate_quadratic_segment,
 # It is helpful to know:
 #  q(r) = P₁ + r𝘂 + r²𝘃,
 # where
-#  𝘂 = 3𝘃₁₃ + 𝘃₂₃
-#  𝘃 = -2(𝘃₁₃ + 𝘃₂₃)
-# and
-# 𝘃₁₃ = q[3] - q[1]
-# 𝘃₂₃ = q[3] - q[2]
-#
-# NOTE: The equations above use 1-based indexing.
+#  𝘂 = -3P₁ - P₂ + 4P₃
+#  𝘃 = 2(P₁ + P₂ - 2P₃)
 #
 
 struct QuadraticSegment{D, T} <: Edge{D, T}
@@ -94,30 +89,25 @@ function arclength(q::QuadraticSegment)
     # L = ∫ ‖𝗾′(r)‖dr = ∫ √(ar² + br + c) dr
     #     0             0
     𝘃₁₃ = q[3] - q[1]
-    𝘃₁₂ = q[2] - q[1]
     𝘃₂₃ = q[3] - q[2]
-    v₁₂ = norm2(𝘃₁₂)
-    𝘃₁₄ = (𝘃₁₃ ⋅ 𝘃₁₂) * inv(v₁₂) * 𝘃₁₂
-    d = norm(𝘃₁₄ - 𝘃₁₃)
-    # If segment is straight
-    if d < EPS_POINT
-        return √v₁₂ # Distance from P₁ to P₂
-    else
-        # q(r) = P₁ + r𝘂 + r²𝘃
-        𝘂 = 3𝘃₁₃ + 𝘃₂₃
-        𝘃 = -2(𝘃₁₃ + 𝘃₂₃)
-        a = 4(𝘃 ⋅ 𝘃)
-        b = 4(𝘂 ⋅ 𝘃)
-        c = 𝘂 ⋅ 𝘂
 
-        d = √(a + b + c)
-        e = 2a + b
-        f = 2√a
+    # q(r) = P₁ + r𝘂 + r²𝘃
+    𝘂 = 3𝘃₁₃ + 𝘃₂₃
+    𝘃 = -2(𝘃₁₃ + 𝘃₂₃)
 
-        l = (d * e - b * √c) / 4a -
-            (b * b - 4a * c) / (4a * f) * log((d * f + e) / (√c * f + b))
-        return l
-    end
+    a = 4(𝘃 ⋅ 𝘃)
+    b = 4(𝘂 ⋅ 𝘃)
+    c = 𝘂 ⋅ 𝘂
+
+    d = √(a + b + c)
+    e = 2a + b
+    f = 2√a
+    g = √c
+
+    l = (d * e - b * g) / 4a -
+        (b * b - 4a * c) / (4a * f) * log((d * f + e) / (f * g + b))
+
+    return l
 end
 
 # The area bounded by q is 4/3 the area of the triangle formed by the vertices.
