@@ -19,11 +19,11 @@ export interpolate_quadratic_segment,
 # See chapter 8 of the VTK book for more info.
 #
 # It is helpful to know:
-#  q(r) = P₁ + r𝘂 + r²𝘃,
+#  q(r) = r²𝗮 + 𝗯r + 𝗰,
 # where
-#  𝘂 = -3P₁ - P₂ + 4P₃
-#  𝘃 = 2(P₁ + P₂ - 2P₃)
-#
+#  𝗮 = 2(P₁ + P₂ - 2P₃)
+#  𝗯 = -3P₁ - P₂ + 4P₃
+#  𝗰 = P₁
 
 struct QuadraticSegment{D, T} <: Edge{D, T}
     vertices::Vec{3, Point{D, T}}
@@ -85,29 +85,56 @@ end
 function arclength(q::QuadraticSegment)
     # The arc length integral may be reduced to an integral over the square root of a
     # quadratic polynomial using ‖𝘅‖ = √(𝘅 ⋅ 𝘅), which has an analytic solution.
-    #     1             1
-    # L = ∫ ‖𝗾′(r)‖dr = ∫ √(ar² + br + c) dr
-    #     0             0
+    #              1             1
+    # arc length = ∫ ‖q′(r)‖dr = ∫ √(ar² + br + c) dr
+    #              0             0
+    #
+    # If a = 0, we need to use a different formula.
+    
+    # q(r) = r²𝗮 + 𝗯r + 𝗰,
+    # where
+    # 𝗮 = 2(P₁ + P₂ - 2P₃)
+    # 𝗯 = -3P₁ - P₂ + 4P₃
+    # 𝗰 = P₁
+    # hence,
+    # q'(r) = 2𝗮r + 𝗯,
     𝘃₁₃ = q[3] - q[1]
     𝘃₂₃ = q[3] - q[2]
+    𝗮 = -2(𝘃₁₃ + 𝘃₂₃)
+    𝗯 = 3𝘃₁₃ + 𝘃₂₃
 
-    # q(r) = P₁ + r𝘂 + r²𝘃
-    𝘂 = 3𝘃₁₃ + 𝘃₂₃
-    𝘃 = -2(𝘃₁₃ + 𝘃₂₃)
+    # ‖q′(r)‖ =  √(4(𝗮 ⋅𝗮)r² + 4(𝗮 ⋅𝗯)r + 𝗯 ⋅𝗯) = √(ar² + br + c)
+    # where
+    # a = 4(𝗮 ⋅ 𝗮)
+    # b = 4(𝗮 ⋅ 𝗯)
+    # c = 𝗯 ⋅ 𝗯
+    a = 4(𝗮 ⋅ 𝗮)
+    # 0 ≤ a, since a = 4(𝗮 ⋅ 𝗮)  = 4 ‖𝗮‖², and 0 ≤ ‖𝗮‖²
+    if a < 1e-5 
+        return distance(q[1], q[2])
+    else
+        b = 4(𝗮 ⋅ 𝗯)
+        c = 𝗯 ⋅ 𝗯
 
-    a = 4(𝘃 ⋅ 𝘃)
-    b = 4(𝘂 ⋅ 𝘃)
-    c = 𝘂 ⋅ 𝘂
+        # √(ar² + br + c) = √a √( (r + b₁)^2 + c₁)
+        # where
+        b₁ = b / (2 * a) 
+        c₁ = (c / a) - b₁^2
+        #
+        # Let u = r + b₁, then
+        # 1                       1 + b₁
+        # ∫ √(ar² + br + c) dr = √a ∫ √(u² + c₁) du
+        # 0                         b₁
+        #
+        # This is an integral that exists in common integral tables.
+        # Evaluation of the resultant expression may be simplified by using
+        lb = b₁
+        ub = 1 + b₁
+        L = √(c₁ + lb^2)
+        U = √(c₁ + ub^2)
 
-    d = √(a + b + c)
-    e = 2a + b
-    f = 2√a
-    g = √c
-
-    l = (d * e - b * g) / 4a -
-        (b * b - 4a * c) / (4a * f) * log((d * f + e) / (f * g + b))
-
-    return l
+        return √a * (U + lb * (U - L) + c₁ * ( atanh(ub / U) - atanh(lb / L) )) / 2
+    end
 end
 
 # The area bounded by q is 4/3 the area of the triangle formed by the vertices.
