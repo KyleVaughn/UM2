@@ -141,6 +141,7 @@ end
 # The area bounded by q and the line from P₁ to P₂ is 4/3 the area of the triangle 
 # formed by the vertices. Assumes the area is convex. 
 function area_enclosed_by(q::QuadraticSegment{2, T}) where {T}
+    # Easily derived by transforming q such that P₁ = (0, 0) and P₂ = (x₂, 0).
     return T(2 // 3) * (q[2] - q[1]) × (q[3] - q[1])
 end
 
