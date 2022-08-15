@@ -7,7 +7,8 @@ export interpolate_triangle,
        jacobian_triangle,
        jacobian,
        area,
-       triangle_area
+       triangle_area,
+       centroid
 
 # TRIANGLE
 # -----------------------------------------------------------------------------
@@ -78,6 +79,10 @@ area(t::Triangle{3}) = norm((t[2] - t[1]) × (t[3] - t[1])) / 2
 function triangle_area(p1::P, p2::P, p3::P) where {P <: Point{2}}
     return ((p2 - p1) × (p3 - p1))/ 2
 end
+
+# -- Centroid --
+
+centroid(t::Triangle) = (t[1] + t[2] + t[3]) / 3
 
 # -- IO --
 

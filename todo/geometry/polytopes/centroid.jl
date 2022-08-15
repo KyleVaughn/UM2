@@ -19,8 +19,6 @@ function centroid(poly::Polygon{N, Point{2, T}}) where {N, T}
     return Point(c / (3a))
 end
 
-centroid(tri::Triangle) = Point(mapreduce(coordinates, +, vertices(tri)) / 3)
-
 centroid(tri6::QuadraticTriangle{<:Point{2}}) = centroid(tri6, Val(4))
 function centroid(tri6::QuadraticTriangle{Point{D, T}}, ::Val{N}) where {D, T, N}
     # Gauss-Legendre quadrature over a triangle is used.

@@ -6,7 +6,8 @@ export Quadrilateral,
 export interpolate_quadrilateral,
        jacobian_quadrilateral,
        jacobian,
-       area
+       area,
+       centroid
 
 # QUADRILATERAL
 # -----------------------------------------------------------------------------
@@ -85,6 +86,20 @@ end
 # Assumes a convex quadrilateral
 function area(q::Quadrilateral{2})
     return ((q[3] - q[1]) × (q[4] - q[2])) / 2
+end
+
+# -- Centroid --
+
+# Assumes a convex quadrilateral
+function centroid(q::Quadrilateral{2})
+    # By geometric decomposition into two triangles
+    v₁₂ = q[2] - q[1]
+    v₁₃ = q[3] - q[1]
+    v₁₄ = q[4] - q[1]
+    A₁ = v₁₂ × v₁₃
+    A₂ = v₁₃ × v₁₄
+    P₁₃ = q[1] + q[3]
+    return (A₁ * (P₁₃ + q[2]) + A₂ * (P₁₃ + q[4])) / (3 * (A₁ + A₂))
 end
 
 # -- IO --
