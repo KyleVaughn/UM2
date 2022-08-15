@@ -38,7 +38,7 @@ Base.broadcastable(v::Vec) = Ref(v)
 
 Vec(xs::T...) where {T} = Vec{length(xs), T}(xs)
 Vec{D}(xs::T...) where {D, T} = Vec{D, T}(xs)
-Vec{D, T}(xs...) where {D, T} = Vec{D, T}(ntuple(i->T(xs[i]), Val(D)))
+Vec{D, T}(xs::X...) where {D, T, X <: Number} = Vec{D, T}(ntuple(i->T(xs[i]), Val(D)))
 
 Base.vec(f::F, ::Val{N}) where {F, N} = Vec(ntuple(f, Val(N)))
 
@@ -51,19 +51,28 @@ Base.:-(v::Vec{D, T}) where {D, T} = vec(i -> -v[i], Val(D))
 Base.:+(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = vec(i -> v[i] + T(scalar), Val(D))
 Base.:-(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = vec(i -> v[i] - T(scalar), Val(D))
 Base.:*(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = vec(i -> v[i] * T(scalar), Val(D))
-Base.:/(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = vec(i -> v[i] / T(scalar), Val(D))
+function Base.:/(v::Vec{D, T}, scalar::X) where {D, T, X <: Number}
+    scalar_inv = 1 / T(scalar)
+    return vec(i -> scalar_inv * v[i], Val(D))
+end
 Base.:+(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = vec(i -> T(scalar) + v[i], Val(D))
 Base.:-(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = vec(i -> T(scalar) - v[i], Val(D))
 Base.:*(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = vec(i -> T(scalar) * v[i], Val(D))
 Base.:/(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = vec(i -> T(scalar) / v[i], Val(D))
-Base.:+(lhs::Vec{D, T}, rhs::Vec{D, T}) where {D, T} = vec(i -> lhs[i] + rhs[i], Val(D))
-Base.:-(lhs::Vec{D, T}, rhs::Vec{D, T}) where {D, T} = vec(i -> lhs[i] - rhs[i], Val(D))
-Base.:*(lhs::Vec{D, T}, rhs::Vec{D, T}) where {D, T} = vec(i -> lhs[i] * rhs[i], Val(D))
-Base.:/(lhs::Vec{D, T}, rhs::Vec{D, T}) where {D, T} = vec(i -> lhs[i] / rhs[i], Val(D))
+Base.:+(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = vec(i -> u[i] + v[i], Val(D))
+Base.:-(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = vec(i -> u[i] - v[i], Val(D))
+Base.:*(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = vec(i -> u[i] * v[i], Val(D))
+Base.:/(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = vec(i -> u[i] / v[i], Val(D))
 
 # -- Methods --
 
-dot(lhs::Vec{D}, rhs::Vec{D}) where {D} = mapreduce(i -> lhs[i] * rhs[i], +, 1:D)
+function dot(u::Vec{D}, v::Vec{D}) where {D}
+    d = u[1] * v[1]
+    for i in 2:D
+        d += u[i] * v[i]
+    end
+    return d 
+end
 const ⋅ = dot
 norm2(v::Vec) = dot(v, v)
 norm(v::Vec) = sqrt(norm2(v))

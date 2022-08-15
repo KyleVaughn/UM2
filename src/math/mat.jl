@@ -2,7 +2,7 @@ export Mat,
        Mat2x2,
        Mat2x2f, Mat2x2d
 
-export col
+export det
 
 # MATRIX    
 # ---------------------------------------------------------------------------    
@@ -22,18 +22,19 @@ const Mat2x2d = Mat{2, 2, Float64}
 
 # -- Interface --
 
-Base.getindex(m::Mat, i) = m.cols[i]
-Base.getindex(m::Mat, i, j) = m.cols[j][i]
-Base.size(m::Mat{M, N}) where {M, N} = (M, N)
-Base.length(m::Mat{M, N}) where {M, N} = M * N 
-Base.eltype(m::Mat{M, N, T}) where {M, N, T} = T
+Base.getindex(A::Mat, i) = A.cols[i]
+Base.getindex(A::Mat, i, j) = A.cols[j][i]
+Base.size(A::Mat{M, N}) where {M, N} = (M, N)
+Base.length(A::Mat{M, N}) where {M, N} = M * N 
+Base.eltype(A::Mat{M, N, T}) where {M, N, T} = T
 
 # -- Constructors --
 
-function Mat{M, N}(xs::T...) where {M, N, T}
-    @assert(length(xs) == M * N)
-    return Mat{M, N, T}(vec(i->Vec(xs[ (1 + (i - 1) * M) : (i * M) ]), Val(N)))
-end
+# Seems to allocate sometimes. Commenting out for now.
+#function Mat{M, N}(xs::T...) where {M, N, T}
+#    @assert(length(xs) == M * N)
+#    return Mat{M, N, T}(vec(i->Vec{M, T}(xs[ (1 + (i - 1) * M) : (i * M) ]), Val(N)))
+#end
 
 function Mat(vecs::Vec...)
     return Mat(Vec(vecs))
@@ -41,51 +42,72 @@ end
 
 # -- Unary operators --
 
-Base.:-(m::Mat{M, N, T}) where {M, N, T} = Mat{M, N, T}(vec(i -> -m[i], Val(M)))
+Base.:-(A::Mat{M, N, T}) where {M, N, T} = Mat{M, N, T}(vec(i -> -A[i], Val(M)))
 
 # -- Binary operators --
 
-function Base.:*(m::Mat{M, N, T}, scalar::X) where {M, N, T, X}
-    return Mat{M, N, T}(vec(i -> m[i] * T(scalar), Val(M)))
+function Base.:*(A::Mat{M, N, T}, scalar::X) where {M, N, T, X}
+    return Mat{M, N, T}(vec(i -> A[i] * T(scalar), Val(M)))
 end
 
-function Base.:/(m::Mat{M, N, T}, scalar::X) where {M, N, T, X}
-    return Mat{M, N, T}(vec(i -> m[i] / T(scalar), Val(M)))
+function Base.:/(A::Mat{M, N, T}, scalar::X) where {M, N, T, X}
+    scalar_inv = 1 / T(scalar)
+    return Mat{M, N, T}(vec(i -> scalar_inv * A[i], Val(M)))
 end
     
-function Base.:*(scalar::X, m::Mat{M, N, T}) where {M, N, T, X}
-    return Mat{M, N, T}(vec(i -> T(scalar) * m[i], Val(M)))
+function Base.:*(scalar::X, A::Mat{M, N, T}) where {M, N, T, X}
+    return Mat{M, N, T}(vec(i -> T(scalar) * A[i], Val(M)))
 end
 
-function Base.:/(scalar::X, m::Mat{M, N, T}) where {M, N, T, X}
-    return Mat{M, N, T}(vec(i -> T(scalar) / m[i], Val(M)))
+function Base.:/(scalar::X, A::Mat{M, N, T}) where {M, N, T, X}
+    return Mat{M, N, T}(vec(i -> T(scalar) / A[i], Val(M)))
 end
 
-function Base.:+(lhs::Mat{M, N, T}, rhs::Mat{M, N, T}) where {M, N, T}
-    return Mat{M, N, T}(vec(i -> lhs[i] + rhs[i], Val(M)))
+function Base.:+(A::Mat{M, N, T}, B::Mat{M, N, T}) where {M, N, T}
+    return Mat{M, N, T}(vec(i -> A[i] + B[i], Val(M)))
 end
 
-function Base.:-(lhs::Mat{M, N, T}, rhs::Mat{M, N, T}) where {M, N, T}
-    return Mat{M, N, T}(vec(i -> lhs[i] - rhs[i], Val(M)))
+function Base.:-(A::Mat{M, N, T}, B::Mat{M, N, T}) where {M, N, T}
+    return Mat{M, N, T}(vec(i -> A[i] - B[i], Val(M)))
 end
 
 # -- 2x2 matrix --
 
+function Mat2x2(a11::T, a21::T, a12::T, a22::T) where {T}
+    return Mat(Vec(a11, a21), Vec(a12, a22))
+end
 
-# Provide more opportunity for optimization by explicitly writing out the
-# matrix-vector multiplication.
-function Base.:*(m::Mat2x2, v::Vec2)
-    return Vec2(m[1,1] * v[1] + m[1,2] * v[2],
-                m[2,1] * v[1] + m[2,2] * v[2])
+function Base.:*(A::Mat2x2, x::Vec2)
+    return Vec2(A[1,1] * x[1] + A[1,2] * x[2],
+                A[2,1] * x[1] + A[2,2] * x[2])
+end
+
+function Base.:*(A::Mat2x2, B::Mat2x2)
+    return Mat2x2(A[1,1] * B[1,1] + A[1,2] * B[2,1],
+                  A[2,1] * B[1,1] + A[2,2] * B[2,1],
+                  A[1,1] * B[1,2] + A[1,2] * B[2,2],
+                  A[2,1] * B[1,2] + A[2,2] * B[2,2])
+end
+
+function det(A::Mat2x2)
+    return A[1,1] * A[2,2] - A[2,1] * A[1,2] 
+end
+
+function Base.inv(A::Mat2x2)
+    detinv = 1 / det(A)
+    return Mat2x2( detinv * A[2,2], 
+                  -detinv * A[2,1],
+                  -detinv * A[1,2],  
+                   detinv * A[1,1])
 end
 
 # -- IO --
 
-function Base.show(io::IO, m::Mat{M, N, T}) where {M, N, T}
+function Base.show(io::IO, A::Mat{M, N, T}) where {M, N, T}
     println(io, M, '×', N, " Mat{", T, "}")
     for i = 1:M
         for j = 1:N
-            print(io,  " ", m[i, j])
+            print(io,  " ", A[i, j])
         end
         println(io)
     end

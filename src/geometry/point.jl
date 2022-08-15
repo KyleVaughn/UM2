@@ -6,6 +6,11 @@ export Point,
        EPS_POINT2,
        INF_POINT
 
+export distance2, 
+       distance, 
+       midpoint,
+       isCCw
+
 # Points separated by 1e-5 cm = 0.1 micron are treated the same.
 const EPS_POINT = 1e-5
 const EPS_POINT2 = EPS_POINT * EPS_POINT
