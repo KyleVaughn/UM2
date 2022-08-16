@@ -11,6 +11,7 @@ export interpolate_quadratic_segment,
        area_enclosed_by_quadratic_segment,
        centroid_of_area_enclosed_by,
        centroid_of_area_enclosed_by_quadratic_segment,
+       bounding_box,
        isleft
 
 # QUADRATIC SEGMENT
@@ -194,7 +195,7 @@ function centroid_of_area_enclosed_by(q::QuadraticSegment{2, T}) where {T}
     four_v₁₃ = 4*(q[3] - q[1])
     u₁ = normalize(v₁₂)
     u₂ = Vec(-u₁[2], u₁[1])
-    U    = Mat(u₁, u₂)
+    U  = Mat(u₁, u₂)
     Cᵤ = Vec(u₁ ⋅(3 * v₁₂ + four_v₁₃), u₂ ⋅ four_v₁₃) / 10
     return U * Cᵤ + q[1]
 end
@@ -205,9 +206,42 @@ function centroid_of_area_enclosed_by_quadratic_segment(
     four_v₁₃ = 4*(p3 - p1)
     u₁ = normalize(v₁₂)
     u₂ = Vec(-u₁[2], u₁[1])
-    U    = Mat(u₁, u₂)
+    U  = Mat(u₁, u₂)
     Cᵤ = Vec(u₁ ⋅(3 * v₁₂ + four_v₁₃), u₂ ⋅ four_v₁₃) / 10
     return U * Cᵤ + p1
+end
+
+# -- Bounding box --
+
+function bounding_box(q::QuadraticSegment{2, T}) where {T}
+    # Find the extrema for x and y by finding:
+    # r_x such that dx/dr = 0    
+    # r_y such that dy/dr = 0    
+    # q(r) = r²𝗮 + 𝗯r + 𝗰
+    # q′(r) = 2𝗮r + 𝗯 
+    # (r_x, r_y) = -𝗯 ./ (2𝗮)    
+    # Compare the extrema with the segment's endpoints to find the AABox    
+    q1 = q[1]
+    q2 = q[2]
+    q3 = q[3]
+    𝘃₁₃ = q3 - q1
+    𝘃₂₃ = q3 - q2
+    𝗮 = -2(𝘃₁₃ + 𝘃₂₃); a_x = 𝗮[1]; a_y = 𝗮[2]
+    𝗯 = 3𝘃₁₃ + 𝘃₂₃;    b_x = 𝗯[1]; b_y = 𝗯[2]
+    𝗿 = 𝗯 / (-2 * 𝗮);  r_x = 𝗿[1]; r_y = 𝗿[2]
+    xmin = min(q1[1], q2[1]); ymin = min(q1[2], q2[2])
+    xmax = max(q1[1], q2[1]); ymax = max(q1[2], q2[2])
+    if 0 < 𝗿[1] < 1
+        x_stationary = r_x * r_x * a_x + r_x * b_x + q1[1]
+        xmin = min(xmin, x_stationary)
+        xmax = max(xmax, x_stationary)
+    end
+    if 0 < 𝗿[2] < 1
+        y_stationary = r_y * r_y * a_y + r_y * b_y + q1[2]
+        ymin = min(ymin, y_stationary)
+        ymax = max(ymax, y_stationary)
+    end
+    return AABox{2, T}(Point{2, T}(xmin, ymin), Point{2, T}(xmax, ymax))
 end
 
 # -- In --
@@ -305,13 +339,14 @@ end
 # -- IO --
 
 function Base.show(io::IO, q::QuadraticSegment{D, T}) where {D, T}
-    print(io, "QuadraticSegment", D)
+    type_char = '?'
     if T === Float32
-        print(io, 'f')
+        type_char = 'f'
     elseif T === Float64
-        print(io, 'd')
-    else
-        print(io, '?')
+        type_char = 'd'
     end
-    print('(', q.vertices[1], ", ", q.vertices[2], ", ", q.vertices[3], ")")
+    print(io, "QuadraticSegment", D, type_char, '(',
+        q.vertices[1], ", ",
+        q.vertices[2], ", ",
+        q.vertices[3], ')')
 end

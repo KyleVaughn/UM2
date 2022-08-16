@@ -11,7 +11,9 @@ export interpolate_quadrilateral,
        centroid,
        quadrilateral_centroid,
        edge,
-       edges
+       edges,
+       bounding_box,
+       triangulate
 
 # QUADRILATERAL
 # -----------------------------------------------------------------------------
@@ -135,19 +137,38 @@ end
 
 edges(q::Quadrilateral) = (edge(i, q) for i in 1:4)
 
+# -- Bounding box --
+
+function bounding_box(q::Quadrilateral)
+    return bounding_box(q.vertices)
+end
+
+# -- In --    
+      
+Base.in(P::Point{2}, q::Quadrilateral{2}) = all(edge -> isleft(P, edge), edges(q))
+
+# -- Triangulation --
+
+# Assumes a convex quadrilateral
+function triangulate(q::Quadrilateral{2})
+    return Vec(
+        Triangle(q[1], q[2], q[3]),
+        Triangle(q[1], q[3], q[4])
+       )
+end
+
 # -- IO --
 
 function Base.show(io::IO, q::Quadrilateral{D, T}) where {D, T}
-    print(io, "Quadrilateral", D)
+    type_char = '?'                                        
     if T === Float32
-        print(io, 'f')
+        type_char = 'f'
     elseif T === Float64
-        print(io, 'd')
-    else
-        print(io, '?')
+        type_char = 'd'
     end
-    print('(', q.vertices[1], ", ",
-               q.vertices[2], ", ",
-               q.vertices[3], ", ",
-               q.vertices[4], ")")
+    print(io, "Quadrilateral", D, type_char, '(', 
+        q.vertices[1], ", ", 
+        q.vertices[2], ", ", 
+        q.vertices[3], ", ",
+        q.vertices[4], ')')
 end

@@ -11,7 +11,8 @@ export interpolate_triangle,
        centroid,
        triangle_centroid,
        edge,
-       edges
+       edges,
+       bounding_box
 
 # TRIANGLE
 # -----------------------------------------------------------------------------
@@ -105,16 +106,27 @@ end
 
 edges(t::Triangle) = (edge(i, t) for i in 1:3)
 
+# -- Bounding box --
+
+function bounding_box(t::Triangle)
+    return bounding_box(t.vertices)
+end
+
+# -- In --
+
+Base.in(P::Point{2}, t::Triangle{2}) = all(edge -> isleft(P, edge), edges(t))
+
 # -- IO --
 
 function Base.show(io::IO, t::Triangle{D, T}) where {D, T}
-    print(io, "Triangle", D)
+    type_char = '?'
     if T === Float32
-        print(io, 'f')
+        type_char = 'f'
     elseif T === Float64
-        print(io, 'd')
-    else
-        print(io, '?')
+        type_char = 'd'
     end
-    print('(', t.vertices[1], ", ", t.vertices[2], ", ", t.vertices[3], ")")
+    print(io, "Triangle", D, type_char, '(', 
+        t.vertices[1], ", ", 
+        t.vertices[2], ", ", 
+        t.vertices[3], ')')
 end

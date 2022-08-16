@@ -9,7 +9,9 @@ export interpolate_quadratic_triangle,
        area,
        centroid,
        edge,
-       edges
+       edges,
+       bounding_box,
+       triangulate
 
 # QUADRATIC TRIANGLE 
 # -----------------------------------------------------------------------------
@@ -69,7 +71,7 @@ function interpolate_quadratic_triangle(vertices::Vec{6}, r, s)
 end
 
 function (t::QuadraticTriangle{D, T})(r::T, s::T) where {D, T}
-    return interpolate_quadratic_triangle(t.vertices, r)
+    return interpolate_quadratic_triangle(t.vertices, r, s)
 end
 
 # -- Jacobian --
@@ -144,21 +146,72 @@ end
 
 edges(t::QuadraticTriangle) = (edge(i, t) for i in 1:3)
 
+# -- Bounding box --
+
+function bounding_box(q::QuadraticTriangle)
+    return bounding_box(edge(1, q)) ∪
+           bounding_box(edge(2, q)) ∪
+           bounding_box(edge(3, q))
+end
+
+# -- In --    
+      
+Base.in(P::Point{2}, t::QuadraticTriangle{2}) = all(edge -> isleft(P, edge), edges(t))
+
+# -- Triangulation --
+
+# N is the number of segments to divide each edge into.
+# Return a Vector of the 2 * N^2 triangles that approximately partition 
+# the quadratic quadrilateral.
+function triangulate(t::QuadraticTriangle{D, T}, N::Integer) where {D, T}
+    # Walk up the triangle in parametric coordinates (r as fast variable,
+    # s as slow variable).
+    # r is incremented along each row, forming two triangles (1,2,3) and
+    # (3,2,4), at each step, until the last r value, which is a single triangle.
+    # 3 --- 4        3 
+    # | \   |        | \   
+    # |   \ |        |   \  
+    # 1 --- 2 ...... 1 --- 2 
+    triangles = Vector{Triangle{D, T}}(undef, N^2)
+    Δ = T(1) / N # Δ for r and s
+    s1 = T(0)
+    ntri = 0
+    for s = 0:(N - 1)
+        r1 = T(0)
+        s2 = s1 + Δ
+        p1 = t(r1, s1)
+        p3 = t(r1, s2)
+        for r = 0:(N - 2 - s)
+            r2 = r1 + Δ
+            p2 = t(r2, s1)
+            p4 = t(r2, s2)
+            triangles[ntri + 2 * r + 1] = Triangle(p1, p2, p3)
+            triangles[ntri + 2 * r + 2] = Triangle(p3, p2, p4)
+            r1 = r2
+            p1 = p2
+            p3 = p4
+        end
+        ntri += 2*(N - s) - 1
+        triangles[ntri] = Triangle(p1, t(r1 + Δ, s1), p3)
+        s1 = s2
+    end
+    return triangles
+end
+
 # -- IO --
 
 function Base.show(io::IO, t::QuadraticTriangle{D, T}) where {D, T}
-    print(io, "QuadraticTriangle", D) 
+    type_char = '?'
     if T === Float32
-        print(io, 'f')
+        type_char = 'f'
     elseif T === Float64
-        print(io, 'd')
-    else
-        print(io, '?')
+        type_char = 'd'
     end
-    print('(', t.vertices[1], ", ", 
-               t.vertices[2], ", ",
-               t.vertices[3], ", ",
-               t.vertices[4], ", ",
-               t.vertices[5], ", ",
-               t.vertices[6], ")")
+    print(io, "QuadraticTriangle", D, type_char, '(', 
+        t.vertices[1], ", ", 
+        t.vertices[2], ", ", 
+        t.vertices[3], ", ",
+        t.vertices[4], ", ",
+        t.vertices[5], ", ",
+        t.vertices[6], ')')
 end

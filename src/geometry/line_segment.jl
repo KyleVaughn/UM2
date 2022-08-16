@@ -7,6 +7,7 @@ export interpolate_line_segment,
        jacobian,
        line_segment_jacobian,
        arclength,
+       bounding_box,
        isleft
 
 # LINE SEGMENT
@@ -53,8 +54,8 @@ end
 
 # -- Jacobian --
 
-function line_segment_jacobian(p1::T, p2::T, r) where {T}    
-    return p2 - p1    
+function line_segment_jacobian(p1::T, p2::T, r) where {T}
+    return p2 - p1
 end
 
 function line_segment_jacobian(vertices::Vec{2}, r)
@@ -69,6 +70,12 @@ end
 
 arclength(l::LineSegment) = distance(l[1], l[2])
 
+# -- Bounding box --
+
+function bounding_box(l::LineSegment{2, T}) where {T}
+    return bounding_box(l.vertices)
+end
+
 # -- In --
 
 isleft(P::Point{2}, l::LineSegment{2}) = 0 ≤ (l[2] - l[1]) × (P - l[1])
@@ -76,13 +83,13 @@ isleft(P::Point{2}, l::LineSegment{2}) = 0 ≤ (l[2] - l[1]) × (P - l[1])
 # -- IO --
 
 function Base.show(io::IO, l::LineSegment{D, T}) where {D, T}
-    print(io, "LineSegment", D) 
+    type_char = '?'
     if T === Float32
-        print(io, 'f')
+        type_char = 'f'
     elseif T === Float64
-        print(io, 'd')
-    else
-        print(io, '?')
+        type_char = 'd'
     end
-    print('(', l.vertices[1], ", ", l.vertices[2], ")")
+    print(io, "LineSegment", D, type_char, '(',
+        l.vertices[1], ", ",
+        l.vertices[2], ')')
 end
