@@ -60,8 +60,8 @@ area(aab::AABox{2}) = prod(maxima(aab) - minima(aab))
 # -- In --
 
 function Base.in(p::Point{2}, aab::AABox{2})
-    return xmin(aab) ≤ p[1] ≤ xmax(aab) &&
-           ymin(aab) ≤ p[2] ≤ ymax(aab)
+    return x_min(aab) ≤ p[1] ≤ x_max(aab) &&
+           y_min(aab) ≤ p[2] ≤ y_max(aab)
 end
 
 # -- Miscellaneous --
@@ -132,7 +132,7 @@ function bounding_box(q::QuadraticSegment{2, T}) where {T}
     𝗯 = 3𝘃₁₃ + 𝘃₂₃;    b_x = 𝗯[1]; b_y = 𝗯[2]
     𝗿 = 𝗯 / (-2 * 𝗮);  r_x = 𝗿[1]; r_y = 𝗿[2]
     xmin = min(q1[1], q2[1]); ymin = min(q1[2], q2[2])
-    xmax = max(q1[1], q2[2]); ymax = max(q1[2], q2[2])
+    xmax = max(q1[1], q2[1]); ymax = max(q1[2], q2[2])
     if 0 < 𝗿[1] < 1    
         x_stationary = r_x * r_x * a_x + r_x * b_x + q1[1]
         xmin = min(xmin, x_stationary)    

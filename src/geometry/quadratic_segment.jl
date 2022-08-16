@@ -212,7 +212,7 @@ end
 
 # -- In --
 
-function isleft(P::Point{2}, q::QuadraticSegment{2})
+function isleft(P::Point{2, T}, q::QuadraticSegment{2, T}) where {T}
     # If the point is not in the bounding box of the segment,
     # then we may simply check if the point is left of the line (P₁, P₂).
     if P ∉ bounding_box(q)
@@ -237,8 +237,8 @@ function isleft(P::Point{2}, q::QuadraticSegment{2})
         # d = -2(𝗯 ⋅ 𝘄)
         # Lagrange's method is used to find the roots.
         # (https://en.wikipedia.org/wiki/Cubic_equation#Lagrange's_method)    
-        𝘃₁₂ = q[2] - q[1]
         𝘃₁₃ = q[3] - q[1]
+        𝘃₂₃ = q[3] - q[2]
         𝗮 = -2(𝘃₁₃ + 𝘃₂₃)    
         a = 4 * (𝗮 ⋅ 𝗮)
 
@@ -280,7 +280,7 @@ function isleft(P::Point{2}, q::QuadraticSegment{2})
             ζ₂ = conj(ζ₁)
 
             # Pick the point closest to P
-            r = real((s₀ + t₁ + t₂)) / 3,
+            r = real((s₀ + t₁ + t₂)) / 3
             d = distance2(P, q(r))
 
             r2 = real((s₀ + ζ₂ * t₁ + ζ₁ * t₂)) / 3
