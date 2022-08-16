@@ -24,7 +24,7 @@ export interpolate_quadrilateral,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct Quadrilateral{D, T} <: Polygon{D, T}
+struct Quadrilateral{D, T} <: AbstractPolygon{D, T}
     vertices::Vec{4, Point{D, T}}
 end
 

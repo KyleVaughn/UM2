@@ -23,7 +23,7 @@ export interpolate_triangle,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct Triangle{D, T} <: Polygon{D, T}
+struct Triangle{D, T} <: AbstractPolygon{D, T}
     vertices::Vec{3, Point{D, T}}
 end
 

@@ -19,7 +19,7 @@ export interpolate_line_segment,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct LineSegment{D, T} <: Edge{D, T}
+struct LineSegment{D, T} <: AbstractEdge{D, T}
     vertices::Vec{2, Point{D, T}}
 end
 

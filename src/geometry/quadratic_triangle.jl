@@ -22,7 +22,7 @@ export interpolate_quadratic_triangle,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct QuadraticTriangle{D, T} <: QuadraticPolygon{D, T}
+struct QuadraticTriangle{D, T} <: AbstractQuadraticPolygon{D, T}
     vertices::Vec{6, Point{D, T}}
 end
 
