@@ -1,35 +1,5 @@
 export edge, edges
 
-function edge(p::Polygon{N}, i::Integer) where {N}
-    # Assumes valid i. This routine needs to be high performance,
-    # so it is not checked.
-    if i < N
-        return LineSegment(p[i], p[i+1])
-    else
-        return LineSegment(p[N], p[1])
-    end
-end
-
-function edge(p::QuadraticPolygon{N}, i::Integer) where {N}
-    # Assumes valid i. This routine needs to be high performance,
-    # so it is not checked.
-    M = N ÷ 2
-    if i < M
-        return QuadraticSegment(p[i], p[i + 1], p[i + M])
-    else
-        return QuadraticSegment(p[M], p[1], p[N])
-    end
-end
-
-function edges(p::Face{N}) where {N}
-    return (edge(p, i) for i in 1:N)
-end
-
-function edges(p::QuadraticPolygon{N}) where {N}
-    M = N ÷ 2
-    return (edge(p, i) for i in 1:M)
-end
-
 #function edges(p::Tetrahedron{T}) where {T}
 #    v = vertices(p)
 #    return Vec(LineSegment{T}(v[1], v[2]),

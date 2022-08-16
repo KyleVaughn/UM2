@@ -32,7 +32,6 @@ const Vec3d = Vec3{f64}
 Base.getindex(v::Vec, i) = Base.getindex(v.coord, i)
 Base.size(v::Vec{D}) where {D} = (D,)
 Base.length(v::Vec{D}) where {D} = D 
-Base.broadcastable(v::Vec) = Ref(v) 
 
 # -- Constructors --
 

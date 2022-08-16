@@ -80,15 +80,6 @@ end
 
 # AABox 
 # ---------------------------------------------------------------------------------------------
-@inline function Base.in(p::Point2D, aab::AABox2D)
-    return aab.xmin ≤ p[1] ≤ aab.xmax &&
-           aab.ymin ≤ p[2] ≤ aab.ymax
-end
-@inline function Base.in(p::Point3D, aab::AABox3D)
-    return aab.xmin ≤ p[1] ≤ aab.xmax &&
-           aab.ymin ≤ p[2] ≤ aab.ymax &&
-           aab.zmin ≤ p[3] ≤ aab.zmax
-end
 # Point inside polygon
 # ---------------------------------------------------------------------------------------------
 # Not necessarily planar

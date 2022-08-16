@@ -4,9 +4,12 @@ export QuadraticTriangle,
        QuadraticTriangle2d
 
 export interpolate_quadratic_triangle,
-       jacobian_quadratic_triangle,
        jacobian,
-       area
+       quadratic_triangle_jacobian,
+       area,
+       centroid,
+       edge,
+       edges
 
 # QUADRATIC TRIANGLE 
 # -----------------------------------------------------------------------------
@@ -17,7 +20,7 @@ export interpolate_quadratic_triangle,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct QuadraticTriangle{D, T} <: Polygon{D, T}
+struct QuadraticTriangle{D, T} <: QuadraticPolygon{D, T}
     vertices::Vec{6, Point{D, T}}
 end
 
@@ -71,7 +74,7 @@ end
 
 # -- Jacobian --
 
-function jacobian_quadratic_triangle(
+function quadratic_triangle_jacobian(
         p1::T, p2::T, p3::T, p4::T, p5::T, p6::T, r, s) where {T}
     ∂r = (4 * r + 4 * s - 3) * (p1 - p4) +    
          (4 * r         - 1) * (p2 - p4) +    
@@ -84,7 +87,7 @@ function jacobian_quadratic_triangle(
     return Mat(∂r, ∂s)
 end
 
-function jacobian_quadratic_triangle(vertices::Vec{6}, r, s)
+function quadratic_triangle_jacobian(vertices::Vec{6}, r, s)
     ∂r = (4 * r + 4 * s - 3) * (vertices[1] - vertices[4]) +    
          (4 * r         - 1) * (vertices[2] - vertices[4]) +    
          (        4 * s    ) * (vertices[5] - vertices[6])
@@ -97,7 +100,7 @@ function jacobian_quadratic_triangle(vertices::Vec{6}, r, s)
 end
 
 function jacobian(t::QuadraticTriangle{D, T}, r::T, s::T) where {D, T}
-    return jacobian_quadratic_triangle(t.vertices, r, s)
+    return quadratic_triangle_jacobian(t.vertices, r, s)
 end
 
 # -- Measure --
@@ -111,6 +114,35 @@ function area(t::QuadraticTriangle{2, T}) where {T}
     tri_area = ((t[2] - t[1]) × (t[3] - t[1])) / 2 
     return edge_area + tri_area
 end
+
+# -- Centroid --
+
+function centroid(t::QuadraticTriangle{2, T}) where {T}
+    # By geometric decomposition into a triangle and the 3 areas
+    # enclosed by the quadratic edges.
+    Aₜ = triangle_area(t[1], t[2], t[3])
+    Cₜ = triangle_centroid(t[1], t[2], t[3])
+    A₁ = area_enclosed_by_quadratic_segment(t[1], t[2], t[4])
+    C₁ = centroid_of_area_enclosed_by_quadratic_segment(t[1], t[2], t[4])
+    A₂ = area_enclosed_by_quadratic_segment(t[2], t[3], t[5])
+    C₂ = centroid_of_area_enclosed_by_quadratic_segment(t[2], t[3], t[5])
+    A₃ = area_enclosed_by_quadratic_segment(t[3], t[1], t[6])
+    C₃ = centroid_of_area_enclosed_by_quadratic_segment(t[3], t[1], t[6])
+    return (Aₜ*Cₜ + A₁ * C₁ + A₂ * C₂ + A₃ * C₃) / (Aₜ + A₁ + A₂ + A₃)
+end
+
+# -- Edges --
+
+function edge(i::Integer, t::QuadraticTriangle)
+    # Assumes 1 ≤ i ≤ 3.
+    if i < 3
+        return QuadraticSegment(t[i], t[i+1], t[i+3])
+    else
+        return QuadraticSegment(t[3], t[1], t[6])
+    end
+end
+
+edges(t::QuadraticTriangle) = (edge(i, t) for i in 1:3)
 
 # -- IO --
 

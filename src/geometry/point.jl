@@ -15,7 +15,7 @@ export distance2,
 const EPS_POINT = 1e-5
 const EPS_POINT2 = EPS_POINT * EPS_POINT
 
-# Used for when IEEE 754 may not be enforced, such as with fast math. 
+# Used as a sentinel value for infinite points.
 const INF_POINT = 1e10
 
 # POINT     

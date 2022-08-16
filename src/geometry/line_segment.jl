@@ -4,9 +4,10 @@ export LineSegment,
        LineSegment2d
 
 export interpolate_line_segment,
-       jacobian_line_segment,
        jacobian,
-       arclength
+       line_segment_jacobian,
+       arclength,
+       isleft
 
 # LINE SEGMENT
 # -----------------------------------------------------------------------------
@@ -52,21 +53,25 @@ end
 
 # -- Jacobian --
 
-function jacobian_line_segment(p1::T, p2::T, r) where {T}    
+function line_segment_jacobian(p1::T, p2::T, r) where {T}    
     return p2 - p1    
 end
 
-function jacobian_line_segment(vertices::Vec{2}, r)
+function line_segment_jacobian(vertices::Vec{2}, r)
     return vertices[2] - vertices[1]
 end
 
 function jacobian(l::LineSegment{D, T}, r::T) where {D, T}
-    return jacobian_line_segment(l.vertices, r)
+    return line_segment_jacobian(l.vertices, r)
 end
 
 # -- Measure --
 
 arclength(l::LineSegment) = distance(l[1], l[2])
+
+# -- In --
+
+isleft(P::Point{2}, l::LineSegment{2}) = 0 ≤ (l[2] - l[1]) × (P - l[1])
 
 # -- IO --
 

@@ -4,10 +4,14 @@ export Quadrilateral,
        Quadrilateral2d
 
 export interpolate_quadrilateral,
-       jacobian_quadrilateral,
        jacobian,
+       quadrilateral_jacobian,
        area,
-       centroid
+       quadrilateral_area,
+       centroid,
+       quadrilateral_centroid,
+       edge,
+       edges
 
 # QUADRILATERAL
 # -----------------------------------------------------------------------------
@@ -36,8 +40,8 @@ Base.broadcastable(t::Quadrilateral) = Ref(t)
 # -- Constructors --
 
 function Quadrilateral(
-        p1::Point{D, T}, 
-        p2::Point{D, T}, 
+        p1::Point{D, T},
+        p2::Point{D, T},
         p3::Point{D, T},
         p4::Point{D, T}) where {D, T}
     return Quadrilateral{D, T}(Vec(p1, p2, p3, p4))
@@ -45,17 +49,18 @@ end
 
 # -- Interpolation --
 
+# Assumes a convex quadrilateral
 function interpolate_quadrilateral(p1::T, p2::T, p3::T, p4::T, r, s) where {T}
-    return ((1 - r) * (1 - s)) * p1 +    
-           (     r  * (1 - s)) * p2 +    
-           (     r  *      s ) * p3 +    
+    return ((1 - r) * (1 - s)) * p1 +
+           (     r  * (1 - s)) * p2 +
+           (     r  *      s ) * p3 +
            ((1 - r) *      s ) * p4
 end
 
 function interpolate_quadrilateral(vertices::Vec{4}, r, s)
-    return ((1 - r) * (1 - s)) * vertices[1] +    
-           (     r  * (1 - s)) * vertices[2] +    
-           (     r  *      s ) * vertices[3] +    
+    return ((1 - r) * (1 - s)) * vertices[1] +
+           (     r  * (1 - s)) * vertices[2] +
+           (     r  *      s ) * vertices[3] +
            ((1 - r) *      s ) * vertices[4]
 end
 
@@ -65,20 +70,21 @@ end
 
 # -- Jacobian --
 
-function jacobian_quadrilateral(p1::T, p2::T, p3::T, p4::T, r, s) where {T}
+# Assumes a convex quadrilateral
+function quadrilateral_jacobian(p1::T, p2::T, p3::T, p4::T, r, s) where {T}
     ∂r = (1 - s) * (p2 - p1) - s * (p4 - p3)
     ∂s = (1 - r) * (p4 - p1) - r * (p2 - p3)
     return Mat(∂r, ∂s)
 end
 
-function jacobian_quadrilateral(vertices::Vec{4}, r, s)
+function quadrilateral_jacobian(vertices::Vec{4}, r, s)
     ∂r = (1 - s) * (vertices[2] - vertices[1]) - s * (vertices[4] - vertices[3])
     ∂s = (1 - r) * (vertices[4] - vertices[1]) - r * (vertices[2] - vertices[3])
     return Mat(∂r, ∂s)
 end
 
 function jacobian(q::Quadrilateral{D, T}, r::T, s::T) where {D, T}
-    return jacobian_quadrilateral(q.vertices, r, s)
+    return quadrilateral_jacobian(q.vertices, r, s)
 end
 
 # -- Measure --
@@ -86,6 +92,10 @@ end
 # Assumes a convex quadrilateral
 function area(q::Quadrilateral{2})
     return ((q[3] - q[1]) × (q[4] - q[2])) / 2
+end
+
+function quadrilateral_area(p1::P, p2::P, p3::P, p4::P) where {P <: Point{2}}
+    return ((p3 - p1) × (p4 - p2)) / 2
 end
 
 # -- Centroid --
@@ -102,10 +112,33 @@ function centroid(q::Quadrilateral{2})
     return (A₁ * (P₁₃ + q[2]) + A₂ * (P₁₃ + q[4])) / (3 * (A₁ + A₂))
 end
 
+function quadrilateral_centroid(p1::P, p2::P, p3::P, p4::P) where {P <: Point{2}}
+    v₁₂ = p2 - p1
+    v₁₃ = p3 - p1
+    v₁₄ = p4 - p1
+    A₁ = v₁₂ × v₁₃
+    A₂ = v₁₃ × v₁₄
+    P₁₃ = p1 + p3
+    return (A₁ * (P₁₃ + p2) + A₂ * (P₁₃ + p4)) / (3 * (A₁ + A₂))
+end
+
+# -- Edges --
+
+function edge(i::Integer, q::Quadrilateral)
+    # Assumes 1 ≤ i ≤ 4.
+    if i < 4
+        return LineSegment(t[i], t[i+1])
+    else
+        return LineSegment(t[4], t[1])
+    end
+end
+
+edges(q::Quadrilateral) = (edge(i, q) for i in 1:4)
+
 # -- IO --
 
 function Base.show(io::IO, q::Quadrilateral{D, T}) where {D, T}
-    print(io, "Quadrilateral", D) 
+    print(io, "Quadrilateral", D)
     if T === Float32
         print(io, 'f')
     elseif T === Float64
@@ -113,8 +146,8 @@ function Base.show(io::IO, q::Quadrilateral{D, T}) where {D, T}
     else
         print(io, '?')
     end
-    print('(', q.vertices[1], ", ", 
-               q.vertices[2], ", ", 
+    print('(', q.vertices[1], ", ",
+               q.vertices[2], ", ",
                q.vertices[3], ", ",
                q.vertices[4], ")")
 end

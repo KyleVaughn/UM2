@@ -4,11 +4,14 @@ export Triangle,
        Triangle2d
 
 export interpolate_triangle,
-       jacobian_triangle,
        jacobian,
+       triangle_jacobian,
        area,
        triangle_area,
-       centroid
+       centroid,
+       triangle_centroid,
+       edge,
+       edges
 
 # TRIANGLE
 # -----------------------------------------------------------------------------
@@ -56,26 +59,27 @@ end
 
 # -- Jacobian --
 
-function jacobian_triangle(p1::T, p2::T, p3::T, r, s) where {T}
+function triangle_jacobian(p1::T, p2::T, p3::T, r, s) where {T}
     ∂r = p2 - p1
     ∂s = p3 - p1
     return Mat(∂r, ∂s)
 end
 
-function jacobian_triangle(vertices::Vec{3}, r, s)
+function triangle_jacobian(vertices::Vec{3}, r, s)
     ∂r = vertices[2] - vertices[1]
     ∂s = vertices[3] - vertices[1]
     return Mat(∂r, ∂s)
 end
 
 function jacobian(t::Triangle{D, T}, r::T, s::T) where {D, T}
-    return jacobian_triangle(t.vertices, r, s)
+    return triangle_jacobian(t.vertices, r, s)
 end
 
 # -- Measure --
 
 area(t::Triangle{2}) = ((t[2] - t[1]) × (t[3] - t[1])) / 2
 area(t::Triangle{3}) = norm((t[2] - t[1]) × (t[3] - t[1])) / 2
+
 function triangle_area(p1::P, p2::P, p3::P) where {P <: Point{2}}
     return ((p2 - p1) × (p3 - p1))/ 2
 end
@@ -83,6 +87,23 @@ end
 # -- Centroid --
 
 centroid(t::Triangle) = (t[1] + t[2] + t[3]) / 3
+
+function triangle_centroid(p1::P, p2::P, p3::P) where {P <: Point{2}}
+    return (p1 + p2 + p3) / 3
+end
+
+# -- Edges --
+
+function edge(i::Integer, t::Triangle)
+    # Assumes 1 ≤ i ≤ 3.
+    if i < 3
+        return LineSegment(t[i], t[i+1])
+    else
+        return LineSegment(t[3], t[1])
+    end
+end
+
+edges(t::Triangle) = (edge(i, t) for i in 1:3)
 
 # -- IO --
 

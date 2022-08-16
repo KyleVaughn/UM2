@@ -1,52 +1,9 @@
-export AABox
-export measure, maxima, minima, xmin, ymin, zmin, xmax, ymax, zmax, Δx, Δy, Δz,
-       facets, ridges, peaks, faces, edges, vertices
-
-"""
-    AABox(minima::Point{D,T}, maxima::Point{D,T})
-
-A `D`-dimensional axis-aligned bounding box using two `D`-dimensional
-points, representing the `minima` and `maxima` of the box. 
-"""
-struct AABox{D, T}
-    minima::Point{D, T}
-    maxima::Point{D, T}
-end
-
-# constructors
-AABox(minima, maxima) = AABox(Point(minima), Point(maxima))
-
-maxima(aab::AABox) = aab.maxima
-minima(aab::AABox) = aab.minima
-function Base.isapprox(aab₁::AABox, aab₂::AABox)
-    return minima(aab₁) ≈ minima(aab₂) &&
-           maxima(aab₁) ≈ maxima(aab₂)
-end
-function Base.union(aab₁::AABox, aab₂::AABox)
-    return AABox(min.(coordinates(minima(aab₁)), coordinates(minima(aab₂))),
-                 max.(coordinates(maxima(aab₁)), coordinates(maxima(aab₂))))
-end
-
-xmin(aab::AABox) = aab.minima[1]
-ymin(aab::AABox) = aab.minima[2]
-zmin(aab::AABox{3}) = aab.minima[3]
-xmax(aab::AABox) = aab.maxima[1]
-ymax(aab::AABox) = aab.maxima[2]
-zmax(aab::AABox{3}) = aab.maxima[3]
-Δx(aab::AABox) = xmax(aab) - xmin(aab)
-Δy(aab::AABox) = ymax(aab) - ymin(aab)
-Δz(aab::AABox{3}) = zmax(aab) - zmin(aab)
 measure(aab::AABox) = prod(maxima(aab) - minima(aab))
 ridges(aab::AABox{2}) = vertices(aab)
 facets(aab::AABox{2}) = edges(aab)
 peaks(aab::AABox{3}) = vertices(aab)
 ridges(aab::AABox{3}) = edges(aab)
 facets(aab::AABox{3}) = faces(aab)
-
-@inline function Base.in(p::Point{2}, aab::AABox{2})    
-    return xmin(aab) ≤ p[1] ≤ xmax(aab) &&    
-           ymin(aab) ≤ p[2] ≤ ymax(aab)    
-end  
 
 function vertices(aab::AABox{2})
     # Ordered CCW

@@ -4,9 +4,12 @@ export QuadraticQuadrilateral,
        QuadraticQuadrilateral2d
 
 export interpolate_quadratic_quadrilateral,
-       jacobian_quadratic_quadrilateral,
        jacobian,
-       area
+       quadratic_quadrilateral_jacobian,
+       area,
+       centroid,
+       edge,
+       edges
 
 # QUADRATIC QUADRILATERAL
 # -----------------------------------------------------------------------------
@@ -17,7 +20,7 @@ export interpolate_quadratic_quadrilateral,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct QuadraticQuadrilateral{D, T} <: Polygon{D, T}
+struct QuadraticQuadrilateral{D, T} <: QuadraticPolygon{D, T}
     vertices::Vec{8, Point{D, T}}
 end
 
@@ -35,8 +38,8 @@ Base.broadcastable(t::QuadraticQuadrilateral) = Ref(t)
 # -- Constructors --
 
 function QuadraticQuadrilateral(
-        p1::Point{D, T}, 
-        p2::Point{D, T}, 
+        p1::Point{D, T},
+        p2::Point{D, T},
         p3::Point{D, T},
         p4::Point{D, T},
         p5::Point{D, T},
@@ -48,17 +51,18 @@ end
 
 # -- Interpolation --
 
-function interpolate_quadratic_quadrilateral(p1::T, p2::T, p3::T, p4::T, 
+# Assumes the base linear quadrilateral is convex
+function interpolate_quadratic_quadrilateral(p1::T, p2::T, p3::T, p4::T,
                                              p5::T, p6::T, p7::T, p8::T, r, s) where {T}
-    ξ = 2 * r - 1    
-    η = 2 * s - 1    
-    return ((1 - ξ) * (1 - η) * (-ξ - η - 1) / 4) * p1 +    
-           ((1 + ξ) * (1 - η) * ( ξ - η - 1) / 4) * p2 +    
-           ((1 + ξ) * (1 + η) * ( ξ + η - 1) / 4) * p3 +    
-           ((1 - ξ) * (1 + η) * (-ξ + η - 1) / 4) * p4 +    
-                      ((1 - ξ * ξ) * (1 - η) / 2) * p5 +    
-                      ((1 - η * η) * (1 + ξ) / 2) * p6 +    
-                      ((1 - ξ * ξ) * (1 + η) / 2) * p7 +    
+    ξ = 2 * r - 1
+    η = 2 * s - 1
+    return ((1 - ξ) * (1 - η) * (-ξ - η - 1) / 4) * p1 +
+           ((1 + ξ) * (1 - η) * ( ξ - η - 1) / 4) * p2 +
+           ((1 + ξ) * (1 + η) * ( ξ + η - 1) / 4) * p3 +
+           ((1 - ξ) * (1 + η) * (-ξ + η - 1) / 4) * p4 +
+                      ((1 - ξ * ξ) * (1 - η) / 2) * p5 +
+                      ((1 - η * η) * (1 + ξ) / 2) * p6 +
+                      ((1 - ξ * ξ) * (1 + η) / 2) * p7 +
                       ((1 - η * η) * (1 - ξ) / 2) * p8
 end
 
@@ -81,7 +85,8 @@ end
 
 # -- Jacobian --
 
-function jacobian_quadratic_quadrilateral(p1::T, p2::T, p3::T, p4::T, 
+# Assumes the base linear quadrilateral is convex
+function quadratic_quadrilateral_jacobian(p1::T, p2::T, p3::T, p4::T,
                                           p5::T, p6::T, p7::T, p8::T, r, s) where {T}
     ξ = 2 * r - 1
     η = 2 * s - 1
@@ -112,7 +117,7 @@ function jacobian_quadratic_quadrilateral(p1::T, p2::T, p3::T, p4::T,
     return Mat(∂r, ∂s)
 end
 
-function jacobian_quadratic_quadrilateral(vertices::Vec{8}, r, s)
+function quadratic_quadrilateral_jacobian(vertices::Vec{8}, r, s)
     ξ = 2 * r - 1
     η = 2 * s - 1
     ∂r = (η * (1 - η) / 2) * (vertices[1] - vertices[2]) +
@@ -143,11 +148,12 @@ function jacobian_quadratic_quadrilateral(vertices::Vec{8}, r, s)
 end
 
 function jacobian(q::QuadraticQuadrilateral{D, T}, r::T, s::T) where {D, T}
-    return jacobian_quadratic_quadrilateral(q.vertices, r, s)
+    return quadratic_quadrilateral_jacobian(q.vertices, r, s)
 end
 
 # -- Measure --
 
+# Assumes the base linear quadrilateral is convex
 function area(q::QuadraticQuadrilateral{2, T}) where {T}
     # The area enclosed by the 4 quadratic edges + the area enclosed
     # by the quadrilateral (p1, p2, p3, p4)
@@ -156,16 +162,48 @@ function area(q::QuadraticQuadrilateral{2, T}) where {T}
                            (q[7] - q[3]) × (q[4] - q[3])  +
                            (q[8] - q[4]) × (q[1] - q[4]))
 
-    quad_area = ((q[2] - q[1]) × (q[3] - q[1]) -       
+    quad_area = ((q[2] - q[1]) × (q[3] - q[1]) -
                  (q[4] - q[1]) × (q[3] - q[1]))  / 2
 
     return edge_area + quad_area
 end
 
+# -- Centroid --
+
+# Assumes the base linear quadrilateral is convex
+function centroid(q::QuadraticQuadrilateral{2, T}) where {T}
+    # By geometric decomposition into a quadrilateral and the 4 areas
+    # enclosed by the quadratic edges.
+    Aq = quadrilateral_area(q[1], q[2], q[3], q[4])
+    Cq = quadrilateral_centroid(q[1], q[2], q[3], q[4])
+    A₁ = area_enclosed_by_quadratic_segment(q[1], q[2], q[5])
+    A₂ = area_enclosed_by_quadratic_segment(q[2], q[3], q[6])
+    A₃ = area_enclosed_by_quadratic_segment(q[3], q[4], q[7])
+    A₄ = area_enclosed_by_quadratic_segment(q[4], q[1], q[8])
+    C₁ = centroid_of_area_enclosed_by_quadratic_segment(q[1], q[2], q[5])
+    C₂ = centroid_of_area_enclosed_by_quadratic_segment(q[2], q[3], q[6])
+    C₃ = centroid_of_area_enclosed_by_quadratic_segment(q[3], q[4], q[7])
+    C₄ = centroid_of_area_enclosed_by_quadratic_segment(q[4], q[1], q[8])
+    return (Aq * Cq + A₁ * C₁ + A₂ * C₂ + A₃ * C₃ + A₄ * C₄) / (Aq + A₁ + A₂ + A₃ + A₄)
+end
+
+# -- Edges --
+
+function edge(i::Integer, q::QuadraticQuadrilateral)
+    # Assumes 1 ≤ i ≤ 4.
+    if i < 4
+        return QuadraticSegment(q[i], q[i+1], q[i+4])
+    else
+        return QuadraticSegment(q[4], q[1], q[8])
+    end
+end
+
+edges(q::QuadraticQuadrilateral) = (edge(i, q) for i in 1:4)
+
 # -- IO --
 
 function Base.show(io::IO, q::QuadraticQuadrilateral{D, T}) where {D, T}
-    print(io, "QuadraticQuadrilateral", D) 
+    print(io, "QuadraticQuadrilateral", D)
     if T === Float32
         print(io, 'f')
     elseif T === Float64
@@ -173,8 +211,8 @@ function Base.show(io::IO, q::QuadraticQuadrilateral{D, T}) where {D, T}
     else
         print(io, '?')
     end
-    print('(', q.vertices[1], ", ", 
-               q.vertices[2], ", ", 
+    print('(', q.vertices[1], ", ",
+               q.vertices[2], ", ",
                q.vertices[3], ", ",
                q.vertices[4], ", ",
                q.vertices[5], ", ",
