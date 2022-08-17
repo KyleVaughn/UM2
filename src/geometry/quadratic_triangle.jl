@@ -125,10 +125,10 @@ function centroid(t::QuadraticTriangle{2, T}) where {T}
     Aₜ = triangle_area(t[1], t[2], t[3])
     Cₜ = triangle_centroid(t[1], t[2], t[3])
     A₁ = area_enclosed_by_quadratic_segment(t[1], t[2], t[4])
-    C₁ = centroid_of_area_enclosed_by_quadratic_segment(t[1], t[2], t[4])
     A₂ = area_enclosed_by_quadratic_segment(t[2], t[3], t[5])
-    C₂ = centroid_of_area_enclosed_by_quadratic_segment(t[2], t[3], t[5])
     A₃ = area_enclosed_by_quadratic_segment(t[3], t[1], t[6])
+    C₁ = centroid_of_area_enclosed_by_quadratic_segment(t[1], t[2], t[4])
+    C₂ = centroid_of_area_enclosed_by_quadratic_segment(t[2], t[3], t[5])
     C₃ = centroid_of_area_enclosed_by_quadratic_segment(t[3], t[1], t[6])
     return (Aₜ*Cₜ + A₁ * C₁ + A₂ * C₂ + A₃ * C₃) / (Aₜ + A₁ + A₂ + A₃)
 end
