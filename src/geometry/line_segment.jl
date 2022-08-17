@@ -3,7 +3,8 @@ export LineSegment,
        LineSegment2f,
        LineSegment2d
 
-export interpolate_line_segment,
+export vertices,
+       interpolate_line_segment,
        jacobian,
        line_segment_jacobian,
        arclength,
@@ -33,6 +34,10 @@ const LineSegment2d    = LineSegment2{Float64}
 
 Base.getindex(l::LineSegment, i) = l.vertices[i]
 Base.broadcastable(l::LineSegment) = Ref(l)
+
+# -- Accessors --
+
+vertices(l::LineSegment) = l.vertices
 
 # -- Constructors --
 

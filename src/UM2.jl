@@ -1,19 +1,31 @@
 module UM2
 
+const UM2_ENABLE_VIS = false 
+
 include("common/types.jl")
+
 include("math/vec.jl")
 include("math/mat.jl")
+
 include("geometry/point.jl")
 include("geometry/axis_aligned_box.jl")
-include("geometry/polytope.jl")
+include("geometry/abstract_types.jl")
 include("geometry/line_segment.jl")
 include("geometry/quadratic_segment.jl")
 include("geometry/triangle.jl")
 include("geometry/quadrilateral.jl")
 include("geometry/quadratic_triangle.jl")
 include("geometry/quadratic_quadrilateral.jl")
+
+include("mesh/abstract_types.jl")
+
+if UM2_ENABLE_VIS
+    include("vis/setup.jl")
+    include("vis/point.jl")
+    include("vis/abstract_edge.jl")
+    include("vis/abstract_face.jl")
+end
 #include("quadrature/Quadrature.jl")
-#include("geometry/Geometry.jl")
 #include("math/Math.jl")
 #include("mesh/Mesh.jl")
 #include("raytracing/Raytracing.jl")

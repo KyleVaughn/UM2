@@ -3,7 +3,8 @@ export Triangle,
        Triangle2f,
        Triangle2d
 
-export interpolate_triangle,
+export vertices,
+       interpolate_triangle,
        jacobian,
        triangle_jacobian,
        area,
@@ -23,7 +24,7 @@ export interpolate_triangle,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct Triangle{D, T} <: AbstractPolygon{D, T}
+struct Triangle{D, T} <: AbstractLinearPolygon{D, T}
     vertices::Vec{3, Point{D, T}}
 end
 
@@ -37,6 +38,10 @@ const Triangle2d = Triangle2{Float64}
 
 Base.getindex(t::Triangle, i) = t.vertices[i]
 Base.broadcastable(t::Triangle) = Ref(t)
+
+# -- Accessors --
+
+vertices(t::Triangle) = t.vertices
 
 # -- Constructors --
 

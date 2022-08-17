@@ -24,7 +24,7 @@ export interpolate_quadrilateral,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct Quadrilateral{D, T} <: AbstractPolygon{D, T}
+struct Quadrilateral{D, T} <: AbstractLinearPolygon{D, T}
     vertices::Vec{4, Point{D, T}}
 end
 
@@ -129,9 +129,9 @@ end
 function edge(i::Integer, q::Quadrilateral)
     # Assumes 1 ≤ i ≤ 4.
     if i < 4
-        return LineSegment(t[i], t[i+1])
+        return LineSegment(q[i], q[i+1])
     else
-        return LineSegment(t[4], t[1])
+        return LineSegment(q[4], q[1])
     end
 end
 

@@ -3,7 +3,7 @@ export Vec,
        Vec1f, Vec2f, Vec3f,
        Vec1d, Vec2d, Vec3d
 
-export ⋅, ×, dot, cross, norm2, norm, normalize
+export ⋅, ×, coord, dot, cross, norm2, norm, normalize
 
 # VECTOR
 # --------------------------------------------------------------------------- 
@@ -32,6 +32,10 @@ const Vec3d = Vec3{f64}
 Base.getindex(v::Vec, i) = Base.getindex(v.coord, i)
 Base.size(v::Vec{D}) where {D} = (D,)
 Base.length(v::Vec{D}) where {D} = D 
+
+# -- Accessors --
+
+coord(v::Vec) = v.coord
 
 # -- Constructors --
 
