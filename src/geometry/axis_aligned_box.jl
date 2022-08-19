@@ -8,9 +8,9 @@ export AABox,
        AABB2d
 
 export minima, maxima,
-       x_min, y_min, z_min,
-       x_max, y_max, z_max,
-       Δx, Δy, Δz,
+       x_min, y_min,
+       x_max, y_max,
+       Δx, Δy,
        area,
        bounding_box
 
@@ -42,16 +42,13 @@ const AABB2d = AABox2d
 minima(aab::AABox) = aab.minima
 maxima(aab::AABox) = aab.maxima
 
-x_min(aab::AABox) = aab.minima[1]
-y_min(aab::AABox) = aab.minima[2]
-z_min(aab::AABox{3}) = aab.minima[3]
-x_max(aab::AABox) = aab.maxima[1]
-y_max(aab::AABox) = aab.maxima[2]
-z_max(aab::AABox{3}) = aab.maxima[3]
+x_min(aab::AABox{2}) = aab.minima[1]
+y_min(aab::AABox{2}) = aab.minima[2]
+x_max(aab::AABox{2}) = aab.maxima[1]
+y_max(aab::AABox{2}) = aab.maxima[2]
 
-Δx(aab::AABox) = x_max(aab) - x_min(aab)
-Δy(aab::AABox) = y_max(aab) - y_min(aab)
-Δz(aab::AABox{3}) = z_max(aab) - z_min(aab)
+Δx(aab::AABox{2}) = x_max(aab) - x_min(aab)
+Δy(aab::AABox{2}) = y_max(aab) - y_min(aab)
 
 # -- Measure --
 
@@ -83,9 +80,9 @@ end
 
 # Vector of points
 function bounding_box(points::Vector{Point{2, T}}) where {T}
-    xmin = ymin = typemax(T)
-    xmax = ymax = typemin(T)
-    for i in 1:length(points)
+    xmin, ymin = points[1]
+    xmax, ymax = points[1]
+    for i in 2:length(points)
         x, y = points[i]
         xmin = min(xmin, x)
         ymin = min(ymin, y)
@@ -97,9 +94,9 @@ end
 
 # Vec of points
 function bounding_box(points::Vec{L, Point{2, T}}) where {L, T}
-    xmin = ymin = typemax(T)
-    xmax = ymax = typemin(T)
-    for i in 1:L
+    xmin, ymin = points[1]
+    xmax, ymax = points[1]  
+    for i in 2:length(points)
         x, y = points[i]
         xmin = min(xmin, x)
         ymin = min(ymin, y)
@@ -112,13 +109,13 @@ end
 # -- IO --
 
 function Base.show(io::IO, aab::AABox{D, T}) where {D, T}
-    print(io, "AABox", D)
+    type_char = '?'
     if T === Float32
-        print(io, 'f')
+        type_char = 'f'
     elseif T === Float64
-        print(io, 'd')
-    else
-        print(io, '?')
+        type_char = 'd'
     end
-    return print(io, "(", minima(aab), maxima(aab), ")")
+    print(io, "AABox", D, type_char, '(', 
+        aab.minima, ", ", 
+        aab.maxima, ')')
 end

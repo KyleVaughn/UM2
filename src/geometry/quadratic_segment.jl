@@ -29,7 +29,7 @@ export interpolate_quadratic_segment,
 #  𝗯 = -3P₁ - P₂ + 4P₃
 #  𝗰 = P₁
 
-struct QuadraticSegment{D, T} <: AbstractEdge{D, T}
+struct QuadraticSegment{D, T} <: AbstractPolygonEdge{D, T}
     vertices::Vec{3, Point{D, T}}
 end
 
@@ -226,9 +226,9 @@ function bounding_box(q::QuadraticSegment{2, T}) where {T}
     q3 = q[3]
     𝘃₁₃ = q3 - q1
     𝘃₂₃ = q3 - q2
-    𝗮 = -2(𝘃₁₃ + 𝘃₂₃); a_x = 𝗮[1]; a_y = 𝗮[2]
-    𝗯 = 3𝘃₁₃ + 𝘃₂₃;    b_x = 𝗯[1]; b_y = 𝗯[2]
-    𝗿 = 𝗯 / (-2 * 𝗮);  r_x = 𝗿[1]; r_y = 𝗿[2]
+    a_x, a_y = -2(𝘃₁₃ + 𝘃₂₃)
+    b_x, b_y = 3𝘃₁₃ + 𝘃₂₃
+    r_x, r_y = 𝗯 / (-2 * 𝗮)
     xmin = min(q1[1], q2[1]); ymin = min(q1[2], q2[2])
     xmax = max(q1[1], q2[1]); ymax = max(q1[2], q2[2])
     if 0 < 𝗿[1] < 1

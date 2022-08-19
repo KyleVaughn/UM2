@@ -1,6 +1,6 @@
 module UM2
 
-const UM2_ENABLE_VIS = true 
+const UM2_ENABLE_VIS = false 
 
 include("common/types.jl")
 
@@ -28,8 +28,6 @@ if UM2_ENABLE_VIS
     include("vis/abstract_face.jl")
 end
 #include("quadrature/Quadrature.jl")
-#include("math/Math.jl")
-#include("mesh/Mesh.jl")
 #include("raytracing/Raytracing.jl")
 #include("physics/Physics.jl")
 #include("mpact/MPACT.jl")

@@ -2,6 +2,9 @@ export Point,
        Point2,
        Point2f,
        Point2d,
+       Point3,
+       Point3f,
+       Point3d,
        EPS_POINT,
        EPS_POINT2,
        INF_POINT
@@ -31,7 +34,12 @@ const Point2 = Vec{2}
 const Point2f = Vec2f
 const Point2d = Vec2d
 
+const Point3 = Vec{3}
+const Point3f = Vec3f
+const Point3d = Vec3d
+
 # -- Methods --
+
 distance2(a::Point, b::Point) = norm2(a - b)
 distance(a::Point, b::Point) = norm(a - b)
 midpoint(a::Point, b::Point) = (a + b) / 2

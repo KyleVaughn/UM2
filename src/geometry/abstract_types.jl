@@ -1,4 +1,5 @@
 export AbstractEdge,
+       AbstractPolygonEdge,
        AbstractFace,
        AbstractPolygon,
        AbstractLinearPolygon,
@@ -6,6 +7,7 @@ export AbstractEdge,
 
 # Parametric dimension = 1
 abstract type AbstractEdge{D, T <: AbstractFloat} end
+abstract type AbstractPolygonEdge{D, T} <: AbstractEdge{D, T} end
 
 # Parametric dimension = 2
 abstract type AbstractFace{D, T <: AbstractFloat} end
