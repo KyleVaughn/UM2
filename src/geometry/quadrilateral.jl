@@ -109,9 +109,9 @@ function centroid(q::Quadrilateral{2})
     v₁₃ = q[3] - q[1]
     v₁₄ = q[4] - q[1]
     A₁ = v₁₂ × v₁₃
-    A₂ = v₁₃ × v₁₄
+    mA₂ = v₁₄ × v₁₃ # minus A₂. Flipped for potential SSE optimization
     P₁₃ = q[1] + q[3]
-    return (A₁ * (P₁₃ + q[2]) + A₂ * (P₁₃ + q[4])) / (3 * (A₁ + A₂))
+    return (A₁ * (P₁₃ + q[2]) - mA₂ * (P₁₃ + q[4])) / (3 * (A₁ - mA₂))
 end
 
 function quadrilateral_centroid(p1::P, p2::P, p3::P, p4::P) where {P <: Point{2}}
@@ -119,9 +119,9 @@ function quadrilateral_centroid(p1::P, p2::P, p3::P, p4::P) where {P <: Point{2}
     v₁₃ = p3 - p1
     v₁₄ = p4 - p1
     A₁ = v₁₂ × v₁₃
-    A₂ = v₁₃ × v₁₄
+    mA₂ = v₁₄ × v₁₃ # minus A₂. Flipped for potential SSE optimization
     P₁₃ = p1 + p3
-    return (A₁ * (P₁₃ + p2) + A₂ * (P₁₃ + p4)) / (3 * (A₁ + A₂))
+    return (A₁ * (P₁₃ + p2) - mA₂ * (P₁₃ + p4)) / (3 * (A₁ - mA₂))
 end
 
 # -- Edges --

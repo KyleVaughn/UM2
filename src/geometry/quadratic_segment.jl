@@ -228,15 +228,16 @@ function bounding_box(q::QuadraticSegment{2, T}) where {T}
     𝘃₂₃ = q3 - q2
     a_x, a_y = -2(𝘃₁₃ + 𝘃₂₃)
     b_x, b_y = 3𝘃₁₃ + 𝘃₂₃
-    r_x, r_y = 𝗯 / (-2 * 𝗮)
+    r_x = b_x / (-2 * a_x)
+    r_y = b_y / (-2 * a_y)
     xmin = min(q1[1], q2[1]); ymin = min(q1[2], q2[2])
     xmax = max(q1[1], q2[1]); ymax = max(q1[2], q2[2])
-    if 0 < 𝗿[1] < 1
+    if 0 < r_x < 1
         x_stationary = r_x * r_x * a_x + r_x * b_x + q1[1]
         xmin = min(xmin, x_stationary)
         xmax = max(xmax, x_stationary)
     end
-    if 0 < 𝗿[2] < 1
+    if 0 < r_y < 1
         y_stationary = r_y * r_y * a_y + r_y * b_y + q1[2]
         ymin = min(ymin, y_stationary)
         ymax = max(ymax, y_stationary)
@@ -293,8 +294,9 @@ function isleft(P::Point{2, T}, q::QuadraticSegment{2, T}) where {T}
         e₃ = -d / a
         A = 2e₁^3 - 9e₁ * e₂ + 27e₃
         B = e₁^2 - 3e₂
-        if A^2 - 4B^3 > 0 # one real root
-            s₁ = ∛((A + √(A^2 - 4B^3)) / 2)
+        disc = A^2 - 4B^3
+        if 0 < disc # one real root
+            s₁ = ∛((A + √(disc)) / 2)
             if s₁ == 0
                 s₂ = s₁
             else
@@ -304,7 +306,7 @@ function isleft(P::Point{2, T}, q::QuadraticSegment{2, T}) where {T}
             return 0 ≤ jacobian(q, r) × (P - q(r))
         else # three real roots
             # t₁ is complex cube root
-            t₁ = exp(log((A + √(complex(A^2 - 4B^3))) / 2) / 3)
+            t₁ = exp(log((A + √(complex(disc))) / 2) / 3)
             if t₁ == 0
                 t₂ = t₁
             else
@@ -328,7 +330,6 @@ function isleft(P::Point{2, T}, q::QuadraticSegment{2, T}) where {T}
             d3 = distance2(P, q(r3))
             if d3 < d
                 r = r3
-                d = d3
             end
 
             return 0 ≤ jacobian(q, r) × (P - q(r))
