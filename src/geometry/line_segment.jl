@@ -20,7 +20,7 @@ export vertices,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct LineSegment{D, T} <: AbstractPolygonEdge{D, T}
+struct LineSegment{D, T}
     vertices::Vec{2, Point{D, T}}
 end
 

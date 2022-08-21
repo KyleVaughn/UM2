@@ -24,7 +24,7 @@ export vertices,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct Triangle{D, T} <: AbstractLinearPolygon{D, T}
+struct Triangle{D, T}
     vertices::Vec{3, Point{D, T}}
 end
 

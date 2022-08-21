@@ -22,7 +22,7 @@ export interpolate_quadratic_triangle,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct QuadraticTriangle{D, T} <: AbstractQuadraticPolygon{D, T}
+struct QuadraticTriangle{D, T}
     vertices::Vec{6, Point{D, T}}
 end
 
@@ -161,8 +161,8 @@ Base.in(P::Point{2}, t::QuadraticTriangle{2}) = all(edge -> isleft(P, edge), edg
 # -- Triangulation --
 
 # N is the number of segments to divide each edge into.
-# Return a Vector of the 2 * N^2 triangles that approximately partition 
-# the quadratic quadrilateral.
+# Return a Vector of the N^2 triangles that approximately partition 
+# the quadratic triangle.
 function triangulate(t::QuadraticTriangle{D, T}, N::Integer) where {D, T}
     # Walk up the triangle in parametric coordinates (r as fast variable,
     # s as slow variable).

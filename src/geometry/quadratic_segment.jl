@@ -29,7 +29,7 @@ export interpolate_quadratic_segment,
 #  𝗯 = -3P₁ - P₂ + 4P₃
 #  𝗰 = P₁
 
-struct QuadraticSegment{D, T} <: AbstractPolygonEdge{D, T}
+struct QuadraticSegment{D, T}
     vertices::Vec{3, Point{D, T}}
 end
 

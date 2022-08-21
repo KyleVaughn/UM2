@@ -9,8 +9,19 @@ function convert_arguments(LS::Type{<:LineSegments}, aab::AABox{2})
                                    LineSegment(p4, p1) ])
 end
 
-function convert_arguments(LS::Type{<:LineSegments}, R::Vector{<:AABox})
-    return convert_arguments(LS, vcat([convert_arguments(LS, aab)[1] for aab in R]...))
+function convert_arguments(LS::Type{<:LineSegments}, aabs::Vector{AABox{2, T}}) where {T}
+    lines = Vector{LineSegment{D, T}}(undef, 4 * length(aabs))
+    for i in eachindex(aabs)
+        lines[4 * i - 3] = LineSegment(Point(x_min(aabs[i]), y_min(aabs[i])), 
+                                       Point(x_max(aabs[i]), y_min(aabs[i])))
+        lines[4 * i - 2] = LineSegment(Point(x_max(aabs[i]), y_min(aabs[i])),
+                                       Point(x_max(aabs[i]), y_max(aabs[i])))
+        lines[4 * i - 1] = LineSegment(Point(x_max(aabs[i]), y_max(aabs[i])),
+                                       Point(x_min(aabs[i]), y_max(aabs[i])))
+        lines[4 * i    ] = LineSegment(Point(x_min(aabs[i]), y_max(aabs[i])),
+                                       Point(x_min(aabs[i]), y_min(aabs[i])))
+    end
+    return convert_arguments(LS, lines) 
 end
 
 function convert_arguments(M::Type{<:GLMakieMesh}, aab::AABox{2})

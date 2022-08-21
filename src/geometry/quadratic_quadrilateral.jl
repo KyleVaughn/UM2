@@ -22,7 +22,7 @@ export interpolate_quadratic_quadrilateral,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct QuadraticQuadrilateral{D, T} <: AbstractQuadraticPolygon{D, T}
+struct QuadraticQuadrilateral{D, T}
     vertices::Vec{8, Point{D, T}}
 end
 
@@ -205,10 +205,8 @@ edges(q::QuadraticQuadrilateral) = (edge(i, q) for i in 1:4)
 # -- Bounding box --
 
 function bounding_box(q::QuadraticQuadrilateral)
-    return bounding_box(edge(1, q)) ∪
-           bounding_box(edge(2, q)) ∪
-           bounding_box(edge(3, q)) ∪
-           bounding_box(edge(4, q))
+    return (bounding_box(edge(1, q)) ∪ bounding_box(edge(2, q))) ∪
+           (bounding_box(edge(3, q)) ∪ bounding_box(edge(4, q)))
 end
 
 # -- In --
@@ -220,8 +218,8 @@ end
 # -- Triangulation --
 
 # N is the number of segments to divide each edge into.
-# Return a Vector of the N^2 triangles that approximately partition
-# the quadratic triangle.
+# Return a Vector of the 2 * N^2 triangles that approximately partition
+# the quadratic quadrilateral.
 function triangulate(q::QuadraticQuadrilateral{D, T}, N::Integer) where {D, T}
     # Walk up the quadrilateral in parametric coordinates (r as fast variable,
     # s as slow variable).

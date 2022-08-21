@@ -6,7 +6,7 @@ export TriMesh
 # A 2D triangle mesh.
 #
 
-struct TriMesh{T, I} <: AbstractLinearPolygonMesh{2, T, I}
+struct TriMesh{T, I}
 
     # Name of the mesh.
     name::String
