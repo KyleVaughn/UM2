@@ -1,8 +1,9 @@
 module UM2
 
-const UM2_ENABLE_VIS = false 
+const UM2_ENABLE_VIS = true
 
 include("common/types.jl")
+include("common/constants.jl")
 
 include("math/vec.jl")
 include("math/mat.jl")
@@ -20,12 +21,17 @@ include("geometry/quadratic_quadrilateral.jl")
 include("mesh/abstract_types.jl")
 include("mesh/tri_mesh.jl")
 
+include("ray_casting/ray.jl")
+include("ray_casting/angular_quadrature.jl")
+include("ray_casting/modular_rays.jl")
+
 if UM2_ENABLE_VIS
     include("vis/setup.jl")
     include("vis/point.jl")
     include("vis/abstract_edge.jl")
     include("vis/axis_aligned_box.jl")
     include("vis/abstract_face.jl")
+    include("vis/ray.jl")
 end
 #include("quadrature/Quadrature.jl")
 #include("raytracing/Raytracing.jl")
