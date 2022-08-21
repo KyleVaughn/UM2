@@ -82,7 +82,7 @@ function get_modular_rays(ang_quad::ProductAngularQuadrature{T},
                           aab::AABox2{T}) where {T}
     nγ = length(ang_quad.γ)
     rays = Vector{Vector{Ray2{T}}}(undef, 2 * nγ)
-    for i in 1:length(ang_quad.γ)
+    for i in 1:ny
         rays[2 * i - 1] = get_modular_rays(       ang_quad.γ[i], s, aab)
         rays[2 * i    ] = get_modular_rays(T(π) - ang_quad.γ[i], s, aab)
     end
