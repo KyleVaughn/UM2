@@ -63,11 +63,11 @@ function chebyshev_angular_quadrature(M::Integer, ::Type{T}) where {T <: Abstrac
     return weights, angles
 end
 
-function angular_quadrature(azimuthal_form::AbstractQuadratureType,
-                            azimuthal_degree::Integer,
-                            polar_form::AbstractQuadratureType,
-                            polar_degree::Integer,
-                            ::Type{T}) where {T <: AbstractFloat}
+function ProductAngularQuadrature(azimuthal_form::AbstractQuadratureType,
+                                  azimuthal_degree::Integer,
+                                  polar_form::AbstractQuadratureType,
+                                  polar_degree::Integer,
+                                  ::Type{T}) where {T <: AbstractFloat}
 
     if azimuthal_form isa ChebyshevType
         azi_weights, azi_angles = chebyshev_angular_quadrature(azimuthal_degree, T)
