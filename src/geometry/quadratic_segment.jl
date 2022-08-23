@@ -316,20 +316,33 @@ function isleft(P::Point{2, T}, q::QuadraticSegment{2, T}) where {T}
             ζ₂ = conj(ζ₁)
 
             # Pick the point closest to P
-            r = real((s₀ + t₁ + t₂)) / 3
-            d = distance2(P, q(r))
+            r = T(0)
+            d = T(INF_POINT) 
+
+            r1 = real((s₀ + t₁ + t₂)) / 3
+            if 0 < r1 < 1
+                d1 = distance2(P, q(r1))
+                if d1 < d
+                    r = r1
+                    d = d1
+                end
+            end
 
             r2 = real((s₀ + ζ₂ * t₁ + ζ₁ * t₂)) / 3
-            d2 = distance2(P, q(r2))
-            if d2 < d
-                r = r2
-                d = d2
+            if 0 < r2 < 1
+                d2 = distance2(P, q(r2))
+                if d2 < d
+                    r = r2
+                    d = d2
+                end
             end
 
             r3 = real((s₀ + ζ₁ * t₁ + ζ₂ * t₂)) / 3
-            d3 = distance2(P, q(r3))
-            if d3 < d
-                r = r3
+            if 0 < r3 < 1
+                d3 = distance2(P, q(r3))
+                if d3 < d
+                    r = r3
+                end
             end
 
             return 0 ≤ jacobian(q, r) × (P - q(r))
