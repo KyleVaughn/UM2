@@ -25,6 +25,7 @@ include("mesh/tri_mesh.jl")
 include("ray_casting/ray.jl")
 include("ray_casting/angular_quadrature.jl")
 include("ray_casting/modular_rays.jl")
+include("ray_casting/intersect/ray-line_segment.jl")
 
 if UM2_ENABLE_VIS
     include("vis/setup.jl")
