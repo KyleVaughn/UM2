@@ -36,27 +36,27 @@ const Quadrilateral2d = Quadrilateral2{Float64}
 
 # -- Base --
 
-Base.getindex(t::Quadrilateral, i) = t.vertices[i]
-Base.broadcastable(t::Quadrilateral) = Ref(t)
+Base.getindex(Q::Quadrilateral, i) = Q.vertices[i]
+Base.broadcastable(Q::Quadrilateral) = Ref(Q)
 
 # -- Constructors --
 
 function Quadrilateral(
-        p1::Point{D, T},
-        p2::Point{D, T},
-        p3::Point{D, T},
-        p4::Point{D, T}) where {D, T}
-    return Quadrilateral{D, T}(Vec(p1, p2, p3, p4))
+        P1::Point{D, T},
+        P2::Point{D, T},
+        P3::Point{D, T},
+        P4::Point{D, T}) where {D, T}
+    return Quadrilateral{D, T}(Vec(P1, P2, P3, P4))
 end
 
 # -- Interpolation --
 
 # Assumes a convex quadrilateral
-function interpolate_quadrilateral(p1::T, p2::T, p3::T, p4::T, r, s) where {T}
-    return ((1 - r) * (1 - s)) * p1 +
-           (     r  * (1 - s)) * p2 +
-           (     r  *      s ) * p3 +
-           ((1 - r) *      s ) * p4
+function interpolate_quadrilateral(P1::T, P2::T, P3::T, P4::T, r, s) where {T}
+    return ((1 - r) * (1 - s)) * P1 +
+           (     r  * (1 - s)) * P2 +
+           (     r  *      s ) * P3 +
+           ((1 - r) *      s ) * P4
 end
 
 function interpolate_quadrilateral(vertices::Vec{4}, r, s)
@@ -66,16 +66,16 @@ function interpolate_quadrilateral(vertices::Vec{4}, r, s)
            ((1 - r) *      s ) * vertices[4]
 end
 
-function (q::Quadrilateral{D, T})(r::T) where {D, T}
-    return interpolate_quadrilateral(q.vertices, r, s)
+function (Q::Quadrilateral{D, T})(r::T) where {D, T}
+    return interpolate_quadrilateral(Q.vertices, r, s)
 end
 
 # -- Jacobian --
 
 # Assumes a convex quadrilateral
-function quadrilateral_jacobian(p1::T, p2::T, p3::T, p4::T, r, s) where {T}
-    ∂r = (1 - s) * (p2 - p1) - s * (p4 - p3)
-    ∂s = (1 - r) * (p4 - p1) - r * (p2 - p3)
+function quadrilateral_jacobian(P1::T, P2::T, P3::T, P4::T, r, s) where {T}
+    ∂r = (1 - s) * (P2 - P1) - s * (P4 - P3)
+    ∂s = (1 - r) * (P4 - P1) - r * (P2 - P3)
     return Mat(∂r, ∂s)
 end
 
@@ -85,81 +85,81 @@ function quadrilateral_jacobian(vertices::Vec{4}, r, s)
     return Mat(∂r, ∂s)
 end
 
-function jacobian(q::Quadrilateral{D, T}, r::T, s::T) where {D, T}
-    return quadrilateral_jacobian(q.vertices, r, s)
+function jacobian(Q::Quadrilateral{D, T}, r::T, s::T) where {D, T}
+    return quadrilateral_jacobian(Q.vertices, r, s)
 end
 
 # -- Measure --
 
 # Assumes a convex quadrilateral
-function area(q::Quadrilateral{2})
-    return ((q[3] - q[1]) × (q[4] - q[2])) / 2
+function area(Q::Quadrilateral{2})
+    return ((Q[3] - Q[1]) × (Q[4] - Q[2])) / 2
 end
 
-function quadrilateral_area(p1::P, p2::P, p3::P, p4::P) where {P <: Point{2}}
-    return ((p3 - p1) × (p4 - p2)) / 2
+function quadrilateral_area(P1::P, P2::P, P3::P, P4::P) where {P <: Point{2}}
+    return ((P3 - P1) × (P4 - P2)) / 2
 end
 
 # -- Centroid --
 
 # Assumes a convex quadrilateral
-function centroid(q::Quadrilateral{2})
+function centroid(Q::Quadrilateral{2})
     # By geometric decomposition into two triangles
-    v₁₂ = q[2] - q[1]
-    v₁₃ = q[3] - q[1]
-    v₁₄ = q[4] - q[1]
-    A₁ = v₁₂ × v₁₃
-    mA₂ = v₁₄ × v₁₃ # minus A₂. Flipped for potential SSE optimization
-    P₁₃ = q[1] + q[3]
-    return (A₁ * (P₁₃ + q[2]) - mA₂ * (P₁₃ + q[4])) / (3 * (A₁ - mA₂))
+    v₁₂ = Q[2] - Q[1]
+    v₁₃ = Q[3] - Q[1]
+    v₁₄ = Q[4] - Q[1]
+    a₁ = v₁₂ × v₁₃
+    ma₂ = v₁₄ × v₁₃ # minus a₂. Flipped for potential SSE optimization
+    P₁₃ = Q[1] + Q[3]
+    return (a₁ * (P₁₃ + q[2]) - ma₂ * (P₁₃ + q[4])) / (3 * (a₁ - ma₂))
 end
 
-function quadrilateral_centroid(p1::P, p2::P, p3::P, p4::P) where {P <: Point{2}}
-    v₁₂ = p2 - p1
-    v₁₃ = p3 - p1
-    v₁₄ = p4 - p1
-    A₁ = v₁₂ × v₁₃
-    mA₂ = v₁₄ × v₁₃ # minus A₂. Flipped for potential SSE optimization
-    P₁₃ = p1 + p3
-    return (A₁ * (P₁₃ + p2) - mA₂ * (P₁₃ + p4)) / (3 * (A₁ - mA₂))
+function quadrilateral_centroid(P1::P, P2::P, P3::P, P4::P) where {P <: Point{2}}
+    v₁₂ = P2 - P1
+    v₁₃ = P3 - P1
+    v₁₄ = P4 - P1
+    a₁ = v₁₂ × v₁₃
+    ma₂ = v₁₄ × v₁₃ # minus a₂. Flipped for potential SSE optimization
+    P₁₃ = P1 + P3
+    return (a₁ * (P₁₃ + P2) - ma₂ * (P₁₃ + P4)) / (3 * (a₁ - ma₂))
 end
 
 # -- Edges --
 
-function edge(i::Integer, q::Quadrilateral)
+function edge(i::Integer, Q::Quadrilateral)
     # Assumes 1 ≤ i ≤ 4.
     if i < 4
-        return LineSegment(q[i], q[i+1])
+        return LineSegment(Q[i], Q[i+1])
     else
-        return LineSegment(q[4], q[1])
+        return LineSegment(Q[4], Q[1])
     end
 end
 
-edges(q::Quadrilateral) = (edge(i, q) for i in 1:4)
+edges(Q::Quadrilateral) = (edge(i, Q) for i in 1:4)
 
 # -- Bounding box --
 
-function bounding_box(q::Quadrilateral)
-    return bounding_box(q.vertices)
+function bounding_box(Q::Quadrilateral)
+    return bounding_box(Q.vertices)
 end
 
 # -- In --    
       
-Base.in(P::Point{2}, q::Quadrilateral{2}) = all(edge -> isleft(P, edge), edges(q))
+Base.in(P::Point{2}, Q::Quadrilateral{2}) = all(edge -> isleft(P, edge), edges(Q))
 
 # -- Triangulation --
 
 # Assumes a convex quadrilateral
-function triangulate(q::Quadrilateral{2})
+function triangulate(Q::Quadrilateral{2})
     return Vec(
-        Triangle(q[1], q[2], q[3]),
-        Triangle(q[1], q[3], q[4])
+        Triangle(Q[1], Q[2], Q[3]),
+        Triangle(Q[1], Q[3], Q[4])
        )
 end
 
 # -- IO --
 
-function Base.show(io::IO, q::Quadrilateral{D, T}) where {D, T}
+function Base.show(io::IO, Q::Quadrilateral{D, T}) where {D, T}
     type_char = '?'                                        
     if T === Float32
         type_char = 'f'
@@ -167,8 +167,8 @@ function Base.show(io::IO, q::Quadrilateral{D, T}) where {D, T}
         type_char = 'd'
     end
     print(io, "Quadrilateral", D, type_char, '(', 
-        q.vertices[1], ", ", 
-        q.vertices[2], ", ", 
-        q.vertices[3], ", ",
-        q.vertices[4], ')')
+        Q.vertices[1], ", ", 
+        Q.vertices[2], ", ", 
+        Q.vertices[3], ", ",
+        Q.vertices[4], ')')
 end

@@ -32,8 +32,8 @@ const LineSegment2d    = LineSegment2{Float64}
 
 # -- Base --
 
-Base.getindex(l::LineSegment, i) = l.vertices[i]
-Base.broadcastable(l::LineSegment) = Ref(l)
+Base.getindex(L::LineSegment, i) = L.vertices[i]
+Base.broadcastable(L::LineSegment) = Ref(L)
 
 # -- Accessors --
 
@@ -41,53 +41,53 @@ vertices(l::LineSegment) = l.vertices
 
 # -- Constructors --
 
-LineSegment(p1::Point{D, T}, p2::Point{D, T}) where {D, T} = LineSegment{D, T}(Vec(p1, p2))
+LineSegment(P1::Point{D, T}, P2::Point{D, T}) where {D, T} = LineSegment{D, T}(Vec(P1, P2))
 
 # -- Interpolation --
 
-function interpolate_line_segment(p1::T, p2::T, r) where {T}
-    return p1 + r * (p2 - p1)
+function interpolate_line_segment(P1::T, P2::T, r) where {T}
+    return P1 + r * (P2 - P1)
 end
 
 function interpolate_line_segment(vertices::Vec{2}, r)
     return vertices[1] + r * (vertices[2] - vertices[1])
 end
 
-function (l::LineSegment{D, T})(r::T) where {D, T}
-    return interpolate_line_segment(l.vertices, r)
+function (L::LineSegment{D, T})(r::T) where {D, T}
+    return interpolate_line_segment(L.vertices, r)
 end
 
 # -- Jacobian --
 
-function line_segment_jacobian(p1::T, p2::T, r) where {T}
-    return p2 - p1
+function line_segment_jacobian(P1::T, P2::T, r) where {T}
+    return P2 - P1
 end
 
 function line_segment_jacobian(vertices::Vec{2}, r)
     return vertices[2] - vertices[1]
 end
 
-function jacobian(l::LineSegment{D, T}, r::T) where {D, T}
-    return line_segment_jacobian(l.vertices, r)
+function jacobian(L::LineSegment{D, T}, r::T) where {D, T}
+    return line_segment_jacobian(L.vertices, r)
 end
 
 # -- Measure --
 
-arclength(l::LineSegment) = distance(l[1], l[2])
+arclength(L::LineSegment) = distance(L[1], L[2])
 
 # -- Bounding box --
 
-function bounding_box(l::LineSegment{2, T}) where {T}
-    return bounding_box(l.vertices)
+function bounding_box(L::LineSegment{2, T}) where {T}
+    return bounding_box(L.vertices)
 end
 
 # -- In --
 
-isleft(P::Point{2}, l::LineSegment{2}) = 0 ≤ (l[2] - l[1]) × (P - l[1])
+isleft(P::Point{2}, L::LineSegment{2}) = 0 ≤ (L[2] - L[1]) × (P - L[1])
 
 # -- IO --
 
-function Base.show(io::IO, l::LineSegment{D, T}) where {D, T}
+function Base.show(io::IO, L::LineSegment{D, T}) where {D, T}
     type_char = '?'
     if T === Float32
         type_char = 'f'
@@ -95,6 +95,6 @@ function Base.show(io::IO, l::LineSegment{D, T}) where {D, T}
         type_char = 'd'
     end
     print(io, "LineSegment", D, type_char, '(',
-        l.vertices[1], ", ",
-        l.vertices[2], ')')
+        L.vertices[1], ", ",
+        L.vertices[2], ')')
 end

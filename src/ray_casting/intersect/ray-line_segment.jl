@@ -1,4 +1,4 @@
-# Returns the value r such that r(r) = l(s). 
+# Returns the value r such that R(r) = L(s). 
 # If such a value does not exist, INF_POINT is returned instead.
 # 1) P₁ + s(P₂ - P₁) = O + r𝗱           subtracting P₁ from both sides
 # 2) s(P₂ - P₁) = (O - P₁) + r𝗱         let 𝘂 = O - P₁, 𝘃 = P₂-P₁
@@ -23,13 +23,13 @@
 # s = (𝘅 ⋅ 𝘇)/(𝘇 ⋅ 𝘇) = x₃/z₃ 
 # r = (𝘆 ⋅ 𝘇)/(𝘇 ⋅ 𝘇) = y₃/z₃ 
 # This result is valid if s ∈ [0, 1]
-function Base.intersect(r::Ray2{T}, l::LineSegment2{T}) where {T}
+function Base.intersect(R::Ray2{T}, L::LineSegment2{T}) where {T}
     # Could rearrange and test z for an early exit, but this case is infrequent,
     # so we settle for smaller code/one less branch that could be mispredicted.
-    𝘃 = l[2]     - l[1]
-    𝘂 = r.origin - l[1]
-    x = 𝘂 × r.direction
-    z = 𝘃 × r.direction
+    𝘃 = L[2]     - L[1]
+    𝘂 = R.origin - L[1]
+    x = 𝘂 × R.direction
+    z = 𝘃 × R.direction
     y = 𝘂 × 𝘃
     s = x / z
     r = y / z

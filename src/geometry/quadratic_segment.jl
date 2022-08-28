@@ -23,11 +23,11 @@ export interpolate_quadratic_segment,
 # See chapter 8 of the VTK book for more info.
 #
 # It is helpful to know:
-#  q(r) = r²𝗮 + 𝗯r + 𝗰,
+#  Q(r) = r²𝗮 + 𝗯r + C,
 # where
 #  𝗮 = 2(P₁ + P₂ - 2P₃)
 #  𝗯 = -3P₁ - P₂ + 4P₃
-#  𝗰 = P₁
+#  C = P₁
 
 struct QuadraticSegment{D, T}
     vertices::Vec{3, Point{D, T}}
@@ -41,21 +41,21 @@ const QuadraticSegment2d = QuadraticSegment2{Float64}
 
 # -- Base --
 
-Base.getindex(q::QuadraticSegment, i) = q.vertices[i]
-Base.broadcastable(q::QuadraticSegment) = Ref(q)
+Base.getindex(Q::QuadraticSegment, i) = Q.vertices[i]
+Base.broadcastable(Q::QuadraticSegment) = Ref(Q)
 
 # -- Constructors --
 
-function QuadraticSegment(p1::Point{D, T}, p2::Point{D, T}, p3::Point{D, T}) where {D, T}
-    return QuadraticSegment{D, T}(Vec(p1, p2, p3))
+function QuadraticSegment(P1::Point{D, T}, P2::Point{D, T}, P3::Point{D, T}) where {D, T}
+    return QuadraticSegment{D, T}(Vec(P1, P2, P3))
 end
 
 # -- Interpolation --
 
-function interpolate_quadratic_segment(p1::T, p2::T, p3::T, r) where {T}
-    return ((2 * r - 1) * (r - 1)) * p1 +
-           ((2 * r - 1) *  r     ) * p2 +
-           (-4 * r      * (r - 1)) * p3
+function interpolate_quadratic_segment(P1::T, P2::T, P3::T, r) where {T}
+    return ((2 * r - 1) * (r - 1)) * P1 +
+           ((2 * r - 1) *  r     ) * P2 +
+           (-4 * r      * (r - 1)) * P3
 end
 
 function interpolate_quadratic_segment(vertices::Vec, r)
@@ -64,15 +64,15 @@ function interpolate_quadratic_segment(vertices::Vec, r)
            (-4 * r      * (r - 1)) * vertices[3]
 end
 
-function (q::QuadraticSegment{D, T})(r::T) where {D, T}
-    return interpolate_quadratic_segment(q.vertices, r)
+function (Q::QuadraticSegment{D, T})(r::T) where {D, T}
+    return interpolate_quadratic_segment(Q.vertices, r)
 end
 
 # -- Jacobian --
 
-function quadratic_segment_jacobian(p1::T, p2::T, p3::T, r) where {T}
-    return (4 * r - 3) * (p1 - p3) +
-           (4 * r - 1) * (p2 - p3)
+function quadratic_segment_jacobian(P1::T, P2::T, P3::T, r) where {T}
+    return (4 * r - 3) * (P1 - P3) +
+           (4 * r - 1) * (P2 - P3)
 end
 
 function quadratic_segment_jacobian(vertices::Vec{3}, r)
@@ -80,34 +80,34 @@ function quadratic_segment_jacobian(vertices::Vec{3}, r)
            (4 * r - 1) * (vertices[2] - vertices[3])
 end
 
-function jacobian(q::QuadraticSegment{D, T}, r::T) where {D, T}
-    return quadratic_segment_jacobian(q.vertices, r)
+function jacobian(Q::QuadraticSegment{D, T}, r::T) where {D, T}
+    return quadratic_segment_jacobian(Q.vertices, r)
 end
 
 # -- Measure --
 
-function arclength(q::QuadraticSegment)
+function arclength(Q::QuadraticSegment)
     # The arc length integral may be reduced to an integral over the square root of a
     # quadratic polynomial using ‖𝘅‖ = √(𝘅 ⋅ 𝘅), which has an analytic solution.
     #              1             1
-    # arc length = ∫ ‖q′(r)‖dr = ∫ √(ar² + br + c) dr
+    # arc length = ∫ ‖Q′(r)‖dr = ∫ √(ar² + br + c) dr
     #              0             0
     #
     # If a = 0, we need to use a different formula, else the result is NaN.
 
-    # q(r) = r²𝗮 + 𝗯r + 𝗰,
+    # Q(r) = r²𝗮 + 𝗯r + C,
     # where
     # 𝗮 = 2(P₁ + P₂ - 2P₃)
     # 𝗯 = -3P₁ - P₂ + 4P₃
-    # 𝗰 = P₁
+    # C = P₁
     # hence,
-    # q'(r) = 2𝗮r + 𝗯,
-    𝘃₁₃ = q[3] - q[1]
-    𝘃₂₃ = q[3] - q[2]
+    # Q'(r) = 2𝗮r + 𝗯,
+    𝘃₁₃ = Q[3] - Q[1]
+    𝘃₂₃ = Q[3] - Q[2]
     𝗮 = -2(𝘃₁₃ + 𝘃₂₃)
     # Move computation of 𝗯 to after exit.
 
-    # ‖q′(r)‖ =  √(4(𝗮 ⋅𝗮)r² + 4(𝗮 ⋅𝗯)r + 𝗯 ⋅𝗯) = √(ar² + br + c)
+    # ‖Q′(r)‖ =  √(4(𝗮 ⋅𝗮)r² + 4(𝗮 ⋅𝗯)r + 𝗯 ⋅𝗯) = √(ar² + br + c)
     # where
     # a = 4(𝗮 ⋅ 𝗮)
     # b = 4(𝗮 ⋅ 𝗯)
@@ -115,7 +115,7 @@ function arclength(q::QuadraticSegment)
     a = 4(𝗮 ⋅ 𝗮)
     # 0 ≤ a, since a = 4(𝗮 ⋅ 𝗮)  = 4 ‖𝗮‖², and 0 ≤ ‖𝗮‖²
     if a < 1e-5
-        return distance(q[1], q[2])
+        return distance(Q[1], Q[2])
     else
 
         𝗯 = 3𝘃₁₃ + 𝘃₂₃
@@ -145,20 +145,20 @@ end
 
 # The area bounded by q and the line from P₁ to P₂ is 4/3 the area of the triangle
 # formed by the vertices. Assumes the area is convex.
-function area_enclosed_by(q::QuadraticSegment{2, T}) where {T}
+function area_enclosed_by(Q::QuadraticSegment{2, T}) where {T}
     # Easily derived by transforming q such that P₁ = (0, 0) and P₂ = (x₂, 0).
     # However, vertices are CCW order, so sign of the area is flipped.
-    return T(2 // 3) * (q[3] - q[1]) × (q[2] - q[1])
+    return T(2 // 3) * (Q[3] - Q[1]) × (Q[2] - Q[1])
 end
 
 function area_enclosed_by_quadratic_segment(
-        p1::Point{2, T}, p2::Point{2, T}, p3::Point{2, T}) where {T}
-    return T(2 // 3) * (p3 - p1) × (p2 - p1)
+        P1::Point{2, T}, P2::Point{2, T}, P3::Point{2, T}) where {T}
+    return T(2 // 3) * (P3 - P1) × (P2 - P1)
 end
 
 # -- Centroid --
 
-function centroid_of_area_enclosed_by(q::QuadraticSegment{2, T}) where {T}
+function centroid_of_area_enclosed_by(Q::QuadraticSegment{2, T}) where {T}
     # For a quadratic segment, with P₁ = (0, 0), P₂ = (x₂, 0), and P₃ = (x₃, y₃),
     # where 0 < x₂, if the area bounded by q and the x-axis is convex, it can be
     # shown that the centroid of the area bounded by the segment and x-axis
@@ -191,54 +191,54 @@ function centroid_of_area_enclosed_by(q::QuadraticSegment{2, T}) where {T}
     # C = U * Cᵤ + P₁
     # where
     # Cᵤ = (u₁ ⋅ (3(P₂ - P₁) + 4(P₃ - P₁)), 4(u₂ ⋅ (P₃ - P₁))) / 10
-    v₁₂ = q[2] - q[1]
-    four_v₁₃ = 4*(q[3] - q[1])
+    v₁₂ = Q[2] - Q[1]
+    four_v₁₃ = 4*(Q[3] - Q[1])
     u₁ = normalize(v₁₂)
     u₂ = Vec(-u₁[2], u₁[1])
     U  = Mat(u₁, u₂)
     Cᵤ = Vec(u₁ ⋅(3 * v₁₂ + four_v₁₃), u₂ ⋅ four_v₁₃) / 10
-    return U * Cᵤ + q[1]
+    return U * Cᵤ + Q[1]
 end
 
 function centroid_of_area_enclosed_by_quadratic_segment(
-        p1::P, p2::P, p3::P) where {P <: Point{2}}
-    v₁₂ = p2 - p1
-    four_v₁₃ = 4*(p3 - p1)
+        P1::P, P2::P, P3::P) where {P <: Point{2}}
+    v₁₂ = P2 - P1
+    four_v₁₃ = 4*(P3 - P1)
     u₁ = normalize(v₁₂)
     u₂ = Vec(-u₁[2], u₁[1])
     U  = Mat(u₁, u₂)
     Cᵤ = Vec(u₁ ⋅(3 * v₁₂ + four_v₁₃), u₂ ⋅ four_v₁₃) / 10
-    return U * Cᵤ + p1
+    return U * Cᵤ + P1
 end
 
 # -- Bounding box --
 
-function bounding_box(q::QuadraticSegment{2, T}) where {T}
+function bounding_box(Q::QuadraticSegment{2, T}) where {T}
     # Find the extrema for x and y by finding:
     # r_x such that dx/dr = 0    
     # r_y such that dy/dr = 0    
-    # q(r) = r²𝗮 + 𝗯r + 𝗰
-    # q′(r) = 2𝗮r + 𝗯 
+    # Q(r) = r²𝗮 + 𝗯r + C
+    # Q′(r) = 2𝗮r + 𝗯 
     # (r_x, r_y) = -𝗯 ./ (2𝗮)    
     # Compare the extrema with the segment's endpoints to find the AABox    
-    q1 = q[1]
-    q2 = q[2]
-    q3 = q[3]
-    𝘃₁₃ = q3 - q1
-    𝘃₂₃ = q3 - q2
+    P1 = P[1]
+    P2 = P[2]
+    P3 = P[3]
+    𝘃₁₃ = P3 - P1
+    𝘃₂₃ = P3 - P2
     a_x, a_y = -2(𝘃₁₃ + 𝘃₂₃)
     b_x, b_y = 3𝘃₁₃ + 𝘃₂₃
     r_x = b_x / (-2 * a_x)
     r_y = b_y / (-2 * a_y)
-    xmin = min(q1[1], q2[1]); ymin = min(q1[2], q2[2])
-    xmax = max(q1[1], q2[1]); ymax = max(q1[2], q2[2])
+    xmin = min(P1[1], P2[1]); ymin = min(P1[2], P2[2])
+    xmax = max(P1[1], P2[1]); ymax = max(P1[2], P2[2])
     if 0 < r_x < 1
-        x_stationary = r_x * r_x * a_x + r_x * b_x + q1[1]
+        x_stationary = r_x * r_x * a_x + r_x * b_x + P1[1]
         xmin = min(xmin, x_stationary)
         xmax = max(xmax, x_stationary)
     end
     if 0 < r_y < 1
-        y_stationary = r_y * r_y * a_y + r_y * b_y + q1[2]
+        y_stationary = r_y * r_y * a_y + r_y * b_y + P1[2]
         ymin = min(ymin, y_stationary)
         ymax = max(ymax, y_stationary)
     end
@@ -247,23 +247,23 @@ end
 
 # -- In --
 
-function isleft(P::Point{2, T}, q::QuadraticSegment{2, T}) where {T}
+function isleft(P::Point{2, T}, Q::QuadraticSegment{2, T}) where {T}
     # If the point is not in the bounding box of the segment,
     # then we may simply check if the point is left of the line (P₁, P₂).
-    if P ∉ bounding_box(q)
-        return 0 ≤ (q[2] - q[1]) × (P - q[1]) 
+    if P ∉ bounding_box(Q)
+        return 0 ≤ (Q[2] - Q[1]) × (P - Q[1]) 
     else
         # If the point is in the bounding box of the segment,
         # we need to check if the point is left of the segment.
         # To do this we must find the point on q that is closest to P.
-        # At this q(r) we compute q'(r) × (P - q(r)). If this quantity is
+        # At this Q(r) we compute Q'(r) × (P - Q(r)). If this quantity is
         # positive, then P is left of the segment.
         #
-        # To compute q_nearest, we find r which minimizes ‖P - q(r)‖.
-        # This r also minimizes ‖P - q(r)‖².
+        # To compute Q_nearest, we find r which minimizes ‖P - Q(r)‖.
+        # This r also minimizes ‖P - Q(r)‖².
         # It can be shown that this is equivalent to finding the minimum of the 
         # quartic function
-        # ‖P - q(r)‖² = f(r) = a₄r⁴ + a₃r³ + a₂r² + a₁r + a₀
+        # ‖P - Q(r)‖² = f(r) = a₄r⁴ + a₃r³ + a₂r² + a₁r + a₀
         # The minimum of f(r) occurs when f′(r) = ar³ + br² + cr + d = 0, where
         # 𝘄 = P - P₁
         # a = 4(𝗮 ⋅ 𝗮)
@@ -278,7 +278,7 @@ function isleft(P::Point{2, T}, q::QuadraticSegment{2, T}) where {T}
         a = 4 * (𝗮 ⋅ 𝗮)
 
         if a < 1e-5 # quadratic is straight
-            return 0 ≤ (q[2] - q[1]) × (P - q[1])
+            return 0 ≤ (Q[2] - Q[1]) × (P - Q[1])
         end
 
         𝗯 = 3𝘃₁₃ + 𝘃₂₃
@@ -303,7 +303,7 @@ function isleft(P::Point{2, T}, q::QuadraticSegment{2, T}) where {T}
                 s₂ = B / s₁
             end
             r = (s₀ + s₁ + s₂) / 3
-            return 0 ≤ jacobian(q, r) × (P - q(r))
+            return 0 ≤ jacobian(Q, r) × (P - Q(r))
         else # three real roots
             # t₁ is complex cube root
             t₁ = exp(log((A + √(complex(disc))) / 2) / 3)
@@ -321,7 +321,7 @@ function isleft(P::Point{2, T}, q::QuadraticSegment{2, T}) where {T}
 
             r1 = real((s₀ + t₁ + t₂)) / 3
             if 0 < r1 < 1
-                d1 = distance2(P, q(r1))
+                d1 = distance2(P, Q(r1))
                 if d1 < d
                     r = r1
                     d = d1
@@ -330,7 +330,7 @@ function isleft(P::Point{2, T}, q::QuadraticSegment{2, T}) where {T}
 
             r2 = real((s₀ + ζ₂ * t₁ + ζ₁ * t₂)) / 3
             if 0 < r2 < 1
-                d2 = distance2(P, q(r2))
+                d2 = distance2(P, Q(r2))
                 if d2 < d
                     r = r2
                     d = d2
@@ -339,20 +339,20 @@ function isleft(P::Point{2, T}, q::QuadraticSegment{2, T}) where {T}
 
             r3 = real((s₀ + ζ₁ * t₁ + ζ₂ * t₂)) / 3
             if 0 < r3 < 1
-                d3 = distance2(P, q(r3))
+                d3 = distance2(P, Q(r3))
                 if d3 < d
                     r = r3
                 end
             end
 
-            return 0 ≤ jacobian(q, r) × (P - q(r))
+            return 0 ≤ jacobian(Q, r) × (P - Q(r))
         end
     end
 end
 
 # -- IO --
 
-function Base.show(io::IO, q::QuadraticSegment{D, T}) where {D, T}
+function Base.show(io::IO, Q::QuadraticSegment{D, T}) where {D, T}
     type_char = '?'
     if T === Float32
         type_char = 'f'
@@ -360,7 +360,7 @@ function Base.show(io::IO, q::QuadraticSegment{D, T}) where {D, T}
         type_char = 'd'
     end
     print(io, "QuadraticSegment", D, type_char, '(',
-        q.vertices[1], ", ",
-        q.vertices[2], ", ",
-        q.vertices[3], ')')
+        Q.vertices[1], ", ",
+        Q.vertices[2], ", ",
+        Q.vertices[3], ')')
 end

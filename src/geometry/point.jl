@@ -40,8 +40,8 @@ const Point3d = Vec3d
 
 # -- Methods --
 
-distance2(a::Point, b::Point) = norm2(a - b)
-distance(a::Point, b::Point) = norm(a - b)
-midpoint(a::Point, b::Point) = (a + b) / 2
-isCCW(a::Point2, b::Point2, c::Point2) = 0 < (b - a) × (c - a)
-Base.isapprox(a::Point{D, T}, b::Point{D, T}) where {D, T} = distance2(a, b) < T(EPS_POINT2)
+distance2(A::Point, B::Point) = norm2(A - B)
+distance(A::Point, B::Point) = norm(A - B)
+midpoint(A::Point, B::Point) = (A + B) / 2
+isCCW(A::Point2, B::Point2, C::Point2) = 0 < (B - A) × (C - A)
+Base.isapprox(A::Point{D, T}, B::Point{D, T}) where {D, T} = distance2(A, B) < T(EPS_POINT2)

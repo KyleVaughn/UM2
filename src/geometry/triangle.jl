@@ -36,23 +36,23 @@ const Triangle2d = Triangle2{Float64}
 
 # -- Base --
 
-Base.getindex(t::Triangle, i) = t.vertices[i]
-Base.broadcastable(t::Triangle) = Ref(t)
+Base.getindex(T::Triangle, i) = T.vertices[i]
+Base.broadcastable(T::Triangle) = Ref(t)
 
 # -- Accessors --
 
-vertices(t::Triangle) = t.vertices
+vertices(T::Triangle) = T.vertices
 
 # -- Constructors --
 
-function Triangle(p1::Point{D, T}, p2::Point{D, T}, p3::Point{D, T}) where {D, T}
-    return Triangle{D, T}(Vec(p1, p2, p3))
+function Triangle(P1::Point{D, T}, P2::Point{D, T}, P3::Point{D, T}) where {D, T}
+    return Triangle{D, T}(Vec(P1, P2, P3))
 end
 
 # -- Interpolation --
 
-function interpolate_triangle(p1::T, p2::T, p3::T, r, s) where {T}
-    return (1 - r - s) * p1 + r * p2 + s * p3
+function interpolate_triangle(P1::T, P2::T, P3::T, r, s) where {T}
+    return (1 - r - s) * P1 + r * P2 + s * P3
 end
 
 function interpolate_triangle(vertices::Vec, r, s)
@@ -65,9 +65,9 @@ end
 
 # -- Jacobian --
 
-function triangle_jacobian(p1::T, p2::T, p3::T, r, s) where {T}
-    ∂r = p2 - p1
-    ∂s = p3 - p1
+function triangle_jacobian(P1::T, P2::T, P3::T, r, s) where {T}
+    ∂r = P2 - P1
+    ∂s = P3 - P1
     return Mat(∂r, ∂s)
 end
 
@@ -77,61 +77,61 @@ function triangle_jacobian(vertices::Vec{3}, r, s)
     return Mat(∂r, ∂s)
 end
 
-function jacobian(t::Triangle{D, T}, r::T, s::T) where {D, T}
-    return triangle_jacobian(t.vertices, r, s)
+function jacobian(T::Triangle{D, F}, r::F, s::F) where {D, F}
+    return triangle_jacobian(T.vertices, r, s)
 end
 
 # -- Measure --
 
-area(t::Triangle{2}) = ((t[2] - t[1]) × (t[3] - t[1])) / 2
-area(t::Triangle{3}) = norm((t[2] - t[1]) × (t[3] - t[1])) / 2
+area(T::Triangle{2}) = ((T[2] - T[1]) × (T[3] - T[1])) / 2
+area(T::Triangle{3}) = norm((T[2] - t[1]) × (t[3] - t[1])) / 2
 
-function triangle_area(p1::P, p2::P, p3::P) where {P <: Point{2}}
-    return ((p2 - p1) × (p3 - p1))/ 2
+function triangle_area(P1::P, P2::P, P3::P) where {P <: Point{2}}
+    return ((P2 - P1) × (P3 - P1))/ 2
 end
 
 # -- Centroid --
 
-centroid(t::Triangle) = (t[1] + t[2] + t[3]) / 3
+centroid(T::Triangle) = (T[1] + T[2] + T[3]) / 3
 
-function triangle_centroid(p1::P, p2::P, p3::P) where {P <: Point{2}}
-    return (p1 + p2 + p3) / 3
+function triangle_centroid(P1::P, P2::P, P3::P) where {P <: Point{2}}
+    return (P1 + P2 + P3) / 3
 end
 
 # -- Edges --
 
-function edge(i::Integer, t::Triangle)
+function edge(i::Integer, T::Triangle)
     # Assumes 1 ≤ i ≤ 3.
     if i < 3
-        return LineSegment(t[i], t[i+1])
+        return LineSegment(T[i], T[i+1])
     else
-        return LineSegment(t[3], t[1])
+        return LineSegment(T[3], T[1])
     end
 end
 
-edges(t::Triangle) = (edge(i, t) for i in 1:3)
+edges(T::Triangle) = (edge(i, T) for i in 1:3)
 
 # -- Bounding box --
 
-function bounding_box(t::Triangle)
-    return bounding_box(t.vertices)
+function bounding_box(T::Triangle)
+    return bounding_box(T.vertices)
 end
 
 # -- In --
 
-Base.in(P::Point{2}, t::Triangle{2}) = all(edge -> isleft(P, edge), edges(t))
+Base.in(P::Point{2}, T::Triangle{2}) = all(edge -> isleft(P, edge), edges(T))
 
 # -- IO --
 
-function Base.show(io::IO, t::Triangle{D, T}) where {D, T}
+function Base.show(io::IO, T::Triangle{D, F}) where {D, F}
     type_char = '?'
-    if T === Float32
+    if F === Float32
         type_char = 'f'
-    elseif T === Float64
+    elseif F === Float64
         type_char = 'd'
     end
     print(io, "Triangle", D, type_char, '(', 
-        t.vertices[1], ", ", 
-        t.vertices[2], ", ", 
-        t.vertices[3], ')')
+        T.vertices[1], ", ", 
+        T.vertices[2], ", ", 
+        T.vertices[3], ')')
 end
