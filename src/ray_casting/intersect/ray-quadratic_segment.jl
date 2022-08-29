@@ -24,37 +24,39 @@ function Base.intersect(R::Ray2{T}, Q::QuadraticSegment2{T}) where {T}
     𝘃₂₃ = Q[3] - Q[2]    
     𝗮 = -2(𝘃₁₃ + 𝘃₂₃)
     𝗯 = 3𝘃₁₃ + 𝘃₂₃
-    a = 𝗮 × R.direction
-    b = 𝗯 × R.direction
-    c = (Q[1] - R.origin) × R.direction
+    C = Q[1]
+    𝗱 = R.direction
+    d2_inv = 1 / norm2(𝗱)
+    O = R.origin
+    a = 𝗮 × 𝗱
+    b = 𝗯 × 𝗱
+    c = (C - O) × 𝗱
     if abs(a) < 1e-5 # 1 intersection
         s = -c/b
-        return 0 ≤ s && s ≤ 1 ? ((r * r) * 𝗮 + r * 𝗯 + q[1], P_miss) : 
-                                (r_miss, r_miss)
-    else # 2 intersections
-        if b^2 < 4a * c
-            return (P_miss, P_miss)
-            r₁ = (-b - √(b^2 - 4a * c)) / 2a
-            r₂ = (-b + √(b^2 - 4a * c)) / 2a
-            P₁ = P_miss
-            P₂ = P_miss
-            if 0 ≤ r₁ ≤ 1
-                Q₁ = q(r₁)
-                s₁ = (Q₁ - l[1]) ⋅ 𝘄
-                if 0 ≤ s₁ && s₁ ≤ w²
-                    P₁ = Q₁
-                end
-            end
-            if 0 ≤ r₂ ≤ 1
-                Q₂ = q(r₂)
-                s₂ = (Q₂ - l[1]) ⋅ 𝘄
-                if 0 ≤ s₂ && s₂ ≤ w²
-                    P₂ = Q₂
-                end
-            end
-            return Vec(P₁, P₂)
+        if 0 ≤ s && s ≤ 1
+            P = s^2 * 𝗮 + s * 𝗯 + C    
+            r = d2_inv * ((P - O) ⋅ 𝗱)
+            return (r, r_miss)
         else
-            return Vec(P_miss, P_miss)
+            return (r_miss, r_miss)
         end
+    else # 2 intersections
+        # No valid intersections
+        if b^2 < 4 * a * c
+            return (r_miss, r_miss)
+        end
+        r₁ = r_miss
+        r₂ = r_miss
+        s₁ = (-b - √(b^2 - 4 * a * c)) / 2a
+        s₂ = (-b + √(b^2 - 4 * a * c)) / 2a
+        if 0 ≤ s₁ && s₁ ≤ 1
+            P = s₁^2 * 𝗮 + s₁ * 𝗯 + C    
+            r₁ = d2_inv * ((P - O) ⋅ 𝗱) 
+        end
+        if 0 ≤ s₂ && s₂ ≤ 1
+            P = s₂^2 * 𝗮 + s₂ * 𝗯 + C    
+            r₂ = d2_inv * ((P - O) ⋅ 𝗱) 
+        end
+        return (r₁, r₂) 
     end
 end

@@ -26,6 +26,7 @@ include("ray_casting/ray.jl")
 include("ray_casting/angular_quadrature.jl")
 include("ray_casting/modular_rays.jl")
 include("ray_casting/intersect/ray-line_segment.jl")
+include("ray_casting/intersect/ray-quadratic_segment.jl")
 
 if UM2_ENABLE_VIS
     include("vis/setup.jl")
@@ -39,8 +40,6 @@ if UM2_ENABLE_VIS
     include("vis/quadratic_quadrilateral.jl")
     include("vis/ray.jl")
 end
-#include("quadrature/Quadrature.jl")
-#include("raytracing/Raytracing.jl")
 #include("physics/Physics.jl")
 #include("mpact/MPACT.jl")
 #include("gmsh/Gmsh.jl")

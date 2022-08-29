@@ -49,28 +49,31 @@ function TriMesh(file::AbaqusFile{T, I}) where {T, I}
     end
 
     # Vertex-face connectivity
-    vf_offsets = Vector{I}(undef, nverts + 1)
-    vf_conn_vecs = [ I[] for _ in 1:nverts ]
+    vf_conn_vert_counts = zeros(I, nverts)
     for face_id in 1:nfaces
         for ivert in 1:3
             vert_id = file.elements[3 * (face_id - 1) + ivert]
-            push!(vf_conn_vecs[vert_id], face_id)
+            vf_conn_vert_counts[vert_id] += 1
         end
     end
-    vf_conn_size = 1
-    for vert_id in 1:nverts
-        vf_offsets[vert_id] = vf_conn_size
-        vf_conn_size += length(vf_conn_vecs[vert_id])
-    end
-    vf_offsets[nverts + 1] = vf_conn_size
-    vf_conn = Vector{I}(undef, vf_conn_size - 1)
-    ctr = 1
-    for vert_id in 1:nverts
-        sort!(vf_conn_vecs[vert_id])
-        for face_id in vf_conn_vecs[vert_id]
-            vf_conn[ctr] = face_id
-            ctr += 1
+    vf_offsets = Vector{I}(undef, nverts + 1)
+    vf_offsets[1] = 1
+    vf_offsets[2:end] = cumsum(vf_conn_vert_counts)
+    vf_offsets[2:end] .+= 1 
+
+    vf_conn_vert_counts .-= 1
+    vf_conn = Vector{I}(undef, vf_offsets[end] - 1)
+    for face_id in 1:nfaces
+        for ivert in 1:3
+            vert_id = file.elements[3 * (face_id - 1) + ivert]
+            vf_conn[vf_offsets[vert_id] + vf_conn_vert_counts[vert_id]] = face_id
+            vf_conn_vert_counts[vert_id] -= 1
         end
+    end
+    for vert_id in 1:nverts
+        this_offset = vf_offsets[vert_id]
+        next_offset = vf_offsets[vert_id + 1]
+        sort!(view(vf_conn, this_offset:(next_offset - 1)))
     end
     
     # Materials
