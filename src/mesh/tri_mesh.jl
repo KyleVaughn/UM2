@@ -42,7 +42,6 @@ function TriMesh(file::AbaqusFile{T, I}) where {T, I}
         error("Number of elements is not a multiple of 3")
     end
 
-
     # Vertices
     nverts = length(file.nodes)
     vertices = Vector{Point{2, T}}(undef, nverts)
