@@ -1,5 +1,5 @@
 function convert_arguments(LS::Type{<:LineSegments}, q::Quadrilateral)
-    return convert_arguments(LS, collect(edges(q)))
+    return convert_arguments(LS, collect(edge_iterator(q)))
 end
 
 function convert_arguments(LS::Type{<:LineSegments}, 

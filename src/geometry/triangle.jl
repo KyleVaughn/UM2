@@ -12,7 +12,7 @@ export vertices,
        centroid,
        triangle_centroid,
        edge,
-       edges,
+       edge_iterator,
        bounding_box
 
 # TRIANGLE
@@ -100,6 +100,19 @@ end
 
 # -- Edges --
 
+function edge_conn(i::Integer, fv_conn::NTuple{3, I}) where {I <: Integer}
+    # Assumes 1 ≤ i ≤ 3.
+    if i < 3
+        return (fv_conn[i], fv_conn[i + 1])
+    else
+        return (fv_conn[3], fv_conn[1])
+    end
+end
+
+function edge_conn_iterator(fv_conn::NTuple{3, I}) where {I}
+    return (edge_conn(i, fv_conn) for i in 1:3)
+end
+
 function edge(i::Integer, T::Triangle)
     # Assumes 1 ≤ i ≤ 3.
     if i < 3
@@ -109,7 +122,7 @@ function edge(i::Integer, T::Triangle)
     end
 end
 
-edges(T::Triangle) = (edge(i, T) for i in 1:3)
+edge_iterator(T::Triangle) = (edge(i, T) for i in 1:3)
 
 # -- Bounding box --
 
@@ -119,7 +132,7 @@ end
 
 # -- In --
 
-Base.in(P::Point{2}, T::Triangle{2}) = all(edge -> isleft(P, edge), edges(T))
+Base.in(P::Point{2}, T::Triangle{2}) = all(edge -> isleft(P, edge), edge_iterator(T))
 
 # -- IO --
 

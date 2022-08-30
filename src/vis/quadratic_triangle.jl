@@ -1,5 +1,5 @@
 function convert_arguments(LS::Type{<:LineSegments}, tri::QuadraticTriangle)
-    return convert_arguments(LS, collect(edges(tri)))
+    return convert_arguments(LS, collect(edge_iterator(tri)))
 end
 
 function convert_arguments(LS::Type{<:LineSegments}, 

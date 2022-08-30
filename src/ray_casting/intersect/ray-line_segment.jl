@@ -1,3 +1,5 @@
+export ray_line_segment_intersection
+
 # Returns the value r such that R(r) = L(s). 
 # If such a value does not exist, INF_POINT is returned instead.
 # 1) P₁ + s(P₂ - P₁) = O + r𝗱           subtracting P₁ from both sides
@@ -28,6 +30,17 @@ function Base.intersect(R::Ray2{T}, L::LineSegment2{T}) where {T}
     # so we settle for smaller code/one less branch that could be mispredicted.
     𝘃 = L[2]     - L[1]
     𝘂 = R.origin - L[1]
+    x = 𝘂 × R.direction
+    z = 𝘃 × R.direction
+    y = 𝘂 × 𝘃
+    s = x / z
+    r = y / z
+    return 0 ≤ s && s ≤ 1 ? r : T(INF_POINT)
+end
+
+function ray_line_segment_intersection(R::Ray2{T}, p1::Point2{T}, p2::Point2{T}) where {T}
+    𝘃 = p2 - p1
+    𝘂 = R.origin - p1
     x = 𝘂 × R.direction
     z = 𝘃 × R.direction
     y = 𝘂 × 𝘃

@@ -9,7 +9,7 @@ export interpolate_quadratic_triangle,
        area,
        centroid,
        edge,
-       edges,
+       edge_iterator,
        bounding_box,
        triangulate
 
@@ -144,7 +144,7 @@ function edge(i::Integer, t::QuadraticTriangle)
     end
 end
 
-edges(T::QuadraticTriangle) = (edge(i, T) for i in 1:3)
+edge_iterator(T::QuadraticTriangle) = (edge(i, T) for i in 1:3)
 
 # -- Bounding box --
 
@@ -156,7 +156,7 @@ end
 
 # -- In --    
       
-Base.in(P::Point{2}, T::QuadraticTriangle{2}) = all(edge -> isleft(P, edge), edges(T))
+Base.in(P::Point{2}, T::QuadraticTriangle{2}) = all(edge -> isleft(P, edge), edge_iterator(T))
 
 # -- Triangulation --
 

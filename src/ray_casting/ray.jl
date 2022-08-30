@@ -23,7 +23,6 @@ const Ray2     = Ray{2}
 const Ray2f    = Ray2{Float32}
 const Ray2d    = Ray2{Float64}
 
-
 # -- Interpolation --
 
 function interpolate_ray(origin::T, direction::T, r) where {T}

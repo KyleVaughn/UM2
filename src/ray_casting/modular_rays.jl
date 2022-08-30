@@ -36,7 +36,7 @@ function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
             x₁ = min(w, h * inv_tan_γₑ + x₀)
             y₁ = min((w - x₀) * tan_γₑ, h)
             rays[ix] = Ray2{T}(Point2{T}(x_min(aab) + x₀, y_min(aab) + y₀),
-                               Vec2{T}(x₁ - x₀, y₁ - y₀))
+                               normalize(Vec2{T}(x₁ - x₀, y₁ - y₀)))
         end
         for iy in 1:ny
             # Generate rays from the left edge of the rectangular domain
@@ -47,7 +47,7 @@ function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
             x₁ = min(w, (h - y₀) * inv_tan_γₑ)
             y₁ = min(w * tan_γₑ + y₀, h)
             rays[nx + iy] = Ray2{T}(Point2{T}(x_min(aab) + x₀, y_min(aab) + y₀),
-                                    Vec2{T}(x₁ - x₀, y₁ - y₀))
+                                    normalize(Vec2{T}(x₁ - x₀, y₁ - y₀)))
         end
         return rays
     else
@@ -60,7 +60,7 @@ function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
             x₁ = max(0, -h * inv_tan_γₑ + x₀)    
             y₁ = min(x₀ * tan_γₑ, h)      
             rays[ix] = Ray2{T}(Point2{T}(x_min(aab) + x₀, y_min(aab) + y₀),    
-                               Vec2{T}(x₁ - x₀, y₁ - y₀))    
+                               normalize(Vec2{T}(x₁ - x₀, y₁ - y₀)))    
         end
         for iy in 1:ny
             # Generate ray from the right edge of the rectangular domain     
@@ -71,7 +71,7 @@ function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
             x₁ = max(0, w - (h - y₀) * inv_tan_γₑ)
             y₁ = min(w * tan_γₑ + y₀, h)
             rays[nx + iy] = Ray2{T}(Point2{T}(x_min(aab) + x₀, y_min(aab) + y₀),
-                                    Vec2{T}(x₁ - x₀, y₁ - y₀))
+                                    normalize(Vec2{T}(x₁ - x₀, y₁ - y₀)))
         end
         return rays
     end

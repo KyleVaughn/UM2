@@ -1,6 +1,6 @@
 module UM2
 
-const UM2_ENABLE_VIS = false
+const UM2_ENABLE_VIS = true
 
 include("common/defines.jl")
 include("common/types.jl")
@@ -27,6 +27,7 @@ include("ray_casting/angular_quadrature.jl")
 include("ray_casting/modular_rays.jl")
 include("ray_casting/intersect/ray-line_segment.jl")
 include("ray_casting/intersect/ray-quadratic_segment.jl")
+include("ray_casting/intersect/ray-tri_mesh.jl")
 
 if UM2_ENABLE_VIS
     include("vis/setup.jl")
@@ -39,6 +40,7 @@ if UM2_ENABLE_VIS
     include("vis/quadratic_triangle.jl")
     include("vis/quadratic_quadrilateral.jl")
     include("vis/ray.jl")
+    include("vis/tri_mesh.jl")
 end
 #include("physics/Physics.jl")
 #include("mpact/MPACT.jl")

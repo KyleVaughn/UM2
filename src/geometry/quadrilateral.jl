@@ -11,7 +11,7 @@ export interpolate_quadrilateral,
        centroid,
        quadrilateral_centroid,
        edge,
-       edges,
+       edge_iterator,
        bounding_box,
        triangulate
 
@@ -135,7 +135,7 @@ function edge(i::Integer, Q::Quadrilateral)
     end
 end
 
-edges(Q::Quadrilateral) = (edge(i, Q) for i in 1:4)
+edge_iterator(Q::Quadrilateral) = (edge(i, Q) for i in 1:4)
 
 # -- Bounding box --
 
@@ -145,7 +145,7 @@ end
 
 # -- In --    
       
-Base.in(P::Point{2}, Q::Quadrilateral{2}) = all(edge -> isleft(P, edge), edges(Q))
+Base.in(P::Point{2}, Q::Quadrilateral{2}) = all(edge -> isleft(P, edge), edge_iterator(Q))
 
 # -- Triangulation --
 
