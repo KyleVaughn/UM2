@@ -100,7 +100,7 @@ end
 
 # -- Edges --
 
-function edge_conn(i::Integer, fv_conn::NTuple{3, I}) where {I <: Integer}
+function ev_conn(i::Integer, fv_conn::NTuple{3, I}) where {I <: Integer}
     # Assumes 1 ≤ i ≤ 3.
     if i < 3
         return (fv_conn[i], fv_conn[i + 1])
@@ -109,8 +109,8 @@ function edge_conn(i::Integer, fv_conn::NTuple{3, I}) where {I <: Integer}
     end
 end
 
-function edge_conn_iterator(fv_conn::NTuple{3, I}) where {I}
-    return (edge_conn(i, fv_conn) for i in 1:3)
+function ev_conn_iterator(fv_conn::NTuple{3, I}) where {I}
+    return (ev_conn(i, fv_conn) for i in 1:3)
 end
 
 function edge(i::Integer, T::Triangle)

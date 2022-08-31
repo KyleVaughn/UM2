@@ -126,6 +126,19 @@ end
 
 # -- Edges --
 
+function ev_conn(i::Integer, fv_conn::NTuple{4, I}) where {I <: Integer}    
+    # Assumes 1 ≤ i ≤ 4.    
+    if i < 4    
+        return (fv_conn[i], fv_conn[i + 1])    
+    else    
+        return (fv_conn[4], fv_conn[1])    
+    end    
+end    
+    
+function ev_conn_iterator(fv_conn::NTuple{4, I}) where {I}    
+    return (ev_conn(i, fv_conn) for i in 1:4)    
+end    
+
 function edge(i::Integer, Q::Quadrilateral)
     # Assumes 1 ≤ i ≤ 4.
     if i < 4
@@ -134,7 +147,7 @@ function edge(i::Integer, Q::Quadrilateral)
         return LineSegment(Q[4], Q[1])
     end
 end
-
+    
 edge_iterator(Q::Quadrilateral) = (edge(i, Q) for i in 1:4)
 
 # -- Bounding box --

@@ -1,6 +1,6 @@
 module UM2
 
-const UM2_ENABLE_VIS = true
+const UM2_ENABLE_VIS = false
 
 include("common/defines.jl")
 include("common/types.jl")
@@ -21,6 +21,7 @@ include("geometry/quadratic_quadrilateral.jl")
 include("mesh/cell_types.jl")
 include("mesh/io_abaqus.jl")
 include("mesh/tri_mesh.jl")
+include("mesh/quad_mesh.jl")
 
 include("ray_casting/ray.jl")
 include("ray_casting/angular_quadrature.jl")
@@ -28,6 +29,7 @@ include("ray_casting/modular_rays.jl")
 include("ray_casting/intersect/ray-line_segment.jl")
 include("ray_casting/intersect/ray-quadratic_segment.jl")
 include("ray_casting/intersect/ray-tri_mesh.jl")
+include("ray_casting/intersect/ray-quad_mesh.jl")
 
 if UM2_ENABLE_VIS
     include("vis/setup.jl")

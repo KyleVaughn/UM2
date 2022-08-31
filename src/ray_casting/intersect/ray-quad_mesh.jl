@@ -2,7 +2,7 @@ export naive_face_intersection,
        naive_face_intersection!,
        fixed_size_naive_face_intersection!
 
-function naive_face_intersection(R::Ray2{T}, mesh::TriMesh{T, I}) where {T, I}
+function naive_face_intersection(R::Ray2{T}, mesh::QuadMesh{T, I}) where {T, I}
     r_miss = T(INF_POINT)
     rvec = T[]
     for fv_conn in fv_conn_iterator(mesh)
@@ -20,7 +20,7 @@ end
 
 function naive_face_intersection!(rvec::Vector{T},
                                   R::Ray2{T}, 
-                                  mesh::TriMesh{T, I}) where {T, I}
+                                  mesh::QuadMesh{T, I}) where {T, I}
     r_miss = T(INF_POINT)
     N = 0
     rvec_length = length(rvec)
@@ -46,7 +46,7 @@ end
 
 function fixed_size_naive_face_intersection!(rvec::Vector{T},
                                              R::Ray2{T}, 
-                                             mesh::TriMesh{T, I}) where {T, I}
+                                             mesh::QuadMesh{T, I}) where {T, I}
     r_miss = T(INF_POINT)
     N = 1
     for fv_conn in fv_conn_iterator(mesh)

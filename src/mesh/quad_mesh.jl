@@ -1,14 +1,14 @@
-export TriMesh
+export QuadMesh
 
 export num_faces, faces, edges
 
-# TRI MESH
+# QUAD MESH
 # -----------------------------------------------------------------------------
 #
-# A 2D triangle mesh.
+# A 2D quadrilateral mesh.
 #
 
-struct TriMesh{T <: AbstractFloat, I <: Integer}
+struct QuadMesh{T <: AbstractFloat, I <: Integer}
 
     # Name of the mesh.
     name::String
@@ -32,14 +32,14 @@ end
 
 # -- Constructors --
 
-function TriMesh(file::AbaqusFile{T, I}) where {T, I}
+function QuadMesh(file::AbaqusFile{T, I}) where {T, I}
     # Error checking
-    if any(eltype -> eltype !== VTK_TRIANGLE, file.element_types)
-        error("Not all elements are triangles")
+    if any(eltype -> eltype !== VTK_QUAD, file.element_types)
+        error("Not all elements are quadrilaterals")
     end
-    nfaces = length(file.elements) ÷ 3
-    if nfaces * 3 != length(file.elements)
-        error("Number of elements is not a multiple of 3")
+    nfaces = length(file.elements) ÷ 4
+    if nfaces * 4 != length(file.elements)
+        error("Number of elements is not a multiple of 4")
     end
 
     # Vertices
@@ -52,8 +52,8 @@ function TriMesh(file::AbaqusFile{T, I}) where {T, I}
     # Vertex-face connectivity
     vf_conn_vert_counts = zeros(I, nverts)
     for face_id in 1:nfaces
-        for ivert in 1:3
-            vert_id = file.elements[3 * (face_id - 1) + ivert]
+        for ivert in 1:4
+            vert_id = file.elements[4 * (face_id - 1) + ivert]
             vf_conn_vert_counts[vert_id] += 1
         end
     end
@@ -65,8 +65,8 @@ function TriMesh(file::AbaqusFile{T, I}) where {T, I}
     vf_conn_vert_counts .-= 1
     vf_conn = Vector{I}(undef, vf_offsets[end] - 1)
     for face_id in 1:nfaces
-        for ivert in 1:3
-            vert_id = file.elements[3 * (face_id - 1) + ivert]
+        for ivert in 1:4
+            vert_id = file.elements[4 * (face_id - 1) + ivert]
             vf_conn[vf_offsets[vert_id] + vf_conn_vert_counts[vert_id]] = face_id
             vf_conn_vert_counts[vert_id] -= 1
         end
@@ -92,7 +92,7 @@ function TriMesh(file::AbaqusFile{T, I}) where {T, I}
         end
     end
 
-    return TriMesh{T, I}(
+    return QuadMesh{T, I}(
         file.name,
         vertices,
         file.elements,
@@ -102,37 +102,39 @@ function TriMesh(file::AbaqusFile{T, I}) where {T, I}
     )
 end
 
-function TriMesh(file::String)
-    return TriMesh(AbaqusFile(file))
+function QuadMesh(file::String)
+    return QuadMesh(AbaqusFile(file))
 end
 
 # -- Iterators/Materialization --
 
-num_faces(mesh::TriMesh) = length(mesh.material_ids)
+num_faces(mesh::QuadMesh) = length(mesh.material_ids)
 
-function fv_conn(i::Integer, mesh::TriMesh)
+function fv_conn(i::Integer, mesh::QuadMesh)
     return ( 
-        mesh.fv_conn[3 * i - 2],
-        mesh.fv_conn[3 * i - 1],
-        mesh.fv_conn[3 * i    ]
+        mesh.fv_conn[4 * i - 3],
+        mesh.fv_conn[4 * i - 2],
+        mesh.fv_conn[4 * i - 1],
+        mesh.fv_conn[4 * i    ]
     )
 end
 
-fv_conn_iterator(mesh::TriMesh) = (fv_conn(i, mesh) for i in 1:num_faces(mesh))
+fv_conn_iterator(mesh::QuadMesh) = (fv_conn(i, mesh) for i in 1:num_faces(mesh))
 
-function face(i::Integer, mesh::TriMesh)
-    return Triangle(
-        mesh.vertices[mesh.fv_conn[3 * i - 2]],
-        mesh.vertices[mesh.fv_conn[3 * i - 1]],
-        mesh.vertices[mesh.fv_conn[3 * i    ]]
+function face(i::Integer, mesh::QuadMesh)
+    return Quadangle(
+        mesh.vertices[mesh.fv_conn[4 * i - 3]],
+        mesh.vertices[mesh.fv_conn[4 * i - 2]],
+        mesh.vertices[mesh.fv_conn[4 * i - 1]],
+        mesh.vertices[mesh.fv_conn[4 * i    ]]
     )
 end
 
-face_iterator(mesh::TriMesh) = (face(i, mesh) for i in 1:num_faces(mesh))
+face_iterator(mesh::QuadMesh) = (face(i, mesh) for i in 1:num_faces(mesh))
 
-faces(mesh::TriMesh) = collect(face_iterator(mesh))
+faces(mesh::QuadMesh) = collect(face_iterator(mesh))
 
-function edges(mesh::TriMesh{T, I}) where {T, I}
+function edges(mesh::QuadMesh{T, I}) where {T, I}
     unique_edges = NTuple{2, I}[]
     nedges = 0
     for fv_conn in fv_conn_iterator(mesh)
@@ -162,7 +164,7 @@ end
 
 # -- In --
 
-function Base.in(P::Point{2}, mesh::TriMesh)
+function Base.in(P::Point{2}, mesh::QuadMesh)
     for fv_conn in fv_conn_iterator(mesh)    
         if all(vids -> isCCW(P, mesh.vertices[vids[1]], mesh.vertices[vids[2]]), 
                ev_conn_iterator(fv_conn))
