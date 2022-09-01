@@ -30,38 +30,40 @@ export interpolate_quadratic_segment,
 #  C = P₁
 
 struct QuadraticSegment{D, T}
-    vertices::Vec{3, Point{D, T}}
+    vertices::NTuple{3, Point{D, T}}
 end
 
 # -- Type aliases --
 
 const QuadraticSegment2  = QuadraticSegment{2}
-const QuadraticSegment2f = QuadraticSegment2{Float32}
-const QuadraticSegment2d = QuadraticSegment2{Float64}
+const QuadraticSegment2f = QuadraticSegment2{f32}
+const QuadraticSegment2d = QuadraticSegment2{f64}
 
 # -- Base --
 
-Base.getindex(Q::QuadraticSegment, i) = Q.vertices[i]
-Base.broadcastable(Q::QuadraticSegment) = Ref(Q)
+Base.getindex(Q::QuadraticSegment, i::Integer) = Q.vertices[i]
 
 # -- Constructors --
 
 function QuadraticSegment(P1::Point{D, T}, P2::Point{D, T}, P3::Point{D, T}) where {D, T}
-    return QuadraticSegment{D, T}(Vec(P1, P2, P3))
+    return QuadraticSegment{D, T}((P1, P2, P3))
 end
 
 # -- Interpolation --
 
-function interpolate_quadratic_segment(P1::T, P2::T, P3::T, r) where {T}
-    return ((2 * r - 1) * (r - 1)) * P1 +
-           ((2 * r - 1) *  r     ) * P2 +
-           (-4 * r      * (r - 1)) * P3
+function quadratic_segment_weights(r)
+    return ((2 * r - 1) * (r - 1),
+            (2 * r - 1) *  r     ,
+            -4 * r      * (r - 1))
 end
 
-function interpolate_quadratic_segment(vertices::Vec, r)
-    return ((2 * r - 1) * (r - 1)) * vertices[1] +
-           ((2 * r - 1) *  r     ) * vertices[2] +
-           (-4 * r      * (r - 1)) * vertices[3]
+function interpolate_quadratic_segment(P1::T, P2::T, P3::T, r) where {T}
+    w = quadratic_segment_weights(r)
+    return w[1] * P1 + w[2] * P2 + w[3] * P3
+end
+
+function interpolate_quadratic_segment(vertices::NTuple{3}, r)
+    return mapreduce(*, +, quadratic_segment_weights(r), vertices)
 end
 
 function (Q::QuadraticSegment{D, T})(r::T) where {D, T}
@@ -75,7 +77,7 @@ function quadratic_segment_jacobian(P1::T, P2::T, P3::T, r) where {T}
            (4 * r - 1) * (P2 - P3)
 end
 
-function quadratic_segment_jacobian(vertices::Vec{3}, r)
+function quadratic_segment_jacobian(vertices::NTuple{3}, r)
     return (4 * r - 3) * (vertices[1] - vertices[3]) +
            (4 * r - 1) * (vertices[2] - vertices[3])
 end
@@ -145,20 +147,20 @@ end
 
 # The area bounded by q and the line from P₁ to P₂ is 4/3 the area of the triangle
 # formed by the vertices. Assumes the area is convex.
-function area_enclosed_by(Q::QuadraticSegment{2, T}) where {T}
+function area_enclosed_by(Q::QuadraticSegment2{T}) where {T}
     # Easily derived by transforming q such that P₁ = (0, 0) and P₂ = (x₂, 0).
     # However, vertices are CCW order, so sign of the area is flipped.
     return T(2 // 3) * (Q[3] - Q[1]) × (Q[2] - Q[1])
 end
 
 function area_enclosed_by_quadratic_segment(
-        P1::Point{2, T}, P2::Point{2, T}, P3::Point{2, T}) where {T}
+        P1::Point2{T}, P2::Point2{T}, P3::Point2{T}) where {T}
     return T(2 // 3) * (P3 - P1) × (P2 - P1)
 end
 
 # -- Centroid --
 
-function centroid_of_area_enclosed_by(Q::QuadraticSegment{2, T}) where {T}
+function centroid_of_area_enclosed_by(Q::QuadraticSegment2{T}) where {T}
     # For a quadratic segment, with P₁ = (0, 0), P₂ = (x₂, 0), and P₃ = (x₃, y₃),
     # where 0 < x₂, if the area bounded by q and the x-axis is convex, it can be
     # shown that the centroid of the area bounded by the segment and x-axis
@@ -201,7 +203,7 @@ function centroid_of_area_enclosed_by(Q::QuadraticSegment{2, T}) where {T}
 end
 
 function centroid_of_area_enclosed_by_quadratic_segment(
-        P1::P, P2::P, P3::P) where {P <: Point{2}}
+        P1::P, P2::P, P3::P) where {P <: Point2}
     v₁₂ = P2 - P1
     four_v₁₃ = 4*(P3 - P1)
     u₁ = normalize(v₁₂)
@@ -213,7 +215,7 @@ end
 
 # -- Bounding box --
 
-function bounding_box(Q::QuadraticSegment{2, T}) where {T}
+function bounding_box(Q::QuadraticSegment2{T}) where {T}
     # Find the extrema for x and y by finding:
     # r_x such that dx/dr = 0    
     # r_y such that dy/dr = 0    
@@ -242,112 +244,107 @@ function bounding_box(Q::QuadraticSegment{2, T}) where {T}
         ymin = min(ymin, y_stationary)
         ymax = max(ymax, y_stationary)
     end
-    return AABox{2, T}(Point{2, T}(xmin, ymin), Point{2, T}(xmax, ymax))
+    return AABox(Point2(xmin, ymin), Point2(xmax, ymax))
 end
 
 # -- In --
 
-function isleft(P::Point{2, T}, Q::QuadraticSegment{2, T}) where {T}
-    # If the point is not in the bounding box of the segment,
-    # then we may simply check if the point is left of the line (P₁, P₂).
-    if P ∉ bounding_box(Q)
-        return 0 ≤ (Q[2] - Q[1]) × (P - Q[1]) 
-    else
-        # If the point is in the bounding box of the segment,
-        # we need to check if the point is left of the segment.
-        # To do this we must find the point on q that is closest to P.
-        # At this Q(r) we compute Q'(r) × (P - Q(r)). If this quantity is
-        # positive, then P is left of the segment.
-        #
-        # To compute Q_nearest, we find r which minimizes ‖P - Q(r)‖.
-        # This r also minimizes ‖P - Q(r)‖².
-        # It can be shown that this is equivalent to finding the minimum of the 
-        # quartic function
-        # ‖P - Q(r)‖² = f(r) = a₄r⁴ + a₃r³ + a₂r² + a₁r + a₀
-        # The minimum of f(r) occurs when f′(r) = ar³ + br² + cr + d = 0, where
-        # 𝘄 = P - P₁
-        # a = 4(𝗮 ⋅ 𝗮)
-        # b = 6(𝗮 ⋅ 𝗯)
-        # c = 2[(𝗯  ⋅ 𝗯) - 2(𝗮 ⋅𝘄)]
-        # d = -2(𝗯 ⋅ 𝘄)
-        # Lagrange's method is used to find the roots.
-        # (https://en.wikipedia.org/wiki/Cubic_equation#Lagrange's_method)    
-        𝘃₁₃ = q[3] - q[1]
-        𝘃₂₃ = q[3] - q[2]
-        𝗮 = -2(𝘃₁₃ + 𝘃₂₃)    
-        a = 4 * (𝗮 ⋅ 𝗮)
+function isleft(P::Point2{T}, Q::QuadraticSegment2{T}) where {T}
+    # If the point is in the bounding box of the segment,
+    # we need to check if the point is left of the segment.
+    # To do this we must find the point on q that is closest to P.
+    # At this Q(r) we compute Q'(r) × (P - Q(r)). If this quantity is
+    # positive, then P is left of the segment.
+    #
+    # To compute Q_nearest, we find r which minimizes ‖P - Q(r)‖.
+    # This r also minimizes ‖P - Q(r)‖².
+    # It can be shown that this is equivalent to finding the minimum of the 
+    # quartic function
+    # ‖P - Q(r)‖² = f(r) = a₄r⁴ + a₃r³ + a₂r² + a₁r + a₀
+    # The minimum of f(r) occurs when f′(r) = ar³ + br² + cr + d = 0, where
+    # 𝘄 = P - P₁
+    # a = 4(𝗮 ⋅ 𝗮)
+    # b = 6(𝗮 ⋅ 𝗯)
+    # c = 2[(𝗯  ⋅ 𝗯) - 2(𝗮 ⋅𝘄)]
+    # d = -2(𝗯 ⋅ 𝘄)
+    # Lagrange's method is used to find the roots.
+    # (https://en.wikipedia.org/wiki/Cubic_equation#Lagrange's_method)    
+    𝘃₁₃ = q[3] - q[1]
+    𝘃₂₃ = q[3] - q[2]
+    𝗮 = -2(𝘃₁₃ + 𝘃₂₃)    
+    a = 4 * (𝗮 ⋅ 𝗮)
 
-        if a < 1e-5 # quadratic is straight
-            return 0 ≤ (Q[2] - Q[1]) × (P - Q[1])
-        end
-
-        𝗯 = 3𝘃₁₃ + 𝘃₂₃
-        𝘄 = P - q[1]
-
-        b = 6 * (𝗮 ⋅ 𝗯)
-        c = 2 * ((𝗯  ⋅ 𝗯) - 2 * (𝗮 ⋅𝘄))
-        d = -2 * (𝗯 ⋅ 𝘄)
-
-        # Lagrange's method
-        e₁ = s₀ = -b / a
-        e₂ = c / a
-        e₃ = -d / a
-        A = 2e₁^3 - 9e₁ * e₂ + 27e₃
-        B = e₁^2 - 3e₂
-        disc = A^2 - 4B^3
-        if 0 < disc # one real root
-            s₁ = ∛((A + √(disc)) / 2)
-            if s₁ == 0
-                s₂ = s₁
-            else
-                s₂ = B / s₁
-            end
-            r = (s₀ + s₁ + s₂) / 3
-            return 0 ≤ jacobian(Q, r) × (P - Q(r))
-        else # three real roots
-            # t₁ is complex cube root
-            t₁ = exp(log((A + √(complex(disc))) / 2) / 3)
-            if t₁ == 0
-                t₂ = t₁
-            else
-                t₂ = B / t₁
-            end
-            ζ₁ = Complex{T}(-1 / 2, √3 / 2)
-            ζ₂ = conj(ζ₁)
-
-            # Pick the point closest to P
-            r = T(0)
-            d = T(INF_POINT) 
-
-            r1 = real((s₀ + t₁ + t₂)) / 3
-            if 0 < r1 < 1
-                d1 = distance2(P, Q(r1))
-                if d1 < d
-                    r = r1
-                    d = d1
-                end
-            end
-
-            r2 = real((s₀ + ζ₂ * t₁ + ζ₁ * t₂)) / 3
-            if 0 < r2 < 1
-                d2 = distance2(P, Q(r2))
-                if d2 < d
-                    r = r2
-                    d = d2
-                end
-            end
-
-            r3 = real((s₀ + ζ₁ * t₁ + ζ₂ * t₂)) / 3
-            if 0 < r3 < 1
-                d3 = distance2(P, Q(r3))
-                if d3 < d
-                    r = r3
-                end
-            end
-
-            return 0 ≤ jacobian(Q, r) × (P - Q(r))
-        end
+    if a < 1e-5 # quadratic is straight
+        return 0 ≤ (Q[2] - Q[1]) × (P - Q[1])
     end
+
+    𝗯 = 3𝘃₁₃ + 𝘃₂₃
+    𝘄 = P - q[1]
+
+    b = 6 * (𝗮 ⋅ 𝗯)
+    c = 2 * ((𝗯  ⋅ 𝗯) - 2 * (𝗮 ⋅𝘄))
+    d = -2 * (𝗯 ⋅ 𝘄)
+
+    # Lagrange's method
+    e₁ = s₀ = -b / a
+    e₂ = c / a
+    e₃ = -d / a
+    A = 2e₁^3 - 9e₁ * e₂ + 27e₃
+    B = e₁^2 - 3e₂
+    disc = A^2 - 4B^3
+    if 0 < disc # one real root
+        s₁ = ∛((A + √(disc)) / 2)
+        if s₁ == 0
+            s₂ = s₁
+        else
+            s₂ = B / s₁
+        end
+        r = (s₀ + s₁ + s₂) / 3
+        return 0 ≤ jacobian(Q, r) × (P - Q(r))
+    else # three real roots
+        # t₁ is complex cube root
+        t₁ = exp(log((A + √(complex(disc))) / 2) / 3)
+        if t₁ == 0
+            t₂ = t₁
+        else
+            t₂ = B / t₁
+        end
+        ζ₁ = Complex{T}(-1 / 2, √3 / 2)
+        ζ₂ = conj(ζ₁)
+
+        # Pick the point closest to P
+        r = T(0)
+        d = T(INF_POINT) 
+
+        r1 = real((s₀ + t₁ + t₂)) / 3
+        if 0 < r1 < 1
+            d1 = distance2(P, Q(r1))
+            if d1 < d
+                r = r1
+                d = d1
+            end
+        end
+
+        r2 = real((s₀ + ζ₂ * t₁ + ζ₁ * t₂)) / 3
+        if 0 < r2 < 1
+            d2 = distance2(P, Q(r2))
+            if d2 < d
+                r = r2
+                d = d2
+            end
+        end
+
+        r3 = real((s₀ + ζ₁ * t₁ + ζ₂ * t₂)) / 3
+        if 0 < r3 < 1
+            d3 = distance2(P, Q(r3))
+            if d3 < d
+                r = r3
+            end
+        end
+
+        return 0 ≤ jacobian(Q, r) × (P - Q(r))
+    end
+    
 end
 
 # -- IO --

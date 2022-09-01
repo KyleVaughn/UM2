@@ -4,15 +4,9 @@ export Quadrilateral,
        Quadrilateral2d
 
 export interpolate_quadrilateral,
-       jacobian,
-       quadrilateral_jacobian,
-       area,
-       quadrilateral_area,
-       centroid,
-       quadrilateral_centroid,
-       edge,
-       edge_iterator,
-       bounding_box,
+       jacobian, quadrilateral_jacobian,
+       area, quadrilateral_area,
+       centroid, quadrilateral_centroid,
        triangulate
 
 # QUADRILATERAL
@@ -24,20 +18,13 @@ export interpolate_quadrilateral,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct Quadrilateral{D, T}
-    vertices::Vec{4, Point{D, T}}
-end
+const Quadrilateral = Polygon{4}
 
 # -- Type aliases --
 
 const Quadrilateral2  = Quadrilateral{2}
-const Quadrilateral2f = Quadrilateral2{Float32}
-const Quadrilateral2d = Quadrilateral2{Float64}
-
-# -- Base --
-
-Base.getindex(Q::Quadrilateral, i) = Q.vertices[i]
-Base.broadcastable(Q::Quadrilateral) = Ref(Q)
+const Quadrilateral2f = Quadrilateral2{f32}
+const Quadrilateral2d = Quadrilateral2{f64}
 
 # -- Constructors --
 
@@ -46,27 +33,29 @@ function Quadrilateral(
         P2::Point{D, T},
         P3::Point{D, T},
         P4::Point{D, T}) where {D, T}
-    return Quadrilateral{D, T}(Vec(P1, P2, P3, P4))
+    return Quadrilateral{D, T}((P1, P2, P3, P4))
 end
 
 # -- Interpolation --
 
+function quadrilateral_weights(r, s)
+    return ((1 - r) * (1 - s),
+                 r  * (1 - s),
+                 r  *      s ,
+            (1 - r) *      s )
+end
+
 # Assumes a convex quadrilateral
 function interpolate_quadrilateral(P1::T, P2::T, P3::T, P4::T, r, s) where {T}
-    return ((1 - r) * (1 - s)) * P1 +
-           (     r  * (1 - s)) * P2 +
-           (     r  *      s ) * P3 +
-           ((1 - r) *      s ) * P4
+    w = quadrilateral_weights(r, s)
+    return w[1] * P1 + w[2] * P2 + w[3] * P3 + w[4] * P4
 end
 
-function interpolate_quadrilateral(vertices::Vec{4}, r, s)
-    return ((1 - r) * (1 - s)) * vertices[1] +
-           (     r  * (1 - s)) * vertices[2] +
-           (     r  *      s ) * vertices[3] +
-           ((1 - r) *      s ) * vertices[4]
+function interpolate_quadrilateral(vertices::NTuple{4}, r, s)
+    return mapreduce(*, +, quadrilateral_weights(r, s), vertices)
 end
 
-function (Q::Quadrilateral{D, T})(r::T) where {D, T}
+function (Q::Quadrilateral{D, T})(r::T, s::T) where {D, T}
     return interpolate_quadrilateral(Q.vertices, r, s)
 end
 
@@ -79,7 +68,7 @@ function quadrilateral_jacobian(P1::T, P2::T, P3::T, P4::T, r, s) where {T}
     return Mat(∂r, ∂s)
 end
 
-function quadrilateral_jacobian(vertices::Vec{4}, r, s)
+function quadrilateral_jacobian(vertices::NTuple{4}, r, s)
     ∂r = (1 - s) * (vertices[2] - vertices[1]) - s * (vertices[4] - vertices[3])
     ∂s = (1 - r) * (vertices[4] - vertices[1]) - r * (vertices[2] - vertices[3])
     return Mat(∂r, ∂s)
@@ -92,18 +81,18 @@ end
 # -- Measure --
 
 # Assumes a convex quadrilateral
-function area(Q::Quadrilateral{2})
+function area(Q::Quadrilateral2)
     return ((Q[3] - Q[1]) × (Q[4] - Q[2])) / 2
 end
 
-function quadrilateral_area(P1::P, P2::P, P3::P, P4::P) where {P <: Point{2}}
+function quadrilateral_area(P1::P, P2::P, P3::P, P4::P) where {P <: Point2}
     return ((P3 - P1) × (P4 - P2)) / 2
 end
 
 # -- Centroid --
 
 # Assumes a convex quadrilateral
-function centroid(Q::Quadrilateral{2})
+function centroid(Q::Quadrilateral2)
     # By geometric decomposition into two triangles
     v₁₂ = Q[2] - Q[1]
     v₁₃ = Q[3] - Q[1]
@@ -114,7 +103,7 @@ function centroid(Q::Quadrilateral{2})
     return (a₁ * (P₁₃ + q[2]) - ma₂ * (P₁₃ + q[4])) / (3 * (a₁ - ma₂))
 end
 
-function quadrilateral_centroid(P1::P, P2::P, P3::P, P4::P) where {P <: Point{2}}
+function quadrilateral_centroid(P1::P, P2::P, P3::P, P4::P) where {P <: Point2}
     v₁₂ = P2 - P1
     v₁₃ = P3 - P1
     v₁₄ = P4 - P1
@@ -124,47 +113,11 @@ function quadrilateral_centroid(P1::P, P2::P, P3::P, P4::P) where {P <: Point{2}
     return (a₁ * (P₁₃ + P2) - ma₂ * (P₁₃ + P4)) / (3 * (a₁ - ma₂))
 end
 
-# -- Edges --
-
-function ev_conn(i::Integer, fv_conn::NTuple{4, I}) where {I <: Integer}    
-    # Assumes 1 ≤ i ≤ 4.    
-    if i < 4    
-        return (fv_conn[i], fv_conn[i + 1])    
-    else    
-        return (fv_conn[4], fv_conn[1])    
-    end    
-end    
-    
-function ev_conn_iterator(fv_conn::NTuple{4, I}) where {I}    
-    return (ev_conn(i, fv_conn) for i in 1:4)    
-end    
-
-function edge(i::Integer, Q::Quadrilateral)
-    # Assumes 1 ≤ i ≤ 4.
-    if i < 4
-        return LineSegment(Q[i], Q[i+1])
-    else
-        return LineSegment(Q[4], Q[1])
-    end
-end
-    
-edge_iterator(Q::Quadrilateral) = (edge(i, Q) for i in 1:4)
-
-# -- Bounding box --
-
-function bounding_box(Q::Quadrilateral)
-    return bounding_box(Q.vertices)
-end
-
-# -- In --    
-      
-Base.in(P::Point{2}, Q::Quadrilateral{2}) = all(edge -> isleft(P, edge), edge_iterator(Q))
-
 # -- Triangulation --
 
 # Assumes a convex quadrilateral
-function triangulate(Q::Quadrilateral{2})
-    return Vec(
+function triangulate(Q::Quadrilateral2)
+    return (
         Triangle(Q[1], Q[2], Q[3]),
         Triangle(Q[1], Q[3], Q[4])
        )

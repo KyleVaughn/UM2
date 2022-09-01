@@ -23,19 +23,18 @@ export interpolate_quadratic_triangle,
 #
 
 struct QuadraticTriangle{D, T}
-    vertices::Vec{6, Point{D, T}}
+    vertices::NTuple{6, Point{D, T}}
 end
 
 # -- Type aliases --
 
 const QuadraticTriangle2  = QuadraticTriangle{2}
-const QuadraticTriangle2f = QuadraticTriangle2{Float32}
-const QuadraticTriangle2d = QuadraticTriangle2{Float64}
+const QuadraticTriangle2f = QuadraticTriangle2{f32}
+const QuadraticTriangle2d = QuadraticTriangle2{f64}
 
 # -- Base --
 
-Base.getindex(T::QuadraticTriangle, i) = T.vertices[i]
-Base.broadcastable(T::QuadraticTriangle) = Ref(T)
+Base.getindex(QT::QuadraticTriangle, i::Integer) = QT.vertices[i]
 
 # -- Constructors --
 
@@ -46,28 +45,28 @@ function QuadraticTriangle(
         P4::Point{D, T},
         P5::Point{D, T},
         P6::Point{D, T}) where {D, T}
-    return QuadraticTriangle{D, T}(Vec(P1, P2, P3, P4, P5, P6))
+    return QuadraticTriangle{D, T}((P1, P2, P3, P4, P5, P6))
 end
 
 # -- Interpolation --
 
-function interpolate_quadratic_triangle(
-        P1::T, P2::T, P3::T, P4::T, P5::T, P6::T, r, s) where {T}
-    return ((2 * (1 - r - s) - 1) * ( 1 - r - s)) * P1 +    
-           (          r           * ( 2 * r - 1)) * P2 +    
-           (              s       * ( 2 * s - 1)) * P3 +    
-           (      4 * r           * ( 1 - r - s)) * P4 +    
-           (      4 * r           *           s ) * P5 +    
-           (          4 * s       * ( 1 - r - s)) * P6
+function quadratic_triangle_weights(r, s)
+    return ((2 * (1 - r - s) - 1) * ( 1 - r - s), 
+                      r           * ( 2 * r - 1),
+                          s       * ( 2 * s - 1),
+                  4 * r           * ( 1 - r - s),
+                  4 * r           *           s ,
+                      4 * s       * ( 1 - r - s))
 end
 
-function interpolate_quadratic_triangle(vertices::Vec{6}, r, s)
-    return ((2 * (1 - r - s) - 1) * ( 1 - r - s)) * vertices[1] +    
-           (          r           * ( 2 * r - 1)) * vertices[2] +    
-           (              s       * ( 2 * s - 1)) * vertices[3] +    
-           (      4 * r           * ( 1 - r - s)) * vertices[4] +    
-           (      4 * r           *           s ) * vertices[5] +    
-           (          4 * s       * ( 1 - r - s)) * vertices[6]
+function interpolate_quadratic_triangle(
+        P1::T, P2::T, P3::T, P4::T, P5::T, P6::T, r, s) where {T}
+    w = quadratic_triangle_weights(r, s)
+    return w[1] * P1 + w[2] * P2 + w[3] * P3 + w[4] * P4 + w[5] * P5 + w[6] * P6
+end
+
+function interpolate_quadratic_triangle(vertices::NTuple{6}, r, s)
+    return mapreduce(*, +, quadratic_triangle_weights(r, s), vertices)
 end
 
 function (T::QuadraticTriangle{D, F})(r::F, s::F) where {D, F}
@@ -89,7 +88,7 @@ function quadratic_triangle_jacobian(
     return Mat(∂r, ∂s)
 end
 
-function quadratic_triangle_jacobian(vertices::Vec{6}, r, s)
+function quadratic_triangle_jacobian(vertices::NTuple{6}, r, s)
     ∂r = (4 * r + 4 * s - 3) * (vertices[1] - vertices[4]) +    
          (4 * r         - 1) * (vertices[2] - vertices[4]) +    
          (        4 * s    ) * (vertices[5] - vertices[6])
@@ -101,13 +100,18 @@ function quadratic_triangle_jacobian(vertices::Vec{6}, r, s)
     return Mat(∂r, ∂s)
 end
 
-function jacobian(T::QuadraticTriangle{D, F}, r::F, s::F) where {D, F}
+
+
+REPLACING T WITH QT, F WITH T
+
+
+function jacobian(QT::QuadraticTriangle{D, F}, r::F, s::F) where {D, F}
     return quadratic_triangle_jacobian(T.vertices, r, s)
 end
 
 # -- Measure --
 
-function area(T::QuadraticTriangle{2, F}) where {F}
+function area(QT::QuadraticTriangle2{T}) where {T}
     # The area enclosed by the 3 quadratic edges + the area enclosed
     # by the triangle (P1, P2, P3)
     edge_area = F(2//3) * ((T[4] - T[1]) × (T[2] - T[1])  +

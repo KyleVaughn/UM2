@@ -1,10 +1,6 @@
 export Point,
-       Point2,
-       Point2f,
-       Point2d,
-       Point3,
-       Point3f,
-       Point3d,
+       Point2, Point2f, Point2d,
+       Point3, Point3f, Point3d,
        EPS_POINT,
        EPS_POINT2,
        INF_POINT
@@ -26,6 +22,7 @@ const INF_POINT = 1e10
 #    
 # Alias for a vector    
 #
+
 const Point = Vec
 
 # -- Type aliases --
@@ -44,4 +41,6 @@ distance2(A::Point, B::Point) = norm2(A - B)
 distance(A::Point, B::Point) = norm(A - B)
 midpoint(A::Point, B::Point) = (A + B) / 2
 isCCW(A::Point2, B::Point2, C::Point2) = 0 < (B - A) × (C - A)
-Base.isapprox(A::Point{D, T}, B::Point{D, T}) where {D, T} = distance2(A, B) < T(EPS_POINT2)
+function Base.isapprox(A::Point{D, T}, B::Point{D, T}) where {D, T}
+    return distance2(A, B) < T(EPS_POINT2)
+end

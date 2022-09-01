@@ -17,8 +17,8 @@ end
 # -- Type aliases --
 
 const Mat2x2  = Mat{2, 2}
-const Mat2x2f = Mat{2, 2, Float32}
-const Mat2x2d = Mat{2, 2, Float64}
+const Mat2x2f = Mat{2, 2, f32}
+const Mat2x2d = Mat{2, 2, f64}
 
 # -- Interface --
 

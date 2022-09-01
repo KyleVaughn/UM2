@@ -3,17 +3,10 @@ export Triangle,
        Triangle2f,
        Triangle2d
 
-export vertices,
-       interpolate_triangle,
-       jacobian,
-       triangle_jacobian,
-       area,
-       triangle_area,
-       centroid,
-       triangle_centroid,
-       edge,
-       edge_iterator,
-       bounding_box
+export interpolate_triangle,
+       jacobian, triangle_jacobian,
+       area, triangle_area,
+       centroid, triangle_centroid
 
 # TRIANGLE
 # -----------------------------------------------------------------------------
@@ -24,9 +17,7 @@ export vertices,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct Triangle{D, T}
-    vertices::Vec{3, Point{D, T}}
-end
+const Triangle = Polygon{3}
 
 # -- Type aliases --
 
@@ -34,29 +25,25 @@ const Triangle2  = Triangle{2}
 const Triangle2f = Triangle2{Float32}
 const Triangle2d = Triangle2{Float64}
 
-# -- Base --
-
-Base.getindex(T::Triangle, i) = T.vertices[i]
-Base.broadcastable(T::Triangle) = Ref(t)
-
-# -- Accessors --
-
-vertices(T::Triangle) = T.vertices
-
 # -- Constructors --
 
 function Triangle(P1::Point{D, T}, P2::Point{D, T}, P3::Point{D, T}) where {D, T}
-    return Triangle{D, T}(Vec(P1, P2, P3))
+    return Triangle{D, T}((P1, P2, P3))
 end
 
 # -- Interpolation --
 
-function interpolate_triangle(P1::T, P2::T, P3::T, r, s) where {T}
-    return (1 - r - s) * P1 + r * P2 + s * P3
+function triangle_weights(r, s)
+    return (1 - r - s, r, s)
 end
 
-function interpolate_triangle(vertices::Vec, r, s)
-    return (1 - r - s) * vertices[1] + r * vertices[2] + s * vertices[3]
+function interpolate_triangle(P1::T, P2::T, P3::T, r, s) where {T}
+    w = triangle_weights(r, s)
+    return w[1] * P1 + w[2] * P2 + w[3] * P3
+end
+
+function interpolate_triangle(vertices::NTuple{3}, r, s)
+    return mapreduce(*, +, triangle_weights(r, s), vertices)
 end
 
 function (t::Triangle{D, T})(r::T, s::T) where {D, T}
@@ -71,7 +58,7 @@ function triangle_jacobian(P1::T, P2::T, P3::T, r, s) where {T}
     return Mat(∂r, ∂s)
 end
 
-function triangle_jacobian(vertices::Vec{3}, r, s)
+function triangle_jacobian(vertices::NTuple{3}, r, s)
     ∂r = vertices[2] - vertices[1]
     ∂s = vertices[3] - vertices[1]
     return Mat(∂r, ∂s)
@@ -83,10 +70,10 @@ end
 
 # -- Measure --
 
-area(T::Triangle{2}) = ((T[2] - T[1]) × (T[3] - T[1])) / 2
-area(T::Triangle{3}) = norm((T[2] - t[1]) × (t[3] - t[1])) / 2
+area(T::Triangle2) = ((T[2] - T[1]) × (T[3] - T[1])) / 2
+#area(T::Triangle3) = norm((T[2] - t[1]) × (t[3] - t[1])) / 2
 
-function triangle_area(P1::P, P2::P, P3::P) where {P <: Point{2}}
+function triangle_area(P1::P, P2::P, P3::P) where {P <: Point2}
     return ((P2 - P1) × (P3 - P1))/ 2
 end
 
@@ -94,45 +81,17 @@ end
 
 centroid(T::Triangle) = (T[1] + T[2] + T[3]) / 3
 
-function triangle_centroid(P1::P, P2::P, P3::P) where {P <: Point{2}}
+function triangle_centroid(P1::P, P2::P, P3::P) where {P <: Point2}
     return (P1 + P2 + P3) / 3
-end
-
-# -- Edges --
-
-function ev_conn(i::Integer, fv_conn::NTuple{3, I}) where {I <: Integer}
-    # Assumes 1 ≤ i ≤ 3.
-    if i < 3
-        return (fv_conn[i], fv_conn[i + 1])
-    else
-        return (fv_conn[3], fv_conn[1])
-    end
-end
-
-function ev_conn_iterator(fv_conn::NTuple{3, I}) where {I}
-    return (ev_conn(i, fv_conn) for i in 1:3)
-end
-
-function edge(i::Integer, T::Triangle)
-    # Assumes 1 ≤ i ≤ 3.
-    if i < 3
-        return LineSegment(T[i], T[i+1])
-    else
-        return LineSegment(T[3], T[1])
-    end
-end
-
-edge_iterator(T::Triangle) = (edge(i, T) for i in 1:3)
-
-# -- Bounding box --
-
-function bounding_box(T::Triangle)
-    return bounding_box(T.vertices)
 end
 
 # -- In --
 
-Base.in(P::Point{2}, T::Triangle{2}) = all(edge -> isleft(P, edge), edge_iterator(T))
+function Base.in(P::Point2, T::Triangle2)
+    return isCCW(T[1], T[2], P) && 
+           isCCW(T[2], T[3], P) && 
+           isCCW(T[3], T[1], P)
+end
 
 # -- IO --
 
