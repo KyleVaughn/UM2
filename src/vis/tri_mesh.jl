@@ -3,9 +3,9 @@ function convert_arguments(S::Type{<:Scatter}, mesh::TriMesh)
 end
 
 function convert_arguments(LS::Type{<:LineSegments}, mesh::TriMesh)
-    return convert_arguments(LS, materialize_edges(mesh))
+    return convert_arguments(LS, edges(mesh))
 end
 
 function convert_arguments(M::Type{<:GLMakieMesh}, mesh::TriMesh)
-    return convert_arguments(M, materialize_faces(mesh))
+    return convert_arguments(M, faces(mesh))
 end

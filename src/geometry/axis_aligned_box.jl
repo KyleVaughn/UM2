@@ -1,11 +1,7 @@
 export AABox,
-       AABox2,
-       AABox2f,
-       AABox2d,
-       AABB,
-       AABB2,
-       AABB2f,
-       AABB2d
+       AABox2, AABox2f, AABox2d,
+       AABB, 
+       AABB2, AABB2f, AABB2d
 
 export minima, maxima,
        x_min, y_min,
@@ -30,8 +26,8 @@ end
 # -- Type aliases --
 
 const AABox2 = AABox{2}
-const AABox2f = AABox{2, Float32}
-const AABox2d = AABox{2, Float64}
+const AABox2f = AABox2{f32}
+const AABox2d = AABox2{f64}
 const AABB = AABox
 const AABB2 = AABox2
 const AABB2f = AABox2f
@@ -42,21 +38,21 @@ const AABB2d = AABox2d
 minima(aab::AABox) = aab.minima
 maxima(aab::AABox) = aab.maxima
 
-x_min(aab::AABox{2}) = aab.minima[1]
-y_min(aab::AABox{2}) = aab.minima[2]
-x_max(aab::AABox{2}) = aab.maxima[1]
-y_max(aab::AABox{2}) = aab.maxima[2]
+x_min(aab::AABox2) = aab.minima[1]
+y_min(aab::AABox2) = aab.minima[2]
+x_max(aab::AABox2) = aab.maxima[1]
+y_max(aab::AABox2) = aab.maxima[2]
 
-delta_x(aab::AABox{2}) = x_max(aab) - x_min(aab)
-delta_y(aab::AABox{2}) = y_max(aab) - y_min(aab)
+delta_x(aab::AABox2) = x_max(aab) - x_min(aab)
+delta_y(aab::AABox2) = y_max(aab) - y_min(aab)
 
 # -- Measure --
 
-area(aab::AABox{2}) = prod(maxima(aab) - minima(aab))
+area(aab::AABox2) = prod(maxima(aab) - minima(aab))
 
 # -- In --
 
-function Base.in(p::Point{2}, aab::AABox{2})
+function Base.in(p::Point2, aab::AABox2)
     return x_min(aab) ≤ p[1] ≤ x_max(aab) &&
            y_min(aab) ≤ p[2] ≤ y_max(aab)
 end
@@ -68,7 +64,7 @@ function Base.isapprox(aab₁::AABox, aab₂::AABox)
            maxima(aab₁) ≈ maxima(aab₂)
 end
 
-function Base.union(aab₁::AABox{2}, aab₂::AABox{2})
+function Base.union(aab₁::AABox2, aab₂::AABox2)
     xmin = min(x_min(aab₁), x_min(aab₂))
     xmax = max(x_max(aab₁), x_max(aab₂))
     ymin = min(y_min(aab₁), y_min(aab₂))
@@ -79,7 +75,7 @@ end
 # -- Bounding box --
 
 # Vector of points
-function bounding_box(points::Vector{Point{2, T}}) where {T}
+function bounding_box(points::Vector{Point2}) where {T}
     xmin, ymin = points[1]
     xmax, ymax = points[1]
     for i in 2:length(points)
@@ -89,11 +85,11 @@ function bounding_box(points::Vector{Point{2, T}}) where {T}
         xmax = max(xmax, x)
         ymax = max(ymax, y)
     end
-    return AABox{2, T}(Point{2, T}(xmin, ymin), Point{2, T}(xmax, ymax))
+    return AABox(Point2(xmin, ymin), Point2(xmax, ymax))
 end
 
-# Vec of points
-function bounding_box(points::Vec{L, Point{2, T}}) where {L, T}
+# Tuple of points
+function bounding_box(points::NTuple{N, Point2{T}}) where {N, T}
     xmin, ymin = points[1]
     xmax, ymax = points[1]  
     for i in 2:length(points)
@@ -103,7 +99,7 @@ function bounding_box(points::Vec{L, Point{2, T}}) where {L, T}
         xmax = max(xmax, x)
         ymax = max(ymax, y)
     end
-    return AABox{2, T}(Point{2, T}(xmin, ymin), Point{2, T}(xmax, ymax))
+    return AABox(Point2(xmin, ymin), Point2(xmax, ymax))
 end
 
 # -- IO --

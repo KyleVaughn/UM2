@@ -21,19 +21,18 @@ export vertices,
 #
 
 struct LineSegment{D, T}
-    vertices::Vec{2, Point{D, T}}
+    vertices::NTuple{2, Point{D, T}}
 end
 
 # -- Type aliases --
 
-const LineSegment2     = LineSegment{2}
-const LineSegment2f    = LineSegment2{Float32}
-const LineSegment2d    = LineSegment2{Float64}
+const LineSegment2  = LineSegment{2}
+const LineSegment2f = LineSegment2{f32}
+const LineSegment2d = LineSegment2{f64}
 
 # -- Base --
 
-Base.getindex(L::LineSegment, i) = L.vertices[i]
-Base.broadcastable(L::LineSegment) = Ref(L)
+Base.getindex(L::LineSegment, i::Integer) = L.vertices[i]
 
 # -- Accessors --
 
@@ -41,7 +40,7 @@ vertices(l::LineSegment) = l.vertices
 
 # -- Constructors --
 
-LineSegment(P1::Point{D, T}, P2::Point{D, T}) where {D, T} = LineSegment{D, T}(Vec(P1, P2))
+LineSegment(P1::Point{D, T}, P2::Point{D, T}) where {D, T} = LineSegment{D, T}((P1, P2))
 
 # -- Interpolation --
 
@@ -49,7 +48,7 @@ function interpolate_line_segment(P1::T, P2::T, r) where {T}
     return P1 + r * (P2 - P1)
 end
 
-function interpolate_line_segment(vertices::Vec{2}, r)
+function interpolate_line_segment(vertices::NTuple{2}, r)
     return vertices[1] + r * (vertices[2] - vertices[1])
 end
 
@@ -63,7 +62,7 @@ function line_segment_jacobian(P1::T, P2::T, r) where {T}
     return P2 - P1
 end
 
-function line_segment_jacobian(vertices::Vec{2}, r)
+function line_segment_jacobian(vertices::NTuple{2}, r)
     return vertices[2] - vertices[1]
 end
 
@@ -77,9 +76,7 @@ arclength(L::LineSegment) = distance(L[1], L[2])
 
 # -- Bounding box --
 
-function bounding_box(L::LineSegment{2, T}) where {T}
-    return bounding_box(L.vertices)
-end
+bounding_box(L::LineSegment) = bounding_box(L.vertices)
 
 # -- In --
 

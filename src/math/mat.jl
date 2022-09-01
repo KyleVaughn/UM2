@@ -10,66 +10,41 @@ export det
 # An M x N matrix with data of type T    
 #  
 
-struct Mat{M, N, T}
-    cols::Vec{N, Vec{M, T}}
+struct Mat{M, N, T <: AbstractFloat}
+    cols::NTuple{N, Vec{M, T}}
 end
 
 # -- Type aliases --
 
 const Mat2x2  = Mat{2, 2}
-const Mat2x2f = Mat{2, 2, Float32}
-const Mat2x2d = Mat{2, 2, Float64}
+const Mat2x2f = Mat{2, 2, f32}
+const Mat2x2d = Mat{2, 2, f64}
 
 # -- Interface --
 
-Base.getindex(A::Mat, i) = A.cols[i]
-Base.getindex(A::Mat, i, j) = A.cols[j][i]
+Base.getindex(A::Mat, i::Integer) = A.cols[i]
+Base.getindex(A::Mat, i::Integer, j::Integer) = A.cols[j][i]
 Base.size(A::Mat{M, N}) where {M, N} = (M, N)
 Base.length(A::Mat{M, N}) where {M, N} = M * N 
 Base.eltype(A::Mat{M, N, T}) where {M, N, T} = T
 
 # -- Constructors --
 
-# Seems to allocate sometimes. Commenting out for now.
-#function Mat{M, N}(xs::T...) where {M, N, T}
-#    @assert(length(xs) == M * N)
-#    return Mat{M, N, T}(vec(i->Vec{M, T}(xs[ (1 + (i - 1) * M) : (i * M) ]), Val(N)))
-#end
-
 function Mat(vecs::Vec...)
-    return Mat(Vec(vecs))
+    return Mat(vecs)
 end
 
 # -- Unary operators --
 
-Base.:-(A::Mat{M, N, T}) where {M, N, T} = Mat{M, N, T}(vec(i -> -A[i], Val(M)))
+Base.:-(A::Mat) = Mat(map(-, A.cols))
 
 # -- Binary operators --
 
-function Base.:*(A::Mat{M, N, T}, scalar::X) where {M, N, T, X}
-    return Mat{M, N, T}(vec(i -> A[i] * T(scalar), Val(M)))
-end
-
-function Base.:/(A::Mat{M, N, T}, scalar::X) where {M, N, T, X}
-    scalar_inv = 1 / T(scalar)
-    return Mat{M, N, T}(vec(i -> scalar_inv * A[i], Val(M)))
-end
-    
-function Base.:*(scalar::X, A::Mat{M, N, T}) where {M, N, T, X}
-    return Mat{M, N, T}(vec(i -> T(scalar) * A[i], Val(M)))
-end
-
-function Base.:/(scalar::X, A::Mat{M, N, T}) where {M, N, T, X}
-    return Mat{M, N, T}(vec(i -> T(scalar) / A[i], Val(M)))
-end
-
-function Base.:+(A::Mat{M, N, T}, B::Mat{M, N, T}) where {M, N, T}
-    return Mat{M, N, T}(vec(i -> A[i] + B[i], Val(M)))
-end
-
-function Base.:-(A::Mat{M, N, T}, B::Mat{M, N, T}) where {M, N, T}
-    return Mat{M, N, T}(vec(i -> A[i] - B[i], Val(M)))
-end
+Base.:*(A::Mat{M, N, T}, scalar::X) where {M, N, T, X <: Number} = Mat(map(x -> x * T(scalar), A.cols))
+Base.:/(A::Mat{M, N, T}, scalar::X) where {M, N, T, X <: Number} = Mat(map(x -> x / T(scalar), A.cols))
+Base.:*(scalar::X, A::Mat{M, N, T}) where {M, N, T, X <: Number} = Mat(map(x -> T(scalar) * x, A.cols))
+Base.:+(A::Mat{M, N, T}, B::Mat{M, N, T}) where {M, N, T} = Mat(map(+, A.cols, B.cols))
+Base.:-(A::Mat{M, N, T}, B::Mat{M, N, T}) where {M, N, T} = Mat(map(-, A.cols, B.cols))
 
 # -- 2x2 matrix --
 
@@ -94,17 +69,16 @@ function det(A::Mat2x2)
 end
 
 function Base.inv(A::Mat2x2)
-    detinv = 1 / det(A)
-    return Mat2x2( detinv * A[2,2], 
-                  -detinv * A[2,1],
-                  -detinv * A[1,2],  
-                   detinv * A[1,1])
+    return Mat2x2( A[2,2], 
+                  -A[2,1],
+                  -A[1,2],  
+                   A[1,1]) / det(A)
 end
 
 # -- IO --
 
 function Base.show(io::IO, A::Mat{M, N, T}) where {M, N, T}
-    println(io, M, '×', N, " Mat{", T, "}")
+    println(io, M, '×', N, " Mat{", T, "}:")
     for i = 1:M
         for j = 1:N
             print(io,  " ", A[i, j])
