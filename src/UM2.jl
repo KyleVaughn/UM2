@@ -1,7 +1,5 @@
 module UM2
 
-const UM2_ENABLE_VIS = false
-
 include("common/defines.jl")
 include("common/types.jl")
 include("common/constants.jl")
@@ -17,7 +15,7 @@ include("geometry/polygon/polygon.jl")
 include("geometry/polygon/triangle.jl")
 include("geometry/polygon/quadrilateral.jl")
 include("geometry/quadratic_polygon/quadratic_polygon.jl")
-#include("geometry/quadratic_triangle.jl")
+include("geometry/quadratic_polygon/quadratic_triangle.jl")
 #include("geometry/quadratic_quadrilateral.jl")
 #
 #include("mesh/cell_types.jl")

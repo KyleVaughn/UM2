@@ -69,8 +69,8 @@ function interpolate_quadratic_triangle(vertices::NTuple{6}, r, s)
     return mapreduce(*, +, quadratic_triangle_weights(r, s), vertices)
 end
 
-function (T::QuadraticTriangle{D, F})(r::F, s::F) where {D, F}
-    return interpolate_quadratic_triangle(T.vertices, r, s)
+function (QT::QuadraticTriangle{D, T})(r::T, s::T) where {D, T}
+    return interpolate_quadratic_triangle(QT.vertices, r, s)
 end
 
 # -- Jacobian --
@@ -100,13 +100,8 @@ function quadratic_triangle_jacobian(vertices::NTuple{6}, r, s)
     return Mat(∂r, ∂s)
 end
 
-
-
-REPLACING T WITH QT, F WITH T
-
-
-function jacobian(QT::QuadraticTriangle{D, F}, r::F, s::F) where {D, F}
-    return quadratic_triangle_jacobian(T.vertices, r, s)
+function jacobian(QT::QuadraticTriangle{D, T}, r::T, s::T) where {D, T}
+    return quadratic_triangle_jacobian(QT.vertices, r, s)
 end
 
 # -- Measure --
@@ -114,45 +109,32 @@ end
 function area(QT::QuadraticTriangle2{T}) where {T}
     # The area enclosed by the 3 quadratic edges + the area enclosed
     # by the triangle (P1, P2, P3)
-    edge_area = F(2//3) * ((T[4] - T[1]) × (T[2] - T[1])  +
-                           (T[5] - T[2]) × (T[3] - T[2])  +
-                           (T[6] - T[3]) × (T[1] - T[3])) 
-    tri_area = ((T[2] - T[1]) × (T[3] - T[1])) / 2 
+    edge_area = T(2//3) * ((QT[4] - QT[1]) × (QT[2] - QT[1])  +
+                           (QT[5] - QT[2]) × (QT[3] - QT[2])  +
+                           (QT[6] - QT[3]) × (QT[1] - QT[3])) 
+    tri_area = ((QT[2] - QT[1]) × (QT[3] - QT[1])) / 2 
     return edge_area + tri_area
 end
 
 # -- Centroid --
 
-function centroid(T::QuadraticTriangle{2, F}) where {F}
+function centroid(QT::QuadraticTriangle2{T}) where {T}
     # By geometric decomposition into a triangle and the 3 areas
     # enclosed by the quadratic edges.
-    aₜ = triangle_area(T[1], T[2], T[3])
-    Cₜ = triangle_centroid(T[1], T[2], T[3])
-    a₁ = area_enclosed_by_quadratic_segment(T[1], T[2], T[4])
-    a₂ = area_enclosed_by_quadratic_segment(T[2], T[3], T[5])
-    a₃ = area_enclosed_by_quadratic_segment(T[3], T[1], T[6])
-    C₁ = centroid_of_area_enclosed_by_quadratic_segment(T[1], T[2], T[4])
-    C₂ = centroid_of_area_enclosed_by_quadratic_segment(T[2], T[3], T[5])
-    C₃ = centroid_of_area_enclosed_by_quadratic_segment(T[3], T[1], T[6])
+    aₜ = triangle_area(QT[1], QT[2], QT[3])
+    Cₜ = triangle_centroid(QT[1], QT[2], QT[3])
+    a₁ = area_enclosed_by_quadratic_segment(QT[1], QT[2], QT[4])
+    a₂ = area_enclosed_by_quadratic_segment(QT[2], QT[3], QT[5])
+    a₃ = area_enclosed_by_quadratic_segment(QT[3], QT[1], QT[6])
+    C₁ = centroid_of_area_enclosed_by_quadratic_segment(QT[1], QT[2], QT[4])
+    C₂ = centroid_of_area_enclosed_by_quadratic_segment(QT[2], QT[3], QT[5])
+    C₃ = centroid_of_area_enclosed_by_quadratic_segment(QT[3], QT[1], QT[6])
     return (aₜ*Cₜ + a₁ * C₁ + a₂ * C₂ + a₃ * C₃) / (aₜ + a₁ + a₂ + a₃)
 end
 
-# -- Edges --
-
-function edge(i::Integer, t::QuadraticTriangle)
-    # Assumes 1 ≤ i ≤ 3.
-    if i < 3
-        return QuadraticSegment(T[i], T[i+1], T[i+3])
-    else
-        return QuadraticSegment(T[3], T[1], T[6])
-    end
-end
-
-edge_iterator(T::QuadraticTriangle) = (edge(i, T) for i in 1:3)
-
 # -- Bounding box --
 
-function bounding_box(T::QuadraticTriangle)
+function bounding_box(QT::QuadraticTriangle)
     return bounding_box(edge(1, Q)) ∪
            bounding_box(edge(2, Q)) ∪
            bounding_box(edge(3, Q))
@@ -160,14 +142,16 @@ end
 
 # -- In --    
       
-Base.in(P::Point{2}, T::QuadraticTriangle{2}) = all(edge -> isleft(P, edge), edge_iterator(T))
+function Base.in(P::Point2, QT::QuadraticTriangle2)
+    return all(edge -> isleft(P, edge), edge_iterator(QT))
+end
 
 # -- Triangulation --
 
 # N is the number of segments to divide each edge into.
 # Return a Vector of the N^2 triangles that approximately partition 
 # the quadratic triangle.
-function triangulate(T::QuadraticTriangle{D, F}, N::Integer) where {D, F}
+function triangulate(QT::QuadraticTriangle{D, T}, N::Integer) where {D, T}
     # Walk up the triangle in parametric coordinates (r as fast variable,
     # s as slow variable).
     # r is incremented along each row, forming two triangles (1,2,3) and
@@ -176,19 +160,19 @@ function triangulate(T::QuadraticTriangle{D, F}, N::Integer) where {D, F}
     # | \   |        | \   
     # |   \ |        |   \  
     # 1 --- 2 ...... 1 --- 2 
-    triangles = Vector{Triangle{D, F}}(undef, N^2)
-    Δ = F(1) / N # Δ for r and s
-    s1 = F(0)
+    triangles = Vector{Triangle{D, T}}(undef, N^2)
+    Δ = T(1) / N # Δ for r and s
+    s1 = T(0)
     ntri = 0
     for s = 0:(N - 1)
-        r1 = F(0)
+        r1 = T(0)
         s2 = s1 + Δ
-        P1 = T(r1, s1)
-        P3 = T(r1, s2)
+        P1 = QT(r1, s1)
+        P3 = QT(r1, s2)
         for r = 0:(N - 2 - s)
             r2 = r1 + Δ
-            P2 = T(r2, s1)
-            P4 = T(r2, s2)
+            P2 = QT(r2, s1)
+            P4 = QT(r2, s2)
             triangles[ntri + 2 * r + 1] = Triangle(P1, P2, P3)
             triangles[ntri + 2 * r + 2] = Triangle(P3, P2, P4)
             r1 = r2
@@ -196,7 +180,7 @@ function triangulate(T::QuadraticTriangle{D, F}, N::Integer) where {D, F}
             P3 = P4
         end
         ntri += 2*(N - s) - 1
-        triangles[ntri] = Triangle(P1, t(r1 + Δ, s1), P3)
+        triangles[ntri] = Triangle(P1, QT(r1 + Δ, s1), P3)
         s1 = s2
     end
     return triangles
@@ -204,18 +188,18 @@ end
 
 # -- IO --
 
-function Base.show(io::IO, T::QuadraticTriangle{D, F}) where {D, F}
+function Base.show(io::IO, QT::QuadraticTriangle{D, T}) where {D, T}
     type_char = '?'
-    if F === Float32
+    if T === Float32
         type_char = 'f'
-    elseif F === Float64
+    elseif T === Float64
         type_char = 'd'
     end
     print(io, "QuadraticTriangle", D, type_char, '(', 
-        T.vertices[1], ", ", 
-        T.vertices[2], ", ", 
-        T.vertices[3], ", ",
-        T.vertices[4], ", ",
-        T.vertices[5], ", ",
-        T.vertices[6], ')')
+        QT.vertices[1], ", ", 
+        QT.vertices[2], ", ", 
+        QT.vertices[3], ", ",
+        QT.vertices[4], ", ",
+        QT.vertices[5], ", ",
+        QT.vertices[6], ')')
 end
