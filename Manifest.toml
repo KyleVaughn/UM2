@@ -28,9 +28,9 @@ version = "0.12.8"
 
 [[deps.Compat]]
 deps = ["Dates", "LinearAlgebra", "UUIDs"]
-git-tree-sha1 = "924cdca592bc16f14d2f7006754a621735280b74"
+git-tree-sha1 = "5856d3031cdb1f3b2b6340dfdc66b6d9a149a374"
 uuid = "34da2185-b29b-5c13-b0c7-acf172513d20"
-version = "4.1.0"
+version = "4.2.0"
 
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -63,15 +63,15 @@ version = "0.8.4"
 
 [[deps.HDF5]]
 deps = ["Compat", "HDF5_jll", "Libdl", "Mmap", "Random", "Requires"]
-git-tree-sha1 = "9ffc57b9bb643bf3fce34f3daf9ff506ed2d8b7a"
+git-tree-sha1 = "899f041bf330ebeead3637073b2ca7477760edde"
 uuid = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
-version = "0.16.10"
+version = "0.16.11"
 
 [[deps.HDF5_jll]]
 deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "OpenSSL_jll", "Pkg", "Zlib_jll"]
-git-tree-sha1 = "bab67c0d1c4662d2c4be8c6007751b0b6111de5c"
+git-tree-sha1 = "c003b31e2e818bc512b0ff99d7dce03b0c1359f5"
 uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"
-version = "1.12.1+0"
+version = "1.12.2+1"
 
 [[deps.InteractiveUtils]]
 deps = ["Markdown"]

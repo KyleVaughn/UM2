@@ -1,20 +1,23 @@
-export TriMesh
+export TriMesh, QuadMesh
 
-export num_faces, faces, edges
+export num_faces, face, face_iterator, faces, edges
 
-# TRI MESH
+# POLYGON MESH
 # -----------------------------------------------------------------------------
 #
-# A 2D triangle mesh.
+# A 2D polygon mesh.
+#
+# N = 3 is a triangle mesh
+# N = 4 is a quad mesh
 #
 
-struct TriMesh{T <: AbstractFloat, I <: Integer}
+struct PolygonMesh{N, T <: AbstractFloat, I <: Integer}
 
     # Name of the mesh.
     name::String
 
     # Vertex positions.
-    vertices::Vector{Point{2, T}}
+    vertices::Vector{Point2{T}}
 
     # Face-vertex connectivity.
     fv_conn::Vector{I}
@@ -30,43 +33,57 @@ struct TriMesh{T <: AbstractFloat, I <: Integer}
 
 end
 
+# -- Type aliases --
+
+const TriMesh = PolygonMesh{3}
+const QuadMesh = PolygonMesh{4}
+
 # -- Constructors --
 
-function TriMesh(file::AbaqusFile{T, I}) where {T, I}
+function PolygonMesh{N}(file::AbaqusFile{T, I}) where {N, T, I}
     # Error checking
-    if any(eltype -> eltype !== VTK_TRIANGLE, file.element_types)
-        error("Not all elements are triangles")
+    if N === 3
+        vtk_type = VTK_TRIANGLE
+    elseif N === 4
+        vtk_type = VTK_QUAD
+    else
+        error("Unsupported polygon mesh type")
     end
-    nfaces = length(file.elements) ÷ 3
-    if nfaces * 3 != length(file.elements)
-        error("Number of elements is not a multiple of 3")
+
+    if any(eltype -> eltype !== vtk_type, file.element_types)
+        error("Not all elements are VTK type " * string(vtk_type))
+    end
+
+    nfaces = length(file.elements) ÷ N
+    if nfaces * N != length(file.elements)
+        error("Number of elements is not a multiple of " * string(N))
     end
 
     # Vertices
     nverts = length(file.nodes)
-    vertices = Vector{Point{2, T}}(undef, nverts)
+    vertices = Vector{Point2{T}}(undef, nverts)
     for i in 1:nverts
-        vertices[i] = Point{2, T}(file.nodes[i][1], file.nodes[i][2])
+        vertices[i] = Point2{T}(file.nodes[i][1], file.nodes[i][2])
     end
 
     # Vertex-face connectivity
     vf_conn_vert_counts = zeros(I, nverts)
     for face_id in 1:nfaces
-        for ivert in 1:3
-            vert_id = file.elements[3 * (face_id - 1) + ivert]
+        for ivert in 1:N
+            vert_id = file.elements[N * (face_id - 1) + ivert]
             vf_conn_vert_counts[vert_id] += 1
         end
     end
     vf_offsets = Vector{I}(undef, nverts + 1)
     vf_offsets[1] = 1
-    vf_offsets[2:end] = cumsum(vf_conn_vert_counts)
+    vf_offsets[2:end] .= cumsum(vf_conn_vert_counts)
     vf_offsets[2:end] .+= 1
 
     vf_conn_vert_counts .-= 1
     vf_conn = Vector{I}(undef, vf_offsets[end] - 1)
     for face_id in 1:nfaces
-        for ivert in 1:3
-            vert_id = file.elements[3 * (face_id - 1) + ivert]
+        for ivert in 1:N
+            vert_id = file.elements[N * (face_id - 1) + ivert]
             vf_conn[vf_offsets[vert_id] + vf_conn_vert_counts[vert_id]] = face_id
             vf_conn_vert_counts[vert_id] -= 1
         end
@@ -92,7 +109,7 @@ function TriMesh(file::AbaqusFile{T, I}) where {T, I}
         end
     end
 
-    return TriMesh{T, I}(
+    return PolygonMesh{N, T, I}(
         file.name,
         vertices,
         file.elements,
@@ -102,41 +119,39 @@ function TriMesh(file::AbaqusFile{T, I}) where {T, I}
     )
 end
 
-function TriMesh(file::String)
-    return TriMesh(AbaqusFile(file))
+function PolygonMesh{N}(file::String) where {N}
+    abaqus_file = AbaqusFile(file)
+    return (get_material_names(abaqus_file),
+            PolygonMesh{N}(abaqus_file))
 end
 
-# -- Iterators/Materialization --
+# -- Basic properties --
 
-num_faces(mesh::TriMesh) = length(mesh.material_ids)
+num_faces(mesh::PolygonMesh) = length(mesh.material_ids)
 
-function fv_conn(i::Integer, mesh::TriMesh)
-    return ( 
-        mesh.fv_conn[3 * i - 2],
-        mesh.fv_conn[3 * i - 1],
-        mesh.fv_conn[3 * i    ]
-    )
+function fv_conn(i::Integer, mesh::PolygonMesh{N}) where {N}
+    return ntuple(j -> mesh.fv_conn[N * (i - 1) + j], Val(N))
 end
 
-fv_conn_iterator(mesh::TriMesh) = (fv_conn(i, mesh) for i in 1:num_faces(mesh))
+fv_conn_iterator(mesh::PolygonMesh) = (fv_conn(i, mesh) for i in 1:num_faces(mesh))
 
-function face(i::Integer, mesh::TriMesh)
-    return Triangle(
-        mesh.vertices[mesh.fv_conn[3 * i - 2]],
-        mesh.vertices[mesh.fv_conn[3 * i - 1]],
-        mesh.vertices[mesh.fv_conn[3 * i    ]]
-    )
+function face(i::Integer, mesh::PolygonMesh{N}) where {N}
+    return Polygon{N}(ntuple(j -> mesh.vertices[mesh.fv_conn[N * (i - 1) + j]],
+                             Val(N))
+                     )
 end
 
-face_iterator(mesh::TriMesh) = (face(i, mesh) for i in 1:num_faces(mesh))
+function face_iterator(mesh::PolygonMesh{N}) where {N}
+    return (face(i, mesh) for i in 1:num_faces(mesh))
+end
 
-faces(mesh::TriMesh) = collect(face_iterator(mesh))
+faces(mesh::PolygonMesh) = collect(face_iterator(mesh))
 
-function edges(mesh::TriMesh{T, I}) where {T, I}
+function edges(mesh::PolygonMesh{N, T, I}) where {N, T, I}
     unique_edges = NTuple{2, I}[]
     nedges = 0
     for fv_conn in fv_conn_iterator(mesh)
-        for ev_conn in ev_conn_iterator(fv_conn)
+        for ev_conn in polygon_ev_conn_iterator(fv_conn)
             # Sort the edge vertices
             if ev_conn[1] < ev_conn[2]
                 sorted_ev = ev_conn
@@ -162,10 +177,10 @@ end
 
 # -- In --
 
-function Base.in(P::Point{2}, mesh::TriMesh)
-    for fv_conn in fv_conn_iterator(mesh)    
-        if all(vids -> isCCW(P, mesh.vertices[vids[1]], mesh.vertices[vids[2]]), 
-               ev_conn_iterator(fv_conn))
+function Base.in(P::Point2, mesh::PolygonMesh)
+    for fv_conn in fv_conn_iterator(mesh)
+        if all(vids -> isCCW(P, mesh.vertices[vids[1]], mesh.vertices[vids[2]]),
+               polygon_ev_conn_iterator(fv_conn))
             return true
         end
     end
