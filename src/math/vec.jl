@@ -11,7 +11,7 @@ export ⋅, ×, coord, dot, cross, norm2, norm, normalize
 # A D-dimenstional vector with data of type T
 #
 
-struct Vec{D, T} <: AbstractVector{T}
+struct Vec{D, T <: AbstractFloat} <: AbstractVector{T}
    coord::NTuple{D, T}
 end
 
@@ -31,7 +31,7 @@ const Vec3d = Vec3{f64}
 
 # -- Abstract vector interface --
 
-Base.getindex(v::Vec, i) = Base.getindex(v.coord, i)
+Base.getindex(v::Vec, i::Integer) = Base.getindex(v.coord, i)
 Base.size(v::Vec{D}) where {D} = (D,)
 Base.length(v::Vec{D}) where {D} = D 
 
@@ -43,41 +43,30 @@ coord(v::Vec) = v.coord
 
 Vec(xs::T...) where {T} = Vec{length(xs), T}(xs)
 Vec{D}(xs::T...) where {D, T} = Vec{D, T}(xs)
-Vec{D, T}(xs::X...) where {D, T, X <: Number} = Vec{D, T}(ntuple(i->T(xs[i]), Val(D)))
-
-Base.vec(f::F, ::Val{N}) where {F, N} = Vec(ntuple(f, Val(N)))
+Vec{D, T}(xs::X...) where {D, T, X <: Number} = Vec{D, T}(map(T, xs))
 
 # -- Unary operators --
 
-Base.:-(v::Vec{D, T}) where {D, T} = vec(i -> -v[i], Val(D))
+Base.:-(v::Vec) = Vec(map(-, v.coord))
 
 # -- Binary operators --
 
-Base.:+(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = vec(i -> v[i] + T(scalar), Val(D))
-Base.:-(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = vec(i -> v[i] - T(scalar), Val(D))
-Base.:*(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = vec(i -> v[i] * T(scalar), Val(D))
-function Base.:/(v::Vec{D, T}, scalar::X) where {D, T, X <: Number}
-    scalar_inv = 1 / T(scalar)
-    return vec(i -> scalar_inv * v[i], Val(D))
-end
-Base.:+(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = vec(i -> T(scalar) + v[i], Val(D))
-Base.:-(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = vec(i -> T(scalar) - v[i], Val(D))
-Base.:*(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = vec(i -> T(scalar) * v[i], Val(D))
-Base.:/(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = vec(i -> T(scalar) / v[i], Val(D))
-Base.:+(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = vec(i -> u[i] + v[i], Val(D))
-Base.:-(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = vec(i -> u[i] - v[i], Val(D))
-Base.:*(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = vec(i -> u[i] * v[i], Val(D))
-Base.:/(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = vec(i -> u[i] / v[i], Val(D))
+Base.:+(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = Vec(map(x -> x + T(scalar), v.coord))
+Base.:-(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = Vec(map(x -> x - T(scalar), v.coord)) 
+Base.:*(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = Vec(map(x -> x * T(scalar), v.coord)) 
+Base.:/(v::Vec{D, T}, scalar::X) where {D, T, X <: Number} = Vec(map(x -> x / T(scalar), v.coord)) 
+Base.:+(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = Vec(map(x -> T(scalar) + x, v.coord)) 
+Base.:-(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = Vec(map(x -> T(scalar) - x, v.coord)) 
+Base.:*(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = Vec(map(x -> T(scalar) * x, v.coord)) 
+Base.:/(scalar::X, v::Vec{D, T}) where {D, T, X <: Number} = Vec(map(x -> T(scalar) / x, v.coord)) 
+Base.:+(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = Vec(map(+, u.coord, v.coord))
+Base.:-(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = Vec(map(-, u.coord, v.coord))
+Base.:*(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = Vec(map(*, u.coord, v.coord))
+Base.:/(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = Vec(map(/, u.coord, v.coord))
 
 # -- Methods --
 
-function dot(u::Vec{D}, v::Vec{D}) where {D}
-    d = u[1] * v[1]
-    for i in 2:D
-        d += u[i] * v[i]
-    end
-    return d 
-end
+dot(u::Vec{D, T}, v::Vec{D, T}) where {D, T} = mapreduce(*, +, u.coord, v.coord)
 const ⋅ = dot
 norm2(v::Vec) = dot(v, v)
 norm(v::Vec) = sqrt(norm2(v))
