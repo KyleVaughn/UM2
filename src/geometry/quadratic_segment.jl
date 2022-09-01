@@ -223,9 +223,9 @@ function bounding_box(Q::QuadraticSegment2{T}) where {T}
     # Q′(r) = 2𝗮r + 𝗯 
     # (r_x, r_y) = -𝗯 ./ (2𝗮)    
     # Compare the extrema with the segment's endpoints to find the AABox    
-    P1 = P[1]
-    P2 = P[2]
-    P3 = P[3]
+    P1 = Q[1]
+    P2 = Q[2]
+    P3 = Q[3]
     𝘃₁₃ = P3 - P1
     𝘃₂₃ = P3 - P2
     a_x, a_y = -2(𝘃₁₃ + 𝘃₂₃)
@@ -269,8 +269,8 @@ function isleft(P::Point2{T}, Q::QuadraticSegment2{T}) where {T}
     # d = -2(𝗯 ⋅ 𝘄)
     # Lagrange's method is used to find the roots.
     # (https://en.wikipedia.org/wiki/Cubic_equation#Lagrange's_method)    
-    𝘃₁₃ = q[3] - q[1]
-    𝘃₂₃ = q[3] - q[2]
+    𝘃₁₃ = Q[3] - Q[1]
+    𝘃₂₃ = Q[3] - Q[2]
     𝗮 = -2(𝘃₁₃ + 𝘃₂₃)    
     a = 4 * (𝗮 ⋅ 𝗮)
 
@@ -344,7 +344,6 @@ function isleft(P::Point2{T}, Q::QuadraticSegment2{T}) where {T}
 
         return 0 ≤ jacobian(Q, r) × (P - Q(r))
     end
-    
 end
 
 # -- IO --

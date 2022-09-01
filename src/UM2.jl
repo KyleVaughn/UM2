@@ -16,8 +16,8 @@ include("geometry/polygon/triangle.jl")
 include("geometry/polygon/quadrilateral.jl")
 include("geometry/quadratic_polygon/quadratic_polygon.jl")
 include("geometry/quadratic_polygon/quadratic_triangle.jl")
-#include("geometry/quadratic_quadrilateral.jl")
-#
+include("geometry/quadratic_polygon/quadratic_quadrilateral.jl")
+
 #include("mesh/cell_types.jl")
 #include("mesh/io_abaqus.jl")
 #include("mesh/tri_mesh.jl")

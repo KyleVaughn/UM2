@@ -8,8 +8,6 @@ export interpolate_quadratic_triangle,
        quadratic_triangle_jacobian,
        area,
        centroid,
-       edge,
-       edge_iterator,
        bounding_box,
        triangulate
 
@@ -22,9 +20,7 @@ export interpolate_quadratic_triangle,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct QuadraticTriangle{D, T}
-    vertices::NTuple{6, Point{D, T}}
-end
+const QuadraticTriangle = QuadraticPolygon{6}
 
 # -- Type aliases --
 
@@ -32,9 +28,10 @@ const QuadraticTriangle2  = QuadraticTriangle{2}
 const QuadraticTriangle2f = QuadraticTriangle2{f32}
 const QuadraticTriangle2d = QuadraticTriangle2{f64}
 
-# -- Base --
-
-Base.getindex(QT::QuadraticTriangle, i::Integer) = QT.vertices[i]
+const QTriangle = QuadraticTriangle
+const QTriangle2 = QuadraticTriangle2
+const QTriangle2f = QuadraticTriangle2f
+const QTriangle2d = QuadraticTriangle2d
 
 # -- Constructors --
 
@@ -45,7 +42,7 @@ function QuadraticTriangle(
         P4::Point{D, T},
         P5::Point{D, T},
         P6::Point{D, T}) where {D, T}
-    return QuadraticTriangle{D, T}((P1, P2, P3, P4, P5, P6))
+    return QTriangle{D, T}((P1, P2, P3, P4, P5, P6))
 end
 
 # -- Interpolation --
@@ -69,7 +66,7 @@ function interpolate_quadratic_triangle(vertices::NTuple{6}, r, s)
     return mapreduce(*, +, quadratic_triangle_weights(r, s), vertices)
 end
 
-function (QT::QuadraticTriangle{D, T})(r::T, s::T) where {D, T}
+function (QT::QTriangle{D, T})(r::T, s::T) where {D, T}
     return interpolate_quadratic_triangle(QT.vertices, r, s)
 end
 
@@ -100,13 +97,13 @@ function quadratic_triangle_jacobian(vertices::NTuple{6}, r, s)
     return Mat(∂r, ∂s)
 end
 
-function jacobian(QT::QuadraticTriangle{D, T}, r::T, s::T) where {D, T}
+function jacobian(QT::QTriangle{D, T}, r::T, s::T) where {D, T}
     return quadratic_triangle_jacobian(QT.vertices, r, s)
 end
 
 # -- Measure --
 
-function area(QT::QuadraticTriangle2{T}) where {T}
+function area(QT::QTriangle2{T}) where {T}
     # The area enclosed by the 3 quadratic edges + the area enclosed
     # by the triangle (P1, P2, P3)
     edge_area = T(2//3) * ((QT[4] - QT[1]) × (QT[2] - QT[1])  +
@@ -118,7 +115,7 @@ end
 
 # -- Centroid --
 
-function centroid(QT::QuadraticTriangle2{T}) where {T}
+function centroid(QT::QTriangle2{T}) where {T}
     # By geometric decomposition into a triangle and the 3 areas
     # enclosed by the quadratic edges.
     aₜ = triangle_area(QT[1], QT[2], QT[3])
@@ -134,15 +131,15 @@ end
 
 # -- Bounding box --
 
-function bounding_box(QT::QuadraticTriangle)
-    return bounding_box(edge(1, Q)) ∪
-           bounding_box(edge(2, Q)) ∪
-           bounding_box(edge(3, Q))
+function bounding_box(QT::QTriangle)
+    return bounding_box(edge(1, QT)) ∪
+           bounding_box(edge(2, QT)) ∪
+           bounding_box(edge(3, QT))
 end
 
 # -- In --    
       
-function Base.in(P::Point2, QT::QuadraticTriangle2)
+function Base.in(P::Point2, QT::QTriangle2)
     return all(edge -> isleft(P, edge), edge_iterator(QT))
 end
 
@@ -151,7 +148,7 @@ end
 # N is the number of segments to divide each edge into.
 # Return a Vector of the N^2 triangles that approximately partition 
 # the quadratic triangle.
-function triangulate(QT::QuadraticTriangle{D, T}, N::Integer) where {D, T}
+function triangulate(QT::QTriangle{D, T}, N::Integer) where {D, T}
     # Walk up the triangle in parametric coordinates (r as fast variable,
     # s as slow variable).
     # r is incremented along each row, forming two triangles (1,2,3) and
@@ -188,7 +185,7 @@ end
 
 # -- IO --
 
-function Base.show(io::IO, QT::QuadraticTriangle{D, T}) where {D, T}
+function Base.show(io::IO, QT::QTriangle{D, T}) where {D, T}
     type_char = '?'
     if T === Float32
         type_char = 'f'
