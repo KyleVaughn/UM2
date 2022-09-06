@@ -1,62 +1,32 @@
-# Chen, Ningtau; Wang, Nengchao; Shi, Baochang
-# "A new algorithm for encoding and decoding the Hilbert order," 
-# in Software–-Practice and Experience, 2007, 37, 897-908.
-function encode_hilbert(x::T, y::T) where {T <: Integer}
-    z = T(0)
-    if x === T(0) && y === T(0)
-        return z
-    end
+function encode_hilbert(x::T, y::T, s_inv::T) where {T <: AbstractFloat}
+    # Assumes x and y are in the range [0, s]
+    # s_inv is the inverse of the side length of the square
+    # x and y are the coordinates of the point
 
-    # floor(log2(max(x, y))) + 1
-    rmin = T(1)
-    xy_max = max(x, y)
-    while (xy_max >>= 1) > 0
-        rmin += 1
-    end
-    
-    w = T(1) << (rmin - 1)
-    quadrant = T(0)
-    while rmin > 0
-        if rmin & 1 == 1  # odd
-            if x < w
-                if y < w # quadrant 0
-                    # x, y = x, y
-                    quadrant = 0
-                else # quadrant 1
-                    x, y = y - w, x
-                    quadrant = 1
-                end
-            else
-                if y < w # quadrant 3
-                    x, y = 2 * w - x - 1, w - y - 1
-                    quadrant = 3
-                else # quadrant 2
-                    x, y = y - w, x - w
-                    quadrant = 2
-                end
+    # Convert to UInt16
+    x_u16 = floor(UInt16, x * s_inv * 100)
+    y_u16 = floor(UInt16, y * s_inv * 100)
+    return encode_hilbert(x_u16, y_u16)
+end
+
+function encode_hilbert(x::T, y::T) where {T <: Integer}
+    n = T(2^15)
+    # Assumes x and y are in the range [0, n - 1]
+    d = T(0)
+    s = n >> T(1)
+    while s > 0
+        rx = T((x & s) > T(0))
+        ry = T((y & s) > T(0))
+        d += s * s * ((T(3) * rx) ⊻ ry);
+        if ry === T(0)
+            if rx === T(1) 
+                x = n - T(1) - x
+                y = n - T(1) - y
             end
-        else  # even
-            if x < w
-                if y < w # quadrant 0
-                    # x, y = x, y
-                    quadrant = 0
-                else # quadrant 3
-                    x, y = w - x - 1, 2 * w - y - 1
-                    quadrant = 3
-                end
-            else
-                if y < w # quadrant 1
-                    x, y = y, x - w
-                    quadrant = 1
-                else # quadrant 2
-                    x, y = y - w, x - w
-                    quadrant = 2
-                end
-            end
+            # Swap x and y
+            x, y = y, x
         end
-        z = (z << 2) + quadrant
-        rmin -= 1
-        w >>= 1
+        s >>= T(1)
     end
-    return z
+    return d
 end
