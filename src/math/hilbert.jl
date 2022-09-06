@@ -1,9 +1,13 @@
-function encode_hilbert(x::T, y::T) where {T}
+# Chen, Ningtau; Wang, Nengchao; Shi, Baochang
+# "A new algorithm for encoding and decoding the Hilbert order," 
+# in Software–-Practice and Experience, 2007, 37, 897-908.
+function encode_hilbert(x::T, y::T) where {T <: Integer}
     z = T(0)
     if x === T(0) && y === T(0)
         return z
     end
 
+    # floor(log2(max(x, y))) + 1
     rmin = T(1)
     xy_max = max(x, y)
     while (xy_max >>= 1) > 0
