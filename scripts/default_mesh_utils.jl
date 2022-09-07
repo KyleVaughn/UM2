@@ -1,6 +1,5 @@
 using UM2
 
-
 # Get the areas of each radial region
 function get_radial_areas(radii::Vector{Float64}, pitch::Float64)
     areas = Vector{Float64}(undef, length(radii) + 1)
@@ -46,8 +45,7 @@ end
 function get_equiv_quad_radii(
         div_radii::Vector{Float64}, 
         div_areas::Vector{Float64}, 
-        pitch::Float64,
-        azimuthal_divisions::Int64)
+        pitch::Float64)
     θ = 2 * π / azimuthal_divisions
     equiv_radii = Vector{Float64}(undef, length(div_radii))
     # The innermost radius is a special case, and is essentially a triangle.
@@ -74,11 +72,40 @@ function get_equiv_quad_radii(
     return equiv_radii
 end
 
+# Get equivalent radii for the quadratic quadrilaterals to preserve areas
+function get_equiv_quad_radii(
+        div_radii::Vector{Float64}, 
+        div_areas::Vector{Float64}, 
+        pitch::Float64)
+    θ = 2 * π / azimuthal_divisions
+    equiv_radii = Vector{Float64}(undef, length(div_radii))
+    offsets = Vector{Float64}(undef, length(div_radii))
+#    # The innermost radius is a special case, and is essentially a triangle.
+#    # A_t = l² * sin(θ) / 2
+#    equiv_radii[1] = sqrt(2 * div_areas[1] / (sin(θ) * azimuthal_divisions))
+#    # A_q = (l² - l²₀) * sin(θ) / 2
+#    for ir in 2:length(div_radii)
+#        equiv_radii[ir] = sqrt(2 * div_areas[ir] / (sin(θ) * azimuthal_divisions) + equiv_radii[ir-1]^2)
+#    end
+#    if any(r -> r > pitch/2, equiv_radii)
+#        error("Equivalent radii are greater than half the pitch")
+#    end
+#
+#    # Sanity check via area error comparision 
+#    Ap = Vector{Float64}(undef, length(div_radii))
+#    Ap[1] = equiv_radii[1]^2 * sin(θ) / 2
+#    for ir in 2:length(equiv_radii)
+#        Ap[ir] = (equiv_radii[ir]^2 - equiv_radii[ir-1]^2) * sin(θ) / 2
+#    end
+#    if any(i -> abs(div_areas[i] - azimuthal_divisions * Ap[i]) > 1e-6, 1:length(Ap))
+#        error("Circular and polygon areas are not equal")
+#    end
+
+    return equiv_radii
+end
+
 # Generate the mesh points 
-function get_quad_mesh_points(
-        equiv_radii::Vector{Float64}, 
-        pitch::Float64, 
-        azimuthal_divisions::Int64)
+function get_quad_mesh_points(equiv_radii::Vector{Float64}, pitch::Float64)
     θ = 2 * π / azimuthal_divisions
     points = Point2d[]
     push!(points, Point2d(0.0, 0.0))
@@ -110,9 +137,7 @@ function get_quad_mesh_points(
 end
 
 # Generate the mesh faces
-function get_quad_mesh_faces(
-        total_radial_divisions::Int64,
-        azimuthal_divisions::Int64)
+function get_quad_mesh_faces(total_radial_divisions::Int64)
     # Error checking for rings outside the pitch should have been done previously,
     # so we skip that here.
     faces = NTuple{4, Int64}[]
@@ -171,7 +196,6 @@ function write_quad_mesh(
         points::Vector{Point2d},
         faces::Vector{NTuple{4, Int64}},
         radial_divisions::Vector{Int64},
-        azimuthal_divisions::Int64,
         materials::Vector{String})
     # Write the file
     io = open(filename, "w");
