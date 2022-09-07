@@ -79,7 +79,6 @@ function get_equiv_quad_radii(
         pitch::Float64)
     θ = 2 * π / azimuthal_divisions
     equiv_radii = Vector{Float64}(undef, length(div_radii))
-    offsets = Vector{Float64}(undef, length(div_radii))
 #    # The innermost radius is a special case, and is essentially a triangle.
 #    # A_t = l² * sin(θ) / 2
 #    equiv_radii[1] = sqrt(2 * div_areas[1] / (sin(θ) * azimuthal_divisions))
