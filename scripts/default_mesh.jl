@@ -5,7 +5,7 @@
 
 # Parameters
 filename = "default_quad_mesh.inp"
-order = 1
+order = 2
 radii = [0.4096, 0.475, 0.575] 
 radial_divisions = [3, 1, 1]
 const azimuthal_divisions = 8

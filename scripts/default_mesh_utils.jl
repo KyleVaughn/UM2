@@ -79,9 +79,10 @@ function get_equiv_quad8_radii(
         pitch::Float64)
     θ = 2 * π / azimuthal_divisions
     equiv_radii = Vector{Float64}(undef, length(div_radii))
-#    # The innermost radius is a special case, and is essentially a triangle.
-#    # A_t = l² * sin(θ) / 2
-#    equiv_radii[1] = sqrt(2 * div_areas[1] / (sin(θ) * azimuthal_divisions))
+    # The innermost radius is a special case, and is essentially a quadratic triangle.
+    # A_t = r² * sin(θ) / 2
+    # A_e = (4 / 3) * r * sin(θ/2) * (R - r)
+    equiv_radii[1] = sqrt(2 * div_areas[1] / (sin(θ) * azimuthal_divisions))
 #    # A_q = (l² - l²₀) * sin(θ) / 2
 #    for ir in 2:length(div_radii)
 #        equiv_radii[ir] = sqrt(2 * div_areas[ir] / (sin(θ) * azimuthal_divisions) + equiv_radii[ir-1]^2)
