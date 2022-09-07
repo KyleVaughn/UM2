@@ -6,6 +6,7 @@ include("common/constants.jl")
 
 include("math/vec.jl")
 include("math/mat.jl")
+include("math/hilbert.jl")
 
 include("geometry/point.jl")
 include("geometry/axis_aligned_box.jl")
