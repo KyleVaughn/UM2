@@ -31,3 +31,5 @@ examples/*/*.h5
 examples/*/*.inp
 examples/*/*.xdmf
 examples/*/*.vtk
+
+scripts/*.inp
