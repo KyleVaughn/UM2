@@ -1,3 +1,5 @@
+export Polygon
+
 export vertices,
        edge,
        edge_iterator,

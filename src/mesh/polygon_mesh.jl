@@ -1,4 +1,4 @@
-export TriMesh, QuadMesh
+export PolygonMesh, TriMesh, QuadMesh
 
 export num_faces, face, face_iterator, faces, edges
 
