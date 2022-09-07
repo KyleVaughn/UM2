@@ -73,7 +73,7 @@ function get_equiv_quad_radii(
 end
 
 # Get equivalent radii for the quadratic quadrilaterals to preserve areas
-function get_equiv_quad_radii(
+function get_equiv_quad8_radii(
         div_radii::Vector{Float64}, 
         div_areas::Vector{Float64}, 
         pitch::Float64)
