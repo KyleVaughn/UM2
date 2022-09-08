@@ -150,12 +150,12 @@ end
 function area_enclosed_by(Q::QuadraticSegment2{T}) where {T}
     # Easily derived by transforming q such that P₁ = (0, 0) and P₂ = (x₂, 0).
     # However, vertices are CCW order, so sign of the area is flipped.
-    return T(2 // 3) * (Q[3] - Q[1]) × (Q[2] - Q[1])
+    return T(2 // 3) * ((Q[3] - Q[1]) × (Q[2] - Q[1]))
 end
 
 function area_enclosed_by_quadratic_segment(
         P1::Point2{T}, P2::Point2{T}, P3::Point2{T}) where {T}
-    return T(2 // 3) * (P3 - P1) × (P2 - P1)
+    return T(2 // 3) * ((P3 - P1) × (P2 - P1))
 end
 
 # -- Centroid --
