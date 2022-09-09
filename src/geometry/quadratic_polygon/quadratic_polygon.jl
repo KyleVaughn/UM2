@@ -1,3 +1,5 @@
+export QuadraticPolygon
+
 export vertices,
        edge,
        edge_iterator
