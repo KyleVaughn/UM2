@@ -87,22 +87,35 @@ function get_equiv_quad8_radii(
     # A_e = (4 / 3) * r * sin(θ/2) * (R - r)
     equiv_radii[1] = div_radii[1] * (3γ + sinγ * cosγ) / (4 * sinγ)
 #    # A_q = (l² - l²₀) * sin(θ) / 2
-#    for ir in 2:length(div_radii)
-#        equiv_radii[ir] = sqrt(2 * div_areas[ir] / (sin(θ) * azimuthal_divisions) + equiv_radii[ir-1]^2)
-#    end
-#    if any(r -> r > pitch/2, equiv_radii)
-#        error("Equivalent radii are greater than half the pitch")
-#    end
-#
-#    # Sanity check via area error comparision 
-#    Ap = Vector{Float64}(undef, length(div_radii))
-#    Ap[1] = equiv_radii[1]^2 * sin(θ) / 2
-#    for ir in 2:length(equiv_radii)
-#        Ap[ir] = (equiv_radii[ir]^2 - equiv_radii[ir-1]^2) * sin(θ) / 2
-#    end
-#    if any(i -> abs(div_areas[i] - azimuthal_divisions * Ap[i]) > 1e-6, 1:length(Ap))
-#        error("Circular and polygon areas are not equal")
-#    end
+    for ir in 2:length(div_radii)
+        r₀ = div_radii[ir - 1]
+        r₁ = div_radii[ir]
+        R₀ = equiv_radii[ir - 1]
+        quad_part = 3 * (γ - sinγ * cosγ) * (r₁^2 - r₀^2) / (4 * sinγ)
+        prev_edge = r₀ * (R₀ - r₀ * cosγ)
+        equiv_radii[ir] = inv(r₁) * (quad_part + prev_edge) + r₁ * cosγ
+    end
+    if any(r -> r > pitch/2, equiv_radii)
+        error("Equivalent radii are greater than half the pitch")
+    end
+
+    # Sanity check via area error comparision 
+    Ap = Vector{Float64}(undef, length(div_radii))
+    r = div_radii[1]
+    R = equiv_radii[1]
+    Ap[1] = r^2 * sin(θ) / 2 + (4 / 3) * r * sinγ * (R - r * cosγ)
+    for ir in 2:length(equiv_radii)
+        r₀ = div_radii[ir - 1]
+        r₁ = div_radii[ir]
+        R₀ = equiv_radii[ir - 1]
+        R₁ = equiv_radii[ir]
+        Ap[ir] = (r₁^2 - r₀^2) * sin(θ) / 2 + 
+            (4 / 3) * r₁ * sinγ * (R₁ - r₁ * cosγ) -
+            (4 / 3) * r₀ * sinγ * (R₀ - r₀ * cosγ)
+    end
+    if any(i -> abs(div_areas[i] - azimuthal_divisions * Ap[i]) > 1e-6, 1:length(Ap))
+        error("Circular and polygon areas are not equal")
+    end
 
     return equiv_radii
 end
@@ -134,6 +147,70 @@ function get_quad_mesh_points(equiv_radii::Vector{Float64}, pitch::Float64)
         end
         push!(points, Point2d(r * cos(ia * θ), 
                               r * sin(ia * θ)))
+    end
+
+    return points
+end
+
+# Generate the mesh points 
+function get_quad8_mesh_points(equiv_radii::Vector{Float64}, pitch::Float64)
+    θ = 2 * π / azimuthal_divisions
+    γ = θ / 2
+    points = Point2d[]
+    push!(points, Point2d(0.0, 0.0))
+    # Linear points
+    # Inside the innermost ring
+    for ia in 1:2:azimuthal_divisions
+        r = div_radii[1] / 2
+        push!(points, Point2d(r * cos(ia * θ), 
+                              r * sin(ia * θ)))
+    end
+    # All other rings
+    for ir in 1:length(div_radii)
+        for ia in 0:azimuthal_divisions - 1
+            push!(points, Point2d(div_radii[ir] * cos(ia * θ), 
+                                  div_radii[ir] * sin(ia * θ)))
+        end
+    end
+    # Outside the outermost ring
+    for ia in 0:azimuthal_divisions - 1
+        if abs(cos(ia * θ)) < 1e-3 # Avoid singularity/numerical error
+            r = pitch / 2
+        else
+            r = abs(pitch / (2 * cos(ia * θ)))
+        end
+        push!(points, Point2d(r * cos(ia * θ), 
+                              r * sin(ia * θ)))
+    end
+    # Quadratic points
+    # Inside the innermost ring
+    for ia in 1:2:azimuthal_divisions
+        r = div_radii[1] / 4
+        push!(points, Point2d(r * cos(ia * θ), 
+                              r * sin(ia * θ)))
+        push!(points, Point2d(3r * cos(ia * θ), 
+                              3r * sin(ia * θ)))
+    end
+    for ia in 0:2:azimuthal_divisions - 1
+        r = div_radii[1] / 2
+        push!(points, Point2d(r * cos(ia * θ), 
+                              r * sin(ia * θ)))
+    end
+    # All other rings
+    for ir in 2:length(div_radii)
+        r₀ = div_radii[ir - 1]
+        r₁ = div_radii[ir]
+        for ia in 0:azimuthal_divisions - 1
+            push!(points, Point2d((r₁ + r₀) / 2 * cos(ia * θ), 
+                                  (r₁ + r₀) / 2 * sin(ia * θ)))
+        end
+    end
+    for ir in 1:length(equiv_radii)
+        R = equiv_radii[ir]
+        for ia in 1:2:(2*azimuthal_divisions) - 1
+            push!(points, Point2d(R * cos(ia * γ), 
+                                  R * sin(ia * γ)))
+        end
     end
 
     return points
@@ -190,6 +267,71 @@ function get_quad_mesh_faces(total_radial_divisions::Int64)
         end
         push!(faces, (p1, p2, p3, p4))
     end
+
+    return faces
+end
+
+# Generate the mesh faces
+function get_quad8_mesh_faces(total_radial_divisions::Int64)
+    # Error checking for rings outside the pitch should have been done previously,
+    # so we skip that here.
+    faces = NTuple{8, Int64}[]
+    # 1, 6, 7, 2, 62, 98, 55, 54
+    # 1, 2, 7, 8, 54, 55, 63, 99
+    # Inside the innermost ring
+    na = azimuthal_divisions
+    na2 = na ÷ 2
+    tr = total_radial_divisions
+    nlin = (tr + 1) * na + (1 + na2) 
+    for ia = 1:2:na
+        p1 = 1
+        p2 = ia + (1 + na2)
+        p3 = ia + 1 + (1 + na2)
+        p4 = ia ÷ 2 + 2
+        p5 = ia + 2 + (1 + na2)
+        if p5 == 1 + na + (1 + na2)
+            p5 = 1 + (1 + na2)
+        end
+        p6 = nlin + ia 
+        p7 = nlin + ia + 1
+        p8 = nlin + na + ia
+        p9 = nlin + na + ia + 1
+        p10 = nlin + tr * na + 1 + na2
+        p11 = nlin + tr * na + 2 + na2
+        push!(faces, (p1, p2, p3, p4, p8, p10, p7, p6))
+        push!(faces, (p1, p4, p3, p5, p6, p7, p9, p11))
+    end
+#    # Rings
+#    nr = total_radial_divisions - 1
+#    for ir = 1:nr
+#        for ia = 1:na
+#            p1 = ia     + (ir - 1) * na + (1 + na2) 
+#            p2 = ia     + (ir    ) * na + (1 + na2) 
+#            p3 = ia + 1 + (ir    ) * na + (1 + na2) 
+#            p4 = ia + 1 + (ir - 1) * na + (1 + na2) 
+#            if p3 == 1 + (ir + 1) * na + (1 + na2)
+#                p3 -= na
+#            end
+#            if p4 == 1 + (ir    ) * na + (1 + na2)
+#                p4 -= na
+#            end
+#            push!(faces, (p1, p2, p3, p4))
+#        end
+#    end
+#    # Outside the outermost ring
+#    for ia = 1:na
+#        p1 = ia +     (nr    ) * na + (1 + na2) 
+#        p2 = ia +     (nr + 1) * na + (1 + na2)
+#        p3 = ia + 1 + (nr + 1) * na + (1 + na2) 
+#        p4 = ia + 1 + (nr    ) * na + (1 + na2)
+#        if p3 == 1 + na * (nr + 2) + (1 + na2)
+#            p3 -= na
+#        end
+#        if p4 == 1 + na * (nr + 1) + (1 + na2)
+#            p4 -= na
+#        end
+#        push!(faces, (p1, p2, p3, p4))
+#    end
 
     return faces
 end

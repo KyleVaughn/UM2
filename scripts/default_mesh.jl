@@ -29,6 +29,8 @@ if order == 1
     write_quad_mesh(filename, points, faces, radial_divisions, materials)
 elseif order == 2
     equiv_radii = get_equiv_quad8_radii(div_radii, div_areas, pitch)
+    points = get_quad8_mesh_points(equiv_radii, pitch)
+    faces = get_quad8_mesh_faces(sum(radial_divisions))
 else
     error("Order of quadrilateral must be 1 or 2")
 end
