@@ -3,10 +3,12 @@ module UM2
 include("common/defines.jl")
 include("common/typedefs.jl")
 include("common/constants.jl")
+include("common/instructions.jl")
 
 include("math/vec.jl")
 include("math/mat.jl")
 include("math/hilbert.jl")
+include("math/morton.jl")
 
 include("geometry/point.jl")
 include("geometry/axis_aligned_box.jl")
