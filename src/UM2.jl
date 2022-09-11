@@ -20,6 +20,7 @@ include("geometry/polygon/quadrilateral.jl")
 include("geometry/quadratic_polygon/quadratic_polygon.jl")
 include("geometry/quadratic_polygon/quadratic_triangle.jl")
 include("geometry/quadratic_polygon/quadratic_quadrilateral.jl")
+include("geometry/morton.jl")
 
 include("mesh/cell_types.jl")
 include("mesh/io_abaqus.jl")

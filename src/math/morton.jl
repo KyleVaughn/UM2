@@ -1,28 +1,32 @@
 export encode_morton
 
+
+const MAX_MORTON_INDEX = 0x000000000000ffff # 2^16 - 1
+
 # Normalizes the coordinate to the range [0, 65535] (2^16 - 1)
 # This guarantees that the Morton code will fit in 32 bits, since
 # (2^16 - 1)^2 < 2^32 - 1
 function encode_morton(x::T, y::T, s_inv::T) where {T <: Union{Float32, Float64}}
-    x_u32 = floor(UInt32, x * s_inv * 65535)
-    y_u32 = floor(UInt32, y * s_inv * 65535)
+    x_u32 = floor(UInt32, x * s_inv * MAX_MORTON_INDEX)
+    y_u32 = floor(UInt32, y * s_inv * MAX_MORTON_INDEX)
     return encode_morton(x_u32, y_u32)
 end
 
-# Encodes the coordinates into a Morton number by
-# reinterpretting the bits as a 32-bit unsigned integer.
-function encode_morton(x::Float32, y::Float32)
-    x_u64 = widen(reinterpret(UInt32, x))
-    y_u64 = widen(reinterpret(UInt32, y))
-    return encode_morton(x_u64, y_u64)
-end
-
-function encode_morton(x::Float64, y::Float64)
-    # Convert to a 32-bit float first.
-    x_u64 = widen(reinterpret(UInt32, Float32(x)))
-    y_u64 = widen(reinterpret(UInt32, Float32(y)))
-    return encode_morton(x_u64, y_u64)
-end
+# This doesn't produce a good correlation between space and morton index.
+## Encodes the coordinates into a Morton number by
+## reinterpretting the bits as a 32-bit unsigned integer.
+#function encode_morton(x::Float32, y::Float32)
+#    x_u64 = widen(reinterpret(UInt32, x))
+#    y_u64 = widen(reinterpret(UInt32, y))
+#    return encode_morton(x_u64, y_u64)
+#end
+#
+#function encode_morton(x::Float64, y::Float64)
+#    # Convert to a 32-bit float first.
+#    x_u64 = widen(reinterpret(UInt32, Float32(x)))
+#    y_u64 = widen(reinterpret(UInt32, Float32(y)))
+#    return encode_morton(x_u64, y_u64)
+#end
 
 # For UInt32, assumes x, y are in the range [0, 2^16)
 # For UInt64, assumes x, y are in the range [0, 2^32)
