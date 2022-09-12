@@ -46,6 +46,7 @@ end
 function get_equiv_quad_radii(
         r_div::Vector{Float64}, 
         a_div::Vector{Float64}, 
+        n_azi::Int64,
         pitch::Float64)
     θ = 2 * π / n_azi
     r_equiv = Vector{Float64}(undef, length(r_div))
@@ -57,6 +58,7 @@ function get_equiv_quad_radii(
         r_equiv[ir] = sqrt(2 * a_div[ir] / (sin(θ) * n_azi) + r_equiv[ir-1]^2)
     end
     if any(r -> r > pitch/2, r_equiv)
+        println(r_equiv)
         error("Equivalent radii are greater than half the pitch")
     end
 
@@ -77,6 +79,7 @@ end
 function get_equiv_quad8_radii(
         r_div::Vector{Float64}, 
         a_div::Vector{Float64}, 
+        n_azi::Int64,
         pitch::Float64)
     θ = 2 * π / n_azi
     γ = θ / 2
@@ -122,7 +125,7 @@ function get_equiv_quad8_radii(
 end
 
 # Generate the mesh points 
-function get_quad_mesh_points(r_equiv::Vector{Float64}, pitch::Float64)
+function get_quad_mesh_points(r_equiv::Vector{Float64}, n_azi::Int64, pitch::Float64)
     θ = 2 * π / n_azi
     points = Point2d[]
     push!(points, Point2d(0.0, 0.0))
@@ -142,23 +145,22 @@ function get_quad_mesh_points(r_equiv::Vector{Float64}, pitch::Float64)
     end
     # Outside the outermost ring, on the pin boundary
     for ia in 0:n_azi - 1
-        if abs(cos(ia * θ)) < 1e-3 # Avoid singularity/numerical error
-            r = pitch / 2
-        else
-            r = abs(pitch / (2 * cos(ia * θ)))
-        end
-        push!(points, Point2d(r * cos(ia * θ), 
-                              r * sin(ia * θ)))
+        rx = abs(pitch / (2 * cos(ia * θ)))
+        ry = abs(pitch / (2 * sin(ia * θ)))
+        r = min(rx, ry)
+        x = r * cos(ia * θ)
+        y = r * sin(ia * θ)
+        push!(points, Point2d(x, y))
     end
 
     return points
 end
 
 # Generate the mesh points 
-function get_quad8_mesh_points(r_equiv::Vector{Float64}, pitch::Float64)
+function get_quad8_mesh_points(r_equiv::Vector{Float64}, n_azi::Int64, pitch::Float64)
     θ = 2 * π / n_azi
     γ = θ / 2
-    points = get_quad_mesh_points(r_equiv, pitch)
+    points = get_quad_mesh_points(r_equiv, n_azi, pitch)
     # Quadratic points
     # The split edge points inside the innermost ring
     for ia in 1:2:n_azi
@@ -191,12 +193,30 @@ function get_quad8_mesh_points(r_equiv::Vector{Float64}, pitch::Float64)
                                   R * sin(ia * γ)))
         end
     end
+    # Outside the outermost ring, on θ angles 
+    for ia in 0:n_azi - 1
+        rx = abs(pitch / (2 * cos(ia * θ)))
+        ry = abs(pitch / (2 * sin(ia * θ)))
+        r = (min(rx, ry) + r_equiv[end]) / 2
+        x = r * cos(ia * θ)
+        y = r * sin(ia * θ)
+        push!(points, Point2d(x, y))
+    end
 
+    # Outside the outermost ring, on the pin boundary for γ
+    for ia in 1:2:(2*n_azi) - 1
+        rx = abs(pitch / (2 * cos(ia * γ)))
+        ry = abs(pitch / (2 * sin(ia * γ)))
+        r = min(rx, ry)
+        x = r * cos(ia * γ)
+        y = r * sin(ia * γ)
+        push!(points, Point2d(x, y))
+    end
     return points
 end
 
 # Generate the mesh faces
-function get_quad_mesh_faces(ndiv::Int64)
+function get_quad_mesh_faces(ndiv::Int64, n_azi::Int64)
     # Error checking for rings outside the pitch should have been done previously,
     # so we skip that here.
     faces = NTuple{4, Int64}[]
@@ -254,7 +274,7 @@ function get_quad_mesh_faces(ndiv::Int64)
 end
 
 # Generate the mesh faces
-function get_quad8_mesh_faces(ndiv::Int64)
+function get_quad8_mesh_faces(ndiv::Int64, n_azi::Int64)
     # Error checking for rings outside the pitch should have been done previously,
     # so we skip that here.
     faces = NTuple{8, Int64}[]
@@ -273,6 +293,7 @@ function get_quad8_mesh_faces(ndiv::Int64)
     # Number of points places at each θ for the quadratic mesh, 
     # excluding the split edge
     nθ = (nr - 1) * na 
+    nγ = nθ
     for ia = 1:2:na
         p1 = 1            # Center point
         p2 = nin + ia     # First regular ring point
@@ -307,27 +328,37 @@ function get_quad8_mesh_faces(ndiv::Int64)
             if p4 == 1 + (ir    ) * na + nin # If we're at the end of the ring
                 p4 -= na
             end
-            p5 = nlin + ntri2 + ntri + ia       # Bottom quadratic point
-            p6 = nlin + ntri2 + ntri + nθ + ia * (ir    ) + ia  # Right quadratic point
-            p7 = nlin + ntri2 + ntri + ia + 1   # Top quadratic point
-            p8 = nlin + ntri2 + ntri + nθ + ia * (ir - 1) + ia  # Left quadratic point
+            p5 = nlin + ntri2 + ntri +      na * (ir - 1) + ia      # Bottom quadratic point
+            p6 = nlin + ntri2 + ntri + nθ + na * (ir    ) + ia      # Right quadratic point
+            p7 = nlin + ntri2 + ntri +      na * (ir - 1) + ia + 1  # Top quadratic point
+            p8 = nlin + ntri2 + ntri + nθ + na * (ir - 1) + ia      # Left quadratic point
+            if p7 == nlin + ntri2 + ntri  + na * ir + 1 
+                p7 -= na
+            end
             push!(faces, (p1, p2, p3, p4, p5, p6, p7, p8))
         end
     end
-#    # Outside the outermost ring
-#    for ia = 1:na
-#        p1 = ia +     (nr    ) * na + (1 + na2) 
-#        p2 = ia +     (nr + 1) * na + (1 + na2)
-#        p3 = ia + 1 + (nr + 1) * na + (1 + na2) 
-#        p4 = ia + 1 + (nr    ) * na + (1 + na2)
-#        if p3 == 1 + na * (nr + 2) + (1 + na2)
-#            p3 -= na
-#        end
-#        if p4 == 1 + na * (nr + 1) + (1 + na2)
-#            p4 -= na
-#        end
-#        push!(faces, (p1, p2, p3, p4))
-#    end
+    # Outside the outermost ring
+    for ia = 1:na
+        p1 = ia +     (nr - 1) * na + nin 
+        p2 = ia +     (nr    ) * na + nin
+        p3 = ia + 1 + (nr    ) * na + nin 
+        p4 = ia + 1 + (nr - 1) * na + nin
+        if p3 == 1 + na * (nr + 1) + nin 
+            p3 -= na
+        end
+        if p4 == 1 + na * (nr    ) + nin 
+            p4 -= na
+        end
+        p5 = nlin + ntri2 + ntri + nθ + nγ + na + ia      # Bottom quadratic point
+        p6 = nlin + ntri2 + ntri + nθ + nγ + 2 * na + ia  # Right quadratic point
+        p7 = nlin + ntri2 + ntri + nθ + nγ + na + ia + 1  # Top quadratic point
+        p8 = nlin + ntri2 + ntri + nθ + nγ + ia           # Left quadratic point
+        if p7 == nlin + ntri2 + ntri + nθ + nγ + 2 * na + 1 
+            p7 -= na
+        end
+        push!(faces, (p1, p2, p3, p4, p5, p6, p7, p8))
+    end
 
     return faces
 end
