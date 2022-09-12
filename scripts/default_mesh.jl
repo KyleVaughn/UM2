@@ -36,6 +36,7 @@ elseif order == 2
     r_equiv = get_equiv_quad8_radii(r_div, a_div, n_azi, pitch)
     points = get_quad8_mesh_points(r_equiv, n_azi, pitch)
     faces = get_quad8_mesh_faces(sum(rdivs), n_azi)
+    write_quad8_mesh(filename, points, faces, rdivs, materials)
 else
     error("Order of quadrilateral must be 1 or 2")
 end

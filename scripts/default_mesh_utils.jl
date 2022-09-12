@@ -367,7 +367,7 @@ function write_quad_mesh(
         filename::String,
         points::Vector{Point2d},
         faces::Vector{NTuple{4, Int64}},
-        radial_divisions::Vector{Int64},
+        rdivs::Vector{Int64},
         materials::Vector{String})
     # Write the file
     io = open(filename, "w");
@@ -386,7 +386,52 @@ function write_quad_mesh(
         for (i, mat) in enumerate(materials)
             if i == 1 || mat != materials[i-1]
                 println(io, "*ELSET,ELSET=Material:_" * mat)
-                ndiv = radial_divisions[i]
+                ndiv = rdivs[i]
+            else
+                ndiv = 1
+            end
+            for j in 1:ndiv
+                for k in 1:n_azi - 1
+                    print(io, fctr, ", ")
+                    fctr += 1
+                end
+                print(io, fctr, ",\n")
+                fctr += 1
+            end
+        end
+    catch e
+        println(e)
+    finally
+        close(io)
+    end
+    return nothing
+end
+
+function write_quad8_mesh(
+        filename::String,
+        points::Vector{Point2d},
+        faces::Vector{NTuple{8, Int64}},
+        rdivs::Vector{Int64},
+        materials::Vector{String})
+    # Write the file
+    io = open(filename, "w");
+    try
+        println(io, "*Heading")
+        println(io, " " * filename)
+        println(io, "*NODE")
+        for (i, p) in enumerate(points)
+            println(io, i, ", ", p[1], ", ", p[2], ", 0.0")
+        end
+        println(io, "*ELEMENT, type=CPS8, ELSET=ALL")
+        for (i, f) in enumerate(faces)
+            println(io, i, ", ", f[1], ", ", f[2], ", ", f[3], ", ", f[4],
+                    ", ", f[5], ", ", f[6], ", ", f[7], ", ", f[8])
+        end
+        fctr = 1
+        for (i, mat) in enumerate(materials)
+            if i == 1 || mat != materials[i-1]
+                println(io, "*ELSET,ELSET=Material:_" * mat)
+                ndiv = rdivs[i]
             else
                 ndiv = 1
             end

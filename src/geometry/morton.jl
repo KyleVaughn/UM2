@@ -10,11 +10,48 @@ function encode_morton(uint::U, ::T) where {U <: Unsigned, T <: AbstractFloat}
 end
 
 
-# Traverse the concentric 
 function find_nearest_point(
         p::Point2{T}, 
         scale_inv::T, 
         points::Vector{Point2{T}}) where {T}
+
+    # Let x's be points in the points vector.
+    # We can find the nearest point by finding the morton curve boundary that
+    # contains the point of interest and one of the points in the points vector.
+    # We then need to test all points in each of the 8 regions surrounding the
+    # boundary to find the nearest point.
+    #
+    #
+    # | -------------- | -------------- | -------------- |
+    # |                |                |                |
+    # |                |                |                |
+    # |         x      |                |                |
+    # |                |                |                |
+    # |                |                |                |
+    # |                |             x  |                |
+    # | -------------- | -------------- | -------------- |
+    # |                |                |                |
+    # |                |           p    |                |
+    # |                |                |                |
+    # |                |                |                |
+    # |                |  x             |                |
+    # |                |                |                |
+    # | -------------- | -------------- | -------------- |
+    # |                |                |                |
+    # |                |                |  x             |
+    # |                |                |                |
+    # |                |                |                |
+    # |                |                |                |
+    # |                |                |                |
+    # | -------------- | -------------- | -------------- |
+    #
+    #
+
+
+
+
+
+
     # Points sorted in z-order are sorted into an implicit quadtree.
     # The nearest point is in the same quadtree node or one of its neighbors.
     # 
