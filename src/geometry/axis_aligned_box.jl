@@ -75,7 +75,7 @@ end
 # -- Bounding box --
 
 # Vector of points
-function bounding_box(points::Vector{Point2}) where {T}
+function bounding_box(points::Vector{Point2{T}}) where {T}
     xmin, ymin = points[1]
     xmax, ymax = points[1]
     for i in 2:length(points)
@@ -85,7 +85,7 @@ function bounding_box(points::Vector{Point2}) where {T}
         xmax = max(xmax, x)
         ymax = max(ymax, y)
     end
-    return AABox(Point2(xmin, ymin), Point2(xmax, ymax))
+    return AABox(Point2{T}(xmin, ymin), Point2{T}(xmax, ymax))
 end
 
 # Tuple of points

@@ -3,10 +3,12 @@ module UM2
 include("common/defines.jl")
 include("common/typedefs.jl")
 include("common/constants.jl")
+include("common/instructions.jl")
 
 include("math/vec.jl")
 include("math/mat.jl")
 include("math/hilbert.jl")
+include("math/morton.jl")
 
 include("geometry/point.jl")
 include("geometry/axis_aligned_box.jl")
@@ -18,6 +20,7 @@ include("geometry/polygon/quadrilateral.jl")
 include("geometry/quadratic_polygon/quadratic_polygon.jl")
 include("geometry/quadratic_polygon/quadratic_triangle.jl")
 include("geometry/quadratic_polygon/quadratic_quadrilateral.jl")
+include("geometry/morton.jl")
 
 include("mesh/cell_types.jl")
 include("mesh/io_abaqus.jl")
