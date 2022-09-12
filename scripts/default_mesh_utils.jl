@@ -294,23 +294,26 @@ function get_quad8_mesh_faces(ndiv::Int64)
         push!(faces, (p1, p2, p3, p4, p6, p7, p8, p9))
         push!(faces, (p1, p4, p3, p5, p9, p8, p10, p11))
     end
-#    # Rings
-#    nr = total_radial_divisions - 1
-#    for ir = 1:nr
-#        for ia = 1:na
-#            p1 = ia     + (ir - 1) * na + (1 + na2) 
-#            p2 = ia     + (ir    ) * na + (1 + na2) 
-#            p3 = ia + 1 + (ir    ) * na + (1 + na2) 
-#            p4 = ia + 1 + (ir - 1) * na + (1 + na2) 
-#            if p3 == 1 + (ir + 1) * na + (1 + na2)
-#                p3 -= na
-#            end
-#            if p4 == 1 + (ir    ) * na + (1 + na2)
-#                p4 -= na
-#            end
-#            push!(faces, (p1, p2, p3, p4))
-#        end
-#    end
+    # Rings
+    for ir = 1:nr - 1
+        for ia = 1:na
+            p1 = ia     + (ir - 1) * na + nin # Bottom left point
+            p2 = ia     + (ir    ) * na + nin # Bottom right point
+            p3 = ia + 1 + (ir    ) * na + nin # Top right point
+            p4 = ia + 1 + (ir - 1) * na + nin # Top left point
+            if p3 == 1 + (ir + 1) * na + nin # If we're at the end of the ring
+                p3 -= na
+            end
+            if p4 == 1 + (ir    ) * na + nin # If we're at the end of the ring
+                p4 -= na
+            end
+            p5 = nlin + ntri2 + ntri + ia       # Bottom quadratic point
+            p6 = nlin + ntri2 + ntri + nθ + ia * (ir    ) + ia  # Right quadratic point
+            p7 = nlin + ntri2 + ntri + ia + 1   # Top quadratic point
+            p8 = nlin + ntri2 + ntri + nθ + ia * (ir - 1) + ia  # Left quadratic point
+            push!(faces, (p1, p2, p3, p4, p5, p6, p7, p8))
+        end
+    end
 #    # Outside the outermost ring
 #    for ia = 1:na
 #        p1 = ia +     (nr    ) * na + (1 + na2) 
