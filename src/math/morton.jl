@@ -1,9 +1,9 @@
 export encode_morton, decode_morton
 
-const MORTON_INDEX_TYPE = UInt64 # 32-bit or 64-bit
-const MORTON_MAX_LEVELS = 4 * sizeof(MORTON_INDEX_TYPE)
-const MORTON_MAX_SIDE  = one(MORTON_INDEX_TYPE) << MORTON_MAX_LEVELS
+const MORTON_INDEX_TYPE = UInt32 # 32-bit or 64-bit
 const MORTON_MAX_INDEX = typemax(MORTON_INDEX_TYPE)
+const MORTON_MAX_SIDE  = typemax(MORTON_INDEX_TYPE) >> (4 * sizeof(MORTON_INDEX_TYPE))
+const MORTON_MAX_LEVELS = 4 * sizeof(MORTON_INDEX_TYPE)
 
 const morton_masks_32 = (
     0x0000ffff, 
@@ -64,16 +64,10 @@ end
 # For UInt64, assumes x, y are in the range [0, 2^32]
 if UM2_HAS_BMI2
     function encode_morton(x::UInt32, y::UInt32)
-        if x == MORTON_MAX_SIDE && y == MORTON_MAX_SIDE
-            return UInt32(MORTON_MAX_INDEX)
-        end
         return pdep(x, 0x55555555) | pdep(y, 0xaaaaaaaa)
     end
 
     function encode_morton(x::UInt64, y::UInt64)
-        if x == MORTON_MAX_SIDE && y == MORTON_MAX_SIDE
-            return UInt64(MORTON_MAX_INDEX)
-        end
         return pdep(x, 0x5555555555555555) | pdep(y, 0xaaaaaaaaaaaaaaaa)
     end
 
@@ -105,7 +99,7 @@ else
     end
 end
 
-# Normalizes the coordinate to the range [0, _MORTON_MAX_SIDE]
+# Normalizes the coordinate to the range [0, MORTON_MAX_SIDE]
 function encode_morton(x::T, y::T, scale_inv::T) where {T <: Union{Float32, Float64}}
     x_u = floor(MORTON_INDEX_TYPE, x * scale_inv * MORTON_MAX_SIDE )
     y_u = floor(MORTON_INDEX_TYPE, y * scale_inv * MORTON_MAX_SIDE )
