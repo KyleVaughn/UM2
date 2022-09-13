@@ -25,6 +25,7 @@ include("geometry/morton.jl")
 include("mesh/cell_types.jl")
 include("mesh/io_abaqus.jl")
 include("mesh/polygon_mesh.jl")
+include("mesh/quadratic_polygon_mesh.jl")
 
 #include("ray_casting/ray.jl")
 #include("ray_casting/angular_quadrature.jl")

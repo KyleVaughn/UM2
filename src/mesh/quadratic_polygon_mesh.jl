@@ -1,17 +1,17 @@
-export PolygonMesh, TriMesh, QuadMesh
+export QuadraticPolygonMesh, QTriMesh, QQuadMesh
 
 export num_faces, face, face_iterator, faces, edges
 
-# POLYGON MESH
+# QUADRATIC POLYGON MESH
 # -----------------------------------------------------------------------------
 #
-# A 2D polygon mesh.
+# A 2D quadratic polygon mesh.
 #
-# N = 3 is a triangle mesh
-# N = 4 is a quad mesh
+# N = 6 is a triangle mesh
+# N = 8 is a quad mesh
 #
 
-struct PolygonMesh{N, T <: AbstractFloat, I <: Integer}
+struct QuadraticPolygonMesh{N, T <: AbstractFloat, I <: Integer}
 
     # Name of the mesh.
     name::String
@@ -35,19 +35,20 @@ end
 
 # -- Type aliases --
 
-const TriMesh = PolygonMesh{3}
-const QuadMesh = PolygonMesh{4}
+const QPolygonMesh = QuadraticPolygonMesh
+const QTriMesh = QuadraticPolygonMesh{6}
+const QQuadMesh = QuadraticPolygonMesh{8}
 
 # -- Constructors --
 
-function PolygonMesh{N}(file::AbaqusFile{T, I}) where {N, T, I}
+function QuadraticPolygonMesh{N}(file::AbaqusFile{T, I}) where {N, T, I}
     # Error checking
-    if N === 3
-        vtk_type = VTK_TRIANGLE
-    elseif N === 4
-        vtk_type = VTK_QUAD
+    if N === 6
+        vtk_type = VTK_QUADRATIC_TRIANGLE
+    elseif N === 8
+        vtk_type = VTK_QUADRATIC_QUAD
     else
-        error("Unsupported polygon mesh type")
+        error("Unsupported quadratic polygon mesh type")
     end
 
     if any(eltype -> eltype !== vtk_type, file.element_types)
@@ -109,7 +110,7 @@ function PolygonMesh{N}(file::AbaqusFile{T, I}) where {N, T, I}
         end
     end
 
-    return PolygonMesh{N, T, I}(
+    return QuadraticPolygonMesh{N, T, I}(
         file.name,
         vertices,
         file.elements,
@@ -119,42 +120,42 @@ function PolygonMesh{N}(file::AbaqusFile{T, I}) where {N, T, I}
     )
 end
 
-function PolygonMesh{N}(file::String) where {N}
+function QuadraticPolygonMesh{N}(file::String) where {N}
     abaqus_file = AbaqusFile(file)
     return (get_material_names(abaqus_file),
-            PolygonMesh{N}(abaqus_file))
+            QuadraticPolygonMesh{N}(abaqus_file))
 end
 
 # -- Basic properties --
 
-num_faces(mesh::PolygonMesh) = length(mesh.material_ids)
+num_faces(mesh::QPolygonMesh) = length(mesh.material_ids)
 
-function fv_conn(i::Integer, mesh::PolygonMesh{N}) where {N}
+function fv_conn(i::Integer, mesh::QPolygonMesh{N}) where {N}
     return ntuple(j -> mesh.fv_conn[N * (i - 1) + j], Val(N))
 end
 
-fv_conn_iterator(mesh::PolygonMesh) = (fv_conn(i, mesh) for i in 1:num_faces(mesh))
+fv_conn_iterator(mesh::QPolygonMesh) = (fv_conn(i, mesh) for i in 1:num_faces(mesh))
 
-function face(i::Integer, mesh::PolygonMesh{N}) where {N}
-    return Polygon{N}(ntuple(j -> mesh.vertices[mesh.fv_conn[N * (i - 1) + j]],
+function face(i::Integer, mesh::QPolygonMesh{N}) where {N}
+    return QPolygon{N}(ntuple(j -> mesh.vertices[mesh.fv_conn[N * (i - 1) + j]],
                              Val(N))
                      )
 end
 
-face_iterator(mesh::PolygonMesh) = (face(i, mesh) for i in 1:num_faces(mesh))
+face_iterator(mesh::QPolygonMesh) = (face(i, mesh) for i in 1:num_faces(mesh))
 
-faces(mesh::PolygonMesh) = collect(face_iterator(mesh))
+faces(mesh::QPolygonMesh) = collect(face_iterator(mesh))
 
-function edges(mesh::PolygonMesh{N, T, I}) where {N, T, I}
-    unique_edges = NTuple{2, I}[]
+function edges(mesh::QPolygonMesh{N, T, I}) where {N, T, I}
+    unique_edges = NTuple{3, I}[]
     nedges = 0
     for fv_conn in fv_conn_iterator(mesh)
-        for ev_conn in polygon_ev_conn_iterator(fv_conn)
+        for ev_conn in qpolygon_ev_conn_iterator(fv_conn)
             # Sort the edge vertices
             if ev_conn[1] < ev_conn[2]
                 sorted_ev = ev_conn
             else
-                sorted_ev = (ev_conn[2], ev_conn[1])
+                sorted_ev = (ev_conn[2], ev_conn[1], ev_conn[3])
             end
             index = searchsortedfirst(unique_edges, sorted_ev)
             if nedges < index || unique_edges[index] !== sorted_ev
@@ -163,11 +164,12 @@ function edges(mesh::PolygonMesh{N, T, I}) where {N, T, I}
             end
         end
     end
-    lines = Vector{LineSegment{2, T}}(undef, nedges)
+    lines = Vector{QuadraticSegment{2, T}}(undef, nedges)
     for iedge = 1:nedges
-        lines[iedge] = LineSegment(
+        lines[iedge] = QuadraticSegment(
             mesh.vertices[unique_edges[iedge][1]],
-            mesh.vertices[unique_edges[iedge][2]]
+            mesh.vertices[unique_edges[iedge][2]],
+            mesh.vertices[unique_edges[iedge][3]]
         )
     end
     return lines
@@ -175,10 +177,9 @@ end
 
 # -- In --
 
-function Base.in(P::Point2, mesh::PolygonMesh)
-    for (i, fv_conn) in enumerate(fv_conn_iterator(mesh))
-        if all(vids -> isCCW(P, mesh.vertices[vids[1]], mesh.vertices[vids[2]]),
-               polygon_ev_conn_iterator(fv_conn))
+function Base.in(P::Point2, mesh::QPolygonMesh)
+    for (i, face) in enumerate(face_iterator(mesh))
+        if P in face
             return i
         end
     end

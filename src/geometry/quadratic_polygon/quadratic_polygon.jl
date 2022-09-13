@@ -21,6 +21,12 @@ end
 
 const QPolygon = QuadraticPolygon
 
+# -- Constructors --
+
+function QPolygon{N}(vertices::NTuple{N, Point{D, T}}) where {N, D, T} 
+    return QPolygon{N, D, T}(vertices)
+end
+
 # -- Base --
 
 Base.getindex(QP::QPolygon, i::Integer) = QP.vertices[i]
