@@ -1,6 +1,6 @@
 export PolygonMesh, TriMesh, QuadMesh
 
-export num_faces, face, face_iterator, faces, edges
+export num_faces, face, face_iterator, faces, edges, bounding_box
 
 # POLYGON MESH
 # -----------------------------------------------------------------------------
@@ -184,3 +184,11 @@ function Base.in(P::Point2, mesh::PolygonMesh)
     end
     return 0
 end
+
+# -- Bounding box --
+
+bounding_box(mesh::PolygonMesh) = bounding_box(mesh.vertices)
+
+# -- Centroid --
+
+centroid(i::Integer, mesh::PolygonMesh) = centroid(face(i, mesh))
