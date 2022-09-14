@@ -365,6 +365,7 @@ end
 
 function write_quad_mesh(
         filename::String,
+        pitch::Float64,
         points::Vector{Point2d},
         faces::Vector{NTuple{4, Int64}},
         rdivs::Vector{Int64},
@@ -375,8 +376,9 @@ function write_quad_mesh(
         println(io, "*Heading")
         println(io, " " * filename)
         println(io, "*NODE")
+        p2 = pitch / 2 # offset to make all points positive
         for (i, p) in enumerate(points)
-            println(io, i, ", ", p[1], ", ", p[2], ", 0.0")
+            println(io, i, ", ", p[1] + p2, ", ", p[2] + p2, ", 0.0")
         end
         println(io, "*ELEMENT, type=CPS4, ELSET=ALL")
         for (i, f) in enumerate(faces)
@@ -409,6 +411,7 @@ end
 
 function write_quad8_mesh(
         filename::String,
+        pitch::Float64,
         points::Vector{Point2d},
         faces::Vector{NTuple{8, Int64}},
         rdivs::Vector{Int64},
@@ -419,8 +422,9 @@ function write_quad8_mesh(
         println(io, "*Heading")
         println(io, " " * filename)
         println(io, "*NODE")
+        p2 = pitch / 2 # offset to make all points positive
         for (i, p) in enumerate(points)
-            println(io, i, ", ", p[1], ", ", p[2], ", 0.0")
+            println(io, i, ", ", p[1] + p2, ", ", p[2] + p2, ", 0.0")
         end
         println(io, "*ELEMENT, type=CPS8, ELSET=ALL")
         for (i, f) in enumerate(faces)

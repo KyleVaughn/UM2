@@ -1,6 +1,7 @@
 export PolygonMesh, TriMesh, QuadMesh
 
-export num_faces, face, face_iterator, faces, edges, bounding_box
+export num_faces, face, face_iterator, faces, edges, bounding_box, centroid,
+       face_areas
 
 # POLYGON MESH
 # -----------------------------------------------------------------------------
@@ -192,3 +193,7 @@ bounding_box(mesh::PolygonMesh) = bounding_box(mesh.vertices)
 # -- Centroid --
 
 centroid(i::Integer, mesh::PolygonMesh) = centroid(face(i, mesh))
+
+# -- Areas --
+
+face_areas(mesh::PolygonMesh) = map(area, face_iterator(mesh))

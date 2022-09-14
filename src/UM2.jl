@@ -7,7 +7,6 @@ include("common/instructions.jl")
 
 include("math/vec.jl")
 include("math/mat.jl")
-include("math/hilbert.jl")
 include("math/morton.jl")
 
 include("geometry/point.jl")
@@ -24,6 +23,7 @@ include("geometry/morton.jl")
 
 include("mesh/cell_types.jl")
 include("mesh/io_abaqus.jl")
+include("mesh/rectilinear_grid.jl")
 include("mesh/polygon_mesh.jl")
 include("mesh/quadratic_polygon_mesh.jl")
 

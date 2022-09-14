@@ -1,6 +1,7 @@
 export QuadraticPolygonMesh, QPolygonMesh, QTriMesh, QQuadMesh
 
-export num_faces, face, face_iterator, faces, edges, bounding_box
+export num_faces, face, face_iterator, faces, edges, bounding_box, centroid,
+       face_areas
 
 # QUADRATIC POLYGON MESH
 # -----------------------------------------------------------------------------
@@ -193,3 +194,7 @@ bounding_box(mesh::QPolygonMesh) = mapreduce(bounding_box, Base.union, face_iter
 # -- Centroid --
 
 centroid(i::Integer, mesh::QPolygonMesh) = centroid(face(i, mesh))
+
+# -- Areas --
+
+face_areas(mesh::QPolygonMesh) = map(area, face_iterator(mesh))

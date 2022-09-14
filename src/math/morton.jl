@@ -1,10 +1,11 @@
 export encode_morton, decode_morton
 
-const MORTON_INDEX_TYPE = UInt32 # 32-bit or 64-bit
+const MORTON_INDEX_TYPE = UInt32 # 32-bit or 64-bit unsigned integer
 const MORTON_MAX_INDEX = typemax(MORTON_INDEX_TYPE)
 const MORTON_MAX_SIDE  = typemax(MORTON_INDEX_TYPE) >> (4 * sizeof(MORTON_INDEX_TYPE))
 const MORTON_MAX_LEVELS = 4 * sizeof(MORTON_INDEX_TYPE)
 
+# Magic numbers for interleaving bits
 const morton_masks_32 = (
     0x0000ffff, 
     0x00ff00ff,
@@ -22,6 +23,7 @@ const morton_masks_64 = (
     0x5555555555555555,
 )     
 
+# Equivalent to pdep(x, 0x55555555)
 function pdep_0x55555555(x::UInt32)
     x &= morton_masks_32[1]
     x = (x | (x << 8)) & morton_masks_32[2]
@@ -41,6 +43,7 @@ function pdep_0x5555555555555555(x::UInt64)
     return x
 end
 
+# Equivalent to pext(x, 0x55555555)
 function pext_0x55555555(x::UInt32)
     x &= morton_masks_32[5]
     x = (x ^ (x >> 1)) & morton_masks_32[4]
@@ -63,6 +66,7 @@ end
 # For UInt32, assumes x, y are in the range [0, 2^16]
 # For UInt64, assumes x, y are in the range [0, 2^32]
 if UM2_HAS_BMI2
+    # Use the BMI2 instructions pdep and pext to encode/decode morton codes
     function encode_morton(x::UInt32, y::UInt32)
         return pdep(x, 0x55555555) | pdep(y, 0xaaaaaaaa)
     end
