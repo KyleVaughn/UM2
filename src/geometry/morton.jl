@@ -1,4 +1,4 @@
-export encode_morton, sort_morton_order!, morton_z_neighbors
+export encode_morton, sort_morton_order!, sortperm_morton_order, morton_z_neighbors
 
 function encode_morton(p::Point2{T}, scale_inv::T) where {T}    
     return encode_morton(p[1], p[2], scale_inv)    
@@ -6,6 +6,10 @@ end
 
 function sort_morton_order!(points::Vector{Point2{T}}, scale_inv::T) where {T}
     return sort!(points, by=p->encode_morton(p, scale_inv))
+end
+
+function sortperm_morton_order(points::Vector{Point2{T}}, scale_inv::T) where {T}
+    return sortperm(points, by=p->encode_morton(p, scale_inv))
 end
 
 # Return the index of the point whose z-order bounds the given point from below and above

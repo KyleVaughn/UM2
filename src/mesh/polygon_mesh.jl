@@ -1,7 +1,7 @@
 export PolygonMesh, TriMesh, QuadMesh
 
 export num_faces, face, face_iterator, faces, edges, bounding_box, centroid,
-       face_areas
+       face_areas, sort_morton_order!
 
 # POLYGON MESH
 # -----------------------------------------------------------------------------
@@ -28,9 +28,6 @@ struct PolygonMesh{N, T <: AbstractFloat, I <: Integer}
 
     # Vertex-face connectivity.
     vf_conn::Vector{I}
-
-    # Material ID for each face.
-    material_ids::Vector{Int8}
 
 end
 
@@ -95,40 +92,23 @@ function PolygonMesh{N}(file::AbaqusFile{T, I}) where {N, T, I}
         sort!(view(vf_conn, this_offset:(next_offset - 1)))
     end
 
-    # Materials
-    material_names = get_material_names(file)
-    material_ids = fill(Int8(-1), nfaces)
-    for mat_id in 1:length(material_names)
-        for face in file.elsets[material_names[mat_id]]
-            if material_ids[face] == -1
-                material_ids[face] = mat_id
-            else
-                error("Face " * string(face) * " is both material" *
-                      string(material_ids[face]) * " and " *
-                      string(mat_id))
-            end
-        end
-    end
-
     return PolygonMesh{N, T, I}(
         file.name,
         vertices,
         file.elements,
         vf_offsets,
-        vf_conn,
-        material_ids
+        vf_conn
     )
 end
 
 function PolygonMesh{N}(file::String) where {N}
     abaqus_file = AbaqusFile(file)
-    return (get_material_names(abaqus_file),
-            PolygonMesh{N}(abaqus_file))
+    return (abaqus_file.elsets, PolygonMesh{N}(abaqus_file))
 end
 
 # -- Basic properties --
 
-num_faces(mesh::PolygonMesh) = length(mesh.material_ids)
+num_faces(mesh::PolygonMesh{N}) where {N} = length(mesh.vf_conn) ÷ N
 
 function fv_conn(i::Integer, mesh::PolygonMesh{N}) where {N}
     return ntuple(j -> mesh.fv_conn[N * (i - 1) + j], Val(N))
@@ -197,3 +177,27 @@ centroid(i::Integer, mesh::PolygonMesh) = centroid(face(i, mesh))
 # -- Areas --
 
 face_areas(mesh::PolygonMesh) = map(area, face_iterator(mesh))
+
+# -- Morton ordering --
+
+# -- Show --
+
+function Base.show(io::IO, mesh::PolygonMesh{N, T, I}) where {N, T, I}
+    if N === 3
+        poly_type = "Tri"
+    elseif N === 4
+        poly_type = "Quad"
+    else
+        poly_type = "Polygon"
+    end 
+    println(io, poly_type, "Mesh{", T, ", ", I, "}")
+    println(io, "  ├─ Name      : ", mesh.name)    
+    size_B = sizeof(mesh)    
+    if size_B < 1e6    
+        println(io, "  ├─ Size (KB) : ", string(@sprintf("%.3f", size_B/1000)))    
+    else    
+        println(io, "  ├─ Size (MB) : ", string(@sprintf("%.3f", size_B/1e6)))    
+    end
+    println(io, "  ├─ Vertices  : ", length(mesh.vertices))
+    println(io, "  └─ Faces     : ", num_faces(mesh))
+end
