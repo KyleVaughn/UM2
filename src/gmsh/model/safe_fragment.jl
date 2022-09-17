@@ -1,5 +1,36 @@
 export safe_fragment
 
+function _process_material_hierarchy!(names::Vector{String},
+                                      new_tags::Vector{Vector{Int32}},
+                                      material_hierarchy::Vector{Material})
+    material_indices = findall(x -> startswith(x, "Material: "), names)
+    material_names = names[material_indices]
+    material_dict = Dict{String, BitSet}()
+    for (i, name) in enumerate(material_names)
+        material_dict[name] = BitSet(new_tags[material_indices[i]])
+    end
+    # Ensure each material group is present in the hierarchy and warn now if it's not. 
+    # Otherwise the error that occurs later is not as easy to figure out
+    hierarchy_names = ["Material: " * mat.name for mat in material_hierarchy]
+    for hierarchy_name in hierarchy_names
+        if hierarchy_name ∉ material_names
+            error("Physical groups does not contain: ", hierarchy_name)
+        end
+    end
+    # Use the hierarchy to ensure that no entity has more than 1 material by removing
+    # all shared elements from sets lower than the current set
+    nmats = length(hierarchy_names)
+    for i in 1:nmats
+        for j in (i + 1):nmats
+            setdiff!(material_dict[hierarchy_names[j]], material_dict[hierarchy_names[i]])
+        end
+    end
+    for (mat_index, global_index) in enumerate(material_indices)
+        new_tags[global_index] = collect(material_dict[material_names[mat_index]])
+    end
+    return material_dict
+end
+
 """
     safe_fragment(object_dtags::Vector{NTuple{2,Int32}},
                   tool_dtags::Vector{NTuple{2,Int32}};
@@ -20,7 +51,9 @@ function safe_fragment(object_dtags::Vector{NTuple{2, Int32}},
                        material_hierarchy::Vector{Material} = Material[])
 
     # Get all physical groups and their names
-    dim = max(maximum(getindex.(object_dtags, 1)), maximum(getindex.(tool_dtags, 1)))
+    dim1 = mapreduce(x -> x[1], max, object_dtags)
+    dim2 = mapreduce(x -> x[1], max, tool_dtags)
+    dim = max(dim1, dim2)
     groups = gmsh.model.get_physical_groups(dim)
     old_tags = [gmsh.model.get_entities_for_physical_group(dtag[1], dtag[2])
                 for dtag in groups]
@@ -44,7 +77,7 @@ function safe_fragment(object_dtags::Vector{NTuple{2, Int32}},
         for tag in old_tags[i]
             dtag = (gdim, tag)
             # If the dim tag was one of the entities in the fragment
-            if dtag ∈ input_dtags
+            if dtag in input_dtags
                 # Get its children
                 index = findfirst(x -> x == dtag, input_dtags)
                 children = output_dtags_map[index]
@@ -86,35 +119,4 @@ function safe_fragment(object_dtags::Vector{NTuple{2, Int32}},
     end
 
     return output_dtags, output_dtags_map
-end
-
-function _process_material_hierarchy!(names::Vector{String},
-                                      new_tags::Vector{Vector{Int32}},
-                                      material_hierarchy::Vector{Material})
-    material_indices = findall(x -> startswith(x, "Material: "), names)
-    material_names = names[material_indices]
-    material_dict = Dict{String, BitSet}()
-    for (i, name) in enumerate(material_names)
-        material_dict[name] = BitSet(new_tags[material_indices[i]])
-    end
-    # Ensure each material group is present in the hierarchy and warn now if it's not. 
-    # Otherwise the error that occurs later is not as easy to figure out
-    hierarchy_names = ["Material: " * mat.name for mat in material_hierarchy]
-    for hierarchy_name in hierarchy_names
-        if hierarchy_name ∉ material_names
-            error("Physical groups does not contain: ", hierarchy_name)
-        end
-    end
-    # Use the hierarchy to ensure that no entity has more than 1 material by removing
-    # all shared elements from sets lower than the current set
-    nmats = length(hierarchy_names)
-    for i in 1:nmats
-        for j in (i + 1):nmats
-            setdiff!(material_dict[hierarchy_names[j]], material_dict[hierarchy_names[i]])
-        end
-    end
-    for (mat_index, global_index) in enumerate(material_indices)
-        new_tags[global_index] = collect(material_dict[material_names[mat_index]])
-    end
-    return material_dict
 end

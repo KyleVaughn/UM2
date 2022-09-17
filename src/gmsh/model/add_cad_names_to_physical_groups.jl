@@ -1,7 +1,7 @@
 export add_cad_names_to_physical_groups
 
 """
-    add_cad_names_to_physical_groups(dim::Int64=-1)
+    add_cad_names_to_physical_groups(dim::Int64 = -1)
 
 Add the names of imported CAD entities of dimension `dim` to the model's
 physical groups. For an entity with name "Shapes/X/Y/Z", the physical group it
