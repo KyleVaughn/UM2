@@ -100,7 +100,7 @@ function centroid(Q::Quadrilateral2)
     a₁ = v₁₂ × v₁₃
     ma₂ = v₁₄ × v₁₃ # minus a₂. Flipped for potential SSE optimization
     P₁₃ = Q[1] + Q[3]
-    return (a₁ * (P₁₃ + q[2]) - ma₂ * (P₁₃ + q[4])) / (3 * (a₁ - ma₂))
+    return (a₁ * (P₁₃ + Q[2]) - ma₂ * (P₁₃ + Q[4])) / (3 * (a₁ - ma₂))
 end
 
 function quadrilateral_centroid(P1::P, P2::P, P3::P, P4::P) where {P <: Point2}

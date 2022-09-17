@@ -1,7 +1,7 @@
 export QuadraticPolygonMesh, QPolygonMesh, QTriMesh, QQuadMesh
 
 export num_faces, face, face_iterator, faces, edges, bounding_box, centroid,
-       face_areas
+       face_areas, sort_morton_order!
 
 # QUADRATIC POLYGON MESH
 # -----------------------------------------------------------------------------
@@ -39,6 +39,42 @@ const QQuadMesh = QuadraticPolygonMesh{8}
 
 # -- Constructors --
 
+function qpolygon_mesh_vf_conn(N::Int64,
+                               vertices::Vector{Point2{T}},
+                               faces::Vector{I}
+                              ) where {T <: AbstractFloat, I <: Integer}
+    # Vertex-face connectivity
+    nverts = length(vertices)
+    nfaces = length(faces) ÷ N
+    vf_conn_vert_counts = zeros(I, nverts)
+    for face_id in 1:nfaces
+        for ivert in 1:N
+            vert_id = faces[N * (face_id - 1) + ivert]
+            vf_conn_vert_counts[vert_id] += 1
+        end
+    end
+    vf_offsets = Vector{I}(undef, nverts + 1)
+    vf_offsets[1] = 1
+    vf_offsets[2:end] .= cumsum(vf_conn_vert_counts)
+    vf_offsets[2:end] .+= 1
+
+    vf_conn_vert_counts .-= 1
+    vf_conn = Vector{I}(undef, vf_offsets[end] - 1)
+    for face_id in 1:nfaces
+        for ivert in 1:N
+            vert_id = faces[N * (face_id - 1) + ivert]
+            vf_conn[vf_offsets[vert_id] + vf_conn_vert_counts[vert_id]] = face_id
+            vf_conn_vert_counts[vert_id] -= 1
+        end
+    end
+    for vert_id in 1:nverts
+        this_offset = vf_offsets[vert_id]
+        next_offset = vf_offsets[vert_id + 1]
+        sort!(view(vf_conn, this_offset:(next_offset - 1)))
+    end
+    return vf_offsets, vf_conn
+end
+
 function QuadraticPolygonMesh{N}(file::AbaqusFile{T, I}) where {N, T, I}
     # Error checking
     if N === 6
@@ -65,33 +101,7 @@ function QuadraticPolygonMesh{N}(file::AbaqusFile{T, I}) where {N, T, I}
         vertices[i] = Point2{T}(file.nodes[i][1], file.nodes[i][2])
     end
 
-    # Vertex-face connectivity
-    vf_conn_vert_counts = zeros(I, nverts)
-    for face_id in 1:nfaces
-        for ivert in 1:N
-            vert_id = file.elements[N * (face_id - 1) + ivert]
-            vf_conn_vert_counts[vert_id] += 1
-        end
-    end
-    vf_offsets = Vector{I}(undef, nverts + 1)
-    vf_offsets[1] = 1
-    vf_offsets[2:end] .= cumsum(vf_conn_vert_counts)
-    vf_offsets[2:end] .+= 1
-
-    vf_conn_vert_counts .-= 1
-    vf_conn = Vector{I}(undef, vf_offsets[end] - 1)
-    for face_id in 1:nfaces
-        for ivert in 1:N
-            vert_id = file.elements[N * (face_id - 1) + ivert]
-            vf_conn[vf_offsets[vert_id] + vf_conn_vert_counts[vert_id]] = face_id
-            vf_conn_vert_counts[vert_id] -= 1
-        end
-    end
-    for vert_id in 1:nverts
-        this_offset = vf_offsets[vert_id]
-        next_offset = vf_offsets[vert_id + 1]
-        sort!(view(vf_conn, this_offset:(next_offset - 1)))
-    end
+    vf_offsets, vf_conn = qpolygon_mesh_vf_conn(N, vertices, file.elements)
 
     return QuadraticPolygonMesh{N, T, I}(
         file.name,
@@ -175,9 +185,52 @@ bounding_box(mesh::QPolygonMesh) = mapreduce(bounding_box, Base.union, face_iter
 
 centroid(i::Integer, mesh::QPolygonMesh) = centroid(face(i, mesh))
 
+centroid_iterator(mesh::QPolygonMesh) = (centroid(i, mesh) for i in 1:num_faces(mesh))
+
 # -- Areas --
 
 face_areas(mesh::QPolygonMesh) = map(area, face_iterator(mesh))
+
+# -- Morton ordering --
+
+function sort_morton_order!(mesh::QPolygonMesh{N}) where {N}
+    bb = bounding_box(mesh)
+    scale = max(delta_x(bb), delta_y(bb))
+    scale_inv = 1 / scale
+    nfaces = num_faces(mesh)
+
+    # Sort the vertices
+    point_map = sortperm_morton_order(mesh.vertices, scale_inv)
+    point_map_inv = invperm(point_map)
+    permute!(mesh.vertices, point_map)
+
+    # Remap the face-vertex connectivity
+    for i in 1:(N * nfaces)
+        mesh.fv_conn[i] = point_map_inv[mesh.fv_conn[i]]
+    end
+
+    # Sort the faces by centroid
+    centroids = collect(centroid_iterator(mesh))
+    centroid_map = sortperm_morton_order(centroids, scale_inv)
+    fv_map = Vector{eltype(centroid_map)}(undef, N * nfaces)
+    for iface in 1:nfaces
+        for ivert in 1:N
+            fv_map[N * (iface - 1) + ivert] = mesh.fv_conn[N * (centroid_map[iface] - 1) + ivert]
+        end
+    end
+
+    # Remap the face-vertex connectivity
+    for i in 1:(N * nfaces)
+        mesh.fv_conn[i] = fv_map[i]
+    end
+
+    # Recompute the vertex-face connectivity
+    vf_offsets, vf_conn = polygon_mesh_vf_conn(N, mesh.vertices, mesh.fv_conn)
+    mesh.vf_offsets .= vf_offsets
+    mesh.vf_conn .= vf_conn
+
+    return nothing
+end
 
 # -- Show --
 
