@@ -26,6 +26,8 @@ function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
     s_eff = w * sin_γₑ / nx
     dx = s_eff * inv_sin_γₑ
     dy = s_eff / cos_γₑ
+    xmin = x_min(aab)
+    ymin = y_min(aab)
     if γ ≤ T(pi_over_2)
         for ix in 1:nx
             # Generate ray from the bottom edge of the rectangular domain
@@ -35,7 +37,7 @@ function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
             y₀ = T(0)
             x₁ = min(w, h * inv_tan_γₑ + x₀)
             y₁ = min((w - x₀) * tan_γₑ, h)
-            rays[ix] = Ray2{T}(Point2{T}(x_min(aab) + x₀, y_min(aab) + y₀),
+            rays[ix] = Ray2{T}(Point2{T}(xmin + x₀, ymin + y₀),
                                normalize(Vec2{T}(x₁ - x₀, y₁ - y₀)))
         end
         for iy in 1:ny
@@ -46,7 +48,7 @@ function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
             y₀ = (iy - T(0.5)) * dy
             x₁ = min(w, (h - y₀) * inv_tan_γₑ)
             y₁ = min(w * tan_γₑ + y₀, h)
-            rays[nx + iy] = Ray2{T}(Point2{T}(x_min(aab) + x₀, y_min(aab) + y₀),
+            rays[nx + iy] = Ray2{T}(Point2{T}(xmin + x₀, ymin + y₀),
                                     normalize(Vec2{T}(x₁ - x₀, y₁ - y₀)))
         end
         return rays
@@ -59,7 +61,7 @@ function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
             y₀ = T(0)    
             x₁ = max(0, -h * inv_tan_γₑ + x₀)    
             y₁ = min(x₀ * tan_γₑ, h)      
-            rays[ix] = Ray2{T}(Point2{T}(x_min(aab) + x₀, y_min(aab) + y₀),    
+            rays[ix] = Ray2{T}(Point2{T}(xmin + x₀, ymin + y₀),    
                                normalize(Vec2{T}(x₁ - x₀, y₁ - y₀)))    
         end
         for iy in 1:ny
@@ -70,7 +72,7 @@ function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
             y₀ = (iy - T(0.5)) * dy
             x₁ = max(0, w - (h - y₀) * inv_tan_γₑ)
             y₁ = min(w * tan_γₑ + y₀, h)
-            rays[nx + iy] = Ray2{T}(Point2{T}(x_min(aab) + x₀, y_min(aab) + y₀),
+            rays[nx + iy] = Ray2{T}(Point2{T}(xmin + x₀, ymin + y₀),
                                     normalize(Vec2{T}(x₁ - x₀, y₁ - y₀)))
         end
         return rays
@@ -82,7 +84,7 @@ function get_modular_rays(ang_quad::ProductAngularQuadrature{T},
                           aab::AABox2{T}) where {T}
     nγ = length(ang_quad.γ)
     rays = Vector{Vector{Ray2{T}}}(undef, 2 * nγ)
-    for i in 1:ny
+    for i in 1:nγ
         rays[2 * i - 1] = get_modular_rays(       ang_quad.γ[i], s, aab)
         rays[2 * i    ] = get_modular_rays(T(π) - ang_quad.γ[i], s, aab)
     end

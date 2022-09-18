@@ -1,5 +1,4 @@
 export AbstractQuadratureType, 
-       LegendreType, 
        ChebyshevType, 
        ProductAngularQuadrature
 
