@@ -1,6 +1,6 @@
 export RectilinearGrid, RectilinearGrid2, RectilinearGrid2f, RectilinearGrid2d
 
-export x_min, x_max, y_min, y_max
+export x_min, x_max, y_min, y_max, delta_x, delta_y, num_x, num_y
 
 # RECTILINEAR GRID
 # -----------------------------------------------------------------------------
@@ -10,6 +10,13 @@ export x_min, x_max, y_min, y_max
 
 struct RectilinearGrid{D, T}
     dims::NTuple{D, Vector{T}}
+
+    function RectilinearGrid(dims::NTuple{D, Vector{T}}) where {D, T}
+        if !all(v -> issorted(v), dims)
+            throw(ArgumentError("The divisions of the grid must be sorted."))
+        end
+        return new{D, T}(dims)
+    end
 end
 
 # -- Type aliases --
@@ -21,8 +28,10 @@ const RectilinearGrid2d = RectilinearGrid2{Float64}
 # -- Constructors --
 
 function RectilinearGrid(x::Vector{T}, y::Vector{T}) where {T}
-    return RectilinearGrid{2, T}(x, y)
+    return RectilinearGrid((x, y))
 end
+
+# -- Methods --
 
 function Base.issubset(g1::RectilinearGrid{D}, g2::RectilinearGrid{D}) where {D}
     for i in 1:D
@@ -37,3 +46,15 @@ x_min(rg::RectilinearGrid) = rg.dims[1][begin]
 y_min(rg::RectilinearGrid) = rg.dims[2][begin]
 x_max(rg::RectilinearGrid) = rg.dims[1][end]
 y_max(rg::RectilinearGrid) = rg.dims[2][end]
+delta_x(rg::RectilinearGrid) = x_max(rg) - x_min(rg)
+delta_y(rg::RectilinearGrid) = y_max(rg) - y_min(rg)
+num_x(rg::RectilinearGrid) = length(rg.dims[1])
+num_y(rg::RectilinearGrid) = length(rg.dims[2])
+
+# For easy translation
+function Base.:+(rg::RectilinearGrid2{T}, P::Point2{T}) where {T}
+    return RectilinearGrid((rg.dims[1] .+ P[1], rg.dims[2] .+ P[2]))
+end
+function Base.:-(rg::RectilinearGrid2{T}, P::Point2{T}) where {T}
+    return RectilinearGrid((rg.dims[1] .- P[1], rg.dims[2] .- P[2]))
+end
