@@ -1,3 +1,5 @@
+export ray_quadratic_segment_intersection
+
 # The ray: R(r) = O + r𝗱
 # The quadratic segment: Q(s) = s²𝗮 + s𝗯 + C,    
 # where    
@@ -25,6 +27,53 @@ function Base.intersect(R::Ray2{T}, Q::QuadraticSegment2{T}) where {T}
     𝗮 = -2(𝘃₁₃ + 𝘃₂₃)
     𝗯 = 3𝘃₁₃ + 𝘃₂₃
     C = Q[1]
+    𝗱 = R.direction
+    d2_inv = 1 / norm2(𝗱)
+    O = R.origin
+    a = 𝗮 × 𝗱
+    b = 𝗯 × 𝗱
+    c = (C - O) × 𝗱
+    if abs(a) < 1e-5 # 1 intersection
+        s = -c/b
+        if 0 ≤ s && s ≤ 1
+            P = s^2 * 𝗮 + s * 𝗯 + C    
+            r = d2_inv * ((P - O) ⋅ 𝗱)
+            return (r, r_miss)
+        else
+            return (r_miss, r_miss)
+        end
+    else # 2 intersections
+        # No valid intersections
+        if b^2 < 4 * a * c
+            return (r_miss, r_miss)
+        end
+        r₁ = r_miss
+        r₂ = r_miss
+        s₁ = (-b - √(b^2 - 4 * a * c)) / 2a
+        s₂ = (-b + √(b^2 - 4 * a * c)) / 2a
+        if 0 ≤ s₁ && s₁ ≤ 1
+            P = s₁^2 * 𝗮 + s₁ * 𝗯 + C    
+            r₁ = d2_inv * ((P - O) ⋅ 𝗱) 
+        end
+        if 0 ≤ s₂ && s₂ ≤ 1
+            P = s₂^2 * 𝗮 + s₂ * 𝗯 + C    
+            r₂ = d2_inv * ((P - O) ⋅ 𝗱) 
+        end
+        return (r₁, r₂) 
+    end
+end
+
+function ray_quadratic_segment_intersection(
+        R::Ray2{T}, 
+        P1::Point2{T}, 
+        P2::Point2{T},
+        P3::Point2{T}) where {T}
+    r_miss = T(INF_POINT)
+    𝘃₁₃ = P3 - P1
+    𝘃₂₃ = P3 - P2
+    𝗮 = -2(𝘃₁₃ + 𝘃₂₃)
+    𝗯 = 3𝘃₁₃ + 𝘃₂₃
+    C = P1
     𝗱 = R.direction
     d2_inv = 1 / norm2(𝗱)
     O = R.origin
