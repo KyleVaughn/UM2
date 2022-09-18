@@ -171,57 +171,6 @@
 # # 
 # 
 # # 
-# # function remap_points_to_hilbert(points::Vector{Point_2D})
-# #     bb = boundingbox(points)
-# #     npoints = length(points)
-# #     # Generate a Hilbert curve
-# #     hilbert_points = hilbert_curve(bb, npoints)
-# #     nhilbert_points = length(hilbert_points)
-# #     # For each point, get the index of the hilbert points that is closest
-# #     point_indices = Vector{Int64}(undef, npoints)
-# #     for i ∈ 1:npoints
-# #         min_distance = 1.0e10
-# #         for j ∈ 1:nhilbert_points
-# #             pdistance = distance²(points[i], hilbert_points[j])
-# #             if pdistance < min_distance
-# #                 min_distance = pdistance
-# #                 point_indices[i] = j
-# #             end
-# #         end
-# #     end
-# #     return sortperm(point_indices)
-# # end
-# # 
-# # function reorder_points_to_hilbert!(mesh::UnstructuredMesh_2D)
-# #     # Points
-# #     # point_map     maps  new_points[i] == mesh.points[point_map[i]]
-# #     # point_map_inv maps mesh.points[i] == new_points[point_map_inv[i]]
-# #     point_map  = remap_points_to_hilbert(mesh.points)
-# #     point_map_inv = UInt32.(sortperm(point_map))
-# #     # reordered to resemble a hilbert curve
-# #     permute!(mesh.points, point_map)
-# # 
-# #     # Adjust face indices
-# #     # Point IDs have changed, so we need to change the point IDs referenced by the faces
-# #     new_faces_vec = [ point_map_inv[face] for face in mesh.faces]
-# #     for i in 1:length(mesh.faces)
-# #         mesh.faces[i] = SVector(point_map_inv[mesh.faces[i]])
-# #     end
-# #     return nothing 
-# # end
-# # 
-# # function reorder_faces_to_hilbert!(mesh::UnstructuredMesh_2D)
-# #     face_map  = UInt32.(remap_points_to_hilbert(centroid.(materialize_faces(mesh))))
-# #     permute!(mesh.faces, face_map)
-# #     return nothing 
-# # end
-# # 
-# # function reorder_to_hilbert!(mesh::UnstructuredMesh_2D)
-# #     reorder_points_to_hilbert!(mesh)
-# #     reorder_faces_to_hilbert!(mesh)
-# #     return nothing
-# # end
-# # 
 # # # Return the ID of the edge shared by two adjacent faces
 # # function shared_edge(face1::UInt32, face2::UInt32, mesh::UnstructuredMesh_2D)
 # #     for edge1 in mesh.face_edge_connectivity[face1]
