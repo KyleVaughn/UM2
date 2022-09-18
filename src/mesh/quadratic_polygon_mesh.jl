@@ -1,7 +1,8 @@
 export QuadraticPolygonMesh, QPolygonMesh, QTriMesh, QQuadMesh
 
 export num_faces, face, face_iterator, faces, edges, bounding_box, centroid,
-       face_areas, sort_morton_order!
+       face_areas, sort_morton_order!, find_face, find_face_morton_order,
+       find_face_robust_morton
 
 # QUADRATIC POLYGON MESH
 # -----------------------------------------------------------------------------
@@ -168,7 +169,7 @@ end
 
 # -- In --
 
-function Base.in(P::Point2, mesh::QPolygonMesh)
+function find_face(P::Point2, mesh::QPolygonMesh)
     for (i, face) in enumerate(face_iterator(mesh))
         if P in face
             return i
@@ -177,6 +178,64 @@ function Base.in(P::Point2, mesh::QPolygonMesh)
     return 0
 end
 
+# Assumes the mesh has been sorted in morton order
+function find_face_morton_order(P::Point2{T}, mesh::QPolygonMesh{N, T}, scale_inv::T) where {N, T}
+    lo, hi = morton_z_neighbors(P, mesh.vertices, scale_inv)
+    dlo = distance2(P, mesh.vertices[lo])
+    dhi = distance2(P, mesh.vertices[hi])
+    if dlo < dhi
+        vmin = vid = lo
+        dmin = dlo
+    else
+        vmin = vid = hi
+        dmin = dhi
+    end
+    # Check the faces that share the vertex.
+    # Compute the closest vertex on each of these faces in case this fails.
+    # If it fails, move to the next vertex and repeat.
+    for _ = 1:4 # Try the initial vertex and the next closest vertex
+        # For each face id in the vertex-face connectivity
+        for voffset in mesh.vf_offsets[vid]:(mesh.vf_offsets[vid + 1] - 1)
+            face_id = mesh.vf_conn[voffset]
+            # Get the vertices that compose the face
+            this_fv_conn = fv_conn(face_id, mesh)
+            # Check if the point is inside the face
+            if all(vids -> isleft(P, QuadraticSegment(mesh.vertices[vids[1]],
+                                                      mesh.vertices[vids[2]],
+                                                      mesh.vertices[vids[3]])),
+                   qpolygon_ev_conn_iterator(this_fv_conn))
+                return face_id
+            end
+            # If the point is not inside the face, check if any of the vertices
+            # are closer than the current closest vertex
+            for iv in 1:N
+                d = distance2(P, mesh.vertices[this_fv_conn[iv]])
+                if d < dmin
+                    vmin = Int64(this_fv_conn[iv])
+                    dmin = d
+                end
+            end
+        end
+        # If we get here, the point is not inside any of the faces that share
+        # the vertex. Move to the next closest vertex and repeat.
+        # If we have already checked the next closest vertex, we are out of
+        # luck.
+        if vmin === vid
+            break
+        end
+        vid = vmin
+    end
+    # If we didn't find a face, return 0
+    return 0
+end
+
+function find_face_robust_morton(P::Point2{T}, mesh::QPolygonMesh{N, T}, scale_inv::T) where {N, T}
+    face_id = find_face_morton_order(P, mesh, scale_inv)    
+    if face_id == 0       
+        face_id = find_face(P, mesh)    
+    end    
+    return face_id    
+end
 # -- Bounding box --
 
 bounding_box(mesh::QPolygonMesh) = mapreduce(bounding_box, Base.union, face_iterator(mesh))

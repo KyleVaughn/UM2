@@ -279,7 +279,7 @@ function isleft(P::Point2{T}, Q::QuadraticSegment2{T}) where {T}
     end
 
     𝗯 = 3𝘃₁₃ + 𝘃₂₃
-    𝘄 = P - q[1]
+    𝘄 = P - Q[1]
 
     b = 6 * (𝗮 ⋅ 𝗯)
     c = 2 * ((𝗯  ⋅ 𝗯) - 2 * (𝗮 ⋅𝘄))

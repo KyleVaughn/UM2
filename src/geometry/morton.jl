@@ -21,5 +21,8 @@ function morton_z_neighbors(p::Point2{T}, points::Vector{Point2{T}}, scale_inv::
     if npts < hi 
         hi = npts
     end
+    if lo === 0
+        lo = 1
+    end
     return lo, hi
 end
