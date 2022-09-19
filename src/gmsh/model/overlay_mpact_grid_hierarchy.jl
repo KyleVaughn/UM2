@@ -3,132 +3,97 @@ export overlay_mpact_grid_hierarchy
 function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
                                       material_hierarchy::Vector{Material})
     @info "Overlaying MPACT grid hierarchy"
-    # Generate all of the rectangles the make up the coarse grid, and save
-    # their (x,y) origin coordinates, so we can group them into their appropriate
-    # modules and lattices later
     model_dtags = gmsh.model.get_entities(2)
-    lg_x = grid.lattice_grid.x
-    lg_y = grid.lattice_grid.y
-    lg_nx = length(lg_x)
-    lg_ny = length(lg_y)
-    mg_x = grid.module_grid.x
-    mg_y = grid.module_grid.y
-    mg_nx = length(mg_x)
-    mg_ny = length(mg_y)
-    cg_x = grid.coarse_grid.x
-    cg_y = grid.coarse_grid.y
-    cg_nx = length(cg_x)
-    cg_ny = length(cg_y)
-    grid_tags_coords = Vector{Tuple{Int32, Float64, Float64}}(undef,
-                                                              (cg_nx - 1) * (cg_ny - 1))
-    gtctr = 1
-    for iy in 1:(cg_ny - 1)
-        y = cg_y[iy]
-        for ix in 1:(cg_nx - 1)
-            x = cg_x[ix]
-            tag = gmsh.model.occ.add_rectangle(x, y, 0, cg_x[ix + 1] - x, cg_y[iy + 1] - y)
-            grid_tags_coords[gtctr] = (tag, x, y)
-            gtctr += 1
+    int_width = 5
+    lat_ctr = 0
+    mod_ctr = 0
+    cel_ctr = 0
+    grid_tags = Int32[]
+    # Sort the lattice (i, j) indices into morton order
+    ilat_max, jlat_max = size(grid.lattice_grid)
+    lat_zorder = Vector{u32}(undef, ilat_max * jlat_max)
+    mod_zorder = u32[]
+    cel_zorder = u32[]
+    groups = Dict{String, Vector{Int32}}()
+    for j in u32(1):u32(jlat_max), i in u32(1):u32(ilat_max)
+        lat_zorder[jlat_max * (j - u32(1)) + i] = encode_morton(i - u32(1), j - u32(1))
+    end
+    lat_zperm = sortperm(lat_zorder)
+    # Traverse the lattices in morton order
+    for lat_idx in lat_zperm
+        lat_ctr += 1
+        lat_name = "Lattice_" * lpad(lat_ctr, int_width, '0')
+        groups[lat_name] = Int32[]
+        # Sort the lattice's module indices into morton order
+        lat = grid.lattice_grid[lat_idx]
+        imod_max, jmod_max = size(lat)
+        mod_len = length(mod_zorder)
+        # Resize the module z-order vector if necessary
+        if imod_max * jmod_max > length(mod_zorder)
+            resize!(mod_zorder, imod_max * jmod_max)
+        end
+        for j in u32(1):u32(jmod_max), i in u32(1):u32(imod_max)
+            mod_zorder[jmod_max * (j - u32(1)) + i] = encode_morton(i - u32(1), j - u32(1))
+        end
+        mod_zperm = sortperm(mod_zorder)
+        # Traverse the modules in morton order
+        for mod_idx in mod_zperm
+            mod_ctr += 1
+            mod_name = "Module_" * lpad(mod_ctr, int_width, '0')
+            groups[mod_name] = Int32[]
+            # Sort the module's coarse cell indices into morton order
+            rt_mod = lat[mod_idx]
+            icell_max, jcell_max = size(rt_mod)
+            icell_max -= 1 # Cells are one less than nodes
+            jcell_max -= 1
+            cell_len = length(cel_zorder)
+            # Resize the cell z-order vector if necessary
+            if icell_max * jcell_max > length(cel_zorder)
+                resize!(cel_zorder, icell_max * jcell_max)
+            end
+            for j in u32(1):u32(jcell_max), i in u32(1):u32(icell_max)
+                cel_zorder[jcell_max * (j - u32(1)) + i] = encode_morton(i - u32(1), j - u32(1))
+            end
+            sort!(cel_zorder)
+            # Create the coarse geometry
+            for z in cel_zorder
+                cel_ctr += 1
+                cel_name = "Cell_" * lpad(cel_ctr, int_width, '0')
+                groups[cel_name] = Int32[]
+                # Get the cell's (i, j) indices
+                i, j = decode_morton(z)
+                # Get the cell's (x, y) coordinates
+                x0 = rt_mod.dims[1][i + u32(1)]
+                y0 = rt_mod.dims[2][j + u32(1)]
+                x1 = rt_mod.dims[1][i + u32(2)]
+                y1 = rt_mod.dims[2][j + u32(2)]
+                # Create the coarse cell
+                tag = gmsh.model.occ.add_rectangle(x0, y0, 0.0, x1 - x0, y1 - y0)
+                # Add the tag to the appropriate group
+                push!(grid_tags, tag)
+                push!(groups[cel_name], tag)
+                push!(groups[mod_name], tag)
+                push!(groups[lat_name], tag)
+                
+            end
         end
     end
     gmsh.model.occ.synchronize()
-    grid_dtags = [(Int32(2), gtc[1]) for gtc in grid_tags_coords]
 
-    # Label the rectangles with the appropriate physical groups 
-    # Create a dictionary holding all the physical group names and tags
-    groups = Dict{String, Vector{Int32}}()
-    max_grid_digits = max(length(string(cg_nx - 1)),
-                          length(string(cg_ny - 1)))
-
-    # Create each grid name
-    # Lattices
-    for ix in 1:(lg_nx - 1)
-        for iy in 1:(lg_ny - 1)
-            grid_str = string("Lattice (", lpad(ix, max_grid_digits, "0"), ", ",
-                              lpad(iy, max_grid_digits, "0"), ")")
-            groups[grid_str] = Int32[]
-        end
-    end
-
-    # Modules
-    for ix in 1:(mg_nx - 1)
-        for iy in 1:(mg_ny - 1)
-            grid_str = string("Module (", lpad(ix, max_grid_digits, "0"), ", ",
-                              lpad(iy, max_grid_digits, "0"), ")")
-            groups[grid_str] = Int32[]
-        end
-    end
-
-    # Coarse Cells
-    for ix in 1:(cg_nx - 1)
-        for iy in 1:(cg_ny - 1)
-            grid_str = string("Coarse Cell (", lpad(ix, max_grid_digits, "0"), ", ",
-                              lpad(iy, max_grid_digits, "0"), ")")
-            groups[grid_str] = Int32[]
-        end
-    end
-
-    # For each rectangle, find which lattice/module/coarse cell it belongs to
-    # Lattices
-    for (tag, x, y) in grid_tags_coords
-        ix = searchsortedfirst(lg_x, x)
-        if x == lg_x[ix]
-            ix += 1
-        end
-        iy = searchsortedfirst(lg_y, y)
-        if y == lg_y[iy]
-            iy += 1
-        end
-        grid_str = string("Lattice (", lpad(ix - 1, max_grid_digits, "0"), ", ",
-                          lpad(iy - 1, max_grid_digits, "0"), ")")
-        push!(groups[grid_str], tag)
-    end
-
-    # Modules
-    for (tag, x, y) in grid_tags_coords
-        ix = searchsortedfirst(mg_x, x)
-        if x == mg_x[ix]
-            ix += 1
-        end
-        iy = searchsortedfirst(mg_y, y)
-        if y == mg_y[iy]
-            iy += 1
-        end
-        grid_str = string("Module (", lpad(ix - 1, max_grid_digits, "0"), ", ",
-                          lpad(iy - 1, max_grid_digits, "0"), ")")
-        push!(groups[grid_str], tag)
-    end
-
-    # Coarse cells
-    for (tag, x, y) in grid_tags_coords
-        ix = searchsortedfirst(cg_x, x)
-        if x == cg_x[ix]
-            ix += 1
-        end
-        iy = searchsortedfirst(cg_y, y)
-        if y == cg_y[iy]
-            iy += 1
-        end
-        grid_str = string("Coarse Cell (", lpad(ix - 1, max_grid_digits, "0"), ", ",
-                          lpad(iy - 1, max_grid_digits, "0"), ")")
-        push!(groups[grid_str], tag)
-    end
-
-    # Setup material physical group
+    # Setup material physical groups
     mat_name = "Material: " * material_hierarchy[end].name
-    groups[mat_name] = [dt[2] for dt in grid_dtags]
+    groups[mat_name] = grid_tags
     old_groups = gmsh.model.get_physical_groups()
     names = [gmsh.model.get_physical_name(grp[1], grp[2]) for grp in old_groups]
 
-    # Assign groups
+    # Assign new groups
     for name in keys(groups)
         safe_add_physical_group(name, [(Int32(2), t) for t in groups[name]])
     end
 
-    # material hierarchy with the grid material at the bottom.
-    output_dtags, output_dtags_map = safe_fragment(model_dtags, grid_dtags,
+    output_dtags, output_dtags_map = safe_fragment(model_dtags, 
+                                                   [(Int32(2), t) for t in grid_tags],
                                                    material_hierarchy = material_hierarchy)
 
-    # Account for material already in model, and erase an add.
     return output_dtags, output_dtags_map
 end

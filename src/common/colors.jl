@@ -693,3 +693,5 @@ const color_names = Dict{String, NTuple{4, UInt8}}(
     "yellow4"              => (139, 139,   0, 255),
     "yellowgreen"          => (154, 205,  50, 255)
 )
+
+RGBA(name::String) = RGBA(color_names[name])

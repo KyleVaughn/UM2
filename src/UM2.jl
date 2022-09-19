@@ -56,6 +56,6 @@ include("gmsh/model/add_cad_names_to_physical_groups.jl")
 include("gmsh/model/add_materials_to_physical_groups_by_color.jl")
 include("gmsh/model/import_model.jl")
 include("gmsh/model/safe_fragment.jl")
-#include("gmsh/model/overlay_mpact_grid_hierarchy.jl")
+include("gmsh/model/overlay_mpact_grid_hierarchy.jl")
 
 end

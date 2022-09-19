@@ -33,6 +33,8 @@ end
 
 # -- Methods --
 
+Base.size(rg::RectilinearGrid2) = (length(rg.dims[1]), length(rg.dims[2]))
+
 function Base.issubset(g1::RectilinearGrid{D}, g2::RectilinearGrid{D}) where {D}
     for i in 1:D
         if g1.dims[i] ⊈ g2.dims[i]

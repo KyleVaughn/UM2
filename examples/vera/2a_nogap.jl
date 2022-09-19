@@ -3,14 +3,14 @@
 # CASL-U-2012-0131-004
 using UM2
 file_prefix = "2a"
-mesh_order = 1 
+mesh_order = 1
 mesh_faces = "Triangle"
-lc = 1.26/5 # cm, pitch = 1.26 cm    
-lc_str = string(round(lc, digits = 4))    
-full_file_prefix = file_prefix * "_" * lowercase(mesh_faces) * string(mesh_order) *    
+lc = 1.26/5 # cm, pitch = 1.26 cm
+lc_str = string(round(lc, digits = 4))
+full_file_prefix = file_prefix * "_" * lowercase(mesh_faces) * string(mesh_order) *
                    "_" * replace(lc_str, "."=>"_")
 
-add_timestamps_to_logger()
+#add_timestamps_to_logger()
 gmsh.initialize()
 gmsh.option.set_number("General.NumThreads", 0) # 0 uses system default, i.e. OMP_NUM_THREADS)
 gmsh.option.set_number("Geometry.OCCParallel", 1) # use parallel OCC boolean operations
@@ -82,34 +82,33 @@ safe_fragment(ents, ents, material_hierarchy = materials)
 
 # Overlay Grid
 # ---------------------------------------------------------------------------------------------
-coarse_divs = [0.0]
-append!(coarse_divs, [pitch * i + 0.04 for i in 1:16])
+coarse_divs = [pitch * i + 0.04 for i in 1:16]
+pushfirst!(coarse_divs, 0.0)
 push!(coarse_divs, 21.5) # Assembly pitch = 21.50 cm (pg. 7)
-scoarse_divs = Vec{18, Float64}(coarse_divs)
-coarse_grid = RectilinearGrid(scoarse_divs, scoarse_divs)
+coarse_grid = RectilinearGrid(coarse_divs, coarse_divs)
 mpact_grid = MPACTGridHierarchy(coarse_grid)
 # We now want Water to fill empty space, preserving all other materials,
 # so we need to swap Water to the bottom of the materials hierarchy
 materials[2], materials[3] = materials[3], materials[2]
 overlay_mpact_grid_hierarchy(mpact_grid, materials)
-
-# Mesh
-# ------------------------------------------------------------------------------------------------
-for mat in materials
-    mat.lc = lc
-end
-set_mesh_field_using_materials(materials)
-generate_mesh(order = mesh_order, faces = mesh_faces, opt_iters = 2, force_quads = false)
-gmsh.write(full_file_prefix*".inp")
-mesh_error = get_cad_to_mesh_error()
-for i in eachindex(mesh_error)
-    println(mesh_error[i])
-end
-gmsh.fltk.run()
-gmsh.finalize()
-
-mesh = import_mesh(full_file_prefix*".inp")
-#statistics(mesh)
-# Partition mesh according to mpact grid hierarchy and write as an xdmf file 
-mpt = MeshPartitionTree(mesh)
-export_mesh(full_file_prefix*".xdmf", mpt)
+#
+## Mesh
+## ------------------------------------------------------------------------------------------------
+#for mat in materials
+#    mat.lc = lc
+#end
+#set_mesh_field_using_materials(materials)
+#generate_mesh(order = mesh_order, faces = mesh_faces, opt_iters = 2, force_quads = false)
+#gmsh.write(full_file_prefix*".inp")
+#mesh_error = get_cad_to_mesh_error()
+#for i in eachindex(mesh_error)
+#    println(mesh_error[i])
+#end
+#gmsh.fltk.run()
+#gmsh.finalize()
+#
+#mesh = import_mesh(full_file_prefix*".inp")
+##statistics(mesh)
+## Partition mesh according to mpact grid hierarchy and write as an xdmf file
+#mpt = MeshPartitionTree(mesh)
+#export_mesh(full_file_prefix*".xdmf", mpt)
