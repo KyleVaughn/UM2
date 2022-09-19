@@ -1,19 +1,19 @@
-export set_mesh_field_using_materials
+export set_mesh_field_by_material
 
-function set_mesh_field_using_materials(materials::Vector{Material})
-    @info "Setting mesh size field using materials"
+function set_mesh_field_by_material(mat_lc::Vector{Tuple{Material, Float64}})
+    @info "Setting mesh size field by material"
     # Setup a field with a constant mesh size (material.lc) inside the 
     # entities that make up that material
-    field_ids = Vector{Int32}(undef, length(materials))
-    for (i, material) in enumerate(materials)
+    field_ids = Vector{Int32}(undef, length(mat_lc))
+    for (i, mlc) in enumerate(mat_lc)
         fid = gmsh.model.mesh.field.add("Constant")
-        gmsh.model.mesh.field.set_number(fid, "VIn", material.lc)
+        gmsh.model.mesh.field.set_number(fid, "VIn", mlc[2])
         field_ids[i] = fid
     end
     # Populate each of the fields with the highest dimensional entities in the material
     # physical group
     material_dict = Dict{String, Vector{Tuple{Int32, Int32}}}()
-    material_names = ["Material: " * mat.name for mat in materials]
+    material_names = ["Material: " * mlc[1].name for mlc in mat_lc]
     for name in material_names
         material_dict[name] = Tuple{Int32, Int32}[]
     end

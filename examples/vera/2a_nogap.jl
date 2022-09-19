@@ -4,13 +4,13 @@
 using UM2
 file_prefix = "2a"
 mesh_order = 1
-mesh_faces = "Triangle"
+mesh_face = "Triangle"
 lc = 1.26/5 # cm, pitch = 1.26 cm
 lc_str = string(round(lc, digits = 4))
-full_file_prefix = file_prefix * "_" * lowercase(mesh_faces) * string(mesh_order) *
+full_file_prefix = file_prefix * "_" * lowercase(mesh_face) * string(mesh_order) *
                    "_" * replace(lc_str, "."=>"_")
 
-#add_timestamps_to_logger()
+add_timestamps_to_log()
 gmsh.initialize()
 gmsh.option.set_number("General.NumThreads", 0) # 0 uses system default, i.e. OMP_NUM_THREADS)
 gmsh.option.set_number("Geometry.OCCParallel", 1) # use parallel OCC boolean operations
@@ -18,6 +18,7 @@ gmsh.option.set_number("General.Verbosity", 2) # 1: +errors, 2: +warnings, 3: +d
 
 # Model
 # ----------------------------------------------------------------------------------------------
+@info "Creating model"
 fuel_entities = Int64[];
 clad_entities = Int64[];
 water_entities = Int64[];
@@ -91,24 +92,22 @@ mpact_grid = MPACTGridHierarchy(coarse_grid)
 # so we need to swap Water to the bottom of the materials hierarchy
 materials[2], materials[3] = materials[3], materials[2]
 overlay_mpact_grid_hierarchy(mpact_grid, materials)
-#
-## Mesh
-## ------------------------------------------------------------------------------------------------
-#for mat in materials
-#    mat.lc = lc
-#end
-#set_mesh_field_using_materials(materials)
-#generate_mesh(order = mesh_order, faces = mesh_faces, opt_iters = 2, force_quads = false)
-#gmsh.write(full_file_prefix*".inp")
-#mesh_error = get_cad_to_mesh_error()
-#for i in eachindex(mesh_error)
-#    println(mesh_error[i])
-#end
+
+# Mesh
+# ------------------------------------------------------------------------------------------------
+mat_lc = [(mat, lc) for mat in materials]
+set_mesh_field_by_material(mat_lc)
+generate_mesh(order = mesh_order, face_type = mesh_face, opt_iters = 2, force_quads = false)
+gmsh.write(full_file_prefix*".inp")
+mesh_errors = get_cad_to_mesh_errors()
+for i in eachindex(mesh_errors)
+    println(mesh_errors[i])
+end
 #gmsh.fltk.run()
-#gmsh.finalize()
-#
-#mesh = import_mesh(full_file_prefix*".inp")
+gmsh.finalize()
+
+elsets, mesh = import_mesh(full_file_prefix*".inp")
 ##statistics(mesh)
-## Partition mesh according to mpact grid hierarchy and write as an xdmf file
+# Partition the mesh according to the mpact grid hierarchy and write it as an xdmf file
 #mpt = MeshPartitionTree(mesh)
 #export_mesh(full_file_prefix*".xdmf", mpt)

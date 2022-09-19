@@ -1,6 +1,6 @@
-export get_cad_to_mesh_error
+export get_cad_to_mesh_errors
 
-function get_cad_to_mesh_error()
+function get_cad_to_mesh_errors()
     errors = NamedTuple{(:name, :cad_mass, :mesh_mass, :percent_error),
                         Tuple{String, Float64, Float64, Float64}}[]
     for group in gmsh.model.get_physical_groups()

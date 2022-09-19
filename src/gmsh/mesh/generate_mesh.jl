@@ -2,15 +2,15 @@ export generate_mesh
 
 function generate_mesh(; dim::Int64 = 2,
                        order::Int64 = 1,
-                       faces::String = "Triangle",
+                       face_type::String = "Triangle",
                        opt_iters::Int64 = 0,
                        force_quads::Bool = false)
-    @info "Generating a mesh of dimension $dim with $faces faces of order $order"
+    @info "Generating a mesh of dimension $dim with $face_type faces of order $order"
     gmsh.option.set_number("Mesh.SecondOrderIncomplete", 1)
     if dim != 2
         error("Only 2D meshes are currently supported.")
     end
-    if faces == "Triangle"
+    if face_type == "Triangle"
         # Delaunay (5) handles large element size gradients better
         gmsh.option.set_number("Mesh.Algorithm", 5)
         if order == 1
@@ -30,7 +30,7 @@ function generate_mesh(; dim::Int64 = 2,
         else
             error("Mesh order must be 1 or 2.")
         end
-    elseif faces == "Quadrilateral"
+    elseif face_type == "Quadrilateral"
         gmsh.option.set_number("Mesh.RecombineAll", 1)
         gmsh.option.set_number("Mesh.Algorithm", 8) # Frontal-Delaunay for quads.
         if force_quads

@@ -1,7 +1,11 @@
 module UM2
 
+using Logging
 using Pkg.Artifacts
 using Printf
+
+using Dates: now, format
+using LoggingExtras: TransformerLogger
 
 # Gmsh
 gmsh_dir = readdir(artifact"gmsh", join = true)[1]
@@ -13,6 +17,7 @@ include("common/defines.jl")
 include("common/typedefs.jl")
 include("common/constants.jl")
 include("common/instructions.jl")
+include("common/log.jl")
 include("common/colors.jl")
 
 include("math/vec.jl")
@@ -36,6 +41,7 @@ include("mesh/io_abaqus.jl")
 include("mesh/rectilinear_grid.jl")
 include("mesh/polygon_mesh.jl")
 include("mesh/quadratic_polygon_mesh.jl")
+include("mesh/io.jl")
 
 include("ray_casting/ray.jl")
 include("ray_casting/angular_quadrature.jl")
@@ -57,5 +63,9 @@ include("gmsh/model/add_materials_to_physical_groups_by_color.jl")
 include("gmsh/model/import_model.jl")
 include("gmsh/model/safe_fragment.jl")
 include("gmsh/model/overlay_mpact_grid_hierarchy.jl")
+
+include("gmsh/mesh/set_mesh_field_by_material.jl")
+include("gmsh/mesh/generate_mesh.jl")
+include("gmsh/mesh/get_cad_to_mesh_errors.jl")
 
 end

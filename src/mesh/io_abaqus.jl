@@ -86,8 +86,9 @@ function parse_elsets!(file::IOStream,
         end
         words = split(line, ',')
         for i in 1:length(words)
-            if 0 < length(words[i])
-                push!(elset, parse(I, words[i]))
+            lsword = lstrip(words[i])
+            if 0 < length(lsword)
+                push!(elset, parse(I, lsword))
             end
         end
     end

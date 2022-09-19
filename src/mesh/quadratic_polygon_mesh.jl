@@ -113,11 +113,6 @@ function QuadraticPolygonMesh{N}(file::AbaqusFile{T, I}) where {N, T, I}
     )
 end
 
-function QuadraticPolygonMesh{N}(file::String) where {N}
-    abaqus_file = AbaqusFile(file)
-    return (abaqus_file.elsets, QuadraticPolygonMesh{N}(abaqus_file))
-end
-
 # -- Basic properties --
 
 num_faces(mesh::QPolygonMesh{N}) where {N} = length(mesh.fv_conn) ÷ N
@@ -303,7 +298,7 @@ function Base.show(io::IO, mesh::QPolygonMesh{N, T, I}) where {N, T, I}
     end
     println(io, poly_type, "Mesh{", T, ", ", I, "}")
     println(io, "  ├─ Name      : ", mesh.name)
-    size_B = sizeof(mesh)
+    size_B = Base.summarysize(mesh)
     if size_B < 1e6
         println(io, "  ├─ Size (KB) : ", string(@sprintf("%.3f", size_B/1000)))
     else
