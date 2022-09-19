@@ -39,17 +39,14 @@ const QuadMesh = PolygonMesh{4}
 
 # -- Constructors --
 
-function polygon_mesh_vf_conn(N::Int64,
-                              vertices::Vector{Point2{T}},
-                              faces::Vector{I}
-                             ) where {T <: AbstractFloat, I <: Integer}
+function polygon_mesh_vf_conn(N::Int64, nverts::Int64, fv_conn::Vector{I}
+                             ) where {I <: Integer}
     # Vertex-face connectivity
-    nverts = length(vertices)
-    nfaces = length(faces) ÷ N
+    nfaces = length(fv_conn) ÷ N
     vf_conn_vert_counts = zeros(I, nverts)
     for face_id in 1:nfaces
         for ivert in 1:N
-            vert_id = faces[N * (face_id - 1) + ivert]
+            vert_id = fv_conn[N * (face_id - 1) + ivert]
             vf_conn_vert_counts[vert_id] += 1
         end
     end
@@ -62,7 +59,7 @@ function polygon_mesh_vf_conn(N::Int64,
     vf_conn = Vector{I}(undef, vf_offsets[end] - 1)
     for face_id in 1:nfaces
         for ivert in 1:N
-            vert_id = faces[N * (face_id - 1) + ivert]
+            vert_id = fv_conn[N * (face_id - 1) + ivert]
             vf_conn[vf_offsets[vert_id] + vf_conn_vert_counts[vert_id]] = face_id
             vf_conn_vert_counts[vert_id] -= 1
         end
@@ -101,7 +98,7 @@ function PolygonMesh{N}(file::AbaqusFile{T, I}) where {N, T, I}
         vertices[i] = Point2{T}(file.nodes[i][1], file.nodes[i][2])
     end
 
-    vf_offsets, vf_conn = polygon_mesh_vf_conn(N, vertices, file.elements)
+    vf_offsets, vf_conn = polygon_mesh_vf_conn(N, nverts, file.elements)
 
     return PolygonMesh{N, T, I}(
         file.name,

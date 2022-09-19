@@ -41,6 +41,7 @@ include("mesh/io_abaqus.jl")
 include("mesh/rectilinear_grid.jl")
 include("mesh/polygon_mesh.jl")
 include("mesh/quadratic_polygon_mesh.jl")
+include("mesh/submesh.jl")
 include("mesh/io.jl")
 
 include("ray_casting/ray.jl")

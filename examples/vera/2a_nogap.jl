@@ -3,7 +3,7 @@
 # CASL-U-2012-0131-004
 using UM2
 file_prefix = "2a"
-mesh_order = 1
+mesh_order = 2
 mesh_face = "Triangle"
 lc = 1.26/5 # cm, pitch = 1.26 cm
 lc_str = string(round(lc, digits = 4))
