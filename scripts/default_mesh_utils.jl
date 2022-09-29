@@ -20,7 +20,7 @@ function get_divided_radii_and_areas(
     r_div = Vector{Float64}(undef, sum(rdivs))
     a_div = Vector{Float64}(undef, sum(rdivs) + 1)
     # Inside the innermost ring 
-    a_div[1] = r_mat[1] / rdivs[1]
+    a_div[1] = a_mat[1] / rdivs[1]
     r_div[1] = sqrt(a_div[1] / π)
     for i in 2:rdivs[1]
         a_div[i] = a_div[1]
