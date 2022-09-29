@@ -1,6 +1,6 @@
 export RectilinearGrid, RectilinearGrid2, RectilinearGrid2f, RectilinearGrid2d
 
-export x_min, x_max, y_min, y_max, delta_x, delta_y, num_x, num_y
+export x_min, x_max, y_min, y_max, delta_x, delta_y, num_x, num_y, find_face
 
 # RECTILINEAR GRID
 # -----------------------------------------------------------------------------
@@ -52,6 +52,16 @@ delta_x(rg::RectilinearGrid) = x_max(rg) - x_min(rg)
 delta_y(rg::RectilinearGrid) = y_max(rg) - y_min(rg)
 num_x(rg::RectilinearGrid) = length(rg.dims[1])
 num_y(rg::RectilinearGrid) = length(rg.dims[2])
+
+function Base.in(P::Point2{T}, rg::RectilinearGrid2{T}) where {T}
+    return x_min(rg) ≤ P.x ≤ x_max(rg) && y_min(rg) ≤ P.y ≤ y_max(rg)
+end
+
+function find_face(P::Point2{T}, rg::RectilinearGrid2{T}) where {T}
+    i = searchsortedfirst(rg.dims[1], P[1])
+    j = searchsortedfirst(rg.dims[2], P[2])
+    return (i, j)
+end
 
 # For easy translation
 function Base.:+(rg::RectilinearGrid2{T}, P::Point2{T}) where {T}

@@ -13,7 +13,7 @@ export num_faces, face, face_iterator, faces, edges, bounding_box, centroid,
 # N = 4 is a quad mesh
 #
 
-struct PolygonMesh{N, T <: AbstractFloat, I <: Integer}
+struct PolygonMesh{N, T <: AbstractFloat, I <: Integer} <: AbstractMesh
 
     # Name of the mesh.
     name::String

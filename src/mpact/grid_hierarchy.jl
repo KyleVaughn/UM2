@@ -3,7 +3,14 @@ export MPACTGridHierarchy
 # Lattice grid = Matrix{Lattice}
 # Lattice = Module grid = Matrix{Module}
 # Module =  A rectilinear grid of coarse cells
-mutable struct MPACTGridHierarchy
+struct MPACTGridHierarchy
+    #      y
+    #      ^
+    # j = 3|
+    # j = 2|
+    # j = 1|
+    #       _____________> x
+    #       i=1  i=2  i=3
     lattice_grid::Matrix{Matrix{RectilinearGrid2d}}
 
     function MPACTGridHierarchy(lattice_grid::Matrix{Matrix{RectilinearGrid2d}})

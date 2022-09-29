@@ -1,6 +1,5 @@
 abstract type AbstractMesh end
 
-include("submesh.jl")
 include("mesh_partition_tree.jl")
 include("boundingbox.jl")
 include("io_vtk.jl")
