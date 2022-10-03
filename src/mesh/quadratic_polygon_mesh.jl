@@ -73,18 +73,23 @@ function qpolygon_mesh_vf_conn(N::Int64, nverts::Int64, fv_conn::Vector{I}
     return vf_offsets, vf_conn
 end
 
-function QuadraticPolygonMesh{N}(file::AbaqusFile{T, I}) where {N, T, I}
+function QuadraticPolygonMesh{N}(file::MeshFile{T, I}) where {N, T, I}
     # Error checking
-    if N === 6
-        vtk_type = VTK_QUADRATIC_TRIANGLE
-    elseif N === 8
-        vtk_type = VTK_QUADRATIC_QUAD
-    else
-        error("Unsupported quadratic polygon mesh type")
-    end
+    if file.format == ABAQUS_FORMAT    
+        # Use vtk numerical types   
+        if N === 6
+            vtk_type = VTK_QUADRATIC_TRIANGLE
+        elseif N === 8
+            vtk_type = VTK_QUADRATIC_QUAD
+        else
+            error("Unsupported quadratic polygon mesh type")
+        end
 
-    if any(eltype -> eltype !== vtk_type, file.element_types)
-        error("Not all elements are VTK type " * string(vtk_type))
+        if any(eltype -> eltype !== vtk_type, file.element_types)
+            error("Not all elements are VTK type " * string(vtk_type))
+        end
+    else
+        error("Unsupported mesh file format")
     end
 
     nfaces = length(file.elements) ÷ N

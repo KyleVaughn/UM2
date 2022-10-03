@@ -72,18 +72,23 @@ function polygon_mesh_vf_conn(N::Int64, nverts::Int64, fv_conn::Vector{I}
     return (vf_offsets, vf_conn)
 end
 
-function PolygonMesh{N}(file::AbaqusFile{T, I}) where {N, T, I}
+function PolygonMesh{N}(file::MeshFile{T, I}) where {N, T, I}
     # Error checking
-    if N === 3
-        vtk_type = VTK_TRIANGLE
-    elseif N === 4
-        vtk_type = VTK_QUAD
-    else
-        error("Unsupported polygon mesh type")
-    end
+    if file.format == ABAQUS_FORMAT
+        # Use vtk numerical types
+        if N === 3
+            vtk_type = VTK_TRIANGLE
+        elseif N === 4
+            vtk_type = VTK_QUAD
+        else
+            error("Unsupported polygon mesh type")
+        end
 
-    if any(eltype -> eltype !== vtk_type, file.element_types)
-        error("Not all elements are VTK type " * string(vtk_type))
+        if any(eltype -> eltype !== vtk_type, file.element_types)
+            error("Not all elements are VTK type " * string(vtk_type))
+        end
+    else
+        error("Unsupported mesh file format")
     end
 
     nfaces = length(file.elements) ÷ N

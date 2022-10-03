@@ -1,27 +1,9 @@
-export AbaqusFile
+# ABAQUS FILE FORMAT
 
-export get_material_names
-
-# ABAQUS FILE
-# -----------------------------------------------------------------------------    
-#    
-# An intermediate representation of an Abaqus input file and a mesh.
-# 
-
-struct AbaqusFile{T <: AbstractFloat, I <: Integer}
-    filepath::String
-    name::String
-    nodes::Vector{Point3{T}}
-    element_types::Vector{Int8}
-    element_offsets::Vector{I}
-    elements::Vector{I}
-    elsets::Dict{String, Set{I}}
-end
-
-# -- IO --
+# -- Read -- 
 
 function parse_nodes!(file::IOStream, 
-                      nodes::Vector{Point3{T}}
+                      nodes::Vector{Point2{T}}
                      ) where {T <: AbstractFloat, I <: Integer}
     line = ""
     while !eof(file)
@@ -32,8 +14,7 @@ function parse_nodes!(file::IOStream,
         words = split(line, ',')
         x = parse(T, words[2])
         y = parse(T, words[3])
-        z = parse(T, words[4])
-        push!(nodes, Point3(x, y, z))
+        push!(nodes, Point2(x, y))
     end
     return line
 end
@@ -96,13 +77,11 @@ function parse_elsets!(file::IOStream,
     return line
 end
 
-# -- Constructors --
-
-function AbaqusFile(filepath::String)
+function read_abaqus_file(filepath::String)
     T = UM2_MESH_FLOAT_TYPE 
     I = UM2_MESH_INT_TYPE
     name = ""
-    nodes = Point3{T}[]
+    nodes = Point2{T}[]
     element_types = Int8[]
     element_offsets = I[]
     elements = I[]
@@ -142,19 +121,6 @@ function AbaqusFile(filepath::String)
         close(file)
     end
     push!(element_offsets, total_offset)
-    return AbaqusFile{T, I}(filepath, name, nodes, element_types, 
+    return MeshFile{T, I}(filepath, ABAQUS_FORMAT, name, nodes, element_types, 
                             element_offsets, elements, elsets)
-end
-
-# -- Getters --
-
-function get_material_names(AbaqusFile)
-    material_names = String[]
-    for elset_name in keys(AbaqusFile.elsets)
-        if startswith(elset_name, "Material:")
-            push!(material_names, elset_name)
-        end
-    end
-    sort!(material_names)
-    return material_names
 end

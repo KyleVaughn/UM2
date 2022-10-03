@@ -4,7 +4,10 @@ using Logging
 using Pkg.Artifacts
 using Printf
 
+
 using Dates: now, format
+using EzXML: AttributeNode, ElementNode, TextNode, XMLDocument, link!, write
+using HDF5:
 using LoggingExtras: TransformerLogger
 
 # Gmsh
@@ -39,11 +42,14 @@ include("geometry/morton.jl")
 
 include("mesh/abstract_mesh.jl")
 include("mesh/cell_types.jl")
+include("mesh/io_mesh_file.jl")
 include("mesh/io_abaqus.jl")
+include("mesh/io_xdmf.jl")
 include("mesh/rectilinear_grid.jl")
 include("mesh/polygon_mesh.jl")
 include("mesh/quadratic_polygon_mesh.jl")
 include("mesh/submesh.jl")
+include("mesh/io_conversions.jl")
 include("mesh/io.jl")
 
 include("ray_casting/ray.jl")
