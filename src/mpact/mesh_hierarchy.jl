@@ -8,7 +8,8 @@ struct MPACTMeshHierarchy{M <: AbstractMesh}
     # j = 1|    
     #       _____________> x    
     #       i=1  i=2  i=3  
-    lattice_meshes::Matrix{Matrix{Matrix{M}}}
+    mesh_ids::Matrix{Matrix{Matrix{UM2_MESH_INT_TYPE}}}
+    pin_meshes::Vector{M}
 end
 
 function MPACTMeshHierarchy(
@@ -16,10 +17,28 @@ function MPACTMeshHierarchy(
         elsets::Dict{String, Set{I}},
         grid_hierarchy::MPACTGridHierarchy
     ) where {M <: AbstractMesh, I <: Integer}
-    # Get the core size in terms of M by N lattices
+    npins = 0
+    # Loop through the RT modules to determine the total number of pins
+    # Get the core size in terms of M by N lattices   
     core_size = size(grid_hierarchy.lattice_grid)
+    # For each lattice
+    for lj in core_size[2], li in core_size[1]
+        # Get the size of the lattice in terms of M by N modules
+        lattice_size = size(grid_hierarchy.lattice_grid[li, lj])
+        # For each module in the lattice
+        for mj in lattice_size[2], mi in lattice_size[1]
+            # Get the size of the module in terms of M by N pins
+            module_size = size(grid_hierarchy.lattice_grid[li, lj][mi, mj])
+            # Module size is the number of divisions in the x and y directions
+            # We need to subtract 1 from each dimension to get the number of pins
+            npins += (module_size[1] - 1) * (module_size[2] - 1)
+        end
+    end
+    # Allocate the pin meshes
+    pin_meshes = Vector{M}(undef, npins)
+
     # Allocate the lattice meshes
-    lattice_meshes = Matrix{Matrix{Matrix{M}}}(undef, core_size[1], core_size[2])
+    mesh_ids = Matrix{Matrix{Matrix{I}}}(undef, core_size[1], core_size[2])
     # Get the names of each lattice elset
     lattice_names = String[]
     for elset_name in keys(elsets)
@@ -43,17 +62,36 @@ function MPACTMeshHierarchy(
         end
     end
     # For each lattice
-    for lj in core_size[2], li in core_size[1]
+    for lj in 1:core_size[2], li in 1:core_size[1]
         # Create the lattice submesh
         lattice_elsets, lattice_mesh = submesh(lattice_locations[li, lj], elsets, mesh)
         # Get the size of the lattice in terms of M by N modules
         lattice_size = size(grid_hierarchy.lattice_grid[li, lj])
         # Allocate the module meshes
-        lattice_meshes[li, lj] = Matrix{Matrix{M}}(undef, lattice_size[1], lattice_size[2])
+        mesh_ids[li, lj] = Matrix{Matrix{I}}(undef, lattice_size[1], lattice_size[2])
+        # Get the names of each module elset
+        module_names = String[]
+        for elset_name in keys(lattice_elsets)
+            if startswith(elset_name, "Module")
+                push!(module_names, elset_name)
+            end
+        end
+        # Determine the locations of each module in the matrix using the centroid of
+        # one of the faces in that submesh
+        module_locations = Matrix{String}(undef, lattice_size[1], lattice_size[2])
+        for mod_name in module_names
+            face_id = first(lattice_elsets[mod_name])
+            C = centroid(face(face_id, lattice_mesh))
+            for mj in 1:lattice_size[2], mi in 1:lattice_size[1]
+                if C in grid_hierarchy.lattice_grid[li, lj][mi, mj]
+                    module_locations[mi, mj] = mod_name
+                end
+            end
+        end
         # For each module
-        for mj in lattice_size[2], mi in lattice_size[1]
+        for mj in 1:lattice_size[2], mi in 1:lattice_size[1]
             # Create the module submesh
-            module_elsets, module_mesh = submesh(grid_hierarchy.lattice_grid[li, lj][mi, mj], 
+            module_elsets, module_mesh = submesh(module_locations[mi, mj],
                                                  lattice_elsets, 
                                                  lattice_mesh)
             # Get the size of the module in terms of M by N cells
@@ -61,169 +99,59 @@ function MPACTMeshHierarchy(
             # This module size is from the rectilinear grid, so we need to decrement
             # each dimension by 1 to get the number of cells in each dimension
             module_size = module_size .- 1
-
-
-
-
-
-
-
-           lattice_meshes[li, lj][mi, mj] = Matrix{M}(undef, module_size[1], module_size[2])
-           for cj in module_size[2], ci in module_size[1]
-#                lattice_meshes[li, lj][mi, mj][ci, cj] = mesh
-#           end
-#        end
+            # Allocate the pin meshes
+            mesh_ids[li, lj][mi, mj] = Matrix{I}(undef, module_size[1], module_size[2])
+            # Get the names of each pin elset
+            pin_names = String[]
+            for elset_name in keys(module_elsets)
+                if startswith(elset_name, "Cell")
+                    push!(pin_names, elset_name)
+                end
+            end
+            # Determine the locations of each pin in the matrix using the centroid of
+            # one of the faces in that submesh
+            pin_locations = Matrix{String}(undef, module_size[1], module_size[2])
+            for pin_name in pin_names
+                face_id = first(module_elsets[pin_name])
+                C = centroid(face(face_id, module_mesh))
+                for cj in 1:module_size[2], ci in 1:module_size[1]
+                    if C in get_box(grid_hierarchy.lattice_grid[li, lj][mi, mj], ci, cj)
+                        pin_locations[ci, cj] = pin_name
+                    end
+                end
+            end
+            # For each pin
+            for cj in 1:module_size[2], ci in 1:module_size[1]
+                # Create the pin submesh
+                pin_elsets, pin_mesh = submesh(pin_locations[ci, cj],
+                                               module_elsets, 
+                                               module_mesh)
+                # Get the integer ID of the pin mesh
+                pin_id = parse(I, pin_mesh.name[6:end])
+                mesh_ids[li, lj][mi, mj][ci, cj] = pin_id
+                # Store the pin mesh
+                pin_meshes[pin_id] = pin_mesh
+            end
+        end
     end
-#    leaf_meshes = _create_leaf_meshes(mesh, root)
-    return MeshPartitionTree(root, leaf_meshes)
+    return MPACTMeshHierarchy(mesh_ids, pin_meshes)
 end
 
-#function _create_leaf_meshes(mesh::AbstractMesh)
-#    leaf_nodes = sort!(leaves(root), by = x -> x.data)
-#    leaf_meshes = Vector{typeof(mesh)}(undef, length(leaf_nodes))
-#    leaf_ctr = 1
-#    node_children = children(root)
-#    if !isnothing(node_children)
-#        for child in sort(node_children, by = x -> x.data)
-#            child_mesh = submesh(mesh, data(child)[2])
-#            leaf_ctr = _create_leaf_meshes!(child_mesh, child, leaf_meshes, leaf_ctr)
-#        end
-#    else
-#        # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
-#        # be encoded in the tree
-#        mpact_groups = filter(x -> isa_MPACT_partition_name(x), keys(groups(mesh)))
-#        for grp in mpact_groups
-#            pop!(groups(mesh), grp)
-#        end
-#        name = data(root)[2]
-#        root.data = (leaf_ctr, name)
-#        leaf_meshes[leaf_ctr] = mesh
-#    end
-#    return leaf_meshes
-#end
-#
-#function _create_leaf_meshes!(mesh::AbstractMesh,
-#                              node::Tree,
-#                              leaf_meshes,
-#                              leaf_ctr::Int64 = 1)
-#    node_children = children(node)
-#    if !isnothing(node_children)
-#        for child in sort(node_children, by = x -> x.data)
-#            child_mesh = submesh(mesh, data(child)[2])
-#            leaf_ctr = _create_leaf_meshes!(child_mesh, child, leaf_meshes, leaf_ctr)
-#        end
-#    else
-#        # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
-#        # be encoded in the tree
-#        mpact_groups = filter(x -> isa_MPACT_partition_name(x), keys(groups(mesh)))
-#        for grp in mpact_groups
-#            pop!(mesh.groups, grp)
-#        end
-#        leaf_meshes[leaf_ctr] = mesh
-#        name = data(node)[2]
-#        node.data = (leaf_ctr, name)
-#        leaf_ctr += 1
-#    end
-#    return leaf_ctr
-#end
-#
-## Create a tree to store grid relationships.
-#function _create_mesh_partition_tree(mesh::AbstractMesh, partition_names::Vector{String})
-#    root = Tree((1, name(mesh)))
-#    parents = [root]
-#    tree_type = typeof(root)
-#    next_parents = tree_type[]
-#    remaining_names = copy(partition_names)
-#    # Extract the sets that are not a subset of any other set.
-#    this_level = Int64[]
-#    mesh_groups = groups(mesh)
-#    while length(remaining_names) > 0
-#        for i in eachindex(remaining_names)
-#            name_i = remaining_names[i]
-#            i_isa_lattice = startswith(name_i, "Lattice")
-#            i_isa_module = startswith(name_i, "Module")
-#            isa_subset = false
-#            for j in eachindex(remaining_names)
-#                if i === j
-#                    continue
-#                end
-#                name_j = remaining_names[j]
-#                j_isa_coarsecell = startswith(name_j, "Coarse")
-#                if j_isa_coarsecell && (i_isa_module || i_isa_lattice)
-#                    continue
-#                end
-#                j_isa_module = startswith(name_j, "Module")
-#                if j_isa_module && i_isa_lattice
-#                    continue
-#                end
-#                if mesh_groups[name_i] ⊆ mesh_groups[name_j]
-#                    isa_subset = true
-#                    break
-#                end
-#            end
-#            if !isa_subset
-#                push!(this_level, i)
-#            end
-#        end
-#        # Add the groups that are not a subset to the tree
-#        # and next_parents
-#        node_id = 1 
-#        for id in this_level
-#            name = remaining_names[id]
-#            for parent in parents
-#                if isroot(parent)
-#                    node = Tree((node_id, name), parent)
-#                    node_id += 1
-#                    push!(next_parents, node)
-#                else
-#                    parent_name = data(parent)[2]
-#                    if mesh_groups[name] ⊆ mesh_groups[parent_name]
-#                        node = Tree((node_id, name), parent)
-#                        node_id += 1
-#                        push!(next_parents, node)
-#                        break
-#                    end
-#                end
-#            end
-#        end
-#        parents = next_parents
-#        next_parents = tree_type[]
-#        # Remove the groups added to the tree from the remaining names
-#        deleteat!(remaining_names, this_level)
-#        this_level = Int64[]
-#    end
-#    return root
-#end
-#
-#function isa_MPACT_partition_name(x::String)
-#    return startswith(x, "Coarse_Cell_(") ||
-#           startswith(x, "Module_(") ||
-#           startswith(x, "Lattice_(")
-#end
-## Extract partition names
-#function _get_partition_names(mesh::AbstractMesh, by::String)
-#    # If by === MPACT, then we will partition by Lattice, Module, and Coarse Cell
-#    # Otherwise, partition by the string contained in by
-#    partition_names = collect(keys(groups(mesh)))
-#    if length(partition_names) === 0
-#        error("The mesh does not have any groups.")
-#    end
-#    if by === "MPACT"
-#        filter!(x -> isa_MPACT_partition_name(x), partition_names)
-#        if length(partition_names) === 0
-#            error("The mesh does not have any MPACT grid hierarchy groups.")
-#        end
-#    else
-#        filter!(x -> occursin(by, x), partition_names)
-#        if length(partition_names) === 0
-#            error("The mesh does not have any groups containing '", by, "'.")
-#        end
-#    end
-#    return sort!(partition_names)
-#end
-#
-#function Base.show(io::IO, mpt::MeshPartitionTree{M}) where {M}
-#    println("MeshPartitionTree{", M, "}")
-#    println(tree(mpt))
-#    return nothing
-#end
+function Base.show(io::IO, mmh::MPACTMeshHierarchy{M}) where {M}
+    println("MPACTMeshHierarchy{", M, "}")
+    nlattices = length(mmh.mesh_ids)
+    nmodules = 0
+    npins = 0
+    for lattice in mmh.mesh_ids
+        nmodules += length(lattice)
+        for rt_module in lattice
+            npins += length(rt_module)
+        end
+    end
+    println(" Number of lattices: ", nlattices)
+    println(" Number of modules: ", nmodules)
+    println(" Number of pins: ", npins)
+    bbox = mapreduce(bounding_box, Base.union, mmh.pin_meshes)
+    println(" Bounding box: ", bbox)
+    return nothing
+end

@@ -35,6 +35,11 @@ end
 
 Base.size(rg::RectilinearGrid2) = (length(rg.dims[1]), length(rg.dims[2]))
 
+function get_box(rg::RectilinearGrid2, i::Integer, j::Integer)
+    return AABox(Point2(rg.dims[1][i    ], rg.dims[2][j    ]),
+                 Point2(rg.dims[1][i + 1], rg.dims[2][j + 1]))
+end
+
 function Base.issubset(g1::RectilinearGrid{D}, g2::RectilinearGrid{D}) where {D}
     for i in 1:D
         if g1.dims[i] ⊈ g2.dims[i]
@@ -54,7 +59,7 @@ num_x(rg::RectilinearGrid) = length(rg.dims[1])
 num_y(rg::RectilinearGrid) = length(rg.dims[2])
 
 function Base.in(P::Point2{T}, rg::RectilinearGrid2{T}) where {T}
-    return x_min(rg) ≤ P.x ≤ x_max(rg) && y_min(rg) ≤ P.y ≤ y_max(rg)
+    return x_min(rg) ≤ P[1] ≤ x_max(rg) && y_min(rg) ≤ P[2] ≤ y_max(rg)
 end
 
 function find_face(P::Point2{T}, rg::RectilinearGrid2{T}) where {T}
