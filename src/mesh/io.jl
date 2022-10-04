@@ -1,4 +1,4 @@
-export import_mesh #, export_mesh
+export import_mesh, export_mesh
 
 # -- Import --
 
@@ -16,12 +16,14 @@ end
 
 # -- Export --
 
-#
-#function export_mesh(path::String, mesh)
-#    @info "Writing " * path
-#    if endswith(path, ".xdmf")
-#        return write_xdmf(path, mesh)
-#    else
-#        error("Could not determine mesh file type from extension")
-#    end
-#end
+function export_mesh(mesh::AbstractMesh, 
+                     elsets::Dict{String, Set{I}},
+                     path::String) where {I}
+    @info "Writing " * path
+    if endswith(path, ".xdmf")
+        mf = MeshFile(XDMF_FORMAT, mesh, elsets)
+        return write_xdmf(mf, path)
+    else
+        error("Could not determine mesh file type from extension")
+    end
+end

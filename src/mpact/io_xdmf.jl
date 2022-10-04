@@ -4,13 +4,14 @@ export write_xdmf
 #                                    WRITE
 #################################################################################
 
-function write_xdmf(mesh::MeshFile{T, I}, filename::String
-    ) where {T <:  AbstractFloat, I <: Integer}
+function write_xdmf(mmh::MPACTMeshHierarchy{M},
+                    elsets::Dict{String, Set{I}},
+                    filename::String) where {M, I}
     # Check valid filename
     if !endswith(filename, ".xdmf")
         error("Invalid filename.")
     end
-    # h5
+    # h5 filename
     h5_filename = filename[1:(end - 4)] * "h5"
     h5_file = h5open(h5_filename, "w")
     # XML
@@ -24,204 +25,25 @@ function write_xdmf(mesh::MeshFile{T, I}, filename::String
         xdomain = ElementNode("Domain")
         link!(xroot, xdomain)
         # Material names
-        material_names = String[]
-        for elset_name in keys(mesh.elsets)
-            if startswith(elset_name, "Material:")
-                push!(material_names, elset_name[11:end])
-            end
-        end
-        sort!(material_names)
+        # All leaf meshes should have same material_names
+        material_names = String[]    
+        for elset_name in keys(elsets)    
+            if startswith(elset_name, "Material:")    
+                push!(material_names, elset_name[11:end])    
+            end    
+        end                                            
+        sort!(material_names) 
         if 0 < length(material_names)
             xmaterials = ElementNode("Information")
             link!(xdomain, xmaterials)
             link!(xmaterials, AttributeNode("Name", "Materials"))
-            link!(xmaterials, TextNode(join(material_names, " ")))
+            link!(xmaterials, TextNode(join(mpt.leaf_meshes[1].material_names, " ")))
         end
-        # Add uniform grid
-        _add_uniform_grid_xdmf!(xdomain, h5_filename, h5_file, mesh)
+        _add_mesh_partition_xdmf!(xdomain, h5_filename, h5_file,
+                                  mpt.partition_tree, mpt.leaf_meshes)
     finally
         write(filename, xdoc)
         close(h5_file)
-    end
-    return nothing
-end
-
-# Helper functions for write_xdmf
-# -------------------------------------------------------------------------------------------------
-function _add_uniform_grid_xdmf!(xml::EzXML.Node,
-                                 h5_filename::String,
-                                 h5_mesh::Union{HDF5.Group, HDF5.File},
-                                 mesh::MeshFile{T, I}) where {T <: AbstractFloat, I <: Integer}
-    # Grid
-    xgrid = ElementNode("Grid")
-    link!(xml, xgrid)
-    link!(xgrid, AttributeNode("Name", mesh.name))
-    link!(xgrid, AttributeNode("GridType", "Uniform"))
-    # h5
-    h5_group = create_group(h5_mesh, mesh.name)
-    # Geometry
-    _write_xdmf_geometry!(xgrid, h5_filename, h5_group, mesh)
-    # Topology
-    _write_xdmf_topology!(xgrid, h5_filename, h5_group, mesh)
-    # Non-material groups
-    _write_xdmf_groups!(xgrid, h5_filename, h5_group, mesh)
-    # Materials
-    _write_xdmf_materials!(xgrid, h5_filename, h5_group, mesh)
-    return nothing
-end
-
-function _write_xdmf_geometry!(xml::EzXML.Node,
-                               h5_filename::String,
-                               h5_mesh::HDF5.Group,
-                               mesh::MeshFile{T, I}) where {T <: AbstractFloat, I <: Integer}
-    verts = mesh.nodes
-    float_precision = string(sizeof(T))
-    nverts = length(verts)
-    nverts_str = string(nverts)
-    point_dim = length(verts[1])
-    if point_dim == 2
-        XYZ = "XY"
-        dim = " 2"
-    else
-        error("Invalid point dimension.")
-#        XYZ = "XYZ"
-#        dim = " 3"
-    end
-    # Convert the points into an array
-    vert_array = zeros(T, point_dim, nverts)
-    for i in eachindex(verts)
-        vert_array[1, i] = verts[i][1]
-        vert_array[2, i] = verts[i][2]
-    end
-    # Geometry
-    xgeom = ElementNode("Geometry")
-    link!(xml, xgeom)
-    link!(xgeom, AttributeNode("GeometryType", XYZ))
-    # DataItem
-    xdataitem = ElementNode("DataItem")
-    link!(xgeom, xdataitem)
-    link!(xdataitem, AttributeNode("DataType", "Float"))
-    link!(xdataitem, AttributeNode("Dimensions", nverts_str * dim))
-    link!(xdataitem, AttributeNode("Format", "HDF"))
-    link!(xdataitem, AttributeNode("Precision", float_precision))
-    h5_text_item = HDF5.name(h5_mesh)
-    link!(xdataitem, TextNode(string(h5_filename, ":", h5_text_item, "/vertices")))
-    # Write the h5
-    h5_mesh["vertices", compress = 3] = vert_array
-    return nothing
-end
-
-function _write_xdmf_topology!(xml::EzXML.Node,
-                               h5_filename::String,
-                               h5_mesh::HDF5.Group,
-                               mesh::MeshFile{T, I}) where {T <: AbstractFloat, I <: Integer}
-    nel = length(mesh.element_types)
-    nelements_str = string(nel)
-    topo_length = nel + length(mesh.elements)
-    int_precision = string(sizeof(I))
-    topo_array = Vector{I}(undef, topo_length)
-    topo_ctr = 1
-    for i in 1:nel
-        eltype = mesh.element_types[i]
-        topo_array[topo_ctr] = eltype
-        npts = points_in_vtk_type(xdmf2vtk(eltype))
-        for j in 1:npts
-            offset = mesh.element_offsets[i]
-            topo_array[topo_ctr + j] = mesh.elements[offset + j - 1] - I(1)
-        end
-        topo_ctr += npts + 1
-    end
-    ndims = string(length(topo_array))
-    # Topology
-    xtopo = ElementNode("Topology")
-    link!(xml, xtopo)
-    link!(xtopo, AttributeNode("TopologyType", "Mixed"))
-    link!(xtopo, AttributeNode("NumberOfElements", nelements_str))
-    # DataItem
-    xdataitem = ElementNode("DataItem")
-    link!(xtopo, xdataitem)
-    link!(xdataitem, AttributeNode("DataType", "Int"))
-    link!(xdataitem, AttributeNode("Dimensions", ndims))
-    link!(xdataitem, AttributeNode("Format", "HDF"))
-    link!(xdataitem, AttributeNode("Precision", int_precision))
-    h5_text_item = HDF5.name(h5_mesh)
-    link!(xdataitem, TextNode(string(h5_filename, ":", h5_text_item, "/connectivity")))
-    # Write the h5
-    h5_mesh["connectivity", compress = 3] = topo_array
-    return nothing
-end
-
-function _write_xdmf_materials!(xml::EzXML.Node,
-                                h5_filename::String,
-                                h5_mesh::HDF5.Group,
-                                mesh::MeshFile{T, I}) where {T <: AbstractFloat, I <: Integer}
-    nel = length(mesh.element_types)
-    material_array = zeros(Int8, nel)
-    # Material names
-    material_names = String[]
-    for elset_name in keys(mesh.elsets)
-        if startswith(elset_name, "Material:")
-            push!(material_names, elset_name)
-        end
-    end
-    sort!(material_names)
-    # Initialize the material array
-    for (i, elset_name) in enumerate(material_names)
-        for el in mesh.elsets[elset_name]
-            if material_array[el] != 0
-                error("Element " * string(el) * " is in multiple materials.")
-            end
-            material_array[el] = Int8(i)
-        end
-    end
-    int_precision = string(sizeof(Int8))
-
-    # Material
-    xmaterial = ElementNode("Attribute")
-    link!(xml, xmaterial)
-    link!(xmaterial, AttributeNode("Center", "Cell"))
-    link!(xmaterial, AttributeNode("Name", "Material"))
-    # DataItem
-    xdataitem = ElementNode("DataItem")
-    link!(xmaterial, xdataitem)
-    link!(xdataitem, AttributeNode("DataType", "Int"))
-    link!(xdataitem, AttributeNode("Dimensions", string(nel)))
-    link!(xdataitem, AttributeNode("Format", "HDF"))
-    link!(xdataitem, AttributeNode("Precision", int_precision))
-    h5_text_item = HDF5.name(h5_mesh)
-    link!(xdataitem, TextNode(string(h5_filename, ":", h5_text_item, "/material")))
-    # Write the h5
-    h5_mesh["material", compress = 3] = material_array .- Int8(1) # 0-based indexing
-    return nothing
-end
-
-function _write_xdmf_groups!(xml::EzXML.Node,
-                             h5_filename::String,
-                             h5_mesh::HDF5.Group,
-                             mesh::MeshFile{T, I}) where {T <: AbstractFloat, I <: Integer}
-    for set_name in keys(mesh.elsets)
-        if startswith(set_name, "Material:")
-            continue
-        end
-        id_array = collect(mesh.elsets[set_name]) .- I(1)
-        int_precision = string(sizeof(I))
-        # Set
-        xset = ElementNode("Set")
-        link!(xml, xset)
-        link!(xset, AttributeNode("Name", set_name))
-        link!(xset, AttributeNode("SetType", "Cell"))
-        # DataItem
-        xdataitem = ElementNode("DataItem")
-        link!(xset, xdataitem)
-        link!(xdataitem, AttributeNode("DataType", "Int"))
-        nelems = string(length(id_array))
-        link!(xdataitem, AttributeNode("Dimensions", nelems))
-        link!(xdataitem, AttributeNode("Format", "HDF"))
-        link!(xdataitem, AttributeNode("Precision", int_precision))
-        h5_text_item = HDF5.name(h5_mesh)
-        link!(xdataitem, TextNode(string(h5_filename, ":", h5_text_item, "/", set_name)))
-        # Write the h5
-        h5_mesh[set_name, compress = 3] = id_array
     end
     return nothing
 end

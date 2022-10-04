@@ -1,13 +1,13 @@
 module UM2
 
+using EzXML
+using HDF5
 using Logging
 using Pkg.Artifacts
 using Printf
 
 
 using Dates: now, format
-using EzXML: AttributeNode, ElementNode, TextNode, XMLDocument, link!, write
-using HDF5:
 using LoggingExtras: TransformerLogger
 
 # Gmsh
