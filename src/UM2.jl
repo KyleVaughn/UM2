@@ -6,7 +6,6 @@ using Logging
 using Pkg.Artifacts
 using Printf
 
-
 using Dates: now, format
 using LoggingExtras: TransformerLogger
 
@@ -17,7 +16,6 @@ include(gmsh_jl)
 export gmsh
 
 include("common/defines.jl")
-include("common/typedefs.jl")
 include("common/constants.jl")
 include("common/instructions.jl")
 include("common/log.jl")

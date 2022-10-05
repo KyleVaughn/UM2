@@ -1,5 +1,26 @@
 export MPACTMeshHierarchy
 
+# Top level struct core:
+# name
+# Vector of pin meshes
+# A Matrix of something
+# A Rectilinear grid
+#
+# Each entry in the matrix needs to have a re
+# Some sort of tree-like structure.
+# Needs to have a name.
+# Needs to have a parent.
+# Needs to have a list of children.
+#
+struct MPACTGridNode{T}
+    name::String
+    rg::RectilinearGrid2d
+    children::Matrix{T}
+#rg
+#matrix of id
+#
+#matrix of rg with size of above
+#matrix of matrix of id
 struct MPACTMeshHierarchy{M <: AbstractMesh}
     #      y    
     #      ^    
