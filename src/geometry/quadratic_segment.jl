@@ -36,8 +36,8 @@ end
 # -- Type aliases --
 
 const QuadraticSegment2  = QuadraticSegment{2}
-const QuadraticSegment2f = QuadraticSegment2{f32}
-const QuadraticSegment2d = QuadraticSegment2{f64}
+const QuadraticSegment2f = QuadraticSegment2{Float32}
+const QuadraticSegment2d = QuadraticSegment2{Float64}
 
 # -- Base --
 

@@ -25,7 +25,7 @@ const morton_masks_64 = (
 
 # Equivalent to pdep(x, 0x55555555)
 function pdep_0x55555555(x::UInt32)
-    x &= morton_masks_32[1]
+#    x &= morton_masks_32[1]
     x = (x | (x << 8)) & morton_masks_32[2]
     x = (x | (x << 4)) & morton_masks_32[3]
     x = (x | (x << 2)) & morton_masks_32[4]
@@ -34,7 +34,7 @@ function pdep_0x55555555(x::UInt32)
 end
 
 function pdep_0x5555555555555555(x::UInt64)
-    x &= morton_masks_64[1]
+#    x &= morton_masks_64[1]
     x = (x | (x << 16)) & morton_masks_64[2]
     x = (x | (x <<  8)) & morton_masks_64[3]
     x = (x | (x <<  4)) & morton_masks_64[4]

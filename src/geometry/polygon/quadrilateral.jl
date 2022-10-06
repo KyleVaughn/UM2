@@ -23,8 +23,8 @@ const Quadrilateral = Polygon{4}
 # -- Type aliases --
 
 const Quadrilateral2  = Quadrilateral{2}
-const Quadrilateral2f = Quadrilateral2{f32}
-const Quadrilateral2d = Quadrilateral2{f64}
+const Quadrilateral2f = Quadrilateral2{Float32}
+const Quadrilateral2d = Quadrilateral2{Float64}
 
 # -- Constructors --
 

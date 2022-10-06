@@ -25,8 +25,8 @@ const QuadraticTriangle = QuadraticPolygon{6}
 # -- Type aliases --
 
 const QuadraticTriangle2  = QuadraticTriangle{2}
-const QuadraticTriangle2f = QuadraticTriangle2{f32}
-const QuadraticTriangle2d = QuadraticTriangle2{f64}
+const QuadraticTriangle2f = QuadraticTriangle2{Float32}
+const QuadraticTriangle2d = QuadraticTriangle2{Float64}
 
 const QTriangle = QuadraticTriangle
 const QTriangle2 = QuadraticTriangle2

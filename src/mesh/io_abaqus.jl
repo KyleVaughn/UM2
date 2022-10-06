@@ -102,6 +102,9 @@ function read_abaqus_file(filepath::String)
             elseif startswith(line, "*Heading")
                 line = readline(file)
                 name = line[2:end]
+                if endswith(name, ".inp")
+                    name = name[1:end-4]
+                end
             elseif startswith(line, "*NODE")
                 line = parse_nodes!(file, nodes)
                 loop_again = true

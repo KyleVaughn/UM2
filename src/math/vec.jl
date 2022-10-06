@@ -21,13 +21,13 @@ const Vec1  = Vec{1}
 const Vec2  = Vec{2}
 const Vec3  = Vec{3}
 
-const Vec1f = Vec1{f32}
-const Vec2f = Vec2{f32}
-const Vec3f = Vec3{f32}
+const Vec1f = Vec1{Float32}
+const Vec2f = Vec2{Float32}
+const Vec3f = Vec3{Float32}
 
-const Vec1d = Vec1{f64}
-const Vec2d = Vec2{f64}
-const Vec3d = Vec3{f64}
+const Vec1d = Vec1{Float64}
+const Vec2d = Vec2{Float64}
+const Vec3d = Vec3{Float64}
 
 # -- Abstract vector interface --
 

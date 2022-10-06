@@ -26,8 +26,8 @@ end
 # -- Type aliases --
 
 const AABox2 = AABox{2}
-const AABox2f = AABox2{f32}
-const AABox2d = AABox2{f64}
+const AABox2f = AABox2{Float32}
+const AABox2d = AABox2{Float64}
 const AABB = AABox
 const AABB2 = AABox2
 const AABB2f = AABox2f

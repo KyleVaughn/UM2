@@ -1,3 +1,3 @@
-export pi_2
+export PI_2
 
-const pi_2 = pi / 2
+const PI_2 = pi / 2

@@ -4,11 +4,11 @@
 ###########################################################
 
 # Parameters
-filename = "default_quad_mesh.inp"
+filename = "default_quad8_mesh.inp"
 order = 2 # mesh order
 r_mat = [0.4096, 0.475, 0.575] # radius of the rings for each material
-rdivs = [3, 1, 1] # radial divisions for each material
-n_azi = 8
+rdivs = [5, 1, 1] # radial divisions for each material
+n_azi = 16
 pitch = 1.26
 materials = ["Fuel", "Clad", "Water", "Water"]
 

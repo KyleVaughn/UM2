@@ -27,8 +27,8 @@ end
 # -- Type aliases --
 
 const LineSegment2  = LineSegment{2}
-const LineSegment2f = LineSegment2{f32}
-const LineSegment2d = LineSegment2{f64}
+const LineSegment2f = LineSegment2{Float32}
+const LineSegment2d = LineSegment2{Float64}
 
 # -- Base --
 

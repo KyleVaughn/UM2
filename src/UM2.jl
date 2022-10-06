@@ -20,7 +20,7 @@ include("common/constants.jl")
 include("common/instructions.jl")
 include("common/log.jl")
 include("common/colors.jl")
-#include("common/tree.jl")
+include("common/tree.jl")
 
 include("math/vec.jl")
 include("math/mat.jl")
@@ -61,7 +61,7 @@ include("ray_casting/intersect/ray-quadratic_polygon_mesh.jl")
 include("physics/material.jl")
 
 include("mpact/grid_hierarchy.jl")
-include("mpact/mesh_hierarchy.jl")
+#include("mpact/mesh_hierarchy.jl")
 
 include("gmsh/model/get_entities_by_color.jl")
 include("gmsh/model/color_material_physical_group_entities.jl")

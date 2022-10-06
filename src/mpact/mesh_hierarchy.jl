@@ -29,6 +29,7 @@ struct MPACTMeshHierarchy{M <: AbstractMesh}
     # j = 1|    
     #       _____________> x    
     #       i=1  i=2  i=3  
+    grid_hierarchy::MPACTGridHierarchy
     mesh_ids::Matrix{Matrix{Matrix{UM2_MESH_INT_TYPE}}}
     pin_meshes::Vector{M}
 end
