@@ -1,3 +1,3 @@
 export AbstractMesh
 
-abstract type AbstractMesh end
+abstract type AbstractMesh{T <: AbstractFloat, I <: Integer} end

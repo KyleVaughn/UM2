@@ -1,7 +1,7 @@
 export PolygonMesh, TriMesh, QuadMesh
 
-export num_faces, face, face_iterator, faces, edges, bounding_box, centroid,
-       face_areas, sort_morton_order!, find_face, find_face_morton_order,
+export name, num_faces, face, face_iterator, faces, edges, bounding_box, 
+       centroid, face_areas, sort_morton_order!, find_face, find_face_morton_order,
        find_face_robust_morton
 
 # POLYGON MESH
@@ -13,7 +13,7 @@ export num_faces, face, face_iterator, faces, edges, bounding_box, centroid,
 # N = 4 is a quad mesh
 #
 
-struct PolygonMesh{N, T <: AbstractFloat, I <: Integer} <: AbstractMesh
+struct PolygonMesh{N, T <: AbstractFloat, I <: Integer} <: AbstractMesh{T, I}
 
     # Name of the mesh.
     name::String
@@ -115,6 +115,8 @@ function PolygonMesh{N}(file::MeshFile{T, I}) where {N, T, I}
 end
 
 # -- Basic properties --
+
+name(mesh::PolygonMesh) = mesh.name
 
 num_faces(mesh::PolygonMesh{N}) where {N} = length(mesh.fv_conn) ÷ N
 

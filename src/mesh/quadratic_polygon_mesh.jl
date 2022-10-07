@@ -1,7 +1,7 @@
 export QuadraticPolygonMesh, QPolygonMesh, QTriMesh, QQuadMesh
 
-export num_faces, face, face_iterator, faces, edges, bounding_box, centroid,
-       face_areas, sort_morton_order!, find_face, find_face_morton_order,
+export name, num_faces, face, face_iterator, faces, edges, bounding_box, 
+       centroid, face_areas, sort_morton_order!, find_face, find_face_morton_order,
        find_face_robust_morton
 
 # QUADRATIC POLYGON MESH
@@ -13,7 +13,7 @@ export num_faces, face, face_iterator, faces, edges, bounding_box, centroid,
 # N = 8 is a quad mesh
 #
 
-struct QuadraticPolygonMesh{N, T <: AbstractFloat, I <: Integer} <: AbstractMesh
+struct QuadraticPolygonMesh{N, T <: AbstractFloat, I <: Integer} <: AbstractMesh{T, I}
 
     # Name of the mesh.
     name::String
@@ -116,6 +116,8 @@ function QuadraticPolygonMesh{N}(file::MeshFile{T, I}) where {N, T, I}
 end
 
 # -- Basic properties --
+
+name(mesh::QuadraticPolygonMesh) = mesh.name
 
 num_faces(mesh::QPolygonMesh{N}) where {N} = length(mesh.fv_conn) ÷ N
 

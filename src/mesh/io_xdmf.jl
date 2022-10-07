@@ -4,58 +4,6 @@ export write_xdmf_file!, read_xdmf_file
 #                                    WRITE
 #################################################################################
 
-function write_xdmf_file!(mesh::MeshFile{T, I}
-    ) where {T <:  AbstractFloat, I <: Integer}
-    # Check valid filepath
-    if !endswith(mesh.filepath, ".xdmf")
-        error("Invalid filepath.")
-    end
-    if mesh.format == XDMF_FORMAT
-        # Do nothing
-    elseif mesh.format == ABAQUS_FORMAT
-        # Convert to XDMF by changing the numerical 
-        # values of the element types
-        map!(vtk2xdmf, mesh.element_types, mesh.element_types) 
-        mesh.format = XDMF_FORMAT
-    else
-        error("Invalid mesh format.")
-    end
-    # h5
-    h5_filepath = mesh.filepath[1:(end - 4)] * "h5"
-    h5_file = h5open(h5_filepath, "w")
-    # XML
-    xdoc = XMLDocument()
-    try
-        # Xdmf
-        xroot = ElementNode("Xdmf")
-        setroot!(xdoc, xroot)
-        link!(xroot, AttributeNode("Version", "3.0"))
-        # Domain
-        xdomain = ElementNode("Domain")
-        link!(xroot, xdomain)
-        # Material names
-        material_names = String[]
-        for elset_name in keys(mesh.elsets)
-            if startswith(elset_name, "Material:")
-                push!(material_names, elset_name[11:end])
-            end
-        end
-        sort!(material_names)
-        if 0 < length(material_names)
-            xmaterials = ElementNode("Information")
-            link!(xdomain, xmaterials)
-            link!(xmaterials, AttributeNode("Name", "Materials"))
-            link!(xmaterials, TextNode(join(material_names, " ")))
-        end
-        # Add uniform grid
-        _add_uniform_grid_xdmf!(xdomain, h5_filepath, h5_file, mesh)
-    finally
-        write(mesh.filepath, xdoc)
-        close(h5_file)
-    end
-    return nothing
-end
-
 # Helper functions for write_xdmf
 # -------------------------------------------------------------------------------------------------
 function _add_uniform_grid_xdmf!(xml::EzXML.Node,
@@ -236,55 +184,64 @@ function _write_xdmf_groups!(xml::EzXML.Node,
     return nothing
 end
 
-##################################################################################
-##                                    READ
-##################################################################################
-xdmf_read_error() = error("Error while reading XDMF file.")
-function read_xdmf_file(filepath::String)
-    xdoc = readxml(filepath)
-    xroot = root(xdoc)
-    nodename(xroot) != "Xdmf" && xdmf_read_error()
-    h5_file = h5open(filepath[begin:(end - 4)] * "h5", "r")
+# ------------------------------------------------------------------------------
+
+function write_xdmf_file!(mesh::MeshFile{T, I}
+    ) where {T <:  AbstractFloat, I <: Integer}
+    # Check valid filepath
+    if !endswith(mesh.filepath, ".xdmf")
+        error("Invalid filepath.")
+    end
+    if mesh.format == XDMF_FORMAT
+        # Do nothing
+    elseif mesh.format == ABAQUS_FORMAT
+        # Convert to XDMF by changing the numerical 
+        # values of the element types
+        map!(vtk2xdmf, mesh.element_types, mesh.element_types) 
+        mesh.format = XDMF_FORMAT
+    else
+        error("Invalid mesh format.")
+    end
+    # h5
+    h5_filepath = mesh.filepath[1:(end - 4)] * "h5"
+    h5_file = h5open(h5_filepath, "w")
+    # XML
+    xdoc = XMLDocument()
     try
-        version = xroot["Version"]
-        version != "3.0" && xdmf_read_error()
-        xdomain = firstnode(xroot)
-        nodename(xdomain) != "Domain" && xdmf_read_error()
+        # Xdmf
+        xroot = ElementNode("Xdmf")
+        setroot!(xdoc, xroot)
+        link!(xroot, AttributeNode("Version", "3.0"))
+        # Domain
+        xdomain = ElementNode("Domain")
+        link!(xroot, xdomain)
+        # Material names
         material_names = String[]
-        nnodes = countnodes(xdomain)
-        if 2 == nnodes && nodename(firstnode(xdomain)) == "Information"
-            append!(material_names, split(nodecontent(firstnode(xdomain)), " "))
-            xgrid = nodes(xdomain)[2]
-        elseif 1 == nnodes
-            xgrid = firstnode(xdomain)
-        else
-            xdmf_read_error()
+        for elset_name in keys(mesh.elsets)
+            if startswith(elset_name, "Material:")
+                push!(material_names, elset_name[11:end])
+            end
         end
-        grid_type = xgrid["GridType"]
-        if grid_type == "Uniform"
-            mesh_file = _read_xdmf_uniform_grid(xgrid, h5_file, material_names)
-            mesh_file.filepath = filepath
-            return mesh_file
-##        elseif grid_type == "Tree"
-##            # Create tree
-##            root = Tree((1, xgrid["Name"]))
-##            _setup_xdmf_tree!(xgrid, root, [0])
-##            nleaf_meshes = nleaves(root)
-##            dim, float_type, uint_type = _get_volume_mesh_params_from_xdmf(xgrid, h5_file)
-##            leaf_meshes = Vector{VolumeMesh{dim, float_type, uint_type}}(undef,
-##                                                                         nleaf_meshes)
-##            # fill the leaf meshes
-##            nleaf = _setup_xdmf_leaf_meshes!(xgrid, h5_file, 1, leaf_meshes, material_names)
-##            @assert nleaf - 1 == nleaf_meshes
-##            return MeshPartitionTree(root, leaf_meshes)
-        else
-            xdmf_read_error()
+        sort!(material_names)
+        if 0 < length(material_names)
+            xmaterials = ElementNode("Information")
+            link!(xdomain, xmaterials)
+            link!(xmaterials, AttributeNode("Name", "Materials"))
+            link!(xmaterials, TextNode(join(material_names, " ")))
         end
+        # Add uniform grid
+        _add_uniform_grid_xdmf!(xdomain, h5_filepath, h5_file, mesh)
     finally
+        write(mesh.filepath, xdoc)
         close(h5_file)
     end
     return nothing
 end
+
+##################################################################################
+##                                    READ
+##################################################################################
+xdmf_read_error() = error("Error while reading XDMF file.")
 
 # Helper functions for read_xdmf
 # -------------------------------------------------------------------------------------------------
@@ -456,3 +413,52 @@ end
 #    end
 #    return id
 #end
+#
+
+# ------------------------------------------------------------------------ #
+
+function read_xdmf_file(filepath::String)
+    xdoc = readxml(filepath)
+    xroot = root(xdoc)
+    nodename(xroot) != "Xdmf" && xdmf_read_error()
+    h5_file = h5open(filepath[begin:(end - 4)] * "h5", "r")
+    try
+        version = xroot["Version"]
+        version != "3.0" && xdmf_read_error()
+        xdomain = firstnode(xroot)
+        nodename(xdomain) != "Domain" && xdmf_read_error()
+        material_names = String[]
+        nnodes = countnodes(xdomain)
+        if 2 == nnodes && nodename(firstnode(xdomain)) == "Information"
+            append!(material_names, split(nodecontent(firstnode(xdomain)), " "))
+            xgrid = nodes(xdomain)[2]
+        elseif 1 == nnodes
+            xgrid = firstnode(xdomain)
+        else
+            xdmf_read_error()
+        end
+        grid_type = xgrid["GridType"]
+        if grid_type == "Uniform"
+            mesh_file = _read_xdmf_uniform_grid(xgrid, h5_file, material_names)
+            mesh_file.filepath = filepath
+            return mesh_file
+##        elseif grid_type == "Tree"
+##            # Create tree
+##            root = Tree((1, xgrid["Name"]))
+##            _setup_xdmf_tree!(xgrid, root, [0])
+##            nleaf_meshes = nleaves(root)
+##            dim, float_type, uint_type = _get_volume_mesh_params_from_xdmf(xgrid, h5_file)
+##            leaf_meshes = Vector{VolumeMesh{dim, float_type, uint_type}}(undef,
+##                                                                         nleaf_meshes)
+##            # fill the leaf meshes
+##            nleaf = _setup_xdmf_leaf_meshes!(xgrid, h5_file, 1, leaf_meshes, material_names)
+##            @assert nleaf - 1 == nleaf_meshes
+##            return MeshPartitionTree(root, leaf_meshes)
+        else
+            xdmf_read_error()
+        end
+    finally
+        close(h5_file)
+    end
+    return nothing
+end
