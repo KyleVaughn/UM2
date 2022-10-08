@@ -1,5 +1,7 @@
 # ABAQUS FILE FORMAT
 
+# TODO: Make this more efficient. See C++ version for ideas.
+
 # -- Read -- 
 
 function parse_nodes!(file::IOStream, 
@@ -78,6 +80,7 @@ function parse_elsets!(file::IOStream,
 end
 
 function read_abaqus_file(filepath::String)
+    @info "Reading ABAQUS file: " * filepath
     T = UM2_MESH_FLOAT_TYPE 
     I = UM2_MESH_INT_TYPE
     name = ""

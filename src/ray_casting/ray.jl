@@ -14,14 +14,14 @@ export interpolate_ray
 
 struct Ray{D, T} 
     origin::Point{D, T}
-    direction::Vec{D, T}
+    direction::Vec{D, T} # Normalized
 end
 
 # -- Type aliases --
 
-const Ray2     = Ray{2}
-const Ray2f    = Ray2{Float32}
-const Ray2d    = Ray2{Float64}
+const Ray2  = Ray{2}
+const Ray2f = Ray2{Float32}
+const Ray2d = Ray2{Float64}
 
 # -- Interpolation --
 

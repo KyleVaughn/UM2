@@ -42,6 +42,16 @@ isroot(node::Tree) = parent(node) === nothing
 isleaf(node::Tree) = children(node) === nothing
 is_parents_last_child(node::Tree) = children(parent(node))[end] === node
 
+function Base.push!(node::Tree, child::Tree)
+    if isnothing(children(node))
+        node.children = [child]
+    else
+        push!(children(node), child)
+    end
+    child.parent = node
+    return nothing
+end
+
 function num_children(node::Tree) 
     node_children = children(node) 
     if !isnothing(node_children)

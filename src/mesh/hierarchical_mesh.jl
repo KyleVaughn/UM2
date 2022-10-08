@@ -1,6 +1,6 @@
 export HierarchicalMesh
 
-export tree, leaf_meshes, getleaf, num_leaves
+export tree, leaf_meshes, getleaf, num_leaves, partition_mesh
 
 # A hierarchical mesh partition
 struct HierarchicalMesh{M <: AbstractMesh{T <: AbstractFloat, I <: Integer}}
@@ -14,62 +14,6 @@ getleaf(mpt::HierarchicalMesh, id::Integer) = mpt.leaf_meshes[id]
 num_leaves(mpt::HierarchicalMesh) = length(mpt.leaf_meshes)
 
 # Convert a mesh to a hierarchical mesh
-
-#function _create_leaf_meshes(mesh::AbstractMesh, root::Tree)
-#    leaf_nodes = sort!(leaves(root), by = x -> x.data)
-#    leaf_meshes = Vector{typeof(mesh)}(undef, length(leaf_nodes))
-#    leaf_ctr = 1
-#    node_children = children(root)
-#    if !isnothing(node_children)
-#        for child in sort(node_children, by = x -> x.data)
-#            child_mesh = submesh(mesh, data(child)[2])
-#            leaf_ctr = _create_leaf_meshes!(child_mesh, child, leaf_meshes, leaf_ctr)
-#        end
-#    else
-#        # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
-#        # be encoded in the tree
-#        mpact_groups = filter(x -> isa_MPACT_partition_name(x), keys(groups(mesh)))
-#        for grp in mpact_groups
-#            pop!(groups(mesh), grp)
-#        end
-#        name = data(root)[2]
-#        root.data = (leaf_ctr, name)
-#        leaf_meshes[leaf_ctr] = mesh
-#    end
-#    return leaf_meshes
-#end
-#
-#function _create_leaf_meshes!(mesh::AbstractMesh,
-#                              node::Tree,
-#                              leaf_meshes,
-#                              leaf_ctr::Int64 = 1)
-#    node_children = children(node)
-#    if !isnothing(node_children)
-#        for child in sort(node_children, by = x -> x.data)
-#            child_mesh = submesh(mesh, data(child)[2])
-#            leaf_ctr = _create_leaf_meshes!(child_mesh, child, leaf_meshes, leaf_ctr)
-#        end
-#    else
-#        # Remove any Lattice, Module, or Coarse_Cell groups, since this info should now
-#        # be encoded in the tree
-#        mpact_groups = filter(x -> isa_MPACT_partition_name(x), keys(groups(mesh)))
-#        for grp in mpact_groups
-#            pop!(mesh.groups, grp)
-#        end
-#        leaf_meshes[leaf_ctr] = mesh
-#        name = data(node)[2]
-#        node.data = (leaf_ctr, name)
-#        leaf_ctr += 1
-#    end
-#    return leaf_ctr
-#end
-#
-
-function is_MPACT_partition_name(x::String)
-    return startswith(x, "Cell_") ||
-           startswith(x, "Module_") ||
-           startswith(x, "Lattice_")
-end
 
 # Extract partition names
 function _get_partition_names(elsets::Dict{String, Set{I}}, 
@@ -91,97 +35,145 @@ function _get_partition_names(elsets::Dict{String, Set{I}},
             error("The mesh does not have any groups containing '", by, "'.")
         end
     end
-    return sort!(partition_names)
+    sort!(partition_names)
+    return partition_names
 end
 
 # Create a tree to store grid relationships.
 function _create_tree(mesh::AbstractMesh, 
                       elsets::Dict{String, Set{I}},
                       partition_names::Vector{String}) where {I <: Integer}
-    root = Tree((I(1), name(mesh)))
-    parents = [root]
-    tree_type = typeof(root)
-    next_parents = tree_type[]
-    remaining_names = copy(partition_names)
-    # Extract the sets that are not a subset of any other set.
-    this_level = Int64[]
-    mesh_groups = groups(mesh)
-    while length(remaining_names) > 0
-        for i in eachindex(remaining_names)
-            name_i = remaining_names[i]
-            i_isa_lattice = startswith(name_i, "Lattice")
-            i_isa_module = startswith(name_i, "Module")
-            isa_subset = false
-            for j in eachindex(remaining_names)
-                if i === j
+    root = Tree((I(0), name(mesh)))
+    # Each set will be tested to see if it is a subset of any other set.
+    # If it is, then it will be added as a child of the node containing that set.
+    tree_nodes = Vector{Tree{Tuple{I, String}}}(undef, length(partition_names))
+    for i in eachindex(partition_names)
+        tree_nodes[i] = Tree((I(0), partition_names[i]))
+    end
+    # If the partition_names are MPACT spatial hierarchy names, we can do this in
+    # a single pass. Otherwise, we need to do a nested loop.
+    if all(x -> is_MPACT_partition_name(x), partition_names)
+        # Partition names sorted alphabetically, it's Cell, Lattice, Module.
+        # Find the indices of the first and last lattice
+        lat_start = findfirst(x -> is_MPACT_lattice(x), partition_names)
+        lat_stop = findlast(x -> is_MPACT_lattice(x), partition_names)
+        # We now know that the first lat_start - 1 elements are cells, and the last
+        # length(partition_names) - lat_stop elements are modules.
+        cell_start = 1
+        cell_stop = lat_start - 1
+        mod_start = lat_stop + 1
+        mod_stop = length(partition_names)
+        # Lattices contain modules, modules contain cells.
+        # Each lattice is mutually exclusive with the other lattices.
+        # Likewse for modules and cells.
+        # Each should only be added to the tree once, hence we will keep a 
+        # Bool vector to track which ones have been added.
+        added = falses(length(partition_names))
+        # Loop over lattices, adding them as children of the root
+        for ilat in lat_start:lat_stop
+            push!(root, tree_nodes[ilat])
+            added[ilat] = true
+            # Loop over modules, adding them as children of the lattice
+            for imod in mod_start:mod_stop
+                if added[imod]
                     continue
                 end
-                name_j = remaining_names[j]
-                j_isa_coarsecell = startswith(name_j, "Coarse")
-                if j_isa_coarsecell && (i_isa_module || i_isa_lattice)
-                    continue
-                end
-                j_isa_module = startswith(name_j, "Module")
-                if j_isa_module && i_isa_lattice
-                    continue
-                end
-                if mesh_groups[name_i] ⊆ mesh_groups[name_j]
-                    isa_subset = true
-                    break
-                end
-            end
-            if !isa_subset
-                push!(this_level, i)
-            end
-        end
-        # Add the groups that are not a subset to the tree
-        # and next_parents
-        node_id = 1 
-        for id in this_level
-            name = remaining_names[id]
-            for parent in parents
-                if isroot(parent)
-                    node = Tree((node_id, name), parent)
-                    node_id += 1
-                    push!(next_parents, node)
-                else
-                    parent_name = data(parent)[2]
-                    if mesh_groups[name] ⊆ mesh_groups[parent_name]
-                        node = Tree((node_id, name), parent)
-                        node_id += 1
-                        push!(next_parents, node)
-                        break
+                if elsets[partition_names[imod]] ⊆ elsets[partition_names[ilat]]
+                    push!(tree_nodes[ilat], tree_nodes[imod])
+                    added[imod] = true
+                    # Loop over cells, adding them as children of the module
+                    for icell in cell_start:cell_stop
+                        if added[icell]
+                            continue
+                        end
+                        if elsets[partition_names[icell]] ⊆ elsets[partition_names[imod]]
+                            push!(tree_nodes[imod], tree_nodes[icell])
+                            added[icell] = true
+                        end
                     end
                 end
             end
         end
-        parents = next_parents
-        next_parents = tree_type[]
-        # Remove the groups added to the tree from the remaining names
-        deleteat!(remaining_names, this_level)
-        this_level = Int64[]
+    else
+        for i in eachindex(partition_names)
+            for j in eachindex(partition_names)
+                if i != j
+                    if elsets[partition_names[i]] ⊆ elsets[partition_names[j]]
+                        push!(tree_nodes[j], tree_nodes[i])
+                    end
+                end
+            end
+        end
+    end
+    # Add the parentless nodes to the root
+    for node in tree_nodes
+        if isroot(node)
+            push!(root, node)
+        end
+    end
+    # Assign IDs to the leaf nodes
+    # Note: partition_names is sorted, so if by == "MPACT", then the order of the
+    # leaf nodes will be Cells sorted by ID.
+    for (i, node) in enumerate(leaves(root))
+        node.data = (I(i), node.data[2])
     end
     return root
+end
+
+function _create_leaf_meshes(mesh::AbstractMesh,
+                             elsets::Dict{String, Set{I}},
+                             root::Tree) where {I <: Integer}
+    # Make a copy of the elsets so we can pop from them
+    # as we create the leaf meshes. This reduces the number of set intersections,
+    # which can be expensive.
+    elsets_copy = Dict{String, Set{I}}()   
+    for (k, v) in elsets
+        elsets_copy[k] = copy(v)
+    end
+    leaf_nodes = leaves(root)
+    leaf_meshes = Vector{typeof(mesh)}(undef, length(leaf_nodes))
+    leaf_elsets = Vector{Dict{String, Set{I}}}(undef, length(leaf_nodes))
+    # If all of the leaf nodes have "Cell_" in their name, then we assume this is
+    # an MPACT spatial hierarchy. Knowing this, we can immediately discard any
+    # sets starting with "Lattice_" or "Module_", since this information is
+    # already encoded in the tree.
+    if all(x -> is_MPACT_cell(getindex(data(x), 2)), leaf_nodes)
+        for key in keys(elsets_copy)
+            if is_MPACT_lattice(key) || is_MPACT_module(key)
+                delete!(elsets_copy, key)
+            end
+        end
+    end
+    # Create the leaf meshes
+    set_names = collect(keys(elsets_copy))
+    for name in set_names
+        # Create the leaf mesh
+        leaf_elset, leaf_mesh = submesh(mesh, elsets_copy, name)
+        leaf_elsets[i] = leaf_elset
+        leaf_meshes[i] = leaf_mesh
+        delete!(elsets_copy, name)
+    end
+    return leaf_elsets, leaf_meshes
 end
 
 # Partitions a mesh based upon the names of its groups 
 # If by = "MPACT", partitions based upon:
 #   Cell ⊆ Module ⊆ Lattice
-function HierarchicalMesh(mesh::AbstractMesh, 
-                          elsets::Dict{String, Set{I}};
-                          by::String = "MPACT") where {I <: Integer}
+function partition_mesh(mesh::AbstractMesh, 
+                        elsets::Dict{String, Set{I}};
+                        by::String = "MPACT") where {I <: Integer}
     @info "Partitioning mesh: " * name(mesh)
     # Extract the names of all face sets that contain 'by' (the variable)
     partition_names = _get_partition_names(elsets, by)
     # Create a tree to store the partition hierarchy.
     root = _create_tree(mesh, elsets, partition_names)
-#    # Construct the leaf meshes
-#    leaf_meshes = _create_leaf_meshes(mesh, root)
-#    return HierarchicalMesh(root, leaf_meshes)
+    # Construct the leaf meshes
+    leaf_elsets, leaf_meshes = _create_leaf_meshes(mesh, root)
+    return leaf_elsets, HierarchicalMesh(root, leaf_meshes)
 end
 
-function Base.show(io::IO, mpt::HierarchicalMesh{M}) where {M}
+function Base.show(io::IO, mesg::HierarchicalMesh{M}) where {M}
     println("HierarchicalMesh{", M, "}")
-    println(tree(mpt))
+    println(tree(mesh))
     return nothing
 end

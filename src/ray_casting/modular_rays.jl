@@ -7,7 +7,7 @@ function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
     w = delta_x(aab)
     h = delta_y(aab)
     γ1 = γ
-    if T(pi_over_2) < γ
+    if T(PI_2) < γ
         γ1 = T(π) - γ
     end
     # Number of rays in x and y directions
@@ -28,7 +28,7 @@ function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
     dy = s_eff / cos_γₑ
     xmin = x_min(aab)
     ymin = y_min(aab)
-    if γ ≤ T(pi_over_2)
+    if γ ≤ T(PI_2)
         for ix in 1:nx
             # Generate ray from the bottom edge of the rectangular domain
             # Ray either terminates at the right edge of the rectangle

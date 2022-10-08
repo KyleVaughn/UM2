@@ -15,4 +15,5 @@ mutable struct HierarchicalMeshFile{T <: AbstractFloat, I <: Integer}
     format::Int64
     partition_tree::Tree{Tuple{I, String}}    
     leaf_meshes::Vector{MeshFile{T, I}}
+    leaf_elsets::Vector{Dict{String, Set{I}}}
 end
