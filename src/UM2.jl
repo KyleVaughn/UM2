@@ -38,6 +38,7 @@ include("geometry/quadratic_polygon/quadratic_triangle.jl")
 include("geometry/quadratic_polygon/quadratic_quadrilateral.jl")
 include("geometry/morton.jl")
 
+# TODO: change integer types to UM2_MESH_INT_TYPE
 include("mesh/abstract_mesh.jl")
 include("mesh/cell_types.jl")
 include("mesh/io_mesh_file.jl")
@@ -66,18 +67,18 @@ include("physics/material.jl")
 
 include("mpact/grid_hierarchy.jl")
 ##include("mpact/mesh_hierarchy.jl")
-#
-#include("gmsh/model/get_entities_by_color.jl")
-#include("gmsh/model/color_material_physical_group_entities.jl")
-#include("gmsh/model/safe_add_physical_group.jl")
-#include("gmsh/model/add_cad_names_to_physical_groups.jl")
-#include("gmsh/model/add_materials_to_physical_groups_by_color.jl")
-#include("gmsh/model/import_model.jl")
-#include("gmsh/model/safe_fragment.jl")
-#include("gmsh/model/overlay_mpact_grid_hierarchy.jl")
-#
-#include("gmsh/mesh/set_mesh_field_by_material.jl")
-#include("gmsh/mesh/generate_mesh.jl")
-#include("gmsh/mesh/get_cad_to_mesh_errors.jl")
+
+include("gmsh/model/get_entities_by_color.jl")
+include("gmsh/model/color_material_physical_group_entities.jl")
+include("gmsh/model/safe_add_physical_group.jl")
+include("gmsh/model/add_cad_names_to_physical_groups.jl")
+include("gmsh/model/add_materials_to_physical_groups_by_color.jl")
+include("gmsh/model/import_model.jl")
+include("gmsh/model/safe_fragment.jl")
+include("gmsh/model/overlay_mpact_grid_hierarchy.jl")
+
+include("gmsh/mesh/set_mesh_field_by_material.jl")
+include("gmsh/mesh/generate_mesh.jl")
+include("gmsh/mesh/get_cad_to_mesh_errors.jl")
 
 end

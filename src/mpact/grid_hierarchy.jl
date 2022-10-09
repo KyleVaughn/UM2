@@ -3,7 +3,7 @@ export MPACTGridHierarchy
 # Lattice grid = Matrix{Lattice}
 # Lattice = Module grid = Matrix{Module}
 # Module =  A rectilinear grid of coarse cells
-struct MPACTGridHierarchy{T}
+struct MPACTGridHierarchy{T <: AbstractFloat}
     #      y
     #      ^
     # j = 3|
@@ -11,9 +11,10 @@ struct MPACTGridHierarchy{T}
     # j = 1|
     #       _____________> x
     #       i=1  i=2  i=3
-    lattice_grid::Matrix{Matrix{RectilinearGrid2{T}}
+    lattice_grid::Matrix{Matrix{RectilinearGrid2{T}}}
 
-    function MPACTGridHierarchy(lattice_grid::Matrix{Matrix{RectilinearGrid2}{T}})
+    function MPACTGridHierarchy(lattice_grid::Matrix{Matrix{RectilinearGrid2{T}}}
+        ) where {T <: AbstractFloat}
         # Check that all modules have the same size
         Δx = delta_x(lattice_grid[1][1])
         Δy = delta_y(lattice_grid[1][1])
@@ -89,7 +90,7 @@ struct MPACTGridHierarchy{T}
                 end
             end
         end
-        return new(lattice_grid)
+        return new{T}(lattice_grid)
     end
 end
 

@@ -3,15 +3,16 @@ export HierarchicalMesh
 export tree, leaf_meshes, getleaf, num_leaves, partition_mesh
 
 # A hierarchical mesh partition
-struct HierarchicalMesh{M <: AbstractMesh{T <: AbstractFloat, I <: Integer}}
-    partition_tree::Tree{Tuple{I, String}}
+# How do I make this M <: AbstractMesh{T <: AbstractFloat, I <: Integer}
+struct HierarchicalMesh{M <: AbstractMesh}
+    partition_tree::Tree{Tuple{UM2_MESH_INT_TYPE, String}}
     leaf_meshes::Vector{M}
 end
 
-tree(mpt::HierarchicalMesh) = mpt.tree
-leaf_meshes(mpt::HierarchicalMesh) = mpt.leaf_meshes
-getleaf(mpt::HierarchicalMesh, id::Integer) = mpt.leaf_meshes[id]
-num_leaves(mpt::HierarchicalMesh) = length(mpt.leaf_meshes)
+tree(hm::HierarchicalMesh) = hm.tree
+leaf_meshes(hm::HierarchicalMesh) = hm.leaf_meshes
+getleaf(hm::HierarchicalMesh, id::Integer) = hm.leaf_meshes[id]
+num_leaves(hm::HierarchicalMesh) = length(hm.leaf_meshes)
 
 # Convert a mesh to a hierarchical mesh
 
