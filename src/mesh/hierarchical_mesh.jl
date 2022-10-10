@@ -38,6 +38,13 @@ function _get_partition_names(elsets::Dict{String, Set{UM_I}}, by::String)
     return partition_names
 end
 
+function _number_tree_nodes(node::Tree{Tuple{UM_I, String}}, branch_ctr::Vector{UM_I})
+    node.data[1] = id
+    for child in node.children
+        _number_tree_nodes(child, id)
+    end
+end
+
 # Create a tree to store grid relationships.
 function _create_tree(mesh::AbstractMesh, 
                       elsets::Dict{String, Set{UM_I}},

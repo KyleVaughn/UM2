@@ -414,27 +414,27 @@ function _read_xdmf_uniform_grid(xgrid::EzXML.Node,
     return MeshFile("", XDMF_FORMAT, name, points, element_types, 
                     offsets, connectivity, groups) 
 end
-##
-##function _setup_xdmf_tree!(xmlnode::EzXML.Node,
-##                          treenode::Tree{Tuple{Int64, String}},
-##                          ids::Vector{Int64},
-##                          level::Int64 = 0)
-##    level += 1
-##    if length(ids) < level
-##        push!(ids, 0)
-##    end
-##    if hasnode(xmlnode)
-##        for xmlchild in eachnode(xmlnode)
-##            if nodename(xmlchild) == "Grid"
-##                ids[level] += 1
-##                treechild = Tree((ids[level], xmlchild["Name"]), treenode)
-##                _setup_xdmf_tree!(xmlchild, treechild, ids, level)
-##            end
-##        end
-##    end
-##    return nothing
-##end
-##
+
+function _setup_xdmf_tree!(xmlnode::EzXML.Node,
+                          treenode::Tree{Tuple{UM_I, String}},
+                          branch_cts::Vector{UM_I},
+                          level::Int64 = 0)
+    level += 1
+    if length(branch_cts) < level
+        push!(branch_cts, 0)
+    end
+    if hasnode(xmlnode)
+        for xmlchild in eachnode(xmlnode)
+            if nodename(xmlchild) == "Grid"
+                branch_cts[level] += 1
+                treechild = Tree((branch_cts[level], xmlchild["Name"]), treenode)
+                _setup_xdmf_tree!(xmlchild, treechild, branch_cts, level)
+            end
+        end
+    end
+    return nothing
+end
+
 ##function _get_volume_mesh_params_from_xdmf(xgrid::EzXML.Node,
 ##                                           h5_file::HDF5.File)
 ##    xmlchild = firstnode(xgrid)
@@ -527,18 +527,18 @@ function read_xdmf_file(filepath::String)
             mesh_file = _read_xdmf_uniform_grid(xgrid, h5_file, material_names)
             mesh_file.filepath = filepath
             return mesh_file
-##        elseif grid_type == "Tree"
-##            # Create tree
-##            root = Tree((1, xgrid["Name"]))
-##            _setup_xdmf_tree!(xgrid, root, [0])
-##            nleaf_meshes = nleaves(root)
-##            dim, float_type, uint_type = _get_volume_mesh_params_from_xdmf(xgrid, h5_file)
-##            leaf_meshes = Vector{VolumeMesh{dim, float_type, uint_type}}(undef,
-##                                                                         nleaf_meshes)
-##            # fill the leaf meshes
-##            nleaf = _setup_xdmf_leaf_meshes!(xgrid, h5_file, 1, leaf_meshes, material_names)
-##            @assert nleaf - 1 == nleaf_meshes
-##            return MeshPartitionTree(root, leaf_meshes)
+        elseif grid_type == "Tree"
+            # Create tree
+            root = Tree((UM_I(0), xgrid["Name"]))
+            _setup_xdmf_tree!(xgrid, root, [0])
+            nleaf_meshes = num_leaves(root)
+            dim, float_type, uint_type = _get_volume_mesh_params_from_xdmf(xgrid, h5_file)
+            leaf_meshes = Vector{VolumeMesh{dim, float_type, uint_type}}(undef,
+                                                                         nleaf_meshes)
+            # fill the leaf meshes
+            nleaf = _setup_xdmf_leaf_meshes!(xgrid, h5_file, 1, leaf_meshes, material_names)
+            @assert nleaf - 1 == nleaf_meshes
+            return MeshPartitionTree(root, leaf_meshes)
         else
             xdmf_read_error()
         end
