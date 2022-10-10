@@ -8,8 +8,7 @@ function is_MPACT_partition(x::String)
     return is_MPACT_cell(x) || is_MPACT_module(x) || is_MPACT_lattice(x)
 end
 
-function _submesh_elsets(elsets::Dict{String, Set{I}},
-                         name::String) where {I <: Integer}
+function _submesh_elsets(elsets::Dict{String, Set{UM_I}}, name::String)
     # Submesh elsets + remap
     # These intersection operations can be expernsive, so if the name by which
     # the mesh is being submeshed is part of the MPACT spatial hierarchy (i.e.
@@ -26,8 +25,9 @@ function _submesh_elsets(elsets::Dict{String, Set{I}},
     name_is_lattice = is_MPACT_lattice(name)
     name_is_module = is_MPACT_module(name)
     name_is_cell = is_MPACT_cell(name)
-    sub_elsets = Dict{String, Set{I}}()
+    sub_elsets = Dict{String, Set{UM_I}}()
     face_ids = elsets[name]
+    face_ids_vec = sort!(collect(face_ids))
     for set_name in keys(elsets)
         if name_is_cell
             if is_MPACT_partition(set_name)
@@ -45,23 +45,23 @@ function _submesh_elsets(elsets::Dict{String, Set{I}},
         set_intersection = intersect(elsets[set_name], face_ids)
         if length(set_intersection) !== 0 && name !== set_name
             set_intersection_vec = collect(set_intersection)
-            sub_elsets[set_name] = Set{I}(searchsortedfirst.(Ref(face_ids_vec), 
-                                                                set_intersection_vec))
+            sub_elsets[set_name] = Set{UM_I}(map(x -> searchsortedfirst(face_ids_vec, x), 
+                                                      set_intersection_vec))
         end
     end
     return sub_elsets
 end
 
-function submesh(mesh::PolygonMesh{N, T, I},
-                 elsets::Dict{String, Set{I}},
-                 name::String) where {N, T <: AbstractFloat, I <: Integer}
+function submesh(mesh::PolygonMesh{N},
+                 elsets::Dict{String, Set{UM_I}},
+                 name::String) where {N}
     # Submesh faces + point ids
     face_ids = elsets[name]
     face_ids_vec = sort!(collect(face_ids))
-    vert_ids_vec = I[]
+    vert_ids_vec = UM_I[]
     nverts = 0
     nfaces = length(face_ids_vec)
-    fv_conn = Vector{I}(undef, N * nfaces)
+    fv_conn = Vector{UM_I}(undef, N * nfaces)
     for (i, fid) in enumerate(face_ids_vec)
         fv_conn[(N * (i - 1) + 1):(N * i)] .= 
             mesh.fv_conn[(N * (fid - 1) + 1):(N * fid)]
@@ -75,7 +75,7 @@ function submesh(mesh::PolygonMesh{N, T, I},
     end
 
     # Submesh vertices 
-    vertices = Vector{Point2{T}}(undef, nverts)
+    vertices = Vector{Point2{UM_F}}(undef, nverts)
     for (i, vid) in enumerate(vert_ids_vec)
         vertices[i] = mesh.vertices[vid]
     end
@@ -91,19 +91,19 @@ function submesh(mesh::PolygonMesh{N, T, I},
     # Recompute vf_conn
     vf_offsets, vf_conn = polygon_mesh_vf_conn(N, nverts, fv_conn)
 
-    return sub_elsets, PolygonMesh{N, T, I}(name, vertices, fv_conn, vf_offsets, vf_conn)
+    return sub_elsets, PolygonMesh{N}(name, vertices, fv_conn, vf_offsets, vf_conn)
 end
 
-function submesh(mesh::QPolygonMesh{N, T, I},
-                 elsets::Dict{String, Set{I}},
-                 name::String) where {N, T <: AbstractFloat, I <: Integer}
+function submesh(mesh::QPolygonMesh{N},
+                 elsets::Dict{String, Set{UM_I}},
+                 name::String) where {N}
     # Submesh faces + point ids
     face_ids = elsets[name]
     face_ids_vec = sort!(collect(face_ids))
-    vert_ids_vec = I[]
+    vert_ids_vec = UM_I[]
     nverts = 0
     nfaces = length(face_ids_vec)
-    fv_conn = Vector{I}(undef, N * nfaces)
+    fv_conn = Vector{UM_I}(undef, N * nfaces)
     for (i, fid) in enumerate(face_ids_vec)
         fv_conn[(N * (i - 1) + 1):(N * i)] .= 
             mesh.fv_conn[(N * (fid - 1) + 1):(N * fid)]
@@ -117,7 +117,7 @@ function submesh(mesh::QPolygonMesh{N, T, I},
     end
 
     # Submesh vertices 
-    vertices = Vector{Point2{T}}(undef, nverts)
+    vertices = Vector{Point2{UM_F}}(undef, nverts)
     for (i, vid) in enumerate(vert_ids_vec)
         vertices[i] = mesh.vertices[vid]
     end
@@ -133,5 +133,5 @@ function submesh(mesh::QPolygonMesh{N, T, I},
     # Recompute vf_conn
     vf_offsets, vf_conn = polygon_mesh_vf_conn(N, nverts, fv_conn)
 
-    return sub_elsets, QPolygonMesh{N, T, I}(name, vertices, fv_conn, vf_offsets, vf_conn)
+    return sub_elsets, QPolygonMesh{N}(name, vertices, fv_conn, vf_offsets, vf_conn)
 end

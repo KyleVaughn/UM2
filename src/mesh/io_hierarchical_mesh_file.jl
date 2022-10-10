@@ -10,10 +10,9 @@ export HierarchicalMeshFile
 # 
 # Each node has an ID and the name of the partition. 
 # If the node is a leaf, the ID is the index of the mesh in the leaf mesh list.
-mutable struct HierarchicalMeshFile{T <: AbstractFloat, I <: Integer}
+mutable struct HierarchicalMeshFile
     filepath::String
     format::Int64
-    partition_tree::Tree{Tuple{I, String}}    
-    leaf_meshes::Vector{MeshFile{T, I}}
-    leaf_elsets::Vector{Dict{String, Set{I}}}
+    partition_tree::Tree{Tuple{UM_I, String}}    
+    leaf_meshes::Vector{MeshFile}
 end

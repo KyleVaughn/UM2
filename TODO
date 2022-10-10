@@ -1,5 +1,6 @@
-Hierarchical Mesh
-Convert to hierarchical mesh file
+Points{D, T}, SoA
+NPoints{D, N, T}, SoA with fixed N. Use in polygons?
+
 write hierarchcical mesh file
 read hierarchical mesh file
 

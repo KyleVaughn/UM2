@@ -5,8 +5,7 @@
 # -- Read -- 
 
 function parse_nodes!(file::IOStream, 
-                      nodes::Vector{Point2{T}}
-                     ) where {T <: AbstractFloat, I <: Integer}
+                      nodes::Vector{Point2{UM_F}})
     line = ""
     while !eof(file)
         line = readline(file)
@@ -14,8 +13,8 @@ function parse_nodes!(file::IOStream,
             break
         end
         words = split(line, ',')
-        x = parse(T, words[2])
-        y = parse(T, words[3])
+        x = parse(UM_F, words[2])
+        y = parse(UM_F, words[3])
         push!(nodes, Point2(x, y))
     end
     return line
@@ -24,11 +23,10 @@ end
 function parse_elements!(file::IOStream, 
                          line::String,
                          element_types::Vector{Int8},
-                         element_offsets::Vector{I},
-                         elements::Vector{I},
-                         total_offset::I
-                        ) where {T <: AbstractFloat, I <: Integer}
-    offset = I(line[19] - 48)
+                         element_offsets::Vector{UM_I},
+                         elements::Vector{UM_I},
+                         total_offset::UM_I)
+    offset = UM_I(line[19] - 48)
     abaqus_type = Int8(0)
     if offset == 3
         abaqus_type = ABAQUS_CPS3
@@ -51,7 +49,7 @@ function parse_elements!(file::IOStream,
         total_offset += offset
         words = split(line, ',')
         for i in 1:offset
-            push!(elements, parse(I, words[i + 1]))
+            push!(elements, parse(UM_I, words[i + 1]))
         end
     end
     return (line, total_offset)
@@ -59,9 +57,9 @@ end
 
 function parse_elsets!(file::IOStream, 
                        line::String,
-                       elsets::Dict{String, Set{I}}) where {I <: Integer}
+                       elsets::Dict{String, Set{UM_I}})
     elset_name = line[14:end]
-    elset = Set{I}()
+    elset = Set{UM_I}()
     while !eof(file)
         line = readline(file)
         if line[1] == '*'
@@ -71,7 +69,7 @@ function parse_elsets!(file::IOStream,
         for i in 1:length(words)
             lsword = lstrip(words[i])
             if 0 < length(lsword)
-                push!(elset, parse(I, lsword))
+                push!(elset, parse(UM_I, lsword))
             end
         end
     end
@@ -81,15 +79,13 @@ end
 
 function read_abaqus_file(filepath::String)
     @info "Reading ABAQUS file: " * filepath
-    T = UM2_MESH_FLOAT_TYPE 
-    I = UM2_MESH_INT_TYPE
     name = ""
-    nodes = Point2{T}[]
+    nodes = Point2{UM_F}[]
     element_types = Int8[]
-    element_offsets = I[]
-    elements = I[]
-    elsets = Dict{String, Set{I}}()
-    total_offset = I(1)
+    element_offsets = UM_I[]
+    elements = UM_I[]
+    elsets = Dict{String, Set{UM_I}}()
+    total_offset = UM_I(1)
     line = ""
     loop_again = false
     file = open(filepath, "r")
@@ -127,6 +123,6 @@ function read_abaqus_file(filepath::String)
         close(file)
     end
     push!(element_offsets, total_offset)
-    return MeshFile{T, I}(filepath, ABAQUS_FORMAT, name, nodes, element_types, 
-                            element_offsets, elements, elsets)
+    return MeshFile(filepath, ABAQUS_FORMAT, name, nodes, element_types, 
+                    element_offsets, elements, elsets)
 end

@@ -1,4 +1,7 @@
-const UM2_MESH_FLOAT_TYPE = Float64
-const UM2_MESH_INT_TYPE = Int32
+const UM_FLOAT = Float64
+const UM_INT = Int32
 
-const UM2_HAS_BMI2 = true
+const UM_F = UM_FLOAT
+const UM_I = UM_INT
+
+const UM_HAS_BMI2 = true

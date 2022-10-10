@@ -3,13 +3,12 @@ export HierarchicalMesh
 export tree, leaf_meshes, getleaf, num_leaves, partition_mesh
 
 # A hierarchical mesh partition
-# How do I make this M <: AbstractMesh{T <: AbstractFloat, I <: Integer}
 struct HierarchicalMesh{M <: AbstractMesh}
-    partition_tree::Tree{Tuple{UM2_MESH_INT_TYPE, String}}
+    partition_tree::Tree{Tuple{UM_I, String}}
     leaf_meshes::Vector{M}
 end
 
-tree(hm::HierarchicalMesh) = hm.tree
+tree(hm::HierarchicalMesh) = hm.partition_tree
 leaf_meshes(hm::HierarchicalMesh) = hm.leaf_meshes
 getleaf(hm::HierarchicalMesh, id::Integer) = hm.leaf_meshes[id]
 num_leaves(hm::HierarchicalMesh) = length(hm.leaf_meshes)
@@ -17,8 +16,7 @@ num_leaves(hm::HierarchicalMesh) = length(hm.leaf_meshes)
 # Convert a mesh to a hierarchical mesh
 
 # Extract partition names
-function _get_partition_names(elsets::Dict{String, Set{I}}, 
-                              by::String) where {I <: Integer}
+function _get_partition_names(elsets::Dict{String, Set{UM_I}}, by::String)
     # If by == "MPACT", then we will partition by Lattice, Module, and Coarse Cell
     # Otherwise, partition by the string contained in by
     partition_names = collect(keys(elsets))
@@ -26,7 +24,7 @@ function _get_partition_names(elsets::Dict{String, Set{I}},
         error("The mesh does not have any groups.")
     end
     if by == "MPACT"
-        filter!(x -> is_MPACT_partition_name(x), partition_names)
+        filter!(x -> is_MPACT_partition(x), partition_names)
         if length(partition_names) === 0
             error("The mesh does not have any MPACT spatial hierarchy groups.")
         end
@@ -42,18 +40,18 @@ end
 
 # Create a tree to store grid relationships.
 function _create_tree(mesh::AbstractMesh, 
-                      elsets::Dict{String, Set{I}},
-                      partition_names::Vector{String}) where {I <: Integer}
-    root = Tree((I(0), name(mesh)))
+                      elsets::Dict{String, Set{UM_I}},
+                      partition_names::Vector{String})
+    root = Tree((UM_I(0), name(mesh)))
     # Each set will be tested to see if it is a subset of any other set.
     # If it is, then it will be added as a child of the node containing that set.
-    tree_nodes = Vector{Tree{Tuple{I, String}}}(undef, length(partition_names))
+    tree_nodes = Vector{Tree{Tuple{UM_I, String}}}(undef, length(partition_names))
     for i in eachindex(partition_names)
-        tree_nodes[i] = Tree((I(0), partition_names[i]))
+        tree_nodes[i] = Tree((UM_I(0), partition_names[i]))
     end
     # If the partition_names are MPACT spatial hierarchy names, we can do this in
     # a single pass. Otherwise, we need to do a nested loop.
-    if all(x -> is_MPACT_partition_name(x), partition_names)
+    if all(x -> is_MPACT_partition(x), partition_names)
         # Partition names sorted alphabetically, it's Cell, Lattice, Module.
         # Find the indices of the first and last lattice
         lat_start = findfirst(x -> is_MPACT_lattice(x), partition_names)
@@ -116,24 +114,24 @@ function _create_tree(mesh::AbstractMesh,
     # Note: partition_names is sorted, so if by == "MPACT", then the order of the
     # leaf nodes will be Cells sorted by ID.
     for (i, node) in enumerate(leaves(root))
-        node.data = (I(i), node.data[2])
+        node.data = (UM_I(i), node.data[2])
     end
     return root
 end
 
 function _create_leaf_meshes(mesh::AbstractMesh,
-                             elsets::Dict{String, Set{I}},
-                             root::Tree) where {I <: Integer}
+                             elsets::Dict{String, Set{UM_I}},
+                             root::Tree{Tuple{UM_I, String}})
     # Make a copy of the elsets so we can pop from them
     # as we create the leaf meshes. This reduces the number of set intersections,
     # which can be expensive.
-    elsets_copy = Dict{String, Set{I}}()   
+    elsets_copy = Dict{String, Set{UM_I}}()   
     for (k, v) in elsets
         elsets_copy[k] = copy(v)
     end
     leaf_nodes = leaves(root)
     leaf_meshes = Vector{typeof(mesh)}(undef, length(leaf_nodes))
-    leaf_elsets = Vector{Dict{String, Set{I}}}(undef, length(leaf_nodes))
+    leaf_elsets = Vector{Dict{String, Set{UM_I}}}(undef, length(leaf_nodes))
     # If all of the leaf nodes have "Cell_" in their name, then we assume this is
     # an MPACT spatial hierarchy. Knowing this, we can immediately discard any
     # sets starting with "Lattice_" or "Module_", since this information is
@@ -146,8 +144,8 @@ function _create_leaf_meshes(mesh::AbstractMesh,
         end
     end
     # Create the leaf meshes
-    set_names = collect(keys(elsets_copy))
-    for name in set_names
+    for (i, node) in enumerate(leaf_nodes)
+        name = getindex(data(node), 2)
         # Create the leaf mesh
         leaf_elset, leaf_mesh = submesh(mesh, elsets_copy, name)
         leaf_elsets[i] = leaf_elset
@@ -161,20 +159,20 @@ end
 # If by = "MPACT", partitions based upon:
 #   Cell ⊆ Module ⊆ Lattice
 function partition_mesh(mesh::AbstractMesh, 
-                        elsets::Dict{String, Set{I}};
-                        by::String = "MPACT") where {I <: Integer}
+                        elsets::Dict{String, Set{UM_I}};
+                        by::String = "MPACT")
     @info "Partitioning mesh: " * name(mesh)
     # Extract the names of all face sets that contain 'by' (the variable)
     partition_names = _get_partition_names(elsets, by)
     # Create a tree to store the partition hierarchy.
     root = _create_tree(mesh, elsets, partition_names)
     # Construct the leaf meshes
-    leaf_elsets, leaf_meshes = _create_leaf_meshes(mesh, root)
+    leaf_elsets, leaf_meshes = _create_leaf_meshes(mesh, elsets, root)
     return leaf_elsets, HierarchicalMesh(root, leaf_meshes)
 end
 
-function Base.show(io::IO, mesg::HierarchicalMesh{M}) where {M}
+function Base.show(io::IO, hm::HierarchicalMesh{M}) where {M}
     println("HierarchicalMesh{", M, "}")
-    println(tree(mesh))
+    println(tree(hm))
     return nothing
 end

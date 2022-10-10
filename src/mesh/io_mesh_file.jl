@@ -14,13 +14,13 @@ export ABAQUS_FORMAT, XDMF_FORMAT
 const ABAQUS_FORMAT = 0 
 const XDMF_FORMAT = 1 
 
-mutable struct MeshFile{T <: AbstractFloat, I <: Integer}
+mutable struct MeshFile
     filepath::String
     format::Int64
     name::String
-    nodes::Vector{Point2{T}}
+    nodes::Vector{Point2{UM_F}}
     element_types::Vector{Int8}
-    element_offsets::Vector{I}
-    elements::Vector{I}
-    elsets::Dict{String, Set{I}}
+    element_offsets::Vector{UM_I}
+    elements::Vector{UM_I}
+    elsets::Dict{String, Set{UM_I}}
 end
