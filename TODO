@@ -1,8 +1,3 @@
-Points{D, T}, SoA
-NPoints{D, N, T}, SoA with fixed N. Use in polygons?
-
-Convert HMF to HM
-
 Use rectilinearmeshpartition
 
 Convert a mesh to MPACTMeshHierarchy
@@ -10,3 +5,7 @@ convert a hierarchical mesh to a hierarchical mesh file
   use tree for a general file
 write that file with xdmf
 read that file with xdmf
+
+Ray packet intersection functions
+Multithreading
+GPU kernals
