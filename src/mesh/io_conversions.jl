@@ -124,3 +124,14 @@ function HierarchicalMeshFile(format::Int64,
                                 partition_tree, 
                                 leaf_meshes)
 end
+
+# HM from HMF
+# Not type-stable, since M could be a PolygonMesh{N} or QPolygonMesh{N}
+function HierarchicalMesh(hmf::HierarchicalMeshFile)
+    leaf_meshes = map(x -> to_mesh(x), hmf.leaf_meshes)
+    mesh_eltype = eltype(leaf_meshes)
+    @assert mesh_eltype <: PolygonMesh || mesh_eltype <: QPolygonMesh
+    return HierarchicalMesh{mesh_eltype}(hmf.partition_tree, leaf_meshes)
+end
+
+to_mesh(hmf::HierarchicalMeshFile) = HierarchicalMesh(hmf)

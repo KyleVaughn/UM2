@@ -416,90 +416,53 @@ function _read_xdmf_uniform_grid(xgrid::EzXML.Node,
 end
 
 function _setup_xdmf_tree!(xmlnode::EzXML.Node,
-                          treenode::Tree{Tuple{UM_I, String}},
-                          branch_cts::Vector{UM_I},
-                          level::Int64 = 0)
-    level += 1
-    if length(branch_cts) < level
-        push!(branch_cts, 0)
+                          node::Tree{Tuple{UM_I, String}},
+                          node_ctr::Vector{UM_I},
+                          level::UM_I)
+    level += UM_I(1)
+    if length(node_ctr) < level
+        push!(node_ctr, UM_I(0))
     end
+    node_ctr[level] += UM_I(1)
+    node.data = (node_ctr[level], xmlnode["Name"])
     if hasnode(xmlnode)
         for xmlchild in eachnode(xmlnode)
             if nodename(xmlchild) == "Grid"
-                branch_cts[level] += 1
-                treechild = Tree((branch_cts[level], xmlchild["Name"]), treenode)
-                _setup_xdmf_tree!(xmlchild, treechild, branch_cts, level)
+                child_node = Tree((UM_I(0), xmlchild["Name"]), node)
+                _setup_xdmf_tree!(xmlchild, child_node, node_ctr, level)
             end
         end
     end
     return nothing
 end
 
-##function _get_volume_mesh_params_from_xdmf(xgrid::EzXML.Node,
-##                                           h5_file::HDF5.File)
-##    xmlchild = firstnode(xgrid)
-##    max_iters = 5
-##    i = 1
-##    while i ≤ max_iters
-##        if nodename(xmlchild) == "Grid" && xmlchild["GridType"] == "Uniform"
-##            points_path = ""
-##            connectivity_path = ""
-##            for child in eachnode(xmlchild)
-##                child_name = nodename(child)
-##                m = match(r"(?<=:/).*", nodecontent(child))
-##                path = string(m.match)
-##                if child_name == "Geometry"
-##                    points_path = path
-##                elseif child_name == "Topology"
-##                    connectivity_path = string(m.match)
-##                end
-##                if points_path != "" && connectivity_path != ""
-##                    break
-##                end
-##            end
-##            # Points
-##            points_xyz = read(h5_file[points_path])
-##            dim, npoints = size(points_xyz)
-##            float_type = eltype(points_xyz)
-##            # Connectivity
-##            connectivity = read(h5_file[connectivity_path])
-##            uint_type = eltype(connectivity)
-##            return (dim, float_type, uint_type)
-##        end
-##        xmlchild = firstnode(xmlchild)
-##        i += 1
-##    end
-##    return error("Could not determine volume mesh parameters.")
-##end
-##
-##function _setup_xdmf_leaf_meshes!(xmlnode::EzXML.Node,
-##                                  h5_file::HDF5.File,
-##                                  idx::Int64,
-##                                  leaf_meshes::Vector{<:VolumeMesh},
-##                                  material_names::Vector{String})
-##    id = idx
-##    if hasnode(xmlnode)
-##        for xmlchild in eachnode(xmlnode)
-##            if nodename(xmlchild) == "Grid"
-##                if xmlchild["GridType"] == "Uniform"
-##                    leaf_meshes[id] = _read_xdmf_uniform_grid(xmlchild, h5_file,
-##                                                              material_names)
-##                    id += 1
-##                elseif xmlchild["GridType"] == "Tree"
-##                    id = _setup_xdmf_leaf_meshes!(xmlchild, h5_file, id,
-##                                                  leaf_meshes, material_names)
-##                else
-##                    error("Unsupported GridType")
-##                end
-##            end
-##        end
-##    end
-##    return id
-##end
-##
-#
-## ------------------------------------------------------------------------ #
-#
+function _setup_xdmf_leaf_meshes!(xmlnode::EzXML.Node,
+                                  h5_file::HDF5.File,
+                                  leaf_meshes::Vector{MeshFile},
+                                  material_names::Vector{String},
+                                  idx::Int64)
+    id = idx
+    if hasnode(xmlnode)
+        for xmlchild in eachnode(xmlnode)
+            if nodename(xmlchild) == "Grid"
+                if xmlchild["GridType"] == "Uniform"
+                    leaf_meshes[id] = _read_xdmf_uniform_grid(xmlchild, h5_file,
+                                                              material_names)
+                    id += 1
+                elseif xmlchild["GridType"] == "Tree"
+                    id = _setup_xdmf_leaf_meshes!(xmlchild, h5_file,
+                                                  leaf_meshes, material_names, id)
+                else
+                    error("Unsupported GridType")
+                end
+            end
+        end
+    end
+    return id
+end
+
+# ------------------------------------------------------------------------ #
+
 # Not type-stable, since it may return a MeshFile or HierarchicalMeshFile
 function read_xdmf_file(filepath::String)
     @info "Reading XDMF file: " * filepath
@@ -528,17 +491,17 @@ function read_xdmf_file(filepath::String)
             mesh_file.filepath = filepath
             return mesh_file
         elseif grid_type == "Tree"
+            @info "... Mesh is hierarchical"
             # Create tree
             root = Tree((UM_I(0), xgrid["Name"]))
-            _setup_xdmf_tree!(xgrid, root, [0])
+            _setup_xdmf_tree!(xgrid, root, [UM_I(0)], UM_I(0))
             nleaf_meshes = num_leaves(root)
-            dim, float_type, uint_type = _get_volume_mesh_params_from_xdmf(xgrid, h5_file)
-            leaf_meshes = Vector{VolumeMesh{dim, float_type, uint_type}}(undef,
-                                                                         nleaf_meshes)
+            leaf_meshes = Vector{MeshFile}(undef, nleaf_meshes)
             # fill the leaf meshes
-            nleaf = _setup_xdmf_leaf_meshes!(xgrid, h5_file, 1, leaf_meshes, material_names)
+            nleaf = _setup_xdmf_leaf_meshes!(xgrid, h5_file, leaf_meshes, 
+                                             material_names, 1)
             @assert nleaf - 1 == nleaf_meshes
-            return MeshPartitionTree(root, leaf_meshes)
+            return HierarchicalMeshFile(filepath, XDMF_FORMAT, root, leaf_meshes)
         else
             xdmf_read_error()
         end

@@ -38,11 +38,23 @@ function _get_partition_names(elsets::Dict{String, Set{UM_I}}, by::String)
     return partition_names
 end
 
-function _number_tree_nodes(node::Tree{Tuple{UM_I, String}}, branch_ctr::Vector{UM_I})
-    node.data[1] = id
-    for child in node.children
-        _number_tree_nodes(child, id)
+# Number the nodes in each level of the partition tree to allow for easy
+# multidimensional indexing
+function _number_tree_nodes!(node::Tree{Tuple{UM_I, String}},
+                            node_ctr::Vector{UM_I},
+                            level::UM_I)
+    level += UM_I(1)
+    if length(node_ctr) < level
+        push!(node_ctr, UM_I(0))
     end
+    node_ctr[level] += UM_I(1)
+    node.data = (node_ctr[level], node.data[2])
+    if !isnothing(node.children)
+        for child in node.children
+            _number_tree_nodes!(child, node_ctr, level)
+        end
+    end
+    return nothing
 end
 
 # Create a tree to store grid relationships.
@@ -177,6 +189,17 @@ function partition_mesh(mesh::AbstractMesh,
     leaf_elsets, leaf_meshes = _create_leaf_meshes(mesh, elsets, root)
     return leaf_elsets, HierarchicalMesh(root, leaf_meshes)
 end
+
+
+
+
+
+
+
+
+
+
+
 
 function Base.show(io::IO, hm::HierarchicalMesh{M}) where {M}
     println("HierarchicalMesh{", M, "}")
