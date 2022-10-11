@@ -44,7 +44,9 @@ include("mesh/io_mesh_file.jl")
 include("mesh/io_hierarchical_mesh_file.jl")
 include("mesh/io_abaqus.jl")
 include("mesh/io_xdmf.jl")
+include("mesh/regular_grid.jl")
 include("mesh/rectilinear_grid.jl")
+include("mesh/rectilinear_partition.jl")
 include("mesh/polygon_mesh.jl")
 include("mesh/quadratic_polygon_mesh.jl")
 include("mesh/submesh.jl")
@@ -58,13 +60,13 @@ include("ray_casting/modular_rays.jl")
 include("ray_casting/intersect/ray-line_segment.jl")
 include("ray_casting/intersect/ray-quadratic_segment.jl")
 include("ray_casting/intersect/ray-polygon_mesh.jl")
-#include("ray_casting/intersect/ray-quadratic_polygon_mesh.jl")
+include("ray_casting/intersect/ray-quadratic_polygon_mesh.jl")
 include("ray_casting/ray_packet.jl")
 include("ray_casting/intersect/ray_packet-line_segment.jl")
 include("ray_casting/intersect/ray_packet-polygon_mesh.jl")
-#
-#include("physics/material.jl")
-#
+
+include("physics/material.jl")
+
 #include("mpact/grid_hierarchy.jl")
 ###include("mpact/mesh_hierarchy.jl")
 #

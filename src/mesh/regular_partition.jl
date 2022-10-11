@@ -1,8 +1,8 @@
-export RectilinearPartition2
+export RegularPartition2
 
-struct RectilinearPartition2{T, P}
+struct RegularPartition2{T, P}
     name::String
-    grid::RectilinearGrid2{T}
+    grid::RegularGrid2{T}
     children::Matrix{P}
 end
 
