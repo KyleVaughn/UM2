@@ -297,7 +297,7 @@ function sort_morton_order!(mesh::PolygonMesh{N}) where {N}
     end
 
     # Recompute the vertex-face connectivity
-    vf_offsets, vf_conn = polygon_mesh_vf_conn(N, mesh.vertices, mesh.fv_conn)
+    vf_offsets, vf_conn = polygon_mesh_vf_conn(N, length(mesh.vertices), mesh.fv_conn)
     mesh.vf_offsets .= vf_offsets
     mesh.vf_conn .= vf_conn
 
