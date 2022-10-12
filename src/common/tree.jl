@@ -8,7 +8,9 @@ export data,
        leaves, 
        num_leaves, 
        isleaf,
-       num_children
+       num_children,
+       nodes_at_level,
+       root
 
 mutable struct Tree{T}
     data::T
@@ -41,6 +43,14 @@ children(node::Tree) = node.children
 isroot(node::Tree) = parent(node) === nothing
 isleaf(node::Tree) = children(node) === nothing
 is_parents_last_child(node::Tree) = children(parent(node))[end] === node
+
+function root(node::Tree)
+    if isroot(node)
+        return node
+    else
+        return root(parent(node))
+    end
+end
 
 function Base.push!(node::Tree, child::Tree)
     if isnothing(children(node))
@@ -93,6 +103,27 @@ function num_leaves(node::Tree)
     else
         return 1
     end
+end
+
+function nodes_at_level!(node::Tree{T}, level::Int64, 
+                         nodes::Vector{Tree{T}}) where {T}
+    if level == 0
+        push!(nodes, node)
+    else
+        node_children = children(node)
+        if !isnothing(node_children)
+            for child in node_children
+                nodes_at_level!(child, level-1, nodes)
+            end
+        end
+    end
+    return nothing
+end
+
+function nodes_at_level(node::Tree{T}, level::Int64) where {T}
+    nodes = Tree{T}[]
+    nodes_at_level!(node, level, nodes)
+    return nodes
 end
 
 # -- IO --

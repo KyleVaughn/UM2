@@ -54,3 +54,60 @@ end
 #    lattice_grid[1, 1] = module_grid
 #    return MPACTSpatialPartition(lattice_grid)
 #end
+
+function MPACTSpatialPartition(hm::HierarchicalMesh)
+    # Build the spatial partitions from the bottom up.
+    # Group the pins into modules
+    pin_bbs = map(x->bounding_box(x), hm.leaf_meshes)
+    module_nodes = nodes_at_level(hm.partition_tree, 2)
+    module_children_ids = map(mod_node->getindex.(
+                                          data.(
+                                            children(mod_node)
+                                           ), # data
+                                         1), # getindex 
+                              module_nodes)
+    module_rect_partitions = map(child_ids->RectPart2(pin_bbs[child_ids]),
+                                 module_children_ids)
+    # Correct id and name to each module rectilinear partition
+    for (i, mod) in enumerate(module_rect_partitions)
+        mod_data = module_nodes[i].data
+        module_rect_partitions[i] = RectPart2(mod_data[1], mod_data[2], mod.grid, mod.children)
+    end
+    # The modules are now ready to be grouped into lattices
+    modules = module_rect_partitions
+
+    # Group the modules into lattices
+    module_bbs = map(x->bounding_box(x), module_rect_partitions)
+    lattice_nodes = nodes_at_level(hm.partition_tree, 1)
+    lattice_children_ids = map(lattice_node->getindex.(
+                                          data.(
+                                            children(lattice_node)
+                                           ), # data
+                                         1), # getindex 
+                              lattice_nodes)
+    # No routine for converting a vector of BB into a regular grid, so we
+    # have to do it manually by first creating a rectilinear grid.
+    lattice_rect_partitions = map(child_ids->RectPart2(module_bbs[child_ids]),
+                                 lattice_children_ids)
+    # Correct id and name to each lattice rectilinear partition
+    for (i, lat) in enumerate(lattice_rect_partitions)
+        lat_data = lattice_nodes[i].data
+        lattice_rect_partitions[i] = RectPart2(lat_data[1], lat_data[2], lat.grid, lat.children)
+    end
+    # Create the regular partitions
+    lattices = map(i->begin
+                          lat = lattice_rect_partitions[i]
+                          RegPart2(lat.id, lat.name, RegularGrid(lat.grid), modules[lat.children]) 
+                      end,
+                      1:length(lattice_rect_partitions))
+
+    # Group the lattices into the core
+    lattice_bbs = map(x->bounding_box(x), lattices)
+    core_rect_partition = RectPart2(lattice_bbs)
+    # Correct id and name 
+    core_node = root(hm.partition_tree)
+    core_data = core_node.data
+    core = RectPart2(core_data[1], core_data[2], core_rect_partition.grid, lattices[core_rect_partition.children])
+
+    return MPACTSpatialPartition(core)
+end

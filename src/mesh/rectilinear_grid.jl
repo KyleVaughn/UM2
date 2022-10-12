@@ -84,3 +84,30 @@ end
 function Base.:-(rg::RectilinearGrid2, P::Point2{UM_F})
     return RectilinearGrid((rg.dims[1] .- P[1], rg.dims[2] .- P[2]))
 end
+
+# -- Convert to RegularGrid --
+
+function RegularGrid(rg::RectilinearGrid2)
+    # Check that the grid is regular
+    dx = rg.dims[1][2] - rg.dims[1][1]
+    if !all(i -> rg.dims[1][i + 1] - rg.dims[1][i] ≈ dx, 1:length(rg.dims[1]) - 1)
+        throw(ArgumentError("The grid is not regular."))
+    end
+    dy = rg.dims[2][2] - rg.dims[2][1]
+    if !all(i -> rg.dims[2][i + 1] - rg.dims[2][i] ≈ dy, 1:length(rg.dims[2]) - 1)
+        throw(ArgumentError("The grid is not regular."))
+    end
+    # Find the bottom left corner
+    min_x = x_min(rg)
+    min_y = y_min(rg)
+    minima = Point2(min_x, min_y)
+    # Find the cell size
+    dx = rg.dims[1][2] - rg.dims[1][1]
+    dy = rg.dims[2][2] - rg.dims[2][1]
+    delta = (dx, dy)
+    # Find the number of divisions
+    num_x = UM_I(length(rg.dims[1]) - 1)
+    num_y = UM_I(length(rg.dims[2]) - 1)
+    ndivs = (num_x, num_y)
+    return RegularGrid(minima, delta, ndivs)
+end
