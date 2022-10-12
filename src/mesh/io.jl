@@ -8,13 +8,13 @@ function import_mesh(path::String)
         file = read_abaqus_file(path)
         return file.elsets, to_mesh(file)
     elseif endswith(path, ".xdmf")
-        file = read_xdmf_file(path)
+        materials, file = read_xdmf_file(path)
         if file isa MeshFile
-            return file.elsets, to_mesh(xdmf_file)
+            return materials, file.elsets, to_mesh(xdmf_file)
         else # HierarchicalMeshFile
             hmf = to_mesh(file)
             leaf_elsets = [mf.elsets for mf in file.leaf_meshes]
-            return leaf_elsets, hmf
+            return materials, leaf_elsets, hmf
         end
     else
         error("Could not determine mesh file type from extension.")

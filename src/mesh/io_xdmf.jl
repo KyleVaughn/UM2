@@ -329,8 +329,8 @@ end
 xdmf_read_error() = error("Error while reading XDMF file.")
 
 function _read_xdmf_uniform_grid(xgrid::EzXML.Node,
-                                 h5_file::HDF5.File,
-                                 material_names::Vector{String})
+                                 h5_file::HDF5.File)
+#                                 material_names::Vector{String})
     # Get all the h5 file paths to relevant data
     points_path = ""
     connectivity_path = ""
@@ -408,11 +408,11 @@ function _read_xdmf_uniform_grid(xgrid::EzXML.Node,
         groups[group_names[i]] = Set{UM_I}(read(h5_file[group_paths[i]]) .+= 1)
     end
     # Convert the materials to groups
-    for i in 1:length(material_names)
-        groups["Material:_" * material_names[i]] = Set{UM_I}(findall(x -> x == i, materials))
-    end
-    return MeshFile("", XDMF_FORMAT, name, points, element_types, 
-                    offsets, connectivity, groups) 
+#    for i in 1:length(material_names)
+#        groups["Material:_" * material_names[i]] = Set{UM_I}(findall(x -> x == i, materials))
+#    end
+    return materials, MeshFile("", XDMF_FORMAT, name, points, element_types, 
+                                offsets, connectivity, groups) 
 end
 
 function _setup_xdmf_tree!(xmlnode::EzXML.Node,
@@ -439,19 +439,21 @@ end
 function _setup_xdmf_leaf_meshes!(xmlnode::EzXML.Node,
                                   h5_file::HDF5.File,
                                   leaf_meshes::Vector{MeshFile},
-                                  material_names::Vector{String},
+                                  leaf_materials::Vector{Vector{Int8}},
+#                                  material_names::Vector{String},
                                   idx::Int64)
     id = idx
     if hasnode(xmlnode)
         for xmlchild in eachnode(xmlnode)
             if nodename(xmlchild) == "Grid"
                 if xmlchild["GridType"] == "Uniform"
-                    leaf_meshes[id] = _read_xdmf_uniform_grid(xmlchild, h5_file,
-                                                              material_names)
+                    leaf_materials[id], leaf_meshes[id] = _read_xdmf_uniform_grid(xmlchild, 
+                                                                              h5_file)
+                                                              #material_names)
                     id += 1
                 elseif xmlchild["GridType"] == "Tree"
                     id = _setup_xdmf_leaf_meshes!(xmlchild, h5_file,
-                                                  leaf_meshes, material_names, id)
+                                                  leaf_meshes, leaf_materials, id)
                 else
                     error("Unsupported GridType")
                 end
@@ -487,9 +489,9 @@ function read_xdmf_file(filepath::String)
         end
         grid_type = xgrid["GridType"]
         if grid_type == "Uniform"
-            mesh_file = _read_xdmf_uniform_grid(xgrid, h5_file, material_names)
+            materials, mesh_file = _read_xdmf_uniform_grid(xgrid, h5_file, material_names)
             mesh_file.filepath = filepath
-            return mesh_file
+            return material_names, materials, mesh_file
         elseif grid_type == "Tree"
             @info "... Mesh is hierarchical"
             # Create tree
@@ -497,11 +499,12 @@ function read_xdmf_file(filepath::String)
             _setup_xdmf_tree!(xgrid, root, [UM_I(0)], UM_I(0))
             nleaf_meshes = num_leaves(root)
             leaf_meshes = Vector{MeshFile}(undef, nleaf_meshes)
+            leaf_materials = Vector{Vector{Int8}}(undef, nleaf_meshes)
             # fill the leaf meshes
             nleaf = _setup_xdmf_leaf_meshes!(xgrid, h5_file, leaf_meshes, 
-                                             material_names, 1)
+                                             leaf_materials, 1)
             @assert nleaf - 1 == nleaf_meshes
-            return HierarchicalMeshFile(filepath, XDMF_FORMAT, root, leaf_meshes)
+            return leaf_materials, HierarchicalMeshFile(filepath, XDMF_FORMAT, root, leaf_meshes)
         else
             xdmf_read_error()
         end

@@ -1,7 +1,7 @@
 export RectilinearPartition2, RectPart2
 
 export x_min, x_max, y_min, y_max, width, height, num_x, num_y,
-       bounding_box, children
+       bounding_box, children, get_index_map
 
 struct RectilinearPartition2{P}
     id::UM_I
@@ -136,6 +136,6 @@ function get_index_map(rp::RectPart2{I}) where {I <: Integer}
     return rp.children
 end
 
-function get_index_map(rp::RectPart2{<:RegularGrid2})
+function get_index_map(rp::RectPart2{<:RegPart2})
     return map(x -> x.id, rp.children)
 end
