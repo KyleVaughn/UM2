@@ -1,7 +1,7 @@
 export RectilinearPartition2, RectPart2
 
 export x_min, x_max, y_min, y_max, width, height, num_x, num_y,
-       bounding_box
+       bounding_box, children
 
 struct RectilinearPartition2{P}
     id::UM_I
@@ -47,6 +47,7 @@ const RectPart2 = RectilinearPartition2
 
 # -- Methods --
 
+children(rp::RectPart2) = rp.children
 x_min(rp::RectPart2) = x_min(rp.grid)
 x_max(rp::RectPart2) = x_max(rp.grid)
 y_min(rp::RectPart2) = y_min(rp.grid)
@@ -129,4 +130,12 @@ function RectilinearPartition2(bbs::Vector{AABox2{T}}) where {T}
         end
     end
     return RectilinearPartition2(UM_I(0), "", grid, children)
+end
+
+function get_index_map(rp::RectPart2{I}) where {I <: Integer}
+    return rp.children
+end
+
+function get_index_map(rp::RectPart2{<:RegularGrid2})
+    return map(x -> x.id, rp.children)
 end

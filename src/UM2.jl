@@ -9,6 +9,8 @@ using Printf
 using Dates: now, format
 using LoggingExtras: TransformerLogger
 
+import EzXML: root
+
 # Gmsh
 gmsh_dir = readdir(artifact"gmsh", join = true)[1]
 gmsh_jl = joinpath(gmsh_dir, "lib", "gmsh.jl")
