@@ -2,7 +2,7 @@ export QuadraticPolygonMesh, QPolygonMesh, QTriMesh, QQuadMesh
 
 export name, num_faces, face, face_iterator, faces, edges, bounding_box, 
        centroid, face_areas, sort_morton_order!, find_face, find_face_morton_order,
-       find_face_robust_morton
+       find_face_robust_morton, vtk_type
 
 # QUADRATIC POLYGON MESH
 # -----------------------------------------------------------------------------
@@ -269,7 +269,7 @@ face_areas(mesh::QPolygonMesh) = map(area, face_iterator(mesh))
 
 function sort_morton_order!(mesh::QPolygonMesh{N}) where {N}
     bb = bounding_box(mesh)
-    scale = max(delta_x(bb), delta_y(bb))
+    scale = max(width(bb), height(bb))
     scale_inv = 1 / scale
     nfaces = num_faces(mesh)
 
@@ -299,11 +299,21 @@ function sort_morton_order!(mesh::QPolygonMesh{N}) where {N}
     end
 
     # Recompute the vertex-face connectivity
-    vf_offsets, vf_conn = polygon_mesh_vf_conn(N, mesh.vertices, mesh.fv_conn)
+    vf_offsets, vf_conn = polygon_mesh_vf_conn(N, length(mesh.vertices), mesh.fv_conn)
     mesh.vf_offsets .= vf_offsets
     mesh.vf_conn .= vf_conn
 
     return nothing
+end
+
+function vtk_type(mesh::QPolygonMesh{N}) where {N}
+    if N === 6
+        return VTK_QUADRATIC_TRIANGLE
+    elseif N === 8
+        return VTK_QUADRATIC_QUAD
+    else
+        error("Unsupported polygon type")
+    end
 end
 
 # -- Show --

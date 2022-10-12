@@ -2,7 +2,7 @@ export PolygonMesh, TriMesh, QuadMesh
 
 export name, num_faces, face, face_iterator, faces, edges, bounding_box, 
        centroid, face_areas, sort_morton_order!, find_face, find_face_morton_order,
-       find_face_robust_morton
+       find_face_robust_morton, vtk_type
 
 # POLYGON MESH
 # -----------------------------------------------------------------------------
@@ -267,7 +267,7 @@ face_areas(mesh::PolygonMesh) = map(area, face_iterator(mesh))
 
 function sort_morton_order!(mesh::PolygonMesh{N}) where {N}
     bb = bounding_box(mesh)
-    scale = max(delta_x(bb), delta_y(bb))
+    scale = max(width(bb), height(bb))
     scale_inv = 1 / scale
     nfaces = num_faces(mesh)
 
@@ -302,6 +302,16 @@ function sort_morton_order!(mesh::PolygonMesh{N}) where {N}
     mesh.vf_conn .= vf_conn
 
     return nothing
+end
+
+function vtk_type(mesh::PolygonMesh{N}) where {N}
+    if N === 3
+        return VTK_TRIANGLE
+    elseif N === 4
+        return VTK_QUAD
+    else
+        error("Unsupported polygon type")
+    end
 end
 
 # -- Show --

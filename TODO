@@ -1,5 +1,29 @@
-Ray packet intersection functions
+Check mesh is morton order
+  ismortonorder(mesh) -> issorted( by = x -> encode_morton)
+
+Morton order difference:
+  Sort rvec
+  morton point in face
+
+Get timing info for packets.
+
+Figure out how to deal with material IDS
+
+Find face with morton order
+
+Setup morton ordering with elsets
+
+Ray cast timing:
+  intersect + find face vs pure ray casting.
+
+Ray packet intersection functions:
   Use a matrix instead of vec of vecs.
   If any(r != r_miss), vec(N * i + j) = (...) tuple
+
+Structured grid acceleration structure.
+Edge to edge RT using structured grid.
+  Intersect each face in the grid. Meaning use the connectivity info of the AABB, which is more
+  reliable. Go in columns or rows based upon the largest \Deltax? 
+
 Multithreading
 GPU kernals
