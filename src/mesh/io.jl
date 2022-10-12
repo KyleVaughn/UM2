@@ -5,16 +5,16 @@ export import_mesh, export_mesh
 # Not type-stable
 function import_mesh(path::String)
     if endswith(path, ".inp")
-        file = read_abaqus_file(path)
-        return file.elsets, to_mesh(file)
+        materials, file = read_abaqus_file(path)
+        return materials, file.elsets, to_mesh(file)
     elseif endswith(path, ".xdmf")
-        materials, file = read_xdmf_file(path)
+        material_names, materials, file = read_xdmf_file(path)
         if file isa MeshFile
-            return materials, file.elsets, to_mesh(xdmf_file)
+            return material_names, materials, file.elsets, to_mesh(xdmf_file)
         else # HierarchicalMeshFile
             hmf = to_mesh(file)
             leaf_elsets = [mf.elsets for mf in file.leaf_meshes]
-            return materials, leaf_elsets, hmf
+            return material_names, materials, leaf_elsets, hmf
         end
     else
         error("Could not determine mesh file type from extension.")

@@ -123,6 +123,26 @@ function read_abaqus_file(filepath::String)
         close(file)
     end
     push!(element_offsets, total_offset)
-    return MeshFile(filepath, ABAQUS_FORMAT, name, nodes, element_types, 
-                    element_offsets, elements, elsets)
+    # Material names
+    material_names = String[]
+    for elset_name in keys(elsets)
+        if startswith(elset_name, "Material:")
+            push!(material_names, elset_name[11:end])
+        end
+    end
+    sort!(material_names)
+    nfaces = length(element_types)
+    materials = zeros(Int8, nfaces)
+    for (i, mat_name) in enumerate(material_names)
+        for id in elsets[mat_name]
+            if materials[id] != 0
+                error("Element " * string(id) * " already has a material")
+            end
+            materials[id] = i 
+        end
+    end
+
+    return material_names, materials, 
+           MeshFile(filepath, ABAQUS_FORMAT, name, nodes, element_types, 
+                                      element_offsets, elements, elsets)
 end

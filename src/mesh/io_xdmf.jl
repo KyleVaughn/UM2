@@ -330,7 +330,7 @@ xdmf_read_error() = error("Error while reading XDMF file.")
 
 function _read_xdmf_uniform_grid(xgrid::EzXML.Node,
                                  h5_file::HDF5.File)
-#                                 material_names::Vector{String})
+#                               material_names::Vector{String})
     # Get all the h5 file paths to relevant data
     points_path = ""
     connectivity_path = ""
@@ -504,7 +504,7 @@ function read_xdmf_file(filepath::String)
             nleaf = _setup_xdmf_leaf_meshes!(xgrid, h5_file, leaf_meshes, 
                                              leaf_materials, 1)
             @assert nleaf - 1 == nleaf_meshes
-            return leaf_materials, HierarchicalMeshFile(filepath, XDMF_FORMAT, root, leaf_meshes)
+            return material_names, leaf_materials, HierarchicalMeshFile(filepath, XDMF_FORMAT, root, leaf_meshes)
         else
             xdmf_read_error()
         end
