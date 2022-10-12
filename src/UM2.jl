@@ -45,6 +45,7 @@ include("mesh/io_hierarchical_mesh_file.jl")
 include("mesh/io_abaqus.jl")
 include("mesh/io_xdmf.jl")
 include("mesh/regular_grid.jl")
+include("mesh/regular_partition.jl")
 include("mesh/rectilinear_grid.jl")
 include("mesh/rectilinear_partition.jl")
 include("mesh/polygon_mesh.jl")
@@ -67,20 +68,19 @@ include("ray_casting/intersect/ray_packet-polygon_mesh.jl")
 
 include("physics/material.jl")
 
-#include("mpact/grid_hierarchy.jl")
-###include("mpact/mesh_hierarchy.jl")
-#
-#include("gmsh/model/get_entities_by_color.jl")
-#include("gmsh/model/color_material_physical_group_entities.jl")
-#include("gmsh/model/safe_add_physical_group.jl")
-#include("gmsh/model/add_cad_names_to_physical_groups.jl")
-#include("gmsh/model/add_materials_to_physical_groups_by_color.jl")
-#include("gmsh/model/import_model.jl")
-#include("gmsh/model/safe_fragment.jl")
-#include("gmsh/model/overlay_mpact_grid_hierarchy.jl")
-#
-#include("gmsh/mesh/set_mesh_field_by_material.jl")
-#include("gmsh/mesh/generate_mesh.jl")
-#include("gmsh/mesh/get_cad_to_mesh_errors.jl")
+include("mpact/spatial_partition.jl")
+
+include("gmsh/model/get_entities_by_color.jl")
+include("gmsh/model/color_material_physical_group_entities.jl")
+include("gmsh/model/safe_add_physical_group.jl")
+include("gmsh/model/add_cad_names_to_physical_groups.jl")
+include("gmsh/model/add_materials_to_physical_groups_by_color.jl")
+include("gmsh/model/import_model.jl")
+include("gmsh/model/safe_fragment.jl")
+include("gmsh/model/overlay_mpact_grid_hierarchy.jl")
+
+include("gmsh/mesh/set_mesh_field_by_material.jl")
+include("gmsh/mesh/generate_mesh.jl")
+include("gmsh/mesh/get_cad_to_mesh_errors.jl")
 
 end

@@ -6,7 +6,7 @@ export AABox,
 export minima, maxima,
        x_min, y_min,
        x_max, y_max,
-       delta_x, delta_y,
+       width, height,
        area,
        bounding_box
 
@@ -43,8 +43,8 @@ y_min(aab::AABox2) = aab.minima[2]
 x_max(aab::AABox2) = aab.maxima[1]
 y_max(aab::AABox2) = aab.maxima[2]
 
-delta_x(aab::AABox2) = x_max(aab) - x_min(aab)
-delta_y(aab::AABox2) = y_max(aab) - y_min(aab)
+width(aab::AABox2) = x_max(aab) - x_min(aab)
+height(aab::AABox2) = y_max(aab) - y_min(aab)
 
 # -- Measure --
 

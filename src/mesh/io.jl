@@ -26,10 +26,22 @@ end
 function export_mesh(mesh::AbstractMesh, 
                      elsets::Dict{String, Set{I}},
                      path::String) where {I}
-    @info "Writing " * path
     if endswith(path, ".xdmf")
         mf = MeshFile(XDMF_FORMAT, mesh, elsets)
-        return write_xdmf(mf, path)
+        mf.filepath = path
+        return write_xdmf_file!(mf)
+    else
+        error("Could not determine mesh file type from extension")
+    end
+end
+
+function export_mesh(mesh::HierarchicalMesh,
+                     leaf_elsets::Vector{Dict{String, Set{I}}},
+                     path::String) where {I}
+    if endswith(path, ".xdmf")
+        hmf = HierarchicalMeshFile(XDMF_FORMAT, mesh, leaf_elsets)
+        hmf.filepath = path
+        return write_xdmf_file!(hmf)
     else
         error("Could not determine mesh file type from extension")
     end

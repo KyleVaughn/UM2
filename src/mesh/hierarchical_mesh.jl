@@ -190,17 +190,6 @@ function partition_mesh(mesh::AbstractMesh,
     return leaf_elsets, HierarchicalMesh(root, leaf_meshes)
 end
 
-
-
-
-
-
-
-
-
-
-
-
 function Base.show(io::IO, hm::HierarchicalMesh{M}) where {M}
     println("HierarchicalMesh{", M, "}")
     println(tree(hm))

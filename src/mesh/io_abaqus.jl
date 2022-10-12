@@ -78,7 +78,7 @@ function parse_elsets!(file::IOStream,
 end
 
 function read_abaqus_file(filepath::String)
-    @info "Reading ABAQUS file: " * filepath
+    @info "Reading ABAQUS file: '" * filepath * "'"
     name = ""
     nodes = Point2{UM_F}[]
     element_types = Int8[]

@@ -216,7 +216,7 @@ end
 # ------------------------------------------------------------------------------
 
 function write_xdmf_file!(mesh::MeshFile)
-    @info "Writing XDMF file " * mesh.filepath
+    @info "Writing XDMF file '" * mesh.filepath * "'"
     # Check valid filepath
     if mesh.format === XDMF_FORMAT
         # Do nothing
@@ -465,7 +465,7 @@ end
 
 # Not type-stable, since it may return a MeshFile or HierarchicalMeshFile
 function read_xdmf_file(filepath::String)
-    @info "Reading XDMF file: " * filepath
+    @info "Reading XDMF file: '" * filepath * "'"
     xdoc = readxml(filepath)
     xroot = root(xdoc)
     nodename(xroot) != "Xdmf" && xdmf_read_error()

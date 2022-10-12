@@ -1,13 +1,5 @@
-Use rectilinearmeshpartition
-
-Convert a mesh to MPACTMeshHierarchy
-convert a hierarchical mesh to a hierarchical mesh file
-  use tree for a general file
-write that file with xdmf
-read that file with xdmf
-
 Ray packet intersection functions
   Use a matrix instead of vec of vecs.
-  If any(r != r_miss), vec(N * i + j) = ...
+  If any(r != r_miss), vec(N * i + j) = (...) tuple
 Multithreading
 GPU kernals

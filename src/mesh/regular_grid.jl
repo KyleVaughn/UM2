@@ -1,10 +1,15 @@
-export RegularGrid, RegularGrid2
+export RegularGrid, RegularGrid2, RegGrid, RegGrid2
 
-export x_min, x_max, y_min, y_max, delta_x, delta_y, num_x, num_y
+export x_min, x_max, y_min, y_max, delta_x, delta_y, num_x, num_y,
+       bounding_box, width, height
 
 struct RegularGrid{D}
+    # The bottom left corner of the grid
     minima::Point{D, UM_F}
+    # The Δx, Δy, etc. of the grid
     delta::NTuple{D, UM_F}
+    # The number of divisions in each dimension.
+    # Must have at least 1 division to form a box.
     ndiv::NTuple{D, UM_I}
 
     function RegularGrid(minima::Point{D, UM_F}, 
@@ -23,6 +28,17 @@ end
 # -- Type aliases --
 
 const RegularGrid2 = RegularGrid{2}
+const RegGrid = RegularGrid
+const RegGrid2 = RegularGrid2
+
+# -- Constructors --
+
+# Turn an AABB into a RegularGrid. Used in spatial partitioning.
+function RegularGrid2(aabb::AABB2)
+    return RegularGrid(aabb.minima, 
+                        (width(aabb), height(aabb)), 
+                        (UM_I(1), UM_I(1)))
+end
 
 # -- Methods --
 
@@ -34,6 +50,9 @@ delta_x(rg::RegularGrid) = rg.delta[1]
 delta_y(rg::RegularGrid) = rg.delta[2]
 num_x(rg::RegularGrid) = rg.ndiv[1]
 num_y(rg::RegularGrid) = rg.ndiv[2]
+bounding_box(rg::RegularGrid2) = AABox(rg.minima, Point(x_max(rg), y_max(rg)))
+width(rg::RegularGrid2) = x_max(rg) - x_min(rg)
+height(rg::RegularGrid2) = y_max(rg) - y_min(rg)
 
 Base.size(rg::RegularGrid2) = (num_x(rg), num_y(rg))
 

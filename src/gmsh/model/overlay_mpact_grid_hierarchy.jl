@@ -1,9 +1,9 @@
 export overlay_mpact_grid_hierarchy
 
-function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
+function overlay_mpact_grid_hierarchy(sp::MPACTSpatialPartition,
                                       material_hierarchy::Vector{Material})
     @info "Overlaying MPACT grid hierarchy"
-    U = UInt32
+    U = MORTON_INDEX_TYPE # Defined in math/morton.jl
     U1 = U(1)
     model_dtags = gmsh.model.get_entities(2)
     int_width = 5
@@ -12,7 +12,7 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
     cel_ctr = 0
     grid_tags = Int32[]
     # Sort the lattice (i, j) indices into morton order
-    ilat_max, jlat_max = U.(size(grid.lattice_grid))
+    ilat_max, jlat_max = U.(size(sp.core))
     lat_zorder = Vector{U}(undef, ilat_max * jlat_max)
     mod_zorder = U[]
     cel_zorder = U[]
@@ -27,7 +27,7 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
         lat_name = "Lattice_" * lpad(lat_ctr, int_width, '0')
         groups[lat_name] = Int32[]
         # Sort the lattice's module indices into morton order
-        lat = grid.lattice_grid[lat_idx]
+        lat = sp.core[lat_idx] # A regular partition
         imod_max, jmod_max = U.(size(lat))
         mod_len = length(mod_zorder)
         # Resize the module z-order vector if necessary
@@ -44,17 +44,17 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
             mod_name = "Module_" * lpad(mod_ctr, int_width, '0')
             groups[mod_name] = Int32[]
             # Sort the module's coarse cell indices into morton order
-            rt_mod = lat[mod_idx]
-            icell_max, jcell_max = U.(size(rt_mod))
-            icell_max -= U1 # Cells are one less than nodes
-            jcell_max -= U1
-            cell_len = length(cel_zorder)
+            rt_mod = lat[mod_idx] # A rectilinear partition
+            icel_max, jcel_max = U.(size(rt_mod))
+            icel_max -= U1 # Cells are one less than nodes
+            jcel_max -= U1
+            cel_len = length(cel_zorder)
             # Resize the cell z-order vector if necessary
-            if icell_max * jcell_max > length(cel_zorder)
-                resize!(cel_zorder, icell_max * jcell_max)
+            if icel_max * jcel_max > length(cel_zorder)
+                resize!(cel_zorder, icel_max * jcel_max)
             end
-            for j in U1:jcell_max, i in U1:icell_max
-                cel_zorder[jcell_max * (j - U1) + i] = encode_morton(i - U1, j - U1)
+            for j in U1:jcel_max, i in U1:icel_max
+                cel_zorder[jcel_max * (j - U1) + i] = encode_morton(i - U1, j - U1)
             end
             sort!(cel_zorder)
             # Create the coarse geometry
@@ -65,10 +65,11 @@ function overlay_mpact_grid_hierarchy(grid::MPACTGridHierarchy,
                 # Get the cell's (i, j) indices
                 i, j = decode_morton(z)
                 # Get the cell's (x, y) coordinates
-                x0 = rt_mod.dims[1][i + U1]
-                y0 = rt_mod.dims[2][j + U1]
-                x1 = rt_mod.dims[1][i + U(2)]
-                y1 = rt_mod.dims[2][j + U(2)]
+                aabb = get_box(rt_mod.grid, i + U1, j + U1)
+                x0 = x_min(aabb)
+                y0 = y_min(aabb)
+                x1 = x_max(aabb)
+                y1 = y_max(aabb)
                 # Create the coarse cell
                 tag = gmsh.model.occ.add_rectangle(x0, y0, 0.0, x1 - x0, y1 - y0)
                 # Add the tag to the appropriate group

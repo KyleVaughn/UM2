@@ -87,14 +87,14 @@ coarse_divs = [pitch * i + 0.04 for i in 1:16]
 pushfirst!(coarse_divs, 0.0)
 push!(coarse_divs, 21.5) # Assembly pitch = 21.50 cm (pg. 7)
 coarse_grid = RectilinearGrid(coarse_divs, coarse_divs)
-mpact_grid = MPACTGridHierarchy(coarse_grid)
+mpact_grid = MPACTSpatialPartition(coarse_grid)
 # We now want Water to fill empty space, preserving all other materials,
 # so we need to swap Water to the bottom of the materials hierarchy
 materials[2], materials[3] = materials[3], materials[2]
 overlay_mpact_grid_hierarchy(mpact_grid, materials)
 
-# Mesh
-# ------------------------------------------------------------------------------------------------
+## Mesh
+## ------------------------------------------------------------------------------------------------
 mat_lc = [(mat, lc) for mat in materials]
 set_mesh_field_by_material(mat_lc)
 generate_mesh(order = mesh_order, face_type = mesh_face, opt_iters = 2, force_quads = false)
@@ -107,7 +107,8 @@ end
 gmsh.finalize()
 
 elsets, mesh = import_mesh(full_file_prefix*".inp")
-##statistics(mesh)
-# Partition the mesh according to the mpact grid hierarchy and write it as an xdmf file
-#mpt = MeshPartitionTree(mesh)
-#export_mesh(full_file_prefix*".xdmf", mpt)
+###statistics(mesh)
+# Partition the mesh according to mpact's spatial hierarchy.
+leaf_elsets, hierarchical_mesh = partition_mesh(mesh, elsets, by = "MPACT")
+# Write the mesh to an xdmf file
+export_mesh(hierarchical_mesh, leaf_elsets, full_file_prefix*".xdmf")
