@@ -129,12 +129,8 @@ function _create_tree(mesh::AbstractMesh,
             push!(root, node)
         end
     end
-    # Assign IDs to the leaf nodes
-    # Note: partition_names is sorted, so if by == "MPACT", then the order of the
-    # leaf nodes will be Cells sorted by ID.
-    for (i, node) in enumerate(leaves(root))
-        node.data = (UM_I(i), node.data[2])
-    end
+    # Assign IDs to the nodes based on order of traversal
+    _number_tree_nodes!(root, UM_I[], UM_I(0))
     return root
 end
 

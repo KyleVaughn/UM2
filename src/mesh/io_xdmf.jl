@@ -409,7 +409,9 @@ function _read_xdmf_uniform_grid(xgrid::EzXML.Node,
     end
     # Convert the materials to groups
     for i in 1:length(material_names)
-        groups["Material:_" * material_names[i]] = Set{UM_I}(findall(x -> x == i, materials))
+        if any(materials .== i)
+            groups["Material:_" * material_names[i]] = Set{UM_I}(findall(x -> x == i, materials))
+        end
     end
     return materials, MeshFile("", XDMF_FORMAT, name, points, element_types, 
                                 offsets, connectivity, groups) 
