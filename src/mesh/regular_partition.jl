@@ -1,7 +1,7 @@
 export RegularPartition2, RegPart2
 
 export x_min, x_max, y_min, y_max, delta_x, delta_y, num_x, num_y,    
-       bounding_box, width, height
+       bounding_box, width, height, children
 
 struct RegularPartition2{P}
     id::UM_I
@@ -27,6 +27,18 @@ struct RegularPartition2{P}
         return new{P}(id, name, grid, children)
     end
 
+    function RegularPartition2(id::UM_I,
+                               name::String,
+                               grid::RegularGrid2,
+                               children::Matrix{P}) where {P <: Integer}
+        grid_size = size(grid)
+        # Ensure that the grid and matrix of children have the same size.
+        if size(children) != grid_size
+            error("The size of the children matrix must match the size of the grid.")
+        end
+        return new{P}(id, name, grid, children)
+    end
+
 end
 
 # -- Aliases --
@@ -35,6 +47,7 @@ const RegPart2 = RegularPartition2
 
 # -- Methods --
 
+children(rp::RegPart2) = rp.children
 x_min(rp::RegPart2) = x_min(rp.grid)
 x_max(rp::RegPart2) = x_max(rp.grid)
 y_min(rp::RegPart2) = y_min(rp.grid)

@@ -55,6 +55,22 @@ function Base.issubset(g1::RectilinearGrid{D}, g2::RectilinearGrid{D}) where {D}
     return true
 end
 
+# If the axis aligned bounding box is equivalent to one of the grid cells
+function Base.issubset(aabb::AABox2, rg::RectilinearGrid2)
+    # Just iterate over every box in the grid and check if it is approximately
+    # equal to the aabb.
+    # One should probably do binary search on the rg for the aabb.minima.x and
+    # aabb.minima.y, then check that the next x and y are aabb.maxima,
+    # but this is probably good enough for now.
+    rg_size = size(rg)
+    for j in 1:rg_size[2], i in 1:rg_size[1]
+        if aabb ≈ get_box(rg, i, j)
+            return true
+        end
+    end
+    return false
+end
+
 x_min(rg::RectilinearGrid) = rg.dims[1][begin]
 y_min(rg::RectilinearGrid) = rg.dims[2][begin]
 x_max(rg::RectilinearGrid) = rg.dims[1][end]

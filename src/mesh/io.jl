@@ -5,8 +5,8 @@ export import_mesh, export_mesh
 # Not type-stable
 function import_mesh(path::String)
     if endswith(path, ".inp")
-        materials, file = read_abaqus_file(path)
-        return materials, file.elsets, to_mesh(file)
+        material_names, materials, file = read_abaqus_file(path)
+        return material_names, materials, file.elsets, to_mesh(file)
     elseif endswith(path, ".xdmf")
         material_names, materials, file = read_xdmf_file(path)
         if file isa MeshFile

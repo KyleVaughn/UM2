@@ -27,7 +27,7 @@ function overlay_mpact_grid_hierarchy(sp::MPACTSpatialPartition,
         lat_name = "Lattice_" * lpad(lat_ctr, int_width, '0')
         groups[lat_name] = Int32[]
         # Sort the lattice's module indices into morton order
-        lat = sp.core[lat_idx] # A regular partition
+        lat = sp.lattices[lat_idx] # A regular partition
         imod_max, jmod_max = U.(size(lat))
         mod_len = length(mod_zorder)
         # Resize the module z-order vector if necessary
@@ -44,10 +44,8 @@ function overlay_mpact_grid_hierarchy(sp::MPACTSpatialPartition,
             mod_name = "Module_" * lpad(mod_ctr, int_width, '0')
             groups[mod_name] = Int32[]
             # Sort the module's coarse cell indices into morton order
-            rt_mod = lat[mod_idx] # A rectilinear partition
+            rt_mod = sp.modules[mod_idx] # A rectilinear partition
             icel_max, jcel_max = U.(size(rt_mod))
-            icel_max -= U1 # Cells are one less than nodes
-            jcel_max -= U1
             cel_len = length(cel_zorder)
             # Resize the cell z-order vector if necessary
             if icel_max * jcel_max > length(cel_zorder)

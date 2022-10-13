@@ -105,8 +105,8 @@ for i in eachindex(mesh_errors)
 end
 #gmsh.fltk.run()
 gmsh.finalize()
-
-elsets, mesh = import_mesh(full_file_prefix*".inp")
+#
+mat_names, mats, elsets, mesh = import_mesh(full_file_prefix*".inp")
 ###statistics(mesh)
 # Partition the mesh according to mpact's spatial hierarchy.
 leaf_elsets, hierarchical_mesh = partition_mesh(mesh, elsets, by = "MPACT")

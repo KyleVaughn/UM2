@@ -1,31 +1,59 @@
 export MPACTSpatialPartition
 
-# Used to store the spatial partitioning information and an index mapping
-# to the pin meshes.
-# The core is a rectilinear partiton of lattices
-# The lattices are a REGULAR partition of modules.
-#   Each module must have the same dimensions, hence the regular grid.
-# The modules are a rectilinear partition of pins.
-# RecilinearPartition2{RegularPartition2{RectilinearGrid2}}
 struct MPACTSpatialPartition
-    #      y
-    #      ^
-    # j = 3|
-    # j = 2|
-    # j = 1|
-    #       _____________> x
-    #       i=1  i=2  i=3
-    core::RectPart2{    # Core == Rectilinear grid of lattices
-           RegPart2{    # Lattice == Regular grid of modules. NOTE: REGULAR GRID
-            RectPart2{  # Module == Rectilinear grid of pins
-             UM_I}}}    # Pin == Unstructured mesh. But we only store the index.
+    core::RectilinearPartition2{UM_I}
+    lattices::Vector{RegularPartition2{UM_I}}
+    modules::Vector{RectilinearPartition2{UM_I}}
 
-    # No input checking is required since:
-    #   -The rectilinear partition ensures that the lattices align with
-    #     each other.
-    #   -The regular partition ensures that the modules align with each other and
-    #     that the modules are the same size.
-    #   -The rectilinear grid ensures that the pins align with each other.
+    function MPACTSpatialPartition(core::RectilinearPartition2{UM_I},
+                                   lattices::Vector{RegularPartition2{UM_I}},
+                                   modules::Vector{RectilinearPartition2{UM_I}})
+        # Check that the core is the same size as the sum of the lattices
+        core_bb = bounding_box(core)
+        lattices_bb = mapreduce(bounding_box, union, lattices)
+        if core_bb != lattices_bb
+            throw(ArgumentError("The core and lattices do not have the same size"))
+        end
+        # Check that the lattices are aligned in the core children matrix
+        core_children = children(core)
+        core_size = size(core_children)
+        for j in 1:core_size[2] - 1, i in 1:core_size[1] - 1
+            # Aligned in x
+            if bounding_box(lattices[core_children[i, j]]) ≉ 
+               bounding_box(lattices[core_children[i, j + 1]])
+                throw(ArgumentError("The lattices are not aligned in the core children matrix"))
+            end
+            # Aligned in y
+            if bounding_box(lattices[core_children[i, j]]) ≉ 
+               bounding_box(lattices[core_children[i + 1, j]])
+                throw(ArgumentError("The lattices are not aligned in the core children matrix"))
+            end
+        end
+        # For each lattice, perform the same as above with the modules
+        for lattice in lattices
+            lattice_bb = bounding_box(lattice)
+            lattice_children = children(lattice)
+            modules_bb = mapreduce(bounding_box, union, modules[lattice_children])
+            if lattice_bb != modules_bb
+                throw(ArgumentError("The lattice and modules do not have the same size"))
+            end
+            lattice_size = size(lattice_children)
+            for j in 1:lattice_size[2] - 1, i in 1:lattice_size[1] - 1
+                # Aligned in x
+                if bounding_box(modules[lattice_children[i, j]]) ≉ 
+                   bounding_box(modules[lattice_children[i, j + 1]])
+                    throw(ArgumentError("The modules are not aligned in the lattice children matrix"))
+                end
+                # Aligned in y
+                if bounding_box(modules[lattice_children[i, j]]) ≉ 
+                   bounding_box(modules[lattice_children[i + 1, j]])
+                    throw(ArgumentError("The modules are not aligned in the lattice children matrix"))
+                end
+            end
+        end
+        # We assume that the pins are aligned within the modules
+        return new(core, lattices, modules)
+    end
 end
 
 function MPACTSpatialPartition(module_grid::RectilinearGrid2)
@@ -35,25 +63,17 @@ function MPACTSpatialPartition(module_grid::RectilinearGrid2)
                                       module_grid, module_children)
 
     lattice_grid = RegularGrid2(bounding_box(rt_module))
-    lattice_children = Matrix{RectilinearPartition2{UM_I}}(undef, 1, 1)
-    lattice_children[1, 1] = rt_module
+    lattice_children = ones(UM_I, 1, 1)
     lattice = RegularPartition2(UM_I(1), "Lattice_00001", 
                                 lattice_grid, lattice_children)
 
     core_grid = RectilinearGrid(bounding_box(lattice))
-    core_children = Matrix{RegPart2{RectPart2{UM_I}}}(undef, 1, 1)
-    core_children[1, 1] = lattice
+    core_children = ones(UM_I, 1, 1)
     core = RectilinearPartition2(UM_I(1), "Core", 
                                  core_grid, core_children)
 
-    return MPACTSpatialPartition(core)
+    return MPACTSpatialPartition(core, [lattice], [rt_module])
 end
-#
-#funtion MPACTSpatialPartition(module_grid::Matrix{RectilinearGrid2{T}}) where {T}
-#    lattice_grid = Matrix{Matrix{RectilinearGrid2{T}}}(undef, 1, 1)
-#    lattice_grid[1, 1] = module_grid
-#    return MPACTSpatialPartition(lattice_grid)
-#end
 
 function MPACTSpatialPartition(hm::HierarchicalMesh)
     # Build the spatial partitions from the bottom up.
@@ -95,11 +115,8 @@ function MPACTSpatialPartition(hm::HierarchicalMesh)
         lattice_rect_partitions[i] = RectPart2(lat_data[1], lat_data[2], lat.grid, lat.children)
     end
     # Create the regular partitions
-    lattices = map(i->begin
-                          lat = lattice_rect_partitions[i]
-                          RegPart2(lat.id, lat.name, RegularGrid(lat.grid), modules[lat.children]) 
-                      end,
-                      1:length(lattice_rect_partitions))
+    lattices = map(lat->RegPart2(lat.id, lat.name, RegularGrid(lat.grid), lat.children), 
+                   lattice_rect_partitions)
 
     # Group the lattices into the core
     lattice_bbs = map(x->bounding_box(x), lattices)
@@ -107,7 +124,8 @@ function MPACTSpatialPartition(hm::HierarchicalMesh)
     # Correct id and name 
     core_node = root(hm.partition_tree)
     core_data = core_node.data
-    core = RectPart2(core_data[1], core_data[2], core_rect_partition.grid, lattices[core_rect_partition.children])
+    core = RectPart2(core_data[1], core_data[2], 
+                     core_rect_partition.grid, core_rect_partition.children)
 
-    return MPACTSpatialPartition(core)
+    return MPACTSpatialPartition(core, lattices, modules)
 end

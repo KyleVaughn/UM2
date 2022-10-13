@@ -131,11 +131,3 @@ function RectilinearPartition2(bbs::Vector{AABox2{T}}) where {T}
     end
     return RectilinearPartition2(UM_I(0), "", grid, children)
 end
-
-function get_index_map(rp::RectPart2{I}) where {I <: Integer}
-    return rp.children
-end
-
-function get_index_map(rp::RectPart2{<:RegPart2})
-    return map(x -> x.id, rp.children)
-end

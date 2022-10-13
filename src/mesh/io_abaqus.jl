@@ -134,7 +134,7 @@ function read_abaqus_file(filepath::String)
     nfaces = length(element_types)
     materials = zeros(Int8, nfaces)
     for (i, mat_name) in enumerate(material_names)
-        for id in elsets[mat_name]
+        for id in elsets["Material:_" * mat_name]
             if materials[id] != 0
                 error("Element " * string(id) * " already has a material")
             end
