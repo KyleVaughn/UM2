@@ -39,7 +39,7 @@ end
 
 # -- Methods --
 
-Base.size(rg::RectilinearGrid2) = (length(rg.dims[1]), length(rg.dims[2]))
+Base.size(rg::RectilinearGrid2) = (length(rg.dims[1]) - 1, length(rg.dims[2]) - 1)
 
 function get_box(rg::RectilinearGrid2, i::Integer, j::Integer)
     return AABox(Point2(rg.dims[1][i    ], rg.dims[2][j    ]),

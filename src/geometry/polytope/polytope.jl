@@ -1,14 +1,12 @@
 export Polytope, 
-       Edge, 
        LineSegment, 
        QuadraticSegment, 
-       Face, 
        Polygon, 
-       QuadraticPolygon,
        Triangle, 
        Quadrilateral, 
+       QuadraticPolygon,
        QuadraticTriangle, 
-       QuadraticQuadrilateral,
+       QuadraticQuadrilateral
 
 export vertices
 
@@ -51,20 +49,20 @@ end
 #  -- Type aliases --
 
 # 1-polytope
-const Edge                      = Polytope{1}
-const LineSegment               = Edge{1, 2}
+const PolytopeEdge              = Polytope{1}
+const LineSegment               = PolytopeEdge{1, 2}
 const LineSegment2              = LineSegment{2}
-const QuadraticSegment          = Edge{2, 3}
+const QuadraticSegment          = PolytopeEdge{2, 3}
 const QuadraticSegment2         = QuadraticSegment{2}
 # 2-polytope
-const Face                      = Polytope{2}
-const Polygon                   = Face{1}
+const PolytopeFace              = Polytope{2}
+const Polygon                   = PolytopeFace{1}
 const Triangle                  = Polygon{3}
 const Triangle2                 = Triangle{2}
 const Quadrilateral             = Polygon{4}
 const Quadrilateral2            = Quadrilateral{2}
 
-const QuadraticPolygon          = Face{2}
+const QuadraticPolygon          = PolytopeFace{2}
 const QuadraticTriangle         = QuadraticPolygon{6}
 const QuadraticTriangle2        = QuadraticTriangle{2}
 const QuadraticQuadrilateral    = QuadraticPolygon{8}

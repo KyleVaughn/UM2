@@ -1,4 +1,7 @@
-export encode_morton, decode_morton, normalized_encode_morton
+export encode_morton, 
+       decode_morton,
+       normalized_encode_morton,
+       normalized_decode_morton
 #
 # Routines to support Morton ordered (Z-ordered) data 
 #
