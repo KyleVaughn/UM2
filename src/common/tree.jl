@@ -12,6 +12,8 @@ export data,
        nodes_at_level,
        root
 
+# A simple tree data structure for homogeneous data.
+# If heterogeneous data is desired, use a Union or Any
 mutable struct Tree{T}
     data::T
     parent::Union{Nothing, Tree{T}}

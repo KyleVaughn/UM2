@@ -3,6 +3,7 @@
 # https://en.wikipedia.org/wiki/CPUID#EAX=7,_ECX=0:_Extended_Features
 CPUInfo = zeros(Int32, 4)
 ccall(:jl_cpuidex, Cvoid, (Ptr{Cint}, Cint, Cint), CPUInfo, 7, 0)
+
 # if bit 8 of ebx is set, BMI2 is supported
 const UM_HAS_BMI2 = CPUInfo[2] & 0x100 != 0
 

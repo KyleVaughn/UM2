@@ -1,5 +1,7 @@
-export encode_morton, decode_morton
-
+export encode_morton, decode_morton, normalized_encode_morton
+#
+# Routines to support Morton ordered (Z-ordered) data 
+#
 # 32-bit or 64-bit unsigned integer
 const MORTON_INDEX_TYPE = UInt32
 # 0xffffffff or 0xffffffffffffffff
@@ -109,15 +111,19 @@ else
     end
 end
 
-# Normalizes the coordinate to the range [0, MORTON_MAX_SIDE]
-function encode_morton(x::T, y::T, scale_inv::T) where {T <: Union{Float32, Float64}}
+# Normalizes the coordinate to the range [0, MORTON_MAX_SIDE] before computing
+# the morton index. This allows for a more sane Float encoding, especially for a known
+# domain size.
+function normalized_encode_morton(x::T, y::T, scale_inv::T) where {T <: AbstractFloat} 
     x_u = floor(MORTON_INDEX_TYPE, x * scale_inv * MORTON_MAX_SIDE )
     y_u = floor(MORTON_INDEX_TYPE, y * scale_inv * MORTON_MAX_SIDE )
     return encode_morton(x_u, y_u)
 end
 
-function decode_morton(z::MORTON_INDEX_TYPE, scale::T
-    ) where {T <: Union{Float32, Float64}}
+# Decodes a floating point x,y pair, encoded by "normalized_encode_morton", scaling it
+# back to the original domain.
+function normalized_decode_morton(z::MORTON_INDEX_TYPE, scale::T) where {T <: AbstractFloat} 
+    mms_inv = T(1) / MORTON_MAX_SIDE
     x, y = decode_morton(z)
-    return x * scale / MORTON_MAX_SIDE, y * scale / MORTON_MAX_SIDE
+    return x * scale * mms_inv, y * scale * mms_inv
 end

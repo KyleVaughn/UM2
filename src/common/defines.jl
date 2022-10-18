@@ -7,6 +7,3 @@ const UM_INT = Int32
 const UM_F = UM_FLOAT
 # Alias for the default integer type
 const UM_I = UM_INT
-
-# If this
-const UM_HAS_BMI2 = true

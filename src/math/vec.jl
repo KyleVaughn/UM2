@@ -9,7 +9,8 @@ export ⋅, ×, coord, dot, cross, norm2, norm, normalize
 # --------------------------------------------------------------------------- 
 #
 # A D-dimenstional vector with data of type T
-#
+# This struct should only be used with small vectors (D ≤ 4). For large vectors
+# use Vector
 
 struct Vec{D, T <: AbstractFloat} <: AbstractVector{T}
    coord::NTuple{D, T}

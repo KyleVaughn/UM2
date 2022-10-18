@@ -44,11 +44,9 @@ function qpolygon_mesh_vf_conn(N::Int64, nverts::Int64, fv_conn::Vector{UM_I})
     # Vertex-face connectivity
     nfaces = length(fv_conn) ÷ N
     vf_conn_vert_counts = zeros(UM_I, nverts)
-    for face_id in 1:nfaces
-        for ivert in 1:N
-            vert_id = fv_conn[N * (face_id - 1) + ivert]
-            vf_conn_vert_counts[vert_id] += 1
-        end
+    for face_id in 1:nfaces, ivert in 1:N
+        vert_id = fv_conn[N * (face_id - 1) + ivert]
+        vf_conn_vert_counts[vert_id] += 1
     end
     vf_offsets = Vector{UM_I}(undef, nverts + 1)
     vf_offsets[1] = 1
@@ -57,12 +55,10 @@ function qpolygon_mesh_vf_conn(N::Int64, nverts::Int64, fv_conn::Vector{UM_I})
 
     vf_conn_vert_counts .-= 1
     vf_conn = Vector{UM_I}(undef, vf_offsets[end] - 1)
-    for face_id in 1:nfaces
-        for ivert in 1:N
-            vert_id = fv_conn[N * (face_id - 1) + ivert]
-            vf_conn[vf_offsets[vert_id] + vf_conn_vert_counts[vert_id]] = face_id
-            vf_conn_vert_counts[vert_id] -= 1
-        end
+    for face_id in 1:nfaces, ivert in 1:N
+        vert_id = fv_conn[N * (face_id - 1) + ivert]
+        vf_conn[vf_offsets[vert_id] + vf_conn_vert_counts[vert_id]] = face_id
+        vf_conn_vert_counts[vert_id] -= 1
     end
     for vert_id in 1:nverts
         this_offset = vf_offsets[vert_id]
@@ -287,10 +283,8 @@ function sort_morton_order!(mesh::QPolygonMesh{N}) where {N}
     centroids = collect(centroid_iterator(mesh))
     centroid_map = sortperm_morton_order(centroids, scale_inv)
     fv_map = Vector{eltype(centroid_map)}(undef, N * nfaces)
-    for iface in 1:nfaces
-        for ivert in 1:N
-            fv_map[N * (iface - 1) + ivert] = mesh.fv_conn[N * (centroid_map[iface] - 1) + ivert]
-        end
+    for iface in 1:nfaces, ivert in 1:N
+        fv_map[N * (iface - 1) + ivert] = mesh.fv_conn[N * (centroid_map[iface] - 1) + ivert]
     end
 
     # Remap the face-vertex connectivity

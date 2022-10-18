@@ -8,7 +8,8 @@ export det
 # ---------------------------------------------------------------------------    
 #    
 # An M x N matrix with data of type T    
-#  
+# This struct should only be used for small matrices (M * N ≤ 9). For large
+# matrices, use Matrix
 
 struct Mat{M, N, T <: AbstractFloat}
     cols::NTuple{N, Vec{M, T}}
