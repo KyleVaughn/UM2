@@ -1,8 +1,3 @@
-export QuadraticSegment,
-       QuadraticSegment2,
-       QuadraticSegment2f,
-       QuadraticSegment2d
-
 export interpolate_quadratic_segment,
        jacobian,
        quadratic_segment_jacobian,
@@ -28,20 +23,6 @@ export interpolate_quadratic_segment,
 #  𝗮 = 2(P₁ + P₂ - 2P₃)
 #  𝗯 = -3P₁ - P₂ + 4P₃
 #  C = P₁
-
-struct QuadraticSegment{D, T}
-    vertices::NTuple{3, Point{D, T}}
-end
-
-# -- Type aliases --
-
-const QuadraticSegment2  = QuadraticSegment{2}
-const QuadraticSegment2f = QuadraticSegment2{Float32}
-const QuadraticSegment2d = QuadraticSegment2{Float64}
-
-# -- Base --
-
-Base.getindex(Q::QuadraticSegment, i::Integer) = Q.vertices[i]
 
 # -- Constructors --
 

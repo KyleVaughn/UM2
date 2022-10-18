@@ -1,8 +1,3 @@
-export Quadrilateral,
-       Quadrilateral2,
-       Quadrilateral2f,
-       Quadrilateral2d
-
 export interpolate_quadrilateral,
        jacobian, quadrilateral_jacobian,
        area, quadrilateral_area,
@@ -17,14 +12,6 @@ export interpolate_quadrilateral,
 #
 # See chapter 8 of the VTK book for more info.
 #
-
-const Quadrilateral = Polygon{4}
-
-# -- Type aliases --
-
-const Quadrilateral2  = Quadrilateral{2}
-const Quadrilateral2f = Quadrilateral2{Float32}
-const Quadrilateral2d = Quadrilateral2{Float64}
 
 # -- Constructors --
 

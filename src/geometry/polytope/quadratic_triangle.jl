@@ -1,8 +1,3 @@
-export QuadraticTriangle,
-       QuadraticTriangle2,
-       QuadraticTriangle2f,
-       QuadraticTriangle2d
-
 export interpolate_quadratic_triangle,
        jacobian,
        quadratic_triangle_jacobian,
@@ -20,18 +15,10 @@ export interpolate_quadratic_triangle,
 # See chapter 8 of the VTK book for more info.
 #
 
-const QuadraticTriangle = QuadraticPolygon{6}
-
 # -- Type aliases --
-
-const QuadraticTriangle2  = QuadraticTriangle{2}
-const QuadraticTriangle2f = QuadraticTriangle2{Float32}
-const QuadraticTriangle2d = QuadraticTriangle2{Float64}
 
 const QTriangle = QuadraticTriangle
 const QTriangle2 = QuadraticTriangle2
-const QTriangle2f = QuadraticTriangle2f
-const QTriangle2d = QuadraticTriangle2d
 
 # -- Constructors --
 
@@ -127,20 +114,6 @@ function centroid(QT::QTriangle2{T}) where {T}
     C₂ = centroid_of_area_enclosed_by_quadratic_segment(QT[2], QT[3], QT[5])
     C₃ = centroid_of_area_enclosed_by_quadratic_segment(QT[3], QT[1], QT[6])
     return (aₜ*Cₜ + a₁ * C₁ + a₂ * C₂ + a₃ * C₃) / (aₜ + a₁ + a₂ + a₃)
-end
-
-# -- Bounding box --
-
-function bounding_box(QT::QTriangle)
-    return bounding_box(edge(1, QT)) ∪
-           bounding_box(edge(2, QT)) ∪
-           bounding_box(edge(3, QT))
-end
-
-# -- In --    
-      
-function Base.in(P::Point2, QT::QTriangle2)
-    return all(edge -> isleft(P, edge), edge_iterator(QT))
 end
 
 # -- Triangulation --

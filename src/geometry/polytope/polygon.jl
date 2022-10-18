@@ -1,7 +1,4 @@
-export Polygon
-
-export vertices,
-       edge,
+export edge,
        edge_iterator,
        bounding_box
 
@@ -11,24 +8,6 @@ export vertices,
 # A polygon represented by its vertices.
 # These N vertices are D-dimensional points of type T.
 #
-
-struct Polygon{N, D, T <: AbstractFloat}
-    vertices::NTuple{N, Point{D, T}}
-end
-
-# -- Constructors --
-
-function Polygon{N}(vertices::NTuple{N, Point{D, T}}) where {N, D, T} 
-    return Polygon{N, D, T}(vertices)
-end
-
-# -- Base --
-
-Base.getindex(P::Polygon, i::Integer) = P.vertices[i]
-
-# -- Accessors --
-
-vertices(P::Polygon) = P.vertices
 
 # -- Edges --
 

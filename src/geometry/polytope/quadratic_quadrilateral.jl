@@ -1,8 +1,3 @@
-export QuadraticQuadrilateral,
-       QuadraticQuadrilateral2,
-       QuadraticQuadrilateral2f,
-       QuadraticQuadrilateral2d
-
 export interpolate_quadratic_quadrilateral,
        jacobian,
        quadratic_quadrilateral_jacobian,
@@ -20,18 +15,10 @@ export interpolate_quadratic_quadrilateral,
 # See chapter 8 of the VTK book for more info.
 #
 
-const QuadraticQuadrilateral = QuadraticPolygon{8}
-
 # -- Type aliases --
-
-const QuadraticQuadrilateral2  = QuadraticQuadrilateral{2}
-const QuadraticQuadrilateral2f = QuadraticQuadrilateral2{Float32}
-const QuadraticQuadrilateral2d = QuadraticQuadrilateral2{Float64}
 
 const QQuadrilateral = QuadraticQuadrilateral
 const QQuadrilateral2  = QuadraticQuadrilateral2
-const QQuadrilateral2f = QuadraticQuadrilateral2f
-const QQuadrilateral2d = QuadraticQuadrilateral2d
 
 # -- Constructors --
 
@@ -180,19 +167,6 @@ function centroid(Q::QQuadrilateral2{T}) where {T}
     C₃ = centroid_of_area_enclosed_by_quadratic_segment(Q[3], Q[4], Q[7])
     C₄ = centroid_of_area_enclosed_by_quadratic_segment(Q[4], Q[1], Q[8])
     return (aq * Cq + a₁ * C₁ + a₂ * C₂ + a₃ * C₃ + a₄ * C₄) / (aq + a₁ + a₂ + a₃ + a₄)
-end
-
-# -- Bounding box --
-
-function bounding_box(Q::QQuadrilateral)
-    return (bounding_box(edge(1, Q)) ∪ bounding_box(edge(2, Q))) ∪
-           (bounding_box(edge(3, Q)) ∪ bounding_box(edge(4, Q)))
-end
-
-# -- In --
-
-function Base.in(P::Point2, Q::QQuadrilateral2)
-    return all(edge -> isleft(P, edge), edge_iterator(Q))
 end
 
 # -- Triangulation --

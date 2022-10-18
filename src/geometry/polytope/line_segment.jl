@@ -1,10 +1,4 @@
-export LineSegment,
-       LineSegment2,
-       LineSegment2f,
-       LineSegment2d
-
-export vertices,
-       interpolate_line_segment,
+export interpolate_line_segment,
        jacobian,
        line_segment_jacobian,
        arclength,
@@ -14,29 +8,11 @@ export vertices,
 # LINE SEGMENT
 # -----------------------------------------------------------------------------
 #
-# A line segment represented by its two vertices.
+# A line segment represented by its 2 vertices.
 # These vertices are D-dimensional points of type T.
 #
 # See chapter 8 of the VTK book for more info.
 #
-
-struct LineSegment{D, T}
-    vertices::NTuple{2, Point{D, T}}
-end
-
-# -- Type aliases --
-
-const LineSegment2  = LineSegment{2}
-const LineSegment2f = LineSegment2{Float32}
-const LineSegment2d = LineSegment2{Float64}
-
-# -- Base --
-
-Base.getindex(L::LineSegment, i::Integer) = L.vertices[i]
-
-# -- Accessors --
-
-vertices(l::LineSegment) = l.vertices
 
 # -- Constructors --
 

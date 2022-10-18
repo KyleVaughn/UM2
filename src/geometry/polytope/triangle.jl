@@ -1,8 +1,3 @@
-export Triangle,
-       Triangle2,
-       Triangle2f,
-       Triangle2d
-
 export interpolate_triangle,
        jacobian, triangle_jacobian,
        area, triangle_area,
@@ -16,14 +11,6 @@ export interpolate_triangle,
 #
 # See chapter 8 of the VTK book for more info.
 #
-
-const Triangle = Polygon{3}
-
-# -- Type aliases --
-
-const Triangle2  = Triangle{2}
-const Triangle2f = Triangle2{Float32}
-const Triangle2d = Triangle2{Float64}
 
 # -- Constructors --
 

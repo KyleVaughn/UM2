@@ -57,7 +57,7 @@ function Base.in(p::Point2, aab::AABox2)
            y_min(aab) ≤ p[2] ≤ y_max(aab)
 end
 
-# -- Miscellaneous --
+# -- Base -- 
 
 function Base.isapprox(aab₁::AABox, aab₂::AABox)
     return minima(aab₁) ≈ minima(aab₂) &&

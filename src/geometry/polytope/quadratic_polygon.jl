@@ -1,7 +1,4 @@
-export QuadraticPolygon
-
-export vertices,
-       edge,
+export edge,
        edge_iterator
 
 # QUADRATIC POLYGON 
@@ -13,27 +10,9 @@ export vertices,
 # See chapter 8 of the VTK book for more info.
 #
 
-struct QuadraticPolygon{N, D, T}
-    vertices::NTuple{N, Point{D, T}}
-end
-
 # -- Type aliases --
 
 const QPolygon = QuadraticPolygon
-
-# -- Constructors --
-
-function QPolygon{N}(vertices::NTuple{N, Point{D, T}}) where {N, D, T} 
-    return QPolygon{N, D, T}(vertices)
-end
-
-# -- Base --
-
-Base.getindex(QP::QPolygon, i::Integer) = QP.vertices[i]
-
-# -- Accessors --
-
-vertices(QP::QPolygon) = QP.vertices
 
 # -- Edges --
 
@@ -70,3 +49,7 @@ end
 # -- In --    
       
 Base.in(P::Point2, QP::QPolygon) = all(edge -> isleft(P, edge), edge_iterator(QP))
+
+# -- Bounding box --
+
+bounding_box(QP::QPolygon) = mapreduce(bounding_box, union, edge_iterator(QP))
