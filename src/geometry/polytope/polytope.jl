@@ -63,6 +63,7 @@ const Triangle                  = Polygon{3}
 const Triangle2                 = Triangle{2}
 const Quadrilateral             = Polygon{4}
 const Quadrilateral2            = Quadrilateral{2}
+
 const QuadraticPolygon          = Face{2}
 const QuadraticTriangle         = QuadraticPolygon{6}
 const QuadraticTriangle2        = QuadraticTriangle{2}
