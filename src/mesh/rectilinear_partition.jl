@@ -1,7 +1,7 @@
 export RectilinearPartition2, RectPart2
 
 export x_min, x_max, y_min, y_max, width, height, num_x, num_y,
-       bounding_box, children, get_index_map
+       bounding_box, children, get_index_map, name
 
 struct RectilinearPartition2{P}
     id::UM_I
@@ -13,7 +13,7 @@ struct RectilinearPartition2{P}
                                    name::String, 
                                    grid::RectilinearGrid2,
                                    children::Matrix{P}) where {P}
-        grid_size = size(grid) .- 1
+        grid_size = size(grid)
         # Ensure that the grid and matrix of children have the same size.
         if size(children) != grid_size
             error("The size of the children matrix must match the size of the grid.")
@@ -31,7 +31,7 @@ struct RectilinearPartition2{P}
                                    name::String, 
                                    grid::RectilinearGrid2,
                                    children::Matrix{P}) where {P <: Integer}
-        grid_size = size(grid) .- 1
+        grid_size = size(grid)
         # Ensure that the grid and matrix of children have the same size.
         if size(children) != grid_size
             error("The size of the children matrix must match the size of the grid.")
@@ -47,6 +47,7 @@ const RectPart2 = RectilinearPartition2
 
 # -- Methods --
 
+name(rp::RectPart2) = rp.name
 children(rp::RectPart2) = rp.children
 x_min(rp::RectPart2) = x_min(rp.grid)
 x_max(rp::RectPart2) = x_max(rp.grid)
@@ -118,7 +119,7 @@ function RectilinearPartition2(bbs::Vector{AABox2{T}}) where {T}
     push!(y_mins, max_y)
     grid = RectilinearGrid((x_mins, y_mins))
     # Ensure that the grid and matrix of children have the same size.
-    grid_size = size(grid) .- 1
+    grid_size = size(grid)
     children_size = size(children)
     if grid_size != children_size
         error("The size of the children matrix $children_size must match the size of the grid $grid_size")

@@ -1,7 +1,7 @@
 export RegularPartition2, RegPart2
 
 export x_min, x_max, y_min, y_max, delta_x, delta_y, num_x, num_y,    
-       bounding_box, width, height, children
+       bounding_box, width, height, children, name
 
 struct RegularPartition2{P}
     id::UM_I
@@ -47,6 +47,7 @@ const RegPart2 = RegularPartition2
 
 # -- Methods --
 
+name(rp::RegPart2) = rp.name
 children(rp::RegPart2) = rp.children
 x_min(rp::RegPart2) = x_min(rp.grid)
 x_max(rp::RegPart2) = x_max(rp.grid)
