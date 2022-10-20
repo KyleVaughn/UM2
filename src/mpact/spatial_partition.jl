@@ -57,7 +57,7 @@ struct MPACTSpatialPartition
 end
 
 function MPACTSpatialPartition(module_grid::RectilinearGrid2)
-    module_dims = size(module_grid) .- 1
+    module_dims = size(module_grid)
     module_children = zeros(UM_I, module_dims[1], module_dims[2])
     rt_module = RectilinearPartition2(UM_I(1), "Module_00001",
                                       module_grid, module_children)
