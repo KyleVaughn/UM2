@@ -1,11 +1,11 @@
-export get_modular_rays
+export get_modular_rays, get_modular_rays!
 
 # Follows https://mit-crpg.github.io/OpenMOC/methods/track_generation.html   
 
 # Get modular rays in the AABox2 aab at angle γ for ray spacing s
 function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
-    w = delta_x(aab)
-    h = delta_y(aab)
+    w = width(aab)
+    h = height(aab)
     γ1 = γ
     if T(PI_2) < γ
         γ1 = T(π) - γ
@@ -77,6 +77,116 @@ function get_modular_rays(γ::T, s::T, aab::AABox2{T}) where {T}
         end
         return rays
     end
+end
+
+# Assumes γ ∈ [0, π]
+function get_modular_rays!(rays::Vector{Ray2{T}}, γ::T, s::T, 
+                           x_origin::T, y_origin::T, w::T, h::T) where {T}
+    # Number of rays in x and y directions
+    sin_γ, cos_γ = sincos(γ)
+    nx = ceil(Int64, abs(w * sin_γ / s))
+    ny = ceil(Int64, abs(h * cos_γ / s))
+    nrays = nx + ny
+    # Resize vector for rays if necessary
+    if length(rays) < nrays
+        resize!(rays, nrays)
+    end
+    # Effective angle to ensure cyclic rays
+    γₑ = atan((h * nx) / (w * ny))
+    sin_γₑ, cos_γₑ = sincos(γₑ)
+    dx = w / nx
+    dy = h / ny 
+    if γ ≤ T(PI_2)
+        dir = Vec2{T}(cos_γₑ, sin_γₑ) # unit vector in direction of γₑ
+        x₀ = x_origin + w + dx / 2
+        for ix in 1:nx
+            # Generate ray from the bottom edge of the rectangular domain
+            # Ray either terminates at the right edge of the rectangle
+            # or on the top edge of the rectangle
+            rays[ix] = Ray2{T}(Point2{T}(x₀ - ix * dx, y_origin), dir)
+        end
+        y₀ = y_origin - dy / 2
+        for iy in 1:ny
+            # Generate rays from the left edge of the rectangular domain
+            # Ray either terminates at the right edge of the rectangle
+            # or on the top edge of the rectangle
+            rays[nx + iy] = Ray2{T}(Point2{T}(x_origin, y₀ + iy * dy), dir)
+        end
+    else
+        dir = Vec2{T}(-cos_γₑ, sin_γₑ) # unit vector in direction of γₑ
+        x₀ = x_origin - dx / 2
+        for ix in 1:nx                                                       
+            # Generate ray from the bottom edge of the rectangular domain     
+            # Ray either terminates at the left edge of the rectangle
+            # or on the top edge of the rectangle
+            rays[ix] = Ray2{T}(Point2{T}(x₀ + ix * dx, y_origin), dir)
+        end
+        xw = x_origin + w
+        y₀ = y_origin - dy / 2
+        for iy in 1:ny
+            # Generate ray from the right edge of the rectangular domain     
+            # Segment either terminates at the left edge of the rectangle
+            # or on the top edge of the rectangle
+            y₀ = (iy - T(0.5)) * dy
+            rays[nx + iy] = Ray2{T}(Point2{T}(xw, y₀ + iy * dy), dir)
+        end
+    end
+    return nrays
+end
+
+# Get the origin points and direction of rays for a given angle γ
+function get_modular_rays!(points::Vector{Point2{T}}, γ::T, s::T, 
+                           x_origin::T, y_origin::T, w::T, h::T) where {T}
+    # Number of rays in x and y directions
+    sin_γ, cos_γ = sincos(γ)
+    nx = ceil(Int64, abs(w * sin_γ / s))
+    ny = ceil(Int64, abs(h * cos_γ / s))
+    nrays = nx + ny
+    # Resize vector for rays if necessary
+    if length(points) < nrays
+        resize!(points, nrays)
+    end
+    # Effective angle to ensure cyclic rays
+    γₑ = atan((h * nx) / (w * ny))
+    sin_γₑ, cos_γₑ = sincos(γₑ)
+    dx = w / nx
+    dy = h / ny 
+    if γ ≤ T(PI_2)
+        dir = Vec2{T}(cos_γₑ, sin_γₑ) # unit vector in direction of γₑ
+        x₀ = x_origin + w + dx / 2
+        for ix in 1:nx
+            # Generate ray from the bottom edge of the rectangular domain
+            # Ray either terminates at the right edge of the rectangle
+            # or on the top edge of the rectangle
+            points[ix] = Point2{T}(x₀ - ix * dx, y_origin)
+        end
+        y₀ = y_origin - dy / 2
+        for iy in 1:ny
+            # Generate rays from the left edge of the rectangular domain
+            # Ray either terminates at the right edge of the rectangle
+            # or on the top edge of the rectangle
+            points[nx + iy] = Point2{T}(x_origin, y₀ + iy * dy)
+        end
+    else
+        dir = Vec2{T}(-cos_γₑ, sin_γₑ) # unit vector in direction of γₑ
+        x₀ = x_origin - dx / 2
+        for ix in 1:nx                                                       
+            # Generate ray from the bottom edge of the rectangular domain     
+            # Ray either terminates at the left edge of the rectangle
+            # or on the top edge of the rectangle
+            points[ix] = Point2{T}(x₀ + ix * dx, y_origin)
+        end
+        xw = x_origin + w
+        y₀ = y_origin - dy / 2
+        for iy in 1:ny
+            # Generate ray from the right edge of the rectangular domain     
+            # Segment either terminates at the left edge of the rectangle
+            # or on the top edge of the rectangle
+            y₀ = (iy - T(0.5)) * dy
+            points[nx + iy] = Point2{T}(xw, y₀ + iy * dy)
+        end
+    end
+    return nrays, dir
 end
 
 function get_modular_rays(ang_quad::ProductAngularQuadrature{T}, 
