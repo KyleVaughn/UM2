@@ -1,6 +1,6 @@
 export Point,
-       Point2, Point2f, Point2d,
-       Point3, Point3f, Point3d,
+       Point2,
+       Point3,
        EPS_POINT,
        EPS_POINT2,
        INF_POINT
@@ -28,12 +28,7 @@ const Point = Vec
 # -- Type aliases --
 
 const Point2 = Vec{2}
-const Point2f = Vec2f
-const Point2d = Vec2d
-
 const Point3 = Vec{3}
-const Point3f = Vec3f
-const Point3d = Vec3d
 
 # -- Methods --
 

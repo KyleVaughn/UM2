@@ -1,6 +1,5 @@
 export Mat,
-       Mat2x2,
-       Mat2x2f, Mat2x2d
+       Mat2x2
 
 export det
 
@@ -18,8 +17,6 @@ end
 # -- Type aliases --
 
 const Mat2x2  = Mat{2, 2}
-const Mat2x2f = Mat{2, 2, Float32}
-const Mat2x2d = Mat{2, 2, Float64}
 
 # -- Interface --
 

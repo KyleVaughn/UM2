@@ -1,7 +1,5 @@
 export Vec,
-       Vec1, Vec2, Vec3,
-       Vec1f, Vec2f, Vec3f,
-       Vec1d, Vec2d, Vec3d
+       Vec1, Vec2, Vec3
 
 export ⋅, ×, coord, dot, cross, norm2, norm, normalize
 
@@ -21,14 +19,6 @@ end
 const Vec1  = Vec{1}
 const Vec2  = Vec{2}
 const Vec3  = Vec{3}
-
-const Vec1f = Vec1{Float32}
-const Vec2f = Vec2{Float32}
-const Vec3f = Vec3{Float32}
-
-const Vec1d = Vec1{Float64}
-const Vec2d = Vec2{Float64}
-const Vec3d = Vec3{Float64}
 
 # -- Abstract vector interface --
 
