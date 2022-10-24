@@ -11,7 +11,7 @@ struct MPACTSpatialPartition
         # Check that the core is the same size as the sum of the lattices
         core_bb = bounding_box(core)
         lattices_bb = mapreduce(bounding_box, union, lattices)
-        if core_bb != lattices_bb
+        if core_bb ≉ lattices_bb
             throw(ArgumentError("The core and lattices do not have the same size"))
         end
         # Check that the lattices are aligned in the core children matrix
@@ -34,7 +34,7 @@ struct MPACTSpatialPartition
             lattice_bb = bounding_box(lattice)
             lattice_children = children(lattice)
             modules_bb = mapreduce(bounding_box, union, modules[lattice_children])
-            if lattice_bb != modules_bb
+            if lattice_bb ≉ modules_bb
                 throw(ArgumentError("The lattice and modules do not have the same size"))
             end
             lattice_size = size(lattice_children)
@@ -91,7 +91,8 @@ function MPACTSpatialPartition(hm::HierarchicalMesh)
     # Correct id and name to each module rectilinear partition
     for (i, mod) in enumerate(module_rect_partitions)
         mod_data = module_nodes[i].data
-        module_rect_partitions[i] = RectPart2(mod_data[1], mod_data[2], mod.grid, mod.children)
+        module_rect_partitions[i] = RectPart2(mod_data[1], mod_data[2], 
+                                              mod.grid, module_children_ids[i][mod.children])
     end
     # The modules are now ready to be grouped into lattices
     modules = module_rect_partitions
@@ -112,7 +113,8 @@ function MPACTSpatialPartition(hm::HierarchicalMesh)
     # Correct id and name to each lattice rectilinear partition
     for (i, lat) in enumerate(lattice_rect_partitions)
         lat_data = lattice_nodes[i].data
-        lattice_rect_partitions[i] = RectPart2(lat_data[1], lat_data[2], lat.grid, lat.children)
+        lattice_rect_partitions[i] = RectPart2(lat_data[1], lat_data[2], 
+                                               lat.grid, lattice_children_ids[i][lat.children])
     end
     # Create the regular partitions
     lattices = map(lat->RegPart2(lat.id, lat.name, RegularGrid(lat.grid), lat.children), 
