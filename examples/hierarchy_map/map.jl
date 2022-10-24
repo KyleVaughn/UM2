@@ -116,7 +116,7 @@ mesh_errors = get_cad_to_mesh_errors()
 for i in eachindex(mesh_errors)
     println(mesh_errors[i])
 end
-#gmsh.fltk.run()
+gmsh.fltk.run()
 gmsh.finalize()
 
 mat_names, mats, elsets, mesh = import_mesh("map.inp")

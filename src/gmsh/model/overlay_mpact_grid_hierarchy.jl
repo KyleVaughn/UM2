@@ -56,14 +56,16 @@ function overlay_mpact_grid_hierarchy(sp::MPACTSpatialPartition,
             end
             cel_zperm = sortperm(cel_zorder)
             # Create the coarse geometry
-            for cel_idx in rt_mod.children[cel_zperm]
+            for cel_idx in cel_zperm
+                cel_id = rt_mod.children[cel_idx]
                 cel_ctr += 1
                 cel_name = "Cell_" * lpad(cel_ctr, int_width, '0')
                 groups[cel_name] = Int32[]
                 # Get the cell's (i, j) indices
-                i, j = morton_decode(UInt32(cel_idx))
+                j = (cel_idx - 1) ÷ icel_max + 1
+                i = cel_idx - (j - 1) * icel_max 
                 # Get the cell's (x, y) coordinates
-                aabb = get_box(rt_mod.grid, i + U1, j + U1)
+                aabb = get_box(rt_mod.grid, i, j)
                 x0 = x_min(aabb)
                 y0 = y_min(aabb)
                 x1 = x_max(aabb)
