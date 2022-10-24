@@ -10,18 +10,18 @@ struct RegularGrid{D}
     delta::NTuple{D, UM_F}
     # The number of divisions in each dimension.
     # Must have at least 1 division to form a box.
-    ndiv::NTuple{D, UM_I}
+    ncells::NTuple{D, UM_I}
 
     function RegularGrid(minima::Point{D, UM_F}, 
                          delta::NTuple{D, UM_F}, 
-                         ndiv::NTuple{D, UM_I}) where {D}
+                         ncells::NTuple{D, UM_I}) where {D}
         if !all(d -> 0 < d, delta)
             throw(ArgumentError("All Δ must be positive"))
         end
-        if !all(d -> 0 < d, ndiv)
+        if !all(d -> 0 < d, ncells)
             throw(ArgumentError("All N must be positive"))
         end
-        return new{D}(minima, delta, ndiv)
+        return new{D}(minima, delta, ncells)
     end
 end
 
@@ -44,12 +44,12 @@ end
 
 x_min(rg::RegularGrid) = rg.minima[1]
 y_min(rg::RegularGrid) = rg.minima[2]
-x_max(rg::RegularGrid) = rg.minima[1] + rg.delta[1] * rg.ndiv[1]
-y_max(rg::RegularGrid) = rg.minima[2] + rg.delta[2] * rg.ndiv[2]
+x_max(rg::RegularGrid) = rg.minima[1] + rg.delta[1] * rg.ncells[1]
+y_max(rg::RegularGrid) = rg.minima[2] + rg.delta[2] * rg.ncells[2]
 delta_x(rg::RegularGrid) = rg.delta[1]
 delta_y(rg::RegularGrid) = rg.delta[2]
-num_x(rg::RegularGrid) = rg.ndiv[1]
-num_y(rg::RegularGrid) = rg.ndiv[2]
+num_x(rg::RegularGrid) = rg.ncells[1]
+num_y(rg::RegularGrid) = rg.ncells[2]
 bounding_box(rg::RegularGrid2) = AABox(rg.minima, Point(x_max(rg), y_max(rg)))
 width(rg::RegularGrid2) = x_max(rg) - x_min(rg)
 height(rg::RegularGrid2) = y_max(rg) - y_min(rg)

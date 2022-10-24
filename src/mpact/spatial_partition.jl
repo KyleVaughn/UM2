@@ -19,13 +19,13 @@ struct MPACTSpatialPartition
         core_size = size(core_children)
         for j in 1:core_size[2] - 1, i in 1:core_size[1] - 1
             # Aligned in x
-            if bounding_box(lattices[core_children[i, j]]) ≉ 
-               bounding_box(lattices[core_children[i, j + 1]])
+            if all(x_coords(bounding_box(lattices[core_children[i, j]])) .≉ 
+                   x_coords(bounding_box(lattices[core_children[i, j + 1]])))
                 throw(ArgumentError("The lattices are not aligned in the core children matrix"))
             end
             # Aligned in y
-            if bounding_box(lattices[core_children[i, j]]) ≉ 
-               bounding_box(lattices[core_children[i + 1, j]])
+            if all(y_coords(bounding_box(lattices[core_children[i, j]])) .≉ 
+                   y_coords(bounding_box(lattices[core_children[i + 1, j]])))
                 throw(ArgumentError("The lattices are not aligned in the core children matrix"))
             end
         end
@@ -40,13 +40,13 @@ struct MPACTSpatialPartition
             lattice_size = size(lattice_children)
             for j in 1:lattice_size[2] - 1, i in 1:lattice_size[1] - 1
                 # Aligned in x
-                if bounding_box(modules[lattice_children[i, j]]) ≉ 
-                   bounding_box(modules[lattice_children[i, j + 1]])
+                if all(x_coords(bounding_box(modules[lattice_children[i, j]])) .≉ 
+                       x_coords(bounding_box(modules[lattice_children[i, j + 1]])))
                     throw(ArgumentError("The modules are not aligned in the lattice children matrix"))
                 end
                 # Aligned in y
-                if bounding_box(modules[lattice_children[i, j]]) ≉ 
-                   bounding_box(modules[lattice_children[i + 1, j]])
+                if all(y_coords(bounding_box(modules[lattice_children[i, j]])) .≉ 
+                       y_coords(bounding_box(modules[lattice_children[i + 1, j]])))
                     throw(ArgumentError("The modules are not aligned in the lattice children matrix"))
                 end
             end

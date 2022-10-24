@@ -1,3 +1,5 @@
+export UM_F, UM_I
+
 # The default floating point type used by the library
 const UM_FLOAT = Float64
 # The default integer type used by the library

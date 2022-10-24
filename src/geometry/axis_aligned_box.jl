@@ -37,6 +37,9 @@ y_min(aab::AABox2) = aab.minima[2]
 x_max(aab::AABox2) = aab.maxima[1]
 y_max(aab::AABox2) = aab.maxima[2]
 
+x_coords(aab::AABox2) = (x_min(aab), x_max(aab))
+y_coords(aab::AABox2) = (y_min(aab), y_max(aab))
+
 width(aab::AABox2) = x_max(aab) - x_min(aab)
 height(aab::AABox2) = y_max(aab) - y_min(aab)
 
