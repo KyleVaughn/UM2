@@ -10,7 +10,7 @@ function import_mesh(path::String)
     elseif endswith(path, ".xdmf")
         material_names, materials, file = read_xdmf_file(path)
         if file isa MeshFile
-            return material_names, materials, file.elsets, to_mesh(xdmf_file)
+            return material_names, materials, file.elsets, to_mesh(file)
         else # HierarchicalMeshFile
             hmf = to_mesh(file)
             leaf_elsets = [mf.elsets for mf in file.leaf_meshes]

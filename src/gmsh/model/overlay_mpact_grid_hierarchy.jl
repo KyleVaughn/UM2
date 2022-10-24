@@ -15,6 +15,7 @@ function overlay_mpact_grid_hierarchy(sp::MPACTSpatialPartition,
     ilat_max, jlat_max = U.(size(sp.core))
     lat_zorder = Vector{U}(undef, ilat_max * jlat_max)
     mod_zorder = U[]
+    cel_zorder = U[]
     groups = Dict{String, Vector{Int32}}()
     for j in U1:jlat_max, i in U1:ilat_max
         lat_zorder[jlat_max * (j - U1) + i] = morton_encode(i - U1, j - U1)
@@ -44,13 +45,23 @@ function overlay_mpact_grid_hierarchy(sp::MPACTSpatialPartition,
             groups[mod_name] = Int32[]
             # Sort the module's coarse cell indices into morton order
             rt_mod = sp.modules[mod_idx] # A rectilinear partition
+            icel_max, jcel_max = U.(size(rt_mod))
+            cel_len = length(cel_zorder)
+            # Resize the coarse cell z-order vector if necessary
+            if icel_max * jcel_max > length(cel_zorder)
+                resize!(cel_zorder, icel_max * jcel_max)
+            end
+            for j in U1:jcel_max, i in U1:icel_max
+                cel_zorder[jcel_max * (j - U1) + i] = morton_encode(i - U1, j - U1)
+            end
+            cel_zperm = sortperm(cel_zorder)
             # Create the coarse geometry
-            for z in 1:length(rt_mod.children)
+            for cel_idx in rt_mod.children[cel_zperm]
                 cel_ctr += 1
                 cel_name = "Cell_" * lpad(cel_ctr, int_width, '0')
                 groups[cel_name] = Int32[]
                 # Get the cell's (i, j) indices
-                i, j = morton_decode(UInt32(z - 1))
+                i, j = morton_decode(UInt32(cel_idx))
                 # Get the cell's (x, y) coordinates
                 aabb = get_box(rt_mod.grid, i + U1, j + U1)
                 x0 = x_min(aabb)
