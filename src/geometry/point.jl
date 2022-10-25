@@ -1,5 +1,6 @@
 export Point,
        Point2,
+       Point2d,
        Point3,
        EPS_POINT,
        EPS_POINT2,
@@ -28,6 +29,7 @@ const Point = Vec
 # -- Type aliases --
 
 const Point2 = Vec{2}
+const Point2d = Point2{Float64}
 const Point3 = Vec{3}
 
 # -- Methods --

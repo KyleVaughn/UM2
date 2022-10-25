@@ -3,7 +3,7 @@
 # CASL-U-2012-0131-004
 using UM2
 file_prefix = "2a"
-mesh_order = 1
+mesh_order = 2
 mesh_face = "Triangle"
 lc = 1.26/5 # cm, pitch = 1.26 cm
 lc_str = string(round(lc, digits = 4))
@@ -19,9 +19,9 @@ gmsh.option.set_number("General.Verbosity", 2) # 1: +errors, 2: +warnings, 3: +d
 # Model
 # ----------------------------------------------------------------------------------------------
 @info "Creating model"
-fuel_entities = Int64[];
-clad_entities = Int64[];
-water_entities = Int64[];
+fuel_entities = Int64[]
+clad_entities = Int64[]
+water_entities = Int64[]
 r_fuel = 0.4096 # Pellet radius = 0.4096 cm (pg. 4)
 r_clad = 0.475  # Outer clad radius = 0.475 cm (pg.4)
 pitch = 1.26    # Pitch = 1.26 cm (pg. 4)
