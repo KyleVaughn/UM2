@@ -1,3 +1,6 @@
+# Meant to produce the MPACT fine mesh discretization for the 1a_nogap
+# case.  This is a manual version of the script, which is meant to
+# preserve areas of the mesh that are important for the physics.
 filename = "1a_quad2.inp"
 r_mat = [0.4096, 0.475, 0.582] # radius of the rings for each material
 rdivs = [5, 1, 1] # radial divisions for each material
@@ -13,6 +16,7 @@ r_equiv = get_equiv_quad8_radii(r_div, a_div, n_azi, pitch)
 points = get_quad8_mesh_points(r_equiv, n_azi, pitch)
 faces = get_quad8_mesh_faces(sum(rdivs), n_azi)
 
+# These should be tweaked ≈ 1e-3 to perfectly match the original mesh
 r0 = 0.682
 r1 = 0.772
 θ = 2 * π / n_azi

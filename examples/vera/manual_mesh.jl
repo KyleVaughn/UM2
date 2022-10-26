@@ -416,6 +416,7 @@ function write_quad8_mesh(
     # Write the file
     io = open(filename, "w");
     try
+        nfaces = length(faces)
         println(io, "*Heading")
         println(io, " " * filename)
         println(io, "*NODE")
@@ -433,19 +434,32 @@ function write_quad8_mesh(
             if i == 1 || mat != materials[i-1]
                 println(io, "*ELSET,ELSET=Material:_" * mat)
                 ndiv = rdivs[i]
-            else
-                ndiv = 1
-            end
-            for j in 1:ndiv
-                for k in 1:n_azi - 1
-                    print(io, fctr, ", ")
+                for j in 1:ndiv
+                    for k in 1:n_azi - 1
+                        print(io, fctr, ", ")
+                        fctr += 1
+                    end
+                    print(io, fctr, ",\n")
                     fctr += 1
                 end
-                print(io, fctr, ",\n")
-                fctr += 1
+            else
+                # This is a dumb way to do this. Fix in the future.
+                while fctr <= nfaces 
+                    for k in 1:n_azi - 1
+                        print(io, fctr, ", ")
+                        fctr += 1
+                        if fctr > nfaces
+                            break
+                        end
+                    end
+                    if fctr > nfaces
+                        break
+                    end
+                    print(io, fctr, ",\n")
+                    fctr += 1
+                end
             end
         end
-        nfaces = length(faces)
         for elset in elsets
             println(io, "*ELSET,ELSET=" * elset)
             for i in 1:nfaces
