@@ -343,66 +343,66 @@ function get_quad8_mesh_faces(ndiv::Int64, n_azi::Int64)
     return faces
 end
 
-function write_quad_mesh(
-        filename::String,
-        pitch::Float64,
-        points::Vector{NTuple{2, Float64}},
-        faces::Vector{NTuple{4, Int64}},
-        rdivs::Vector{Int64},
-        materials::Vector{String},
-        elsets::Vector{String}
-    )
-    # Write the file
-    io = open(filename, "w");
-    try
-        println(io, "*Heading")
-        println(io, " " * filename)
-        println(io, "*NODE")
-        p2 = pitch / 2 # offset to make all points positive
-        for (i, p) in enumerate(points)
-            println(io, i, ", ", p[1] + p2, ", ", p[2] + p2, ", 0.0")
-        end
-        println(io, "*ELEMENT, type=CPS4, ELSET=ALL")
-        for (i, f) in enumerate(faces)
-            println(io, i, ", ", f[1], ", ", f[2], ", ", f[3], ", ", f[4])
-        end
-        fctr = 1
-        for (i, mat) in enumerate(materials)
-            if i == 1 || mat != materials[i-1]
-                println(io, "*ELSET,ELSET=Material:_" * mat)
-                ndiv = rdivs[i]
-            else
-                ndiv = 1
-            end
-            for j in 1:ndiv
-                for k in 1:n_azi - 1
-                    print(io, fctr, ", ")
-                    fctr += 1
-                end
-                print(io, fctr, ",\n")
-                fctr += 1
-            end
-        end
-        nfaces = length(faces)
-        for elset in elsets
-            println(io, "*ELSET,ELSET=" * elset)
-            for i in 1:nfaces
-                if i == nfaces
-                    println(io, i)
-                elseif i % 10 == 0
-                    print(io, i, ",\n")
-                else
-                    print(io, i, ", ")
-                end
-            end
-        end
-    catch e
-        println(e)
-    finally
-        close(io)
-    end
-    return nothing
-end
+#function write_quad_mesh(
+#        filename::String,
+#        pitch::Float64,
+#        points::Vector{NTuple{2, Float64}},
+#        faces::Vector{NTuple{4, Int64}},
+#        rdivs::Vector{Int64},
+#        materials::Vector{String},
+#        elsets::Vector{String}
+#    )
+#    # Write the file
+#    io = open(filename, "w");
+#    try
+#        println(io, "*Heading")
+#        println(io, " " * filename)
+#        println(io, "*NODE")
+#        p2 = pitch / 2 # offset to make all points positive
+#        for (i, p) in enumerate(points)
+#            println(io, i, ", ", p[1] + p2, ", ", p[2] + p2, ", 0.0")
+#        end
+#        println(io, "*ELEMENT, type=CPS4, ELSET=ALL")
+#        for (i, f) in enumerate(faces)
+#            println(io, i, ", ", f[1], ", ", f[2], ", ", f[3], ", ", f[4])
+#        end
+#        fctr = 1
+#        for (i, mat) in enumerate(materials)
+#            if i == 1 || mat != materials[i-1]
+#                println(io, "*ELSET,ELSET=Material:_" * mat)
+#                ndiv = rdivs[i]
+#            else
+#                ndiv = 1
+#            end
+#            for j in 1:ndiv
+#                for k in 1:n_azi - 1
+#                    print(io, fctr, ", ")
+#                    fctr += 1
+#                end
+#                print(io, fctr, ",\n")
+#                fctr += 1
+#            end
+#        end
+#        nfaces = length(faces)
+#        for elset in elsets
+#            println(io, "*ELSET,ELSET=" * elset)
+#            for i in 1:nfaces
+#                if i == nfaces
+#                    println(io, i)
+#                elseif i % 10 == 0
+#                    print(io, i, ",\n")
+#                else
+#                    print(io, i, ", ")
+#                end
+#            end
+#        end
+#    catch e
+#        println(e)
+#    finally
+#        close(io)
+#    end
+#    return nothing
+#end
 
 function write_quad8_mesh(
         filename::String,

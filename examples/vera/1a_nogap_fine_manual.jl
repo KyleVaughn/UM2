@@ -128,4 +128,76 @@ push!(faces, (413, 353, 432, 361, 463, 464, 465, 441))
 push!(points, (points[353] .+ points[432]) ./ 2)
 push!(points, (points[432] .+ points[361]) ./ 2)
 
-write_quad8_mesh(filename, pitch, points, faces, rdivs, materials, elsets)
+# Write the file
+io = open(filename, "w");
+try
+    nfaces = length(faces)
+    println(io, "*Heading")
+    println(io, " " * filename)
+    println(io, "*NODE")
+    p2 = pitch / 2 # offset to make all points positive
+    for (i, p) in enumerate(points)
+        println(io, i, ", ", p[1] + p2, ", ", p[2] + p2, ", 0.0")
+    end
+    println(io, "*ELEMENT, type=CPS8, ELSET=ALL")
+    for (i, f) in enumerate(faces)
+        println(io, i, ", ", f[1], ", ", f[2], ", ", f[3], ", ", f[4],
+                ", ", f[5], ", ", f[6], ", ", f[7], ", ", f[8])
+    end
+    material_dict = Dict{String, Set{Int64}}()
+    for mat in materials
+        if !haskey(material_dict, mat)
+            material_dict[mat] = Set{Int64}()
+        end
+    end
+    nrad = sum(rdivs) + 1
+    cum_divs = 0
+    for (i, mat) in enumerate(materials)
+        if i != 1
+            cum_divs += rdivs[i-1]
+        end
+        for ia in 1:n_azi
+            if i == length(materials)
+                ndiv = 1
+            else
+                ndiv = rdivs[i]
+            end
+            for ir in 1:ndiv
+                push!(material_dict[mat], (ia - 1) * nrad  + ir + cum_divs)
+            end
+        end
+    end
+    for i in ((n_azi - 1) * nrad + cum_divs + 1):nfaces
+        push!(material_dict[materials[end]], i)
+    end
+    for mat in sort!(collect(keys(material_dict)))
+        println(io, "*ELSET,ELSET=Material:_" * mat)
+        ids = sort!(collect(material_dict[mat]))
+        for (i, id) in enumerate(ids)
+            if i == length(ids)
+                println(io, id)
+            elseif i % 10 == 0
+                print(io, id, ",\n")
+            else
+                print(io, id, ", ")
+            end
+        end
+    end
+    for elset in elsets
+        println(io, "*ELSET,ELSET=" * elset)
+        for i in 1:nfaces
+            if i == nfaces
+                println(io, i)
+            else
+                print(io, i, ", ")
+            end
+            if i % 10 == 0
+                println(io)
+            end
+        end
+    end
+catch e
+    println(e)
+finally
+    close(io)
+end
