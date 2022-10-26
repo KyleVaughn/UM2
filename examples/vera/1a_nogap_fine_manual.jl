@@ -127,3 +127,5 @@ push!(points, (points[353] .+ points[413]) ./ 2)
 push!(faces, (413, 353, 432, 361, 463, 464, 465, 441))
 push!(points, (points[353] .+ points[432]) ./ 2)
 push!(points, (points[432] .+ points[361]) ./ 2)
+
+write_quad8_mesh(filename, pitch, points, faces, rdivs, materials, elsets)
