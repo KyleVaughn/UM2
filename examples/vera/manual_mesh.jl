@@ -429,34 +429,40 @@ function write_quad8_mesh(
             println(io, i, ", ", f[1], ", ", f[2], ", ", f[3], ", ", f[4],
                     ", ", f[5], ", ", f[6], ", ", f[7], ", ", f[8])
         end
-        fctr = 1
+        material_dict = Dict{String, Set{Int64}}()
+        for mat in materials
+            if !haskey(material_dict, mat)
+                material_dict[mat] = Set{Int64}()
+            end
+        end
+        nrad = sum(rdivs) + 1
+        cum_divs = 0
         for (i, mat) in enumerate(materials)
-            if i == 1 || mat != materials[i-1]
-                println(io, "*ELSET,ELSET=Material:_" * mat)
-                ndiv = rdivs[i]
-                for j in 1:ndiv
-                    for k in 1:n_azi - 1
-                        print(io, fctr, ", ")
-                        fctr += 1
-                    end
-                    print(io, fctr, ",\n")
-                    fctr += 1
+            if i != 1
+                cum_divs += rdivs[i-1]
+            end
+            for ia in 1:n_azi
+                if i == length(materials)
+                    ndiv = 1
+                else
+                    ndiv = rdivs[i]
                 end
-            else
-                # This is a dumb way to do this. Fix in the future.
-                while fctr <= nfaces 
-                    for k in 1:n_azi - 1
-                        print(io, fctr, ", ")
-                        fctr += 1
-                        if fctr > nfaces
-                            break
-                        end
-                    end
-                    if fctr > nfaces
-                        break
-                    end
-                    print(io, fctr, ",\n")
-                    fctr += 1
+                for ir in 1:ndiv
+                    fctr = (ia - 1) * nrad  + ir + cum_divs
+                    push!(material_dict[mat], fctr)
+                end
+            end
+        end
+        for mat in sort!(collect(keys(material_dict)))
+            println(io, "*ELSET,ELSET=Material:_" * mat)
+            ids = sort!(collect(material_dict[mat]))
+            for (i, id) in enumerate(ids)
+                if i == length(ids)
+                    println(io, id)
+                elseif i % 10 == 0
+                    print(io, id, ",\n")
+                else
+                    print(io, id, ", ")
                 end
             end
         end
