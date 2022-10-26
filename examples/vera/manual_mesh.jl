@@ -182,6 +182,7 @@ function get_quad8_mesh_points(r_equiv::Vector{Float64}, n_azi::Int64, pitch::Fl
     # 2 * n_azi * (nrings + 1 boundary) 
     # n_azi points for the quadratic points on the triangular quads
     points = Vector{NTuple{2, Float64}}(undef, 1 + 3 * n_azi * (nrings + 1) + n_azi)
+    points[1] = (0.0, 0.0)
     # The ring + boundary points.
     # Excludes the center point and the quadratic points on the shared edge.
     for ia in 0:n_azi - 1
