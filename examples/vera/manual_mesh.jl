@@ -409,7 +409,9 @@ function write_quad8_mesh(
         points::Vector{NTuple{2, Float64}},
         faces::Vector{NTuple{8, Int64}},
         rdivs::Vector{Int64},
-        materials::Vector{String})
+        materials::Vector{String},
+        elsets::Vector{String}
+    )
     # Write the file
     io = open(filename, "w");
     try

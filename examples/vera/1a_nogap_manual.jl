@@ -3,7 +3,7 @@
 ###########################################################
 
 # Parameters
-order = 1 # mesh order
+order = 2 # mesh order
 filename = "1a_quad" * string(order) * ".inp"
 r_mat = [0.4096, 0.475, 0.575] # radius of the rings for each material
 rdivs = [3, 1, 1] # radial divisions for each material
@@ -30,7 +30,7 @@ if order == 1
     r_equiv = get_equiv_quad_radii(r_div, a_div, n_azi, pitch)
     points = get_quad_mesh_points(r_equiv, n_azi, pitch)
     faces = get_quad_mesh_faces(sum(rdivs), n_azi)
-write_quad_mesh(filename, pitch, points, faces, rdivs, materials, elsets)
+    write_quad_mesh(filename, pitch, points, faces, rdivs, materials, elsets)
 elseif order == 2
     r_equiv = get_equiv_quad8_radii(r_div, a_div, n_azi, pitch)
     points = get_quad8_mesh_points(r_equiv, n_azi, pitch)
