@@ -30,7 +30,7 @@ include("math/mat.jl")
 include("math/morton.jl")
 
 include("geometry/point.jl")
-include("geometry/point_morton.jl")
+include("geometry/morton_point.jl")
 include("geometry/axis_aligned_box.jl")
 include("geometry/polytope/polytope.jl")
 include("geometry/polytope/line_segment.jl")

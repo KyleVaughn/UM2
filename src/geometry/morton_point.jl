@@ -19,15 +19,12 @@ end
 function morton_neighbors(p::Point2{T}, points::Vector{Point2{T}}, scale_inv::T) where {T}
     # Binary search on the z-order of the points
     hi = searchsortedfirst(points, p, by=p->morton_encode(p, scale_inv))
-    # hi is greater or equal to the index of p, hence lo less or equal the index of p
-    lo = hi - 1
     npts = length(points)
-    # Correct lo/hi to be in 1:npts
-    if npts < hi 
-        hi = npts
+    if hi == 1
+        return (1, 1)
+    elseif hi == npts + 1
+        return (npts, npts)
+    else
+        return (hi-1, hi)
     end
-    if lo === 0
-        lo = 1
-    end
-    return lo, hi
 end
