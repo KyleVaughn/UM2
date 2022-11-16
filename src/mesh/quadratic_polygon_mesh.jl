@@ -163,7 +163,7 @@ function edges(mesh::QPolygonMesh{N}) where {N}
             end
         end
     end
-    segss = Vector{QuadraticSegment{2, UM_F}}(undef, nedges)
+    segs = Vector{QuadraticSegment{2, UM_F}}(undef, nedges)
     for iedge = 1:nedges
         segs[iedge] = QuadraticSegment(
             mesh.vertices[unique_edges[iedge][1]],
