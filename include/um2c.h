@@ -8,6 +8,8 @@ void um2_malloc(void ** const p, int const size);
 
 void um2_free(void * const p);
 
+void um2_sort(double * begin, double * end);
+
 //void um2_initialize(char const * const verbosity,
 //                    int const init_gmsh,
 //                    int * const ierr);

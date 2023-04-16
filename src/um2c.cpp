@@ -1,6 +1,8 @@
 #include <um2c.h>
 #include <cstdlib>
 
+#include <thrust/sort.h>
+
 void um2_malloc(void ** const p, int const size)
 {
     *p = malloc(size);
@@ -9,6 +11,11 @@ void um2_malloc(void ** const p, int const size)
 void um2_free(void * const p)
 {
     if (p) free(p);
+}
+
+void um2_sort(double * begin, double * end)
+{
+    thrust::sort(begin, end)
 }
 
 //void um2_initialize(char const * const verbosity, 
