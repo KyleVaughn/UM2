@@ -1,24 +1,7 @@
-STORE EACH LEVEL IN PARTITION ACCORDING TO HILBERT CURVE
-
-
-
-rect mesh partition type
-intersect rect mesh edges
-intersect rect mesh faces
-test difference in line intersecting mesh using jl_function vs using cfunction
-find face
-    May wish to consider an acceleration structure here
-        RECTILINEAR GRID
-        USE BOUNDING BOX OF THE POLYGONS TO MAKE THE TREE
-        This algorithm to do the splitting should be similar to the CMFD grid algorithm
-        computing a split plane in a spatial partitioning hierarchy
-        We can be smart and cache some values for the next point
-multithreading for materialize edges & faces, submesh.
-edge to edge RT
-
-OTF ray trace for effective optical thickness calculation.
-Ensure functions are not allocating using @allocated
-
-Do explicit typing where possible.
-
-Check meshes for overlapping faces.
+CMake
+clang-tidy
+clang-format
+clang warnings
+gcc warnings
+CUDA
+CTest -> GoogleTest?
