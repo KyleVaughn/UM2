@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(
@@ -12,35 +12,40 @@ project(
     VERSION 0.1.0
     DESCRIPTION "An unstructured mesh library for automated method of characteristic mesh generation"
     HOMEPAGE_URL "https://github.com/KyleVaughn/UM2"
-    LANGUAGES C CXX
+    LANGUAGES CXX
 )
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 
+    set(CMAKE_CXX_STANDARD 23)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+    #    include(CTest)
+
+endif()
 
 option(UM2_ENABLE_CUDA "Enable CUDA support" OFF)
 
-# CUDA is currently only supported via Clang
-if(UM2_ENABLE_CUDA)
-  if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    message(
-        FATAL_ERROR
-        "CUDA supported requires Clang as the C++ compiler."
-    )
-  endif()
-  #  include(Compiler/
-  #
-  #  set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
-  #  set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-  enable_language(CUDA)
-  set_source_files_properties(test.cpp PROPERTIES LANGUAGE CUDA)
-endif()
+add_subdirectory(src)
 
-add_executable(
-    um2
-    test.cpp 
-)
+# CUDA is currently only supported via Clang
+#if(UM2_ENABLE_CUDA)
+#  if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+#    message(
+#        FATAL_ERROR
+#        "CUDA supported requires Clang as the C++ compiler."
+#    )
+#  endif()
+#  #  include(Compiler/
+#  #
+#  #  set(CMAKE_CUDA_COMPILER ${CMAKE_CXX_COMPILER})
+#  #  set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+#  enable_language(CUDA)
+#  set_source_files_properties(test.cpp PROPERTIES LANGUAGE CUDA)
+#endif()
+
 #add_library(
 #    um2
 #    source/UM2.cpp
