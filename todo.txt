@@ -1,7 +1,6 @@
-CMake
 clang-tidy
 clang-format
 clang warnings
 gcc warnings
 CUDA
-CTest -> GoogleTest?
+Sphinx documentation

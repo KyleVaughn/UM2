@@ -35,14 +35,6 @@ if (UM2_ENABLE_CUDA)
   find_package(CUDA REQUIRED)
 endif()
 
-
-
-
-
-
-
-
-
 # Thrust
 include(cmake/thrust.cmake)
 
