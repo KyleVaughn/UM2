@@ -1,6 +1,7 @@
 file(GLOB HEADERS CONFIGURE_DEPENDS "${UM2_SOURCE_DIR}/include/*")
 
 add_library(um2 um2c.cpp ${HEADERS})
+add_library(UM2::UM2_CXX ALIAS um2)
 
 target_include_directories(um2 PUBLIC ../include)
 

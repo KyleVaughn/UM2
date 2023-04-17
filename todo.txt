@@ -4,3 +4,8 @@ clang warnings
 gcc warnings
 CUDA
 Sphinx documentation
+Setup Read the Docs
+https://devblogs.microsoft.com/cppblog/clear-functional-c-documentation-with-sphinx-breathe-doxygen-cmake/
+Use cmake-init to lookat how clang-tidy and clang-format are integrated
+Add cppcheck
+Add debug build that uses address sanitizing

@@ -102,12 +102,6 @@ endif()
 #  PACKAGE UM2
 #)
 #
-## Packaging
-#include(cmake/packaging.cmake)
-#
-## CPack
-#include(CPack)
-#
 ## Doxygen
 #include(cmake/doxygen.cmake)
 #
