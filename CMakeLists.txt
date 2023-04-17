@@ -1,49 +1,180 @@
 cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
-  message(
-      FATAL_ERROR
-      "In-source builds are not supported. "
-  )
-endif()
-
 project(
-    UM2
-    VERSION 0.1.0
-    DESCRIPTION "An unstructured mesh library for automated method of characteristic mesh generation"
-    HOMEPAGE_URL "https://github.com/KyleVaughn/UM2"
-    LANGUAGES CXX
+  UM2
+  VERSION 0.1.0
+  DESCRIPTION "An unstructured mesh library for automated method of characteristic mesh generation"
+  HOMEPAGE_URL "https://github.com/KyleVaughn/UM2"
+  LANGUAGES CXX
 )
 
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 
-    set(CMAKE_CXX_STANDARD 23)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+#
+#  set(CMAKE_CXX_STANDARD 23)
+#  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#
+#  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+#
+#  #    include(CTest)
+#
+#endif()
 
-    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+option(UM2_ENABLE_OPENMP "Enable OpenMP" OFF)
+option(UM2_ENABLE_CUDA "Enable CUDA" OFF)
+option(UM2_ENABLE_TESTS "Enable tests" ON)
 
-    #    include(CTest)
+include(cmake/update-git-submodules.cmake)
+# OpenMP
+#if (UM2_ENABLE_OPENMP)
+#  find_package(OpenMP REQUIRED)
+#endif()
 
+# CUDA
+if (UM2_ENABLE_CUDA)
+  find_package(CUDA REQUIRED)
 endif()
 
-option(UM2_ENABLE_CUDA "Enable CUDA support" OFF)
 
-find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-# Update submodules as needed
-    option(GIT_SUBMODULE "Check submodules during build" ON)
-    if(GIT_SUBMODULE)
-        message(STATUS "Submodule update")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        endif()
-    endif()
-endif()
+
+
+
+
+
+
+
+# Thrust
+include(cmake/thrust.cmake)
 
 add_subdirectory(src)
+
+# Tests
+if (UM2_ENABLE_TESTS)
+  enable_testing()
+  include(GoogleTest)
+  add_subdirectory("${PROJECT_SOURCE_DIR}/tpls/googletest")
+  add_subdirectory(tests)
+endif()
+
+## Install
+#include(GNUInstallDirs)
+#install(
+#  TARGETS UM2
+#  EXPORT UM2Targets
+#  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+#  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+#)
+#
+#install(
+#  DIRECTORY include/
+#  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+#)
+#
+#include(CMakePackageConfigHelpers)
+#write_basic_package_version_file(
+#  "${CMAKE_CURRENT_BINARY_DIR}/UM2/UM2ConfigVersion.cmake"
+#  VERSION ${PROJECT_VERSION}
+#  COMPATIBILITY SameMajorVersion
+#)
+#
+#export(
+#  EXPORT UM2Targets
+#  FILE "${CMAKE_CURRENT_BINARY_DIR}/UM2/UM2Targets.cmake"
+#  NAMESPACE UM2::
+#)
+#
+#configure_file(cmake/UM2Config.cmake
+#  "${CMAKE_CURRENT_BINARY_DIR}/UM2/UM2Config.cmake"
+#  COPYONLY
+#)
+#
+#set(ConfigPackageLocation lib/cmake/UM2)
+#install(
+#  EXPORT UM2Targets
+#  FILE UM2Targets.cmake
+#  NAMESPACE UM2::
+#  DESTINATION ${ConfigPackageLocation}
+#)
+#
+#install(
+#  FILES
+#    "${CMAKE_CURRENT_BINARY_DIR}/UM2/UM2Config.cmake"
+#    "${CMAKE_CURRENT_BINARY_DIR}/UM2/UM2ConfigVersion.cmake"
+#  DESTINATION ${ConfigPackageLocation}
+#)
+#
+## Export from the build tree
+#export(
+#  PACKAGE UM2
+#)
+#
+## Packaging
+#include(cmake/packaging.cmake)
+#
+## CPack
+#include(CPack)
+#
+## Doxygen
+#include(cmake/doxygen.cmake)
+#
+## CTest
+#include(CTest)
+#
+## Code coverage
+#include(cmake/coverage.cmake)
+#
+## Sanitizers
+#include(cmake/sanitizers.cmake)
+#
+## Clang tidy
+#include(cmake/clang-tidy.cmake)
+#
+## Clang format
+#include(cmake/clang-format.cmake)
+#
+## Cppcheck
+#include(cmake/cppcheck.cmake)
+#
+## Cppcheck
+#include(cmake/clang-analyzer.cmake)
+#
+## Cppcheck
+#include(cmake/clang-static-analyzer.cmake)
+#
+## C
+
+
+
+
+
+
+## CMake compile options
+#if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+#  include(cmake/cmake-compile-options.cmake)
+#endif()
+#
+## CMake compile definitions
+#if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+#  include(cmake/cmake-compile-definitions.cmake)
+#endif()
+#
+## CMake compile features
+#if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+#  include(cmake/cmake-compile-features.cmake)
+#endif()
+#
+## CMake compile options
+#if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+#  include(cmake/cmake-compile-options.cmake)
+#endif()
+#
+## CMake compile definitions
+#if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+#  include(cmake/cmake-compile-definitions.cmake)
+#endif()
+
 
 # CUDA is currently only supported via Clang
 #if(UM2_ENABLE_CUDA)

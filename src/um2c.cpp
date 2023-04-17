@@ -15,7 +15,7 @@ void um2_free(void * const p)
 
 void um2_sort(double * begin, double * end)
 {
-    thrust::sort(begin, end)
+    thrust::sort(begin, end);
 }
 
 //void um2_initialize(char const * const verbosity, 
