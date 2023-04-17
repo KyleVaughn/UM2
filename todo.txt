@@ -9,3 +9,5 @@ https://devblogs.microsoft.com/cppblog/clear-functional-c-documentation-with-sph
 Use cmake-init to lookat how clang-tidy and clang-format are integrated
 Add cppcheck
 Add debug build that uses address sanitizing
+Determine if there is inconsistency between clang-tidy and clang-format
+  use -style=file?

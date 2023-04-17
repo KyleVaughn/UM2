@@ -1,0 +1,9 @@
+BasedOnStyle: LLVM
+
+BreakBeforeBraces: Linux
+IndentCaseLabels: false
+ColumnLimit: 100
+AlignArrayOfStructures: Right
+PointerAlignment: Middle
+ReferenceAlignment: Middle
+...
