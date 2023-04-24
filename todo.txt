@@ -1,13 +1,15 @@
-clang-tidy
-clang-format
+clang-tidy target
+clang-tidy header-filter
+clang-format target -> script to run clang-format on all files
+Use cmake-init to lookat how clang-tidy and clang-format are integrated
+https://github.com/friendlyanon/cmake-init-shared-static/blob/master/cmake/lint-targets.cmake
+
 clang warnings
 gcc warnings
 CUDA
 Sphinx documentation
 Setup Read the Docs
 https://devblogs.microsoft.com/cppblog/clear-functional-c-documentation-with-sphinx-breathe-doxygen-cmake/
-Use cmake-init to lookat how clang-tidy and clang-format are integrated
 Add cppcheck
 Add debug build that uses address sanitizing
-Determine if there is inconsistency between clang-tidy and clang-format
-  use -style=file?
+OpenGL or other use interface for mesh viewing

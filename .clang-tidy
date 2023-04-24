@@ -12,6 +12,7 @@ Checks: "bugprone-*,\
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,\
   -readability-identifier-length"
 WarningsAsErrors: true
+FormatStyle: file
 CheckOptions:
   - key: 'bugprone-argument-comment.StrictMode'
     value: 'true'
@@ -72,7 +73,7 @@ CheckOptions:
   - key: 'readability-identifier-naming.EnumConstantCase'
     value: 'lower_case'
   - key: 'readability-identifier-naming.FunctionCase'
-    value: 'lower_case'
+    value: 'camelBack'
   - key: 'readability-identifier-naming.GlobalConstantCase'
     value: 'lower_case'
   - key: 'readability-identifier-naming.GlobalConstantPointerCase'

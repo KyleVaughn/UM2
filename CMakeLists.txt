@@ -8,23 +8,14 @@ project(
   LANGUAGES CXX
 )
 
-
-#if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-#
-#  set(CMAKE_CXX_STANDARD 23)
-#  set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#
-#  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-#
-#  #    include(CTest)
-#
-#endif()
-
 option(UM2_ENABLE_OPENMP "Enable OpenMP" OFF)
 option(UM2_ENABLE_CUDA "Enable CUDA" OFF)
 option(UM2_ENABLE_TESTS "Enable tests" ON)
 
 include(cmake/update-git-submodules.cmake)
+include(cmake/thrust.cmake)
+include(cmake/headers.cmake)
+
 # OpenMP
 #if (UM2_ENABLE_OPENMP)
 #  find_package(OpenMP REQUIRED)
@@ -35,8 +26,11 @@ if (UM2_ENABLE_CUDA)
   find_package(CUDA REQUIRED)
 endif()
 
-# Thrust
-include(cmake/thrust.cmake)
+# Don't use -std=c++23, use -std=c++2b instead.        
+# Change this for future compiler versions.    
+set(CMAKE_CXX23_STANDARD_COMPILE_OPTION "-std=c++2b")        
+set(CMAKE_CXX23_EXTENSION_COMPILE_OPTION "-std=gnu++2b")    
+set(CMAKE_CXX_STANDARD 23)
 
 add_subdirectory(src)
 
