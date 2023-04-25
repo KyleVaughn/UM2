@@ -8,23 +8,23 @@ project(
   LANGUAGES CXX
 )
 
-option(UM2_ENABLE_OPENMP "Enable OpenMP" OFF)
+option(UM2_ENABLE_OPENMP "Enable OpenMP" ON)
 option(UM2_ENABLE_CUDA "Enable CUDA" OFF)
 option(UM2_ENABLE_TESTS "Enable tests" ON)
+option(UM2_ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
 
-include(cmake/update-git-submodules.cmake)
-include(cmake/thrust.cmake)
-include(cmake/headers.cmake)
+if (UM2_ENABLE_OPENMP)
+  find_package(OpenMP REQUIRED)
+endif()
 
-# OpenMP
-#if (UM2_ENABLE_OPENMP)
-#  find_package(OpenMP REQUIRED)
-#endif()
-
-# CUDA
 if (UM2_ENABLE_CUDA)
   find_package(CUDA REQUIRED)
 endif()
+
+include(cmake/headers.cmake)
+include(cmake/update-git-submodules.cmake)
+include(cmake/thrust-config.cmake)
+include(cmake/format-targets.cmake)
 
 # Don't use -std=c++23, use -std=c++2b instead.        
 # Change this for future compiler versions.    

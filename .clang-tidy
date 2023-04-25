@@ -1,18 +1,22 @@
-Checks: "bugprone-*,\
-  clang-analyzer-*,\
-  cppcoreguidelines-*,\
-  misc-*,\
-  modernize-*,\
-  readability-*,\
-  performance-*,\
-  portability-*,\
-  -clang-analyzer-osx*,\
-  -cppcoreguidelines-no-malloc,\
-  -cppcoreguidelines-owning-memory,\
-  -cppcoreguidelines-pro-bounds-pointer-arithmetic,\
-  -readability-identifier-length"
+Checks: 'bugprone-*,\
+cert-*,
+clang-analyzer-*,
+cppcoreguidelines-*,
+google-*,
+misc-*,
+modernize-*,
+readability-*,
+performance-*,
+portability-*,
+-clang-analyzer-osx*,
+-cppcoreguidelines-no-malloc,
+-cppcoreguidelines-owning-memory,
+-cppcoreguidelines-pro-bounds-pointer-arithmetic,
+-readability-identifier-length
+'
 WarningsAsErrors: true
 FormatStyle: file
+
 CheckOptions:
   - key: 'bugprone-argument-comment.StrictMode'
     value: 'true'
