@@ -7,10 +7,14 @@ set(
     tests/*.hpp
     tests/*.cpp 
     CACHE STRING
-    "; separated patterns relative to the project source dir to format"
+    "Patterns to format"
 )
 
-set(FORMAT_COMMAND clang-format CACHE STRING "Formatter to use")
+find_program(CLANG_FORMAT clang-format)
+if (NOT CLANG_FORMAT)
+    message(FATAL_ERROR "Could not find clang-format")
+endif()
+set(FORMAT_COMMAND ${CLANG_FORMAT})
 
 add_custom_target(
     format-check

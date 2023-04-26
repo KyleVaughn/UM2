@@ -6,4 +6,6 @@ ColumnLimit: 100
 AlignArrayOfStructures: Right
 PointerAlignment: Middle
 ReferenceAlignment: Middle
+IndentPPDirectives: AfterHash
+AlignConsecutiveMacros: Consecutive
 ...

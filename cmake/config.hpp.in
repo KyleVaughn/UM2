@@ -1,0 +1,62 @@
+#pragma once
+
+// Compiler
+#define UM2_HAS_CLANG @UM2_HAS_CLANG@
+
+// OpenMP
+#define UM2_HAS_OPENMP @UM2_HAS_OPENMP@
+
+// CUDA
+#define UM2_HAS_CUDA @UM2_HAS_CUDA@
+#if UM2_HAS_CUDA    
+#  define UM2_HOST    __host__    
+#  define UM2_DEVICE  __device__    
+#  define UM2_HOSTDEV __host__ __device__    
+#  define UM2_GLOBAL  __global__    
+#else    
+#  define UM2_HOST    
+#  define UM2_DEVICE    
+#  define UM2_HOSTDEV    
+#  define UM2_GLOBAL    
+#endif
+
+// Attributes
+// -----------------------------------------------------------------------------
+// These are supported by GCC and Clang
+#define UM2_PURE  [[gnu::pure]]
+#define UM2_CONST [[gnu::const]]
+#define UM2_HOT   [[gnu::hot]]
+
+// Define a PURE/CONST attribute that depends on a release build to be enabled
+#if defined(NDEBUG)
+#  define UM2_NDEBUG_PURE  UM2_PURE
+#  define UM2_NDEBUG_CONST UM2_CONST
+#else
+#  define UM2_NDEBUG_PURE
+#  define UM2_NDEBUG_CONST
+#endif
+
+//// Typedefs
+//// -----------------------------------------------------------------------------
+//typedef int32_t length_t; 
+//typedef int8_t  MaterialID; // Must be signed
+//// C API
+//#ifdef DBL
+//#   define UM2_REAL double
+//#else
+//#   define UM2_REAL float
+//#endif
+//
+//#ifdef DBLINT
+//#   define UM2_INT int64_t
+//#else
+//#   define UM2_INT int32_t
+//#endif
+//
+////// Libs
+////// -----------------------------------------------------------------------------
+////#if __has_include(<gmsh.h>) && UM2_ENABLE_GMSH == 1
+////#   define UM2_HAS_GMSH 1
+////#else
+////#   define UM2_HAS_GMSH 0
+////#endif

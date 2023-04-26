@@ -8,31 +8,40 @@ project(
   LANGUAGES CXX
 )
 
+# Update git submodules before doing anything else
+include(cmake/update-git-submodules.cmake)
+
+# User options
 option(UM2_ENABLE_OPENMP "Enable OpenMP" ON)
 option(UM2_ENABLE_CUDA "Enable CUDA" OFF)
 option(UM2_ENABLE_TESTS "Enable tests" ON)
-option(UM2_ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
 
-if (UM2_ENABLE_OPENMP)
-  find_package(OpenMP REQUIRED)
+# Dev options
+option(UM2_DEV_MODE "Enable development mode" ON)
+option(UM2_ENABLE_CLANG_FORMAT "Enable clang-format targets" ${UM2_DEV_MODE})
+option(UM2_ENABLE_CLANG_TIDY "Enable clang-tidy" ${UM2_DEV_MODE})
+
+# Configure using options
+include(cmake/um2_config.cmake)
+
+# Header and source files
+set(UM2_HEADERS
+    "include/um2/common/config.hpp"
+    "include/um2c.h"
+    )
+set(UM2_SOURCES
+    "src/um2c.cpp"
+    )
+
+# libum2
+add_library(um2 ${UM2_HEADERS} ${UM2_SOURCES})
+target_include_directories(um2 PUBLIC include)
+target_link_libraries(um2 PRIVATE Thrust)
+if (UM2_ENABLE_CLANG_TIDY)
+  set_target_properties(um2 PROPERTIES
+                        CXX_CLANG_TIDY
+                        "clang-tidy;--header-filter=include")
 endif()
-
-if (UM2_ENABLE_CUDA)
-  find_package(CUDA REQUIRED)
-endif()
-
-include(cmake/headers.cmake)
-include(cmake/update-git-submodules.cmake)
-include(cmake/thrust-config.cmake)
-include(cmake/format-targets.cmake)
-
-# Don't use -std=c++23, use -std=c++2b instead.        
-# Change this for future compiler versions.    
-set(CMAKE_CXX23_STANDARD_COMPILE_OPTION "-std=c++2b")        
-set(CMAKE_CXX23_EXTENSION_COMPILE_OPTION "-std=gnu++2b")    
-set(CMAKE_CXX_STANDARD 23)
-
-add_subdirectory(src)
 
 # Tests
 if (UM2_ENABLE_TESTS)
