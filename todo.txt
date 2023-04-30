@@ -14,3 +14,4 @@ OpenGL or other use interface for mesh viewing
 group tests
 
 Use unique_ptr and shared_ptr
+ -cppcoreguidelines-owning-memory,?

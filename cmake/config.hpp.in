@@ -20,6 +20,9 @@
 #  define UM2_GLOBAL    
 #endif
 
+// spdlog
+#define SPDLOG_ACTIVE_LEVEL @UM2_SPDLOG_LEVEL@
+
 // Attributes
 // -----------------------------------------------------------------------------
 // These are supported by GCC and Clang

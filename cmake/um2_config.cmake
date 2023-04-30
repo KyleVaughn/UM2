@@ -66,11 +66,33 @@ else()
   set(UM2_THRUST_DEVICE "CPP" CACHE STRING "Thrust device backend")
 endif()
 set_property(CACHE UM2_THRUST_DEVICE PROPERTY STRINGS "CUDA" "OMP" "CPP")
-MESSAGE(STATUS "Thrust host backend: ${UM2_THRUST_HOST}")
-MESSAGE(STATUS "Thrust device backend: ${UM2_THRUST_DEVICE}")
+message(STATUS "Thrust host backend: ${UM2_THRUST_HOST}")
+message(STATUS "Thrust device backend: ${UM2_THRUST_DEVICE}")
 thrust_create_target(Thrust HOST ${UM2_THRUST_HOST} DEVICE ${UM2_THRUST_DEVICE})
 
-# Configure config.hpp
+## spdlog ########################################
+##################################################
+add_subdirectory("${PROJECT_SOURCE_DIR}/tpls/spdlog" SYSTEM)
+if (UM2_LOG_LEVEL STREQUAL "trace")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_TRACE")
+elseif (UM2_LOG_LEVEL STREQUAL "debug")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_DEBUG")
+elseif (UM2_LOG_LEVEL STREQUAL "info")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_INFO")
+elseif (UM2_LOG_LEVEL STREQUAL "warn")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_WARN")
+elseif (UM2_LOG_LEVEL STREQUAL "err")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_ERROR")
+elseif (UM2_LOG_LEVEL STREQUAL "critical")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_CRITICAL")
+elseif (UM2_LOG_LEVEL STREQUAL "off")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_OFF")
+else()
+  message(FATAL_ERROR "Unknown log level: ${UM2_LOG_LEVEL}")
+endif()
+
+## config.hpp ####################################
+##################################################
 configure_file(
   "${PROJECT_SOURCE_DIR}/cmake/config.hpp.in"
   "${PROJECT_SOURCE_DIR}/include/um2/common/config.hpp"

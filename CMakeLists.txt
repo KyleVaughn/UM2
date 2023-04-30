@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.25 FATAL_ERROR)
 
 project(
   UM2
@@ -15,6 +15,9 @@ include(cmake/update-git-submodules.cmake)
 option(UM2_ENABLE_OPENMP "Enable OpenMP" ON)
 option(UM2_ENABLE_CUDA "Enable CUDA" OFF)
 option(UM2_ENABLE_TESTS "Enable tests" ON)
+set(UM2_LOG_LEVEL "info" CACHE STRING "Log level")
+set_property(CACHE UM2_LOG_LEVEL PROPERTY STRINGS 
+  "trace" "debug" "info" "warn" "error" "critical" "off")
 
 # Dev options
 option(UM2_DEV_MODE "Enable development mode" ON)
@@ -36,7 +39,13 @@ set(UM2_SOURCES
 # libum2
 add_library(um2 ${UM2_HEADERS} ${UM2_SOURCES})
 target_include_directories(um2 PUBLIC include)
-target_link_libraries(um2 PRIVATE Thrust)
+# Treat the Thrust includes as system includes
+target_include_directories(um2 SYSTEM PUBLIC
+  "${PROJECT_SOURCE_DIR}/tpls/thrust/thrust/cmake/../.."
+  "${PROJECT_SOURCE_DIR}/tpls/thrust/dependencies/libcudacxx/include"
+  "${PROJECT_SOURCE_DIR}/tpls/thrust/dependencies/cub"
+  )
+target_link_libraries(um2 PRIVATE Thrust spdlog::spdlog)
 if (UM2_ENABLE_CLANG_TIDY)
   set_target_properties(um2 PROPERTIES
                         CXX_CLANG_TIDY
