@@ -12,12 +12,6 @@ if (NOT (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
          CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
   message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
-# Some features are only available in clang, such as CUDA support
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(UM2_HAS_CLANG 1)
-else()
-  set(UM2_HAS_CLANG 0)
-endif()
 
 ## Standard ######################################
 ##################################################
@@ -32,18 +26,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ##################################################
 if (UM2_ENABLE_OPENMP)
   find_package(OpenMP REQUIRED)
-  set(UM2_HAS_OPENMP 1)
-else()
-  set(UM2_HAS_OPENMP 0)
 endif()
 
 ## CUDA ##########################################
 ##################################################
-if (UM2_ENABLE_CUDA AND UM2_HAS_CLANG)
-  find_package(CUDA REQUIRED)
-  set(UM2_HAS_CUDA 1)
-else()
-  set(UM2_HAS_CUDA 0)
+if (UM2_ENABLE_CUDA)
+  #  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    find_package(CUDA REQUIRED)
+    enable_language(CUDA)
+    # If CUDA version is higher that 11.5, warn the user
+    #    if (CUDA_VERSION VERSION_GREATER_EQUAL "11.5")
+    #      message(WARNING "CUDA version ${CUDA_VERSION} is not supported")
+    #    endif()
+    #  else()
+    #    message(FATAL_ERROR "CUDA is only supported with Clang") 
+    #  endif()
 endif()
 
 ## Thrust ########################################
@@ -51,16 +48,16 @@ endif()
 set(Thrust_DIR "${PROJECT_SOURCE_DIR}/tpls/thrust/thrust/cmake")
 find_package(Thrust REQUIRED CONFIG)
 # Host backend (OpenMP > Sequential)
-if (UM2_HAS_OPENMP)
+if (UM2_ENABLE_OPENMP)
   set(UM2_THRUST_HOST "OMP" CACHE STRING "Thrust host backend")
 else()
   set(UM2_THRUST_HOST "CPP" CACHE STRING "Thrust host backend")
 endif()
 set_property(CACHE UM2_THRUST_HOST PROPERTY STRINGS "OMP" "CPP")
 # Device backend (CUDA > OpenMP > Sequential)
-if (UM2_HAS_CUDA)
+if (UM2_ENABLE_CUDA)
   set(UM2_THRUST_DEVICE "CUDA" CACHE STRING "Thrust device backend")
-elseif (UM2_HAS_OPENMP)
+elseif (UM2_ENABLE_OPENMP)
   set(UM2_THRUST_DEVICE "OMP" CACHE STRING "Thrust device backend")
 else()
   set(UM2_THRUST_DEVICE "CPP" CACHE STRING "Thrust device backend")

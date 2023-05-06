@@ -1,24 +1,21 @@
 #pragma once
 
-// Compiler
-#define UM2_HAS_CLANG @UM2_HAS_CLANG@
-
 // OpenMP
-#define UM2_HAS_OPENMP @UM2_HAS_OPENMP@
+#cmakedefine01 UM2_ENABLE_OPENMP
 
 // CUDA
-#define UM2_HAS_CUDA @UM2_HAS_CUDA@
-#if UM2_HAS_CUDA    
-#  define UM2_HOST    __host__    
-#  define UM2_DEVICE  __device__    
-#  define UM2_HOSTDEV __host__ __device__    
-#  define UM2_GLOBAL  __global__    
-#else    
+#cmakedefine01 UM2_ENABLE_CUDA
+//#if UM2_ENABLE_CUDA
+//#  define UM2_HOST    __host__    
+//#  define UM2_DEVICE  __device__    
+//#  define UM2_HOSTDEV __host__ __device__    
+//#  define UM2_GLOBAL  __global__    
+//#else    
 #  define UM2_HOST    
 #  define UM2_DEVICE    
 #  define UM2_HOSTDEV    
 #  define UM2_GLOBAL    
-#endif
+//#endif
 
 // spdlog
 #define SPDLOG_ACTIVE_LEVEL @UM2_SPDLOG_LEVEL@
@@ -39,9 +36,14 @@
 #  define UM2_NDEBUG_CONST
 #endif
 
-//// Typedefs
-//// -----------------------------------------------------------------------------
-//typedef int32_t length_t; 
+// Typedefs
+// -----------------------------------------------------------------------------
+#cmakedefine01 UM2_ENABLE_INT64
+#if UM2_ENABLE_INT64 
+typedef int64_t len_t;
+#else
+typedef int32_t len_t;
+#endif
 //typedef int8_t  MaterialID; // Must be signed
 //// C API
 //#ifdef DBL

@@ -12,12 +12,15 @@ project(
 include(cmake/update-git-submodules.cmake)
 
 # User options
-option(UM2_ENABLE_OPENMP "Enable OpenMP" ON)
-option(UM2_ENABLE_CUDA "Enable CUDA" OFF)
-option(UM2_ENABLE_TESTS "Enable tests" ON)
+option(UM2_ENABLE_OPENMP  "Enable OpenMP"   ON)
+option(UM2_ENABLE_CUDA    "Enable CUDA"     ON)
+option(UM2_ENABLE_TESTS   "Enable tests"    ON)
 set(UM2_LOG_LEVEL "info" CACHE STRING "Log level")
 set_property(CACHE UM2_LOG_LEVEL PROPERTY STRINGS 
   "trace" "debug" "info" "warn" "error" "critical" "off")
+
+# Advanced user options
+option(UM2_ENABLE_INT64 "Enable 64-bit integer types" OFF)
 
 # Dev options
 option(UM2_DEV_MODE "Enable development mode" ON)
@@ -35,6 +38,11 @@ set(UM2_HEADERS
 set(UM2_SOURCES
     "src/um2c.cpp"
     )
+
+# If compiling with CUDA, compile the cpp files with nvcc
+if (UM2_ENABLE_CUDA)
+  set_source_files_properties(${UM2_SOURCES} PROPERTIES LANGUAGE CUDA)
+endif()
 
 # libum2
 add_library(um2 ${UM2_HEADERS} ${UM2_SOURCES})
@@ -54,9 +62,7 @@ endif()
 
 # Tests
 if (UM2_ENABLE_TESTS)
-  enable_testing()
-  include(GoogleTest)
-  add_subdirectory("${PROJECT_SOURCE_DIR}/tpls/googletest")
+  include(CTest)
   add_subdirectory(tests)
 endif()
 

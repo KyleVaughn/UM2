@@ -1,6 +1,5 @@
 Start on common.
-
-spdlog
+switch to hip
 
 clang warnings
 gcc warnings

@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-void um2Malloc(void ** const p, int const size);
+void um2_malloc(void ** const p, int const size);
 
 void um2_free(void * const p);
 

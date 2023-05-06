@@ -1,17 +1,9 @@
 macro(add_um2_test TESTNAME)
-    # create an executable in which the tests will be stored
-    add_executable(${TESTNAME} ${ARGN})
-    # link the Google test infrastructure, mocking library, and a default main function to
-    # the test executable.  Remove g_test_main if writing your own main function.
-    target_link_libraries(${TESTNAME} gtest gmock gtest_main)
-    # gtest_discover_tests replaces gtest_add_tests,
-    # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
-    gtest_discover_tests(${TESTNAME}
-        # set a working directory so your project root so that you can find test data via paths relative to the project root
-        WORKING_DIRECTORY ${PROJECT_DIR}
-        PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_DIR}"
-    )
-    set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
+  # Add test_framework.h to the list of sources
+  add_executable(${TESTNAME} ${ARGN} ${PROJECT_SOURCE_DIR}/tests/test_framework.hpp)
+  target_link_libraries(${TESTNAME} um2)
+  add_test(${TESTNAME} ${TESTNAME})
 endmacro()
 
-add_um2_test(hello hello_test.cpp)
+# Test the framework itself
+add_um2_test(test_framework test_framework.cpp)
