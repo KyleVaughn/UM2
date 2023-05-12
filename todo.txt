@@ -1,9 +1,10 @@
 Start on common.
-switch to hip
+test framework
+
+Make a hostdev test, then test it on the host and device.
 
 clang warnings
 gcc warnings
-CUDA
 Sphinx documentation
 Setup Read the Docs
 https://devblogs.microsoft.com/cppblog/clear-functional-c-documentation-with-sphinx-breathe-doxygen-cmake/

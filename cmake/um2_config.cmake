@@ -15,11 +15,7 @@ endif()
 
 ## Standard ######################################
 ##################################################
-# Don't use -std=c++23, use -std=c++2b instead.
-# Change this for future compiler versions when -std=c++23 is available.
-set(CMAKE_CXX23_STANDARD_COMPILE_OPTION "-std=c++2b")
-set(CMAKE_CXX23_EXTENSION_COMPILE_OPTION "-std=gnu++2b")
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ## OpenMP ########################################
@@ -30,17 +26,11 @@ endif()
 
 ## CUDA ##########################################
 ##################################################
+include(CheckLanguage)
+check_language(CUDA)
 if (UM2_ENABLE_CUDA)
-  #  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     find_package(CUDA REQUIRED)
     enable_language(CUDA)
-    # If CUDA version is higher that 11.5, warn the user
-    #    if (CUDA_VERSION VERSION_GREATER_EQUAL "11.5")
-    #      message(WARNING "CUDA version ${CUDA_VERSION} is not supported")
-    #    endif()
-    #  else()
-    #    message(FATAL_ERROR "CUDA is only supported with Clang") 
-    #  endif()
 endif()
 
 ## Thrust ########################################

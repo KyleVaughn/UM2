@@ -53,6 +53,13 @@ target_include_directories(um2 SYSTEM PUBLIC
   "${PROJECT_SOURCE_DIR}/tpls/thrust/dependencies/libcudacxx/include"
   "${PROJECT_SOURCE_DIR}/tpls/thrust/dependencies/cub"
   )
+# If compiling with CUDA, include the CUDA headers 
+if (UM2_ENABLE_CUDA)
+  target_include_directories(um2 SYSTEM PUBLIC
+    "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}"
+    )
+endif()
+
 target_link_libraries(um2 PRIVATE Thrust spdlog::spdlog)
 if (UM2_ENABLE_CLANG_TIDY)
   set_target_properties(um2 PROPERTIES
