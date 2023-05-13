@@ -8,11 +8,18 @@ modernize-*,
 readability-*,
 performance-*,
 portability-*,
+-bugprone-easily-swappable-parameters,
 -clang-analyzer-osx*,
+-cppcoreguidelines-avoid-magic-numbers,
+-cppcoreguidelines-macro-usage,
 -cppcoreguidelines-no-malloc,
 -cppcoreguidelines-owning-memory,
 -cppcoreguidelines-pro-bounds-pointer-arithmetic,
--readability-identifier-length
+-cppcoreguidelines-pro-type-vararg,
+-cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+-readability-identifier-length,
+-readability-magic-numbers,
+-misc-non-private-member-variables-in-classes
 '
 WarningsAsErrors: true
 FormatStyle: file
@@ -154,4 +161,6 @@ CheckOptions:
     value: 'lower_case'
   - key: 'readability-identifier-naming.VirtualMethodCase'
     value: 'lower_case'
+  - key: 'readability-identifier-naming.TypeTemplateParameterIgnoredRegexp'
+    value: 'expr-type'
 ...

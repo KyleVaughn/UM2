@@ -26,6 +26,7 @@ option(UM2_ENABLE_INT64 "Enable 64-bit integer types" OFF)
 option(UM2_DEV_MODE "Enable development mode" ON)
 option(UM2_ENABLE_CLANG_FORMAT "Enable clang-format targets" ${UM2_DEV_MODE})
 option(UM2_ENABLE_CLANG_TIDY "Enable clang-tidy" ${UM2_DEV_MODE})
+option(UM2_CLANG_TIDY_FIX "Enable clang-tidy to fix readability errors" OFF)
 
 # Configure using options
 include(cmake/um2_config.cmake)
@@ -62,9 +63,15 @@ endif()
 
 target_link_libraries(um2 PRIVATE Thrust spdlog::spdlog)
 if (UM2_ENABLE_CLANG_TIDY)
-  set_target_properties(um2 PROPERTIES
-                        CXX_CLANG_TIDY
-                        "clang-tidy;--header-filter=include")
+  if (UM2_CLANG_TIDY_FIX)
+    set_target_properties(um2 PROPERTIES
+                          CXX_CLANG_TIDY
+                          "clang-tidy;--header-filter=include;--fix")
+  else()
+    set_target_properties(um2 PROPERTIES
+                          CXX_CLANG_TIDY
+                          "clang-tidy;--header-filter=include")
+  endif()
 endif()
 
 # Tests

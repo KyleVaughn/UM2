@@ -1,20 +1,22 @@
 #pragma once
 
+#include <cstdint> // int32_t, int64_t
+
 // OpenMP
 #cmakedefine01 UM2_ENABLE_OPENMP
 
 // CUDA
 #cmakedefine01 UM2_ENABLE_CUDA
 #if UM2_ENABLE_CUDA
-#  define UM2_HOST    __host__    
-#  define UM2_DEVICE  __device__    
-#  define UM2_HOSTDEV __host__ __device__    
-#  define UM2_GLOBAL  __global__    
-#else    
-#  define UM2_HOST    
-#  define UM2_DEVICE    
-#  define UM2_HOSTDEV    
-#  define UM2_GLOBAL    
+#  define UM2_HOST    __host__
+#  define UM2_DEVICE  __device__
+#  define UM2_HOSTDEV __host__ __device__
+#  define UM2_GLOBAL  __global__
+#else
+#  define UM2_HOST
+#  define UM2_DEVICE
+#  define UM2_HOSTDEV
+#  define UM2_GLOBAL
 #endif
 
 // spdlog
@@ -39,29 +41,8 @@
 // Typedefs
 // -----------------------------------------------------------------------------
 #cmakedefine01 UM2_ENABLE_INT64
-#if UM2_ENABLE_INT64 
-typedef int64_t len_t;
+#if UM2_ENABLE_INT64
+using len_t = int64_t;
 #else
-typedef int32_t len_t;
+using len_t = int32_t;
 #endif
-//typedef int8_t  MaterialID; // Must be signed
-//// C API
-//#ifdef DBL
-//#   define UM2_REAL double
-//#else
-//#   define UM2_REAL float
-//#endif
-//
-//#ifdef DBLINT
-//#   define UM2_INT int64_t
-//#else
-//#   define UM2_INT int32_t
-//#endif
-//
-////// Libs
-////// -----------------------------------------------------------------------------
-////#if __has_include(<gmsh.h>) && UM2_ENABLE_GMSH == 1
-////#   define UM2_HAS_GMSH 1
-////#else
-////#   define UM2_HAS_GMSH 0
-////#endif

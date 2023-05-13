@@ -1,7 +1,8 @@
 Start on common.
-test framework
 
 Make a hostdev test, then test it on the host and device.
+
+# Test without cuda
 
 clang warnings
 gcc warnings
