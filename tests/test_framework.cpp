@@ -1,11 +1,13 @@
 #include "test_framework.hpp"
 
+// cppcheck-suppress duplicateExpression
 UM2_HOSTDEV TEST_CASE(expectTrue) { EXPECT_TRUE(1 == 1); }
 MAKE_CUDA_KERNEL(expectTrue);
 
 UM2_HOSTDEV TEST_CASE(expectFalse) { EXPECT_FALSE(1 == 2); }
 MAKE_CUDA_KERNEL(expectFalse);
 
+// cppcheck-suppress duplicateExpression
 UM2_HOSTDEV TEST_CASE(expectEqual) { EXPECT_EQ(1, 1); }
 MAKE_CUDA_KERNEL(expectEqual);
 

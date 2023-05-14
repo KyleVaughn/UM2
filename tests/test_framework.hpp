@@ -9,7 +9,7 @@
 // A very simple GPU-compatible test framework.
 //
 // Overview:
-// 1. Use EXPECT_XXX macros to check conditions for non-fatal errors. 
+// 1. Use EXPECT_XXX macros to check conditions for non-fatal errors.
 //  - If a condition is not met, the test will fail, but execution will continue.
 //  - EXPECT_TRUE(a)          to check that a is true
 //  - EXPECT_FALSE(a)         to check that a is false
@@ -22,7 +22,7 @@
 // 3. Use TEST_CASE(name) to define a test case containing one or more EXPECT_XXX or ASSERT_XXX.
 // 4. Use MAKE_CUDA_KERNEL(name) to create a CUDA kernel from a test case, provided that the test
 //   case was declared with UM2_HOSTDEV.
-// 5. Use TEST_SUITE(name) to define a test suite containing one or more TEST(host_test) or 
+// 5. Use TEST_SUITE(name) to define a test suite containing one or more TEST(host_test) or
 //   TEST_CUDA_KERNEL(host_test, blocks, threads).
 //   - It is assumed MAKE_CUDA_KERNEL(host_test) was called before TEST_CUDA_KERNEL(host_test, ...).
 //   - TEST_CUDA_KERNEL(host_test) defaults to 1 block and 1 thread.
@@ -139,55 +139,55 @@ struct TestResult {
   }
 
 #if UM2_ENABLE_CUDA
-#define MAKE_CUDA_KERNEL(host_test)                                                                \
-  __global__ void host_test##_cuda_kernel(TestResult * const result, bool * const exit_on_failure) \
-  {                                                                                                \
-    host_test(result, *exit_on_failure);                                                           \
-  }
+#  define MAKE_CUDA_KERNEL(host_test)                                                              \
+    __global__ void host_test##_cuda_kernel(TestResult * const result,                             \
+                                            bool * const exit_on_failure)                          \
+    {                                                                                              \
+      host_test(result, *exit_on_failure);                                                         \
+    }
 
-#define __TEST_CUDA_KERNEL(host_test, blocks, threads)                                             \
-  {                                                                                                \
-    TestResult * device_result;                                                                    \
-    cudaMalloc(&device_result, sizeof(TestResult));                                                \
-    bool * device_exit_on_failure;                                                                 \
-    cudaMalloc(&device_exit_on_failure, sizeof(bool));                                             \
-    cudaMemcpy(device_exit_on_failure, &exit_on_failure, sizeof(bool), cudaMemcpyHostToDevice);    \
-    printf("Running CUDA test case '%s' with %d blocks and %d threads\n", #host_test, blocks,      \
-           threads);                                                                               \
-    host_test##_cuda_kernel<<<(blocks), (threads)>>>(device_result, device_exit_on_failure);       \
-    cudaDeviceSynchronize();                                                                       \
-    cudaError_t error = cudaGetLastError();                                                        \
-    if (error != cudaSuccess) {                                                                    \
-      printf("CUDA error: %s\n", cudaGetErrorString(error));                                       \
-      return;                                                                                      \
-    }                                                                                              \
-    cudaMemcpy(&result, device_result, sizeof(TestResult), cudaMemcpyDeviceToHost);                \
-    printf("CUDA test case '%s' finished with %d failures\n", #host_test, result.num_failures);    \
-    if (result.num_failures > 0) {                                                                 \
-      return;                                                                                      \
-    }                                                                                              \
-  }
+#  define __TEST_CUDA_KERNEL(host_test, blocks, threads)                                           \
+    {                                                                                              \
+      TestResult * device_result;                                                                  \
+      cudaMalloc(&device_result, sizeof(TestResult));                                              \
+      bool * device_exit_on_failure;                                                               \
+      cudaMalloc(&device_exit_on_failure, sizeof(bool));                                           \
+      cudaMemcpy(device_exit_on_failure, &exit_on_failure, sizeof(bool), cudaMemcpyHostToDevice);  \
+      printf("Running CUDA test case '%s' with %d blocks and %d threads\n", #host_test, blocks,    \
+             threads);                                                                             \
+      host_test##_cuda_kernel<<<(blocks), (threads)>>>(device_result, device_exit_on_failure);     \
+      cudaDeviceSynchronize();                                                                     \
+      cudaError_t error = cudaGetLastError();                                                      \
+      if (error != cudaSuccess) {                                                                  \
+        printf("CUDA error: %s\n", cudaGetErrorString(error));                                     \
+        return;                                                                                    \
+      }                                                                                            \
+      cudaMemcpy(&result, device_result, sizeof(TestResult), cudaMemcpyDeviceToHost);              \
+      printf("CUDA test case '%s' finished with %d failures\n", #host_test, result.num_failures);  \
+      if (result.num_failures > 0) {                                                               \
+        return;                                                                                    \
+      }                                                                                            \
+    }
 
-#define TEST_CUDA_KERNEL_1_ARGS(host_test)                                                         \
-  __TEST_CUDA_KERNEL(host_test, 1, 1)                                                              \
+#  define TEST_CUDA_KERNEL_1_ARGS(host_test) __TEST_CUDA_KERNEL(host_test, 1, 1)
 
-#define TEST_CUDA_KERNEL_2_ARGS(host_test, threads)                                                \
-  __TEST_CUDA_KERNEL(host_test, 1, threads)                                                        \
+#  define TEST_CUDA_KERNEL_2_ARGS(host_test, threads) __TEST_CUDA_KERNEL(host_test, 1, threads)
 
-#define TEST_CUDA_KERNEL_3_ARGS(host_test, blocks, threads)                                        \
-  __TEST_CUDA_KERNEL(host_test, blocks, threads)                                                   \
+#  define TEST_CUDA_KERNEL_3_ARGS(host_test, blocks, threads)                                      \
+    __TEST_CUDA_KERNEL(host_test, blocks, threads)
 
-#define TEST_CUDA_KERNEL_GET_MACRO(_1, _2, _3, NAME, ...) NAME
-#define TEST_CUDA_KERNEL(...)                                                                      \
-  TEST_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, TEST_CUDA_KERNEL_3_ARGS, TEST_CUDA_KERNEL_2_ARGS,         \
-                             TEST_CUDA_KERNEL_1_ARGS)(__VA_ARGS__)
+#  define TEST_CUDA_KERNEL_GET_MACRO(_1, _2, _3, NAME, ...) NAME
+#  define TEST_CUDA_KERNEL(...)                                                                    \
+    TEST_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, TEST_CUDA_KERNEL_3_ARGS, TEST_CUDA_KERNEL_2_ARGS,      \
+                               TEST_CUDA_KERNEL_1_ARGS)                                            \
+    (__VA_ARGS__)
 
 #else
-#define MAKE_CUDA_KERNEL(host_test)
-#define TEST_CUDA_KERNEL(...)
+#  define MAKE_CUDA_KERNEL(host_test)
+#  define TEST_CUDA_KERNEL(...)
 #endif
 
-#define __RUN_TESTS(suite, exit_on_failure)                                                   \
+#define __RUN_TESTS(suite, exit_on_failure)                                                        \
   {                                                                                                \
     TestResult result;                                                                             \
     printf("Running test suite '%s'\n", #suite);                                                   \
@@ -198,15 +198,14 @@ struct TestResult {
     }                                                                                              \
   }
 
-#define RUN_TESTS_1_ARGS(suite)                                                                    \
-  __RUN_TESTS(suite, true)                                                                         \
+#define RUN_TESTS_1_ARGS(suite) __RUN_TESTS(suite, true)
 
-#define RUN_TESTS_2_ARGS(suite, exit_on_failure)                                                   \
-  __RUN_TESTS(suite, exit_on_failure)                                                              \
+#define RUN_TESTS_2_ARGS(suite, exit_on_failure) __RUN_TESTS(suite, exit_on_failure)
 
 #define RUN_TESTS_GET_MACRO(_1, _2, NAME, ...) NAME
 #define RUN_TESTS(...)                                                                             \
   RUN_TESTS_GET_MACRO(__VA_ARGS__, RUN_TESTS_2_ARGS, RUN_TESTS_1_ARGS)(__VA_ARGS__)
 
-#define TEST_HOSTDEV(name) TEST(name); TEST_CUDA_KERNEL(name);
-
+#define TEST_HOSTDEV(name)                                                                         \
+  TEST(name);                                                                                      \
+  TEST_CUDA_KERNEL(name);
