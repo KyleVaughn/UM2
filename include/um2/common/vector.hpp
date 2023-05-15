@@ -21,19 +21,15 @@ namespace um2 {
 // Allocates 2^N elements, where N is the smallest integer such that 2^N >= size.
 // Use this in place of std::vector for hostdev/device code.
 //
-// TODO: Implement all relevant member functions/operators.
 // https://en.cppreference.com/w/cpp/container/vector
 
 template <typename T>
 struct Vector {
 
-    typedef T value_type;
-    typedef T * iterator;
-    typedef T const * const_iterator;
 
     private:
 
-    len_t _size = 0;
+    len_t size_ = 0;
     len_t _capacity = 0;
     T * _data = nullptr;
 
@@ -87,7 +83,7 @@ struct Vector {
 //
 //    // -- Methods --
 //
-//    UM2_HOSTDEV void clear();
+   UM2_HOSTDEV void clear();
 //
 //    UM2_HOSTDEV inline void reserve(len_t);
 //
