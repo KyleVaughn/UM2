@@ -1,6 +1,8 @@
 #pragma once
 
 #include <um2/common/config.hpp>
+#include <um2/common/bit_ceil.hpp>
+#include <initializer_list>
 
 //#include <thrust/execution_policy.h>
 //#include <thrust/iterator/zip_iterator.h>
@@ -77,9 +79,9 @@ struct Vector {
 
     UM2_HOSTDEV Vector(len_t const, T const &);
 //
-//    UM2_HOSTDEV Vector(Vector const &);
+   UM2_HOSTDEV Vector(Vector const &);
 //
-//    UM2_HOSTDEV Vector(std::initializer_list<T> const &);
+   UM2_HOSTDEV explicit Vector(std::initializer_list<T> const &);
 //
 //    // -- Methods --
 //

@@ -148,12 +148,15 @@ endif()
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   include(cmake/clang-cxx-flags.cmake)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_CLANG_FLAGS}")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  include(cmake/gnu-cxx-flags.cmake)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_GNU_FLAGS}")
 endif()
 if (UM2_ENABLE_FASTMATH)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ffast-math")
 endif()
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
-set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined,thread")
+set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
 
 ## Tests #########################################
 ##################################################

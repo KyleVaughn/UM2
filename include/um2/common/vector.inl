@@ -192,30 +192,30 @@ Vector<T>::Vector(len_t const n, T const & value) :
     }
 }
 
-//template <typename T>
-//UM2_HOSTDEV
-//Vector<T>::Vector(Vector<T> const & v) :
-//    size_{v.size_},
-//    _capacity{static_cast<len_t>(bit_ceil(v.size_))},
-//    _data{new T[static_cast<size_t>(this->_capacity)]}
-//{
-//    for (len_t i = 0; i < v.size_; ++i) {
-//        this->_data[i] = v._data[i];
-//    }
-//}
+template <typename T>
+UM2_HOSTDEV
+Vector<T>::Vector(Vector<T> const & v) :
+   size_{v.size_},
+   _capacity{static_cast<len_t>(bit_ceil(v.size_))},
+   _data{new T[static_cast<size_t>(this->_capacity)]}
+{
+   for (len_t i = 0; i < v.size_; ++i) {
+       this->_data[i] = v._data[i];
+   }
+}
 //
-//template <typename T>
-//UM2_HOSTDEV 
-//Vector<T>::Vector(std::initializer_list<T> const & list) :
-//    size_{static_cast<len_t>(list.size())},
-//    _capacity{static_cast<len_t>(bit_ceil(list.size()))},
-//    _data{new T[static_cast<size_t>(this->_capacity)]}
-//{
-//    len_t i = 0;
-//    for (auto const & value : list) {
-//        this->_data[i++] = value;
-//    }
-//}
+template <typename T>
+UM2_HOSTDEV 
+Vector<T>::Vector(std::initializer_list<T> const & list) :
+   size_{static_cast<len_t>(list.size())},
+   _capacity{static_cast<len_t>(bit_ceil(list.size()))},
+   _data{new T[static_cast<size_t>(this->_capacity)]}
+{
+   len_t i = 0;
+   for (auto const & value : list) {
+       this->_data[i++] = value;
+   }
+}
 //
 //// -- Operators --
 //
