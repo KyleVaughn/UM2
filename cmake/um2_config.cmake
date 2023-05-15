@@ -145,8 +145,10 @@ endif()
 
 ## flags #########################################
 ##################################################
-# Common flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  include(cmake/clang-cxx-flags.cmake)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_CLANG_FLAGS}")
+endif()
 
 ## Tests #########################################
 ##################################################

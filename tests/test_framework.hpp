@@ -187,7 +187,7 @@ struct TestResult {
 #  define TEST_CUDA_KERNEL(...)
 #endif
 
-#define __RUN_TESTS(suite, exit_on_failure)                                                        \
+#define RUN_THE_TESTS(suite, exit_on_failure)                                                      \
   {                                                                                                \
     TestResult result;                                                                             \
     printf("Running test suite '%s'\n", #suite);                                                   \
@@ -198,9 +198,9 @@ struct TestResult {
     }                                                                                              \
   }
 
-#define RUN_TESTS_1_ARGS(suite) __RUN_TESTS(suite, true)
+#define RUN_TESTS_1_ARGS(suite) RUN_THE_TESTS(suite, true)
 
-#define RUN_TESTS_2_ARGS(suite, exit_on_failure) __RUN_TESTS(suite, exit_on_failure)
+#define RUN_TESTS_2_ARGS(suite, exit_on_failure) RUN_THE_TESTS(suite, exit_on_failure)
 
 #define RUN_TESTS_GET_MACRO(_1, _2, NAME, ...) NAME
 #define RUN_TESTS(...)                                                                             \
