@@ -14,6 +14,11 @@
 //  - EXPECT_TRUE(a)          to check that a is true
 //  - EXPECT_FALSE(a)         to check that a is false
 //  - EXPECT_EQ(a, b)         to check that a == b
+//  - EXPECT_NE(a, b)         to check that a != b
+//  - EXPECT_LT(a, b)         to check that a < b
+//  - EXPECT_LE(a, b)         to check that a <= b
+//  - EXPECT_GT(a, b)         to check that a > b
+//  - EXPECT_GE(a, b)         to check that a >= b
 //  - EXPECT_NEAR(a, b, eps)  to check that abs(a - b) < eps
 //  ... more to come
 // 2. Use ASSERT_XXX macros to check conditions for fatal errors.
@@ -44,51 +49,86 @@ struct TestResult {
   }
 };
 
-inline void expect(bool a, TestResult * result, bool exit_on_failure, char const * const msg)
-{
-  if (!a) {
-    result->failure(__FILE__, __LINE__, __FUNCTION__, msg);
-    if (exit_on_failure) {
-      exit(EXIT_FAILURE);
-    }
+#define EXPECT_TRUE(a)                                                                             \
+  if (!(a)) {                                                                                      \
+    result->failure(__FILE__, __LINE__, __FUNCTION__,                                              \
+                    "Expected " #a " to be true, but got false\n");                                \
+    if (exit_on_failure) {                                                                         \
+      return;                                                                                      \
+    }                                                                                              \
   }
-}
-
-#define EXPECT_TRUE(a) \
-  expect(a, result, exit_on_failure, "Expected " #a " to be true, but got false\n")
 
 #define EXPECT_FALSE(a)                                                                            \
-  expect(!(a), result, exit_on_failure, "Expected " #a " to be false, but got true\n")
+  if (a) {                                                                                         \
+    result->failure(__FILE__, __LINE__, __FUNCTION__,                                              \
+                    "Expected " #a " to be false, but got true\n");                                \
+    if (exit_on_failure) {                                                                         \
+      return;                                                                                      \
+    }                                                                                              \
+  }
 
 #define EXPECT_EQ(a, b)                                                                            \
-  expect((a) == (b), result, exit_on_failure,                                                      \
-         "Expected " #a " == " #b ", but got " #a " != " #b "\n")
+  if (!((a) == (b))) {                                                                             \
+    result->failure(__FILE__, __LINE__, __FUNCTION__,                                              \
+                    "Expected " #a " == " #b ", but got " #a " != " #b "\n");                      \
+    if (exit_on_failure) {                                                                         \
+      return;                                                                                      \
+    }                                                                                              \
+  }
 
 #define EXPECT_NE(a, b)                                                                            \
-  expect((a) != (b), result, exit_on_failure,                                                      \
-         "Expected " #a " != " #b ", but got " #a " == " #b "\n")
+  if (!((a) != (b))) {                                                                             \
+    result->failure(__FILE__, __LINE__, __FUNCTION__,                                              \
+                    "Expected " #a " != " #b ", but got " #a " == " #b "\n");                      \
+    if (exit_on_failure) {                                                                         \
+      return;                                                                                      \
+    }                                                                                              \
+  }
 
 #define EXPECT_LT(a, b)                                                                            \
-  expect((a) < (b), result, exit_on_failure,                                                       \
-         "Expected " #a " < " #b ", but got " #a " >= " #b "\n")
+  if (!((a) < (b))) {                                                                              \
+    result->failure(__FILE__, __LINE__, __FUNCTION__,                                              \
+                    "Expected " #a " < " #b ", but got " #a " >= " #b "\n");                       \
+    if (exit_on_failure) {                                                                         \
+      return;                                                                                      \
+    }                                                                                              \
+  }
 
 #define EXPECT_LE(a, b)                                                                            \
-  expect((a) <= (b), result, exit_on_failure,                                                      \
-         "Expected " #a " <= " #b ", but got " #a " > " #b "\n")
+  if (!((a) <= (b))) {                                                                             \
+    result->failure(__FILE__, __LINE__, __FUNCTION__,                                              \
+                    "Expected " #a " <= " #b ", but got " #a " > " #b "\n");                       \
+    if (exit_on_failure) {                                                                         \
+      return;                                                                                      \
+    }                                                                                              \
+  }
 
 #define EXPECT_GT(a, b)                                                                            \
-  expect((a) > (b), result, exit_on_failure,                                                       \
-         "Expected " #a " > " #b ", but got " #a " <= " #b "\n")
+  if (!((a) > (b))) {                                                                              \
+    result->failure(__FILE__, __LINE__, __FUNCTION__,                                              \
+                    "Expected " #a " > " #b ", but got " #a " <= " #b "\n");                       \
+    if (exit_on_failure) {                                                                         \
+      return;                                                                                      \
+    }                                                                                              \
+  }
 
 #define EXPECT_GE(a, b)                                                                            \
-  expect((a) >= (b), result, exit_on_failure,                                                      \
-         "Expected " #a " >= " #b ", but got " #a " < " #b "\n")
+  if (!((a) >= (b))) {                                                                             \
+    result->failure(__FILE__, __LINE__, __FUNCTION__,                                              \
+                    "Expected " #a " >= " #b ", but got " #a " < " #b "\n");                       \
+    if (exit_on_failure) {                                                                         \
+      return;                                                                                      \
+    }                                                                                              \
+  }
 
 #define EXPECT_NEAR(a, b, eps)                                                                     \
-  expect(std::abs((a) - (b)) < (eps), result, exit_on_failure,                                     \
-         "Expected abs(" #a " - " #b ") < " #eps ", but got abs(" #a " - " #b ") = ");             \
-  if (!(std::abs((a) - (b)) < (eps))) {                                                            \
+  if (std::abs((a) - (b)) > (eps)) {                                                               \
+    result->failure(__FILE__, __LINE__, __FUNCTION__,                                              \
+                    "Expected abs(" #a " - " #b ") < " #eps ", but got abs(" #a " - " #b ") = ");  \
     printf("%f\n", static_cast<double>(std::abs((a) - (b))));                                      \
+    if (exit_on_failure) {                                                                         \
+      return;                                                                                      \
+    }                                                                                              \
   }
 
 #define TEST_CASE(name) static void name(TestResult * const result, bool exit_on_failure)

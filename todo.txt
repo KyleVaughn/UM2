@@ -7,7 +7,6 @@ Setup continuous integration for:
   Run tests
 
 Find an appropriate set of warnings for:
-  gcc
   nvcc -> Forward to host compiler, but also warnings for nvcc
 
 Setup Sphinx/Read the Docs

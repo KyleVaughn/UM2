@@ -164,3 +164,5 @@ if (UM2_ENABLE_TESTS)
   include(CTest)
   add_subdirectory(tests)
 endif()
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
