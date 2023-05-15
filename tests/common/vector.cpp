@@ -21,14 +21,14 @@ UM2_HOSTDEV TEST_CASE(length_val_constructor)
     }
 }
 //
-//template <typename T>
-//UM2_HOSTDEV TEST(clear)
-//    um2::Vector<T> v(10, 2);
-//    v.clear();
-//    ASSERT(v.size() == 0, "size is not 0");
-//    ASSERT(v.capacity() == 0, "capacity is not 0");
-//    ASSERT(v.data() == nullptr, "data is not nullptr");
-//END_TEST
+template <typename T>
+UM2_HOSTDEV TEST_CASE(clear){
+   um2::Vector<T> v(10, 2);
+   v.clear();
+   EXPECT_EQ(v.size() , 0);
+   EXPECT_EQ(v.capacity(),0);
+   EXPECT_EQ(v.data(), nullptr);
+}
 //
 //template <typename T>
 //UM2_HOSTDEV TEST(copy_constructor)
@@ -265,6 +265,7 @@ TEST_SUITE(vector)
 {
   TEST(length_constructor<T>)
   TEST(length_val_constructor)
+  TEST(clear<T>)
 //    RUN_TEST("length_constructor", length_constructor<T>);
 //    RUN_TEST("length_val_constructor", length_val_constructor);
 //    RUN_TEST("clear", clear<T>);

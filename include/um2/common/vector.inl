@@ -5,14 +5,14 @@ namespace um2 {
 //template <typename T>
 //UM2_NDEBUG_PURE UM2_HOSTDEV constexpr
 //T & Vector<T>::operator [] (len_t const i) {
-//    UM2_ASSERT(0 <= i && i < this->_size);
+//    UM2_ASSERT(0 <= i && i < this->size_);
 //    return this->_data[i];
 //}
 //
 //template <typename T>
 //UM2_NDEBUG_PURE UM2_HOSTDEV constexpr
 //T const & Vector<T>::operator [] (len_t const i) const {
-//    UM2_ASSERT(0 <= i && i < this->_size);
+//    UM2_ASSERT(0 <= i && i < this->size_);
 //    return this->_data[i];
 //}
 //
@@ -22,7 +22,7 @@ namespace um2 {
 //
 //template <typename T>
 //UM2_PURE UM2_HOSTDEV constexpr
-//T * Vector<T>::end() const { return this->_data + this->_size; }
+//T * Vector<T>::end() const { return this->_data + this->size_; }
 //
 //template <typename T>
 //UM2_PURE UM2_HOSTDEV constexpr
@@ -30,11 +30,11 @@ namespace um2 {
 //
 //template <typename T>
 //UM2_PURE UM2_HOSTDEV constexpr
-//T const * Vector<T>::cend() const { return this->_data + this->_size; }
+//T const * Vector<T>::cend() const { return this->_data + this->size_; }
 //
 template <typename T>
 UM2_PURE UM2_HOSTDEV constexpr
-len_t Vector<T>::size() const { return this->_size; }
+len_t Vector<T>::size() const { return this->size_; }
 
 template <typename T>
 UM2_PURE UM2_HOSTDEV constexpr
@@ -52,7 +52,7 @@ T * Vector<T>::data() { return this->_data; }
 //UM2_NDEBUG_PURE UM2_HOSTDEV constexpr
 //T & Vector<T>::front() 
 //{ 
-//    UM2_ASSERT(this->_size > 0);
+//    UM2_ASSERT(this->size_ > 0);
 //    return this->_data[0]; 
 //}
 //
@@ -60,7 +60,7 @@ T * Vector<T>::data() { return this->_data; }
 //UM2_NDEBUG_PURE UM2_HOSTDEV constexpr
 //T const & Vector<T>::front() const 
 //{ 
-//    UM2_ASSERT(this->_size > 0);
+//    UM2_ASSERT(this->size_ > 0);
 //    return this->_data[0]; 
 //}
 //
@@ -68,28 +68,28 @@ T * Vector<T>::data() { return this->_data; }
 //UM2_NDEBUG_PURE UM2_HOSTDEV constexpr
 //T & Vector<T>::back() 
 //{ 
-//    UM2_ASSERT(this->_size > 0);
-//    return this->_data[this->_size - 1];
+//    UM2_ASSERT(this->size_ > 0);
+//    return this->_data[this->size_ - 1];
 //}
 //
 //template <typename T>
 //UM2_NDEBUG_PURE UM2_HOSTDEV constexpr
 //T const & Vector<T>::back() const 
 //{ 
-//    UM2_ASSERT(this->_size > 0);
-//    return this->_data[this->_size - 1];
+//    UM2_ASSERT(this->size_ > 0);
+//    return this->_data[this->size_ - 1];
 //}
 //
 //// -- Member functions --
 //
-//template <typename T>
-//UM2_HOSTDEV
-//void Vector<T>::clear() {
-//    this->_size = 0;
-//    this->_capacity = 0;
-//    delete[] this->_data;
-//    this->_data = nullptr;
-//}
+template <typename T>
+UM2_HOSTDEV
+void Vector<T>::clear() {
+   this->size_ = 0;
+   this->_capacity = 0;
+   delete[] this->_data;
+   this->_data = nullptr;
+}
 //
 //template <typename T>
 //UM2_HOSTDEV inline
@@ -99,7 +99,7 @@ T * Vector<T>::data() { return this->_data; }
 //        // to determine the next power of 2
 //        n = static_cast<len_t>(bit_ceil(n));
 //        T * new_data = new T[static_cast<size_t>(n)];
-//        for (len_t i = 0; i < this->_size; ++i) {
+//        for (len_t i = 0; i < this->size_; ++i) {
 //            new_data[i] = this->_data[i];
 //        }
 //        delete[] this->_data;
@@ -112,19 +112,19 @@ T * Vector<T>::data() { return this->_data; }
 //UM2_HOSTDEV
 //void Vector<T>::resize(len_t n) {
 //    this->reserve(n);
-//    this->_size = n;
+//    this->size_ = n;
 //}
 //
 //template <typename T>
 //UM2_HOSTDEV
 //inline void Vector<T>::push_back(T const & value) {
-//    this->reserve(this->_size + 1);
-//    this->_data[this->_size++] = value;
+//    this->reserve(this->size_ + 1);
+//    this->_data[this->size_++] = value;
 //}
 //
 //template <typename T>
 //UM2_PURE UM2_HOSTDEV constexpr
-//bool Vector<T>::empty() const { return this->_size == 0; }
+//bool Vector<T>::empty() const { return this->size_ == 0; }
 //
 //template <typename T>
 //UM2_HOSTDEV
@@ -132,11 +132,11 @@ T * Vector<T>::data() { return this->_data; }
 //{
 //    if (n == 0) { return; }
 //    len_t const offset = static_cast<len_t>(pos - this->_data);
-//    UM2_ASSERT(0 <= offset && offset <= this->_size);
-//    len_t const new_size = this->_size + n;
-//    this->reserve(new_size);
+//    UM2_ASSERT(0 <= offset && offset <= this->size_);
+//    len_t const newsize_ = this->size_ + n;
+//    this->reserve(newsize_);
 //    // Shift elements to make room for the insertion
-//    for (len_t i = this->_size - 1; i >= offset; --i) 
+//    for (len_t i = this->size_ - 1; i >= offset; --i) 
 //    {
 //        this->_data[i + n] = this->_data[i];
 //    }
@@ -145,7 +145,7 @@ T * Vector<T>::data() { return this->_data; }
 //    {
 //        this->_data[i] = value;
 //    }
-//    this->_size = new_size;
+//    this->size_ = newsize_;
 //}
 //
 //template <typename T>
@@ -159,7 +159,7 @@ T * Vector<T>::data() { return this->_data; }
 //UM2_PURE UM2_HOSTDEV constexpr
 //bool Vector<T>::contains(T const & value) const
 //{
-//    for (len_t i = 0; i < this->_size; ++i) {
+//    for (len_t i = 0; i < this->size_; ++i) {
 //        if (this->_data[i] == value) {
 //            return true;
 //        }
@@ -172,7 +172,7 @@ T * Vector<T>::data() { return this->_data; }
 template <typename T>
 UM2_HOSTDEV
 Vector<T>::Vector(len_t const n) :
-    _size{n},
+    size_{n},
     _capacity{n},
     _data{new T[static_cast<size_t>(n)]}
 {
@@ -182,7 +182,7 @@ Vector<T>::Vector(len_t const n) :
 template <typename T>
 UM2_HOSTDEV
 Vector<T>::Vector(len_t const n, T const & value) :
-    _size{n},
+    size_{n},
     _capacity{n},
     _data{new T[static_cast<size_t>(n)]}
 {
@@ -195,11 +195,11 @@ Vector<T>::Vector(len_t const n, T const & value) :
 //template <typename T>
 //UM2_HOSTDEV
 //Vector<T>::Vector(Vector<T> const & v) :
-//    _size{v._size},
-//    _capacity{static_cast<len_t>(bit_ceil(v._size))},
+//    size_{v.size_},
+//    _capacity{static_cast<len_t>(bit_ceil(v.size_))},
 //    _data{new T[static_cast<size_t>(this->_capacity)]}
 //{
-//    for (len_t i = 0; i < v._size; ++i) {
+//    for (len_t i = 0; i < v.size_; ++i) {
 //        this->_data[i] = v._data[i];
 //    }
 //}
@@ -207,7 +207,7 @@ Vector<T>::Vector(len_t const n, T const & value) :
 //template <typename T>
 //UM2_HOSTDEV 
 //Vector<T>::Vector(std::initializer_list<T> const & list) :
-//    _size{static_cast<len_t>(list.size())},
+//    size_{static_cast<len_t>(list.size())},
 //    _capacity{static_cast<len_t>(bit_ceil(list.size()))},
 //    _data{new T[static_cast<size_t>(this->_capacity)]}
 //{
@@ -228,7 +228,7 @@ Vector<T>::Vector(len_t const n, T const & value) :
 //            this->_data = new T[static_cast<size_t>(bit_ceil(v.size()))];
 //            this->_capacity = bit_ceil(v.size());
 //        }
-//        this->_size = v.size();
+//        this->size_ = v.size();
 //        for (len_t i = 0; i < v.size(); ++i) {
 //            this->_data[i] = v._data[i];
 //        }
@@ -239,8 +239,8 @@ Vector<T>::Vector(len_t const n, T const & value) :
 //template <typename T>
 //UM2_PURE UM2_HOSTDEV constexpr
 //bool Vector<T>::operator == (Vector<T> const & v) const {
-//    if (this->_size != v._size) { return false; }
-//    for (len_t i = 0; i < this->_size; ++i) {
+//    if (this->size_ != v.size_) { return false; }
+//    for (len_t i = 0; i < this->size_; ++i) {
 //        if (this->_data[i] != v._data[i]) { return false; }
 //    }
 //    return true;

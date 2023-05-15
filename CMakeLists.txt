@@ -14,6 +14,9 @@ option(UM2_ENABLE_OPENMP    "Enable OpenMP"     ON)
 option(UM2_ENABLE_TESTS     "Enable tests"      ON)
 option(UM2_ENABLE_FASTMATH  "Enable fast math"  ON)
 
+# generate compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 ## Advanced options ###########################################################
 ###############################################################################
 option(UM2_ENABLE_INT64 "Enable 64-bit integer types" OFF) # For large meshes
@@ -33,8 +36,9 @@ option(UM2_ENABLE_CPPCHECK      "Enable cppcheck"                 ${UM2_DEV_MODE
 ###############################################################################
 
 # Headers
-set(UM2_HEADERS        
-    "include/um2/common/config.hpp"        
+set(UM2_HEADERS
+    "include/um2/common/config.hpp"
+    "include/um2/common/vector.hpp"
     "include/um2c.h")    
     
 # Sources
