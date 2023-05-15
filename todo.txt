@@ -1,19 +1,14 @@
-Add debug build that uses sanitiziation
-
 Setup continuous integration for:
   debug and release
   gcc and clang
   CUDA enabled/disabled
-  For each of the above, run:
-    clang-tidy
-    cppcheck
-    clang-format
-    tests
+  OpenMP enabled/disabled
+  Dev mode enabled/disabled
+  Run tests
 
 Find an appropriate set of warnings for:
-  clang
   gcc
-  nvcc 
+  nvcc -> Forward to host compiler, but also warnings for nvcc
 
 Setup Sphinx/Read the Docs
 

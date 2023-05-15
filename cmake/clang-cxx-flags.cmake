@@ -32,4 +32,5 @@ string(CONCAT UM2_CLANG_FLAGS
   " -Wvector-conversion"
   " -Wvla"
   " -Wzero-as-null-pointer-constant"
-  " -pedantic")
+  " -pedantic"
+  )
