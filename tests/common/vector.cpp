@@ -10,15 +10,16 @@ UM2_HOSTDEV TEST_CASE(length_constructor)
   EXPECT_NE(v.data(), nullptr)
 }
 
-//UM2_HOSTDEV TEST(length_val_constructor)
-//    um2::Vector<int> v(10, 2);
-//    ASSERT(v.size() == 10, "size is not 10");
-//    ASSERT(v.capacity() == 10, "capacity is not 10");
-//    ASSERT(v.data() != nullptr, "data is nullptr");
-//    for (int i = 0; i < 10; i++) {
-//        ASSERT(v.data()[i] == 2, "data[i] is not 2");
-//    }
-//END_TEST
+UM2_HOSTDEV TEST_CASE(length_val_constructor)
+{
+    um2::Vector<int> v(10, 2);
+    EXPECT_EQ(v.size(), 10);
+    EXPECT_EQ(v.capacity(), 10);
+    EXPECT_NE(v.data(),  nullptr);
+    for (int i = 0; i < 10; i++) {
+      EXPECT_EQ(v.data()[i], 2); 
+    }
+}
 //
 //template <typename T>
 //UM2_HOSTDEV TEST(clear)
@@ -263,6 +264,7 @@ template <typename T>
 TEST_SUITE(vector)
 {
   TEST(length_constructor<T>)
+  TEST(length_val_constructor)
 //    RUN_TEST("length_constructor", length_constructor<T>);
 //    RUN_TEST("length_val_constructor", length_val_constructor);
 //    RUN_TEST("clear", clear<T>);

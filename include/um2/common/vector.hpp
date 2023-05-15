@@ -78,8 +78,8 @@ struct Vector {
 //    UM2_HOSTDEV constexpr Vector() = default;
 //
     UM2_HOSTDEV explicit Vector(len_t const);
-//
-//    UM2_HOSTDEV Vector(len_t const, T const &);
+
+    UM2_HOSTDEV Vector(len_t const, T const &);
 //
 //    UM2_HOSTDEV Vector(Vector const &);
 //

@@ -179,19 +179,19 @@ Vector<T>::Vector(len_t const n) :
   assert(n > 0);
 }
 
-//template <typename T>
-//UM2_HOSTDEV
-//Vector<T>::Vector(len_t const n, T const & value) :
-//    _size{n},
-//    _capacity{n},
-//    _data{new T[static_cast<size_t>(n)]}
-//{
-//    UM2_ASSERT(n > 0);
-//    for (len_t i = 0; i < n; ++i) {
-//        this->_data[i] = value;
-//    }
-//}
-//
+template <typename T>
+UM2_HOSTDEV
+Vector<T>::Vector(len_t const n, T const & value) :
+    _size{n},
+    _capacity{n},
+    _data{new T[static_cast<size_t>(n)]}
+{
+    assert(n > 0);
+    for (len_t i = 0; i < n; ++i) {
+      this->_data[i] = value;
+    }
+}
+
 //template <typename T>
 //UM2_HOSTDEV
 //Vector<T>::Vector(Vector<T> const & v) :
