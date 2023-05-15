@@ -1,4 +1,4 @@
-Add debug build that uses sanitiziation, cppcheck, clang-tidy, and clang-format
+Add debug build that uses sanitiziation
 
 Setup continuous integration for:
   debug and release
@@ -13,6 +13,7 @@ Setup continuous integration for:
 Find an appropriate set of warnings for:
   clang
   gcc
+  nvcc 
 
 Setup Sphinx/Read the Docs
 

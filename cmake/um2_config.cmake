@@ -1,3 +1,7 @@
+## Update git submodules #########################
+##################################################
+include(cmake/update-git-submodules.cmake)
+
 ## System ########################################
 ##################################################
 # No Windows support
@@ -29,8 +33,20 @@ endif()
 include(CheckLanguage)
 check_language(CUDA)
 if (UM2_ENABLE_CUDA)
-    find_package(CUDA REQUIRED)
-    enable_language(CUDA)
+  # nvcc will default to gcc and g++ if the host compiler is not set using CUDAHOSTCXX. 
+  # To prevent unintentional version/compiler mismatches, we set the host compiler to the 
+  # same compiler used to build the project.
+  if (NOT DEFINED ENV{CUDAHOSTCXX})
+    message(STATUS "Setting CMAKE_CUDA_HOST_COMPILER to ${CMAKE_CXX_COMPILER}." 
+      " Consider setting the CUDAHOSTCXX environment variable if this is not desired.")
+    set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+  endif()
+  find_package(CUDA REQUIRED)
+  enable_language(CUDA)
+  set_target_properties(um2 PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+  set_target_properties(um2 PROPERTIES CUDA_ARCHITECTURES native)
+  set_source_files_properties(${UM2_SOURCES} PROPERTIES LANGUAGE CUDA)    
+  target_include_directories(um2 SYSTEM PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")    
 endif()
 
 ## Thrust ########################################
@@ -56,6 +72,12 @@ set_property(CACHE UM2_THRUST_DEVICE PROPERTY STRINGS "CUDA" "OMP" "CPP")
 message(STATUS "Thrust host backend: ${UM2_THRUST_HOST}")
 message(STATUS "Thrust device backend: ${UM2_THRUST_DEVICE}")
 thrust_create_target(Thrust HOST ${UM2_THRUST_HOST} DEVICE ${UM2_THRUST_DEVICE})
+# Treat the Thrust includes as system includes    
+target_link_libraries(um2 PRIVATE Thrust)
+target_include_directories(um2 SYSTEM PUBLIC      
+  "${PROJECT_SOURCE_DIR}/tpls/thrust/thrust/cmake/../.."    
+  "${PROJECT_SOURCE_DIR}/tpls/thrust/dependencies/libcudacxx/include"    
+  "${PROJECT_SOURCE_DIR}/tpls/thrust/dependencies/cub")
 
 ## spdlog ########################################
 ##################################################
@@ -77,16 +99,58 @@ elseif (UM2_LOG_LEVEL STREQUAL "off")
 else()
   message(FATAL_ERROR "Unknown log level: ${UM2_LOG_LEVEL}")
 endif()
+target_link_libraries(um2 PRIVATE spdlog::spdlog)
 
 ## config.hpp ####################################
 ##################################################
 configure_file(
   "${PROJECT_SOURCE_DIR}/cmake/config.hpp.in"
-  "${PROJECT_SOURCE_DIR}/include/um2/common/config.hpp"
-)
+  "${PROJECT_SOURCE_DIR}/include/um2/common/config.hpp")
 
 ## clang-format ##################################
 ##################################################
 if (UM2_ENABLE_CLANG_FORMAT)
   include(cmake/clang-format.cmake)
+endif()
+
+## clang-tidy ####################################
+##################################################
+if (UM2_ENABLE_CLANG_TIDY)
+  if (UM2_CLANG_TIDY_FIX)
+    set_target_properties(um2 PROPERTIES
+                          CXX_CLANG_TIDY
+                          "clang-tidy;--header-filter=include;--fix")
+  else()
+    set_target_properties(um2 PROPERTIES
+                          CXX_CLANG_TIDY
+                          "clang-tidy;--header-filter=include")
+  endif()
+endif()
+
+## cppcheck ######################################
+##################################################
+if (UM2_ENABLE_CPPCHECK)
+  # Concatenate the cppcheck arguments into a single string
+  string(CONCAT CPPCHECK_ARGS
+    "cppcheck"
+    ";--enable=warning,style,information,missingInclude"
+    ";--std=c++20"
+    ";--language=c++"
+    ";--suppress=missingIncludeSystem"
+    ";--inconclusive"
+    ";--inline-suppr"
+    ";--error-exitcode=10")
+  set_target_properties(um2 PROPERTIES CXX_CPPCHECK "${CPPCHECK_ARGS}")
+endif()
+
+## flags #########################################
+##################################################
+# Common flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
+
+## Tests #########################################
+##################################################
+if (UM2_ENABLE_TESTS)
+  include(CTest)
+  add_subdirectory(tests)
 endif()
