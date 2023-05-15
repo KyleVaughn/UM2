@@ -5,9 +5,9 @@ template <typename T>
 UM2_HOSTDEV TEST_CASE(length_constructor)
 {
   um2::Vector<T> v(10);
-  EXPECT_EQ(v.size(), 10)
-  EXPECT_EQ(v.capacity(), 10)
-  EXPECT_NE(v.data(), nullptr)
+  EXPECT_EQ(v.size(), 10);
+  EXPECT_EQ(v.capacity(), 10);
+  EXPECT_NE(v.data(), nullptr);
 }
 
 UM2_HOSTDEV TEST_CASE(length_val_constructor)
@@ -54,7 +54,7 @@ UM2_HOSTDEV TEST_CASE(copy_constructor){
 //
 template <typename T>
 UM2_HOSTDEV TEST_CASE(initializer_list_constructor){
-   um2::Vector<T> v = {1, 2, 3, 4, 5};
+   um2::Vector<T> v{1, 2, 3, 4, 5};
    EXPECT_EQ(v.size() , 5);
    EXPECT_EQ(v.capacity() , 8);
    EXPECT_NE(v.data(), nullptr);
