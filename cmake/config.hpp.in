@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert> // assert
 #include <cstdint> // int32_t, int64_t
 
 // OpenMP
