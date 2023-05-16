@@ -1,3 +1,5 @@
+templated cuda tests
+
 Setup continuous integration for:
   debug and release
   gcc and clang

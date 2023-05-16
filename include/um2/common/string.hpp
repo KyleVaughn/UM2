@@ -5,7 +5,7 @@
 
 #include <cstring>
 //#include <ostream>
-//#include <string>
+#include <string>
 
 namespace um2
 {
@@ -37,14 +37,14 @@ public:
   //
   //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char const & operator [] (len_t const) const;
   //
-  //    UM2_PURE UM2_HOSTDEV constexpr char * begin() const;
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr char * end() const;
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr char const * cbegin() const;
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr char const * cend() const;
-  //
+  UM2_PURE UM2_HOSTDEV constexpr char8_t * begin() const;
+
+  UM2_PURE UM2_HOSTDEV constexpr char8_t * end() const;
+
+  UM2_PURE UM2_HOSTDEV constexpr char8_t const * cbegin() const;
+
+  UM2_PURE UM2_HOSTDEV constexpr char8_t const * cend() const;
+
   UM2_PURE UM2_HOSTDEV constexpr len_t size() const;
 
   UM2_PURE UM2_HOSTDEV constexpr len_t capacity() const;
@@ -60,9 +60,9 @@ public:
   //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char & back();
   //
   //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char const & back() const;
-  //
-  //    // -- Constructors --
-  //
+
+  // -- Constructors --
+
   UM2_HOSTDEV constexpr String() = default;
 
   template <size_t N>
@@ -70,23 +70,9 @@ public:
 
   UM2_HOSTDEV String(String const &);
 
-  //    String(std::string const &);
-  //
-  //    // -- Methods --
-  //
-  //    UM2_HOSTDEV void clear();
-  //
-  //    UM2_HOSTDEV inline void reserve(len_t);
-  //
-  //    UM2_HOSTDEV void resize(len_t);
-  //
-  //    UM2_HOSTDEV void push_back(char const);
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr bool empty() const;
-  //
-  //    UM2_HOSTDEV void insert(char const *, len_t const, char const);
-  //
-  //    UM2_HOSTDEV void insert(char const *, char const);
+  explicit String(std::string const &);
+
+  // -- Methods --
   //
   //    UM2_PURE UM2_HOSTDEV constexpr bool contains(char const) const;
   //
@@ -94,15 +80,17 @@ public:
   //
   //    UM2_PURE constexpr bool ends_with(std::string const &) const;
   //
-  //    // -- Operators --
+  // -- Operators --
 
   UM2_HOSTDEV String & operator=(String const &);
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr bool operator == (String const &) const;
-  //
-  //    template <size_t N>
-  //    UM2_HOSTDEV String & operator = (char const (&)[N]);
-  //
+
+  template <size_t N>
+  UM2_HOSTDEV String & operator=(char const (&)[N]);
+
+  String & operator=(std::string const &);
+
+  UM2_PURE UM2_HOSTDEV constexpr bool operator==(String const &) const;
+
   //    String & operator = (std::string const &);
   //
   //    UM2_PURE UM2_HOSTDEV constexpr bool operator < (String const &) const;

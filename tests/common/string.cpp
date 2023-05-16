@@ -32,6 +32,20 @@ UM2_HOSTDEV TEST_CASE(um2_string_constructor)
 }
 MAKE_CUDA_KERNEL(um2_string_constructor);
 
+TEST_CASE(std_string_constructor)
+{
+  std::string s0("hello");
+  um2::String s(s0);
+  EXPECT_EQ(s.size(), 5);
+  EXPECT_EQ(s.capacity(), 6);
+  EXPECT_EQ(s.data()[0], 'h');
+  EXPECT_EQ(s.data()[1], 'e');
+  EXPECT_EQ(s.data()[2], 'l');
+  EXPECT_EQ(s.data()[3], 'l');
+  EXPECT_EQ(s.data()[4], 'o');
+  EXPECT_EQ(s.data()[5], '\0');
+}
+
 // -- Operators --
 
 UM2_HOSTDEV TEST_CASE(assign_um2_string)
@@ -50,147 +64,63 @@ UM2_HOSTDEV TEST_CASE(assign_um2_string)
 }
 MAKE_CUDA_KERNEL(assign_um2_string);
 
-// template <typename T>
-// UM2_HOSTDEV TEST(clear)
-//     um2::String<T> v(10, 2);
-//     v.clear();
-//     ASSERT(v.size() == 0, "size is not 0");
-//     ASSERT(v.capacity() == 0, "capacity is not 0");
-//     ASSERT(v.data() == nullptr, "data is not nullptr");
-// END_TEST
-//
-// template <typename T>
-// UM2_HOSTDEV TEST(copy_constructor)
-//     um2::String<T> v(10);
-//     for (int i = 0; i < 10; i++) {
-//         v.data()[i] = i;
-//     }
-//     um2::String<T> v2(v);
-//     ASSERT(v2.size() == 10, "size is not 10");
-//     ASSERT(v2.capacity() == 16, "capacity is not 16");
-//     ASSERT(v2.data() != nullptr, "data is nullptr");
-//     for (int i = 0; i < 10; i++) {
-//         ASSERT(v2.data()[i] == i, "data[i] is not i");
-//     }
-//     um2::String<T> v3 = v;
-//     ASSERT(v3.size() == 10, "size is not 10");
-//     ASSERT(v3.capacity() == 16, "capacity is not 16");
-//     ASSERT(v3.data() != nullptr, "data is nullptr");
-//     for (int i = 0; i < 10; i++) {
-//         ASSERT(v3.data()[i] == i, "data[i] is not i");
-//     }
-// END_TEST
-//
-// template <typename T>
-// UM2_HOSTDEV TEST(initializer_list_constructor)
-//     um2::String<T> v = {1, 2, 3, 4, 5};
-//     ASSERT(v.size() == 5, "size is not 5");
-//     ASSERT(v.capacity() == 8, "capacity is not 8");
-//     ASSERT(v.data() != nullptr, "data is nullptr");
-//     for (int i = 0; i < 5; i++) {
-//         ASSERT(v.data()[i] == i + 1, "data[i] is not i + 1");
-//     }
-// END_TEST
-//
-// template <typename T>
-// UM2_HOSTDEV TEST(reserve)
-//     um2::String<T> v;
-//     // Check that reserve does not change size or data, and gives the correct capacity
-//     v.reserve(0);
-//     ASSERT(v.size() == 0, "size");
-//     ASSERT(v.capacity() == 0, "capacity");
-//     ASSERT(v.data() == nullptr, "data");
-//     v.reserve(1);
-//     ASSERT(v.size() == 0, "size");
-//     ASSERT(v.capacity() == 1, "capacity");
-//     ASSERT(v.data() != nullptr, "data");
-//     v.clear();
-//     v.reserve(2);
-//     ASSERT(v.size() == 0, "size");
-//     ASSERT(v.capacity() == 2, "capacity");
-//     ASSERT(v.data() != nullptr, "data");
-//     v.clear();
-//     v.reserve(3);
-//     ASSERT(v.size() == 0, "size");
-//     ASSERT(v.capacity() == 4, "capacity");
-//     ASSERT(v.data() != nullptr, "data");
-//     v.clear();
-//     v.reserve(4);
-//     ASSERT(v.size() == 0, "size");
-//     ASSERT(v.capacity() == 4, "capacity");
-//     ASSERT(v.data() != nullptr, "data");
-//     v.clear();
-//     v.reserve(15);
-//     ASSERT(v.size() == 0, "size");
-//     ASSERT(v.capacity() == 16, "capacity");
-//     ASSERT(v.data() != nullptr, "data");
-// END_TEST
-//
-// UM2_HOSTDEV TEST(empty)
-//     um2::String<int> v;
-//     ASSERT(v.empty(), "empty");
-//     v.push_back(1);
-//     ASSERT(!v.empty(), "!empty");
-// END_TEST
-//
-// template <typename T>
-// UM2_HOSTDEV TEST(begin_end)
-//     um2::String<T> v;
-//     ASSERT(v.begin() == v.end(), "begin == end");
-//     v.push_back(1);
-//     ASSERT(v.begin() != v.end(), "begin != end");
-//     ASSERT(*v.begin() == 1, "*begin");
-//     ASSERT(*(v.end() - 1) == 1, "*(end - 1)");
-//     v.push_back(2);
-//     ASSERT(v.begin() != v.end(), "begin != end");
-//     ASSERT(*v.begin() == 1, "*begin");
-//     ASSERT(*(v.end() - 1) == 2, "*(end - 1)");
-//     *v.begin() = 3;
-//     ASSERT(v[0] == 3, "*begin");
-//
-//     v.clear();
-//     v.reserve(3);
-//     v.push_back(1);
-//     v.push_back(2);
-//     v.data()[2] = 3;
-//     ASSERT(v.cbegin() != v.cend(), "cbegin != cend");
-//     ASSERT(*v.cbegin() == 1, "*cbegin");
-//     ASSERT(*v.cend() == 3, "*(cend - 1)");
-// END_TEST
-//
-// template <typename T>
-// UM2_HOSTDEV TEST(push_back)
-//     um2::String<T> v;
-//     v.push_back(1);
-//     ASSERT(v.size() == 1, "size");
-//     ASSERT(v.capacity() == 1, "capacity");
-//     ASSERT(v.data()[0] == 1, "data[0]");
-//     v.push_back(2);
-//     ASSERT(v.size() == 2, "size");
-//     ASSERT(v.capacity() == 2, "capacity");
-//     ASSERT(v.data()[0] == 1, "data[0]");
-//     ASSERT(v.data()[1] == 2, "data[1]");
-//     v.push_back(3);
-//     ASSERT(v.size() == 3, "size");
-//     ASSERT(v.capacity() == 4, "capacity");
-//     ASSERT(v.data()[0] == 1, "data[0]");
-//     ASSERT(v.data()[1] == 2, "data[1]");
-//     ASSERT(v.data()[2] == 3, "data[2]");
-//     v.clear();
-//     v.reserve(3);
-//     v.push_back(1);
-//     v.push_back(2);
-//     v.push_back(3);
-//     v.push_back(4);
-//     v.push_back(5);
-//     ASSERT(v.size() == 5, "size");
-//     ASSERT(v.capacity() == 8, "capacity");
-//     ASSERT(v.data()[0] == 1, "data[0]");
-//     ASSERT(v.data()[1] == 2, "data[1]");
-//     ASSERT(v.data()[2] == 3, "data[2]");
-//     ASSERT(v.data()[3] == 4, "data[3]");
-//     ASSERT(v.data()[4] == 5, "data[4]");
-// END_TEST
+UM2_HOSTDEV TEST_CASE(assign_const_char_array)
+{
+  um2::String s;
+  s = "hello";
+  EXPECT_EQ(s.size(), 5);
+  EXPECT_EQ(s.capacity(), 6);
+  EXPECT_EQ(s.data()[0], 'h');
+  EXPECT_EQ(s.data()[1], 'e');
+  EXPECT_EQ(s.data()[2], 'l');
+  EXPECT_EQ(s.data()[3], 'l');
+  EXPECT_EQ(s.data()[4], 'o');
+  EXPECT_EQ(s.data()[5], '\0');
+}
+MAKE_CUDA_KERNEL(assign_const_char_array);
+
+TEST_CASE(assign_std_string)
+{
+  um2::String s;
+  s = "hello";
+  EXPECT_EQ(s.size(), 5);
+  EXPECT_EQ(s.capacity(), 6);
+  EXPECT_EQ(s.data()[0], 'h');
+  EXPECT_EQ(s.data()[1], 'e');
+  EXPECT_EQ(s.data()[2], 'l');
+  EXPECT_EQ(s.data()[3], 'l');
+  EXPECT_EQ(s.data()[4], 'o');
+  EXPECT_EQ(s.data()[5], '\0');
+}
+
+UM2_HOSTDEV TEST_CASE(equals_um2_string)
+{
+  um2::String s0("hello");
+  um2::String s1("helo");
+  um2::String s2("hello");
+  EXPECT_EQ(s0, s0);
+  EXPECT_EQ(s0, s2);
+  EXPECT_NE(s0, s1);
+}
+MAKE_CUDA_KERNEL(equals_um2_string);
+
+// -- Accessors --
+
+UM2_HOSTDEV TEST_CASE(begin_end)
+{
+  um2::String s;
+  EXPECT_EQ(s.begin(), s.end());
+  EXPECT_EQ(s.cbegin(), s.cend());
+
+  s = "hello";
+  EXPECT_NE(s.begin(), s.end());
+  EXPECT_NE(s.cbegin(), s.cend());
+  EXPECT_EQ(*s.begin(), 'h');
+  EXPECT_EQ(*s.cbegin(), 'h');
+  EXPECT_EQ(*(s.end() - 1), 'o');
+  EXPECT_EQ(*(s.cend() - 1), 'o');
+}
+MAKE_CUDA_KERNEL(begin_end);
 //
 // template <typename T>
 // UM2_HOSTDEV TEST(insert)
@@ -295,8 +225,14 @@ TEST_SUITE(string)
   // Constructors
   TEST_HOSTDEV(const_char_array_constructor)
   TEST_HOSTDEV(um2_string_constructor)
+  TEST(std_string_constructor)
   // Operators
   TEST_HOSTDEV(assign_um2_string)
+  TEST_HOSTDEV(assign_const_char_array)
+  TEST(assign_std_string)
+  TEST_HOSTDEV(equals_um2_string)
+  // Accessors
+  TEST_HOSTDEV(begin_end)
   //    RUN_TEST("length_constructor", length_constructor<T>);
   //    RUN_TEST("length_val_constructor", length_val_constructor);
   //    RUN_TEST("clear", clear<T>);

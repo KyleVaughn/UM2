@@ -15,18 +15,17 @@ namespace um2
 //    return this->_data[i];
 //}
 //
-// UM2_PURE UM2_HOSTDEV constexpr
-// char * String::begin() const { return this->_data; }
-//
-// UM2_PURE UM2_HOSTDEV constexpr
-// char * String::end() const { return this->_data + this->_size; }
-//
-// UM2_PURE UM2_HOSTDEV constexpr
-// char const * String::cbegin() const { return this->_data; }
-//
-// UM2_PURE UM2_HOSTDEV constexpr
-// char const * String::cend() const { return this->_data + this->_size; }
-//
+UM2_PURE UM2_HOSTDEV constexpr char8_t * String::begin() const { return this->_data; }
+
+UM2_PURE UM2_HOSTDEV constexpr char8_t * String::end() const { return this->_data + this->_size; }
+
+UM2_PURE UM2_HOSTDEV constexpr char8_t const * String::cbegin() const { return this->_data; }
+
+UM2_PURE UM2_HOSTDEV constexpr char8_t const * String::cend() const
+{
+  return this->_data + this->_size;
+}
+
 UM2_PURE UM2_HOSTDEV constexpr len_t String::size() const { return this->_size; }
 
 UM2_PURE UM2_HOSTDEV constexpr len_t String::capacity() const { return this->_capacity; }
@@ -65,25 +64,8 @@ UM2_PURE UM2_HOSTDEV constexpr char8_t const * String::data() const { return thi
 //
 //// -- Member functions --
 //
-// UM2_HOSTDEV inline
-// void String::reserve(len_t n) {
-//    // Reserve one more than n to account for the null terminator
-//    if (this->_capacity < n + 1) {
-//        // since n > 0, we are safe to cast to unsigned and use bit_ceil
-//        // to find the next power of 2
-//        n = static_cast<len_t>(bit_ceil(n + 1));
-//        char * new_data = new char[static_cast<size_t>(n)];
-//        memcpy(new_data, this->_data, static_cast<size_t>(this->_size));
-//        memset(new_data + this->_size, '\0', static_cast<size_t>(n - this->_size));
-//        delete[] this->_data;
-//        this->_data = new_data;
-//        this->_capacity = n;
-//    }
-//}
-//
 // UM2_PURE UM2_HOSTDEV constexpr
 // bool String::empty() const { return this->_size == 0; }
-//
 //
 // UM2_PURE UM2_HOSTDEV constexpr
 // bool String::contains(char const value) const
@@ -115,6 +97,14 @@ UM2_HOSTDEV String::String(String const & s)
   memcpy(this->_data, s._data, static_cast<size_t>(this->_size + 1));
 }
 
+String::String(std::string const & s)
+{
+  this->_size = static_cast<len_t>(s.size());
+  this->_capacity = static_cast<len_t>(bit_ceil(s.size() + 1));
+  this->_data = new char8_t[this->_capacity];
+  memcpy(this->_data, s.data(), static_cast<size_t>(this->_size + 1));
+}
+
 // -- Operators --
 
 UM2_HOSTDEV String & String::operator=(String const & s)
@@ -131,29 +121,44 @@ UM2_HOSTDEV String & String::operator=(String const & s)
   return *this;
 }
 
-// UM2_PURE UM2_HOSTDEV constexpr
-// bool String::operator == (String const & v) const {
-//    if (this->_size != v._size) { return false; }
-//    for (len_t i = 0; i < this->_size; ++i) {
-//        if (this->_data[i] != v._data[i]) { return false; }
-//    }
-//    return true;
-//}
-//
-// template <size_t N>
-// UM2_HOSTDEV String & String::operator = (char const (&s)[N])
-//{
-//    if (this->_capacity < static_cast<len_t>(N)) {
-//        delete[] this->_data;
-//        this->_data = new char[bit_ceil(N)];
-//        memset(this->_data, '\0', bit_ceil(N));
-//        this->_capacity = static_cast<len_t>(bit_ceil(N));
-//    }
-//    this->_size = static_cast<len_t>(N - 1);
-//    memcpy(this->_data, s, N - 1);
-//    return *this;
-//}
-//
+template <size_t N>
+UM2_HOSTDEV String & String::operator=(char const (&s)[N])
+{
+  if (this->_capacity < static_cast<len_t>(N)) {
+    delete[] this->_data;
+    this->_capacity = static_cast<len_t>(bit_ceil(N));
+    this->_data = new char8_t[static_cast<size_t>(this->_capacity)];
+  }
+  this->_size = static_cast<len_t>(N - 1);
+  memcpy(this->_data, s, N);
+  return *this;
+}
+
+String & String::operator=(std::string const & s)
+{
+  if (this->_capacity < static_cast<len_t>(s.size() + 1)) {
+    delete[] this->_data;
+    this->_capacity = static_cast<len_t>(bit_ceil(s.size() + 1));
+    this->_data = new char8_t[this->_capacity];
+  }
+  this->_size = static_cast<len_t>(s.size());
+  memcpy(this->_data, s.data(), s.size() + 1);
+  return *this;
+}
+
+UM2_PURE UM2_HOSTDEV constexpr bool String::operator==(String const & s) const
+{
+  if (this->_size != s._size) {
+    return false;
+  }
+  for (len_t i = 0; i < this->_size; ++i) {
+    if (this->_data[i] != s._data[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // UM2_PURE UM2_HOSTDEV constexpr bool String::operator < (String const & v) const
 //{
 //    // Lexicographical comparison.
