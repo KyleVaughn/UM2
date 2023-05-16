@@ -19,7 +19,7 @@ UM2_HOSTDEV TEST_CASE(length_val_constructor)
     EXPECT_EQ(v.data()[i], 2);
   }
 }
-//
+
 template <typename T> UM2_HOSTDEV TEST_CASE(clear)
 {
   um2::Vector<T> v(10, 2);
@@ -28,39 +28,39 @@ template <typename T> UM2_HOSTDEV TEST_CASE(clear)
   EXPECT_EQ(v.capacity(), 0);
   EXPECT_EQ(v.data(), nullptr);
 }
+
+template <typename T>
+UM2_HOSTDEV TEST_CASE(copy_constructor){
+   um2::Vector<T> v(10);
+   for (int i = 0; i < 10; i++) {
+       v.data()[i] = i;
+   }
+   um2::Vector<T> v2(v);
+   EXPECT_EQ(v2.size() , 10);
+   EXPECT_EQ(v2.capacity() , 16);
+   EXPECT_NE(v2.data() , nullptr);
+   for (int i = 0; i < 10; i++) {
+       EXPECT_EQ(v2.data()[i] , i);
+   }
+   um2::Vector<T> v3 = v;
+   EXPECT_EQ(v3.size() , 10);
+   EXPECT_EQ(v3.capacity() , 16);
+   EXPECT_NE(v3.data() , nullptr);
+   for (int i = 0; i < 10; i++) {
+       EXPECT_EQ(v3.data()[i] , i);
+   }
+}
 //
-// template <typename T>
-// UM2_HOSTDEV TEST(copy_constructor)
-//    um2::Vector<T> v(10);
-//    for (int i = 0; i < 10; i++) {
-//        v.data()[i] = i;
-//    }
-//    um2::Vector<T> v2(v);
-//    ASSERT(v2.size() == 10, "size is not 10");
-//    ASSERT(v2.capacity() == 16, "capacity is not 16");
-//    ASSERT(v2.data() != nullptr, "data is nullptr");
-//    for (int i = 0; i < 10; i++) {
-//        ASSERT(v2.data()[i] == i, "data[i] is not i");
-//    }
-//    um2::Vector<T> v3 = v;
-//    ASSERT(v3.size() == 10, "size is not 10");
-//    ASSERT(v3.capacity() == 16, "capacity is not 16");
-//    ASSERT(v3.data() != nullptr, "data is nullptr");
-//    for (int i = 0; i < 10; i++) {
-//        ASSERT(v3.data()[i] == i, "data[i] is not i");
-//    }
-// END_TEST
-//
-// template <typename T>
-// UM2_HOSTDEV TEST(initializer_list_constructor)
-//    um2::Vector<T> v = {1, 2, 3, 4, 5};
-//    ASSERT(v.size() == 5, "size is not 5");
-//    ASSERT(v.capacity() == 8, "capacity is not 8");
-//    ASSERT(v.data() != nullptr, "data is nullptr");
-//    for (int i = 0; i < 5; i++) {
-//        ASSERT(v.data()[i] == i + 1, "data[i] is not i + 1");
-//    }
-// END_TEST
+template <typename T>
+UM2_HOSTDEV TEST_CASE(initializer_list_constructor){
+   um2::Vector<T> v{1, 2, 3, 4, 5};
+   EXPECT_EQ(v.size() , 5);
+   EXPECT_EQ(v.capacity() , 8);
+   EXPECT_NE(v.data(), nullptr);
+   for (int i = 0; i < 5; i++) {
+       EXPECT_EQ(v.data()[i] , i + 1);
+   }
+}
 //
 // template <typename T>
 // UM2_HOSTDEV TEST(reserve)
@@ -265,29 +265,27 @@ template <typename T> TEST_SUITE(vector)
   TEST(length_constructor<T>)
   TEST(length_val_constructor)
   TEST(clear<T>)
-  //    RUN_TEST("length_constructor", length_constructor<T>);
-  //    RUN_TEST("length_val_constructor", length_val_constructor);
-  //    RUN_TEST("clear", clear<T>);
-  //    RUN_TEST("copy_constructor", copy_constructor<T>);
-  //    RUN_TEST("initializer_list_constructor", initializer_list_constructor<T>);
-  //    RUN_TEST("reserve", reserve<T>);
-  //    RUN_TEST("push_back", push_back<T>);
-  //    RUN_TEST("empty", empty);
-  //    RUN_TEST("insert", insert<T>);
-  //    RUN_TEST("begin_end", begin_end<T>);
-  //    RUN_TEST("is_approx_int", is_approx_int);
-  //
-  //    RUN_CUDA_TEST("clear_cuda", clear_cuda<T>);
-  //    RUN_CUDA_TEST("length_constructor_cuda", length_constructor_cuda<T>);
-  //    RUN_CUDA_TEST("length_val_constructor_cuda", length_val_constructor_cuda);
-  //    RUN_CUDA_TEST("copy_constructor_cuda", copy_constructor_cuda<T>);
-  //    RUN_CUDA_TEST("initializer_list_constructor_cuda", initializer_list_constructor_cuda<T>);
-  //    RUN_CUDA_TEST("reserve_cuda", reserve_cuda<T>);
-  //    RUN_CUDA_TEST("push_back_cuda", push_back_cuda<T>);
-  //    RUN_CUDA_TEST("insert_cuda", insert_cuda<T>);
-  //    RUN_CUDA_TEST("empty_cuda", empty_cuda);
-  //    RUN_CUDA_TEST("begin_end_cuda", begin_end_cuda<T>);
-  //    RUN_CUDA_TEST("is_approx_int_cuda", is_approx_int_cuda);
+  TEST(copy_constructor<T>);
+  TEST(initializer_list_constructor<T>);
+
+//    RUN_TEST("reserve", reserve<T>);
+//    RUN_TEST("push_back", push_back<T>);
+//    RUN_TEST("empty", empty);
+//    RUN_TEST("insert", insert<T>);
+//    RUN_TEST("begin_end", begin_end<T>);
+//    RUN_TEST("is_approx_int", is_approx_int);
+//
+//    RUN_CUDA_TEST("clear_cuda", clear_cuda<T>);
+//    RUN_CUDA_TEST("length_constructor_cuda", length_constructor_cuda<T>);
+//    RUN_CUDA_TEST("length_val_constructor_cuda", length_val_constructor_cuda);
+//    RUN_CUDA_TEST("copy_constructor_cuda", copy_constructor_cuda<T>);
+//    RUN_CUDA_TEST("initializer_list_constructor_cuda", initializer_list_constructor_cuda<T>);
+//    RUN_CUDA_TEST("reserve_cuda", reserve_cuda<T>);
+//    RUN_CUDA_TEST("push_back_cuda", push_back_cuda<T>);
+//    RUN_CUDA_TEST("insert_cuda", insert_cuda<T>);
+//    RUN_CUDA_TEST("empty_cuda", empty_cuda);
+//    RUN_CUDA_TEST("begin_end_cuda", begin_end_cuda<T>);
+//    RUN_CUDA_TEST("is_approx_int_cuda", is_approx_int_cuda);
 }
 auto main() -> int
 {

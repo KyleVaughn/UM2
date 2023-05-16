@@ -1,6 +1,9 @@
 #pragma once
 
 #include <um2/common/config.hpp>
+#include <um2/common/bit_ceil.hpp>
+
+#include <initializer_list>
 
 //#include <thrust/execution_policy.h>
 //#include <thrust/iterator/zip_iterator.h>
@@ -9,7 +12,6 @@
 //
 //#include <bit>
 //#include <cmath>
-//#include <initializer_list>
 //#include <ostream>
 
 namespace um2
@@ -66,18 +68,18 @@ public:
   //
   //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & back() const;
   //
-  //    // -- Constructors --
-  //
-  //    UM2_HOSTDEV constexpr Vector() = default;
-  //
+  // -- Constructors --
+
+  UM2_HOSTDEV constexpr Vector() = default;
+
   UM2_HOSTDEV explicit Vector(len_t const);
 
   UM2_HOSTDEV Vector(len_t const, T const &);
-  //
-  //    UM2_HOSTDEV Vector(Vector const &);
-  //
-  //    UM2_HOSTDEV Vector(std::initializer_list<T> const &);
-  //
+
+  UM2_HOSTDEV Vector(Vector const &);
+
+  UM2_HOSTDEV explicit Vector(std::initializer_list<T> const &);
+
   //    // -- Methods --
   //
   UM2_HOSTDEV void clear();
@@ -102,6 +104,7 @@ public:
   //
   //    UM2_PURE UM2_HOSTDEV constexpr bool operator == (Vector const &) const;
   //
+
 }; // struct Vector
 //
 //// -- IO --
