@@ -11,11 +11,20 @@ namespace um2
 
 constexpr uint8_t bit_ceil(int8_t x) { return std::bit_ceil(std::bit_cast<uint8_t>(x)); }
 
-constexpr uint16_t bit_ceil(int16_t x) { return std::bit_ceil(std::bit_cast<uint16_t>(x)); }
+constexpr uint16_t bit_ceil(int16_t x)
+{
+  return std::bit_ceil(std::bit_cast<uint16_t>(x));
+}
 
-constexpr uint32_t bit_ceil(int32_t x) { return std::bit_ceil(std::bit_cast<uint32_t>(x)); }
+constexpr uint32_t bit_ceil(int32_t x)
+{
+  return std::bit_ceil(std::bit_cast<uint32_t>(x));
+}
 
-constexpr uint64_t bit_ceil(int64_t x) { return std::bit_ceil(std::bit_cast<uint64_t>(x)); }
+constexpr uint64_t bit_ceil(int64_t x)
+{
+  return std::bit_ceil(std::bit_cast<uint64_t>(x));
+}
 
 template <std::unsigned_integral T>
 constexpr T bit_ceil(T x)
@@ -34,7 +43,10 @@ __device__ constexpr uint32_t bit_ceil(uint32_t x)
   }
 }
 
-__device__ constexpr uint32_t bit_ceil(int32_t x) { return bit_ceil(static_cast<uint32_t>(x)); }
+__device__ constexpr uint32_t bit_ceil(int32_t x)
+{
+  return bit_ceil(static_cast<uint32_t>(x));
+}
 
 __device__ constexpr uint64_t bit_ceil(uint64_t x)
 {
@@ -45,7 +57,10 @@ __device__ constexpr uint64_t bit_ceil(uint64_t x)
   }
 }
 
-__device__ constexpr uint64_t bit_ceil(int64_t x) { return bit_ceil(static_cast<uint64_t>(x)); }
+__device__ constexpr uint64_t bit_ceil(int64_t x)
+{
+  return bit_ceil(static_cast<uint64_t>(x));
+}
 
 #endif // __CUDA_ARCH__
 

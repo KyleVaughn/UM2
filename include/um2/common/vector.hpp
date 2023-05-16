@@ -40,42 +40,38 @@ public:
   UM2_HOSTDEV ~Vector() { delete[] _data; }
 
   // -- Accessors --
-  //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T & operator [] (len_t const);
-  //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & operator [] (len_t const) const;
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr T * begin() const;
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr T * end() const;
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr T const * cbegin() const;
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr T const * cend() const;
-  //
+
   UM2_PURE UM2_HOSTDEV constexpr len_t size() const;
 
   UM2_PURE UM2_HOSTDEV constexpr len_t capacity() const;
 
   UM2_PURE UM2_HOSTDEV constexpr T * data();
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr T const * data() const;
-  //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T & front();
-  //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & front() const;
-  //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T & back();
-  //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & back() const;
-  //
+
+  UM2_PURE UM2_HOSTDEV constexpr T const * data() const;
+
+  UM2_PURE UM2_HOSTDEV constexpr T * begin() const;
+
+  UM2_PURE UM2_HOSTDEV constexpr T * end() const;
+
+  UM2_PURE UM2_HOSTDEV constexpr T const * cbegin() const;
+
+  UM2_PURE UM2_HOSTDEV constexpr T const * cend() const;
+
+  UM2_PURE UM2_HOSTDEV constexpr T & front();
+
+  UM2_PURE UM2_HOSTDEV constexpr T const & front() const;
+
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T & back();
+
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & back() const;
+
   // -- Constructors --
 
-  UM2_HOSTDEV constexpr Vector() = default;
+  constexpr Vector() = default;
 
-  UM2_HOSTDEV explicit Vector(len_t const);
+  UM2_HOSTDEV explicit Vector(len_t);
 
-  UM2_HOSTDEV Vector(len_t const, T const &);
+  UM2_HOSTDEV Vector(len_t, T const &);
 
   UM2_HOSTDEV Vector(Vector const &);
 
@@ -84,27 +80,30 @@ public:
   // -- Methods --
 
   UM2_HOSTDEV void clear();
-  //
-  //    UM2_HOSTDEV inline void reserve(len_t);
-  //
-  //    UM2_HOSTDEV void resize(len_t);
-  //
-  //    UM2_HOSTDEV inline void push_back(T const &);
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr bool empty() const;
-  //
-  //    UM2_HOSTDEV void insert(T const *, len_t const, T const &);
-  //
-  //    UM2_HOSTDEV void insert(T const *, T const &);
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr bool contains(T const &) const;
-  //
-  //    // -- Operators --
-  //
-  //    UM2_HOSTDEV Vector & operator = (Vector const &);
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr bool operator == (Vector const &) const;
-  //
+
+  UM2_HOSTDEV inline void reserve(len_t);
+
+  UM2_HOSTDEV void resize(len_t);
+
+  UM2_HOSTDEV inline void push_back(T const &);
+
+  UM2_PURE UM2_HOSTDEV constexpr bool empty() const;
+
+  UM2_HOSTDEV void insert(T const *, len_t, T const &);
+
+  UM2_HOSTDEV void insert(T const *, T const &);
+
+  UM2_PURE UM2_HOSTDEV constexpr bool contains(T const &) const;
+
+  // -- Operators --
+
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T & operator[](len_t);
+
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & operator[](len_t) const;
+
+  UM2_HOSTDEV Vector & operator=(Vector const &);
+
+  UM2_PURE UM2_HOSTDEV constexpr bool operator==(Vector const &) const;
 
 }; // struct Vector
 //

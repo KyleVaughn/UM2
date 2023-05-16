@@ -35,7 +35,8 @@ public:
   //
   //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char & operator [] (len_t const);
   //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char const & operator [] (len_t const) const;
+  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char const & operator [] (len_t const)
+  //    const;
   //
   UM2_PURE UM2_HOSTDEV constexpr char8_t * begin() const;
 
@@ -63,7 +64,7 @@ public:
 
   // -- Constructors --
 
-  UM2_HOSTDEV constexpr String() = default;
+  constexpr String() = default;
 
   template <size_t N>
   UM2_HOSTDEV explicit String(char const (&)[N]);

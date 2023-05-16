@@ -1,4 +1,8 @@
-templated cuda tests
+Template and finish the vector tests
+
+Vector tests.
+String tests.
+templated cuda tests -> vector
 
 Setup continuous integration for:
   debug and release

@@ -37,7 +37,7 @@ TEST_CASE(std_string_constructor)
   std::string s0("hello");
   um2::String s(s0);
   EXPECT_EQ(s.size(), 5);
-  EXPECT_EQ(s.capacity(), 6);
+  EXPECT_EQ(s.capacity(), 8);
   EXPECT_EQ(s.data()[0], 'h');
   EXPECT_EQ(s.data()[1], 'e');
   EXPECT_EQ(s.data()[2], 'l');
@@ -69,7 +69,7 @@ UM2_HOSTDEV TEST_CASE(assign_const_char_array)
   um2::String s;
   s = "hello";
   EXPECT_EQ(s.size(), 5);
-  EXPECT_EQ(s.capacity(), 6);
+  EXPECT_EQ(s.capacity(), 8);
   EXPECT_EQ(s.data()[0], 'h');
   EXPECT_EQ(s.data()[1], 'e');
   EXPECT_EQ(s.data()[2], 'l');
@@ -84,7 +84,7 @@ TEST_CASE(assign_std_string)
   um2::String s;
   s = "hello";
   EXPECT_EQ(s.size(), 5);
-  EXPECT_EQ(s.capacity(), 6);
+  EXPECT_EQ(s.capacity(), 8);
   EXPECT_EQ(s.data()[0], 'h');
   EXPECT_EQ(s.data()[1], 'e');
   EXPECT_EQ(s.data()[2], 'l');
@@ -189,10 +189,10 @@ MAKE_CUDA_KERNEL(begin_end);
 // ADD_TEMPLATED_KERNEL_TEST(copy_constructor_kernel, copy_constructor_cuda, T)
 //
 // template <typename T>
-// ADD_TEMPLATED_CUDA_KERNEL(initializer_list_constructor, initializer_list_constructor_kernel, T)
-// template <typename T>
-// ADD_TEMPLATED_KERNEL_TEST(initializer_list_constructor_kernel, initializer_list_constructor_cuda,
-// T)
+// ADD_TEMPLATED_CUDA_KERNEL(initializer_list_constructor,
+// initializer_list_constructor_kernel, T) template <typename T>
+// ADD_TEMPLATED_KERNEL_TEST(initializer_list_constructor_kernel,
+// initializer_list_constructor_cuda, T)
 //
 // template <typename T>
 // ADD_TEMPLATED_CUDA_KERNEL(reserve, reserve_kernel, T)
@@ -249,9 +249,9 @@ TEST_SUITE(string)
   //    RUN_CUDA_TEST("length_constructor_cuda", length_constructor_cuda<T>);
   //    RUN_CUDA_TEST("length_val_constructor_cuda", length_val_constructor_cuda);
   //    RUN_CUDA_TEST("copy_constructor_cuda", copy_constructor_cuda<T>);
-  //    RUN_CUDA_TEST("initializer_list_constructor_cuda", initializer_list_constructor_cuda<T>);
-  //    RUN_CUDA_TEST("reserve_cuda", reserve_cuda<T>);
-  //    RUN_CUDA_TEST("push_back_cuda", push_back_cuda<T>);
+  //    RUN_CUDA_TEST("initializer_list_constructor_cuda",
+  //    initializer_list_constructor_cuda<T>); RUN_CUDA_TEST("reserve_cuda",
+  //    reserve_cuda<T>); RUN_CUDA_TEST("push_back_cuda", push_back_cuda<T>);
   //    RUN_CUDA_TEST("insert_cuda", insert_cuda<T>);
   //    RUN_CUDA_TEST("empty_cuda", empty_cuda);
   //    RUN_CUDA_TEST("begin_end_cuda", begin_end_cuda<T>);

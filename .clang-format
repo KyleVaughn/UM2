@@ -3,7 +3,7 @@ BasedOnStyle: LLVM
 AlwaysBreakTemplateDeclarations: Yes
 BreakBeforeBraces: Linux
 IndentCaseLabels: false
-ColumnLimit: 100
+ColumnLimit: 90
 AlignArrayOfStructures: Right
 PointerAlignment: Middle
 ReferenceAlignment: Middle
