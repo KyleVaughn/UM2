@@ -65,7 +65,8 @@ public:
   //
   UM2_HOSTDEV constexpr String() = default;
 
-  template <size_t N> UM2_HOSTDEV explicit String(char const (&)[N]);
+  template <size_t N>
+  UM2_HOSTDEV explicit String(char const (&)[N]);
 
   UM2_HOSTDEV String(String const &);
 

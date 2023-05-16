@@ -33,17 +33,23 @@ namespace um2
 // UM2_PURE UM2_HOSTDEV constexpr
 // T const * Vector<T>::cend() const { return this->_data + this->size_; }
 //
-template <typename T> UM2_PURE UM2_HOSTDEV constexpr len_t Vector<T>::size() const
+template <typename T>
+UM2_PURE UM2_HOSTDEV constexpr len_t Vector<T>::size() const
 {
   return this->size_;
 }
 
-template <typename T> UM2_PURE UM2_HOSTDEV constexpr len_t Vector<T>::capacity() const
+template <typename T>
+UM2_PURE UM2_HOSTDEV constexpr len_t Vector<T>::capacity() const
 {
   return this->_capacity;
 }
 
-template <typename T> UM2_PURE UM2_HOSTDEV constexpr T * Vector<T>::data() { return this->_data; }
+template <typename T>
+UM2_PURE UM2_HOSTDEV constexpr T * Vector<T>::data()
+{
+  return this->_data;
+}
 //
 // template <typename T>
 // UM2_PURE UM2_HOSTDEV constexpr
@@ -83,7 +89,8 @@ template <typename T> UM2_PURE UM2_HOSTDEV constexpr T * Vector<T>::data() { ret
 //
 //// -- Member functions --
 //
-template <typename T> UM2_HOSTDEV void Vector<T>::clear()
+template <typename T>
+UM2_HOSTDEV void Vector<T>::clear()
 {
   this->size_ = 0;
   this->_capacity = 0;
@@ -187,11 +194,9 @@ UM2_HOSTDEV Vector<T>::Vector(len_t const n, T const & value)
 }
 
 template <typename T>
-UM2_HOSTDEV
-Vector<T>::Vector(Vector<T> const & v) :
-   size_{v.size_},
-   _capacity{static_cast<len_t>(bit_ceil(v.size_))},
-   _data{new T[static_cast<size_t>(this->_capacity)]}
+UM2_HOSTDEV Vector<T>::Vector(Vector<T> const & v)
+    : size_{v.size_}, _capacity{static_cast<len_t>(bit_ceil(v.size_))},
+      _data{new T[static_cast<size_t>(this->_capacity)]}
 {
   for (len_t i = 0; i < v.size_; ++i) {
     this->_data[i] = v._data[i];
@@ -199,16 +204,14 @@ Vector<T>::Vector(Vector<T> const & v) :
 }
 
 template <typename T>
-UM2_HOSTDEV 
-Vector<T>::Vector(std::initializer_list<T> const & list) :
-   size_{static_cast<len_t>(list.size())},
-   _capacity{static_cast<len_t>(bit_ceil(list.size()))},
-   _data{new T[static_cast<size_t>(this->_capacity)]}
+UM2_HOSTDEV Vector<T>::Vector(std::initializer_list<T> const & list)
+    : size_{static_cast<len_t>(list.size())}, _capacity{static_cast<len_t>(bit_ceil(list.size()))},
+      _data{new T[static_cast<size_t>(this->_capacity)]}
 {
-   len_t i = 0;
-   for (auto const & value : list) {
-       this->_data[i++] = value;
-   }
+  len_t i = 0;
+  for (auto const & value : list) {
+    this->_data[i++] = value;
+  }
 }
 //
 //// -- Operators --

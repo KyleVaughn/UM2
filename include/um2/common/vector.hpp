@@ -1,7 +1,7 @@
 #pragma once
 
-#include <um2/common/config.hpp>
 #include <um2/common/bit_ceil.hpp>
+#include <um2/common/config.hpp>
 
 #include <initializer_list>
 
@@ -26,7 +26,8 @@ namespace um2
 //
 // https://en.cppreference.com/w/cpp/container/vector
 
-template <typename T> struct Vector {
+template <typename T>
+struct Vector {
 
 private:
   len_t size_ = 0;
@@ -38,7 +39,7 @@ public:
 
   UM2_HOSTDEV ~Vector() { delete[] _data; }
 
-  //    // -- Accessors --
+  // -- Accessors --
   //
   //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T & operator [] (len_t const);
   //
@@ -80,8 +81,8 @@ public:
 
   UM2_HOSTDEV explicit Vector(std::initializer_list<T> const &);
 
-  //    // -- Methods --
-  //
+  // -- Methods --
+
   UM2_HOSTDEV void clear();
   //
   //    UM2_HOSTDEV inline void reserve(len_t);

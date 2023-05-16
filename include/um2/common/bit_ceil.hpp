@@ -23,7 +23,11 @@ constexpr unsigned long long bit_ceil(long long x)
   return std::bit_ceil(std::bit_cast<unsigned long long>(x));
 }
 
-template <std::unsigned_integral T> constexpr T bit_ceil(T x) { return std::bit_ceil(x); }
+template <std::unsigned_integral T>
+constexpr T bit_ceil(T x)
+{
+  return std::bit_ceil(x);
+}
 
 #else // __CUDA_ARCH__
 

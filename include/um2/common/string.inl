@@ -98,7 +98,8 @@ UM2_PURE UM2_HOSTDEV constexpr char8_t const * String::data() const { return thi
 //
 // -- Constructors --
 
-template <size_t N> UM2_HOSTDEV String::String(char const (&s)[N])
+template <size_t N>
+UM2_HOSTDEV String::String(char const (&s)[N])
 {
   this->_size = N - 1;
   this->_capacity = N;
