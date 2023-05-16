@@ -3,16 +3,14 @@
 #include <um2/common/bit_ceil.hpp>
 #include <um2/common/config.hpp>
 
-#include <initializer_list>
+#include <thrust/execution_policy.h>      // thrust::seq
+#include <thrust/iterator/zip_iterator.h> // thrust::zip_iterator
+#include <thrust/logical.h>               // thrust::all_of
+#include <thrust/tuple.h>                 // thrust::tuple
 
-//#include <thrust/execution_policy.h>
-//#include <thrust/iterator/zip_iterator.h>
-//#include <thrust/logical.h>
-//#include <thrust/tuple.h>
-//
-//#include <bit>
-//#include <cmath>
-//#include <ostream>
+#include <cmath>            // std::abs
+#include <initializer_list> // std::initializer_list
+#include <ostream>          // std::ostream
 
 namespace um2
 {
@@ -106,27 +104,17 @@ public:
   UM2_PURE UM2_HOSTDEV constexpr bool operator==(Vector const &) const;
 
 }; // struct Vector
-//
-//// -- IO --
-//
-// template <typename T>
-// std::ostream & operator << (std::ostream &, Vector<T> const &);
-//
-//// -- Methods --
-//
-// template <typename T>
-// UM2_NDEBUG_PURE UM2_HOST constexpr
-// bool is_approx(Vector<T> const & a,
-//               Vector<T> const & b,
-//               T const & epsilon = T{});
-//
-//#if UM2_HAS_CUDA
-// template <typename T>
-// UM2_NDEBUG_PURE UM2_DEVICE constexpr
-// bool is_approx(Vector<T> const & a,
-//               Vector<T> const & b,
-//               T const & epsilon = T{});
-//#endif
+
+// -- IO --
+
+template <typename T>
+std::ostream & operator<<(std::ostream &, Vector<T> const &);
+
+// -- Methods --
+
+template <typename T>
+UM2_PURE UM2_HOSTDEV constexpr bool is_approx(Vector<T> const & a, Vector<T> const & b,
+                                              T const & epsilon = T{});
 
 } // namespace um2
 

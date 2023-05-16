@@ -30,9 +30,9 @@ endif()
 
 ## CUDA ##########################################
 ##################################################
-include(CheckLanguage)
-check_language(CUDA)
 if (UM2_ENABLE_CUDA)
+  include(CheckLanguage)
+  check_language(CUDA)
   # nvcc will default to gcc and g++ if the host compiler is not set using CUDAHOSTCXX. 
   # To prevent unintentional version/compiler mismatches, we set the host compiler to the 
   # same compiler used to build the project.

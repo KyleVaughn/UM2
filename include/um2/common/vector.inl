@@ -204,6 +204,31 @@ UM2_PURE UM2_HOSTDEV constexpr bool Vector<T>::contains(T const & value) const
   return false;
 }
 
+// A classic abs(a - b) <= epsilon comparison
+template <typename T>
+UM2_PURE UM2_HOSTDEV constexpr bool is_approx(Vector<T> const & a, Vector<T> const & b,
+                                              T const & epsilon)
+{
+  if (a.size() != b.size()) {
+    return false;
+  }
+  struct approx_functor {
+
+    T const epsilon;
+
+    UM2_PURE UM2_HOSTDEV constexpr bool
+    operator()(thrust::tuple<T, T> const & tuple) const
+    {
+      return std::abs(thrust::get<0>(tuple) - thrust::get<1>(tuple)) <= epsilon;
+    }
+  };
+
+  return thrust::all_of(
+      thrust::seq, thrust::make_zip_iterator(thrust::make_tuple(a.cbegin(), b.cbegin())),
+      thrust::make_zip_iterator(thrust::make_tuple(a.cend(), b.cend())),
+      approx_functor{epsilon});
+}
+
 // -- Operators --
 
 template <typename T>
@@ -251,73 +276,19 @@ UM2_PURE UM2_HOSTDEV constexpr bool Vector<T>::operator==(Vector<T> const & v) c
   return true;
 }
 
-//// -- IO --
-//
-// template <typename T>
-// std::ostream & operator << (std::ostream & os, Vector<T> const & v) {
-//    os << '(';
-//    for (len_t i = 0; i < v.size(); ++i) {
-//        os << v[i];
-//        if (i < v.size() - 1) os << ", ";
-//    }
-//    os << ')';
-//    return os;
-//}
-//
-//// -- Methods --
-//
-//// A classic abs(a - b) <= epsilon comparison
-// template <typename T>
-// UM2_NDEBUG_PURE UM2_HOST constexpr
-// bool is_approx(Vector<T> const & a, Vector<T> const & b, T const & epsilon)
-//{
-//     if (a.size() != b.size()) { return false; }
-//     struct approx_functor {
-//
-//         typedef thrust::tuple<T, T> Tuple;
-//
-//         T const epsilon;
-//
-//         UM2_PURE UM2_HOSTDEV constexpr
-//         bool operator()(Tuple const & tuple) const {
-//             T const & a = thrust::get<0>(tuple);
-//             T const & b = thrust::get<1>(tuple);
-//             return std::abs(a - b) <= epsilon;
-//         }
-//     };
-//
-//     return thrust::all_of(
-//             thrust::make_zip_iterator(thrust::make_tuple(a.cbegin(), b.cbegin())),
-//             thrust::make_zip_iterator(thrust::make_tuple(a.cend(), b.cend())),
-//             approx_functor{epsilon});
-// }
-//
-//#if UM2_HAS_CUDA
-// template <typename T>
-// UM2_NDEBUG_PURE UM2_DEVICE constexpr
-// bool is_approx(Vector<T> const & a, Vector<T> const & b, T const & epsilon)
-//{
-//     if (a.size() != b.size()) { return false; }
-//     struct approx_functor {
-//
-//         typedef thrust::tuple<T, T> Tuple;
-//
-//         T const epsilon;
-//
-//         UM2_PURE UM2_HOSTDEV constexpr
-//         bool operator()(Tuple const & tuple) const {
-//             T const & a = thrust::get<0>(tuple);
-//             T const & b = thrust::get<1>(tuple);
-//             return std::abs(a - b) <= epsilon;
-//         }
-//     };
-//
-//     return thrust::all_of(
-//             thrust::seq,
-//             thrust::make_zip_iterator(thrust::make_tuple(a.cbegin(), b.cbegin())),
-//             thrust::make_zip_iterator(thrust::make_tuple(a.cend(), b.cend())),
-//             approx_functor{epsilon});
-// }
-//#endif
+// -- IO --
+
+template <typename T>
+std::ostream & operator<<(std::ostream & os, Vector<T> const & v)
+{
+  os << '(';
+  for (len_t i = 0; i < v.size(); ++i) {
+    os << v[i];
+    if (i < v.size() - 1)
+      os << ", ";
+  }
+  os << ')';
+  return os;
+}
 
 } // namespace um2
