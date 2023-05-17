@@ -16,28 +16,45 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup cmake
-        run: cmake --version
+      - name: Set up gcc 
+        shell: bash
+        if: matrix.compiler == 'gcc'
+        run: |
+          sudo apt -y update
+          sudo apt install -y gcc-12 g++-12
+          sudo update-alternatives --set gcc /usr/bin/gcc-12
+          sudo update-alternatives --set g++ /usr/bin/g++-12
+          export CC=gcc
+          export CXX=g++
 
-          #      - name: Set up ${{ matrix.compiler }}
-          #        if: startsWith(matrix.compiler, 'gcc')
-          #        run: sudo apt-get install -y gcc clang-format clang-tidy cppcheck
-          #      - name: Set up ${{ matrix.compiler }}
-          #        if: startsWith(matrix.compiler, 'clang')
-          #        run: sudo apt-get install -y clang clang-format clang-tidy cppcheck
+      - name: Set up clang 
+        shell: bash
+        if: startsWith(matrix.compiler, 'clang')
+        run: |
+          sudo apt -y update
+          sudo apt install -y clang-14
+          sudo update-alternatives --set clang /usr/bin/clang-14
+          sudo update-alternatives --set clang++ /usr/bin/clang++-14
+          export CC=clang
+          export CXX=clang++
+
+          #      - name: Dev mode dependencies
+          #        if: dev
           #
-          #      - name: Configure and build
-          #        run: |
-          #          mkdir build
-          #          cd build
-          #          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-          #                -DUM2_ENABLE_CUDA=${{ matrix.cuda_enabled }} \
-          #                -DUM2_ENABLE_OPENMP=${{ matrix.openmp_enabled }} \
-          #                -DUM2_DEV_MODE=${{ matrix.dev_mode_enabled }} \
-          #                ..
-          #          cmake --build .
-          #
-          #      - name: Run tests
-          #        run: |
-          #          cd build
-          #          ctest -C ${{ matrix.build_type }}
+          #clang-format-14 clang-tidy cppcheck && gcc -- version
+
+#      - name: Configure and build
+#        run: |
+#          mkdir build
+#          cd build
+#          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+#                -DUM2_ENABLE_CUDA=${{ matrix.cuda_enabled }} \
+#                -DUM2_ENABLE_OPENMP=${{ matrix.openmp_enabled }} \
+#                -DUM2_DEV_MODE=${{ matrix.dev_mode_enabled }} \
+#                ..
+#          cmake --build .
+#
+#      - name: Run tests
+#        run: |
+#          cd build
+#          ctest -C ${{ matrix.build_type }}
