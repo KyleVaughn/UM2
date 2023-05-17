@@ -22,7 +22,7 @@ jobs:
           wget https://cmake.org/files/v3.25/cmake-3.25.3-linux-x86_64.tar.gz
           sudo ln -s $PWD/cmake-3.25.3-linux-x86_64/bin/cmake /usr/bin/cmake
           sudo ln -s $PWD/cmake-3.25.3-linux-x86_64/bin/ctest /usr/bin/ctest
-        run: cmake --version
+          cmake --version
 
           #      - name: Set up ${{ matrix.compiler }}
           #        if: startsWith(matrix.compiler, 'gcc')
