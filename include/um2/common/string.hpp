@@ -31,13 +31,8 @@ public:
 
   UM2_HOSTDEV ~String() { delete[] _data; }
 
-  //    // -- Accessors --
-  //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char & operator [] (len_t const);
-  //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char const & operator [] (len_t const)
-  //    const;
-  //
+  // -- Accessors --
+
   UM2_PURE UM2_HOSTDEV constexpr char8_t * begin() const;
 
   UM2_PURE UM2_HOSTDEV constexpr char8_t * end() const;
@@ -53,14 +48,6 @@ public:
   UM2_PURE UM2_HOSTDEV constexpr char8_t * data();
 
   UM2_PURE UM2_HOSTDEV constexpr char8_t const * data() const;
-  //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char & front();
-  //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char const & front() const;
-  //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char & back();
-  //
-  //    UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char const & back() const;
 
   // -- Constructors --
 
@@ -73,14 +60,6 @@ public:
 
   explicit String(std::string const &);
 
-  // -- Methods --
-  //
-  //    UM2_PURE UM2_HOSTDEV constexpr bool contains(char const) const;
-  //
-  //    UM2_PURE constexpr bool starts_with(std::string const &) const;
-  //
-  //    UM2_PURE constexpr bool ends_with(std::string const &) const;
-  //
   // -- Operators --
 
   UM2_HOSTDEV String & operator=(String const &);
@@ -92,14 +71,33 @@ public:
 
   UM2_PURE UM2_HOSTDEV constexpr bool operator==(String const &) const;
 
-  //    String & operator = (std::string const &);
+  template <size_t N>
+  UM2_PURE UM2_HOSTDEV constexpr bool operator==(char const (&)[N]) const;
+
+  UM2_PURE constexpr bool operator==(std::string const &) const;
+
+  UM2_PURE UM2_HOSTDEV bool operator<(String const &) const;
+
+  UM2_PURE UM2_HOSTDEV bool operator>(String const &) const;
+
+  UM2_PURE UM2_HOSTDEV bool operator<=(String const &) const;
+
+  UM2_PURE UM2_HOSTDEV bool operator>=(String const &) const;
+
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char8_t & operator[](len_t);
+
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char8_t const & operator[](len_t) const;
+
+  // -- Methods --
+
+  UM2_PURE UM2_HOSTDEV int compare(String const &) const;
+
+  //    UM2_PURE UM2_HOSTDEV constexpr bool contains(char const) const;
   //
-  //    UM2_PURE UM2_HOSTDEV constexpr bool operator < (String const &) const;
+  //    UM2_PURE constexpr bool starts_with(std::string const &) const;
   //
-  //    template <size_t N>
-  //    UM2_PURE UM2_HOSTDEV constexpr bool operator == (char const (&)[N]) const;
+  //    UM2_PURE constexpr bool ends_with(std::string const &) const;
   //
-  //    UM2_PURE constexpr bool operator == (std::string const &) const;
 
 }; // struct String
 

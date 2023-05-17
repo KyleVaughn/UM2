@@ -1,7 +1,9 @@
 #include "../test_framework.hpp"
 #include <um2/common/vector.hpp>
 
-// -- Accessors --
+// ----------------------------------------------------------------------------
+// Accessors
+// ----------------------------------------------------------------------------
 
 template <typename T>
 UM2_HOSTDEV TEST_CASE(begin_end)
@@ -41,7 +43,9 @@ UM2_HOSTDEV TEST_CASE(front_back)
   EXPECT_EQ(v.back(), 2);
 }
 
-// -- Constructors --
+// ----------------------------------------------------------------------------
+// Constructors
+// ----------------------------------------------------------------------------
 
 template <typename T>
 UM2_HOSTDEV TEST_CASE(length_constructor)
@@ -95,7 +99,37 @@ UM2_HOSTDEV TEST_CASE(initializer_list_constructor)
   }
 }
 
-// -- Methods --
+// ----------------------------------------------------------------------------
+// Operators
+// ----------------------------------------------------------------------------
+
+template <typename T>
+UM2_HOSTDEV TEST_CASE(operator_equal)
+{
+  um2::Vector<T> v1{1, 2, 3, 4, 5};
+  um2::Vector<T> v2{1, 2, 3, 4, 5};
+  um2::Vector<T> v3{1, 2, 3, 4, 6};
+  um2::Vector<T> v4{1, 2, 3, 4, 5, 6};
+  EXPECT_TRUE(v1 == v2);
+  EXPECT_FALSE(v1 == v3);
+  EXPECT_FALSE(v1 == v4);
+}
+
+template <typename T>
+UM2_HOSTDEV TEST_CASE(operator_assign)
+{
+  um2::Vector<T> v1{1, 2, 3, 4, 5};
+  um2::Vector<T> v2;
+  v2 = v1;
+  EXPECT_TRUE(v1 == v2);
+  EXPECT_EQ(v1.size(), v2.size());
+  EXPECT_EQ(v1.capacity(), v2.capacity());
+  EXPECT_NE(v1.data(), v2.data());
+}
+
+// ----------------------------------------------------------------------------
+// Methods
+// ----------------------------------------------------------------------------
 
 template <typename T>
 UM2_HOSTDEV TEST_CASE(clear)
@@ -272,32 +306,9 @@ UM2_HOSTDEV TEST_CASE(is_approx)
   EXPECT_TRUE(is_approx(v1, v3, 1));
 }
 
-// -- Operators --
-
-template <typename T>
-UM2_HOSTDEV TEST_CASE(operator_equal)
-{
-  um2::Vector<T> v1{1, 2, 3, 4, 5};
-  um2::Vector<T> v2{1, 2, 3, 4, 5};
-  um2::Vector<T> v3{1, 2, 3, 4, 6};
-  um2::Vector<T> v4{1, 2, 3, 4, 5, 6};
-  EXPECT_TRUE(v1 == v2);
-  EXPECT_FALSE(v1 == v3);
-  EXPECT_FALSE(v1 == v4);
-}
-
-template <typename T>
-UM2_HOSTDEV TEST_CASE(operator_assign)
-{
-  um2::Vector<T> v1{1, 2, 3, 4, 5};
-  um2::Vector<T> v2;
-  v2 = v1;
-  EXPECT_TRUE(v1 == v2);
-  EXPECT_EQ(v1.size(), v2.size());
-  EXPECT_EQ(v1.capacity(), v2.capacity());
-  EXPECT_NE(v1.data(), v2.data());
-}
-
+// --------------------------------------------------------------------------
+// CUDA
+// --------------------------------------------------------------------------
 #if UM2_ENABLE_CUDA
 template <typename T>
 MAKE_CUDA_KERNEL(begin_end, T)
@@ -347,7 +358,7 @@ MAKE_CUDA_KERNEL(operator_equal, T)
 template <typename T>
 MAKE_CUDA_KERNEL(operator_assign, T)
 
-#endif
+#endif // UM2_ENABLE_CUDA
 
 template <typename T>
 TEST_SUITE(vector)
@@ -360,6 +371,9 @@ TEST_SUITE(vector)
   TEST_HOSTDEV(length_val_constructor, 1, 1, T)
   TEST_HOSTDEV(copy_constructor, 1, 1, T)
   TEST_HOSTDEV(initializer_list_constructor, 1, 1, T)
+  // Operators
+  TEST_HOSTDEV(operator_equal, 1, 1, T)
+  TEST_HOSTDEV(operator_assign, 1, 1, T)
   // Methods
   TEST_HOSTDEV(clear, 1, 1, T)
   TEST_HOSTDEV(reserve, 1, 1, T)
@@ -369,9 +383,6 @@ TEST_SUITE(vector)
   TEST_HOSTDEV(insert, 1, 1, T)
   TEST_HOSTDEV(contains, 1, 1, T)
   TEST_HOSTDEV(is_approx, 1, 1, T)
-  // Operators
-  TEST_HOSTDEV(operator_equal, 1, 1, T)
-  TEST_HOSTDEV(operator_assign, 1, 1, T)
 }
 
 auto main() -> int

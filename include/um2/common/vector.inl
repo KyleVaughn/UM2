@@ -1,7 +1,9 @@
 namespace um2
 {
 
-// -- Accessors --
+// ---------------------------------------------------------------------------
+// Accessors
+// ---------------------------------------------------------------------------
 
 template <typename T>
 UM2_PURE UM2_HOSTDEV constexpr len_t Vector<T>::size() const
@@ -77,7 +79,9 @@ UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & Vector<T>::back() const
   return this->_data[this->size_ - 1];
 }
 
-// -- Constructors --
+// ---------------------------------------------------------------------------
+// Constructors
+// ---------------------------------------------------------------------------
 
 template <typename T>
 UM2_HOSTDEV Vector<T>::Vector(len_t const n)
@@ -118,7 +122,58 @@ UM2_HOSTDEV Vector<T>::Vector(std::initializer_list<T> const & list)
   }
 }
 
-// -- Methods --
+// ---------------------------------------------------------------------------
+// Operators
+// ---------------------------------------------------------------------------
+
+template <typename T>
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T & Vector<T>::operator[](len_t const i)
+{
+  assert(0 <= i && i < this->size_);
+  return this->_data[i];
+}
+
+template <typename T>
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & Vector<T>::operator[](len_t const i) const
+{
+  assert(0 <= i && i < this->size_);
+  return this->_data[i];
+}
+
+template <typename T>
+UM2_HOSTDEV Vector<T> & Vector<T>::operator=(Vector<T> const & v)
+{
+  if (this != &v) {
+    if (this->_capacity < v.size()) {
+      delete[] this->_data;
+      this->_data = new T[bit_ceil(v.size())];
+      this->_capacity = static_cast<len_t>(bit_ceil(v.size()));
+    }
+    this->size_ = v.size();
+    for (len_t i = 0; i < v.size(); ++i) {
+      this->_data[i] = v._data[i];
+    }
+  }
+  return *this;
+}
+
+template <typename T>
+UM2_PURE UM2_HOSTDEV constexpr bool Vector<T>::operator==(Vector<T> const & v) const
+{
+  if (this->size_ != v.size_) {
+    return false;
+  }
+  for (len_t i = 0; i < this->size_; ++i) {
+    if (this->_data[i] != v._data[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Methods
+// ---------------------------------------------------------------------------
 
 template <typename T>
 UM2_HOSTDEV void Vector<T>::clear()
@@ -229,54 +284,9 @@ UM2_PURE UM2_HOSTDEV constexpr bool is_approx(Vector<T> const & a, Vector<T> con
       approx_functor{epsilon});
 }
 
-// -- Operators --
-
-template <typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T & Vector<T>::operator[](len_t const i)
-{
-  assert(0 <= i && i < this->size_);
-  return this->_data[i];
-}
-
-template <typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & Vector<T>::operator[](len_t const i) const
-{
-  assert(0 <= i && i < this->size_);
-  return this->_data[i];
-}
-
-template <typename T>
-UM2_HOSTDEV Vector<T> & Vector<T>::operator=(Vector<T> const & v)
-{
-  if (this != &v) {
-    if (this->_capacity < v.size()) {
-      delete[] this->_data;
-      this->_data = new T[bit_ceil(v.size())];
-      this->_capacity = static_cast<len_t>(bit_ceil(v.size()));
-    }
-    this->size_ = v.size();
-    for (len_t i = 0; i < v.size(); ++i) {
-      this->_data[i] = v._data[i];
-    }
-  }
-  return *this;
-}
-
-template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr bool Vector<T>::operator==(Vector<T> const & v) const
-{
-  if (this->size_ != v.size_) {
-    return false;
-  }
-  for (len_t i = 0; i < this->size_; ++i) {
-    if (this->_data[i] != v._data[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// -- IO --
+// ---------------------------------------------------------------------------
+// IO
+// ---------------------------------------------------------------------------
 
 template <typename T>
 std::ostream & operator<<(std::ostream & os, Vector<T> const & v)

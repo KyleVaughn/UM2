@@ -19,8 +19,9 @@ endif()
 
 ## Standard ######################################
 ##################################################
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(UM2_CXX_STANDARD "20" CACHE STRING "C++ standard")
+set_target_properties(um2 PROPERTIES CXX_STANDARD ${UM2_CXX_STANDARD})
+set_target_properties(um2 PROPERTIES CXX_STANDARD_REQUIRED ON)
 
 ## OpenMP ########################################
 ##################################################
@@ -33,6 +34,9 @@ endif()
 if (UM2_ENABLE_CUDA)
   include(CheckLanguage)
   check_language(CUDA)
+  set(UM2_CUDA_STANDARD "20" CACHE STRING "CUDA standard")
+  set_target_properties(um2 PROPERTIES CUDA_STANDARD ${UM2_CUDA_STANDARD})
+  set_target_properties(um2 PROPERTIES CUDA_STANDARD_REQUIRED ON)
   # nvcc will default to gcc and g++ if the host compiler is not set using CUDAHOSTCXX. 
   # To prevent unintentional version/compiler mismatches, we set the host compiler to the 
   # same compiler used to build the project.
