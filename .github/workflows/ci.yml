@@ -36,7 +36,7 @@ jobs:
 
       - name: Dev mode dependencies
         shell: bash
-        if: dev_mode == 'ON'
+        if: matrix.dev_mode == 'ON'
         run: |
           sudo apt install -y clang-format-14 clang-tidy-14 cppcheck
           sudo ln -s /usr/bin/clang-format-14 /usr/bin/clang-format
