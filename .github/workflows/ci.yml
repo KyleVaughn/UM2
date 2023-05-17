@@ -10,9 +10,9 @@ jobs:
       matrix:
         compiler: [ gcc, clang ]
         build_type: [ Release, Debug ]
-        cuda_enabled: [ OFF ]
-        openmp_enabled: [ OFF, ON ]
-        dev_mode_enabled: [ OFF, ON ]
+        cuda: [ OFF ]
+        openmp: [ OFF, ON ]
+        dev_mode: [ OFF, ON ]
     steps:
       - uses: actions/checkout@v3
 
@@ -27,30 +27,30 @@ jobs:
 
       - name: Set up clang 
         shell: bash
-        if: startsWith(matrix.compiler, 'clang')
+        if: matrix.compiler == 'clang' 
         run: |
           sudo apt -y update
           sudo apt install -y clang-14
           export CC=clang-14
           export CXX=clang++-14
 
-          #      - name: Dev mode dependencies
-          #        if: dev
-          #
-          #clang-format-14 clang-tidy cppcheck && gcc -- version
+      - name: Dev mode dependencies
+        shell: bash
+        if: dev_mode == 'ON'
+        run: |
+          sudo apt install -y clang-format-14 clang-tidy-14 cppcheck
+          sudo ln -s /usr/bin/clang-format-14 /usr/bin/clang-format
+          sudo ln -s /usr/bin/clang-tidy-14 /usr/bin/clang-tidy
 
-#      - name: Configure and build
-#        run: |
-#          mkdir build
-#          cd build
-#          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-#                -DUM2_ENABLE_CUDA=${{ matrix.cuda_enabled }} \
-#                -DUM2_ENABLE_OPENMP=${{ matrix.openmp_enabled }} \
-#                -DUM2_DEV_MODE=${{ matrix.dev_mode_enabled }} \
-#                ..
-#          cmake --build .
-#
-#      - name: Run tests
-#        run: |
-#          cd build
-#          ctest -C ${{ matrix.build_type }}
+      - name: Configure and build
+        run: |
+          cmake -S . -B build \
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+                -DUM2_ENABLE_CUDA=${{ matrix.cuda }} \
+                -DUM2_ENABLE_OPENMP=${{ matrix.openmp }} \
+                -DUM2_DEV_MODE=${{ matrix.dev_mode }}
+          make -C build
+
+      - name: Run tests
+        run: 
+          make -C build test 
