@@ -1,0 +1,48 @@
+name: CI 
+
+on: [push]
+
+jobs:
+  main:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: true
+      matrix:
+        compiler: [ gcc, clang ]
+        build_type: [ Release, Debug ]
+        cuda_enabled: [ OFF ]
+        openmp_enabled: [ OFF, ON ]
+        dev_mode_enabled: [ OFF, ON ]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup cmake
+        shell: bash
+        run: |
+          wget https://cmake.org/files/v3.25/cmake-3.25.3-linux-x86_64.tar.gz
+          sudo ln -s $PWD/cmake-3.25.3-linux-x86_64/bin/cmake /usr/bin/cmake
+          sudo ln -s $PWD/cmake-3.25.3-linux-x86_64/bin/ctest /usr/bin/ctest
+        run: cmake --version
+
+          #      - name: Set up ${{ matrix.compiler }}
+          #        if: startsWith(matrix.compiler, 'gcc')
+          #        run: sudo apt-get install -y gcc clang-format clang-tidy cppcheck
+          #      - name: Set up ${{ matrix.compiler }}
+          #        if: startsWith(matrix.compiler, 'clang')
+          #        run: sudo apt-get install -y clang clang-format clang-tidy cppcheck
+          #
+          #      - name: Configure and build
+          #        run: |
+          #          mkdir build
+          #          cd build
+          #          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+          #                -DUM2_ENABLE_CUDA=${{ matrix.cuda_enabled }} \
+          #                -DUM2_ENABLE_OPENMP=${{ matrix.openmp_enabled }} \
+          #                -DUM2_DEV_MODE=${{ matrix.dev_mode_enabled }} \
+          #                ..
+          #          cmake --build .
+          #
+          #      - name: Run tests
+          #        run: |
+          #          cd build
+          #          ctest -C ${{ matrix.build_type }}
