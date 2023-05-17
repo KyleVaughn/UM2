@@ -17,12 +17,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Setup cmake
-        shell: bash
-        run: |
-          wget https://cmake.org/files/v3.25/cmake-3.25.3-linux-x86_64.tar.gz
-          sudo ln -s $PWD/cmake-3.25.3-linux-x86_64/bin/cmake /usr/bin/cmake
-          sudo ln -s $PWD/cmake-3.25.3-linux-x86_64/bin/ctest /usr/bin/ctest
-          cmake --version
+        run: cmake --version
 
           #      - name: Set up ${{ matrix.compiler }}
           #        if: startsWith(matrix.compiler, 'gcc')
