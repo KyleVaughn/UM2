@@ -5,30 +5,36 @@ namespace um2
 // Accessors
 // --------------------------------------------------------------------------
 
-UM2_PURE UM2_HOSTDEV constexpr char8_t * String::begin() const { return this->_data; }
-
-UM2_PURE UM2_HOSTDEV constexpr char8_t * String::end() const
-{
-  return this->_data + this->_size;
-}
-
-UM2_PURE UM2_HOSTDEV constexpr char8_t const * String::cbegin() const
+UM2_PURE UM2_HOSTDEV constexpr auto String::begin() const -> char8_t *
 {
   return this->_data;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr char8_t const * String::cend() const
+UM2_PURE UM2_HOSTDEV constexpr auto String::end() const -> char8_t *
 {
   return this->_data + this->_size;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr len_t String::size() const { return this->_size; }
+UM2_PURE UM2_HOSTDEV constexpr auto String::cbegin() const -> char8_t const *
+{
+  return this->_data;
+}
 
-UM2_PURE UM2_HOSTDEV constexpr len_t String::capacity() const { return this->_capacity; }
+UM2_PURE UM2_HOSTDEV constexpr auto String::cend() const -> char8_t const *
+{
+  return this->_data + this->_size;
+}
 
-UM2_PURE UM2_HOSTDEV constexpr char8_t * String::data() { return this->_data; }
+UM2_PURE UM2_HOSTDEV constexpr auto String::size() const -> len_t { return this->_size; }
 
-UM2_PURE UM2_HOSTDEV constexpr char8_t const * String::data() const
+UM2_PURE UM2_HOSTDEV constexpr auto String::capacity() const -> len_t
+{
+  return this->_capacity;
+}
+
+UM2_PURE UM2_HOSTDEV constexpr auto String::data() -> char8_t * { return this->_data; }
+
+UM2_PURE UM2_HOSTDEV constexpr auto String::data() const -> char8_t const *
 {
   return this->_data;
 }
@@ -38,11 +44,10 @@ UM2_PURE UM2_HOSTDEV constexpr char8_t const * String::data() const
 // --------------------------------------------------------------------------
 
 template <size_t N>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
 UM2_HOSTDEV String::String(char const (&s)[N])
+    : _size(N - 1), _capacity(N), _data(new char8_t[N])
 {
-  this->_size = N - 1;
-  this->_capacity = N;
-  this->_data = new char8_t[N];
   memcpy(this->_data, s, N);
 }
 
@@ -51,7 +56,8 @@ UM2_HOSTDEV String::String(char const (&s)[N])
 // --------------------------------------------------------------------------
 
 template <size_t N>
-UM2_HOSTDEV String & String::operator=(char const (&s)[N])
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+UM2_HOSTDEV auto String::operator=(char const (&s)[N]) -> String &
 {
   if (this->_capacity < static_cast<len_t>(N)) {
     delete[] this->_data;
@@ -63,54 +69,22 @@ UM2_HOSTDEV String & String::operator=(char const (&s)[N])
   return *this;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr bool String::operator==(String const & s) const
-{
-  if (this->_size != s._size) {
-    return false;
-  }
-  for (len_t i = 0; i < this->_size; ++i) {
-    if (this->_data[i] != s._data[i]) {
-      return false;
-    }
-  }
-  return true;
-}
-
 template <size_t N>
-UM2_PURE UM2_HOSTDEV constexpr bool String::operator==(char const (&s)[N]) const
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+UM2_PURE UM2_HOSTDEV auto String::operator==(char const (&s)[N]) const -> bool
 {
-  if (this->_size != static_cast<len_t>(N - 1)) {
-    return false;
-  }
-  for (len_t i = 0; i < this->_size; ++i) {
-    if (this->_data[i] != s[i]) {
-      return false;
-    }
-  }
-  return true;
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+  return this->compare(reinterpret_cast<char8_t const *>(s)) == 0;
 }
 
-UM2_PURE constexpr bool String::operator==(std::string const & s) const
-{
-  if (this->_size != static_cast<len_t>(s.size())) {
-    return false;
-  }
-  for (len_t i = 0; i < this->_size; ++i) {
-    if (this->_data[i] != s[static_cast<size_t>(i)]) {
-      return false;
-    }
-  }
-  return true;
-}
-
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char8_t & String::operator[](len_t const i)
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto String::operator[](len_t const i) -> char8_t &
 {
   assert(0 <= i && i < this->_size);
   return this->_data[i];
 }
 
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char8_t const &
-String::operator[](len_t const i) const
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto String::operator[](len_t const i) const
+    -> char8_t const &
 {
   assert(0 <= i && i < this->_size);
   return this->_data[i];

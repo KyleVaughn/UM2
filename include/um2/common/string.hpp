@@ -33,64 +33,73 @@ public:
 
   // -- Accessors --
 
-  UM2_PURE UM2_HOSTDEV constexpr char8_t * begin() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto begin() const -> char8_t *;
 
-  UM2_PURE UM2_HOSTDEV constexpr char8_t * end() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto end() const -> char8_t *;
 
-  UM2_PURE UM2_HOSTDEV constexpr char8_t const * cbegin() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto cbegin() const -> char8_t const *;
 
-  UM2_PURE UM2_HOSTDEV constexpr char8_t const * cend() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto cend() const -> char8_t const *;
 
-  UM2_PURE UM2_HOSTDEV constexpr len_t size() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto size() const -> len_t;
 
-  UM2_PURE UM2_HOSTDEV constexpr len_t capacity() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto capacity() const -> len_t;
 
-  UM2_PURE UM2_HOSTDEV constexpr char8_t * data();
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto data() -> char8_t *;
 
-  UM2_PURE UM2_HOSTDEV constexpr char8_t const * data() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto data() const -> char8_t const *;
 
   // -- Constructors --
 
   constexpr String() = default;
 
   template <size_t N>
-  UM2_HOSTDEV explicit String(char const (&)[N]);
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+  UM2_HOSTDEV explicit String(char const (&s)[N]);
 
-  UM2_HOSTDEV String(String const &);
+  UM2_HOSTDEV String(String const & s);
 
-  explicit String(std::string const &);
+  UM2_HOSTDEV String(String && s) noexcept;
+
+  explicit String(std::string const & s);
 
   // -- Operators --
 
-  UM2_HOSTDEV String & operator=(String const &);
+  UM2_HOSTDEV auto operator=(String const & s) -> String &;
+
+  UM2_HOSTDEV auto operator=(String && s) noexcept -> String &;
 
   template <size_t N>
-  UM2_HOSTDEV String & operator=(char const (&)[N]);
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+  UM2_HOSTDEV auto operator=(char const (&s)[N]) -> String &;
 
-  String & operator=(std::string const &);
+  auto operator=(std::string const & s) -> String &;
 
-  UM2_PURE UM2_HOSTDEV constexpr bool operator==(String const &) const;
+  UM2_PURE UM2_HOSTDEV auto operator==(String const & s) const -> bool;
 
   template <size_t N>
-  UM2_PURE UM2_HOSTDEV constexpr bool operator==(char const (&)[N]) const;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+  UM2_PURE UM2_HOSTDEV auto operator==(char const (&s)[N]) const -> bool;
 
-  UM2_PURE constexpr bool operator==(std::string const &) const;
+  UM2_PURE auto operator==(std::string const & s) const -> bool;
 
-  UM2_PURE UM2_HOSTDEV bool operator<(String const &) const;
+  UM2_PURE UM2_HOSTDEV auto operator<(String const & s) const -> bool;
 
-  UM2_PURE UM2_HOSTDEV bool operator>(String const &) const;
+  UM2_PURE UM2_HOSTDEV auto operator>(String const & s) const -> bool;
 
-  UM2_PURE UM2_HOSTDEV bool operator<=(String const &) const;
+  UM2_PURE UM2_HOSTDEV auto operator<=(String const & s) const -> bool;
 
-  UM2_PURE UM2_HOSTDEV bool operator>=(String const &) const;
+  UM2_PURE UM2_HOSTDEV auto operator>=(String const & s) const -> bool;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char8_t & operator[](len_t);
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) -> char8_t &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr char8_t const & operator[](len_t) const;
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) const -> char8_t const &;
 
   // -- Methods --
 
-  UM2_PURE UM2_HOSTDEV int compare(String const &) const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] auto compare(char8_t const * s) const -> int;
+
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] auto compare(String const & s) const -> int;
 
   //    UM2_PURE UM2_HOSTDEV constexpr bool contains(char const) const;
   //

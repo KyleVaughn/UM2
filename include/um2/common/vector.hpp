@@ -28,7 +28,7 @@ template <typename T>
 struct Vector {
 
 private:
-  len_t size_ = 0;
+  len_t _size = 0;
   len_t _capacity = 0;
   T * _data = nullptr;
 
