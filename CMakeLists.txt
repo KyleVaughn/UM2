@@ -35,12 +35,15 @@ option(UM2_ENABLE_CPPCHECK      "Enable cppcheck"                 ${UM2_DEV_MODE
 # Headers
 set(UM2_HEADERS
     "include/um2/common/config.hpp"
+    "include/um2/common/bit_ceil.hpp"
+    "include/um2/common/sto.hpp"
     "include/um2/common/vector.hpp"
     "include/um2/common/string.hpp"
     "include/um2c.h")    
     
 # Sources
 set(UM2_SOURCES        
+    "src/common/sto.cpp"
     "src/common/string.cpp"
     "src/um2c.cpp")    
     

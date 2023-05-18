@@ -6,74 +6,74 @@ namespace um2
 // ---------------------------------------------------------------------------
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr len_t Vector<T>::size() const
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::size() const -> len_t
 {
   return this->_size;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr len_t Vector<T>::capacity() const
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::capacity() const -> len_t 
 {
   return this->_capacity;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr T * Vector<T>::data()
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::data() -> T * 
 {
   return this->_data;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr T const * Vector<T>::data() const
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::data() const -> T const * 
 {
   return this->_data;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr T * Vector<T>::begin() const
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::begin() -> T * 
 {
   return this->_data;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr T * Vector<T>::end() const
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::end() -> T * 
 {
   return this->_data + this->_size;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr T const * Vector<T>::cbegin() const
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::cbegin() const -> T const * 
 {
   return this->_data;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr T const * Vector<T>::cend() const
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::cend() const -> T const * 
 {
   return this->_data + this->_size;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr T & Vector<T>::front()
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::front() -> T & 
 {
   return this->_data[0];
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr T const & Vector<T>::front() const
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::front() const -> T const & 
 {
   return this->_data[0];
 }
 
 template <typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T & Vector<T>::back()
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::back() -> T & 
 {
   assert(this->_size > 0);
   return this->_data[this->_size - 1];
 }
 
 template <typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & Vector<T>::back() const
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::back() const -> T const & 
 {
   assert(this->_size > 0);
   return this->_data[this->_size - 1];
@@ -117,6 +117,15 @@ UM2_HOSTDEV Vector<T>::Vector(Vector<T> const & v)
 }
 
 template <typename T>
+UM2_HOSTDEV Vector<T>::Vector(Vector<T> && v) noexcept
+    : _size{v._size}, _capacity{v._capacity}, _data{v._data}
+{
+  v._size = 0;
+  v._capacity = 0;
+  v._data = nullptr;
+}
+
+template <typename T>
 UM2_HOSTDEV Vector<T>::Vector(std::initializer_list<T> const & list)
     : _size{static_cast<len_t>(list.size())}, _capacity{static_cast<len_t>(
                                                   bit_ceil(list.size()))},
@@ -137,21 +146,22 @@ UM2_HOSTDEV Vector<T>::Vector(std::initializer_list<T> const & list)
 // ---------------------------------------------------------------------------
 
 template <typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T & Vector<T>::operator[](len_t const i)
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::operator[](len_t const i) -> T &
 {
   assert(0 <= i && i < this->_size);
   return this->_data[i];
 }
 
 template <typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & Vector<T>::operator[](len_t const i) const
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto 
+Vector<T>::operator[](len_t const i) const -> T const &
 {
   assert(0 <= i && i < this->_size);
   return this->_data[i];
 }
 
 template <typename T>
-UM2_HOSTDEV Vector<T> & Vector<T>::operator=(Vector<T> const & v)
+UM2_HOSTDEV auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> & 
 {
   if (this != &v) {
     if (this->_capacity < v.size()) {
@@ -171,9 +181,25 @@ UM2_HOSTDEV Vector<T> & Vector<T>::operator=(Vector<T> const & v)
   return *this;
 }
 
+template <typename T>
+UM2_HOSTDEV auto Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> & 
+{
+  if (this != &v) {
+    delete[] this->_data;
+    this->_size = v._size;
+    this->_capacity = v._capacity;
+    this->_data = v._data;
+    v._size = 0;
+    v._capacity = 0;
+    v._data = nullptr;
+  }
+  return *this;
+} 
+
 #ifdef __CUDA_ARCH__
 template <typename T>
-UM2_PURE __device__ constexpr bool Vector<T>::operator==(Vector<T> const & v) const
+UM2_PURE __device__ constexpr auto 
+Vector<T>::operator==(Vector<T> const & v) const -> bool
 {
   if (this->_size != v._size) {
     return false;
@@ -187,7 +213,7 @@ UM2_PURE __device__ constexpr bool Vector<T>::operator==(Vector<T> const & v) co
 }
 #else
 template <typename T>
-UM2_PURE UM2_HOST constexpr bool Vector<T>::operator==(Vector<T> const & v) const
+UM2_PURE UM2_HOST constexpr auto Vector<T>::operator==(Vector<T> const & v) const -> bool
 {
   if (this->_size != v._size) {
     return false;
@@ -255,7 +281,7 @@ UM2_HOSTDEV inline void Vector<T>::push_back(T const & value)
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr bool Vector<T>::empty() const
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::empty() const -> bool 
 {
   return this->_size == 0;
 }
@@ -266,7 +292,7 @@ UM2_HOSTDEV void Vector<T>::insert(T const * pos, len_t const n, T const & value
   if (n == 0) {
     return;
   }
-  len_t const offset = static_cast<len_t>(pos - this->_data);
+  auto const offset = static_cast<len_t>(pos - this->_data);
   assert(0 <= offset && offset <= this->_size);
   len_t const new_size = this->_size + n;
   this->reserve(new_size);
@@ -288,7 +314,8 @@ UM2_HOSTDEV void Vector<T>::insert(T const * pos, T const & value)
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr bool Vector<T>::contains(T const & value) const
+UM2_PURE UM2_HOSTDEV constexpr auto 
+Vector<T>::contains(T const & value) const -> bool
 {
   for (len_t i = 0; i < this->_size; ++i) {
     if (this->_data[i] == value) {
@@ -300,18 +327,18 @@ UM2_PURE UM2_HOSTDEV constexpr bool Vector<T>::contains(T const & value) const
 
 // A classic abs(a - b) <= epsilon comparison
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr bool is_approx(Vector<T> const & a, Vector<T> const & b,
-                                              T const & epsilon)
+UM2_PURE UM2_HOSTDEV constexpr auto 
+is_approx(Vector<T> const & a, Vector<T> const & b, T const & epsilon) -> bool
 {
   if (a.size() != b.size()) {
     return false;
   }
-  struct approx_functor {
+  struct ApproxFunctor {
 
     T const epsilon;
 
-    UM2_PURE UM2_HOSTDEV constexpr bool
-    operator()(thrust::tuple<T, T> const & tuple) const
+    UM2_PURE UM2_HOSTDEV constexpr auto 
+    operator()(thrust::tuple<T, T> const & tuple) const -> bool
     {
       return std::abs(thrust::get<0>(tuple) - thrust::get<1>(tuple)) <= epsilon;
     }
@@ -320,7 +347,7 @@ UM2_PURE UM2_HOSTDEV constexpr bool is_approx(Vector<T> const & a, Vector<T> con
   return thrust::all_of(
       thrust::seq, thrust::make_zip_iterator(thrust::make_tuple(a.cbegin(), b.cbegin())),
       thrust::make_zip_iterator(thrust::make_tuple(a.cend(), b.cend())),
-      approx_functor{epsilon});
+      ApproxFunctor{epsilon});
 }
 
 // ---------------------------------------------------------------------------
@@ -328,13 +355,14 @@ UM2_PURE UM2_HOSTDEV constexpr bool is_approx(Vector<T> const & a, Vector<T> con
 // ---------------------------------------------------------------------------
 
 template <typename T>
-std::ostream & operator<<(std::ostream & os, Vector<T> const & v)
+auto operator<<(std::ostream & os, Vector<T> const & v) -> std::ostream & 
 {
   os << '(';
   for (len_t i = 0; i < v.size(); ++i) {
     os << v[i];
-    if (i < v.size() - 1)
+    if (i < v.size() - 1) {
       os << ", ";
+    }
   }
   os << ')';
   return os;
