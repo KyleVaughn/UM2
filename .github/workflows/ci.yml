@@ -34,11 +34,11 @@ jobs:
           export CC=clang-14
           export CXX=clang++-14
 
-          #      - name: Dev mode dependencies
-          #        shell: bash
-          #        if: matrix.dev_mode == 'ON'
-          #        run: |
-          #          sudo apt install -y clang-format-14 clang-tidy-14 cppcheck
+      - name: Dev mode dependencies
+        shell: bash
+        if: matrix.dev_mode == 'ON'
+        run: |
+          sudo apt install -y cppcheck
 
       - name: Configure and build
         run: |
