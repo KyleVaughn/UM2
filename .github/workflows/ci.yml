@@ -21,7 +21,7 @@ jobs:
         if: matrix.compiler == 'gcc'
         run: |
           sudo apt -y update
-          sudo apt install -y gcc-12 g++-12
+          sudo apt install -y gcc-12 g++-12 clang-14
           export CC=gcc-12
           export CXX=g++-12
 
@@ -38,7 +38,7 @@ jobs:
         shell: bash
         if: matrix.dev_mode == 'ON'
         run: |
-          sudo apt install -y cppcheck
+          sudo apt install -y cppcheck clang # clang-tidy can't find omp without clang
 
       - name: Configure and build
         run: |
