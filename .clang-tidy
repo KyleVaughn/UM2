@@ -21,6 +21,7 @@ portability-*,
 -readability-magic-numbers,
 -misc-non-private-member-variables-in-classes
 '
+HeaderFilterRegex: '.*'
 WarningsAsErrors: true
 FormatStyle: file
 
