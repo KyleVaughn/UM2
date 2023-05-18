@@ -13,6 +13,10 @@ jobs:
         cuda: [ OFF ]
         openmp: [ OFF, ON ]
         dev_mode: [ OFF, ON ]
+
+    name: "${{ matrix.compiler }}, ${{ matrix.build_type }}, OMP=$${{ matrix.openmp }}, 
+      Dev=$${{ matrix.dev_mode }}"
+
     steps:
       - uses: actions/checkout@v3
 
