@@ -163,7 +163,7 @@ UM2_HOSTDEV Vector<T> & Vector<T>::operator=(Vector<T> const & v)
     if constexpr (std::is_trivially_copyable_v<T>) {
       memcpy(this->_data, v._data, static_cast<size_t>(v.size()) * sizeof(T));
     } else {
-      for (len_t i = 0; i < v._size(); ++i) {
+      for (len_t i = 0; i < v.size(); ++i) {
         this->_data[i] = v._data[i];
       }
     }

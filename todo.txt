@@ -1,6 +1,3 @@
-Find an appropriate set of warnings for:
-  nvcc -> Forward to host compiler, but also warnings for nvcc
-
 Setup Sphinx/Read the Docs
 
 Add code coverage

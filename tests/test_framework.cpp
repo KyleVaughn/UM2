@@ -1,5 +1,10 @@
 #include "test_framework.hpp"
 
+#ifdef __clang__
+// Ignore unreachable code warnings for the tests, since
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunreachable-code"
+#endif
 // cppcheck-suppress duplicateExpression
 UM2_HOSTDEV TEST_CASE(expectTrue) { EXPECT_TRUE(1 == 1); }
 MAKE_CUDA_KERNEL(expectTrue);
@@ -28,6 +33,9 @@ MAKE_CUDA_KERNEL(expectGreaterEqual);
 
 UM2_HOSTDEV TEST_CASE(expectNear) { EXPECT_NEAR(1.0, 1.1, 0.2); }
 MAKE_CUDA_KERNEL(expectNear);
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 TEST_SUITE(testFramework)
 {
