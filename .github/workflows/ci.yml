@@ -34,11 +34,16 @@ jobs:
           export CC=clang-14
           export CXX=clang++-14
 
+      - name: OpenMP
+        shell: bash
+        if: matrix.openmp == 'ON'
+        run: sudo apt install -y libomp-14-dev
+
       - name: Dev mode dependencies
         shell: bash
         if: matrix.dev_mode == 'ON'
         run: |
-          sudo apt install -y cppcheck clang # clang-tidy can't find omp without clang
+          sudo apt install -y cppcheck
 
       - name: Configure and build
         run: |
