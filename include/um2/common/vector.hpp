@@ -39,82 +39,86 @@ public:
 
   // -- Accessors --
 
-  UM2_PURE UM2_HOSTDEV constexpr len_t size() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto size() const -> len_t;
 
-  UM2_PURE UM2_HOSTDEV constexpr len_t capacity() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto capacity() const -> len_t;
 
-  UM2_PURE UM2_HOSTDEV constexpr T * data();
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto data() -> T *;
 
-  UM2_PURE UM2_HOSTDEV constexpr T const * data() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto data() const -> T const *;
 
-  UM2_PURE UM2_HOSTDEV constexpr T * begin() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto begin() const -> T *;
 
-  UM2_PURE UM2_HOSTDEV constexpr T * end() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto end() const -> T *;
 
-  UM2_PURE UM2_HOSTDEV constexpr T const * cbegin() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto cbegin() const -> T const *;
 
-  UM2_PURE UM2_HOSTDEV constexpr T const * cend() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto cend() const -> T const *;
 
-  UM2_PURE UM2_HOSTDEV constexpr T & front();
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto front() -> T &;
 
-  UM2_PURE UM2_HOSTDEV constexpr T const & front() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto front() const -> T const &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T & back();
+  UM2_NDEBUG_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto back() -> T &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & back() const;
+  UM2_NDEBUG_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto back() const -> T const &;
 
   // -- Constructors --
 
   constexpr Vector() = default;
 
-  UM2_HOSTDEV explicit Vector(len_t);
+  UM2_HOSTDEV explicit Vector(len_t /*n*/);
 
-  UM2_HOSTDEV Vector(len_t, T const &);
+  UM2_HOSTDEV Vector(len_t /*n*/, T const & /*value*/);
 
-  UM2_HOSTDEV Vector(Vector const &);
+  UM2_HOSTDEV Vector(Vector const & /*v*/);
 
-  UM2_HOSTDEV explicit Vector(std::initializer_list<T> const &);
+  UM2_HOSTDEV Vector(std::initializer_list<T> const & /*list*/);
 
+  UM2_HOSTDEV Vector(Vector && other) = delete;
   // -- Methods --
 
   UM2_HOSTDEV void clear();
 
-  UM2_HOSTDEV inline void reserve(len_t);
+  UM2_HOSTDEV inline void reserve(len_t /*n*/);
 
-  UM2_HOSTDEV void resize(len_t);
+  UM2_HOSTDEV void resize(len_t /*n*/);
 
-  UM2_HOSTDEV inline void push_back(T const &);
+  UM2_HOSTDEV inline void push_back(T const & /*value*/);
 
-  UM2_PURE UM2_HOSTDEV constexpr bool empty() const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto empty() const -> bool;
 
-  UM2_HOSTDEV void insert(T const *, len_t, T const &);
+  UM2_HOSTDEV void insert(T const * /*pos*/, len_t /*n*/, T const & /*value*/);
 
-  UM2_HOSTDEV void insert(T const *, T const &);
+  UM2_HOSTDEV void insert(T const * /*pos*/, T const & /*value*/);
 
-  UM2_PURE UM2_HOSTDEV constexpr bool contains(T const &) const;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto contains(T const & /*value*/) const
+      -> bool;
 
   // -- Operators --
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T & operator[](len_t);
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t /*i*/) -> T &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr T const & operator[](len_t) const;
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t /*i*/) const -> T const &;
 
-  UM2_HOSTDEV Vector & operator=(Vector const &);
+  UM2_HOSTDEV auto operator=(Vector const & /*v*/) -> Vector &;
 
-  UM2_PURE UM2_HOSTDEV constexpr bool operator==(Vector const &) const;
+  UM2_HOSTDEV auto operator=(Vector && /*v*/) -> Vector = delete;
+
+  UM2_PURE UM2_HOSTDEV constexpr auto operator==(Vector const & /*v*/) const -> bool;
 
 }; // struct Vector
 
 // -- IO --
 
 template <typename T>
-std::ostream & operator<<(std::ostream &, Vector<T> const &);
+auto operator<<(std::ostream & /*os*/, Vector<T> const & /*v*/) -> std::ostream &;
 
 // -- Methods --
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr bool is_approx(Vector<T> const & a, Vector<T> const & b,
-                                              T const & epsilon = T{});
+UM2_PURE UM2_HOSTDEV constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b,
+                                              T const & epsilon = T{}) -> bool;
 
 } // namespace um2
 
