@@ -22,7 +22,7 @@ portability-*,
 -misc-non-private-member-variables-in-classes
 '
 HeaderFilterRegex: '.*'
-WarningsAsErrors: true
+WarningsAsErrors: '*'
 FormatStyle: file
 
 CheckOptions:

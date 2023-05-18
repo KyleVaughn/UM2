@@ -58,6 +58,9 @@ jobs:
                 -DUM2_DEV_MODE=${{ matrix.dev_mode }}
           make -C build
 
+      - name: Format check
+        run: make -C build format-check
+
       - name: Run tests
         run: 
           make -C build test 
