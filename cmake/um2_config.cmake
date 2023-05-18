@@ -123,11 +123,11 @@ if (UM2_ENABLE_CLANG_TIDY)
   if (UM2_CLANG_TIDY_FIX)
     set_target_properties(um2 PROPERTIES
                           CXX_CLANG_TIDY
-                          "clang-tidy;--header-filter=include;--fix")
+                          "clang-tidy;--fix")
   else()
     set_target_properties(um2 PROPERTIES
                           CXX_CLANG_TIDY
-                          "clang-tidy;--header-filter=include")
+                          "clang-tidy")
   endif()
 endif()
 
