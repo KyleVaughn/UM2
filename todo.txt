@@ -1,4 +1,4 @@
-String tests
+String tests, coor
 
 Setup Sphinx/Read the Docs
 

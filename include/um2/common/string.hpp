@@ -3,9 +3,9 @@
 #include <um2/common/bit_ceil.hpp>
 #include <um2/common/config.hpp>
 
-#include <cstring>
-//#include <ostream>
-#include <string>
+#include <cstring> // memcpy, strcmp
+#include <ostream> // std::ostream
+#include <string> // std::string
 
 namespace um2
 {
@@ -54,7 +54,7 @@ public:
   constexpr String() = default;
 
   template <size_t N>
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+  // NOLINTNEXTLINE(*-avoid-c-arrays)
   UM2_HOSTDEV explicit String(char const (&s)[N]);
 
   UM2_HOSTDEV String(String const & s);
@@ -70,7 +70,7 @@ public:
   UM2_HOSTDEV auto operator=(String && s) noexcept -> String &;
 
   template <size_t N>
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+  // NOLINTNEXTLINE(*-avoid-c-arrays)
   UM2_HOSTDEV auto operator=(char const (&s)[N]) -> String &;
 
   auto operator=(std::string const & s) -> String &;
@@ -78,7 +78,7 @@ public:
   UM2_PURE UM2_HOSTDEV auto operator==(String const & s) const -> bool;
 
   template <size_t N>
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+  // NOLINTNEXTLINE(*-avoid-c-arrays)
   UM2_PURE UM2_HOSTDEV auto operator==(char const (&s)[N]) const -> bool;
 
   UM2_PURE auto operator==(std::string const & s) const -> bool;
@@ -101,12 +101,12 @@ public:
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] auto compare(String const & s) const -> int;
 
-  //    UM2_PURE UM2_HOSTDEV constexpr bool contains(char const) const;
-  //
-  //    UM2_PURE constexpr bool starts_with(std::string const &) const;
-  //
-  //    UM2_PURE constexpr bool ends_with(std::string const &) const;
-  //
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto contains(char c) const -> bool;
+  
+  UM2_PURE [[nodiscard]] constexpr auto starts_with(std::string const & s) const -> bool;
+  
+  UM2_PURE [[nodiscard]] constexpr auto ends_with(std::string const & s) const -> bool;
+  
 
 }; // struct String
 
