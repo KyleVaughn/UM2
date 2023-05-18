@@ -160,10 +160,10 @@ MAKE_CUDA_KERNEL(comparison);
 
 UM2_HOSTDEV TEST_CASE(compare)
 {
-  EXPECT_EQ(um2::String("Zebra").compare(um2::String("Ant")), 25);
-  EXPECT_EQ(um2::String("Ant").compare(um2::String("Zebra")), -25);
+  EXPECT_GT(um2::String("Zebra").compare(um2::String("Ant")), 0);
+  EXPECT_LT(um2::String("Ant").compare(um2::String("Zebra")), 0);
   EXPECT_EQ(um2::String("Zebra").compare(um2::String("Zebra")), 0);
-  EXPECT_EQ(um2::String("Zebra").compare(um2::String("ant")), -7);
+  EXPECT_LT(um2::String("Zebra").compare(um2::String("ant")), 0);
 }
 MAKE_CUDA_KERNEL(compare);
 
