@@ -60,14 +60,14 @@ TEST_CASE(sto_double)
 
 TEST_SUITE(sto)
 {
-  TEST_HOSTDEV(sto_int16);
-  TEST_HOSTDEV(sto_int32);
-  TEST_HOSTDEV(sto_int64);
-  TEST_HOSTDEV(sto_uint16);
-  TEST_HOSTDEV(sto_uint32);
-  TEST_HOSTDEV(sto_uint64);
-  TEST_HOSTDEV(sto_float);
-  TEST_HOSTDEV(sto_double);
+  TEST(sto_int16);
+  TEST(sto_int32);
+  TEST(sto_int64);
+  TEST(sto_uint16);
+  TEST(sto_uint32);
+  TEST(sto_uint64);
+  TEST(sto_float);
+  TEST(sto_double);
 }
 
 auto main() -> int

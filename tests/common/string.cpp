@@ -177,7 +177,7 @@ UM2_HOSTDEV TEST_CASE(contains)
   EXPECT_FALSE(s.contains('a'));
   EXPECT_FALSE(s.contains('b'));
 }
-MAKE_CUDA_KERNEL(compare);
+MAKE_CUDA_KERNEL(contains);
 
 TEST_CASE(starts_ends_with)
 {
