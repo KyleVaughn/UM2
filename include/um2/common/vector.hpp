@@ -51,17 +51,17 @@ public:
 
   UM2_PURE UM2_HOSTDEV constexpr auto end() -> T *;
 
-  UM2_PURE UM2_HOSTDEV constexpr auto cbegin() const -> T const *; 
+  UM2_PURE UM2_HOSTDEV constexpr auto cbegin() const -> T const *;
 
-  UM2_PURE UM2_HOSTDEV constexpr auto cend() const -> T const *; 
+  UM2_PURE UM2_HOSTDEV constexpr auto cend() const -> T const *;
 
-  UM2_PURE UM2_HOSTDEV constexpr auto front() -> T &; 
+  UM2_PURE UM2_HOSTDEV constexpr auto front() -> T &;
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto front() const -> T const &; 
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto front() const -> T const &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto back() -> T &; 
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto back() -> T &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto back() const -> T const &; 
+  UM2_NDEBUG_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto back() const -> T const &;
 
   // -- Constructors --
 
@@ -88,7 +88,7 @@ public:
 
   UM2_HOSTDEV inline void push_back(T const & value);
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto empty() const -> bool; 
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto empty() const -> bool;
 
   UM2_HOSTDEV void insert(T const * pos, len_t n, T const & value);
 
@@ -100,7 +100,7 @@ public:
 
   UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) -> T &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) const -> T const &; 
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) const -> T const &;
 
   UM2_HOSTDEV auto operator=(Vector const & v) -> Vector &;
 

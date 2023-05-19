@@ -5,7 +5,7 @@
 
 #include <cstring> // memcpy, strcmp
 #include <ostream> // std::ostream
-#include <string> // std::string
+#include <string>  // std::string
 
 namespace um2
 {
@@ -102,17 +102,16 @@ public:
   UM2_PURE UM2_HOSTDEV [[nodiscard]] auto compare(String const & s) const -> int;
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto contains(char c) const -> bool;
-  
+
   UM2_PURE [[nodiscard]] constexpr auto starts_with(std::string const & s) const -> bool;
-  
+
   UM2_PURE [[nodiscard]] constexpr auto ends_with(std::string const & s) const -> bool;
-  
 
 }; // struct String
 
-// // -- Methods --
-//
-// UM2_PURE std::string to_string(String const & v);
+// -- Methods --
+
+UM2_PURE auto to_string(String const & v) -> std::string;
 //
 // // -- IO --
 //

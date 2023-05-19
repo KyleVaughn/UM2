@@ -94,45 +94,50 @@ UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto String::operator[](len_t const i) con
 // Methods
 // --------------------------------------------------------------------------
 
-UM2_PURE UM2_HOSTDEV constexpr
-auto String::contains(char const c) const -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto String::contains(char const c) const -> bool
 {
-    auto const cc = static_cast<char8_t>(c);
-    for (len_t i = 0; i < this->_size; ++i) {
-        if (this->_data[i] == cc) {
-            return true;
-        }
+  auto const cc = static_cast<char8_t>(c);
+  for (len_t i = 0; i < this->_size; ++i) {
+    if (this->_data[i] == cc) {
+      return true;
     }
-    return false;
+  }
+  return false;
 }
 
 UM2_PURE constexpr auto String::starts_with(std::string const & s) const -> bool
 {
 
-  if (this->_size < static_cast<len_t>(s.size())) { return false; }
-  char8_t const * const data = this->_data;
-  //NOLINENEXTLINE(readability-qualified-auto)
-  auto const sdata = reinterpret_cast<char8_t const *>(s.data());
-  for (len_t i = 0; i < static_cast<len_t>(s.size()); ++i) {
-    if (data[i] != sdata[i]) { return false; }
+  if (this->_size < static_cast<len_t>(s.size())) {
+    return false;
   }
-    return true;
+  char8_t const * const data = this->_data;
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+  auto const * const sdata = reinterpret_cast<char8_t const *>(s.data());
+  for (len_t i = 0; i < static_cast<len_t>(s.size()); ++i) {
+    if (data[i] != sdata[i]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 UM2_PURE constexpr auto String::ends_with(std::string const & s) const -> bool
 {
-    auto const ssize = static_cast<len_t>(s.size());
-    len_t const vsize = this->_size;
-    if (vsize < ssize) { return false; }
-    char8_t const * const data = this->_data;
-    //NOLINENEXTLINE(readability-qualified-auto)
-    auto const sdata = reinterpret_cast<char8_t const *>(s.data());
-    for (len_t i = 0; i < ssize; ++i) {
-        if (this->_data[vsize - 1 - i] != s[s.size() - 1 - static_cast<size_t>(i)]) {
-            return false;
-        }
+  auto const ssize = static_cast<len_t>(s.size());
+  len_t const vsize = this->_size;
+  if (vsize < ssize) {
+    return false;
+  }
+  char8_t const * const data = this->_data;
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+  auto const * const sdata = reinterpret_cast<char8_t const *>(s.data());
+  for (len_t i = 0; i < ssize; ++i) {
+    if (data[vsize - 1 - i] != sdata[ssize - 1 - i]) {
+      return false;
     }
-    return true;
+  }
+  return true;
 }
 
 } // namespace um2
