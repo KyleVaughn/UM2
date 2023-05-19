@@ -145,10 +145,11 @@ UM2_PURE UM2_HOSTDEV auto String::compare(String const & s) const -> int
   return this->compare(s._data);
 }
 
-UM2_PURE auto to_string(String const & v) -> std::string
+UM2_PURE auto to_string(String const & s) -> std::string
 {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  return std::string{reinterpret_cast<char const *>(v.data())};
+  auto const * const sdata = reinterpret_cast<char const *>(s.data());
+  return {sdata, static_cast<size_t>(s.size())};
 }
 
 } // namespace um2

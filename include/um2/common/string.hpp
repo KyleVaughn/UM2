@@ -111,11 +111,11 @@ public:
 
 // -- Methods --
 
-UM2_PURE auto to_string(String const & v) -> std::string;
-//
-// // -- IO --
-//
-// std::ostream & operator << (std::ostream &, String const &);
+UM2_PURE auto to_string(String const & s) -> std::string;
+
+// -- IO --
+
+auto operator<<(std::ostream & os, String const & s) -> std::ostream &;
 
 } // namespace um2
 
