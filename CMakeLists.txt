@@ -39,12 +39,14 @@ set(UM2_HEADERS
     "include/um2/common/sto.hpp"
     "include/um2/common/vector.hpp"
     "include/um2/common/string.hpp"
+    "include/um2/common/color.hpp"
     "include/um2c.h")    
     
 # Sources
 set(UM2_SOURCES        
     "src/common/sto.cpp"
     "src/common/string.cpp"
+    "src/common/color.cpp"
     "src/um2c.cpp")    
     
 # Library
