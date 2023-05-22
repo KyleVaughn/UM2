@@ -6,3 +6,7 @@ Add code coverage
 
 Add OpenGL or other visualization for user interface for mesh viewing
   Maybe just call Gmsh? Would need to account for Gmsh being active in the current process.
+
+Half edge mesh
+CrossSection struct
+Reading/Writing MPACT files
