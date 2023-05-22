@@ -27,6 +27,10 @@ struct Color {
 
   // From a named color (see function definition for list)
   explicit Color(String const & name);
+
+  template <size_t N>
+  // NOLINTNEXTLINE(*-avoid-c-arrays)
+  explicit Color(char const (&name)[N]);
 };
 
 // Operators

@@ -9,6 +9,7 @@ UM2_HOSTDEV TEST_CASE(color_default_constructor)
   EXPECT_EQ(black.b, 0);
   EXPECT_EQ(black.a, 255);
 }
+MAKE_CUDA_KERNEL(color_default_constructor)
 
 UM2_HOSTDEV TEST_CASE(color_int_constructor)
 {
@@ -28,6 +29,7 @@ UM2_HOSTDEV TEST_CASE(color_int_constructor)
   EXPECT_EQ(transparent_red.b, 0);
   EXPECT_EQ(transparent_red.a, 0);
 }
+MAKE_CUDA_KERNEL(color_int_constructor)
 
 UM2_HOSTDEV TEST_CASE(color_float_constructor)
 {
@@ -47,6 +49,7 @@ UM2_HOSTDEV TEST_CASE(color_float_constructor)
   EXPECT_EQ(transparent_red.b, 0);
   EXPECT_EQ(transparent_red.a, 0);
 }
+MAKE_CUDA_KERNEL(color_float_constructor)
 
 UM2_HOSTDEV TEST_CASE(color_double_constructor)
 {
@@ -66,6 +69,7 @@ UM2_HOSTDEV TEST_CASE(color_double_constructor)
   EXPECT_EQ(transparent_red.b, 0);
   EXPECT_EQ(transparent_red.a, 0);
 }
+MAKE_CUDA_KERNEL(color_double_constructor)
 
 TEST_CASE(to_rgba)
 {
@@ -87,7 +91,7 @@ TEST_CASE(color_string_constructor)
 {
   um2::Color aliceblue(um2::String("aliceblue"));
   um2::Color aliceblue_ref(240, 248, 255, 255);
-  um2::Color yellow(um2::String("yellow"));
+  um2::Color yellow("yellow");
   um2::Color yellow_ref(255, 255, 0, 255);
   EXPECT_EQ(aliceblue.r, aliceblue_ref.r);
   EXPECT_EQ(aliceblue.g, aliceblue_ref.g);
@@ -122,8 +126,8 @@ TEST_SUITE(color)
   TEST_HOSTDEV(color_int_constructor);
   TEST_HOSTDEV(color_float_constructor);
   TEST_HOSTDEV(color_double_constructor);
-  TEST_HOSTDEV(to_rgba);
-  TEST_HOSTDEV(color_string_constructor);
+  TEST(to_rgba);
+  TEST(color_string_constructor);
   TEST_HOSTDEV(color_comparison);
 }
 

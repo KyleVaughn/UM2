@@ -23,22 +23,44 @@ UM2_HOSTDEV constexpr Color::Color(T r_in, T g_in, T b_in, T a_in)
 {
 }
 
+template <size_t N>
+// NOLINTNEXTLINE(*-avoid-c-arrays)
+Color::Color(char const (&name)[N])
+{
+  *this = to_rgba(String(name));
+}
+
 // Operators
 // -----------------------------------------------------------------------------
 
-UM2_CONST UM2_HOSTDEV constexpr auto operator==(Color const lhs, Color const rhs) -> bool
+#ifdef __CUDA_ARCH__
+UM2_CONST __device__ constexpr auto operator==(Color const lhs, Color const rhs) -> bool
+{
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+  return reinterpret_cast<uint32_t const &>(lhs) ==
+         reinterpret_cast<uint32_t const &>(rhs);
+}
+
+UM2_CONST __device__ constexpr auto operator<(Color const lhs, Color const rhs) -> bool
+{
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+  return reinterpret_cast<uint32_t const &>(lhs) <
+         reinterpret_cast<uint32_t const &>(rhs);
+}
+#else
+UM2_CONST UM2_HOST constexpr auto operator==(Color const lhs, Color const rhs) -> bool
 {
   return std::bit_cast<uint32_t>(lhs) == std::bit_cast<uint32_t>(rhs);
 }
+UM2_CONST UM2_HOST constexpr auto operator<(Color const lhs, Color const rhs) -> bool
+{
+  return std::bit_cast<uint32_t>(lhs) < std::bit_cast<uint32_t>(rhs);
+}
+#endif
 
 UM2_CONST UM2_HOSTDEV constexpr auto operator!=(Color const lhs, Color const rhs) -> bool
 {
   return !(lhs == rhs);
-}
-
-UM2_CONST UM2_HOSTDEV constexpr auto operator<(Color const lhs, Color const rhs) -> bool
-{
-  return std::bit_cast<uint32_t>(lhs) < std::bit_cast<uint32_t>(rhs);
 }
 
 } // namespace um2

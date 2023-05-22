@@ -85,14 +85,14 @@ UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::back() const -> T const &
 
 template <typename T>
 UM2_HOSTDEV Vector<T>::Vector(len_t const n)
-    : _size{n}, _capacity{n}, _data{new T[static_cast<size_t>(n)]}
+    : _size{n}, _capacity{static_cast<len_t>(bit_ceil(n))}, _data{new T[bit_ceil(n)]}
 {
   assert(n > 0);
 }
 
 template <typename T>
 UM2_HOSTDEV Vector<T>::Vector(len_t const n, T const & value)
-    : _size{n}, _capacity{n}, _data{new T[static_cast<size_t>(n)]}
+    : _size{n}, _capacity{static_cast<len_t>(bit_ceil(n))}, _data{new T[bit_ceil(n)]}
 {
   assert(n > 0);
   // Trusting the compiler to optimize this to memset for appropriate types.
@@ -126,7 +126,7 @@ UM2_HOSTDEV Vector<T>::Vector(Vector<T> && v) noexcept
 }
 
 template <typename T>
-UM2_HOSTDEV Vector<T>::Vector(std::initializer_list<T> const & list)
+Vector<T>::Vector(std::initializer_list<T> const & list)
     : _size{static_cast<len_t>(list.size())}, _capacity{static_cast<len_t>(
                                                   bit_ceil(list.size()))},
       _data{new T[bit_ceil(list.size())]}
