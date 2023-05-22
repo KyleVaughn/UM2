@@ -56,11 +56,12 @@ jobs:
                 -DUM2_ENABLE_CUDA=${{ matrix.cuda }} \
                 -DUM2_ENABLE_OPENMP=${{ matrix.openmp }} \
                 -DUM2_DEV_MODE=${{ matrix.dev_mode }}
-          make -C build
+          make -j -C build
 
       - name: Format check
+        if: matrix.dev_mode == 'ON'
         run: make -C build format-check
 
       - name: Run tests
         run: 
-          make -C build test 
+          make -j -C build test 
