@@ -8,3 +8,4 @@ prefix/
 CMakeLists.txt.user
 CMakeUserPresets.json
 include/um2/common/config.hpp
+.cache/
