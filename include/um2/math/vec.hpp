@@ -20,7 +20,7 @@ struct Vec {
 
   // -- Implementation --
 
-  using array_type = typename Array<D, T>::type;
+  using array_type = Array<D, T>;
   using value_type = T;
 
   array_type data;
@@ -197,12 +197,14 @@ UM2_PURE UM2_HOSTDEV constexpr auto normalize(Vec<D, T> const & /*v*/) -> Vec<D,
 // -- Vec2 --
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto cross(vec2<T> const &, vec2<T> const &) -> T;
+UM2_PURE UM2_HOSTDEV constexpr auto cross(vec2<T> const & /*u*/, vec2<T> const & /*v*/)
+    -> T;
 
 // -- vec3 --
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto cross(vec3<T> const &, vec3<T> const &) -> vec3<T>;
+UM2_PURE UM2_HOSTDEV constexpr auto cross(vec3<T> const & /*u*/, vec3<T> const & /*v*/)
+    -> vec3<T>;
 
 } // namespace um2
 

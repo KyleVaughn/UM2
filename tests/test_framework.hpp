@@ -127,11 +127,12 @@ struct TestResult {
   }
 
 #define EXPECT_NEAR(a, b, eps)                                                           \
-  if (std::abs((a) - (b)) > (eps)) {                                                     \
+  if (std::abs((static_cast<double>(a)) - (static_cast<double>(b))) > (eps)) {           \
     result->failure(__FILE__, __LINE__, __FUNCTION__,                                    \
                     "Expected abs(" #a " - " #b ") < " #eps ", but got abs(" #a " - " #b \
                     ") = ");                                                             \
-    printf("%f\n", static_cast<double>(std::abs((a) - (b))));                            \
+    printf("%f\n", static_cast<double>(                                                  \
+                       std::abs(static_cast<double>(a) - static_cast<double>(b))));      \
     if (exit_on_failure) {                                                               \
       return;                                                                            \
     }                                                                                    \
