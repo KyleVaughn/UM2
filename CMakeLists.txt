@@ -32,13 +32,13 @@ option(UM2_ENABLE_CPPCHECK "Enable cppcheck" ${UM2_DEV_MODE})
 ## um2 library ################################################################
 ###############################################################################
 
+file(GLOB_RECURSE COMMON_HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_LIST_DIR}/include/um2/common/*.hpp)
+file(GLOB_RECURSE MATH_HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_LIST_DIR}/include/um2/math/*.hpp)
 # Headers
 set(UM2_HEADERS
-        "include/um2/common/config.hpp"
-        "include/um2/common/vector.hpp"
-        "include/um2/common/string.hpp"
-        "include/um2/common/color.hpp"
-        "include/um2c.h")
+        ${COMMON_HEADERS}
+        ${MATH_HEADERS}
+        "include/um2c.h" include/um2/math/vec.inl)
 
 # Sources
 set(UM2_SOURCES
