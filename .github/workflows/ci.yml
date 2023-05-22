@@ -26,8 +26,8 @@ jobs:
         run: |
           sudo apt -y update
           sudo apt install -y gcc-12 g++-12 clang-14
-          export CC=gcc-12
-          export CXX=g++-12
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 100
 
       - name: Set up clang 
         shell: bash
@@ -35,8 +35,8 @@ jobs:
         run: |
           sudo apt -y update
           sudo apt install -y clang-14
-          export CC=clang-14
-          export CXX=clang++-14
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-14 100
 
       - name: OpenMP
         shell: bash
