@@ -41,11 +41,12 @@ set(UM2_HEADERS
         "include/um2c.h" include/um2/math/vec.inl)
 
 # Sources
-set(UM2_SOURCES
-        "src/common/string.cpp"
-        "src/common/color.cpp"
-        "src/um2c.cpp")
-
+set(UM2_SOURCES        
+    "src/common/sto.cpp"
+    "src/common/string.cpp"
+    "src/common/color.cpp"
+    "src/um2c.cpp")    
+    
 # Library
 add_library(um2 ${UM2_HEADERS} ${UM2_SOURCES})
 target_include_directories(um2 PUBLIC include)

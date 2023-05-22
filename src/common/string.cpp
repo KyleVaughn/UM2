@@ -8,8 +8,8 @@ namespace um2
 // --------------------------------------------------------------------------
 
 UM2_HOSTDEV String::String(String const & s)
-    : _size(s._size), _capacity(s._capacity),
-      _data(new char8_t[static_cast<size_t>(s._capacity)])
+    : _size{s._size}, _capacity{s._capacity},
+      _data{new char8_t[static_cast<size_t>(s._capacity)]}
 {
   memcpy(this->_data, s._data, static_cast<size_t>(this->_size) + 1);
 }
@@ -17,20 +17,19 @@ UM2_HOSTDEV String::String(String const & s)
 // Turn off warning about member initializers since we need to delete _data before
 // assigning a new value to it.
 // NOLINTBEGIN(cppcoreguidelines-prefer-member-initializer)
-UM2_HOSTDEV String::String(String && s) noexcept : _size(s._size), _capacity(s._capacity)
+UM2_HOSTDEV String::String(String && s) noexcept
+    : _size{s._size}, _capacity{s._capacity}, _data{s._data}
 {
-  delete[] this->_data;
-  this->_data = s._data;
-  s._data = nullptr;
-  s._capacity = 0;
   s._size = 0;
+  s._capacity = 0;
+  s._data = nullptr;
 }
 // NOLINTEND(cppcoreguidelines-prefer-member-initializer)
 
 String::String(std::string const & s)
-    : _size(static_cast<len_t>(s.size())),
-      _capacity(static_cast<len_t>(bit_ceil(s.size() + 1))),
-      _data(new char8_t[static_cast<size_t>(bit_ceil(s.size() + 1))])
+    : _size{static_cast<len_t>(s.size())}, _capacity{static_cast<len_t>(
+                                               bit_ceil(s.size() + 1))},
+      _data{new char8_t[static_cast<size_t>(bit_ceil(s.size() + 1))]}
 {
   memcpy(this->_data, s.data(), s.size() + 1);
 }
@@ -59,11 +58,11 @@ UM2_HOSTDEV auto String::operator=(String && s) noexcept -> String &
   if (this != &s) {
     delete[] this->_data;
     this->_data = s._data;
-    this->_capacity = s._capacity;
     this->_size = s._size;
-    s._data = nullptr;
-    s._capacity = 0;
+    this->_capacity = s._capacity;
     s._size = 0;
+    s._capacity = 0;
+    s._data = nullptr;
   }
   return *this;
 }
@@ -144,6 +143,13 @@ UM2_PURE UM2_HOST auto String::compare(char8_t const * s) const -> int
 UM2_PURE UM2_HOSTDEV auto String::compare(String const & s) const -> int
 {
   return this->compare(s._data);
+}
+
+UM2_PURE auto to_string(String const & s) -> std::string
+{
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+  auto const * const sdata = reinterpret_cast<char const *>(s.data());
+  return {sdata, static_cast<size_t>(s.size())};
 }
 
 } // namespace um2

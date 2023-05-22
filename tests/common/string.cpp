@@ -167,6 +167,33 @@ UM2_HOSTDEV TEST_CASE(compare)
 }
 MAKE_CUDA_KERNEL(compare);
 
+UM2_HOSTDEV TEST_CASE(contains)
+{
+  um2::String s("hello");
+  EXPECT_TRUE(s.contains('h'));
+  EXPECT_TRUE(s.contains('e'));
+  EXPECT_TRUE(s.contains('l'));
+  EXPECT_TRUE(s.contains('o'));
+  EXPECT_FALSE(s.contains('a'));
+  EXPECT_FALSE(s.contains('b'));
+}
+MAKE_CUDA_KERNEL(contains);
+
+TEST_CASE(starts_ends_with)
+{
+  um2::String s("hello");
+  EXPECT_TRUE(s.starts_with("he"));
+  EXPECT_FALSE(s.starts_with("eh"));
+  EXPECT_TRUE(s.ends_with("lo"));
+  EXPECT_FALSE(s.ends_with("ol"));
+}
+
+TEST_CASE(to_string)
+{
+  um2::String s("hello");
+  EXPECT_EQ(to_string(s), std::string("hello"));
+}
+
 TEST_SUITE(string)
 {
   // Accessors
@@ -185,6 +212,9 @@ TEST_SUITE(string)
   TEST_HOSTDEV(comparison)
   // Methods
   TEST_HOSTDEV(compare)
+  TEST_HOSTDEV(contains)
+  TEST(starts_ends_with)
+  TEST(to_string)
 }
 
 auto main() -> int

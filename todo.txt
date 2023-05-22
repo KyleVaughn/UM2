@@ -1,3 +1,5 @@
+String tests, coor
+
 Setup Sphinx/Read the Docs
 
 Add code coverage

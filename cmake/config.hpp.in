@@ -43,7 +43,10 @@
 // -----------------------------------------------------------------------------
 #cmakedefine01 UM2_ENABLE_INT64
 #if UM2_ENABLE_INT64
+// We want this alias to be lower case to match int32_t, int64_t, etc.
+// NOLINTNEXTLINE(readability-identifier-naming) 
 using len_t = int64_t;
 #else
+// NOLINTNEXTLINE(readability-identifier-naming)
 using len_t = int32_t;
 #endif

@@ -19,11 +19,11 @@ struct Color {
 
   // From RGB, set alpha to 255
   template <std::integral I>
-  UM2_HOSTDEV constexpr Color(I r, I g, I b, I a = 255);
+  UM2_HOSTDEV constexpr Color(I r_in, I g_in, I b_in, I a_in = 255);
 
   // From floating point RGB, set alpha to 1.0
   template <std::floating_point T>
-  UM2_HOSTDEV constexpr Color(T r, T g, T b, T a = 1);
+  UM2_HOSTDEV constexpr Color(T r_in, T g_in, T b_in, T a_in = 1);
 
   // From a named color (see function definition for list)
   explicit Color(String const & name);

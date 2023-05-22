@@ -30,13 +30,13 @@ UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::data() const -> T const *
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::begin() const -> T *
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::begin() -> T *
 {
   return this->_data;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::end() const -> T *
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::end() -> T *
 {
   return this->_data + this->_size;
 }
@@ -117,6 +117,15 @@ UM2_HOSTDEV Vector<T>::Vector(Vector<T> const & v)
 }
 
 template <typename T>
+UM2_HOSTDEV Vector<T>::Vector(Vector<T> && v) noexcept
+    : _size{v._size}, _capacity{v._capacity}, _data{v._data}
+{
+  v._size = 0;
+  v._capacity = 0;
+  v._data = nullptr;
+}
+
+template <typename T>
 UM2_HOSTDEV Vector<T>::Vector(std::initializer_list<T> const & list)
     : _size{static_cast<len_t>(list.size())},
       _capacity{static_cast<len_t>(bit_ceil(list.size()))},
@@ -172,9 +181,25 @@ UM2_HOSTDEV auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
   return *this;
 }
 
+template <typename T>
+UM2_HOSTDEV auto Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
+{
+  if (this != &v) {
+    delete[] this->_data;
+    this->_size = v._size;
+    this->_capacity = v._capacity;
+    this->_data = v._data;
+    v._size = 0;
+    v._capacity = 0;
+    v._data = nullptr;
+  }
+  return *this;
+}
+
 #ifdef __CUDA_ARCH__
 template <typename T>
-UM2_PURE __device__ constexpr bool Vector<T>::operator==(Vector<T> const & v) const
+UM2_PURE __device__ constexpr auto Vector<T>::operator==(Vector<T> const & v) const
+    -> bool
 {
   if (this->_size != v._size) {
     return false;
