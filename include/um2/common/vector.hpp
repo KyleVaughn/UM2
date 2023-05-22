@@ -97,7 +97,8 @@ public:
 
   UM2_HOSTDEV void insert(T const * pos, T const & value);
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto contains(T const & value) const -> bool;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto contains(T const & value) const
+      -> bool;
 
   // -- Operators --
 

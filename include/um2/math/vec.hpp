@@ -45,13 +45,13 @@ struct Vec {
   // Otherwise, require explicit conversion to avoid accidental loss of
   // precision/performance.
   template <typename... Is>
-    requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
-             !(std::same_as<T, Is> && ...))
-  UM2_HOSTDEV constexpr explicit Vec(Is const... /*args*/);
+  requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
+           !(std::same_as<T, Is> && ...)) UM2_HOSTDEV
+      constexpr explicit Vec(Is const... /*args*/);
 
   template <typename... Ts>
-    requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...))
-  UM2_HOSTDEV constexpr explicit Vec(Ts const... /*args*/);
+  requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...)) UM2_HOSTDEV
+      constexpr explicit Vec(Ts const... /*args*/);
 
 }; // struct Vec
 
@@ -137,39 +137,44 @@ UM2_PURE UM2_HOSTDEV constexpr auto operator/(Vec<D, T> /*u*/, Vec<D, T> const &
 // -- Scalar operators --
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator+=(Vec<D, T> & /*u*/, S const & /*s*/) -> Vec<D, T> &;
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator+=(Vec<D, T> & /*u*/, S const & /*s*/) -> Vec<D, T> &;
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator-=(Vec<D, T> & /*u*/, S const & /*s*/) -> Vec<D, T> &;
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator-=(Vec<D, T> & /*u*/, S const & /*s*/) -> Vec<D, T> &;
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator*=(Vec<D, T> & /*u*/, S const & /*s*/) -> Vec<D, T> &;
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator*=(Vec<D, T> & /*u*/, S const & /*s*/) -> Vec<D, T> &;
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator/=(Vec<D, T> & /*u*/, S const & /*s*/) -> Vec<D, T> &;
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator/=(Vec<D, T> & /*u*/, S const & /*s*/) -> Vec<D, T> &;
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_PURE UM2_HOSTDEV constexpr auto operator+(Vec<D, T>, S const &) -> Vec<D, T>;
+requires(std::same_as<T, S> ||
+         (std::floating_point<T> && std::integral<S>)) UM2_PURE UM2_HOSTDEV constexpr auto
+operator+(Vec<D, T>, S const &) -> Vec<D, T>;
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_PURE UM2_HOSTDEV constexpr auto operator*(S const & /*s*/, Vec<D, T> /*v*/)
-    -> Vec<D, T>;
+requires(std::same_as<T, S> ||
+         (std::floating_point<T> && std::integral<S>)) UM2_PURE UM2_HOSTDEV constexpr auto
+operator*(S const & /*s*/, Vec<D, T> /*v*/) -> Vec<D, T>;
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_PURE UM2_HOSTDEV constexpr auto operator*(Vec<D, T> /*v*/, S const & /*s*/)
-    -> Vec<D, T>;
+requires(std::same_as<T, S> ||
+         (std::floating_point<T> && std::integral<S>)) UM2_PURE UM2_HOSTDEV constexpr auto
+operator*(Vec<D, T> /*v*/, S const & /*s*/) -> Vec<D, T>;
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_PURE UM2_HOSTDEV constexpr auto operator/(Vec<D, T> /*v*/, S const & /*s*/)
-    -> Vec<D, T>;
+requires(std::same_as<T, S> ||
+         (std::floating_point<T> && std::integral<S>)) UM2_PURE UM2_HOSTDEV constexpr auto
+operator/(Vec<D, T> /*v*/, S const & /*s*/) -> Vec<D, T>;
 
 // -- Methods --
 

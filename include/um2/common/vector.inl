@@ -127,8 +127,8 @@ UM2_HOSTDEV Vector<T>::Vector(Vector<T> && v) noexcept
 
 template <typename T>
 UM2_HOSTDEV Vector<T>::Vector(std::initializer_list<T> const & list)
-    : _size{static_cast<len_t>(list.size())},
-      _capacity{static_cast<len_t>(bit_ceil(list.size()))},
+    : _size{static_cast<len_t>(list.size())}, _capacity{static_cast<len_t>(
+                                                  bit_ceil(list.size()))},
       _data{new T[bit_ceil(list.size())]}
 {
   if constexpr (std::is_trivially_copyable_v<T>) {

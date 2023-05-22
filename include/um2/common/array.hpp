@@ -126,8 +126,9 @@ UM2_PURE UM2_HOSTDEV constexpr auto operator/(Array<L, T> u, Array<L, T> const &
 // -- Scalar operators --
 
 template <len_t L, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator+=(Array<L, T> & u, S const & s) -> Array<L, T> &
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator+=(Array<L, T> & u, S const & s) -> Array<L, T> &
 {
   for (len_t i = 0; i < L; ++i) {
     u[i] += static_cast<T>(s);
@@ -136,8 +137,9 @@ UM2_HOSTDEV constexpr auto operator+=(Array<L, T> & u, S const & s) -> Array<L, 
 }
 
 template <len_t L, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator-=(Array<L, T> & u, S const & s) -> Array<L, T> &
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator-=(Array<L, T> & u, S const & s) -> Array<L, T> &
 {
   for (len_t i = 0; i < L; ++i) {
     u[i] -= static_cast<T>(s);
@@ -146,8 +148,9 @@ UM2_HOSTDEV constexpr auto operator-=(Array<L, T> & u, S const & s) -> Array<L, 
 }
 
 template <len_t L, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator*=(Array<L, T> & u, S const & s) -> Array<L, T> &
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator*=(Array<L, T> & u, S const & s) -> Array<L, T> &
 {
   for (len_t i = 0; i < L; ++i) {
     u[i] *= static_cast<T>(s);
@@ -156,8 +159,9 @@ UM2_HOSTDEV constexpr auto operator*=(Array<L, T> & u, S const & s) -> Array<L, 
 }
 
 template <len_t L, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator/=(Array<L, T> & u, S const & s) -> Array<L, T> &
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator/=(Array<L, T> & u, S const & s) -> Array<L, T> &
 {
   for (len_t i = 0; i < L; ++i) {
     u[i] /= static_cast<T>(s);
@@ -166,22 +170,25 @@ UM2_HOSTDEV constexpr auto operator/=(Array<L, T> & u, S const & s) -> Array<L, 
 }
 
 template <len_t L, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator*(S const & s, Array<L, T> u) -> Array<L, T>
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator*(S const & s, Array<L, T> u) -> Array<L, T>
 {
   return u *= static_cast<T>(s);
 }
 
 template <len_t L, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_PURE UM2_HOSTDEV constexpr auto operator*(Array<L, T> u, S const & s) -> Array<L, T>
+requires(std::same_as<T, S> ||
+         (std::floating_point<T> && std::integral<S>)) UM2_PURE UM2_HOSTDEV constexpr auto
+operator*(Array<L, T> u, S const & s) -> Array<L, T>
 {
   return u *= static_cast<T>(s);
 }
 
 template <len_t L, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_PURE UM2_HOSTDEV constexpr auto operator/(Array<L, T> u, S const & s) -> Array<L, T>
+requires(std::same_as<T, S> ||
+         (std::floating_point<T> && std::integral<S>)) UM2_PURE UM2_HOSTDEV constexpr auto
+operator/(Array<L, T> u, S const & s) -> Array<L, T>
 {
   return u /= static_cast<T>(s);
 }

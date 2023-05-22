@@ -23,16 +23,18 @@ UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vec<D, T>::operator[](len_t const i) 
 
 template <len_t D, typename T>
 template <typename... Is>
-  requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
-           !(std::same_as<T, Is> && ...))
-UM2_HOSTDEV constexpr Vec<D, T>::Vec(Is const... args) : data{static_cast<T>(args)...}
+requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
+         !(std::same_as<T, Is> && ...)) UM2_HOSTDEV
+    constexpr Vec<D, T>::Vec(Is const... args)
+    : data{static_cast<T>(args)...}
 {
 }
 
 template <len_t D, typename T>
 template <typename... Ts>
-  requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...))
-UM2_HOSTDEV constexpr Vec<D, T>::Vec(Ts const... args) : data{args...}
+requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...)) UM2_HOSTDEV
+    constexpr Vec<D, T>::Vec(Ts const... args)
+    : data{args...}
 {
 }
 
@@ -122,54 +124,61 @@ UM2_PURE UM2_HOSTDEV constexpr auto operator/(Vec<D, T> u, Vec<D, T> const & v)
 // -- Scalar operators --
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator+=(Vec<D, T> & u, S const & s) -> Vec<D, T> &
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator+=(Vec<D, T> & u, S const & s) -> Vec<D, T> &
 {
   u.data += static_cast<T>(s);
   return u;
 }
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator-=(Vec<D, T> & u, S const & s) -> Vec<D, T> &
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator-=(Vec<D, T> & u, S const & s) -> Vec<D, T> &
 {
   u.data -= static_cast<T>(s);
   return u;
 }
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator*=(Vec<D, T> & u, S const & s) -> Vec<D, T> &
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator*=(Vec<D, T> & u, S const & s) -> Vec<D, T> &
 {
   u.data *= static_cast<T>(s);
   return u;
 }
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_HOSTDEV constexpr auto operator/=(Vec<D, T> & u, S const & s) -> Vec<D, T> &
+requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>)) UM2_HOSTDEV
+    constexpr auto
+    operator/=(Vec<D, T> & u, S const & s) -> Vec<D, T> &
 {
   u.data /= static_cast<T>(s);
   return u;
 }
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_PURE UM2_HOSTDEV constexpr auto operator*(S const & s, Vec<D, T> v) -> Vec<D, T>
+requires(std::same_as<T, S> ||
+         (std::floating_point<T> && std::integral<S>)) UM2_PURE UM2_HOSTDEV constexpr auto
+operator*(S const & s, Vec<D, T> v) -> Vec<D, T>
 {
   return v *= static_cast<T>(s);
 }
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_PURE UM2_HOSTDEV constexpr auto operator*(Vec<D, T> v, S const & s) -> Vec<D, T>
+requires(std::same_as<T, S> ||
+         (std::floating_point<T> && std::integral<S>)) UM2_PURE UM2_HOSTDEV constexpr auto
+operator*(Vec<D, T> v, S const & s) -> Vec<D, T>
 {
   return v *= static_cast<T>(s);
 }
 
 template <len_t D, typename T, typename S>
-  requires(std::same_as<T, S> || (std::floating_point<T> && std::integral<S>))
-UM2_PURE UM2_HOSTDEV constexpr auto operator/(Vec<D, T> v, S const & s) -> Vec<D, T>
+requires(std::same_as<T, S> ||
+         (std::floating_point<T> && std::integral<S>)) UM2_PURE UM2_HOSTDEV constexpr auto
+operator/(Vec<D, T> v, S const & s) -> Vec<D, T>
 {
   return v /= static_cast<T>(s);
 }
