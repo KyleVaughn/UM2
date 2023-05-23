@@ -9,3 +9,9 @@ CMakeLists.txt.user
 CMakeUserPresets.json
 include/um2/common/config.hpp
 .cache/
+env/
+docs/_build/
+docs/_static/
+docs/_templates/
+docs/html/
+docs/latex/
