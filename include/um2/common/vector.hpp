@@ -78,7 +78,7 @@ public:
   UM2_HOSTDEV Vector(Vector && v) noexcept;
 
   // cppcheck-suppress noExplicitConstructor
-  UM2_HOSTDEV Vector(std::initializer_list<T> const & list);
+  Vector(std::initializer_list<T> const & list);
 
   UM2_HOSTDEV Vector(Vector && other) = delete;
   // -- Methods --

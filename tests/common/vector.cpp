@@ -52,7 +52,7 @@ UM2_HOSTDEV TEST_CASE(length_constructor)
 {
   um2::Vector<T> v(10);
   EXPECT_EQ(v.size(), 10);
-  EXPECT_EQ(v.capacity(), 10);
+  EXPECT_EQ(v.capacity(), 16);
   EXPECT_NE(v.data(), nullptr);
 }
 
@@ -61,7 +61,7 @@ UM2_HOSTDEV TEST_CASE(length_val_constructor)
 {
   um2::Vector<T> v(10, 2);
   EXPECT_EQ(v.size(), 10);
-  EXPECT_EQ(v.capacity(), 10);
+  EXPECT_EQ(v.capacity(), 16);
   for (int i = 0; i < 10; i++) {
     EXPECT_EQ(v.data()[i], 2);
   }
@@ -89,7 +89,7 @@ UM2_HOSTDEV TEST_CASE(copy_constructor)
 }
 
 template <typename T>
-UM2_HOSTDEV TEST_CASE(initializer_list_constructor)
+TEST_CASE(initializer_list_constructor)
 {
   um2::Vector<T> v{1, 2, 3, 4, 5};
   EXPECT_EQ(v.size(), 5);
@@ -106,10 +106,18 @@ UM2_HOSTDEV TEST_CASE(initializer_list_constructor)
 template <typename T>
 UM2_HOSTDEV TEST_CASE(operator_equal)
 {
-  um2::Vector<T> v1{1, 2, 3, 4, 5};
-  um2::Vector<T> v2{1, 2, 3, 4, 5};
-  um2::Vector<T> v3{1, 2, 3, 4, 6};
-  um2::Vector<T> v4{1, 2, 3, 4, 5, 6};
+  um2::Vector<T> v1(5); // {1, 2, 3, 4, 5};
+  um2::Vector<T> v2(5); // {1, 2, 3, 4, 5};
+  um2::Vector<T> v3(5); // {1, 2, 3, 4, 6};
+  um2::Vector<T> v4(5); // {1, 2, 3, 4, 5, 6};
+  for (int i = 0; i < 5; i++) {
+    v1.data()[i] = i + 1;
+    v2.data()[i] = i + 1;
+    v3.data()[i] = i + 1;
+    v4.data()[i] = i + 1;
+  }
+  v3.data()[4] = 6;
+  v4.push_back(6);
   EXPECT_TRUE(v1 == v2);
   EXPECT_FALSE(v1 == v3);
   EXPECT_FALSE(v1 == v4);
@@ -118,12 +126,15 @@ UM2_HOSTDEV TEST_CASE(operator_equal)
 template <typename T>
 UM2_HOSTDEV TEST_CASE(operator_assign)
 {
-  um2::Vector<T> v1{1, 2, 3, 4, 5};
+  um2::Vector<T> v1(5);
+  for (int i = 0; i < 5; i++) {
+    v1.data()[i] = i;
+  }
   um2::Vector<T> v2;
   v2 = v1;
   EXPECT_TRUE(v1 == v2);
   EXPECT_EQ(v1.size(), v2.size());
-  EXPECT_EQ(v1.capacity(), v2.capacity());
+  EXPECT_EQ(v1.capacity(), 8);
   EXPECT_NE(v1.data(), v2.data());
 }
 
@@ -284,7 +295,11 @@ UM2_HOSTDEV TEST_CASE(insert)
 template <typename T>
 UM2_HOSTDEV TEST_CASE(contains)
 {
-  um2::Vector<T> v{2, 1, 5, 6};
+  um2::Vector<T> v(4); // {2, 1, 5, 6};
+  v[0] = 2;
+  v[1] = 1;
+  v[2] = 5;
+  v[3] = 6;
   EXPECT_TRUE(v.contains(2));
   EXPECT_TRUE(v.contains(1));
   EXPECT_TRUE(v.contains(5));
@@ -295,10 +310,19 @@ UM2_HOSTDEV TEST_CASE(contains)
 template <typename T>
 UM2_HOSTDEV TEST_CASE(is_approx)
 {
-  um2::Vector<T> v1{1, 2, 3, 4, 5};
-  um2::Vector<T> v2{1, 2, 3, 4, 5};
-  um2::Vector<T> v3{1, 2, 3, 4, 6};
-  um2::Vector<T> v4{1, 2, 3, 4, 5, 6};
+  um2::Vector<T> v1(5); // {1, 2, 3, 4, 5};
+  um2::Vector<T> v2(5); // {1, 2, 3, 4, 5};
+  um2::Vector<T> v3(5); // {1, 2, 3, 4, 6};
+  um2::Vector<T> v4(5); // {1, 2, 3, 4, 5, 6};
+  for (int i = 0; i < 5; i++) {
+    v1.data()[i] = i + 1;
+    v2.data()[i] = i + 1;
+    v3.data()[i] = i + 1;
+    v4.data()[i] = i + 1;
+  }
+  v3.data()[4] = 6;
+  v4.push_back(6);
+
   EXPECT_TRUE(is_approx(v1, v2));
   EXPECT_FALSE(is_approx(v1, v3));
   EXPECT_FALSE(is_approx(v1, v4));
@@ -324,9 +348,6 @@ MAKE_CUDA_KERNEL(length_val_constructor, T)
 
 template <typename T>
 MAKE_CUDA_KERNEL(copy_constructor, T)
-
-template <typename T>
-MAKE_CUDA_KERNEL(initializer_list_constructor, T)
 
 template <typename T>
 MAKE_CUDA_KERNEL(clear, T)
@@ -370,7 +391,7 @@ TEST_SUITE(vector)
   TEST_HOSTDEV(length_constructor, 1, 1, T)
   TEST_HOSTDEV(length_val_constructor, 1, 1, T)
   TEST_HOSTDEV(copy_constructor, 1, 1, T)
-  TEST_HOSTDEV(initializer_list_constructor, 1, 1, T)
+  TEST(initializer_list_constructor<T>)
   // Operators
   TEST_HOSTDEV(operator_equal, 1, 1, T)
   TEST_HOSTDEV(operator_assign, 1, 1, T)

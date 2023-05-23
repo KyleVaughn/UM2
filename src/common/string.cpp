@@ -8,10 +8,10 @@ namespace um2
 // --------------------------------------------------------------------------
 
 UM2_HOSTDEV String::String(String const & s)
-    : _size{s._size}, _capacity{s._capacity},
-      _data{new char8_t[static_cast<size_t>(s._capacity)]}
+    : _size{s._size}, _capacity{static_cast<len_t>(bit_ceil(s._size + 1))},
+      _data{new char8_t[bit_ceil(s._size + 1)]}
 {
-  memcpy(this->_data, s._data, static_cast<size_t>(this->_size) + 1);
+  memcpy(this->_data, s._data, static_cast<size_t>(s._size) + 1);
 }
 
 // Turn off warning about member initializers since we need to delete _data before
@@ -29,7 +29,7 @@ UM2_HOSTDEV String::String(String && s) noexcept
 String::String(std::string const & s)
     : _size{static_cast<len_t>(s.size())}, _capacity{static_cast<len_t>(
                                                bit_ceil(s.size() + 1))},
-      _data{new char8_t[static_cast<size_t>(bit_ceil(s.size() + 1))]}
+      _data{new char8_t[bit_ceil(s.size() + 1)]}
 {
   memcpy(this->_data, s.data(), s.size() + 1);
 }

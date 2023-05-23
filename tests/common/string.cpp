@@ -29,7 +29,7 @@ UM2_HOSTDEV TEST_CASE(const_char_array_constructor)
 {
   um2::String s("hello");
   EXPECT_EQ(s.size(), 5);
-  EXPECT_EQ(s.capacity(), 6);
+  EXPECT_EQ(s.capacity(), 8);
   EXPECT_EQ(s.data()[0], 'h');
   EXPECT_EQ(s.data()[1], 'e');
   EXPECT_EQ(s.data()[2], 'l');
@@ -44,7 +44,7 @@ UM2_HOSTDEV TEST_CASE(um2_string_constructor)
   um2::String s0("hello");
   um2::String s(s0);
   EXPECT_EQ(s.size(), 5);
-  EXPECT_EQ(s.capacity(), 6);
+  EXPECT_EQ(s.capacity(), 8);
   EXPECT_EQ(s.data()[0], 'h');
   EXPECT_EQ(s.data()[1], 'e');
   EXPECT_EQ(s.data()[2], 'l');
@@ -77,7 +77,7 @@ UM2_HOSTDEV TEST_CASE(assign_um2_string)
   um2::String s0("hello");
   um2::String s = s0;
   EXPECT_EQ(s.size(), 5);
-  EXPECT_EQ(s.capacity(), 6);
+  EXPECT_EQ(s.capacity(), 8);
   EXPECT_EQ(s.data()[0], 'h');
   EXPECT_EQ(s.data()[1], 'e');
   EXPECT_EQ(s.data()[2], 'l');

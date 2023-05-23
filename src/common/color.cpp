@@ -689,12 +689,10 @@ UM2_PURE auto to_rgba(String const & name) -> Color
   if (it != named_colors.cend() && it->first == name) {
     return it->second;
   }
-  //  SPDLOG_WARN("Unknown color name"_a);
+  SPDLOG_WARN("Unknown color name");
   return {0, 0, 0, 255};
 }
 
 Color::Color(String const & name) { *this = to_rgba(name); }
-
-} // namespace um2
 
 } // namespace um2
