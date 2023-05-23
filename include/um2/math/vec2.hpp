@@ -30,7 +30,9 @@ requires(std::is_arithmetic_v<T>) struct Vec<2, T> {
   // precision/performance.
   template <std::integral I>
   UM2_HOSTDEV constexpr Vec(I x_in, I y_in)
-      : x{static_cast<T>(x_in)}, y{static_cast<T>(y_in)} {}
+      : x{static_cast<T>(x_in)}, y{static_cast<T>(y_in)}
+  {
+  }
 };
 
 // Zero vector created using value initialization.
