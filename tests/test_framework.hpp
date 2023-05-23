@@ -126,15 +126,12 @@ struct TestResult {
     }                                                                                    \
   }
 
-
-
-
 // NOLINTBEGIN(*-double-promotion)
 #define EXPECT_NEAR(a, b, eps)                                                           \
-  _Pragma("GCC diagnostic push")                                                         \
-  _Pragma("GCC diagnostic ignored \"-Wconversion\"")                                     \
-  _Pragma("GCC diagnostic ignored \"-Wdouble-promotion\"")                               \
-  if (std::abs((a) - (b)) > (eps)) {                                                     \
+  _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wconversion\"")      \
+      _Pragma("GCC diagnostic ignored \"-Wdouble-promotion\"") if (std::abs((a) - (b)) > \
+                                                                   (eps))                \
+  {                                                                                      \
     result->failure(__FILE__, __LINE__, __FUNCTION__,                                    \
                     "Expected abs(" #a " - " #b ") < " #eps ", but got abs(" #a " - " #b \
                     ") = ");                                                             \
