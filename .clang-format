@@ -9,4 +9,6 @@ PointerAlignment: Middle
 ReferenceAlignment: Middle
 IndentPPDirectives: AfterHash
 AlignConsecutiveMacros: Consecutive
+AlignEscapedNewlines: Right
+AlignOperands: Align
 ...
