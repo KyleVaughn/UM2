@@ -49,7 +49,7 @@ template <std::unsigned_integral U>
 static constexpr U bmi_2d_y_mask = static_cast<U>(0xAAAAAAAAAAAAAAAA);
 
 template <std::unsigned_integral U>
-UM2_NDEBUG_CONST inline U morton_encode(U const x, U const y)
+UM2_NDEBUG_CONST inline auto morton_encode(U const x, U const y) -> U
 {
   assert(x <= morton_max_2d_coord<U> && y <= morton_max_2d_coord<U>);
   return pdep(x, bmi_2d_x_mask<U>) | pdep(y, bmi_2d_y_mask<U>);
@@ -72,7 +72,7 @@ template <std::unsigned_integral U>
 static constexpr U bmi_3d_z_mask = static_cast<U>(0x4924924924924924);
 
 template <std::unsigned_integral U>
-UM2_NDEBUG_CONST inline U morton_encode(U const x, U const y, U const z)
+UM2_NDEBUG_CONST inline auto morton_encode(U const x, U const y, U const z) -> U
 {
   assert(x <= morton_max_3d_coord<U> && y <= morton_max_3d_coord<U> &&
          z <= morton_max_3d_coord<U>);

@@ -21,6 +21,26 @@ template <typename T>
 requires(std::is_arithmetic_v<T>) struct Vec<2, T> {
   T x, y;
 
+  // -- Accessors --
+
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) -> T &
+  {
+    assert(0 <= i && i < 2);
+    if (i == 0) {
+      return x;
+    }
+    return y;
+  }
+
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) const -> T const &
+  {
+    assert(0 <= i && i < 2);
+    if (i == 0) {
+      return x;
+    }
+    return y;
+  }
+
   // -- Constructors --
 
   constexpr Vec() = default;

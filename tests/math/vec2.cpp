@@ -2,6 +2,18 @@
 #include <um2/math/vec2.hpp>
 
 template <typename T>
+UM2_HOSTDEV TEST_CASE(accessor)
+{
+  um2::Vec2<T> v(1, 2);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v[0], 1, 1e-6);
+    EXPECT_NEAR(v[1], 2, 1e-6);
+  } else {
+    EXPECT_EQ(v[0], 1);
+    EXPECT_EQ(v[1], 2);
+  }
+}
+template <typename T>
 UM2_HOSTDEV TEST_CASE(unary_minus)
 {
   um2::Vec2<T> v0(1, -1);
@@ -421,6 +433,7 @@ MAKE_CUDA_KERNEL(normalize, T);
 template <typename T>
 TEST_SUITE(vec2)
 {
+  TEST_HOSTDEV(accessor, 1, 1, T);
   if constexpr (std::floating_point<T> || std::signed_integral<T>) {
     TEST_HOSTDEV(unary_minus, 1, 1, T);
   }
