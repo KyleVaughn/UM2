@@ -126,8 +126,12 @@ struct TestResult {
     }                                                                                    \
   }
 
+// NOLINTBEGIN(*-double-promotion)
 #define EXPECT_NEAR(a, b, eps)                                                           \
-  if (std::abs((static_cast<double>(a)) - (static_cast<double>(b))) > (eps)) {           \
+  _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wconversion\"")      \
+      _Pragma("GCC diagnostic ignored \"-Wdouble-promotion\"") if (std::abs((a) - (b)) > \
+                                                                   (eps))                \
+  {                                                                                      \
     result->failure(__FILE__, __LINE__, __FUNCTION__,                                    \
                     "Expected abs(" #a " - " #b ") < " #eps ", but got abs(" #a " - " #b \
                     ") = ");                                                             \
@@ -136,7 +140,9 @@ struct TestResult {
     if (exit_on_failure) {                                                               \
       return;                                                                            \
     }                                                                                    \
-  }
+  }                                                                                      \
+  _Pragma("GCC diagnostic pop")
+// NOLINTEND(*-double-promotion)
 
 #define TEST_CASE(name) static void name(TestResult * const result, bool exit_on_failure)
 
@@ -241,6 +247,22 @@ struct TestResult {
       }                                                                                  \
     }
 
+#  define __TEST_2TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U)                 \
+    {                                                                                    \
+      __TEST_CUDA_KERNEL_SETUP                                                           \
+      printf("Running CUDA test case '%s'<%s, %s> with %d blocks and %d threads\n",      \
+             #host_test, #T, #U, blocks, threads);                                       \
+      host_test##_cuda_kernel<T, U>                                                      \
+          <<<(blocks), (threads)>>>(device_result, device_exit_on_failure);              \
+      __TEST_CUDA_KERNEL_POST                                                            \
+      cudaMemcpy(&result, device_result, sizeof(TestResult), cudaMemcpyDeviceToHost);    \
+      printf("CUDA test case '%s'<%s, %s> finished with %d failures\n", #host_test, #T,  \
+             #U, num_failures_after);                                                    \
+      if (result.num_failures > 0) {                                                     \
+        return;                                                                          \
+      }                                                                                  \
+    }
+
 #  define TEST_CUDA_KERNEL_1_ARGS(host_test) __TEST_CUDA_KERNEL(host_test, 1, 1)
 
 #  define TEST_CUDA_KERNEL_2_ARGS(host_test, threads)                                    \
@@ -252,11 +274,14 @@ struct TestResult {
 #  define TEST_CUDA_KERNEL_4_ARGS(host_test, blocks, threads, T)                         \
     __TEST_1TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T)
 
-#  define TEST_CUDA_KERNEL_GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
+#  define TEST_CUDA_KERNEL_5_ARGS(host_test, blocks, threads, T, U)                      \
+    __TEST_2TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U)
+
+#  define TEST_CUDA_KERNEL_GET_MACRO(_1, _2, _3, _4, _5, NAME, ...) NAME
 #  define TEST_CUDA_KERNEL(...)                                                          \
-    TEST_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, TEST_CUDA_KERNEL_4_ARGS,                     \
-                               TEST_CUDA_KERNEL_3_ARGS, TEST_CUDA_KERNEL_2_ARGS,         \
-                               TEST_CUDA_KERNEL_1_ARGS)                                  \
+    TEST_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, TEST_CUDA_KERNEL_5_ARGS,                     \
+                               TEST_CUDA_KERNEL_4_ARGS, TEST_CUDA_KERNEL_3_ARGS,         \
+                               TEST_CUDA_KERNEL_2_ARGS, TEST_CUDA_KERNEL_1_ARGS)         \
     (__VA_ARGS__)
 
 #else
@@ -299,10 +324,14 @@ struct TestResult {
 #define TEST_HOSTDEV_4_ARGS(host_test, blocks, threads, T)                               \
   TEST(host_test<T>);                                                                    \
   TEST_CUDA_KERNEL(host_test, blocks, threads, T);
+
+#define TEST_HOSTDEV_5_ARGS(host_test, blocks, threads, T, U)                            \
+  TEST((host_test<T, U>));                                                               \
+  TEST_CUDA_KERNEL(host_test, blocks, threads, T, U);
 // NOLINTEND(bugprone-macro-parentheses)
 
-#define TEST_HOSTDEV_GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
+#define TEST_HOSTDEV_GET_MACRO(_1, _2, _3, _4, _5, NAME, ...) NAME
 #define TEST_HOSTDEV(...)                                                                \
-  TEST_HOSTDEV_GET_MACRO(__VA_ARGS__, TEST_HOSTDEV_4_ARGS, TEST_HOSTDEV_3_ARGS,          \
-                         TEST_HOSTDEV_2_ARGS, TEST_HOSTDEV_1_ARGS)                       \
+  TEST_HOSTDEV_GET_MACRO(__VA_ARGS__, TEST_HOSTDEV_5_ARGS, TEST_HOSTDEV_4_ARGS,          \
+                         TEST_HOSTDEV_3_ARGS, TEST_HOSTDEV_2_ARGS, TEST_HOSTDEV_1_ARGS)  \
   (__VA_ARGS__)

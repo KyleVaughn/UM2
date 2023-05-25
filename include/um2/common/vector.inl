@@ -349,22 +349,4 @@ UM2_PURE UM2_HOSTDEV constexpr auto is_approx(Vector<T> const & a, Vector<T> con
       ApproxFunctor{epsilon});
 }
 
-// ---------------------------------------------------------------------------
-// IO
-// ---------------------------------------------------------------------------
-
-template <typename T>
-auto operator<<(std::ostream & os, Vector<T> const & v) -> std::ostream &
-{
-  os << '(';
-  for (len_t i = 0; i < v.size(); ++i) {
-    os << v[i];
-    if (i < v.size() - 1) {
-      os << ", ";
-    }
-  }
-  os << ')';
-  return os;
-}
-
 } // namespace um2

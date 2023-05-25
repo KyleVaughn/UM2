@@ -4,7 +4,6 @@
 #include <um2/common/config.hpp>
 
 #include <cstring> // memcpy, strcmp
-#include <ostream> // std::ostream
 #include <string>  // std::string
 
 namespace um2
@@ -112,10 +111,6 @@ public:
 // -- Methods --
 
 UM2_PURE auto to_string(String const & s) -> std::string;
-
-// -- IO --
-
-auto operator<<(std::ostream & os, String const & s) -> std::ostream &;
 
 } // namespace um2
 

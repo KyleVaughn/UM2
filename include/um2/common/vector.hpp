@@ -10,7 +10,6 @@
 
 #include <cmath>            // std::abs
 #include <initializer_list> // std::initializer_list
-#include <ostream>          // std::ostream
 
 namespace um2
 {
@@ -113,11 +112,6 @@ public:
   UM2_PURE UM2_HOSTDEV constexpr auto operator==(Vector const & v) const -> bool;
 
 }; // struct Vector
-
-// -- IO --
-
-template <typename T>
-auto operator<<(std::ostream & os, Vector<T> const & v) -> std::ostream &;
 
 // -- Methods --
 
