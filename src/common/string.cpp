@@ -87,7 +87,6 @@ UM2_PURE UM2_HOSTDEV auto String::operator==(String const & s) const noexcept ->
 
 UM2_PURE auto String::operator==(std::string const & s) const noexcept -> bool
 {
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   return this->compare(reinterpret_cast<char8_t const *>(s.data())) == 0;
 }
 
@@ -117,9 +116,8 @@ UM2_PURE UM2_HOSTDEV auto String::operator>=(String const & s) const noexcept ->
 
 // Turn off warning about reinterpret_cast since we need to compare char8_t
 // as unsigned char/char
-// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
 #ifdef __CUDA_ARCH__
-UM2_PURE UM2_DEVICE auto String::compare(char8_t const * s) const noexcept -> int
+UM2_PURE UM2_DEVICE auto String::compare(char8_t const * const s) const noexcept -> int
 {
   char8_t const * s1 = this->_data;
   char8_t const * s2 = s;
@@ -131,14 +129,13 @@ UM2_PURE UM2_DEVICE auto String::compare(char8_t const * s) const noexcept -> in
          *reinterpret_cast<unsigned char const *>(s2);
 }
 #else
-UM2_PURE UM2_HOST auto String::compare(char8_t const * s) const noexcept -> int
+UM2_PURE UM2_HOST auto String::compare(char8_t const * const s) const noexcept -> int
 {
   // Reinterpret char8_t as char
   return strcmp(reinterpret_cast<char const *>(this->_data),
                 reinterpret_cast<char const *>(s));
 }
 #endif
-// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
 
 UM2_PURE UM2_HOSTDEV auto String::compare(String const & s) const noexcept -> int
 {
@@ -147,7 +144,6 @@ UM2_PURE UM2_HOSTDEV auto String::compare(String const & s) const noexcept -> in
 
 UM2_PURE auto to_string(String const & s) -> std::string
 {
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   auto const * const sdata = reinterpret_cast<char const *>(s.data());
   return {sdata, static_cast<size_t>(s.size())};
 }

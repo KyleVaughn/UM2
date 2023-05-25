@@ -326,8 +326,9 @@ UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::contains(T const & value) const -
 
 // A classic abs(a - b) <= epsilon comparison
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b,
-                                              T const & epsilon) -> bool
+requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
+    constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b, T const epsilon)
+        -> bool
 {
   if (a.size() != b.size()) {
     return false;
@@ -340,6 +341,34 @@ UM2_PURE UM2_HOSTDEV constexpr auto is_approx(Vector<T> const & a, Vector<T> con
     operator()(thrust::tuple<T, T> const & tuple) const -> bool
     {
       return std::abs(thrust::get<0>(tuple) - thrust::get<1>(tuple)) <= epsilon;
+    }
+  };
+
+  return thrust::all_of(
+      thrust::seq, thrust::make_zip_iterator(thrust::make_tuple(a.cbegin(), b.cbegin())),
+      thrust::make_zip_iterator(thrust::make_tuple(a.cend(), b.cend())),
+      ApproxFunctor{epsilon});
+}
+
+template <typename T>
+requires(std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
+    constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b, T const epsilon)
+        -> bool
+{
+  if (a.size() != b.size()) {
+    return false;
+  }
+  struct ApproxFunctor {
+
+    T const epsilon;
+
+    UM2_PURE UM2_HOSTDEV constexpr auto
+    operator()(thrust::tuple<T, T> const & tuple) const -> bool
+    {
+      T const a = thrust::get<0>(tuple);
+      T const b = thrust::get<1>(tuple);
+      T const diff = a > b ? a - b : b - a;
+      return diff <= epsilon;
     }
   };
 

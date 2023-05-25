@@ -29,7 +29,6 @@ struct Color {
   explicit Color(String const & name) noexcept;
 
   template <size_t N>
-  // NOLINTNEXTLINE(*-avoid-c-arrays)
   explicit Color(char const (&name)[N]) noexcept;
 };
 

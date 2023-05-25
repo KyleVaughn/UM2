@@ -50,7 +50,6 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::data() const noexcept -> char8_t con
 // --------------------------------------------------------------------------
 
 template <size_t N>
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
 UM2_HOSTDEV String::String(char const (&s)[N])
     : _size(N - 1), _capacity(static_cast<len_t>(bit_ceil(N))),
       _data(new char8_t[bit_ceil(N)])
@@ -63,7 +62,6 @@ UM2_HOSTDEV String::String(char const (&s)[N])
 // --------------------------------------------------------------------------
 
 template <size_t N>
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
 UM2_HOSTDEV auto String::operator=(char const (&s)[N]) -> String &
 {
   if (this->_capacity < static_cast<len_t>(N)) {
@@ -80,7 +78,6 @@ template <size_t N>
 // NOLINTNEXTLINE(*-avoid-c-arrays)
 UM2_PURE UM2_HOSTDEV auto String::operator==(char const (&s)[N]) const noexcept -> bool
 {
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   return this->compare(reinterpret_cast<char8_t const *>(s)) == 0;
 }
 

@@ -1,4 +1,8 @@
-String tests, coor
+Vector int, uint, float, double, uint64,int64
+Vector noexcept
+
+vec2 int, uint etc. noexcept
+
 
 Setup Sphinx/Read the Docs
 

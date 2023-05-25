@@ -72,19 +72,19 @@ UM2_HOSTDEV TEST_CASE(copy_constructor)
 {
   um2::Vector<T> v(10);
   for (int i = 0; i < 10; i++) {
-    v.data()[i] = i;
+    v.data()[i] = static_cast<T>(i);
   }
   um2::Vector<T> v2(v);
   EXPECT_EQ(v2.size(), 10);
   EXPECT_EQ(v2.capacity(), 16);
   for (int i = 0; i < 10; i++) {
-    EXPECT_EQ(v2.data()[i], i);
+    EXPECT_EQ(v2.data()[i], static_cast<T>(i));
   }
   um2::Vector<T> v3 = v;
   EXPECT_EQ(v3.size(), 10);
   EXPECT_EQ(v3.capacity(), 16);
   for (int i = 0; i < 10; i++) {
-    EXPECT_EQ(v3.data()[i], i);
+    EXPECT_EQ(v3.data()[i], static_cast<T>(i));
   }
 }
 
@@ -95,7 +95,7 @@ TEST_CASE(initializer_list_constructor)
   EXPECT_EQ(v.size(), 5);
   EXPECT_EQ(v.capacity(), 8);
   for (int i = 0; i < 5; i++) {
-    EXPECT_EQ(v.data()[i], i + 1);
+    EXPECT_EQ(v.data()[i], static_cast<T>(i + 1));
   }
 }
 
@@ -111,10 +111,10 @@ UM2_HOSTDEV TEST_CASE(operator_equal)
   um2::Vector<T> v3(5); // {1, 2, 3, 4, 6};
   um2::Vector<T> v4(5); // {1, 2, 3, 4, 5, 6};
   for (int i = 0; i < 5; i++) {
-    v1.data()[i] = i + 1;
-    v2.data()[i] = i + 1;
-    v3.data()[i] = i + 1;
-    v4.data()[i] = i + 1;
+    v1.data()[i] = static_cast<T>(i + 1);
+    v2.data()[i] = static_cast<T>(i + 1);
+    v3.data()[i] = static_cast<T>(i + 1);
+    v4.data()[i] = static_cast<T>(i + 1);
   }
   v3.data()[4] = 6;
   v4.push_back(6);
@@ -128,7 +128,7 @@ UM2_HOSTDEV TEST_CASE(operator_assign)
 {
   um2::Vector<T> v1(5);
   for (int i = 0; i < 5; i++) {
-    v1.data()[i] = i;
+    v1.data()[i] = static_cast<T>(i + 1);
   }
   um2::Vector<T> v2;
   v2 = v1;
@@ -315,10 +315,10 @@ UM2_HOSTDEV TEST_CASE(is_approx)
   um2::Vector<T> v3(5); // {1, 2, 3, 4, 6};
   um2::Vector<T> v4(5); // {1, 2, 3, 4, 5, 6};
   for (int i = 0; i < 5; i++) {
-    v1.data()[i] = i + 1;
-    v2.data()[i] = i + 1;
-    v3.data()[i] = i + 1;
-    v4.data()[i] = i + 1;
+    v1.data()[i] = static_cast<T>(i + 1);
+    v2.data()[i] = static_cast<T>(i + 1);
+    v3.data()[i] = static_cast<T>(i + 1);
+    v4.data()[i] = static_cast<T>(i + 1);
   }
   v3.data()[4] = 6;
   v4.push_back(6);
@@ -326,8 +326,9 @@ UM2_HOSTDEV TEST_CASE(is_approx)
   EXPECT_TRUE(is_approx(v1, v2));
   EXPECT_FALSE(is_approx(v1, v3));
   EXPECT_FALSE(is_approx(v1, v4));
-  EXPECT_TRUE(is_approx(v1, v2, 1));
-  EXPECT_TRUE(is_approx(v1, v3, 1));
+  T const eps = static_cast<T>(1);
+  EXPECT_TRUE(is_approx(v1, v2, eps));
+  EXPECT_TRUE(is_approx(v1, v3, eps));
 }
 
 // --------------------------------------------------------------------------
@@ -408,6 +409,7 @@ TEST_SUITE(vector)
 
 auto main() -> int
 {
-  RUN_TESTS(vector<int>);
+  RUN_TESTS(vector<int32_t>);
+  RUN_TESTS(vector<uint32_t>);
   return 0;
 }

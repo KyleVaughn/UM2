@@ -24,11 +24,11 @@ UM2_HOSTDEV constexpr Color::Color(T r_in, T g_in, T b_in, T a_in) noexcept
 }
 
 template <size_t N>
-// NOLINTNEXTLINE(*-avoid-c-arrays)
 Color::Color(char const (&name)[N]) noexcept : Color(String(name))
 {
 }
 
+// -----------------------------------------------------------------------------
 // Operators
 // -----------------------------------------------------------------------------
 
@@ -36,7 +36,6 @@ Color::Color(char const (&name)[N]) noexcept : Color(String(name))
 UM2_CONST __device__ constexpr auto operator==(Color const lhs, Color const rhs) noexcept
     -> bool
 {
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   return reinterpret_cast<uint32_t const &>(lhs) ==
          reinterpret_cast<uint32_t const &>(rhs);
 }
@@ -44,7 +43,6 @@ UM2_CONST __device__ constexpr auto operator==(Color const lhs, Color const rhs)
 UM2_CONST __device__ constexpr auto operator<(Color const lhs, Color const rhs) noexcept
     -> bool
 {
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   return reinterpret_cast<uint32_t const &>(lhs) <
          reinterpret_cast<uint32_t const &>(rhs);
 }

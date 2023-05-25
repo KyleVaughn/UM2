@@ -113,8 +113,14 @@ public:
 // -- Methods --
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b,
-                                              T const & epsilon = T{}) -> bool;
+requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
+    constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b, T epsilon = T{})
+        -> bool;
+
+template <typename T>
+requires(std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
+    constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b, T epsilon = T{})
+        -> bool;
 
 } // namespace um2
 

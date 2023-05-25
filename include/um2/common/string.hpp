@@ -56,7 +56,6 @@ public:
   constexpr String() = default;
 
   template <size_t N>
-  // NOLINTNEXTLINE(*-avoid-c-arrays)
   UM2_HOSTDEV explicit String(char const (&s)[N]);
 
   UM2_HOSTDEV String(String const & s);
@@ -72,7 +71,6 @@ public:
   UM2_HOSTDEV auto operator=(String && s) noexcept -> String &;
 
   template <size_t N>
-  // NOLINTNEXTLINE(*-avoid-c-arrays)
   UM2_HOSTDEV auto operator=(char const (&s)[N]) -> String &;
 
   auto operator=(std::string const & s) -> String &;
@@ -80,7 +78,6 @@ public:
   UM2_PURE UM2_HOSTDEV auto operator==(String const & s) const noexcept -> bool;
 
   template <size_t N>
-  // NOLINTNEXTLINE(*-avoid-c-arrays)
   UM2_PURE UM2_HOSTDEV auto operator==(char const (&s)[N]) const noexcept -> bool;
 
   UM2_PURE auto operator==(std::string const & s) const noexcept -> bool;
