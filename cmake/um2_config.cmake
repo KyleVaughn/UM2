@@ -178,4 +178,10 @@ if (UM2_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
+## Docs #########################################
+##################################################
+if (UM2_DEV_MODE)
+  add_subdirectory(docs)
+endif()
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
