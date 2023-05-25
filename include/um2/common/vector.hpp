@@ -39,12 +39,10 @@ public:
   // -- Accessors --
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto size() const -> len_t;
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto size() const -> len_t;
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto capacity() const -> len_t;
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto capacity() const -> len_t;
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto data() -> T *;
+  UM2_PURE UM2_HOSTDEV constexpr auto data() -> T *;
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto data() const -> T const *;
 
@@ -79,7 +77,6 @@ public:
   // cppcheck-suppress noExplicitConstructor
   Vector(std::initializer_list<T> const & list);
 
-  UM2_HOSTDEV Vector(Vector && other) = delete;
   // -- Methods --
 
   UM2_HOSTDEV void clear();

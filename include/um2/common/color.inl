@@ -64,5 +64,3 @@ UM2_CONST UM2_HOSTDEV constexpr auto operator!=(Color const lhs, Color const rhs
 }
 
 } // namespace um2
-
-} // namespace um2
