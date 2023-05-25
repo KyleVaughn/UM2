@@ -357,6 +357,9 @@ UM2_HOSTDEV TEST_CASE(normalize)
 // --------------------------------------------------------------------------
 #if UM2_ENABLE_CUDA
 template <typename T>
+MAKE_CUDA_KERNEL(accessor, T);
+
+template <typename T>
 MAKE_CUDA_KERNEL(unary_minus, T);
 
 template <typename T>
@@ -434,7 +437,7 @@ template <typename T>
 TEST_SUITE(vec2)
 {
   TEST_HOSTDEV(accessor, 1, 1, T);
-  if constexpr (std::floating_point<T> || std::signed_integral<T>) {
+  if constexpr (!std::unsigned_integral<T>) {
     TEST_HOSTDEV(unary_minus, 1, 1, T);
   }
   TEST_HOSTDEV(compound_add, 1, 1, T);

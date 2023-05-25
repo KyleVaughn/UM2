@@ -3,10 +3,11 @@
 #include <um2/common/config.hpp>
 #include <um2/math/vec.hpp>
 
-namespace um2 {
+namespace um2
+{
 
 // -----------------------------------------------------------------------------
-// MAT 
+// MAT
 // -----------------------------------------------------------------------------
 // An M by N matrix.
 //
@@ -17,8 +18,7 @@ namespace um2 {
 // very small matrices should be done using something like OpenBLAS or cuBLAS.
 
 template <len_t M, len_t N, typename T>
-requires(std::is_arithmetic_v<T>)
-struct Mat {
+requires(std::is_arithmetic_v<T>) struct Mat {
 };
 
 } // namespace um2

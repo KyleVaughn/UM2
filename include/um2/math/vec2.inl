@@ -6,9 +6,8 @@ namespace um2
 // -----------------------------------------------------------------------------
 
 template <typename T>
-requires(std::floating_point<T> || std::signed_integral<T>) UM2_CONST UM2_HOSTDEV
-    constexpr auto
-    operator-(Vec<2, T> v) -> Vec<2, T>
+requires(!std::unsigned_integral<T>) UM2_CONST UM2_HOSTDEV constexpr auto
+operator-(Vec<2, T> v) -> Vec<2, T>
 {
   v.x = -v.x;
   v.y = -v.y;
@@ -20,7 +19,7 @@ requires(std::floating_point<T> || std::signed_integral<T>) UM2_CONST UM2_HOSTDE
 // -----------------------------------------------------------------------------
 
 template <typename T>
-UM2_HOSTDEV constexpr auto operator+=(Vec2<T> & u, Vec2<T> const & v) -> Vec2<T> &
+UM2_HOSTDEV constexpr auto operator+=(Vec2<T> & u, Vec2<T> v) -> Vec2<T> &
 {
   u.x += v.x;
   u.y += v.y;
@@ -28,7 +27,7 @@ UM2_HOSTDEV constexpr auto operator+=(Vec2<T> & u, Vec2<T> const & v) -> Vec2<T>
 }
 
 template <typename T>
-UM2_HOSTDEV constexpr auto operator-=(Vec2<T> & u, Vec2<T> const & v) -> Vec2<T> &
+UM2_HOSTDEV constexpr auto operator-=(Vec2<T> & u, Vec2<T> v) -> Vec2<T> &
 {
   u.x -= v.x;
   u.y -= v.y;
@@ -36,7 +35,7 @@ UM2_HOSTDEV constexpr auto operator-=(Vec2<T> & u, Vec2<T> const & v) -> Vec2<T>
 }
 
 template <typename T>
-UM2_HOSTDEV constexpr auto operator*=(Vec2<T> & u, Vec2<T> const & v) -> Vec2<T> &
+UM2_HOSTDEV constexpr auto operator*=(Vec2<T> & u, Vec2<T> v) -> Vec2<T> &
 {
   u.x *= v.x;
   u.y *= v.y;
@@ -44,7 +43,7 @@ UM2_HOSTDEV constexpr auto operator*=(Vec2<T> & u, Vec2<T> const & v) -> Vec2<T>
 }
 
 template <typename T>
-UM2_HOSTDEV constexpr auto operator/=(Vec2<T> & u, Vec2<T> const & v) -> Vec2<T> &
+UM2_HOSTDEV constexpr auto operator/=(Vec2<T> & u, Vec2<T> v) -> Vec2<T> &
 {
   u.x /= v.x;
   u.y /= v.y;
@@ -52,32 +51,32 @@ UM2_HOSTDEV constexpr auto operator/=(Vec2<T> & u, Vec2<T> const & v) -> Vec2<T>
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto operator+(Vec2<T> u, Vec2<T> const & v) -> Vec2<T>
+UM2_CONST UM2_HOSTDEV constexpr auto operator+(Vec2<T> u, Vec2<T> v) -> Vec2<T>
 {
   return u += v;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto operator-(Vec2<T> u, Vec2<T> const & v) -> Vec2<T>
+UM2_CONST UM2_HOSTDEV constexpr auto operator-(Vec2<T> u, Vec2<T> v) -> Vec2<T>
 {
   return u -= v;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto operator*(Vec2<T> u, Vec2<T> const & v) -> Vec2<T>
+UM2_CONST UM2_HOSTDEV constexpr auto operator*(Vec2<T> u, Vec2<T> v) -> Vec2<T>
 {
   return u *= v;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto operator/(Vec2<T> u, Vec2<T> const & v) -> Vec2<T>
+UM2_CONST UM2_HOSTDEV constexpr auto operator/(Vec2<T> u, Vec2<T> v) -> Vec2<T>
 {
   return u /= v;
 }
 
 template <typename T, typename S>
 requires(std::same_as<T, S> || std::integral<S>) UM2_HOSTDEV constexpr auto
-operator+=(Vec2<T> & u, S const & s) -> Vec2<T> &
+operator+=(Vec2<T> & u, S s) -> Vec2<T> &
 {
   u.x += static_cast<T>(s);
   u.y += static_cast<T>(s);
@@ -86,7 +85,7 @@ operator+=(Vec2<T> & u, S const & s) -> Vec2<T> &
 
 template <typename T, typename S>
 requires(std::same_as<T, S> || std::integral<S>) UM2_HOSTDEV constexpr auto
-operator-=(Vec2<T> & u, S const & s) -> Vec2<T> &
+operator-=(Vec2<T> & u, S s) -> Vec2<T> &
 {
   u.x -= static_cast<T>(s);
   u.y -= static_cast<T>(s);
@@ -95,7 +94,7 @@ operator-=(Vec2<T> & u, S const & s) -> Vec2<T> &
 
 template <typename T, typename S>
 requires(std::same_as<T, S> || std::integral<S>) UM2_HOSTDEV constexpr auto
-operator*=(Vec2<T> & u, S const & s) -> Vec2<T> &
+operator*=(Vec2<T> & u, S s) -> Vec2<T> &
 {
   u.x *= static_cast<T>(s);
   u.y *= static_cast<T>(s);
@@ -104,7 +103,7 @@ operator*=(Vec2<T> & u, S const & s) -> Vec2<T> &
 
 template <typename T, typename S>
 requires(std::same_as<T, S> || std::integral<S>) UM2_HOSTDEV constexpr auto
-operator/=(Vec2<T> & u, S const & s) -> Vec2<T> &
+operator/=(Vec2<T> & u, S s) -> Vec2<T> &
 {
   u.x /= static_cast<T>(s);
   u.y /= static_cast<T>(s);
@@ -112,36 +111,36 @@ operator/=(Vec2<T> & u, S const & s) -> Vec2<T> &
 }
 
 template <typename T, typename S>
-requires(std::same_as<T, S> || std::integral<S>) UM2_PURE UM2_HOSTDEV constexpr auto
-operator+(Vec2<T> u, S const & s) -> Vec2<T>
+requires(std::same_as<T, S> || std::integral<S>) UM2_CONST UM2_HOSTDEV constexpr auto
+operator+(Vec2<T> u, S s) -> Vec2<T>
 {
   return u += s;
 }
 
 template <typename T, typename S>
-requires(std::same_as<T, S> || std::integral<S>) UM2_PURE UM2_HOSTDEV constexpr auto
-operator-(Vec2<T> u, S const & s) -> Vec2<T>
+requires(std::same_as<T, S> || std::integral<S>) UM2_CONST UM2_HOSTDEV constexpr auto
+operator-(Vec2<T> u, S s) -> Vec2<T>
 {
   return u -= s;
 }
 template <typename T, typename S>
 
-requires(std::same_as<T, S> || std::integral<S>) UM2_PURE UM2_HOSTDEV constexpr auto
-operator*(Vec2<T> u, S const & s) -> Vec2<T>
+requires(std::same_as<T, S> || std::integral<S>) UM2_CONST UM2_HOSTDEV constexpr auto
+operator*(Vec2<T> u, S s) -> Vec2<T>
 {
   return u *= s;
 }
 
 template <typename T, typename S>
-requires(std::same_as<T, S> || std::integral<S>) UM2_PURE UM2_HOSTDEV constexpr auto
-operator*(S const & s, Vec2<T> u) -> Vec2<T>
+requires(std::same_as<T, S> || std::integral<S>) UM2_CONST UM2_HOSTDEV constexpr auto
+operator*(S s, Vec2<T> u) -> Vec2<T>
 {
   return u *= s;
 }
 
 template <typename T, typename S>
-requires(std::same_as<T, S> || std::integral<S>) UM2_PURE UM2_HOSTDEV constexpr auto
-operator/(Vec2<T> u, S const & s) -> Vec2<T>
+requires(std::same_as<T, S> || std::integral<S>) UM2_CONST UM2_HOSTDEV constexpr auto
+operator/(Vec2<T> u, S s) -> Vec2<T>
 {
   return u /= s;
 }
@@ -151,7 +150,7 @@ operator/(Vec2<T> u, S const & s) -> Vec2<T>
 // -----------------------------------------------------------------------------
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto min(Vec2<T> u, Vec2<T> const & v) -> Vec2<T>
+UM2_CONST UM2_HOSTDEV constexpr auto min(Vec2<T> u, Vec2<T> v) -> Vec2<T>
 {
   u.x = thrust::min(u.x, v.x);
   u.y = thrust::min(u.y, v.y);
@@ -159,7 +158,7 @@ UM2_PURE UM2_HOSTDEV constexpr auto min(Vec2<T> u, Vec2<T> const & v) -> Vec2<T>
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto max(Vec2<T> u, Vec2<T> const & v) -> Vec2<T>
+UM2_CONST UM2_HOSTDEV constexpr auto max(Vec2<T> u, Vec2<T> v) -> Vec2<T>
 {
   u.x = thrust::max(u.x, v.x);
   u.y = thrust::max(u.y, v.y);
@@ -167,31 +166,31 @@ UM2_PURE UM2_HOSTDEV constexpr auto max(Vec2<T> u, Vec2<T> const & v) -> Vec2<T>
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto dot(Vec2<T> const & u, Vec2<T> const & v) -> T
+UM2_CONST UM2_HOSTDEV constexpr auto dot(Vec2<T> u, Vec2<T> v) -> T
 {
   return u.x * v.x + u.y * v.y;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto cross(Vec2<T> const & u, Vec2<T> const & v) -> T
+UM2_CONST UM2_HOSTDEV constexpr auto cross(Vec2<T> u, Vec2<T> v) -> T
 {
   return u.x * v.y - u.y * v.x;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto norm2(Vec2<T> const & u) -> T
+UM2_CONST UM2_HOSTDEV constexpr auto norm2(Vec2<T> u) -> T
 {
   return u.x * u.x + u.y * u.y;
 }
 
 template <std::floating_point T>
-UM2_PURE UM2_HOSTDEV constexpr auto norm(Vec2<T> const & u) -> T
+UM2_CONST UM2_HOSTDEV constexpr auto norm(Vec2<T> u) -> T
 {
   return std::sqrt(norm2(u));
 }
 
 template <std::floating_point T>
-UM2_PURE UM2_HOSTDEV constexpr auto normalize(Vec2<T> u) -> Vec2<T>
+UM2_CONST UM2_HOSTDEV constexpr auto normalize(Vec2<T> u) -> Vec2<T>
 {
   return u /= norm(u);
 }
