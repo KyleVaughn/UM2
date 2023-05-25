@@ -80,33 +80,33 @@ auto String::operator=(std::string const & s) -> String &
   return *this;
 }
 
-UM2_PURE UM2_HOSTDEV auto String::operator==(String const & s) const -> bool
+UM2_PURE UM2_HOSTDEV auto String::operator==(String const & s) const noexcept -> bool
 {
   return this->compare(s) == 0;
 }
 
-UM2_PURE auto String::operator==(std::string const & s) const -> bool
+UM2_PURE auto String::operator==(std::string const & s) const noexcept -> bool
 {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   return this->compare(reinterpret_cast<char8_t const *>(s.data())) == 0;
 }
 
-UM2_PURE UM2_HOSTDEV auto String::operator<(String const & s) const -> bool
+UM2_PURE UM2_HOSTDEV auto String::operator<(String const & s) const noexcept -> bool
 {
   return this->compare(s) < 0;
 }
 
-UM2_PURE UM2_HOSTDEV auto String::operator<=(String const & s) const -> bool
+UM2_PURE UM2_HOSTDEV auto String::operator<=(String const & s) const noexcept -> bool
 {
   return this->compare(s) <= 0;
 }
 
-UM2_PURE UM2_HOSTDEV auto String::operator>(String const & s) const -> bool
+UM2_PURE UM2_HOSTDEV auto String::operator>(String const & s) const noexcept -> bool
 {
   return this->compare(s) > 0;
 }
 
-UM2_PURE UM2_HOSTDEV auto String::operator>=(String const & s) const -> bool
+UM2_PURE UM2_HOSTDEV auto String::operator>=(String const & s) const noexcept -> bool
 {
   return this->compare(s) >= 0;
 }
@@ -119,7 +119,7 @@ UM2_PURE UM2_HOSTDEV auto String::operator>=(String const & s) const -> bool
 // as unsigned char/char
 // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
 #ifdef __CUDA_ARCH__
-UM2_PURE UM2_DEVICE auto String::compare(char8_t const * s) const -> int
+UM2_PURE UM2_DEVICE auto String::compare(char8_t const * s) const noexcept -> int
 {
   char8_t const * s1 = this->_data;
   char8_t const * s2 = s;
@@ -131,7 +131,7 @@ UM2_PURE UM2_DEVICE auto String::compare(char8_t const * s) const -> int
          *reinterpret_cast<unsigned char const *>(s2);
 }
 #else
-UM2_PURE UM2_HOST auto String::compare(char8_t const * s) const -> int
+UM2_PURE UM2_HOST auto String::compare(char8_t const * s) const noexcept -> int
 {
   // Reinterpret char8_t as char
   return strcmp(reinterpret_cast<char const *>(this->_data),
@@ -140,7 +140,7 @@ UM2_PURE UM2_HOST auto String::compare(char8_t const * s) const -> int
 #endif
 // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
 
-UM2_PURE UM2_HOSTDEV auto String::compare(String const & s) const -> int
+UM2_PURE UM2_HOSTDEV auto String::compare(String const & s) const noexcept -> int
 {
   return this->compare(s._data);
 }
