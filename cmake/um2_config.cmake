@@ -53,6 +53,10 @@ if (UM2_ENABLE_CUDA)
   target_include_directories(um2 SYSTEM PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")    
 endif()
 
+## Eigen #########################################
+##################################################
+target_include_directories(um2 SYSTEM PUBLIC "${PROJECT_SOURCE_DIR}/tpls/eigen")
+
 ## Thrust ########################################
 ##################################################
 set(Thrust_DIR "${PROJECT_SOURCE_DIR}/tpls/thrust/thrust/cmake")

@@ -50,3 +50,4 @@ using len_t = int64_t;
 // NOLINTNEXTLINE(readability-identifier-naming)
 using len_t = int32_t;
 #endif
+#define EIGEN_DEFAULT_DENSE_INDEX_TYPE len_t

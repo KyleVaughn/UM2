@@ -42,7 +42,7 @@ set(UM2_HEADERS
     "include/um2/common/string.hpp"
     "include/um2/common/color.hpp"
     "include/um2/math/morton.hpp"
-    "include/um2/math/vec2.hpp"
+    "include/um2/math/vec.hpp"
     "include/um2/math/mat.hpp"
     "include/um2c.h")    
     

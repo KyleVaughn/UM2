@@ -1,3 +1,6 @@
+Follow Eigen documentation and setup multithreading and CUDA tests
+
+Can vector be replaced with Eigen?
 Vector int, uint, float, double, uint64,int64
 Vector noexcept
 
