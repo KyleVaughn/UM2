@@ -8,7 +8,7 @@
 namespace um2
 {
 
-UM2_PURE auto to_rgba(String const & name) noexcept -> Color
+UM2_PURE auto toColor(String const & name) noexcept -> Color
 {
   using NamedColor = std::pair<String, Color>;
   // A map of named colors to their Color values.
@@ -693,6 +693,6 @@ UM2_PURE auto to_rgba(String const & name) noexcept -> Color
   return {0, 0, 0, 255};
 }
 
-Color::Color(String const & name) noexcept : Color() { *this = to_rgba(name); }
+Color::Color(String const & name) noexcept : Color() { *this = toColor(name); }
 
 } // namespace um2

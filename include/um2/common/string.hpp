@@ -115,7 +115,7 @@ public:
 
 // -- Methods --
 
-UM2_PURE auto to_string(String const & s) -> std::string;
+UM2_PURE auto toString(String const & s) -> std::string;
 
 } // namespace um2
 

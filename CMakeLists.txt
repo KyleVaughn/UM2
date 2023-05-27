@@ -9,10 +9,11 @@ project(
 
 ## User options ###############################################################
 ###############################################################################
-option(UM2_ENABLE_CUDA      "Enable CUDA"       OFF)
-option(UM2_ENABLE_OPENMP    "Enable OpenMP"     ON)
-option(UM2_ENABLE_TESTS     "Enable tests"      ON)
-option(UM2_ENABLE_FASTMATH  "Enable fast math"  ON)
+option(UM2_ENABLE_CUDA      "Enable CUDA"          OFF)
+option(UM2_ENABLE_OPENMP    "Enable OpenMP"        ON)
+option(UM2_ENABLE_TESTS     "Enable tests"         ON)
+option(UM2_ENABLE_FASTMATH  "Enable fast math"     ON)
+option(UM2_ENABLE_VIS       "Enable visualization" ON)
 
 ## Advanced options ###########################################################
 ###############################################################################

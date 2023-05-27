@@ -10,3 +10,5 @@ add_um2_test(color ./common/color.cpp)
 add_um2_test(morton ./math/morton.cpp)
 add_um2_test(vec2 ./math/vec2.cpp)
 add_um2_test(mat2x2 ./math/mat2x2.cpp)
+
+add_um2_test(window ./vis/window.cpp)

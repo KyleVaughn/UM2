@@ -188,10 +188,10 @@ TEST_CASE(starts_ends_with)
   EXPECT_FALSE(s.ends_with("ol"));
 }
 
-TEST_CASE(to_string)
+TEST_CASE(toString)
 {
   um2::String s("hello");
-  EXPECT_EQ(to_string(s), std::string("hello"));
+  EXPECT_EQ(toString(s), std::string("hello"));
 }
 
 TEST_SUITE(string)
@@ -214,7 +214,7 @@ TEST_SUITE(string)
   TEST_HOSTDEV(compare)
   TEST_HOSTDEV(contains)
   TEST(starts_ends_with)
-  TEST(to_string)
+  TEST(toString)
 }
 
 auto main() -> int

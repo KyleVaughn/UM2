@@ -44,7 +44,7 @@ UM2_CONST UM2_HOSTDEV constexpr auto operator<(Color lhs, Color rhs) noexcept ->
 // Methods
 // -----------------------------------------------------------------------------
 
-UM2_PURE auto to_rgba(String const & name) noexcept -> Color;
+UM2_PURE auto toColor(String const & name) noexcept -> Color;
 
 } // namespace um2
 

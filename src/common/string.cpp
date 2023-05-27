@@ -142,7 +142,7 @@ UM2_PURE UM2_HOSTDEV auto String::compare(String const & s) const noexcept -> in
   return this->compare(s._data);
 }
 
-UM2_PURE auto to_string(String const & s) -> std::string
+UM2_PURE auto toString(String const & s) -> std::string
 {
   auto const * const sdata = reinterpret_cast<char const *>(s.data());
   return {sdata, static_cast<size_t>(s.size())};
