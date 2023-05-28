@@ -2,15 +2,21 @@
 #include <um2/common/bit_ceil.hpp>
 
 template <typename T>
-TEST_CASE(zero_through_5)
+UM2_HOSTDEV TEST_CASE(zero_through_5)
 {
-  EXPECT_EQ(um2::bit_ceil<T>(0), 1);
-  EXPECT_EQ(um2::bit_ceil<T>(1), 1);
-  EXPECT_EQ(um2::bit_ceil<T>(2), 2);
-  EXPECT_EQ(um2::bit_ceil<T>(3), 4);
-  EXPECT_EQ(um2::bit_ceil<T>(4), 4);
-  EXPECT_EQ(um2::bit_ceil<T>(5), 8);
+  printf("bit_ceil(%d) = %d\n", 0, um2::bit_ceil(0));
+  EXPECT_EQ(um2::bit_ceil(0), 1);
+  EXPECT_EQ(um2::bit_ceil(1), 1);
+  EXPECT_EQ(um2::bit_ceil(2), 2);
+  EXPECT_EQ(um2::bit_ceil(3), 4);
+  EXPECT_EQ(um2::bit_ceil(4), 4);
+  EXPECT_EQ(um2::bit_ceil(5), 8);
 }
+
+#if UM2_ENABLE_CUDA
+template <typename T>
+MAKE_CUDA_KERNEL(zero_through_5, T);
+#endif
 
 template <typename T>
 TEST_SUITE(bit_ceil)

@@ -60,10 +60,10 @@ auto main() -> int
 
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-  while (glfwWindowShouldClose(window) == GLFW_FALSE) {
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-  }
+//  while (glfwWindowShouldClose(window) == GLFW_FALSE) {
+//    glfwSwapBuffers(window);
+//    glfwPollEvents();
+//  }
 
   glfwTerminate();
   return 0;

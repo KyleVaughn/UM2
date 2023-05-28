@@ -233,13 +233,13 @@ struct TestResult {
 #  define __TEST_1TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T)                    \
     {                                                                                    \
       __TEST_CUDA_KERNEL_SETUP                                                           \
-      printf("Running CUDA test case '%s'<%s> with %d blocks and %d threads\n",          \
+      printf("Running CUDA test case '%s<%s>' with %d blocks and %d threads\n",          \
              #host_test, #T, blocks, threads);                                           \
       host_test##_cuda_kernel<T>                                                         \
           <<<(blocks), (threads)>>>(device_result, device_exit_on_failure);              \
       __TEST_CUDA_KERNEL_POST                                                            \
       cudaMemcpy(&result, device_result, sizeof(TestResult), cudaMemcpyDeviceToHost);    \
-      printf("CUDA test case '%s'<%s> finished with %d failures\n", #host_test, #T,      \
+      printf("CUDA test case '%s<%s>' finished with %d failures\n", #host_test, #T,      \
              num_failures_after);                                                        \
       if (result.num_failures > 0) {                                                     \
         return;                                                                          \
@@ -249,13 +249,13 @@ struct TestResult {
 #  define __TEST_2TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U)                 \
     {                                                                                    \
       __TEST_CUDA_KERNEL_SETUP                                                           \
-      printf("Running CUDA test case '%s'<%s, %s> with %d blocks and %d threads\n",      \
+      printf("Running CUDA test case '%s<%s, %s>' with %d blocks and %d threads\n",      \
              #host_test, #T, #U, blocks, threads);                                       \
       host_test##_cuda_kernel<T, U>                                                      \
           <<<(blocks), (threads)>>>(device_result, device_exit_on_failure);              \
       __TEST_CUDA_KERNEL_POST                                                            \
       cudaMemcpy(&result, device_result, sizeof(TestResult), cudaMemcpyDeviceToHost);    \
-      printf("CUDA test case '%s'<%s, %s> finished with %d failures\n", #host_test, #T,  \
+      printf("CUDA test case '%s<%s, %s>' finished with %d failures\n", #host_test, #T,  \
              #U, num_failures_after);                                                    \
       if (result.num_failures > 0) {                                                     \
         return;                                                                          \

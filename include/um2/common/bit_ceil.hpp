@@ -34,7 +34,7 @@ constexpr auto bit_ceil(T const x) noexcept -> T
 __device__ constexpr auto bit_ceil(uint32_t const x) noexcept -> uint32_t
 {
   if (x <= 1) {
-    return x;
+    return 1;
   } else {
     return 1 << (32 - __clz(x - 1));
   }
@@ -49,9 +49,9 @@ __device__ constexpr auto bit_ceil(int32_t const x) noexcept -> uint32_t
 __device__ constexpr auto bit_ceil(uint64_t const x) noexcept -> uint64_t
 {
   if (x <= 1) {
-    return x;
+    return 1;
   } else {
-    return 1 << (64 - __clzl(x - 1));
+    return 1 << (64 - __clzll(x - 1));
   }
 }
 
