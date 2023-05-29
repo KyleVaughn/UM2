@@ -182,6 +182,13 @@ struct TestResult {
       host_test<T, U>(result, *exit_on_failure);                                         \
     }
 
+#  define MAKE_3TEMPLATE_CUDA_KERNEL(host_test, T, U, V)                                 \
+    __global__ void host_test##_cuda_kernel(TestResult * const result,                   \
+                                            bool * const exit_on_failure)                \
+    {                                                                                    \
+      host_test<T, U, V>(result, *exit_on_failure);                                      \
+    }
+
 #  define MAKE_CUDA_KERNEL_1_ARGS(host_test) MAKE_UNTEMPLATED_CUDA_KERNEL(host_test)
 
 #  define MAKE_CUDA_KERNEL_2_ARGS(host_test, T) MAKE_1TEMPLATE_CUDA_KERNEL(host_test, T)
@@ -189,10 +196,15 @@ struct TestResult {
 #  define MAKE_CUDA_KERNEL_3_ARGS(host_test, T, U)                                       \
     MAKE_2TEMPLATE_CUDA_KERNEL(host_test, T, U)
 
-#  define MAKE_CUDA_KERNEL_GET_MACRO(_1, _2, _3, NAME, ...) NAME
+#  define MAKE_CUDA_KERNEL_4_ARGS(host_test, T, U, V)                                    \
+    MAKE_3TEMPLATE_CUDA_KERNEL(host_test, T, U, V)
+
+#  define MAKE_CUDA_KERNEL_GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
 #  define MAKE_CUDA_KERNEL(...)                                                          \
-    MAKE_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, MAKE_CUDA_KERNEL_3_ARGS,                     \
-                               MAKE_CUDA_KERNEL_2_ARGS, MAKE_CUDA_KERNEL_1_ARGS)         \
+    MAKE_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, MAKE_CUDA_KERNEL_4_ARGS,                     \
+                               MAKE_CUDA_KERNEL_3_ARGS,                     \
+                               MAKE_CUDA_KERNEL_2_ARGS,                    \
+                               MAKE_CUDA_KERNEL_1_ARGS)         \
     (__VA_ARGS__)
 
 #  define __TEST_CUDA_KERNEL_SETUP                                                       \
@@ -262,6 +274,22 @@ struct TestResult {
       }                                                                                  \
     }
 
+#  define __TEST_3TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U, V)              \
+    {                                                                                    \
+      __TEST_CUDA_KERNEL_SETUP                                                           \
+      printf("Running CUDA test case '%s<%s, %s, %s>' with %d blocks and %d threads\n",  \
+             #host_test, #T, #U, #V, blocks, threads);                                   \
+      host_test##_cuda_kernel<T, U, V>                                                   \
+          <<<(blocks), (threads)>>>(device_result, device_exit_on_failure);              \
+      __TEST_CUDA_KERNEL_POST                                                            \
+      cudaMemcpy(&result, device_result, sizeof(TestResult), cudaMemcpyDeviceToHost);    \
+      printf("CUDA test case '%s<%s, %s, %s>' finished with %d failures\n", #host_test, \
+             #T, #U, #V, num_failures_after);                                            \
+      if (result.num_failures > 0) {                                                     \
+        return;                                                                          \
+      }                                                                                  \
+    }
+
 #  define TEST_CUDA_KERNEL_1_ARGS(host_test) __TEST_CUDA_KERNEL(host_test, 1, 1)
 
 #  define TEST_CUDA_KERNEL_2_ARGS(host_test, threads)                                    \
@@ -276,9 +304,13 @@ struct TestResult {
 #  define TEST_CUDA_KERNEL_5_ARGS(host_test, blocks, threads, T, U)                      \
     __TEST_2TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U)
 
-#  define TEST_CUDA_KERNEL_GET_MACRO(_1, _2, _3, _4, _5, NAME, ...) NAME
+#  define TEST_CUDA_KERNEL_6_ARGS(host_test, blocks, threads, T, U, V)                   \
+    __TEST_3TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U, V)
+
+#  define TEST_CUDA_KERNEL_GET_MACRO(_1, _2, _3, _4, _5, _6, NAME, ...) NAME
 #  define TEST_CUDA_KERNEL(...)                                                          \
-    TEST_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, TEST_CUDA_KERNEL_5_ARGS,                     \
+    TEST_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, TEST_CUDA_KERNEL_6_ARGS,                     \
+                               TEST_CUDA_KERNEL_5_ARGS,                     \
                                TEST_CUDA_KERNEL_4_ARGS, TEST_CUDA_KERNEL_3_ARGS,         \
                                TEST_CUDA_KERNEL_2_ARGS, TEST_CUDA_KERNEL_1_ARGS)         \
     (__VA_ARGS__)
@@ -327,10 +359,15 @@ struct TestResult {
 #define TEST_HOSTDEV_5_ARGS(host_test, blocks, threads, T, U)                            \
   TEST((host_test<T, U>));                                                               \
   TEST_CUDA_KERNEL(host_test, blocks, threads, T, U);
+
+#define TEST_HOSTDEV_6_ARGS(host_test, blocks, threads, T, U, V)                         \
+  TEST((host_test<T, U, V>));                                                            \
+  TEST_CUDA_KERNEL(host_test, blocks, threads, T, U, V);
 // NOLINTEND(bugprone-macro-parentheses)
 
-#define TEST_HOSTDEV_GET_MACRO(_1, _2, _3, _4, _5, NAME, ...) NAME
+#define TEST_HOSTDEV_GET_MACRO(_1, _2, _3, _4, _5, _6, NAME, ...) NAME
 #define TEST_HOSTDEV(...)                                                                \
-  TEST_HOSTDEV_GET_MACRO(__VA_ARGS__, TEST_HOSTDEV_5_ARGS, TEST_HOSTDEV_4_ARGS,          \
+  TEST_HOSTDEV_GET_MACRO(__VA_ARGS__, TEST_HOSTDEV_6_ARGS, TEST_HOSTDEV_5_ARGS,          \
+                         TEST_HOSTDEV_4_ARGS,          \
                          TEST_HOSTDEV_3_ARGS, TEST_HOSTDEV_2_ARGS, TEST_HOSTDEV_1_ARGS)  \
   (__VA_ARGS__)

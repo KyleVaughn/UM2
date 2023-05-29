@@ -1,5 +1,8 @@
+// Don't reorder headers, glad must be included before glfw3
+// clang-format off
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+// clang-format on
 
 #include <cstdint>
 #include <cstdio>
@@ -7,11 +10,10 @@
 uint32_t const WIDTH = 1920;
 uint32_t const HEIGHT = 1080;
 
-void errorCallback(int error, const char* description)
+void errorCallback(int error, const char * description)
 {
   fprintf(stderr, "Error %d: %s\n", error, description);
 }
-
 
 void keyCallback(GLFWwindow * window, int key, int /*scancode*/, int action, int /*mods*/)
 {
@@ -52,18 +54,17 @@ auto main() -> int
   glfwSetKeyCallback(window, keyCallback);
 
   glfwMakeContextCurrent(window);
-  if (gladLoadGL(glfwGetProcAddress) == 0)
-  {
+  if (gladLoadGL(glfwGetProcAddress) == 0) {
     printf("Failed to initialize OpenGL context\n");
     return -1;
-  }    
+  }
 
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-//  while (glfwWindowShouldClose(window) == GLFW_FALSE) {
-//    glfwSwapBuffers(window);
-//    glfwPollEvents();
-//  }
+  //  while (glfwWindowShouldClose(window) == GLFW_FALSE) {
+  //    glfwSwapBuffers(window);
+  //    glfwPollEvents();
+  //  }
 
   glfwTerminate();
   return 0;

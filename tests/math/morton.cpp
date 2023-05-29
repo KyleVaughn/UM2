@@ -82,35 +82,35 @@ UM2_HOSTDEV TEST_CASE(normalizedMortonEncode)
   T xscale_inv = static_cast<T>(1) / xscale;
   T yscale_inv = static_cast<T>(1) / yscale;
   U value = um2::normalizedMortonEncode<U, T>(static_cast<T>(0), static_cast<T>(0),
-                                                xscale_inv, yscale_inv);
+                                              xscale_inv, yscale_inv);
   EXPECT_EQ(value, static_cast<U>(0x0000000000000000));
   value = um2::normalizedMortonEncode<U, T>(static_cast<T>(2), static_cast<T>(4),
-                                              xscale_inv, yscale_inv);
+                                            xscale_inv, yscale_inv);
   EXPECT_EQ(value, static_cast<U>(0xffffffffffffffff));
   value = um2::normalizedMortonEncode<U, T>(static_cast<T>(2), static_cast<T>(0),
-                                              xscale_inv, yscale_inv);
+                                            xscale_inv, yscale_inv);
   EXPECT_EQ(value, static_cast<U>(0x5555555555555555));
   value = um2::normalizedMortonEncode<U, T>(static_cast<T>(0), static_cast<T>(4),
-                                              xscale_inv, yscale_inv);
+                                            xscale_inv, yscale_inv);
   EXPECT_EQ(value, static_cast<U>(0xaaaaaaaaaaaaaaaa));
 
   T zscale = static_cast<T>(8);
   T zscale_inv = static_cast<T>(1) / zscale;
   value = um2::normalizedMortonEncode<U, T>(static_cast<T>(0), static_cast<T>(0),
-                                              static_cast<T>(0), xscale_inv, yscale_inv,
-                                              zscale_inv);
+                                            static_cast<T>(0), xscale_inv, yscale_inv,
+                                            zscale_inv);
   EXPECT_EQ(value, static_cast<U>(0x0000000000000000));
   value = um2::normalizedMortonEncode<U, T>(static_cast<T>(2), static_cast<T>(4),
-                                              static_cast<T>(8), xscale_inv, yscale_inv,
-                                              zscale_inv);
+                                            static_cast<T>(8), xscale_inv, yscale_inv,
+                                            zscale_inv);
   if constexpr (std::same_as<uint32_t, U>) {
     EXPECT_EQ(value, static_cast<U>(0x3fffffff));
   } else {
     EXPECT_EQ(value, static_cast<U>(0x7fffffffffffffff));
   }
   value = um2::normalizedMortonEncode<U, T>(static_cast<T>(2), static_cast<T>(0),
-                                              static_cast<T>(0), xscale_inv, yscale_inv,
-                                              zscale_inv);
+                                            static_cast<T>(0), xscale_inv, yscale_inv,
+                                            zscale_inv);
   if constexpr (std::same_as<uint32_t, U>) {
     EXPECT_EQ(value, static_cast<U>(0x9249249));
   } else {
@@ -126,38 +126,38 @@ UM2_HOSTDEV TEST_CASE(normalizedMortonDecode)
   T x;
   T y;
   um2::normalizedMortonDecode<U, T>(static_cast<U>(0x0000000000000000), x, y, xscale,
-                                      yscale);
+                                    yscale);
   EXPECT_NEAR(x, static_cast<T>(0), 1e-6);
   EXPECT_NEAR(y, static_cast<T>(0), 1e-6);
   um2::normalizedMortonDecode<U, T>(static_cast<U>(0xffffffffffffffff), x, y, xscale,
-                                      yscale);
+                                    yscale);
   EXPECT_NEAR(x, static_cast<T>(2), 1e-6);
   EXPECT_NEAR(y, static_cast<T>(4), 1e-6);
   um2::normalizedMortonDecode<U, T>(static_cast<U>(0x5555555555555555), x, y, xscale,
-                                      yscale);
+                                    yscale);
   EXPECT_NEAR(x, static_cast<T>(2), 1e-6);
   EXPECT_NEAR(y, static_cast<T>(0), 1e-6);
   um2::normalizedMortonDecode<U, T>(static_cast<U>(0xaaaaaaaaaaaaaaaa), x, y, xscale,
-                                      yscale);
+                                    yscale);
   EXPECT_NEAR(x, static_cast<T>(0), 1e-6);
   EXPECT_NEAR(y, static_cast<T>(4), 1e-6);
 
   T zscale = static_cast<T>(8);
   T z;
   um2::normalizedMortonDecode<U, T>(static_cast<U>(0x0000000000000000), x, y, z, xscale,
-                                      yscale, zscale);
+                                    yscale, zscale);
   EXPECT_NEAR(x, static_cast<T>(0), 1e-6);
   EXPECT_NEAR(y, static_cast<T>(0), 1e-6);
   EXPECT_NEAR(z, static_cast<T>(0), 1e-6);
   if constexpr (std::same_as<uint32_t, U>) {
-    um2::normalizedMortonDecode<U, T>(static_cast<U>(0x3fffffff), x, y, z, xscale,
-                                        yscale, zscale);
+    um2::normalizedMortonDecode<U, T>(static_cast<U>(0x3fffffff), x, y, z, xscale, yscale,
+                                      zscale);
     EXPECT_NEAR(x, static_cast<T>(2), 1e-6);
     EXPECT_NEAR(y, static_cast<T>(4), 1e-6);
     EXPECT_NEAR(z, static_cast<T>(8), 1e-6);
   } else {
-    um2::normalizedMortonDecode<U, T>(static_cast<U>(0x7fffffffffffffff), x, y, z,
-                                        xscale, yscale, zscale);
+    um2::normalizedMortonDecode<U, T>(static_cast<U>(0x7fffffffffffffff), x, y, z, xscale,
+                                      yscale, zscale);
     EXPECT_NEAR(x, static_cast<T>(2), 1e-6);
     EXPECT_NEAR(y, static_cast<T>(4), 1e-6);
     EXPECT_NEAR(z, static_cast<T>(8), 1e-6);

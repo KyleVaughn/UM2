@@ -6,74 +6,78 @@ namespace um2
 // ---------------------------------------------------------------------------
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::size() const -> len_t
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::size() const noexcept -> len_t
 {
   return this->_size;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::capacity() const -> len_t
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::capacity() const noexcept -> len_t
 {
   return this->_capacity;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::data() -> T *
+// cppcheck-suppress functionConst
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::data() noexcept -> T *
 {
   return this->_data;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::data() const -> T const *
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::data() const noexcept -> T const *
 {
   return this->_data;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::begin() -> T *
+// cppcheck-suppress functionConst
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::begin() noexcept -> T *
 {
   return this->_data;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::end() -> T *
+// cppcheck-suppress functionConst
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::end() noexcept -> T *
 {
   return this->_data + this->_size;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::cbegin() const -> T const *
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::cbegin() const noexcept -> T const *
 {
   return this->_data;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::cend() const -> T const *
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::cend() const noexcept -> T const *
 {
   return this->_data + this->_size;
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::front() -> T &
+// cppcheck-suppress functionConst
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::front() noexcept -> T &
 {
   return this->_data[0];
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::front() const -> T const &
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::front() const noexcept -> T const &
 {
   return this->_data[0];
 }
 
 template <typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::back() -> T &
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::back() noexcept -> T &
 {
   assert(this->_size > 0);
   return this->_data[this->_size - 1];
 }
 
 template <typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::back() const -> T const &
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::back() const noexcept -> T const &
 {
   assert(this->_size > 0);
   return this->_data[this->_size - 1];
@@ -146,15 +150,16 @@ Vector<T>::Vector(std::initializer_list<T> const & list)
 // ---------------------------------------------------------------------------
 
 template <typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::operator[](len_t const i) -> T &
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::operator[](len_t const i) noexcept
+    -> T &
 {
   assert(0 <= i && i < this->_size);
   return this->_data[i];
 }
 
 template <typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::operator[](len_t const i) const
-    -> T const &
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
+Vector<T>::operator[](len_t const i) const noexcept -> T const &
 {
   assert(0 <= i && i < this->_size);
   return this->_data[i];
@@ -198,8 +203,8 @@ UM2_HOSTDEV auto Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
 
 #ifdef __CUDA_ARCH__
 template <typename T>
-UM2_PURE __device__ constexpr auto Vector<T>::operator==(Vector<T> const & v) const
-    -> bool
+UM2_PURE __device__ constexpr auto
+Vector<T>::operator==(Vector<T> const & v) const noexcept -> bool
 {
   if (this->_size != v._size) {
     return false;
@@ -213,7 +218,8 @@ UM2_PURE __device__ constexpr auto Vector<T>::operator==(Vector<T> const & v) co
 }
 #else
 template <typename T>
-UM2_PURE UM2_HOST constexpr auto Vector<T>::operator==(Vector<T> const & v) const -> bool
+UM2_PURE UM2_HOST constexpr auto Vector<T>::operator==(Vector<T> const & v) const noexcept
+    -> bool
 {
   if (this->_size != v._size) {
     return false;
@@ -237,7 +243,7 @@ UM2_PURE UM2_HOST constexpr auto Vector<T>::operator==(Vector<T> const & v) cons
 // ---------------------------------------------------------------------------
 
 template <typename T>
-UM2_HOSTDEV void Vector<T>::clear()
+UM2_HOSTDEV void Vector<T>::clear() noexcept
 {
   this->_size = 0;
   this->_capacity = 0;
@@ -314,7 +320,8 @@ UM2_HOSTDEV void Vector<T>::insert(T const * pos, T const & value)
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::contains(T const & value) const -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::contains(T const & value) const noexcept
+    -> bool requires(!std::floating_point<T>)
 {
   for (len_t i = 0; i < this->_size; ++i) {
     if (this->_data[i] == value) {
@@ -327,8 +334,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::contains(T const & value) const -
 // A classic abs(a - b) <= epsilon comparison
 template <typename T>
 requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
-    constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b, T const epsilon)
-        -> bool
+    constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b,
+                             T const epsilon) noexcept -> bool
 {
   if (a.size() != b.size()) {
     return false;
@@ -352,8 +359,8 @@ requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) UM2_PURE UM2_HOS
 
 template <typename T>
 requires(std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
-    constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b, T const epsilon)
-        -> bool
+    constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b,
+                             T const epsilon) noexcept -> bool
 {
   if (a.size() != b.size()) {
     return false;

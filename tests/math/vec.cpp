@@ -2,8 +2,7 @@
 #include <um2/math/vec.hpp>
 
 template <len_t D, typename T>
-UM2_HOSTDEV static constexpr
-auto make_vec() -> um2::Vec<D, T> 
+UM2_HOSTDEV static constexpr auto make_vec() -> um2::Vec<D, T>
 {
   um2::Vec<D, T> v;
   for (len_t i = 0; i < D; ++i) {
@@ -167,7 +166,7 @@ UM2_HOSTDEV TEST_CASE(div)
 {
   um2::Vec<D, T> v0 = make_vec<D, T>();
   um2::Vec<D, T> v1 = make_vec<D, T>();
-  um2::Vec<D, T> v = v0.array() / v1.array(); 
+  um2::Vec<D, T> v = v0.array() / v1.array();
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
       EXPECT_NEAR(v[i], 1, 1e-6);
@@ -312,7 +311,7 @@ UM2_HOSTDEV TEST_CASE(min)
 {
   um2::Vec<D, T> v0 = make_vec<D, T>();
   um2::Vec<D, T> v1 = make_vec<D, T>().array() + 1;
-  um2::Vec<D, T> v = v0.cwiseMin(v1); 
+  um2::Vec<D, T> v = v0.cwiseMin(v1);
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
       EXPECT_NEAR(v[i], static_cast<T>(i + 1), 1e-6);
@@ -329,7 +328,7 @@ UM2_HOSTDEV TEST_CASE(max)
 {
   um2::Vec<D, T> v0 = make_vec<D, T>();
   um2::Vec<D, T> v1 = make_vec<D, T>().array() + 1;
-  um2::Vec<D, T> v = v0.cwiseMax(v1); 
+  um2::Vec<D, T> v = v0.cwiseMax(v1);
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
       EXPECT_NEAR(v[i], static_cast<T>(i + 2), 1e-6);
@@ -347,7 +346,7 @@ UM2_HOSTDEV TEST_CASE(dot)
   um2::Vec<D, T> v = make_vec<D, T>();
   T dot = v.dot(v);
   if constexpr (std::floating_point<T>) {
-    EXPECT_NEAR(dot, static_cast<T>(D * (D + 1) * (2 * D + 1) / 6), 1e-6);
+    EXPECT_NEAR(dot, static_cast<T>(D * (D + 1) * (2 * D + 1)) / 6, 1e-6);
   } else {
     EXPECT_EQ(dot, static_cast<T>(D * (D + 1) * (2 * D + 1) / 6));
   }
@@ -372,18 +371,18 @@ UM2_HOSTDEV TEST_CASE(norm2)
   um2::Vec<D, T> v = make_vec<D, T>();
   T norm2 = v.squaredNorm();
   if constexpr (std::floating_point<T>) {
-    EXPECT_NEAR(norm2, static_cast<T>(D * (D + 1) * (2 * D + 1) / 6), 1e-6);
+    EXPECT_NEAR(norm2, static_cast<T>(D * (D + 1) * (2 * D + 1)) / 6, 1e-6);
   } else {
     EXPECT_EQ(norm2, static_cast<T>(D * (D + 1) * (2 * D + 1) / 6));
   }
 }
 
-template <len_t D, typename T> 
+template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(norm)
 {
   um2::Vec<D, T> v = make_vec<D, T>();
   T norm = v.norm();
-  EXPECT_NEAR(norm, std::sqrt(static_cast<T>(D * (D + 1) * (2 * D + 1) / 6)), 1e-6);
+  EXPECT_NEAR(norm, std::sqrt(static_cast<T>(D * (D + 1) * (2 * D + 1)) / 6), 1e-6);
 }
 
 template <len_t D, typename T>
@@ -391,8 +390,8 @@ UM2_HOSTDEV TEST_CASE(normalize)
 {
   um2::Vec<D, T> v = make_vec<D, T>();
   um2::Vec<D, T> v2 = v.normalized();
-  T norm = v2.norm();
-  EXPECT_NEAR(norm, 1, 1e-6);
+  T n = v2.norm();
+  EXPECT_NEAR(n, 1, 1e-6);
 }
 // --------------------------------------------------------------------------
 // CUDA
@@ -419,7 +418,7 @@ MAKE_CUDA_KERNEL(compound_div, D, T);
 template <len_t D, typename T>
 MAKE_CUDA_KERNEL(add, D, T);
 
-template <len_t D, typename T> 
+template <len_t D, typename T>
 MAKE_CUDA_KERNEL(sub, D, T);
 
 template <len_t D, typename T>
@@ -478,7 +477,7 @@ MAKE_CUDA_KERNEL(normalize, D, T);
 template <len_t D, typename T>
 TEST_SUITE(vec)
 {
-  TEST_HOSTDEV(accessor, 1, 1, D, T); 
+  TEST_HOSTDEV(accessor, 1, 1, D, T);
   if constexpr (!std::unsigned_integral<T>) {
     TEST_HOSTDEV(unary_minus, 1, 1, D, T);
   }
@@ -498,7 +497,7 @@ TEST_SUITE(vec)
   TEST_HOSTDEV(scalar_sub, 1, 1, D, T);
   TEST_HOSTDEV(scalar_mul, 1, 1, D, T);
   TEST_HOSTDEV(scalar_div, 1, 1, D, T);
-  TEST_HOSTDEV(min, 1, 1, D, T); 
+  TEST_HOSTDEV(min, 1, 1, D, T);
   TEST_HOSTDEV(max, 1, 1, D, T);
   TEST_HOSTDEV(dot, 1, 1, D, T);
   TEST_HOSTDEV(norm2, 1, 1, D, T);
@@ -515,10 +514,12 @@ auto main() -> int
   RUN_TESTS((vec<2, double>));
   RUN_TESTS((vec<2, int32_t>));
   RUN_TESTS((vec<2, uint32_t>));
+
   RUN_TESTS((vec<3, float>));
   RUN_TESTS((vec<3, double>));
   RUN_TESTS((vec<3, int32_t>));
   RUN_TESTS((vec<3, uint32_t>));
+
   RUN_TESTS((vec<4, float>));
   RUN_TESTS((vec<4, double>));
   RUN_TESTS((vec<4, int32_t>));
