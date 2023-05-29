@@ -1,10 +1,9 @@
 #include "../test_framework.hpp"
-#include <um2/math/vec.hpp>
 #include <um2/math/mat.hpp>
+#include <um2/math/vec.hpp>
 
 template <len_t M, len_t N, typename T>
-UM2_HOSTDEV static constexpr
-auto make_mat() -> um2::Mat<M, N, T>  
+UM2_HOSTDEV static constexpr auto make_mat() -> um2::Mat<M, N, T>
 {
   um2::Mat<M, N, T> m;
   T tm = static_cast<T>(M);
@@ -18,28 +17,28 @@ auto make_mat() -> um2::Mat<M, N, T>
   return m;
 }
 
-template <len_t M, len_t N, typename T>    
-UM2_HOSTDEV TEST_CASE(accessors)    
+template <len_t M, len_t N, typename T>
+UM2_HOSTDEV TEST_CASE(accessors)
 {
-  um2::Mat<M, N, T> m = make_mat<M, N, T>();    
-  for (len_t j = 0; j < N; ++j) {    
-    for (len_t i = 0; i < M; ++i) {    
-      if constexpr (std::floating_point<T>) {    
+  um2::Mat<M, N, T> m = make_mat<M, N, T>();
+  for (len_t j = 0; j < N; ++j) {
+    for (len_t i = 0; i < M; ++i) {
+      if constexpr (std::floating_point<T>) {
         EXPECT_NEAR(m.col(j)[i], static_cast<T>(j * M + i), 1e-6);
       } else {
         EXPECT_EQ(m.col(j)[i], static_cast<T>(j * M + i));
       }
-    }    
-  }    
-  for (len_t j = 0; j < N; ++j) {    
-    for (len_t i = 0; i < M; ++i) {    
-      if constexpr (std::floating_point<T>) {    
-        EXPECT_NEAR(m(i, j), static_cast<T>(j * M + i), 1e-6); 
+    }
+  }
+  for (len_t j = 0; j < N; ++j) {
+    for (len_t i = 0; i < M; ++i) {
+      if constexpr (std::floating_point<T>) {
+        EXPECT_NEAR(m(i, j), static_cast<T>(j * M + i), 1e-6);
       } else {
         EXPECT_EQ(m(i, j), static_cast<T>(j * M + i));
       }
-    }    
-  }    
+    }
+  }
 }
 
 template <len_t M, len_t N, typename T>
@@ -118,26 +117,26 @@ UM2_HOSTDEV TEST_CASE(scalar_mul)
   }
 }
 
-template <len_t M, len_t N, typename T>    
+template <len_t M, len_t N, typename T>
 UM2_HOSTDEV TEST_CASE(mat_vec)
 {
-  um2::Mat<M, N, T> m = make_mat<M, N, T>();    
-  um2::Vec<N, T> v;    
-  for (len_t i = 0; i < N; ++i) {    
-    v(i) = static_cast<T>(i);    
-  }    
-  um2::Vec<M, T> mv = m * v;    
-  for (len_t i = 0; i < M; ++i) {    
-    T mv_i = 0;    
-    for (len_t j = 0; j < N; ++j) {    
-        mv_i += m(i, j) * v(j);    
-    }    
-    if constexpr (std::floating_point<T>) {    
-      EXPECT_NEAR(mv[i], mv_i, 1e-6);    
-    } else {    
-      EXPECT_EQ(mv[i], mv_i);    
+  um2::Mat<M, N, T> m = make_mat<M, N, T>();
+  um2::Vec<N, T> v;
+  for (len_t i = 0; i < N; ++i) {
+    v(i) = static_cast<T>(i);
+  }
+  um2::Vec<M, T> mv = m * v;
+  for (len_t i = 0; i < M; ++i) {
+    T mv_i = 0;
+    for (len_t j = 0; j < N; ++j) {
+      mv_i += m(i, j) * v(j);
     }
-  }    
+    if constexpr (std::floating_point<T>) {
+      EXPECT_NEAR(mv[i], mv_i, 1e-6);
+    } else {
+      EXPECT_EQ(mv[i], mv_i);
+    }
+  }
 }
 
 template <len_t M, len_t N, typename T>
@@ -180,7 +179,7 @@ UM2_HOSTDEV TEST_CASE(scalar_div)
 template <len_t M, len_t N, typename T>
 UM2_HOSTDEV TEST_CASE(determinant)
 {
-  um2::Mat<M, N, T> m = um2::Mat<M, N, T>::Identity(); 
+  um2::Mat<M, N, T> m = um2::Mat<M, N, T>::Identity();
   T detv = m.determinant();
   if constexpr (std::floating_point<T>) {
     EXPECT_NEAR(detv, 1, 1e-6);
