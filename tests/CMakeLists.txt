@@ -11,4 +11,6 @@ add_um2_test(morton ./math/morton.cpp)
 add_um2_test(vec ./math/vec.cpp)
 add_um2_test(mat ./math/mat.cpp)
 
-add_um2_test(window ./vis/window.cpp)
+if (UM2_ENABLE_VIS)
+  add_um2_test(window ./vis/window.cpp)
+endif()

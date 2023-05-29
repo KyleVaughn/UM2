@@ -12,7 +12,7 @@ jobs:
         build_type: [ Release, Debug ]
         cuda: [ OFF ]
         openmp: [ OFF, ON ]
-        vis: [OFF, ON]
+        vis: [ON]
         dev_mode: [ OFF, ON ]
 
     name: "${{ matrix.compiler }}, ${{ matrix.build_type }}, OMP=${{ matrix.openmp }}, 
@@ -61,8 +61,7 @@ jobs:
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
                 -DUM2_ENABLE_CUDA=${{ matrix.cuda }} \
                 -DUM2_ENABLE_OPENMP=${{ matrix.openmp }} \
-                -DUM2_DEV_MODE=${{ matrix.dev_mode }} \
-                -DUM2_ENABLE_VIS=${{ matrix.vis }}
+                -DUM2_DEV_MODE=${{ matrix.dev_mode }}
           make -j -C build
 
       - name: Format check
