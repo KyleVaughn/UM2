@@ -12,7 +12,7 @@ jobs:
         build_type: [ Release, Debug ]
         cuda: [ OFF ]
         openmp: [ OFF, ON ]
-        vis: [ON]
+        vis: [OFF]
         dev_mode: [ OFF, ON ]
 
     name: "${{ matrix.compiler }}, ${{ matrix.build_type }}, OMP=${{ matrix.openmp }}, 
@@ -47,7 +47,7 @@ jobs:
       - name: Vis
         shell: bash
         if: matrix.vis == 'ON'
-        run: sudo apt install -y xorg-dev libgl1-mesa-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev
+        run: sudo apt install -y xorg-dev libgl1-mesa-dev
 
       - name: Dev mode dependencies
         shell: bash
