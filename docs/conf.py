@@ -25,29 +25,27 @@ def configureDoxyfile(input_dir, output_dir):
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 
-def find_directories_and_header_files(directory):
-    results = []
-
-    for root, _, files in os.walk(directory):
+def find_directories_and_header_files(directory, results: list):
+    for root, dirs, files in os.walk(directory):
         for file in files:
-            if file.endswith('.h'):
+            if file.endswith('.h') or file.endswith('.hpp') or file.endswith('inl'):
                 results.append(os.path.join(root, file))
+        for subdir in dirs:
+            results.append(find_directories_and_header_files(subdir, results))
 
     return results
 
 
 include_dir = '../include'
-file_list = find_directories_and_header_files(include_dir)
+file_list = find_directories_and_header_files(include_dir, [])
+file_list = list(filter(lambda x: not isinstance(x, list), file_list))
 file_string = ' '.join(file_list)
-
-print(file_string)
 
 breathe_projects = {}
 if read_the_docs_build:
     # recursively find all directory and *.h file under ../include and generate a string seperate by space
-    input_dir = '../CatCutifier'
     output_dir = 'build'
-    configureDoxyfile(input_dir, output_dir)
+    configureDoxyfile(file_string, output_dir)
     subprocess.call('doxygen', shell=True)
     breathe_projects['UM2'] = output_dir + '/xml'
 

@@ -13,5 +13,8 @@ Welcome to UM2's documentation!
 
 Docs
 ====
+.. TODO: add docs here.
 
 .. doxygenfile:: array.hpp
+.. doxygenfile:: color.hpp
+
