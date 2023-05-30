@@ -9,11 +9,11 @@ project(
 
 ## User options ###############################################################
 ###############################################################################
-option(UM2_ENABLE_CUDA      "Enable CUDA"          OFF)
-option(UM2_ENABLE_OPENMP    "Enable OpenMP"        ON)
-option(UM2_ENABLE_TESTS     "Enable tests"         ON)
-option(UM2_ENABLE_FASTMATH  "Enable fast math"     ON)
-option(UM2_ENABLE_VIS       "Enable visualization" ON)
+option(UM2_ENABLE_CUDA "Enable CUDA" OFF)
+option(UM2_ENABLE_OPENMP "Enable OpenMP" ON)
+option(UM2_ENABLE_TESTS "Enable tests" ON)
+option(UM2_ENABLE_FASTMATH "Enable fast math" ON)
+option(UM2_ENABLE_VIS "Enable visualization" ON)
 
 ## Advanced options ###########################################################
 ###############################################################################
@@ -40,7 +40,6 @@ set(UM2_HEADERS
         ${COMMON_HEADERS}
         ${MATH_HEADERS}
         "include/um2c.h" include/um2/math/vec.inl)
-
 # Sources
 set(UM2_SOURCES
         "src/common/sto.cpp"

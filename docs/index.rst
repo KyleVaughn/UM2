@@ -16,5 +16,9 @@ Docs
 .. TODO: add docs here.
 
 .. doxygenfile:: array.hpp
+.. doxygenfile:: bit_ceil.hpp
 .. doxygenfile:: color.hpp
+.. doxygenfile:: sto.hpp
+.. doxygenfile:: string.hpp
+.. doxygenfile:: vector.hpp
 
