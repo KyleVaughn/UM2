@@ -693,6 +693,10 @@ UM2_PURE auto toColor(String const & name) noexcept -> Color
   return {0, 0, 0, 255};
 }
 
-Color::Color(String const & name) noexcept : Color() { *this = toColor(name); }
+Color::Color(String const & name) noexcept
+    : Color()
+{
+  *this = toColor(name);
+}
 
 } // namespace um2

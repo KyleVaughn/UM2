@@ -36,6 +36,7 @@ else()
     " -Wshadow"
     " -Wundef"
     " -Wunused"
+    " -Wuseless-cast"
     " -Wvla"
     " -Wzero-as-null-pointer-constant"
     " -pedantic"

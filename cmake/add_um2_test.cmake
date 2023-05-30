@@ -12,11 +12,11 @@ macro(add_um2_test TESTNAME)
     if (UM2_CLANG_TIDY_FIX)    
       set_target_properties(${TESTNAME} PROPERTIES    
                             CXX_CLANG_TIDY    
-                            "clang-tidy;--fix")    
+                            "clang-tidy;--fix;--extra-arg=-Wno-unknown-warning-option")
     else()    
       set_target_properties(${TESTNAME} PROPERTIES    
                             CXX_CLANG_TIDY    
-                            "clang-tidy")    
+                            "clang-tidy;--extra-arg=-Wno-unknown-warning-option")
     endif()    
   endif()    
   if (UM2_ENABLE_CPPCHECK)    

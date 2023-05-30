@@ -51,7 +51,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::data() const noexcept -> char8_t con
 
 template <size_t N>
 UM2_HOSTDEV String::String(char const (&s)[N])
-    : _size(N - 1), _capacity(static_cast<len_t>(bit_ceil(N))),
+    : _size(N - 1),
+      _capacity(static_cast<len_t>(bit_ceil(N))),
       _data(new char8_t[bit_ceil(N)])
 {
   memcpy(this->_data, s, N);

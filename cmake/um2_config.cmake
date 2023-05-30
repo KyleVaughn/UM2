@@ -147,11 +147,11 @@ if (UM2_ENABLE_CLANG_TIDY)
   if (UM2_CLANG_TIDY_FIX)
     set_target_properties(um2 PROPERTIES
                           CXX_CLANG_TIDY
-                          "clang-tidy;--fix")
+                          "clang-tidy;--fix;--extra-arg=-Wno-unknown-warning-option")
   else()
     set_target_properties(um2 PROPERTIES
                           CXX_CLANG_TIDY
-                          "clang-tidy")
+                          "clang-tidy;--extra-arg=-Wno-unknown-warning-option")
   endif()
 endif()
 
@@ -165,6 +165,8 @@ if (UM2_ENABLE_CPPCHECK)
     ";--std=c++20"
     ";--language=c++"
     ";--suppress=missingIncludeSystem"
+    ";--suppress=invalidPrintfArgType_float"
+    ";--suppress=unmatchedSuppression"
     ";--inconclusive"
     ";--inline-suppr"
     ";--error-exitcode=10")
@@ -187,7 +189,9 @@ if (UM2_ENABLE_FASTMATH)
   endif()
 endif()
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
-set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
+if (!UM2_ENABLE_CUDA)
+  set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
+endif()
 # If CUDA is enabled, pass the CXX flags via -Xcompiler
 if (UM2_ENABLE_CUDA)
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler \"${CMAKE_CXX_FLAGS}\"")

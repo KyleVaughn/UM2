@@ -1,7 +1,6 @@
 #pragma once
 
 #include <um2/common/bit_ceil.hpp>
-#include <um2/common/config.hpp>
 
 #include <cstring> // memcpy, strcmp
 #include <string>  // std::string
@@ -16,6 +15,9 @@ namespace um2
 // Allocates 2^N elements, where N is the smallest integer such that 2^N >= size.
 //
 // Stores a null-terminator at the end of the string.
+
+// We disable warnings about lower_case function names because we want to match the
+// names of the functions in the standard library.
 
 struct String {
 
@@ -105,9 +107,11 @@ public:
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto contains(char c) const noexcept
       -> bool;
 
+  // NOLINTNEXTLINE(readability-identifier-naming)
   UM2_PURE [[nodiscard]] constexpr auto starts_with(std::string const & s) const noexcept
       -> bool;
 
+  // NOLINTNEXTLINE(readability-identifier-naming)
   UM2_PURE [[nodiscard]] constexpr auto ends_with(std::string const & s) const noexcept
       -> bool;
 

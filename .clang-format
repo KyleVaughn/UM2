@@ -5,8 +5,10 @@ BreakBeforeBraces: Linux
 IndentCaseLabels: false
 ColumnLimit: 90
 AlignArrayOfStructures: Right
+PackConstructorInitializers: Never
 PointerAlignment: Middle
 ReferenceAlignment: Middle
+IncludeBlocks: Preserve
 IndentPPDirectives: AfterHash
 AlignConsecutiveMacros: Consecutive
 AlignEscapedNewlines: Right

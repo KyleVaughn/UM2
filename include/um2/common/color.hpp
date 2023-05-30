@@ -35,6 +35,9 @@ struct Color {
 // Operators
 // -----------------------------------------------------------------------------
 
+// If the native endianness is little, then rgba is stored in memory as
+// abgr. This means that sorting by rgba is equivalent to sorting by abgr.
+
 UM2_CONST UM2_HOSTDEV constexpr auto operator==(Color lhs, Color rhs) noexcept -> bool;
 
 UM2_CONST UM2_HOSTDEV constexpr auto operator!=(Color lhs, Color rhs) noexcept -> bool;

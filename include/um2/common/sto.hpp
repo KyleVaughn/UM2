@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string> // std::string, std::stoi, std::stod, etc.
 #include <um2/common/config.hpp>
+
+#include <string> // std::string, std::stoi, std::stod, etc.
 
 namespace um2
 {

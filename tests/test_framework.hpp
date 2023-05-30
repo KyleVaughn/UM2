@@ -135,7 +135,7 @@ struct TestResult {
     result->failure(__FILE__, __LINE__, __FUNCTION__,                                    \
                     "Expected abs(" #a " - " #b ") < " #eps ", but got abs(" #a " - " #b \
                     ") = ");                                                             \
-    printf("%f\n", static_cast<double>(std::abs((a) - (b))));                            \
+    printf("%f\n", std::abs((a) - (b)));                                                 \
     if (exit_on_failure) {                                                               \
       return;                                                                            \
     }                                                                                    \

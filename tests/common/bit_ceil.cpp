@@ -4,7 +4,6 @@
 template <typename T>
 UM2_HOSTDEV TEST_CASE(zero_through_5)
 {
-  printf("bit_ceil(%d) = %d\n", 0, um2::bit_ceil(0));
   EXPECT_EQ(um2::bit_ceil(0), 1);
   EXPECT_EQ(um2::bit_ceil(1), 1);
   EXPECT_EQ(um2::bit_ceil(2), 2);

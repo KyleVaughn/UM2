@@ -1,7 +1,6 @@
 #pragma once
 
 #include <um2/common/bit_ceil.hpp>
-#include <um2/common/config.hpp>
 
 #include <thrust/execution_policy.h>      // thrust::seq
 #include <thrust/iterator/zip_iterator.h> // thrust::zip_iterator
@@ -120,13 +119,13 @@ public:
 
 template <typename T>
 requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
-    constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b,
-                             T epsilon = T{}) noexcept -> bool;
+    constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
+                            T epsilon = T{}) noexcept -> bool;
 
 template <typename T>
 requires(std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
-    constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b,
-                             T epsilon = T{}) noexcept -> bool;
+    constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
+                            T epsilon = T{}) noexcept -> bool;
 
 } // namespace um2
 

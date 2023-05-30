@@ -1,5 +1,3 @@
-Setup Sphinx/Read the Docs
-
 Add code coverage
 
 Add OpenGL or other visualization for user interface for mesh viewing

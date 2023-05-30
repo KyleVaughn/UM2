@@ -8,8 +8,9 @@ namespace um2
 // --------------------------------------------------------------------------
 
 UM2_HOSTDEV String::String(String const & s)
-    : _size{s._size}, _capacity{static_cast<len_t>(bit_ceil(s._size + 1))},
-      _data{new char8_t[bit_ceil(s._size + 1)]}
+    : _size{s._size},
+      _capacity{bit_ceil(s._size + 1)},
+      _data{new char8_t[static_cast<ulen_t>(bit_ceil(s._size + 1))]}
 {
   memcpy(this->_data, s._data, static_cast<size_t>(s._size) + 1);
 }
@@ -18,7 +19,9 @@ UM2_HOSTDEV String::String(String const & s)
 // assigning a new value to it.
 // NOLINTBEGIN(cppcoreguidelines-prefer-member-initializer)
 UM2_HOSTDEV String::String(String && s) noexcept
-    : _size{s._size}, _capacity{s._capacity}, _data{s._data}
+    : _size{s._size},
+      _capacity{s._capacity},
+      _data{s._data}
 {
   s._size = 0;
   s._capacity = 0;
@@ -27,8 +30,8 @@ UM2_HOSTDEV String::String(String && s) noexcept
 // NOLINTEND(cppcoreguidelines-prefer-member-initializer)
 
 String::String(std::string const & s)
-    : _size{static_cast<len_t>(s.size())}, _capacity{static_cast<len_t>(
-                                               bit_ceil(s.size() + 1))},
+    : _size{static_cast<len_t>(s.size())},
+      _capacity{static_cast<len_t>(bit_ceil(s.size() + 1))},
       _data{new char8_t[bit_ceil(s.size() + 1)]}
 {
   memcpy(this->_data, s.data(), s.size() + 1);
@@ -44,8 +47,8 @@ UM2_HOSTDEV auto String::operator=(String const & s) -> String &
     len_t const sizep1 = s._size + 1;
     if (this->_capacity < sizep1) {
       delete[] this->_data;
-      this->_capacity = static_cast<len_t>(bit_ceil(sizep1));
-      this->_data = new char8_t[bit_ceil(sizep1)];
+      this->_capacity = bit_ceil(sizep1);
+      this->_data = new char8_t[static_cast<ulen_t>(bit_ceil(sizep1))];
     }
     this->_size = s._size;
     memcpy(this->_data, s._data, static_cast<size_t>(sizep1));

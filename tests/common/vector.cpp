@@ -403,7 +403,7 @@ UM2_HOSTDEV TEST_CASE(contains)
 }
 
 template <typename T>
-UM2_HOSTDEV TEST_CASE(is_approx)
+UM2_HOSTDEV TEST_CASE(isApprox)
 {
   um2::Vector<T> v1(5); // {1, 2, 3, 4, 5};
   um2::Vector<T> v2(5); // {1, 2, 3, 4, 5};
@@ -418,12 +418,12 @@ UM2_HOSTDEV TEST_CASE(is_approx)
   v3.data()[4] = 6;
   v4.push_back(6);
 
-  EXPECT_TRUE(is_approx(v1, v2));
-  EXPECT_FALSE(is_approx(v1, v3));
-  EXPECT_FALSE(is_approx(v1, v4));
+  EXPECT_TRUE(isApprox(v1, v2));
+  EXPECT_FALSE(isApprox(v1, v3));
+  EXPECT_FALSE(isApprox(v1, v4));
   T const eps = static_cast<T>(1);
-  EXPECT_TRUE(is_approx(v1, v2, eps));
-  EXPECT_TRUE(is_approx(v1, v3, eps));
+  EXPECT_TRUE(isApprox(v1, v2, eps));
+  EXPECT_TRUE(isApprox(v1, v3, eps));
 }
 
 // --------------------------------------------------------------------------
@@ -467,7 +467,7 @@ template <typename T>
 MAKE_CUDA_KERNEL(contains, T)
 
 template <typename T>
-MAKE_CUDA_KERNEL(is_approx, T)
+MAKE_CUDA_KERNEL(isApprox, T)
 
 template <typename T>
 MAKE_CUDA_KERNEL(operator_equal, T)
@@ -501,7 +501,7 @@ TEST_SUITE(vector)
   if constexpr (!std::floating_point<T>) {
     TEST_HOSTDEV(contains, 1, 1, T)
   }
-  TEST_HOSTDEV(is_approx, 1, 1, T)
+  TEST_HOSTDEV(isApprox, 1, 1, T)
 }
 
 auto main() -> int
