@@ -12,23 +12,43 @@ UM2_HOSTDEV TEST_CASE(begin_end)
   EXPECT_EQ(v.begin(), v.end());
   v.push_back(1);
   EXPECT_NE(v.begin(), v.end());
-  EXPECT_EQ(*v.begin(), 1);
-  EXPECT_EQ(*(v.end() - 1), 1);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(*v.begin(), 1, 1e-6);
+    EXPECT_NEAR(*(v.end() - 1), 1, 1e-6);
+  } else {
+    EXPECT_EQ(*v.begin(), 1);
+    EXPECT_EQ(*(v.end() - 1), 1);
+  }
   v.push_back(2);
   EXPECT_NE(v.begin(), v.end());
-  EXPECT_EQ(*v.begin(), 1);
-  EXPECT_EQ(*(v.end() - 1), 2);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(*v.begin(), 1, 1e-6);
+    EXPECT_NEAR(*(v.end() - 1), 2, 1e-6);
+  } else {
+    EXPECT_EQ(*v.begin(), 1);
+    EXPECT_EQ(*(v.end() - 1), 2);
+  }
 
   v.clear();
   EXPECT_EQ(v.cbegin(), v.cend());
   v.push_back(1);
   EXPECT_NE(v.cbegin(), v.cend());
-  EXPECT_EQ(*v.cbegin(), 1);
-  EXPECT_EQ(*(v.cend() - 1), 1);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(*v.cbegin(), 1, 1e-6);
+    EXPECT_NEAR(*(v.cend() - 1), 1, 1e-6);
+  } else {
+    EXPECT_EQ(*v.cbegin(), 1);
+    EXPECT_EQ(*(v.cend() - 1), 1);
+  }
   v.push_back(2);
   EXPECT_NE(v.cbegin(), v.cend());
-  EXPECT_EQ(*v.cbegin(), 1);
-  EXPECT_EQ(*(v.cend() - 1), 2);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(*v.cbegin(), 1, 1e-6);
+    EXPECT_NEAR(*(v.cend() - 1), 2, 1e-6);
+  } else {
+    EXPECT_EQ(*v.cbegin(), 1);
+    EXPECT_EQ(*(v.cend() - 1), 2);
+  }
 }
 
 template <typename T>
@@ -36,11 +56,21 @@ UM2_HOSTDEV TEST_CASE(front_back)
 {
   um2::Vector<T> v;
   v.push_back(1);
-  EXPECT_EQ(v.front(), 1);
-  EXPECT_EQ(v.back(), 1);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v.front(), 1, 1e-6);
+    EXPECT_NEAR(v.back(), 1, 1e-6);
+  } else {
+    EXPECT_EQ(v.front(), 1);
+    EXPECT_EQ(v.back(), 1);
+  }
   v.push_back(2);
-  EXPECT_EQ(v.front(), 1);
-  EXPECT_EQ(v.back(), 2);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v.front(), 1, 1e-6);
+    EXPECT_NEAR(v.back(), 2, 1e-6);
+  } else {
+    EXPECT_EQ(v.front(), 1);
+    EXPECT_EQ(v.back(), 2);
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -63,7 +93,11 @@ UM2_HOSTDEV TEST_CASE(length_val_constructor)
   EXPECT_EQ(v.size(), 10);
   EXPECT_EQ(v.capacity(), 16);
   for (int i = 0; i < 10; i++) {
-    EXPECT_EQ(v.data()[i], 2);
+    if constexpr (std::floating_point<T>) {
+      EXPECT_NEAR(v.data()[i], 2, 1e-6);
+    } else {
+      EXPECT_EQ(v.data()[i], 2);
+    }
   }
 }
 
@@ -72,19 +106,27 @@ UM2_HOSTDEV TEST_CASE(copy_constructor)
 {
   um2::Vector<T> v(10);
   for (int i = 0; i < 10; i++) {
-    v.data()[i] = i;
+    v.data()[i] = static_cast<T>(i);
   }
   um2::Vector<T> v2(v);
   EXPECT_EQ(v2.size(), 10);
   EXPECT_EQ(v2.capacity(), 16);
   for (int i = 0; i < 10; i++) {
-    EXPECT_EQ(v2.data()[i], i);
+    if constexpr (std::floating_point<T>) {
+      EXPECT_NEAR(v2.data()[i], static_cast<T>(i), 1e-6);
+    } else {
+      EXPECT_EQ(v2.data()[i], static_cast<T>(i));
+    }
   }
   um2::Vector<T> v3 = v;
   EXPECT_EQ(v3.size(), 10);
   EXPECT_EQ(v3.capacity(), 16);
   for (int i = 0; i < 10; i++) {
-    EXPECT_EQ(v3.data()[i], i);
+    if constexpr (std::floating_point<T>) {
+      EXPECT_NEAR(v3.data()[i], static_cast<T>(i), 1e-6);
+    } else {
+      EXPECT_EQ(v3.data()[i], static_cast<T>(i));
+    }
   }
 }
 
@@ -95,7 +137,11 @@ TEST_CASE(initializer_list_constructor)
   EXPECT_EQ(v.size(), 5);
   EXPECT_EQ(v.capacity(), 8);
   for (int i = 0; i < 5; i++) {
-    EXPECT_EQ(v.data()[i], i + 1);
+    if constexpr (std::floating_point<T>) {
+      EXPECT_NEAR(v.data()[i], static_cast<T>(i + 1), 1e-6);
+    } else {
+      EXPECT_EQ(v.data()[i], static_cast<T>(i + 1));
+    }
   }
 }
 
@@ -111,10 +157,10 @@ UM2_HOSTDEV TEST_CASE(operator_equal)
   um2::Vector<T> v3(5); // {1, 2, 3, 4, 6};
   um2::Vector<T> v4(5); // {1, 2, 3, 4, 5, 6};
   for (int i = 0; i < 5; i++) {
-    v1.data()[i] = i + 1;
-    v2.data()[i] = i + 1;
-    v3.data()[i] = i + 1;
-    v4.data()[i] = i + 1;
+    v1.data()[i] = static_cast<T>(i) + 1;
+    v2.data()[i] = static_cast<T>(i) + 1;
+    v3.data()[i] = static_cast<T>(i) + 1;
+    v4.data()[i] = static_cast<T>(i) + 1;
   }
   v3.data()[4] = 6;
   v4.push_back(6);
@@ -128,7 +174,7 @@ UM2_HOSTDEV TEST_CASE(operator_assign)
 {
   um2::Vector<T> v1(5);
   for (int i = 0; i < 5; i++) {
-    v1.data()[i] = i;
+    v1.data()[i] = static_cast<T>(i) + 1;
   }
   um2::Vector<T> v2;
   v2 = v1;
@@ -216,18 +262,33 @@ UM2_HOSTDEV TEST_CASE(push_back)
   v.push_back(1);
   EXPECT_EQ(v.size(), 1);
   EXPECT_EQ(v.capacity(), 1);
-  EXPECT_EQ(v.data()[0], 1);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v.data()[0], static_cast<T>(1), 1e-6);
+  } else {
+    EXPECT_EQ(v.data()[0], static_cast<T>(1));
+  }
   v.push_back(2);
   EXPECT_EQ(v.size(), 2);
   EXPECT_EQ(v.capacity(), 2);
-  EXPECT_EQ(v.data()[0], 1);
-  EXPECT_EQ(v.data()[1], 2);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v.data()[0], static_cast<T>(1), 1e-6);
+    EXPECT_NEAR(v.data()[1], static_cast<T>(2), 1e-6);
+  } else {
+    EXPECT_EQ(v.data()[0], static_cast<T>(1));
+    EXPECT_EQ(v.data()[1], static_cast<T>(2));
+  }
   v.push_back(3);
   EXPECT_EQ(v.size(), 3);
   EXPECT_EQ(v.capacity(), 4);
-  EXPECT_EQ(v.data()[0], 1);
-  EXPECT_EQ(v.data()[1], 2);
-  EXPECT_EQ(v.data()[2], 3);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v.data()[0], static_cast<T>(1), 1e-6);
+    EXPECT_NEAR(v.data()[1], static_cast<T>(2), 1e-6);
+    EXPECT_NEAR(v.data()[2], static_cast<T>(3), 1e-6);
+  } else {
+    EXPECT_EQ(v.data()[0], static_cast<T>(1));
+    EXPECT_EQ(v.data()[1], static_cast<T>(2));
+    EXPECT_EQ(v.data()[2], static_cast<T>(3));
+  }
   v.clear();
   v.reserve(3);
   v.push_back(1);
@@ -237,11 +298,19 @@ UM2_HOSTDEV TEST_CASE(push_back)
   v.push_back(5);
   EXPECT_EQ(v.size(), 5);
   EXPECT_EQ(v.capacity(), 8);
-  EXPECT_EQ(v.data()[0], 1);
-  EXPECT_EQ(v.data()[1], 2);
-  EXPECT_EQ(v.data()[2], 3);
-  EXPECT_EQ(v.data()[3], 4);
-  EXPECT_EQ(v.data()[4], 5);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v.data()[0], static_cast<T>(1), 1e-6);
+    EXPECT_NEAR(v.data()[1], static_cast<T>(2), 1e-6);
+    EXPECT_NEAR(v.data()[2], static_cast<T>(3), 1e-6);
+    EXPECT_NEAR(v.data()[3], static_cast<T>(4), 1e-6);
+    EXPECT_NEAR(v.data()[4], static_cast<T>(5), 1e-6);
+  } else {
+    EXPECT_EQ(v.data()[0], static_cast<T>(1));
+    EXPECT_EQ(v.data()[1], static_cast<T>(2));
+    EXPECT_EQ(v.data()[2], static_cast<T>(3));
+    EXPECT_EQ(v.data()[3], static_cast<T>(4));
+    EXPECT_EQ(v.data()[4], static_cast<T>(5));
+  }
 }
 
 template <typename T>
@@ -261,35 +330,61 @@ UM2_HOSTDEV TEST_CASE(insert)
   v.insert(v.begin(), 2, 1);
   EXPECT_EQ(v.size(), 2);
   EXPECT_EQ(v.capacity(), 2);
-  EXPECT_EQ(v.data()[0], 1);
-  EXPECT_EQ(v.data()[1], 1);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v.data()[0], static_cast<T>(1), 1e-6);
+    EXPECT_NEAR(v.data()[1], static_cast<T>(1), 1e-6);
+  } else {
+    EXPECT_EQ(v.data()[0], static_cast<T>(1));
+    EXPECT_EQ(v.data()[1], static_cast<T>(1));
+  }
   v.insert(v.begin(), 2, 2);
   EXPECT_EQ(v.size(), 4);
   EXPECT_EQ(v.capacity(), 4);
-  EXPECT_EQ(v.data()[0], 2);
-  EXPECT_EQ(v.data()[1], 2);
-  EXPECT_EQ(v.data()[2], 1);
-  EXPECT_EQ(v.data()[3], 1);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v.data()[0], static_cast<T>(2), 1e-6);
+    EXPECT_NEAR(v.data()[1], static_cast<T>(2), 1e-6);
+    EXPECT_NEAR(v.data()[2], static_cast<T>(1), 1e-6);
+    EXPECT_NEAR(v.data()[3], static_cast<T>(1), 1e-6);
+  } else {
+    EXPECT_EQ(v.data()[0], static_cast<T>(2));
+    EXPECT_EQ(v.data()[1], static_cast<T>(2));
+    EXPECT_EQ(v.data()[2], static_cast<T>(1));
+    EXPECT_EQ(v.data()[3], static_cast<T>(1));
+  }
   // Check insertion at end
   v.clear();
   v.insert(v.begin(), 2, 1);
   v.insert(v.end(), 2, 2);
   EXPECT_EQ(v.size(), 4);
   EXPECT_EQ(v.capacity(), 4);
-  EXPECT_EQ(v.data()[0], 1);
-  EXPECT_EQ(v.data()[1], 1);
-  EXPECT_EQ(v.data()[2], 2);
-  EXPECT_EQ(v.data()[3], 2);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v.data()[0], static_cast<T>(1), 1e-6);
+    EXPECT_NEAR(v.data()[1], static_cast<T>(1), 1e-6);
+    EXPECT_NEAR(v.data()[2], static_cast<T>(2), 1e-6);
+    EXPECT_NEAR(v.data()[3], static_cast<T>(2), 1e-6);
+  } else {
+    EXPECT_EQ(v.data()[0], static_cast<T>(1));
+    EXPECT_EQ(v.data()[1], static_cast<T>(1));
+    EXPECT_EQ(v.data()[2], static_cast<T>(2));
+    EXPECT_EQ(v.data()[3], static_cast<T>(2));
+  }
   // Check insertion in middle
   v.clear();
   v.insert(v.begin(), 2, 1);
   v.insert(v.begin() + 1, 2, 2);
   EXPECT_EQ(v.size(), 4);
   EXPECT_EQ(v.capacity(), 4);
-  EXPECT_EQ(v.data()[0], 1);
-  EXPECT_EQ(v.data()[1], 2);
-  EXPECT_EQ(v.data()[2], 2);
-  EXPECT_EQ(v.data()[3], 1);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v.data()[0], static_cast<T>(1), 1e-6);
+    EXPECT_NEAR(v.data()[1], static_cast<T>(2), 1e-6);
+    EXPECT_NEAR(v.data()[2], static_cast<T>(2), 1e-6);
+    EXPECT_NEAR(v.data()[3], static_cast<T>(1), 1e-6);
+  } else {
+    EXPECT_EQ(v.data()[0], static_cast<T>(1));
+    EXPECT_EQ(v.data()[1], static_cast<T>(2));
+    EXPECT_EQ(v.data()[2], static_cast<T>(2));
+    EXPECT_EQ(v.data()[3], static_cast<T>(1));
+  }
 }
 
 template <typename T>
@@ -315,10 +410,10 @@ UM2_HOSTDEV TEST_CASE(is_approx)
   um2::Vector<T> v3(5); // {1, 2, 3, 4, 6};
   um2::Vector<T> v4(5); // {1, 2, 3, 4, 5, 6};
   for (int i = 0; i < 5; i++) {
-    v1.data()[i] = i + 1;
-    v2.data()[i] = i + 1;
-    v3.data()[i] = i + 1;
-    v4.data()[i] = i + 1;
+    v1.data()[i] = static_cast<T>(i) + 1;
+    v2.data()[i] = static_cast<T>(i) + 1;
+    v3.data()[i] = static_cast<T>(i) + 1;
+    v4.data()[i] = static_cast<T>(i) + 1;
   }
   v3.data()[4] = 6;
   v4.push_back(6);
@@ -326,8 +421,9 @@ UM2_HOSTDEV TEST_CASE(is_approx)
   EXPECT_TRUE(is_approx(v1, v2));
   EXPECT_FALSE(is_approx(v1, v3));
   EXPECT_FALSE(is_approx(v1, v4));
-  EXPECT_TRUE(is_approx(v1, v2, 1));
-  EXPECT_TRUE(is_approx(v1, v3, 1));
+  T const eps = static_cast<T>(1);
+  EXPECT_TRUE(is_approx(v1, v2, eps));
+  EXPECT_TRUE(is_approx(v1, v3, eps));
 }
 
 // --------------------------------------------------------------------------
@@ -402,12 +498,19 @@ TEST_SUITE(vector)
   TEST_HOSTDEV(push_back, 1, 1, T)
   TEST_HOSTDEV(empty, 1, 1, T)
   TEST_HOSTDEV(insert, 1, 1, T)
-  TEST_HOSTDEV(contains, 1, 1, T)
+  if constexpr (!std::floating_point<T>) {
+    TEST_HOSTDEV(contains, 1, 1, T)
+  }
   TEST_HOSTDEV(is_approx, 1, 1, T)
 }
 
 auto main() -> int
 {
-  RUN_TESTS(vector<int>);
+  RUN_TESTS(vector<float>);
+  RUN_TESTS(vector<double>);
+  RUN_TESTS(vector<int32_t>);
+  RUN_TESTS(vector<uint32_t>);
+  RUN_TESTS(vector<int64_t>);
+  RUN_TESTS(vector<uint64_t>);
   return 0;
 }

@@ -34,33 +34,38 @@ private:
 public:
   // -- Destructor --
 
-  UM2_HOSTDEV ~Vector() { delete[] _data; }
+  UM2_HOSTDEV ~Vector() noexcept { delete[] _data; }
 
   // -- Accessors --
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto size() const -> len_t;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto size() const noexcept -> len_t;
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto capacity() const -> len_t;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto capacity() const noexcept -> len_t;
 
-  UM2_PURE UM2_HOSTDEV constexpr auto data() -> T *;
+  // cppcheck-suppress functionConst
+  UM2_PURE UM2_HOSTDEV constexpr auto data() noexcept -> T *;
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto data() const -> T const *;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto data() const noexcept -> T const *;
 
-  UM2_PURE UM2_HOSTDEV constexpr auto begin() -> T *;
+  // cppcheck-suppress functionConst
+  UM2_PURE UM2_HOSTDEV constexpr auto begin() noexcept -> T *;
 
-  UM2_PURE UM2_HOSTDEV constexpr auto end() -> T *;
+  // cppcheck-suppress functionConst
+  UM2_PURE UM2_HOSTDEV constexpr auto end() noexcept -> T *;
 
-  UM2_PURE UM2_HOSTDEV constexpr auto cbegin() const -> T const *;
+  UM2_PURE UM2_HOSTDEV constexpr auto cbegin() const noexcept -> T const *;
 
-  UM2_PURE UM2_HOSTDEV constexpr auto cend() const -> T const *;
+  UM2_PURE UM2_HOSTDEV constexpr auto cend() const noexcept -> T const *;
 
-  UM2_PURE UM2_HOSTDEV constexpr auto front() -> T &;
+  // cppcheck-suppress functionConst
+  UM2_PURE UM2_HOSTDEV constexpr auto front() noexcept -> T &;
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto front() const -> T const &;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto front() const noexcept -> T const &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto back() -> T &;
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto back() noexcept -> T &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto back() const -> T const &;
+  UM2_NDEBUG_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto back() const noexcept
+      -> T const &;
 
   // -- Constructors --
 
@@ -79,7 +84,7 @@ public:
 
   // -- Methods --
 
-  UM2_HOSTDEV void clear();
+  UM2_HOSTDEV void clear() noexcept;
 
   UM2_HOSTDEV inline void reserve(len_t n);
 
@@ -93,28 +98,35 @@ public:
 
   UM2_HOSTDEV void insert(T const * pos, T const & value);
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto contains(T const & value) const
-      -> bool;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  contains(T const & value) const noexcept -> bool requires(!std::floating_point<T>);
 
   // -- Operators --
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) -> T &;
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) noexcept -> T &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) const -> T const &;
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) const noexcept
+      -> T const &;
 
   UM2_HOSTDEV auto operator=(Vector const & v) -> Vector &;
 
   UM2_HOSTDEV auto operator=(Vector && v) noexcept -> Vector &;
 
-  UM2_PURE UM2_HOSTDEV constexpr auto operator==(Vector const & v) const -> bool;
+  UM2_PURE UM2_HOSTDEV constexpr auto operator==(Vector const & v) const noexcept -> bool;
 
 }; // struct Vector
 
 // -- Methods --
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b,
-                                              T const & epsilon = T{}) -> bool;
+requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
+    constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b,
+                             T epsilon = T{}) noexcept -> bool;
+
+template <typename T>
+requires(std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
+    constexpr auto is_approx(Vector<T> const & a, Vector<T> const & b,
+                             T epsilon = T{}) noexcept -> bool;
 
 } // namespace um2
 

@@ -5,36 +5,42 @@ namespace um2
 // Accessors
 // --------------------------------------------------------------------------
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::begin() const -> char8_t *
+UM2_PURE UM2_HOSTDEV constexpr auto String::begin() const noexcept -> char8_t *
 {
   return this->_data;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::end() const -> char8_t *
+UM2_PURE UM2_HOSTDEV constexpr auto String::end() const noexcept -> char8_t *
 {
   return this->_data + this->_size;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::cbegin() const -> char8_t const *
+UM2_PURE UM2_HOSTDEV constexpr auto String::cbegin() const noexcept -> char8_t const *
 {
   return this->_data;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::cend() const -> char8_t const *
+UM2_PURE UM2_HOSTDEV constexpr auto String::cend() const noexcept -> char8_t const *
 {
   return this->_data + this->_size;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::size() const -> len_t { return this->_size; }
+UM2_PURE UM2_HOSTDEV constexpr auto String::size() const noexcept -> len_t
+{
+  return this->_size;
+}
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::capacity() const -> len_t
+UM2_PURE UM2_HOSTDEV constexpr auto String::capacity() const noexcept -> len_t
 {
   return this->_capacity;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::data() -> char8_t * { return this->_data; }
+UM2_PURE UM2_HOSTDEV constexpr auto String::data() noexcept -> char8_t *
+{
+  return this->_data;
+}
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::data() const -> char8_t const *
+UM2_PURE UM2_HOSTDEV constexpr auto String::data() const noexcept -> char8_t const *
 {
   return this->_data;
 }
@@ -44,7 +50,6 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::data() const -> char8_t const *
 // --------------------------------------------------------------------------
 
 template <size_t N>
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
 UM2_HOSTDEV String::String(char const (&s)[N])
     : _size(N - 1), _capacity(static_cast<len_t>(bit_ceil(N))),
       _data(new char8_t[bit_ceil(N)])
@@ -57,7 +62,6 @@ UM2_HOSTDEV String::String(char const (&s)[N])
 // --------------------------------------------------------------------------
 
 template <size_t N>
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
 UM2_HOSTDEV auto String::operator=(char const (&s)[N]) -> String &
 {
   if (this->_capacity < static_cast<len_t>(N)) {
@@ -72,20 +76,20 @@ UM2_HOSTDEV auto String::operator=(char const (&s)[N]) -> String &
 
 template <size_t N>
 // NOLINTNEXTLINE(*-avoid-c-arrays)
-UM2_PURE UM2_HOSTDEV auto String::operator==(char const (&s)[N]) const -> bool
+UM2_PURE UM2_HOSTDEV auto String::operator==(char const (&s)[N]) const noexcept -> bool
 {
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   return this->compare(reinterpret_cast<char8_t const *>(s)) == 0;
 }
 
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto String::operator[](len_t const i) -> char8_t &
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto String::operator[](len_t const i) noexcept
+    -> char8_t &
 {
   assert(0 <= i && i < this->_size);
   return this->_data[i];
 }
 
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto String::operator[](len_t const i) const
-    -> char8_t const &
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
+String::operator[](len_t const i) const noexcept -> char8_t const &
 {
   assert(0 <= i && i < this->_size);
   return this->_data[i];
@@ -95,7 +99,7 @@ UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto String::operator[](len_t const i) con
 // Methods
 // --------------------------------------------------------------------------
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::contains(char const c) const -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto String::contains(char const c) const noexcept -> bool
 {
   auto const cc = static_cast<char8_t>(c);
   for (len_t i = 0; i < this->_size; ++i) {
@@ -106,7 +110,7 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::contains(char const c) const -> bool
   return false;
 }
 
-UM2_PURE constexpr auto String::starts_with(std::string const & s) const -> bool
+UM2_PURE constexpr auto String::starts_with(std::string const & s) const noexcept -> bool
 {
 
   if (this->_size < static_cast<len_t>(s.size())) {
@@ -123,7 +127,7 @@ UM2_PURE constexpr auto String::starts_with(std::string const & s) const -> bool
   return true;
 }
 
-UM2_PURE constexpr auto String::ends_with(std::string const & s) const -> bool
+UM2_PURE constexpr auto String::ends_with(std::string const & s) const noexcept -> bool
 {
   auto const ssize = static_cast<len_t>(s.size());
   len_t const vsize = this->_size;

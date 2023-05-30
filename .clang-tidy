@@ -8,6 +8,7 @@ modernize-*,
 readability-*,
 performance-*,
 portability-*,
+-*-avoid-c-arrays,
 -bugprone-easily-swappable-parameters,
 -clang-analyzer-osx*,
 -cppcoreguidelines-avoid-magic-numbers,
@@ -15,6 +16,7 @@ portability-*,
 -cppcoreguidelines-no-malloc,
 -cppcoreguidelines-owning-memory,
 -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+-cppcoreguidelines-pro-type-reinterpret-cast,
 -cppcoreguidelines-pro-type-vararg,
 -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
 -readability-identifier-length,
@@ -89,11 +91,11 @@ CheckOptions:
   - key: 'readability-identifier-naming.FunctionCase'
     value: 'camelBack'
   - key: 'readability-identifier-naming.GlobalConstantCase'
-    value: 'lower_case'
+    value: 'UPPER_CASE'
   - key: 'readability-identifier-naming.GlobalConstantPointerCase'
     value: 'lower_case'
   - key: 'readability-identifier-naming.GlobalFunctionCase'
-    value: 'lower_case'
+    value: 'camelBack'
   - key: 'readability-identifier-naming.GlobalPointerCase'
     value: 'lower_case'
   - key: 'readability-identifier-naming.GlobalVariableCase'

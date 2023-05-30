@@ -6,3 +6,11 @@
 	path = tpls/spdlog
 	url = https://github.com/gabime/spdlog.git
 	branch = v1.x
+[submodule "tpls/glfw"]
+	path = tpls/glfw
+	url = https://github.com/glfw/glfw.git
+	branch = 3.3-stable
+[submodule "tpls/eigen"]
+	path = tpls/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+	branch = 3.4
