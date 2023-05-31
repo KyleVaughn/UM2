@@ -9,6 +9,7 @@
 #include <type_traits> // std::make_unsigned_t
 
 // -----------------------------------------------------------------------------
+// A GPU-compatible implementation of std::bit_ceil.
 // Returns the smallest power of two that is greater than or equal to x.
 // -----------------------------------------------------------------------------
 
@@ -19,7 +20,7 @@
 namespace um2
 {
 
-#ifndef __CUDA_ARCH__
+#ifndef __CUDA_ARCH__ 
 
 template <std::unsigned_integral T>
 // NOLINTNEXTLINE(readability-identifier-naming)

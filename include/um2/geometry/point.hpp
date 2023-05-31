@@ -35,7 +35,9 @@ using Point2d = Point2<double>;
 using Point3f = Point3<float>;
 using Point3d = Point3<double>;
 
-// -- Constants --
+// -----------------------------------------------------------------------------
+// Constants
+// -----------------------------------------------------------------------------
 
 template <std::floating_point T>
 UM2_CONST UM2_HOSTDEV constexpr auto epsilonDistance() -> T
@@ -55,7 +57,9 @@ UM2_CONST UM2_HOSTDEV constexpr auto infiniteDistance() -> T
   return static_cast<T>(1e10);
 }
 
-// -- Methods --
+// -----------------------------------------------------------------------------
+// Methods
+// -----------------------------------------------------------------------------
 
 template <len_t D, typename T>
 UM2_PURE UM2_HOSTDEV constexpr auto distanceSquared(Point<D, T> const & a,

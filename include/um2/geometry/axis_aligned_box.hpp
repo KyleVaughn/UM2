@@ -18,12 +18,16 @@ struct AABox {
   Point<D, T> minima;
   Point<D, T> maxima;
 
-  // -- Constructors --
+  // -----------------------------------------------------------------------------
+  // Constructors
+  // -----------------------------------------------------------------------------
 
   constexpr AABox() = default;
   UM2_HOSTDEV constexpr AABox(Point<D, T> const & min, Point<D, T> const & max);
 
-  // -- Accessors --
+  // -----------------------------------------------------------------------------
+  // Accessors
+  // -----------------------------------------------------------------------------
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto xmin() const -> T;
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto xmax() const -> T;
@@ -32,7 +36,9 @@ struct AABox {
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto zmin() const -> T;
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto zmax() const -> T;
 
-  // -- Methods --
+  // -----------------------------------------------------------------------------
+  // Methods
+  // -----------------------------------------------------------------------------
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto width() const -> T;  // dx
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto height() const -> T; // dy
@@ -43,7 +49,9 @@ struct AABox {
 
 }; // struct AABox
 
-// -- Aliases --
+// -----------------------------------------------------------------------------
+// Aliases
+// -----------------------------------------------------------------------------
 
 template <typename T>
 using AABox1 = AABox<1, T>;
@@ -64,7 +72,9 @@ template <len_t D, typename T>
 UM2_PURE UM2_HOSTDEV constexpr auto isApprox(AABox<D, T> const & a, AABox<D, T> const & b)
     -> bool;
 
-// -- Bounding box --
+// -----------------------------------------------------------------------------
+// Bounding box
+// -----------------------------------------------------------------------------
 
 template <len_t D, typename T>
 UM2_PURE UM2_HOSTDEV constexpr auto boundingBox(AABox<D, T> const & a,

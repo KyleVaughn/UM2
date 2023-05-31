@@ -51,7 +51,6 @@ set(UM2_HEADERS
 # Sources
 set(UM2_SOURCES        
     "src/common/string.cpp"
-    "src/common/color.cpp"
     "src/um2c.cpp")    
     
 # Library

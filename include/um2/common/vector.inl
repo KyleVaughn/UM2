@@ -208,9 +208,8 @@ UM2_HOSTDEV auto Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
   return *this;
 }
 
-#ifdef __CUDA_ARCH__
 template <typename T>
-UM2_PURE __device__ constexpr auto
+UM2_PURE UM2_HOSTDEV constexpr auto
 Vector<T>::operator==(Vector<T> const & v) const noexcept -> bool
 {
   if (this->_size != v._size) {
@@ -223,27 +222,6 @@ Vector<T>::operator==(Vector<T> const & v) const noexcept -> bool
   }
   return true;
 }
-#else
-template <typename T>
-UM2_PURE UM2_HOST constexpr auto Vector<T>::operator==(Vector<T> const & v) const noexcept
-    -> bool
-{
-  if (this->_size != v._size) {
-    return false;
-  }
-  if constexpr (std::is_trivially_copyable_v<T>) {
-    return memcmp(this->_data, v._data, static_cast<size_t>(this->_size) * sizeof(T)) ==
-           0;
-  } else {
-    for (len_t i = 0; i < this->_size; ++i) {
-      if (this->_data[i] != v._data[i]) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-#endif
 
 // ---------------------------------------------------------------------------
 // Methods

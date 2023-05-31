@@ -27,11 +27,15 @@ private:
   T * _data = nullptr;
 
 public:
-  // -- Destructor --
+  // -----------------------------------------------------------------------------
+  // Destructor
+  // -----------------------------------------------------------------------------
 
   UM2_HOSTDEV ~Vector() noexcept { delete[] _data; }
 
-  // -- Accessors --
+  // -----------------------------------------------------------------------------
+  // Accessors
+  // -----------------------------------------------------------------------------
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto size() const noexcept -> len_t;
 
@@ -62,7 +66,9 @@ public:
   UM2_NDEBUG_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto back() const noexcept
       -> T const &;
 
-  // -- Constructors --
+  // -----------------------------------------------------------------------------
+  // Constructors
+  // -----------------------------------------------------------------------------
 
   constexpr Vector() = default;
 
@@ -78,7 +84,9 @@ public:
   // NOLINTNEXTLINE(google-explicit-constructor)
   Vector(std::initializer_list<T> const & list);
 
-  // -- Methods --
+  // -----------------------------------------------------------------------------
+  // Methods
+  // -----------------------------------------------------------------------------
 
   UM2_HOSTDEV void clear() noexcept;
 
@@ -97,7 +105,9 @@ public:
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
   contains(T const & value) const noexcept -> bool requires(!std::floating_point<T>);
 
-  // -- Operators --
+  // -----------------------------------------------------------------------------
+  // Operators
+  // -----------------------------------------------------------------------------
 
   UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) noexcept -> T &;
 
@@ -112,7 +122,9 @@ public:
 
 }; // struct Vector
 
-// -- Methods --
+// -----------------------------------------------------------------------------
+// Methods
+// -----------------------------------------------------------------------------
 
 template <typename T>
 requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV

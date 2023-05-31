@@ -178,7 +178,19 @@ UM2_HOSTDEV TEST_CASE(operator_assign)
   }
   um2::Vector<T> v2;
   v2 = v1;
-  EXPECT_TRUE(v1 == v2);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v2.data()[0], 1, 1e-6);
+    EXPECT_NEAR(v2.data()[1], 2, 1e-6);
+    EXPECT_NEAR(v2.data()[2], 3, 1e-6);
+    EXPECT_NEAR(v2.data()[3], 4, 1e-6);
+    EXPECT_NEAR(v2.data()[4], 5, 1e-6);
+  } else {
+    EXPECT_EQ(v2.data()[0], 1);
+    EXPECT_EQ(v2.data()[1], 2);
+    EXPECT_EQ(v2.data()[2], 3);
+    EXPECT_EQ(v2.data()[3], 4);
+    EXPECT_EQ(v2.data()[4], 5);
+  }
   EXPECT_EQ(v1.size(), v2.size());
   EXPECT_EQ(v1.capacity(), 8);
   EXPECT_NE(v1.data(), v2.data());
@@ -489,7 +501,9 @@ TEST_SUITE(vector)
   TEST_HOSTDEV(copy_constructor, 1, 1, T)
   TEST(initializer_list_constructor<T>)
   // Operators
-  TEST_HOSTDEV(operator_equal, 1, 1, T)
+  if constexpr (!std::floating_point<T>) {
+    TEST_HOSTDEV(operator_equal, 1, 1, T)
+  }
   TEST_HOSTDEV(operator_assign, 1, 1, T)
   // Methods
   TEST_HOSTDEV(clear, 1, 1, T)
