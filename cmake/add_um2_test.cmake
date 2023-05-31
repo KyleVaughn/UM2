@@ -3,7 +3,7 @@ set(TEST_FRAMEWORK_HEADER "${PROJECT_SOURCE_DIR}/tests/test_framework.hpp")
 macro(add_um2_test TESTNAME)    
   # Add the test framework header to the test    
   add_executable(${TESTNAME} ${ARGN} ${TEST_FRAMEWORK_HEADER})    
-  target_link_libraries(${TESTNAME} um2 Thrust)    
+  target_link_libraries(${TESTNAME} um2)    
   add_test(${TESTNAME} ${TESTNAME})    
   set_target_properties(${TESTNAME} PROPERTIES CXX_STANDARD ${UM2_CXX_STANDARD}) 
   set_target_properties(${TESTNAME} PROPERTIES CXX_STANDARD_REQUIRED ON)

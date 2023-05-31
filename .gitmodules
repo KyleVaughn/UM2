@@ -1,7 +1,3 @@
-[submodule "tpls/thrust"]
-	path = tpls/thrust
-	url = https://github.com/NVIDIA/thrust.git
-	branch = 2.1.x
 [submodule "tpls/spdlog"]
 	path = tpls/spdlog
 	url = https://github.com/gabime/spdlog.git
