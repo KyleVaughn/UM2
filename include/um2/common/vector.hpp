@@ -2,12 +2,8 @@
 
 #include <um2/common/bit_ceil.hpp>
 
-#include <thrust/execution_policy.h>      // thrust::seq
-#include <thrust/iterator/zip_iterator.h> // thrust::zip_iterator
-#include <thrust/logical.h>               // thrust::all_of
-#include <thrust/tuple.h>                 // thrust::tuple
-
 #include <cmath>            // std::abs
+#include <cstring>          // memcpy
 #include <initializer_list> // std::initializer_list
 
 namespace um2
@@ -52,9 +48,9 @@ public:
   // cppcheck-suppress functionConst
   UM2_PURE UM2_HOSTDEV constexpr auto end() noexcept -> T *;
 
-  UM2_PURE UM2_HOSTDEV constexpr auto cbegin() const noexcept -> T const *;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto cbegin() const noexcept -> T const *;
 
-  UM2_PURE UM2_HOSTDEV constexpr auto cend() const noexcept -> T const *;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto cend() const noexcept -> T const *;
 
   // cppcheck-suppress functionConst
   UM2_PURE UM2_HOSTDEV constexpr auto front() noexcept -> T &;
@@ -79,6 +75,7 @@ public:
   UM2_HOSTDEV Vector(Vector && v) noexcept;
 
   // cppcheck-suppress noExplicitConstructor
+  // NOLINTNEXTLINE(google-explicit-constructor)
   Vector(std::initializer_list<T> const & list);
 
   // -- Methods --

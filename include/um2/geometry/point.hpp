@@ -38,18 +38,27 @@ using Point3d = Point3<double>;
 // -- Constants --
 
 template <std::floating_point T>
-constexpr T point_eps = static_cast<T>(1e-5);
+UM2_CONST UM2_HOSTDEV constexpr auto epsilonDistance() -> T
+{
+  return static_cast<T>(1e-5);
+}
 
 template <std::floating_point T>
-constexpr T point_eps_squared = point_eps<T> * point_eps<T>;
+UM2_CONST UM2_HOSTDEV constexpr auto epsilonDistanceSquared() -> T
+{
+  return epsilonDistance<T>() * epsilonDistance<T>();
+}
 
 template <std::floating_point T>
-constexpr T point_inf = static_cast<T>(1e10);
+UM2_CONST UM2_HOSTDEV constexpr auto infiniteDistance() -> T
+{
+  return static_cast<T>(1e10);
+}
 
 // -- Methods --
 
 template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto squaredDistance(Point<D, T> const & a,
+UM2_PURE UM2_HOSTDEV constexpr auto distanceSquared(Point<D, T> const & a,
                                                     Point<D, T> const & b) -> T
 {
   return (a - b).squaredNorm();
@@ -73,7 +82,7 @@ template <len_t D, typename T>
 UM2_PURE UM2_HOSTDEV constexpr auto isApprox(Point<D, T> const & a, Point<D, T> const & b)
     -> bool
 {
-  return squaredDistance(a, b) < point_eps_squared<T>;
+  return distanceSquared(a, b) < epsilonDistanceSquared<T>();
 }
 
 template <typename T>

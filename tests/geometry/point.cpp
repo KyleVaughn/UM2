@@ -26,7 +26,7 @@ UM2_HOSTDEV TEST_CASE(distance)
 {
   um2::Point<D, T> p1 = makep1<D, T>();
   um2::Point<D, T> p2 = makep2<D, T>();
-  T d2 = um2::squaredDistance(p1, p2);
+  T d2 = um2::distanceSquared(p1, p2);
   if constexpr (std::floating_point<T>) {
     EXPECT_NEAR(d2, static_cast<T>(D), 1e-6);
   } else {
@@ -34,10 +34,11 @@ UM2_HOSTDEV TEST_CASE(distance)
   }
 
   T d = um2::distance(p1, p2);
+  d *= d;
   if constexpr (std::floating_point<T>) {
-    EXPECT_NEAR(d, static_cast<T>(std::sqrt(D)), 1e-6);
+    EXPECT_NEAR(d, static_cast<T>(D), 1e-6);
   } else {
-    EXPECT_EQ(d, static_cast<T>(std::sqrt(D)));
+    EXPECT_EQ(d, static_cast<T>(D));
   }
 }
 
@@ -53,7 +54,7 @@ UM2_HOSTDEV TEST_CASE(midpoint)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(isApprox)
+UM2_HOSTDEV TEST_CASE(is_approx)
 {
   um2::Point<D, T> p1 = makep1<D, T>();
   um2::Point<D, T> p2 = makep2<D, T>();
@@ -63,10 +64,10 @@ UM2_HOSTDEV TEST_CASE(isApprox)
   EXPECT_FALSE(um2::isApprox(p1, p2));
   // Non-trivial equality
   p2 = p1;
-  p2[0] += um2::point_eps<T> / 2;
+  p2[0] += um2::epsilonDistance<T>() / 2;
   EXPECT_TRUE(um2::isApprox(p1, p2));
   // Non-trivial inequality
-  p2[0] += um2::point_eps<T>;
+  p2[0] += um2::epsilonDistance<T>();
   EXPECT_FALSE(um2::isApprox(p1, p2));
 }
 
@@ -93,7 +94,7 @@ template <len_t D, typename T>
 MAKE_CUDA_KERNEL(midpoint, D, T);
 
 template <len_t D, typename T>
-MAKE_CUDA_KERNEL(isApprox, D, T);
+MAKE_CUDA_KERNEL(is_approx, D, T);
 
 template <typename T>
 MAKE_CUDA_KERNEL(areCCW, T);
@@ -104,7 +105,7 @@ TEST_SUITE(point)
 {
   TEST_HOSTDEV(distance, 1, 1, D, T);
   TEST_HOSTDEV(midpoint, 1, 1, D, T);
-  TEST_HOSTDEV(isApprox, 1, 1, D, T);
+  TEST_HOSTDEV(is_approx, 1, 1, D, T);
   if constexpr (D == 2) {
     TEST_HOSTDEV(areCCW, 1, 1, T);
   }

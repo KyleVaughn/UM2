@@ -347,21 +347,12 @@ requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) UM2_PURE UM2_HOS
   if (a.size() != b.size()) {
     return false;
   }
-  struct ApproxFunctor {
-
-    T const epsilon;
-
-    UM2_PURE UM2_HOSTDEV constexpr auto
-    operator()(thrust::tuple<T, T> const & tuple) const -> bool
-    {
-      return std::abs(thrust::get<0>(tuple) - thrust::get<1>(tuple)) <= epsilon;
+  for (len_t i = 0; i < a.size(); ++i) {
+    if (std::abs(a[i] - b[i]) > epsilon) {
+      return false;
     }
-  };
-
-  return thrust::all_of(
-      thrust::seq, thrust::make_zip_iterator(thrust::make_tuple(a.cbegin(), b.cbegin())),
-      thrust::make_zip_iterator(thrust::make_tuple(a.cend(), b.cend())),
-      ApproxFunctor{epsilon});
+  }
+  return true;
 }
 
 template <typename T>
@@ -372,24 +363,13 @@ requires(std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
   if (a.size() != b.size()) {
     return false;
   }
-  struct ApproxFunctor {
-
-    T const epsilon;
-
-    UM2_PURE UM2_HOSTDEV constexpr auto
-    operator()(thrust::tuple<T, T> const & tuple) const -> bool
-    {
-      T const a = thrust::get<0>(tuple);
-      T const b = thrust::get<1>(tuple);
-      T const diff = a > b ? a - b : b - a;
-      return diff <= epsilon;
+  for (len_t i = 0; i < a.size(); ++i) {
+    T const diff = a[i] > b[i] ? a[i] - b[i] : b[i] - a[i];
+    if (diff > epsilon) {
+      return false;
     }
   };
-
-  return thrust::all_of(
-      thrust::seq, thrust::make_zip_iterator(thrust::make_tuple(a.cbegin(), b.cbegin())),
-      thrust::make_zip_iterator(thrust::make_tuple(a.cend(), b.cend())),
-      ApproxFunctor{epsilon});
+  return true;
 }
 
 } // namespace um2

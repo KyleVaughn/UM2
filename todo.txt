@@ -1,7 +1,9 @@
+Remove thrust as a dependency
+Reading/Writing MPACT files
+
 Add code coverage
 
 Add OpenGL or other visualization for user interface for mesh viewing
 
 Half edge mesh?
 CrossSection struct
-Reading/Writing MPACT files

@@ -45,11 +45,11 @@ set(UM2_HEADERS
     "include/um2/math/vec.hpp"
     "include/um2/math/mat.hpp"
     "include/um2/geometry/point.hpp"
+    "include/um2/geometry/axis_aligned_box.hpp"
     "include/um2c.h")    
     
 # Sources
 set(UM2_SOURCES        
-    "src/common/sto.cpp"
     "src/common/string.cpp"
     "src/common/color.cpp"
     "src/um2c.cpp")    
