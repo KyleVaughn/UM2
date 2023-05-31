@@ -33,7 +33,6 @@ struct Color {
   UM2_HOSTDEV constexpr explicit Color(char const (&name)[N]) noexcept;
 
   UM2_HOSTDEV constexpr explicit Color(String const & name) noexcept;
-
 };
 
 // -----------------------------------------------------------------------------

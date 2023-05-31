@@ -20,7 +20,7 @@
 namespace um2
 {
 
-#ifndef __CUDA_ARCH__ 
+#ifndef __CUDA_ARCH__
 
 template <std::unsigned_integral T>
 // NOLINTNEXTLINE(readability-identifier-naming)

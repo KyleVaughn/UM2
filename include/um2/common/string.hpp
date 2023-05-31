@@ -44,8 +44,7 @@ public:
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto cbegin() const noexcept
       -> char const *;
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto cend() const noexcept
-      -> char const *;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto cend() const noexcept -> char const *;
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto size() const noexcept -> len_t;
 
@@ -54,8 +53,7 @@ public:
   // cppcheck-suppress functionConst
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto data() noexcept -> char *;
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto data() const noexcept
-      -> char const *;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto data() const noexcept -> char const *;
 
   // -----------------------------------------------------------------------------
   // Constructors
@@ -88,7 +86,8 @@ public:
   UM2_PURE UM2_HOSTDEV constexpr auto operator==(String const & s) const noexcept -> bool;
 
   template <size_t N>
-  UM2_PURE UM2_HOSTDEV constexpr auto operator==(char const (&s)[N]) const noexcept -> bool;
+  UM2_PURE UM2_HOSTDEV constexpr auto operator==(char const (&s)[N]) const noexcept
+      -> bool;
 
   UM2_PURE auto operator==(std::string const & s) const noexcept -> bool;
 
@@ -109,8 +108,7 @@ public:
   // Methods
   // -----------------------------------------------------------------------------
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] auto compare(char const * s) const noexcept
-      -> int;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] auto compare(char const * s) const noexcept -> int;
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] auto compare(String const & s) const noexcept -> int;
 
@@ -128,7 +126,7 @@ public:
 }; // struct String
 
 // -----------------------------------------------------------------------------
-// Methods 
+// Methods
 // -----------------------------------------------------------------------------
 
 UM2_PURE auto toString(String const & s) -> std::string;

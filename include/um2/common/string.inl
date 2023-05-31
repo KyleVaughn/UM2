@@ -77,55 +77,60 @@ UM2_HOSTDEV auto String::operator=(char const (&s)[N]) -> String &
 
 template <size_t N>
 // NOLINTNEXTLINE(*-avoid-c-arrays)
-UM2_PURE UM2_HOSTDEV constexpr auto String::operator==(char const (&s)[N]) const noexcept -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto String::operator==(char const (&s)[N]) const noexcept
+    -> bool
 {
   if (this->_size != static_cast<len_t>(N - 1)) {
     return false;
-  } 
+  }
   for (len_t i = 0; i < this->_size; ++i) {
     if (this->_data[i] != s[i]) {
       return false;
     }
   }
-  return true; 
+  return true;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::operator==(String const & s) const noexcept -> bool    
-{    
-  if (this->_size != s._size) {    
-    return false;    
-  } 
-  for (len_t i = 0; i < this->_size; ++i) {    
-    if (this->_data[i] != s._data[i]) {    
-      return false;    
-    }    
+UM2_PURE UM2_HOSTDEV constexpr auto String::operator==(String const & s) const noexcept
+    -> bool
+{
+  if (this->_size != s._size) {
+    return false;
+  }
+  for (len_t i = 0; i < this->_size; ++i) {
+    if (this->_data[i] != s._data[i]) {
+      return false;
+    }
   }
   return true;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::operator<(String const & s) const noexcept -> bool    
-{    
-  len_t const min_size = this->_size < s._size ? this->_size : s._size; 
+UM2_PURE UM2_HOSTDEV constexpr auto String::operator<(String const & s) const noexcept
+    -> bool
+{
+  len_t const min_size = this->_size < s._size ? this->_size : s._size;
   for (len_t i = 0; i < min_size; ++i) {
-    if (this->_data[i] != s._data[i]) {    
+    if (this->_data[i] != s._data[i]) {
       return this->_data[i] < s._data[i];
-    } 
+    }
   }
   return this->_size < s._size;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::operator<=(String const & s) const noexcept -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto String::operator<=(String const & s) const noexcept
+    -> bool
 {
-  len_t const min_size = this->_size < s._size ? this->_size : s._size; 
-  for (len_t i = 0; i < min_size; ++i) {    
-    if (this->_data[i] != s._data[i]) {    
-      return this->_data[i] < s._data[i]; 
+  len_t const min_size = this->_size < s._size ? this->_size : s._size;
+  for (len_t i = 0; i < min_size; ++i) {
+    if (this->_data[i] != s._data[i]) {
+      return this->_data[i] < s._data[i];
     }
   }
   return this->_size <= s._size;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::operator>(String const & s) const noexcept -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto String::operator>(String const & s) const noexcept
+    -> bool
 {
   len_t const min_size = this->_size < s._size ? this->_size : s._size;
   for (len_t i = 0; i < min_size; ++i) {
@@ -136,13 +141,14 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::operator>(String const & s) const no
   return this->_size > s._size;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::operator>=(String const & s) const noexcept -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto String::operator>=(String const & s) const noexcept
+    -> bool
 {
   len_t const min_size = this->_size < s._size ? this->_size : s._size;
   for (len_t i = 0; i < min_size; ++i) {
     if (this->_data[i] != s._data[i]) {
       return this->_data[i] > s._data[i];
-    } 
+    }
   }
   return this->_size >= s._size;
 }

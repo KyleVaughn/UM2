@@ -77,8 +77,7 @@ UM2_CONST UM2_HOSTDEV constexpr auto operator!=(Color const lhs, Color const rhs
 UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Color
 {
   // 28 bytes + 4 byte color = 32 bytes
-  struct ColorName
-  {
+  struct ColorName {
     char name[28] = "                           ";
 
     UM2_HOSTDEV constexpr explicit ColorName(char const (&s)[28]) noexcept
@@ -90,7 +89,7 @@ UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Col
 
     UM2_HOSTDEV constexpr explicit ColorName(String const & s) noexcept
     {
-      assert(s.size() < 28); 
+      assert(s.size() < 28);
       for (len_t i = 0; i < s.size(); ++i) {
         name[i] = s[i];
       }
@@ -114,7 +113,7 @@ UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Col
         }
       }
       return false;
-    }                                                                                    
+    }
 
     UM2_HOSTDEV constexpr auto operator>(ColorName const & rhs) const noexcept -> bool
     {
@@ -124,12 +123,11 @@ UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Col
         }
       }
       return false;
-    }                                                                                   
+    }
   };
 
-  struct NamedColor
-  {
-    ColorName name; 
+  struct NamedColor {
+    ColorName name;
     Color color;
   };
 
@@ -140,6 +138,7 @@ UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Col
   // prefering the SVG definition when they clash.
   // You can find the color swatches in:
   // http://juliagraphics.github.io/Colors.jl/dev/namedcolors/
+  // clang-format off
   NamedColor const named_colors[666] = {
     {ColorName{"aliceblue                  "}, {240, 248, 255, 255}},
     {ColorName{"antiquewhite               "}, {250, 235, 215, 255}},
@@ -808,10 +807,11 @@ UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Col
     {ColorName{"yellow4                    "}, {139, 139,   0, 255}},
     {ColorName{"yellowgreen                "}, {154, 205,  50, 255}}
   };
+  // clang-format on
   // Binary search
   uint32_t l = 0;
-  uint32_t r = sizeof(named_colors) / sizeof(named_colors[0]) - 1; 
-  while (l <= r) { 
+  uint32_t r = sizeof(named_colors) / sizeof(named_colors[0]) - 1;
+  while (l <= r) {
     uint32_t const m = (l + r) >> 1;
     if (named_colors[m].name < color_name) {
       l = m + 1;
