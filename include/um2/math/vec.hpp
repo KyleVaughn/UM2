@@ -38,4 +38,16 @@ using Vec4d = Vec4<double>;
 using Vec4i = Vec4<int32_t>;
 using Vec4u = Vec4<uint32_t>;
 
+template <typename T>
+UM2_PURE UM2_HOSTDEV constexpr auto cross(Vec3<T> const & a, Vec3<T> const & b) -> Vec3<T>
+{
+  return a.cross(b);
+}
+
+template <typename T>
+UM2_PURE UM2_HOSTDEV constexpr auto cross(Vec2<T> const & a, Vec2<T> const & b) -> T
+{
+  return a[0] * b[1] - a[1] * b[0];
+}
+
 } // namespace um2

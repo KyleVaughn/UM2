@@ -44,6 +44,7 @@ set(UM2_HEADERS
     "include/um2/math/morton.hpp"
     "include/um2/math/vec.hpp"
     "include/um2/math/mat.hpp"
+    "include/um2/geometry/point.hpp"
     "include/um2c.h")    
     
 # Sources
