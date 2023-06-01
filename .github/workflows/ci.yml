@@ -11,7 +11,7 @@ jobs:
         compiler: [ gcc, clang ]
         build_type: [ Release, Debug ]
         cuda: [ OFF ]
-        openmp: [ OFF, ON ]
+        openmp: [ OFF]
         vis: [OFF]
         dev_mode: [ OFF, ON ]
 
