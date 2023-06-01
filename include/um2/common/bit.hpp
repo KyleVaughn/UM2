@@ -9,7 +9,7 @@
 #include <type_traits> // std::make_unsigned_t, std::is_trivially_constructible_v, etc.
 
 // -----------------------------------------------------------------------------
-// A GPU-compatible implementation of some of the functions in <bit>. 
+// A GPU-compatible implementation of some of the functions in <bit>.
 // -----------------------------------------------------------------------------
 
 // TODO(kcvaughn@umich.edu): Use [[assume(0 <= x)]] once C++23 is supported.
@@ -31,13 +31,13 @@ constexpr auto bit_cast(From const & from) noexcept -> To
 {
   return std::bit_cast<To>(from);
 }
-#else // __CUDA_ARCH__
+#else  // __CUDA_ARCH__
 // (kcvaughn): I'm not sure this is legal C++ from a constexpr perspective, but it
 // seems to work for CUDA.
 template <typename To, typename From>
 requires(sizeof(To) == sizeof(From) && std::is_trivially_copyable_v<From> &&
-         std::is_trivially_copyable_v<To>)
-__device__ constexpr auto bit_cast(From const & from) noexcept -> To
+         std::is_trivially_copyable_v<To>) __device__
+    constexpr auto bit_cast(From const & from) noexcept -> To
 {
   static_assert(std::is_trivially_constructible_v<To>);
   To to;
@@ -54,16 +54,16 @@ __device__ constexpr auto bit_cast(From const & from) noexcept -> To
 
 #ifndef __CUDA_ARCH__
 template <std::unsigned_integral T>
-UM2_CONST constexpr auto bit_width(T const x) noexcept -> T 
+UM2_CONST constexpr auto bit_width(T const x) noexcept -> T
 {
   return std::bit_width(x);
 }
-#else // __CUDA_ARCH__
-UM2_CONST __device__ constexpr auto bit_width(uint32_t const x) noexcept -> uint32_t 
+#else  // __CUDA_ARCH__
+UM2_CONST __device__ constexpr auto bit_width(uint32_t const x) noexcept -> uint32_t
 {
   if (x == 0) {
     return 0;
-  } 
+  }
   return 32 - __clz(x);
 }
 
@@ -71,8 +71,8 @@ UM2_CONST __device__ constexpr auto bit_width(uint64_t const x) noexcept -> uint
 {
   if (x == 0) {
     return 0;
-  } 
-  return 64 - __clzll(x); 
+  }
+  return 64 - __clzll(x);
 }
 #endif // __CUDA_ARCH__
 
@@ -94,14 +94,14 @@ UM2_CONST constexpr auto bit_ceil(T const x) noexcept -> T
 {
   return std::bit_ceil(x);
 }
-#else // __CUDA_ARCH__
+#else  // __CUDA_ARCH__
 template <std::unsigned_integral T>
 UM2_CONST __device__ constexpr auto bit_ceil(T const x) noexcept -> T
 {
   if (x <= 1) {
     return 1;
   } else {
-    return 1 << bit_width(x - 1); 
+    return 1 << bit_width(x - 1);
   }
 }
 #endif // __CUDA_ARCH__

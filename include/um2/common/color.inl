@@ -52,7 +52,7 @@ UM2_HOSTDEV constexpr Color::Color(char const (&name)[N]) noexcept
 UM2_CONST UM2_HOSTDEV constexpr auto operator==(Color const lhs, Color const rhs) noexcept
     -> bool
 {
-  return bit_cast<uint32_t>(lhs) == bit_cast<uint32_t>(rhs); 
+  return bit_cast<uint32_t>(lhs) == bit_cast<uint32_t>(rhs);
 }
 
 UM2_CONST UM2_HOSTDEV constexpr auto operator!=(Color const lhs, Color const rhs) noexcept
@@ -73,7 +73,7 @@ UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Col
   // NameColor struct (28 byte name + 4 byte color = 32 bytes).
   struct ColorName {
 
-    // Note that the 28th char is \0, so the string is 27 non-null chars long. 
+    // Note that the 28th char is \0, so the string is 27 non-null chars long.
     char name[28] = "                           ";
 
     UM2_HOSTDEV constexpr explicit ColorName(char const (&s)[28]) noexcept
