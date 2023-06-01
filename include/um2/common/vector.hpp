@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/common/bit_ceil.hpp>
+#include <um2/common/bit.hpp>
 
 #include <cmath>            // std::abs
 #include <cstring>          // memcpy

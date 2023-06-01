@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/common/bit_ceil.hpp>
+#include <um2/common/bit.hpp>
 
 #include <cstring> // memcpy, strcmp
 #include <string>  // std::string
@@ -107,10 +107,6 @@ public:
   // -----------------------------------------------------------------------------
   // Methods
   // -----------------------------------------------------------------------------
-
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] auto compare(char const * s) const noexcept -> int;
-
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] auto compare(String const & s) const noexcept -> int;
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto contains(char c) const noexcept
       -> bool;

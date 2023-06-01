@@ -85,38 +85,20 @@ auto String::operator=(std::string const & s) -> String &
 
 UM2_PURE auto String::operator==(std::string const & s) const noexcept -> bool
 {
-  return this->compare(s.data()) == 0;
+  if (this->_size != static_cast<len_t>(s.size())) {
+    return false;
+  }
+  for (len_t i = 0; i < this->_size; ++i) {
+    if (this->_data[i] != s[static_cast<size_t>(i)]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // --------------------------------------------------------------------------
 // Methods
 // --------------------------------------------------------------------------
-
-// Turn off warning about reinterpret_cast since we need to compare char
-// as unsigned char/char
-#ifdef __CUDA_ARCH__
-UM2_PURE UM2_DEVICE auto String::compare(char const * const s) const noexcept -> int
-{
-  char const * s1 = this->_data;
-  char const * s2 = s;
-  while (*s1 && (*s1 == *s2)) {
-    ++s1;
-    ++s2;
-  }
-  return *reinterpret_cast<unsigned char const *>(s1) -
-         *reinterpret_cast<unsigned char const *>(s2);
-}
-#else
-UM2_PURE UM2_HOST auto String::compare(char const * const s) const noexcept -> int
-{
-  return strcmp(this->_data, s);
-}
-#endif
-
-UM2_PURE UM2_HOSTDEV auto String::compare(String const & s) const noexcept -> int
-{
-  return this->compare(s._data);
-}
 
 UM2_PURE auto toString(String const & s) -> std::string
 {

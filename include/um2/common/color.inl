@@ -49,20 +49,11 @@ UM2_HOSTDEV constexpr Color::Color(char const (&name)[N]) noexcept
 // Operators
 // -----------------------------------------------------------------------------
 
-#ifdef __CUDA_ARCH__
-UM2_CONST __device__ constexpr auto operator==(Color const lhs, Color const rhs) noexcept
+UM2_CONST UM2_HOSTDEV constexpr auto operator==(Color const lhs, Color const rhs) noexcept
     -> bool
 {
-  return reinterpret_cast<uint32_t const &>(lhs) ==
-         reinterpret_cast<uint32_t const &>(rhs);
+  return bit_cast<uint32_t>(lhs) == bit_cast<uint32_t>(rhs); 
 }
-#else
-UM2_CONST UM2_HOST constexpr auto operator==(Color const lhs, Color const rhs) noexcept
-    -> bool
-{
-  return std::bit_cast<uint32_t>(lhs) == std::bit_cast<uint32_t>(rhs);
-}
-#endif
 
 UM2_CONST UM2_HOSTDEV constexpr auto operator!=(Color const lhs, Color const rhs) noexcept
     -> bool
@@ -76,8 +67,13 @@ UM2_CONST UM2_HOSTDEV constexpr auto operator!=(Color const lhs, Color const rhs
 
 UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Color
 {
-  // 28 bytes + 4 byte color = 32 bytes
+  // A struct to hold the name of a color and some comparison operators to allow
+  // for a binary search over the list of color names.
+  // 28 chars is longer the longest color names, but provides nice alignment for the
+  // NameColor struct (28 byte name + 4 byte color = 32 bytes).
   struct ColorName {
+
+    // Note that the 28th char is \0, so the string is 27 non-null chars long. 
     char name[28] = "                           ";
 
     UM2_HOSTDEV constexpr explicit ColorName(char const (&s)[28]) noexcept

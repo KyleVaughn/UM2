@@ -158,15 +158,6 @@ MAKE_CUDA_KERNEL(comparison);
 // Methods
 // -----------------------------------------------------------------------------
 
-UM2_HOSTDEV TEST_CASE(compare)
-{
-  EXPECT_GT(um2::String("Zebra").compare(um2::String("Ant")), 0);
-  EXPECT_LT(um2::String("Ant").compare(um2::String("Zebra")), 0);
-  EXPECT_EQ(um2::String("Zebra").compare(um2::String("Zebra")), 0);
-  EXPECT_LT(um2::String("Zebra").compare(um2::String("ant")), 0);
-}
-MAKE_CUDA_KERNEL(compare);
-
 UM2_HOSTDEV TEST_CASE(contains)
 {
   um2::String s("hello");
@@ -211,7 +202,6 @@ TEST_SUITE(string)
   TEST(equals_std_string)
   TEST_HOSTDEV(comparison)
   // Methods
-  TEST_HOSTDEV(compare)
   TEST_HOSTDEV(contains)
   TEST(starts_ends_with)
   TEST(toString)
