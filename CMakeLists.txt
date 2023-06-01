@@ -14,6 +14,7 @@ option(UM2_ENABLE_OPENMP "Enable OpenMP" ON)
 option(UM2_ENABLE_TESTS "Enable tests" ON)
 option(UM2_ENABLE_FASTMATH "Enable fast math" ON)
 option(UM2_ENABLE_VIS "Enable visualization" ON)
+option(UM2_ENABLE_COVERAGE "Compile with coverage analysis flags" ON)
 
 ## Advanced options ###########################################################
 ###############################################################################

@@ -112,22 +112,22 @@ target_link_libraries(um2 PRIVATE spdlog::spdlog)
 ## visualization #################################
 ##################################################
 if (UM2_ENABLE_VIS)
-  set(UM2_VIS_LIBRARIES
-    "OpenGL::GL"
-    "glfw"
-    "glad"
-    CACHE STRING "Visualization libraries")
-  # OpenGL
-  find_package(OpenGL REQUIRED)
-  # GLFW
-  set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-  set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-  set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-  add_subdirectory("${PROJECT_SOURCE_DIR}/tpls/glfw" SYSTEM)
-  # GLAD
-  add_subdirectory("${PROJECT_SOURCE_DIR}/tpls/glad" SYSTEM)
-  target_link_libraries(um2 PRIVATE ${UM2_VIS_LIBRARIES}) 
-endif()
+    set(UM2_VIS_LIBRARIES
+            "OpenGL::GL"
+            "glfw"
+            "glad"
+            CACHE STRING "Visualization libraries")
+    # OpenGL
+    find_package(OpenGL REQUIRED)
+    # GLFW
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    add_subdirectory("${PROJECT_SOURCE_DIR}/tpls/glfw" SYSTEM)
+    # GLAD
+    add_subdirectory("${PROJECT_SOURCE_DIR}/tpls/glad" SYSTEM)
+    target_link_libraries(um2 PRIVATE ${UM2_VIS_LIBRARIES})
+endif ()
 
 ## config.hpp ####################################
 ##################################################
@@ -179,6 +179,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     include(cmake/gnu-cxx-flags.cmake)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_GNU_FLAGS}")
+    if (UM2_ENABLE_COVERAGE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+        target_link_libraries(um2 PUBLIC gcov)
+    endif ()
 endif ()
 if (UM2_ENABLE_FASTMATH)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ffast-math")
