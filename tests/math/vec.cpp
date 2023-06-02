@@ -363,14 +363,10 @@ UM2_HOSTDEV TEST_CASE(cross)
     EXPECT_NEAR(v[1], 2, 1e-6);
     EXPECT_NEAR(v[2], -1, 1e-6);
     v *= 0;
-    v = um2::cross(v0, v1);
-    EXPECT_NEAR(v[0], -1, 1e-6);
-    EXPECT_NEAR(v[1], 2, 1e-6);
-    EXPECT_NEAR(v[2], -1, 1e-6);
   } else if constexpr (D == 2) {
     um2::Vec2<T> v0(1, 2);
     um2::Vec2<T> v1(3, 4);
-    T x = um2::cross(v0, v1);
+    T x = um2::cross2(v0, v1);
     EXPECT_NEAR(x, -2, 1e-6);
   }
 }

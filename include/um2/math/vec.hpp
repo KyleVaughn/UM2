@@ -38,16 +38,17 @@ using Vec4d = Vec4<double>;
 using Vec4i = Vec4<int32_t>;
 using Vec4u = Vec4<uint32_t>;
 
-template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto cross(Vec3<T> const & a, Vec3<T> const & b) -> Vec3<T>
+// Cross product of two 2D vectors (returns a scalar, since the result is in the z
+// direction)
+template <typename DerivedA, typename DerivedB>
+UM2_PURE UM2_HOSTDEV constexpr auto cross2(Eigen::MatrixBase<DerivedA> const & a,
+                                           Eigen::MatrixBase<DerivedB> const & b) noexcept
+    -> typename DerivedA::Scalar
 {
-  return a.cross(b);
-}
-
-template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto cross(Vec2<T> const & a, Vec2<T> const & b) -> T
-{
-  return a[0] * b[1] - a[1] * b[0];
+  // Check that a and b are vectors of size 2
+  EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(DerivedA, 2);
+  EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(DerivedB, 2);
+  return a.x() * b.y() - a.y() * b.x();
 }
 
 } // namespace um2

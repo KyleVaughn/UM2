@@ -18,6 +18,7 @@ add_um2_test(mat    ./math/mat.cpp)
 # geometry
 add_um2_test(point            ./geometry/point.cpp)
 add_um2_test(axis_aligned_box ./geometry/axis_aligned_box.cpp)
+add_um2_test(line_segment     ./geometry/line_segment.cpp)
 
 if (UM2_ENABLE_VIS)
   add_um2_test(window ./vis/window.cpp)

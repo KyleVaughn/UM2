@@ -26,10 +26,16 @@
 
 // Attributes
 // -----------------------------------------------------------------------------
-// These are supported by GCC and Clang
-#define UM2_PURE  [[gnu::pure]]
-#define UM2_CONST [[gnu::const]]
-#define UM2_HOT   [[gnu::hot]]
+// These are supported by GCC and Clang, but cause issues when using nvcc
+#if defined(__NVCC__)
+#  define UM2_PURE
+#  define UM2_CONST
+#  define UM2_HOT
+#else
+#  define UM2_PURE  [[gnu::pure]]
+#  define UM2_CONST [[gnu::const]]
+#  define UM2_HOT   [[gnu::hot]]
+#endif
 
 // Define a PURE/CONST attribute that depends on a release build to be enabled
 #if defined(NDEBUG)

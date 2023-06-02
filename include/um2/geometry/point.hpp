@@ -40,19 +40,19 @@ using Point3d = Point3<double>;
 // -----------------------------------------------------------------------------
 
 template <std::floating_point T>
-UM2_CONST UM2_HOSTDEV constexpr auto epsilonDistance() -> T
+UM2_HOSTDEV consteval auto epsilonDistance() -> T
 {
   return static_cast<T>(1e-5);
 }
 
 template <std::floating_point T>
-UM2_CONST UM2_HOSTDEV constexpr auto epsilonDistanceSquared() -> T
+UM2_HOSTDEV consteval auto epsilonDistanceSquared() -> T
 {
   return epsilonDistance<T>() * epsilonDistance<T>();
 }
 
 template <std::floating_point T>
-UM2_CONST UM2_HOSTDEV constexpr auto infiniteDistance() -> T
+UM2_HOSTDEV consteval auto infiniteDistance() -> T
 {
   return static_cast<T>(1e10);
 }
@@ -61,41 +61,58 @@ UM2_CONST UM2_HOSTDEV constexpr auto infiniteDistance() -> T
 // Methods
 // -----------------------------------------------------------------------------
 
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto distanceSquared(Point<D, T> const & a,
-                                                    Point<D, T> const & b) -> T
+template <typename DerivedA, typename DerivedB>
+UM2_PURE UM2_HOSTDEV constexpr auto
+distanceSquared(Eigen::MatrixBase<DerivedA> const & a,
+                Eigen::MatrixBase<DerivedB> const & b) noexcept ->
+    typename DerivedA::Scalar
 {
+  // Check that a and b are vectors
+  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedA);
+  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedB);
   return (a - b).squaredNorm();
 }
 
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto distance(Point<D, T> const & a, Point<D, T> const & b)
-    -> T
+template <typename DerivedA, typename DerivedB>
+UM2_PURE UM2_HOSTDEV constexpr auto
+distance(Eigen::MatrixBase<DerivedA> const & a,
+         Eigen::MatrixBase<DerivedB> const & b) noexcept -> typename DerivedA::Scalar
 {
-  return (a - b).norm();
+  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedA);
+  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedB);
+  return std::sqrt(distanceSquared(a, b));
 }
 
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto midpoint(Point<D, T> const & a, Point<D, T> const & b)
-    -> Point<D, T>
+template <typename DerivedA, typename DerivedB>
+UM2_PURE UM2_HOSTDEV constexpr auto
+midpoint(Eigen::MatrixBase<DerivedA> const & a,
+         Eigen::MatrixBase<DerivedB> const & b) noexcept -> typename DerivedA::PlainObject
 {
+  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedA);
+  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedB);
   return (a + b) / 2;
 }
 
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto isApprox(Point<D, T> const & a, Point<D, T> const & b)
-    -> bool
+template <typename DerivedA, typename DerivedB>
+UM2_PURE UM2_HOSTDEV constexpr auto
+isApprox(Eigen::MatrixBase<DerivedA> const & a,
+         Eigen::MatrixBase<DerivedB> const & b) noexcept -> bool
 {
-  return distanceSquared(a, b) < epsilonDistanceSquared<T>();
+  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedA);
+  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedB);
+  return distanceSquared(a, b) < epsilonDistanceSquared<typename DerivedA::Scalar>();
 }
 
-template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto areCCW(Point2<T> const & a, Point2<T> const & b,
-                                           Point2<T> const & c) -> bool
+template <typename DerivedA, typename DerivedB, typename DerivedC>
+UM2_PURE UM2_HOSTDEV constexpr auto areCCW(Eigen::MatrixBase<DerivedA> const & a,
+                                           Eigen::MatrixBase<DerivedB> const & b,
+                                           Eigen::MatrixBase<DerivedC> const & c) noexcept
+    -> bool
 {
-  Point2<T> const ab = b - a;
-  Point2<T> const ac = c - a;
-  return 0 < cross(ab, ac);
+  EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(DerivedA, 2);
+  EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(DerivedB, 2);
+  EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(DerivedC, 2);
+  return 0 < cross2(b - a, c - a);
 }
 
 } // namespace um2

@@ -46,6 +46,8 @@ set(UM2_HEADERS
     "include/um2/math/mat.hpp"
     "include/um2/geometry/point.hpp"
     "include/um2/geometry/axis_aligned_box.hpp"
+    "include/um2/geometry/polytope.hpp"
+    "include/um2/geometry/line_segment.hpp"
     "include/um2c.h")    
     
 # Sources
