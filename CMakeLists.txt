@@ -58,9 +58,13 @@ set(UM2_SOURCES
     "src/visualization/shader.cpp"
     "src/um2c.cpp")    
 
+# Visualization headers and sources
 if (UM2_ENABLE_VIS)
   list(APPEND UM2_HEADERS
-    "include/um2/visualization/shader.hpp")
+    "include/um2/visualization/shader.hpp"
+    "include/um2/visualization/vertex_buffer.hpp"
+    "include/um2/visualization/vertex_array.hpp"
+    "include/um2/visualization/element_buffer.hpp")
   list(APPEND UM2_SOURCES
     "src/visualization/shader.cpp")
 endif()

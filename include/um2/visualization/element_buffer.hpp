@@ -4,33 +4,35 @@
 
 #include <glad/gl.h>
 
-#include <spdlog/spdlog.h>
-
 namespace um2
 {
 
 // -----------------------------------------------------------------------------
-// SHADER 
+// ELEMENT BUFFER 
 // -----------------------------------------------------------------------------
-// A struct for managing shader programs. 
 
-struct Shader {
-
-  uint32_t id; // The OpenGL shader program ID
+struct ElementBuffer
+{
+  uint32_t id;
 
   // ---------------------------------------------------------------------------
-  // Constructor
+  // Constructors
   // ---------------------------------------------------------------------------
 
-  Shader( char const * vertex_shader_source, 
-          char const * fragment_shader_source );
+  ElementBuffer(int32_t const * data, int32_t n)
+  {
+    glGenBuffers(1, &id);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(n) * 4, data, GL_STATIC_DRAW);
+  }
 
   // ---------------------------------------------------------------------------
   // Methods
   // ---------------------------------------------------------------------------
 
-  inline void use() const { glUseProgram( id ); }
-  inline void destroy() const { glDeleteProgram( id ); }
+  inline void bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id); }
+  static inline void unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
+  inline void destroy() const { glDeleteBuffers(1, &id); }
 };
 
 } // namespace um2

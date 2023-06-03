@@ -34,6 +34,8 @@ else()
     " -Wnon-virtual-dtor"
     " -Wold-style-cast"
     " -Wshadow"
+    " -Wsuggest-attribute=const"
+    " -Wsuggest-attribute=pure"
     " -Wundef"
     " -Wunused"
     " -Wuseless-cast"

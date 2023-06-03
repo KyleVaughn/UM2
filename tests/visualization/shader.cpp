@@ -2,7 +2,10 @@
 #include <GLFW/glfw3.h>
 
 #include "../test_framework.hpp"
+#include <um2/visualization/element_buffer.hpp>
 #include <um2/visualization/shader.hpp>
+#include <um2/visualization/vertex_array.hpp>
+#include <um2/visualization/vertex_buffer.hpp>
 
 static void errorCallback(int error, const char * description)
 {
@@ -59,18 +62,26 @@ UM2_HOSTDEV TEST_CASE(construct_from_source)
   glEnable( GL_DEPTH_TEST );
   glDepthFunc( GL_LESS );
 
-  uint32_t vbo = 0;
-  glGenBuffers( 1, &vbo );
-  glBindBuffer( GL_ARRAY_BUFFER, vbo );
-  GLfloat points[9] = { 0.0F, 0.5F, 0.0F, 0.5F, -0.5F, 0.0F, -0.5F, -0.5F, 0.0F };
-  glBufferData( GL_ARRAY_BUFFER, 9 * sizeof( GLfloat ), points, GL_STATIC_DRAW );
-
-  uint32_t vao = 0;
-  glGenVertexArrays( 1, &vao );
-  glBindVertexArray( vao );
-  glEnableVertexAttribArray( 0 );
-  glBindBuffer( GL_ARRAY_BUFFER, vbo );
-  glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, nullptr );
+  float vertices[] = {
+      -0.5F, -0.5F, 0.0F, // bottom left
+      0.5F,  -0.5F, 0.0F, // bottom right
+      0.5F,  0.5F,  0.0F, // top right
+      -0.5F, 0.5F,  0.0F  // top left
+  };
+  int32_t indices[] = {
+      0, 1, 2, // first triangle
+      2, 3, 0  // second triangle                                               
+  };
+  um2::VertexArray vao;
+  EXPECT_EQ(vao.id, 1);
+  vao.bind();
+  um2::VertexBuffer vbo( vertices, 12 );
+  EXPECT_EQ(vbo.id, 1);
+  um2::ElementBuffer ebo( indices, 6 );
+  EXPECT_EQ(ebo.id, 2);
+  um2::VertexArray::set_vertex_dimension(3);
+  um2::VertexBuffer::unbind();
+  um2::VertexArray::unbind();
 
   char const * vertex_shader_source =
     "#version 460\n"
@@ -90,12 +101,15 @@ UM2_HOSTDEV TEST_CASE(construct_from_source)
   while ( glfwWindowShouldClose( window ) == 0) {
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     shdr.use();
-    glBindVertexArray( vao );
-    glDrawArrays( GL_TRIANGLES, 0, 3 );
+    vao.bind();
+    glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr );
     glfwPollEvents();
     glfwSwapBuffers( window );
   }
   
+  vbo.destroy();
+  ebo.destroy();
+  shdr.destroy();
   glfwTerminate();
 
 }

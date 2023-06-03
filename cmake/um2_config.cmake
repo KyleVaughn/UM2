@@ -8,10 +8,14 @@ include(cmake/update-git-submodules.cmake)
 if (WIN32)
   message(FATAL_ERROR "Windows is not supported")
 endif()
+# No Apple support
+if (APPLE)
+  message(FATAL_ERROR "Apple is not supported")
+endif()
 
 ## Compiler ######################################
 ##################################################
-# Check for gcc and clang
+# Check for gcc or clang
 if (NOT (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
          CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
   message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
@@ -145,6 +149,7 @@ endif()
 
 ## flags #########################################
 ##################################################
+# Set compiler-specific flags
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   include(cmake/clang-cxx-flags.cmake)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_CLANG_FLAGS}")
@@ -152,13 +157,16 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   include(cmake/gnu-cxx-flags.cmake)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_GNU_FLAGS}")
 endif()
+# Set fast math flags
 if (UM2_ENABLE_FASTMATH)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ffast-math")
   if (UM2_ENABLE_CUDA)
     set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} --use_fast_math")
   endif()
 endif()
+# Set release flags
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
+# Set debug flags
 if (!UM2_ENABLE_CUDA)
   set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
 endif()

@@ -3,7 +3,11 @@ Reading/Writing MPACT files
 
 Add code coverage
 
-Add OpenGL or other visualization for user interface for mesh viewing
-
 Half edge mesh?
 CrossSection struct
+
+Vis:
+ Render a line segment
+ Add GUI and options for edge and vertex selection and edges/faces on/off
+ Use instancing for repeated pins
+ Use ray casted picking for selection
