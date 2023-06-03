@@ -171,9 +171,15 @@ endif()
 
 ## Tests #########################################
 ##################################################
-if (UM2_ENABLE_TESTS)
+if (UM2_BUILD_TESTS)
   include(CTest)
   add_subdirectory(tests)
+endif()
+
+## Examples ###################################### 
+##################################################
+if (UM2_BUILD_EXAMPLES)
+  add_subdirectory(examples)
 endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
