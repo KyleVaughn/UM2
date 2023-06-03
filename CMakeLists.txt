@@ -51,12 +51,20 @@ set(UM2_HEADERS
     "include/um2/geometry/polytope.hpp"
     "include/um2/geometry/line_segment.hpp"
     "include/um2c.h")    
-    
+
 # Sources
 set(UM2_SOURCES        
     "src/common/string.cpp"
+    "src/visualization/shader.cpp"
     "src/um2c.cpp")    
-    
+
+if (UM2_ENABLE_VIS)
+  list(APPEND UM2_HEADERS
+    "include/um2/visualization/shader.hpp")
+  list(APPEND UM2_SOURCES
+    "src/visualization/shader.cpp")
+endif()
+
 # Library
 add_library(um2 ${UM2_HEADERS} ${UM2_SOURCES})
 target_include_directories(um2 PUBLIC include)
