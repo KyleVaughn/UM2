@@ -1,18 +1,18 @@
 #pragma once
 
 #include <um2/common/config.hpp>
+#if UM2_ENABLE_VIS
 
-#include <glad/gl.h>
+#  include <glad/gl.h>
 
 namespace um2
 {
 
 // -----------------------------------------------------------------------------
-// ELEMENT BUFFER 
+// ELEMENT BUFFER
 // -----------------------------------------------------------------------------
 
-struct ElementBuffer
-{
+struct ElementBuffer {
   uint32_t id;
 
   // ---------------------------------------------------------------------------
@@ -23,7 +23,8 @@ struct ElementBuffer
   {
     glGenBuffers(1, &id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(n) * 4, data, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(n) * 4, data,
+                 GL_STATIC_DRAW);
   }
 
   // ---------------------------------------------------------------------------
@@ -36,3 +37,4 @@ struct ElementBuffer
 };
 
 } // namespace um2
+#endif // UM2_ENABLE_VIS

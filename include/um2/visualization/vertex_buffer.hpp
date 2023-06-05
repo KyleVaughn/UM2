@@ -1,18 +1,18 @@
 #pragma once
 
 #include <um2/common/config.hpp>
+#if UM2_ENABLE_VIS
 
-#include <glad/gl.h>
+#  include <glad/gl.h>
 
 namespace um2
 {
 
 // -----------------------------------------------------------------------------
-// VERTEX BUFFER 
+// VERTEX BUFFER
 // -----------------------------------------------------------------------------
 
-struct VertexBuffer
-{
+struct VertexBuffer {
   uint32_t id;
 
   // ---------------------------------------------------------------------------
@@ -36,3 +36,4 @@ struct VertexBuffer
 };
 
 } // namespace um2
+#endif // UM2_ENABLE_VIS

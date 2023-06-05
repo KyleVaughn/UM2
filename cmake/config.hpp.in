@@ -24,6 +24,9 @@
 // spdlog
 #define SPDLOG_ACTIVE_LEVEL @UM2_SPDLOG_LEVEL@
 
+// Visualization
+#cmakedefine01 UM2_ENABLE_VIS
+
 // Attributes
 // -----------------------------------------------------------------------------
 // These are supported by GCC and Clang, but cause issues when using nvcc
