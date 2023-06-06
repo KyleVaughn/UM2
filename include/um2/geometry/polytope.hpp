@@ -23,8 +23,8 @@ namespace um2
 // See https://en.wikipedia.org/wiki/Polytope for help with terminology.
 //
 template <len_t K, len_t P, len_t N, len_t D, typename T>
-struct Polytope {
-};
+// NOLINTNEXTLINE(bugprone-reserved-identifier, readability-identifier-naming)
+struct Polytope;
 
 // -----------------------------------------------------------------------------
 // Aliases
