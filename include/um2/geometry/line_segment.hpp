@@ -32,6 +32,14 @@ struct Polytope<1, 1, 2, D, T> {
       -> Point<D, T> const &;
 
   // -----------------------------------------------------------------------------
+  // Constructors
+  // -----------------------------------------------------------------------------
+
+  constexpr Polytope() = default;
+
+  UM2_HOSTDEV constexpr Polytope(Point<D, T> const & p0, Point<D, T> const & p1) noexcept;
+
+  // -----------------------------------------------------------------------------
   // Methods
   // -----------------------------------------------------------------------------
 
@@ -42,11 +50,12 @@ struct Polytope<1, 1, 2, D, T> {
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto jacobian(R /*r*/) const noexcept
       -> Vec<D, T>;
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto length() const noexcept -> T;
-
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
   isLeft(Point<D, T> const & p) const noexcept -> bool requires(D == 2);
 };
+
+template <len_t D, typename T>
+UM2_PURE UM2_HOSTDEV constexpr auto length(LineSegment<D, T> const & line) noexcept -> T;
 
 template <len_t D, typename T>
 UM2_PURE UM2_HOSTDEV constexpr auto boundingBox(LineSegment<D, T> const & line) noexcept

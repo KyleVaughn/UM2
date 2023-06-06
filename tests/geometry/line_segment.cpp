@@ -64,7 +64,7 @@ UM2_HOSTDEV TEST_CASE(length)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
   T len_ref = (line[1] - line[0]).norm();
-  T len = line.length();
+  T len = length(line);
   EXPECT_NEAR(len, len_ref, static_cast<T>(1e-5));
 }
 // -------------------------------------------------------------------
