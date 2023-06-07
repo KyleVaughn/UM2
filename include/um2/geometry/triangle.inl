@@ -79,41 +79,10 @@ Triangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool requires(
 }
 
 // -------------------------------------------------------------------
+// See polytope.inl for
+// -------------------------------------------------------------------
 // area
-// -------------------------------------------------------------------
-
-template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto area(Triangle<2, T> const & tri) noexcept -> T
-{
-  return cross2(tri[1] - tri[0], tri[2] - tri[0]) / 2;
-}
-
-template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto area(Triangle<3, T> const & tri) noexcept -> T
-{
-  return (tri[1] - tri[0]).cross(tri[2] - tri[0]).norm() / 2;
-}
-
-// -------------------------------------------------------------------
 // centroid
-// -------------------------------------------------------------------
-
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto centroid(Triangle<D, T> const & tri) noexcept
-    -> Point<D, T>
-{
-  return (tri[0] + tri[1] + tri[2]) / 3;
-}
-
-// -------------------------------------------------------------------
 // boundingBox
-// -------------------------------------------------------------------
-
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto boundingBox(Triangle<D, T> const & tri) noexcept
-    -> AABox<D, T>
-{
-  return boundingBox(tri.vertices);
-}
 
 } // namespace um2

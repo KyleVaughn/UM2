@@ -50,17 +50,6 @@ struct Polytope<2, 1, 3, D, T> {
   contains(Point<D, T> const & p) const noexcept -> bool requires(D == 2);
 };
 
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto area(Triangle<D, T> const & tri) noexcept -> T;
-
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto centroid(Triangle<D, T> const & tri) noexcept
-    -> Point<D, T>;
-
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto boundingBox(Triangle<D, T> const & tri) noexcept
-    -> AABox<D, T>;
-
 } // namespace um2
 
 #include "triangle.inl"

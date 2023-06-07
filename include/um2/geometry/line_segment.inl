@@ -76,15 +76,4 @@ UM2_PURE UM2_HOSTDEV constexpr auto length(LineSegment<D, T> const & line) noexc
   return distance(line[0], line[1]);
 }
 
-// -------------------------------------------------------------------
-// boundingBox
-// -------------------------------------------------------------------
-
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto boundingBox(LineSegment<D, T> const & line) noexcept
-    -> AABox<D, T>
-{
-  return boundingBox(line.vertices);
-}
-
 } // namespace um2

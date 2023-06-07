@@ -57,10 +57,6 @@ struct Polytope<1, 1, 2, D, T> {
 template <len_t D, typename T>
 UM2_PURE UM2_HOSTDEV constexpr auto length(LineSegment<D, T> const & line) noexcept -> T;
 
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto boundingBox(LineSegment<D, T> const & line) noexcept
-    -> AABox<D, T>;
-
 } // namespace um2
 
 #include "line_segment.inl"
