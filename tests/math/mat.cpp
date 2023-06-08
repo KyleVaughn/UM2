@@ -3,7 +3,7 @@
 #include <um2/math/vec.hpp>
 
 template <len_t M, len_t N, typename T>
-UM2_HOSTDEV static constexpr auto make_mat() -> um2::Mat<M, N, T>
+UM2_HOSTDEV static constexpr auto makeMat() -> um2::Mat<M, N, T>
 {
   um2::Mat<M, N, T> m;
   T tm = static_cast<T>(M);
@@ -20,7 +20,7 @@ UM2_HOSTDEV static constexpr auto make_mat() -> um2::Mat<M, N, T>
 template <len_t M, len_t N, typename T>
 UM2_HOSTDEV TEST_CASE(accessors)
 {
-  um2::Mat<M, N, T> m = make_mat<M, N, T>();
+  um2::Mat<M, N, T> m = makeMat<M, N, T>();
   for (len_t j = 0; j < N; ++j) {
     for (len_t i = 0; i < M; ++i) {
       if constexpr (std::floating_point<T>) {
@@ -44,7 +44,7 @@ UM2_HOSTDEV TEST_CASE(accessors)
 template <len_t M, len_t N, typename T>
 UM2_HOSTDEV TEST_CASE(unary_minus)
 {
-  um2::Mat<M, N, T> m = make_mat<M, N, T>();
+  um2::Mat<M, N, T> m = makeMat<M, N, T>();
   um2::Mat<M, N, T> neg_m = -m;
   for (len_t j = 0; j < N; ++j) {
     for (len_t i = 0; i < M; ++i) {
@@ -60,8 +60,8 @@ UM2_HOSTDEV TEST_CASE(unary_minus)
 template <len_t M, len_t N, typename T>
 UM2_HOSTDEV TEST_CASE(add)
 {
-  um2::Mat<M, N, T> m = make_mat<M, N, T>();
-  um2::Mat<M, N, T> n = make_mat<M, N, T>();
+  um2::Mat<M, N, T> m = makeMat<M, N, T>();
+  um2::Mat<M, N, T> n = makeMat<M, N, T>();
   um2::Mat<M, N, T> sum = m + n;
   for (len_t j = 0; j < N; ++j) {
     for (len_t i = 0; i < M; ++i) {
@@ -77,8 +77,8 @@ UM2_HOSTDEV TEST_CASE(add)
 template <len_t M, len_t N, typename T>
 UM2_HOSTDEV TEST_CASE(sub)
 {
-  um2::Mat<M, N, T> m = make_mat<M, N, T>();
-  um2::Mat<M, N, T> n = make_mat<M, N, T>();
+  um2::Mat<M, N, T> m = makeMat<M, N, T>();
+  um2::Mat<M, N, T> n = makeMat<M, N, T>();
   um2::Mat<M, N, T> diff = m - n;
   for (len_t j = 0; j < N; ++j) {
     for (len_t i = 0; i < M; ++i) {
@@ -94,7 +94,7 @@ UM2_HOSTDEV TEST_CASE(sub)
 template <len_t M, len_t N, typename T>
 UM2_HOSTDEV TEST_CASE(scalar_mul)
 {
-  um2::Mat<M, N, T> m = make_mat<M, N, T>();
+  um2::Mat<M, N, T> m = makeMat<M, N, T>();
   um2::Mat<M, N, T> scaled = m * 2;
   for (len_t j = 0; j < N; ++j) {
     for (len_t i = 0; i < M; ++i) {
@@ -120,7 +120,7 @@ UM2_HOSTDEV TEST_CASE(scalar_mul)
 template <len_t M, len_t N, typename T>
 UM2_HOSTDEV TEST_CASE(mat_vec)
 {
-  um2::Mat<M, N, T> m = make_mat<M, N, T>();
+  um2::Mat<M, N, T> m = makeMat<M, N, T>();
   um2::Vec<N, T> v;
   for (len_t i = 0; i < N; ++i) {
     v(i) = static_cast<T>(i);
@@ -142,8 +142,8 @@ UM2_HOSTDEV TEST_CASE(mat_vec)
 template <len_t M, len_t N, typename T>
 UM2_HOSTDEV TEST_CASE(mat_mat)
 {
-  um2::Mat<M, N, T> m = make_mat<M, N, T>();
-  um2::Mat<M, N, T> n = make_mat<M, N, T>();
+  um2::Mat<M, N, T> m = makeMat<M, N, T>();
+  um2::Mat<M, N, T> n = makeMat<M, N, T>();
   um2::Mat<M, N, T> prod = m * n;
   for (len_t j = 0; j < N; ++j) {
     for (len_t i = 0; i < M; ++i) {
@@ -163,7 +163,7 @@ UM2_HOSTDEV TEST_CASE(mat_mat)
 template <len_t M, len_t N, typename T>
 UM2_HOSTDEV TEST_CASE(scalar_div)
 {
-  um2::Mat<M, N, T> m = make_mat<M, N, T>();
+  um2::Mat<M, N, T> m = makeMat<M, N, T>();
   um2::Mat<M, N, T> quot = (2 * m) / 2;
   for (len_t j = 0; j < N; ++j) {
     for (len_t i = 0; i < M; ++i) {

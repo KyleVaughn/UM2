@@ -2,7 +2,7 @@
 #include <um2/math/vec.hpp>
 
 template <len_t D, typename T>
-UM2_HOSTDEV static constexpr auto make_vec() -> um2::Vec<D, T>
+UM2_HOSTDEV static constexpr auto makeVec() -> um2::Vec<D, T>
 {
   um2::Vec<D, T> v;
   for (len_t i = 0; i < D; ++i) {
@@ -14,7 +14,7 @@ UM2_HOSTDEV static constexpr auto make_vec() -> um2::Vec<D, T>
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(accessor)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
       EXPECT_NEAR(v[i], static_cast<T>(i + 1), 1e-6);
@@ -29,7 +29,7 @@ UM2_HOSTDEV TEST_CASE(accessor)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(unary_minus)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
   um2::Vec<D, T> v2 = -v;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -45,8 +45,8 @@ UM2_HOSTDEV TEST_CASE(unary_minus)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(compound_add)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
-  um2::Vec<D, T> v2 = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::Vec<D, T> v2 = makeVec<D, T>();
   v += v2;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -62,8 +62,8 @@ UM2_HOSTDEV TEST_CASE(compound_add)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(compound_sub)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
-  um2::Vec<D, T> v2 = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::Vec<D, T> v2 = makeVec<D, T>();
   v -= v2;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -79,8 +79,8 @@ UM2_HOSTDEV TEST_CASE(compound_sub)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(compound_mul)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
-  um2::Vec<D, T> v2 = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::Vec<D, T> v2 = makeVec<D, T>();
   v.array() *= v2.array();
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -96,8 +96,8 @@ UM2_HOSTDEV TEST_CASE(compound_mul)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(compound_div)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
-  um2::Vec<D, T> v2 = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::Vec<D, T> v2 = makeVec<D, T>();
   v.array() /= v2.array();
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -113,8 +113,8 @@ UM2_HOSTDEV TEST_CASE(compound_div)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(add)
 {
-  um2::Vec<D, T> v0 = make_vec<D, T>();
-  um2::Vec<D, T> v1 = make_vec<D, T>();
+  um2::Vec<D, T> v0 = makeVec<D, T>();
+  um2::Vec<D, T> v1 = makeVec<D, T>();
   um2::Vec<D, T> v = v0 + v1;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -130,8 +130,8 @@ UM2_HOSTDEV TEST_CASE(add)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(sub)
 {
-  um2::Vec<D, T> v0 = make_vec<D, T>();
-  um2::Vec<D, T> v1 = make_vec<D, T>();
+  um2::Vec<D, T> v0 = makeVec<D, T>();
+  um2::Vec<D, T> v1 = makeVec<D, T>();
   um2::Vec<D, T> v = v0 - v1;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -147,8 +147,8 @@ UM2_HOSTDEV TEST_CASE(sub)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(mul)
 {
-  um2::Vec<D, T> v0 = make_vec<D, T>();
-  um2::Vec<D, T> v1 = make_vec<D, T>();
+  um2::Vec<D, T> v0 = makeVec<D, T>();
+  um2::Vec<D, T> v1 = makeVec<D, T>();
   um2::Vec<D, T> v = v0.array() * v1.array();
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -164,8 +164,8 @@ UM2_HOSTDEV TEST_CASE(mul)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(div)
 {
-  um2::Vec<D, T> v0 = make_vec<D, T>();
-  um2::Vec<D, T> v1 = make_vec<D, T>();
+  um2::Vec<D, T> v0 = makeVec<D, T>();
+  um2::Vec<D, T> v1 = makeVec<D, T>();
   um2::Vec<D, T> v = v0.array() / v1.array();
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -181,7 +181,7 @@ UM2_HOSTDEV TEST_CASE(div)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(compound_scalar_add)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
   v.array() += 2;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -197,7 +197,7 @@ UM2_HOSTDEV TEST_CASE(compound_scalar_add)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(compound_scalar_sub)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
   v.array() -= 2;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -213,7 +213,7 @@ UM2_HOSTDEV TEST_CASE(compound_scalar_sub)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(compound_scalar_mul)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
   v *= 2;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -229,7 +229,7 @@ UM2_HOSTDEV TEST_CASE(compound_scalar_mul)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(compound_scalar_div)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
   v /= 2;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -245,7 +245,7 @@ UM2_HOSTDEV TEST_CASE(compound_scalar_div)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(scalar_add)
 {
-  um2::Vec<D, T> v0 = make_vec<D, T>();
+  um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v = v0.array() + 2;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -261,7 +261,7 @@ UM2_HOSTDEV TEST_CASE(scalar_add)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(scalar_sub)
 {
-  um2::Vec<D, T> v0 = make_vec<D, T>();
+  um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v = v0.array() - 2;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -277,7 +277,7 @@ UM2_HOSTDEV TEST_CASE(scalar_sub)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(scalar_mul)
 {
-  um2::Vec<D, T> v0 = make_vec<D, T>();
+  um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v = v0 * 2;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -293,7 +293,7 @@ UM2_HOSTDEV TEST_CASE(scalar_mul)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(scalar_div)
 {
-  um2::Vec<D, T> v0 = make_vec<D, T>();
+  um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v = v0 / 2;
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -309,8 +309,8 @@ UM2_HOSTDEV TEST_CASE(scalar_div)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(min)
 {
-  um2::Vec<D, T> v0 = make_vec<D, T>();
-  um2::Vec<D, T> v1 = make_vec<D, T>().array() + 1;
+  um2::Vec<D, T> v0 = makeVec<D, T>();
+  um2::Vec<D, T> v1 = makeVec<D, T>().array() + 1;
   um2::Vec<D, T> v = v0.cwiseMin(v1);
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -326,8 +326,8 @@ UM2_HOSTDEV TEST_CASE(min)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(max)
 {
-  um2::Vec<D, T> v0 = make_vec<D, T>();
-  um2::Vec<D, T> v1 = make_vec<D, T>().array() + 1;
+  um2::Vec<D, T> v0 = makeVec<D, T>();
+  um2::Vec<D, T> v1 = makeVec<D, T>().array() + 1;
   um2::Vec<D, T> v = v0.cwiseMax(v1);
   if constexpr (std::floating_point<T>) {
     for (len_t i = 0; i < D; ++i) {
@@ -343,7 +343,7 @@ UM2_HOSTDEV TEST_CASE(max)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(dot)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
   T dot = v.dot(v);
   if constexpr (std::floating_point<T>) {
     EXPECT_NEAR(dot, static_cast<T>(D * (D + 1) * (2 * D + 1)) / 6, 1e-6);
@@ -356,19 +356,25 @@ template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(cross)
 {
   if constexpr (D == 3) {
-    um2::Vec<D, T> v0 = make_vec<D, T>();
-    um2::Vec<D, T> v1 = make_vec<D, T>().array() + 1;
+    um2::Vec<D, T> v0 = makeVec<D, T>();
+    um2::Vec<D, T> v1 = makeVec<D, T>().array() + 1;
     um2::Vec<D, T> v = v0.cross(v1);
     EXPECT_NEAR(v[0], -1, 1e-6);
     EXPECT_NEAR(v[1], 2, 1e-6);
     EXPECT_NEAR(v[2], -1, 1e-6);
+    v *= 0;
+  } else if constexpr (D == 2) {
+    um2::Vec2<T> v0(1, 2);
+    um2::Vec2<T> v1(3, 4);
+    T x = um2::cross2(v0, v1);
+    EXPECT_NEAR(x, -2, 1e-6);
   }
 }
 
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(norm2)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
   T norm2 = v.squaredNorm();
   if constexpr (std::floating_point<T>) {
     EXPECT_NEAR(norm2, static_cast<T>(D * (D + 1) * (2 * D + 1)) / 6, 1e-6);
@@ -380,7 +386,7 @@ UM2_HOSTDEV TEST_CASE(norm2)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(norm)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
   T norm = v.norm();
   EXPECT_NEAR(norm, std::sqrt(static_cast<T>(D * (D + 1) * (2 * D + 1)) / 6), 1e-6);
 }
@@ -388,7 +394,7 @@ UM2_HOSTDEV TEST_CASE(norm)
 template <len_t D, typename T>
 UM2_HOSTDEV TEST_CASE(normalize)
 {
-  um2::Vec<D, T> v = make_vec<D, T>();
+  um2::Vec<D, T> v = makeVec<D, T>();
   um2::Vec<D, T> v2 = v.normalized();
   T n = v2.norm();
   EXPECT_NEAR(n, 1, 1e-6);

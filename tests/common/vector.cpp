@@ -178,7 +178,19 @@ UM2_HOSTDEV TEST_CASE(operator_assign)
   }
   um2::Vector<T> v2;
   v2 = v1;
-  EXPECT_TRUE(v1 == v2);
+  if constexpr (std::floating_point<T>) {
+    EXPECT_NEAR(v2.data()[0], 1, 1e-6);
+    EXPECT_NEAR(v2.data()[1], 2, 1e-6);
+    EXPECT_NEAR(v2.data()[2], 3, 1e-6);
+    EXPECT_NEAR(v2.data()[3], 4, 1e-6);
+    EXPECT_NEAR(v2.data()[4], 5, 1e-6);
+  } else {
+    EXPECT_EQ(v2.data()[0], 1);
+    EXPECT_EQ(v2.data()[1], 2);
+    EXPECT_EQ(v2.data()[2], 3);
+    EXPECT_EQ(v2.data()[3], 4);
+    EXPECT_EQ(v2.data()[4], 5);
+  }
   EXPECT_EQ(v1.size(), v2.size());
   EXPECT_EQ(v1.capacity(), 8);
   EXPECT_NE(v1.data(), v2.data());
@@ -403,7 +415,7 @@ UM2_HOSTDEV TEST_CASE(contains)
 }
 
 template <typename T>
-UM2_HOSTDEV TEST_CASE(is_approx)
+UM2_HOSTDEV TEST_CASE(isApprox)
 {
   um2::Vector<T> v1(5); // {1, 2, 3, 4, 5};
   um2::Vector<T> v2(5); // {1, 2, 3, 4, 5};
@@ -418,12 +430,12 @@ UM2_HOSTDEV TEST_CASE(is_approx)
   v3.data()[4] = 6;
   v4.push_back(6);
 
-  EXPECT_TRUE(is_approx(v1, v2));
-  EXPECT_FALSE(is_approx(v1, v3));
-  EXPECT_FALSE(is_approx(v1, v4));
+  EXPECT_TRUE(isApprox(v1, v2));
+  EXPECT_FALSE(isApprox(v1, v3));
+  EXPECT_FALSE(isApprox(v1, v4));
   T const eps = static_cast<T>(1);
-  EXPECT_TRUE(is_approx(v1, v2, eps));
-  EXPECT_TRUE(is_approx(v1, v3, eps));
+  EXPECT_TRUE(isApprox(v1, v2, eps));
+  EXPECT_TRUE(isApprox(v1, v3, eps));
 }
 
 // --------------------------------------------------------------------------
@@ -467,7 +479,7 @@ template <typename T>
 MAKE_CUDA_KERNEL(contains, T)
 
 template <typename T>
-MAKE_CUDA_KERNEL(is_approx, T)
+MAKE_CUDA_KERNEL(isApprox, T)
 
 template <typename T>
 MAKE_CUDA_KERNEL(operator_equal, T)
@@ -489,7 +501,9 @@ TEST_SUITE(vector)
   TEST_HOSTDEV(copy_constructor, 1, 1, T)
   TEST(initializer_list_constructor<T>)
   // Operators
-  TEST_HOSTDEV(operator_equal, 1, 1, T)
+  if constexpr (!std::floating_point<T>) {
+    TEST_HOSTDEV(operator_equal, 1, 1, T)
+  }
   TEST_HOSTDEV(operator_assign, 1, 1, T)
   // Methods
   TEST_HOSTDEV(clear, 1, 1, T)
@@ -501,7 +515,7 @@ TEST_SUITE(vector)
   if constexpr (!std::floating_point<T>) {
     TEST_HOSTDEV(contains, 1, 1, T)
   }
-  TEST_HOSTDEV(is_approx, 1, 1, T)
+  TEST_HOSTDEV(isApprox, 1, 1, T)
 }
 
 auto main() -> int
