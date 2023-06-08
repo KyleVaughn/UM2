@@ -59,10 +59,8 @@ template <len_t D, typename T>
 UM2_PURE UM2_HOSTDEV constexpr auto Triangle<D, T>::edge(len_t i) const noexcept
     -> LineSegment<D, T>
 {
-  if (i == 2) {
-    return LineSegment<D, T>(this->vertices[2], this->vertices[0]);
-  }
-  return LineSegment<D, T>(this->vertices[i], this->vertices[i + 1]);
+  return (i == 2) ? LineSegment<D, T>(this->vertices[2], this->vertices[0])
+                  : LineSegment<D, T>(this->vertices[i], this->vertices[i + 1]);
 }
 
 // -------------------------------------------------------------------

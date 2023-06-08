@@ -103,7 +103,6 @@ UM2_HOSTDEV Vector<T>::Vector(len_t const n, T const & value)
       _data{new T[static_cast<ulen_t>(bit_ceil(n))]}
 {
   assert(n > 0);
-  // Trusting the compiler to optimize this to memset for appropriate types.
   for (len_t i = 0; i < n; ++i) {
     this->_data[i] = value;
   }

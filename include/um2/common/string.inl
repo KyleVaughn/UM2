@@ -187,10 +187,9 @@ UM2_PURE constexpr auto String::starts_with(std::string const & s) const noexcep
   if (this->_size < static_cast<len_t>(s.size())) {
     return false;
   }
-  char const * const data = this->_data;
   char const * const sdata = s.data();
   for (len_t i = 0; i < static_cast<len_t>(s.size()); ++i) {
-    if (data[i] != sdata[i]) {
+    if (this->_data[i] != sdata[i]) {
       return false;
     }
   }
@@ -204,10 +203,9 @@ UM2_PURE constexpr auto String::ends_with(std::string const & s) const noexcept 
   if (vsize < ssize) {
     return false;
   }
-  char const * const data = this->_data;
   char const * const sdata = s.data();
   for (len_t i = 0; i < ssize; ++i) {
-    if (data[vsize - 1 - i] != sdata[ssize - 1 - i]) {
+    if (this->_data[vsize - 1 - i] != sdata[ssize - 1 - i]) {
       return false;
     }
   }

@@ -12,8 +12,6 @@
 // A GPU-compatible implementation of some of the functions in <bit>.
 // -----------------------------------------------------------------------------
 
-// TODO(kcvaughn@umich.edu): Use [[assume(0 <= x)]] once C++23 is supported.
-
 // We disable warnings about lower_case function names because we want to match the
 // names of the functions in the standard library.
 // NOLINTBEGIN(readability-identifier-naming)
@@ -61,18 +59,12 @@ UM2_CONST constexpr auto bit_width(T const x) noexcept -> T
 #else  // __CUDA_ARCH__
 UM2_CONST __device__ constexpr auto bit_width(uint32_t const x) noexcept -> uint32_t
 {
-  if (x == 0) {
-    return 0;
-  }
-  return 32 - __clz(x);
+  return (x == 0) ? 0 : 32 - __clz(x);
 }
 
 UM2_CONST __device__ constexpr auto bit_width(uint64_t const x) noexcept -> uint64_t
 {
-  if (x == 0) {
-    return 0;
-  }
-  return 64 - __clzll(x);
+  return (x == 0) ? 0 : 64 - __clzll(x);
 }
 #endif // __CUDA_ARCH__
 
@@ -98,11 +90,7 @@ UM2_CONST constexpr auto bit_ceil(T const x) noexcept -> T
 template <std::unsigned_integral T>
 UM2_CONST __device__ constexpr auto bit_ceil(T const x) noexcept -> T
 {
-  if (x <= 1) {
-    return 1;
-  } else {
-    return 1 << bit_width(x - 1);
-  }
+  return (x <= 1) ? 1 : 1 << bit_width(x - 1);
 }
 #endif // __CUDA_ARCH__
 
