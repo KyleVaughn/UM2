@@ -173,7 +173,9 @@ TEST_SUITE(quadrilateral)
     TEST_HOSTDEV(contains, 1, 1, T);
   }
   TEST_HOSTDEV(area, 1, 1, D, T);
-  //  TEST_HOSTDEV(centroid, 1, 1, D, T);
+  if constexpr (D != 3) {
+    TEST_HOSTDEV(centroid, 1, 1, D, T);
+  }
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
 }
 
