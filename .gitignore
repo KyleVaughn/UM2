@@ -7,4 +7,4 @@ prefix/
 **/.DS_Store
 CMakeLists.txt.user
 CMakeUserPresets.json
-include/um2/common/config.hpp
+include/um2/config.hpp

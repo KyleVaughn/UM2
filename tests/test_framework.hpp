@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/common/config.hpp> // UM2_ENABLE_CUDA, UM2_HOSTDEV
+#include <um2/config.hpp> // ENABLE_CUDA, HOSTDEV
 
 #include <cmath>   // std::abs
 #include <cstdio>  // printf
@@ -28,7 +28,7 @@
 // ASSERT_XXX.
 // 4. Use MAKE_CUDA_KERNEL(name) to create a CUDA kernel from a test case, provided that
 // the test
-//   case was declared with UM2_HOSTDEV.
+//   case was declared with HOSTDEV.
 // 5. Use TEST_SUITE(name) to define a test suite containing one or more TEST(host_test)
 // or
 //   TEST_CUDA_KERNEL(host_test, blocks, threads).
@@ -44,7 +44,7 @@
 struct TestResult {
   int num_failures = 0;
 
-  UM2_HOSTDEV void failure(char const * file, int line, char const * function,
+  HOSTDEV void failure(char const * file, int line, char const * function,
                            char const * message)
   {
     num_failures++;

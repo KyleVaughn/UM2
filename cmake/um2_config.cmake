@@ -137,7 +137,7 @@ endif()
 ##################################################
 configure_file(
   "${PROJECT_SOURCE_DIR}/cmake/config.hpp.in"
-  "${PROJECT_SOURCE_DIR}/include/um2/common/config.hpp")
+  "${PROJECT_SOURCE_DIR}/include/um2/config.hpp")
 
 ## clang-format ##################################
 ##################################################

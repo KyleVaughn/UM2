@@ -37,26 +37,25 @@ option(UM2_ENABLE_CPPCHECK      "Enable cppcheck"                 ${UM2_DEV_MODE
 
 # Headers
 set(UM2_HEADERS
-    "include/um2/common/config.hpp"
-    "include/um2/common/bit.hpp"
+    "include/um2/config.hpp"
     "include/um2/common/sto.hpp"
     "include/um2/common/vector.hpp"
-    "include/um2/common/string.hpp"
-    "include/um2/common/color.hpp"
-    "include/um2/math/morton.hpp"
-    "include/um2/math/vec.hpp"
-    "include/um2/math/mat.hpp"
-    "include/um2/geometry/point.hpp"
-    "include/um2/geometry/axis_aligned_box.hpp"
-    "include/um2/geometry/polytope.hpp"
-    "include/um2/geometry/line_segment.hpp"
-    "include/um2/geometry/triangle.hpp"
+    #    "include/um2/common/string.hpp"
+    #    "include/um2/common/color.hpp"
+    #    "include/um2/math/morton.hpp"
+    #    "include/um2/math/vec.hpp"
+    #    "include/um2/math/mat.hpp"
+    #    "include/um2/geometry/point.hpp"
+    #    "include/um2/geometry/axis_aligned_box.hpp"
+    #    "include/um2/geometry/polytope.hpp"
+    #    "include/um2/geometry/line_segment.hpp"
+    #    "include/um2/geometry/triangle.hpp"
     "include/um2c.h")    
 
 # Sources
 set(UM2_SOURCES        
-    "src/common/string.cpp"
-    "src/visualization/shader.cpp"
+  #"src/common/string.cpp"
+    #    "src/visualization/shader.cpp"
     "src/um2c.cpp")    
 
 # Visualization headers and sources
