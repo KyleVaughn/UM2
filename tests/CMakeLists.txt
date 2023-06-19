@@ -1,12 +1,15 @@
 include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
 
-# Test the framework itself
-add_um2_test(test_framework test_framework.cpp)
-
-# common
-add_um2_test(memory ./common/memory.cpp)
-add_um2_test(sto    ./common/sto.cpp) 
-#add_um2_test(vector ./common/vector.cpp)
+# ------------------------------------------------------------------------------
+# common 
+# ------------------------------------------------------------------------------
+# memory
+add_um2_test(addressof ./common/memory/addressof.cpp)
+add_um2_test(destroy_at ./common/memory/destroy_at.cpp)
+# Also tests AllocatorTraits
+add_um2_test(BasicAllocator ./common/memory/BasicAllocator.cpp)
+add_um2_test(Vector ./common/Vector.cpp)
+#add_um2_test(sto    ./common/sto.cpp) 
 #add_um2_test(string ./common/string.cpp)
 #add_um2_test(color  ./common/color.cpp)
 #

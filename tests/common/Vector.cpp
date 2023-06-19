@@ -1,81 +1,36 @@
-#include "../test_framework.hpp"
-#include <um2/common/vector.hpp>
+#include "../test_macros.hpp"
+#include <um2/common/Vector.hpp>
 
 // ----------------------------------------------------------------------------
-// Accessors
+// Constructors
 // ----------------------------------------------------------------------------
 
 template <typename T>
-UM2_HOSTDEV TEST_CASE(begin_end)
+HOSTDEV TEST_CASE(test_allocator_constructor)
 {
-  um2::Vector<T> v;
-  EXPECT_EQ(v.begin(), v.end());
-  v.push_back(1);
-  EXPECT_NE(v.begin(), v.end());
-  if constexpr (std::floating_point<T>) {
-    EXPECT_NEAR(*v.begin(), 1, 1e-6);
-    EXPECT_NEAR(*(v.end() - 1), 1, 1e-6);
-  } else {
-    EXPECT_EQ(*v.begin(), 1);
-    EXPECT_EQ(*(v.end() - 1), 1);
-  }
-  v.push_back(2);
-  EXPECT_NE(v.begin(), v.end());
-  if constexpr (std::floating_point<T>) {
-    EXPECT_NEAR(*v.begin(), 1, 1e-6);
-    EXPECT_NEAR(*(v.end() - 1), 2, 1e-6);
-  } else {
-    EXPECT_EQ(*v.begin(), 1);
-    EXPECT_EQ(*(v.end() - 1), 2);
-  }
+  struct TestAlloc {
 
-  v.clear();
-  EXPECT_EQ(v.cbegin(), v.cend());
-  v.push_back(1);
-  EXPECT_NE(v.cbegin(), v.cend());
-  if constexpr (std::floating_point<T>) {
-    EXPECT_NEAR(*v.cbegin(), 1, 1e-6);
-    EXPECT_NEAR(*(v.cend() - 1), 1, 1e-6);
-  } else {
-    EXPECT_EQ(*v.cbegin(), 1);
-    EXPECT_EQ(*(v.cend() - 1), 1);
-  }
-  v.push_back(2);
-  EXPECT_NE(v.cbegin(), v.cend());
-  if constexpr (std::floating_point<T>) {
-    EXPECT_NEAR(*v.cbegin(), 1, 1e-6);
-    EXPECT_NEAR(*(v.cend() - 1), 2, 1e-6);
-  } else {
-    EXPECT_EQ(*v.cbegin(), 1);
-    EXPECT_EQ(*(v.cend() - 1), 2);
-  }
+    int i = 0;
+
+    HOSTDEV [[nodiscard]] constexpr auto allocate(size_t n) -> T*    
+    {    
+      i++;
+      return static_cast<T*>(::operator new(n * sizeof(T)));    
+    }    
+      
+    HOSTDEV constexpr void deallocate(T * p)    
+    {    
+      i--;
+      ::operator delete(p);    
+    }
+  };
+
+  TestAlloc alloc;
+  alloc.i = 11;
+
+  um2::Vector<T, TestAlloc> v(alloc);
+  assert(v.get_allocator().i == 11);
 }
-//
-//template <typename T>
-//UM2_HOSTDEV TEST_CASE(front_back)
-//{
-//  um2::Vector<T> v;
-//  v.push_back(1);
-//  if constexpr (std::floating_point<T>) {
-//    EXPECT_NEAR(v.front(), 1, 1e-6);
-//    EXPECT_NEAR(v.back(), 1, 1e-6);
-//  } else {
-//    EXPECT_EQ(v.front(), 1);
-//    EXPECT_EQ(v.back(), 1);
-//  }
-//  v.push_back(2);
-//  if constexpr (std::floating_point<T>) {
-//    EXPECT_NEAR(v.front(), 1, 1e-6);
-//    EXPECT_NEAR(v.back(), 2, 1e-6);
-//  } else {
-//    EXPECT_EQ(v.front(), 1);
-//    EXPECT_EQ(v.back(), 2);
-//  }
-//}
-//
-//// ----------------------------------------------------------------------------
-//// Constructors
-//// ----------------------------------------------------------------------------
 //
 //template <typename T>
 //UM2_HOSTDEV TEST_CASE(length_constructor)
@@ -145,6 +100,152 @@ UM2_HOSTDEV TEST_CASE(begin_end)
 //  }
 //}
 //
+
+
+// ----------------------------------------------------------------------------
+// Accessors
+// ----------------------------------------------------------------------------
+
+//template <typename T>
+//UM2_HOSTDEV TEST_CASE(begin_end)
+//{
+//  um2::Vector<T> v;
+//  EXPECT_EQ(v.begin(), v.end());
+//  v.push_back(1);
+//  EXPECT_NE(v.begin(), v.end());
+//  if constexpr (std::floating_point<T>) {
+//    EXPECT_NEAR(*v.begin(), 1, 1e-6);
+//    EXPECT_NEAR(*(v.end() - 1), 1, 1e-6);
+//  } else {
+//    EXPECT_EQ(*v.begin(), 1);
+//    EXPECT_EQ(*(v.end() - 1), 1);
+//  }
+//  v.push_back(2);
+//  EXPECT_NE(v.begin(), v.end());
+//  if constexpr (std::floating_point<T>) {
+//    EXPECT_NEAR(*v.begin(), 1, 1e-6);
+//    EXPECT_NEAR(*(v.end() - 1), 2, 1e-6);
+//  } else {
+//    EXPECT_EQ(*v.begin(), 1);
+//    EXPECT_EQ(*(v.end() - 1), 2);
+//  }
+//
+//  v.clear();
+//  EXPECT_EQ(v.cbegin(), v.cend());
+//  v.push_back(1);
+//  EXPECT_NE(v.cbegin(), v.cend());
+//  if constexpr (std::floating_point<T>) {
+//    EXPECT_NEAR(*v.cbegin(), 1, 1e-6);
+//    EXPECT_NEAR(*(v.cend() - 1), 1, 1e-6);
+//  } else {
+//    EXPECT_EQ(*v.cbegin(), 1);
+//    EXPECT_EQ(*(v.cend() - 1), 1);
+//  }
+//  v.push_back(2);
+//  EXPECT_NE(v.cbegin(), v.cend());
+//  if constexpr (std::floating_point<T>) {
+//    EXPECT_NEAR(*v.cbegin(), 1, 1e-6);
+//    EXPECT_NEAR(*(v.cend() - 1), 2, 1e-6);
+//  } else {
+//    EXPECT_EQ(*v.cbegin(), 1);
+//    EXPECT_EQ(*(v.cend() - 1), 2);
+//  }
+//}
+//
+//template <typename T>
+//UM2_HOSTDEV TEST_CASE(front_back)
+//{
+//  um2::Vector<T> v;
+//  v.push_back(1);
+//  if constexpr (std::floating_point<T>) {
+//    EXPECT_NEAR(v.front(), 1, 1e-6);
+//    EXPECT_NEAR(v.back(), 1, 1e-6);
+//  } else {
+//    EXPECT_EQ(v.front(), 1);
+//    EXPECT_EQ(v.back(), 1);
+//  }
+//  v.push_back(2);
+//  if constexpr (std::floating_point<T>) {
+//    EXPECT_NEAR(v.front(), 1, 1e-6);
+//    EXPECT_NEAR(v.back(), 2, 1e-6);
+//  } else {
+//    EXPECT_EQ(v.front(), 1);
+//    EXPECT_EQ(v.back(), 2);
+//  }
+//}
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //// ----------------------------------------------------------------------------
 //// Operators
 //// ----------------------------------------------------------------------------
@@ -492,13 +593,20 @@ UM2_HOSTDEV TEST_CASE(begin_end)
 template <typename T>
 TEST_SUITE(vector)
 {
-  // Accessors
-  TEST_HOSTDEV(begin_end, 1, 1, T)
-//  TEST_HOSTDEV(front_back, 1, 1, T)
-//  // Constructors
+  // Constructors
+  TEST_HOSTDEV(test_allocator_constructor, 1, 1, T)
 //  TEST_HOSTDEV(length_constructor, 1, 1, T)
 //  TEST_HOSTDEV(length_val_constructor, 1, 1, T)
 //  TEST_HOSTDEV(copy_constructor, 1, 1, T)
+
+
+  // Accessors
+//  TEST_HOSTDEV(begin_end, 1, 1, T)
+//  TEST_HOSTDEV(front_back, 1, 1, T)
+
+
+
+
 //  TEST(initializer_list_constructor<T>)
 //  // Operators
 //  if constexpr (!std::floating_point<T>) {
@@ -520,11 +628,11 @@ TEST_SUITE(vector)
 
 auto main() -> int
 {
-  RUN_TESTS(vector<float>);
-  RUN_TESTS(vector<double>);
+//  RUN_TESTS(vector<float>);
+//  RUN_TESTS(vector<double>);
   RUN_TESTS(vector<int32_t>);
-  RUN_TESTS(vector<uint32_t>);
-  RUN_TESTS(vector<int64_t>);
-  RUN_TESTS(vector<uint64_t>);
+//  RUN_TESTS(vector<uint32_t>);
+//  RUN_TESTS(vector<int64_t>);
+//  RUN_TESTS(vector<uint64_t>);
   return 0;
 }

@@ -1,4 +1,4 @@
-set(TEST_FRAMEWORK_HEADER "${PROJECT_SOURCE_DIR}/tests/test_framework.hpp")    
+set(TEST_FRAMEWORK_HEADER "${PROJECT_SOURCE_DIR}/tests/test_macros.hpp")    
     
 macro(add_um2_test TESTNAME)    
   # Always include the test framework header with the test    

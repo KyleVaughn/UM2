@@ -21,6 +21,7 @@ portability-*,
 -cppcoreguidelines-pro-type-vararg,
 -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
 -cppcoreguidelines-pro-bounds-constant-array-index,
+-cppcoreguidelines-pro-type-union-access,
 -readability-identifier-length,
 -readability-magic-numbers,
 -misc-non-private-member-variables-in-classes
