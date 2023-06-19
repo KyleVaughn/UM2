@@ -1,7 +1,8 @@
 #include <um2/common/config.hpp>
 
-#include <GLFW/glfw3.h>
 #include <glad/gl.h>
+
+#include <GLFW/glfw3.h>
 
 #include "../test_framework.hpp"
 #include <um2/visualization/element_buffer.hpp>
