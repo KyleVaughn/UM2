@@ -20,6 +20,7 @@ add_um2_test(point            ./geometry/point.cpp)
 add_um2_test(axis_aligned_box ./geometry/axis_aligned_box.cpp)
 add_um2_test(line_segment     ./geometry/line_segment.cpp)
 add_um2_test(triangle         ./geometry/triangle.cpp)
+add_um2_test(quadrilateral    ./geometry/quadrilateral.cpp)
 
 if (UM2_ENABLE_VIS)
   add_um2_test(shader ./visualization/shader.cpp)

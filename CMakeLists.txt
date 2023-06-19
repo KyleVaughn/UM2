@@ -51,6 +51,7 @@ set(UM2_HEADERS
     "include/um2/geometry/polytope.hpp"
     "include/um2/geometry/line_segment.hpp"
     "include/um2/geometry/triangle.hpp"
+    "include/um2/geometry/quadrilateral.hpp"
     "include/um2c.h")    
 
 # Sources
