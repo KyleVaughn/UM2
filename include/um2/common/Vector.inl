@@ -21,7 +21,7 @@ HOSTDEV constexpr Vector<T, Allocator>::Vector(Allocator const & a) noexcept
 //} 
 
 //template <typename T>
-//UM2_HOSTDEV Vector<T>::Vector(len_t const n)
+//HOSTDEV Vector<T>::Vector(len_t const n)
 //    : _size{n},
 //      _capacity{bit_ceil(n)},
 //      _data{new T[static_cast<ulen_t>(bit_ceil(n))]}
@@ -30,7 +30,7 @@ HOSTDEV constexpr Vector<T, Allocator>::Vector(Allocator const & a) noexcept
 //}
 //
 //template <typename T>
-//UM2_HOSTDEV Vector<T>::Vector(len_t const n, T const & value)
+//HOSTDEV Vector<T>::Vector(len_t const n, T const & value)
 //    : _size{n},
 //      _capacity{bit_ceil(n)},
 //      _data{new T[static_cast<ulen_t>(bit_ceil(n))]}
@@ -42,7 +42,7 @@ HOSTDEV constexpr Vector<T, Allocator>::Vector(Allocator const & a) noexcept
 //}
 //
 //template <typename T>
-//UM2_HOSTDEV Vector<T>::Vector(Vector<T> const & v)
+//HOSTDEV Vector<T>::Vector(Vector<T> const & v)
 //    : _size{v._size},
 //      _capacity{bit_ceil(v._size)},
 //      _data{new T[static_cast<ulen_t>(bit_ceil(v._size))]}
@@ -58,7 +58,7 @@ HOSTDEV constexpr Vector<T, Allocator>::Vector(Allocator const & a) noexcept
 //}
 //
 //template <typename T>
-//UM2_HOSTDEV Vector<T>::Vector(Vector<T> && v) noexcept
+//HOSTDEV Vector<T>::Vector(Vector<T> && v) noexcept
 //    : _size{v._size},
 //      _capacity{v._capacity},
 //      _data{v._data}
@@ -98,78 +98,78 @@ auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 }
 
 //template <typename T>
-//UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::size() const noexcept -> len_t
+//PURE HOSTDEV constexpr auto Vector<T>::size() const noexcept -> len_t
 //{
 //  return this->_size;
 //}
 //
-//template <typename T>
-//UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::capacity() const noexcept -> len_t
-//{
-//  return this->_capacity;
-//}
+template <typename T, typename Allocator>
+PURE HOSTDEV constexpr auto Vector<T, Allocator>::capacity() const noexcept -> size_t 
+{
+  return static_cast<size_t>(this->_end_cap.first - this->_begin);
+}
 //
 //template <typename T>
 //// cppcheck-suppress functionConst
-//UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::data() noexcept -> T *
+//PURE HOSTDEV constexpr auto Vector<T>::data() noexcept -> T *
 //{
 //  return this->_data;
 //}
 //
 //template <typename T>
-//UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::data() const noexcept -> T const *
-//{
-//  return this->_data;
-//}
-//
-//template <typename T>
-//// cppcheck-suppress functionConst
-//UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::begin() noexcept -> T *
+//PURE HOSTDEV constexpr auto Vector<T>::data() const noexcept -> T const *
 //{
 //  return this->_data;
 //}
 //
 //template <typename T>
 //// cppcheck-suppress functionConst
-//UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::end() noexcept -> T *
+//PURE HOSTDEV constexpr auto Vector<T>::begin() noexcept -> T *
+//{
+//  return this->_data;
+//}
+//
+//template <typename T>
+//// cppcheck-suppress functionConst
+//PURE HOSTDEV constexpr auto Vector<T>::end() noexcept -> T *
 //{
 //  return this->_data + this->_size;
 //}
 //
 //template <typename T>
-//UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::cbegin() const noexcept -> T const *
+//PURE HOSTDEV constexpr auto Vector<T>::cbegin() const noexcept -> T const *
 //{
 //  return this->_data;
 //}
 //
 //template <typename T>
-//UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::cend() const noexcept -> T const *
+//PURE HOSTDEV constexpr auto Vector<T>::cend() const noexcept -> T const *
 //{
 //  return this->_data + this->_size;
 //}
 //
 //template <typename T>
 //// cppcheck-suppress functionConst
-//UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::front() noexcept -> T &
+//PURE HOSTDEV constexpr auto Vector<T>::front() noexcept -> T &
 //{
 //  return this->_data[0];
 //}
 //
 //template <typename T>
-//UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::front() const noexcept -> T const &
+//PURE HOSTDEV constexpr auto Vector<T>::front() const noexcept -> T const &
 //{
 //  return this->_data[0];
 //}
 //
 //template <typename T>
-//UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::back() noexcept -> T &
+//NDEBUG_PURE HOSTDEV constexpr auto Vector<T>::back() noexcept -> T &
 //{
 //  assert(this->_size > 0);
 //  return this->_data[this->_size - 1];
 //}
 //
 //template <typename T>
-//UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::back() const noexcept -> T const &
+//NDEBUG_PURE HOSTDEV constexpr auto Vector<T>::back() const noexcept -> T const &
 //{
 //  assert(this->_size > 0);
 //  return this->_data[this->_size - 1];
@@ -248,7 +248,7 @@ auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 //// ---------------------------------------------------------------------------
 //
 //template <typename T>
-//UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Vector<T>::operator[](len_t const i) noexcept
+//NDEBUG_PURE HOSTDEV constexpr auto Vector<T>::operator[](len_t const i) noexcept
 //    -> T &
 //{
 //  assert(0 <= i && i < this->_size);
@@ -256,7 +256,7 @@ auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 //}
 //
 //template <typename T>
-//UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
+//NDEBUG_PURE HOSTDEV constexpr auto
 //Vector<T>::operator[](len_t const i) const noexcept -> T const &
 //{
 //  assert(0 <= i && i < this->_size);
@@ -264,7 +264,7 @@ auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 //}
 //
 //template <typename T>
-//UM2_HOSTDEV auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
+//HOSTDEV auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
 //{
 //  if (this != &v) {
 //    if (this->_capacity < v.size()) {
@@ -285,7 +285,7 @@ auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 //}
 //
 //template <typename T>
-//UM2_HOSTDEV auto Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
+//HOSTDEV auto Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
 //{
 //  if (this != &v) {
 //    delete[] this->_data;
@@ -300,7 +300,7 @@ auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 //}
 //
 //template <typename T>
-//UM2_PURE UM2_HOSTDEV constexpr auto
+//PURE HOSTDEV constexpr auto
 //Vector<T>::operator==(Vector<T> const & v) const noexcept -> bool
 //{
 //  if (this->_size != v._size) {
@@ -319,7 +319,7 @@ auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 //// ---------------------------------------------------------------------------
 //
 //template <typename T>
-//UM2_HOSTDEV void Vector<T>::clear() noexcept
+//HOSTDEV void Vector<T>::clear() noexcept
 //{
 //  this->_size = 0;
 //  this->_capacity = 0;
@@ -328,7 +328,7 @@ auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 //}
 //
 //template <typename T>
-//UM2_HOSTDEV inline void Vector<T>::reserve(len_t n)
+//HOSTDEV inline void Vector<T>::reserve(len_t n)
 //{
 //  if (this->_capacity < n) {
 //    // since n > 0, we are safe to cast to unsigned and use bit_ceil
@@ -349,27 +349,27 @@ auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 //}
 //
 //template <typename T>
-//UM2_HOSTDEV void Vector<T>::resize(len_t const n)
+//HOSTDEV void Vector<T>::resize(len_t const n)
 //{
 //  this->reserve(n);
 //  this->_size = n;
 //}
 //
 //template <typename T>
-//UM2_HOSTDEV inline void Vector<T>::push_back(T const & value)
+//HOSTDEV inline void Vector<T>::push_back(T const & value)
 //{
 //  this->reserve(this->_size + 1);
 //  this->_data[this->_size++] = value;
 //}
 //
 //template <typename T>
-//UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::empty() const -> bool
+//PURE HOSTDEV constexpr auto Vector<T>::empty() const -> bool
 //{
 //  return this->_size == 0;
 //}
 //
 //template <typename T>
-//UM2_HOSTDEV void Vector<T>::insert(T const * pos, len_t const n, T const & value)
+//HOSTDEV void Vector<T>::insert(T const * pos, len_t const n, T const & value)
 //{
 //  if (n == 0) {
 //    return;
@@ -390,13 +390,13 @@ auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 //}
 //
 //template <typename T>
-//UM2_HOSTDEV void Vector<T>::insert(T const * pos, T const & value)
+//HOSTDEV void Vector<T>::insert(T const * pos, T const & value)
 //{
 //  this->insert(pos, 1, value);
 //}
 //
 //template <typename T>
-//UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::contains(T const & value) const noexcept
+//PURE HOSTDEV constexpr auto Vector<T>::contains(T const & value) const noexcept
 //    -> bool requires(!std::floating_point<T>)
 //{
 //  for (len_t i = 0; i < this->_size; ++i) {
@@ -409,7 +409,7 @@ auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 //
 //// A classic abs(a - b) <= epsilon comparison
 //template <typename T>
-//requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
+//requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) PURE HOSTDEV
 //    constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
 //                            T const epsilon) noexcept -> bool
 //{
@@ -425,7 +425,7 @@ auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 //}
 //
 //template <typename T>
-//requires(std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
+//requires(std::unsigned_integral<T>) PURE HOSTDEV
 //    constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
 //                            T const epsilon) noexcept -> bool
 //{

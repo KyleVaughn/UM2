@@ -2,6 +2,8 @@
 
 #include <um2/config.hpp>
 
+#include <um2/common/memory/destroy_at.hpp>
+
 #include <type_traits>
 
 // NOLINTBEGIN(readability-identifier-naming)
@@ -22,6 +24,11 @@ struct AllocatorTraits {
   HOSTDEV constexpr static 
   void deallocate(Allocator & a, pointer p, size_t n) noexcept {
       a.deallocate(p, n);
+  }
+
+  HOSTDEV constexpr static
+  void destroy(Allocator & /*a*/, pointer p) noexcept {
+      destroy_at(p);
   }
 
   HOSTDEV [[nodiscard]] constexpr static auto 

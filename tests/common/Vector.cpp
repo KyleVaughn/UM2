@@ -9,6 +9,11 @@ template <typename T>
 HOSTDEV TEST_CASE(test_allocator_constructor)
 {
   struct TestAlloc {
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    using value_type = T;
+    #pragma GCC diagnostic pop
 
     int i = 0;
 
@@ -18,7 +23,7 @@ HOSTDEV TEST_CASE(test_allocator_constructor)
       return static_cast<T*>(::operator new(n * sizeof(T)));    
     }    
       
-    HOSTDEV constexpr void deallocate(T * p)    
+    HOSTDEV constexpr void deallocate(T * p, size_t /*n*/)    
     {    
       i--;
       ::operator delete(p);    

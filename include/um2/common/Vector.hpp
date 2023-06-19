@@ -22,6 +22,7 @@ namespace um2
 // https://en.cppreference.com/w/cpp/container/vector
 
 template <typename T, typename Allocator = BasicAllocator<T>>
+//NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
 struct Vector {
 
   using Ptr = T *;
@@ -32,10 +33,6 @@ struct Vector {
     Ptr _begin = nullptr;
     Ptr _end = nullptr;
     EndCap _end_cap = EndCap(nullptr, Allocator());
-
-    // -----------------------------------------------------------------------------
-    // Private methods
-    // -----------------------------------------------------------------------------
 
     //  Allocate space for n objects
     //  throws length_error if n > max_size()
@@ -53,35 +50,40 @@ struct Vector {
 //        __end_cap() = __begin_ + __allocation.count;
 //        __annotate_new(0);
 //    }
+    // cppcheck-suppress functionConst
+    [[nodiscard]] constexpr HIDDEN auto alloc() noexcept -> Allocator &
+    {
+      return this->_end_cap.second;
+    }
 
-////    constexpr void _clear() noexcept {__base_destruct_at_end(this->_begin);}
-//
-//
-    //constexpr HIDDEN void __base_destruct_at_end(Ptr new_last) noexcept {
-    //  Ptr soon_to_be_end = this->_end;
-    //  while (new_last != soon_to_be_end) {
-    //    AllocTraits::destroy(__alloc(), std::__to_address(--__soon_to_be_end));
-    //  }
-    //  this->_end = new_last;
-    //}
+    [[nodiscard]] constexpr HIDDEN auto alloc() const noexcept -> Allocator const &
+    {
+      return this->_end_cap.second;
+    }
 
-    //constexpr HIDDEN void __clear() noexcept {__base_destruct_at_end(this->_begin);}
+    // cppcheck-suppress functionConst
+    [[nodiscard]] constexpr HIDDEN auto endcap() noexcept -> Allocator &
+    {
+      return this->_end_cap.first;
+    }
 
-    //class _DestroyVector {
-    //  private:
-    //    Vector & _vec;
+    [[nodiscard]] constexpr HIDDEN auto endcap() const noexcept -> Allocator const &
+    {
+      return this->_end_cap.first;
+    }
 
-    //  public:
-    //    constexpr HIDDEN _DestroyVector(Vector & vec) : _vec(vec) {}
-    
-    //    constexpr HIDDEN void operator()() {
-    //      if (_vec._begin != nullptr) {
-    //        _vec.__clear();
-//  //          _alloc_traits::deallocate(__vec_.__alloc(), __vec_.__begin_, __vec_.capacity());
-    //      }
-    //    }
-    //}; // class DestroyVector
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    constexpr HIDDEN void destruct_at_end(Ptr new_last) noexcept
+    {
+      Ptr soon_to_be_end = this->_end;
+      while (new_last != soon_to_be_end) {
+        AllocTraits::destroy(alloc(), --soon_to_be_end);
+      }
+      this->_end = new_last;
+    }
 
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    constexpr HIDDEN void clear_mem() noexcept { destruct_at_end(this->_begin); }
 
   public:
 
@@ -112,12 +114,17 @@ struct Vector {
 ////  // NOLINTNEXTLINE(google-explicit-constructor)
 ////  Vector(std::initializer_list<T> const & list);
 ////
-//
-//    // -----------------------------------------------------------------------------
-//    // Destructor
-//    // -----------------------------------------------------------------------------
-//    HOSTDEV constexpr ~Vector() noexcept { _DestroyVector(*this)(); }
-//
+
+    // -----------------------------------------------------------------------------
+    // Destructor
+    // -----------------------------------------------------------------------------
+    HOSTDEV constexpr ~Vector() noexcept {
+      if (_begin != nullptr) {
+        clear_mem();
+        AllocTraits::deallocate(alloc(), _begin, capacity());
+      }
+    }
+
   // -----------------------------------------------------------------------------
   // Accessors
   // -----------------------------------------------------------------------------
@@ -127,7 +134,8 @@ struct Vector {
 //
 ////  PURE HOSTDEV [[nodiscard]] constexpr auto size() const noexcept -> len_t;
 ////
-////  PURE HOSTDEV [[nodiscard]] constexpr auto capacity() const noexcept -> len_t;
+    PURE HOSTDEV [[nodiscard]] constexpr auto 
+    capacity() const noexcept -> size_t;
 ////
 ////  // cppcheck-suppress functionConst
 ////  PURE HOSTDEV constexpr auto data() noexcept -> T *;
