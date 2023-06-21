@@ -83,35 +83,40 @@ else()
 endif()
 target_link_libraries(um2 PRIVATE spdlog::spdlog)
 
-## Thrust ########################################
+## libcudacxx ####################################
 ##################################################
-set(Thrust_DIR "${PROJECT_SOURCE_DIR}/tpls/thrust/thrust/cmake")
-find_package(Thrust REQUIRED CONFIG)
-# Host backend (OpenMP > Sequential)
-if (UM2_ENABLE_OPENMP)
-  set(UM2_THRUST_HOST "OMP" CACHE STRING "Thrust host backend")
-else()
-  set(UM2_THRUST_HOST "CPP" CACHE STRING "Thrust host backend")
-endif()
-set_property(CACHE UM2_THRUST_HOST PROPERTY STRINGS "OMP" "CPP")
-# Device backend (CUDA > OpenMP > Sequential)
-if (UM2_ENABLE_CUDA)
-  set(UM2_THRUST_DEVICE "CUDA" CACHE STRING "Thrust device backend")
-elseif (UM2_ENABLE_OPENMP)
-  set(UM2_THRUST_DEVICE "OMP" CACHE STRING "Thrust device backend")
-else()
-  set(UM2_THRUST_DEVICE "CPP" CACHE STRING "Thrust device backend")
-endif()
-set_property(CACHE UM2_THRUST_DEVICE PROPERTY STRINGS "CUDA" "OMP" "CPP")
-message(STATUS "Thrust host backend: ${UM2_THRUST_HOST}")
-message(STATUS "Thrust device backend: ${UM2_THRUST_DEVICE}")
-thrust_create_target(Thrust HOST ${UM2_THRUST_HOST} DEVICE ${UM2_THRUST_DEVICE})
-# Treat the Thrust includes as system includes    
-target_link_libraries(um2 PRIVATE Thrust)
+add_subdirectory("${PROJECT_SOURCE_DIR}/tpls/libcudacxx" SYSTEM)
+#target_link_libraries(um2 PRIVATE CUDA::cudart CUDA::cuda_driver CUDA::nvrtc libcudacxx)
 target_include_directories(um2 SYSTEM PUBLIC      
-  "${PROJECT_SOURCE_DIR}/tpls/thrust/thrust/cmake/../.."    
-  "${PROJECT_SOURCE_DIR}/tpls/thrust/dependencies/libcudacxx/include"    
-  "${PROJECT_SOURCE_DIR}/tpls/thrust/dependencies/cub")
+  "${PROJECT_SOURCE_DIR}/tpls/libcudacxx/include") 
+
+#set(Thrust_DIR "${PROJECT_SOURCE_DIR}/tpls/thrust/thrust/cmake")
+#find_package(Thrust REQUIRED CONFIG)
+## Host backend (OpenMP > Sequential)
+#if (UM2_ENABLE_OPENMP)
+#  set(UM2_THRUST_HOST "OMP" CACHE STRING "Thrust host backend")
+#else()
+#  set(UM2_THRUST_HOST "CPP" CACHE STRING "Thrust host backend")
+#endif()
+#set_property(CACHE UM2_THRUST_HOST PROPERTY STRINGS "OMP" "CPP")
+## Device backend (CUDA > OpenMP > Sequential)
+#if (UM2_ENABLE_CUDA)
+#  set(UM2_THRUST_DEVICE "CUDA" CACHE STRING "Thrust device backend")
+#elseif (UM2_ENABLE_OPENMP)
+#  set(UM2_THRUST_DEVICE "OMP" CACHE STRING "Thrust device backend")
+#else()
+#  set(UM2_THRUST_DEVICE "CPP" CACHE STRING "Thrust device backend")
+#endif()
+#set_property(CACHE UM2_THRUST_DEVICE PROPERTY STRINGS "CUDA" "OMP" "CPP")
+#message(STATUS "Thrust host backend: ${UM2_THRUST_HOST}")
+#message(STATUS "Thrust device backend: ${UM2_THRUST_DEVICE}")
+#thrust_create_target(Thrust HOST ${UM2_THRUST_HOST} DEVICE ${UM2_THRUST_DEVICE})
+## Treat the Thrust includes as system includes    
+#target_link_libraries(um2 PRIVATE Thrust)
+#target_include_directories(um2 SYSTEM PUBLIC      
+#  "${PROJECT_SOURCE_DIR}/tpls/thrust/thrust/cmake/../.."    
+#  "${PROJECT_SOURCE_DIR}/tpls/thrust/dependencies/libcudacxx/include"    
+#  "${PROJECT_SOURCE_DIR}/tpls/thrust/dependencies/cub")
 
 ## visualization #################################
 ##################################################

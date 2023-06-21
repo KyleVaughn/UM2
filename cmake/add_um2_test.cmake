@@ -4,7 +4,7 @@ macro(add_um2_test TESTNAME)
   # Always include the test framework header with the test    
   add_executable(${TESTNAME} ${ARGN} ${TEST_FRAMEWORK_HEADER})    
 
-  target_link_libraries(${TESTNAME} um2 spdlog::spdlog Thrust)    
+  target_link_libraries(${TESTNAME} um2 spdlog::spdlog)    
 
   add_test(${TESTNAME} ${TESTNAME})    
 

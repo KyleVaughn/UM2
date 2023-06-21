@@ -40,14 +40,18 @@ TEST_CASE(test_allocator_constructor)
   assert(v.get_allocator().i == 11);
 }
 
-//template <class T>
-//HOSTDEV TEST_CASE(length_constructor)
-//{
-//  um2::Vector<T> v(10);
-//  assert(v.size() == 10);
-//  assert(v.capacity() == 10);
-//  assert(v.data() != nullptr);
-//}
+template <class T>
+HOSTDEV
+TEST_CASE(test_length_constructor)
+{
+  um2::Vector<T> v(10);
+  assert(v.size() == 10);
+  assert(v.capacity() == 10);
+  assert(v.data() != nullptr);
+  for (int i = 0; i < 10; i++) {
+    assert(v.data()[i] == 0);
+  }
+}
 
 // template <class T>
 // HOSTDEV TEST_CASE(length_val_constructor)
@@ -475,63 +479,70 @@ TEST_CASE(test_allocator_constructor)
 //  EXPECT_TRUE(isApprox(v1, v3, eps));
 //}
 //
-//// --------------------------------------------------------------------------
-//// CUDA
-//// --------------------------------------------------------------------------
-//#if ENABLE_CUDA
+// --------------------------------------------------------------------------
+// CUDA
+// --------------------------------------------------------------------------
+#if UM2_ENABLE_CUDA
+
+template <class T>
+MAKE_CUDA_KERNEL(test_allocator_constructor, T)
+
+template <class T>
+MAKE_CUDA_KERNEL(test_length_constructor, T)
+
 // template <class T>
 // MAKE_CUDA_KERNEL(begin_end, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(front_back, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(front_back, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(length_constructor, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(length_constructor, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(length_val_constructor, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(length_val_constructor, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(copy_constructor, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(copy_constructor, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(clear, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(clear, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(reserve, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(reserve, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(resize, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(resize, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(push_back, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(push_back, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(empty, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(empty, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(insert, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(insert, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(contains, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(contains, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(isApprox, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(isApprox, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(operator_equal, T)
+//  template <class T>
+//  MAKE_CUDA_KERNEL(operator_equal, T)
 //
-// template <class T>
-// MAKE_CUDA_KERNEL(operator_assign, T)
-//
-//#endif // ENABLE_CUDA
-//
+//  template <class T>
+//  MAKE_CUDA_KERNEL(operator_assign, T)
+
+#endif // UM2_ENABLE_CUDA
+
 template <class T>
 TEST_SUITE(vector)
 {
   // Constructors
   TEST_HOSTDEV(test_allocator_constructor, 1, 1, T)
-//  TEST_HOSTDEV(length_constructor, 1, 1, T)
+  TEST_HOSTDEV(test_length_constructor, 1, 1, T)
   //  TEST_HOSTDEV(length_val_constructor, 1, 1, T)
   //  TEST_HOSTDEV(copy_constructor, 1, 1, T)
 

@@ -2,7 +2,7 @@
 
 #include <um2/common/memory.hpp>
 
-#include <cuda/std/bit> // cuda::std::bit_ceil
+#include <cuda/std/bit>     // cuda::std::bit_ceil
 #include <cuda/std/utility> // cuda::std::pair
 
 //#include <cmath>            // std::abs
@@ -95,6 +95,7 @@ template <typename T, typename Allocator = BasicAllocator<T>>
 struct Vector {
 
   using Ptr = T *;
+  using ConstPtr = T const *;
   using EndCap = cuda::std::pair<Ptr, Allocator>;
   using AllocTraits = AllocatorTraits<Allocator>;
 
@@ -102,37 +103,75 @@ private:
   Ptr _begin = nullptr;
   Ptr _end = nullptr;
   EndCap _end_cap = EndCap(nullptr, Allocator());
-  
+
   // ---------------------------------------------------------------------------
   // HIDDEN
   // ---------------------------------------------------------------------------
-  [[nodiscard]] constexpr HIDDEN auto
+  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
   // cppcheck-suppress functionConst
   alloc() noexcept -> Allocator &
   {
     return _end_cap.second;
   }
 
-  [[nodiscard]] constexpr HIDDEN auto
+  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
   alloc() const noexcept -> Allocator const &
   {
     return _end_cap.second;
   }
 
-  [[nodiscard]] constexpr HIDDEN auto
+  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
   // cppcheck-suppress functionConst
-  endcap() noexcept -> Allocator &
+  endcap() noexcept -> Ptr &
   {
     return _end_cap.first;
   }
 
-  [[nodiscard]] constexpr HIDDEN auto
-  endcap() const noexcept -> Allocator const &
+  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
+  endcap() const noexcept -> Ptr const &
   {
     return _end_cap.first;
   }
 
-  constexpr HIDDEN void
+  // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
+  struct ConstructTransaction {
+
+    Vector & v;
+    Ptr pos;
+    ConstPtr const new_end;
+
+    constexpr HIDDEN explicit ConstructTransaction(Vector & v_in, Size n)
+        : v(v_in),
+          pos(v_in._end),
+          new_end(v_in._end + n)
+    {
+    }
+
+    constexpr HIDDEN ~ConstructTransaction() { v._end = pos; }
+
+    ConstructTransaction(ConstructTransaction const &) = delete;
+    auto
+    operator=(ConstructTransaction const &) -> ConstructTransaction & = delete;
+  };
+
+  //  Default constructs n objects starting at _end
+  //  Precondition:  n > 0
+  //  Precondition:  size() + n <= capacity()
+  //  Postcondition:  size() == size() + n
+  HOSTDEV constexpr HIDDEN void
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  construct_at_end(Size n)
+  {
+    assert(n > 0);
+    assert(size() + n <= capacity());
+    ConstructTransaction tx(*this, n);
+    ConstPtr new_end = tx.new_end;
+    for (Ptr pos = tx.pos; pos != new_end; tx.pos = ++pos) {
+      AllocTraits::construct(this->alloc(), pos);
+    }
+  }
+
+  HOSTDEV constexpr HIDDEN void
   // NOLINTNEXTLINE(readability-identifier-naming)
   destruct_at_end(Ptr new_last) noexcept
   {
@@ -143,7 +182,7 @@ private:
     _end = new_last;
   }
 
-  constexpr HIDDEN void
+  HOSTDEV constexpr HIDDEN void
   // NOLINTNEXTLINE(readability-identifier-naming)
   clear_mem() noexcept
   {
@@ -155,7 +194,7 @@ private:
   //  Precondition:  n > 0
   //  Postcondition:  capacity() >= n
   //  Postcondition:  size() == 0
-  constexpr HIDDEN void
+  HOSTDEV constexpr HIDDEN void
   allocate(Size const n)
   {
     auto const allocation = AllocTraits::allocate_at_least(alloc(), n);
@@ -257,12 +296,12 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   data() const noexcept -> T const *;
 
-  
   // -----------------------------------------------------------------------------
   // Methods
   // -----------------------------------------------------------------------------
-  
-  HOSTDEV constexpr void reserve(Size n);
+
+  HOSTDEV constexpr void
+  reserve(Size n);
 
   ////  HOSTDEV void clear() noexcept;
   ////

@@ -10,7 +10,6 @@
 	path = tpls/eigen
 	url = https://gitlab.com/libeigen/eigen.git
 	branch = 3.4
-[submodule "tpls/thrust"]
-	path = tpls/thrust
-	url = https://github.com/NVIDIA/thrust.git
-	branch = 2.1.x
+[submodule "tpls/libcudacxx"]
+	path = tpls/libcudacxx
+	url = https://github.com/NVIDIA/libcudacxx.git

@@ -9,30 +9,18 @@ DEVICE int count = 0;
 #endif
 struct Counted {
   HOSTDEV
-  Counted()
-  {
-    ++count;
-  }
+  Counted() { ++count; }
   HOSTDEV
-  Counted(Counted const &)
-  {
-    ++count;
-  }
+  Counted(Counted const &) { ++count; }
   HOSTDEV ~Counted() { --count; }
   HOSTDEV friend void operator&(Counted) = delete;
 };
 
 struct VCounted {
   HOSTDEV
-  VCounted()
-  {
-    ++count;
-  }
+  VCounted() { ++count; }
   HOSTDEV
-  VCounted(VCounted const &)
-  {
-    ++count;
-  }
+  VCounted(VCounted const &) { ++count; }
   HOSTDEV virtual ~VCounted() { --count; }
   HOSTDEV friend void operator&(VCounted) = delete;
 };
@@ -94,6 +82,37 @@ TEST_CASE(test_destroy_at)
 MAKE_CUDA_KERNEL(test_destroy_at);
 
 // ------------------------------------------------------------
+// construct_at
+// ------------------------------------------------------------
+
+HOSTDEV
+TEST_CASE(test_construct_at)
+{
+  struct S {
+    int x;
+    float y;
+    double z;
+
+    HOSTDEV
+    S(int x_in, float y_in, double z_in)
+        : x(x_in),
+          y(y_in),
+          z(z_in)
+    {
+    }
+  };
+
+  alignas(S) unsigned char storage[sizeof(S)];
+
+  S * ptr = um2::construct_at(reinterpret_cast<S *>(storage), 42, 2.71828F, 3.1415);
+  assert((*ptr).x == 42);
+  assert(((*ptr).y - 2.71828F) < 0.0001F);
+  assert(((*ptr).z - 3.1415) < 0.0001);
+  um2::destroy_at(ptr);
+}
+MAKE_CUDA_KERNEL(test_construct_at);
+
+// ------------------------------------------------------------
 // destroy
 // ------------------------------------------------------------
 
@@ -128,15 +147,16 @@ MAKE_CUDA_KERNEL(test_destroy);
 // Test Suite
 // ------------------------------------------------------------
 
-TEST_SUITE(destroy_at)
+TEST_SUITE(construct_at)
 {
   TEST_HOSTDEV(test_destroy_at);
+  TEST_HOSTDEV(test_construct_at);
   TEST_HOSTDEV(test_destroy);
 }
 
 auto
 main() -> int
 {
-  RUN_TESTS(destroy_at);
+  RUN_TESTS(construct_at);
   return 0;
 }

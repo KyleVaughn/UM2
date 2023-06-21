@@ -3,12 +3,26 @@
 #include <um2/config.hpp>
 
 #include <um2/common/memory/addressof.hpp>
-
-#include <memory>
+#include <um2/common/utility/forward.hpp>
 
 // NOLINTBEGIN(readability-identifier-naming)
 namespace um2
 {
+
+// -----------------------------------------------------------------------------
+// construct_at
+// -----------------------------------------------------------------------------
+// Constructs an object of type T in allocated uninitialized storage pointed to
+// by p, as if by ::new(p) T(std::forward<Args>(args)...).
+// https://en.cppreference.com/w/cpp/memory/construct_at
+
+template <class T, class... Args>
+HOSTDEV constexpr auto
+construct_at(T * p, Args &&... args) -> T *
+{
+  assert(p != nullptr && "null pointer given to construct_at");
+  return ::new (static_cast<void *>(p)) T(forward<Args>(args)...);
+}
 
 // -----------------------------------------------------------------------------
 // destroy_at
@@ -19,19 +33,8 @@ namespace um2
 // as if by calling std::destroy(std::begin(*p), std::end(*p)).
 // https://en.cppreference.com/w/cpp/memory/destroy_at
 
-#ifndef __CUDA_ARCH__
-
 template <class T>
-constexpr void
-destroy_at(T * p)
-{
-  std::destroy_at(p);
-}
-
-#else
-
-template <class T>
-__device__ constexpr void
+HOSTDEV constexpr void
 destroy_at(T * p)
 {
   if constexpr (std::is_array_v<T>) {
@@ -43,35 +46,20 @@ destroy_at(T * p)
   }
 }
 
-#endif
-
 // -----------------------------------------------------------------------------
 // destroy
 // -----------------------------------------------------------------------------
 // Destroys the objects in the range [first, last).
 // https://en.cppreference.com/w/cpp/memory/destroy
 
-#ifndef __CUDA_ARCH__
-
 template <class ForwardIt>
-constexpr void
-destroy(ForwardIt first, ForwardIt last)
-{
-  std::destroy(first, last);
-}
-
-#else
-
-template <class ForwardIt>
-__device__ constexpr void
+HOSTDEV constexpr void
 destroy(ForwardIt first, ForwardIt last)
 {
   for (; first != last; ++first) {
     destroy_at(addressof(*first));
   }
 }
-
-#endif
 
 } // namespace um2
 // NOLINTEND(readability-identifier-naming)

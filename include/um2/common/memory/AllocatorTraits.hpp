@@ -13,7 +13,7 @@ namespace um2
 template <class Pointer>
 struct AllocationResult {
   Pointer ptr;
-  Size count; 
+  Size count;
 };
 
 template <class Allocator>
@@ -38,6 +38,13 @@ struct AllocatorTraits {
   destroy(Allocator & /*a*/, pointer p) noexcept
   {
     destroy_at(p);
+  }
+
+  template <class... Args>
+  HOSTDEV constexpr static void
+  construct(Allocator & /*a*/, pointer p, Args &&... args) noexcept
+  {
+    construct_at(p, forward<Args>(args)...);
   }
 
   HOSTDEV [[nodiscard]] constexpr static auto

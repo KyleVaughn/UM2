@@ -44,7 +44,6 @@ TEST_CASE(test_basic_allocator)
   assert(alloc_result_i32.ptr != nullptr);
   assert(alloc_result_i32.count == 3);
   alloc_i32.deallocate(alloc_result_i32.ptr, alloc_result_i32.count);
-
 }
 MAKE_CUDA_KERNEL(test_basic_allocator);
 
@@ -80,7 +79,7 @@ TEST_CASE(test_basic_allocator_traits)
   n = 3;
   auto alloc_result_i32 = AllocTraitsi32::allocate_at_least(alloc_i32, n);
   assert(alloc_result_i32.ptr != nullptr);
-  assert(alloc_result_i32.count == 3); 
+  assert(alloc_result_i32.count == 3);
   AllocTraitsi32::deallocate(alloc_i32, alloc_result_i32.ptr, alloc_result_i32.count);
 }
 MAKE_CUDA_KERNEL(test_basic_allocator_traits);

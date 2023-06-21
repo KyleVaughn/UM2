@@ -10,14 +10,14 @@ HOSTDEV constexpr Vector<T, Allocator>::Vector(Allocator const & a) noexcept
 {
 }
 
-// template <class T>
-// HOSTDEV Vector<T>::Vector(Size const n)
-//     : _size{n},
-//       _capacity{bit_ceil(n)},
-//       _data{new T[static_cast<uSize>(bit_ceil(n))]}
-//{
-//   assert(n > 0);
-// }
+template <class T, class Allocator>
+HOSTDEV
+Vector<T, Allocator>::Vector(Size const n)
+{
+  assert(n > 0);
+  allocate(n);
+  construct_at_end(n);
+}
 //
 // template <class T>
 // HOSTDEV Vector<T>::Vector(Size const n, T const & value)
@@ -261,29 +261,18 @@ Vector<T, Allocator>::operator[](Size const i) const noexcept -> T const &
 // Methods
 // ---------------------------------------------------------------------------
 
-//template <class T, class Allocator>
-//constexpr void
-//Vector<T, Allocator>::reserve(Size n)
+// template <class T, class Allocator>
+// constexpr void
+// Vector<T, Allocator>::reserve(Size n)
 //{
-//    if (n > capacity()) {
-//        if (n > max_size())
-//            this->__throw_length_error();
-//        allocator_type& __a = this->__alloc();
-//        __split_buffer<value_type, allocator_type&> __v(__n, size(), __a);
-//        __swap_out_circular_buffer(__v);
-//    }
-//}
-
-
-
-
-
-
-
-
-
-
-
+//     if (n > capacity()) {
+//         if (n > max_size())
+//             this->__throw_length_error();
+//         allocator_type& __a = this->__alloc();
+//         __split_buffer<value_type, allocator_type&> __v(__n, size(), __a);
+//         __swap_out_circular_buffer(__v);
+//     }
+// }
 
 // template <class T>
 // HOSTDEV void Vector<T>::clear() noexcept
