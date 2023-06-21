@@ -40,15 +40,18 @@ struct Color {
 // Operators
 // -----------------------------------------------------------------------------
 
-UM2_CONST UM2_HOSTDEV constexpr auto operator==(Color lhs, Color rhs) noexcept -> bool;
+UM2_CONST UM2_HOSTDEV constexpr auto
+operator==(Color lhs, Color rhs) noexcept -> bool;
 
-UM2_CONST UM2_HOSTDEV constexpr auto operator!=(Color lhs, Color rhs) noexcept -> bool;
+UM2_CONST UM2_HOSTDEV constexpr auto
+operator!=(Color lhs, Color rhs) noexcept -> bool;
 
 // -----------------------------------------------------------------------------
 // Methods
 // -----------------------------------------------------------------------------
 
-UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Color;
+UM2_PURE UM2_HOSTDEV constexpr auto
+toColor(String const & name) noexcept -> Color;
 
 } // namespace um2
 

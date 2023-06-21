@@ -6,15 +6,15 @@ namespace um2
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Triangle<D, T>::operator[](len_t i)
-    -> Point<D, T> &
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
+Triangle<D, T>::operator[](len_t i) -> Point<D, T> &
 {
   return this->vertices[i];
 }
 
 template <len_t D, typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Triangle<D, T>::operator[](len_t i) const
-    -> Point<D, T> const &
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
+Triangle<D, T>::operator[](len_t i) const -> Point<D, T> const &
 {
   return this->vertices[i];
 }
@@ -25,9 +25,8 @@ UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto Triangle<D, T>::operator[](len_t i) c
 
 template <len_t D, typename T>
 template <typename R, typename S>
-UM2_PURE UM2_HOSTDEV constexpr auto Triangle<D, T>::operator()(R const r,
-                                                               S const s) const noexcept
-    -> Point<D, T>
+UM2_PURE UM2_HOSTDEV constexpr auto
+Triangle<D, T>::operator()(R const r, S const s) const noexcept -> Point<D, T>
 {
   T const rr = static_cast<T>(r);
   T const ss = static_cast<T>(s);
@@ -41,9 +40,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto Triangle<D, T>::operator()(R const r,
 
 template <len_t D, typename T>
 template <typename R, typename S>
-UM2_PURE UM2_HOSTDEV constexpr auto Triangle<D, T>::jacobian(R /*r*/,
-                                                             S /*s*/) const noexcept
-    -> Mat<D, 2, T>
+UM2_PURE UM2_HOSTDEV constexpr auto
+Triangle<D, T>::jacobian(R /*r*/, S /*s*/) const noexcept -> Mat<D, 2, T>
 {
   Mat<D, 2, T> jac;
   jac.col(0) = this->vertices[1] - this->vertices[0];
@@ -56,8 +54,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto Triangle<D, T>::jacobian(R /*r*/,
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto Triangle<D, T>::edge(len_t i) const noexcept
-    -> LineSegment<D, T>
+UM2_PURE UM2_HOSTDEV constexpr auto
+Triangle<D, T>::edge(len_t i) const noexcept -> LineSegment<D, T>
 {
   return (i == 2) ? LineSegment<D, T>(this->vertices[2], this->vertices[0])
                   : LineSegment<D, T>(this->vertices[i], this->vertices[i + 1]);

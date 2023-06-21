@@ -2,7 +2,8 @@
 #include <um2/geometry/axis_aligned_box.hpp>
 
 template <len_t D, std::floating_point T>
-UM2_HOSTDEV static constexpr auto makeBox() -> um2::AABox<D, T>
+UM2_HOSTDEV static constexpr auto
+makeBox() -> um2::AABox<D, T>
 {
   um2::AABox<D, T> box;
   for (len_t i = 0; i < D; ++i) {
@@ -13,7 +14,8 @@ UM2_HOSTDEV static constexpr auto makeBox() -> um2::AABox<D, T>
 }
 
 template <len_t D, std::floating_point T>
-UM2_HOSTDEV TEST_CASE(accessors)
+UM2_HOSTDEV
+TEST_CASE(accessors)
 {
   um2::AABox<D, T> box = makeBox<D, T>();
   if constexpr (D >= 1) {
@@ -31,7 +33,8 @@ UM2_HOSTDEV TEST_CASE(accessors)
 }
 
 template <len_t D, std::floating_point T>
-UM2_HOSTDEV TEST_CASE(lengths)
+UM2_HOSTDEV
+TEST_CASE(lengths)
 {
   um2::AABox<D, T> box = makeBox<D, T>();
   if constexpr (D >= 1) {
@@ -46,7 +49,8 @@ UM2_HOSTDEV TEST_CASE(lengths)
 }
 
 template <len_t D, std::floating_point T>
-UM2_HOSTDEV TEST_CASE(centroid)
+UM2_HOSTDEV
+TEST_CASE(centroid)
 {
   um2::AABox<D, T> box = makeBox<D, T>();
   um2::Point<D, T> p = box.centroid();
@@ -56,7 +60,8 @@ UM2_HOSTDEV TEST_CASE(centroid)
 }
 
 template <len_t D, std::floating_point T>
-UM2_HOSTDEV TEST_CASE(contains)
+UM2_HOSTDEV
+TEST_CASE(contains)
 {
   um2::AABox<D, T> box = makeBox<D, T>();
   um2::Point<D, T> p;
@@ -71,7 +76,8 @@ UM2_HOSTDEV TEST_CASE(contains)
 }
 
 template <len_t D, std::floating_point T>
-UM2_HOSTDEV TEST_CASE(is_approx)
+UM2_HOSTDEV
+TEST_CASE(is_approx)
 {
   um2::AABox<D, T> box1 = makeBox<D, T>();
   um2::AABox<D, T> box2 = makeBox<D, T>();
@@ -83,7 +89,8 @@ UM2_HOSTDEV TEST_CASE(is_approx)
 }
 
 template <len_t D, std::floating_point T>
-UM2_HOSTDEV TEST_CASE(bounding_box)
+UM2_HOSTDEV
+TEST_CASE(bounding_box)
 {
   // boundingBox(AABox, AABox)
   um2::AABox<D, T> box = makeBox<D, T>();
@@ -164,7 +171,8 @@ TEST_SUITE(aabb)
   TEST_HOSTDEV(bounding_box, 1, 1, D, T);
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_TESTS((aabb<1, float>));
   RUN_TESTS((aabb<2, float>));

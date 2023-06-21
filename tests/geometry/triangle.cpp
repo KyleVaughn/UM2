@@ -2,7 +2,8 @@
 #include <um2/geometry/triangle.hpp>
 
 template <len_t D, typename T>
-UM2_HOSTDEV static constexpr auto makeTri() -> um2::Triangle<D, T>
+UM2_HOSTDEV static constexpr auto
+makeTri() -> um2::Triangle<D, T>
 {
   um2::Triangle<D, T> this_tri;
   for (len_t i = 0; i < 3; ++i) {
@@ -20,7 +21,8 @@ UM2_HOSTDEV static constexpr auto makeTri() -> um2::Triangle<D, T>
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(interpolate)
+UM2_HOSTDEV
+TEST_CASE(interpolate)
 {
   um2::Triangle<D, T> tri = makeTri<D, T>();
   um2::Point<D, T> p00 = tri(0, 0);
@@ -36,7 +38,8 @@ UM2_HOSTDEV TEST_CASE(interpolate)
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(jacobian)
+UM2_HOSTDEV
+TEST_CASE(jacobian)
 {
   // For the reference triangle, the Jacobian is constant.
   um2::Triangle<D, T> tri = makeTri<D, T>();
@@ -57,7 +60,8 @@ UM2_HOSTDEV TEST_CASE(jacobian)
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(edge)
+UM2_HOSTDEV
+TEST_CASE(edge)
 {
   um2::Triangle<D, T> tri = makeTri<D, T>();
   um2::LineSegment<D, T> edge = tri.edge(0);
@@ -76,7 +80,8 @@ UM2_HOSTDEV TEST_CASE(edge)
 // -------------------------------------------------------------------
 
 template <typename T>
-UM2_HOSTDEV TEST_CASE(contains)
+UM2_HOSTDEV
+TEST_CASE(contains)
 {
   um2::Triangle<2, T> tri = makeTri<2, T>();
   um2::Point2<T> p = um2::Point2<T>(static_cast<T>(0.25), static_cast<T>(0.25));
@@ -94,7 +99,8 @@ UM2_HOSTDEV TEST_CASE(contains)
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(area)
+UM2_HOSTDEV
+TEST_CASE(area)
 {
   um2::Triangle<2, T> tri = makeTri<2, T>();
   EXPECT_NEAR(area(tri), 0.5, 1e-5);
@@ -104,7 +110,8 @@ UM2_HOSTDEV TEST_CASE(area)
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(centroid)
+UM2_HOSTDEV
+TEST_CASE(centroid)
 {
   um2::Triangle<D, T> tri = makeTri<D, T>();
   um2::Point<D, T> c = centroid(tri);
@@ -117,7 +124,8 @@ UM2_HOSTDEV TEST_CASE(centroid)
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(boundingBox)
+UM2_HOSTDEV
+TEST_CASE(boundingBox)
 {
   um2::Triangle<D, T> tri = makeTri<D, T>();
   um2::AABox<D, T> box = boundingBox(tri);
@@ -164,7 +172,8 @@ TEST_SUITE(triangle)
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_TESTS((triangle<2, float>));
   RUN_TESTS((triangle<3, float>));

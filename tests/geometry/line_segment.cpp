@@ -2,7 +2,8 @@
 #include <um2/geometry/line_segment.hpp>
 
 template <len_t D, typename T>
-UM2_HOSTDEV static constexpr auto makeLine() -> um2::LineSegment<D, T>
+UM2_HOSTDEV static constexpr auto
+makeLine() -> um2::LineSegment<D, T>
 {
   um2::LineSegment<D, T> line;
   for (len_t i = 0; i < D; ++i) {
@@ -16,7 +17,8 @@ UM2_HOSTDEV static constexpr auto makeLine() -> um2::LineSegment<D, T>
 // Accessors
 // -------------------------------------------------------------------
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(accessors)
+UM2_HOSTDEV
+TEST_CASE(accessors)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
   EXPECT_TRUE(um2::isApprox(line[0], line.vertices[0]));
@@ -28,7 +30,8 @@ UM2_HOSTDEV TEST_CASE(accessors)
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(interpolate)
+UM2_HOSTDEV
+TEST_CASE(interpolate)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
   um2::Point<D, T> p0 = line(0);
@@ -45,7 +48,8 @@ UM2_HOSTDEV TEST_CASE(interpolate)
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(jacobian)
+UM2_HOSTDEV
+TEST_CASE(jacobian)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
   um2::Vec<D, T> j_ref = line[1] - line[0];
@@ -60,7 +64,8 @@ UM2_HOSTDEV TEST_CASE(jacobian)
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(length)
+UM2_HOSTDEV
+TEST_CASE(length)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
   T len_ref = (line[1] - line[0]).norm();
@@ -72,7 +77,8 @@ UM2_HOSTDEV TEST_CASE(length)
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(bounding_box)
+UM2_HOSTDEV
+TEST_CASE(bounding_box)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
   um2::AABox<D, T> box = boundingBox(line);
@@ -85,7 +91,8 @@ UM2_HOSTDEV TEST_CASE(bounding_box)
 // -------------------------------------------------------------------
 
 template <typename T>
-UM2_HOSTDEV TEST_CASE(is_left)
+UM2_HOSTDEV
+TEST_CASE(is_left)
 {
   um2::LineSegment2<T> line = makeLine<2, T>();
   um2::Point2<T> p0 = line[0];
@@ -133,7 +140,8 @@ TEST_SUITE(line_segment)
   TEST_HOSTDEV(is_left, 1, 1, T);
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_TESTS((line_segment<2, float>));
   RUN_TESTS((line_segment<3, float>));

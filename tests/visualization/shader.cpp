@@ -11,20 +11,22 @@
 #include <um2/visualization/vertex_buffer.hpp>
 
 #if UM2_ENABLE_VIS
-static void errorCallback(int error, const char * description)
+static void
+errorCallback(int error, const char * description)
 {
   fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
-static void keyCallback(GLFWwindow * window, int key, int /*scancode*/, int action,
-                        int /*mods*/)
+static void
+keyCallback(GLFWwindow * window, int key, int /*scancode*/, int action, int /*mods*/)
 {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
 }
 
-static void framebufferSizeCallback(GLFWwindow * /*window*/, int width, int height)
+static void
+framebufferSizeCallback(GLFWwindow * /*window*/, int width, int height)
 {
   glViewport(0, 0, width, height);
 }
@@ -32,7 +34,8 @@ static void framebufferSizeCallback(GLFWwindow * /*window*/, int width, int heig
 int const WIDTH = 1024;
 int const HEIGHT = 768;
 
-UM2_HOSTDEV TEST_CASE(construct_from_source)
+UM2_HOSTDEV
+TEST_CASE(construct_from_source)
 {
 
   glfwSetErrorCallback(errorCallback);
@@ -119,7 +122,8 @@ UM2_HOSTDEV TEST_CASE(construct_from_source)
 TEST_SUITE(shader) { TEST(construct_from_source) }
 #endif
 
-auto main() -> int
+auto
+main() -> int
 {
 #if UM2_ENABLE_VIS
   RUN_TESTS(shader);

@@ -7,7 +7,8 @@ namespace um2
 // Constructors
 // --------------------------------------------------------------------------
 
-UM2_HOSTDEV String::String(String const & s)
+UM2_HOSTDEV
+String::String(String const & s)
     : _size{s._size},
       _capacity{bit_ceil(s._size + 1)},
       _data{new char[static_cast<ulen_t>(bit_ceil(s._size + 1))]}
@@ -18,7 +19,8 @@ UM2_HOSTDEV String::String(String const & s)
 // Turn off warning about member initializers since we need to delete _data before
 // assigning a new value to it.
 // NOLINTBEGIN(cppcoreguidelines-prefer-member-initializer)
-UM2_HOSTDEV String::String(String && s) noexcept
+UM2_HOSTDEV
+String::String(String && s) noexcept
     : _size{s._size},
       _capacity{s._capacity},
       _data{s._data}
@@ -41,7 +43,8 @@ String::String(std::string const & s)
 // Operators
 // --------------------------------------------------------------------------
 
-UM2_HOSTDEV auto String::operator=(String const & s) -> String &
+UM2_HOSTDEV auto
+String::operator=(String const & s) -> String &
 {
   if (this != &s) {
     len_t const sizep1 = s._size + 1;
@@ -56,7 +59,8 @@ UM2_HOSTDEV auto String::operator=(String const & s) -> String &
   return *this;
 }
 
-UM2_HOSTDEV auto String::operator=(String && s) noexcept -> String &
+UM2_HOSTDEV auto
+String::operator=(String && s) noexcept -> String &
 {
   if (this != &s) {
     delete[] this->_data;
@@ -70,7 +74,8 @@ UM2_HOSTDEV auto String::operator=(String && s) noexcept -> String &
   return *this;
 }
 
-auto String::operator=(std::string const & s) -> String &
+auto
+String::operator=(std::string const & s) -> String &
 {
   size_t const sizep1 = s.size() + 1;
   if (this->_capacity < static_cast<len_t>(sizep1)) {
@@ -83,7 +88,8 @@ auto String::operator=(std::string const & s) -> String &
   return *this;
 }
 
-UM2_PURE auto String::operator==(std::string const & s) const noexcept -> bool
+UM2_PURE auto
+String::operator==(std::string const & s) const noexcept -> bool
 {
   if (this->_size != static_cast<len_t>(s.size())) {
     return false;
@@ -100,7 +106,8 @@ UM2_PURE auto String::operator==(std::string const & s) const noexcept -> bool
 // Methods
 // --------------------------------------------------------------------------
 
-UM2_PURE auto toString(String const & s) -> std::string
+UM2_PURE auto
+toString(String const & s) -> std::string
 {
   return {s.data(), static_cast<size_t>(s.size())};
 }

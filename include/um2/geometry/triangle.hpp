@@ -26,25 +26,27 @@ struct Polytope<2, 1, 3, D, T> {
   // Accessors
   // -----------------------------------------------------------------------------
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) -> Point<D, T> &;
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
+  operator[](len_t i) -> Point<D, T> &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) const
-      -> Point<D, T> const &;
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
+  operator[](len_t i) const -> Point<D, T> const &;
 
   // -----------------------------------------------------------------------------
   // Methods
   // -----------------------------------------------------------------------------
 
   template <typename R, typename S>
-  UM2_PURE UM2_HOSTDEV constexpr auto operator()(R r, S s) const noexcept -> Point<D, T>;
+  UM2_PURE UM2_HOSTDEV constexpr auto
+  operator()(R r, S s) const noexcept -> Point<D, T>;
 
   template <typename R, typename S>
   UM2_PURE UM2_HOSTDEV
       [[nodiscard]] constexpr auto jacobian(R /*r*/, S /*s*/) const noexcept
       -> Mat<D, 2, T>;
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto edge(len_t i) const noexcept
-      -> LineSegment<D, T>;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  edge(len_t i) const noexcept -> LineSegment<D, T>;
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
   contains(Point<D, T> const & p) const noexcept -> bool requires(D == 2);

@@ -2,7 +2,8 @@
 #include <um2/math/morton.hpp>
 
 template <typename U>
-UM2_HOSTDEV TEST_CASE(mortonEncode)
+UM2_HOSTDEV
+TEST_CASE(mortonEncode)
 {
   EXPECT_EQ(um2::mortonEncode(static_cast<U>(0), static_cast<U>(0)), 0);
   EXPECT_EQ(um2::mortonEncode(static_cast<U>(1), static_cast<U>(0)), 1);
@@ -36,7 +37,8 @@ UM2_HOSTDEV TEST_CASE(mortonEncode)
 }
 
 template <typename U>
-UM2_HOSTDEV TEST_CASE(mortonDecode)
+UM2_HOSTDEV
+TEST_CASE(mortonDecode)
 {
   U x;
   U y;
@@ -75,7 +77,8 @@ UM2_HOSTDEV TEST_CASE(mortonDecode)
 }
 
 template <typename U, typename T>
-UM2_HOSTDEV TEST_CASE(normalizedMortonEncode)
+UM2_HOSTDEV
+TEST_CASE(normalizedMortonEncode)
 {
   T xscale = static_cast<T>(2);
   T yscale = static_cast<T>(4);
@@ -119,7 +122,8 @@ UM2_HOSTDEV TEST_CASE(normalizedMortonEncode)
 }
 
 template <typename U, typename T>
-UM2_HOSTDEV TEST_CASE(normalizedMortonDecode)
+UM2_HOSTDEV
+TEST_CASE(normalizedMortonDecode)
 {
   T xscale = static_cast<T>(2);
   T yscale = static_cast<T>(4);
@@ -192,7 +196,8 @@ TEST_SUITE(morton)
   }
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_TESTS(morton<uint32_t>);
   RUN_TESTS(morton<uint64_t>);

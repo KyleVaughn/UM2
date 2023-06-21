@@ -30,9 +30,21 @@ struct VertexBuffer {
   // Methods
   // ---------------------------------------------------------------------------
 
-  inline void bind() const { glBindBuffer(GL_ARRAY_BUFFER, id); }
-  static inline void unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
-  inline void destroy() const { glDeleteBuffers(1, &id); }
+  inline void
+  bind() const
+  {
+    glBindBuffer(GL_ARRAY_BUFFER, id);
+  }
+  static inline void
+  unbind()
+  {
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+  }
+  inline void
+  destroy() const
+  {
+    glDeleteBuffers(1, &id);
+  }
 };
 
 } // namespace um2

@@ -8,26 +8,28 @@ namespace um2
 {
 
 // -----------------------------------------------------------------------------
-// addressof 
+// addressof
 // -----------------------------------------------------------------------------
-// Obtains the actual address of the object or function arg, even in presence of 
+// Obtains the actual address of the object or function arg, even in presence of
 // overloaded operator&
 // https://en.cppreference.com/w/cpp/memory/addressof
 
 #ifndef __CUDA_ARCH__
 
-template <typename T>
-constexpr auto addressof(T& arg) noexcept -> T*
+template <class T>
+constexpr auto
+addressof(T & arg) noexcept -> T *
 {
   return std::addressof(arg);
 }
 
 #else
 
-template <typename T>
-__device__ constexpr auto addressof(T& arg) noexcept -> T*
+template <class T>
+__device__ constexpr auto
+addressof(T & arg) noexcept -> T *
 {
-  return __builtin_addressof(arg); 
+  return __builtin_addressof(arg);
 }
 
 #endif

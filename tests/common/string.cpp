@@ -5,7 +5,8 @@
 // Accessors
 // -----------------------------------------------------------------------------
 
-UM2_HOSTDEV TEST_CASE(begin_end)
+UM2_HOSTDEV
+TEST_CASE(begin_end)
 {
   um2::String s;
   EXPECT_EQ(s.begin(), s.end());
@@ -25,7 +26,8 @@ MAKE_CUDA_KERNEL(begin_end);
 // Constructors
 // -----------------------------------------------------------------------------
 
-UM2_HOSTDEV TEST_CASE(const_char_array_constructor)
+UM2_HOSTDEV
+TEST_CASE(const_char_array_constructor)
 {
   um2::String s("hello");
   EXPECT_EQ(s.size(), 5);
@@ -39,7 +41,8 @@ UM2_HOSTDEV TEST_CASE(const_char_array_constructor)
 }
 MAKE_CUDA_KERNEL(const_char_array_constructor);
 
-UM2_HOSTDEV TEST_CASE(um2_string_constructor)
+UM2_HOSTDEV
+TEST_CASE(um2_string_constructor)
 {
   um2::String s0("hello");
   um2::String s(s0);
@@ -72,7 +75,8 @@ TEST_CASE(std_string_constructor)
 // Operators
 // -----------------------------------------------------------------------------
 
-UM2_HOSTDEV TEST_CASE(assign_um2_string)
+UM2_HOSTDEV
+TEST_CASE(assign_um2_string)
 {
   um2::String s0("hello");
   um2::String s = s0;
@@ -88,7 +92,8 @@ UM2_HOSTDEV TEST_CASE(assign_um2_string)
 }
 MAKE_CUDA_KERNEL(assign_um2_string);
 
-UM2_HOSTDEV TEST_CASE(assign_const_char_array)
+UM2_HOSTDEV
+TEST_CASE(assign_const_char_array)
 {
   um2::String s;
   s = "hello";
@@ -117,7 +122,8 @@ TEST_CASE(assign_std_string)
   EXPECT_EQ(s.data()[5], '\0');
 }
 
-UM2_HOSTDEV TEST_CASE(equals_um2_string)
+UM2_HOSTDEV
+TEST_CASE(equals_um2_string)
 {
   um2::String s0("hello");
   um2::String s1("helo");
@@ -128,7 +134,8 @@ UM2_HOSTDEV TEST_CASE(equals_um2_string)
 }
 MAKE_CUDA_KERNEL(equals_um2_string);
 
-UM2_HOSTDEV TEST_CASE(equals_const_char_array)
+UM2_HOSTDEV
+TEST_CASE(equals_const_char_array)
 {
   um2::String s("hello");
   EXPECT_EQ(s, "hello");
@@ -143,7 +150,8 @@ TEST_CASE(equals_std_string)
   EXPECT_NE(s, std::string("helo"));
 }
 
-UM2_HOSTDEV TEST_CASE(comparison)
+UM2_HOSTDEV
+TEST_CASE(comparison)
 {
   EXPECT_LT(um2::String("Ant"), um2::String("Zebra"));
   EXPECT_GT(um2::String("Zebra"), um2::String("Ant"));
@@ -158,7 +166,8 @@ MAKE_CUDA_KERNEL(comparison);
 // Methods
 // -----------------------------------------------------------------------------
 
-UM2_HOSTDEV TEST_CASE(contains)
+UM2_HOSTDEV
+TEST_CASE(contains)
 {
   um2::String s("hello");
   EXPECT_TRUE(s.contains('h'));
@@ -207,7 +216,8 @@ TEST_SUITE(string)
   TEST(toString)
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_TESTS(string)
   return 0;

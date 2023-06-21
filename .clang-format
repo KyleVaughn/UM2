@@ -1,5 +1,6 @@
 BasedOnStyle: LLVM
 
+AlwaysBreakAfterReturnType: All 
 AlwaysBreakTemplateDeclarations: Yes
 BreakBeforeBraces: Linux
 IndentCaseLabels: false

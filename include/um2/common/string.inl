@@ -5,42 +5,50 @@ namespace um2
 // Accessors
 // --------------------------------------------------------------------------
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::begin() const noexcept -> char *
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::begin() const noexcept -> char *
 {
   return this->_data;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::end() const noexcept -> char *
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::end() const noexcept -> char *
 {
   return this->_data + this->_size;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::cbegin() const noexcept -> char const *
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::cbegin() const noexcept -> char const *
 {
   return this->_data;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::cend() const noexcept -> char const *
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::cend() const noexcept -> char const *
 {
   return this->_data + this->_size;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::size() const noexcept -> len_t
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::size() const noexcept -> len_t
 {
   return this->_size;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::capacity() const noexcept -> len_t
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::capacity() const noexcept -> len_t
 {
   return this->_capacity;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::data() noexcept -> char *
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::data() noexcept -> char *
 {
   return this->_data;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::data() const noexcept -> char const *
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::data() const noexcept -> char const *
 {
   return this->_data;
 }
@@ -50,7 +58,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::data() const noexcept -> char const 
 // --------------------------------------------------------------------------
 
 template <size_t N>
-UM2_HOSTDEV String::String(char const (&s)[N])
+UM2_HOSTDEV
+String::String(char const (&s)[N])
     : _size(N - 1),
       _capacity(static_cast<len_t>(bit_ceil(N))),
       _data(new char[bit_ceil(N)])
@@ -63,7 +72,8 @@ UM2_HOSTDEV String::String(char const (&s)[N])
 // --------------------------------------------------------------------------
 
 template <size_t N>
-UM2_HOSTDEV auto String::operator=(char const (&s)[N]) -> String &
+UM2_HOSTDEV auto
+String::operator=(char const (&s)[N]) -> String &
 {
   if (this->_capacity < static_cast<len_t>(N)) {
     delete[] this->_data;
@@ -77,8 +87,8 @@ UM2_HOSTDEV auto String::operator=(char const (&s)[N]) -> String &
 
 template <size_t N>
 // NOLINTNEXTLINE(*-avoid-c-arrays)
-UM2_PURE UM2_HOSTDEV constexpr auto String::operator==(char const (&s)[N]) const noexcept
-    -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::operator==(char const (&s)[N]) const noexcept -> bool
 {
   if (this->_size != static_cast<len_t>(N - 1)) {
     return false;
@@ -91,8 +101,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::operator==(char const (&s)[N]) const
   return true;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::operator==(String const & s) const noexcept
-    -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::operator==(String const & s) const noexcept -> bool
 {
   if (this->_size != s._size) {
     return false;
@@ -105,8 +115,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::operator==(String const & s) const n
   return true;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::operator<(String const & s) const noexcept
-    -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::operator<(String const & s) const noexcept -> bool
 {
   len_t const min_size = this->_size < s._size ? this->_size : s._size;
   for (len_t i = 0; i < min_size; ++i) {
@@ -117,8 +127,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::operator<(String const & s) const no
   return this->_size < s._size;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::operator<=(String const & s) const noexcept
-    -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::operator<=(String const & s) const noexcept -> bool
 {
   len_t const min_size = this->_size < s._size ? this->_size : s._size;
   for (len_t i = 0; i < min_size; ++i) {
@@ -129,8 +139,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::operator<=(String const & s) const n
   return this->_size <= s._size;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::operator>(String const & s) const noexcept
-    -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::operator>(String const & s) const noexcept -> bool
 {
   len_t const min_size = this->_size < s._size ? this->_size : s._size;
   for (len_t i = 0; i < min_size; ++i) {
@@ -141,8 +151,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::operator>(String const & s) const no
   return this->_size > s._size;
 }
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::operator>=(String const & s) const noexcept
-    -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::operator>=(String const & s) const noexcept -> bool
 {
   len_t const min_size = this->_size < s._size ? this->_size : s._size;
   for (len_t i = 0; i < min_size; ++i) {
@@ -153,8 +163,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::operator>=(String const & s) const n
   return this->_size >= s._size;
 }
 
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto String::operator[](len_t const i) noexcept
-    -> char &
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
+String::operator[](len_t const i) noexcept -> char &
 {
   assert(0 <= i && i < this->_size);
   return this->_data[i];
@@ -171,7 +181,8 @@ String::operator[](len_t const i) const noexcept -> char const &
 // Methods
 // --------------------------------------------------------------------------
 
-UM2_PURE UM2_HOSTDEV constexpr auto String::contains(char const c) const noexcept -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto
+String::contains(char const c) const noexcept -> bool
 {
   for (len_t i = 0; i < this->_size; ++i) {
     if (this->_data[i] == c) {
@@ -181,7 +192,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto String::contains(char const c) const noexcep
   return false;
 }
 
-UM2_PURE constexpr auto String::starts_with(std::string const & s) const noexcept -> bool
+UM2_PURE constexpr auto
+String::starts_with(std::string const & s) const noexcept -> bool
 {
 
   if (this->_size < static_cast<len_t>(s.size())) {
@@ -196,7 +208,8 @@ UM2_PURE constexpr auto String::starts_with(std::string const & s) const noexcep
   return true;
 }
 
-UM2_PURE constexpr auto String::ends_with(std::string const & s) const noexcept -> bool
+UM2_PURE constexpr auto
+String::ends_with(std::string const & s) const noexcept -> bool
 {
   auto const ssize = static_cast<len_t>(s.size());
   len_t const vsize = this->_size;

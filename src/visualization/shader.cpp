@@ -4,7 +4,8 @@
 namespace um2
 {
 
-static void checkShaderCompilation(uint32_t shader)
+static void
+checkShaderCompilation(uint32_t shader)
 {
   int32_t success = 0;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -15,7 +16,8 @@ static void checkShaderCompilation(uint32_t shader)
   }
 }
 
-static void checkShaderLinking(uint32_t shader)
+static void
+checkShaderLinking(uint32_t shader)
 {
   int32_t success = 0;
   glGetProgramiv(shader, GL_LINK_STATUS, &success);

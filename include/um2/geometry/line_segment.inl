@@ -6,15 +6,15 @@ namespace um2
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto LineSegment<D, T>::operator[](len_t i)
-    -> Point<D, T> &
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
+LineSegment<D, T>::operator[](len_t i) -> Point<D, T> &
 {
   return this->vertices[i];
 }
 
 template <len_t D, typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto LineSegment<D, T>::operator[](len_t i) const
-    -> Point<D, T> const &
+UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
+LineSegment<D, T>::operator[](len_t i) const -> Point<D, T> const &
 {
   return this->vertices[i];
 }
@@ -49,8 +49,8 @@ LineSegment<D, T>::operator()(R const r) const noexcept -> Point<D, T>
 
 template <len_t D, typename T>
 template <typename R>
-UM2_PURE UM2_HOSTDEV constexpr auto LineSegment<D, T>::jacobian(R /*r*/) const noexcept
-    -> Vec<D, T>
+UM2_PURE UM2_HOSTDEV constexpr auto
+LineSegment<D, T>::jacobian(R /*r*/) const noexcept -> Vec<D, T>
 {
   return this->vertices[1] - this->vertices[0];
 }
@@ -71,7 +71,8 @@ LineSegment<D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool requires
 // -------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto length(LineSegment<D, T> const & line) noexcept -> T
+UM2_PURE UM2_HOSTDEV constexpr auto
+length(LineSegment<D, T> const & line) noexcept -> T
 {
   return distance(line[0], line[1]);
 }

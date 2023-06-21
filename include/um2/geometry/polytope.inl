@@ -5,9 +5,9 @@ namespace um2
 // area
 // -----------------------------------------------------------------------------
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto triangleArea(Point2<T> const & p0,
-                                                 Point2<T> const & p1,
-                                                 Point2<T> const & p2) noexcept -> T
+UM2_PURE UM2_HOSTDEV constexpr auto
+triangleArea(Point2<T> const & p0, Point2<T> const & p1, Point2<T> const & p2) noexcept
+    -> T
 {
   return cross2(p1 - p0, p2 - p0) / 2;
 }
@@ -22,8 +22,8 @@ quadrilateralArea(Point2<T> const & p0, Point2<T> const & p1, Point2<T> const & 
 
 // Area of a linear, planar polygon
 template <len_t N, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto area(LinearPolygon<N, 2, T> const & poly) noexcept
-    -> T
+UM2_PURE UM2_HOSTDEV constexpr auto
+area(LinearPolygon<N, 2, T> const & poly) noexcept -> T
 {
   if constexpr (N == 3) {
     return triangleArea(poly[0], poly[1], poly[2]);
@@ -41,7 +41,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto area(LinearPolygon<N, 2, T> const & poly) no
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto area(Triangle<3, T> const & tri) noexcept -> T
+UM2_PURE UM2_HOSTDEV constexpr auto
+area(Triangle<3, T> const & tri) noexcept -> T
 {
   return (tri[1] - tri[0]).cross(tri[2] - tri[0]).norm() / 2;
 }
@@ -51,10 +52,9 @@ UM2_PURE UM2_HOSTDEV constexpr auto area(Triangle<3, T> const & tri) noexcept ->
 // -----------------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto triangleCentroid(Point<D, T> const & p0,
-                                                     Point<D, T> const & p1,
-                                                     Point<D, T> const & p2) noexcept
-    -> Point<D, T>
+UM2_PURE UM2_HOSTDEV constexpr auto
+triangleCentroid(Point<D, T> const & p0, Point<D, T> const & p1,
+                 Point<D, T> const & p2) noexcept -> Point<D, T>
 {
   return (p0 + p1 + p2) / 3;
 }
@@ -74,8 +74,8 @@ quadrilateralCentroid(Point2<T> const & p0, Point2<T> const & p1, Point2<T> cons
 
 // Centroid of a linear, planar polygon
 template <len_t N, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto centroid(LinearPolygon<N, 2, T> const & poly) noexcept
-    -> Point2<T>
+UM2_PURE UM2_HOSTDEV constexpr auto
+centroid(LinearPolygon<N, 2, T> const & poly) noexcept -> Point2<T>
 {
   if constexpr (N == 3) {
     return triangleCentroid(poly[0], poly[1], poly[2]);
@@ -96,8 +96,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto centroid(LinearPolygon<N, 2, T> const & poly
 }
 
 template <typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto centroid(Triangle<3, T> const & tri) noexcept
-    -> Point3<T>
+UM2_PURE UM2_HOSTDEV constexpr auto
+centroid(Triangle<3, T> const & tri) noexcept -> Point3<T>
 {
   return triangleCentroid(tri[0], tri[1], tri[2]);
 }
@@ -108,8 +108,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto centroid(Triangle<3, T> const & tri) noexcep
 // The bounding box of any linear polytope is simply the min and max of its
 // vertices.
 template <len_t K, len_t N, len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto boundingBox(Polytope<K, 1, N, D, T> const & poly)
-    -> AABox<D, T>
+UM2_PURE UM2_HOSTDEV constexpr auto
+boundingBox(Polytope<K, 1, N, D, T> const & poly) -> AABox<D, T>
 {
   return boundingBox(poly.vertices);
 }

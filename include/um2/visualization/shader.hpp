@@ -29,8 +29,16 @@ struct Shader {
   // Methods
   // ---------------------------------------------------------------------------
 
-  inline void use() const { glUseProgram(id); }
-  inline void destroy() const { glDeleteProgram(id); }
+  inline void
+  use() const
+  {
+    glUseProgram(id);
+  }
+  inline void
+  destroy() const
+  {
+    glDeleteProgram(id);
+  }
 };
 
 } // namespace um2

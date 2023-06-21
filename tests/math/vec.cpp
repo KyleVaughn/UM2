@@ -2,7 +2,8 @@
 #include <um2/math/vec.hpp>
 
 template <len_t D, typename T>
-UM2_HOSTDEV static constexpr auto makeVec() -> um2::Vec<D, T>
+UM2_HOSTDEV static constexpr auto
+makeVec() -> um2::Vec<D, T>
 {
   um2::Vec<D, T> v;
   for (len_t i = 0; i < D; ++i) {
@@ -12,7 +13,8 @@ UM2_HOSTDEV static constexpr auto makeVec() -> um2::Vec<D, T>
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(accessor)
+UM2_HOSTDEV
+TEST_CASE(accessor)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   if constexpr (std::floating_point<T>) {
@@ -27,7 +29,8 @@ UM2_HOSTDEV TEST_CASE(accessor)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(unary_minus)
+UM2_HOSTDEV
+TEST_CASE(unary_minus)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   um2::Vec<D, T> v2 = -v;
@@ -43,7 +46,8 @@ UM2_HOSTDEV TEST_CASE(unary_minus)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(compound_add)
+UM2_HOSTDEV
+TEST_CASE(compound_add)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   um2::Vec<D, T> v2 = makeVec<D, T>();
@@ -60,7 +64,8 @@ UM2_HOSTDEV TEST_CASE(compound_add)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(compound_sub)
+UM2_HOSTDEV
+TEST_CASE(compound_sub)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   um2::Vec<D, T> v2 = makeVec<D, T>();
@@ -77,7 +82,8 @@ UM2_HOSTDEV TEST_CASE(compound_sub)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(compound_mul)
+UM2_HOSTDEV
+TEST_CASE(compound_mul)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   um2::Vec<D, T> v2 = makeVec<D, T>();
@@ -94,7 +100,8 @@ UM2_HOSTDEV TEST_CASE(compound_mul)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(compound_div)
+UM2_HOSTDEV
+TEST_CASE(compound_div)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   um2::Vec<D, T> v2 = makeVec<D, T>();
@@ -111,7 +118,8 @@ UM2_HOSTDEV TEST_CASE(compound_div)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(add)
+UM2_HOSTDEV
+TEST_CASE(add)
 {
   um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v1 = makeVec<D, T>();
@@ -128,7 +136,8 @@ UM2_HOSTDEV TEST_CASE(add)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(sub)
+UM2_HOSTDEV
+TEST_CASE(sub)
 {
   um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v1 = makeVec<D, T>();
@@ -145,7 +154,8 @@ UM2_HOSTDEV TEST_CASE(sub)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(mul)
+UM2_HOSTDEV
+TEST_CASE(mul)
 {
   um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v1 = makeVec<D, T>();
@@ -162,7 +172,8 @@ UM2_HOSTDEV TEST_CASE(mul)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(div)
+UM2_HOSTDEV
+TEST_CASE(div)
 {
   um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v1 = makeVec<D, T>();
@@ -179,7 +190,8 @@ UM2_HOSTDEV TEST_CASE(div)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(compound_scalar_add)
+UM2_HOSTDEV
+TEST_CASE(compound_scalar_add)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   v.array() += 2;
@@ -195,7 +207,8 @@ UM2_HOSTDEV TEST_CASE(compound_scalar_add)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(compound_scalar_sub)
+UM2_HOSTDEV
+TEST_CASE(compound_scalar_sub)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   v.array() -= 2;
@@ -211,7 +224,8 @@ UM2_HOSTDEV TEST_CASE(compound_scalar_sub)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(compound_scalar_mul)
+UM2_HOSTDEV
+TEST_CASE(compound_scalar_mul)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   v *= 2;
@@ -227,7 +241,8 @@ UM2_HOSTDEV TEST_CASE(compound_scalar_mul)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(compound_scalar_div)
+UM2_HOSTDEV
+TEST_CASE(compound_scalar_div)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   v /= 2;
@@ -243,7 +258,8 @@ UM2_HOSTDEV TEST_CASE(compound_scalar_div)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(scalar_add)
+UM2_HOSTDEV
+TEST_CASE(scalar_add)
 {
   um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v = v0.array() + 2;
@@ -259,7 +275,8 @@ UM2_HOSTDEV TEST_CASE(scalar_add)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(scalar_sub)
+UM2_HOSTDEV
+TEST_CASE(scalar_sub)
 {
   um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v = v0.array() - 2;
@@ -275,7 +292,8 @@ UM2_HOSTDEV TEST_CASE(scalar_sub)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(scalar_mul)
+UM2_HOSTDEV
+TEST_CASE(scalar_mul)
 {
   um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v = v0 * 2;
@@ -291,7 +309,8 @@ UM2_HOSTDEV TEST_CASE(scalar_mul)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(scalar_div)
+UM2_HOSTDEV
+TEST_CASE(scalar_div)
 {
   um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v = v0 / 2;
@@ -307,7 +326,8 @@ UM2_HOSTDEV TEST_CASE(scalar_div)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(min)
+UM2_HOSTDEV
+TEST_CASE(min)
 {
   um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v1 = makeVec<D, T>().array() + 1;
@@ -324,7 +344,8 @@ UM2_HOSTDEV TEST_CASE(min)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(max)
+UM2_HOSTDEV
+TEST_CASE(max)
 {
   um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v1 = makeVec<D, T>().array() + 1;
@@ -341,7 +362,8 @@ UM2_HOSTDEV TEST_CASE(max)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(dot)
+UM2_HOSTDEV
+TEST_CASE(dot)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   T dot = v.dot(v);
@@ -353,7 +375,8 @@ UM2_HOSTDEV TEST_CASE(dot)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(cross)
+UM2_HOSTDEV
+TEST_CASE(cross)
 {
   if constexpr (D == 3) {
     um2::Vec<D, T> v0 = makeVec<D, T>();
@@ -372,7 +395,8 @@ UM2_HOSTDEV TEST_CASE(cross)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(norm2)
+UM2_HOSTDEV
+TEST_CASE(norm2)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   T norm2 = v.squaredNorm();
@@ -384,7 +408,8 @@ UM2_HOSTDEV TEST_CASE(norm2)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(norm)
+UM2_HOSTDEV
+TEST_CASE(norm)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   T norm = v.norm();
@@ -392,7 +417,8 @@ UM2_HOSTDEV TEST_CASE(norm)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(normalize)
+UM2_HOSTDEV
+TEST_CASE(normalize)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   um2::Vec<D, T> v2 = v.normalized();
@@ -514,7 +540,8 @@ TEST_SUITE(vec)
   }
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_TESTS((vec<2, float>));
   RUN_TESTS((vec<2, double>));

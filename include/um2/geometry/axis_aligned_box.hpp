@@ -29,22 +29,31 @@ struct AABox {
   // Accessors
   // -----------------------------------------------------------------------------
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto xmin() const noexcept -> T;
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto xmax() const noexcept -> T;
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto ymin() const noexcept -> T;
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto ymax() const noexcept -> T;
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto zmin() const noexcept -> T;
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto zmax() const noexcept -> T;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  xmin() const noexcept -> T;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  xmax() const noexcept -> T;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  ymin() const noexcept -> T;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  ymax() const noexcept -> T;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  zmin() const noexcept -> T;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  zmax() const noexcept -> T;
 
   // -----------------------------------------------------------------------------
   // Methods
   // -----------------------------------------------------------------------------
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto width() const noexcept -> T;  // dx
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto height() const noexcept -> T; // dy
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto depth() const noexcept -> T;  // dz
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto centroid() const noexcept
-      -> Point<D, T>;
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  width() const noexcept -> T; // dx
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  height() const noexcept -> T; // dy
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  depth() const noexcept -> T; // dz
+  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  centroid() const noexcept -> Point<D, T>;
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
   contains(Point<D, T> const & p) const noexcept -> bool;
 
@@ -70,21 +79,20 @@ using AABox3f = AABox3<float>;
 using AABox3d = AABox3<double>;
 
 template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto isApprox(AABox<D, T> const & a,
-                                             AABox<D, T> const & b) noexcept -> bool;
+UM2_PURE UM2_HOSTDEV constexpr auto
+isApprox(AABox<D, T> const & a, AABox<D, T> const & b) noexcept -> bool;
 
 // -----------------------------------------------------------------------------
 // Bounding box
 // -----------------------------------------------------------------------------
 
 template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto boundingBox(AABox<D, T> const & a,
-                                                AABox<D, T> const & b) noexcept
-    -> AABox<D, T>;
+UM2_PURE UM2_HOSTDEV constexpr auto
+boundingBox(AABox<D, T> const & a, AABox<D, T> const & b) noexcept -> AABox<D, T>;
 
 template <len_t D, typename T, len_t N>
-UM2_PURE UM2_HOSTDEV constexpr auto boundingBox(Point<D, T> const (&points)[N]) noexcept
-    -> AABox<D, T>;
+UM2_PURE UM2_HOSTDEV constexpr auto
+boundingBox(Point<D, T> const (&points)[N]) noexcept -> AABox<D, T>;
 
 template <len_t D, typename T>
 UM2_PURE UM2_HOSTDEV constexpr auto

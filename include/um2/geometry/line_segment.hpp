@@ -26,10 +26,11 @@ struct Polytope<1, 1, 2, D, T> {
   // Accessors
   // -----------------------------------------------------------------------------
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) -> Point<D, T> &;
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
+  operator[](len_t i) -> Point<D, T> &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto operator[](len_t i) const
-      -> Point<D, T> const &;
+  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
+  operator[](len_t i) const -> Point<D, T> const &;
 
   // -----------------------------------------------------------------------------
   // Constructors
@@ -44,7 +45,8 @@ struct Polytope<1, 1, 2, D, T> {
   // -----------------------------------------------------------------------------
 
   template <typename R>
-  UM2_PURE UM2_HOSTDEV constexpr auto operator()(R r) const noexcept -> Point<D, T>;
+  UM2_PURE UM2_HOSTDEV constexpr auto
+  operator()(R r) const noexcept -> Point<D, T>;
 
   template <typename R>
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto jacobian(R /*r*/) const noexcept
@@ -55,7 +57,8 @@ struct Polytope<1, 1, 2, D, T> {
 };
 
 template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto length(LineSegment<D, T> const & line) noexcept -> T;
+UM2_PURE UM2_HOSTDEV constexpr auto
+length(LineSegment<D, T> const & line) noexcept -> T;
 
 } // namespace um2
 

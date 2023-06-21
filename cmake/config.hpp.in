@@ -63,11 +63,8 @@
 // -----------------------------------------------------------------------------
 #cmakedefine01 UM2_ENABLE_INT64
 #if UM2_ENABLE_INT64
-// We want this alias to be lower case to match uint32_t, uint64_t, etc.
-// NOLINTBEGIN(readability-identifier-naming)
-using idx_t = uint64_t;
+using Size = uint64_t;
 #else
-using idx_t = uint32_t;
-// NOLINTEND(readability-identifier-naming)
+using Size = uint32_t;
 #endif
-#define EIGEN_DEFAULT_DENSE_INDEX_TYPE idx_t
+#define EIGEN_DEFAULT_DENSE_INDEX_TYPE Size 

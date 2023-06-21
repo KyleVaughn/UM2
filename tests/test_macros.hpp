@@ -27,74 +27,74 @@
 #define TEST_SUITE(name) static void name()
 
 #define TEST(name)                                                                       \
-    printf("Running test case '%s'\n", #name);                                           \
-    name();                                                                              \
-    printf("Test case '%s' passed\n", #name);
+  printf("Running test case '%s'\n", #name);                                             \
+  name();                                                                                \
+  printf("Test case '%s' passed\n", #name);
 
 #if UM2_ENABLE_CUDA
 
-#  define  MAKE_CUDA_KERNEL_1_ARGS(host_test)                                           \
+#  define MAKE_CUDA_KERNEL_1_ARGS(host_test)                                             \
     __global__ void host_test##_cuda_kernel() { host_test(); }
 
-#  define  MAKE_CUDA_KERNEL_2_ARGS(host_test, T)                                        \
+#  define MAKE_CUDA_KERNEL_2_ARGS(host_test, T)                                          \
     __global__ void host_test##_cuda_kernel() { host_test<T>(); }
 
-#  define  MAKE_CUDA_KERNEL_3_ARGS(host_test, T, U)                                     \
+#  define MAKE_CUDA_KERNEL_3_ARGS(host_test, T, U)                                       \
     __global__ void host_test##_cuda_kernel() { host_test<T, U>(); }
 
-#  define  MAKE_CUDA_KERNEL_4_ARGS(host_test, T, U, V)                                  \
+#  define MAKE_CUDA_KERNEL_4_ARGS(host_test, T, U, V)                                    \
     __global__ void host_test##_cuda_kernel() { host_test<T, U, V>(); }
 
 #  define MAKE_CUDA_KERNEL_GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
-#  define MAKE_CUDA_KERNEL(...)                                                         \
-    MAKE_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, MAKE_CUDA_KERNEL_4_ARGS,                    \
-                               MAKE_CUDA_KERNEL_3_ARGS, MAKE_CUDA_KERNEL_2_ARGS,        \
-                               MAKE_CUDA_KERNEL_1_ARGS)                                 \
+#  define MAKE_CUDA_KERNEL(...)                                                          \
+    MAKE_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, MAKE_CUDA_KERNEL_4_ARGS,                     \
+                               MAKE_CUDA_KERNEL_3_ARGS, MAKE_CUDA_KERNEL_2_ARGS,         \
+                               MAKE_CUDA_KERNEL_1_ARGS)                                  \
     (__VA_ARGS__)
 
-# define CUDA_KERNEL_POST_TEST                                                          \
-      cudaDeviceSynchronize();                                                          \
-      cudaError_t error = cudaGetLastError();                                           \
-      if (error != cudaSuccess) {                                                       \
-        printf("CUDA error: %s\n", cudaGetErrorString(error));                          \
-        fflush(stdout);                                                                 \
-        exit(1);                                                                        \
-      }                                                                                 \
-
-#  define __TEST_CUDA_KERNEL(host_test, blocks, threads)                                \
-    {                                                                                   \
-      printf("Running CUDA test case '%s' with %d blocks and %d threads\n", #host_test, \
-             blocks, threads);                                                          \
-      host_test##_cuda_kernel<<<(blocks), (threads)>>>();                               \
-      CUDA_KERNEL_POST_TEST                                                             \
-      printf("CUDA test case '%s' finished\n", #host_test);                             \
+#  define CUDA_KERNEL_POST_TEST                                                          \
+    cudaDeviceSynchronize();                                                             \
+    cudaError_t error = cudaGetLastError();                                              \
+    if (error != cudaSuccess) {                                                          \
+      printf("CUDA error: %s\n", cudaGetErrorString(error));                             \
+      fflush(stdout);                                                                    \
+      exit(1);                                                                           \
     }
 
-#  define __TEST_1TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T)                   \
-    {                                                                                   \
-      printf("Running CUDA test case '%s<%s>' with %d blocks and %d threads\n",         \
-             #host_test, #T, blocks, threads);                                          \
-      host_test##_cuda_kernel<T><<<(blocks), (threads)>>>();                            \
-      CUDA_KERNEL_POST_TEST                                                             \
-      printf("CUDA test case '%s<%s>' finished\n", #host_test, #T);                     \
+#  define __TEST_CUDA_KERNEL(host_test, blocks, threads)                                 \
+    {                                                                                    \
+      printf("Running CUDA test case '%s' with %d blocks and %d threads\n", #host_test,  \
+             blocks, threads);                                                           \
+      host_test##_cuda_kernel<<<(blocks), (threads)>>>();                                \
+      CUDA_KERNEL_POST_TEST                                                              \
+      printf("CUDA test case '%s' finished\n", #host_test);                              \
     }
 
-#  define __TEST_2TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U)                \
-    {                                                                                   \
-      printf("Running CUDA test case '%s<%s, %s>' with %d blocks and %d threads\n",     \
-             #host_test, #T, #U, blocks, threads);                                      \
-      host_test##_cuda_kernel<T, U><<<(blocks), (threads)>>>();                         \
-      CUDA_KERNEL_POST_TEST                                                             \
-      printf("CUDA test case '%s<%s, %s>' finished\n", #host_test, #T, #U);             \
+#  define __TEST_1TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T)                    \
+    {                                                                                    \
+      printf("Running CUDA test case '%s<%s>' with %d blocks and %d threads\n",          \
+             #host_test, #T, blocks, threads);                                           \
+      host_test##_cuda_kernel<T><<<(blocks), (threads)>>>();                             \
+      CUDA_KERNEL_POST_TEST                                                              \
+      printf("CUDA test case '%s<%s>' finished\n", #host_test, #T);                      \
     }
 
-#  define __TEST_3TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U, V)             \
-    {                                                                                   \
-      printf("Running CUDA test case '%s<%s, %s, %s>' with %d blocks and %d threads\n", \
-             #host_test, #T, #U, #V, blocks, threads);                                  \
-      host_test##_cuda_kernel<T, U, V><<<(blocks), (threads)>>>();                      \
-      CUDA_KERNEL_POST_TEST                                                             \
-      printf("CUDA test case '%s<%s, %s, %s>' finished\n", #host_test, #T, #U, #V);     \
+#  define __TEST_2TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U)                 \
+    {                                                                                    \
+      printf("Running CUDA test case '%s<%s, %s>' with %d blocks and %d threads\n",      \
+             #host_test, #T, #U, blocks, threads);                                       \
+      host_test##_cuda_kernel<T, U><<<(blocks), (threads)>>>();                          \
+      CUDA_KERNEL_POST_TEST                                                              \
+      printf("CUDA test case '%s<%s, %s>' finished\n", #host_test, #T, #U);              \
+    }
+
+#  define __TEST_3TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U, V)              \
+    {                                                                                    \
+      printf("Running CUDA test case '%s<%s, %s, %s>' with %d blocks and %d threads\n",  \
+             #host_test, #T, #U, #V, blocks, threads);                                   \
+      host_test##_cuda_kernel<T, U, V><<<(blocks), (threads)>>>();                       \
+      CUDA_KERNEL_POST_TEST                                                              \
+      printf("CUDA test case '%s<%s, %s, %s>' finished\n", #host_test, #T, #U, #V);      \
     }
 
 #  define TEST_CUDA_KERNEL_1_ARGS(host_test) __TEST_CUDA_KERNEL(host_test, 1, 1)
@@ -128,9 +128,9 @@
 #endif
 
 #define RUN_TESTS(suite)                                                                 \
-    printf("Running test suite '%s'\n", #suite);                                         \
-    suite();                                                                             \
-    printf("Test suite '%s' passed\n", #suite);
+  printf("Running test suite '%s'\n", #suite);                                           \
+  suite();                                                                               \
+  printf("Test suite '%s' passed\n", #suite);
 
 #define TEST_HOSTDEV_1_ARGS(host_test)                                                   \
   TEST(host_test);                                                                       \

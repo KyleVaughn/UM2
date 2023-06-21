@@ -25,10 +25,23 @@ struct VertexArray {
   // Methods
   // ---------------------------------------------------------------------------
 
-  inline void bind() const { glBindVertexArray(id); }
-  static inline void unbind() { glBindVertexArray(0); }
-  inline void destroy() const { glDeleteVertexArrays(1, &id); }
-  static inline void set_vertex_dimension(int32_t n)
+  inline void
+  bind() const
+  {
+    glBindVertexArray(id);
+  }
+  static inline void
+  unbind()
+  {
+    glBindVertexArray(0);
+  }
+  inline void
+  destroy() const
+  {
+    glDeleteVertexArrays(1, &id);
+  }
+  static inline void
+  set_vertex_dimension(int32_t n)
   {
     glVertexAttribPointer(0, n, GL_FLOAT, GL_FALSE, 4 * n, nullptr);
     glEnableVertexAttribArray(0);

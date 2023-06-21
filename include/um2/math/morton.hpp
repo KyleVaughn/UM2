@@ -25,22 +25,26 @@ static constexpr U morton_max_3d_coord = (static_cast<U>(1) << (8 * sizeof(U) / 
 // -----------------------------------------------------------------------------
 // BMI2 intrinsics
 // -----------------------------------------------------------------------------
-static inline auto pdep(uint32_t source, uint32_t mask) noexcept -> uint32_t
+static inline auto
+pdep(uint32_t source, uint32_t mask) noexcept -> uint32_t
 {
   return _pdep_u32(source, mask);
 }
 
-static inline auto pdep(uint64_t source, uint64_t mask) noexcept -> uint64_t
+static inline auto
+pdep(uint64_t source, uint64_t mask) noexcept -> uint64_t
 {
   return _pdep_u64(source, mask);
 }
 
-static inline auto pext(uint32_t source, uint32_t mask) noexcept -> uint32_t
+static inline auto
+pext(uint32_t source, uint32_t mask) noexcept -> uint32_t
 {
   return _pext_u32(source, mask);
 }
 
-static inline auto pext(uint64_t source, uint64_t mask) noexcept -> uint64_t
+static inline auto
+pext(uint64_t source, uint64_t mask) noexcept -> uint64_t
 {
   return _pext_u64(source, mask);
 }
@@ -64,14 +68,16 @@ static constexpr U bmi_3d_z_mask = static_cast<U>(0x4924924924924924);
 // Morton encoding/decoding
 // -----------------------------------------------------------------------------
 template <std::unsigned_integral U>
-UM2_NDEBUG_CONST inline auto mortonEncode(U const x, U const y) -> U
+UM2_NDEBUG_CONST inline auto
+mortonEncode(U const x, U const y) -> U
 {
   assert(x <= morton_max_2d_coord<U> && y <= morton_max_2d_coord<U>);
   return pdep(x, bmi_2d_x_mask<U>) | pdep(y, bmi_2d_y_mask<U>);
 }
 
 template <std::unsigned_integral U>
-UM2_NDEBUG_CONST inline auto mortonEncode(U const x, U const y, U const z) -> U
+UM2_NDEBUG_CONST inline auto
+mortonEncode(U const x, U const y, U const z) -> U
 {
   assert(x <= morton_max_3d_coord<U> && y <= morton_max_3d_coord<U> &&
          z <= morton_max_3d_coord<U>);
@@ -80,14 +86,16 @@ UM2_NDEBUG_CONST inline auto mortonEncode(U const x, U const y, U const z) -> U
 }
 
 template <std::unsigned_integral U>
-inline void mortonDecode(U const morton, U & x, U & y)
+inline void
+mortonDecode(U const morton, U & x, U & y)
 {
   x = pext(morton, bmi_2d_x_mask<U>);
   y = pext(morton, bmi_2d_y_mask<U>);
 }
 
 template <std::unsigned_integral U>
-inline void mortonDecode(U const morton, U & x, U & y, U & z)
+inline void
+mortonDecode(U const morton, U & x, U & y, U & z)
 {
   x = pext(morton, bmi_3d_x_mask<U>);
   y = pext(morton, bmi_3d_y_mask<U>);
@@ -102,7 +110,8 @@ inline void mortonDecode(U const morton, U & x, U & y, U & z)
 // -----------------------------------------------------------------------------
 // BMI2 intrinsics emulation
 // -----------------------------------------------------------------------------
-UM2_NDEBUG_CONST UM2_HOSTDEV static constexpr auto pdep0x55555555(uint32_t x) -> uint32_t
+UM2_NDEBUG_CONST UM2_HOSTDEV static constexpr auto
+pdep0x55555555(uint32_t x) -> uint32_t
 {
   assert(x <= morton_max_2d_coord<uint32_t>);
   x = (x | (x << 8)) & 0x00ff00ff;
@@ -112,8 +121,8 @@ UM2_NDEBUG_CONST UM2_HOSTDEV static constexpr auto pdep0x55555555(uint32_t x) ->
   return x;
 }
 
-UM2_NDEBUG_CONST UM2_HOSTDEV static constexpr auto pdep0x5555555555555555(uint64_t x)
-    -> uint64_t
+UM2_NDEBUG_CONST UM2_HOSTDEV static constexpr auto
+pdep0x5555555555555555(uint64_t x) -> uint64_t
 {
   assert(x <= morton_max_2d_coord<uint64_t>);
   x = (x | (x << 16)) & 0x0000ffff0000ffff;
@@ -124,7 +133,8 @@ UM2_NDEBUG_CONST UM2_HOSTDEV static constexpr auto pdep0x5555555555555555(uint64
   return x;
 }
 
-UM2_CONST UM2_HOSTDEV constexpr static auto pext0x55555555(uint32_t x) -> uint32_t
+UM2_CONST UM2_HOSTDEV constexpr static auto
+pext0x55555555(uint32_t x) -> uint32_t
 {
   x &= 0x55555555;
   x = (x ^ (x >> 1)) & 0x33333333;
@@ -134,7 +144,8 @@ UM2_CONST UM2_HOSTDEV constexpr static auto pext0x55555555(uint32_t x) -> uint32
   return x;
 }
 
-UM2_CONST UM2_HOSTDEV constexpr static auto pext0x5555555555555555(uint64_t x) -> uint64_t
+UM2_CONST UM2_HOSTDEV constexpr static auto
+pext0x5555555555555555(uint64_t x) -> uint64_t
 {
   x &= 0x5555555555555555;
   x = (x ^ (x >> 1)) & 0x3333333333333333;
@@ -145,7 +156,8 @@ UM2_CONST UM2_HOSTDEV constexpr static auto pext0x5555555555555555(uint64_t x) -
   return x;
 }
 
-UM2_NDEBUG_CONST UM2_HOSTDEV static constexpr auto pdep0x92492492(uint32_t x) -> uint32_t
+UM2_NDEBUG_CONST UM2_HOSTDEV static constexpr auto
+pdep0x92492492(uint32_t x) -> uint32_t
 {
   assert(x <= morton_max_3d_coord<uint32_t>);
   x = (x | (x << 16)) & 0x030000ff;
@@ -155,8 +167,8 @@ UM2_NDEBUG_CONST UM2_HOSTDEV static constexpr auto pdep0x92492492(uint32_t x) ->
   return x;
 }
 
-UM2_NDEBUG_CONST UM2_HOSTDEV static constexpr auto pdep0x9249249249249249(uint64_t x)
-    -> uint64_t
+UM2_NDEBUG_CONST UM2_HOSTDEV static constexpr auto
+pdep0x9249249249249249(uint64_t x) -> uint64_t
 {
   assert(x <= morton_max_3d_coord<uint64_t>);
   x = (x | (x << 32)) & 0x001f00000000ffff;
@@ -167,7 +179,8 @@ UM2_NDEBUG_CONST UM2_HOSTDEV static constexpr auto pdep0x9249249249249249(uint64
   return x;
 }
 
-UM2_CONST UM2_HOSTDEV constexpr static auto pext0x92492492(uint32_t x) -> uint32_t
+UM2_CONST UM2_HOSTDEV constexpr static auto
+pext0x92492492(uint32_t x) -> uint32_t
 {
   x &= 0x09249249;
   x = (x ^ (x >> 2)) & 0x030c30c3;
@@ -177,7 +190,8 @@ UM2_CONST UM2_HOSTDEV constexpr static auto pext0x92492492(uint32_t x) -> uint32
   return x;
 }
 
-UM2_CONST UM2_HOSTDEV constexpr static auto pext0x9249249249249249(uint64_t x) -> uint64_t
+UM2_CONST UM2_HOSTDEV constexpr static auto
+pext0x9249249249249249(uint64_t x) -> uint64_t
 {
   x &= 0x1249249249249249;
   x = (x ^ (x >> 2)) & 0x10c30c30c30c30c3;
@@ -191,25 +205,27 @@ UM2_CONST UM2_HOSTDEV constexpr static auto pext0x9249249249249249(uint64_t x) -
 // -----------------------------------------------------------------------------
 // Morton encoding/decoding
 // -----------------------------------------------------------------------------
-UM2_NDEBUG_CONST UM2_HOSTDEV constexpr auto mortonEncode(uint32_t const x,
-                                                         uint32_t const y) -> uint32_t
+UM2_NDEBUG_CONST UM2_HOSTDEV constexpr auto
+mortonEncode(uint32_t const x, uint32_t const y) -> uint32_t
 {
   return pdep0x55555555(x) | (pdep0x55555555(y) << 1);
 }
 
-UM2_NDEBUG_CONST UM2_HOSTDEV constexpr auto mortonEncode(uint64_t const x,
-                                                         uint64_t const y) -> uint64_t
+UM2_NDEBUG_CONST UM2_HOSTDEV constexpr auto
+mortonEncode(uint64_t const x, uint64_t const y) -> uint64_t
 {
   return pdep0x5555555555555555(x) | (pdep0x5555555555555555(y) << 1);
 }
 
-UM2_HOSTDEV constexpr void mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y)
+UM2_HOSTDEV constexpr void
+mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y)
 {
   x = pext0x55555555(morton);
   y = pext0x55555555(morton >> 1);
 }
 
-UM2_HOSTDEV constexpr void mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y)
+UM2_HOSTDEV constexpr void
+mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y)
 {
   x = pext0x5555555555555555(morton);
   y = pext0x5555555555555555(morton >> 1);
@@ -228,16 +244,16 @@ mortonEncode(uint64_t const x, uint64_t const y, uint64_t const z) -> uint64_t
          (pdep0x9249249249249249(z) << 2);
 }
 
-UM2_HOSTDEV constexpr void mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y,
-                                        uint32_t & z)
+UM2_HOSTDEV constexpr void
+mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y, uint32_t & z)
 {
   x = pext0x92492492(morton);
   y = pext0x92492492(morton >> 1);
   z = pext0x92492492(morton >> 2);
 }
 
-UM2_HOSTDEV constexpr void mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y,
-                                        uint64_t & z)
+UM2_HOSTDEV constexpr void
+mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y, uint64_t & z)
 {
   x = pext0x9249249249249249(morton);
   y = pext0x9249249249249249(morton >> 1);
@@ -250,8 +266,8 @@ UM2_HOSTDEV constexpr void mortonDecode(uint64_t const morton, uint64_t & x, uin
 // Morton encoding/decoding with normalization
 // -----------------------------------------------------------------------------
 template <std::unsigned_integral U, std::floating_point T>
-UM2_HOSTDEV auto normalizedMortonEncode(T const x, T const y, T const xscale_inv,
-                                        T const yscale_inv) -> U
+UM2_HOSTDEV auto
+normalizedMortonEncode(T const x, T const y, T const xscale_inv, T const yscale_inv) -> U
 {
   assert(x >= 0 && xscale_inv > 0);
   assert(y >= 0 && yscale_inv > 0);
@@ -265,8 +281,8 @@ UM2_HOSTDEV auto normalizedMortonEncode(T const x, T const y, T const xscale_inv
 }
 
 template <std::unsigned_integral U, std::floating_point T>
-UM2_HOSTDEV void normalizedMortonDecode(U const morton, T & x, T & y, T const xscale,
-                                        T const yscale)
+UM2_HOSTDEV void
+normalizedMortonDecode(U const morton, T & x, T & y, T const xscale, T const yscale)
 {
   assert(xscale > 0 && yscale > 0);
   constexpr T mm_inv = static_cast<T>(1) / morton_max_2d_coord<U>;
@@ -278,9 +294,9 @@ UM2_HOSTDEV void normalizedMortonDecode(U const morton, T & x, T & y, T const xs
 }
 
 template <std::unsigned_integral U, std::floating_point T>
-UM2_HOSTDEV auto normalizedMortonEncode(T const x, T const y, T const z,
-                                        T const xscale_inv, T const yscale_inv,
-                                        T const zscale_inv) -> U
+UM2_HOSTDEV auto
+normalizedMortonEncode(T const x, T const y, T const z, T const xscale_inv,
+                       T const yscale_inv, T const zscale_inv) -> U
 {
   assert(0 <= x && 0 < xscale_inv);
   assert(0 <= y && 0 < yscale_inv);
@@ -292,8 +308,9 @@ UM2_HOSTDEV auto normalizedMortonEncode(T const x, T const y, T const z,
 }
 
 template <std::unsigned_integral U, std::floating_point T>
-UM2_HOSTDEV void normalizedMortonDecode(U const morton, T & x, T & y, T & z,
-                                        T const xscale, T const yscale, T const zscale)
+UM2_HOSTDEV void
+normalizedMortonDecode(U const morton, T & x, T & y, T & z, T const xscale,
+                       T const yscale, T const zscale)
 {
   assert(xscale > 0 && yscale > 0 && zscale > 0);
   constexpr T mm_inv = static_cast<T>(1) / morton_max_3d_coord<U>;

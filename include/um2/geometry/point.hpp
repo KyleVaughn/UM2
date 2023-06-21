@@ -40,19 +40,22 @@ using Point3d = Point3<double>;
 // -----------------------------------------------------------------------------
 
 template <std::floating_point T>
-UM2_HOSTDEV consteval auto epsilonDistance() -> T
+UM2_HOSTDEV consteval auto
+epsilonDistance() -> T
 {
   return static_cast<T>(1e-5);
 }
 
 template <std::floating_point T>
-UM2_HOSTDEV consteval auto epsilonDistanceSquared() -> T
+UM2_HOSTDEV consteval auto
+epsilonDistanceSquared() -> T
 {
   return epsilonDistance<T>() * epsilonDistance<T>();
 }
 
 template <std::floating_point T>
-UM2_HOSTDEV consteval auto infiniteDistance() -> T
+UM2_HOSTDEV consteval auto
+infiniteDistance() -> T
 {
   return static_cast<T>(1e10);
 }
@@ -104,10 +107,9 @@ isApprox(Eigen::MatrixBase<DerivedA> const & a,
 }
 
 template <typename DerivedA, typename DerivedB, typename DerivedC>
-UM2_PURE UM2_HOSTDEV constexpr auto areCCW(Eigen::MatrixBase<DerivedA> const & a,
-                                           Eigen::MatrixBase<DerivedB> const & b,
-                                           Eigen::MatrixBase<DerivedC> const & c) noexcept
-    -> bool
+UM2_PURE UM2_HOSTDEV constexpr auto
+areCCW(Eigen::MatrixBase<DerivedA> const & a, Eigen::MatrixBase<DerivedB> const & b,
+       Eigen::MatrixBase<DerivedC> const & c) noexcept -> bool
 {
   EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(DerivedA, 2);
   EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(DerivedB, 2);

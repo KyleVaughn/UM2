@@ -49,14 +49,14 @@ UM2_HOSTDEV constexpr Color::Color(char const (&name)[N]) noexcept
 // Operators
 // -----------------------------------------------------------------------------
 
-UM2_CONST UM2_HOSTDEV constexpr auto operator==(Color const lhs, Color const rhs) noexcept
-    -> bool
+UM2_CONST UM2_HOSTDEV constexpr auto
+operator==(Color const lhs, Color const rhs) noexcept -> bool
 {
   return bit_cast<uint32_t>(lhs) == bit_cast<uint32_t>(rhs);
 }
 
-UM2_CONST UM2_HOSTDEV constexpr auto operator!=(Color const lhs, Color const rhs) noexcept
-    -> bool
+UM2_CONST UM2_HOSTDEV constexpr auto
+operator!=(Color const lhs, Color const rhs) noexcept -> bool
 {
   return !(lhs == rhs);
 }
@@ -65,7 +65,8 @@ UM2_CONST UM2_HOSTDEV constexpr auto operator!=(Color const lhs, Color const rhs
 // Methods
 // -----------------------------------------------------------------------------
 
-UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Color
+UM2_PURE UM2_HOSTDEV constexpr auto
+toColor(String const & name) noexcept -> Color
 {
   // A struct to hold the name of a color and some comparison operators to allow
   // for a binary search over the list of color names.
@@ -91,7 +92,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Col
       }
     }
 
-    UM2_HOSTDEV constexpr auto operator==(ColorName const & rhs) const noexcept -> bool
+    UM2_HOSTDEV constexpr auto
+    operator==(ColorName const & rhs) const noexcept -> bool
     {
       for (len_t i = 0; i < 27; ++i) {
         if (name[i] != rhs.name[i]) {
@@ -101,7 +103,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Col
       return true;
     }
 
-    UM2_HOSTDEV constexpr auto operator<(ColorName const & rhs) const noexcept -> bool
+    UM2_HOSTDEV constexpr auto
+    operator<(ColorName const & rhs) const noexcept -> bool
     {
       for (len_t i = 0; i < 27; ++i) {
         if (name[i] != rhs.name[i]) {
@@ -111,7 +114,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto toColor(String const & name) noexcept -> Col
       return false;
     }
 
-    UM2_HOSTDEV constexpr auto operator>(ColorName const & rhs) const noexcept -> bool
+    UM2_HOSTDEV constexpr auto
+    operator>(ColorName const & rhs) const noexcept -> bool
     {
       for (len_t i = 0; i < 27; ++i) {
         if (name[i] != rhs.name[i]) {

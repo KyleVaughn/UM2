@@ -70,7 +70,8 @@ TEST_SUITE(sto)
   TEST(sto_double);
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_TESTS(sto);
   return 0;

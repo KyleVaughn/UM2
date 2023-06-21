@@ -3,7 +3,8 @@
 #include <um2/math/vec.hpp>
 
 template <len_t M, len_t N, typename T>
-UM2_HOSTDEV static constexpr auto makeMat() -> um2::Mat<M, N, T>
+UM2_HOSTDEV static constexpr auto
+makeMat() -> um2::Mat<M, N, T>
 {
   um2::Mat<M, N, T> m;
   T tm = static_cast<T>(M);
@@ -18,7 +19,8 @@ UM2_HOSTDEV static constexpr auto makeMat() -> um2::Mat<M, N, T>
 }
 
 template <len_t M, len_t N, typename T>
-UM2_HOSTDEV TEST_CASE(accessors)
+UM2_HOSTDEV
+TEST_CASE(accessors)
 {
   um2::Mat<M, N, T> m = makeMat<M, N, T>();
   for (len_t j = 0; j < N; ++j) {
@@ -42,7 +44,8 @@ UM2_HOSTDEV TEST_CASE(accessors)
 }
 
 template <len_t M, len_t N, typename T>
-UM2_HOSTDEV TEST_CASE(unary_minus)
+UM2_HOSTDEV
+TEST_CASE(unary_minus)
 {
   um2::Mat<M, N, T> m = makeMat<M, N, T>();
   um2::Mat<M, N, T> neg_m = -m;
@@ -58,7 +61,8 @@ UM2_HOSTDEV TEST_CASE(unary_minus)
 }
 
 template <len_t M, len_t N, typename T>
-UM2_HOSTDEV TEST_CASE(add)
+UM2_HOSTDEV
+TEST_CASE(add)
 {
   um2::Mat<M, N, T> m = makeMat<M, N, T>();
   um2::Mat<M, N, T> n = makeMat<M, N, T>();
@@ -75,7 +79,8 @@ UM2_HOSTDEV TEST_CASE(add)
 }
 
 template <len_t M, len_t N, typename T>
-UM2_HOSTDEV TEST_CASE(sub)
+UM2_HOSTDEV
+TEST_CASE(sub)
 {
   um2::Mat<M, N, T> m = makeMat<M, N, T>();
   um2::Mat<M, N, T> n = makeMat<M, N, T>();
@@ -92,7 +97,8 @@ UM2_HOSTDEV TEST_CASE(sub)
 }
 
 template <len_t M, len_t N, typename T>
-UM2_HOSTDEV TEST_CASE(scalar_mul)
+UM2_HOSTDEV
+TEST_CASE(scalar_mul)
 {
   um2::Mat<M, N, T> m = makeMat<M, N, T>();
   um2::Mat<M, N, T> scaled = m * 2;
@@ -118,7 +124,8 @@ UM2_HOSTDEV TEST_CASE(scalar_mul)
 }
 
 template <len_t M, len_t N, typename T>
-UM2_HOSTDEV TEST_CASE(mat_vec)
+UM2_HOSTDEV
+TEST_CASE(mat_vec)
 {
   um2::Mat<M, N, T> m = makeMat<M, N, T>();
   um2::Vec<N, T> v;
@@ -140,7 +147,8 @@ UM2_HOSTDEV TEST_CASE(mat_vec)
 }
 
 template <len_t M, len_t N, typename T>
-UM2_HOSTDEV TEST_CASE(mat_mat)
+UM2_HOSTDEV
+TEST_CASE(mat_mat)
 {
   um2::Mat<M, N, T> m = makeMat<M, N, T>();
   um2::Mat<M, N, T> n = makeMat<M, N, T>();
@@ -161,7 +169,8 @@ UM2_HOSTDEV TEST_CASE(mat_mat)
 }
 
 template <len_t M, len_t N, typename T>
-UM2_HOSTDEV TEST_CASE(scalar_div)
+UM2_HOSTDEV
+TEST_CASE(scalar_div)
 {
   um2::Mat<M, N, T> m = makeMat<M, N, T>();
   um2::Mat<M, N, T> quot = (2 * m) / 2;
@@ -177,7 +186,8 @@ UM2_HOSTDEV TEST_CASE(scalar_div)
 }
 
 template <len_t M, len_t N, typename T>
-UM2_HOSTDEV TEST_CASE(determinant)
+UM2_HOSTDEV
+TEST_CASE(determinant)
 {
   um2::Mat<M, N, T> m = um2::Mat<M, N, T>::Identity();
   T detv = m.determinant();
@@ -235,7 +245,8 @@ TEST_SUITE(mat)
   }
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_TESTS((mat<2, 2, float>));
   RUN_TESTS((mat<2, 2, double>));

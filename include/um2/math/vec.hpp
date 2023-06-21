@@ -41,9 +41,9 @@ using Vec4u = Vec4<uint32_t>;
 // Cross product of two 2D vectors (returns a scalar, since the result is in the z
 // direction)
 template <typename DerivedA, typename DerivedB>
-UM2_PURE UM2_HOSTDEV constexpr auto cross2(Eigen::MatrixBase<DerivedA> const & a,
-                                           Eigen::MatrixBase<DerivedB> const & b) noexcept
-    -> typename DerivedA::Scalar
+UM2_PURE UM2_HOSTDEV constexpr auto
+cross2(Eigen::MatrixBase<DerivedA> const & a,
+       Eigen::MatrixBase<DerivedB> const & b) noexcept -> typename DerivedA::Scalar
 {
   // Check that a and b are vectors of size 2
   EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(DerivedA, 2);

@@ -4,294 +4,237 @@ namespace um2
 // Constructors
 // ---------------------------------------------------------------------------
 
-template <typename T, typename Allocator>
-HOSTDEV constexpr Vector<T, Allocator>::Vector(Allocator const & a) noexcept    
-    : _end_cap(nullptr, a) {}
+template <class T, class Allocator>
+HOSTDEV constexpr Vector<T, Allocator>::Vector(Allocator const & a) noexcept
+    : _end_cap(nullptr, a)
+{
+}
 
-//template <typename T, typename A>
-//HOSTDEV constexpr Vector<T, A>::Vector(idx_t n, 
-//                                       T const & x,
-//                                       A const & a)
-//    : _end_cap(nullptr, a)
+// template <class T>
+// HOSTDEV Vector<T>::Vector(Size const n)
+//     : _size{n},
+//       _capacity{bit_ceil(n)},
+//       _data{new T[static_cast<uSize>(bit_ceil(n))]}
 //{
-//  if (n > 0) {
-////    __vaate(__n);
-////    __construct_at_end(__n, __x);
-//  }
-//} 
-
-//template <typename T>
-//HOSTDEV Vector<T>::Vector(len_t const n)
-//    : _size{n},
-//      _capacity{bit_ceil(n)},
-//      _data{new T[static_cast<ulen_t>(bit_ceil(n))]}
-//{
-//  assert(n > 0);
-//}
+//   assert(n > 0);
+// }
 //
-//template <typename T>
-//HOSTDEV Vector<T>::Vector(len_t const n, T const & value)
-//    : _size{n},
-//      _capacity{bit_ceil(n)},
-//      _data{new T[static_cast<ulen_t>(bit_ceil(n))]}
+// template <class T>
+// HOSTDEV Vector<T>::Vector(Size const n, T const & value)
+//     : _size{n},
+//       _capacity{bit_ceil(n)},
+//       _data{new T[static_cast<uSize>(bit_ceil(n))]}
 //{
-//  assert(n > 0);
-//  for (len_t i = 0; i < n; ++i) {
-//    this->_data[i] = value;
-//  }
-//}
+//   assert(n > 0);
+//   for (Size i = 0; i < n; ++i) {
+//     _data[i] = value;
+//   }
+// }
 //
-//template <typename T>
-//HOSTDEV Vector<T>::Vector(Vector<T> const & v)
-//    : _size{v._size},
-//      _capacity{bit_ceil(v._size)},
-//      _data{new T[static_cast<ulen_t>(bit_ceil(v._size))]}
+// template <class T>
+// HOSTDEV Vector<T>::Vector(Vector<T> const & v)
+//     : _size{v._size},
+//       _capacity{bit_ceil(v._size)},
+//       _data{new T[static_cast<uSize>(bit_ceil(v._size))]}
 //{
 //
-//  if constexpr (std::is_trivially_copyable_v<T>) {
-//    memcpy(this->_data, v._data, static_cast<size_t>(v._size) * sizeof(T));
-//  } else {
-//    for (len_t i = 0; i < v._size; ++i) {
-//      this->_data[i] = v._data[i];
-//    }
-//  }
-//}
+//   if constexpr (std::is_trivially_copyable_v<T>) {
+//     memcpy(_data, v._data, static_cast<Size>(v._size) * sizeof(T));
+//   } else {
+//     for (Size i = 0; i < v._size; ++i) {
+//       _data[i] = v._data[i];
+//     }
+//   }
+// }
 //
-//template <typename T>
-//HOSTDEV Vector<T>::Vector(Vector<T> && v) noexcept
-//    : _size{v._size},
-//      _capacity{v._capacity},
-//      _data{v._data}
+// template <class T>
+// HOSTDEV Vector<T>::Vector(Vector<T> && v) noexcept
+//     : _size{v._size},
+//       _capacity{v._capacity},
+//       _data{v._data}
 //{
-//  v._size = 0;
-//  v._capacity = 0;
-//  v._data = nullptr;
-//}
+//   v._size = 0;
+//   v._capacity = 0;
+//   v._data = nullptr;
+// }
 //
-//template <typename T>
-//Vector<T>::Vector(std::initializer_list<T> const & list)
-//    : _size{static_cast<len_t>(list.size())},
-//      _capacity{static_cast<len_t>(bit_ceil(list.size()))},
-//      _data{new T[bit_ceil(list.size())]}
+// template <class T>
+// Vector<T>::Vector(std::initializer_list<T> const & list)
+//     : _size{static_cast<Size>(list.size())},
+//       _capacity{static_cast<Size>(bit_ceil(list.size()))},
+//       _data{new T[bit_ceil(list.size())]}
 //{
-//  if constexpr (std::is_trivially_copyable_v<T>) {
-//    memcpy(this->_data, list.begin(), list.size() * sizeof(T));
-//  } else {
-//    len_t i = 0;
-//    for (auto const & value : list) {
-//      this->_data[i++] = value;
-//    }
-//  }
-//}
+//   if constexpr (std::is_trivially_copyable_v<T>) {
+//     memcpy(_data, list.begin(), list.size() * sizeof(T));
+//   } else {
+//     Size i = 0;
+//     for (auto const & value : list) {
+//       _data[i++] = value;
+//     }
+//   }
+// }
 //
-
 
 // ---------------------------------------------------------------------------
 // Accessors
 // ---------------------------------------------------------------------------
 
-template <typename T, typename Allocator>
-PURE HOSTDEV [[nodiscard]] constexpr
-auto Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
+template <class T, class Allocator>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T, Allocator>::get_allocator() const noexcept -> Allocator
 {
-  return this->_end_cap.second;
+  return _end_cap.second;
 }
 
-//template <typename T>
-//PURE HOSTDEV constexpr auto Vector<T>::size() const noexcept -> len_t
-//{
-//  return this->_size;
-//}
-//
-template <typename T, typename Allocator>
-PURE HOSTDEV constexpr auto Vector<T, Allocator>::capacity() const noexcept -> size_t 
+template <class T, class Allocator>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T, Allocator>::begin() noexcept -> T *
 {
-  return static_cast<size_t>(this->_end_cap.first - this->_begin);
+  return _begin;
 }
-//
-//template <typename T>
-//// cppcheck-suppress functionConst
-//PURE HOSTDEV constexpr auto Vector<T>::data() noexcept -> T *
-//{
-//  return this->_data;
-//}
-//
-//template <typename T>
-//PURE HOSTDEV constexpr auto Vector<T>::data() const noexcept -> T const *
-//{
-//  return this->_data;
-//}
-//
-//template <typename T>
-//// cppcheck-suppress functionConst
-//PURE HOSTDEV constexpr auto Vector<T>::begin() noexcept -> T *
-//{
-//  return this->_data;
-//}
-//
-//template <typename T>
-//// cppcheck-suppress functionConst
-//PURE HOSTDEV constexpr auto Vector<T>::end() noexcept -> T *
-//{
-//  return this->_data + this->_size;
-//}
-//
-//template <typename T>
-//PURE HOSTDEV constexpr auto Vector<T>::cbegin() const noexcept -> T const *
-//{
-//  return this->_data;
-//}
-//
-//template <typename T>
-//PURE HOSTDEV constexpr auto Vector<T>::cend() const noexcept -> T const *
-//{
-//  return this->_data + this->_size;
-//}
-//
-//template <typename T>
-//// cppcheck-suppress functionConst
-//PURE HOSTDEV constexpr auto Vector<T>::front() noexcept -> T &
-//{
-//  return this->_data[0];
-//}
-//
-//template <typename T>
-//PURE HOSTDEV constexpr auto Vector<T>::front() const noexcept -> T const &
-//{
-//  return this->_data[0];
-//}
-//
-//template <typename T>
-//NDEBUG_PURE HOSTDEV constexpr auto Vector<T>::back() noexcept -> T &
-//{
-//  assert(this->_size > 0);
-//  return this->_data[this->_size - 1];
-//}
-//
-//template <typename T>
-//NDEBUG_PURE HOSTDEV constexpr auto Vector<T>::back() const noexcept -> T const &
-//{
-//  assert(this->_size > 0);
-//  return this->_data[this->_size - 1];
-//}
-//
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//// ---------------------------------------------------------------------------
-//// Operators
-//// ---------------------------------------------------------------------------
-//
-//template <typename T>
-//NDEBUG_PURE HOSTDEV constexpr auto Vector<T>::operator[](len_t const i) noexcept
-//    -> T &
-//{
-//  assert(0 <= i && i < this->_size);
-//  return this->_data[i];
-//}
-//
-//template <typename T>
-//NDEBUG_PURE HOSTDEV constexpr auto
-//Vector<T>::operator[](len_t const i) const noexcept -> T const &
-//{
-//  assert(0 <= i && i < this->_size);
-//  return this->_data[i];
-//}
-//
-//template <typename T>
-//HOSTDEV auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
+template <class T, class Allocator>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T, Allocator>::begin() const noexcept -> T const *
+{
+  return _begin;
+}
+
+template <class T, class Allocator>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T, Allocator>::end() noexcept -> T *
+{
+  return _end;
+}
+
+template <class T, class Allocator>
+PURE HOSTDEV constexpr auto
+Vector<T, Allocator>::size() const noexcept -> Size
+{
+  return static_cast<Size>(_end - _begin);
+}
+
+template <class T, class Allocator>
+PURE HOSTDEV constexpr auto
+Vector<T, Allocator>::capacity() const noexcept -> Size
+{
+  return static_cast<Size>(_end_cap.first - _begin);
+}
+
+template <class T, class Allocator>
+PURE HOSTDEV constexpr auto
+Vector<T, Allocator>::empty() const noexcept -> bool
+{
+  return _begin == _end;
+}
+
+template <class T, class Allocator>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T, Allocator>::cbegin() const noexcept -> T const *
+{
+  return begin();
+}
+
+template <class T, class Allocator>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T, Allocator>::cend() const noexcept -> T const *
+{
+  return end();
+}
+
+template <class T, class Allocator>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T, Allocator>::front() noexcept -> T &
+{
+  return *_begin;
+}
+
+template <class T, class Allocator>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T, Allocator>::front() const noexcept -> T const &
+{
+  return *_begin;
+}
+
+template <class T, class Allocator>
+NDEBUG_PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T, Allocator>::back() noexcept -> T &
+{
+  assert(size() > 0);
+  return *(_end - 1);
+}
+
+template <class T, class Allocator>
+NDEBUG_PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T, Allocator>::back() const noexcept -> T const &
+{
+  assert(size() > 0);
+  return *(_end - 1);
+}
+
+template <class T, class Allocator>
+// cppcheck-suppress functionConst
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T, Allocator>::data() noexcept -> T *
+{
+  return _begin;
+}
+
+template <class T, class Allocator>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T, Allocator>::data() const noexcept -> T const *
+{
+  return _begin;
+}
+
+// ---------------------------------------------------------------------------
+// Operators
+// ---------------------------------------------------------------------------
+
+template <class T, class Allocator>
+NDEBUG_PURE HOSTDEV constexpr auto
+Vector<T, Allocator>::operator[](Size const i) noexcept -> T &
+{
+  assert(i < size());
+  return _begin[i];
+}
+
+template <class T, class Allocator>
+NDEBUG_PURE HOSTDEV constexpr auto
+Vector<T, Allocator>::operator[](Size const i) const noexcept -> T const &
+{
+  assert(i < size());
+  return _begin[i];
+}
+// template <class T>
+// HOSTDEV auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
 //{
 //  if (this != &v) {
-//    if (this->_capacity < v.size()) {
-//      delete[] this->_data;
-//      this->_data = new T[static_cast<ulen_t>(bit_ceil(v.size()))];
-//      this->_capacity = bit_ceil(v.size());
+//    if (_capacity < v.size()) {
+//      delete[] _data;
+//      _data = new T[static_cast<uSize>(bit_ceil(v.size()))];
+//      _capacity = bit_ceil(v.size());
 //    }
-//    this->_size = v.size();
+//    _size = v.size();
 //    if constexpr (std::is_trivially_copyable_v<T>) {
-//      memcpy(this->_data, v._data, static_cast<size_t>(v.size()) * sizeof(T));
+//      memcpy(_data, v._data, static_cast<Size>(v.size()) * sizeof(T));
 //    } else {
-//      for (len_t i = 0; i < v.size(); ++i) {
-//        this->_data[i] = v._data[i];
+//      for (Size i = 0; i < v.size(); ++i) {
+//        _data[i] = v._data[i];
 //      }
 //    }
 //  }
 //  return *this;
 //}
 //
-//template <typename T>
-//HOSTDEV auto Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
+// template <class T>
+// HOSTDEV auto Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
 //{
 //  if (this != &v) {
-//    delete[] this->_data;
-//    this->_size = v._size;
-//    this->_capacity = v._capacity;
-//    this->_data = v._data;
+//    delete[] _data;
+//    _size = v._size;
+//    _capacity = v._capacity;
+//    _data = v._data;
 //    v._size = 0;
 //    v._capacity = 0;
 //    v._data = nullptr;
@@ -299,108 +242,132 @@ PURE HOSTDEV constexpr auto Vector<T, Allocator>::capacity() const noexcept -> s
 //  return *this;
 //}
 //
-//template <typename T>
-//PURE HOSTDEV constexpr auto
-//Vector<T>::operator==(Vector<T> const & v) const noexcept -> bool
+// template <class T>
+// PURE HOSTDEV constexpr auto
+// Vector<T>::operator==(Vector<T> const & v) const noexcept -> bool
 //{
-//  if (this->_size != v._size) {
+//  if (_size != v._size) {
 //    return false;
 //  }
-//  for (len_t i = 0; i < this->_size; ++i) {
-//    if (this->_data[i] != v._data[i]) {
+//  for (Size i = 0; i < _size; ++i) {
+//    if (_data[i] != v._data[i]) {
 //      return false;
 //    }
 //  }
 //  return true;
 //}
 //
-//// ---------------------------------------------------------------------------
-//// Methods
-//// ---------------------------------------------------------------------------
-//
-//template <typename T>
-//HOSTDEV void Vector<T>::clear() noexcept
+// ---------------------------------------------------------------------------
+// Methods
+// ---------------------------------------------------------------------------
+
+//template <class T, class Allocator>
+//constexpr void
+//Vector<T, Allocator>::reserve(Size n)
 //{
-//  this->_size = 0;
-//  this->_capacity = 0;
-//  delete[] this->_data;
-//  this->_data = nullptr;
+//    if (n > capacity()) {
+//        if (n > max_size())
+//            this->__throw_length_error();
+//        allocator_type& __a = this->__alloc();
+//        __split_buffer<value_type, allocator_type&> __v(__n, size(), __a);
+//        __swap_out_circular_buffer(__v);
+//    }
+//}
+
+
+
+
+
+
+
+
+
+
+
+
+// template <class T>
+// HOSTDEV void Vector<T>::clear() noexcept
+//{
+//  _size = 0;
+//  _capacity = 0;
+//  delete[] _data;
+//  _data = nullptr;
 //}
 //
-//template <typename T>
-//HOSTDEV inline void Vector<T>::reserve(len_t n)
+// template <class T>
+// HOSTDEV inline void Vector<T>::reserve(Size n)
 //{
-//  if (this->_capacity < n) {
+//  if (_capacity < n) {
 //    // since n > 0, we are safe to cast to unsigned and use bit_ceil
 //    // to determine the next power of 2
 //    n = bit_ceil(n);
-//    T * new_data = new T[static_cast<size_t>(n)];
+//    T * new_data = new T[static_cast<Size>(n)];
 //    if constexpr (std::is_trivially_copyable_v<T>) {
-//      memcpy(new_data, this->_data, static_cast<size_t>(this->_size) * sizeof(T));
+//      memcpy(new_data, _data, static_cast<Size>(_size) * sizeof(T));
 //    } else {
-//      for (len_t i = 0; i < this->_size; ++i) {
-//        new_data[i] = this->_data[i];
+//      for (Size i = 0; i < _size; ++i) {
+//        new_data[i] = _data[i];
 //      }
 //    }
-//    delete[] this->_data;
-//    this->_data = new_data;
-//    this->_capacity = n;
+//    delete[] _data;
+//    _data = new_data;
+//    _capacity = n;
 //  }
 //}
 //
-//template <typename T>
-//HOSTDEV void Vector<T>::resize(len_t const n)
+// template <class T>
+// HOSTDEV void Vector<T>::resize(Size const n)
 //{
-//  this->reserve(n);
-//  this->_size = n;
+//  reserve(n);
+//  _size = n;
 //}
 //
-//template <typename T>
-//HOSTDEV inline void Vector<T>::push_back(T const & value)
+// template <class T>
+// HOSTDEV inline void Vector<T>::push_back(T const & value)
 //{
-//  this->reserve(this->_size + 1);
-//  this->_data[this->_size++] = value;
+//  reserve(_size + 1);
+//  _data[_size++] = value;
 //}
 //
-//template <typename T>
-//PURE HOSTDEV constexpr auto Vector<T>::empty() const -> bool
+// template <class T>
+// PURE HOSTDEV constexpr auto Vector<T>::empty() const -> bool
 //{
-//  return this->_size == 0;
+//  return _size == 0;
 //}
 //
-//template <typename T>
-//HOSTDEV void Vector<T>::insert(T const * pos, len_t const n, T const & value)
+// template <class T>
+// HOSTDEV void Vector<T>::insert(T const * pos, Size const n, T const & value)
 //{
 //  if (n == 0) {
 //    return;
 //  }
-//  auto const offset = static_cast<len_t>(pos - this->_data);
-//  assert(0 <= offset && offset <= this->_size);
-//  len_t const new_size = this->_size + n;
-//  this->reserve(new_size);
+//  auto const offset = static_cast<Size>(pos - _data);
+//  assert(0 <= offset && offset <= _size);
+//  Size const new_size = _size + n;
+//  reserve(new_size);
 //  // Shift elements to make room for the insertion
-//  for (len_t i = this->_size - 1; i >= offset; --i) {
-//    this->_data[i + n] = this->_data[i];
+//  for (Size i = _size - 1; i >= offset; --i) {
+//    _data[i + n] = _data[i];
 //  }
 //  // Insert elements
-//  for (len_t i = offset; i < offset + n; ++i) {
-//    this->_data[i] = value;
+//  for (Size i = offset; i < offset + n; ++i) {
+//    _data[i] = value;
 //  }
-//  this->_size = new_size;
+//  _size = new_size;
 //}
 //
-//template <typename T>
-//HOSTDEV void Vector<T>::insert(T const * pos, T const & value)
+// template <class T>
+// HOSTDEV void Vector<T>::insert(T const * pos, T const & value)
 //{
-//  this->insert(pos, 1, value);
+//  insert(pos, 1, value);
 //}
 //
-//template <typename T>
-//PURE HOSTDEV constexpr auto Vector<T>::contains(T const & value) const noexcept
+// template <class T>
+// PURE HOSTDEV constexpr auto Vector<T>::contains(T const & value) const noexcept
 //    -> bool requires(!std::floating_point<T>)
 //{
-//  for (len_t i = 0; i < this->_size; ++i) {
-//    if (this->_data[i] == value) {
+//  for (Size i = 0; i < _size; ++i) {
+//    if (_data[i] == value) {
 //      return true;
 //    }
 //  }
@@ -408,37 +375,37 @@ PURE HOSTDEV constexpr auto Vector<T, Allocator>::capacity() const noexcept -> s
 //}
 //
 //// A classic abs(a - b) <= epsilon comparison
-//template <typename T>
-//requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) PURE HOSTDEV
-//    constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
-//                            T const epsilon) noexcept -> bool
+// template <class T>
+// requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) PURE HOSTDEV
+//     constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
+//                             T const epsilon) noexcept -> bool
 //{
-//  if (a.size() != b.size()) {
-//    return false;
-//  }
-//  for (len_t i = 0; i < a.size(); ++i) {
-//    if (std::abs(a[i] - b[i]) > epsilon) {
-//      return false;
-//    }
-//  }
-//  return true;
-//}
+//   if (a.size() != b.size()) {
+//     return false;
+//   }
+//   for (Size i = 0; i < a.size(); ++i) {
+//     if (std::abs(a[i] - b[i]) > epsilon) {
+//       return false;
+//     }
+//   }
+//   return true;
+// }
 //
-//template <typename T>
-//requires(std::unsigned_integral<T>) PURE HOSTDEV
-//    constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
-//                            T const epsilon) noexcept -> bool
+// template <class T>
+// requires(std::unsigned_integral<T>) PURE HOSTDEV
+//     constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
+//                             T const epsilon) noexcept -> bool
 //{
-//  if (a.size() != b.size()) {
-//    return false;
-//  }
-//  for (len_t i = 0; i < a.size(); ++i) {
-//    T const diff = a[i] > b[i] ? a[i] - b[i] : b[i] - a[i];
-//    if (diff > epsilon) {
-//      return false;
-//    }
-//  };
-//  return true;
-//}
+//   if (a.size() != b.size()) {
+//     return false;
+//   }
+//   for (Size i = 0; i < a.size(); ++i) {
+//     T const diff = a[i] > b[i] ? a[i] - b[i] : b[i] - a[i];
+//     if (diff > epsilon) {
+//       return false;
+//     }
+//   };
+//   return true;
+// }
 
 } // namespace um2

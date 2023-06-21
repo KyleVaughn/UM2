@@ -1,7 +1,8 @@
 #include "../test_framework.hpp"
 #include <um2/common/color.hpp>
 
-UM2_HOSTDEV TEST_CASE(color_default_constructor)
+UM2_HOSTDEV
+TEST_CASE(color_default_constructor)
 {
   um2::Color black;
   EXPECT_EQ(black.r, 0);
@@ -11,7 +12,8 @@ UM2_HOSTDEV TEST_CASE(color_default_constructor)
 }
 MAKE_CUDA_KERNEL(color_default_constructor)
 
-UM2_HOSTDEV TEST_CASE(color_int_constructor)
+UM2_HOSTDEV
+TEST_CASE(color_int_constructor)
 {
   um2::Color black(0, 0, 0, 255);
   um2::Color white(255, 255, 255, 255);
@@ -31,7 +33,8 @@ UM2_HOSTDEV TEST_CASE(color_int_constructor)
 }
 MAKE_CUDA_KERNEL(color_int_constructor)
 
-UM2_HOSTDEV TEST_CASE(color_float_constructor)
+UM2_HOSTDEV
+TEST_CASE(color_float_constructor)
 {
   um2::Color black(0.0, 0.0, 0.0, 1.0);
   um2::Color white(1.0, 1.0, 1.0, 1.0);
@@ -51,7 +54,8 @@ UM2_HOSTDEV TEST_CASE(color_float_constructor)
 }
 MAKE_CUDA_KERNEL(color_float_constructor)
 
-UM2_HOSTDEV TEST_CASE(color_double_constructor)
+UM2_HOSTDEV
+TEST_CASE(color_double_constructor)
 {
   um2::Color black(0.0, 0.0, 0.0, 1.0);
   um2::Color white(1.0, 1.0, 1.0, 1.0);
@@ -71,7 +75,8 @@ UM2_HOSTDEV TEST_CASE(color_double_constructor)
 }
 MAKE_CUDA_KERNEL(color_double_constructor)
 
-UM2_HOSTDEV TEST_CASE(toColor)
+UM2_HOSTDEV
+TEST_CASE(toColor)
 {
   um2::Color aliceblue = um2::toColor(um2::String("aliceblue"));
   um2::Color aliceblue_ref(240, 248, 255, 255);
@@ -88,7 +93,8 @@ UM2_HOSTDEV TEST_CASE(toColor)
 }
 MAKE_CUDA_KERNEL(toColor)
 
-UM2_HOSTDEV TEST_CASE(color_string_constructor)
+UM2_HOSTDEV
+TEST_CASE(color_string_constructor)
 {
   um2::Color aliceblue(um2::String("aliceblue"));
   um2::Color aliceblue_ref(240, 248, 255, 255);
@@ -105,7 +111,8 @@ UM2_HOSTDEV TEST_CASE(color_string_constructor)
 }
 MAKE_CUDA_KERNEL(color_string_constructor)
 
-UM2_HOSTDEV TEST_CASE(color_comparison)
+UM2_HOSTDEV
+TEST_CASE(color_comparison)
 {
   um2::Color black(0, 0, 0, 255);
   um2::Color white(255, 255, 255, 255);
@@ -130,7 +137,8 @@ TEST_SUITE(color)
   TEST_HOSTDEV(color_comparison);
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_TESTS(color);
   return 0;

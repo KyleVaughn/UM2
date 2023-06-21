@@ -2,7 +2,8 @@
 #include <um2/geometry/point.hpp>
 
 template <len_t D, typename T>
-UM2_HOSTDEV static constexpr auto makep1() -> um2::Point<D, T>
+UM2_HOSTDEV static constexpr auto
+makep1() -> um2::Point<D, T>
 {
   um2::Point<D, T> v;
   for (len_t i = 0; i < D; ++i) {
@@ -12,7 +13,8 @@ UM2_HOSTDEV static constexpr auto makep1() -> um2::Point<D, T>
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV static constexpr auto makep2() -> um2::Point<D, T>
+UM2_HOSTDEV static constexpr auto
+makep2() -> um2::Point<D, T>
 {
   um2::Point<D, T> v;
   for (len_t i = 0; i < D; ++i) {
@@ -22,7 +24,8 @@ UM2_HOSTDEV static constexpr auto makep2() -> um2::Point<D, T>
 }
 
 template <len_t D, std::floating_point T>
-UM2_HOSTDEV TEST_CASE(distance)
+UM2_HOSTDEV
+TEST_CASE(distance)
 {
   um2::Point<D, T> p1 = makep1<D, T>();
   um2::Point<D, T> p2 = makep2<D, T>();
@@ -43,7 +46,8 @@ UM2_HOSTDEV TEST_CASE(distance)
 }
 
 template <len_t D, std::floating_point T>
-UM2_HOSTDEV TEST_CASE(midpoint)
+UM2_HOSTDEV
+TEST_CASE(midpoint)
 {
   um2::Point<D, T> p1 = makep1<D, T>();
   um2::Point<D, T> p2 = makep2<D, T>();
@@ -54,7 +58,8 @@ UM2_HOSTDEV TEST_CASE(midpoint)
 }
 
 template <len_t D, typename T>
-UM2_HOSTDEV TEST_CASE(is_approx)
+UM2_HOSTDEV
+TEST_CASE(is_approx)
 {
   um2::Point<D, T> p1 = makep1<D, T>();
   um2::Point<D, T> p2 = makep2<D, T>();
@@ -72,7 +77,8 @@ UM2_HOSTDEV TEST_CASE(is_approx)
 }
 
 template <typename T>
-UM2_HOSTDEV TEST_CASE(areCCW)
+UM2_HOSTDEV
+TEST_CASE(areCCW)
 {
   um2::Point2<T> p1(0, 0);
   um2::Point2<T> p2(1, 1);
@@ -111,7 +117,8 @@ TEST_SUITE(point)
   }
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_TESTS((point<1, float>));
   RUN_TESTS((point<1, double>));
