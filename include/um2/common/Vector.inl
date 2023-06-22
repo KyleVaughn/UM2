@@ -1,41 +1,37 @@
+#include <iostream>
 namespace um2
 {
 // ---------------------------------------------------------------------------
 // Constructors
 // ---------------------------------------------------------------------------
 
-template <class T, class Allocator>
-HOSTDEV constexpr Vector<T, Allocator>::Vector(Allocator const & a) noexcept
-    : _end_cap(nullptr, a)
+template <class T>
+HOSTDEV constexpr
+Vector<T>::Vector(Size const n)
+  : _begin{new T[n]},
+    _end{_begin + n},
+    _end_cap{_begin + n} {}
+
+template <class T>
+HOSTDEV constexpr 
+Vector<T>::Vector(Size const n, T const & value)
+  : _begin{new T[n]},
+    _end{_begin + n},
+    _end_cap{_begin + n}
 {
+  for (auto pos = _begin; pos != _end; ++pos) {
+    *pos = value;
+  }
 }
 
-template <class T, class Allocator>
-HOSTDEV
-Vector<T, Allocator>::Vector(Size const n)
+template <class T>
+HOSTDEV constexpr 
+Vector<T>::Vector(Vector<T> const & v)
+  : _begin{new T[v.size()]},
+    _end{_begin + v.size()},
+    _end_cap{_begin + v.size()}
 {
-  assert(n > 0);
-  allocate(n);
-  constructAtEnd(n);
-}
-//
-// template <class T>
-// HOSTDEV Vector<T>::Vector(Size const n, T const & value)
-//     : _size{n},
-//       _capacity{bit_ceil(n)},
-//       _data{new T[static_cast<uSize>(bit_ceil(n))]}
-//{
-//   assert(n > 0);
-//   for (Size i = 0; i < n; ++i) {
-//     _data[i] = value;
-//   }
-// }
-//
-template <class T, class Allocator>
-HOSTDEV constexpr Vector<T, Allocator>::Vector(Vector<T, Allocator> const & v)
- : _end_cap(nullptr, v.getAllocator())
-{
-  initWithSize(v._begin, v._end, v.size());
+  copy(v.begin(), v.end(), _begin);
 }
 
 // template <class T>
@@ -66,120 +62,120 @@ HOSTDEV constexpr Vector<T, Allocator>::Vector(Vector<T, Allocator> const & v)
 // }
 //
 
-template <class T, class Allocator>
-HOSTDEV constexpr Vector<T, Allocator>::~Vector() noexcept
+template <class T>
+HOSTDEV constexpr Vector<T>::~Vector() noexcept
 {
-  destroy_vector (*this)();
+  delete[] _begin;
 }
 
 // ---------------------------------------------------------------------------
 // Accessors
 // ---------------------------------------------------------------------------
 
-template <class T, class Allocator>
+template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-Vector<T, Allocator>::getAllocator() const noexcept -> Allocator
-{
-  return _end_cap.second;
-}
-
-template <class T, class Allocator>
-PURE HOSTDEV [[nodiscard]] constexpr auto
-Vector<T, Allocator>::begin() noexcept -> T *
+Vector<T>::begin() noexcept -> T *
 {
   return _begin;
 }
 
-template <class T, class Allocator>
+template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-Vector<T, Allocator>::begin() const noexcept -> T const *
+Vector<T>::begin() const noexcept -> T const *
 {
   return _begin;
 }
 
-template <class T, class Allocator>
+template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-Vector<T, Allocator>::end() noexcept -> T *
+Vector<T>::end() noexcept -> T *
 {
   return _end;
 }
 
-template <class T, class Allocator>
+template <class T>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vector<T>::end() const noexcept -> T const *
+{
+  return _end;
+}
+
+template <class T>
 PURE HOSTDEV constexpr auto
-Vector<T, Allocator>::size() const noexcept -> Size
+Vector<T>::size() const noexcept -> Size
 {
   return static_cast<Size>(_end - _begin);
 }
 
-template <class T, class Allocator>
+template <class T>
 PURE HOSTDEV constexpr auto
-Vector<T, Allocator>::capacity() const noexcept -> Size
+Vector<T>::capacity() const noexcept -> Size
 {
-  return static_cast<Size>(_end_cap.first - _begin);
+  return static_cast<Size>(_end_cap - _begin);
 }
 
-template <class T, class Allocator>
+template <class T>
 PURE HOSTDEV constexpr auto
-Vector<T, Allocator>::empty() const noexcept -> bool
+Vector<T>::empty() const noexcept -> bool
 {
   return _begin == _end;
 }
 
-template <class T, class Allocator>
+template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-Vector<T, Allocator>::cbegin() const noexcept -> T const *
+Vector<T>::cbegin() const noexcept -> T const *
 {
   return begin();
 }
 
-template <class T, class Allocator>
+template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-Vector<T, Allocator>::cend() const noexcept -> T const *
+Vector<T>::cend() const noexcept -> T const *
 {
   return end();
 }
 
-template <class T, class Allocator>
+template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-Vector<T, Allocator>::front() noexcept -> T &
+Vector<T>::front() noexcept -> T &
 {
   return *_begin;
 }
 
-template <class T, class Allocator>
+template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-Vector<T, Allocator>::front() const noexcept -> T const &
+Vector<T>::front() const noexcept -> T const &
 {
   return *_begin;
 }
 
-template <class T, class Allocator>
+template <class T>
 NDEBUG_PURE HOSTDEV [[nodiscard]] constexpr auto
-Vector<T, Allocator>::back() noexcept -> T &
+Vector<T>::back() noexcept -> T &
 {
   assert(size() > 0);
   return *(_end - 1);
 }
 
-template <class T, class Allocator>
+template <class T>
 NDEBUG_PURE HOSTDEV [[nodiscard]] constexpr auto
-Vector<T, Allocator>::back() const noexcept -> T const &
+Vector<T>::back() const noexcept -> T const &
 {
   assert(size() > 0);
   return *(_end - 1);
 }
 
-template <class T, class Allocator>
+template <class T>
 // cppcheck-suppress functionConst
 PURE HOSTDEV [[nodiscard]] constexpr auto
-Vector<T, Allocator>::data() noexcept -> T *
+Vector<T>::data() noexcept -> T *
 {
   return _begin;
 }
 
-template <class T, class Allocator>
+template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-Vector<T, Allocator>::data() const noexcept -> T const *
+Vector<T>::data() const noexcept -> T const *
 {
   return _begin;
 }
@@ -188,41 +184,34 @@ Vector<T, Allocator>::data() const noexcept -> T const *
 // Operators
 // ---------------------------------------------------------------------------
 
-template <class T, class Allocator>
+template <class T>
 NDEBUG_PURE HOSTDEV constexpr auto
-Vector<T, Allocator>::operator[](Size const i) noexcept -> T &
+Vector<T>::operator[](Size const i) noexcept -> T &
 {
   assert(i < size());
   return _begin[i];
 }
 
-template <class T, class Allocator>
+template <class T>
 NDEBUG_PURE HOSTDEV constexpr auto
-Vector<T, Allocator>::operator[](Size const i) const noexcept -> T const &
+Vector<T>::operator[](Size const i) const noexcept -> T const &
 {
   assert(i < size());
   return _begin[i];
 }
-// template <class T>
-// HOSTDEV auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
-//{
-//  if (this != &v) {
-//    if (_capacity < v.size()) {
-//      delete[] _data;
-//      _data = new T[static_cast<uSize>(bit_ceil(v.size()))];
-//      _capacity = bit_ceil(v.size());
-//    }
-//    _size = v.size();
-//    if constexpr (std::is_trivially_copyable_v<T>) {
-//      memcpy(_data, v._data, static_cast<Size>(v.size()) * sizeof(T));
-//    } else {
-//      for (Size i = 0; i < v.size(); ++i) {
-//        _data[i] = v._data[i];
-//      }
-//    }
-//  }
-//  return *this;
-//}
+
+template <class T>
+HOSTDEV constexpr auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
+{
+  if (this != addressof(v)) {
+    delete[] _begin;
+    _begin = new T[v.size()];
+    _end = _begin + v.size();
+    _end_cap = _begin + v.size();
+    copy(v.begin(), v.end(), _begin);
+  }
+  return *this;
+}
 //
 // template <class T>
 // HOSTDEV auto Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
@@ -258,9 +247,9 @@ Vector<T, Allocator>::operator[](Size const i) const noexcept -> T const &
 // Methods
 // ---------------------------------------------------------------------------
 
-// template <class T, class Allocator>
+// template <class T>
 // constexpr void
-// Vector<T, Allocator>::reserve(Size n)
+// Vector<T>::reserve(Size n)
 //{
 //     if (n > capacity()) {
 //         if (n > max_size())
@@ -393,108 +382,5 @@ Vector<T, Allocator>::operator[](Size const i) const noexcept -> T const &
 //   };
 //   return true;
 // }
-
-// ---------------------------------------------------------------------------
-// Hidden methods
-// ---------------------------------------------------------------------------
-template <class T, class Allocator>
-PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
-// cppcheck-suppress functionStatic
-Vector<T, Allocator>::alloc() noexcept -> Allocator &
-{
-  return _end_cap.second;
-}
-
-template <class T, class Allocator>
-PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
-Vector<T, Allocator>::alloc() const noexcept -> Allocator const &
-{
-  return _end_cap.second;
-}
-
-template <class T, class Allocator>
-PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
-// cppcheck-suppress functionStatic
-Vector<T, Allocator>::endcap() noexcept -> Ptr &
-{
-  return _end_cap.first;
-}
-
-template <class T, class Allocator>
-PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
-Vector<T, Allocator>::endcap() const noexcept -> Ptr const &
-{
-  return _end_cap.first;
-}
-
-//  Default constructs n objects starting at _end
-//  Precondition:  n > 0
-//  Precondition:  size() + n <= capacity()
-//  Postcondition:  size() == size() + n
-template <class T, class Allocator>
-HOSTDEV constexpr HIDDEN void
-Vector<T, Allocator>::constructAtEnd(Size n)
-{
-  assert(n > 0);
-  assert(size() + n <= capacity());
-  ConstructTransaction tx(*this, n);
-  ConstPtr new_end = tx.new_end;
-  for (Ptr pos = tx.pos; pos != new_end; tx.pos = ++pos) {
-    AllocTraits::construct(this->alloc(), pos);
-  }
-}
-
-//template <class InputIterator, class Sentinel>
-//HOSTDEV constexpr HIDDEN void
-//constructAtEnd(InputIterator first, Sentinel last, Size n)
-//{
-////  ConstructTransaction tx(*this, __n);
-////  tx.pos = uninitializedAllocatorCopy(alloc(), first, last, tx.pos);
-//}
-
-template <class T, class Allocator>
-HOSTDEV constexpr HIDDEN void
-Vector<T, Allocator>::destructAtEnd(Ptr new_last) noexcept
-{
-  Ptr soon_to_be_end = _end;
-  while (new_last != soon_to_be_end) {
-    AllocTraits::destroy(alloc(), --soon_to_be_end);
-  }
-  _end = new_last;
-}
-
-template <class T, class Allocator>
-HOSTDEV constexpr HIDDEN void
-Vector<T, Allocator>::clearMemory() noexcept
-{
-  destructAtEnd(_begin);
-}
-
-//  Allocate space for n objects
-//  Precondition:  _begin == _end == endcap() == 0
-//  Precondition:  n > 0
-//  Postcondition:  capacity() >= n
-//  Postcondition:  size() == 0
-template <class T, class Allocator>
-HOSTDEV constexpr HIDDEN void
-Vector<T, Allocator>::allocate(Size const n)
-{
-  auto const allocation = AllocTraits::allocateAtLeast(alloc(), n);
-  _begin = allocation.ptr;
-  _end = allocation.ptr;
-  endcap() = _begin + allocation.count;
-}
-
-template <class T, class Allocator>
-template <class InputIterator, class Sentinel>
-constexpr HIDDEN void
-Vector<T, Allocator>::initWithSize(InputIterator first, Sentinel last, Size n)
-{
-  destroy_vector(*this)();
-  if (n > 0) {
-    allocate(n);
-    constructAtEnd(first, last, n);
-  }
-}
 
 } // namespace um2

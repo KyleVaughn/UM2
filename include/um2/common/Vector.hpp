@@ -1,6 +1,7 @@
 #pragma once
 
-#include <um2/common/memory.hpp>
+#include <um2/common/algorithm.hpp> // copy
+#include <um2/common/memory.hpp> // addressof
 
 #include <cuda/std/bit>     // cuda::std::bit_ceil
 #include <cuda/std/utility> // cuda::std::pair
@@ -11,36 +12,32 @@ namespace um2
 // -----------------------------------------------------------------------------
 // VECTOR
 // -----------------------------------------------------------------------------
-// An std::vector-like class.
+// An std::vector-like class without and Allocator template parameter.
 //
 // https://en.cppreference.com/w/cpp/container/vector
 
-template <typename T, typename Allocator = BasicAllocator<T>>
+template <typename T>
 struct Vector {
 
   using Ptr = T *;
   using ConstPtr = T const *;
-  using EndCap = cuda::std::pair<Ptr, Allocator>;
-  using AllocTraits = AllocatorTraits<Allocator>;
 
 private:
   Ptr _begin = nullptr;
   Ptr _end = nullptr;
-  EndCap _end_cap = EndCap(nullptr, Allocator());
+  Ptr _end_cap = nullptr;
 
 public:
   // -----------------------------------------------------------------------------
   // Constructors
   // -----------------------------------------------------------------------------
 
-  constexpr Vector() noexcept(noexcept(Allocator())) = default;
+  constexpr Vector() noexcept = default;
 
-  HOSTDEV constexpr explicit Vector(Allocator const & a) noexcept;
-
-  HOSTDEV explicit Vector(Size n);
-  ////
-  ////  HOSTDEV Vector(Size n, T const & value);
-  ////
+  HOSTDEV explicit constexpr Vector(Size n);
+  
+  HOSTDEV constexpr Vector(Size n, T const & value);
+  
   HOSTDEV constexpr Vector(Vector const & v);
 
   HOSTDEV constexpr Vector(Vector && v) noexcept;
@@ -58,9 +55,6 @@ public:
   // -----------------------------------------------------------------------------
   // Accessors
   // -----------------------------------------------------------------------------
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  getAllocator() const noexcept -> Allocator;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   // cppcheck-suppress functionConst
@@ -156,87 +150,6 @@ public:
   ////  PURE HOSTDEV constexpr auto operator==(Vector const & v) const noexcept -> bool;
   //
 
-private:
-  // ---------------------------------------------------------------------------
-  // HIDDEN
-  // ---------------------------------------------------------------------------
-
-  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
-  // cppcheck-suppress functionConst
-  alloc() noexcept -> Allocator &;
-
-  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
-  alloc() const noexcept -> Allocator const &;
-
-  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
-  // cppcheck-suppress functionConst
-  endcap() noexcept -> Ptr &;
-
-  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
-  endcap() const noexcept -> Ptr const &;
-
-  // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
-  struct ConstructTransaction {
-
-    Vector & v;
-    Ptr pos;
-    ConstPtr const new_end;
-
-    HOSTDEV constexpr HIDDEN explicit ConstructTransaction(Vector & v_in, Size n)
-        : v(v_in),
-          pos(v_in._end),
-          new_end(v_in._end + n)
-    {
-    }
-
-    HOSTDEV constexpr HIDDEN ~ConstructTransaction() { v._end = pos; }
-
-    ConstructTransaction(ConstructTransaction const &) = delete;
-    auto
-    operator=(ConstructTransaction const &) -> ConstructTransaction & = delete;
-  };
-
-  HOSTDEV constexpr HIDDEN void
-  constructAtEnd(Size n);
-
-  template <class InputIterator, class Sentinel>
-  HOSTDEV constexpr HIDDEN void
-  constructAtEnd(InputIterator first, Sentinel last, Size n);
-
-  HOSTDEV constexpr HIDDEN void
-  destructAtEnd(Ptr new_last) noexcept;
-
-  HOSTDEV constexpr HIDDEN void
-  clearMemory() noexcept;
-
-  HOSTDEV constexpr HIDDEN void
-  allocate(Size n);
-
-  class destroy_vector
-  {
-
-    Vector & _vec;
-
-  public:
-    HOSTDEV constexpr HIDDEN explicit destroy_vector(Vector & vec_in)
-        : _vec(vec_in)
-    {
-    }
-
-    HOSTDEV constexpr HIDDEN void
-    operator()()
-    {
-      if (_vec._begin != nullptr) {
-        _vec.clearMemory();
-        AllocTraits::deallocate(_vec.alloc(), _vec._begin, _vec.capacity());
-      }
-    }
-  };
-
-  template <class InputIterator, class Sentinel>
-  constexpr HIDDEN void
-  initWithSize(InputIterator first, Sentinel last, Size n);
-
 }; // struct Vector
 
 // -----------------------------------------------------------------------------
@@ -254,8 +167,8 @@ private:
 //                             T epsilon = T{}) noexcept -> bool;
 
 // Vector<bool> is a specialization that is not supported
-template <typename Allocator>
-struct Vector<bool, Allocator> {
+template <>
+struct Vector<bool> {
 };
 
 } // namespace um2

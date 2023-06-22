@@ -56,9 +56,6 @@
 #  define NDEBUG_CONST
 #endif
 
-#undef HIDDEN
-#define HIDDEN __attribute__ ((visibility("hidden")))
-
 // Typedefs
 // -----------------------------------------------------------------------------
 #cmakedefine01 UM2_ENABLE_INT64

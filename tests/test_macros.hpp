@@ -22,6 +22,8 @@
 // Additional notes:
 // - TEST_HOSTDEV(name) is a shortcut for "TEST(name); TEST_CUDA_KERNEL(name)".
 
+#define EXPECT_NEAR(a, b, eps) assert(!((a) < (b) - (eps)) && !((b) < (a) - (eps))) 
+
 #define TEST_CASE(name) static void name()
 
 #define TEST_SUITE(name) static void name()

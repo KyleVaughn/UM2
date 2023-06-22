@@ -39,6 +39,7 @@ option(UM2_ENABLE_CPPCHECK      "Enable cppcheck"                 ${UM2_DEV_MODE
 set(UM2_HEADERS
     "include/um2/config.hpp"
     "include/um2/common/memory.hpp"
+    "include/um2/common/algorithm.hpp"
     "include/um2/common/Vector.hpp"
     #    "include/um2/common/sto.hpp"
     #    "include/um2/common/string.hpp"
