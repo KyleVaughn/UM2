@@ -13,7 +13,7 @@ struct Foo {
 // ------------------------------------------------------------
 
 HOSTDEV
-TEST_CASE(test_basic_allocator)
+TEST_CASE(test_BasicAllocator)
 {
   int32_t * ptr = nullptr;
   Foo * foo_ptr = nullptr;
@@ -21,12 +21,12 @@ TEST_CASE(test_basic_allocator)
   um2::BasicAllocator<int32_t> alloc_i32;
   um2::BasicAllocator<Foo> alloc_foo;
 
-  // max_size
+  // maxSize
   Size const size_max = static_cast<Size>(-1);
   // NOLINTNEXTLINE(misc-static-assert)
-  assert(alloc_i32.max_size() == size_max / 4);
+  assert(alloc_i32.maxSize() == size_max / 4);
   // NOLINTNEXTLINE(misc-static-assert)
-  assert(alloc_foo.max_size() == size_max / sizeof(Foo));
+  assert(alloc_foo.maxSize() == size_max / sizeof(Foo));
 
   // allocate
   ptr = alloc_i32.allocate(n);
@@ -38,61 +38,20 @@ TEST_CASE(test_basic_allocator)
   alloc_i32.deallocate(ptr, n);
   alloc_foo.deallocate(foo_ptr, n);
 
-  // allocate_at_least
+  // allocateAtLeast
   n = 3;
-  auto alloc_result_i32 = alloc_i32.allocate_at_least(n);
+  auto alloc_result_i32 = alloc_i32.allocateAtLeast(n);
   assert(alloc_result_i32.ptr != nullptr);
   assert(alloc_result_i32.count == 3);
   alloc_i32.deallocate(alloc_result_i32.ptr, alloc_result_i32.count);
 }
 MAKE_CUDA_KERNEL(test_basic_allocator);
 
-HOSTDEV
-TEST_CASE(test_basic_allocator_traits)
-{
-  int32_t * ptr = nullptr;
-  Foo * foo_ptr = nullptr;
-  Size n = 1;
-  um2::BasicAllocator<int32_t> alloc_i32;
-  um2::BasicAllocator<Foo> alloc_foo;
-  using AllocTraitsi32 = um2::AllocatorTraits<um2::BasicAllocator<int32_t>>;
-  using AllocTraitsFoo = um2::AllocatorTraits<um2::BasicAllocator<Foo>>;
-
-  // max_size
-  Size const size_max = static_cast<Size>(-1);
-  // NOLINTNEXTLINE(misc-static-assert)
-  assert(AllocTraitsi32::max_size(alloc_i32) == size_max / 4);
-  // NOLINTNEXTLINE(misc-static-assert)
-  assert(AllocTraitsFoo::max_size(alloc_foo) == size_max / sizeof(Foo));
-
-  // allocate
-  ptr = AllocTraitsi32::allocate(alloc_i32, n);
-  assert(ptr != nullptr);
-  foo_ptr = AllocTraitsFoo::allocate(alloc_foo, n);
-  assert(foo_ptr != nullptr);
-
-  // deallocate
-  AllocTraitsi32::deallocate(alloc_i32, ptr, n);
-  AllocTraitsFoo::deallocate(alloc_foo, foo_ptr, n);
-
-  // allocate_at_least
-  n = 3;
-  auto alloc_result_i32 = AllocTraitsi32::allocate_at_least(alloc_i32, n);
-  assert(alloc_result_i32.ptr != nullptr);
-  assert(alloc_result_i32.count == 3);
-  AllocTraitsi32::deallocate(alloc_i32, alloc_result_i32.ptr, alloc_result_i32.count);
-}
-MAKE_CUDA_KERNEL(test_basic_allocator_traits);
-
 // ------------------------------------------------------------
 // Test Suite
 // ------------------------------------------------------------
 
-TEST_SUITE(basic_allocator)
-{
-  TEST_HOSTDEV(test_basic_allocator);
-  TEST_HOSTDEV(test_basic_allocator_traits);
-}
+TEST_SUITE(basic_allocator) { TEST_HOSTDEV(test_BasicAllocator); }
 
 auto
 main() -> int

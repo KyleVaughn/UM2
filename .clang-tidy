@@ -9,9 +9,9 @@ readability-*,
 performance-*,
 portability-*,
 -*-avoid-c-arrays,
+-*-magic-numbers,
 -bugprone-easily-swappable-parameters,
 -clang-analyzer-osx*,
--cppcoreguidelines-avoid-magic-numbers,
 -cppcoreguidelines-macro-usage,
 -cppcoreguidelines-no-malloc,
 -cppcoreguidelines-owning-memory,
@@ -23,7 +23,6 @@ portability-*,
 -cppcoreguidelines-pro-bounds-constant-array-index,
 -cppcoreguidelines-pro-type-union-access,
 -readability-identifier-length,
--readability-magic-numbers,
 -misc-non-private-member-variables-in-classes
 '
 HeaderFilterRegex: '.*'

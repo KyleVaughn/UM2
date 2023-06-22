@@ -2,11 +2,8 @@
 
 #include <um2/config.hpp>
 
-#include <um2/common/memory/construct_at.hpp>
+#include <um2/common/memory/constructAt.hpp>
 
-#include <type_traits>
-
-// NOLINTBEGIN(readability-identifier-naming)
 namespace um2
 {
 
@@ -19,45 +16,57 @@ struct AllocationResult {
 template <class Allocator>
 struct AllocatorTraits {
 
-  using value_type = typename Allocator::value_type;
-  using pointer = value_type *;
+  using Value = typename Allocator::Value;
+  using Pointer = Value *;
 
   HOSTDEV [[nodiscard]] constexpr static auto
-  allocate(Allocator & a, Size n) noexcept -> pointer
+  allocate(Allocator & a, Size n) noexcept -> Pointer
   {
     return a.allocate(n);
   }
 
   HOSTDEV constexpr static void
-  deallocate(Allocator & a, pointer p, Size n) noexcept
+  deallocate(Allocator & a, Pointer p, Size n) noexcept
   {
     a.deallocate(p, n);
   }
 
   HOSTDEV constexpr static void
-  destroy(Allocator & /*a*/, pointer p) noexcept
+  destroy(Allocator & a, Pointer p) noexcept
   {
-    destroy_at(p);
+    if constexpr (requires { a.destroy(p); }) {
+      a.destroy(p);
+    } else {
+      destroyAt(p);
+    }
   }
 
   template <class... Args>
   HOSTDEV constexpr static void
-  construct(Allocator & /*a*/, pointer p, Args &&... args) noexcept
+  construct(Allocator & a, Pointer p, Args &&... args) noexcept
   {
-    construct_at(p, forward<Args>(args)...);
+    if constexpr (requires { a.construct(p, forward<Args>(args)...); }) {
+      a.construct(p, forward<Args>(args)...);
+    } else {
+      constructAt(p, forward<Args>(args)...);
+    }
   }
 
   HOSTDEV [[nodiscard]] constexpr static auto
-  max_size(Allocator const & a) noexcept -> Size
+  maxSize(Allocator const & a) noexcept -> Size
   {
-    return a.max_size();
+    if constexpr (requires { a.maxSize(); }) {
+      return a.maxSize();
+    } else {
+      return static_cast<Size>(-1) / sizeof(Value);
+    }
   }
 
   HOSTDEV [[nodiscard]] constexpr static auto
-  allocate_at_least(Allocator & a, Size n) noexcept -> AllocationResult<pointer>
+  allocateAtLeast(Allocator & a, Size n) noexcept -> AllocationResult<Pointer>
   {
-    if constexpr (requires { a.allocate_at_least(n); }) {
-      return a.allocate_at_least(n);
+    if constexpr (requires { a.allocateAtLeast(n); }) {
+      return a.allocateAtLeast(n);
     } else {
       return {a.allocate(n), n};
     }
@@ -66,4 +75,3 @@ struct AllocatorTraits {
 }; // struct AllocatorTraits
 
 } // namespace um2
-// NOLINTEND(readability-identifier-naming)

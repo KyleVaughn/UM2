@@ -1,5 +1,7 @@
 #include "../../test_macros.hpp"
-#include <um2/common/memory/construct_at.hpp>
+#include <um2/common/memory/constructAt.hpp>
+
+#include <cstdlib>
 
 // NOLINTBEGIN
 #ifndef __CUDA_ARCH__
@@ -31,11 +33,11 @@ struct DCounted : VCounted {
 // NOLINTEND
 
 // ------------------------------------------------------------
-// destroy_at
+// destroyAt
 // ------------------------------------------------------------
 
 HOSTDEV
-TEST_CASE(test_destroy_at)
+TEST_CASE(test_destroyAt)
 {
   {
     void * mem1 = malloc(sizeof(Counted));
@@ -50,9 +52,9 @@ TEST_CASE(test_destroy_at)
     ptr2 = ::new (mem2) Counted();
     assert(ptr2 != nullptr);
     assert(count == 2);
-    um2::destroy_at(ptr1);
+    um2::destroyAt(ptr1);
     assert(count == 1);
-    um2::destroy_at(ptr2);
+    um2::destroyAt(ptr2);
     assert(count == 0);
     free(mem1);
     free(mem2);
@@ -71,22 +73,22 @@ TEST_CASE(test_destroy_at)
     ptr2 = ::new (mem2) DCounted();
     assert(ptr2 != nullptr);
     assert(count == 2);
-    um2::destroy_at(ptr1);
+    um2::destroyAt(ptr1);
     assert(count == 1);
-    um2::destroy_at(ptr2);
+    um2::destroyAt(ptr2);
     assert(count == 0);
     free(mem1);
     free(mem2);
   }
 }
-MAKE_CUDA_KERNEL(test_destroy_at);
+MAKE_CUDA_KERNEL(test_destroyAt);
 
 // ------------------------------------------------------------
-// construct_at
+// constructAt
 // ------------------------------------------------------------
 
 HOSTDEV
-TEST_CASE(test_construct_at)
+TEST_CASE(test_constructAt)
 {
   struct S {
     int x;
@@ -104,13 +106,13 @@ TEST_CASE(test_construct_at)
 
   alignas(S) unsigned char storage[sizeof(S)];
 
-  S * ptr = um2::construct_at(reinterpret_cast<S *>(storage), 42, 2.71828F, 3.1415);
+  S * ptr = um2::constructAt(reinterpret_cast<S *>(storage), 42, 2.71828F, 3.1415);
   assert((*ptr).x == 42);
   assert(((*ptr).y - 2.71828F) < 0.0001F);
   assert(((*ptr).z - 3.1415) < 0.0001);
-  um2::destroy_at(ptr);
+  um2::destroyAt(ptr);
 }
-MAKE_CUDA_KERNEL(test_construct_at);
+MAKE_CUDA_KERNEL(test_constructAt);
 
 // ------------------------------------------------------------
 // destroy
@@ -147,16 +149,16 @@ MAKE_CUDA_KERNEL(test_destroy);
 // Test Suite
 // ------------------------------------------------------------
 
-TEST_SUITE(construct_at)
+TEST_SUITE(constructAt)
 {
-  TEST_HOSTDEV(test_destroy_at);
-  TEST_HOSTDEV(test_construct_at);
+  TEST_HOSTDEV(test_destroyAt);
+  TEST_HOSTDEV(test_constructAt);
   TEST_HOSTDEV(test_destroy);
 }
 
 auto
 main() -> int
 {
-  RUN_TESTS(construct_at);
+  RUN_TESTS(constructAt);
   return 0;
 }

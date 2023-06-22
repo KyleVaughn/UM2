@@ -5,10 +5,6 @@
 #include <cuda/std/bit>     // cuda::std::bit_ceil
 #include <cuda/std/utility> // cuda::std::pair
 
-//#include <cmath>            // std::abs
-//#include <cstring>          // memcpy
-//#include <initializer_list> // std::initializer_list
-
 namespace um2
 {
 
@@ -19,79 +15,7 @@ namespace um2
 //
 // https://en.cppreference.com/w/cpp/container/vector
 
-// The following std::vector functions still need to be implemented:
-//    explicit vector(size_type n);
-//    explicit vector(size_type n, const allocator_type&); // C++14
-//    vector(size_type n, const value_type& value, const allocator_type& =
-//    allocator_type()); template <class InputIterator>
-//        vector(InputIterator first, InputIterator last, const allocator_type& =
-//        allocator_type());
-//    template<container-compatible-range<T> R>
-//      constexpr vector(from_range_t, R&& rg, const Allocator& = Allocator()); // C++23
-//    vector(const vector& x);
-//    vector(vector&& x)
-//        noexcept(is_nothrow_move_constructible<allocator_type>::value);
-//    vector(initializer_list<value_type> il);
-//    vector(initializer_list<value_type> il, const allocator_type& a);
-//    vector& operator=(const vector& x);
-//    vector& operator=(vector&& x)
-//        noexcept(
-//             allocator_type::propagate_on_container_move_assignment::value ||
-//             allocator_type::is_always_equal::value); // C++17
-//    vector& operator=(initializer_list<value_type> il);
-//    template <class InputIterator>
-//        void assign(InputIterator first, InputIterator last);
-//    template<container-compatible-range<T> R>
-//      constexpr void assign_range(R&& rg); // C++23
-//    void assign(size_type n, const value_type& u);
-//    void assign(initializer_list<value_type> il);
-//
-//    reverse_iterator       rbegin() noexcept;
-//    const_reverse_iterator rbegin()  const noexcept;
-//    reverse_iterator       rend() noexcept;
-//    const_reverse_iterator rend()    const noexcept;
-//
-//    const_reverse_iterator crbegin() const noexcept;
-//    const_reverse_iterator crend()   const noexcept;
-//
-//    void reserve(size_type n);
-//    void shrink_to_fit() noexcept;
-//
-//    void push_back(const value_type& x);
-//    void push_back(value_type&& x);
-//    template <class... Args>
-//        reference emplace_back(Args&&... args); // reference in C++17
-//    template<container-compatible-range<T> R>
-//      constexpr void append_range(R&& rg); // C++23
-//    void pop_back();
-//
-//    template <class... Args> iterator emplace(const_iterator position, Args&&... args);
-//    iterator insert(const_iterator position, const value_type& x);
-//    iterator insert(const_iterator position, value_type&& x);
-//    iterator insert(const_iterator position, size_type n, const value_type& x);
-//    template <class InputIterator>
-//        iterator insert(const_iterator position, InputIterator first, InputIterator
-//        last);
-//    template<container-compatible-range<T> R>
-//      constexpr iterator insert_range(const_iterator position, R&& rg); // C++23
-//    iterator insert(const_iterator position, initializer_list<value_type> il);
-//
-//    iterator erase(const_iterator position);
-//    iterator erase(const_iterator first, const_iterator last);
-//
-//    void clear() noexcept;
-//
-//    void resize(size_type sz);
-//    void resize(size_type sz, const value_type& c);
-//
-//    void swap(vector&)
-//        noexcept(allocator_traits<allocator_type>::propagate_on_container_swap::value ||
-//                 allocator_traits<allocator_type>::is_always_equal::value);  // C++17
-//
-//    bool __invariants() const;
-
 template <typename T, typename Allocator = BasicAllocator<T>>
-// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
 struct Vector {
 
   using Ptr = T *;
@@ -104,109 +28,7 @@ private:
   Ptr _end = nullptr;
   EndCap _end_cap = EndCap(nullptr, Allocator());
 
-  // ---------------------------------------------------------------------------
-  // HIDDEN
-  // ---------------------------------------------------------------------------
-  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
-  // cppcheck-suppress functionConst
-  alloc() noexcept -> Allocator &
-  {
-    return _end_cap.second;
-  }
-
-  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
-  alloc() const noexcept -> Allocator const &
-  {
-    return _end_cap.second;
-  }
-
-  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
-  // cppcheck-suppress functionConst
-  endcap() noexcept -> Ptr &
-  {
-    return _end_cap.first;
-  }
-
-  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
-  endcap() const noexcept -> Ptr const &
-  {
-    return _end_cap.first;
-  }
-
-  // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
-  struct ConstructTransaction {
-
-    Vector & v;
-    Ptr pos;
-    ConstPtr const new_end;
-
-    constexpr HIDDEN explicit ConstructTransaction(Vector & v_in, Size n)
-        : v(v_in),
-          pos(v_in._end),
-          new_end(v_in._end + n)
-    {
-    }
-
-    constexpr HIDDEN ~ConstructTransaction() { v._end = pos; }
-
-    ConstructTransaction(ConstructTransaction const &) = delete;
-    auto
-    operator=(ConstructTransaction const &) -> ConstructTransaction & = delete;
-  };
-
-  //  Default constructs n objects starting at _end
-  //  Precondition:  n > 0
-  //  Precondition:  size() + n <= capacity()
-  //  Postcondition:  size() == size() + n
-  HOSTDEV constexpr HIDDEN void
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  construct_at_end(Size n)
-  {
-    assert(n > 0);
-    assert(size() + n <= capacity());
-    ConstructTransaction tx(*this, n);
-    ConstPtr new_end = tx.new_end;
-    for (Ptr pos = tx.pos; pos != new_end; tx.pos = ++pos) {
-      AllocTraits::construct(this->alloc(), pos);
-    }
-  }
-
-  HOSTDEV constexpr HIDDEN void
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  destruct_at_end(Ptr new_last) noexcept
-  {
-    Ptr soon_to_be_end = _end;
-    while (new_last != soon_to_be_end) {
-      AllocTraits::destroy(alloc(), --soon_to_be_end);
-    }
-    _end = new_last;
-  }
-
-  HOSTDEV constexpr HIDDEN void
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  clear_mem() noexcept
-  {
-    destruct_at_end(_begin);
-  }
-
-  //  Allocate space for n objects
-  //  Precondition:  _begin == _end == endcap() == 0
-  //  Precondition:  n > 0
-  //  Postcondition:  capacity() >= n
-  //  Postcondition:  size() == 0
-  HOSTDEV constexpr HIDDEN void
-  allocate(Size const n)
-  {
-    auto const allocation = AllocTraits::allocate_at_least(alloc(), n);
-    _begin = allocation.ptr;
-    _end = allocation.ptr;
-    endcap() = _begin + allocation.count;
-  }
-
 public:
-  // Ignore UM2 naming convention to match std lib functions
-  // NOLINTBEGIN(readability-identifier-naming)
-
   // -----------------------------------------------------------------------------
   // Constructors
   // -----------------------------------------------------------------------------
@@ -219,32 +41,26 @@ public:
   ////
   ////  HOSTDEV Vector(Size n, T const & value);
   ////
-  ////    HOSTDEV constexpr Vector(Vector const & v);
-  ////
-  ////  HOSTDEV Vector(Vector && v) noexcept;
+  HOSTDEV constexpr Vector(Vector const & v);
+
+  HOSTDEV constexpr Vector(Vector && v) noexcept;
   ////
   ////  // cppcheck-suppress noExplicitConstructor
-  ////  // NOLINTNEXTLINE(google-explicit-constructor)
   ////  Vector(std::initializer_list<T> const & list);
   ////
 
   // -----------------------------------------------------------------------------
   // Destructor
   // -----------------------------------------------------------------------------
-  HOSTDEV constexpr ~Vector() noexcept
-  {
-    if (_begin != nullptr) {
-      clear_mem();
-      AllocTraits::deallocate(alloc(), _begin, capacity());
-    }
-  }
+
+  HOSTDEV constexpr ~Vector() noexcept;
 
   // -----------------------------------------------------------------------------
   // Accessors
   // -----------------------------------------------------------------------------
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  get_allocator() const noexcept -> Allocator;
+  getAllocator() const noexcept -> Allocator;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   // cppcheck-suppress functionConst
@@ -300,8 +116,8 @@ public:
   // Methods
   // -----------------------------------------------------------------------------
 
-  HOSTDEV constexpr void
-  reserve(Size n);
+  // HOSTDEV constexpr void
+  // reserve(Size n);
 
   ////  HOSTDEV void clear() noexcept;
   ////
@@ -330,14 +146,97 @@ public:
 
   NDEBUG_PURE HOSTDEV constexpr auto
   operator[](Size i) const noexcept -> T const &;
-  ////
-  ////  HOSTDEV auto operator=(Vector const & v) -> Vector &;
-  ////
-  ////  HOSTDEV auto operator=(Vector && v) noexcept -> Vector &;
+
+  HOSTDEV constexpr auto
+  operator=(Vector const & v) -> Vector &;
+
+  HOSTDEV constexpr auto
+  operator=(Vector && v) noexcept -> Vector &;
   ////
   ////  PURE HOSTDEV constexpr auto operator==(Vector const & v) const noexcept -> bool;
   //
-  //  // NOLINTEND(readability-identifier-naming)
+
+private:
+  // ---------------------------------------------------------------------------
+  // HIDDEN
+  // ---------------------------------------------------------------------------
+
+  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
+  // cppcheck-suppress functionConst
+  alloc() noexcept -> Allocator &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
+  alloc() const noexcept -> Allocator const &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
+  // cppcheck-suppress functionConst
+  endcap() noexcept -> Ptr &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr HIDDEN auto
+  endcap() const noexcept -> Ptr const &;
+
+  // NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
+  struct ConstructTransaction {
+
+    Vector & v;
+    Ptr pos;
+    ConstPtr const new_end;
+
+    HOSTDEV constexpr HIDDEN explicit ConstructTransaction(Vector & v_in, Size n)
+        : v(v_in),
+          pos(v_in._end),
+          new_end(v_in._end + n)
+    {
+    }
+
+    HOSTDEV constexpr HIDDEN ~ConstructTransaction() { v._end = pos; }
+
+    ConstructTransaction(ConstructTransaction const &) = delete;
+    auto
+    operator=(ConstructTransaction const &) -> ConstructTransaction & = delete;
+  };
+
+  HOSTDEV constexpr HIDDEN void
+  constructAtEnd(Size n);
+
+  template <class InputIterator, class Sentinel>
+  HOSTDEV constexpr HIDDEN void
+  constructAtEnd(InputIterator first, Sentinel last, Size n);
+
+  HOSTDEV constexpr HIDDEN void
+  destructAtEnd(Ptr new_last) noexcept;
+
+  HOSTDEV constexpr HIDDEN void
+  clearMemory() noexcept;
+
+  HOSTDEV constexpr HIDDEN void
+  allocate(Size n);
+
+  class destroy_vector
+  {
+
+    Vector & _vec;
+
+  public:
+    HOSTDEV constexpr HIDDEN explicit destroy_vector(Vector & vec_in)
+        : _vec(vec_in)
+    {
+    }
+
+    HOSTDEV constexpr HIDDEN void
+    operator()()
+    {
+      if (_vec._begin != nullptr) {
+        _vec.clearMemory();
+        AllocTraits::deallocate(_vec.alloc(), _vec._begin, _vec.capacity());
+      }
+    }
+  };
+
+  template <class InputIterator, class Sentinel>
+  constexpr HIDDEN void
+  initWithSize(InputIterator first, Sentinel last, Size n);
+
 }; // struct Vector
 
 // -----------------------------------------------------------------------------

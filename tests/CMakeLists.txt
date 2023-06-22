@@ -5,8 +5,8 @@ include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
 # ------------------------------------------------------------------------------
 # memory
 add_um2_test(addressof ./common/memory/addressof.cpp)
-add_um2_test(construct_at ./common/memory/construct_at.cpp)
-# Also tests AllocatorTraits
+add_um2_test(constructAt ./common/memory/constructAt.cpp)
+add_um2_test(AllocatorTraits ./common/memory/AllocatorTraits.cpp)
 add_um2_test(BasicAllocator ./common/memory/BasicAllocator.cpp)
 add_um2_test(Vector ./common/Vector.cpp)
 #add_um2_test(sto    ./common/sto.cpp) 

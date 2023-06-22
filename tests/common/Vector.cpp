@@ -7,13 +7,12 @@
 
 template <class T>
 HOSTDEV
-TEST_CASE(test_allocator_constructor)
+TEST_CASE(test_constructor_Allocator)
 {
   struct TestAlloc {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    using value_type = T;
+    using Value = T;
 #pragma GCC diagnostic pop
 
     int i = 0;
@@ -37,12 +36,12 @@ TEST_CASE(test_allocator_constructor)
   alloc.i = 11;
 
   um2::Vector<T, TestAlloc> v(alloc);
-  assert(v.get_allocator().i == 11);
+  assert(v.getAllocator().i == 11);
 }
 
 template <class T>
 HOSTDEV
-TEST_CASE(test_length_constructor)
+TEST_CASE(test_constructor_Size)
 {
   um2::Vector<T> v(10);
   assert(v.size() == 10);
@@ -485,10 +484,10 @@ TEST_CASE(test_length_constructor)
 #if UM2_ENABLE_CUDA
 
 template <class T>
-MAKE_CUDA_KERNEL(test_allocator_constructor, T)
+MAKE_CUDA_KERNEL(test_constructor_Allocator, T)
 
 template <class T>
-MAKE_CUDA_KERNEL(test_length_constructor, T)
+MAKE_CUDA_KERNEL(test_constructor_Size, T)
 
 // template <class T>
 // MAKE_CUDA_KERNEL(begin_end, T)
@@ -541,8 +540,8 @@ template <class T>
 TEST_SUITE(vector)
 {
   // Constructors
-  TEST_HOSTDEV(test_allocator_constructor, 1, 1, T)
-  TEST_HOSTDEV(test_length_constructor, 1, 1, T)
+  TEST_HOSTDEV(test_constructor_Allocator, 1, 1, T)
+  TEST_HOSTDEV(test_constructor_Size, 1, 1, T)
   //  TEST_HOSTDEV(length_val_constructor, 1, 1, T)
   //  TEST_HOSTDEV(copy_constructor, 1, 1, T)
 

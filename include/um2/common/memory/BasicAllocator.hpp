@@ -2,7 +2,6 @@
 
 #include <um2/common/memory/AllocatorTraits.hpp>
 
-// NOLINTBEGIN(readability-identifier-naming)
 namespace um2
 {
 
@@ -16,32 +15,33 @@ namespace um2
 template <class T>
 struct BasicAllocator {
 
-  using value_type = T;
+  using Value = T;
+  using Pointer = T *;
 
   HOSTDEV [[nodiscard]] constexpr auto
   // cppcheck-suppress functionStatic
-  max_size() const noexcept -> Size
+  maxSize() const noexcept -> Size
   {
     return static_cast<Size>(-1) / static_cast<Size>(sizeof(T));
   }
 
   HOSTDEV [[nodiscard]] constexpr auto
   // cppcheck-suppress functionStatic
-  allocate(Size n) noexcept -> T *
+  allocate(Size n) noexcept -> Pointer
   {
-    return static_cast<T *>(::operator new(n * sizeof(T)));
+    return static_cast<Pointer>(::operator new(n * sizeof(T)));
   }
 
   HOSTDEV [[nodiscard]] constexpr auto
   // cppcheck-suppress functionStatic
-  allocate_at_least(Size n) noexcept -> AllocationResult<T *>
+  allocateAtLeast(Size n) noexcept -> AllocationResult<Pointer>
   {
     return {allocate(n), n};
   }
 
   HOSTDEV constexpr void
   // cppcheck-suppress functionStatic
-  deallocate(T * p, Size /*n*/) noexcept
+  deallocate(Pointer p, Size /*n*/) noexcept
   {
     ::operator delete(p);
   }
@@ -49,4 +49,3 @@ struct BasicAllocator {
 }; // struct BasicAllocator
 
 } // namespace um2
-// NOLINTEND(readability-identifier-naming)

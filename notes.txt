@@ -1,0 +1,4 @@
+Check Vector for
+is_constant_evaluated
+
+    going to need std::move at some point too
