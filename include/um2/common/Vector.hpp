@@ -6,6 +6,8 @@
 #include <cuda/std/bit>     // cuda::std::bit_ceil
 #include <cuda/std/utility> // cuda::std::pair
 
+#include <initializer_list> // std::initializer_list
+
 namespace um2
 {
 
@@ -41,10 +43,9 @@ public:
   HOSTDEV constexpr Vector(Vector const & v);
 
   HOSTDEV constexpr Vector(Vector && v) noexcept;
-  ////
-  ////  // cppcheck-suppress noExplicitConstructor
-  ////  Vector(std::initializer_list<T> const & list);
-  ////
+  
+  // cppcheck-suppress noExplicitConstructor
+  HOSTDEV constexpr Vector(std::initializer_list<T> const & list);
 
   // -----------------------------------------------------------------------------
   // Destructor
@@ -109,6 +110,29 @@ public:
   // -----------------------------------------------------------------------------
   // Methods
   // -----------------------------------------------------------------------------
+
+//    void reserve(size_type n);
+//    void shrink_to_fit() noexcept;
+//    void push_back(const value_type& x);
+//    void push_back(value_type&& x);
+//    template <class... Args>
+//        reference emplace_back(Args&&... args); // reference in C++17
+//    template<container-compatible-range<T> R>
+//      constexpr void append_range(R&& rg); // C++23
+//    void pop_back();
+//    iterator insert(const_iterator position, const value_type& x);
+//    iterator insert(const_iterator position, value_type&& x);
+//    iterator insert(const_iterator position, size_type n, const value_type& x);
+//    template <class InputIterator>
+//        iterator insert(const_iterator position, InputIterator first, InputIterator last);
+//    template<container-compatible-range<T> R>
+//      constexpr iterator insert_range(const_iterator position, R&& rg); // C++23
+//    iterator insert(const_iterator position, initializer_list<value_type> il);
+//    iterator erase(const_iterator position);
+//    iterator erase(const_iterator first, const_iterator last);
+//    void clear() noexcept;
+//    void resize(size_type sz);
+//    void resize(size_type sz, const value_type& c);
 
   // HOSTDEV constexpr void
   // reserve(Size n);

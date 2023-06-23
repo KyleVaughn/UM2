@@ -1,8 +1,9 @@
 #include "../test_macros.hpp"
 #include <um2/common/Vector.hpp>
 
+#include <um2/common/utility.hpp>
+
 #include <concepts>
-#include <iostream>
 
 // ----------------------------------------------------------------------------
 // Constructors
@@ -78,95 +79,50 @@ HOSTDEV TEST_CASE(test_copy_constructor)
     }
   }
 }
-//
-// template <class T>
-// TEST_CASE(initializer_list_constructor)
-//{
-//  um2::Vector<T> v{1, 2, 3, 4, 5};
-//  assert(v.size(), 5);
-//  assert(v.capacity(), 8);
-//  for (int i = 0; i < 5; i++) {
-//    if constexpr (std::floating_point<T>) {
-//      EXPECT_NEAR(v.data()[i], static_cast<T>(i + 1), 1e-6);
-//    } else {
-//      assert(v.data()[i], static_cast<T>(i + 1));
-//    }
-//  }
-//}
-//
 
-// ----------------------------------------------------------------------------
-// Accessors
-// ----------------------------------------------------------------------------
+template <class T>
+HOSTDEV auto createVector(Size size) -> um2::Vector<T> 
+{
+  um2::Vector<T> v(size);
+  for (Size i = 0; i < size; i++) {
+    v.data()[i] = static_cast<T>(i);
+  }
+  return v;
+}
 
-// template <class T>
-// HOSTDEV TEST_CASE(begin_end)
-//{
-//   um2::Vector<T> v;
-//   assert(v.begin(), v.end());
-//   v.push_back(1);
-//   EXPECT_NE(v.begin(), v.end());
-//   if constexpr (std::floating_point<T>) {
-//     EXPECT_NEAR(*v.begin(), 1, 1e-6);
-//     EXPECT_NEAR(*(v.end() - 1), 1, 1e-6);
-//   } else {
-//     assert(*v.begin(), 1);
-//     assert(*(v.end() - 1), 1);
-//   }
-//   v.push_back(2);
-//   EXPECT_NE(v.begin(), v.end());
-//   if constexpr (std::floating_point<T>) {
-//     EXPECT_NEAR(*v.begin(), 1, 1e-6);
-//     EXPECT_NEAR(*(v.end() - 1), 2, 1e-6);
-//   } else {
-//     assert(*v.begin(), 1);
-//     assert(*(v.end() - 1), 2);
-//   }
-//
-//   v.clear();
-//   assert(v.cbegin(), v.cend());
-//   v.push_back(1);
-//   EXPECT_NE(v.cbegin(), v.cend());
-//   if constexpr (std::floating_point<T>) {
-//     EXPECT_NEAR(*v.cbegin(), 1, 1e-6);
-//     EXPECT_NEAR(*(v.cend() - 1), 1, 1e-6);
-//   } else {
-//     assert(*v.cbegin(), 1);
-//     assert(*(v.cend() - 1), 1);
-//   }
-//   v.push_back(2);
-//   EXPECT_NE(v.cbegin(), v.cend());
-//   if constexpr (std::floating_point<T>) {
-//     EXPECT_NEAR(*v.cbegin(), 1, 1e-6);
-//     EXPECT_NEAR(*(v.cend() - 1), 2, 1e-6);
-//   } else {
-//     assert(*v.cbegin(), 1);
-//     assert(*(v.cend() - 1), 2);
-//   }
-// }
-//
-// template <class T>
-// HOSTDEV TEST_CASE(front_back)
-//{
-//   um2::Vector<T> v;
-//   v.push_back(1);
-//   if constexpr (std::floating_point<T>) {
-//     EXPECT_NEAR(v.front(), 1, 1e-6);
-//     EXPECT_NEAR(v.back(), 1, 1e-6);
-//   } else {
-//     assert(v.front(), 1);
-//     assert(v.back(), 1);
-//   }
-//   v.push_back(2);
-//   if constexpr (std::floating_point<T>) {
-//     EXPECT_NEAR(v.front(), 1, 1e-6);
-//     EXPECT_NEAR(v.back(), 2, 1e-6);
-//   } else {
-//     assert(v.front(), 1);
-//     assert(v.back(), 2);
-//   }
-// }
-//
+template <class T>
+HOSTDEV TEST_CASE(test_move_constructor)
+{
+  um2::Vector<T> v(move(createVector<T>(10)));
+  assert(v.cbegin() != nullptr);
+  assert(v.cend() != nullptr);
+  assert(v.size() == 10);
+  assert(v.capacity() == 10);
+
+  um2::Vector<T> v1;
+  v1 = move(createVector<T>(10));
+  assert(v1.cbegin() != nullptr);
+  assert(v1.cend() != nullptr);
+  assert(v1.size() == 10);
+  assert(v1.capacity() == 10);
+}
+
+template <class T>
+TEST_CASE(test_constructor_initializer_list)
+{
+  um2::Vector<T> v{1, 2, 3, 4, 5};
+  assert(v.size() == 5);
+  assert(v.capacity() == 5);
+  for (int i = 0; i < 5; ++i) {
+    if constexpr (std::floating_point<T>) {
+      // cppcheck-suppress assertWithSideEffect
+      EXPECT_NEAR(v.data()[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
+    } else {
+      // cppcheck-suppress assertWithSideEffect
+      assert(v.data()[i] == static_cast<T>(i + 1));
+    }
+  }
+}
 
 //// ----------------------------------------------------------------------------
 //// Operators
@@ -219,10 +175,10 @@ HOSTDEV TEST_CASE(test_copy_constructor)
 //  EXPECT_NE(v1.data(), v2.data());
 //}
 //
-//// ----------------------------------------------------------------------------
-//// Methods
-//// ----------------------------------------------------------------------------
-//
+// ----------------------------------------------------------------------------
+// Methods
+// ----------------------------------------------------------------------------
+
 // template <class T>
 // HOSTDEV TEST_CASE(clear)
 //{
@@ -349,15 +305,6 @@ HOSTDEV TEST_CASE(test_copy_constructor)
 //}
 //
 // template <class T>
-// HOSTDEV TEST_CASE(empty)
-//{
-//  um2::Vector<T> v;
-//  EXPECT_TRUE(v.empty());
-//  v.push_back(1);
-//  EXPECT_FALSE(v.empty());
-//}
-//
-// template <class T>
 // HOSTDEV TEST_CASE(insert)
 //{
 //  um2::Vector<T> v;
@@ -460,7 +407,7 @@ HOSTDEV TEST_CASE(test_copy_constructor)
 //  EXPECT_TRUE(isApprox(v1, v2, eps));
 //  EXPECT_TRUE(isApprox(v1, v3, eps));
 //}
-//
+
 // --------------------------------------------------------------------------
 // CUDA
 // --------------------------------------------------------------------------
@@ -474,19 +421,11 @@ MAKE_CUDA_KERNEL(test_constructor_Size_value, T)
 template <class T>
 MAKE_CUDA_KERNEL(test_copy_constructor, T)
 
-// template <class T>
-// MAKE_CUDA_KERNEL(begin_end, T)
-//
-//  template <class T>
-//  MAKE_CUDA_KERNEL(front_back, T)
-//
-//  template <class T>
-//  MAKE_CUDA_KERNEL(length_constructor, T)
-//
-//  template <class T>
-//  MAKE_CUDA_KERNEL(length_val_constructor, T)
-//
+template <class T>
+MAKE_CUDA_KERNEL(test_move_constructor, T)
 
+template <class T>
+MAKE_CUDA_KERNEL(test_constructor_initializer_list, T)
 
 //
 //  template <class T>
@@ -528,12 +467,9 @@ TEST_SUITE(vector)
   TEST_HOSTDEV(test_constructor_Size, 1, 1, T)
   TEST_HOSTDEV(test_constructor_Size_value, 1, 1, T)
   TEST_HOSTDEV(test_copy_constructor, 1, 1, T)
+  TEST_HOSTDEV(test_move_constructor, 1, 1, T)
+  TEST_HOSTDEV(test_constructor_initializer_list, 1, 1, T)
 
-  // Accessors
-  //  TEST_HOSTDEV(begin_end, 1, 1, T)
-  //  TEST_HOSTDEV(front_back, 1, 1, T)
-
-  //  TEST(initializer_list_constructor<T>)
   //  // Operators
   //  if constexpr (!std::floating_point<T>) {
   //    TEST_HOSTDEV(operator_equal, 1, 1, T)

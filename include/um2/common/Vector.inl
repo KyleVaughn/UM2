@@ -1,4 +1,3 @@
-#include <iostream>
 namespace um2
 {
 // ---------------------------------------------------------------------------
@@ -34,33 +33,31 @@ Vector<T>::Vector(Vector<T> const & v)
   copy(v.begin(), v.end(), _begin);
 }
 
-// template <class T>
-// HOSTDEV Vector<T>::Vector(Vector<T> && v) noexcept
-//     : _size{v._size},
-//       _capacity{v._capacity},
-//       _data{v._data}
-//{
-//   v._size = 0;
-//   v._capacity = 0;
-//   v._data = nullptr;
-// }
-//
-// template <class T>
-// Vector<T>::Vector(std::initializer_list<T> const & list)
-//     : _size{static_cast<Size>(list.size())},
-//       _capacity{static_cast<Size>(bit_ceil(list.size()))},
-//       _data{new T[bit_ceil(list.size())]}
-//{
-//   if constexpr (std::is_trivially_copyable_v<T>) {
-//     memcpy(_data, list.begin(), list.size() * sizeof(T));
-//   } else {
-//     Size i = 0;
-//     for (auto const & value : list) {
-//       _data[i++] = value;
-//     }
-//   }
-// }
-//
+template <class T>
+HOSTDEV constexpr
+Vector<T>::Vector(Vector<T> && v) noexcept
+  : _begin{v._begin},
+    _end{v._end},
+    _end_cap{v._end_cap} 
+{
+  v._begin = nullptr;
+  v._end = nullptr;
+  v._end_cap = nullptr;
+}
+
+template <class T>
+HOSTDEV constexpr
+Vector<T>::Vector(std::initializer_list<T> const & list)
+ : _begin{new T[list.size()]},
+   _end{_begin + list.size()},
+   _end_cap{_begin + list.size()}
+{
+  copy(list.begin(), list.end(), _begin);
+}
+
+// ---------------------------------------------------------------------------
+// Destructor
+// ---------------------------------------------------------------------------
 
 template <class T>
 HOSTDEV constexpr Vector<T>::~Vector() noexcept
@@ -212,22 +209,23 @@ HOSTDEV constexpr auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
   }
   return *this;
 }
-//
-// template <class T>
-// HOSTDEV auto Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
-//{
-//  if (this != &v) {
-//    delete[] _data;
-//    _size = v._size;
-//    _capacity = v._capacity;
-//    _data = v._data;
-//    v._size = 0;
-//    v._capacity = 0;
-//    v._data = nullptr;
-//  }
-//  return *this;
-//}
-//
+
+template <class T>
+HOSTDEV constexpr auto 
+Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
+{
+  if (this != addressof(v)) {
+    delete[] _begin;
+    _begin = v._begin;
+    _end = v._end;
+    _end_cap = v._end_cap;
+    v._begin = nullptr;
+    v._end = nullptr;
+    v._end_cap = nullptr;
+  }
+  return *this;
+}
+
 // template <class T>
 // PURE HOSTDEV constexpr auto
 // Vector<T>::operator==(Vector<T> const & v) const noexcept -> bool
@@ -242,7 +240,7 @@ HOSTDEV constexpr auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
 //  }
 //  return true;
 //}
-//
+
 // ---------------------------------------------------------------------------
 // Methods
 // ---------------------------------------------------------------------------
@@ -302,12 +300,6 @@ HOSTDEV constexpr auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
 //{
 //  reserve(_size + 1);
 //  _data[_size++] = value;
-//}
-//
-// template <class T>
-// PURE HOSTDEV constexpr auto Vector<T>::empty() const -> bool
-//{
-//  return _size == 0;
 //}
 //
 // template <class T>

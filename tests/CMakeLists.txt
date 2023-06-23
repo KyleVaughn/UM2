@@ -5,6 +5,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
 # ------------------------------------------------------------------------------
 # memory
 add_um2_test(addressof ./common/memory/addressof.cpp)
+add_um2_test(construct_at ./common/memory/construct_at.cpp)
 add_um2_test(Vector ./common/Vector.cpp)
 #add_um2_test(sto    ./common/sto.cpp) 
 #add_um2_test(string ./common/string.cpp)
