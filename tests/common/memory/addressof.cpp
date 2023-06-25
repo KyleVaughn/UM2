@@ -1,5 +1,7 @@
-#include "../../test_macros.hpp"
 #include <um2/common/memory/addressof.hpp>
+
+#include "../../test_macros.hpp"
+
 
 // NOLINTBEGIN
 struct A {
@@ -24,19 +26,19 @@ struct Nothing {
 // ------------------------------------------------------------
 
 HOSTDEV
-TEST_CASE(test_addressof)
+TEST_CASE(addressof)
 {
   // NOLINTBEGIN(misc-static-assert)
   {
     int i = 0;
     double d = 0;
-    assert(um2::addressof(i) == &i);
-    assert(um2::addressof(d) == &d);
+    ASSERT(um2::addressof(i) == &i);
+    ASSERT(um2::addressof(d) == &d);
 
     A * tp = new A;
     const A * ctp = tp;
-    assert(um2::addressof(*tp) == tp);
-    assert(um2::addressof(*ctp) == ctp);
+    ASSERT(um2::addressof(*tp) == tp);
+    ASSERT(um2::addressof(*ctp) == ctp);
     delete tp;
   }
   {
@@ -44,17 +46,17 @@ TEST_CASE(test_addressof)
       Nothing n;
       int i;
     };
-    assert(um2::addressof(n) == static_cast<void *>(um2::addressof(n)));
+    ASSERT(um2::addressof(n) == static_cast<void *>(um2::addressof(n)));
   }
   // NOLINTEND(misc-static-assert)
 }
-MAKE_CUDA_KERNEL(test_addressof);
+MAKE_CUDA_KERNEL(addressof);
 
-TEST_SUITE(addressof) { TEST_HOSTDEV(test_addressof); }
+TEST_SUITE(addressof) { TEST_HOSTDEV(addressof); }
 
 auto
 main() -> int
 {
-  RUN_TESTS(addressof);
+  RUN_SUITE(addressof);
   return 0;
 }

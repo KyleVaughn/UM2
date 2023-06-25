@@ -1,8 +1,15 @@
 set(TEST_FRAMEWORK_HEADER "${PROJECT_SOURCE_DIR}/tests/test_macros.hpp")    
     
-macro(add_um2_test TESTNAME)    
+macro(add_um2_test FILENAME)
+  # Strip the path and extension from the filename to get the test name
+  set(TESTNAME ${FILENAME})
+  get_filename_component(TESTNAME ${TESTNAME} NAME_WE)
+  get_filename_component(TESTNAME ${TESTNAME} NAME_WLE)
+  # Prepend "test_" to the test name
+  set(TESTNAME "test_${TESTNAME}")
+
   # Always include the test framework header with the test    
-  add_executable(${TESTNAME} ${ARGN} ${TEST_FRAMEWORK_HEADER})    
+  add_executable(${TESTNAME} ${FILENAME} ${TEST_FRAMEWORK_HEADER})    
 
   target_link_libraries(${TESTNAME} um2 spdlog::spdlog Thrust)    
 
@@ -33,7 +40,7 @@ macro(add_um2_test TESTNAME)
   if (UM2_ENABLE_CUDA)    
     set_target_properties(${TESTNAME} PROPERTIES CUDA_STANDARD ${UM2_CUDA_STANDARD})
     set_target_properties(${TESTNAME} PROPERTIES CUDA_STANDARD_REQUIRED ON)
-    set_source_files_properties(${ARGN} PROPERTIES LANGUAGE CUDA)    
+    set_source_files_properties(${FILENAME} PROPERTIES LANGUAGE CUDA)    
     set_property(TARGET ${TESTNAME} PROPERTY CUDA_SEPARABLE_COMPILATION ON)    
     set_property(TARGET ${TESTNAME} PROPERTY CUDA_ARCHITECTURES native)        
   endif()                                                                      

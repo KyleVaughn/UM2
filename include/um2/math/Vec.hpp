@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/common/config.hpp>
+#include <um2/config.hpp>
 
 #include <Eigen/Dense> // Eigen::Matrix
 
@@ -11,7 +11,7 @@ namespace um2
 // VEC
 // -----------------------------------------------------------------------------
 
-template <len_t D, typename T>
+template <Size D, typename T>
 using Vec = Eigen::Matrix<T, D, 1>;
 
 template <typename T>
@@ -41,7 +41,7 @@ using Vec4u = Vec4<uint32_t>;
 // Cross product of two 2D vectors (returns a scalar, since the result is in the z
 // direction)
 template <typename DerivedA, typename DerivedB>
-UM2_PURE UM2_HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 cross2(Eigen::MatrixBase<DerivedA> const & a,
        Eigen::MatrixBase<DerivedB> const & b) noexcept -> typename DerivedA::Scalar
 {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <um2/config.hpp>
+
 #include <type_traits>
 
 namespace um2

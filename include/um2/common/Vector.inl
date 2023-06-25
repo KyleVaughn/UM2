@@ -7,14 +7,14 @@ namespace um2
 template <class T>
 HOSTDEV constexpr
 Vector<T>::Vector(Size const n)
-  : _begin{new T[n]},
+  : _begin{new T[static_cast<uint64_t>(n)]},
     _end{_begin + n},
     _end_cap{_begin + n} {}
 
 template <class T>
 HOSTDEV constexpr 
 Vector<T>::Vector(Size const n, T const & value)
-  : _begin{new T[n]},
+  : _begin{new T[static_cast<uint64_t>(n)]},
     _end{_begin + n},
     _end_cap{_begin + n}
 {
@@ -26,7 +26,7 @@ Vector<T>::Vector(Size const n, T const & value)
 template <class T>
 HOSTDEV constexpr 
 Vector<T>::Vector(Vector<T> const & v)
-  : _begin{new T[v.size()]},
+  : _begin{new T[static_cast<uint64_t>(v.size())]},
     _end{_begin + v.size()},
     _end_cap{_begin + v.size()}
 {
@@ -202,7 +202,7 @@ HOSTDEV constexpr auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
 {
   if (this != addressof(v)) {
     delete[] _begin;
-    _begin = new T[v.size()];
+    _begin = new T[static_cast<uint64_t>(v.size())];
     _end = _begin + v.size();
     _end_cap = _begin + v.size();
     copy(v.begin(), v.end(), _begin);

@@ -1,7 +1,9 @@
-#include "../../test_macros.hpp"
 #include <um2/common/memory/construct_at.hpp>
 
 #include <cstdlib>
+
+#include "../../test_macros.hpp"
+
 
 // NOLINTBEGIN
 #ifndef __CUDA_ARCH__
@@ -37,25 +39,25 @@ struct DCounted : VCounted {
 // ------------------------------------------------------------
 
 HOSTDEV
-TEST_CASE(test_destroy_at)
+TEST_CASE(destroy_at)
 {
   {
     void * mem1 = malloc(sizeof(Counted));
     void * mem2 = malloc(sizeof(Counted));
-    assert(mem1 != nullptr);
-    assert(mem2 != nullptr);
-    assert(count == 0);
+    ASSERT(mem1 != nullptr);
+    ASSERT(mem2 != nullptr);
+    ASSERT(count == 0);
     Counted * ptr1 = nullptr;
     ptr1 = ::new (mem1) Counted();
-    assert(ptr1 != nullptr);
+    ASSERT(ptr1 != nullptr);
     Counted * ptr2 = nullptr;
     ptr2 = ::new (mem2) Counted();
-    assert(ptr2 != nullptr);
-    assert(count == 2);
+    ASSERT(ptr2 != nullptr);
+    ASSERT(count == 2);
     um2::destroy_at(ptr1);
-    assert(count == 1);
+    ASSERT(count == 1);
     um2::destroy_at(ptr2);
-    assert(count == 0);
+    ASSERT(count == 0);
     free(mem1);
     free(mem2);
     count = 0;
@@ -63,32 +65,32 @@ TEST_CASE(test_destroy_at)
   {
     void * mem1 = malloc(sizeof(DCounted));
     void * mem2 = malloc(sizeof(DCounted));
-    assert(mem1 != nullptr);
-    assert(mem2 != nullptr);
-    assert(count == 0);
+    ASSERT(mem1 != nullptr);
+    ASSERT(mem2 != nullptr);
+    ASSERT(count == 0);
     DCounted * ptr1 = nullptr;
     ptr1 = ::new (mem1) DCounted();
-    assert(ptr1 != nullptr);
+    ASSERT(ptr1 != nullptr);
     DCounted * ptr2 = nullptr;
     ptr2 = ::new (mem2) DCounted();
-    assert(ptr2 != nullptr);
-    assert(count == 2);
+    ASSERT(ptr2 != nullptr);
+    ASSERT(count == 2);
     um2::destroy_at(ptr1);
-    assert(count == 1);
+    ASSERT(count == 1);
     um2::destroy_at(ptr2);
-    assert(count == 0);
+    ASSERT(count == 0);
     free(mem1);
     free(mem2);
   }
 }
-MAKE_CUDA_KERNEL(test_destroy_at);
+MAKE_CUDA_KERNEL(destroy_at);
 
 // ------------------------------------------------------------
 // construct_at
 // ------------------------------------------------------------
 
 HOSTDEV
-TEST_CASE(test_construct_at)
+TEST_CASE(construct_at)
 {
   struct S {
     int x;
@@ -107,24 +109,24 @@ TEST_CASE(test_construct_at)
   alignas(S) unsigned char storage[sizeof(S)];
 
   S * ptr = um2::construct_at(reinterpret_cast<S *>(storage), 42, 2.71828F, 3.1415);
-  assert((*ptr).x == 42);
-  assert(((*ptr).y - 2.71828F) < 0.0001F);
-  assert(((*ptr).z - 3.1415) < 0.0001);
+  ASSERT((*ptr).x == 42);
+  ASSERT(((*ptr).y - 2.71828F) < 0.0001F);
+  ASSERT(((*ptr).z - 3.1415) < 0.0001);
   um2::destroy_at(ptr);
 }
-MAKE_CUDA_KERNEL(test_construct_at);
+MAKE_CUDA_KERNEL(construct_at);
 
 // ------------------------------------------------------------
 // destroy
 // ------------------------------------------------------------
 
 HOSTDEV
-TEST_CASE(test_destroy)
+TEST_CASE(destroy)
 {
   {
     void * mem = malloc(5 * sizeof(Counted));
-    assert(mem != nullptr);
-    assert(count == 0);
+    ASSERT(mem != nullptr);
+    ASSERT(count == 0);
     Counted * ptr_begin = nullptr;
     ptr_begin = ::new (mem) Counted();
     // Initialize the rest of the memory.
@@ -133,17 +135,17 @@ TEST_CASE(test_destroy)
           static_cast<void *>(static_cast<char *>(mem) + i * sizeof(Counted));
       ::new (mem_init) Counted();
     }
-    assert(ptr_begin != nullptr);
+    ASSERT(ptr_begin != nullptr);
     Counted * ptr_end = ptr_begin + 5;
-    assert(count == 5);
+    ASSERT(count == 5);
     um2::destroy(ptr_begin + 2, ptr_end);
-    assert(count == 2);
+    ASSERT(count == 2);
     um2::destroy(ptr_begin, ptr_begin + 2);
-    assert(count == 0);
+    ASSERT(count == 0);
     free(mem);
   }
 }
-MAKE_CUDA_KERNEL(test_destroy);
+MAKE_CUDA_KERNEL(destroy);
 
 // ------------------------------------------------------------
 // Test Suite
@@ -151,14 +153,14 @@ MAKE_CUDA_KERNEL(test_destroy);
 
 TEST_SUITE(construct_at)
 {
-  TEST_HOSTDEV(test_destroy_at);
-  TEST_HOSTDEV(test_construct_at);
-  TEST_HOSTDEV(test_destroy);
+  TEST_HOSTDEV(destroy_at);
+  TEST_HOSTDEV(construct_at);
+  TEST_HOSTDEV(destroy);
 }
 
 auto
 main() -> int
 {
-  RUN_TESTS(construct_at);
+  RUN_SUITE(construct_at);
   return 0;
 }

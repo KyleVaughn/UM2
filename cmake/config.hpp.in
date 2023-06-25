@@ -51,8 +51,8 @@
 // -----------------------------------------------------------------------------
 #cmakedefine01 UM2_ENABLE_INT64
 #if UM2_ENABLE_INT64
-using Size = uint64_t;
+using Size = int64_t;
 #else
-using Size = uint32_t;
+using Size = int32_t;
 #endif
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE Size 

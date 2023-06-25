@@ -1,3 +1,5 @@
 End in noexcept and const
 const all variables
 constexpr amd nodiscard functions
+
+restrict
