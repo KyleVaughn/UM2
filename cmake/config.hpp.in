@@ -47,15 +47,6 @@
 #  define HOT   [[gnu::hot]]
 #endif
 
-// Define a PURE/CONST attribute that depends on a release build to be enabled
-#if defined(NDEBUG)
-#  define NDEBUG_PURE  PURE
-#  define NDEBUG_CONST CONST
-#else
-#  define NDEBUG_PURE
-#  define NDEBUG_CONST
-#endif
-
 // Typedefs
 // -----------------------------------------------------------------------------
 #cmakedefine01 UM2_ENABLE_INT64

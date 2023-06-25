@@ -108,6 +108,7 @@ HOSTDEV TEST_CASE(test_move_constructor)
 }
 
 template <class T>
+HOSTDEV
 TEST_CASE(test_constructor_initializer_list)
 {
   um2::Vector<T> v{1, 2, 3, 4, 5};
@@ -179,15 +180,32 @@ TEST_CASE(test_constructor_initializer_list)
 // Methods
 // ----------------------------------------------------------------------------
 
-// template <class T>
-// HOSTDEV TEST_CASE(clear)
-//{
-//  um2::Vector<T> v(10, 2);
-//  v.clear();
-//  assert(v.size(), 0);
-//  assert(v.capacity(), 0);
-//  assert(v.data(), nullptr);
-//}
+// NOLINTBEGIN
+#ifndef __CUDA_ARCH__
+int count = 0;
+#else
+DEVICE int count = 0;
+#endif
+struct Counted {
+  HOSTDEV
+  Counted() { ++count; }
+  HOSTDEV
+  Counted(Counted const &) { ++count; }
+  HOSTDEV ~Counted() { --count; }
+  HOSTDEV friend void operator&(Counted) = delete;
+};
+// NOLINTEND
+
+HOSTDEV TEST_CASE(test_clear)
+{
+  count = 0;
+  um2::Vector<Counted> v(10);
+  assert(count == 10);
+  v.clear();
+  assert(count == 0);
+  assert(v.empty());
+  assert(v.capacity() == 10);
+}
 //
 // template <class T>
 // HOSTDEV TEST_CASE(reserve)
@@ -427,9 +445,7 @@ MAKE_CUDA_KERNEL(test_move_constructor, T)
 template <class T>
 MAKE_CUDA_KERNEL(test_constructor_initializer_list, T)
 
-//
-//  template <class T>
-//  MAKE_CUDA_KERNEL(clear, T)
+MAKE_CUDA_KERNEL(test_clear)
 //
 //  template <class T>
 //  MAKE_CUDA_KERNEL(reserve, T)
@@ -475,8 +491,9 @@ TEST_SUITE(vector)
   //    TEST_HOSTDEV(operator_equal, 1, 1, T)
   //  }
   //  TEST_HOSTDEV(operator_assign, 1, 1, T)
-  //  // Methods
-  //  TEST_HOSTDEV(clear, 1, 1, T)
+
+  // Methods
+  TEST_HOSTDEV(test_clear)
   //  TEST_HOSTDEV(reserve, 1, 1, T)
   //  TEST_HOSTDEV(resize, 1, 1, T)
   //  TEST_HOSTDEV(push_back, 1, 1, T)

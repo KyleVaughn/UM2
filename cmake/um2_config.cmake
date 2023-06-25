@@ -185,6 +185,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   include(cmake/gnu-cxx-flags.cmake)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_GNU_FLAGS}")
 endif()
+
 # Set fast math flags
 if (UM2_ENABLE_FASTMATH)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ffast-math")
@@ -192,12 +193,15 @@ if (UM2_ENABLE_FASTMATH)
     set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} --use_fast_math")
   endif()
 endif()
+
 # Set release flags
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
+
 # Set debug flags
 if (!UM2_ENABLE_CUDA)
   set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
 endif()
+
 # If CUDA is enabled, pass the CXX flags via -Xcompiler
 if (UM2_ENABLE_CUDA)
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler \"${CMAKE_CXX_FLAGS}\"")

@@ -1,11 +1,11 @@
 #pragma once
 
+// undef NDEBUG to enable asserts in release mode
+#undef NDEBUG
+
 #include <um2/config.hpp> // ENABLE_CUDA, HOSTDEV
 
 #include <cstdio> // printf
-
-// undef NDEBUG to enable asserts in release mode
-#undef NDEBUG
 
 // Overview:
 // 1. Use TEST_CASE(name) to define a test case containing one or more 'assert'

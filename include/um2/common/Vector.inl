@@ -147,7 +147,7 @@ Vector<T>::front() const noexcept -> T const &
 }
 
 template <class T>
-NDEBUG_PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] constexpr auto
 Vector<T>::back() noexcept -> T &
 {
   assert(size() > 0);
@@ -155,7 +155,7 @@ Vector<T>::back() noexcept -> T &
 }
 
 template <class T>
-NDEBUG_PURE HOSTDEV [[nodiscard]] constexpr auto
+PURE HOSTDEV [[nodiscard]] constexpr auto
 Vector<T>::back() const noexcept -> T const &
 {
   assert(size() > 0);
@@ -182,7 +182,7 @@ Vector<T>::data() const noexcept -> T const *
 // ---------------------------------------------------------------------------
 
 template <class T>
-NDEBUG_PURE HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 Vector<T>::operator[](Size const i) noexcept -> T &
 {
   assert(i < size());
@@ -190,7 +190,7 @@ Vector<T>::operator[](Size const i) noexcept -> T &
 }
 
 template <class T>
-NDEBUG_PURE HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 Vector<T>::operator[](Size const i) const noexcept -> T const &
 {
   assert(i < size());
@@ -258,14 +258,12 @@ Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
 //     }
 // }
 
-// template <class T>
-// HOSTDEV void Vector<T>::clear() noexcept
-//{
-//  _size = 0;
-//  _capacity = 0;
-//  delete[] _data;
-//  _data = nullptr;
-//}
+template <class T>
+HOSTDEV constexpr void Vector<T>::clear() noexcept
+{
+  destroy(begin(), end());
+  _end = _begin;
+}
 //
 // template <class T>
 // HOSTDEV inline void Vector<T>::reserve(Size n)

@@ -130,14 +130,13 @@ public:
 //    iterator insert(const_iterator position, initializer_list<value_type> il);
 //    iterator erase(const_iterator position);
 //    iterator erase(const_iterator first, const_iterator last);
-//    void clear() noexcept;
 //    void resize(size_type sz);
 //    void resize(size_type sz, const value_type& c);
 
   // HOSTDEV constexpr void
   // reserve(Size n);
 
-  ////  HOSTDEV void clear() noexcept;
+  HOSTDEV constexpr void clear() noexcept;
   ////
   ////
   ////  HOSTDEV void resize(Size n);
@@ -158,11 +157,11 @@ public:
   // Operators
   // -----------------------------------------------------------------------------
 
-  NDEBUG_PURE HOSTDEV constexpr auto
+  PURE HOSTDEV constexpr auto
   // cppcheck-suppress functionConst
   operator[](Size i) noexcept -> T &;
 
-  NDEBUG_PURE HOSTDEV constexpr auto
+  PURE HOSTDEV constexpr auto
   operator[](Size i) const noexcept -> T const &;
 
   HOSTDEV constexpr auto

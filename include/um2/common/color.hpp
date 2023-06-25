@@ -15,7 +15,12 @@ namespace um2
 
 struct Color {
 
-  uint8_t r, g, b, a;
+  union {
+    struct {
+      uint8_t r, g, b, a;
+    };
+    uint32_t rgba;
+  };
 
   // -----------------------------------------------------------------------------
   // Constructors
