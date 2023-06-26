@@ -1,5 +1,5 @@
-#include <um2/common/utility.hpp>
 #include <um2/common/Vector.hpp>
+#include <um2/common/utility.hpp>
 
 #include <concepts>
 
@@ -21,7 +21,8 @@ TEST_CASE(constructor_Size)
 }
 
 template <class T>
-HOSTDEV TEST_CASE(constructor_Size_value)
+HOSTDEV
+TEST_CASE(constructor_Size_value)
 {
   um2::Vector<T> v(10, 2);
   ASSERT(v.cbegin() != nullptr);
@@ -30,17 +31,18 @@ HOSTDEV TEST_CASE(constructor_Size_value)
   ASSERT(v.capacity() == 10);
   for (int i = 0; i < 10; ++i) {
     if constexpr (std::floating_point<T>) {
-      // cppcheck-suppress ASSERTWithSideEffect
+      // cppcheck-suppress assertWithSideEffect
       ASSERT_NEAR(v.data()[i], static_cast<T>(2), static_cast<T>(1e-6));
     } else {
-      // cppcheck-suppress ASSERTWithSideEffect
+      // cppcheck-suppress assertWithSideEffect
       ASSERT(v.data()[i] == 2);
     }
   }
 }
 
 template <class T>
-HOSTDEV TEST_CASE(copy_constructor)
+HOSTDEV
+TEST_CASE(copy_constructor)
 {
   um2::Vector<T> v(10);
   for (int i = 0; i < 10; i++) {
@@ -53,17 +55,18 @@ HOSTDEV TEST_CASE(copy_constructor)
   ASSERT(v.cbegin() != v2.cbegin());
   for (int i = 0; i < 10; i++) {
     if constexpr (std::floating_point<T>) {
-      // cppcheck-suppress ASSERTWithSideEffect
-      ASSERT_NEAR(v2.data()[i], static_cast<T>(i), static_cast<T>(1e-6)); 
+      // cppcheck-suppress assertWithSideEffect
+      ASSERT_NEAR(v2.data()[i], static_cast<T>(i), static_cast<T>(1e-6));
     } else {
-      // cppcheck-suppress ASSERTWithSideEffect
+      // cppcheck-suppress assertWithSideEffect
       ASSERT(v2.data()[i] == static_cast<T>(i));
     }
   }
 }
 
 template <class T>
-HOSTDEV auto createVector(Size size) -> um2::Vector<T> 
+HOSTDEV auto
+createVector(Size size) -> um2::Vector<T>
 {
   um2::Vector<T> v(size);
   for (Size i = 0; i < size; i++) {
@@ -73,7 +76,8 @@ HOSTDEV auto createVector(Size size) -> um2::Vector<T>
 }
 
 template <class T>
-HOSTDEV TEST_CASE(move_constructor)
+HOSTDEV
+TEST_CASE(move_constructor)
 {
   um2::Vector<T> v(move(createVector<T>(10)));
   ASSERT(v.cbegin() != nullptr);
@@ -98,10 +102,10 @@ TEST_CASE(constructor_initializer_list)
   ASSERT(v.capacity() == 5);
   for (int i = 0; i < 5; ++i) {
     if constexpr (std::floating_point<T>) {
-      // cppcheck-suppress ASSERTWithSideEffect
+      // cppcheck-suppress assertWithSideEffect
       ASSERT_NEAR(v.data()[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
     } else {
-      // cppcheck-suppress ASSERTWithSideEffect
+      // cppcheck-suppress assertWithSideEffect
       ASSERT(v.data()[i] == static_cast<T>(i + 1));
     }
   }
@@ -112,7 +116,8 @@ TEST_CASE(constructor_initializer_list)
 // ----------------------------------------------------------------------------
 
 template <class T>
-HOSTDEV TEST_CASE(operator_copy)
+HOSTDEV
+TEST_CASE(operator_copy)
 {
   um2::Vector<T> v(10);
   for (int i = 0; i < 10; i++) {
@@ -127,17 +132,18 @@ HOSTDEV TEST_CASE(operator_copy)
   ASSERT(v.cbegin() != v3.cbegin());
   for (int i = 0; i < 10; i++) {
     if constexpr (std::floating_point<T>) {
-      // cppcheck-suppress ASSERTWithSideEffect
-      ASSERT_NEAR(v3.data()[i], static_cast<T>(i), static_cast<T>(1e-6)); 
+      // cppcheck-suppress assertWithSideEffect
+      ASSERT_NEAR(v3.data()[i], static_cast<T>(i), static_cast<T>(1e-6));
     } else {
-      // cppcheck-suppress ASSERTWithSideEffect
+      // cppcheck-suppress assertWithSideEffect
       ASSERT(v3.data()[i] == static_cast<T>(i));
     }
   }
 }
 
 template <class T>
-HOSTDEV TEST_CASE(operator_move)
+HOSTDEV
+TEST_CASE(operator_move)
 {
   um2::Vector<T> v1;
   v1 = move(createVector<T>(10));
@@ -215,7 +221,8 @@ struct Counted {
 };
 // NOLINTEND
 
-HOSTDEV TEST_CASE(clear)
+HOSTDEV
+TEST_CASE(clear)
 {
   count = 0;
   um2::Vector<Counted> v(10);
@@ -465,33 +472,33 @@ template <class T>
 MAKE_CUDA_KERNEL(constructor_initializer_list, T)
 
 MAKE_CUDA_KERNEL(clear)
-//
-//  template <class T>
-//  MAKE_CUDA_KERNEL(reserve, T)
-//
-//  template <class T>
-//  MAKE_CUDA_KERNEL(resize, T)
-//
-//  template <class T>
-//  MAKE_CUDA_KERNEL(push_back, T)
-//
-//  template <class T>
-//  MAKE_CUDA_KERNEL(empty, T)
-//
-//  template <class T>
-//  MAKE_CUDA_KERNEL(insert, T)
-//
-//  template <class T>
-//  MAKE_CUDA_KERNEL(contains, T)
-//
-//  template <class T>
-//  MAKE_CUDA_KERNEL(isApprox, T)
+    //
+    //  template <class T>
+    //  MAKE_CUDA_KERNEL(reserve, T)
+    //
+    //  template <class T>
+    //  MAKE_CUDA_KERNEL(resize, T)
+    //
+    //  template <class T>
+    //  MAKE_CUDA_KERNEL(push_back, T)
+    //
+    //  template <class T>
+    //  MAKE_CUDA_KERNEL(empty, T)
+    //
+    //  template <class T>
+    //  MAKE_CUDA_KERNEL(insert, T)
+    //
+    //  template <class T>
+    //  MAKE_CUDA_KERNEL(contains, T)
+    //
+    //  template <class T>
+    //  MAKE_CUDA_KERNEL(isApprox, T)
 
-template <class T>
-MAKE_CUDA_KERNEL(operator_copy, T)
+    template <class T>
+    MAKE_CUDA_KERNEL(operator_copy, T)
 
-template <class T>
-MAKE_CUDA_KERNEL(operator_move, T)
+    template <class T>
+    MAKE_CUDA_KERNEL(operator_move, T)
 
 //
 //  template <class T>
@@ -503,8 +510,8 @@ MAKE_CUDA_KERNEL(operator_move, T)
 
 #endif // UM2_ENABLE_CUDA
 
-template <class T>
-TEST_SUITE(Vector)
+    template <class T>
+    TEST_SUITE(Vector)
 {
   // Constructors
   TEST_HOSTDEV(constructor_Size, 1, 1, T)
@@ -514,7 +521,7 @@ TEST_SUITE(Vector)
   TEST_HOSTDEV(constructor_initializer_list, 1, 1, T)
 
   // Operators
-  TEST_HOSTDEV(operator_copy, 1, 1, T) 
+  TEST_HOSTDEV(operator_copy, 1, 1, T)
   TEST_HOSTDEV(operator_move, 1, 1, T)
   //  if constexpr (!std::floating_point<T>) {
   //    TEST_HOSTDEV(operator_equal, 1, 1, T)

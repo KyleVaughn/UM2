@@ -2,15 +2,16 @@
 
 // In order for assert to work, NDEBUG cannot be defined.
 // However, NDEBUG is defined for Release builds.
-// In order to safely undef NDEBUG, allowing assert to work, all of the code we wish to 
+// In order to safely undef NDEBUG, allowing assert to work, all of the code we wish to
 // test must be included prior to undefing NDEBUG.
 // Therefore, we check that UM2_ENABLE_CUDA, a macro defined in all UM2 files, is defined
 // to check this condition.
-// 
-// TODO(kcvaughn@umich.edu): Write our own assert. How can we do this without exit and abort?
+//
+// TODO(kcvaughn@umich.edu): Write our own assert. How can we do this without exit and
+// abort?
 //                             maybe a trap instruction?
 #ifndef UM2_ENABLE_CUDA
-# error("test_macros.hpp must be included after any UM2 files since it undefs NDEBUG")
+#  error("test_macros.hpp must be included after any UM2 files since it undefs NDEBUG")
 #endif
 
 #include <cstdio> // printf
@@ -39,7 +40,7 @@
 
 #define TEST_CASE(name) static void name()
 
-#define TEST_SUITE(name) static void test_suite_##name() 
+#define TEST_SUITE(name) static void name()
 
 #define TEST(name)                                                                       \
   printf("Running test case '%s'\n", #name);                                             \
@@ -85,7 +86,7 @@
       printf("CUDA test case '%s' finished\n", #host_test);                              \
     }
 
-#  define TEST_1TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T)                    \
+#  define TEST_1TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T)                      \
     {                                                                                    \
       printf("Running CUDA test case '%s<%s>' with %d blocks and %d threads\n",          \
              #host_test, #T, blocks, threads);                                           \
@@ -94,7 +95,7 @@
       printf("CUDA test case '%s<%s>' finished\n", #host_test, #T);                      \
     }
 
-#  define TEST_2TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U)                 \
+#  define TEST_2TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U)                   \
     {                                                                                    \
       printf("Running CUDA test case '%s<%s, %s>' with %d blocks and %d threads\n",      \
              #host_test, #T, #U, blocks, threads);                                       \
@@ -103,7 +104,7 @@
       printf("CUDA test case '%s<%s, %s>' finished\n", #host_test, #T, #U);              \
     }
 
-#  define TEST_3TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U, V)              \
+#  define TEST_3TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U, V)                \
     {                                                                                    \
       printf("Running CUDA test case '%s<%s, %s, %s>' with %d blocks and %d threads\n",  \
              #host_test, #T, #U, #V, blocks, threads);                                   \
@@ -144,7 +145,7 @@
 
 #define RUN_SUITE(suite)                                                                 \
   printf("Running test suite '%s'\n", #suite);                                           \
-  test_suite_##suite();                                                                  \
+  suite();                                                                               \
   printf("Test suite '%s' passed\n", #suite);
 
 #define TEST_HOSTDEV_1_ARGS(host_test)                                                   \

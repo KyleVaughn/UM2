@@ -1,12 +1,13 @@
-#include "../test_macros.hpp"
 #include <um2/math/morton.hpp>
+
+#include "../test_macros.hpp"
 
 template <std::unsigned_integral U>
 HOSTDEV
-TEST_CASE(test_mortonEncode)
+TEST_CASE(mortonEncode)
 {
   // NOLINTNEXTLINE
-  using namespace um2; 
+  using namespace um2;
 
   // 2D
   assert(mortonEncode(static_cast<U>(0), static_cast<U>(0)) == 0);
@@ -17,24 +18,24 @@ TEST_CASE(test_mortonEncode)
   assert(mortonEncode(static_cast<U>(3), static_cast<U>(3)) == 15);
 
   // 3D
-  assert(mortonEncode(static_cast<U>(0), static_cast<U>(0), static_cast<U>(0)) ==  0);
-  assert(mortonEncode(static_cast<U>(1), static_cast<U>(0), static_cast<U>(0)) ==  1);
-  assert(mortonEncode(static_cast<U>(0), static_cast<U>(1), static_cast<U>(0)) ==  2); 
-  assert(mortonEncode(static_cast<U>(1), static_cast<U>(1), static_cast<U>(0)) ==  3);
-  assert(mortonEncode(static_cast<U>(0), static_cast<U>(0), static_cast<U>(1)) ==  4);
-  assert(mortonEncode(static_cast<U>(1), static_cast<U>(0), static_cast<U>(1)) ==  5);
-  assert(mortonEncode(static_cast<U>(0), static_cast<U>(1), static_cast<U>(1)) ==  6);
-  assert(mortonEncode(static_cast<U>(1), static_cast<U>(1), static_cast<U>(1)) ==  7);
-  assert(mortonEncode(static_cast<U>(2), static_cast<U>(0), static_cast<U>(0)) ==  8);
+  assert(mortonEncode(static_cast<U>(0), static_cast<U>(0), static_cast<U>(0)) == 0);
+  assert(mortonEncode(static_cast<U>(1), static_cast<U>(0), static_cast<U>(0)) == 1);
+  assert(mortonEncode(static_cast<U>(0), static_cast<U>(1), static_cast<U>(0)) == 2);
+  assert(mortonEncode(static_cast<U>(1), static_cast<U>(1), static_cast<U>(0)) == 3);
+  assert(mortonEncode(static_cast<U>(0), static_cast<U>(0), static_cast<U>(1)) == 4);
+  assert(mortonEncode(static_cast<U>(1), static_cast<U>(0), static_cast<U>(1)) == 5);
+  assert(mortonEncode(static_cast<U>(0), static_cast<U>(1), static_cast<U>(1)) == 6);
+  assert(mortonEncode(static_cast<U>(1), static_cast<U>(1), static_cast<U>(1)) == 7);
+  assert(mortonEncode(static_cast<U>(2), static_cast<U>(0), static_cast<U>(0)) == 8);
   assert(mortonEncode(static_cast<U>(2), static_cast<U>(2), static_cast<U>(2)) == 56);
   assert(mortonEncode(static_cast<U>(3), static_cast<U>(3), static_cast<U>(3)) == 63);
 }
 
 template <std::unsigned_integral U>
 HOSTDEV
-TEST_CASE(test_mortonDecode)
+TEST_CASE(mortonDecode)
 {
-  
+
   // NOLINTNEXTLINE
   using namespace um2;
 
@@ -78,7 +79,7 @@ TEST_CASE(test_mortonDecode)
 
 template <std::unsigned_integral U, std::floating_point T>
 HOSTDEV
-TEST_CASE(test_mortonEncodeFloat)
+TEST_CASE(mortonEncodeFloat)
 {
   // NOLINTNEXTLINE
   using namespace um2;
@@ -109,7 +110,7 @@ TEST_CASE(test_mortonEncodeFloat)
 
 template <std::unsigned_integral U, std::floating_point T>
 HOSTDEV
-TEST_CASE(test_mortonDecodeFloat)
+TEST_CASE(mortonDecodeFloat)
 {
 
   // NOLINTNEXTLINE
@@ -118,69 +119,69 @@ TEST_CASE(test_mortonDecodeFloat)
   T x;
   T y;
   mortonDecode<U, T>(static_cast<U>(0x0000000000000000), x, y);
-  EXPECT_NEAR(x, static_cast<T>(0), static_cast<T>(1e-6));
-  EXPECT_NEAR(y, static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(x, static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(y, static_cast<T>(0), static_cast<T>(1e-6));
   mortonDecode<U, T>(static_cast<U>(0xFFFFFFFFFFFFFFFF), x, y);
-  EXPECT_NEAR(x, static_cast<T>(1), static_cast<T>(1e-6));
-  EXPECT_NEAR(y, static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(x, static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(y, static_cast<T>(1), static_cast<T>(1e-6));
   mortonDecode<U, T>(static_cast<U>(0x5555555555555555), x, y);
-  EXPECT_NEAR(x, static_cast<T>(1), static_cast<T>(1e-6));
-  EXPECT_NEAR(y, static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(x, static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(y, static_cast<T>(0), static_cast<T>(1e-6));
   mortonDecode<U, T>(static_cast<U>(0xAAAAAAAAAAAAAAAA), x, y);
-  EXPECT_NEAR(x, static_cast<T>(0), static_cast<T>(1e-6));
-  EXPECT_NEAR(y, static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(x, static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(y, static_cast<T>(1), static_cast<T>(1e-6));
 
   // 3D
   T z;
   mortonDecode<U, T>(static_cast<U>(0x0000000000000000), x, y, z);
-  EXPECT_NEAR(x, static_cast<T>(0), static_cast<T>(1e-6));
-  EXPECT_NEAR(y, static_cast<T>(0), static_cast<T>(1e-6));
-  EXPECT_NEAR(z, static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(x, static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(y, static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(z, static_cast<T>(0), static_cast<T>(1e-6));
   if constexpr (std::same_as<uint32_t, U>) {
     mortonDecode<U, T>(static_cast<U>(0x3fffffff), x, y, z);
   } else {
     mortonDecode<U, T>(static_cast<U>(0x7fffffffffffffff), x, y, z);
   }
-  EXPECT_NEAR(x, static_cast<T>(1), static_cast<T>(1e-6));
-  EXPECT_NEAR(y, static_cast<T>(1), static_cast<T>(1e-6));
-  EXPECT_NEAR(z, static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(x, static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(y, static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(z, static_cast<T>(1), static_cast<T>(1e-6));
 }
 
 #if UM2_ENABLE_CUDA
 template <std::unsigned_integral U>
-MAKE_CUDA_KERNEL(test_mortonEncode, U);
+MAKE_CUDA_KERNEL(mortonEncode, U);
 
 template <std::unsigned_integral U>
-MAKE_CUDA_KERNEL(test_mortonDecode, U);
+MAKE_CUDA_KERNEL(mortonDecode, U);
 
 template <std::unsigned_integral U, std::floating_point T>
-MAKE_CUDA_KERNEL(test_mortonEncodeFloat, U, T);
+MAKE_CUDA_KERNEL(mortonEncodeFloat, U, T);
 
 template <std::unsigned_integral U, std::floating_point T>
-MAKE_CUDA_KERNEL(test_mortonDecodeFloat, U, T);
+MAKE_CUDA_KERNEL(mortonDecodeFloat, U, T);
 #endif
 
 template <std::unsigned_integral U>
 TEST_SUITE(morton)
 {
-  TEST_HOSTDEV(test_mortonEncode, 1, 1, U);
-  TEST_HOSTDEV(test_mortonDecode, 1, 1, U);
+  TEST_HOSTDEV(mortonEncode, 1, 1, U);
+  TEST_HOSTDEV(mortonDecode, 1, 1, U);
 }
 
 template <std::unsigned_integral U, std::floating_point T>
 TEST_SUITE(mortonFloat)
 {
-  TEST_HOSTDEV(test_mortonEncodeFloat, 1, 1, U, T); 
-  TEST_HOSTDEV(test_mortonDecodeFloat, 1, 1, U, T);
+  TEST_HOSTDEV(mortonEncodeFloat, 1, 1, U, T);
+  TEST_HOSTDEV(mortonDecodeFloat, 1, 1, U, T);
 }
 
 auto
 main() -> int
 {
-  RUN_TESTS(morton<uint32_t>);
-  RUN_TESTS(morton<uint64_t>);
-  RUN_TESTS((mortonFloat<uint32_t, float>));
-  RUN_TESTS((mortonFloat<uint32_t, double>));
-  RUN_TESTS((mortonFloat<uint64_t, double>));
+  RUN_SUITE(morton<uint32_t>);
+  RUN_SUITE(morton<uint64_t>);
+  RUN_SUITE((mortonFloat<uint32_t, float>));
+  RUN_SUITE((mortonFloat<uint32_t, double>));
+  RUN_SUITE((mortonFloat<uint64_t, double>));
   return 0;
 }

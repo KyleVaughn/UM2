@@ -1,6 +1,7 @@
-#include "../test_macros.hpp"
 #include <um2/math/Mat.hpp>
 #include <um2/math/Vec.hpp>
+
+#include "../test_macros.hpp"
 
 template <Size M, Size N, typename T>
 HOSTDEV static constexpr auto
@@ -26,7 +27,7 @@ TEST_CASE(accessors)
   for (Size j = 0; j < N; ++j) {
     for (Size i = 0; i < M; ++i) {
       if constexpr (std::floating_point<T>) {
-        EXPECT_NEAR(m.col(j)[i], static_cast<T>(j * M + i), static_cast<T>(1e-6));
+        ASSERT_NEAR(m.col(j)[i], static_cast<T>(j * M + i), static_cast<T>(1e-6));
       } else {
         assert(m.col(j)[i] == static_cast<T>(j * M + i));
       }
@@ -35,7 +36,7 @@ TEST_CASE(accessors)
   for (Size j = 0; j < N; ++j) {
     for (Size i = 0; i < M; ++i) {
       if constexpr (std::floating_point<T>) {
-        EXPECT_NEAR(m(i, j), static_cast<T>(j * M + i), static_cast<T>(1e-6));
+        ASSERT_NEAR(m(i, j), static_cast<T>(j * M + i), static_cast<T>(1e-6));
       } else {
         assert(m(i, j) == static_cast<T>(j * M + i));
       }
@@ -52,7 +53,7 @@ TEST_CASE(unary_minus)
   for (Size j = 0; j < N; ++j) {
     for (Size i = 0; i < M; ++i) {
       if constexpr (std::floating_point<T>) {
-        EXPECT_NEAR(neg_m(i, j), -static_cast<T>(j * M + i), static_cast<T>(1e-6));
+        ASSERT_NEAR(neg_m(i, j), -static_cast<T>(j * M + i), static_cast<T>(1e-6));
       } else {
         assert(neg_m(i, j) == -static_cast<T>(j * M + i));
       }
@@ -70,7 +71,7 @@ TEST_CASE(add)
   for (Size j = 0; j < N; ++j) {
     for (Size i = 0; i < M; ++i) {
       if constexpr (std::floating_point<T>) {
-        EXPECT_NEAR(sum(i, j), 2 * static_cast<T>(j * M + i), static_cast<T>(1e-6));
+        ASSERT_NEAR(sum(i, j), 2 * static_cast<T>(j * M + i), static_cast<T>(1e-6));
       } else {
         assert(sum(i, j) == 2 * static_cast<T>(j * M + i));
       }
@@ -88,7 +89,7 @@ TEST_CASE(sub)
   for (Size j = 0; j < N; ++j) {
     for (Size i = 0; i < M; ++i) {
       if constexpr (std::floating_point<T>) {
-        EXPECT_NEAR(diff(i, j), 0, static_cast<T>(1e-6));
+        ASSERT_NEAR(diff(i, j), 0, static_cast<T>(1e-6));
       } else {
         assert(diff(i, j) == 0);
       }
@@ -105,7 +106,7 @@ TEST_CASE(scalar_mul)
   for (Size j = 0; j < N; ++j) {
     for (Size i = 0; i < M; ++i) {
       if constexpr (std::floating_point<T>) {
-        EXPECT_NEAR(scaled(i, j), 2 * static_cast<T>(j * M + i), static_cast<T>(1e-6));
+        ASSERT_NEAR(scaled(i, j), 2 * static_cast<T>(j * M + i), static_cast<T>(1e-6));
       } else {
         assert(scaled(i, j) == 2 * static_cast<T>(j * M + i));
       }
@@ -115,7 +116,7 @@ TEST_CASE(scalar_mul)
   for (Size j = 0; j < N; ++j) {
     for (Size i = 0; i < M; ++i) {
       if constexpr (std::floating_point<T>) {
-        EXPECT_NEAR(scaled2(i, j), 2 * static_cast<T>(j * M + i), static_cast<T>(1e-6));
+        ASSERT_NEAR(scaled2(i, j), 2 * static_cast<T>(j * M + i), static_cast<T>(1e-6));
       } else {
         assert(scaled2(i, j) == 2 * static_cast<T>(j * M + i));
       }
@@ -139,7 +140,7 @@ TEST_CASE(mat_vec)
       mv_i += m(i, j) * v(j);
     }
     if constexpr (std::floating_point<T>) {
-      EXPECT_NEAR(mv[i], mv_i, static_cast<T>(1e-6));
+      ASSERT_NEAR(mv[i], mv_i, static_cast<T>(1e-6));
     } else {
       assert(mv[i] == mv_i);
     }
@@ -160,7 +161,7 @@ TEST_CASE(mat_mat)
         prod_ij += m(i, k) * n(k, j);
       }
       if constexpr (std::floating_point<T>) {
-        EXPECT_NEAR(prod(i, j), prod_ij, static_cast<T>(1e-6));
+        ASSERT_NEAR(prod(i, j), prod_ij, static_cast<T>(1e-6));
       } else {
         assert(prod(i, j) == prod_ij);
       }
@@ -177,7 +178,7 @@ TEST_CASE(scalar_div)
   for (Size j = 0; j < N; ++j) {
     for (Size i = 0; i < M; ++i) {
       if constexpr (std::floating_point<T>) {
-        EXPECT_NEAR(quot(i, j), static_cast<T>(j * M + i), static_cast<T>(1e-6));
+        ASSERT_NEAR(quot(i, j), static_cast<T>(j * M + i), static_cast<T>(1e-6));
       } else {
         assert(quot(i, j) == static_cast<T>(j * M + i));
       }
@@ -192,7 +193,7 @@ TEST_CASE(determinant)
   um2::Mat<M, N, T> m = um2::Mat<M, N, T>::Identity();
   T detv = m.determinant();
   if constexpr (std::floating_point<T>) {
-    EXPECT_NEAR(detv, 1, static_cast<T>(1e-6));
+    ASSERT_NEAR(detv, 1, static_cast<T>(1e-6));
   } else {
     assert(detv == 1);
   }
@@ -248,25 +249,25 @@ TEST_SUITE(mat)
 auto
 main() -> int
 {
-  RUN_TESTS((mat<2, 2, float>));
-  RUN_TESTS((mat<2, 2, double>));
-  RUN_TESTS((mat<2, 2, int32_t>));
-  RUN_TESTS((mat<2, 2, uint32_t>));
-  RUN_TESTS((mat<2, 2, int64_t>));
-  RUN_TESTS((mat<2, 2, uint64_t>));
+  RUN_SUITE((mat<2, 2, float>));
+  RUN_SUITE((mat<2, 2, double>));
+  RUN_SUITE((mat<2, 2, int32_t>));
+  RUN_SUITE((mat<2, 2, uint32_t>));
+  RUN_SUITE((mat<2, 2, int64_t>));
+  RUN_SUITE((mat<2, 2, uint64_t>));
 
-  RUN_TESTS((mat<3, 3, float>));
-  RUN_TESTS((mat<3, 3, double>));
-  RUN_TESTS((mat<3, 3, int32_t>));
-  RUN_TESTS((mat<3, 3, uint32_t>));
-  RUN_TESTS((mat<3, 3, int64_t>));
-  RUN_TESTS((mat<3, 3, uint64_t>));
+  RUN_SUITE((mat<3, 3, float>));
+  RUN_SUITE((mat<3, 3, double>));
+  RUN_SUITE((mat<3, 3, int32_t>));
+  RUN_SUITE((mat<3, 3, uint32_t>));
+  RUN_SUITE((mat<3, 3, int64_t>));
+  RUN_SUITE((mat<3, 3, uint64_t>));
 
-  RUN_TESTS((mat<4, 4, float>));
-  RUN_TESTS((mat<4, 4, double>));
-  RUN_TESTS((mat<4, 4, int32_t>));
-  RUN_TESTS((mat<4, 4, uint32_t>));
-  RUN_TESTS((mat<4, 4, int64_t>));
-  RUN_TESTS((mat<4, 4, uint64_t>));
+  RUN_SUITE((mat<4, 4, float>));
+  RUN_SUITE((mat<4, 4, double>));
+  RUN_SUITE((mat<4, 4, int32_t>));
+  RUN_SUITE((mat<4, 4, uint32_t>));
+  RUN_SUITE((mat<4, 4, int64_t>));
+  RUN_SUITE((mat<4, 4, uint64_t>));
   return 0;
 }

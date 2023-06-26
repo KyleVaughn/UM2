@@ -1,7 +1,7 @@
 #pragma once
 
-#include <um2/common/config.hpp>
-#include <um2/math/vec.hpp>
+#include <um2/config.hpp>
+#include <um2/math/Vec.hpp>
 
 namespace um2
 {
@@ -12,7 +12,7 @@ namespace um2
 // An alias for a D-dimensional vector. This isn't technically correct, but it
 // is more efficient to use a vector for a point than a separate class.
 
-template <len_t D, typename T>
+template <Size D, typename T>
 using Point = Vec<D, T>;
 
 // -- Aliases --
@@ -40,21 +40,21 @@ using Point3d = Point3<double>;
 // -----------------------------------------------------------------------------
 
 template <std::floating_point T>
-UM2_HOSTDEV consteval auto
+HOSTDEV consteval auto
 epsilonDistance() -> T
 {
   return static_cast<T>(1e-5);
 }
 
 template <std::floating_point T>
-UM2_HOSTDEV consteval auto
+HOSTDEV consteval auto
 epsilonDistanceSquared() -> T
 {
   return epsilonDistance<T>() * epsilonDistance<T>();
 }
 
 template <std::floating_point T>
-UM2_HOSTDEV consteval auto
+HOSTDEV consteval auto
 infiniteDistance() -> T
 {
   return static_cast<T>(1e10);
@@ -65,7 +65,7 @@ infiniteDistance() -> T
 // -----------------------------------------------------------------------------
 
 template <typename DerivedA, typename DerivedB>
-UM2_PURE UM2_HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 distanceSquared(Eigen::MatrixBase<DerivedA> const & a,
                 Eigen::MatrixBase<DerivedB> const & b) noexcept ->
     typename DerivedA::Scalar
@@ -77,7 +77,7 @@ distanceSquared(Eigen::MatrixBase<DerivedA> const & a,
 }
 
 template <typename DerivedA, typename DerivedB>
-UM2_PURE UM2_HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 distance(Eigen::MatrixBase<DerivedA> const & a,
          Eigen::MatrixBase<DerivedB> const & b) noexcept -> typename DerivedA::Scalar
 {
@@ -87,7 +87,7 @@ distance(Eigen::MatrixBase<DerivedA> const & a,
 }
 
 template <typename DerivedA, typename DerivedB>
-UM2_PURE UM2_HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 midpoint(Eigen::MatrixBase<DerivedA> const & a,
          Eigen::MatrixBase<DerivedB> const & b) noexcept -> typename DerivedA::PlainObject
 {
@@ -97,7 +97,7 @@ midpoint(Eigen::MatrixBase<DerivedA> const & a,
 }
 
 template <typename DerivedA, typename DerivedB>
-UM2_PURE UM2_HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 isApprox(Eigen::MatrixBase<DerivedA> const & a,
          Eigen::MatrixBase<DerivedB> const & b) noexcept -> bool
 {
@@ -107,7 +107,7 @@ isApprox(Eigen::MatrixBase<DerivedA> const & a,
 }
 
 template <typename DerivedA, typename DerivedB, typename DerivedC>
-UM2_PURE UM2_HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 areCCW(Eigen::MatrixBase<DerivedA> const & a, Eigen::MatrixBase<DerivedB> const & b,
        Eigen::MatrixBase<DerivedC> const & c) noexcept -> bool
 {

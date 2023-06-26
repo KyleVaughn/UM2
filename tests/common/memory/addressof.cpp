@@ -2,7 +2,6 @@
 
 #include "../../test_macros.hpp"
 
-
 // NOLINTBEGIN
 struct A {
   void
@@ -52,11 +51,11 @@ TEST_CASE(addressof)
 }
 MAKE_CUDA_KERNEL(addressof);
 
-TEST_SUITE(addressof) { TEST_HOSTDEV(addressof); }
+TEST_SUITE(addressof_suite) { TEST_HOSTDEV(addressof); }
 
 auto
 main() -> int
 {
-  RUN_SUITE(addressof);
+  RUN_SUITE(addressof_suite);
   return 0;
 }

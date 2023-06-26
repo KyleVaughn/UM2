@@ -18,10 +18,10 @@ namespace um2
 // Therefore, the max coordinate value is 2^(X / N) - 1.
 
 template <std::unsigned_integral U>
-static constexpr U max_2d_morton_coord = (static_cast<U>(1) << (4 * sizeof(U))) - 1; 
+static constexpr U max_2d_morton_coord = (static_cast<U>(1) << (4 * sizeof(U))) - 1;
 
 template <std::unsigned_integral U>
-static constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 3)) - 1; 
+static constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 3)) - 1;
 
 #if defined(__BMI2__) && !defined(__CUDA_ARCH__)
 
@@ -291,15 +291,15 @@ mortonDecode(U const morton, T & x, T & y)
   U y_m;
   mortonDecode(morton, x_m, y_m);
   x = static_cast<T>(x_m) / static_cast<T>(max_2d_morton_coord<U>);
-  y = static_cast<T>(y_m) / static_cast<T>(max_2d_morton_coord<U>); 
+  y = static_cast<T>(y_m) / static_cast<T>(max_2d_morton_coord<U>);
 }
 
 template <std::unsigned_integral U, std::floating_point T>
 CONST HOSTDEV auto
 mortonEncode(T const x, T const y, T const z) -> U
 {
-  assert(0 <= x && x <= 1); 
-  assert(0 <= y && y <= 1); 
+  assert(0 <= x && x <= 1);
+  assert(0 <= y && y <= 1);
   assert(0 <= z && z <= 1);
   U const x_m = static_cast<U>(x * max_3d_morton_coord<U>);
   U const y_m = static_cast<U>(y * max_3d_morton_coord<U>);
@@ -316,7 +316,7 @@ mortonDecode(U const morton, T & x, T & y, T & z)
   U z_m;
   mortonDecode(morton, x_m, y_m, z_m);
   x = static_cast<T>(x_m) / static_cast<T>(max_3d_morton_coord<U>);
-  y = static_cast<T>(y_m) / static_cast<T>(max_3d_morton_coord<U>); 
+  y = static_cast<T>(y_m) / static_cast<T>(max_3d_morton_coord<U>);
   z = static_cast<T>(z_m) / static_cast<T>(max_3d_morton_coord<U>);
 }
 

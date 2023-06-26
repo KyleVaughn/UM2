@@ -4,7 +4,6 @@
 
 #include "../../test_macros.hpp"
 
-
 // NOLINTBEGIN
 #ifndef __CUDA_ARCH__
 int count = 0;
@@ -151,7 +150,7 @@ MAKE_CUDA_KERNEL(destroy);
 // Test Suite
 // ------------------------------------------------------------
 
-TEST_SUITE(construct_at)
+TEST_SUITE(construct_at_suite)
 {
   TEST_HOSTDEV(destroy_at);
   TEST_HOSTDEV(construct_at);
@@ -161,6 +160,6 @@ TEST_SUITE(construct_at)
 auto
 main() -> int
 {
-  RUN_SUITE(construct_at);
+  RUN_SUITE(construct_at_suite);
   return 0;
 }

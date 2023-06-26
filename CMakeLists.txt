@@ -38,19 +38,21 @@ option(UM2_ENABLE_CPPCHECK      "Enable cppcheck"                 ${UM2_DEV_MODE
 # Headers
 set(UM2_HEADERS
     "include/um2/config.hpp"
+    # common
     "include/um2/common/memory.hpp"
     "include/um2/common/algorithm.hpp"
     "include/um2/common/Vector.hpp"
     "include/um2/common/sto.hpp"
+    # math
     #    "include/um2/common/string.hpp"
     #    "include/um2/common/color.hpp"
     "include/um2/math/morton.hpp"
     "include/um2/math/Vec.hpp"
     "include/um2/math/Mat.hpp"
-    #    "include/um2/geometry/point.hpp"
-    #    "include/um2/geometry/axis_aligned_box.hpp"
-    #    "include/um2/geometry/polytope.hpp"
-    #    "include/um2/geometry/line_segment.hpp"
+    # geometry
+    "include/um2/geometry/Point.hpp"
+    "include/um2/geometry/AxisAlignedBox.hpp"
+    "include/um2/geometry/LineSegment.hpp"
     #    "include/um2/geometry/triangle.hpp"
     "include/um2c.h")    
 

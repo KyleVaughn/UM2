@@ -5,18 +5,18 @@ namespace um2
 // ---------------------------------------------------------------------------
 
 template <class T>
-HOSTDEV constexpr
-Vector<T>::Vector(Size const n)
-  : _begin{new T[static_cast<uint64_t>(n)]},
-    _end{_begin + n},
-    _end_cap{_begin + n} {}
+HOSTDEV constexpr Vector<T>::Vector(Size const n)
+    : _begin{new T[static_cast<uint64_t>(n)]},
+      _end{_begin + n},
+      _end_cap{_begin + n}
+{
+}
 
 template <class T>
-HOSTDEV constexpr 
-Vector<T>::Vector(Size const n, T const & value)
-  : _begin{new T[static_cast<uint64_t>(n)]},
-    _end{_begin + n},
-    _end_cap{_begin + n}
+HOSTDEV constexpr Vector<T>::Vector(Size const n, T const & value)
+    : _begin{new T[static_cast<uint64_t>(n)]},
+      _end{_begin + n},
+      _end_cap{_begin + n}
 {
   for (auto pos = _begin; pos != _end; ++pos) {
     *pos = value;
@@ -24,21 +24,19 @@ Vector<T>::Vector(Size const n, T const & value)
 }
 
 template <class T>
-HOSTDEV constexpr 
-Vector<T>::Vector(Vector<T> const & v)
-  : _begin{new T[static_cast<uint64_t>(v.size())]},
-    _end{_begin + v.size()},
-    _end_cap{_begin + v.size()}
+HOSTDEV constexpr Vector<T>::Vector(Vector<T> const & v)
+    : _begin{new T[static_cast<uint64_t>(v.size())]},
+      _end{_begin + v.size()},
+      _end_cap{_begin + v.size()}
 {
   copy(v.begin(), v.end(), _begin);
 }
 
 template <class T>
-HOSTDEV constexpr
-Vector<T>::Vector(Vector<T> && v) noexcept
-  : _begin{v._begin},
-    _end{v._end},
-    _end_cap{v._end_cap} 
+HOSTDEV constexpr Vector<T>::Vector(Vector<T> && v) noexcept
+    : _begin{v._begin},
+      _end{v._end},
+      _end_cap{v._end_cap}
 {
   v._begin = nullptr;
   v._end = nullptr;
@@ -46,11 +44,10 @@ Vector<T>::Vector(Vector<T> && v) noexcept
 }
 
 template <class T>
-HOSTDEV constexpr
-Vector<T>::Vector(std::initializer_list<T> const & list)
- : _begin{new T[list.size()]},
-   _end{_begin + list.size()},
-   _end_cap{_begin + list.size()}
+HOSTDEV constexpr Vector<T>::Vector(std::initializer_list<T> const & list)
+    : _begin{new T[list.size()]},
+      _end{_begin + list.size()},
+      _end_cap{_begin + list.size()}
 {
   copy(list.begin(), list.end(), _begin);
 }
@@ -198,7 +195,8 @@ Vector<T>::operator[](Size const i) const noexcept -> T const &
 }
 
 template <class T>
-HOSTDEV constexpr auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
+HOSTDEV constexpr auto
+Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
 {
   if (this != addressof(v)) {
     delete[] _begin;
@@ -211,7 +209,7 @@ HOSTDEV constexpr auto Vector<T>::operator=(Vector<T> const & v) -> Vector<T> &
 }
 
 template <class T>
-HOSTDEV constexpr auto 
+HOSTDEV constexpr auto
 Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
 {
   if (this != addressof(v)) {
@@ -259,7 +257,8 @@ Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
 // }
 
 template <class T>
-HOSTDEV constexpr void Vector<T>::clear() noexcept
+HOSTDEV constexpr void
+Vector<T>::clear() noexcept
 {
   destroy(begin(), end());
   _end = _begin;

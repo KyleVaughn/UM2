@@ -5,73 +5,73 @@ namespace um2
 // Accessors
 // -------------------------------------------------------------------
 
-template <len_t D, typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
-LineSegment<D, T>::operator[](len_t i) -> Point<D, T> &
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+LineSegment<D, T>::operator[](Size i) -> Point<D, T> &
 {
-  return this->vertices[i];
+  return vertices[i];
 }
 
-template <len_t D, typename T>
-UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
-LineSegment<D, T>::operator[](len_t i) const -> Point<D, T> const &
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+LineSegment<D, T>::operator[](Size i) const -> Point<D, T> const &
 {
-  return this->vertices[i];
+  return vertices[i];
 }
 
 // -------------------------------------------------------------------
 // Constructors
 // -------------------------------------------------------------------
 
-template <len_t D, typename T>
-UM2_HOSTDEV constexpr LineSegment<D, T>::Polytope(Point<D, T> const & p0,
-                                                  Point<D, T> const & p1) noexcept
+template <Size D, typename T>
+HOSTDEV constexpr LineSegment<D, T>::Polytope(Point<D, T> const & p0,
+                                              Point<D, T> const & p1) noexcept
 {
-  this->vertices[0] = p0;
-  this->vertices[1] = p1;
+  vertices[0] = p0;
+  vertices[1] = p1;
 }
 
 // -------------------------------------------------------------------
 // Interpolation
 // -------------------------------------------------------------------
 
-template <len_t D, typename T>
+template <Size D, typename T>
 template <typename R>
-UM2_PURE UM2_HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 LineSegment<D, T>::operator()(R const r) const noexcept -> Point<D, T>
 {
-  return this->vertices[0] + static_cast<T>(r) * (this->vertices[1] - this->vertices[0]);
+  return vertices[0] + static_cast<T>(r) * (vertices[1] - vertices[0]);
 }
 
 // -------------------------------------------------------------------
 // jacobian
 // -------------------------------------------------------------------
 
-template <len_t D, typename T>
+template <Size D, typename T>
 template <typename R>
-UM2_PURE UM2_HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 LineSegment<D, T>::jacobian(R /*r*/) const noexcept -> Vec<D, T>
 {
-  return this->vertices[1] - this->vertices[0];
+  return vertices[1] - vertices[0];
 }
 
 // -------------------------------------------------------------------
 // isLeft
 // -------------------------------------------------------------------
 
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
 LineSegment<D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool requires(D == 2)
 {
-  return areCCW(this->vertices[0], this->vertices[1], p);
+  return areCCW(vertices[0], vertices[1], p);
 }
 
 // -------------------------------------------------------------------
 // length
 // -------------------------------------------------------------------
 
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
 length(LineSegment<D, T> const & line) noexcept -> T
 {
   return distance(line[0], line[1]);

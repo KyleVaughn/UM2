@@ -1,7 +1,6 @@
 #pragma once
 
-#include <um2/geometry/axis_aligned_box.hpp>
-#include <um2/geometry/polytope.hpp>
+#include <um2/geometry/Polytope.hpp>
 
 namespace um2
 {
@@ -17,7 +16,7 @@ using LineSegment2 = LineSegment<2, T>;
 using LineSegment2f = LineSegment2<float>;
 using LineSegment2d = LineSegment2<double>;
 
-template <len_t D, typename T>
+template <Size D, typename T>
 struct Polytope<1, 1, 2, D, T> {
 
   Point<D, T> vertices[2];
@@ -26,11 +25,11 @@ struct Polytope<1, 1, 2, D, T> {
   // Accessors
   // -----------------------------------------------------------------------------
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
-  operator[](len_t i) -> Point<D, T> &;
+  PURE HOSTDEV constexpr auto
+  operator[](Size i) -> Point<D, T> &;
 
-  UM2_NDEBUG_PURE UM2_HOSTDEV constexpr auto
-  operator[](len_t i) const -> Point<D, T> const &;
+  PURE HOSTDEV constexpr auto
+  operator[](Size i) const -> Point<D, T> const &;
 
   // -----------------------------------------------------------------------------
   // Constructors
@@ -38,28 +37,28 @@ struct Polytope<1, 1, 2, D, T> {
 
   constexpr Polytope() = default;
 
-  UM2_HOSTDEV constexpr Polytope(Point<D, T> const & p0, Point<D, T> const & p1) noexcept;
+  HOSTDEV constexpr Polytope(Point<D, T> const & p0, Point<D, T> const & p1) noexcept;
 
   // -----------------------------------------------------------------------------
   // Methods
   // -----------------------------------------------------------------------------
 
   template <typename R>
-  UM2_PURE UM2_HOSTDEV constexpr auto
+  PURE HOSTDEV constexpr auto
   operator()(R r) const noexcept -> Point<D, T>;
 
   template <typename R>
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto jacobian(R /*r*/) const noexcept
+  PURE HOSTDEV [[nodiscard]] constexpr auto jacobian(R /*r*/) const noexcept
       -> Vec<D, T>;
 
-  UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   isLeft(Point<D, T> const & p) const noexcept -> bool requires(D == 2);
 };
 
-template <len_t D, typename T>
-UM2_PURE UM2_HOSTDEV constexpr auto
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
 length(LineSegment<D, T> const & line) noexcept -> T;
 
 } // namespace um2
 
-#include "line_segment.inl"
+#include "LineSegment.inl"
