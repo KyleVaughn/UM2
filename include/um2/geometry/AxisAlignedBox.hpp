@@ -1,6 +1,7 @@
 #pragma once
 
 #include <um2/config.hpp>
+
 #include <um2/common/Vector.hpp>
 #include <um2/geometry/Point.hpp>
 
@@ -90,8 +91,7 @@ using AxisAlignedBox3d = AxisAlignedBox3<double>;
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-isApprox(AxisAlignedBox<D, T> const & a, AxisAlignedBox<D, T> const & b) noexcept ->
-bool;
+isApprox(AxisAlignedBox<D, T> const & a, AxisAlignedBox<D, T> const & b) noexcept -> bool;
 
 // -----------------------------------------------------------------------------
 // Bounding box
@@ -99,8 +99,8 @@ bool;
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-boundingBox(AxisAlignedBox<D, T> const & a, AxisAlignedBox<D, T> const & b) noexcept ->
-AxisAlignedBox<D, T>;
+boundingBox(AxisAlignedBox<D, T> const & a, AxisAlignedBox<D, T> const & b) noexcept
+    -> AxisAlignedBox<D, T>;
 
 template <Size D, typename T, Size N>
 PURE HOSTDEV constexpr auto

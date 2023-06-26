@@ -48,8 +48,7 @@ struct Polytope<1, 1, 2, D, T> {
   operator()(R r) const noexcept -> Point<D, T>;
 
   template <typename R>
-  PURE HOSTDEV [[nodiscard]] constexpr auto jacobian(R /*r*/) const noexcept
-      -> Vec<D, T>;
+  PURE HOSTDEV [[nodiscard]] constexpr auto jacobian(R /*r*/) const noexcept -> Vec<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isLeft(Point<D, T> const & p) const noexcept -> bool requires(D == 2);

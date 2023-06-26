@@ -53,7 +53,8 @@ set(UM2_HEADERS
     "include/um2/geometry/Point.hpp"
     "include/um2/geometry/AxisAlignedBox.hpp"
     "include/um2/geometry/LineSegment.hpp"
-    #    "include/um2/geometry/triangle.hpp"
+    "include/um2/geometry/Triangle.hpp"
+    "include/um2/geometry/Quadrilateral.hpp"
     "include/um2c.h")    
 
 # Sources

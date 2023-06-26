@@ -24,7 +24,15 @@ namespace um2
 // See https://en.wikipedia.org/wiki/Polytope for help with terminology.
 //
 template <Size K, Size P, Size N, Size D, typename T>
-struct Polytope;
+// Why does clang-tidy complain declaration uses identifier '__i0'? There is
+// no __i0 in the code.
+// If you're reading this, uncomment the NOLINTNEXTLINE line below and see if
+// this has been fixed.
+// NOLINTNEXTLINE(bugprone-reserved-identifier, readability-identifier-naming)
+struct Polytope 
+{
+  static_assert(K > 0 && K <= 3, "Polytope dimension must be 1, 2, or 3");
+};
 
 // -----------------------------------------------------------------------------
 // Aliases
