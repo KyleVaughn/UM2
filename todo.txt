@@ -1,9 +1,6 @@
 Line in opengl
 Reading/Writing MPACT files
 
-Add code coverage
-
-Half edge mesh?
 CrossSection struct
 
 Vis:

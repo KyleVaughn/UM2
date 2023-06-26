@@ -43,9 +43,9 @@ set(UM2_HEADERS
     "include/um2/common/algorithm.hpp"
     "include/um2/common/Vector.hpp"
     "include/um2/common/sto.hpp"
-    # math
     #    "include/um2/common/string.hpp"
     #    "include/um2/common/color.hpp"
+    # math
     "include/um2/math/morton.hpp"
     "include/um2/math/Vec.hpp"
     "include/um2/math/Mat.hpp"
@@ -55,12 +55,14 @@ set(UM2_HEADERS
     "include/um2/geometry/LineSegment.hpp"
     "include/um2/geometry/Triangle.hpp"
     "include/um2/geometry/Quadrilateral.hpp"
+    # api
     "include/um2c.h")    
 
 # Sources
 set(UM2_SOURCES        
   #"src/common/string.cpp"
     #    "src/visualization/shader.cpp"
+    # api
     "src/um2c.cpp")    
 
 # Visualization headers and sources
