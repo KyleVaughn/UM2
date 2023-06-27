@@ -38,7 +38,7 @@ HOSTDEV constexpr LineSegment<D, T>::Polytope(Point<D, T> const & p0,
 template <Size D, typename T>
 template <typename R>
 PURE HOSTDEV constexpr auto
-LineSegment<D, T>::operator()(R const r) const noexcept -> Point<D, T>
+LineSegment<D, T>::operator()(R const r) const noexcept -> Point<D, T> 
 {
   return vertices[0] + static_cast<T>(r) * (vertices[1] - vertices[0]);
 }

@@ -6,12 +6,13 @@ template <Size D, std::floating_point T>
 HOSTDEV static constexpr auto
 makeBox() -> um2::AxisAlignedBox<D, T>
 {
-  um2::AxisAlignedBox<D, T> box;
+  um2::Point<D, T> minima;
+  um2::Point<D, T> maxima;
   for (Size i = 0; i < D; ++i) {
-    box.minima[i] = static_cast<T>(i);
-    box.maxima[i] = static_cast<T>(i + 1);
+    minima[i] = static_cast<T>(i);
+    maxima[i] = static_cast<T>(i + 1);
   }
-  return box;
+  return {minima, maxima}; 
 }
 
 template <Size D, std::floating_point T>

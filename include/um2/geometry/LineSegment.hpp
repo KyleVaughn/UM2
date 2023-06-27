@@ -35,7 +35,7 @@ struct Polytope<1, 1, 2, D, T> {
   // Constructors
   // -----------------------------------------------------------------------------
 
-  constexpr Polytope() = default;
+  HOSTDEV constexpr Polytope() = default;
 
   HOSTDEV constexpr Polytope(Point<D, T> const & p0, Point<D, T> const & p1) noexcept;
 
@@ -45,7 +45,7 @@ struct Polytope<1, 1, 2, D, T> {
 
   template <typename R>
   PURE HOSTDEV constexpr auto
-  operator()(R r) const noexcept -> Point<D, T>;
+  operator()(R r) const noexcept -> Point<D, T>; 
 
   template <typename R>
   PURE HOSTDEV [[nodiscard]] constexpr auto jacobian(R /*r*/) const noexcept -> Vec<D, T>;

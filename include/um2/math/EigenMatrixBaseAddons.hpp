@@ -1,6 +1,6 @@
 template<typename OtherDerived>
-constexpr auto 
-HOSTDEV squaredDistanceTo(MatrixBase<OtherDerived> const & other) const noexcept -> Scalar
+HOSTDEV constexpr auto 
+squaredDistanceTo(MatrixBase<OtherDerived> const & other) const noexcept -> Scalar
 { 
   EIGEN_STATIC_ASSERT_VECTOR_ONLY(Derived)
   EIGEN_STATIC_ASSERT_VECTOR_ONLY(OtherDerived)
@@ -8,7 +8,8 @@ HOSTDEV squaredDistanceTo(MatrixBase<OtherDerived> const & other) const noexcept
 }
 
 template<typename OtherDerived>
-HOSTDEV constexpr auto distanceTo(MatrixBase<OtherDerived> const & other) const noexcept -> RealScalar
+HOSTDEV constexpr auto 
+distanceTo(MatrixBase<OtherDerived> const & other) const noexcept -> RealScalar
 { 
   EIGEN_STATIC_ASSERT_VECTOR_ONLY(Derived)
   EIGEN_STATIC_ASSERT_VECTOR_ONLY(OtherDerived)

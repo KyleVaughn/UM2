@@ -112,7 +112,7 @@ HOSTDEV
 TEST_CASE(area)
 {
   um2::Quadrilateral<2, T> quad = makeQuad<2, T>();
-  ASSERT_NEAR(area(quad), static_cast<T>(1), static_cast<T>(1e-5));
+  ASSERT_NEAR(quad.area(), static_cast<T>(1), static_cast<T>(1e-5));
 }
 
 // -------------------------------------------------------------------
@@ -124,12 +124,12 @@ HOSTDEV
 TEST_CASE(centroid)
 {
   um2::Quadrilateral<D, T> quad = makeQuad<D, T>();
-  um2::Point<D, T> c = centroid(quad);
+  um2::Point<D, T> c = quad.centroid();
   ASSERT_NEAR(c[0], static_cast<T>(0.5), static_cast<T>(1e-5));
   ASSERT_NEAR(c[1], static_cast<T>(0.5), static_cast<T>(1e-5));
   quad[2] = um2::Point<D, T>(static_cast<T>(2), static_cast<T>(0.5));
   quad[3] = um2::Point<D, T>(static_cast<T>(1), static_cast<T>(0.5));
-  c = centroid(quad);
+  c = quad.centroid();
   ASSERT_NEAR(c[0], static_cast<T>(1.00), static_cast<T>(1e-5));
   ASSERT_NEAR(c[1], static_cast<T>(0.25), static_cast<T>(1e-5));
 }
@@ -143,7 +143,7 @@ HOSTDEV
 TEST_CASE(boundingBox)
 {
   um2::Quadrilateral<D, T> quad = makeQuad<D, T>();
-  um2::AxisAlignedBox<D, T> box = boundingBox(quad);
+  um2::AxisAlignedBox<D, T> box = quad.boundingBox();
   ASSERT_NEAR(box.xMin(), static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(box.yMin(), static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(box.xMax(), static_cast<T>(1), static_cast<T>(1e-5));

@@ -77,10 +77,39 @@ Quadrilateral<D, T>::contains(Point<D, T> const & p) const noexcept
 }
 
 // -------------------------------------------------------------------
-// See polytope.inl for
+// area 
 // -------------------------------------------------------------------
-// area
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+Quadrilateral<D, T>::area() const noexcept -> T requires(D == 2)
+{
+  return cross2(vertices[2] - vertices[0], vertices[3] - vertices[1]) / 2;
+}
+
+// -------------------------------------------------------------------
 // centroid
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+Quadrilateral<D, T>::centroid() const noexcept -> Point<D, T> requires (D == 2)
+{
+  T const a1 = cross2(vertices[1] - vertices[0], vertices[2] - vertices[0]);
+  T const a2 = cross2(vertices[2] - vertices[0], vertices[3] - vertices[0]);
+  return (a1 * (vertices[0] + vertices[1] + vertices[2]) + 
+          a2 * (vertices[0] + vertices[2] + vertices[3]) ) / (3 * (a1 + a2));
+}
+
+// -------------------------------------------------------------------
 // boundingBox
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+Quadrilateral<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
+{
+  return um2::boundingBox(vertices);
+}
 
 } // namespace um2

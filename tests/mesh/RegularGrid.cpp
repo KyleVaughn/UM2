@@ -7,23 +7,25 @@ HOSTDEV static constexpr auto
 makeGrid() -> um2::RegularGrid<D, T>
 {
   static_assert(1 <= D && D <= 3, "D must be in [1, 3]");
-  um2::RegularGrid<D, T> grid;
+  um2::Point<D, T> minima;
+  um2::Point<D, T> spacing;
+  um2::Point<D, Size> num_cells;
   if constexpr (D >= 1) {
-    grid.minima[0] = 1;
-    grid.spacing[0] = 1;
-    grid.num_cells[0] = 1;
+    minima[0] = 1;
+    spacing[0] = 1;
+    num_cells[0] = 1;
   }
   if constexpr (D >= 2) {
-    grid.minima[1] = 2;
-    grid.spacing[1] = 2;
-    grid.num_cells[1] = 2;
+    minima[1] = 2;
+    spacing[1] = 2;
+    num_cells[1] = 2;
   }
   if constexpr (D >= 3) {
-    grid.minima[2] = 3;
-    grid.spacing[2] = 3;
-    grid.num_cells[2] = 3;
+    minima[2] = 3;
+    spacing[2] = 3;
+    num_cells[2] = 3;
   }
-  return grid;
+  return {minima, spacing, num_cells};
 }
 
 template <Size D, typename T>

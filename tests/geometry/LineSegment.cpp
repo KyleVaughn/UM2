@@ -37,7 +37,6 @@ TEST_CASE(interpolate)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
   um2::Point<D, T> p0 = line(0);
-  printf("p0: %f %f\n", static_cast<double>(p0[0]), static_cast<double>(p0[1]));
   ASSERT((um2::isApprox(p0, line[0])));
   um2::Point<D, T> p1 = line(1);
   ASSERT((um2::isApprox(p1, line[1])));

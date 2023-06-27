@@ -17,6 +17,11 @@ using Triangle2 = Triangle<2, T>;
 using Triangle2f = Triangle2<float>;
 using Triangle2d = Triangle2<double>;
 
+template <typename T>
+using Triangle3 = Triangle<3, T>;
+using Triangle3f = Triangle3<float>;
+using Triangle3d = Triangle3<double>;
+
 template <Size D, typename T>
 struct Polytope<2, 1, 3, D, T> {
 
@@ -49,6 +54,16 @@ struct Polytope<2, 1, 3, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   contains(Point<D, T> const & p) const noexcept -> bool requires(D == 2);
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  area() const noexcept -> T; 
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  centroid() const noexcept -> Point<D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  boundingBox() const noexcept -> AxisAlignedBox<D, T>;
+
 };
 
 } // namespace um2

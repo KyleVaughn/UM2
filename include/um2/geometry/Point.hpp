@@ -1,6 +1,5 @@
 #pragma once
 
-#include <um2/config.hpp>
 #include <um2/math/Vec.hpp>
 
 namespace um2

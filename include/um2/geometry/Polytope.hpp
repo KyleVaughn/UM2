@@ -111,15 +111,6 @@ PURE HOSTDEV constexpr auto
 quadrilateralArea(Point2<T> const & p0, Point2<T> const & p1, Point2<T> const & p2,
                   Point2<T> const & p3) noexcept -> T;
 
-// Area of a linear, planar polygon
-template <Size N, typename T>
-PURE HOSTDEV constexpr auto
-area(LinearPolygon<N, 2, T> const & poly) noexcept -> T;
-
-template <typename T>
-PURE HOSTDEV constexpr auto
-area(Triangle<3, T> const & tri) noexcept -> T;
-
 // -----------------------------------------------------------------------------
 // centroid
 // -----------------------------------------------------------------------------

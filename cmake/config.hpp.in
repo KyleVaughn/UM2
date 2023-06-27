@@ -60,4 +60,4 @@ using Size = int32_t;
 // -----------------------------------------------------------------------------
 #define EIGEN_DEFAULT_DENSE_INDEX_TYPE Size 
 // NOLINTNEXTLINE
-#define EIGEN_MATRIXBASE_PLUGIN <um2/math/MatrixBaseAddons.hpp>
+#define EIGEN_MATRIXBASE_PLUGIN <um2/math/EigenMatrixBaseAddons.hpp>

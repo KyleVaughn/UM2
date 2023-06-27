@@ -73,10 +73,42 @@ Triangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool requires(
 }
 
 // -------------------------------------------------------------------
-// See polytope.inl for
+// area 
 // -------------------------------------------------------------------
-// area
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+Triangle<D, T>::area() const noexcept -> T
+{
+  if constexpr (D == 2) {
+    return cross2(vertices[1] - vertices[0], vertices[2] - vertices[0]) / 2;
+  } else if constexpr (D == 3) {
+    return (vertices[1] - vertices[0]).cross(vertices[2] - vertices[0]).norm() / 2; 
+  } else {
+    static_assert(D == 2 || D == 3, "Triangle::area() is only defined for 2D and 3D triangles");
+  }
+}
+
+// -------------------------------------------------------------------
 // centroid
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+Triangle<D, T>::centroid() const noexcept -> Point<D, T>
+{
+  return (vertices[0] + vertices[1] + vertices[2]) / 3;
+}
+
+// -------------------------------------------------------------------
 // boundingBox
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+Triangle<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
+{
+  return um2::boundingBox(vertices);
+}
 
 } // namespace um2

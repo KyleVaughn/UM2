@@ -103,8 +103,8 @@ template <Size D, typename T>
 HOSTDEV
 TEST_CASE(area)
 {
-  um2::Triangle<2, T> tri = makeTri<2, T>();
-  ASSERT_NEAR(area(tri), static_cast<T>(0.5), static_cast<T>(1e-5));
+  um2::Triangle<D, T> tri = makeTri<D, T>();
+  ASSERT_NEAR(tri.area(), static_cast<T>(0.5), static_cast<T>(1e-5));
 }
 // -------------------------------------------------------------------
 // centroid
@@ -115,7 +115,7 @@ HOSTDEV
 TEST_CASE(centroid)
 {
   um2::Triangle<D, T> tri = makeTri<D, T>();
-  um2::Point<D, T> c = centroid(tri);
+  um2::Point<D, T> c = tri.centroid();
   ASSERT_NEAR(c[0], static_cast<T>(1.0 / 3.0), static_cast<T>(1e-5));
   ASSERT_NEAR(c[1], static_cast<T>(1.0 / 3.0), static_cast<T>(1e-5));
 }
@@ -129,7 +129,7 @@ HOSTDEV
 TEST_CASE(boundingBox)
 {
   um2::Triangle<D, T> tri = makeTri<D, T>();
-  um2::AxisAlignedBox<D, T> box = boundingBox(tri);
+  um2::AxisAlignedBox<D, T> box = tri.boundingBox();
   ASSERT_NEAR(box.xMin(), static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(box.yMin(), static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(box.xMax(), static_cast<T>(1), static_cast<T>(1e-5));
