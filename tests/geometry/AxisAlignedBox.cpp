@@ -12,7 +12,7 @@ makeBox() -> um2::AxisAlignedBox<D, T>
     minima[i] = static_cast<T>(i);
     maxima[i] = static_cast<T>(i + 1);
   }
-  return {minima, maxima}; 
+  return {minima, maxima};
 }
 
 template <Size D, std::floating_point T>

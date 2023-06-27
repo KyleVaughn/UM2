@@ -60,7 +60,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 RegularGrid<D, T>::dx() const noexcept -> T
 {
-  return spacing[0]; 
+  return spacing[0];
 }
 
 template <Size D, typename T>
@@ -106,7 +106,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 RegularGrid<D, T>::width() const noexcept -> T
 {
-  return static_cast<T>(numXCells()) * dx(); 
+  return static_cast<T>(numXCells()) * dx();
 }
 
 template <Size D, typename T>
@@ -145,26 +145,25 @@ PURE HOSTDEV constexpr auto
 RegularGrid<D, T>::zMax() const noexcept -> T
 {
   static_assert(3 <= D);
-  return zMin() + depth(); 
+  return zMin() + depth();
 }
-
 
 // Bounding box
 template <Size D, typename T>
-PURE HOSTDEV constexpr auto boundingBox(RegularGrid<D, T> const & grid)
-    -> AxisAlignedBox<D, T>
+PURE HOSTDEV constexpr auto
+boundingBox(RegularGrid<D, T> const & grid) -> AxisAlignedBox<D, T>
 {
-   assert(1 <= D && D <= 3);
-   if constexpr (D == 1) {
-     return AxisAlignedBox<D, T>(Point<D, T>(xMin(grid)), Point<D, T>(xMax(grid)));
-   } else if constexpr (D == 2) {
-     return AxisAlignedBox<D, T>(Point<D, T>(xMin(grid), yMin(grid)),
-                        Point<D, T>(xMax(grid), yMax(grid)));
-   } else {
-     return AxisAlignedBox<D, T>(Point<D, T>(xMin(grid), yMin(grid), zMin(grid)),
-                        Point<D, T>(xMax(grid), yMax(grid), zMax(grid)));
-   }
- }
+  assert(1 <= D && D <= 3);
+  if constexpr (D == 1) {
+    return AxisAlignedBox<D, T>(Point<D, T>(xMin(grid)), Point<D, T>(xMax(grid)));
+  } else if constexpr (D == 2) {
+    return AxisAlignedBox<D, T>(Point<D, T>(xMin(grid), yMin(grid)),
+                                Point<D, T>(xMax(grid), yMax(grid)));
+  } else {
+    return AxisAlignedBox<D, T>(Point<D, T>(xMin(grid), yMin(grid), zMin(grid)),
+                                Point<D, T>(xMax(grid), yMax(grid), zMax(grid)));
+  }
+}
 
 // template <Size D, typename T>
 // NDEBUG_PURE HOSTDEV constexpr auto RegularGrid<D, T>::getBox(Size const i,

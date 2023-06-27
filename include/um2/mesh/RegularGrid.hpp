@@ -114,8 +114,8 @@ using RegularGrid3d = RegularGrid3<double>;
 // -----------------------------------------------------------------------------
 
 template <Size D, typename T>
-PURE HOSTDEV constexpr auto boundingBox(RegularGrid<D, T> const & grid)
-     -> AxisAlignedBox<D, T>;
+PURE HOSTDEV constexpr auto
+boundingBox(RegularGrid<D, T> const & grid) -> AxisAlignedBox<D, T>;
 
 } // namespace um2
 

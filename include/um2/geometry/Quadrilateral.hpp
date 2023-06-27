@@ -54,11 +54,11 @@ struct Polytope<2, 1, 4, D, T> {
   area() const noexcept -> T requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  centroid() const noexcept -> Point<D, T> requires(D == 2);
+  centroid() const noexcept -> Point<D, T>
+  requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
-
 };
 
 } // namespace um2

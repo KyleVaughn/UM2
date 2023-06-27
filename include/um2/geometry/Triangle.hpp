@@ -56,14 +56,13 @@ struct Polytope<2, 1, 3, D, T> {
   contains(Point<D, T> const & p) const noexcept -> bool requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  area() const noexcept -> T; 
+  area() const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   centroid() const noexcept -> Point<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
-
 };
 
 } // namespace um2

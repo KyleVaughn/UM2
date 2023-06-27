@@ -77,7 +77,7 @@ Quadrilateral<D, T>::contains(Point<D, T> const & p) const noexcept
 }
 
 // -------------------------------------------------------------------
-// area 
+// area
 // -------------------------------------------------------------------
 
 template <Size D, typename T>
@@ -93,12 +93,14 @@ Quadrilateral<D, T>::area() const noexcept -> T requires(D == 2)
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-Quadrilateral<D, T>::centroid() const noexcept -> Point<D, T> requires (D == 2)
+Quadrilateral<D, T>::centroid() const noexcept -> Point<D, T>
+requires(D == 2)
 {
   T const a1 = cross2(vertices[1] - vertices[0], vertices[2] - vertices[0]);
   T const a2 = cross2(vertices[2] - vertices[0], vertices[3] - vertices[0]);
-  return (a1 * (vertices[0] + vertices[1] + vertices[2]) + 
-          a2 * (vertices[0] + vertices[2] + vertices[3]) ) / (3 * (a1 + a2));
+  return (a1 * (vertices[0] + vertices[1] + vertices[2]) +
+          a2 * (vertices[0] + vertices[2] + vertices[3])) /
+         (3 * (a1 + a2));
 }
 
 // -------------------------------------------------------------------
