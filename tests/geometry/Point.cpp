@@ -30,14 +30,14 @@ TEST_CASE(distance)
 {
   um2::Point<D, T> p1 = makep1<D, T>();
   um2::Point<D, T> p2 = makep2<D, T>();
-  T d2 = um2::distanceSquared(p1, p2);
+  T d2 = p1.squaredDistanceTo(p2);
   if constexpr (std::floating_point<T>) {
     ASSERT_NEAR(d2, static_cast<T>(D), static_cast<T>(1e-6));
   } else {
     ASSERT(d2 == static_cast<T>(D));
   }
 
-  T d = um2::distance(p1, p2);
+  T d = p1.distanceTo(p2);
   d *= d;
   if constexpr (std::floating_point<T>) {
     ASSERT_NEAR(d, static_cast<T>(D), static_cast<T>(1e-6));

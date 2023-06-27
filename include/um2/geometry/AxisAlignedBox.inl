@@ -56,8 +56,13 @@ AxisAlignedBox<D, T>::zMax() const noexcept -> T
 // --------------------------------------------------------------------------
 
 template <Size D, typename T>
+HOSTDEV constexpr AxisAlignedBox<D, T>::AxisAlignedBox() noexcept
+{
+}
+
+template <Size D, typename T>
 HOSTDEV constexpr AxisAlignedBox<D, T>::AxisAlignedBox(Point<D, T> const & min,
-                                                       Point<D, T> const & max)
+                                                       Point<D, T> const & max) noexcept
     : minima(min),
       maxima(max)
 {

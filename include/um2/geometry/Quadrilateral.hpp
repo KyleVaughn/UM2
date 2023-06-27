@@ -26,24 +26,26 @@ struct Polytope<2, 1, 4, D, T> {
   // Accessors
   // -----------------------------------------------------------------------------
 
-  PURE HOSTDEV constexpr auto operator[](Size i) -> Point<D, T> &;
+  PURE HOSTDEV constexpr auto
+  operator[](Size i) noexcept -> Point<D, T> &;
 
-  PURE HOSTDEV constexpr auto operator[](Size i) const -> Point<D, T> const &;
+  PURE HOSTDEV constexpr auto
+  operator[](Size i) const noexcept -> Point<D, T> const &;
 
   // -----------------------------------------------------------------------------
   // Methods
   // -----------------------------------------------------------------------------
 
   template <typename R, typename S>
-  PURE HOSTDEV constexpr auto operator()(R r, S s) const noexcept -> Point<D, T>;
+  PURE HOSTDEV constexpr auto
+  operator()(R r, S s) const noexcept -> Point<D, T>;
 
   template <typename R, typename S>
-  PURE HOSTDEV
-      [[nodiscard]] constexpr auto jacobian(R /*r*/, S /*s*/) const noexcept
+  PURE HOSTDEV [[nodiscard]] constexpr auto jacobian(R /*r*/, S /*s*/) const noexcept
       -> Mat<D, 2, T>;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto edge(Size i) const noexcept
-      -> LineSegment<D, T>;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  edge(Size i) const noexcept -> LineSegment<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   contains(Point<D, T> const & p) const noexcept -> bool requires(D == 2);

@@ -23,9 +23,10 @@ struct AxisAlignedBox {
   // Constructors
   // -----------------------------------------------------------------------------
 
-  constexpr AxisAlignedBox() = default;
+  HOSTDEV constexpr AxisAlignedBox() noexcept;
 
-  HOSTDEV constexpr AxisAlignedBox(Point<D, T> const & min, Point<D, T> const & max);
+  HOSTDEV constexpr AxisAlignedBox(Point<D, T> const & min,
+                                   Point<D, T> const & max) noexcept;
 
   // -----------------------------------------------------------------------------
   // Accessors

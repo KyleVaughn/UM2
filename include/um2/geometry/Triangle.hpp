@@ -27,10 +27,10 @@ struct Polytope<2, 1, 3, D, T> {
   // -----------------------------------------------------------------------------
 
   PURE HOSTDEV constexpr auto
-  operator[](Size i) -> Point<D, T> &;
+  operator[](Size i) noexcept -> Point<D, T> &;
 
   PURE HOSTDEV constexpr auto
-  operator[](Size i) const -> Point<D, T> const &;
+  operator[](Size i) const noexcept -> Point<D, T> const &;
 
   // -----------------------------------------------------------------------------
   // Methods

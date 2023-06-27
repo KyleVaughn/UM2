@@ -55,6 +55,8 @@ set(UM2_HEADERS
     "include/um2/geometry/LineSegment.hpp"
     "include/um2/geometry/Triangle.hpp"
     "include/um2/geometry/Quadrilateral.hpp"
+    # mesh
+    "include/um2/mesh/RegularGrid.hpp"
     # api
     "include/um2c.h")    
 

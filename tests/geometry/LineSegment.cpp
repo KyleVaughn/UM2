@@ -72,8 +72,7 @@ TEST_CASE(length)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
   T len_ref = (line[1] - line[0]).norm();
-  T len = length(line);
-  ASSERT_NEAR(len, len_ref, static_cast<T>(1e-5));
+  ASSERT_NEAR(line.length(), len_ref, static_cast<T>(1e-5));
 }
 
 // -------------------------------------------------------------------
@@ -85,7 +84,7 @@ HOSTDEV
 TEST_CASE(boundingBox)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
-  um2::AxisAlignedBox<D, T> box = boundingBox(line);
+  um2::AxisAlignedBox<D, T> box = line.boundingBox();
   ASSERT(um2::isApprox(line[0], box.minima));
   ASSERT(um2::isApprox(line[1], box.maxima));
 }

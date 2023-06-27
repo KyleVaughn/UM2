@@ -7,14 +7,14 @@ namespace um2
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-LineSegment<D, T>::operator[](Size i) -> Point<D, T> &
+LineSegment<D, T>::operator[](Size i) noexcept -> Point<D, T> &
 {
   return vertices[i];
 }
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-LineSegment<D, T>::operator[](Size i) const -> Point<D, T> const &
+LineSegment<D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
 {
   return vertices[i];
 }
@@ -72,9 +72,20 @@ LineSegment<D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool requires
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-length(LineSegment<D, T> const & line) noexcept -> T
+LineSegment<D, T>::length() const noexcept -> T
 {
-  return distance(line[0], line[1]);
+  return vertices[0].distanceTo(vertices[1]);
+}
+
+// -------------------------------------------------------------------
+// boundingBox
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+LineSegment<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
+{
+  return um2::boundingBox(vertices);
 }
 
 } // namespace um2

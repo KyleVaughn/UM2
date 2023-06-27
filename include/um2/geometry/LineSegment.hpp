@@ -26,10 +26,10 @@ struct Polytope<1, 1, 2, D, T> {
   // -----------------------------------------------------------------------------
 
   PURE HOSTDEV constexpr auto
-  operator[](Size i) -> Point<D, T> &;
+  operator[](Size i) noexcept -> Point<D, T> &;
 
   PURE HOSTDEV constexpr auto
-  operator[](Size i) const -> Point<D, T> const &;
+  operator[](Size i) const noexcept -> Point<D, T> const &;
 
   // -----------------------------------------------------------------------------
   // Constructors
@@ -52,11 +52,13 @@ struct Polytope<1, 1, 2, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isLeft(Point<D, T> const & p) const noexcept -> bool requires(D == 2);
-};
 
-template <Size D, typename T>
-PURE HOSTDEV constexpr auto
-length(LineSegment<D, T> const & line) noexcept -> T;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  length() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  boundingBox() const noexcept -> AxisAlignedBox<D, T>;
+};
 
 } // namespace um2
 

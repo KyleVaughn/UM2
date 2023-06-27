@@ -66,28 +66,6 @@ infiniteDistance() -> T
 
 template <typename DerivedA, typename DerivedB>
 PURE HOSTDEV constexpr auto
-distanceSquared(Eigen::MatrixBase<DerivedA> const & a,
-                Eigen::MatrixBase<DerivedB> const & b) noexcept ->
-    typename DerivedA::Scalar
-{
-  // Check that a and b are vectors
-  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedA);
-  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedB);
-  return (a - b).squaredNorm();
-}
-
-template <typename DerivedA, typename DerivedB>
-PURE HOSTDEV constexpr auto
-distance(Eigen::MatrixBase<DerivedA> const & a,
-         Eigen::MatrixBase<DerivedB> const & b) noexcept -> typename DerivedA::Scalar
-{
-  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedA);
-  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedB);
-  return std::sqrt(distanceSquared(a, b));
-}
-
-template <typename DerivedA, typename DerivedB>
-PURE HOSTDEV constexpr auto
 midpoint(Eigen::MatrixBase<DerivedA> const & a,
          Eigen::MatrixBase<DerivedB> const & b) noexcept -> typename DerivedA::PlainObject
 {
@@ -103,7 +81,7 @@ isApprox(Eigen::MatrixBase<DerivedA> const & a,
 {
   EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedA);
   EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedB);
-  return distanceSquared(a, b) < epsilonDistanceSquared<typename DerivedA::Scalar>();
+  return a.squaredDistanceTo(b) < epsilonDistanceSquared<typename DerivedA::Scalar>();
 }
 
 template <typename DerivedA, typename DerivedB, typename DerivedC>

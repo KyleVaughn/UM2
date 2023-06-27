@@ -3,7 +3,8 @@
 #include "../test_macros.hpp"
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto makeQuad() -> um2::Quadrilateral<D, T>
+HOSTDEV static constexpr auto
+makeQuad() -> um2::Quadrilateral<D, T>
 {
   um2::Quadrilateral<D, T> quad;
   for (Size i = 0; i < 4; ++i) {
@@ -24,14 +25,15 @@ HOSTDEV static constexpr auto makeQuad() -> um2::Quadrilateral<D, T>
 // -------------------------------------------------------------------
 
 template <Size D, typename T>
-HOSTDEV TEST_CASE(interpolate)
+HOSTDEV
+TEST_CASE(interpolate)
 {
   um2::Quadrilateral<D, T> quad = makeQuad<D, T>();
   um2::Point<D, T> p00 = quad(0, 0);
   um2::Point<D, T> p10 = quad(1, 0);
   um2::Point<D, T> p01 = quad(0, 1);
   um2::Point<D, T> p11 = quad(1, 1);
-  ASSERT(um2::isApprox(p00, quad[0])); 
+  ASSERT(um2::isApprox(p00, quad[0]));
   ASSERT(um2::isApprox(p10, quad[1]));
   ASSERT(um2::isApprox(p01, quad[3]));
   ASSERT(um2::isApprox(p11, quad[2]));
@@ -42,7 +44,8 @@ HOSTDEV TEST_CASE(interpolate)
 // -------------------------------------------------------------------
 
 template <Size D, typename T>
-HOSTDEV TEST_CASE(jacobian)
+HOSTDEV
+TEST_CASE(jacobian)
 {
   // For the reference quad, the Jacobian is constant.
   um2::Quadrilateral<D, T> quad = makeQuad<D, T>();
@@ -63,7 +66,8 @@ HOSTDEV TEST_CASE(jacobian)
 // -------------------------------------------------------------------
 
 template <Size D, typename T>
-HOSTDEV TEST_CASE(edge)
+HOSTDEV
+TEST_CASE(edge)
 {
   um2::Quadrilateral<D, T> quad = makeQuad<D, T>();
   um2::LineSegment<D, T> edge = quad.edge(0);
@@ -85,7 +89,8 @@ HOSTDEV TEST_CASE(edge)
 // -------------------------------------------------------------------
 
 template <typename T>
-HOSTDEV TEST_CASE(contains)
+HOSTDEV
+TEST_CASE(contains)
 {
   um2::Quadrilateral<2, T> quad = makeQuad<2, T>();
   um2::Point2<T> p = um2::Point2<T>(static_cast<T>(0.25), static_cast<T>(0.25));
@@ -103,7 +108,8 @@ HOSTDEV TEST_CASE(contains)
 // -------------------------------------------------------------------
 
 template <Size D, typename T>
-HOSTDEV TEST_CASE(area)
+HOSTDEV
+TEST_CASE(area)
 {
   um2::Quadrilateral<2, T> quad = makeQuad<2, T>();
   ASSERT_NEAR(area(quad), static_cast<T>(1), static_cast<T>(1e-5));
@@ -114,7 +120,8 @@ HOSTDEV TEST_CASE(area)
 // -------------------------------------------------------------------
 
 template <Size D, typename T>
-HOSTDEV TEST_CASE(centroid)
+HOSTDEV
+TEST_CASE(centroid)
 {
   um2::Quadrilateral<D, T> quad = makeQuad<D, T>();
   um2::Point<D, T> c = centroid(quad);
@@ -132,7 +139,8 @@ HOSTDEV TEST_CASE(centroid)
 // -------------------------------------------------------------------
 
 template <Size D, typename T>
-HOSTDEV TEST_CASE(boundingBox)
+HOSTDEV
+TEST_CASE(boundingBox)
 {
   um2::Quadrilateral<D, T> quad = makeQuad<D, T>();
   um2::AxisAlignedBox<D, T> box = boundingBox(quad);
@@ -163,7 +171,7 @@ MAKE_CUDA_KERNEL(centroid, D, T);
 
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(boundingBox, D, T);
-#endif 
+#endif
 
 template <Size D, typename T>
 TEST_SUITE(Quadrilateral)
@@ -181,7 +189,8 @@ TEST_SUITE(Quadrilateral)
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_SUITE((Quadrilateral<2, float>));
   RUN_SUITE((Quadrilateral<3, float>));

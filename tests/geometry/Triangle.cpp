@@ -157,7 +157,7 @@ MAKE_CUDA_KERNEL(centroid, D, T);
 
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(boundingBox, D, T);
-#endif // UM2_ENABLE 
+#endif // UM2_ENABLE
 
 template <Size D, typename T>
 TEST_SUITE(Triangle)

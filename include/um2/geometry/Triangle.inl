@@ -7,14 +7,14 @@ namespace um2
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-Triangle<D, T>::operator[](Size i) -> Point<D, T> &
+Triangle<D, T>::operator[](Size i) noexcept -> Point<D, T> &
 {
   return vertices[i];
 }
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-Triangle<D, T>::operator[](Size i) const -> Point<D, T> const &
+Triangle<D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
 {
   return vertices[i];
 }
@@ -68,8 +68,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool requires(D == 2)
 {
-  return areCCW(vertices[0], vertices[1], p) &&
-         areCCW(vertices[1], vertices[2], p) &&
+  return areCCW(vertices[0], vertices[1], p) && areCCW(vertices[1], vertices[2], p) &&
          areCCW(vertices[2], vertices[0], p);
 }
 

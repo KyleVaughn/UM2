@@ -106,7 +106,7 @@ centroid(Triangle<3, T> const & tri) noexcept -> Point3<T>
 // vertices.
 template <Size K, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-boundingBox(Polytope<K, 1, N, D, T> const & poly) -> AxisAlignedBox<D, T>
+boundingBox(Polytope<K, 1, N, D, T> const & poly) noexcept -> AxisAlignedBox<D, T>
 {
   return boundingBox(poly.vertices);
 }

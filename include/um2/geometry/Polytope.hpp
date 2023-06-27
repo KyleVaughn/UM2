@@ -29,8 +29,7 @@ template <Size K, Size P, Size N, Size D, typename T>
 // If you're reading this, uncomment the NOLINTNEXTLINE line below and see if
 // this has been fixed.
 // NOLINTNEXTLINE(bugprone-reserved-identifier, readability-identifier-naming)
-struct Polytope 
-{
+struct Polytope {
   static_assert(K > 0 && K <= 3, "Polytope dimension must be 1, 2, or 3");
 };
 
@@ -147,7 +146,7 @@ centroid(LinearPolygon<N, 2, T> const & poly) noexcept -> Point2<T>;
 // vertices.
 template <Size K, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-boundingBox(Polytope<K, 1, N, D, T> const & poly) -> AxisAlignedBox<D, T>;
+boundingBox(Polytope<K, 1, N, D, T> const & poly) noexcept -> AxisAlignedBox<D, T>;
 
 } // namespace um2
 

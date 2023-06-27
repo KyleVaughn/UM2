@@ -1,3 +1,5 @@
+area, centroid, and boundingBox functions for polytopes
+
 Line in opengl
 Reading/Writing MPACT files
 
