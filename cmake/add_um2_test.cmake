@@ -29,6 +29,11 @@ macro(add_um2_test TESTNAME)
     set_target_properties(${TESTNAME} PROPERTIES CXX_CPPCHECK "${CPPCHECK_ARGS}")       
   endif()                                        
 
+  if (UM2_ENABLE_COVERAGE)
+    target_link_libraries(${TESTNAME} gcov)
+    target_compile_options(${TESTNAME} PUBLIC --coverage)
+  endif ()
+
   # If compiling with CUDA, compile the cpp files as cuda    
   if (UM2_ENABLE_CUDA)    
     set_target_properties(${TESTNAME} PROPERTIES CUDA_STANDARD ${UM2_CUDA_STANDARD})
@@ -42,4 +47,5 @@ macro(add_um2_test TESTNAME)
   if (UM2_ENABLE_VIS)    
     target_link_libraries(${TESTNAME} ${UM2_VIS_LIBRARIES})
   endif()
+
 endmacro()
