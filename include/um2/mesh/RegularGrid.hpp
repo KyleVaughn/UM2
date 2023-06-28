@@ -82,12 +82,17 @@ struct RegularGrid {
   PURE HOSTDEV [[nodiscard]] constexpr auto
   zMax() const noexcept -> T;
 
-  //  // -- Methods --
-  //
-  //  UM2_NDEBUG_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto getBox(Size i, Size j)
-  //  const
-  //      -> AxisAlignedBox2<T>
-  //  requires(D == 2);
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  maxima() const noexcept -> Point<D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  boundingBox() const noexcept -> AxisAlignedBox<D, T>;
+
+
+  template <typename ...Args>
+  requires (sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto 
+  getBox(Args ...args) const noexcept -> AxisAlignedBox<D, T>;
 };
 
 // -----------------------------------------------------------------------------
@@ -108,14 +113,6 @@ using RegularGrid3f = RegularGrid3<float>;
 using RegularGrid1d = RegularGrid1<double>;
 using RegularGrid2d = RegularGrid2<double>;
 using RegularGrid3d = RegularGrid3<double>;
-
-// -----------------------------------------------------------------------------
-// Methods
-// -----------------------------------------------------------------------------
-
-template <Size D, typename T>
-PURE HOSTDEV constexpr auto
-boundingBox(RegularGrid<D, T> const & grid) -> AxisAlignedBox<D, T>;
 
 } // namespace um2
 

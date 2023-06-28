@@ -148,37 +148,34 @@ RegularGrid<D, T>::zMax() const noexcept -> T
   return zMin() + depth();
 }
 
-// Bounding box
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-boundingBox(RegularGrid<D, T> const & grid) -> AxisAlignedBox<D, T>
+RegularGrid<D, T>::maxima() const noexcept -> Point<D, T>
 {
-  assert(1 <= D && D <= 3);
-  if constexpr (D == 1) {
-    return AxisAlignedBox<D, T>(Point<D, T>(xMin(grid)), Point<D, T>(xMax(grid)));
-  } else if constexpr (D == 2) {
-    return AxisAlignedBox<D, T>(Point<D, T>(xMin(grid), yMin(grid)),
-                                Point<D, T>(xMax(grid), yMax(grid)));
-  } else {
-    return AxisAlignedBox<D, T>(Point<D, T>(xMin(grid), yMin(grid), zMin(grid)),
-                                Point<D, T>(xMax(grid), yMax(grid), zMax(grid)));
-  }
+  return minima + spacing.cwiseProduct(num_cells.template cast<T>());
+} 
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+RegularGrid<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
+{
+  return AxisAlignedBox<D, T>(minima, maxima());
 }
 
-// template <Size D, typename T>
-// NDEBUG_PURE HOSTDEV constexpr auto RegularGrid<D, T>::getBox(Size const i,
-//                                                                      Size const j)
-//                                                                      const
-//     -> AxisAlignedBox2<T>
-// requires(D == 2)
-//{
-//   assert(i < numXcells(*this));
-//   assert(j < numYcells(*this));
-//   return AxisAlignedBox2<T>(Point2<T>(xMin(*this) + static_cast<T>(i) *
-//   this->spacing[0],
-//                              yMin(*this) + static_cast<T>(j) * this->spacing[1]),
-//                    Point2<T>(xMin(*this) + static_cast<T>(i + 1) * this->spacing[0],
-//                              yMin(*this) + static_cast<T>(j + 1) * this->spacing[1]));
-// }
-//
+template <Size D, typename T>
+template <typename ...Args>
+requires (sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto
+RegularGrid<D, T>::getBox(Args ...args) const noexcept 
+     -> AxisAlignedBox<D, T>
+{
+   Point<D, Size> const index(args...);
+   for (Size i = 0; i < D; ++i) {
+     assert(index[i] < num_cells[i]);
+   }
+   Point<D, T> const min_point = minima + spacing.cwiseProduct(index.template cast<T>());
+   Point<D, T> const max_point = min_point + spacing; 
+   return AxisAlignedBox<D, T>(min_point, max_point);
+ }
+
 } // namespace um2
