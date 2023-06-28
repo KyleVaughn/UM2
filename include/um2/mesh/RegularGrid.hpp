@@ -88,11 +88,10 @@ struct RegularGrid {
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
 
-
-  template <typename ...Args>
-  requires (sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto 
-  getBox(Args ...args) const noexcept -> AxisAlignedBox<D, T>;
+  template <typename... Args>
+  requires(sizeof...(Args) == D) PURE HOSTDEV
+      [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
+      -> AxisAlignedBox<D, T>;
 };
 
 // -----------------------------------------------------------------------------

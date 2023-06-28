@@ -89,7 +89,8 @@ TEST_CASE(accessors)
 }
 
 template <Size D, typename T>
-HOSTDEV TEST_CASE(boundingBox)
+HOSTDEV
+TEST_CASE(boundingBox)
 {
   um2::RegularGrid<D, T> const grid = makeGrid<D, T>();
   um2::AxisAlignedBox<D, T> box = grid.boundingBox();
@@ -108,60 +109,61 @@ HOSTDEV TEST_CASE(boundingBox)
 }
 
 template <typename T>
-HOSTDEV TEST_CASE(getBox)
+HOSTDEV
+TEST_CASE(getBox)
 {
-   // Declare some variables to avoid a bunch of static casts.
-   T const three = static_cast<T>(3);
-   T const two = static_cast<T>(2);
-   T const one = static_cast<T>(1);
-   T const half = static_cast<T>(0.5);
-   T const forth = static_cast<T>(0.25);
-   um2::Point2<T> minima = {1, -1};
-   um2::Vec2<T> spacing = {half, forth};
-   um2::Vec2<Size> num_cells = {4, 8};
-   um2::RegularGrid2<T> grid(minima, spacing, num_cells);
-   um2::AxisAlignedBox2<T> box = grid.getBox(0, 0);
-   um2::AxisAlignedBox2<T> box_ref = {
-       {         1,             -1},
-       {one + half, -three * forth}
-   };
-   ASSERT(isApprox(box, box_ref));
-   box = grid.getBox(1, 0);
-   //{ { 1.5, -1.0 }, { 2.0, -0.75 } };
-   box_ref = {
-       {one + half,           -one},
-       {       two, -three * forth}
-   };
-   ASSERT(isApprox(box, box_ref));
-   box = grid.getBox(3, 0);
-   // box_ref = { { 2.5, -1.0 }, { 3.0, -0.75 } };
-   box_ref = {
-       {two + half,           -one},
-       {     three, -three * forth}
-   };
-   ASSERT(isApprox(box, box_ref));
-   box = grid.getBox(0, 1);
-   // box_ref = { { 1.0, -0.75 }, { 1.5, -0.5 } };
-   box_ref = {
-       {       one, -three * forth},
-       {one + half,          -half}
-   };
-   ASSERT(isApprox(box, box_ref));
-   box = grid.getBox(0, 7);
-   // box_ref = { { 1.0, 0.75 }, { 1.5, 1.0 } };
-   box_ref = {
-       {       one, three * forth},
-       {one + half,           one}
-   };
-   ASSERT(isApprox(box, box_ref));
-   box = grid.getBox(3, 7);
-   // box_ref = { { 2.5, 0.75 }, { 3.0, 1.0 } };
-   box_ref = {
-       {two + half, three * forth},
-       {     three,           one}
-   };
-   ASSERT(isApprox(box, box_ref));
- }
+  // Declare some variables to avoid a bunch of static casts.
+  T const three = static_cast<T>(3);
+  T const two = static_cast<T>(2);
+  T const one = static_cast<T>(1);
+  T const half = static_cast<T>(0.5);
+  T const forth = static_cast<T>(0.25);
+  um2::Point2<T> minima = {1, -1};
+  um2::Vec2<T> spacing = {half, forth};
+  um2::Vec2<Size> num_cells = {4, 8};
+  um2::RegularGrid2<T> grid(minima, spacing, num_cells);
+  um2::AxisAlignedBox2<T> box = grid.getBox(0, 0);
+  um2::AxisAlignedBox2<T> box_ref = {
+      {         1,             -1},
+      {one + half, -three * forth}
+  };
+  ASSERT(isApprox(box, box_ref));
+  box = grid.getBox(1, 0);
+  //{ { 1.5, -1.0 }, { 2.0, -0.75 } };
+  box_ref = {
+      {one + half,           -one},
+      {       two, -three * forth}
+  };
+  ASSERT(isApprox(box, box_ref));
+  box = grid.getBox(3, 0);
+  // box_ref = { { 2.5, -1.0 }, { 3.0, -0.75 } };
+  box_ref = {
+      {two + half,           -one},
+      {     three, -three * forth}
+  };
+  ASSERT(isApprox(box, box_ref));
+  box = grid.getBox(0, 1);
+  // box_ref = { { 1.0, -0.75 }, { 1.5, -0.5 } };
+  box_ref = {
+      {       one, -three * forth},
+      {one + half,          -half}
+  };
+  ASSERT(isApprox(box, box_ref));
+  box = grid.getBox(0, 7);
+  // box_ref = { { 1.0, 0.75 }, { 1.5, 1.0 } };
+  box_ref = {
+      {       one, three * forth},
+      {one + half,           one}
+  };
+  ASSERT(isApprox(box, box_ref));
+  box = grid.getBox(3, 7);
+  // box_ref = { { 2.5, 0.75 }, { 3.0, 1.0 } };
+  box_ref = {
+      {two + half, three * forth},
+      {     three,           one}
+  };
+  ASSERT(isApprox(box, box_ref));
+}
 
 #if UM2_ENABLE_CUDA
 template <Size D, typename T>
