@@ -242,4 +242,25 @@ Vec<D, T>::cross(Vec3<T> const & v) const noexcept -> Vec3<T>
   };
 }
 
+template <Size D, class T>
+PURE HOSTDEV constexpr auto
+Vec<D, T>::squaredDistanceTo(Vec<D, T> const & v) const noexcept -> T 
+{
+  T const d0 = data[0] - v[0];
+  T result = d0 * d0;
+  for (Size i = 1; i < D; ++i) {
+    T const di = data[i] - v[i];
+    result += di * di; 
+  }
+  return result; 
+}
+
+template <Size D, class T>
+PURE HOSTDEV constexpr auto
+Vec<D, T>::distanceTo(Vec<D, T> const & v) const noexcept -> T 
+{
+  static_assert(std::is_floating_point_v<T>);
+  return um2::sqrt(squaredDistanceTo(v));
+}
+
 } // namespace um2

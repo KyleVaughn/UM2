@@ -118,10 +118,10 @@ struct Vec {
   HOSTDEV constexpr auto
   max(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
 
-  PURE HOSTDEV constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   dot(Vec<D, T> const & v) const noexcept -> T;
 
-  PURE HOSTDEV constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   squaredNorm() const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -135,6 +135,12 @@ struct Vec {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   cross(Vec<3, T> const & v) const noexcept -> Vec<3, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  squaredDistanceTo(Vec<D, T> const & v) const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  distanceTo(Vec<D, T> const & v) const noexcept -> T;
 
 }; // struct Vec
 
@@ -184,27 +190,6 @@ using Vec1u = Vec1<unsigned>;
 using Vec2u = Vec2<unsigned>;
 using Vec3u = Vec3<unsigned>;
 using Vec4u = Vec4<unsigned>;
-
-//// -- Methods --
-//
-//template <Size D, class T>
-//PURE HOSTDEV constexpr Vec<D, T> min(Vec<D, T>, Vec<D, T> const &);
-//
-//template <Size D, class T>
-//PURE HOSTDEV constexpr Vec<D, T> max(Vec<D, T>, Vec<D, T> const &);
-//
-//template <Size D, class T>
-//PURE HOSTDEV constexpr T dot(Vec<D, T> const &, Vec<D, T> const &);
-//
-//template <Size D, class T>
-//PURE HOSTDEV constexpr T norm2(Vec<D, T> const &);
-//
-//template <Size D, std::floating_point T>
-//PURE HOSTDEV constexpr T norm(Vec<D, T> const &);
-//
-////// Also do inplace
-////template <Size D, std::floating_point T>
-////PURE HOSTDEV constexpr Vec<D, T> normalize(Vec<D, T> const &);
 
 } // namespace um2
 

@@ -24,9 +24,12 @@ template <Size D, typename T>
 HOSTDEV constexpr RegularGrid<D, T>::RegularGrid(
     AxisAlignedBox<D, T> const & box) noexcept
     : minima(box.minima),
-      spacing(box.maxima - box.minima)
+      spacing(box.maxima)
 {
-  num_cells.setOnes();
+  spacing -= minima;
+  for (Size i = 0; i < D; ++i) {
+    num_cells[i] = 1; 
+  }
 }
 
 // --------------------------------------------------------------------------------------
@@ -152,7 +155,11 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 RegularGrid<D, T>::maxima() const noexcept -> Point<D, T>
 {
-  return minima + spacing.cwiseProduct(num_cells.template cast<T>());
+  Point<D, T> result;
+  for (Size i = 0; i < D; ++i) {
+    result[i] = minima[i] + spacing[i] * static_cast<T>(num_cells[i]);
+  }
+  return result; 
 }
 
 template <Size D, typename T>
@@ -168,13 +175,16 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
     constexpr auto RegularGrid<D, T>::getBox(Args... args) const noexcept
     -> AxisAlignedBox<D, T>
 {
-  Point<D, Size> const index(args...);
+  Point<D, Size> const index{args...};
   for (Size i = 0; i < D; ++i) {
     assert(index[i] < num_cells[i]);
   }
-  Point<D, T> const min_point = minima + spacing.cwiseProduct(index.template cast<T>());
-  Point<D, T> const max_point = min_point + spacing;
-  return AxisAlignedBox<D, T>(min_point, max_point);
+  AxisAlignedBox<D, T> result;
+  for (Size i = 0; i < D; ++i) {
+    result.minima[i] = minima[i] + spacing[i] * static_cast<T>(index[i]);
+    result.maxima[i] = result.minima[i] + spacing[i];
+  }
+  return result; 
 }
 
 } // namespace um2

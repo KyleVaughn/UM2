@@ -54,7 +54,10 @@ HOSTDEV
 TEST_CASE(jacobian)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
-  um2::Vec<D, T> j_ref = line[1] - line[0];
+  um2::Vec<D, T> j_ref;
+  for (Size i = 0; i < D; ++i) {
+    j_ref[i] = line[1][i] - line[0][i]; 
+  }
   um2::Vec<D, T> j0 = line.jacobian(0);
   um2::Vec<D, T> j1 = line.jacobian(1);
   ASSERT(um2::isApprox(j0, j_ref));
@@ -70,7 +73,7 @@ HOSTDEV
 TEST_CASE(length)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
-  T len_ref = (line[1] - line[0]).norm();
+  T len_ref = line[0].distanceTo(line[1]); 
   ASSERT_NEAR(line.length(), len_ref, static_cast<T>(1e-5));
 }
 

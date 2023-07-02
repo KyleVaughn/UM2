@@ -57,15 +57,20 @@ set(UM2_HEADERS
     "include/um2/geometry/Quadrilateral.hpp"
     # mesh
     "include/um2/mesh/RegularGrid.hpp"
+    "include/um2/mesh/RegularPartition.hpp"
+    #    # ray_casting
+    #    "include/um2/ray_casting/Ray.hpp"
     # api
-    "include/um2c.h")    
+    "include/um2c.h"
+    )
 
 # Sources
 set(UM2_SOURCES        
   #"src/common/string.cpp"
     #    "src/visualization/shader.cpp"
     # api
-    "src/um2c.cpp")    
+    "src/um2c.cpp"
+  ) 
 
 # Visualization headers and sources
 if (UM2_ENABLE_VIS)

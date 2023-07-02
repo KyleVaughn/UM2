@@ -10,20 +10,10 @@ makeGrid() -> um2::RegularGrid<D, T>
   um2::Point<D, T> minima;
   um2::Point<D, T> spacing;
   um2::Point<D, Size> num_cells;
-  if constexpr (D >= 1) {
-    minima[0] = 1;
-    spacing[0] = 1;
-    num_cells[0] = 1;
-  }
-  if constexpr (D >= 2) {
-    minima[1] = 2;
-    spacing[1] = 2;
-    num_cells[1] = 2;
-  }
-  if constexpr (D >= 3) {
-    minima[2] = 3;
-    spacing[2] = 3;
-    num_cells[2] = 3;
+  for (Size i = 0; i < D; ++i) {
+    minima[i] = static_cast<T>(i + 1);
+    spacing[i] = static_cast<T>(i + 1);
+    num_cells[i] = i + 1;
   }
   return {minima, spacing, num_cells};
 }
@@ -116,29 +106,29 @@ TEST_CASE(getBox)
   T const three = static_cast<T>(3);
   T const two = static_cast<T>(2);
   T const one = static_cast<T>(1);
-  T const half = static_cast<T>(0.5);
+  T const ahalf = static_cast<T>(0.5);
   T const forth = static_cast<T>(0.25);
   um2::Point2<T> minima = {1, -1};
-  um2::Vec2<T> spacing = {half, forth};
+  um2::Vec2<T> spacing = {ahalf, forth};
   um2::Vec2<Size> num_cells = {4, 8};
   um2::RegularGrid2<T> grid(minima, spacing, num_cells);
   um2::AxisAlignedBox2<T> box = grid.getBox(0, 0);
   um2::AxisAlignedBox2<T> box_ref = {
       {         1,             -1},
-      {one + half, -three * forth}
+      {one + ahalf, -three * forth}
   };
   ASSERT(isApprox(box, box_ref));
   box = grid.getBox(1, 0);
   //{ { 1.5, -1.0 }, { 2.0, -0.75 } };
   box_ref = {
-      {one + half,           -one},
+      {one + ahalf,           -one},
       {       two, -three * forth}
   };
   ASSERT(isApprox(box, box_ref));
   box = grid.getBox(3, 0);
   // box_ref = { { 2.5, -1.0 }, { 3.0, -0.75 } };
   box_ref = {
-      {two + half,           -one},
+      {two + ahalf,           -one},
       {     three, -three * forth}
   };
   ASSERT(isApprox(box, box_ref));
@@ -146,20 +136,20 @@ TEST_CASE(getBox)
   // box_ref = { { 1.0, -0.75 }, { 1.5, -0.5 } };
   box_ref = {
       {       one, -three * forth},
-      {one + half,          -half}
+      {one + ahalf,          -ahalf}
   };
   ASSERT(isApprox(box, box_ref));
   box = grid.getBox(0, 7);
   // box_ref = { { 1.0, 0.75 }, { 1.5, 1.0 } };
   box_ref = {
       {       one, three * forth},
-      {one + half,           one}
+      {one + ahalf,           one}
   };
   ASSERT(isApprox(box, box_ref));
   box = grid.getBox(3, 7);
   // box_ref = { { 2.5, 0.75 }, { 3.0, 1.0 } };
   box_ref = {
-      {two + half, three * forth},
+      {two + ahalf, three * forth},
       {     three,           one}
   };
   ASSERT(isApprox(box, box_ref));
@@ -175,8 +165,8 @@ MAKE_CUDA_KERNEL(accessors, D, T)
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(boundingBox, D, T)
 
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(getBox, D, T)
+template <typename T>
+MAKE_CUDA_KERNEL(getBox, T)
 
 #endif
 

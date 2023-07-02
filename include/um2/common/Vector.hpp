@@ -2,6 +2,9 @@
 
 #include <um2/common/algorithm.hpp> // copy
 #include <um2/common/memory.hpp>    // addressof
+#include <um2/common/utility.hpp>   // move
+
+#include <thrust/extrema.h> // thrust::max
 
 #include <cuda/std/bit>     // cuda::std::bit_ceil
 #include <cuda/std/utility> // cuda::std::pair
@@ -36,16 +39,16 @@ public:
 
   constexpr Vector() noexcept = default;
 
-  HOSTDEV explicit constexpr Vector(Size n);
+  HOSTDEV explicit constexpr Vector(Size n) noexcept;
 
-  HOSTDEV constexpr Vector(Size n, T const & value);
+  HOSTDEV constexpr Vector(Size n, T const & value) noexcept;
 
-  HOSTDEV constexpr Vector(Vector const & v);
+  HOSTDEV constexpr Vector(Vector const & v) noexcept;
 
   HOSTDEV constexpr Vector(Vector && v) noexcept;
 
   // cppcheck-suppress noExplicitConstructor
-  HOSTDEV constexpr Vector(std::initializer_list<T> const & list);
+  HOSTDEV constexpr Vector(std::initializer_list<T> const & list) noexcept;
 
   // -----------------------------------------------------------------------------
   // Destructor
@@ -56,6 +59,10 @@ public:
   // -----------------------------------------------------------------------------
   // Accessors
   // -----------------------------------------------------------------------------
+
+  PURE HOSTDEV [[nodiscard]] static constexpr auto
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  max_size() noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   // cppcheck-suppress functionConst
@@ -131,21 +138,17 @@ public:
   //    iterator insert(const_iterator position, initializer_list<value_type> il);
   //    iterator erase(const_iterator position);
   //    iterator erase(const_iterator first, const_iterator last);
-  //    void resize(size_type sz);
-  //    void resize(size_type sz, const value_type& c);
 
   // HOSTDEV constexpr void
   // reserve(Size n);
 
   HOSTDEV constexpr void
   clear() noexcept;
-  ////
-  ////
-  ////  HOSTDEV void resize(Size n);
+  
+  HOSTDEV constexpr void 
+  resize(Size n) noexcept;
   ////
   ////  HOSTDEV inline void push_back(T const & value);
-  ////
-  ////  PURE HOSTDEV [[nodiscard]] constexpr auto empty() const -> bool;
   ////
   ////  HOSTDEV void insert(T const * pos, Size n, T const & value);
   ////
@@ -167,13 +170,39 @@ public:
   operator[](Size i) const noexcept -> T const &;
 
   HOSTDEV constexpr auto
-  operator=(Vector const & v) -> Vector &;
+  operator=(Vector const & v) noexcept -> Vector &;
 
   HOSTDEV constexpr auto
   operator=(Vector && v) noexcept -> Vector &;
   ////
   ////  PURE HOSTDEV constexpr auto operator==(Vector const & v) const noexcept -> bool;
   //
+
+  // -----------------------------------------------------------------------------
+  // Hidden
+  // -----------------------------------------------------------------------------
+
+  HOSTDEV HIDDEN constexpr void
+  allocate(Size n) noexcept;
+
+  HOSTDEV HIDDEN constexpr void
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  construct_at_end(Size n) noexcept;
+
+  HOSTDEV HIDDEN constexpr void
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  construct_at_end(Size n, T const & value) noexcept;
+
+  HOSTDEV HIDDEN constexpr void
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  destruct_at_end(Ptr new_last) noexcept;
+
+  HOSTDEV HIDDEN constexpr void
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  append_default(Size n) noexcept;
+
+  HOSTDEV [[nodiscard]] HIDDEN constexpr auto 
+  recommend(Size new_size) const noexcept -> Size;
 
 }; // struct Vector
 

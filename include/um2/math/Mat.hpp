@@ -1,17 +1,67 @@
 #pragma once
 
-#include <um2/config.hpp>
+#include <um2/math/Vec.hpp>
 
-#include <Eigen/Core> // Eigen::Matrix
-
-namespace um2
-{
+namespace um2 {
 
 // -----------------------------------------------------------------------------
-// MAT
+// MAT 
 // -----------------------------------------------------------------------------
+// An M by N matrix.
+//
+// This struct is used for VERY small matrices, where the matrix size is known
+// at compile time. The matrix is stored in column-major order.
+//
+// Note that there is not a general matmul or matvec function. Anything beyond
+// very small matrices should be done using something like OpenBLAS, cuBLAS, etc.
 
 template <Size M, Size N, typename T>
-using Mat = Eigen::Matrix<T, M, N>;
+struct Mat {
 
+  using Col = Vec<M, T>;
+
+  // Stored column-major
+  // 0 3
+  // 1 4
+  // 2 5
+
+  Col cols[N];
+
+  // -----------------------------------------------------------------------------
+  // Accessors
+  // -----------------------------------------------------------------------------
+
+  PURE HOSTDEV constexpr auto
+  // cppcheck-suppress functionConst 
+  col(Size i) noexcept -> Col &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  col(Size i) const noexcept -> Col const &;
+
+  PURE HOSTDEV constexpr auto
+  // cppcheck-suppress functionConst
+  operator()(Size i, Size j) noexcept -> T &;
+
+  PURE HOSTDEV constexpr auto
+  operator()(Size i, Size j) const noexcept -> T const &;
+
+  // -- Constructors --
+
+  HOSTDEV constexpr Mat() = default;
+    
+//    template<std::same_as<Col> ...Cols> 
+//    requires (sizeof...(Cols) == N)
+//    HOSTDEV constexpr Mat(Cols... cols);
+
+};
+
+//// -- Aliases --
+//
+//template <typename T = defaultp> using Mat2x2 = Mat<2, 2, T, Q>;
+//
+//template <Qualifier Q = defaultp> using Mat2x2f = Mat2x2<float, Q>;
+//template <Qualifier Q = defaultp> using Mat2x2d = Mat2x2<double, Q>;
+//
 } // namespace um2
+
+#include "Mat.inl"

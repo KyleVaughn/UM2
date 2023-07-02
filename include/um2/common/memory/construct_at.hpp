@@ -21,7 +21,7 @@ namespace um2
 template <class T, class... Args>
 HOSTDEV constexpr auto
 // NOLINTNEXTLINE(readability-identifier-naming)
-construct_at(T * p, Args &&... args) -> T *
+construct_at(T * p, Args &&... args) noexcept -> T *
 {
   assert(p != nullptr && "null pointer given to construct_at");
   return ::new (static_cast<void *>(p)) T(forward<Args>(args)...);
@@ -40,7 +40,7 @@ construct_at(T * p, Args &&... args) -> T *
 template <class T>
 HOSTDEV constexpr void
 // NOLINTNEXTLINE(readability-identifier-naming)
-destroy_at(T * p)
+destroy_at(T * p) noexcept
 {
   if constexpr (std::is_array_v<T>) {
     for (auto & elem : *p) {
@@ -60,7 +60,7 @@ destroy_at(T * p)
 
 template <class ForwardIt>
 HOSTDEV constexpr void
-destroy(ForwardIt first, ForwardIt last)
+destroy(ForwardIt first, ForwardIt last) noexcept
 {
   for (; first != last; ++first) {
     destroy_at(addressof(*first));

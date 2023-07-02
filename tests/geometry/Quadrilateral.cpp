@@ -70,16 +70,16 @@ HOSTDEV
 TEST_CASE(edge)
 {
   um2::Quadrilateral<D, T> quad = makeQuad<D, T>();
-  um2::LineSegment<D, T> edge = quad.getEdge(0);
+  um2::LineSegment<D, T> edge = quad.edge(0);
   ASSERT(um2::isApprox(edge[0], quad[0]));
   ASSERT(um2::isApprox(edge[1], quad[1]));
-  edge = quad.getEdge(1);
+  edge = quad.edge(1);
   ASSERT(um2::isApprox(edge[0], quad[1]));
   ASSERT(um2::isApprox(edge[1], quad[2]));
-  edge = quad.getEdge(2);
+  edge = quad.edge(2);
   ASSERT(um2::isApprox(edge[0], quad[2]));
   ASSERT(um2::isApprox(edge[1], quad[3]));
-  edge = quad.getEdge(3);
+  edge = quad.edge(3);
   ASSERT(um2::isApprox(edge[0], quad[3]));
   ASSERT(um2::isApprox(edge[1], quad[0]));
 }

@@ -30,6 +30,12 @@ add_um2_test(./geometry/Quadrilateral.cpp)
 # mesh
 # ------------------------------------------------------------------------------
 add_um2_test(./mesh/RegularGrid.cpp)
+add_um2_test(./mesh/RegularPartition.cpp)
+#
+## ------------------------------------------------------------------------------
+## ray_casting
+## ------------------------------------------------------------------------------
+#add_um2_test(./ray_casting/intersect/Ray-LineSegment.cpp)
 
 #
 #if (UM2_ENABLE_VIS)

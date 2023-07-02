@@ -1,4 +1,10 @@
-area, centroid, and boundingBox functions for polytopes
+Mat
+
+abs/min/max/sqrt -> thrust
+
+noexcept everything
+
+use move semantics for assignment in code and tests
 
 Line in opengl
 Reading/Writing MPACT files

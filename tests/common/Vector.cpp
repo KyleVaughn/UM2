@@ -268,27 +268,26 @@ TEST_CASE(clear)
 //  EXPECT_NE(v.data(), nullptr);
 //}
 //
-// template <class T>
-// HOSTDEV TEST_CASE(resize)
-//{
-//  um2::Vector<T> v;
-//  v.resize(0);
-//  ASSERT(v.size(), 0);
-//  ASSERT(v.capacity(), 0);
-//  ASSERT(v.data(), nullptr);
-//  v.resize(1);
-//  ASSERT(v.size(), 1);
-//  ASSERT(v.capacity(), 1);
-//  EXPECT_NE(v.data(), nullptr);
-//  v.resize(2);
-//  ASSERT(v.size(), 2);
-//  ASSERT(v.capacity(), 2);
-//  EXPECT_NE(v.data(), nullptr);
-//  v.resize(3);
-//  ASSERT(v.size(), 3);
-//  ASSERT(v.capacity(), 4);
-//  EXPECT_NE(v.data(), nullptr);
-//}
+template <class T>
+HOSTDEV TEST_CASE(resize)
+{
+  um2::Vector<T> v;
+  v.resize(0);
+  ASSERT(v.empty());
+  ASSERT(v.capacity() == 0);
+  // cppcheck-suppress assertWithSideEffect 
+  ASSERT(v.data() == nullptr);
+  v.resize(1);
+  ASSERT(v.size() == 1);
+  ASSERT(v.capacity() == 1);
+  // cppcheck-suppress assertWithSideEffect
+  ASSERT(v.data() != nullptr);
+  v.resize(2);
+  ASSERT(v.size() == 2);
+  ASSERT(v.capacity() == 2);
+  // cppcheck-suppress assertWithSideEffect
+  ASSERT(v.data() != nullptr);
+}
 //
 // template <class T>
 // HOSTDEV TEST_CASE(push_back)
@@ -471,13 +470,12 @@ MAKE_CUDA_KERNEL(move_constructor, T)
 template <class T>
 MAKE_CUDA_KERNEL(constructor_initializer_list, T)
 
-MAKE_CUDA_KERNEL(clear)
     //
     //  template <class T>
     //  MAKE_CUDA_KERNEL(reserve, T)
     //
-    //  template <class T>
-    //  MAKE_CUDA_KERNEL(resize, T)
+
+
     //
     //  template <class T>
     //  MAKE_CUDA_KERNEL(push_back, T)
@@ -494,11 +492,17 @@ MAKE_CUDA_KERNEL(clear)
     //  template <class T>
     //  MAKE_CUDA_KERNEL(isApprox, T)
 
-    template <class T>
-    MAKE_CUDA_KERNEL(operator_copy, T)
+template <class T>
+MAKE_CUDA_KERNEL(operator_copy, T)
 
-    template <class T>
-    MAKE_CUDA_KERNEL(operator_move, T)
+template <class T>
+MAKE_CUDA_KERNEL(operator_move, T)
+
+MAKE_CUDA_KERNEL(clear)
+
+template <class T>
+MAKE_CUDA_KERNEL(resize, T)
+
 
 //
 //  template <class T>
@@ -531,7 +535,7 @@ MAKE_CUDA_KERNEL(clear)
   // Methods
   TEST_HOSTDEV(clear)
   //  TEST_HOSTDEV(reserve, 1, 1, T)
-  //  TEST_HOSTDEV(resize, 1, 1, T)
+  TEST_HOSTDEV(resize, 1, 1, T)
   //  TEST_HOSTDEV(push_back, 1, 1, T)
   //  TEST_HOSTDEV(empty, 1, 1, T)
   //  TEST_HOSTDEV(insert, 1, 1, T)

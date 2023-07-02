@@ -103,8 +103,13 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
 {
-  return (minima.array() - epsilonDistance<T>() <= p.array()).all() &&
-         (p.array() <= maxima.array() + epsilonDistance<T>()).all();
+  T const eps = epsilonDistance<T>();
+  for (Size i = 0; i < D; ++i) {
+    if (p[i] < minima[i] - eps || maxima[i] + eps < p[i]) {
+      return false;
+    }
+  }
+  return true; 
 }
 
 template <Size D, typename T>
@@ -122,8 +127,10 @@ PURE HOSTDEV constexpr auto
 boundingBox(AxisAlignedBox<D, T> const & a, AxisAlignedBox<D, T> const & b) noexcept
     -> AxisAlignedBox<D, T>
 {
-  Point<D, T> const minima = a.minima.cwiseMin(b.minima);
-  Point<D, T> const maxima = a.maxima.cwiseMax(b.maxima);
+  Point<D, T> minima = a.minima;
+  minima.min(b.minima);
+  Point<D, T> maxima = a.maxima;
+  maxima.max(b.maxima);
   return AxisAlignedBox<D, T>{minima, maxima};
 }
 
@@ -134,8 +141,8 @@ boundingBox(Point<D, T> const (&points)[N]) noexcept -> AxisAlignedBox<D, T>
   Point<D, T> minima = points[0];
   Point<D, T> maxima = points[0];
   for (Size i = 1; i < N; ++i) {
-    minima = minima.cwiseMin(points[i]);
-    maxima = maxima.cwiseMax(points[i]);
+    minima.min(points[i]);
+    maxima.max(points[i]);
   }
   return AxisAlignedBox<D, T>(minima, maxima);
 }
@@ -147,8 +154,8 @@ boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>
   Point<D, T> minima = points[0];
   Point<D, T> maxima = points[0];
   for (Size i = 1; i < points.size(); ++i) {
-    minima = minima.cwiseMin(points[i]);
-    maxima = maxima.cwiseMax(points[i]);
+    minima.min(points[i]);
+    maxima.max(points[i]);
   }
   return AxisAlignedBox<D, T>(minima, maxima);
 }

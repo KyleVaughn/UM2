@@ -63,35 +63,35 @@ infiniteDistance() -> T
 // Methods
 // -----------------------------------------------------------------------------
 
-template <typename DerivedA, typename DerivedB>
+template <Size D, class T>
 PURE HOSTDEV constexpr auto
-midpoint(Eigen::MatrixBase<DerivedA> const & a,
-         Eigen::MatrixBase<DerivedB> const & b) noexcept -> typename DerivedA::PlainObject
+midpoint(Point<D, T> const & a, Point<D, T> const & b) noexcept -> Point<D, T>
 {
-  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedA);
-  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedB);
-  return (a + b) / 2;
+  Point<D, T> result;
+  for (Size i = 0; i < D; ++i) {
+    result[i] = (a[i] + b[i]) / 2;
+  }
+  return result;
 }
 
-template <typename DerivedA, typename DerivedB>
+template <Size D, class T>
 PURE HOSTDEV constexpr auto
-isApprox(Eigen::MatrixBase<DerivedA> const & a,
-         Eigen::MatrixBase<DerivedB> const & b) noexcept -> bool
+isApprox(Point<D, T> const & a, Point<D, T> const & b) noexcept -> bool
 {
-  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedA);
-  EIGEN_STATIC_ASSERT_VECTOR_ONLY(DerivedB);
-  return a.squaredDistanceTo(b) < epsilonDistanceSquared<typename DerivedA::Scalar>();
+  return a.squaredDistanceTo(b) < epsilonDistanceSquared<T>();
 }
 
-template <typename DerivedA, typename DerivedB, typename DerivedC>
+template <class T>
 PURE HOSTDEV constexpr auto
-areCCW(Eigen::MatrixBase<DerivedA> const & a, Eigen::MatrixBase<DerivedB> const & b,
-       Eigen::MatrixBase<DerivedC> const & c) noexcept -> bool
+areCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept -> bool
 {
-  EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(DerivedA, 2);
-  EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(DerivedB, 2);
-  EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(DerivedC, 2);
-  return 0 < cross2(b - a, c - a);
+  // 2D cross product, of (b - a) and (c - a). We write it out explicitly to
+  // help the compiler optimize.
+  T const ab_x = b[0] - a[0]; 
+  T const ac_x = c[0] - a[0];
+  T const ab_y = b[1] - a[1];
+  T const ac_y = c[1] - a[1];
+  return 0 < (ab_x * ac_y - ab_y * ac_x); 
 }
 
 } // namespace um2
