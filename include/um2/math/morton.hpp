@@ -6,8 +6,12 @@
 
 #include <concepts>
 
+// If CPU supports BMI2, and we are compiling for CPU, then use BMI2 intrinsics.
 #if defined(__BMI2__) && !defined(__CUDA_ARCH__)
-#  include <immintrin.h> // _pdep_u64, _pext_u64, _pdep_u32, _pext_u32
+# define BMI2_HOSTDEV DEVICE
+# include <immintrin.h> // _pdep_u64, _pext_u64, _pdep_u32, _pext_u32
+#else
+# define BMI2_HOSTDEV HOSTDEV
 #endif
 
 namespace um2
@@ -105,7 +109,7 @@ mortonDecode(U const morton, U & x, U & y, U & z)
   z = pext(morton, bmi_3d_z_mask<U>);
 }
 
-#else // this branch if !defined(__BMI2__) || defined(__CUDA_ARCH__)
+#else // this branch if !defined(__BMI2__) && !defined(__CUDA_ARCH__)
 
 // This is the fallback implementation of morton encoding/decoding that
 // mimics the behavior of the BMI2 intrinsics.
@@ -113,7 +117,7 @@ mortonDecode(U const morton, U & x, U & y, U & z)
 // -----------------------------------------------------------------------------
 // BMI2 intrinsics emulation
 // -----------------------------------------------------------------------------
-CONST HOSTDEV static constexpr auto
+CONST BMI2_HOSTDEV static constexpr auto
 pdep0x55555555(uint32_t x) -> uint32_t
 {
   assert(x <= max_2d_morton_coord<uint32_t>);
@@ -124,7 +128,7 @@ pdep0x55555555(uint32_t x) -> uint32_t
   return x;
 }
 
-CONST HOSTDEV static constexpr auto
+CONST BMI2_HOSTDEV static constexpr auto
 pdep0x5555555555555555(uint64_t x) -> uint64_t
 {
   assert(x <= max_2d_morton_coord<uint64_t>);
@@ -136,7 +140,7 @@ pdep0x5555555555555555(uint64_t x) -> uint64_t
   return x;
 }
 
-CONST HOSTDEV constexpr static auto
+CONST BMI2_HOSTDEV constexpr static auto
 pext0x55555555(uint32_t x) -> uint32_t
 {
   x &= 0x55555555;
@@ -147,7 +151,7 @@ pext0x55555555(uint32_t x) -> uint32_t
   return x;
 }
 
-CONST HOSTDEV constexpr static auto
+CONST BMI2_HOSTDEV constexpr static auto
 pext0x5555555555555555(uint64_t x) -> uint64_t
 {
   x &= 0x5555555555555555;
@@ -159,7 +163,7 @@ pext0x5555555555555555(uint64_t x) -> uint64_t
   return x;
 }
 
-CONST HOSTDEV static constexpr auto
+CONST BMI2_HOSTDEV static constexpr auto
 pdep0x92492492(uint32_t x) -> uint32_t
 {
   assert(x <= max_3d_morton_coord<uint32_t>);
@@ -170,7 +174,7 @@ pdep0x92492492(uint32_t x) -> uint32_t
   return x;
 }
 
-CONST HOSTDEV static constexpr auto
+CONST BMI2_HOSTDEV static constexpr auto
 pdep0x9249249249249249(uint64_t x) -> uint64_t
 {
   assert(x <= max_3d_morton_coord<uint64_t>);
@@ -182,7 +186,7 @@ pdep0x9249249249249249(uint64_t x) -> uint64_t
   return x;
 }
 
-CONST HOSTDEV constexpr static auto
+CONST BMI2_HOSTDEV constexpr static auto
 pext0x92492492(uint32_t x) -> uint32_t
 {
   x &= 0x09249249;
@@ -193,7 +197,7 @@ pext0x92492492(uint32_t x) -> uint32_t
   return x;
 }
 
-CONST HOSTDEV constexpr static auto
+CONST BMI2_HOSTDEV constexpr static auto
 pext0x9249249249249249(uint64_t x) -> uint64_t
 {
   x &= 0x1249249249249249;
@@ -208,46 +212,46 @@ pext0x9249249249249249(uint64_t x) -> uint64_t
 // -----------------------------------------------------------------------------
 // Morton encoding/decoding
 // -----------------------------------------------------------------------------
-CONST HOSTDEV constexpr auto
+CONST BMI2_HOSTDEV constexpr auto
 mortonEncode(uint32_t const x, uint32_t const y) -> uint32_t
 {
   return pdep0x55555555(x) | (pdep0x55555555(y) << 1);
 }
 
-CONST HOSTDEV constexpr auto
+CONST BMI2_HOSTDEV constexpr auto
 mortonEncode(uint64_t const x, uint64_t const y) -> uint64_t
 {
   return pdep0x5555555555555555(x) | (pdep0x5555555555555555(y) << 1);
 }
 
-HOSTDEV constexpr void
+BMI2_HOSTDEV constexpr void
 mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y)
 {
   x = pext0x55555555(morton);
   y = pext0x55555555(morton >> 1);
 }
 
-HOSTDEV constexpr void
+BMI2_HOSTDEV constexpr void
 mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y)
 {
   x = pext0x5555555555555555(morton);
   y = pext0x5555555555555555(morton >> 1);
 }
 
-CONST HOSTDEV constexpr auto
+CONST BMI2_HOSTDEV constexpr auto
 mortonEncode(uint32_t const x, uint32_t const y, uint32_t const z) -> uint32_t
 {
   return pdep0x92492492(x) | (pdep0x92492492(y) << 1) | (pdep0x92492492(z) << 2);
 }
 
-CONST HOSTDEV constexpr auto
+CONST BMI2_HOSTDEV constexpr auto
 mortonEncode(uint64_t const x, uint64_t const y, uint64_t const z) -> uint64_t
 {
   return pdep0x9249249249249249(x) | (pdep0x9249249249249249(y) << 1) |
          (pdep0x9249249249249249(z) << 2);
 }
 
-HOSTDEV constexpr void
+BMI2_HOSTDEV constexpr void
 mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y, uint32_t & z)
 {
   x = pext0x92492492(morton);
@@ -255,7 +259,7 @@ mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y, uint32_t & z)
   z = pext0x92492492(morton >> 2);
 }
 
-HOSTDEV constexpr void
+BMI2_HOSTDEV constexpr void
 mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y, uint64_t & z)
 {
   x = pext0x9249249249249249(morton);
