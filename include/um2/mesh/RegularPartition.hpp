@@ -33,7 +33,7 @@ struct RegularPartition {
   // Constructors
   // ---------------------------------------------------------------------------
 
-  constexpr RegularPartition() = default;
+  constexpr RegularPartition() noexcept = default;
 
   // ---------------------------------------------------------------------------
   // Accessors

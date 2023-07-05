@@ -48,7 +48,7 @@ struct Mat {
 
   // -- Constructors --
 
-  constexpr Mat() = default;
+  constexpr Mat() noexcept = default;
 
   //    template<std::same_as<Col> ...Cols>
   //    requires (sizeof...(Cols) == N)

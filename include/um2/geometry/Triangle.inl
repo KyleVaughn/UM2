@@ -28,6 +28,7 @@ template <typename R, typename S>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::operator()(R const r, S const s) const noexcept -> Point<D, T>
 {
+  // (1 - r - s) v0 + r v1 + s v2
   T const rr = static_cast<T>(r);
   T const ss = static_cast<T>(s);
   T const w0 = (1 - rr - ss);
@@ -49,6 +50,8 @@ template <typename R, typename S>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::jacobian(R /*r*/, S /*s*/) const noexcept -> Mat<D, 2, T>
 {
+  // jac.col(0) = v1 - v0;
+  // jac.col(1) = v2 - v0;
   Mat<D, 2, T> jac;
   for (Size i = 0; i < D; ++i) {
     jac(i, 0) = vertices[1][i] - vertices[0][i];
@@ -90,6 +93,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::area() const noexcept -> T
 {
+  // return (v1 - v0).cross(v2 - v0).norm() / 2;
   Vec<D, T> ab;
   Vec<D, T> ac;
   for (Size i = 0; i < D; ++i) {
@@ -114,6 +118,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::centroid() const noexcept -> Point<D, T>
 {
+  // (v0 + v1 + v2) / 3
   Point<D, T> result;
   for (Size i = 0; i < D; ++i) {
     result[i] = (vertices[0][i] + vertices[1][i] + vertices[2][i]);

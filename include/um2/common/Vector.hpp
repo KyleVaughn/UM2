@@ -4,7 +4,7 @@
 #include <um2/common/memory.hpp>    // addressof
 #include <um2/common/utility.hpp>   // move
 
-#include <thrust/extrema.h> // thrust::max
+#include <um2/math/math_functions.hpp> // um2::max
 
 #include <cuda/std/bit>     // cuda::std::bit_ceil
 #include <cuda/std/utility> // cuda::std::pair

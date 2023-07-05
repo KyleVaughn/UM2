@@ -27,7 +27,7 @@ struct RegularGrid {
   // Constructors
   // -----------------------------------------------------------------------------
 
-  constexpr RegularGrid() = default;
+  constexpr RegularGrid() noexcept = default;
 
   HOSTDEV constexpr RegularGrid(Point<D, T> const & minima_in,
                                 Vec<D, T> const & spacing_in,

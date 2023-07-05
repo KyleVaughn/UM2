@@ -31,11 +31,9 @@ TEST_CASE(constructor_Size_value)
   ASSERT(v.capacity() == 10);
   for (int i = 0; i < 10; ++i) {
     if constexpr (std::floating_point<T>) {
-      // cppcheck-suppress assertWithSideEffect
-      ASSERT_NEAR(v.data()[i], static_cast<T>(2), static_cast<T>(1e-6));
+      ASSERT_NEAR(v[i], static_cast<T>(2), static_cast<T>(1e-6));
     } else {
-      // cppcheck-suppress assertWithSideEffect
-      ASSERT(v.data()[i] == 2);
+      ASSERT(v[i] == 2);
     }
   }
 }
@@ -55,11 +53,9 @@ TEST_CASE(copy_constructor)
   ASSERT(v.cbegin() != v2.cbegin());
   for (int i = 0; i < 10; i++) {
     if constexpr (std::floating_point<T>) {
-      // cppcheck-suppress assertWithSideEffect
-      ASSERT_NEAR(v2.data()[i], static_cast<T>(i), static_cast<T>(1e-6));
+      ASSERT_NEAR(v2[i], static_cast<T>(i), static_cast<T>(1e-6));
     } else {
-      // cppcheck-suppress assertWithSideEffect
-      ASSERT(v2.data()[i] == static_cast<T>(i));
+      ASSERT(v2[i] == static_cast<T>(i));
     }
   }
 }
@@ -70,7 +66,7 @@ createVector(Size size) -> um2::Vector<T>
 {
   um2::Vector<T> v(size);
   for (Size i = 0; i < size; i++) {
-    v.data()[i] = static_cast<T>(i);
+    v[i] = static_cast<T>(i);
   }
   return v;
 }
@@ -102,11 +98,9 @@ TEST_CASE(constructor_initializer_list)
   ASSERT(v.capacity() == 5);
   for (int i = 0; i < 5; ++i) {
     if constexpr (std::floating_point<T>) {
-      // cppcheck-suppress assertWithSideEffect
-      ASSERT_NEAR(v.data()[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
+      ASSERT_NEAR(v[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
     } else {
-      // cppcheck-suppress assertWithSideEffect
-      ASSERT(v.data()[i] == static_cast<T>(i + 1));
+      ASSERT(v[i] == static_cast<T>(i + 1));
     }
   }
 }
@@ -132,11 +126,9 @@ TEST_CASE(operator_copy)
   ASSERT(v.cbegin() != v3.cbegin());
   for (int i = 0; i < 10; i++) {
     if constexpr (std::floating_point<T>) {
-      // cppcheck-suppress assertWithSideEffect
-      ASSERT_NEAR(v3.data()[i], static_cast<T>(i), static_cast<T>(1e-6));
+      ASSERT_NEAR(v3[i], static_cast<T>(i), static_cast<T>(1e-6));
     } else {
-      // cppcheck-suppress assertWithSideEffect
-      ASSERT(v3.data()[i] == static_cast<T>(i));
+      ASSERT(v3[i] == static_cast<T>(i));
     }
   }
 }

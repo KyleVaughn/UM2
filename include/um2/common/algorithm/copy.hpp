@@ -14,6 +14,8 @@ namespace um2
 // does nothing.
 //
 // https://en.cppreference.com/w/cpp/algorithm/copy
+//
+// We use __restrict__ to tell the compiler that the ranges do not overlap.
 
 template <typename InputIt, typename OutputIt>
 HOSTDEV constexpr auto

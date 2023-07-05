@@ -39,22 +39,22 @@ using Point3d = Point3<double>;
 // -----------------------------------------------------------------------------
 
 template <std::floating_point T>
-HOSTDEV consteval auto
-epsilonDistance() -> T
+CONST HOSTDEV consteval auto
+epsilonDistance() noexcept -> T
 {
   return static_cast<T>(1e-5);
 }
 
 template <std::floating_point T>
-HOSTDEV consteval auto
-epsilonDistanceSquared() -> T
+CONST HOSTDEV consteval auto
+epsilonDistanceSquared() noexcept -> T
 {
   return epsilonDistance<T>() * epsilonDistance<T>();
 }
 
 template <std::floating_point T>
-HOSTDEV consteval auto
-infiniteDistance() -> T
+CONST HOSTDEV consteval auto
+infiniteDistance() noexcept -> T
 {
   return static_cast<T>(1e10);
 }
@@ -67,6 +67,7 @@ template <Size D, class T>
 PURE HOSTDEV constexpr auto
 midpoint(Point<D, T> const & a, Point<D, T> const & b) noexcept -> Point<D, T>
 {
+  // (a + b) / 2
   Point<D, T> result;
   for (Size i = 0; i < D; ++i) {
     result[i] = (a[i] + b[i]) / 2;

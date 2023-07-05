@@ -58,8 +58,8 @@ set(UM2_HEADERS
     # mesh
     "include/um2/mesh/RegularGrid.hpp"
     "include/um2/mesh/RegularPartition.hpp"
-    #    # ray_casting
-    #    "include/um2/ray_casting/Ray.hpp"
+    # ray_casting
+    "include/um2/ray_casting/Ray.hpp"
     # api
     "include/um2c.h"
     )

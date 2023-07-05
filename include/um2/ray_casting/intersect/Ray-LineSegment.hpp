@@ -32,16 +32,16 @@ namespace um2
 // r = (𝘆 ⋅ 𝘇)/(𝘇 ⋅ 𝘇) = y₃/z₃
 // This result is valid if s ∈ [0, 1]
 template <std::floating_point T>
-PURE constexpr auto
+PURE HOSTDEV constexpr auto
 intersect(Ray2<T> const & ray, LineSegment2<T> const & line) noexcept -> T
 {
-  Vec2<T> const v = line[1] - line[0];
-  Vec2<T> const u = ray.o - line[0];
+  Vec2<T> const v(line[1][0] - line[0][0], line[1][1] - line[0][1]);
+  Vec2<T> const u(ray.o[0] - line[0][0], ray.o[1] - line[0][1]);
 
-  T const z = cross2(v, ray.d);
+  T const z = v.cross(ray.d);
 
-  T const s = cross2(u, ray.d) / z;
-  T const r = cross2(u, v) / z;
+  T const s = u.cross(ray.d) / z;
+  T const r = u.cross(v) / z;
 
   bool const valid = 0 <= s && s <= 1;
 

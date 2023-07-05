@@ -467,7 +467,7 @@ template <class T>
 HOSTDEV constexpr auto
 Vector<T>::recommend(Size new_size) const noexcept -> Size
 {
-  return thrust::max(2 * capacity(), new_size);
+  return um2::max(2 * capacity(), new_size);
 }
 
 } // namespace um2

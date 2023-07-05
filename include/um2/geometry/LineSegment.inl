@@ -40,6 +40,7 @@ template <typename R>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::operator()(R const r) const noexcept -> Point<D, T>
 {
+  // v0 + r * (v1 - v0)
   Point<D, T> result;
   for (Size i = 0; i < D; ++i) {
     result[i] = vertices[0][i] + static_cast<T>(r) * (vertices[1][i] - vertices[0][i]);
@@ -56,8 +57,11 @@ template <typename R>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::jacobian(R /*r*/) const noexcept -> Vec<D, T>
 {
-  Vec<D, T> result = vertices[1];
-  result -= vertices[0];
+  // v1 - v0
+  Vec<D, T> result;
+  for (Size i = 0; i < D; ++i) {
+    result[i] = vertices[1][i] - vertices[0][i];
+  }
   return result;
 }
 

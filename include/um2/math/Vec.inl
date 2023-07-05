@@ -167,7 +167,7 @@ HOSTDEV constexpr auto
 Vec<D, T>::min(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
   for (Size i = 0; i < D; ++i) {
-    data[i] = thrust::min(data[i], v[i]);
+    data[i] = um2::min(data[i], v[i]);
   }
   return *this;
 }
@@ -177,7 +177,7 @@ HOSTDEV constexpr auto
 Vec<D, T>::max(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
   for (Size i = 0; i < D; ++i) {
-    data[i] = thrust::max(data[i], v[i]);
+    data[i] = um2::max(data[i], v[i]);
   }
   return *this;
 }
@@ -218,6 +218,16 @@ Vec<D, T>::normalize() noexcept
 {
   static_assert(std::is_floating_point_v<T>);
   *this /= norm();
+}
+
+template <Size D, class T>
+PURE HOSTDEV constexpr auto
+Vec<D, T>::normalized() const noexcept -> Vec<D, T>
+{
+  static_assert(std::is_floating_point_v<T>);
+  Vec<D, T> result = *this;
+  result.normalize();
+  return result;
 }
 
 template <Size D, class T>

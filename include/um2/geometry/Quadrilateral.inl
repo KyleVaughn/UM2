@@ -28,6 +28,10 @@ template <typename R, typename S>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::operator()(R const r, S const s) const noexcept -> Point<D, T>
 {
+  // (1 - r) (1 - s) v0 +
+  // (    r) (1 - s) v1 +
+  // (    r) (    s) v2 +
+  // (1 - r) (    s) v3
   T const rr = static_cast<T>(r);
   T const ss = static_cast<T>(s);
   T const w0 = (1 - rr) * (1 - ss);
@@ -51,6 +55,8 @@ template <typename R, typename S>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::jacobian(R r, S s) const noexcept -> Mat<D, 2, T>
 {
+  // jac.col(0) = (v1 - v0) - s (v3 - v2)
+  // jac.col(1) = (v3 - v0) - r (v1 - v2)
   T const rr = static_cast<T>(r);
   T const ss = static_cast<T>(s);
   T const w0 = 1 - ss;
@@ -101,6 +107,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::area() const noexcept -> T requires(D == 2)
 {
+  // (v2 - v0).cross(v3 - v1) / 2
   Vec<D, T> ac;
   Vec<D, T> bd;
   for (Size i = 0; i < D; ++i) {

@@ -2,9 +2,7 @@
 
 #include <um2/config.hpp>
 
-#include <um2/math/math_functions.hpp> // um2::sqrt
-
-#include <thrust/extrema.h> // thrust::min, thrust::max
+#include <um2/math/math_functions.hpp> // um2::sqrt, um2::max, um2::min
 
 #include <concepts>
 
@@ -56,7 +54,7 @@ struct Vec {
   // Constructors
   // -----------------------------------------------------------------------------
 
-  constexpr Vec() = default;
+  constexpr Vec() noexcept = default;
 
   // NOLINTBEGIN(google-explicit-constructor)
   // Allow implicit conversion from integral types.
@@ -128,6 +126,9 @@ struct Vec {
   HOSTDEV constexpr void
   normalize() noexcept;
 
+  PURE HOSTDEV constexpr auto
+  normalized() const noexcept -> Vec<D, T>;
+
   PURE HOSTDEV [[nodiscard]] constexpr auto
   cross(Vec<2, T> const & v) const noexcept -> T;
 
@@ -145,7 +146,7 @@ struct Vec {
 // Zero vector
 template <Size D, class T>
 HOSTDEV constexpr auto
-zeroVec() -> Vec<D, T>
+zeroVec() noexcept -> Vec<D, T>
 {
   if constexpr (D == 1) {
     return Vec<D, T>(0);
