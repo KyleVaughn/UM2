@@ -36,8 +36,8 @@
 
 #define ASSERT(cond) assert(cond)
 
-#define ASSERT_NEAR(a, b, eps) \
-  {                            \
+#define ASSERT_NEAR(a, b, eps)                                                           \
+  {                                                                                      \
     auto diff = (a) < (b) ? (b) - (a) : (a) - (b);                                       \
     assert(diff < (eps));                                                                \
   }

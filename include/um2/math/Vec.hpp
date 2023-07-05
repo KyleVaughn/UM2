@@ -126,7 +126,7 @@ struct Vec {
   HOSTDEV constexpr void
   normalize() noexcept;
 
-  PURE HOSTDEV constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   normalized() const noexcept -> Vec<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto

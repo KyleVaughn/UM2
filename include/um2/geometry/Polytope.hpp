@@ -101,43 +101,43 @@ using QuadraticHexahedron = QuadraticPolyhedron<20, 3, T>;
 //// -----------------------------------------------------------------------------
 //// area
 //// -----------------------------------------------------------------------------
-//template <typename T>
-//PURE HOSTDEV constexpr auto
-//triangleArea(Point2<T> const & p0, Point2<T> const & p1, Point2<T> const & p2) noexcept
-//    -> T;
+// template <typename T>
+// PURE HOSTDEV constexpr auto
+// triangleArea(Point2<T> const & p0, Point2<T> const & p1, Point2<T> const & p2) noexcept
+//     -> T;
 //
-//template <typename T>
-//PURE HOSTDEV constexpr auto
-//quadrilateralArea(Point2<T> const & p0, Point2<T> const & p1, Point2<T> const & p2,
-//                  Point2<T> const & p3) noexcept -> T;
+// template <typename T>
+// PURE HOSTDEV constexpr auto
+// quadrilateralArea(Point2<T> const & p0, Point2<T> const & p1, Point2<T> const & p2,
+//                   Point2<T> const & p3) noexcept -> T;
 //
 //// -----------------------------------------------------------------------------
 //// centroid
 //// -----------------------------------------------------------------------------
 //
-//template <Size D, typename T>
-//PURE HOSTDEV constexpr auto
-//triangleCentroid(Point<D, T> const & p0, Point<D, T> const & p1,
+// template <Size D, typename T>
+// PURE HOSTDEV constexpr auto
+// triangleCentroid(Point<D, T> const & p0, Point<D, T> const & p1,
 //                 Point<D, T> const & p2) noexcept -> Point<D, T>;
 //
-//template <typename T>
-//PURE HOSTDEV constexpr auto
-//quadrilateralCentroid(Point2<T> const & p0, Point2<T> const & p1, Point2<T> const & p2,
+// template <typename T>
+// PURE HOSTDEV constexpr auto
+// quadrilateralCentroid(Point2<T> const & p0, Point2<T> const & p1, Point2<T> const & p2,
 //                      Point2<T> const & p3) noexcept -> Point2<T>;
 //
 //// Centroid of a linear, planar polygon
-//template <Size N, typename T>
-//PURE HOSTDEV constexpr auto
-//centroid(LinearPolygon<N, 2, T> const & poly) noexcept -> Point2<T>;
+// template <Size N, typename T>
+// PURE HOSTDEV constexpr auto
+// centroid(LinearPolygon<N, 2, T> const & poly) noexcept -> Point2<T>;
 //
 //// -----------------------------------------------------------------------------
 //// boundingBox
 //// -----------------------------------------------------------------------------
 //// The bounding box of any linear polytope is simply the min and max of its
 //// vertices.
-//template <Size K, Size N, Size D, typename T>
-//PURE HOSTDEV constexpr auto
-//boundingBox(Polytope<K, 1, N, D, T> const & poly) noexcept -> AxisAlignedBox<D, T>;
+// template <Size K, Size N, Size D, typename T>
+// PURE HOSTDEV constexpr auto
+// boundingBox(Polytope<K, 1, N, D, T> const & poly) noexcept -> AxisAlignedBox<D, T>;
 
 } // namespace um2
 
