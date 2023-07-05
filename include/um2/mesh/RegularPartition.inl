@@ -50,7 +50,7 @@ template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RegularPartition<D, T, P>::numXCells() const noexcept -> Size
 {
-  return grid.numXCells(); 
+  return grid.numXCells();
 }
 
 template <Size D, typename T, typename P>
@@ -64,21 +64,21 @@ template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RegularPartition<D, T, P>::numZCells() const noexcept -> Size
 {
-  return grid.numZCells(); 
+  return grid.numZCells();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RegularPartition<D, T, P>::width() const noexcept -> T
 {
-  return grid.width(); 
+  return grid.width();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RegularPartition<D, T, P>::height() const noexcept -> T
 {
-  return grid.height(); 
+  return grid.height();
 }
 
 template <Size D, typename T, typename P>
@@ -135,19 +135,16 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 template <Size D, typename T, typename P>
 template <typename... Args>
 requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RegularPartition<D, T, P>::getChild(Args... args) noexcept
-    -> P & 
+    constexpr auto RegularPartition<D, T, P>::getChild(Args... args) noexcept -> P &
 {
   Point<D, Size> const index{args...};
-  for (Size i = 0; i < D; ++i)
-  {
+  for (Size i = 0; i < D; ++i) {
     assert(index[i] < grid.num_cells[i]);
   }
   // [0, nx, nx*ny, nx*ny*nz, ...]
   Point<D, Size> exclusive_scan_prod;
   exclusive_scan_prod[0] = 1;
-  for (Size i = 1; i < D; ++i)
-  {
+  for (Size i = 1; i < D; ++i) {
     exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * grid.num_cells[i - 1];
   }
   Size const child_index = index.dot(exclusive_scan_prod);
@@ -158,18 +155,16 @@ template <Size D, typename T, typename P>
 template <typename... Args>
 requires(sizeof...(Args) == D) PURE HOSTDEV
     constexpr auto RegularPartition<D, T, P>::getChild(Args... args) const noexcept
-    -> P const & 
+    -> P const &
 {
   Point<D, Size> const index{args...};
-  for (Size i = 0; i < D; ++i)
-  {
+  for (Size i = 0; i < D; ++i) {
     assert(index[i] < grid.num_cells[i]);
   }
   // [0, nx, nx*ny, nx*ny*nz, ...]
   Point<D, Size> exclusive_scan_prod;
   exclusive_scan_prod[0] = 1;
-  for (Size i = 1; i < D; ++i)
-  {
+  for (Size i = 1; i < D; ++i) {
     exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * grid.num_cells[i - 1];
   }
   Size const child_index = index.dot(exclusive_scan_prod);

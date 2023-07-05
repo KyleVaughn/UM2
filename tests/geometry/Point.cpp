@@ -77,18 +77,18 @@ TEST_CASE(isApprox)
   ASSERT(!um2::isApprox(p1, p2));
 }
 
-//template <typename T>
-//HOSTDEV
-//TEST_CASE(areCCW)
+// template <typename T>
+// HOSTDEV
+// TEST_CASE(areCCW)
 //{
-//  um2::Point2<T> p1(0, 0);
-//  um2::Point2<T> p2(1, 1);
-//  um2::Point2<T> p3(2, -4);
-//  bool b = um2::areCCW(p1, p2, p3);
-//  ASSERT(!b);
-//  b = um2::areCCW(p1, p3, p2);
-//  ASSERT(b);
-//}
+//   um2::Point2<T> p1(0, 0);
+//   um2::Point2<T> p2(1, 1);
+//   um2::Point2<T> p3(2, -4);
+//   bool b = um2::areCCW(p1, p2, p3);
+//   ASSERT(!b);
+//   b = um2::areCCW(p1, p3, p2);
+//   ASSERT(b);
+// }
 
 // --------------------------------------------------------------------------
 // CUDA
@@ -113,9 +113,9 @@ TEST_SUITE(point)
   TEST_HOSTDEV(distance, 1, 1, D, T);
   TEST_HOSTDEV(midpoint, 1, 1, D, T);
   TEST_HOSTDEV(isApprox, 1, 1, D, T);
-//  if constexpr (D == 2) {
-//    TEST_HOSTDEV(areCCW, 1, 1, T);
-//  }
+  //  if constexpr (D == 2) {
+  //    TEST_HOSTDEV(areCCW, 1, 1, T);
+  //  }
 }
 
 auto

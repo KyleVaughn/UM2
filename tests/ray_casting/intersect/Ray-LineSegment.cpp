@@ -5,7 +5,8 @@
 #include "../../test_macros.hpp"
 
 template <typename T>
-HOSTDEV TEST_CASE(intersect)
+HOSTDEV
+TEST_CASE(intersect)
 {
   um2::LineSegment<2, T> l(um2::Point2<T>(0, 1), um2::Point2<T>(2, -1));
   um2::Vec2<T> const dir = um2::Point2<T>(1, 1).normalized();
@@ -32,7 +33,8 @@ TEST_SUITE(ray2_line_segment2)
   TEST_HOSTDEV(intersect, 1, 1, T);
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_SUITE((ray2_line_segment2<float>));
   RUN_SUITE((ray2_line_segment2<double>));

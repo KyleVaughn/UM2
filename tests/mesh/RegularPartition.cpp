@@ -3,7 +3,8 @@
 #include "../test_macros.hpp"
 
 template <Size D, typename T, typename P>
-HOSTDEV static constexpr auto makePart() -> um2::RegularPartition<D, T, P>
+HOSTDEV static constexpr auto
+makePart() -> um2::RegularPartition<D, T, P>
 {
   static_assert(1 <= D && D <= 3, "D must be in [1, 3]");
   um2::Point<D, T> minima;
@@ -26,7 +27,7 @@ HOSTDEV static constexpr auto makePart() -> um2::RegularPartition<D, T, P>
   um2::RegularPartition<D, T, P> part;
   part.grid = grid;
   part.children = children;
-  return part; 
+  return part;
 }
 
 template <Size D, typename T, typename P>
@@ -87,7 +88,8 @@ TEST_CASE(boundingBox)
 }
 
 template <typename T, typename P>
-HOSTDEV TEST_CASE(getBox_and_getChild)
+HOSTDEV
+TEST_CASE(getBox_and_getChild)
 {
   // Declare some variables to avoid a bunch of static casts.
   T const three = static_cast<T>(3);
@@ -107,7 +109,7 @@ HOSTDEV TEST_CASE(getBox_and_getChild)
   }
   um2::AxisAlignedBox2<T> box = part.getBox(0, 0);
   um2::AxisAlignedBox2<T> box_ref = {
-      {         1,             -1},
+      {          1,             -1},
       {one + ahalf, -three * forth}
   };
   ASSERT(isApprox(box, box_ref));
@@ -115,27 +117,27 @@ HOSTDEV TEST_CASE(getBox_and_getChild)
   //{ { 1.5, -1.0 }, { 2.0, -0.75 } };
   box_ref = {
       {one + ahalf,           -one},
-      {       two, -three * forth}
+      {        two, -three * forth}
   };
   ASSERT(isApprox(box, box_ref));
   box = part.getBox(3, 0);
   // box_ref = { { 2.5, -1.0 }, { 3.0, -0.75 } };
   box_ref = {
       {two + ahalf,           -one},
-      {     three, -three * forth}
+      {      three, -three * forth}
   };
   ASSERT(isApprox(box, box_ref));
   box = part.getBox(0, 1);
   // box_ref = { { 1.0, -0.75 }, { 1.5, -0.5 } };
   box_ref = {
-      {       one, -three * forth},
-      {one + ahalf,          -ahalf}
+      {        one, -three * forth},
+      {one + ahalf,         -ahalf}
   };
   ASSERT(isApprox(box, box_ref));
   box = part.getBox(0, 7);
   // box_ref = { { 1.0, 0.75 }, { 1.5, 1.0 } };
   box_ref = {
-      {       one, three * forth},
+      {        one, three * forth},
       {one + ahalf,           one}
   };
   ASSERT(isApprox(box, box_ref));
@@ -143,7 +145,7 @@ HOSTDEV TEST_CASE(getBox_and_getChild)
   // box_ref = { { 2.5, 0.75 }, { 3.0, 1.0 } };
   box_ref = {
       {two + ahalf, three * forth},
-      {     three,           one}
+      {      three,           one}
   };
   ASSERT(isApprox(box, box_ref));
 
@@ -182,7 +184,8 @@ TEST_SUITE(RegularPartition)
   }
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_SUITE((RegularPartition<1, float, int32_t>));
   RUN_SUITE((RegularPartition<2, float, int32_t>));

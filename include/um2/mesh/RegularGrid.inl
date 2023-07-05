@@ -28,7 +28,7 @@ HOSTDEV constexpr RegularGrid<D, T>::RegularGrid(
 {
   spacing -= minima;
   for (Size i = 0; i < D; ++i) {
-    num_cells[i] = 1; 
+    num_cells[i] = 1;
   }
 }
 
@@ -159,7 +159,7 @@ RegularGrid<D, T>::maxima() const noexcept -> Point<D, T>
   for (Size i = 0; i < D; ++i) {
     result[i] = minima[i] + spacing[i] * static_cast<T>(num_cells[i]);
   }
-  return result; 
+  return result;
 }
 
 template <Size D, typename T>
@@ -184,7 +184,7 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
     result.minima[i] = minima[i] + spacing[i] * static_cast<T>(index[i]);
     result.maxima[i] = result.minima[i] + spacing[i];
   }
-  return result; 
+  return result;
 }
 
 } // namespace um2

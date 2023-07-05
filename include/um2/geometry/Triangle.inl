@@ -78,8 +78,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool requires(D == 2)
 {
-  return areCCW(vertices[0], vertices[1], p) && 
-         areCCW(vertices[1], vertices[2], p) &&
+  return areCCW(vertices[0], vertices[1], p) && areCCW(vertices[1], vertices[2], p) &&
          areCCW(vertices[2], vertices[0], p);
 }
 

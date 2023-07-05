@@ -144,8 +144,8 @@ public:
 
   HOSTDEV constexpr void
   clear() noexcept;
-  
-  HOSTDEV constexpr void 
+
+  HOSTDEV constexpr void
   resize(Size n) noexcept;
   ////
   ////  HOSTDEV inline void push_back(T const & value);
@@ -201,7 +201,7 @@ public:
   // NOLINTNEXTLINE(readability-identifier-naming)
   append_default(Size n) noexcept;
 
-  HOSTDEV [[nodiscard]] HIDDEN constexpr auto 
+  HOSTDEV [[nodiscard]] HIDDEN constexpr auto
   recommend(Size new_size) const noexcept -> Size;
 
 }; // struct Vector

@@ -36,8 +36,8 @@ Quadrilateral<D, T>::operator()(R const r, S const s) const noexcept -> Point<D,
   T const w3 = (1 - rr) * ss;
   Point<D, T> result;
   for (Size i = 0; i < D; ++i) {
-    result[i] = w0 * vertices[0][i] + w1 * vertices[1][i] + 
-                w2 * vertices[2][i] + w3 * vertices[3][i];
+    result[i] = w0 * vertices[0][i] + w1 * vertices[1][i] + w2 * vertices[2][i] +
+                w3 * vertices[3][i];
   }
   return result;
 }
@@ -59,8 +59,10 @@ Quadrilateral<D, T>::jacobian(R r, S s) const noexcept -> Mat<D, 2, T>
   // T const w3 = rr;
   Mat<D, 2, T> jac;
   for (Size i = 0; i < D; ++i) {
-    jac(i, 0) = w0 * (vertices[1][i] - vertices[0][i]) - ss * (vertices[3][i] - vertices[2][i]);
-    jac(i, 1) = w2 * (vertices[3][i] - vertices[0][i]) - rr * (vertices[1][i] - vertices[2][i]);
+    jac(i, 0) =
+        w0 * (vertices[1][i] - vertices[0][i]) - ss * (vertices[3][i] - vertices[2][i]);
+    jac(i, 1) =
+        w2 * (vertices[3][i] - vertices[0][i]) - rr * (vertices[1][i] - vertices[2][i]);
   }
   return jac;
 }
@@ -117,7 +119,7 @@ PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::centroid() const noexcept -> Point<D, T>
 requires(D == 2)
 {
-  // Algorithm: Decompose the quadrilateral into two triangles and 
+  // Algorithm: Decompose the quadrilateral into two triangles and
   // compute the centroid of each triangle. The centroid of the
   // quadrilateral is the weighted average of the centroids of the
   // two triangles, where the weights are the areas of the triangles.
@@ -138,7 +140,7 @@ requires(D == 2)
     T const v02 = vertices[0][i] + vertices[2][i];
     result[i] = a1 * vertices[1][i] + a2 * vertices[3][i] + a12 * v02;
   }
-  return result /= (3 * a12); 
+  return result /= (3 * a12);
 }
 
 // -------------------------------------------------------------------

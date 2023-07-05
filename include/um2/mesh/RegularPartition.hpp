@@ -33,7 +33,7 @@ struct RegularPartition {
   // Constructors
   // ---------------------------------------------------------------------------
 
-  HOSTDEV constexpr RegularPartition() = default;
+  constexpr RegularPartition() = default;
 
   // ---------------------------------------------------------------------------
   // Accessors
@@ -97,14 +97,11 @@ struct RegularPartition {
 
   template <typename... Args>
   requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getChild(Args... args) noexcept
-      -> P &;
+      [[nodiscard]] constexpr auto getChild(Args... args) noexcept -> P &;
 
   template <typename... Args>
   requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getChild(Args... args) const noexcept
-      -> P const &;
-
+      [[nodiscard]] constexpr auto getChild(Args... args) const noexcept -> P const &;
 };
 
 // -- Aliases --

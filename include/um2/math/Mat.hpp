@@ -2,10 +2,11 @@
 
 #include <um2/math/Vec.hpp>
 
-namespace um2 {
+namespace um2
+{
 
 // -----------------------------------------------------------------------------
-// MAT 
+// MAT
 // -----------------------------------------------------------------------------
 // An M by N matrix.
 //
@@ -32,7 +33,7 @@ struct Mat {
   // -----------------------------------------------------------------------------
 
   PURE HOSTDEV constexpr auto
-  // cppcheck-suppress functionConst 
+  // cppcheck-suppress functionConst
   col(Size i) noexcept -> Col &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -47,20 +48,19 @@ struct Mat {
 
   // -- Constructors --
 
-  HOSTDEV constexpr Mat() = default;
-    
-//    template<std::same_as<Col> ...Cols> 
-//    requires (sizeof...(Cols) == N)
-//    HOSTDEV constexpr Mat(Cols... cols);
+  constexpr Mat() = default;
 
+  //    template<std::same_as<Col> ...Cols>
+  //    requires (sizeof...(Cols) == N)
+  //    HOSTDEV constexpr Mat(Cols... cols);
 };
 
 //// -- Aliases --
 //
-//template <typename T = defaultp> using Mat2x2 = Mat<2, 2, T, Q>;
+// template <typename T = defaultp> using Mat2x2 = Mat<2, 2, T, Q>;
 //
-//template <Qualifier Q = defaultp> using Mat2x2f = Mat2x2<float, Q>;
-//template <Qualifier Q = defaultp> using Mat2x2d = Mat2x2<double, Q>;
+// template <Qualifier Q = defaultp> using Mat2x2f = Mat2x2<float, Q>;
+// template <Qualifier Q = defaultp> using Mat2x2d = Mat2x2<double, Q>;
 //
 } // namespace um2
 

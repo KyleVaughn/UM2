@@ -8,10 +8,10 @@
 
 // If CPU supports BMI2, and we are compiling for CPU, then use BMI2 intrinsics.
 #if defined(__BMI2__) && !defined(__CUDA_ARCH__)
-# define BMI2_HOSTDEV DEVICE
-# include <immintrin.h> // _pdep_u64, _pext_u64, _pdep_u32, _pext_u32
+#  define BMI2_HOSTDEV DEVICE
+#  include <immintrin.h> // _pdep_u64, _pext_u64, _pdep_u32, _pext_u32
 #else
-# define BMI2_HOSTDEV HOSTDEV
+#  define BMI2_HOSTDEV HOSTDEV
 #endif
 
 namespace um2

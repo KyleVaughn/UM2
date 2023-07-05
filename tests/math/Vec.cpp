@@ -229,8 +229,8 @@ HOSTDEV
 TEST_CASE(cross)
 {
   if constexpr (D == 3) {
-    um2::Vec<D, T> v0(1, 2, 3); 
-    um2::Vec<D, T> v1(2, 3, 4); 
+    um2::Vec<D, T> v0(1, 2, 3);
+    um2::Vec<D, T> v1(2, 3, 4);
     um2::Vec<D, T> v = v0.cross(v1);
     ASSERT_NEAR(v[0], -1, static_cast<T>(1e-6));
     ASSERT_NEAR(v[1], 2, static_cast<T>(1e-6));
@@ -238,7 +238,7 @@ TEST_CASE(cross)
   } else if constexpr (D == 2) {
     um2::Vec2<T> v0(1, 2);
     um2::Vec2<T> v1(3, 4);
-    T x = v0.cross(v1); 
+    T x = v0.cross(v1);
     ASSERT_NEAR(x, -2, static_cast<T>(1e-6));
   }
 }
@@ -263,8 +263,8 @@ TEST_CASE(norm)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   T norm = v.norm();
-  ASSERT_NEAR(norm, um2::sqrt(static_cast<T>(D * (D + 1) * (2 * D + 1)) / 6),
-              static_cast<T>(1e-6));
+  T ref = um2::sqrt(static_cast<T>(D * (D + 1) * (2 * D + 1)) / 6);
+  ASSERT_NEAR(norm, ref, static_cast<T>(1e-6));
 }
 
 template <Size D, typename T>
@@ -273,7 +273,7 @@ TEST_CASE(normalize)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   T n = v.norm();
-  ASSERT(n > static_cast<T>(1));
+  ASSERT((n > static_cast<T>(1)));
   v.normalize();
   n = v.norm();
   ASSERT_NEAR(n, 1, static_cast<T>(1e-6));

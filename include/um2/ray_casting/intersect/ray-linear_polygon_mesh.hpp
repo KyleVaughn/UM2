@@ -38,7 +38,8 @@ namespace um2
 // Fixed size buffer
 template <std::floating_point T, std::signed_integral I>
 // UM2_HOT
-void intersect(
+void
+intersect(
     Ray2<T> const & ray, TriMesh<T, I> const & mesh, T * const intersections,
     int * const n) // length of intersections on input, number of intersections on output
 {
@@ -70,7 +71,8 @@ void intersect(
 // Fixed size buffer
 template <std::floating_point T, std::signed_integral I>
 // UM2_HOT
-void intersect(
+void
+intersect(
     Ray2<T> const & ray, QuadMesh<T, I> const & mesh, T * const intersections,
     int * const n) // length of intersections on input, number of intersections on output
 {
@@ -107,7 +109,8 @@ void intersect(
 
 template <std::floating_point T, std::signed_integral I>
 // UM2_HOT
-void intersect(
+void
+intersect(
     Ray2<T> const & ray, TriQuadMesh<T, I> const & mesh, T * const intersections,
     int * const n) // length of intersections on input, number of intersections on output
 {

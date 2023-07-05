@@ -9,7 +9,7 @@ template <Size D, typename T>
 struct Ray {
 
   Point<D, T> o; // origin
-  Vec<D, T> d; // direction (unit vector)
+  Vec<D, T> d;   // direction (unit vector)
 
   // ---------------------------------------------------------------------------
   // Constructors

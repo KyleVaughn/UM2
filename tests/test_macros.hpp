@@ -36,7 +36,11 @@
 
 #define ASSERT(cond) assert(cond)
 
-#define ASSERT_NEAR(a, b, eps) assert(!((a) < (b) - (eps)) && !((b) < (a) - (eps)))
+#define ASSERT_NEAR(a, b, eps) \
+  {                            \
+    auto diff = (a) < (b) ? (b) - (a) : (a) - (b);                                       \
+    assert(diff < (eps));                                                                \
+  }
 
 #define TEST_CASE(name) static void name()
 
@@ -73,7 +77,6 @@
     cudaError_t error = cudaGetLastError();                                              \
     if (error != cudaSuccess) {                                                          \
       printf("CUDA error: %s\n", cudaGetErrorString(error));                             \
-      fflush(stdout);                                                                    \
       exit(1);                                                                           \
     }
 

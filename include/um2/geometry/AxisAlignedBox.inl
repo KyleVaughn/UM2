@@ -109,7 +109,7 @@ AxisAlignedBox<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
       return false;
     }
   }
-  return true; 
+  return true;
 }
 
 template <Size D, typename T>

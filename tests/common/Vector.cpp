@@ -269,13 +269,14 @@ TEST_CASE(clear)
 //}
 //
 template <class T>
-HOSTDEV TEST_CASE(resize)
+HOSTDEV
+TEST_CASE(resize)
 {
   um2::Vector<T> v;
   v.resize(0);
   ASSERT(v.empty());
   ASSERT(v.capacity() == 0);
-  // cppcheck-suppress assertWithSideEffect 
+  // cppcheck-suppress assertWithSideEffect
   ASSERT(v.data() == nullptr);
   v.resize(1);
   ASSERT(v.size() == 1);
@@ -470,27 +471,26 @@ MAKE_CUDA_KERNEL(move_constructor, T)
 template <class T>
 MAKE_CUDA_KERNEL(constructor_initializer_list, T)
 
-    //
-    //  template <class T>
-    //  MAKE_CUDA_KERNEL(reserve, T)
-    //
+//
+//  template <class T>
+//  MAKE_CUDA_KERNEL(reserve, T)
+//
 
-
-    //
-    //  template <class T>
-    //  MAKE_CUDA_KERNEL(push_back, T)
-    //
-    //  template <class T>
-    //  MAKE_CUDA_KERNEL(empty, T)
-    //
-    //  template <class T>
-    //  MAKE_CUDA_KERNEL(insert, T)
-    //
-    //  template <class T>
-    //  MAKE_CUDA_KERNEL(contains, T)
-    //
-    //  template <class T>
-    //  MAKE_CUDA_KERNEL(isApprox, T)
+//
+//  template <class T>
+//  MAKE_CUDA_KERNEL(push_back, T)
+//
+//  template <class T>
+//  MAKE_CUDA_KERNEL(empty, T)
+//
+//  template <class T>
+//  MAKE_CUDA_KERNEL(insert, T)
+//
+//  template <class T>
+//  MAKE_CUDA_KERNEL(contains, T)
+//
+//  template <class T>
+//  MAKE_CUDA_KERNEL(isApprox, T)
 
 template <class T>
 MAKE_CUDA_KERNEL(operator_copy, T)
@@ -500,9 +500,8 @@ MAKE_CUDA_KERNEL(operator_move, T)
 
 MAKE_CUDA_KERNEL(clear)
 
-template <class T>
-MAKE_CUDA_KERNEL(resize, T)
-
+    template <class T>
+    MAKE_CUDA_KERNEL(resize, T)
 
 //
 //  template <class T>

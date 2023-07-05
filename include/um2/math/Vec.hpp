@@ -8,7 +8,8 @@
 
 #include <concepts>
 
-namespace um2 {
+namespace um2
+{
 
 // -----------------------------------------------------------------------------
 // VEC
@@ -29,84 +30,81 @@ struct Vec {
   // -----------------------------------------------------------------------------
   // Accessors
   // -----------------------------------------------------------------------------
-  
-  PURE HOSTDEV constexpr auto 
+
+  PURE HOSTDEV constexpr auto
   // cppcheck-suppress functionConst
-  operator [](Size i) noexcept -> T &;
+  operator[](Size i) noexcept -> T &;
 
-  PURE HOSTDEV constexpr auto 
-  operator [](Size i) const noexcept -> T const &;
+  PURE HOSTDEV constexpr auto
+  operator[](Size i) const noexcept -> T const &;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
-  // cppcheck-suppress functionConst    
-  begin() noexcept -> T *;    
-    
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  // cppcheck-suppress functionConst
+  begin() noexcept -> T *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   begin() const noexcept -> T const *;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
-  // cppcheck-suppress functionConst    
-  end() noexcept -> T *;    
-    
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  // cppcheck-suppress functionConst
+  end() noexcept -> T *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   end() const noexcept -> T const *;
 
   // -----------------------------------------------------------------------------
   // Constructors
   // -----------------------------------------------------------------------------
 
-  HOSTDEV constexpr Vec() = default;
+  constexpr Vec() = default;
 
   // NOLINTBEGIN(google-explicit-constructor)
   // Allow implicit conversion from integral types.
   // Otherwise, require explicit conversion to avoid accidental loss of
   // precision/performance.
-  template <class ...Is>
-  requires (sizeof...(Is) == D && (std::integral<Is> && ...) && !(std::same_as<T, Is> && ...))
-  // cppcheck-suppress noExplicitConstructor
-  HOSTDEV constexpr Vec(Is const ...args) noexcept;
+  template <class... Is>
+  requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
+           !(std::same_as<T, Is> && ...))
+      // cppcheck-suppress noExplicitConstructor
+      HOSTDEV constexpr Vec(Is const... args) noexcept;
 
-  template <class ...Ts>
-  requires (sizeof...(Ts) == D && (std::same_as<T, Ts> && ...)) 
-  // cppcheck-suppress noExplicitConstructor
-  HOSTDEV constexpr Vec(Ts const ...args) noexcept;
+  template <class... Ts>
+  requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...))
+      // cppcheck-suppress noExplicitConstructor
+      HOSTDEV constexpr Vec(Ts const... args) noexcept;
   // NOLINTEND(google-explicit-constructor)
-  
+
   // -----------------------------------------------------------------------------
   // Binary operators
   // -----------------------------------------------------------------------------
 
-  HOSTDEV constexpr auto 
-  operator += (Vec<D, T> const & v) noexcept -> Vec<D, T> &;
+  HOSTDEV constexpr auto
+  operator+=(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
 
   HOSTDEV constexpr auto
-  operator -= (Vec<D, T> const & v) noexcept -> Vec<D, T> &;
+  operator-=(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
 
   HOSTDEV constexpr auto
-  operator *= (Vec<D, T> const & v) noexcept -> Vec<D, T> &;
+  operator*=(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
 
   HOSTDEV constexpr auto
-  operator /= (Vec<D, T> const & v) noexcept -> Vec<D, T> &;
-
-  template <class S>
-  requires (std::same_as<T, S> || std::integral<S>)
-  HOSTDEV constexpr auto
-  operator += (S const & s) noexcept -> Vec<D, T> &;
+  operator/=(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
 
   template <class S>
-  requires (std::same_as<T, S> || std::integral<S>)
-  HOSTDEV constexpr auto
-  operator -= (S const & s) noexcept -> Vec<D, T> &;
+  requires(std::same_as<T, S> || std::integral<S>) HOSTDEV constexpr auto
+  operator+=(S const & s) noexcept -> Vec<D, T> &;
 
   template <class S>
-  requires (std::same_as<T, S> || std::integral<S>)
-  HOSTDEV constexpr auto
-  operator *= (S const & s) noexcept -> Vec<D, T> &;
+  requires(std::same_as<T, S> || std::integral<S>) HOSTDEV constexpr auto
+  operator-=(S const & s) noexcept -> Vec<D, T> &;
 
   template <class S>
-  requires (std::same_as<T, S> || std::integral<S>)
-  HOSTDEV constexpr auto
-  operator /= (S const & s) noexcept -> Vec<D, T> &;
+  requires(std::same_as<T, S> || std::integral<S>) HOSTDEV constexpr auto
+  operator*=(S const & s) noexcept -> Vec<D, T> &;
+
+  template <class S>
+  requires(std::same_as<T, S> || std::integral<S>) HOSTDEV constexpr auto
+  operator/=(S const & s) noexcept -> Vec<D, T> &;
 
   // -----------------------------------------------------------------------------
   // Methods
@@ -146,7 +144,8 @@ struct Vec {
 
 // Zero vector
 template <Size D, class T>
-HOSTDEV constexpr auto zeroVec() -> Vec<D, T> 
+HOSTDEV constexpr auto
+zeroVec() -> Vec<D, T>
 {
   if constexpr (D == 1) {
     return Vec<D, T>(0);
@@ -166,10 +165,14 @@ HOSTDEV constexpr auto zeroVec() -> Vec<D, T>
 // Aliases
 // -----------------------------------------------------------------------------
 
-template <class T> using Vec1 = Vec<1, T>;
-template <class T> using Vec2 = Vec<2, T>;
-template <class T> using Vec3 = Vec<3, T>;
-template <class T> using Vec4 = Vec<4, T>;
+template <class T>
+using Vec1 = Vec<1, T>;
+template <class T>
+using Vec2 = Vec<2, T>;
+template <class T>
+using Vec3 = Vec<3, T>;
+template <class T>
+using Vec4 = Vec<4, T>;
 
 using Vec1f = Vec1<float>;
 using Vec2f = Vec2<float>;

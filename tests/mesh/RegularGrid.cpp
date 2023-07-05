@@ -114,7 +114,7 @@ TEST_CASE(getBox)
   um2::RegularGrid2<T> grid(minima, spacing, num_cells);
   um2::AxisAlignedBox2<T> box = grid.getBox(0, 0);
   um2::AxisAlignedBox2<T> box_ref = {
-      {         1,             -1},
+      {          1,             -1},
       {one + ahalf, -three * forth}
   };
   ASSERT(isApprox(box, box_ref));
@@ -122,27 +122,27 @@ TEST_CASE(getBox)
   //{ { 1.5, -1.0 }, { 2.0, -0.75 } };
   box_ref = {
       {one + ahalf,           -one},
-      {       two, -three * forth}
+      {        two, -three * forth}
   };
   ASSERT(isApprox(box, box_ref));
   box = grid.getBox(3, 0);
   // box_ref = { { 2.5, -1.0 }, { 3.0, -0.75 } };
   box_ref = {
       {two + ahalf,           -one},
-      {     three, -three * forth}
+      {      three, -three * forth}
   };
   ASSERT(isApprox(box, box_ref));
   box = grid.getBox(0, 1);
   // box_ref = { { 1.0, -0.75 }, { 1.5, -0.5 } };
   box_ref = {
-      {       one, -three * forth},
-      {one + ahalf,          -ahalf}
+      {        one, -three * forth},
+      {one + ahalf,         -ahalf}
   };
   ASSERT(isApprox(box, box_ref));
   box = grid.getBox(0, 7);
   // box_ref = { { 1.0, 0.75 }, { 1.5, 1.0 } };
   box_ref = {
-      {       one, three * forth},
+      {        one, three * forth},
       {one + ahalf,           one}
   };
   ASSERT(isApprox(box, box_ref));
@@ -150,7 +150,7 @@ TEST_CASE(getBox)
   // box_ref = { { 2.5, 0.75 }, { 3.0, 1.0 } };
   box_ref = {
       {two + ahalf, three * forth},
-      {     three,           one}
+      {      three,           one}
   };
   ASSERT(isApprox(box, box_ref));
 }

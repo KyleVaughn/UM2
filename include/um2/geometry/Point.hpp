@@ -87,11 +87,11 @@ areCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept -
 {
   // 2D cross product, of (b - a) and (c - a). We write it out explicitly to
   // help the compiler optimize.
-  T const ab_x = b[0] - a[0]; 
+  T const ab_x = b[0] - a[0];
   T const ac_x = c[0] - a[0];
   T const ab_y = b[1] - a[1];
   T const ac_y = c[1] - a[1];
-  return 0 < (ab_x * ac_y - ab_y * ac_x); 
+  return 0 < (ab_x * ac_y - ab_y * ac_x);
 }
 
 } // namespace um2

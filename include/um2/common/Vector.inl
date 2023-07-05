@@ -56,7 +56,7 @@ HOSTDEV constexpr Vector<T>::~Vector() noexcept
 {
   if (_begin != nullptr) {
     destruct_at_end(_begin);
-    ::operator delete(_begin); 
+    ::operator delete(_begin);
   }
 }
 
@@ -205,7 +205,7 @@ Vector<T>::operator=(Vector<T> const & v) noexcept -> Vector<T> &
 {
   if (this != addressof(v)) {
     destruct_at_end(_begin);
-    ::operator delete(_begin); 
+    ::operator delete(_begin);
     _begin = nullptr;
     allocate(v.size());
     construct_at_end(v.size());
@@ -293,7 +293,8 @@ Vector<T>::clear() noexcept
 //}
 //
 template <class T>
-HOSTDEV constexpr void Vector<T>::resize(Size const n) noexcept
+HOSTDEV constexpr void
+Vector<T>::resize(Size const n) noexcept
 {
   Size const cs = size();
   // If we are shrinking, destroy the elements that are no longer needed
@@ -390,18 +391,18 @@ HOSTDEV constexpr void Vector<T>::resize(Size const n) noexcept
 // ----------------------------------------------------------------------------
 
 template <class T>
-HOSTDEV constexpr void 
+HOSTDEV constexpr void
 Vector<T>::allocate(Size n) noexcept
 {
   assert(n < max_size());
   assert(_begin == nullptr);
-  _begin = static_cast<T*>(::operator new(static_cast<size_t>(n) * sizeof(T)));
+  _begin = static_cast<T *>(::operator new(static_cast<size_t>(n) * sizeof(T)));
   _end = _begin;
   _end_cap = _begin + n;
 }
 
 template <class T>
-HOSTDEV constexpr void 
+HOSTDEV constexpr void
 Vector<T>::construct_at_end(Size n) noexcept
 {
   Ptr new_end = _end + n;
@@ -412,7 +413,7 @@ Vector<T>::construct_at_end(Size n) noexcept
 }
 
 template <class T>
-HOSTDEV constexpr void 
+HOSTDEV constexpr void
 Vector<T>::construct_at_end(Size n, T const & value) noexcept
 {
   Ptr new_end = _end + n;
@@ -444,7 +445,8 @@ Vector<T>::append_default(Size n) noexcept
     Size const current_size = size();
     Size const new_size = current_size + n;
     Size const new_capacity = recommend(new_size);
-    Ptr new_begin = static_cast<T*>(::operator new(static_cast<size_t>(new_capacity) * sizeof(T)));
+    Ptr new_begin =
+        static_cast<T *>(::operator new(static_cast<size_t>(new_capacity) * sizeof(T)));
     Ptr new_end = new_begin;
     // Move the elements over
     for (Ptr old_pos = _begin; old_pos != _end; ++old_pos, ++new_end) {

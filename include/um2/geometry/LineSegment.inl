@@ -44,7 +44,7 @@ LineSegment<D, T>::operator()(R const r) const noexcept -> Point<D, T>
   for (Size i = 0; i < D; ++i) {
     result[i] = vertices[0][i] + static_cast<T>(r) * (vertices[1][i] - vertices[0][i]);
   }
-  return result; 
+  return result;
 }
 
 // -------------------------------------------------------------------
@@ -58,7 +58,7 @@ LineSegment<D, T>::jacobian(R /*r*/) const noexcept -> Vec<D, T>
 {
   Vec<D, T> result = vertices[1];
   result -= vertices[0];
-  return result; 
+  return result;
 }
 
 // -------------------------------------------------------------------

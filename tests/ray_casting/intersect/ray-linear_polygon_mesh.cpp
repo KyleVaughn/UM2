@@ -117,7 +117,8 @@ TEST_SUITE(ray_linear_polygon_mesh)
   TEST_HOSTDEV((intersect_tri_quad_mesh_edge<T, I>));
 }
 
-auto main() -> int
+auto
+main() -> int
 {
   RUN_TESTS((ray_linear_polygon_mesh<float, int32_t>));
   RUN_TESTS((ray_linear_polygon_mesh<double, int32_t>));
