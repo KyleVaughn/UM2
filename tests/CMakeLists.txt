@@ -7,7 +7,7 @@ add_um2_test(./common/memory/addressof.cpp)
 add_um2_test(./common/memory/construct_at.cpp)
 add_um2_test(./common/Vector.cpp)
 add_um2_test(./common/sto.cpp) 
-#add_um2_test(string ./common/string.cpp)
+add_um2_test(./common/String.cpp)
 #add_um2_test(color  ./common/color.cpp)
 
 # ------------------------------------------------------------------------------

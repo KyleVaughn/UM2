@@ -178,6 +178,11 @@ TEST_CASE(constructor)
 //// ADD_TEMPLATED_KERNEL_TEST(boundingBox_kernel, boundingBox_cuda, T, I)
 //// #endif
 ////
+#if UM2_ENABLE_CUDA
+template <Size D, std::floating_point T, std::signed_integral I>
+MAKE_CUDA_KERNEL(constructor, D, T, I);
+#endif
+
 template <Size D, std::floating_point T, std::signed_integral I>
 TEST_SUITE(TriMesh)
 {

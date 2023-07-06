@@ -1,3 +1,6 @@
+Make sure that we have a null terminator. Modify size
+String -> MeshFile
+
 Mat
 
 use move semantics for assignment in code and tests

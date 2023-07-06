@@ -43,7 +43,7 @@ set(UM2_HEADERS
     "include/um2/common/algorithm.hpp"
     "include/um2/common/Vector.hpp"
     "include/um2/common/sto.hpp"
-    #    "include/um2/common/string.hpp"
+    "include/um2/common/String.hpp"
     #    "include/um2/common/color.hpp"
     # math
     "include/um2/math/morton.hpp"
