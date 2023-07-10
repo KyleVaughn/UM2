@@ -23,6 +23,7 @@ add_um2_test(./math/Mat.cpp)
 add_um2_test(./geometry/Point.cpp)
 add_um2_test(./geometry/AxisAlignedBox.cpp)
 add_um2_test(./geometry/LineSegment.cpp)
+add_um2_test(./geometry/QuadraticSegment.cpp)
 add_um2_test(./geometry/Triangle.cpp)
 add_um2_test(./geometry/Quadrilateral.cpp)
 
