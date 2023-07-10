@@ -201,7 +201,7 @@ public:
   // NOLINTNEXTLINE(readability-identifier-naming)
   append_default(Size n) noexcept;
 
-  HOSTDEV [[nodiscard]] HIDDEN constexpr auto
+  PURE HOSTDEV [[nodiscard]] HIDDEN constexpr auto
   recommend(Size new_size) const noexcept -> Size;
 
 }; // struct Vector

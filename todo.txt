@@ -1,9 +1,8 @@
-Make sure that we have a null terminator. Modify size
 String -> MeshFile
 
-Mat
+Seach for NOLINTS and check that they are still needed
 
-use move semantics for assignment in code and tests
+Mat?
 
 Line in opengl
 Reading/Writing MPACT files
