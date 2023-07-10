@@ -130,145 +130,77 @@ String::operator=(String && s) noexcept -> String &
   return *this;
 }
 
-// template <size_t N>
-// HOSTDEV auto
-// String::operator=(char const (&s)[N]) -> String &
-//{
-//   if (this->_capacity < static_cast<len_t>(N)) {
-//     delete[] this->_data;
-//     this->_capacity = static_cast<len_t>(bit_ceil(N));
-//     this->_data = new char[bit_ceil(N)];
-//   }
-//   this->_size = static_cast<len_t>(N - 1);
-//   memcpy(this->_data, s, N);
-//   return *this;
-// }
-//
-// template <size_t N>
-//// NOLINTNEXTLINE(*-avoid-c-arrays)
-// PURE HOSTDEV constexpr auto
-// String::operator==(char const (&s)[N]) const noexcept -> bool
-//{
-//   if (this->_size != static_cast<len_t>(N - 1)) {
-//     return false;
-//   }
-//   for (len_t i = 0; i < this->_size; ++i) {
-//     if (this->_data[i] != s[i]) {
-//       return false;
-//     }
-//   }
-//   return true;
-// }
-//
-// PURE HOSTDEV constexpr auto
-// String::operator==(String const & s) const noexcept -> bool
-//{
-//   if (this->_size != s._size) {
-//     return false;
-//   }
-//   for (len_t i = 0; i < this->_size; ++i) {
-//     if (this->_data[i] != s._data[i]) {
-//       return false;
-//     }
-//   }
-//   return true;
-// }
-//
-// PURE HOSTDEV constexpr auto
-// String::operator<(String const & s) const noexcept -> bool
-//{
-//   len_t const min_size = this->_size < s._size ? this->_size : s._size;
-//   for (len_t i = 0; i < min_size; ++i) {
-//     if (this->_data[i] != s._data[i]) {
-//       return this->_data[i] < s._data[i];
-//     }
-//   }
-//   return this->_size < s._size;
-// }
-//
-// PURE HOSTDEV constexpr auto
-// String::operator<=(String const & s) const noexcept -> bool
-//{
-//   len_t const min_size = this->_size < s._size ? this->_size : s._size;
-//   for (len_t i = 0; i < min_size; ++i) {
-//     if (this->_data[i] != s._data[i]) {
-//       return this->_data[i] < s._data[i];
-//     }
-//   }
-//   return this->_size <= s._size;
-// }
-//
-// PURE HOSTDEV constexpr auto
-// String::operator>(String const & s) const noexcept -> bool
-//{
-//   len_t const min_size = this->_size < s._size ? this->_size : s._size;
-//   for (len_t i = 0; i < min_size; ++i) {
-//     if (this->_data[i] != s._data[i]) {
-//       return this->_data[i] > s._data[i];
-//     }
-//   }
-//   return this->_size > s._size;
-// }
-//
-// PURE HOSTDEV constexpr auto
-// String::operator>=(String const & s) const noexcept -> bool
-//{
-//   len_t const min_size = this->_size < s._size ? this->_size : s._size;
-//   for (len_t i = 0; i < min_size; ++i) {
-//     if (this->_data[i] != s._data[i]) {
-//       return this->_data[i] > s._data[i];
-//     }
-//   }
-//   return this->_size >= s._size;
-// }
-//
-//// --------------------------------------------------------------------------
-//// Methods
-//// --------------------------------------------------------------------------
-//
-// PURE HOSTDEV constexpr auto
-// String::contains(char const c) const noexcept -> bool
-//{
-//  for (len_t i = 0; i < this->_size; ++i) {
-//    if (this->_data[i] == c) {
-//      return true;
-//    }
-//  }
-//  return false;
-//}
-//
-// PURE constexpr auto
-// String::starts_with(std::string const & s) const noexcept -> bool
-//{
-//
-//  if (this->_size < static_cast<len_t>(s.size())) {
-//    return false;
-//  }
-//  char const * const sdata = s.data();
-//  for (len_t i = 0; i < static_cast<len_t>(s.size()); ++i) {
-//    if (this->_data[i] != sdata[i]) {
-//      return false;
-//    }
-//  }
-//  return true;
-//}
-//
-// PURE constexpr auto
-// String::ends_with(std::string const & s) const noexcept -> bool
-//{
-//  auto const ssize = static_cast<len_t>(s.size());
-//  len_t const vsize = this->_size;
-//  if (vsize < ssize) {
-//    return false;
-//  }
-//  char const * const sdata = s.data();
-//  for (len_t i = 0; i < ssize; ++i) {
-//    if (this->_data[vsize - 1 - i] != sdata[ssize - 1 - i]) {
-//      return false;
-//    }
-//  }
-//  return true;
-//}
+HOSTDEV constexpr auto
+String::operator==(String const & s) const noexcept -> bool
+{
+  uint64_t const l_size = size();
+  uint64_t const r_size = s.size();
+  if (l_size != r_size) {
+    return false;
+  }
+  char const * l_data = data();
+  char const * r_data = s.data();
+  for (uint64_t i = 0; i < l_size; ++i) {
+    if (*l_data != *r_data) {
+      return false;
+    }
+    ++l_data;
+    ++r_data;
+  }
+  return true;
+}
+
+HOSTDEV constexpr auto
+String::operator!=(String const & s) const noexcept -> bool
+{
+  return !(*this == s);
+}
+
+HOSTDEV constexpr auto
+String::operator<(String const & s) const noexcept -> bool
+{
+  return compare(s) < 0;
+}
+
+HOSTDEV constexpr auto
+String::operator<=(String const & s) const noexcept -> bool
+{
+  return compare(s) <= 0;
+}
+
+HOSTDEV constexpr auto
+String::operator>(String const & s) const noexcept -> bool
+{
+  return compare(s) > 0;
+}
+
+HOSTDEV constexpr auto
+String::operator>=(String const & s) const noexcept -> bool
+{
+  return compare(s) >= 0;
+}
+
+// --------------------------------------------------------------------------
+// Methods
+// --------------------------------------------------------------------------
+
+HOSTDEV constexpr auto
+String::compare(String const & s) const noexcept -> int
+{
+  uint64_t const l_size = size();
+  uint64_t const r_size = s.size();
+  uint64_t const min_size = um2::min(l_size, r_size);
+  char const * l_data = data();
+  char const * r_data = s.data();
+  for (uint64_t i = 0; i < min_size; ++i) {
+    if (*l_data != *r_data) {
+      return static_cast<int>(*l_data) - static_cast<int>(*r_data);
+    }
+    ++l_data;
+    ++r_data;
+  }
+  return static_cast<int>(l_size) - static_cast<int>(r_size);
+}
 
 // --------------------------------------------------------------------------
 // HIDDEN
@@ -299,7 +231,7 @@ String::getShortCap() noexcept -> uint64_t
 }
 
 PURE HOSTDEV HIDDEN constexpr auto
-// NOLINTNEXTLINE
+// NOLINTNEXTLINE(readability-make-member-function-const)
 String::getLongPointer() noexcept -> char *
 {
   return _r.l.data;
@@ -341,23 +273,5 @@ String::fitsInShort(uint64_t n) noexcept -> bool
 {
   return n <= min_cap;
 }
-
-//// n includes null terminator
-// HOSTDEV HIDDEN constexpr void
-// String::initShort(uint64_t n) noexcept
-//{
-//   _r.s.is_long = false;
-//   _r.s.size = n - 1;
-// }
-//
-//// n includes null terminator
-// HOSTDEV HIDDEN constexpr void
-// String::initLong(uint64_t n) noexcept
-//{
-//   _r.l.is_long = 1;
-//   _r.l.cap = n - 1;
-//   _r.l.size = n - 1;
-//   _r.l.data = static_cast<char *>(::operator new(static_cast<uint64_t>(n)));
-// }
 
 } // namespace um2

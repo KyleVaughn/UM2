@@ -6,9 +6,9 @@
 #include <um2/common/memory.hpp>    // addressof
 #include <um2/common/utility.hpp>   // move
 
-#include <cstring> // memcpy, strcmp
+#include <um2/math/math_functions.hpp> // min
 
-//#include <string>  // std::string
+#include <cstring> // memcpy, strcmp
 
 namespace um2
 {
@@ -18,7 +18,6 @@ namespace um2
 // -----------------------------------------------------------------------------
 // A std::string-like class, but without an allocator template parameter.
 
-// NOLINTNEXTLINE
 struct String {
 
 private:
@@ -101,8 +100,6 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   data() const noexcept -> char const *;
 
-  //  explicit String(std::string const & s);
-  //
   // -----------------------------------------------------------------------------
   // Operators
   // -----------------------------------------------------------------------------
@@ -112,51 +109,32 @@ public:
 
   HOSTDEV constexpr auto
   operator=(String && s) noexcept -> String &;
-  //
-  //  template <size_t N>
-  //  HOSTDEV auto
-  //  operator=(char const (&s)[N]) -> String &;
-  //
-  //  auto
-  //  operator=(std::string const & s) -> String &;
-  //
-  //  PURE HOSTDEV constexpr auto
-  //  operator==(String const & s) const noexcept -> bool;
-  //
-  //  template <size_t N>
-  //  PURE HOSTDEV constexpr auto
-  //  operator==(char const (&s)[N]) const noexcept -> bool;
-  //
-  //  PURE auto
-  //  operator==(std::string const & s) const noexcept -> bool;
-  //
-  //  PURE HOSTDEV constexpr auto
-  //  operator<(String const & s) const noexcept -> bool;
-  //
-  //  PURE HOSTDEV constexpr auto
-  //  operator>(String const & s) const noexcept -> bool;
-  //
-  //  PURE HOSTDEV constexpr auto
-  //  operator<=(String const & s) const noexcept -> bool;
-  //
-  //  PURE HOSTDEV constexpr auto
-  //  operator>=(String const & s) const noexcept -> bool;
-  //
-  //  // -----------------------------------------------------------------------------
-  //  // Methods
-  //  // -----------------------------------------------------------------------------
-  //
-  //  PURE HOSTDEV [[nodiscard]] constexpr auto
-  //  contains(char c) const noexcept -> bool;
-  //
-  //  // NOLINTNEXTLINE(readability-identifier-naming)
-  //  PURE [[nodiscard]] constexpr auto
-  //  starts_with(std::string const & s) const noexcept -> bool;
-  //
-  //  // NOLINTNEXTLINE(readability-identifier-naming)
-  //  PURE [[nodiscard]] constexpr auto
-  //  ends_with(std::string const & s) const noexcept -> bool;
-  //
+
+  HOSTDEV constexpr auto
+  operator==(String const & s) const noexcept -> bool;
+
+  HOSTDEV constexpr auto
+  operator!=(String const & s) const noexcept -> bool;
+
+  HOSTDEV constexpr auto
+  operator<(String const & s) const noexcept -> bool;
+
+  HOSTDEV constexpr auto
+  operator<=(String const & s) const noexcept -> bool;
+
+  HOSTDEV constexpr auto
+  operator>(String const & s) const noexcept -> bool;
+
+  HOSTDEV constexpr auto
+  operator>=(String const & s) const noexcept -> bool;
+
+  // -----------------------------------------------------------------------------
+  // Methods
+  // -----------------------------------------------------------------------------
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  compare(String const & s) const noexcept -> int;
+
   // -----------------------------------------------------------------------------
   // HIDDEN
   // -----------------------------------------------------------------------------
@@ -202,14 +180,7 @@ public:
   initLong(uint64_t n) noexcept;
 
 }; // struct String
-//
-//// -----------------------------------------------------------------------------
-//// Methods
-//// -----------------------------------------------------------------------------
-//
-// PURE auto
-// toString(String const & s) -> std::string;
-//
+
 } // namespace um2
 
 #include "String.inl"

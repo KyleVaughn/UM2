@@ -118,46 +118,12 @@ public:
   // Methods
   // -----------------------------------------------------------------------------
 
-  //    void reserve(size_type n);
-  //    void shrink_to_fit() noexcept;
-  //    void push_back(const value_type& x);
-  //    void push_back(value_type&& x);
-  //    template <class... Args>
-  //        reference emplace_back(Args&&... args); // reference in C++17
-  //    template<container-compatible-range<T> R>
-  //      constexpr void append_range(R&& rg); // C++23
-  //    void pop_back();
-  //    iterator insert(const_iterator position, const value_type& x);
-  //    iterator insert(const_iterator position, value_type&& x);
-  //    iterator insert(const_iterator position, size_type n, const value_type& x);
-  //    template <class InputIterator>
-  //        iterator insert(const_iterator position, InputIterator first, InputIterator
-  //        last);
-  //    template<container-compatible-range<T> R>
-  //      constexpr iterator insert_range(const_iterator position, R&& rg); // C++23
-  //    iterator insert(const_iterator position, initializer_list<value_type> il);
-  //    iterator erase(const_iterator position);
-  //    iterator erase(const_iterator first, const_iterator last);
-
-  // HOSTDEV constexpr void
-  // reserve(Size n);
-
   HOSTDEV constexpr void
   clear() noexcept;
 
   HOSTDEV constexpr void
   resize(Size n) noexcept;
-  ////
-  ////  HOSTDEV inline void push_back(T const & value);
-  ////
-  ////  HOSTDEV void insert(T const * pos, Size n, T const & value);
-  ////
-  ////  HOSTDEV void insert(T const * pos, T const & value);
-  ////
-  ////  PURE HOSTDEV [[nodiscard]] constexpr auto
-  ////  contains(T const & value) const noexcept -> bool
-  /// requires(!std::floating_point<T>);
-  ////
+
   // -----------------------------------------------------------------------------
   // Operators
   // -----------------------------------------------------------------------------
@@ -174,9 +140,6 @@ public:
 
   HOSTDEV constexpr auto
   operator=(Vector && v) noexcept -> Vector &;
-  ////
-  ////  PURE HOSTDEV constexpr auto operator==(Vector const & v) const noexcept -> bool;
-  //
 
   // -----------------------------------------------------------------------------
   // Hidden
@@ -205,20 +168,6 @@ public:
   recommend(Size new_size) const noexcept -> Size;
 
 }; // struct Vector
-
-// -----------------------------------------------------------------------------
-// Methods
-// -----------------------------------------------------------------------------
-
-// template <typename T>
-// requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) PURE HOSTDEV
-//     constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
-//                             T epsilon = T{}) noexcept -> bool;
-//
-// template <typename T>
-// requires(std::unsigned_integral<T>) PURE HOSTDEV
-//     constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
-//                             T epsilon = T{}) noexcept -> bool;
 
 // Vector<bool> is a specialization that is not supported
 template <>

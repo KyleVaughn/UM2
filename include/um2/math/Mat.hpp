@@ -49,19 +49,8 @@ struct Mat {
   // -- Constructors --
 
   constexpr Mat() noexcept = default;
-
-  //    template<std::same_as<Col> ...Cols>
-  //    requires (sizeof...(Cols) == N)
-  //    HOSTDEV constexpr Mat(Cols... cols);
 };
 
-//// -- Aliases --
-//
-// template <typename T = defaultp> using Mat2x2 = Mat<2, 2, T, Q>;
-//
-// template <Qualifier Q = defaultp> using Mat2x2f = Mat2x2<float, Q>;
-// template <Qualifier Q = defaultp> using Mat2x2d = Mat2x2<double, Q>;
-//
 } // namespace um2
 
 #include "Mat.inl"
