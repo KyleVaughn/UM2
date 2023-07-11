@@ -2,6 +2,19 @@ Color
 Quadratic Geom
 Rectilinear Grid
 
+Examine Ray/LineSegment, Ray/Mesh, Ray/QuadraticSegement intersections by
+using a change of basis to make the ray R = o + t*d into R = o' + t'*d' where
+d' = (1, 0, 0) and o' = (0, 0, 0).  Then the intersection is just the
+
+FVM
+  vertices xyz
+  faces v0 v1 v2
+  ff (f1, f2, f3) ??
+  vf (v1, v2, v3)
+  vf offsets
+
+Consider adding a mesh with edges
+
 String -> MeshFile
 
 Seach for NOLINTS and check that they are still needed

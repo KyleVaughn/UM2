@@ -62,7 +62,6 @@ TEST_CASE(copy_constructor)
   s0.data()[0] = 'a';
   // cppcheck-suppress assertWithSideEffect
   assert(s.data()[0] == 'h');
-
 }
 MAKE_CUDA_KERNEL(copy_constructor);
 
@@ -103,7 +102,6 @@ TEST_CASE(assign_operator)
   s0.data()[0] = 'a';
   // cppcheck-suppress assertWithSideEffect
   assert(s.data()[0] == 'h');
-
 }
 MAKE_CUDA_KERNEL(assign_operator);
 

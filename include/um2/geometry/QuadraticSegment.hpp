@@ -37,8 +37,7 @@ struct Polytope<1, 2, 3, D, T> {
 
   constexpr Polytope() noexcept = default;
 
-  HOSTDEV constexpr Polytope(Point<D, T> const & p0, 
-                             Point<D, T> const & p1,
+  HOSTDEV constexpr Polytope(Point<D, T> const & p0, Point<D, T> const & p1,
                              Point<D, T> const & p2) noexcept;
 
   // -----------------------------------------------------------------------------

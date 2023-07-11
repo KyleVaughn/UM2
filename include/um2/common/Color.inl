@@ -258,7 +258,7 @@ toColor(String const & name) noexcept -> Color
       {         String("yellowgreen"),  {154, 205, 50, 255}}
   };
   // Binary search
-  NamedColor const * first = addressof(named_colors[0]); 
+  NamedColor const * first = addressof(named_colors[0]);
   NamedColor const * last = first + num_named_colors; // 1 past the end
   auto length = last - first;
   while (0 < length) {

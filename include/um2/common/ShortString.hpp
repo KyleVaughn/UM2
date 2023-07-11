@@ -21,7 +21,6 @@ namespace um2
 struct ShortString {
 
 private:
-
   char _c[32];
   // data[31] is used to store the remaining capacity of the string.
   // In the event that the array is full, data[31] will be 0, a null terminator.
@@ -41,7 +40,7 @@ public:
   // -----------------------------------------------------------------------------
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  size() const noexcept -> Size; 
+  size() const noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] static constexpr auto
   capacity() noexcept -> Size;

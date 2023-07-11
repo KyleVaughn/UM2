@@ -7,7 +7,7 @@ namespace um2
 
 HOSTDEV constexpr ShortString::ShortString() noexcept
 {
-  memset(data(), 0, sizeof(ShortString) - 1); 
+  memset(data(), 0, sizeof(ShortString) - 1);
   _c[31] = static_cast<char>(31);
 }
 
@@ -23,15 +23,15 @@ HOSTDEV constexpr ShortString::ShortString(char const (&s)[N]) noexcept
 // Accessors
 // --------------------------------------------------------------------------
 PURE HOSTDEV constexpr auto
-ShortString::size() const noexcept -> Size 
+ShortString::size() const noexcept -> Size
 {
   return capacity() - _c[31];
 }
 
 PURE HOSTDEV constexpr auto
-ShortString::capacity() noexcept -> Size 
+ShortString::capacity() noexcept -> Size
 {
-  return sizeof(ShortString) - 1; 
+  return sizeof(ShortString) - 1;
 }
 
 PURE HOSTDEV constexpr auto
@@ -43,7 +43,7 @@ ShortString::data() noexcept -> char *
 PURE HOSTDEV constexpr auto
 ShortString::data() const noexcept -> char const *
 {
-  return addressof(_c[0]); 
+  return addressof(_c[0]);
 }
 
 // --------------------------------------------------------------------------
