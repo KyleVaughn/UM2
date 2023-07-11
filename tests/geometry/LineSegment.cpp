@@ -8,8 +8,8 @@ makeLine() -> um2::LineSegment<D, T>
 {
   um2::LineSegment<D, T> line;
   for (Size i = 0; i < D; ++i) {
-    line.vertices[0][i] = static_cast<T>(1);
-    line.vertices[1][i] = static_cast<T>(2);
+    line.w[0][i] = static_cast<T>(1);
+    line.w[1][i] = static_cast<T>(1);
   }
   return line;
 }
@@ -23,8 +23,12 @@ HOSTDEV
 TEST_CASE(accessors)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
-  ASSERT(um2::isApprox(line[0], line.vertices[0]));
-  ASSERT(um2::isApprox(line[1], line.vertices[1]));
+  ASSERT(um2::isApprox(line.getVertex(0), line.w[0]));
+  um2::Vec<D, T> p1;
+  for (Size i = 0; i < D; ++i) {
+    p1[i] = line.w[0][i] + line.w[1][i];
+  }
+  ASSERT(um2::isApprox(line.getVertex(1), p1));
 }
 
 // -------------------------------------------------------------------
@@ -37,9 +41,8 @@ TEST_CASE(interpolate)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
   um2::Point<D, T> p0 = line(0);
-  ASSERT((um2::isApprox(p0, line[0])));
+  ASSERT((um2::isApprox(p0, line.w[0])));
   um2::Point<D, T> p1 = line(1);
-  ASSERT((um2::isApprox(p1, line[1])));
   um2::Point<D, T> p05 = line(static_cast<T>(0.5));
   um2::Point<D, T> mp = um2::midpoint(p0, p1);
   ASSERT((um2::isApprox(p05, mp)));
@@ -54,10 +57,7 @@ HOSTDEV
 TEST_CASE(jacobian)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
-  um2::Vec<D, T> j_ref;
-  for (Size i = 0; i < D; ++i) {
-    j_ref[i] = line[1][i] - line[0][i];
-  }
+  um2::Vec<D, T> j_ref = line.w[1];
   um2::Vec<D, T> j0 = line.jacobian(0);
   um2::Vec<D, T> j1 = line.jacobian(1);
   ASSERT(um2::isApprox(j0, j_ref));
@@ -73,7 +73,7 @@ HOSTDEV
 TEST_CASE(length)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
-  T len_ref = line[0].distanceTo(line[1]);
+  T len_ref = line.getVertex(0).distanceTo(line.getVertex(1));
   ASSERT_NEAR(line.length(), len_ref, static_cast<T>(1e-5));
 }
 
@@ -87,8 +87,8 @@ TEST_CASE(boundingBox)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
   um2::AxisAlignedBox<D, T> box = line.boundingBox();
-  ASSERT(um2::isApprox(line[0], box.minima));
-  ASSERT(um2::isApprox(line[1], box.maxima));
+  ASSERT(um2::isApprox(line.getVertex(0), box.minima));
+  ASSERT(um2::isApprox(line.getVertex(1), box.maxima));
 }
 
 // -------------------------------------------------------------------
@@ -100,8 +100,8 @@ HOSTDEV
 TEST_CASE(isLeft)
 {
   um2::LineSegment2<T> line = makeLine<2, T>();
-  um2::Point2<T> p0 = line[0];
-  um2::Point2<T> p1 = line[1];
+  um2::Point2<T> p0 = line.getVertex(0);
+  um2::Point2<T> p1 = line.getVertex(1);
   p0[1] -= static_cast<T>(1); // (1, 0)
   p1[1] += static_cast<T>(1); // (2, 3)
   ASSERT(!line.isLeft(p0));

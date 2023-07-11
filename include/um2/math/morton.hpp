@@ -2,8 +2,6 @@
 
 #include <um2/config.hpp>
 
-#include <cuda/std/bit> // bit_ceil
-
 #include <concepts>
 
 // If CPU supports BMI2, and we are compiling for CPU, then use BMI2 intrinsics.

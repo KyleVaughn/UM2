@@ -53,7 +53,7 @@ struct Polytope<2, 1, 3, D, T> {
   edge(Size i) const noexcept -> LineSegment<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  contains(Point<D, T> const & p) const noexcept -> bool requires(D == 2);
+  contains(Point<D, T> const & p) const noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   area() const noexcept -> T;

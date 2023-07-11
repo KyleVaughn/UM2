@@ -19,6 +19,15 @@ using QuadraticSegment2d = QuadraticSegment2<double>;
 template <Size D, typename T>
 struct Polytope<1, 2, 3, D, T> {
 
+  //  Q(r) = P₁ + r𝘂 + r²𝘃,        
+  // where        
+  //  𝘂 = 3𝘃₁₃ + 𝘃₂₃    = -3q[1] -  q[2] + 4q[3] 
+  //  𝘃 = -2(𝘃₁₃ + 𝘃₂₃) =  2q[1] + 2q[2] - 4q[3]       
+  // and        
+  // 𝘃₁₃ = q[3] - q[1]        
+  // 𝘃₂₃ = q[3] - q[2]        
+  // NOTE: The equations above use 1-based indexing.        
+
   Point<D, T> vertices[3];
 
   // -----------------------------------------------------------------------------
@@ -49,10 +58,10 @@ struct Polytope<1, 2, 3, D, T> {
   operator()(R r) const noexcept -> Point<D, T>;
 
   template <typename R>
-  PURE HOSTDEV [[nodiscard]] constexpr auto jacobian(R /*r*/) const noexcept -> Vec<D, T>;
+  PURE HOSTDEV [[nodiscard]] constexpr auto jacobian(R r) const noexcept -> Vec<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isLeft(Point<D, T> const & p) const noexcept -> bool requires(D == 2);
+  isLeft(Point<D, T> const & p) const noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   length() const noexcept -> T;

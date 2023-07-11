@@ -79,8 +79,9 @@ Triangle<D, T>::edge(Size i) const noexcept -> LineSegment<D, T>
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-Triangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool requires(D == 2)
+Triangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
 {
+  static_assert(D == 2, "Triangle::contains() is only defined for 2D triangles");
   return areCCW(vertices[0], vertices[1], p) && areCCW(vertices[1], vertices[2], p) &&
          areCCW(vertices[2], vertices[0], p);
 }
@@ -121,7 +122,7 @@ Triangle<D, T>::centroid() const noexcept -> Point<D, T>
   // (v0 + v1 + v2) / 3
   Point<D, T> result;
   for (Size i = 0; i < D; ++i) {
-    result[i] = (vertices[0][i] + vertices[1][i] + vertices[2][i]);
+    result[i] = vertices[0][i] + vertices[1][i] + vertices[2][i];
   }
   return result /= 3;
 }

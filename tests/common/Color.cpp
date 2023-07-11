@@ -79,13 +79,13 @@ MAKE_CUDA_KERNEL(color_double_constructor)
 HOSTDEV
 TEST_CASE(toColor)
 {
-  um2::Color aliceblue = um2::toColor(um2::String("aliceblue"));
+  um2::Color aliceblue = um2::toColor(um2::ShortString("aliceblue"));
   um2::Color aliceblue_ref(240, 248, 255, 255);
   ASSERT(aliceblue.r() == aliceblue_ref.r());
   ASSERT(aliceblue.g() == aliceblue_ref.g());
   ASSERT(aliceblue.b() == aliceblue_ref.b());
   ASSERT(aliceblue.a() == aliceblue_ref.a());
-  um2::Color yellow = um2::toColor(um2::String("yellow"));
+  um2::Color yellow = um2::toColor(um2::ShortString("yellow"));
   um2::Color yellow_ref(255, 255, 0, 255);
   ASSERT(yellow.r() == yellow_ref.r());
   ASSERT(yellow.g() == yellow_ref.g());
@@ -97,7 +97,7 @@ MAKE_CUDA_KERNEL(toColor)
 HOSTDEV
 TEST_CASE(color_string_constructor)
 {
-  um2::Color aliceblue(um2::String("aliceblue"));
+  um2::Color aliceblue(um2::ShortString("aliceblue"));
   um2::Color aliceblue_ref(240, 248, 255, 255);
   ASSERT(aliceblue.r() == aliceblue_ref.r());
   ASSERT(aliceblue.g() == aliceblue_ref.g());

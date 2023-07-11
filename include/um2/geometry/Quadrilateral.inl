@@ -92,8 +92,7 @@ Quadrilateral<D, T>::edge(Size i) const noexcept -> LineSegment<D, T>
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-Quadrilateral<D, T>::contains(Point<D, T> const & p) const noexcept
-    -> bool requires(D == 2)
+Quadrilateral<D, T>::contains(Point<D, T> const & p) const noexcept -> bool 
 {
   return areCCW(vertices[0], vertices[1], p) && areCCW(vertices[1], vertices[2], p) &&
          areCCW(vertices[2], vertices[3], p) && areCCW(vertices[3], vertices[0], p);
@@ -105,8 +104,9 @@ Quadrilateral<D, T>::contains(Point<D, T> const & p) const noexcept
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-Quadrilateral<D, T>::area() const noexcept -> T requires(D == 2)
+Quadrilateral<D, T>::area() const noexcept -> T
 {
+  static_assert(D == 2, "Area of quadrilateral is only defined in 2D");
   // (v2 - v0).cross(v3 - v1) / 2
   Vec<D, T> ac;
   Vec<D, T> bd;
@@ -124,8 +124,8 @@ Quadrilateral<D, T>::area() const noexcept -> T requires(D == 2)
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::centroid() const noexcept -> Point<D, T>
-requires(D == 2)
 {
+  static_assert(D == 2, "Centroid of quadrilateral is only defined in 2D");
   // Algorithm: Decompose the quadrilateral into two triangles and
   // compute the centroid of each triangle. The centroid of the
   // quadrilateral is the weighted average of the centroids of the

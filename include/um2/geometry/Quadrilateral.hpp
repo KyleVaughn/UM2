@@ -48,14 +48,13 @@ struct Polytope<2, 1, 4, D, T> {
   edge(Size i) const noexcept -> LineSegment<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  contains(Point<D, T> const & p) const noexcept -> bool requires(D == 2);
+  contains(Point<D, T> const & p) const noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  area() const noexcept -> T requires(D == 2);
+  area() const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  centroid() const noexcept -> Point<D, T>
-  requires(D == 2);
+  centroid() const noexcept -> Point<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;

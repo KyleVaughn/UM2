@@ -103,9 +103,8 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
 {
-  T const eps = epsilonDistance<T>();
   for (Size i = 0; i < D; ++i) {
-    if (p[i] < minima[i] - eps || maxima[i] + eps < p[i]) {
+    if (p[i] < minima[i] || maxima[i] < p[i]) {
       return false;
     }
   }
@@ -127,10 +126,13 @@ PURE HOSTDEV constexpr auto
 boundingBox(AxisAlignedBox<D, T> const & a, AxisAlignedBox<D, T> const & b) noexcept
     -> AxisAlignedBox<D, T>
 {
-  Point<D, T> minima = a.minima;
-  minima.min(b.minima);
-  Point<D, T> maxima = a.maxima;
-  maxima.max(b.maxima);
+
+  Point<D, T> minima;
+  Point<D, T> maxima;
+  for (Size i = 0; i < D; ++i) {
+    minima[i] = um2::min(a.minima[i], b.minima[i]);
+    maxima[i] = um2::max(a.maxima[i], b.maxima[i]);
+  }
   return AxisAlignedBox<D, T>{minima, maxima};
 }
 

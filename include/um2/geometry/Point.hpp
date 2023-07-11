@@ -70,9 +70,9 @@ midpoint(Point<D, T> const & a, Point<D, T> const & b) noexcept -> Point<D, T>
   // (a + b) / 2
   Point<D, T> result;
   for (Size i = 0; i < D; ++i) {
-    result[i] = (a[i] + b[i]) / 2;
+    result[i] = a[i] + b[i];
   }
-  return result;
+  return result /= 2;
 }
 
 template <Size D, class T>
@@ -92,7 +92,8 @@ areCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept -
   T const ac_x = c[0] - a[0];
   T const ab_y = b[1] - a[1];
   T const ac_y = c[1] - a[1];
-  return 0 < (ab_x * ac_y - ab_y * ac_x);
+  // Allow equality, so that we can handle collinear points.
+  return 0 <= (ab_x * ac_y - ab_y * ac_x);
 }
 
 } // namespace um2

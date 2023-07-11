@@ -2,24 +2,6 @@ namespace um2
 {
 
 // -------------------------------------------------------------------
-// Accessors
-// -------------------------------------------------------------------
-
-template <Size D, typename T>
-PURE HOSTDEV constexpr auto
-LineSegment<D, T>::operator[](Size i) noexcept -> Point<D, T> &
-{
-  return vertices[i];
-}
-
-template <Size D, typename T>
-PURE HOSTDEV constexpr auto
-LineSegment<D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
-{
-  return vertices[i];
-}
-
-// -------------------------------------------------------------------
 // Constructors
 // -------------------------------------------------------------------
 
@@ -27,8 +9,21 @@ template <Size D, typename T>
 HOSTDEV constexpr LineSegment<D, T>::Polytope(Point<D, T> const & p0,
                                               Point<D, T> const & p1) noexcept
 {
-  vertices[0] = p0;
-  vertices[1] = p1;
+  w[0] = p0;
+  for (Size i = 1; i < D; ++i) {
+    w[1] = p1[i] - p0[i];
+  }
+}
+
+// -------------------------------------------------------------------
+// Accessors
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+LineSegment<D, T>::getVertex(Size const i) const noexcept -> Point<D, T>
+{
+  return this->operator()(i);
 }
 
 // -------------------------------------------------------------------
@@ -40,10 +35,9 @@ template <typename R>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::operator()(R const r) const noexcept -> Point<D, T>
 {
-  // v0 + r * (v1 - v0)
   Point<D, T> result;
   for (Size i = 0; i < D; ++i) {
-    result[i] = vertices[0][i] + static_cast<T>(r) * (vertices[1][i] - vertices[0][i]);
+    result[i] = w[0][i] + static_cast<T>(r) * w[1][i];
   }
   return result;
 }
@@ -57,12 +51,9 @@ template <typename R>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::jacobian(R /*r*/) const noexcept -> Vec<D, T>
 {
-  // v1 - v0
-  Vec<D, T> result;
-  for (Size i = 0; i < D; ++i) {
-    result[i] = vertices[1][i] - vertices[0][i];
-  }
-  return result;
+  // L(r) = = w0 + r * w1  
+  // L'(r) = w1
+  return w[1]; 
 }
 
 // -------------------------------------------------------------------
@@ -71,9 +62,17 @@ LineSegment<D, T>::jacobian(R /*r*/) const noexcept -> Vec<D, T>
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-LineSegment<D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool requires(D == 2)
+LineSegment<D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool
 {
-  return areCCW(vertices[0], vertices[1], p);
+  static_assert(D == 2, "isLeft is only defined for 2D line segments");
+  // If the cross product of the vector from the first vertex to the 
+  // second vertex and the vector from the first vertex to the point
+  // is positive, then the point is to the left of the line segment.
+  Vec<D, T> dp;
+  for (Size i = 0; i < D; ++i) {
+    dp[i] = p[i] - w[0][i];
+  }
+  return 0 <= w[1].cross(dp); 
 }
 
 // -------------------------------------------------------------------
@@ -84,7 +83,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::length() const noexcept -> T
 {
-  return vertices[0].distanceTo(vertices[1]);
+  return w[1].norm();
 }
 
 // -------------------------------------------------------------------
@@ -95,7 +94,12 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 {
-  return um2::boundingBox(vertices);
+  Point<D, T> minima = w[0];
+  Point<D, T> maxima = w[0];
+  Point<D, T> v1 = getVertex(1);
+  minima.min(v1);
+  maxima.max(v1);
+  return AxisAlignedBox<D, T>{minima, maxima}; 
 }
 
 } // namespace um2

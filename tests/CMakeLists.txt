@@ -8,24 +8,24 @@ add_um2_test(./common/memory/construct_at.cpp)
 add_um2_test(./common/Vector.cpp)
 add_um2_test(./common/sto.cpp) 
 add_um2_test(./common/ShortString.cpp)
-#add_um2_test(./common/Color.cpp)
+add_um2_test(./common/Color.cpp)
 
-## ------------------------------------------------------------------------------
-## math
-## ------------------------------------------------------------------------------
-#add_um2_test(./math/morton.cpp)
-#add_um2_test(./math/Vec.cpp)
-#add_um2_test(./math/Mat.cpp)
-#
-## ------------------------------------------------------------------------------
-## geometry
-## ------------------------------------------------------------------------------
-#add_um2_test(./geometry/Point.cpp)
-#add_um2_test(./geometry/AxisAlignedBox.cpp)
-#add_um2_test(./geometry/LineSegment.cpp)
-#add_um2_test(./geometry/QuadraticSegment.cpp)
+# ------------------------------------------------------------------------------
+# math
+# ------------------------------------------------------------------------------
+add_um2_test(./math/morton.cpp)
+add_um2_test(./math/Vec.cpp)
+add_um2_test(./math/Mat.cpp)
+
+# ------------------------------------------------------------------------------
+# geometry
+# ------------------------------------------------------------------------------
+add_um2_test(./geometry/Point.cpp)
+add_um2_test(./geometry/AxisAlignedBox.cpp)
+add_um2_test(./geometry/LineSegment.cpp)
 #add_um2_test(./geometry/Triangle.cpp)
 #add_um2_test(./geometry/Quadrilateral.cpp)
+#add_um2_test(./geometry/QuadraticSegment.cpp)
 #
 ## ------------------------------------------------------------------------------
 ## mesh

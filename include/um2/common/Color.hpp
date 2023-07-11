@@ -2,12 +2,9 @@
 
 #include <um2/config.hpp>
 
-#include <um2/common/String.hpp>
-
-#include <cuda/std/bit> // bit_cast
+#include <um2/common/ShortString.hpp>
 
 #include <concepts>
-#include <cstdio> // sscanf
 
 namespace um2
 {
@@ -49,7 +46,7 @@ struct Color {
   template <size_t N>
   HOSTDEV constexpr explicit Color(char const (&name)[N]) noexcept;
 
-  HOSTDEV constexpr explicit Color(String const & name) noexcept;
+  HOSTDEV constexpr explicit Color(ShortString const & name) noexcept;
 
   // -----------------------------------------------------------------------------
   // Accessors
@@ -83,7 +80,7 @@ operator!=(Color lhs, Color rhs) noexcept -> bool;
 // -----------------------------------------------------------------------------
 
 PURE HOSTDEV constexpr auto
-toColor(String const & name) noexcept -> Color;
+toColor(ShortString const & name) noexcept -> Color;
 
 } // namespace um2
 
