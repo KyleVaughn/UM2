@@ -27,24 +27,29 @@ TEST_CASE(interpolate)
   }
 }
 
-//// -------------------------------------------------------------------
-//// jacobian
-//// -------------------------------------------------------------------
-//
-//template <Size D, typename T>
-//HOSTDEV
-//TEST_CASE(jacobian)
-//{
-//  um2::QuadraticSegment<D, T> seg = makeQuadratic<D, T>();
-//  um2::Vec<D, T> j_ref;
-//  for (Size i = 0; i < D; ++i) {
-//    j_ref[i] = seg[1][i] - seg[0][i];
-//  }
-//  um2::Vec<D, T> j0 = seg.jacobian(0);
-//  um2::Vec<D, T> j1 = seg.jacobian(1);
-//  ASSERT(um2::isApprox(j0, j_ref));
-//  ASSERT(um2::isApprox(j1, j_ref));
-//}
+// -------------------------------------------------------------------
+// jacobian
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+HOSTDEV
+TEST_CASE(jacobian)
+{
+  um2::QuadraticSegment<D, T> seg;
+  seg[0] = um2::zeroVec<D, T>();
+  seg[1] = um2::zeroVec<D, T>();
+  seg[2] = um2::zeroVec<D, T>();
+  seg[1][0] = static_cast<T>(1);
+  seg[2][0] = static_cast<T>(0.5);
+  um2::Vec<D, T> j0 = seg.jacobian(0);
+  um2::Vec<D, T> j12 = seg.jacobian(static_cast<T>(0.5));
+  um2::Vec<D, T> j1 = seg.jacobian(1);
+  um2::Vec<D, T> j_ref = um2::zeroVec<D, T>();
+  j_ref[0] = static_cast<T>(1);
+  ASSERT(um2::isApprox(j0, j_ref));
+  ASSERT(um2::isApprox(j12, j_ref));
+  ASSERT(um2::isApprox(j1, j_ref));
+}
 
 //// -------------------------------------------------------------------
 //// length
@@ -96,16 +101,13 @@ TEST_CASE(interpolate)
 //  ASSERT(seg.isLeft(p1));
 //}
 //
-//#if UM2_ENABLE_CUDA
-//template <Size D, typename T>
-//MAKE_CUDA_KERNEL(accessors, D, T);
-//
-//template <Size D, typename T>
-//MAKE_CUDA_KERNEL(interpolate, D, T);
-//
-//template <Size D, typename T>
-//MAKE_CUDA_KERNEL(jacobian, D, T);
-//
+#if UM2_ENABLE_CUDA
+template <Size D, typename T>
+MAKE_CUDA_KERNEL(interpolate, D, T);
+
+template <Size D, typename T>
+MAKE_CUDA_KERNEL(jacobian, D, T);
+
 //template <Size D, typename T>
 //MAKE_CUDA_KERNEL(length, D, T);
 //
@@ -114,13 +116,13 @@ TEST_CASE(interpolate)
 //
 //template <typename T>
 //MAKE_CUDA_KERNEL(isLeft, T);
-//#endif
+#endif
 
 template <Size D, typename T>
 TEST_SUITE(QuadraticSegment)
 {
   TEST_HOSTDEV(interpolate, 1, 1, D, T);
-//  TEST_HOSTDEV(jacobian, 1, 1, D, T);
+  TEST_HOSTDEV(jacobian, 1, 1, D, T);
 //  TEST_HOSTDEV(length, 1, 1, D, T);
 //  TEST_HOSTDEV(boundingBox, 1, 1, D, T);
 //  TEST_HOSTDEV(isLeft, 1, 1, T);

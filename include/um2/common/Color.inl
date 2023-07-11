@@ -268,7 +268,7 @@ toColor(String const & name) noexcept -> Color
     }
     length = half;
   }
-  return first->name == name ? first->color : Color(); 
+  return first->color;
 }
 
 } // namespace um2

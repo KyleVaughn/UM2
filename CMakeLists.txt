@@ -43,25 +43,25 @@ set(UM2_HEADERS
     "include/um2/common/algorithm.hpp"
     "include/um2/common/Vector.hpp"
     "include/um2/common/sto.hpp"
-    "include/um2/common/String.hpp"
-    "include/um2/common/Color.hpp"
-    # math
-    "include/um2/math/morton.hpp"
-    "include/um2/math/Vec.hpp"
-    "include/um2/math/Mat.hpp"
-    # geometry
-    "include/um2/geometry/Point.hpp"
-    "include/um2/geometry/AxisAlignedBox.hpp"
-    "include/um2/geometry/LineSegment.hpp"
-    "include/um2/geometry/Triangle.hpp"
-    "include/um2/geometry/Quadrilateral.hpp"
-    # mesh
-    "include/um2/mesh/RegularGrid.hpp"
-    "include/um2/mesh/RegularPartition.hpp"
-    # ray_casting
-    "include/um2/ray_casting/Ray.hpp"
-    # api
-    "include/um2c.h"
+    "include/um2/common/ShortString.hpp"
+    #    "include/um2/common/Color.hpp"
+    #    # math
+    #    "include/um2/math/morton.hpp"
+    #    "include/um2/math/Vec.hpp"
+    #    "include/um2/math/Mat.hpp"
+    #    # geometry
+    #    "include/um2/geometry/Point.hpp"
+    #    "include/um2/geometry/AxisAlignedBox.hpp"
+    #    "include/um2/geometry/LineSegment.hpp"
+    #    "include/um2/geometry/Triangle.hpp"
+    #    "include/um2/geometry/Quadrilateral.hpp"
+    #    # mesh
+    #    "include/um2/mesh/RegularGrid.hpp"
+    #    "include/um2/mesh/RegularPartition.hpp"
+    #    # ray_casting
+    #    "include/um2/ray_casting/Ray.hpp"
+    #    # api
+    #    "include/um2c.h"
     )
 
 # Sources
