@@ -51,33 +51,72 @@ TEST_CASE(jacobian)
   ASSERT(um2::isApprox(j1, j_ref));
 }
 
-//// -------------------------------------------------------------------
-//// length
-//// -------------------------------------------------------------------
-//
-// template <Size D, typename T>
-// HOSTDEV
-// TEST_CASE(length)
-//{
-//  um2::QuadraticSegment<D, T> seg = makeQuadratic<D, T>();
-//  T len_ref = seg[0].distanceTo(seg[1]);
-//  ASSERT_NEAR(seg.length(), len_ref, static_cast<T>(1e-5));
-//}
-//
-//// -------------------------------------------------------------------
-//// boundingBox
-//// -------------------------------------------------------------------
-//
-// template <Size D, typename T>
-// HOSTDEV
-// TEST_CASE(boundingBox)
-//{
-//  um2::QuadraticSegment<D, T> seg = makeQuadratic<D, T>();
-//  um2::AxisAlignedBox<D, T> box = seg.boundingBox();
-//  ASSERT(um2::isApprox(seg[0], box.minima));
-//  ASSERT(um2::isApprox(seg[1], box.maxima));
-//}
-//
+// -------------------------------------------------------------------
+// isStraight
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+HOSTDEV
+TEST_CASE(isStraight)
+{
+  um2::QuadraticSegment<D, T> seg;
+  seg[0] = um2::zeroVec<D, T>();
+  seg[1] = um2::zeroVec<D, T>();
+  seg[2] = um2::zeroVec<D, T>();
+  seg[1][0] = static_cast<T>(1);
+  seg[2][0] = static_cast<T>(0.5);
+  ASSERT(seg.isStraight());
+  seg[2][1] = static_cast<T>(0.5);
+  ASSERT(!seg.isStraight());
+}
+
+// -------------------------------------------------------------------
+// length
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+HOSTDEV
+TEST_CASE(length)
+{
+  um2::QuadraticSegment<D, T> seg;
+  for (Size i = 0; i < 3; ++i) {
+    seg[i] = um2::zeroVec<D, T>();
+  }
+  seg[1][0] = static_cast<T>(1);
+  seg[2][0] = static_cast<T>(0.5);
+  T l_ref = static_cast<T>(1);
+  T l = seg.length();
+  ASSERT_NEAR(l, l_ref, static_cast<T>(1e-5));
+
+  seg[2][1] = static_cast<T>(0.5);
+  l_ref = static_cast<T>(1.4789428575445974);
+  l = seg.length();
+  ASSERT_NEAR(l, l_ref, static_cast<T>(1e-5));
+}
+
+// -------------------------------------------------------------------
+// boundingBox
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+HOSTDEV
+TEST_CASE(boundingBox)
+{
+  um2::QuadraticSegment<D, T> seg;
+  for (Size i = 0; i < D; ++i) {
+    seg[i] = um2::zeroVec<D, T>();
+  }
+  seg[1][0] = static_cast<T>(1);
+  seg[2][0] = static_cast<T>(0.5);
+  seg[2][1] = static_cast<T>(0.7);
+  um2::AxisAlignedBox<D, T> box = seg.boundingBox();
+  um2::Point<D, T> p0 = seg(0);
+  um2::Point<D, T> p1 = seg(1);
+  p1.data[1] = static_cast<T>(0.7);
+  ASSERT(um2::isApprox(p0, box.minima));
+  ASSERT(um2::isApprox(p1, box.maxima));
+}
+
 //// -------------------------------------------------------------------
 //// isLeft
 //// -------------------------------------------------------------------
@@ -108,14 +147,14 @@ MAKE_CUDA_KERNEL(interpolate, D, T);
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(jacobian, D, T);
 
-// template <Size D, typename T>
-// MAKE_CUDA_KERNEL(length, D, T);
-//
-// template <Size D, typename T>
-// MAKE_CUDA_KERNEL(boundingBox, D, T);
-//
-// template <typename T>
-// MAKE_CUDA_KERNEL(isLeft, T);
+template <Size D, typename T>
+MAKE_CUDA_KERNEL(length, D, T);
+
+template <Size D, typename T>
+MAKE_CUDA_KERNEL(boundingBox, D, T);
+
+template <typename T>
+MAKE_CUDA_KERNEL(isLeft, T);
 #endif
 
 template <Size D, typename T>
@@ -123,8 +162,9 @@ TEST_SUITE(QuadraticSegment)
 {
   TEST_HOSTDEV(interpolate, 1, 1, D, T);
   TEST_HOSTDEV(jacobian, 1, 1, D, T);
-  //  TEST_HOSTDEV(length, 1, 1, D, T);
-  //  TEST_HOSTDEV(boundingBox, 1, 1, D, T);
+  TEST_HOSTDEV(isStraight, 1, 1, D, T);
+  TEST_HOSTDEV(boundingBox, 1, 1, D, T);
+  TEST_HOSTDEV(length, 1, 1, D, T);
   //  TEST_HOSTDEV(isLeft, 1, 1, T);
 }
 

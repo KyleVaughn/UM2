@@ -9,14 +9,14 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::operator[](Size i) noexcept -> Point<D, T> &
 {
-  return vertices[i];
+  return v[i];
 }
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
 {
-  return vertices[i];
+  return v[i];
 }
 
 // -------------------------------------------------------------------
@@ -40,8 +40,7 @@ Quadrilateral<D, T>::operator()(R const r, S const s) const noexcept -> Point<D,
   T const w3 = (1 - rr) * ss;
   Point<D, T> result;
   for (Size i = 0; i < D; ++i) {
-    result[i] = w0 * vertices[0][i] + w1 * vertices[1][i] + w2 * vertices[2][i] +
-                w3 * vertices[3][i];
+    result[i] = w0 * v[0][i] + w1 * v[1][i] + w2 * v[2][i] + w3 * v[3][i];
   }
   return result;
 }
@@ -65,10 +64,8 @@ Quadrilateral<D, T>::jacobian(R r, S s) const noexcept -> Mat<D, 2, T>
   // T const w3 = rr;
   Mat<D, 2, T> jac;
   for (Size i = 0; i < D; ++i) {
-    jac(i, 0) =
-        w0 * (vertices[1][i] - vertices[0][i]) - ss * (vertices[3][i] - vertices[2][i]);
-    jac(i, 1) =
-        w2 * (vertices[3][i] - vertices[0][i]) - rr * (vertices[1][i] - vertices[2][i]);
+    jac(i, 0) = w0 * (v[1][i] - v[0][i]) - ss * (v[3][i] - v[2][i]);
+    jac(i, 1) = w2 * (v[3][i] - v[0][i]) - rr * (v[1][i] - v[2][i]);
   }
   return jac;
 }
@@ -82,8 +79,7 @@ PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::edge(Size i) const noexcept -> LineSegment<D, T>
 {
   assert(i < 4);
-  return (i == 3) ? LineSegment<D, T>(vertices[3], vertices[0])
-                  : LineSegment<D, T>(vertices[i], vertices[i + 1]);
+  return (i == 3) ? LineSegment<D, T>(v[3], v[0]) : LineSegment<D, T>(v[i], v[i + 1]);
 }
 
 // -------------------------------------------------------------------
@@ -92,10 +88,12 @@ Quadrilateral<D, T>::edge(Size i) const noexcept -> LineSegment<D, T>
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-Quadrilateral<D, T>::contains(Point<D, T> const & p) const noexcept -> bool 
+Quadrilateral<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
 {
-  return areCCW(vertices[0], vertices[1], p) && areCCW(vertices[1], vertices[2], p) &&
-         areCCW(vertices[2], vertices[3], p) && areCCW(vertices[3], vertices[0], p);
+  // GPU alternative? Maybe do all the computations up until the final comparison and
+  // assign the value to a bool variable. Then return the bool variable.
+  return areCCW(v[0], v[1], p) && areCCW(v[1], v[2], p) && areCCW(v[2], v[3], p) &&
+         areCCW(v[3], v[0], p);
 }
 
 // -------------------------------------------------------------------
@@ -107,14 +105,11 @@ PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::area() const noexcept -> T
 {
   static_assert(D == 2, "Area of quadrilateral is only defined in 2D");
+  assert(isConvex());
   // (v2 - v0).cross(v3 - v1) / 2
-  Vec<D, T> ac;
-  Vec<D, T> bd;
-  for (Size i = 0; i < D; ++i) {
-    ac[i] = vertices[2][i] - vertices[0][i];
-    bd[i] = vertices[3][i] - vertices[1][i];
-  }
-  return ac.cross(bd) / 2;
+  Vec<D, T> v20 = v[2] - v[0];
+  Vec<D, T> v31 = v[3] - v[1];
+  return v20.cross(v31) / 2;
 }
 
 // -------------------------------------------------------------------
@@ -125,27 +120,28 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::centroid() const noexcept -> Point<D, T>
 {
-  static_assert(D == 2, "Centroid of quadrilateral is only defined in 2D");
   // Algorithm: Decompose the quadrilateral into two triangles and
   // compute the centroid of each triangle. The centroid of the
   // quadrilateral is the weighted average of the centroids of the
   // two triangles, where the weights are the areas of the triangles.
-  Vec<D, T> ab;
-  Vec<D, T> ac;
-  Vec<D, T> ad;
-  for (Size i = 0; i < D; ++i) {
-    ab[i] = vertices[1][i] - vertices[0][i];
-    ac[i] = vertices[2][i] - vertices[0][i];
-    ad[i] = vertices[3][i] - vertices[0][i];
-  }
+  static_assert(D == 2, "Centroid of quadrilateral is only defined in 2D");
+  assert(isConvex());
+  // If the quadrilateral is not convex, then we need to choose the correct
+  // two triangles to decompose the quadrilateral into. If the quadrilateral
+  // is convex, any two triangles will do.
+  Vec<D, T> v10 = v[1] - v[0];
+  Vec<D, T> v20 = v[2] - v[0];
+  Vec<D, T> v30 = v[3] - v[0];
   // Compute the area of each triangle
-  T const a1 = ab.cross(ac);
-  T const a2 = ac.cross(ad);
+  T const a1 = v10.cross(v20);
+  T const a2 = v20.cross(v30);
   T const a12 = a1 + a2;
+  // Compute the centroid of each triangle
+  // (v0 + v1 + v2) / 3
+  // Each triangle shares v0 and v2, so we factor out the common terms
   Point<D, T> result;
   for (Size i = 0; i < D; ++i) {
-    T const v02 = vertices[0][i] + vertices[2][i];
-    result[i] = a1 * vertices[1][i] + a2 * vertices[3][i] + a12 * v02;
+    result[i] = a1 * v[1][i] + a2 * v[3][i] + a12 * (v[0][i] + v[2][i]);
   }
   return result /= (3 * a12);
 }
@@ -158,7 +154,20 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 {
-  return um2::boundingBox(vertices);
+  return um2::boundingBox(v);
 }
 
+// -------------------------------------------------------------------
+// isConvex
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+Quadrilateral<D, T>::isConvex() const noexcept -> bool
+{
+  static_assert(D == 2, "Convexity of quadrilateral is only defined in 2D");
+  // Alternative: Use sum of areas of triangles
+  return areCCW(v[0], v[1], v[2]) && areCCW(v[1], v[2], v[3]) &&
+         areCCW(v[2], v[3], v[0]) && areCCW(v[3], v[0], v[1]);
+}
 } // namespace um2

@@ -68,10 +68,7 @@ PURE HOSTDEV constexpr auto
 midpoint(Point<D, T> const & a, Point<D, T> const & b) noexcept -> Point<D, T>
 {
   // (a + b) / 2
-  Point<D, T> result;
-  for (Size i = 0; i < D; ++i) {
-    result[i] = a[i] + b[i];
-  }
+  Point<D, T> result = a + b;
   return result /= 2;
 }
 

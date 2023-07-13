@@ -1,7 +1,6 @@
 #pragma once
 
 #include <um2/config.hpp>
-#include <um2/geometry/AxisAlignedBox.hpp>
 
 namespace um2
 {

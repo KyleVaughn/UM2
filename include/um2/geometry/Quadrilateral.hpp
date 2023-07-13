@@ -20,7 +20,7 @@ using Quadrilateral2d = Quadrilateral2<double>;
 template <Size D, typename T>
 struct Polytope<2, 1, 4, D, T> {
 
-  Point<D, T> vertices[4];
+  Point<D, T> v[4];
 
   // -----------------------------------------------------------------------------
   // Accessors
@@ -58,6 +58,9 @@ struct Polytope<2, 1, 4, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  isConvex() const noexcept -> bool;
 };
 
 } // namespace um2

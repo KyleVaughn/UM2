@@ -195,6 +195,18 @@ using Vec2u = Vec2<unsigned>;
 using Vec3u = Vec3<unsigned>;
 using Vec4u = Vec4<unsigned>;
 
+// -----------------------------------------------------------------------------
+// Binary operators
+// -----------------------------------------------------------------------------
+
+template <Size D, class T>
+HOSTDEV constexpr auto
+operator+(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>;
+
+template <Size D, class T>
+HOSTDEV constexpr auto
+operator-(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>;
+
 } // namespace um2
 
 #include "Vec.inl"

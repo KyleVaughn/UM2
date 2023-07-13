@@ -46,10 +46,34 @@ struct Mat {
   PURE HOSTDEV constexpr auto
   operator()(Size i, Size j) const noexcept -> T const &;
 
-  // -- Constructors --
+  // -----------------------------------------------------------------------------
+  // Constructors
+  // -----------------------------------------------------------------------------
 
   constexpr Mat() noexcept = default;
+
+  template <std::same_as<Col>... Cols>
+  requires(sizeof...(Cols) == N) HOSTDEV constexpr explicit Mat(Cols... in_cols) noexcept;
 };
+
+// -----------------------------------------------------------------------------
+// Aliases
+// -----------------------------------------------------------------------------
+
+template <typename T>
+using Mat2x2 = Mat<2, 2, T>;
+
+template <typename T>
+using Mat3x3 = Mat<3, 3, T>;
+
+// -----------------------------------------------------------------------------
+// Methods
+// -----------------------------------------------------------------------------
+
+template <Size M, Size N, typename T>
+PURE HOSTDEV constexpr auto
+// NOLINTNEXTLINE(readability-identifier-naming)
+operator*(Mat<M, N, T> const & A, Vec<N, T> const & x) noexcept -> Vec<M, T>;
 
 } // namespace um2
 

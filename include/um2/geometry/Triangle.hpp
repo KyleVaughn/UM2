@@ -25,7 +25,7 @@ using Triangle3d = Triangle3<double>;
 template <Size D, typename T>
 struct Polytope<2, 1, 3, D, T> {
 
-  Point<D, T> vertices[3];
+  Point<D, T> v[3];
 
   // -----------------------------------------------------------------------------
   // Accessors

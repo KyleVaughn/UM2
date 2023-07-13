@@ -158,6 +158,20 @@ requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
   return *this;
 }
 
+template <Size D, class T>
+PURE HOSTDEV constexpr auto
+operator+(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
+{
+  return u += v;
+}
+
+template <Size D, class T>
+PURE HOSTDEV constexpr auto
+operator-(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
+{
+  return u -= v;
+}
+
 // -----------------------------------------------------------------------------
 // Methods
 // -----------------------------------------------------------------------------

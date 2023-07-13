@@ -2,6 +2,24 @@ namespace um2
 {
 
 // -------------------------------------------------------------------
+// Accessors
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+LineSegment<D, T>::operator[](Size i) noexcept -> Point<D, T> &
+{
+  return v[i];
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+LineSegment<D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
+{
+  return v[i];
+}
+
+// -------------------------------------------------------------------
 // Constructors
 // -------------------------------------------------------------------
 
@@ -9,21 +27,8 @@ template <Size D, typename T>
 HOSTDEV constexpr LineSegment<D, T>::Polytope(Point<D, T> const & p0,
                                               Point<D, T> const & p1) noexcept
 {
-  w[0] = p0;
-  for (Size i = 1; i < D; ++i) {
-    w[1] = p1[i] - p0[i];
-  }
-}
-
-// -------------------------------------------------------------------
-// Accessors
-// -------------------------------------------------------------------
-
-template <Size D, typename T>
-PURE HOSTDEV constexpr auto
-LineSegment<D, T>::getVertex(Size const i) const noexcept -> Point<D, T>
-{
-  return this->operator()(i);
+  v[0] = p0;
+  v[1] = p1;
 }
 
 // -------------------------------------------------------------------
@@ -35,9 +40,10 @@ template <typename R>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::operator()(R const r) const noexcept -> Point<D, T>
 {
+  T const rr = static_cast<T>(r);
   Point<D, T> result;
   for (Size i = 0; i < D; ++i) {
-    result[i] = w[0][i] + static_cast<T>(r) * w[1][i];
+    result[i] = v[0][i] + rr * (v[1][i] - v[0][i]);
   }
   return result;
 }
@@ -51,9 +57,49 @@ template <typename R>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::jacobian(R /*r*/) const noexcept -> Vec<D, T>
 {
-  // L(r) = = w0 + r * w1  
-  // L'(r) = w1
-  return w[1]; 
+  return v[1] - v[0];
+}
+
+// -------------------------------------------------------------------
+// getRotation
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+LineSegment<D, T>::getRotation() const noexcept -> Mat<D, D, T>
+{
+  // We want to transform the segment so that v[0] is at the origin and v[1]
+  // is on the x-axis. We can do this by first translating by -v[0] and then
+  // using a change of basis (rotation) matrix to rotate v[1] onto the x-axis.
+  // x_old = U * x_new
+  //
+  // For 2D:
+  // Let a = (a₁, a₂) = (P₂ - P₁) / ‖P₂ - P₁‖
+  // u₁ = ( a₁,  a₂) = a
+  // u₂ = (-a₂,  a₁)
+  //
+  // Note: u₁ and u₂ are orthonormal.
+  //
+  // The transformation from the new basis to the standard basis is given by
+  // U = [u₁ u₂] = | a₁ -a₂ |
+  //               | a₂  a₁ |
+  //
+  // Since u₁ and u₂ are orthonormal, U is unitary.
+  //
+  // The transformation from the standard basis to the new basis is given by
+  // U⁻¹ = Uᵗ = |  a₁  a₂ |
+  //            | -a₂  a₁ |
+  // since U is unitary.
+  Vec<D, T> const a = v[1] - v[0];
+  a.normalize();
+  if constexpr (D == 2) {
+    Vec<D, T> const col0(a[0], -a[1]);
+    Vec<D, T> const col1(a[1], a[0]);
+    return Mat<D, D, T>(col0, col1);
+  } else {
+    static_assert(D == 3, "getRotation is only defined for 2D and 3D line segments");
+    return Mat<D, D, T>();
+  }
 }
 
 // -------------------------------------------------------------------
@@ -65,14 +111,7 @@ PURE HOSTDEV constexpr auto
 LineSegment<D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool
 {
   static_assert(D == 2, "isLeft is only defined for 2D line segments");
-  // If the cross product of the vector from the first vertex to the 
-  // second vertex and the vector from the first vertex to the point
-  // is positive, then the point is to the left of the line segment.
-  Vec<D, T> dp;
-  for (Size i = 0; i < D; ++i) {
-    dp[i] = p[i] - w[0][i];
-  }
-  return 0 <= w[1].cross(dp); 
+  return areCCW(v[0], v[1], p);
 }
 
 // -------------------------------------------------------------------
@@ -83,7 +122,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::length() const noexcept -> T
 {
-  return w[1].norm();
+  return v[0].distanceTo(v[1]);
 }
 
 // -------------------------------------------------------------------
@@ -94,12 +133,43 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 {
-  Point<D, T> minima = w[0];
-  Point<D, T> maxima = w[0];
-  Point<D, T> v1 = getVertex(1);
-  minima.min(v1);
-  maxima.max(v1);
-  return AxisAlignedBox<D, T>{minima, maxima}; 
+  return um2::boundingBox(v);
+}
+
+// -------------------------------------------------------------------
+// distanceTo
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+LineSegment<D, T>::squaredDistanceTo(Point<D, T> const & p) const noexcept -> T
+{
+  // From Real-Time Collision Detection, Christer Ericson, 2005
+  // Given segment ab and point c, computes closest point d on ab.
+  // Also returns t for the position of d, d(t) = a + t*(b - a)
+  Vec<D, T> const ab = v[1] - v[0];
+  // Project c onto ab, computing parameterized position d(t) = a + t*(b − a)
+  T t = (p - v[0]).dot(ab) / ab.squaredNorm();
+  // If outside segment, clamp t (and therefore d) to the closest endpoint
+  if (t < 0) {
+    t = 0;
+  }
+  if (t > 1) {
+    t = 1;
+  }
+  // Compute projected position from the clamped t
+  Vec<D, T> d;
+  for (Size i = 0; i < D; ++i) {
+    d[i] = v[0][i] + t * ab[i];
+  }
+  return d.squaredDistanceTo(p);
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+LineSegment<D, T>::distanceTo(Point<D, T> const & p) const noexcept -> T
+{
+  return um2::sqrt(squaredDistanceTo(p));
 }
 
 } // namespace um2

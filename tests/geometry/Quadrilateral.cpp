@@ -16,7 +16,6 @@ makeQuad() -> um2::Quadrilateral<D, T>
   quad[2][0] = static_cast<T>(1);
   quad[2][1] = static_cast<T>(1);
   quad[3][1] = static_cast<T>(1);
-  ;
   return quad;
 }
 
@@ -82,6 +81,24 @@ TEST_CASE(edge)
   edge = quad.edge(3);
   ASSERT(um2::isApprox(edge[0], quad[3]));
   ASSERT(um2::isApprox(edge[1], quad[0]));
+}
+
+// -------------------------------------------------------------------
+// isConvex
+// -------------------------------------------------------------------
+
+template <typename T>
+HOSTDEV
+TEST_CASE(isConvex)
+{
+  um2::Quadrilateral<2, T> quad = makeQuad<2, T>();
+  ASSERT(quad.isConvex());
+  quad[3][0] = static_cast<T>(0.5);
+  ASSERT(quad.isConvex());
+  quad[3][1] = static_cast<T>(0.5);
+  ASSERT(quad.isConvex());
+  quad[3][0] = static_cast<T>(0.75);
+  ASSERT(!quad.isConvex());
 }
 
 // -------------------------------------------------------------------
@@ -180,6 +197,7 @@ TEST_SUITE(Quadrilateral)
   TEST_HOSTDEV(jacobian, 1, 1, D, T);
   TEST_HOSTDEV(edge, 1, 1, D, T);
   if constexpr (D == 2) {
+    TEST_HOSTDEV(isConvex, 1, 1, T);
     TEST_HOSTDEV(contains, 1, 1, T);
   }
   TEST_HOSTDEV(area, 1, 1, D, T);

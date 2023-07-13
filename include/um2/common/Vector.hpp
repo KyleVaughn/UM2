@@ -1,8 +1,8 @@
 #pragma once
 
-#include <um2/common/algorithm.hpp> // copy
-#include <um2/common/memory.hpp>    // addressof
-#include <um2/common/utility.hpp>   // move
+#include <um2/common/algorithm.hpp>    // copy
+#include <um2/common/memory.hpp>       // addressof
+#include <um2/common/utility.hpp>      // move
 #include <um2/math/math_functions.hpp> // um2::max
 
 #include <initializer_list> // std::initializer_list

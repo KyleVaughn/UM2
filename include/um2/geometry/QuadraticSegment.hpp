@@ -1,5 +1,8 @@
 #pragma once
 
+#include <um2/math/Mat.hpp>
+
+#include <um2/geometry/AxisAlignedBox.hpp>
 #include <um2/geometry/Polytope.hpp>
 
 namespace um2
@@ -19,16 +22,16 @@ using QuadraticSegment2d = QuadraticSegment2<double>;
 template <Size D, typename T>
 struct Polytope<1, 2, 3, D, T> {
 
-  //  Q(r) = P₁ + r𝘂 + r²𝘃,        
-  // where        
-  //  𝘂 = 3𝘃₁₃ + 𝘃₂₃    = -3q[1] -  q[2] + 4q[3] 
-  //  𝘃 = -2(𝘃₁₃ + 𝘃₂₃) =  2q[1] + 2q[2] - 4q[3]       
-  // and        
-  // 𝘃₁₃ = q[3] - q[1]        
-  // 𝘃₂₃ = q[3] - q[2]        
-  // NOTE: The equations above use 1-based indexing.        
+  //  Q(r) = P₁ + rB + r²A,
+  // where
+  //  B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]
+  //  A = -2(V₁₃ + V₂₃) =  2q[1] + 2q[2] - 4q[3]
+  // and
+  // V₁₃ = q[3] - q[1]
+  // V₂₃ = q[3] - q[2]
+  // NOTE: The equations above use 1-based indexing.
 
-  Point<D, T> vertices[3];
+  Point<D, T> v[3];
 
   // -----------------------------------------------------------------------------
   // Accessors
@@ -58,7 +61,13 @@ struct Polytope<1, 2, 3, D, T> {
   operator()(R r) const noexcept -> Point<D, T>;
 
   template <typename R>
-  PURE HOSTDEV [[nodiscard]] constexpr auto jacobian(R r) const noexcept -> Vec<D, T>;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  jacobian(R r) const noexcept -> Vec<D, T>;
+
+  // Checks isApprox(v[2],  midpoint(v[0], v[1]))
+  // NOTE: The segment may still be straight even if this returns false.
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  isStraight() const noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isLeft(Point<D, T> const & p) const noexcept -> bool;
