@@ -90,8 +90,7 @@ LineSegment<D, T>::getRotation() const noexcept -> Mat<D, D, T>
   // U⁻¹ = Uᵗ = |  a₁  a₂ |
   //            | -a₂  a₁ |
   // since U is unitary.
-  Vec<D, T> const a = v[1] - v[0];
-  a.normalize();
+  Vec<D, T> const a = (v[1] - v[0]).normalized();
   if constexpr (D == 2) {
     Vec<D, T> const col0(a[0], -a[1]);
     Vec<D, T> const col1(a[1], a[0]);

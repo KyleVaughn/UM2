@@ -36,10 +36,12 @@
 
 #define ASSERT(cond) assert(cond)
 
-#define ASSERT_NEAR(a, b, eps)                                                           \
-  {                                                                                      \
-    auto diff = (a) < (b) ? (b) - (a) : (a) - (b);                                       \
-    assert(diff < (eps));                                                                \
+#define ASSERT_NEAR(a, b, eps)                                                            \
+  {                                                                                       \
+    auto const a_eval = (a);                                                              \
+    auto const b_eval = (b);                                                              \
+    auto const diff = a_eval > b_eval ? a_eval - b_eval : b_eval - a_eval;                \
+    assert(diff < (eps));                                                                 \
   }
 
 #define TEST_CASE(name) static void name()

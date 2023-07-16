@@ -177,6 +177,20 @@ operator-(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 // -----------------------------------------------------------------------------
 
 template <Size D, class T>
+PURE HOSTDEV constexpr auto
+min(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
+{
+  return u.min(v);
+}
+
+template <Size D, class T>
+PURE HOSTDEV constexpr auto
+max(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
+{
+  return u.max(v);
+}
+
+template <Size D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::min(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {

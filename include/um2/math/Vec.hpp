@@ -207,6 +207,18 @@ template <Size D, class T>
 HOSTDEV constexpr auto
 operator-(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>;
 
+// -----------------------------------------------------------------------------
+// Methods
+// -----------------------------------------------------------------------------
+
+template <Size D, class T>
+HOSTDEV constexpr auto
+min(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>;
+
+template <Size D, class T>
+HOSTDEV constexpr auto
+max(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>;
+
 } // namespace um2
 
 #include "Vec.inl"

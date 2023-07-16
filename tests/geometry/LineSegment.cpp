@@ -65,6 +65,35 @@ TEST_CASE(jacobian)
 }
 
 // -------------------------------------------------------------------
+// getRotation 
+// -------------------------------------------------------------------
+
+template <typename T>
+HOSTDEV
+TEST_CASE(getRotation)
+{
+  um2::LineSegment<2, T> line = makeLine<2, T>();
+  um2::Mat2x2<T> rot = line.getRotation();
+  um2::LineSegment<2, T> line_rot(rot * line[0], rot * line[1]);
+  ASSERT_NEAR(line_rot[0][1], static_cast<T>(0), static_cast<T>(1e-5));
+  ASSERT_NEAR(line_rot[1][1], static_cast<T>(0), static_cast<T>(1e-5));
+  // NOLINTNEXTLINE
+  um2::LineSegment<2, T> line_rot2(rot * (line[0] - line[0]), 
+                                   rot * (line[1] - line[0]));
+  ASSERT_NEAR(line_rot2[0][0], static_cast<T>(0), static_cast<T>(1e-5));
+  ASSERT_NEAR(line_rot2[0][1], static_cast<T>(0), static_cast<T>(1e-5));
+  ASSERT_NEAR(line_rot2[1][1], static_cast<T>(0), static_cast<T>(1e-5));
+  line[0][0] = static_cast<T>(10);
+  rot = line.getRotation();
+  // NOLINTNEXTLINE
+  um2::LineSegment<2, T> line_rot3(rot * (line[0] - line[0]), 
+                                   rot * (line[1] - line[0])); 
+  ASSERT_NEAR(line_rot3[0][0], static_cast<T>(0), static_cast<T>(1e-5));
+  ASSERT_NEAR(line_rot3[0][1], static_cast<T>(0), static_cast<T>(1e-5));
+  ASSERT_NEAR(line_rot3[1][1], static_cast<T>(0), static_cast<T>(1e-5));
+}
+
+// -------------------------------------------------------------------
 // length
 // -------------------------------------------------------------------
 
@@ -119,24 +148,31 @@ HOSTDEV
 TEST_CASE(distanceTo)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
+  
+  // The left end point 
   um2::Point<D, T> p0 = line[0];
-  um2::Point<D, T> p1 = line[1];
   ASSERT_NEAR(line.distanceTo(p0), static_cast<T>(0), static_cast<T>(1e-5));
-  ASSERT_NEAR(line.distanceTo(p1), static_cast<T>(0), static_cast<T>(1e-5));
+  // A point to the left of the left end point
   p0[0] -= static_cast<T>(1);
-  p1[0] += static_cast<T>(1);
   ASSERT_NEAR(line.distanceTo(p0), static_cast<T>(1), static_cast<T>(1e-5));
-  ASSERT_NEAR(line.distanceTo(p1), static_cast<T>(1), static_cast<T>(1e-5));
-  p0[0] += static_cast<T>(3);
-  p1[0] -= static_cast<T>(3);
+  // A point to the right of the left end point
+  p0[0] += static_cast<T>(1.5);
+  T ref = 0;
   if constexpr (D == 2) {
-    T const sqrt2 = um2::sqrt(static_cast<T>(2));
-    ASSERT_NEAR(line.distanceTo(p0), sqrt2, static_cast<T>(1e-5));
-    ASSERT_NEAR(line.distanceTo(p1), sqrt2, static_cast<T>(1e-5));
+    ref = um2::sin(um2::pi<T>() / static_cast<T>(4)) / 2; 
   } else {
-    ASSERT_NEAR(line.distanceTo(p0), 1.632993, static_cast<T>(1e-5));
-    ASSERT_NEAR(line.distanceTo(p1), 1.632993, static_cast<T>(1e-5));
+    // d = (7/6, 1/6, 1/6)
+    ref = um2::sqrt(static_cast<T>(6)) / 6;
   }
+  ASSERT_NEAR(line.distanceTo(p0), ref, static_cast<T>(1e-5));
+
+  // Repeat for the right end point
+  um2::Point<D, T> p1 = line[1];
+  ASSERT_NEAR(line.distanceTo(p1), static_cast<T>(0), static_cast<T>(1e-5));
+  p1[0] += static_cast<T>(1);
+  ASSERT_NEAR(line.distanceTo(p1), static_cast<T>(1), static_cast<T>(1e-5));
+  p1[0] -= static_cast<T>(1.5);
+  ASSERT_NEAR(line.distanceTo(p1), ref, static_cast<T>(1e-5));
 }
 
 #if UM2_ENABLE_CUDA
@@ -168,6 +204,7 @@ TEST_SUITE(LineSegment)
   TEST_HOSTDEV(accessors, 1, 1, D, T);
   TEST_HOSTDEV(interpolate, 1, 1, D, T);
   TEST_HOSTDEV(jacobian, 1, 1, D, T);
+  TEST_HOSTDEV(getRotation, 1, 1, T);
   TEST_HOSTDEV(length, 1, 1, D, T);
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
   TEST_HOSTDEV(isLeft, 1, 1, T);
@@ -177,8 +214,8 @@ TEST_SUITE(LineSegment)
 auto
 main() -> int
 {
-  //  RUN_SUITE((LineSegment<2, float>));
-  //  RUN_SUITE((LineSegment<3, float>));
+  RUN_SUITE((LineSegment<2, float>));
+  RUN_SUITE((LineSegment<3, float>));
   RUN_SUITE((LineSegment<2, double>));
   RUN_SUITE((LineSegment<3, double>));
   return 0;

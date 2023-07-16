@@ -1,3 +1,5 @@
+#include <iostream>
+
 namespace um2
 {
 
@@ -46,8 +48,7 @@ QuadraticSegment<D, T>::operator()(R const r) const noexcept -> Point<D, T>
   // (2 * r - 1) *  r      * v1 +
   // -4 * r      * (r - 1) * v2
   T const rr = static_cast<T>(r);
-  // If an add or sub is 4 cycles and mul is 7, then we can solve for the weights quickly
-  // using the following:
+  // We factor out the common terms to reduce the number of multiplications
   T const two_rr = 2 * rr;
   T const rr_1 = rr - 1;
   T const x = two_rr * rr_1;
@@ -82,6 +83,17 @@ QuadraticSegment<D, T>::jacobian(R r) const noexcept -> Vec<D, T>
 }
 
 // -------------------------------------------------------------------
+// getRotation
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+QuadraticSegment<D, T>::getRotation() const noexcept -> Mat<D, D, T>
+{
+  return LineSegment<D, T>(v[0], v[1]).getRotation();
+}
+
+// -------------------------------------------------------------------
 // isStraight
 // -------------------------------------------------------------------
 
@@ -109,6 +121,24 @@ QuadraticSegment<D, T>::isStraight() const noexcept -> bool
 }
 
 // -------------------------------------------------------------------
+// curvesLeft
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+QuadraticSegment<D, T>::curvesLeft() const noexcept -> bool
+{
+  static_assert(D == 2, "curvesLeft is only defined for 2D");
+  // If the segment is not straight, then we can compute the cross product of the
+  // vectors from v[0] to v[1] and v[0] to v[2]. If the cross product is positive,
+  // then the segment curves left. If the cross product is negative, then the segment
+  // curves right.
+  Vec<D, T> const v01 = v[1] - v[0];
+  Vec<D, T> const v02 = v[2] - v[0];
+  return v01.cross(v02) >= 0;
+}
+
+// -------------------------------------------------------------------
 // isLeft
 // -------------------------------------------------------------------
 
@@ -116,38 +146,121 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 QuadraticSegment<D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool
 {
+  // This routine has previously been a major bottleneck, so some readability
+  // has been sacrificed for performance.
+  // Mainly, we could use some member functions to make this more readable, but 
+  // this results in redundant computations. Instead, we will do the computations
+  // once and then use them multiple times.
   static_assert(D == 2, "isLeft is only defined for 2D");
-  // If the point is in the bounding box of the segment,
-  // we need to check if the point is left of the segment.
-  // To do this we must find the point on Q that is closest to P.
-  // At this Q(r) we compute Q'(r) × (P - Q(r)). If this quantity is
-  // positive, then P is left of the segment.
-  //
-  // To compute Q_nearest, we find r which minimizes ‖P - Q(r)‖.
-  // This r also minimizes ‖P - Q(r)‖².
-  // It can be shown that this is equivalent to finding the minimum of the
-  // quartic function
-  // ‖P - Q(r)‖² = f(r) = a₄r⁴ + a₃r³ + a₂r² + a₁r + a₀
-  // The minimum of f(r) occurs when f′(r) = ar³ + br² + cr + d = 0, where
-  // W = P - P₁
-  // a = 2(A ⋅ A)
-  // b = 3(A ⋅ B)
-  // c = [(B  ⋅ B) - 2(A ⋅W)]
-  // d = -(B ⋅ W)
-  // Lagrange's method is used to find the roots.
-  // (https://en.wikipedia.org/wiki/Cubic_equation#Lagrange's_method)
+  // Algorithm:
+  // 1) Translate by -v[0] and rotate the segment so that v[0] is at the origin and
+  //  v[1] is on the x-axis.
+  // 2) Compute the AABB of the segment.
+  // 3) If p_rotated is outside the AABB of the segment, we may return early. 
+  // 4) If p_rotated is inside the AABB of the segment, then we find the point on the
+  //    segment that shares the same x-coordinate as p_rotated.
+  // 5) If p_rotated is above this point, then the segment curves left. Otherwise, it
+  //   curves right.
+ 
+  // Compute rotation matrix and rotated points 
+  Vec2<T> const v01 = v[1] - v[0];
+  Vec2<T> const v02 = v[2] - v[0];
+  Vec2<T> const v01_normalized = v01.normalized();
+  // NOLINTBEGIN(readability-identifier-naming)
+  Mat2x2<T> const R(
+      um2::Vec<D, T>(v01_normalized[0], -v01_normalized[1]), 
+      um2::Vec<D, T>(v01_normalized[1],  v01_normalized[0]));
+  Point2<T> const p_rotated = R * (p - v[0]);
+  Point2<T> const v1_rotated = R * v01; 
+  Point2<T> const v2_rotated = R * v02;
 
-  //  Q(r) = C + rB + r²A,
+  // Compute the bounding box
+  //  Q(r) = C + rB + r²A 
   // where
-  //  C = P₁
-  //  B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]
-  //  A = -2(V₁₃ + V₂₃) =  2q[1] + 2q[2] - 4q[3]
-  // and
-  // V₁₃ = q[3] - q[1]
-  // V₂₃ = q[3] - q[2]
+  //  C = (0, 0)
+  //  B =  4 * v2_rotated - v1_rotated
+  //  A = -4 * v2_rotated + 2 * v1_rotated = -B + v1_rotated
   // Q′(r) = B + 2rA,
-
-  return areCCW(v[0], v[1], p);
+  // (r_i,...) = -B / (2A)
+  Vec2<T> const B(4 * v2_rotated[0] - v1_rotated[0], 
+                  4 * v2_rotated[1] - v1_rotated[1]);
+  Vec2<T> const A(-B[0] + v1_rotated[0], 
+                  -B[1] + v1_rotated[1]);
+  bool const curves_left = v2_rotated[1] <= 0;
+  T ymax = curves_left ? 0 : v2_rotated[1];
+  T ymin = curves_left ? v2_rotated[1] : 0;
+  if (um2::abs(A[1]) > 4 * epsilonDistance<T>()) {
+    // r_i = -B_i / (2A_i)
+    T const half_by = B[1] / 2;
+    T const ry = -half_by / A[1];
+    // NOLINTNEXTLINE(misc-redundant-expression)
+    if (0 < ry && ry < 1) {
+      // x_i = Q(r_i) = - B² / (4A) = r(B/2)
+      T const y_stationary = ry * half_by;
+      ymin = um2::min(ymin, y_stationary);
+      ymax = um2::max(ymax, y_stationary);
+    }
+  }
+  // Check if the point is above or below the AABB 
+  if (ymax <= p_rotated[1]) {
+    return true;
+  }
+  if (p_rotated[1] <= ymin) {
+    return false;
+  }
+  T xmin = 0;
+  T xmax = v1_rotated[0];
+  if (um2::abs(A[0]) > 4 * epsilonDistance<T>()) {
+    // r_i = -B_i / (2A_i)
+    T const half_bx = B[0] / 2;
+    T const rx = -half_bx / A[0];
+    // NOLINTNEXTLINE(misc-redundant-expression)
+    if (0 < rx && rx < 1) {
+      // x_i = Q(r_i) = - B² / (4A) = r(B/2)
+      T const x_stationary = rx * half_bx;
+      xmin = um2::min(xmin, x_stationary);
+      xmax = um2::max(xmax, x_stationary);
+    }
+  }
+  if (p_rotated[0] <= xmin || xmax <= p_rotated[0]) {
+    // Since the point is in the y-range of the AABB, the point will be
+    // left of the segment if the segment curves right and right of the segment
+    // if the segment curves left.
+    return !curves_left; 
+  }
+  // If the point is in the bounding box of the segment,
+  // we will find the point on the segment that shares the same x-coordinate
+  //  Q(r) = C + rB + r²A = P
+  // Hence we wish to solve 0 = -P_x + rB_x + r²A_x for r.
+  // This is a quadratic equation, which has two potential solutions.
+  // r = (-b ± √(b² - 4ac)) / 2a
+  // if A[0] == 0, then we have a well-behaved quadratic segment, and there is one root.
+  // This is the expected case.
+  if (um2::abs(A[0]) < 4 * epsilonDistance<T>()) [[likely]] {
+    // This is a linear equation, so there is only one root.
+    T const r = p_rotated[0] / B[0]; // B[0] != 0, otherwise the segment would be degenerate.
+    assert(0 <= r && r <= 1);
+    T const Q_y = r * (B[1] + r * A[1]);
+    return Q_y <= p_rotated[1]; 
+  } else {
+    // Two roots.
+    T const disc = B[0] * B[0] + 4 * A[0] * p_rotated[0];
+    assert(disc >= 0);
+    T const r1 = (-B[0] + um2::sqrt(disc)) / (2 * A[0]);
+    T const r2 = (-B[0] - um2::sqrt(disc)) / (2 * A[0]);
+    T const Q_y1 = r1 * (B[1] + r1 * A[1]);
+    T const Q_y2 = r2 * (B[1] + r2 * A[1]);
+    T const Q_ymin = um2::min(Q_y1, Q_y2);
+    T const Q_ymax = um2::max(Q_y1, Q_y2);
+    if (Q_ymax <= p_rotated[1]) {
+      return true; 
+    }
+    if (p_rotated[1] <= Q_ymin) {
+      return false; 
+    }
+    return curves_left;
+  }
+  // NOLINTEND(readability-identifier-naming)
 }
 
 // -------------------------------------------------------------------
@@ -169,7 +282,6 @@ QuadraticSegment<D, T>::length() const noexcept -> T
   //              0             0
   //
   // If a = 0, we need to use a different formula, else the result is NaN.
-
   //  Q(r) = C + rB + r²A,
   // where
   //  C = P₁
@@ -195,8 +307,10 @@ QuadraticSegment<D, T>::length() const noexcept -> T
 
   T const a = 4 * A.squaredNorm();
   // 0 ≤ a, since a = 4(A ⋅ A)  = 4 ‖A‖², and 0 ≤ ‖A‖²
-  // If a = 0, then the segment is a line.
-  if (a < static_cast<T>(1e-6)) {
+  // A = 4(midpoint of line - p3) -> a = 64 ‖midpoint of line - p3‖²
+  // if a is small, then the segment is almost a straight line, and we can use the
+  // distance between the endpoints as an approximation.
+  if (a < 64 * epsilonDistanceSquared<T>()) { 
     return v[0].distanceTo(v[1]);
   }
   Vec<D, T> B;
@@ -249,37 +363,32 @@ QuadraticSegment<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
   // V₂₃ = q[3] - q[2]
   // Q′(r) = B + 2rA,
   // (r_i,...) = -B / (2A)
+  // x_i = Q(r_i) = P₁ - B² / (4A)
   // Compare the extrema with the segment's endpoints to find the AABox
-  Vec<D, T> v02 = v[2] - v[0];
-  Vec<D, T> v12 = v[2] - v[1];
+  Vec<D, T> const v02 = v[2] - v[0];
+  Vec<D, T> const v12 = v[2] - v[1];
 
-  Vec<D, T> b;
-  Vec<D, T> a;
+  Point<D, T> minima = um2::min(v[0], v[1]);
+  Point<D, T> maxima = um2::max(v[0], v[1]);
   for (Size i = 0; i < D; ++i) {
-    b[i] = 3 * v02[i] + v12[i];
-    a[i] = -2 * (v02[i] + v12[i]);
-  }
-
-  Vec<D, T> r;
-  for (Size i = 0; i < D; ++i) {
+    T const a = -2 * (v02[i] + v12[i]);
+    if (um2::abs(a) < 4 * epsilonDistance<T>()) {
+      // The segment is almost a straight line, so the extrema are the endpoints.
+      continue;
+    }
     // r_i = -B_i / (2A_i)
-    r[i] = -b[i] / (2 * a[i]);
-  }
-
-  Point<D, T> minima = v[0];
-  minima.min(v[1]);
-  Point<D, T> maxima = v[0];
-  maxima.max(v[1]);
-  for (Size i = 0; i < D; ++i) {
-    // Not redundant for non-trivial segments
+    T const half_b = (3 * v02[i] + v12[i]) / 2;
+    T const r = -half_b / a;
+    // if r is not in [0, 1], then the extrema are not on the segment, hence
+    // the segment's endpoints are the extrema.
     // NOLINTNEXTLINE(misc-redundant-expression)
-    if (0 < r[i] && r[i] < 1) {
-      T const stationary = v[0][i] + r[i] * (b[i] + r[i] * a[i]);
-      minima[i] = um2::min(minima[i], stationary);
-      maxima[i] = um2::max(maxima[i], stationary);
+    if (0 < r && r < 1) {
+      // x_i = Q(r_i) = P₁ - B² / (4A) = P₁ + r(B/2)
+      T const x = v[0][i] + r * half_b; 
+      minima[i] = um2::min(minima[i], x); 
+      maxima[i] = um2::max(maxima[i], x);
     }
   }
-
   return AxisAlignedBox<D, T>{minima, maxima};
 }
 

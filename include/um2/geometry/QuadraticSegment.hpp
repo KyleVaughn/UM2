@@ -64,8 +64,12 @@ struct Polytope<1, 2, 3, D, T> {
   PURE HOSTDEV [[nodiscard]] constexpr auto
   jacobian(R r) const noexcept -> Vec<D, T>;
 
-  // Checks isApprox(v[2],  midpoint(v[0], v[1]))
-  // NOTE: The segment may still be straight even if this returns false.
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getRotation() const noexcept -> Mat<D, D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  curvesLeft() const noexcept -> bool;
+
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isStraight() const noexcept -> bool;
 

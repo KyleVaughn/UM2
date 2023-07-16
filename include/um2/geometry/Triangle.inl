@@ -109,9 +109,9 @@ Triangle<D, T>::area() const noexcept -> T
   Vec<D, T> v10 = v[1] - v[0];
   Vec<D, T> v20 = v[2] - v[0];
   if constexpr (D == 2) {
-    return v10.cross(v20) / 2;
+    return v10.cross(v20) / 2; // this is the signed area
   } else if constexpr (D == 3) {
-    return v10.cross(v20).norm() / 2;
+    return v10.cross(v20).norm() / 2; // this is the unsigned area
   } else {
     static_assert(D == 2 || D == 3,
                   "Triangle::area() is only defined for 2D and 3D triangles");

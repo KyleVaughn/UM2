@@ -42,7 +42,7 @@ template <std::floating_point T>
 CONST HOSTDEV consteval auto
 epsilonDistance() noexcept -> T
 {
-  return static_cast<T>(1e-5);
+  return static_cast<T>(1e-6); // 0.1 micron
 }
 
 template <std::floating_point T>

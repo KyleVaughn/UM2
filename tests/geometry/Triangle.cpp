@@ -54,6 +54,13 @@ TEST_CASE(jacobian)
   ASSERT_NEAR((jac(1, 0)), 0, static_cast<T>(1e-5));
   ASSERT_NEAR((jac(0, 1)), 0, static_cast<T>(1e-5));
   ASSERT_NEAR((jac(1, 1)), 1, static_cast<T>(1e-5));
+  // If we stretch the triangle, the Jacobian should change.
+  tri[1][0] = static_cast<T>(2);
+  jac = tri.jacobian(0.5, 0);
+  ASSERT_NEAR((jac(0, 0)), 2, static_cast<T>(1e-5));
+  ASSERT_NEAR((jac(1, 0)), 0, static_cast<T>(1e-5));
+  ASSERT_NEAR((jac(0, 1)), 0, static_cast<T>(1e-5));
+  ASSERT_NEAR((jac(1, 1)), 1, static_cast<T>(1e-5));
 }
 
 // -------------------------------------------------------------------
@@ -105,6 +112,8 @@ TEST_CASE(area)
 {
   um2::Triangle<D, T> tri = makeTri<D, T>();
   ASSERT_NEAR(tri.area(), static_cast<T>(0.5), static_cast<T>(1e-5));
+  tri[1][0] = static_cast<T>(2);
+  ASSERT_NEAR(tri.area(), static_cast<T>(1), static_cast<T>(1e-5));
 }
 // -------------------------------------------------------------------
 // centroid
