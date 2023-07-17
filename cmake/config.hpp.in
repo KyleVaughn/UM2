@@ -44,20 +44,23 @@
 #  define CONST [[gnu::const]]
 #  define HOT   [[gnu::hot]]
 #endif
-#define HIDDEN __attribute__((visibility ("hidden")))
+#define HIDDEN __attribute__((visibility("hidden")))
 
 // Typedefs
 // -----------------------------------------------------------------------------
 #cmakedefine01 UM2_ENABLE_INT64
 #if UM2_ENABLE_INT64
 using Size = int64_t;
-consteval auto sizeMax() -> Size
+consteval auto
+sizeMax() -> Size
 {
   return 0x7FFFFFFFFFFFFFFF;
 }
 #else
 using Size = int32_t;
-consteval auto sizeMax() -> Size {
+consteval auto
+sizeMax() -> Size
+{
   return 0x7FFFFFFF;
 }
 #endif
