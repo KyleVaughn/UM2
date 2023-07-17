@@ -183,6 +183,9 @@ MAKE_CUDA_KERNEL(interpolate, D, T);
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(jacobian, D, T);
 
+template <typename T>
+MAKE_CUDA_KERNEL(getRotation, T);
+
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(length, D, T);
 

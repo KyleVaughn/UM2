@@ -178,6 +178,9 @@ template <Size D, typename T>
 MAKE_CUDA_KERNEL(edge, D, T);
 
 template <typename T>
+MAKE_CUDA_KERNEL(isConvex, T);
+
+template <typename T>
 MAKE_CUDA_KERNEL(contains, T);
 
 template <Size D, typename T>

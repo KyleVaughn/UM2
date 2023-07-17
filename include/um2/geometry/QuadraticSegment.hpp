@@ -81,6 +81,12 @@ struct Polytope<1, 2, 3, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  enclosedArea() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  enclosedCentroid() const noexcept -> Point<D, T>;
 };
 
 } // namespace um2
