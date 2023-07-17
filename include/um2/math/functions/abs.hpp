@@ -46,4 +46,4 @@ abs(double x) noexcept -> double
 
 #endif
 
-}  // namespace um2
+} // namespace um2

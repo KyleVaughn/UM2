@@ -172,6 +172,20 @@ operator-(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
   return u -= v;
 }
 
+template <Size D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>) HOSTDEV constexpr auto
+operator*(Scalar s, Vec<D, T> u) noexcept -> Vec<D, T>
+{
+  return u *= s;
+}
+
+template <Size D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>) HOSTDEV constexpr auto
+operator/(Vec<D, T> u, Scalar s) noexcept -> Vec<D, T>
+{
+  return u /= s;
+}
+
 // -----------------------------------------------------------------------------
 // Methods
 // -----------------------------------------------------------------------------

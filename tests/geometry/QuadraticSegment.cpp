@@ -5,7 +5,7 @@
 // Description of the quadratic segments used in test cases
 // --------------------------------------------------------
 // All segment have P0 = (0, 0) and P1 = (2, 0)
-// 1) A straight line segment with P2 = (1, 0) 
+// 1) A straight line segment with P2 = (1, 0)
 // 2) A segment that curves right with P2 = (1, 1)
 // 3) A segment that curves left with P2 = (1, -1)
 // 4) A segment that curves right, with P2 = (2, 1)
@@ -26,7 +26,7 @@ template <Size D, typename T>
 HOSTDEV static constexpr auto
 makeBaseSeg() -> um2::QuadraticSegment<D, T>
 {
-  um2::QuadraticSegment<D, T> q; 
+  um2::QuadraticSegment<D, T> q;
   q[0] = um2::zeroVec<D, T>();
   q[1] = um2::zeroVec<D, T>();
   q[2] = um2::zeroVec<D, T>();
@@ -233,21 +233,23 @@ template <typename T>
 HOSTDEV
 TEST_CASE(isLeft)
 {
-  um2::Vector<um2::Point2<T>> test_points =
-  {
-    um2::Point2<T>(static_cast<T>(1), static_cast<T>(3)), // always left
-    um2::Point2<T>(static_cast<T>(1), static_cast<T>(-3)), // always right
-    um2::Point2<T>(static_cast<T>(-1), static_cast<T>(0.5)), // always left
-    um2::Point2<T>(static_cast<T>(-1), static_cast<T>(-0.5)), // always right
-    um2::Point2<T>(static_cast<T>(3), static_cast<T>(0.5)), // always left
-    um2::Point2<T>(static_cast<T>(3), static_cast<T>(-0.5)), // always right
-    um2::Point2<T>(static_cast<T>(0.1), static_cast<T>(0.9)), // always left 
-    um2::Point2<T>(static_cast<T>(0.1), static_cast<T>(-0.9)), // always right
-    um2::Point2<T>(static_cast<T>(1.9), static_cast<T>(0.9)), // always left
-    um2::Point2<T>(static_cast<T>(1.9), static_cast<T>(-0.9)), // always right
-    um2::Point2<T>(static_cast<T>(1.1), static_cast<T>(0.5)), 
+  um2::Vector<um2::Point2<T>> test_points = {
+      um2::Point2<T>(static_cast<T>(1), static_cast<T>(3)),      // always left
+      um2::Point2<T>(static_cast<T>(1), static_cast<T>(-3)),     // always right
+      um2::Point2<T>(static_cast<T>(-1), static_cast<T>(0.5)),   // always left
+      um2::Point2<T>(static_cast<T>(-1), static_cast<T>(-0.5)),  // always right
+      um2::Point2<T>(static_cast<T>(3), static_cast<T>(0.5)),    // always left
+      um2::Point2<T>(static_cast<T>(3), static_cast<T>(-0.5)),   // always right
+      um2::Point2<T>(static_cast<T>(0.1), static_cast<T>(0.9)),  // always left
+      um2::Point2<T>(static_cast<T>(0.1), static_cast<T>(-0.9)), // always right
+      um2::Point2<T>(static_cast<T>(1.9), static_cast<T>(0.9)),  // always left
+      um2::Point2<T>(static_cast<T>(1.9), static_cast<T>(-0.9)), // always right
+      um2::Point2<T>(static_cast<T>(1.1), static_cast<T>(0.5)),
+      um2::Point2<T>(static_cast<T>(2), static_cast<T>(0.5)),
+      um2::Point2<T>(static_cast<T>(2.1), static_cast<T>(0.01)),
+      um2::Point2<T>(static_cast<T>(2.1), static_cast<T>(0.5)),
   };
-  
+
   // A straight line
   um2::QuadraticSegment2<T> q1 = makeSeg1<2, T>();
   ASSERT(q1.isLeft(test_points[0]));
@@ -261,6 +263,9 @@ TEST_CASE(isLeft)
   ASSERT(q1.isLeft(test_points[8]));
   ASSERT(!q1.isLeft(test_points[9]));
   ASSERT(q1.isLeft(test_points[10]));
+  ASSERT(q1.isLeft(test_points[11]));
+  ASSERT(q1.isLeft(test_points[12]));
+  ASSERT(q1.isLeft(test_points[13]));
 
   // Curves right
   um2::QuadraticSegment2<T> q2 = makeSeg2<2, T>();
@@ -275,6 +280,9 @@ TEST_CASE(isLeft)
   ASSERT(q2.isLeft(test_points[8]));
   ASSERT(!q2.isLeft(test_points[9]));
   ASSERT(!q2.isLeft(test_points[10]));
+  ASSERT(q2.isLeft(test_points[11]));
+  ASSERT(q2.isLeft(test_points[12]));
+  ASSERT(q2.isLeft(test_points[13]));
 
   // Curves left
   um2::QuadraticSegment2<T> q3 = makeSeg3<2, T>();
@@ -289,14 +297,94 @@ TEST_CASE(isLeft)
   ASSERT(q3.isLeft(test_points[8]));
   ASSERT(!q3.isLeft(test_points[9]));
   ASSERT(q3.isLeft(test_points[10]));
-//  um2::Point2<T> p_down(static_cast<T>(1.1), static_cast<T>(-0.5));
-//  ASSERT(!q1.isLeft(p_down)); 
-//  ASSERT(!q2.isLeft(p_down));
-//  ASSERT(q3.isLeft(p_down)); 
-//
-//  // A poorly behaved segment
-//  um2::QuadraticSegment2<T> q4(p0, p1, um2::Point2<T>(2, 1));
-//
+  ASSERT(q3.isLeft(test_points[11]));
+  ASSERT(q3.isLeft(test_points[12]));
+  ASSERT(q3.isLeft(test_points[13]));
+
+  // Curves right, P2 = (2, 1)
+  um2::QuadraticSegment2<T> q4 = makeSeg4<2, T>();
+  ASSERT(q4.isLeft(test_points[0]));
+  ASSERT(!q4.isLeft(test_points[1]));
+  ASSERT(q4.isLeft(test_points[2]));
+  ASSERT(!q4.isLeft(test_points[3]));
+  ASSERT(q4.isLeft(test_points[4]));
+  ASSERT(!q4.isLeft(test_points[5]));
+  ASSERT(q4.isLeft(test_points[6]));
+  ASSERT(!q4.isLeft(test_points[7]));
+  ASSERT(!q4.isLeft(test_points[8]));
+  ASSERT(!q4.isLeft(test_points[9]));
+  ASSERT(!q4.isLeft(test_points[10]));
+  ASSERT(!q4.isLeft(test_points[11]));
+  ASSERT(q4.isLeft(test_points[12]));
+  ASSERT(!q4.isLeft(test_points[13]));
+
+  // Curves left, P2 = (2, -1)
+  um2::QuadraticSegment2<T> q5 = makeSeg5<2, T>();
+  ASSERT(q5.isLeft(test_points[0]));
+  ASSERT(!q5.isLeft(test_points[1]));
+  ASSERT(q5.isLeft(test_points[2]));
+  ASSERT(!q5.isLeft(test_points[3]));
+  ASSERT(q5.isLeft(test_points[4]));
+  ASSERT(!q5.isLeft(test_points[5]));
+  ASSERT(q5.isLeft(test_points[6]));
+  ASSERT(!q5.isLeft(test_points[7]));
+  ASSERT(q5.isLeft(test_points[8]));
+  ASSERT(q5.isLeft(test_points[9]));
+  ASSERT(q5.isLeft(test_points[10]));
+  ASSERT(q5.isLeft(test_points[11]));
+  ASSERT(q5.isLeft(test_points[12]));
+  ASSERT(q5.isLeft(test_points[13]));
+
+  // Curves right, P2 = (0, 1)
+  um2::QuadraticSegment2<T> q6 = makeSeg6<2, T>();
+  ASSERT(q6.isLeft(test_points[0]));
+  ASSERT(!q6.isLeft(test_points[1]));
+  ASSERT(q6.isLeft(test_points[2]));
+  ASSERT(!q6.isLeft(test_points[3]));
+  ASSERT(q6.isLeft(test_points[4]));
+  ASSERT(!q6.isLeft(test_points[5]));
+  ASSERT(!q6.isLeft(test_points[6]));
+  ASSERT(!q6.isLeft(test_points[7]));
+  ASSERT(q6.isLeft(test_points[8]));
+  ASSERT(!q6.isLeft(test_points[9]));
+  ASSERT(!q6.isLeft(test_points[10]));
+  ASSERT(q6.isLeft(test_points[11]));
+  ASSERT(q6.isLeft(test_points[12]));
+  ASSERT(q6.isLeft(test_points[13]));
+
+  // Curves left, P2 = (0, -1)
+  um2::QuadraticSegment2<T> q7 = makeSeg7<2, T>();
+  ASSERT(q7.isLeft(test_points[0]));
+  ASSERT(!q7.isLeft(test_points[1]));
+  ASSERT(q7.isLeft(test_points[2]));
+  ASSERT(!q7.isLeft(test_points[3]));
+  ASSERT(q7.isLeft(test_points[4]));
+  ASSERT(!q7.isLeft(test_points[5]));
+  ASSERT(q7.isLeft(test_points[6]));
+  ASSERT(q7.isLeft(test_points[7]));
+  ASSERT(q7.isLeft(test_points[8]));
+  ASSERT(!q7.isLeft(test_points[9]));
+  ASSERT(q7.isLeft(test_points[10]));
+  ASSERT(q7.isLeft(test_points[11]));
+  ASSERT(q7.isLeft(test_points[12]));
+  ASSERT(q7.isLeft(test_points[13]));
+
+  // Curves right, P2 = (4, 3)
+  um2::QuadraticSegment2<T> q8 = makeSeg8<2, T>();
+  ASSERT(q8.isLeft(test_points[0]));
+  ASSERT(!q8.isLeft(test_points[1]));
+  ASSERT(q8.isLeft(test_points[2]));
+  ASSERT(!q8.isLeft(test_points[3]));
+  ASSERT(q8.isLeft(test_points[4]));
+  ASSERT(!q8.isLeft(test_points[5]));
+  ASSERT(q8.isLeft(test_points[6]));
+  ASSERT(!q8.isLeft(test_points[7]));
+  ASSERT(!q8.isLeft(test_points[8]));
+  ASSERT(!q8.isLeft(test_points[9]));
+  ASSERT(!q8.isLeft(test_points[10]));
+  ASSERT(!q8.isLeft(test_points[11]));
+  ASSERT(q8.isLeft(test_points[12]));
+  ASSERT(!q8.isLeft(test_points[13]));
 }
 
 #if UM2_ENABLE_CUDA

@@ -65,7 +65,7 @@ TEST_CASE(jacobian)
 }
 
 // -------------------------------------------------------------------
-// getRotation 
+// getRotation
 // -------------------------------------------------------------------
 
 template <typename T>
@@ -78,16 +78,14 @@ TEST_CASE(getRotation)
   ASSERT_NEAR(line_rot[0][1], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot[1][1], static_cast<T>(0), static_cast<T>(1e-5));
   // NOLINTNEXTLINE
-  um2::LineSegment<2, T> line_rot2(rot * (line[0] - line[0]), 
-                                   rot * (line[1] - line[0]));
+  um2::LineSegment<2, T> line_rot2(rot * (line[0] - line[0]), rot * (line[1] - line[0]));
   ASSERT_NEAR(line_rot2[0][0], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot2[0][1], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot2[1][1], static_cast<T>(0), static_cast<T>(1e-5));
   line[0][0] = static_cast<T>(10);
   rot = line.getRotation();
   // NOLINTNEXTLINE
-  um2::LineSegment<2, T> line_rot3(rot * (line[0] - line[0]), 
-                                   rot * (line[1] - line[0])); 
+  um2::LineSegment<2, T> line_rot3(rot * (line[0] - line[0]), rot * (line[1] - line[0]));
   ASSERT_NEAR(line_rot3[0][0], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot3[0][1], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot3[1][1], static_cast<T>(0), static_cast<T>(1e-5));
@@ -148,8 +146,8 @@ HOSTDEV
 TEST_CASE(distanceTo)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
-  
-  // The left end point 
+
+  // The left end point
   um2::Point<D, T> p0 = line[0];
   ASSERT_NEAR(line.distanceTo(p0), static_cast<T>(0), static_cast<T>(1e-5));
   // A point to the left of the left end point
@@ -159,7 +157,7 @@ TEST_CASE(distanceTo)
   p0[0] += static_cast<T>(1.5);
   T ref = 0;
   if constexpr (D == 2) {
-    ref = um2::sin(um2::pi<T>() / static_cast<T>(4)) / 2; 
+    ref = um2::sin(um2::pi<T>() / static_cast<T>(4)) / 2;
   } else {
     // d = (7/6, 1/6, 1/6)
     ref = um2::sqrt(static_cast<T>(6)) / 6;
