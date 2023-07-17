@@ -25,9 +25,6 @@
 #  define GLOBAL
 #endif
 
-// spdlog
-#define SPDLOG_ACTIVE_LEVEL @UM2_SPDLOG_LEVEL@
-
 // Visualization
 #cmakedefine01 UM2_ENABLE_VIS
 
@@ -38,7 +35,7 @@
 #undef CONST
 #undef HOT
 #undef HIDDEN
-#if UM2_ENABLE_CUDA 
+#if UM2_ENABLE_CUDA
 #  define PURE
 #  define CONST
 #  define HOT
@@ -47,15 +44,20 @@
 #  define CONST [[gnu::const]]
 #  define HOT   [[gnu::hot]]
 #endif
-#define HIDDEN __attribute__ ((visibility ("hidden"))) 
+#define HIDDEN __attribute__((visibility ("hidden")))
 
 // Typedefs
 // -----------------------------------------------------------------------------
 #cmakedefine01 UM2_ENABLE_INT64
 #if UM2_ENABLE_INT64
 using Size = int64_t;
-consteval auto sizeMax() -> Size { return 0x7FFFFFFFFFFFFFFF; }
+consteval auto sizeMax() -> Size
+{
+  return 0x7FFFFFFFFFFFFFFF;
+}
 #else
 using Size = int32_t;
-consteval auto sizeMax() -> Size { return 0x7FFFFFFF; }
+consteval auto sizeMax() -> Size {
+  return 0x7FFFFFFF;
+}
 #endif
