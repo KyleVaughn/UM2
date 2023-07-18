@@ -11,7 +11,7 @@ namespace um2
 // -----------------------------------------------------------------------------
 // QUADRATIC SEGMENT
 // -----------------------------------------------------------------------------
-// A 1-dimensional polytope, of polynomial order 2, represented by the connectivity
+// A 1-polytope, of polynomial order 2, represented by the connectivity
 // of its vertices. These 3 vertices are D-dimensional points of type T.
 
 template <typename T>

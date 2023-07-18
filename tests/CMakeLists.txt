@@ -7,6 +7,7 @@ add_um2_test(./common/memory/addressof.cpp)
 add_um2_test(./common/memory/construct_at.cpp)
 add_um2_test(./common/Vector.cpp)
 add_um2_test(./common/sto.cpp) 
+add_um2_test(./common/String.cpp)
 add_um2_test(./common/ShortString.cpp)
 add_um2_test(./common/Color.cpp)
 
@@ -26,6 +27,7 @@ add_um2_test(./geometry/LineSegment.cpp)
 add_um2_test(./geometry/Triangle.cpp)
 add_um2_test(./geometry/Quadrilateral.cpp)
 add_um2_test(./geometry/QuadraticSegment.cpp)
+add_um2_test(./geometry/QuadraticTriangle.cpp)
 #
 ## ------------------------------------------------------------------------------
 ## mesh

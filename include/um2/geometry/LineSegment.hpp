@@ -11,7 +11,7 @@ namespace um2
 // -----------------------------------------------------------------------------
 // LINE SEGMENT
 // -----------------------------------------------------------------------------
-// A 1-dimensional polytope, of polynomial order 1, represented by the connectivity
+// A 1-polytope, of polynomial order 1, represented by the connectivity
 // of its vertices. These 2 vertices are D-dimensional points of type T.
 
 template <typename T>

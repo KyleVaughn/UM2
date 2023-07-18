@@ -1,41 +1,31 @@
 #pragma once
 
-#include <um2/geometry/LineSegment.hpp>
-#include <um2/math/Mat.hpp>
+#include <um2/geometry/Triangle.hpp>
+#include <um2/geometry/QuadraticSegment.hpp>
 
 namespace um2
 {
 
 // -----------------------------------------------------------------------------
-// TRIANGLE
+// QUADRATIC TRIANGLE
 // -----------------------------------------------------------------------------
 // A 2-polytope, of polynomial order 1, represented by the connectivity
 // of its vertices. These 3 vertices are D-dimensional points of type T.
 
 template <typename T>
-using Triangle2 = Triangle<2, T>;
-using Triangle2f = Triangle2<float>;
-using Triangle2d = Triangle2<double>;
+using QuadraticTriangle2 = QuadraticTriangle<2, T>;
+using QuadraticTriangle2f = QuadraticTriangle2<float>;
+using QuadraticTriangle2d = QuadraticTriangle2<double>;
 
 template <typename T>
-using Triangle3 = Triangle<3, T>;
-using Triangle3f = Triangle3<float>;
-using Triangle3d = Triangle3<double>;
+using QuadraticTriangle3 = QuadraticTriangle<3, T>;
+using QuadraticTriangle3f = QuadraticTriangle3<float>;
+using QuadraticTriangle3d = QuadraticTriangle3<double>;
 
 template <Size D, typename T>
-struct Polytope<2, 1, 3, D, T> {
+struct Polytope<2, 2, 6, D, T> {
 
-  Point<D, T> v[3];
-
-  // -----------------------------------------------------------------------------
-  // Constructors
-  // -----------------------------------------------------------------------------
-
-  constexpr Polytope() noexcept = default;
-
-  HOSTDEV constexpr Polytope(Point<D, T> const & p0,
-                             Point<D, T> const & p1,
-                             Point<D, T> const & p2) noexcept;
+  Point<D, T> v[6];
 
   // -----------------------------------------------------------------------------
   // Accessors
@@ -60,10 +50,13 @@ struct Polytope<2, 1, 3, D, T> {
       -> Mat<D, 2, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  edge(Size i) const noexcept -> LineSegment<D, T>;
+  edge(Size i) const noexcept -> QuadraticSegment<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   contains(Point<D, T> const & p) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  linearPolygon() const noexcept -> Triangle<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   area() const noexcept -> T;
@@ -77,4 +70,4 @@ struct Polytope<2, 1, 3, D, T> {
 
 } // namespace um2
 
-#include "Triangle.inl"
+#include "QuadraticTriangle.inl"

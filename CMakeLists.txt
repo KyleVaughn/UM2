@@ -43,6 +43,7 @@ set(UM2_HEADERS
     "include/um2/common/algorithm.hpp"
     "include/um2/common/Vector.hpp"
     "include/um2/common/sto.hpp"
+    "include/um2/common/String.hpp"
     "include/um2/common/ShortString.hpp"
     "include/um2/common/Color.hpp"
     # math
@@ -56,6 +57,7 @@ set(UM2_HEADERS
     "include/um2/geometry/Triangle.hpp"
     "include/um2/geometry/Quadrilateral.hpp"
     "include/um2/geometry/QuadraticSegment.hpp"
+    "include/um2/geometry/QuadraticTriangle.hpp"
     #    # mesh
     #    "include/um2/mesh/RegularGrid.hpp"
     #    "include/um2/mesh/RegularPartition.hpp"

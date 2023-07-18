@@ -9,7 +9,7 @@ namespace um2
 // -----------------------------------------------------------------------------
 // QUADRILATERAL
 // -----------------------------------------------------------------------------
-// A 2-dimensional polytope, of polynomial order 1, represented by the connectivity
+// A 2-polytope, of polynomial order 1, represented by the connectivity
 // of its vertices. These 4 vertices are D-dimensional points of type T.
 
 template <typename T>
