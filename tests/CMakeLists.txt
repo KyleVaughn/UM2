@@ -28,6 +28,7 @@ add_um2_test(./geometry/Triangle.cpp)
 add_um2_test(./geometry/Quadrilateral.cpp)
 add_um2_test(./geometry/QuadraticSegment.cpp)
 add_um2_test(./geometry/QuadraticTriangle.cpp)
+add_um2_test(./geometry/QuadraticQuadrilateral.cpp)
 #
 ## ------------------------------------------------------------------------------
 ## mesh

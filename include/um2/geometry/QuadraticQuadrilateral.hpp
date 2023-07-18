@@ -1,31 +1,31 @@
 #pragma once
 
 #include <um2/geometry/QuadraticSegment.hpp>
-#include <um2/geometry/Triangle.hpp>
+#include <um2/geometry/Quadrilateral.hpp>
 
 namespace um2
 {
 
 // -----------------------------------------------------------------------------
-// QUADRATIC TRIANGLE
+// QUADRATIC QUADRILATERAL 
 // -----------------------------------------------------------------------------
 // A 2-polytope, of polynomial order 1, represented by the connectivity
-// of its vertices. These 3 vertices are D-dimensional points of type T.
+// of its vertices. These 4 vertices are D-dimensional points of type T.
 
 template <typename T>
-using QuadraticTriangle2 = QuadraticTriangle<2, T>;
-using QuadraticTriangle2f = QuadraticTriangle2<float>;
-using QuadraticTriangle2d = QuadraticTriangle2<double>;
+using QuadraticQuadrilateral2 = QuadraticQuadrilateral<2, T>;
+using QuadraticQuadrilateral2f = QuadraticQuadrilateral2<float>;
+using QuadraticQuadrilateral2d = QuadraticQuadrilateral2<double>;
 
 template <typename T>
-using QuadraticTriangle3 = QuadraticTriangle<3, T>;
-using QuadraticTriangle3f = QuadraticTriangle3<float>;
-using QuadraticTriangle3d = QuadraticTriangle3<double>;
+using QuadraticQuadrilateral3 = QuadraticQuadrilateral<3, T>;
+using QuadraticQuadrilateral3f = QuadraticQuadrilateral3<float>;
+using QuadraticQuadrilateral3d = QuadraticQuadrilateral3<double>;
 
 template <Size D, typename T>
-struct Polytope<2, 2, 6, D, T> {
+struct Polytope<2, 2, 8, D, T> {
 
-  Point<D, T> v[6];
+  Point<D, T> v[8];
 
   // -----------------------------------------------------------------------------
   // Accessors
@@ -56,7 +56,7 @@ struct Polytope<2, 2, 6, D, T> {
   contains(Point<D, T> const & p) const noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  linearPolygon() const noexcept -> Triangle<D, T>;
+  linearPolygon() const noexcept -> Quadrilateral<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   area() const noexcept -> T;
@@ -70,4 +70,4 @@ struct Polytope<2, 2, 6, D, T> {
 
 } // namespace um2
 
-#include "QuadraticTriangle.inl"
+#include "QuadraticQuadrilateral.inl"

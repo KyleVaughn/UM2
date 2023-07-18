@@ -1,4 +1,4 @@
-Quadratic Geom
+Quadratic Quad 
 Rectilinear Grid
 FVM
 FVM IO
@@ -7,9 +7,9 @@ Examine Ray/LineSegment, Ray/Mesh, Ray/QuadraticSegement intersections by
 using a change of basis to make the ray R = o + t*d into R = o' + t'*d' where
 d' = (1, 0, 0) and o' = (0, 0, 0).  Then the intersection is just the
 
-Consider adding a mesh with edges
+MeshFile
 
-String -> MeshFile
+Remove thrust as a dependency
 
 Seach for NOLINTS and check that they are still needed
 

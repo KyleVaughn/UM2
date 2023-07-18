@@ -2,8 +2,6 @@
 
 #include "../test_macros.hpp"
 
-#include<iostream>
-
 template <Size D, typename T>
 HOSTDEV static constexpr auto
 makeTri() -> um2::QuadraticTriangle<D, T>
@@ -20,7 +18,6 @@ makeTri() -> um2::QuadraticTriangle<D, T>
   this_tri[5][1] = static_cast<T>(0.5);
   return this_tri;
 }
-
 
 // P4 = (0.7, 0.8)
 template <Size D, typename T>
@@ -50,16 +47,11 @@ TEST_CASE(interpolate)
 {
   um2::QuadraticTriangle<D, T> tri = makeTri2<D, T>();
   ASSERT(um2::isApprox(tri(0, 0), tri[0]));
-  um2::Point<D, T> p10 = tri(1, 0);
-  ASSERT(um2::isApprox(p10, tri[1]));
-  um2::Point<D, T> p01 = tri(0, 1);
-  um2::Point<D, T> p05 = tri(static_cast<T>(0.5), static_cast<T>(0));    
-  um2::Point<D, T> p0505 = tri(static_cast<T>(0.5), static_cast<T>(0.5));    
-  um2::Point<D, T> p005 = tri(static_cast<T>(0), static_cast<T>(0.5));
-  ASSERT(um2::isApprox(p01, tri[2]));
-  ASSERT(um2::isApprox(p05, tri[3]));
-  ASSERT(um2::isApprox(p0505, tri[4]));
-  ASSERT(um2::isApprox(p005, tri[5]));
+  ASSERT(um2::isApprox(tri(1, 0), tri[1]));
+  ASSERT(um2::isApprox(tri(0, 1), tri[2]));
+  ASSERT(um2::isApprox(tri(0.5, 0), tri[3]));
+  ASSERT(um2::isApprox(tri(0.5, 0.5), tri[4]));
+  ASSERT(um2::isApprox(tri(0, 0.5), tri[5]));
 }
 
 // -------------------------------------------------------------------
@@ -145,8 +137,8 @@ TEST_CASE(area)
 {
   um2::QuadraticTriangle<2, T> tri = makeTri<2, T>();
   ASSERT_NEAR(tri.area(), static_cast<T>(0.5), static_cast<T>(1e-5));
-  tri[3] = um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.05));    
-  tri[5] = um2::Point2<T>(static_cast<T>(0.05), static_cast<T>(0.5));    
+  tri[3] = um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.05));
+  tri[5] = um2::Point2<T>(static_cast<T>(0.05), static_cast<T>(0.5));
   ASSERT_NEAR(tri.area(), static_cast<T>(0.4333333333), static_cast<T>(1e-5));
 
   um2::QuadraticTriangle<2, T> tri2 = makeTri2<2, T>();

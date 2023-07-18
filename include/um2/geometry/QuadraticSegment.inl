@@ -27,7 +27,7 @@ template <Size D, typename T>
 HOSTDEV constexpr QuadraticSegment<D, T>::Polytope(Point<D, T> const & p0,
                                                    Point<D, T> const & p1,
                                                    Point<D, T> const & p2) noexcept
-  : v{p0, p1, p2}
+    : v{p0, p1, p2}
 {
 }
 

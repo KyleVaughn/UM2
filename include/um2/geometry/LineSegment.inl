@@ -26,7 +26,7 @@ LineSegment<D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
 template <Size D, typename T>
 HOSTDEV constexpr LineSegment<D, T>::Polytope(Point<D, T> const & p0,
                                               Point<D, T> const & p1) noexcept
-  : v{p0, p1}
+    : v{p0, p1}
 {
 }
 
