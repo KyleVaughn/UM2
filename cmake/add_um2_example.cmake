@@ -8,15 +8,7 @@ macro(add_um2_example EXAMPLE)
   
   # clang-tidy
   if (UM2_ENABLE_CLANG_TIDY)    
-    if (UM2_CLANG_TIDY_FIX)    
-      set_target_properties(${EXAMPLE} PROPERTIES    
-                            CXX_CLANG_TIDY    
-                            "clang-tidy;--fix;--extra-arg=-Wno-unknown-warning-option")
-    else()    
-      set_target_properties(${EXAMPLE} PROPERTIES    
-                            CXX_CLANG_TIDY    
-                            "clang-tidy;--extra-arg=-Wno-unknown-warning-option")
-    endif()    
+    set_clang_tidy_properties(${EXAMPLE})
   endif()    
 
   # cppcheck
@@ -26,11 +18,7 @@ macro(add_um2_example EXAMPLE)
 
   # If compiling with CUDA, compile the cpp files as cuda    
   if (UM2_ENABLE_CUDA)    
-    set_target_properties(${EXAMPLE} PROPERTIES CUDA_STANDARD ${UM2_CUDA_STANDARD})
-    set_target_properties(${EXAMPLE} PROPERTIES CUDA_STANDARD_REQUIRED ON)
-    set_source_files_properties(${ARGN} PROPERTIES LANGUAGE CUDA)    
-    set_property(TARGET ${EXAMPLE} PROPERTY CUDA_SEPARABLE_COMPILATION ON)    
-    set_property(TARGET ${EXAMPLE} PROPERTY CUDA_ARCHITECTURES native)        
+    set_cuda_properties(${EXAMPLE} ${ARGN})
   endif()                                                                      
 
   # If vis is enabled, link the necessary libraries

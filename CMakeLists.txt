@@ -11,25 +11,22 @@ project(
 ###############################################################################
 option(UM2_BUILD_TESTS      "Build tests"          ON)
 option(UM2_BUILD_EXAMPLES   "Build examples"       ON)
+option(UM2_BUILD_BENCH      "Build benchmarks"     OFF)
 
 option(UM2_ENABLE_CUDA      "Enable CUDA"          OFF)
 option(UM2_ENABLE_OPENMP    "Enable OpenMP"        ON)
 option(UM2_ENABLE_FASTMATH  "Enable fast math"     ON)
-option(UM2_ENABLE_VIS       "Enable visualization" OFF)
+option(UM2_ENABLE_OPENGL    "Enable OpenGL visualization" OFF)
 
 ## Advanced options ###########################################################
 ###############################################################################
 option(UM2_ENABLE_INT64 "Enable 64-bit integer types" OFF) # For large meshes
-set(UM2_LOG_LEVEL "info" CACHE STRING "Log level")
-set_property(CACHE UM2_LOG_LEVEL PROPERTY STRINGS
-  "trace" "debug" "info" "warn" "error" "critical" "off")
 
 ## Dev options #################################################################
 ###############################################################################
 option(UM2_DEV_MODE             "Enable development mode"         ON             )
 option(UM2_ENABLE_CLANG_FORMAT  "Enable clang-format targets"     ${UM2_DEV_MODE})
 option(UM2_ENABLE_CLANG_TIDY    "Enable clang-tidy"               ${UM2_DEV_MODE})
-option(UM2_CLANG_TIDY_FIX       "Enable clang-tidy to fix errors" OFF            )  
 option(UM2_ENABLE_CPPCHECK      "Enable cppcheck"                 ${UM2_DEV_MODE})
 
 ## um2 library ################################################################
@@ -79,15 +76,15 @@ set(UM2_SOURCES
   ) 
 
 # Visualization headers and sources
-if (UM2_ENABLE_VIS)
-  list(APPEND UM2_HEADERS
-    "include/um2/visualization/shader.hpp"
-    "include/um2/visualization/vertex_buffer.hpp"
-    "include/um2/visualization/vertex_array.hpp"
-    "include/um2/visualization/element_buffer.hpp")
-  list(APPEND UM2_SOURCES
-    "src/visualization/shader.cpp")
-endif()
+#if (UM2_ENABLE_OPENGL)
+#  list(APPEND UM2_HEADERS
+#    "include/um2/visualization/shader.hpp"
+#    "include/um2/visualization/vertex_buffer.hpp"
+#    "include/um2/visualization/vertex_array.hpp"
+#    "include/um2/visualization/element_buffer.hpp")
+#  list(APPEND UM2_SOURCES
+#    "src/visualization/shader.cpp")
+#endif()
 
 # Library
 add_library(um2 ${UM2_HEADERS} ${UM2_SOURCES})

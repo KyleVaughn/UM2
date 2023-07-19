@@ -3,6 +3,7 @@ openmp and cuda kernels for bounding box and the mesh functions
 Add OpenMP to the test matrix
 
 Create benchmark of bounding box of a vector of 2D oints
+  Add bench to CMake Dir
 
 DO the set_child function but as a member function for the mesh
 

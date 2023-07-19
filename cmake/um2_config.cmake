@@ -31,16 +31,17 @@ set_target_properties(um2 PROPERTIES CXX_STANDARD_REQUIRED ON)
 ##################################################
 if (UM2_ENABLE_OPENMP)
   find_package(OpenMP REQUIRED)
+  if (OpenMP_CXX_FOUND)
+    target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
+  endif()
 endif()
 
 ## CUDA ##########################################
 ##################################################
 if (UM2_ENABLE_CUDA)
-  include(CheckLanguage)
-  check_language(CUDA)
-  set(UM2_CUDA_STANDARD "20" CACHE STRING "CUDA standard")
-  set_target_properties(um2 PROPERTIES CUDA_STANDARD ${UM2_CUDA_STANDARD})
-  set_target_properties(um2 PROPERTIES CUDA_STANDARD_REQUIRED ON)
+  find_package(CUDA REQUIRED)
+  enable_language(CUDA)
+
   # nvcc will default to gcc and g++ if the host compiler is not set using CUDAHOSTCXX. 
   # To prevent unintentional version/compiler mismatches, we set the host compiler to the 
   # same compiler used to build the project.
@@ -49,63 +50,37 @@ if (UM2_ENABLE_CUDA)
       " Consider setting the CUDAHOSTCXX environment variable if this is not desired.")
     set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
   endif()
-  find_package(CUDA REQUIRED)
-  enable_language(CUDA)
-  set_target_properties(um2 PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-  set_target_properties(um2 PROPERTIES CUDA_ARCHITECTURES native)
-  set_source_files_properties(${UM2_SOURCES} PROPERTIES LANGUAGE CUDA)    
+  set(UM2_CUDA_STANDARD "20" CACHE STRING "CUDA standard")
+  macro(set_cuda_properties CUDA_TARGET)
+    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_STANDARD ${UM2_CUDA_STANDARD})
+    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_STANDARD_REQUIRED ON)
+    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_ARCHITECTURES native)
+    set_source_files_properties(${ARGN} PROPERTIES LANGUAGE CUDA)    
+  endmacro()
+  set_cuda_properties(um2 ${UM2_SOURCES})
   target_include_directories(um2 SYSTEM PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")    
 endif()
 
-## Thrust ########################################
-##################################################
-set(Thrust_DIR "${PROJECT_SOURCE_DIR}/dependencies/thrust/thrust/cmake")
-find_package(Thrust REQUIRED CONFIG)
-# Host backend (OpenMP > Sequential)
-if (UM2_ENABLE_OPENMP)
-  set(UM2_THRUST_HOST "OMP" CACHE STRING "Thrust host backend")
-else()
-  set(UM2_THRUST_HOST "CPP" CACHE STRING "Thrust host backend")
-endif()
-set_property(CACHE UM2_THRUST_HOST PROPERTY STRINGS "OMP" "CPP")
-# Device backend (CUDA > OpenMP > Sequential)
-if (UM2_ENABLE_CUDA)
-  set(UM2_THRUST_DEVICE "CUDA" CACHE STRING "Thrust device backend")
-elseif (UM2_ENABLE_OPENMP)
-  set(UM2_THRUST_DEVICE "OMP" CACHE STRING "Thrust device backend")
-else()
-  set(UM2_THRUST_DEVICE "CPP" CACHE STRING "Thrust device backend")
-endif()
-set_property(CACHE UM2_THRUST_DEVICE PROPERTY STRINGS "CUDA" "OMP" "CPP")
-message(STATUS "Thrust host backend: ${UM2_THRUST_HOST}")
-message(STATUS "Thrust device backend: ${UM2_THRUST_DEVICE}")
-thrust_create_target(Thrust HOST ${UM2_THRUST_HOST} DEVICE ${UM2_THRUST_DEVICE})
-# Treat the Thrust includes as system includes    
-target_link_libraries(um2 PRIVATE Thrust)
-target_include_directories(um2 SYSTEM PUBLIC      
-  "${PROJECT_SOURCE_DIR}/dependencies/thrust/thrust/cmake/../.."    
-  "${PROJECT_SOURCE_DIR}/dependencies/thrust/dependencies/libcudacxx/include"    
-  "${PROJECT_SOURCE_DIR}/dependencies/thrust/dependencies/cub")
-
-## visualization #################################
-##################################################
-if (UM2_ENABLE_VIS)
-  set(UM2_VIS_LIBRARIES
-    "OpenGL::GL"
-    "glfw"
-    "glad"
-    CACHE STRING "Visualization libraries")
-  # OpenGL
-  find_package(OpenGL REQUIRED)
-  # GLFW
-  set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-  set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-  set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-  add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/glfw" SYSTEM)
-  # GLAD
-  add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/glad" SYSTEM)
-  target_link_libraries(um2 PRIVATE ${UM2_VIS_LIBRARIES}) 
-endif()
+### visualization #################################
+###################################################
+#if (UM2_ENABLE_VIS)
+#  set(UM2_VIS_LIBRARIES
+#    "OpenGL::GL"
+#    "glfw"
+#    "glad"
+#    CACHE STRING "Visualization libraries")
+#  # OpenGL
+#  find_package(OpenGL REQUIRED)
+#  # GLFW
+#  set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+#  set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+#  set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+#  add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/glfw" SYSTEM)
+#  # GLAD
+#  add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/glad" SYSTEM)
+#  target_link_libraries(um2 PRIVATE ${UM2_VIS_LIBRARIES}) 
+#endif()
 
 ## config.hpp ####################################
 ##################################################
@@ -122,15 +97,12 @@ endif()
 ## clang-tidy ####################################
 ##################################################
 if (UM2_ENABLE_CLANG_TIDY)
-  if (UM2_CLANG_TIDY_FIX)
-    set_target_properties(um2 PROPERTIES
-                          CXX_CLANG_TIDY
-                          "clang-tidy;--fix;--extra-arg=-Wno-unknown-warning-option")
-  else()
-    set_target_properties(um2 PROPERTIES
+  macro(set_clang_tidy_properties TIDY_TARGET)
+    set_target_properties(${TIDY_TARGET} PROPERTIES
                           CXX_CLANG_TIDY
                           "clang-tidy;--extra-arg=-Wno-unknown-warning-option")
-  endif()
+  endmacro()
+  set_clang_tidy_properties(um2)
 endif()
 
 ## cppcheck ######################################
@@ -183,6 +155,10 @@ if (UM2_ENABLE_CUDA)
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler \"${CMAKE_CXX_FLAGS}\"")
   set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} -Xcompiler \"${CMAKE_CXX_FLAGS_RELEASE}\"")
   set(CMAKE_CUDA_FLAGS_DEBUG   "${CMAKE_CUDA_FLAGS_DEBUG} -Xcompiler \"${CMAKE_CXX_FLAGS_DEBUG}\"")
+  # If OpenMP is enabled, -fopenmp is passed via -Xcompiler
+  if (UM2_ENABLE_OPENMP)
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -fopenmp")
+  endif()
 endif()
 
 ## Tests #########################################
