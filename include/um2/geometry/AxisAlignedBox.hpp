@@ -108,7 +108,7 @@ PURE HOSTDEV constexpr auto
 boundingBox(Point<D, T> const (&points)[N]) noexcept -> AxisAlignedBox<D, T>;
 
 template <Size D, typename T>
-PURE HOSTDEV constexpr auto
+PURE auto
 boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>;
 
 } // namespace um2

@@ -1,7 +1,8 @@
 template <Size D, std::floating_point T, std::signed_integral I>
-HOSTDEV static void
-makeTriReferenceMesh(um2::TriMesh<D, T, I> & mesh)
+HOSTDEV static auto
+makeTriReferenceMesh() -> um2::TriMesh<D, T, I> 
 {
+  um2::TriMesh<D, T, I> mesh;
   if constexpr (D == 2) {
     mesh.vertices = {
         {0, 0},
@@ -23,6 +24,7 @@ makeTriReferenceMesh(um2::TriMesh<D, T, I> & mesh)
   };
   mesh.vf_offsets = {0, 2, 3, 5, 6};
   mesh.vf = {0, 1, 0, 0, 1, 1};
+  return mesh;
 }
 
 // template <std::floating_point T, std::signed_integral I>

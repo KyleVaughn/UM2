@@ -123,23 +123,24 @@ TEST_CASE(bounding_box)
     ASSERT_NEAR(box4.minima[i], -static_cast<T>(D), static_cast<T>(1e-6));
     ASSERT_NEAR(box4.maxima[i], static_cast<T>(D), static_cast<T>(1e-6));
   }
+}
+
+template <std::floating_point T>
+HOST
+TEST_CASE(bounding_box_vector)
+{
   // boundingBox(Vector<Point> points)
-  um2::Vector<um2::Point<D, T>> points2(2 * D);
-  for (Size i = 0; i < D; ++i) {
-    um2::Point<D, T> p_right;
-    um2::Point<D, T> p_left;
-    for (Size j = 0; j < D; ++j) {
-      p_right[j] = static_cast<T>(i + 1);
-      p_left[j] = -static_cast<T>(i + 1);
-    }
-    points2[2 * i + 0] = p_right;
-    points2[2 * i + 1] = p_left;
+  Size n = 20;
+  um2::Vector<um2::Point2<T>> points(n);
+  for (Size i = 0; i < n; ++i) {
+    points[i][0] = static_cast<T>(0.1) * static_cast<T>(i); 
+    points[i][1] = static_cast<T>(0.2) * static_cast<T>(i);
   }
-  um2::AxisAlignedBox<D, T> box5 = um2::boundingBox(points2);
-  for (Size i = 0; i < D; ++i) {
-    ASSERT_NEAR(box5.minima[i], -static_cast<T>(D), static_cast<T>(1e-6));
-    ASSERT_NEAR(box5.maxima[i], static_cast<T>(D), static_cast<T>(1e-6));
-  }
+  auto const box = um2::boundingBox(points);
+  ASSERT_NEAR(box.xMin(), static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(box.xMax(), static_cast<T>(0.1 * (n - 1)), static_cast<T>(1e-6));
+  ASSERT_NEAR(box.yMin(), static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(box.yMax(), static_cast<T>(0.2 * (n - 1)), static_cast<T>(1e-6));
 }
 
 #if UM2_ENABLE_CUDA
@@ -171,6 +172,9 @@ TEST_SUITE(aabb)
   TEST_HOSTDEV(contains, 1, 1, D, T);
   TEST_HOSTDEV(is_approx, 1, 1, D, T);
   TEST_HOSTDEV(bounding_box, 1, 1, D, T);
+  if constexpr (D==2) {
+    TEST((bounding_box_vector<T>));
+  }
 }
 
 auto
