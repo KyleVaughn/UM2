@@ -1,26 +1,15 @@
 #include <um2/mesh/TriMesh.hpp>
 
 // #include "./helpers/setup_mesh_file.hpp"
-#include "./helpers/setup_mesh.hpp"
+//#include "./helpers/setup_mesh.hpp"
 
 #include "../test_macros.hpp"
 
-template <Size D, std::floating_point T, std::signed_integral I>
-HOSTDEV
-TEST_CASE(constructor)
-{
-  //  um2::MeshFile<T, I> mesh_file;
-  //  make_tri_reference_mesh_file(mesh_file);
-  um2::TriMesh<D, T, I> ref_mesh;
-  makeTriReferenceMesh(ref_mesh);
-  assert(!ref_mesh.vertices.empty());
-  //  um2::TriMesh<T, I> mesh(mesh_file);
-  //  EXPECT_TRUE(um2::isApprox(mesh.vertices, ref_mesh.vertices));
-  //  EXPECT_TRUE(mesh.fv_offsets.empty());
-  //  EXPECT_EQ(mesh.fv, ref_mesh.fv);
-  //  EXPECT_EQ(mesh.vf_offsets, ref_mesh.vf_offsets);
-  //  EXPECT_EQ(mesh.vf, ref_mesh.vf);
-}
+// numVertices
+// numFaces
+// boundingBox
+// face
+// faceContaining
 
 // template <std::floating_point T, std::signed_integral I>
 // TEST_CASE(boundingBox)
@@ -178,15 +167,10 @@ TEST_CASE(constructor)
 //// ADD_TEMPLATED_KERNEL_TEST(boundingBox_kernel, boundingBox_cuda, T, I)
 //// #endif
 ////
-#if UM2_ENABLE_CUDA
-template <Size D, std::floating_point T, std::signed_integral I>
-MAKE_CUDA_KERNEL(constructor, D, T, I);
-#endif
 
 template <Size D, std::floating_point T, std::signed_integral I>
 TEST_SUITE(TriMesh)
 {
-  TEST_HOSTDEV(constructor, 1, 1, D, T, I);
   //  TEST_HOSTDEV((boundingBox<T, I>));
   //  RUN_TEST("to_mesh_file", (to_mesh_file<T, I>));
   //

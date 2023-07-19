@@ -1,8 +1,8 @@
 [submodule "tpls/glfw"]
-	path = tpls/glfw
+	path = dependencies/glfw
 	url = https://github.com/glfw/glfw.git
 	branch = 3.3-stable
 [submodule "tpls/thrust"]
-	path = tpls/thrust
+	path = dependencies/thrust
 	url = https://github.com/NVIDIA/thrust.git
 	branch = 2.1.x

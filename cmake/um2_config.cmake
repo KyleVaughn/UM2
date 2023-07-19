@@ -59,7 +59,7 @@ endif()
 
 ## Thrust ########################################
 ##################################################
-set(Thrust_DIR "${PROJECT_SOURCE_DIR}/tpls/thrust/thrust/cmake")
+set(Thrust_DIR "${PROJECT_SOURCE_DIR}/dependencies/thrust/thrust/cmake")
 find_package(Thrust REQUIRED CONFIG)
 # Host backend (OpenMP > Sequential)
 if (UM2_ENABLE_OPENMP)
@@ -83,9 +83,9 @@ thrust_create_target(Thrust HOST ${UM2_THRUST_HOST} DEVICE ${UM2_THRUST_DEVICE})
 # Treat the Thrust includes as system includes    
 target_link_libraries(um2 PRIVATE Thrust)
 target_include_directories(um2 SYSTEM PUBLIC      
-  "${PROJECT_SOURCE_DIR}/tpls/thrust/thrust/cmake/../.."    
-  "${PROJECT_SOURCE_DIR}/tpls/thrust/dependencies/libcudacxx/include"    
-  "${PROJECT_SOURCE_DIR}/tpls/thrust/dependencies/cub")
+  "${PROJECT_SOURCE_DIR}/dependencies/thrust/thrust/cmake/../.."    
+  "${PROJECT_SOURCE_DIR}/dependencies/thrust/dependencies/libcudacxx/include"    
+  "${PROJECT_SOURCE_DIR}/dependencies/thrust/dependencies/cub")
 
 ## visualization #################################
 ##################################################
@@ -101,9 +101,9 @@ if (UM2_ENABLE_VIS)
   set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
   set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
   set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-  add_subdirectory("${PROJECT_SOURCE_DIR}/tpls/glfw" SYSTEM)
+  add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/glfw" SYSTEM)
   # GLAD
-  add_subdirectory("${PROJECT_SOURCE_DIR}/tpls/glad" SYSTEM)
+  add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/glad" SYSTEM)
   target_link_libraries(um2 PRIVATE ${UM2_VIS_LIBRARIES}) 
 endif()
 

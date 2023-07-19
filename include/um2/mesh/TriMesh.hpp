@@ -10,8 +10,8 @@ namespace um2
 template <Size D, std::floating_point T, std::signed_integral I>
 struct FaceVertexMesh<1, 3, D, T, I> {
 
-//  using FaceConn = Vec<3, I>;
-//  using Face = Triangle<D, T>;
+  using FaceConn = Vec<3, I>;
+  using Face = Triangle<D, T>;
 
   Vector<Point<D, T>> vertices;
   Vector<FaceConn> fv;

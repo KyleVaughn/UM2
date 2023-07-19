@@ -47,6 +47,7 @@ set(UM2_HEADERS
     "include/um2/common/ShortString.hpp"
     "include/um2/common/Color.hpp"
     # math
+    "include/um2/math/math_functions.hpp"
     "include/um2/math/morton.hpp"
     "include/um2/math/Vec.hpp"
     "include/um2/math/Mat.hpp"

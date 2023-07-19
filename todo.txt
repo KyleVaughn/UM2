@@ -3,6 +3,10 @@ Benchmark methods for CPU and GPU
   Need IO to read these
   Use these to determine for what N we should use single thread, multi-thread, or GPU
 
+spack
+morton sourt points
+visualize the points
+
 Rectilinear Grid
 FVM
 FVM IO
