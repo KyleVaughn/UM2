@@ -34,24 +34,34 @@ TriMesh<D, T, I>::face(Size i) const noexcept -> Face
 // -------------------------------------------------------------------
 
 template <Size D, std::floating_point T, std::signed_integral I>
-PURE HOST constexpr auto
-TriMesh<D, T, I>::boundingBox() const noexcept -> AxisAlignedBox<D, T> 
+PURE constexpr auto
+TriMesh<D, T, I>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 {
-  return um2::boundingBox(vertices); 
+  return um2::boundingBox(vertices);
 }
 
 template <Size D, std::floating_point T, std::signed_integral I>
-PURE HOST constexpr auto
+PURE constexpr auto
 TriMesh<D, T, I>::faceContaining(Point<D, T> const & p) const noexcept -> Size
 {
-  static_assert(D==2, "Only implemented for 2D meshes");
+  static_assert(D == 2, "Only implemented for 2D meshes");
   for (Size i = 0; i < numFaces(); ++i) {
     if (face(i).contains(p)) {
       return i;
     }
   }
   assert(false);
-  return -1; 
+  return -1;
+}
+
+template <Size D, std::floating_point T, std::signed_integral I>
+template <Size N> // N = max number of faces per grid cell
+PURE [[nodiscard]] constexpr auto
+TriMesh<D, T, I>::regularPartition() const noexcept -> RegularPartition<D, T, Vec<N, I>>
+{
+  static_assert(D == 2, "Only implemented for 2D meshes");
+  //  auto const bb = boundingBox();
+  return RegularPartition<D, T, Vec<N, I>>{};
 }
 
 } // namespace um2

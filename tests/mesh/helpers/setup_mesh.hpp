@@ -1,6 +1,6 @@
 template <Size D, std::floating_point T, std::signed_integral I>
 HOSTDEV static auto
-makeTriReferenceMesh() -> um2::TriMesh<D, T, I> 
+makeTriReferenceMesh() -> um2::TriMesh<D, T, I>
 {
   um2::TriMesh<D, T, I> mesh;
   if constexpr (D == 2) {

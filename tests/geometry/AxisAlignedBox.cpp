@@ -126,14 +126,14 @@ TEST_CASE(bounding_box)
 }
 
 template <std::floating_point T>
-HOST
+HOSTDEV
 TEST_CASE(bounding_box_vector)
 {
   // boundingBox(Vector<Point> points)
   Size n = 20;
   um2::Vector<um2::Point2<T>> points(n);
   for (Size i = 0; i < n; ++i) {
-    points[i][0] = static_cast<T>(0.1) * static_cast<T>(i); 
+    points[i][0] = static_cast<T>(0.1) * static_cast<T>(i);
     points[i][1] = static_cast<T>(0.2) * static_cast<T>(i);
   }
   auto const box = um2::boundingBox(points);
@@ -161,6 +161,9 @@ MAKE_CUDA_KERNEL(is_approx, D, T);
 
 template <Size D, std::floating_point T>
 MAKE_CUDA_KERNEL(bounding_box, D, T);
+
+template <std::floating_point T>
+MAKE_CUDA_KERNEL(bounding_box_vector, T);
 #endif
 
 template <Size D, std::floating_point T>
@@ -172,8 +175,8 @@ TEST_SUITE(aabb)
   TEST_HOSTDEV(contains, 1, 1, D, T);
   TEST_HOSTDEV(is_approx, 1, 1, D, T);
   TEST_HOSTDEV(bounding_box, 1, 1, D, T);
-  if constexpr (D==2) {
-    TEST((bounding_box_vector<T>));
+  if constexpr (D == 2) {
+    TEST_HOSTDEV(bounding_box_vector, 1, 1, T);
   }
 }
 

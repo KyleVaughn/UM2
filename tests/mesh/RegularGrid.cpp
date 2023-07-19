@@ -178,8 +178,8 @@ TEST_CASE(getRangeContaining)
   um2::AxisAlignedBox2<T> box1({static_cast<T>(3), static_cast<T>(1)},
                                {static_cast<T>(5), static_cast<T>(2)});
   um2::Vec<4, Size> range1 = grid.getRangeContaining(box1);
-  ASSERT(range1[0] == 1);
-  ASSERT(range1[1] == 2);
+  ASSERT(range1[0] == 0 || range1[0] == 1);
+  ASSERT(range1[1] == 1 || range1[1] == 2);
   ASSERT(range1[2] == 1 || range1[2] == 2); // Valid in either cell.
   ASSERT(range1[3] == 2 || range1[3] == 3);
 

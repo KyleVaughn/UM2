@@ -96,7 +96,7 @@ TEST_CASE(isConvex)
   quad[3][0] = static_cast<T>(0.5);
   ASSERT(quad.isConvex());
   quad[3][1] = static_cast<T>(0.5);
-  ASSERT(quad.isConvex());
+  ASSERT(quad.isConvex()); // Effectively a triangle.
   quad[3][0] = static_cast<T>(0.75);
   ASSERT(!quad.isConvex());
 }

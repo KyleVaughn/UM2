@@ -11,7 +11,7 @@ project(
 ###############################################################################
 option(UM2_BUILD_TESTS      "Build tests"          ON)
 option(UM2_BUILD_EXAMPLES   "Build examples"       ON)
-option(UM2_BUILD_BENCH      "Build benchmarks"     OFF)
+option(UM2_BUILD_BENCHMARKS "Build benchmarks"     OFF)
 
 option(UM2_ENABLE_CUDA      "Enable CUDA"          OFF)
 option(UM2_ENABLE_OPENMP    "Enable OpenMP"        ON)

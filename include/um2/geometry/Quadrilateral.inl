@@ -179,7 +179,6 @@ PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::isConvex() const noexcept -> bool
 {
   static_assert(D == 2, "Convexity of quadrilateral is only defined in 2D");
-  // Alternative: Use sum of areas of triangles
   return areCCW(v[0], v[1], v[2]) && areCCW(v[1], v[2], v[3]) &&
          areCCW(v[2], v[3], v[0]) && areCCW(v[3], v[0], v[1]);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <um2/geometry/LineSegment.hpp>
+#include <um2/geometry/Triangle.hpp>
 #include <um2/math/Mat.hpp>
 
 namespace um2

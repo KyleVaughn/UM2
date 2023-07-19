@@ -125,7 +125,7 @@ endif()
 
 ## flags #########################################
 ##################################################
-# Set compiler-specific flags
+# Set compiler-specific warning flags 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   include(cmake/clang-cxx-flags.cmake)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_CLANG_FLAGS}")
@@ -134,7 +134,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_GNU_FLAGS}")
 endif()
 
-# Set fast math flags
+# Set fast math flags if enabled
 if (UM2_ENABLE_FASTMATH)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ffast-math")
   if (UM2_ENABLE_CUDA)
@@ -172,6 +172,12 @@ endif()
 ##################################################
 if (UM2_BUILD_EXAMPLES)
   add_subdirectory(examples)
+endif()
+
+## Benchmarks #################################### 
+##################################################
+if (UM2_BUILD_BENCHMARKS)
+  add_subdirectory(benchmarks)
 endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

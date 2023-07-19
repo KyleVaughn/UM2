@@ -6,3 +6,6 @@
 	path = dependencies/thrust
 	url = https://github.com/NVIDIA/thrust.git
 	branch = 2.1.x
+[submodule "dependencies/benchmark"]
+	path = dependencies/benchmark
+	url = https://github.com/google/benchmark.git

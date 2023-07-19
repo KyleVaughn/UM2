@@ -149,24 +149,17 @@ boundingBox(Point<D, T> const (&points)[N]) noexcept -> AxisAlignedBox<D, T>
   return AxisAlignedBox<D, T>(minima, maxima);
 }
 
-#ifndef __CUDA_ARCH__
-template <typename T>
-PURE auto
-boundingBox(Vector<Point2<T>> const & points) noexcept -> AxisAlignedBox2<T>
+template <Size D, typename T>
+PURE HOSTDEV auto
+boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>
 {
-  T xmin = points[0][0];
-  T xmax = points[0][0];
-  T ymin = points[0][1];
-  T ymax = points[0][1];
-  # pragma omp parallel for reduction(min: xmin, ymin) reduction(max: xmax, ymax)
+  Point<D, T> minima = points[0];
+  Point<D, T> maxima = points[0];
   for (Size i = 1; i < points.size(); ++i) {
-    xmin = um2::min(xmin, points[i][0]);
-    xmax = um2::max(xmax, points[i][0]);
-    ymin = um2::min(ymin, points[i][1]);
-    ymax = um2::max(ymax, points[i][1]);
+    minima.min(points[i]);
+    maxima.max(points[i]);
   }
-  return AxisAlignedBox2<T>({xmin, ymin}, {xmax, ymax});
+  return AxisAlignedBox<D, T>(minima, maxima);
 }
-#endif
 
 } // namespace um2

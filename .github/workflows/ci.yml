@@ -2,6 +2,9 @@ name: CI
 
 on: [push]
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   main:
     runs-on: ubuntu-22.04
@@ -9,14 +12,13 @@ jobs:
       fail-fast: true
       matrix:
         compiler: [ gcc, clang ]
-        build_type: [ Release, Debug ]
+        build_type: [ Debug, Release ]
         cuda: [ OFF ]
-        openmp: [ OFF]
-        vis: [OFF]
-        dev_mode: [ OFF, ON ]
+        openmp: [ ON, OFF]
+        dev_mode: [ ON, OFF ]
 
     name: "${{ matrix.compiler }}, ${{ matrix.build_type }}, OMP=${{ matrix.openmp }}, 
-      Vis=${{ matrix.vis }}, Dev=${{ matrix.dev_mode }}"
+      Dev=${{ matrix.dev_mode }}"
 
     steps:
       - uses: actions/checkout@v3
@@ -44,10 +46,10 @@ jobs:
         if: matrix.openmp == 'ON'
         run: sudo apt install -y libomp-14-dev
 
-      - name: Vis
-        shell: bash
-        if: matrix.vis == 'ON'
-        run: sudo apt install -y xorg-dev libgl1-mesa-dev
+          #      - name: Vis
+          #        shell: bash
+          #        if: matrix.vis == 'ON'
+          #        run: sudo apt install -y xorg-dev libgl1-mesa-dev
 
       - name: Dev mode dependencies
         shell: bash
@@ -61,7 +63,6 @@ jobs:
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
                 -DUM2_ENABLE_CUDA=${{ matrix.cuda }} \
                 -DUM2_ENABLE_OPENMP=${{ matrix.openmp }} \
-                -DUM2_ENABLE_VIS=${{ matrix.vis }} \
                 -DUM2_DEV_MODE=${{ matrix.dev_mode }}
           make -j -C build
 

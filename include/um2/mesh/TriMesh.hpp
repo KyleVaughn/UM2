@@ -1,8 +1,8 @@
 #pragma once
 
-#include <um2/mesh/FaceVertexMesh.hpp>
-
 #include <um2/geometry/Triangle.hpp>
+#include <um2/mesh/FaceVertexMesh.hpp>
+#include <um2/mesh/RegularPartition.hpp>
 
 namespace um2
 {
@@ -41,12 +41,15 @@ struct FaceVertexMesh<1, 3, D, T, I> {
   // Methods
   // --------------------------------------------------------------------------
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   faceContaining(Point<D, T> const & p) const noexcept -> Size;
 
+  template <Size N> // N = max number of faces per grid cell
+  PURE [[nodiscard]] constexpr auto
+  regularPartition() const noexcept -> RegularPartition<D, T, Vec<N, I>>;
 };
 
 } // namespace um2

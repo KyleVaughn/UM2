@@ -102,10 +102,6 @@ Triangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
   T const s = A.cross(C) * invdetAB;
   return (r >= 0) && (s >= 0) && (r + s <= 1);
   // NOLINTEND(readability-identifier-naming)
-
-  // GPU alternative? Maybe do all the computations up until the final comparison and
-  // assign the value to a bool variable. Then return the bool variable.
-  // return areCCW(v[0], v[1], p) && areCCW(v[1], v[2], p) && areCCW(v[2], v[0], p)
 }
 
 // -------------------------------------------------------------------
