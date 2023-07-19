@@ -62,6 +62,7 @@ set(UM2_HEADERS
     # mesh
     "include/um2/mesh/RegularGrid.hpp"
     "include/um2/mesh/RegularPartition.hpp"
+    "include/um2/mesh/TriMesh.hpp"
     #    # ray_casting
     #    "include/um2/ray_casting/Ray.hpp"
     #    # api

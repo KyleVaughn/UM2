@@ -11,7 +11,7 @@ namespace um2
 
 // FACE-VERTEX MESH
 //-----------------------------------------------------------------------------
-// A 2D volumetric or 3D surface mesh composed of polygones of polynomial order P.
+// A 2D volumetric or 3D surface mesh composed of polygons of polynomial order P.
 // Each polygon (face) is composed of N vertices. Each vertex is a D-dimensional
 // point of floating point type T. For heterogeneous meshes, N is the sum of the
 // number of vertices of each face. This makes each mesh type uniquely
@@ -42,6 +42,11 @@ namespace um2
 //          belongs. There is an additional element at the end, which is the length
 //          of the vf vector. Used to calculate the number of faces to which each
 //          vertex belongs.
+//
+//
+//
+//    Ignore the comments below for now. They are not up to date.
+//
 //  - A TriQuadMesh (FaceVertexMesh<1, 7>) with one triangle and one quad:
 //    3---2
 //    |   | \                                                                       .

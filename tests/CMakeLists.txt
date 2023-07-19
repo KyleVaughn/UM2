@@ -35,7 +35,7 @@ add_um2_test(./geometry/QuadraticQuadrilateral.cpp)
 # ------------------------------------------------------------------------------
 add_um2_test(./mesh/RegularGrid.cpp)
 add_um2_test(./mesh/RegularPartition.cpp)
-#add_um2_test(./mesh/TriMesh.cpp)
+add_um2_test(./mesh/TriMesh.cpp)
 #
 ## ------------------------------------------------------------------------------
 ## ray_casting
