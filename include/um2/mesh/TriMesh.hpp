@@ -23,7 +23,6 @@ struct FaceVertexMesh<1, 3, D, T, I> {
   // --------------------------------------------------------------------------
 
   constexpr FaceVertexMesh() noexcept = default;
-
 };
 
 } // namespace um2

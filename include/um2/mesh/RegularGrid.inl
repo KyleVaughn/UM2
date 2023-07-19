@@ -1,3 +1,4 @@
+#include <iostream>
 namespace um2
 {
 
@@ -183,6 +184,22 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
   for (Size i = 0; i < D; ++i) {
     result.minima[i] = minima[i] + spacing[i] * static_cast<T>(index[i]);
     result.maxima[i] = result.minima[i] + spacing[i];
+  }
+  return result;
+}
+
+template <Size D, typename T>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+RegularGrid<D, T>::getRangeContaining(AxisAlignedBox<D, T> const & box) const noexcept
+    -> Vec<2 * D, Size>
+{
+  Vec<2 * D, Size> result;
+  for (Size i = 0; i < D; ++i) {
+    result[i] = static_cast<Size>(um2::floor((box.minima[i] - minima[i]) / spacing[i]));
+    result[i + D] =
+        static_cast<Size>(um2::floor((box.maxima[i] - minima[i]) / spacing[i]));
+    assert(0 <= result[i] && result[i] < num_cells[i]);
+    assert(0 <= result[i + D] && result[i + D] < num_cells[i]);
   }
   return result;
 }

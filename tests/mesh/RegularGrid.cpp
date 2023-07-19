@@ -155,6 +155,53 @@ TEST_CASE(getBox)
   ASSERT(isApprox(box, box_ref));
 }
 
+template <typename T>
+HOSTDEV
+TEST_CASE(getRangeContaining)
+{
+  um2::Point2<T> minima(1, -1);
+  um2::Vec2<T> spacing(2, 1);
+  um2::Vec2<Size> num_cells(5, 8);
+  // Grid ranges from 1 to 11 in x and -1 to 7 in y.
+  um2::RegularGrid2<T> grid(minima, spacing, num_cells);
+
+  // A box in a single cell.
+  um2::AxisAlignedBox2<T> box0({static_cast<T>(3.1), static_cast<T>(1.1)},
+                               {static_cast<T>(3.9), static_cast<T>(1.9)});
+  um2::Vec<4, Size> range0 = grid.getRangeContaining(box0);
+  ASSERT(range0[0] == 1);
+  ASSERT(range0[1] == 2);
+  ASSERT(range0[2] == 1);
+  ASSERT(range0[3] == 2);
+
+  // A box with perfect alignment.
+  um2::AxisAlignedBox2<T> box1({static_cast<T>(3), static_cast<T>(1)},
+                               {static_cast<T>(5), static_cast<T>(2)});
+  um2::Vec<4, Size> range1 = grid.getRangeContaining(box1);
+  ASSERT(range1[0] == 1);
+  ASSERT(range1[1] == 2);
+  ASSERT(range1[2] == 1 || range1[2] == 2); // Valid in either cell.
+  ASSERT(range1[3] == 2 || range1[3] == 3);
+
+  // A box in multiple cells.
+  um2::AxisAlignedBox2<T> box2({static_cast<T>(3.1), static_cast<T>(1.1)},
+                               {static_cast<T>(5.9), static_cast<T>(1.9)});
+  um2::Vec<4, Size> range2 = grid.getRangeContaining(box2);
+  ASSERT(range2[0] == 1);
+  ASSERT(range2[1] == 2);
+  ASSERT(range2[2] == 2);
+  ASSERT(range2[3] == 2);
+
+  // A box in 4 cells.
+  um2::AxisAlignedBox2<T> box3({static_cast<T>(3.1), static_cast<T>(1.1)},
+                               {static_cast<T>(5.9), static_cast<T>(2.9)});
+  um2::Vec<4, Size> range3 = grid.getRangeContaining(box3);
+  ASSERT(range3[0] == 1);
+  ASSERT(range3[1] == 2);
+  ASSERT(range3[2] == 2);
+  ASSERT(range3[3] == 3);
+}
+
 #if UM2_ENABLE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(constructor, D, T)
@@ -168,6 +215,9 @@ MAKE_CUDA_KERNEL(boundingBox, D, T)
 template <typename T>
 MAKE_CUDA_KERNEL(getBox, T)
 
+template <typename T>
+MAKE_CUDA_KERNEL(getRangeContaining, T)
+
 #endif
 
 template <Size D, typename T>
@@ -178,6 +228,7 @@ TEST_SUITE(RegularGrid)
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
   if constexpr (D == 2) {
     TEST_HOSTDEV(getBox, 1, 1, T);
+    TEST_HOSTDEV(getRangeContaining, 1, 1, T);
   }
 }
 

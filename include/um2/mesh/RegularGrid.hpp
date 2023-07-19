@@ -94,6 +94,9 @@ struct RegularGrid {
   requires(sizeof...(Args) == D) PURE HOSTDEV
       [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
       -> AxisAlignedBox<D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getRangeContaining(AxisAlignedBox<D, T> const & box) const noexcept -> Vec<2 * D, Size>;
 };
 
 // -----------------------------------------------------------------------------
