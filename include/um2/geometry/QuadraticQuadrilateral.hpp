@@ -7,7 +7,7 @@ namespace um2
 {
 
 // -----------------------------------------------------------------------------
-// QUADRATIC QUADRILATERAL 
+// QUADRATIC QUADRILATERAL
 // -----------------------------------------------------------------------------
 // A 2-polytope, of polynomial order 1, represented by the connectivity
 // of its vertices. These 4 vertices are D-dimensional points of type T.
@@ -46,8 +46,8 @@ struct Polytope<2, 2, 8, D, T> {
   operator()(R r, S s) const noexcept -> Point<D, T>;
 
   template <typename R, typename S>
-  PURE HOSTDEV [[nodiscard]] constexpr auto jacobian(R r, S s) const noexcept
-      -> Mat<D, 2, T>;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  jacobian(R r, S s) const noexcept -> Mat<D, 2, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   edge(Size i) const noexcept -> QuadraticSegment<D, T>;

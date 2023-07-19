@@ -1,4 +1,3 @@
-Quadratic Quad 
 Rectilinear Grid
 FVM
 FVM IO

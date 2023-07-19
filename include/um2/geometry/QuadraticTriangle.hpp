@@ -46,8 +46,8 @@ struct Polytope<2, 2, 6, D, T> {
   operator()(R r, S s) const noexcept -> Point<D, T>;
 
   template <typename R, typename S>
-  PURE HOSTDEV [[nodiscard]] constexpr auto jacobian(R r, S s) const noexcept
-      -> Mat<D, 2, T>;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  jacobian(R r, S s) const noexcept -> Mat<D, 2, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   edge(Size i) const noexcept -> QuadraticSegment<D, T>;

@@ -29,12 +29,12 @@ add_um2_test(./geometry/Quadrilateral.cpp)
 add_um2_test(./geometry/QuadraticSegment.cpp)
 add_um2_test(./geometry/QuadraticTriangle.cpp)
 add_um2_test(./geometry/QuadraticQuadrilateral.cpp)
-#
-## ------------------------------------------------------------------------------
-## mesh
-## ------------------------------------------------------------------------------
-#add_um2_test(./mesh/RegularGrid.cpp)
-#add_um2_test(./mesh/RegularPartition.cpp)
+
+# ------------------------------------------------------------------------------
+# mesh
+# ------------------------------------------------------------------------------
+add_um2_test(./mesh/RegularGrid.cpp)
+add_um2_test(./mesh/RegularPartition.cpp)
 #add_um2_test(./mesh/TriMesh.cpp)
 #
 ## ------------------------------------------------------------------------------

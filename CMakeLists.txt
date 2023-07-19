@@ -59,9 +59,9 @@ set(UM2_HEADERS
     "include/um2/geometry/QuadraticSegment.hpp"
     "include/um2/geometry/QuadraticTriangle.hpp"
     "include/um2/geometry/QuadraticQuadrilateral.hpp"
-    #    # mesh
-    #    "include/um2/mesh/RegularGrid.hpp"
-    #    "include/um2/mesh/RegularPartition.hpp"
+    # mesh
+    "include/um2/mesh/RegularGrid.hpp"
+    "include/um2/mesh/RegularPartition.hpp"
     #    # ray_casting
     #    "include/um2/ray_casting/Ray.hpp"
     #    # api

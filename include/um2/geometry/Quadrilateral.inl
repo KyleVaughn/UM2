@@ -2,6 +2,19 @@ namespace um2
 {
 
 // -------------------------------------------------------------------
+// Constructors
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+HOSTDEV constexpr Quadrilateral<D, T>::Polytope(Point<D, T> const & p0,
+                                                Point<D, T> const & p1,
+                                                Point<D, T> const & p2,
+                                                Point<D, T> const & p3) noexcept
+    : v{p0, p1, p2, p3}
+{
+}
+
+// -------------------------------------------------------------------
 // Accessors
 // -------------------------------------------------------------------
 
