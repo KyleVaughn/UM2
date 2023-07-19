@@ -42,10 +42,34 @@ HOSTDEV
 TEST_CASE(faceContaining)
 {
   um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
-  um2::Point2<T> p(0.5, 0.25);
+  um2::Point2<T> p(static_cast<T>(0.5), static_cast<T>(0.25));
   ASSERT(mesh.faceContaining(p) == 0);
-  p = um2::Point2<T>(0.5, 0.75);
+  p = um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.75));
   ASSERT(mesh.faceContaining(p) == 1);
+}
+
+template <std::floating_point T, std::signed_integral I>
+HOSTDEV
+TEST_CASE(regularPartition)
+{
+  um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
+  um2::Vector<I> face_ids_buffer;
+  // All in one cell
+  auto const partition = mesh.regularPartition(face_ids_buffer, static_cast<T>(0.001));
+  ASSERT_NEAR(partition.xMin(), static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(partition.xMax(), static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(partition.yMin(), static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(partition.yMax(), static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT(partition.numXCells() == 1);
+  ASSERT(partition.numYCells() == 1);
+  ASSERT_NEAR(partition.grid.dx(), static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(partition.grid.dy(), static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT(partition.children.size() == 2);
+  ASSERT(partition.children[0] == 0);
+  ASSERT(partition.children[1] == 2);
+  ASSERT(face_ids_buffer.size() == 2);
+  ASSERT(face_ids_buffer[0] == 0);
+  ASSERT(face_ids_buffer[1] == 1);
 }
 
 #if UM2_ENABLE_CUDA
@@ -61,6 +85,8 @@ TEST_SUITE(TriMesh)
 {
   TEST_HOSTDEV(accessors, 1, 1, T, I);
   TEST_HOSTDEV(boundingBox, 1, 1, T, I);
+  TEST_HOSTDEV(faceContaining, 1, 1, T, I);
+  TEST_HOSTDEV(regularPartition, 1, 1, T, I);
 }
 
 auto

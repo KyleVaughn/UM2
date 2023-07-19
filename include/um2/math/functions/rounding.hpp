@@ -2,6 +2,7 @@
 
 #include <um2/config.hpp>
 
+#include <algorithm> // clamp
 #include <cmath>
 
 namespace um2
@@ -82,6 +83,30 @@ ceil(double x) noexcept -> double
 {
   return ::ceil(x);
 }
+
+#endif
+
+// --------------------------------------------------------------------------
+// clamp
+// --------------------------------------------------------------------------
+
+#ifndef __CUDA_ARCH__
+
+template <typename T>
+PURE HOST constexpr auto
+clamp(T const & v, T const & lo, T const & hi) noexcept -> T
+{
+  return std::clamp(v, lo, hi);
+}
+
+#else
+
+template <typename T>
+PURE DEVICE constexpr auto
+clamp(T const & v, T const & lo, T const & hi) noexcept -> T
+{
+  return v < lo ? lo : hi < v ? hi : v;
+} 
 
 #endif
 

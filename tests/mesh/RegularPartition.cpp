@@ -25,8 +25,8 @@ makePart() -> um2::RegularPartition<D, T, P>
     children = {1, 2, 3, 4, 5, 6};
   }
   um2::RegularPartition<D, T, P> part;
-  part.grid = grid;
-  part.children = children;
+  part.grid = um2::move(grid);
+  part.children = um2::move(children);
   return part;
 }
 

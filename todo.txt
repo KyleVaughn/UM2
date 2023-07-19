@@ -1,3 +1,6 @@
+Write image of mesh in RegularPartition. Just color by the cell and print the edges
+Test with a larger mesh -> IO
+
 openmp and cuda kernels for mesh functions
 
 Add OpenMP to the test matrix

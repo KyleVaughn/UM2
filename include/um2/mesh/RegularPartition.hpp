@@ -11,7 +11,7 @@ namespace um2
 // A D-dimensional box, partitioned by a regular grid.
 //
 // Suppose the grid has nx cells in the x direction and ny cells in the
-// y direction. Then the children vector contains nx * ny elements.
+// y direction.
 // Let i in [0, nx) and j in [0, ny). Then children[i + nx * j] is the child
 // of the cell with indices (i, j) in the grid.
 //  j
@@ -102,6 +102,9 @@ struct RegularPartition {
   template <typename... Args>
   requires(sizeof...(Args) == D) PURE HOSTDEV
       [[nodiscard]] constexpr auto getChild(Args... args) const noexcept -> P const &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getRangeContaining(AxisAlignedBox<D, T> const & box) const noexcept -> Vec<2 * D, Size>;
 };
 
 // -- Aliases --
