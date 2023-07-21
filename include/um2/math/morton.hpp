@@ -32,8 +32,8 @@ static constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 
 // -----------------------------------------------------------------------------
 
 // False positive for -Wunused-function
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wunused-function"
 static inline auto
 pdep(uint32_t source, uint32_t mask) noexcept -> uint32_t
 {
@@ -57,7 +57,7 @@ pext(uint64_t source, uint64_t mask) noexcept -> uint64_t
 {
   return _pext_u64(source, mask);
 }
-#pragma GCC diagnostic pop
+#  pragma GCC diagnostic pop
 
 template <std::unsigned_integral U>
 static constexpr U bmi_2d_x_mask = static_cast<U>(0x5555555555555555);

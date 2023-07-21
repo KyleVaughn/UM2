@@ -122,17 +122,23 @@ TEST_CASE(comparison)
 {
   bool b = false;
   b = um2::ShortString("Ant") < um2::ShortString("Zebra");
-  ASSERT(b); b = false;
+  ASSERT(b);
+  b = false;
   b = um2::ShortString("Zebra") > um2::ShortString("Ant");
-  ASSERT(b); b = false;
+  ASSERT(b);
+  b = false;
   b = um2::ShortString("Zebra") <= um2::ShortString("ant");
-  ASSERT(b); b = false;
+  ASSERT(b);
+  b = false;
   b = um2::ShortString("ant") >= um2::ShortString("Zebra");
-  ASSERT(b); b = false;
+  ASSERT(b);
+  b = false;
   b = um2::ShortString("Zebra") <= um2::ShortString("Zebra");
-  ASSERT(b); b = false;
+  ASSERT(b);
+  b = false;
   b = um2::ShortString("Zebra") >= um2::ShortString("Zebra");
-  ASSERT(b); b = false;
+  ASSERT(b);
+  b = false;
 }
 MAKE_CUDA_KERNEL(comparison);
 

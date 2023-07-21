@@ -72,7 +72,7 @@ TriMesh<D, T, I>::regularPartition(Vector<I> & face_ids_buffer,
 
   // Count the number of faces in each cell.
   T const dx = bb.width() / static_cast<T>(nx);
-  T const dy = bb.height() / static_cast<T>(ny); 
+  T const dy = bb.height() / static_cast<T>(ny);
   RegularPartition<D, T, I> partition;
   RegularGrid<D, T> grid(bb.minima, {dx, dy}, {nx, ny});
   partition.grid = um2::move(grid);

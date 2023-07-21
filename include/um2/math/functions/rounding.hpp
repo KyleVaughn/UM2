@@ -106,7 +106,7 @@ PURE DEVICE constexpr auto
 clamp(T const & v, T const & lo, T const & hi) noexcept -> T
 {
   return v < lo ? lo : hi < v ? hi : v;
-} 
+}
 
 #endif
 

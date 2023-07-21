@@ -1,5 +1,5 @@
-#include <um2/geometry/morton_sort_points.hpp>
 #include <um2/common/Vector.hpp>
+#include <um2/geometry/morton_sort_points.hpp>
 
 #include "../test_macros.hpp"
 
@@ -43,9 +43,10 @@ TEST_CASE(deviceMortonSort)
     }
   }
   um2::Point2<T> * d_points;
-  size_t const size_in_bytes = sizeof(um2::Point2<T>) * static_cast<size_t>(points.size());
-  cudaMalloc(&d_points, size_in_bytes); 
-  cudaMemcpy(d_points, points.data(), size_in_bytes, cudaMemcpyHostToDevice); 
+  size_t const size_in_bytes =
+      sizeof(um2::Point2<T>) * static_cast<size_t>(points.size());
+  cudaMalloc(&d_points, size_in_bytes);
+  cudaMemcpy(d_points, points.data(), size_in_bytes, cudaMemcpyHostToDevice);
   um2::deviceMortonSort<U>(d_points, d_points + points.size());
   cudaMemcpy(after.data(), d_points, size_in_bytes, cudaMemcpyDeviceToHost);
   cudaError_t err = cudaGetLastError();

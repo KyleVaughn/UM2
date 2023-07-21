@@ -12,14 +12,11 @@ openmp and cuda kernels for mesh functions
 
 Add OpenMP to the test matrix
 
-Benchmark methods for CPU and GPU
-  Larger meshes -> pin cell, lattice, and full core
-  Need IO to read these
-  Use these to determine for what N we should use single thread, multi-thread, or GPU
+Use these to determine for what N we should use single thread, multi-thread, or GPU
 
 spack
-morton sourt points
 visualize the points
+  benchmark with and without RegularGrid
 
 Rectilinear Grid
 FVM
@@ -32,8 +29,6 @@ d' = (1, 0, 0) and o' = (0, 0, 0).  Then the intersection is just the
 MeshFile
 
 Remove thrust as a dependency? 
-
-Seach for NOLINTS and check that they are still needed
 
 Line in opengl
 Reading/Writing MPACT files
