@@ -150,7 +150,7 @@ boundingBox(Point<D, T> const (&points)[N]) noexcept -> AxisAlignedBox<D, T>
 }
 
 template <Size D, typename T>
-PURE HOSTDEV auto
+PURE auto
 boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>
 {
   Point<D, T> minima = points[0];

@@ -120,18 +120,19 @@ MAKE_CUDA_KERNEL(equals_operator);
 HOSTDEV
 TEST_CASE(comparison)
 {
-  // NOLINTNEXTLINE(misc-static-assert)
-  ASSERT(um2::ShortString("Ant") < um2::ShortString("Zebra"));
-  // NOLINTNEXTLINE(misc-static-assert)
-  ASSERT(um2::ShortString("Zebra") > um2::ShortString("Ant"));
-  // NOLINTNEXTLINE(misc-static-assert)
-  ASSERT(um2::ShortString("Zebra") <= um2::ShortString("ant"));
-  // NOLINTNEXTLINE(misc-static-assert)
-  ASSERT(um2::ShortString("ant") >= um2::ShortString("Zebra"));
-  // NOLINTNEXTLINE(misc-static-assert)
-  ASSERT(um2::ShortString("Zebra") <= um2::ShortString("Zebra"));
-  // NOLINTNEXTLINE(misc-static-assert)
-  ASSERT(um2::ShortString("Zebra") >= um2::ShortString("Zebra"));
+  bool b = false;
+  b = um2::ShortString("Ant") < um2::ShortString("Zebra");
+  ASSERT(b); b = false;
+  b = um2::ShortString("Zebra") > um2::ShortString("Ant");
+  ASSERT(b); b = false;
+  b = um2::ShortString("Zebra") <= um2::ShortString("ant");
+  ASSERT(b); b = false;
+  b = um2::ShortString("ant") >= um2::ShortString("Zebra");
+  ASSERT(b); b = false;
+  b = um2::ShortString("Zebra") <= um2::ShortString("Zebra");
+  ASSERT(b); b = false;
+  b = um2::ShortString("Zebra") >= um2::ShortString("Zebra");
+  ASSERT(b); b = false;
 }
 MAKE_CUDA_KERNEL(comparison);
 

@@ -1,3 +1,5 @@
+// FINDINGS: The area method is faster than the CCW method, but is not as robust.
+
 #include <benchmark/benchmark.h>
 #include <um2/geometry/Triangle.hpp>
 #include <um2/geometry/Quadrilateral.hpp>

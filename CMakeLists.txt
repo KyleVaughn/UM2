@@ -50,6 +50,7 @@ set(UM2_HEADERS
     "include/um2/math/Mat.hpp"
     # geometry
     "include/um2/geometry/Point.hpp"
+    "include/um2/geometry/morton_sort_points.hpp"
     "include/um2/geometry/AxisAlignedBox.hpp"
     "include/um2/geometry/LineSegment.hpp"
     "include/um2/geometry/Triangle.hpp"

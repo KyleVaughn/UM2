@@ -1,5 +1,8 @@
-
 macro(add_um2_benchmark FILENAME)
+  # If this is not a release build, warn the user
+  if (NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+    message(WARNING "Benchmarking is only recommended in release mode. You are building in ${CMAKE_BUILD_TYPE} mode.")
+  endif()
 
   # Strip the path and extension from the filename to get the test name
   set(BENCHNAME ${FILENAME})

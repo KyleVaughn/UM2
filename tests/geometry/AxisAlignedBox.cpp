@@ -126,7 +126,6 @@ TEST_CASE(bounding_box)
 }
 
 template <std::floating_point T>
-HOSTDEV
 TEST_CASE(bounding_box_vector)
 {
   // boundingBox(Vector<Point> points)
@@ -162,8 +161,6 @@ MAKE_CUDA_KERNEL(is_approx, D, T);
 template <Size D, std::floating_point T>
 MAKE_CUDA_KERNEL(bounding_box, D, T);
 
-template <std::floating_point T>
-MAKE_CUDA_KERNEL(bounding_box_vector, T);
 #endif
 
 template <Size D, std::floating_point T>
@@ -176,7 +173,7 @@ TEST_SUITE(aabb)
   TEST_HOSTDEV(is_approx, 1, 1, D, T);
   TEST_HOSTDEV(bounding_box, 1, 1, D, T);
   if constexpr (D == 2) {
-    TEST_HOSTDEV(bounding_box_vector, 1, 1, T);
+    TEST((bounding_box_vector<T>));
   }
 }
 

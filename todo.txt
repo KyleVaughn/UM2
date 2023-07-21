@@ -1,11 +1,16 @@
+Vector toDevice -> update deviceMortonSort test and benchmark
+
 Write image of mesh in RegularPartition. Just color by the cell and print the edges
 Test with a larger mesh -> IO
+
+getBoxIDContaining(P)
+
+Remap mesh to morton order
+  Benchmark
 
 openmp and cuda kernels for mesh functions
 
 Add OpenMP to the test matrix
-
-DO the set_child function but as a member function for the mesh
 
 Benchmark methods for CPU and GPU
   Larger meshes -> pin cell, lattice, and full core

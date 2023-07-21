@@ -26,7 +26,6 @@ TEST_CASE(accessors)
 }
 
 template <std::floating_point T, std::signed_integral I>
-HOSTDEV
 TEST_CASE(boundingBox)
 {
   um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
@@ -38,7 +37,6 @@ TEST_CASE(boundingBox)
 }
 
 template <std::floating_point T, std::signed_integral I>
-HOSTDEV
 TEST_CASE(faceContaining)
 {
   um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
@@ -49,7 +47,6 @@ TEST_CASE(faceContaining)
 }
 
 template <std::floating_point T, std::signed_integral I>
-HOSTDEV
 TEST_CASE(regularPartition)
 {
   um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
@@ -75,18 +72,15 @@ TEST_CASE(regularPartition)
 #if UM2_ENABLE_CUDA
 template <std::floating_point T, std::signed_integral I>
 MAKE_CUDA_KERNEL(accessors, T, I)
-
-template <std::floating_point T, std::signed_integral I>
-MAKE_CUDA_KERNEL(boundingBox, T, I)
 #endif
 
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(TriMesh)
 {
   TEST_HOSTDEV(accessors, 1, 1, T, I);
-  TEST_HOSTDEV(boundingBox, 1, 1, T, I);
-  TEST_HOSTDEV(faceContaining, 1, 1, T, I);
-  TEST_HOSTDEV(regularPartition, 1, 1, T, I);
+  TEST((boundingBox<T, I>));
+  TEST((faceContaining<T, I>));
+  TEST((regularPartition<T, I>));
 }
 
 auto

@@ -198,8 +198,8 @@ RegularGrid<D, T>::getRangeContaining(AxisAlignedBox<D, T> const & box) const no
     result[i] = static_cast<Size>(um2::floor((box.minima[i] - minima[i]) / spacing[i]));
     result[i + D] =
         static_cast<Size>(um2::floor((box.maxima[i] - minima[i]) / spacing[i]));
-    result[i] = um2::clamp(result[i], static_cast<Size>(0), num_cells[i] - 1);
-    result[i + D] = um2::clamp(result[i + D], static_cast<Size>(0), num_cells[i] - 1);
+    result[i] = um2::clamp(result[i], 0, num_cells[i] - 1);
+    result[i + D] = um2::clamp(result[i + D], 0, num_cells[i] - 1);
   }
   return result;
 }

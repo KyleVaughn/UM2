@@ -22,6 +22,7 @@ add_um2_test(./math/Mat.cpp)
 # geometry
 # ------------------------------------------------------------------------------
 add_um2_test(./geometry/Point.cpp)
+add_um2_test(./geometry/morton_sort_points.cpp)
 add_um2_test(./geometry/AxisAlignedBox.cpp)
 add_um2_test(./geometry/LineSegment.cpp)
 add_um2_test(./geometry/Triangle.cpp)

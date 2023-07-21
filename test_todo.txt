@@ -1,0 +1,31 @@
+geometry/morton.hpp
+  Ensure that mortonSort works in 3D for: 
+    (uint32_t, float)
+    (uint32_t, double)
+    (uint64_t, double)
+
+Quadrilateral.contains
+  On a GPU, is it more performant to short circuit the areCCW or to compute them all? 
+
+Quadrilateral.area
+  For a quadrilateral with 3 collinear points, is the area still correct?
+
+Quadrilateral.centroid
+  For a quadrilateral with 3 collinear points, is the centroid still correct?
+
+QuadraticSegment.isLeft
+  Benchmark the old and new implementations.
+
+RegularGrid.getBoxIDContaining(point)
+
+TriMesh.regularPartition
+  3 by 3 grid. 
+    6  7  8
+    3  4  5
+    0  1  2
+    The cells on the diagonal (0, 4, 8) should contain 0 and 1. 
+    Cell 6 = 1
+    Cell 2 = 0
+    Cells 1, 3, 5, 7 are indeterminate due to floating point error.
+
+RegularPartition

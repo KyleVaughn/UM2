@@ -39,9 +39,8 @@ endif()
 ## CUDA ##########################################
 ##################################################
 if (UM2_ENABLE_CUDA)
-  find_package(CUDA REQUIRED)
-  enable_language(CUDA)
-
+  include(CheckLanguage)
+  check_language(CUDA)
   # nvcc will default to gcc and g++ if the host compiler is not set using CUDAHOSTCXX. 
   # To prevent unintentional version/compiler mismatches, we set the host compiler to the 
   # same compiler used to build the project.
@@ -50,6 +49,8 @@ if (UM2_ENABLE_CUDA)
       " Consider setting the CUDAHOSTCXX environment variable if this is not desired.")
     set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
   endif()
+  find_package(CUDA REQUIRED)
+  enable_language(CUDA)
   set(UM2_CUDA_STANDARD "20" CACHE STRING "CUDA standard")
   macro(set_cuda_properties CUDA_TARGET)
     set_target_properties(${CUDA_TARGET} PROPERTIES CUDA_STANDARD ${UM2_CUDA_STANDARD})
