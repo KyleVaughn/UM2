@@ -120,25 +120,33 @@ MAKE_CUDA_KERNEL(equals_operator);
 HOSTDEV
 TEST_CASE(comparison)
 {
+  // Because the comparisons are constexpr, they can be evaluated at compile time and
+  // the compiler complains that the result is unused.
+  // NOLINTBEGIN
   bool b = false;
   b = um2::ShortString("Ant") < um2::ShortString("Zebra");
   ASSERT(b);
   b = false;
+  // cppcheck-suppress redundantAssignment
   b = um2::ShortString("Zebra") > um2::ShortString("Ant");
   ASSERT(b);
   b = false;
+  // cppcheck-suppress redundantAssignment
   b = um2::ShortString("Zebra") <= um2::ShortString("ant");
   ASSERT(b);
   b = false;
+  // cppcheck-suppress redundantAssignment
   b = um2::ShortString("ant") >= um2::ShortString("Zebra");
   ASSERT(b);
   b = false;
+  // cppcheck-suppress redundantAssignment
   b = um2::ShortString("Zebra") <= um2::ShortString("Zebra");
   ASSERT(b);
   b = false;
+  // cppcheck-suppress redundantAssignment
   b = um2::ShortString("Zebra") >= um2::ShortString("Zebra");
   ASSERT(b);
-  b = false;
+  // NOLINTEND
 }
 MAKE_CUDA_KERNEL(comparison);
 
