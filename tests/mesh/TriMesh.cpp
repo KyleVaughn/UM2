@@ -59,8 +59,8 @@ TEST_CASE(regularPartition)
   ASSERT_NEAR(partition.yMax(), static_cast<T>(1), static_cast<T>(1e-6));
   ASSERT(partition.numXCells() == 1);
   ASSERT(partition.numYCells() == 1);
-  ASSERT_NEAR(partition.grid.dx(), static_cast<T>(1), static_cast<T>(1e-6));
-  ASSERT_NEAR(partition.grid.dy(), static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(partition.dx(), static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(partition.dy(), static_cast<T>(1), static_cast<T>(1e-6));
   ASSERT(partition.children.size() == 2);
   ASSERT(partition.children[0] == 0);
   ASSERT(partition.children[1] == 2);

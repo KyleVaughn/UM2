@@ -190,7 +190,7 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 
 template <Size D, typename T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-RegularGrid<D, T>::getRangeContaining(AxisAlignedBox<D, T> const & box) const noexcept
+RegularGrid<D, T>::getCellIndicesIntersecting(AxisAlignedBox<D, T> const & box) const noexcept
     -> Vec<2 * D, Size>
 {
   Vec<2 * D, Size> result;
@@ -200,6 +200,18 @@ RegularGrid<D, T>::getRangeContaining(AxisAlignedBox<D, T> const & box) const no
         static_cast<Size>(um2::floor((box.maxima[i] - minima[i]) / spacing[i]));
     result[i] = um2::clamp(result[i], 0, num_cells[i] - 1);
     result[i + D] = um2::clamp(result[i + D], 0, num_cells[i] - 1);
+  }
+  return result;
+}
+
+template <Size D, typename T>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+RegularGrid<D, T>::getCellIndexContaining(Point<D, T> const & point) const noexcept -> Vec<D, Size>
+{
+  Vec<D, Size> result;
+  for (Size i = 0; i < D; ++i) {
+    result[i] = static_cast<Size>(um2::floor((point[i] - minima[i]) / spacing[i]));
+    result[i] = um2::clamp(result[i], 0, num_cells[i] - 1);
   }
   return result;
 }

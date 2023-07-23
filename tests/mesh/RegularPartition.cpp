@@ -15,7 +15,6 @@ makePart() -> um2::RegularPartition<D, T, P>
     spacing[i] = static_cast<T>(i + 1);
     num_cells[i] = i + 1;
   }
-  um2::RegularGrid<D, T> grid(minima, spacing, num_cells);
   um2::Vector<P> children;
   if constexpr (D >= 1) {
     children = {1};
@@ -25,7 +24,9 @@ makePart() -> um2::RegularPartition<D, T, P>
     children = {1, 2, 3, 4, 5, 6};
   }
   um2::RegularPartition<D, T, P> part;
-  part.grid = um2::move(grid);
+  part.minima = um2::move(minima);
+  part.spacing = um2::move(spacing);
+  part.num_cells = um2::move(num_cells);
   part.children = um2::move(children);
   return part;
 }
@@ -36,31 +37,31 @@ TEST_CASE(accessors)
 {
   um2::RegularPartition<D, T, P> part = makePart<D, T, P>();
   if constexpr (D >= 1) {
-    T const xmin = part.grid.minima[0];
+    T const xmin = part.minima[0];
     ASSERT_NEAR(part.xMin(), xmin, static_cast<T>(1e-6));
-    T const dx = part.grid.spacing[0];
+    T const dx = part.spacing[0];
     ASSERT_NEAR(part.dx(), dx, static_cast<T>(1e-6));
-    auto const nx = part.grid.num_cells[0];
+    auto const nx = part.num_cells[0];
     ASSERT(part.numXCells() == nx);
     ASSERT_NEAR(part.width(), dx * static_cast<T>(nx), static_cast<T>(1e-6));
     ASSERT_NEAR(part.xMax(), xmin + dx * static_cast<T>(nx), static_cast<T>(1e-6));
   }
   if constexpr (D >= 2) {
-    T const ymin = part.grid.minima[1];
+    T const ymin = part.minima[1];
     ASSERT_NEAR(part.yMin(), ymin, static_cast<T>(1e-6));
-    T const dy = part.grid.spacing[1];
+    T const dy = part.spacing[1];
     ASSERT_NEAR(part.dy(), dy, static_cast<T>(1e-6));
-    auto const ny = part.grid.num_cells[1];
+    auto const ny = part.num_cells[1];
     ASSERT(part.numYCells() == ny);
     ASSERT_NEAR(part.height(), dy * static_cast<T>(ny), static_cast<T>(1e-6));
     ASSERT_NEAR(part.yMax(), ymin + dy * static_cast<T>(ny), static_cast<T>(1e-6));
   }
   if constexpr (D >= 3) {
-    T const zmin = part.grid.minima[2];
+    T const zmin = part.minima[2];
     ASSERT_NEAR(part.zMin(), zmin, static_cast<T>(1e-6));
-    T const dz = part.grid.spacing[2];
+    T const dz = part.spacing[2];
     ASSERT_NEAR(part.dz(), dz, static_cast<T>(1e-6));
-    auto const nz = part.grid.num_cells[2];
+    auto const nz = part.num_cells[2];
     ASSERT(part.numZCells() == nz);
     ASSERT_NEAR(part.depth(), dz * static_cast<T>(nz), static_cast<T>(1e-6));
     ASSERT_NEAR(part.zMax(), zmin + dz * static_cast<T>(nz), static_cast<T>(1e-6));
@@ -102,7 +103,9 @@ TEST_CASE(getBox_and_getChild)
   um2::Vec2<Size> num_cells = {4, 8};
   um2::RegularGrid2<T> grid(minima, spacing, num_cells);
   um2::RegularPartition<2, T, P> part;
-  part.grid = grid;
+  part.minima = um2::move(minima);
+  part.spacing = um2::move(spacing);
+  part.num_cells = um2::move(num_cells);
   part.children.resize(32);
   for (Size i = 0; i < 32; ++i) {
     part.children[i] = static_cast<P>(i);

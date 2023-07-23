@@ -1,25 +1,28 @@
-Vector toDevice -> update deviceMortonSort test and benchmark
+Image2D write_ppm test
 
-Write image of mesh in RegularPartition. Just color by the cell and print the edges
-Test with a larger mesh -> IO
+Faster to use the edge method or write the loop explicitly?
 
-getBoxIDContaining(P)
+faceContaining, Find the closest point first, then just test all faces around it 
+  Benchmark this
+
+Image
+
+Image of mesh
+  -> Benchmark
+  -> Benchmark with last cell optimization
+  -> Benchmark with find closest point optimization for faceContaining
+  -> Benchmark with regular partition
 
 Remap mesh to morton order
   Benchmark
 
 openmp and cuda kernels for mesh functions
 
-Add OpenMP to the test matrix
-
-Use these to determine for what N we should use single thread, multi-thread, or GPU
-
 spack
-visualize the points
-  benchmark with and without RegularGrid
 
 Rectilinear Grid
 FVM
+mesh statistics
 FVM IO
 
 Examine Ray/LineSegment, Ray/Mesh, Ray/QuadraticSegement intersections by
@@ -27,6 +30,11 @@ using a change of basis to make the ray R = o + t*d into R = o' + t'*d' where
 d' = (1, 0, 0) and o' = (0, 0, 0).  Then the intersection is just the
 
 MeshFile
+
+Regular Partiton of mesh, but set the cells based upon membership on lower left point of AABB
+  Less memory.
+  Also set grid equal to largest object size or bigger. Therefore, no object canbe in more than 2 cells in 1 direction
+  Pg 296 of Real Time Collision Detection
 
 Remove thrust as a dependency? 
 

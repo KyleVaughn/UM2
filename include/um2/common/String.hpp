@@ -110,30 +110,47 @@ public:
   HOSTDEV constexpr auto
   operator=(String && s) noexcept -> String &;
 
-  HOSTDEV constexpr auto
+  PURE HOSTDEV constexpr auto
   operator==(String const & s) const noexcept -> bool;
 
-  HOSTDEV constexpr auto
+  PURE HOSTDEV constexpr auto
   operator!=(String const & s) const noexcept -> bool;
 
-  HOSTDEV constexpr auto
+  PURE HOSTDEV constexpr auto
   operator<(String const & s) const noexcept -> bool;
 
-  HOSTDEV constexpr auto
+  PURE HOSTDEV constexpr auto
   operator<=(String const & s) const noexcept -> bool;
 
-  HOSTDEV constexpr auto
+  PURE HOSTDEV constexpr auto
   operator>(String const & s) const noexcept -> bool;
 
-  HOSTDEV constexpr auto
+  PURE HOSTDEV constexpr auto
   operator>=(String const & s) const noexcept -> bool;
 
   // -----------------------------------------------------------------------------
   // Methods
   // -----------------------------------------------------------------------------
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   compare(String const & s) const noexcept -> int;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  c_str() const noexcept -> char const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  starts_with(String const & s) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  ends_with(String const & s) const noexcept -> bool;
+
+  template <uint64_t N>
+  PURE HOSTDEV [[nodiscard]] auto
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  ends_with(char const (&s)[N]) const noexcept -> bool;
 
   // -----------------------------------------------------------------------------
   // HIDDEN

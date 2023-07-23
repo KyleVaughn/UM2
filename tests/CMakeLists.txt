@@ -43,6 +43,11 @@ add_um2_test(./mesh/TriMesh.cpp)
 ## ------------------------------------------------------------------------------
 #add_um2_test(./ray_casting/intersect/Ray-LineSegment.cpp)
 
+# ------------------------------------------------------------------------------
+# visualization 
+# ------------------------------------------------------------------------------
+add_um2_test(./visualization/Image2D.cpp)
+
 #
 #if (UM2_ENABLE_VIS)
 #  add_um2_test(shader ./visualization/shader.cpp)

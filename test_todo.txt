@@ -1,22 +1,17 @@
+String.starts_with
+String.ends_with
+
 geometry/morton.hpp
   Ensure that mortonSort works in 3D for: 
     (uint32_t, float)
     (uint32_t, double)
     (uint64_t, double)
 
-Quadrilateral.contains
-  On a GPU, is it more performant to short circuit the areCCW or to compute them all? 
-
 Quadrilateral.area
   For a quadrilateral with 3 collinear points, is the area still correct?
 
 Quadrilateral.centroid
   For a quadrilateral with 3 collinear points, is the centroid still correct?
-
-QuadraticSegment.isLeft
-  Benchmark the old and new implementations.
-
-RegularGrid.getBoxIDContaining(point)
 
 TriMesh.regularPartition
   3 by 3 grid. 

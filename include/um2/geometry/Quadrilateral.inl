@@ -103,10 +103,14 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
 {
-  // GPU alternative? Maybe do all the computations up until the final comparison and
-  // assign the value to a bool variable. Then return the bool variable.
-  return areCCW(v[0], v[1], p) && areCCW(v[1], v[2], p) && areCCW(v[2], v[3], p) &&
-         areCCW(v[3], v[0], p);
+  // Benchmarking shows it is faster to compute the areCCW() test for each
+  // edge, then return based on the AND of the results, rather than compute
+  // the areCCW one at a time and return as soon as one is false.
+  bool const b0 = areCCW(v[0], v[1], p);
+  bool const b1 = areCCW(v[1], v[2], p);
+  bool const b2 = areCCW(v[2], v[3], p);
+  bool const b3 = areCCW(v[3], v[0], p);
+  return b0 && b1 && b2 && b3;
 }
 
 // -------------------------------------------------------------------
@@ -179,7 +183,14 @@ PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::isConvex() const noexcept -> bool
 {
   static_assert(D == 2, "Convexity of quadrilateral is only defined in 2D");
-  return areCCW(v[0], v[1], v[2]) && areCCW(v[1], v[2], v[3]) &&
-         areCCW(v[2], v[3], v[0]) && areCCW(v[3], v[0], v[1]);
+  // Benchmarking shows it is faster to compute the areCCW() test for each
+  // edge, then return based on the AND of the results, rather than compute
+  // the areCCW one at a time and return as soon as one is false.
+  bool const b0 = areCCW(v[0], v[1], v[2]);
+  bool const b1 = areCCW(v[1], v[2], v[3]);
+  bool const b2 = areCCW(v[2], v[3], v[0]);
+  bool const b3 = areCCW(v[3], v[0], v[1]);
+  return b0 && b1 && b2 && b3;
 }
+
 } // namespace um2

@@ -42,13 +42,15 @@ HOSTDEV constexpr String::String(char const (&s)[N]) noexcept
   if constexpr (N <= min_cap) {
     _r.s.is_long = 0;
     _r.s.size = N - 1;
-    copy(addressof(s[0]), addressof(s[N - 1]), addressof(_r.s.data[0]));
+    copy(addressof(s[0]), addressof(s[0]) + N, addressof(_r.s.data[0]));
+    assert(_r.s.data[N - 1] == '\0');
   } else {
     _r.l.is_long = 1;
     _r.l.cap = N - 1;
     _r.l.size = N - 1;
     _r.l.data = static_cast<char *>(::operator new(N));
-    copy(addressof(s[0]), addressof(s[N - 1]), _r.l.data);
+    copy(addressof(s[0]), addressof(s[0]) + N, _r.l.data);
+    assert(_r.l.data[N - 1] == '\0');
   }
 }
 
@@ -130,7 +132,7 @@ String::operator=(String && s) noexcept -> String &
   return *this;
 }
 
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 String::operator==(String const & s) const noexcept -> bool
 {
   uint64_t const l_size = size();
@@ -150,31 +152,31 @@ String::operator==(String const & s) const noexcept -> bool
   return true;
 }
 
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 String::operator!=(String const & s) const noexcept -> bool
 {
   return !(*this == s);
 }
 
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 String::operator<(String const & s) const noexcept -> bool
 {
   return compare(s) < 0;
 }
 
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 String::operator<=(String const & s) const noexcept -> bool
 {
   return compare(s) <= 0;
 }
 
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 String::operator>(String const & s) const noexcept -> bool
 {
   return compare(s) > 0;
 }
 
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 String::operator>=(String const & s) const noexcept -> bool
 {
   return compare(s) >= 0;
@@ -184,7 +186,7 @@ String::operator>=(String const & s) const noexcept -> bool
 // Methods
 // --------------------------------------------------------------------------
 
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 String::compare(String const & s) const noexcept -> int
 {
   uint64_t const l_size = size();
@@ -200,6 +202,57 @@ String::compare(String const & s) const noexcept -> int
     ++r_data;
   }
   return static_cast<int>(l_size) - static_cast<int>(r_size);
+}
+
+PURE HOSTDEV constexpr auto
+String::c_str() const noexcept -> char const *
+{
+  return data();
+}
+
+PURE HOSTDEV constexpr auto
+String::starts_with(String const & s) const noexcept -> bool
+{
+  if (size() < s.size()) { 
+    return false;
+  }
+  char const * l_data = data(); 
+  char const * r_data = s.data(); 
+  for (uint64_t i = 0; i < s.size(); ++i) {
+    if (*l_data != *r_data) {
+      return false;
+    }
+    ++l_data;
+    ++r_data;
+  }
+  return true;
+}
+
+PURE HOSTDEV constexpr auto
+String::ends_with(String const & s) const noexcept -> bool
+{
+  uint64_t const l_size = size();
+  uint64_t const r_size = s.size();
+  if (l_size < r_size) {
+    return false;
+  }
+  char const * l_data = data() + l_size - r_size; 
+  char const * r_data = s.data();
+  for (uint64_t i = 0; i < r_size; ++i) {
+    if (*l_data != *r_data) {
+      return false;
+    }
+    ++l_data;
+    ++r_data;
+  }
+  return true;
+}
+
+template <uint64_t N>
+PURE HOSTDEV auto
+String::ends_with(char const (&s)[N]) const noexcept -> bool
+{
+  return ends_with(String(s));
 }
 
 // --------------------------------------------------------------------------

@@ -96,7 +96,12 @@ struct RegularGrid {
       -> AxisAlignedBox<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getRangeContaining(AxisAlignedBox<D, T> const & box) const noexcept -> Vec<2 * D, Size>;
+  getCellIndicesIntersecting(AxisAlignedBox<D, T> const & box) const noexcept
+      -> Vec<2 * D, Size>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getCellIndexContaining(Point<D, T> const & point) const noexcept -> Vec<D, Size>;
+
 };
 
 // -----------------------------------------------------------------------------

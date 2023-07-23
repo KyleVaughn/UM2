@@ -74,14 +74,16 @@ TriMesh<D, T, I>::regularPartition(Vector<I> & face_ids_buffer,
   T const dx = bb.width() / static_cast<T>(nx);
   T const dy = bb.height() / static_cast<T>(ny);
   RegularPartition<D, T, I> partition;
-  RegularGrid<D, T> grid(bb.minima, {dx, dy}, {nx, ny});
-  partition.grid = um2::move(grid);
+  partition.minima = bb.minima;
+  partition.spacing = {dx, dy};
+  partition.num_cells = {nx, ny};
   Size const nxny = nx * ny;
   // We allocate 1 extra element, mapping the count of face i to index i + 1, so we may
   // perform an exclusive scan to get the starting index of each cell.
   partition.children.resize(nxny + 1);
   for (Size i = 0; i < numFaces(); ++i) {
-    Vec<4, Size> const cell_range = partition.getRangeContaining(face(i).boundingBox());
+    Vec<4, Size> const cell_range =
+        partition.getCellIndicesIntersecting(face(i).boundingBox());
     // Iterate over index 1 as the fast variable
     for (Size cj = cell_range[1]; cj <= cell_range[3]; ++cj) {
       Size const row_start = cj * nx;
@@ -100,7 +102,8 @@ TriMesh<D, T, I>::regularPartition(Vector<I> & face_ids_buffer,
   face_ids_buffer = um2::move(Vector<I>(num_cells, -1));
   // Assign the face ids to the buffer.
   for (Size i = 0; i < numFaces(); ++i) {
-    Vec<4, Size> const cell_range = partition.getRangeContaining(face(i).boundingBox());
+    Vec<4, Size> const cell_range =
+        partition.getCellIndicesIntersecting(face(i).boundingBox());
     // Iterate over index 1 as the fast variable
     for (Size cj = cell_range[1]; cj <= cell_range[3]; ++cj) {
       Size const row_start = cj * nx;

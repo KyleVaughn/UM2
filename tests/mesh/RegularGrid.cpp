@@ -157,7 +157,7 @@ TEST_CASE(getBox)
 
 template <typename T>
 HOSTDEV
-TEST_CASE(getRangeContaining)
+TEST_CASE(getCellIndicesIntersecting)
 {
   um2::Point2<T> minima(1, -1);
   um2::Vec2<T> spacing(2, 1);
@@ -168,7 +168,7 @@ TEST_CASE(getRangeContaining)
   // A box in a single cell.
   um2::AxisAlignedBox2<T> box0({static_cast<T>(3.1), static_cast<T>(1.1)},
                                {static_cast<T>(3.9), static_cast<T>(1.9)});
-  um2::Vec<4, Size> range0 = grid.getRangeContaining(box0);
+  um2::Vec<4, Size> range0 = grid.getCellIndicesIntersecting(box0);
   ASSERT(range0[0] == 1);
   ASSERT(range0[1] == 2);
   ASSERT(range0[2] == 1);
@@ -177,7 +177,7 @@ TEST_CASE(getRangeContaining)
   // A box with perfect alignment.
   um2::AxisAlignedBox2<T> box1({static_cast<T>(3), static_cast<T>(1)},
                                {static_cast<T>(5), static_cast<T>(2)});
-  um2::Vec<4, Size> range1 = grid.getRangeContaining(box1);
+  um2::Vec<4, Size> range1 = grid.getCellIndicesIntersecting(box1);
   ASSERT(range1[0] == 0 || range1[0] == 1);
   ASSERT(range1[1] == 1 || range1[1] == 2);
   ASSERT(range1[2] == 1 || range1[2] == 2); // Valid in either cell.
@@ -186,7 +186,7 @@ TEST_CASE(getRangeContaining)
   // A box in multiple cells.
   um2::AxisAlignedBox2<T> box2({static_cast<T>(3.1), static_cast<T>(1.1)},
                                {static_cast<T>(5.9), static_cast<T>(1.9)});
-  um2::Vec<4, Size> range2 = grid.getRangeContaining(box2);
+  um2::Vec<4, Size> range2 = grid.getCellIndicesIntersecting(box2);
   ASSERT(range2[0] == 1);
   ASSERT(range2[1] == 2);
   ASSERT(range2[2] == 2);
@@ -195,11 +195,29 @@ TEST_CASE(getRangeContaining)
   // A box in 4 cells.
   um2::AxisAlignedBox2<T> box3({static_cast<T>(3.1), static_cast<T>(1.1)},
                                {static_cast<T>(5.9), static_cast<T>(2.9)});
-  um2::Vec<4, Size> range3 = grid.getRangeContaining(box3);
+  um2::Vec<4, Size> range3 = grid.getCellIndicesIntersecting(box3);
   ASSERT(range3[0] == 1);
   ASSERT(range3[1] == 2);
   ASSERT(range3[2] == 2);
   ASSERT(range3[3] == 3);
+}
+
+template <typename T>
+HOSTDEV
+TEST_CASE(getCellIndexContaining)
+{
+  um2::Point2<T> minima(1, -1);
+  um2::Vec2<T> spacing(2, 1);
+  um2::Vec2<Size> num_cells(5, 8);
+  // Grid ranges from 1 to 11 in x and -1 to 7 in y.
+  um2::RegularGrid2<T> grid(minima, spacing, num_cells);
+  um2::Vec<2, Size> id = grid.getCellIndexContaining({static_cast<T>(1.1),
+                                                      static_cast<T>(1.1)});
+  ASSERT(id[0] == 0);
+  ASSERT(id[1] == 2);
+  id = grid.getCellIndexContaining({static_cast<T>(4.9), static_cast<T>(2.1)});
+  ASSERT(id[0] == 1);
+  ASSERT(id[1] == 3);
 }
 
 #if UM2_ENABLE_CUDA
@@ -216,8 +234,10 @@ template <typename T>
 MAKE_CUDA_KERNEL(getBox, T)
 
 template <typename T>
-MAKE_CUDA_KERNEL(getRangeContaining, T)
+MAKE_CUDA_KERNEL(getCellIndicesIntersecting, T)
 
+template <typename T>
+MAKE_CUDA_KERNEL(getCellIndexContaining, T)
 #endif
 
 template <Size D, typename T>
@@ -228,7 +248,8 @@ TEST_SUITE(RegularGrid)
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
   if constexpr (D == 2) {
     TEST_HOSTDEV(getBox, 1, 1, T);
-    TEST_HOSTDEV(getRangeContaining, 1, 1, T);
+    TEST_HOSTDEV(getCellIndicesIntersecting, 1, 1, T);
+    TEST_HOSTDEV(getCellIndexContaining, 1, 1, T);
   }
 }
 

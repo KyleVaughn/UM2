@@ -64,14 +64,16 @@ set(UM2_HEADERS
     "include/um2/mesh/TriMesh.hpp"
     #    # ray_casting
     #    "include/um2/ray_casting/Ray.hpp"
+    # visualization
+    "include/um2/visualization/Image2D.hpp"
     #    # api
     #    "include/um2c.h"
     )
 
 # Sources
 set(UM2_SOURCES        
-  #"src/common/string.cpp"
-    #    "src/visualization/shader.cpp"
+    # visualization
+    "src/visualization/Image2D.cpp"
     # api
     "src/um2c.cpp"
   ) 
