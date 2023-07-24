@@ -23,9 +23,40 @@ TEST_CASE(writePPM)
 }
 
 template <typename T>
+TEST_CASE(rasterizePoint)
+{
+  um2::Image2D<T> image;
+  image.minima[0] = static_cast<T>(0); 
+  image.minima[1] = static_cast<T>(0);
+  image.spacing[0] = static_cast<T>(1);
+  image.spacing[1] = static_cast<T>(1);
+  image.num_cells[0] = 100;
+  image.num_cells[1] = 100;
+  image.children.resize(100 * 100);
+
+  T r = 10;
+  image.rasterize(um2::Point2<T>(0, 0), r, um2::Color("red"));
+  r = 5;
+  image.rasterize(um2::Point2<T>(99, 0), r, um2::Color("green"));
+  r = 20;
+  image.rasterize(um2::Point2<T>(0, 99), r, um2::Color("blue"));
+  r = 30;
+  image.rasterize(um2::Point2<T>(99, 99), r, um2::Color("white"));
+  r = 2;
+  image.rasterize(um2::Point2<T>(50, 50), r, um2::Color("yellow"));
+  image.write("test.ppm");
+//  {
+//    std::ifstream file("test.ppm");
+//    ASSERT(file.is_open());
+//  }
+//  std::remove("test.ppm");
+}
+
+template <typename T>
 TEST_SUITE(Image2D)
 {
   TEST((writePPM<T>));
+  TEST((rasterizePoint<T>));
 }
 
 auto

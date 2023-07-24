@@ -56,6 +56,7 @@ AxisAlignedBox<D, T>::zMax() const noexcept -> T
 // --------------------------------------------------------------------------
 
 template <Size D, typename T>
+// NOLINTBEGIN(misc-unused-parameters)
 HOSTDEV constexpr AxisAlignedBox<D, T>::AxisAlignedBox(Point<D, T> const & min,
                                                        Point<D, T> const & max) noexcept
     : minima(min),
@@ -65,6 +66,7 @@ HOSTDEV constexpr AxisAlignedBox<D, T>::AxisAlignedBox(Point<D, T> const & min,
     assert(minima[i] <= maxima[i]);
   }
 }
+// NOLINTEND(misc-unused-parameters)
 
 // ------------------------------------------------------------------------------
 // Methods
@@ -101,6 +103,7 @@ AxisAlignedBox<D, T>::centroid() const noexcept -> Point<D, T>
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
+// NOLINTNEXTLINE(misc-unused-parameters)
 AxisAlignedBox<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
 {
   for (Size i = 0; i < D; ++i) {

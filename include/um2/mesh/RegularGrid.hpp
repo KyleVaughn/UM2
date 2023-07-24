@@ -95,6 +95,11 @@ struct RegularGrid {
       [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
       -> AxisAlignedBox<D, T>;
 
+  template <typename... Args>
+  requires(sizeof...(Args) == D) PURE HOSTDEV
+      [[nodiscard]] constexpr auto getCellCentroid(Args... args) const noexcept
+      -> Point<D, T>;
+
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getCellIndicesIntersecting(AxisAlignedBox<D, T> const & box) const noexcept
       -> Vec<2 * D, Size>;

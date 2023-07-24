@@ -1,5 +1,3 @@
-Image2D write_ppm test
-
 Faster to use the edge method or write the loop explicitly?
 
 faceContaining, Find the closest point first, then just test all faces around it 

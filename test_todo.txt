@@ -13,6 +13,12 @@ Quadrilateral.area
 Quadrilateral.centroid
   For a quadrilateral with 3 collinear points, is the centroid still correct?
 
+
+RegularGrid.getCellCentroid
+
+Image
+  rasterizePoint
+
 TriMesh.regularPartition
   3 by 3 grid. 
     6  7  8

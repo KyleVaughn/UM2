@@ -189,6 +189,23 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 }
 
 template <Size D, typename T>
+template <typename... Args>
+requires(sizeof...(Args) == D) PURE HOSTDEV
+    constexpr auto RegularGrid<D, T>::getCellCentroid(Args... args) const noexcept
+    -> Point<D, T>
+{
+  Point<D, Size> const index{args...};
+  for (Size i = 0; i < D; ++i) {
+    assert(index[i] < num_cells[i]);
+  }
+  Point<D, T> result;
+  for (Size i = 0; i < D; ++i) {
+    result[i] = minima[i] + spacing[i] * (static_cast<T>(index[i]) + static_cast<T>(0.5));
+  }
+  return result;
+}
+
+template <Size D, typename T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 RegularGrid<D, T>::getCellIndicesIntersecting(AxisAlignedBox<D, T> const & box) const noexcept
     -> Vec<2 * D, Size>
