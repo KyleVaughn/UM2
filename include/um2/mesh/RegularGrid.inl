@@ -207,8 +207,8 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 
 template <Size D, typename T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-RegularGrid<D, T>::getCellIndicesIntersecting(AxisAlignedBox<D, T> const & box) const noexcept
-    -> Vec<2 * D, Size>
+RegularGrid<D, T>::getCellIndicesIntersecting(
+    AxisAlignedBox<D, T> const & box) const noexcept -> Vec<2 * D, Size>
 {
   Vec<2 * D, Size> result;
   for (Size i = 0; i < D; ++i) {
@@ -223,7 +223,8 @@ RegularGrid<D, T>::getCellIndicesIntersecting(AxisAlignedBox<D, T> const & box) 
 
 template <Size D, typename T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-RegularGrid<D, T>::getCellIndexContaining(Point<D, T> const & point) const noexcept -> Vec<D, Size>
+RegularGrid<D, T>::getCellIndexContaining(Point<D, T> const & point) const noexcept
+    -> Vec<D, Size>
 {
   Vec<D, Size> result;
   for (Size i = 0; i < D; ++i) {

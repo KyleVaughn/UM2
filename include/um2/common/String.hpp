@@ -9,6 +9,7 @@
 #include <um2/math/math_functions.hpp> // min
 
 #include <cstring> // memcpy, strcmp
+#include <string>  // std::string
 
 namespace um2
 {
@@ -69,6 +70,8 @@ public:
   template <uint64_t N>
   HOSTDEV constexpr explicit String(char const (&s)[N]) noexcept;
 
+  HOSTDEV constexpr explicit String(char const * s) noexcept;
+
   // -----------------------------------------------------------------------------
   // Destructor
   // -----------------------------------------------------------------------------
@@ -109,6 +112,12 @@ public:
 
   HOSTDEV constexpr auto
   operator=(String && s) noexcept -> String &;
+
+  constexpr auto
+  operator=(std::string const & s) noexcept -> String &;
+
+  constexpr auto
+  operator=(std::string && s) noexcept -> String &;
 
   PURE HOSTDEV constexpr auto
   operator==(String const & s) const noexcept -> bool;

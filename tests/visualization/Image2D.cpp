@@ -26,7 +26,7 @@ template <typename T>
 TEST_CASE(rasterizePoint)
 {
   um2::Image2D<T> image;
-  image.minima[0] = static_cast<T>(0); 
+  image.minima[0] = static_cast<T>(0);
   image.minima[1] = static_cast<T>(0);
   image.spacing[0] = static_cast<T>(1);
   image.spacing[1] = static_cast<T>(1);
@@ -45,11 +45,11 @@ TEST_CASE(rasterizePoint)
   r = 2;
   image.rasterize(um2::Point2<T>(50, 50), r, um2::Color("yellow"));
   image.write("test.ppm");
-//  {
-//    std::ifstream file("test.ppm");
-//    ASSERT(file.is_open());
-//  }
-//  std::remove("test.ppm");
+  //  {
+  //    std::ifstream file("test.ppm");
+  //    ASSERT(file.is_open());
+  //  }
+  //  std::remove("test.ppm");
 }
 
 template <typename T>

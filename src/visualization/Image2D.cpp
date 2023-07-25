@@ -1,11 +1,13 @@
 #include <um2/visualization/Image2D.hpp>
 
-#include <bit> // std::bit_cast
+#include <bit>     // std::bit_cast
 #include <fstream> // std::ofstream
 
-namespace um2 {
+namespace um2
+{
 
-void writePPM(Vector<Color> const & buffer, Size nx, Size ny, String const & filename) 
+void
+writePPM(Vector<Color> const & buffer, Size nx, Size ny, String const & filename)
 {
   std::ofstream ofs(filename.c_str(), std::ios::out | std::ios::binary);
   assert(ofs.is_open() && "Could not open file for writing");
@@ -15,8 +17,7 @@ void writePPM(Vector<Color> const & buffer, Size nx, Size ny, String const & fil
   for (Size y = ny - 1; y >= 0; --y) {
     for (Size x = 0; x < nx; ++x) {
       auto const & pixel = buffer[y * nx + x];
-      ofs << std::bit_cast<char>(pixel.r()) 
-          << std::bit_cast<char>(pixel.g()) 
+      ofs << std::bit_cast<char>(pixel.r()) << std::bit_cast<char>(pixel.g())
           << std::bit_cast<char>(pixel.b());
     }
   }

@@ -106,7 +106,6 @@ struct RegularGrid {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getCellIndexContaining(Point<D, T> const & point) const noexcept -> Vec<D, Size>;
-
 };
 
 // -----------------------------------------------------------------------------

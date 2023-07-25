@@ -25,6 +25,9 @@
 #  define GLOBAL
 #endif
 
+// spdlog
+#define SPDLOG_ACTIVE_LEVEL @UM2_SPDLOG_LEVEL@
+
 // Visualization
 #cmakedefine01 UM2_ENABLE_VIS
 

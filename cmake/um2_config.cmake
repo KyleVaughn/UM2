@@ -63,6 +63,28 @@ if (UM2_ENABLE_CUDA)
   target_include_directories(um2 SYSTEM PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")    
 endif()
 
+## spdlog ########################################
+##################################################
+add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/spdlog" SYSTEM)
+if (UM2_MIN_LOG_LEVEL STREQUAL "trace")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_TRACE")
+elseif (UM2_MIN_LOG_LEVEL STREQUAL "debug")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_DEBUG")
+elseif (UM2_MIN_LOG_LEVEL STREQUAL "info")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_INFO")
+elseif (UM2_MIN_LOG_LEVEL STREQUAL "warn")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_WARN")
+elseif (UM2_MIN_LOG_LEVEL STREQUAL "err")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_ERROR")
+elseif (UM2_MIN_LOG_LEVEL STREQUAL "critical")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_CRITICAL")
+elseif (UM2_MIN_LOG_LEVEL STREQUAL "off")
+  set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_OFF")
+else()
+  message(FATAL_ERROR "Unknown log level: ${UM2_MIN_LOG_LEVEL}")
+endif()
+target_link_libraries(um2 PRIVATE spdlog::spdlog)
+
 ### visualization #################################
 ###################################################
 #if (UM2_ENABLE_VIS)

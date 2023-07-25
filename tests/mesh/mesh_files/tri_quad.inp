@@ -1,0 +1,21 @@
+*Heading
+ tri_quad.inp
+*NODE
+1, 0, 0, 0
+2, 1, 0, 0
+3, 1, 1, 0
+4, 0, 1, 0
+5, 2, 0, 0
+******* E L E M E N T S *************
+*ELEMENT, type=CPS4, ELSET=Surface1
+1, 1, 2, 3, 4
+*ELEMENT, type=CPS3, ELSET=Surface2
+2, 2, 5, 3
+*ELSET,ELSET=A
+1, 2,
+*ELSET,ELSET=B
+2,
+*ELSET,ELSET=Material_UO2
+1,
+*ELSET,ELSET=Material_H2O
+2,

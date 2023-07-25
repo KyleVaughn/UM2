@@ -6,6 +6,7 @@
 #include <um2/math/math_functions.hpp> // um2::max
 
 #include <initializer_list> // std::initializer_list
+#include <numeric>          // std::iota
 
 namespace um2
 {
@@ -120,6 +121,17 @@ public:
   HOSTDEV constexpr void
   resize(Size n) noexcept;
 
+  // NOLINTBEGIN(readability-identifier-naming)
+  HOSTDEV constexpr void
+  push_back(T const & value) noexcept;
+
+  HOSTDEV constexpr void
+  push_back(T && value) noexcept;
+
+  HOSTDEV constexpr void
+  push_back(Size n, T const & value) noexcept;
+  // NOLINTEND(readability-identifier-naming)
+
   // -----------------------------------------------------------------------------
   // Operators
   // -----------------------------------------------------------------------------
@@ -137,6 +149,12 @@ public:
   HOSTDEV constexpr auto
   operator=(Vector && v) noexcept -> Vector &;
 
+  HOSTDEV constexpr auto
+  operator=(std::initializer_list<T> const & list) noexcept -> Vector &;
+
+  constexpr auto
+  operator==(Vector const & v) const noexcept -> bool;
+
   // -----------------------------------------------------------------------------
   // Hidden
   // -----------------------------------------------------------------------------
@@ -153,15 +171,18 @@ public:
   construct_at_end(Size n, T const & value) noexcept;
 
   HOSTDEV HIDDEN constexpr void
-  // NOLINTNEXTLINE(readability-identifier-naming)
+  // NOLINTNEXTLINE
   destruct_at_end(Ptr new_last) noexcept;
 
   HOSTDEV HIDDEN constexpr void
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  append_default(Size n) noexcept;
+  grow(Size n) noexcept;
 
   PURE HOSTDEV [[nodiscard]] HIDDEN constexpr auto
   recommend(Size new_size) const noexcept -> Size;
+
+  HOSTDEV HIDDEN constexpr void
+  // NOLINTNEXTLINE
+  append_default(Size n) noexcept;
 
 }; // struct Vector
 
@@ -169,6 +190,15 @@ public:
 template <>
 struct Vector<bool> {
 };
+
+// TODO (kcvaughn@umich.edu): Add comparator template parameter
+template <typename T>
+constexpr void
+sortPermutation(Vector<T> const & v, Vector<Size> & perm) noexcept;
+
+template <typename T>
+constexpr void
+applyPermutation(Vector<T> & v, Vector<Size> const & perm) noexcept;
 
 } // namespace um2
 

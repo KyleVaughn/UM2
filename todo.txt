@@ -1,9 +1,19 @@
-Faster to use the edge method or write the loop explicitly?
+MeshFile
 
-faceContaining, Find the closest point first, then just test all faces around it 
+TriMesh
+QuadMesh
+QuadraticTriMesh
+QuadraticQuadMesh
+
+CellType and MeshType are not elegant. Review
+
+TriMesh.faceContaining, Find the closest point first, then just test all faces around it 
   Benchmark this
 
+Faster to use the edge method or write the loop explicitly?
+
 Image
+  Rasterize line, triangle
 
 Image of mesh
   -> Benchmark
@@ -13,8 +23,6 @@ Image of mesh
 
 Remap mesh to morton order
   Benchmark
-
-openmp and cuda kernels for mesh functions
 
 spack
 
@@ -46,3 +54,5 @@ Vis:
  Add GUI and options for edge and vertex selection and edges/faces on/off
  Use instancing for repeated pins
  Use ray casted picking for selection
+
+openmp and cuda kernels for mesh functions

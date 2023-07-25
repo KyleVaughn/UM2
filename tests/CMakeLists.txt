@@ -34,9 +34,14 @@ add_um2_test(./geometry/QuadraticQuadrilateral.cpp)
 # ------------------------------------------------------------------------------
 # mesh
 # ------------------------------------------------------------------------------
+# Copy the mesh files to the built test directory
+file(COPY ${PROJECT_SOURCE_DIR}/tests/mesh/mesh_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+add_um2_test(./mesh/CellType.cpp)
 add_um2_test(./mesh/RegularGrid.cpp)
 add_um2_test(./mesh/RegularPartition.cpp)
 add_um2_test(./mesh/TriMesh.cpp)
+add_um2_test(./mesh/io_abaqus.cpp)
 #
 ## ------------------------------------------------------------------------------
 ## ray_casting

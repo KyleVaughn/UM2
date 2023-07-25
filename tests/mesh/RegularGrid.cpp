@@ -211,8 +211,8 @@ TEST_CASE(getCellIndexContaining)
   um2::Vec2<Size> num_cells(5, 8);
   // Grid ranges from 1 to 11 in x and -1 to 7 in y.
   um2::RegularGrid2<T> grid(minima, spacing, num_cells);
-  um2::Vec<2, Size> id = grid.getCellIndexContaining({static_cast<T>(1.1),
-                                                      static_cast<T>(1.1)});
+  um2::Vec<2, Size> id =
+      grid.getCellIndexContaining({static_cast<T>(1.1), static_cast<T>(1.1)});
   ASSERT(id[0] == 0);
   ASSERT(id[1] == 2);
   id = grid.getCellIndexContaining({static_cast<T>(4.9), static_cast<T>(2.1)});

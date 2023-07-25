@@ -21,6 +21,13 @@ option(UM2_ENABLE_OPENGL    "Enable OpenGL visualization" OFF)
 ## Advanced options ###########################################################
 ###############################################################################
 option(UM2_ENABLE_INT64 "Enable 64-bit integer types" OFF) # For large meshes
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(UM2_MIN_LOG_LEVEL "trace" CACHE STRING "Log level" FORCE)
+else()
+  set(UM2_MIN_LOG_LEVEL "debug" CACHE STRING "Log level" FORCE)
+endif()
+set_property(CACHE UM2_MIN_LOG_LEVEL PROPERTY STRINGS
+  "trace" "debug" "info" "warn" "error" "critical" "off")
 
 ## Dev options #################################################################
 ###############################################################################
@@ -59,6 +66,10 @@ set(UM2_HEADERS
     "include/um2/geometry/QuadraticTriangle.hpp"
     "include/um2/geometry/QuadraticQuadrilateral.hpp"
     # mesh
+    "include/um2/mesh/CellType.hpp"
+    "include/um2/mesh/MeshType.hpp"
+    "include/um2/mesh/MeshFile.hpp"
+    "include/um2/mesh/io_abaqus.hpp"
     "include/um2/mesh/RegularGrid.hpp"
     "include/um2/mesh/RegularPartition.hpp"
     "include/um2/mesh/TriMesh.hpp"

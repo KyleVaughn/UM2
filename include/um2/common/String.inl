@@ -54,6 +54,31 @@ HOSTDEV constexpr String::String(char const (&s)[N]) noexcept
   }
 }
 
+HOSTDEV constexpr String::String(char const * s) noexcept
+{
+  uint64_t n = 0;
+  while (s[n] != '\0') {
+    ++n;
+  }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+  // Short string
+  if (n + 1 <= min_cap) {
+    _r.s.is_long = 0;
+    _r.s.size = static_cast<uint8_t>(n);
+    copy(s, s + (n + 1), addressof(_r.s.data[0]));
+    assert(_r.s.data[n] == '\0');
+  } else {
+    _r.l.is_long = 1;
+    _r.l.cap = n;
+    _r.l.size = n;
+    _r.l.data = static_cast<char *>(::operator new(n + 1));
+    copy(s, s + (n + 1), _r.l.data);
+    assert(_r.l.data[n] == '\0');
+  }
+#pragma GCC diagnostic pop
+}
+
 // --------------------------------------------------------------------------
 // Accessors
 // --------------------------------------------------------------------------
@@ -130,6 +155,22 @@ String::operator=(String && s) noexcept -> String &
     s._r.l.data = nullptr;
   }
   return *this;
+}
+
+// These can be done better. If we use the same short string optimization,
+// we should be able to do this more efficiently.
+constexpr auto
+String::operator=(std::string const & s) noexcept -> String &
+{
+  String tmp(s.c_str());
+  return *this = um2::move(tmp);
+}
+
+constexpr auto
+String::operator=(std::string && s) noexcept -> String &
+{
+  String tmp(s.c_str());
+  return *this = um2::move(tmp);
 }
 
 PURE HOSTDEV constexpr auto
@@ -213,11 +254,11 @@ String::c_str() const noexcept -> char const *
 PURE HOSTDEV constexpr auto
 String::starts_with(String const & s) const noexcept -> bool
 {
-  if (size() < s.size()) { 
+  if (size() < s.size()) {
     return false;
   }
-  char const * l_data = data(); 
-  char const * r_data = s.data(); 
+  char const * l_data = data();
+  char const * r_data = s.data();
   for (uint64_t i = 0; i < s.size(); ++i) {
     if (*l_data != *r_data) {
       return false;
@@ -236,7 +277,7 @@ String::ends_with(String const & s) const noexcept -> bool
   if (l_size < r_size) {
     return false;
   }
-  char const * l_data = data() + l_size - r_size; 
+  char const * l_data = data() + l_size - r_size;
   char const * r_data = s.data();
   for (uint64_t i = 0; i < r_size; ++i) {
     if (*l_data != *r_data) {
