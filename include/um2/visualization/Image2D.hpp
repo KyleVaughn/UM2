@@ -7,7 +7,8 @@
 #include <um2/geometry/Point.hpp>
 #include <um2/mesh/RegularPartition.hpp>
 
-#include <cstdio>  // fprintf
+#include <spdlog/spdlog.h>
+
 #include <cstdlib> // exit
 
 namespace um2

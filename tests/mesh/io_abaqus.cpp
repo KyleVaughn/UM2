@@ -9,7 +9,7 @@
 template <std::floating_point T, std::signed_integral I>
 TEST_CASE(tri_mesh)
 {
-  std::string filename = "./mesh_files/tri.inp";
+  std::string const filename = "./mesh_files/tri.inp";
   um2::MeshFile<T, I> mesh_ref;
   makeReferenceTriMeshFile(mesh_ref);
 

@@ -1,4 +1,13 @@
-io_aba
+Resolve errors.
+Remove spdlog as a dependency
+Figure out CUDA install using spack.
+Remove thrust as a dependency -> link from cuda sdk?
+cub 
+
+Enum with common colors
+
+
+Update github actions to use spack
 
 MeshFile
 
@@ -26,18 +35,12 @@ Image of mesh
 Remap mesh to morton order
   Benchmark
 
-spack
-
 Rectilinear Grid
-FVM
 mesh statistics
-FVM IO
 
 Examine Ray/LineSegment, Ray/Mesh, Ray/QuadraticSegement intersections by
 using a change of basis to make the ray R = o + t*d into R = o' + t'*d' where
 d' = (1, 0, 0) and o' = (0, 0, 0).  Then the intersection is just the
-
-MeshFile
 
 Regular Partiton of mesh, but set the cells based upon membership on lower left point of AABB
   Less memory.

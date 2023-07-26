@@ -28,10 +28,10 @@ HOSTDEV
 TEST_CASE(interpolate)
 {
   um2::Quadrilateral<D, T> quad = makeQuad<D, T>();
-  um2::Point<D, T> p00 = quad(0, 0);
-  um2::Point<D, T> p10 = quad(1, 0);
-  um2::Point<D, T> p01 = quad(0, 1);
-  um2::Point<D, T> p11 = quad(1, 1);
+  um2::Point<D, T> const p00 = quad(0, 0);
+  um2::Point<D, T> const p10 = quad(1, 0);
+  um2::Point<D, T> const p01 = quad(0, 1);
+  um2::Point<D, T> const p11 = quad(1, 1);
   ASSERT(um2::isApprox(p00, quad[0]));
   ASSERT(um2::isApprox(p10, quad[1]));
   ASSERT(um2::isApprox(p01, quad[3]));
@@ -47,7 +47,7 @@ HOSTDEV
 TEST_CASE(jacobian)
 {
   // For the reference quad, the Jacobian is constant.
-  um2::Quadrilateral<D, T> quad = makeQuad<D, T>();
+  um2::Quadrilateral<D, T> const quad = makeQuad<D, T>();
   um2::Mat<D, 2, T> jac = quad.jacobian(0, 0);
   ASSERT_NEAR((jac(0, 0)), static_cast<T>(1), static_cast<T>(1e-5));
   ASSERT_NEAR((jac(1, 0)), static_cast<T>(0), static_cast<T>(1e-5));
@@ -109,7 +109,7 @@ template <typename T>
 HOSTDEV
 TEST_CASE(contains)
 {
-  um2::Quadrilateral<2, T> quad = makeQuad<2, T>();
+  um2::Quadrilateral<2, T> const quad = makeQuad<2, T>();
   um2::Point2<T> p = um2::Point2<T>(static_cast<T>(0.25), static_cast<T>(0.25));
   ASSERT(quad.contains(p));
   p = um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.25));
@@ -128,7 +128,7 @@ template <Size D, typename T>
 HOSTDEV
 TEST_CASE(area)
 {
-  um2::Quadrilateral<2, T> quad = makeQuad<2, T>();
+  um2::Quadrilateral<2, T> const quad = makeQuad<2, T>();
   ASSERT_NEAR(quad.area(), static_cast<T>(1), static_cast<T>(1e-5));
 }
 
@@ -159,8 +159,8 @@ template <Size D, typename T>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
-  um2::Quadrilateral<D, T> quad = makeQuad<D, T>();
-  um2::AxisAlignedBox<D, T> box = quad.boundingBox();
+  um2::Quadrilateral<D, T> const quad = makeQuad<D, T>();
+  um2::AxisAlignedBox<D, T> const box = quad.boundingBox();
   ASSERT_NEAR(box.xMin(), static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(box.yMin(), static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(box.xMax(), static_cast<T>(1), static_cast<T>(1e-5));

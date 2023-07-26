@@ -28,7 +28,7 @@ TEST_CASE(accessors)
 template <std::floating_point T, std::signed_integral I>
 TEST_CASE(boundingBox)
 {
-  um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
+  um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
   auto const box = mesh.boundingBox();
   ASSERT_NEAR(box.xMin(), static_cast<T>(0), static_cast<T>(1e-6));
   ASSERT_NEAR(box.xMax(), static_cast<T>(1), static_cast<T>(1e-6));
@@ -39,7 +39,7 @@ TEST_CASE(boundingBox)
 template <std::floating_point T, std::signed_integral I>
 TEST_CASE(faceContaining)
 {
-  um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
+  um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
   um2::Point2<T> p(static_cast<T>(0.5), static_cast<T>(0.25));
   ASSERT(mesh.faceContaining(p) == 0);
   p = um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.75));

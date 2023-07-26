@@ -28,8 +28,8 @@ template <Size D, std::floating_point T>
 HOSTDEV
 TEST_CASE(distance)
 {
-  um2::Point<D, T> p1 = makep1<D, T>();
-  um2::Point<D, T> p2 = makep2<D, T>();
+  um2::Point<D, T> const p1 = makep1<D, T>();
+  um2::Point<D, T> const p2 = makep2<D, T>();
   T d2 = p1.squaredDistanceTo(p2);
   if constexpr (std::floating_point<T>) {
     ASSERT_NEAR(d2, static_cast<T>(D), static_cast<T>(1e-6));
@@ -50,8 +50,8 @@ template <Size D, std::floating_point T>
 HOSTDEV
 TEST_CASE(midpoint)
 {
-  um2::Point<D, T> p1 = makep1<D, T>();
-  um2::Point<D, T> p2 = makep2<D, T>();
+  um2::Point<D, T> const p1 = makep1<D, T>();
+  um2::Point<D, T> const p2 = makep2<D, T>();
   um2::Point<D, T> m = um2::midpoint(p1, p2);
   for (Size i = 0; i < D; ++i) {
     ASSERT_NEAR(m[i], static_cast<T>(i + 1.5), static_cast<T>(1e-6));
@@ -62,7 +62,7 @@ template <Size D, typename T>
 HOSTDEV
 TEST_CASE(isApprox)
 {
-  um2::Point<D, T> p1 = makep1<D, T>();
+  um2::Point<D, T> const p1 = makep1<D, T>();
   um2::Point<D, T> p2 = makep2<D, T>();
   // Trivial equality
   ASSERT(um2::isApprox(p1, p1));
@@ -81,9 +81,9 @@ template <typename T>
 HOSTDEV
 TEST_CASE(areCCW)
 {
-  um2::Point2<T> p1(0, 0);
-  um2::Point2<T> p2(1, 1);
-  um2::Point2<T> p3(2, -4);
+  um2::Point2<T> const p1(0, 0);
+  um2::Point2<T> const p2(1, 1);
+  um2::Point2<T> const p3(2, -4);
   bool b = um2::areCCW(p1, p2, p3);
   ASSERT(!b);
   b = um2::areCCW(p1, p3, p2);

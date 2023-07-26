@@ -26,9 +26,9 @@ HOSTDEV
 TEST_CASE(interpolate)
 {
   um2::Triangle<D, T> tri = makeTri<D, T>();
-  um2::Point<D, T> p00 = tri(0, 0);
-  um2::Point<D, T> p10 = tri(1, 0);
-  um2::Point<D, T> p01 = tri(0, 1);
+  um2::Point<D, T> const p00 = tri(0, 0);
+  um2::Point<D, T> const p10 = tri(1, 0);
+  um2::Point<D, T> const p01 = tri(0, 1);
   ASSERT(um2::isApprox(p00, tri[0]));
   ASSERT(um2::isApprox(p10, tri[1]));
   ASSERT(um2::isApprox(p01, tri[2]));
@@ -91,7 +91,7 @@ template <typename T>
 HOSTDEV
 TEST_CASE(contains)
 {
-  um2::Triangle<2, T> tri = makeTri<2, T>();
+  um2::Triangle<2, T> const tri = makeTri<2, T>();
   um2::Point2<T> p = um2::Point2<T>(static_cast<T>(0.25), static_cast<T>(0.25));
   ASSERT(tri.contains(p));
   p = um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.25));
@@ -123,7 +123,7 @@ template <Size D, typename T>
 HOSTDEV
 TEST_CASE(centroid)
 {
-  um2::Triangle<D, T> tri = makeTri<D, T>();
+  um2::Triangle<D, T> const tri = makeTri<D, T>();
   um2::Point<D, T> c = tri.centroid();
   ASSERT_NEAR(c[0], static_cast<T>(1.0 / 3.0), static_cast<T>(1e-5));
   ASSERT_NEAR(c[1], static_cast<T>(1.0 / 3.0), static_cast<T>(1e-5));
@@ -137,8 +137,8 @@ template <Size D, typename T>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
-  um2::Triangle<D, T> tri = makeTri<D, T>();
-  um2::AxisAlignedBox<D, T> box = tri.boundingBox();
+  um2::Triangle<D, T> const tri = makeTri<D, T>();
+  um2::AxisAlignedBox<D, T> const box = tri.boundingBox();
   ASSERT_NEAR(box.xMin(), static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(box.yMin(), static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(box.xMax(), static_cast<T>(1), static_cast<T>(1e-5));

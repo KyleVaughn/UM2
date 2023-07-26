@@ -19,7 +19,8 @@ TEST_CASE(writePPM)
     std::ifstream file("test.ppm");
     ASSERT(file.is_open());
   }
-  std::remove("test.ppm");
+  int const stat = std::remove("test.ppm");
+  ASSERT(stat == 0);
 }
 
 template <typename T>
@@ -45,11 +46,12 @@ TEST_CASE(rasterizePoint)
   r = 2;
   image.rasterize(um2::Point2<T>(50, 50), r, um2::Color("yellow"));
   image.write("test.ppm");
-  //  {
-  //    std::ifstream file("test.ppm");
-  //    ASSERT(file.is_open());
-  //  }
-  //  std::remove("test.ppm");
+  {
+    std::ifstream file("test.ppm");
+    ASSERT(file.is_open());
+  }
+  int const stat = std::remove("test.ppm");
+  ASSERT(stat == 0);
 }
 
 template <typename T>

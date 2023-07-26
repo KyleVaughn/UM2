@@ -116,7 +116,7 @@ template <typename T>
 HOSTDEV
 TEST_CASE(contains)
 {
-  um2::QuadraticQuadrilateral<2, T> quad = makeQuad2<2, T>();
+  um2::QuadraticQuadrilateral<2, T> const quad = makeQuad2<2, T>();
   um2::Point2<T> p = um2::Point2<T>(static_cast<T>(0.25), static_cast<T>(0.25));
   ASSERT(quad.contains(p));
   p = um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.25));
@@ -143,7 +143,7 @@ TEST_CASE(area)
   quad[7] = um2::Point2<T>(static_cast<T>(0.1), static_cast<T>(0.5));
   ASSERT_NEAR(quad.area(), static_cast<T>(1), static_cast<T>(1e-5));
 
-  um2::QuadraticQuadrilateral<2, T> quad2 = makeQuad2<2, T>();
+  um2::QuadraticQuadrilateral<2, T> const quad2 = makeQuad2<2, T>();
   ASSERT_NEAR(quad2.area(), static_cast<T>(1.3333333), static_cast<T>(1e-5));
 }
 
@@ -155,12 +155,12 @@ template <typename T>
 HOSTDEV
 TEST_CASE(centroid)
 {
-  um2::QuadraticQuadrilateral<2, T> quad = makeQuad<2, T>();
+  um2::QuadraticQuadrilateral<2, T> const quad = makeQuad<2, T>();
   um2::Point<2, T> c = quad.centroid();
   ASSERT_NEAR(c[0], static_cast<T>(0.5), static_cast<T>(1e-5));
   ASSERT_NEAR(c[1], static_cast<T>(0.5), static_cast<T>(1e-5));
 
-  um2::QuadraticQuadrilateral<2, T> quad2 = makeQuad2<2, T>();
+  um2::QuadraticQuadrilateral<2, T> const quad2 = makeQuad2<2, T>();
   c = quad2.centroid();
   ASSERT_NEAR(c[0], static_cast<T>(0.53), static_cast<T>(1e-5));
   ASSERT_NEAR(c[1], static_cast<T>(0.675), static_cast<T>(1e-5));
@@ -174,8 +174,8 @@ template <typename T>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
-  um2::QuadraticQuadrilateral<2, T> quad = makeQuad2<2, T>();
-  um2::AxisAlignedBox<2, T> box = quad.boundingBox();
+  um2::QuadraticQuadrilateral<2, T> const quad = makeQuad2<2, T>();
+  um2::AxisAlignedBox<2, T> const box = quad.boundingBox();
   ASSERT_NEAR(box.xMin(), static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(box.yMin(), static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(box.xMax(), static_cast<T>(1.0083333), static_cast<T>(1e-5));

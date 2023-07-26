@@ -4,6 +4,7 @@
 #include <cstdint> // int32_t, int64_t
 
 // OpenMP
+// NOLINTNEXTLINE(modernize-macro-to-enum)
 #cmakedefine01 UM2_ENABLE_OPENMP
 
 // CUDA
@@ -27,9 +28,6 @@
 
 // spdlog
 #define SPDLOG_ACTIVE_LEVEL @UM2_SPDLOG_LEVEL@
-
-// Visualization
-#cmakedefine01 UM2_ENABLE_VIS
 
 // Attributes
 // -----------------------------------------------------------------------------

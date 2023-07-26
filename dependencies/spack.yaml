@@ -1,12 +1,21 @@
-# This is a Spack Environment file.
-#
-# It describes a set of packages to be installed, along with
-# configuration settings.
 spack:
-  # add package specs to the `specs` list
   specs:
-    - gcc@12.1.0
-    - cmake@3.26.3
+    - cmake
+    - hdf5
+    - llvm@15
+    - spdlog
+    - opencascade
+    - gmsh
+      # - cuda@12
   view: true
+  packages:
+    all:
+      compiler: [clang@15, gcc@12]
+    hdf5:
+      require: +ipo+cxx+fortran~mpi
+    opencascade:
+      require: +ipo~visualization # These don't work for some reason ~draw~application_framework
+    gmsh:
+      require: +ipo+openmp+cairo+fltk+opencascade+eigen+hdf5
   concretizer:
     unify: true

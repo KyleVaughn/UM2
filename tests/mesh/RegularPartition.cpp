@@ -101,7 +101,7 @@ TEST_CASE(getBox_and_getChild)
   um2::Point2<T> minima = {1, -1};
   um2::Vec2<T> spacing = {ahalf, forth};
   um2::Vec2<Size> num_cells = {4, 8};
-  um2::RegularGrid2<T> grid(minima, spacing, num_cells);
+  um2::RegularGrid2<T> const grid(minima, spacing, num_cells);
   um2::RegularPartition<2, T, P> part;
   part.minima = um2::move(minima);
   part.spacing = um2::move(spacing);

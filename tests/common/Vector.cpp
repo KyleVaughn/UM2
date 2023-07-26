@@ -13,7 +13,7 @@ template <class T>
 HOSTDEV
 TEST_CASE(constructor_Size)
 {
-  um2::Vector<T> v(10);
+  um2::Vector<T> const v(10);
   ASSERT(v.cbegin() != nullptr);
   ASSERT(v.cend() != nullptr);
   ASSERT(v.size() == 10);
@@ -75,7 +75,7 @@ template <class T>
 HOSTDEV
 TEST_CASE(move_constructor)
 {
-  um2::Vector<T> v(move(createVector<T>(10)));
+  um2::Vector<T> const v(move(createVector<T>(10)));
   ASSERT(v.cbegin() != nullptr);
   ASSERT(v.cend() != nullptr);
   ASSERT(v.size() == 10);

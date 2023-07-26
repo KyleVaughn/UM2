@@ -113,8 +113,8 @@ PURE HOSTDEV constexpr auto
 Triangle<D, T>::area() const noexcept -> T
 {
   // return (v1 - v0).cross(v2 - v0).norm() / 2;
-  Vec<D, T> v10 = v[1] - v[0];
-  Vec<D, T> v20 = v[2] - v[0];
+  Vec<D, T> const v10 = v[1] - v[0];
+  Vec<D, T> const v20 = v[2] - v[0];
   if constexpr (D == 2) {
     return v10.cross(v20) / 2; // this is the signed area
   } else if constexpr (D == 3) {

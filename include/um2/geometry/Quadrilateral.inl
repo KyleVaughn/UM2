@@ -124,8 +124,8 @@ Quadrilateral<D, T>::area() const noexcept -> T
   static_assert(D == 2, "Area of quadrilateral is only defined in 2D");
   assert(isConvex());
   // (v2 - v0).cross(v3 - v1) / 2
-  Vec<D, T> v20 = v[2] - v[0];
-  Vec<D, T> v31 = v[3] - v[1];
+  Vec<D, T> const v20 = v[2] - v[0];
+  Vec<D, T> const v31 = v[3] - v[1];
   return v20.cross(v31) / 2;
 }
 
@@ -146,9 +146,9 @@ Quadrilateral<D, T>::centroid() const noexcept -> Point<D, T>
   // If the quadrilateral is not convex, then we need to choose the correct
   // two triangles to decompose the quadrilateral into. If the quadrilateral
   // is convex, any two triangles will do.
-  Vec<D, T> v10 = v[1] - v[0];
-  Vec<D, T> v20 = v[2] - v[0];
-  Vec<D, T> v30 = v[3] - v[0];
+  Vec<D, T> const v10 = v[1] - v[0];
+  Vec<D, T> const v20 = v[2] - v[0];
+  Vec<D, T> const v30 = v[3] - v[0];
   // Compute the area of each triangle
   T const a1 = v10.cross(v20);
   T const a2 = v20.cross(v30);

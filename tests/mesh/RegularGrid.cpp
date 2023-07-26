@@ -108,10 +108,10 @@ TEST_CASE(getBox)
   T const one = static_cast<T>(1);
   T const ahalf = static_cast<T>(0.5);
   T const forth = static_cast<T>(0.25);
-  um2::Point2<T> minima = {1, -1};
-  um2::Vec2<T> spacing = {ahalf, forth};
-  um2::Vec2<Size> num_cells = {4, 8};
-  um2::RegularGrid2<T> grid(minima, spacing, num_cells);
+  um2::Point2<T> const minima = {1, -1};
+  um2::Vec2<T> const spacing = {ahalf, forth};
+  um2::Vec2<Size> const num_cells = {4, 8};
+  um2::RegularGrid2<T> const grid(minima, spacing, num_cells);
   um2::AxisAlignedBox2<T> box = grid.getBox(0, 0);
   um2::AxisAlignedBox2<T> box_ref = {
       {          1,             -1},
@@ -159,43 +159,43 @@ template <typename T>
 HOSTDEV
 TEST_CASE(getCellIndicesIntersecting)
 {
-  um2::Point2<T> minima(1, -1);
-  um2::Vec2<T> spacing(2, 1);
-  um2::Vec2<Size> num_cells(5, 8);
+  um2::Point2<T> const minima(1, -1);
+  um2::Vec2<T> const spacing(2, 1);
+  um2::Vec2<Size> const num_cells(5, 8);
   // Grid ranges from 1 to 11 in x and -1 to 7 in y.
-  um2::RegularGrid2<T> grid(minima, spacing, num_cells);
+  um2::RegularGrid2<T> const grid(minima, spacing, num_cells);
 
   // A box in a single cell.
-  um2::AxisAlignedBox2<T> box0({static_cast<T>(3.1), static_cast<T>(1.1)},
-                               {static_cast<T>(3.9), static_cast<T>(1.9)});
-  um2::Vec<4, Size> range0 = grid.getCellIndicesIntersecting(box0);
+  um2::AxisAlignedBox2<T> const box0({static_cast<T>(3.1), static_cast<T>(1.1)},
+                                     {static_cast<T>(3.9), static_cast<T>(1.9)});
+  um2::Vec<4, Size> const range0 = grid.getCellIndicesIntersecting(box0);
   ASSERT(range0[0] == 1);
   ASSERT(range0[1] == 2);
   ASSERT(range0[2] == 1);
   ASSERT(range0[3] == 2);
 
   // A box with perfect alignment.
-  um2::AxisAlignedBox2<T> box1({static_cast<T>(3), static_cast<T>(1)},
-                               {static_cast<T>(5), static_cast<T>(2)});
-  um2::Vec<4, Size> range1 = grid.getCellIndicesIntersecting(box1);
+  um2::AxisAlignedBox2<T> const box1({static_cast<T>(3), static_cast<T>(1)},
+                                     {static_cast<T>(5), static_cast<T>(2)});
+  um2::Vec<4, Size> const range1 = grid.getCellIndicesIntersecting(box1);
   ASSERT(range1[0] == 0 || range1[0] == 1);
   ASSERT(range1[1] == 1 || range1[1] == 2);
   ASSERT(range1[2] == 1 || range1[2] == 2); // Valid in either cell.
   ASSERT(range1[3] == 2 || range1[3] == 3);
 
   // A box in multiple cells.
-  um2::AxisAlignedBox2<T> box2({static_cast<T>(3.1), static_cast<T>(1.1)},
-                               {static_cast<T>(5.9), static_cast<T>(1.9)});
-  um2::Vec<4, Size> range2 = grid.getCellIndicesIntersecting(box2);
+  um2::AxisAlignedBox2<T> const box2({static_cast<T>(3.1), static_cast<T>(1.1)},
+                                     {static_cast<T>(5.9), static_cast<T>(1.9)});
+  um2::Vec<4, Size> const range2 = grid.getCellIndicesIntersecting(box2);
   ASSERT(range2[0] == 1);
   ASSERT(range2[1] == 2);
   ASSERT(range2[2] == 2);
   ASSERT(range2[3] == 2);
 
   // A box in 4 cells.
-  um2::AxisAlignedBox2<T> box3({static_cast<T>(3.1), static_cast<T>(1.1)},
+  um2::AxisAlignedBox2<T> const box3({static_cast<T>(3.1), static_cast<T>(1.1)},
                                {static_cast<T>(5.9), static_cast<T>(2.9)});
-  um2::Vec<4, Size> range3 = grid.getCellIndicesIntersecting(box3);
+  um2::Vec<4, Size> const range3 = grid.getCellIndicesIntersecting(box3);
   ASSERT(range3[0] == 1);
   ASSERT(range3[1] == 2);
   ASSERT(range3[2] == 2);
@@ -206,11 +206,11 @@ template <typename T>
 HOSTDEV
 TEST_CASE(getCellIndexContaining)
 {
-  um2::Point2<T> minima(1, -1);
-  um2::Vec2<T> spacing(2, 1);
-  um2::Vec2<Size> num_cells(5, 8);
+  um2::Point2<T> const minima(1, -1);
+  um2::Vec2<T> const spacing(2, 1);
+  um2::Vec2<Size> const num_cells(5, 8);
   // Grid ranges from 1 to 11 in x and -1 to 7 in y.
-  um2::RegularGrid2<T> grid(minima, spacing, num_cells);
+  um2::RegularGrid2<T> const grid(minima, spacing, num_cells);
   um2::Vec<2, Size> id =
       grid.getCellIndexContaining({static_cast<T>(1.1), static_cast<T>(1.1)});
   ASSERT(id[0] == 0);

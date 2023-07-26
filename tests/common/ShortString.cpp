@@ -10,11 +10,9 @@ HOSTDEV
 TEST_CASE(default_constructor)
 {
   um2::ShortString s;
-  // NOLINTNEXTLINE(misc-static-assert)
-  assert(sizeof(s) == 32);
+  static_assert(sizeof(s) == 32);
   assert(s.size() == 0);
-  // NOLINTNEXTLINE(misc-static-assert)
-  assert(s.capacity() == 31);
+  static_assert(s.capacity() == 31);
   for (int i = 0; i < 31; ++i) {
     // cppcheck-suppress assertWithSideEffect
     assert(s.data()[i] == '\0');
@@ -27,8 +25,7 @@ TEST_CASE(const_char_array_constructor)
 {
   um2::ShortString s("hello");
   assert(s.size() == 5);
-  // NOLINTNEXTLINE(misc-static-assert)
-  assert(s.capacity() == 31);
+  static_assert(s.capacity() == 31);
   // cppcheck-suppress assertWithSideEffect
   assert(s.data()[0] == 'h');
   // cppcheck-suppress assertWithSideEffect
@@ -108,9 +105,9 @@ MAKE_CUDA_KERNEL(assign_operator);
 HOSTDEV
 TEST_CASE(equals_operator)
 {
-  um2::ShortString s0("hello");
-  um2::ShortString s1("helo");
-  um2::ShortString s2("hello");
+  um2::ShortString const s0("hello");
+  um2::ShortString const s1("helo");
+  um2::ShortString const s2("hello");
   ASSERT(s0 == s0);
   ASSERT(s0 == s2);
   ASSERT(s0 != s1);

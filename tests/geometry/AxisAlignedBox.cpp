@@ -19,7 +19,7 @@ template <Size D, std::floating_point T>
 HOSTDEV
 TEST_CASE(accessors)
 {
-  um2::AxisAlignedBox<D, T> box = makeBox<D, T>();
+  um2::AxisAlignedBox<D, T> const box = makeBox<D, T>();
   if constexpr (D >= 1) {
     ASSERT_NEAR(box.xMin(), 0, static_cast<T>(1e-6));
     ASSERT_NEAR(box.xMax(), 1, static_cast<T>(1e-6));
@@ -38,7 +38,7 @@ template <Size D, std::floating_point T>
 HOSTDEV
 TEST_CASE(lengths)
 {
-  um2::AxisAlignedBox<D, T> box = makeBox<D, T>();
+  um2::AxisAlignedBox<D, T> const box = makeBox<D, T>();
   if constexpr (D >= 1) {
     ASSERT_NEAR(box.width(), 1, static_cast<T>(1e-5));
   }
@@ -54,7 +54,7 @@ template <Size D, std::floating_point T>
 HOSTDEV
 TEST_CASE(centroid)
 {
-  um2::AxisAlignedBox<D, T> box = makeBox<D, T>();
+  um2::AxisAlignedBox<D, T> const box = makeBox<D, T>();
   um2::Point<D, T> p = box.centroid();
   for (Size i = 0; i < D; ++i) {
     ASSERT_NEAR(p[i], static_cast<T>(i) + static_cast<T>(0.5), static_cast<T>(1e-6));
@@ -65,7 +65,7 @@ template <Size D, std::floating_point T>
 HOSTDEV
 TEST_CASE(contains)
 {
-  um2::AxisAlignedBox<D, T> box = makeBox<D, T>();
+  um2::AxisAlignedBox<D, T> const box = makeBox<D, T>();
   um2::Point<D, T> p;
   for (Size i = 0; i < D; ++i) {
     p[i] = static_cast<T>(i);
@@ -81,7 +81,7 @@ template <Size D, std::floating_point T>
 HOSTDEV
 TEST_CASE(is_approx)
 {
-  um2::AxisAlignedBox<D, T> box1 = makeBox<D, T>();
+  um2::AxisAlignedBox<D, T> const box1 = makeBox<D, T>();
   um2::AxisAlignedBox<D, T> box2 = makeBox<D, T>();
   ASSERT(isApprox(box1, box2));
   box2.maxima[0] += um2::epsilonDistance<T>() / 2;
@@ -95,7 +95,7 @@ HOSTDEV
 TEST_CASE(bounding_box)
 {
   // boundingBox(AxisAlignedBox, AxisAlignedBox)
-  um2::AxisAlignedBox<D, T> box = makeBox<D, T>();
+  um2::AxisAlignedBox<D, T> const box = makeBox<D, T>();
   um2::AxisAlignedBox<D, T> box2 = makeBox<D, T>();
   for (Size i = 0; i < D; ++i) {
     box2.minima[i] += static_cast<T>(1);
@@ -129,7 +129,7 @@ template <std::floating_point T>
 TEST_CASE(bounding_box_vector)
 {
   // boundingBox(Vector<Point> points)
-  Size n = 20;
+  Size const n = 20;
   um2::Vector<um2::Point2<T>> points(n);
   for (Size i = 0; i < n; ++i) {
     points[i][0] = static_cast<T>(0.1) * static_cast<T>(i);

@@ -36,12 +36,12 @@ HOSTDEV
 TEST_CASE(interpolate)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
-  um2::Point<D, T> p0 = line(0);
+  um2::Point<D, T> const p0 = line(0);
   ASSERT((um2::isApprox(p0, line[0])));
-  um2::Point<D, T> p1 = line(1);
+  um2::Point<D, T> const p1 = line(1);
   ASSERT((um2::isApprox(p1, line[1])));
-  um2::Point<D, T> p05 = line(static_cast<T>(0.5));
-  um2::Point<D, T> mp = um2::midpoint(p0, p1);
+  um2::Point<D, T> const p05 = line(static_cast<T>(0.5));
+  um2::Point<D, T> const mp = um2::midpoint(p0, p1);
   ASSERT((um2::isApprox(p05, mp)));
 }
 
@@ -58,8 +58,8 @@ TEST_CASE(jacobian)
   for (Size i = 0; i < D; ++i) {
     j_ref[i] = line[1][i] - line[0][i];
   }
-  um2::Vec<D, T> j0 = line.jacobian(0);
-  um2::Vec<D, T> j1 = line.jacobian(1);
+  um2::Vec<D, T> const j0 = line.jacobian(0);
+  um2::Vec<D, T> const j1 = line.jacobian(1);
   ASSERT(um2::isApprox(j0, j_ref));
   ASSERT(um2::isApprox(j1, j_ref));
 }
@@ -113,7 +113,7 @@ HOSTDEV
 TEST_CASE(boundingBox)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
-  um2::AxisAlignedBox<D, T> box = line.boundingBox();
+  um2::AxisAlignedBox<D, T> const box = line.boundingBox();
   ASSERT(um2::isApprox(line[0], box.minima));
   ASSERT(um2::isApprox(line[1], box.maxima));
 }

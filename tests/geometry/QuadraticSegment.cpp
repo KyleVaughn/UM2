@@ -122,10 +122,11 @@ template <Size D, typename T>
 HOSTDEV
 TEST_CASE(interpolate)
 {
-  um2::QuadraticSegment<D, T> seg = makeSeg2<D, T>();
+
+  um2::QuadraticSegment<D, T> const seg = makeSeg2<D, T>();
   for (Size i = 0; i < 5; ++i) {
     T r = static_cast<T>(i) / static_cast<T>(4);
-    um2::Point<D, T> p = seg(r);
+    um2::Point<D, T> const p = seg(r);
     um2::Point<D, T> p_ref = um2::zeroVec<D, T>();
     p_ref[0] = 2 * r;
     p_ref[1] = 4 * r * (1 - r);
@@ -141,7 +142,7 @@ template <Size D, typename T>
 HOSTDEV
 TEST_CASE(jacobian)
 {
-  um2::QuadraticSegment<D, T> seg = makeSeg1<D, T>();
+  um2::QuadraticSegment<D, T> const seg = makeSeg1<D, T>();
   um2::Vec<D, T> j0 = seg.jacobian(0);
   um2::Vec<D, T> j12 = seg.jacobian(static_cast<T>(0.5));
   um2::Vec<D, T> j1 = seg.jacobian(1);
@@ -151,7 +152,7 @@ TEST_CASE(jacobian)
   ASSERT(um2::isApprox(j12, j_ref));
   ASSERT(um2::isApprox(j1, j_ref));
 
-  um2::QuadraticSegment<D, T> seg2 = makeSeg2<D, T>();
+  um2::QuadraticSegment<D, T> const seg2 = makeSeg2<D, T>();
   j0 = seg2.jacobian(0);
   j12 = seg2.jacobian(static_cast<T>(0.5));
   j1 = seg2.jacobian(1);
@@ -171,11 +172,11 @@ template <Size D, typename T>
 HOSTDEV
 TEST_CASE(isStraight)
 {
-  um2::QuadraticSegment<D, T> seg1 = makeSeg1<D, T>();
+  um2::QuadraticSegment<D, T> const seg1 = makeSeg1<D, T>();
   ASSERT(seg1.isStraight());
-  um2::QuadraticSegment<D, T> seg2 = makeSeg2<D, T>();
+  um2::QuadraticSegment<D, T> const seg2 = makeSeg2<D, T>();
   ASSERT(!seg2.isStraight());
-  um2::QuadraticSegment<D, T> seg5 = makeSeg5<D, T>();
+  um2::QuadraticSegment<D, T> const seg5 = makeSeg5<D, T>();
   ASSERT(!seg5.isStraight());
 }
 
@@ -207,18 +208,18 @@ HOSTDEV
 TEST_CASE(boundingBox)
 {
   um2::QuadraticSegment<D, T> seg1 = makeSeg1<D, T>();
-  um2::AxisAlignedBox<D, T> bb1 = seg1.boundingBox();
-  um2::AxisAlignedBox<D, T> bb_ref(seg1[0], seg1[1]);
+  um2::AxisAlignedBox<D, T> const bb1 = seg1.boundingBox();
+  um2::AxisAlignedBox<D, T> const bb_ref(seg1[0], seg1[1]);
   ASSERT(um2::isApprox(bb1, bb_ref));
 
   um2::QuadraticSegment<D, T> seg2 = makeSeg2<D, T>();
-  um2::AxisAlignedBox<D, T> bb2 = seg2.boundingBox();
-  um2::AxisAlignedBox<D, T> bb_ref2(seg2[0], seg2[1]);
+  um2::AxisAlignedBox<D, T> const bb2 = seg2.boundingBox();
+  um2::AxisAlignedBox<D, T>  bb_ref2(seg2[0], seg2[1]);
   bb_ref2.maxima.max(seg2[2]);
   ASSERT(um2::isApprox(bb2, bb_ref2));
 
-  um2::QuadraticSegment<D, T> seg8 = makeSeg8<D, T>();
-  um2::AxisAlignedBox<D, T> bb8 = seg8.boundingBox();
+  um2::QuadraticSegment<D, T> const seg8 = makeSeg8<D, T>();
+  um2::AxisAlignedBox<D, T> const bb8 = seg8.boundingBox();
   um2::AxisAlignedBox<D, T> bb_ref8(um2::zeroVec<D, T>(), um2::zeroVec<D, T>());
   bb_ref8.maxima[0] = static_cast<T>(4.083334);
   bb_ref8.maxima[1] = static_cast<T>(3);
@@ -251,7 +252,7 @@ TEST_CASE(isLeft)
   };
 
   // A straight line
-  um2::QuadraticSegment2<T> q1 = makeSeg1<2, T>();
+  um2::QuadraticSegment2<T> const q1 = makeSeg1<2, T>();
   ASSERT(q1.isLeft(test_points[0]));
   ASSERT(!q1.isLeft(test_points[1]));
   ASSERT(q1.isLeft(test_points[2]));
@@ -268,7 +269,7 @@ TEST_CASE(isLeft)
   ASSERT(q1.isLeft(test_points[13]));
 
   // Curves right
-  um2::QuadraticSegment2<T> q2 = makeSeg2<2, T>();
+  um2::QuadraticSegment2<T> const q2 = makeSeg2<2, T>();
   ASSERT(q2.isLeft(test_points[0]));
   ASSERT(!q2.isLeft(test_points[1]));
   ASSERT(q2.isLeft(test_points[2]));
@@ -285,7 +286,7 @@ TEST_CASE(isLeft)
   ASSERT(q2.isLeft(test_points[13]));
 
   // Curves left
-  um2::QuadraticSegment2<T> q3 = makeSeg3<2, T>();
+  um2::QuadraticSegment2<T> const q3 = makeSeg3<2, T>();
   ASSERT(q3.isLeft(test_points[0]));
   ASSERT(!q3.isLeft(test_points[1]));
   ASSERT(q3.isLeft(test_points[2]));
@@ -302,7 +303,7 @@ TEST_CASE(isLeft)
   ASSERT(q3.isLeft(test_points[13]));
 
   // Curves right, P2 = (2, 1)
-  um2::QuadraticSegment2<T> q4 = makeSeg4<2, T>();
+  um2::QuadraticSegment2<T> const q4 = makeSeg4<2, T>();
   ASSERT(q4.isLeft(test_points[0]));
   ASSERT(!q4.isLeft(test_points[1]));
   ASSERT(q4.isLeft(test_points[2]));
@@ -319,7 +320,7 @@ TEST_CASE(isLeft)
   ASSERT(!q4.isLeft(test_points[13]));
 
   // Curves left, P2 = (2, -1)
-  um2::QuadraticSegment2<T> q5 = makeSeg5<2, T>();
+  um2::QuadraticSegment2<T> const q5 = makeSeg5<2, T>();
   ASSERT(q5.isLeft(test_points[0]));
   ASSERT(!q5.isLeft(test_points[1]));
   ASSERT(q5.isLeft(test_points[2]));
@@ -336,7 +337,7 @@ TEST_CASE(isLeft)
   ASSERT(q5.isLeft(test_points[13]));
 
   // Curves right, P2 = (0, 1)
-  um2::QuadraticSegment2<T> q6 = makeSeg6<2, T>();
+  um2::QuadraticSegment2<T> const q6 = makeSeg6<2, T>();
   ASSERT(q6.isLeft(test_points[0]));
   ASSERT(!q6.isLeft(test_points[1]));
   ASSERT(q6.isLeft(test_points[2]));
@@ -353,7 +354,7 @@ TEST_CASE(isLeft)
   ASSERT(q6.isLeft(test_points[13]));
 
   // Curves left, P2 = (0, -1)
-  um2::QuadraticSegment2<T> q7 = makeSeg7<2, T>();
+  um2::QuadraticSegment2<T> const q7 = makeSeg7<2, T>();
   ASSERT(q7.isLeft(test_points[0]));
   ASSERT(!q7.isLeft(test_points[1]));
   ASSERT(q7.isLeft(test_points[2]));
@@ -370,7 +371,7 @@ TEST_CASE(isLeft)
   ASSERT(q7.isLeft(test_points[13]));
 
   // Curves right, P2 = (4, 3)
-  um2::QuadraticSegment2<T> q8 = makeSeg8<2, T>();
+  um2::QuadraticSegment2<T> const q8 = makeSeg8<2, T>();
   ASSERT(q8.isLeft(test_points[0]));
   ASSERT(!q8.isLeft(test_points[1]));
   ASSERT(q8.isLeft(test_points[2]));
@@ -395,22 +396,22 @@ template <typename T>
 HOSTDEV
 TEST_CASE(enclosedArea)
 {
-  um2::QuadraticSegment2<T> seg1 = makeSeg1<2, T>();
+  um2::QuadraticSegment2<T> const seg1 = makeSeg1<2, T>();
   T area = seg1.enclosedArea();
   T area_ref = static_cast<T>(0);
   ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
 
-  um2::QuadraticSegment2<T> seg2 = makeSeg2<2, T>();
+  um2::QuadraticSegment2<T> const seg2 = makeSeg2<2, T>();
   // 4/3 triangle area = (2 / 3) * b * h
   area_ref = -static_cast<T>(2.0 / 3.0) * 2 * 1;
   area = seg2.enclosedArea();
   ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
 
-  um2::QuadraticSegment2<T> seg4 = makeSeg4<2, T>();
+  um2::QuadraticSegment2<T> const seg4 = makeSeg4<2, T>();
   area = seg4.enclosedArea();
   ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
 
-  um2::QuadraticSegment2<T> seg8 = makeSeg8<2, T>();
+  um2::QuadraticSegment2<T> const seg8 = makeSeg8<2, T>();
   area_ref = -static_cast<T>(4);
   area = seg8.enclosedArea();
   ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
@@ -420,7 +421,7 @@ template <typename T>
 HOSTDEV
 TEST_CASE(enclosedCentroid)
 {
-  um2::QuadraticSegment2<T> seg1 = makeSeg1<2, T>();
+  um2::QuadraticSegment2<T> const seg1 = makeSeg1<2, T>();
   um2::Point2<T> centroid = seg1.enclosedCentroid();
   um2::Point2<T> centroid_ref(1, 0);
   ASSERT(um2::isApprox(centroid, centroid_ref));
@@ -436,10 +437,10 @@ TEST_CASE(enclosedCentroid)
   seg2[2][0] = static_cast<T>(-1);
   seg2[2][1] = um2::sqrt(static_cast<T>(2));
   // Compute centroid_ref
-  um2::Vec2<T> u1 = (seg2[1] - seg2[0]).normalized();
-  um2::Vec2<T> u2(-u1[1], u1[0]);
+  um2::Vec2<T> const u1 = (seg2[1] - seg2[0]).normalized();
+  um2::Vec2<T> const u2(-u1[1], u1[0]);
   // NOLINTNEXTLINE(readability-identifier-naming)
-  um2::Mat2x2<T> R(u1, u2);
+  um2::Mat2x2<T> const R(u1, u2);
   centroid_ref = R * centroid_ref + seg2[0];
   centroid = seg2.enclosedCentroid();
   ASSERT(um2::isApprox(centroid, centroid_ref));

@@ -10,8 +10,7 @@ HOSTDEV
 TEST_CASE(default_constructor)
 {
   um2::String s;
-  // NOLINTNEXTLINE(misc-static-assert)
-  assert(sizeof(s) == 24);
+  static_assert(sizeof(s) == 24);
   assert(s.size() == 0);
   assert(s.capacity() == 22);
   for (int i = 0; i < 22; ++i) {
@@ -153,9 +152,9 @@ MAKE_CUDA_KERNEL(assign_operator);
 HOSTDEV
 TEST_CASE(equals_operator)
 {
-  um2::String s0("hello");
-  um2::String s1("helo");
-  um2::String s2("hello");
+  um2::String const s0("hello");
+  um2::String const s1("helo");
+  um2::String const s2("hello");
   ASSERT(s0 == s0);
   ASSERT(s0 == s2);
   ASSERT(s0 != s1);

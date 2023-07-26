@@ -27,12 +27,11 @@ struct Nothing {
 HOSTDEV
 TEST_CASE(addressof)
 {
-  // NOLINTBEGIN(misc-static-assert)
   {
     int i = 0;
     double d = 0;
-    ASSERT(um2::addressof(i) == &i);
-    ASSERT(um2::addressof(d) == &d);
+    static_assert(um2::addressof(i) == &i);
+    static_assert(um2::addressof(d) == &d);
 
     A * tp = new A;
     const A * ctp = tp;
@@ -45,9 +44,9 @@ TEST_CASE(addressof)
       Nothing n;
       int i;
     };
+    // NOLINTNEXTLINE
     ASSERT(um2::addressof(n) == static_cast<void *>(um2::addressof(n)));
   }
-  // NOLINTEND(misc-static-assert)
 }
 MAKE_CUDA_KERNEL(addressof);
 

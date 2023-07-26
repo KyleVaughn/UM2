@@ -78,7 +78,7 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   Size num_elements = 0;
   while (std::getline(file, line) && line[0] != '*') {
     SPDLOG_TRACE("Line: " + line);
-    std::string_view line_view = line;
+    std::string_view const line_view = line;
     // For each element, read the element ID and the node IDs
     // Format: id, n1, n2, n3, n4, n5 ...
     // Skip ID
@@ -121,7 +121,7 @@ parseElsets(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   SPDLOG_DEBUG("Parsing elsets");
   std::string_view line_view = line;
   // "*ELSET,ELSET=".size() = 13
-  std::string elset_name{line_view.substr(13, line_view.size() - 13)};
+  std::string const elset_name{line_view.substr(13, line_view.size() - 13)};
   mesh.elset_names.push_back(String(elset_name.c_str()));
   Vector<I> this_elset_ids;
   while (std::getline(file, line) && line[0] != '*') {
