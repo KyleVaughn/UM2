@@ -5,6 +5,7 @@ spack:
     - llvm@15
     - gmsh
     - spdlog
+    - pugixml
     - cuda@12
     - benchmark
   view: true
