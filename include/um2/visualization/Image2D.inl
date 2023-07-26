@@ -24,7 +24,7 @@ Image2D<T>::write(String const & filename) const
   //    write_png(filename);
   //  }
   else {
-    spdlog::error("Image2D::write(): unknown file extension");
+//    spdlog::error("Image2D::write(): unknown file extension");
     exit(EXIT_FAILURE);
   }
 }

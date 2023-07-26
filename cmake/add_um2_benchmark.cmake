@@ -13,11 +13,9 @@ macro(add_um2_benchmark FILENAME)
 
   add_executable(${BENCHNAME} ${FILENAME})
 
-  set(benchmark_DIR ${PROJECT_SOURCE_DIR}/dependencies/benchmark/build)
   find_package(benchmark REQUIRED)
 
   target_link_libraries(${BENCHNAME} um2 benchmark::benchmark benchmark::benchmark_main)
-  #  target_include_directories(${BENCHNAME} SYSTEM PRIVATE ${PROJECT_SOURCE_DIR}/dependencies/benchmark/include)
   set_target_properties(${BENCHNAME} PROPERTIES CXX_STANDARD ${UM2_CXX_STANDARD})
   set_target_properties(${BENCHNAME} PROPERTIES CXX_STANDARD_REQUIRED ON)
 

@@ -7,7 +7,7 @@
 #include <um2/geometry/Point.hpp>
 #include <um2/mesh/RegularPartition.hpp>
 
-#include <spdlog/spdlog.h>
+// #include <spdlog/spdlog.h>
 
 #include <cstdlib> // exit
 

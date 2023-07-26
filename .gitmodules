@@ -2,14 +2,3 @@
 	path = dependencies/glfw
 	url = https://github.com/glfw/glfw.git
 	branch = 3.3-stable
-[submodule "tpls/thrust"]
-	path = dependencies/thrust
-	url = https://github.com/NVIDIA/thrust.git
-	branch = 2.1.x
-[submodule "dependencies/benchmark"]
-	path = dependencies/benchmark
-	url = https://github.com/google/benchmark.git
-[submodule "dependencies/spdlog"]
-	path = dependencies/spdlog
-	url = https://github.com/gabime/spdlog.git
-	branch = v1.x

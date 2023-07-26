@@ -3,10 +3,11 @@ spack:
     - cmake
     - hdf5
     - llvm@15
-    - spdlog
     - opencascade
     - gmsh
-      # - cuda@12
+    - spdlog
+    - cuda@12
+    - benchmark
   view: true
   packages:
     all:
@@ -17,5 +18,7 @@ spack:
       require: +ipo~visualization # These don't work for some reason ~draw~application_framework
     gmsh:
       require: +ipo+openmp+cairo+fltk+opencascade+eigen+hdf5
+    spdlog:
+      require: ~shared
   concretizer:
     unify: true

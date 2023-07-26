@@ -65,7 +65,7 @@ endif()
 
 ## spdlog ########################################
 ##################################################
-add_subdirectory("${PROJECT_SOURCE_DIR}/dependencies/spdlog" SYSTEM)
+find_package(spdlog REQUIRED)
 if (UM2_MIN_LOG_LEVEL STREQUAL "trace")
   set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_TRACE")
 elseif (UM2_MIN_LOG_LEVEL STREQUAL "debug")
