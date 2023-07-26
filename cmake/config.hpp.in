@@ -29,6 +29,10 @@
 // spdlog
 #define SPDLOG_ACTIVE_LEVEL @UM2_SPDLOG_LEVEL@
 
+// gmsh
+// NOLINTNEXTLINE(modernize-macro-to-enum)
+#cmakedefine01 UM2_ENABLE_GMSH
+
 // Attributes
 // -----------------------------------------------------------------------------
 // These are supported by GCC and Clang, but cause issues when using nvcc

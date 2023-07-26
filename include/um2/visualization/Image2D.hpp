@@ -29,17 +29,10 @@ namespace um2
 template <std::floating_point T>
 struct Image2D : public RegularPartition<2, T, Color> {
 
-  static constexpr auto
-  defaultPointRadius() noexcept -> T
-  {
-    return static_cast<T>(0.05);
-  }
-
-  static constexpr auto
-  defaultPointColor() noexcept -> Color
-  {
-    return Color("white");
-  }
+  // Point rasterization parameters
+  // -----------------------------
+  static constexpr T default_point_radius = static_cast<T>(0.05);
+  static constexpr Colors default_point_color = Colors::White;
 
   constexpr Image2D() noexcept = default;
 
@@ -55,8 +48,8 @@ struct Image2D : public RegularPartition<2, T, Color> {
   write(char const (&filename)[N]) const;
 
   void
-  rasterize(Point2<T> const & p, T r = defaultPointRadius(),
-            Color const & c = defaultPointColor());
+  rasterize(Point2<T> const & p, T r = default_point_radius,
+            Color c = default_point_color);
 };
 
 } // namespace um2

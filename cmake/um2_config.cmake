@@ -85,6 +85,16 @@ else()
 endif()
 target_link_libraries(um2 PRIVATE spdlog::spdlog)
 
+## gmsh ##########################################
+##################################################
+if (UM2_ENABLE_GMSH)
+  find_library(GMSH_LIB gmsh)
+  if (NOT GMSH_LIB)
+    message(FATAL_ERROR "Could not find gmsh")
+  endif()
+  target_link_libraries(um2 PUBLIC ${GMSH_LIB})
+endif()
+
 ### visualization #################################
 ###################################################
 #if (UM2_ENABLE_VIS)

@@ -28,6 +28,11 @@ HOSTDEV constexpr Color::Color(T r_in, T g_in, T b_in, T a_in) noexcept
   rep.rgba.a = static_cast<uint8_t>(a_in * 255);
 }
 
+HOSTDEV constexpr Color::Color(Colors color) noexcept
+{
+  rep.u32 = static_cast<uint32_t>(color);
+}
+
 HOSTDEV constexpr Color::Color(ShortString const & name) noexcept
     : Color()
 {
@@ -71,6 +76,13 @@ Color::a() const noexcept -> uint8_t
 // -----------------------------------------------------------------------------
 // Operators
 // -----------------------------------------------------------------------------
+
+HOSTDEV constexpr auto
+Color::operator=(Colors color) noexcept -> Color &
+{
+  rep.u32 = static_cast<uint32_t>(color);
+  return *this;
+}
 
 CONST HOSTDEV constexpr auto
 operator==(Color const lhs, Color const rhs) noexcept -> bool

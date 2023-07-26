@@ -3,7 +3,6 @@ spack:
     - cmake
     - hdf5
     - llvm@15
-    - opencascade
     - gmsh
     - spdlog
     - cuda@12
@@ -13,11 +12,9 @@ spack:
     all:
       compiler: [clang@15, gcc@12]
     hdf5:
-      require: +ipo+cxx+fortran~mpi
-    opencascade:
-      require: +ipo~visualization # These don't work for some reason ~draw~application_framework
+      require: +cxx+fortran~mpi
     gmsh:
-      require: +ipo+openmp+cairo+fltk+opencascade+eigen+hdf5
+      require: +openmp+cairo+fltk+opencascade+eigen+hdf5 #^opencascade~visualization~draw~application_framework
     spdlog:
       require: ~shared
   concretizer:

@@ -172,8 +172,8 @@ RegularGrid<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 
 template <Size D, typename T>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RegularGrid<D, T>::getBox(Args... args) const noexcept
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto RegularGrid<D, T>::getBox(Args... args) const noexcept
     -> AxisAlignedBox<D, T>
 {
   Point<D, Size> const index{args...};
@@ -190,7 +190,8 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 
 template <Size D, typename T>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV
     constexpr auto RegularGrid<D, T>::getCellCentroid(Args... args) const noexcept
     -> Point<D, T>
 {

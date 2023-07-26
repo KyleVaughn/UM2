@@ -24,22 +24,21 @@ Image2D<T>::write(String const & filename) const
   //    write_png(filename);
   //  }
   else {
-//    spdlog::error("Image2D::write(): unknown file extension");
+    //    spdlog::error("Image2D::write(): unknown file extension");
     exit(EXIT_FAILURE);
   }
 }
 
 template <std::floating_point T>
 void
-Image2D<T>::rasterize(Point2<T> const & p, T const r, Color const & c)
+Image2D<T>::rasterize(Point2<T> const & p, T const r, Color const c)
 {
   if (p[0] < this->xMin() || p[0] >= this->xMax() || p[1] < this->yMin() ||
       p[1] >= this->yMax()) {
     return;
   }
 
-  // We will treat the circle as a square to get the bounding box
-  // of the circle
+  // Get the bounding box of the circle
   AxisAlignedBox2<T> const bb({p[0] - r, p[1] - r}, {p[0] + r, p[1] + r});
   auto const range = this->getCellIndicesIntersecting(bb);
   // For each cell in the bounding box, check if the centroid is in the circle.

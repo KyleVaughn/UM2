@@ -1,11 +1,4 @@
-Resolve errors.
-Remove spdlog as a dependency
-Figure out CUDA install using spack.
-Remove thrust as a dependency -> link from cuda sdk?
-cub 
-
-Enum with common colors
-
+Link gmsh, gmsh api, gmsh tests
 
 Update github actions to use spack
 
@@ -46,8 +39,6 @@ Regular Partiton of mesh, but set the cells based upon membership on lower left 
   Less memory.
   Also set grid equal to largest object size or bigger. Therefore, no object canbe in more than 2 cells in 1 direction
   Pg 296 of Real Time Collision Detection
-
-Remove thrust as a dependency? 
 
 Line in opengl
 Reading/Writing MPACT files

@@ -214,7 +214,7 @@ TEST_CASE(boundingBox)
 
   um2::QuadraticSegment<D, T> seg2 = makeSeg2<D, T>();
   um2::AxisAlignedBox<D, T> const bb2 = seg2.boundingBox();
-  um2::AxisAlignedBox<D, T>  bb_ref2(seg2[0], seg2[1]);
+  um2::AxisAlignedBox<D, T> bb_ref2(seg2[0], seg2[1]);
   bb_ref2.maxima.max(seg2[2]);
   ASSERT(um2::isApprox(bb2, bb_ref2));
 

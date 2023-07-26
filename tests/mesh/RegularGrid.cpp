@@ -194,7 +194,7 @@ TEST_CASE(getCellIndicesIntersecting)
 
   // A box in 4 cells.
   um2::AxisAlignedBox2<T> const box3({static_cast<T>(3.1), static_cast<T>(1.1)},
-                               {static_cast<T>(5.9), static_cast<T>(2.9)});
+                                     {static_cast<T>(5.9), static_cast<T>(2.9)});
   um2::Vec<4, Size> const range3 = grid.getCellIndicesIntersecting(box3);
   ASSERT(range3[0] == 1);
   ASSERT(range3[1] == 2);

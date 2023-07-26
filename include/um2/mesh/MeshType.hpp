@@ -6,13 +6,12 @@ namespace um2
 {
 
 enum class MeshType : int8_t {
-  Error = 0,
-  Tri = 1,
-  Quad = 2,
-  TriQuad = 3,
-  QuadraticTri = 4,
-  QuadraticQuad = 5,
-  QuadraticTriQuad = 6,
+  Tri = 3,
+  Quad = 4,
+  TriQuad = 7,
+  QuadraticTri = 6,
+  QuadraticQuad = 8,
+  QuadraticTriQuad = 14,
 };
 
 // template <std::integral I>

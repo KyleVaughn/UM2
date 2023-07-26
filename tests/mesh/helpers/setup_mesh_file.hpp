@@ -15,9 +15,9 @@ makeReferenceTriMeshFile(um2::MeshFile<T, I> & mesh)
                       um2::String("Material_UO2")};
   mesh.elset_ids = {
       {0, 1},
-      {1  },
-      {1  },
-      {0  }
+      {1},
+      {1},
+      {0}
   };
 }
 

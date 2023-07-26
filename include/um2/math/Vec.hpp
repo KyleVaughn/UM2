@@ -61,15 +61,15 @@ struct Vec {
   // Otherwise, require explicit conversion to avoid accidental loss of
   // precision/performance.
   template <class... Is>
-  requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
-           !(std::same_as<T, Is> && ...))
-      // cppcheck-suppress noExplicitConstructor
-      HOSTDEV constexpr Vec(Is const... args) noexcept;
+    requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
+             !(std::same_as<T, Is> && ...))
+  // cppcheck-suppress noExplicitConstructor
+  HOSTDEV constexpr Vec(Is const... args) noexcept;
 
   template <class... Ts>
-  requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...))
-      // cppcheck-suppress noExplicitConstructor
-      HOSTDEV constexpr Vec(Ts const... args) noexcept;
+    requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...))
+  // cppcheck-suppress noExplicitConstructor
+  HOSTDEV constexpr Vec(Ts const... args) noexcept;
   // NOLINTEND(google-explicit-constructor)
 
   // -----------------------------------------------------------------------------
@@ -89,19 +89,23 @@ struct Vec {
   operator/=(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
 
   template <class S>
-  requires(std::same_as<T, S> || std::integral<S>) HOSTDEV constexpr auto
+    requires(std::same_as<T, S> || std::integral<S>)
+  HOSTDEV constexpr auto
   operator+=(S const & s) noexcept -> Vec<D, T> &;
 
   template <class S>
-  requires(std::same_as<T, S> || std::integral<S>) HOSTDEV constexpr auto
+    requires(std::same_as<T, S> || std::integral<S>)
+  HOSTDEV constexpr auto
   operator-=(S const & s) noexcept -> Vec<D, T> &;
 
   template <class S>
-  requires(std::same_as<T, S> || std::integral<S>) HOSTDEV constexpr auto
+    requires(std::same_as<T, S> || std::integral<S>)
+  HOSTDEV constexpr auto
   operator*=(S const & s) noexcept -> Vec<D, T> &;
 
   template <class S>
-  requires(std::same_as<T, S> || std::integral<S>) HOSTDEV constexpr auto
+    requires(std::same_as<T, S> || std::integral<S>)
+  HOSTDEV constexpr auto
   operator/=(S const & s) noexcept -> Vec<D, T> &;
 
   // -----------------------------------------------------------------------------
@@ -208,11 +212,13 @@ HOSTDEV constexpr auto
 operator-(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>;
 
 template <Size D, class T, typename Scalar>
-requires(std::same_as<T, Scalar> || std::integral<Scalar>) HOSTDEV constexpr auto
+  requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+HOSTDEV constexpr auto
 operator*(Scalar s, Vec<D, T> u) noexcept -> Vec<D, T>;
 
 template <Size D, class T, typename Scalar>
-requires(std::same_as<T, Scalar> || std::integral<Scalar>) HOSTDEV constexpr auto
+  requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+HOSTDEV constexpr auto
 operator/(Vec<D, T> u, Scalar s) noexcept -> Vec<D, T>;
 
 // -----------------------------------------------------------------------------

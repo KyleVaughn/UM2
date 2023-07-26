@@ -39,12 +39,13 @@ struct RegularPartition : public RegularGrid<D, T> {
   // ---------------------------------------------------------------------------
 
   template <typename... Args>
-  requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getChild(Args... args) noexcept -> P &;
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto getChild(Args... args) noexcept -> P &;
 
   template <typename... Args>
-  requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getChild(Args... args) const noexcept -> P const &;
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto getChild(Args... args) const noexcept
+      -> P const &;
 };
 
 // -- Aliases --

@@ -17,6 +17,7 @@ option(UM2_ENABLE_CUDA      "Enable CUDA"          OFF)
 option(UM2_ENABLE_OPENMP    "Enable OpenMP"        ON)
 option(UM2_ENABLE_FASTMATH  "Enable fast math"     ON)
 option(UM2_ENABLE_OPENGL    "Enable OpenGL visualization" OFF)
+option(UM2_ENABLE_GMSH      "Enable Gmsh"          ON)
 
 ## Advanced options ###########################################################
 ###############################################################################
@@ -73,6 +74,8 @@ set(UM2_HEADERS
     "include/um2/mesh/RegularGrid.hpp"
     "include/um2/mesh/RegularPartition.hpp"
     "include/um2/mesh/TriMesh.hpp"
+    # gmsh
+    "include/um2/gmsh/base_gmsh_api.hpp"
     #    # ray_casting
     #    "include/um2/ray_casting/Ray.hpp"
     # visualization
@@ -83,6 +86,8 @@ set(UM2_HEADERS
 
 # Sources
 set(UM2_SOURCES        
+    # gmsh
+    "src/gmsh/base_gmsh_api.cpp"
     # visualization
     "src/visualization/Image2D.cpp"
     # api

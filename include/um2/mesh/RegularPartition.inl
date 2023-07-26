@@ -6,8 +6,9 @@ namespace um2
 
 template <Size D, typename T, typename P>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RegularPartition<D, T, P>::getChild(Args... args) noexcept -> P &
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto RegularPartition<D, T, P>::getChild(Args... args) noexcept
+    -> P &
 {
   Point<D, Size> const index{args...};
   for (Size i = 0; i < D; ++i) {
@@ -29,7 +30,8 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 
 template <Size D, typename T, typename P>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV
     constexpr auto RegularPartition<D, T, P>::getChild(Args... args) const noexcept
     -> P const &
 {

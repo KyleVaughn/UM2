@@ -46,7 +46,6 @@ struct FaceVertexMesh<1, 3, D, T, I> {
 
   PURE [[nodiscard]] constexpr auto
   faceContaining(Point<D, T> const & p) const noexcept -> Size;
-
 };
 
 } // namespace um2

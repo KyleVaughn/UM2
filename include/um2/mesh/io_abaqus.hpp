@@ -4,7 +4,7 @@
 #include <um2/config.hpp>
 #include <um2/mesh/MeshFile.hpp>
 
-//#include <spdlog/spdlog.h>
+// #include <spdlog/spdlog.h>
 
 #include <charconv>
 #include <concepts>
@@ -25,7 +25,7 @@ static void
 parseNodes(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
 {
   // Would love to use chars_format here, but it bugs out on "0.5" occasionally
-//  SPDLOG_DEBUG("Parsing nodes");
+  //  SPDLOG_DEBUG("Parsing nodes");
   while (std::getline(file, line) && line[0] != '*') {
     // Format: node_id, x, y, z
     // Skip ID
@@ -45,15 +45,15 @@ static void
 // NOLINTNEXTLINE(misc-unused-parameters)
 parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
 {
-  //SPDLOG_DEBUG("Parsing elements");
-  // "*ELEMENT, type=CPS".size() = 18
-  // CPS3 is a 3-node triangle
-  // CPS4 is a 4-node quadrilateral
-  // CPS6 is a 6-node quadratic triangle
-  // CPS8 is a 8-node quadratic quadrilateral
-  // Hence, line[18] is the offset of the element type
-  // ASCII code for '0' is 48, so line[18] - 48 is the offset
-  // as an integer
+  // SPDLOG_DEBUG("Parsing elements");
+  //  "*ELEMENT, type=CPS".size() = 18
+  //  CPS3 is a 3-node triangle
+  //  CPS4 is a 4-node quadrilateral
+  //  CPS6 is a 6-node quadratic triangle
+  //  CPS8 is a 8-node quadratic quadrilateral
+  //  Hence, line[18] is the offset of the element type
+  //  ASCII code for '0' is 48, so line[18] - 48 is the offset
+  //  as an integer
   I offset = static_cast<I>(line[18]) - 48;
   AbaqusCellType element_type = AbaqusCellType::CPS3;
   switch (offset) {
@@ -155,12 +155,12 @@ template <std::floating_point T, std::signed_integral I>
 void
 readAbaqusFile(std::string const & filename, MeshFile<T, I> & mesh)
 {
-  //SPDLOG_INFO("Reading ABAQUS mesh file: " + filename);
+  // SPDLOG_INFO("Reading ABAQUS mesh file: " + filename);
 
   // Open file
   std::ifstream file(filename);
   if (!file.is_open()) {
-    //SPDLOG_ERROR("Could not open file: " + filename);
+    // SPDLOG_ERROR("Could not open file: " + filename);
     return;
   }
 
