@@ -1,6 +1,3 @@
-initialize, finalize.
-  Need to get a logger that works with nvcc, or place logger in log file and conditionally enable
-
 gmsh api, gmsh tests
 
 Update github actions to use spack

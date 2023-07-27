@@ -24,17 +24,19 @@ RegularGrid.getCellCentroid
 
 MeshFile.compareGeometry
 
-TriMesh.regularPartition
-  3 by 3 grid. 
-    6  7  8
-    3  4  5
-    0  1  2
-    The cells on the diagonal (0, 4, 8) should contain 0 and 1. 
-    Cell 6 = 1
-    Cell 2 = 0
-    Cells 1, 3, 5, 7 are indeterminate due to floating point error.
-
-RegularPartition
+// TriMesh.regularPartition
+//   3 by 3 grid. 
+//     6  7  8
+//     3  4  5
+//     0  1  2
+//     The cells on the diagonal (0, 4, 8) should contain 0 and 1. 
+//     Cell 6 = 1
+//     Cell 2 = 0
+//     Cells 1, 3, 5, 7 are indeterminate due to floating point error.
 
 Image
   rasterizePoint
+
+API
+  initialize (see UM2-C/test/api)
+  finalize

@@ -1,36 +1,36 @@
 #include <um2.hpp>
-// #include <um2/common/log.hpp>
+#include <um2/common/Log.hpp>
 
-// NOLINTBEGIN
+#include <algorithm>
+
 namespace um2
 {
 
 void
-initialize(std::string const & verbosity, bool init_gmsh)
+initialize(std::string const & verbosity, bool init_gmsh, int gmsh_verbosity)
 {
-  int gmsh_verbosity = 0;
-  if (verbosity == "info") {
-    gmsh_verbosity = 2;
+  Log::reset();
+  // Set verbosity
+  // Make uppercase for comparison
+  std::string verbosity_upper = verbosity;
+  std::transform(verbosity.begin(), verbosity.end(), verbosity_upper.begin(), ::toupper);
+  if (verbosity == "TRACE") {
+    Log::setMaxVerbosityLevel(LogVerbosity::Trace);
+  } else if (verbosity == "DEBUG") {
+    Log::setMaxVerbosityLevel(LogVerbosity::Debug);
+  } else if (verbosity == "INFO") {
+    Log::setMaxVerbosityLevel(LogVerbosity::Info);
+  } else if (verbosity == "WARN") {
+    Log::setMaxVerbosityLevel(LogVerbosity::Warn);
+  } else if (verbosity == "ERROR") {
+    Log::setMaxVerbosityLevel(LogVerbosity::Error);
+  } else if (verbosity == "OFF") {
+    Log::setMaxVerbosityLevel(LogVerbosity::Off);
+  } else {
+    Log::setMaxVerbosityLevel(LogVerbosity::Info);
+    Log::warn("Invalid verbosity level: " + verbosity + ". Defaulting to INFO.");
   }
-  // Reset log
-//    Log::reset();
-// Set verbosity
-// Make uppercase for comparison
-//    thrust::transform(verbosity.begin(), verbosity.end(),
-//                      verbosity.begin(), ::toupper);
-//    if (verbosity == "DEBUG") {
-//        Log::set_max_verbosity_level(LogVerbosity::debug);
-//    } else if (verbosity == "INFO") {
-//        Log::set_max_verbosity_level(LogVerbosity::info);
-//    } else if (verbosity == "WARN") {
-//        Log::set_max_verbosity_level(LogVerbosity::warn);
-//    } else if (verbosity == "ERROR") {
-//        Log::set_max_verbosity_level(LogVerbosity::error);
-//    } else {
-//        Log::set_max_verbosity_level(LogVerbosity::info);
-//        Log::warn("Invalid verbosity level: " + verbosity + ". Defaulting to INFO.");
-//    }
-//    Log::info("Initializing UM2");
+  Log::info("Initializing UM2");
 #if UM2_ENABLE_GMSH
   if (init_gmsh && gmsh::isInitialized() == 0) {
     gmsh::initialize();
@@ -44,14 +44,13 @@ initialize(std::string const & verbosity, bool init_gmsh)
 void
 finalize()
 {
-//  Log::info("Finalizing UM2");
-//  Log::flush();
+  Log::info("Finalizing UM2");
+  Log::flush();
 #if UM2_ENABLE_GMSH
   if (gmsh::isInitialized() != 0) {
     gmsh::finalize();
   }
 #endif
 }
-// NOLINTEND
 
 } // namespace um2
