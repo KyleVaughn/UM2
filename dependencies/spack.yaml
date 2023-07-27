@@ -4,7 +4,6 @@ spack:
     - hdf5
     - llvm@15
     - gmsh
-    - spdlog
     - pugixml
     - cuda@12
     - benchmark
@@ -16,7 +15,5 @@ spack:
       require: +cxx+fortran~mpi
     gmsh:
       require: +openmp+cairo+fltk+opencascade+eigen+hdf5 #^opencascade~visualization~draw~application_framework
-    spdlog:
-      require: ~shared
   concretizer:
     unify: true

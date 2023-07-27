@@ -1,10 +1,10 @@
 #pragma once
 
-#include <um2/common/sto.hpp>
 #include <um2/config.hpp>
-#include <um2/mesh/MeshFile.hpp>
 
-// #include <spdlog/spdlog.h>
+#include <um2/common/Log.hpp>
+#include <um2/common/sto.hpp>
+#include <um2/mesh/MeshFile.hpp>
 
 #include <charconv>
 #include <concepts>
@@ -25,7 +25,7 @@ static void
 parseNodes(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
 {
   // Would love to use chars_format here, but it bugs out on "0.5" occasionally
-  //  SPDLOG_DEBUG("Parsing nodes");
+  LOG_DEBUG("Parsing nodes");
   while (std::getline(file, line) && line[0] != '*') {
     // Format: node_id, x, y, z
     // Skip ID
@@ -45,7 +45,7 @@ static void
 // NOLINTNEXTLINE(misc-unused-parameters)
 parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
 {
-  // SPDLOG_DEBUG("Parsing elements");
+  LOG_DEBUG("Parsing elements");
   //  "*ELEMENT, type=CPS".size() = 18
   //  CPS3 is a 3-node triangle
   //  CPS4 is a 4-node quadrilateral
@@ -70,14 +70,14 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     element_type = AbaqusCellType::CPS8;
     break;
   default: {
-    // SPDLOG_ERROR("AbaqusCellType CPS{} is not supported", offset);
+    LOG_ERROR("AbaqusCellType CPS" + std::to_string(offset) + " is not supported");
     break;
   }
   }
   // NOLINTBEGIN(cppcoreguidelines-init-variables)
   Size num_elements = 0;
   while (std::getline(file, line) && line[0] != '*') {
-    // SPDLOG_TRACE("Line: " + line);
+    LOG_TRACE("Line: " + line);
     std::string_view const line_view = line;
     // For each element, read the element ID and the node IDs
     // Format: id, n1, n2, n3, n4, n5 ...
@@ -87,7 +87,7 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     I id = -1;
     while (next != std::string::npos) {
       std::from_chars(line_view.data() + last + 2, line_view.data() + next, id);
-      // SPDLOG_TRACE("Node ID: {}", id);
+      LOG_TRACE("Node ID: " + std::to_string(id));
       assert(id > 0);
       mesh.element_conn.push_back(id - 1); // ABAQUS is 1-indexed
       last = next;
@@ -118,7 +118,7 @@ template <std::floating_point T, std::signed_integral I>
 static void
 parseElsets(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
 {
-  // SPDLOG_DEBUG("Parsing elsets");
+  LOG_DEBUG("Parsing elsets");
   std::string_view line_view = line;
   // "*ELSET,ELSET=".size() = 13
   std::string const elset_name{line_view.substr(13, line_view.size() - 13)};
@@ -155,12 +155,12 @@ template <std::floating_point T, std::signed_integral I>
 void
 readAbaqusFile(std::string const & filename, MeshFile<T, I> & mesh)
 {
-  // SPDLOG_INFO("Reading ABAQUS mesh file: " + filename);
+  LOG_INFO("Reading ABAQUS mesh file: " + filename);
 
   // Open file
   std::ifstream file(filename);
   if (!file.is_open()) {
-    // SPDLOG_ERROR("Could not open file: " + filename);
+    LOG_ERROR("Could not open file: " + filename);
     return;
   }
 

@@ -85,23 +85,31 @@ PURE HOSTDEV constexpr auto
 Triangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
 {
   static_assert(D == 2, "Triangle::contains() is only defined for 2D triangles");
-  // NOLINTBEGIN(readability-identifier-naming)
-  // P = V0 + r(V1 - V0) + s(V2 - V0)
-  // P - V0 = r(V1 - V0) + s(V2 - V0)
-  // Let A = V1 - V0, B = V2 - V0, C = P - V0
-  // C = rA + sB = [A B] [r s]^T
-  // Using Cramer's rule
-  // r = det([C B]) / det([A B])
-  // s = det([A C]) / det([A B])
-  // Note that det([A B]) = A x B
-  Vec<D, T> const A = v[1] - v[0];
-  Vec<D, T> const B = v[2] - v[0];
-  Vec<D, T> const C = p - v[0];
-  T const invdetAB = 1 / A.cross(B);
-  T const r = C.cross(B) * invdetAB;
-  T const s = A.cross(C) * invdetAB;
-  return (r >= 0) && (s >= 0) && (r + s <= 1);
-  // NOLINTEND(readability-identifier-naming)
+  //// NOLINTBEGIN(readability-identifier-naming)
+  //// P = V0 + r(V1 - V0) + s(V2 - V0)
+  //// P - V0 = r(V1 - V0) + s(V2 - V0)
+  //// Let A = V1 - V0, B = V2 - V0, C = P - V0
+  //// C = rA + sB = [A B] [r s]^T
+  //// Using Cramer's rule
+  //// r = det([C B]) / det([A B])
+  //// s = det([A C]) / det([A B])
+  //// Note that det([A B]) = A x B
+  // Vec<D, T> const A = v[1] - v[0];
+  // Vec<D, T> const B = v[2] - v[0];
+  // Vec<D, T> const C = p - v[0];
+  // T const invdetAB = 1 / A.cross(B);
+  // T const r = C.cross(B) * invdetAB;
+  // T const s = A.cross(C) * invdetAB;
+  // return (r >= 0) && (s >= 0) && (r + s <= 1);
+  //// NOLINTEND(readability-identifier-naming)
+
+  // Benchmarking shows it is faster to compute the areCCW() test for each
+  // edge, then return based on the AND of the results, rather than compute
+  // the areCCW one at a time and return as soon as one is false.
+  bool const b0 = areCCW(v[0], v[1], p);
+  bool const b1 = areCCW(v[1], v[2], p);
+  bool const b2 = areCCW(v[2], v[0], p);
+  return b0 && b1 && b2;
 }
 
 // -------------------------------------------------------------------

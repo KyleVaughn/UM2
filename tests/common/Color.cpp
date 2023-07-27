@@ -130,7 +130,6 @@ TEST_CASE(color_comparison)
 }
 MAKE_CUDA_KERNEL(color_comparison)
 
-HOSTDEV
 TEST_CASE(colors_enum)
 {
   um2::Color const black(0, 0, 0);
@@ -156,7 +155,7 @@ TEST_SUITE(color)
   TEST_HOSTDEV(toColor);
   TEST_HOSTDEV(color_string_constructor);
   TEST_HOSTDEV(color_comparison);
-  TEST_HOSTDEV(colors_enum);
+  TEST(colors_enum);
 }
 
 auto

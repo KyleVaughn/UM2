@@ -173,6 +173,14 @@ String::operator=(std::string && s) noexcept -> String &
   return *this = um2::move(tmp);
 }
 
+template <uint64_t N>
+constexpr auto
+String::operator=(char const (&s)[N]) noexcept -> String &
+{
+  String tmp(s);
+  return *this = um2::move(tmp);
+}
+
 PURE HOSTDEV constexpr auto
 String::operator==(String const & s) const noexcept -> bool
 {

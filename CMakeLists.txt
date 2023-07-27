@@ -22,13 +22,20 @@ option(UM2_ENABLE_GMSH      "Enable Gmsh"          ON)
 ## Advanced options ###########################################################
 ###############################################################################
 option(UM2_ENABLE_INT64 "Enable 64-bit integer types" OFF) # For large meshes
+
+
+# minimum log level for compile time filtering of log messages
+# Off = 0,        // no messages    
+# Error = 1,      // only errors    
+# Warn = 2,       // errors and warnings    
+# Info = 3,       // errors, warnings and info    
+# Debug = 4,       // errors, warnings, info and debug    
+# Trace = 5,       // errors, warnings, info, debug and trace    
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(UM2_MIN_LOG_LEVEL "trace" CACHE STRING "Log level" FORCE)
+  set(UM2_MIN_LOG_LEVEL 5) 
 else()
-  set(UM2_MIN_LOG_LEVEL "debug" CACHE STRING "Log level" FORCE)
+  set(UM2_MIN_LOG_LEVEL 3)
 endif()
-set_property(CACHE UM2_MIN_LOG_LEVEL PROPERTY STRINGS
-  "trace" "debug" "info" "warn" "error" "critical" "off")
 
 ## Dev options #################################################################
 ###############################################################################
@@ -49,6 +56,7 @@ set(UM2_HEADERS
     "include/um2/common/Vector.hpp"
     "include/um2/common/sto.hpp"
     "include/um2/common/String.hpp"
+    "include/um2/common/Log.hpp"
     "include/um2/common/ShortString.hpp"
     "include/um2/common/Color.hpp"
     # math
@@ -87,6 +95,8 @@ set(UM2_HEADERS
 
 # Sources
 set(UM2_SOURCES        
+    # common
+    "src/common/Log.cpp"
     # gmsh
     "src/gmsh/base_gmsh_api.cpp"
     # visualization

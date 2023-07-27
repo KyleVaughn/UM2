@@ -119,6 +119,10 @@ public:
   constexpr auto
   operator=(std::string && s) noexcept -> String &;
 
+  template <uint64_t N>
+  constexpr auto
+  operator=(char const (&s)[N]) noexcept -> String &;
+
   PURE HOSTDEV constexpr auto
   operator==(String const & s) const noexcept -> bool;
 

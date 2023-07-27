@@ -3,11 +3,10 @@
 #include <um2/config.hpp>
 
 #include <um2/common/Color.hpp>
+#include <um2/common/Log.hpp>
 #include <um2/common/String.hpp>
 #include <um2/geometry/Point.hpp>
 #include <um2/mesh/RegularPartition.hpp>
-
-// #include <spdlog/spdlog.h>
 
 #include <cstdlib> // exit
 

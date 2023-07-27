@@ -56,7 +56,7 @@ template <class T>
 HOSTDEV constexpr Vector<T>::~Vector() noexcept
 {
   if (_begin != nullptr) {
-    destruct_at_end(_begin);
+    this->destruct_at_end(_begin);
     ::operator delete(_begin);
   }
 }
@@ -260,7 +260,7 @@ template <class T>
 HOSTDEV constexpr void
 Vector<T>::clear() noexcept
 {
-  destroy(_begin, _end);
+  um2::destroy(_begin, _end);
   _end = _begin;
 }
 
@@ -294,9 +294,9 @@ HOSTDEV constexpr void
 Vector<T>::push_back(T && value) noexcept
 {
   if (_end == _end_cap) {
-    grow(1);
+    this->grow(1);
   }
-  construct_at(_end, move(value));
+  um2::construct_at(_end, um2::move(value));
   ++_end;
 }
 
@@ -307,7 +307,7 @@ Vector<T>::push_back(Size const n, T const & value) noexcept
   // If we have enough capacity, just construct the new elements
   // Otherwise, allocate a new buffer and move the elements over
   if (static_cast<Size>(_end_cap - _end) < n) {
-    grow(n);
+    this->grow(n);
   }
   // Construct the new elements
   construct_at_end(n, value);
@@ -399,7 +399,7 @@ Vector<T>::destruct_at_end(Ptr new_last) noexcept
 {
   Ptr soon_to_be_end = _end;
   while (new_last != soon_to_be_end) {
-    destroy_at(--soon_to_be_end);
+    um2::destroy_at(--soon_to_be_end);
   }
   _end = new_last;
 }
@@ -423,7 +423,7 @@ Vector<T>::grow(Size n) noexcept
   Ptr new_end = new_begin;
   // Move the elements over
   for (Ptr old_pos = _begin; old_pos != _end; ++old_pos, ++new_end) {
-    construct_at(new_end, move(*old_pos));
+    um2::construct_at(new_end, um2::move(*old_pos));
   }
   // Destroy the old elements
   destruct_at_end(_begin);

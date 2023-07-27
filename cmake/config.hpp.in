@@ -26,8 +26,8 @@
 #  define GLOBAL
 #endif
 
-// spdlog
-#define SPDLOG_ACTIVE_LEVEL @UM2_SPDLOG_LEVEL@
+// NOLINTNEXTLINE(modernize-macro-to-enum)
+#define MIN_LOG_LEVEL @UM2_MIN_LOG_LEVEL@
 
 // gmsh
 // NOLINTNEXTLINE(modernize-macro-to-enum)
