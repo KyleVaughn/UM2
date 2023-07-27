@@ -1,3 +1,5 @@
+Is applypermutation still needed?
+
 gmsh api, gmsh tests
 
 Update github actions to use spack
@@ -27,6 +29,9 @@ Image of mesh
 
 Remap mesh to morton order
   Benchmark
+
+String.push_back
+  io_xdmf, look for String.push_back comments
 
 Rectilinear Grid
 mesh statistics

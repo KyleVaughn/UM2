@@ -4,6 +4,10 @@ Vector.push_back(n, &)
 sortPermutation(Vector)
 applyPermutation(Vector, Permutation)
 
+common/permute_vector.hpp
+  sortPermutation
+  applyPermutation
+
 String.starts_with
 String.ends_with
 String(char const *, uint64_t)
@@ -23,6 +27,7 @@ Quadrilateral.centroid
 RegularGrid.getCellCentroid
 
 MeshFile.compareGeometry
+MeshFile.sortElsets
 
 // TriMesh.regularPartition
 //   3 by 3 grid. 

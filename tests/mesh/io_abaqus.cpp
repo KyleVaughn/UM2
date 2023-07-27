@@ -22,6 +22,7 @@ TEST_CASE(tri_mesh)
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(mesh.element_types == mesh_ref.element_types);
   ASSERT(mesh.elset_names == mesh_ref.elset_names);
+  ASSERT(mesh.elset_offsets == mesh_ref.elset_offsets);
   ASSERT(mesh.elset_ids == mesh_ref.elset_ids);
 }
 

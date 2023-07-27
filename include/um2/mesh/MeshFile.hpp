@@ -1,7 +1,5 @@
 #pragma once
 
-#include <um2/common/String.hpp>
-#include <um2/common/Vector.hpp>
 #include <um2/geometry/Point.hpp>
 #include <um2/mesh/CellType.hpp>
 #include <um2/mesh/MeshType.hpp>
@@ -10,6 +8,8 @@
 #ifdef _OPENMP
 #  include <parallel/algorithm>
 #endif
+#include <string>
+#include <vector>
 
 namespace um2
 {
@@ -32,39 +32,45 @@ enum class MeshFileFormat : int8_t {
 template <std::floating_point T, std::signed_integral I>
 struct MeshFile {
 
-  String filepath; // path to the mesh file, including file name
-  String name;     // name of the mesh
+  std::string filepath; // path to the mesh file, including file name
+  std::string name;     // name of the mesh
 
   MeshFileFormat format = MeshFileFormat::Default;
 
-  Vector<T> nodes_x;
-  Vector<T> nodes_y;
-  Vector<T> nodes_z;
+  std::vector<T> nodes_x;
+  std::vector<T> nodes_y;
+  std::vector<T> nodes_z;
 
-  Vector<int8_t> element_types;
-  Vector<I> element_offsets; // size = num_elements + 1
-  Vector<I> element_conn;    // size = element_offsets[num_elements]
+  std::vector<int8_t> element_types;
+  std::vector<I> element_offsets; // size = num_elements + 1
+  std::vector<I> element_conn;    // size = element_offsets[num_elements]
 
-  Vector<String> elset_names;
-  Vector<Vector<I>> elset_ids;
+  std::vector<std::string> elset_names;
+  std::vector<I> elset_offsets; // size = num_elsets + 1
+  std::vector<I> elset_ids;     // size = elset_offsets[num_elsets]
 
   constexpr MeshFile() = default;
+
+  // -----------------------------------------------------------------------------
+  // Methods
+  // -----------------------------------------------------------------------------
+
+  constexpr void
+  sortElsets();
   //
-  //    // -- Methods --
-  //
-  //    constexpr void sort_elsets();
-  //
-  //    constexpr void get_submesh(String const & elset_name, MeshFile<T, I> & submesh)
-  //    const;
+  //    constexpr void get_submesh(std::string const & elset_name, MeshFile<T, I> &
+  //    submesh) const;
   //
   //    constexpr MeshType get_mesh_type() const;
   //
-  //    constexpr void get_material_names(Vector<String> & material_names) const;
+  //    constexpr void get_material_names(std::vector<std::string> & material_names)
+  //    const;
   //
-  //    constexpr void get_material_ids(Vector<MaterialID> & material_ids) const;
+  //    constexpr void get_material_ids(std::vector<MaterialID> & material_ids) const;
   //
-  //    constexpr void get_material_ids(Vector<MaterialID> & material_ids,
-  //                                    Vector<String> const & material_names) const;
+  //    constexpr void get_material_ids(std::vector<MaterialID> & material_ids,
+  //                                    std::vector<std::string> const & material_names)
+  //                                    const;
 
 }; // struct MeshFile
 
@@ -142,38 +148,37 @@ compareGeometry(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
 }
 #endif
 
-// template <std::floating_point T, std::signed_integral I>
-// constexpr void MeshFile<T, I>::sort_elsets()
-//{
-//     // Create a copy of the elset ids. Create a vector of offset pairs.
-//     // Sort the pairs by the elset names. Then, use the sorted pairs to
-//     // reorder the elset ids and offsets.
-//     length_t const num_elsets = this->elset_names.size();
-//     Vector<I> elset_ids_copy = this->elset_ids;
-//     Vector<thrust::pair<I, I>> offset_pairs(num_elsets);
-//     for (length_t i = 0; i < num_elsets; ++i) {
-//         offset_pairs[i] = thrust::make_pair(this->elset_offsets[i    ],
-//                                             this->elset_offsets[i + 1]);
-//     }
-//     thrust::sort_by_key(this->elset_names.begin(),
-//                         this->elset_names.end(),
-//                         offset_pairs.begin());
-//     I offset = 0;
-//     for (length_t i = 0; i < num_elsets; ++i) {
-//         I const len = offset_pairs[i].second - offset_pairs[i].first;
-//         this->elset_offsets[i    ] = offset;
-//         this->elset_offsets[i + 1] = offset + len;
-//         I const copy_offset = offset_pairs[i].first;
-//         for (I j = 0; j < len; ++j) {
-//             this->elset_ids[static_cast<length_t>(offset + j)] =
-//                 elset_ids_copy[static_cast<length_t>(copy_offset + j)];
-//         }
-//         offset += len;
-//     }
-// }
+template <std::floating_point T, std::signed_integral I>
+constexpr void
+MeshFile<T, I>::sortElsets()
+{
+  // Create a copy of the elset ids. Create a vector of offset pairs.
+  // Sort the pairs by the elset names. Then, use the sorted pairs to
+  // reorder the elset ids and offsets.
+  size_t const num_elsets = elset_names.size();
+  std::vector<I> elset_ids_copy = elset_ids;
+  std::vector<std::pair<I, I>> offset_pairs(num_elsets);
+  for (size_t i = 0; i < num_elsets; ++i) {
+    offset_pairs[i] = std::make_pair(elset_offsets[i], elset_offsets[i + 1]);
+  }
+  thrust::sort_by_key(this->elset_names.begin(), this->elset_names.end(),
+                      offset_pairs.begin());
+  I offset = 0;
+  for (length_t i = 0; i < num_elsets; ++i) {
+    I const len = offset_pairs[i].second - offset_pairs[i].first;
+    this->elset_offsets[i] = offset;
+    this->elset_offsets[i + 1] = offset + len;
+    I const copy_offset = offset_pairs[i].first;
+    for (I j = 0; j < len; ++j) {
+      this->elset_ids[static_cast<length_t>(offset + j)] =
+          elset_ids_copy[static_cast<length_t>(copy_offset + j)];
+    }
+    offset += len;
+  }
+}
 //
 // template <std::floating_point T, std::signed_integral I>
-// constexpr void MeshFile<T, I>::get_submesh(String const & elset_name,
+// constexpr void MeshFile<T, I>::get_submesh(std::string const & elset_name,
 //                                            MeshFile<T, I> & submesh) const
 //{
 //     Log::debug("Extracting submesh for elset: " + to_string(elset_name));
@@ -198,7 +203,7 @@ compareGeometry(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
 //     I const submesh_elset_end   = this->elset_offsets[elset_index + 1];
 //     I const submesh_num_elements = submesh_elset_end - submesh_elset_start;
 //     length_t const submesh_num_elements_l =
-//     static_cast<length_t>(submesh_num_elements); Vector<I>
+//     static_cast<length_t>(submesh_num_elements); std::vector<I>
 //     element_ids(submesh_num_elements_l); for (length_t i = 0; i <
 //     submesh_num_elements_l; ++i) {
 //         element_ids[i] = this->elset_ids[static_cast<length_t>(submesh_elset_start) +
@@ -209,7 +214,7 @@ compareGeometry(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
 //     // Get the element types, offsets, connectivity. We will also get the unique node
 //     ids,
 //     // since we need to remap the connectivity.
-//     Vector<I> unique_node_ids;
+//     std::vector<I> unique_node_ids;
 //     submesh.element_types.resize(submesh_num_elements_l);
 //     submesh.element_offsets.resize(submesh_num_elements_l + 1);
 //     submesh.element_offsets[0] = 0;
@@ -260,7 +265,7 @@ compareGeometry(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
 //         if (i == elset_index) continue;
 //         length_t const elset_start = static_cast<length_t>(this->elset_offsets[i]);
 //         length_t const elset_end   = static_cast<length_t>(this->elset_offsets[i + 1]);
-//         Vector<I> intersection;
+//         std::vector<I> intersection;
 //         std::set_intersection(element_ids.begin(), element_ids.end(),
 //                               this->elset_ids.begin() + elset_start,
 //                               this->elset_ids.begin() + elset_end,
@@ -383,8 +388,8 @@ compareGeometry(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// constexpr void MeshFile<T, I>::get_material_names(Vector<String> & material_names)
-// const
+// constexpr void MeshFile<T, I>::get_material_names(std::vector<std::string> &
+// material_names) const
 //{
 //     material_names.clear();
 //     std::string const material = "Material";
@@ -399,9 +404,9 @@ compareGeometry(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// constexpr void MeshFile<T, I>::get_material_ids(Vector<MaterialID> & material_ids,
-//                                                 Vector<String> const & material_names)
-//                                                 const
+// constexpr void MeshFile<T, I>::get_material_ids(std::vector<MaterialID> & material_ids,
+//                                                 std::vector<std::string> const &
+//                                                 material_names) const
 //{
 //     length_t const nelems = this->element_types.size();
 //     material_ids.resize(nelems);
@@ -411,7 +416,7 @@ compareGeometry(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
 //
 //     length_t const nmats = material_names.size();
 //     for (length_t i = 0; i < nmats; ++i) {
-//         String const & mat_name = material_names[i];
+//         std::string const & mat_name = material_names[i];
 //         for (length_t j = 0; j < this->elset_names.size(); ++j) {
 //             if (this->elset_names[j] == mat_name) {
 //                 length_t const start = static_cast<length_t>(this->elset_offsets[j ]);
@@ -435,10 +440,10 @@ compareGeometry(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// constexpr void MeshFile<T, I>::get_material_ids(Vector<MaterialID> & material_ids)
+// constexpr void MeshFile<T, I>::get_material_ids(std::vector<MaterialID> & material_ids)
 // const
 //{
-//     Vector<String> material_names;
+//     std::vector<std::string> material_names;
 //     this->get_material_names(material_names);
 //     length_t const nmats = material_names.size();
 //     if (nmats == 0) {

@@ -80,38 +80,38 @@ enum class XDMFCellType : int8_t {
 // constexpr auto
 // abaqus2xdmf(AbaqusCellType abq_type) -> XDMFCellType
 //{
-//   switch (abq_type) {
-//   case AbaqusCellType::CPS3:
-//     return XDMFCellType::Triangle;
-//   case AbaqusCellType::CPS4:
-//     return XDMFCellType::Quad;
-//   case AbaqusCellType::CPS6:
-//     return XDMFCellType::QuadraticTriangle;
-//   case AbaqusCellType::CPS8:
-//     return XDMFCellType::QuadraticQuad;
-//   default:
-//     assert(false && "Unsupported VTK cell type");
-//     return XDMFCellType::Triangle;
-//   }
-// }
-//
-// constexpr auto
-// abaqus2xdmf(int8_t abq_type) -> int8_t
-//{
-//   switch (abq_type) {
-//   case static_cast<int8_t>(AbaqusCellType::CPS3):
-//     return static_cast<int8_t>(XDMFCellType::Triangle);
-//   case static_cast<int8_t>(AbaqusCellType::CPS4):
-//     return static_cast<int8_t>(XDMFCellType::Quad);
-//   case static_cast<int8_t>(AbaqusCellType::CPS6):
-//     return static_cast<int8_t>(XDMFCellType::QuadraticTriangle);
-//   case static_cast<int8_t>(AbaqusCellType::CPS8):
-//     return static_cast<int8_t>(XDMFCellType::QuadraticQuad);
-//   default:
-//     assert(false && "Unsupported VTK cell type");
-//     return static_cast<int8_t>(XDMFCellType::Triangle);
-//   }
-// }
+//  switch (abq_type) {
+//  case AbaqusCellType::CPS3:
+//    return XDMFCellType::Triangle;
+//  case AbaqusCellType::CPS4:
+//    return XDMFCellType::Quad;
+//  case AbaqusCellType::CPS6:
+//    return XDMFCellType::QuadraticTriangle;
+//  case AbaqusCellType::CPS8:
+//    return XDMFCellType::QuadraticQuad;
+//  default:
+//    assert(false && "Unsupported VTK cell type");
+//    return XDMFCellType::Triangle;
+//  }
+//}
+
+constexpr auto
+abaqus2xdmf(int8_t abq_type) -> int8_t
+{
+  switch (abq_type) {
+  case static_cast<int8_t>(AbaqusCellType::CPS3):
+    return static_cast<int8_t>(XDMFCellType::Triangle);
+  case static_cast<int8_t>(AbaqusCellType::CPS4):
+    return static_cast<int8_t>(XDMFCellType::Quad);
+  case static_cast<int8_t>(AbaqusCellType::CPS6):
+    return static_cast<int8_t>(XDMFCellType::QuadraticTriangle);
+  case static_cast<int8_t>(AbaqusCellType::CPS8):
+    return static_cast<int8_t>(XDMFCellType::QuadraticQuad);
+  default:
+    assert(false && "Unsupported VTK cell type");
+    return static_cast<int8_t>(XDMFCellType::Triangle);
+  }
+}
 //
 // constexpr auto
 // xdmf2vtk(XDMFCellType xdmf_type) -> VTKCellType

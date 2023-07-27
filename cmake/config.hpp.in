@@ -69,3 +69,4 @@ sizeMax() -> Size
   return 0x7FFFFFFF;
 }
 #endif
+using MaterialID = int8_t;

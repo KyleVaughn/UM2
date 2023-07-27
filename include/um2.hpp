@@ -21,7 +21,8 @@ namespace um2
 {
 
 void
-initialize(std::string const & verbosity = "info", bool init_gmsh = true, int gmsh_verbosity = 2);
+initialize(std::string const & verbosity = "info", bool init_gmsh = true,
+           int gmsh_verbosity = 2);
 
 void
 finalize();

@@ -10,7 +10,7 @@ project(
 ## User options ###############################################################
 ###############################################################################
 option(UM2_BUILD_TESTS      "Build tests"          ON)
-option(UM2_BUILD_EXAMPLES   "Build examples"       ON)
+option(UM2_BUILD_EXAMPLES   "Build examples"       OFF)
 option(UM2_BUILD_BENCHMARKS "Build benchmarks"     OFF)
 
 option(UM2_ENABLE_CUDA      "Enable CUDA"          OFF)
@@ -22,7 +22,6 @@ option(UM2_ENABLE_GMSH      "Enable Gmsh"          ON)
 ## Advanced options ###########################################################
 ###############################################################################
 option(UM2_ENABLE_INT64 "Enable 64-bit integer types" OFF) # For large meshes
-
 
 # minimum log level for compile time filtering of log messages
 # Off = 0,        // no messages    
@@ -78,7 +77,8 @@ set(UM2_HEADERS
     "include/um2/mesh/CellType.hpp"
     "include/um2/mesh/MeshType.hpp"
     "include/um2/mesh/MeshFile.hpp"
-    "include/um2/mesh/io_abaqus.hpp"
+    #"include/um2/mesh/io_abaqus.hpp"
+    #    "include/um2/mesh/io_xdmf.hpp"
     "include/um2/mesh/RegularGrid.hpp"
     "include/um2/mesh/RegularPartition.hpp"
     "include/um2/mesh/TriMesh.hpp"

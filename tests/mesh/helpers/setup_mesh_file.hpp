@@ -11,14 +11,8 @@ makeReferenceTriMeshFile(um2::MeshFile<T, I> & mesh)
   mesh.element_types = {5, 5};
   mesh.element_offsets = {0, 3, 6};
   mesh.element_conn = {0, 1, 2, 2, 3, 0};
-  mesh.elset_names = {um2::String("A"), um2::String("B"), um2::String("Material_H2O"),
-                      um2::String("Material_UO2")};
-  mesh.elset_ids = {
-      {0, 1},
-      {1},
-      {1},
-      {0}
-  };
+  mesh.elset_names = {"A", "B", "Material_H2O", "Material_UO2"};
+  mesh.elset_ids = {0, 1, 1, 1, 0};
 }
 
 // template <std::floating_point T, std::signed_integral I>

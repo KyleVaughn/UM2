@@ -63,6 +63,36 @@ if (UM2_ENABLE_CUDA)
   target_include_directories(um2 SYSTEM PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")    
 endif()
 
+## hdf5 ##########################################
+##################################################
+find_library(HDF5_LIB "hdf5")
+if (NOT HDF5_LIB)
+  message(FATAL_ERROR "Could not find hdf5")
+endif()
+find_library(HDF5_CPP_LIB "hdf5_cpp")
+if (NOT HDF5_CPP_LIB)
+  message(FATAL_ERROR "Could not find hdf5_cpp")
+endif()
+find_path(HDF5_CPP_INC "H5Cpp.h")
+if (NOT HDF5_CPP_INC)
+  message(FATAL_ERROR "Could not find H5Cpp.h")
+endif()
+target_link_libraries(um2 PUBLIC "${HDF5_LIB}" "${HDF5_CPP_LIB}")
+target_include_directories(um2 SYSTEM PUBLIC "${HDF5_CPP_INC}")
+
+## pugixml #######################################
+##################################################
+find_library(PUGIXML_LIB "pugixml")
+if (NOT PUGIXML_LIB)
+  message(FATAL_ERROR "Could not find pugixml")
+endif()
+find_path(PUGIXML_INC "pugixml.hpp")
+if (NOT PUGIXML_INC)
+  message(FATAL_ERROR "Could not find pugixml.hpp")
+endif()
+target_link_libraries(um2 PUBLIC "${PUGIXML_LIB}")
+target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
+
 ## gmsh ##########################################
 ##################################################
 if (UM2_ENABLE_GMSH)

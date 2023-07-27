@@ -75,7 +75,7 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   }
   }
   // NOLINTBEGIN(cppcoreguidelines-init-variables)
-  Size num_elements = 0;
+  size_t num_elements = 0;
   while (std::getline(file, line) && line[0] != '*') {
     LOG_TRACE("Line: " + line);
     std::string_view const line_view = line;
@@ -100,16 +100,17 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     num_elements++;
   }
   // NOLINTEND(cppcoreguidelines-init-variables)
-  mesh.element_types.push_back(num_elements, static_cast<int8_t>(element_type));
-  Size offsets_size = mesh.element_offsets.size();
+  mesh.element_types.insert(mesh.element_types.end(), num_elements,
+                            static_cast<int8_t>(element_type));
+  size_t offsets_size = mesh.element_offsets.size();
   if (offsets_size == 0) {
     mesh.element_offsets.push_back(0);
     offsets_size = 1;
   }
   I const offset_back = mesh.element_offsets.back();
-  mesh.element_offsets.push_back(num_elements, -1);
-  for (Size i = 0; i < num_elements; ++i) {
-    I const val = offset_back + static_cast<I>((i + 1) * offset);
+  mesh.element_offsets.insert(mesh.element_offsets.end(), num_elements, -1);
+  for (size_t i = 0; i < num_elements; ++i) {
+    I const val = offset_back + static_cast<I>((i + 1)) * offset;
     mesh.element_offsets[offsets_size + i] = val;
   }
 }
@@ -122,8 +123,12 @@ parseElsets(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   std::string_view line_view = line;
   // "*ELSET,ELSET=".size() = 13
   std::string const elset_name{line_view.substr(13, line_view.size() - 13)};
-  mesh.elset_names.push_back(String(elset_name.c_str()));
-  Vector<I> this_elset_ids;
+  mesh.elset_names.emplace_back(elset_name);
+  if (mesh.elset_offsets.size() == 0) {
+    mesh.elset_offsets.push_back(0);
+  }
+  I const offset_back = mesh.elset_offsets.back();
+  I num_elements = 0;
   while (std::getline(file, line) && line[0] != '*') {
     line_view = line;
     // Add each element ID to the elset
@@ -135,20 +140,22 @@ parseElsets(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     I id;
     std::from_chars(line_view.data(), line_view.data() + next, id);
     assert(id > 0);
-    this_elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
+    mesh.elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
+    num_elements++;
     last = next;
     next = line_view.find(',', last + 1);
     while (next != std::string::npos) {
       std::from_chars(line_view.data() + last + 2, line_view.data() + next, id);
       assert(id > 0);
-      this_elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
+      mesh.elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
+      num_elements++;
       last = next;
       next = line_view.find(',', last + 1);
     }
   }
+  mesh.elset_offsets.push_back(offset_back + num_elements);
   // Ensure the elset is sorted
-  assert(std::is_sorted(this_elset_ids.cbegin(), this_elset_ids.cend()));
-  mesh.elset_ids.push_back(um2::move(this_elset_ids));
+  assert(std::is_sorted(this_elset_ids.cbegin() + offset_back, this_elset_ids.cend()));
 }
 
 template <std::floating_point T, std::signed_integral I>
@@ -192,12 +199,7 @@ readAbaqusFile(std::string const & filename, MeshFile<T, I> & mesh)
       loop_again = true;
     }
   }
-  // Sort the elsets (and elset_ids) by name
-  Vector<Size> perm;
-  sortPermutation(mesh.elset_names, perm);
-  applyPermutation(mesh.elset_names, perm);
-  applyPermutation(mesh.elset_ids, perm);
-
+  mesh.sortElsets();
   file.close();
 } // readAbaqusFile
 
