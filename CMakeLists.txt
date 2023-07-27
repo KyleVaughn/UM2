@@ -80,8 +80,9 @@ set(UM2_HEADERS
     #    "include/um2/ray_casting/Ray.hpp"
     # visualization
     "include/um2/visualization/Image2D.hpp"
-    #    # api
-    #    "include/um2c.h"
+    # api
+    "include/um2.hpp"
+    #"include/um2c.h"
     )
 
 # Sources
@@ -91,7 +92,8 @@ set(UM2_SOURCES
     # visualization
     "src/visualization/Image2D.cpp"
     # api
-    "src/um2c.cpp"
+    "src/um2.cpp"
+    #"src/um2c.cpp"
   ) 
 
 # Visualization headers and sources

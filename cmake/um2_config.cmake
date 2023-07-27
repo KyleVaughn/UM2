@@ -65,7 +65,7 @@ endif()
 
 ## spdlog ########################################
 ##################################################
-find_package(spdlog REQUIRED)
+#find_package(spdlog REQUIRED)
 if (UM2_MIN_LOG_LEVEL STREQUAL "trace")
   set(UM2_SPDLOG_LEVEL "SPDLOG_LEVEL_TRACE")
 elseif (UM2_MIN_LOG_LEVEL STREQUAL "debug")
@@ -83,16 +83,21 @@ elseif (UM2_MIN_LOG_LEVEL STREQUAL "off")
 else()
   message(FATAL_ERROR "Unknown log level: ${UM2_MIN_LOG_LEVEL}")
 endif()
-target_link_libraries(um2 PRIVATE spdlog::spdlog)
+#target_link_libraries(um2 PRIVATE spdlog::spdlog)
 
 ## gmsh ##########################################
 ##################################################
 if (UM2_ENABLE_GMSH)
-  find_library(GMSH_LIB gmsh)
+  find_library(GMSH_LIB "gmsh")
   if (NOT GMSH_LIB)
     message(FATAL_ERROR "Could not find gmsh")
   endif()
-  target_link_libraries(um2 PUBLIC ${GMSH_LIB})
+  find_path(GMSH_INC "gmsh.h")
+  if (NOT GMSH_INC)
+    message(FATAL_ERROR "Could not find gmsh.h")
+  endif()
+  target_link_libraries(um2 PUBLIC "${GMSH_LIB}")
+  target_include_directories(um2 SYSTEM PUBLIC "${GMSH_INC}")
 endif()
 
 ### visualization #################################

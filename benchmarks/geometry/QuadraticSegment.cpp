@@ -165,8 +165,8 @@ isLeftOld(um2::QuadraticSegment<D, T> const & Q, um2::Point<D, T> const & p) -> 
 }
 
 static void isLeftBench(benchmark::State& state) {
-//  auto const seg = makeBaseSeg();
-  auto const seg = makeSeg4();
+  auto const seg = makeBaseSeg();
+//  auto const seg = makeSeg4();
   auto const points = makePoints(static_cast<Size>(state.range(0)));
   // NOLINTNEXTLINE
   for (auto s : state) {
@@ -179,8 +179,8 @@ static void isLeftBench(benchmark::State& state) {
 }
 
 static void isLeftOldBench(benchmark::State& state) {
-  // auto const seg = makeBaseSeg();
-  auto const seg = makeSeg4();
+  auto const seg = makeBaseSeg();
+  // auto const seg = makeSeg4();
   auto const points = makePoints(static_cast<Size>(state.range(0)));
   // NOLINTNEXTLINE
   for (auto s : state) {

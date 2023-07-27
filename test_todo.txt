@@ -22,8 +22,7 @@ Quadrilateral.centroid
 
 RegularGrid.getCellCentroid
 
-Image
-  rasterizePoint
+MeshFile.compareGeometry
 
 TriMesh.regularPartition
   3 by 3 grid. 
@@ -36,3 +35,6 @@ TriMesh.regularPartition
     Cells 1, 3, 5, 7 are indeterminate due to floating point error.
 
 RegularPartition
+
+Image
+  rasterizePoint
