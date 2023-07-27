@@ -15,7 +15,7 @@ static constexpr bool log_default_buffered = false;
 static constexpr bool log_default_timestamped = true;
 static constexpr bool log_default_colorized = true;
 static constexpr bool log_default_exit_on_error = true;
-static constexpr Size log_default_flush_threshold = 20; // flush after 20 messages
+static constexpr size_t log_default_flush_threshold = 20; // flush after 20 messages
 
 // ------------------------------------------------------------------------------
 // Initialize static members
@@ -26,14 +26,14 @@ bool Log::buffered = log_default_buffered;
 bool Log::timestamped = log_default_timestamped;
 bool Log::colorized = log_default_colorized;
 bool Log::exit_on_error = log_default_exit_on_error;
-Size Log::flush_threshold = log_default_flush_threshold;
+size_t Log::flush_threshold = log_default_flush_threshold;
 
 LogTimePoint Log::start_time = LogClock::now();
-Size Log::num_errors = 0;
-Size Log::num_warnings = 0;
-Vector<LogVerbosity> Log::verbosity_levels;
-Vector<LogTimePoint> Log::times;
-Vector<String> Log::messages;
+size_t Log::num_errors = 0;
+size_t Log::num_warnings = 0;
+std::vector<LogVerbosity> Log::verbosity_levels;
+std::vector<LogTimePoint> Log::times;
+std::vector<std::string> Log::messages;
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 // ------------------------------------------------------------------------------
@@ -88,7 +88,7 @@ Log::setExitOnError(bool val)
   exit_on_error = val;
 }
 void
-Log::setFlushThreshold(Size val)
+Log::setFlushThreshold(size_t val)
 {
   flush_threshold = val;
 }
@@ -122,7 +122,7 @@ Log::isExitOnError() -> bool
   return exit_on_error;
 }
 PURE auto
-Log::getFlushThreshold() -> Size
+Log::getFlushThreshold() -> size_t
 {
   return flush_threshold;
 }
@@ -132,12 +132,12 @@ Log::getStartTime() -> LogTimePoint
   return start_time;
 }
 PURE auto
-Log::getNumErrors() -> Size
+Log::getNumErrors() -> size_t
 {
   return num_errors;
 }
 PURE auto
-Log::getNumWarnings() -> Size
+Log::getNumWarnings() -> size_t
 {
   return num_warnings;
 }
@@ -146,17 +146,18 @@ Log::getNumWarnings() -> Size
 
 static auto
 logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
-                   String const & message) -> std::string
+                   std::string const & message) -> std::string
 {
   // Time
   std::string time_str;
   if (Log::isTimestamped()) {
     LogTimePoint const start_time = Log::getStartTime();
     LogDuration const elapsed_seconds = time - start_time;
-    Size const hours = static_cast<Size>(elapsed_seconds.count()) / 3600;
-    Size const minutes = (static_cast<Size>(elapsed_seconds.count()) / 60) % 60;
-    Size const seconds = static_cast<Size>(elapsed_seconds.count()) % 60;
-    Size const milliseconds = static_cast<Size>(elapsed_seconds.count() * 1000) % 1000;
+    size_t const hours = static_cast<size_t>(elapsed_seconds.count()) / 3600;
+    size_t const minutes = (static_cast<size_t>(elapsed_seconds.count()) / 60) % 60;
+    size_t const seconds = static_cast<size_t>(elapsed_seconds.count()) % 60;
+    size_t const milliseconds =
+        static_cast<size_t>(elapsed_seconds.count() * 1000) % 1000;
     std::stringstream ss;
     ss << "[" << std::setw(2) << std::setfill('0') << hours << ":" << std::setw(2)
        << std::setfill('0') << minutes << ":" << std::setw(2) << std::setfill('0')
@@ -223,14 +224,13 @@ logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
   }
   // Message
   std::stringstream ss;
-  std::string const msg_str(message.c_str());
-  ss << c0 << time_str << verbosity_str << ": " << msg_str << c1;
+  ss << c0 << time_str << verbosity_str << ": " << message << c1;
   return ss.str();
 }
 
 static void
 printLogMessage(LogVerbosity const verbosity, LogTimePoint const time,
-                String const & message)
+                std::string const & message)
 {
   std::string const log_message = logMessageToString(verbosity, time, message);
   if (verbosity == LogVerbosity::Error) {
@@ -243,7 +243,7 @@ printLogMessage(LogVerbosity const verbosity, LogTimePoint const time,
 void
 Log::flush()
 {
-  for (Size i = 0; i < messages.size(); ++i) {
+  for (size_t i = 0; i < messages.size(); ++i) {
     printLogMessage(verbosity_levels[i], times[i], messages[i]);
   }
   verbosity_levels.clear();
@@ -254,7 +254,7 @@ Log::flush()
 // Handle the messages from error, warn, etc. and store or print them
 // depending on the Log configuration.
 void
-Log::handleMessage(LogVerbosity const verbosity, String const & msg)
+Log::handleMessage(LogVerbosity const verbosity, std::string const & msg)
 {
   if (verbosity <= max_verbosity_level) {
     if (buffered) {
@@ -271,7 +271,7 @@ Log::handleMessage(LogVerbosity const verbosity, String const & msg)
 }
 
 void
-Log::error(String const & msg)
+Log::error(std::string const & msg)
 {
   num_errors += 1;
   handleMessage(LogVerbosity::Error, msg);
@@ -281,26 +281,26 @@ Log::error(String const & msg)
 }
 
 void
-Log::warn(String const & msg)
+Log::warn(std::string const & msg)
 {
   num_warnings += 1;
   handleMessage(LogVerbosity::Warn, msg);
 }
 
 void
-Log::info(String const & msg)
+Log::info(std::string const & msg)
 {
   handleMessage(LogVerbosity::Info, msg);
 }
 
 void
-Log::debug(String const & msg)
+Log::debug(std::string const & msg)
 {
   handleMessage(LogVerbosity::Debug, msg);
 }
 
 void
-Log::trace(String const & msg)
+Log::trace(std::string const & msg)
 {
   handleMessage(LogVerbosity::Trace, msg);
 }

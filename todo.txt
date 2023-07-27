@@ -1,10 +1,13 @@
 Is applypermutation still needed?
+Redo the mesh
 
 gmsh api, gmsh tests
 
 Update github actions to use spack
 
 MeshFile
+  compareGeometru
+  compareToplogy
 
 TriMesh
 QuadMesh
@@ -29,9 +32,6 @@ Image of mesh
 
 Remap mesh to morton order
   Benchmark
-
-String.push_back
-  io_xdmf, look for String.push_back comments
 
 Rectilinear Grid
 mesh statistics

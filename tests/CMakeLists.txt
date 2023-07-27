@@ -42,8 +42,8 @@ add_um2_test(./mesh/CellType.cpp)
 add_um2_test(./mesh/RegularGrid.cpp)
 add_um2_test(./mesh/RegularPartition.cpp)
 add_um2_test(./mesh/TriMesh.cpp)
-#add_um2_test(./mesh/io_abaqus.cpp)
-#add_um2_test(./mesh/io_xdmf.cpp)
+add_um2_test(./mesh/io_abaqus.cpp)
+add_um2_test(./mesh/io_xdmf.cpp)
 
 # ------------------------------------------------------------------------------
 # gmsh

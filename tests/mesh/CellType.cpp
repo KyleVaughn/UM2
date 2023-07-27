@@ -27,30 +27,32 @@
 //   // NOLINTEND(misc-static-assert)
 // }
 //
-// TEST_CASE(abaqus2xdmf)
-//{
-//   // NOLINTNEXTLINE
-//   using namespace um2;
-//   AbaqusCellType tri = AbaqusCellType::CPS3;
-//   AbaqusCellType quad = AbaqusCellType::CPS4;
-//   AbaqusCellType tri6 = AbaqusCellType::CPS6;
-//   AbaqusCellType quad8 = AbaqusCellType::CPS8;
-//   ASSERT(abaqus2xdmf(tri) == XDMFCellType::Triangle);
-//   ASSERT(abaqus2xdmf(quad) == XDMFCellType::Quad);
-//   ASSERT(abaqus2xdmf(tri6) == XDMFCellType::QuadraticTriangle);
-//   ASSERT(abaqus2xdmf(quad8) == XDMFCellType::QuadraticQuad);
-//
-//   auto const i8_tri = static_cast<int8_t>(AbaqusCellType::CPS3);
-//   auto const i8_quad = static_cast<int8_t>(AbaqusCellType::CPS4);
-//   auto const i8_tri6 = static_cast<int8_t>(AbaqusCellType::CPS6);
-//   auto const i8_quad8 = static_cast<int8_t>(AbaqusCellType::CPS8);
-//   // NOLINTBEGIN(misc-static-assert)
-//   ASSERT(abaqus2xdmf(i8_tri) == static_cast<int8_t>(XDMFCellType::Triangle));
-//   ASSERT(abaqus2xdmf(i8_quad) == static_cast<int8_t>(XDMFCellType::Quad));
-//   ASSERT(abaqus2xdmf(i8_tri6) == static_cast<int8_t>(XDMFCellType::QuadraticTriangle));
-//   ASSERT(abaqus2xdmf(i8_quad8) == static_cast<int8_t>(XDMFCellType::QuadraticQuad));
-//   // NOLINTEND(misc-static-assert)
-// }
+TEST_CASE(abaqus2xdmf)
+{
+  // NOLINTNEXTLINE
+  using namespace um2;
+  //   AbaqusCellType tri = AbaqusCellType::CPS3;
+  //   AbaqusCellType quad = AbaqusCellType::CPS4;
+  //   AbaqusCellType tri6 = AbaqusCellType::CPS6;
+  //   AbaqusCellType quad8 = AbaqusCellType::CPS8;
+  //   ASSERT(abaqus2xdmf(tri) == XDMFCellType::Triangle);
+  //   ASSERT(abaqus2xdmf(quad) == XDMFCellType::Quad);
+  //   ASSERT(abaqus2xdmf(tri6) == XDMFCellType::QuadraticTriangle);
+  //   ASSERT(abaqus2xdmf(quad8) == XDMFCellType::QuadraticQuad);
+  //
+  auto const i8_tri = static_cast<int8_t>(AbaqusCellType::CPS3);
+  auto const i8_quad = static_cast<int8_t>(AbaqusCellType::CPS4);
+  auto const i8_tri6 = static_cast<int8_t>(AbaqusCellType::CPS6);
+  auto const i8_quad8 = static_cast<int8_t>(AbaqusCellType::CPS8);
+  // NOLINTBEGIN(misc-static-assert)
+  static_assert(abaqus2xdmf(i8_tri) == static_cast<int8_t>(XDMFCellType::Triangle));
+  static_assert(abaqus2xdmf(i8_quad) == static_cast<int8_t>(XDMFCellType::Quad));
+  static_assert(abaqus2xdmf(i8_tri6) ==
+                static_cast<int8_t>(XDMFCellType::QuadraticTriangle));
+  static_assert(abaqus2xdmf(i8_quad8) ==
+                static_cast<int8_t>(XDMFCellType::QuadraticQuad));
+  // NOLINTEND(misc-static-assert)
+}
 //
 // TEST_CASE(xdmf2vtk)
 //{
@@ -94,25 +96,26 @@
 //   // NOLINTEND(misc-static-assert)
 // }
 //
-// TEST_CASE(pointsInXDMFCell)
-//{
-//   // NOLINTNEXTLINE
-//   using namespace um2;
-//   // NOLINTBEGIN(misc-static-assert)
-//   ASSERT(pointsInXDMFCell(static_cast<int8_t>(XDMFCellType::Triangle)) == 3);
-//   ASSERT(pointsInXDMFCell(static_cast<int8_t>(XDMFCellType::Quad)) == 4);
-//   ASSERT(pointsInXDMFCell(static_cast<int8_t>(XDMFCellType::QuadraticTriangle)) == 6);
-//   ASSERT(pointsInXDMFCell(static_cast<int8_t>(XDMFCellType::QuadraticQuad)) == 8);
-//   // NOLINTEND(misc-static-assert)
-// }
+TEST_CASE(pointsInXDMFCell)
+{
+  // NOLINTNEXTLINE
+  using namespace um2;
+  // NOLINTBEGIN(misc-static-assert)
+  static_assert(pointsInXDMFCell(static_cast<int8_t>(XDMFCellType::Triangle)) == 3);
+  static_assert(pointsInXDMFCell(static_cast<int8_t>(XDMFCellType::Quad)) == 4);
+  static_assert(pointsInXDMFCell(static_cast<int8_t>(XDMFCellType::QuadraticTriangle)) ==
+                6);
+  static_assert(pointsInXDMFCell(static_cast<int8_t>(XDMFCellType::QuadraticQuad)) == 8);
+  // NOLINTEND(misc-static-assert)
+}
 
 TEST_SUITE(CellType)
 {
   //  TEST(vtk2xdmf);
-  //  TEST(abaqus2xdmf);
+  TEST(abaqus2xdmf);
   //  TEST(xdmf2vtk);
   //  TEST(isLinear);
-  //  TEST(pointsInXDMFCell);
+  TEST(pointsInXDMFCell);
 }
 
 auto

@@ -12,6 +12,7 @@ makeReferenceTriMeshFile(um2::MeshFile<T, I> & mesh)
   mesh.element_offsets = {0, 3, 6};
   mesh.element_conn = {0, 1, 2, 2, 3, 0};
   mesh.elset_names = {"A", "B", "Material_H2O", "Material_UO2"};
+  mesh.elset_offsets = {0, 2, 3, 4, 5};
   mesh.elset_ids = {0, 1, 1, 1, 0};
 }
 

@@ -155,7 +155,7 @@ parseElsets(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   }
   mesh.elset_offsets.push_back(offset_back + num_elements);
   // Ensure the elset is sorted
-  assert(std::is_sorted(this_elset_ids.cbegin() + offset_back, this_elset_ids.cend()));
+  assert(std::is_sorted(mesh.elset_ids.cbegin() + offset_back, mesh.elset_ids.cend()));
 }
 
 template <std::floating_point T, std::signed_integral I>

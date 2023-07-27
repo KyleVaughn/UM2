@@ -181,22 +181,22 @@ abaqus2xdmf(int8_t abq_type) -> int8_t
 //   }
 // }
 //
-// constexpr auto
-// pointsInXDMFCell(int8_t xdmf_type) -> Size
-//{
-//   switch (xdmf_type) {
-//   case static_cast<int8_t>(XDMFCellType::Triangle):
-//     return 3;
-//   case static_cast<int8_t>(XDMFCellType::Quad):
-//     return 4;
-//   case static_cast<int8_t>(XDMFCellType::QuadraticTriangle):
-//     return 6;
-//   case static_cast<int8_t>(XDMFCellType::QuadraticQuad):
-//     return 8;
-//   default:
-//     assert(false && "Unsupported XDMF cell type");
-//     return 3;
-//   }
-// }
+constexpr auto
+pointsInXDMFCell(int8_t xdmf_type) -> Size
+{
+  switch (xdmf_type) {
+  case static_cast<int8_t>(XDMFCellType::Triangle):
+    return 3;
+  case static_cast<int8_t>(XDMFCellType::Quad):
+    return 4;
+  case static_cast<int8_t>(XDMFCellType::QuadraticTriangle):
+    return 6;
+  case static_cast<int8_t>(XDMFCellType::QuadraticQuad):
+    return 8;
+  default:
+    assert(false && "Unsupported XDMF cell type");
+    return 3;
+  }
+}
 
 } // namespace um2

@@ -27,6 +27,7 @@ Quadrilateral.centroid
 RegularGrid.getCellCentroid
 
 MeshFile.compareGeometry
+MeshFile.compareTopology
 MeshFile.sortElsets
 
 // TriMesh.regularPartition

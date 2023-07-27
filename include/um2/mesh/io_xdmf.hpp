@@ -1,22 +1,15 @@
 #pragma once
 
 #include <um2/common/Log.hpp>
+#include <um2/common/sto.hpp>
 #include <um2/config.hpp>
-// #include <um2/common/sto.hpp>
 // #include <um2/mesh/cell_type.hpp>
 #include <um2/mesh/MeshFile.hpp>
-//
-// #include <thrust/logical.h> // thrust::all_of
-// #include <thrust/transform.h> // thrust::transform
-//
+
 #include <algorithm> // std::transform
+#include <cstring>   // strcmp
 #include <string>
 #include <vector>
-// #include <concepts> // std::floating_point, std::signed_integral
-// #include <string.h> // strcmp, strcpy
-// #include <fstream> // std::ifstream
-// #include <limits> // std::numeric_limits
-// #include <string> // std::string
 
 // External dependencies
 #include <H5Cpp.h>     // H5::H5File, H5::DataSet, H5::DataSpace, H5::DataType
@@ -98,7 +91,7 @@ static void writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
   // If xyz is not null, delete it
   delete[] xyz;
 
-} // write_xdmf_geometry
+} // writeXDMFgeometry
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
@@ -256,41 +249,26 @@ static void writeXDMFMaterials(pugi::xml_node & xgrid, H5::Group & h5group,
   }     // for i
 
   // Create HDF5 data space
-  hsize_t dims = static_cast<hsize_t>(materials.size());
+  auto const dims = static_cast<hsize_t>(materials.size());
   H5::DataSpace const h5space(1, &dims);
   // Create HDF5 data type
   H5::DataType h5type;
   // NOLINTBEGIN(cppcoreguidelines-slicing)
+  static_assert(std::signed_integral<MaterialID>);
   if constexpr (sizeof(MaterialID) == 1) {
-    if constexpr (std::signed_integral<MaterialID>) {
-      h5type = H5::PredType::NATIVE_INT8;
-    } else if constexpr (std::signed_integral<MaterialID>) {
-      h5type = H5::PredType::NATIVE_UINT8;
-    }
+    h5type = H5::PredType::NATIVE_INT8;
   } else if constexpr (sizeof(MaterialID) == 2) {
-    if constexpr (std::signed_integral<MaterialID>) {
-      h5type = H5::PredType::NATIVE_INT16;
-    } else if constexpr (std::signed_integral<MaterialID>) {
-      h5type = H5::PredType::NATIVE_UINT16;
-    }
+    h5type = H5::PredType::NATIVE_INT16;
   } else if constexpr (sizeof(MaterialID) == 4) {
-    if constexpr (std::signed_integral<MaterialID>) {
-      h5type = H5::PredType::NATIVE_INT32;
-    } else if constexpr (std::signed_integral<MaterialID>) {
-      h5type = H5::PredType::NATIVE_UINT32;
-    }
+    h5type = H5::PredType::NATIVE_INT32;
   } else if constexpr (sizeof(MaterialID) == 8) {
-    if constexpr (std::signed_integral<MaterialID>) {
-      h5type = H5::PredType::NATIVE_INT64;
-    } else if constexpr (std::signed_integral<MaterialID>) {
-      h5type = H5::PredType::NATIVE_UINT64;
-    }
+    h5type = H5::PredType::NATIVE_INT64;
   } else {
     Log::error("Unsupported MaterialID size");
   }
   // NOLINTEND(cppcoreguidelines-slicing)
   // Create HDF5 data set
-  H5::DataSet h5dataset = h5group.createDataSet("Materials", h5type, h5space);
+  H5::DataSet const h5dataset = h5group.createDataSet("Materials", h5type, h5space);
   // Write HDF5 data set
   h5dataset.write(materials.data(), h5type, h5space);
 
@@ -300,11 +278,7 @@ static void writeXDMFMaterials(pugi::xml_node & xgrid, H5::Group & h5group,
   xmat.append_attribute("Center") = "Cell";
   // Create XDMF DataItem node
   auto xdata = xmat.append_child("DataItem");
-  if constexpr (std::signed_integral<MaterialID>) {
-    xdata.append_attribute("DataType") = "Int";
-  } else if constexpr (std::signed_integral<MaterialID>) {
-    xdata.append_attribute("DataType") = "UInt";
-  }
+  xdata.append_attribute("DataType") = "Int";
   xdata.append_attribute("Dimensions") = materials.size();
   if (sizeof(MaterialID) == 1) {
     xdata.append_attribute("Precision") = "1";
@@ -318,68 +292,71 @@ static void writeXDMFMaterials(pugi::xml_node & xgrid, H5::Group & h5group,
     Log::error("Unsupported MaterialID size");
   }
   xdata.append_attribute("Format") = "HDF";
-  std::string h5matpath = h5filename + ":" + h5path + "/Materials";
+  std::string const h5matpath = h5filename + ":" + h5path + "/Materials";
   xdata.append_child(pugi::node_pcdata).set_value(h5matpath.c_str());
-} // write_xdmf_materials
+} // writeXDMFMaterials
 
-// template <std::floating_point T, std::signed_integral I>
-// requires (sizeof(T) == 4 || sizeof(T) == 8)
-// static void write_xdmf_elsets(
-//     pugi::xml_node & xgrid,
-//     H5::Group & h5group,
-//     std::string const & h5filename,
-//     std::string const & h5path,
-//     MeshFile<T, I> const & mesh)
-//{
-//     um2::Log::debug("Writing XDMF elsets");
-//     for (size_t i = 0; i < mesh.elset_names.size(); ++i) {
-//         std::string name = to_string(mesh.elset_names[i]);
-//         size_t const start = static_cast<size_t>(mesh.elset_offsets[i    ]);
-//         size_t const end   = static_cast<size_t>(mesh.elset_offsets[i + 1]);
-//         // Create HDF5 data space
-//         hsize_t dims = static_cast<hsize_t>(end - start);
-//         H5::DataSpace h5space(1, &dims);
-//         // Create HDF5 data type
-//         H5::DataType h5type;
-//         if constexpr (sizeof(I) == 1) {
-//             h5type = H5::PredType::NATIVE_INT8;
-//         } else if constexpr (sizeof(I) == 2) {
-//             h5type = H5::PredType::NATIVE_INT16;
-//         } else if constexpr (sizeof(I) == 4) {
-//             h5type = H5::PredType::NATIVE_INT32;
-//         } else if constexpr (sizeof(I) == 8) {
-//             h5type = H5::PredType::NATIVE_INT64;
-//         } else {
-//             Log::error("Unsupported element index size");
-//         }
-//         // Create HDF5 data set
-//         H5::DataSet h5dataset = h5group.createDataSet(name, h5type, h5space);
-//         // Write HDF5 data set.
-//         h5dataset.write(&mesh.elset_ids[start], h5type, h5space);
-//
-//         // Create XDMF Elset node
-//         auto xelset = xgrid.append_child("Set");
-//         xelset.append_attribute("Name") = name.c_str();
-//         xelset.append_attribute("SetType") = "Cell";
-//         // Create XDMF DataItem node
-//         auto xdata = xelset.append_child("DataItem");
-//         xdata.append_attribute("DataType") = "Int";
-//         xdata.append_attribute("Dimensions") = end - start;
-//         if constexpr (sizeof(I) == 1) {
-//             xdata.append_attribute("Precision") = 1;
-//         } else if constexpr (sizeof(I) == 2) {
-//             xdata.append_attribute("Precision") = 2;
-//         } else if constexpr (sizeof(I) == 4) {
-//             xdata.append_attribute("Precision") = 4;
-//         } else if constexpr (sizeof(I) == 8) {
-//             xdata.append_attribute("Precision") = 8;
-//         }
-//         xdata.append_attribute("Format") = "HDF";
-//         std::string h5elsetpath = h5filename + ":" + h5path + "/" + name;
-//         xdata.append_child(pugi::node_pcdata).set_value(h5elsetpath.c_str());
-//     }
-// } // write_xdmf_elsets
-//
+template <std::floating_point T, std::signed_integral I>
+  requires(sizeof(T) == 4 || sizeof(T) == 8)
+static void writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
+                            std::string const & h5filename, std::string const & h5path,
+                            MeshFile<T, I> const & mesh)
+{
+  Log::debug("Writing XDMF elsets");
+  for (size_t i = 0; i < mesh.elset_names.size(); ++i) {
+    std::string const name = mesh.elset_names[i];
+    auto const start = static_cast<size_t>(mesh.elset_offsets[i]);
+    auto const end = static_cast<size_t>(mesh.elset_offsets[i + 1]);
+    // Create HDF5 data space
+    auto dims = static_cast<hsize_t>(end - start);
+    H5::DataSpace const h5space(1, &dims);
+    // Create HDF5 data type
+    H5::DataType h5type;
+    // NOTE: NOLINTBEGIN(cppcoreguidelines-slicing)
+    if constexpr (sizeof(I) == 1) {
+      h5type = H5::PredType::NATIVE_INT8;
+    } else if constexpr (sizeof(I) == 2) {
+      h5type = H5::PredType::NATIVE_INT16;
+    } else if constexpr (sizeof(I) == 4) {
+      h5type = H5::PredType::NATIVE_INT32;
+    } else if constexpr (sizeof(I) == 8) {
+      h5type = H5::PredType::NATIVE_INT64;
+    } else {
+      Log::error("Unsupported element index size");
+    }
+    // NOTE: NOLINTEND(cppcoreguidelines-slicing)
+    // Create HDF5 data set
+    H5::DataSet const h5dataset = h5group.createDataSet(name, h5type, h5space);
+    // Write HDF5 data set.
+    h5dataset.write(&mesh.elset_ids[start], h5type, h5space);
+
+    // Create XDMF Elset node
+    auto xelset = xgrid.append_child("Set");
+    xelset.append_attribute("Name") = name.c_str();
+    xelset.append_attribute("SetType") = "Cell";
+    // Create XDMF DataItem node
+    auto xdata = xelset.append_child("DataItem");
+    xdata.append_attribute("DataType") = "Int";
+    xdata.append_attribute("Dimensions") = end - start;
+    if constexpr (sizeof(I) == 1) {
+      xdata.append_attribute("Precision") = 1;
+    } else if constexpr (sizeof(I) == 2) {
+      xdata.append_attribute("Precision") = 2;
+    } else if constexpr (sizeof(I) == 4) {
+      xdata.append_attribute("Precision") = 4;
+    } else if constexpr (sizeof(I) == 8) {
+      xdata.append_attribute("Precision") = 8;
+    }
+    xdata.append_attribute("Format") = "HDF";
+    std::string h5elsetpath = h5filename;
+    h5elsetpath += ':';
+    h5elsetpath += h5path;
+    h5elsetpath += '/';
+    h5elsetpath += name;
+    xdata.append_child(pugi::node_pcdata).set_value(h5elsetpath.c_str());
+  }
+} // writeXDMFelsets
+
 template <std::floating_point T, std::signed_integral I>
 static void
 writeXDMFUniformGrid(pugi::xml_node & xdomain, H5::H5File & h5file,
@@ -405,15 +382,14 @@ writeXDMFUniformGrid(pugi::xml_node & xdomain, H5::H5File & h5file,
   xgrid.append_attribute("GridType") = "Uniform";
 
   // h5
-  std::string const h5groupname = name;
   std::string const h5grouppath = "/" + name;
   H5::Group h5group = h5file.createGroup(h5grouppath);
 
   writeXDMFGeometry(xgrid, h5group, h5filename, h5grouppath, mesh);
   writeXDMFTopology(xgrid, h5group, h5filename, h5grouppath, mesh);
   writeXDMFMaterials(xgrid, h5group, h5filename, h5grouppath, mesh, material_names);
-  //    write_xdmf_elsets(xgrid, h5group, h5filename, h5grouppath, mesh);
-} // write_xdmf_uniform_grid
+  writeXDMFElsets(xgrid, h5group, h5filename, h5grouppath, mesh);
+} // writeXDMFUniformGrid
 
 template <std::floating_point T, std::signed_integral I>
 void
@@ -501,295 +477,278 @@ writeXDMFFile(MeshFile<T, I> & mesh)
   // Close the HDF5 file
   h5file.close();
 
-} // write_xdmf_file
+} // writeXDMFfile
 
-//// -------------------------------------------------------------------------- //
-//
-// template <std::floating_point T, std::signed_integral I, std::floating_point V>
-// static void add_nodes_to_mesh(
-//        MeshFile<T, I> & mesh,
-//        size_t const num_nodes,
-//        size_t const num_dimensions,
-//        H5::DataSet const & dataset,
-//        H5::FloatType const & datatype,
-//        bool const XYZ)
-//{
-//    V * data = new V [num_nodes * num_dimensions];
-//    dataset.read(data, datatype);
-//    size_t const num_nodes_old = mesh.nodes_x.size();
-//    size_t const lnum_nodes = static_cast<size_t>(num_nodes);
-//    // Add the nodes to the mesh
-//    if (XYZ) {
-//        mesh.nodes_x.insert(mesh.nodes_x.end(), lnum_nodes, -1);
-//        mesh.nodes_y.insert(mesh.nodes_y.end(), lnum_nodes, -1);
-//        mesh.nodes_z.insert(mesh.nodes_z.end(), lnum_nodes, -1);
-//        for (size_t i = 0; i < lnum_nodes; ++i) {
-//            mesh.nodes_x[num_nodes_old + i] = static_cast<T>(data[i * 3]);
-//            mesh.nodes_y[num_nodes_old + i] = static_cast<T>(data[i * 3 + 1]);
-//            mesh.nodes_z[num_nodes_old + i] = static_cast<T>(data[i * 3 + 2]);
-//        }
-//    } else { // XY
-//        mesh.nodes_x.insert(mesh.nodes_x.end(), lnum_nodes, -1);
-//        mesh.nodes_y.insert(mesh.nodes_y.end(), lnum_nodes, -1);
-//        for (size_t i = 0; i < lnum_nodes; ++i) {
-//            mesh.nodes_x[num_nodes_old + i] = static_cast<T>(data[i * 2]);
-//            mesh.nodes_y[num_nodes_old + i] = static_cast<T>(data[i * 2 + 1]);
-//        }
-//    }
-//    if (data) { delete[] data; }
-//} // add_nodes_to_mesh
-//
-// template <std::floating_point T, std::signed_integral I>
-// requires (sizeof(T) == 4 || sizeof(T) == 8)
-// static void read_xdmf_geometry(
-//    pugi::xml_node const & xgrid,
-//    H5::H5File const & h5file,
-//    std::string const & h5filename,
-//    MeshFile<T, I> & mesh)
-//{
-//    Log::debug("Reading XDMF geometry");
-//    pugi::xml_node xgeometry = xgrid.child("Geometry");
-//    if (strcmp(xgeometry.name(), "Geometry") != 0) {
-//        Log::error("XDMF geometry node not found");
-//        return;
-//    }
-//    // Get the geometry type
-//    std::string geometry_type = xgeometry.attribute("GeometryType").value();
-//    if (geometry_type.compare("XYZ") != 0 &&
-//        geometry_type.compare("XY") != 0) {
-//        Log::error("XDMF geometry type not supported: " + geometry_type);
-//        return;
-//    }
-//    // Get the DataItem node
-//    pugi::xml_node xdataitem = xgeometry.child("DataItem");
-//    if (strcmp(xdataitem.name(), "DataItem") != 0) {
-//        Log::error("XDMF geometry DataItem node not found");
-//        return;
-//    }
-//    // Get the data type
-//    std::string data_type = xdataitem.attribute("DataType").value();
-//    if (data_type.compare("Float") != 0) {
-//        Log::error("XDMF geometry data type not supported: " + data_type);
-//        return;
-//    }
-//    // Get the precision
-//    std::string precision = xdataitem.attribute("Precision").value();
-//    if (precision.compare("4") != 0 && precision.compare("8") != 0) {
-//        Log::error("XDMF geometry precision not supported: " + precision);
-//        return;
-//    }
-//    // Get the dimensions
-//    std::string dimensions = xdataitem.attribute("Dimensions").value();
-//    size_t const split = dimensions.find_last_of(" ");
-//    size_t const num_nodes = std::stoul(dimensions.substr(0, split));
-//    size_t const num_dimensions = std::stoul(dimensions.substr(split + 1));
-//    if (geometry_type.compare("XYZ") == 0 && num_dimensions != 3) {
-//        Log::error("XDMF geometry dimensions not supported: " + dimensions);
-//        return;
-//    }
-//    if (geometry_type.compare("XY") == 0 && num_dimensions != 2) {
-//        Log::error("XDMF geometry dimensions not supported: " + dimensions);
-//        return;
-//    }
-//    // Get the format
-//    std::string format = xdataitem.attribute("Format").value();
-//    if (format.compare("HDF") != 0) {
-//        Log::error("XDMF geometry format not supported: " + format);
-//        return;
-//    }
-//    // Get the h5 dataset path
-//    std::string h5dataset = xdataitem.child_value();
-//    // Read the data
-//    H5::DataSet dataset = h5file.openDataSet(h5dataset.substr(h5filename.size() + 1));
-//    H5T_class_t type_class = dataset.getTypeClass();
-//    UM2_ASSERT(type_class == H5T_FLOAT);
-//    H5::FloatType datatype = dataset.getFloatType();
-//    size_t const datatype_size = datatype.getsize_t();
-//    UM2_ASSERT(datatype_size == std::stoul(precision));
-//    H5::DataSpace dataspace = dataset.getSpace();
-//    int rank = dataspace.getSimpleExtentNdims();
-//    UM2_ASSERT(rank == 2);
-//    hsize_t dims[2];
-//    int ndims = dataspace.getSimpleExtentDims(dims, nullptr);
-//    UM2_ASSERT(ndims == 2);
-//    UM2_ASSERT(dims[0] == num_nodes);
-//    UM2_ASSERT(dims[1] == num_dimensions);
-//    if (datatype_size == 4) {
-//        add_nodes_to_mesh<T, I, float>(mesh, num_nodes, num_dimensions,
-//                                  dataset, datatype,
-//                                  geometry_type.compare("XYZ") == 0);
-//    } else if (datatype_size == 8) {
-//        add_nodes_to_mesh<T, I, double>(mesh, num_nodes, num_dimensions,
-//                                   dataset, datatype,
-//                                   geometry_type.compare("XYZ") == 0);
-//    }
-//}
-//
-// template <std::floating_point T, std::signed_integral I, std::signed_integral V>
-// static void add_elements_to_mesh(
-//        size_t const num_elements,
-//        std::string const & topology_type,
-//        std::string const & dimensions,
-//        MeshFile<T, I> & mesh,
-//        H5::DataSet const & dataset,
-//        H5::IntType const & datatype)
-//{
-//    size_t const prev_num_elements = mesh.element_types.size();
-//    size_t const lnum_elements = static_cast<size_t>(num_elements);
-//    if (prev_num_elements == 0) {
-//        mesh.element_offsets.push_back(0);
-//    }
-//    I const prev_offset = mesh.element_offsets.back();
-//    mesh.element_offsets.insert(mesh.element_offsets.end(), lnum_elements, -1);
-//    if (topology_type.compare("Mixed") == 0) {
-//        mesh.element_types.insert(mesh.element_types.end(), lnum_elements, -1);
-//        // Expect dims to be one number
-//        size_t const conn_length = sto<size_t>(dimensions);
-//        V * data = new V[conn_length];
-//        dataset.read(data, datatype);
-//        // Add the elements to the mesh
-//        size_t const prev_conn_size = mesh.element_conn.size();
-//        size_t const num_conn_added = static_cast<size_t>(conn_length - num_elements);
-//        mesh.element_conn.insert(mesh.element_conn.end(), num_conn_added, -1);
-//        size_t offset = 0;
-//        size_t position = 0;
-//        for (size_t i = 0; i < lnum_elements; ++i) {
-//            int8_t const element_type = static_cast<int8_t>(data[position]);
-//            mesh.element_types[prev_num_elements + i] = element_type;
-//            size_t const npoints = points_in_xdmf_cell(element_type);
-//            for (size_t j = 0; j < npoints; ++j) {
-//                mesh.element_conn[prev_conn_size + offset + j] =
-//                    static_cast<I>(data[position + j + 1]);
-//            }
-//            offset += npoints;
-//            position += npoints + 1;
-//            mesh.element_offsets[1 + prev_num_elements + i] =
-//                static_cast<I>(prev_offset + offset);
-//        }
-//        if (data) { delete[] data; }
-//    } else {
-//        size_t const split = dimensions.find_last_of(" ");
-//        size_t const ncells = sto<size_t>(dimensions.substr(0, split));
-//        size_t const nverts = sto<size_t>(dimensions.substr(split + 1));
-//        UM2_ASSERT(ncells == lnum_elements);
-//        V * data = new V[static_cast<size_t>(ncells * nverts)];
-//        dataset.read(data, datatype);
-//        // Add the elements to the mesh
-//        size_t const prev_conn_size = mesh.element_conn.size();
-//        mesh.element_conn.insert(mesh.element_conn.end(), ncells * nverts, -1);
-//        for (size_t i = 0; i < ncells; ++i) {
-//            mesh.element_offsets[1 + prev_num_elements + i] =
-//                static_cast<I>((i + 1) * nverts) + prev_offset;
-//            for (size_t j = 0; j < nverts; ++j) {
-//                mesh.element_conn[prev_conn_size + i * nverts + j] =
-//                    static_cast<I>(data[i * nverts + j]);
-//            }
-//        }
-//        if (data) { delete[] data; }
-//        int8_t element_type = -1;
-//        if (topology_type.compare("Triangle") == 0) {
-//            element_type = static_cast<int8_t>(XDMFCellType::TRIANGLE);
-//        } else if (topology_type.compare("Quadrilateral") == 0) {
-//            element_type = static_cast<int8_t>(XDMFCellType::QUAD);
-//        } else if (topology_type.compare("Triangle_6") == 0) {
-//            element_type = static_cast<int8_t>(XDMFCellType::QUADRATIC_TRIANGLE);
-//        } else if (topology_type.compare("Quadrilateral_8") == 0) {
-//            element_type = static_cast<int8_t>(XDMFCellType::QUADRATIC_QUAD);
-//        } else {
-//            Log::error("Unsupported element type");
-//        }
-//        mesh.element_types.insert(mesh.element_types.end(), ncells, element_type);
-//    }
-//}
-//
-// template <std::floating_point T, std::signed_integral I>
-// requires (sizeof(T) == 4 || sizeof(T) == 8)
-// static void read_xdmf_topology(
-//    pugi::xml_node const & xgrid,
-//    H5::H5File const & h5file,
-//    std::string const & h5filename,
-//    MeshFile<T, I> & mesh)
-//{
-//    Log::debug("Reading XDMF topology");
-//    pugi::xml_node xtopology = xgrid.child("Topology");
-//    if (strcmp(xtopology.name(), "Topology") != 0) {
-//        Log::error("XDMF topology node not found");
-//        return;
-//    }
-//    // Get the topology type
-//    std::string topology_type = xtopology.attribute("TopologyType").value();
-//    // Get the number of elements
-//    size_t const num_elements =
-//    std::stoul(xtopology.attribute("NumberOfElements").value());
-//    // Get the DataItem node
-//    pugi::xml_node xdataitem = xtopology.child("DataItem");
-//    if (strcmp(xdataitem.name(), "DataItem") != 0) {
-//        Log::error("XDMF topology DataItem node not found");
-//        return;
-//    }
-//    // Get the data type
-//    std::string data_type = xdataitem.attribute("DataType").value();
-//    if (data_type.compare("Int") != 0) {
-//        Log::error("XDMF topology data type not supported: " + data_type);
-//        return;
-//    }
-//    // Get the precision
-//    std::string precision = xdataitem.attribute("Precision").value();
-//    if (precision.compare("1") != 0 && precision.compare("2") != 0 &&
-//        precision.compare("4") != 0 && precision.compare("8") != 0) {
-//        Log::error("XDMF topology precision not supported: " + precision);
-//        return;
-//    }
-//    // Get the format
-//    std::string format = xdataitem.attribute("Format").value();
-//    if (format.compare("HDF") != 0) {
-//        Log::error("XDMF geometry format not supported: " + format);
-//        return;
-//    }
-//    // Get the h5 dataset path
-//    std::string h5dataset = xdataitem.child_value();
-//    // Read the data
-//    H5::DataSet dataset = h5file.openDataSet(h5dataset.substr(h5filename.size() + 1));
-//    H5T_class_t type_class = dataset.getTypeClass();
-//    UM2_ASSERT(type_class == H5T_INTEGER);
-//    H5::IntType datatype = dataset.getIntType();
-//    size_t const datatype_size = datatype.getsize_t();
-//    UM2_ASSERT(datatype_size == std::stoul(precision));
-//    H5::DataSpace dataspace = dataset.getSpace();
-//    int rank = dataspace.getSimpleExtentNdims();
-//    if (topology_type.compare("Mixed") == 0) {
-//        UM2_ASSERT(rank == 1);
-//        hsize_t dims[1];
-//        int ndims = dataspace.getSimpleExtentDims(dims, nullptr);
-//        UM2_ASSERT(ndims == 1);
-//    } else {
-//        UM2_ASSERT(rank == 2);
-//        hsize_t dims[2];
-//        int ndims = dataspace.getSimpleExtentDims(dims, nullptr);
-//        UM2_ASSERT(ndims == 2);
-//    }
-//    // Get the dimensions
-//    std::string dimensions = xdataitem.attribute("Dimensions").value();
-//    if (datatype_size == 1) {
-//        add_elements_to_mesh<T, I, int8_t>(num_elements, topology_type,
-//                                           dimensions, mesh, dataset, datatype);
-//    } else if (datatype_size == 2) {
-//        add_elements_to_mesh<T, I, int16_t>(num_elements, topology_type,
-//                                            dimensions, mesh, dataset, datatype);
-//    } else if (datatype_size == 4) {
-//        add_elements_to_mesh<T, I, int32_t>(num_elements, topology_type,
-//                                            dimensions, mesh, dataset, datatype);
-//    } else if (datatype_size == 8) {
-//        add_elements_to_mesh<T, I, int64_t>(num_elements, topology_type,
-//                                            dimensions, mesh, dataset, datatype);
-//    } else {
-//        Log::error("Unsupported data type size");
-//    }
-//}
+// -------------------------------------------------------------------------- //
+
+template <std::floating_point T, std::signed_integral I, std::floating_point V>
+static void
+addNodesToMesh(MeshFile<T, I> & mesh, size_t const num_nodes, size_t const num_dimensions,
+               H5::DataSet const & dataset, H5::FloatType const & datatype,
+               bool const xyz)
+{
+  V * data = new V[num_nodes * num_dimensions];
+  dataset.read(data, datatype);
+  size_t const num_nodes_old = mesh.nodes_x.size();
+  auto const lnum_nodes = static_cast<size_t>(num_nodes);
+  // Add the nodes to the mesh
+  if (xyz) {
+    mesh.nodes_x.insert(mesh.nodes_x.end(), lnum_nodes, -1);
+    mesh.nodes_y.insert(mesh.nodes_y.end(), lnum_nodes, -1);
+    mesh.nodes_z.insert(mesh.nodes_z.end(), lnum_nodes, -1);
+    for (size_t i = 0; i < lnum_nodes; ++i) {
+      mesh.nodes_x[num_nodes_old + i] = static_cast<T>(data[i * 3]);
+      mesh.nodes_y[num_nodes_old + i] = static_cast<T>(data[i * 3 + 1]);
+      mesh.nodes_z[num_nodes_old + i] = static_cast<T>(data[i * 3 + 2]);
+    }
+  } else { // XY
+    mesh.nodes_x.insert(mesh.nodes_x.end(), lnum_nodes, -1);
+    mesh.nodes_y.insert(mesh.nodes_y.end(), lnum_nodes, -1);
+    for (size_t i = 0; i < lnum_nodes; ++i) {
+      mesh.nodes_x[num_nodes_old + i] = static_cast<T>(data[i * 2]);
+      mesh.nodes_y[num_nodes_old + i] = static_cast<T>(data[i * 2 + 1]);
+    }
+  }
+  delete[] data;
+} // addNodesToMesh
+
+template <std::floating_point T, std::signed_integral I>
+  requires(sizeof(T) == 4 || sizeof(T) == 8)
+static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+                             std::string const & h5filename, MeshFile<T, I> & mesh)
+{
+  Log::debug("Reading XDMF geometry");
+  pugi::xml_node const xgeometry = xgrid.child("Geometry");
+  if (strcmp(xgeometry.name(), "Geometry") != 0) {
+    Log::error("XDMF geometry node not found");
+    return;
+  }
+  // Get the geometry type
+  std::string const geometry_type = xgeometry.attribute("GeometryType").value();
+  if (geometry_type != "XYZ" && geometry_type != "XY") {
+    Log::error("XDMF geometry type not supported: " + geometry_type);
+    return;
+  }
+  // Get the DataItem node
+  pugi::xml_node const xdataitem = xgeometry.child("DataItem");
+  if (strcmp(xdataitem.name(), "DataItem") != 0) {
+    Log::error("XDMF geometry DataItem node not found");
+    return;
+  }
+  // Get the data type
+  std::string const data_type = xdataitem.attribute("DataType").value();
+  if (data_type != "Float") {
+    Log::error("XDMF geometry data type not supported: " + data_type);
+    return;
+  }
+  // Get the precision
+  std::string const precision = xdataitem.attribute("Precision").value();
+  if (precision != "4" && precision != "8") {
+    Log::error("XDMF geometry precision not supported: " + precision);
+    return;
+  }
+  // Get the dimensions
+  std::string const dimensions = xdataitem.attribute("Dimensions").value();
+  size_t const split = dimensions.find_last_of(' ');
+  size_t const num_nodes = std::stoul(dimensions.substr(0, split));
+  size_t const num_dimensions = std::stoul(dimensions.substr(split + 1));
+  if (geometry_type == "XYZ" && num_dimensions != 3) {
+    Log::error("XDMF geometry dimensions not supported: " + dimensions);
+    return;
+  }
+  if (geometry_type == "XY" && num_dimensions != 2) {
+    Log::error("XDMF geometry dimensions not supported: " + dimensions);
+    return;
+  }
+  // Get the format
+  std::string const format = xdataitem.attribute("Format").value();
+  if (format != "HDF") {
+    Log::error("XDMF geometry format not supported: " + format);
+    return;
+  }
+  // Get the h5 dataset path
+  std::string const h5dataset = xdataitem.child_value();
+  // Read the data
+  H5::DataSet const dataset = h5file.openDataSet(h5dataset.substr(h5filename.size() + 1));
+  H5T_class_t const type_class = dataset.getTypeClass();
+  assert(type_class == H5T_FLOAT);
+  H5::FloatType const datatype = dataset.getFloatType();
+  size_t const datatype_size = datatype.getSize();
+  assert(datatype_size == std::stoul(precision));
+  H5::DataSpace const dataspace = dataset.getSpace();
+  int const rank = dataspace.getSimpleExtentNdims();
+  assert(rank == 2);
+  hsize_t dims[2];
+  int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
+  assert(ndims == 2);
+  assert(dims[0] == num_nodes);
+  assert(dims[1] == num_dimensions);
+  if (datatype_size == 4) {
+    addNodesToMesh<T, I, float>(mesh, num_nodes, num_dimensions, dataset, datatype,
+                                geometry_type == "XYZ");
+  } else if (datatype_size == 8) {
+    addNodesToMesh<T, I, double>(mesh, num_nodes, num_dimensions, dataset, datatype,
+                                 geometry_type == "XYZ");
+  }
+}
+
+template <std::floating_point T, std::signed_integral I, std::signed_integral V>
+static void
+addElementsToMesh(size_t const num_elements, std::string const & topology_type,
+                  std::string const & dimensions, MeshFile<T, I> & mesh,
+                  H5::DataSet const & dataset, H5::IntType const & datatype)
+{
+  size_t const prev_num_elements = mesh.element_types.size();
+  auto const lnum_elements = static_cast<size_t>(num_elements);
+  if (prev_num_elements == 0) {
+    mesh.element_offsets.push_back(0);
+  }
+  I const prev_offset = mesh.element_offsets.back();
+  mesh.element_offsets.insert(mesh.element_offsets.end(), lnum_elements, -1);
+  if (topology_type == "Mixed") {
+    mesh.element_types.insert(mesh.element_types.end(), lnum_elements, -1);
+    // Expect dims to be one number
+    size_t const conn_length = sto<size_t>(dimensions);
+    V * data = new V[conn_length];
+    dataset.read(data, datatype);
+    // Add the elements to the mesh
+    size_t const prev_conn_size = mesh.element_conn.size();
+    auto const num_conn_added = static_cast<size_t>(conn_length - num_elements);
+    mesh.element_conn.insert(mesh.element_conn.end(), num_conn_added, -1);
+    size_t offset = 0;
+    size_t position = 0;
+    for (size_t i = 0; i < lnum_elements; ++i) {
+      auto const element_type = static_cast<int8_t>(data[position]);
+      mesh.element_types[prev_num_elements + i] = element_type;
+      auto const npoints = static_cast<size_t>(pointsInXDMFCell(element_type));
+      for (size_t j = 0; j < npoints; ++j) {
+        mesh.element_conn[prev_conn_size + offset + j] =
+            static_cast<I>(static_cast<unsigned char>(data[position + j + 1]));
+      }
+      offset += npoints;
+      position += npoints + 1;
+      mesh.element_offsets[1 + prev_num_elements + i] =
+          prev_offset + static_cast<I>(offset);
+    }
+    delete[] data;
+  } else {
+    size_t const split = dimensions.find_last_of(' ');
+    size_t const ncells = sto<size_t>(dimensions.substr(0, split));
+    size_t const nverts = sto<size_t>(dimensions.substr(split + 1));
+    assert(ncells == lnum_elements);
+    V * data = new V[static_cast<size_t>(ncells * nverts)];
+    dataset.read(data, datatype);
+    // Add the elements to the mesh
+    size_t const prev_conn_size = mesh.element_conn.size();
+    mesh.element_conn.insert(mesh.element_conn.end(), ncells * nverts, -1);
+    for (size_t i = 0; i < ncells; ++i) {
+      mesh.element_offsets[1 + prev_num_elements + i] =
+          static_cast<I>((i + 1) * nverts) + prev_offset;
+      for (size_t j = 0; j < nverts; ++j) {
+        mesh.element_conn[prev_conn_size + i * nverts + j] =
+            static_cast<I>(static_cast<unsigned char>(data[i * nverts + j]));
+      }
+    }
+    delete[] data;
+    int8_t element_type = -1;
+    if (topology_type == "Triangle") {
+      element_type = static_cast<int8_t>(XDMFCellType::Triangle);
+    } else if (topology_type == "Quadrilateral") {
+      element_type = static_cast<int8_t>(XDMFCellType::Quad);
+    } else if (topology_type == "Triangle_6") {
+      element_type = static_cast<int8_t>(XDMFCellType::QuadraticTriangle);
+    } else if (topology_type == "Quadrilateral_8") {
+      element_type = static_cast<int8_t>(XDMFCellType::QuadraticQuad);
+    } else {
+      Log::error("Unsupported element type");
+    }
+    mesh.element_types.insert(mesh.element_types.end(), ncells, element_type);
+  }
+}
+
+template <std::floating_point T, std::signed_integral I>
+  requires(sizeof(T) == 4 || sizeof(T) == 8)
+static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+                             std::string const & h5filename, MeshFile<T, I> & mesh)
+{
+  Log::debug("Reading XDMF topology");
+  pugi::xml_node const xtopology = xgrid.child("Topology");
+  if (strcmp(xtopology.name(), "Topology") != 0) {
+    Log::error("XDMF topology node not found");
+    return;
+  }
+  // Get the topology type
+  std::string const topology_type = xtopology.attribute("TopologyType").value();
+  // Get the number of elements
+  size_t const num_elements = std::stoul(xtopology.attribute("NumberOfElements").value());
+  // Get the DataItem node
+  pugi::xml_node const xdataitem = xtopology.child("DataItem");
+  if (strcmp(xdataitem.name(), "DataItem") != 0) {
+    Log::error("XDMF topology DataItem node not found");
+    return;
+  }
+  // Get the data type
+  std::string const data_type = xdataitem.attribute("DataType").value();
+  if (data_type != "Int") {
+    Log::error("XDMF topology data type not supported: " + data_type);
+    return;
+  }
+  // Get the precision
+  std::string const precision = xdataitem.attribute("Precision").value();
+  if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
+    Log::error("XDMF topology precision not supported: " + precision);
+    return;
+  }
+  // Get the format
+  std::string const format = xdataitem.attribute("Format").value();
+  if (format != "HDF") {
+    Log::error("XDMF geometry format not supported: " + format);
+    return;
+  }
+  // Get the h5 dataset path
+  std::string const h5dataset = xdataitem.child_value();
+  // Read the data
+  H5::DataSet const dataset = h5file.openDataSet(h5dataset.substr(h5filename.size() + 1));
+  H5T_class_t const type_class = dataset.getTypeClass();
+  assert(type_class == H5T_INTEGER);
+  H5::IntType const datatype = dataset.getIntType();
+  size_t const datatype_size = datatype.getSize();
+  assert(datatype_size == std::stoul(precision));
+  H5::DataSpace const dataspace = dataset.getSpace();
+  int const rank = dataspace.getSimpleExtentNdims();
+  if (topology_type == "Mixed") {
+    assert(rank == 1);
+    hsize_t dims[1];
+    int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
+    assert(ndims == 1);
+  } else {
+    assert(rank == 2);
+    hsize_t dims[2];
+    int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
+    assert(ndims == 2);
+  }
+  // Get the dimensions
+  std::string const dimensions = xdataitem.attribute("Dimensions").value();
+  if (datatype_size == 1) {
+    addElementsToMesh<T, I, int8_t>(num_elements, topology_type, dimensions, mesh,
+                                    dataset, datatype);
+  } else if (datatype_size == 2) {
+    addElementsToMesh<T, I, int16_t>(num_elements, topology_type, dimensions, mesh,
+                                     dataset, datatype);
+  } else if (datatype_size == 4) {
+    addElementsToMesh<T, I, int32_t>(num_elements, topology_type, dimensions, mesh,
+                                     dataset, datatype);
+  } else if (datatype_size == 8) {
+    addElementsToMesh<T, I, int64_t>(num_elements, topology_type, dimensions, mesh,
+                                     dataset, datatype);
+  } else {
+    Log::error("Unsupported data type size");
+  }
+}
 //
 ////template <std::floating_point T, std::signed_integral I>
 ////requires (sizeof(T) == 4 || sizeof(T) == 8)
-////static void read_xdmf_materials(
+////static void readXDMFmaterials(
 ////    pugi::xml_node const & xgrid,
 ////    H5::H5File const & h5file,
 ////    std::string const & h5filename,
@@ -842,14 +801,14 @@ writeXDMFFile(MeshFile<T, I> & mesh)
 ////        std::string h5dataset = xdataitem.child_value();
 ////        // Read the data
 ////        H5::DataSet dataset = h5file.openDataSet(h5dataset.substr(h5filename.size() +
-/// 1)); /        H5T_class_t type_class = dataset.getTypeClass(); / UM2_ASSERT(type_class
+/// 1)); /        H5T_class_t type_class = dataset.getTypeClass(); / assert(type_class
 ///== H5T_INTEGER); /        H5::IntType datatype = dataset.getIntType(); /        size_t
-/// const datatype_size = datatype.getsize_t(); /        UM2_ASSERT(datatype_size ==
+/// const datatype_size = datatype.getsize_t(); /        assert(datatype_size ==
 /// std::stoul(precision)); /        H5::DataSpace dataspace = dataset.getSpace(); / int
-/// rank = dataspace.getSimpleExtentNdims(); /        UM2_ASSERT(rank == 1); / hsize_t
+/// rank = dataspace.getSimpleExtentNdims(); /        assert(rank == 1); / hsize_t
 /// dims[1]; /        int ndims = dataspace.getSimpleExtentDims(dims, nullptr); /
-/// UM2_ASSERT(ndims == 1); /        // Get the dimensions /        std::string dimensions
-///= xdataitem.attribute("Dimensions").value(); /        UM2_ASSERT(datatype_size == 1);
+/// assert(ndims == 1); /        // Get the dimensions /        std::string dimensions
+///= xdataitem.attribute("Dimensions").value(); /        assert(datatype_size == 1);
 ////        // Expect dims to be one number
 ////        size_t const mats_length = dims[0];
 ////        std::vector<int8_t> data(mats_length);
@@ -869,199 +828,188 @@ writeXDMFFile(MeshFile<T, I> & mesh)
 ////    }
 ////}
 //
-// template <std::floating_point T, std::signed_integral I, std::signed_integral V>
-// static void add_elset_to_mesh(
-//        MeshFile<T, I> & mesh,
-//        size_t const num_elements,
-//        H5::DataSet const & dataset,
-//        H5::IntType const & datatype)
-//{
-//    V * data = new V[num_elements];
-//    dataset.read(data, datatype);
-//    size_t const lnum_elements = static_cast<size_t>(num_elements);
-//    size_t const offset = static_cast<size_t>(mesh.elset_offsets.back());
-//    I const last_offset = mesh.elset_offsets.back();
-//    mesh.elset_offsets.push_back(last_offset + static_cast<I>(num_elements));
-//    mesh.elset_ids.insert(mesh.elset_ids.end(),
-//                          lnum_elements, -1);
-//    for (size_t i = 0; i < lnum_elements; ++i) {
-//        mesh.elset_ids[i + offset] = static_cast<I>(data[i]);
-//    }
-//    if (data) { delete[] data; }
-//}
-//
-// template <std::floating_point T, std::signed_integral I>
-// requires (sizeof(T) == 4 || sizeof(T) == 8)
-// static void read_xdmf_elsets(
-//    pugi::xml_node const & xgrid,
-//    H5::H5File const & h5file,
-//    std::string const & h5filename,
-//    MeshFile<T, I> & mesh)
-//{
-//    Log::debug("Reading XDMF elsets");
-//    // Loop over all nodes to find the elsets
-//    for (pugi::xml_node xelset = xgrid.first_child();
-//         xelset; xelset = xelset.next_sibling()) {
-//        if (strcmp(xelset.name(), "Set") != 0) {
-//            continue;
-//        }
-//        // Get the SetType
-//        std::string set_type = xelset.attribute("SetType").value();
-//        if (set_type.compare("Cell") != 0) {
-//            Log::error("XDMF elset only supports SetType=Cell");
-//            return;
-//        }
-//        // Get the name
-//        std::string name = xelset.attribute("Name").value();
-//        if (name.empty()) {
-//            Log::error("XDMF elset name not found");
-//            return;
-//        }
-//        // Get the DataItem node
-//        pugi::xml_node xdataitem = xelset.child("DataItem");
-//        if (strcmp(xdataitem.name(), "DataItem") != 0) {
-//            Log::error("XDMF elset DataItem node not found");
-//            return;
-//        }
-//        // Get the data type
-//        std::string data_type = xdataitem.attribute("DataType").value();
-//        if (data_type.compare("Int") != 0) {
-//            Log::error("XDMF elset data type not supported: " + data_type);
-//            return;
-//        }
-//        // Get the precision
-//        std::string precision = xdataitem.attribute("Precision").value();
-//        if (precision.compare("1") != 0 && precision.compare("2") != 0 &&
-//            precision.compare("4") != 0 && precision.compare("8") != 0) {
-//            Log::error("XDMF elset precision not supported: " + precision);
-//            return;
-//        }
-//        // Get the format
-//        std::string format = xdataitem.attribute("Format").value();
-//        if (format.compare("HDF") != 0) {
-//            Log::error("XDMF elset format not supported: " + format);
-//            return;
-//        }
-//        // Get the h5 dataset path
-//        std::string h5dataset = xdataitem.child_value();
-//        // Read the data
-//        H5::DataSet dataset = h5file.openDataSet(h5dataset.substr(h5filename.size() +
-//        1)); H5T_class_t type_class = dataset.getTypeClass(); UM2_ASSERT(type_class ==
-//        H5T_INTEGER); H5::IntType datatype = dataset.getIntType(); size_t const
-//        datatype_size = datatype.getsize_t(); UM2_ASSERT(datatype_size ==
-//        std::stoul(precision)); H5::DataSpace dataspace = dataset.getSpace(); int rank =
-//        dataspace.getSimpleExtentNdims(); UM2_ASSERT(rank == 1); hsize_t dims[1]; int
-//        ndims = dataspace.getSimpleExtentDims(dims, nullptr); UM2_ASSERT(ndims == 1);
-//        // Get the dimensions
-//        std::string dimensions = xdataitem.attribute("Dimensions").value();
-//        size_t const num_elements = dims[0];
-//        UM2_ASSERT(num_elements == std::stoul(dimensions));
-//        mesh.elset_names.push_back(name);
-//        if (mesh.elset_offsets.empty()) {
-//            mesh.elset_offsets.push_back(0);
-//        }
-//        if (datatype_size == 1) {
-//            add_elset_to_mesh<T, I, int8_t>(mesh, num_elements, dataset, datatype);
-//        } else if (datatype_size == 2) {
-//            add_elset_to_mesh<T, I, int16_t>(mesh, num_elements, dataset, datatype);
-//        } else if (datatype_size == 4) {
-//            add_elset_to_mesh<T, I, int32_t>(mesh, num_elements, dataset, datatype);
-//        } else if (datatype_size == 8) {
-//            add_elset_to_mesh<T, I, int64_t>(mesh, num_elements, dataset, datatype);
-//        }
-//    }
-//}
-//
-// template <std::floating_point T, std::signed_integral I>
-// requires (sizeof(T) == 4 || sizeof(T) == 8)
-// void read_xdmf_uniform_grid(
-//    pugi::xml_node const & xgrid,
-//    H5::H5File const & h5file,
-//    std::string const & h5filename,
-////    std::vector<std::string> const & material_names,
-//    MeshFile<T, I> & mesh)
-//{
-//    read_xdmf_geometry(xgrid, h5file, h5filename, mesh);
-//    read_xdmf_topology(xgrid, h5file, h5filename, mesh);
-//    // Reading materials is redundant with elsets
-////    read_xdmf_materials(xgrid, h5file, h5filename, material_names, mesh);
-//    read_xdmf_elsets(xgrid, h5file, h5filename, mesh);
-//}
-//
-// template <std::floating_point T, std::signed_integral I>
-// void read_xdmf_file(std::string const & filename, MeshFile<T, I> & mesh)
-//{
-//    Log::info("Reading XDMF mesh file: " + filename);
-//
-//    // Open the XDMF file
-//    std::ifstream file(filename);
-//    if (!file.is_open()) {
-//        Log::error("Could not open file: " + filename);
-//        return;
-//    }
-//    // Open HDF5 file
-//    size_t const h5filepath_end = filename.find_last_of("/") + 1;
-//    std::string h5filename = filename.substr(
-//            h5filepath_end,
-//            filename.size() - 4 - h5filepath_end) + "h5";
-//    std::string h5filepath = filename.substr(0, h5filepath_end);
-//    um2::Log::debug("H5 filename: " + h5filename);
-//    H5::H5File h5file(h5filepath + h5filename, H5F_ACC_RDONLY);
-//
-//    // Set filepath and format
-//    mesh.filepath = filename;
-//    mesh.format = MeshFileFormat::XDMF;
-//
-//    // Setup XML file
-//    pugi::xml_document xdoc;
-//    pugi::xml_parse_result result = xdoc.load_file(filename.c_str());
-//    if (!result) {
-//        Log::error("XDMF XML parse error: " + std::string(result.description()) +
-//                ", character pos= " + std::to_string(result.offset));
-//    }
-//    pugi::xml_node xroot = xdoc.child("Xdmf");
-//    if (strcmp("Xdmf", xroot.name()) != 0) {
-//        Log::error("XDMF XML root node is not Xdmf");
-//        return;
-//    }
-//    pugi::xml_node xdomain = xroot.child("Domain");
-//    if (strcmp("Domain", xdomain.name()) != 0) {
-//        Log::error("XDMF XML domain node is not Domain");
-//        return;
-//    }
-//    std::vector<std::string> material_names;
-//    pugi::xml_node xinfo = xdomain.child("Information");
-//    if (strcmp("Information", xinfo.name()) == 0) {
-//        // Get the "Name" attribute
-//        pugi::xml_attribute xname = xinfo.attribute("Name");
-//        if (strcmp("Materials", xname.value()) == 0) {
-//            // Get the material names
-//            std::string materials = xinfo.child_value();
-//            std::stringstream ss(materials);
-//            std::string material;
-//            while (std::getline(ss, material, ',')) {
-//                if (material[0] == ' ') {
-//                    material_names.push_back(material.substr(1));
-//                } else {
-//                    material_names.push_back(material);
-//                }
-//            }
-//        }
-//    }
-//    pugi::xml_node xgrid = xdomain.child("Grid");
-//    if (strcmp("Grid", xgrid.name()) != 0) {
-//        Log::error("XDMF XML grid node is not Grid");
-//        return;
-//    }
-//    std::string grid_name = xgrid.attribute("Name").value();
-//    mesh.name = grid_name;
-//    if (strcmp("Uniform", xgrid.attribute("GridType").value()) == 0) {
-//        read_xdmf_uniform_grid(xgrid, h5file, h5filename, mesh);
-//    } else if (strcmp("Tree", xgrid.attribute("GridType").value()) == 0) {
-//        Log::error("XDMF XML Tree is not supported");
-//    } else {
-//        Log::error("XDMF XML grid type is not Uniform or Tree");
-//    }
-//}
+template <std::floating_point T, std::signed_integral I, std::signed_integral V>
+static void
+addElsetToMesh(MeshFile<T, I> & mesh, size_t const num_elements,
+               H5::DataSet const & dataset, H5::IntType const & datatype)
+{
+  V * data = new V[num_elements];
+  dataset.read(data, datatype);
+  auto const lnum_elements = static_cast<size_t>(num_elements);
+  auto const offset = static_cast<size_t>(mesh.elset_offsets.back());
+  I const last_offset = mesh.elset_offsets.back();
+  mesh.elset_offsets.push_back(last_offset + static_cast<I>(num_elements));
+  mesh.elset_ids.insert(mesh.elset_ids.end(), lnum_elements, -1);
+  for (size_t i = 0; i < lnum_elements; ++i) {
+    mesh.elset_ids[i + offset] = static_cast<I>(static_cast<unsigned char>(data[i]));
+  }
+  delete[] data;
+}
+
+template <std::floating_point T, std::signed_integral I>
+  requires(sizeof(T) == 4 || sizeof(T) == 8)
+static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+                           std::string const & h5filename, MeshFile<T, I> & mesh)
+{
+  Log::debug("Reading XDMF elsets");
+  // Loop over all nodes to find the elsets
+  for (pugi::xml_node xelset = xgrid.first_child(); xelset;
+       xelset = xelset.next_sibling()) {
+    if (strcmp(xelset.name(), "Set") != 0) {
+      continue;
+    }
+    // Get the SetType
+    std::string const set_type = xelset.attribute("SetType").value();
+    if (set_type != "Cell") {
+      Log::error("XDMF elset only supports SetType=Cell");
+      return;
+    }
+    // Get the name
+    std::string const name = xelset.attribute("Name").value();
+    if (name.empty()) {
+      Log::error("XDMF elset name not found");
+      return;
+    }
+    // Get the DataItem node
+    pugi::xml_node const xdataitem = xelset.child("DataItem");
+    if (strcmp(xdataitem.name(), "DataItem") != 0) {
+      Log::error("XDMF elset DataItem node not found");
+      return;
+    }
+    // Get the data type
+    std::string const data_type = xdataitem.attribute("DataType").value();
+    if (data_type != "Int") {
+      Log::error("XDMF elset data type not supported: " + data_type);
+      return;
+    }
+    // Get the precision
+    std::string const precision = xdataitem.attribute("Precision").value();
+    if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
+      Log::error("XDMF elset precision not supported: " + precision);
+      return;
+    }
+    // Get the format
+    std::string const format = xdataitem.attribute("Format").value();
+    if (format != "HDF") {
+      Log::error("XDMF elset format not supported: " + format);
+      return;
+    }
+    // Get the h5 dataset path
+    std::string const h5dataset = xdataitem.child_value();
+    // Read the data
+    H5::DataSet const dataset = h5file.openDataSet(h5dataset.substr(h5filename.size() + 1));
+    H5T_class_t const type_class = dataset.getTypeClass();
+    assert(type_class == H5T_INTEGER);
+    H5::IntType const datatype = dataset.getIntType();
+    size_t const datatype_size = datatype.getSize();
+    assert(datatype_size == std::stoul(precision));
+    H5::DataSpace const dataspace = dataset.getSpace();
+    int const rank = dataspace.getSimpleExtentNdims();
+    assert(rank == 1);
+    hsize_t dims[1];
+    int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
+    assert(ndims == 1);
+    // Get the dimensions
+    std::string const dimensions = xdataitem.attribute("Dimensions").value();
+    size_t const num_elements = dims[0];
+    assert(num_elements == std::stoul(dimensions));
+    mesh.elset_names.push_back(name);
+    if (mesh.elset_offsets.empty()) {
+      mesh.elset_offsets.push_back(0);
+    }
+    if (datatype_size == 1) {
+      addElsetToMesh<T, I, int8_t>(mesh, num_elements, dataset, datatype);
+    } else if (datatype_size == 2) {
+      addElsetToMesh<T, I, int16_t>(mesh, num_elements, dataset, datatype);
+    } else if (datatype_size == 4) {
+      addElsetToMesh<T, I, int32_t>(mesh, num_elements, dataset, datatype);
+    } else if (datatype_size == 8) {
+      addElsetToMesh<T, I, int64_t>(mesh, num_elements, dataset, datatype);
+    }
+  }
+}
+
+template <std::floating_point T, std::signed_integral I>
+  requires(sizeof(T) == 4 || sizeof(T) == 8)
+void readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+                         std::string const & h5filename,
+                         //    std::vector<std::string> const & material_names,
+                         MeshFile<T, I> & mesh)
+{
+  readXDMFGeometry(xgrid, h5file, h5filename, mesh);
+  readXDMFTopology(xgrid, h5file, h5filename, mesh);
+  // Reading materials is redundant with elsets
+  //    readXDMFmaterials(xgrid, h5file, h5filename, material_names, mesh);
+  readXDMFElsets(xgrid, h5file, h5filename, mesh);
+}
+
+template <std::floating_point T, std::signed_integral I>
+void
+readXDMFFile(std::string const & filename, MeshFile<T, I> & mesh)
+{
+  Log::info("Reading XDMF mesh file: " + filename);
+
+  // Open HDF5 file
+  size_t const h5filepath_end = filename.find_last_of('/') + 1;
+  std::string const h5filename =
+      filename.substr(h5filepath_end, filename.size() - 4 - h5filepath_end) + "h5";
+  std::string const h5filepath = filename.substr(0, h5filepath_end);
+  Log::debug("H5 filename: " + h5filename);
+  H5::H5File const h5file(h5filepath + h5filename, H5F_ACC_RDONLY);
+
+  // Set filepath and format
+  mesh.filepath = filename;
+  mesh.format = MeshFileFormat::XDMF;
+
+  // Setup XML file
+  pugi::xml_document xdoc;
+  pugi::xml_parse_result const result = xdoc.load_file(filename.c_str());
+  if (!result) {
+    Log::error("XDMF XML parse error: " + std::string(result.description()) +
+               ", character pos= " + std::to_string(result.offset));
+  }
+  pugi::xml_node const xroot = xdoc.child("Xdmf");
+  if (strcmp("Xdmf", xroot.name()) != 0) {
+    Log::error("XDMF XML root node is not Xdmf");
+    return;
+  }
+  pugi::xml_node const xdomain = xroot.child("Domain");
+  if (strcmp("Domain", xdomain.name()) != 0) {
+    Log::error("XDMF XML domain node is not Domain");
+    return;
+  }
+  std::vector<std::string> material_names;
+  pugi::xml_node const xinfo = xdomain.child("Information");
+  if (strcmp("Information", xinfo.name()) == 0) {
+    // Get the "Name" attribute
+    pugi::xml_attribute const xname = xinfo.attribute("Name");
+    if (strcmp("Materials", xname.value()) == 0) {
+      // Get the material names
+      std::string const materials = xinfo.child_value();
+      std::stringstream ss(materials);
+      std::string material;
+      while (std::getline(ss, material, ',')) {
+        if (material[0] == ' ') {
+          material_names.push_back(material.substr(1));
+        } else {
+          material_names.push_back(material);
+        }
+      }
+    }
+  }
+  pugi::xml_node const xgrid = xdomain.child("Grid");
+  if (strcmp("Grid", xgrid.name()) != 0) {
+    Log::error("XDMF XML grid node is not Grid");
+    return;
+  }
+  mesh.name = xgrid.attribute("Name").value();
+  if (strcmp("Uniform", xgrid.attribute("GridType").value()) == 0) {
+    readXDMFUniformGrid(xgrid, h5file, h5filename, mesh);
+  } else if (strcmp("Tree", xgrid.attribute("GridType").value()) == 0) {
+    Log::error("XDMF XML Tree is not supported");
+  } else {
+    Log::error("XDMF XML grid type is not Uniform or Tree");
+  }
+}
 
 } // namespace um2

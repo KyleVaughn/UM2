@@ -1,12 +1,10 @@
 #pragma once
 
-#include <um2/common/String.hpp>
-#include <um2/common/Vector.hpp>
 #include <um2/config.hpp>
 
-#include <chrono> // std::chrono::system_clock,
-                  // std::chrono::time_point,
-                  // std::chrono::duration
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace um2
 {
@@ -46,25 +44,25 @@ class Log
   // We need the global log options to be accessible from anywhere in the code
   // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
   static LogVerbosity max_verbosity_level;
-  static bool buffered;        // messages are buffered until flush() is called
-  static bool timestamped;     // messages are prefixed with a timestamp
-  static bool colorized;       // messages are colorized based on their verbosity level
-  static bool exit_on_error;   // the program exits after an error is logged
-  static Size flush_threshold; // flush after this many messages
+  static bool buffered;          // messages are buffered until flush() is called
+  static bool timestamped;       // messages are prefixed with a timestamp
+  static bool colorized;         // messages are colorized based on their verbosity level
+  static bool exit_on_error;     // the program exits after an error is logged
+  static size_t flush_threshold; // flush after this many messages
 
   // Data
   static LogTimePoint start_time;
-  static Size num_errors;
-  static Size num_warnings;
-  static Vector<LogVerbosity> verbosity_levels;
-  static Vector<LogTimePoint> times;
-  static Vector<String> messages;
+  static size_t num_errors;
+  static size_t num_warnings;
+  static std::vector<LogVerbosity> verbosity_levels;
+  static std::vector<LogTimePoint> times;
+  static std::vector<std::string> messages;
   // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
   // -- Methods --
 
   static void
-  handleMessage(LogVerbosity verbosity, String const & msg);
+  handleMessage(LogVerbosity verbosity, std::string const & msg);
 
 public:
   Log() = delete;
@@ -85,7 +83,7 @@ public:
   static void
   setExitOnError(bool val);
   static void
-  setFlushThreshold(Size val);
+  setFlushThreshold(size_t val);
 
   // -- Getters --
 
@@ -100,94 +98,29 @@ public:
   PURE static auto
   isExitOnError() -> bool;
   PURE static auto
-  getFlushThreshold() -> Size;
+  getFlushThreshold() -> size_t;
 
   PURE static auto
   getStartTime() -> LogTimePoint;
   PURE static auto
-  getNumErrors() -> Size;
+  getNumErrors() -> size_t;
   PURE static auto
-  getNumWarnings() -> Size;
+  getNumWarnings() -> size_t;
 
   // -- Methods --
 
   static void
   flush();
   static void
-  error(String const & msg);
+  error(std::string const & msg);
   static void
-  warn(String const & msg);
+  warn(std::string const & msg);
   static void
-  info(String const & msg);
+  info(std::string const & msg);
   static void
-  debug(String const & msg);
+  debug(std::string const & msg);
   static void
-  trace(String const & msg);
-
-  template <uint64_t N>
-  static void
-  error(char const (&msg)[N])
-  {
-    error(String(msg));
-  }
-
-  template <uint64_t N>
-  static void
-  warn(char const (&msg)[N])
-  {
-    warn(String(msg));
-  }
-
-  template <uint64_t N>
-  static void
-  info(char const (&msg)[N])
-  {
-    info(String(msg));
-  }
-
-  template <uint64_t N>
-  static void
-  debug(char const (&msg)[N])
-  {
-    debug(String(msg));
-  }
-
-  template <uint64_t N>
-  static void
-  trace(char const (&msg)[N])
-  {
-    trace(String(msg));
-  }
-
-  static void
-  error(std::string const & msg)
-  {
-    error(String(msg.c_str()));
-  }
-
-  static void
-  warn(std::string const & msg)
-  {
-    warn(String(msg.c_str()));
-  }
-
-  static void
-  info(std::string const & msg)
-  {
-    info(String(msg.c_str()));
-  }
-
-  static void
-  debug(std::string const & msg)
-  {
-    debug(String(msg.c_str()));
-  }
-
-  static void
-  trace(std::string const & msg)
-  {
-    trace(String(msg.c_str()));
-  }
+  trace(std::string const & msg);
 
   // -- Destructor --
 

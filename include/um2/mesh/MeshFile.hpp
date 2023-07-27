@@ -1,5 +1,7 @@
 #pragma once
 
+#include <um2/common/algorithm.hpp>
+#include <um2/common/memory.hpp>
 #include <um2/geometry/Point.hpp>
 #include <um2/mesh/CellType.hpp>
 #include <um2/mesh/MeshType.hpp>
@@ -98,16 +100,6 @@ compareGeometry(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
                   compare_floats)) {
     return 3;
   }
-  if (a.element_offsets.size() != b.element_offsets.size() ||
-      !std::equal(a.element_offsets.cbegin(), a.element_offsets.cend(),
-                  b.element_offsets.cbegin())) {
-    return 4;
-  }
-  if (a.element_conn.size() != b.element_conn.size() ||
-      !std::equal(a.element_conn.cbegin(), a.element_conn.cend(),
-                  b.element_conn.cbegin())) {
-    return 5;
-  }
   return 0;
 }
 #else
@@ -134,15 +126,41 @@ compareGeometry(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
                              compare_floats)) {
     return 3;
   }
+  return 0;
+}
+#endif
+
+#ifndef _OPENMP
+template <std::floating_point T, std::signed_integral I>
+constexpr auto
+compareTopology(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
+{
+  if (a.element_offsets.size() != b.element_offsets.size() ||
+      !std::equal(a.element_offsets.cbegin(), a.element_offsets.cend(),
+                  b.element_offsets.cbegin())) {
+    return 1;
+  }
+  if (a.element_conn.size() != b.element_conn.size() ||
+      !std::equal(a.element_conn.cbegin(), a.element_conn.cend(),
+                  b.element_conn.cbegin())) {
+    return 2;
+  }
+  return 0;
+}
+#else
+template <std::floating_point T, std::signed_integral I>
+constexpr auto
+compareTopology(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
+{
   if (a.element_offsets.size() != b.element_offsets.size() ||
       !__gnu_parallel::equal(a.element_offsets.cbegin(), a.element_offsets.cend(),
                              b.element_offsets.cbegin())) {
-    return 4;
+    return 1;
   }
   if (a.element_conn.size() != b.element_conn.size() ||
       !__gnu_parallel::equal(a.element_conn.cbegin(), a.element_conn.cend(),
                              b.element_conn.cbegin())) {
-    return 5;
+    return 2;
   }
   return 0;
 }
@@ -152,27 +170,33 @@ template <std::floating_point T, std::signed_integral I>
 constexpr void
 MeshFile<T, I>::sortElsets()
 {
-  // Create a copy of the elset ids. Create a vector of offset pairs.
-  // Sort the pairs by the elset names. Then, use the sorted pairs to
-  // reorder the elset ids and offsets.
+  using NameOffsetsPair = std::pair<std::string, std::pair<I, I>>;
+  // Create a vector containing the elset names and offsets.
   size_t const num_elsets = elset_names.size();
-  std::vector<I> elset_ids_copy = elset_ids;
-  std::vector<std::pair<I, I>> offset_pairs(num_elsets);
+  std::vector<NameOffsetsPair> elset_name_offsets_pairs(num_elsets);
   for (size_t i = 0; i < num_elsets; ++i) {
-    offset_pairs[i] = std::make_pair(elset_offsets[i], elset_offsets[i + 1]);
+    elset_name_offsets_pairs[i] = std::make_pair(
+        elset_names[i], std::make_pair(elset_offsets[i], elset_offsets[i + 1]));
   }
-  thrust::sort_by_key(this->elset_names.begin(), this->elset_names.end(),
-                      offset_pairs.begin());
+  // Sort the vector by the elset names.
+  std::sort(elset_name_offsets_pairs.begin(), elset_name_offsets_pairs.end(),
+            [](NameOffsetsPair const & a, NameOffsetsPair const & b) -> bool {
+              return a.first < b.first;
+            });
+  // Create a vector to store the sorted elset ids.
+  std::vector<I> elset_ids_copy = elset_ids;
+  // Overwrite the current elset offsets and
+  // copy the sorted elset ids to the elset_ids_copy vector.
   I offset = 0;
-  for (length_t i = 0; i < num_elsets; ++i) {
-    I const len = offset_pairs[i].second - offset_pairs[i].first;
-    this->elset_offsets[i] = offset;
-    this->elset_offsets[i + 1] = offset + len;
-    I const copy_offset = offset_pairs[i].first;
-    for (I j = 0; j < len; ++j) {
-      this->elset_ids[static_cast<length_t>(offset + j)] =
-          elset_ids_copy[static_cast<length_t>(copy_offset + j)];
-    }
+  for (size_t i = 0; i < num_elsets; ++i) {
+    elset_names[i] = elset_name_offsets_pairs[i].first;
+    auto const & offset_pair = elset_name_offsets_pairs[i].second;
+    I const len = offset_pair.second - offset_pair.first;
+    elset_offsets[i] = offset;
+    elset_offsets[i + 1] = offset + len;
+    copy(addressof(elset_ids_copy[static_cast<size_t>(offset_pair.first)]),
+         addressof(elset_ids_copy[static_cast<size_t>(offset_pair.second)]),
+         addressof(elset_ids[static_cast<size_t>(offset)]));
     offset += len;
   }
 }
