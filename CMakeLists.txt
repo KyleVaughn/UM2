@@ -73,6 +73,8 @@ set(UM2_HEADERS
     "include/um2/geometry/QuadraticSegment.hpp"
     "include/um2/geometry/QuadraticTriangle.hpp"
     "include/um2/geometry/QuadraticQuadrilateral.hpp"
+    # physics
+    "include/um2/physics/Material.hpp"
     # mesh
     "include/um2/mesh/CellType.hpp"
     "include/um2/mesh/MeshType.hpp"
@@ -84,6 +86,7 @@ set(UM2_HEADERS
     "include/um2/mesh/TriMesh.hpp"
     # gmsh
     "include/um2/gmsh/base_gmsh_api.hpp"
+    "include/um2/gmsh/model.hpp"
     #    # ray_casting
     #    "include/um2/ray_casting/Ray.hpp"
     # visualization
@@ -99,6 +102,7 @@ set(UM2_SOURCES
     "src/common/Log.cpp"
     # gmsh
     "src/gmsh/base_gmsh_api.cpp"
+    "src/gmsh/model.cpp"
     # visualization
     "src/visualization/Image2D.cpp"
     # api

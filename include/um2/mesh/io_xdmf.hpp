@@ -897,7 +897,8 @@ static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5fi
     // Get the h5 dataset path
     std::string const h5dataset = xdataitem.child_value();
     // Read the data
-    H5::DataSet const dataset = h5file.openDataSet(h5dataset.substr(h5filename.size() + 1));
+    H5::DataSet const dataset =
+        h5file.openDataSet(h5dataset.substr(h5filename.size() + 1));
     H5T_class_t const type_class = dataset.getTypeClass();
     assert(type_class == H5T_INTEGER);
     H5::IntType const datatype = dataset.getIntType();

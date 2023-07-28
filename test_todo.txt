@@ -6,7 +6,10 @@ applyPermutation(Vector, Permutation)
 
 String.starts_with
 String.ends_with
-String(char const *, uint64_t)
+String(char const *)
+
+ShortString(char const *)
+ShortString==(std::string const &)
 
 geometry/morton.hpp
   Ensure that mortonSort works in 3D for: 
@@ -19,6 +22,8 @@ Quadrilateral.area
 
 Quadrilateral.centroid
   For a quadrilateral with 3 collinear points, is the centroid still correct?
+
+Material tests
 
 RegularGrid.getCellCentroid
 

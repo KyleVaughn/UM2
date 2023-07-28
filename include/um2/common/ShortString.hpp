@@ -8,6 +8,7 @@
 #include <um2/math/math_functions.hpp> // min
 
 #include <cstring> // memcpy
+#include <string>
 
 namespace um2
 {
@@ -33,6 +34,8 @@ public:
 
   template <uint64_t N>
   HOSTDEV constexpr explicit ShortString(char const (&s)[N]) noexcept;
+
+  HOSTDEV constexpr explicit ShortString(char const * s) noexcept;
 
   // -----------------------------------------------------------------------------
   // Accessors
@@ -72,6 +75,9 @@ public:
 
   HOSTDEV constexpr auto
   operator>=(ShortString const & s) const noexcept -> bool;
+
+  constexpr auto
+  operator==(std::string const & s) const noexcept -> bool;
 
   // -----------------------------------------------------------------------------
   // Methods

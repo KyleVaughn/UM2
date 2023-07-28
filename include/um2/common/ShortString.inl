@@ -19,6 +19,17 @@ HOSTDEV constexpr ShortString::ShortString(char const (&s)[N]) noexcept
   _c[31] = capacity() - static_cast<char>(N - 1);
 }
 
+HOSTDEV constexpr ShortString::ShortString(char const * s) noexcept
+{
+  Size n = 0;
+  while (s[n] != '\0') {
+    ++n;
+  }
+  assert(n <= capacity());
+  copy(addressof(s[0]), addressof(s[n]), addressof(_c[0]));
+  _c[31] = static_cast<char>(capacity() - n);
+}
+
 // --------------------------------------------------------------------------
 // Accessors
 // --------------------------------------------------------------------------
@@ -55,6 +66,26 @@ ShortString::operator==(ShortString const & s) const noexcept -> bool
 {
   Size const l_size = size();
   Size const r_size = s.size();
+  if (l_size != r_size) {
+    return false;
+  }
+  char const * l_data = data();
+  char const * r_data = s.data();
+  for (Size i = 0; i < l_size; ++i) {
+    if (*l_data != *r_data) {
+      return false;
+    }
+    ++l_data;
+    ++r_data;
+  }
+  return true;
+}
+
+constexpr auto
+ShortString::operator==(std::string const & s) const noexcept -> bool
+{
+  Size const l_size = size();
+  auto const r_size = static_cast<Size>(s.size());
   if (l_size != r_size) {
     return false;
   }
