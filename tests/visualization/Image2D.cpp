@@ -7,8 +7,8 @@ template <typename T>
 TEST_CASE(writePPM)
 {
   um2::Image2D<T> image;
-  image.num_cells[0] = 10;
-  image.num_cells[1] = 10;
+  image.grid.num_cells[0] = 10;
+  image.grid.num_cells[1] = 10;
   image.children.resize(100);
   image.getChild(0, 0) = um2::Color("red");
   image.getChild(9, 0) = um2::Color("green");
@@ -27,12 +27,12 @@ template <typename T>
 TEST_CASE(rasterizePoint)
 {
   um2::Image2D<T> image;
-  image.minima[0] = static_cast<T>(0);
-  image.minima[1] = static_cast<T>(0);
-  image.spacing[0] = static_cast<T>(1);
-  image.spacing[1] = static_cast<T>(1);
-  image.num_cells[0] = 100;
-  image.num_cells[1] = 100;
+  image.grid.minima[0] = static_cast<T>(0);
+  image.grid.minima[1] = static_cast<T>(0);
+  image.grid.spacing[0] = static_cast<T>(1);
+  image.grid.spacing[1] = static_cast<T>(1);
+  image.grid.num_cells[0] = 100;
+  image.grid.num_cells[1] = 100;
   image.children.resize(100 * 100);
 
   T r = 10;

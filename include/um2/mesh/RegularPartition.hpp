@@ -24,19 +24,76 @@ namespace um2
 //  * is where grid.minima is located.
 
 template <Size D, typename T, typename P>
-struct RegularPartition : public RegularGrid<D, T> {
+struct RegularPartition {
 
+  RegularGrid<D, T> grid;
   Vector<P> children;
 
   // ---------------------------------------------------------------------------
   // Constructors
   // ---------------------------------------------------------------------------
 
-  constexpr RegularPartition() noexcept = default;
+  constexpr RegularPartition() = default;
 
   // ---------------------------------------------------------------------------
   // Accessors
   // ---------------------------------------------------------------------------
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  xMin() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  yMin() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  zMin() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  dx() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  dy() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  dz() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  numXCells() const noexcept -> Size;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  numYCells() const noexcept -> Size;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  numZCells() const noexcept -> Size;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  width() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  height() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  depth() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  xMax() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  yMax() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  zMax() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  maxima() const noexcept -> Point<D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  boundingBox() const noexcept -> AxisAlignedBox<D, T>;
+
+  template <typename... Args>
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
+      -> AxisAlignedBox<D, T>;
 
   template <typename... Args>
     requires(sizeof...(Args) == D)
@@ -46,6 +103,18 @@ struct RegularPartition : public RegularGrid<D, T> {
     requires(sizeof...(Args) == D)
   PURE HOSTDEV [[nodiscard]] constexpr auto getChild(Args... args) const noexcept
       -> P const &;
+
+  template <typename... Args>
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto getCellCentroid(Args... args) const noexcept
+      -> Point<D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getCellIndicesIntersecting(AxisAlignedBox<D, T> const & box) const noexcept
+      -> Vec<2 * D, Size>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getCellIndexContaining(Point<D, T> const & point) const noexcept -> Vec<D, Size>;
 };
 
 // -- Aliases --

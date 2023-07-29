@@ -17,7 +17,7 @@ void
 Image2D<T>::write(String const & filename) const
 {
   if (filename.ends_with("ppm")) {
-    writePPM(this->children, this->num_cells[0], this->num_cells[1], filename);
+    writePPM(this->children, this->grid.num_cells[0], this->grid.num_cells[1], filename);
   }
   //  else if (filename.ends_with("png"))
   //  {

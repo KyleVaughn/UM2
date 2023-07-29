@@ -3,7 +3,6 @@
 #include <um2/common/Log.hpp>
 #include <um2/common/sto.hpp>
 #include <um2/config.hpp>
-// #include <um2/mesh/cell_type.hpp>
 #include <um2/mesh/MeshFile.hpp>
 
 #include <algorithm> // std::transform
@@ -16,6 +15,12 @@
 #include <pugixml.hpp> // pugi::xml_document, pugi::xml_node
                        // H5::Group, H5::PredType, H5::hsize_t
 
+// Turn off useless cast warnings, since the casts are only useless for certain
+// CMake configurations.
+#if defined(__GNUC__) && !defined(__clang__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
 namespace um2
 {
 
@@ -1014,3 +1019,6 @@ readXDMFFile(std::string const & filename, MeshFile<T, I> & mesh)
 }
 
 } // namespace um2
+#if defined(__GNUC__) && !defined(__clang__)
+#  pragma GCC diagnostic pop
+#endif

@@ -1,5 +1,3 @@
-Undo inhertance on regularPartition
-
 gmsh api, gmsh tests
 
 Update github actions to use spack

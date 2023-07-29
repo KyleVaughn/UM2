@@ -110,7 +110,12 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   I const offset_back = mesh.element_offsets.back();
   mesh.element_offsets.insert(mesh.element_offsets.end(), num_elements, -1);
   for (size_t i = 0; i < num_elements; ++i) {
+    // GCC INSISTS that this is a narrowing conversion, but it's not.
+    // val, offset_back, and offset are all I, so the result is I.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
     I const val = offset_back + static_cast<I>((i + 1)) * offset;
+#pragma GCC diagnostic pop
     mesh.element_offsets[offsets_size + i] = val;
   }
 }
