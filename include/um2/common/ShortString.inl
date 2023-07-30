@@ -15,8 +15,9 @@ template <uint64_t N>
 HOSTDEV constexpr ShortString::ShortString(char const (&s)[N]) noexcept
 {
   static_assert(N - 1 <= capacity(), "String too long");
-  copy(addressof(s[0]), addressof(s[N - 1]), addressof(_c[0]));
+  copy(addressof(s[0]), addressof(s[N]), addressof(_c[0]));
   _c[31] = capacity() - static_cast<char>(N - 1);
+  assert(_c[N - 1] == '\0');
 }
 
 HOSTDEV constexpr ShortString::ShortString(char const * s) noexcept
@@ -26,8 +27,9 @@ HOSTDEV constexpr ShortString::ShortString(char const * s) noexcept
     ++n;
   }
   assert(n <= capacity());
-  copy(addressof(s[0]), addressof(s[n]), addressof(_c[0]));
+  copy(addressof(s[0]), addressof(s[n + 1]), addressof(_c[0]));
   _c[31] = static_cast<char>(capacity() - n);
+  assert(_c[n] == '\0');
 }
 
 // --------------------------------------------------------------------------

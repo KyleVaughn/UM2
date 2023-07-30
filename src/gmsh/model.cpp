@@ -228,7 +228,8 @@ getNewPhysicalGroups(gmsh::vectorpair const & object_dimtags,
   }
   for (size_t i = 0; i < num_groups; ++i) {
     std::vector<int> const & tags = pre_physical_group_ent_tags[i];
-    std::vector<int> new_tags(tags.size());
+    std::vector<int> new_tags;
+    new_tags.reserve(tags.size());
     // The object, tool, and physical group entities are sorted.
     // Therefore, we can simply iterate through the entities in the
     // physical group and the object and tool entities, and compare
@@ -370,6 +371,7 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
   Log::info("Fragmenting " + std::to_string(nobject) + " object entities and " +
             std::to_string(ntool) + " tool entities");
   gmsh::model::removePhysicalGroups();
+
   gmsh::model::occ::fragment(object_dimtags, tool_dimtags, out_dimtags, out_dimtags_map,
                              tag, remove_object, remove_tool);
   // Remove object or tool entities if requested.
