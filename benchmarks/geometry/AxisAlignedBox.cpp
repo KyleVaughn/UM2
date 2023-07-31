@@ -1,5 +1,5 @@
 // FINDINGS:
-// It is not helpful to implent an OpenMP version of the bounding box of a vector
+// It is not helpful to implement an OpenMP version of the bounding box of a vector
 // of points. The single threaded version is faster than the OpenMP version for all
 // sizes under very large N
 

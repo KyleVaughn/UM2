@@ -44,6 +44,7 @@ add_um2_test(./mesh/RegularPartition.cpp)
 add_um2_test(./mesh/RectilinearGrid.cpp)
 add_um2_test(./mesh/RectilinearPartition.cpp)
 add_um2_test(./mesh/TriMesh.cpp)
+add_um2_test(./mesh/QuadMesh.cpp)
 add_um2_test(./mesh/io_abaqus.cpp)
 add_um2_test(./mesh/io_xdmf.cpp)
 
@@ -52,6 +53,11 @@ add_um2_test(./mesh/io_xdmf.cpp)
 # ------------------------------------------------------------------------------
 add_um2_test(./gmsh/base_gmsh_api.cpp)
 add_um2_test(./gmsh/model.cpp)
+
+# ------------------------------------------------------------------------------
+# mpact
+# ------------------------------------------------------------------------------
+#add_um2_test(./mpact/SpatialPartition.cpp)
 
 ## ------------------------------------------------------------------------------
 ## ray_casting

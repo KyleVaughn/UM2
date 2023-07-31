@@ -1,6 +1,6 @@
 // FINDINGS:
 //  BMI2 vs non-BMI2: Use of BMI is 2x-3x faster than non-BMI
-//  Single vs multi-threaded: multithreaded appears to be same for faster
+//  Single vs multi-threaded: multithreaded appears to be same or faster
 //    Also, the execution policy for sort does not seem to matter
 //  CUDA: Faster after 1000 points
 

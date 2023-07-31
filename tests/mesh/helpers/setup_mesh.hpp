@@ -27,24 +27,27 @@ makeTriReferenceMesh() -> um2::TriMesh<D, T, I>
   return mesh;
 }
 
-// template <std::floating_point T, std::signed_integral I>
-// UM2_HOSTDEV static void makeQuadReferenceMesh(um2::QuadMesh<T, I> & mesh)
-//{
-//   mesh.vertices = {
-//       {0, 0},
-//       {1, 0},
-//       {1, 1},
-//       {0, 1},
-//       {2, 0},
-//       {2, 1}
-//   };
-//   mesh.fv = {0, 1, 2, 3, 1, 4, 5, 2};
-//   mesh.vf_offsets = {0, 1, 3, 5, 6, 7, 8};
-//   mesh.vf = {0, 0, 1, 0, 1, 0, 1, 1};
-// }
+template <Size D, std::floating_point T, std::signed_integral I>
+HOSTDEV static auto makeQuadReferenceMesh() -> um2::QuadMesh<D, T, I>
+{
+  um2::QuadMesh<D, T, I> mesh;
+  mesh.vertices = {
+      {0, 0},
+      {1, 0},
+      {1, 1},
+      {0, 1},
+      {2, 0},
+      {2, 1}
+  };
+  mesh.fv = {{0, 1, 2, 3}, {1, 4, 5, 2}};
+  mesh.vf_offsets = {0, 1, 3, 5, 6, 7, 8};
+  mesh.vf = {0, 0, 1, 0, 1, 0, 1, 1};
+  return mesh;
+}
+
 //
 // template <std::floating_point T, std::signed_integral I>
-// UM2_HOSTDEV static void makeTriQuadReferenceMesh(um2::TriQuadMesh<T, I> & mesh)
+// HOSTDEV static void makeTriQuadReferenceMesh(um2::TriQuadMesh<T, I> & mesh)
 //{
 //   mesh.vertices = {
 //       {0, 0},
@@ -60,7 +63,7 @@ makeTriReferenceMesh() -> um2::TriMesh<D, T, I>
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// UM2_HOSTDEV static void makeTri6ReferenceMesh(um2::QuadraticTriMesh<T, I> & mesh)
+// HOSTDEV static void makeTri6ReferenceMesh(um2::QuadraticTriMesh<T, I> & mesh)
 //{
 //   mesh.vertices = {
 //       {                  0,                   0},
@@ -79,7 +82,7 @@ makeTriReferenceMesh() -> um2::TriMesh<D, T, I>
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// UM2_HOSTDEV static void makeQuad8ReferenceMesh(um2::QuadraticQuadMesh<T, I> & mesh)
+// HOSTDEV static void makeQuad8ReferenceMesh(um2::QuadraticQuadMesh<T, I> & mesh)
 //{
 //   mesh.vertices = {
 //       {static_cast<T>(0.0), static_cast<T>(0.0)},
@@ -102,7 +105,7 @@ makeTriReferenceMesh() -> um2::TriMesh<D, T, I>
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// UM2_HOSTDEV static void makeTri6Quad8ReferenceMesh(um2::QuadraticTriQuadMesh<T, I> &
+// HOSTDEV static void makeTri6Quad8ReferenceMesh(um2::QuadraticTriQuadMesh<T, I> &
 // mesh)
 //{
 //   mesh.vertices = {

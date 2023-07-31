@@ -46,29 +46,6 @@ TEST_CASE(faceContaining)
   ASSERT(mesh.faceContaining(p) == 1);
 }
 
-// template <std::floating_point T, std::signed_integral I>
-// TEST_CASE(regularPartition)
-//{
-//   um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
-//   um2::Vector<I> face_ids_buffer;
-//   // All in one cell
-//   auto const partition = mesh.regularPartition(face_ids_buffer, static_cast<T>(0.001));
-//   ASSERT_NEAR(partition.xMin(), static_cast<T>(0), static_cast<T>(1e-6));
-//   ASSERT_NEAR(partition.xMax(), static_cast<T>(1), static_cast<T>(1e-6));
-//   ASSERT_NEAR(partition.yMin(), static_cast<T>(0), static_cast<T>(1e-6));
-//   ASSERT_NEAR(partition.yMax(), static_cast<T>(1), static_cast<T>(1e-6));
-//   ASSERT(partition.numXCells() == 1);
-//   ASSERT(partition.numYCells() == 1);
-//   ASSERT_NEAR(partition.dx(), static_cast<T>(1), static_cast<T>(1e-6));
-//   ASSERT_NEAR(partition.dy(), static_cast<T>(1), static_cast<T>(1e-6));
-//   ASSERT(partition.children.size() == 2);
-//   ASSERT(partition.children[0] == 0);
-//   ASSERT(partition.children[1] == 2);
-//   ASSERT(face_ids_buffer.size() == 2);
-//   ASSERT(face_ids_buffer[0] == 0);
-//   ASSERT(face_ids_buffer[1] == 1);
-// }
-
 #if UM2_ENABLE_CUDA
 template <std::floating_point T, std::signed_integral I>
 MAKE_CUDA_KERNEL(accessors, T, I)
@@ -80,7 +57,6 @@ TEST_SUITE(TriMesh)
   TEST_HOSTDEV(accessors, 1, 1, T, I);
   TEST((boundingBox<T, I>));
   TEST((faceContaining<T, I>));
-  //  TEST((regularPartition<T, I>));
 }
 
 auto

@@ -10,7 +10,7 @@
 #define D       2
 #define T       float
 #define NPOINTS 1 << 16
-#define NTRIS   1 << 3
+#define NTRIS   1 << 5
 #define BOX_MAX 10
 // NOLINTEND
 
@@ -46,6 +46,16 @@ triContainsCCW(um2::Triangle<D, T> const & tri, um2::Point<D, T> const & p) -> b
   return um2::areCCW(tri[0], tri[1], p) && um2::areCCW(tri[1], tri[2], p) &&
          um2::areCCW(tri[2], tri[0], p);
 }
+
+constexpr auto
+triContainsNoShortCCW(um2::Triangle<D, T> const & tri, um2::Point<D, T> const & p) -> bool
+{
+  bool const b0 = um2::areCCW(tri[0], tri[1], p);
+  bool const b1 = um2::areCCW(tri[1], tri[2], p);
+  bool const b2 = um2::areCCW(tri[2], tri[0], p);
+  return b0 && b1 && b2;
+}
+
 // NOLINTEND(readability-identifier-naming)
 
 static void
@@ -100,6 +110,33 @@ containsCCW(benchmark::State & state)
   }
 }
 
-BENCHMARK(containsBary)->RangeMultiplier(2)->Range(16, NPOINTS);
-BENCHMARK(containsCCW)->RangeMultiplier(2)->Range(16, NPOINTS);
+static void
+containsNoShortCCW(benchmark::State & state)
+{
+  um2::Vector<um2::Point<D, T>> points(static_cast<Size>(state.range(0)));
+  um2::Vector<um2::Triangle<D, T>> tris(NTRIS);
+  for (auto & p : points) {
+    // cppcheck-suppress useStlAlgorithm
+    p = randomPoint();
+  }
+  for (auto & t : tris) {
+    // cppcheck-suppress useStlAlgorithm
+    t = um2::Triangle<D, T>(randomPoint(), randomPoint(), randomPoint());
+  }
+  // NOLINTNEXTLINE
+  for (auto s : state) {
+    int i = 0;
+    for (auto const & t : tris) {
+      for (auto const & p : points) {
+        // cppcheck-suppress useStlAlgorithm
+        i += static_cast<int>(triContainsNoShortCCW(t, p));
+      }
+    }
+    benchmark::DoNotOptimize(i);
+  }
+}
+
+BENCHMARK(containsBary)->RangeMultiplier(2)->Range(1024, NPOINTS)->Unit(benchmark::kMicrosecond);
+BENCHMARK(containsCCW)->RangeMultiplier(2)->Range(1024, NPOINTS)->Unit(benchmark::kMicrosecond);
+BENCHMARK(containsNoShortCCW)->RangeMultiplier(2)->Range(1024, NPOINTS)->Unit(benchmark::kMicrosecond);
 BENCHMARK_MAIN();
