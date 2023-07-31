@@ -4,7 +4,7 @@
 
 #if UM2_ENABLE_GMSH
 #  include <um2/common/Log.hpp>
-// #include <um2/geometry/point.hpp>
+#  include <um2/geometry/Point.hpp>
 // #include <um2/geometry/axis_aligned_box.hpp>
 // #include <um2/mesh/rectilinear_grid.hpp>
 #  include <um2/gmsh/base_gmsh_api.hpp>
@@ -50,19 +50,18 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
                          std::vector<Material> const & material_hierarchy = {},
                          int tag = -1, bool remove_object = true,
                          bool remove_tool = true);
-//
-//    std::vector<int> add_2d_cylindrical_pin(
-//            Point2d const & center,
-//            std::vector<double> const & radii,
-//            std::vector<Material> const & materials);
-//
-//    std::vector<int> add_2d_cylindrical_pin_lattice(
-//            std::vector<std::vector<double>> const & radii,
-//            std::vector<std::vector<Material>> const & materials,
-//            std::vector<Vec2d> const & dxdy,
-//            std::vector<std::vector<int>> const & pin_ids,
-//            Point2d const & offset = {0.0, 0.0});
-//
+
+auto
+addCylindricalPin2D(Point2d const & center, std::vector<double> const & radii,
+                    std::vector<Material> const & materials) -> std::vector<int>;
+
+auto
+addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
+                           std::vector<std::vector<Material>> const & materials,
+                           std::vector<Vec2d> const & dxdy,
+                           std::vector<std::vector<int>> const & pin_ids,
+                           Point2d const & offset = {0.0, 0.0}) -> std::vector<int>;
+
 //    std::vector<int> add_cylindrical_pin(
 //            Point3d const & center,
 //            double const height,

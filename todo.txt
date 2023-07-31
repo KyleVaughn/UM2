@@ -1,3 +1,6 @@
+RectilinearPartition
+mpact::SpatialPartiton
+
 gmsh api, gmsh tests
 
 Update github actions to use spack

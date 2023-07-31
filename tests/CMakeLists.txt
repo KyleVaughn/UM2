@@ -41,6 +41,7 @@ file(COPY ${PROJECT_SOURCE_DIR}/tests/mesh/mesh_files DESTINATION ${CMAKE_CURREN
 add_um2_test(./mesh/CellType.cpp)
 add_um2_test(./mesh/RegularGrid.cpp)
 add_um2_test(./mesh/RegularPartition.cpp)
+add_um2_test(./mesh/RectilinearGrid.cpp)
 add_um2_test(./mesh/TriMesh.cpp)
 add_um2_test(./mesh/io_abaqus.cpp)
 add_um2_test(./mesh/io_xdmf.cpp)

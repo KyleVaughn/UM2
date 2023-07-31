@@ -14,17 +14,17 @@ initialize(std::string const & verbosity, bool init_gmsh, int gmsh_verbosity)
   // Make uppercase for comparison
   std::string verbosity_upper = verbosity;
   std::transform(verbosity.begin(), verbosity.end(), verbosity_upper.begin(), ::toupper);
-  if (verbosity == "TRACE") {
+  if (verbosity_upper == "TRACE") {
     Log::setMaxVerbosityLevel(LogVerbosity::Trace);
-  } else if (verbosity == "DEBUG") {
+  } else if (verbosity_upper == "DEBUG") {
     Log::setMaxVerbosityLevel(LogVerbosity::Debug);
-  } else if (verbosity == "INFO") {
+  } else if (verbosity_upper == "INFO") {
     Log::setMaxVerbosityLevel(LogVerbosity::Info);
-  } else if (verbosity == "WARN") {
+  } else if (verbosity_upper == "WARN") {
     Log::setMaxVerbosityLevel(LogVerbosity::Warn);
-  } else if (verbosity == "ERROR") {
+  } else if (verbosity_upper == "ERROR") {
     Log::setMaxVerbosityLevel(LogVerbosity::Error);
-  } else if (verbosity == "OFF") {
+  } else if (verbosity_upper == "OFF") {
     Log::setMaxVerbosityLevel(LogVerbosity::Off);
   } else {
     Log::setMaxVerbosityLevel(LogVerbosity::Info);

@@ -31,6 +31,7 @@ MeshFile.compareGeometry
 MeshFile.compareTopology
 MeshFile.sortElsets
 
+Ignore commented section below
 // TriMesh.regularPartition
 //   3 by 3 grid. 
 //     6  7  8
@@ -40,6 +41,10 @@ MeshFile.sortElsets
 //     Cell 6 = 1
 //     Cell 2 = 0
 //     Cells 1, 3, 5, 7 are indeterminate due to floating point error.
+
+Gmsh
+  groupPreservingIntersect
+  addCylindricalPin2D
 
 Image
   rasterizePoint

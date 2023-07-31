@@ -83,9 +83,11 @@ set(UM2_HEADERS
     "include/um2/mesh/io_xdmf.hpp"
     "include/um2/mesh/RegularGrid.hpp"
     "include/um2/mesh/RegularPartition.hpp"
+    "include/um2/mesh/RectilinearGrid.hpp"
     "include/um2/mesh/TriMesh.hpp"
     # gmsh
     "include/um2/gmsh/base_gmsh_api.hpp"
+    "include/um2/gmsh/io.hpp"
     "include/um2/gmsh/model.hpp"
     #    # ray_casting
     #    "include/um2/ray_casting/Ray.hpp"
@@ -102,6 +104,7 @@ set(UM2_SOURCES
     "src/common/Log.cpp"
     # gmsh
     "src/gmsh/base_gmsh_api.cpp"
+    "src/gmsh/io.cpp"
     "src/gmsh/model.cpp"
     # visualization
     "src/visualization/Image2D.cpp"
