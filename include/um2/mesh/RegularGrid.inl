@@ -216,8 +216,8 @@ RegularGrid<D, T>::getCellIndicesIntersecting(
     result[i] = static_cast<Size>(um2::floor((box.minima[i] - minima[i]) / spacing[i]));
     result[i + D] =
         static_cast<Size>(um2::floor((box.maxima[i] - minima[i]) / spacing[i]));
-    result[i] = um2::clamp(result[i], 0, num_cells[i] - 1);
-    result[i + D] = um2::clamp(result[i + D], 0, num_cells[i] - 1);
+    result[i] = um2::clamp(result[i], static_cast<Size>(0), num_cells[i] - 1);
+    result[i + D] = um2::clamp(result[i + D], static_cast<Size>(0), num_cells[i] - 1);
   }
   return result;
 }
@@ -230,7 +230,7 @@ RegularGrid<D, T>::getCellIndexContaining(Point<D, T> const & point) const noexc
   Vec<D, Size> result;
   for (Size i = 0; i < D; ++i) {
     result[i] = static_cast<Size>(um2::floor((point[i] - minima[i]) / spacing[i]));
-    result[i] = um2::clamp(result[i], 0, num_cells[i] - 1);
+    result[i] = um2::clamp(result[i], static_cast<Size>(0), num_cells[i] - 1);
   }
   return result;
 }

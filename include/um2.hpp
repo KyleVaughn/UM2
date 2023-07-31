@@ -21,8 +21,12 @@ namespace um2
 {
 
 void
+#if UM2_ENABLE_GMSH
 initialize(std::string const & verbosity = "info", bool init_gmsh = true,
            int gmsh_verbosity = 2);
+#else
+initialize(std::string const & verbosity = "info");
+#endif
 
 void
 finalize();

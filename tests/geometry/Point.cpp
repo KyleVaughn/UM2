@@ -54,7 +54,7 @@ TEST_CASE(midpoint)
   um2::Point<D, T> const p2 = makep2<D, T>();
   um2::Point<D, T> m = um2::midpoint(p1, p2);
   for (Size i = 0; i < D; ++i) {
-    ASSERT_NEAR(m[i], static_cast<T>(i + 1.5), static_cast<T>(1e-6));
+    ASSERT_NEAR(m[i], static_cast<T>(i) + static_cast<T>(1.5), static_cast<T>(1e-6));
   }
 }
 

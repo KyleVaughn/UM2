@@ -7,7 +7,11 @@ namespace um2
 {
 
 void
+#if UM2_ENABLE_GMSH
 initialize(std::string const & verbosity, bool init_gmsh, int gmsh_verbosity)
+#else
+initialize(std::string const & verbosity)
+#endif
 {
   Log::reset();
   // Set verbosity
