@@ -197,41 +197,28 @@ TEST_CASE(getBox)
 //    }
 // END_TEST
 //
-////#if HAS_CUDA
-////template <Size D, typename T>
-////ADD_TEMPLATED_CUDA_KERNEL(clear, clear_kernel, D, T)
-////template <Size D, typename T>
-////ADD_TEMPLATED_KERNEL_TEST(clear_kernel, clear_cuda, D, T)
-////
-////template <Size D, typename T>
-////ADD_TEMPLATED_CUDA_KERNEL(accessors, accessors_kernel, D, T)
-////template <Size D, typename T>
-////ADD_TEMPLATED_KERNEL_TEST(accessors_kernel, accessors_cuda, D, T)
-////
-////template <Size D, typename T>
-////ADD_TEMPLATED_CUDA_KERNEL(bounding_box, bounding_box_kernel, D, T)
-////template <Size D, typename T>
-////ADD_TEMPLATED_KERNEL_TEST(bounding_box_kernel, bounding_box_cuda, D, T)
-////
-////template <typename T>
-////ADD_TEMPLATED_CUDA_KERNEL(getBox, getBox_kernel, T)
-////template <typename T>
-////ADD_TEMPLATED_KERNEL_TEST(getBox_kernel, getBox_cuda, T)
-////
-////template <typename T>
-////ADD_TEMPLATED_CUDA_KERNEL(aabb2_constructor, aabb2_constructor_kernel, T)
-////template <typename T>
-////ADD_TEMPLATED_KERNEL_TEST(aabb2_constructor_kernel, aabb2_constructor_cuda, T)
-////#endif
+#if UM2_ENABLE_CUDA 
+template <Size D, typename T>
+MAKE_CUDA_KERNEL(clear, D, T)
+
+template <Size D, typename T>
+MAKE_CUDA_KERNEL(accessors, D, T)
+
+template <Size D, typename T>
+MAKE_CUDA_KERNEL(boundingBox, D, T)
+
+template <typename T>
+MAKE_CUDA_KERNEL(getBox, T)
+#endif
 
 template <Size D, typename T>
 TEST_SUITE(RectilinearGrid)
 {
-  TEST((clear<D, T>));
-  TEST((accessors<D, T>));
-  TEST((boundingBox<D, T>));
+  TEST_HOSTDEV(clear, 1, 1, D, T);
+  TEST_HOSTDEV(accessors, 1, 1, D, T);
+  TEST_HOSTDEV(boundingBox, 1, 1, D, T);
   if constexpr (D == 2) {
-    TEST((getBox<T>));
+    TEST_HOSTDEV(getBox, 1, 1, T);
     //    RUN_TEST("aabb2_constructor", (aabb2_constructor<T>)  );
     //    RUN_TEST("id_array_constructor", (id_array_constructor<T>)  );
   }

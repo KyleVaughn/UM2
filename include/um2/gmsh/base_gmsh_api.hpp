@@ -2,9 +2,12 @@
 
 #include <um2/config.hpp> // UM2_HAS_GMSH
 
+#if UM2_ENABLE_GMSH
+
 // NOLINTBEGIN(readability*, modernize*)
 
-#if UM2_ENABLE_GMSH
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 
 #  include <cmath>
 #  include <functional>
@@ -1133,5 +1136,8 @@ getLastError(std::string & error);
 } // namespace logger
 } // namespace gmsh
 } // namespace um2
-#endif // UM2_ENABLE_GMSH
+
+#  pragma GCC diagnostic pop
 // NOLINTEND(readability*, modernize*)
+
+#endif // UM2_ENABLE_GMSH

@@ -3,7 +3,8 @@
 #include <um2/common/Vector.hpp>
 #include <um2/mesh/RectilinearGrid.hpp>
 
-namespace um2 {
+namespace um2
+{
 
 // -----------------------------------------------------------------------------
 // RECTILINEAR PARTITION
@@ -36,11 +37,10 @@ struct RectilinearPartition {
 
   constexpr RectilinearPartition() noexcept = default;
 
-//    // dydy and an array of IDs, mapping to the dxdy
-//    constexpr RectilinearPartition(std::vector<Vec2<T>> const &,
-//                                   std::vector<std::vector<int>> const &)
-//    requires (D == 2);
-
+  //    // dydy and an array of IDs, mapping to the dxdy
+  //    constexpr RectilinearPartition(std::vector<Vec2<T>> const &,
+  //                                   std::vector<std::vector<int>> const &)
+  //    requires (D == 2);
 
   // ---------------------------------------------------------------------------
   // Accessors
@@ -115,8 +115,8 @@ struct RectilinearPartition {
   // Methods
   // ---------------------------------------------------------------------------
 
-  HOSTDEV constexpr void clear() noexcept;
-
+  HOSTDEV constexpr void
+  clear() noexcept;
 };
 
 // -- Aliases --
@@ -130,13 +130,19 @@ using RectilinearPartition2 = RectilinearPartition<2, T, P>;
 template <typename T, typename P>
 using RectilinearPartition3 = RectilinearPartition<3, T, P>;
 
-template <typename P> using RectilinearPartition1f = RectilinearPartition1<float, P>;
-template <typename P> using RectilinearPartition2f = RectilinearPartition2<float, P>;
-template <typename P> using RectilinearPartition3f = RectilinearPartition3<float, P>;
+template <typename P>
+using RectilinearPartition1f = RectilinearPartition1<float, P>;
+template <typename P>
+using RectilinearPartition2f = RectilinearPartition2<float, P>;
+template <typename P>
+using RectilinearPartition3f = RectilinearPartition3<float, P>;
 
-template <typename P> using RectilinearPartition1d = RectilinearPartition1<double, P>;
-template <typename P> using RectilinearPartition2d = RectilinearPartition2<double, P>;
-template <typename P> using RectilinearPartition3d = RectilinearPartition3<double, P>;
+template <typename P>
+using RectilinearPartition1d = RectilinearPartition1<double, P>;
+template <typename P>
+using RectilinearPartition2d = RectilinearPartition2<double, P>;
+template <typename P>
+using RectilinearPartition3d = RectilinearPartition3<double, P>;
 
 } // namespace um2
 

@@ -1,4 +1,5 @@
-namespace um2 {
+namespace um2
+{
 
 // --------------------------------------------------------------------------------
 // Accessors
@@ -126,7 +127,8 @@ RectilinearPartition<D, T, P>::boundingBox() const noexcept -> AxisAlignedBox<D,
 template <Size D, typename T, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getBox(Args... args) const noexcept
+PURE HOSTDEV
+    constexpr auto RectilinearPartition<D, T, P>::getBox(Args... args) const noexcept
     -> AxisAlignedBox<D, T>
 {
   return grid.getBox(args...);
@@ -135,8 +137,7 @@ PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getBox(Args... args) 
 template <Size D, typename T, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV
-    constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) noexcept
+PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) noexcept
     -> P &
 {
   Point<D, Size> const index{args...};
@@ -147,7 +148,7 @@ PURE HOSTDEV
     return children[index[0]];
   }
   if constexpr (D == 2) {
-    return children[index[0] + index[1] * numXCells()]; 
+    return children[index[0] + index[1] * numXCells()];
   }
   //} else { // General case
   //  // [0, nx, nx*ny, nx*ny*nz, ...]
@@ -165,7 +166,7 @@ template <Size D, typename T, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
 PURE HOSTDEV
-    constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args)  const noexcept
+    constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) const noexcept
     -> P const &
 {
   Point<D, Size> const index{args...};
@@ -176,7 +177,7 @@ PURE HOSTDEV
     return children[index[0]];
   }
   if constexpr (D == 2) {
-    return children[index[0] + index[1] * numXCells()]; 
+    return children[index[0] + index[1] * numXCells()];
   }
   //} else { // General case
   //  // [0, nx, nx*ny, nx*ny*nz, ...]
@@ -195,7 +196,8 @@ PURE HOSTDEV
 // ------------------------------------------------------------------------------
 
 template <Size D, typename T, typename P>
-HOSTDEV constexpr void RectilinearPartition<D, T, P>::clear() noexcept
+HOSTDEV constexpr void
+RectilinearPartition<D, T, P>::clear() noexcept
 {
   grid.clear();
   children.clear();
@@ -203,9 +205,9 @@ HOSTDEV constexpr void RectilinearPartition<D, T, P>::clear() noexcept
 
 //// -- Constructors --
 //
-//template <length_t D, typename T, typename P>
-//constexpr
-//RectilinearPartition<D, T, P>::RectilinearPartition(
+// template <length_t D, typename T, typename P>
+// constexpr
+// RectilinearPartition<D, T, P>::RectilinearPartition(
 //        std::vector<Vec2<T>> const & dxdy,
 //        std::vector<std::vector<int>> const & ids)
 //    requires (D == 2) : grid(dxdy, ids)
@@ -218,7 +220,8 @@ HOSTDEV constexpr void RectilinearPartition<D, T, P>::clear() noexcept
 //    for (length_t i = 0; i < ny; ++i) {
 //        for (length_t j = 0; j < nx; ++j) {
 //            children[i * nx + j] =
-//                static_cast<P>(ids[static_cast<size_t>(ny - 1 - i)][static_cast<size_t>(j)]);
+//                static_cast<P>(ids[static_cast<size_t>(ny - 1 -
+//                i)][static_cast<size_t>(j)]);
 //        }
 //    }
 //}
