@@ -84,8 +84,8 @@ using TriMesh = LinearPolygonMesh<3, D, T, I>;
 template <Size D, std::floating_point T, std::signed_integral I>
 using QuadMesh = LinearPolygonMesh<4, D, T, I>;
 
-template <Size D, std::floating_point T, std::signed_integral I>
-using TriQuadMesh = LinearPolygonMesh<7, D, T, I>;
+// template <Size D, std::floating_point T, std::signed_integral I>
+// using TriQuadMesh = LinearPolygonMesh<7, D, T, I>;
 
 template <Size D, std::floating_point T, std::signed_integral I>
 using QuadraticTriMesh = QuadraticPolygonMesh<6, D, T, I>;
@@ -93,7 +93,7 @@ using QuadraticTriMesh = QuadraticPolygonMesh<6, D, T, I>;
 template <Size D, std::floating_point T, std::signed_integral I>
 using QuadraticQuadMesh = QuadraticPolygonMesh<8, D, T, I>;
 
-template <Size D, std::floating_point T, std::signed_integral I>
-using QuadraticTriQuadMesh = QuadraticPolygonMesh<14, D, T, I>;
+// template <Size D, std::floating_point T, std::signed_integral I>
+// using QuadraticTriQuadMesh = QuadraticPolygonMesh<14, D, T, I>;
 
 } // namespace um2

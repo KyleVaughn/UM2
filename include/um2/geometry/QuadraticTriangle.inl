@@ -2,6 +2,19 @@ namespace um2
 {
 
 // -------------------------------------------------------------------
+// Constructors
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+HOSTDEV constexpr QuadraticTriangle<D, T>::Polytope(
+    Point<D, T> const & p0, Point<D, T> const & p1, Point<D, T> const & p2,
+    Point<D, T> const & p3, Point<D, T> const & p4, Point<D, T> const & p5
+    ) noexcept
+    : v{p0, p1, p2, p3, p4, p5}
+{
+}
+
+// -------------------------------------------------------------------
 // Accessors
 // -------------------------------------------------------------------
 
@@ -90,7 +103,12 @@ PURE HOSTDEV constexpr auto
 QuadraticTriangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
 {
   static_assert(D == 2, "QuadraticTriangle::contains() is only defined for 2D triangles");
-  return edge(0).isLeft(p) && edge(1).isLeft(p) && edge(2).isLeft(p);
+  for (Size i = 0; i < 3; ++i) {
+    if (!edge(i).isLeft(p)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // -------------------------------------------------------------------

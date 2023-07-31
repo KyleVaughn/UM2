@@ -197,7 +197,7 @@ TEST_CASE(getBox)
 //    }
 // END_TEST
 //
-#if UM2_ENABLE_CUDA 
+#if UM2_ENABLE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(clear, D, T)
 

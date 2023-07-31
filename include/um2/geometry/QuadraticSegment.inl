@@ -418,7 +418,7 @@ QuadraticSegment<D, T>::enclosedArea() const noexcept -> T
   // The area bounded by the segment and the line between the endpoints is
   // 4/3 of the area of the triangle formed by the vertices.
   // Assumes that the segment is convex.
-  T const two_thirds = static_cast<T>(2) / static_cast<T>(3);
+  T constexpr two_thirds = static_cast<T>(2) / static_cast<T>(3);
   Vec<D, T> const v02 = v[2] - v[0];
   Vec<D, T> const v01 = v[1] - v[0];
   return two_thirds * v02.cross(v01);

@@ -144,9 +144,9 @@ TEST_CASE(getBoxAndChild)
   ASSERT(child == 31);
 }
 
-#if UM2_ENABLE_CUDA 
+#if UM2_ENABLE_CUDA
 template <Size D, typename T, std::integral P>
-MAKE_CUDA_KERNEL(clear,  D, T, P)
+MAKE_CUDA_KERNEL(clear, D, T, P)
 
 template <typename T, std::integral P>
 MAKE_CUDA_KERNEL(getBoxAndChild, T, P)

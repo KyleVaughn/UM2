@@ -28,6 +28,17 @@ struct Polytope<2, 2, 8, D, T> {
   Point<D, T> v[8];
 
   // -----------------------------------------------------------------------------
+  // Constructors
+  // -----------------------------------------------------------------------------
+
+  constexpr Polytope() noexcept = default;
+
+  HOSTDEV constexpr Polytope(Point<D, T> const & p0, Point<D, T> const & p1,
+                             Point<D, T> const & p2, Point<D, T> const & p3,
+                             Point<D, T> const & p4, Point<D, T> const & p5,
+                             Point<D, T> const & p6, Point<D, T> const & p7) noexcept;
+
+  // -----------------------------------------------------------------------------
   // Accessors
   // -----------------------------------------------------------------------------
 

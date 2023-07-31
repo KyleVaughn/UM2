@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/geometry/QuadraticTriangle.hpp>
+#include <um2/geometry/QuadraticQuadrilateral.hpp>
 #include <um2/mesh/FaceVertexMesh.hpp>
 #include <um2/mesh/RegularPartition.hpp>
 
@@ -8,10 +8,10 @@ namespace um2
 {
 
 template <Size D, std::floating_point T, std::signed_integral I>
-struct FaceVertexMesh<2, 6, D, T, I> {
+struct FaceVertexMesh<2, 8, D, T, I> {
 
-  using FaceConn = Vec<6, I>;
-  using Face = QuadraticTriangle<D, T>;
+  using FaceConn = Vec<8, I>;
+  using Face = QuadraticQuadrilateral<D, T>;
 
   Vector<Point<D, T>> vertices;
   Vector<FaceConn> fv;

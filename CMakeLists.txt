@@ -88,6 +88,7 @@ set(UM2_HEADERS
     "include/um2/mesh/TriMesh.hpp"
     "include/um2/mesh/QuadMesh.hpp"
     "include/um2/mesh/QuadraticTriMesh.hpp"
+    "include/um2/mesh/QuadraticQuadMesh.hpp"
     # gmsh
     "include/um2/gmsh/base_gmsh_api.hpp"
     "include/um2/gmsh/io.hpp"

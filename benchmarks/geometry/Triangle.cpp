@@ -136,7 +136,16 @@ containsNoShortCCW(benchmark::State & state)
   }
 }
 
-BENCHMARK(containsBary)->RangeMultiplier(2)->Range(1024, NPOINTS)->Unit(benchmark::kMicrosecond);
-BENCHMARK(containsCCW)->RangeMultiplier(2)->Range(1024, NPOINTS)->Unit(benchmark::kMicrosecond);
-BENCHMARK(containsNoShortCCW)->RangeMultiplier(2)->Range(1024, NPOINTS)->Unit(benchmark::kMicrosecond);
+BENCHMARK(containsBary)
+    ->RangeMultiplier(2)
+    ->Range(1024, NPOINTS)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(containsCCW)
+    ->RangeMultiplier(2)
+    ->Range(1024, NPOINTS)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(containsNoShortCCW)
+    ->RangeMultiplier(2)
+    ->Range(1024, NPOINTS)
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK_MAIN();
