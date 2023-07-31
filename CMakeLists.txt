@@ -84,6 +84,7 @@ set(UM2_HEADERS
     "include/um2/mesh/RegularGrid.hpp"
     "include/um2/mesh/RegularPartition.hpp"
     "include/um2/mesh/RectilinearGrid.hpp"
+    "include/um2/mesh/RectilinearPartition.hpp"
     "include/um2/mesh/TriMesh.hpp"
     # gmsh
     "include/um2/gmsh/base_gmsh_api.hpp"

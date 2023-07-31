@@ -1,39 +1,46 @@
 #pragma once
 
-#include <um2/mesh/RegularGrid.hpp>
+#include <um2/common/Vector.hpp>
+#include <um2/mesh/RectilinearGrid.hpp>
 
-namespace um2
-{
+namespace um2 {
 
 // -----------------------------------------------------------------------------
-// REGULAR PARTITION
+// RECTILINEAR PARTITION
 // -----------------------------------------------------------------------------
-// A D-dimensional box, partitioned by a regular grid.
+// A D-dimensional rectilinear partition of a D-dimensional box.
 //
-// Suppose the grid has nx cells in the x direction and ny cells in the
-// y direction.
+// Suppose the grid has nx cells in the x direction and ny cells in the y
+// y direction. Then the children vector contains nx * ny elements.
 // Let i in [0, nx) and j in [0, ny). Then children[i + nx * j] is the child
 // of the cell with indices (i, j) in the grid.
 //  j
 //  ^
 //  |
-//  | 2 3
-//  | 0 1
-//  *--------> i
+//  |
+//  | 2  3
+//  | 0  1
+//  *-----------> i
 //
-//  * is where grid.minima is located.
+//  * is where grid.minima is located
 
 template <Size D, typename T, typename P>
-struct RegularPartition {
+struct RectilinearPartition {
 
-  RegularGrid<D, T> grid;
+  RectilinearGrid<D, T> grid;
   Vector<P> children;
 
   // ---------------------------------------------------------------------------
   // Constructors
   // ---------------------------------------------------------------------------
 
-  constexpr RegularPartition() noexcept = default;
+  constexpr RectilinearPartition() noexcept = default;
+
+//    // dydy and an array of IDs, mapping to the dxdy
+//    constexpr RectilinearPartition(std::vector<Vec2<T>> const &,
+//                                   std::vector<std::vector<int>> const &)
+//    requires (D == 2);
+
 
   // ---------------------------------------------------------------------------
   // Accessors
@@ -104,44 +111,33 @@ struct RegularPartition {
   PURE HOSTDEV [[nodiscard]] constexpr auto getChild(Args... args) const noexcept
       -> P const &;
 
-  template <typename... Args>
-    requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getCellCentroid(Args... args) const noexcept
-      -> Point<D, T>;
+  // ---------------------------------------------------------------------------
+  // Methods
+  // ---------------------------------------------------------------------------
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  getCellIndicesIntersecting(AxisAlignedBox<D, T> const & box) const noexcept
-      -> Vec<2 * D, Size>;
+  HOSTDEV constexpr void clear() noexcept;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  getCellIndexContaining(Point<D, T> const & point) const noexcept -> Vec<D, Size>;
 };
 
 // -- Aliases --
 
 template <typename T, typename P>
-using RegularPartition1 = RegularPartition<1, T, P>;
+using RectilinearPartition1 = RectilinearPartition<1, T, P>;
 
 template <typename T, typename P>
-using RegularPartition2 = RegularPartition<2, T, P>;
+using RectilinearPartition2 = RectilinearPartition<2, T, P>;
 
 template <typename T, typename P>
-using RegularPartition3 = RegularPartition<3, T, P>;
+using RectilinearPartition3 = RectilinearPartition<3, T, P>;
 
-template <typename P>
-using RegularPartition1f = RegularPartition1<float, P>;
-template <typename P>
-using RegularPartition2f = RegularPartition2<float, P>;
-template <typename P>
-using RegularPartition3f = RegularPartition3<float, P>;
+template <typename P> using RectilinearPartition1f = RectilinearPartition1<float, P>;
+template <typename P> using RectilinearPartition2f = RectilinearPartition2<float, P>;
+template <typename P> using RectilinearPartition3f = RectilinearPartition3<float, P>;
 
-template <typename P>
-using RegularPartition1d = RegularPartition1<double, P>;
-template <typename P>
-using RegularPartition2d = RegularPartition2<double, P>;
-template <typename P>
-using RegularPartition3d = RegularPartition3<double, P>;
+template <typename P> using RectilinearPartition1d = RectilinearPartition1<double, P>;
+template <typename P> using RectilinearPartition2d = RectilinearPartition2<double, P>;
+template <typename P> using RectilinearPartition3d = RectilinearPartition3<double, P>;
 
 } // namespace um2
 
-#include "RegularPartition.inl"
+#include "RectilinearPartition.inl"
