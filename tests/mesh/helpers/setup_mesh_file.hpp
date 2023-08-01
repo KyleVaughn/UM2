@@ -73,24 +73,25 @@ makeReferenceTri6MeshFile(um2::MeshFile<T, I> & mesh)
 }
 
 template <std::floating_point T, std::signed_integral I>
-static void makeReferenceQuad8MeshFile(um2::MeshFile<T, I> & mesh)
+static void
+makeReferenceQuad8MeshFile(um2::MeshFile<T, I> & mesh)
 {
-     mesh.filepath = "./mesh_files/quad8.inp";
-     mesh.name = "quad8";
-     mesh.format = um2::MeshFileFormat::Abaqus;
+  mesh.filepath = "./mesh_files/quad8.inp";
+  mesh.name = "quad8";
+  mesh.format = um2::MeshFileFormat::Abaqus;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
-     mesh.nodes_x = {0, 1, 1, 0, 2, 2, 0.5, 1.1, 0.5, 0.0, 1.5, 2.0, 1.5};
-     mesh.nodes_y = {0, 0, 1, 1, 0, 1, 0.0, 0.6, 1.0, 0.5, 0.0, 0.5, 1.0};
-     mesh.nodes_z = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  mesh.nodes_x = {0, 1, 1, 0, 2, 2, 0.5, 1.1, 0.5, 0.0, 1.5, 2.0, 1.5};
+  mesh.nodes_y = {0, 0, 1, 1, 0, 1, 0.0, 0.6, 1.0, 0.5, 0.0, 0.5, 1.0};
+  mesh.nodes_z = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 #pragma GCC diagnostic pop
-     mesh.element_types = {23, 23};
-     mesh.element_offsets = {0, 8, 16};
-     mesh.element_conn = {0, 1, 2, 3, 6, 7, 8, 9, 1, 4, 5, 2, 10, 11, 12, 7};
-     mesh.elset_names = {"A", "B", "Material_H2O", "Material_UO2"};
-     mesh.elset_offsets = {0, 2, 3, 4, 5};
-     mesh.elset_ids = {0, 1, 1, 1, 0};
- }
+  mesh.element_types = {23, 23};
+  mesh.element_offsets = {0, 8, 16};
+  mesh.element_conn = {0, 1, 2, 3, 6, 7, 8, 9, 1, 4, 5, 2, 10, 11, 12, 7};
+  mesh.elset_names = {"A", "B", "Material_H2O", "Material_UO2"};
+  mesh.elset_offsets = {0, 2, 3, 4, 5};
+  mesh.elset_ids = {0, 1, 1, 1, 0};
+}
 //
 // template <std::floating_point T, std::signed_integral I>
 // static void make_tri6_quad8_reference_mesh_file(um2::MeshFile<T, I> & mesh)

@@ -8,8 +8,7 @@ namespace um2
 template <Size D, typename T>
 HOSTDEV constexpr QuadraticTriangle<D, T>::Polytope(
     Point<D, T> const & p0, Point<D, T> const & p1, Point<D, T> const & p2,
-    Point<D, T> const & p3, Point<D, T> const & p4, Point<D, T> const & p5
-    ) noexcept
+    Point<D, T> const & p3, Point<D, T> const & p4, Point<D, T> const & p5) noexcept
     : v{p0, p1, p2, p3, p4, p5}
 {
 }

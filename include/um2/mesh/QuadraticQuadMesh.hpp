@@ -50,4 +50,4 @@ struct FaceVertexMesh<2, 8, D, T, I> {
 
 } // namespace um2
 
-#include "QuadraticTriMesh.inl"
+#include "QuadraticQuadMesh.inl"

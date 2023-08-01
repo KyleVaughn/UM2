@@ -29,8 +29,8 @@ QuadraticTriMesh<D, T, I>::face(Size i) const noexcept -> Face
   auto const v3 = static_cast<Size>(fv[i][3]);
   auto const v4 = static_cast<Size>(fv[i][4]);
   auto const v5 = static_cast<Size>(fv[i][5]);
-  return QuadraticTriangle<D, T>(vertices[v0], vertices[v1], vertices[v2], 
-                                 vertices[v3], vertices[v4], vertices[v5]);
+  return QuadraticTriangle<D, T>(vertices[v0], vertices[v1], vertices[v2], vertices[v3],
+                                 vertices[v4], vertices[v5]);
 }
 
 // -------------------------------------------------------------------

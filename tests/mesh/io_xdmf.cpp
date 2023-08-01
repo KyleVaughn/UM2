@@ -163,7 +163,7 @@ TEST_SUITE(io_xdmf)
   TEST((quad_mesh<T, I>));
   // TEST((tri_quad_mesh<T, I>) );
   TEST((tri6_mesh<T, I>));
-  TEST((quad8_mesh<T, I>) );
+  TEST((quad8_mesh<T, I>));
   // TEST(esh", (tri6_quad8_mesh<T, I>) );
 }
 

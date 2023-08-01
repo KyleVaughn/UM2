@@ -22,8 +22,9 @@ TEST_CASE(accessors)
   ASSERT(um2::isApprox(tri0[3], tri0_ref[3]));
   ASSERT(um2::isApprox(tri0[4], tri0_ref[4]));
   ASSERT(um2::isApprox(tri0[5], tri0_ref[5]));
-  um2::QuadraticTriangle<2, T> tri1_ref(mesh.vertices[1], mesh.vertices[6], mesh.vertices[2],
-                               mesh.vertices[7], mesh.vertices[8], mesh.vertices[4]);
+  um2::QuadraticTriangle<2, T> tri1_ref(mesh.vertices[1], mesh.vertices[6],
+                                        mesh.vertices[2], mesh.vertices[7],
+                                        mesh.vertices[8], mesh.vertices[4]);
   auto const tri1 = mesh.face(1);
   ASSERT(um2::isApprox(tri1[0], tri1_ref[0]));
   ASSERT(um2::isApprox(tri1[1], tri1_ref[1]));

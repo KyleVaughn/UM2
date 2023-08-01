@@ -31,8 +31,9 @@ QuadraticQuadMesh<D, T, I>::face(Size i) const noexcept -> Face
   auto const v5 = static_cast<Size>(fv[i][5]);
   auto const v6 = static_cast<Size>(fv[i][6]);
   auto const v7 = static_cast<Size>(fv[i][7]);
-  return QuadraticQuadrilateral<D, T>(vertices[v0], vertices[v1], vertices[v2], vertices[v3],
-                                 vertices[v4], vertices[v5], vertices[v6], vertices[v7]);
+  return QuadraticQuadrilateral<D, T>(vertices[v0], vertices[v1], vertices[v2],
+                                      vertices[v3], vertices[v4], vertices[v5],
+                                      vertices[v6], vertices[v7]);
 }
 
 // -------------------------------------------------------------------
