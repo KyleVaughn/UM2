@@ -170,34 +170,34 @@ TEST_CASE(aabb2_constructor)
     ASSERT_NEAR(grid2.divs[1][0], 1, static_cast<T>(1e-6));
     ASSERT_NEAR(grid2.divs[1][1], 2, static_cast<T>(1e-6));
 }
-//
-// template <typename T>
-// TEST(id_array_constructor)
-//    std::vector<std::vector<int>> ids = {
-//        { 0, 1, 2, 0 },
-//        { 0, 2, 0, 2 },
-//        { 0, 1, 0, 1 },
-//    };
-//    std::vector<um2::Vec2<T>> dxdy = {
-//        { 2, 1 },
-//        { 2, 1 },
-//        { 2, 1 },
-//        { 2, 1 },
-//    };
-//    um2::RectilinearGrid2<T> grid(dxdy, ids);
-//
-//    ASSERT(grid.divs[0].size() == 5, "x divs");
-//    T xref[5] = { 0, 2, 4, 6, 8 };
-//    for (Size i = 0; i < 5; ++i) {
-//        ASSERT_NEAR(grid.divs[0][i], xref[i], 1e-6, "x divs");
-//    }
-//    ASSERT(grid.divs[1].size() == 4, "y divs");
-//    T yref[4] = { 0, 1, 2, 3 };
-//    for (Size i = 0; i < 4; ++i) {
-//        ASSERT_NEAR(grid.divs[1][i], yref[i], 1e-6, "y divs");
-//    }
-// END_TEST
-//
+
+template <typename T>
+TEST_CASE(id_array_constructor)
+{
+    std::vector<std::vector<Size>> const ids = {
+        { 0, 1, 2, 0 },
+        { 0, 2, 0, 2 },
+        { 0, 1, 0, 1 },
+    };
+    std::vector<um2::Vec2<T>> const dxdy = {
+        { 2, 1 },
+        { 2, 1 },
+        { 2, 1 },
+        { 2, 1 },
+    };
+    um2::RectilinearGrid2<T> grid(dxdy, ids);
+
+    ASSERT(grid.divs[0].size() == 5);
+    T const xref[5] = { 0, 2, 4, 6, 8 };
+    for (Size i = 0; i < 5; ++i) {
+        ASSERT_NEAR(grid.divs[0][i], xref[i], static_cast<T>(1e-6));
+    }
+    ASSERT(grid.divs[1].size() == 4);
+    T const yref[4] = { 0, 1, 2, 3 };
+    for (Size i = 0; i < 4; ++i) {
+        ASSERT_NEAR(grid.divs[1][i], yref[i], static_cast<T>(1e-6));
+    }
+  }
 #if UM2_ENABLE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(clear, D, T)
@@ -221,7 +221,7 @@ TEST_SUITE(RectilinearGrid)
   if constexpr (D == 2) {
     TEST_HOSTDEV(getBox, 1, 1, T);
     TEST((aabb2_constructor<T>)  );
-    //    RUN_TEST("id_array_constructor", (id_array_constructor<T>)  );
+    TEST((id_array_constructor<T>)  );
   }
 }
 

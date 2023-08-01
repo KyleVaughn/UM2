@@ -58,47 +58,41 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<AxisAlignedBox<D, T>> co
   }
   assert(ncells_total == boxes.size()); 
 }
-//
-// template <Size D, typename T>
-// HOSTDEV constexpr RectilinearGrid<D, T>::RectilinearGrid(
-//{
-//  new (this) RectilinearGrid(boxes.data(), boxes.size());
-//}
-//
-// template <Size D, typename T>
-// constexpr RectilinearGrid<D, T>::RectilinearGrid(
-//    std::vector<Vec2<T>> const & dxdy,
-//    std::vector<std::vector<int>> const & ids) requires(D == 2)
-//{
-//  // Convert the dxdy to AxisAlignedBoxes
-//  size_t const nrows = ids.size();
-//  size_t const ncols = ids[0].size();
-//  // Ensure that each row has the same number of columns
-//  for (size_t i = 1; i < nrows; ++i) {
-//    assert(ids[i].size() == ncols);
-//    for (size_t j = 0; j < ncols; ++j) {
-//      assert(ids[i][j] >= 0);
-//    }
-//  }
-//  Vector<AxisAlignedBox<D, T>> boxes(static_cast<Size>(nrows * ncols));
-//  T y = 0;
-//  // Iterate rows in reverse order
-//  for (size_t i = 0; i < nrows; ++i) {
-//    std::vector<int> const & row = ids[nrows - i - 1];
-//    Vec2<T> minima(static_cast<T>(0), y);
-//    for (size_t j = 0; j < ncols; ++j) {
-//      int const id = row[j];
-//      Vec2<T> const & dxdy_ij = dxdy[static_cast<size_t>(id)];
-//      Vec2<T> const maxima = minima + dxdy_ij;
-//      boxes[static_cast<Size>(i * ncols + j)].minima = minima;
-//      boxes[static_cast<Size>(i * ncols + j)].maxima = maxima;
-//      minima.data()[0] = maxima[0];
-//    }
-//    y += dxdy[static_cast<size_t>(row[0])][1];
-//  }
-//  new (this) RectilinearGrid(boxes);
-//}
-//
+
+template <Size D, typename T>
+constexpr RectilinearGrid<D, T>::RectilinearGrid(
+   std::vector<Vec2<T>> const & dxdy,
+   std::vector<std::vector<int>> const & ids)
+{
+  static_assert(D == 2);
+  // Convert the dxdy to AxisAlignedBoxes
+  size_t const nrows = ids.size();
+  size_t const ncols = ids[0].size();
+  // Ensure that each row has the same number of columns
+  for (size_t i = 1; i < nrows; ++i) {
+    assert(ids[i].size() == ncols);
+    for (size_t j = 0; j < ncols; ++j) {
+      assert(ids[i][j] >= 0);
+    }
+  }
+  Vector<AxisAlignedBox<D, T>> boxes(static_cast<Size>(nrows * ncols));
+  T y = 0;
+  // Iterate rows in reverse order
+  for (size_t i = 0; i < nrows; ++i) {
+    std::vector<int> const & row = ids[nrows - i - 1];
+    Vec2<T> minima(static_cast<T>(0), y);
+    for (size_t j = 0; j < ncols; ++j) {
+      int const id = row[j];
+      Vec2<T> const & dxdy_ij = dxdy[static_cast<size_t>(id)];
+      Vec2<T> const maxima = minima + dxdy_ij;
+      boxes[static_cast<Size>(i * ncols + j)].minima = minima;
+      boxes[static_cast<Size>(i * ncols + j)].maxima = maxima;
+      minima[0] = maxima[0];
+    }
+    y += dxdy[static_cast<size_t>(row[0])][1];
+  }
+  new (this) RectilinearGrid(boxes);
+}
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto

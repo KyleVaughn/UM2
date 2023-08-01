@@ -4,6 +4,8 @@
 #include <um2/config.hpp>
 #include <um2/geometry/AxisAlignedBox.hpp>
 
+#include <vector>
+
 namespace um2
 {
 
@@ -27,13 +29,11 @@ struct RectilinearGrid {
   constexpr explicit RectilinearGrid(AxisAlignedBox<D, T> const & box);
   
   constexpr explicit RectilinearGrid(Vector<AxisAlignedBox<D, T>> const & boxes);
-  //
-  //  // dydy and an array of IDs, mapping to the dxdy
-  //  constexpr RectilinearGrid(std::vector<Vec2<T>> const & /*dxdy*/,
-  //                            std::vector<std::vector<int>> const & /*ids*/) requires(D
-  //                            ==
-  //                                                                                    2);
-  //
+  
+  // dxdy and an array of IDs, mapping to the dxdy
+  constexpr RectilinearGrid(std::vector<Vec2<T>> const & dxdy,
+                            std::vector<std::vector<Size>> const & ids);
+
 
   // -----------------------------------------------------------------------------
   // Accessors
