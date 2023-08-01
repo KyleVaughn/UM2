@@ -1,10 +1,15 @@
 #pragma once
 
+#include <um2/common/Log.hpp>
 #include <um2/common/Vector.hpp>
-// #include <um2/physics/material.hpp>
+#include <um2/mesh/MeshType.hpp>
+#include <um2/mesh/QuadMesh.hpp>
+#include <um2/mesh/QuadraticQuadMesh.hpp>
+#include <um2/mesh/QuadraticTriMesh.hpp>
 #include <um2/mesh/RectilinearPartition.hpp>
 #include <um2/mesh/RegularPartition.hpp>
-// #include <um2/mesh/face_vertex_mesh.hpp>
+#include <um2/mesh/TriMesh.hpp>
+#include <um2/physics/Material.hpp>
 // #include <um2/mesh/io.hpp>
 // #include <um2/ray_casting/intersect/ray-linear_polygon_mesh.hpp>
 // #include <um2/ray_casting/intersect/ray-quadratic_polygon_mesh.hpp>
@@ -13,7 +18,7 @@
 
 // #include <thrust/pair.h> // thrust::pair
 
-// #include <string> // std::string
+#include <string>
 
 namespace um2::mpact
 {
@@ -65,19 +70,22 @@ namespace um2::mpact
 template <std::floating_point T, std::signed_integral I>
 struct SpatialPartition {
 
-  //    // Take this out of the struct?
-  //    struct CoarseCell {
-  //        Vec2<T> dxdy; // dx, dy
-  //        I mesh_type = -1;  // see MeshType
-  //        I mesh_id = -1;    // index into the corresponding mesh array
-  //        Vector<MaterialID> material_ids; // size = num_faces(mesh)
-  //
-  //        UM2_PURE constexpr length_t num_faces() const { return material_ids.size(); }
-  //
-  //    };
-  typedef RectilinearPartition2<T, I> RTM;
-  typedef RegularPartition2<T, I> Lattice;
-  typedef RectilinearPartition1<T, I> Assembly;
+  // Take this out of the struct?
+  struct CoarseCell {
+    Vec2<T> dxdy; // dx, dy
+    MeshType mesh_type = MeshType::None;
+    Size mesh_id = -1;               // index into the corresponding mesh array
+    Vector<MaterialID> material_ids; // size = mesh.numFaces()
+
+    PURE [[nodiscard]] constexpr auto
+    numFaces() const noexcept -> Size
+    {
+      return material_ids.size();
+    }
+  };
+  using RTM = RectilinearPartition2<T, I>;
+  using Lattice = RegularPartition2<T, I>;
+  using Assembly = RectilinearPartition1<T, I>;
 
   // The children IDs are used to index the corresponding array.
   // Child ID = -1 indicates that the child does not exist. This is used
@@ -91,18 +99,37 @@ struct SpatialPartition {
 
   Vector<Material> materials;
 
-  //    Vector<TriMesh<T, I>> tri;
-  //    Vector<QuadMesh<T, I>> quad;
-  //    Vector<TriQuadMesh<T, I>> tri_quad;
-  //    Vector<QuadraticTriMesh<T, I>> quadratic_tri;
-  //    Vector<QuadraticQuadMesh<T, I>> quadratic_quad;
-  //    Vector<QuadraticTriQuadMesh<T, I>> quadratic_tri_quad;
+  Vector<TriMesh<2, T, I>> tri;
+  Vector<QuadMesh<2, T, I>> quad;
+  // Vector<TriQuadMesh<T, I>> tri_quad;
+  Vector<QuadraticTriMesh<2, T, I>> quadratic_tri;
+  Vector<QuadraticQuadMesh<2, T, I>> quadratic_quad;
+  // Vector<QuadraticTriQuadMesh<T, I>> quadratic_tri_quad;
 
-  // -- Constructors --
+  // -----------------------------------------------------------------------------
+  // Constructors
+  // -----------------------------------------------------------------------------
 
-  //    UM2_HOSTDEV SpatialPartition() = default;
+  constexpr SpatialPartition() noexcept = default;
+
+  // -----------------------------------------------------------------------------
+  // Accessors
+  // -----------------------------------------------------------------------------
+
+  PURE [[nodiscard]] constexpr auto
+  numCoarseCells() const noexcept -> Size
+  {
+    return coarse_cells.size();
+  }
+
+  PURE [[nodiscard]] constexpr auto
+  numRTMs() const noexcept -> Size
+  {
+    return rtms.size();
+  }
+
   //
-  //    UM2_HOSTDEV void clear();
+  //    HOSTDEV void clear();
 
   //    int make_cylindrical_pin_mesh(std::vector<double> const & radii,
   //                                  double const pitch,
@@ -118,13 +145,12 @@ struct SpatialPartition {
   //                         I const mesh_id,
   //                         std::vector<Material> const & materials);
   //
-  //    int make_coarse_cell(Vec2<T> const dxdy,
-  //                         I const mesh_type = -1,
-  //                         I const mesh_id = -1,
-  //                         MaterialID const * const material_ids = nullptr,
-  //                         length_t const num_faces = 0);
-  //
-  //    int make_rtm(std::vector<std::vector<int>> const & cc_ids);
+  auto
+  makeCoarseCell(Vec2<T> dxdy, MeshType mesh_type = MeshType::None, Size mesh_id = -1,
+                 Vector<MaterialID> const & material_ids = {}) -> Size;
+
+  auto
+  makeRTM(std::vector<std::vector<Size>> const & cc_ids) -> Size;
   //
   //    int make_lattice(std::vector<std::vector<int>> const & rtm_ids);
   //
@@ -137,19 +163,19 @@ struct SpatialPartition {
   //
   //    void coarse_cell_heights(Vector<std::pair<int, double>> & id_dz) const;
   //
-  //    void coarse_cell_face_areas(length_t const cc_id, Vector<T> & areas) const;
+  //    void coarse_cell_face_areas(Size const cc_id, Vector<T> & areas) const;
   //
-  //    length_t coarse_cell_find_face(length_t const cc_id, Point2<T> const & p) const;
+  //    Size coarse_cell_find_face(Size const cc_id, Point2<T> const & p) const;
   //
-  //    Point2<T> coarse_cell_face_centroid(length_t const cc_id, length_t const face_id)
+  //    Point2<T> coarse_cell_face_centroid(Size const cc_id, Size const face_id)
   //    const;
   //
-  //    void intersect_coarse_cell(length_t const cc_id,
+  //    void intersect_coarse_cell(Size const cc_id,
   //                               Ray2<T> const & ray,
   //                               Vector<T> & intersections) const;
   //
   //
-  //    void intersect_coarse_cell(length_t const cc_id, // Fixed-size buffer
+  //    void intersect_coarse_cell(Size const cc_id, // Fixed-size buffer
   //                               Ray2<T> const & ray,
   //                               T * const intersections,
   //                               int * const n) const;
@@ -159,10 +185,10 @@ struct SpatialPartition {
   //
   //    void lattice_heights(Vector<std::pair<int, double>> & id_dz) const;
   //
-  //    void coarse_cell_face_data(length_t const cc_id,
-  //                               length_t * const mesh_type,
-  //                               length_t * const num_vertices,
-  //                               length_t * const num_faces,
+  //    void coarse_cell_face_data(Size const cc_id,
+  //                               Size * const mesh_type,
+  //                               Size * const num_vertices,
+  //                               Size * const num_faces,
   //                               T ** const vertices,
   //                               I ** const fv_offsets,
   //                               I ** const fv) const;
@@ -170,25 +196,19 @@ struct SpatialPartition {
 }; // struct SpatialPartition
 
 // template <std::floating_point T, std::signed_integral I>
-// UM2_PURE constexpr int num_unique_coarse_cells(SpatialPartition<T, I> const & sp)
-//{
-//     return static_cast<int>(sp.coarse_cells.size());
-// }
-//
-// template <std::floating_point T, std::signed_integral I>
-// UM2_PURE constexpr int num_unique_rtms(SpatialPartition<T, I> const & sp)
+// PURE constexpr int num_unique_rtms(SpatialPartition<T, I> const & sp)
 //{
 //     return static_cast<int>(sp.rtms.size());
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// UM2_PURE constexpr int num_unique_lattices(SpatialPartition<T, I> const & sp)
+// PURE constexpr int num_unique_lattices(SpatialPartition<T, I> const & sp)
 //{
 //     return static_cast<int>(sp.lattices.size());
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// UM2_PURE constexpr int num_unique_assemblies(SpatialPartition<T, I> const & sp)
+// PURE constexpr int num_unique_assemblies(SpatialPartition<T, I> const & sp)
 //{
 //     return static_cast<int>(sp.assemblies.size());
 // }

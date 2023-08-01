@@ -6,6 +6,7 @@ namespace um2
 {
 
 enum class MeshType : int8_t {
+  None = 0,
   Tri = 3,
   Quad = 4,
   TriQuad = 7,

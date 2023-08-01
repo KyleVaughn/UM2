@@ -1,66 +1,66 @@
 namespace um2
 {
 
-//// -- Constructors --
-//
-// template <Size D, typename T>
-// HOSTDEV constexpr RectilinearGrid<D, T>::RectilinearGrid(AABox<D, T> const & box)
-//{
-//  for (Size i = 0; i < D; ++i) {
-//    this->divs[i] = {box.minima[i], box.maxima[i]};
-//    assert(box.minima[i] < box.maxima[i]);
-//  }
-//}
+// ----------------------------------------------------------------------------
+// Constructors
+// ----------------------------------------------------------------------------
+
+ template <Size D, typename T>
+ HOSTDEV constexpr RectilinearGrid<D, T>::RectilinearGrid(AxisAlignedBox<D, T> const & box)
+{
+  for (Size i = 0; i < D; ++i) {
+    divs[i] = {box.minima[i], box.maxima[i]};
+    assert(box.minima[i] < box.maxima[i]);
+  }
+}
+
+template <Size D, typename T>
+constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<AxisAlignedBox<D, T>> const & boxes)
+{
+  // Create divs by finding the unique planar divisions
+  T constexpr eps = epsilonDistance<T>();
+  for (Size i = 0; i < boxes.size(); ++i) {
+    AxisAlignedBox<D, T> const & box = boxes[i];
+    for (Size d = 0; d < D; ++d) {
+      bool min_found = false;    
+      for (Size j = 0; j < divs[d].size(); ++j) {    
+          if (std::abs(divs[d][j] - box.minima[d]) < eps) {    
+              min_found = true;    
+              break;    
+          }    
+      }    
+      if (!min_found) {    
+          this->divs[d].push_back(box.minima[d]);    
+      }    
+      bool max_found = false;    
+      for (Size j = 0; j < divs[d].size(); ++j) {    
+          if (std::abs(divs[d][j] - box.maxima[d]) < eps) {    
+              max_found = true;    
+              break;    
+          }    
+      }    
+      if (!max_found) {    
+          this->divs[d].push_back(box.maxima[d]);    
+      }
+    }
+  }
+  // We now have the unique divisions for each dimension. Sort them.
+  for (Size i = 0; i < D; ++i) {
+    std::sort(divs[i].begin(), divs[i].end());
+  }
+  // Ensure that the boxes completely cover the grid
+  // all num_divs >= 2
+  // n = ∏(num_divs[i] - 1)
+  Size ncells_total = 1;
+  for (Size i = 0; i < D; ++i) {
+    assert(divs[i].size() >= 2);
+    ncells_total *= divs[i].size() - 1;
+  }
+  assert(ncells_total == boxes.size()); 
+}
 //
 // template <Size D, typename T>
 // HOSTDEV constexpr RectilinearGrid<D, T>::RectilinearGrid(
-//    AABox<D, T> const * const boxes, Size const n)
-//{
-//  // Create divs by finding the unique planar divisions
-//  T const eps = static_cast<T>(1e-4);
-//  for (Size i = 0; i < n; ++i) {
-//    AABox<D, T> const & box = boxes[i];
-//    for (Size d = 0; d < D; ++d) {
-//      bool min_found = false;
-//      for (Size j = 0; j < this->divs[d].size(); ++j) {
-//        if (std::abs(this->divs[d][j] - box.minima[d]) < eps) {
-//          min_found = true;
-//          break;
-//        }
-//      }
-//      if (!min_found) {
-//        this->divs[d].push_back(box.minima[d]);
-//      }
-//      bool max_found = false;
-//      for (Size j = 0; j < this->divs[d].size(); ++j) {
-//        if (std::abs(this->divs[d][j] - box.maxima[d]) < eps) {
-//          max_found = true;
-//          break;
-//        }
-//      }
-//      if (!max_found) {
-//        this->divs[d].push_back(box.maxima[d]);
-//      }
-//    }
-//  }
-//  // We now have the unique divisions for each dimension. Sort them.
-//  for (Size i = 0; i < D; ++i) {
-//    thrust::sort(thrust::seq, this->divs[i].begin(), this->divs[i].end());
-//  }
-//  // Ensure that the boxes completely cover the grid
-//  // all num_divs >= 2
-//  // n = ∏(num_divs[i] - 1)
-//  Size ncells_total = 1;
-//  for (Size i = 0; i < D; ++i) {
-//    assert(this->divs[i].size() >= 2);
-//    ncells_total *= this->divs[i].size() - 1;
-//  }
-//  assert(ncells_total == n);
-//}
-//
-// template <Size D, typename T>
-// HOSTDEV constexpr RectilinearGrid<D, T>::RectilinearGrid(
-//    Vector<AABox<D, T>> const & boxes)
 //{
 //  new (this) RectilinearGrid(boxes.data(), boxes.size());
 //}
@@ -70,7 +70,7 @@ namespace um2
 //    std::vector<Vec2<T>> const & dxdy,
 //    std::vector<std::vector<int>> const & ids) requires(D == 2)
 //{
-//  // Convert the dxdy to AABoxes
+//  // Convert the dxdy to AxisAlignedBoxes
 //  size_t const nrows = ids.size();
 //  size_t const ncols = ids[0].size();
 //  // Ensure that each row has the same number of columns
@@ -80,7 +80,7 @@ namespace um2
 //      assert(ids[i][j] >= 0);
 //    }
 //  }
-//  Vector<AABox<D, T>> boxes(static_cast<Size>(nrows * ncols));
+//  Vector<AxisAlignedBox<D, T>> boxes(static_cast<Size>(nrows * ncols));
 //  T y = 0;
 //  // Iterate rows in reverse order
 //  for (size_t i = 0; i < nrows; ++i) {

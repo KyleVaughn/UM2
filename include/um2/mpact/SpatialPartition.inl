@@ -1,23 +1,23 @@
 namespace um2::mpact
 {
 
-template <std::floating_point T, std::signed_integral I>
-void
-SpatialPartition<T, I>::clear()
-{
-  this->core.clear();
-  this->assemblies.clear();
-  this->lattices.clear();
-  this->rtms.clear();
-  this->coarse_cells.clear();
-
-  this->tri.clear();
-  this->quad.clear();
-  this->tri_quad.clear();
-  this->quadratic_tri.clear();
-  this->quadratic_quad.clear();
-  this->quadratic_tri_quad.clear();
-}
+// template <std::floating_point T, std::signed_integral I>
+// void
+// SpatialPartition<T, I>::clear()
+//{
+//   this->core.clear();
+//   this->assemblies.clear();
+//   this->lattices.clear();
+//   this->rtms.clear();
+//   this->coarse_cells.clear();
+//
+//   this->tri.clear();
+//   this->quad.clear();
+//   this->tri_quad.clear();
+//   this->quadratic_tri.clear();
+//   this->quadratic_quad.clear();
+//   this->quadratic_tri_quad.clear();
+// }
 
 // template <std::floating_point T, std::signed_integral I>
 // int SpatialPartition<T, I>::make_cylindrical_pin_mesh(
@@ -55,7 +55,7 @@ SpatialPartition<T, I>::clear()
 //   //   ring_radii = the radius of each ring, NOT including the outside of the last
 //   radius
 //   //   ring_areas = the area of each ring, including the outside of the last radius
-//   length_t mesh_id = -1;
+//   Size mesh_id = -1;
 //   if (mesh_order == 1) {
 //     mesh_id = this->quad.size();
 //     Log::info("Making linear quadrilateral cylindrical pin mesh " +
@@ -273,7 +273,7 @@ SpatialPartition<T, I>::clear()
 //         faces[ir * na + ia] = {p0, p1, p2, p3};
 //       }
 //     }
-//     Vector<Point2<T>> vertices_t(static_cast<length_t>(num_points));
+//     Vector<Point2<T>> vertices_t(static_cast<Size>(num_points));
 //     double const half_pitch = pitch / 2;
 //     for (size_t i = 0; i < num_points; ++i)
 //     {
@@ -289,7 +289,7 @@ SpatialPartition<T, I>::clear()
 //         vertices_t[i][1] = 0;
 //       }
 //     }
-//     Vector<I> faces_t(static_cast<length_t>(num_faces * 4));
+//     Vector<I> faces_t(static_cast<Size>(num_faces * 4));
 //     for (size_t i = 0; i < num_faces; ++i)
 //     {
 //       faces_t[4 * i    ] = static_cast<I>(faces[i][0]);
@@ -564,7 +564,7 @@ SpatialPartition<T, I>::clear()
 //       std::to_string(faces[i][7]));
 //     }
 //
-//     Vector<Point2<T>> vertices_t(static_cast<length_t>(num_points));
+//     Vector<Point2<T>> vertices_t(static_cast<Size>(num_points));
 //     double const half_pitch = pitch / 2;
 //     for (size_t i = 0; i < num_points; ++i)
 //     {
@@ -580,7 +580,7 @@ SpatialPartition<T, I>::clear()
 //         vertices_t[i][1] = 0;
 //       }
 //     }
-//     Vector<I> faces_t(static_cast<length_t>(num_faces * 8));
+//     Vector<I> faces_t(static_cast<Size>(num_faces * 8));
 //     for (size_t i = 0; i < num_faces; ++i)
 //     {
 //       faces_t[8 * i    ] = static_cast<I>(faces[i][0]);
@@ -615,26 +615,26 @@ SpatialPartition<T, I>::clear()
 //     Log::error("Number of divisions in x and y must be positive");
 //   }
 //
-//   length_t mesh_id = mesh_id = this->quad.size();
+//   Size mesh_id = mesh_id = this->quad.size();
 //   Log::info("Making rectangular pin mesh " + std::to_string(mesh_id));
 //
 //   // Make the vertices
-//   Vector<Point2<T>> vertices(static_cast<length_t>((nx + 1) * (ny + 1)));
+//   Vector<Point2<T>> vertices(static_cast<Size>((nx + 1) * (ny + 1)));
 //   T const delta_x = dxdy[0] / nx;
 //   T const delta_y = dxdy[1] / ny;
-//   for (length_t j = 0; j < ny + 1; ++j)
+//   for (Size j = 0; j < ny + 1; ++j)
 //   {
-//     for (length_t i = 0; i < nx + 1; ++i)
+//     for (Size i = 0; i < nx + 1; ++i)
 //     {
 //       vertices[j * (nx + 1) + i] = {i * delta_x, j * delta_y};
 //     }
 //   }
 //   // Make the faces
-//   Vector<I> faces(4 * static_cast<length_t>(nx * ny));
+//   Vector<I> faces(4 * static_cast<Size>(nx * ny));
 //   // Left to right, bottom to top
-//   for (length_t j = 0; j < ny; ++j)
+//   for (Size j = 0; j < ny; ++j)
 //   {
-//     for (length_t i = 0; i < nx; ++i)
+//     for (Size i = 0; i < nx; ++i)
 //     {
 //       faces[4 * (j * nx + i)    ] = (j    ) * (nx + 1) + i    ;
 //       faces[4 * (j * nx + i) + 1] = (j    ) * (nx + 1) + i + 1;
@@ -647,12 +647,12 @@ SpatialPartition<T, I>::clear()
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// int SpatialPartition<T, I>::make_coarse_cell(I const mesh_type,
+// int SpatialPartition<T, I>::makeCoarseCell(I const mesh_type,
 //                                              I const mesh_id,
 //                                              std::vector<Material> const &
 //                                              cc_materials)
 //{
-//     length_t const cc_id = this->coarse_cells.size();
+//     Size const cc_id = this->coarse_cells.size();
 //     Log::info("Making coarse cell " + std::to_string(cc_id));
 //
 //     // Ensure valid mesh type
@@ -720,7 +720,7 @@ SpatialPartition<T, I>::clear()
 //     }
 //
 //     Vector<MaterialID> material_ids_vec(cc_materials.size());
-//     for (length_t i = 0; i < cc_materials.size(); ++i) {
+//     for (Size i = 0; i < cc_materials.size(); ++i) {
 //         auto it = std::find(this->materials.begin(), this->materials.end(),
 //         cc_materials[i]); ptrdiff_t const idx = std::distance(this->materials.begin(),
 //         it); if (idx >= this->materials.size()) {
@@ -734,155 +734,135 @@ SpatialPartition<T, I>::clear()
 //     return cc_id;
 // }
 //
-// template <std::floating_point T, std::signed_integral I>
-// int SpatialPartition<T, I>::make_coarse_cell(Vec2<T> const dxdy,
-//                                              I const mesh_type,
-//                                              I const mesh_id,
-//                                              MaterialID const * const material_ids,
-//                                              length_t const num_faces)
-//{
-//     length_t const cc_id = this->coarse_cells.size();
-//     Log::info("Making coarse cell " + std::to_string(cc_id));
-//     // Ensure dx and dy are positive
-//     if (dxdy[0] <= 0 || dxdy[1] <= 0) {
-//         Log::error("dx and dy must be positive:; " +
-//                 std::to_string(dxdy[0]) + ", " +
-//                 std::to_string(dxdy[1]));
-//         return -1;
-//     }
-//     // Ensure valid mesh type
-//     if (mesh_type != -1) {
-//         if (!(1 <= mesh_type && mesh_type <= 6)) {
-//             Log::error("Invalid mesh type: " + std::to_string(mesh_type));
-//             return -1;
-//         }
-//     }
-//     // Ensure that the mesh exists
-//     if (mesh_id != -1) {
-//         switch (mesh_type) {
-//             case 1:
-//                 if (!(0 <= mesh_id && mesh_id < this->tri.size())) {
-//                     Log::error("Tri mesh " + std::to_string(mesh_id) + " does not
-//                     exist"); return -1;
-//                 }
-//                 break;
-//             case 2:
-//                 if (!(0 <= mesh_id && mesh_id < this->quad.size())) {
-//                     Log::error("Quad mesh " + std::to_string(mesh_id) + " does not
-//                     exist"); return -1;
-//                 }
-//                 break;
-//             case 3:
-//                 if (!(0 <= mesh_id && mesh_id < this->tri_quad.size())) {
-//                     Log::error("Tri-quad mesh " + std::to_string(mesh_id) + " does not
-//                     exist"); return -1;
-//                 }
-//                 break;
-//             case 4:
-//                 if (!(0 <= mesh_id && mesh_id < this->quadratic_tri.size())) {
-//                     Log::error("Quadratic tri mesh " + std::to_string(mesh_id) + " does
-//                     not exist"); return -1;
-//                 }
-//                 break;
-//             case 5:
-//                 if (!(0 <= mesh_id && mesh_id < this->quadratic_quad.size())) {
-//                     Log::error("Quadratic quad mesh " + std::to_string(mesh_id) + "
-//                     does not exist"); return -1;
-//                 }
-//                 break;
-//             case 6:
-//                 if (!(0 <= mesh_id && mesh_id < this->quadratic_tri_quad.size())) {
-//                     Log::error("Quadratic tri-quad mesh " + std::to_string(mesh_id) + "
-//                     does not exist"); return -1;
-//                 }
-//                 break;
-//             default: Log::error("Invalid mesh type: " + std::to_string(mesh_type));
-//                 return -1;
-//         }
-//     }
-//     Vector<MaterialID> material_ids_vec;
-//     if (material_ids != nullptr) {
-//         material_ids_vec.resize(num_faces);
-//         for (length_t i = 0; i < num_faces; ++i) {
-//             material_ids_vec[i] = material_ids[i];
-//         }
-//     }
-//     // Create the coarse cell
-//     this->coarse_cells.push_back({dxdy, mesh_type, mesh_id, material_ids_vec});
-//     return cc_id;
-// }
-//
-// template <std::floating_point T, std::signed_integral I>
-// int SpatialPartition<T, I>::make_rtm(std::vector<std::vector<int>> const & cc_ids)
-//{
-//     length_t const rtm_id = this->rtms.size();
-//     Log::info("Making ray tracing module " + std::to_string(rtm_id));
-//     std::vector<int> unique_cc_ids;
-//     std::vector<Vec2<T>> dxdy;
-//     // Ensure that all coarse cells exist
-//     length_t const num_cc = this->coarse_cells.size();
-//     for (auto const & cc_ids_row : cc_ids) {
-//         for (auto const & id : cc_ids_row) {
-//             if (id < 0 || id >= num_cc) {
-//                 Log::error("Coarse cell " + std::to_string(id) + " does not exist");
-//                 return -1;
-//             }
-//             auto const it = std::find(unique_cc_ids.begin(), unique_cc_ids.end(), id);
-//             if (it == unique_cc_ids.end()) {
-//                 unique_cc_ids.push_back(id);
-//                 // We know id > 0, so subtracting 1 is safe
-//                 dxdy.push_back(this->coarse_cells[static_cast<length_t>(id)].dxdy);
-//             }
-//         }
-//     }
-//     // For a max pin ID N, the RectilinearGrid constructor needs all dxdy from 0 to N.
-//     // To get around this requirement, we will renumber the coarse cells to be 0, 1, 2,
-//     3, ...
-//     // and then use the renumbered IDs to create the RectilinearGrid.
-//     std::vector<std::vector<int>> cc_ids_renumbered(cc_ids.size());
-//     for (size_t i = 0; i < cc_ids.size(); ++i) {
-//         cc_ids_renumbered[i].resize(cc_ids[i].size());
-//         for (size_t j = 0; j < cc_ids[i].size(); ++j) {
-//             auto const it = std::find(unique_cc_ids.begin(), unique_cc_ids.end(),
-//             cc_ids[i][j]); UM2_ASSERT(it != unique_cc_ids.end());
-//             cc_ids_renumbered[i][j] = static_cast<int>(it - unique_cc_ids.begin());
-//         }
-//     }
-//     // Create the rectilinear grid
-//     RectilinearGrid2<T> grid(dxdy, cc_ids_renumbered);
-//     // Ensure the grid has the same dxdy as all other RTMs
-//     if (!this->rtms.empty()) {
-//         T const eps = static_cast<T>(1e-5);
-//         if (std::abs(width(grid) -  width(this->rtms[0].grid)) > eps ||
-//             std::abs(height(grid) - height(this->rtms[0].grid)) > eps) {
-//             Log::error("All RTMs must have the same dxdy");
-//             return -1;
-//         }
-//     }
-//     // Flatten the coarse cell IDs (rows are reversed)
-//     size_t const num_rows = cc_ids.size();
-//     size_t const num_cols = cc_ids[0].size();
-//     Vector<I> cc_ids_flat(static_cast<length_t>(num_rows * num_cols));
-//     for (size_t i = 0; i < num_rows; ++i) {
-//         for (size_t j = 0; j < num_cols; ++j) {
-//             cc_ids_flat[static_cast<length_t>(i * num_cols + j)] =
-//                 static_cast<I>(cc_ids[num_rows - 1 - i][j]);
-//         }
-//     }
-//     RTM rtm;
-//     rtm.grid = grid;
-//     rtm.children = cc_ids_flat;
-//     this->rtms.push_back(rtm);
-//     return rtm_id;
-// }
+template <std::floating_point T, std::signed_integral I>
+auto
+SpatialPartition<T, I>::makeCoarseCell(Vec2<T> const dxdy, MeshType const mesh_type,
+                                       Size const mesh_id,
+                                       Vector<MaterialID> const & material_ids) -> Size
+{
+  Size const cc_id = coarse_cells.size();
+  Log::info("Making coarse cell " + std::to_string(cc_id));
+  // Ensure dx and dy are positive
+  if (dxdy[0] <= 0 || dxdy[1] <= 0) {
+    Log::error("dx and dy must be positive:; " + std::to_string(dxdy[0]) + ", " +
+               std::to_string(dxdy[1]));
+    return -1;
+  }
+  // Ensure that the mesh exists
+  if (mesh_id != -1) {
+    switch (mesh_type) {
+    case MeshType::Tri:
+      if (!(0 <= mesh_id && mesh_id < this->tri.size())) {
+        Log::error("Tri mesh " + std::to_string(mesh_id) + " does not exist");
+        return -1;
+      }
+      break;
+    case MeshType::Quad:
+      if (!(0 <= mesh_id && mesh_id < this->quad.size())) {
+        Log::error("Quad mesh " + std::to_string(mesh_id) + " does not exist");
+        return -1;
+      }
+      break;
+    case MeshType::QuadraticTri:
+      if (!(0 <= mesh_id && mesh_id < this->quadratic_tri.size())) {
+        Log::error("Quadratic tri mesh " + std::to_string(mesh_id) + " does not exist");
+        return -1;
+      }
+      break;
+    case MeshType::QuadraticQuad:
+      if (!(0 <= mesh_id && mesh_id < this->quadratic_quad.size())) {
+        Log::error("Quadratic quad mesh " + std::to_string(mesh_id) + " does not exist");
+        return -1;
+      }
+      break;
+    default:
+      Log::error("Invalid mesh type");
+      return -1;
+    }
+    // Make sure materials are specified
+    if (material_ids.empty()) {
+      Log::error("No materials specified");
+      return -1;
+    }
+  }
+
+  // Create the coarse cell
+  this->coarse_cells.push_back(CoarseCell{dxdy, mesh_type, mesh_id, material_ids});
+  return cc_id;
+}
+
+template <std::floating_point T, std::signed_integral I>
+auto
+SpatialPartition<T, I>::makeRTM(std::vector<std::vector<Size>> const & cc_ids) -> Size
+{
+  Size const rtm_id = rtms.size();
+  Log::info("Making ray tracing module " + std::to_string(rtm_id));
+  std::vector<int> unique_cc_ids;
+  std::vector<Vec2<T>> dxdy;
+  // Ensure that all coarse cells exist
+  Size const num_cc = coarse_cells.size();
+  for (auto const & cc_ids_row : cc_ids) {
+    for (auto const & id : cc_ids_row) {
+      if (id < 0 || id >= num_cc) {
+        Log::error("Coarse cell " + std::to_string(id) + " does not exist");
+        return -1;
+      }
+      auto const it = std::find(unique_cc_ids.begin(), unique_cc_ids.end(), id);
+      if (it == unique_cc_ids.end()) {
+        unique_cc_ids.push_back(id);
+        // We know id > 0, so subtracting 1 is safe
+        dxdy.push_back(coarse_cells[id].dxdy);
+      }
+    }
+  }
+  // For a max pin ID N, the RectilinearGrid constructor needs all dxdy from 0 to N.
+  // To get around this requirement, we will renumber the coarse cells to be 0, 1, 2,
+  // 3, ...
+  // and then use the renumbered IDs to create the RectilinearGrid.
+  //  std::vector<std::vector<int>> cc_ids_renumbered(cc_ids.size());
+  //  for (size_t i = 0; i < cc_ids.size(); ++i) {
+  //      cc_ids_renumbered[i].resize(cc_ids[i].size());
+  //      for (size_t j = 0; j < cc_ids[i].size(); ++j) {
+  //          auto const it = std::find(unique_cc_ids.begin(), unique_cc_ids.end(),
+  //          cc_ids[i][j]); UM2_ASSERT(it != unique_cc_ids.end());
+  //          cc_ids_renumbered[i][j] = static_cast<int>(it - unique_cc_ids.begin());
+  //      }
+  //  }
+  //  // Create the rectilinear grid
+  //  RectilinearGrid2<T> grid(dxdy, cc_ids_renumbered);
+  //  // Ensure the grid has the same dxdy as all other RTMs
+  //  if (!this->rtms.empty()) {
+  //      T const eps = static_cast<T>(1e-5);
+  //      if (std::abs(width(grid) -  width(this->rtms[0].grid)) > eps ||
+  //          std::abs(height(grid) - height(this->rtms[0].grid)) > eps) {
+  //          Log::error("All RTMs must have the same dxdy");
+  //          return -1;
+  //      }
+  //  }
+  //  // Flatten the coarse cell IDs (rows are reversed)
+  //  size_t const num_rows = cc_ids.size();
+  //  size_t const num_cols = cc_ids[0].size();
+  //  Vector<I> cc_ids_flat(static_cast<Size>(num_rows * num_cols));
+  //  for (size_t i = 0; i < num_rows; ++i) {
+  //      for (size_t j = 0; j < num_cols; ++j) {
+  //          cc_ids_flat[static_cast<Size>(i * num_cols + j)] =
+  //              static_cast<I>(cc_ids[num_rows - 1 - i][j]);
+  //      }
+  //  }
+  //  RTM rtm;
+  //  rtm.grid = grid;
+  //  rtm.children = cc_ids_flat;
+  //  this->rtms.push_back(rtm);
+  return rtm_id;
+}
 //
 // template <std::floating_point T, std::signed_integral I>
 // int SpatialPartition<T, I>::make_lattice(std::vector<std::vector<int>> const & rtm_ids)
 //{
-//     length_t const lat_id = this->lattices.size();
+//     Size const lat_id = this->lattices.size();
 //     Log::info("Making lattice " + std::to_string(lat_id));
 //     // Ensure that all RTMs exist
-//     length_t const num_rtm = this->rtms.size();
+//     Size const num_rtm = this->rtms.size();
 //     for (auto const & rtm_ids_row : rtm_ids) {
 //         for (auto const & id : rtm_ids_row) {
 //             if (id < 0 || id >= num_rtm) {
@@ -903,13 +883,13 @@ SpatialPartition<T, I>::clear()
 //             return -1;
 //         }
 //     }
-//     Vec<2, length_t> const num_cells = {num_cols, num_rows};
+//     Vec<2, Size> const num_cells = {num_cols, num_rows};
 //     RegularGrid2<T> grid(minima, spacing, num_cells);
 //     // Flatten the RTM IDs (rows are reversed)
-//     Vector<I> rtm_ids_flat(static_cast<length_t>(num_rows * num_cols));
+//     Vector<I> rtm_ids_flat(static_cast<Size>(num_rows * num_cols));
 //     for (size_t i = 0; i < num_rows; ++i) {
 //         for (size_t j = 0; j < num_cols; ++j) {
-//             rtm_ids_flat[static_cast<length_t>(i * num_cols + j)] =
+//             rtm_ids_flat[static_cast<Size>(i * num_cols + j)] =
 //                 static_cast<I>(rtm_ids[num_rows - 1 - i][j]);
 //         }
 //     }
@@ -924,10 +904,10 @@ SpatialPartition<T, I>::clear()
 // int SpatialPartition<T, I>::make_assembly(std::vector<int> const & lat_ids,
 //                                           std::vector<double> const & z)
 //{
-//     length_t const ass_id = this->assemblies.size();
+//     Size const ass_id = this->assemblies.size();
 //     Log::info("Making assembly " + std::to_string(ass_id));
 //     // Ensure that all lattices exist
-//     length_t const num_lat = this->lattices.size();
+//     Size const num_lat = this->lattices.size();
 //     for (auto const & id : lat_ids) {
 //         if (id < 0 || id >= num_lat) {
 //             Log::error("Lattice " + std::to_string(id) + " does not exist");
@@ -967,8 +947,8 @@ SpatialPartition<T, I>::clear()
 //     // Ensure the lattices all have the same dimensions. Since they are composed of
 //     RTMs,
 //     // it is sufficient to check num_xcells and num_ycells.
-//     length_t const num_xcells = this->lattices[lat_ids[0]].grid.num_cells[0];
-//     length_t const num_ycells = this->lattices[lat_ids[0]].grid.num_cells[1];
+//     Size const num_xcells = this->lattices[lat_ids[0]].grid.num_cells[0];
+//     Size const num_ycells = this->lattices[lat_ids[0]].grid.num_cells[1];
 //     for (auto const & id : lat_ids) {
 //         if (this->lattices[id].grid.num_cells[0] != num_xcells ||
 //             this->lattices[id].grid.num_cells[1] != num_ycells) {
@@ -978,21 +958,21 @@ SpatialPartition<T, I>::clear()
 //     }
 //
 //     // Clean this up. Too many static_casts.
-//     Vector<I> lat_ids_I(static_cast<length_t>(lat_ids.size()));
+//     Vector<I> lat_ids_I(static_cast<Size>(lat_ids.size()));
 //     for (size_t i = 0; i < lat_ids.size(); ++i) {
-//         lat_ids_I[static_cast<length_t>(i)] = static_cast<I>(lat_ids[i]);
+//         lat_ids_I[static_cast<Size>(i)] = static_cast<I>(lat_ids[i]);
 //     }
 //
 //     RectilinearGrid1<T> grid;
 //     if constexpr (std::same_as<double, T>) {
-//         grid.divs[0].resize(static_cast<length_t>(z.size()));
+//         grid.divs[0].resize(static_cast<Size>(z.size()));
 //         for (size_t i = 0; i < z.size(); ++i) {
-//             grid.divs[0][static_cast<length_t>(i)] = z[i];
+//             grid.divs[0][static_cast<Size>(i)] = z[i];
 //         }
 //     } else {
-//         Vector<T> z_T(static_cast<length_t>(z.size()));
+//         Vector<T> z_T(static_cast<Size>(z.size()));
 //         for (size_t i = 0; i < z.size(); ++i) {
-//             z_T[static_cast<length_t>(i)] = static_cast<T>(z[i]);
+//             z_T[static_cast<Size>(i)] = static_cast<T>(z[i]);
 //         }
 //         grid.divs[0] = z_T;
 //     }
@@ -1008,7 +988,7 @@ SpatialPartition<T, I>::clear()
 //{
 //     Log::info("Making core");
 //     // Ensure that all assemblies exist
-//     length_t const num_ass = this->assemblies.size();
+//     Size const num_ass = this->assemblies.size();
 //     Vector<bool> seen(num_ass, false);
 //     for (auto const & ass : ass_ids) {
 //         for (auto const & id : ass) {
@@ -1067,8 +1047,8 @@ SpatialPartition<T, I>::clear()
 //         }
 //     }
 //     std::stringstream ss;
-//     length_t const num_coarse_cells = this->coarse_cells.size();
-//     for (length_t i = 0; i < num_coarse_cells; ++i) {
+//     Size const num_coarse_cells = this->coarse_cells.size();
+//     for (Size i = 0; i < num_coarse_cells; ++i) {
 //         ss.str("");
 //         ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << i;
 //         MeshFile<T, I> cc_submesh;
@@ -1192,26 +1172,26 @@ SpatialPartition<T, I>::clear()
 //     // Sort the vector by dz
 //     // For each unique assembly
 //     for (auto const & assembly : this->assemblies) {
-//         length_t const nlattices = assembly.children.size();
+//         Size const nlattices = assembly.children.size();
 //         // For each lattice in the assembly
-//         for (length_t ilat = 0; ilat < nlattices; ++ilat) {
+//         for (Size ilat = 0; ilat < nlattices; ++ilat) {
 //             I const lat_id = assembly.children[ilat];
 //             // Get the dz of the lattice
 //             AABox1<T> const bb = assembly.get_box(ilat);
 //             double const dz = static_cast<double>(width(bb));
 //             auto const & lattice = this->lattices[lat_id];
-//             length_t const nrtms = lattice.children.size();
+//             Size const nrtms = lattice.children.size();
 //             // For each rtm in the lattice
-//             for (length_t irtm = 0; irtm < nrtms; ++irtm) {
+//             for (Size irtm = 0; irtm < nrtms; ++irtm) {
 //                 I const rtm_id = lattice.children[irtm];
 //                 auto const & rtm = this->rtms[rtm_id];
-//                 length_t const nccs = rtm.children.size();
+//                 Size const nccs = rtm.children.size();
 //                 // For each coarse cell in the rtm
-//                 for (length_t icc = 0; icc < nccs; ++icc) {
+//                 for (Size icc = 0; icc < nccs; ++icc) {
 //                     I const cc_id = rtm.children[icc];
 //                     // If the id, dz pair is not in the vector, add it
 //                     bool add_id = true;
-//                     for (length_t i = 0; i < id_dz.size(); ++i) {
+//                     for (Size i = 0; i < id_dz.size(); ++i) {
 //                       if (id_dz[i].first == cc_id && std::abs(id_dz[i].second - dz) <
 //                       1e-4) {
 //                         add_id = false;
@@ -1235,7 +1215,7 @@ SpatialPartition<T, I>::clear()
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// void SpatialPartition<T, I>::coarse_cell_face_areas(length_t const cc_id, Vector<T> &
+// void SpatialPartition<T, I>::coarse_cell_face_areas(Size const cc_id, Vector<T> &
 // areas) const
 //{
 //     I const mesh_id = this->coarse_cells[cc_id].mesh_id;
@@ -1277,8 +1257,8 @@ SpatialPartition<T, I>::clear()
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// length_t SpatialPartition<T, I>::coarse_cell_find_face(
-//         length_t const cc_id,
+// Size SpatialPartition<T, I>::coarse_cell_find_face(
+//         Size const cc_id,
 //         Point2<T> const & p) const
 //{
 //     I const mesh_id = this->coarse_cells[cc_id].mesh_id;
@@ -1311,8 +1291,8 @@ SpatialPartition<T, I>::clear()
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// Point2<T> SpatialPartition<T, I>::coarse_cell_face_centroid(length_t const cc_id,
-//                                                             length_t const face_id)
+// Point2<T> SpatialPartition<T, I>::coarse_cell_face_centroid(Size const cc_id,
+//                                                             Size const face_id)
 //                                                             const
 //{
 //     I const mesh_id = this->coarse_cells[cc_id].mesh_id;
@@ -1345,7 +1325,7 @@ SpatialPartition<T, I>::clear()
 //     }
 // }
 ////template <std::floating_point T, std::signed_integral I>
-////void SpatialPartition<T, I>::intersect_coarse_cell(length_t const cc_id,
+////void SpatialPartition<T, I>::intersect_coarse_cell(Size const cc_id,
 ////                                                   Ray2<T> const & ray,
 ////                                                   Vector<T> & intersections) const
 ////{
@@ -1381,7 +1361,7 @@ SpatialPartition<T, I>::clear()
 //
 //// fixed-size buffer
 // template <std::floating_point T, std::signed_integral I>
-// void SpatialPartition<T, I>::intersect_coarse_cell(length_t const cc_id,
+// void SpatialPartition<T, I>::intersect_coarse_cell(Size const cc_id,
 //                                                    Ray2<T> const & ray,
 //                                                    T * const intersections,
 //                                                    int * const n) const
@@ -1424,17 +1404,17 @@ SpatialPartition<T, I>::clear()
 //     // Sort the vector by dz
 //     // For each unique assembly
 //     for (auto const & assembly : this->assemblies) {
-//         length_t const nlattices = assembly.children.size();
+//         Size const nlattices = assembly.children.size();
 //         // For each lattice in the assembly
-//         for (length_t ilat = 0; ilat < nlattices; ++ilat) {
+//         for (Size ilat = 0; ilat < nlattices; ++ilat) {
 //             I const lat_id = assembly.children[ilat];
 //             // Get the dz of the lattice
 //             AABox1<T> const bb = assembly.get_box(ilat);
 //             double const dz = static_cast<double>(width(bb));
 //             auto const & lattice = this->lattices[lat_id];
-//             length_t const nrtms = lattice.children.size();
+//             Size const nrtms = lattice.children.size();
 //             // For each rtm in the lattice
-//             for (length_t irtm = 0; irtm < nrtms; ++irtm) {
+//             for (Size irtm = 0; irtm < nrtms; ++irtm) {
 //                 I const rtm_id = lattice.children[irtm];
 //                 // If the id, dz pair is not in the vector, add it
 //                 auto const & it = std::find_if(id_dz.begin(), id_dz.end(),
@@ -1467,9 +1447,9 @@ SpatialPartition<T, I>::clear()
 //     // Sort the vector by dz
 //     // For each unique assembly
 //     for (auto const & assembly : this->assemblies) {
-//         length_t const nlattices = assembly.children.size();
+//         Size const nlattices = assembly.children.size();
 //         // For each lattice in the assembly
-//         for (length_t ilat = 0; ilat < nlattices; ++ilat) {
+//         for (Size ilat = 0; ilat < nlattices; ++ilat) {
 //             I const lat_id = assembly.children[ilat];
 //             // Get the dz of the lattice
 //             AABox1<T> const bb = assembly.get_box(ilat);
@@ -1494,10 +1474,10 @@ SpatialPartition<T, I>::clear()
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// void SpatialPartition<T, I>::coarse_cell_face_data(length_t const cc_id,
-//                                length_t * const mesh_type,
-//                                length_t * const num_vertices,
-//                                length_t * const num_faces,
+// void SpatialPartition<T, I>::coarse_cell_face_data(Size const cc_id,
+//                                Size * const mesh_type,
+//                                Size * const num_vertices,
+//                                Size * const num_faces,
 //                                T ** const vertices,
 //                                I ** const fv_offsets,
 //                                I ** const fv) const
@@ -1505,7 +1485,7 @@ SpatialPartition<T, I>::clear()
 //     I const mesh_id = this->coarse_cells[cc_id].mesh_id;
 //     switch (this->coarse_cells[cc_id].mesh_type) {
 //         case static_cast<I>(MeshType::TRI):
-//             *mesh_type = static_cast<length_t>(MeshType::TRI);
+//             *mesh_type = static_cast<Size>(MeshType::TRI);
 //             *num_vertices = this->tri[mesh_id].vertices.size();
 //             *num_faces = um2::num_faces(this->tri[mesh_id]);
 //             *vertices = reinterpret_cast<T *>(this->tri[mesh_id].vertices.begin());
@@ -1513,7 +1493,7 @@ SpatialPartition<T, I>::clear()
 //             *fv = this->tri[mesh_id].fv.begin();
 //             break;
 //         case static_cast<I>(MeshType::QUAD):
-//             *mesh_type = static_cast<length_t>(MeshType::QUAD);
+//             *mesh_type = static_cast<Size>(MeshType::QUAD);
 //             *num_vertices = this->quad[mesh_id].vertices.size();
 //             *num_faces = um2::num_faces(this->quad[mesh_id]);
 //             *vertices = reinterpret_cast<T *>(this->quad[mesh_id].vertices.begin());
@@ -1521,7 +1501,7 @@ SpatialPartition<T, I>::clear()
 //             *fv = this->quad[mesh_id].fv.begin();
 //             break;
 //         case static_cast<I>(MeshType::TRI_QUAD):
-//             *mesh_type = static_cast<length_t>(MeshType::TRI_QUAD);
+//             *mesh_type = static_cast<Size>(MeshType::TRI_QUAD);
 //             *num_vertices = this->tri_quad[mesh_id].vertices.size();
 //             *num_faces = um2::num_faces(this->tri_quad[mesh_id]);
 //             *vertices = reinterpret_cast<T
@@ -1529,7 +1509,7 @@ SpatialPartition<T, I>::clear()
 //             this->tri_quad[mesh_id].fv_offsets.begin(); *fv =
 //             this->tri_quad[mesh_id].fv.begin(); break;
 //         case static_cast<I>(MeshType::QUADRATIC_TRI):
-//             *mesh_type = static_cast<length_t>(MeshType::QUADRATIC_TRI);
+//             *mesh_type = static_cast<Size>(MeshType::QUADRATIC_TRI);
 //             *num_vertices = this->quadratic_tri[mesh_id].vertices.size();
 //             *num_faces = um2::num_faces(this->quadratic_tri[mesh_id]);
 //             *vertices = reinterpret_cast<T
@@ -1537,7 +1517,7 @@ SpatialPartition<T, I>::clear()
 //             *fv = this->quadratic_tri[mesh_id].fv.begin();
 //             break;
 //         case static_cast<I>(MeshType::QUADRATIC_QUAD):
-//             *mesh_type = static_cast<length_t>(MeshType::QUADRATIC_QUAD);
+//             *mesh_type = static_cast<Size>(MeshType::QUADRATIC_QUAD);
 //             *num_vertices = this->quadratic_quad[mesh_id].vertices.size();
 //             *num_faces = um2::num_faces(this->quadratic_quad[mesh_id]);
 //             *vertices = reinterpret_cast<T
@@ -1545,7 +1525,7 @@ SpatialPartition<T, I>::clear()
 //             *fv = this->quadratic_quad[mesh_id].fv.begin();
 //             break;
 //         case static_cast<I>(MeshType::QUADRATIC_TRI_QUAD):
-//             *mesh_type = static_cast<length_t>(MeshType::QUADRATIC_TRI_QUAD);
+//             *mesh_type = static_cast<Size>(MeshType::QUADRATIC_TRI_QUAD);
 //             *num_vertices = this->quadratic_tri_quad[mesh_id].vertices.size();
 //             *num_faces = um2::num_faces(this->quadratic_tri_quad[mesh_id]);
 //             *vertices = reinterpret_cast<T

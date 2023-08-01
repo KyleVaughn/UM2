@@ -23,12 +23,10 @@ struct RectilinearGrid {
   // -----------------------------------------------------------------------------
 
   constexpr RectilinearGrid() noexcept = default;
-  //
-  //  HOSTDEV constexpr explicit RectilinearGrid(AABox<D, T> const & /*box*/);
-  //
-  //  HOSTDEV constexpr RectilinearGrid(AABox<D, T> const * /*boxes*/, Size /*n*/);
-  //
-  //  HOSTDEV constexpr explicit RectilinearGrid(Vector<AABox<D, T>> const & /*boxes*/);
+
+  constexpr explicit RectilinearGrid(AxisAlignedBox<D, T> const & box);
+  
+  constexpr explicit RectilinearGrid(Vector<AxisAlignedBox<D, T>> const & boxes);
   //
   //  // dydy and an array of IDs, mapping to the dxdy
   //  constexpr RectilinearGrid(std::vector<Vec2<T>> const & /*dxdy*/,

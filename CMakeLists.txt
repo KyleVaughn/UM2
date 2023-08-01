@@ -94,7 +94,7 @@ set(UM2_HEADERS
     "include/um2/gmsh/io.hpp"
     "include/um2/gmsh/model.hpp"
     # mpact
-    #"include/um2/mpact/SpatialPartition.hpp"
+    "include/um2/mpact/SpatialPartition.hpp"
     #    # ray_casting
     #    "include/um2/ray_casting/Ray.hpp"
     # visualization
