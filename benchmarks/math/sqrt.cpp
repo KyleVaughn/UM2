@@ -1,3 +1,7 @@
+// FINDINGS:
+// sqrt<double> is couple of times slower than sqrt<float>
+// Multi-threaded sqrt seems to be faster after about 30k elements
+// CUDA sqrt seems faster even before 30k elements
 #include "../helpers.hpp"
 #include <um2/math/math_functions.hpp>
 
@@ -8,7 +12,7 @@ static void
 sqrtCPU(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<T> const x = makeVectorOfRandomFloats<T, -3, 3>(n);
+  um2::Vector<T> const x = makeVectorOfRandomFloats<T, 1, 20000>(n);
   um2::Vector<T> sqrtx(n);
   // NOLINTNEXTLINE
   for (auto s : state) {

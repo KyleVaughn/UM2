@@ -7,10 +7,8 @@
 #include "../helpers.hpp"
 #include <um2/geometry/morton_sort_points.hpp>
 
-#include <algorithm>
 #include <execution>
 #include <iostream>
-#include <parallel/algorithm>
 #include <random>
 
 // NOLINTBEGIN

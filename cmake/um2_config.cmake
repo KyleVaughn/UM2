@@ -196,6 +196,11 @@ if (!UM2_ENABLE_CUDA)
   set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
 endif()
 
+# If OPENMP is enabled
+if (UM2_ENABLE_OPENMP)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_PARALLEL")
+endif()
+
 # If CUDA is enabled, pass the CXX flags via -Xcompiler
 if (UM2_ENABLE_CUDA)
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler \"${CMAKE_CXX_FLAGS}\"")
