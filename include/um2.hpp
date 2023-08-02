@@ -16,8 +16,8 @@
 #if UM2_ENABLE_GMSH
 #  include <um2/gmsh/base_gmsh_api.hpp>
 #  include <um2/gmsh/io.hpp>
-#  include <um2/gmsh/model.hpp>
 #  include <um2/gmsh/mesh.hpp>
+#  include <um2/gmsh/model.hpp>
 #endif
 
 namespace um2

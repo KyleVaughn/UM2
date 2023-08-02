@@ -82,6 +82,7 @@ set(UM2_HEADERS
     "include/um2/mesh/MeshFile.hpp"
     "include/um2/mesh/io_abaqus.hpp"
     "include/um2/mesh/io_xdmf.hpp"
+    "include/um2/mesh/io.hpp"
     "include/um2/mesh/RegularGrid.hpp"
     "include/um2/mesh/RegularPartition.hpp"
     "include/um2/mesh/RectilinearGrid.hpp"

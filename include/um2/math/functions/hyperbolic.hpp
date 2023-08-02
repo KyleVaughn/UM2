@@ -46,4 +46,43 @@ atanh(double x) noexcept -> double
 
 #endif
 
+// --------------------------------------------------------------------------
+// exp
+// --------------------------------------------------------------------------
+
+#ifndef __CUDA_ARCH__
+
+template <typename T>
+PURE HOST constexpr auto
+exp(T x) noexcept -> T
+{
+  return std::exp(x);
+}
+
+#else
+
+template <typename T>
+PURE DEVICE constexpr auto
+exp(T x) noexcept -> T
+{
+  static_assert(false, "exp not implemented for this type");
+  return T();
+}
+
+template <>
+PURE DEVICE constexpr auto
+exp(float x) noexcept -> float
+{
+  return ::expf(x);
+}
+
+template <>
+PURE DEVICE constexpr auto
+exp(double x) noexcept -> double
+{
+  return ::exp(x);
+}
+
+#endif
+
 } // namespace um2

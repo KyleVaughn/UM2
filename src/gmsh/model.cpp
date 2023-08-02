@@ -78,9 +78,13 @@ addToPhysicalGroup(int const dim, std::vector<int> const & tags, int const tag,
       gmsh::model::removePhysicalGroups({
           {dim, existing_group_tag}
       });
+#  ifndef NDEBUG
       int const new_tag =
           gmsh::model::addPhysicalGroup(dim, new_tags, existing_group_tag, name);
       assert(new_tag == existing_group_tag);
+#  else
+      gmsh::model::addPhysicalGroup(dim, new_tags, existing_group_tag, name);
+#  endif
       return;
     }
   }
@@ -402,12 +406,20 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
   // Create the new physical groups
   // ----------------------------------------------------------------------
   for (size_t i = 0; i < physical_group_names.size(); ++i) {
+#  ifndef NDEBUG
     int const pgroup_tag = gmsh::model::addPhysicalGroup(
         model_dim,                       // Dimension of the physical group
         post_physical_group_ent_tags[i], // Tags of the entities in the group
         physical_group_tag[i],           // Old tag of the physical group
         physical_group_names[i]);        // Name of the physical group
     assert(pgroup_tag == physical_group_tag[i]);
+#  else
+    gmsh::model::addPhysicalGroup(
+        model_dim,                       // Dimension of the physical group
+        post_physical_group_ent_tags[i], // Tags of the entities in the group
+        physical_group_tag[i],           // Old tag of the physical group
+        physical_group_names[i]);        // Name of the physical group
+#  endif
   }
 
   // Apply material colors.
@@ -485,12 +497,20 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
   // Create the new physical groups
   // ----------------------------------------------------------------------
   for (size_t i = 0; i < physical_group_names.size(); ++i) {
+#  ifndef NDEBUG
     int const pgroup_tag = gmsh::model::addPhysicalGroup(
         model_dim,                       // Dimension of the physical group
         post_physical_group_ent_tags[i], // Tags of the entities in the group
         physical_group_tag[i],           // Old tag of the physical group
         physical_group_names[i]);        // Name of the physical group
     assert(pgroup_tag == physical_group_tag[i]);
+#  else
+    gmsh::model::addPhysicalGroup(
+        model_dim,                       // Dimension of the physical group
+        post_physical_group_ent_tags[i], // Tags of the entities in the group
+        physical_group_tag[i],           // Old tag of the physical group
+        physical_group_names[i]);        // Name of the physical group
+#  endif
   }
 
   // Apply material colors.

@@ -171,7 +171,7 @@ public:
   construct_at_end(Size n, T const & value) noexcept;
 
   HOSTDEV HIDDEN constexpr void
-  // NOLINTNEXTLINE
+  // NOLINTNEXTLINE(readability-identifier-naming)
   destruct_at_end(Ptr new_last) noexcept;
 
   HOSTDEV HIDDEN constexpr void
@@ -181,7 +181,7 @@ public:
   recommend(Size new_size) const noexcept -> Size;
 
   HOSTDEV HIDDEN constexpr void
-  // NOLINTNEXTLINE
+  // NOLINTNEXTLINE(readability-identifier-naming)
   append_default(Size n) noexcept;
 
 }; // struct Vector

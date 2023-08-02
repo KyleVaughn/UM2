@@ -176,8 +176,9 @@ struct SpatialPartition {
 
   auto
   makeCore(std::vector<std::vector<Size>> const & asy_ids);
-  //
-  //    int import_coarse_cells(std::string const & filename);
+
+  void
+  importCoarseCells(std::string const & filename);
   //
   //    void coarse_cell_heights(Vector<std::pair<int, double>> & id_dz) const;
   //

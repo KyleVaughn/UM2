@@ -58,8 +58,8 @@ main() -> int
   model.makeAssembly({0});
   model.makeCore({{0}});
   um2::gmsh::model::occ::overlaySpatialPartition(model, "Water");
-  um2::gmsh::model::mesh::setGlobalMeshSize(0.05);    
-  um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri); 
+  um2::gmsh::model::mesh::setGlobalMeshSize(0.05);
+  um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
   um2::gmsh::fltk::run();
   um2::gmsh::write("2a.inp");
   //  model.import_coarse_cells("2a.inp");
