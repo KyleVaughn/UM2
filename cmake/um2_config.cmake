@@ -196,8 +196,8 @@ if (!UM2_ENABLE_CUDA)
   set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
 endif()
 
-# If OPENMP is enabled
-if (UM2_ENABLE_OPENMP)
+# If OpenMP and parallel STL are enabled
+if (UM2_ENABLE_OPENMP AND UM2_ENABLE_PAR_STL)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_PARALLEL")
 endif()
 

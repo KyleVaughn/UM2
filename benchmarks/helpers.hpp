@@ -5,22 +5,23 @@
 
 #include <algorithm>
 #if UM2_ENABLE_OPENMP
-#include <parallel/algorithm>
+#  include <parallel/algorithm>
 #endif
 #include <random>
 
 template <typename T, int Lo, int Hi>
 auto
-randomFloat() -> T 
+randomFloat() -> T
 {
   // NOLINTNEXTLINE
   static std::default_random_engine rng;
   static std::uniform_real_distribution<T> dist(Lo, Hi);
-  return dist(rng); 
+  return dist(rng);
 }
 
 template <typename T, int Lo, int Hi>
-auto makeVectorOfRandomFloats(Size size) -> um2::Vector<T>
+auto
+makeVectorOfRandomFloats(Size size) -> um2::Vector<T>
 {
   um2::Vector<T> v(size);
   std::generate(v.begin(), v.end(), randomFloat<T, Lo, Hi>);

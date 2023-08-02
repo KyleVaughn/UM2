@@ -73,16 +73,34 @@ expFloatCUDA(benchmark::State & state)
 }
 #endif
 
-BENCHMARK_TEMPLATE(expCPU, float)->RangeMultiplier(2)->Range(1024, npoints);
-BENCHMARK_TEMPLATE(expCPU, double)->RangeMultiplier(2)->Range(1024, npoints);
+BENCHMARK_TEMPLATE(expCPU, float)
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(expCPU, double)
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
+    ->Unit(benchmark::kMicrosecond);
 
 #if UM2_ENABLE_OPENMP
-BENCHMARK_TEMPLATE(expCPUThreads, float)->RangeMultiplier(2)->Range(1024, npoints);
-BENCHMARK_TEMPLATE(expCPUThreads, double)->RangeMultiplier(2)->Range(1024, npoints);
+BENCHMARK_TEMPLATE(expCPUThreads, float)
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(expCPUThreads, double)
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
+    ->Unit(benchmark::kMicrosecond);
 #endif
 
 #if UM2_ENABLE_CUDA
-BENCHMARK_TEMPLATE(expFloatCUDA, float)->RangeMultiplier(2)->Range(65536, npoints);
-BENCHMARK_TEMPLATE(expFloatCUDA, double)->RangeMultiplier(2)->Range(65536, npoints);
+BENCHMARK_TEMPLATE(expFloatCUDA, float)
+    ->RangeMultiplier(4)
+    ->Range(65536, npoints)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(expFloatCUDA, double)
+    ->RangeMultiplier(4)
+    ->Range(65536, npoints)
+    ->Unit(benchmark::kMicrosecond);
 #endif
 BENCHMARK_MAIN();
