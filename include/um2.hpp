@@ -3,7 +3,10 @@
 // ---------------------------------------------------------------------------
 // Mandatory includes
 // ---------------------------------------------------------------------------
+#include <um2/common/to_vecvec.hpp>
 #include <um2/config.hpp>
+#include <um2/mpact/SpatialPartition.hpp>
+#include <um2/physics/Material.hpp>
 
 #include <string>
 

@@ -1,14 +1,13 @@
-RectilinearPartition
+WIP: overlay for 3D
+  Make Vera 2D
+
+If overlay grid fails, check the refactor comments in model.inl
+
 mpact::SpatialPartiton
 
 gmsh api, gmsh tests
 
 Update github actions to use spack
-
-TriMesh
-QuadMesh
-QuadraticTriMesh
-QuadraticQuadMesh
 
 CellType and MeshType are not elegant. Review
 

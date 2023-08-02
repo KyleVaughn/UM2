@@ -8,8 +8,8 @@
 // #include <um2/geometry/axis_aligned_box.hpp>
 // #include <um2/mesh/rectilinear_grid.hpp>
 #  include <um2/gmsh/base_gmsh_api.hpp>
+#  include <um2/mpact/SpatialPartition.hpp>
 #  include <um2/physics/Material.hpp>
-// #include <um2/mpact/spatial_partition.hpp>
 
 namespace um2::gmsh::model
 {
@@ -75,11 +75,14 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
 //            std::vector<Vec2d> const & dxdy,
 //            std::vector<std::vector<int>> const & pin_ids,
 //            Point3d const & offset = {0.0, 0.0, 0.0});
-//
-//    template <std::floating_point T, std::signed_integral I>
-//    void overlay_spatial_partition(
-//            mpact::SpatialPartition<T, I> const & partition,
-//            std::string const & fill_material_name = "Moderator");
+
+template <std::floating_point T, std::signed_integral I>
+void
+overlaySpatialPartition(mpact::SpatialPartition<T, I> const & partition,
+                        std::string const & fill_material_name = "Moderator",
+                        Color fill_material_color = Color("royalblue"));
 } // namespace occ
 } // namespace um2::gmsh::model
 #endif // UM2_ENABLE_GMSH
+
+#include "model.inl"

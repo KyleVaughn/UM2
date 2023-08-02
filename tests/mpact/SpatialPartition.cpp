@@ -230,75 +230,75 @@ TEST_CASE(makeAssembly)
   ASSERT_NEAR(grid.divs[0][2], 3, static_cast<T>(1e-6));
   ASSERT_NEAR(grid.divs[0][3], 4, static_cast<T>(1e-6));
 }
-//
-// template <typename T, typename I>
-// TEST_CASE(test_make_assembly_2d)
-// um2::mpact::SpatialPartition<T, I> model;
-// um2::Vec2<T> const dxdy(1, 1);
-// ASSERT(model.makeCoarseCell(dxdy) == 0, "0");
-// std::vector<std::vector<int>> const cc_ids = {
-//     {0, 0},
-//     {0, 0}
-// };
-// ASSERT(model.make_rtm(cc_ids) == 0, "0");
-// std::vector<std::vector<int>> const rtm_ids = {{0}};
-// ASSERT(model.make_lattice(rtm_ids) == 0, "0");
-// ASSERT(model.make_lattice(rtm_ids) == 1, "1");
-// std::vector<int> const lat_ids = {0};
-// std::vector<double> const lat_z = {-1, 1};
-// int id = model.make_assembly(lat_ids, lat_z);
-// ASSERT(id == 0, "id should be 0");
-// ASSERT(model.assemblies.size() == 1, "size");
-// ASSERT(model.assemblies[0].children.size() == 1, "lattice_ids");
-// ASSERT(model.assemblies[0].children[0] == 0, "lattice_ids");
-// um2::RectilinearGrid1<T> const & grid = model.assemblies[0].grid;
-// ASSERT(grid.divs[0].size() == 2, "divs");
-// ASSERT_NEAR(grid.divs[0][0], -1, 1e-6, "z");
-// ASSERT_NEAR(grid.divs[0][1], 1, 1e-6, "z");
-// END_TEST_CASE
-//
-// template <typename T, typename I>
-// TEST_CASE(test_make_core)
-// um2::mpact::SpatialPartition<T, I> model;
-//
-// um2::Vec2<T> const dxdy(2, 1);
-// ASSERT(model.makeCoarseCell(dxdy) == 0, "0");
-//
-// std::vector<std::vector<int>> const cc_ids = {{0}};
-// ASSERT(model.make_rtm(cc_ids) == 0, "0");
-//
-// std::vector<std::vector<int>> const rtm_ids = {{0}};
-// ASSERT(model.make_lattice(rtm_ids) == 0, "0");
-//
-// std::vector<int> const lat_ids1 = {0, 0, 0};
-// std::vector<double> const lat_z1 = {0, 2, 3, 4};
-// ASSERT(model.make_assembly(lat_ids1, lat_z1) == 0, "0");
-// std::vector<int> const lat_ids2 = {0, 0};
-// std::vector<double> const lat_z2 = {0, 3, 4};
-// ASSERT(model.make_assembly(lat_ids2, lat_z2) == 1, "1");
-// ASSERT(model.make_assembly(lat_ids1, lat_z1) == 2, "2");
-// ASSERT(model.make_assembly(lat_ids2, lat_z2) == 3, "3");
-//
-// std::vector<std::vector<int>> const ass_ids = {
-//     {2, 3},
-//     {0, 1}
-// };
-// int id = model.make_core(ass_ids);
-// ASSERT(id == 0, "id should be 0");
-// ASSERT(model.core.children.size() == 4, "assembly_ids");
-// ASSERT(model.core.children[0] == 0, "assembly_ids");
-// ASSERT(model.core.children[1] == 1, "assembly_ids");
-// ASSERT(model.core.children[2] == 2, "assembly_ids");
-// ASSERT(model.core.children[3] == 3, "assembly_ids");
-// ASSERT(model.core.grid.divs[0].size() == 3, "divs[0]");
-// ASSERT(model.core.grid.divs[1].size() == 3, "divs[1]");
-// ASSERT_NEAR(model.core.grid.divs[0][0], 0, 1e-6, "divs[0][0]");
-// ASSERT_NEAR(model.core.grid.divs[0][1], 2, 1e-6, "divs[0][1]");
-// ASSERT_NEAR(model.core.grid.divs[0][2], 4, 1e-6, "divs[0][2]");
-// ASSERT_NEAR(model.core.grid.divs[1][0], 0, 1e-6, "divs[1][0]");
-// ASSERT_NEAR(model.core.grid.divs[1][1], 1, 1e-6, "divs[1][1]");
-// ASSERT_NEAR(model.core.grid.divs[1][2], 2, 1e-6, "divs[1][2]");
-// END_TEST_CASE
+
+template <typename T, typename I>
+TEST_CASE(makeAssembly_2d)
+{
+  um2::mpact::SpatialPartition<T, I> model;
+  um2::Vec2<T> const dxdy(1, 1);
+  ASSERT(model.makeCoarseCell(dxdy) == 0);
+  std::vector<std::vector<Size>> const cc_ids = {
+      {0, 0},
+      {0, 0}
+  };
+  ASSERT(model.makeRTM(cc_ids) == 0);
+  std::vector<std::vector<Size>> const rtm_ids = {{0}};
+  ASSERT(model.makeLattice(rtm_ids) == 0);
+  ASSERT(model.makeLattice(rtm_ids) == 1);
+  std::vector<Size> const lat_ids = {0};
+  Size const id = model.makeAssembly(lat_ids);
+  ASSERT(id == 0);
+  ASSERT(model.assemblies.size() == 1);
+  ASSERT(model.assemblies[0].children.size() == 1);
+  ASSERT(model.assemblies[0].children[0] == 0);
+  um2::RectilinearGrid1<T> const & grid = model.assemblies[0].grid;
+  ASSERT(grid.divs[0].size() == 2);
+  ASSERT_NEAR(grid.divs[0][0], -1, static_cast<T>(1e-6));
+  ASSERT_NEAR(grid.divs[0][1], 1, static_cast<T>(1e-6));
+}
+
+template <typename T, typename I>
+TEST_CASE(makeCore)
+{
+  um2::mpact::SpatialPartition<T, I> model;
+  um2::Vec2<T> const dxdy(2, 1);
+  ASSERT(model.makeCoarseCell(dxdy) == 0);
+
+  std::vector<std::vector<Size>> const cc_ids = {{0}};
+  ASSERT(model.makeRTM(cc_ids) == 0);
+
+  std::vector<std::vector<Size>> const rtm_ids = {{0}};
+  ASSERT(model.makeLattice(rtm_ids) == 0);
+
+  std::vector<Size> const lat_ids1 = {0, 0, 0};
+  std::vector<T> const lat_z1 = {0, 2, 3, 4};
+  ASSERT(model.makeAssembly(lat_ids1, lat_z1) == 0);
+  std::vector<Size> const lat_ids2 = {0, 0};
+  std::vector<T> const lat_z2 = {0, 3, 4};
+  ASSERT(model.makeAssembly(lat_ids2, lat_z2) == 1);
+  ASSERT(model.makeAssembly(lat_ids1, lat_z1) == 2);
+  ASSERT(model.makeAssembly(lat_ids2, lat_z2) == 3);
+
+  std::vector<std::vector<Size>> const asy_ids = {
+      {2, 3},
+      {0, 1}
+  };
+  Size const id = model.makeCore(asy_ids);
+  ASSERT(id == 0);
+  ASSERT(model.core.children.size() == 4);
+  ASSERT(model.core.children[0] == 0);
+  ASSERT(model.core.children[1] == 1);
+  ASSERT(model.core.children[2] == 2);
+  ASSERT(model.core.children[3] == 3);
+  ASSERT(model.core.grid.divs[0].size() == 3);
+  ASSERT(model.core.grid.divs[1].size() == 3);
+  ASSERT_NEAR(model.core.grid.divs[0][0], 0, static_cast<T>(1e-6));
+  ASSERT_NEAR(model.core.grid.divs[0][1], 2, static_cast<T>(1e-6));
+  ASSERT_NEAR(model.core.grid.divs[0][2], 4, static_cast<T>(1e-6));
+  ASSERT_NEAR(model.core.grid.divs[1][0], 0, static_cast<T>(1e-6));
+  ASSERT_NEAR(model.core.grid.divs[1][1], 1, static_cast<T>(1e-6));
+  ASSERT_NEAR(model.core.grid.divs[1][2], 2, static_cast<T>(1e-6));
+}
 //
 // template <typename T, typename I>
 // TEST_CASE(test_import_coarse_cells)
@@ -499,8 +499,8 @@ TEST_SUITE(SpatialPartition)
   TEST((makeRTM<T, I>));
   TEST((makeLattice<T, I>));
   TEST((makeAssembly<T, I>));
-  //    TEST_CASE("make_assembly_2d", (test_make_assembly_2d<T, I>));
-  //    TEST_CASE("make_core", (test_make_core<T, I>));
+  TEST((makeAssembly_2d<T, I>));
+  TEST((makeCore<T, I>));
   //    TEST_CASE("import_coarse_cells", (test_import_coarse_cells<T, I>));
   //    TEST_CASE("export_mesh", (test_export_mesh<T, I>));
   //    TEST_CASE("coarse_cell_face_areas", (test_coarse_cell_face_areas<T, I>));

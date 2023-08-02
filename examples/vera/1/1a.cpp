@@ -9,19 +9,18 @@ main() -> int
 {
 
   // Parameters
-  //  double const pitch = 1.26; // Pitch = 1.26 cm (pg. 4)
+  double const pitch = 1.26; // Pitch = 1.26 cm (pg. 4)
 
-  um2::initialize("debug");
+  um2::initialize();
   um2::gmsh::open("1a.brep", /*extra_info=*/true);
-  // um2::gmsh::fltk::run();
-
-  //  mpact::SpatialPartition<double, int32_t> model;
-  //  model.make_coarse_cell({pitch, pitch});
-  //  model.make_rtm({{0}});
-  //  model.make_lattice({{0}});
-  //  model.make_assembly({0});
-  //  model.make_core({{0}});
-  //  gmsh::model::occ::overlay_spatial_partition(model);
+  um2::mpact::SpatialPartition<double, int32_t> model;
+  model.makeCoarseCell({pitch, pitch});
+  model.makeRTM({{0}});
+  model.makeLattice({{0}});
+  model.makeAssembly({0});
+  model.makeCore({{0}});
+  um2::gmsh::model::occ::overlaySpatialPartition(model);
+  um2::gmsh::fltk::run();
   //  std::vector<std::pair<int, int>> out;
   //  gmsh::model::getEntities(out, 0);
   //  gmsh::model::mesh::setSize(out, 0.4);

@@ -901,16 +901,18 @@ SpatialPartition<T, I>::makeLattice(std::vector<std::vector<Size>> const & rtm_i
 }
 
 template <std::floating_point T, std::signed_integral I>
-auto SpatialPartition<T, I>::makeAssembly(std::vector<Size> const & lat_ids,
-                                          std::vector<T> const & z)
+auto
+SpatialPartition<T, I>::makeAssembly(std::vector<Size> const & lat_ids,
+                                     std::vector<T> const & z)
 {
-  Size const ass_id = assemblies.size();
-  Log::info("Making assembly " + std::to_string(ass_id));
+  Size const asy_id = assemblies.size();
+  Log::info("Making assembly " + std::to_string(asy_id));
   // Ensure that all lattices exist
   Size const num_lat = lattices.size();
   {
-    auto const it = std::find_if(lat_ids.cbegin(), lat_ids.cend(),
-                       [num_lat](Size const id) { return id < 0 || id >= num_lat; });
+    auto const it =
+        std::find_if(lat_ids.cbegin(), lat_ids.cend(),
+                     [num_lat](Size const id) { return id < 0 || id >= num_lat; });
     if (it != lat_ids.end()) {
       Log::error("Lattice " + std::to_string(*it) + " does not exist");
       return -1;
@@ -918,24 +920,23 @@ auto SpatialPartition<T, I>::makeAssembly(std::vector<Size> const & lat_ids,
   }
   // Ensure the number of lattices is 1 less than the number of z-planes
   if (lat_ids.size() + 1 != z.size()) {
-      Log::error("The number of lattices must be 1 less than the number of z-planes"); 
-      return -1;
+    Log::error("The number of lattices must be 1 less than the number of z-planes");
+    return -1;
   }
   // Ensure all z-planes are in ascending order
   if (!std::is_sorted(z.begin(), z.end())) {
-      Log::error("The z-planes must be in ascending order");
-      return -1;
+    Log::error("The z-planes must be in ascending order");
+    return -1;
   }
   // Ensure this assembly is the same height as all other assemblies
   if (!assemblies.empty()) {
-      T const eps = epsilonDistance<T>(); 
-      T const assem_top = assemblies[0].xMax();
-      T const assem_bot = assemblies[0].xMin();
-      if (um2::abs(z.back() - assem_top) > eps ||
-          um2::abs(z.front() - assem_bot) > eps) {
-          Log::error("All assemblies must have the same height");
-          return -1;
-      }
+    T const eps = epsilonDistance<T>();
+    T const assem_top = assemblies[0].xMax();
+    T const assem_bot = assemblies[0].xMin();
+    if (um2::abs(z.back() - assem_top) > eps || um2::abs(z.front() - assem_bot) > eps) {
+      Log::error("All assemblies must have the same height");
+      return -1;
+    }
   }
   // Ensure the lattices all have the same dimensions. Since they are composed of RTMs,
   // it is sufficient to check numXCells and numYCells.
@@ -943,10 +944,10 @@ auto SpatialPartition<T, I>::makeAssembly(std::vector<Size> const & lat_ids,
     Size const num_xcells = lattices[lat_ids[0]].numXCells();
     Size const num_ycells = lattices[lat_ids[0]].numYCells();
     auto const it = std::find_if(lat_ids.cbegin(), lat_ids.cend(),
-                       [num_xcells, num_ycells, this](Size const id) {
-                           return this->lattices[id].numXCells() != num_xcells ||
-                                  this->lattices[id].numYCells() != num_ycells;
-                       });
+                                 [num_xcells, num_ycells, this](Size const id) {
+                                   return this->lattices[id].numXCells() != num_xcells ||
+                                          this->lattices[id].numYCells() != num_ycells;
+                                 });
     if (it != lat_ids.end()) {
       Log::error("All lattices must have the same xy-dimensions");
       return -1;
@@ -956,66 +957,60 @@ auto SpatialPartition<T, I>::makeAssembly(std::vector<Size> const & lat_ids,
   // Clean this up. Too many static_casts.
   Vector<I> lat_ids_i(static_cast<Size>(lat_ids.size()));
   for (size_t i = 0; i < lat_ids.size(); ++i) {
-      lat_ids_i[static_cast<Size>(i)] = static_cast<I>(lat_ids[i]);
+    lat_ids_i[static_cast<Size>(i)] = static_cast<I>(lat_ids[i]);
   }
 
   RectilinearGrid1<T> grid;
   grid.divs[0].resize(static_cast<Size>(z.size()));
   std::copy(z.cbegin(), z.cend(), grid.divs[0].begin());
-  Assembly ass;
-  ass.grid = um2::move(grid);
-  ass.children = um2::move(lat_ids_i);
-  assemblies.push_back(um2::move(ass));
-  return ass_id;
+  Assembly asy;
+  asy.grid = um2::move(grid);
+  asy.children = um2::move(lat_ids_i);
+  assemblies.push_back(um2::move(asy));
+  return asy_id;
 }
-//
-// template <std::floating_point T, std::signed_integral I>
-// int SpatialPartition<T, I>::make_core(std::vector<std::vector<int>> const & ass_ids)
-//{
-//     Log::info("Making core");
-//     // Ensure that all assemblies exist
-//     Size const num_ass = this->assemblies.size();
-//     Vector<bool> seen(num_ass, false);
-//     for (auto const & ass : ass_ids) {
-//         for (auto const & id : ass) {
-//             if (id < 0 || id >= num_ass) {
-//                 Log::error("Assembly " + std::to_string(id) + " does not exist");
-//                 return -1;
-//             }
-//             seen[id] = true;
-//         }
-//     }
-//     // Ensure each of the 1:N assemblies, get the dxdy.
-//     std::vector<Vec2<T>> dxdy(num_ass);
-//     for (size_t i = 0; i < num_ass; ++i) {
-//         if (!seen[i]) {
-//             Log::error("Assembly " + std::to_string(i) + " is not used");
-//             return -1;
-//         }
-//         I const lat_id = this->assemblies[i].children[0];
-//         dxdy[i] = { width(this->lattices[lat_id].grid),
-//                    height(this->lattices[lat_id].grid)};
-//     }
-//     // Create the rectilinear grid
-//     RectilinearGrid2<T> grid(dxdy, ass_ids);
-//     // Flatten the assembly IDs (rows are reversed)
-//     size_t const num_rows = ass_ids.size();
-//     size_t const num_cols = ass_ids[0].size();
-//     Vector<I> ass_ids_flat(num_rows * num_cols);
-//     for (size_t i = 0; i < num_rows; ++i) {
-//         if (ass_ids[i].size() != num_cols) {
-//             Log::error("Each row must have the same number of columns");
-//             return -1;
-//         }
-//         for (size_t j = 0; j < num_cols; ++j) {
-//             ass_ids_flat[i * num_cols + j] = static_cast<I>(ass_ids[num_rows - 1 -
-//             i][j]);
-//         }
-//     }
-//     this->core.grid = grid;
-//     this->core.children = ass_ids_flat;
-//     return 0;
-// }
+
+template <std::floating_point T, std::signed_integral I>
+auto
+SpatialPartition<T, I>::makeCore(std::vector<std::vector<Size>> const & asy_ids)
+{
+  Log::info("Making core");
+  // Ensure that all assemblies exist
+  Size const num_asy = assemblies.size();
+  for (auto const & asy_ids_row : asy_ids) {
+    auto const it =
+        std::find_if(asy_ids_row.cbegin(), asy_ids_row.cend(),
+                     [num_asy](Size const id) { return id < 0 || id >= num_asy; });
+    if (it != asy_ids_row.end()) {
+      Log::error("Assembly " + std::to_string(*it) + " does not exist");
+      return -1;
+    }
+  }
+  std::vector<Vec2<T>> dxdy(static_cast<size_t>(num_asy));
+  for (size_t i = 0; i < static_cast<size_t>(num_asy); ++i) {
+    auto const lat_id = static_cast<Size>(assemblies[static_cast<Size>(i)].getChild(0));
+    dxdy[i] = {lattices[lat_id].width(), lattices[lat_id].height()};
+  }
+  // Create the rectilinear grid
+  RectilinearGrid2<T> grid(dxdy, asy_ids);
+  // Flatten the assembly IDs (rows are reversed)
+  size_t const num_rows = asy_ids.size();
+  size_t const num_cols = asy_ids[0].size();
+  Vector<I> asy_ids_flat(static_cast<Size>(num_rows * num_cols));
+  for (size_t i = 0; i < num_rows; ++i) {
+    if (asy_ids[i].size() != num_cols) {
+      Log::error("Each row must have the same number of columns");
+      return -1;
+    }
+    for (size_t j = 0; j < num_cols; ++j) {
+      asy_ids_flat[static_cast<Size>(i * num_cols + j)] =
+          static_cast<I>(asy_ids[num_rows - 1 - i][j]);
+    }
+  }
+  core.grid = um2::move(grid);
+  core.children = um2::move(asy_ids_flat);
+  return 0;
+}
 //
 // template <std::floating_point T, std::signed_integral I>
 // int SpatialPartition<T, I>::import_coarse_cells(std::string const & filename)

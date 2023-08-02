@@ -134,6 +134,12 @@ struct SpatialPartition {
     return lattices.size();
   }
 
+  PURE [[nodiscard]] constexpr auto
+  numAssemblies() const noexcept -> Size
+  {
+    return assemblies.size();
+  }
+
   // -----------------------------------------------------------------------------
   // Methods
   // -----------------------------------------------------------------------------
@@ -165,11 +171,11 @@ struct SpatialPartition {
   auto
   makeLattice(std::vector<std::vector<Size>> const & rtm_ids) -> Size;
 
-  auto 
-  makeAssembly(std::vector<Size> const & lat_ids,
-               std::vector<T> const & z = {-1, 1});
-  //
-  //    int make_core(std::vector<std::vector<int>> const & ass_ids);
+  auto
+  makeAssembly(std::vector<Size> const & lat_ids, std::vector<T> const & z = {-1, 1});
+
+  auto
+  makeCore(std::vector<std::vector<Size>> const & asy_ids);
   //
   //    int import_coarse_cells(std::string const & filename);
   //

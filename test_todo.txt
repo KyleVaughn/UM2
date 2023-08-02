@@ -45,6 +45,8 @@ Ignore commented section below
 Gmsh
   groupPreservingIntersect
   addCylindricalPin2D
+  overlaySpatialPartition
+  addCylindricalPinLattice2D
 
 Image
   rasterizePoint

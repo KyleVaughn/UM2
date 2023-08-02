@@ -58,6 +58,7 @@ set(UM2_HEADERS
     "include/um2/common/Log.hpp"
     "include/um2/common/ShortString.hpp"
     "include/um2/common/Color.hpp"
+    "include/um2/common/to_vecvec.hpp"
     # math
     "include/um2/math/math_functions.hpp"
     "include/um2/math/morton.hpp"
@@ -89,12 +90,12 @@ set(UM2_HEADERS
     "include/um2/mesh/QuadMesh.hpp"
     "include/um2/mesh/QuadraticTriMesh.hpp"
     "include/um2/mesh/QuadraticQuadMesh.hpp"
+    # mpact
+    "include/um2/mpact/SpatialPartition.hpp"
     # gmsh
     "include/um2/gmsh/base_gmsh_api.hpp"
     "include/um2/gmsh/io.hpp"
     "include/um2/gmsh/model.hpp"
-    # mpact
-    "include/um2/mpact/SpatialPartition.hpp"
     #    # ray_casting
     #    "include/um2/ray_casting/Ray.hpp"
     # visualization
