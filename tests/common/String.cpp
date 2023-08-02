@@ -101,6 +101,27 @@ TEST_CASE(move_constructor)
 }
 MAKE_CUDA_KERNEL(move_constructor);
 
+HOSTDEV
+TEST_CASE(const_char_constructor)
+{
+  const char * input = "Short String";
+  um2::String s(input);
+  ASSERT(s.size() == 12);
+  ASSERT(s.capacity() == 22);
+  ASSERT(!s.isLong());
+  // cppcheck-suppress assertWithSideEffect
+  ASSERT(s.data()[0] == 'S');
+  const char * input2 =
+      "This string will be too long to fit in the small string optimization";
+  um2::String s2(input2);
+  ASSERT(s2.size() == 68);
+  ASSERT(s2.capacity() == 68);
+  ASSERT(s2.isLong());
+  // cppcheck-suppress assertWithSideEffect
+  ASSERT(s2.data()[0] == 'T');
+}
+MAKE_CUDA_KERNEL(const_char_constructor);
+
 // -----------------------------------------------------------------------------
 // Operators
 // -----------------------------------------------------------------------------
@@ -189,14 +210,16 @@ MAKE_CUDA_KERNEL(comparison);
 //}
 // MAKE_CUDA_KERNEL(contains);
 //
-// TEST_CASE(starts_ends_with)
-//{
-//  um2::String s("hello");
-//  EXPECT_TRUE(s.starts_with("he"));
-//  EXPECT_FALSE(s.starts_with("eh"));
-//  EXPECT_TRUE(s.ends_with("lo"));
-//  EXPECT_FALSE(s.ends_with("ol"));
-//}
+HOSTDEV
+TEST_CASE(starts_ends_with)
+{
+  um2::String const s("hello");
+  ASSERT(s.starts_with(um2::String("he")));
+  ASSERT(!s.starts_with(um2::String("eh")));
+  ASSERT(s.ends_with("lo"));
+  ASSERT(!s.ends_with("ol"));
+}
+MAKE_CUDA_KERNEL(starts_ends_with);
 //
 // TEST_CASE(toString)
 //{
@@ -211,14 +234,14 @@ TEST_SUITE(String)
   TEST_HOSTDEV(const_char_array_constructor)
   TEST_HOSTDEV(copy_constructor)
   TEST_HOSTDEV(move_constructor)
-
+  TEST_HOSTDEV(const_char_constructor)
   // Operators
   TEST_HOSTDEV(assign_operator)
   TEST_HOSTDEV(equals_operator)
   TEST_HOSTDEV(comparison)
   //  // Methods
   //  TEST_HOSTDEV(contains)
-  //  TEST(starts_ends_with)
+  TEST(starts_ends_with)
   //  TEST(toString)
 }
 
