@@ -1,23 +1,21 @@
 namespace um2::mpact
 {
 
-// template <std::floating_point T, std::signed_integral I>
-// void
-// SpatialPartition<T, I>::clear()
-//{
-//   this->core.clear();
-//   this->assemblies.clear();
-//   this->lattices.clear();
-//   this->rtms.clear();
-//   this->coarse_cells.clear();
-//
-//   this->tri.clear();
-//   this->quad.clear();
-//   this->tri_quad.clear();
-//   this->quadratic_tri.clear();
-//   this->quadratic_quad.clear();
-//   this->quadratic_tri_quad.clear();
-// }
+template <std::floating_point T, std::signed_integral I>
+HOSTDEV constexpr void
+SpatialPartition<T, I>::clear() noexcept
+{
+  core.clear();
+  assemblies.clear();
+  lattices.clear();
+  rtms.clear();
+  coarse_cells.clear();
+
+  tri.clear();
+  quad.clear();
+  quadratic_tri.clear();
+  quadratic_quad.clear();
+}
 
 // template <std::floating_point T, std::signed_integral I>
 // int SpatialPartition<T, I>::make_cylindrical_pin_mesh(
@@ -797,7 +795,7 @@ SpatialPartition<T, I>::makeRTM(std::vector<std::vector<Size>> const & cc_ids) -
 {
   Size const rtm_id = rtms.size();
   Log::info("Making ray tracing module " + std::to_string(rtm_id));
-  std::vector<int> unique_cc_ids;
+  std::vector<Size> unique_cc_ids;
   std::vector<Vec2<T>> dxdy;
   // Ensure that all coarse cells exist
   Size const num_cc = coarse_cells.size();
@@ -817,171 +815,159 @@ SpatialPartition<T, I>::makeRTM(std::vector<std::vector<Size>> const & cc_ids) -
   }
   // For a max pin ID N, the RectilinearGrid constructor needs all dxdy from 0 to N.
   // To get around this requirement, we will renumber the coarse cells to be 0, 1, 2,
-  // 3, ...
-  // and then use the renumbered IDs to create the RectilinearGrid.
-  //  std::vector<std::vector<int>> cc_ids_renumbered(cc_ids.size());
-  //  for (size_t i = 0; i < cc_ids.size(); ++i) {
-  //      cc_ids_renumbered[i].resize(cc_ids[i].size());
-  //      for (size_t j = 0; j < cc_ids[i].size(); ++j) {
-  //          auto const it = std::find(unique_cc_ids.begin(), unique_cc_ids.end(),
-  //          cc_ids[i][j]); UM2_ASSERT(it != unique_cc_ids.end());
-  //          cc_ids_renumbered[i][j] = static_cast<int>(it - unique_cc_ids.begin());
-  //      }
-  //  }
-  //  // Create the rectilinear grid
-  //  RectilinearGrid2<T> grid(dxdy, cc_ids_renumbered);
-  //  // Ensure the grid has the same dxdy as all other RTMs
-  //  if (!this->rtms.empty()) {
-  //      T const eps = static_cast<T>(1e-5);
-  //      if (std::abs(width(grid) -  width(this->rtms[0].grid)) > eps ||
-  //          std::abs(height(grid) - height(this->rtms[0].grid)) > eps) {
-  //          Log::error("All RTMs must have the same dxdy");
-  //          return -1;
-  //      }
-  //  }
-  //  // Flatten the coarse cell IDs (rows are reversed)
-  //  size_t const num_rows = cc_ids.size();
-  //  size_t const num_cols = cc_ids[0].size();
-  //  Vector<I> cc_ids_flat(static_cast<Size>(num_rows * num_cols));
-  //  for (size_t i = 0; i < num_rows; ++i) {
-  //      for (size_t j = 0; j < num_cols; ++j) {
-  //          cc_ids_flat[static_cast<Size>(i * num_cols + j)] =
-  //              static_cast<I>(cc_ids[num_rows - 1 - i][j]);
-  //      }
-  //  }
-  //  RTM rtm;
-  //  rtm.grid = grid;
-  //  rtm.children = cc_ids_flat;
-  //  this->rtms.push_back(rtm);
+  // 3, ..., and then use the renumbered IDs to create the RectilinearGrid.
+  std::vector<std::vector<Size>> cc_ids_renumbered(cc_ids.size());
+  for (size_t i = 0; i < cc_ids.size(); ++i) {
+    cc_ids_renumbered[i].resize(cc_ids[i].size());
+    for (size_t j = 0; j < cc_ids[i].size(); ++j) {
+      auto const it = std::find(unique_cc_ids.begin(), unique_cc_ids.end(), cc_ids[i][j]);
+      assert(it != unique_cc_ids.end());
+      cc_ids_renumbered[i][j] = static_cast<Size>(it - unique_cc_ids.begin());
+    }
+  }
+  // Create the rectilinear grid
+  RectilinearGrid2<T> grid(dxdy, cc_ids_renumbered);
+  // Ensure the grid has the same dxdy as all other RTMs
+  if (!rtms.empty()) {
+    T const eps = epsilonDistance<T>();
+    if (um2::abs(grid.width() - rtms[0].width()) > eps ||
+        um2::abs(grid.height() - rtms[0].height()) > eps) {
+      Log::error("All RTMs must have the same dxdy");
+      return -1;
+    }
+  }
+  // Flatten the coarse cell IDs (rows are reversed)
+  size_t const num_rows = cc_ids.size();
+  size_t const num_cols = cc_ids[0].size();
+  Vector<I> cc_ids_flat(static_cast<Size>(num_rows * num_cols));
+  for (size_t i = 0; i < num_rows; ++i) {
+    for (size_t j = 0; j < num_cols; ++j) {
+      cc_ids_flat[static_cast<Size>(i * num_cols + j)] =
+          static_cast<I>(cc_ids[num_rows - 1 - i][j]);
+    }
+  }
+  RTM rtm;
+  rtm.grid = um2::move(grid);
+  rtm.children = um2::move(cc_ids_flat);
+  rtms.push_back(um2::move(rtm));
   return rtm_id;
 }
-//
-// template <std::floating_point T, std::signed_integral I>
-// int SpatialPartition<T, I>::make_lattice(std::vector<std::vector<int>> const & rtm_ids)
-//{
-//     Size const lat_id = this->lattices.size();
-//     Log::info("Making lattice " + std::to_string(lat_id));
-//     // Ensure that all RTMs exist
-//     Size const num_rtm = this->rtms.size();
-//     for (auto const & rtm_ids_row : rtm_ids) {
-//         for (auto const & id : rtm_ids_row) {
-//             if (id < 0 || id >= num_rtm) {
-//                 Log::error("RTM " + std::to_string(id) + " does not exist");
-//                 return -1;
-//             }
-//         }
-//     }
-//     // Create the lattice
-//     // Ensure each row has the same number of columns
-//     Point2<T> const minima(0, 0);
-//     Vec<2, T> spacing = {width(this->rtms[0].grid), height(this->rtms[0].grid)};
-//     size_t const num_rows = rtm_ids.size();
-//     size_t const num_cols = rtm_ids[0].size();
-//     for (size_t i = 1; i < num_rows; ++i) {
-//         if (rtm_ids[i].size() != num_cols) {
-//             Log::error("Each row must have the same number of columns");
-//             return -1;
-//         }
-//     }
-//     Vec<2, Size> const num_cells = {num_cols, num_rows};
-//     RegularGrid2<T> grid(minima, spacing, num_cells);
-//     // Flatten the RTM IDs (rows are reversed)
-//     Vector<I> rtm_ids_flat(static_cast<Size>(num_rows * num_cols));
-//     for (size_t i = 0; i < num_rows; ++i) {
-//         for (size_t j = 0; j < num_cols; ++j) {
-//             rtm_ids_flat[static_cast<Size>(i * num_cols + j)] =
-//                 static_cast<I>(rtm_ids[num_rows - 1 - i][j]);
-//         }
-//     }
-//     Lattice lat;
-//     lat.grid = grid;
-//     lat.children = rtm_ids_flat;
-//     this->lattices.push_back(lat);
-//     return lat_id;
-// }
-//
-// template <std::floating_point T, std::signed_integral I>
-// int SpatialPartition<T, I>::make_assembly(std::vector<int> const & lat_ids,
-//                                           std::vector<double> const & z)
-//{
-//     Size const ass_id = this->assemblies.size();
-//     Log::info("Making assembly " + std::to_string(ass_id));
-//     // Ensure that all lattices exist
-//     Size const num_lat = this->lattices.size();
-//     for (auto const & id : lat_ids) {
-//         if (id < 0 || id >= num_lat) {
-//             Log::error("Lattice " + std::to_string(id) + " does not exist");
-//             return -1;
-//         }
-//     }
-//     // Ensure the number of lattices is 1 less than the number of z-planes
-//     if (lat_ids.size() + 1 != z.size()) {
-//         Log::error("The number of lattices must be 1 less than the number of
-//         z-planes"); return -1;
-//     }
-//     // Ensure all z-planes are in ascending order and positive.
-//     // The [-1, 1] case is the only exception to this rule, which signifies a
-//     // 2D model.
-//     if (!(z.size() == 2 && std::abs(z[0] + 1) < 1e-4 && std::abs(z[1] - 1) < 1e-4)) {
-//         if (!std::is_sorted(z.begin(), z.end())) {
-//             Log::error("The z-planes must be in ascending order");
-//             return -1;
-//         }
-//         if (z.front() < 0) {
-//             Log::error("The z-planes must be positive");
-//             return -1;
-//         }
-//     }
-//     // Ensure this assembly is the same height as all other assemblies
-//     if (!this->assemblies.empty()) {
-//         double const eps = 1e-5;
-//         double const assem_top =
-//         static_cast<double>(this->assemblies[0].grid.divs[0].back()); double const
-//         assem_bot = static_cast<double>(this->assemblies[0].grid.divs[0].front()); if
-//         (std::abs(z.back() - assem_top) > eps ||
-//             std::abs(z.front() - assem_bot) > eps) {
-//             Log::error("All assemblies must have the same height");
-//             return -1;
-//         }
-//     }
-//     // Ensure the lattices all have the same dimensions. Since they are composed of
-//     RTMs,
-//     // it is sufficient to check num_xcells and num_ycells.
-//     Size const num_xcells = this->lattices[lat_ids[0]].grid.num_cells[0];
-//     Size const num_ycells = this->lattices[lat_ids[0]].grid.num_cells[1];
-//     for (auto const & id : lat_ids) {
-//         if (this->lattices[id].grid.num_cells[0] != num_xcells ||
-//             this->lattices[id].grid.num_cells[1] != num_ycells) {
-//             Log::error("All lattices must have the same xy-dimensions");
-//             return -1;
-//         }
-//     }
-//
-//     // Clean this up. Too many static_casts.
-//     Vector<I> lat_ids_I(static_cast<Size>(lat_ids.size()));
-//     for (size_t i = 0; i < lat_ids.size(); ++i) {
-//         lat_ids_I[static_cast<Size>(i)] = static_cast<I>(lat_ids[i]);
-//     }
-//
-//     RectilinearGrid1<T> grid;
-//     if constexpr (std::same_as<double, T>) {
-//         grid.divs[0].resize(static_cast<Size>(z.size()));
-//         for (size_t i = 0; i < z.size(); ++i) {
-//             grid.divs[0][static_cast<Size>(i)] = z[i];
-//         }
-//     } else {
-//         Vector<T> z_T(static_cast<Size>(z.size()));
-//         for (size_t i = 0; i < z.size(); ++i) {
-//             z_T[static_cast<Size>(i)] = static_cast<T>(z[i]);
-//         }
-//         grid.divs[0] = z_T;
-//     }
-//     Assembly ass;
-//     ass.grid = grid;
-//     ass.children = lat_ids_I;
-//     this->assemblies.push_back(ass);
-//     return ass_id;
-// }
+
+template <std::floating_point T, std::signed_integral I>
+auto
+SpatialPartition<T, I>::makeLattice(std::vector<std::vector<Size>> const & rtm_ids)
+    -> Size
+{
+  Size const lat_id = lattices.size();
+  Log::info("Making lattice " + std::to_string(lat_id));
+  // Ensure that all RTMs exist
+  Size const num_rtm = rtms.size();
+  for (auto const & rtm_ids_row : rtm_ids) {
+    auto const it =
+        std::find_if(rtm_ids_row.begin(), rtm_ids_row.end(),
+                     [num_rtm](Size const id) { return id < 0 || id >= num_rtm; });
+    if (it != rtm_ids_row.end()) {
+      Log::error("RTM " + std::to_string(*it) + " does not exist");
+      return -1;
+    }
+  }
+  // Create the lattice
+  // Ensure each row has the same number of columns
+  Point2<T> const minima(0, 0);
+  Vec2<T> const spacing(rtms[0].width(), rtms[0].height());
+  size_t const num_rows = rtm_ids.size();
+  size_t const num_cols = rtm_ids[0].size();
+  for (size_t i = 1; i < num_rows; ++i) {
+    if (rtm_ids[i].size() != num_cols) {
+      Log::error("Each row must have the same number of columns");
+      return -1;
+    }
+  }
+  Vec2<Size> const num_cells(num_cols, num_rows);
+  RegularGrid2<T> grid(minima, spacing, num_cells);
+  // Flatten the RTM IDs (rows are reversed)
+  Vector<I> rtm_ids_flat(static_cast<Size>(num_rows * num_cols));
+  for (size_t i = 0; i < num_rows; ++i) {
+    for (size_t j = 0; j < num_cols; ++j) {
+      rtm_ids_flat[static_cast<Size>(i * num_cols + j)] =
+          static_cast<I>(rtm_ids[num_rows - 1 - i][j]);
+    }
+  }
+  Lattice lat;
+  lat.grid = um2::move(grid);
+  lat.children = um2::move(rtm_ids_flat);
+  lattices.push_back(um2::move(lat));
+  return lat_id;
+}
+
+template <std::floating_point T, std::signed_integral I>
+auto SpatialPartition<T, I>::makeAssembly(std::vector<Size> const & lat_ids,
+                                          std::vector<T> const & z)
+{
+  Size const ass_id = assemblies.size();
+  Log::info("Making assembly " + std::to_string(ass_id));
+  // Ensure that all lattices exist
+  Size const num_lat = lattices.size();
+  {
+    auto const it = std::find_if(lat_ids.cbegin(), lat_ids.cend(),
+                       [num_lat](Size const id) { return id < 0 || id >= num_lat; });
+    if (it != lat_ids.end()) {
+      Log::error("Lattice " + std::to_string(*it) + " does not exist");
+      return -1;
+    }
+  }
+  // Ensure the number of lattices is 1 less than the number of z-planes
+  if (lat_ids.size() + 1 != z.size()) {
+      Log::error("The number of lattices must be 1 less than the number of z-planes"); 
+      return -1;
+  }
+  // Ensure all z-planes are in ascending order
+  if (!std::is_sorted(z.begin(), z.end())) {
+      Log::error("The z-planes must be in ascending order");
+      return -1;
+  }
+  // Ensure this assembly is the same height as all other assemblies
+  if (!assemblies.empty()) {
+      T const eps = epsilonDistance<T>(); 
+      T const assem_top = assemblies[0].xMax();
+      T const assem_bot = assemblies[0].xMin();
+      if (um2::abs(z.back() - assem_top) > eps ||
+          um2::abs(z.front() - assem_bot) > eps) {
+          Log::error("All assemblies must have the same height");
+          return -1;
+      }
+  }
+  // Ensure the lattices all have the same dimensions. Since they are composed of RTMs,
+  // it is sufficient to check numXCells and numYCells.
+  {
+    Size const num_xcells = lattices[lat_ids[0]].numXCells();
+    Size const num_ycells = lattices[lat_ids[0]].numYCells();
+    auto const it = std::find_if(lat_ids.cbegin(), lat_ids.cend(),
+                       [num_xcells, num_ycells, this](Size const id) {
+                           return this->lattices[id].numXCells() != num_xcells ||
+                                  this->lattices[id].numYCells() != num_ycells;
+                       });
+    if (it != lat_ids.end()) {
+      Log::error("All lattices must have the same xy-dimensions");
+      return -1;
+    }
+  }
+
+  // Clean this up. Too many static_casts.
+  Vector<I> lat_ids_i(static_cast<Size>(lat_ids.size()));
+  for (size_t i = 0; i < lat_ids.size(); ++i) {
+      lat_ids_i[static_cast<Size>(i)] = static_cast<I>(lat_ids[i]);
+  }
+
+  RectilinearGrid1<T> grid;
+  grid.divs[0].resize(static_cast<Size>(z.size()));
+  std::copy(z.cbegin(), z.cend(), grid.divs[0].begin());
+  Assembly ass;
+  ass.grid = um2::move(grid);
+  ass.children = um2::move(lat_ids_i);
+  assemblies.push_back(um2::move(ass));
+  return ass_id;
+}
 //
 // template <std::floating_point T, std::signed_integral I>
 // int SpatialPartition<T, I>::make_core(std::vector<std::vector<int>> const & ass_ids)

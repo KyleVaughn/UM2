@@ -5,8 +5,8 @@ namespace um2
 // Constructors
 // ----------------------------------------------------------------------------
 
- template <Size D, typename T>
- HOSTDEV constexpr RectilinearGrid<D, T>::RectilinearGrid(AxisAlignedBox<D, T> const & box)
+template <Size D, typename T>
+HOSTDEV constexpr RectilinearGrid<D, T>::RectilinearGrid(AxisAlignedBox<D, T> const & box)
 {
   for (Size i = 0; i < D; ++i) {
     divs[i] = {box.minima[i], box.maxima[i]};
@@ -15,32 +15,33 @@ namespace um2
 }
 
 template <Size D, typename T>
-constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<AxisAlignedBox<D, T>> const & boxes)
+constexpr RectilinearGrid<D, T>::RectilinearGrid(
+    Vector<AxisAlignedBox<D, T>> const & boxes)
 {
   // Create divs by finding the unique planar divisions
   T constexpr eps = epsilonDistance<T>();
   for (Size i = 0; i < boxes.size(); ++i) {
     AxisAlignedBox<D, T> const & box = boxes[i];
     for (Size d = 0; d < D; ++d) {
-      bool min_found = false;    
-      for (Size j = 0; j < divs[d].size(); ++j) {    
-          if (std::abs(divs[d][j] - box.minima[d]) < eps) {    
-              min_found = true;    
-              break;    
-          }    
-      }    
-      if (!min_found) {    
-          this->divs[d].push_back(box.minima[d]);    
-      }    
-      bool max_found = false;    
-      for (Size j = 0; j < divs[d].size(); ++j) {    
-          if (std::abs(divs[d][j] - box.maxima[d]) < eps) {    
-              max_found = true;    
-              break;    
-          }    
-      }    
-      if (!max_found) {    
-          this->divs[d].push_back(box.maxima[d]);    
+      bool min_found = false;
+      for (Size j = 0; j < divs[d].size(); ++j) {
+        if (std::abs(divs[d][j] - box.minima[d]) < eps) {
+          min_found = true;
+          break;
+        }
+      }
+      if (!min_found) {
+        this->divs[d].push_back(box.minima[d]);
+      }
+      bool max_found = false;
+      for (Size j = 0; j < divs[d].size(); ++j) {
+        if (std::abs(divs[d][j] - box.maxima[d]) < eps) {
+          max_found = true;
+          break;
+        }
+      }
+      if (!max_found) {
+        this->divs[d].push_back(box.maxima[d]);
       }
     }
   }
@@ -56,13 +57,12 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<AxisAlignedBox<D, T>> co
     assert(divs[i].size() >= 2);
     ncells_total *= divs[i].size() - 1;
   }
-  assert(ncells_total == boxes.size()); 
+  assert(ncells_total == boxes.size());
 }
 
 template <Size D, typename T>
 constexpr RectilinearGrid<D, T>::RectilinearGrid(
-   std::vector<Vec2<T>> const & dxdy,
-   std::vector<std::vector<int>> const & ids)
+    std::vector<Vec2<T>> const & dxdy, std::vector<std::vector<int>> const & ids)
 {
   static_assert(D == 2);
   // Convert the dxdy to AxisAlignedBoxes

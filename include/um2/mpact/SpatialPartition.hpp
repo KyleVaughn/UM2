@@ -128,8 +128,18 @@ struct SpatialPartition {
     return rtms.size();
   }
 
-  //
-  //    HOSTDEV void clear();
+  PURE [[nodiscard]] constexpr auto
+  numLattices() const noexcept -> Size
+  {
+    return lattices.size();
+  }
+
+  // -----------------------------------------------------------------------------
+  // Methods
+  // -----------------------------------------------------------------------------
+
+  HOSTDEV constexpr void
+  clear() noexcept;
 
   //    int make_cylindrical_pin_mesh(std::vector<double> const & radii,
   //                                  double const pitch,
@@ -151,11 +161,13 @@ struct SpatialPartition {
 
   auto
   makeRTM(std::vector<std::vector<Size>> const & cc_ids) -> Size;
-  //
-  //    int make_lattice(std::vector<std::vector<int>> const & rtm_ids);
-  //
-  //    int make_assembly(std::vector<int> const & lat_ids,
-  //                      std::vector<double> const & z = {-1, 1});
+
+  auto
+  makeLattice(std::vector<std::vector<Size>> const & rtm_ids) -> Size;
+
+  auto 
+  makeAssembly(std::vector<Size> const & lat_ids,
+               std::vector<T> const & z = {-1, 1});
   //
   //    int make_core(std::vector<std::vector<int>> const & ass_ids);
   //
@@ -194,24 +206,6 @@ struct SpatialPartition {
   //                               I ** const fv) const;
 
 }; // struct SpatialPartition
-
-// template <std::floating_point T, std::signed_integral I>
-// PURE constexpr int num_unique_rtms(SpatialPartition<T, I> const & sp)
-//{
-//     return static_cast<int>(sp.rtms.size());
-// }
-//
-// template <std::floating_point T, std::signed_integral I>
-// PURE constexpr int num_unique_lattices(SpatialPartition<T, I> const & sp)
-//{
-//     return static_cast<int>(sp.lattices.size());
-// }
-//
-// template <std::floating_point T, std::signed_integral I>
-// PURE constexpr int num_unique_assemblies(SpatialPartition<T, I> const & sp)
-//{
-//     return static_cast<int>(sp.assemblies.size());
-// }
 
 } // namespace um2::mpact
 

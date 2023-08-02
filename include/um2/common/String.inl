@@ -299,6 +299,7 @@ String::ends_with(String const & s) const noexcept -> bool
 
 template <uint64_t N>
 PURE HOSTDEV auto
+// NOLINTNEXTLINE(readability-identifier-naming)
 String::ends_with(char const (&s)[N]) const noexcept -> bool
 {
   return ends_with(String(s));

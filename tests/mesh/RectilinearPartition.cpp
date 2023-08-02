@@ -40,37 +40,38 @@ TEST_CASE(clear)
   ASSERT(part.children.empty());
 }
 
-// template <typename T, std::integral P>
-// TEST_CASE(id_array_constructor)
-//     std::vector<std::vector<int>> ids = {
-//         { 0, 1, 2, 0 },
-//         { 0, 2, 0, 2 },
-//         { 0, 1, 0, 1 },
-//     };
-//     std::vector<um2::Vec2<T>> dxdy = {
-//         { 2, 1 },
-//         { 2, 1 },
-//         { 2, 1 },
-//         { 2, 1 },
-//     };
-//     um2::Vector<P> expected = { 0, 1, 0, 1, 0, 2, 0, 2, 0, 1, 2, 0 };
-//     um2::RectilinearPartition2<T, P> part(dxdy, ids);
-//
-//     ASSERT(part.grid.divs[0].size() == 5, "x divs");
-//     T xref[5] = { 0, 2, 4, 6, 8 };
-//     for (Size i = 0; i < 5; ++i) {
-//         ASSERT_APPROX(part.grid.divs[0][i], xref[i], 1e-6, "x divs");
-//     }
-//     ASSERT(part.grid.divs[1].size() == 4, "y divs");
-//     T yref[4] = { 0, 1, 2, 3 };
-//     for (Size i = 0; i < 4; ++i) {
-//         ASSERT_APPROX(part.grid.divs[1][i], yref[i], 1e-6, "y divs");
-//     }
-//     for (Size i = 0; i < 12; ++i) {
-//         ASSERT(part.children[i] == expected[i], "children");
-//     }
-// END_TEST_CASE
-//
+template <typename T, std::integral P>
+TEST_CASE(id_array_constructor)
+{
+  std::vector<std::vector<Size>> const ids = {
+      {0, 1, 2, 0},
+      {0, 2, 0, 2},
+      {0, 1, 0, 1},
+  };
+  std::vector<um2::Vec2<T>> const dxdy = {
+      {2, 1},
+      {2, 1},
+      {2, 1},
+      {2, 1},
+  };
+  um2::Vector<P> const expected = {0, 1, 0, 1, 0, 2, 0, 2, 0, 1, 2, 0};
+  um2::RectilinearPartition2<T, P> const part(dxdy, ids);
+
+  ASSERT(part.grid.divs[0].size() == 5);
+  T const xref[5] = {0, 2, 4, 6, 8};
+  for (Size i = 0; i < 5; ++i) {
+    ASSERT_NEAR(part.grid.divs[0][i], xref[i], static_cast<T>(1e-6));
+  }
+  ASSERT(part.grid.divs[1].size() == 4);
+  T const yref[4] = {0, 1, 2, 3};
+  for (Size i = 0; i < 4; ++i) {
+    ASSERT_NEAR(part.grid.divs[1][i], yref[i], static_cast<T>(1e-6));
+  }
+  for (Size i = 0; i < 12; ++i) {
+    ASSERT(part.children[i] == expected[i]);
+  }
+}
+
 template <typename T, std::integral P>
 HOSTDEV
 TEST_CASE(getBoxAndChild)
@@ -157,9 +158,9 @@ TEST_SUITE(RectilinearPartition)
 {
   TEST_HOSTDEV(clear, 1, 1, D, T, P);
   TEST_HOSTDEV(getBoxAndChild, 1, 1, T, P);
-  //    if constexpr (D == 2) {
-  //        RUN_TEST("id_array_constructor", (id_array_constructor<T, P>));
-  //    }
+  if constexpr (D == 2) {
+    TEST((id_array_constructor<T, P>));
+  }
 }
 
 auto

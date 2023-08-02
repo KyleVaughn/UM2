@@ -2,6 +2,29 @@ namespace um2
 {
 
 // --------------------------------------------------------------------------------
+// Constructors
+// --------------------------------------------------------------------------------
+
+template <Size D, typename T, typename P>
+constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
+    std::vector<Vec2<T>> const & dxdy, std::vector<std::vector<Size>> const & ids)
+    : grid(dxdy, ids)
+{
+  static_assert(D == 2);
+  // Flatten the ids to get the children
+  // The rows are in reverse order
+  Size const nx = grid.numXCells();
+  Size const ny = grid.numYCells();
+  children.resize(nx * ny);
+  for (Size i = 0; i < ny; ++i) {
+    for (Size j = 0; j < nx; ++j) {
+      children[i * nx + j] =
+          static_cast<P>(ids[static_cast<size_t>(ny - 1 - i)][static_cast<size_t>(j)]);
+    }
+  }
+}
+
+// --------------------------------------------------------------------------------
 // Accessors
 // --------------------------------------------------------------------------------
 
@@ -200,28 +223,5 @@ RectilinearPartition<D, T, P>::clear() noexcept
   grid.clear();
   children.clear();
 }
-
-//// -- Constructors --
-//
-// template <length_t D, typename T, typename P>
-// constexpr
-// RectilinearPartition<D, T, P>::RectilinearPartition(
-//        std::vector<Vec2<T>> const & dxdy,
-//        std::vector<std::vector<int>> const & ids)
-//    requires (D == 2) : grid(dxdy, ids)
-//{
-//    // Flatten the ids to get the children
-//    // The rows are in reverse order
-//    length_t const nx = num_xcells(this->grid);
-//    length_t const ny = num_ycells(this->grid);
-//    this->children.resize(nx * ny);
-//    for (length_t i = 0; i < ny; ++i) {
-//        for (length_t j = 0; j < nx; ++j) {
-//            children[i * nx + j] =
-//                static_cast<P>(ids[static_cast<size_t>(ny - 1 -
-//                i)][static_cast<size_t>(j)]);
-//        }
-//    }
-//}
 
 } // namespace um2

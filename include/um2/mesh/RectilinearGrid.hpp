@@ -15,6 +15,11 @@ namespace um2
 // A D-dimensional rectilinear grid with data of type T
 
 template <Size D, typename T>
+// Why does clang-tidy complain declaration uses identifier '__i0'? There is
+// no __i0 in the code.
+// If you're reading this, uncomment the NOLINTNEXTLINE line below and see if
+// this has been fixed.
+// NOLINTNEXTLINE
 struct RectilinearGrid {
 
   // Divisions along each axis
@@ -27,13 +32,12 @@ struct RectilinearGrid {
   constexpr RectilinearGrid() noexcept = default;
 
   constexpr explicit RectilinearGrid(AxisAlignedBox<D, T> const & box);
-  
+
   constexpr explicit RectilinearGrid(Vector<AxisAlignedBox<D, T>> const & boxes);
-  
+
   // dxdy and an array of IDs, mapping to the dxdy
   constexpr RectilinearGrid(std::vector<Vec2<T>> const & dxdy,
                             std::vector<std::vector<Size>> const & ids);
-
 
   // -----------------------------------------------------------------------------
   // Accessors
