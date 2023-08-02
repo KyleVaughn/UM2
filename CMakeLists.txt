@@ -96,6 +96,7 @@ set(UM2_HEADERS
     "include/um2/gmsh/base_gmsh_api.hpp"
     "include/um2/gmsh/io.hpp"
     "include/um2/gmsh/model.hpp"
+    "include/um2/gmsh/mesh.hpp"
     #    # ray_casting
     #    "include/um2/ray_casting/Ray.hpp"
     # visualization
@@ -113,6 +114,7 @@ set(UM2_SOURCES
     "src/gmsh/base_gmsh_api.cpp"
     "src/gmsh/io.cpp"
     "src/gmsh/model.cpp"
+    "src/gmsh/mesh.cpp"
     # visualization
     "src/visualization/Image2D.cpp"
     # api
