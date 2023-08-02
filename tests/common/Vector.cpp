@@ -2,6 +2,7 @@
 #include <um2/common/utility.hpp>
 
 #include <concepts>
+#include <vector>
 
 #include "../test_macros.hpp"
 
@@ -281,64 +282,115 @@ TEST_CASE(resize)
   // cppcheck-suppress assertWithSideEffect
   ASSERT(v.data() != nullptr);
 }
+
+template <class T>
+HOSTDEV
+TEST_CASE(push_back)
+{
+  um2::Vector<T> v;
+  v.push_back(1);
+  ASSERT(v.size() == 1);
+  ASSERT(v.capacity() == 1);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
+  } else {
+    // cppcheck-suppress assertWithSideEffect
+    ASSERT(v.data()[0] == static_cast<T>(1));
+  }
+  v.push_back(2);
+  ASSERT(v.size() == 2);
+  ASSERT(v.capacity() == 2);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
+  } else {
+    // cppcheck-suppress assertWithSideEffect
+    ASSERT(v.data()[0] == static_cast<T>(1));
+    // cppcheck-suppress assertWithSideEffect
+    ASSERT(v.data()[1] == static_cast<T>(2));
+  }
+  v.push_back(3);
+  ASSERT(v.size() == 3);
+  ASSERT(v.capacity() == 4);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[2], static_cast<T>(3), static_cast<T>(1e-6));
+  } else {
+    // cppcheck-suppress assertWithSideEffect
+    ASSERT(v.data()[0] == static_cast<T>(1));
+    // cppcheck-suppress assertWithSideEffect
+    ASSERT(v.data()[1] == static_cast<T>(2));
+    // cppcheck-suppress assertWithSideEffect
+    ASSERT(v.data()[2] == static_cast<T>(3));
+  }
+  v.clear();
+  v.push_back(1);
+  v.push_back(2);
+  v.push_back(3);
+  v.push_back(4);
+  v.push_back(5);
+  ASSERT(v.size() == 5);
+  ASSERT(v.capacity() == 8);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[2], static_cast<T>(3), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[3], static_cast<T>(4), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[4], static_cast<T>(5), static_cast<T>(1e-6));
+  } else {
+    // cppcheck-suppress assertWithSideEffect
+    ASSERT(v.data()[0] == static_cast<T>(1));
+    // cppcheck-suppress assertWithSideEffect
+    ASSERT(v.data()[1] == static_cast<T>(2));
+    // cppcheck-suppress assertWithSideEffect
+    ASSERT(v.data()[2] == static_cast<T>(3));
+    // cppcheck-suppress assertWithSideEffect
+    ASSERT(v.data()[3] == static_cast<T>(4));
+    // cppcheck-suppress assertWithSideEffect
+    ASSERT(v.data()[4] == static_cast<T>(5));
+  }
+}
 //
-// template <class T>
-// HOSTDEV TEST_CASE(push_back)
-//{
-//  um2::Vector<T> v;
-//  v.push_back(1);
-//  ASSERT(v.size(), 1);
-//  ASSERT(v.capacity(), 1);
-//  if constexpr (std::floating_point<T>) {
-//    ASSERT_NEAR(v.data()[0], static_cast<T>(1), 1e-6);
-//  } else {
-//    ASSERT(v.data()[0], static_cast<T>(1));
-//  }
-//  v.push_back(2);
-//  ASSERT(v.size(), 2);
-//  ASSERT(v.capacity(), 2);
-//  if constexpr (std::floating_point<T>) {
-//    ASSERT_NEAR(v.data()[0], static_cast<T>(1), 1e-6);
-//    ASSERT_NEAR(v.data()[1], static_cast<T>(2), 1e-6);
-//  } else {
-//    ASSERT(v.data()[0], static_cast<T>(1));
-//    ASSERT(v.data()[1], static_cast<T>(2));
-//  }
-//  v.push_back(3);
-//  ASSERT(v.size(), 3);
-//  ASSERT(v.capacity(), 4);
-//  if constexpr (std::floating_point<T>) {
-//    ASSERT_NEAR(v.data()[0], static_cast<T>(1), 1e-6);
-//    ASSERT_NEAR(v.data()[1], static_cast<T>(2), 1e-6);
-//    ASSERT_NEAR(v.data()[2], static_cast<T>(3), 1e-6);
-//  } else {
-//    ASSERT(v.data()[0], static_cast<T>(1));
-//    ASSERT(v.data()[1], static_cast<T>(2));
-//    ASSERT(v.data()[2], static_cast<T>(3));
-//  }
-//  v.clear();
-//  v.reserve(3);
-//  v.push_back(1);
-//  v.push_back(2);
-//  v.push_back(3);
-//  v.push_back(4);
-//  v.push_back(5);
-//  ASSERT(v.size(), 5);
-//  ASSERT(v.capacity(), 8);
-//  if constexpr (std::floating_point<T>) {
-//    ASSERT_NEAR(v.data()[0], static_cast<T>(1), 1e-6);
-//    ASSERT_NEAR(v.data()[1], static_cast<T>(2), 1e-6);
-//    ASSERT_NEAR(v.data()[2], static_cast<T>(3), 1e-6);
-//    ASSERT_NEAR(v.data()[3], static_cast<T>(4), 1e-6);
-//    ASSERT_NEAR(v.data()[4], static_cast<T>(5), 1e-6);
-//  } else {
-//    ASSERT(v.data()[0], static_cast<T>(1));
-//    ASSERT(v.data()[1], static_cast<T>(2));
-//    ASSERT(v.data()[2], static_cast<T>(3));
-//    ASSERT(v.data()[3], static_cast<T>(4));
-//    ASSERT(v.data()[4], static_cast<T>(5));
-//  }
-//}
+template <class T>
+HOSTDEV
+TEST_CASE(push_back_rval_ref)
+{
+  um2::Vector<T> l_value_vector;
+  l_value_vector.push_back(static_cast<T>(1));
+  l_value_vector.push_back(static_cast<T>(2));
+  um2::Vector<um2::Vector<T>> my_vector;
+  my_vector.push_back(std::move(l_value_vector));
+  ASSERT(my_vector.size() == 1);
+  ASSERT(my_vector.capacity() == 1);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(my_vector.data()[0].data()[0], static_cast<T>(1), static_cast<T>(1e-6));
+  } else {
+    // cppcheck-suppress assertWithSideEffect
+    ASSERT(my_vector.data()[0].data()[0] == static_cast<T>(1));
+  }
+}
+
+template <class T>
+HOSTDEV
+TEST_CASE(push_back_n)
+{
+  um2::Vector<T> empty_vector;
+  um2::Vector<T> non_empty_vector{1, 2, 3};
+  empty_vector.push_back(3, static_cast<T>(7));
+  ASSERT(empty_vector.size() == 3);
+  for (const auto & i : empty_vector) {
+    if constexpr (std::floating_point<T>) {
+      ASSERT_NEAR(i, static_cast<T>(7), static_cast<T>(1e-6));
+    } else {
+      ASSERT(i == static_cast<T>(7));
+    }
+  }
+  non_empty_vector.push_back(2, static_cast<T>(5));
+  ASSERT(non_empty_vector.size() == 5);
+  ASSERT(non_empty_vector.capacity() == 6);
+}
+
 //
 // template <class T>
 // HOSTDEV TEST_CASE(insert)
@@ -527,7 +579,10 @@ MAKE_CUDA_KERNEL(clear)
   TEST_HOSTDEV(clear)
   //  TEST_HOSTDEV(reserve, 1, 1, T)
   TEST_HOSTDEV(resize, 1, 1, T)
-  //  TEST_HOSTDEV(push_back, 1, 1, T)
+  TEST_HOSTDEV(push_back, 1, 1, T)
+  TEST_HOSTDEV(push_back_rval_ref, 1, 1, T)
+  TEST_HOSTDEV(push_back_n, 1, 1, T)
+
   //  TEST_HOSTDEV(empty, 1, 1, T)
   //  TEST_HOSTDEV(insert, 1, 1, T)
   //  if constexpr (!std::floating_point<T>) {
