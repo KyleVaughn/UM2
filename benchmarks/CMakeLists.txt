@@ -5,6 +5,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/add_um2_benchmark.cmake)
 # ------------------------------------------------------------------------------
 add_um2_benchmark(./math/exp.cpp)
 add_um2_benchmark(./math/sqrt.cpp)
+add_um2_benchmark(./math/Vec2.cpp)
 
 # ------------------------------------------------------------------------------
 # geometry

@@ -18,7 +18,7 @@ option(UM2_ENABLE_OPENMP    "Enable OpenMP"        ON)
 option(UM2_ENABLE_FASTMATH  "Enable fast math"     ON)
 option(UM2_ENABLE_OPENGL    "Enable OpenGL visualization" OFF)
 option(UM2_ENABLE_GMSH      "Enable Gmsh"          ON)
-option(UM2_ENABLE_PAR_STL   "Enable parallel STL"  ON) 
+option(UM2_ENABLE_PAR_STL   "Enable parallel STL"  OFF) 
 
 ## Advanced options ###########################################################
 ###############################################################################

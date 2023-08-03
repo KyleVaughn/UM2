@@ -2,6 +2,7 @@
 
 #include <um2/common/Log.hpp>
 #include <um2/common/Vector.hpp>
+#include <um2/geometry/Point.hpp>
 
 #include <algorithm>
 #if UM2_ENABLE_OPENMP
@@ -9,22 +10,40 @@
 #endif
 #include <random>
 
-template <typename T, int Lo, int Hi>
+template <typename T, int lo, int hi>
 auto
 randomFloat() -> T
 {
   // NOLINTNEXTLINE
   static std::default_random_engine rng;
-  static std::uniform_real_distribution<T> dist(Lo, Hi);
+  static std::uniform_real_distribution<T> dist(lo, hi);
   return dist(rng);
 }
 
-template <typename T, int Lo, int Hi>
+template <typename T, int lo, int hi>
 auto
 makeVectorOfRandomFloats(Size size) -> um2::Vector<T>
 {
   um2::Vector<T> v(size);
-  std::generate(v.begin(), v.end(), randomFloat<T, Lo, Hi>);
+  std::generate(v.begin(), v.end(), randomFloat<T, lo, hi>);
+  return v;
+}
+
+template <Size D, typename T, int lo, int hi>
+auto
+randomPoint() -> um2::Point<D, T>
+{
+  um2::Point<D, T> p;
+  std::generate(p.begin(), p.end(), randomFloat<T, lo, hi>);
+  return p;
+}
+
+template <Size D, typename T, int lo, int hi>
+auto
+makeVectorOfRandomPoints(Size size) -> um2::Vector<um2::Point<D, T>>
+{
+  um2::Vector<um2::Point<D, T>> v(size);
+  std::generate(v.begin(), v.end(), randomPoint<D, T, lo, hi>);
   return v;
 }
 

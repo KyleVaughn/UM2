@@ -15,7 +15,7 @@ struct Material {
   // Constructors
   // ---------------------------------------------------------------------
 
-  HOSTDEV constexpr Material() noexcept = default;
+  constexpr Material() noexcept = default;
 
   HOSTDEV constexpr Material(ShortString const & name_in, Color color_in) noexcept
       : name(name_in),

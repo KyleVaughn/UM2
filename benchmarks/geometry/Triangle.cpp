@@ -1,10 +1,9 @@
-// FINDINGS: The barycentric method is faster than the CCW method on some processors, but
-// not others
+// FINDINGS: 
+//  The barycentric method is faster than the CCW method on some 
+//  processors, but not others
 
-#include <benchmark/benchmark.h>
+#include "../helpers.hpp" 
 #include <um2/geometry/Triangle.hpp>
-
-#include <random>
 
 // NOLINTBEGIN
 #define D       2

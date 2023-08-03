@@ -139,6 +139,33 @@ boundingBox(AxisAlignedBox<D, T> const & a, AxisAlignedBox<D, T> const & b) noex
   return AxisAlignedBox<D, T>{minima, maxima};
 }
 
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+boundingBox(AxisAlignedBox<D, T> const & box, Point<D, T> const & p) noexcept
+    -> AxisAlignedBox<D, T>
+{
+  auto result = box;
+  result.minima.min(p);
+  result.maxima.max(p);
+  return result; 
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+boundingBox(Point<D, T> const & p, AxisAlignedBox<D, T> const & box) noexcept
+    -> AxisAlignedBox<D, T>
+{
+  return boundingBox(box, p);
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+boundingBox(Point<D, T> const & a, Point<D, T> const & b) noexcept
+  -> AxisAlignedBox<D, T>
+{
+  return AxisAlignedBox<D, T>{um2::min(a, b), um2::max(a, b)};
+}
+
 template <Size D, typename T, Size N>
 PURE HOSTDEV constexpr auto
 boundingBox(Point<D, T> const (&points)[N]) noexcept -> AxisAlignedBox<D, T>
@@ -156,13 +183,9 @@ template <Size D, typename T>
 PURE auto
 boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>
 {
-  Point<D, T> minima = points[0];
-  Point<D, T> maxima = points[0];
-  for (Size i = 1; i < points.size(); ++i) {
-    minima.min(points[i]);
-    maxima.max(points[i]);
-  }
-  return AxisAlignedBox<D, T>(minima, maxima);
+  return std::reduce(std::execution::par_unseq,
+      points.begin(), points.end(), AxisAlignedBox<D, T>{points[0], points[0]},
+                     [](auto const & a, auto const & b) { return boundingBox(a, b); });
 }
 
 } // namespace um2

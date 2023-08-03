@@ -58,13 +58,14 @@ sqrtFloatCUDA(benchmark::State & state)
   transferToDevice(&x_d, x);
   transferToDevice(&sqrtx_d, sqrtx);
 
-  constexpr int threadsPerBlock = 256;
+  constexpr uint32_t threadsPerBlock = 256;
+  uint32_t const blocks = (static_cast<uint32_t>(n) + threadsPerBlock - 1) / threadsPerBlock;
   // NOLINTNEXTLINE
   for (auto s : state) {
-    sqrtFloatKernel<<<(n + threadsPerBlock - 1) / threadsPerBlock, threadsPerBlock>>>(
-        x_d, sqrtx_d, n);
+    sqrtFloatKernel<<<(blocks), threadsPerBlock>>>(x_d, sqrtx_d, n);
     cudaDeviceSynchronize();
   }
+
   transferFromDevice(sqrtx, sqrtx_d);
   cudaFree(x_d);
   cudaFree(sqrtx_d);

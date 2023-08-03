@@ -39,14 +39,14 @@ template <Size D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::end() noexcept -> T *
 {
-  return addressof(data[D]);
+  return addressof(data[0]) + D;
 }
 
 template <Size D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::end() const noexcept -> T const *
 {
-  return addressof(data[D]);
+  return addressof(data[0]) + D;
 }
 
 // -----------------------------------------------------------------------------

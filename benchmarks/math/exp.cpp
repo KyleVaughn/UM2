@@ -8,13 +8,15 @@
 #include <um2/math/math_functions.hpp>
 
 constexpr Size npoints = 1 << 20;
+constexpr int lo = -3;
+constexpr int hi = 3; 
 
 template <typename T>
 static void
 expCPU(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<T> const x = makeVectorOfRandomFloats<T, -3, 3>(n);
+  um2::Vector<T> const x = makeVectorOfRandomFloats<T, lo, hi>(n);
   um2::Vector<T> expx(n);
   // NOLINTNEXTLINE
   for (auto s : state) {
@@ -28,7 +30,7 @@ static void
 expCPUThreads(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<T> const x = makeVectorOfRandomFloats<T, -3, 3>(n);
+  um2::Vector<T> const x = makeVectorOfRandomFloats<T, lo, hi>(n);
   um2::Vector<T> expx(n);
   // NOLINTNEXTLINE
   for (auto s : state) {
@@ -53,18 +55,18 @@ static void
 expFloatCUDA(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<T> const x = makeVectorOfRandomFloats<T, -3, 3>(n);
+  um2::Vector<T> const x = makeVectorOfRandomFloats<T, lo, hi>(n);
   um2::Vector<T> expx(n);
   T * x_d;
   T * expx_d;
   transferToDevice(&x_d, x);
   transferToDevice(&expx_d, expx);
 
-  constexpr int threadsPerBlock = 256;
+  constexpr uint32_t threadsPerBlock = 256;
+  uint32_t const blocks = (static_cast<uint32_t>(n) + threadsPerBlock - 1) / threadsPerBlock;
   // NOLINTNEXTLINE
   for (auto s : state) {
-    expFloatKernel<<<(n + threadsPerBlock - 1) / threadsPerBlock, threadsPerBlock>>>(
-        x_d, expx_d, n);
+    expFloatKernel<<<(blocks), threadsPerBlock>>>(x_d, expx_d, n);
     cudaDeviceSynchronize();
   }
   transferFromDevice(expx, expx_d);
