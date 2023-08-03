@@ -27,7 +27,6 @@ Material tests
 
 RegularGrid.getCellCentroid
 
-MeshFile.compareGeometry
 MeshFile.compareTopology
 MeshFile.sortElsets
 

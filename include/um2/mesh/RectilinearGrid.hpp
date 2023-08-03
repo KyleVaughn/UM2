@@ -19,6 +19,7 @@ template <Size D, typename T>
 // no __i0 in the code.
 // If you're reading this, uncomment the NOLINTNEXTLINE line below and see if
 // this has been fixed.
+// NOLINTNEXTLINE
 struct RectilinearGrid {
 
   // Divisions along each axis

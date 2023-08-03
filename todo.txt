@@ -1,3 +1,5 @@
+Drop support for non-homogenous meshes
+
 Update benchmarks
 
 WIP: overlay for 3D

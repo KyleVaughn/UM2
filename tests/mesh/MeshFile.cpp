@@ -1,4 +1,4 @@
-#include <um2/mesh/mesh_file.hpp>
+#include <um2/mesh/MeshFile.hpp>
 
 #include "./helpers/setup_mesh_file.hpp"
 
@@ -7,171 +7,161 @@
 template <std::floating_point T, std::signed_integral I>
 TEST_CASE(compareGeometry)
 {
-  std::string filename = "./mesh_files/tri.inp";
   um2::MeshFile<T, I> tri_ref;
-  make_tri_reference_mesh_file(tri_ref);
+  makeReferenceTriMeshFile(tri_ref);
   um2::MeshFile<T, I> tri;
-  make_tri_reference_mesh_file(tri);
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 0, "compare_geometry");
+  makeReferenceTriMeshFile(tri);
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
   // Compare x,y,z
   // Trivial inequality x
   T node_tmp = tri.nodes_x[0];
   tri.nodes_x[0] = node_tmp + 1;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 1, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 1);
   tri.nodes_x[0] = node_tmp;
   // Trivial inequality y
   node_tmp = tri.nodes_y[0];
   tri.nodes_y[0] = node_tmp + 1;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 1, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 2);
   tri.nodes_y[0] = node_tmp;
   // Trivial inequality z
   node_tmp = tri.nodes_z[0];
   tri.nodes_z[0] = node_tmp + 1;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 1, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 3);
   tri.nodes_z[0] = node_tmp;
   // Non-trivial equality/inequality x
-  T const eps = um2::EPS_POINT<T>;
+  T const eps = um2::epsilonDistance<T>();
   node_tmp = tri.nodes_x[0];
   tri.nodes_x[0] = node_tmp + 2 * eps;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 1, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 1);
   tri.nodes_x[0] = node_tmp + eps / 2;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 0, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
   tri.nodes_x[0] = node_tmp;
   // Non-trivial equality/inequality y
   node_tmp = tri.nodes_y[0];
   tri.nodes_y[0] = node_tmp + 2 * eps;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 1, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 2);
   tri.nodes_y[0] = node_tmp + eps / 2;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 0, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
   tri.nodes_y[0] = node_tmp;
   // Non-trivial equality/inequality z
   node_tmp = tri.nodes_z[0];
   tri.nodes_z[0] = node_tmp + 2 * eps;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 1, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 3);
   tri.nodes_z[0] = node_tmp + eps / 2;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 0, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
   tri.nodes_z[0] = node_tmp;
-  //    // Compare topology
-  //    // element_offsets
-  //    tri.element_offsets[0] = 1;
-  //    ASSERT(um2::compare_geometry(tri, tri_ref) == 2, "compare_geometry");
-  //    tri.element_offsets[0] = 0;
-  //    // element_conn
-  //    tri.element_conn[0] = 1;
-  //    ASSERT(um2::compare_geometry(tri, tri_ref) == 2, "compare_geometry");
-  //    tri.element_conn[0] = 0;
 }
 
-// template <std::floating_point T, std::signed_integral I>
-// TEST(sort_elsets)
-//     um2::MeshFile<T, I> tri_ref;
-//     make_tri_reference_mesh_file(tri_ref);
-//     um2::MeshFile<T, I> tri;
-//     make_tri_reference_mesh_file(tri);
-//     // Reorder elsets
-//     tri.elset_names = {"Material_UO2", "Material_H2O", "A", "B"};
-//     tri.elset_offsets = {0, 1, 2, 4, 5};
-//     tri.elset_ids = {0, 1, 0, 1, 1};
-//     tri.sort_elsets();
-//     ASSERT(tri.elset_names == tri_ref.elset_names, "sort_elsets");
-//     ASSERT(tri.elset_offsets == tri_ref.elset_offsets, "sort_elsets");
-//     ASSERT(tri.elset_ids == tri_ref.elset_ids, "sort_elsets");
-// END_TEST
-//
-// template <std::floating_point T, std::signed_integral I>
-// TEST(get_submesh)
-//     um2::MeshFile<T, I> tri_quad;
-//     make_tri_quad_reference_mesh_file(tri_quad);
-//     um2::MeshFile<T, I> tri_quad_A;
-//
-//     tri_quad.get_submesh("A", tri_quad_A);
-//     ASSERT(tri_quad_A.filepath == "", "get_submesh");
-//     ASSERT(tri_quad_A.name == "A", "get_submesh");
-//     ASSERT(tri_quad_A.format == tri_quad.format, "get_submesh");
-//     ASSERT(um2::is_approx(tri_quad_A.nodes_x, tri_quad.nodes_x), "get_submesh");
-//     ASSERT(um2::is_approx(tri_quad_A.nodes_y, tri_quad.nodes_y), "get_submesh");
-//     ASSERT(um2::is_approx(tri_quad_A.nodes_z, tri_quad.nodes_z), "get_submesh");
-//     ASSERT(tri_quad_A.element_types == tri_quad.element_types, "get_submesh");
-//     ASSERT(tri_quad_A.element_offsets == tri_quad.element_offsets, "get_submesh");
-//     ASSERT(tri_quad_A.element_conn == tri_quad.element_conn, "get_submesh");
-//     ASSERT(tri_quad_A.elset_names.size() == 3, "get_submesh");
-//     ASSERT(tri_quad_A.elset_names[0] == "B", "get_submesh");
-//     ASSERT(tri_quad_A.elset_names[1] == "Material_H2O", "get_submesh");
-//     ASSERT(tri_quad_A.elset_names[2] == "Material_UO2", "get_submesh");
-//     um2::Vector<I> elset_offsets_ref = {0, 1, 2, 3};
-//     ASSERT(tri_quad_A.elset_offsets == elset_offsets_ref, "get_submesh");
-//     um2::Vector<I> elset_ids_ref = {1, 1, 0};
-//     ASSERT(tri_quad_A.elset_ids == elset_ids_ref, "get_submesh");
-//
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(sortElsets)
+{
+  um2::MeshFile<T, I> tri_ref;
+  makeReferenceTriMeshFile(tri_ref);
+  um2::MeshFile<T, I> tri;
+  makeReferenceTriMeshFile(tri);
+  // Reorder elsets
+  tri.elset_names = {"Material_UO2", "Material_H2O", "A", "B"};
+  tri.elset_offsets = {0, 1, 2, 4, 5};
+  tri.elset_ids = {0, 1, 0, 1, 1};
+  tri.sortElsets();
+  ASSERT(tri.elset_names == tri_ref.elset_names);
+  ASSERT(tri.elset_offsets == tri_ref.elset_offsets);
+  ASSERT(tri.elset_ids == tri_ref.elset_ids);
+}
+
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(getSubmesh)
+{
+  um2::MeshFile<T, I> tri;
+  makeReferenceTriMeshFile(tri); 
+  um2::MeshFile<T, I> tri_a;
+
+  tri.getSubmesh("A", tri_a);
+  ASSERT(tri_a.filepath == "");
+  ASSERT(tri_a.name == "A");
+  ASSERT(tri_a.format == tri.format);
+  ASSERT(um2::compareGeometry(tri_a, tri) == 0);
+  ASSERT(tri_a.element_types == tri.element_types);
+  ASSERT(tri_a.element_offsets == tri.element_offsets);
+  ASSERT(tri_a.element_conn == tri.element_conn);
+  ASSERT(tri_a.elset_names.size() == 3);
+  ASSERT(tri_a.elset_names[0] == "B");
+  ASSERT(tri_a.elset_names[1] == "Material_H2O");
+  ASSERT(tri_a.elset_names[2] == "Material_UO2");
+  std::vector<I> const elset_offsets_ref = {0, 1, 2, 3};
+  ASSERT(tri_a.elset_offsets == elset_offsets_ref);
+  std::vector<I> const elset_ids_ref = {1, 1, 0};
+  ASSERT(tri_a.elset_ids == elset_ids_ref);
+
 //     um2::MeshFile<T, I> tri_quad_UO2;
-//     tri_quad.get_submesh("Material_UO2", tri_quad_UO2);
-//     ASSERT(tri_quad_UO2.filepath == "", "get_submesh");
-//     ASSERT(tri_quad_UO2.name == "Material_UO2", "get_submesh");
-//     ASSERT(tri_quad_UO2.format == tri_quad.format, "get_submesh");
-//     ASSERT(tri_quad_UO2.nodes_x.size() == 4, "get_submesh");
-//     ASSERT(tri_quad_UO2.nodes_y.size() == 4, "get_submesh");
-//     ASSERT(tri_quad_UO2.nodes_z.size() == 4, "get_submesh");
+//     tri_quad.getSubmesh("Material_UO2", tri_quad_UO2);
+//     ASSERT(tri_quad_UO2.filepath == "", "getSubmesh");
+//     ASSERT(tri_quad_UO2.name == "Material_UO2", "getSubmesh");
+//     ASSERT(tri_quad_UO2.format == tri_quad.format, "getSubmesh");
+//     ASSERT(tri_quad_UO2.nodes_x.size() == 4, "getSubmesh");
+//     ASSERT(tri_quad_UO2.nodes_y.size() == 4, "getSubmesh");
+//     ASSERT(tri_quad_UO2.nodes_z.size() == 4, "getSubmesh");
 //     for (length_t i = 0; i < 4; ++i) {
 //         ASSERT_APPROX(tri_quad_UO2.nodes_x[i], tri_quad.nodes_x[i], 1e-4,
-//         "get_submesh"); ASSERT_APPROX(tri_quad_UO2.nodes_y[i], tri_quad.nodes_y[i],
-//         1e-4, "get_submesh"); ASSERT_APPROX(tri_quad_UO2.nodes_z[i],
-//         tri_quad.nodes_z[i], 1e-4, "get_submesh");
+//         "getSubmesh"); ASSERT_APPROX(tri_quad_UO2.nodes_y[i], tri_quad.nodes_y[i],
+//         1e-4, "getSubmesh"); ASSERT_APPROX(tri_quad_UO2.nodes_z[i],
+//         tri_quad.nodes_z[i], 1e-4, "getSubmesh");
 //     }
-//     ASSERT(tri_quad_UO2.element_types.size() == 1, "get_submesh");
-//     ASSERT(tri_quad_UO2.element_types[0] == 9, "get_submesh");
-//     ASSERT(tri_quad_UO2.element_offsets.size() == 2, "get_submesh");
-//     ASSERT(tri_quad_UO2.element_offsets[0] == 0, "get_submesh");
-//     ASSERT(tri_quad_UO2.element_offsets[1] == 4, "get_submesh");
-//     ASSERT(tri_quad_UO2.element_conn.size() == 4, "get_submesh");
-//     ASSERT(tri_quad_UO2.element_conn[0] == 0, "get_submesh");
-//     ASSERT(tri_quad_UO2.element_conn[1] == 1, "get_submesh");
-//     ASSERT(tri_quad_UO2.element_conn[2] == 2, "get_submesh");
-//     ASSERT(tri_quad_UO2.element_conn[3] == 3, "get_submesh");
-//     ASSERT(tri_quad_UO2.elset_names.size() == 1, "get_submesh");
-//     ASSERT(tri_quad_UO2.elset_names[0] == "A", "get_submesh");
-//     ASSERT(tri_quad_UO2.elset_offsets.size() == 2, "get_submesh");
-//     ASSERT(tri_quad_UO2.elset_offsets[0] == 0, "get_submesh");
-//     ASSERT(tri_quad_UO2.elset_offsets[1] == 1, "get_submesh");
-//     ASSERT(tri_quad_UO2.elset_ids.size() == 1, "get_submesh");
-//     ASSERT(tri_quad_UO2.elset_ids[0] == 0, "get_submesh");
+//     ASSERT(tri_quad_UO2.element_types.size() == 1, "getSubmesh");
+//     ASSERT(tri_quad_UO2.element_types[0] == 9, "getSubmesh");
+//     ASSERT(tri_quad_UO2.element_offsets.size() == 2, "getSubmesh");
+//     ASSERT(tri_quad_UO2.element_offsets[0] == 0, "getSubmesh");
+//     ASSERT(tri_quad_UO2.element_offsets[1] == 4, "getSubmesh");
+//     ASSERT(tri_quad_UO2.element_conn.size() == 4, "getSubmesh");
+//     ASSERT(tri_quad_UO2.element_conn[0] == 0, "getSubmesh");
+//     ASSERT(tri_quad_UO2.element_conn[1] == 1, "getSubmesh");
+//     ASSERT(tri_quad_UO2.element_conn[2] == 2, "getSubmesh");
+//     ASSERT(tri_quad_UO2.element_conn[3] == 3, "getSubmesh");
+//     ASSERT(tri_quad_UO2.elset_names.size() == 1, "getSubmesh");
+//     ASSERT(tri_quad_UO2.elset_names[0] == "A", "getSubmesh");
+//     ASSERT(tri_quad_UO2.elset_offsets.size() == 2, "getSubmesh");
+//     ASSERT(tri_quad_UO2.elset_offsets[0] == 0, "getSubmesh");
+//     ASSERT(tri_quad_UO2.elset_offsets[1] == 1, "getSubmesh");
+//     ASSERT(tri_quad_UO2.elset_ids.size() == 1, "getSubmesh");
+//     ASSERT(tri_quad_UO2.elset_ids[0] == 0, "getSubmesh");
 //
 //     um2::MeshFile<T, I> tri_quad_H2O;
-//     tri_quad.get_submesh("Material_H2O", tri_quad_H2O);
-//     ASSERT(tri_quad_H2O.filepath == "", "get_submesh");
-//     ASSERT(tri_quad_H2O.name == "Material_H2O", "get_submesh");
-//     ASSERT(tri_quad_H2O.format == tri_quad.format, "get_submesh");
-//     ASSERT(tri_quad_H2O.nodes_x.size() == 3, "get_submesh");
-//     ASSERT(tri_quad_H2O.nodes_y.size() == 3, "get_submesh");
-//     ASSERT(tri_quad_H2O.nodes_z.size() == 3, "get_submesh");
-//     ASSERT_APPROX(tri_quad_H2O.nodes_x[0], tri_quad.nodes_x[1], 1e-4, "get_submesh");
-//     ASSERT_APPROX(tri_quad_H2O.nodes_y[0], tri_quad.nodes_y[1], 1e-4, "get_submesh");
-//     ASSERT_APPROX(tri_quad_H2O.nodes_z[0], tri_quad.nodes_z[1], 1e-4, "get_submesh");
-//     ASSERT_APPROX(tri_quad_H2O.nodes_x[1], tri_quad.nodes_x[2], 1e-4, "get_submesh");
-//     ASSERT_APPROX(tri_quad_H2O.nodes_y[1], tri_quad.nodes_y[2], 1e-4, "get_submesh");
-//     ASSERT_APPROX(tri_quad_H2O.nodes_z[1], tri_quad.nodes_z[2], 1e-4, "get_submesh");
-//     ASSERT_APPROX(tri_quad_H2O.nodes_x[2], tri_quad.nodes_x[4], 1e-4, "get_submesh");
-//     ASSERT_APPROX(tri_quad_H2O.nodes_y[2], tri_quad.nodes_y[4], 1e-4, "get_submesh");
-//     ASSERT_APPROX(tri_quad_H2O.nodes_z[2], tri_quad.nodes_z[4], 1e-4, "get_submesh");
-//     ASSERT(tri_quad_H2O.element_types.size() == 1, "get_submesh");
-//     ASSERT(tri_quad_H2O.element_types[0] == 5, "get_submesh");
-//     ASSERT(tri_quad_H2O.element_offsets.size() == 2, "get_submesh");
-//     ASSERT(tri_quad_H2O.element_offsets[0] == 0, "get_submesh");
-//     ASSERT(tri_quad_H2O.element_offsets[1] == 3, "get_submesh");
-//     ASSERT(tri_quad_H2O.element_conn.size() == 3, "get_submesh");
-//     ASSERT(tri_quad_H2O.element_conn[0] == 0, "get_submesh");
-//     ASSERT(tri_quad_H2O.element_conn[1] == 2, "get_submesh");
-//     ASSERT(tri_quad_H2O.element_conn[2] == 1, "get_submesh");
-//     ASSERT(tri_quad_H2O.elset_names.size() == 2, "get_submesh");
-//     ASSERT(tri_quad_H2O.elset_names[0] == "A", "get_submesh");
-//     ASSERT(tri_quad_H2O.elset_names[1] == "B", "get_submesh");
-//     ASSERT(tri_quad_H2O.elset_offsets.size() == 3, "get_submesh");
-//     ASSERT(tri_quad_H2O.elset_offsets[0] == 0, "get_submesh");
-//     ASSERT(tri_quad_H2O.elset_offsets[1] == 1, "get_submesh");
-//     ASSERT(tri_quad_H2O.elset_offsets[2] == 2, "get_submesh");
-//     ASSERT(tri_quad_H2O.elset_ids.size() == 2, "get_submesh");
-//     ASSERT(tri_quad_H2O.elset_ids[0] == 0, "get_submesh");
-//     ASSERT(tri_quad_H2O.elset_ids[1] == 0, "get_submesh");
-// END_TEST
+//     tri_quad.getSubmesh("Material_H2O", tri_quad_H2O);
+//     ASSERT(tri_quad_H2O.filepath == "", "getSubmesh");
+//     ASSERT(tri_quad_H2O.name == "Material_H2O", "getSubmesh");
+//     ASSERT(tri_quad_H2O.format == tri_quad.format, "getSubmesh");
+//     ASSERT(tri_quad_H2O.nodes_x.size() == 3, "getSubmesh");
+//     ASSERT(tri_quad_H2O.nodes_y.size() == 3, "getSubmesh");
+//     ASSERT(tri_quad_H2O.nodes_z.size() == 3, "getSubmesh");
+//     ASSERT_APPROX(tri_quad_H2O.nodes_x[0], tri_quad.nodes_x[1], 1e-4, "getSubmesh");
+//     ASSERT_APPROX(tri_quad_H2O.nodes_y[0], tri_quad.nodes_y[1], 1e-4, "getSubmesh");
+//     ASSERT_APPROX(tri_quad_H2O.nodes_z[0], tri_quad.nodes_z[1], 1e-4, "getSubmesh");
+//     ASSERT_APPROX(tri_quad_H2O.nodes_x[1], tri_quad.nodes_x[2], 1e-4, "getSubmesh");
+//     ASSERT_APPROX(tri_quad_H2O.nodes_y[1], tri_quad.nodes_y[2], 1e-4, "getSubmesh");
+//     ASSERT_APPROX(tri_quad_H2O.nodes_z[1], tri_quad.nodes_z[2], 1e-4, "getSubmesh");
+//     ASSERT_APPROX(tri_quad_H2O.nodes_x[2], tri_quad.nodes_x[4], 1e-4, "getSubmesh");
+//     ASSERT_APPROX(tri_quad_H2O.nodes_y[2], tri_quad.nodes_y[4], 1e-4, "getSubmesh");
+//     ASSERT_APPROX(tri_quad_H2O.nodes_z[2], tri_quad.nodes_z[4], 1e-4, "getSubmesh");
+//     ASSERT(tri_quad_H2O.element_types.size() == 1, "getSubmesh");
+//     ASSERT(tri_quad_H2O.element_types[0] == 5, "getSubmesh");
+//     ASSERT(tri_quad_H2O.element_offsets.size() == 2, "getSubmesh");
+//     ASSERT(tri_quad_H2O.element_offsets[0] == 0, "getSubmesh");
+//     ASSERT(tri_quad_H2O.element_offsets[1] == 3, "getSubmesh");
+//     ASSERT(tri_quad_H2O.element_conn.size() == 3, "getSubmesh");
+//     ASSERT(tri_quad_H2O.element_conn[0] == 0, "getSubmesh");
+//     ASSERT(tri_quad_H2O.element_conn[1] == 2, "getSubmesh");
+//     ASSERT(tri_quad_H2O.element_conn[2] == 1, "getSubmesh");
+//     ASSERT(tri_quad_H2O.elset_names.size() == 2, "getSubmesh");
+//     ASSERT(tri_quad_H2O.elset_names[0] == "A", "getSubmesh");
+//     ASSERT(tri_quad_H2O.elset_names[1] == "B", "getSubmesh");
+//     ASSERT(tri_quad_H2O.elset_offsets.size() == 3, "getSubmesh");
+//     ASSERT(tri_quad_H2O.elset_offsets[0] == 0, "getSubmesh");
+//     ASSERT(tri_quad_H2O.elset_offsets[1] == 1, "getSubmesh");
+//     ASSERT(tri_quad_H2O.elset_offsets[2] == 2, "getSubmesh");
+//     ASSERT(tri_quad_H2O.elset_ids.size() == 2, "getSubmesh");
+//     ASSERT(tri_quad_H2O.elset_ids[0] == 0, "getSubmesh");
+//     ASSERT(tri_quad_H2O.elset_ids[1] == 0, "getSubmesh");
+}
 //
 // template <std::floating_point T, std::signed_integral I>
 // TEST(get_mesh_type)
@@ -220,10 +210,10 @@ TEST_CASE(compareGeometry)
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(MeshFile)
 {
-  RUN_TEST((compare_geometry<T, I>));
+  TEST((compareGeometry<T, I>));
   // compare tolopolgy
-  //    RUN_TEST("sort_elsets", (sort_elsets<T, I>) );
-  //    RUN_TEST("get_submesh", (get_submesh<T, I>) );
+  TEST((sortElsets<T, I>) );
+  TEST((getSubmesh<T, I>) );
   //    RUN_TEST("get_mesh_type", (get_mesh_type<T, I>) );
   //    RUN_TEST("get_material_ids", (get_material_ids<T, I>) );
 }
