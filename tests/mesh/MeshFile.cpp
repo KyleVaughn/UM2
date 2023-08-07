@@ -1,82 +1,84 @@
-#include <um2/mesh/mesh_file.hpp>
+#include <um2/mesh/MeshFile.hpp>
 
 #include "./helpers/setup_mesh_file.hpp"
 
 #include "../test_macros.hpp"
+#include "um2/common/Vector.hpp"
 
 template <std::floating_point T, std::signed_integral I>
-TEST_CASE(compareGeometry)
+TEST_CASE(compare_geometry)
 {
-  std::string filename = "./mesh_files/tri.inp";
+  //  std::string const filename = "./mesh_files/tri.inp";
   um2::MeshFile<T, I> tri_ref;
-  make_tri_reference_mesh_file(tri_ref);
+  makeReferenceTriMeshFile(tri_ref);
   um2::MeshFile<T, I> tri;
-  make_tri_reference_mesh_file(tri);
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 0, "compare_geometry");
+  makeReferenceTriMeshFile(tri);
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
   // Compare x,y,z
   // Trivial inequality x
   T node_tmp = tri.nodes_x[0];
   tri.nodes_x[0] = node_tmp + 1;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 1, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 1);
   tri.nodes_x[0] = node_tmp;
   // Trivial inequality y
   node_tmp = tri.nodes_y[0];
   tri.nodes_y[0] = node_tmp + 1;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 1, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 2);
   tri.nodes_y[0] = node_tmp;
   // Trivial inequality z
   node_tmp = tri.nodes_z[0];
   tri.nodes_z[0] = node_tmp + 1;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 1, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 3);
   tri.nodes_z[0] = node_tmp;
   // Non-trivial equality/inequality x
-  T const eps = um2::EPS_POINT<T>;
+  T const eps = um2::epsilonDistance<T>();
   node_tmp = tri.nodes_x[0];
   tri.nodes_x[0] = node_tmp + 2 * eps;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 1, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 1);
   tri.nodes_x[0] = node_tmp + eps / 2;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 0, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
   tri.nodes_x[0] = node_tmp;
   // Non-trivial equality/inequality y
   node_tmp = tri.nodes_y[0];
   tri.nodes_y[0] = node_tmp + 2 * eps;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 1, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 2);
   tri.nodes_y[0] = node_tmp + eps / 2;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 0, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
   tri.nodes_y[0] = node_tmp;
   // Non-trivial equality/inequality z
   node_tmp = tri.nodes_z[0];
   tri.nodes_z[0] = node_tmp + 2 * eps;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 1, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 3);
   tri.nodes_z[0] = node_tmp + eps / 2;
-  ASSERT(um2::compare_geometry(tri, tri_ref) == 0, "compare_geometry");
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
   tri.nodes_z[0] = node_tmp;
-  //    // Compare topology
-  //    // element_offsets
-  //    tri.element_offsets[0] = 1;
-  //    ASSERT(um2::compare_geometry(tri, tri_ref) == 2, "compare_geometry");
-  //    tri.element_offsets[0] = 0;
-  //    // element_conn
-  //    tri.element_conn[0] = 1;
-  //    ASSERT(um2::compare_geometry(tri, tri_ref) == 2, "compare_geometry");
-  //    tri.element_conn[0] = 0;
+  // Compare topology
+  // element_offsets
+  tri.element_offsets[0] = 1;
+  ASSERT(um2::compareTopology(tri, tri_ref) == 1);
+  tri.element_offsets[0] = 0;
+  // element_conn
+  tri.element_conn[0] = 1;
+  ASSERT(um2::compareTopology(tri, tri_ref) == 2);
+  tri.element_conn[0] = 0;
 }
 
-// template <std::floating_point T, std::signed_integral I>
-// TEST(sort_elsets)
-//     um2::MeshFile<T, I> tri_ref;
-//     make_tri_reference_mesh_file(tri_ref);
-//     um2::MeshFile<T, I> tri;
-//     make_tri_reference_mesh_file(tri);
-//     // Reorder elsets
-//     tri.elset_names = {"Material_UO2", "Material_H2O", "A", "B"};
-//     tri.elset_offsets = {0, 1, 2, 4, 5};
-//     tri.elset_ids = {0, 1, 0, 1, 1};
-//     tri.sort_elsets();
-//     ASSERT(tri.elset_names == tri_ref.elset_names, "sort_elsets");
-//     ASSERT(tri.elset_offsets == tri_ref.elset_offsets, "sort_elsets");
-//     ASSERT(tri.elset_ids == tri_ref.elset_ids, "sort_elsets");
-// END_TEST
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(sort_elsets)
+{
+  um2::MeshFile<T, I> tri_ref;
+  makeReferenceTriMeshFile(tri_ref);
+  um2::MeshFile<T, I> tri;
+  makeReferenceTriMeshFile(tri);
+  // Reorder elsets
+  tri.elset_names = {"Material_UO2", "Material_H2O", "A", "B"};
+  tri.elset_offsets = {0, 1, 2, 4, 5};
+  tri.elset_ids = {0, 1, 0, 1, 1};
+  tri.sortElsets();
+  ASSERT(tri.elset_names == tri_ref.elset_names);
+  ASSERT(tri.elset_offsets == tri_ref.elset_offsets);
+  ASSERT(tri.elset_ids == tri_ref.elset_ids);
+}
 //
 // template <std::floating_point T, std::signed_integral I>
 // TEST(get_submesh)
@@ -208,24 +210,25 @@ TEST_CASE(compareGeometry)
 // END_TEST
 
 // template <std::floating_point T, std::signed_integral I>
-// TEST(get_material_ids)
-//     um2::MeshFile<T, I> tri_ref;
-//     make_tri_reference_mesh_file(tri_ref);
-//     um2::Vector<MaterialID> mat_ids_ref = {1, 0};
-//     um2::Vector<MaterialID> mat_ids;
-//     tri_ref.get_material_ids(mat_ids);
-//     ASSERT(mat_ids == mat_ids_ref, "get_material_ids");
-// END_TEST
-//
+// TEST_CASE(get_material_ids)
+//{
+//   um2::MeshFile<T, I> tri_ref;
+//   makeReferenceTriMeshFile((tri_ref));
+//   um2::Vector<MaterialID> mat_ids_ref = {1, 0};
+//   um2::Vector<MaterialID> mat_ids;
+//   tri_ref.getMaterialNames()
+//   ASSERT(mat_ids == mat_ids_ref);
+// }
+
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(MeshFile)
 {
-  RUN_TEST((compare_geometry<T, I>));
+  TEST_HOSTDEV(compare_geometry, 1, 1, T, I)
   // compare tolopolgy
-  //    RUN_TEST("sort_elsets", (sort_elsets<T, I>) );
+  TEST_HOSTDEV(sort_elsets, 1, 1, T, I);
   //    RUN_TEST("get_submesh", (get_submesh<T, I>) );
   //    RUN_TEST("get_mesh_type", (get_mesh_type<T, I>) );
-  //    RUN_TEST("get_material_ids", (get_material_ids<T, I>) );
+  //  TEST_HOSTDEV(get_material_ids, 1, 1, T, I);
 }
 
 auto

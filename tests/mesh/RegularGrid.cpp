@@ -45,7 +45,7 @@ template <Size D, typename T>
 HOSTDEV
 TEST_CASE(getCellCentroid)
 {
-  um2::RegularGrid<D, T> grid = makeGrid<D, T>();
+  um2::RegularGrid<D, T> const grid = makeGrid<D, T>();
   if constexpr (D == 1) {
     auto const x = grid.getCellCentroid(0);
     ASSERT_NEAR(x[0], grid.minima[0] + grid.spacing[0] / static_cast<T>(2),

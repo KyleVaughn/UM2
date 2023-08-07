@@ -6,7 +6,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
 add_um2_test(./common/memory/addressof.cpp)
 add_um2_test(./common/memory/construct_at.cpp)
 add_um2_test(./common/Vector.cpp)
-add_um2_test(./common/sto.cpp) 
+add_um2_test(./common/sto.cpp)
 add_um2_test(./common/String.cpp)
 add_um2_test(./common/Log.cpp)
 add_um2_test(./common/ShortString.cpp)
@@ -50,6 +50,7 @@ add_um2_test(./mesh/QuadraticTriMesh.cpp)
 add_um2_test(./mesh/QuadraticQuadMesh.cpp)
 add_um2_test(./mesh/io_abaqus.cpp)
 add_um2_test(./mesh/io_xdmf.cpp)
+add_um2_test(./mesh/MeshFile.cpp)
 
 # ------------------------------------------------------------------------------
 # mpact
