@@ -4,14 +4,11 @@
 //    Also, the execution policy for sort does not seem to matter
 //  CUDA: Faster after 1000 points
 
-#include <benchmark/benchmark.h>
-#include <um2/common/Vector.hpp>
+#include "../helpers.hpp"
 #include <um2/geometry/morton_sort_points.hpp>
 
-#include <algorithm>
 #include <execution>
 #include <iostream>
-#include <parallel/algorithm>
 #include <random>
 
 // NOLINTBEGIN
@@ -94,17 +91,14 @@ mortonSortCuda(benchmark::State & state)
     p = randomPoint();
   }
   um2::Point2<T> * d_points;
-  size_t const size_in_bytes =
-      sizeof(um2::Point2<T>) * static_cast<size_t>(points.size());
-  cudaMalloc(&d_points, size_in_bytes);
-  cudaMemcpy(d_points, points.data(), size_in_bytes, cudaMemcpyHostToDevice);
+  transferToDevice(&d_points, points);
 
   // NOLINTNEXTLINE
   for (auto s : state) {
     um2::deviceMortonSort<U>(d_points, d_points + points.size());
   }
 
-  cudaMemcpy(after.data(), d_points, size_in_bytes, cudaMemcpyDeviceToHost);
+  transferFromDevice(after, d_points);
   if (!std::is_sorted(after.begin(), after.end(), um2::mortonLess<U, D, T>)) {
     std::cout << "Not sorted" << std::endl;
   }

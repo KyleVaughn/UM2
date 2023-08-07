@@ -6,7 +6,7 @@ namespace um2
 // ----------------------------------------------------------------------------
 
 template <Size D, typename T>
-HOSTDEV constexpr RectilinearGrid<D, T>::RectilinearGrid(AxisAlignedBox<D, T> const & box)
+constexpr RectilinearGrid<D, T>::RectilinearGrid(AxisAlignedBox<D, T> const & box)
 {
   for (Size i = 0; i < D; ++i) {
     divs[i] = {box.minima[i], box.maxima[i]};

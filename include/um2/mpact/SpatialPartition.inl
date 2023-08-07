@@ -1011,24 +1011,25 @@ SpatialPartition<T, I>::makeCore(std::vector<std::vector<Size>> const & asy_ids)
   core.children = um2::move(asy_ids_flat);
   return 0;
 }
-//
+
 // template <std::floating_point T, std::signed_integral I>
-// int SpatialPartition<T, I>::import_coarse_cells(std::string const & filename)
+// void SpatialPartition<T, I>::import_coarse_cells(std::string const & filename)
 //{
-//     Log::info("Importing coarse cells");
+//     Log::info("Importing coarse cells from " + filename);
 //     MeshFile<T, I> mesh_file;
-//     import_mesh(filename, mesh_file);
-//     Vector<String> material_names;
-//     mesh_file.get_material_names(material_names);
-//     this->materials.resize(material_names.size());
+//     importMesh(filename, mesh_file);
+//     std::vector<std::string> material_names;
+//     mesh_file.getMaterialNames(material_names);
+//     materials.resize(static_cast<Size>(material_names.size()));
 //     for (size_t i = 0; i < material_names.size(); ++i) {
-//         this->materials[i].name.resize(material_names[i].size() - 9);
-//         for (size_t j = 0; j < this->materials[i].name.size(); ++j) {
-//             this->materials[i].name[j] = material_names[i][j + 9];
+//       ShortString & this_name = materials[static_cast<Size>(i)].name;
+//       std::copy(material_names[i].cbegin() + 9,
+//                 material_names[i].cend() + 1,
+//                 this_name.data());
 //         }
 //     }
 //     std::stringstream ss;
-//     Size const num_coarse_cells = this->coarse_cells.size();
+//     Size const num_coarse_cells = numCoarseCells();
 //     for (Size i = 0; i < num_coarse_cells; ++i) {
 //         ss.str("");
 //         ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << i;
@@ -1134,177 +1135,175 @@ SpatialPartition<T, I>::makeCore(std::vector<std::vector<Size>> const & asy_ids)
 //                 }
 //             default:
 //                 Log::error("Mesh type not supported");
-//                 return -1;
 //         }
 //     }
-//     return 0;
 // }
 //
-// template <std::floating_point T, std::signed_integral I>
-// void SpatialPartition<T, I>::coarse_cell_heights(Vector<std::pair<int, double>> &
-// id_dz) const
+//  template <std::floating_point T, std::signed_integral I>
+//  void SpatialPartition<T, I>::coarse_cell_heights(Vector<std::pair<int, double>> &
+//  id_dz) const
 //{
-//     // For each unique assembly
-//     //  For each lattice in the assembly
-//     //    Get the dz of the lattice
-//     //    For each rtm in the lattice
-//     //      For each coarse cell in the rtm
-//     //        If the id, dz pair is not in the vector, add it
-//     // Sort the vector by dz
-//     // For each unique assembly
-//     for (auto const & assembly : this->assemblies) {
-//         Size const nlattices = assembly.children.size();
-//         // For each lattice in the assembly
-//         for (Size ilat = 0; ilat < nlattices; ++ilat) {
-//             I const lat_id = assembly.children[ilat];
-//             // Get the dz of the lattice
-//             AABox1<T> const bb = assembly.get_box(ilat);
-//             double const dz = static_cast<double>(width(bb));
-//             auto const & lattice = this->lattices[lat_id];
-//             Size const nrtms = lattice.children.size();
-//             // For each rtm in the lattice
-//             for (Size irtm = 0; irtm < nrtms; ++irtm) {
-//                 I const rtm_id = lattice.children[irtm];
-//                 auto const & rtm = this->rtms[rtm_id];
-//                 Size const nccs = rtm.children.size();
-//                 // For each coarse cell in the rtm
-//                 for (Size icc = 0; icc < nccs; ++icc) {
-//                     I const cc_id = rtm.children[icc];
-//                     // If the id, dz pair is not in the vector, add it
-//                     bool add_id = true;
-//                     for (Size i = 0; i < id_dz.size(); ++i) {
-//                       if (id_dz[i].first == cc_id && std::abs(id_dz[i].second - dz) <
-//                       1e-4) {
-//                         add_id = false;
-//                         break;
-//                       }
-//                     }
-//                     if (add_id) {
-//                         id_dz.push_back(std::make_pair(cc_id, dz));
-//                     }
-//                 } // icc
-//             } // irtm
-//         } // ilat
-//     } // assembly
-//     // Sort the vector by dz first, then by id. But, if dz are close to each other,
-//     // then sort by id.
-//     std::sort(id_dz.begin(), id_dz.end(),
-//             [](auto const & p1, auto const & p2) {
-//                 return std::abs(p1.second - p2.second) < 1e-4 ? p1.first < p2.first :
-//                 p1.second < p2.second;
-//             });
-// }
+//      // For each unique assembly
+//      //  For each lattice in the assembly
+//      //    Get the dz of the lattice
+//      //    For each rtm in the lattice
+//      //      For each coarse cell in the rtm
+//      //        If the id, dz pair is not in the vector, add it
+//      // Sort the vector by dz
+//      // For each unique assembly
+//      for (auto const & assembly : this->assemblies) {
+//          Size const nlattices = assembly.children.size();
+//          // For each lattice in the assembly
+//          for (Size ilat = 0; ilat < nlattices; ++ilat) {
+//              I const lat_id = assembly.children[ilat];
+//              // Get the dz of the lattice
+//              AABox1<T> const bb = assembly.get_box(ilat);
+//              double const dz = static_cast<double>(width(bb));
+//              auto const & lattice = this->lattices[lat_id];
+//              Size const nrtms = lattice.children.size();
+//              // For each rtm in the lattice
+//              for (Size irtm = 0; irtm < nrtms; ++irtm) {
+//                  I const rtm_id = lattice.children[irtm];
+//                  auto const & rtm = this->rtms[rtm_id];
+//                  Size const nccs = rtm.children.size();
+//                  // For each coarse cell in the rtm
+//                  for (Size icc = 0; icc < nccs; ++icc) {
+//                      I const cc_id = rtm.children[icc];
+//                      // If the id, dz pair is not in the vector, add it
+//                      bool add_id = true;
+//                      for (Size i = 0; i < id_dz.size(); ++i) {
+//                        if (id_dz[i].first == cc_id && std::abs(id_dz[i].second - dz) <
+//                        1e-4) {
+//                          add_id = false;
+//                          break;
+//                        }
+//                      }
+//                      if (add_id) {
+//                          id_dz.push_back(std::make_pair(cc_id, dz));
+//                      }
+//                  } // icc
+//              } // irtm
+//          } // ilat
+//      } // assembly
+//      // Sort the vector by dz first, then by id. But, if dz are close to each other,
+//      // then sort by id.
+//      std::sort(id_dz.begin(), id_dz.end(),
+//              [](auto const & p1, auto const & p2) {
+//                  return std::abs(p1.second - p2.second) < 1e-4 ? p1.first < p2.first :
+//                  p1.second < p2.second;
+//              });
+//  }
 //
-// template <std::floating_point T, std::signed_integral I>
-// void SpatialPartition<T, I>::coarse_cell_face_areas(Size const cc_id, Vector<T> &
-// areas) const
+//  template <std::floating_point T, std::signed_integral I>
+//  void SpatialPartition<T, I>::coarse_cell_face_areas(Size const cc_id, Vector<T> &
+//  areas) const
 //{
-//     I const mesh_id = this->coarse_cells[cc_id].mesh_id;
-//     switch (this->coarse_cells[cc_id].mesh_type) {
-//         case static_cast<I>(MeshType::TRI):
-//             {
-//                 this->tri[mesh_id].face_areas(areas);
-//                 break;
-//             }
-//         case static_cast<I>(MeshType::QUAD):
-//             {
-//                 this->quad[mesh_id].face_areas(areas);
-//                 break;
-//             }
-//         case static_cast<I>(MeshType::TRI_QUAD):
-//             {
-//                 this->tri_quad[mesh_id].face_areas(areas);
-//                 break;
-//             }
-//         case static_cast<I>(MeshType::QUADRATIC_TRI):
-//             {
-//                 this->quadratic_tri[mesh_id].face_areas(areas);
-//                 break;
-//             }
-//         case static_cast<I>(MeshType::QUADRATIC_QUAD):
-//             {
-//                 this->quadratic_quad[mesh_id].face_areas(areas);
-//                 break;
-//             }
-//         case static_cast<I>(MeshType::QUADRATIC_TRI_QUAD):
-//             {
-//                 this->quadratic_tri_quad[mesh_id].face_areas(areas);
-//                 break;
-//             }
-//         default:
-//             Log::error("Mesh type not supported");
-//             return;
-//     }
-// }
+//      I const mesh_id = this->coarse_cells[cc_id].mesh_id;
+//      switch (this->coarse_cells[cc_id].mesh_type) {
+//          case static_cast<I>(MeshType::TRI):
+//              {
+//                  this->tri[mesh_id].face_areas(areas);
+//                  break;
+//              }
+//          case static_cast<I>(MeshType::QUAD):
+//              {
+//                  this->quad[mesh_id].face_areas(areas);
+//                  break;
+//              }
+//          case static_cast<I>(MeshType::TRI_QUAD):
+//              {
+//                  this->tri_quad[mesh_id].face_areas(areas);
+//                  break;
+//              }
+//          case static_cast<I>(MeshType::QUADRATIC_TRI):
+//              {
+//                  this->quadratic_tri[mesh_id].face_areas(areas);
+//                  break;
+//              }
+//          case static_cast<I>(MeshType::QUADRATIC_QUAD):
+//              {
+//                  this->quadratic_quad[mesh_id].face_areas(areas);
+//                  break;
+//              }
+//          case static_cast<I>(MeshType::QUADRATIC_TRI_QUAD):
+//              {
+//                  this->quadratic_tri_quad[mesh_id].face_areas(areas);
+//                  break;
+//              }
+//          default:
+//              Log::error("Mesh type not supported");
+//              return;
+//      }
+//  }
 //
-// template <std::floating_point T, std::signed_integral I>
-// Size SpatialPartition<T, I>::coarse_cell_find_face(
-//         Size const cc_id,
-//         Point2<T> const & p) const
+//  template <std::floating_point T, std::signed_integral I>
+//  Size SpatialPartition<T, I>::coarse_cell_find_face(
+//          Size const cc_id,
+//          Point2<T> const & p) const
 //{
-//     I const mesh_id = this->coarse_cells[cc_id].mesh_id;
-//     switch (this->coarse_cells[cc_id].mesh_type) {
-//         case static_cast<I>(MeshType::TRI):
-//                 return this->tri[mesh_id].find_face(p);
-//         case static_cast<I>(MeshType::QUAD):
-//             {
-//                 return this->quad[mesh_id].find_face(p);
-//             }
-//         case static_cast<I>(MeshType::TRI_QUAD):
-//             {
-//                 return this->tri_quad[mesh_id].find_face(p);
-//             }
-//         case static_cast<I>(MeshType::QUADRATIC_TRI):
-//             {
-//                 return this->quadratic_tri[mesh_id].find_face(p);
-//             }
-//         case static_cast<I>(MeshType::QUADRATIC_QUAD):
-//             {
-//                 return this->quadratic_quad[mesh_id].find_face(p);
-//             }
-//         case static_cast<I>(MeshType::QUADRATIC_TRI_QUAD):
-//             {
-//                 return this->quadratic_tri_quad[mesh_id].find_face(p);
-//             }
-//         default:
-//             return -1;
-//     }
-// }
+//      I const mesh_id = this->coarse_cells[cc_id].mesh_id;
+//      switch (this->coarse_cells[cc_id].mesh_type) {
+//          case static_cast<I>(MeshType::TRI):
+//                  return this->tri[mesh_id].find_face(p);
+//          case static_cast<I>(MeshType::QUAD):
+//              {
+//                  return this->quad[mesh_id].find_face(p);
+//              }
+//          case static_cast<I>(MeshType::TRI_QUAD):
+//              {
+//                  return this->tri_quad[mesh_id].find_face(p);
+//              }
+//          case static_cast<I>(MeshType::QUADRATIC_TRI):
+//              {
+//                  return this->quadratic_tri[mesh_id].find_face(p);
+//              }
+//          case static_cast<I>(MeshType::QUADRATIC_QUAD):
+//              {
+//                  return this->quadratic_quad[mesh_id].find_face(p);
+//              }
+//          case static_cast<I>(MeshType::QUADRATIC_TRI_QUAD):
+//              {
+//                  return this->quadratic_tri_quad[mesh_id].find_face(p);
+//              }
+//          default:
+//              return -1;
+//      }
+//  }
 //
-// template <std::floating_point T, std::signed_integral I>
-// Point2<T> SpatialPartition<T, I>::coarse_cell_face_centroid(Size const cc_id,
-//                                                             Size const face_id)
-//                                                             const
+//  template <std::floating_point T, std::signed_integral I>
+//  Point2<T> SpatialPartition<T, I>::coarse_cell_face_centroid(Size const cc_id,
+//                                                              Size const face_id)
+//                                                              const
 //{
-//     I const mesh_id = this->coarse_cells[cc_id].mesh_id;
-//     switch (this->coarse_cells[cc_id].mesh_type) {
-//         case static_cast<I>(MeshType::TRI):
-//                 return this->tri[mesh_id].face_centroid(face_id);
-//         case static_cast<I>(MeshType::QUAD):
-//             {
-//                 return this->quad[mesh_id].face_centroid(face_id);
-//             }
-//         case static_cast<I>(MeshType::TRI_QUAD):
-//             {
-//                 return this->tri_quad[mesh_id].face_centroid(face_id);
-//             }
-//         case static_cast<I>(MeshType::QUADRATIC_TRI):
-//             {
-//                 return this->quadratic_tri[mesh_id].face_centroid(face_id);
-//             }
-//         case static_cast<I>(MeshType::QUADRATIC_QUAD):
-//             {
-//                 return this->quadratic_quad[mesh_id].face_centroid(face_id);
-//             }
-//         case static_cast<I>(MeshType::QUADRATIC_TRI_QUAD):
-//             {
-//                 return this->quadratic_tri_quad[mesh_id].face_centroid(face_id);
-//             }
-//         default:
-//             Log::error("Mesh type not supported");
-//             return Point2<T>(-1, -1);
-//     }
-// }
+//      I const mesh_id = this->coarse_cells[cc_id].mesh_id;
+//      switch (this->coarse_cells[cc_id].mesh_type) {
+//          case static_cast<I>(MeshType::TRI):
+//                  return this->tri[mesh_id].face_centroid(face_id);
+//          case static_cast<I>(MeshType::QUAD):
+//              {
+//                  return this->quad[mesh_id].face_centroid(face_id);
+//              }
+//          case static_cast<I>(MeshType::TRI_QUAD):
+//              {
+//                  return this->tri_quad[mesh_id].face_centroid(face_id);
+//              }
+//          case static_cast<I>(MeshType::QUADRATIC_TRI):
+//              {
+//                  return this->quadratic_tri[mesh_id].face_centroid(face_id);
+//              }
+//          case static_cast<I>(MeshType::QUADRATIC_QUAD):
+//              {
+//                  return this->quadratic_quad[mesh_id].face_centroid(face_id);
+//              }
+//          case static_cast<I>(MeshType::QUADRATIC_TRI_QUAD):
+//              {
+//                  return this->quadratic_tri_quad[mesh_id].face_centroid(face_id);
+//              }
+//          default:
+//              Log::error("Mesh type not supported");
+//              return Point2<T>(-1, -1);
+//      }
+//  }
 ////template <std::floating_point T, std::signed_integral I>
 ////void SpatialPartition<T, I>::intersect_coarse_cell(Size const cc_id,
 ////                                                   Ray2<T> const & ray,

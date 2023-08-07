@@ -59,14 +59,14 @@ struct MeshFile {
 
   constexpr void
   sortElsets();
-  //
-  //    constexpr void get_submesh(std::string const & elset_name, MeshFile<T, I> &
-  //    submesh) const;
+
+  constexpr void
+  getSubmesh(std::string const & elset_name, MeshFile<T, I> & submesh) const;
   //
   //    constexpr MeshType get_mesh_type() const;
   //
-  //    constexpr void get_material_names(std::vector<std::string> & material_names)
-  //    const;
+  constexpr void
+  getMaterialNames(std::vector<std::string> & material_names) const;
   //
   //    constexpr void get_material_ids(std::vector<MaterialID> & material_ids) const;
   //
@@ -200,116 +200,114 @@ MeshFile<T, I>::sortElsets()
     offset += len;
   }
 }
-//
+
 // template <std::floating_point T, std::signed_integral I>
-// constexpr void MeshFile<T, I>::get_submesh(std::string const & elset_name,
+// constexpr void MeshFile<T, I>::getSubmesh(std::string const & elset_name,
 //                                            MeshFile<T, I> & submesh) const
 //{
-//     Log::debug("Extracting submesh for elset: " + to_string(elset_name));
-//     // Find the elset with the given name.
-//     length_t const num_elsets = this->elset_names.size();
-//     length_t elset_index = 0;
-//     for (; elset_index < num_elsets; ++elset_index) {
-//         if (this->elset_names[elset_index] == elset_name) break;
-//     }
-//     if (elset_index == num_elsets) {
-//         Log::error("Elset not found");
-//         submesh = MeshFile<T, I>();
-//         return;
-//     }
+//      Log::debug("Extracting submesh for elset: " + elset_name);
+//      // Find the elset with the given name.
+//      size_t const num_elsets = elset_names.size();
+//      size_t elset_index = 0;
+//      auto const it = std::find(elset_names.cbegin(), elset_names.cend(), elset_name);
+//      if (it == elset_names.cend()) {
+//          Log::error("Elset not found");
+//          submesh = MeshFile<T, I>();
+//          return;
+//      }
 //
-//     submesh.filepath = "";
-//     submesh.name = elset_name;
-//     submesh.format = this->format;
+//      submesh.filepath = "";
+//      submesh.name = elset_name;
+//      submesh.format = this->format;
 //
-//     // Get the element ids in the elset.
-//     I const submesh_elset_start = this->elset_offsets[elset_index];
-//     I const submesh_elset_end   = this->elset_offsets[elset_index + 1];
-//     I const submesh_num_elements = submesh_elset_end - submesh_elset_start;
-//     length_t const submesh_num_elements_l =
-//     static_cast<length_t>(submesh_num_elements); std::vector<I>
-//     element_ids(submesh_num_elements_l); for (length_t i = 0; i <
-//     submesh_num_elements_l; ++i) {
-//         element_ids[i] = this->elset_ids[static_cast<length_t>(submesh_elset_start) +
-//         i];
-//     }
-//     std::sort(element_ids.begin(), element_ids.end());
+//      // Get the element ids in the elset.
+//      I const submesh_elset_start = this->elset_offsets[elset_index];
+//      I const submesh_elset_end   = this->elset_offsets[elset_index + 1];
+//      I const submesh_num_elements = submesh_elset_end - submesh_elset_start;
+//      length_t const submesh_num_elements_l =
+//      static_cast<length_t>(submesh_num_elements); std::vector<I>
+//      element_ids(submesh_num_elements_l); for (length_t i = 0; i <
+//      submesh_num_elements_l; ++i) {
+//          element_ids[i] = this->elset_ids[static_cast<length_t>(submesh_elset_start) +
+//          i];
+//      }
+//      std::sort(element_ids.begin(), element_ids.end());
 //
-//     // Get the element types, offsets, connectivity. We will also get the unique node
-//     ids,
-//     // since we need to remap the connectivity.
-//     std::vector<I> unique_node_ids;
-//     submesh.element_types.resize(submesh_num_elements_l);
-//     submesh.element_offsets.resize(submesh_num_elements_l + 1);
-//     submesh.element_offsets[0] = 0;
-//     for (length_t i = 0; i < submesh_num_elements_l; ++i) {
-//         I const element_id = element_ids[i];
-//         length_t const element_id_l = static_cast<length_t>(element_id);
-//         submesh.element_types[i] = this->element_types[element_id_l];
-//         I const element_start = this->element_offsets[element_id_l];
-//         I const element_end   = this->element_offsets[element_id_l + 1];
-//         I const element_len   = element_end - element_start;
-//         submesh.element_offsets[i + 1] = submesh.element_offsets[i] + element_len;
-//         for (I j = 0; j < element_len; ++j) {
-//             I const node_id = this->element_conn[static_cast<length_t>(element_start +
-//             j)]; submesh.element_conn.push_back(node_id); auto const it =
-//             std::lower_bound(unique_node_ids.cbegin(),
-//                                              unique_node_ids.cend(), node_id);
-//             if (it == unique_node_ids.cend() || *it != node_id) {
-//                 unique_node_ids.insert(it, node_id);
-//             }
-//         }
-//     }
-//     // We now have the unique node ids. We need to remap the connectivity.
-//     // unique_node_ids[i] is the old node id, and i is the new node id.
-//     for (length_t i = 0; i < submesh.element_conn.size(); ++i) {
-//         I const old_node_id = submesh.element_conn[i];
-//         auto const it = std::lower_bound(unique_node_ids.begin(),
-//                                          unique_node_ids.end(), old_node_id);
-//         submesh.element_conn[i] = static_cast<I>(it - unique_node_ids.begin());
-//     }
+//      // Get the element types, offsets, connectivity. We will also get the unique node
+//      ids,
+//      // since we need to remap the connectivity.
+//      std::vector<I> unique_node_ids;
+//      submesh.element_types.resize(submesh_num_elements_l);
+//      submesh.element_offsets.resize(submesh_num_elements_l + 1);
+//      submesh.element_offsets[0] = 0;
+//      for (length_t i = 0; i < submesh_num_elements_l; ++i) {
+//          I const element_id = element_ids[i];
+//          length_t const element_id_l = static_cast<length_t>(element_id);
+//          submesh.element_types[i] = this->element_types[element_id_l];
+//          I const element_start = this->element_offsets[element_id_l];
+//          I const element_end   = this->element_offsets[element_id_l + 1];
+//          I const element_len   = element_end - element_start;
+//          submesh.element_offsets[i + 1] = submesh.element_offsets[i] + element_len;
+//          for (I j = 0; j < element_len; ++j) {
+//              I const node_id = this->element_conn[static_cast<length_t>(element_start +
+//              j)]; submesh.element_conn.push_back(node_id); auto const it =
+//              std::lower_bound(unique_node_ids.cbegin(),
+//                                               unique_node_ids.cend(), node_id);
+//              if (it == unique_node_ids.cend() || *it != node_id) {
+//                  unique_node_ids.insert(it, node_id);
+//              }
+//          }
+//      }
+//      // We now have the unique node ids. We need to remap the connectivity.
+//      // unique_node_ids[i] is the old node id, and i is the new node id.
+//      for (length_t i = 0; i < submesh.element_conn.size(); ++i) {
+//          I const old_node_id = submesh.element_conn[i];
+//          auto const it = std::lower_bound(unique_node_ids.begin(),
+//                                           unique_node_ids.end(), old_node_id);
+//          submesh.element_conn[i] = static_cast<I>(it - unique_node_ids.begin());
+//      }
 //
-//     // Get the x, y, z coordinates for the nodes.
-//     submesh.nodes_x.resize(unique_node_ids.size());
-//     submesh.nodes_y.resize(unique_node_ids.size());
-//     submesh.nodes_z.resize(unique_node_ids.size());
-//     for (length_t i = 0; i < unique_node_ids.size(); ++i) {
-//         length_t const node_id = static_cast<length_t>(unique_node_ids[i]);
-//         submesh.nodes_x[i] = this->nodes_x[node_id];
-//         submesh.nodes_y[i] = this->nodes_y[node_id];
-//         submesh.nodes_z[i] = this->nodes_z[node_id];
-//     }
+//      // Get the x, y, z coordinates for the nodes.
+//      submesh.nodes_x.resize(unique_node_ids.size());
+//      submesh.nodes_y.resize(unique_node_ids.size());
+//      submesh.nodes_z.resize(unique_node_ids.size());
+//      for (length_t i = 0; i < unique_node_ids.size(); ++i) {
+//          length_t const node_id = static_cast<length_t>(unique_node_ids[i]);
+//          submesh.nodes_x[i] = this->nodes_x[node_id];
+//          submesh.nodes_y[i] = this->nodes_y[node_id];
+//          submesh.nodes_z[i] = this->nodes_z[node_id];
+//      }
 //
-//     // If the intersection of this elset and another elset is non-empty, then we need
-//     to
-//     // add the itersection as an elset and remap the elset IDs using the element_ids
-//     vector.
-//     // element_ids[i] is the old element id, and i is the new element id.
-//     for (length_t i = 0; i < num_elsets; ++i) {
-//         if (i == elset_index) continue;
-//         length_t const elset_start = static_cast<length_t>(this->elset_offsets[i]);
-//         length_t const elset_end   = static_cast<length_t>(this->elset_offsets[i + 1]);
-//         std::vector<I> intersection;
-//         std::set_intersection(element_ids.begin(), element_ids.end(),
-//                               this->elset_ids.begin() + elset_start,
-//                               this->elset_ids.begin() + elset_end,
-//                               std::back_inserter(intersection));
-//         if (intersection.empty()) continue;
-//         // We have an intersection. Add the elset.
-//         submesh.elset_names.push_back(this->elset_names[i]);
-//         if (submesh.elset_offsets.empty()) {
-//             submesh.elset_offsets.push_back(0);
-//         }
-//         submesh.elset_offsets.push_back(submesh.elset_offsets.back() +
-//         intersection.size()); for (length_t j = 0; j < intersection.size(); ++j) {
-//             I const old_element_id = intersection[j];
-//             auto const it = std::lower_bound(element_ids.begin(),
-//                                              element_ids.end(), old_element_id);
-//             submesh.elset_ids.push_back(static_cast<I>(it - element_ids.begin()));
-//         }
-//     }
-// }
-//
+//      // If the intersection of this elset and another elset is non-empty, then we need
+//      to
+//      // add the itersection as an elset and remap the elset IDs using the element_ids
+//      vector.
+//      // element_ids[i] is the old element id, and i is the new element id.
+//      for (length_t i = 0; i < num_elsets; ++i) {
+//          if (i == elset_index) continue;
+//          length_t const elset_start = static_cast<length_t>(this->elset_offsets[i]);
+//          length_t const elset_end   = static_cast<length_t>(this->elset_offsets[i +
+//          1]); std::vector<I> intersection; std::set_intersection(element_ids.begin(),
+//          element_ids.end(),
+//                                this->elset_ids.begin() + elset_start,
+//                                this->elset_ids.begin() + elset_end,
+//                                std::back_inserter(intersection));
+//          if (intersection.empty()) continue;
+//          // We have an intersection. Add the elset.
+//          submesh.elset_names.push_back(this->elset_names[i]);
+//          if (submesh.elset_offsets.empty()) {
+//              submesh.elset_offsets.push_back(0);
+//          }
+//          submesh.elset_offsets.push_back(submesh.elset_offsets.back() +
+//          intersection.size()); for (length_t j = 0; j < intersection.size(); ++j) {
+//              I const old_element_id = intersection[j];
+//              auto const it = std::lower_bound(element_ids.begin(),
+//                                               element_ids.end(), old_element_id);
+//              submesh.elset_ids.push_back(static_cast<I>(it - element_ids.begin()));
+//          }
+//      }
+//  }
+
 // template <std::floating_point T, std::signed_integral I>
 // constexpr MeshType MeshFile<T, I>::get_mesh_type() const
 //{
@@ -411,22 +409,21 @@ MeshFile<T, I>::sortElsets()
 //     return mesh_type;
 // }
 //
-// template <std::floating_point T, std::signed_integral I>
-// constexpr void MeshFile<T, I>::get_material_names(std::vector<std::string> &
-// material_names) const
-//{
-//     material_names.clear();
-//     std::string const material = "Material";
-//     for (length_t i = 0; i < this->elset_names.size(); ++i) {
-//         length_t const name_len = this->elset_names[i].size();
-//         if (name_len >= 10 && this->elset_names[i].starts_with(material)) {
-//             material_names.push_back(this->elset_names[i]);
-//         }
-//     }
-//     // Should already be sorted
-//     UM2_ASSERT(std::is_sorted(material_names.begin(), material_names.end()));
-// }
-//
+template <std::floating_point T, std::signed_integral I>
+constexpr void
+MeshFile<T, I>::getMaterialNames(std::vector<std::string> & material_names) const
+{
+  std::string const material = "Material";
+  for (auto const & elset_name : elset_names) {
+    size_t const name_len = elset_name.size();
+    if (name_len >= 10 && elset_name.starts_with(material)) {
+      material_names.push_back(elset_name);
+    }
+  }
+  // Should already be sorted
+  assert(std::is_sorted(material_names.begin(), material_names.end()));
+}
+
 // template <std::floating_point T, std::signed_integral I>
 // constexpr void MeshFile<T, I>::get_material_ids(std::vector<MaterialID> & material_ids,
 //                                                 std::vector<std::string> const &

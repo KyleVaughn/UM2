@@ -550,9 +550,6 @@ MAKE_CUDA_KERNEL(constructor_initializer_list, T)
 
 //
 //  template <class T>
-//  MAKE_CUDA_KERNEL(push_back, T)
-//
-//  template <class T>
 //  MAKE_CUDA_KERNEL(empty, T)
 //
 //  template <class T>
@@ -574,6 +571,15 @@ MAKE_CUDA_KERNEL(clear)
 
     template <class T>
     MAKE_CUDA_KERNEL(resize, T)
+
+    template <class T>
+    MAKE_CUDA_KERNEL(push_back, T)
+
+    template <class T>
+    MAKE_CUDA_KERNEL(push_back_rval_ref, T)
+
+    template <class T>
+    MAKE_CUDA_KERNEL(push_back_n, T)
 
 //
 //  template <class T>

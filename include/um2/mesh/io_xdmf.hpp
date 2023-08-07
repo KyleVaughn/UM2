@@ -575,10 +575,13 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
   std::string const h5dataset = xdataitem.child_value();
   // Read the data
   H5::DataSet const dataset = h5file.openDataSet(h5dataset.substr(h5filename.size() + 1));
+#ifndef NDEBUG
   H5T_class_t const type_class = dataset.getTypeClass();
   assert(type_class == H5T_FLOAT);
+#endif
   H5::FloatType const datatype = dataset.getFloatType();
   size_t const datatype_size = datatype.getSize();
+#ifndef NDEBUG
   assert(datatype_size == std::stoul(precision));
   H5::DataSpace const dataspace = dataset.getSpace();
   int const rank = dataspace.getSimpleExtentNdims();
@@ -588,6 +591,7 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
   assert(ndims == 2);
   assert(dims[0] == num_nodes);
   assert(dims[1] == num_dimensions);
+#endif
   if (datatype_size == 4) {
     addNodesToMesh<T, I, float>(mesh, num_nodes, num_dimensions, dataset, datatype,
                                 geometry_type == "XYZ");
@@ -714,10 +718,13 @@ static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5
   std::string const h5dataset = xdataitem.child_value();
   // Read the data
   H5::DataSet const dataset = h5file.openDataSet(h5dataset.substr(h5filename.size() + 1));
+#ifndef NDEBUG
   H5T_class_t const type_class = dataset.getTypeClass();
   assert(type_class == H5T_INTEGER);
+#endif
   H5::IntType const datatype = dataset.getIntType();
   size_t const datatype_size = datatype.getSize();
+#ifndef NDEBUG
   assert(datatype_size == std::stoul(precision));
   H5::DataSpace const dataspace = dataset.getSpace();
   int const rank = dataspace.getSimpleExtentNdims();
@@ -732,6 +739,7 @@ static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5
     int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
     assert(ndims == 2);
   }
+#endif
   // Get the dimensions
   std::string const dimensions = xdataitem.attribute("Dimensions").value();
   if (datatype_size == 1) {
@@ -904,17 +912,25 @@ static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5fi
     // Read the data
     H5::DataSet const dataset =
         h5file.openDataSet(h5dataset.substr(h5filename.size() + 1));
+#ifndef NDEBUG
     H5T_class_t const type_class = dataset.getTypeClass();
     assert(type_class == H5T_INTEGER);
+#endif
     H5::IntType const datatype = dataset.getIntType();
     size_t const datatype_size = datatype.getSize();
     assert(datatype_size == std::stoul(precision));
     H5::DataSpace const dataspace = dataset.getSpace();
+#ifndef NDEBUG
     int const rank = dataspace.getSimpleExtentNdims();
     assert(rank == 1);
+#endif
     hsize_t dims[1];
+#ifndef NDEBUG
     int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
     assert(ndims == 1);
+#else
+    dataspace.getSimpleExtentDims(dims, nullptr);
+#endif
     // Get the dimensions
     std::string const dimensions = xdataitem.attribute("Dimensions").value();
     size_t const num_elements = dims[0];

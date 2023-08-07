@@ -65,7 +65,7 @@ isLeft(um2::QuadraticSegment<D, T> const & seg, um2::Point<D, T> const & p) -> b
   return seg.isLeft(p);
 }
 
-HOSTDEV auto
+PURE HOSTDEV auto
 isLeftOld(um2::QuadraticSegment<D, T> const & Q, um2::Point<D, T> const & p) -> bool
 {
   um2::Vec2<T> const v13 = Q[2] - Q[0];

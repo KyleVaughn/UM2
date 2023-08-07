@@ -6,7 +6,9 @@ set(
   include/*.inl
   tests/*.hpp
   tests/*.cpp
+  examples/*.hpp
   examples/*.cpp
+  benchmarks/*.hpp
   benchmarks/*.cpp
   CACHE STRING
   "Patterns to format")

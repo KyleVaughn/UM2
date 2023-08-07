@@ -18,6 +18,7 @@ option(UM2_ENABLE_OPENMP    "Enable OpenMP"        ON)
 option(UM2_ENABLE_FASTMATH  "Enable fast math"     ON)
 option(UM2_ENABLE_OPENGL    "Enable OpenGL visualization" OFF)
 option(UM2_ENABLE_GMSH      "Enable Gmsh"          ON)
+option(UM2_ENABLE_PAR_STL   "Enable parallel STL"  OFF) 
 
 ## Advanced options ###########################################################
 ###############################################################################
@@ -82,6 +83,7 @@ set(UM2_HEADERS
     "include/um2/mesh/MeshFile.hpp"
     "include/um2/mesh/io_abaqus.hpp"
     "include/um2/mesh/io_xdmf.hpp"
+    "include/um2/mesh/io.hpp"
     "include/um2/mesh/RegularGrid.hpp"
     "include/um2/mesh/RegularPartition.hpp"
     "include/um2/mesh/RectilinearGrid.hpp"
@@ -96,6 +98,7 @@ set(UM2_HEADERS
     "include/um2/gmsh/base_gmsh_api.hpp"
     "include/um2/gmsh/io.hpp"
     "include/um2/gmsh/model.hpp"
+    "include/um2/gmsh/mesh.hpp"
     #    # ray_casting
     #    "include/um2/ray_casting/Ray.hpp"
     # visualization
@@ -113,6 +116,7 @@ set(UM2_SOURCES
     "src/gmsh/base_gmsh_api.cpp"
     "src/gmsh/io.cpp"
     "src/gmsh/model.cpp"
+    "src/gmsh/mesh.cpp"
     # visualization
     "src/visualization/Image2D.cpp"
     # api

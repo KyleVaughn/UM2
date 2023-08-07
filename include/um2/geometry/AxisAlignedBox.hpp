@@ -5,6 +5,8 @@
 #include <um2/common/Vector.hpp>
 #include <um2/geometry/Point.hpp>
 
+#include <execution>
+
 namespace um2
 {
 
@@ -101,6 +103,16 @@ isApprox(AxisAlignedBox<D, T> const & a, AxisAlignedBox<D, T> const & b) noexcep
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 boundingBox(AxisAlignedBox<D, T> const & a, AxisAlignedBox<D, T> const & b) noexcept
+    -> AxisAlignedBox<D, T>;
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+boundingBox(AxisAlignedBox<D, T> const & box, Point<D, T> const & p) noexcept
+    -> AxisAlignedBox<D, T>;
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+boundingBox(Point<D, T> const & p, AxisAlignedBox<D, T> const & box) noexcept
     -> AxisAlignedBox<D, T>;
 
 template <Size D, typename T, Size N>
