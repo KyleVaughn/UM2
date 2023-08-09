@@ -29,6 +29,20 @@ add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}
 
 add_custom_target(Doxygen ALL DEPENDS ${DOXYGEN_INDEX_FILE})
 
+#Look for an executable called sphinx-build
+find_program(SPHINX_EXECUTABLE
+        NAMES sphinx-build
+        DOC "Path to sphinx-build executable")
+
+include(FindPackageHandleStandardArgs)
+
+#Handle standard arguments to find_package like REQUIRED and QUIET
+find_package_handle_standard_args(Sphinx
+        "Failed to find sphinx-build executable"
+        SPHINX_EXECUTABLE)
+
+message(${PROJECT_SOURCE_DIR})
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 ##Sphinx
 find_package(Sphinx REQUIRED)

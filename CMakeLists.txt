@@ -141,3 +141,5 @@ target_include_directories(um2 PUBLIC include)
 
 # Configure
 include(cmake/um2_config.cmake)
+
+add_subdirectory(docs)
