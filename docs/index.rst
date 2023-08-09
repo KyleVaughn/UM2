@@ -2,8 +2,10 @@
 Dependencies are installed via spack.
 -------------------------------------
 In ``spack.yaml``:
+
 - Change ``+fltk`` to ``~fltk`` if a mesh viewer is not needed
 - Delete the ``cuda`` spec if cuda is not desired supported
+
 To install spack:
 -----------------
 .. code-block:: bash
