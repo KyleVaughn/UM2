@@ -1,8 +1,7 @@
 #pragma once
 
-#include <um2/common/Vector.hpp>
-#include <um2/config.hpp>
 #include <um2/geometry/AxisAlignedBox.hpp>
+#include <um2/stdlib/Vector.hpp>
 
 #include <vector>
 

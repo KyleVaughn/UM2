@@ -3,7 +3,9 @@ Tests for each common function
 Tests for each geometry function
 
 Make rep meshes. Test point containment, ray intersection, etc
+Quadratic Segment use tri bb or not, difference in best vs worst case
 
+QuadraticSegment, closest point
 
 Fix dZ
 Drop support for non-homogenous meshes

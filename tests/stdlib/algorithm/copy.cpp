@@ -21,11 +21,31 @@ TEST_CASE(copy_nontrivial)
   struct A {
     T a;
     T b;
-    A() : a(0), b(0){}
-    HOSTDEV A(T aa, T bb) : a(aa), b(bb) {}
-    HOSTDEV A(A const& other) : a(other.a), b(other.b){}
-    HOSTDEV A(A&& other) noexcept : a(other.a), b(other.b) {}
-    HOSTDEV auto operator=(A const& other) -> A&
+    A()
+        : a(0),
+          b(0)
+    {
+    }
+    HOSTDEV
+    A(T aa, T bb)
+        : a(aa),
+          b(bb)
+    {
+    }
+    HOSTDEV
+    A(A const & other)
+        : a(other.a),
+          b(other.b)
+    {
+    }
+    HOSTDEV
+    A(A && other) noexcept
+        : a(other.a),
+          b(other.b)
+    {
+    }
+    HOSTDEV auto
+    operator=(A const & other) -> A &
     {
       if (this == &other) {
         return *this;
@@ -34,7 +54,8 @@ TEST_CASE(copy_nontrivial)
       b = other.b;
       return *this;
     }
-    HOSTDEV auto operator=(A&& other) noexcept -> A&
+    HOSTDEV auto
+    operator=(A && other) noexcept -> A &
     {
       a = other.a;
       b = other.b;
@@ -60,7 +81,8 @@ MAKE_CUDA_KERNEL(copy_nontrivial, T);
 #endif
 
 template <typename T>
-TEST_SUITE(copy_suite) { 
+TEST_SUITE(copy_suite)
+{
   TEST_HOSTDEV(copy_trivial, 1, 1, T);
   TEST_HOSTDEV(copy_nontrivial, 1, 1, T);
 }

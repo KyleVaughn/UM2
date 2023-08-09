@@ -149,7 +149,7 @@ QuadraticSegment<D, T>::getBezierControlPoint() const noexcept -> Point<D, T>
   for (Size i = 0; i < D; ++i) {
     result[i] = static_cast<T>(2) * v[2][i] - (v[0][i] + v[1][i]) / 2;
   }
-  return result; 
+  return result;
 }
 
 // -------------------------------------------------------------------
@@ -166,36 +166,34 @@ QuadraticSegment<D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool
 
   // The quadratic segment has an equivalent quadratic Bezier curve.
   // The triangle formed by the control points of the equivalent quadratic Bezier curve
-  // bound the curve. If p is not in this triangle we can ignore the curvature of the segment
-  // and return based upon areCCW(v[0], v[1], p).
-  // If the triangle is CCW oriented,
-  //  We will check that p is in the triangle by checking that p is left of each edge of the 
-  //  triangle.
+  // bound the curve. If p is not in this triangle we can ignore the curvature of the
+  // segment and return based upon areCCW(v[0], v[1], p). If the triangle is CCW oriented,
+  //  We will check that p is in the triangle by checking that p is left of each edge of
+  //  the triangle.
   // else
-  //  We will check that p is in the triangle by checking that p is right of each edge of the
-  //  triangle.
+  //  We will check that p is in the triangle by checking that p is right of each edge of
+  //  the triangle.
   // We manually perform the check for (v0, v1) since we want to reuse v01 and v0p.
-  Vec2<T> const v01(v[1][0] - v[0][0], 
-                    v[1][1] - v[0][1]);
-//  Point2<T> const bcp = getBezierControlPoint(); 
-//  Vec2<T> const v0b(bcp[0] - v[0][0],
-//                    bcp[1] - v[0][1]);
-//  Vec2<T> const v0p(p[0] - v[0][0], 
-//                    p[1] - v[0][1]);
-//  bool const tri_is_ccw = v01.cross(v0b) >= 0; 
-//  {
-//    bool const b0 = v01.cross(v0p) >= 0; // areCCW(v[0], v[1], p) == Left of edge 0 
-//    bool const b1 = areCCW(v[1], bcp, p); // Left of edge 1
-//    bool const b2 = areCCW(bcp, v[0], p); // Left of edge 2
-//    // if b0 && b1 && b2, the point is in the triangle, and we must perform further
-//    // analysis.
-//    // if !(b0 && b1 && b2), the point is outside the triangle, and we may return
-//    // b0
-//    bool const p_in_tri = tri_is_ccw ? (b0 && b1 && b2) : (!b0 && !b1 && !b2);
-//    if (!p_in_tri) {
-//      return b0;
-//    }
-//  }
+  Vec2<T> const v01(v[1][0] - v[0][0], v[1][1] - v[0][1]);
+  //  Point2<T> const bcp = getBezierControlPoint();
+  //  Vec2<T> const v0b(bcp[0] - v[0][0],
+  //                    bcp[1] - v[0][1]);
+  //  Vec2<T> const v0p(p[0] - v[0][0],
+  //                    p[1] - v[0][1]);
+  //  bool const tri_is_ccw = v01.cross(v0b) >= 0;
+  //  {
+  //    bool const b0 = v01.cross(v0p) >= 0; // areCCW(v[0], v[1], p) == Left of edge 0
+  //    bool const b1 = areCCW(v[1], bcp, p); // Left of edge 1
+  //    bool const b2 = areCCW(bcp, v[0], p); // Left of edge 2
+  //    // if b0 && b1 && b2, the point is in the triangle, and we must perform further
+  //    // analysis.
+  //    // if !(b0 && b1 && b2), the point is outside the triangle, and we may return
+  //    // b0
+  //    bool const p_in_tri = tri_is_ccw ? (b0 && b1 && b2) : (!b0 && !b1 && !b2);
+  //    if (!p_in_tri) {
+  //      return b0;
+  //    }
+  //  }
 
   // We want to rotate the segment so that v[0] is at the origin and v[1] is on the
   // x-axis. We then take note of the sign of the rotated v[2] to determine if the

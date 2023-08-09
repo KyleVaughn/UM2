@@ -1,9 +1,9 @@
 #pragma once
 
-#include <um2/stdlib/algorithm.hpp>    // copy
-#include <um2/stdlib/memory.hpp>       // addressof
-#include <um2/stdlib/utility.hpp>      // move
-#include <um2/stdlib/math.hpp> // max
+#include <um2/stdlib/algorithm.hpp> // copy
+#include <um2/stdlib/math.hpp>      // max
+#include <um2/stdlib/memory.hpp>    // addressof
+#include <um2/stdlib/utility.hpp>   // move
 
 #include <initializer_list> // std::initializer_list
 #include <numeric>          // std::iota

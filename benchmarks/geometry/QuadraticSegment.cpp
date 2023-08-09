@@ -1,5 +1,28 @@
-// FINDINGS: The new algorithm is 3x to 30x faster depending on the shape of the segment.
-//           The best case (common) is 30x faster. The worst case (rare) is 3x faster.
+// FINDINGS:
+//  For points in [0, 3]^2, which tend to be in the bounding box of the segments,
+//    New, well behaved (rotated aabb)   : 61.4 us
+//    New, well behaved (bezier triangle): 77.5 us
+//    Old, well behaved                  : 2197 us
+//    Speedup range: 28x to 36x
+//    New, poor behaved (rotated aabb)   : 1312 us
+//    New, poor behaved (bezier triangle):  224 us
+//    Old, poor behaved                  : 7027 us
+//    Speedup range: 5x to 31x
+//
+//    The well behaved case is 26% faster using the rotated aabb, but the poorly
+//    behaved case is 486% slower. Therefore, the "correct" choice depends on
+//    the use case.
+
+//  For points in [-100, 100]^2, which tend to NOT be in the bounding box of the segments,
+//    New, well behaved (rotated aabb)   :  66.2 us
+//    New, well behaved (bezier triangle):  76.8 us
+//    Old, well behaved                  :  2704 us
+//    Speedup range: 35x to 41x
+//    New, poor behaved (rotated aabb)   :  921 us
+//    New, poor behaved (bezier triangle):  225 us
+//    Old, poor behaved                  :  2796 us
+//    Speedup range: 3x to 12x
+//
 
 #include "../helpers.hpp"
 #include <um2/geometry/QuadraticSegment.hpp>
@@ -11,8 +34,8 @@ constexpr Size D = 2;
 constexpr Size npoints = 1 << 18;
 // BB of base seg is [0, 0] to [2, 1]
 // BB of seg4 is [0, 0] to [2.25, 2]
-constexpr int lo = -1;
-constexpr int hi = 3;
+constexpr int lo = -100;
+constexpr int hi = 100;
 
 // NOLINTBEGIN(readability-identifier-naming)
 
@@ -155,13 +178,11 @@ isLeftBenchWellBehaved(benchmark::State & state)
   Size const n = static_cast<Size>(state.range(0));
   auto const seg = makeBaseSeg<T>();
   //  auto const seg = makeSeg4();
-  auto const points = makeVectorOfRandomPoints<2, T, lo, hi>(n); 
+  auto const points = makeVectorOfRandomPoints<2, T, lo, hi>(n);
   int64_t i = 0;
   for (auto s : state) {
-    i += std::count_if(points.begin(), points.end(), 
-    [&seg](auto const & p) {
-      return isLeft(seg, p);
-    });
+    i += std::count_if(points.begin(), points.end(),
+                       [&seg](auto const & p) { return isLeft(seg, p); });
   }
   if (i == 0) {
     std::cout << i << std::endl;
@@ -174,13 +195,11 @@ isLeftBenchPoorlyBehaved(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const seg = makeSeg4<T>();
-  auto const points = makeVectorOfRandomPoints<2, T, lo, hi>(n); 
+  auto const points = makeVectorOfRandomPoints<2, T, lo, hi>(n);
   int64_t i = 0;
   for (auto s : state) {
-    i += std::count_if(points.begin(), points.end(), 
-    [&seg](auto const & p) {
-      return isLeft(seg, p);
-    });
+    i += std::count_if(points.begin(), points.end(),
+                       [&seg](auto const & p) { return isLeft(seg, p); });
   }
   if (i == 0) {
     std::cout << i << std::endl;
@@ -193,13 +212,11 @@ isLeftOldWellBehavedBench(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const seg = makeBaseSeg<T>();
-  auto const points = makeVectorOfRandomPoints<2, T, lo, hi>(n); 
+  auto const points = makeVectorOfRandomPoints<2, T, lo, hi>(n);
   int64_t i = 0;
   for (auto s : state) {
-    i += std::count_if(points.begin(), points.end(), 
-    [&seg](auto const & p) {
-      return isLeftOld(seg, p);
-    });
+    i += std::count_if(points.begin(), points.end(),
+                       [&seg](auto const & p) { return isLeftOld(seg, p); });
   }
   if (i == 0) {
     std::cout << i << std::endl;
@@ -212,13 +229,11 @@ isLeftOldPoorlyBehavedBench(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const seg = makeSeg4<T>();
-  auto const points = makeVectorOfRandomPoints<2, T, lo, hi>(n); 
+  auto const points = makeVectorOfRandomPoints<2, T, lo, hi>(n);
   int64_t i = 0;
   for (auto s : state) {
-    i += std::count_if(points.begin(), points.end(), 
-    [&seg](auto const & p) {
-      return isLeftOld(seg, p);
-    });
+    i += std::count_if(points.begin(), points.end(),
+                       [&seg](auto const & p) { return isLeftOld(seg, p); });
   }
   if (i == 0) {
     std::cout << i << std::endl;

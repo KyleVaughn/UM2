@@ -1,9 +1,9 @@
 #include <benchmark/benchmark.h>
 
 #include <um2/common/Log.hpp>
-#include <um2/stdlib/Vector.hpp>
 #include <um2/geometry/Point.hpp>
 #include <um2/geometry/Triangle.hpp>
+#include <um2/stdlib/Vector.hpp>
 
 #include <algorithm>
 #if UM2_ENABLE_OPENMP

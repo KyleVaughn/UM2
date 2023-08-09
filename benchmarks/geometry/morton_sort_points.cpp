@@ -52,22 +52,23 @@ mortonSortParallel(benchmark::State & state)
   }
 }
 
-//template <typename T, typename U>
-//static void mortonSortParallelExec(benchmark::State& state) 
+// template <typename T, typename U>
+// static void mortonSortParallelExec(benchmark::State& state)
 //{
-//  Size const n = static_cast<Size>(state.range(0));
-//  um2::Vector<um2::Point<D, T>> points = makeVectorOfRandomPoints<D, T, 0, 1>(n);
-//  // NOLINTNEXTLINE
-//  for (auto s : state) {
-//    state.PauseTiming();
-//    std::random_shuffle(points.begin(), points.end());
-//    state.ResumeTiming();
-//    std::sort(std::execution::par_unseq, points.begin(), points.end(), um2::mortonLess<U, D, T>);
-//  }
-//  if (!std::is_sorted(points.begin(), points.end(), um2::mortonLess<U, D, T>)) {
-//    std::cout << "Not sorted" << std::endl;
-//  }
-//}
+//   Size const n = static_cast<Size>(state.range(0));
+//   um2::Vector<um2::Point<D, T>> points = makeVectorOfRandomPoints<D, T, 0, 1>(n);
+//   // NOLINTNEXTLINE
+//   for (auto s : state) {
+//     state.PauseTiming();
+//     std::random_shuffle(points.begin(), points.end());
+//     state.ResumeTiming();
+//     std::sort(std::execution::par_unseq, points.begin(), points.end(),
+//     um2::mortonLess<U, D, T>);
+//   }
+//   if (!std::is_sorted(points.begin(), points.end(), um2::mortonLess<U, D, T>)) {
+//     std::cout << "Not sorted" << std::endl;
+//   }
+// }
 #endif
 
 #if UM2_ENABLE_CUDA
@@ -102,28 +103,28 @@ mortonSortCuda(benchmark::State & state)
 #endif
 
 BENCHMARK_TEMPLATE2(mortonSortSerial, double, uint64_t)
-  ->RangeMultiplier(4)
-  ->Range(16, npoints)
-  ->Unit(benchmark::kMicrosecond);
-//BENCHMARK_TEMPLATE2(mortonSortSerial, float, uint32_t) 
-//  ->RangeMultiplier(4)
-//  ->Range(16, npoints)
-//  ->Unit(benchmark::kMicrosecond);
+    ->RangeMultiplier(4)
+    ->Range(16, npoints)
+    ->Unit(benchmark::kMicrosecond);
+// BENCHMARK_TEMPLATE2(mortonSortSerial, float, uint32_t)
+//   ->RangeMultiplier(4)
+//   ->Range(16, npoints)
+//   ->Unit(benchmark::kMicrosecond);
 
 #if _OPENMP
 BENCHMARK_TEMPLATE2(mortonSortParallel, double, uint64_t)
-  ->RangeMultiplier(4)
-  ->Range(16, npoints)
-  ->Unit(benchmark::kMicrosecond);
-//BENCHMARK_TEMPLATE2(mortonSortParallelExec, double, uint64_t)
-//  ->RangeMultiplier(4)
-//  ->Range(16, npoints)
-//  ->Unit(benchmark::kMicrosecond);
+    ->RangeMultiplier(4)
+    ->Range(16, npoints)
+    ->Unit(benchmark::kMicrosecond);
+// BENCHMARK_TEMPLATE2(mortonSortParallelExec, double, uint64_t)
+//   ->RangeMultiplier(4)
+//   ->Range(16, npoints)
+//   ->Unit(benchmark::kMicrosecond);
 #endif
 #if UM2_ENABLE_CUDA
 BENCHMARK_TEMPLATE2(mortonSortCuda, double, uint64_t)
-  ->RangeMultiplier(4)
-  ->Range(16, npoints)
-  ->Unit(benchmark::kMicrosecond);
+    ->RangeMultiplier(4)
+    ->Range(16, npoints)
+    ->Unit(benchmark::kMicrosecond);
 #endif
 BENCHMARK_MAIN();

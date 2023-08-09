@@ -9,7 +9,7 @@
 
 constexpr Size npoints = 1 << 20;
 constexpr int lo = -3;
-constexpr int hi = 3; 
+constexpr int hi = 3;
 
 template <typename T>
 static void
@@ -63,7 +63,8 @@ expFloatCUDA(benchmark::State & state)
   transferToDevice(&expx_d, expx);
 
   constexpr uint32_t threadsPerBlock = 256;
-  uint32_t const blocks = (static_cast<uint32_t>(n) + threadsPerBlock - 1) / threadsPerBlock;
+  uint32_t const blocks =
+      (static_cast<uint32_t>(n) + threadsPerBlock - 1) / threadsPerBlock;
   // NOLINTNEXTLINE
   for (auto s : state) {
     expFloatKernel<<<(blocks), threadsPerBlock>>>(x_d, expx_d, n);

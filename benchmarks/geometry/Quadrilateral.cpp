@@ -6,10 +6,10 @@
 #include "../helpers.hpp"
 #include <um2/geometry/Quadrilateral.hpp>
 
-constexpr Size npoints = 1 << 18;    
-constexpr Size D = 2;    
-constexpr int lo = 0;    
-constexpr int hi = 10; 
+constexpr Size npoints = 1 << 18;
+constexpr Size D = 2;
+constexpr int lo = 0;
+constexpr int hi = 10;
 
 // NOLINTBEGIN(readability-identifier-naming)
 
@@ -19,7 +19,7 @@ makeQuadGrid() -> um2::Vector<um2::Quadrilateral<D, T>>
 {
   um2::Vector<um2::Quadrilateral<D, T>> quads(static_cast<Size>(hi * hi));
   // Create a hi x hi grid of quadrilaterals.
-  for (Size x = 0; x < static_cast<Size>(hi); ++x) { 
+  for (Size x = 0; x < static_cast<Size>(hi); ++x) {
     for (Size y = 0; y < static_cast<Size>(hi); ++y) {
       um2::Point<D, T> const p0(x, y);
       um2::Point<D, T> const p1(x + 1, y);
@@ -92,7 +92,7 @@ TriangleDecomp(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
-  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n); 
+  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
   // NOLINTNEXTLINE
   for (auto s : state) {
     int i = 0;
@@ -112,7 +112,7 @@ CCWShortCircuit(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
-  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n); 
+  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
   // NOLINTNEXTLINE
   for (auto s : state) {
     int i = 0;
@@ -170,7 +170,7 @@ CCWShortCircuitGPU(benchmark::State & state)
   um2::Quadrilateral<D, T> * d_quads;
   transferToDevice(&d_quads, quads);
 
-  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n); 
+  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
   um2::Point<D, T> * d_points;
   transferToDevice(&d_points, points);
 
@@ -179,13 +179,13 @@ CCWShortCircuitGPU(benchmark::State & state)
   transferToDevice(&d_results, results);
 
   constexpr uint32_t threads_per_block = 256;
-  uint32_t const nblocks = (quads.size() * points.size() + threads_per_block - 1) /
-                               threads_per_block;
+  uint32_t const nblocks =
+      (quads.size() * points.size() + threads_per_block - 1) / threads_per_block;
 
   // NOLINTNEXTLINE
   for (auto s : state) {
-    CCWShortCircuitGPUKernel<<<nblocks, threads_per_block>>>(
-        d_quads, d_points, d_results, quads.size(), points.size());
+    CCWShortCircuitGPUKernel<<<nblocks, threads_per_block>>>(d_quads, d_points, d_results,
+                                                             quads.size(), points.size());
     cudaDeviceSynchronize();
   }
 
@@ -218,7 +218,7 @@ CCWNoShortCircuitGPU(benchmark::State & state)
   um2::Quadrilateral<D, T> * d_quads;
   transferToDevice(&d_quads, quads);
 
-  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n); 
+  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
   um2::Point<D, T> * d_points;
   transferToDevice(&d_points, points);
 
@@ -227,8 +227,8 @@ CCWNoShortCircuitGPU(benchmark::State & state)
   transferToDevice(&d_results, results);
 
   constexpr uint32_t threads_per_block = 256;
-  uint32_t const nblocks = (quads.size() * points.size() + threads_per_block - 1) /
-                               threads_per_block;
+  uint32_t const nblocks =
+      (quads.size() * points.size() + threads_per_block - 1) / threads_per_block;
 
   // NOLINTNEXTLINE
   for (auto s : state) {

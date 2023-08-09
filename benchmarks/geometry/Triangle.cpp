@@ -1,8 +1,8 @@
-// FINDINGS: 
-//  The barycentric method is faster than the CCW method on some 
+// FINDINGS:
+//  The barycentric method is faster than the CCW method on some
 //  processors, but not others
 
-#include "../helpers.hpp" 
+#include "../helpers.hpp"
 #include <um2/geometry/Triangle.hpp>
 
 constexpr Size npoints = 1 << 16;
@@ -51,7 +51,8 @@ containsBary(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   um2::Vector<um2::Point<D, T>> const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
-  um2::Vector<um2::Triangle<D, T>> const tris = makeVectorOfRandomTriangles<T, lo, hi>(ntris); 
+  um2::Vector<um2::Triangle<D, T>> const tris =
+      makeVectorOfRandomTriangles<T, lo, hi>(ntris);
   // NOLINTNEXTLINE
   for (auto s : state) {
     int i = 0;
@@ -71,7 +72,8 @@ containsCCW(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   um2::Vector<um2::Point<D, T>> const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
-  um2::Vector<um2::Triangle<D, T>> const tris = makeVectorOfRandomTriangles<T, lo, hi>(ntris); 
+  um2::Vector<um2::Triangle<D, T>> const tris =
+      makeVectorOfRandomTriangles<T, lo, hi>(ntris);
   // NOLINTNEXTLINE
   for (auto s : state) {
     int i = 0;
@@ -91,7 +93,8 @@ containsNoShortCCW(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   um2::Vector<um2::Point<D, T>> const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
-  um2::Vector<um2::Triangle<D, T>> const tris = makeVectorOfRandomTriangles<T, lo, hi>(ntris); 
+  um2::Vector<um2::Triangle<D, T>> const tris =
+      makeVectorOfRandomTriangles<T, lo, hi>(ntris);
   // NOLINTNEXTLINE
   for (auto s : state) {
     int i = 0;
