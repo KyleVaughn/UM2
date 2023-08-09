@@ -3,7 +3,7 @@
 // Multi-threaded sqrt seems to be faster after about 30k elements
 // CUDA sqrt seems faster even before 30k elements
 #include "../helpers.hpp"
-#include <um2/math/math_functions.hpp>
+#include <um2/stdlib/math.hpp>
 
 constexpr Size npoints = 1 << 20;
 

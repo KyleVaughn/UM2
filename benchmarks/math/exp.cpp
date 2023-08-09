@@ -5,7 +5,7 @@
 // It doesn't appear that multiple threads help
 // After about 100k exps, the GPU is faster than the CPU
 #include "../helpers.hpp"
-#include <um2/math/math_functions.hpp>
+#include <um2/stdlib/math.hpp>
 
 constexpr Size npoints = 1 << 20;
 constexpr int lo = -3;

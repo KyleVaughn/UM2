@@ -2,11 +2,10 @@
 
 #include <um2/config.hpp>
 
-#include <um2/common/algorithm.hpp> // copy
-#include <um2/common/memory.hpp>    // addressof
-#include <um2/common/utility.hpp>   // move
-
-#include <um2/math/math_functions.hpp> // min
+#include <um2/stdlib/algorithm.hpp> // copy
+#include <um2/stdlib/memory.hpp>    // addressof
+#include <um2/stdlib/utility.hpp>   // move
+#include <um2/stdlib/math.hpp> // min
 
 #include <cstring> // memcpy, strcmp
 #include <string>  // std::string

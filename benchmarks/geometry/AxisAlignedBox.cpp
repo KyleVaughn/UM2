@@ -39,7 +39,7 @@ boundingBox(benchmark::State & state)
   // NOLINTNEXTLINE
   for (auto s : state) {
     box = um2::boundingBox(points);
-//    benchmark::DoNotOptimize(box);
+    benchmark::DoNotOptimize(box);
     benchmark::ClobberMemory();
   }
   if (!(um2::abs(box.xMin() - xmin) < static_cast<T>(1e-6))) {

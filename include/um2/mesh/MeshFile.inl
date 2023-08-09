@@ -131,12 +131,12 @@ constexpr void MeshFile<T, I>::getSubmesh(std::string const & elset_name,
   }
  // We now have the unique node ids. We need to remap the connectivity.
  // unique_node_ids[i] is the old node id, and i is the new node id.
- for (length_t i = 0; i < submesh.element_conn.size(); ++i) {
-     I const old_node_id = submesh.element_conn[i];
-     auto const it = std::lower_bound(unique_node_ids.begin(),
-                                      unique_node_ids.end(), old_node_id);
-     submesh.element_conn[i] = static_cast<I>(it - unique_node_ids.begin());
-  }
+ //for (length_t i = 0; i < submesh.element_conn.size(); ++i) {
+ //    I const old_node_id = submesh.element_conn[i];
+ //    auto const it = std::lower_bound(unique_node_ids.begin(),
+ //                                     unique_node_ids.end(), old_node_id);
+ //    submesh.element_conn[i] = static_cast<I>(it - unique_node_ids.begin());
+ // }
 //
 //      // Get the x, y, z coordinates for the nodes.
 //      submesh.nodes_x.resize(unique_node_ids.size());

@@ -2,8 +2,8 @@
 
 #include <um2/config.hpp>
 
-#include <um2/common/memory/addressof.hpp>
-#include <um2/common/utility/forward.hpp>
+#include <um2/stdlib/memory/addressof.hpp>
+#include <um2/stdlib/utility/forward.hpp>
 
 #include <new>
 

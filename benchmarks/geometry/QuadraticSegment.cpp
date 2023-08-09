@@ -1,33 +1,22 @@
 // FINDINGS: The new algorithm is 3x to 30x faster depending on the shape of the segment.
 //           The best case (common) is 30x faster. The worst case (rare) is 3x faster.
 
-#include <benchmark/benchmark.h>
-#include <um2/common/Vector.hpp>
+#include "../helpers.hpp"
 #include <um2/geometry/QuadraticSegment.hpp>
 
-#include <random>
+#include <iostream>
 #include <thrust/complex.h>
 
-// NOLINTBEGIN
-#define D       2
-#define T       float
-#define NPOINTS 1 << 16
-// NOLINTEND
+constexpr Size D = 2;
+constexpr Size npoints = 1 << 18;
+// BB of base seg is [0, 0] to [2, 1]
+// BB of seg4 is [0, 0] to [2.25, 2]
+constexpr int lo = -1;
+constexpr int hi = 3;
 
 // NOLINTBEGIN(readability-identifier-naming)
-auto
-randomPoint() -> um2::Point<D, T>
-{
-  // NOLINTNEXTLINE
-  static std::default_random_engine rng;
-  static std::uniform_real_distribution<T> dist(-2, 7);
-  um2::Point<D, T> p;
-  for (Size i = 0; i < D; ++i) {
-    p[i] = dist(rng);
-  }
-  return p;
-}
 
+template <typename T>
 HOSTDEV static constexpr auto
 makeBaseSeg() -> um2::QuadraticSegment<D, T>
 {
@@ -39,32 +28,24 @@ makeBaseSeg() -> um2::QuadraticSegment<D, T>
   return q;
 }
 
-// HOSTDEV static constexpr auto
-// makeSeg4() -> um2::QuadraticSegment<D, T>
-//{
-//   um2::QuadraticSegment<D, T> q = makeBaseSeg();
-//   q[2][0] = static_cast<T>(2);
-//   q[2][1] = static_cast<T>(1);
-//   return q;
-// }
-
-auto
-makePoints(Size n) -> um2::Vector<um2::Point<D, T>>
+template <typename T>
+HOSTDEV static constexpr auto
+makeSeg4() -> um2::QuadraticSegment<D, T>
 {
-  um2::Vector<um2::Point<D, T>> points(n);
-  for (auto & p : points) {
-    // cppcheck-suppress useStlAlgorithm
-    p = randomPoint();
-  }
-  return points;
+  um2::QuadraticSegment<D, T> q = makeBaseSeg<T>();
+  q[2][0] = static_cast<T>(2);
+  q[2][1] = static_cast<T>(1);
+  return q;
 }
 
+template <typename T>
 HOSTDEV constexpr auto
 isLeft(um2::QuadraticSegment<D, T> const & seg, um2::Point<D, T> const & p) -> bool
 {
   return seg.isLeft(p);
 }
 
+template <typename T>
 PURE HOSTDEV auto
 isLeftOld(um2::QuadraticSegment<D, T> const & Q, um2::Point<D, T> const & p) -> bool
 {
@@ -167,47 +148,98 @@ isLeftOld(um2::QuadraticSegment<D, T> const & Q, um2::Point<D, T> const & p) -> 
   return 0 <= Q.jacobian(r).cross(p - Q(r));
 }
 
+template <typename T>
 static void
-isLeftBench(benchmark::State & state)
+isLeftBenchWellBehaved(benchmark::State & state)
 {
-  auto const seg = makeBaseSeg();
+  Size const n = static_cast<Size>(state.range(0));
+  auto const seg = makeBaseSeg<T>();
   //  auto const seg = makeSeg4();
-  auto const points = makePoints(static_cast<Size>(state.range(0)));
-  // NOLINTNEXTLINE
+  auto const points = makeVectorOfRandomPoints<2, T, lo, hi>(n); 
+  int64_t i = 0;
   for (auto s : state) {
-    int i = 0;
-    for (auto const & p : points) {
-      // cppcheck-suppress useStlAlgorithm
-      i += static_cast<int>(seg.isLeft(p));
-    }
-    benchmark::DoNotOptimize(i);
+    i += std::count_if(points.begin(), points.end(), 
+    [&seg](auto const & p) {
+      return isLeft(seg, p);
+    });
+  }
+  if (i == 0) {
+    std::cout << i << std::endl;
   }
 }
 
+template <typename T>
 static void
-isLeftOldBench(benchmark::State & state)
+isLeftBenchPoorlyBehaved(benchmark::State & state)
 {
-  auto const seg = makeBaseSeg();
-  // auto const seg = makeSeg4();
-  auto const points = makePoints(static_cast<Size>(state.range(0)));
-  // NOLINTNEXTLINE
+  Size const n = static_cast<Size>(state.range(0));
+  auto const seg = makeSeg4<T>();
+  auto const points = makeVectorOfRandomPoints<2, T, lo, hi>(n); 
+  int64_t i = 0;
   for (auto s : state) {
-    int i = 0;
-    for (auto const & p : points) {
-      // cppcheck-suppress useStlAlgorithm
-      i += static_cast<int>(isLeftOld(seg, p));
-    }
-    benchmark::DoNotOptimize(i);
+    i += std::count_if(points.begin(), points.end(), 
+    [&seg](auto const & p) {
+      return isLeft(seg, p);
+    });
+  }
+  if (i == 0) {
+    std::cout << i << std::endl;
   }
 }
 
-// NOLINTEND(readability-identifier-naming)
-BENCHMARK(isLeftBench)
-    ->RangeMultiplier(2)
-    ->Range(128, NPOINTS)
+template <typename T>
+static void
+isLeftOldWellBehavedBench(benchmark::State & state)
+{
+  Size const n = static_cast<Size>(state.range(0));
+  auto const seg = makeBaseSeg<T>();
+  auto const points = makeVectorOfRandomPoints<2, T, lo, hi>(n); 
+  int64_t i = 0;
+  for (auto s : state) {
+    i += std::count_if(points.begin(), points.end(), 
+    [&seg](auto const & p) {
+      return isLeftOld(seg, p);
+    });
+  }
+  if (i == 0) {
+    std::cout << i << std::endl;
+  }
+}
+
+template <typename T>
+static void
+isLeftOldPoorlyBehavedBench(benchmark::State & state)
+{
+  Size const n = static_cast<Size>(state.range(0));
+  auto const seg = makeSeg4<T>();
+  auto const points = makeVectorOfRandomPoints<2, T, lo, hi>(n); 
+  int64_t i = 0;
+  for (auto s : state) {
+    i += std::count_if(points.begin(), points.end(), 
+    [&seg](auto const & p) {
+      return isLeftOld(seg, p);
+    });
+  }
+  if (i == 0) {
+    std::cout << i << std::endl;
+  }
+}
+
+BENCHMARK_TEMPLATE(isLeftBenchWellBehaved, double)
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK(isLeftOldBench)
-    ->RangeMultiplier(2)
-    ->Range(128, NPOINTS)
+BENCHMARK_TEMPLATE(isLeftBenchPoorlyBehaved, double)
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(isLeftOldWellBehavedBench, double)
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(isLeftOldPoorlyBehavedBench, double)
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
+    ->Unit(benchmark::kMicrosecond);
+
 BENCHMARK_MAIN();

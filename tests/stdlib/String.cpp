@@ -1,4 +1,4 @@
-#include <um2/common/String.hpp>
+#include <um2/stdlib/String.hpp>
 
 #include "../test_macros.hpp"
 
