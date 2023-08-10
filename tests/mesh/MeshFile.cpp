@@ -12,44 +12,14 @@ TEST_CASE(compareGeometry)
   um2::MeshFile<T, I> tri;
   makeReferenceTriMeshFile(tri);
   ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
-  // Compare x,y,z
-  // Trivial inequality x
-  T node_tmp = tri.nodes_x[0];
-  tri.nodes_x[0] = node_tmp + 1;
+  tri.vertices.push_back(um2::Point3<T>{0, 0, 0});
   ASSERT(um2::compareGeometry(tri, tri_ref) == 1);
-  tri.nodes_x[0] = node_tmp;
-  // Trivial inequality y
-  node_tmp = tri.nodes_y[0];
-  tri.nodes_y[0] = node_tmp + 1;
-  ASSERT(um2::compareGeometry(tri, tri_ref) == 2);
-  tri.nodes_y[0] = node_tmp;
-  // Trivial inequality z
-  node_tmp = tri.nodes_z[0];
-  tri.nodes_z[0] = node_tmp + 1;
-  ASSERT(um2::compareGeometry(tri, tri_ref) == 3);
-  tri.nodes_z[0] = node_tmp;
-  // Non-trivial equality/inequality x
+  tri.vertices.pop_back();
   T const eps = um2::epsilonDistance<T>();
-  node_tmp = tri.nodes_x[0];
-  tri.nodes_x[0] = node_tmp + 2 * eps;
-  ASSERT(um2::compareGeometry(tri, tri_ref) == 1);
-  tri.nodes_x[0] = node_tmp + eps / 2;
+  tri.vertices[0][0] += (eps / 2); 
   ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
-  tri.nodes_x[0] = node_tmp;
-  // Non-trivial equality/inequality y
-  node_tmp = tri.nodes_y[0];
-  tri.nodes_y[0] = node_tmp + 2 * eps;
+  tri.vertices[0][0] += (eps * 2);
   ASSERT(um2::compareGeometry(tri, tri_ref) == 2);
-  tri.nodes_y[0] = node_tmp + eps / 2;
-  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
-  tri.nodes_y[0] = node_tmp;
-  // Non-trivial equality/inequality z
-  node_tmp = tri.nodes_z[0];
-  tri.nodes_z[0] = node_tmp + 2 * eps;
-  ASSERT(um2::compareGeometry(tri, tri_ref) == 3);
-  tri.nodes_z[0] = node_tmp + eps / 2;
-  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
-  tri.nodes_z[0] = node_tmp;
 }
 
 template <std::floating_point T, std::signed_integral I>
@@ -63,8 +33,11 @@ TEST_CASE(compareTopology)
   tri.type = um2::MeshType::Quad;
   ASSERT(um2::compareTopology(tri, tri_ref) == 1);
   tri.type = um2::MeshType::Tri;
-  tri.element_conn[0] += 1;
+  tri.element_conn.push_back(0);
   ASSERT(um2::compareTopology(tri, tri_ref) == 2);
+  tri.element_conn.pop_back();
+  tri.element_conn[0] += 1;
+  ASSERT(um2::compareTopology(tri, tri_ref) == 3);
 }
 
 template <std::floating_point T, std::signed_integral I>
@@ -111,19 +84,17 @@ TEST_CASE(getSubmesh)
   ASSERT(tri_h2o.filepath == "");
   ASSERT(tri_h2o.name == "Material_H2O");
   ASSERT(tri_h2o.format == tri.format);
-  ASSERT(tri_h2o.nodes_x.size() == 3);
-  ASSERT(tri_h2o.nodes_y.size() == 3);
-  ASSERT(tri_h2o.nodes_z.size() == 3);
+  ASSERT(tri_h2o.vertices.size() == 3);
   // (0,0), (1,1), (0,1)
-  ASSERT_NEAR(tri_h2o.nodes_x[0], static_cast<T>(0), static_cast<T>(1e-6));
-  ASSERT_NEAR(tri_h2o.nodes_y[0], static_cast<T>(0), static_cast<T>(1e-6));
-  ASSERT_NEAR(tri_h2o.nodes_z[0], static_cast<T>(0), static_cast<T>(1e-6));
-  ASSERT_NEAR(tri_h2o.nodes_x[1], static_cast<T>(1), static_cast<T>(1e-6));
-  ASSERT_NEAR(tri_h2o.nodes_y[1], static_cast<T>(1), static_cast<T>(1e-6));
-  ASSERT_NEAR(tri_h2o.nodes_z[1], static_cast<T>(0), static_cast<T>(1e-6));
-  ASSERT_NEAR(tri_h2o.nodes_x[2], static_cast<T>(0), static_cast<T>(1e-6));
-  ASSERT_NEAR(tri_h2o.nodes_y[2], static_cast<T>(1), static_cast<T>(1e-6));
-  ASSERT_NEAR(tri_h2o.nodes_z[2], static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(tri_h2o.vertices[0][0], static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(tri_h2o.vertices[0][1], static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(tri_h2o.vertices[0][2], static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(tri_h2o.vertices[1][0], static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(tri_h2o.vertices[1][1], static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(tri_h2o.vertices[1][2], static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(tri_h2o.vertices[2][0], static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(tri_h2o.vertices[2][1], static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(tri_h2o.vertices[2][2], static_cast<T>(0), static_cast<T>(1e-6));
   ASSERT(tri_h2o.element_conn[0] == 1);
   ASSERT(tri_h2o.element_conn[1] == 2);
   ASSERT(tri_h2o.element_conn[2] == 0);
@@ -138,51 +109,51 @@ TEST_CASE(getSubmesh)
   ASSERT(tri_h2o.elset_ids[0] == 0);
   ASSERT(tri_h2o.elset_ids[1] == 0);
 }
-
-// template <std::floating_point T, std::signed_integral I>
-// TEST(get_mesh_type)
-//     um2::MeshFile<T, I> tri_ref;
-//     make_tri_reference_mesh_file(tri_ref);
-//     um2::MeshType mesh_type = um2::MeshType::ERROR;
-//     mesh_type = tri_ref.get_mesh_type();
-//     ASSERT(mesh_type == um2::MeshType::TRI, "get_mesh_type");
 //
-//     um2::MeshFile<T, I> quad_ref;
-//     make_quad_reference_mesh_file(quad_ref);
-//     mesh_type = quad_ref.get_mesh_type();
-//     ASSERT(mesh_type == um2::MeshType::QUAD, "get_mesh_type");
+//// template <std::floating_point T, std::signed_integral I>
+//// TEST(get_mesh_type)
+////     um2::MeshFile<T, I> tri_ref;
+////     make_tri_reference_mesh_file(tri_ref);
+////     um2::MeshType mesh_type = um2::MeshType::ERROR;
+////     mesh_type = tri_ref.get_mesh_type();
+////     ASSERT(mesh_type == um2::MeshType::TRI, "get_mesh_type");
+////
+////     um2::MeshFile<T, I> quad_ref;
+////     make_quad_reference_mesh_file(quad_ref);
+////     mesh_type = quad_ref.get_mesh_type();
+////     ASSERT(mesh_type == um2::MeshType::QUAD, "get_mesh_type");
+////
+////     um2::MeshFile<T, I> tri_ref;
+////     make_tri_reference_mesh_file(tri_ref);
+////     mesh_type = tri_ref.get_mesh_type();
+////     ASSERT(mesh_type == um2::MeshType::TRI_QUAD, "get_mesh_type");
+////
+////     um2::MeshFile<T, I> tri6_ref;
+////     make_tri6_reference_mesh_file(tri6_ref);
+////     mesh_type = tri6_ref.get_mesh_type();
+////     ASSERT(mesh_type == um2::MeshType::QUADRATIC_TRI, "get_mesh_type");
+////
+////     um2::MeshFile<T, I> quad8_ref;
+////     make_quad8_reference_mesh_file(quad8_ref);
+////     mesh_type = quad8_ref.get_mesh_type();
+////     ASSERT(mesh_type == um2::MeshType::QUADRATIC_QUAD, "get_mesh_type");
+////
+////     um2::MeshFile<T, I> tri6_quad8_ref;
+////     make_tri6_quad8_reference_mesh_file(tri6_quad8_ref);
+////     mesh_type = tri6_quad8_ref.get_mesh_type();
+////     ASSERT(mesh_type == um2::MeshType::QUADRATIC_TRI_QUAD, "get_mesh_type");
+//// END_TEST
 //
-//     um2::MeshFile<T, I> tri_ref;
-//     make_tri_reference_mesh_file(tri_ref);
-//     mesh_type = tri_ref.get_mesh_type();
-//     ASSERT(mesh_type == um2::MeshType::TRI_QUAD, "get_mesh_type");
-//
-//     um2::MeshFile<T, I> tri6_ref;
-//     make_tri6_reference_mesh_file(tri6_ref);
-//     mesh_type = tri6_ref.get_mesh_type();
-//     ASSERT(mesh_type == um2::MeshType::QUADRATIC_TRI, "get_mesh_type");
-//
-//     um2::MeshFile<T, I> quad8_ref;
-//     make_quad8_reference_mesh_file(quad8_ref);
-//     mesh_type = quad8_ref.get_mesh_type();
-//     ASSERT(mesh_type == um2::MeshType::QUADRATIC_QUAD, "get_mesh_type");
-//
-//     um2::MeshFile<T, I> tri6_quad8_ref;
-//     make_tri6_quad8_reference_mesh_file(tri6_quad8_ref);
-//     mesh_type = tri6_quad8_ref.get_mesh_type();
-//     ASSERT(mesh_type == um2::MeshType::QUADRATIC_TRI_QUAD, "get_mesh_type");
-// END_TEST
-
-// template <std::floating_point T, std::signed_integral I>
-// TEST(get_material_ids)
-//     um2::MeshFile<T, I> tri_ref;
-//     make_tri_reference_mesh_file(tri_ref);
-//     um2::Vector<MaterialID> mat_ids_ref = {1, 0};
-//     um2::Vector<MaterialID> mat_ids;
-//     tri_ref.get_material_ids(mat_ids);
-//     ASSERT(mat_ids == mat_ids_ref, "get_material_ids");
-// END_TEST
-//
+//// template <std::floating_point T, std::signed_integral I>
+//// TEST(get_material_ids)
+////     um2::MeshFile<T, I> tri_ref;
+////     make_tri_reference_mesh_file(tri_ref);
+////     um2::Vector<MaterialID> mat_ids_ref = {1, 0};
+////     um2::Vector<MaterialID> mat_ids;
+////     tri_ref.get_material_ids(mat_ids);
+////     ASSERT(mat_ids == mat_ids_ref, "get_material_ids");
+//// END_TEST
+////
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(MeshFile)
 {

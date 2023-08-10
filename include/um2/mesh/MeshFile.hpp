@@ -39,12 +39,9 @@ struct MeshFile {
   std::string name;     // name of the mesh
 
   MeshFileFormat format = MeshFileFormat::None;
-
-  std::vector<T> nodes_x;
-  std::vector<T> nodes_y;
-  std::vector<T> nodes_z;
-
   MeshType type = MeshType::None;
+
+  std::vector<Point3<T>> vertices;
   std::vector<I> element_conn;
 
   // Instead of storing a vector of vector, we store the elset IDs in a single contiguous
@@ -59,6 +56,9 @@ struct MeshFile {
   // -----------------------------------------------------------------------------
   // Methods
   // -----------------------------------------------------------------------------
+
+  PURE [[nodiscard]] constexpr auto
+  numCells() const -> size_t;
 
   constexpr void
   sortElsets();
@@ -81,11 +81,11 @@ struct MeshFile {
 
 template <std::floating_point T, std::signed_integral I>
 constexpr auto
-compareGeometry(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int;
+compareGeometry(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int;
 
 template <std::floating_point T, std::signed_integral I>
 constexpr auto
-compareTopology(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int;
+compareTopology(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int;
 
 } // namespace um2
 

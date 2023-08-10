@@ -2,42 +2,41 @@ namespace um2
 {
 
 template <std::floating_point T, std::signed_integral I>
-constexpr auto
-compareGeometry(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
+PURE constexpr auto
+MeshFile<T, I>::numCells() const -> size_t
 {
-  auto compare_floats = [](T const x, T const y) -> bool {
-    return um2::abs(x - y) < epsilonDistance<T>();
-  };
+  assert(type != MeshType::None);
+  return element_conn.size() / static_cast<size_t>(verticesPerCell(type));
+}
 
-  if (a.nodes_x.size() != b.nodes_x.size() ||
-      !std::equal(a.nodes_x.cbegin(), a.nodes_x.cend(), b.nodes_x.cbegin(),
-                  compare_floats)) {
+template <std::floating_point T, std::signed_integral I>
+constexpr auto
+compareGeometry(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int
+{
+  if (lhs.vertices.size() != rhs.vertices.size()) {
     return 1;
   }
-  if (a.nodes_y.size() != b.nodes_y.size() ||
-      !std::equal(a.nodes_y.cbegin(), a.nodes_y.cend(), b.nodes_y.cbegin(),
-                  compare_floats)) {
+  auto const compare = [](Point3<T> const & a, Point3<T> const & b) -> bool {
+    return um2::isApprox(a, b);
+  };
+  if (!std::equal(lhs.vertices.cbegin(), lhs.vertices.cend(), rhs.vertices.cbegin(), compare)) { 
     return 2;
-  }
-  if (a.nodes_z.size() != b.nodes_z.size() ||
-      !std::equal(a.nodes_z.cbegin(), a.nodes_z.cend(), b.nodes_z.cbegin(),
-                  compare_floats)) {
-    return 3;
   }
   return 0;
 }
 
 template <std::floating_point T, std::signed_integral I>
 constexpr auto
-compareTopology(MeshFile<T, I> const & a, MeshFile<T, I> const & b) -> int
+compareTopology(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int
 {
-  if (a.type != b.type) {
+  if (lhs.type != rhs.type) {
     return 1;
   }
-  if (a.element_conn.size() != b.element_conn.size() ||
-      !std::equal(a.element_conn.cbegin(), a.element_conn.cend(),
-                  b.element_conn.cbegin())) {
+  if (lhs.element_conn.size() != rhs.element_conn.size()) {
     return 2;
+  }
+  if (!std::equal(lhs.element_conn.cbegin(), lhs.element_conn.cend(), rhs.element_conn.cbegin())) {
+    return 3;
   }
   return 0;
 }
@@ -105,43 +104,39 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
   }
   std::sort(element_ids.begin(), element_ids.end());
 
-  // Get the element connectivity and remap the node ids.
+  // Get the element connectivity and remap the vertex ids.
   auto const verts_per_cell = static_cast<size_t>(verticesPerCell(type));
   submesh.element_conn.resize(submesh_num_elements * verts_per_cell);
-  std::vector<I> all_node_ids(submesh_num_elements * verts_per_cell);
+  std::vector<I> all_vertex_ids(submesh_num_elements * verts_per_cell);
   for (size_t i = 0; i < submesh_num_elements; ++i) {
     auto const element_id = static_cast<size_t>(element_ids[i]);
     auto const element_start = verts_per_cell * element_id;
     for (size_t j = 0; j < verts_per_cell; ++j) {
-      I const node_id = element_conn[element_start + j];
-      submesh.element_conn[i * verts_per_cell + j] = node_id;
-      all_node_ids[i * verts_per_cell + j] = node_id;
+      I const vertex_id = element_conn[element_start + j];
+      submesh.element_conn[i * verts_per_cell + j] = vertex_id;
+      all_vertex_ids[i * verts_per_cell + j] = vertex_id;
     }
   }
-  // Get the unique node ids.
-  std::sort(all_node_ids.begin(), all_node_ids.end());
-  auto const last = std::unique(all_node_ids.begin(), all_node_ids.end());
-  std::vector<I> unique_node_ids(all_node_ids.begin(), last);
-  // We now have the unique node ids. We need to remap the connectivity.
-  // unique_node_ids[i] is the old node id, and i is the new node id.
+  // Get the unique vertex ids.
+  std::sort(all_vertex_ids.begin(), all_vertex_ids.end());
+  auto const last = std::unique(all_vertex_ids.begin(), all_vertex_ids.end());
+  std::vector<I> unique_vertex_ids(all_vertex_ids.begin(), last);
+  // We now have the unique vertex ids. We need to remap the connectivity.
+  // unique_vertex_ids[i] is the old vertex id, and i is the new vertex id.
   for (size_t i = 0; i < submesh.element_conn.size(); ++i) {
-    I const old_node_id = submesh.element_conn[i];
+    I const old_vertex_id = submesh.element_conn[i];
     auto const it =
-        std::lower_bound(unique_node_ids.begin(), unique_node_ids.end(), old_node_id);
-    auto const new_node_id = static_cast<I>(it - unique_node_ids.begin());
-    assert(*it == old_node_id);
-    submesh.element_conn[i] = new_node_id;
+        std::lower_bound(unique_vertex_ids.begin(), unique_vertex_ids.end(), old_vertex_id);
+    auto const new_vertex_id = static_cast<I>(it - unique_vertex_ids.begin());
+    assert(*it == old_vertex_id);
+    submesh.element_conn[i] = new_vertex_id;
   }
 
-  // Get the x, y, z coordinates for the nodes.
-  submesh.nodes_x.resize(unique_node_ids.size());
-  submesh.nodes_y.resize(unique_node_ids.size());
-  submesh.nodes_z.resize(unique_node_ids.size());
-  for (size_t i = 0; i < unique_node_ids.size(); ++i) {
-    auto const node_id = static_cast<size_t>(unique_node_ids[i]);
-    submesh.nodes_x[i] = nodes_x[node_id];
-    submesh.nodes_y[i] = nodes_y[node_id];
-    submesh.nodes_z[i] = nodes_z[node_id];
+  // Get the x, y, z coordinates for the vertices.
+  submesh.vertices.resize(unique_vertex_ids.size());
+  for (size_t i = 0; i < unique_vertex_ids.size(); ++i) {
+    auto const vertex_id = static_cast<size_t>(unique_vertex_ids[i]);
+    submesh.vertices[i] = vertices[vertex_id];
   }
 
   size_t const num_elsets = elset_names.size();
@@ -176,169 +171,169 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
     }
   }
 }
+////
+////// template <std::floating_point T, std::signed_integral I>
+////// constexpr MeshType MeshFile<T, I>::get_mesh_type() const
+//////{
+//////     MeshType mesh_type = MeshType::ERROR;
+//////     int identifier = 0;
+//////     if (this->format == MeshFileFormat::ABAQUS) {
+//////         auto is_tri = [](int8_t const element_type) {
+//////             return element_type == static_cast<int8_t>(AbaqusCellType::CPS3);
+//////         };
+//////         auto is_quad = [](int8_t const element_type) {
+//////             return element_type == static_cast<int8_t>(AbaqusCellType::CPS4);
+//////         };
+//////         auto is_tri6 = [](int8_t const element_type) {
+//////             return element_type == static_cast<int8_t>(AbaqusCellType::CPS6);
+//////         };
+//////         auto is_quad8 = [](int8_t const element_type) {
+//////             return element_type == static_cast<int8_t>(AbaqusCellType::CPS8);
+//////         };
+//////         if (std::any_of(this->element_types.cbegin(),
+//////                         this->element_types.cend(),
+//////                         is_tri)) {
+//////             identifier += 3;
+//////         }
+//////         if (std::any_of(this->element_types.cbegin(),
+//////                         this->element_types.cend(),
+//////                         is_quad)) {
+//////             identifier += 4;
+//////         }
+//////         if (std::any_of(this->element_types.cbegin(),
+//////                         this->element_types.cend(),
+//////                         is_tri6)) {
+//////             identifier += 6;
+//////         }
+//////         if (std::any_of(this->element_types.cbegin(),
+//////                         this->element_types.cend(),
+//////                         is_quad8)) {
+//////             identifier += 8;
+//////         }
+//////     } else if (this->format == MeshFileFormat::XDMF) {
+//////         auto is_tri = [](int8_t const element_type) {
+//////             return element_type == static_cast<int8_t>(XDMFCellType::TRIANGLE);
+//////         };
+//////         auto is_quad = [](int8_t const element_type) {
+//////             return element_type == static_cast<int8_t>(XDMFCellType::QUAD);
+//////         };
+//////         auto is_tri6 = [](int8_t const element_type) {
+//////             return element_type ==
+//////             static_cast<int8_t>(XDMFCellType::QUADRATIC_TRIANGLE);
+//////         };
+//////         auto is_quad8 = [](int8_t const element_type) {
+//////             return element_type == static_cast<int8_t>(XDMFCellType::QUADRATIC_QUAD);
+//////         };
+//////         if (std::any_of(this->element_types.cbegin(),
+//////                         this->element_types.cend(),
+//////                         is_tri)) {
+//////             identifier += 3;
+//////         }
+//////         if (std::any_of(this->element_types.cbegin(),
+//////                         this->element_types.cend(),
+//////                         is_quad)) {
+//////             identifier += 4;
+//////         }
+//////         if (std::any_of(this->element_types.cbegin(),
+//////                         this->element_types.cend(),
+//////                         is_tri6)) {
+//////             identifier += 6;
+//////         }
+//////         if (std::any_of(this->element_types.cbegin(),
+//////                         this->element_types.cend(),
+//////                         is_quad8)) {
+//////             identifier += 8;
+//////         }
+//////     } else {
+//////         Log::error("Unknown mesh format");
+//////     }
+//////     switch (identifier) {
+//////         case 3:
+//////             mesh_type = MeshType::TRI;
+//////             break;
+//////         case 4:
+//////             mesh_type = MeshType::QUAD;
+//////             break;
+//////         case 7:
+//////             mesh_type = MeshType::TRI_QUAD;
+//////             break;
+//////         case 6:
+//////             mesh_type = MeshType::QUADRATIC_TRI;
+//////             break;
+//////         case 8:
+//////             mesh_type = MeshType::QUADRATIC_QUAD;
+//////             break;
+//////         case 14:
+//////             mesh_type = MeshType::QUADRATIC_TRI_QUAD;
+//////             break;
+//////         default:
+//////             Log::error("Unknown mesh type");
+//////     }
+//////
+//////     return mesh_type;
+////// }
+//////
+//// template <std::floating_point T, std::signed_integral I>
+//// constexpr void
+//// MeshFile<T, I>::getMaterialNames(std::vector<std::string> & material_names) const
+////{
+////   std::string const material = "Material";
+////   for (auto const & elset_name : elset_names) {
+////     size_t const name_len = elset_name.size();
+////     if (name_len >= 10 && elset_name.starts_with(material)) {
+////       material_names.push_back(elset_name);
+////     }
+////   }
+////   // Should already be sorted
+////   assert(std::is_sorted(material_names.begin(), material_names.end()));
+//// }
+////
+////// template <std::floating_point T, std::signed_integral I>
+////// constexpr void MeshFile<T, I>::get_material_ids(std::vector<MaterialID> &
+/////material_ids, / std::vector<std::string> const & / material_names) const
+//////{
+//////     length_t const nelems = this->element_types.size();
+//////     material_ids.resize(nelems);
+//////     for (length_t i = 0; i < nelems; ++i) {
+//////         material_ids[i] = static_cast<MaterialID>(-1);
+//////     }
+//////
+//////     length_t const nmats = material_names.size();
+//////     for (length_t i = 0; i < nmats; ++i) {
+//////         std::string const & mat_name = material_names[i];
+//////         for (length_t j = 0; j < this->elset_names.size(); ++j) {
+//////             if (this->elset_names[j] == mat_name) {
+//////                 length_t const start = static_cast<length_t>(this->elset_offsets[j
+/////]); /                 length_t const end   =
+/////static_cast<length_t>(this->elset_offsets[j + /                 1]); for (length_t k =
+/////start; k < end; ++k) { /                     length_t const elem =
+/////static_cast<length_t>(this->elset_ids[k]); /                     if (material_ids[elem]
+/////!= -1) { /                         Log::error("Element " + std::to_string(elem) + " has
+/////multiple /                         materials"); /                     } /
+/////material_ids[elem] = static_cast<MaterialID>(i); /                 } // for k / break;
+//////             } // if elset_names[j] == mat_name
+//////         } // for j
+//////     } // for i
+//////     if (std::any_of(material_ids.cbegin(), material_ids.cend(),
+//////                     [](MaterialID const mat_id) { return mat_id == -1; })) {
+//////         Log::warn("Some elements have no material");
+//////     }
+////// }
+//////
+////// template <std::floating_point T, std::signed_integral I>
+////// constexpr void MeshFile<T, I>::get_material_ids(std::vector<MaterialID> &
+/////material_ids) / const
+//////{
+//////     std::vector<std::string> material_names;
+//////     this->get_material_names(material_names);
+//////     length_t const nmats = material_names.size();
+//////     if (nmats == 0) {
+//////         Log::error("No materials found in mesh file");
+//////     }
+//////     if (nmats > std::numeric_limits<MaterialID>::max()) {
+//////         Log::error("Number of materials exceeds MaterialID capacity");
+//////     }
+//////     this->get_material_ids(material_ids, material_names);
+////// }
 //
-//// template <std::floating_point T, std::signed_integral I>
-//// constexpr MeshType MeshFile<T, I>::get_mesh_type() const
-////{
-////     MeshType mesh_type = MeshType::ERROR;
-////     int identifier = 0;
-////     if (this->format == MeshFileFormat::ABAQUS) {
-////         auto is_tri = [](int8_t const element_type) {
-////             return element_type == static_cast<int8_t>(AbaqusCellType::CPS3);
-////         };
-////         auto is_quad = [](int8_t const element_type) {
-////             return element_type == static_cast<int8_t>(AbaqusCellType::CPS4);
-////         };
-////         auto is_tri6 = [](int8_t const element_type) {
-////             return element_type == static_cast<int8_t>(AbaqusCellType::CPS6);
-////         };
-////         auto is_quad8 = [](int8_t const element_type) {
-////             return element_type == static_cast<int8_t>(AbaqusCellType::CPS8);
-////         };
-////         if (std::any_of(this->element_types.cbegin(),
-////                         this->element_types.cend(),
-////                         is_tri)) {
-////             identifier += 3;
-////         }
-////         if (std::any_of(this->element_types.cbegin(),
-////                         this->element_types.cend(),
-////                         is_quad)) {
-////             identifier += 4;
-////         }
-////         if (std::any_of(this->element_types.cbegin(),
-////                         this->element_types.cend(),
-////                         is_tri6)) {
-////             identifier += 6;
-////         }
-////         if (std::any_of(this->element_types.cbegin(),
-////                         this->element_types.cend(),
-////                         is_quad8)) {
-////             identifier += 8;
-////         }
-////     } else if (this->format == MeshFileFormat::XDMF) {
-////         auto is_tri = [](int8_t const element_type) {
-////             return element_type == static_cast<int8_t>(XDMFCellType::TRIANGLE);
-////         };
-////         auto is_quad = [](int8_t const element_type) {
-////             return element_type == static_cast<int8_t>(XDMFCellType::QUAD);
-////         };
-////         auto is_tri6 = [](int8_t const element_type) {
-////             return element_type ==
-////             static_cast<int8_t>(XDMFCellType::QUADRATIC_TRIANGLE);
-////         };
-////         auto is_quad8 = [](int8_t const element_type) {
-////             return element_type == static_cast<int8_t>(XDMFCellType::QUADRATIC_QUAD);
-////         };
-////         if (std::any_of(this->element_types.cbegin(),
-////                         this->element_types.cend(),
-////                         is_tri)) {
-////             identifier += 3;
-////         }
-////         if (std::any_of(this->element_types.cbegin(),
-////                         this->element_types.cend(),
-////                         is_quad)) {
-////             identifier += 4;
-////         }
-////         if (std::any_of(this->element_types.cbegin(),
-////                         this->element_types.cend(),
-////                         is_tri6)) {
-////             identifier += 6;
-////         }
-////         if (std::any_of(this->element_types.cbegin(),
-////                         this->element_types.cend(),
-////                         is_quad8)) {
-////             identifier += 8;
-////         }
-////     } else {
-////         Log::error("Unknown mesh format");
-////     }
-////     switch (identifier) {
-////         case 3:
-////             mesh_type = MeshType::TRI;
-////             break;
-////         case 4:
-////             mesh_type = MeshType::QUAD;
-////             break;
-////         case 7:
-////             mesh_type = MeshType::TRI_QUAD;
-////             break;
-////         case 6:
-////             mesh_type = MeshType::QUADRATIC_TRI;
-////             break;
-////         case 8:
-////             mesh_type = MeshType::QUADRATIC_QUAD;
-////             break;
-////         case 14:
-////             mesh_type = MeshType::QUADRATIC_TRI_QUAD;
-////             break;
-////         default:
-////             Log::error("Unknown mesh type");
-////     }
-////
-////     return mesh_type;
-//// }
-////
-// template <std::floating_point T, std::signed_integral I>
-// constexpr void
-// MeshFile<T, I>::getMaterialNames(std::vector<std::string> & material_names) const
-//{
-//   std::string const material = "Material";
-//   for (auto const & elset_name : elset_names) {
-//     size_t const name_len = elset_name.size();
-//     if (name_len >= 10 && elset_name.starts_with(material)) {
-//       material_names.push_back(elset_name);
-//     }
-//   }
-//   // Should already be sorted
-//   assert(std::is_sorted(material_names.begin(), material_names.end()));
-// }
-//
-//// template <std::floating_point T, std::signed_integral I>
-//// constexpr void MeshFile<T, I>::get_material_ids(std::vector<MaterialID> &
-///material_ids, / std::vector<std::string> const & / material_names) const
-////{
-////     length_t const nelems = this->element_types.size();
-////     material_ids.resize(nelems);
-////     for (length_t i = 0; i < nelems; ++i) {
-////         material_ids[i] = static_cast<MaterialID>(-1);
-////     }
-////
-////     length_t const nmats = material_names.size();
-////     for (length_t i = 0; i < nmats; ++i) {
-////         std::string const & mat_name = material_names[i];
-////         for (length_t j = 0; j < this->elset_names.size(); ++j) {
-////             if (this->elset_names[j] == mat_name) {
-////                 length_t const start = static_cast<length_t>(this->elset_offsets[j
-///]); /                 length_t const end   =
-///static_cast<length_t>(this->elset_offsets[j + /                 1]); for (length_t k =
-///start; k < end; ++k) { /                     length_t const elem =
-///static_cast<length_t>(this->elset_ids[k]); /                     if (material_ids[elem]
-///!= -1) { /                         Log::error("Element " + std::to_string(elem) + " has
-///multiple /                         materials"); /                     } /
-///material_ids[elem] = static_cast<MaterialID>(i); /                 } // for k / break;
-////             } // if elset_names[j] == mat_name
-////         } // for j
-////     } // for i
-////     if (std::any_of(material_ids.cbegin(), material_ids.cend(),
-////                     [](MaterialID const mat_id) { return mat_id == -1; })) {
-////         Log::warn("Some elements have no material");
-////     }
-//// }
-////
-//// template <std::floating_point T, std::signed_integral I>
-//// constexpr void MeshFile<T, I>::get_material_ids(std::vector<MaterialID> &
-///material_ids) / const
-////{
-////     std::vector<std::string> material_names;
-////     this->get_material_names(material_names);
-////     length_t const nmats = material_names.size();
-////     if (nmats == 0) {
-////         Log::error("No materials found in mesh file");
-////     }
-////     if (nmats > std::numeric_limits<MaterialID>::max()) {
-////         Log::error("Number of materials exceeds MaterialID capacity");
-////     }
-////     this->get_material_ids(material_ids, material_names);
-//// }
-
 } // namespace um2

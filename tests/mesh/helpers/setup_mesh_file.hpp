@@ -6,9 +6,12 @@ makeReferenceTriMeshFile(um2::MeshFile<T, I> & mesh)
   mesh.name = "tri";
   mesh.format = um2::MeshFileFormat::Abaqus;
   mesh.type = um2::MeshType::Tri;
-  mesh.nodes_x = {0, 1, 1, 0};
-  mesh.nodes_y = {0, 0, 1, 1};
-  mesh.nodes_z = {0, 0, 0, 0};
+  mesh.vertices = {
+    {0, 0, 0},
+    {1, 0, 0},
+    {1, 1, 0},
+    {0, 1, 0},
+  };
   // mesh.element_types = {5, 5};
   // mesh.element_offsets = {0, 3, 6};
   mesh.element_conn = {0, 1, 2, 2, 3, 0};
@@ -25,9 +28,14 @@ makeReferenceQuadMeshFile(um2::MeshFile<T, I> & mesh)
   mesh.name = "quad";
   mesh.format = um2::MeshFileFormat::Abaqus;
   mesh.type = um2::MeshType::Quad;
-  mesh.nodes_x = {0, 1, 1, 0, 2, 2};
-  mesh.nodes_y = {0, 0, 1, 1, 0, 1};
-  mesh.nodes_z = {0, 0, 0, 0, 0, 0};
+  mesh.vertices = {
+    {0, 0, 0},
+    {1, 0, 0},
+    {1, 1, 0},
+    {0, 1, 0},
+    {2, 0, 0},
+    {2, 1, 0},
+  };
   // mesh.element_types = {9, 9};
   // mesh.element_offsets = {0, 4, 8};
   mesh.element_conn = {0, 1, 2, 3, 1, 4, 5, 2};
@@ -61,12 +69,20 @@ makeReferenceTri6MeshFile(um2::MeshFile<T, I> & mesh)
   mesh.name = "tri6";
   mesh.format = um2::MeshFileFormat::Abaqus;
   mesh.type = um2::MeshType::QuadraticTri;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-  mesh.nodes_x = {0.0, 1.0, 0.0, 0.5, 0.7, 0.0, 1.0, 1.0, 0.5};
-  mesh.nodes_y = {0.0, 0.0, 1.0, 0.0, 0.5, 0.5, 1.0, 0.5, 1.0};
-  mesh.nodes_z = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-#pragma GCC diagnostic pop
+  mesh.vertices = {
+    {0, 0, 0},
+    {1, 0, 0},
+    {0, 1, 0},
+    {static_cast<T>(0.5), static_cast<T>(0.0), static_cast<T>(0)},
+    {static_cast<T>(0.7), static_cast<T>(0.5), static_cast<T>(0)},
+    {static_cast<T>(0.0), static_cast<T>(0.5), static_cast<T>(0)},
+    {static_cast<T>(1.0), static_cast<T>(1.0), static_cast<T>(0)},
+    {static_cast<T>(1.0), static_cast<T>(0.5), static_cast<T>(0)},
+    {static_cast<T>(0.5), static_cast<T>(1.0), static_cast<T>(0)},
+  };
+//  mesh.nodes_x = {0.0, 1.0, 0.0, 0.5, 0.7, 0.0, 1.0, 1.0, 0.5};
+//  mesh.nodes_y = {0.0, 0.0, 1.0, 0.0, 0.5, 0.5, 1.0, 0.5, 1.0};
+//  mesh.nodes_z = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   //  mesh.element_types = {22, 22};
   //  mesh.element_offsets = {0, 6, 12};
   mesh.element_conn = {0, 1, 2, 3, 4, 5, 1, 6, 2, 7, 8, 4};
@@ -83,12 +99,24 @@ makeReferenceQuad8MeshFile(um2::MeshFile<T, I> & mesh)
   mesh.name = "quad8";
   mesh.format = um2::MeshFileFormat::Abaqus;
   mesh.type = um2::MeshType::QuadraticQuad;
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-  mesh.nodes_x = {0, 1, 1, 0, 2, 2, 0.5, 1.1, 0.5, 0.0, 1.5, 2.0, 1.5};
-  mesh.nodes_y = {0, 0, 1, 1, 0, 1, 0.0, 0.6, 1.0, 0.5, 0.0, 0.5, 1.0};
-  mesh.nodes_z = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-#pragma GCC diagnostic pop
+  mesh.vertices = {
+    {0, 0, 0},
+    {1, 0, 0},
+    {1, 1, 0},
+    {0, 1, 0},
+    {2, 0, 0},
+    {2, 1, 0},
+    {static_cast<T>(0.5), static_cast<T>(0.0), static_cast<T>(0)},
+    {static_cast<T>(1.1), static_cast<T>(0.6), static_cast<T>(0)},
+    {static_cast<T>(0.5), static_cast<T>(1.0), static_cast<T>(0)},
+    {static_cast<T>(0.0), static_cast<T>(0.5), static_cast<T>(0)},
+    {static_cast<T>(1.5), static_cast<T>(0.0), static_cast<T>(0)},
+    {static_cast<T>(2.0), static_cast<T>(0.5), static_cast<T>(0)},
+    {static_cast<T>(1.5), static_cast<T>(1.0), static_cast<T>(0)},
+  };
+  //mesh.nodes_x = {0, 1, 1, 0, 2, 2, 0.5, 1.1, 0.5, 0.0, 1.5, 2.0, 1.5};
+  //mesh.nodes_y = {0, 0, 1, 1, 0, 1, 0.0, 0.6, 1.0, 0.5, 0.0, 0.5, 1.0};
+  //mesh.nodes_z = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   //  mesh.element_types = {23, 23};
   //  mesh.element_offsets = {0, 8, 16};
   mesh.element_conn = {0, 1, 2, 3, 6, 7, 8, 9, 1, 4, 5, 2, 10, 11, 12, 7};

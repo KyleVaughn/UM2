@@ -21,8 +21,6 @@ TEST_CASE(tri_mesh)
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
-  std::vector<int8_t> const element_types = {4, 4};
-  ASSERT(mesh.element_types == element_types);
   ASSERT(mesh.elset_names == mesh_ref.elset_names);
   ASSERT(mesh.elset_offsets == mesh_ref.elset_offsets);
   ASSERT(mesh.elset_ids == mesh_ref.elset_ids);
@@ -48,8 +46,6 @@ TEST_CASE(quad_mesh)
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
-  std::vector<int8_t> const element_types = {5, 5};
-  ASSERT(mesh.element_types == element_types);
   ASSERT(mesh.elset_names == mesh_ref.elset_names);
   ASSERT(mesh.elset_offsets == mesh_ref.elset_offsets);
   ASSERT(mesh.elset_ids == mesh_ref.elset_ids);
@@ -96,8 +92,6 @@ TEST_CASE(tri6_mesh)
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
-  std::vector<int8_t> const element_types = {36, 36};
-  ASSERT(mesh.element_types == element_types);
   ASSERT(mesh.elset_names == mesh_ref.elset_names);
   ASSERT(mesh.elset_offsets == mesh_ref.elset_offsets);
   ASSERT(mesh.elset_ids == mesh_ref.elset_ids);
@@ -123,8 +117,6 @@ TEST_CASE(quad8_mesh)
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
-  std::vector<int8_t> const element_types = {37, 37};
-  ASSERT(mesh.element_types == element_types);
   ASSERT(mesh.elset_names == mesh_ref.elset_names);
   ASSERT(mesh.elset_offsets == mesh_ref.elset_offsets);
   ASSERT(mesh.elset_ids == mesh_ref.elset_ids);
