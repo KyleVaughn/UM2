@@ -3,7 +3,7 @@
 // Multi-threaded sqrt seems to be faster after about 30k elements
 // CUDA sqrt seems faster even before 30k elements
 #include "../helpers.hpp"
-#include <um2/math/math_functions.hpp>
+#include <um2/stdlib/math.hpp>
 
 constexpr Size npoints = 1 << 20;
 
@@ -59,7 +59,8 @@ sqrtFloatCUDA(benchmark::State & state)
   transferToDevice(&sqrtx_d, sqrtx);
 
   constexpr uint32_t threadsPerBlock = 256;
-  uint32_t const blocks = (static_cast<uint32_t>(n) + threadsPerBlock - 1) / threadsPerBlock;
+  uint32_t const blocks =
+      (static_cast<uint32_t>(n) + threadsPerBlock - 1) / threadsPerBlock;
   // NOLINTNEXTLINE
   for (auto s : state) {
     sqrtFloatKernel<<<(blocks), threadsPerBlock>>>(x_d, sqrtx_d, n);

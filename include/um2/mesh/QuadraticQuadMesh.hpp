@@ -1,7 +1,9 @@
 #pragma once
 
 #include <um2/geometry/QuadraticQuadrilateral.hpp>
+#include <um2/geometry/morton_sort_points.hpp>
 #include <um2/mesh/FaceVertexMesh.hpp>
+#include <um2/mesh/MeshFile.hpp>
 #include <um2/mesh/RegularPartition.hpp>
 
 namespace um2
@@ -23,6 +25,8 @@ struct FaceVertexMesh<2, 8, D, T, I> {
   // --------------------------------------------------------------------------
 
   constexpr FaceVertexMesh() noexcept = default;
+
+  explicit FaceVertexMesh(MeshFile<T, I> const & file);
 
   // --------------------------------------------------------------------------
   // Accessors
@@ -46,6 +50,9 @@ struct FaceVertexMesh<2, 8, D, T, I> {
 
   PURE [[nodiscard]] constexpr auto
   faceContaining(Point<D, T> const & p) const noexcept -> Size;
+
+  void
+  toMeshFile(MeshFile<T, I> & file) const noexcept;
 };
 
 } // namespace um2

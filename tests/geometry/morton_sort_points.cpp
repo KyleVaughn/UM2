@@ -1,5 +1,7 @@
-#include <um2/common/Vector.hpp>
 #include <um2/geometry/morton_sort_points.hpp>
+#include <um2/stdlib/Vector.hpp>
+
+#include <random>
 
 #include "../test_macros.hpp"
 
@@ -31,7 +33,6 @@ TEST_CASE(mortonSort2D)
   ASSERT(um2::isApprox(points[15], um2::Point2<T>(3, 3) / 3));
 }
 
-// test case for morton sort in 3D
 template <std::unsigned_integral U, std::floating_point T>
 TEST_CASE(mortonSort3D)
 {
@@ -44,6 +45,9 @@ TEST_CASE(mortonSort3D)
       }
     }
   }
+  std::random_device rd;
+  std::mt19937 g(rd());
+  std::shuffle(points.begin(), points.end(), g);
   um2::mortonSort<U>(points.begin(), points.end());
   ASSERT(um2::isApprox(points[0], um2::Point3<T>(0, 0, 0) / 3));
   ASSERT(um2::isApprox(points[1], um2::Point3<T>(1, 0, 0) / 3));

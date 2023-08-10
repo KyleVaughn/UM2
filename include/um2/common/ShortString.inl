@@ -133,6 +133,20 @@ ShortString::operator>=(ShortString const & s) const noexcept -> bool
   return compare(s) >= 0;
 }
 
+HOSTDEV constexpr auto
+ShortString::operator[](Size const i) noexcept -> char &
+{
+  assert(i < size());
+  return _c[i];
+}
+
+HOSTDEV constexpr auto
+ShortString::operator[](Size const i) const noexcept -> char const &
+{
+  assert(i < size());
+  return _c[i];
+}
+
 // --------------------------------------------------------------------------
 // Methods
 // --------------------------------------------------------------------------

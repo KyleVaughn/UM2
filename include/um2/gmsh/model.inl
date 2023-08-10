@@ -76,8 +76,8 @@ overlaySpatialPartition(mpact::SpatialPartition<T, I> const & partition,
         T const low_z = assembly.grid.divs[0][izlat];
         T const high_z = assembly.grid.divs[0][izlat + 1];
         T const z_cut = (low_z + high_z) / 2;
-        T const dz =
-            high_z - low_z; // This was changed in the refactor. Used to be divided by 2.
+        // Only half the thickness, since we want to cut at the midpoint
+        T const dz = (high_z - low_z) / 2;
         auto const & lattice = partition.lattices[lat_id];
         if (lattice.children.empty()) {
           Log::error("Lattice has no children");
@@ -228,100 +228,94 @@ overlaySpatialPartition(mpact::SpatialPartition<T, I> const & partition,
   gmsh::model::removeEntities(to_remove_dimtags, /*recursive=*/true);
   gmsh::model::occ::synchronize();
   if (model_dim == 3) {
-    Log::error("Tell Kyle to reimplement 3D");
+    // We need to create a 2D version of each physical group, then intersect the 2D
+    // grid.
+    group_dimtags.clear();
+    gmsh::model::getPhysicalGroups(group_dimtags);
+    for (auto const & dimtag : group_dimtags) {
+      int const dim = dimtag.first;
+      assert(dim == 3);
+      int const tag = dimtag.second;
+      std::string name;
+      gmsh::model::getPhysicalName(dim, tag, name);
+      std::vector<int> tags_3d;
+      gmsh::model::getEntitiesForPhysicalGroup(dim, tag, tags_3d);
+      std::vector<int> tags_2d;
+      for (auto const & etag : tags_3d) {
+        std::vector<int> upward;
+        std::vector<int> downward;
+        gmsh::model::getAdjacencies(3, etag, upward, downward);
+        // If the downard tags are not in the list of 2D entities, then add them.
+        // We expect many repeated tags, so we use a binary search to find the
+        // insertion point.
+        for (auto const & tag_2 : downward) {
+          auto it = std::lower_bound(tags_2d.begin(), tags_2d.end(), tag_2);
+          if (it == tags_2d.end() || *it != tag_2) {
+            tags_2d.insert(it, tag_2);
+          }
+        }
+      }
+      // Create a new physical group for the 2D entities
+      gmsh::model::addPhysicalGroup(2, tags_2d, -1, name);
+    }
+    gmsh::vectorpair model_dimtags_2d;
+    gmsh::model::getEntities(model_dimtags_2d, 2);
+    std::vector<int> cc_tags_2d(static_cast<size_t>(num_cc));
+    // Create rectangles
+    for (Size i = 0; i < num_cc; ++i) {
+      Point3<T> const & ll = cc_lower_lefts[i];
+      Vec3<T> const & ext = cc_extents[i];
+      cc_tags_2d[static_cast<size_t>(i)] =
+          factory::addRectangle(ll[0], ll[1], ll[2], ext[0], ext[1]);
+    }
+    factory::synchronize();
+    // Don't need to add coarse cell physical groups to the 2D grid. The model
+    // already has the physical groups.
+    gmsh::vectorpair grid_dimtags_2d(cc_tags_2d.size());
+    for (size_t i = 0; i < cc_tags_2d.size(); ++i) {
+      grid_dimtags_2d[i] = {2, cc_tags_2d[i]};
+    }
+    std::sort(grid_dimtags_2d.begin(), grid_dimtags_2d.end());
+    // remove all 3D entities (leaving surfaces), then intersect the 2D grid
+    to_remove_dimtags.clear();
+    gmsh::model::getEntities(to_remove_dimtags, 3);
+    gmsh::model::removeEntities(to_remove_dimtags);
+    gmsh::model::occ::remove(to_remove_dimtags);
+    gmsh::vectorpair out_dimtags_2d;
+    std::vector<gmsh::vectorpair> out_dimtags_map_2d;
+    groupPreservingIntersect(model_dimtags_2d, grid_dimtags_2d, out_dimtags_2d,
+                             out_dimtags_map_2d, materials);
+    // Remove all entities that are not children of the grid entities.
+    std::vector<int> dont_remove_2d;
+    size_t const nmodel_2d = model_dimtags_2d.size();
+    size_t const ngrid_2d = grid_dimtags_2d.size();
+    for (size_t i = nmodel_2d; i < nmodel_2d + ngrid_2d; ++i) {
+      for (auto const & child : out_dimtags_map_2d[i]) {
+        auto child_it =
+            std::lower_bound(dont_remove_2d.begin(), dont_remove_2d.end(), child.second);
+        if (child_it == dont_remove_2d.end() || *child_it != child.second) {
+          dont_remove_2d.insert(child_it, child.second);
+        }
+      }
+    }
+    gmsh::vectorpair dont_remove_dimtags_2d(dont_remove_2d.size());
+    for (size_t i = 0; i < dont_remove_2d.size(); ++i) {
+      dont_remove_dimtags_2d[i] = {2, dont_remove_2d[i]};
+    }
+    gmsh::vectorpair to_remove_dimtags_2d;
+    gmsh::vectorpair all_dimtags_2d;
+    gmsh::model::getEntities(all_dimtags_2d, 2);
+    std::set_difference(all_dimtags_2d.begin(), all_dimtags_2d.end(),
+                        dont_remove_dimtags_2d.begin(), dont_remove_dimtags_2d.end(),
+                        std::back_inserter(to_remove_dimtags_2d));
+    gmsh::vectorpair all_dimtags_3d;
+    gmsh::model::getEntities(all_dimtags_3d, 3);
+    gmsh::model::occ::remove(all_dimtags_3d);
+    gmsh::model::removeEntities(all_dimtags_3d);
+    // gmsh::model::occ::remove(to_remove_dimtags_2d, true); Already removed via intersect
+    gmsh::model::removeEntities(to_remove_dimtags_2d, /*recursive=*/true);
+    gmsh::model::occ::synchronize();
   }
-  //    if (model_dim == 3) {
-  //        // We need to create a 2D version of each physical group, then intersect the
-  //        2D
-  //        // grid.
-  //        group_dimtags.clear();
-  //        gmsh::model::getPhysicalGroups(group_dimtags);
-  //        for (auto const & dimtag : group_dimtags) {
-  //            int const dim = dimtag.first;
-  //            UM2_ASSERT(dim == 3);
-  //            int const tag = dimtag.second;
-  //            std::string name;
-  //            gmsh::model::getPhysicalName(dim, tag, name);
-  //            std::vector<int> tags_3d;
-  //            gmsh::model::getEntitiesForPhysicalGroup(dim, tag, tags_3d);
-  //            std::vector<int> tags_2d;
-  //            for (auto const & etag : tags_3d) {
-  //                std::vector<int> upward, downward;
-  //                gmsh::model::getAdjacencies(3, etag, upward, downward);
-  //                // If the downard tags are not in the list of 2D entities, then add
-  //                them.
-  //                // We expect many repeated tags, so we use a binary search to find the
-  //                // insertion point.
-  //                for (auto const & tag_2 : downward) {
-  //                    auto it = std::lower_bound(tags_2d.begin(), tags_2d.end(), tag_2);
-  //                    if (it == tags_2d.end() || *it != tag_2) {
-  //                        tags_2d.insert(it, tag_2);
-  //                    }
-  //                }
-  //            }
-  //            // Create a new physical group for the 2D entities
-  //            gmsh::model::addPhysicalGroup(2, tags_2d, -1, name);
-  //        }
-  //        gmsh::vectorpair model_dimtags_2d;
-  //        gmsh::model::getEntities(model_dimtags_2d, 2);
-  //        std::vector<int> cc_tags_2d(num_cc);
-  //        // Create rectangles
-  //        for (Size i = 0; i < num_cc; ++i) {
-  //            Point3<T> const & ll = cc_lower_lefts[i];
-  //            Vec3<T> const & ext = cc_extents[i];
-  //            cc_tags_2d[static_cast<size_t>(i)] =
-  //                factory::addRectangle(ll[0], ll[1], ll[2], ext[0], ext[1]);
-  //        }
-  //        factory::synchronize();
-  //        // Don't need to add coarse cell physical groups to the 2D grid. The model
-  //        // already has the physical groups.
-  //        gmsh::vectorpair grid_dimtags_2d(cc_tags_2d.size());
-  //        for (size_t i = 0; i < cc_tags_2d.size(); ++i) {
-  //            grid_dimtags_2d[i] = {2, cc_tags_2d[i]};
-  //        }
-  //        std::sort(grid_dimtags_2d.begin(), grid_dimtags_2d.end());
-  //        // remove all 3D entities (leaving surfaces), then intersect the 2D grid
-  //        to_remove_dimtags.clear();
-  //        gmsh::model::getEntities(to_remove_dimtags, 3);
-  //        gmsh::model::removeEntities(to_remove_dimtags);
-  //        gmsh::model::occ::remove(to_remove_dimtags);
-  //        gmsh::vectorpair out_dimtags_2d;
-  //        std::vector<gmsh::vectorpair> out_dimtags_map_2d;
-  //        group_preserving_intersect(model_dimtags_2d, grid_dimtags_2d,
-  //                out_dimtags_2d, out_dimtags_map_2d, materials);
-  //        // Remove all entities that are not children of the grid entities.
-  //        std::vector<int> dont_remove_2d;
-  //        size_t const nmodel_2d = model_dimtags_2d.size();
-  //        size_t const ngrid_2d = grid_dimtags_2d.size();
-  //        for (size_t i = nmodel_2d; i < nmodel_2d + ngrid_2d; ++i) {
-  //            for (auto const & child : out_dimtags_map_2d[i]) {
-  //                auto child_it = std::lower_bound(dont_remove_2d.begin(),
-  //                                                 dont_remove_2d.end(),
-  //                                                 child.second);
-  //                if (child_it == dont_remove_2d.end() || *child_it != child.second) {
-  //                    dont_remove_2d.insert(child_it, child.second);
-  //                }
-  //            }
-  //        }
-  //        gmsh::vectorpair dont_remove_dimtags_2d(dont_remove_2d.size());
-  //        for (size_t i = 0; i < dont_remove_2d.size(); ++i) {
-  //            dont_remove_dimtags_2d[i] = {2, dont_remove_2d[i]};
-  //        }
-  //        gmsh::vectorpair to_remove_dimtags_2d;
-  //        gmsh::vectorpair all_dimtags_2d;
-  //        gmsh::model::getEntities(all_dimtags_2d, 2);
-  //        std::set_difference(all_dimtags_2d.begin(), all_dimtags_2d.end(),
-  //                dont_remove_dimtags_2d.begin(), dont_remove_dimtags_2d.end(),
-  //                std::back_inserter(to_remove_dimtags_2d));
-  //        gmsh::vectorpair all_dimtags_3d;
-  //        gmsh::model::getEntities(all_dimtags_3d, 3);
-  //        gmsh::model::occ::remove(all_dimtags_3d);
-  //        gmsh::model::removeEntities(all_dimtags_3d);
-  ////        gmsh::model::occ::remove(to_remove_dimtags_2d, true); Already removed via
-  /// intersect
-  //        gmsh::model::removeEntities(to_remove_dimtags_2d, true);
-  //        gmsh::model::occ::synchronize();
-  //    }
 }
 
 } // namespace um2::gmsh::model::occ

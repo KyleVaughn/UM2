@@ -50,18 +50,20 @@ option(UM2_ENABLE_CPPCHECK      "Enable cppcheck"                 ${UM2_DEV_MODE
 # Headers
 set(UM2_HEADERS
     "include/um2/config.hpp"
-    # common
-    "include/um2/common/memory.hpp"
-    "include/um2/common/algorithm.hpp"
-    "include/um2/common/Vector.hpp"
-    "include/um2/common/sto.hpp"
-    "include/um2/common/String.hpp"
+    # stdlib
+    "include/um2/stdlib/utility.hpp"
+    "include/um2/stdlib/memory.hpp"
+    "include/um2/stdlib/math.hpp"
+    "include/um2/stdlib/algorithm.hpp"
+    "include/um2/stdlib/Vector.hpp"
+    "include/um2/stdlib/sto.hpp"
+    "include/um2/stdlib/String.hpp"
+     # common
     "include/um2/common/Log.hpp"
     "include/um2/common/ShortString.hpp"
     "include/um2/common/Color.hpp"
     "include/um2/common/to_vecvec.hpp"
     # math
-    "include/um2/math/math_functions.hpp"
     "include/um2/math/morton.hpp"
     "include/um2/math/Vec.hpp"
     "include/um2/math/Mat.hpp"
@@ -78,31 +80,32 @@ set(UM2_HEADERS
     # physics
     "include/um2/physics/Material.hpp"
     # mesh
+    "include/um2/mesh/RegularGrid.hpp"
+    "include/um2/mesh/RegularPartition.hpp"
+    "include/um2/mesh/RectilinearGrid.hpp"
+    "include/um2/mesh/RectilinearPartition.hpp"
     "include/um2/mesh/CellType.hpp"
     "include/um2/mesh/MeshType.hpp"
     "include/um2/mesh/MeshFile.hpp"
     "include/um2/mesh/io_abaqus.hpp"
     "include/um2/mesh/io_xdmf.hpp"
     "include/um2/mesh/io.hpp"
-    "include/um2/mesh/RegularGrid.hpp"
-    "include/um2/mesh/RegularPartition.hpp"
-    "include/um2/mesh/RectilinearGrid.hpp"
-    "include/um2/mesh/RectilinearPartition.hpp"
     "include/um2/mesh/TriMesh.hpp"
     "include/um2/mesh/QuadMesh.hpp"
     "include/um2/mesh/QuadraticTriMesh.hpp"
     "include/um2/mesh/QuadraticQuadMesh.hpp"
     # mpact
     "include/um2/mpact/SpatialPartition.hpp"
+    "include/um2/mpact/io.hpp"
     # gmsh
     "include/um2/gmsh/base_gmsh_api.hpp"
     "include/um2/gmsh/io.hpp"
     "include/um2/gmsh/model.hpp"
     "include/um2/gmsh/mesh.hpp"
-    #    # ray_casting
-    #    "include/um2/ray_casting/Ray.hpp"
-    # visualization
-    "include/um2/visualization/Image2D.hpp"
+    #    #    # ray_casting
+    #    #    "include/um2/ray_casting/Ray.hpp"
+    #    # visualization
+    #    "include/um2/visualization/Image2D.hpp"
     # api
     "include/um2.hpp"
     #"include/um2c.h"
@@ -117,8 +120,8 @@ set(UM2_SOURCES
     "src/gmsh/io.cpp"
     "src/gmsh/model.cpp"
     "src/gmsh/mesh.cpp"
-    # visualization
-    "src/visualization/Image2D.cpp"
+  #    # visualization
+  #    "src/visualization/Image2D.cpp"
     # api
     "src/um2.cpp"
     #"src/um2c.cpp"

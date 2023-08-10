@@ -3,9 +3,9 @@
 // of points. The single threaded version is faster than the OpenMP version for all
 // sizes under very large N
 
-#include "../helpers.hpp" 
-#include <um2/geometry/AxisAlignedBox.hpp>
+#include "../helpers.hpp"
 #include <iostream>
+#include <um2/geometry/AxisAlignedBox.hpp>
 
 constexpr Size npoints = 1 << 22;
 constexpr int lo = -100;
@@ -15,9 +15,9 @@ template <typename T>
 static void
 boundingBox(benchmark::State & state)
 {
-  Size const n = static_cast<Size>(state.range(0));    
+  Size const n = static_cast<Size>(state.range(0));
   um2::Vector<um2::Vec2<T>> const points = makeVectorOfRandomPoints<2, T, lo, hi>(n);
-  T xmin = hi; 
+  T xmin = hi;
   T xmax = lo;
   T ymin = hi;
   T ymax = lo;
@@ -39,7 +39,7 @@ boundingBox(benchmark::State & state)
   // NOLINTNEXTLINE
   for (auto s : state) {
     box = um2::boundingBox(points);
-//    benchmark::DoNotOptimize(box);
+    benchmark::DoNotOptimize(box);
     benchmark::ClobberMemory();
   }
   if (!(um2::abs(box.xMin() - xmin) < static_cast<T>(1e-6))) {
@@ -60,8 +60,8 @@ boundingBox(benchmark::State & state)
   }
 }
 
-BENCHMARK_TEMPLATE(boundingBox, double)    
-    ->RangeMultiplier(4)    
-    ->Range(1024, npoints)    
+BENCHMARK_TEMPLATE(boundingBox, double)
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
 BENCHMARK_MAIN();

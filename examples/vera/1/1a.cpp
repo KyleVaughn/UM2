@@ -21,12 +21,11 @@ main() -> int
   model.makeCore({{0}});
   um2::gmsh::model::occ::overlaySpatialPartition(model);
   um2::gmsh::model::mesh::setGlobalMeshSize(0.1);
-  um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
+  um2::gmsh::model::mesh::generateMesh(um2::MeshType::Tri);
   // um2::gmsh::fltk::run();
-  //  gmsh::write("1a.inp");
-  //  model.import_coarse_cells("1a.inp");
-  //  export_mesh("1a.xdmf", model);
-  //
+  um2::gmsh::write("1a.inp");
+  model.importCoarseCells("1a.inp");
+  um2::exportMesh("1a.xdmf", model);
   um2::finalize();
   return 0;
 }

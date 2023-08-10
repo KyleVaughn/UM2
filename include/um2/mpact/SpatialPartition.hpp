@@ -1,7 +1,6 @@
 #pragma once
 
 #include <um2/common/Log.hpp>
-#include <um2/common/Vector.hpp>
 #include <um2/mesh/MeshType.hpp>
 #include <um2/mesh/QuadMesh.hpp>
 #include <um2/mesh/QuadraticQuadMesh.hpp>
@@ -9,15 +8,13 @@
 #include <um2/mesh/RectilinearPartition.hpp>
 #include <um2/mesh/RegularPartition.hpp>
 #include <um2/mesh/TriMesh.hpp>
+#include <um2/mesh/io.hpp>
 #include <um2/physics/Material.hpp>
-// #include <um2/mesh/io.hpp>
+#include <um2/stdlib/Vector.hpp>
 // #include <um2/ray_casting/intersect/ray-linear_polygon_mesh.hpp>
 // #include <um2/ray_casting/intersect/ray-quadratic_polygon_mesh.hpp>
 
-// #include <iomanip>
-
-// #include <thrust/pair.h> // thrust::pair
-
+#include <iomanip>
 #include <string>
 
 namespace um2::mpact
@@ -101,10 +98,8 @@ struct SpatialPartition {
 
   Vector<TriMesh<2, T, I>> tri;
   Vector<QuadMesh<2, T, I>> quad;
-  // Vector<TriQuadMesh<T, I>> tri_quad;
   Vector<QuadraticTriMesh<2, T, I>> quadratic_tri;
   Vector<QuadraticQuadMesh<2, T, I>> quadratic_quad;
-  // Vector<QuadraticTriQuadMesh<T, I>> quadratic_tri_quad;
 
   // -----------------------------------------------------------------------------
   // Constructors

@@ -9,11 +9,27 @@ enum class MeshType : int8_t {
   None = 0,
   Tri = 3,
   Quad = 4,
-  TriQuad = 7,
   QuadraticTri = 6,
   QuadraticQuad = 8,
-  QuadraticTriQuad = 14,
 };
+
+constexpr auto
+verticesPerCell(MeshType const type) -> Size
+{
+  switch (type) {
+  case MeshType::Tri:
+    return 3;
+  case MeshType::Quad:
+    return 4;
+  case MeshType::QuadraticTri:
+    return 6;
+  case MeshType::QuadraticQuad:
+    return 8;
+  default:
+    assert(false);
+    return 0;
+  }
+}
 
 // template <std::integral I>
 // constexpr auto

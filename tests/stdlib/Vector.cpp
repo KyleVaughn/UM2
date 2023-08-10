@@ -1,9 +1,10 @@
-#include <um2/common/Vector.hpp>
-#include <um2/common/utility.hpp>
+#include <um2/stdlib/Vector.hpp>
+#include <um2/stdlib/utility.hpp>
 
-#include "../test_macros.hpp"
 #include <concepts>
 #include <vector>
+
+#include "../test_macros.hpp"
 
 // ----------------------------------------------------------------------------
 // Constructors
@@ -391,8 +392,7 @@ TEST_CASE(push_back_n)
 }
 
 template <typename T>
-HOSTDEV
-TEST_CASE(test_sortPermutation)
+TEST_CASE(sortPermutation)
 {
   um2::Vector<T> const v{5, 3, 1, 4, 2};
   um2::Vector<Size> perm;
@@ -402,15 +402,13 @@ TEST_CASE(test_sortPermutation)
   for (Size i = 0; i < v.size(); ++i) {
     sorted_v[i] = v[perm[i]];
   }
-  // cppcheck-suppress assertWithSideEffect
   ASSERT(std::is_sorted(sorted_v.begin(), sorted_v.end()));
   um2::Vector<Size> const expected_perm{2, 4, 1, 3, 0};
   ASSERT(perm == expected_perm);
 }
 
 template <typename T>
-HOSTDEV
-TEST_CASE(apply_perm)
+TEST_CASE(applyPermutation)
 {
   um2::Vector<T> v{5, 3, 1, 4, 2};
   um2::Vector<Size> const perm{2, 4, 1, 3, 0};
@@ -419,7 +417,6 @@ TEST_CASE(apply_perm)
   ASSERT(v == expected_v);
 }
 
-//
 // template <class T>
 // HOSTDEV TEST_CASE(insert)
 //{
@@ -616,8 +613,10 @@ MAKE_CUDA_KERNEL(clear)
   TEST_HOSTDEV(push_back, 1, 1, T)
   TEST_HOSTDEV(push_back_rval_ref, 1, 1, T)
   TEST_HOSTDEV(push_back_n, 1, 1, T)
-  TEST_HOSTDEV(test_sortPermutation, 1, 1, T)
-  TEST_HOSTDEV(apply_perm, 1, 1, T)
+
+  TEST((sortPermutation<T>))
+  TEST((applyPermutation<T>))
+
   //  TEST_HOSTDEV(empty, 1, 1, T)
   //  TEST_HOSTDEV(insert, 1, 1, T)
   //  if constexpr (!std::floating_point<T>) {

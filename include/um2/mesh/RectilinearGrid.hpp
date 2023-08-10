@@ -1,8 +1,7 @@
 #pragma once
 
-#include <um2/common/Vector.hpp>
-#include <um2/config.hpp>
 #include <um2/geometry/AxisAlignedBox.hpp>
+#include <um2/stdlib/Vector.hpp>
 
 #include <vector>
 
@@ -19,6 +18,7 @@ template <Size D, typename T>
 // no __i0 in the code.
 // If you're reading this, uncomment the NOLINTNEXTLINE line below and see if
 // this has been fixed.
+// NOLINTNEXTLINE
 struct RectilinearGrid {
 
   // Divisions along each axis

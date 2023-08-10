@@ -1,4 +1,4 @@
-#include <um2/common/String.hpp>
+#include <um2/stdlib/String.hpp>
 
 #include "../test_macros.hpp"
 
@@ -209,7 +209,7 @@ MAKE_CUDA_KERNEL(comparison);
 //  EXPECT_FALSE(s.contains('b'));
 //}
 // MAKE_CUDA_KERNEL(contains);
-//
+
 HOSTDEV
 TEST_CASE(starts_ends_with)
 {
@@ -235,11 +235,12 @@ TEST_SUITE(String)
   TEST_HOSTDEV(copy_constructor)
   TEST_HOSTDEV(move_constructor)
   TEST_HOSTDEV(const_char_constructor)
+
   // Operators
   TEST_HOSTDEV(assign_operator)
   TEST_HOSTDEV(equals_operator)
   TEST_HOSTDEV(comparison)
-  //  // Methods
+  // Methods
   //  TEST_HOSTDEV(contains)
   TEST(starts_ends_with)
   //  TEST(toString)

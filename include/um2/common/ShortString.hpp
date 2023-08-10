@@ -2,10 +2,10 @@
 
 #include <um2/config.hpp>
 
-#include <um2/common/algorithm.hpp>    // copy
-#include <um2/common/memory.hpp>       // addressof
-#include <um2/common/utility.hpp>      // move
-#include <um2/math/math_functions.hpp> // min
+#include <um2/stdlib/algorithm.hpp> // copy
+#include <um2/stdlib/math.hpp>      // min
+#include <um2/stdlib/memory.hpp>    // addressof
+#include <um2/stdlib/utility.hpp>   // move
 
 #include <cstring> // memcpy
 #include <string>
@@ -78,6 +78,13 @@ public:
 
   constexpr auto
   operator==(std::string const & s) const noexcept -> bool;
+
+  HOSTDEV constexpr auto
+  // cppcheck-suppress functionConst
+  operator[](Size i) noexcept -> char &;
+
+  HOSTDEV constexpr auto
+  operator[](Size i) const noexcept -> char const &;
 
   // -----------------------------------------------------------------------------
   // Methods

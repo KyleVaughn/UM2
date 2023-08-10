@@ -1,32 +1,18 @@
-// FINDINGS: 
-//  The barycentric method is faster than the CCW method on some 
+// FINDINGS:
+//  The barycentric method is faster than the CCW method on some
 //  processors, but not others
 
-#include "../helpers.hpp" 
+#include "../helpers.hpp"
 #include <um2/geometry/Triangle.hpp>
 
-// NOLINTBEGIN
-#define D       2
-#define T       float
-#define NPOINTS 1 << 16
-#define NTRIS   1 << 5
-#define BOX_MAX 10
-// NOLINTEND
-
-auto
-randomPoint() -> um2::Point<D, T>
-{
-  // NOLINTNEXTLINE
-  static std::default_random_engine rng;
-  static std::uniform_real_distribution<T> dist(0, BOX_MAX);
-  um2::Point<D, T> p;
-  for (Size i = 0; i < D; ++i) {
-    p[i] = dist(rng);
-  }
-  return p;
-}
+constexpr Size npoints = 1 << 16;
+constexpr Size ntris = 1 << 5;
+constexpr Size D = 2;
+constexpr int lo = 0;
+constexpr int hi = 100;
 
 // NOLINTBEGIN(readability-identifier-naming)
+template <typename T>
 constexpr auto
 triContainsBary(um2::Triangle<D, T> const & tri, um2::Point<D, T> const & p) -> bool
 {
@@ -39,6 +25,7 @@ triContainsBary(um2::Triangle<D, T> const & tri, um2::Point<D, T> const & p) -> 
   return (r >= 0) && (s >= 0) && (r + s <= 1);
 }
 
+template <typename T>
 constexpr auto
 triContainsCCW(um2::Triangle<D, T> const & tri, um2::Point<D, T> const & p) -> bool
 {
@@ -46,6 +33,7 @@ triContainsCCW(um2::Triangle<D, T> const & tri, um2::Point<D, T> const & p) -> b
          um2::areCCW(tri[2], tri[0], p);
 }
 
+template <typename T>
 constexpr auto
 triContainsNoShortCCW(um2::Triangle<D, T> const & tri, um2::Point<D, T> const & p) -> bool
 {
@@ -57,19 +45,14 @@ triContainsNoShortCCW(um2::Triangle<D, T> const & tri, um2::Point<D, T> const & 
 
 // NOLINTEND(readability-identifier-naming)
 
+template <typename T>
 static void
 containsBary(benchmark::State & state)
 {
-  um2::Vector<um2::Point<D, T>> points(static_cast<Size>(state.range(0)));
-  um2::Vector<um2::Triangle<D, T>> tris(NTRIS);
-  for (auto & p : points) {
-    // cppcheck-suppress useStlAlgorithm
-    p = randomPoint();
-  }
-  for (auto & t : tris) {
-    // cppcheck-suppress useStlAlgorithm
-    t = um2::Triangle<D, T>(randomPoint(), randomPoint(), randomPoint());
-  }
+  Size const n = static_cast<Size>(state.range(0));
+  um2::Vector<um2::Point<D, T>> const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
+  um2::Vector<um2::Triangle<D, T>> const tris =
+      makeVectorOfRandomTriangles<T, lo, hi>(ntris);
   // NOLINTNEXTLINE
   for (auto s : state) {
     int i = 0;
@@ -83,19 +66,14 @@ containsBary(benchmark::State & state)
   }
 }
 
+template <typename T>
 static void
 containsCCW(benchmark::State & state)
 {
-  um2::Vector<um2::Point<D, T>> points(static_cast<Size>(state.range(0)));
-  um2::Vector<um2::Triangle<D, T>> tris(NTRIS);
-  for (auto & p : points) {
-    // cppcheck-suppress useStlAlgorithm
-    p = randomPoint();
-  }
-  for (auto & t : tris) {
-    // cppcheck-suppress useStlAlgorithm
-    t = um2::Triangle<D, T>(randomPoint(), randomPoint(), randomPoint());
-  }
+  Size const n = static_cast<Size>(state.range(0));
+  um2::Vector<um2::Point<D, T>> const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
+  um2::Vector<um2::Triangle<D, T>> const tris =
+      makeVectorOfRandomTriangles<T, lo, hi>(ntris);
   // NOLINTNEXTLINE
   for (auto s : state) {
     int i = 0;
@@ -109,19 +87,14 @@ containsCCW(benchmark::State & state)
   }
 }
 
+template <typename T>
 static void
 containsNoShortCCW(benchmark::State & state)
 {
-  um2::Vector<um2::Point<D, T>> points(static_cast<Size>(state.range(0)));
-  um2::Vector<um2::Triangle<D, T>> tris(NTRIS);
-  for (auto & p : points) {
-    // cppcheck-suppress useStlAlgorithm
-    p = randomPoint();
-  }
-  for (auto & t : tris) {
-    // cppcheck-suppress useStlAlgorithm
-    t = um2::Triangle<D, T>(randomPoint(), randomPoint(), randomPoint());
-  }
+  Size const n = static_cast<Size>(state.range(0));
+  um2::Vector<um2::Point<D, T>> const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
+  um2::Vector<um2::Triangle<D, T>> const tris =
+      makeVectorOfRandomTriangles<T, lo, hi>(ntris);
   // NOLINTNEXTLINE
   for (auto s : state) {
     int i = 0;
@@ -135,16 +108,16 @@ containsNoShortCCW(benchmark::State & state)
   }
 }
 
-BENCHMARK(containsBary)
-    ->RangeMultiplier(2)
-    ->Range(1024, NPOINTS)
+BENCHMARK_TEMPLATE(containsBary, double)
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK(containsCCW)
-    ->RangeMultiplier(2)
-    ->Range(1024, NPOINTS)
+BENCHMARK_TEMPLATE(containsCCW, double)
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK(containsNoShortCCW)
-    ->RangeMultiplier(2)
-    ->Range(1024, NPOINTS)
+BENCHMARK_TEMPLATE(containsNoShortCCW, double)
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
 BENCHMARK_MAIN();

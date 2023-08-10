@@ -1,8 +1,9 @@
 #include <benchmark/benchmark.h>
 
 #include <um2/common/Log.hpp>
-#include <um2/common/Vector.hpp>
 #include <um2/geometry/Point.hpp>
+#include <um2/geometry/Triangle.hpp>
+#include <um2/stdlib/Vector.hpp>
 
 #include <algorithm>
 #if UM2_ENABLE_OPENMP
@@ -44,6 +45,23 @@ makeVectorOfRandomPoints(Size size) -> um2::Vector<um2::Point<D, T>>
 {
   um2::Vector<um2::Point<D, T>> v(size);
   std::generate(v.begin(), v.end(), randomPoint<D, T, lo, hi>);
+  return v;
+}
+
+template <typename T, int lo, int hi>
+auto
+makeVectorOfRandomTriangles(Size size) -> um2::Vector<um2::Triangle2<T>>
+{
+  um2::Vector<um2::Triangle2<T>> v(size);
+  for (auto & t : v) {
+    t[0] = randomPoint<2, T, lo, hi>();
+    t[1] = randomPoint<2, T, lo, hi>();
+    // We require that the third point is CCW from the first two.
+    t[2] = randomPoint<2, T, lo, hi>();
+    while (!um2::areCCW(t[0], t[1], t[2])) {
+      t[2] = randomPoint<2, T, lo, hi>();
+    }
+  }
   return v;
 }
 

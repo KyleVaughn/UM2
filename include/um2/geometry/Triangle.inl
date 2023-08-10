@@ -160,4 +160,16 @@ Triangle<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
   return um2::boundingBox(v);
 }
 
+// -------------------------------------------------------------------
+// isCCW
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+Triangle<D, T>::isCCW() const noexcept -> bool
+{
+  static_assert(D == 2, "Triangle::isCCW() is only defined for 2D triangles");
+  return areCCW(v[0], v[1], v[2]);
+}
+
 } // namespace um2

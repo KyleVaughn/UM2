@@ -72,6 +72,9 @@ struct Polytope<2, 1, 3, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  isCCW() const noexcept -> bool;
 };
 
 } // namespace um2

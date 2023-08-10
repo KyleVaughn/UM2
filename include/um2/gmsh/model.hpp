@@ -5,8 +5,6 @@
 #if UM2_ENABLE_GMSH
 #  include <um2/common/Log.hpp>
 #  include <um2/geometry/Point.hpp>
-// #include <um2/geometry/axis_aligned_box.hpp>
-// #include <um2/mesh/rectilinear_grid.hpp>
 #  include <um2/gmsh/base_gmsh_api.hpp>
 #  include <um2/mpact/SpatialPartition.hpp>
 #  include <um2/physics/Material.hpp>
@@ -62,11 +60,10 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
                            std::vector<std::vector<int>> const & pin_ids,
                            Point2d const & offset = {0.0, 0.0}) -> std::vector<int>;
 
-//    std::vector<int> add_cylindrical_pin(
-//            Point3d const & center,
-//            double const height,
-//            std::vector<double> const & radii,
-//            std::vector<Material> const & materials);
+auto
+addCylindricalPin(Point3d const & center, double height,
+                  std::vector<double> const & radii,
+                  std::vector<Material> const & materials) -> std::vector<int>;
 //
 //    std::vector<int> add_cylindrical_pin_lattice(
 //            std::vector<std::vector<double>> const & radii,

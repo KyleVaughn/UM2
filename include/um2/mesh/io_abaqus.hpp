@@ -3,8 +3,8 @@
 #include <um2/config.hpp>
 
 #include <um2/common/Log.hpp>
-#include <um2/common/sto.hpp>
 #include <um2/mesh/MeshFile.hpp>
+#include <um2/stdlib/sto.hpp>
 
 #include <charconv>
 #include <concepts>
@@ -32,11 +32,12 @@ parseNodes(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     size_t last = line.find(',', 0);
     size_t next = line.find(',', last + 2);
     // Read coordinates
-    mesh.nodes_x.push_back(sto<T>(line.substr(last + 2, next - last - 2)));
+    T const x = sto<T>(line.substr(last + 2, next - last - 2));
     last = next;
     next = line.find(',', last + 2);
-    mesh.nodes_y.push_back(sto<T>(line.substr(last + 2, next - last - 2)));
-    mesh.nodes_z.push_back(sto<T>(line.substr(next + 2)));
+    T const y = sto<T>(line.substr(last + 2, next - last - 2));
+    T const z = sto<T>(line.substr(next + 2));
+    mesh.vertices.emplace_back(x, y, z);
   }
 }
 
@@ -55,27 +56,32 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   //  ASCII code for '0' is 48, so line[18] - 48 is the offset
   //  as an integer
   I offset = static_cast<I>(line[18]) - 48;
-  AbaqusCellType element_type = AbaqusCellType::CPS3;
+  MeshType this_type = MeshType::None;
   switch (offset) {
   case 3:
-    element_type = AbaqusCellType::CPS3;
+    this_type = MeshType::Tri;
     break;
   case 4:
-    element_type = AbaqusCellType::CPS4;
+    this_type = MeshType::Quad;
     break;
   case 6:
-    element_type = AbaqusCellType::CPS6;
+    this_type = MeshType::QuadraticTri;
     break;
   case 8:
-    element_type = AbaqusCellType::CPS8;
+    this_type = MeshType::QuadraticQuad;
     break;
   default: {
     LOG_ERROR("AbaqusCellType CPS" + std::to_string(offset) + " is not supported");
     break;
   }
   }
+  if (mesh.type == MeshType::None) {
+    mesh.type = this_type;
+  }
+  if (mesh.type != this_type) {
+    LOG_ERROR("Heterogeneous mesh types are not supported");
+  }
   // NOLINTBEGIN(cppcoreguidelines-init-variables)
-  size_t num_elements = 0;
   while (std::getline(file, line) && line[0] != '*') {
     LOG_TRACE("Line: " + line);
     std::string_view const line_view = line;
@@ -97,27 +103,8 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     std::from_chars(line_view.data() + last + 2, line_view.data() + line_view.size(), id);
     assert(id > 0);
     mesh.element_conn.push_back(id - 1); // ABAQUS is 1-indexed
-    num_elements++;
   }
   // NOLINTEND(cppcoreguidelines-init-variables)
-  mesh.element_types.insert(mesh.element_types.end(), num_elements,
-                            static_cast<int8_t>(element_type));
-  size_t offsets_size = mesh.element_offsets.size();
-  if (offsets_size == 0) {
-    mesh.element_offsets.push_back(0);
-    offsets_size = 1;
-  }
-  I const offset_back = mesh.element_offsets.back();
-  mesh.element_offsets.insert(mesh.element_offsets.end(), num_elements, -1);
-  for (size_t i = 0; i < num_elements; ++i) {
-    // GCC INSISTS that this is a narrowing conversion, but it's not.
-    // val, offset_back, and offset are all I, so the result is I.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-    I const val = offset_back + static_cast<I>((i + 1)) * offset;
-#pragma GCC diagnostic pop
-    mesh.element_offsets[offsets_size + i] = val;
-  }
 }
 
 template <std::floating_point T, std::signed_integral I>

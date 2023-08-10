@@ -5,11 +5,11 @@
 // It doesn't appear that multiple threads help
 // After about 100k exps, the GPU is faster than the CPU
 #include "../helpers.hpp"
-#include <um2/math/math_functions.hpp>
+#include <um2/stdlib/math.hpp>
 
 constexpr Size npoints = 1 << 20;
 constexpr int lo = -3;
-constexpr int hi = 3; 
+constexpr int hi = 3;
 
 template <typename T>
 static void
@@ -63,7 +63,8 @@ expFloatCUDA(benchmark::State & state)
   transferToDevice(&expx_d, expx);
 
   constexpr uint32_t threadsPerBlock = 256;
-  uint32_t const blocks = (static_cast<uint32_t>(n) + threadsPerBlock - 1) / threadsPerBlock;
+  uint32_t const blocks =
+      (static_cast<uint32_t>(n) + threadsPerBlock - 1) / threadsPerBlock;
   // NOLINTNEXTLINE
   for (auto s : state) {
     expFloatKernel<<<(blocks), threadsPerBlock>>>(x_d, expx_d, n);
