@@ -11,13 +11,8 @@ add_um2_test(./stdlib/sto.cpp)
 add_um2_test(./stdlib/String.cpp)
 
 # ------------------------------------------------------------------------------
-# common 
+# common
 # ------------------------------------------------------------------------------
-add_um2_test(./common/memory/addressof.cpp)
-add_um2_test(./common/memory/construct_at.cpp)
-add_um2_test(./common/Vector.cpp)
-add_um2_test(./common/sto.cpp)
-add_um2_test(./common/String.cpp)
 add_um2_test(./common/Log.cpp)
 add_um2_test(./common/ShortString.cpp)
 add_um2_test(./common/Color.cpp)

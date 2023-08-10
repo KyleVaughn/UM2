@@ -122,8 +122,9 @@ writeXDMFFile(std::string const & path, mpact::SpatialPartition<T, I> const & mo
         T const cut_z = (low_z + high_z) / 2;
         pugi::xml_node xlat_info = xlat_grid.append_child("Information");
         xlat_info.append_attribute("Name") = "Z";
-        std::string const z_values = std::to_string(low_z) + ", " + std::to_string(cut_z) +
-                               ", " + std::to_string(high_z);
+        std::string const z_values = std::to_string(low_z) + ", " +
+                                     std::to_string(cut_z) + ", " +
+                                     std::to_string(high_z);
         xlat_info.append_child(pugi::node_pcdata).set_value(z_values.c_str());
         auto const & lattice = model.lattices[lat_id];
         if (lattice.children.empty()) {
@@ -135,7 +136,8 @@ writeXDMFFile(std::string const & path, mpact::SpatialPartition<T, I> const & mo
         // Lattice M by N
         pugi::xml_node xlat_info2 = xlat_grid.append_child("Information");
         xlat_info2.append_attribute("Name") = "M_by_N";
-        std::string const lat_mn_str = std::to_string(nyrtm) + " x " + std::to_string(nxrtm);
+        std::string const lat_mn_str =
+            std::to_string(nyrtm) + " x " + std::to_string(nxrtm);
         xlat_info2.append_child(pugi::node_pcdata).set_value(lat_mn_str.c_str());
         // For each RTM
         for (Size iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
@@ -200,8 +202,9 @@ writeXDMFFile(std::string const & path, mpact::SpatialPartition<T, I> const & mo
                     model.coarse_cells[cell_id].material_ids;
                 Vector<MaterialID> unique_mat_ids;
                 for (auto const & mat_id : mat_ids) {
-                  if (!std::any_of(unique_mat_ids.begin(), unique_mat_ids.end(),
-                                   [mat_id](MaterialID const & id) { return id == mat_id; })) {
+                  if (!std::any_of(
+                          unique_mat_ids.begin(), unique_mat_ids.end(),
+                          [mat_id](MaterialID const & id) { return id == mat_id; })) {
                     unique_mat_ids.push_back(mat_id);
                   }
                 }
@@ -215,7 +218,8 @@ writeXDMFFile(std::string const & path, mpact::SpatialPartition<T, I> const & mo
                 mesh_file.elset_ids.resize(num_elements);
                 for (Size imat = 0; imat < num_mats; ++imat) {
                   MaterialID const mat_id = unique_mat_ids[imat];
-                  mesh_file.elset_names[static_cast<size_t>(imat)] = mat_names[static_cast<size_t>(mat_id)];
+                  mesh_file.elset_names[static_cast<size_t>(imat)] =
+                      mat_names[static_cast<size_t>(mat_id)];
                   for (Size ielem = 0; ielem < static_cast<Size>(num_elements); ++ielem) {
                     if (mat_ids[ielem] == mat_id) {
                       mesh_file.elset_ids[static_cast<size_t>(elem_ctr++)] = ielem;
@@ -252,7 +256,7 @@ writeXDMFFile(std::string const & path, mpact::SpatialPartition<T, I> const & mo
 
 template <std::floating_point T, std::signed_integral I>
 void
-exportMesh(std::string const & path, mpact::SpatialPartition<T, I> const &  model)
+exportMesh(std::string const & path, mpact::SpatialPartition<T, I> const & model)
 {
   if (path.ends_with(".xdmf")) {
     writeXDMFFile<T, I>(path, model);
