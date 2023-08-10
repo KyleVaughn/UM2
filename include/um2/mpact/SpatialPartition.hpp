@@ -1,7 +1,7 @@
 #pragma once
 
 #include <um2/common/Log.hpp>
-#include <um2/common/Vector.hpp>
+#include <um2/stdlib/Vector.hpp>
 #include <um2/mesh/MeshType.hpp>
 #include <um2/mesh/QuadMesh.hpp>
 #include <um2/mesh/QuadraticQuadMesh.hpp>
@@ -101,10 +101,8 @@ struct SpatialPartition {
 
   Vector<TriMesh<2, T, I>> tri;
   Vector<QuadMesh<2, T, I>> quad;
-  // Vector<TriQuadMesh<T, I>> tri_quad;
   Vector<QuadraticTriMesh<2, T, I>> quadratic_tri;
   Vector<QuadraticQuadMesh<2, T, I>> quadratic_quad;
-  // Vector<QuadraticTriQuadMesh<T, I>> quadratic_tri_quad;
 
   // -----------------------------------------------------------------------------
   // Constructors
@@ -177,8 +175,8 @@ struct SpatialPartition {
   auto
   makeCore(std::vector<std::vector<Size>> const & asy_ids);
 
-  void
-  importCoarseCells(std::string const & filename);
+  //void
+  //importCoarseCells(std::string const & filename);
   //
   //    void coarse_cell_heights(Vector<std::pair<int, double>> & id_dz) const;
   //

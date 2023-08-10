@@ -87,20 +87,20 @@ set(UM2_HEADERS
     "include/um2/mesh/CellType.hpp"
     "include/um2/mesh/MeshType.hpp"
     "include/um2/mesh/MeshFile.hpp"
-    #"include/um2/mesh/io_abaqus.hpp"
-    #    "include/um2/mesh/io_xdmf.hpp"
-    #    "include/um2/mesh/io.hpp"
-    #    "include/um2/mesh/TriMesh.hpp"
-    #    "include/um2/mesh/QuadMesh.hpp"
-    #    "include/um2/mesh/QuadraticTriMesh.hpp"
-    #    "include/um2/mesh/QuadraticQuadMesh.hpp"
-    #    # mpact
-    #    "include/um2/mpact/SpatialPartition.hpp"
-    #    # gmsh
-    #    "include/um2/gmsh/base_gmsh_api.hpp"
-    #    "include/um2/gmsh/io.hpp"
-    #    "include/um2/gmsh/model.hpp"
-    #    "include/um2/gmsh/mesh.hpp"
+    "include/um2/mesh/io_abaqus.hpp"
+    "include/um2/mesh/io_xdmf.hpp"
+    "include/um2/mesh/io.hpp"
+    "include/um2/mesh/TriMesh.hpp"
+    "include/um2/mesh/QuadMesh.hpp"
+    "include/um2/mesh/QuadraticTriMesh.hpp"
+    "include/um2/mesh/QuadraticQuadMesh.hpp"
+    # mpact
+    "include/um2/mpact/SpatialPartition.hpp"
+    # gmsh
+    "include/um2/gmsh/base_gmsh_api.hpp"
+    "include/um2/gmsh/io.hpp"
+    # "include/um2/gmsh/model.hpp"
+    # "include/um2/gmsh/mesh.hpp"
     #    #    # ray_casting
     #    #    "include/um2/ray_casting/Ray.hpp"
     #    # visualization
@@ -114,9 +114,9 @@ set(UM2_HEADERS
 set(UM2_SOURCES        
     # common
     "src/common/Log.cpp"
-  #    # gmsh
-  #    "src/gmsh/base_gmsh_api.cpp"
-  #    "src/gmsh/io.cpp"
+    # gmsh
+    "src/gmsh/base_gmsh_api.cpp"
+    "src/gmsh/io.cpp"
   #    "src/gmsh/model.cpp"
   #    "src/gmsh/mesh.cpp"
   #    # visualization
