@@ -79,6 +79,13 @@ public:
   constexpr auto
   operator==(std::string const & s) const noexcept -> bool;
 
+  HOSTDEV constexpr auto
+  // cppcheck-suppress functionConst
+  operator[](Size i) noexcept -> char &;
+
+  HOSTDEV constexpr auto
+  operator[](Size i) const noexcept -> char const &;
+
   // -----------------------------------------------------------------------------
   // Methods
   // -----------------------------------------------------------------------------

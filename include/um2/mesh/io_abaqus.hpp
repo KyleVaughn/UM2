@@ -3,8 +3,8 @@
 #include <um2/config.hpp>
 
 #include <um2/common/Log.hpp>
-#include <um2/stdlib/sto.hpp>
 #include <um2/mesh/MeshFile.hpp>
+#include <um2/stdlib/sto.hpp>
 
 #include <charconv>
 #include <concepts>
@@ -76,11 +76,11 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   }
   }
   if (mesh.type == MeshType::None) {
-    mesh.type = this_type; 
-  } 
+    mesh.type = this_type;
+  }
   if (mesh.type != this_type) {
     LOG_ERROR("Heterogeneous mesh types are not supported");
-  } 
+  }
   // NOLINTBEGIN(cppcoreguidelines-init-variables)
   while (std::getline(file, line) && line[0] != '*') {
     LOG_TRACE("Line: " + line);

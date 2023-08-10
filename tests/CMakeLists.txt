@@ -68,7 +68,7 @@ add_um2_test(./mpact/SpatialPartition.cpp)
 # ------------------------------------------------------------------------------
 add_um2_test(./gmsh/base_gmsh_api.cpp)
 add_um2_test(./gmsh/io.cpp)
-# add_um2_test(./gmsh/model.cpp)
+add_um2_test(./gmsh/model.cpp)
 
 ### ------------------------------------------------------------------------------
 ### ray_casting

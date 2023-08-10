@@ -68,14 +68,14 @@ struct MeshFile {
   //  //
   //  //    constexpr MeshType get_mesh_type() const;
   //  //
-  //  constexpr void
-  //  getMaterialNames(std::vector<std::string> & material_names) const;
+  constexpr void
+  getMaterialNames(std::vector<std::string> & material_names) const;
   //
   //    constexpr void get_material_ids(std::vector<MaterialID> & material_ids) const;
   //
-  //    constexpr void get_material_ids(std::vector<MaterialID> & material_ids,
-  //                                    std::vector<std::string> const & material_names)
-  //                                    const;
+  constexpr void
+  getMaterialIDs(std::vector<MaterialID> & material_ids,
+                 std::vector<std::string> const & material_names) const;
 
 }; // struct MeshFile
 

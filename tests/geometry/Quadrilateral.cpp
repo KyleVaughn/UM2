@@ -19,6 +19,24 @@ makeQuad() -> um2::Quadrilateral<D, T>
   return quad;
 }
 
+template <Size D, typename T>
+HOSTDEV static constexpr auto
+makeTriQuad() -> um2::Quadrilateral<D, T>
+{
+  um2::Quadrilateral<D, T> quad;
+  for (Size i = 0; i < 4; ++i) {
+    for (Size j = 0; j < D; ++j) {
+      quad[i][j] = static_cast<T>(0);
+    }
+  }
+  quad[1][0] = static_cast<T>(1);
+  quad[2][0] = static_cast<T>(1);
+  quad[2][1] = static_cast<T>(1);
+  quad[3][1] = static_cast<T>(0.5);
+  quad[3][0] = static_cast<T>(0.5);
+  return quad;
+}
+
 // -------------------------------------------------------------------
 // Interpolation
 // -------------------------------------------------------------------
@@ -130,6 +148,8 @@ TEST_CASE(area)
 {
   um2::Quadrilateral<2, T> const quad = makeQuad<2, T>();
   ASSERT_NEAR(quad.area(), static_cast<T>(1), static_cast<T>(1e-5));
+  um2::Quadrilateral<2, T> const triquad = makeTriQuad<2, T>();
+  ASSERT_NEAR(triquad.area(), static_cast<T>(0.5), static_cast<T>(1e-5));
 }
 
 // -------------------------------------------------------------------
@@ -149,6 +169,10 @@ TEST_CASE(centroid)
   c = quad.centroid();
   ASSERT_NEAR(c[0], static_cast<T>(1.00), static_cast<T>(1e-5));
   ASSERT_NEAR(c[1], static_cast<T>(0.25), static_cast<T>(1e-5));
+  um2::Quadrilateral<D, T> const quad2 = makeTriQuad<D, T>();
+  c = quad2.centroid();
+  ASSERT_NEAR(c[0], static_cast<T>(static_cast<T>(2) / 3), static_cast<T>(1e-5));
+  ASSERT_NEAR(c[1], static_cast<T>(static_cast<T>(1) / 3), static_cast<T>(1e-5));
 }
 
 // -------------------------------------------------------------------

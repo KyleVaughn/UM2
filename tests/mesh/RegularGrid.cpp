@@ -43,6 +43,23 @@ TEST_CASE(constructor)
 
 template <Size D, typename T>
 HOSTDEV
+TEST_CASE(getCellCentroid)
+{
+  um2::RegularGrid<D, T> const grid = makeGrid<D, T>();
+  if constexpr (D == 1) {
+    auto const x = grid.getCellCentroid(0);
+    ASSERT_NEAR(x[0], grid.minima[0] + grid.spacing[0] / static_cast<T>(2),
+                static_cast<T>(1e-6));
+  }
+  if constexpr (D == 2) {
+    auto const y = grid.getCellCentroid(0, 0);
+    ASSERT_NEAR(y[1], grid.minima[1] + grid.spacing[1] / static_cast<T>(2),
+                static_cast<T>(1e-6));
+  }
+}
+
+template <Size D, typename T>
+HOSTDEV
 TEST_CASE(accessors)
 {
   um2::RegularGrid<D, T> grid = makeGrid<D, T>();
@@ -246,6 +263,7 @@ TEST_SUITE(RegularGrid)
   TEST_HOSTDEV(constructor, 1, 1, D, T);
   TEST_HOSTDEV(accessors, 1, 1, D, T);
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
+  TEST_HOSTDEV(getCellCentroid, 1, 1, D, T)
   if constexpr (D == 2) {
     TEST_HOSTDEV(getBox, 1, 1, T);
     TEST_HOSTDEV(getCellIndicesIntersecting, 1, 1, T);

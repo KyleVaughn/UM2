@@ -16,7 +16,7 @@ TEST_CASE(compareGeometry)
   ASSERT(um2::compareGeometry(tri, tri_ref) == 1);
   tri.vertices.pop_back();
   T const eps = um2::epsilonDistance<T>();
-  tri.vertices[0][0] += (eps / 2); 
+  tri.vertices[0][0] += (eps / 2);
   ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
   tri.vertices[0][0] += (eps * 2);
   ASSERT(um2::compareGeometry(tri, tri_ref) == 2);

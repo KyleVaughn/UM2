@@ -1012,132 +1012,83 @@ SpatialPartition<T, I>::makeCore(std::vector<std::vector<Size>> const & asy_ids)
   return 0;
 }
 
-// template <std::floating_point T, std::signed_integral I>
-// void SpatialPartition<T, I>::import_coarse_cells(std::string const & filename)
-//{
-//     Log::info("Importing coarse cells from " + filename);
-//     MeshFile<T, I> mesh_file;
-//     importMesh(filename, mesh_file);
-//     std::vector<std::string> material_names;
-//     mesh_file.getMaterialNames(material_names);
-//     materials.resize(static_cast<Size>(material_names.size()));
-//     for (size_t i = 0; i < material_names.size(); ++i) {
-//       ShortString & this_name = materials[static_cast<Size>(i)].name;
-//       std::copy(material_names[i].cbegin() + 9,
-//                 material_names[i].cend() + 1,
-//                 this_name.data());
-//         }
-//     }
-//     std::stringstream ss;
-//     Size const num_coarse_cells = numCoarseCells();
-//     for (Size i = 0; i < num_coarse_cells; ++i) {
-//         ss.str("");
-//         ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << i;
-//         MeshFile<T, I> cc_submesh;
-//         mesh_file.get_submesh(ss.str(), cc_submesh);
-//         MeshType const mesh_type = cc_submesh.get_mesh_type();
-//         switch (mesh_type) {
-//             case MeshType::TRI:
-//                 {
-//                     CoarseCell & cc = this->coarse_cells[i];
-//                     cc.mesh_type = static_cast<I>(MeshType::TRI);
-//                     cc.mesh_id = static_cast<I>(this->tri.size());
-//                     cc_submesh.get_material_ids(cc.material_ids, material_names);
-//                     this->tri.push_back(cc_submesh);
-//                     // Shift the points so that the min point is at the origin.
-//                     TriMesh<T, I> & mesh = this->tri.back();
-//                     AABox2<T> bb = bounding_box(mesh);
-//                     Point2<T> min_point = bb.minima;
-//                     for (auto & p : mesh.vertices) { p -= min_point; }
-//                     Point2<T> dxdy = bb.maxima - bb.minima;
-//                     UM2_ASSERT(is_approx(dxdy, cc.dxdy));
-//                     break;
-//                 }
-//             case MeshType::QUAD:
-//                 {
-//                     CoarseCell & cc = this->coarse_cells[i];
-//                     cc.mesh_type = static_cast<I>(MeshType::QUAD);
-//                     cc.mesh_id = static_cast<I>(this->quad.size());
-//                     cc_submesh.get_material_ids(cc.material_ids, material_names);
-//                     this->quad.push_back(cc_submesh);
-//                     // Shift the points so that the min point is at the origin.
-//                     QuadMesh<T, I> & mesh = this->quad.back();
-//                     AABox2<T> bb = bounding_box(mesh);
-//                     Point2<T> min_point = bb.minima;
-//                     for (auto & p : mesh.vertices) { p -= min_point; }
-//                     Point2<T> dxdy = bb.maxima - bb.minima;
-//                     UM2_ASSERT(is_approx(dxdy, cc.dxdy));
-//                     break;
-//                 }
-//             case MeshType::TRI_QUAD:
-//                 {
-//                     CoarseCell & cc = this->coarse_cells[i];
-//                     cc.mesh_type = static_cast<I>(MeshType::TRI_QUAD);
-//                     cc.mesh_id = static_cast<I>(this->tri_quad.size());
-//                     cc_submesh.get_material_ids(cc.material_ids, material_names);
-//                     this->tri_quad.push_back(cc_submesh);
-//                     // Shift the points so that the min point is at the origin.
-//                     TriQuadMesh<T, I> & mesh = this->tri_quad.back();
-//                     AABox2<T> bb = bounding_box(mesh);
-//                     Point2<T> min_point = bb.minima;
-//                     for (auto & p : mesh.vertices) { p -= min_point; }
-//                     Point2<T> dxdy = bb.maxima - bb.minima;
-//                     UM2_ASSERT(is_approx(dxdy, cc.dxdy));
-//                     break;
-//                 }
-//             case MeshType::QUADRATIC_TRI:
-//                 {
-//                     CoarseCell & cc = this->coarse_cells[i];
-//                     cc.mesh_type = static_cast<I>(MeshType::QUADRATIC_TRI);
-//                     cc.mesh_id = static_cast<I>(this->quadratic_tri.size());
-//                     cc_submesh.get_material_ids(cc.material_ids, material_names);
-//                     this->quadratic_tri.push_back(cc_submesh);
-//                     // Shift the points so that the min point is at the origin.
-//                     QuadraticTriMesh<T, I> & mesh = this->quadratic_tri.back();
-//                     AABox2<T> bb = bounding_box(mesh);
-//                     Point2<T> min_point = bb.minima;
-//                     for (auto & p : mesh.vertices) { p -= min_point; }
-//                     Point2<T> dxdy = bb.maxima - bb.minima;
-//                     UM2_ASSERT(is_approx(dxdy, cc.dxdy));
-//                     break;
-//                 }
-//             case MeshType::QUADRATIC_QUAD:
-//                 {
-//                     CoarseCell & cc = this->coarse_cells[i];
-//                     cc.mesh_type = static_cast<I>(MeshType::QUADRATIC_QUAD);
-//                     cc.mesh_id = static_cast<I>(this->quadratic_quad.size());
-//                     cc_submesh.get_material_ids(cc.material_ids, material_names);
-//                     this->quadratic_quad.push_back(cc_submesh);
-//                     // Shift the points so that the min point is at the origin.
-//                     QuadraticQuadMesh<T, I> & mesh = this->quadratic_quad.back();
-//                     AABox2<T> bb = bounding_box(mesh);
-//                     Point2<T> min_point = bb.minima;
-//                     for (auto & p : mesh.vertices) { p -= min_point; }
-//                     Point2<T> dxdy = bb.maxima - bb.minima;
-//                     UM2_ASSERT(is_approx(dxdy, cc.dxdy));
-//                     break;
-//                 }
-//             case MeshType::QUADRATIC_TRI_QUAD:
-//                 {
-//                     CoarseCell & cc = this->coarse_cells[i];
-//                     cc.mesh_type = static_cast<I>(MeshType::QUADRATIC_TRI_QUAD);
-//                     cc.mesh_id = static_cast<I>(this->quadratic_tri_quad.size());
-//                     cc_submesh.get_material_ids(cc.material_ids, material_names);
-//                     this->quadratic_tri_quad.push_back(cc_submesh);
-//                     // Shift the points so that the min point is at the origin.
-//                     QuadraticTriQuadMesh<T, I> & mesh =
-//                     this->quadratic_tri_quad.back(); AABox2<T> bb = bounding_box(mesh);
-//                     Point2<T> min_point = bb.minima;
-//                     for (auto & p : mesh.vertices) { p -= min_point; }
-//                     Point2<T> dxdy = bb.maxima - bb.minima;
-//                     UM2_ASSERT(is_approx(dxdy, cc.dxdy));
-//                     break;
-//                 }
-//             default:
-//                 Log::error("Mesh type not supported");
-//         }
-//     }
-// }
+template <std::floating_point T, std::signed_integral I>
+void
+SpatialPartition<T, I>::importCoarseCells(std::string const & filename)
+{
+  Log::info("Importing coarse cells from " + filename);
+  MeshFile<T, I> mesh_file;
+  importMesh(filename, mesh_file);
+
+  // Get the materials
+  std::vector<std::string> material_names;
+  mesh_file.getMaterialNames(material_names);
+  materials.resize(static_cast<Size>(material_names.size()));
+  for (size_t i = 0; i < material_names.size(); ++i) {
+    ShortString & this_name = materials[static_cast<Size>(i)].name;
+    this_name = ShortString(material_names[i].substr(9).c_str());
+  }
+
+  std::stringstream ss;
+  Size const num_coarse_cells = numCoarseCells();
+  for (Size i = 0; i < num_coarse_cells; ++i) {
+    ss.str("");
+    ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << i;
+    MeshFile<T, I> cc_submesh;
+    mesh_file.getSubmesh(ss.str(), cc_submesh);
+
+    MeshType const mesh_type = cc_submesh.type;
+    CoarseCell & cc = coarse_cells[i];
+    cc.mesh_type = mesh_type;
+    std::vector<MaterialID> mat_ids;
+    cc_submesh.getMaterialIDs(mat_ids, material_names);
+    cc.material_ids.resize(static_cast<Size>(mat_ids.size()));
+    std::copy(mat_ids.cbegin(), mat_ids.cend(), cc.material_ids.begin());
+    AxisAlignedBox2<T> bb;
+    Point2<T> * vertices = nullptr;
+    size_t const num_verts = cc_submesh.vertices.size();
+    switch (mesh_type) {
+    case MeshType::Tri: {
+      cc.mesh_id = tri.size();
+      tri.push_back(um2::move(TriMesh<2, T, I>(cc_submesh)));
+      bb = tri.back().boundingBox();
+      vertices = tri.back().vertices.data();
+      break;
+    }
+    case MeshType::Quad: {
+      cc.mesh_id = quad.size();
+      quad.push_back(um2::move(QuadMesh<2, T, I>(cc_submesh)));
+      bb = quad.back().boundingBox();
+      vertices = quad.back().vertices.data();
+      break;
+    }
+    case MeshType::QuadraticTri: {
+      cc.mesh_id = quadratic_tri.size();
+      quadratic_tri.push_back(um2::move(QuadraticTriMesh<2, T, I>(cc_submesh)));
+      bb = quadratic_tri.back().boundingBox();
+      vertices = quadratic_tri.back().vertices.data();
+      break;
+    }
+    case MeshType::QuadraticQuad: {
+      cc.mesh_id = quadratic_quad.size();
+      quadratic_quad.push_back(um2::move(QuadraticQuadMesh<2, T, I>(cc_submesh)));
+      bb = quadratic_quad.back().boundingBox();
+      vertices = quadratic_quad.back().vertices.data();
+      break;
+    }
+    default:
+      Log::error("Mesh type not supported");
+    }
+
+    // Shift the points so that the min point is at the origin.
+    Point2<T> const min_point = bb.minima;
+    for (size_t ip = 0; ip < num_verts; ++ip) {
+      vertices[ip] -= min_point;
+    }
+    Point2<T> const dxdy = bb.maxima - bb.minima;
+    assert(isApprox(dxdy, cc.dxdy));
+  }
+}
 //
 //  template <std::floating_point T, std::signed_integral I>
 //  void SpatialPartition<T, I>::coarse_cell_heights(Vector<std::pair<int, double>> &

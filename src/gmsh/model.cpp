@@ -378,13 +378,6 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
 
   gmsh::model::occ::fragment(object_dimtags, tool_dimtags, out_dimtags, out_dimtags_map,
                              tag, remove_object, remove_tool);
-  //  // Remove object or tool entities if requested.
-  //  if (remove_object) {
-  //    gmsh::model::removeEntities(object_dimtags, /*recursive=*/true);
-  //  }
-  //  if (remove_tool) {
-  //    gmsh::model::removeEntities(tool_dimtags, /*recursive=*/true);
-  //  }
   gmsh::model::occ::synchronize();
 
   // ----------------------------------------------------------------------
@@ -469,13 +462,6 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
   gmsh::model::removePhysicalGroups();
   gmsh::model::occ::intersect(object_dimtags, tool_dimtags, out_dimtags, out_dimtags_map,
                               tag, remove_object, remove_tool);
-  // Remove object or tool entities if requested.
-  //  if (remove_object) {
-  //    gmsh::model::removeEntities(object_dimtags, /*recursive=*/true);
-  //  }
-  //  if (remove_tool) {
-  //    gmsh::model::removeEntities(tool_dimtags, /*recursive=*/true);
-  //  }
   gmsh::model::occ::synchronize();
 
   // ----------------------------------------------------------------------
@@ -703,69 +689,76 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
   return out_tags;
 
 } // addCylindricalPinLattice2D
-//
-//     std::vector<int> add_cylindrical_pin(
-//             Point3d const & center,
-//             double const height,
-//             std::vector<double> const & radii,
-//             std::vector<Material> const & materials)
-//     {
-//         Log::info("Adding cylindrical pin");
-//         // Input checking
-//         size_t nradii = radii.size();
-//         if (height <= 0.0) { Log::error("height must be positive"); }
-//         if (nradii == 0) { Log::error("radii must not be empty"); }
-//         if (nradii > materials.size()) {
-//             Log::error("Number of radii must be <= number of materials");
-//         }
-//         if (radii[0] <= 0.0) { Log::error("radii must be positive"); }
-//         for (size_t i = 1; i < nradii; ++i) {
-//             if (radii[i] <= radii[i-1]) { Log::error("radii must be strictly
-//             increasing"); }
-//         }
-//         // Create the pin geometry
-//         gmsh::vectorpair dimtags_2d;
-//         double const x = center[0u];
-//         double const y = center[1u];
-//         double const z = center[2u];
-//         // Do the innermost disk
-//         int const circle0_tag = gmsh::model::occ::addCircle(x, y, z, radii[0]);
-//         int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
-//         int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
-//         dimtags_2d.push_back({2, disk_tag});
-//         // Do the annuli
-//         int prev_loop_tag = loop0_tag;
-//         for (size_t i = 1; i < nradii; ++i) {
-//             int const circle_tag = gmsh::model::occ::addCircle(x, y, z, radii[i]);
-//             int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
-//             int const annulus_tag = gmsh::model::occ::addPlaneSurface({loop_tag,
-//             prev_loop_tag}); dimtags_2d.push_back({2, annulus_tag}); prev_loop_tag =
-//             loop_tag;
-//         }
-//         gmsh::vectorpair out_dimtags;
-//         gmsh::model::occ::extrude(dimtags_2d, 0.0, 0.0, height, out_dimtags);
-//         gmsh::model::occ::synchronize();
-//         std::vector<int> out_tags;
-//         out_tags.reserve(nradii);
-//         for (auto const & dt : out_dimtags) {
-//             if (dt.first == 3) { out_tags.emplace_back(dt.second); }
-//         }
-//         // Add materials
-//         for (size_t i = 0; i < nradii; ++i) {
-//             add_to_physical_group(3, {out_tags[i]}, -1, "Material " +
-//             to_string(materials[i].name));
-//             // Color entities according to materials
-//             Color const color = materials[i].color;
-//             gmsh::model::setColor(
-//                     {{3, out_tags[i]}}, // Entities to color
-//                     static_cast<int>(color.r),
-//                     static_cast<int>(color.g),
-//                     static_cast<int>(color.b),
-//                     static_cast<int>(color.a),
-//                     true);
-//         }
-//         return out_tags;
-//     } // end function
+
+auto
+addCylindricalPin(Point3d const & center, double const height,
+                  std::vector<double> const & radii,
+                  std::vector<Material> const & materials) -> std::vector<int>
+{
+  LOG_INFO("Adding cylindrical pin");
+  // Input checking
+  size_t const nradii = radii.size();
+  if (height <= 0.0) {
+    Log::error("height must be positive");
+  }
+  if (nradii == 0) {
+    Log::error("radii must not be empty");
+  }
+  if (nradii > materials.size()) {
+    Log::error("Number of radii must be <= number of materials");
+  }
+  if (radii[0] <= 0.0) {
+    Log::error("radii must be positive");
+  }
+  if (!std::is_sorted(radii.cbegin(), radii.cend())) {
+    Log::error("radii must be strictly increasing");
+  }
+  // Create the pin geometry
+  gmsh::vectorpair dimtags_2d;
+  double const x = center[0];
+  double const y = center[1];
+  double const z = center[2];
+  // Do the innermost disk
+  int const circle0_tag = gmsh::model::occ::addCircle(x, y, z, radii[0]);
+  int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
+  int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
+  dimtags_2d.push_back({2, disk_tag});
+  // Do the annuli
+  int prev_loop_tag = loop0_tag;
+  for (size_t i = 1; i < nradii; ++i) {
+    int const circle_tag = gmsh::model::occ::addCircle(x, y, z, radii[i]);
+    int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
+    int const annulus_tag = gmsh::model::occ::addPlaneSurface({loop_tag, prev_loop_tag});
+    dimtags_2d.push_back({2, annulus_tag});
+    prev_loop_tag = loop_tag;
+  }
+  gmsh::vectorpair out_dimtags;
+  // NOLINTNEXTLINE(readability-suspicious-call-argument)
+  gmsh::model::occ::extrude(dimtags_2d, 0.0, 0.0, height, out_dimtags);
+  gmsh::model::occ::synchronize();
+  std::vector<int> out_tags;
+  out_tags.reserve(nradii);
+  for (auto const & dt : out_dimtags) {
+    if (dt.first == 3) {
+      out_tags.emplace_back(dt.second);
+    }
+  }
+  // Add materials
+  for (size_t i = 0; i < nradii; ++i) {
+    addToPhysicalGroup(3, {out_tags[i]}, -1,
+                       "Material " + std::string(materials[i].name.data()));
+    // Color entities according to materials
+    Color const color = materials[i].color;
+    gmsh::model::setColor(
+        {
+            {3, out_tags[i]}
+    }, // Entities to color
+        static_cast<int>(color.r()), static_cast<int>(color.g()),
+        static_cast<int>(color.b()), static_cast<int>(color.a()),
+        /*recursive=*/true);
+  }
+  return out_tags;
+} // addCylindricalPin
 //
 //     std::vector<int> add_cylindrical_pin_lattice(
 //             std::vector<std::vector<double>> const & radii,

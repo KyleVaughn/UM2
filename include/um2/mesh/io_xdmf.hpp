@@ -1,8 +1,8 @@
 #pragma once
 
 #include <um2/common/Log.hpp>
-#include <um2/stdlib/sto.hpp>
 #include <um2/mesh/MeshFile.hpp>
+#include <um2/stdlib/sto.hpp>
 
 #include <algorithm> // std::transform
 #include <cstring>   // strcmp
@@ -36,10 +36,11 @@ static void writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
 {
   Log::debug("Writing XDMF geometry");
   size_t const num_verts = mesh.vertices.size();
-  bool const is_2d = std::count_if(mesh.vertices.cbegin(), mesh.vertices.cend(),
-                                    [](auto const & v) { return um2::abs(v[2]) < epsilonDistance<T>(); }
-                                  ) == static_cast<int64_t>(num_verts);
-  size_t const dim = is_2d ? 2 : 3; 
+  bool const is_2d =
+      std::count_if(mesh.vertices.cbegin(), mesh.vertices.cend(), [](auto const & v) {
+        return um2::abs(v[2]) < epsilonDistance<T>();
+      }) == static_cast<int64_t>(num_verts);
+  size_t const dim = is_2d ? 2 : 3;
   // Create XDMF Geometry node
   auto xgeom = xgrid.append_child("Geometry");
   if (dim == 3) {
@@ -77,7 +78,8 @@ static void writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
   // Create HDF5 data set
   H5::DataSet const h5dataset = h5group.createDataSet("Geometry", h5type, h5space);
   // Create an xy or xyz array
-  T * xyz = new T[num_verts * dim];
+  // cppcheck-suppress constStatement
+  T * const xyz = new T[num_verts * dim];
   if (dim == 2) {
     for (size_t i = 0; i < num_verts; ++i) {
       xyz[2 * i] = mesh.vertices[i][0];
@@ -554,9 +556,9 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
 
 template <std::floating_point T, std::signed_integral I, std::signed_integral V>
 static void
-addElementsToMesh(size_t const num_elements,
-                  std::string const & dimensions, MeshFile<T, I> & mesh,
-                  H5::DataSet const & dataset, H5::IntType const & datatype)
+addElementsToMesh(size_t const num_elements, std::string const & dimensions,
+                  MeshFile<T, I> & mesh, H5::DataSet const & dataset,
+                  H5::IntType const & datatype)
 {
   size_t const split = dimensions.find_last_of(' ');
   size_t const ncells = sto<size_t>(dimensions.substr(0, split));
@@ -589,7 +591,6 @@ static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5
   // Get the topology type
   std::string const topology_type = xtopology.attribute("TopologyType").value();
   MeshType mesh_type = MeshType::None;
-
 
   if (topology_type == "Triangle") {
     mesh_type = MeshType::Tri;
@@ -660,17 +661,13 @@ static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5
   // Get the dimensions
   std::string const dimensions = xdataitem.attribute("Dimensions").value();
   if (datatype_size == 1) {
-    addElementsToMesh<T, I, int8_t>(num_elements, dimensions, mesh,
-                                    dataset, datatype);
+    addElementsToMesh<T, I, int8_t>(num_elements, dimensions, mesh, dataset, datatype);
   } else if (datatype_size == 2) {
-    addElementsToMesh<T, I, int16_t>(num_elements, dimensions, mesh,
-                                     dataset, datatype);
+    addElementsToMesh<T, I, int16_t>(num_elements, dimensions, mesh, dataset, datatype);
   } else if (datatype_size == 4) {
-    addElementsToMesh<T, I, int32_t>(num_elements, dimensions, mesh,
-                                     dataset, datatype);
+    addElementsToMesh<T, I, int32_t>(num_elements, dimensions, mesh, dataset, datatype);
   } else if (datatype_size == 8) {
-    addElementsToMesh<T, I, int64_t>(num_elements, dimensions, mesh,
-                                     dataset, datatype);
+    addElementsToMesh<T, I, int64_t>(num_elements, dimensions, mesh, dataset, datatype);
   } else {
     Log::error("Unsupported data type size");
   }

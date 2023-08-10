@@ -96,18 +96,19 @@ set(UM2_HEADERS
     "include/um2/mesh/QuadraticQuadMesh.hpp"
     # mpact
     "include/um2/mpact/SpatialPartition.hpp"
+    "include/um2/mpact/io.hpp"
     # gmsh
     "include/um2/gmsh/base_gmsh_api.hpp"
     "include/um2/gmsh/io.hpp"
-    # "include/um2/gmsh/model.hpp"
-    # "include/um2/gmsh/mesh.hpp"
+    "include/um2/gmsh/model.hpp"
+    "include/um2/gmsh/mesh.hpp"
     #    #    # ray_casting
     #    #    "include/um2/ray_casting/Ray.hpp"
     #    # visualization
     #    "include/um2/visualization/Image2D.hpp"
-    #    # api
-    #    "include/um2.hpp"
-    #    #"include/um2c.h"
+    # api
+    "include/um2.hpp"
+    #"include/um2c.h"
     )
 
 # Sources
@@ -117,13 +118,13 @@ set(UM2_SOURCES
     # gmsh
     "src/gmsh/base_gmsh_api.cpp"
     "src/gmsh/io.cpp"
-  #    "src/gmsh/model.cpp"
-  #    "src/gmsh/mesh.cpp"
+    "src/gmsh/model.cpp"
+    "src/gmsh/mesh.cpp"
   #    # visualization
   #    "src/visualization/Image2D.cpp"
-  #    # api
-  #    "src/um2.cpp"
-  #    #"src/um2c.cpp"
+    # api
+    "src/um2.cpp"
+    #"src/um2c.cpp"
   ) 
 
 # Visualization headers and sources

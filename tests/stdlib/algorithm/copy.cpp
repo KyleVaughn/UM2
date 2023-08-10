@@ -39,7 +39,8 @@ TEST_CASE(copy_nontrivial)
     {
     }
     HOSTDEV
-    A(A && other) noexcept
+    A(A && other)
+    noexcept
         : a(other.a),
           b(other.b)
     {

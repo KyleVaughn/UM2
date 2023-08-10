@@ -2,8 +2,8 @@
 
 #include <um2/config.hpp>
 
-#include <um2/stdlib/Vector.hpp>
 #include <um2/geometry/Point.hpp>
+#include <um2/stdlib/Vector.hpp>
 
 namespace um2
 {
@@ -12,7 +12,7 @@ namespace um2
 //-----------------------------------------------------------------------------
 // A 2D volumetric or 3D surface mesh composed of polygons of polynomial order P.
 // Each polygon (face) is composed of N vertices. Each vertex is a D-dimensional
-// point of floating point type T. 
+// point of floating point type T.
 //  - P = 1, N =  3: Triangular mesh
 //  - P = 1, N =  4: Quadrilateral mesh
 //  - P = 2, N =  6: Quadratic triangular mesh

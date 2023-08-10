@@ -1,6 +1,8 @@
 #include <um2/geometry/morton_sort_points.hpp>
 #include <um2/stdlib/Vector.hpp>
 
+#include <random>
+
 #include "../test_macros.hpp"
 
 template <std::unsigned_integral U, std::floating_point T>
@@ -29,6 +31,40 @@ TEST_CASE(mortonSort2D)
   ASSERT(um2::isApprox(points[13], um2::Point2<T>(3, 2) / 3));
   ASSERT(um2::isApprox(points[14], um2::Point2<T>(2, 3) / 3));
   ASSERT(um2::isApprox(points[15], um2::Point2<T>(3, 3) / 3));
+}
+
+template <std::unsigned_integral U, std::floating_point T>
+TEST_CASE(mortonSort3D)
+{
+  um2::Vector<um2::Point3<T>> points(64);
+  for (Size i = 0; i < 4; ++i) {
+    for (Size j = 0; j < 4; ++j) {
+      for (Size k = 0; k < 4; ++k) {
+        points[i * 16 + j * 4 + k] =
+            um2::Point3<T>(static_cast<T>(i), static_cast<T>(j), static_cast<T>(k)) / 3;
+      }
+    }
+  }
+  std::random_device rd;
+  std::mt19937 g(rd());
+  std::shuffle(points.begin(), points.end(), g);
+  um2::mortonSort<U>(points.begin(), points.end());
+  ASSERT(um2::isApprox(points[0], um2::Point3<T>(0, 0, 0) / 3));
+  ASSERT(um2::isApprox(points[1], um2::Point3<T>(1, 0, 0) / 3));
+  ASSERT(um2::isApprox(points[2], um2::Point3<T>(0, 1, 0) / 3));
+  ASSERT(um2::isApprox(points[3], um2::Point3<T>(1, 1, 0) / 3));
+  ASSERT(um2::isApprox(points[4], um2::Point3<T>(0, 0, 1) / 3));
+  ASSERT(um2::isApprox(points[5], um2::Point3<T>(1, 0, 1) / 3));
+  ASSERT(um2::isApprox(points[6], um2::Point3<T>(0, 1, 1) / 3));
+  ASSERT(um2::isApprox(points[7], um2::Point3<T>(1, 1, 1) / 3));
+  ASSERT(um2::isApprox(points[8], um2::Point3<T>(2, 0, 0) / 3));
+  ASSERT(um2::isApprox(points[9], um2::Point3<T>(3, 0, 0) / 3));
+  ASSERT(um2::isApprox(points[10], um2::Point3<T>(2, 1, 0) / 3));
+  ASSERT(um2::isApprox(points[11], um2::Point3<T>(3, 1, 0) / 3));
+  ASSERT(um2::isApprox(points[12], um2::Point3<T>(2, 0, 1) / 3));
+  ASSERT(um2::isApprox(points[13], um2::Point3<T>(3, 0, 1) / 3));
+  ASSERT(um2::isApprox(points[14], um2::Point3<T>(2, 1, 1) / 3));
+  ASSERT(um2::isApprox(points[15], um2::Point3<T>(3, 1, 1) / 3));
 }
 
 #if UM2_ENABLE_CUDA
@@ -76,6 +112,7 @@ template <std::unsigned_integral U, std::floating_point T>
 TEST_SUITE(mortonSort)
 {
   TEST((mortonSort2D<U, T>));
+  TEST((mortonSort3D<U, T>));
 #if UM2_ENABLE_CUDA
   TEST((deviceMortonSort<U, T>));
 #endif

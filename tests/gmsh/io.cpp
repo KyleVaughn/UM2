@@ -1,5 +1,5 @@
-#include <um2/config.hpp>
 #include <um2/common/Log.hpp>
+#include <um2/config.hpp>
 #if UM2_ENABLE_GMSH
 #  include <um2/gmsh/io.hpp>
 #endif
@@ -16,14 +16,18 @@ TEST_CASE(write_open)
   um2::gmsh::model::occ::addDisk(0.0, 0.0, 0.0, 1.0, 1.0);
   um2::gmsh::model::occ::synchronize();
   um2::gmsh::model::addPhysicalGroup(2, {1}, -1, "A");
-  um2::gmsh::model::setColor({{2,1}}, 255, 0, 0, 255, /*recursive=*/true);
+  um2::gmsh::model::setColor(
+      {
+          {2, 1}
+  },
+      255, 0, 0, 255, /*recursive=*/true);
   um2::gmsh::write("test.brep", /*extra_info=*/true);
   um2::gmsh::finalize();
   um2::gmsh::initialize();
   um2::gmsh::open("test.brep", /*extra_info=*/true);
   um2::gmsh::vectorpair dimtags;
   um2::gmsh::model::getEntities(dimtags);
-  ASSERT(dimtags.size() == 3); 
+  ASSERT(dimtags.size() == 3);
   ASSERT(dimtags[0].first == 0);
   ASSERT(dimtags[0].second == 1);
   ASSERT(dimtags[1].first == 1);
@@ -44,7 +48,7 @@ TEST_CASE(write_open)
   ASSERT(g == 0);
   ASSERT(b == 0);
   ASSERT(a == 255);
-  r = 0; 
+  r = 0;
   g = 0;
   b = 0;
   a = 0;
@@ -59,10 +63,7 @@ TEST_CASE(write_open)
   ASSERT(stat == 0);
 }
 
-TEST_SUITE(gmsh_io)
-{
-  TEST(write_open);
-}
+TEST_SUITE(gmsh_io) { TEST(write_open); }
 #endif // UM2_ENABLE_GMSH
 
 auto

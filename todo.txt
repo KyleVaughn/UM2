@@ -7,6 +7,10 @@ Quadratic Segment use tri bb or not, difference in best vs worst case
 
 QuadraticSegment, closest point
 
+Mesh-> Faster find face
+Mesh-> Reorder.
+MeshFile Reorder
+
 Fix dZ
 Drop support for non-homogenous meshes
 

@@ -1,51 +1,34 @@
-Vector.push_back(&)
-Vector.push_back(&&)
-Vector.push_back(n, &)
-sortPermutation(Vector)
-applyPermutation(Vector, Permutation)
-
-String.starts_with
-String.ends_with
-String(char const *)
-
-ShortString(char const *)
-ShortString==(std::string const &)
-
-geometry/morton.hpp
-  Ensure that mortonSort works in 3D for: 
-    (uint32_t, float)
-    (uint32_t, double)
-    (uint64_t, double)
-
-Quadrilateral.area
-  For a quadrilateral with 3 collinear points, is the area still correct?
-
-Quadrilateral.centroid
-  For a quadrilateral with 3 collinear points, is the centroid still correct?
-
-Material tests
-
-RegularGrid.getCellCentroid
-
-MeshFile.compareTopology
-MeshFile.sortElsets
-
-Ignore commented section below
-// TriMesh.regularPartition
-//   3 by 3 grid. 
-//     6  7  8
-//     3  4  5
-//     0  1  2
-//     The cells on the diagonal (0, 4, 8) should contain 0 and 1. 
-//     Cell 6 = 1
-//     Cell 2 = 0
-//     Cells 1, 3, 5, 7 are indeterminate due to floating point error.
+ShortString 
+  operator[]
 
 Gmsh
-  groupPreservingIntersect
-  addCylindricalPin2D
-  overlaySpatialPartition
-  addCylindricalPinLattice2D
+  model
+    groupPreservingIntersect_2d3d?
+    addCylindricalPin2D
+    addCylindricalPinLattice2D
+    addCylinricalPin
+    overlaySpatialPartition 2d
+    overlaySpatialPartition 3d
+  mesh
+    setGlobalMeshSize
+    generateMesh
+
+MeshFile
+  getMaterialNames
+  getMaterialIDs
+
+TriMesh
+  toMeshFile
+QuadMesh
+  toMeshFile
+QuadraticTriMesh
+  toMeshFile
+QuadraticQuadMesh
+  toMeshFile
+
+SpatialPartition
+  importCoarseCells
+  writeXDMFFile
 
 Image
   rasterizePoint

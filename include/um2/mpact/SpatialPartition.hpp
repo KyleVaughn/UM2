@@ -1,7 +1,6 @@
 #pragma once
 
 #include <um2/common/Log.hpp>
-#include <um2/stdlib/Vector.hpp>
 #include <um2/mesh/MeshType.hpp>
 #include <um2/mesh/QuadMesh.hpp>
 #include <um2/mesh/QuadraticQuadMesh.hpp>
@@ -9,15 +8,13 @@
 #include <um2/mesh/RectilinearPartition.hpp>
 #include <um2/mesh/RegularPartition.hpp>
 #include <um2/mesh/TriMesh.hpp>
+#include <um2/mesh/io.hpp>
 #include <um2/physics/Material.hpp>
-// #include <um2/mesh/io.hpp>
+#include <um2/stdlib/Vector.hpp>
 // #include <um2/ray_casting/intersect/ray-linear_polygon_mesh.hpp>
 // #include <um2/ray_casting/intersect/ray-quadratic_polygon_mesh.hpp>
 
-// #include <iomanip>
-
-// #include <thrust/pair.h> // thrust::pair
-
+#include <iomanip>
 #include <string>
 
 namespace um2::mpact
@@ -175,8 +172,8 @@ struct SpatialPartition {
   auto
   makeCore(std::vector<std::vector<Size>> const & asy_ids);
 
-  //void
-  //importCoarseCells(std::string const & filename);
+  void
+  importCoarseCells(std::string const & filename);
   //
   //    void coarse_cell_heights(Vector<std::pair<int, double>> & id_dz) const;
   //

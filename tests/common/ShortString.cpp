@@ -63,6 +63,23 @@ TEST_CASE(copy_constructor)
 MAKE_CUDA_KERNEL(copy_constructor);
 
 HOSTDEV
+TEST_CASE(const_char_pointer_constructor)
+{
+  um2::ShortString s("hello");
+  assert(s.size() == 5);
+  // cppcheck-suppress assertWithSideEffect
+  assert(s.data()[0] == 'h');
+  // cppcheck-suppress assertWithSideEffect
+  assert(s.data()[1] == 'e');
+  // cppcheck-suppress assertWithSideEffect
+  assert(s.data()[2] == 'l');
+  // cppcheck-suppress assertWithSideEffect
+  assert(s.data()[3] == 'l');
+  // cppcheck-suppress assertWithSideEffect
+  assert(s.data()[4] == 'o');
+}
+
+HOSTDEV
 TEST_CASE(move_constructor)
 {
   um2::ShortString s1("Garbage");
@@ -111,6 +128,8 @@ TEST_CASE(equals_operator)
   ASSERT(s0 == s0);
   ASSERT(s0 == s2);
   ASSERT(s0 != s1);
+  ASSERT(s0 == std::string("hello"));
+  ASSERT(!(s0 == std::string("helo")));
 }
 MAKE_CUDA_KERNEL(equals_operator);
 
@@ -154,6 +173,7 @@ TEST_SUITE(ShortString)
   TEST_HOSTDEV(const_char_array_constructor)
   TEST_HOSTDEV(copy_constructor)
   TEST_HOSTDEV(move_constructor)
+  TEST_HOSTDEV(const_char_pointer_constructor)
 
   // Operators
   TEST_HOSTDEV(assign_operator)
