@@ -563,7 +563,10 @@ addElementsToMesh(size_t const num_elements, std::string const & dimensions,
   size_t const split = dimensions.find_last_of(' ');
   size_t const ncells = sto<size_t>(dimensions.substr(0, split));
   size_t const nverts = sto<size_t>(dimensions.substr(split + 1));
-  assert(ncells == num_elements);
+  if (ncells != num_elements) {
+    Log::error("Mismatch in number of elements");
+    return;
+  }
   V * data = new V[ncells * nverts];
   dataset.read(data, datatype);
   // Add the elements to the mesh
