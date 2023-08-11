@@ -13,22 +13,24 @@
 #include <iostream>
 
 constexpr Size npoints = 1 << 20;
-constexpr Size D = 2;
+constexpr Size dim = 2;
 
 template <typename T, typename U>
 static void
 mortonSortSerial(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<um2::Point<D, T>> points = makeVectorOfRandomPoints<D, T, 0, 1>(n);
+  um2::Vector<um2::Point<dim, T>> points = makeVectorOfRandomPoints<dim, T, 0, 1>(n);
+  std::random_device rd;
+  std::mt19937 g(rd());
   // NOLINTNEXTLINE
   for (auto s : state) {
     state.PauseTiming();
-    std::random_shuffle(points.begin(), points.end());
+    std::shuffle(points.begin(), points.end(), g);
     state.ResumeTiming();
-    std::sort(points.begin(), points.end(), um2::mortonLess<U, D, T>);
+    std::sort(points.begin(), points.end(), um2::mortonLess<U, dim, T>);
   }
-  if (!std::is_sorted(points.begin(), points.end(), um2::mortonLess<U, D, T>)) {
+  if (!std::is_sorted(points.begin(), points.end(), um2::mortonLess<U, dim, T>)) {
     std::cout << "Not sorted" << std::endl;
   }
 }
@@ -39,15 +41,17 @@ static void
 mortonSortParallel(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<um2::Point<D, T>> points = makeVectorOfRandomPoints<D, T, 0, 1>(n);
+  um2::Vector<um2::Point<dim, T>> points = makeVectorOfRandomPoints<dim, T, 0, 1>(n);
+  std::random_device rd;
+  std::mt19937 g(rd());
   // NOLINTNEXTLINE
   for (auto s : state) {
     state.PauseTiming();
-    std::random_shuffle(points.begin(), points.end());
+    std::shuffle(points.begin(), points.end(), g);
     state.ResumeTiming();
-    __gnu_parallel::sort(points.begin(), points.end(), um2::mortonLess<U, D, T>);
+    __gnu_parallel::sort(points.begin(), points.end(), um2::mortonLess<U, dim, T>);
   }
-  if (!std::is_sorted(points.begin(), points.end(), um2::mortonLess<U, D, T>)) {
+  if (!std::is_sorted(points.begin(), points.end(), um2::mortonLess<U, dim, T>)) {
     std::cout << "Not sorted" << std::endl;
   }
 }
@@ -56,16 +60,16 @@ mortonSortParallel(benchmark::State & state)
 // static void mortonSortParallelExec(benchmark::State& state)
 //{
 //   Size const n = static_cast<Size>(state.range(0));
-//   um2::Vector<um2::Point<D, T>> points = makeVectorOfRandomPoints<D, T, 0, 1>(n);
+//   um2::Vector<um2::Point<dim, T>> points = makeVectorOfRandomPoints<dim, T, 0, 1>(n);
 //   // NOLINTNEXTLINE
 //   for (auto s : state) {
 //     state.PauseTiming();
 //     std::random_shuffle(points.begin(), points.end());
 //     state.ResumeTiming();
 //     std::sort(std::execution::par_unseq, points.begin(), points.end(),
-//     um2::mortonLess<U, D, T>);
+//     um2::mortonLess<U, dim, T>);
 //   }
-//   if (!std::is_sorted(points.begin(), points.end(), um2::mortonLess<U, D, T>)) {
+//   if (!std::is_sorted(points.begin(), points.end(), um2::mortonLess<U, dim, T>)) {
 //     std::cout << "Not sorted" << std::endl;
 //   }
 // }
@@ -77,8 +81,8 @@ static void
 mortonSortCuda(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<um2::Point<D, T>> points = makeVectorOfRandomPoints<D, T, 0, 1>(n);
-  um2::Vector<um2::Point<D, T>> after(n);
+  um2::Vector<um2::Point<dim, T>> points = makeVectorOfRandomPoints<dim, T, 0, 1>(n);
+  um2::Vector<um2::Point<dim, T>> after(n);
 
   um2::Point2<T> * d_points;
   transferToDevice(&d_points, points);
@@ -95,7 +99,7 @@ mortonSortCuda(benchmark::State & state)
   }
 
   transferFromDevice(after, d_points);
-  if (!std::is_sorted(after.begin(), after.end(), um2::mortonLess<U, D, T>)) {
+  if (!std::is_sorted(after.begin(), after.end(), um2::mortonLess<U, dim, T>)) {
     std::cout << "Not sorted" << std::endl;
   }
   cudaFree(d_points);

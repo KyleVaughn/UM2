@@ -11,55 +11,55 @@
 #endif
 #include <random>
 
-template <typename T, int lo, int hi>
+template <typename T, int Lo, int Hi>
 auto
 randomFloat() -> T
 {
   // NOLINTNEXTLINE
   static std::default_random_engine rng;
-  static std::uniform_real_distribution<T> dist(lo, hi);
+  static std::uniform_real_distribution<T> dist(Lo, Hi);
   return dist(rng);
 }
 
-template <typename T, int lo, int hi>
+template <typename T, int Lo, int Hi>
 auto
 makeVectorOfRandomFloats(Size size) -> um2::Vector<T>
 {
   um2::Vector<T> v(size);
-  std::generate(v.begin(), v.end(), randomFloat<T, lo, hi>);
+  std::generate(v.begin(), v.end(), randomFloat<T, Lo, Hi>);
   return v;
 }
 
-template <Size D, typename T, int lo, int hi>
+template <Size D, typename T, int Lo, int Hi>
 auto
 randomPoint() -> um2::Point<D, T>
 {
   um2::Point<D, T> p;
-  std::generate(p.begin(), p.end(), randomFloat<T, lo, hi>);
+  std::generate(p.begin(), p.end(), randomFloat<T, Lo, Hi>);
   return p;
 }
 
-template <Size D, typename T, int lo, int hi>
+template <Size D, typename T, int Lo, int Hi>
 auto
 makeVectorOfRandomPoints(Size size) -> um2::Vector<um2::Point<D, T>>
 {
   um2::Vector<um2::Point<D, T>> v(size);
-  std::generate(v.begin(), v.end(), randomPoint<D, T, lo, hi>);
+  std::generate(v.begin(), v.end(), randomPoint<D, T, Lo, Hi>);
   return v;
 }
 
-template <typename T, int lo, int hi>
+template <typename T, int Lo, int Hi>
 auto
 makeVectorOfRandomTriangles(Size size) -> um2::Vector<um2::Triangle2<T>>
 {
   um2::Vector<um2::Triangle2<T>> v(size);
   for (auto & t : v) {
-    t[0] = randomPoint<2, T, lo, hi>();
-    t[1] = randomPoint<2, T, lo, hi>();
+    t[0] = randomPoint<2, T, Lo, Hi>();
+    t[1] = randomPoint<2, T, Lo, Hi>();
     // We require that the third point is CCW from the first two.
-    t[2] = randomPoint<2, T, lo, hi>();
+    t[2] = randomPoint<2, T, Lo, Hi>();
     while (!um2::areCCW(t[0], t[1], t[2])) {
-      t[2] = randomPoint<2, T, lo, hi>();
+      t[2] = randomPoint<2, T, Lo, Hi>();
     }
   }
   return v;

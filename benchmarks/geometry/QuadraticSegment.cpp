@@ -30,32 +30,32 @@
 #include <iostream>
 #include <thrust/complex.h>
 
-constexpr Size D = 2;
+constexpr Size dim = 2;
 constexpr Size npoints = 1 << 18;
 // BB of base seg is [0, 0] to [2, 1]
 // BB of seg4 is [0, 0] to [2.25, 2]
 constexpr int lo = -100;
 constexpr int hi = 100;
 
-// NOLINTBEGIN(readability-identifier-naming)
+// NOLINTBEGIN(readability-*)
 
 template <typename T>
 HOSTDEV static constexpr auto
-makeBaseSeg() -> um2::QuadraticSegment<D, T>
+makeBaseSeg() -> um2::QuadraticSegment<dim, T>
 {
-  um2::QuadraticSegment<D, T> q;
-  q[0] = um2::zeroVec<D, T>();
-  q[1] = um2::zeroVec<D, T>();
-  q[2] = um2::zeroVec<D, T>();
+  um2::QuadraticSegment<dim, T> q;
+  q[0] = um2::zeroVec<dim, T>();
+  q[1] = um2::zeroVec<dim, T>();
+  q[2] = um2::zeroVec<dim, T>();
   q[1][0] = static_cast<T>(2);
   return q;
 }
 
 template <typename T>
 HOSTDEV static constexpr auto
-makeSeg4() -> um2::QuadraticSegment<D, T>
+makeSeg4() -> um2::QuadraticSegment<dim, T>
 {
-  um2::QuadraticSegment<D, T> q = makeBaseSeg<T>();
+  um2::QuadraticSegment<dim, T> q = makeBaseSeg<T>();
   q[2][0] = static_cast<T>(2);
   q[2][1] = static_cast<T>(1);
   return q;
@@ -63,14 +63,14 @@ makeSeg4() -> um2::QuadraticSegment<D, T>
 
 template <typename T>
 HOSTDEV constexpr auto
-isLeft(um2::QuadraticSegment<D, T> const & seg, um2::Point<D, T> const & p) -> bool
+isLeft(um2::QuadraticSegment<dim, T> const & seg, um2::Point<dim, T> const & p) -> bool
 {
   return seg.isLeft(p);
 }
 
 template <typename T>
 PURE HOSTDEV auto
-isLeftOld(um2::QuadraticSegment<D, T> const & Q, um2::Point<D, T> const & p) -> bool
+isLeftOld(um2::QuadraticSegment<dim, T> const & Q, um2::Point<dim, T> const & p) -> bool
 {
   um2::Vec2<T> const v13 = Q[2] - Q[0];
   um2::Vec2<T> const v23 = Q[2] - Q[1];
@@ -170,6 +170,8 @@ isLeftOld(um2::QuadraticSegment<D, T> const & Q, um2::Point<D, T> const & p) -> 
   }
   return 0 <= Q.jacobian(r).cross(p - Q(r));
 }
+
+// NOLINTEND(readability-*)
 
 template <typename T>
 static void
