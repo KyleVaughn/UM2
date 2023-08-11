@@ -11,23 +11,9 @@ Mesh-> Faster find face
 Mesh-> Reorder.
 MeshFile Reorder
 
-Fix dZ
-Drop support for non-homogenous meshes
-
-Update benchmarks
-
-WIP: overlay for 3D
-  Make Vera 2D
-
 If overlay grid fails, check the refactor comments in model.inl
 
-mpact::SpatialPartiton
-
-gmsh api, gmsh tests
-
 Update github actions to use spack
-
-CellType and MeshType are not elegant. Review
 
 TriMesh.faceContaining, Find the closest point first, then just test all faces around it 
   Benchmark this
@@ -46,7 +32,6 @@ Image of mesh
 Remap mesh to morton order
   Benchmark
 
-Rectilinear Grid
 mesh statistics
 
 Examine Ray/LineSegment, Ray/Mesh, Ray/QuadraticSegement intersections by

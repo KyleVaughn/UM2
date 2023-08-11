@@ -2,8 +2,8 @@
 
 #include <um2/config.hpp>
 
+#include <um2/stdlib/math.hpp>   // um2::sqrt, um2::max, um2::min
 #include <um2/stdlib/memory.hpp> // addressof
-#include <um2/stdlib/math.hpp> // um2::sqrt, um2::max, um2::min
 
 #include <concepts>
 

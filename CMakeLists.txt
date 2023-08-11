@@ -39,7 +39,7 @@ endif()
 
 ## Dev options #################################################################
 ###############################################################################
-option(UM2_DEV_MODE             "Enable development mode"         ON             )
+option(UM2_DEV_MODE             "Enable development mode"         OFF            )
 option(UM2_ENABLE_CLANG_FORMAT  "Enable clang-format targets"     ${UM2_DEV_MODE})
 option(UM2_ENABLE_CLANG_TIDY    "Enable clang-tidy"               ${UM2_DEV_MODE})
 option(UM2_ENABLE_CPPCHECK      "Enable cppcheck"                 ${UM2_DEV_MODE})

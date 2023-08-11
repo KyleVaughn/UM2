@@ -2,11 +2,11 @@
 // Revision 4, August 29, 2014
 // CASL-U-2012-0131-004
 
-#include <um2.hpp>
 #include "../../helpers.hpp"
+#include <um2.hpp>
 
 auto
-main(int argc, char* argv[]) -> int
+main(int argc, char * argv[]) -> int
 {
   um2::MeshType mesh_type = um2::MeshType::None;
   double lc = 0.0;

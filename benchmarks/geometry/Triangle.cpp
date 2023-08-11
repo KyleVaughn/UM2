@@ -35,7 +35,8 @@ triContainsCCW(um2::Triangle<dim, T> const & tri, um2::Point<dim, T> const & p) 
 
 template <typename T>
 constexpr auto
-triContainsNoShortCCW(um2::Triangle<dim, T> const & tri, um2::Point<dim, T> const & p) -> bool
+triContainsNoShortCCW(um2::Triangle<dim, T> const & tri, um2::Point<dim, T> const & p)
+    -> bool
 {
   bool const b0 = um2::areCCW(tri[0], tri[1], p);
   bool const b1 = um2::areCCW(tri[1], tri[2], p);
@@ -50,7 +51,8 @@ static void
 containsBary(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<um2::Point<dim, T>> const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
+  um2::Vector<um2::Point<dim, T>> const points =
+      makeVectorOfRandomPoints<dim, T, lo, hi>(n);
   um2::Vector<um2::Triangle<dim, T>> const tris =
       makeVectorOfRandomTriangles<T, lo, hi>(ntris);
   // NOLINTNEXTLINE
@@ -71,7 +73,8 @@ static void
 containsCCW(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<um2::Point<dim, T>> const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
+  um2::Vector<um2::Point<dim, T>> const points =
+      makeVectorOfRandomPoints<dim, T, lo, hi>(n);
   um2::Vector<um2::Triangle<dim, T>> const tris =
       makeVectorOfRandomTriangles<T, lo, hi>(ntris);
   // NOLINTNEXTLINE
@@ -92,7 +95,8 @@ static void
 containsNoShortCCW(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<um2::Point<dim, T>> const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
+  um2::Vector<um2::Point<dim, T>> const points =
+      makeVectorOfRandomPoints<dim, T, lo, hi>(n);
   um2::Vector<um2::Triangle<dim, T>> const tris =
       makeVectorOfRandomTriangles<T, lo, hi>(ntris);
   // NOLINTNEXTLINE

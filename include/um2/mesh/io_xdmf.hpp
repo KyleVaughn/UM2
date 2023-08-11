@@ -323,8 +323,7 @@ static void writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
 template <std::floating_point T, std::signed_integral I>
 static void
 writeXDMFUniformGrid(pugi::xml_node & xdomain, H5::H5File & h5file,
-                     std::string const & h5filename, 
-                     std::string const & h5path,
+                     std::string const & h5filename, std::string const & h5path,
                      MeshFile<T, I> const & mesh,
                      std::vector<std::string> const & material_names)
 {

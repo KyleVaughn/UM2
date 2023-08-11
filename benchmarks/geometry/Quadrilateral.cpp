@@ -67,8 +67,8 @@ containsTriangle(um2::Quadrilateral<dim, T> const & quad, um2::Point<dim, T> con
 
 template <typename T>
 HOSTDEV constexpr auto
-containsCCWShortCircuit(um2::Quadrilateral<dim, T> const & quad, um2::Point<dim, T> const & p)
-    -> bool
+containsCCWShortCircuit(um2::Quadrilateral<dim, T> const & quad,
+                        um2::Point<dim, T> const & p) -> bool
 {
   return um2::areCCW(quad[0], quad[1], p) && um2::areCCW(quad[1], quad[2], p) &&
          um2::areCCW(quad[2], quad[3], p) && um2::areCCW(quad[3], quad[0], p);
@@ -196,8 +196,9 @@ CCWShortCircuitGPU(benchmark::State & state)
 
 template <typename T>
 __global__ void
-CCWNoShortCircuitGPUKernel(um2::Quadrilateral<dim, T> * quads, um2::Point<dim, T> * points,
-                           int * results, Size nquads, Size num_points)
+CCWNoShortCircuitGPUKernel(um2::Quadrilateral<dim, T> * quads,
+                           um2::Point<dim, T> * points, int * results, Size nquads,
+                           Size num_points)
 {
   Size const i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i >= nquads * num_points) {
