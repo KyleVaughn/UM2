@@ -323,7 +323,9 @@ static void writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
 template <std::floating_point T, std::signed_integral I>
 static void
 writeXDMFUniformGrid(pugi::xml_node & xdomain, H5::H5File & h5file,
-                     std::string const & h5filename, MeshFile<T, I> const & mesh,
+                     std::string const & h5filename, 
+                     std::string const & h5path,
+                     MeshFile<T, I> const & mesh,
                      std::vector<std::string> const & material_names)
 {
   Log::debug("Writing XDMF uniform grid");
@@ -345,7 +347,7 @@ writeXDMFUniformGrid(pugi::xml_node & xdomain, H5::H5File & h5file,
   xgrid.append_attribute("GridType") = "Uniform";
 
   // h5
-  std::string const h5grouppath = "/" + name;
+  std::string const h5grouppath = h5path + "/" + name;
   H5::Group h5group = h5file.createGroup(h5grouppath);
 
   writeXDMFGeometry(xgrid, h5group, h5filename, h5grouppath, mesh);
@@ -429,7 +431,8 @@ writeXDMFFile(MeshFile<T, I> & mesh)
   }
 
   // Add the mesh as a uniform grid
-  writeXDMFUniformGrid(xdomain, h5file, h5filename, mesh, material_names);
+  std::string const h5path;
+  writeXDMFUniformGrid(xdomain, h5file, h5filename, h5path, mesh, material_names);
 
   // Write the XML file
   xdoc.save_file(mesh.filepath.c_str(), "  ");

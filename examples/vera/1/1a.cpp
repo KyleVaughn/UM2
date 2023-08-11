@@ -26,10 +26,10 @@ main(int argc, char* argv[]) -> int
   um2::gmsh::model::occ::overlaySpatialPartition(model);
   um2::gmsh::model::mesh::setGlobalMeshSize(lc);
   um2::gmsh::model::mesh::generateMesh(mesh_type);
-  um2::gmsh::fltk::run();
-  um2::gmsh::write("vera_pin.inp");
-  //model.importCoarseCells("1a.inp");
-  //um2::exportMesh("1a.xdmf", model);
+  // um2::gmsh::fltk::run();
+  um2::gmsh::write("1a.inp");
+  model.importCoarseCells("1a.inp");
+  um2::exportMesh("1a.xdmf", model);
   um2::finalize();
   return 0;
 }

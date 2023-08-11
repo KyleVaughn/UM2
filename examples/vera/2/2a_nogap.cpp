@@ -18,7 +18,7 @@ main(int argc, char* argv[]) -> int
   double const pitch = 1.26;   // Pitch = 1.26 cm (pg. 4)
   um2::Vec2d const dxdy(pitch, pitch);
 
-  um2::initialize("debug");
+  um2::initialize();
   um2::gmsh::open("2a.brep", /*extra_info=*/true);
 
   um2::mpact::SpatialPartition<double, int32_t> model;
@@ -45,11 +45,10 @@ main(int argc, char* argv[]) -> int
   um2::gmsh::model::occ::overlaySpatialPartition(model, "Water");
   um2::gmsh::model::mesh::setGlobalMeshSize(lc);    
   um2::gmsh::model::mesh::generateMesh(mesh_type);
-  um2::gmsh::fltk::run();
-  um2::gmsh::write("vera_lattice.inp");
-  //  model.import_coarse_cells("2a.inp");
-  //  export_mesh("2a.xdmf", model);
-
+  // um2::gmsh::fltk::run();
+  um2::gmsh::write("2a.inp");
+  model.importCoarseCells("2a.inp");
+  um2::exportMesh("2a.xdmf", model);
   um2::finalize();
   return 0;
 }
