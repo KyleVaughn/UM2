@@ -63,7 +63,7 @@ CheckOptions:
   - key: 'readability-redundant-access-specifiers.CheckFirstDeclaration'
     value: 'true'
   - key: 'readability-identifier-naming.AbstractClassCase'
-    value: 'lower_case'
+    value: 'CamelCase'
   - key: 'readability-identifier-naming.ClassCase'
     value: 'CamelCase'
   - key: 'readability-identifier-naming.ClassConstantCase'

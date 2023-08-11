@@ -61,7 +61,7 @@ main(int argc, char* argv[]) -> int
   model.makeLattice({{0}});
   model.makeAssembly({0});
   model.makeCore({{0}});
-  um2::gmsh::model::occ::overlaySpatialPartition(model, "Water");
+  //um2::gmsh::model::occ::overlaySpatialPartition(model, "Water");
   um2::gmsh::model::mesh::setGlobalMeshSize(lc);    
   um2::gmsh::model::mesh::generateMesh(mesh_type);
   um2::gmsh::fltk::run();
