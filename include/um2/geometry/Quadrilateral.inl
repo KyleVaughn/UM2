@@ -91,8 +91,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::edge(Size i) const noexcept -> LineSegment<D, T>
 {
-  assert(i < 4);
-  return (i == 3) ? LineSegment<D, T>(v[3], v[0]) : LineSegment<D, T>(v[i], v[i + 1]);
+  return um2::edge(*this, i);
 }
 
 // -------------------------------------------------------------------
@@ -171,7 +170,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 {
-  return um2::boundingBox(v);
+  return um2::boundingBox(*this);
 }
 
 // -------------------------------------------------------------------

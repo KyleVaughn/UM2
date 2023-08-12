@@ -1,9 +1,7 @@
 #pragma once
 
+#include <um2/geometry/Dion.hpp>
 #include <um2/math/Mat.hpp>
-
-#include <um2/geometry/AxisAlignedBox.hpp>
-#include <um2/geometry/Polytope.hpp>
 
 namespace um2
 {

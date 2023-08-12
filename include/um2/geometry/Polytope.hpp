@@ -2,6 +2,9 @@
 
 #include <um2/config.hpp>
 
+#include <um2/geometry/AxisAlignedBox.hpp>
+#include <um2/geometry/Point.hpp>
+
 namespace um2
 {
 
@@ -30,11 +33,15 @@ template <Size K, Size P, Size N, Size D, typename T>
 // NOLINTNEXTLINE(bugprone-reserved-identifier, readability-identifier-naming)
 struct Polytope {
   static_assert(K > 0 && K <= 3, "Polytope dimension must be 1, 2, or 3");
+  Point<D, T> v[N];
 };
 
 // -----------------------------------------------------------------------------
 // Aliases
 // -----------------------------------------------------------------------------
+
+template <Size K, Size N, Size D, typename T>
+using LinearPolytope = Polytope<K, 1, N, D, T>;
 
 template <Size P, Size N, Size D, typename T>
 using Dion = Polytope<1, P, N, D, T>;
@@ -90,5 +97,16 @@ using QuadraticTetrahedron = QuadraticPolyhedron<10, 3, T>;
 
 template <typename T>
 using QuadraticHexahedron = QuadraticPolyhedron<20, 3, T>;
+
+// -----------------------------------------------------------------------------
+// Methods
+// -----------------------------------------------------------------------------
+
+template <Size K, Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+boundingBox(LinearPolytope<K, N, D, T> const & polytope) noexcept -> AxisAlignedBox<D, T>
+{
+  return boundingBox(polytope.v);
+}
 
 } // namespace um2

@@ -88,9 +88,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 QuadraticTriangle<D, T>::edge(Size i) const noexcept -> QuadraticSegment<D, T>
 {
-  assert(i < 3);
-  return (i == 2) ? QuadraticSegment<D, T>(v[2], v[0], v[5])
-                  : QuadraticSegment<D, T>(v[i], v[i + 1], v[i + 3]);
+  return um2::edge(*this, i);
 }
 
 // -------------------------------------------------------------------

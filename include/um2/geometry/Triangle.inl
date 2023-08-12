@@ -72,8 +72,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::edge(Size i) const noexcept -> LineSegment<D, T>
 {
-  assert(i < 3);
-  return (i == 2) ? LineSegment<D, T>(v[2], v[0]) : LineSegment<D, T>(v[i], v[i + 1]);
+  return um2::edge(*this, i);
 }
 
 // -------------------------------------------------------------------
@@ -120,17 +119,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::area() const noexcept -> T
 {
-  // return (v1 - v0).cross(v2 - v0).norm() / 2;
-  Vec<D, T> const v10 = v[1] - v[0];
-  Vec<D, T> const v20 = v[2] - v[0];
-  if constexpr (D == 2) {
-    return v10.cross(v20) / 2; // this is the signed area
-  } else if constexpr (D == 3) {
-    return v10.cross(v20).norm() / 2; // this is the unsigned area
-  } else {
-    static_assert(D == 2 || D == 3,
-                  "Triangle::area() is only defined for 2D and 3D triangles");
-  }
+  return um2::area(*this);
 }
 
 // -------------------------------------------------------------------
@@ -157,7 +146,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 {
-  return um2::boundingBox(v);
+  return um2::boundingBox(*this);
 }
 
 // -------------------------------------------------------------------

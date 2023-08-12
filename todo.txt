@@ -1,6 +1,12 @@
-Tests for each stdlib function
-Tests for each common function
-Tests for each geometry function
+pointClosestTo()
+squaredDistanceTo()
+distanceTo()
+
+
+isCCW for each planar face
+
+
+
 
 Make rep meshes. Test point containment, ray intersection, etc
 Quadratic Segment use tri bb or not, difference in best vs worst case

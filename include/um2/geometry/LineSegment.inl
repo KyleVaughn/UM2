@@ -39,12 +39,7 @@ template <typename R>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::operator()(R const r) const noexcept -> Point<D, T>
 {
-  T const rr = static_cast<T>(r);
-  Point<D, T> result;
-  for (Size i = 0; i < D; ++i) {
-    result[i] = v[0][i] + rr * (v[1][i] - v[0][i]);
-  }
-  return result;
+  return interpolate(*this, r);
 }
 
 // -------------------------------------------------------------------
@@ -54,9 +49,9 @@ LineSegment<D, T>::operator()(R const r) const noexcept -> Point<D, T>
 template <Size D, typename T>
 template <typename R>
 PURE HOSTDEV constexpr auto
-LineSegment<D, T>::jacobian(R /*r*/) const noexcept -> Vec<D, T>
+LineSegment<D, T>::jacobian(R const r) const noexcept -> Vec<D, T>
 {
-  return v[1] - v[0];
+  return um2::jacobian(*this, r); 
 }
 
 // -------------------------------------------------------------------
@@ -120,7 +115,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::length() const noexcept -> T
 {
-  return v[0].distanceTo(v[1]);
+  return um2::length(*this);
 }
 
 // -------------------------------------------------------------------
@@ -131,7 +126,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 {
-  return um2::boundingBox(v);
+  return um2::boundingBox(*this);
 }
 
 // -------------------------------------------------------------------

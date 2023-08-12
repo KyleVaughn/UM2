@@ -3,7 +3,7 @@
 #include <um2/math/Mat.hpp>
 
 #include <um2/geometry/AxisAlignedBox.hpp>
-#include <um2/geometry/Polytope.hpp>
+#include <um2/geometry/Dion.hpp>
 
 namespace um2
 {
@@ -51,7 +51,8 @@ struct Polytope<1, 1, 2, D, T> {
   operator()(R r) const noexcept -> Point<D, T>;
 
   template <typename R>
-  PURE HOSTDEV [[nodiscard]] constexpr auto jacobian(R /*r*/) const noexcept -> Vec<D, T>;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  jacobian(R r) const noexcept -> Vec<D, T>;
 
   // Get the rotation matrix that transforms the line segment such that it is
   // aligned with the x-axis.

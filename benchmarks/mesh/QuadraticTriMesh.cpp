@@ -6,9 +6,9 @@
 
 #include <iostream>
 
-constexpr Size npoints = 1 << 20;
+constexpr Size npoints = 1048576;
 
-class TriMeshFixture : public benchmark::Fixture
+class Pin268FaceFixture : public benchmark::Fixture
 {
 public:
   um2::QuadraticTriMesh<2, float, int32_t> mesh;
@@ -29,8 +29,66 @@ public:
   }
 };
 
+class Pin1656FaceFixture : public benchmark::Fixture
+{
+public:
+  um2::QuadraticTriMesh<2, float, int32_t> mesh;
+
+  void
+  SetUp(const ::benchmark::State & /*state*/) final
+  {
+    um2::Log::setMaxVerbosityLevel(um2::LogVerbosity::Warn);
+    std::string const filename = "./mesh_files/tri6_pin_1656.inp";
+    um2::MeshFile<float, int32_t> meshfile;
+    um2::readAbaqusFile(filename, meshfile);
+    mesh = um2::QuadraticTriMesh<2, float, int32_t>(meshfile);
+  }
+
+  void
+  TearDown(const ::benchmark::State & /*state*/) final
+  {
+  }
+};
+
+// class LatticeFaceFixture : public benchmark::Fixture
+//{
+// public:
+//   um2::QuadraticTriMesh<2, float, int32_t> mesh;
+//
+//   void
+//   SetUp(const ::benchmark::State & /*state*/) final
+//   {
+//     um2::Log::setMaxVerbosityLevel(um2::LogVerbosity::Warn);
+//     std::string const filename = "./mesh_files/tri6_pin_1656.inp";
+//     um2::MeshFile<float, int32_t> meshfile;
+//     um2::readAbaqusFile(filename, meshfile);
+//     mesh = um2::QuadraticTriMesh<2, float, int32_t>(meshfile);
+//   }
+//
+//   void
+//   TearDown(const ::benchmark::State & /*state*/) final
+//   {
+//   }
+// };
+
 // cppcheck-suppress unknownMacro
-BENCHMARK_DEFINE_F(TriMeshFixture, faceContaining268)(benchmark::State & state)
+BENCHMARK_DEFINE_F(Pin268FaceFixture, faceContaining268)(benchmark::State & state)
+{
+  Size const n = static_cast<Size>(state.range(0));
+  um2::Vector<um2::Point2<float>> const points =
+      makeVectorOfRandomPoints<2, float, 0, 1>(n);
+  // NOLINTNEXTLINE
+  for (auto s : state) {
+    for (auto const & p : points) {
+      Size const i = mesh.faceContaining(p);
+      if (i == -1) {
+        std::cerr << "Face not found" << std::endl;
+      }
+    }
+  }
+}
+
+BENCHMARK_DEFINE_F(Pin1656FaceFixture, faceContaining1656)(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   um2::Vector<um2::Point2<float>> const points =
@@ -117,15 +175,17 @@ BENCHMARK_DEFINE_F(TriMeshFixture, faceContaining268)(benchmark::State & state)
 // }
 // #endif
 
-BENCHMARK_REGISTER_F(TriMeshFixture, faceContaining268)
+BENCHMARK_REGISTER_F(Pin268FaceFixture, faceContaining268)
     ->RangeMultiplier(4)
-    ->Range(1024, npoints)
-    ->Unit(benchmark::kMicrosecond);
+    ->Range(16384, npoints)
+    ->Unit(benchmark::kMillisecond)
+    ->MinTime(10);
 
-// BENCHMARK_TEMPLATE2(faceContaining268, float, int32_t)
-//     ->RangeMultiplier(4)
-//     ->Range(16, npoints)
-//     ->Unit(benchmark::kMicrosecond);
+BENCHMARK_REGISTER_F(Pin1656FaceFixture, faceContaining1656)
+    ->RangeMultiplier(4)
+    ->Range(16384, npoints)
+    ->Unit(benchmark::kMillisecond)
+    ->MinTime(10);
 
 // #if _OPENMP
 // BENCHMARK_TEMPLATE2(mortonSortParallel, float, uint32_t)

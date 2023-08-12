@@ -40,7 +40,7 @@ TEST_CASE(interpolate)
   ASSERT((um2::isApprox(p0, line[0])));
   um2::Point<D, T> const p1 = line(1);
   ASSERT((um2::isApprox(p1, line[1])));
-  um2::Point<D, T> const p05 = line(static_cast<T>(0.5));
+  um2::Point<D, T> const p05 = um2::interpolate(line, static_cast<T>(0.5));
   um2::Point<D, T> const mp = um2::midpoint(p0, p1);
   ASSERT((um2::isApprox(p05, mp)));
 }
@@ -59,7 +59,7 @@ TEST_CASE(jacobian)
     j_ref[i] = line[1][i] - line[0][i];
   }
   um2::Vec<D, T> const j0 = line.jacobian(0);
-  um2::Vec<D, T> const j1 = line.jacobian(1);
+  um2::Vec<D, T> const j1 = um2::jacobian(line, 1);
   ASSERT(um2::isApprox(j0, j_ref));
   ASSERT(um2::isApprox(j1, j_ref));
 }
@@ -102,6 +102,7 @@ TEST_CASE(length)
   um2::LineSegment<D, T> line = makeLine<D, T>();
   T len_ref = line[0].distanceTo(line[1]);
   ASSERT_NEAR(line.length(), len_ref, static_cast<T>(1e-5));
+  ASSERT_NEAR(um2::length(line), len_ref, static_cast<T>(1e-5));
 }
 
 // -------------------------------------------------------------------
@@ -116,6 +117,9 @@ TEST_CASE(boundingBox)
   um2::AxisAlignedBox<D, T> const box = line.boundingBox();
   ASSERT(um2::isApprox(line[0], box.minima));
   ASSERT(um2::isApprox(line[1], box.maxima));
+  um2::AxisAlignedBox<D, T> const box2 = um2::boundingBox(line);
+  ASSERT(um2::isApprox(box2.minima, box.minima));
+  ASSERT(um2::isApprox(box2.maxima, box.maxima));
 }
 
 // -------------------------------------------------------------------

@@ -62,9 +62,6 @@ struct Polytope<2, 1, 3, D, T> {
   edge(Size i) const noexcept -> LineSegment<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  contains(Point<D, T> const & p) const noexcept -> bool;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
   area() const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -72,6 +69,13 @@ struct Polytope<2, 1, 3, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
+
+  // -----------------------------------------------------------------------------
+  // 2D only methods
+  // -----------------------------------------------------------------------------
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  contains(Point<D, T> const & p) const noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isCCW() const noexcept -> bool;

@@ -17,16 +17,17 @@ template <typename T>
 auto
 makeQuadGrid() -> um2::Vector<um2::Quadrilateral<dim, T>>
 {
-  um2::Vector<um2::Quadrilateral<dim, T>> quads(static_cast<Size>(hi * hi));
+  Size const n = static_cast<Size>(hi);
+  um2::Vector<um2::Quadrilateral<dim, T>> quads(n * n);
   // Create a hi x hi grid of quadrilaterals.
-  for (Size x = 0; x < static_cast<Size>(hi); ++x) {
-    for (Size y = 0; y < static_cast<Size>(hi); ++y) {
+  for (Size x = 0; x < n; ++x) {
+    for (Size y = 0; y < n; ++y) {
       um2::Point<dim, T> const p0(x, y);
       um2::Point<dim, T> const p1(x + 1, y);
       um2::Point<dim, T> const p2(x + 1, y + 1);
       um2::Point<dim, T> const p3(x, y + 1);
       um2::Quadrilateral<dim, T> const q(p0, p1, p2, p3);
-      quads[x * static_cast<Size>(hi) + y] = q;
+      quads[x * n + y] = q;
     }
   }
   return quads;
