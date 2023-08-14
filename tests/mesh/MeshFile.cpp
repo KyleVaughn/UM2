@@ -4,6 +4,14 @@
 
 #include "../test_macros.hpp"
 
+TEST_CASE(verticesPerCell)    
+{    
+  static_assert(um2::verticesPerCell(um2::MeshType::Tri) == 3);    
+  static_assert(um2::verticesPerCell(um2::MeshType::Quad) == 4);    
+  static_assert(um2::verticesPerCell(um2::MeshType::QuadraticTri) == 6);    
+  static_assert(um2::verticesPerCell(um2::MeshType::QuadraticQuad) == 8);    
+}
+
 template <std::floating_point T, std::signed_integral I>
 TEST_CASE(compareGeometry)
 {
@@ -109,41 +117,6 @@ TEST_CASE(getSubmesh)
   ASSERT(tri_h2o.elset_ids[0] == 0);
   ASSERT(tri_h2o.elset_ids[1] == 0);
 }
-//
-//// template <std::floating_point T, std::signed_integral I>
-//// TEST(get_mesh_type)
-////     um2::MeshFile<T, I> tri_ref;
-////     make_tri_reference_mesh_file(tri_ref);
-////     um2::MeshType mesh_type = um2::MeshType::ERROR;
-////     mesh_type = tri_ref.get_mesh_type();
-////     ASSERT(mesh_type == um2::MeshType::TRI, "get_mesh_type");
-////
-////     um2::MeshFile<T, I> quad_ref;
-////     make_quad_reference_mesh_file(quad_ref);
-////     mesh_type = quad_ref.get_mesh_type();
-////     ASSERT(mesh_type == um2::MeshType::QUAD, "get_mesh_type");
-////
-////     um2::MeshFile<T, I> tri_ref;
-////     make_tri_reference_mesh_file(tri_ref);
-////     mesh_type = tri_ref.get_mesh_type();
-////     ASSERT(mesh_type == um2::MeshType::TRI_QUAD, "get_mesh_type");
-////
-////     um2::MeshFile<T, I> tri6_ref;
-////     make_tri6_reference_mesh_file(tri6_ref);
-////     mesh_type = tri6_ref.get_mesh_type();
-////     ASSERT(mesh_type == um2::MeshType::QUADRATIC_TRI, "get_mesh_type");
-////
-////     um2::MeshFile<T, I> quad8_ref;
-////     make_quad8_reference_mesh_file(quad8_ref);
-////     mesh_type = quad8_ref.get_mesh_type();
-////     ASSERT(mesh_type == um2::MeshType::QUADRATIC_QUAD, "get_mesh_type");
-////
-////     um2::MeshFile<T, I> tri6_quad8_ref;
-////     make_tri6_quad8_reference_mesh_file(tri6_quad8_ref);
-////     mesh_type = tri6_quad8_ref.get_mesh_type();
-////     ASSERT(mesh_type == um2::MeshType::QUADRATIC_TRI_QUAD, "get_mesh_type");
-//// END_TEST
-//
 //// template <std::floating_point T, std::signed_integral I>
 //// TEST(get_material_ids)
 ////     um2::MeshFile<T, I> tri_ref;
@@ -157,11 +130,11 @@ TEST_CASE(getSubmesh)
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(MeshFile)
 {
+  TEST(verticesPerCell);
   TEST((compareGeometry<T, I>));
   TEST((compareTopology<T, I>));
   TEST((sortElsets<T, I>));
   TEST((getSubmesh<T, I>));
-  //    RUN_TEST("get_mesh_type", (get_mesh_type<T, I>) );
   //    RUN_TEST("get_material_ids", (get_material_ids<T, I>) );
 }
 

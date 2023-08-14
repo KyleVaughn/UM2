@@ -39,17 +39,7 @@ template <typename R, typename S>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::operator()(R const r, S const s) const noexcept -> Point<D, T>
 {
-  // (1 - r - s) v0 + r v1 + s v2
-  T const rr = static_cast<T>(r);
-  T const ss = static_cast<T>(s);
-  T const w0 = (1 - rr - ss);
-  // T const w1 = rr;
-  // T const w2 = ss;
-  Point<D, T> result;
-  for (Size i = 0; i < D; ++i) {
-    result[i] = w0 * v[0][i] + rr * v[1][i] + ss * v[2][i];
-  }
-  return result;
+  return interpolate(*this, r, s);
 }
 
 // -------------------------------------------------------------------
@@ -59,9 +49,9 @@ Triangle<D, T>::operator()(R const r, S const s) const noexcept -> Point<D, T>
 template <Size D, typename T>
 template <typename R, typename S>
 PURE HOSTDEV constexpr auto
-Triangle<D, T>::jacobian(R /*r*/, S /*s*/) const noexcept -> Mat<D, 2, T>
+Triangle<D, T>::jacobian(R r, S s) const noexcept -> Mat<D, 2, T>
 {
-  return Mat<D, 2, T>(v[1] - v[0], v[2] - v[0]);
+  return um2::jacobian(*this, r, s);
 }
 
 // -------------------------------------------------------------------
@@ -83,32 +73,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
 {
-  static_assert(D == 2, "Triangle::contains() is only defined for 2D triangles");
-  //// NOLINTBEGIN(readability-identifier-naming)
-  //// P = V0 + r(V1 - V0) + s(V2 - V0)
-  //// P - V0 = r(V1 - V0) + s(V2 - V0)
-  //// Let A = V1 - V0, B = V2 - V0, C = P - V0
-  //// C = rA + sB = [A B] [r s]^T
-  //// Using Cramer's rule
-  //// r = det([C B]) / det([A B])
-  //// s = det([A C]) / det([A B])
-  //// Note that det([A B]) = A x B
-  // Vec<D, T> const A = v[1] - v[0];
-  // Vec<D, T> const B = v[2] - v[0];
-  // Vec<D, T> const C = p - v[0];
-  // T const invdetAB = 1 / A.cross(B);
-  // T const r = C.cross(B) * invdetAB;
-  // T const s = A.cross(C) * invdetAB;
-  // return (r >= 0) && (s >= 0) && (r + s <= 1);
-  //// NOLINTEND(readability-identifier-naming)
-
-  // Benchmarking shows it is faster to compute the areCCW() test for each
-  // edge, then return based on the AND of the results, rather than compute
-  // the areCCW one at a time and return as soon as one is false.
-  bool const b0 = areCCW(v[0], v[1], p);
-  bool const b1 = areCCW(v[1], v[2], p);
-  bool const b2 = areCCW(v[2], v[0], p);
-  return b0 && b1 && b2;
+  return um2::contains(*this, p); 
 }
 
 // -------------------------------------------------------------------
@@ -130,12 +95,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::centroid() const noexcept -> Point<D, T>
 {
-  // (v0 + v1 + v2) / 3
-  Point<D, T> result;
-  for (Size i = 0; i < D; ++i) {
-    result[i] = v[0][i] + v[1][i] + v[2][i];
-  }
-  return result /= 3;
+  return um2::centroid(*this); 
 }
 
 // -------------------------------------------------------------------
@@ -157,8 +117,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::isCCW() const noexcept -> bool
 {
-  static_assert(D == 2, "Triangle::isCCW() is only defined for 2D triangles");
-  return areCCW(v[0], v[1], v[2]);
+  return um2::isCCW(*this); 
 }
 
 } // namespace um2

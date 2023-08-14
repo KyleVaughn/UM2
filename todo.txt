@@ -2,20 +2,17 @@ pointClosestTo()
 squaredDistanceTo()
 distanceTo()
 
+add isCCW as member function of faces
 
-isCCW for each planar face
+Generalize routines in Mesh similar to Polygon
+Mesh-> Reorder
 
-
-
-
-Make rep meshes. Test point containment, ray intersection, etc
+Make rep meshes. 
+  Test point containment, ray intersection, etc
 Quadratic Segment use tri bb or not, difference in best vs worst case
 
-QuadraticSegment, closest point
-
-Mesh-> Faster find face
-Mesh-> Reorder.
 MeshFile Reorder
+Mesh-> Faster find face
 
 If overlay grid fails, check the refactor comments in model.inl
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/geometry/QuadraticSegment.hpp>
+#include <um2/geometry/Polygon.hpp>
 #include <um2/geometry/Triangle.hpp>
 
 namespace um2
@@ -9,18 +9,8 @@ namespace um2
 // -----------------------------------------------------------------------------
 // QUADRATIC TRIANGLE
 // -----------------------------------------------------------------------------
-// A 2-polytope, of polynomial order 1, represented by the connectivity
-// of its vertices. These 3 vertices are D-dimensional points of type T.
-
-template <typename T>
-using QuadraticTriangle2 = QuadraticTriangle<2, T>;
-using QuadraticTriangle2f = QuadraticTriangle2<float>;
-using QuadraticTriangle2d = QuadraticTriangle2<double>;
-
-template <typename T>
-using QuadraticTriangle3 = QuadraticTriangle<3, T>;
-using QuadraticTriangle3f = QuadraticTriangle3<float>;
-using QuadraticTriangle3d = QuadraticTriangle3<double>;
+// A 2-polytope, of polynomial order 2, represented by the connectivity
+// of its vertices. These 6 vertices are D-dimensional points of type T.
 
 template <Size D, typename T>
 struct Polytope<2, 2, 6, D, T> {

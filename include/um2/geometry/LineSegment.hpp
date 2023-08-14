@@ -14,11 +14,6 @@ namespace um2
 // A 1-polytope, of polynomial order 1, represented by the connectivity
 // of its vertices. These 2 vertices are D-dimensional points of type T.
 
-template <typename T>
-using LineSegment2 = LineSegment<2, T>;
-using LineSegment2f = LineSegment2<float>;
-using LineSegment2d = LineSegment2<double>;
-
 template <Size D, typename T>
 struct Polytope<1, 1, 2, D, T> {
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/geometry/QuadraticSegment.hpp>
+#include <um2/geometry/Polygon.hpp>
 #include <um2/geometry/Quadrilateral.hpp>
 
 namespace um2
@@ -9,18 +9,8 @@ namespace um2
 // -----------------------------------------------------------------------------
 // QUADRATIC QUADRILATERAL
 // -----------------------------------------------------------------------------
-// A 2-polytope, of polynomial order 1, represented by the connectivity
-// of its vertices. These 4 vertices are D-dimensional points of type T.
-
-template <typename T>
-using QuadraticQuadrilateral2 = QuadraticQuadrilateral<2, T>;
-using QuadraticQuadrilateral2f = QuadraticQuadrilateral2<float>;
-using QuadraticQuadrilateral2d = QuadraticQuadrilateral2<double>;
-
-template <typename T>
-using QuadraticQuadrilateral3 = QuadraticQuadrilateral<3, T>;
-using QuadraticQuadrilateral3f = QuadraticQuadrilateral3<float>;
-using QuadraticQuadrilateral3d = QuadraticQuadrilateral3<double>;
+// A 2-polytope, of polynomial order 2, represented by the connectivity
+// of its vertices. These 8 vertices are D-dimensional points of type T.
 
 template <Size D, typename T>
 struct Polytope<2, 2, 8, D, T> {

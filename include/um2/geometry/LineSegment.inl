@@ -51,7 +51,7 @@ template <typename R>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::jacobian(R const r) const noexcept -> Vec<D, T>
 {
-  return um2::jacobian(*this, r); 
+  return um2::jacobian(*this, r);
 }
 
 // -------------------------------------------------------------------
@@ -103,8 +103,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 LineSegment<D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool
 {
-  static_assert(D == 2, "isLeft is only defined for 2D line segments");
-  return areCCW(v[0], v[1], p);
+  return pointIsLeft(*this, p);
 }
 
 // -------------------------------------------------------------------

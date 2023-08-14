@@ -164,21 +164,21 @@ TEST_CASE(jacobian)
   ASSERT(j1[1] < 0);
 }
 
-// -------------------------------------------------------------------
-// isStraight
-// -------------------------------------------------------------------
-
-template <Size D, typename T>
-HOSTDEV
-TEST_CASE(isStraight)
-{
-  um2::QuadraticSegment<D, T> const seg1 = makeSeg1<D, T>();
-  ASSERT(seg1.isStraight());
-  um2::QuadraticSegment<D, T> const seg2 = makeSeg2<D, T>();
-  ASSERT(!seg2.isStraight());
-  um2::QuadraticSegment<D, T> const seg5 = makeSeg5<D, T>();
-  ASSERT(!seg5.isStraight());
-}
+//// -------------------------------------------------------------------
+//// isStraight
+//// -------------------------------------------------------------------
+//
+// template <Size D, typename T>
+// HOSTDEV
+// TEST_CASE(isStraight)
+//{
+//  um2::QuadraticSegment<D, T> const seg1 = makeSeg1<D, T>();
+//  ASSERT(seg1.isStraight());
+//  um2::QuadraticSegment<D, T> const seg2 = makeSeg2<D, T>();
+//  ASSERT(!seg2.isStraight());
+//  um2::QuadraticSegment<D, T> const seg5 = makeSeg5<D, T>();
+//  ASSERT(!seg5.isStraight());
+//}
 
 // -------------------------------------------------------------------
 // length
@@ -453,8 +453,8 @@ MAKE_CUDA_KERNEL(interpolate, D, T);
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(jacobian, D, T);
 
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(isStraight, D, T);
+// template <Size D, typename T>
+// MAKE_CUDA_KERNEL(isStraight, D, T);
 
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(length, D, T);
@@ -477,7 +477,7 @@ TEST_SUITE(QuadraticSegment)
 {
   TEST_HOSTDEV(interpolate, 1, 1, D, T);
   TEST_HOSTDEV(jacobian, 1, 1, D, T);
-  TEST_HOSTDEV(isStraight, 1, 1, D, T);
+  //  TEST_HOSTDEV(isStraight, 1, 1, D, T);
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
   TEST_HOSTDEV(length, 1, 1, D, T);
   if constexpr (D == 2) {

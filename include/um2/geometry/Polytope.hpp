@@ -4,6 +4,7 @@
 
 #include <um2/geometry/AxisAlignedBox.hpp>
 #include <um2/geometry/Point.hpp>
+#include <um2/math/Mat.hpp>
 
 namespace um2
 {
@@ -30,7 +31,6 @@ template <Size K, Size P, Size N, Size D, typename T>
 // no __i0 in the code.
 // If you're reading this, uncomment the NOLINTNEXTLINE line below and see if
 // this has been fixed.
-// NOLINTNEXTLINE(bugprone-reserved-identifier, readability-identifier-naming)
 struct Polytope {
   static_assert(K > 0 && K <= 3, "Polytope dimension must be 1, 2, or 3");
   Point<D, T> v[N];
@@ -56,27 +56,78 @@ using Polyhedron = Polytope<3, P, N, D, T>;
 template <Size D, typename T>
 using LineSegment = Dion<1, 2, D, T>;
 
+template <typename T>
+using LineSegment2 = LineSegment<2, T>;
+using LineSegment2f = LineSegment2<float>;
+using LineSegment2d = LineSegment2<double>;
+
 template <Size D, typename T>
 using QuadraticSegment = Dion<2, 3, D, T>;
+
+template <typename T>
+using QuadraticSegment2 = QuadraticSegment<2, T>;
+using QuadraticSegment2f = QuadraticSegment2<float>;
+using QuadraticSegment2d = QuadraticSegment2<double>;
 
 // Polygons
 template <Size N, Size D, typename T>
 using LinearPolygon = Polygon<1, N, D, T>;
 
+template <Size N, typename T>
+using PlanarLinearPolygon = LinearPolygon<N, 2, T>;
+
 template <Size N, Size D, typename T>
 using QuadraticPolygon = Polygon<2, N, D, T>;
+
+template <Size N, typename T>
+using PlanarQuadraticPolygon = QuadraticPolygon<N, 2, T>;
 
 template <Size D, typename T>
 using Triangle = LinearPolygon<3, D, T>;
 
+template <typename T>
+using Triangle2 = Triangle<2, T>;
+using Triangle2f = Triangle2<float>;
+using Triangle2d = Triangle2<double>;
+
+template <typename T>
+using Triangle3 = Triangle<3, T>;
+using Triangle3f = Triangle3<float>;
+using Triangle3d = Triangle3<double>;
+
 template <Size D, typename T>
 using Quadrilateral = LinearPolygon<4, D, T>;
+
+template <typename T>
+using Quadrilateral2 = Quadrilateral<2, T>;
+using Quadrilateral2f = Quadrilateral2<float>;
+using Quadrilateral2d = Quadrilateral2<double>;
 
 template <Size D, typename T>
 using QuadraticTriangle = QuadraticPolygon<6, D, T>;
 
+template <typename T>
+using QuadraticTriangle2 = QuadraticTriangle<2, T>;
+using QuadraticTriangle2f = QuadraticTriangle2<float>;
+using QuadraticTriangle2d = QuadraticTriangle2<double>;
+
+template <typename T>
+using QuadraticTriangle3 = QuadraticTriangle<3, T>;
+using QuadraticTriangle3f = QuadraticTriangle3<float>;
+using QuadraticTriangle3d = QuadraticTriangle3<double>;
+
 template <Size D, typename T>
 using QuadraticQuadrilateral = QuadraticPolygon<8, D, T>;
+
+template <typename T>
+using QuadraticQuadrilateral2 = QuadraticQuadrilateral<2, T>;
+using QuadraticQuadrilateral2f = QuadraticQuadrilateral2<float>;
+using QuadraticQuadrilateral2d = QuadraticQuadrilateral2<double>;
+
+template <typename T>
+using QuadraticQuadrilateral3 = QuadraticQuadrilateral<3, T>;
+using QuadraticQuadrilateral3f = QuadraticQuadrilateral3<float>;
+using QuadraticQuadrilateral3d = QuadraticQuadrilateral3<double>;
 
 // Polyhedrons
 template <Size N, Size D, typename T>

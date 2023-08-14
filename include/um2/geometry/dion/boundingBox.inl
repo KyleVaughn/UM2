@@ -41,7 +41,7 @@ boundingBox(QuadraticSegment<D, T> const & q) noexcept -> AxisAlignedBox<D, T>
     T const r = -half_b / a;
     // if r is not in [0, 1], then the extrema are not on the segment, hence
     // the segment's endpoints are the extrema.
-    // NOLINTNEXTLINE(misc-redundant-expression)                                                   
+    // NOLINTNEXTLINE(misc-redundant-expression)
     if (0 < r && r < 1) {
       // x_i = Q(r_i) = P₁ - B² / (4A) = P₁ + r(B/2)
       T const x = q[0][i] + r * half_b;

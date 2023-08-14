@@ -1,6 +1,9 @@
 ShortString 
   operator[]
 
+Polygon
+  isCCW
+
 Gmsh
   model
     groupPreservingIntersect_2d3d?

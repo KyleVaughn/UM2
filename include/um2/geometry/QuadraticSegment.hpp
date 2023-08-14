@@ -12,11 +12,6 @@ namespace um2
 // A 1-polytope, of polynomial order 2, represented by the connectivity
 // of its vertices. These 3 vertices are D-dimensional points of type T.
 
-template <typename T>
-using QuadraticSegment2 = QuadraticSegment<2, T>;
-using QuadraticSegment2f = QuadraticSegment2<float>;
-using QuadraticSegment2d = QuadraticSegment2<double>;
-
 template <Size D, typename T>
 struct Polytope<1, 2, 3, D, T> {
 
@@ -65,11 +60,11 @@ struct Polytope<1, 2, 3, D, T> {
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getRotation() const noexcept -> Mat<D, D, T>;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  curvesLeft() const noexcept -> bool;
+  // PURE HOSTDEV [[nodiscard]] constexpr auto
+  // curvesLeft() const noexcept -> bool;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  isStraight() const noexcept -> bool;
+  // PURE HOSTDEV [[nodiscard]] constexpr auto
+  // isStraight() const noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isLeft(Point<D, T> const & p) const noexcept -> bool;
