@@ -1,17 +1,17 @@
 include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
 
 # ------------------------------------------------------------------------------
-# stdlib 
+# stdlib
 # ------------------------------------------------------------------------------
 add_um2_test(./stdlib/algorithm/copy.cpp)
 add_um2_test(./stdlib/memory/addressof.cpp)
 add_um2_test(./stdlib/memory/construct_at.cpp)
 add_um2_test(./stdlib/Vector.cpp)
-add_um2_test(./stdlib/sto.cpp) 
+add_um2_test(./stdlib/sto.cpp)
 add_um2_test(./stdlib/String.cpp)
 
 # ------------------------------------------------------------------------------
-# common 
+# common
 # ------------------------------------------------------------------------------
 add_um2_test(./common/Log.cpp)
 add_um2_test(./common/ShortString.cpp)
@@ -76,7 +76,7 @@ add_um2_test(./gmsh/model.cpp)
 ##add_um2_test(./ray_casting/intersect/Ray-LineSegment.cpp)
 #
 ## ------------------------------------------------------------------------------
-## visualization 
+## visualization
 ## ------------------------------------------------------------------------------
 #add_um2_test(./visualization/Image2D.cpp)
 #

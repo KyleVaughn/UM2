@@ -109,51 +109,30 @@ TEST_CASE(getSubmesh)
   ASSERT(tri_h2o.elset_ids[0] == 0);
   ASSERT(tri_h2o.elset_ids[1] == 0);
 }
-//
-//// template <std::floating_point T, std::signed_integral I>
-//// TEST(get_mesh_type)
-////     um2::MeshFile<T, I> tri_ref;
-////     make_tri_reference_mesh_file(tri_ref);
-////     um2::MeshType mesh_type = um2::MeshType::ERROR;
-////     mesh_type = tri_ref.get_mesh_type();
-////     ASSERT(mesh_type == um2::MeshType::TRI, "get_mesh_type");
-////
-////     um2::MeshFile<T, I> quad_ref;
-////     make_quad_reference_mesh_file(quad_ref);
-////     mesh_type = quad_ref.get_mesh_type();
-////     ASSERT(mesh_type == um2::MeshType::QUAD, "get_mesh_type");
-////
-////     um2::MeshFile<T, I> tri_ref;
-////     make_tri_reference_mesh_file(tri_ref);
-////     mesh_type = tri_ref.get_mesh_type();
-////     ASSERT(mesh_type == um2::MeshType::TRI_QUAD, "get_mesh_type");
-////
-////     um2::MeshFile<T, I> tri6_ref;
-////     make_tri6_reference_mesh_file(tri6_ref);
-////     mesh_type = tri6_ref.get_mesh_type();
-////     ASSERT(mesh_type == um2::MeshType::QUADRATIC_TRI, "get_mesh_type");
-////
-////     um2::MeshFile<T, I> quad8_ref;
-////     make_quad8_reference_mesh_file(quad8_ref);
-////     mesh_type = quad8_ref.get_mesh_type();
-////     ASSERT(mesh_type == um2::MeshType::QUADRATIC_QUAD, "get_mesh_type");
-////
-////     um2::MeshFile<T, I> tri6_quad8_ref;
-////     make_tri6_quad8_reference_mesh_file(tri6_quad8_ref);
-////     mesh_type = tri6_quad8_ref.get_mesh_type();
-////     ASSERT(mesh_type == um2::MeshType::QUADRATIC_TRI_QUAD, "get_mesh_type");
-//// END_TEST
-//
-//// template <std::floating_point T, std::signed_integral I>
-//// TEST(get_material_ids)
-////     um2::MeshFile<T, I> tri_ref;
-////     make_tri_reference_mesh_file(tri_ref);
-////     um2::Vector<MaterialID> mat_ids_ref = {1, 0};
-////     um2::Vector<MaterialID> mat_ids;
-////     tri_ref.get_material_ids(mat_ids);
-////     ASSERT(mat_ids == mat_ids_ref, "get_material_ids");
-//// END_TEST
-////
+
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(get_material_names)
+{
+  um2::MeshFile<T, I> tri_ref;
+  makeReferenceTriMeshFile(tri_ref);
+  std::vector<std::string> const mat_names_ref = {"Material_H2O", "Material_UO2"};
+  std::vector<std::string> mat_names;
+  tri_ref.getMaterialNames(mat_names);
+  ASSERT(mat_names == mat_names_ref);
+}
+
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(get_material_ids)
+{
+  um2::MeshFile<T, I> tri_ref;
+  makeReferenceTriMeshFile(tri_ref);
+  std::vector<MaterialID> const mat_ids_ref = {1, 0};
+  std::vector<MaterialID> mat_ids;
+  tri_ref.getMaterialIDs(mat_ids,
+                         std::vector<std::string>{"Material_H2O", "Material_UO2"});
+  ASSERT(mat_ids == mat_ids_ref);
+}
+
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(MeshFile)
 {
@@ -161,8 +140,8 @@ TEST_SUITE(MeshFile)
   TEST((compareTopology<T, I>));
   TEST((sortElsets<T, I>));
   TEST((getSubmesh<T, I>));
-  //    RUN_TEST("get_mesh_type", (get_mesh_type<T, I>) );
-  //    RUN_TEST("get_material_ids", (get_material_ids<T, I>) );
+  TEST((get_material_names<T, I>));
+  TEST((get_material_ids<T, I>));
 }
 
 auto

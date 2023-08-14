@@ -71,6 +71,19 @@ TEST_CASE(faceContaining)
   ASSERT(mesh.faceContaining(p) == 1);
 }
 
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(to_mesh_file)
+{
+  um2::QuadMesh<2, T, I> const quad_mesh = makeQuadReferenceMesh<2, T, I>();
+  um2::MeshFile<T, I> quad_mesh_file_ref;
+  makeReferenceQuadMeshFile(quad_mesh_file_ref);
+  um2::MeshFile<T, I> quad_mesh_file;
+  quad_mesh.toMeshFile(quad_mesh_file);
+  ASSERT(um2::compareGeometry(quad_mesh_file, quad_mesh_file_ref) == 0);
+  ASSERT(um2::compareTopology(quad_mesh_file, quad_mesh_file_ref) == 0);
+  ASSERT(quad_mesh_file.type == um2::MeshType::Quad);
+}
+
 #if UM2_ENABLE_CUDA
 template <std::floating_point T, std::signed_integral I>
 MAKE_CUDA_KERNEL(accessors, T, I)
@@ -83,6 +96,7 @@ TEST_SUITE(QuadMesh)
   TEST_HOSTDEV(accessors, 1, 1, T, I);
   TEST((boundingBox<T, I>));
   TEST((faceContaining<T, I>));
+  TEST((to_mesh_file<T, I>));
 }
 
 auto
