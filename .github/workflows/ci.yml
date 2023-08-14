@@ -1,6 +1,12 @@
 name: CI
 
-on: [ push ]
+on: 
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
 
 jobs:
   main:
@@ -9,58 +15,67 @@ jobs:
       fail-fast: true
       matrix:
         compiler: [ gcc, clang ]
-        build_type: [ Debug, Release ]
-        cuda: [ OFF ]
-        openmp: [ ON, OFF]
-        dev_mode: [ ON, OFF ]
+          build_type: [ Debug, Release ]
+          openmp: [ ON, OFF]
+          dev_mode: [ ON, OFF ]
+          #gmsh: [ ON, OFF ]
+          #PAR_STL 
+          #INT64
 
-    name: "${{ matrix.compiler }}, ${{ matrix.build_type }}, OMP=${{ matrix.openmp }}, 
-      Dev=${{ matrix.dev_mode }}"
+          #    name: "${{ matrix.compiler }}, ${{ matrix.build_type }}, OMP=${{ matrix.openmp }}, 
+          #      Dev=${{ matrix.dev_mode }}"
+
+    name: "${{ matrix.compiler }}" 
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up gcc 
+      - name: Apt dependencies
+        shell: bash
+        run: |
+          sudo apt -y update
+          sudo apt install -y libhdf5-dev \
+                              libpugixml-dev
+
+      - name: gcc 
         shell: bash
         if: matrix.compiler == 'gcc'
         run: |
-          sudo apt -y update
-          sudo apt install -y gcc-12 g++-12 clang-14
+          sudo apt install -y gcc-12 g++-12
           echo "CC=gcc-12" >> $GITHUB_ENV 
           echo "CXX=g++-12" >> $GITHUB_ENV 
 
-      - name: Set up clang 
+      - name: Dev mode dependencies
+        shell: bash
+        if: matrix.dev_mode == 'ON'
+        run: |
+          sudo apt install -y llvm-15 cppcheck
+
+      - name: clang 
         shell: bash
         if: matrix.compiler == 'clang' 
         run: |
-          sudo apt -y update
-          sudo apt install -y clang-14
-          echo "CC=clang-14" >> $GITHUB_ENV 
-          echo "CXX=clang++-14" >> $GITHUB_ENV 
+          sudo apt install -y clang-15
+          echo "CC=clang-15" >> $GITHUB_ENV 
+          echo "CXX=clang++-15" >> $GITHUB_ENV 
 
       - name: OpenMP
         shell: bash
         if: matrix.openmp == 'ON'
-        run: sudo apt install -y libomp-14-dev
+        run: sudo apt install -y libomp-15-dev
 
           #      - name: Vis
           #        shell: bash
           #        if: matrix.vis == 'ON'
           #        run: sudo apt install -y xorg-dev libgl1-mesa-dev
 
-      - name: Dev mode dependencies
-        shell: bash
-        if: matrix.dev_mode == 'ON'
-        run: |
-          sudo apt install -y cppcheck
-
       - name: Configure and build
         run: |
           cmake -S . -B build \
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                -DUM2_ENABLE_CUDA=${{ matrix.cuda }} \
                 -DUM2_ENABLE_OPENMP=${{ matrix.openmp }} \
                 -DUM2_DEV_MODE=${{ matrix.dev_mode }}
+                -DUM2_ENABLE_CUDA=OFF \
           make -j -C build
 
       - name: Format check
@@ -79,4 +94,4 @@ jobs:
           python3 -m pip install cpp-coveralls
           coveralls -e cmake-build-debug/ -e env/ -e scripts/ -e tpls/ --gcov /usr/bin/gcov-12
         env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }} # read the token from github env
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
