@@ -81,5 +81,4 @@ jobs:
           python3 -m pip install cpp-coveralls
           coveralls -e cmake-build-debug/ -e env/ -e scripts/ -e tpls/ --gcov /usr/bin/gcov-12
         env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }} # read the token from github env
