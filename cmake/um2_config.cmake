@@ -212,6 +212,12 @@ if (UM2_ENABLE_CUDA)
   endif()
 endif()
 
+# If COVERAGE is enabled, set the flags
+if (UM2_ENABLE_COVERAGE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -O0")
+  target_link_libraries(um2 PUBLIC gcov)
+endif ()
+
 ## Tests #########################################
 ##################################################
 if (UM2_BUILD_TESTS)
