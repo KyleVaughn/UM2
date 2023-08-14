@@ -61,7 +61,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto LineSegment<D, T>::jacobian(R /*r*/) const n
 
 template <len_t D, typename T>
 UM2_PURE UM2_HOSTDEV constexpr auto
-LineSegment<D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool requires(D == 2)
+LineSegment<D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool
+  requires(D == 2)
 {
   return areCCW(this->vertices[0], this->vertices[1], p);
 }

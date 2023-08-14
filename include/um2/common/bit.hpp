@@ -33,9 +33,9 @@ constexpr auto bit_cast(From const & from) noexcept -> To
 // (kcvaughn): I'm not sure this is legal C++ from a constexpr perspective, but it
 // seems to work for CUDA.
 template <typename To, typename From>
-requires(sizeof(To) == sizeof(From) && std::is_trivially_copyable_v<From> &&
-         std::is_trivially_copyable_v<To>) __device__
-    constexpr auto bit_cast(From const & from) noexcept -> To
+  requires(sizeof(To) == sizeof(From) && std::is_trivially_copyable_v<From> &&
+           std::is_trivially_copyable_v<To>)
+__device__ constexpr auto bit_cast(From const & from) noexcept -> To
 {
   static_assert(std::is_trivially_constructible_v<To>);
   To to;

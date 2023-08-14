@@ -51,7 +51,8 @@ struct Polytope<1, 1, 2, D, T> {
       -> Vec<D, T>;
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
-  isLeft(Point<D, T> const & p) const noexcept -> bool requires(D == 2);
+  isLeft(Point<D, T> const & p) const noexcept -> bool
+    requires(D == 2);
 };
 
 template <len_t D, typename T>

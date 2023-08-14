@@ -305,7 +305,8 @@ UM2_HOSTDEV void Vector<T>::insert(T const * pos, T const & value)
 
 template <typename T>
 UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::contains(T const & value) const noexcept
-    -> bool requires(!std::floating_point<T>)
+    -> bool
+  requires(!std::floating_point<T>)
 {
   for (len_t i = 0; i < this->_size; ++i) {
     if (this->_data[i] == value) {
@@ -317,9 +318,9 @@ UM2_PURE UM2_HOSTDEV constexpr auto Vector<T>::contains(T const & value) const n
 
 // A classic abs(a - b) <= epsilon comparison
 template <typename T>
-requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
-    constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
-                            T const epsilon) noexcept -> bool
+  requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>)
+UM2_PURE UM2_HOSTDEV constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
+                                             T const epsilon) noexcept -> bool
 {
   if (a.size() != b.size()) {
     return false;
@@ -333,9 +334,9 @@ requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) UM2_PURE UM2_HOS
 }
 
 template <typename T>
-requires(std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
-    constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
-                            T const epsilon) noexcept -> bool
+  requires(std::unsigned_integral<T>)
+UM2_PURE UM2_HOSTDEV constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
+                                             T const epsilon) noexcept -> bool
 {
   if (a.size() != b.size()) {
     return false;

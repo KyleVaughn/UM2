@@ -103,7 +103,8 @@ public:
   UM2_HOSTDEV void insert(T const * pos, T const & value);
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
-  contains(T const & value) const noexcept -> bool requires(!std::floating_point<T>);
+  contains(T const & value) const noexcept -> bool
+    requires(!std::floating_point<T>);
 
   // -----------------------------------------------------------------------------
   // Operators
@@ -127,14 +128,14 @@ public:
 // -----------------------------------------------------------------------------
 
 template <typename T>
-requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
-    constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
-                            T epsilon = T{}) noexcept -> bool;
+  requires(std::is_arithmetic_v<T> && !std::unsigned_integral<T>)
+UM2_PURE UM2_HOSTDEV constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
+                                             T epsilon = T{}) noexcept -> bool;
 
 template <typename T>
-requires(std::unsigned_integral<T>) UM2_PURE UM2_HOSTDEV
-    constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
-                            T epsilon = T{}) noexcept -> bool;
+  requires(std::unsigned_integral<T>)
+UM2_PURE UM2_HOSTDEV constexpr auto isApprox(Vector<T> const & a, Vector<T> const & b,
+                                             T epsilon = T{}) noexcept -> bool;
 
 } // namespace um2
 

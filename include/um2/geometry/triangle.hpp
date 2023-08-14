@@ -47,7 +47,8 @@ struct Polytope<2, 1, 3, D, T> {
       -> LineSegment<D, T>;
 
   UM2_PURE UM2_HOSTDEV [[nodiscard]] constexpr auto
-  contains(Point<D, T> const & p) const noexcept -> bool requires(D == 2);
+  contains(Point<D, T> const & p) const noexcept -> bool
+    requires(D == 2);
 };
 
 } // namespace um2

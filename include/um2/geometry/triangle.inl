@@ -69,7 +69,8 @@ UM2_PURE UM2_HOSTDEV constexpr auto Triangle<D, T>::edge(len_t i) const noexcept
 
 template <len_t D, typename T>
 UM2_PURE UM2_HOSTDEV constexpr auto
-Triangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool requires(D == 2)
+Triangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
+  requires(D == 2)
 {
   return areCCW(this->vertices[0], this->vertices[1], p) &&
          areCCW(this->vertices[1], this->vertices[2], p) &&
