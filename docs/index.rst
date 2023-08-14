@@ -1,4 +1,5 @@
 .. UM2 documentation master file, created by sphinx-quickstart.
+
 Dependencies are installed via spack.
 -------------------------------------
 In ``spack.yaml``:
@@ -51,5 +52,11 @@ Docs
 ====
 .. TODO: add docs here.
 
-.. doxygenfile:: sto.hpp
+.. toctree::
+   :maxdepth: 2
+
+   usage
+
+
+.. doxygenfile:: Log.hpp
 
