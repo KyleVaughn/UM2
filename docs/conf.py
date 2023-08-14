@@ -8,6 +8,7 @@
 
 import subprocess
 import os
+import time
 
 
 def configureDoxyfile(input_dir, output_dir):
@@ -42,12 +43,12 @@ file_list = list(filter(lambda x: not isinstance(x, list), file_list))
 file_string = ' '.join(file_list)
 
 breathe_projects = {}
-if read_the_docs_build:
-    # recursively find all directory and *.h file under ../include and generate a string seperate by space
-    output_dir = 'build'
-    configureDoxyfile(file_string, output_dir)
-    subprocess.call('doxygen', shell=True)
-    breathe_projects['UM2'] = output_dir + '/xml'
+# recursively find all directory and *.h file under ../include and generate a string seperate by space
+output_dir = 'build'
+configureDoxyfile(file_string, output_dir)
+print(output_dir)
+subprocess.call('doxygen', shell=True)
+breathe_projects['UM2'] = output_dir + '/xml'
 
 project = 'UM2'
 copyright = '2023, Kyle'

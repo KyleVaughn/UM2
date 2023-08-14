@@ -56,6 +56,7 @@ Docs
    :maxdepth: 2
 
    usage
+   doc_of_doc
 
 
 .. doxygenfile:: Log.hpp
