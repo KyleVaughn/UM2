@@ -1,6 +1,6 @@
 name: CI
 
-on: 
+on:
   pull_request:
     branches:
       - main
@@ -15,17 +15,14 @@ jobs:
       fail-fast: true
       matrix:
         compiler: [ gcc, clang ]
-          build_type: [ Debug, Release ]
-          openmp: [ ON, OFF]
-          dev_mode: [ ON, OFF ]
+        build_type: [ Debug, Release ]
+        openmp: [ ON, OFF]
+        dev_mode: [ ON, OFF ]
           #gmsh: [ ON, OFF ]
-          #PAR_STL 
+          #PAR_STL
           #INT64
 
-          #    name: "${{ matrix.compiler }}, ${{ matrix.build_type }}, OMP=${{ matrix.openmp }}, 
-          #      Dev=${{ matrix.dev_mode }}"
-
-    name: "${{ matrix.compiler }}" 
+    name: "${{ matrix.compiler }},${{ matrix.build_type }},OMP=${{ matrix.openmp }},Dev=${{ matrix.dev_mode }}"
 
     steps:
       - uses: actions/checkout@v3
@@ -37,13 +34,13 @@ jobs:
           sudo apt install -y libhdf5-dev \
                               libpugixml-dev
 
-      - name: gcc 
+      - name: gcc
         shell: bash
         if: matrix.compiler == 'gcc'
         run: |
           sudo apt install -y gcc-12 g++-12
-          echo "CC=gcc-12" >> $GITHUB_ENV 
-          echo "CXX=g++-12" >> $GITHUB_ENV 
+          echo "CC=gcc-12" >> $GITHUB_ENV
+          echo "CXX=g++-12" >> $GITHUB_ENV
 
       - name: Dev mode dependencies
         shell: bash
@@ -51,13 +48,13 @@ jobs:
         run: |
           sudo apt install -y llvm-15 cppcheck
 
-      - name: clang 
+      - name: clang
         shell: bash
-        if: matrix.compiler == 'clang' 
+        if: matrix.compiler == 'clang'
         run: |
           sudo apt install -y clang-15
-          echo "CC=clang-15" >> $GITHUB_ENV 
-          echo "CXX=clang++-15" >> $GITHUB_ENV 
+          echo "CC=clang-15" >> $GITHUB_ENV
+          echo "CXX=clang++-15" >> $GITHUB_ENV
 
       - name: OpenMP
         shell: bash
@@ -83,8 +80,8 @@ jobs:
         run: make -C build format-check
 
       - name: Run tests
-        run: 
-          make -j -C build test 
+        run:
+          make -j -C build test
 
       - name: Upload coverage
         if: matrix.dev_mode == 'ON' && matrix.build_type == 'Debug'  && matrix.compiler == 'gcc'
