@@ -1,5 +1,96 @@
 namespace um2
 {
+
+// ----------------------------------------------------------------------------
+// Hidden
+// ----------------------------------------------------------------------------
+
+template <class T>
+HOSTDEV constexpr void
+Vector<T>::allocate(Size n) noexcept
+{
+  assert(n < max_size());
+  assert(_begin == nullptr);
+  _begin = static_cast<T *>(::operator new(static_cast<size_t>(n) * sizeof(T)));
+  _end = _begin;
+  _end_cap = _begin + n;
+}
+
+template <class T>
+HOSTDEV constexpr void
+Vector<T>::construct_at_end(Size n) noexcept
+{
+  Ptr new_end = _end + n;
+  for (Ptr pos = _end; pos != new_end; ++pos) {
+    construct_at(pos);
+  }
+  _end = new_end;
+}
+
+template <class T>
+HOSTDEV constexpr void
+Vector<T>::construct_at_end(Size n, T const & value) noexcept
+{
+  Ptr new_end = _end + n;
+  for (Ptr pos = _end; pos != new_end; ++pos) {
+    construct_at(pos, value);
+  }
+  _end = new_end;
+}
+
+template <class T>
+HOSTDEV constexpr void
+Vector<T>::destruct_at_end(Ptr new_last) noexcept
+{
+  Ptr soon_to_be_end = _end;
+  while (new_last != soon_to_be_end) {
+    um2::destroy_at(--soon_to_be_end);
+  }
+  _end = new_last;
+}
+
+template <class T>
+PURE HOSTDEV constexpr auto
+Vector<T>::recommend(Size new_size) const noexcept -> Size
+{
+  return um2::max(2 * capacity(), new_size);
+}
+
+template <class T>
+HOSTDEV constexpr void
+Vector<T>::grow(Size n) noexcept
+{
+  Size const current_size = size();
+  Size const new_size = current_size + n;
+  Size const new_capacity = recommend(new_size);
+  Ptr new_begin =
+      static_cast<T *>(::operator new(static_cast<size_t>(new_capacity) * sizeof(T)));
+  Ptr new_end = new_begin;
+  // Move the elements over
+  for (Ptr old_pos = _begin; old_pos != _end; ++old_pos, ++new_end) {
+    um2::construct_at(new_end, um2::move(*old_pos));
+  }
+  // Destroy the old elements
+  destruct_at_end(_begin);
+  // Update the pointers
+  _begin = new_begin;
+  _end = new_end;
+  _end_cap = _begin + new_capacity;
+}
+
+template <class T>
+HOSTDEV constexpr void
+Vector<T>::append_default(Size n) noexcept
+{
+  // If we have enough capacity, just construct the new elements
+  // Otherwise, allocate a new buffer and move the elements over
+  if (static_cast<Size>(_end_cap - _end) < n) {
+    grow(n);
+  }
+  // Construct the new elements
+  construct_at_end(n);
+}
+
 // ---------------------------------------------------------------------------
 // Constructors
 // ---------------------------------------------------------------------------
@@ -354,96 +445,6 @@ applyPermutation(Vector<T> & v, Vector<Size> const & perm) noexcept
       j = perm[j];
     }
   }
-}
-
-// ----------------------------------------------------------------------------
-// Hidden
-// ----------------------------------------------------------------------------
-
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::allocate(Size n) noexcept
-{
-  assert(n < max_size());
-  assert(_begin == nullptr);
-  _begin = static_cast<T *>(::operator new(static_cast<size_t>(n) * sizeof(T)));
-  _end = _begin;
-  _end_cap = _begin + n;
-}
-
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::construct_at_end(Size n) noexcept
-{
-  Ptr new_end = _end + n;
-  for (Ptr pos = _end; pos != new_end; ++pos) {
-    construct_at(pos);
-  }
-  _end = new_end;
-}
-
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::construct_at_end(Size n, T const & value) noexcept
-{
-  Ptr new_end = _end + n;
-  for (Ptr pos = _end; pos != new_end; ++pos) {
-    construct_at(pos, value);
-  }
-  _end = new_end;
-}
-
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::destruct_at_end(Ptr new_last) noexcept
-{
-  Ptr soon_to_be_end = _end;
-  while (new_last != soon_to_be_end) {
-    um2::destroy_at(--soon_to_be_end);
-  }
-  _end = new_last;
-}
-
-template <class T>
-PURE HOSTDEV constexpr auto
-Vector<T>::recommend(Size new_size) const noexcept -> Size
-{
-  return um2::max(2 * capacity(), new_size);
-}
-
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::grow(Size n) noexcept
-{
-  Size const current_size = size();
-  Size const new_size = current_size + n;
-  Size const new_capacity = recommend(new_size);
-  Ptr new_begin =
-      static_cast<T *>(::operator new(static_cast<size_t>(new_capacity) * sizeof(T)));
-  Ptr new_end = new_begin;
-  // Move the elements over
-  for (Ptr old_pos = _begin; old_pos != _end; ++old_pos, ++new_end) {
-    um2::construct_at(new_end, um2::move(*old_pos));
-  }
-  // Destroy the old elements
-  destruct_at_end(_begin);
-  // Update the pointers
-  _begin = new_begin;
-  _end = new_end;
-  _end_cap = _begin + new_capacity;
-}
-
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::append_default(Size n) noexcept
-{
-  // If we have enough capacity, just construct the new elements
-  // Otherwise, allocate a new buffer and move the elements over
-  if (static_cast<Size>(_end_cap - _end) < n) {
-    grow(n);
-  }
-  // Construct the new elements
-  construct_at_end(n);
 }
 
 } // namespace um2
