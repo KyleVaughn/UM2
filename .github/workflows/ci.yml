@@ -19,7 +19,7 @@ jobs:
       fail-fast: true
       matrix:
         compiler: [clang ]
-        build_type: [Release ]
+        build_type: [Debug, Release]
         dev_mode: [ ON]
         gmsh: [ ON]
           #PAR_STL
