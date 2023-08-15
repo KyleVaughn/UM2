@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+env:
+  HDF5_ROOT: /usr
+
 jobs:
   main:
     runs-on: ubuntu-22.04
@@ -18,7 +21,7 @@ jobs:
         build_type: [ Debug, Release ]
         openmp: [ ON, OFF]
         dev_mode: [ ON, OFF ]
-          #gmsh: [ ON, OFF ]
+        gmsh: [ ON, OFF ]
           #PAR_STL
           #INT64
 
@@ -61,6 +64,14 @@ jobs:
         if: matrix.openmp == 'ON'
         run: sudo apt install -y libomp-15-dev
 
+      - name: Gmsh
+        shell: bash
+        if: matrix.gmsh = 'ON'
+        run: |
+          wget https://gmsh.info/bin/Linux/gmsh-4.11.1-Linux64-sdk.tgz
+          tar -xzvf gmsh-4.11.1-Linux64-sdk.tgz
+          echo "GMSH_ROOT=${PWD}/gmsh-4.11.1-Linux64-sdk" >> $GITHUB_ENV
+
           #      - name: Vis
           #        shell: bash
           #        if: matrix.vis == 'ON'
@@ -71,7 +82,8 @@ jobs:
           cmake -S . -B build \
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
                 -DUM2_ENABLE_OPENMP=${{ matrix.openmp }} \
-                -DUM2_DEV_MODE=${{ matrix.dev_mode }}
+                -DUM2_DEV_MODE=${{ matrix.dev_mode }} \
+                -DUM2_ENABLE_GMSH=${{ matrix.gmsh }} \
                 -DUM2_ENABLE_CUDA=OFF \
           make -j -C build
 

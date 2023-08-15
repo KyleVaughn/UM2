@@ -1,3 +1,7 @@
+## Set module path ###############################
+##################################################
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+
 ## Update git submodules #########################
 ##################################################
 include(cmake/update-git-submodules.cmake)
@@ -30,10 +34,8 @@ set_target_properties(um2 PROPERTIES CXX_STANDARD_REQUIRED ON)
 ## OpenMP ########################################
 ##################################################
 if (UM2_ENABLE_OPENMP)
-    find_package(OpenMP REQUIRED)
-    if (OpenMP_CXX_FOUND)
-        target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
-    endif()
+    find_package(OpenMP REQUIRED COMPONENTS CXX)
+    target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
 ## CUDA ##########################################
@@ -65,25 +67,9 @@ endif()
 
 ## hdf5 ##########################################
 ##################################################
-#FindHDF5()
 find_package(HDF5 REQUIRED COMPONENTS CXX)
-if (NOT HDF5_FOUND)
-    message(FATAL_ERROR "Could not find hdf5")
-endif()
-find_library(HDF5_LIB "hdf5")
-if (NOT HDF5_LIB)
-    message(FATAL_ERROR "Could not find hdf5")
-endif()
-find_library(HDF5_CPP_LIB "hdf5_cpp")
-if (NOT HDF5_CPP_LIB)
-    message(FATAL_ERROR "Could not find hdf5_cpp")
-endif()
-find_path(HDF5_CPP_INC "H5Cpp.h")
-if (NOT HDF5_CPP_INC)
-    message(FATAL_ERROR "Could not find H5Cpp.h")
-endif()
-target_link_libraries(um2 PUBLIC "${HDF5_LIB}" "${HDF5_CPP_LIB}")
-target_include_directories(um2 SYSTEM PUBLIC "${HDF5_CPP_INC}")
+target_link_libraries(um2 PUBLIC "${HDF5_CXX_LIBRARIES}")
+target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
 
 ## pugixml #######################################
 ##################################################
@@ -101,14 +87,8 @@ target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
 ## gmsh ##########################################
 ##################################################
 if (UM2_ENABLE_GMSH)
-    find_library(GMSH_LIB "gmsh")
-    if (NOT GMSH_LIB)
-        message(FATAL_ERROR "Could not find gmsh")
-    endif()
-    find_path(GMSH_INC "gmsh.h")
-    if (NOT GMSH_INC)
-        message(FATAL_ERROR "Could not find gmsh.h")
-    endif()
+    find_library(GMSH_LIB "gmsh" REQUIRED HINTS $ENV{GMSH_ROOT}/lib)
+    find_path(GMSH_INC "gmsh.h" REQUIRED HINTS $ENV{GMSH_ROOT}/include)
     target_link_libraries(um2 PUBLIC "${GMSH_LIB}")
     target_include_directories(um2 SYSTEM PUBLIC "${GMSH_INC}")
 endif()
@@ -247,6 +227,5 @@ endif()
 if (UM2_BUILD_DOCS)
     add_subdirectory(docs)
 endif()
-
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
