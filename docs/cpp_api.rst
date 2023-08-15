@@ -1,4 +1,4 @@
 =========
 C++ API
 =========
-.. doxygenfile:: Log.hpp
+.. doxygenfile:: doc_demo.hpp

@@ -24,4 +24,8 @@ Doxygen output into Sphinx.
     1. the `conf.py` will ask read the docs to locate all header file and inline file in include directory.
     2. index.rst can include markdown file as sub document.
 
+4. if new directory is added, add it to the doc/CMakeLists.txt line 5
+
+5. document the file or class under docs/cpp_api.rst
+
 [^1]: [Read the Docs](https://readthedocs.org/)
