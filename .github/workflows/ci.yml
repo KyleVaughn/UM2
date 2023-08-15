@@ -84,7 +84,7 @@ jobs:
                 -DUM2_ENABLE_OPENMP=${{ matrix.openmp }} \
                 -DUM2_DEV_MODE=${{ matrix.dev_mode }} \
                 -DUM2_ENABLE_GMSH=${{ matrix.gmsh }} \
-                -DUM2_ENABLE_CUDA=OFF \
+                -DUM2_ENABLE_CUDA=OFF
           make -j -C build
 
       - name: Format check
