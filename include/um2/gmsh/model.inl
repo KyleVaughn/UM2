@@ -302,6 +302,7 @@ overlaySpatialPartition(mpact::SpatialPartition<T, I> const & partition,
     for (size_t i = 0; i < dont_remove_2d.size(); ++i) {
       dont_remove_dimtags_2d[i] = {2, dont_remove_2d[i]};
     }
+    // NOLINTNEXTLINE(misc-const-correctness)
     gmsh::vectorpair to_remove_dimtags_2d;
     gmsh::vectorpair all_dimtags_2d;
     gmsh::model::getEntities(all_dimtags_2d, 2);

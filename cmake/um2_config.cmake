@@ -34,7 +34,7 @@ set_target_properties(um2 PROPERTIES CXX_STANDARD_REQUIRED ON)
 ## OpenMP ########################################
 ##################################################
 if (UM2_ENABLE_OPENMP)
-    find_package(OpenMP REQUIRED COMPONENTS CXX)
+    find_package(OpenMP REQUIRED)
     target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
@@ -73,14 +73,8 @@ target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
 
 ## pugixml #######################################
 ##################################################
-find_library(PUGIXML_LIB "pugixml")
-if (NOT PUGIXML_LIB)
-    message(FATAL_ERROR "Could not find pugixml")
-endif()
-find_path(PUGIXML_INC "pugixml.hpp")
-if (NOT PUGIXML_INC)
-    message(FATAL_ERROR "Could not find pugixml.hpp")
-endif()
+find_library(PUGIXML_LIB "pugixml" REQUIRED)
+find_path(PUGIXML_INC "pugixml.hpp" REQUIRED)
 target_link_libraries(um2 PUBLIC "${PUGIXML_LIB}")
 target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
 

@@ -33,9 +33,7 @@ jobs:
         shell: bash
         run: |
           sudo apt -y update
-          sudo apt install -y libhdf5-dev \
-                              libpugixml-dev \
-                              libomp-15-dev
+          sudo apt install -y libhdf5-dev libpugixml-dev
 
       - name: gcc
         shell: bash
@@ -49,13 +47,13 @@ jobs:
         shell: bash
         if: matrix.dev_mode == 'ON'
         run: |
-          sudo apt install -y llvm-15 cppcheck
+          sudo apt install -y clang-tools-15 cppcheck libomp-15-dev
 
       - name: clang
         shell: bash
         if: matrix.compiler == 'clang'
         run: |
-          sudo apt install -y clang-15
+          sudo apt install -y clang-15 libomp-15-dev
           echo "CC=clang-15" >> $GITHUB_ENV
           echo "CXX=clang++-15" >> $GITHUB_ENV
 
