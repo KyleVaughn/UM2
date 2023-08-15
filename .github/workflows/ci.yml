@@ -17,10 +17,10 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        compiler: [ gcc, clang ]
-        build_type: [ Debug, Release ]
-        dev_mode: [ ON, OFF ]
-        gmsh: [ ON, OFF ]
+        compiler: [clang ]
+        build_type: [Release ]
+        dev_mode: [ ON]
+        gmsh: [ ON]
           #PAR_STL
           #INT64
 
@@ -63,6 +63,7 @@ jobs:
         shell: bash
         if: matrix.gmsh == 'ON'
         run: |
+          sudo apt install -y libglu1-mesa
           wget https://gmsh.info/bin/Linux/gmsh-4.11.1-Linux64-sdk.tgz
           tar -xzvf gmsh-4.11.1-Linux64-sdk.tgz
           echo "GMSH_ROOT=${PWD}/gmsh-4.11.1-Linux64-sdk" >> $GITHUB_ENV
