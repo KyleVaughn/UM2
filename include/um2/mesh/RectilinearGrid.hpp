@@ -88,8 +88,8 @@ struct RectilinearGrid {
   depth() const noexcept -> T;
 
   template <typename... Args>
-    requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
+  requires(sizeof...(Args) == D) PURE HOSTDEV
+      [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
       -> AxisAlignedBox<D, T>;
 
   // -----------------------------------------------------------------------------

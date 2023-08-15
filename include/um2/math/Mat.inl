@@ -44,8 +44,8 @@ Mat<M, N, T>::operator()(Size i, Size j) const noexcept -> T const &
 // From a list of columns
 template <Size M, Size N, typename T>
 template <std::same_as<Vec<M, T>>... Cols>
-  requires(sizeof...(Cols) == N)
-HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... in_cols) noexcept
+requires(sizeof...(Cols) == N) HOSTDEV
+    constexpr Mat<M, N, T>::Mat(Cols... in_cols) noexcept
     : cols{in_cols...}
 {
 }

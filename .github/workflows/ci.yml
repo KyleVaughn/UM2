@@ -10,6 +10,7 @@ on:
 
 env:
   HDF5_ROOT: /usr
+  OMP_NUM_THREADS: 2
 
 jobs:
   main:
