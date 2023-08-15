@@ -12,6 +12,7 @@ project(
 option(UM2_BUILD_TESTS      "Build tests"          ON)
 option(UM2_BUILD_EXAMPLES   "Build examples"       OFF)
 option(UM2_BUILD_BENCHMARKS "Build benchmarks"     OFF)
+option(UM2_BUILD_DOCS       "Build documentation"  OFF)
 
 option(UM2_ENABLE_CUDA      "Enable CUDA"          OFF)
 option(UM2_ENABLE_OPENMP    "Enable OpenMP"        ON)
@@ -144,5 +145,3 @@ target_include_directories(um2 PUBLIC include)
 
 # Configure
 include(cmake/um2_config.cmake)
-
-add_subdirectory(docs)
