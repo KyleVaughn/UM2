@@ -65,6 +65,9 @@ struct Polytope<2, 1, 4, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isConvex() const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  isCCW() const noexcept -> bool;
 };
 
 } // namespace um2

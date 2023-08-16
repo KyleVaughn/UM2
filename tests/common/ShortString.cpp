@@ -78,6 +78,7 @@ TEST_CASE(const_char_pointer_constructor)
   // cppcheck-suppress assertWithSideEffect
   assert(s.data()[4] == 'o');
 }
+MAKE_CUDA_KERNEL(const_char_pointer_constructor);
 
 HOSTDEV
 TEST_CASE(move_constructor)
@@ -128,10 +129,15 @@ TEST_CASE(equals_operator)
   ASSERT(s0 == s0);
   ASSERT(s0 == s2);
   ASSERT(s0 != s1);
+}
+MAKE_CUDA_KERNEL(equals_operator);
+
+TEST_CASE(equals_operator_std_string)
+{
+  um2::ShortString const s0("hello");
   ASSERT(s0 == std::string("hello"));
   ASSERT(!(s0 == std::string("helo")));
 }
-MAKE_CUDA_KERNEL(equals_operator);
 
 HOSTDEV
 TEST_CASE(comparison)
@@ -178,6 +184,7 @@ TEST_SUITE(ShortString)
   // Operators
   TEST_HOSTDEV(assign_operator)
   TEST_HOSTDEV(equals_operator)
+  TEST(equals_operator_std_string)
   TEST_HOSTDEV(comparison)
 }
 

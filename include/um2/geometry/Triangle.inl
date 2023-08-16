@@ -62,7 +62,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::edge(Size i) const noexcept -> LineSegment<D, T>
 {
-  return um2::edge(*this, i);
+  return um2::getEdge(*this, i);
 }
 
 // -------------------------------------------------------------------

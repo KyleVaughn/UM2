@@ -1,8 +1,8 @@
+Utility
+  swap
+
 ShortString 
   operator[]
-
-Polygon
-  isCCW
 
 Gmsh
   model
@@ -28,6 +28,8 @@ QuadraticTriMesh
   toMeshFile
 QuadraticQuadMesh
   toMeshFile
+
+flipFace for all of the above
 
 SpatialPartition
   importCoarseCells

@@ -1,22 +1,17 @@
+Review NOLINTs and cppcheck suppress
+
 pointClosestTo()
 squaredDistanceTo()
 distanceTo()
 
-add isCCW as member function of faces
-
-Generalize routines in Mesh similar to Polygon
 Mesh-> Reorder
 
 Make rep meshes. 
   Test point containment, ray intersection, etc
-Quadratic Segment use tri bb or not, difference in best vs worst case
 
-MeshFile Reorder
 Mesh-> Faster find face
 
 If overlay grid fails, check the refactor comments in model.inl
-
-Update github actions to use spack
 
 TriMesh.faceContaining, Find the closest point first, then just test all faces around it 
   Benchmark this

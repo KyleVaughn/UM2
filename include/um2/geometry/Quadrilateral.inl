@@ -64,7 +64,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::edge(Size i) const noexcept -> LineSegment<D, T>
 {
-  return um2::edge(*this, i);
+  return um2::getEdge(*this, i);
 }
 
 // -------------------------------------------------------------------
@@ -120,6 +120,17 @@ PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::isConvex() const noexcept -> bool
 {
   return um2::isConvex(*this); 
+}
+
+// -------------------------------------------------------------------
+// isCCW
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+Quadrilateral<D, T>::isCCW() const noexcept -> bool
+{
+  return um2::isCCW(*this);
 }
 
 } // namespace um2

@@ -63,7 +63,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 QuadraticTriangle<D, T>::edge(Size i) const noexcept -> QuadraticSegment<D, T>
 {
-  return um2::edge(*this, i);
+  return um2::getEdge(*this, i);
 }
 
 // -------------------------------------------------------------------
@@ -119,6 +119,17 @@ PURE HOSTDEV constexpr auto
 QuadraticTriangle<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 {
   return um2::boundingBox(*this); 
+}
+
+// -------------------------------------------------------------------    
+// isCCW    
+// -------------------------------------------------------------------    
+    
+template <Size D, typename T>    
+PURE HOSTDEV constexpr auto      
+QuadraticTriangle<D, T>::isCCW() const noexcept -> bool    
+{    
+  return um2::isCCW(*this);    
 }
 
 } // namespace um2

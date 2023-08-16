@@ -18,7 +18,7 @@
 // Defines:
 //   interpolate
 //   jacobian
-//   edge
+//   getEdge
 //   linearPolygon
 //   isConvex (Quadrilateral only)
 //   area
@@ -26,6 +26,7 @@
 //   contains (point)
 //   boundingBox
 //   isCCW
+//   flipFace
 
 #include <um2/geometry/polygon/interpolate.inl>
 #include <um2/geometry/polygon/jacobian.inl>
@@ -36,12 +37,12 @@ namespace um2
 {
 
 // -------------------------------------------------------------------
-// edge
+// getEdge
 // -------------------------------------------------------------------
 
 template <Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-edge(LinearPolygon<N, D, T> const & p, Size const i) noexcept
+getEdge(LinearPolygon<N, D, T> const & p, Size const i) noexcept
 {
   assert(0 <= i && i < N);
   return (i < N - 1) ? LineSegment<D, T>(p[i], p[i + 1])
@@ -50,7 +51,7 @@ edge(LinearPolygon<N, D, T> const & p, Size const i) noexcept
 
 template <Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-edge(QuadraticPolygon<N, D, T> const & p, Size const i) noexcept
+getEdge(QuadraticPolygon<N, D, T> const & p, Size const i) noexcept
 {
   assert(0 <= i && i < N);
   constexpr Size m = N / 2;
@@ -103,10 +104,10 @@ PURE HOSTDEV constexpr auto
 boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept 
   -> AxisAlignedBox2<T>
 {
-  AxisAlignedBox2<T> box = boundingBox(edge(p, 0));
+  AxisAlignedBox2<T> box = boundingBox(getEdge(p, 0));
   constexpr Size m = N / 2;
   for (Size i = 1; i < m; ++i) {
-    box = boundingBox(box, boundingBox(edge(p, i)));
+    box = boundingBox(box, boundingBox(getEdge(p, i)));
   }
   return box;
 }
@@ -143,6 +144,40 @@ PURE HOSTDEV constexpr auto
 isCCW(QuadraticQuadrilateral2<T> const & q) noexcept -> bool
 {
   return isCCW(linearPolygon(q));
+}
+
+// -------------------------------------------------------------------
+// flipFace 
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+HOSTDEV constexpr void 
+flipFace(Triangle<D, T> & t) noexcept
+{
+  um2::swap(t[1], t[2]);
+}
+
+template <Size D, typename T>
+HOSTDEV constexpr void
+flipFace(Quadrilateral<D, T> & q) noexcept
+{
+  um2::swap(q[1], q[3]);
+}
+
+template <Size D, typename T>
+HOSTDEV constexpr void
+flipFace(QuadraticTriangle<D, T> & q) noexcept
+{
+  um2::swap(q[1], q[2]);
+  um2::swap(q[3], q[5]);
+}
+
+template <Size D, typename T>
+HOSTDEV constexpr void
+flipFace(QuadraticQuadrilateral<D, T> & q) noexcept
+{
+  um2::swap(q[1], q[3]);
+  um2::swap(q[4], q[7]);
 }
 
 } // namespace um2

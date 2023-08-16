@@ -182,6 +182,22 @@ TEST_CASE(boundingBox)
   ASSERT_NEAR(box.yMax(), static_cast<T>(1.5), static_cast<T>(1e-5));
 }
 
+// -------------------------------------------------------------------        
+// isCCW        
+// -------------------------------------------------------------------        
+        
+template <typename T>        
+HOSTDEV        
+TEST_CASE(isCCW_flipFace)        
+{        
+  auto quad = makeQuad<2, T>();    
+  ASSERT(quad.isCCW());        
+  um2::swap(quad[1], quad[3]);    
+  ASSERT(!quad.isCCW());        
+  um2::flipFace(quad);        
+  ASSERT(quad.isCCW());        
+}
+
 #if UM2_ENABLE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(interpolate, D, T);
@@ -203,6 +219,9 @@ MAKE_CUDA_KERNEL(centroid, T);
 
 template <typename T>
 MAKE_CUDA_KERNEL(boundingBox, T);
+
+template <typename T>
+MAKE_CUDA_KERNEL(isCCW_flipFace, T);
 #endif // UM2_ENABLE
 
 template <Size D, typename T>
@@ -216,6 +235,7 @@ TEST_SUITE(QuadraticQuadrilateral)
     TEST_HOSTDEV(area, 1, 1, T);
     TEST_HOSTDEV(centroid, 1, 1, T);
     TEST_HOSTDEV(boundingBox, 1, 1, T);
+    TEST_HOSTDEV(isCCW_flipFace, 1, 1, T);
   }
 }
 

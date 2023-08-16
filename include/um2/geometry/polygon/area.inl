@@ -55,7 +55,7 @@ area(PlanarQuadraticPolygon<N, T> const & q) noexcept -> T
   T result = area(linearPolygon(q));
   constexpr Size m = N / 2;
   for (Size i = 0; i < m; ++i) {
-    result += enclosedArea(edge(q, i));
+    result += enclosedArea(getEdge(q, i));
   }
   return result;
 }

@@ -39,7 +39,7 @@ struct FaceVertexMesh<2, 6, D, T, I> {
   numFaces() const noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  face(Size i) const noexcept -> Face;
+  getFace(Size i) const noexcept -> Face;
 
   // --------------------------------------------------------------------------
   // Methods
@@ -50,6 +50,8 @@ struct FaceVertexMesh<2, 6, D, T, I> {
 
   PURE [[nodiscard]] constexpr auto
   faceContaining(Point<D, T> const & p) const noexcept -> Size;
+
+  void flipFace(Size i) noexcept;
 
   void
   toMeshFile(MeshFile<T, I> & file) const noexcept;

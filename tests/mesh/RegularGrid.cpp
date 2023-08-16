@@ -247,6 +247,9 @@ MAKE_CUDA_KERNEL(accessors, D, T)
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(boundingBox, D, T)
 
+template <Size D, typename T>
+MAKE_CUDA_KERNEL(getCellCentroid, D, T)
+
 template <typename T>
 MAKE_CUDA_KERNEL(getBox, T)
 

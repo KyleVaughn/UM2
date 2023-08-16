@@ -14,7 +14,7 @@ namespace um2
 #ifndef __CUDA_ARCH__
 
 template <typename T>
-PURE HOSTDEV constexpr auto
+PURE HOST constexpr auto
 max(T x, T y) noexcept -> T
 {
   return std::max(x, y);
