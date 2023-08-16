@@ -1047,6 +1047,8 @@ SpatialPartition<T, I>::importCoarseCells(std::string const & filename)
     AxisAlignedBox2<T> bb;
     Point2<T> * vertices = nullptr;
     size_t const num_verts = cc_submesh.vertices.size();
+    // clang-tidy false positive
+    // NOLINTBEGIN(bugprone-branch-clone)
     switch (mesh_type) {
     case MeshType::Tri: {
       cc.mesh_id = tri.size();
@@ -1076,6 +1078,7 @@ SpatialPartition<T, I>::importCoarseCells(std::string const & filename)
       vertices = quadratic_quad.back().vertices.data();
       break;
     }
+    // NOLINTEND(bugprone-branch-clone)
     default:
       Log::error("Mesh type not supported");
     }

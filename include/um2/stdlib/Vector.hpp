@@ -65,7 +65,7 @@ public:
   max_size() noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  // cppcheck-suppress functionConst 
+  // cppcheck-suppress functionConst
   begin() noexcept -> T *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -187,7 +187,6 @@ public:
 // Vector<bool> is a specialization that is not supported
 template <>
 struct Vector<bool> {
-  static_assert(false, "Vector<bool> is not supported");
 };
 
 // TODO (kcvaughn@umich.edu): Add comparator template parameter

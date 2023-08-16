@@ -121,6 +121,22 @@ TEST_CASE(assign_operator)
 MAKE_CUDA_KERNEL(assign_operator);
 
 HOSTDEV
+TEST_CASE(access_operator)
+{
+  um2::ShortString s0("hello");
+  um2::ShortString const s("Garbage");
+  s0[0] = 'G';
+  assert(s0[0] == 'G');
+  assert(s[1] == 'a');
+  assert(s[2] == 'r');
+  assert(s[3] == 'b');
+  assert(s[4] == 'a');
+  ASSERT(s0[0] == 'G');
+  ASSERT(s0[1] == 'e');
+}
+MAKE_CUDA_KERNEL(access_operator);
+
+HOSTDEV
 TEST_CASE(equals_operator)
 {
   um2::ShortString const s0("hello");
@@ -179,6 +195,7 @@ TEST_SUITE(ShortString)
   TEST_HOSTDEV(const_char_array_constructor)
   TEST_HOSTDEV(copy_constructor)
   TEST_HOSTDEV(move_constructor)
+  TEST_HOSTDEV(access_operator)
   TEST_HOSTDEV(const_char_pointer_constructor)
 
   // Operators

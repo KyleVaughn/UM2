@@ -66,7 +66,7 @@ template <Size D, std::floating_point T, std::signed_integral I>
 void
 QuadraticQuadMesh<D, T, I>::toMeshFile(MeshFile<T, I> & file) const noexcept
 {
-  toMeshFile(*this, file);
+  um2::toMeshFile(*this, file);
 }
 
 } // namespace um2

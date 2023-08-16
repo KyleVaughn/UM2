@@ -4,16 +4,17 @@
 // However, NDEBUG is defined for Release builds.
 // In order to safely undef NDEBUG, allowing assert to work, all of the code we wish to
 // test must be included prior to undefing NDEBUG.
-// Therefore, we check that UM2_ENABLE_CUDA, a macro defined in all UM2 files, is defined
+// Therefore, we check that UM2_USE_CUDA, a macro defined in all UM2 files, is defined
 // to check this condition.
 //
 // TODO(kcvaughn@umich.edu): Write our own assert. How can we do this without exit and
 // abort?
 //                             maybe a trap instruction?
-#ifndef UM2_ENABLE_CUDA
+#ifndef UM2_USE_CUDA
 #  error("test_macros.hpp must be included after any UM2 files since it undefs NDEBUG")
 #endif
 
+#include <cstdlib> // exit
 #include <cstdio> // printf
 
 #undef NDEBUG
@@ -53,7 +54,7 @@
   name();                                                                                \
   printf("Test case '%s' passed\n", #name);
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
 #  define MAKE_CUDA_KERNEL_1_ARGS(host_test)                                             \
@@ -90,7 +91,7 @@
 
 #  define CUDA_KERNEL_POST_TEST                                                          \
     cudaDeviceSynchronize();                                                             \
-    cudaError_t error = cudaGetLastError();                                              \
+    cudaError_t const error = cudaGetLastError();                                        \
     if (error != cudaSuccess) {                                                          \
       printf("CUDA error: %s\n", cudaGetErrorString(error));                             \
       exit(1);                                                                           \

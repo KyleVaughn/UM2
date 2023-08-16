@@ -1,9 +1,16 @@
-name: CI 
+name: CI
 
-on: [push]
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
 
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  HDF5_ROOT: /usr
+  OMP_NUM_THREADS: 2
 
 jobs:
   main:
@@ -11,59 +18,69 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        compiler: [ gcc, clang ]
-        build_type: [ Debug, Release ]
-        cuda: [ OFF ]
-        openmp: [ ON, OFF]
-        dev_mode: [ ON, OFF ]
+        compiler: [gcc, clang]
+        build_type: [Debug, Release]
+        dev_mode: [ON]
+        gmsh: [ON]
+          #PAR_STL
+          #INT64
 
-    name: "${{ matrix.compiler }}, ${{ matrix.build_type }}, OMP=${{ matrix.openmp }}, 
-      Dev=${{ matrix.dev_mode }}"
+    name: "${{ matrix.compiler }}-${{ matrix.build_type }},Dev=${{ matrix.dev_mode }},Gmsh=${{ matrix.gmsh }}"
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up gcc 
+      - name: Apt dependencies
+        shell: bash
+        run: |
+          sudo apt -y update
+          sudo apt install -y libhdf5-dev libpugixml-dev
+
+      - name: gcc
         shell: bash
         if: matrix.compiler == 'gcc'
         run: |
-          sudo apt -y update
-          sudo apt install -y gcc-12 g++-12 clang-14
-          echo "CC=gcc-12" >> $GITHUB_ENV 
-          echo "CXX=g++-12" >> $GITHUB_ENV 
+          sudo apt install -y gcc-12 g++-12
+          echo "CC=gcc-12" >> $GITHUB_ENV
+          echo "CXX=g++-12" >> $GITHUB_ENV
 
-      - name: Set up clang 
+      - name: Dev mode dependencies
         shell: bash
-        if: matrix.compiler == 'clang' 
+        if: matrix.dev_mode == 'ON'
         run: |
-          sudo apt -y update
-          sudo apt install -y clang-14
-          echo "CC=clang-14" >> $GITHUB_ENV 
-          echo "CXX=clang++-14" >> $GITHUB_ENV 
+          sudo apt install -y clang-tidy-15 clang-format-15 cppcheck libomp-15-dev
+          sudo rm /usr/bin/clang-tidy
+          sudo ln -s /usr/bin/clang-tidy-15 /usr/bin/clang-tidy
 
-      - name: OpenMP
+      - name: clang
         shell: bash
-        if: matrix.openmp == 'ON'
-        run: sudo apt install -y libomp-14-dev
+        if: matrix.compiler == 'clang'
+        run: |
+          sudo apt install -y clang-15 libomp-15-dev
+          echo "CC=clang-15" >> $GITHUB_ENV
+          echo "CXX=clang++-15" >> $GITHUB_ENV
+
+      - name: Gmsh
+        shell: bash
+        if: matrix.gmsh == 'ON'
+        run: |
+          sudo apt install -y libglu1-mesa
+          wget https://gmsh.info/bin/Linux/gmsh-4.11.1-Linux64-sdk.tgz
+          tar -xzvf gmsh-4.11.1-Linux64-sdk.tgz
+          echo "GMSH_ROOT=${PWD}/gmsh-4.11.1-Linux64-sdk" >> $GITHUB_ENV
 
           #      - name: Vis
           #        shell: bash
           #        if: matrix.vis == 'ON'
           #        run: sudo apt install -y xorg-dev libgl1-mesa-dev
 
-      - name: Dev mode dependencies
-        shell: bash
-        if: matrix.dev_mode == 'ON'
-        run: |
-          sudo apt install -y cppcheck
-
       - name: Configure and build
         run: |
           cmake -S . -B build \
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                -DUM2_ENABLE_CUDA=${{ matrix.cuda }} \
-                -DUM2_ENABLE_OPENMP=${{ matrix.openmp }} \
-                -DUM2_DEV_MODE=${{ matrix.dev_mode }}
+                -DUM2_DEV_MODE=${{ matrix.dev_mode }} \
+                -DUM2_ENABLE_GMSH=${{ matrix.gmsh }} \
+                -DUM2_ENABLE_CUDA=OFF
           make -j -C build
 
       - name: Format check
@@ -71,5 +88,15 @@ jobs:
         run: make -C build format-check
 
       - name: Run tests
-        run: 
-          make -j -C build test 
+        run:
+          make -j -C build test
+
+      - name: Upload coverage
+        if: matrix.dev_mode == 'ON' && matrix.build_type == 'Debug'  && matrix.compiler == 'gcc'
+        run: |
+          sudo apt install -y python3 python3-pip
+          python3 -m pip install --upgrade pip
+          python3 -m pip install cpp-coveralls
+          coveralls -e cmake-build-debug/ -e env/ -e scripts/ -e tpls/ --gcov /usr/bin/gcov-12
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

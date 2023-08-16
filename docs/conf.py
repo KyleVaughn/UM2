@@ -8,6 +8,7 @@
 
 import subprocess
 import os
+import time
 
 
 def configureDoxyfile(input_dir, output_dir):
@@ -42,12 +43,12 @@ file_list = list(filter(lambda x: not isinstance(x, list), file_list))
 file_string = ' '.join(file_list)
 
 breathe_projects = {}
-if read_the_docs_build:
-    # recursively find all directory and *.h file under ../include and generate a string seperate by space
-    output_dir = 'build'
-    configureDoxyfile(file_string, output_dir)
-    subprocess.call('doxygen', shell=True)
-    breathe_projects['UM2'] = output_dir + '/xml'
+# recursively find all directory and *.h file under ../include and generate a string seperate by space
+output_dir = 'build'
+configureDoxyfile(file_string, output_dir)
+print(output_dir)
+subprocess.call('doxygen', shell=True)
+breathe_projects['UM2'] = output_dir + '/xml'
 
 project = 'UM2'
 copyright = '2023, Kyle'
@@ -57,7 +58,7 @@ release = '0.1.0'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["breathe"]
+extensions = ["breathe", "myst_parser"]
 breathe_default_project = "UM2"
 
 templates_path = ['_templates']
@@ -69,4 +70,3 @@ root_doc = 'index'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']

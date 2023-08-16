@@ -182,7 +182,7 @@ template <Size D, typename T>
 PURE auto
 boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>
 {
-  return std::reduce(std::execution::par_unseq, points.begin(), points.end(),
+  return std::reduce(std::execution::par, points.begin(), points.end(),
                      AxisAlignedBox<D, T>{points[0], points[0]},
                      [](auto const & a, auto const & b) { return boundingBox(a, b); });
 }

@@ -3,17 +3,48 @@
 #include <cassert> // assert
 #include <cstdint> // int32_t, int64_t
 
+// Ignore clang-tidy in this case, since these are CMake defines
+// NOLINTBEGIN(modernize-macro-to-enum)
+
+//==============================================================================
+// CMake defines
+//==============================================================================
+
 // OpenMP
-// NOLINTNEXTLINE(modernize-macro-to-enum)
-#cmakedefine01 UM2_ENABLE_OPENMP
+#cmakedefine01 UM2_USE_OPENMP
+
+// Gmsh
+#cmakedefine01 UM2_USE_GMSH
 
 // CUDA
-#cmakedefine01 UM2_ENABLE_CUDA
+#cmakedefine01 UM2_USE_CUDA
+
+// Integer/Float types in API
+#cmakedefine01 UM2_ENABLE_INT64
+#cmakedefine01 UM2_ENABLE_FLOAT64
+
+// Logging
+#define MIN_LOG_LEVEL @UM2_MIN_LOG_LEVEL@
+
+//==============================================================================
+// Attributes
+//==============================================================================
+
+// Optimization
+#undef PURE
+#undef CONST
+#undef HOT
+#undef HIDDEN
+#define PURE  [[gnu::pure]]
+#define CONST [[gnu::const]]
+#define HOT   [[gnu::hot]]
+
+// CUDA
 #undef HOST
 #undef DEVICE
 #undef HOSTDEV
 #undef GLOBAL
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 #  include <cuda_runtime.h>
 #  define HOST    __host__
 #  define DEVICE  __device__
@@ -26,41 +57,43 @@
 #  define GLOBAL
 #endif
 
-// NOLINTNEXTLINE(modernize-macro-to-enum)
-#define MIN_LOG_LEVEL @UM2_MIN_LOG_LEVEL@
-
-// gmsh
-// NOLINTNEXTLINE(modernize-macro-to-enum)
-#cmakedefine01 UM2_ENABLE_GMSH
-
-// Attributes
-// -----------------------------------------------------------------------------
-// These are supported by GCC and Clang, but cause issues when using nvcc
-#undef PURE
-#undef CONST
-#undef HOT
-#undef HIDDEN
-#define PURE  [[gnu::pure]]
-#define CONST [[gnu::const]]
-#define HOT   [[gnu::hot]]
+// API
 #define HIDDEN __attribute__((visibility("hidden")))
 
+//==============================================================================
 // Typedefs
-// -----------------------------------------------------------------------------
-#cmakedefine01 UM2_ENABLE_INT64
+//==============================================================================
+
 #if UM2_ENABLE_INT64
-using Size = int64_t;
+using Size = int64_t; // Index type
+using Int  = int64_t; // Integer type in API
+
 consteval auto
 sizeMax() -> Size
 {
   return 0x7FFFFFFFFFFFFFFF;
 }
+
 #else
-using Size = int32_t;
+
+using Size = int32_t; // Index type
+using Int  = int32_t; // Integer type in API
+
 consteval auto
 sizeMax() -> Size
 {
   return 0x7FFFFFFF;
 }
+
 #endif
+
+#if UM2_ENABLE_FLOAT64
+using Float = double; // Floating point type in API
+#else
+using Float = float; // Floating point type in API
+#endif
+
+// Integer type for material IDs. 
 using MaterialID = int8_t;
+
+// NOLINTEND(modernize-macro-to-enum)

@@ -17,20 +17,19 @@ macro(add_um2_benchmark FILENAME)
 
   target_link_libraries(${BENCHNAME} um2 benchmark::benchmark benchmark::benchmark_main)
   set_target_properties(${BENCHNAME} PROPERTIES CXX_STANDARD ${UM2_CXX_STANDARD})
-  set_target_properties(${BENCHNAME} PROPERTIES CXX_STANDARD_REQUIRED ON)
 
   # clang-tidy
-  if (UM2_ENABLE_CLANG_TIDY)
+  if (UM2_USE_CLANG_TIDY)
     set_clang_tidy_properties(${BENCHNAME})
   endif()
 
   # cppcheck
-  if (UM2_ENABLE_CPPCHECK)
+  if (UM2_USE_CPPCHECK)
     set_target_properties(${BENCHNAME} PROPERTIES CXX_CPPCHECK "${CPPCHECK_ARGS}")
   endif()
 
   # If compiling with CUDA, compile the cpp files as cuda
-  if (UM2_ENABLE_CUDA)
+  if (UM2_USE_CUDA)
     set_cuda_properties(${BENCHNAME} ${FILENAME})
   endif()
 endmacro()

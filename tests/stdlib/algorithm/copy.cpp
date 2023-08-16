@@ -73,7 +73,7 @@ TEST_CASE(copy_nontrivial)
   }
 }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <typename T>
 MAKE_CUDA_KERNEL(copy_trivial, T);
 

@@ -524,7 +524,7 @@ TEST_CASE(applyPermutation)
 // --------------------------------------------------------------------------
 // CUDA
 // --------------------------------------------------------------------------
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <class T>
 MAKE_CUDA_KERNEL(constructor_Size, T)
 
@@ -586,10 +586,10 @@ MAKE_CUDA_KERNEL(clear)
 //  template <class T>
 //  MAKE_CUDA_KERNEL(operator_assign, T)
 
-#endif // UM2_ENABLE_CUDA
+#endif // UM2_USE_CUDA
 
-    template <class T>
-    TEST_SUITE(Vector)
+template <class T>
+TEST_SUITE(Vector)
 {
   // Constructors
   TEST_HOSTDEV(constructor_Size, 1, 1, T)

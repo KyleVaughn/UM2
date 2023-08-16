@@ -66,6 +66,19 @@ TEST_CASE(faceContaining)
   ASSERT(mesh.faceContaining(p) == 1);
 }
 
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(to_mesh_file)
+{
+  um2::TriMesh<2, T, I> const tri_mesh = makeTriReferenceMesh<2, T, I>();
+  um2::MeshFile<T, I> tri_mesh_file_ref;
+  makeReferenceTriMeshFile(tri_mesh_file_ref);
+  um2::MeshFile<T, I> tri_mesh_file;
+  tri_mesh.toMeshFile(tri_mesh_file);
+  ASSERT(um2::compareGeometry(tri_mesh_file, tri_mesh_file_ref) == 0);
+  ASSERT(um2::compareTopology(tri_mesh_file, tri_mesh_file_ref) == 0);
+  ASSERT(tri_mesh_file.type == um2::MeshType::Tri);
+}
+
 #if UM2_ENABLE_CUDA
 template <std::floating_point T, std::signed_integral I>
 MAKE_CUDA_KERNEL(accessors, T, I)
@@ -78,6 +91,7 @@ TEST_SUITE(TriMesh)
   TEST_HOSTDEV(accessors, 1, 1, T, I);
   TEST((boundingBox<T, I>));
   TEST((faceContaining<T, I>));
+  TEST((to_mesh_file<T, I>));
 }
 
 auto
