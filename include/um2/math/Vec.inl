@@ -55,17 +55,17 @@ Vec<D, T>::end() const noexcept -> T const *
 
 template <Size D, class T>
 template <class... Is>
-requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
-         !(std::same_as<T, Is> && ...)) HOSTDEV
-    constexpr Vec<D, T>::Vec(Is const... args) noexcept
+  requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
+           !(std::same_as<T, Is> && ...))
+HOSTDEV constexpr Vec<D, T>::Vec(Is const... args) noexcept
     : data{static_cast<T>(args)...}
 {
 }
 
 template <Size D, class T>
 template <class... Ts>
-requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...)) HOSTDEV
-    constexpr Vec<D, T>::Vec(Ts const... args) noexcept
+  requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...))
+HOSTDEV constexpr Vec<D, T>::Vec(Ts const... args) noexcept
     : data{args...}
 {
 }
@@ -116,8 +116,8 @@ Vec<D, T>::operator/=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 
 template <Size D, class T>
 template <class S>
-requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
-    constexpr auto Vec<D, T>::operator+=(S const & s) noexcept -> Vec<D, T> &
+  requires(std::same_as<T, S> || std::integral<S>)
+HOSTDEV constexpr auto Vec<D, T>::operator+=(S const & s) noexcept -> Vec<D, T> &
 {
   for (Size i = 0; i < D; ++i) {
     data[i] += static_cast<T>(s);
@@ -127,8 +127,8 @@ requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
 
 template <Size D, class T>
 template <class S>
-requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
-    constexpr auto Vec<D, T>::operator-=(S const & s) noexcept -> Vec<D, T> &
+  requires(std::same_as<T, S> || std::integral<S>)
+HOSTDEV constexpr auto Vec<D, T>::operator-=(S const & s) noexcept -> Vec<D, T> &
 {
   for (Size i = 0; i < D; ++i) {
     data[i] -= static_cast<T>(s);
@@ -138,8 +138,8 @@ requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
 
 template <Size D, class T>
 template <class S>
-requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
-    constexpr auto Vec<D, T>::operator*=(S const & s) noexcept -> Vec<D, T> &
+  requires(std::same_as<T, S> || std::integral<S>)
+HOSTDEV constexpr auto Vec<D, T>::operator*=(S const & s) noexcept -> Vec<D, T> &
 {
   for (Size i = 0; i < D; ++i) {
     data[i] *= static_cast<T>(s);
@@ -149,8 +149,8 @@ requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
 
 template <Size D, class T>
 template <class S>
-requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
-    constexpr auto Vec<D, T>::operator/=(S const & s) noexcept -> Vec<D, T> &
+  requires(std::same_as<T, S> || std::integral<S>)
+HOSTDEV constexpr auto Vec<D, T>::operator/=(S const & s) noexcept -> Vec<D, T> &
 {
   for (Size i = 0; i < D; ++i) {
     data[i] /= static_cast<T>(s);
@@ -173,14 +173,16 @@ operator-(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 }
 
 template <Size D, class T, typename Scalar>
-requires(std::same_as<T, Scalar> || std::integral<Scalar>) HOSTDEV constexpr auto
+  requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+HOSTDEV constexpr auto
 operator*(Scalar s, Vec<D, T> u) noexcept -> Vec<D, T>
 {
   return u *= s;
 }
 
 template <Size D, class T, typename Scalar>
-requires(std::same_as<T, Scalar> || std::integral<Scalar>) HOSTDEV constexpr auto
+  requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+HOSTDEV constexpr auto
 operator/(Vec<D, T> u, Scalar s) noexcept -> Vec<D, T>
 {
   return u /= s;

@@ -71,7 +71,28 @@ struct AxisAlignedBox {
   PURE HOSTDEV [[nodiscard]] constexpr auto
   contains(Point<D, T> const & p) const noexcept -> bool;
 
-}; // struct AxisAlignedBox
+  auto
+  operator+=(Point<D, T> const & p) noexcept -> AxisAlignedBox<D, T> &;
+
+  auto
+  operator+=(AxisAlignedBox<D, T> const & box) noexcept -> AxisAlignedBox<D, T> &;
+};
+// struct AxisAlignedBox
+
+template <Size D, typename T>
+auto
+operator+(AxisAlignedBox<D, T> const & box, Point<D, T> const & p) noexcept
+    -> AxisAlignedBox<D, T>;
+
+template <Size D, typename T>
+auto
+operator+(Point<D, T> const & p, AxisAlignedBox<D, T> const & box) noexcept
+    -> AxisAlignedBox<D, T>;
+
+template <Size D, typename T>
+auto
+operator+(AxisAlignedBox<D, T> const & box_lhs,
+          AxisAlignedBox<D, T> const & box_rhs) noexcept -> AxisAlignedBox<D, T>;
 
 // -----------------------------------------------------------------------------
 // Aliases

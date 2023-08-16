@@ -125,8 +125,8 @@ RegularPartition<D, T, P>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 
 template <Size D, typename T, typename P>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RegularPartition<D, T, P>::getBox(Args... args) const noexcept
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto RegularPartition<D, T, P>::getBox(Args... args) const noexcept
     -> AxisAlignedBox<D, T>
 {
   return grid.getBox(args...);
@@ -134,8 +134,9 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 
 template <Size D, typename T, typename P>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RegularPartition<D, T, P>::getChild(Args... args) noexcept -> P &
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto RegularPartition<D, T, P>::getChild(Args... args) noexcept
+    -> P &
 {
   Point<D, Size> const index{args...};
   for (Size i = 0; i < D; ++i) {
@@ -157,7 +158,8 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 
 template <Size D, typename T, typename P>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV
     constexpr auto RegularPartition<D, T, P>::getChild(Args... args) const noexcept
     -> P const &
 {
@@ -181,9 +183,9 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 
 template <Size D, typename T, typename P>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    [[nodiscard]] constexpr auto RegularPartition<D, T, P>::getCellCentroid(
-        Args... args) const noexcept -> Point<D, T>
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV [[nodiscard]] constexpr auto RegularPartition<D, T, P>::getCellCentroid(
+    Args... args) const noexcept -> Point<D, T>
 {
   return grid.getCellCentroid(args...);
 }

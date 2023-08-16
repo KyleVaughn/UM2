@@ -187,4 +187,54 @@ boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>
                      [](auto const & a, auto const & b) { return boundingBox(a, b); });
 }
 
+// ------------------------------------------------------------------------------
+// Operators
+// ------------------------------------------------------------------------------
+
+template <Size D, typename T>
+auto
+AxisAlignedBox<D, T>::operator+=(const Point<D, T> & p) noexcept -> AxisAlignedBox<D, T> &
+{
+  this->minima.min(p);
+  this->maxima.max(p);
+  return *this;
+}
+
+template <Size D, typename T>
+auto
+AxisAlignedBox<D, T>::operator+=(const AxisAlignedBox<D, T> & box) noexcept
+    -> AxisAlignedBox<D, T> &
+{
+  this->minima.min(box.minima);
+  this->maxima.max(box.maxima);
+  return *this;
+}
+template <Size D, typename T>
+auto
+operator+(AxisAlignedBox<D, T> const & box, Point<D, T> const & p) noexcept
+    -> AxisAlignedBox<D, T>
+{
+  auto result = box;
+  result += p;
+  return result;
+}
+
+template <Size D, typename T>
+auto
+operator+(Point<D, T> const & p, AxisAlignedBox<D, T> const & box) noexcept
+    -> AxisAlignedBox<D, T>
+{
+  return box + p;
+}
+
+template <Size D, typename T>
+auto
+operator+(AxisAlignedBox<D, T> const & box_lhs,
+          AxisAlignedBox<D, T> const & box_rhs) noexcept -> AxisAlignedBox<D, T>
+{
+  auto retval = box_lhs;
+  retval += box_rhs;
+  return retval;
+}
+
 } // namespace um2

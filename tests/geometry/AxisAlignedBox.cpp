@@ -123,6 +123,48 @@ TEST_CASE(bounding_box)
     ASSERT_NEAR(box4.minima[i], -static_cast<T>(D), static_cast<T>(1e-6));
     ASSERT_NEAR(box4.maxima[i], static_cast<T>(D), static_cast<T>(1e-6));
   }
+
+  // test for the operator +=
+  um2::AxisAlignedBox<D, T> box5 = makeBox<D, T>();
+  um2::AxisAlignedBox<D, T> const box6 = makeBox<D, T>();
+  box5 += box6;
+  for (Size i = 0; i < D; ++i) {
+    ASSERT_NEAR(box5.minima[i], static_cast<T>(i), static_cast<T>(1e-6));
+    ASSERT_NEAR(box5.maxima[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
+  }
+  box5 += box6.minima;
+  for (Size i = 0; i < D; ++i) {
+    ASSERT_NEAR(box5.minima[i], static_cast<T>(i), static_cast<T>(1e-6));
+    ASSERT_NEAR(box5.maxima[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
+  }
+  // box+point
+  um2::AxisAlignedBox<D, T> box7 = makeBox<D, T>();
+  um2::Point<D, T> p;
+  for (Size i = 0; i < D; ++i) {
+    p[i] = static_cast<T>(i);
+  }
+  box7 += p;
+  for (Size i = 0; i < D; ++i) {
+    ASSERT_NEAR(box7.minima[i], static_cast<T>(i), static_cast<T>(1e-6));
+    ASSERT_NEAR(box7.maxima[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
+  }
+  um2::AxisAlignedBox<D, T> box8 = box7 + p;
+  for (Size i = 0; i < D; ++i) {
+    ASSERT_NEAR(box8.minima[i], static_cast<T>(i), static_cast<T>(1e-6));
+    ASSERT_NEAR(box8.maxima[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
+  }
+  // box+box
+  um2::AxisAlignedBox<D, T> box9 = box7 + box8;
+  for (Size i = 0; i < D; ++i) {
+    ASSERT_NEAR(box9.minima[i], static_cast<T>(i), static_cast<T>(1e-6));
+    ASSERT_NEAR(box9.maxima[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
+  }
+  // point + box
+  um2::AxisAlignedBox<D, T> box10 = p + box7;
+  for (Size i = 0; i < D; ++i) {
+    ASSERT_NEAR(box10.minima[i], static_cast<T>(i), static_cast<T>(1e-6));
+    ASSERT_NEAR(box10.maxima[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
+  }
 }
 
 template <std::floating_point T>

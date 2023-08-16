@@ -242,8 +242,8 @@ RectilinearGrid<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 
 template <Size D, typename T>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RectilinearGrid<D, T>::getBox(Args... args) const noexcept
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto RectilinearGrid<D, T>::getBox(Args... args) const noexcept
     -> AxisAlignedBox<D, T>
 {
   Point<D, Size> const index{args...};

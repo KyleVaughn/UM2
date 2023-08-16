@@ -97,17 +97,18 @@ struct RectilinearPartition {
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
 
   template <typename... Args>
-  requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
       -> AxisAlignedBox<D, T>;
 
   template <typename... Args>
-  requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getChild(Args... args) noexcept -> P &;
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto getChild(Args... args) noexcept -> P &;
 
   template <typename... Args>
-  requires(sizeof...(Args) == D) PURE HOSTDEV
-      [[nodiscard]] constexpr auto getChild(Args... args) const noexcept -> P const &;
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto getChild(Args... args) const noexcept
+      -> P const &;
 
   // ---------------------------------------------------------------------------
   // Methods

@@ -149,7 +149,8 @@ RectilinearPartition<D, T, P>::boundingBox() const noexcept -> AxisAlignedBox<D,
 
 template <Size D, typename T, typename P>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV
     constexpr auto RectilinearPartition<D, T, P>::getBox(Args... args) const noexcept
     -> AxisAlignedBox<D, T>
 {
@@ -158,8 +159,9 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 
 template <Size D, typename T, typename P>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
-    constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) noexcept -> P &
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) noexcept
+    -> P &
 {
   static_assert(D == 1 || D == 2);
   Point<D, Size> const index{args...};
@@ -184,7 +186,8 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
 
 template <Size D, typename T, typename P>
 template <typename... Args>
-requires(sizeof...(Args) == D) PURE HOSTDEV
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV
     constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) const noexcept
     -> P const &
 {
