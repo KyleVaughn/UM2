@@ -18,12 +18,12 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        compiler: [gcc, clang]
-        build_type: [Debug, Release]
-        dev_mode: [ON]
-        gmsh: [ON]
+        compiler: [ gcc, clang ]
+        build_type: [ Debug, Release ]
+        dev_mode: [ ON ]
+        gmsh: [ ON ]
           #PAR_STL
-          #INT64
+        #INT64
 
     name: "${{ matrix.compiler }}-${{ matrix.build_type }},Dev=${{ matrix.dev_mode }},Gmsh=${{ matrix.gmsh }}"
 
@@ -54,7 +54,7 @@ jobs:
 
       - name: clang
         shell: bash
-        if: matrix.compiler == 'clang' 
+        if: matrix.compiler == 'clang'
         run: |
           sudo apt install -y clang-15 libomp-15-dev
           echo "CC=clang-15" >> $GITHUB_ENV
@@ -97,6 +97,6 @@ jobs:
           sudo apt install -y python3 python3-pip
           python3 -m pip install --upgrade pip
           python3 -m pip install cpp-coveralls
-          coveralls -e cmake-build-debug/ -e env/ -e scripts/ -e tpls/ -e tests/ -e examples/ --gcov /usr/bin/gcov-12
+          coveralls -i include/ -i tests/  --gcov /usr/bin/gcov-12
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
