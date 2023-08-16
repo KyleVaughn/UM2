@@ -1,3 +1,7 @@
+## Set module path ###############################
+##################################################
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+
 ## Update git submodules #########################
 ##################################################
 include(cmake/update-git-submodules.cmake)
@@ -7,11 +11,11 @@ include(cmake/update-git-submodules.cmake)
 # No Windows support
 if (WIN32)
     message(FATAL_ERROR "Windows is not supported")
-endif ()
+endif()
 # No Apple support
 if (APPLE)
     message(FATAL_ERROR "Apple is not supported")
-endif ()
+endif()
 
 ## Compiler ######################################
 ##################################################
@@ -19,7 +23,7 @@ endif ()
 if (NOT (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
         CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
     message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
-endif ()
+endif()
 
 ## Standard ######################################
 ##################################################
@@ -31,10 +35,8 @@ set_target_properties(um2 PROPERTIES CXX_STANDARD_REQUIRED ON)
 ##################################################
 if (UM2_ENABLE_OPENMP)
     find_package(OpenMP REQUIRED)
-    if (OpenMP_CXX_FOUND)
-        target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
-    endif ()
-endif ()
+    target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
+endif()
 
 ## CUDA ##########################################
 ##################################################
@@ -48,7 +50,7 @@ if (UM2_ENABLE_CUDA)
         message(STATUS "Setting CMAKE_CUDA_HOST_COMPILER to ${CMAKE_CXX_COMPILER}."
                 " Consider setting the CUDAHOSTCXX environment variable if this is not desired.")
         set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-    endif ()
+    endif()
     find_package(CUDA REQUIRED)
     enable_language(CUDA)
     set(UM2_CUDA_STANDARD "20" CACHE STRING "CUDA standard")
@@ -61,52 +63,29 @@ if (UM2_ENABLE_CUDA)
     endmacro()
     set_cuda_properties(um2 ${UM2_SOURCES})
     target_include_directories(um2 SYSTEM PUBLIC "${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}")
-endif ()
+endif()
 
 ## hdf5 ##########################################
 ##################################################
-find_library(HDF5_LIB "hdf5")
-if (NOT HDF5_LIB)
-    message(FATAL_ERROR "Could not find hdf5")
-endif ()
-find_library(HDF5_CPP_LIB "hdf5_cpp")
-if (NOT HDF5_CPP_LIB)
-    message(FATAL_ERROR "Could not find hdf5_cpp")
-endif ()
-find_path(HDF5_CPP_INC "H5Cpp.h")
-if (NOT HDF5_CPP_INC)
-    message(FATAL_ERROR "Could not find H5Cpp.h")
-endif ()
-target_link_libraries(um2 PUBLIC "${HDF5_LIB}" "${HDF5_CPP_LIB}")
-target_include_directories(um2 SYSTEM PUBLIC "${HDF5_CPP_INC}")
+find_package(HDF5 REQUIRED COMPONENTS CXX)
+target_link_libraries(um2 PUBLIC "${HDF5_CXX_LIBRARIES}")
+target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
 
 ## pugixml #######################################
 ##################################################
-find_library(PUGIXML_LIB "pugixml")
-if (NOT PUGIXML_LIB)
-    message(FATAL_ERROR "Could not find pugixml")
-endif ()
-find_path(PUGIXML_INC "pugixml.hpp")
-if (NOT PUGIXML_INC)
-    message(FATAL_ERROR "Could not find pugixml.hpp")
-endif ()
+find_library(PUGIXML_LIB "pugixml" REQUIRED)
+find_path(PUGIXML_INC "pugixml.hpp" REQUIRED)
 target_link_libraries(um2 PUBLIC "${PUGIXML_LIB}")
 target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
 
 ## gmsh ##########################################
 ##################################################
 if (UM2_ENABLE_GMSH)
-    find_library(GMSH_LIB "gmsh")
-    if (NOT GMSH_LIB)
-        message(FATAL_ERROR "Could not find gmsh")
-    endif ()
-    find_path(GMSH_INC "gmsh.h")
-    if (NOT GMSH_INC)
-        message(FATAL_ERROR "Could not find gmsh.h")
-    endif ()
+    find_library(GMSH_LIB "gmsh" REQUIRED HINTS $ENV{GMSH_ROOT}/lib)
+    find_path(GMSH_INC "gmsh.h" REQUIRED HINTS $ENV{GMSH_ROOT}/include)
     target_link_libraries(um2 PUBLIC "${GMSH_LIB}")
     target_include_directories(um2 SYSTEM PUBLIC "${GMSH_INC}")
-endif ()
+endif()
 
 ### visualization #################################
 ###################################################
@@ -138,7 +117,7 @@ configure_file(
 ##################################################
 if (UM2_ENABLE_CLANG_FORMAT)
     include(cmake/clang-format.cmake)
-endif ()
+endif()
 
 ## clang-tidy ####################################
 ##################################################
@@ -149,7 +128,7 @@ if (UM2_ENABLE_CLANG_TIDY)
                 "clang-tidy;--extra-arg=-Wno-unknown-warning-option")
     endmacro()
     set_clang_tidy_properties(um2)
-endif ()
+endif()
 
 ## cppcheck ######################################
 ##################################################
@@ -167,7 +146,7 @@ if (UM2_ENABLE_CPPCHECK)
             ";--inline-suppr"
             ";--error-exitcode=10")
     set_target_properties(um2 PROPERTIES CXX_CPPCHECK "${CPPCHECK_ARGS}")
-endif ()
+endif()
 
 ## flags #########################################
 ##################################################
@@ -178,15 +157,15 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     include(cmake/gnu-cxx-flags.cmake)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_GNU_FLAGS}")
-endif ()
+endif()
 
 # Set fast math flags if enabled
 if (UM2_ENABLE_FASTMATH)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ffast-math")
     if (UM2_ENABLE_CUDA)
         set(CMAKE_CUDA_FLAGS_RELEASE "${CMAKE_CUDA_FLAGS_RELEASE} --use_fast_math")
-    endif ()
-endif ()
+    endif()
+endif()
 
 # Set release flags
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
@@ -194,12 +173,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
 # Set debug flags
 if (!UM2_ENABLE_CUDA)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
-endif ()
+endif()
 
 # If OpenMP and parallel STL are enabled
 if (UM2_ENABLE_OPENMP AND UM2_ENABLE_PAR_STL)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_PARALLEL")
-endif ()
+endif()
 
 # If CUDA is enabled, pass the CXX flags via -Xcompiler
 if (UM2_ENABLE_CUDA)
@@ -209,32 +188,38 @@ if (UM2_ENABLE_CUDA)
     # If OpenMP is enabled, -fopenmp is passed via -Xcompiler
     if (UM2_ENABLE_OPENMP)
         set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -fopenmp")
-    endif ()
-endif ()
+    endif()
+endif()
 
 # If COVERAGE is enabled, set the flags
 if (UM2_ENABLE_COVERAGE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
     target_link_libraries(um2 PUBLIC gcov)
-endif ()
+endif()
 
 ## Tests #########################################
 ##################################################
 if (UM2_BUILD_TESTS)
     include(CTest)
     add_subdirectory(tests)
-endif ()
+endif()
 
 ## Examples ###################################### 
 ##################################################
 if (UM2_BUILD_EXAMPLES)
     add_subdirectory(examples)
-endif ()
+endif()
 
 ## Benchmarks #################################### 
 ##################################################
 if (UM2_BUILD_BENCHMARKS)
     add_subdirectory(benchmarks)
-endif ()
+endif()
+
+## Docs ########################################## 
+##################################################
+if (UM2_BUILD_DOCS)
+    add_subdirectory(docs)
+endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

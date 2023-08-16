@@ -53,8 +53,7 @@ struct Mat {
   constexpr Mat() noexcept = default;
 
   template <std::same_as<Col>... Cols>
-    requires(sizeof...(Cols) == N)
-  HOSTDEV constexpr explicit Mat(Cols... in_cols) noexcept;
+  requires(sizeof...(Cols) == N) HOSTDEV constexpr explicit Mat(Cols... in_cols) noexcept;
 };
 
 // -----------------------------------------------------------------------------

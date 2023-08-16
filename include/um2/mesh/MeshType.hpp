@@ -27,7 +27,7 @@ verticesPerCell(MeshType const type) -> Size
     return 8;
   default:
     assert(false);
-    return 0;
+    return -1;
   }
 }
 

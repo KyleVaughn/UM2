@@ -2,11 +2,15 @@
 // Revision 4, August 29, 2014
 // CASL-U-2012-0131-004
 
+#include "../../helpers.hpp"
 #include <um2.hpp>
 
 auto
-main() -> int
+main(int argc, char * argv[]) -> int
 {
+  um2::MeshType mesh_type = um2::MeshType::None;
+  double lc = 0.0;
+  getGlobalMeshParams(argc, argv, mesh_type, lc);
 
   // Parameters
   double const pitch = 1.26; // Pitch = 1.26 cm (pg. 4)
@@ -20,8 +24,8 @@ main() -> int
   model.makeAssembly({0});
   model.makeCore({{0}});
   um2::gmsh::model::occ::overlaySpatialPartition(model);
-  um2::gmsh::model::mesh::setGlobalMeshSize(0.1);
-  um2::gmsh::model::mesh::generateMesh(um2::MeshType::Tri);
+  um2::gmsh::model::mesh::setGlobalMeshSize(lc);
+  um2::gmsh::model::mesh::generateMesh(mesh_type);
   // um2::gmsh::fltk::run();
   um2::gmsh::write("1a.inp");
   model.importCoarseCells("1a.inp");

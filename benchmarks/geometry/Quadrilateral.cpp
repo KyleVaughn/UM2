@@ -7,7 +7,7 @@
 #include <um2/geometry/Quadrilateral.hpp>
 
 constexpr Size npoints = 1 << 18;
-constexpr Size D = 2;
+constexpr Size dim = 2;
 constexpr int lo = 0;
 constexpr int hi = 10;
 
@@ -15,17 +15,17 @@ constexpr int hi = 10;
 
 template <typename T>
 auto
-makeQuadGrid() -> um2::Vector<um2::Quadrilateral<D, T>>
+makeQuadGrid() -> um2::Vector<um2::Quadrilateral<dim, T>>
 {
-  um2::Vector<um2::Quadrilateral<D, T>> quads(static_cast<Size>(hi * hi));
+  um2::Vector<um2::Quadrilateral<dim, T>> quads(static_cast<Size>(hi * hi));
   // Create a hi x hi grid of quadrilaterals.
   for (Size x = 0; x < static_cast<Size>(hi); ++x) {
     for (Size y = 0; y < static_cast<Size>(hi); ++y) {
-      um2::Point<D, T> const p0(x, y);
-      um2::Point<D, T> const p1(x + 1, y);
-      um2::Point<D, T> const p2(x + 1, y + 1);
-      um2::Point<D, T> const p3(x, y + 1);
-      um2::Quadrilateral<D, T> const q(p0, p1, p2, p3);
+      um2::Point<dim, T> const p0(x, y);
+      um2::Point<dim, T> const p1(x + 1, y);
+      um2::Point<dim, T> const p2(x + 1, y + 1);
+      um2::Point<dim, T> const p3(x, y + 1);
+      um2::Quadrilateral<dim, T> const q(p0, p1, p2, p3);
       quads[x * static_cast<Size>(hi) + y] = q;
     }
   }
@@ -34,17 +34,17 @@ makeQuadGrid() -> um2::Vector<um2::Quadrilateral<D, T>>
 
 // NOLINTBEGIN(readability-identifier-naming)
 // constexpr auto
-// isConvexArea(um2::Quadrilateral<D, T> const & quad) -> bool
+// isConvexArea(um2::Quadrilateral<dim, T> const & quad) -> bool
 //{
-//  T const A1 = um2::Triangle<D, T>(quad[0], quad[1], quad[2]).area();
-//  T const A2 = um2::Triangle<D, T>(quad[2], quad[3], quad[0]).area();
-//  T const A3 = um2::Triangle<D, T>(quad[3], quad[0], quad[1]).area();
-//  T const A4 = um2::Triangle<D, T>(quad[1], quad[2], quad[3]).area();
+//  T const A1 = um2::Triangle<dim, T>(quad[0], quad[1], quad[2]).area();
+//  T const A2 = um2::Triangle<dim, T>(quad[2], quad[3], quad[0]).area();
+//  T const A3 = um2::Triangle<dim, T>(quad[3], quad[0], quad[1]).area();
+//  T const A4 = um2::Triangle<dim, T>(quad[1], quad[2], quad[3]).area();
 //  return um2::abs(A1 + A2 - A3 - A4) < static_cast<T>(0.01) * (A1 + A2);
 //}
 //
 // constexpr auto
-// isConvexCCW(um2::Quadrilateral<D, T> const & quad) -> bool
+// isConvexCCW(um2::Quadrilateral<dim, T> const & quad) -> bool
 //{
 //  return um2::areCCW(quad[0], quad[1], quad[2]) &&
 //         um2::areCCW(quad[1], quad[2], quad[3]) &&
@@ -55,20 +55,20 @@ makeQuadGrid() -> um2::Vector<um2::Quadrilateral<D, T>>
 
 template <typename T>
 HOSTDEV constexpr auto
-containsTriangle(um2::Quadrilateral<D, T> const & quad, um2::Point<D, T> const & p)
+containsTriangle(um2::Quadrilateral<dim, T> const & quad, um2::Point<dim, T> const & p)
     -> bool
 {
-  um2::Triangle<D, T> const t1(quad[0], quad[1], quad[2]);
+  um2::Triangle<dim, T> const t1(quad[0], quad[1], quad[2]);
   bool const b0 = t1.contains(p);
-  um2::Triangle<D, T> const t2(quad[2], quad[3], quad[0]);
+  um2::Triangle<dim, T> const t2(quad[2], quad[3], quad[0]);
   bool const b1 = t2.contains(p);
   return b0 && b1;
 }
 
 template <typename T>
 HOSTDEV constexpr auto
-containsCCWShortCircuit(um2::Quadrilateral<D, T> const & quad, um2::Point<D, T> const & p)
-    -> bool
+containsCCWShortCircuit(um2::Quadrilateral<dim, T> const & quad,
+                        um2::Point<dim, T> const & p) -> bool
 {
   return um2::areCCW(quad[0], quad[1], p) && um2::areCCW(quad[1], quad[2], p) &&
          um2::areCCW(quad[2], quad[3], p) && um2::areCCW(quad[3], quad[0], p);
@@ -76,8 +76,8 @@ containsCCWShortCircuit(um2::Quadrilateral<D, T> const & quad, um2::Point<D, T> 
 
 template <typename T>
 HOSTDEV constexpr auto
-containsCCWNoShortCircuit(um2::Quadrilateral<D, T> const & quad,
-                          um2::Point<D, T> const & p) -> bool
+containsCCWNoShortCircuit(um2::Quadrilateral<dim, T> const & quad,
+                          um2::Point<dim, T> const & p) -> bool
 {
   bool const b0 = um2::areCCW(quad[0], quad[1], p);
   bool const b1 = um2::areCCW(quad[1], quad[2], p);
@@ -92,7 +92,7 @@ TriangleDecomp(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
-  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
+  auto const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
   // NOLINTNEXTLINE
   for (auto s : state) {
     int i = 0;
@@ -112,7 +112,7 @@ CCWShortCircuit(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
-  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
+  auto const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
   // NOLINTNEXTLINE
   for (auto s : state) {
     int i = 0;
@@ -132,7 +132,7 @@ CCWNoShortCircuit(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
-  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
+  auto const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
   // NOLINTNEXTLINE
   for (auto s : state) {
     int i = 0;
@@ -149,7 +149,7 @@ CCWNoShortCircuit(benchmark::State & state)
 #if UM2_ENABLE_CUDA
 template <typename T>
 __global__ void
-CCWShortCircuitGPUKernel(um2::Quadrilateral<D, T> * quads, um2::Point<D, T> * points,
+CCWShortCircuitGPUKernel(um2::Quadrilateral<dim, T> * quads, um2::Point<dim, T> * points,
                          int * results, Size nquads, Size num_points)
 {
   Size const i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -167,11 +167,11 @@ CCWShortCircuitGPU(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
-  um2::Quadrilateral<D, T> * d_quads;
+  um2::Quadrilateral<dim, T> * d_quads;
   transferToDevice(&d_quads, quads);
 
-  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
-  um2::Point<D, T> * d_points;
+  auto const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
+  um2::Point<dim, T> * d_points;
   transferToDevice(&d_points, points);
 
   um2::Vector<int> results(quads.size() * points.size());
@@ -196,8 +196,9 @@ CCWShortCircuitGPU(benchmark::State & state)
 
 template <typename T>
 __global__ void
-CCWNoShortCircuitGPUKernel(um2::Quadrilateral<D, T> * quads, um2::Point<D, T> * points,
-                           int * results, Size nquads, Size num_points)
+CCWNoShortCircuitGPUKernel(um2::Quadrilateral<dim, T> * quads,
+                           um2::Point<dim, T> * points, int * results, Size nquads,
+                           Size num_points)
 {
   Size const i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i >= nquads * num_points) {
@@ -215,11 +216,11 @@ CCWNoShortCircuitGPU(benchmark::State & state)
 
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
-  um2::Quadrilateral<D, T> * d_quads;
+  um2::Quadrilateral<dim, T> * d_quads;
   transferToDevice(&d_quads, quads);
 
-  auto const points = makeVectorOfRandomPoints<D, T, lo, hi>(n);
-  um2::Point<D, T> * d_points;
+  auto const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
+  um2::Point<dim, T> * d_points;
   transferToDevice(&d_points, points);
 
   um2::Vector<int> results(quads.size() * points.size());

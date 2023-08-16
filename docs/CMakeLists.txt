@@ -44,9 +44,6 @@ find_package_handle_standard_args(Sphinx
         "Failed to find sphinx-build executable"
         SPHINX_EXECUTABLE)
 
-message(${PROJECT_SOURCE_DIR})
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-
 ##Sphinx
 find_package(Sphinx REQUIRED)
 

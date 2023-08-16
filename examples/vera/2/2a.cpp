@@ -2,11 +2,15 @@
 // Revision 4, August 29, 2014
 // CASL-U-2012-0131-004
 
+#include "../../helpers.hpp"
 #include <um2.hpp>
 
 auto
-main() -> int
+main(int argc, char * argv[]) -> int
 {
+  um2::MeshType mesh_type = um2::MeshType::None;
+  double lc = 0.0;
+  getGlobalMeshParams(argc, argv, mesh_type, lc);
 
   double const pitch = 1.26;   // Pitch = 1.26 cm (pg. 4)
   double const half_gap = 0.4; // Inter-Assembly Half Gap  = 0.04 cm (pg. 7)
@@ -15,7 +19,7 @@ main() -> int
   um2::Vec2d const wide_dxdy(pitch + half_gap, pitch);
   um2::Vec2d const corner_dxdy(pitch + half_gap, pitch + half_gap);
 
-  um2::initialize("debug");
+  um2::initialize();
   um2::gmsh::open("2a.brep", /*extra_info=*/true);
 
   um2::mpact::SpatialPartition<double, int32_t> model;
@@ -58,13 +62,12 @@ main() -> int
   model.makeAssembly({0});
   model.makeCore({{0}});
   um2::gmsh::model::occ::overlaySpatialPartition(model, "Water");
-  um2::gmsh::model::mesh::setGlobalMeshSize(0.05);
-  um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
-  um2::gmsh::fltk::run();
+  um2::gmsh::model::mesh::setGlobalMeshSize(lc);
+  um2::gmsh::model::mesh::generateMesh(mesh_type);
+  // um2::gmsh::fltk::run();
   um2::gmsh::write("2a.inp");
-  //  model.import_coarse_cells("2a.inp");
-  //  export_mesh("2a.xdmf", model);
-
+  model.importCoarseCells("2a.inp");
+  um2::exportMesh("2a.xdmf", model);
   um2::finalize();
   return 0;
 }

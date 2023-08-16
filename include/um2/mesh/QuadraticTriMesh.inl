@@ -25,11 +25,13 @@ QuadraticTriMesh<D, T, I>::FaceVertexMesh(MeshFile<T, I> const & file)
   // -- Vertices --
   // Ensure each of the vertices has approximately the same z
   if constexpr (D == 2) {
-    T const z = file.vertices[0][2];
+#ifndef NDEBUG
     T const eps = epsilonDistance<T>();
+    T const z = file.vertices[0][2];
     for (auto const & v : file.vertices) {
       assert(std::abs(v[2] - z) < eps);
     }
+#endif
     vertices.resize(num_vertices);
     for (Size i = 0; i < num_vertices; ++i) {
       vertices[i][0] = file.vertices[static_cast<size_t>(i)][0];

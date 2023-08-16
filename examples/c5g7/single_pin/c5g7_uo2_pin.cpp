@@ -42,10 +42,10 @@ main() -> int
   um2::gmsh::model::occ::overlaySpatialPartition(model);
   um2::gmsh::model::mesh::setGlobalMeshSize(0.05);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
-  um2::gmsh::fltk::run();
-  // um2::gmsh::write("c5g7_pin.inp");
-  //   model.import_coarse_cells("c5g7_pin.inp");
-  //   export_mesh("c5g7_pin.xdmf", model);
+  // um2::gmsh::fltk::run();
+  um2::gmsh::write("c5g7_pin.inp");
+  model.importCoarseCells("c5g7_pin.inp");
+  um2::exportMesh("c5g7_pin.xdmf", model);
   um2::finalize();
   return 0;
 }

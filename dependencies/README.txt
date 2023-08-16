@@ -7,6 +7,13 @@ To install spack:
 git clone -c feature.manyFiles=true https://github.com/spack/spack.git
 . spack/share/spack/setup-env.sh
 
+Install gcc-12 or clang-15 on the system or using spack.
+To install using spack: 
+    spack compiler find
+    spack install gcc@12 or spack install llvm@15
+    spack load <choice above>
+    
+
 Then, to install UM2 dependencies:
 spack compiler find
 spack env create um2 spack.yaml
@@ -23,4 +30,5 @@ packages:
     - spec: opengl@4.6.0
       prefix: /usr/x86_64-linux-gnu
 ```
-in ~/.spack/packages.yaml
+in ~/.spack/packages.yaml 
+if using a configuration which requires gmsh
