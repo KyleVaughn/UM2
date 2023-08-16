@@ -75,7 +75,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
 {
-  return um2::contains(*this, p); 
+  return um2::contains(*this, p);
 }
 
 // -------------------------------------------------------------------
@@ -86,7 +86,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::area() const noexcept -> T
 {
-  return um2::area(*this); 
+  return um2::area(*this);
 }
 
 // -------------------------------------------------------------------
@@ -97,7 +97,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::centroid() const noexcept -> Point<D, T>
 {
-  return um2::centroid(*this); 
+  return um2::centroid(*this);
 }
 
 // -------------------------------------------------------------------
@@ -119,7 +119,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D, T>::isConvex() const noexcept -> bool
 {
-  return um2::isConvex(*this); 
+  return um2::isConvex(*this);
 }
 
 // -------------------------------------------------------------------

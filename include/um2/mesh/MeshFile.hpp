@@ -30,66 +30,66 @@ enum class MeshFileFormat : int8_t {
   XDMF = 2,
 };
 
-enum class VTKCellType : int8_t {    
-    
-  // Linear cells    
-  Triangle = 5,    
-  Quad = 9,    
-    
-  // Quadratic, isoparametric cells    
-  QuadraticTriangle = 22,    
-  QuadraticQuad = 23    
-    
-};    
-    
-enum class AbaqusCellType : int8_t {    
-    
-  // Linear cells    
-  CPS3 = static_cast<int8_t>(VTKCellType::Triangle),    
-  CPS4 = static_cast<int8_t>(VTKCellType::Quad),    
-    
-  // Quadratic, isoparametric cells    
-  CPS6 = static_cast<int8_t>(VTKCellType::QuadraticTriangle),    
-  CPS8 = static_cast<int8_t>(VTKCellType::QuadraticQuad)    
-    
-};    
-    
-enum class XDMFCellType : int8_t {    
-    
-  // Linear cells    
-  Triangle = 4,    
-  Quad = 5,    
-    
-  // Quadratic, isoparametric cells    
-  QuadraticTriangle = 36,    
-  QuadraticQuad = 37    
-    
+enum class VTKCellType : int8_t {
+
+  // Linear cells
+  Triangle = 5,
+  Quad = 9,
+
+  // Quadratic, isoparametric cells
+  QuadraticTriangle = 22,
+  QuadraticQuad = 23
+
 };
 
-enum class MeshType : int8_t {    
-  None = 0,    
-  Tri = 3,    
-  Quad = 4,    
-  QuadraticTri = 6,    
-  QuadraticQuad = 8,    
-};    
-    
-constexpr auto    
-verticesPerCell(MeshType const type) -> Size    
-{    
-  switch (type) {    
-  case MeshType::Tri:    
-    return 3;    
-  case MeshType::Quad:    
-    return 4;    
-  case MeshType::QuadraticTri:    
-    return 6;    
-  case MeshType::QuadraticQuad:    
-    return 8;    
-  default:    
-    assert(false);    
-    return -1;    
-  }    
+enum class AbaqusCellType : int8_t {
+
+  // Linear cells
+  CPS3 = static_cast<int8_t>(VTKCellType::Triangle),
+  CPS4 = static_cast<int8_t>(VTKCellType::Quad),
+
+  // Quadratic, isoparametric cells
+  CPS6 = static_cast<int8_t>(VTKCellType::QuadraticTriangle),
+  CPS8 = static_cast<int8_t>(VTKCellType::QuadraticQuad)
+
+};
+
+enum class XDMFCellType : int8_t {
+
+  // Linear cells
+  Triangle = 4,
+  Quad = 5,
+
+  // Quadratic, isoparametric cells
+  QuadraticTriangle = 36,
+  QuadraticQuad = 37
+
+};
+
+enum class MeshType : int8_t {
+  None = 0,
+  Tri = 3,
+  Quad = 4,
+  QuadraticTri = 6,
+  QuadraticQuad = 8,
+};
+
+constexpr auto
+verticesPerCell(MeshType const type) -> Size
+{
+  switch (type) {
+  case MeshType::Tri:
+    return 3;
+  case MeshType::Quad:
+    return 4;
+  case MeshType::QuadraticTri:
+    return 6;
+  case MeshType::QuadraticQuad:
+    return 8;
+  default:
+    assert(false);
+    return -1;
+  }
 }
 
 template <std::floating_point T, std::signed_integral I>

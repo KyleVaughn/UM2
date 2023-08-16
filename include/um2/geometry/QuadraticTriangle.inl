@@ -85,7 +85,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 QuadraticTriangle<D, T>::linearPolygon() const noexcept -> Triangle<D, T>
 {
-  return um2::linearPolygon(*this); 
+  return um2::linearPolygon(*this);
 }
 
 // -------------------------------------------------------------------
@@ -107,7 +107,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 QuadraticTriangle<D, T>::centroid() const noexcept -> Point<D, T>
 {
-  return um2::centroid(*this); 
+  return um2::centroid(*this);
 }
 
 // -------------------------------------------------------------------
@@ -118,18 +118,18 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 QuadraticTriangle<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 {
-  return um2::boundingBox(*this); 
+  return um2::boundingBox(*this);
 }
 
-// -------------------------------------------------------------------    
-// isCCW    
-// -------------------------------------------------------------------    
-    
-template <Size D, typename T>    
-PURE HOSTDEV constexpr auto      
-QuadraticTriangle<D, T>::isCCW() const noexcept -> bool    
-{    
-  return um2::isCCW(*this);    
+// -------------------------------------------------------------------
+// isCCW
+// -------------------------------------------------------------------
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+QuadraticTriangle<D, T>::isCCW() const noexcept -> bool
+{
+  return um2::isCCW(*this);
 }
 
 } // namespace um2

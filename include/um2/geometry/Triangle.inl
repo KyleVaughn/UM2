@@ -73,7 +73,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
 {
-  return um2::contains(*this, p); 
+  return um2::contains(*this, p);
 }
 
 // -------------------------------------------------------------------
@@ -95,7 +95,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::centroid() const noexcept -> Point<D, T>
 {
-  return um2::centroid(*this); 
+  return um2::centroid(*this);
 }
 
 // -------------------------------------------------------------------
@@ -117,7 +117,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 Triangle<D, T>::isCCW() const noexcept -> bool
 {
-  return um2::isCCW(*this); 
+  return um2::isCCW(*this);
 }
 
 } // namespace um2

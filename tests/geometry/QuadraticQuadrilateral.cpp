@@ -182,20 +182,20 @@ TEST_CASE(boundingBox)
   ASSERT_NEAR(box.yMax(), static_cast<T>(1.5), static_cast<T>(1e-5));
 }
 
-// -------------------------------------------------------------------        
-// isCCW        
-// -------------------------------------------------------------------        
-        
-template <typename T>        
-HOSTDEV        
-TEST_CASE(isCCW_flipFace)        
-{        
-  auto quad = makeQuad<2, T>();    
-  ASSERT(quad.isCCW());        
-  um2::swap(quad[1], quad[3]);    
-  ASSERT(!quad.isCCW());        
-  um2::flipFace(quad);        
-  ASSERT(quad.isCCW());        
+// -------------------------------------------------------------------
+// isCCW
+// -------------------------------------------------------------------
+
+template <typename T>
+HOSTDEV
+TEST_CASE(isCCW_flipFace)
+{
+  auto quad = makeQuad<2, T>();
+  ASSERT(quad.isCCW());
+  um2::swap(quad[1], quad[3]);
+  ASSERT(!quad.isCCW());
+  um2::flipFace(quad);
+  ASSERT(quad.isCCW());
 }
 
 #if UM2_ENABLE_CUDA

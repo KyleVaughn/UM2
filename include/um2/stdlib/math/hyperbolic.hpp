@@ -22,22 +22,12 @@ atanh(T x) noexcept -> T
 
 #else
 
-template <typename T>
-PURE DEVICE constexpr auto
-atanh(T x) noexcept -> T
-{
-  static_assert(false, "atanh not implemented for this type");
-  return T();
-}
-
-template <>
 PURE DEVICE constexpr auto
 atanh(float x) noexcept -> float
 {
   return ::atanhf(x);
 }
 
-template <>
 PURE DEVICE constexpr auto
 atanh(double x) noexcept -> double
 {
@@ -61,22 +51,12 @@ exp(T x) noexcept -> T
 
 #else
 
-template <typename T>
-PURE DEVICE constexpr auto
-exp(T x) noexcept -> T
-{
-  static_assert(false, "exp not implemented for this type");
-  return T();
-}
-
-template <>
 PURE DEVICE constexpr auto
 exp(float x) noexcept -> float
 {
   return ::expf(x);
 }
 
-template <>
 PURE DEVICE constexpr auto
 exp(double x) noexcept -> double
 {

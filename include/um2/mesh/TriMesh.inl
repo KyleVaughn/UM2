@@ -26,14 +26,14 @@ template <Size D, std::floating_point T, std::signed_integral I>
 PURE HOSTDEV constexpr auto
 TriMesh<D, T, I>::numFaces() const noexcept -> Size
 {
-  return um2::numFaces(*this); 
+  return um2::numFaces(*this);
 }
 
 template <Size D, std::floating_point T, std::signed_integral I>
 PURE HOSTDEV constexpr auto
 TriMesh<D, T, I>::getFace(Size i) const noexcept -> Face
 {
-  return um2::getFace(*this, i); 
+  return um2::getFace(*this, i);
 }
 
 // -------------------------------------------------------------------
@@ -51,14 +51,14 @@ template <Size D, std::floating_point T, std::signed_integral I>
 PURE constexpr auto
 TriMesh<D, T, I>::faceContaining(Point<D, T> const & p) const noexcept -> Size
 {
-  return um2::faceContaining(*this, p); 
+  return um2::faceContaining(*this, p);
 }
 
 template <Size D, std::floating_point T, std::signed_integral I>
 void
 TriMesh<D, T, I>::flipFace(Size i) noexcept
 {
-  um2::swap(fv[i][1], fv[i][2]); 
+  um2::swap(fv[i][1], fv[i][2]);
 }
 
 template <Size D, std::floating_point T, std::signed_integral I>

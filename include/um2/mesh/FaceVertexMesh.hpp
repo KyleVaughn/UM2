@@ -2,10 +2,10 @@
 
 #include <um2/config.hpp>
 
-#include <um2/geometry/Point.hpp>
 #include <um2/geometry/AxisAlignedBox.hpp>
-#include <um2/stdlib/Vector.hpp>
+#include <um2/geometry/Point.hpp>
 #include <um2/mesh/MeshFile.hpp>
+#include <um2/stdlib/Vector.hpp>
 
 namespace um2
 {
@@ -43,12 +43,12 @@ namespace um2
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 struct FaceVertexMesh {
 
-  using FaceConn = Vec<N, I>;    
-  using Face = Polygon<P, N, D, T>; 
+  using FaceConn = Vec<N, I>;
+  using Face = Polygon<P, N, D, T>;
 
-  Vector<Point<D, T>> vertices;    
-  Vector<FaceConn> fv;    
-  Vector<I> vf_offsets; // size = num_vertices + 1    
+  Vector<Point<D, T>> vertices;
+  Vector<FaceConn> fv;
+  Vector<I> vf_offsets; // size = num_vertices + 1
   Vector<I> vf;         // size = vf_offsets[num_vertices]
 };
 
@@ -114,8 +114,7 @@ numFaces(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept -> Size
 // -----------------------------------------------------------------------------
 template <Size N, Size D, std::floating_point T, std::signed_integral I>
 PURE constexpr auto
-boundingBox(LinearPolygonMesh<N, D, T, I> const & mesh) noexcept
-    -> AxisAlignedBox<D, T>
+boundingBox(LinearPolygonMesh<N, D, T, I> const & mesh) noexcept -> AxisAlignedBox<D, T>
 {
   return boundingBox(mesh.vertices);
 }
@@ -125,11 +124,11 @@ PURE constexpr auto
 boundingBox(QuadraticPolygonMesh<N, D, T, I> const & mesh) noexcept
     -> AxisAlignedBox<D, T>
 {
-  AxisAlignedBox<D, T> box = mesh.getFace(0).boundingBox();    
-  for (Size i = 1; i < numFaces(mesh); ++i) {    
+  AxisAlignedBox<D, T> box = mesh.getFace(0).boundingBox();
+  for (Size i = 1; i < numFaces(mesh); ++i) {
     box = um2::boundingBox(box, mesh.getFace(i).boundingBox());
-  }    
-  return box;    
+  }
+  return box;
 }
 
 // -----------------------------------------------------------------------------
@@ -137,8 +136,8 @@ boundingBox(QuadraticPolygonMesh<N, D, T, I> const & mesh) noexcept
 // -----------------------------------------------------------------------------
 template <Size P, Size N, std::floating_point T, std::signed_integral I>
 PURE constexpr auto
-faceContaining(PlanarPolygonMesh<P, N, T, I> const & mesh, Point2<T> const & p)
-    noexcept -> Size
+faceContaining(PlanarPolygonMesh<P, N, T, I> const & mesh, Point2<T> const & p) noexcept
+    -> Size
 {
   for (Size i = 0; i < numFaces(mesh); ++i) {
     if (mesh.getFace(i).contains(p)) {
@@ -157,70 +156,71 @@ faceContaining(PlanarPolygonMesh<P, N, T, I> const & mesh, Point2<T> const & p)
 #pragma GCC diagnostic ignored "-Wunused-function"
 // Return true if the MeshType and P, N are compatible.
 template <Size P, Size N>
-constexpr auto validateMeshFileType(MeshType const /*type*/) -> bool
+constexpr auto
+validateMeshFileType(MeshType const /*type*/) -> bool
 {
   return false;
 }
 
 template <>
-constexpr
-auto validateMeshFileType<1, 3>(MeshType const type) -> bool
+constexpr auto
+validateMeshFileType<1, 3>(MeshType const type) -> bool
 {
   return type == MeshType::Tri;
 }
 
 template <>
-constexpr
-auto validateMeshFileType<1, 4>(MeshType const type) -> bool
+constexpr auto
+validateMeshFileType<1, 4>(MeshType const type) -> bool
 {
   return type == MeshType::Quad;
 }
 
 template <>
-constexpr
-auto validateMeshFileType<2, 6>(MeshType const type) -> bool
+constexpr auto
+validateMeshFileType<2, 6>(MeshType const type) -> bool
 {
   return type == MeshType::QuadraticTri;
 }
 
 template <>
-constexpr
-auto validateMeshFileType<2, 8>(MeshType const type) -> bool
+constexpr auto
+validateMeshFileType<2, 8>(MeshType const type) -> bool
 {
   return type == MeshType::QuadraticQuad;
 }
 
 template <Size P, Size N>
-constexpr
-auto getMeshType() -> MeshType
+constexpr auto
+getMeshType() -> MeshType
 {
   return MeshType::None;
 }
 
 template <>
-constexpr
-auto getMeshType<1, 3>() -> MeshType
+constexpr auto
+getMeshType<1, 3>() -> MeshType
 {
   return MeshType::Tri;
 }
 
 template <>
-constexpr
-auto getMeshType<1, 4>() -> MeshType
+constexpr auto
+getMeshType<1, 4>() -> MeshType
 {
   return MeshType::Quad;
 }
 
 template <>
-constexpr
-auto getMeshType<2, 6>() -> MeshType
+constexpr auto
+getMeshType<2, 6>() -> MeshType
 {
   return MeshType::QuadraticTri;
 }
 
 template <>
-constexpr
-auto getMeshType<2, 8>() -> MeshType
+constexpr auto
+getMeshType<2, 8>() -> MeshType
 {
   return MeshType::QuadraticQuad;
 }
@@ -228,25 +228,25 @@ auto getMeshType<2, 8>() -> MeshType
 #pragma GCC diagnostic pop
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-void toFaceVertexMesh(
-    MeshFile<T, I> const & file, 
-    FaceVertexMesh<P, N, D, T, I> & mesh) noexcept
+toFaceVertexMesh(MeshFile<T, I> const & file,
+                 FaceVertexMesh<P, N, D, T, I> & mesh) noexcept
 {
   assert(!file.vertices.empty());
   assert(!file.element_conn.empty());
-  auto const num_vertices = static_cast<Size>(file.vertices.size());    
-  auto const num_faces = static_cast<Size>(file.numCells());    
-  auto const conn_size = static_cast<Size>(file.element_conn.size());    
+  auto const num_vertices = static_cast<Size>(file.vertices.size());
+  auto const num_faces = static_cast<Size>(file.numCells());
+  auto const conn_size = static_cast<Size>(file.element_conn.size());
   auto const verts_per_face = verticesPerCell(file.type);
   if (!validateMeshFileType<P, N>(file.type)) {
-    Log::error(    
-        "Attempted to construct a FaceVertexMesh from a mesh file with an incompatible mesh type");    
+    Log::error("Attempted to construct a FaceVertexMesh from a mesh file with an "
+               "incompatible mesh type");
   }
   assert(conn_size == num_faces * verts_per_face);
 
-  // -- Vertices --    
-  // Ensure each of the vertices has approximately the same z    
+  // -- Vertices --
+  // Ensure each of the vertices has approximately the same z
   if constexpr (D == 2) {
 #ifndef NDEBUG
     T const eps = epsilonDistance<T>();
@@ -264,7 +264,7 @@ void toFaceVertexMesh(
     mesh.vertices = file.vertices;
   }
 
-  // -- Face/Vertex connectivity -- 
+  // -- Face/Vertex connectivity --
   mesh.fv.resize(num_faces);
   for (Size i = 0; i < num_faces; ++i) {
     for (Size j = 0; j < N; ++j) {
@@ -280,7 +280,8 @@ void toFaceVertexMesh(
   }
   mesh.vf_offsets.resize(num_vertices + 1);
   mesh.vf_offsets[0] = 0;
-  std::inclusive_scan(vert_counts.cbegin(), vert_counts.cend(), mesh.vf_offsets.begin() + 1);
+  std::inclusive_scan(vert_counts.cbegin(), vert_counts.cend(),
+                      mesh.vf_offsets.begin() + 1);
   vert_counts.clear();
   mesh.vf.resize(static_cast<Size>(mesh.vf_offsets[num_vertices]));
   // Copy vf_offsets to vert_offsets
@@ -345,29 +346,27 @@ void toFaceVertexMesh(
 #endif
 }
 
-
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
-void toMeshFile(
-    FaceVertexMesh<P, N, D, T, I> const & mesh,
-    MeshFile<T, I> & file) noexcept
+void
+toMeshFile(FaceVertexMesh<P, N, D, T, I> const & mesh, MeshFile<T, I> & file) noexcept
 {
   // Default to XDMf
   file.format = MeshFileFormat::XDMF;
   file.type = getMeshType<P, N>();
-  
-  // Vertices    
-  if constexpr (D == 3) {    
-    file.vertices = mesh.vertices;    
-  } else {    
-    file.vertices.resize(static_cast<size_t>(mesh.numVertices()));    
-    for (Size i = 0; i < mesh.numVertices(); ++i) {    
-      file.vertices[static_cast<size_t>(i)][0] = mesh.vertices[i][0];    
-      file.vertices[static_cast<size_t>(i)][1] = mesh.vertices[i][1];    
-      file.vertices[static_cast<size_t>(i)][2] = 0;    
-    }    
+
+  // Vertices
+  if constexpr (D == 3) {
+    file.vertices = mesh.vertices;
+  } else {
+    file.vertices.resize(static_cast<size_t>(mesh.numVertices()));
+    for (Size i = 0; i < mesh.numVertices(); ++i) {
+      file.vertices[static_cast<size_t>(i)][0] = mesh.vertices[i][0];
+      file.vertices[static_cast<size_t>(i)][1] = mesh.vertices[i][1];
+      file.vertices[static_cast<size_t>(i)][2] = 0;
+    }
   }
 
-  // Faces    
+  // Faces
   // NOLINTBEGIN(bugprone-misplaced-widening-cast)
   auto const len = static_cast<size_t>(mesh.numFaces() * N);
   file.element_conn.resize(len);

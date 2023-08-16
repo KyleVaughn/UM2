@@ -159,14 +159,14 @@ HOSTDEV constexpr auto Vec<D, T>::operator/=(S const & s) noexcept -> Vec<D, T> 
 }
 
 template <Size D, class T>
-PURE HOSTDEV constexpr auto
+HOSTDEV constexpr auto
 operator+(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 {
   return u += v;
 }
 
 template <Size D, class T>
-PURE HOSTDEV constexpr auto
+HOSTDEV constexpr auto
 operator-(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 {
   return u -= v;
@@ -193,14 +193,14 @@ operator/(Vec<D, T> u, Scalar s) noexcept -> Vec<D, T>
 // -----------------------------------------------------------------------------
 
 template <Size D, class T>
-PURE HOSTDEV constexpr auto
+HOSTDEV constexpr auto
 min(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 {
   return u.min(v);
 }
 
 template <Size D, class T>
-PURE HOSTDEV constexpr auto
+HOSTDEV constexpr auto
 max(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 {
   return u.max(v);

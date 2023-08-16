@@ -23,22 +23,12 @@ abs(T x) noexcept -> T
 
 #else
 
-template <typename T>
-PURE DEVICE constexpr auto
-abs(T x) noexcept -> T
-{
-  static_assert(false, "abs not implemented for this type");
-  return T();
-}
-
-template <>
 PURE DEVICE constexpr auto
 abs(float x) noexcept -> float
 {
   return ::fabsf(x);
 }
 
-template <>
 PURE DEVICE constexpr auto
 abs(double x) noexcept -> double
 {
@@ -62,22 +52,12 @@ ceil(T x) noexcept -> T
 
 #else
 
-template <typename T>
-PURE DEVICE constexpr auto
-ceil(T x) noexcept -> T
-{
-  static_assert(false, "ceil not implemented for this type");
-  return T();
-}
-
-template <>
 PURE DEVICE constexpr auto
 ceil(float x) noexcept -> float
 {
   return ::ceilf(x);
 }
 
-template <>
 PURE DEVICE constexpr auto
 ceil(double x) noexcept -> double
 {
@@ -125,22 +105,12 @@ floor(T x) noexcept -> T
 
 #else
 
-template <typename T>
-PURE DEVICE constexpr auto
-floor(T x) noexcept -> T
-{
-  static_assert(false, "floor not implemented for this type");
-  return T();
-}
-
-template <>
 PURE DEVICE constexpr auto
 floor(float x) noexcept -> float
 {
   return ::floorf(x);
 }
 
-template <>
 PURE DEVICE constexpr auto
 floor(double x) noexcept -> double
 {

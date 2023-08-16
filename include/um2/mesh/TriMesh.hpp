@@ -51,11 +51,11 @@ struct FaceVertexMesh<1, 3, D, T, I> {
   PURE [[nodiscard]] constexpr auto
   faceContaining(Point<D, T> const & p) const noexcept -> Size;
 
-  void flipFace(Size i) noexcept;
+  void
+  flipFace(Size i) noexcept;
 
   void
   toMeshFile(MeshFile<T, I> & file) const noexcept;
-
 };
 
 } // namespace um2

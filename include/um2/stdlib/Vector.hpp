@@ -44,6 +44,7 @@ public:
 
   HOSTDEV constexpr Vector(Vector && v) noexcept;
 
+  // Initializer-list constructor should not be explicit
   // cppcheck-suppress noExplicitConstructor
   HOSTDEV constexpr Vector(std::initializer_list<T> const & list) noexcept;
 
@@ -57,12 +58,14 @@ public:
   // Accessors
   // -----------------------------------------------------------------------------
 
+  // Match stdlib naming conventions
+  // NOLINTBEGIN(readability-identifier-naming)
+
   PURE HOSTDEV [[nodiscard]] static constexpr auto
-  // NOLINTNEXTLINE(readability-identifier-naming)
   max_size() noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  // cppcheck-suppress functionConst
+  // cppcheck-suppress functionConst 
   begin() noexcept -> T *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -121,7 +124,6 @@ public:
   HOSTDEV constexpr void
   resize(Size n) noexcept;
 
-  // NOLINTBEGIN(readability-identifier-naming)
   HOSTDEV constexpr void
   push_back(T const & value) noexcept;
 
@@ -130,7 +132,6 @@ public:
 
   HOSTDEV constexpr void
   push_back(Size n, T const & value) noexcept;
-  // NOLINTEND(readability-identifier-naming)
 
   // -----------------------------------------------------------------------------
   // Operators
@@ -163,15 +164,12 @@ public:
   allocate(Size n) noexcept;
 
   HOSTDEV HIDDEN constexpr void
-  // NOLINTNEXTLINE(readability-identifier-naming)
   construct_at_end(Size n) noexcept;
 
   HOSTDEV HIDDEN constexpr void
-  // NOLINTNEXTLINE(readability-identifier-naming)
   construct_at_end(Size n, T const & value) noexcept;
 
   HOSTDEV HIDDEN constexpr void
-  // NOLINTNEXTLINE(readability-identifier-naming)
   destruct_at_end(Ptr new_last) noexcept;
 
   HOSTDEV HIDDEN constexpr void
@@ -181,14 +179,15 @@ public:
   recommend(Size new_size) const noexcept -> Size;
 
   HOSTDEV HIDDEN constexpr void
-  // NOLINTNEXTLINE(readability-identifier-naming)
   append_default(Size n) noexcept;
 
+  // NOLINTEND(readability-identifier-naming)
 }; // struct Vector
 
 // Vector<bool> is a specialization that is not supported
 template <>
 struct Vector<bool> {
+  static_assert(false, "Vector<bool> is not supported");
 };
 
 // TODO (kcvaughn@umich.edu): Add comparator template parameter

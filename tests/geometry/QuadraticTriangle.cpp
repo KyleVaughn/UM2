@@ -180,21 +180,21 @@ TEST_CASE(boundingBox)
   ASSERT_NEAR(box.yMax(), static_cast<T>(1.008333), static_cast<T>(1e-5));
 }
 
-// -------------------------------------------------------------------    
-// isCCW    
-// -------------------------------------------------------------------    
-    
-template <typename T>    
-HOSTDEV    
-TEST_CASE(isCCW_flipFace)    
-{    
+// -------------------------------------------------------------------
+// isCCW
+// -------------------------------------------------------------------
+
+template <typename T>
+HOSTDEV
+TEST_CASE(isCCW_flipFace)
+{
   auto tri = makeTri<2, T>();
-  ASSERT(tri.isCCW());    
-  um2::swap(tri[1], tri[2]);    
+  ASSERT(tri.isCCW());
+  um2::swap(tri[1], tri[2]);
   um2::swap(tri[3], tri[5]);
-  ASSERT(!tri.isCCW());    
-  um2::flipFace(tri);    
-  ASSERT(tri.isCCW());    
+  ASSERT(!tri.isCCW());
+  um2::flipFace(tri);
+  ASSERT(tri.isCCW());
 }
 
 #if UM2_ENABLE_CUDA

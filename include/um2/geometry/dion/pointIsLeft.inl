@@ -32,13 +32,11 @@ pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> boo
   // We manually perform the check for (v0, v1) since we want to reuse v01 and v0p.
   Vec2<T> const v01(q[1][0] - q[0][0], q[1][1] - q[0][1]);
   Point2<T> const bcp = q.getBezierControlPoint();
-  Vec2<T> const v0b(bcp[0] - q[0][0],
-                    bcp[1] - q[0][1]);
-  Vec2<T> const v0p(p[0] - q[0][0],
-                    p[1] - q[0][1]);
+  Vec2<T> const v0b(bcp[0] - q[0][0], bcp[1] - q[0][1]);
+  Vec2<T> const v0p(p[0] - q[0][0], p[1] - q[0][1]);
   bool const tri_is_ccw = v01.cross(v0b) >= 0;
   {
-    bool const b0 = v01.cross(v0p) >= 0; // areCCW(v[0], v[1], p) == Left of edge 0
+    bool const b0 = v01.cross(v0p) >= 0;  // areCCW(v[0], v[1], p) == Left of edge 0
     bool const b1 = areCCW(q[1], bcp, p); // Left of edge 1
     bool const b2 = areCCW(bcp, q[0], p); // Left of edge 2
     // if b0 && b1 && b2, the point is in the triangle, and we must perform further
@@ -111,8 +109,8 @@ pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> boo
   T const Ax = -Bx + v1_r[0];
   T const Ay = -By; // Negative
 
-// This is the logic or testing against the AABB. This was benchmarked to be slower than
-// using the Triangle test above
+  // This is the logic or testing against the AABB. This was benchmarked to be slower than
+  // using the Triangle test above
   // // Handle the case where the point is above the bounding box
   // {
   //   T ymax = v2_r[1];
@@ -156,7 +154,7 @@ pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> boo
   //     return curves_right;
   //   }
   // }
-// End of AABB test
+  // End of AABB test
   // If the point is in the bounding box of the segment,
   // we will find the point on the segment that shares the same x-coordinate
   //  Q(r) = C + rB + r²A = P

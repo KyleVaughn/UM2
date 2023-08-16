@@ -1,19 +1,21 @@
 // FINDINGS:
 // Using the AABB method for isLeft
-// Pin268FaceFixture/faceContaining268/16384/min_time:10.000           28.8 ms         28.8 ms          491
-// Pin268FaceFixture/faceContaining268/65536/min_time:10.000            115 ms          115 ms          121
-// Pin268FaceFixture/faceContaining268/262144/min_time:10.000           462 ms          462 ms           30
-// Pin268FaceFixture/faceContaining268/1048576/min_time:10.000         1836 ms         1835 ms            8
-// Pin1656FaceFixture/faceContaining1656/16384/min_time:10.000          260 ms          260 ms           54
+// Pin268FaceFixture/faceContaining268/16384/min_time:10.000           28.8
+// ms         28.8 ms          491
+// Pin268FaceFixture/faceContaining268/65536/min_time:10.000            115 ms 115 ms 121
+// Pin268FaceFixture/faceContaining268/262144/min_time:10.000           462 ms 462 ms 30
+// Pin268FaceFixture/faceContaining268/1048576/min_time:10.000         1836 ms 1835 ms 8
+// Pin1656FaceFixture/faceContaining1656/16384/min_time:10.000          260 ms 260 ms 54
 // Using the Bezier bounding Triangle method for isLeft
-// Pin268FaceFixture/faceContaining268/16384/min_time:10.000           13.5 ms         13.5 ms         1044
-// Pin268FaceFixture/faceContaining268/65536/min_time:10.000           54.2 ms         54.2 ms          259
-// Pin268FaceFixture/faceContaining268/262144/min_time:10.000           217 ms          217 ms           64
-// Pin268FaceFixture/faceContaining268/1048576/min_time:10.000          865 ms          865 ms           16
-// Pin1656FaceFixture/faceContaining1656/16384/min_time:10.000          148 ms          148 ms           95
+// Pin268FaceFixture/faceContaining268/16384/min_time:10.000           13.5
+// ms         13.5 ms         1044
+// Pin268FaceFixture/faceContaining268/65536/min_time:10.000           54.2
+// ms         54.2 ms          259
+// Pin268FaceFixture/faceContaining268/262144/min_time:10.000           217 ms 217 ms 64
+// Pin268FaceFixture/faceContaining268/1048576/min_time:10.000          865 ms 865 ms 16
+// Pin1656FaceFixture/faceContaining1656/16384/min_time:10.000          148 ms 148 ms 95
 
 // Looks like the Bezier bounding triangle method is faster
-
 
 #include "../helpers.hpp"
 #include <um2/mesh/QuadraticTriMesh.hpp>

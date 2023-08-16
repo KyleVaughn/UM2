@@ -40,15 +40,9 @@
 #undef CONST
 #undef HOT
 #undef HIDDEN
-#if UM2_ENABLE_CUDA
-#  define PURE
-#  define CONST
-#  define HOT
-#else
-#  define PURE  [[gnu::pure]]
-#  define CONST [[gnu::const]]
-#  define HOT   [[gnu::hot]]
-#endif
+#define PURE  [[gnu::pure]]
+#define CONST [[gnu::const]]
+#define HOT   [[gnu::hot]]
 #define HIDDEN __attribute__((visibility("hidden")))
 
 // Typedefs

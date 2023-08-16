@@ -28,11 +28,11 @@
 //   isCCW
 //   flipFace
 
-#include <um2/geometry/polygon/interpolate.inl>
-#include <um2/geometry/polygon/jacobian.inl>
 #include <um2/geometry/polygon/area.inl>
 #include <um2/geometry/polygon/centroid.inl>
 #include <um2/geometry/polygon/contains.inl>
+#include <um2/geometry/polygon/interpolate.inl>
+#include <um2/geometry/polygon/jacobian.inl>
 namespace um2
 {
 
@@ -63,17 +63,17 @@ getEdge(QuadraticPolygon<N, D, T> const & p, Size const i) noexcept
 // linearPolygon
 // -------------------------------------------------------------------
 
-template <Size D, typename T>    
-PURE HOSTDEV constexpr auto    
-linearPolygon(QuadraticTriangle<D, T> const & q) noexcept -> Triangle<D, T>    
-{    
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+linearPolygon(QuadraticTriangle<D, T> const & q) noexcept -> Triangle<D, T>
+{
   return Triangle<D, T>(q[0], q[1], q[2]);
 }
 
-template <Size D, typename T>    
-PURE HOSTDEV constexpr auto    
-linearPolygon(QuadraticQuadrilateral<D, T> const & q) noexcept -> Quadrilateral<D, T>    
-{    
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+linearPolygon(QuadraticQuadrilateral<D, T> const & q) noexcept -> Quadrilateral<D, T>
+{
   return Quadrilateral<D, T>(q[0], q[1], q[2], q[3]);
 }
 
@@ -81,28 +81,27 @@ linearPolygon(QuadraticQuadrilateral<D, T> const & q) noexcept -> Quadrilateral<
 // isConvex
 // -------------------------------------------------------------------
 
-template <typename T>                                             
+template <typename T>
 PURE HOSTDEV constexpr auto
 isConvex(Quadrilateral2<T> const & q) noexcept -> bool
-{                              
+{
   // Benchmarking shows it is faster to compute the areCCW() test for each
   // edge, then return based on the AND of the results, rather than compute
-  // the areCCW one at a time and return as soon as one is false.  
-  bool const b0 = areCCW(q[0], q[1], q[2]);                           
-  bool const b1 = areCCW(q[1], q[2], q[3]);                              
-  bool const b2 = areCCW(q[2], q[3], q[0]);                                    
+  // the areCCW one at a time and return as soon as one is false.
+  bool const b0 = areCCW(q[0], q[1], q[2]);
+  bool const b1 = areCCW(q[1], q[2], q[3]);
+  bool const b2 = areCCW(q[2], q[3], q[0]);
   bool const b3 = areCCW(q[3], q[0], q[1]);
-  return b0 && b1 && b2 && b3;                                                 
+  return b0 && b1 && b2 && b3;
 }
 
 // -------------------------------------------------------------------
-// boundingBox 
+// boundingBox
 // -------------------------------------------------------------------
 
 template <Size N, typename T>
-PURE HOSTDEV constexpr auto 
-boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept 
-  -> AxisAlignedBox2<T>
+PURE HOSTDEV constexpr auto
+boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept -> AxisAlignedBox2<T>
 {
   AxisAlignedBox2<T> box = boundingBox(getEdge(p, 0));
   constexpr Size m = N / 2;
@@ -117,10 +116,10 @@ boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept
 // -------------------------------------------------------------------
 
 template <typename T>
-PURE HOSTDEV constexpr auto 
+PURE HOSTDEV constexpr auto
 isCCW(Triangle2<T> const & t) noexcept -> bool
 {
-  return areCCW(t[0], t[1], t[2]); 
+  return areCCW(t[0], t[1], t[2]);
 }
 
 template <typename T>
@@ -147,11 +146,11 @@ isCCW(QuadraticQuadrilateral2<T> const & q) noexcept -> bool
 }
 
 // -------------------------------------------------------------------
-// flipFace 
+// flipFace
 // -------------------------------------------------------------------
 
 template <Size D, typename T>
-HOSTDEV constexpr void 
+HOSTDEV constexpr void
 flipFace(Triangle<D, T> & t) noexcept
 {
   um2::swap(t[1], t[2]);

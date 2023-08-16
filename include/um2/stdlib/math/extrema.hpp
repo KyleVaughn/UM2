@@ -22,22 +22,12 @@ max(T x, T y) noexcept -> T
 
 #else
 
-template <typename T>
-PURE DEVICE constexpr auto
-max(T x, T y) noexcept -> T
-{
-  static_assert(false, "max not implemented for this type");
-  return T();
-}
-
-template <>
 PURE DEVICE constexpr auto
 max(float x, float y) noexcept -> float
 {
   return ::fmaxf(x, y);
 }
 
-template <>
 PURE DEVICE constexpr auto
 max(double x, double y) noexcept -> double
 {
@@ -68,22 +58,12 @@ min(T x, T y) noexcept -> T
 
 #else
 
-template <typename T>
-PURE DEVICE constexpr auto
-min(T x, T y) noexcept -> T
-{
-  static_assert(false, "min not implemented for this type");
-  return T();
-}
-
-template <>
 PURE DEVICE constexpr auto
 min(float x, float y) noexcept -> float
 {
   return ::fminf(x, y);
 }
 
-template <>
 PURE DEVICE constexpr auto
 min(double x, double y) noexcept -> double
 {

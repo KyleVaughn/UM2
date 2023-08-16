@@ -89,7 +89,7 @@ centroid(PlanarQuadraticPolygon<N, T> const & q) noexcept -> Point2<T>
     area_sum += a;
     centroid_sum += a * enclosedCentroid(e);
   }
-  return centroid_sum / area_sum; 
+  return centroid_sum / area_sum;
 }
 
 } // namespace um2

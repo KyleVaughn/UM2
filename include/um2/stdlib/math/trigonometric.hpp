@@ -29,22 +29,12 @@ sin(T x) noexcept -> T
 
 #else
 
-template <typename T>
-PURE DEVICE constexpr auto
-sin(T x) noexcept -> T
-{
-  static_assert(false, "sin not implemented for this type");
-  return T();
-}
-
-template <>
 PURE DEVICE constexpr auto
 sin(float x) noexcept -> float
 {
   return ::sinf(x);
 }
 
-template <>
 PURE DEVICE constexpr auto
 sin(double x) noexcept -> double
 {
