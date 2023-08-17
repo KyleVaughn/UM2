@@ -1,9 +1,9 @@
 namespace um2
 {
 
-// -------------------------------------------------------------------
+//==============================================================================
 // Triangle
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T, typename R, typename S>
 PURE HOSTDEV constexpr auto
@@ -12,9 +12,9 @@ jacobian(Triangle<D, T> const & t, R /*r*/, S /*s*/) noexcept -> Mat<D, 2, T>
   return Mat<D, 2, T>(t[1] - t[0], t[2] - t[0]);
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // Quadrilateral
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T, typename R, typename S>
 PURE HOSTDEV constexpr auto
@@ -36,9 +36,9 @@ jacobian(Quadrilateral<D, T> const & q, R const r, S const s) noexcept -> Mat<D,
   return jac;
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // QuadraticTriangle
-// -------------------------------------------------------------------
+//==============================================================================
 template <Size D, typename T, typename R, typename S>
 PURE HOSTDEV constexpr auto
 jacobian(QuadraticTriangle<D, T> const & t6, R const r, S const s) noexcept
@@ -57,9 +57,9 @@ jacobian(QuadraticTriangle<D, T> const & t6, R const r, S const s) noexcept
   return result;
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // QuadraticQuadrilateral
-// -------------------------------------------------------------------
+//==============================================================================
 template <Size D, typename T, typename R, typename S>
 PURE HOSTDEV constexpr auto
 jacobian(QuadraticQuadrilateral<D, T> const & q, R const r, S const s) noexcept

@@ -2,9 +2,9 @@
 
 #include <um2/geometry/Polytope.hpp>
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // DION
-// -----------------------------------------------------------------------------
+//==============================================================================
 //
 // A 1-dimensional polytope, of polynomial order P, represented by the connectivity
 // of its vertices. These N vertices are D-dimensional points of type T.
@@ -31,9 +31,9 @@ namespace um2
 //   enclosedArea
 //   enclosedCentroid
 
-// -------------------------------------------------------------------
+//==============================================================================
 // QuadraticSegment2 only
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <typename T>
 PURE HOSTDEV constexpr auto
@@ -88,7 +88,7 @@ enclosedCentroid(QuadraticSegment2<T> const & q) noexcept -> Point2<T>
   Vec2<T> const four_v13 = 4 * (q[2] - q[0]);
   Vec2<T> const u1 = v12.normalized();
   Vec2<T> const u2(-u1[1], u1[0]);
-  // NOLINTBEGIN(readability-identifier-naming)
+  // NOLINTBEGIN(readability-identifier-naming) justification: capitalize matrix
   Mat2x2<T> const U(u1, u2);
   Vec2<T> const Cu(u1.dot((3 * v12 + four_v13)) / 10, u2.dot(four_v13) / 10);
   return U * Cu + q[0];

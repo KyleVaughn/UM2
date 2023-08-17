@@ -14,9 +14,9 @@ makeLine() -> um2::LineSegment<D, T>
   return line;
 }
 
-// -------------------------------------------------------------------
+//=============================================================================
 // Accessors
-// -------------------------------------------------------------------
+//=============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -27,9 +27,9 @@ TEST_CASE(accessors)
   ASSERT(um2::isApprox(line[1], line.v[1]));
 }
 
-// -------------------------------------------------------------------
+//=============================================================================
 // Interpolation
-// -------------------------------------------------------------------
+//=============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -45,9 +45,9 @@ TEST_CASE(interpolate)
   ASSERT((um2::isApprox(p05, mp)));
 }
 
-// -------------------------------------------------------------------
+//=============================================================================
 // jacobian
-// -------------------------------------------------------------------
+//=============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -64,9 +64,9 @@ TEST_CASE(jacobian)
   ASSERT(um2::isApprox(j1, j_ref));
 }
 
-// -------------------------------------------------------------------
+//=============================================================================
 // getRotation
-// -------------------------------------------------------------------
+//=============================================================================
 
 template <typename T>
 HOSTDEV
@@ -77,23 +77,21 @@ TEST_CASE(getRotation)
   um2::LineSegment<2, T> line_rot(rot * line[0], rot * line[1]);
   ASSERT_NEAR(line_rot[0][1], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot[1][1], static_cast<T>(0), static_cast<T>(1e-5));
-  // NOLINTNEXTLINE
-  um2::LineSegment<2, T> line_rot2(rot * (line[0] - line[0]), rot * (line[1] - line[0]));
+  um2::LineSegment<2, T> line_rot2(um2::zeroVec<2, T>(), rot * (line[1] - line[0]));
   ASSERT_NEAR(line_rot2[0][0], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot2[0][1], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot2[1][1], static_cast<T>(0), static_cast<T>(1e-5));
   line[0][0] = static_cast<T>(10);
   rot = line.getRotation();
-  // NOLINTNEXTLINE
-  um2::LineSegment<2, T> line_rot3(rot * (line[0] - line[0]), rot * (line[1] - line[0]));
+  um2::LineSegment<2, T> line_rot3(um2::zeroVec<2, T>(), rot * (line[1] - line[0]));
   ASSERT_NEAR(line_rot3[0][0], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot3[0][1], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot3[1][1], static_cast<T>(0), static_cast<T>(1e-5));
 }
 
-// -------------------------------------------------------------------
+//=============================================================================
 // length
-// -------------------------------------------------------------------
+//=============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -105,9 +103,9 @@ TEST_CASE(length)
   ASSERT_NEAR(um2::length(line), len_ref, static_cast<T>(1e-5));
 }
 
-// -------------------------------------------------------------------
+//=============================================================================
 // boundingBox
-// -------------------------------------------------------------------
+//=============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -122,9 +120,9 @@ TEST_CASE(boundingBox)
   ASSERT(um2::isApprox(box2.maxima, box.maxima));
 }
 
-// -------------------------------------------------------------------
+//=============================================================================
 // isLeft
-// -------------------------------------------------------------------
+//=============================================================================
 
 template <typename T>
 HOSTDEV
@@ -177,7 +175,7 @@ TEST_CASE(distanceTo)
   ASSERT_NEAR(line.distanceTo(p1), ref, static_cast<T>(1e-5));
 }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(accessors, D, T);
 

@@ -3,6 +3,8 @@ Change _OPENMP to USE_OPENMP
 Change --- to ===
 Review NOLINTs and cppcheck suppress
 
+AABB parallel
+
 Doc build and comments
 
 pointClosestTo()

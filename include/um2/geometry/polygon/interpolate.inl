@@ -1,9 +1,9 @@
 namespace um2
 {
 
-// -------------------------------------------------------------------
+//==============================================================================
 // Triangle
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T, typename R, typename S>
 PURE HOSTDEV constexpr auto
@@ -22,9 +22,9 @@ interpolate(Triangle<D, T> const & tri, R const r, S const s) noexcept -> Point<
   return result;
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // Quadrilateral
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T, typename R, typename S>
 PURE HOSTDEV constexpr auto
@@ -48,9 +48,9 @@ interpolate(Quadrilateral<D, T> const & quad, R const r, S const s) noexcept
   return result;
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // QuadraticTriangle
-// -------------------------------------------------------------------
+//==============================================================================
 template <Size D, typename T, typename R, typename S>
 PURE HOSTDEV constexpr auto
 interpolate(QuadraticTriangle<D, T> const & tri6, R const r, S const s) noexcept
@@ -74,9 +74,9 @@ interpolate(QuadraticTriangle<D, T> const & tri6, R const r, S const s) noexcept
   return result;
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // QuadraticQuadrilateral
-// -------------------------------------------------------------------
+//==============================================================================
 template <Size D, typename T, typename R, typename S>
 PURE HOSTDEV constexpr auto
 interpolate(QuadraticQuadrilateral<D, T> const & quad8, R const r, S const s) noexcept

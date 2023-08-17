@@ -28,20 +28,20 @@ add_um2_test(./math/morton.cpp)
 add_um2_test(./math/Vec.cpp)
 add_um2_test(./math/Mat.cpp)
 
-##===============================================================================
-## geometry
-##===============================================================================
-#
-#add_um2_test(./geometry/Point.cpp)
-#add_um2_test(./geometry/morton_sort_points.cpp)
-#add_um2_test(./geometry/AxisAlignedBox.cpp)
-#add_um2_test(./geometry/LineSegment.cpp)
-#add_um2_test(./geometry/Triangle.cpp)
-#add_um2_test(./geometry/Quadrilateral.cpp)
-#add_um2_test(./geometry/QuadraticSegment.cpp)
-#add_um2_test(./geometry/QuadraticTriangle.cpp)
-#add_um2_test(./geometry/QuadraticQuadrilateral.cpp)
-#
+#===============================================================================
+# geometry
+#===============================================================================
+
+add_um2_test(./geometry/Point.cpp)
+add_um2_test(./geometry/morton_sort_points.cpp)
+add_um2_test(./geometry/AxisAlignedBox.cpp)
+add_um2_test(./geometry/LineSegment.cpp)
+add_um2_test(./geometry/Triangle.cpp)
+add_um2_test(./geometry/Quadrilateral.cpp)
+add_um2_test(./geometry/QuadraticSegment.cpp)
+add_um2_test(./geometry/QuadraticTriangle.cpp)
+add_um2_test(./geometry/QuadraticQuadrilateral.cpp)
+
 ##==============================================================================
 ## mesh
 ##==============================================================================

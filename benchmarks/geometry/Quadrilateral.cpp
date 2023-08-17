@@ -1,75 +1,54 @@
-// FINDINGS: The area method is faster than the CCW method, but is not as robust.
-//           contains(p) is faster when we compute the CCW test of each edge first, then
-//           return, instead of short-circuiting for some processors.
-//           This didn't seem to effect GPU performance at all.
+//=============================================================================
+// Findings
+//=============================================================================
+// For a 10x10 grid of quadrilaterals and 262144 random points:
+//  containsTriangle:       113724 us = 4.3 ns/point
+//  CCWShortCircuit:        124319 us = 4.7 ns/point
+//  CCWNoShortCircuit:        8980 us = 0.3 ns/point
+//  CUDA CCWShortCircuit:     1922 us = 0.07 ns/point
+//  CUDA CCWNoShortCircuit:   1915 us = 0.07 ns/point
 
 #include "../helpers.hpp"
 #include <um2/geometry/Quadrilateral.hpp>
 
 constexpr Size npoints = 1 << 18;
-constexpr Size dim = 2;
-constexpr int lo = 0;
 constexpr int hi = 10;
-
-// NOLINTBEGIN(readability-identifier-naming)
 
 template <typename T>
 auto
-makeQuadGrid() -> um2::Vector<um2::Quadrilateral<dim, T>>
+makeQuadGrid() -> um2::Vector<um2::Quadrilateral2<T>>
 {
   Size const n = static_cast<Size>(hi);
-  um2::Vector<um2::Quadrilateral<dim, T>> quads(n * n);
+  um2::Vector<um2::Quadrilateral2<T>> quads(n * n);
   // Create a hi x hi grid of quadrilaterals.
   for (Size x = 0; x < n; ++x) {
     for (Size y = 0; y < n; ++y) {
-      um2::Point<dim, T> const p0(x, y);
-      um2::Point<dim, T> const p1(x + 1, y);
-      um2::Point<dim, T> const p2(x + 1, y + 1);
-      um2::Point<dim, T> const p3(x, y + 1);
-      um2::Quadrilateral<dim, T> const q(p0, p1, p2, p3);
+      um2::Point2<T> const p0(x, y);
+      um2::Point2<T> const p1(x + 1, y);
+      um2::Point2<T> const p2(x + 1, y + 1);
+      um2::Point2<T> const p3(x, y + 1);
+      um2::Quadrilateral2<T> const q(p0, p1, p2, p3);
       quads[x * n + y] = q;
     }
   }
   return quads;
 }
 
-// NOLINTBEGIN(readability-identifier-naming)
-// constexpr auto
-// isConvexArea(um2::Quadrilateral<dim, T> const & quad) -> bool
-//{
-//  T const A1 = um2::Triangle<dim, T>(quad[0], quad[1], quad[2]).area();
-//  T const A2 = um2::Triangle<dim, T>(quad[2], quad[3], quad[0]).area();
-//  T const A3 = um2::Triangle<dim, T>(quad[3], quad[0], quad[1]).area();
-//  T const A4 = um2::Triangle<dim, T>(quad[1], quad[2], quad[3]).area();
-//  return um2::abs(A1 + A2 - A3 - A4) < static_cast<T>(0.01) * (A1 + A2);
-//}
-//
-// constexpr auto
-// isConvexCCW(um2::Quadrilateral<dim, T> const & quad) -> bool
-//{
-//  return um2::areCCW(quad[0], quad[1], quad[2]) &&
-//         um2::areCCW(quad[1], quad[2], quad[3]) &&
-//         um2::areCCW(quad[2], quad[3], quad[0]) &&
-//         um2::areCCW(quad[3], quad[0], quad[1]);
-//}
-//// NOLINTEND(readability-identifier-naming)
-
 template <typename T>
 HOSTDEV constexpr auto
-containsTriangle(um2::Quadrilateral<dim, T> const & quad, um2::Point<dim, T> const & p)
-    -> bool
+containsTriangle(um2::Quadrilateral2<T> const & quad, um2::Point2<T> const & p) -> bool
 {
-  um2::Triangle<dim, T> const t1(quad[0], quad[1], quad[2]);
+  um2::Triangle2<T> const t1(quad[0], quad[1], quad[2]);
   bool const b0 = t1.contains(p);
-  um2::Triangle<dim, T> const t2(quad[2], quad[3], quad[0]);
+  um2::Triangle2<T> const t2(quad[2], quad[3], quad[0]);
   bool const b1 = t2.contains(p);
   return b0 && b1;
 }
 
 template <typename T>
 HOSTDEV constexpr auto
-containsCCWShortCircuit(um2::Quadrilateral<dim, T> const & quad,
-                        um2::Point<dim, T> const & p) -> bool
+containsCCWShortCircuit(um2::Quadrilateral2<T> const & quad, um2::Point2<T> const & p)
+    -> bool
 {
   return um2::areCCW(quad[0], quad[1], p) && um2::areCCW(quad[1], quad[2], p) &&
          um2::areCCW(quad[2], quad[3], p) && um2::areCCW(quad[3], quad[0], p);
@@ -77,8 +56,8 @@ containsCCWShortCircuit(um2::Quadrilateral<dim, T> const & quad,
 
 template <typename T>
 HOSTDEV constexpr auto
-containsCCWNoShortCircuit(um2::Quadrilateral<dim, T> const & quad,
-                          um2::Point<dim, T> const & p) -> bool
+containsCCWNoShortCircuit(um2::Quadrilateral2<T> const & quad, um2::Point2<T> const & p)
+    -> bool
 {
   bool const b0 = um2::areCCW(quad[0], quad[1], p);
   bool const b1 = um2::areCCW(quad[1], quad[2], p);
@@ -89,19 +68,17 @@ containsCCWNoShortCircuit(um2::Quadrilateral<dim, T> const & quad,
 
 template <typename T>
 static void
-TriangleDecomp(benchmark::State & state)
+triangleDecomp(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
-  auto const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
-  // NOLINTNEXTLINE
+  um2::AxisAlignedBox2<T> const box({0, 0}, {hi, hi});
+  auto const points = makeVectorOfRandomPoints(n, box);
   for (auto s : state) {
-    int i = 0;
+    int64_t i = 0;
     for (auto const & q : quads) {
-      for (auto const & p : points) {
-        // cppcheck-suppress useStlAlgorithm
-        i += static_cast<int>(containsTriangle(q, p));
-      }
+      i += std::count_if(points.begin(), points.end(),
+                         [&q](auto const & p) { return containsTriangle(q, p); });
     }
     benchmark::DoNotOptimize(i);
   }
@@ -113,15 +90,13 @@ CCWShortCircuit(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
-  auto const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
-  // NOLINTNEXTLINE
+  um2::AxisAlignedBox2<T> const box({0, 0}, {hi, hi});
+  auto const points = makeVectorOfRandomPoints(n, box);
   for (auto s : state) {
-    int i = 0;
+    int64_t i = 0;
     for (auto const & q : quads) {
-      for (auto const & p : points) {
-        // cppcheck-suppress useStlAlgorithm
-        i += static_cast<int>(containsCCWShortCircuit(q, p));
-      }
+      i += std::count_if(points.begin(), points.end(),
+                         [&q](auto const & p) { return containsCCWShortCircuit(q, p); });
     }
     benchmark::DoNotOptimize(i);
   }
@@ -133,24 +108,23 @@ CCWNoShortCircuit(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
-  auto const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
-  // NOLINTNEXTLINE
+  um2::AxisAlignedBox2<T> const box({0, 0}, {hi, hi});
+  auto const points = makeVectorOfRandomPoints(n, box);
   for (auto s : state) {
-    int i = 0;
+    int64_t i = 0;
     for (auto const & q : quads) {
-      for (auto const & p : points) {
-        // cppcheck-suppress useStlAlgorithm
-        i += static_cast<int>(containsCCWNoShortCircuit(q, p));
-      }
+      i += std::count_if(points.begin(), points.end(), [&q](auto const & p) {
+        return containsCCWNoShortCircuit(q, p);
+      });
     }
     benchmark::DoNotOptimize(i);
   }
 }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <typename T>
 __global__ void
-CCWShortCircuitGPUKernel(um2::Quadrilateral<dim, T> * quads, um2::Point<dim, T> * points,
+CCWShortCircuitGPUKernel(um2::Quadrilateral2<T> * quads, um2::Point2<T> * points,
                          int * results, Size nquads, Size num_points)
 {
   Size const i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -168,11 +142,12 @@ CCWShortCircuitGPU(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
-  um2::Quadrilateral<dim, T> * d_quads;
+  um2::Quadrilateral2<T> * d_quads;
   transferToDevice(&d_quads, quads);
 
-  auto const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
-  um2::Point<dim, T> * d_points;
+  um2::AxisAlignedBox2<T> const box({0, 0}, {hi, hi});
+  auto const points = makeVectorOfRandomPoints(n, box);
+  um2::Point2<T> * d_points;
   transferToDevice(&d_points, points);
 
   um2::Vector<int> results(quads.size() * points.size());
@@ -183,7 +158,6 @@ CCWShortCircuitGPU(benchmark::State & state)
   uint32_t const nblocks =
       (quads.size() * points.size() + threads_per_block - 1) / threads_per_block;
 
-  // NOLINTNEXTLINE
   for (auto s : state) {
     CCWShortCircuitGPUKernel<<<nblocks, threads_per_block>>>(d_quads, d_points, d_results,
                                                              quads.size(), points.size());
@@ -197,9 +171,8 @@ CCWShortCircuitGPU(benchmark::State & state)
 
 template <typename T>
 __global__ void
-CCWNoShortCircuitGPUKernel(um2::Quadrilateral<dim, T> * quads,
-                           um2::Point<dim, T> * points, int * results, Size nquads,
-                           Size num_points)
+CCWNoShortCircuitGPUKernel(um2::Quadrilateral2<T> * quads, um2::Point2<T> * points,
+                           int * results, Size nquads, Size num_points)
 {
   Size const i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i >= nquads * num_points) {
@@ -217,11 +190,12 @@ CCWNoShortCircuitGPU(benchmark::State & state)
 
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
-  um2::Quadrilateral<dim, T> * d_quads;
+  um2::Quadrilateral2<T> * d_quads;
   transferToDevice(&d_quads, quads);
 
-  auto const points = makeVectorOfRandomPoints<dim, T, lo, hi>(n);
-  um2::Point<dim, T> * d_points;
+  um2::AxisAlignedBox2<T> const box({0, 0}, {hi, hi});
+  auto const points = makeVectorOfRandomPoints(n, box);
+  um2::Point2<T> * d_points;
   transferToDevice(&d_points, points);
 
   um2::Vector<int> results(quads.size() * points.size());
@@ -232,7 +206,6 @@ CCWNoShortCircuitGPU(benchmark::State & state)
   uint32_t const nblocks =
       (quads.size() * points.size() + threads_per_block - 1) / threads_per_block;
 
-  // NOLINTNEXTLINE
   for (auto s : state) {
     CCWNoShortCircuitGPUKernel<<<nblocks, threads_per_block>>>(
         d_quads, d_points, d_results, quads.size(), points.size());
@@ -246,8 +219,7 @@ CCWNoShortCircuitGPU(benchmark::State & state)
 }
 #endif
 
-// NOLINTEND(readability-identifier-naming)
-BENCHMARK_TEMPLATE(TriangleDecomp, float)
+BENCHMARK_TEMPLATE(triangleDecomp, float)
     ->RangeMultiplier(4)
     ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
@@ -259,12 +231,11 @@ BENCHMARK_TEMPLATE(CCWNoShortCircuit, float)
     ->RangeMultiplier(4)
     ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 BENCHMARK_TEMPLATE(CCWShortCircuitGPU, float)
     ->RangeMultiplier(4)
     ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
-
 BENCHMARK_TEMPLATE(CCWNoShortCircuitGPU, float)
     ->RangeMultiplier(4)
     ->Range(1024, npoints)

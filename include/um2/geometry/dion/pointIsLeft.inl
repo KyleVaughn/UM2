@@ -1,9 +1,10 @@
 namespace um2
 {
 
-// -------------------------------------------------------------------
+//==============================================================================
 // LineSegment
-// -------------------------------------------------------------------
+//==============================================================================
+
 template <typename T>
 PURE HOSTDEV constexpr auto
 pointIsLeft(LineSegment2<T> const & l, Point2<T> const & p) noexcept -> bool
@@ -11,9 +12,10 @@ pointIsLeft(LineSegment2<T> const & l, Point2<T> const & p) noexcept -> bool
   return areCCW(l[0], l[1], p);
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // QuadraticSegment
-// -------------------------------------------------------------------
+//==============================================================================
+
 template <typename T>
 PURE HOSTDEV constexpr auto
 pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> bool
@@ -58,7 +60,7 @@ pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> boo
   //     v1_r is zero.
   Point2<T> const v1_r(v01_norm, static_cast<T>(0));
   Vec2<T> const v01_normalized = v01 / v01_norm;
-  //     NOLINTBEGIN(readability-identifier-naming)
+  //     NOLINTBEGIN(readability-identifier-naming) justification: matrix notation
   Mat2x2<T> const R(Vec2<T>(v01_normalized[0], -v01_normalized[1]),
                     Vec2<T>(v01_normalized[1], v01_normalized[0]));
   Vec2<T> const v02 = q[2] - q[0];
@@ -139,7 +141,6 @@ pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> boo
   //     // r_i = -B_i / (2A_i)
   //     T const half_b = Bx / 2;
   //     T const rx = -half_b / Ax;
-  //     // NOLINTNEXTLINE(misc-redundant-expression)
   //     if (0 < rx && rx < 1) {
   //       // x_i = Q(r_i) = - B² / (4A) = r(B/2)
   //       T const x_stationary = rx * half_b;

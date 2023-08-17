@@ -6,7 +6,7 @@ template <std::unsigned_integral U>
 HOSTDEV
 TEST_CASE(mortonEncode)
 {
-  // NOLINTNEXTLINE justification: reduce clutter 
+  // NOLINTNEXTLINE justification: reduce clutter
   using namespace um2;
 
   // 2D
@@ -81,7 +81,7 @@ template <std::unsigned_integral U, std::floating_point T>
 HOSTDEV
 TEST_CASE(mortonEncodeFloat)
 {
-  // NOLINTNEXTLINE justification: reduce clutter 
+  // NOLINTNEXTLINE justification: reduce clutter
   using namespace um2;
 
   T const zero = static_cast<T>(0);

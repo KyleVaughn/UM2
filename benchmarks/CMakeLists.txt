@@ -16,13 +16,13 @@ add_um2_benchmark(./geometry/morton_sort_points.cpp)
 add_um2_benchmark(./geometry/AxisAlignedBox.cpp)
 add_um2_benchmark(./geometry/Triangle.cpp)
 add_um2_benchmark(./geometry/Quadrilateral.cpp)
-add_um2_benchmark(./geometry/QuadraticSegment.cpp)
+#add_um2_benchmark(./geometry/QuadraticSegment.cpp)
 
-#===============================================================================
-# mesh 
-#===============================================================================
-
-# Copy the mesh files
-file(COPY ${PROJECT_SOURCE_DIR}/benchmarks/mesh/mesh_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})    
-
-add_um2_benchmark(./mesh/QuadraticTriMesh.cpp)
+##===============================================================================
+## mesh 
+##===============================================================================
+#
+## Copy the mesh files
+#file(COPY ${PROJECT_SOURCE_DIR}/benchmarks/mesh/mesh_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})    
+#
+#add_um2_benchmark(./mesh/QuadraticTriMesh.cpp)

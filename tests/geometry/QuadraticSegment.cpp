@@ -114,9 +114,9 @@ makeSeg8() -> um2::QuadraticSegment<D, T>
   return q;
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // Interpolation
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -134,9 +134,9 @@ TEST_CASE(interpolate)
   }
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // jacobian
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -164,25 +164,9 @@ TEST_CASE(jacobian)
   ASSERT(j1[1] < 0);
 }
 
-//// -------------------------------------------------------------------
-//// isStraight
-//// -------------------------------------------------------------------
-//
-// template <Size D, typename T>
-// HOSTDEV
-// TEST_CASE(isStraight)
-//{
-//  um2::QuadraticSegment<D, T> const seg1 = makeSeg1<D, T>();
-//  ASSERT(seg1.isStraight());
-//  um2::QuadraticSegment<D, T> const seg2 = makeSeg2<D, T>();
-//  ASSERT(!seg2.isStraight());
-//  um2::QuadraticSegment<D, T> const seg5 = makeSeg5<D, T>();
-//  ASSERT(!seg5.isStraight());
-//}
-
-// -------------------------------------------------------------------
+//==============================================================================
 // length
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -199,9 +183,9 @@ TEST_CASE(length)
   ASSERT_NEAR(l, l_ref, static_cast<T>(1e-5));
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // boundingBox
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -226,9 +210,9 @@ TEST_CASE(boundingBox)
   ASSERT(um2::isApprox(bb8, bb_ref8));
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // isLeft
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <typename T>
 HOSTDEV
@@ -388,9 +372,9 @@ TEST_CASE(isLeft)
   ASSERT(!q8.isLeft(test_points[13]));
 }
 
-// -----------------------------------------------------------------------------
+//==============================================================================----------
 // enclosedArea
-// -----------------------------------------------------------------------------
+//==============================================================================----------
 
 template <typename T>
 HOSTDEV
@@ -439,22 +423,19 @@ TEST_CASE(enclosedCentroid)
   // Compute centroid_ref
   um2::Vec2<T> const u1 = (seg2[1] - seg2[0]).normalized();
   um2::Vec2<T> const u2(-u1[1], u1[0]);
-  // NOLINTNEXTLINE(readability-identifier-naming)
+  // NOLINTNEXTLINE(readability-identifier-naming) justification: matrix notation
   um2::Mat2x2<T> const R(u1, u2);
   centroid_ref = R * centroid_ref + seg2[0];
   centroid = seg2.enclosedCentroid();
   ASSERT(um2::isApprox(centroid, centroid_ref));
 }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(interpolate, D, T);
 
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(jacobian, D, T);
-
-// template <Size D, typename T>
-// MAKE_CUDA_KERNEL(isStraight, D, T);
 
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(length, D, T);
@@ -477,7 +458,6 @@ TEST_SUITE(QuadraticSegment)
 {
   TEST_HOSTDEV(interpolate, 1, 1, D, T);
   TEST_HOSTDEV(jacobian, 1, 1, D, T);
-  //  TEST_HOSTDEV(isStraight, 1, 1, D, T);
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
   TEST_HOSTDEV(length, 1, 1, D, T);
   if constexpr (D == 2) {

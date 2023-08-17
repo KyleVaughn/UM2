@@ -1,9 +1,9 @@
 namespace um2
 {
 
-// -------------------------------------------------------------------
+//==============================================================================
 // LineSegment
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
@@ -12,16 +12,17 @@ length(LineSegment<D, T> const & l) noexcept -> T
   return (l[0]).distanceTo(l[1]);
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // QuadraticSegment
-// -------------------------------------------------------------------
+//==============================================================================
+
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 length(QuadraticSegment<D, T> const & q) noexcept -> T
 {
   // Turn off variable naming convention warning for this function, since we will use
   // capital letters to denote vectors.
-  // NOLINTBEGIN(readability-identifier-naming)
+  // NOLINTBEGIN(readability-identifier-naming) justification: mathematical convention
 
   // The arc length integral may be reduced to an integral over the square root of a
   // quadratic polynomial using ‖𝘅‖ = √(𝘅 ⋅ 𝘅), which has an analytic solution.

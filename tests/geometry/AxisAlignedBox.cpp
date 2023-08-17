@@ -92,20 +92,26 @@ TEST_CASE(is_approx)
 
 template <Size D, std::floating_point T>
 HOSTDEV
-TEST_CASE(bounding_box)
+TEST_CASE(operator_plus)
 {
-  // boundingBox(AxisAlignedBox, AxisAlignedBox)
+  // (AxisAlignedBox, AxisAlignedBox)
   um2::AxisAlignedBox<D, T> const box = makeBox<D, T>();
   um2::AxisAlignedBox<D, T> box2 = makeBox<D, T>();
   for (Size i = 0; i < D; ++i) {
     box2.minima[i] += static_cast<T>(1);
     box2.maxima[i] += static_cast<T>(1);
   }
-  um2::AxisAlignedBox<D, T> box3 = boundingBox(box, box2);
+  um2::AxisAlignedBox<D, T> box3 = box + box2;
   for (Size i = 0; i < D; ++i) {
     ASSERT_NEAR(box3.minima[i], static_cast<T>(i), static_cast<T>(1e-6));
     ASSERT_NEAR(box3.maxima[i], static_cast<T>(i + 2), static_cast<T>(1e-6));
   }
+}
+
+template <Size D, std::floating_point T>
+HOSTDEV
+TEST_CASE(bounding_box)
+{
   // boundingBox(Point points[N])
   um2::Point<D, T> points[2 * D];
   for (Size i = 0; i < D; ++i) {
@@ -142,7 +148,7 @@ TEST_CASE(bounding_box_vector)
   ASSERT_NEAR(box.yMax(), static_cast<T>(0.2 * (n - 1)), static_cast<T>(1e-6));
 }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <Size D, std::floating_point T>
 MAKE_CUDA_KERNEL(accessors, D, T);
 
@@ -159,6 +165,9 @@ template <Size D, std::floating_point T>
 MAKE_CUDA_KERNEL(is_approx, D, T);
 
 template <Size D, std::floating_point T>
+MAKE_CUDA_KERNEL(operator_plus, D, T);
+
+template <Size D, std::floating_point T>
 MAKE_CUDA_KERNEL(bounding_box, D, T);
 
 #endif
@@ -171,6 +180,7 @@ TEST_SUITE(aabb)
   TEST_HOSTDEV(centroid, 1, 1, D, T);
   TEST_HOSTDEV(contains, 1, 1, D, T);
   TEST_HOSTDEV(is_approx, 1, 1, D, T);
+  TEST_HOSTDEV(operator_plus, 1, 1, D, T);
   TEST_HOSTDEV(bounding_box, 1, 1, D, T);
   if constexpr (D == 2) {
     TEST((bounding_box_vector<T>));

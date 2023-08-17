@@ -9,9 +9,9 @@
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // POLYTOPE
-// -----------------------------------------------------------------------------
+//==============================================================================
 //
 // A K-dimensional polytope, of polynomial order P, represented by the connectivity
 // of its vertices. These N vertices are D-dimensional points of type T.
@@ -27,18 +27,14 @@ namespace um2
 // See https://en.wikipedia.org/wiki/Polytope for help with terminology.
 //
 template <Size K, Size P, Size N, Size D, typename T>
-// Why does clang-tidy complain declaration uses identifier '__i0'? There is
-// no __i0 in the code.
-// If you're reading this, uncomment the NOLINTNEXTLINE line below and see if
-// this has been fixed.
 struct Polytope {
   static_assert(K > 0 && K <= 3, "Polytope dimension must be 1, 2, or 3");
   Point<D, T> v[N];
 };
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Aliases
-// -----------------------------------------------------------------------------
+//==============================================================================
 
 template <Size K, Size N, Size D, typename T>
 using LinearPolytope = Polytope<K, 1, N, D, T>;
@@ -149,9 +145,9 @@ using QuadraticTetrahedron = QuadraticPolyhedron<10, 3, T>;
 template <typename T>
 using QuadraticHexahedron = QuadraticPolyhedron<20, 3, T>;
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Methods
-// -----------------------------------------------------------------------------
+//==============================================================================
 
 template <Size K, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
