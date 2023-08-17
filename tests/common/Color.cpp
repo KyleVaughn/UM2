@@ -3,7 +3,7 @@
 #include "../test_macros.hpp"
 
 // clang-tidy complains that these can be static asserts, but gcc complains when they are
-// NOLINTBEGIN(cert-dcl03-c,misc-static-assert)
+// NOLINTBEGIN(cert-dcl03-c,misc-static-assert) justified
 HOSTDEV
 TEST_CASE(color_default_constructor)
 {

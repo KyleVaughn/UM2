@@ -93,7 +93,7 @@ TEST_CASE(areCCW)
 // --------------------------------------------------------------------------
 // CUDA
 // --------------------------------------------------------------------------
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(distance, D, T);
 

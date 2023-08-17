@@ -1,6 +1,9 @@
-Doc build and comments
-
+Remove explicit use of gnu_parallel
+Change _OPENMP to USE_OPENMP
+Change --- to ===
 Review NOLINTs and cppcheck suppress
+
+Doc build and comments
 
 pointClosestTo()
 squaredDistanceTo()

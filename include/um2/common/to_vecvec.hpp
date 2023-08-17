@@ -16,7 +16,8 @@ namespace um2
 
 template <typename T>
 constexpr auto
-// NOLINTNEXTLINE(readability-identifier-naming)
+// We have a class named Vec, so we need to use a different name for this function.
+// NOLINTNEXTLINE(readability-identifier-naming) justified
 to_vecvec(std::string const & str, std::string const & delimiter = " ")
     -> std::vector<std::vector<T>>
 {

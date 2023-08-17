@@ -10,7 +10,6 @@ import subprocess
 import os
 import time
 
-
 def configureDoxyfile(input_dir, output_dir):
     with open('Doxyfile.in', 'r') as file:
         filedata = file.read()
@@ -24,7 +23,6 @@ def configureDoxyfile(input_dir, output_dir):
 
 # Check if we're running on Read the Docs' servers
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
-
 
 def find_directories_and_header_files(directory, results: list):
     for root, dirs, files in os.walk(directory):

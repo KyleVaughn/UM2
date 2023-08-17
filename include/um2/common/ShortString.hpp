@@ -13,9 +13,10 @@
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // SHORT STRING
-// -----------------------------------------------------------------------------
+//==============================================================================
+//
 // A stack allocated string that can hold up to 31 characters.
 
 struct ShortString {
@@ -26,9 +27,9 @@ private:
   // In the event that the array is full, data[31] will be 0, a null terminator.
 
 public:
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Constructors
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   HOSTDEV constexpr ShortString() noexcept;
 
@@ -37,9 +38,9 @@ public:
 
   HOSTDEV constexpr explicit ShortString(char const * s) noexcept;
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Accessors
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   size() const noexcept -> Size;
@@ -47,16 +48,16 @@ public:
   PURE HOSTDEV [[nodiscard]] static constexpr auto
   capacity() noexcept -> Size;
 
-  // cppcheck-suppress functionConst
+  // cppcheck-suppress functionConst justification: can't be const
   PURE HOSTDEV [[nodiscard]] constexpr auto
   data() noexcept -> char *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   data() const noexcept -> char const *;
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Operators
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   HOSTDEV constexpr auto
   operator==(ShortString const & s) const noexcept -> bool;
@@ -80,15 +81,15 @@ public:
   operator==(std::string const & s) const noexcept -> bool;
 
   HOSTDEV constexpr auto
-  // cppcheck-suppress functionConst
+  // cppcheck-suppress functionConst justification: can't be const
   operator[](Size i) noexcept -> char &;
 
   HOSTDEV constexpr auto
   operator[](Size i) const noexcept -> char const &;
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Methods
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   HOSTDEV [[nodiscard]] constexpr auto
   compare(ShortString const & s) const noexcept -> int;

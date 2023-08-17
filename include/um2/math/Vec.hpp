@@ -10,72 +10,75 @@
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // VEC
-// -----------------------------------------------------------------------------
+//==============================================================================
+//
 // A D-dimensional vector with data of type T.
 //
 // This struct is used for small vectors, where the number of elements is known
 // at compile time.
 //
-// Many arithmetic operators are purposely not defined, to avoid accidental
+// Many arithmetic operators are purposely not defined to avoid accidental
 // loss of performance through creation of temporaries, poor vectorization, etc.
+// Ideally we should use expression templates to avoid this, but Eigen + CUDA
+// is not a good combination.
 
 template <Size D, class T>
 struct Vec {
 
   T data[D];
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Accessors
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   PURE HOSTDEV constexpr auto
-  // cppcheck-suppress functionConst
+  // cppcheck-suppress functionConst justification: can't be const
   operator[](Size i) noexcept -> T &;
 
   PURE HOSTDEV constexpr auto
   operator[](Size i) const noexcept -> T const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  // cppcheck-suppress functionConst
+  // cppcheck-suppress functionConst justification: can't be const
   begin() noexcept -> T *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   begin() const noexcept -> T const *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  // cppcheck-suppress functionConst
+  // cppcheck-suppress functionConst justification: can't be const
   end() noexcept -> T *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   end() const noexcept -> T const *;
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Constructors
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   constexpr Vec() noexcept = default;
 
-  // NOLINTBEGIN(google-explicit-constructor)
   // Allow implicit conversion from integral types.
   // Otherwise, require explicit conversion to avoid accidental loss of
   // precision/performance.
+  // NOLINTBEGIN(google-explicit-constructor) justified
   template <class... Is>
     requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
              !(std::same_as<T, Is> && ...))
-  // cppcheck-suppress noExplicitConstructor
+  // cppcheck-suppress noExplicitConstructor justified
   HOSTDEV constexpr Vec(Is const... args) noexcept;
 
   template <class... Ts>
     requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...))
-  // cppcheck-suppress noExplicitConstructor
+  // cppcheck-suppress noExplicitConstructor justified
   HOSTDEV constexpr Vec(Ts const... args) noexcept;
   // NOLINTEND(google-explicit-constructor)
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Binary operators
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   HOSTDEV constexpr auto
   operator+=(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
@@ -109,9 +112,9 @@ struct Vec {
   HOSTDEV constexpr auto
   operator/=(S const & s) noexcept -> Vec<D, T> &;
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Methods
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   HOSTDEV constexpr auto
   min(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
@@ -153,6 +156,7 @@ template <Size D, class T>
 HOSTDEV constexpr auto
 zeroVec() noexcept -> Vec<D, T>
 {
+  // There has to be a better way to do this...
   if constexpr (D == 1) {
     return Vec<D, T>(0);
   } else if constexpr (D == 2) {
@@ -167,9 +171,9 @@ zeroVec() noexcept -> Vec<D, T>
   }
 }
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Aliases
-// -----------------------------------------------------------------------------
+//==============================================================================
 
 template <class T>
 using Vec1 = Vec<1, T>;
@@ -200,9 +204,9 @@ using Vec2u = Vec2<unsigned>;
 using Vec3u = Vec3<unsigned>;
 using Vec4u = Vec4<unsigned>;
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Binary operators
-// -----------------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, class T>
 HOSTDEV constexpr auto
@@ -222,9 +226,9 @@ template <Size D, class T, typename Scalar>
 HOSTDEV constexpr auto
 operator/(Vec<D, T> u, Scalar s) noexcept -> Vec<D, T>;
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Methods
-// -----------------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, class T>
 HOSTDEV constexpr auto

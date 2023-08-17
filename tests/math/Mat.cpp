@@ -199,7 +199,7 @@ TEST_CASE(mat_vec)
 //   }
 // }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <Size M, Size N, typename T>
 MAKE_CUDA_KERNEL(accessors, M, N, T);
 

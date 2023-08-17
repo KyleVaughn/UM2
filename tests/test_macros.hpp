@@ -14,8 +14,8 @@
 #  error("test_macros.hpp must be included after any UM2 files since it undefs NDEBUG")
 #endif
 
+#include <cstdio>  // printf
 #include <cstdlib> // exit
-#include <cstdio> // printf
 
 #undef NDEBUG
 #include <cassert>

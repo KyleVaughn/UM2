@@ -7,9 +7,10 @@
 namespace um2
 {
 
-// ------------------------------------------------------------------------------
+//==============================================================================
 // Default values
-// ------------------------------------------------------------------------------
+//==============================================================================
+
 static constexpr LogVerbosity log_default_max_verbosity_level = LogVerbosity::Info;
 static constexpr bool log_default_buffered = false;
 static constexpr bool log_default_timestamped = true;
@@ -17,10 +18,12 @@ static constexpr bool log_default_colorized = true;
 static constexpr bool log_default_exit_on_error = true;
 static constexpr size_t log_default_flush_threshold = 20; // flush after 20 messages
 
-// ------------------------------------------------------------------------------
+//==============================================================================
 // Initialize static members
-// ------------------------------------------------------------------------------
-// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+//==============================================================================
+
+// We need log variables to be global
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables) justified
 LogVerbosity Log::max_verbosity_level = log_default_max_verbosity_level;
 bool Log::buffered = log_default_buffered;
 bool Log::timestamped = log_default_timestamped;
@@ -36,9 +39,9 @@ std::vector<LogTimePoint> Log::times;
 std::vector<std::string> Log::messages;
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
-// ------------------------------------------------------------------------------
+//==============================================================================
 // Member functions
-// ------------------------------------------------------------------------------
+//==============================================================================
 
 void
 Log::reset()

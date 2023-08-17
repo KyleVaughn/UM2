@@ -27,9 +27,9 @@ static constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 
 
 #if defined(__BMI2__) && !defined(__CUDA_ARCH__)
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // BMI2 intrinsics
-// -----------------------------------------------------------------------------
+//==============================================================================
 
 // False positive for -Wunused-function
 #  pragma GCC diagnostic push
@@ -74,9 +74,10 @@ static constexpr U bmi_3d_y_mask = static_cast<U>(0x2492492492492492);
 template <std::unsigned_integral U>
 static constexpr U bmi_3d_z_mask = static_cast<U>(0x4924924924924924);
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Morton encoding/decoding
-// -----------------------------------------------------------------------------
+//==============================================================================
+
 template <std::unsigned_integral U>
 CONST inline auto
 mortonEncode(U const x, U const y) -> U
@@ -117,9 +118,10 @@ mortonDecode(U const morton, U & x, U & y, U & z)
 // This is the fallback implementation of morton encoding/decoding that
 // mimics the behavior of the BMI2 intrinsics.
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // BMI2 intrinsics emulation
-// -----------------------------------------------------------------------------
+//==============================================================================
+
 CONST BMI2_HOSTDEV static constexpr auto
 pdep0x55555555(uint32_t x) -> uint32_t
 {
@@ -212,9 +214,10 @@ pext0x9249249249249249(uint64_t x) -> uint64_t
   return x;
 }
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Morton encoding/decoding
-// -----------------------------------------------------------------------------
+//==============================================================================
+
 CONST BMI2_HOSTDEV constexpr auto
 mortonEncode(uint32_t const x, uint32_t const y) -> uint32_t
 {
@@ -272,9 +275,10 @@ mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y, uint64_t & z)
 
 #endif // defined(__BMI2__) && !defined(__CUDA_ARCH__)
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Morton encoding/decoding with normalization
-// -----------------------------------------------------------------------------
+//==============================================================================
+
 template <std::unsigned_integral U, std::floating_point T>
 CONST HOSTDEV auto
 mortonEncode(T const x, T const y) -> U

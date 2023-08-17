@@ -1,9 +1,9 @@
 namespace um2
 {
 
-// --------------------------------------------------------------------------
+//==============================================================================
 // Constructors
-// --------------------------------------------------------------------------
+//==============================================================================
 
 HOSTDEV constexpr String::String() noexcept
     : _r()
@@ -79,9 +79,9 @@ HOSTDEV constexpr String::String(char const * s) noexcept
 #pragma GCC diagnostic pop
 }
 
-// --------------------------------------------------------------------------
+//==============================================================================
 // Accessors
-// --------------------------------------------------------------------------
+//==============================================================================
 
 PURE HOSTDEV constexpr auto
 String::isLong() const noexcept -> bool
@@ -114,9 +114,9 @@ String::data() const noexcept -> char const *
   return getPointer();
 }
 
-// --------------------------------------------------------------------------
+//==============================================================================
 // Operators
-// --------------------------------------------------------------------------
+//==============================================================================
 
 HOSTDEV constexpr auto
 String::operator=(String const & s) noexcept -> String &
@@ -231,9 +231,9 @@ String::operator>=(String const & s) const noexcept -> bool
   return compare(s) >= 0;
 }
 
-// --------------------------------------------------------------------------
+//==============================================================================
 // Methods
-// --------------------------------------------------------------------------
+//==============================================================================
 
 PURE HOSTDEV constexpr auto
 String::compare(String const & s) const noexcept -> int
@@ -299,15 +299,15 @@ String::ends_with(String const & s) const noexcept -> bool
 
 template <uint64_t N>
 PURE HOSTDEV auto
-// NOLINTNEXTLINE(readability-identifier-naming)
+// NOLINTNEXTLINE(readability-identifier-naming) justification: mimics std::string
 String::ends_with(char const (&s)[N]) const noexcept -> bool
 {
   return ends_with(String(s));
 }
 
-// --------------------------------------------------------------------------
+//==============================================================================
 // HIDDEN
-// --------------------------------------------------------------------------
+//==============================================================================
 
 PURE HOSTDEV HIDDEN constexpr auto
 String::getLongSize() const noexcept -> uint64_t
@@ -334,7 +334,7 @@ String::getShortCap() noexcept -> uint64_t
 }
 
 PURE HOSTDEV HIDDEN constexpr auto
-// NOLINTNEXTLINE(readability-make-member-function-const)
+// NOLINTNEXTLINE(readability-make-member-function-const) justification: can't be const
 String::getLongPointer() noexcept -> char *
 {
   return _r.l.data;

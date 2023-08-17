@@ -9,9 +9,9 @@
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // LOG
-// -----------------------------------------------------------------------------
+//==============================================================================
 // A simple logger class for use in host code only.
 // The logger can be configured to:
 //  - log messages of different verbosity levels
@@ -36,13 +36,16 @@ using LogClock = std::chrono::system_clock;
 using LogTimePoint = std::chrono::time_point<LogClock>;
 using LogDuration = std::chrono::duration<double>;
 
-// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
+// We don't want to use the default constructor for Log, nor do we want
+// to call the destructor without flushing the messages first, but otherwise
+// have no need for the rule of 5
+// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions) justified
 class Log
 {
 
   // Options
   // We need the global log options to be accessible from anywhere in the code
-  // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+  // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables) justified
   static LogVerbosity max_verbosity_level;
   static bool buffered;          // messages are buffered until flush() is called
   static bool timestamped;       // messages are prefixed with a timestamp

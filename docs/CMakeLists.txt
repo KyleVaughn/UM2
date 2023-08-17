@@ -1,7 +1,6 @@
 find_package(Doxygen REQUIRED)
 
 # Find all the public headers
-
 file(GLOB_RECURSE COMMON_HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../include/um2/common/*.hpp)
 file(GLOB_RECURSE MATH_HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/../include/um2/math/*.hpp)
 # Headers
