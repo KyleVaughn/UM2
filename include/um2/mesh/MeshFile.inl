@@ -44,6 +44,51 @@ compareTopology(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int
 }
 
 template <std::floating_point T, std::signed_integral I>
+constexpr auto
+compareMaterialElsets(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int
+{
+  auto it_rhs = rhs.elset_names.cbegin();
+  for (auto it_lhs = lhs.elset_names.cbegin(); it_lhs != lhs.elset_names.cend();
+       it_lhs++) {
+    if ((*it_lhs).starts_with("Material_")) {
+      for (; it_rhs != rhs.elset_names.cend(); it_rhs++) {
+        if (it_rhs->starts_with("Material_")) {
+          break;
+        }
+      }
+      if (it_rhs == rhs.elset_names.cend()) {
+        return 1; // lhs has material not in rhs
+      }
+      if (*it_lhs != *it_rhs) {
+        return 2; // lhs and rhs have different material names
+      }
+      using OffsetPair = std::pair<I, I>;
+      OffsetPair const lhs_offsets = std::make_pair(
+          lhs.elset_offsets[static_cast<std::vector<std::string>::size_type>(
+              it_lhs - lhs.elset_names.cbegin())],
+          lhs.elset_offsets[static_cast<std::vector<std::string>::size_type>(
+              it_lhs - lhs.elset_names.cbegin() + 1)]);
+      OffsetPair const rhs_offsets = std::make_pair(
+          rhs.elset_offsets[static_cast<std::vector<std::string>::size_type>(
+              it_rhs - rhs.elset_names.cbegin())],
+          rhs.elset_offsets[static_cast<std::vector<std::string>::size_type>(
+              it_rhs - rhs.elset_names.cbegin() + 1)]);
+      if (lhs_offsets.second - lhs_offsets.first !=
+          rhs_offsets.second - rhs_offsets.first) {
+        return 3; // lhs and rhs have different number of elements in material
+      }
+      if (!std::equal(lhs.elset_ids.cbegin() + lhs_offsets.first,
+                      lhs.elset_ids.cbegin() + lhs_offsets.second,
+                      rhs.elset_ids.cbegin() + rhs_offsets.first)) {
+        return 4; // lhs and rhs have different element ids in material
+      }
+    }
+    it_rhs++;
+  }
+  return 0;
+}
+
+template <std::floating_point T, std::signed_integral I>
 constexpr void
 MeshFile<T, I>::sortElsets()
 {

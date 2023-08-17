@@ -8,6 +8,7 @@
 #include <um2/stdlib/memory.hpp>
 
 #include <algorithm>
+#include <iostream>
 #ifdef _OPENMP
 #  include <parallel/algorithm>
 #endif
@@ -86,6 +87,10 @@ compareGeometry(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int;
 template <std::floating_point T, std::signed_integral I>
 constexpr auto
 compareTopology(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int;
+
+template <std::floating_point T, std::signed_integral I>
+constexpr auto
+compareMaterialElsets(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int;
 
 } // namespace um2
 

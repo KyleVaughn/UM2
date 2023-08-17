@@ -211,30 +211,26 @@ AxisAlignedBox<D, T>::operator+=(const AxisAlignedBox<D, T> & box) noexcept
 }
 template <Size D, typename T>
 auto
-operator+(AxisAlignedBox<D, T> const & box, Point<D, T> const & p) noexcept
+operator+(AxisAlignedBox<D, T> box, Point<D, T> const & p) noexcept
     -> AxisAlignedBox<D, T>
 {
-  auto result = box;
-  result += p;
-  return result;
+  return box += p;
 }
 
 template <Size D, typename T>
 auto
-operator+(Point<D, T> const & p, AxisAlignedBox<D, T> const & box) noexcept
+operator+(Point<D, T> const & p, AxisAlignedBox<D, T> box) noexcept
     -> AxisAlignedBox<D, T>
 {
-  return box + p;
+  return box += p;
 }
 
 template <Size D, typename T>
 auto
-operator+(AxisAlignedBox<D, T> const & box_lhs,
-          AxisAlignedBox<D, T> const & box_rhs) noexcept -> AxisAlignedBox<D, T>
+operator+(AxisAlignedBox<D, T> box_lhs, AxisAlignedBox<D, T> const & box_rhs) noexcept
+    -> AxisAlignedBox<D, T>
 {
-  auto retval = box_lhs;
-  retval += box_rhs;
-  return retval;
+  return box_lhs += box_rhs;
 }
 
 } // namespace um2

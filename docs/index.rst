@@ -12,6 +12,7 @@ Welcome to UM2's documentation!
    :maxdepth: 1
    :caption: Contents:
 
+   installation
    usage
    doc_of_doc
    cpp_api

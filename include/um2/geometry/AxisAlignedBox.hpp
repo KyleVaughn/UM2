@@ -81,18 +81,18 @@ struct AxisAlignedBox {
 
 template <Size D, typename T>
 auto
-operator+(AxisAlignedBox<D, T> const & box, Point<D, T> const & p) noexcept
+operator+(AxisAlignedBox<D, T> box, Point<D, T> const & p) noexcept
     -> AxisAlignedBox<D, T>;
 
 template <Size D, typename T>
 auto
-operator+(Point<D, T> const & p, AxisAlignedBox<D, T> const & box) noexcept
+operator+(Point<D, T> const & p, AxisAlignedBox<D, T> box) noexcept
     -> AxisAlignedBox<D, T>;
 
 template <Size D, typename T>
 auto
-operator+(AxisAlignedBox<D, T> const & box_lhs,
-          AxisAlignedBox<D, T> const & box_rhs) noexcept -> AxisAlignedBox<D, T>;
+operator+(AxisAlignedBox<D, T> box_lhs, AxisAlignedBox<D, T> const & box_rhs) noexcept
+    -> AxisAlignedBox<D, T>;
 
 // -----------------------------------------------------------------------------
 // Aliases
