@@ -1,6 +1,8 @@
 Change --- to ===
 Review NOLINTs and cppcheck suppress
 
+Mesh visualization to debug BinnedFaceVertexMesh faceContaining
+
 Docs
 coverage update
 

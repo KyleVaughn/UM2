@@ -50,7 +50,7 @@ struct Polytope<2, 1, 4, D, T> {
   jacobian(R r, S s) const noexcept -> Mat<D, 2, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  edge(Size i) const noexcept -> LineSegment<D, T>;
+  getEdge(Size i) const noexcept -> LineSegment<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   contains(Point<D, T> const & p) const noexcept -> bool;

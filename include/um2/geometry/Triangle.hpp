@@ -49,7 +49,7 @@ struct Polytope<2, 1, 3, D, T> {
   jacobian(R r, S s) const noexcept -> Mat<D, 2, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  edge(Size i) const noexcept -> LineSegment<D, T>;
+  getEdge(Size i) const noexcept -> LineSegment<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   area() const noexcept -> T;

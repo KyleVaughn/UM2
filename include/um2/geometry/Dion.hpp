@@ -2,6 +2,8 @@
 
 #include <um2/geometry/Polytope.hpp>
 
+#include <iostream>
+
 #if UM2_USE_CUDA
 #  include <cuda/std/complex>
 #else

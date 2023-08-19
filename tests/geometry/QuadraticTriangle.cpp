@@ -93,15 +93,15 @@ TEST_CASE(edge)
 {
   um2::QuadraticTriangle<D, T> tri = makeTri2<D, T>();
   static_assert(numEdges(tri) == 3);
-  um2::QuadraticSegment<D, T> edge = tri.edge(0);
+  um2::QuadraticSegment<D, T> edge = tri.getEdge(0);
   ASSERT(um2::isApprox(edge[0], tri[0]));
   ASSERT(um2::isApprox(edge[1], tri[1]));
   ASSERT(um2::isApprox(edge[2], tri[3]));
-  edge = tri.edge(1);
+  edge = tri.getEdge(1);
   ASSERT(um2::isApprox(edge[0], tri[1]));
   ASSERT(um2::isApprox(edge[1], tri[2]));
   ASSERT(um2::isApprox(edge[2], tri[4]));
-  edge = tri.edge(2);
+  edge = tri.getEdge(2);
   ASSERT(um2::isApprox(edge[0], tri[2]));
   ASSERT(um2::isApprox(edge[1], tri[0]));
   ASSERT(um2::isApprox(edge[2], tri[5]));

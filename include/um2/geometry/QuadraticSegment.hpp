@@ -64,8 +64,8 @@ struct Polytope<1, 2, 3, D, T> {
   // PURE HOSTDEV [[nodiscard]] constexpr auto
   // curvesLeft() const noexcept -> bool;
 
-  // PURE HOSTDEV [[nodiscard]] constexpr auto
-  // isStraight() const noexcept -> bool;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  isStraight() const noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isLeft(Point<D, T> const & p) const noexcept -> bool;

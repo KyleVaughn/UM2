@@ -62,7 +62,7 @@ Quadrilateral<D, T>::jacobian(R r, S s) const noexcept -> Mat<D, 2, T>
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-Quadrilateral<D, T>::edge(Size i) const noexcept -> LineSegment<D, T>
+Quadrilateral<D, T>::getEdge(Size i) const noexcept -> LineSegment<D, T>
 {
   return um2::getEdge(*this, i);
 }

@@ -61,7 +61,7 @@ QuadraticTriangle<D, T>::jacobian(R r, S s) const noexcept -> Mat<D, 2, T>
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::edge(Size i) const noexcept -> QuadraticSegment<D, T>
+QuadraticTriangle<D, T>::getEdge(Size i) const noexcept -> QuadraticSegment<D, T>
 {
   return um2::getEdge(*this, i);
 }

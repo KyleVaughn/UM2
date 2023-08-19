@@ -73,13 +73,13 @@ TEST_CASE(edge)
 {
   um2::Triangle<D, T> tri = makeTri<D, T>();
   static_assert(numEdges(tri) == 3);
-  um2::LineSegment<D, T> edge = tri.edge(0);
+  um2::LineSegment<D, T> edge = tri.getEdge(0);
   ASSERT(um2::isApprox(edge[0], tri[0]));
   ASSERT(um2::isApprox(edge[1], tri[1]));
-  edge = tri.edge(1);
+  edge = tri.getEdge(1);
   ASSERT(um2::isApprox(edge[0], tri[1]));
   ASSERT(um2::isApprox(edge[1], tri[2]));
-  edge = tri.edge(2);
+  edge = tri.getEdge(2);
   ASSERT(um2::isApprox(edge[0], tri[2]));
   ASSERT(um2::isApprox(edge[1], tri[0]));
 }

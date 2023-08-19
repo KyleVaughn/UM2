@@ -66,33 +66,32 @@ QuadraticSegment<D, T>::getRotation() const noexcept -> Mat<D, D, T>
   return LineSegment<D, T>(v[0], v[1]).getRotation();
 }
 
-// //==============================================================================
-// // isStraight
-// //==============================================================================
-//
-// template <Size D, typename T>
-// PURE HOSTDEV constexpr auto
-// QuadraticSegment<D, T>::isStraight() const noexcept -> bool
-// {
-//   // A slightly more optimized version of doing:
-//   // LineSegment(v[0], v[1]).distanceTo(v[2]) < epsilonDistance
-//   //
-//   // Compute the point on the line v[0] + r * (v[1] - v[0]) that is closest to v[2]
-//   Vec<D, T> const v01 = v[1] - v[0];
-//   T const r = (v[2] - v[0]).dot(v01) / v01.squaredNorm();
-//   // If r is outside the range [0, 1], then the segment is not straight
-//   if (r < 0 || r > 1) {
-//     return false;
-//   }
-//   // Compute the point on the line
-//   Vec<D, T> p;
-//   for (Size i = 0; i < D; ++i) {
-//     p[i] = v[0][i] + r * v01[i];
-//   }
-//   // Check if the point is within epsilon distance of v[2]
-//   return isApprox(p, v[2]);
-// }
-//
+//==============================================================================
+// isStraight
+//==============================================================================
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+QuadraticSegment<D, T>::isStraight() const noexcept -> bool
+{
+  // A slightly more optimized version of doing:
+  // LineSegment(v[0], v[1]).distanceTo(v[2]) < epsilonDistance
+  //
+  // Compute the point on the line v[0] + r * (v[1] - v[0]) that is closest to v[2]
+  Vec<D, T> const v01 = v[1] - v[0];
+  T const r = (v[2] - v[0]).dot(v01) / v01.squaredNorm();
+  // If r is outside the range [0, 1], then the segment is not straight
+  if (r < 0 || r > 1) {
+    return false;
+  }
+  // Compute the point on the line
+  Vec<D, T> p;
+  for (Size i = 0; i < D; ++i) {
+    p[i] = v[0][i] + r * v01[i];
+  }
+  // Check if the point is within epsilon distance of v[2]
+  return isApprox(p, v[2]);
+}
 // //==============================================================================
 // // curvesLeft
 // //==============================================================================

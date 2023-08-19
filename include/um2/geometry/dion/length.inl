@@ -40,6 +40,11 @@ length(QuadraticSegment<D, T> const & q) noexcept -> T
   // V₁₃ = q[3] - q[1]
   // V₂₃ = q[3] - q[2]
   // Q′(r) = B + 2rA,
+
+  if (q.isStraight()) {
+    return q[0].distanceTo(q[1]);
+  }
+
   Vec<D, T> const v13 = q[2] - q[0];
   Vec<D, T> const v23 = q[2] - q[1];
   Vec<D, T> A;
@@ -54,18 +59,11 @@ length(QuadraticSegment<D, T> const & q) noexcept -> T
   // b = 4(A ⋅ B)
   // c = B ⋅ B
 
-  T const a = 4 * squaredNorm(A);
-  // 0 ≤ a, since a = 4(A ⋅ A)  = 4 ‖A‖², and 0 ≤ ‖A‖²
-  // A = 4(midpoint of line - p3) -> a = 64 ‖midpoint of line - p3‖²
-  // if a is small, then the segment is almost a straight line, and we can use the
-  // distance between the endpoints as an approximation.
-  if (a < 64 * epsilonDistanceSquared<T>()) {
-    return q[0].distanceTo(q[1]);
-  }
   Vec<D, T> B;
   for (Size i = 0; i < D; ++i) {
     B[i] = 3 * v13[i] + v23[i];
   }
+  T const a = 4 * squaredNorm(A);
   T const b = 4 * dot(A, B);
   T const c = squaredNorm(B);
 
@@ -87,10 +85,17 @@ length(QuadraticSegment<D, T> const & q) noexcept -> T
   T const ub = 1 + b1;
   T const L = um2::sqrt(c1 + lb * lb);
   T const U = um2::sqrt(c1 + ub * ub);
-  T const atanh_u = um2::atanh(ub / U);
-  T const atanh_l = um2::atanh(lb / L);
-
-  return um2::sqrt(a) * (U + lb * (U - L) + c1 * (atanh_u - atanh_l)) / 2;
+  // Numerical issues may cause the bounds to be slightly outside the range [-1, 1].
+  // If we go too far outside this range, error out as something has gone wrong.
+  assert(static_cast<T>(-1.0001) <= (lb / L) && (lb / L) <= static_cast<T>(1.0001));
+  assert(static_cast<T>(-1.0001) <= (ub / U) && (ub / U) <= static_cast<T>(1.0001));
+  T const arg_l = um2::clamp(lb / L, static_cast<T>(-0.99999), static_cast<T>(0.99999));
+  T const arg_u = um2::clamp(ub / U, static_cast<T>(-0.99999), static_cast<T>(0.99999));
+  T const atanh_l = um2::atanh(arg_l);
+  T const atanh_u = um2::atanh(arg_u);
+  T const result = um2::sqrt(a) * (U + lb * (U - L) + c1 * (atanh_u - atanh_l)) / 2;
+  assert(0 <= result && result <= infiniteDistance<T>());
+  return result;
   // NOLINTEND(readability-identifier-naming)
 }
 

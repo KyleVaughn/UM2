@@ -97,7 +97,11 @@ struct RegularPartition {
 
   template <typename... Args>
     requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getFlatIndex(Args... args) noexcept -> Size;
+  PURE HOSTDEV [[nodiscard]] constexpr auto getFlatIndex(Args... args) const noexcept
+      -> Size;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size;
 
   template <typename... Args>
     requires(sizeof...(Args) == D)

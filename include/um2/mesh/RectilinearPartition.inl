@@ -184,6 +184,28 @@ PURE HOSTDEV
 }
 
 template <Size D, typename T, typename P>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+RectilinearPartition<D, T, P>::getFlatIndex(Vec<D, Size> const & index) noexcept -> Size
+{
+  for (Size i = 0; i < D; ++i) {
+    assert(index[i] < grid.divs[i].size());
+  }
+  if constexpr (D == 1) {
+    return index[0];
+  } else if constexpr (D == 2) {
+    return index[0] + index[1] * numXCells();
+  } else { // General case
+    // [0, nx, nx*ny, nx*ny*nz, ...]
+    Point<D, Size> exclusive_scan_prod;
+    exclusive_scan_prod[0] = 1;
+    for (Size i = 1; i < D; ++i) {
+      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * grid.num_cells[i - 1];
+    }
+    return index.dot(exclusive_scan_prod);
+  }
+}
+
+template <Size D, typename T, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
 PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) noexcept
