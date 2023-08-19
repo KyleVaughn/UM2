@@ -218,7 +218,7 @@ template <typename T>
 HOSTDEV
 TEST_CASE(isLeft)
 {
-  um2::Vector<um2::Point2<T>> test_points = {
+  um2::Vector<um2::Point2<T>> const test_points = {
       um2::Point2<T>(static_cast<T>(1), static_cast<T>(3)),      // always left
       um2::Point2<T>(static_cast<T>(1), static_cast<T>(-3)),     // always right
       um2::Point2<T>(static_cast<T>(-1), static_cast<T>(0.5)),   // always left
@@ -430,6 +430,69 @@ TEST_CASE(enclosedCentroid)
   ASSERT(um2::isApprox(centroid, centroid_ref));
 }
 
+//==============================================================================
+// pointClosestTo 
+//==============================================================================
+
+template <typename T>
+HOSTDEV
+TEST_CASE(pointClosestTo)
+{
+  // Due to difficulty in computing the closest point to a quadratic segment,
+  // we will simply test a point, compute the distance, then perturb the value
+  // in both directions and ensure that the distance increases.
+  um2::Vector<um2::Point2<T>> const test_points = {
+      um2::Point2<T>(static_cast<T>(1), static_cast<T>(3)),      // always left
+      um2::Point2<T>(static_cast<T>(1), static_cast<T>(-3)),     // always right
+      um2::Point2<T>(static_cast<T>(-1), static_cast<T>(0.5)),   // always left
+      um2::Point2<T>(static_cast<T>(-1), static_cast<T>(-0.5)),  // always right
+      um2::Point2<T>(static_cast<T>(3), static_cast<T>(0.5)),    // always left
+      um2::Point2<T>(static_cast<T>(3), static_cast<T>(-0.5)),   // always right
+      um2::Point2<T>(static_cast<T>(0.1), static_cast<T>(0.9)),  // always left
+      um2::Point2<T>(static_cast<T>(0.1), static_cast<T>(-0.9)), // always right
+      um2::Point2<T>(static_cast<T>(1.9), static_cast<T>(0.9)),  // always left
+      um2::Point2<T>(static_cast<T>(1.9), static_cast<T>(-0.9)), // always right
+      um2::Point2<T>(static_cast<T>(1.1), static_cast<T>(0.5)),
+      um2::Point2<T>(static_cast<T>(2), static_cast<T>(0.5)),
+      um2::Point2<T>(static_cast<T>(2.1), static_cast<T>(0.01)),
+      um2::Point2<T>(static_cast<T>(2.1), static_cast<T>(0.5)),
+  };
+  T const eps = static_cast<T>(1e-2);
+  um2::Vector<um2::QuadraticSegment2<T>> const segments = {
+    makeSeg1<2, T>(),
+    makeSeg2<2, T>(),
+    makeSeg3<2, T>(),
+    makeSeg4<2, T>(),
+    makeSeg5<2, T>(),
+    makeSeg6<2, T>(),
+    makeSeg7<2, T>(),
+    makeSeg8<2, T>(),
+  };
+
+  int ctr = 0;
+  for (auto const & q : segments) {
+    std::cerr << "seg " << ++ctr << std::endl;
+    for (um2::Point2<T> const & p : test_points) {
+      std::cerr << "p=( " << p[0] << ", " << p[1] << ")" << std::endl;
+      T const r0 = q.pointClosestTo(p);
+      T const d0 = p.distanceTo(q(r0)); 
+      T const r1 = r0 - eps;
+      T const d1 = p.distanceTo(q(r1)); 
+      T const r2 = r0 + eps;
+      T const d2 = p.distanceTo(q(r2)); 
+      std::cerr << "r0 = " << r0 << ", d0 = " << d0 << std::endl;
+      std::cerr << "r1 = " << r1 << ", d1 = " << d1 << std::endl;
+      std::cerr << "r2 = " << r2 << ", d2 = " << d2 << std::endl;
+      if (0 <= r1 && r1 <= 1) { 
+        ASSERT(d0 < d1);
+      }
+      if (0 <= r2 && r2 <= 1) { 
+        ASSERT(d0 < d2);
+      }
+    }
+  }
+}
+
 #if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(interpolate, D, T);
@@ -451,6 +514,9 @@ MAKE_CUDA_KERNEL(enclosedArea, T);
 
 template <typename T>
 MAKE_CUDA_KERNEL(enclosedCentroid, T);
+
+template <typename T>
+MAKE_CUDA_KERNEL(pointClosestTo, T);
 #endif
 
 template <Size D, typename T>
@@ -464,6 +530,7 @@ TEST_SUITE(QuadraticSegment)
     TEST_HOSTDEV(isLeft, 1, 1, T);
     TEST_HOSTDEV(enclosedArea, 1, 1, T);
     TEST_HOSTDEV(enclosedCentroid, 1, 1, T);
+    TEST_HOSTDEV(pointClosestTo, 1, 1, T);
   }
 }
 

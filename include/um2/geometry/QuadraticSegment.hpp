@@ -83,7 +83,7 @@ struct Polytope<1, 2, 3, D, T> {
   enclosedCentroid() const noexcept -> Point<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  closestPointTo(Point<D, T> const & p) const noexcept -> Point<D, T>;
+  pointClosestTo(Point<D, T> const & p) const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getBezierControlPoint() const noexcept -> Point<D, T>;

@@ -46,4 +46,43 @@ sqrt(double x) noexcept -> double
 
 #endif
 
+//==============================================================================
+// cbrt
+//==============================================================================
+
+#ifndef __CUDA_ARCH__
+
+template <typename T>
+PURE HOST constexpr auto
+cbrt(T x) noexcept -> T
+{
+  return std::cbrt(x);
+}
+
+#else
+
+template <typename T>
+PURE HOST constexpr auto
+cbrt(T x) noexcept -> T
+{
+  static_assert(!sizeof(T), "cbrt is not implemented for this type");
+  return T();
+}
+
+template <>
+PURE DEVICE constexpr auto
+cbrt(float x) noexcept -> float
+{
+  return ::cbrtf(x);
+}
+
+template <>
+PURE DEVICE constexpr auto
+cbrt(double x) noexcept -> double
+{
+  return ::cbrt(x);
+}
+
+#endif
+
 } // namespace um2

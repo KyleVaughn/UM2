@@ -238,6 +238,22 @@ template <Size D, class T>
 HOSTDEV constexpr auto
 max(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>;
 
+template <Size D, class T>
+PURE HOSTDEV constexpr auto
+dot(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> T; 
+
+template <Size D, class T>
+PURE HOSTDEV constexpr auto
+squaredNorm(Vec<D, T> const & v) noexcept -> T; 
+
+template <Size D, class T>
+PURE HOSTDEV constexpr auto
+norm(Vec<D, T> const & v) noexcept -> T; 
+
+template <Size D, class T>
+PURE HOSTDEV constexpr auto
+normalized(Vec<D, T> v) noexcept -> Vec<D, T>;
+
 } // namespace um2
 
 #include "Vec.inl"

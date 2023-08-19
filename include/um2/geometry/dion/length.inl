@@ -54,7 +54,7 @@ length(QuadraticSegment<D, T> const & q) noexcept -> T
   // b = 4(A ⋅ B)
   // c = B ⋅ B
 
-  T const a = 4 * A.squaredNorm();
+  T const a = 4 * squaredNorm(A);
   // 0 ≤ a, since a = 4(A ⋅ A)  = 4 ‖A‖², and 0 ≤ ‖A‖²
   // A = 4(midpoint of line - p3) -> a = 64 ‖midpoint of line - p3‖²
   // if a is small, then the segment is almost a straight line, and we can use the
@@ -66,8 +66,8 @@ length(QuadraticSegment<D, T> const & q) noexcept -> T
   for (Size i = 0; i < D; ++i) {
     B[i] = 3 * v13[i] + v23[i];
   }
-  T const b = 4 * A.dot(B);
-  T const c = B.squaredNorm();
+  T const b = 4 * dot(A, B);
+  T const c = squaredNorm(B);
 
   // √(ar² + br + c) = √a √( (r + b₁)^2 + c₁)
   // where

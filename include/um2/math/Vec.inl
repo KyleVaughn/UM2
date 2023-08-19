@@ -208,6 +208,45 @@ max(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 
 template <Size D, class T>
 HOSTDEV constexpr auto
+dot(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> T
+{
+  T result = u[0] * v[0];
+  for (Size i = 1; i < D; ++i) {
+    result += u[i] * v[i];
+  }
+  return result;
+}
+
+template <Size D, class T>
+HOSTDEV constexpr auto
+squaredNorm(Vec<D, T> const & v) noexcept -> T
+{
+  T result = v[0] * v[0];
+  for (Size i = 1; i < D; ++i) {
+    result += v[i] * v[i];
+  }
+  return result;
+}
+
+template <Size D, class T>
+HOSTDEV constexpr auto
+norm(Vec<D, T> const & v) noexcept -> T
+{
+  static_assert(std::is_floating_point_v<T>);
+  return um2::sqrt(squaredNorm(v));
+}
+
+template <Size D, class T>
+PURE HOSTDEV constexpr auto
+normalized(Vec<D, T> v) noexcept -> Vec<D, T>
+{
+  static_assert(std::is_floating_point_v<T>);
+  v.normalize(); 
+  return v;
+}
+
+template <Size D, class T>
+HOSTDEV constexpr auto
 Vec<D, T>::min(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
   for (Size i = 0; i < D; ++i) {
@@ -230,30 +269,21 @@ template <Size D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::dot(Vec<D, T> const & v) const noexcept -> T
 {
-  T result = data[0] * v[0];
-  for (Size i = 1; i < D; ++i) {
-    result += data[i] * v[i];
-  }
-  return result;
+  return um2::dot(*this, v);
 }
 
 template <Size D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::squaredNorm() const noexcept -> T
 {
-  T result = data[0] * data[0];
-  for (Size i = 1; i < D; ++i) {
-    result += data[i] * data[i];
-  }
-  return result;
+  return um2::squaredNorm(*this); 
 }
 
 template <Size D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::norm() const noexcept -> T
 {
-  static_assert(std::is_floating_point_v<T>);
-  return um2::sqrt(squaredNorm());
+  return um2::norm(*this);
 }
 
 template <Size D, class T>
@@ -268,10 +298,7 @@ template <Size D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::normalized() const noexcept -> Vec<D, T>
 {
-  static_assert(std::is_floating_point_v<T>);
-  Vec<D, T> result = *this;
-  result.normalize();
-  return result;
+  return um2::normalized(*this); 
 }
 
 template <Size D, class T>

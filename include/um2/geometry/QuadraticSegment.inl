@@ -184,4 +184,15 @@ QuadraticSegment<D, T>::enclosedCentroid() const noexcept -> Point<D, T>
   return um2::enclosedCentroid(*this);
 }
 
+//==============================================================================
+// pointClosestTo
+//==============================================================================
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+QuadraticSegment<D, T>::pointClosestTo(Point<D, T> const & p) const noexcept -> T
+{
+  return um2::pointClosestTo(*this, p);
+}
+
 } // namespace um2

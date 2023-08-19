@@ -164,4 +164,11 @@ LineSegment<D, T>::distanceTo(Point<D, T> const & p) const noexcept -> T
   return um2::sqrt(squaredDistanceTo(p));
 }
 
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+LineSegment<D, T>::pointClosestTo(Point<D, T> const & p) const noexcept -> T
+{
+  return um2::pointClosestTo(*this, p);
+}
+
 } // namespace um2

@@ -69,6 +69,10 @@ struct Polytope<1, 1, 2, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   distanceTo(Point<D, T> const & p) const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  pointClosestTo(Point<D, T> const & p) const noexcept -> T;
+
 };
 
 } // namespace um2

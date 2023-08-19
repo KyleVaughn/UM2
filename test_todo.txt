@@ -1,3 +1,10 @@
+LineSegment closest point to
+Quadratic Segment closest point to
+  linear segment
+  end points
+  non-endpoints perturb
+
+
 Utility
   swap
 
