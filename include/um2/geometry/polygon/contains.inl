@@ -36,8 +36,7 @@ contains(PlanarQuadraticPolygon<N, T> const & q, Point2<T> const & p) noexcept -
   // Benchmarking shows that the opposite conclusion is true for quadratic
   // polygons: it is faster to compute the areCCW() test for each edge, short
   // circuiting as soon as one is false, rather than compute all of them.
-  constexpr Size m = N / 2;
-  for (Size i = 0; i < m; ++i) {
+  for (Size i = 0; i < numEdges(q); ++i) {
     if (!getEdge(q, i).isLeft(p)) {
       return false;
     }

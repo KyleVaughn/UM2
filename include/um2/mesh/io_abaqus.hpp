@@ -14,14 +14,13 @@
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================-
 // ABAQUS mesh file
-// -----------------------------------------------------------------------------
+//==============================================================================
 // IO for ABAQUS mesh files.
 
 template <std::floating_point T, std::signed_integral I>
 static void
-// NOLINTNEXTLINE(misc-unused-parameters)
 parseNodes(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
 {
   // Would love to use chars_format here, but it bugs out on "0.5" occasionally
@@ -43,7 +42,6 @@ parseNodes(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
 
 template <std::floating_point T, std::signed_integral I>
 static void
-// NOLINTNEXTLINE(misc-unused-parameters)
 parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
 {
   LOG_DEBUG("Parsing elements");

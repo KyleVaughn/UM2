@@ -118,7 +118,7 @@ TEST_CASE(getSubmesh)
   ASSERT(tri_h2o.elset_ids[1] == 0);
 }
 template <std::floating_point T, std::signed_integral I>
-TEST_CASE(get_material_names)
+TEST_CASE(getMaterialNames)
 {
   um2::MeshFile<T, I> tri_ref;
   makeReferenceTriMeshFile(tri_ref);
@@ -129,15 +129,20 @@ TEST_CASE(get_material_names)
 }
 
 template <std::floating_point T, std::signed_integral I>
-TEST_CASE(get_material_ids)
+TEST_CASE(getMaterialIDs)
 {
   um2::MeshFile<T, I> tri_ref;
   makeReferenceTriMeshFile(tri_ref);
-  std::vector<MaterialID> const mat_ids_ref = {1, 0};
   std::vector<MaterialID> mat_ids;
   tri_ref.getMaterialIDs(mat_ids,
                          std::vector<std::string>{"Material_H2O", "Material_UO2"});
+  std::vector<MaterialID> const mat_ids_ref = {1, 0};
   ASSERT(mat_ids == mat_ids_ref);
+  mat_ids.clear();
+  tri_ref.getMaterialIDs(mat_ids,
+                         std::vector<std::string>{"Material_UO2", "Material_H2O"});
+  std::vector<MaterialID> const mat_ids_ref2 = {0, 1};
+  ASSERT(mat_ids == mat_ids_ref2);
 }
 
 template <std::floating_point T, std::signed_integral I>
@@ -148,8 +153,8 @@ TEST_SUITE(MeshFile)
   TEST((compareTopology<T, I>));
   TEST((sortElsets<T, I>));
   TEST((getSubmesh<T, I>));
-  TEST((get_material_names<T, I>));
-  TEST((get_material_ids<T, I>));
+  TEST((getMaterialNames<T, I>));
+  TEST((getMaterialIDs<T, I>));
 }
 
 auto

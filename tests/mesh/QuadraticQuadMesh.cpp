@@ -81,7 +81,7 @@ TEST_CASE(faceContaining)
 }
 
 template <std::floating_point T, std::signed_integral I>
-TEST_CASE(to_mesh_file)
+TEST_CASE(toMeshFile)
 {
   um2::QuadraticQuadMesh<2, T, I> const quad_mesh = makeQuadReferenceMesh<2, T, I>();
   um2::MeshFile<T, I> quad_mesh_file_ref;
@@ -93,7 +93,7 @@ TEST_CASE(to_mesh_file)
   ASSERT(quad_mesh_file.type == um2::MeshType::QuadraticQuad);
 }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <std::floating_point T, std::signed_integral I>
 MAKE_CUDA_KERNEL(accessors, T, I)
 #endif

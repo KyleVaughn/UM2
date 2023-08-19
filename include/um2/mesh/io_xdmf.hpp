@@ -23,10 +23,9 @@
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
-// XDMF mesh file
-// -----------------------------------------------------------------------------
-// IO for XDMF mesh files.
+//==============================================================================
+// writeXDMFGeometry
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
@@ -98,6 +97,10 @@ static void writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
   delete[] xyz;
 
 } // writeXDMFgeometry
+
+//==============================================================================
+// writeXDMFTopology
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
@@ -175,6 +178,10 @@ static void writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
   // Write HDF5 data set
   h5dataset.write(mesh.element_conn.data(), h5type, h5space);
 } // writeXDMFTopology
+
+//==============================================================================
+// writeXDMFMaterials
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
@@ -259,6 +266,10 @@ static void writeXDMFMaterials(pugi::xml_node & xgrid, H5::Group & h5group,
   xdata.append_child(pugi::node_pcdata).set_value(h5matpath.c_str());
 } // writeXDMFMaterials
 
+//==============================================================================
+// writeXDMFElsets
+//==============================================================================
+
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
 static void writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
@@ -320,6 +331,10 @@ static void writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
   }
 } // writeXDMFelsets
 
+//==============================================================================
+// writeXDMFUniformGrid
+//==============================================================================
+
 template <std::floating_point T, std::signed_integral I>
 static void
 writeXDMFUniformGrid(pugi::xml_node & xdomain, H5::H5File & h5file,
@@ -354,6 +369,10 @@ writeXDMFUniformGrid(pugi::xml_node & xdomain, H5::H5File & h5file,
   writeXDMFMaterials(xgrid, h5group, h5filename, h5grouppath, mesh, material_names);
   writeXDMFElsets(xgrid, h5group, h5filename, h5grouppath, mesh);
 } // writeXDMFUniformGrid
+
+//==============================================================================
+// writeXDMFFile
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
 void
@@ -441,7 +460,9 @@ writeXDMFFile(MeshFile<T, I> & mesh)
 
 } // writeXDMFfile
 
-// -------------------------------------------------------------------------- //
+//==============================================================================
+// addNodesToMesh
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I, std::floating_point V>
 static void
@@ -471,6 +492,10 @@ addNodesToMesh(MeshFile<T, I> & mesh, size_t const num_verts, size_t const num_d
   }
   delete[] data;
 } // addNodesToMesh
+
+//==============================================================================
+// readXDMFGeometry
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
@@ -556,6 +581,10 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
   }
 }
 
+//==============================================================================
+// addElementsToMesh
+//==============================================================================
+
 template <std::floating_point T, std::signed_integral I, std::signed_integral V>
 static void
 addElementsToMesh(size_t const num_elements, std::string const & dimensions,
@@ -581,6 +610,10 @@ addElementsToMesh(size_t const num_elements, std::string const & dimensions,
   }
   delete[] data;
 }
+
+//==============================================================================
+// readXDMFTopology
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
@@ -678,6 +711,10 @@ static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5
   }
 }
 
+//==============================================================================
+// addElsetToMesh
+//==============================================================================
+
 template <std::floating_point T, std::signed_integral I, std::signed_integral V>
 static void
 addElsetToMesh(MeshFile<T, I> & mesh, size_t const num_elements,
@@ -693,6 +730,10 @@ addElsetToMesh(MeshFile<T, I> & mesh, size_t const num_elements,
   }
   delete[] data;
 }
+
+//==============================================================================
+// readXDMFElsets
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
@@ -786,6 +827,10 @@ static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5fi
   }
 }
 
+//==============================================================================
+// readXDMFUniformGrid
+//==============================================================================
+
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
 void readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file,
@@ -797,6 +842,10 @@ void readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file
   readXDMFTopology(xgrid, h5file, h5filename, mesh);
   readXDMFElsets(xgrid, h5file, h5filename, mesh);
 }
+
+//==============================================================================
+// readXDMFFile
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
 void

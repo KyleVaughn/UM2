@@ -1,8 +1,10 @@
-Change _OPENMP to USE_OPENMP
 Change --- to ===
 Review NOLINTs and cppcheck suppress
 
-Doc build and comments
+Docs
+coverage update
+
+Organize FaceVertexMesh better
 
 Mesh-> Reorder
 

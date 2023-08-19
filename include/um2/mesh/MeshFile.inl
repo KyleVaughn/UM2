@@ -1,6 +1,10 @@
 namespace um2
 {
 
+//==============================================================================
+// numCells
+//==============================================================================
+
 template <std::floating_point T, std::signed_integral I>
 PURE constexpr auto
 MeshFile<T, I>::numCells() const -> size_t
@@ -8,6 +12,10 @@ MeshFile<T, I>::numCells() const -> size_t
   assert(type != MeshType::None);
   return element_conn.size() / static_cast<size_t>(verticesPerCell(type));
 }
+
+//==============================================================================
+// compareGeometry
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
 constexpr auto
@@ -26,6 +34,10 @@ compareGeometry(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int
   return 0;
 }
 
+//==============================================================================
+// compareTopology
+//==============================================================================
+
 template <std::floating_point T, std::signed_integral I>
 constexpr auto
 compareTopology(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int
@@ -42,6 +54,10 @@ compareTopology(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int
   }
   return 0;
 }
+
+//==============================================================================
+// sortElsets
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
 constexpr void
@@ -77,6 +93,10 @@ MeshFile<T, I>::sortElsets()
     offset += len;
   }
 }
+
+//==============================================================================
+// getSubmesh
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
 constexpr void
@@ -174,6 +194,10 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
   }
 }
 
+//==============================================================================
+// getMaterialNames
+//==============================================================================
+
 template <std::floating_point T, std::signed_integral I>
 constexpr void
 MeshFile<T, I>::getMaterialNames(std::vector<std::string> & material_names) const
@@ -188,6 +212,10 @@ MeshFile<T, I>::getMaterialNames(std::vector<std::string> & material_names) cons
   // Should already be sorted
   assert(std::is_sorted(material_names.begin(), material_names.end()));
 }
+
+//==============================================================================
+// getMaterialIDs
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
 constexpr void
@@ -219,20 +247,4 @@ MeshFile<T, I>::getMaterialIDs(std::vector<MaterialID> & material_ids,
   }
 }
 
-////// template <std::floating_point T, std::signed_integral I>
-////// constexpr void MeshFile<T, I>::get_material_ids(std::vector<MaterialID> &
-/////material_ids) / const
-//////{
-//////     std::vector<std::string> material_names;
-//////     this->get_material_names(material_names);
-//////     length_t const nmats = material_names.size();
-//////     if (nmats == 0) {
-//////         Log::error("No materials found in mesh file");
-//////     }
-//////     if (nmats > std::numeric_limits<MaterialID>::max()) {
-//////         Log::error("Number of materials exceeds MaterialID capacity");
-//////     }
-//////     this->get_material_ids(material_ids, material_names);
-////// }
-//
 } // namespace um2

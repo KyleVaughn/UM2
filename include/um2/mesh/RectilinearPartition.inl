@@ -1,9 +1,9 @@
 namespace um2
 {
 
-// --------------------------------------------------------------------------------
+//==============================================================================
 // Constructors
-// --------------------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T, typename P>
 constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
@@ -24,9 +24,9 @@ constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
   }
 }
 
-// --------------------------------------------------------------------------------
+//==============================================================================
 // Accessors
-// --------------------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
@@ -160,18 +160,18 @@ PURE HOSTDEV
 template <Size D, typename T, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) noexcept
-    -> P &
+PURE HOSTDEV
+    constexpr auto RectilinearPartition<D, T, P>::getFlatIndex(Args... args) noexcept
+    -> Size
 {
-  static_assert(D == 1 || D == 2);
   Point<D, Size> const index{args...};
   for (Size i = 0; i < D; ++i) {
     assert(index[i] < grid.divs[i].size());
   }
   if constexpr (D == 1) {
-    return children[index[0]];
+    return index[0];
   } else if constexpr (D == 2) {
-    return children[index[0] + index[1] * numXCells()];
+    return index[0] + index[1] * numXCells();
   } else { // General case
     // [0, nx, nx*ny, nx*ny*nz, ...]
     Point<D, Size> exclusive_scan_prod;
@@ -179,9 +179,17 @@ PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args
     for (Size i = 1; i < D; ++i) {
       exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * grid.num_cells[i - 1];
     }
-    Size const child_index = index.dot(exclusive_scan_prod);
-    return children[child_index];
+    return index.dot(exclusive_scan_prod);
   }
+}
+
+template <Size D, typename T, typename P>
+template <typename... Args>
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) noexcept
+    -> P &
+{
+  return children[getFlatIndex(args...)];
 }
 
 template <Size D, typename T, typename P>
@@ -191,30 +199,12 @@ PURE HOSTDEV
     constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) const noexcept
     -> P const &
 {
-  static_assert(D == 1 || D == 2);
-  Point<D, Size> const index{args...};
-  for (Size i = 0; i < D; ++i) {
-    assert(index[i] < grid.divs[i].size());
-  }
-  if constexpr (D == 1) {
-    return children[index[0]];
-  } else if constexpr (D == 2) {
-    return children[index[0] + index[1] * numXCells()];
-  } else { // General case
-    // [0, nx, nx*ny, nx*ny*nz, ...]
-    Point<D, Size> exclusive_scan_prod;
-    exclusive_scan_prod[0] = 1;
-    for (Size i = 1; i < D; ++i) {
-      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * grid.num_cells[i - 1];
-    }
-    Size const child_index = index.dot(exclusive_scan_prod);
-    return children[child_index];
-  }
+  return children[getFlatIndex(args...)];
 }
 
-// ------------------------------------------------------------------------------
+//==============================================================================
 // Methods
-// ------------------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T, typename P>
 HOSTDEV constexpr void

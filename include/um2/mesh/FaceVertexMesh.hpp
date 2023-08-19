@@ -10,8 +10,9 @@
 namespace um2
 {
 
+//=============================================================================
 // FACE-VERTEX MESH
-//-----------------------------------------------------------------------------
+//=============================================================================
 // A 2D volumetric or 3D surface mesh composed of polygons of polynomial order P.
 // Each polygon (face) is composed of N vertices. Each vertex is a D-dimensional
 // point of floating point type T.
@@ -52,9 +53,9 @@ struct FaceVertexMesh {
   Vector<I> vf;         // size = vf_offsets[num_vertices]
 };
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Aliases
-// -----------------------------------------------------------------------------
+//==============================================================================
 
 template <Size N, Size D, std::floating_point T, std::signed_integral I>
 using LinearPolygonMesh = FaceVertexMesh<1, N, D, T, I>;
@@ -77,9 +78,9 @@ using QuadraticQuadMesh = QuadraticPolygonMesh<8, D, T, I>;
 template <Size P, Size N, std::floating_point T, std::signed_integral I>
 using PlanarPolygonMesh = FaceVertexMesh<P, N, 2, T, I>;
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Methods
-// -----------------------------------------------------------------------------
+//==============================================================================
 // For all FaceVertexMesh, we define:
 //   numVertices
 //   numFaces
@@ -89,9 +90,10 @@ using PlanarPolygonMesh = FaceVertexMesh<P, N, 2, T, I>;
 //   toFaceVertexMesh(MeshFile)
 //   toMeshFile(FaceVertexMesh)
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // numVertices
-// -----------------------------------------------------------------------------
+//==============================================================================
+
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 PURE HOSTDEV constexpr auto
 numVertices(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept -> Size
@@ -99,9 +101,10 @@ numVertices(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept -> Size
   return mesh.vertices.size();
 }
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // numFaces
-// -----------------------------------------------------------------------------
+//==============================================================================
+
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 PURE HOSTDEV constexpr auto
 numFaces(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept -> Size
@@ -109,15 +112,20 @@ numFaces(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept -> Size
   return mesh.fv.size();
 }
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // boundingBox
-// -----------------------------------------------------------------------------
+//==============================================================================
+
 template <Size N, Size D, std::floating_point T, std::signed_integral I>
 PURE constexpr auto
 boundingBox(LinearPolygonMesh<N, D, T, I> const & mesh) noexcept -> AxisAlignedBox<D, T>
 {
   return boundingBox(mesh.vertices);
 }
+
+//==============================================================================
+// boundingBox
+//==============================================================================
 
 template <Size N, Size D, std::floating_point T, std::signed_integral I>
 PURE constexpr auto
@@ -126,14 +134,15 @@ boundingBox(QuadraticPolygonMesh<N, D, T, I> const & mesh) noexcept
 {
   AxisAlignedBox<D, T> box = mesh.getFace(0).boundingBox();
   for (Size i = 1; i < numFaces(mesh); ++i) {
-    box = um2::boundingBox(box, mesh.getFace(i).boundingBox());
+    box += mesh.getFace(i).boundingBox();
   }
   return box;
 }
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // faceContaining(Point)
-// -----------------------------------------------------------------------------
+//==============================================================================
+
 template <Size P, Size N, std::floating_point T, std::signed_integral I>
 PURE constexpr auto
 faceContaining(PlanarPolygonMesh<P, N, T, I> const & mesh, Point2<T> const & p) noexcept
@@ -148,9 +157,9 @@ faceContaining(PlanarPolygonMesh<P, N, T, I> const & mesh, Point2<T> const & p) 
   return -1;
 }
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // toFaceVertexMesh(MeshFile)
-// -----------------------------------------------------------------------------
+//==============================================================================
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -238,12 +247,11 @@ toFaceVertexMesh(MeshFile<T, I> const & file,
   auto const num_vertices = static_cast<Size>(file.vertices.size());
   auto const num_faces = static_cast<Size>(file.numCells());
   auto const conn_size = static_cast<Size>(file.element_conn.size());
-  auto const verts_per_face = verticesPerCell(file.type);
   if (!validateMeshFileType<P, N>(file.type)) {
     Log::error("Attempted to construct a FaceVertexMesh from a mesh file with an "
                "incompatible mesh type");
   }
-  assert(conn_size == num_faces * verts_per_face);
+  assert(conn_size == num_faces * verticesPerCell(file.type));
 
   // -- Vertices --
   // Ensure each of the vertices has approximately the same z
@@ -315,6 +323,10 @@ toFaceVertexMesh(MeshFile<T, I> const & file,
   } else {
     mortonSort<uint64_t>(vertices_copy.begin(), vertices_copy.end());
   }
+  // Revert the scaling
+  for (auto & v : vertices_copy) {
+    v /= normalization;
+  }
   for (Size i = 0; i < num_vertices - 1; ++i) {
     if (isApprox(vertices_copy[i], vertices_copy[i + 1])) {
       Log::warn("Vertex " + std::to_string(i) + " and " + std::to_string(i + 1) +
@@ -341,8 +353,6 @@ toFaceVertexMesh(MeshFile<T, I> const & file,
       }
     }
   }
-
-  // Overlap check
 #endif
 }
 
@@ -367,7 +377,7 @@ toMeshFile(FaceVertexMesh<P, N, D, T, I> const & mesh, MeshFile<T, I> & file) no
   }
 
   // Faces
-  // NOLINTBEGIN(bugprone-misplaced-widening-cast)
+  // NOLINTBEGIN(bugprone-misplaced-widening-cast) justification: It's not misplaced...
   auto const len = static_cast<size_t>(mesh.numFaces() * N);
   file.element_conn.resize(len);
   for (Size i = 0; i < mesh.numFaces(); ++i) {

@@ -1,15 +1,16 @@
-LineSegment closest point to
-Quadratic Segment closest point to
-  linear segment
-  end points
-  non-endpoints perturb
-
-
 Utility
   swap
 
-ShortString 
-  operator[]
+TriMesh
+  toMeshFile
+QuadMesh
+  toMeshFile
+QuadraticTriMesh
+  toMeshFile
+QuadraticQuadMesh
+  toMeshFile
+
+flipFace for all of the above
 
 Gmsh
   model
@@ -22,21 +23,6 @@ Gmsh
   mesh
     setGlobalMeshSize
     generateMesh
-
-MeshFile
-  getMaterialNames
-  getMaterialIDs
-
-TriMesh
-  toMeshFile
-QuadMesh
-  toMeshFile
-QuadraticTriMesh
-  toMeshFile
-QuadraticQuadMesh
-  toMeshFile
-
-flipFace for all of the above
 
 SpatialPartition
   importCoarseCells

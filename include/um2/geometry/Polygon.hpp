@@ -19,6 +19,7 @@
 //   interpolate
 //   jacobian
 //   getEdge
+//   numEdges
 //   linearPolygon
 //   isConvex (Quadrilateral only)
 //   area
@@ -57,6 +58,18 @@ getEdge(QuadraticPolygon<N, D, T> const & p, Size const i) noexcept
   constexpr Size m = N / 2;
   return (i < m - 1) ? QuadraticSegment<D, T>(p[i], p[i + 1], p[i + m])
                      : QuadraticSegment<D, T>(p[m - 1], p[0], p[N - 1]);
+}
+
+//==============================================================================
+// numEdges
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+numEdges(Polygon<P, N, D, T> const & /*p*/) noexcept -> Size
+{
+  static_assert(P == 1 || P == 2, "Only P = 1 or P = 2 supported");
+  return N / P;
 }
 
 //==============================================================================
@@ -104,8 +117,7 @@ PURE HOSTDEV constexpr auto
 boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept -> AxisAlignedBox2<T>
 {
   AxisAlignedBox2<T> box = boundingBox(getEdge(p, 0));
-  constexpr Size m = N / 2;
-  for (Size i = 1; i < m; ++i) {
+  for (Size i = 1; i < numEdges(p); ++i) {
     box += boundingBox(getEdge(p, i));
   }
   return box;

@@ -72,6 +72,7 @@ HOSTDEV
 TEST_CASE(edge)
 {
   um2::Triangle<D, T> tri = makeTri<D, T>();
+  static_assert(numEdges(tri) == 3);
   um2::LineSegment<D, T> edge = tri.edge(0);
   ASSERT(um2::isApprox(edge[0], tri[0]));
   ASSERT(um2::isApprox(edge[1], tri[1]));

@@ -198,7 +198,7 @@ TEST_CASE(id_array_constructor)
     ASSERT_NEAR(grid.divs[1][i], yref[i], static_cast<T>(1e-6));
   }
 }
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(clear, D, T)
 
