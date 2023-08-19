@@ -431,7 +431,7 @@ TEST_CASE(enclosedCentroid)
 }
 
 //==============================================================================
-// pointClosestTo 
+// pointClosestTo
 //==============================================================================
 
 template <typename T>
@@ -459,28 +459,22 @@ TEST_CASE(pointClosestTo)
   };
   T const eps = static_cast<T>(1e-2);
   um2::Vector<um2::QuadraticSegment2<T>> const segments = {
-    makeSeg1<2, T>(),
-    makeSeg2<2, T>(),
-    makeSeg3<2, T>(),
-    makeSeg4<2, T>(),
-    makeSeg5<2, T>(),
-    makeSeg6<2, T>(),
-    makeSeg7<2, T>(),
-    makeSeg8<2, T>(),
+      makeSeg1<2, T>(), makeSeg2<2, T>(), makeSeg3<2, T>(), makeSeg4<2, T>(),
+      makeSeg5<2, T>(), makeSeg6<2, T>(), makeSeg7<2, T>(), makeSeg8<2, T>(),
   };
 
   for (auto const & q : segments) {
     for (um2::Point2<T> const & p : test_points) {
       T const r0 = q.pointClosestTo(p);
-      T const d0 = p.distanceTo(q(r0)); 
+      T const d0 = p.distanceTo(q(r0));
       T const r1 = r0 - eps;
-      T const d1 = p.distanceTo(q(r1)); 
+      T const d1 = p.distanceTo(q(r1));
       T const r2 = r0 + eps;
-      T const d2 = p.distanceTo(q(r2)); 
-      if (0 <= r1 && r1 <= 1) { 
+      T const d2 = p.distanceTo(q(r2));
+      if (0 <= r1 && r1 <= 1) {
         ASSERT(d0 < d1);
       }
-      if (0 <= r2 && r2 <= 1) { 
+      if (0 <= r2 && r2 <= 1) {
         ASSERT(d0 < d2);
       }
     }

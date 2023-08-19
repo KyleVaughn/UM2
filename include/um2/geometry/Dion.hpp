@@ -3,9 +3,9 @@
 #include <um2/geometry/Polytope.hpp>
 
 #if UM2_USE_CUDA
-#include <cuda/std/complex>
+#  include <cuda/std/complex>
 #else
-#include <complex>
+#  include <complex>
 #endif
 
 //==============================================================================
@@ -30,8 +30,8 @@
 #include <um2/geometry/dion/interpolate.inl>
 #include <um2/geometry/dion/jacobian.inl>
 #include <um2/geometry/dion/length.inl>
-#include <um2/geometry/dion/pointIsLeft.inl>
 #include <um2/geometry/dion/pointClosestTo.inl>
+#include <um2/geometry/dion/pointIsLeft.inl>
 namespace um2
 {
 

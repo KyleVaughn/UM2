@@ -158,8 +158,8 @@ TEST_CASE(equals_operator_std_string)
 HOSTDEV
 TEST_CASE(comparison)
 {
-// nvcc, gcc, or clang is bound to complain about the following static_asserts or lack thereof
-// NOLINTBEGIN(cert-dcl03-c,misc-static-assert) justified above
+// nvcc, gcc, or clang is bound to complain about the following static_asserts or lack
+// thereof NOLINTBEGIN(cert-dcl03-c,misc-static-assert) justified above
 #ifdef _clang_
   static_assert(um2::ShortString("Ant") < um2::ShortString("Zebra"));
   static_assert(um2::ShortString("Zebra") > um2::ShortString("Ant"));
@@ -175,7 +175,7 @@ TEST_CASE(comparison)
   ASSERT(um2::ShortString("Zebra") <= um2::ShortString("Zebra"));
   ASSERT(um2::ShortString("Zebra") >= um2::ShortString("Zebra"));
 #endif
-// NOLINTEND(cert-dcl03-c,misc-static-assert)
+  // NOLINTEND(cert-dcl03-c,misc-static-assert)
 }
 MAKE_CUDA_KERNEL(comparison);
 

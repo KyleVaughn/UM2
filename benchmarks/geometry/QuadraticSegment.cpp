@@ -25,8 +25,8 @@
 //
 
 #include "../helpers.hpp"
-#include <um2/geometry/QuadraticSegment.hpp>
 #include <um2/geometry/LineSegment.hpp>
+#include <um2/geometry/QuadraticSegment.hpp>
 
 #include <iostream>
 #include <thrust/complex.h>

@@ -240,15 +240,15 @@ max(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>;
 
 template <Size D, class T>
 PURE HOSTDEV constexpr auto
-dot(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> T; 
+dot(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> T;
 
 template <Size D, class T>
 PURE HOSTDEV constexpr auto
-squaredNorm(Vec<D, T> const & v) noexcept -> T; 
+squaredNorm(Vec<D, T> const & v) noexcept -> T;
 
 template <Size D, class T>
 PURE HOSTDEV constexpr auto
-norm(Vec<D, T> const & v) noexcept -> T; 
+norm(Vec<D, T> const & v) noexcept -> T;
 
 template <Size D, class T>
 PURE HOSTDEV constexpr auto

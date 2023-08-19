@@ -6,7 +6,7 @@
 
 // If CPU supports BMI2, and we are compiling for CPU, then use BMI2 intrinsics.
 // NOTE: we temporarily disable BMI2 intrinsics when compiling for CUDA because
-// including <immintrin.h> causes compilation errors due to conflicting 
+// including <immintrin.h> causes compilation errors due to conflicting
 // definitions for 16-bit types
 #if defined(__BMI2__) && !UM2_USE_CUDA // && !defined(__CUDA_ARCH__)
 #  define BMI2_HOSTDEV DEVICE

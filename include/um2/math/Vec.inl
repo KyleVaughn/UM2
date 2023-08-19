@@ -241,7 +241,7 @@ PURE HOSTDEV constexpr auto
 normalized(Vec<D, T> v) noexcept -> Vec<D, T>
 {
   static_assert(std::is_floating_point_v<T>);
-  v.normalize(); 
+  v.normalize();
   return v;
 }
 
@@ -276,7 +276,7 @@ template <Size D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::squaredNorm() const noexcept -> T
 {
-  return um2::squaredNorm(*this); 
+  return um2::squaredNorm(*this);
 }
 
 template <Size D, class T>
@@ -298,7 +298,7 @@ template <Size D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::normalized() const noexcept -> Vec<D, T>
 {
-  return um2::normalized(*this); 
+  return um2::normalized(*this);
 }
 
 template <Size D, class T>

@@ -36,7 +36,7 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
 {
 
   // We want to use the complex funcstions in the std or cuda::std namespace
-  // depending on if we're using CUDA 
+  // depending on if we're using CUDA
   // NOLINTBEGIN(google-build-using-namespace) justified
 #if UM2_USE_CUDA
   using namespace cuda::std;
@@ -48,9 +48,9 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
   // Note the 1-based indexing in this section
   //
   // The interpolation function of the quadratic segment is
-  // Q(r) = C + rB + r²A,    
+  // Q(r) = C + rB + r²A,
   // where
-  // C = P₁    
+  // C = P₁
   // B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]
   // A = -2(V₁₃ + V₂₃) =  2q[1] + 2q[2] - 4q[3]
   // V₁₃ = q[3] - q[1]
@@ -63,7 +63,7 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
   // ‖P - Q(r)‖² = f(r) = a₄r⁴ + a₃r³ + a₂r² + a₁r + a₀
   // Let W = P - P₁ = P - C
   // a₄ = A ⋅ A
-  // a₃ = 2(A ⋅ B) 
+  // a₃ = 2(A ⋅ B)
   // a₂ = -2(A ⋅ W) + (B ⋅ B)
   // a₁ = -2(B ⋅ W)
   // a₀ = W ⋅ W
@@ -73,14 +73,14 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
   // b = 3(A ⋅ B)
   // c = (B ⋅ B) - 2(A ⋅W)
   // d = -(B ⋅ W)
-  // Note we factored out a 2 
+  // Note we factored out a 2
   //
   // We can then use Lagrange's method is used to find the roots.
   // (https://en.wikipedia.org/wiki/Cubic_equation#Lagrange's_method)
   Vec<D, T> const v13 = q[2] - q[0];
   Vec<D, T> const v23 = q[2] - q[1];
   Vec<D, T> const A = -2 * (v13 + v23);
-  T const a = 2 * squaredNorm(A); 
+  T const a = 2 * squaredNorm(A);
   // 0 ≤ a, since a = 2(A ⋅ A)  = 2 ‖A‖², and 0 ≤ ‖A‖²
   // A = 4(midpoint of line - p3) -> a = 32 ‖midpoint of line - p3‖²
   // if a is small, then the segment is almost a straight line, and we should use the
@@ -97,7 +97,7 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
     return r;
   }
   Vec<D, T> const B = 3 * v13 + v23;
-  T const b = 3 * dot(A, B); 
+  T const b = 3 * dot(A, B);
   Vec<D, T> const W = p - q[0];
   T const c = squaredNorm(B) - 2 * dot(A, W);
   T const d = -dot(B, W);
@@ -111,34 +111,34 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
   T const P = e1 * e1 - 3 * e2;
   T const S = 2 * e1 * e1 * e1 - 9 * e1 * e2 + 27 * e3;
   // We solve z^2 - Sz + P^3 = 0
-  T const disc = S * S - 4 * P * P * P; 
+  T const disc = S * S - 4 * P * P * P;
   T const eps = static_cast<T>(1e-7);
-//  assert(um2::abs(disc) > eps); // 0 single or double root
-//  if (0 < disc) { // One real root
-//    T const s1 = um2::cbrt((S + um2::sqrt(disc)) / 2);
-//    T const s2 = (um2::abs(s1) < eps) ? 0 : P / s1;
-//    // Using s0 = e1
-//    return (e1 + s1 + s2) / 3;
-//  }
+  //  assert(um2::abs(disc) > eps); // 0 single or double root
+  //  if (0 < disc) { // One real root
+  //    T const s1 = um2::cbrt((S + um2::sqrt(disc)) / 2);
+  //    T const s2 = (um2::abs(s1) < eps) ? 0 : P / s1;
+  //    // Using s0 = e1
+  //    return (e1 + s1 + s2) / 3;
+  //  }
   // A complex cbrt
   T constexpr ahalf = static_cast<T>(0.5);
   T constexpr athird = static_cast<T>(1) / 3;
-  complex<T> const s1 = exp(log((S + sqrt(static_cast<complex<T>>(disc))) * ahalf) * athird);
+  complex<T> const s1 =
+      exp(log((S + sqrt(static_cast<complex<T>>(disc))) * ahalf) * athird);
   complex<T> const s2 = (abs(s1) < eps) ? 0 : P / s1;
   // zeta1 = (-1/2, sqrt(3)/2)
   complex<T> const zeta1(static_cast<T>(-0.5), um2::sqrt(static_cast<T>(3)) / 2);
   complex<T> const zeta2(conj(zeta1));
 
   // Find the real root that minimizes the distance to p
-  T r = 0; 
+  T r = 0;
   T dist = p.squaredDistanceTo(q[0]);
   if (p.squaredDistanceTo(q[1]) < dist) {
     r = 1;
     dist = p.squaredDistanceTo(q[1]);
   }
 
-  Vec3<T> const rr((e1 + real(s1 + s2)) / 3,
-                   (e1 + real(zeta2 * s1 + zeta1 * s2)) / 3,
+  Vec3<T> const rr((e1 + real(s1 + s2)) / 3, (e1 + real(zeta2 * s1 + zeta1 * s2)) / 3,
                    (e1 + real(zeta1 * s1 + zeta2 * s2)) / 3);
   for (Size i = 0; i < 3; ++i) {
     T const rc = rr[i];
@@ -150,7 +150,7 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
       }
     }
   }
-  return r; 
+  return r;
 }
 // NOLINTEND(readability-identifier-naming)
 
