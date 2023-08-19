@@ -36,9 +36,14 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
 {
 
   // We want to use the complex funcstions in the std or cuda::std namespace
-  // depending on if we're compiling for the host or device
-  // NOLINTNEXTLINE(google-build-using-namespace) justified
+  // depending on if we're using CUDA 
+  // NOLINTBEGIN(google-build-using-namespace) justified
+#if UM2_USE_CUDA
+  using namespace cuda::std;
+#else
   using namespace std;
+#endif
+  // NOLINTEND(google-build-using-namespace)
 
   // Note the 1-based indexing in this section
   //
@@ -116,9 +121,9 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
 //    return (e1 + s1 + s2) / 3;
 //  }
   // A complex cbrt
-  T constexpr half = static_cast<T>(0.5);
-  T constexpr third = static_cast<T>(1) / 3;
-  complex<T> const s1 = exp(log((S + sqrt(static_cast<complex<T>>(disc))) * half) * third);
+  T constexpr ahalf = static_cast<T>(0.5);
+  T constexpr athird = static_cast<T>(1) / 3;
+  complex<T> const s1 = exp(log((S + sqrt(static_cast<complex<T>>(disc))) * ahalf) * athird);
   complex<T> const s2 = (abs(s1) < eps) ? 0 : P / s1;
   // zeta1 = (-1/2, sqrt(3)/2)
   complex<T> const zeta1(static_cast<T>(-0.5), um2::sqrt(static_cast<T>(3)) / 2);

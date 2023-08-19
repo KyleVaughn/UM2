@@ -469,20 +469,14 @@ TEST_CASE(pointClosestTo)
     makeSeg8<2, T>(),
   };
 
-  int ctr = 0;
   for (auto const & q : segments) {
-    std::cerr << "seg " << ++ctr << std::endl;
     for (um2::Point2<T> const & p : test_points) {
-      std::cerr << "p=( " << p[0] << ", " << p[1] << ")" << std::endl;
       T const r0 = q.pointClosestTo(p);
       T const d0 = p.distanceTo(q(r0)); 
       T const r1 = r0 - eps;
       T const d1 = p.distanceTo(q(r1)); 
       T const r2 = r0 + eps;
       T const d2 = p.distanceTo(q(r2)); 
-      std::cerr << "r0 = " << r0 << ", d0 = " << d0 << std::endl;
-      std::cerr << "r1 = " << r1 << ", d1 = " << d1 << std::endl;
-      std::cerr << "r2 = " << r2 << ", d2 = " << d2 << std::endl;
       if (0 <= r1 && r1 <= 1) { 
         ASSERT(d0 < d1);
       }

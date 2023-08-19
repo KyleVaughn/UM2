@@ -4,10 +4,6 @@ Review NOLINTs and cppcheck suppress
 
 Doc build and comments
 
-pointClosestTo()
-squaredDistanceTo()
-distanceTo()
-
 Mesh-> Reorder
 
 Make rep meshes. 

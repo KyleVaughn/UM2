@@ -158,14 +158,24 @@ TEST_CASE(equals_operator_std_string)
 HOSTDEV
 TEST_CASE(comparison)
 {
-  // Because the comparisons are constexpr, they can be evaluated at compile time and
-  // the compiler complains that the result is unused.
+// nvcc, gcc, or clang is bound to complain about the following static_asserts or lack thereof
+// NOLINTBEGIN(cert-dcl03-c,misc-static-assert) justified above
+#ifdef _clang_
   static_assert(um2::ShortString("Ant") < um2::ShortString("Zebra"));
   static_assert(um2::ShortString("Zebra") > um2::ShortString("Ant"));
   static_assert(um2::ShortString("Zebra") <= um2::ShortString("ant"));
   static_assert(um2::ShortString("ant") >= um2::ShortString("Zebra"));
   static_assert(um2::ShortString("Zebra") <= um2::ShortString("Zebra"));
   static_assert(um2::ShortString("Zebra") >= um2::ShortString("Zebra"));
+#else
+  ASSERT(um2::ShortString("Ant") < um2::ShortString("Zebra"));
+  ASSERT(um2::ShortString("Zebra") > um2::ShortString("Ant"));
+  ASSERT(um2::ShortString("Zebra") <= um2::ShortString("ant"));
+  ASSERT(um2::ShortString("ant") >= um2::ShortString("Zebra"));
+  ASSERT(um2::ShortString("Zebra") <= um2::ShortString("Zebra"));
+  ASSERT(um2::ShortString("Zebra") >= um2::ShortString("Zebra"));
+#endif
+// NOLINTEND(cert-dcl03-c,misc-static-assert)
 }
 MAKE_CUDA_KERNEL(comparison);
 

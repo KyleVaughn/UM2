@@ -2,7 +2,11 @@
 
 #include <um2/geometry/Polytope.hpp>
 
+#if UM2_USE_CUDA
+#include <cuda/std/complex>
+#else
 #include <complex>
+#endif
 
 //==============================================================================
 // DION

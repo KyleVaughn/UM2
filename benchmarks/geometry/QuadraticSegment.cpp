@@ -37,8 +37,6 @@ constexpr Size npoints = 1 << 18;
 constexpr int lo = 0;
 constexpr int hi = 3;
 
-// NOLINTBEGIN(readability-*)
-
 template <typename T>
 HOSTDEV static constexpr auto
 makeBaseSeg() -> um2::QuadraticSegment2<T>
@@ -83,8 +81,6 @@ isLeftOld(um2::QuadraticSegment2<T> const & q, um2::Point2<T> const & p) -> bool
   }
   return um2::LineSegment2<T>(q[0], q(r)).isLeft(p);
 }
-
-// NOLINTEND(readability-*)
 
 template <typename T>
 static void

@@ -5,7 +5,10 @@
 #include <concepts>
 
 // If CPU supports BMI2, and we are compiling for CPU, then use BMI2 intrinsics.
-#if defined(__BMI2__) && !defined(__CUDA_ARCH__)
+// NOTE: we temporarily disable BMI2 intrinsics when compiling for CUDA because
+// including <immintrin.h> causes compilation errors due to conflicting 
+// definitions for 16-bit types
+#if defined(__BMI2__) && !UM2_USE_CUDA // && !defined(__CUDA_ARCH__)
 #  define BMI2_HOSTDEV DEVICE
 #  include <immintrin.h> // _pdep_u64, _pext_u64, _pdep_u32, _pext_u32
 #else
@@ -25,7 +28,7 @@ static constexpr U max_2d_morton_coord = (static_cast<U>(1) << (4 * sizeof(U))) 
 template <std::unsigned_integral U>
 static constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 3)) - 1;
 
-#if defined(__BMI2__) && !defined(__CUDA_ARCH__)
+#if defined(__BMI2__) && !UM2_USE_CUDA // && !defined(__CUDA_ARCH__)
 
 //==============================================================================
 // BMI2 intrinsics
