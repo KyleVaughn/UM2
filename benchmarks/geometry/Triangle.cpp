@@ -24,9 +24,9 @@ triContainsBary(um2::Triangle2<T> const & tri, um2::Point2<T> const & p) -> bool
   um2::Vec2<T> const a = tri[1] - tri[0];
   um2::Vec2<T> const b = tri[2] - tri[0];
   um2::Vec2<T> const c = p - tri[0];
-  T const invdetAB = 1 / a.cross(b);
-  T const r = c.cross(b) * invdetAB;
-  T const s = a.cross(c) * invdetAB;
+  T const invdet_ab = 1 / a.cross(b);
+  T const r = c.cross(b) * invdet_ab;
+  T const s = a.cross(c) * invdet_ab;
   return (r >= 0) && (s >= 0) && (r + s <= 1);
 }
 

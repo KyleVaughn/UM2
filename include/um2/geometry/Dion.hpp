@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 
 #include <um2/geometry/Polytope.hpp>
 

@@ -16,7 +16,7 @@ add_um2_benchmark(./geometry/morton_sort_points.cpp)
 add_um2_benchmark(./geometry/AxisAlignedBox.cpp)
 add_um2_benchmark(./geometry/Triangle.cpp)
 add_um2_benchmark(./geometry/Quadrilateral.cpp)
-#add_um2_benchmark(./geometry/QuadraticSegment.cpp)
+add_um2_benchmark(./geometry/QuadraticSegment.cpp)
 
 ##===============================================================================
 ## mesh 

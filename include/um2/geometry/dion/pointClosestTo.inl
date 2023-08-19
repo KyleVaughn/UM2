@@ -89,7 +89,6 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
     if (r > 1) {
       r = 1;
     }
-    std::cerr << "Linear" << std::endl;
     return r;
   }
   Vec<D, T> const B = 3 * v13 + v23;
@@ -111,7 +110,6 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
   T const eps = static_cast<T>(1e-7);
 //  assert(um2::abs(disc) > eps); // 0 single or double root
 //  if (0 < disc) { // One real root
-//    std::cerr << "one real root" << std::endl;
 //    T const s1 = um2::cbrt((S + um2::sqrt(disc)) / 2);
 //    T const s2 = (um2::abs(s1) < eps) ? 0 : P / s1;
 //    // Using s0 = e1

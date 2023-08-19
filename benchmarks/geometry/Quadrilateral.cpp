@@ -86,7 +86,7 @@ triangleDecomp(benchmark::State & state)
 
 template <typename T>
 static void
-CCWShortCircuit(benchmark::State & state)
+ccwShortCircuit(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
@@ -104,7 +104,7 @@ CCWShortCircuit(benchmark::State & state)
 
 template <typename T>
 static void
-CCWNoShortCircuit(benchmark::State & state)
+ccwNoShortCircuit(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   auto const quads = makeQuadGrid<T>();
@@ -223,11 +223,11 @@ BENCHMARK_TEMPLATE(triangleDecomp, float)
     ->RangeMultiplier(4)
     ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(CCWShortCircuit, float)
+BENCHMARK_TEMPLATE(ccwShortCircuit, float)
     ->RangeMultiplier(4)
     ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(CCWNoShortCircuit, float)
+BENCHMARK_TEMPLATE(ccwNoShortCircuit, float)
     ->RangeMultiplier(4)
     ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
