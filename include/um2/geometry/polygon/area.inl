@@ -53,7 +53,8 @@ PURE HOSTDEV constexpr auto
 area(PlanarQuadraticPolygon<N, T> const & q) noexcept -> T
 {
   T result = area(linearPolygon(q));
-  for (Size i = 0; i < numEdges(q); ++i) {
+  Size const num_edges = polygonNumEdges<2, N>();
+  for (Size i = 0; i < num_edges; ++i) {
     result += enclosedArea(getEdge(q, i));
   }
   return result;

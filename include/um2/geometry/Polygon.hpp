@@ -1,7 +1,6 @@
 #pragma once
 
-#include <um2/geometry/LineSegment.hpp>
-#include <um2/geometry/QuadraticSegment.hpp>
+#include <um2/geometry/Dion.hpp>
 
 //==============================================================================
 // Polygon
@@ -15,68 +14,80 @@
 //   Quadrilateral (P = 1, N = 4)
 //   Quadratic Triangle (P = 2, N = 6)
 //   Quadratic Quadrilateral (P = 2, N = 8)
-// Defines:
-//   interpolate
-//   jacobian
-//   getEdge
-//   numEdges
-//   linearPolygon
-//   isConvex (Quadrilateral only)
-//   area
-//   centroid
-//   contains (point)
-//   boundingBox
-//   isCCW
-//   flipFace
 
-#include <um2/geometry/polygon/area.inl>
-#include <um2/geometry/polygon/centroid.inl>
-#include <um2/geometry/polygon/contains.inl>
-#include <um2/geometry/polygon/interpolate.inl>
-#include <um2/geometry/polygon/jacobian.inl>
 namespace um2
 {
 
-//// of its vertices. These 3 vertices are D-dimensional points of type T.    
-//    
-//template <Size P, Size N, Size D, typename T>    
-//struct Polytope<2, P, N, D, T> {    
-//
-//  Point<D, T> v[N];
-//
-//}
-
-
-//==============================================================================
-// getEdge
-//==============================================================================
-
-template <Size N, Size D, typename T>
-PURE HOSTDEV constexpr auto
-getEdge(LinearPolygon<N, D, T> const & p, Size const i) noexcept
-{
-  assert(0 <= i && i < N);
-  return (i < N - 1) ? LineSegment<D, T>(p[i], p[i + 1])
-                     : LineSegment<D, T>(p[N - 1], p[0]);
-}
-
-template <Size N, Size D, typename T>
-PURE HOSTDEV constexpr auto
-getEdge(QuadraticPolygon<N, D, T> const & p, Size const i) noexcept
-{
-  assert(0 <= i && i < N);
-  constexpr Size m = N / 2;
-  return (i < m - 1) ? QuadraticSegment<D, T>(p[i], p[i + 1], p[i + m])
-                     : QuadraticSegment<D, T>(p[m - 1], p[0], p[N - 1]);
-}
-
-//==============================================================================
-// numEdges
-//==============================================================================
-
 template <Size P, Size N, Size D, typename T>
+struct Polytope<2, P, N, D, T> {
+
+  Point<D, T> v[N];
+
+  //==============================================================================
+  // Accessors
+  //==============================================================================
+
+  PURE HOSTDEV constexpr auto
+  operator[](Size i) noexcept -> Point<D, T> &;
+
+  PURE HOSTDEV constexpr auto
+  operator[](Size i) const noexcept -> Point<D, T> const &;
+
+  //==============================================================================
+  // Constructors
+  //==============================================================================
+
+  constexpr Polytope() noexcept = default;
+
+  template <class... Pts>
+    requires(sizeof...(Pts) == N  && (std::same_as<Point<D, T>, Pts> && ...))
+  // NOLINTNEXTLINE(google-explicit-constructor) justification: implicit conversion
+  HOSTDEV constexpr Polytope(Pts const... args) noexcept : v{args...} {}
+
+  //==============================================================================
+  // Methods
+  //==============================================================================
+
+  template <typename R, typename S>
+  PURE HOSTDEV constexpr auto
+  operator()(R r, S s) const noexcept -> Point<D, T>;
+
+  template <typename R, typename S>
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  jacobian(R r, S s) const noexcept -> Mat<D, 2, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto    
+  getEdge(Size i) const noexcept -> LineSegment<D, T>
+  requires(P == 1);
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getEdge(Size i) const noexcept -> QuadraticSegment<D, T>
+  requires(P == 2);
+    
+  PURE HOSTDEV [[nodiscard]] constexpr auto    
+  contains(Point<D, T> const & p) const noexcept -> bool;    
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto    
+  area() const noexcept -> T;    
+    
+  PURE HOSTDEV [[nodiscard]] constexpr auto    
+  centroid() const noexcept -> Point<D, T>;    
+    
+  PURE HOSTDEV [[nodiscard]] constexpr auto    
+  boundingBox() const noexcept -> AxisAlignedBox<D, T>; 
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto    
+  isCCW() const noexcept -> bool;
+
+}; // Polygon
+
+//==============================================================================
+// polygonNumEdges
+//==============================================================================
+
+template <Size P, Size N>
 PURE HOSTDEV constexpr auto
-numEdges(Polygon<P, N, D, T> const & /*p*/) noexcept -> Size
+polygonNumEdges() noexcept -> Size
 {
   static_assert(P == 1 || P == 2, "Only P = 1 or P = 2 supported");
   return N / P;
@@ -127,78 +138,13 @@ PURE HOSTDEV constexpr auto
 boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept -> AxisAlignedBox2<T>
 {
   AxisAlignedBox2<T> box = boundingBox(getEdge(p, 0));
-  for (Size i = 1; i < numEdges(p); ++i) {
+  Size const num_edges = polygonNumEdges<2, N>();
+  for (Size i = 1; i < num_edges; ++i) {
     box += boundingBox(getEdge(p, i));
   }
   return box;
 }
 
-//==============================================================================
-// isCCW
-//==============================================================================
-
-template <typename T>
-PURE HOSTDEV constexpr auto
-isCCW(Triangle2<T> const & t) noexcept -> bool
-{
-  return areCCW(t[0], t[1], t[2]);
-}
-
-template <typename T>
-PURE HOSTDEV constexpr auto
-isCCW(Quadrilateral2<T> const & q) noexcept -> bool
-{
-  bool const b0 = areCCW(q[0], q[1], q[2]);
-  bool const b1 = areCCW(q[0], q[2], q[3]);
-  return b0 && b1;
-}
-
-template <typename T>
-PURE HOSTDEV constexpr auto
-isCCW(QuadraticTriangle2<T> const & q) noexcept -> bool
-{
-  return isCCW(linearPolygon(q));
-}
-
-template <typename T>
-PURE HOSTDEV constexpr auto
-isCCW(QuadraticQuadrilateral2<T> const & q) noexcept -> bool
-{
-  return isCCW(linearPolygon(q));
-}
-
-//==============================================================================
-// flipFace
-//==============================================================================
-
-template <Size D, typename T>
-HOSTDEV constexpr void
-flipFace(Triangle<D, T> & t) noexcept
-{
-  um2::swap(t[1], t[2]);
-}
-
-template <Size D, typename T>
-HOSTDEV constexpr void
-flipFace(Quadrilateral<D, T> & q) noexcept
-{
-  um2::swap(q[1], q[3]);
-}
-
-template <Size D, typename T>
-HOSTDEV constexpr void
-flipFace(QuadraticTriangle<D, T> & q) noexcept
-{
-  um2::swap(q[1], q[2]);
-  um2::swap(q[3], q[5]);
-}
-
-template <Size D, typename T>
-HOSTDEV constexpr void
-flipFace(QuadraticQuadrilateral<D, T> & q) noexcept
-{
-  um2::swap(q[1], q[3]);
-  um2::swap(q[4], q[7]);
-}
-
 } // namespace um2
+
+#include "Polygon.inl"

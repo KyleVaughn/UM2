@@ -19,14 +19,6 @@
 // For Dions:
 //   LineSegment (P = 1, N = 2)
 //   QuadraticSegment (P = 2, N = 3)
-// Defines:
-//   interpolate
-//   jacobian
-//   getRotation
-//   length
-//   boundingBox
-//   pointClosestTo
-//   pointIsLeft
 
 // For quadratic segments, the parametric equation is
 //  Q(r) = P₁ + rB + r²A,    

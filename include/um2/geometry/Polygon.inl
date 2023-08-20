@@ -1,32 +1,31 @@
+// Free functions
+#include <um2/geometry/polygon/area.inl>    
+#include <um2/geometry/polygon/centroid.inl>    
+#include <um2/geometry/polygon/contains.inl>    
+#include <um2/geometry/polygon/interpolate.inl>    
+#include <um2/geometry/polygon/jacobian.inl>
+#include <um2/geometry/polygon/flipFace.inl>
+#include <um2/geometry/polygon/isCCW.inl>
+#include <um2/geometry/polygon/getEdge.inl>
+
+// Member functions
 namespace um2
 {
-
-//==============================================================================
-// Constructors
-//==============================================================================
-
-template <Size D, typename T>
-HOSTDEV constexpr QuadraticTriangle<D, T>::Polytope(
-    Point<D, T> const & p0, Point<D, T> const & p1, Point<D, T> const & p2,
-    Point<D, T> const & p3, Point<D, T> const & p4, Point<D, T> const & p5) noexcept
-    : v{p0, p1, p2, p3, p4, p5}
-{
-}
 
 //==============================================================================
 // Accessors
 //==============================================================================
 
-template <Size D, typename T>
+template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::operator[](Size i) noexcept -> Point<D, T> &
+Polygon<P, N, D, T>::operator[](Size i) noexcept -> Point<D, T> &
 {
   return v[i];
 }
 
-template <Size D, typename T>
+template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
+Polygon<P, N, D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
 {
   return v[i];
 }
@@ -35,10 +34,10 @@ QuadraticTriangle<D, T>::operator[](Size i) const noexcept -> Point<D, T> const 
 // Interpolation
 //==============================================================================
 
-template <Size D, typename T>
+template <Size P, Size N, Size D, typename T>
 template <typename R, typename S>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::operator()(R const r, S const s) const noexcept -> Point<D, T>
+Polygon<P, N, D, T>::operator()(R const r, S const s) const noexcept -> Point<D, T>
 {
   return interpolate(*this, r, s);
 }
@@ -47,10 +46,10 @@ QuadraticTriangle<D, T>::operator()(R const r, S const s) const noexcept -> Poin
 // jacobian
 //==============================================================================
 
-template <Size D, typename T>
+template <Size P, Size N, Size D, typename T>
 template <typename R, typename S>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::jacobian(R r, S s) const noexcept -> Mat<D, 2, T>
+Polygon<P, N, D, T>::jacobian(R r, S s) const noexcept -> Mat<D, 2, T>
 {
   return um2::jacobian(*this, r, s);
 }
@@ -59,9 +58,18 @@ QuadraticTriangle<D, T>::jacobian(R r, S s) const noexcept -> Mat<D, 2, T>
 // edge
 //==============================================================================
 
-template <Size D, typename T>
+template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::getEdge(Size i) const noexcept -> QuadraticSegment<D, T>
+Polygon<P, N, D, T>::getEdge(Size i) const noexcept -> LineSegment<D, T>
+requires (P == 1)
+{
+  return um2::getEdge(*this, i);
+}
+
+template <Size P, Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+Polygon<P, N, D, T>::getEdge(Size i) const noexcept -> QuadraticSegment<D, T>
+requires (P == 2)
 {
   return um2::getEdge(*this, i);
 }
@@ -70,31 +78,20 @@ QuadraticTriangle<D, T>::getEdge(Size i) const noexcept -> QuadraticSegment<D, T
 // contains
 //==============================================================================
 
-template <Size D, typename T>
+template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::contains(Point<D, T> const & p) const noexcept -> bool
+Polygon<P, N, D, T>::contains(Point<D, T> const & p) const noexcept -> bool
 {
   return um2::contains(*this, p);
-}
-
-//==============================================================================
-// linearPolygon
-//==============================================================================
-
-template <Size D, typename T>
-PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::linearPolygon() const noexcept -> Triangle<D, T>
-{
-  return um2::linearPolygon(*this);
 }
 
 //==============================================================================
 // area
 //==============================================================================
 
-template <Size D, typename T>
+template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::area() const noexcept -> T
+Polygon<P, N, D, T>::area() const noexcept -> T
 {
   return um2::area(*this);
 }
@@ -103,9 +100,9 @@ QuadraticTriangle<D, T>::area() const noexcept -> T
 // centroid
 //==============================================================================
 
-template <Size D, typename T>
+template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::centroid() const noexcept -> Point<D, T>
+Polygon<P, N, D, T>::centroid() const noexcept -> Point<D, T>
 {
   return um2::centroid(*this);
 }
@@ -114,9 +111,9 @@ QuadraticTriangle<D, T>::centroid() const noexcept -> Point<D, T>
 // boundingBox
 //==============================================================================
 
-template <Size D, typename T>
+template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
+Polygon<P, N, D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 {
   return um2::boundingBox(*this);
 }
@@ -125,9 +122,9 @@ QuadraticTriangle<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 // isCCW
 //==============================================================================
 
-template <Size D, typename T>
+template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D, T>::isCCW() const noexcept -> bool
+Polygon<P, N, D, T>::isCCW() const noexcept -> bool
 {
   return um2::isCCW(*this);
 }

@@ -1,4 +1,4 @@
-#include <um2/geometry/Triangle.hpp>
+#include <um2/geometry/Polygon.hpp>
 
 #include "../test_macros.hpp"
 
@@ -72,7 +72,6 @@ HOSTDEV
 TEST_CASE(edge)
 {
   um2::Triangle<D, T> tri = makeTri<D, T>();
-  static_assert(numEdges(tri) == 3);
   um2::LineSegment<D, T> edge = tri.getEdge(0);
   ASSERT(um2::isApprox(edge[0], tri[0]));
   ASSERT(um2::isApprox(edge[1], tri[1]));
@@ -116,6 +115,7 @@ TEST_CASE(area)
   tri[1][0] = static_cast<T>(2);
   ASSERT_NEAR(tri.area(), static_cast<T>(1), static_cast<T>(1e-5));
 }
+
 //==============================================================================
 // centroid
 //==============================================================================

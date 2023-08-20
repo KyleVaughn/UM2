@@ -1,4 +1,4 @@
-#include <um2/geometry/QuadraticTriangle.hpp>
+#include <um2/geometry/Polygon.hpp>
 
 #include "../test_macros.hpp"
 
@@ -92,7 +92,6 @@ HOSTDEV
 TEST_CASE(edge)
 {
   um2::QuadraticTriangle<D, T> tri = makeTri2<D, T>();
-  static_assert(numEdges(tri) == 3);
   um2::QuadraticSegment<D, T> edge = tri.getEdge(0);
   ASSERT(um2::isApprox(edge[0], tri[0]));
   ASSERT(um2::isApprox(edge[1], tri[1]));

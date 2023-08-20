@@ -82,7 +82,8 @@ centroid(PlanarQuadraticPolygon<N, T> const & q) noexcept -> Point2<T>
   auto lin_poly = linearPolygon(q);
   T area_sum = lin_poly.area();
   Point2<T> centroid_sum = area_sum * centroid(lin_poly);
-  for (Size i = 0; i < numEdges(q); ++i) {
+  Size const num_edges = polygonNumEdges<1, N>();
+  for (Size i = 0; i < num_edges; ++i) {
     auto const e = getEdge(q, i);
     T const a = enclosedArea(e);
     area_sum += a;

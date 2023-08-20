@@ -1,8 +1,6 @@
-#include <um2/geometry/QuadraticQuadrilateral.hpp>
+#include <um2/geometry/Polygon.hpp>
 
 #include "../test_macros.hpp"
-
-#include <iostream>
 
 template <Size D, typename T>
 HOSTDEV static constexpr auto
@@ -90,7 +88,6 @@ HOSTDEV
 TEST_CASE(edge)
 {
   um2::QuadraticQuadrilateral<D, T> quad = makeQuad2<D, T>();
-  static_assert(numEdges(quad) == 4);
   um2::QuadraticSegment<D, T> edge = quad.getEdge(0);
   ASSERT(um2::isApprox(edge[0], quad[0]));
   ASSERT(um2::isApprox(edge[1], quad[1]));

@@ -1,4 +1,4 @@
-#include <um2/geometry/Quadrilateral.hpp>
+#include <um2/geometry/Polygon.hpp>
 
 #include "../test_macros.hpp"
 
@@ -87,7 +87,6 @@ HOSTDEV
 TEST_CASE(edge)
 {
   um2::Quadrilateral<D, T> quad = makeQuad<D, T>();
-  static_assert(numEdges(quad) == 4);
   um2::LineSegment<D, T> edge = quad.getEdge(0);
   ASSERT(um2::isApprox(edge[0], quad[0]));
   ASSERT(um2::isApprox(edge[1], quad[1]));
@@ -111,13 +110,13 @@ HOSTDEV
 TEST_CASE(isConvex)
 {
   um2::Quadrilateral<2, T> quad = makeQuad<2, T>();
-  ASSERT(quad.isConvex());
+  ASSERT(isConvex(quad));
   quad[3][0] = static_cast<T>(0.5);
-  ASSERT(quad.isConvex());
+  ASSERT(isConvex(quad));
   quad[3][1] = static_cast<T>(0.5);
-  ASSERT(quad.isConvex()); // Effectively a triangle.
+  ASSERT(isConvex(quad)); // Effectively a triangle.
   quad[3][0] = static_cast<T>(0.75);
-  ASSERT(!quad.isConvex());
+  ASSERT(!isConvex(quad));
 }
 
 //==============================================================================
