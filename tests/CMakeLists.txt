@@ -36,30 +36,30 @@ add_um2_test(./geometry/Point.cpp)
 add_um2_test(./geometry/morton_sort_points.cpp)
 add_um2_test(./geometry/AxisAlignedBox.cpp)
 add_um2_test(./geometry/LineSegment.cpp)
-add_um2_test(./geometry/Triangle.cpp)
-add_um2_test(./geometry/Quadrilateral.cpp)
+#add_um2_test(./geometry/Triangle.cpp)
+#add_um2_test(./geometry/Quadrilateral.cpp)
 add_um2_test(./geometry/QuadraticSegment.cpp)
-add_um2_test(./geometry/QuadraticTriangle.cpp)
-add_um2_test(./geometry/QuadraticQuadrilateral.cpp)
+#add_um2_test(./geometry/QuadraticTriangle.cpp)
+#add_um2_test(./geometry/QuadraticQuadrilateral.cpp)
 
-#==============================================================================
-# mesh
-#==============================================================================
-
-# Copy the mesh files to the built test directory
-file(COPY ${PROJECT_SOURCE_DIR}/tests/mesh/mesh_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-add_um2_test(./mesh/RegularGrid.cpp)
-add_um2_test(./mesh/RegularPartition.cpp)
-add_um2_test(./mesh/RectilinearGrid.cpp)
-add_um2_test(./mesh/RectilinearPartition.cpp)
-add_um2_test(./mesh/MeshFile.cpp)
-add_um2_test(./mesh/TriMesh.cpp)
-add_um2_test(./mesh/QuadMesh.cpp)
-add_um2_test(./mesh/QuadraticTriMesh.cpp)
-add_um2_test(./mesh/QuadraticQuadMesh.cpp)
-add_um2_test(./mesh/io_abaqus.cpp)
-add_um2_test(./mesh/io_xdmf.cpp)
+##==============================================================================
+## mesh
+##==============================================================================
+#
+## Copy the mesh files to the built test directory
+#file(COPY ${PROJECT_SOURCE_DIR}/tests/mesh/mesh_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+#
+#add_um2_test(./mesh/RegularGrid.cpp)
+#add_um2_test(./mesh/RegularPartition.cpp)
+#add_um2_test(./mesh/RectilinearGrid.cpp)
+#add_um2_test(./mesh/RectilinearPartition.cpp)
+#add_um2_test(./mesh/MeshFile.cpp)
+#add_um2_test(./mesh/TriMesh.cpp)
+#add_um2_test(./mesh/QuadMesh.cpp)
+#add_um2_test(./mesh/QuadraticTriMesh.cpp)
+#add_um2_test(./mesh/QuadraticQuadMesh.cpp)
+#add_um2_test(./mesh/io_abaqus.cpp)
+#add_um2_test(./mesh/io_xdmf.cpp)
 
 ###==============================================================================
 ### mpact

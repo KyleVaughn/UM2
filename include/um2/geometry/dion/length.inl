@@ -41,7 +41,7 @@ length(QuadraticSegment<D, T> const & q) noexcept -> T
   // V₂₃ = q[3] - q[2]
   // Q′(r) = B + 2rA,
 
-  if (q.isStraight()) {
+  if (isStraight(q)) {
     return q[0].distanceTo(q[1]);
   }
 

@@ -1,4 +1,4 @@
-#include <um2/geometry/LineSegment.hpp>
+#include <um2/geometry/Dion.hpp>
 
 #include "../test_macros.hpp"
 
@@ -144,6 +144,35 @@ TEST_CASE(isLeft)
 }
 
 //=============================================================================
+// pointClosestTo
+//=============================================================================
+
+template <Size D, typename T>
+HOSTDEV
+TEST_CASE(pointClosestTo)
+{
+  um2::LineSegment<D, T> line = makeLine<D, T>();
+
+  // The left end point
+  um2::Point<D, T> p0 = line[0];
+  ASSERT_NEAR(line.pointClosestTo(p0), static_cast<T>(0), static_cast<T>(1e-5));
+  // A point to the left of the left end point
+  p0[0] -= static_cast<T>(1);
+  ASSERT_NEAR(line.pointClosestTo(p0), static_cast<T>(0), static_cast<T>(1e-5));
+  // A point to the right of the left end point
+  p0 = line(static_cast<T>(0.5));
+  p0[0] -= static_cast<T>(0.1);
+  p0[1] += static_cast<T>(0.1);
+  ASSERT_NEAR(line.pointClosestTo(p0), static_cast<T>(0.5), static_cast<T>(1e-5));
+
+  // Repeat for the right end point
+  um2::Point<D, T> p1 = line[1];
+  ASSERT_NEAR(line.pointClosestTo(p1), static_cast<T>(1), static_cast<T>(1e-5));
+  p1[0] += static_cast<T>(1);
+  ASSERT_NEAR(line.pointClosestTo(p1), static_cast<T>(1), static_cast<T>(1e-5));
+}
+
+//=============================================================================
 // distanceTo
 //=============================================================================
 
@@ -177,35 +206,6 @@ TEST_CASE(distanceTo)
   ASSERT_NEAR(line.distanceTo(p1), static_cast<T>(1), static_cast<T>(1e-5));
   p1[0] -= static_cast<T>(1.5);
   ASSERT_NEAR(line.distanceTo(p1), ref, static_cast<T>(1e-5));
-}
-
-//=============================================================================
-// pointClosestTo
-//=============================================================================
-
-template <Size D, typename T>
-HOSTDEV
-TEST_CASE(pointClosestTo)
-{
-  um2::LineSegment<D, T> line = makeLine<D, T>();
-
-  // The left end point
-  um2::Point<D, T> p0 = line[0];
-  ASSERT_NEAR(line.pointClosestTo(p0), static_cast<T>(0), static_cast<T>(1e-5));
-  // A point to the left of the left end point
-  p0[0] -= static_cast<T>(1);
-  ASSERT_NEAR(line.pointClosestTo(p0), static_cast<T>(0), static_cast<T>(1e-5));
-  // A point to the right of the left end point
-  p0 = line(static_cast<T>(0.5));
-  p0[0] -= static_cast<T>(0.1);
-  p0[1] += static_cast<T>(0.1);
-  ASSERT_NEAR(line.pointClosestTo(p0), static_cast<T>(0.5), static_cast<T>(1e-5));
-
-  // Repeat for the right end point
-  um2::Point<D, T> p1 = line[1];
-  ASSERT_NEAR(line.pointClosestTo(p1), static_cast<T>(1), static_cast<T>(1e-5));
-  p1[0] += static_cast<T>(1);
-  ASSERT_NEAR(line.pointClosestTo(p1), static_cast<T>(1), static_cast<T>(1e-5));
 }
 
 #if UM2_USE_CUDA
@@ -247,8 +247,8 @@ TEST_SUITE(LineSegment)
   TEST_HOSTDEV(length, 1, 1, D, T);
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
   TEST_HOSTDEV(isLeft, 1, 1, T);
-  TEST_HOSTDEV(distanceTo, 1, 1, D, T);
   TEST_HOSTDEV(pointClosestTo, 1, 1, D, T);
+  TEST_HOSTDEV(distanceTo, 1, 1, D, T);
 }
 
 auto

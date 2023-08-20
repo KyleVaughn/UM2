@@ -6,6 +6,13 @@
 #include <um2/mesh/MeshFile.hpp>
 #include <um2/mesh/RegularPartition.hpp>
 
+//=============================================================================
+// QUADRATIC TRI MESH
+//=============================================================================
+//
+// A 2D volumetric or 3D surface mesh composed of quadratic triangles.
+// This is a specialization of FaceVertexMesh for P=2 and N=6.
+
 namespace um2
 {
 

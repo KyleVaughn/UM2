@@ -14,11 +14,6 @@ namespace um2
 // A D-dimensional rectilinear grid with data of type T
 
 template <Size D, typename T>
-// Why does clang-tidy complain declaration uses identifier '__i0'? There is
-// no __i0 in the code.
-// If you're reading this, uncomment the NOLINTNEXTLINE line below and see if
-// this has been fixed.
-// NOLINTNEXTLINE
 struct RectilinearGrid {
 
   // Divisions along each axis

@@ -23,6 +23,37 @@
 namespace um2
 {
 
+template <typename T>
+static inline auto
+getH5DataType() -> H5::PredType
+{
+  // NOLINTNEXTLINE(bugprone-branch-clone) justification: Need a default case
+  if constexpr (std::same_as<T, float>) {
+    return H5::PredType::NATIVE_FLOAT;
+  } else if constexpr (std::same_as<T, double>) {
+    return H5::PredType::NATIVE_DOUBLE;
+  } else if constexpr (std::same_as<T, int8_t>) {
+    return H5::PredType::NATIVE_INT8;
+  } else if constexpr (std::same_as<T, int16_t>) {
+    return H5::PredType::NATIVE_INT16;
+  } else if constexpr (std::same_as<T, int32_t>) {
+    return H5::PredType::NATIVE_INT32;
+  } else if constexpr (std::same_as<T, int64_t>) {
+    return H5::PredType::NATIVE_INT64;
+  } else if constexpr (std::same_as<T, uint8_t>) {
+    return H5::PredType::NATIVE_UINT8;
+  } else if constexpr (std::same_as<T, uint16_t>) {
+    return H5::PredType::NATIVE_UINT16;
+  } else if constexpr (std::same_as<T, uint32_t>) {
+    return H5::PredType::NATIVE_UINT32;
+  } else if constexpr (std::same_as<T, uint64_t>) {
+    return H5::PredType::NATIVE_UINT64;
+  } else {
+    static_assert(!sizeof(T), "Unsupported type");
+    return H5::PredType::NATIVE_FLOAT;
+  }
+}
+
 //==============================================================================
 // writeXDMFGeometry
 //==============================================================================
@@ -33,7 +64,7 @@ static void writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
                               std::string const & h5filename, std::string const & h5path,
                               MeshFile<T, I> const & mesh)
 {
-  Log::debug("Writing XDMF geometry");
+  LOG_DEBUG("Writing XDMF geometry");
   size_t const num_verts = mesh.vertices.size();
   bool const is_2d =
       std::count_if(mesh.vertices.cbegin(), mesh.vertices.cend(), [](auto const & v) {
@@ -53,11 +84,7 @@ static void writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
   xdata.append_attribute("DataType") = "Float";
   xdata.append_attribute("Dimensions") =
       (std::to_string(num_verts) + " " + std::to_string(dim)).c_str();
-  if constexpr (sizeof(T) == 4) {
-    xdata.append_attribute("Precision") = 4;
-  } else if constexpr (sizeof(T) == 8) {
-    xdata.append_attribute("Precision") = 8;
-  }
+  xdata.append_attribute("Precision") = sizeof(T);
   xdata.append_attribute("Format") = "HDF";
   std::string const h5geompath = h5filename + ":" + h5path + "/Geometry";
   xdata.append_child(pugi::node_pcdata).set_value(h5geompath.c_str());
@@ -66,18 +93,10 @@ static void writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
   hsize_t dims[2] = {static_cast<hsize_t>(num_verts), dim};
   H5::DataSpace const h5space(2, dims);
   // Create HDF5 data type
-  H5::DataType h5type;
-  // NOLINTBEGIN(cppcoreguidelines-slicing)
-  if constexpr (sizeof(T) == 4) {
-    h5type = H5::PredType::NATIVE_FLOAT;
-  } else if constexpr (sizeof(T) == 8) {
-    h5type = H5::PredType::NATIVE_DOUBLE;
-  }
-  // NOLINTEND(cppcoreguidelines-slicing)
+  H5::DataType const h5type = getH5DataType<T>();
   // Create HDF5 data set
   H5::DataSet const h5dataset = h5group.createDataSet("Geometry", h5type, h5space);
   // Create an xy or xyz array
-  // cppcheck-suppress constStatement
   T * const xyz = new T[num_verts * dim];
   if (dim == 2) {
     for (size_t i = 0; i < num_verts; ++i) {
@@ -108,7 +127,7 @@ static void writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
                               std::string const & h5filename, std::string const & h5path,
                               MeshFile<T, I> const & mesh)
 {
-  Log::debug("Writing XDMF topology");
+  LOG_DEBUG("Writing XDMF topology");
   // Create XDMF Topology node
   auto xtopo = xgrid.append_child("Topology");
   size_t const ncells = mesh.numCells();
@@ -141,35 +160,13 @@ static void writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
   auto xdata = xtopo.append_child("DataItem");
   xdata.append_attribute("DataType") = "Int";
   xdata.append_attribute("Dimensions") = dimensions.c_str();
-  if constexpr (sizeof(I) == 1) {
-    xdata.append_attribute("Precision") = 1;
-  } else if constexpr (sizeof(I) == 2) {
-    xdata.append_attribute("Precision") = 2;
-  } else if constexpr (sizeof(I) == 4) {
-    xdata.append_attribute("Precision") = 4;
-  } else if constexpr (sizeof(I) == 8) {
-    xdata.append_attribute("Precision") = 8;
-  }
+  xdata.append_attribute("Precision") = sizeof(I);
   xdata.append_attribute("Format") = "HDF";
   std::string const h5topopath = h5filename + ":" + h5path + "/Topology";
   xdata.append_child(pugi::node_pcdata).set_value(h5topopath.c_str());
 
   // Create HDF5 data type
-  H5::DataType h5type;
-  // NOLINTBEGIN(cppcoreguidelines-slicing)
-  if constexpr (sizeof(I) == 1) {
-    h5type = H5::PredType::NATIVE_INT8;
-  } else if constexpr (sizeof(I) == 2) {
-    h5type = H5::PredType::NATIVE_INT16;
-  } else if constexpr (sizeof(I) == 4) {
-    h5type = H5::PredType::NATIVE_INT32;
-  } else if constexpr (sizeof(I) == 8) {
-    h5type = H5::PredType::NATIVE_INT64;
-  } else {
-    Log::error("Unsupported signed integral type");
-  }
-  // NOLINTEND(cppcoreguidelines-slicing)
-
+  H5::DataType const h5type = getH5DataType<I>();
   // Create HDF5 data space
   hsize_t dims[2] = {static_cast<hsize_t>(ncells), nverts};
   H5::DataSpace const h5space(2, dims);
@@ -185,13 +182,12 @@ static void writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 static void writeXDMFMaterials(pugi::xml_node & xgrid, H5::Group & h5group,
                                std::string const & h5filename, std::string const & h5path,
                                MeshFile<T, I> const & mesh,
                                std::vector<std::string> const & material_names)
 {
-  Log::debug("Writing XDMF materials");
+  LOG_DEBUG("Writing XDMF materials");
   // Create material array
   size_t const ncells = mesh.numCells();
   std::vector<MaterialID> materials(ncells, -1);
@@ -222,21 +218,8 @@ static void writeXDMFMaterials(pugi::xml_node & xgrid, H5::Group & h5group,
   auto const dims = static_cast<hsize_t>(materials.size());
   H5::DataSpace const h5space(1, &dims);
   // Create HDF5 data type
-  H5::DataType h5type;
-  // NOLINTBEGIN(cppcoreguidelines-slicing)
   static_assert(std::signed_integral<MaterialID>);
-  if constexpr (sizeof(MaterialID) == 1) {
-    h5type = H5::PredType::NATIVE_INT8;
-  } else if constexpr (sizeof(MaterialID) == 2) {
-    h5type = H5::PredType::NATIVE_INT16;
-  } else if constexpr (sizeof(MaterialID) == 4) {
-    h5type = H5::PredType::NATIVE_INT32;
-  } else if constexpr (sizeof(MaterialID) == 8) {
-    h5type = H5::PredType::NATIVE_INT64;
-  } else {
-    Log::error("Unsupported MaterialID size");
-  }
-  // NOLINTEND(cppcoreguidelines-slicing)
+  H5::DataType const h5type = getH5DataType<MaterialID>();
   // Create HDF5 data set
   H5::DataSet const h5dataset = h5group.createDataSet("Materials", h5type, h5space);
   // Write HDF5 data set
@@ -250,17 +233,7 @@ static void writeXDMFMaterials(pugi::xml_node & xgrid, H5::Group & h5group,
   auto xdata = xmat.append_child("DataItem");
   xdata.append_attribute("DataType") = "Int";
   xdata.append_attribute("Dimensions") = materials.size();
-  if (sizeof(MaterialID) == 1) {
-    xdata.append_attribute("Precision") = "1";
-  } else if (sizeof(MaterialID) == 2) {
-    xdata.append_attribute("Precision") = "2";
-  } else if (sizeof(MaterialID) == 4) {
-    xdata.append_attribute("Precision") = "4";
-  } else if (sizeof(MaterialID) == 8) {
-    xdata.append_attribute("Precision") = "8";
-  } else {
-    Log::error("Unsupported MaterialID size");
-  }
+  xdata.append_attribute("Precision") = sizeof(MaterialID);
   xdata.append_attribute("Format") = "HDF";
   std::string const h5matpath = h5filename + ":" + h5path + "/Materials";
   xdata.append_child(pugi::node_pcdata).set_value(h5matpath.c_str());
@@ -276,7 +249,7 @@ static void writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
                             std::string const & h5filename, std::string const & h5path,
                             MeshFile<T, I> const & mesh)
 {
-  Log::debug("Writing XDMF elsets");
+  LOG_DEBUG("Writing XDMF elsets");
   for (size_t i = 0; i < mesh.elset_names.size(); ++i) {
     std::string const name = mesh.elset_names[i];
     auto const start = static_cast<size_t>(mesh.elset_offsets[i]);
@@ -285,20 +258,7 @@ static void writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
     auto dims = static_cast<hsize_t>(end - start);
     H5::DataSpace const h5space(1, &dims);
     // Create HDF5 data type
-    H5::DataType h5type;
-    // NOTE: NOLINTBEGIN(cppcoreguidelines-slicing)
-    if constexpr (sizeof(I) == 1) {
-      h5type = H5::PredType::NATIVE_INT8;
-    } else if constexpr (sizeof(I) == 2) {
-      h5type = H5::PredType::NATIVE_INT16;
-    } else if constexpr (sizeof(I) == 4) {
-      h5type = H5::PredType::NATIVE_INT32;
-    } else if constexpr (sizeof(I) == 8) {
-      h5type = H5::PredType::NATIVE_INT64;
-    } else {
-      Log::error("Unsupported element index size");
-    }
-    // NOTE: NOLINTEND(cppcoreguidelines-slicing)
+    H5::DataType const h5type = getH5DataType<I>();
     // Create HDF5 data set
     H5::DataSet const h5dataset = h5group.createDataSet(name, h5type, h5space);
     // Write HDF5 data set.
@@ -312,15 +272,7 @@ static void writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
     auto xdata = xelset.append_child("DataItem");
     xdata.append_attribute("DataType") = "Int";
     xdata.append_attribute("Dimensions") = end - start;
-    if constexpr (sizeof(I) == 1) {
-      xdata.append_attribute("Precision") = 1;
-    } else if constexpr (sizeof(I) == 2) {
-      xdata.append_attribute("Precision") = 2;
-    } else if constexpr (sizeof(I) == 4) {
-      xdata.append_attribute("Precision") = 4;
-    } else if constexpr (sizeof(I) == 8) {
-      xdata.append_attribute("Precision") = 8;
-    }
+    xdata.append_attribute("Precision") = sizeof(I);
     xdata.append_attribute("Format") = "HDF";
     std::string h5elsetpath = h5filename;
     h5elsetpath += ':';
@@ -342,7 +294,7 @@ writeXDMFUniformGrid(pugi::xml_node & xdomain, H5::H5File & h5file,
                      MeshFile<T, I> const & mesh,
                      std::vector<std::string> const & material_names)
 {
-  Log::debug("Writing XDMF uniform grid");
+  LOG_DEBUG("Writing XDMF uniform grid");
 
   // Remove any leading slashes from the mesh name
   std::string const name_str = mesh.name;
@@ -410,7 +362,7 @@ writeXDMFFile(MeshFile<T, I> & mesh)
       mesh.filepath.substr(h5filepath_end, mesh.filepath.size() - 5 - h5filepath_end) +
       ".h5";
   std::string const h5filepath = mesh.filepath.substr(0, h5filepath_end);
-  Log::debug("H5 filename: " + h5filename);
+  LOG_DEBUG("H5 filename: " + h5filename);
   H5::H5File h5file(h5filepath + h5filename, H5F_ACC_TRUNC);
 
   // Setup XML file
@@ -438,7 +390,6 @@ writeXDMFFile(MeshFile<T, I> & mesh)
     pugi::xml_node xinfo = xdomain.append_child("Information");
     xinfo.append_attribute("Name") = "Materials";
     std::string materials;
-    ;
     for (size_t i = 0; i < material_names.size(); i++) {
       materials += material_names[i];
       if (i + 1 < material_names.size()) {
@@ -502,7 +453,7 @@ template <std::floating_point T, std::signed_integral I>
 static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
                              std::string const & h5filename, MeshFile<T, I> & mesh)
 {
-  Log::debug("Reading XDMF geometry");
+  LOG_DEBUG("Reading XDMF geometry");
   pugi::xml_node const xgeometry = xgrid.child("Geometry");
   if (strcmp(xgeometry.name(), "Geometry") != 0) {
     Log::error("XDMF geometry node not found");
@@ -620,7 +571,7 @@ template <std::floating_point T, std::signed_integral I>
 static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
                              std::string const & h5filename, MeshFile<T, I> & mesh)
 {
-  Log::debug("Reading XDMF topology");
+  LOG_DEBUG("Reading XDMF topology");
   pugi::xml_node const xtopology = xgrid.child("Topology");
   if (strcmp(xtopology.name(), "Topology") != 0) {
     Log::error("XDMF topology node not found");
@@ -740,7 +691,7 @@ template <std::floating_point T, std::signed_integral I>
 static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
                            std::string const & h5filename, MeshFile<T, I> & mesh)
 {
-  Log::debug("Reading XDMF elsets");
+  LOG_DEBUG("Reading XDMF elsets");
   // Loop over all nodes to find the elsets
   for (pugi::xml_node xelset = xgrid.first_child(); xelset;
        xelset = xelset.next_sibling()) {
@@ -858,7 +809,7 @@ readXDMFFile(std::string const & filename, MeshFile<T, I> & mesh)
   std::string const h5filename =
       filename.substr(h5filepath_end, filename.size() - 4 - h5filepath_end) + "h5";
   std::string const h5filepath = filename.substr(0, h5filepath_end);
-  Log::debug("H5 filename: " + h5filename);
+  LOG_DEBUG("H5 filename: " + h5filename);
   H5::H5File const h5file(h5filepath + h5filename, H5F_ACC_RDONLY);
 
   // Set filepath and format

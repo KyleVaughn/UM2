@@ -37,6 +37,16 @@
 namespace um2
 {
 
+//// of its vertices. These 3 vertices are D-dimensional points of type T.    
+//    
+//template <Size P, Size N, Size D, typename T>    
+//struct Polytope<2, P, N, D, T> {    
+//
+//  Point<D, T> v[N];
+//
+//}
+
+
 //==============================================================================
 // getEdge
 //==============================================================================

@@ -5,10 +5,6 @@
 #include <um2/geometry/Point.hpp>
 #include <um2/stdlib/Vector.hpp>
 
-#if UM2_USE_OPENMP
-#  include <parallel/numeric> // __gnu_parallel::accumulate
-#endif
-
 namespace um2
 {
 
@@ -90,6 +86,7 @@ struct AxisAlignedBox {
 // Aliases
 //==============================================================================
 
+// Aliases for 1, 2, and 3 dimensions.
 template <typename T>
 using AxisAlignedBox1 = AxisAlignedBox<1, T>;
 
@@ -99,6 +96,7 @@ using AxisAlignedBox2 = AxisAlignedBox<2, T>;
 template <typename T>
 using AxisAlignedBox3 = AxisAlignedBox<3, T>;
 
+// Aliases for float and double.
 using AxisAlignedBox2f = AxisAlignedBox2<float>;
 using AxisAlignedBox2d = AxisAlignedBox2<double>;
 

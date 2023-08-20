@@ -6,6 +6,13 @@
 #include <um2/mesh/MeshFile.hpp>
 #include <um2/mesh/RegularPartition.hpp>
 
+//=============================================================================
+// QUAD MESH
+//=============================================================================
+//
+// A 2D volumetric or 3D surface mesh composed of Quadrilaterals.
+// This is a specialization of FaceVertexMesh for P=1 and N=4.
+
 namespace um2
 {
 

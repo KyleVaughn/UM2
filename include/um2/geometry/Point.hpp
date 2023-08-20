@@ -19,10 +19,8 @@ using Point = Vec<D, T>;
 
 template <typename T>
 using Point1 = Point<1, T>;
-
 template <typename T>
 using Point2 = Point<2, T>;
-
 template <typename T>
 using Point3 = Point<3, T>;
 
@@ -66,11 +64,11 @@ infiniteDistance() noexcept -> T
 
 template <Size D, class T>
 PURE HOSTDEV constexpr auto
-midpoint(Point<D, T> const & a, Point<D, T> const & b) noexcept -> Point<D, T>
+midpoint(Point<D, T> a, Point<D, T> const & b) noexcept -> Point<D, T>
 {
   // (a + b) / 2
-  Point<D, T> result = a + b;
-  return result /= 2;
+  a += b;
+  return a /= 2;
 }
 
 template <Size D, class T>

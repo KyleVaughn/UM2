@@ -67,7 +67,7 @@ struct BinnedFaceVertexMesh {
         max_side_length = um2::max(max_side_length, delta[j]); 
       }
     }
-    std::cerr << "max_side_length = " << max_side_length << std::endl;
+    //std::cerr << "max_side_length = " << max_side_length << std::endl;
     //    Log::info("max_edge_length = " + std::to_string(max_edge_length));
 
     // Determine the number of bins and the bin size in each dimension.
@@ -81,7 +81,7 @@ struct BinnedFaceVertexMesh {
       assert(num_bins[d] > 0);
       bin_size[d] = delta / static_cast<T>(num_bins[d]);
     }
-    std::cerr << "num_bins = (" << num_bins[0] << ", " << num_bins[1] << ")" << std::endl;
+    //std::cerr << "num_bins = (" << num_bins[0] << ", " << num_bins[1] << ")" << std::endl;
 
     // Initialize the partition's grid.
     partition.grid.minima = box.minima;
@@ -95,8 +95,8 @@ struct BinnedFaceVertexMesh {
     partition.children.resize(total_bins + 1);
     partition.children[0] = 0; // Just to be safe.
     for (Size i = 0; i < nfaces; ++i) {
-      auto const lower_left_point = mesh.getFace(i).boundingBox().minima;
-      auto const index = partition.getCellIndexContaining(lower_left_point);
+      auto const upper_right_point = mesh.getFace(i).boundingBox().maxima;
+      auto const index = partition.getCellIndexContaining(upper_right_point);
       Size const flat_index = partition.getFlatIndex(index);
       ++partition.children[flat_index + 1];
     }
@@ -109,8 +109,8 @@ struct BinnedFaceVertexMesh {
     face_ids = um2::move(Vector<I>(nfaces, -1));
     // Assign the face ids to the bins.
     for (Size i = 0; i < nfaces; ++i) {
-      auto const lower_left_point = mesh.getFace(i).boundingBox().minima;
-      auto const index = partition.getCellIndexContaining(lower_left_point);
+      auto const upper_right_point = mesh.getFace(i).boundingBox().maxima;
+      auto const index = partition.getCellIndexContaining(upper_right_point);
       Size const offset_index = partition.getFlatIndex(index);
       auto offset = static_cast<Size>(partition.children[offset_index]);
       // Find the first empty slot in the bin.
@@ -238,9 +238,9 @@ faceContaining(BinnedPlanarPolygonMesh<P, N, T, I> const & bmesh,
   //  ...
   // }
 
-  std::cerr << "p = (" << p[0] << ", " << p[1] << ")\n";
+  // std::cerr << "p = (" << p[0] << ", " << p[1] << ")\n";
   auto const index = bmesh.partition.getCellIndexContaining(p);
-  std::cerr << "index = (" << index[0] << ", " << index[1] << ")\n";
+  // std::cerr << "index = (" << index[0] << ", " << index[1] << ")\n";
   {
     Size const offset_index = bmesh.partition.getFlatIndex(index);
     auto const offset_start = static_cast<Size>(bmesh.partition.children[offset_index]);
@@ -248,7 +248,7 @@ faceContaining(BinnedPlanarPolygonMesh<P, N, T, I> const & bmesh,
     assert(offset_start <= offset_end);
     for (Size offset = offset_start; offset < offset_end; ++offset) {
       auto const i = static_cast<Size>(bmesh.face_ids[offset]);
-      std::cerr << "i = " << i << "\n";
+      // std::cerr << "i = " << i << "\n";
       if (bmesh.mesh.getFace(i).contains(p)) {
         return i;
       }
@@ -259,14 +259,14 @@ faceContaining(BinnedPlanarPolygonMesh<P, N, T, I> const & bmesh,
   if (!is_last_on_x) {
     auto index_right = index;
     ++index_right[0];
-    std::cerr << "index_right = (" << index_right[0] << ", " << index_right[1] << ")\n";
+    // std::cerr << "index_right = (" << index_right[0] << ", " << index_right[1] << ")\n";
     Size const offset_index = bmesh.partition.getFlatIndex(index_right);
     auto const offset_start = static_cast<Size>(bmesh.partition.children[offset_index]);
     auto const offset_end = static_cast<Size>(bmesh.partition.children[offset_index + 1]);
     assert(offset_start <= offset_end);
     for (Size offset = offset_start; offset < offset_end; ++offset) {
       auto const i = static_cast<Size>(bmesh.face_ids[offset]);
-      std::cerr << "i = " << i << "\n";
+      // std::cerr << "i = " << i << "\n";
       if (bmesh.mesh.getFace(i).contains(p)) {
         return i;
       }
@@ -276,14 +276,14 @@ faceContaining(BinnedPlanarPolygonMesh<P, N, T, I> const & bmesh,
   if (!is_last_on_y) {
     auto index_top = index;
     ++index_top[1];
-    std::cerr << "index_top = (" << index_top[0] << ", " << index_top[1] << ")\n";
+    // std::cerr << "index_top = (" << index_top[0] << ", " << index_top[1] << ")\n";
     Size const offset_index = bmesh.partition.getFlatIndex(index_top);
     auto const offset_start = static_cast<Size>(bmesh.partition.children[offset_index]);
     auto const offset_end = static_cast<Size>(bmesh.partition.children[offset_index + 1]);
     assert(offset_start <= offset_end);
     for (Size offset = offset_start; offset < offset_end; ++offset) {
       auto const i = static_cast<Size>(bmesh.face_ids[offset]);
-      std::cerr << "i = " << i << "\n";
+      // std::cerr << "i = " << i << "\n";
       if (bmesh.mesh.getFace(i).contains(p)) {
         return i;
       }
@@ -293,21 +293,21 @@ faceContaining(BinnedPlanarPolygonMesh<P, N, T, I> const & bmesh,
     auto index_top_right = index;
     ++index_top_right[0];
     ++index_top_right[1];
-    std::cerr << "index_top_right = (" << index_top_right[0] << ", " << index_top_right[1]
-              << ")\n";
+    // std::cerr << "index_top_right = (" << index_top_right[0] << ", " << index_top_right[1]
+    //           << ")\n";
     Size const offset_index = bmesh.partition.getFlatIndex(index_top_right);
     auto const offset_start = static_cast<Size>(bmesh.partition.children[offset_index]);
     auto const offset_end = static_cast<Size>(bmesh.partition.children[offset_index + 1]);
     assert(offset_start <= offset_end);
     for (Size offset = offset_start; offset < offset_end; ++offset) {
       auto const i = static_cast<Size>(bmesh.face_ids[offset]);
-      std::cerr << "i = " << i << "\n";
+      // std::cerr << "i = " << i << "\n";
       if (bmesh.mesh.getFace(i).contains(p)) {
         return i;
       }
     }
   }
-  std::cerr << "Actual face = " << bmesh.mesh.faceContaining(p) << "\n";
+  // std::cerr << "Actual face = " << bmesh.mesh.faceContaining(p) << "\n";
   assert(false);
   return -1;
 }

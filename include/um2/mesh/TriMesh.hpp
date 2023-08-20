@@ -6,6 +6,13 @@
 #include <um2/mesh/MeshFile.hpp>
 #include <um2/mesh/RegularPartition.hpp>
 
+//=============================================================================
+// TRI MESH 
+//=============================================================================
+//
+// A 2D volumetric or 3D surface mesh composed of triangles. 
+// This is a specialization of FaceVertexMesh for P=1 and N=3.
+
 namespace um2
 {
 

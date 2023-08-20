@@ -1,6 +1,8 @@
 Change --- to ===
 Review NOLINTs and cppcheck suppress
 
+Generalize polygon
+
 Mesh visualization to debug BinnedFaceVertexMesh faceContaining
 
 Docs

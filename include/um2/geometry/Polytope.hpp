@@ -39,6 +39,7 @@ struct Polytope {
 template <Size K, Size N, Size D, typename T>
 using LinearPolytope = Polytope<K, 1, N, D, T>;
 
+// K-Polytopes
 template <Size P, Size N, Size D, typename T>
 using Dion = Polytope<1, P, N, D, T>;
 

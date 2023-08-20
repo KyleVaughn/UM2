@@ -17,7 +17,13 @@ namespace um2
 //==============================================================================-
 // ABAQUS mesh file
 //==============================================================================
+//
 // IO for ABAQUS mesh files.
+
+
+//==============================================================================-
+// parseNodes 
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
 static void
@@ -39,6 +45,10 @@ parseNodes(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     mesh.vertices.emplace_back(x, y, z);
   }
 }
+
+//==============================================================================-
+// parseElements 
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
 static void
@@ -79,7 +89,6 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   if (mesh.type != this_type) {
     LOG_ERROR("Heterogeneous mesh types are not supported");
   }
-  // NOLINTBEGIN(cppcoreguidelines-init-variables)
   while (std::getline(file, line) && line[0] != '*') {
     LOG_TRACE("Line: " + line);
     std::string_view const line_view = line;
@@ -102,8 +111,11 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     assert(id > 0);
     mesh.element_conn.push_back(id - 1); // ABAQUS is 1-indexed
   }
-  // NOLINTEND(cppcoreguidelines-init-variables)
 }
+
+//==============================================================================
+// parseElsets
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
 static void
@@ -147,6 +159,10 @@ parseElsets(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   // Ensure the elset is sorted
   assert(std::is_sorted(mesh.elset_ids.cbegin() + offset_back, mesh.elset_ids.cend()));
 }
+
+//==============================================================================
+// readAbaqusFile
+//==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
 void

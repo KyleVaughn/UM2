@@ -33,7 +33,7 @@ pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> boo
   //    of the triangle.
   // We manually perform the check for (v0, v1) since we want to reuse v01 and v0p.
   Vec2<T> const v01(q[1][0] - q[0][0], q[1][1] - q[0][1]);
-  Point2<T> const bcp = q.getBezierControlPoint();
+  Point2<T> const bcp = getBezierControlPoint(q);
   Vec2<T> const v0b(bcp[0] - q[0][0], bcp[1] - q[0][1]);
   Vec2<T> const v0p(p[0] - q[0][0], p[1] - q[0][1]);
   bool const tri_is_ccw = v01.cross(v0b) >= 0;

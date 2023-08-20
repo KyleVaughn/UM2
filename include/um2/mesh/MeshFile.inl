@@ -102,7 +102,7 @@ template <std::floating_point T, std::signed_integral I>
 constexpr void
 MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & submesh) const
 {
-  Log::debug("Extracting submesh for elset: " + elset_name);
+  LOG_DEBUG("Extracting submesh for elset: " + elset_name);
   // Find the elset with the given name.
   auto const elset_it = std::find(elset_names.cbegin(), elset_names.cend(), elset_name);
   if (elset_it == elset_names.cend()) {
