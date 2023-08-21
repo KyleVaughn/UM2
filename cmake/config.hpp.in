@@ -4,7 +4,7 @@
 #include <cstdint> // int32_t, int64_t
 
 // Ignore clang-tidy in this case, since these are CMake defines
-// NOLINTBEGIN(modernize-macro-to-enum)
+// NOLINTBEGIN(modernize-macro-to-enum) justified
 
 //==============================================================================
 // CMake defines
@@ -66,7 +66,7 @@
 
 #if UM2_ENABLE_INT64
 using Size = int64_t; // Index type
-using Int  = int64_t; // Integer type in API
+using Int = int64_t;  // Integer type in API
 
 consteval auto
 sizeMax() -> Size
@@ -77,7 +77,7 @@ sizeMax() -> Size
 #else
 
 using Size = int32_t; // Index type
-using Int  = int32_t; // Integer type in API
+using Int = int32_t;  // Integer type in API
 
 consteval auto
 sizeMax() -> Size
@@ -93,7 +93,7 @@ using Float = double; // Floating point type in API
 using Float = float; // Floating point type in API
 #endif
 
-// Integer type for material IDs. 
+// Integer type for material IDs.
 using MaterialID = int8_t;
 
 // NOLINTEND(modernize-macro-to-enum)

@@ -56,7 +56,7 @@
 
 #if UM2_USE_CUDA
 
-// NOLINTBEGIN(bugprone-macro-parentheses)
+// NOLINTBEGIN(bugprone-macro-parentheses) justification: using the name of the test
 #  define MAKE_CUDA_KERNEL_1_ARGS(host_test)                                             \
     __global__ void host_test##_cuda_kernel()                                            \
     {                                                                                    \
@@ -81,7 +81,6 @@
       host_test<T, U, V>();                                                              \
     }
 
-// NOLINTEND(bugprone-macro-parentheses)
 #  define MAKE_CUDA_KERNEL_GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
 #  define MAKE_CUDA_KERNEL(...)                                                          \
     MAKE_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, MAKE_CUDA_KERNEL_4_ARGS,                     \
@@ -180,7 +179,6 @@
   TEST(host_test);                                                                       \
   TEST_CUDA_KERNEL(host_test, blocks, threads);
 
-// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TEST_HOSTDEV_4_ARGS(host_test, blocks, threads, T)                               \
   TEST(host_test<T>);                                                                    \
   TEST_CUDA_KERNEL(host_test, blocks, threads, T);

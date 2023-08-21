@@ -21,22 +21,22 @@
 //   QuadraticSegment (P = 2, N = 3)
 
 // For quadratic segments, the parametric equation is
-//  Q(r) = P₁ + rB + r²A,    
-// where    
-//  B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]    
-//  A = -2(V₁₃ + V₂₃) =  2q[1] + 2q[2] - 4q[3]    
-// and    
-// V₁₃ = q[3] - q[1]    
-// V₂₃ = q[3] - q[2]    
-// NOTE: The equations above use 1-based indexing.  
+//  Q(r) = P₁ + rB + r²A,
+// where
+//  B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]
+//  A = -2(V₁₃ + V₂₃) =  2q[1] + 2q[2] - 4q[3]
+// and
+// V₁₃ = q[3] - q[1]
+// V₂₃ = q[3] - q[2]
+// NOTE: The equations above use 1-based indexing.
 
 namespace um2
 {
 
-template <Size P, Size N, Size D, typename T>    
-struct Polytope<1, P, N, D, T> {    
-    
-  Point<D, T> v[N]; 
+template <Size P, Size N, Size D, typename T>
+struct Polytope<1, P, N, D, T> {
+
+  Point<D, T> v[N];
 
   //==============================================================================
   // Accessors
@@ -49,48 +49,51 @@ struct Polytope<1, P, N, D, T> {
   operator[](Size i) const noexcept -> Point<D, T> const &;
 
   //==============================================================================
-  // Constructors    
-  //==============================================================================    
-    
-  constexpr Polytope() noexcept = default;    
+  // Constructors
+  //==============================================================================
 
-  template <class... Pts>    
-    requires(sizeof...(Pts) == N  && (std::same_as<Point<D, T>, Pts> && ...))    
+  constexpr Polytope() noexcept = default;
+
+  template <class... Pts>
+    requires(sizeof...(Pts) == N && (std::same_as<Point<D, T>, Pts> && ...))
   // NOLINTNEXTLINE(google-explicit-constructor) justification: implicit conversion
-  HOSTDEV constexpr Polytope(Pts const... args) noexcept : v{args...} {} 
+  HOSTDEV constexpr Polytope(Pts const... args) noexcept
+      : v{args...}
+  {
+  }
 
-  //==============================================================================    
-  // Methods    
-  //==============================================================================    
-    
-  template <typename R>    
-  PURE HOSTDEV constexpr auto    
+  //==============================================================================
+  // Methods
+  //==============================================================================
+
+  template <typename R>
+  PURE HOSTDEV constexpr auto
   operator()(R r) const noexcept -> Point<D, T>;
-    
-  template <typename R>    
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
-  jacobian(R r) const noexcept -> Vec<D, T>;
-    
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
-  getRotation() const noexcept -> Mat<D, D, T>;    
-    
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
-  isLeft(Point<D, T> const & p) const noexcept -> bool;    
-    
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
-  length() const noexcept -> T;    
-    
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
-  boundingBox() const noexcept -> AxisAlignedBox<D, T>;    
-    
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
-  pointClosestTo(Point<D, T> const & p) const noexcept -> T;    
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
-  squaredDistanceTo(Point<D, T> const & p) const noexcept -> T;    
-    
-  PURE HOSTDEV [[nodiscard]] constexpr auto    
-  distanceTo(Point<D, T> const & p) const noexcept -> T;    
+  template <typename R>
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  jacobian(R r) const noexcept -> Vec<D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getRotation() const noexcept -> Mat<D, D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  isLeft(Point<D, T> const & p) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  length() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  boundingBox() const noexcept -> AxisAlignedBox<D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  pointClosestTo(Point<D, T> const & p) const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  squaredDistanceTo(Point<D, T> const & p) const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  distanceTo(Point<D, T> const & p) const noexcept -> T;
 
 }; // Dion
 

@@ -20,9 +20,8 @@ namespace um2
 //
 // IO for ABAQUS mesh files.
 
-
 //==============================================================================-
-// parseNodes 
+// parseNodes
 //==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
@@ -47,7 +46,7 @@ parseNodes(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
 }
 
 //==============================================================================-
-// parseElements 
+// parseElements
 //==============================================================================
 
 template <std::floating_point T, std::signed_integral I>

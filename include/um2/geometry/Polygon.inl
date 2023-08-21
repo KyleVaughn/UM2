@@ -1,12 +1,15 @@
 // Free functions
-#include <um2/geometry/polygon/area.inl>    
-#include <um2/geometry/polygon/centroid.inl>    
-#include <um2/geometry/polygon/contains.inl>    
-#include <um2/geometry/polygon/interpolate.inl>    
-#include <um2/geometry/polygon/jacobian.inl>
+#include <um2/geometry/polygon/area.inl>
+#include <um2/geometry/polygon/boundingBox.inl>
+#include <um2/geometry/polygon/centroid.inl>
+#include <um2/geometry/polygon/contains.inl>
 #include <um2/geometry/polygon/flipFace.inl>
-#include <um2/geometry/polygon/isCCW.inl>
 #include <um2/geometry/polygon/getEdge.inl>
+#include <um2/geometry/polygon/interpolate.inl>
+#include <um2/geometry/polygon/isCCW.inl>
+#include <um2/geometry/polygon/isConvex.inl>
+#include <um2/geometry/polygon/jacobian.inl>
+#include <um2/geometry/polygon/linearPolygon.inl>
 
 // Member functions
 namespace um2
@@ -60,16 +63,7 @@ Polygon<P, N, D, T>::jacobian(R r, S s) const noexcept -> Mat<D, 2, T>
 
 template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-Polygon<P, N, D, T>::getEdge(Size i) const noexcept -> LineSegment<D, T>
-requires (P == 1)
-{
-  return um2::getEdge(*this, i);
-}
-
-template <Size P, Size N, Size D, typename T>
-PURE HOSTDEV constexpr auto
-Polygon<P, N, D, T>::getEdge(Size i) const noexcept -> QuadraticSegment<D, T>
-requires (P == 2)
+Polygon<P, N, D, T>::getEdge(Size i) const noexcept -> Edge
 {
   return um2::getEdge(*this, i);
 }

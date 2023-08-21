@@ -1,12 +1,7 @@
 #pragma once
 
-#include <um2/config.hpp>
-
-#include <um2/mesh/QuadMesh.hpp>
-#include <um2/mesh/QuadraticQuadMesh.hpp>
-#include <um2/mesh/QuadraticTriMesh.hpp>
 #include <um2/mesh/RegularPartition.hpp>
-#include <um2/mesh/TriMesh.hpp>
+#include <um2/mesh/FaceVertexMesh.hpp>
 
 namespace um2
 {
@@ -64,11 +59,11 @@ struct BinnedFaceVertexMesh {
       auto const face_bb = face.boundingBox();
       auto const delta = face_bb.maxima - face_bb.minima;
       for (Size j = 0; j < D; ++j) {
-        max_side_length = um2::max(max_side_length, delta[j]); 
+        max_side_length = um2::max(max_side_length, delta[j]);
       }
     }
-    //std::cerr << "max_side_length = " << max_side_length << std::endl;
-    //    Log::info("max_edge_length = " + std::to_string(max_edge_length));
+    // std::cerr << "max_side_length = " << max_side_length << std::endl;
+    //     Log::info("max_edge_length = " + std::to_string(max_edge_length));
 
     // Determine the number of bins and the bin size in each dimension.
     Vec<D, Size> num_bins;
@@ -81,7 +76,8 @@ struct BinnedFaceVertexMesh {
       assert(num_bins[d] > 0);
       bin_size[d] = delta / static_cast<T>(num_bins[d]);
     }
-    //std::cerr << "num_bins = (" << num_bins[0] << ", " << num_bins[1] << ")" << std::endl;
+    // std::cerr << "num_bins = (" << num_bins[0] << ", " << num_bins[1] << ")" <<
+    // std::endl;
 
     // Initialize the partition's grid.
     partition.grid.minima = box.minima;
@@ -119,7 +115,8 @@ struct BinnedFaceVertexMesh {
       }
       face_ids[offset] = static_cast<I>(i);
     }
-    assert(std::all_of(face_ids.begin(), face_ids.end(), [](auto const & id) { return id != -1; }));
+    assert(std::all_of(face_ids.begin(), face_ids.end(),
+                       [](auto const & id) { return id != -1; }));
   }
 
   //===========================================================================
@@ -259,7 +256,8 @@ faceContaining(BinnedPlanarPolygonMesh<P, N, T, I> const & bmesh,
   if (!is_last_on_x) {
     auto index_right = index;
     ++index_right[0];
-    // std::cerr << "index_right = (" << index_right[0] << ", " << index_right[1] << ")\n";
+    // std::cerr << "index_right = (" << index_right[0] << ", " << index_right[1] <<
+    // ")\n";
     Size const offset_index = bmesh.partition.getFlatIndex(index_right);
     auto const offset_start = static_cast<Size>(bmesh.partition.children[offset_index]);
     auto const offset_end = static_cast<Size>(bmesh.partition.children[offset_index + 1]);
@@ -293,7 +291,8 @@ faceContaining(BinnedPlanarPolygonMesh<P, N, T, I> const & bmesh,
     auto index_top_right = index;
     ++index_top_right[0];
     ++index_top_right[1];
-    // std::cerr << "index_top_right = (" << index_top_right[0] << ", " << index_top_right[1]
+    // std::cerr << "index_top_right = (" << index_top_right[0] << ", " <<
+    // index_top_right[1]
     //           << ")\n";
     Size const offset_index = bmesh.partition.getFlatIndex(index_top_right);
     auto const offset_start = static_cast<Size>(bmesh.partition.children[offset_index]);

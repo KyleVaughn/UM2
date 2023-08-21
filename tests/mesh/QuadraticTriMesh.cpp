@@ -1,4 +1,4 @@
-#include <um2/mesh/QuadraticTriMesh.hpp>
+#include <um2/mesh/FaceVertexMesh.hpp>
 
 #include "./helpers/setup_mesh.hpp"
 #include "./helpers/setup_mesh_file.hpp"

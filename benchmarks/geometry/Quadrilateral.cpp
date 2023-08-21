@@ -9,7 +9,6 @@
 //  CUDA CCWNoShortCircuit:   1915 us = 0.07 ns/point
 
 #include "../helpers.hpp"
-#include <um2/geometry/Quadrilateral.hpp>
 
 constexpr Size npoints = 1 << 18;
 constexpr int hi = 10;

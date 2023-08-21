@@ -1,26 +1,19 @@
 Change --- to ===
 Review NOLINTs and cppcheck suppress
 
-Generalize polygon
+BinnedFaceVertexMesh and Ray
 
 Mesh visualization to debug BinnedFaceVertexMesh faceContaining
 
 Docs
 coverage update
 
-Organize FaceVertexMesh better
-
 Mesh-> Reorder
 
 Make rep meshes. 
   Test point containment, ray intersection, etc
 
-Mesh-> Faster find face
-
 If overlay grid fails, check the refactor comments in model.inl
-
-TriMesh.faceContaining, Find the closest point first, then just test all faces around it 
-  Benchmark this
 
 Faster to use the edge method or write the loop explicitly?
 

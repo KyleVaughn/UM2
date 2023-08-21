@@ -10,7 +10,6 @@
 // on multiple processors shows that CCW no short is faster on average.
 
 #include "../helpers.hpp"
-#include <um2/geometry/Triangle.hpp>
 
 constexpr Size npoints = 1 << 16;
 constexpr Size ntris = 1 << 10;

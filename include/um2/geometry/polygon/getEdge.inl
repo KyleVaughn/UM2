@@ -12,7 +12,8 @@ getEdge(LinearPolygon<N, D, T> const & p, Size const i) noexcept -> LineSegment<
 
 template <Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-getEdge(QuadraticPolygon<N, D, T> const & p, Size const i) noexcept -> QuadraticSegment<D, T>
+getEdge(QuadraticPolygon<N, D, T> const & p, Size const i) noexcept
+    -> QuadraticSegment<D, T>
 {
   assert(0 <= i && i < N);
   constexpr Size m = N / 2;

@@ -427,9 +427,9 @@ TEST_CASE(pointClosestTo)
 //// enclosedArea
 ////==============================================================================----------
 //
-//template <typename T>
-//HOSTDEV
-//TEST_CASE(enclosedArea)
+// template <typename T>
+// HOSTDEV
+// TEST_CASE(enclosedArea)
 //{
 //  um2::QuadraticSegment2<T> const seg1 = makeSeg1<2, T>();
 //  T area = seg1.enclosedArea();
@@ -452,9 +452,9 @@ TEST_CASE(pointClosestTo)
 //  ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
 //}
 //
-//template <typename T>
-//HOSTDEV
-//TEST_CASE(enclosedCentroid)
+// template <typename T>
+// HOSTDEV
+// TEST_CASE(enclosedCentroid)
 //{
 //  um2::QuadraticSegment2<T> const seg1 = makeSeg1<2, T>();
 //  um2::Point2<T> centroid = seg1.enclosedCentroid();
@@ -517,8 +517,8 @@ TEST_SUITE(QuadraticSegment)
   if constexpr (D == 2) {
     TEST_HOSTDEV(isLeft, 1, 1, T);
     TEST_HOSTDEV(pointClosestTo, 1, 1, T);
-//    TEST_HOSTDEV(enclosedArea, 1, 1, T);
-//    TEST_HOSTDEV(enclosedCentroid, 1, 1, T);
+    //    TEST_HOSTDEV(enclosedArea, 1, 1, T);
+    //    TEST_HOSTDEV(enclosedCentroid, 1, 1, T);
   }
 }
 

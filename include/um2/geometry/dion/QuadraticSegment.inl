@@ -67,30 +67,30 @@ getBezierControlPoint(QuadraticSegment<D, T> const & q) noexcept -> Point<D, T>
 // enclosedArea
 //==============================================================================
 
-template <typename T>    
-PURE HOSTDEV constexpr auto    
-enclosedArea(QuadraticSegment2<T> const & q) noexcept -> T    
-{    
-  // The area bounded by the segment and the line between the endpoints is    
-  // 4/3 of the area of the triangle formed by the vertices.    
-  // Assumes that the segment is convex.    
-  T constexpr two_thirds = static_cast<T>(2) / static_cast<T>(3);    
-  Vec2<T> const v02 = q[2] - q[0];    
-  Vec2<T> const v01 = q[1] - q[0];    
-  return two_thirds * v02.cross(v01);    
-} 
+template <typename T>
+PURE HOSTDEV constexpr auto
+enclosedArea(QuadraticSegment2<T> const & q) noexcept -> T
+{
+  // The area bounded by the segment and the line between the endpoints is
+  // 4/3 of the area of the triangle formed by the vertices.
+  // Assumes that the segment is convex.
+  T constexpr two_thirds = static_cast<T>(2) / static_cast<T>(3);
+  Vec2<T> const v02 = q[2] - q[0];
+  Vec2<T> const v01 = q[1] - q[0];
+  return two_thirds * v02.cross(v01);
+}
 
 //==============================================================================
 // enclosedCentroid
 //==============================================================================
 
-template <typename T>    
-PURE HOSTDEV constexpr auto    
-enclosedCentroid(QuadraticSegment2<T> const & q) noexcept -> Point2<T>    
-{    
-  // For a quadratic segment, with P₁ = (0, 0), P₂ = (x₂, 0), and P₃ = (x₃, y₃),    
-  // where 0 < x₂, if the area bounded by q and the x-axis is convex, it can be    
-  // shown that the centroid of the area bounded by the segment and x-axis    
+template <typename T>
+PURE HOSTDEV constexpr auto
+enclosedCentroid(QuadraticSegment2<T> const & q) noexcept -> Point2<T>
+{
+  // For a quadratic segment, with P₁ = (0, 0), P₂ = (x₂, 0), and P₃ = (x₃, y₃),
+  // where 0 < x₂, if the area bounded by q and the x-axis is convex, it can be
+  // shown that the centroid of the area bounded by the segment and x-axis
   // is given by
   // C = (3x₂ + 4x₃, 4y₃) / 10
   //
