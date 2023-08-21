@@ -477,8 +477,8 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
   using vvvint = std::vector<std::vector<std::vector<int>>>;
   using vdouble = std::vector<double>;
   using vvdouble = std::vector<std::vector<double>>;
-  // using Vmatid = Vector<MaterialID>;
-  // using vVmatid = std::vector<Vector<MaterialID>>;
+  using vmatid = std::vector<MaterialID>;
+  using vvmatid = std::vector<std::vector<MaterialID>>;
   //  NOLINTEND(readability-identifier-naming)
 
   vvint core_assembly_ids; // 2D map of the IDs of each assembly in the core
@@ -499,14 +499,13 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
   vvvint lattice_rtm_ids; // 2D layout of the IDs of each RTM in each lattice
   vint lattice_ids;       // IDs of all lattices
 
-  // vvvint rtm_coarse_cell_ids; // 2D layout of the IDs of each coarse cell in each RTM
-  vint rtm_ids; // IDs of all RTMs
-  //
-  //   std::vector<Vec2d> coarse_cell_dxdys; // dx and dy of each coarse cell
-  //   vint coarse_cell_mesh_types;          // Mesh type in each coarse cell
-  //   vint coarse_cell_mesh_ids;            // Mesh ID in each coarse cell
-  //   vVmatid coarse_cell_material_ids;     // Material IDs in each coarse cell
-  //   vint coarse_cell_ids;                 // IDs of all coarse cells
+  vvvint rtm_coarse_cell_ids; // 2D layout of the IDs of each coarse cell in each RTM
+  vint rtm_ids;               // IDs of all RTMs
+
+  std::vector<Vec2d> coarse_cell_dxdys; // dx and dy of each coarse cell
+  vint coarse_cell_mesh_ids;            // Mesh ID in each coarse cell
+  vvmatid coarse_cell_material_ids; // Material IDs in each coarse cell
+  vint coarse_cell_ids;             // IDs of all coarse cells
   //   // We also store a Vector of Mesh objects for each mesh type
   //   Vector<TriMesh<T, I>> tri;
   //   Vector<QuadMesh<T, I>> quad;
@@ -731,213 +730,197 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
                   return;
                 }
               }
-              //               // Allocate rtm_coarse_cell_ids to M by N
-              //               rtm_coarse_cell_ids.insert(rtm_coarse_cell_ids.begin() +
-              //               rtm_id_idx,
-              //                                          vvint());
-              //               rtm_coarse_cell_ids[rtm_id_idx].resize(rtm_M);
-              //               for (auto & rtm_coarse_cell_id :
-              //               rtm_coarse_cell_ids[rtm_id_idx])
-              //               {
-              //                 rtm_coarse_cell_id.resize(rtm_N);
-              //               }
-              //               // Loop over all coarse cells
-              //               // Get the coarse cell node
-              //               int coarse_cell_count = 0;
-              //               for (auto const & coarse_cell_node :
-              //               rtm_node.children("Grid"))
-              //               {
-              //                 // Extract the coarse cell ID from the name
-              //                 // Of the form Coarse_Cell_XXXXX_YYYYY, where XXXXX is
-              //                 the coarse cell ID std::string coarse_cell_name =
-              //                 coarse_cell_node.attribute("Name").value();
-              //                 // Write the coarse cell ID to rtm_coarse_cell_ids
-              //                 int coarse_cell_id =
-              //                 std::stoi(coarse_cell_name.substr(12, 5));
-              //                 {
-              //                   int j, i;
-              //                   map_lattice_idx_to_j_i(coarse_cell_count, j, i, rtm_M,
-              //                   rtm_N); rtm_coarse_cell_ids[rtm_id_idx][j][i] =
-              //                   coarse_cell_id;
-              //                 }
-              //                 // If the coarse cell ID is not in coarse_cell_ids
-              //                 auto coarse_cell_id_it = std::lower_bound(
-              //                     coarse_cell_ids.begin(), coarse_cell_ids.end(),
-              //                     coarse_cell_id);
-              //                 if (coarse_cell_id_it == coarse_cell_ids.end() ||
-              //                     *coarse_cell_id_it != coarse_cell_id) {
-              //                   ptrdiff_t coarse_cell_id_idx =
-              //                       coarse_cell_id_it - coarse_cell_ids.begin();
-              //                   // Insert the ID to coarse_cell_ids
-              //                   coarse_cell_ids.insert(coarse_cell_ids.begin() +
-              //                   coarse_cell_id_idx,
-              //                                          coarse_cell_id);
-              //                   // Read the mesh into a MeshFile object using
-              //                   read_xdmf_uniform_grid MeshFile<T, I> coarse_cell_mesh;
-              //                   coarse_cell_mesh.format = MeshFileFormat::XDMF;
-              //                   read_xdmf_uniform_grid(coarse_cell_node, h5file,
-              //                   h5filename,
-              //                                          coarse_cell_mesh);
-              //                   // Set the coarse cell mesh type, mesh id, and material
-              //                   IDs MeshType const mesh_type =
-              //                   coarse_cell_mesh.get_mesh_type();
-              //                   coarse_cell_material_ids.insert(
-              //                       coarse_cell_material_ids.begin() +
-              //                       coarse_cell_id_idx, Vmatid());
-              //                   coarse_cell_mesh.get_material_ids(
-              //                       coarse_cell_material_ids[coarse_cell_id_idx],
-              //                       long_material_names);
-              //                   coarse_cell_dxdys.insert(coarse_cell_dxdys.begin() +
-              //                   coarse_cell_id_idx,
-              //                                            Vec2d(0, 0));
-              //                   switch (mesh_type) {
-              //                   case MeshType::TRI: {
-              //                     coarse_cell_mesh_types.insert(coarse_cell_mesh_types.begin()
-              //                     +
-              //                                                       coarse_cell_id_idx,
-              //                                                   static_cast<Int>(MeshType::TRI));
-              //                     coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin()
-              //                     +
-              //                                                     coarse_cell_id_idx,
-              //                                                 static_cast<Int>(tri.size()));
-              //                     tri.push_back(coarse_cell_mesh);
-              //                     // Shift the points so that the min point is at the
-              //                     origin. TriMesh<T, I> & mesh = tri.back();
-              //                     AxisAlignedBox2<Float> bb = bounding_box(mesh);
-              //                     Point2<Float> min_point = bb.minima;
-              //                     for (auto & p : mesh.vertices) {
-              //                       p -= min_point;
-              //                     }
-              //                     Point2<Float> dxdy = bb.maxima - bb.minima;
-              //                     coarse_cell_dxdys[coarse_cell_id_idx] =
-              //                         Vec2d(static_cast<double>(dxdy[0]),
-              //                         static_cast<double>(dxdy[1]));
-              //                     break;
-              //                   }
-              //                   case MeshType::QUAD: {
-              //                     coarse_cell_mesh_types.insert(coarse_cell_mesh_types.begin()
-              //                     +
-              //                                                       coarse_cell_id_idx,
-              //                                                   static_cast<Int>(MeshType::QUAD));
-              //                     coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin()
-              //                     +
-              //                                                     coarse_cell_id_idx,
-              //                                                 static_cast<Int>(quad.size()));
-              //                     quad.push_back(coarse_cell_mesh);
-              //                     // Shift the points so that the min point is at the
-              //                     origin. QuadMesh<T, I> & mesh = quad.back();
-              //                     AxisAlignedBox2<Float> bb = bounding_box(mesh);
-              //                     Point2<Float> min_point = bb.minima;
-              //                     for (auto & p : mesh.vertices) {
-              //                       p -= min_point;
-              //                     }
-              //                     Point2<Float> dxdy = bb.maxima - bb.minima;
-              //                     coarse_cell_dxdys[coarse_cell_id_idx] =
-              //                         Vec2d(static_cast<double>(dxdy[0]),
-              //                         static_cast<double>(dxdy[1]));
-              //                     break;
-              //                   }
-              //                   case MeshType::TRI_QUAD: {
-              //                     coarse_cell_mesh_types.insert(coarse_cell_mesh_types.begin()
-              //                     +
-              //                                                       coarse_cell_id_idx,
-              //                                                   static_cast<Int>(MeshType::TRI_QUAD));
-              //                     coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin()
-              //                     +
-              //                                                     coarse_cell_id_idx,
-              //                                                 static_cast<Int>(tri_quad.size()));
-              //                     tri_quad.push_back(coarse_cell_mesh);
-              //                     // Shift the points so that the min point is at the
-              //                     origin. TriQuadMesh<T, I> & mesh = tri_quad.back();
-              //                     AxisAlignedBox2<Float> bb = bounding_box(mesh);
-              //                     Point2<Float> min_point = bb.minima;
-              //                     for (auto & p : mesh.vertices) {
-              //                       p -= min_point;
-              //                     }
-              //                     Point2<Float> dxdy = bb.maxima - bb.minima;
-              //                     coarse_cell_dxdys[coarse_cell_id_idx] =
-              //                         Vec2d(static_cast<double>(dxdy[0]),
-              //                         static_cast<double>(dxdy[1]));
-              //                     break;
-              //                   }
-              //                   case MeshType::QUADRATIC_TRI: {
-              //                     coarse_cell_mesh_types.insert(
-              //                         coarse_cell_mesh_types.begin() +
-              //                         coarse_cell_id_idx,
-              //                         static_cast<Int>(MeshType::QUADRATIC_TRI));
-              //                     coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin()
-              //                     +
-              //                                                     coarse_cell_id_idx,
-              //                                                 static_cast<Int>(quadratic_tri.size()));
-              //                     quadratic_tri.push_back(coarse_cell_mesh);
-              //                     // Shift the points so that the min point is at the
-              //                     origin. QuadraticTriMesh<T, I> & mesh =
-              //                     quadratic_tri.back(); AxisAlignedBox2<Float> bb =
-              //                     bounding_box(mesh); Point2<Float> min_point =
-              //                     bb.minima; for (auto & p : mesh.vertices) {
-              //                       p -= min_point;
-              //                     }
-              //                     Point2<Float> dxdy = bb.maxima - bb.minima;
-              //                     coarse_cell_dxdys[coarse_cell_id_idx] =
-              //                         Vec2d(static_cast<double>(dxdy[0]),
-              //                         static_cast<double>(dxdy[1]));
-              //                     break;
-              //                   }
-              //                   case MeshType::QUADRATIC_QUAD: {
-              //                     coarse_cell_mesh_types.insert(
-              //                         coarse_cell_mesh_types.begin() +
-              //                         coarse_cell_id_idx,
-              //                         static_cast<Int>(MeshType::QUADRATIC_QUAD));
-              //                     coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin()
-              //                     +
-              //                                                     coarse_cell_id_idx,
-              //                                                 static_cast<Int>(quadratic_quad.size()));
-              //                     quadratic_quad.push_back(coarse_cell_mesh);
-              //                     // Shift the points so that the min point is at the
-              //                     origin. QuadraticQuadMesh<T, I> & mesh =
-              //                     quadratic_quad.back(); AxisAlignedBox2<Float> bb =
-              //                     bounding_box(mesh); Point2<Float> min_point =
-              //                     bb.minima; for (auto & p : mesh.vertices) {
-              //                       p -= min_point;
-              //                     }
-              //                     Point2<Float> dxdy = bb.maxima - bb.minima;
-              //                     coarse_cell_dxdys[coarse_cell_id_idx] =
-              //                         Vec2d(static_cast<double>(dxdy[0]),
-              //                         static_cast<double>(dxdy[1]));
-              //                     break;
-              //                   }
-              //                   case MeshType::QUADRATIC_TRI_QUAD: {
-              //                     coarse_cell_mesh_types.insert(
-              //                         coarse_cell_mesh_types.begin() +
-              //                         coarse_cell_id_idx,
-              //                         static_cast<Int>(MeshType::QUADRATIC_TRI_QUAD));
-              //                     coarse_cell_mesh_ids.insert(
-              //                         coarse_cell_mesh_ids.begin() +
-              //                         coarse_cell_id_idx,
-              //                         static_cast<Int>(quadratic_tri_quad.size()));
-              //                     quadratic_tri_quad.push_back(coarse_cell_mesh);
-              //                     // Shift the points so that the min point is at the
-              //                     origin. QuadraticTriQuadMesh<T, I> & mesh =
-              //                     quadratic_tri_quad.back(); AxisAlignedBox2<Float> bb
-              //                     = bounding_box(mesh); Point2<Float> min_point =
-              //                     bb.minima; for (auto & p : mesh.vertices) {
-              //                       p -= min_point;
-              //                     }
-              //                     Point2<Float> dxdy = bb.maxima - bb.minima;
-              //                     coarse_cell_dxdys[coarse_cell_id_idx] =
-              //                         Vec2d(static_cast<double>(dxdy[0]),
-              //                         static_cast<double>(dxdy[1]));
-              //                     break;
-              //                   }
-              //                   default:
-              //                     Log::error("Mesh type not supported");
-              //                     return;
-              //                   }
-              //                 } // if (coarse_cell_id_it == coarse_cell_ids.end())
-              //                 coarse_cell_count++;
-              //               } // for (auto const & coarse_cell_node :
-              //               rtm_node.children("Grid"))
-            } // if (rtm_id_it == rtm_ids.end())
+              // Allocate rtm_coarse_cell_ids to M by N
+              rtm_coarse_cell_ids.insert(rtm_coarse_cell_ids.begin() + rtm_id_idx,
+                                         vvint());
+              rtm_coarse_cell_ids[static_cast<size_t>(rtm_id_idx)].resize(
+                  static_cast<size_t>(rtm_m));
+              for (auto & rtm_coarse_cell_id :
+                   rtm_coarse_cell_ids[static_cast<size_t>(rtm_id_idx)]) {
+                rtm_coarse_cell_id.resize(static_cast<size_t>(rtm_n));
+              }
+              // Loop over all coarse cells
+              // Get the coarse cell node
+              int coarse_cell_count = 0;
+              for (auto const & coarse_cell_node : rtm_node.children("Grid")) {
+                // Extract the coarse cell ID from the name
+                // Of the form Coarse_Cell_XXXXX_YYYYY, where XXXXX is the
+                // coarse cell ID
+                std::string const coarse_cell_name =
+                    coarse_cell_node.attribute("Name").value();
+                // Write the coarse cell ID to rtm_coarse_cell_ids
+                int const coarse_cell_id = sto<int>(coarse_cell_name.substr(12, 5));
+                {
+                  int j = 0;
+                  int i = 0;
+                  mapLatticeIndexToji(coarse_cell_count, j, i, rtm_m, rtm_n);
+                  rtm_coarse_cell_ids[static_cast<size_t>(rtm_id_idx)]
+                                     [static_cast<size_t>(j)][static_cast<size_t>(i)] =
+                                         coarse_cell_id;
+                }
+                // If the coarse cell ID is not in coarse_cell_ids
+                auto coarse_cell_id_it = std::lower_bound(
+                    coarse_cell_ids.begin(), coarse_cell_ids.end(), coarse_cell_id);
+                if (coarse_cell_id_it == coarse_cell_ids.end() ||
+                    *coarse_cell_id_it != coarse_cell_id) {
+                  ptrdiff_t const coarse_cell_id_idx =
+                      coarse_cell_id_it - coarse_cell_ids.begin();
+                  // Insert the ID to coarse_cell_ids
+                  coarse_cell_ids.insert(coarse_cell_ids.begin() + coarse_cell_id_idx,
+                                         coarse_cell_id);
+                  // Read the mesh into a MeshFile object using readXDMFUniformGrid
+                  MeshFile<Float, Int> coarse_cell_mesh;
+                  coarse_cell_mesh.format = MeshFileFormat::XDMF;
+                  readXDMFUniformGrid(coarse_cell_node, h5file, h5filename,
+                                      coarse_cell_mesh);
+                  // Set the coarse cell mesh type, mesh id, and material IDs
+                  coarse_cell_material_ids.insert(
+                      coarse_cell_material_ids.begin() + coarse_cell_id_idx, vmatid());
+                  coarse_cell_mesh.getMaterialIDs(
+                      coarse_cell_material_ids[coarse_cell_id_idx], long_material_names);
+                  coarse_cell_dxdys.insert(coarse_cell_dxdys.begin() + coarse_cell_id_idx,
+                                           Vec2d(0, 0));
+                  switch (coarse_cell_mesh.mesh_type;) {
+                  case MeshType::Tri: {
+                    coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin() +
+                                                    coarse_cell_id_idx,
+                                                static_cast<Int>(tri.size()));
+                    tri.push_back(um2::move(coarse_cell_mesh));
+                    // Shift the points so that the min point is at the origin.
+                    TriMesh<T, I> & mesh = tri.back();
+                    AxisAlignedBox2<Float> bb = boundingBox(mesh);
+                    Point2<Float> const min_point = bb.minima;
+                    for (auto & p : mesh.vertices) {
+                      p -= min_point;
+                    }
+                    Point2<Float> const dxdy = bb.maxima - bb.minima;
+                    coarse_cell_dxdys[coarse_cell_id_idx] =
+                        Vec2d(static_cast<double>(dxdy[0]), static_cast<double>(dxdy[1]));
+                    break;
+                  }
+                  // case MeshType::QUAD: {
+                  //   coarse_cell_mesh_types.insert(coarse_cell_mesh_types.begin()
+                  //   +
+                  //                                     coarse_cell_id_idx,
+                  //                                 static_cast<Int>(MeshType::QUAD));
+                  //   coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin()
+                  //   +
+                  //                                   coarse_cell_id_idx,
+                  //                               static_cast<Int>(quad.size()));
+                  //   quad.push_back(coarse_cell_mesh);
+                  //   // Shift the points so that the min point is at
+                  //   the origin. QuadMesh<T, I> & mesh = quad.back();
+                  //   AxisAlignedBox2<Float> bb = bounding_box(mesh);
+                  //   Point2<Float> min_point = bb.minima;
+                  //   for (auto & p : mesh.vertices) {
+                  //     p -= min_point;
+                  //   }
+                  //   Point2<Float> dxdy = bb.maxima - bb.minima;
+                  //   coarse_cell_dxdys[coarse_cell_id_idx] =
+                  //       Vec2d(static_cast<double>(dxdy[0]),
+                  //       static_cast<double>(dxdy[1]));
+                  //   break;
+                  // }
+                  // case MeshType::TRI_QUAD: {
+                  //   coarse_cell_mesh_types.insert(coarse_cell_mesh_types.begin()
+                  //   +
+                  //                                     coarse_cell_id_idx,
+                  //                                 static_cast<Int>(MeshType::TRI_QUAD));
+                  //   coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin()
+                  //   +
+                  //                                   coarse_cell_id_idx,
+                  //                               static_cast<Int>(tri_quad.size()));
+                  //   tri_quad.push_back(coarse_cell_mesh);
+                  //   // Shift the points so that the min point is at
+                  //   the origin. TriQuadMesh<T, I> & mesh =
+                  //   tri_quad.back(); AxisAlignedBox2<Float> bb =
+                  //   bounding_box(mesh); Point2<Float> min_point =
+                  //   bb.minima; for (auto & p : mesh.vertices) {
+                  //     p -= min_point;
+                  //   }
+                  //   Point2<Float> dxdy = bb.maxima - bb.minima;
+                  //   coarse_cell_dxdys[coarse_cell_id_idx] =
+                  //       Vec2d(static_cast<double>(dxdy[0]),
+                  //       static_cast<double>(dxdy[1]));
+                  //   break;
+                  // }
+                  // case MeshType::QUADRATIC_TRI: {
+                  //   coarse_cell_mesh_types.insert(
+                  //       coarse_cell_mesh_types.begin() +
+                  //       coarse_cell_id_idx,
+                  //       static_cast<Int>(MeshType::QUADRATIC_TRI));
+                  //   coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin()
+                  //   +
+                  //                                   coarse_cell_id_idx,
+                  //                               static_cast<Int>(quadratic_tri.size()));
+                  //   quadratic_tri.push_back(coarse_cell_mesh);
+                  //   // Shift the points so that the min point is at
+                  //   the origin. QuadraticTriMesh<T, I> & mesh =
+                  //   quadratic_tri.back(); AxisAlignedBox2<Float> bb =
+                  //   bounding_box(mesh); Point2<Float> min_point =
+                  //   bb.minima; for (auto & p : mesh.vertices) {
+                  //     p -= min_point;
+                  //   }
+                  //   Point2<Float> dxdy = bb.maxima - bb.minima;
+                  //   coarse_cell_dxdys[coarse_cell_id_idx] =
+                  //       Vec2d(static_cast<double>(dxdy[0]),
+                  //       static_cast<double>(dxdy[1]));
+                  //   break;
+                  // }
+                  // case MeshType::QUADRATIC_QUAD: {
+                  //   coarse_cell_mesh_types.insert(
+                  //       coarse_cell_mesh_types.begin() +
+                  //       coarse_cell_id_idx,
+                  //       static_cast<Int>(MeshType::QUADRATIC_QUAD));
+                  //   coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin()
+                  //   +
+                  //                                   coarse_cell_id_idx,
+                  //                               static_cast<Int>(quadratic_quad.size()));
+                  //   quadratic_quad.push_back(coarse_cell_mesh);
+                  //   // Shift the points so that the min point is at
+                  //   the origin. QuadraticQuadMesh<T, I> & mesh =
+                  //   quadratic_quad.back(); AxisAlignedBox2<Float> bb
+                  //   = bounding_box(mesh); Point2<Float> min_point =
+                  //   bb.minima; for (auto & p : mesh.vertices) {
+                  //     p -= min_point;
+                  //   }
+                  //   Point2<Float> dxdy = bb.maxima - bb.minima;
+                  //   coarse_cell_dxdys[coarse_cell_id_idx] =
+                  //       Vec2d(static_cast<double>(dxdy[0]),
+                  //       static_cast<double>(dxdy[1]));
+                  //   break;
+                  // }
+                  // case MeshType::QUADRATIC_TRI_QUAD: {
+                  //   coarse_cell_mesh_types.insert(
+                  //       coarse_cell_mesh_types.begin() +
+                  //       coarse_cell_id_idx,
+                  //       static_cast<Int>(MeshType::QUADRATIC_TRI_QUAD));
+                  //   coarse_cell_mesh_ids.insert(
+                  //       coarse_cell_mesh_ids.begin() +
+                  //       coarse_cell_id_idx,
+                  //       static_cast<Int>(quadratic_tri_quad.size()));
+                  //   quadratic_tri_quad.push_back(coarse_cell_mesh);
+                  //   // Shift the points so that the min point is at
+                  //   the origin. QuadraticTriQuadMesh<T, I> & mesh =
+                  //   quadratic_tri_quad.back(); AxisAlignedBox2<Float>
+                  //   bb = bounding_box(mesh); Point2<Float> min_point
+                  //   = bb.minima; for (auto & p : mesh.vertices) {
+                  //     p -= min_point;
+                  //   }
+                  //   Point2<Float> dxdy = bb.maxima - bb.minima;
+                  //   coarse_cell_dxdys[coarse_cell_id_idx] =
+                  //       Vec2d(static_cast<double>(dxdy[0]),
+                  //       static_cast<double>(dxdy[1]));
+                  //   break;
+                  // }
+                  default:
+                    Log::error("Mesh type not supported");
+                    return;
+                  }
+                } // if (coarse_cell_id_it == coarse_cell_ids.end())
+                coarse_cell_count++;
+              } // for (auto const & coarse_cell_node : rtm_node.children("Grid"))
+            }   // if (rtm_id_it == rtm_ids.end())
             rtm_count++;
           } // for (auto const & rtm_node : lattice_node.children("Grid"))
         }   // if (lattice_id_it == lattice_ids.end())

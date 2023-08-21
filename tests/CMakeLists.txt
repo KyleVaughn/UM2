@@ -68,7 +68,7 @@ add_um2_test(./mesh/io_xdmf.cpp)
 # Copy the mesh files to the built test directory
 file(COPY ${PROJECT_SOURCE_DIR}/tests/mpact/mpact_mesh_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-#add_um2_test(./mpact/SpatialPartition.cpp)
+add_um2_test(./mpact/SpatialPartition.cpp)
 
 ###==============================================================================
 ### gmsh

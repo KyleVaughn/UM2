@@ -1,17 +1,14 @@
 Change --- to ===
 Review NOLINTs and cppcheck suppress
 
+Change io_abaqus, xdmf, and mpact types to allow for more than one mesh type
+
 BinnedFaceVertexMesh and Ray
 
 Mesh visualization to debug BinnedFaceVertexMesh faceContaining
 
 Docs
 coverage update
-
-Mesh-> Reorder
-
-Make rep meshes. 
-  Test point containment, ray intersection, etc
 
 If overlay grid fails, check the refactor comments in model.inl
 
@@ -34,11 +31,6 @@ mesh statistics
 Examine Ray/LineSegment, Ray/Mesh, Ray/QuadraticSegement intersections by
 using a change of basis to make the ray R = o + t*d into R = o' + t'*d' where
 d' = (1, 0, 0) and o' = (0, 0, 0).  Then the intersection is just the
-
-Regular Partiton of mesh, but set the cells based upon membership on lower left point of AABB
-  Less memory.
-  Also set grid equal to largest object size or bigger. Therefore, no object canbe in more than 2 cells in 1 direction
-  Pg 296 of Real Time Collision Detection
 
 Line in opengl
 Reading/Writing MPACT files
