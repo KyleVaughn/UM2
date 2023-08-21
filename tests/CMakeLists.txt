@@ -24,6 +24,7 @@ add_um2_test(./common/to_vecvec.cpp)
 add_um2_test(./math/morton.cpp)
 add_um2_test(./math/Vec.cpp)
 add_um2_test(./math/Mat.cpp)
+add_um2_test(./math/Stats.cpp)
 
 # ------------------------------------------------------------------------------
 # geometry
