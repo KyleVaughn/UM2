@@ -166,7 +166,7 @@ TEST_CASE(getBox_and_getChild)
   ASSERT(child == 31);
 }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <Size D, typename T, typename P>
 MAKE_CUDA_KERNEL(accessors, D, T, P)
 

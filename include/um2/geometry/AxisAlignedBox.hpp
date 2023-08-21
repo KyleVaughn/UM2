@@ -5,14 +5,13 @@
 #include <um2/geometry/Point.hpp>
 #include <um2/stdlib/Vector.hpp>
 
-#include <execution>
-
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // AXIS-ALIGNED BOX
-// -----------------------------------------------------------------------------
+//==============================================================================
+//
 // A D-dimensional axis-aligned box.
 
 template <Size D, typename T>
@@ -21,18 +20,18 @@ struct AxisAlignedBox {
   Point<D, T> minima;
   Point<D, T> maxima;
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Constructors
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   constexpr AxisAlignedBox() noexcept = default;
 
   HOSTDEV constexpr AxisAlignedBox(Point<D, T> const & min,
                                    Point<D, T> const & max) noexcept;
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Accessors
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   xMin() const noexcept -> T;
@@ -52,9 +51,19 @@ struct AxisAlignedBox {
   PURE HOSTDEV [[nodiscard]] constexpr auto
   zMax() const noexcept -> T;
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
+  // Operators
+  //===============================================================================
+
+  HOSTDEV constexpr auto
+  operator+=(Point<D, T> const & p) noexcept -> AxisAlignedBox<D, T> &;
+
+  HOSTDEV constexpr auto
+  operator+=(AxisAlignedBox<D, T> const & box) noexcept -> AxisAlignedBox<D, T> &;
+
+  //==============================================================================
   // Methods
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   width() const noexcept -> T; // dx
@@ -94,10 +103,11 @@ auto
 operator+(AxisAlignedBox<D, T> box_lhs, AxisAlignedBox<D, T> const & box_rhs) noexcept
     -> AxisAlignedBox<D, T>;
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Aliases
-// -----------------------------------------------------------------------------
+//==============================================================================
 
+// Aliases for 1, 2, and 3 dimensions.
 template <typename T>
 using AxisAlignedBox1 = AxisAlignedBox<1, T>;
 
@@ -107,6 +117,7 @@ using AxisAlignedBox2 = AxisAlignedBox<2, T>;
 template <typename T>
 using AxisAlignedBox3 = AxisAlignedBox<3, T>;
 
+// Aliases for float and double.
 using AxisAlignedBox2f = AxisAlignedBox2<float>;
 using AxisAlignedBox2d = AxisAlignedBox2<double>;
 
@@ -117,23 +128,23 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 isApprox(AxisAlignedBox<D, T> const & a, AxisAlignedBox<D, T> const & b) noexcept -> bool;
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Bounding box
-// -----------------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-boundingBox(AxisAlignedBox<D, T> const & a, AxisAlignedBox<D, T> const & b) noexcept
+operator+(AxisAlignedBox<D, T> a, AxisAlignedBox<D, T> const & b) noexcept
     -> AxisAlignedBox<D, T>;
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-boundingBox(AxisAlignedBox<D, T> const & box, Point<D, T> const & p) noexcept
+operator+(AxisAlignedBox<D, T> box, Point<D, T> const & p) noexcept
     -> AxisAlignedBox<D, T>;
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-boundingBox(Point<D, T> const & p, AxisAlignedBox<D, T> const & box) noexcept
+operator+(Point<D, T> const & p, AxisAlignedBox<D, T> box) noexcept
     -> AxisAlignedBox<D, T>;
 
 template <Size D, typename T, Size N>

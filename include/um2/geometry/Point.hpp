@@ -5,9 +5,10 @@
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // POINT
-// -----------------------------------------------------------------------------
+//==============================================================================
+//
 // An alias for a D-dimensional vector. This isn't technically correct, but it
 // is more efficient to use a vector for a point than a separate class.
 
@@ -18,10 +19,8 @@ using Point = Vec<D, T>;
 
 template <typename T>
 using Point1 = Point<1, T>;
-
 template <typename T>
 using Point2 = Point<2, T>;
-
 template <typename T>
 using Point3 = Point<3, T>;
 
@@ -34,9 +33,9 @@ using Point2d = Point2<double>;
 using Point3f = Point3<float>;
 using Point3d = Point3<double>;
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Constants
-// -----------------------------------------------------------------------------
+//==============================================================================
 
 template <std::floating_point T>
 CONST HOSTDEV consteval auto
@@ -59,17 +58,17 @@ infiniteDistance() noexcept -> T
   return static_cast<T>(1e10);
 }
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Methods
-// -----------------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, class T>
 PURE HOSTDEV constexpr auto
-midpoint(Point<D, T> const & a, Point<D, T> const & b) noexcept -> Point<D, T>
+midpoint(Point<D, T> a, Point<D, T> const & b) noexcept -> Point<D, T>
 {
   // (a + b) / 2
-  Point<D, T> result = a + b;
-  return result /= 2;
+  a += b;
+  return a /= 2;
 }
 
 template <Size D, class T>

@@ -8,25 +8,22 @@
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // RECTILINEAR GRID
-// -----------------------------------------------------------------------------
+//==============================================================================
 // A D-dimensional rectilinear grid with data of type T
 
 template <Size D, typename T>
-// Why does clang-tidy complain declaration uses identifier '__i0'? There is
-// no __i0 in the code.
-// If you're reading this, uncomment the NOLINTNEXTLINE line below and see if
-// this has been fixed.
-// NOLINTNEXTLINE
+// clang-tidy complaing about '__i0' in the name of the struct
+// NOLINTNEXTLINE justiified
 struct RectilinearGrid {
 
   // Divisions along each axis
   Vector<T> divs[D];
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Constructors
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   constexpr RectilinearGrid() noexcept = default;
 
@@ -38,9 +35,9 @@ struct RectilinearGrid {
   constexpr RectilinearGrid(std::vector<Vec2<T>> const & dxdy,
                             std::vector<std::vector<Size>> const & ids);
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Accessors
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   xMin() const noexcept -> T;
@@ -92,9 +89,9 @@ struct RectilinearGrid {
   PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
       -> AxisAlignedBox<D, T>;
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Methods
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;

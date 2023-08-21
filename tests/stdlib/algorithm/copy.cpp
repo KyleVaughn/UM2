@@ -62,7 +62,7 @@ TEST_CASE(copy_nontrivial)
       b = other.b;
       return *this;
     }
-    HOSTDEV ~A() = default;
+    ~A() = default;
   };
   A a[5] = {A(0, 0), A(1, 1), A(2, 2), A(3, 3), A(4, 4)};
   A b[5] = {A(0, 0), A(0, 0), A(0, 0), A(0, 0), A(0, 0)};
@@ -73,7 +73,7 @@ TEST_CASE(copy_nontrivial)
   }
 }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <typename T>
 MAKE_CUDA_KERNEL(copy_trivial, T);
 

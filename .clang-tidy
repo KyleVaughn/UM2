@@ -24,6 +24,7 @@ portability-*,
 -cppcoreguidelines-pro-type-union-access,
 -readability-identifier-length,
 -misc-non-private-member-variables-in-classes
+-misc-confusable-identifiers
 '
 HeaderFilterRegex: '.*'
 WarningsAsErrors: '*'

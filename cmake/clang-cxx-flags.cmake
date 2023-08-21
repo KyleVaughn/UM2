@@ -1,4 +1,4 @@
-if (UM2_ENABLE_CUDA)
+if (UM2_USE_CUDA)
   string(CONCAT UM2_CLANG_FLAGS 
     " -Wall"
     " -Wcast-align"

@@ -67,7 +67,7 @@ TEST_CASE(mortonSort3D)
   ASSERT(um2::isApprox(points[15], um2::Point3<T>(3, 1, 1) / 3));
 }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <std::unsigned_integral U, std::floating_point T>
 TEST_CASE(deviceMortonSort)
 {
@@ -113,7 +113,7 @@ TEST_SUITE(mortonSort)
 {
   TEST((mortonSort2D<U, T>));
   TEST((mortonSort3D<U, T>));
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
   TEST((deviceMortonSort<U, T>));
 #endif
 }

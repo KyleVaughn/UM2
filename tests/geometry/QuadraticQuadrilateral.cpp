@@ -1,8 +1,6 @@
-#include <um2/geometry/QuadraticQuadrilateral.hpp>
+#include <um2/geometry/Polygon.hpp>
 
 #include "../test_macros.hpp"
-
-#include <iostream>
 
 template <Size D, typename T>
 HOSTDEV static constexpr auto
@@ -36,9 +34,9 @@ makeQuad2() -> um2::QuadraticQuadrilateral<D, T>
   return this_quad;
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // Interpolation
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -55,9 +53,9 @@ TEST_CASE(interpolate)
   ASSERT(um2::isApprox(quad(0, 0.5), quad[7]));
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // jacobian
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -81,36 +79,36 @@ TEST_CASE(jacobian)
   ASSERT_NEAR((jac(0, 0)), 2, static_cast<T>(1e-5));
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // edge
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 HOSTDEV
 TEST_CASE(edge)
 {
   um2::QuadraticQuadrilateral<D, T> quad = makeQuad2<D, T>();
-  um2::QuadraticSegment<D, T> edge = quad.edge(0);
+  um2::QuadraticSegment<D, T> edge = quad.getEdge(0);
   ASSERT(um2::isApprox(edge[0], quad[0]));
   ASSERT(um2::isApprox(edge[1], quad[1]));
   ASSERT(um2::isApprox(edge[2], quad[4]));
-  edge = quad.edge(1);
+  edge = quad.getEdge(1);
   ASSERT(um2::isApprox(edge[0], quad[1]));
   ASSERT(um2::isApprox(edge[1], quad[2]));
   ASSERT(um2::isApprox(edge[2], quad[5]));
-  edge = quad.edge(2);
+  edge = quad.getEdge(2);
   ASSERT(um2::isApprox(edge[0], quad[2]));
   ASSERT(um2::isApprox(edge[1], quad[3]));
   ASSERT(um2::isApprox(edge[2], quad[6]));
-  edge = quad.edge(3);
+  edge = quad.getEdge(3);
   ASSERT(um2::isApprox(edge[0], quad[3]));
   ASSERT(um2::isApprox(edge[1], quad[0]));
   ASSERT(um2::isApprox(edge[2], quad[7]));
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // contains
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <typename T>
 HOSTDEV
@@ -129,9 +127,9 @@ TEST_CASE(contains)
   ASSERT(quad.contains(p));
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // area
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <typename T>
 HOSTDEV
@@ -147,9 +145,9 @@ TEST_CASE(area)
   ASSERT_NEAR(quad2.area(), static_cast<T>(1.3333333), static_cast<T>(1e-5));
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // centroid
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <typename T>
 HOSTDEV
@@ -166,9 +164,9 @@ TEST_CASE(centroid)
   ASSERT_NEAR(c[1], static_cast<T>(0.675), static_cast<T>(1e-5));
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // boundingBox
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <typename T>
 HOSTDEV
@@ -182,7 +180,23 @@ TEST_CASE(boundingBox)
   ASSERT_NEAR(box.yMax(), static_cast<T>(1.5), static_cast<T>(1e-5));
 }
 
-#if UM2_ENABLE_CUDA
+//==============================================================================
+// isCCW
+//==============================================================================
+
+template <typename T>
+HOSTDEV
+TEST_CASE(isCCW_flipFace)
+{
+  auto quad = makeQuad<2, T>();
+  ASSERT(quad.isCCW());
+  um2::swap(quad[1], quad[3]);
+  ASSERT(!quad.isCCW());
+  um2::flipFace(quad);
+  ASSERT(quad.isCCW());
+}
+
+#if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(interpolate, D, T);
 
@@ -203,7 +217,10 @@ MAKE_CUDA_KERNEL(centroid, T);
 
 template <typename T>
 MAKE_CUDA_KERNEL(boundingBox, T);
-#endif // UM2_ENABLE
+
+template <typename T>
+MAKE_CUDA_KERNEL(isCCW_flipFace, T);
+#endif
 
 template <Size D, typename T>
 TEST_SUITE(QuadraticQuadrilateral)
@@ -216,6 +233,7 @@ TEST_SUITE(QuadraticQuadrilateral)
     TEST_HOSTDEV(area, 1, 1, T);
     TEST_HOSTDEV(centroid, 1, 1, T);
     TEST_HOSTDEV(boundingBox, 1, 1, T);
+    TEST_HOSTDEV(isCCW_flipFace, 1, 1, T);
   }
 }
 

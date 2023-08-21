@@ -2,14 +2,11 @@
 
 #include <um2/common/Log.hpp>
 #include <um2/geometry/Point.hpp>
-#include <um2/mesh/CellType.hpp>
-#include <um2/mesh/MeshType.hpp>
 #include <um2/stdlib/algorithm.hpp>
 #include <um2/stdlib/memory.hpp>
 
 #include <algorithm>
-#include <iostream>
-#ifdef _OPENMP
+#ifdef UM2_USE_OPENMP
 #  include <parallel/algorithm>
 #endif
 #include <string>
@@ -18,9 +15,9 @@
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // MESH FILE
-// -----------------------------------------------------------------------------
+//==============================================================================
 // An intermediate representation of a mesh that can be used to:
 // - read a mesh from a file
 // - write a mesh to a file
@@ -32,6 +29,68 @@ enum class MeshFileFormat : int8_t {
   Abaqus = 1,
   XDMF = 2,
 };
+
+enum class VTKCellType : int8_t {
+
+  // Linear cells
+  Triangle = 5,
+  Quad = 9,
+
+  // Quadratic, isoparametric cells
+  QuadraticTriangle = 22,
+  QuadraticQuad = 23
+
+};
+
+enum class AbaqusCellType : int8_t {
+
+  // Linear cells
+  CPS3 = static_cast<int8_t>(VTKCellType::Triangle),
+  CPS4 = static_cast<int8_t>(VTKCellType::Quad),
+
+  // Quadratic, isoparametric cells
+  CPS6 = static_cast<int8_t>(VTKCellType::QuadraticTriangle),
+  CPS8 = static_cast<int8_t>(VTKCellType::QuadraticQuad)
+
+};
+
+enum class XDMFCellType : int8_t {
+
+  // Linear cells
+  Triangle = 4,
+  Quad = 5,
+
+  // Quadratic, isoparametric cells
+  QuadraticTriangle = 36,
+  QuadraticQuad = 37
+
+};
+
+enum class MeshType : int8_t {
+  None = 0,
+  Tri = 3,
+  Quad = 4,
+  QuadraticTri = 6,
+  QuadraticQuad = 8,
+};
+
+constexpr auto
+verticesPerCell(MeshType const type) -> Size
+{
+  switch (type) {
+  case MeshType::Tri:
+    return 3;
+  case MeshType::Quad:
+    return 4;
+  case MeshType::QuadraticTri:
+    return 6;
+  case MeshType::QuadraticQuad:
+    return 8;
+  default:
+    assert(false);
+    return -1;
+  }
+}
 
 template <std::floating_point T, std::signed_integral I>
 struct MeshFile {
@@ -54,9 +113,9 @@ struct MeshFile {
 
   constexpr MeshFile() = default;
 
-  // -----------------------------------------------------------------------------
+  //==============================================================================
   // Methods
-  // -----------------------------------------------------------------------------
+  //==============================================================================
 
   PURE [[nodiscard]] constexpr auto
   numCells() const -> size_t;
@@ -66,14 +125,10 @@ struct MeshFile {
 
   constexpr void
   getSubmesh(std::string const & elset_name, MeshFile<T, I> & submesh) const;
-  //  //
-  //  //    constexpr MeshType get_mesh_type() const;
-  //  //
+
   constexpr void
   getMaterialNames(std::vector<std::string> & material_names) const;
-  //
-  //    constexpr void get_material_ids(std::vector<MaterialID> & material_ids) const;
-  //
+
   constexpr void
   getMaterialIDs(std::vector<MaterialID> & material_ids,
                  std::vector<std::string> const & material_names) const;
@@ -87,10 +142,6 @@ compareGeometry(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int;
 template <std::floating_point T, std::signed_integral I>
 constexpr auto
 compareTopology(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int;
-
-template <std::floating_point T, std::signed_integral I>
-constexpr auto
-compareMaterialElsets(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int;
 
 } // namespace um2
 

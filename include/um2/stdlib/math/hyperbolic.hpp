@@ -7,9 +7,9 @@
 namespace um2
 {
 
-// --------------------------------------------------------------------------
+//==============================================================================
 // atanh
-// --------------------------------------------------------------------------
+//==============================================================================
 
 #ifndef __CUDA_ARCH__
 
@@ -23,10 +23,10 @@ atanh(T x) noexcept -> T
 #else
 
 template <typename T>
-PURE DEVICE constexpr auto
+PURE HOST constexpr auto
 atanh(T x) noexcept -> T
 {
-  static_assert(false, "atanh not implemented for this type");
+  static_assert(!sizeof(T), "atanh is not implemented for this type");
   return T();
 }
 
@@ -46,9 +46,9 @@ atanh(double x) noexcept -> double
 
 #endif
 
-// --------------------------------------------------------------------------
+//==============================================================================
 // exp
-// --------------------------------------------------------------------------
+//==============================================================================
 
 #ifndef __CUDA_ARCH__
 
@@ -62,10 +62,10 @@ exp(T x) noexcept -> T
 #else
 
 template <typename T>
-PURE DEVICE constexpr auto
+PURE HOST constexpr auto
 exp(T x) noexcept -> T
 {
-  static_assert(false, "exp not implemented for this type");
+  static_assert(!sizeof(T), "exp is not implemented for this type");
   return T();
 }
 

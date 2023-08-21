@@ -1,22 +1,19 @@
-Tests for each stdlib function
-Tests for each common function
-Tests for each geometry function
+Change --- to ===
+Review NOLINTs and cppcheck suppress
 
-Make rep meshes. Test point containment, ray intersection, etc
-Quadratic Segment use tri bb or not, difference in best vs worst case
+BinnedFaceVertexMesh and Ray
 
-QuadraticSegment, closest point
+Mesh visualization to debug BinnedFaceVertexMesh faceContaining
 
-Mesh-> Faster find face
-Mesh-> Reorder.
-MeshFile Reorder
+Docs
+coverage update
+
+Mesh-> Reorder
+
+Make rep meshes. 
+  Test point containment, ray intersection, etc
 
 If overlay grid fails, check the refactor comments in model.inl
-
-Update github actions to use spack
-
-TriMesh.faceContaining, Find the closest point first, then just test all faces around it 
-  Benchmark this
 
 Faster to use the edge method or write the loop explicitly?
 

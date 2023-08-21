@@ -237,7 +237,7 @@ TEST_CASE(getCellIndexContaining)
   ASSERT(id[1] == 3);
 }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(constructor, D, T)
 
@@ -246,6 +246,9 @@ MAKE_CUDA_KERNEL(accessors, D, T)
 
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(boundingBox, D, T)
+
+template <Size D, typename T>
+MAKE_CUDA_KERNEL(getCellCentroid, D, T)
 
 template <typename T>
 MAKE_CUDA_KERNEL(getBox, T)

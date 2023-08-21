@@ -1,8 +1,8 @@
 namespace um2
 {
-// --------------------------------------------------------------------------------------
+//==============================================================================
 // Accessors
-// --------------------------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
@@ -135,15 +135,18 @@ PURE HOSTDEV constexpr auto RegularPartition<D, T, P>::getBox(Args... args) cons
 template <Size D, typename T, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RegularPartition<D, T, P>::getChild(Args... args) noexcept
-    -> P &
+PURE HOSTDEV
+    constexpr auto RegularPartition<D, T, P>::getFlatIndex(Args... args) const noexcept
+    -> Size
 {
   Point<D, Size> const index{args...};
   for (Size i = 0; i < D; ++i) {
     assert(index[i] < grid.num_cells[i]);
   }
-  if constexpr (D == 2) {
-    return children[index[0] + index[1] * grid.num_cells[0]];
+  if constexpr (D == 1) {
+    return index[0];
+  } else if constexpr (D == 2) {
+    return index[0] + index[1] * grid.num_cells[0];
   } else { // General case
     // [0, nx, nx*ny, nx*ny*nz, ...]
     Point<D, Size> exclusive_scan_prod;
@@ -151,9 +154,39 @@ PURE HOSTDEV constexpr auto RegularPartition<D, T, P>::getChild(Args... args) no
     for (Size i = 1; i < D; ++i) {
       exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * grid.num_cells[i - 1];
     }
-    Size const child_index = index.dot(exclusive_scan_prod);
-    return children[child_index];
+    return index.dot(exclusive_scan_prod);
   }
+}
+
+template <Size D, typename T, typename P>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+RegularPartition<D, T, P>::getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size
+{
+  for (Size i = 0; i < D; ++i) {
+    assert(index[i] < grid.num_cells[i]);
+  }
+  if constexpr (D == 1) {
+    return index[0];
+  } else if constexpr (D == 2) {
+    return index[0] + index[1] * grid.num_cells[0];
+  } else { // General case
+    // [0, nx, nx*ny, nx*ny*nz, ...]
+    Point<D, Size> exclusive_scan_prod;
+    exclusive_scan_prod[0] = 1;
+    for (Size i = 1; i < D; ++i) {
+      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * grid.num_cells[i - 1];
+    }
+    return index.dot(exclusive_scan_prod);
+  }
+}
+
+template <Size D, typename T, typename P>
+template <typename... Args>
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto RegularPartition<D, T, P>::getChild(Args... args) noexcept
+    -> P &
+{
+  return children[getFlatIndex(args...)];
 }
 
 template <Size D, typename T, typename P>
@@ -163,22 +196,7 @@ PURE HOSTDEV
     constexpr auto RegularPartition<D, T, P>::getChild(Args... args) const noexcept
     -> P const &
 {
-  Point<D, Size> const index{args...};
-  for (Size i = 0; i < D; ++i) {
-    assert(index[i] < grid.num_cells[i]);
-  }
-  if constexpr (D == 2) {
-    return children[index[0] + index[1] * grid.num_cells[0]];
-  } else { // General case
-    // [0, nx, nx*ny, nx*ny*nz, ...]
-    Point<D, Size> exclusive_scan_prod;
-    exclusive_scan_prod[0] = 1;
-    for (Size i = 1; i < D; ++i) {
-      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * grid.num_cells[i - 1];
-    }
-    Size const child_index = index.dot(exclusive_scan_prod);
-    return children[child_index];
-  }
+  return children[getFlatIndex(args...)];
 }
 
 template <Size D, typename T, typename P>

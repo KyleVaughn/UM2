@@ -1,41 +1,47 @@
-// FINDINGS:
-// sqrt<double> is couple of times slower than sqrt<float>
-// Multi-threaded sqrt seems to be faster after about 30k elements
-// CUDA sqrt seems faster even before 30k elements
+//==============================================================================
+// Findings
+//==============================================================================
+// On i7-12800H, sqrt<double> is 4x slower than sqrt<float>
+// The time per sqrt (double) is approximately 0.6ns
+// It doesn't appear that multiple threads help before 100k elements
+// After about 50k elements, the Nvidia 3050 GPU is faster than the CPU
+
 #include "../helpers.hpp"
 #include <um2/stdlib/math.hpp>
 
 constexpr Size npoints = 1 << 20;
+constexpr int lo = 0;
+constexpr int hi = 10000;
 
 template <typename T>
 static void
 sqrtCPU(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<T> const x = makeVectorOfRandomFloats<T, 1, 20000>(n);
+  um2::Vector<T> x =
+      makeVectorOfRandomFloats<T>(n, static_cast<T>(lo), static_cast<T>(hi));
   um2::Vector<T> sqrtx(n);
-  // NOLINTNEXTLINE
   for (auto s : state) {
     std::transform(x.begin(), x.end(), sqrtx.begin(), um2::sqrt<T>);
   }
 }
 
-#if UM2_ENABLE_OPENMP
+#if UM2_USE_OPENMP
 template <typename T>
 static void
 sqrtCPUThreads(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<T> const x = makeVectorOfRandomFloats<T, -3, 3>(n);
+  um2::Vector<T> x =
+      makeVectorOfRandomFloats<T>(n, static_cast<T>(lo), static_cast<T>(hi));
   um2::Vector<T> sqrtx(n);
-  // NOLINTNEXTLINE
   for (auto s : state) {
     __gnu_parallel::transform(x.begin(), x.end(), sqrtx.begin(), um2::sqrt<T>);
   }
 }
 #endif
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <typename T>
 static __global__ void
 sqrtFloatKernel(T * x, T * sqrtx, Size const n)
@@ -51,7 +57,8 @@ static void
 sqrtFloatCUDA(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<T> const x = makeVectorOfRandomFloats<T, -3, 3>(n);
+  um2::Vector<T> x =
+      makeVectorOfRandomFloats<T>(n, static_cast<T>(lo), static_cast<T>(hi));
   um2::Vector<T> sqrtx(n);
   T * x_d;
   T * sqrtx_d;
@@ -61,7 +68,6 @@ sqrtFloatCUDA(benchmark::State & state)
   constexpr uint32_t threadsPerBlock = 256;
   uint32_t const blocks =
       (static_cast<uint32_t>(n) + threadsPerBlock - 1) / threadsPerBlock;
-  // NOLINTNEXTLINE
   for (auto s : state) {
     sqrtFloatKernel<<<(blocks), threadsPerBlock>>>(x_d, sqrtx_d, n);
     cudaDeviceSynchronize();
@@ -82,7 +88,7 @@ BENCHMARK_TEMPLATE(sqrtCPU, double)
     ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
 
-#if UM2_ENABLE_OPENMP
+#if UM2_USE_OPENMP
 BENCHMARK_TEMPLATE(sqrtCPUThreads, float)
     ->RangeMultiplier(4)
     ->Range(1024, npoints)
@@ -93,7 +99,7 @@ BENCHMARK_TEMPLATE(sqrtCPUThreads, double)
     ->Unit(benchmark::kMicrosecond);
 #endif
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 BENCHMARK_TEMPLATE(sqrtFloatCUDA, float)
     ->RangeMultiplier(4)
     ->Range(65536, npoints)

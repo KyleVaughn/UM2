@@ -6,9 +6,9 @@
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // RECTILINEAR PARTITION
-// -----------------------------------------------------------------------------
+//==============================================================================
 // A D-dimensional rectilinear partition of a D-dimensional box.
 //
 // Suppose the grid has nx cells in the x direction and ny cells in the y
@@ -31,9 +31,9 @@ struct RectilinearPartition {
   RectilinearGrid<D, T> grid;
   Vector<P> children;
 
-  // ---------------------------------------------------------------------------
+  //==============================================================================
   // Constructors
-  // ---------------------------------------------------------------------------
+  //==============================================================================
 
   constexpr RectilinearPartition() noexcept = default;
 
@@ -41,9 +41,9 @@ struct RectilinearPartition {
   constexpr RectilinearPartition(std::vector<Vec2<T>> const & dxdy,
                                  std::vector<std::vector<Size>> const & ids);
 
-  // ---------------------------------------------------------------------------
+  //==============================================================================
   // Accessors
-  // ---------------------------------------------------------------------------
+  //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   xMin() const noexcept -> T;
@@ -103,6 +103,14 @@ struct RectilinearPartition {
 
   template <typename... Args>
     requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto getFlatIndex(Args... args) const noexcept
+      -> Size;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size;
+
+  template <typename... Args>
+    requires(sizeof...(Args) == D)
   PURE HOSTDEV [[nodiscard]] constexpr auto getChild(Args... args) noexcept -> P &;
 
   template <typename... Args>
@@ -110,9 +118,9 @@ struct RectilinearPartition {
   PURE HOSTDEV [[nodiscard]] constexpr auto getChild(Args... args) const noexcept
       -> P const &;
 
-  // ---------------------------------------------------------------------------
+  //==============================================================================
   // Methods
-  // ---------------------------------------------------------------------------
+  //==============================================================================
 
   HOSTDEV constexpr void
   clear() noexcept;

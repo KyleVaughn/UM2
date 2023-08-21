@@ -6,7 +6,7 @@ template <std::unsigned_integral U>
 HOSTDEV
 TEST_CASE(mortonEncode)
 {
-  // NOLINTNEXTLINE
+  // NOLINTNEXTLINE justification: reduce clutter
   using namespace um2;
 
   // 2D
@@ -36,7 +36,7 @@ HOSTDEV
 TEST_CASE(mortonDecode)
 {
 
-  // NOLINTNEXTLINE
+  // NOLINTNEXTLINE justification: reduce clutter
   using namespace um2;
 
   // 2D
@@ -81,7 +81,7 @@ template <std::unsigned_integral U, std::floating_point T>
 HOSTDEV
 TEST_CASE(mortonEncodeFloat)
 {
-  // NOLINTNEXTLINE
+  // NOLINTNEXTLINE justification: reduce clutter
   using namespace um2;
 
   T const zero = static_cast<T>(0);
@@ -113,7 +113,7 @@ HOSTDEV
 TEST_CASE(mortonDecodeFloat)
 {
 
-  // NOLINTNEXTLINE
+  // NOLINTNEXTLINE justification: reduce clutter
   using namespace um2;
 
   T x;
@@ -147,7 +147,7 @@ TEST_CASE(mortonDecodeFloat)
   ASSERT_NEAR(z, static_cast<T>(1), static_cast<T>(1e-6));
 }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <std::unsigned_integral U>
 MAKE_CUDA_KERNEL(mortonEncode, U);
 

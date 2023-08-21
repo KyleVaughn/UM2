@@ -4,7 +4,7 @@
 
 import subprocess 
 
-diagtool = 'diagtool-14'
+diagtool = 'diagtool-15'
 all_warnings_file = 'all_warnings.txt'
 test_cpp_file = 'point2d.cpp' # Any file will do
 current_warnings_file = 'current_warnings.txt'
@@ -37,7 +37,7 @@ current_flags = [
         '-Wthread-safety',
         '-Wunused',
         '-Wunaligned-access',
-        '-Wundef'
+        '-Wundef',
         '-Werror',
         '-Wunneeded-member-function',
         '-Wvector-conversion',

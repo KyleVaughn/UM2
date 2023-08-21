@@ -5,9 +5,9 @@
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // REGULAR PARTITION
-// -----------------------------------------------------------------------------
+//==============================================================================
 // A D-dimensional box, partitioned by a regular grid.
 //
 // Suppose the grid has nx cells in the x direction and ny cells in the
@@ -29,15 +29,15 @@ struct RegularPartition {
   RegularGrid<D, T> grid;
   Vector<P> children;
 
-  // ---------------------------------------------------------------------------
+  //==============================================================================--------
   // Constructors
-  // ---------------------------------------------------------------------------
+  //==============================================================================--------
 
   constexpr RegularPartition() noexcept = default;
 
-  // ---------------------------------------------------------------------------
+  //==============================================================================--------
   // Accessors
-  // ---------------------------------------------------------------------------
+  //==============================================================================--------
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   xMin() const noexcept -> T;
@@ -94,6 +94,14 @@ struct RegularPartition {
     requires(sizeof...(Args) == D)
   PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
       -> AxisAlignedBox<D, T>;
+
+  template <typename... Args>
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto getFlatIndex(Args... args) const noexcept
+      -> Size;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size;
 
   template <typename... Args>
     requires(sizeof...(Args) == D)

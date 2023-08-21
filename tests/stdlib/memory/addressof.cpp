@@ -2,7 +2,7 @@
 
 #include "../../test_macros.hpp"
 
-// NOLINTBEGIN
+// NOLINTBEGIN justification: Just simple test code
 struct A {
   void
   operator&() const
@@ -20,9 +20,9 @@ struct Nothing {
 };
 // NOLINTEND
 
-// ------------------------------------------------------------
+//=============================================================================
 // addressof
-// ------------------------------------------------------------
+//=============================================================================
 
 HOSTDEV
 TEST_CASE(addressof)
@@ -44,8 +44,12 @@ TEST_CASE(addressof)
       Nothing n;
       int i;
     };
-    // NOLINTNEXTLINE
+// Clang can do this as a static assert, gcc cannot
+#ifdef __clang__
+    static_assert(um2::addressof(n) == static_cast<void *>(um2::addressof(n)));
+#else
     ASSERT(um2::addressof(n) == static_cast<void *>(um2::addressof(n)));
+#endif
   }
 }
 MAKE_CUDA_KERNEL(addressof);

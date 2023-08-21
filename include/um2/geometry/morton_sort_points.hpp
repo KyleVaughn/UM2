@@ -5,20 +5,21 @@
 
 #include <algorithm> // std::sort
 
-#ifdef _OPENMP
+#if UM2_USE_OPENMP
 #  include <parallel/algorithm> // __gnu_parallel::sort
 #endif
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 #  include <cub/device/device_merge_sort.cuh>
 #endif
 
 namespace um2
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // Morton encoding/decoding with normalization
-// -----------------------------------------------------------------------------
+//==============================================================================
+
 template <std::unsigned_integral U, Size D, std::floating_point T>
 PURE HOSTDEV auto
 mortonEncode(Point<D, T> const & p) -> U
@@ -66,14 +67,19 @@ template <std::unsigned_integral U, Size D, std::floating_point T>
 void
 mortonSort(Point<D, T> * begin, Point<D, T> * end)
 {
-#ifdef _OPENMP
-  __gnu_parallel::sort(begin, end, mortonLess<U, D, T>);
-#else
   std::sort(begin, end, mortonLess<U, D, T>);
-#endif
 }
 
-#if UM2_ENABLE_CUDA
+#if UM2_USE_OPENMP
+template <std::unsigned_integral U, Size D, std::floating_point T>
+void
+mortonSortParallel(Point<D, T> * begin, Point<D, T> * end)
+{
+  __gnu_parallel::sort(begin, end, mortonLess<U, D, T>);
+}
+#endif
+
+#if UM2_USE_CUDA
 template <std::unsigned_integral U, Size D, std::floating_point T>
 void
 deviceMortonSort(Point<D, T> * begin, Point<D, T> * end)

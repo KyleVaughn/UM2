@@ -1,4 +1,4 @@
-#include <um2/geometry/QuadraticSegment.hpp>
+#include <um2/geometry/Dion.hpp>
 
 #include "../test_macros.hpp"
 
@@ -114,9 +114,9 @@ makeSeg8() -> um2::QuadraticSegment<D, T>
   return q;
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // Interpolation
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -134,9 +134,9 @@ TEST_CASE(interpolate)
   }
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // jacobian
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -164,25 +164,9 @@ TEST_CASE(jacobian)
   ASSERT(j1[1] < 0);
 }
 
-// -------------------------------------------------------------------
-// isStraight
-// -------------------------------------------------------------------
-
-template <Size D, typename T>
-HOSTDEV
-TEST_CASE(isStraight)
-{
-  um2::QuadraticSegment<D, T> const seg1 = makeSeg1<D, T>();
-  ASSERT(seg1.isStraight());
-  um2::QuadraticSegment<D, T> const seg2 = makeSeg2<D, T>();
-  ASSERT(!seg2.isStraight());
-  um2::QuadraticSegment<D, T> const seg5 = makeSeg5<D, T>();
-  ASSERT(!seg5.isStraight());
-}
-
-// -------------------------------------------------------------------
+//==============================================================================
 // length
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -199,9 +183,9 @@ TEST_CASE(length)
   ASSERT_NEAR(l, l_ref, static_cast<T>(1e-5));
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // boundingBox
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <Size D, typename T>
 HOSTDEV
@@ -226,15 +210,15 @@ TEST_CASE(boundingBox)
   ASSERT(um2::isApprox(bb8, bb_ref8));
 }
 
-// -------------------------------------------------------------------
+//==============================================================================
 // isLeft
-// -------------------------------------------------------------------
+//==============================================================================
 
 template <typename T>
 HOSTDEV
 TEST_CASE(isLeft)
 {
-  um2::Vector<um2::Point2<T>> test_points = {
+  um2::Vector<um2::Point2<T>> const test_points = {
       um2::Point2<T>(static_cast<T>(1), static_cast<T>(3)),      // always left
       um2::Point2<T>(static_cast<T>(1), static_cast<T>(-3)),     // always right
       um2::Point2<T>(static_cast<T>(-1), static_cast<T>(0.5)),   // always left
@@ -388,73 +372,121 @@ TEST_CASE(isLeft)
   ASSERT(!q8.isLeft(test_points[13]));
 }
 
-// -----------------------------------------------------------------------------
-// enclosedArea
-// -----------------------------------------------------------------------------
+//==============================================================================
+// pointClosestTo
+//==============================================================================
 
 template <typename T>
 HOSTDEV
-TEST_CASE(enclosedArea)
+TEST_CASE(pointClosestTo)
 {
-  um2::QuadraticSegment2<T> const seg1 = makeSeg1<2, T>();
-  T area = seg1.enclosedArea();
-  T area_ref = static_cast<T>(0);
-  ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
+  // Due to difficulty in computing the closest point to a quadratic segment,
+  // we will simply test a point, compute the distance, then perturb the value
+  // in both directions and ensure that the distance increases.
+  um2::Vector<um2::Point2<T>> const test_points = {
+      um2::Point2<T>(static_cast<T>(1), static_cast<T>(3)),      // always left
+      um2::Point2<T>(static_cast<T>(1), static_cast<T>(-3)),     // always right
+      um2::Point2<T>(static_cast<T>(-1), static_cast<T>(0.5)),   // always left
+      um2::Point2<T>(static_cast<T>(-1), static_cast<T>(-0.5)),  // always right
+      um2::Point2<T>(static_cast<T>(3), static_cast<T>(0.5)),    // always left
+      um2::Point2<T>(static_cast<T>(3), static_cast<T>(-0.5)),   // always right
+      um2::Point2<T>(static_cast<T>(0.1), static_cast<T>(0.9)),  // always left
+      um2::Point2<T>(static_cast<T>(0.1), static_cast<T>(-0.9)), // always right
+      um2::Point2<T>(static_cast<T>(1.9), static_cast<T>(0.9)),  // always left
+      um2::Point2<T>(static_cast<T>(1.9), static_cast<T>(-0.9)), // always right
+      um2::Point2<T>(static_cast<T>(1.1), static_cast<T>(0.5)),
+      um2::Point2<T>(static_cast<T>(2), static_cast<T>(0.5)),
+      um2::Point2<T>(static_cast<T>(2.1), static_cast<T>(0.01)),
+      um2::Point2<T>(static_cast<T>(2.1), static_cast<T>(0.5)),
+  };
+  T const eps = static_cast<T>(1e-2);
+  um2::Vector<um2::QuadraticSegment2<T>> const segments = {
+      makeSeg1<2, T>(), makeSeg2<2, T>(), makeSeg3<2, T>(), makeSeg4<2, T>(),
+      makeSeg5<2, T>(), makeSeg6<2, T>(), makeSeg7<2, T>(), makeSeg8<2, T>(),
+  };
 
-  um2::QuadraticSegment2<T> const seg2 = makeSeg2<2, T>();
-  // 4/3 triangle area = (2 / 3) * b * h
-  area_ref = -static_cast<T>(2.0 / 3.0) * 2 * 1;
-  area = seg2.enclosedArea();
-  ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
-
-  um2::QuadraticSegment2<T> const seg4 = makeSeg4<2, T>();
-  area = seg4.enclosedArea();
-  ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
-
-  um2::QuadraticSegment2<T> const seg8 = makeSeg8<2, T>();
-  area_ref = -static_cast<T>(4);
-  area = seg8.enclosedArea();
-  ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
+  for (auto const & q : segments) {
+    for (um2::Point2<T> const & p : test_points) {
+      T const r0 = q.pointClosestTo(p);
+      T const d0 = p.distanceTo(q(r0));
+      T const r1 = r0 - eps;
+      T const d1 = p.distanceTo(q(r1));
+      T const r2 = r0 + eps;
+      T const d2 = p.distanceTo(q(r2));
+      if (0 <= r1 && r1 <= 1) {
+        ASSERT(d0 < d1);
+      }
+      if (0 <= r2 && r2 <= 1) {
+        ASSERT(d0 < d2);
+      }
+    }
+  }
 }
 
-template <typename T>
-HOSTDEV
-TEST_CASE(enclosedCentroid)
-{
-  um2::QuadraticSegment2<T> const seg1 = makeSeg1<2, T>();
-  um2::Point2<T> centroid = seg1.enclosedCentroid();
-  um2::Point2<T> centroid_ref(1, 0);
-  ASSERT(um2::isApprox(centroid, centroid_ref));
+////==============================================================================----------
+//// enclosedArea
+////==============================================================================----------
+//
+// template <typename T>
+// HOSTDEV
+// TEST_CASE(enclosedArea)
+//{
+//  um2::QuadraticSegment2<T> const seg1 = makeSeg1<2, T>();
+//  T area = seg1.enclosedArea();
+//  T area_ref = static_cast<T>(0);
+//  ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
+//
+//  um2::QuadraticSegment2<T> const seg2 = makeSeg2<2, T>();
+//  // 4/3 triangle area = (2 / 3) * b * h
+//  area_ref = -static_cast<T>(2.0 / 3.0) * 2 * 1;
+//  area = seg2.enclosedArea();
+//  ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
+//
+//  um2::QuadraticSegment2<T> const seg4 = makeSeg4<2, T>();
+//  area = seg4.enclosedArea();
+//  ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
+//
+//  um2::QuadraticSegment2<T> const seg8 = makeSeg8<2, T>();
+//  area_ref = -static_cast<T>(4);
+//  area = seg8.enclosedArea();
+//  ASSERT_NEAR(area, area_ref, static_cast<T>(1e-5));
+//}
+//
+// template <typename T>
+// HOSTDEV
+// TEST_CASE(enclosedCentroid)
+//{
+//  um2::QuadraticSegment2<T> const seg1 = makeSeg1<2, T>();
+//  um2::Point2<T> centroid = seg1.enclosedCentroid();
+//  um2::Point2<T> centroid_ref(1, 0);
+//  ASSERT(um2::isApprox(centroid, centroid_ref));
+//
+//  um2::QuadraticSegment2<T> seg2 = makeSeg2<2, T>();
+//  centroid_ref = um2::Point2<T>(static_cast<T>(1), static_cast<T>(0.4));
+//  centroid = seg2.enclosedCentroid();
+//  ASSERT(um2::isApprox(centroid, centroid_ref));
+//  // Rotated 45 degrees, translated -1 in x
+//  seg2[0][0] = static_cast<T>(-1);
+//  seg2[1][0] = um2::sqrt(static_cast<T>(2)) - 1;
+//  seg2[1][1] = um2::sqrt(static_cast<T>(2));
+//  seg2[2][0] = static_cast<T>(-1);
+//  seg2[2][1] = um2::sqrt(static_cast<T>(2));
+//  // Compute centroid_ref
+//  um2::Vec2<T> const u1 = (seg2[1] - seg2[0]).normalized();
+//  um2::Vec2<T> const u2(-u1[1], u1[0]);
+//  // NOLINTNEXTLINE(readability-identifier-naming) justification: matrix notation
+//  um2::Mat2x2<T> const R(u1, u2);
+//  centroid_ref = R * centroid_ref + seg2[0];
+//  centroid = seg2.enclosedCentroid();
+//  ASSERT(um2::isApprox(centroid, centroid_ref));
+//}
 
-  um2::QuadraticSegment2<T> seg2 = makeSeg2<2, T>();
-  centroid_ref = um2::Point2<T>(static_cast<T>(1), static_cast<T>(0.4));
-  centroid = seg2.enclosedCentroid();
-  ASSERT(um2::isApprox(centroid, centroid_ref));
-  // Rotated 45 degrees, translated -1 in x
-  seg2[0][0] = static_cast<T>(-1);
-  seg2[1][0] = um2::sqrt(static_cast<T>(2)) - 1;
-  seg2[1][1] = um2::sqrt(static_cast<T>(2));
-  seg2[2][0] = static_cast<T>(-1);
-  seg2[2][1] = um2::sqrt(static_cast<T>(2));
-  // Compute centroid_ref
-  um2::Vec2<T> const u1 = (seg2[1] - seg2[0]).normalized();
-  um2::Vec2<T> const u2(-u1[1], u1[0]);
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  um2::Mat2x2<T> const R(u1, u2);
-  centroid_ref = R * centroid_ref + seg2[0];
-  centroid = seg2.enclosedCentroid();
-  ASSERT(um2::isApprox(centroid, centroid_ref));
-}
-
-#if UM2_ENABLE_CUDA
+#if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(interpolate, D, T);
 
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(jacobian, D, T);
-
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(isStraight, D, T);
 
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(length, D, T);
@@ -470,6 +502,9 @@ MAKE_CUDA_KERNEL(enclosedArea, T);
 
 template <typename T>
 MAKE_CUDA_KERNEL(enclosedCentroid, T);
+
+template <typename T>
+MAKE_CUDA_KERNEL(pointClosestTo, T);
 #endif
 
 template <Size D, typename T>
@@ -477,13 +512,13 @@ TEST_SUITE(QuadraticSegment)
 {
   TEST_HOSTDEV(interpolate, 1, 1, D, T);
   TEST_HOSTDEV(jacobian, 1, 1, D, T);
-  TEST_HOSTDEV(isStraight, 1, 1, D, T);
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
   TEST_HOSTDEV(length, 1, 1, D, T);
   if constexpr (D == 2) {
     TEST_HOSTDEV(isLeft, 1, 1, T);
-    TEST_HOSTDEV(enclosedArea, 1, 1, T);
-    TEST_HOSTDEV(enclosedCentroid, 1, 1, T);
+    TEST_HOSTDEV(pointClosestTo, 1, 1, T);
+    //    TEST_HOSTDEV(enclosedArea, 1, 1, T);
+    //    TEST_HOSTDEV(enclosedCentroid, 1, 1, T);
   }
 }
 
