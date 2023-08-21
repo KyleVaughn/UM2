@@ -1,16 +1,10 @@
 #pragma once
 
-#include <um2/common/Log.hpp>
-#include <um2/mesh/MeshType.hpp>
-#include <um2/mesh/QuadMesh.hpp>
-#include <um2/mesh/QuadraticQuadMesh.hpp>
-#include <um2/mesh/QuadraticTriMesh.hpp>
+#include <um2/mesh/FaceVertexMesh.hpp>
 #include <um2/mesh/RectilinearPartition.hpp>
 #include <um2/mesh/RegularPartition.hpp>
-#include <um2/mesh/TriMesh.hpp>
 #include <um2/mesh/io.hpp>
 #include <um2/physics/Material.hpp>
-#include <um2/stdlib/Vector.hpp>
 // #include <um2/ray_casting/intersect/ray-linear_polygon_mesh.hpp>
 // #include <um2/ray_casting/intersect/ray-quadratic_polygon_mesh.hpp>
 
@@ -20,9 +14,10 @@
 namespace um2::mpact
 {
 
-// -----------------------------------------------------------------------------
+//==============================================================================
 // MPACT SPATIAL PARTITON
-// -----------------------------------------------------------------------------
+//==============================================================================
+//
 // An equivalent representation to the various mesh hierarchies in an MPACT model.
 //
 //  ************************
@@ -30,6 +25,8 @@ namespace um2::mpact
 //  ************************
 //  - The pin mesh coordinate system origin in MPACT is the center of the pin. Here
 //    we use the bottom left corner of the pin mesh as the origin.
+//  - In MPACT, two pins with the same mesh but different heights are considered
+//    different meshes. Here we consider them the same mesh.
 //
 // The MPACT spatial partition consists of:
 //      1. Core
@@ -64,12 +61,11 @@ namespace um2::mpact
 //          cells may contain a piece of a pin, multiple pins, or any other
 //          arbitrary geometry.
 //
-template <std::floating_point T, std::signed_integral I>
 struct SpatialPartition {
 
   // Take this out of the struct?
   struct CoarseCell {
-    Vec2<T> dxdy; // dx, dy
+    Vec2<Float> dxdy; // dx, dy
     MeshType mesh_type = MeshType::None;
     Size mesh_id = -1;               // index into the corresponding mesh array
     Vector<MaterialID> material_ids; // size = mesh.numFaces()
@@ -80,15 +76,15 @@ struct SpatialPartition {
       return material_ids.size();
     }
   };
-  using RTM = RectilinearPartition2<T, I>;
-  using Lattice = RegularPartition2<T, I>;
-  using Assembly = RectilinearPartition1<T, I>;
+  using RTM = RectilinearPartition2<Float, Int>;
+  using Lattice = RegularPartition2<Float, Int>;
+  using Assembly = RectilinearPartition1<Float, Int>;
 
   // The children IDs are used to index the corresponding array.
   // Child ID = -1 indicates that the child does not exist. This is used
   // for when the child should be generated automatically.
 
-  RectilinearPartition2<T, I> core;
+  RectilinearPartition2<Float, Int> core;
   Vector<Assembly> assemblies;
   Vector<Lattice> lattices;
   Vector<RTM> rtms;
@@ -96,10 +92,10 @@ struct SpatialPartition {
 
   Vector<Material> materials;
 
-  Vector<TriMesh<2, T, I>> tri;
-  Vector<QuadMesh<2, T, I>> quad;
-  Vector<QuadraticTriMesh<2, T, I>> quadratic_tri;
-  Vector<QuadraticQuadMesh<2, T, I>> quadratic_quad;
+  Vector<TriMesh<2, Float, Int>> tri;
+  Vector<QuadMesh<2, Float, Int>> quad;
+  Vector<QuadraticTriMesh<2, Float, Int>> quadratic_tri;
+  Vector<QuadraticQuadMesh<2, Float, Int>> quadratic_quad;
 
   // -----------------------------------------------------------------------------
   // Constructors
@@ -140,7 +136,48 @@ struct SpatialPartition {
   // -----------------------------------------------------------------------------
 
   HOSTDEV constexpr void
-  clear() noexcept;
+  clear() noexcept
+  {
+    core.clear();
+    assemblies.clear();
+    lattices.clear();
+    rtms.clear();
+    coarse_cells.clear();
+
+    tri.clear();
+    quad.clear();
+    quadratic_tri.clear();
+    quadratic_quad.clear();
+  }
+
+  inline void
+  checkMeshExists(MeshType mesh_type, Size mesh_id) const
+  {
+    switch (mesh_type) {
+    case MeshType::Tri:
+      if (0 > mesh_id || mesh_id >= this->tri.size()) {
+        Log::error("Tri mesh " + std::to_string(mesh_id) + " does not exist");
+      }
+      break;
+    case MeshType::Quad:
+      if (0 > mesh_id || mesh_id >= this->quad.size()) {
+        Log::error("Quad mesh " + std::to_string(mesh_id) + " does not exist");
+      }
+      break;
+    case MeshType::QuadraticTri:
+      if (0 > mesh_id || mesh_id >= this->quadratic_tri.size()) {
+        Log::error("Quadratic tri mesh " + std::to_string(mesh_id) + " does not exist");
+      }
+      break;
+    case MeshType::QuadraticQuad:
+      if (0 > mesh_id || mesh_id >= this->quadratic_quad.size()) {
+        Log::error("Quadratic quad mesh " + std::to_string(mesh_id) + " does not exist");
+      }
+      break;
+    default:
+      Log::error("Invalid mesh type");
+    }
+  }
 
   //    int make_cylindrical_pin_mesh(std::vector<double> const & radii,
   //                                  double const pitch,
@@ -148,7 +185,7 @@ struct SpatialPartition {
   //                                  int const num_azimuthal,
   //                                  int const mesh_order = 1);
   //
-  //    int make_rectangular_pin_mesh(Vec2<T> const dxdy,
+  //    int make_rectangular_pin_mesh(Vec2<Float> const dxdy,
   //                                  int const nx,
   //                                  int const ny);
   //
@@ -157,7 +194,7 @@ struct SpatialPartition {
   //                         std::vector<Material> const & materials);
   //
   auto
-  makeCoarseCell(Vec2<T> dxdy, MeshType mesh_type = MeshType::None, Size mesh_id = -1,
+  makeCoarseCell(Vec2<Float> dxdy, MeshType mesh_type = MeshType::None, Size mesh_id = -1,
                  Vector<MaterialID> const & material_ids = {}) -> Size;
 
   auto
@@ -167,30 +204,31 @@ struct SpatialPartition {
   makeLattice(std::vector<std::vector<Size>> const & rtm_ids) -> Size;
 
   auto
-  makeAssembly(std::vector<Size> const & lat_ids, std::vector<T> const & z = {-1, 1});
+  makeAssembly(std::vector<Size> const & lat_ids, std::vector<Float> const & z = {-1, 1})
+      -> Size;
 
   auto
-  makeCore(std::vector<std::vector<Size>> const & asy_ids);
+  makeCore(std::vector<std::vector<Size>> const & asy_ids) -> Size;
 
   void
   importCoarseCells(std::string const & filename);
   //
   //    void coarse_cell_heights(Vector<std::pair<int, double>> & id_dz) const;
   //
-  //    void coarse_cell_face_areas(Size const cc_id, Vector<T> & areas) const;
+  //    void coarse_cell_face_areas(Size const cc_id, Vector<Float> & areas) const;
   //
-  //    Size coarse_cell_find_face(Size const cc_id, Point2<T> const & p) const;
+  //    Size coarse_cell_find_face(Size const cc_id, Point2<Float> const & p) const;
   //
-  //    Point2<T> coarse_cell_face_centroid(Size const cc_id, Size const face_id)
+  //    Point2<Float> coarse_cell_face_centroid(Size const cc_id, Size const face_id)
   //    const;
   //
   //    void intersect_coarse_cell(Size const cc_id,
-  //                               Ray2<T> const & ray,
-  //                               Vector<T> & intersections) const;
+  //                               Ray2<Float> const & ray,
+  //                               Vector<Float> & intersections) const;
   //
   //
   //    void intersect_coarse_cell(Size const cc_id, // Fixed-size buffer
-  //                               Ray2<T> const & ray,
+  //                               Ray2<Float> const & ray,
   //                               T * const intersections,
   //                               int * const n) const;
   //
@@ -210,5 +248,3 @@ struct SpatialPartition {
 }; // struct SpatialPartition
 
 } // namespace um2::mpact
-
-#include "SpatialPartition.inl"

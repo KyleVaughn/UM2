@@ -6,7 +6,7 @@
 // CCW:          307249 us = 4.58 ns/point
 // CCW no short:  33773 us = 0.50 ns/point
 //
-// Although CCW no short is slower than Barycentric, in these results, benchmarking
+// Although CCW no short is slower than Barycentric in these results, benchmarking
 // on multiple processors shows that CCW no short is faster on average.
 
 #include "../helpers.hpp"

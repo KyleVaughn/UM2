@@ -160,9 +160,8 @@ PURE HOSTDEV
 template <Size D, typename T, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV
-    constexpr auto RectilinearPartition<D, T, P>::getFlatIndex(Args... args) noexcept
-    -> Size
+PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getFlatIndex(
+    Args... args) const noexcept -> Size
 {
   Point<D, Size> const index{args...};
   for (Size i = 0; i < D; ++i) {
@@ -185,7 +184,8 @@ PURE HOSTDEV
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-RectilinearPartition<D, T, P>::getFlatIndex(Vec<D, Size> const & index) noexcept -> Size
+RectilinearPartition<D, T, P>::getFlatIndex(Vec<D, Size> const & index) const noexcept
+    -> Size
 {
   for (Size i = 0; i < D; ++i) {
     assert(index[i] < grid.divs[i].size());

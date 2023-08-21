@@ -106,7 +106,7 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
   // Find the elset with the given name.
   auto const elset_it = std::find(elset_names.cbegin(), elset_names.cend(), elset_name);
   if (elset_it == elset_names.cend()) {
-    Log::error("Elset not found");
+    Log::error("getSubmesh: Elset '" + elset_name + "' not found");
     return;
   }
 

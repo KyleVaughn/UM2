@@ -1,7 +1,7 @@
 #pragma once
 
-#include <um2/mesh/RegularPartition.hpp>
 #include <um2/mesh/FaceVertexMesh.hpp>
+#include <um2/mesh/RegularPartition.hpp>
 
 namespace um2
 {
@@ -9,15 +9,16 @@ namespace um2
 //=============================================================================
 // BINNED FACE-VERTEX MESH
 //=============================================================================
+//
 // A 2D volumetric or 3D surface mesh composed of polygons of polynomial order P.
 // Each polygon (face) is composed of N vertices. Each vertex is a D-dimensional
 // point of floating point type T.
 //
 // The faces of the mesh are sorted into a regular grid of bins based upon the
-// lower left corner of the bounding box of the face. The bin size is determined
-// by the bounding box of the mesh and the size of the longest edge in the mesh.
+// upper right corner of the bounding box of the face. The bin size is determined
+// by the bounding box of the mesh and the size of the largest face bounding box.
 // In direction x, the number of bins is:
-//  num_bins_x = floor((max_x - min_x) / max_edge_length)
+//  num_bins_x = floor((max_x - min_x) / max_box_length)
 //
 // face_ids is a Vector<I> of size numFaces(mesh) that holds the ids of the faces
 // in each bin. partition.children holds the offsets into face_ids for each bin.
@@ -35,6 +36,7 @@ namespace um2
 //
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 struct BinnedFaceVertexMesh {
+
   FaceVertexMesh<P, N, D, T, I> mesh;
   RegularPartition<D, T, I> partition;
   Vector<I> face_ids;
@@ -133,24 +135,23 @@ struct BinnedFaceVertexMesh {
 // Aliases
 //==============================================================================
 
+// Polynomial order
 template <Size N, Size D, std::floating_point T, std::signed_integral I>
 using BinnedLinearPolygonMesh = BinnedFaceVertexMesh<1, N, D, T, I>;
-
 template <Size N, Size D, std::floating_point T, std::signed_integral I>
 using BinnedQuadraticPolygonMesh = BinnedFaceVertexMesh<2, N, D, T, I>;
 
+// Number of vertices per face
 template <Size D, std::floating_point T, std::signed_integral I>
 using BinnedTriMesh = BinnedLinearPolygonMesh<3, D, T, I>;
-
 template <Size D, std::floating_point T, std::signed_integral I>
 using BinnedQuadMesh = BinnedLinearPolygonMesh<4, D, T, I>;
-
 template <Size D, std::floating_point T, std::signed_integral I>
 using BinnedQuadraticTriMesh = BinnedQuadraticPolygonMesh<6, D, T, I>;
-
 template <Size D, std::floating_point T, std::signed_integral I>
 using BinnedQuadraticQuadMesh = BinnedQuadraticPolygonMesh<8, D, T, I>;
 
+// 2D
 template <Size P, Size N, std::floating_point T, std::signed_integral I>
 using BinnedPlanarPolygonMesh = BinnedFaceVertexMesh<P, N, 2, T, I>;
 

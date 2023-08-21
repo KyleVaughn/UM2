@@ -1,16 +1,314 @@
-#pragma once
-
-#include <um2/mesh/io_xdmf.hpp>
-#include <um2/mpact/SpatialPartition.hpp>
+#include <um2/mpact/io.hpp>
 
 namespace um2
 {
 
-void
-writeXDMFFile(std::string const & path, mpact::SpatialPartition const & model);
+//==============================================================================
+// writeCoarseCell
+//==============================================================================
+
+static void
+writeCoarseCell(Size rtm_id, mpact::SpatialPartition const & model, Size ix, Size iy,
+                Vector<Int> & cc_found, Point2<Float> const & prev_ll,
+                std::vector<std::string> const & mat_names, Float const cut_z,
+                std::stringstream & ss, pugi::xml_node & xrtm_grid, H5::H5File & h5file,
+                std::string const & h5filename, std::string const & h5rtm_grouppath,
+                std::vector<std::string> const & mat_names_short)
+{
+  auto const & rtm = model.rtms[rtm_id];
+  auto const & cell_id = static_cast<Size>(rtm.getChild(ix, iy));
+  cc_found[cell_id] += 1;
+  auto const cell_bb = rtm.getBox(ix, iy);
+  Point2<Float> const ll = prev_ll + cell_bb.minima;
+  Int const cell_id_ctr = cc_found[cell_id];
+  MeshType const mesh_type = model.coarse_cells[cell_id].mesh_type;
+  Size const mesh_id = model.coarse_cells[cell_id].mesh_id;
+  MeshFile<Float, Int> mesh_file;
+  switch (mesh_type) {
+  case MeshType::Tri:
+    model.tri[mesh_id].toMeshFile(mesh_file);
+    break;
+  case MeshType::Quad:
+    model.quad[mesh_id].toMeshFile(mesh_file);
+    break;
+  case MeshType::QuadraticTri:
+    model.quadratic_tri[mesh_id].toMeshFile(mesh_file);
+    break;
+  case MeshType::QuadraticQuad:
+    model.quadratic_quad[mesh_id].toMeshFile(mesh_file);
+    break;
+  default:
+    Log::error("Unsupported mesh type");
+    return;
+  } // switch
+  // We need to add the material_ids as elsets to the mesh file
+  // Get the number of materials in the mesh
+  Vector<MaterialID> const & mat_ids = model.coarse_cells[cell_id].material_ids;
+  Vector<MaterialID> unique_mat_ids;
+  for (auto const & mat_id : mat_ids) {
+    if (!std::any_of(unique_mat_ids.begin(), unique_mat_ids.end(),
+                     [mat_id](MaterialID const & id) { return id == mat_id; })) {
+      unique_mat_ids.push_back(mat_id);
+    }
+  }
+  auto const num_mats = static_cast<size_t>(unique_mat_ids.size());
+  std::sort(unique_mat_ids.begin(), unique_mat_ids.end());
+  mesh_file.elset_names.resize(num_mats);
+  mesh_file.elset_offsets.resize(num_mats + 1U);
+  mesh_file.elset_offsets[0] = 0;
+  size_t const num_elements = mesh_file.numCells();
+  size_t elem_ctr = 0;
+  mesh_file.elset_ids.resize(num_elements);
+  // Indexing with different types makes the next few lines a bit messy
+  for (size_t imat = 0; imat < num_mats; ++imat) {
+    MaterialID const mat_id = unique_mat_ids[static_cast<Size>(imat)];
+    mesh_file.elset_names[imat] = mat_names[static_cast<size_t>(mat_id)];
+    for (size_t ielem = 0; ielem < num_elements; ++ielem) {
+      if (mat_ids[static_cast<Size>(ielem)] == mat_id) {
+        mesh_file.elset_ids[elem_ctr++] = static_cast<Size>(ielem);
+        mesh_file.elset_offsets[imat + 1U] = static_cast<Size>(elem_ctr);
+      }
+    }
+  }
+  // Shift the mesh to global coordinates
+  for (auto & vertex : mesh_file.vertices) {
+    vertex[0] += ll[0];
+    vertex[1] += ll[1];
+    vertex[2] += cut_z;
+  }
+  ss.str("");
+  ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id << "_"
+     << std::setw(5) << std::setfill('0') << cell_id_ctr;
+  mesh_file.name = ss.str();
+  // Now write the coarse cell as a uniform grid
+  writeXDMFUniformGrid(xrtm_grid, h5file, h5filename, h5rtm_grouppath, mesh_file,
+                       mat_names_short);
+}
+
+//==============================================================================
+// writeRTM
+//==============================================================================
+
+static void
+writeRTM(Size lat_id, mpact::SpatialPartition const & model, Size ix, Size iy,
+         Vector<Int> & cc_found, Vector<Int> & rtm_found, Point2<Float> const & asy_ll,
+         std::vector<std::string> const & mat_names, Float const cut_z,
+         std::stringstream & ss, pugi::xml_node & xlat_grid, H5::H5File & h5file,
+         std::string const & h5filename, std::string const & h5lat_grouppath,
+         std::vector<std::string> const & mat_names_short)
+{
+  auto const & lattice = model.lattices[lat_id];
+  auto const rtm_id = static_cast<Size>(lattice.getChild(ix, iy));
+  rtm_found[rtm_id] += 1;
+  Int const rtm_id_ctr = rtm_found[rtm_id];
+  pugi::xml_node xrtm_grid = xlat_grid.append_child("Grid");
+  ss.str("");
+  ss << "RTM_" << std::setw(5) << std::setfill('0') << rtm_id << "_" << std::setw(5)
+     << std::setfill('0') << rtm_id_ctr;
+  xrtm_grid.append_attribute("Name") = ss.str().c_str();
+  xrtm_grid.append_attribute("GridType") = "Tree";
+  std::string const h5rtm_grouppath = h5lat_grouppath + "/" + ss.str();
+  H5::Group const h5rtm_group = h5file.createGroup(h5rtm_grouppath);
+  auto const rtm_bb = lattice.getBox(ix, iy);
+  Point2<Float> const rtm_ll = rtm_bb.minima; // Lower left corner
+  auto const & rtm = model.rtms[rtm_id];
+  if (rtm.children.empty()) {
+    Log::error("RTM has no children");
+    return;
+  }
+  Size const nycells = rtm.numYCells();
+  Size const nxcells = rtm.numXCells();
+  // RTM M by N
+  pugi::xml_node xrtm_info = xrtm_grid.append_child("Information");
+  xrtm_info.append_attribute("Name") = "M_by_N";
+  std::string const rtm_mn_str =
+      std::to_string(nycells) + " x " + std::to_string(nxcells);
+  xrtm_info.append_child(pugi::node_pcdata).set_value(rtm_mn_str.c_str());
+  Point2<Float> const prev_ll = asy_ll + rtm_ll;
+  // For each coarse cell
+  for (Size iycell = 0; iycell < nycells; ++iycell) {
+    for (Size ixcell = 0; ixcell < nxcells; ++ixcell) {
+      writeCoarseCell(rtm_id, model, ixcell, iycell, cc_found, prev_ll, mat_names, cut_z,
+                      ss, xrtm_grid, h5file, h5filename, h5rtm_grouppath,
+                      mat_names_short);
+    } // cell
+  }   // cell
+}
+
+//==============================================================================
+// writeLattice
+//==============================================================================
+
+static void
+writeLattice(Size asy_id, mpact::SpatialPartition const & model, Size iz,
+             Vector<Int> & cc_found, Vector<Int> & rtm_found, Vector<Int> & lat_found,
+             Point2<Float> const & asy_ll, std::vector<std::string> const & mat_names,
+             std::stringstream & ss, pugi::xml_node & xasy_grid, H5::H5File & h5file,
+             std::string const & h5filename, std::string const & h5asy_grouppath,
+             std::vector<std::string> const & mat_names_short)
+{
+  auto const & assembly = model.assemblies[asy_id];
+  auto const lat_id = static_cast<Size>(assembly.children[iz]);
+  lat_found[lat_id] += 1;
+  Int const lat_id_ctr = lat_found[lat_id];
+  pugi::xml_node xlat_grid = xasy_grid.append_child("Grid");
+  ss.str("");
+  ss << "Lattice_" << std::setw(5) << std::setfill('0') << lat_id << "_" << std::setw(5)
+     << std::setfill('0') << lat_id_ctr;
+  xlat_grid.append_attribute("Name") = ss.str().c_str();
+  xlat_grid.append_attribute("GridType") = "Tree";
+  std::string const h5lat_grouppath = h5asy_grouppath + "/" + ss.str();
+  H5::Group const h5lat_group = h5file.createGroup(h5lat_grouppath);
+  Float const low_z = assembly.grid.divs[0][iz];
+  Float const high_z = assembly.grid.divs[0][iz + 1];
+  Float const cut_z = (low_z + high_z) / 2;
+  pugi::xml_node xlat_info = xlat_grid.append_child("Information");
+  xlat_info.append_attribute("Name") = "Z";
+  std::string const z_values = std::to_string(low_z) + ", " + std::to_string(cut_z) +
+                               ", " + std::to_string(high_z);
+  xlat_info.append_child(pugi::node_pcdata).set_value(z_values.c_str());
+  auto const & lattice = model.lattices[lat_id];
+  if (lattice.children.empty()) {
+    Log::error("Lattice has no children");
+    return;
+  }
+  Size const nyrtm = lattice.numYCells();
+  Size const nxrtm = lattice.numXCells();
+  // Lattice M by N
+  pugi::xml_node xlat_info2 = xlat_grid.append_child("Information");
+  xlat_info2.append_attribute("Name") = "M_by_N";
+  std::string const lat_mn_str = std::to_string(nyrtm) + " x " + std::to_string(nxrtm);
+  xlat_info2.append_child(pugi::node_pcdata).set_value(lat_mn_str.c_str());
+  // For each RTM
+  for (Size iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
+    for (Size ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
+      writeRTM(lat_id, model, ixrtm, iyrtm, cc_found, rtm_found, asy_ll, mat_names, cut_z,
+               ss, xlat_grid, h5file, h5filename, h5lat_grouppath, mat_names_short);
+    } // rtm
+  }   // rtm
+}
+
+//==============================================================================
+// writeXDMFFile
+//==============================================================================
 
 void
-exportMesh(std::string const & path, mpact::SpatialPartition const & model);
+writeXDMFFile(std::string const & path, mpact::SpatialPartition const & model)
+{
+  Log::info("Writing MPACT model to XDMF file: " + path);
+
+  size_t const h5filepath_end = path.find_last_of('/') + 1;
+  std::string const name = path.substr(h5filepath_end, path.size() - 5 - h5filepath_end);
+  std::string const h5filename = name + ".h5";
+  std::string const h5filepath = path.substr(0, h5filepath_end);
+  LOG_DEBUG("H5 filename: " + h5filename);
+  H5::H5File h5file(h5filepath + h5filename, H5F_ACC_TRUNC);
+
+  // Setup XML file
+  pugi::xml_document xdoc;
+
+  // XDMF root node
+  pugi::xml_node xroot = xdoc.append_child("Xdmf");
+  xroot.append_attribute("Version") = "3.0";
+
+  // Domain node
+  pugi::xml_node xdomain = xroot.append_child("Domain");
+
+  // Material info
+  pugi::xml_node xinfo = xdomain.append_child("Information");
+  xinfo.append_attribute("Name") = "Materials";
+  std::string materials;
+  std::vector<std::string> mat_names;
+  std::vector<std::string> mat_names_short;
+  std::string const material_str = "Material_";
+  for (Size i = 0; i < model.materials.size(); i++) {
+    std::string const mat_name(model.materials[i].name.data());
+    materials += mat_name;
+    if (i + 1 < model.materials.size()) {
+      materials += ", ";
+    }
+    mat_names.push_back(material_str + mat_name);
+    mat_names_short.push_back(mat_name);
+  }
+  xinfo.append_child(pugi::node_pcdata).set_value(materials.c_str());
+
+  // Core grid
+  pugi::xml_node xcore_grid = xdomain.append_child("Grid");
+  xcore_grid.append_attribute("Name") = name.c_str();
+  xcore_grid.append_attribute("GridType") = "Tree";
+
+  // h5
+  H5::Group const h5core_group = h5file.createGroup(name);
+  std::string const h5core_grouppath = "/" + name;
+
+  Vector<Int> cc_found(model.coarse_cells.size(), -1);
+  Vector<Int> rtm_found(model.rtms.size(), -1);
+  Vector<Int> lat_found(model.lattices.size(), -1);
+  Vector<Int> asy_found(model.assemblies.size(), -1);
+  auto const & core = model.core;
+  if (core.children.empty()) {
+    Log::error("Core has no children");
+    return;
+  }
+  std::stringstream ss;
+  Size const nyasy = core.numYCells();
+  Size const nxasy = core.numXCells();
+  // Core M by N
+  pugi::xml_node xcore_info = xcore_grid.append_child("Information");
+  xcore_info.append_attribute("Name") = "M_by_N";
+  std::string const core_mn_str = std::to_string(nyasy) + " x " + std::to_string(nxasy);
+  xcore_info.append_child(pugi::node_pcdata).set_value(core_mn_str.c_str());
+  // For each assembly
+  for (Size iyasy = 0; iyasy < nyasy; ++iyasy) {
+    for (Size ixasy = 0; ixasy < nxasy; ++ixasy) {
+      Int const asy_id = core.getChild(ixasy, iyasy);
+      asy_found[static_cast<Size>(asy_id)] += 1;
+      Int const asy_id_ctr = asy_found[static_cast<Size>(asy_id)];
+      pugi::xml_node xasy_grid = xcore_grid.append_child("Grid");
+      ss.str("");
+      ss << "Assembly_" << std::setw(5) << std::setfill('0') << asy_id << "_"
+         << std::setw(5) << std::setfill('0') << asy_id_ctr;
+      xasy_grid.append_attribute("Name") = ss.str().c_str();
+      xasy_grid.append_attribute("GridType") = "Tree";
+      std::string const h5asy_grouppath = h5core_grouppath + "/" + ss.str();
+      H5::Group const h5asy_group = h5file.createGroup(h5asy_grouppath);
+      AxisAlignedBox2<Float> const asy_bb = core.getBox(ixasy, iyasy);
+      Point2<Float> const asy_ll = asy_bb.minima; // Lower left corner
+      auto const & assembly = model.assemblies[asy_id];
+      if (assembly.children.empty()) {
+        Log::error("Assembly has no children");
+        return;
+      }
+      Size const nzlat = assembly.numXCells();
+      // Assembly M by N
+      pugi::xml_node xasy_info = xasy_grid.append_child("Information");
+      xasy_info.append_attribute("Name") = "M_by_N";
+      std::string const asy_mn_str = std::to_string(nzlat) + " x 1";
+      xasy_info.append_child(pugi::node_pcdata).set_value(asy_mn_str.c_str());
+      // For each lattice
+      for (Size izlat = 0; izlat < nzlat; ++izlat) {
+        writeLattice(asy_id, model, izlat, cc_found, rtm_found, lat_found, asy_ll,
+                     mat_names, ss, xasy_grid, h5file, h5filename, h5asy_grouppath,
+                     mat_names_short);
+      } // lat
+    }   // assembly
+  }     // assembly
+  // Write the XML file
+  xdoc.save_file(path.c_str(), "  ");
+
+  // Close the HDF5 file
+  h5file.close();
+}
+
+void
+exportMesh(std::string const & path, mpact::SpatialPartition const & model)
+{
+  if (path.ends_with(".xdmf")) {
+    writeXDMFFile(path, model);
+  } else {
+    Log::error("Unsupported file format.");
+  }
+}
 
 // static inline void
 // map_lattice_idx_to_j_i(int const idx, int & j, int & i, int const M, int const N)
@@ -447,19 +745,19 @@ exportMesh(std::string const & path, mpact::SpatialPartition const & model);
 //                   case MeshType::TRI: {
 //                     coarse_cell_mesh_types.insert(coarse_cell_mesh_types.begin() +
 //                                                       coarse_cell_id_idx,
-//                                                   static_cast<I>(MeshType::TRI));
+//                                                   static_cast<Int>(MeshType::TRI));
 //                     coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin() +
 //                                                     coarse_cell_id_idx,
-//                                                 static_cast<I>(tri.size()));
+//                                                 static_cast<Int>(tri.size()));
 //                     tri.push_back(coarse_cell_mesh);
 //                     // Shift the points so that the min point is at the origin.
 //                     TriMesh<T, I> & mesh = tri.back();
-//                     AxisAlignedBox2<T> bb = bounding_box(mesh);
-//                     Point2<T> min_point = bb.minima;
+//                     AxisAlignedBox2<Float> bb = bounding_box(mesh);
+//                     Point2<Float> min_point = bb.minima;
 //                     for (auto & p : mesh.vertices) {
 //                       p -= min_point;
 //                     }
-//                     Point2<T> dxdy = bb.maxima - bb.minima;
+//                     Point2<Float> dxdy = bb.maxima - bb.minima;
 //                     coarse_cell_dxdys[coarse_cell_id_idx] =
 //                         Vec2d(static_cast<double>(dxdy[0]),
 //                         static_cast<double>(dxdy[1]));
@@ -468,19 +766,19 @@ exportMesh(std::string const & path, mpact::SpatialPartition const & model);
 //                   case MeshType::QUAD: {
 //                     coarse_cell_mesh_types.insert(coarse_cell_mesh_types.begin() +
 //                                                       coarse_cell_id_idx,
-//                                                   static_cast<I>(MeshType::QUAD));
+//                                                   static_cast<Int>(MeshType::QUAD));
 //                     coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin() +
 //                                                     coarse_cell_id_idx,
-//                                                 static_cast<I>(quad.size()));
+//                                                 static_cast<Int>(quad.size()));
 //                     quad.push_back(coarse_cell_mesh);
 //                     // Shift the points so that the min point is at the origin.
 //                     QuadMesh<T, I> & mesh = quad.back();
-//                     AxisAlignedBox2<T> bb = bounding_box(mesh);
-//                     Point2<T> min_point = bb.minima;
+//                     AxisAlignedBox2<Float> bb = bounding_box(mesh);
+//                     Point2<Float> min_point = bb.minima;
 //                     for (auto & p : mesh.vertices) {
 //                       p -= min_point;
 //                     }
-//                     Point2<T> dxdy = bb.maxima - bb.minima;
+//                     Point2<Float> dxdy = bb.maxima - bb.minima;
 //                     coarse_cell_dxdys[coarse_cell_id_idx] =
 //                         Vec2d(static_cast<double>(dxdy[0]),
 //                         static_cast<double>(dxdy[1]));
@@ -489,19 +787,19 @@ exportMesh(std::string const & path, mpact::SpatialPartition const & model);
 //                   case MeshType::TRI_QUAD: {
 //                     coarse_cell_mesh_types.insert(coarse_cell_mesh_types.begin() +
 //                                                       coarse_cell_id_idx,
-//                                                   static_cast<I>(MeshType::TRI_QUAD));
+//                                                   static_cast<Int>(MeshType::TRI_QUAD));
 //                     coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin() +
 //                                                     coarse_cell_id_idx,
-//                                                 static_cast<I>(tri_quad.size()));
+//                                                 static_cast<Int>(tri_quad.size()));
 //                     tri_quad.push_back(coarse_cell_mesh);
 //                     // Shift the points so that the min point is at the origin.
 //                     TriQuadMesh<T, I> & mesh = tri_quad.back();
-//                     AxisAlignedBox2<T> bb = bounding_box(mesh);
-//                     Point2<T> min_point = bb.minima;
+//                     AxisAlignedBox2<Float> bb = bounding_box(mesh);
+//                     Point2<Float> min_point = bb.minima;
 //                     for (auto & p : mesh.vertices) {
 //                       p -= min_point;
 //                     }
-//                     Point2<T> dxdy = bb.maxima - bb.minima;
+//                     Point2<Float> dxdy = bb.maxima - bb.minima;
 //                     coarse_cell_dxdys[coarse_cell_id_idx] =
 //                         Vec2d(static_cast<double>(dxdy[0]),
 //                         static_cast<double>(dxdy[1]));
@@ -510,19 +808,19 @@ exportMesh(std::string const & path, mpact::SpatialPartition const & model);
 //                   case MeshType::QUADRATIC_TRI: {
 //                     coarse_cell_mesh_types.insert(
 //                         coarse_cell_mesh_types.begin() + coarse_cell_id_idx,
-//                         static_cast<I>(MeshType::QUADRATIC_TRI));
+//                         static_cast<Int>(MeshType::QUADRATIC_TRI));
 //                     coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin() +
 //                                                     coarse_cell_id_idx,
-//                                                 static_cast<I>(quadratic_tri.size()));
+//                                                 static_cast<Int>(quadratic_tri.size()));
 //                     quadratic_tri.push_back(coarse_cell_mesh);
 //                     // Shift the points so that the min point is at the origin.
 //                     QuadraticTriMesh<T, I> & mesh = quadratic_tri.back();
-//                     AxisAlignedBox2<T> bb = bounding_box(mesh);
-//                     Point2<T> min_point = bb.minima;
+//                     AxisAlignedBox2<Float> bb = bounding_box(mesh);
+//                     Point2<Float> min_point = bb.minima;
 //                     for (auto & p : mesh.vertices) {
 //                       p -= min_point;
 //                     }
-//                     Point2<T> dxdy = bb.maxima - bb.minima;
+//                     Point2<Float> dxdy = bb.maxima - bb.minima;
 //                     coarse_cell_dxdys[coarse_cell_id_idx] =
 //                         Vec2d(static_cast<double>(dxdy[0]),
 //                         static_cast<double>(dxdy[1]));
@@ -531,19 +829,19 @@ exportMesh(std::string const & path, mpact::SpatialPartition const & model);
 //                   case MeshType::QUADRATIC_QUAD: {
 //                     coarse_cell_mesh_types.insert(
 //                         coarse_cell_mesh_types.begin() + coarse_cell_id_idx,
-//                         static_cast<I>(MeshType::QUADRATIC_QUAD));
+//                         static_cast<Int>(MeshType::QUADRATIC_QUAD));
 //                     coarse_cell_mesh_ids.insert(coarse_cell_mesh_ids.begin() +
 //                                                     coarse_cell_id_idx,
-//                                                 static_cast<I>(quadratic_quad.size()));
+//                                                 static_cast<Int>(quadratic_quad.size()));
 //                     quadratic_quad.push_back(coarse_cell_mesh);
 //                     // Shift the points so that the min point is at the origin.
 //                     QuadraticQuadMesh<T, I> & mesh = quadratic_quad.back();
-//                     AxisAlignedBox2<T> bb = bounding_box(mesh);
-//                     Point2<T> min_point = bb.minima;
+//                     AxisAlignedBox2<Float> bb = bounding_box(mesh);
+//                     Point2<Float> min_point = bb.minima;
 //                     for (auto & p : mesh.vertices) {
 //                       p -= min_point;
 //                     }
-//                     Point2<T> dxdy = bb.maxima - bb.minima;
+//                     Point2<Float> dxdy = bb.maxima - bb.minima;
 //                     coarse_cell_dxdys[coarse_cell_id_idx] =
 //                         Vec2d(static_cast<double>(dxdy[0]),
 //                         static_cast<double>(dxdy[1]));
@@ -552,19 +850,19 @@ exportMesh(std::string const & path, mpact::SpatialPartition const & model);
 //                   case MeshType::QUADRATIC_TRI_QUAD: {
 //                     coarse_cell_mesh_types.insert(
 //                         coarse_cell_mesh_types.begin() + coarse_cell_id_idx,
-//                         static_cast<I>(MeshType::QUADRATIC_TRI_QUAD));
+//                         static_cast<Int>(MeshType::QUADRATIC_TRI_QUAD));
 //                     coarse_cell_mesh_ids.insert(
 //                         coarse_cell_mesh_ids.begin() + coarse_cell_id_idx,
-//                         static_cast<I>(quadratic_tri_quad.size()));
+//                         static_cast<Int>(quadratic_tri_quad.size()));
 //                     quadratic_tri_quad.push_back(coarse_cell_mesh);
 //                     // Shift the points so that the min point is at the origin.
 //                     QuadraticTriQuadMesh<T, I> & mesh = quadratic_tri_quad.back();
-//                     AxisAlignedBox2<T> bb = bounding_box(mesh);
-//                     Point2<T> min_point = bb.minima;
+//                     AxisAlignedBox2<Float> bb = bounding_box(mesh);
+//                     Point2<Float> min_point = bb.minima;
 //                     for (auto & p : mesh.vertices) {
 //                       p -= min_point;
 //                     }
-//                     Point2<T> dxdy = bb.maxima - bb.minima;
+//                     Point2<Float> dxdy = bb.maxima - bb.minima;
 //                     coarse_cell_dxdys[coarse_cell_id_idx] =
 //                         Vec2d(static_cast<double>(dxdy[0]),
 //                         static_cast<double>(dxdy[1]));
@@ -592,34 +890,34 @@ exportMesh(std::string const & path, mpact::SpatialPartition const & model);
 //   for (size_t i = 0; i < coarse_cell_ids.size(); ++i) {
 //     UM2_ASSERT(static_cast<int>(i) == coarse_cell_ids[i]);
 //     //   Use make_coarse_cell to create the coarse cell
-//     model.make_coarse_cell(Vec2<T>(static_cast<T>(coarse_cell_dxdys[i][0]),
-//                                    static_cast<T>(coarse_cell_dxdys[i][1])));
+//     model.make_coarse_cell(Vec2<Float>(static_cast<Float>(coarse_cell_dxdys[i][0]),
+//                                    static_cast<Float>(coarse_cell_dxdys[i][1])));
 //     // Add the mesh to the model
 //     // Adjust the mesh id of the coarse cell to be the index of the mesh in the
 //     model model.coarse_cells[i].mesh_type = coarse_cell_mesh_types[i];
 //     model.coarse_cells[i].material_ids = coarse_cell_material_ids[i];
 //     switch (coarse_cell_mesh_types[i]) {
-//     case static_cast<I>(MeshType::TRI):
+//     case static_cast<Int>(MeshType::TRI):
 //       model.coarse_cells[i].mesh_id = model.tri.size();
 //       model.tri.push_back(tri[coarse_cell_mesh_ids[i]]);
 //       break;
-//     case static_cast<I>(MeshType::QUAD):
+//     case static_cast<Int>(MeshType::QUAD):
 //       model.coarse_cells[i].mesh_id = model.quad.size();
 //       model.quad.push_back(quad[coarse_cell_mesh_ids[i]]);
 //       break;
-//     case static_cast<I>(MeshType::TRI_QUAD):
+//     case static_cast<Int>(MeshType::TRI_QUAD):
 //       model.coarse_cells[i].mesh_id = model.tri_quad.size();
 //       model.tri_quad.push_back(tri_quad[coarse_cell_mesh_ids[i]]);
 //       break;
-//     case static_cast<I>(MeshType::QUADRATIC_TRI):
+//     case static_cast<Int>(MeshType::QUADRATIC_TRI):
 //       model.coarse_cells[i].mesh_id = model.quadratic_tri.size();
 //       model.quadratic_tri.push_back(quadratic_tri[coarse_cell_mesh_ids[i]]);
 //       break;
-//     case static_cast<I>(MeshType::QUADRATIC_QUAD):
+//     case static_cast<Int>(MeshType::QUADRATIC_QUAD):
 //       model.coarse_cells[i].mesh_id = model.quadratic_quad.size();
 //       model.quadratic_quad.push_back(quadratic_quad[coarse_cell_mesh_ids[i]]);
 //       break;
-//     case static_cast<I>(MeshType::QUADRATIC_TRI_QUAD):
+//     case static_cast<Int>(MeshType::QUADRATIC_TRI_QUAD):
 //       model.coarse_cells[i].mesh_id = model.quadratic_tri_quad.size();
 //       model.quadratic_tri_quad.push_back(quadratic_tri_quad[coarse_cell_mesh_ids[i]]);
 //       break;
