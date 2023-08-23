@@ -1007,21 +1007,27 @@ SpatialPartition::importCoarseCells(std::string const & filename)
     this_name = ShortString(material_names[i].substr(9).c_str());
   }
 
+  // For each coarse cell
   std::stringstream ss;
   Size const num_coarse_cells = numCoarseCells();
   for (Size i = 0; i < num_coarse_cells; ++i) {
+    // Get the submesh for the coarse cell
     ss.str("");
     ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << i;
     MeshFile<Float, Int> cc_submesh;
     mesh_file.getSubmesh(ss.str(), cc_submesh);
 
-    MeshType const mesh_type = cc_submesh.type;
+    // Get the mesh type and material IDs
+    MeshType const mesh_type = cc_submesh.getMeshType();
     CoarseCell & cc = coarse_cells[i];
     cc.mesh_type = mesh_type;
     std::vector<MaterialID> mat_ids;
     cc_submesh.getMaterialIDs(mat_ids, material_names);
     cc.material_ids.resize(static_cast<Size>(mat_ids.size()));
     std::copy(mat_ids.cbegin(), mat_ids.cend(), cc.material_ids.begin());
+
+    // Create the FaceVertexMesh and shift it from global coordinates to local
+    // coordinates, with the bottom left corner of the AABB at the origin
     AxisAlignedBox2<Float> bb;
     Point2<Float> * vertices = nullptr;
     size_t const num_verts = cc_submesh.vertices.size();

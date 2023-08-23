@@ -163,7 +163,7 @@ static void writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
     size_t topo_ctr = 0;
     for (size_t i = 0; i < ncells; ++i) {
       int8_t const topo_type = meshTypeToXDMFCellType(mesh.element_types[i]);
-      if (topo_type == -1) { 
+      if (topo_type == -1) {
         Log::error("Unsupported mesh type");
       }
       topology[topo_ctr] = static_cast<I>(static_cast<unsigned int>(topo_type));
@@ -572,12 +572,9 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
 
 template <std::floating_point T, std::signed_integral I, std::signed_integral V>
 static void
-addElementsToMesh(size_t const num_elements, 
-    std::string const & topology_type,
-    std::string const & dimensions,
-                  MeshFile<T, I> & mesh, 
-                  H5::DataSet const & dataset,
-                  H5::IntType const & datatype)
+addElementsToMesh(size_t const num_elements, std::string const & topology_type,
+                  std::string const & dimensions, MeshFile<T, I> & mesh,
+                  H5::DataSet const & dataset, H5::IntType const & datatype)
 {
   size_t const prev_num_elements = mesh.element_types.size();
   if (prev_num_elements == 0) {
@@ -599,12 +596,12 @@ addElementsToMesh(size_t const num_elements,
     size_t position = 0;
     for (size_t i = 0; i < num_elements; ++i) {
       auto const element_type = static_cast<int8_t>(data[position]);
-      MeshType const mesh_type = xdmfCellTypeToMeshType(element_type); 
-      mesh.element_types[prev_num_elements + i] = mesh_type; 
-      auto const npoints = static_cast<size_t>(verticesPerCell(mesh_type)); 
+      MeshType const mesh_type = xdmfCellTypeToMeshType(element_type);
+      mesh.element_types[prev_num_elements + i] = mesh_type;
+      auto const npoints = static_cast<size_t>(verticesPerCell(mesh_type));
       for (size_t j = 0; j < npoints; ++j) {
-          mesh.element_conn[prev_conn_size + offset + j] =
-              static_cast<I>(static_cast<unsigned int>(data[position + j + 1]));
+        mesh.element_conn[prev_conn_size + offset + j] =
+            static_cast<I>(static_cast<unsigned int>(data[position + j + 1]));
       }
       offset += npoints;
       position += npoints + 1;
@@ -626,8 +623,8 @@ addElementsToMesh(size_t const num_elements,
     size_t const prev_conn_size = mesh.element_conn.size();
     mesh.element_conn.reserve(prev_conn_size + ncells * nverts);
     for (size_t i = 0; i < ncells; ++i) {
-      mesh.element_offsets[1 + prev_num_elements + i] =  
-                static_cast<I>((i + 1U) * nverts) + prev_offset;
+      mesh.element_offsets[1 + prev_num_elements + i] =
+          static_cast<I>((i + 1U) * nverts) + prev_offset;
       for (size_t j = 0; j < nverts; ++j) {
         mesh.element_conn.emplace_back(static_cast<I>(data[i * nverts + j]));
       }
@@ -635,8 +632,8 @@ addElementsToMesh(size_t const num_elements,
     delete[] data;
     MeshType mesh_type = MeshType::None;
     if (topology_type == "Triangle") {
-      mesh_type = MeshType::Tri; 
-    } else if (topology_type == "Quadrilateral") {  
+      mesh_type = MeshType::Tri;
+    } else if (topology_type == "Quadrilateral") {
       mesh_type = MeshType::Quad;
     } else if (topology_type == "Triangle_6") {
       mesh_type = MeshType::QuadraticTri;

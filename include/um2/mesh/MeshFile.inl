@@ -20,6 +20,8 @@ template <std::floating_point T, std::signed_integral I>
 PURE constexpr auto
 MeshFile<T, I>::getMeshType() const -> MeshType
 {
+  // Loop throught the element types to determine which 1 or 2 mesh types are
+  // present.
   MeshType type1 = MeshType::None;
   MeshType type2 = MeshType::None;
   for (auto const & this_type : element_types) {
@@ -37,6 +39,7 @@ MeshFile<T, I>::getMeshType() const -> MeshType
     }
     return MeshType::None;
   }
+  // Determine the mesh type from the 1 or 2 mesh types.
   if (type1 == MeshType::Tri && type2 == MeshType::None) {
     return MeshType::Tri;
   }
