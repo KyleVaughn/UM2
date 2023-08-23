@@ -1,6 +1,7 @@
 #pragma once
 
 #include <um2/geometry/Polytope.hpp>
+#include <um2/geometry/Ray.hpp>
 
 // Need complex for quadratic segments
 #if UM2_USE_CUDA

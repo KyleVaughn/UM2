@@ -208,6 +208,20 @@ TEST_CASE(distanceTo)
   ASSERT_NEAR(line.distanceTo(p1), ref, static_cast<T>(1e-5));
 }
 
+template <typename T>    
+HOSTDEV 
+TEST_CASE(intersect)    
+{
+  um2::LineSegment2<T> l(um2::Point2<T>(0, 1), um2::Point2<T>(2, -1));    
+  um2::Ray2<T> const ray(um2::Point2<T>(0, -1), um2::normalized(um2::Point2<T>(1, 1)));    
+  T res = um2::intersect(l, ray);    
+  ASSERT_NEAR(res, um2::sqrt(static_cast<T>(2)), static_cast<T>(1e-4)); 
+    
+  l = um2::LineSegment2<T>(um2::Point2<T>(1, -1), um2::Point2<T>(1, 1));    
+  res = um2::intersect(l, ray);    
+  ASSERT_NEAR(res, um2::sqrt(static_cast<T>(2)), static_cast<T>(1e-4)); 
+}
+
 #if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(accessors, D, T);
@@ -235,6 +249,9 @@ MAKE_CUDA_KERNEL(distanceTo, D, T);
 
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(pointClosestTo, D, T);
+
+template <typename T>
+MAKE_CUDA_KERNEL(intersect, T);
 #endif
 
 template <Size D, typename T>
@@ -249,6 +266,9 @@ TEST_SUITE(LineSegment)
   TEST_HOSTDEV(isLeft, 1, 1, T);
   TEST_HOSTDEV(pointClosestTo, 1, 1, D, T);
   TEST_HOSTDEV(distanceTo, 1, 1, D, T);
+  if constexpr (D == 2) {
+    TEST_HOSTDEV(intersect, 1, 1, T);
+  }
 }
 
 auto

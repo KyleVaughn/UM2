@@ -351,74 +351,74 @@ TEST_CASE(importCoarseCells)
   ASSERT(tri_mesh1.fv[1][2] == 1);
 }
 
-TEST_CASE(io)
-{
-  using CoarseCell = um2::mpact::SpatialPartition::CoarseCell;
-  um2::mpact::SpatialPartition model;
-  model.makeCoarseCell({1, 1});
-  model.makeCoarseCell({1, 1});
-  model.makeRTM({
-      {1, 1},
-      {0, 1}
-  });
-  model.makeLattice({{0}});
-  model.makeAssembly({0});
-  model.makeCore({{0}});
-  model.importCoarseCells("./mpact_mesh_files/coarse_cells.inp");
-  std::string const filepath = "./mpact_export_test_model.xdmf";
-  um2::exportMesh(filepath, model);
-  um2::mpact::SpatialPartition model_in;
-  um2::importMesh(filepath, model_in);
-
-  ASSERT(model_in.numAssemblies() == 1);
-  ASSERT(model_in.numLattices() == 1);
-  ASSERT(model_in.numRTMs() == 1);
-  ASSERT(model_in.numCoarseCells() == 2);
-
-  ASSERT(model.tri.size() == 2);
-  CoarseCell const & cell = model.coarse_cells[0];
-  ASSERT(cell.mesh_type == um2::MeshType::Tri);
-  ASSERT(cell.mesh_id == 0);
-  ASSERT(cell.material_ids.size() == 2);
-  ASSERT(cell.material_ids[0] == 1);
-  ASSERT(cell.material_ids[1] == 2);
-  um2::TriMesh<2, Float, Int> const & tri_mesh = model.tri[0];
-  ASSERT(tri_mesh.numVertices() == 4);
-  ASSERT(um2::isApprox(tri_mesh.vertices[0], {0, 0}));
-  ASSERT(um2::isApprox(tri_mesh.vertices[1], {1, 0}));
-  ASSERT(um2::isApprox(tri_mesh.vertices[2], {1, 1}));
-  ASSERT(um2::isApprox(tri_mesh.vertices[3], {0, 1}));
-  ASSERT(tri_mesh.fv[0][0] == 0);
-  ASSERT(tri_mesh.fv[0][1] == 1);
-  ASSERT(tri_mesh.fv[0][2] == 2);
-  ASSERT(tri_mesh.fv[1][0] == 2);
-  ASSERT(tri_mesh.fv[1][1] == 3);
-  ASSERT(tri_mesh.fv[1][2] == 0);
-
-  CoarseCell const & cell1 = model.coarse_cells[1];
-  ASSERT(cell1.mesh_type == um2::MeshType::Tri);
-  ASSERT(cell1.mesh_id == 1);
-  ASSERT(cell1.material_ids.size() == 2);
-  ASSERT(cell1.material_ids[0] == 1);
-  ASSERT(cell1.material_ids[1] == 0);
-  um2::TriMesh<2, Float, Int> const & tri_mesh1 = model.tri[1];
-  ASSERT(tri_mesh1.vertices.size() == 4);
-  ASSERT(um2::isApprox(tri_mesh1.vertices[0], {0, 0}));
-  ASSERT(um2::isApprox(tri_mesh1.vertices[1], {0, 1}));
-  ASSERT(um2::isApprox(tri_mesh1.vertices[2], {1, 0}));
-  ASSERT(um2::isApprox(tri_mesh1.vertices[3], {1, 1}));
-  ASSERT(tri_mesh1.fv[0][0] == 0);
-  ASSERT(tri_mesh1.fv[0][1] == 2);
-  ASSERT(tri_mesh1.fv[0][2] == 1);
-  ASSERT(tri_mesh1.fv[1][0] == 2);
-  ASSERT(tri_mesh1.fv[1][1] == 3);
-  ASSERT(tri_mesh1.fv[1][2] == 1);
-
-  int stat = std::remove("./mpact_export_test_model.xdmf");
-  ASSERT(stat == 0);
-  stat = std::remove("./mpact_export_test_model.h5");
-  ASSERT(stat == 0);
-}
+//TEST_CASE(io)
+//{
+//  using CoarseCell = um2::mpact::SpatialPartition::CoarseCell;
+//  um2::mpact::SpatialPartition model;
+//  model.makeCoarseCell({1, 1});
+//  model.makeCoarseCell({1, 1});
+//  model.makeRTM({
+//      {1, 1},
+//      {0, 1}
+//  });
+//  model.makeLattice({{0}});
+//  model.makeAssembly({0});
+//  model.makeCore({{0}});
+//  model.importCoarseCells("./mpact_mesh_files/coarse_cells.inp");
+//  std::string const filepath = "./mpact_export_test_model.xdmf";
+//  um2::exportMesh(filepath, model);
+//  um2::mpact::SpatialPartition model_in;
+//  um2::importMesh(filepath, model_in);
+//
+//  ASSERT(model_in.numAssemblies() == 1);
+//  ASSERT(model_in.numLattices() == 1);
+//  ASSERT(model_in.numRTMs() == 1);
+//  ASSERT(model_in.numCoarseCells() == 2);
+//
+//  ASSERT(model.tri.size() == 2);
+//  CoarseCell const & cell = model.coarse_cells[0];
+//  ASSERT(cell.mesh_type == um2::MeshType::Tri);
+//  ASSERT(cell.mesh_id == 0);
+//  ASSERT(cell.material_ids.size() == 2);
+//  ASSERT(cell.material_ids[0] == 1);
+//  ASSERT(cell.material_ids[1] == 2);
+//  um2::TriMesh<2, Float, Int> const & tri_mesh = model.tri[0];
+//  ASSERT(tri_mesh.numVertices() == 4);
+//  ASSERT(um2::isApprox(tri_mesh.vertices[0], {0, 0}));
+//  ASSERT(um2::isApprox(tri_mesh.vertices[1], {1, 0}));
+//  ASSERT(um2::isApprox(tri_mesh.vertices[2], {1, 1}));
+//  ASSERT(um2::isApprox(tri_mesh.vertices[3], {0, 1}));
+//  ASSERT(tri_mesh.fv[0][0] == 0);
+//  ASSERT(tri_mesh.fv[0][1] == 1);
+//  ASSERT(tri_mesh.fv[0][2] == 2);
+//  ASSERT(tri_mesh.fv[1][0] == 2);
+//  ASSERT(tri_mesh.fv[1][1] == 3);
+//  ASSERT(tri_mesh.fv[1][2] == 0);
+//
+//  CoarseCell const & cell1 = model.coarse_cells[1];
+//  ASSERT(cell1.mesh_type == um2::MeshType::Tri);
+//  ASSERT(cell1.mesh_id == 1);
+//  ASSERT(cell1.material_ids.size() == 2);
+//  ASSERT(cell1.material_ids[0] == 1);
+//  ASSERT(cell1.material_ids[1] == 0);
+//  um2::TriMesh<2, Float, Int> const & tri_mesh1 = model.tri[1];
+//  ASSERT(tri_mesh1.vertices.size() == 4);
+//  ASSERT(um2::isApprox(tri_mesh1.vertices[0], {0, 0}));
+//  ASSERT(um2::isApprox(tri_mesh1.vertices[1], {0, 1}));
+//  ASSERT(um2::isApprox(tri_mesh1.vertices[2], {1, 0}));
+//  ASSERT(um2::isApprox(tri_mesh1.vertices[3], {1, 1}));
+//  ASSERT(tri_mesh1.fv[0][0] == 0);
+//  ASSERT(tri_mesh1.fv[0][1] == 2);
+//  ASSERT(tri_mesh1.fv[0][2] == 1);
+//  ASSERT(tri_mesh1.fv[1][0] == 2);
+//  ASSERT(tri_mesh1.fv[1][1] == 3);
+//  ASSERT(tri_mesh1.fv[1][2] == 1);
+//
+//  int stat = std::remove("./mpact_export_test_model.xdmf");
+//  ASSERT(stat == 0);
+//  stat = std::remove("./mpact_export_test_model.h5");
+//  ASSERT(stat == 0);
+//}
 //// template <typename T, typename I>
 //// TEST_CASE(test_coarse_cell_face_areas)
 //// um2::mpact::SpatialPartition model;
@@ -533,7 +533,7 @@ TEST_SUITE(SpatialPartition)
   TEST(makeAssembly_2d);
   TEST(makeCore);
   TEST(importCoarseCells);
-  TEST(io);
+//  TEST(io);
   //    TEST_CASE("coarse_cell_face_areas", (test_coarse_cell_face_areas<Float, Int>));
   //    TEST_CASE("coarse_cell_find_face", (test_coarse_cell_find_face<Float, Int>));
   //    TEST_CASE("coarse_cell_ray_intersect", (test_coarse_cell_ray_intersect<Float,

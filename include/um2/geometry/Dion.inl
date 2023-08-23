@@ -7,6 +7,7 @@
 #include <um2/geometry/dion/length.inl>
 #include <um2/geometry/dion/pointClosestTo.inl>
 #include <um2/geometry/dion/pointIsLeft.inl>
+#include <um2/geometry/dion/intersect.inl>
 
 // Member functions
 namespace um2

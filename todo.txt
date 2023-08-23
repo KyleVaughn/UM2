@@ -14,6 +14,8 @@ If overlay grid fails, check the refactor comments in model.inl
 
 Faster to use the edge method or write the loop explicitly?
 
+Better linesegment and quadraticsegment intersection test
+
 Image
   Rasterize line, triangle
 
