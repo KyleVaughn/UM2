@@ -1,6 +1,5 @@
 #include <um2/math/Stats.hpp>
 #include <um2/stdlib/Vector.hpp>
-#include <vector>
 
 #include "../test_macros.hpp"
 
@@ -26,10 +25,18 @@ TEST_CASE(variance_calculation)
 }
 
 template <typename T>
+TEST_CASE(histogram)
+{
+  std::vector<T> const v{1, 2, 2, 3, 4, 5, 6, 7, 7, 8, 9, 10};
+  um2::simpleUnicodeHistogram(v);
+}
+
+template <typename T>
 TEST_SUITE(stats)
 {
   TEST(mean_calculation<T>)
   TEST(median_calculation<T>)
+  TEST(histogram<T>)
 }
 
 auto
