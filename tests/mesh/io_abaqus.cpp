@@ -131,10 +131,10 @@ TEST_SUITE(io_abaqus)
 {
   TEST((tri_mesh<T, I>));
   TEST((quad_mesh<T, I>));
-  TEST((tri_quad_mesh<T, I>) );
+  TEST((tri_quad_mesh<T, I>));
   TEST((tri6_mesh<T, I>));
   TEST((quad8_mesh<T, I>));
-  TEST((tri6_quad8_mesh<T, I>) );
+  TEST((tri6_quad8_mesh<T, I>));
 }
 auto
 main() -> int

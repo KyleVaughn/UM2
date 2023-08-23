@@ -162,17 +162,16 @@ static void writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
     // Create the topology array (type id + node ids)
     size_t topo_ctr = 0;
     for (size_t i = 0; i < ncells; ++i) {
-      if (mesh.element_types[i] == MeshType::QuadraticTri) {
-        topology[topo_ctr] = static_cast<I>(XDMFCellType::QuadraticTriangle);
-      } else if (mesh.element_types[i] == MeshType::QuadraticQuad) {
-        topology[topo_ctr] = static_cast<I>(XDMFCellType::QuadraticQuad);
-      } else {
+      int8_t const topo_type = meshTypeToXDMFCellType(mesh.element_types[i]);
+      if (topo_type == -1) { 
         Log::error("Unsupported mesh type");
       }
+      topology[topo_ctr] = static_cast<I>(static_cast<unsigned int>(topo_type));
       auto const offset = static_cast<size_t>(mesh.element_offsets[i]);
-      auto const npts   = static_cast<size_t>(mesh.element_offsets[i + 1] - mesh.element_offsets[i]); 
+      auto const npts =
+          static_cast<size_t>(mesh.element_offsets[i + 1] - mesh.element_offsets[i]);
       for (size_t j = 0; j < npts; ++j) {
-          topology[topo_ctr + j + 1] = mesh.element_conn[offset + j];
+        topology[topo_ctr + j + 1] = mesh.element_conn[offset + j];
       }
       topo_ctr += npts + 1;
     }
@@ -573,28 +572,81 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
 
 template <std::floating_point T, std::signed_integral I, std::signed_integral V>
 static void
-addElementsToMesh(size_t const num_elements, std::string const & dimensions,
-                  MeshFile<T, I> & mesh, H5::DataSet const & dataset,
+addElementsToMesh(size_t const num_elements, 
+    std::string const & topology_type,
+    std::string const & dimensions,
+                  MeshFile<T, I> & mesh, 
+                  H5::DataSet const & dataset,
                   H5::IntType const & datatype)
 {
-  size_t const split = dimensions.find_last_of(' ');
-  size_t const ncells = sto<size_t>(dimensions.substr(0, split));
-  size_t const nverts = sto<size_t>(dimensions.substr(split + 1));
-  if (ncells != num_elements) {
-    Log::error("Mismatch in number of elements");
-    return;
+  size_t const prev_num_elements = mesh.element_types.size();
+  if (prev_num_elements == 0) {
+    mesh.element_offsets.push_back(0);
   }
-  V * data = new V[ncells * nverts];
-  dataset.read(data, datatype);
-  // Add the elements to the mesh
-  size_t const prev_conn_size = mesh.element_conn.size();
-  mesh.element_conn.reserve(prev_conn_size + ncells * nverts);
-  for (size_t i = 0; i < ncells; ++i) {
-    for (size_t j = 0; j < nverts; ++j) {
-      mesh.element_conn.emplace_back(static_cast<I>(data[i * nverts + j]));
+  I const prev_offset = mesh.element_offsets.back();
+  mesh.element_offsets.insert(mesh.element_offsets.end(), num_elements, -1);
+  if (topology_type == "Mixed") {
+    mesh.element_types.insert(mesh.element_types.end(), num_elements, MeshType::None);
+    // Expect dims to be one number
+    size_t const conn_length = sto<size_t>(dimensions);
+    V * data = new V[conn_length];
+    dataset.read(data, datatype);
+    // Add the elements to the mesh
+    size_t const prev_conn_size = mesh.element_conn.size();
+    size_t const num_conn_added = conn_length - num_elements;
+    mesh.element_conn.insert(mesh.element_conn.end(), num_conn_added, -1);
+    size_t offset = 0;
+    size_t position = 0;
+    for (size_t i = 0; i < num_elements; ++i) {
+      auto const element_type = static_cast<int8_t>(data[position]);
+      MeshType const mesh_type = xdmfCellTypeToMeshType(element_type); 
+      mesh.element_types[prev_num_elements + i] = mesh_type; 
+      auto const npoints = static_cast<size_t>(verticesPerCell(mesh_type)); 
+      for (size_t j = 0; j < npoints; ++j) {
+          mesh.element_conn[prev_conn_size + offset + j] =
+              static_cast<I>(static_cast<unsigned int>(data[position + j + 1]));
+      }
+      offset += npoints;
+      position += npoints + 1;
+      mesh.element_offsets[1 + prev_num_elements + i] =
+          prev_offset + static_cast<I>(offset);
     }
+    delete[] data;
+  } else {
+    size_t const split = dimensions.find_last_of(' ');
+    size_t const ncells = sto<size_t>(dimensions.substr(0, split));
+    size_t const nverts = sto<size_t>(dimensions.substr(split + 1));
+    if (ncells != num_elements) {
+      Log::error("Mismatch in number of elements");
+      return;
+    }
+    V * data = new V[ncells * nverts];
+    dataset.read(data, datatype);
+    // Add the elements to the mesh
+    size_t const prev_conn_size = mesh.element_conn.size();
+    mesh.element_conn.reserve(prev_conn_size + ncells * nverts);
+    for (size_t i = 0; i < ncells; ++i) {
+      mesh.element_offsets[1 + prev_num_elements + i] =  
+                static_cast<I>((i + 1U) * nverts) + prev_offset;
+      for (size_t j = 0; j < nverts; ++j) {
+        mesh.element_conn.emplace_back(static_cast<I>(data[i * nverts + j]));
+      }
+    }
+    delete[] data;
+    MeshType mesh_type = MeshType::None;
+    if (topology_type == "Triangle") {
+      mesh_type = MeshType::Tri; 
+    } else if (topology_type == "Quadrilateral") {  
+      mesh_type = MeshType::Quad;
+    } else if (topology_type == "Triangle_6") {
+      mesh_type = MeshType::QuadraticTri;
+    } else if (topology_type == "Quadrilateral_8") {
+      mesh_type = MeshType::QuadraticQuad;
+    } else {
+      Log::error("Unsupported element type");
+    }
+    mesh.element_types.insert(mesh.element_types.end(), ncells, mesh_type);
   }
-  delete[] data;
 }
 
 //==============================================================================
@@ -614,29 +666,6 @@ static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5
   }
   // Get the topology type
   std::string const topology_type = xtopology.attribute("TopologyType").value();
-  MeshType mesh_type = MeshType::None;
-
-  if (topology_type == "Triangle") {
-    mesh_type = MeshType::Tri;
-  } else if (topology_type == "Quadrilateral") {
-    mesh_type = MeshType::Quad;
-  } else if (topology_type == "Triangle_6") {
-    mesh_type = MeshType::QuadraticTri;
-  } else if (topology_type == "Quadrilateral_8") {
-    mesh_type = MeshType::QuadraticQuad;
-  } else {
-    Log::error("Unsupported topology type: " + topology_type);
-    return;
-  }
-  if (mesh.type != MeshType::None) {
-    if (mesh.type != mesh_type) {
-      Log::error("Heterogeneous mesh types not supported");
-      return;
-    }
-  } else {
-    mesh.type = mesh_type;
-  }
-
   // Get the number of elements
   size_t const num_elements = std::stoul(xtopology.attribute("NumberOfElements").value());
   // Get the DataItem node
@@ -677,21 +706,32 @@ static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5
   assert(datatype_size == std::stoul(precision));
   H5::DataSpace const dataspace = dataset.getSpace();
   int const rank = dataspace.getSimpleExtentNdims();
-  assert(rank == 2);
-  hsize_t dims[2];
-  int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
-  assert(ndims == 2);
+  if (topology_type == "Mixed") {
+    assert(rank == 1);
+    hsize_t dims[1];
+    int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
+    assert(ndims == 1);
+  } else {
+    assert(rank == 2);
+    hsize_t dims[2];
+    int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
+    assert(ndims == 2);
+  }
 #endif
   // Get the dimensions
   std::string const dimensions = xdataitem.attribute("Dimensions").value();
   if (datatype_size == 1) {
-    addElementsToMesh<T, I, int8_t>(num_elements, dimensions, mesh, dataset, datatype);
+    addElementsToMesh<T, I, int8_t>(num_elements, topology_type, dimensions, mesh,
+                                    dataset, datatype);
   } else if (datatype_size == 2) {
-    addElementsToMesh<T, I, int16_t>(num_elements, dimensions, mesh, dataset, datatype);
+    addElementsToMesh<T, I, int16_t>(num_elements, topology_type, dimensions, mesh,
+                                     dataset, datatype);
   } else if (datatype_size == 4) {
-    addElementsToMesh<T, I, int32_t>(num_elements, dimensions, mesh, dataset, datatype);
+    addElementsToMesh<T, I, int32_t>(num_elements, topology_type, dimensions, mesh,
+                                     dataset, datatype);
   } else if (datatype_size == 8) {
-    addElementsToMesh<T, I, int64_t>(num_elements, dimensions, mesh, dataset, datatype);
+    addElementsToMesh<T, I, int64_t>(num_elements, topology_type, dimensions, mesh,
+                                     dataset, datatype);
   } else {
     Log::error("Unsupported data type size");
   }

@@ -43,7 +43,7 @@ makeReferenceQuadMeshFile(um2::MeshFile<T, I> & mesh)
 }
 
 template <std::floating_point T, std::signed_integral I>
-static void 
+static void
 makeReferenceTriQuadMeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/tri_quad.inp";
@@ -98,19 +98,19 @@ makeReferenceQuad8MeshFile(um2::MeshFile<T, I> & mesh)
   mesh.name = "quad8";
   mesh.format = um2::MeshFileFormat::Abaqus;
   mesh.vertices = {
-    {0, 0, 0},
-    {1, 0, 0},
-    {1, 1, 0},
-    {0, 1, 0},
-    {2, 0, 0},
-    {2, 1, 0},
-    {static_cast<T>(0.5), static_cast<T>(0.0), static_cast<T>(0)},
-    {static_cast<T>(1.1), static_cast<T>(0.6), static_cast<T>(0)},
-    {static_cast<T>(0.5), static_cast<T>(1.0), static_cast<T>(0)},
-    {static_cast<T>(0.0), static_cast<T>(0.5), static_cast<T>(0)},
-    {static_cast<T>(1.5), static_cast<T>(0.0), static_cast<T>(0)},
-    {static_cast<T>(2.0), static_cast<T>(0.5), static_cast<T>(0)},
-    {static_cast<T>(1.5), static_cast<T>(1.0), static_cast<T>(0)}
+      {                  0,                   0,                 0},
+      {                  1,                   0,                 0},
+      {                  1,                   1,                 0},
+      {                  0,                   1,                 0},
+      {                  2,                   0,                 0},
+      {                  2,                   1,                 0},
+      {static_cast<T>(0.5), static_cast<T>(0.0), static_cast<T>(0)},
+      {static_cast<T>(1.1), static_cast<T>(0.6), static_cast<T>(0)},
+      {static_cast<T>(0.5), static_cast<T>(1.0), static_cast<T>(0)},
+      {static_cast<T>(0.0), static_cast<T>(0.5), static_cast<T>(0)},
+      {static_cast<T>(1.5), static_cast<T>(0.0), static_cast<T>(0)},
+      {static_cast<T>(2.0), static_cast<T>(0.5), static_cast<T>(0)},
+      {static_cast<T>(1.5), static_cast<T>(1.0), static_cast<T>(0)}
   };
   // mesh.nodes_x = {0, 1, 1, 0, 2, 2, 0.5, 1.1, 0.5, 0.0, 1.5, 2.0, 1.5};
   // mesh.nodes_y = {0, 0, 1, 1, 0, 1, 0.0, 0.6, 1.0, 0.5, 0.0, 0.5, 1.0};
@@ -124,24 +124,24 @@ makeReferenceQuad8MeshFile(um2::MeshFile<T, I> & mesh)
 }
 
 template <std::floating_point T, std::signed_integral I>
-static void 
+static void
 makeReferenceTri6Quad8MeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/tri6_quad8.inp";
   mesh.name = "tri6_quad8";
   mesh.format = um2::MeshFileFormat::Abaqus;
   mesh.vertices = {
-    {0, 0, 0},
-    {1, 0, 0},
-    {1, 1, 0},
-    {0, 1, 0},
-    {2, 0, 0},
-    {static_cast<T>(0.5), static_cast<T>(0.0), static_cast<T>(0)},
-    {static_cast<T>(0.7), static_cast<T>(0.6), static_cast<T>(0)},
-    {static_cast<T>(0.5), static_cast<T>(1.0), static_cast<T>(0)},
-    {static_cast<T>(0.0), static_cast<T>(0.5), static_cast<T>(0)},
-    {static_cast<T>(1.5), static_cast<T>(0.0), static_cast<T>(0)},
-    {static_cast<T>(1.5), static_cast<T>(0.5), static_cast<T>(0)}
+      {                  0,                   0,                 0},
+      {                  1,                   0,                 0},
+      {                  1,                   1,                 0},
+      {                  0,                   1,                 0},
+      {                  2,                   0,                 0},
+      {static_cast<T>(0.5), static_cast<T>(0.0), static_cast<T>(0)},
+      {static_cast<T>(0.7), static_cast<T>(0.6), static_cast<T>(0)},
+      {static_cast<T>(0.5), static_cast<T>(1.0), static_cast<T>(0)},
+      {static_cast<T>(0.0), static_cast<T>(0.5), static_cast<T>(0)},
+      {static_cast<T>(1.5), static_cast<T>(0.0), static_cast<T>(0)},
+      {static_cast<T>(1.5), static_cast<T>(0.5), static_cast<T>(0)}
   };
   // mesh.nodes_x = {0, 1, 1, 0, 2, 0.5, 0.7, 0.5, 0.0, 1.5, 1.5};
   // mesh.nodes_y = {0, 0, 1, 1, 0, 0.0, 0.6, 1.0, 0.5, 0.0, 1.5};

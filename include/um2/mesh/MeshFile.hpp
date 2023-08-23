@@ -94,6 +94,42 @@ verticesPerCell(MeshType const type) -> Size
   }
 }
 
+constexpr auto
+xdmfCellTypeToMeshType(int8_t x) -> MeshType
+{
+  switch (x) {
+  case static_cast<int8_t>(XDMFCellType::Triangle):
+    return MeshType::Tri;
+  case static_cast<int8_t>(XDMFCellType::Quad):
+    return MeshType::Quad;
+  case static_cast<int8_t>(XDMFCellType::QuadraticTriangle):
+    return MeshType::QuadraticTri;
+  case static_cast<int8_t>(XDMFCellType::QuadraticQuad):
+    return MeshType::QuadraticQuad;
+  default:
+    assert(false);
+    return MeshType::None;
+  }
+}
+
+constexpr auto
+meshTypeToXDMFCellType(MeshType x) -> int8_t
+{
+  switch (x) {
+  case MeshType::Tri:
+    return static_cast<int8_t>(XDMFCellType::Triangle);
+  case MeshType::Quad:
+    return static_cast<int8_t>(XDMFCellType::Quad);
+  case MeshType::QuadraticTri:
+    return static_cast<int8_t>(XDMFCellType::QuadraticTriangle);
+  case MeshType::QuadraticQuad:
+    return static_cast<int8_t>(XDMFCellType::QuadraticQuad);
+  default:
+    assert(false);
+    return -1;
+  }
+}
+
 template <std::floating_point T, std::signed_integral I>
 struct MeshFile {
 

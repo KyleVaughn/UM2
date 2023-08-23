@@ -111,7 +111,7 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   if (offsets_size == 0) {
     mesh.element_offsets.push_back(0);
     offsets_size = 1;
-  } 
+  }
   I const offset_back = mesh.element_offsets.back();
   mesh.element_offsets.resize(offsets_size + num_elements);
   for (size_t i = 0; i < num_elements; ++i) {

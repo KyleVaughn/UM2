@@ -77,7 +77,8 @@ TEST_CASE(toMeshFile)
   um2::MeshFile<T, I> tri_mesh_file;
   tri_mesh.toMeshFile(tri_mesh_file);
   ASSERT(um2::compareGeometry(tri_mesh_file, tri_mesh_file_ref) == 0);
-  std::cerr << "compareTopology: " << um2::compareTopology(tri_mesh_file, tri_mesh_file_ref) << std::endl;
+  std::cerr << "compareTopology: "
+            << um2::compareTopology(tri_mesh_file, tri_mesh_file_ref) << std::endl;
   ASSERT(um2::compareTopology(tri_mesh_file, tri_mesh_file_ref) == 0);
   ASSERT(tri_mesh_file.getMeshType() == um2::MeshType::Tri);
 }

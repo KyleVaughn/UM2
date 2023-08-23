@@ -24,8 +24,8 @@ MeshFile<T, I>::getMeshType() const -> MeshType
   MeshType type2 = MeshType::None;
   for (auto const & this_type : element_types) {
     if (type1 == MeshType::None) {
-      type1 = this_type; 
-    } 
+      type1 = this_type;
+    }
     if (type1 == this_type) {
       continue;
     }
@@ -47,7 +47,7 @@ MeshFile<T, I>::getMeshType() const -> MeshType
       (type1 == MeshType::Quad && type2 == MeshType::Tri)) {
     return MeshType::TriQuad;
   }
-  if (type1 == MeshType::QuadraticTri && type2 == MeshType::None) { 
+  if (type1 == MeshType::QuadraticTri && type2 == MeshType::None) {
     return MeshType::QuadraticTri;
   }
   if (type1 == MeshType::QuadraticQuad && type2 == MeshType::None) {
@@ -102,10 +102,10 @@ compareTopology(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int
   }
 
   // If the element types and connectivity are the same, then the element
-  // offsets SHOULD be the same. 
+  // offsets SHOULD be the same.
 #ifndef NDEBUG
   if (lhs.element_offsets.size() != rhs.element_offsets.size()) {
-    return 4; 
+    return 4;
   }
   if (!std::equal(lhs.element_offsets.cbegin(), lhs.element_offsets.cend(),
                   rhs.element_offsets.cbegin())) {
@@ -189,14 +189,16 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
   submesh.element_types.resize(submesh_num_elements);
   submesh.element_offsets.resize(submesh_num_elements + 1);
   submesh.element_offsets[0] = 0;
-  submesh.element_conn.reserve(3 * submesh_num_elements); // 3 is the min vertices per element
+  submesh.element_conn.reserve(3 *
+                               submesh_num_elements); // 3 is the min vertices per element
   for (size_t i = 0; i < submesh_num_elements; ++i) {
     auto const element_id = static_cast<size_t>(element_ids[i]);
     submesh.element_types[i] = element_types[element_id];
-    auto const element_start = static_cast<size_t>(element_offsets[element_id]); 
+    auto const element_start = static_cast<size_t>(element_offsets[element_id]);
     auto const element_end = static_cast<size_t>(element_offsets[element_id + 1]);
     auto const element_len = element_end - element_start;
-    submesh.element_offsets[i + 1] = submesh.element_offsets[i] + static_cast<I>(element_len);
+    submesh.element_offsets[i + 1] =
+        submesh.element_offsets[i] + static_cast<I>(element_len);
     for (size_t j = 0; j < element_len; ++j) {
       I const vertex_id = element_conn[element_start + j];
       submesh.element_conn.push_back(vertex_id);

@@ -24,9 +24,9 @@ toMeshFile(FaceVertexMesh<P, N, D, T, I> const & mesh, MeshFile<T, I> & file) no
   // NOLINTBEGIN(bugprone-misplaced-widening-cast) justification: It's not misplaced...
   auto const nfaces = static_cast<size_t>(mesh.numFaces());
   auto const n = static_cast<size_t>(N);
-  auto const len = nfaces * n; 
+  auto const len = nfaces * n;
   MeshType const mesh_type = getMeshType<P, N>();
-  file.element_types.resize(nfaces, mesh_type); 
+  file.element_types.resize(nfaces, mesh_type);
   file.element_offsets.resize(nfaces + 1U);
   file.element_conn.resize(len);
   for (size_t i = 0; i < nfaces; ++i) {
