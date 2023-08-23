@@ -44,11 +44,12 @@ toFaceVertexMesh(MeshFile<T, I> const & file,
   auto const num_vertices = static_cast<Size>(file.vertices.size());
   auto const num_faces = static_cast<Size>(file.numCells());
   auto const conn_size = static_cast<Size>(file.element_conn.size());
-  if (!validateMeshFileType<P, N>(file.type)) {
+  MeshType const meshtype = file.getMeshType();
+  if (!validateMeshFileType<P, N>(meshtype)) {
     Log::error("Attempted to construct a FaceVertexMesh from a mesh file with an "
                "incompatible mesh type");
   }
-  assert(conn_size == num_faces * verticesPerCell(file.type));
+  assert(conn_size == num_faces * verticesPerCell(meshtype));
 
   // -- Vertices --
   // Ensure each of the vertices has approximately the same z

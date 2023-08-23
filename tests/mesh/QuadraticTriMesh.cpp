@@ -86,7 +86,7 @@ TEST_CASE(toMeshFile)
   quad_mesh.toMeshFile(quad_mesh_file);
   ASSERT(um2::compareGeometry(quad_mesh_file, quad_mesh_file_ref) == 0);
   ASSERT(um2::compareTopology(quad_mesh_file, quad_mesh_file_ref) == 0);
-  ASSERT(quad_mesh_file.type == um2::MeshType::QuadraticTri);
+  ASSERT(quad_mesh_file.getMeshType() == um2::MeshType::QuadraticTri);
 }
 
 #if UM2_USE_CUDA

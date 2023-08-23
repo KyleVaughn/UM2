@@ -132,25 +132,50 @@ static void writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
   auto xtopo = xgrid.append_child("Topology");
   size_t const ncells = mesh.numCells();
 
+  std::vector<I> topology;
   std::string topology_type;
   std::string dimensions;
   size_t nverts = 0;
-  if (mesh.type == MeshType::Tri) {
+  bool ishomogeneous = true;
+  MeshType const mesh_type = mesh.getMeshType();
+  if (mesh_type == MeshType::Tri) {
     topology_type = "Triangle";
     dimensions = std::to_string(ncells) + " 3";
     nverts = 3;
-  } else if (mesh.type == MeshType::Quad) {
+  } else if (mesh_type == MeshType::Quad) {
     topology_type = "Quadrilateral";
     dimensions = std::to_string(ncells) + " 4";
     nverts = 4;
-  } else if (mesh.type == MeshType::QuadraticTri) {
+  } else if (mesh_type == MeshType::QuadraticTri) {
     topology_type = "Triangle_6";
     dimensions = std::to_string(ncells) + " 6";
     nverts = 6;
-  } else if (mesh.type == MeshType::QuadraticQuad) {
+  } else if (mesh_type == MeshType::QuadraticQuad) {
     topology_type = "Quadrilateral_8";
     dimensions = std::to_string(ncells) + " 8";
     nverts = 8;
+  } else if (mesh_type == MeshType::TriQuad || mesh_type == MeshType::QuadraticTriQuad) {
+    topology_type = "Mixed";
+    ishomogeneous = false;
+    dimensions = std::to_string(ncells + mesh.element_conn.size());
+    topology.resize(ncells + mesh.element_conn.size());
+    // Create the topology array (type id + node ids)
+    size_t topo_ctr = 0;
+    for (size_t i = 0; i < ncells; ++i) {
+      if (mesh.element_types[i] == MeshType::QuadraticTri) {
+        topology[topo_ctr] = static_cast<I>(XDMFCellType::QuadraticTriangle);
+      } else if (mesh.element_types[i] == MeshType::QuadraticQuad) {
+        topology[topo_ctr] = static_cast<I>(XDMFCellType::QuadraticQuad);
+      } else {
+        Log::error("Unsupported mesh type");
+      }
+      auto const offset = static_cast<size_t>(mesh.element_offsets[i]);
+      auto const npts   = static_cast<size_t>(mesh.element_offsets[i + 1] - mesh.element_offsets[i]); 
+      for (size_t j = 0; j < npts; ++j) {
+          topology[topo_ctr + j + 1] = mesh.element_conn[offset + j];
+      }
+      topo_ctr += npts + 1;
+    }
   } else {
     Log::error("Unsupported mesh type");
   }
@@ -167,13 +192,23 @@ static void writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
 
   // Create HDF5 data type
   H5::DataType const h5type = getH5DataType<I>();
-  // Create HDF5 data space
-  hsize_t dims[2] = {static_cast<hsize_t>(ncells), nverts};
-  H5::DataSpace const h5space(2, dims);
-  // Create HDF5 data set
-  H5::DataSet const h5dataset = h5group.createDataSet("Topology", h5type, h5space);
-  // Write HDF5 data set
-  h5dataset.write(mesh.element_conn.data(), h5type, h5space);
+  if (ishomogeneous) {
+    // Create HDF5 data space
+    hsize_t dims[2] = {static_cast<hsize_t>(ncells), nverts};
+    H5::DataSpace const h5space(2, dims);
+    // Create HDF5 data set
+    H5::DataSet const h5dataset = h5group.createDataSet("Topology", h5type, h5space);
+    // Write HDF5 data set
+    h5dataset.write(mesh.element_conn.data(), h5type, h5space);
+  } else {
+    // Create HDF5 data space
+    auto const dims = static_cast<hsize_t>(topology.size());
+    H5::DataSpace const h5space(1, &dims);
+    // Create HDF5 data set
+    H5::DataSet const h5dataset = h5group.createDataSet("Topology", h5type, h5space);
+    // Write HDF5 data set
+    h5dataset.write(topology.data(), h5type, h5space);
+  }
 } // writeXDMFTopology
 
 //==============================================================================

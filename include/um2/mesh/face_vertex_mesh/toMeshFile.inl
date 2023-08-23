@@ -7,7 +7,6 @@ toMeshFile(FaceVertexMesh<P, N, D, T, I> const & mesh, MeshFile<T, I> & file) no
 {
   // Default to XDMf
   file.format = MeshFileFormat::XDMF;
-  file.type = getMeshType<P, N>();
 
   // Vertices
   if constexpr (D == 3) {
@@ -23,13 +22,20 @@ toMeshFile(FaceVertexMesh<P, N, D, T, I> const & mesh, MeshFile<T, I> & file) no
 
   // Faces
   // NOLINTBEGIN(bugprone-misplaced-widening-cast) justification: It's not misplaced...
-  auto const len = static_cast<size_t>(mesh.numFaces() * N);
+  auto const nfaces = static_cast<size_t>(mesh.numFaces());
+  auto const n = static_cast<size_t>(N);
+  auto const len = nfaces * n; 
+  MeshType const mesh_type = getMeshType<P, N>();
+  file.element_types.resize(nfaces, mesh_type); 
+  file.element_offsets.resize(nfaces + 1U);
   file.element_conn.resize(len);
-  for (Size i = 0; i < mesh.numFaces(); ++i) {
-    for (Size j = 0; j < N; ++j) {
-      file.element_conn[static_cast<size_t>(i * N + j)] = mesh.fv[i][j];
+  for (size_t i = 0; i < nfaces; ++i) {
+    file.element_offsets[i] = static_cast<I>(i * n);
+    for (size_t j = 0; j < n; ++j) {
+      file.element_conn[i * n + j] = mesh.fv[static_cast<Size>(i)][static_cast<Size>(j)];
     }
   }
+  file.element_offsets[nfaces] = static_cast<I>(len);
   // NOLINTEND(bugprone-misplaced-widening-cast)
 }
 

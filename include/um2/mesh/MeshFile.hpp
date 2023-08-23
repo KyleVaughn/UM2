@@ -70,8 +70,10 @@ enum class MeshType : int8_t {
   None = 0,
   Tri = 3,
   Quad = 4,
+  TriQuad = 7,
   QuadraticTri = 6,
   QuadraticQuad = 8,
+  QuadraticTriQuad = 14
 };
 
 constexpr auto
@@ -99,9 +101,10 @@ struct MeshFile {
   std::string name;     // name of the mesh
 
   MeshFileFormat format = MeshFileFormat::None;
-  MeshType type = MeshType::None;
 
   std::vector<Point3<T>> vertices;
+  std::vector<MeshType> element_types;
+  std::vector<I> element_offsets; // size = num_cells + 1
   std::vector<I> element_conn;
 
   // Instead of storing a vector of vector, we store the elset IDs in a single contiguous
@@ -119,6 +122,9 @@ struct MeshFile {
 
   PURE [[nodiscard]] constexpr auto
   numCells() const -> size_t;
+
+  PURE [[nodiscard]] constexpr auto
+  getMeshType() const -> MeshType;
 
   constexpr void
   sortElsets();

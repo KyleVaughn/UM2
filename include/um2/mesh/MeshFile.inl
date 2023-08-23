@@ -9,8 +9,55 @@ template <std::floating_point T, std::signed_integral I>
 PURE constexpr auto
 MeshFile<T, I>::numCells() const -> size_t
 {
-  assert(type != MeshType::None);
-  return element_conn.size() / static_cast<size_t>(verticesPerCell(type));
+  return element_offsets.size() - 1;
+}
+
+//==============================================================================
+// getMeshType
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+PURE constexpr auto
+MeshFile<T, I>::getMeshType() const -> MeshType
+{
+  MeshType type1 = MeshType::None;
+  MeshType type2 = MeshType::None;
+  for (auto const & this_type : element_types) {
+    if (type1 == MeshType::None) {
+      type1 = this_type; 
+    } 
+    if (type1 == this_type) {
+      continue;
+    }
+    if (type2 == MeshType::None) {
+      type2 = this_type;
+    }
+    if (type2 == this_type) {
+      continue;
+    }
+    return MeshType::None;
+  }
+  if (type1 == MeshType::Tri && type2 == MeshType::None) {
+    return MeshType::Tri;
+  }
+  if (type1 == MeshType::Quad && type2 == MeshType::None) {
+    return MeshType::Quad;
+  }
+  if ((type1 == MeshType::Tri && type2 == MeshType::Quad) ||
+      (type1 == MeshType::Quad && type2 == MeshType::Tri)) {
+    return MeshType::TriQuad;
+  }
+  if (type1 == MeshType::QuadraticTri && type2 == MeshType::None) { 
+    return MeshType::QuadraticTri;
+  }
+  if (type1 == MeshType::QuadraticQuad && type2 == MeshType::None) {
+    return MeshType::QuadraticQuad;
+  }
+  if ((type1 == MeshType::QuadraticTri && type2 == MeshType::QuadraticQuad) ||
+      (type1 == MeshType::QuadraticQuad && type2 == MeshType::QuadraticTri)) {
+    return MeshType::QuadraticTriQuad;
+  }
+  return MeshType::None;
 }
 
 //==============================================================================
@@ -42,16 +89,29 @@ template <std::floating_point T, std::signed_integral I>
 constexpr auto
 compareTopology(MeshFile<T, I> const & lhs, MeshFile<T, I> const & rhs) -> int
 {
-  if (lhs.type != rhs.type) {
+  if (lhs.element_types.size() != rhs.element_types.size()) {
     return 1;
   }
-  if (lhs.element_conn.size() != rhs.element_conn.size()) {
+  if (!std::equal(lhs.element_types.cbegin(), lhs.element_types.cend(),
+                  rhs.element_types.cbegin())) {
     return 2;
   }
   if (!std::equal(lhs.element_conn.cbegin(), lhs.element_conn.cend(),
                   rhs.element_conn.cbegin())) {
     return 3;
   }
+
+  // If the element types and connectivity are the same, then the element
+  // offsets SHOULD be the same. 
+#ifndef NDEBUG
+  if (lhs.element_offsets.size() != rhs.element_offsets.size()) {
+    return 4; 
+  }
+  if (!std::equal(lhs.element_offsets.cbegin(), lhs.element_offsets.cend(),
+                  rhs.element_offsets.cbegin())) {
+    return 5;
+  }
+#endif
   return 0;
 }
 
@@ -113,7 +173,6 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
   submesh.filepath = "";
   submesh.name = elset_name;
   submesh.format = format;
-  submesh.type = type;
 
   // Get the element ids in the elset.
   auto const elset_index = static_cast<size_t>(elset_it - elset_names.cbegin());
@@ -127,19 +186,24 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
   std::sort(element_ids.begin(), element_ids.end());
 
   // Get the element connectivity and remap the vertex ids.
-  auto const verts_per_cell = static_cast<size_t>(verticesPerCell(type));
-  submesh.element_conn.resize(submesh_num_elements * verts_per_cell);
-  std::vector<I> all_vertex_ids(submesh_num_elements * verts_per_cell);
+  submesh.element_types.resize(submesh_num_elements);
+  submesh.element_offsets.resize(submesh_num_elements + 1);
+  submesh.element_offsets[0] = 0;
+  submesh.element_conn.reserve(3 * submesh_num_elements); // 3 is the min vertices per element
   for (size_t i = 0; i < submesh_num_elements; ++i) {
     auto const element_id = static_cast<size_t>(element_ids[i]);
-    auto const element_start = verts_per_cell * element_id;
-    for (size_t j = 0; j < verts_per_cell; ++j) {
+    submesh.element_types[i] = element_types[element_id];
+    auto const element_start = static_cast<size_t>(element_offsets[element_id]); 
+    auto const element_end = static_cast<size_t>(element_offsets[element_id + 1]);
+    auto const element_len = element_end - element_start;
+    submesh.element_offsets[i + 1] = submesh.element_offsets[i] + static_cast<I>(element_len);
+    for (size_t j = 0; j < element_len; ++j) {
       I const vertex_id = element_conn[element_start + j];
-      submesh.element_conn[i * verts_per_cell + j] = vertex_id;
-      all_vertex_ids[i * verts_per_cell + j] = vertex_id;
+      submesh.element_conn.push_back(vertex_id);
     }
   }
   // Get the unique vertex ids.
+  std::vector<I> all_vertex_ids = submesh.element_conn;
   std::sort(all_vertex_ids.begin(), all_vertex_ids.end());
   auto const last = std::unique(all_vertex_ids.begin(), all_vertex_ids.end());
   std::vector<I> unique_vertex_ids(all_vertex_ids.begin(), last);

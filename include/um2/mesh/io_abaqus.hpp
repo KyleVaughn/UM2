@@ -62,7 +62,7 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   //  Hence, line[18] is the offset of the element type
   //  ASCII code for '0' is 48, so line[18] - 48 is the offset
   //  as an integer
-  I offset = static_cast<I>(line[18]) - 48;
+  I const offset = static_cast<I>(line[18]) - 48;
   MeshType this_type = MeshType::None;
   switch (offset) {
   case 3:
@@ -82,12 +82,7 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     break;
   }
   }
-  if (mesh.type == MeshType::None) {
-    mesh.type = this_type;
-  }
-  if (mesh.type != this_type) {
-    LOG_ERROR("Heterogeneous mesh types are not supported");
-  }
+  size_t num_elements = 0;
   while (std::getline(file, line) && line[0] != '*') {
     LOG_TRACE("Line: " + line);
     std::string_view const line_view = line;
@@ -109,6 +104,22 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     std::from_chars(line_view.data() + last + 2, line_view.data() + line_view.size(), id);
     assert(id > 0);
     mesh.element_conn.push_back(id - 1); // ABAQUS is 1-indexed
+    ++num_elements;
+  }
+  mesh.element_types.insert(mesh.element_types.end(), num_elements, this_type);
+  size_t offsets_size = mesh.element_offsets.size();
+  if (offsets_size == 0) {
+    mesh.element_offsets.push_back(0);
+    offsets_size = 1;
+  } 
+  I const offset_back = mesh.element_offsets.back();
+  mesh.element_offsets.resize(offsets_size + num_elements);
+  for (size_t i = 0; i < num_elements; ++i) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+    auto const ip1 = static_cast<I>(i + 1U);
+    mesh.element_offsets[offsets_size + i] = offset_back + ip1 * offset;
+#pragma GCC diagnostic pop
   }
 }
 
