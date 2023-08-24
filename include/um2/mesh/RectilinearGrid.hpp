@@ -15,7 +15,7 @@ namespace um2
 
 template <Size D, typename T>
 // clang-tidy complaing about '__i0' in the name of the struct
-// NOLINTNEXTLINE justiified
+// NOLINTNEXTLINE justified above
 struct RectilinearGrid {
 
   // Divisions along each axis

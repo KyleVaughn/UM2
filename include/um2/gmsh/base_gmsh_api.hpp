@@ -2,9 +2,9 @@
 
 #include <um2/config.hpp> // UM2_HAS_GMSH
 
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
 
-// NOLINTBEGIN(readability*, modernize*)
+// NOLINTBEGIN(readability*, modernize*) justification: this is a third party library
 
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
@@ -1140,4 +1140,4 @@ getLastError(std::string & error);
 #  pragma GCC diagnostic pop
 // NOLINTEND(readability*, modernize*)
 
-#endif // UM2_ENABLE_GMSH
+#endif // UM2_USE_GMSH

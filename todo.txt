@@ -1,7 +1,7 @@
 Change --- to ===
 Review NOLINTs and cppcheck suppress
 
-Change io_abaqus, xdmf, and mpact types to allow for more than one mesh type
+Fix cognitive complexity on SpatialPartition 
 
 BinnedFaceVertexMesh and Ray
 
@@ -44,5 +44,3 @@ Vis:
  Add GUI and options for edge and vertex selection and edges/faces on/off
  Use instancing for repeated pins
  Use ray casted picking for selection
-
-openmp and cuda kernels for mesh functions

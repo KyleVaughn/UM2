@@ -96,9 +96,9 @@ set(UM2_SOURCES
     "src/mpact/SpatialPartition.cpp"
     "src/mpact/io.cpp"
     # gmsh
-    #    "src/gmsh/base_gmsh_api.cpp"
-    #    "src/gmsh/io.cpp"
-    #    "src/gmsh/model.cpp"
+    "src/gmsh/base_gmsh_api.cpp"
+    "src/gmsh/io.cpp"
+    "src/gmsh/model.cpp"
     #    "src/gmsh/mesh.cpp"
   #    # visualization
   #    "src/visualization/Image2D.cpp"
@@ -278,7 +278,6 @@ if (UM2_ENABLE_COVERAGE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
   target_link_libraries(um2 gcov)
 endif()
-
 
 #===============================================================================
 # Optional subdirectories

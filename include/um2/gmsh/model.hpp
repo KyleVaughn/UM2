@@ -2,7 +2,7 @@
 
 #include <um2/config.hpp>
 
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
 #  include <um2/common/Log.hpp>
 #  include <um2/geometry/Point.hpp>
 #  include <um2/gmsh/base_gmsh_api.hpp>
@@ -73,13 +73,10 @@ addCylindricalPin(Point3d const & center, double height,
 //            std::vector<std::vector<int>> const & pin_ids,
 //            Point3d const & offset = {0.0, 0.0, 0.0});
 
-template <std::floating_point T, std::signed_integral I>
 void
-overlaySpatialPartition(mpact::SpatialPartition<T, I> const & partition,
+overlaySpatialPartition(mpact::SpatialPartition const & partition,
                         std::string const & fill_material_name = "Moderator",
                         Color fill_material_color = Color("royalblue"));
 } // namespace occ
 } // namespace um2::gmsh::model
-#endif // UM2_ENABLE_GMSH
-
-#include "model.inl"
+#endif // UM2_USE_GMSH

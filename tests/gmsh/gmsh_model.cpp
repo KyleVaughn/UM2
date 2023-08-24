@@ -1,11 +1,11 @@
 #include <um2/config.hpp>
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
 #  include <um2/gmsh/model.hpp>
 #endif
 
 #include "../test_macros.hpp"
 
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
 
 TEST_CASE(addToPhysicalGroup)
 {
@@ -380,12 +380,12 @@ TEST_SUITE(gmsh_model)
   TEST(groupPresFragment_3d3d);
   TEST(groupPresIntersect_2d2d);
 }
-#endif // UM2_ENABLE_GMSH
+#endif // UM2_USE_GMSH
 
 auto
 main() -> int
 {
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
   um2::Log::setMaxVerbosityLevel(um2::LogVerbosity::Error);
   RUN_SUITE(gmsh_model);
 #endif

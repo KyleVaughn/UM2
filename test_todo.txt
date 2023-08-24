@@ -1,17 +1,6 @@
 Utility
   swap
 
-TriMesh
-  toMeshFile
-QuadMesh
-  toMeshFile
-QuadraticTriMesh
-  toMeshFile
-QuadraticQuadMesh
-  toMeshFile
-
-flipFace for all of the above
-
 Gmsh
   model
     groupPreservingIntersect_2d3d?
@@ -23,10 +12,6 @@ Gmsh
   mesh
     setGlobalMeshSize
     generateMesh
-
-SpatialPartition
-  importCoarseCells
-  writeXDMFFile
 
 Image
   rasterizePoint

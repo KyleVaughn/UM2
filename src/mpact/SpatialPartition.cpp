@@ -991,6 +991,10 @@ SpatialPartition::makeCore(std::vector<std::vector<Size>> const & asy_ids) -> Si
   return 0;
 }
 
+//=============================================================================
+// importCoarseCells
+//=============================================================================
+
 void
 SpatialPartition::importCoarseCells(std::string const & filename)
 {
@@ -1032,7 +1036,7 @@ SpatialPartition::importCoarseCells(std::string const & filename)
     Point2<Float> * vertices = nullptr;
     size_t const num_verts = cc_submesh.vertices.size();
     // clang-tidy false positive
-    // NOLINTBEGIN(bugprone-branch-clone)
+    // NOLINTBEGIN(bugprone-branch-clone) justified above
     switch (mesh_type) {
     case MeshType::Tri: {
       cc.mesh_id = tri.size();

@@ -8,10 +8,14 @@
 #include <fstream>   // std::ofstream, std::ifstream
 #include <vector>    // std::vector
 
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
 
 namespace um2::gmsh
 {
+
+//=============================================================================
+// write
+//=============================================================================
 
 void
 write(std::string const & filename, bool const extra_info)
@@ -28,8 +32,9 @@ write(std::string const & filename, bool const extra_info)
     Log::error("Could not open file " + info_filename);
     return;
   }
+  //==============================================================================
   // PHYSICAL_GROUPS
-  // ---------------------------------------------------------------------
+  //==============================================================================
   gmsh::vectorpair dimtags;
   gmsh::model::getPhysicalGroups(dimtags);
   size_t const num_groups = dimtags.size();
@@ -59,8 +64,9 @@ write(std::string const & filename, bool const extra_info)
       info_file << tags[num_full_lines * 8 + num_remaining_tags - 1] << "\n";
     }
   }
+  //==============================================================================
   // ENTITY_COLORS
-  // ---------------------------------------------------------------------
+  //==============================================================================
   dimtags.clear();
   gmsh::model::getEntities(dimtags);
   std::vector<Color> colors;
@@ -135,8 +141,9 @@ write(std::string const & filename, bool const extra_info)
 static void
 addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
 {
+  //==============================================================================
   // PHYSICAL_GROUPS
-  // ---------------------------------------------------------------------
+  //==============================================================================
   std::string line;
   std::getline(info_file, line);
   if (!line.starts_with("PHYSICAL_GROUPS")) {
@@ -190,6 +197,10 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
   }
 }
 
+//==============================================================================
+// open
+//==============================================================================
+
 void
 open(std::string const & filename, bool const extra_info)
 {
@@ -213,12 +224,14 @@ open(std::string const & filename, bool const extra_info)
     Log::error("Could not open file " + info_filename);
     return;
   }
+  //==============================================================================
   // PHYSICAL_GROUPS
-  // ---------------------------------------------------------------------
+  //==============================================================================
   addPhysicalGroups(info_file, info_filename);
 
+  //==============================================================================
   // ENTITY_COLORS
-  // ---------------------------------------------------------------------
+  //==============================================================================
   {
     std::string line;
     std::getline(info_file, line);
@@ -302,4 +315,4 @@ open(std::string const & filename, bool const extra_info)
 }
 
 } // namespace um2::gmsh
-#endif // UM2_ENABLE_GMSH
+#endif // UM2_USE_GMSH

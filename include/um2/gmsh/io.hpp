@@ -2,7 +2,7 @@
 
 #include <um2/config.hpp>
 
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
 #  include <um2/gmsh/base_gmsh_api.hpp>
 
 #  include <string> // std::string
@@ -19,4 +19,4 @@ void
 open(std::string const & filename, bool extra_info);
 
 } // namespace um2::gmsh
-#endif // UM2_ENABLE_GMSH
+#endif // UM2_USE_GMSH

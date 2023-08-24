@@ -1,8 +1,9 @@
 #include <um2/gmsh/base_gmsh_api.hpp>
 
-// NOLINTBEGIN(readability*, modernize*)
+// NOLINTBEGIN(readability*, modernize*) justification: simply a gmsh wrapper (not our
+// code).
 
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
 #  include <gmsh.h>
 
 // A wrapper around the gmsh library to make namespace management with um2 gmsh
@@ -807,7 +808,7 @@ setSizeAtParametricPoints(const int dim, const int tag,
 void
 setSizeCallback(std::function<double(int, int, double, double, double, double)> callback)
 {
-  // NOLINTNEXTLINE(performance-unnecessary-value-param)
+  // NOLINTNEXTLINE(performance-unnecessary-value-param) justification: this is a TPL
   ::gmsh::model::mesh::setSizeCallback(callback);
 }
 void
@@ -2190,5 +2191,5 @@ getLastError(std::string & error)
 } // namespace logger
 } // namespace gmsh
 } // namespace um2
-#endif // UM2_ENABLE_GMSH
+#endif // UM2_USE_GMSH
 // NOLINTEND(readability*, modernize*)

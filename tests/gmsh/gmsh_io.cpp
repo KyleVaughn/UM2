@@ -1,6 +1,6 @@
 #include <um2/common/Log.hpp>
 #include <um2/config.hpp>
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
 #  include <um2/gmsh/io.hpp>
 #endif
 
@@ -8,7 +8,7 @@
 
 #include <fstream>
 
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
 
 TEST_CASE(write_open)
 {
@@ -64,12 +64,12 @@ TEST_CASE(write_open)
 }
 
 TEST_SUITE(gmsh_io) { TEST(write_open); }
-#endif // UM2_ENABLE_GMSH
+#endif // UM2_USE_GMSH
 
 auto
 main() -> int
 {
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
   um2::Log::setMaxVerbosityLevel(um2::LogVerbosity::Error);
   RUN_SUITE(gmsh_io);
 #endif
