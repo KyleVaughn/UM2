@@ -399,7 +399,7 @@ TEST_CASE(io)
   ASSERT(model.numAssemblies() == 1);
   ASSERT(model.numLattices() == 1);
   ASSERT(model.numRTMs() == 1);
-  ASSERT(model.numCoarseCells() == 2);
+  ASSERT(model.numCoarseCells() == 3);
 
   ASSERT(model.tri.size() == 2);
   CoarseCell const & cell = model.coarse_cells[0];

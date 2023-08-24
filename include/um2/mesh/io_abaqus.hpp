@@ -178,7 +178,7 @@ template <std::floating_point T, std::signed_integral I>
 void
 readAbaqusFile(std::string const & filename, MeshFile<T, I> & mesh)
 {
-  LOG_INFO("Reading ABAQUS mesh file: " + filename);
+  LOG_INFO("Reading Abaqus mesh file: " + filename);
 
   // Open file
   std::ifstream file(filename);
