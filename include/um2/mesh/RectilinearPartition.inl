@@ -93,6 +93,13 @@ RectilinearPartition<D, T, P>::numZCells() const noexcept -> Size
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
+RectilinearPartition<D, T, P>::numCells() const noexcept -> Vec<D, Size>
+{
+  return grid.numCells();
+}
+
+template <Size D, typename T, typename P>
+PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::width() const noexcept -> T
 {
   return grid.width();

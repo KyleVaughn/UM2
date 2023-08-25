@@ -189,10 +189,6 @@ struct SpatialPartition {
   //                                  int const nx,
   //                                  int const ny);
   //
-  //    int make_coarse_cell(I const mesh_type,
-  //                         I const mesh_id,
-  //                         std::vector<Material> const & materials);
-  //
   auto
   makeCoarseCell(Vec2<Float> dxdy, MeshType mesh_type = MeshType::None, Size mesh_id = -1,
                  Vector<MaterialID> const & material_ids = {}) -> Size;

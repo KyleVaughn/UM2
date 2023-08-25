@@ -7,8 +7,8 @@ namespace um2
 {
 
 void
-#if UM2_ENABLE_GMSH
-initialize(std::string const & verbosity, bool init_gmsh, int gmsh_verbosity)
+#if UM2_USE_GMSH
+initialize(std::string const & verbosity, bool init_gmsh, Int gmsh_verbosity)
 #else
 initialize(std::string const & verbosity)
 #endif
@@ -35,7 +35,7 @@ initialize(std::string const & verbosity)
     Log::warn("Invalid verbosity level: " + verbosity + ". Defaulting to INFO.");
   }
   Log::info("Initializing UM2");
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
   if (init_gmsh && gmsh::isInitialized() == 0) {
     gmsh::initialize();
     gmsh::option::setNumber("General.NumThreads", 0);             // System default
@@ -50,7 +50,7 @@ finalize()
 {
   Log::info("Finalizing UM2");
   Log::flush();
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
   if (gmsh::isInitialized() != 0) {
     gmsh::finalize();
   }

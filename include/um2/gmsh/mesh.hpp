@@ -1,11 +1,11 @@
 #pragma once
 
-#include <um2/config.hpp> // UM2_ENABLE_GMSH
+#include <um2/config.hpp> // UM2_USE_GMSH
 
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
 #  include <um2/common/Log.hpp>
 #  include <um2/gmsh/base_gmsh_api.hpp>
-#  include <um2/mesh/MeshType.hpp>
+#  include <um2/mesh/MeshFile.hpp>
 
 #  include <concepts> // std::floating_point, std::unsigned_integral
 #  include <string>   // std::string
@@ -26,4 +26,4 @@ void
 generateMesh(MeshType mesh_type, int opt_iters = 5, int smooth_iters = 100);
 
 } // namespace um2::gmsh::model::mesh
-#endif // UM2_ENABLE_GMSH
+#endif // UM2_USE_GMSH

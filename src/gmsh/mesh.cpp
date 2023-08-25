@@ -1,6 +1,6 @@
 #include <um2/gmsh/mesh.hpp>
 
-#if UM2_ENABLE_GMSH
+#if UM2_USE_GMSH
 
 namespace um2::gmsh::model::mesh
 {
@@ -76,4 +76,4 @@ generateMesh(MeshType const mesh_type, int const opt_iters, int const smooth_ite
 }
 
 } // namespace um2::gmsh::model::mesh
-#endif // UM2_ENABLE_GMSH
+#endif // UM2_USE_GMSH
