@@ -21,7 +21,7 @@ main(int argc, char * argv[]) -> int
   um2::initialize();
   um2::gmsh::open("2a.brep", /*extra_info=*/true);
 
-  um2::mpact::SpatialPartition<double, int32_t> model;
+  um2::mpact::SpatialPartition model;
 
   // Fuel rod and guide tube layout (pg. 5)
   std::vector<std::vector<int>> pin_ids(17, std::vector<int>(17, 0));

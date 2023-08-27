@@ -5,7 +5,7 @@
 #if UM2_ENABLE_FLOAT64
 constexpr Float eps = 1e-4;
 #else
-constexpr Float eps = 1e-4f;
+constexpr Float eps = 1e-4F;
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -222,7 +222,7 @@ TEST_CASE(coarse_cell_functions)
 #if UM2_ENABLE_FLOAT64 == 1
   Float const expected_dx = 1.26;
 #else
-  Float const expected_dx = 1.26f;
+  Float const expected_dx = 1.26F;
 #endif
   ASSERT_NEAR(dx, expected_dx, eps);
   dx = -1;

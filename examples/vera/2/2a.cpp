@@ -9,24 +9,24 @@ auto
 main(int argc, char * argv[]) -> int
 {
   um2::MeshType mesh_type = um2::MeshType::None;
-  double lc = 0.0;
+  Float lc = 0.0;
   getGlobalMeshParams(argc, argv, mesh_type, lc);
 
-  double const pitch = 1.26;   // Pitch = 1.26 cm (pg. 4)
-  double const half_gap = 0.4; // Inter-Assembly Half Gap  = 0.04 cm (pg. 7)
-  um2::Vec2d const dxdy(pitch, pitch);
-  um2::Vec2d const tall_dxdy(pitch, pitch + half_gap);
-  um2::Vec2d const wide_dxdy(pitch + half_gap, pitch);
-  um2::Vec2d const corner_dxdy(pitch + half_gap, pitch + half_gap);
+  Float const pitch = 1.26;   // Pitch = 1.26 cm (pg. 4)
+  Float const half_gap = 0.4; // Inter-Assembly Half Gap  = 0.04 cm (pg. 7)
+  um2::Vec2<Float> const dxdy(pitch, pitch);
+  um2::Vec2<Float> const tall_dxdy(pitch, pitch + half_gap);
+  um2::Vec2<Float> const wide_dxdy(pitch + half_gap, pitch);
+  um2::Vec2<Float> const corner_dxdy(pitch + half_gap, pitch + half_gap);
 
   um2::initialize();
   um2::gmsh::open("2a.brep", /*extra_info=*/true);
 
-  um2::mpact::SpatialPartition<double, int32_t> model;
+  um2::mpact::SpatialPartition model;
 
   // Fuel rod and guide tube layout (pg. 5)
   // Due to the half gap, the cells on the perimeter are extended
-  std::vector<std::vector<int>> const pin_ids = um2::to_vecvec<int>(R"(
+  std::vector<std::vector<Size>> const pin_ids = um2::to_vecvec<Size>(R"(
      7 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 8
      6 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4
      6 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 4

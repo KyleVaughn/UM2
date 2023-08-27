@@ -206,38 +206,6 @@ struct SpatialPartition {
 
   void
   importCoarseCells(std::string const & filename);
-  //
-  //    void coarse_cell_heights(Vector<std::pair<int, double>> & id_dz) const;
-  //
-  //    void coarse_cell_face_areas(Size const cc_id, Vector<Float> & areas) const;
-  //
-  //    Size coarse_cell_find_face(Size const cc_id, Point2<Float> const & p) const;
-  //
-  //    Point2<Float> coarse_cell_face_centroid(Size const cc_id, Size const face_id)
-  //    const;
-  //
-  //    void intersect_coarse_cell(Size const cc_id,
-  //                               Ray2<Float> const & ray,
-  //                               Vector<Float> & intersections) const;
-  //
-  //
-  //    void intersect_coarse_cell(Size const cc_id, // Fixed-size buffer
-  //                               Ray2<Float> const & ray,
-  //                               T * const intersections,
-  //                               int * const n) const;
-  //
-  //
-  //    void rtm_heights(Vector<std::pair<int, double>> & id_dz) const;
-  //
-  //    void lattice_heights(Vector<std::pair<int, double>> & id_dz) const;
-  //
-  //    void coarse_cell_face_data(Size const cc_id,
-  //                               Size * const mesh_type,
-  //                               Size * const num_vertices,
-  //                               Size * const num_faces,
-  //                               T ** const vertices,
-  //                               I ** const fv_offsets,
-  //                               I ** const fv) const;
 
 }; // struct SpatialPartition
 

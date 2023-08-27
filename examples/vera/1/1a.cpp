@@ -9,15 +9,15 @@ auto
 main(int argc, char * argv[]) -> int
 {
   um2::MeshType mesh_type = um2::MeshType::None;
-  double lc = 0.0;
+  Float lc = 0.0;
   getGlobalMeshParams(argc, argv, mesh_type, lc);
 
   // Parameters
-  double const pitch = 1.26; // Pitch = 1.26 cm (pg. 4)
+  Float const pitch = 1.26; // Pitch = 1.26 cm (pg. 4)
 
   um2::initialize();
   um2::gmsh::open("1a.brep", /*extra_info=*/true);
-  um2::mpact::SpatialPartition<double, int32_t> model;
+  um2::mpact::SpatialPartition model;
   model.makeCoarseCell({pitch, pitch});
   model.makeRTM({{0}});
   model.makeLattice({{0}});
