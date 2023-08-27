@@ -50,7 +50,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'UM2'
-copyright = '2021-2023, Kyle Vaughn'
+copyright = '2018-2023, Kyle Vaughn'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -129,10 +129,10 @@ html_favicon = 'favicon.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
-#
-#def setup(app):
-#    app.add_css_file('theme_overrides.css')
+html_static_path = ['_static']
+
+def setup(app):
+    app.add_css_file('theme_overrides.css')
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
