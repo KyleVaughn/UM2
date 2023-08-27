@@ -47,6 +47,18 @@ um2Finalize(Int * const ierr)
   TRY_CATCH(um2::finalize());
 }
 
+void
+getSizeOfInt(int * size)
+{
+  *size = static_cast<int>(sizeof(Int));
+}
+
+void
+getSizeOfFloat(int * size)
+{
+  *size = static_cast<int>(sizeof(Float));
+}
+
 //==============================================================================
 // MPACT SpatialPartition
 //==============================================================================
@@ -74,7 +86,7 @@ um2ImportMPACTModel(char const * const path, void ** const model, Int * const ie
 }
 
 void
-um2GetMPACTNumCoarseCells(void * const model, Int * const n, Int * const ierr)
+um2MPACTNumCoarseCells(void * const model, Int * const n, Int * const ierr)
 {
   TRY_CATCH({
     auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
@@ -83,7 +95,7 @@ um2GetMPACTNumCoarseCells(void * const model, Int * const n, Int * const ierr)
 }
 
 void
-um2GetMPACTNumRTMs(void * const model, Int * const n, Int * const ierr)
+um2MPACTNumRTMs(void * const model, Int * const n, Int * const ierr)
 {
   TRY_CATCH({
     auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
@@ -92,7 +104,7 @@ um2GetMPACTNumRTMs(void * const model, Int * const n, Int * const ierr)
 }
 
 void
-um2GetMPACTNumLattices(void * const model, Int * const n, Int * const ierr)
+um2MPACTNumLattices(void * const model, Int * const n, Int * const ierr)
 {
   TRY_CATCH({
     auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
@@ -101,7 +113,7 @@ um2GetMPACTNumLattices(void * const model, Int * const n, Int * const ierr)
 }
 
 void
-um2GetMPACTNumAssemblies(void * const model, Int * const n, Int * const ierr)
+um2MPACTNumAssemblies(void * const model, Int * const n, Int * const ierr)
 {
   TRY_CATCH({
     auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
@@ -110,8 +122,7 @@ um2GetMPACTNumAssemblies(void * const model, Int * const n, Int * const ierr)
 }
 
 void
-um2GetMPACTCoreNumCells(void * const model, int * const nx, int * const ny,
-                        int * const ierr)
+um2MPACTCoreNumCells(void * const model, int * const nx, int * const ny, int * const ierr)
 {
   TRY_CATCH({
     auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
@@ -122,435 +133,552 @@ um2GetMPACTCoreNumCells(void * const model, int * const nx, int * const ny,
 }
 
 void
-um2GetMPACTAssemblyNumCells(void * const model, Int const asy_id, Int * const nx,
-                            Int * const ierr)
+um2MPACTAssemblyNumCells(void * const model, Int const asy_id, Int * const nx,
+                         Int * const ierr)
 {
   TRY_CATCH({
     auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
     *nx = sp.assemblies[asy_id].numXCells();
   });
 }
-//
-// void um2_MPACT_lattice_num_cells(void * const model,
-//                                  int const lat_id,
-//                                  int * const num_x,
-//                                  int * const num_y,
-//                                  int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         *num_x = static_cast<int>(um2::num_xcells(sp->lattices[lat_id]));
-//         *num_y = static_cast<int>(um2::num_ycells(sp->lattices[lat_id]));
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_rtm_num_cells(void * const model,
-//                                  int const rtm_id,
-//                                  int * const num_x,
-//                                  int * const num_y,
-//                                  int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         *num_x = static_cast<int>(um2::num_xcells(sp->rtms[rtm_id]));
-//         *num_y = static_cast<int>(um2::num_ycells(sp->rtms[rtm_id]));
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_core_get_child(void * const model,
-//                               int const i,
-//                               int const j,
-//                               int * const child,
-//                               int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         *child = static_cast<int>(sp->core.get_child(static_cast<length_t>(i),
-//                                                      static_cast<length_t>(j)));
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_assembly_get_child(void * const model,
-//                                   int const id,
-//                                   int const i,
-//                                   int * const child,
-//                                   int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         *child =
-//         static_cast<int>(sp->assemblies[id].get_child(static_cast<length_t>(i)));
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_lattice_get_child(void * const model,
-//                                   int const id,
-//                                   int const i,
-//                                   int const j,
-//                                   int * const child,
-//                                   int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         *child = static_cast<int>(sp->lattices[id].get_child(static_cast<length_t>(i),
-//                                                              static_cast<length_t>(j)));
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_rtm_get_child(void * const model,
-//                                   int const id,
-//                                   int const i,
-//                                   int const j,
-//                                   int * const child,
-//                                   int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         *child = static_cast<int>(sp->rtms[id].get_child(static_cast<length_t>(i),
-//                                                          static_cast<length_t>(j)));
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_coarse_cell_num_faces(void * const model,
-//                                      int const cc_id,
-//                                      int * const num_faces,
-//                                      int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         *num_faces = static_cast<int>(sp->coarse_cells[cc_id].num_faces());
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_coarse_cell_dx(void * const model,
-//                               int const cc_id,
-//                               double * const dx,
-//                               int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         *dx = static_cast<double>(sp->coarse_cells[cc_id].dxdy[0]);
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_coarse_cell_dy(void * const model,
-//                               int const cc_id,
-//                               double * const dy,
-//                               int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         *dy = static_cast<double>(sp->coarse_cells[cc_id].dxdy[1]);
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_coarse_cell_dxdy(void * const model,
-//                                 int const cc_id,
-//                                 double * const dx,
-//                                 double * const dy,
-//                                 int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         *dx = static_cast<double>(sp->coarse_cells[cc_id].dxdy[0]);
-//         *dy = static_cast<double>(sp->coarse_cells[cc_id].dxdy[1]);
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_coarse_cell_face_areas(void * const model,
-//                                       int const cc_id,
-//                                       int * const n,         // Number of faces
-//                                       double ** const areas,
-//                                       int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         um2::Vector<UM2_REAL> vareas;
-//         sp->coarse_cell_face_areas(cc_id, vareas);
-//         *n = static_cast<int>(vareas.size());
-//         *areas = (double *)malloc(*n * sizeof(double));
-//         for (int i = 0; i < *n; ++i) {
-//             (*areas)[i] = static_cast<double>(vareas[i]);
-//         }
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_coarse_cell_find_face(void * const model,
-//                                      int const cc_id,
-//                                      double const x,
-//                                      double const y,
-//                                      int * const face_id,
-//                                      int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         UM2_REAL const xt = static_cast<UM2_REAL>(x);
-//         UM2_REAL const yt = static_cast<UM2_REAL>(y);
-//         length_t const id = sp->coarse_cell_find_face(cc_id,
-//                                         um2::Point2<UM2_REAL>(xt, yt));
-//         *face_id = static_cast<int>(id);
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_coarse_cell_face_centroid(void * const model,
-//                                          int const cc_id,
-//                                          int const face_id,
-//                                          double * const x, // local coordinates
-//                                          double * const y,
-//                                          int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         um2::Point2<UM2_REAL> const pt = sp->coarse_cell_face_centroid(cc_id, face_id);
-//         *x = static_cast<double>(pt[0]);
-//         *y = static_cast<double>(pt[1]);
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_coarse_cell_heights(void * const model,
-//                                    int * const n,       // Number of heights
-//                                    int ** const cc_ids, // Coarse cell ids array ptr
-//                                    double ** heights,   // Heights array ptr
-//                                    int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//             reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         um2::Vector<std::pair<int, double>> id_dz;
-//         sp->coarse_cell_heights(id_dz);
-//         *n = static_cast<int>(id_dz.size());
-//         *cc_ids = (int *)malloc(*n * sizeof(int));
-//         *heights = (double *)malloc(*n * sizeof(double));
-//         for (int i = 0; i < *n; ++i) {
-//             (*cc_ids)[i] = id_dz[i].first;
-//             (*heights)[i] = id_dz[i].second;
-//         }
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_coarse_cell_material_ids(void * const model,
-//                                         int const cc_id,
-//                                         MaterialID ** const mat_ids,  // Ptr to first
-//                                         mat id int * const n, // Number of mats int *
-//                                         const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         *n = static_cast<int>(sp->coarse_cells[cc_id].material_ids.size());
-//         *mat_ids = &sp->coarse_cells[cc_id].material_ids[0];
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_module_dimensions(void * const model,
-//                                  double * const dx,
-//                                  double * const dy,
-//                                  double * const dz,
-//                                  int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         auto const aabb2 = bounding_box(sp->rtms[0]);
-//         *dx = static_cast<double>(um2::width(aabb2));
-//         *dy = static_cast<double>(um2::height(aabb2));
-//         auto const aabb1 = sp->assemblies[0].get_box(0);
-//         *dz = static_cast<double>(um2::width(aabb1));
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-//
-// }
-//
-// void um2_MPACT_intersect_coarse_cell(void * const model,
-//                                      int const cc_id,
-//                                      UM2_REAL const origin_x, // pin coordinates
-//                                      UM2_REAL const origin_y,
-//                                      UM2_REAL const direction_x,
-//                                      UM2_REAL const direction_y,
-//                                      UM2_REAL * const intersections, // ray
-//                                      iterpolation values int * const n, // number of
-//                                      intersections int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         if (*n <= 0) {
-//             *ierr = 1;
-//             return;
-//         }
-//         um2_MPACT_spatial_partition * const sp =
-//             reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         um2::Ray2<UM2_REAL> const ray(um2::Point2<UM2_REAL>(origin_x, origin_y),
-//                                       um2::Vec2<UM2_REAL>(direction_x, direction_y));
-//         sp->intersect_coarse_cell(cc_id, ray, intersections, n);
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_rtm_dxdy(void * const model,
-//                         int const rtm_id,
-//                         double * const dx,
-//                         double * const dy,
-//                         int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//           reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         auto const aabb2 = um2::bounding_box(sp->rtms[rtm_id]);
-//         *dx = static_cast<double>(width(aabb2));
-//         *dy = static_cast<double>(height(aabb2));
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_rtm_heights(void * const model,
-//                            int * const n,             // Number of heights
-//                            int ** const rtm_ids,      // RTM ids array ptr
-//                            double ** const heights,   // Heights array ptr
-//                            int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//             reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         um2::Vector<std::pair<int, double>> id_dz;
-//         sp->rtm_heights(id_dz);
-//         *n = static_cast<int>(id_dz.size());
-//         *rtm_ids = (int *)malloc(*n * sizeof(int));
-//         *heights = (double *)malloc(*n * sizeof(double));
-//         for (int i = 0; i < *n; ++i) {
-//             (*rtm_ids)[i] = id_dz[i].first;
-//             (*heights)[i] = id_dz[i].second;
-//         }
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_lattice_heights(void * const model,
-//                                int * const n,             // Number of heights
-//                                int ** const lat_ids,      // lat ids array ptr
-//                                double ** const heights,   // Heights array ptr
-//                                int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//             reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         um2::Vector<std::pair<int, double>> id_dz;
-//         sp->lattice_heights(id_dz);
-//         *n = static_cast<int>(id_dz.size());
-//         *lat_ids = (int *)malloc(*n * sizeof(int));
-//         *heights = (double *)malloc(*n * sizeof(double));
-//         for (int i = 0; i < *n; ++i) {
-//             (*lat_ids)[i] = id_dz[i].first;
-//             (*heights)[i] = id_dz[i].second;
-//         }
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_assembly_dzs(void * const model,
-//                             int const id,
-//                             int * const n,             // Number of heights
-//                             double ** const dzs,   // Heights array ptr
-//                             int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//             reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         length_t const n_dz = sp->assemblies[id].children.size();
-//         *n = static_cast<int>(n_dz);
-//         *dzs = (double *)malloc(*n * sizeof(double));
-//         for (int i = 0; i < *n; ++i) {
-//             (*dzs)[i] = static_cast<double>(um2::width(sp->assemblies[id].get_box(i)));
-//         }
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
-//
-// void um2_MPACT_coarse_cell_face_data(void * const model,
-//                                      length_t const cc_id,
-//                                      length_t * const mesh_type,
-//                                      length_t * const num_vertices,
-//                                      length_t * const num_faces,
-//                                      UM2_REAL ** const vertices,
-//                                      UM2_INT ** const fv_offsets,
-//                                      UM2_INT ** const fv,
-//                                      int * const ierr)
-//{
-//     if (ierr) *ierr = 0;
-//     try {
-//         um2_MPACT_spatial_partition * const sp =
-//             reinterpret_cast<um2_MPACT_spatial_partition *>(model);
-//         sp->coarse_cell_face_data(cc_id, mesh_type, num_vertices, num_faces, vertices,
-//         fv_offsets, fv);
-//     } catch (...) {
-//         if (ierr) *ierr = 1;
-//     }
-// }
+
+void
+um2MPACTLatticeNumCells(void * const model, Int const lat_id, Int * const nx,
+                        Int * const ny, Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    auto const ncells = sp.lattices[lat_id].numCells();
+    *nx = ncells[0];
+    *ny = ncells[1];
+  });
+}
+
+void
+um2MPACTRTMNumCells(void * const model, Int const rtm_id, Int * const nx, Int * const ny,
+                    Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    auto const ncells = sp.rtms[rtm_id].numCells();
+    *nx = ncells[0];
+    *ny = ncells[1];
+  });
+}
+
+void
+um2MPACTCoreGetChild(void * const model, Int const ix, Int const iy, Int * const child,
+                     Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    *child = sp.core.getChild(ix, iy);
+  });
+}
+
+void
+um2MPACTAssemblyGetChild(void * const model, Int const asy_id, Int const ix,
+                         Int * const child, Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    *child = sp.assemblies[asy_id].getChild(ix);
+  });
+}
+
+void
+um2MPACTLatticeGetChild(void * const model, Int const lat_id, Int const ix, Int const iy,
+                        Int * const child, Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    *child = sp.lattices[lat_id].getChild(ix, iy);
+  });
+}
+
+void
+um2MPACTRTMGetChild(void * const model, Int const rtm_id, Int const ix, Int const iy,
+                    Int * const child, Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    *child = sp.rtms[rtm_id].getChild(ix, iy);
+  });
+}
+
+//==============================================================================
+// CoarseCell
+//==============================================================================
+
+void
+um2MPACTCoarseCellNumFaces(void * const model, Int const cc_id, Int * const num_faces,
+                           Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    *num_faces = sp.coarse_cells[cc_id].numFaces();
+  });
+}
+
+void
+um2MPACTCoarseCellWidth(void * const model, Int const cc_id, Float * const width,
+                        Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    *width = sp.coarse_cells[cc_id].dxdy[0];
+  });
+}
+
+void
+um2MPACTCoarseCellHeight(void * const model, Int const cc_id, Float * const height,
+                         Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    *height = sp.coarse_cells[cc_id].dxdy[1];
+  });
+}
+
+void
+um2MPACTCoarseCellFaceAreas(void * const model, Int const cc_id, Int * const n,
+                            Float ** const areas, Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    auto const & cc = sp.coarse_cells[cc_id];
+    auto const & mesh_id = cc.mesh_id;
+    um2::Vector<Float> areas_vec;
+    // NOLINTBEGIN(bugprone-branch-clone)
+    switch (cc.mesh_type) {
+    case um2::MeshType::Tri: {
+      areas_vec = sp.tri[mesh_id].getFaceAreas();
+      break;
+    }
+    case um2::MeshType::Quad: {
+      areas_vec = sp.quad[mesh_id].getFaceAreas();
+      break;
+    }
+    case um2::MeshType::QuadraticTri: {
+      areas_vec = sp.quadratic_tri[mesh_id].getFaceAreas();
+      break;
+    }
+    case um2::MeshType::QuadraticQuad: {
+      areas_vec = sp.quadratic_quad[mesh_id].getFaceAreas();
+      break;
+    }
+    default:
+      um2::Log::error("Mesh type not supported");
+      // NOLINTNEXTLINE justification: complains this is a null deference, but it's not
+      *ierr = 1;
+      break;
+    }
+    // NOLINTEND(bugprone-branch-clone)
+    *n = areas_vec.size();
+    *areas = static_cast<Float *>(malloc(static_cast<size_t>(*n) * sizeof(Float)));
+    std::copy(areas_vec.begin(), areas_vec.end(), *areas);
+  });
+}
+
+void
+um2MPACTCoarseCellFaceContaining(void * const model, Int const cc_id, Float const x,
+                                 Float const y, Int * const face_id, Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    auto const & cc = sp.coarse_cells[cc_id];
+    auto const & mesh_id = cc.mesh_id;
+    // NOLINTBEGIN(bugprone-branch-clone)
+    switch (cc.mesh_type) {
+    case um2::MeshType::Tri: {
+      *face_id = sp.tri[mesh_id].faceContaining(um2::Point2<Float>(x, y));
+      break;
+    }
+    case um2::MeshType::Quad: {
+      *face_id = sp.quad[mesh_id].faceContaining(um2::Point2<Float>(x, y));
+      break;
+    }
+    case um2::MeshType::QuadraticTri: {
+      *face_id = sp.quadratic_tri[mesh_id].faceContaining(um2::Point2<Float>(x, y));
+      break;
+    }
+    case um2::MeshType::QuadraticQuad: {
+      *face_id = sp.quadratic_quad[mesh_id].faceContaining(um2::Point2<Float>(x, y));
+      break;
+    }
+    default:
+      um2::Log::error("Mesh type not supported");
+      // NOLINTNEXTLINE justification: complains this is a null deference, but it's not
+      *ierr = 1;
+      break;
+    }
+    // NOLINTEND(bugprone-branch-clone)
+  });
+}
+
+void
+um2MPACTCoarseCellFaceCentroid(void * const model, Int const cc_id, Int const face_id,
+                               Float * const x, Float * const y, Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    auto const & cc = sp.coarse_cells[cc_id];
+    auto const & mesh_id = cc.mesh_id;
+    // NOLINTBEGIN(bugprone-branch-clone)
+    switch (cc.mesh_type) {
+    case um2::MeshType::Tri: {
+      auto const p = sp.tri[mesh_id].getFace(face_id).centroid();
+      *x = p[0];
+      *y = p[1];
+      break;
+    }
+    case um2::MeshType::Quad: {
+      auto const p = sp.quad[mesh_id].getFace(face_id).centroid();
+      *x = p[0];
+      *y = p[1];
+      break;
+    }
+    case um2::MeshType::QuadraticTri: {
+      auto const p = sp.quadratic_tri[mesh_id].getFace(face_id).centroid();
+      *x = p[0];
+      *y = p[1];
+      break;
+    }
+    case um2::MeshType::QuadraticQuad: {
+      auto const p = sp.quadratic_quad[mesh_id].getFace(face_id).centroid();
+      *x = p[0];
+      *y = p[1];
+      break;
+    }
+    default:
+      um2::Log::error("Mesh type not supported");
+      // NOLINTNEXTLINE justification: complains this is a null deference, but it's not
+      *ierr = 1;
+      break;
+    }
+    // NOLINTEND(bugprone-branch-clone)
+  });
+}
+
+void
+um2MPACTCoarseCellMaterialIDs(void * model, Int cc_id, MaterialID ** mat_ids, Int * n,
+                              Int * ierr)
+{
+  TRY_CATCH({
+    auto & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    auto & cc = sp.coarse_cells[cc_id];
+    *n = cc.material_ids.size();
+    *mat_ids = cc.material_ids.begin();
+  });
+}
+
+// NOLINTBEGIN
+void
+um2MPACTIntersectCoarseCell(void * const model, Int const cc_id, Float const origin_x,
+                            Float const origin_y, Float const direction_x,
+                            Float const direction_y, Float * const intersections,
+                            Int * const n, Int * const ierr)
+{
+  *ierr = 1;
+  if (*n <= 0) {
+    return;
+  }
+  auto & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+  auto const & cc = sp.coarse_cells[cc_id];
+  auto const & mesh_id = cc.mesh_id;
+  um2::Ray<2, Float> const ray(um2::Point<2, Float>(origin_x, origin_y),
+                               um2::Vec<2, Float>(direction_x, direction_y));
+
+  switch (cc.mesh_type) {
+  case um2::MeshType::Tri: {
+    um2::intersect(sp.tri[mesh_id], ray, intersections, n);
+    break;
+  }
+  case um2::MeshType::Quad: {
+    um2::intersect(sp.quad[mesh_id], ray, intersections, n);
+    break;
+  }
+  case um2::MeshType::QuadraticTri: {
+    um2::intersect(sp.quadratic_tri[mesh_id], ray, intersections, n);
+    break;
+  }
+  case um2::MeshType::QuadraticQuad: {
+    um2::intersect(sp.quadratic_quad[mesh_id], ray, intersections, n);
+    break;
+  }
+  default:
+    um2::Log::error("Mesh type not supported");
+    *ierr = 1;
+    break;
+  }
+  *ierr = 0;
+}
+// NOLINTEND
+
+void
+um2MPACTRTMWidth(void * const model, Int const rtm_id, Float * const width,
+                 Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    *width = sp.rtms[rtm_id].boundingBox().width();
+  });
+}
+
+void
+um2MPACTRTMHeight(void * const model, Int const rtm_id, Float * const height,
+                  Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    *height = sp.rtms[rtm_id].boundingBox().height();
+  });
+}
+
+void
+// NOLINTBEGIN
+um2MPACTCoarseCellHeights(void * model, Int * const n, Int ** const cc_ids,
+                          Float ** heights, Int * const ierr)
+{
+  *ierr = 1;
+  auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+  std::vector<std::pair<Int, Float>> id_dz;
+#if UM2_ENABLE_FLOAT64 == 0
+  auto const eps = static_cast<Float>(1e-4);
+#else
+  auto const eps = 1e-4;
+#endif
+  // For each assembly
+  //  For each lattice in the assembly
+  //    Get the dz of the lattice
+  //    For each rtm in the lattice
+  //      For each coarse cell in the rtm
+  //        If the id, dz pair is not in the vector, add it
+  // Sort the vector by dz
+  // For each unique assembly
+  for (auto const & assembly : sp.assemblies) {
+    Size const nlattices = assembly.children.size();
+    // For each lattice in the assembly
+    for (Size ilat = 0; ilat < nlattices; ++ilat) {
+      Int const lat_id = assembly.children[ilat];
+      // Get the dz of the lattice
+      auto const bb = assembly.getBox(ilat);
+      Float const dz = bb.width();
+      auto const & lattice = sp.lattices[lat_id];
+      // For each rtm in the lattice
+      for (auto const & rtm_id : lattice.children) {
+        auto const & rtm = sp.rtms[rtm_id];
+        // For each coarse cell in the rtm
+        for (auto const & cc_id : rtm.children) {
+          // If the id, dz pair is not in the vector, add it
+          bool add_id = true;
+          for (auto const & pair : id_dz) {
+            if (pair.first == cc_id && std::abs(pair.second - dz) < eps) {
+              add_id = false;
+              break;
+            }
+          }
+          if (add_id) {
+            id_dz.emplace_back(cc_id, dz);
+          }
+        } // icc
+      }   // irtm
+    }     // ilat
+  }       // assembly
+  // Sort the vector by dz first, then by id. But, if dz are close to each other,
+  // then sort by id.
+  std::sort(id_dz.begin(), id_dz.end(), [eps](auto const & p1, auto const & p2) {
+    return std::abs(p1.second - p2.second) < eps ? p1.first < p2.first
+                                                 : p1.second < p2.second;
+  });
+  *n = static_cast<Int>(id_dz.size());
+  *cc_ids = static_cast<Int *>(malloc(id_dz.size() * sizeof(Int)));
+  *heights = static_cast<Float *>(malloc(id_dz.size() * sizeof(Float)));
+  for (size_t i = 0; i < id_dz.size(); ++i) {
+    (*cc_ids)[i] = id_dz[i].first;
+    (*heights)[i] = id_dz[i].second;
+  }
+  *ierr = 0;
+}
+// NOLINTEND
+
+void
+// NOLINTBEGIN
+um2MPACTRTMHeights(void * model, Int * const n, Int ** const rtm_ids, Float ** heights,
+                   Int * const ierr)
+{
+  *ierr = 1;
+  auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+  std::vector<std::pair<Int, Float>> id_dz;
+#if UM2_ENABLE_FLOAT64 == 0
+  auto const eps = static_cast<Float>(1e-4);
+#else
+  auto const eps = 1e-4;
+#endif
+  // For each assembly
+  //  For each lattice in the assembly
+  //    Get the dz of the lattice
+  //    For each rtm in the lattice
+  //      If the id, dz pair is not in the vector, add it
+  // Sort the vector by dz
+  // For each unique assembly
+  for (auto const & assembly : sp.assemblies) {
+    Size const nlattices = assembly.children.size();
+    // For each lattice in the assembly
+    for (Size ilat = 0; ilat < nlattices; ++ilat) {
+      Int const lat_id = assembly.children[ilat];
+      // Get the dz of the lattice
+      auto const bb = assembly.getBox(ilat);
+      Float const dz = bb.width();
+      auto const & lattice = sp.lattices[lat_id];
+      // For each rtm in the lattice
+      for (auto const & rtm_id : lattice.children) {
+        // If the id, dz pair is not in the vector, add it
+        bool add_id = true;
+        for (auto const & pair : id_dz) {
+          if (pair.first == rtm_id && std::abs(pair.second - dz) < eps) {
+            add_id = false;
+            break;
+          }
+        }
+        if (add_id) {
+          id_dz.emplace_back(rtm_id, dz);
+        }
+      } // irtm
+    }   // ilat
+  }     // assembly
+  // Sort the vector by dz first, then by id. But, if dz are close to each other,
+  // then sort by id.
+  std::sort(id_dz.begin(), id_dz.end(), [eps](auto const & p1, auto const & p2) {
+    return std::abs(p1.second - p2.second) < eps ? p1.first < p2.first
+                                                 : p1.second < p2.second;
+  });
+  *n = static_cast<Int>(id_dz.size());
+  *rtm_ids = static_cast<Int *>(malloc(id_dz.size() * sizeof(Int)));
+  *heights = static_cast<Float *>(malloc(id_dz.size() * sizeof(Float)));
+  for (size_t i = 0; i < id_dz.size(); ++i) {
+    (*rtm_ids)[i] = id_dz[i].first;
+    (*heights)[i] = id_dz[i].second;
+  }
+  *ierr = 0;
+}
+// NOLINTEND
+
+void
+// NOLINTBEGIN
+um2MPACTLatticeHeights(void * model, Int * const n, Int ** const lat_ids,
+                       Float ** heights, Int * const ierr)
+{
+  *ierr = 1;
+  auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+  std::vector<std::pair<Int, Float>> id_dz;
+#if UM2_ENABLE_FLOAT64 == 0
+  auto const eps = static_cast<Float>(1e-4);
+#else
+  auto const eps = 1e-4;
+#endif
+  // For each assembly
+  //  For each lattice in the assembly
+  //    Get the dz of the lattice
+  //    For each rtm in the lattice
+  //      If the id, dz pair is not in the vector, add it
+  // Sort the vector by dz
+  // For each unique assembly
+  for (auto const & assembly : sp.assemblies) {
+    Size const nlattices = assembly.children.size();
+    // For each lattice in the assembly
+    for (Size ilat = 0; ilat < nlattices; ++ilat) {
+      Int const lat_id = assembly.children[ilat];
+      // Get the dz of the lattice
+      auto const bb = assembly.getBox(ilat);
+      Float const dz = bb.width();
+      // If the id, dz pair is not in the vector, add it
+      bool add_id = true;
+      for (auto const & pair : id_dz) {
+        if (pair.first == lat_id && std::abs(pair.second - dz) < eps) {
+          add_id = false;
+          break;
+        }
+      }
+      if (add_id) {
+        id_dz.emplace_back(lat_id, dz);
+      }
+    } // ilat
+  }   // assembly
+  // Sort the vector by dz first, then by id. But, if dz are close to each other,
+  // then sort by id.
+  std::sort(id_dz.begin(), id_dz.end(), [eps](auto const & p1, auto const & p2) {
+    return std::abs(p1.second - p2.second) < eps ? p1.first < p2.first
+                                                 : p1.second < p2.second;
+  });
+  *n = static_cast<Int>(id_dz.size());
+  *lat_ids = static_cast<Int *>(malloc(id_dz.size() * sizeof(Int)));
+  *heights = static_cast<Float *>(malloc(id_dz.size() * sizeof(Float)));
+  for (size_t i = 0; i < id_dz.size(); ++i) {
+    (*lat_ids)[i] = id_dz[i].first;
+    (*heights)[i] = id_dz[i].second;
+  }
+  *ierr = 0;
+}
+// NOLINTEND
+
+void
+um2MPACTAssemblyHeights(void * const model, Int const asy_id, Int * const n,
+                        Float ** const heights, Int * const ierr)
+{
+  TRY_CATCH({
+    auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+    *n = sp.assemblies[asy_id].children.size();
+    *heights = static_cast<Float *>(malloc(static_cast<size_t>(*n) * sizeof(Float)));
+    for (Int i = 0; i < *n; ++i) {
+      (*heights)[i] = sp.assemblies[asy_id].getBox(i).width();
+    }
+  });
+}
+
+void
+um2MPACTCoarseCellFaceData(void * const model, Int const cc_id, Int * const mesh_type,
+                           Int * const num_vertices, Int * const num_faces,
+                           Float ** const vertices, Int ** const fv, Int * const ierr)
+{
+  auto & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);
+  auto const & cc = sp.coarse_cells[cc_id];
+  auto const & mesh_id = cc.mesh_id;
+  *mesh_type = static_cast<Int>(cc.mesh_type);
+  switch (cc.mesh_type) {
+  case um2::MeshType::Tri: {
+    *num_vertices = sp.tri[mesh_id].numVertices();
+    *num_faces = sp.tri[mesh_id].numFaces();
+    *vertices = reinterpret_cast<Float *>(sp.tri[mesh_id].vertices.data());
+    *fv = reinterpret_cast<Int *>(sp.tri[mesh_id].fv.data());
+    break;
+  }
+  case um2::MeshType::Quad: {
+    *num_vertices = sp.quad[mesh_id].numVertices();
+    *num_faces = sp.quad[mesh_id].numFaces();
+    *vertices = reinterpret_cast<Float *>(sp.quad[mesh_id].vertices.data());
+    *fv = reinterpret_cast<Int *>(sp.quad[mesh_id].fv.data());
+    break;
+  }
+  case um2::MeshType::QuadraticTri: {
+    *num_vertices = sp.quadratic_tri[mesh_id].numVertices();
+    *num_faces = sp.quadratic_tri[mesh_id].numFaces();
+    *vertices = reinterpret_cast<Float *>(sp.quadratic_tri[mesh_id].vertices.data());
+    *fv = reinterpret_cast<Int *>(sp.quadratic_tri[mesh_id].fv.data());
+    break;
+  }
+  case um2::MeshType::QuadraticQuad: {
+    *num_vertices = sp.quadratic_quad[mesh_id].numVertices();
+    *num_faces = sp.quadratic_quad[mesh_id].numFaces();
+    *vertices = reinterpret_cast<Float *>(sp.quadratic_quad[mesh_id].vertices.data());
+    *fv = reinterpret_cast<Int *>(sp.quadratic_quad[mesh_id].fv.data());
+    break;
+  }
+  default: {
+    um2::Log::error("Mesh type not supported");
+    *ierr = 1;
+    return;
+  }
+  }
+  *ierr = 0;
+}

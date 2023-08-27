@@ -107,6 +107,13 @@ RegularGrid<D, T>::numZCells() const noexcept -> Size
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
+RegularGrid<D, T>::numCells() const noexcept -> Vec<D, Size>
+{
+  return num_cells;
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
 RegularGrid<D, T>::width() const noexcept -> T
 {
   return static_cast<T>(numXCells()) * dx();

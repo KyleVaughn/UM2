@@ -5,8 +5,6 @@
 #include <um2/mesh/RegularPartition.hpp>
 #include <um2/mesh/io.hpp>
 #include <um2/physics/Material.hpp>
-// #include <um2/ray_casting/intersect/ray-linear_polygon_mesh.hpp>
-// #include <um2/ray_casting/intersect/ray-quadratic_polygon_mesh.hpp>
 
 #include <iomanip>
 #include <string>

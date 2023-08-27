@@ -123,9 +123,6 @@ intersect(QuadraticSegment2<T> const & q, Ray2<T> const & ray) noexcept -> Vec2<
   if (0 <= s2 && s2 <= 1) {
     Point2<T> const P(s2 * (s2 * A[0] + B[0]) + voc[0], s2 * (s2 * A[1] + B[1]) + voc[1]);
     result[1] = dot(P, ray.d) / ray.d.squaredNorm();
-    if (result[0] > result[1]) {
-      um2::swap(result[0], result[1]);
-    }
   }
   // NOLINTEND(readability-identifier-naming)
   return result;

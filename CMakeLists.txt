@@ -305,3 +305,15 @@ if (UM2_BUILD_BENCHMARKS)
 endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # For IDE users
+
+#===============================================================================
+# Install
+#===============================================================================
+
+# Install the library
+install(TARGETS um2
+        EXPORT um2-targets
+        RUNTIME DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin 
+        LIBRARY DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lib
+        ARCHIVE DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lib)
+install(DIRECTORY include/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include)

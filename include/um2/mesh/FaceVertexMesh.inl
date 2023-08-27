@@ -2,6 +2,7 @@
 #include <um2/mesh/face_vertex_mesh/boundingBox.inl>
 #include <um2/mesh/face_vertex_mesh/faceContaining.inl>
 #include <um2/mesh/face_vertex_mesh/getFace.inl>
+#include <um2/mesh/face_vertex_mesh/intersect.inl>
 #include <um2/mesh/face_vertex_mesh/numVerticesFaces.inl>
 #include <um2/mesh/face_vertex_mesh/toFaceVertexMesh.inl>
 #include <um2/mesh/face_vertex_mesh/toMeshFile.inl>
@@ -107,6 +108,21 @@ void
 FaceVertexMesh<P, N, D, T, I>::toMeshFile(MeshFile<T, I> & file) const noexcept
 {
   um2::toMeshFile(*this, file);
+}
+
+//==============================================================================
+// getFaceAreas
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+constexpr auto
+FaceVertexMesh<P, N, D, T, I>::getFaceAreas() const noexcept -> Vector<T>
+{
+  Vector<T> areas(numFaces());
+  for (Size i = 0; i < numFaces(); ++i) {
+    areas[i] = getFace(i).area();
+  }
+  return areas;
 }
 
 } // namespace um2

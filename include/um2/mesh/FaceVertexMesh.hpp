@@ -88,6 +88,9 @@ struct FaceVertexMesh {
 
   void
   toMeshFile(MeshFile<T, I> & file) const noexcept;
+
+  [[nodiscard]] constexpr auto
+  getFaceAreas() const noexcept -> Vector<T>;
 };
 
 //==============================================================================
@@ -113,6 +116,10 @@ using QuadraticQuadMesh = QuadraticPolygonMesh<8, D, T, I>;
 // 2D
 template <Size P, Size N, std::floating_point T, std::signed_integral I>
 using PlanarPolygonMesh = FaceVertexMesh<P, N, 2, T, I>;
+template <Size N, std::floating_point T, std::signed_integral I>
+using PlanarLinearPolygonMesh = FaceVertexMesh<1, N, 2, T, I>;
+template <Size N, std::floating_point T, std::signed_integral I>
+using PlanarQuadraticPolygonMesh = FaceVertexMesh<2, N, 2, T, I>;
 
 } // namespace um2
 

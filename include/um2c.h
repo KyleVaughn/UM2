@@ -19,6 +19,13 @@ um2Initialize(char const * verbosity, Int init_gmsh, Int gmsh_verbosity, Int * i
 void
 um2Finalize(Int * ierr);
 
+// Size of Int and Float
+void
+getSizeOfInt(int * size);
+
+void
+getSizeOfFloat(int * size);
+
 // MPACT Spatial Partition
 void
 um2NewMPACTSpatialPartition(void ** model, Int * ierr);
@@ -28,163 +35,77 @@ um2DeleteMPACTSpatialPartition(void * model, Int * ierr);
 void
 um2ImportMPACTModel(char const * path, void ** model, Int * ierr);
 
-// GetNum
+// Num
 void
-um2GetMPACTNumCoarseCells(void * model, Int * n, Int * ierr);
+um2MPACTNumCoarseCells(void * model, Int * n, Int * ierr);
 void
-um2GetMPACTNumRTMs(void * model, Int * n, Int * ierr);
+um2MPACTNumRTMs(void * model, Int * n, Int * ierr);
 void
-um2GetMPACTNumLattices(void * model, Int * n, Int * ierr);
+um2MPACTNumLattices(void * model, Int * n, Int * ierr);
 void
-um2GetMPACTNumAssemblies(void * model, Int * n, Int * ierr);
+um2MPACTNumAssemblies(void * model, Int * n, Int * ierr);
 
-// GetNumCells
+// NumCells
 void
-um2GetMPACTCoreNumCells(void * model, Int * nx, Int * ny, Int * ierr);
+um2MPACTCoreNumCells(void * model, Int * nx, Int * ny, Int * ierr);
 void
-um2GetMPACTAssemblyNumCells(void * model, Int asy_id, Int * nx, Int * ierr);
+um2MPACTAssemblyNumCells(void * model, Int asy_id, Int * nx, Int * ierr);
+void
+um2MPACTLatticeNumCells(void * model, Int lat_id, Int * nx, Int * ny, Int * ierr);
+void
+um2MPACTRTMNumCells(void * model, Int rtm_id, Int * nx, Int * ny, Int * ierr);
 
-// void um2_MPACT_lattice_num_cells(void * const model,
-//                                 int const lat_id,
-//                                 int * const num_x,
-//                                 int * const num_y,
-//                                 int * const ierr);
-//
-// void um2_MPACT_rtm_num_cells(void * const model,
-//                              int const rtm_id,
-//                              int * const num_x,
-//                              int * const num_y,
-//                              int * const ierr);
-//
-// void um2_MPACT_core_get_child(void * const model,
-//                              int const i,
-//                              int const j,
-//                              int * const child,
-//                              int * const ierr);
-//
-// void um2_MPACT_assembly_get_child(void * const model,
-//                                  int const id,
-//                                  int const i,
-//                                  int * const child,
-//                                  int * const ierr);
-//
-// void um2_MPACT_lattice_get_child(void * const model,
-//                                 int const id,
-//                                 int const i,
-//                                 int const j,
-//                                 int * const child,
-//                                 int * const ierr);
-//
-// void um2_MPACT_rtm_get_child(void * const model,
-//                             int const id,
-//                             int const i,
-//                             int const j,
-//                             int * const child,
-//                             int * const ierr);
-//
-// void um2_MPACT_coarse_cell_num_faces(void * const model,
-//                                     int const cc_id,
-//                                     int * const num_faces,
-//                                     int * const ierr);
-//
-// void um2_MPACT_coarse_cell_dx(void * const model,
-//                              int const cc_id,
-//                              double * const dx,
-//                              int * const ierr);
-//
-// void um2_MPACT_coarse_cell_dy(void * const model,
-//                              int const cc_id,
-//                              double * const dy,
-//                              int * const ierr);
-//
-// void um2_MPACT_coarse_cell_dxdy(void * const model,
-//                                int const cc_id,
-//                                double * const dx,
-//                                double * const dy,
-//                                int * const ierr);
-//
-// void um2_MPACT_coarse_cell_face_areas(void * const model,
-//                                      int const cc_id,
-//                                      int * const n,         // Number of faces
-//                                      double ** const areas,
-//                                      int * const ierr);
-//
-// void um2_MPACT_coarse_cell_find_face(void * const model,
-//                                     int const cc_id,
-//                                     double const x, // local coordinates
-//                                     double const y,
-//                                     int * const face_id,
-//                                     int * const ierr);
-//
-// void um2_MPACT_coarse_cell_face_centroid(void * const model,
-//                                         int const cc_id,
-//                                         int const face_id,
-//                                         double * const x, // local coordinates
-//                                         double * const y,
-//                                         int * const ierr);
-//
-// void um2_MPACT_coarse_cell_heights(void * const model,
-//                                   int * const n,             // Number of heights
-//                                   int ** const cc_ids,       // Coarse cell ids array
-//                                   ptr double ** const heights,   // Heights array ptr
-//                                   int * const ierr);
-//
-// void um2_MPACT_coarse_cell_material_ids(void * const model,
-//                                        int const cc_id,
-//                                        MaterialID ** const mat_ids,  // Ptr to first
-//                                        mat id int * const n, // Number of mats int *
-//                                        const ierr);
-//
-// void um2_MPACT_module_dimensions(void * const model,
-//                                 double * const dx,
-//                                 double * const dy,
-//                                 double * const dz,
-//                                 int * const ierr);
-//
-// void um2_MPACT_intersect_coarse_cell(void * const model,
-//                                     int const cc_id,
-//                                     UM2_REAL const origin_x, // pin coordinates
-//                                     UM2_REAL const origin_y,
-//                                     UM2_REAL const direction_x,
-//                                     UM2_REAL const direction_y,
-//                                     UM2_REAL * const intersections, // ray iterpolation
-//                                     values int * const n,                // in: size of
-//                                     array, out: num intersections int * const ierr);
-//
-//
-// void um2_MPACT_rtm_dxdy(void * const model,
-//                        int const rtm_id,
-//                        double * const dx,
-//                        double * const dy,
-//                        int * const ierr);
-//
-// void um2_MPACT_rtm_heights(void * const model,
-//                           int * const n,             // Number of heights
-//                           int ** const rtm_ids,      // RTM ids array ptr
-//                           double ** const heights,   // Heights array ptr
-//                           int * const ierr);
-//
-// void um2_MPACT_lattice_heights(void * const model,
-//                               int * const n,             // Number of heights
-//                               int ** const lat_ids,      // lattice ids array ptr
-//                               double ** const heights,   // Heights array ptr
-//                               int * const ierr);
-//
-// void um2_MPACT_assembly_dzs(void * const model,
-//                            int const id,
-//                            int * const n,             // Number of heights
-//                            double ** const dzs,   // Heights array ptr
-//                            int * const ierr);
-//
-// void um2_MPACT_coarse_cell_face_data(void * const model,
-//                                     length_t const cc_id,
-//                                     length_t * const mesh_type,
-//                                     length_t * const num_vertices,
-//                                     length_t * const num_faces,
-//                                     UM2_REAL ** const vertices,
-//                                     UM2_INT ** const fv_offsets,
-//                                     UM2_INT ** const fv,
-//                                     int * const ierr);
+// Child
+void
+um2MPACTCoreGetChild(void * model, Int ix, Int iy, Int * child, Int * ierr);
+void
+um2MPACTAssemblyGetChild(void * model, Int asy_id, Int ix, Int * child, Int * ierr);
+void
+um2MPACTLatticeGetChild(void * model, Int lat_id, Int ix, Int iy, Int * child,
+                        Int * ierr);
+void
+um2MPACTRTMGetChild(void * model, Int rtm_id, Int ix, Int iy, Int * child, Int * ierr);
+
+// CoarseCell
+void
+um2MPACTCoarseCellNumFaces(void * model, Int cc_id, Int * num_faces, Int * ierr);
+void
+um2MPACTCoarseCellWidth(void * model, Int cc_id, Float * width, Int * ierr);
+void
+um2MPACTCoarseCellHeight(void * model, Int cc_id, Float * height, Int * ierr);
+void
+um2MPACTCoarseCellFaceAreas(void * model, Int cc_id, Int * n, Float ** areas, Int * ierr);
+void
+um2MPACTCoarseCellFaceContaining(void * model, Int cc_id, Float x, Float y, Int * face_id,
+                                 Int * ierr);
+void
+um2MPACTCoarseCellFaceCentroid(void * model, Int cc_id, Int face_id, Float * x, Float * y,
+                               Int * ierr);
+void
+um2MPACTCoarseCellMaterialIDs(void * model, Int cc_id, MaterialID ** mat_ids, Int * n,
+                              Int * ierr);
+void
+um2MPACTIntersectCoarseCell(void * model, Int cc_id, Float origin_x, Float origin_y,
+                            Float direction_x, Float direction_y, Float * intersections,
+                            Int * n, Int * ierr);
+void
+um2MPACTRTMWidth(void * model, Int rtm_id, Float * width, Int * ierr);
+void
+um2MPACTRTMHeight(void * model, Int rtm_id, Float * height, Int * ierr);
+void
+um2MPACTCoarseCellHeights(void * model, Int * n, Int ** cc_ids, Float ** heights,
+                          Int * ierr);
+void
+um2MPACTRTMHeights(void * model, Int * n, Int ** rtm_ids, Float ** heights, Int * ierr);
+void
+um2MPACTLatticeHeights(void * model, Int * n, Int ** lat_ids, Float ** heights,
+                       Int * ierr);
+void
+um2MPACTAssemblyHeights(void * model, Int asy_id, Int * n, Float ** heights, Int * ierr);
+
+void
+um2MPACTCoarseCellFaceData(void * model, Int cc_id, Int * mesh_type, Int * num_vertices,
+                           Int * num_faces, Float ** vertices, Int ** fv, Int * ierr);
 
 #ifdef __cplusplus
 }

@@ -67,6 +67,9 @@ struct RegularPartition {
   numZCells() const noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
+  numCells() const noexcept -> Vec<D, Size>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   width() const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto

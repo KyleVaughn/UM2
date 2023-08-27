@@ -540,7 +540,7 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
   // 1D map of the IDs of each lattice in each assembly
   std::vector<std::vector<Size>> assembly_lattice_ids;
   // Z coordinates of each lattice in each assembly
-  std::vector<std::vector<float>> assembly_lattice_zs;
+  std::vector<std::vector<Float>> assembly_lattice_zs;
   // 2D layout of the IDs of each RTM in each lattice
   std::vector<std::vector<std::vector<Size>>> lattice_rtm_ids;
   // 2D layout of the IDs of each coarse cell in each RTM
@@ -633,8 +633,13 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
         assembly_lattice_ids[static_cast<size_t>(assembly_id_idx)]
                             [static_cast<size_t>(lattice_count)] = lattice_id;
         // Get the Z positions of the lattice
-        auto lattice_z_low = static_cast<Float>(1e10);
-        auto lattice_z_high = static_cast<Float>(-1e10);
+#if UM2_ENABLE_FLOAT64 == 1
+        auto lattice_z_low = 1e10;
+        auto lattice_z_high = -1e10;
+#else
+        auto lattice_z_low = static_cast<Float>(1e100);
+        auto lattice_z_high = static_cast<Float>(-1e100);
+#endif
         {
           pugi::xml_node const xlattice_zs = lattice_node.child("Information");
           pugi::xml_attribute const xlattice_zs_name = xlattice_zs.attribute("Name");
@@ -652,8 +657,13 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
             return;
           }
           assert(lattice_z_low < lattice_z_high);
+#if UM2_ENABLE_FLOAT64 == 1
+          assert(lattice_z_low < 1e9);
+          assert(lattice_z_high > -1e9);
+#else
           assert(lattice_z_low < static_cast<Float>(1e9));
           assert(lattice_z_high > static_cast<Float>(-1e9));
+#endif
         }
         // If this is the first lattice write the top and bottom Z positions to
         // assembly_lattice_zs else write the top Z position to assembly_lattice_zs

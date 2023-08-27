@@ -7,6 +7,12 @@
 
 #include <fstream>
 
+#if UM2_ENABLE_FLOAT64 == 1
+constexpr Float eps = 1e-6;
+#else
+constexpr auto eps = static_cast<Float>(1e-6);
+#endif
+
 // template <typename T, typename I>
 // TEST_CASE(test_make_cylindrical_pin_mesh)
 // um2::mpact::SpatialPartition model;
@@ -129,11 +135,11 @@ TEST_CASE(makeRTM)
   um2::RectilinearGrid2<Float> const & grid = model.rtms[0].grid;
   ASSERT(grid.divs[0].size() == 3);
   ASSERT(grid.divs[1].size() == 2);
-  ASSERT_NEAR(grid.divs[0][0], 0, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid.divs[0][1], 2, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid.divs[0][2], 4, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid.divs[1][0], 0, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid.divs[1][1], 1, static_cast<Float>(1e-6));
+  ASSERT_NEAR(grid.divs[0][0], 0, eps);
+  ASSERT_NEAR(grid.divs[0][1], 2, eps);
+  ASSERT_NEAR(grid.divs[0][2], 4, eps);
+  ASSERT_NEAR(grid.divs[1][0], 0, eps);
+  ASSERT_NEAR(grid.divs[1][1], 1, eps);
   model.clear();
 
   std::vector<std::vector<Size>> const cc_ids2 = {
@@ -155,12 +161,12 @@ TEST_CASE(makeRTM)
   um2::RectilinearGrid2<Float> const & grid2 = model.rtms[0].grid;
   ASSERT(grid2.divs[0].size() == 3);
   ASSERT(grid2.divs[1].size() == 3);
-  ASSERT_NEAR(grid2.divs[0][0], 0, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid2.divs[0][1], 2, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid2.divs[0][2], 4, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid2.divs[1][0], 0, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid2.divs[1][1], 1, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid2.divs[1][2], 2, static_cast<Float>(1e-6));
+  ASSERT_NEAR(grid2.divs[0][0], 0, eps);
+  ASSERT_NEAR(grid2.divs[0][1], 2, eps);
+  ASSERT_NEAR(grid2.divs[0][2], 4, eps);
+  ASSERT_NEAR(grid2.divs[1][0], 0, eps);
+  ASSERT_NEAR(grid2.divs[1][1], 1, eps);
+  ASSERT_NEAR(grid2.divs[1][2], 2, eps);
 }
 
 TEST_CASE(makeLattice)
@@ -195,10 +201,10 @@ TEST_CASE(makeLattice)
   um2::RegularGrid2<Float> const & grid = model.lattices[0].grid;
   ASSERT(grid.numXCells() == 2);
   ASSERT(grid.numYCells() == 1);
-  ASSERT_NEAR(grid.spacing[0], 12, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid.spacing[1], 12, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid.minima[0], 0, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid.minima[1], 0, static_cast<Float>(1e-6));
+  ASSERT_NEAR(grid.spacing[0], 12, eps);
+  ASSERT_NEAR(grid.spacing[1], 12, eps);
+  ASSERT_NEAR(grid.minima[0], 0, eps);
+  ASSERT_NEAR(grid.minima[1], 0, eps);
 }
 
 TEST_CASE(makeAssembly)
@@ -225,10 +231,10 @@ TEST_CASE(makeAssembly)
   ASSERT(model.assemblies[0].children[2] == 0);
   um2::RectilinearGrid1<Float> const & grid = model.assemblies[0].grid;
   ASSERT(grid.divs[0].size() == 4);
-  ASSERT_NEAR(grid.divs[0][0], 0, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid.divs[0][1], 2, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid.divs[0][2], 3, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid.divs[0][3], 4, static_cast<Float>(1e-6));
+  ASSERT_NEAR(grid.divs[0][0], 0, eps);
+  ASSERT_NEAR(grid.divs[0][1], 2, eps);
+  ASSERT_NEAR(grid.divs[0][2], 3, eps);
+  ASSERT_NEAR(grid.divs[0][3], 4, eps);
 }
 
 TEST_CASE(makeAssembly_2d)
@@ -252,8 +258,8 @@ TEST_CASE(makeAssembly_2d)
   ASSERT(model.assemblies[0].children[0] == 0);
   um2::RectilinearGrid1<Float> const & grid = model.assemblies[0].grid;
   ASSERT(grid.divs[0].size() == 2);
-  ASSERT_NEAR(grid.divs[0][0], -1, static_cast<Float>(1e-6));
-  ASSERT_NEAR(grid.divs[0][1], 1, static_cast<Float>(1e-6));
+  ASSERT_NEAR(grid.divs[0][0], -1, eps);
+  ASSERT_NEAR(grid.divs[0][1], 1, eps);
 }
 
 TEST_CASE(makeCore)
@@ -290,12 +296,12 @@ TEST_CASE(makeCore)
   ASSERT(model.core.children[3] == 3);
   ASSERT(model.core.grid.divs[0].size() == 3);
   ASSERT(model.core.grid.divs[1].size() == 3);
-  ASSERT_NEAR(model.core.grid.divs[0][0], 0, static_cast<Float>(1e-6));
-  ASSERT_NEAR(model.core.grid.divs[0][1], 2, static_cast<Float>(1e-6));
-  ASSERT_NEAR(model.core.grid.divs[0][2], 4, static_cast<Float>(1e-6));
-  ASSERT_NEAR(model.core.grid.divs[1][0], 0, static_cast<Float>(1e-6));
-  ASSERT_NEAR(model.core.grid.divs[1][1], 1, static_cast<Float>(1e-6));
-  ASSERT_NEAR(model.core.grid.divs[1][2], 2, static_cast<Float>(1e-6));
+  ASSERT_NEAR(model.core.grid.divs[0][0], 0, eps);
+  ASSERT_NEAR(model.core.grid.divs[0][1], 2, eps);
+  ASSERT_NEAR(model.core.grid.divs[0][2], 4, eps);
+  ASSERT_NEAR(model.core.grid.divs[1][0], 0, eps);
+  ASSERT_NEAR(model.core.grid.divs[1][1], 1, eps);
+  ASSERT_NEAR(model.core.grid.divs[1][2], 2, eps);
 }
 
 TEST_CASE(importCoarseCells)
