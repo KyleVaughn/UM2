@@ -38,9 +38,14 @@ initialize(std::string const & verbosity)
 #if UM2_USE_GMSH
   if (init_gmsh && gmsh::isInitialized() == 0) {
     gmsh::initialize();
-    gmsh::option::setNumber("General.NumThreads", 0);             // System default
-    gmsh::option::setNumber("Geometry.OCCParallel", 1);           // Parallelize OCC
+    gmsh::option::setNumber("General.NumThreads", 0);   // System default
+    gmsh::option::setNumber("Geometry.OCCParallel", 1); // Parallelize OCC
+#  if UM2_ENABLE_INT64 == 1
+    gmsh::option::setNumber("General.Verbosity",
+                            static_cast<int>(gmsh_verbosity)); // Errors + warnings
+#  else
     gmsh::option::setNumber("General.Verbosity", gmsh_verbosity); // Errors + warnings
+#  endif
   }
 #endif
 }

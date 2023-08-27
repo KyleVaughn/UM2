@@ -122,7 +122,7 @@ um2MPACTNumAssemblies(void * const model, Int * const n, Int * const ierr)
 }
 
 void
-um2MPACTCoreNumCells(void * const model, int * const nx, int * const ny, int * const ierr)
+um2MPACTCoreNumCells(void * const model, Int * const nx, Int * const ny, Int * const ierr)
 {
   TRY_CATCH({
     auto const & sp = *reinterpret_cast<um2::mpact::SpatialPartition *>(model);

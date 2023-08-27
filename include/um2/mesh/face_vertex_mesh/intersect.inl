@@ -8,7 +8,9 @@ intersect(PlanarLinearPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
 {
   T const r_miss = infiniteDistance<T>();
   Size nintersect = 0;
+#ifndef NDEBUG
   Size const n0 = *n;
+#endif
   for (Size i = 0; i < numFaces(mesh); ++i) {
     auto const face = mesh.getFace(i);
     for (Size j = 0; j < polygonNumEdges<1, N>(); ++j) {
@@ -31,7 +33,9 @@ intersect(PlanarQuadraticPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
 {
   T const r_miss = infiniteDistance<T>();
   Size nintersect = 0;
+#ifndef NDEBUG
   Size const n0 = *n;
+#endif
   for (Size i = 0; i < numFaces(mesh); ++i) {
     auto const face = mesh.getFace(i);
     for (Size j = 0; j < polygonNumEdges<2, N>(); ++j) {

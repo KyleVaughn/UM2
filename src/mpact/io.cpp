@@ -347,12 +347,13 @@ exportMesh(std::string const & path, mpact::SpatialPartition const & model)
 //==============================================================================
 
 static inline void
-mapLatticeIndexToji(int const idx, int & j, int & i, int const m, int const n)
+mapLatticeIndexToji(size_t const idx, size_t & j, size_t & i, size_t const m,
+                    size_t const n)
 {
   j = m - idx / n - 1;
   i = idx % n;
-  assert(j >= 0 && j < m);
-  assert(i >= 0 && i < n);
+  assert(j < m);
+  assert(i < n);
 }
 
 //==============================================================================
@@ -360,7 +361,7 @@ mapLatticeIndexToji(int const idx, int & j, int & i, int const m, int const n)
 //==============================================================================
 
 static inline void
-getMbyN(Size & m, Size & n, pugi::xml_node const & x)
+getMbyN(size_t & m, size_t & n, pugi::xml_node const & x)
 {
   pugi::xml_node const x_mn = x.child("Information");
   pugi::xml_attribute const x_mn_name = x_mn.attribute("Name");
@@ -369,9 +370,9 @@ getMbyN(Size & m, Size & n, pugi::xml_node const & x)
     std::stringstream ss(x_mn_value);
     std::string token;
     std::getline(ss, token, 'x');
-    m = sto<Size>(token);
+    m = sto<size_t>(token);
     std::getline(ss, token, 'x');
-    n = sto<Size>(token);
+    n = sto<size_t>(token);
     assert(m > 0);
     assert(n > 0);
   } else {
@@ -573,17 +574,17 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
     return;
   }
   // Get the M by N size of the core (of the form M x N)
-  Size core_m = 0;
-  Size core_n = 0;
+  size_t core_m = 0;
+  size_t core_n = 0;
   getMbyN(core_m, core_n, xcore);
   // Allocate core_assembly_ids to be M by N
-  core_assembly_ids.resize(static_cast<size_t>(core_m));
-  for (size_t i = 0; i < static_cast<size_t>(core_m); i++) {
-    core_assembly_ids[i].resize(static_cast<size_t>(core_n));
+  core_assembly_ids.resize(core_m);
+  for (size_t i = 0; i < core_m; ++i) {
+    core_assembly_ids[i].resize(core_n);
   }
   // Loop over all assemblies
   // Get the assembly node
-  Size assembly_count = 0;
+  size_t assembly_count = 0;
   for (auto const & assembly_node : xcore.children("Grid")) {
     // Extract the assembly ID from the name
     // Of the form Assembly_XXXXX_YYYYY, where XXXXX is the assembly ID
@@ -591,10 +592,10 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
     Size const assembly_id = sto<Size>(assembly_name.substr(9, 5));
     // Write the assembly ID to core_assembly_ids
     {
-      Size j = 0;
-      Size i = 0;
+      size_t j = 0;
+      size_t i = 0;
       mapLatticeIndexToji(assembly_count, j, i, core_m, core_n);
-      core_assembly_ids[static_cast<size_t>(j)][static_cast<size_t>(i)] = assembly_id;
+      core_assembly_ids[j][i] = assembly_id;
     }
     // If the assembly ID is not in assembly_ids
     auto assembly_id_it =
@@ -604,8 +605,8 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
       // Insert the ID to assembly_ids
       assembly_ids.insert(assembly_id_it, assembly_id);
       // Get M by N size of the assembly (N = 1 always)
-      Size assembly_m = 0;
-      Size assembly_n = 0;
+      size_t assembly_m = 0;
+      size_t assembly_n = 0;
       getMbyN(assembly_m, assembly_n, assembly_node);
       if (assembly_n != 1) {
         Log::error("Expected assembly N=1");
@@ -614,24 +615,22 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
       // Allocate assembly_lattice_ids to M
       assembly_lattice_ids.insert(assembly_lattice_ids.begin() + assembly_id_idx,
                                   std::vector<Size>());
-      assembly_lattice_ids[static_cast<size_t>(assembly_id_idx)].resize(
-          static_cast<size_t>(assembly_m));
+      assembly_lattice_ids[static_cast<size_t>(assembly_id_idx)].resize(assembly_m);
       // Allocate assembly_lattice_zs to M + 1
       assembly_lattice_zs.insert(assembly_lattice_zs.begin() + assembly_id_idx,
                                  std::vector<Float>());
-      assembly_lattice_zs[static_cast<size_t>(assembly_id_idx)].resize(
-          static_cast<size_t>(assembly_m) + 1U);
+      assembly_lattice_zs[static_cast<size_t>(assembly_id_idx)].resize(assembly_m + 1U);
       // Loop over all lattices
       // Get the lattice node
-      Size lattice_count = 0;
+      size_t lattice_count = 0;
       for (auto const & lattice_node : assembly_node.children("Grid")) {
         // Extract the lattice ID from the name
         // Of the form Lattice_XXXXX_YYYYY, where XXXXX is the lattice ID
         std::string const lattice_name = lattice_node.attribute("Name").value();
         Size const lattice_id = sto<Size>(lattice_name.substr(8, 5));
         // Write the lattice ID to assembly_lattice_ids
-        assembly_lattice_ids[static_cast<size_t>(assembly_id_idx)]
-                            [static_cast<size_t>(lattice_count)] = lattice_id;
+        assembly_lattice_ids[static_cast<size_t>(assembly_id_idx)][lattice_count] =
+            lattice_id;
         // Get the Z positions of the lattice
 #if UM2_ENABLE_FLOAT64 == 1
         auto lattice_z_low = 1e10;
@@ -668,11 +667,11 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
         // If this is the first lattice write the top and bottom Z positions to
         // assembly_lattice_zs else write the top Z position to assembly_lattice_zs
         if (lattice_count == 0) {
-          assembly_lattice_zs[static_cast<size_t>(assembly_id_idx)]
-                             [static_cast<size_t>(lattice_count)] = lattice_z_low;
+          assembly_lattice_zs[static_cast<size_t>(assembly_id_idx)][lattice_count] =
+              lattice_z_low;
         }
-        assembly_lattice_zs[static_cast<size_t>(assembly_id_idx)]
-                           [static_cast<size_t>(lattice_count) + 1U] = lattice_z_high;
+        assembly_lattice_zs[static_cast<size_t>(assembly_id_idx)][lattice_count + 1U] =
+            lattice_z_high;
         // If the lattice ID is not in lattice_ids
         auto lattice_id_it =
             std::lower_bound(lattice_ids.begin(), lattice_ids.end(), lattice_id);
@@ -681,8 +680,8 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
           // Insert the ID to lattice_ids
           lattice_ids.insert(lattice_ids.begin() + lattice_id_idx, lattice_id);
           // Get M by N size of the lattice
-          Size lattice_m = 0;
-          Size lattice_n = 0;
+          size_t lattice_m = 0;
+          size_t lattice_n = 0;
           {
             pugi::xml_node const xlattice_mn =
                 lattice_node.child("Information").next_sibling("Information");
@@ -692,9 +691,9 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
               std::stringstream ss(xlattice_mn_value);
               std::string token;
               std::getline(ss, token, 'x');
-              lattice_m = sto<Size>(token);
+              lattice_m = sto<size_t>(token);
               std::getline(ss, token, 'x');
-              lattice_n = sto<Size>(token);
+              lattice_n = sto<size_t>(token);
               assert(lattice_m > 0);
               assert(lattice_n > 0);
             } else {
@@ -705,15 +704,14 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
           // Allocate lattice_rtm_ids to M by N
           lattice_rtm_ids.insert(lattice_rtm_ids.begin() + lattice_id_idx,
                                  std::vector<std::vector<Size>>());
-          lattice_rtm_ids[static_cast<size_t>(lattice_id_idx)].resize(
-              static_cast<size_t>(lattice_m));
+          lattice_rtm_ids[static_cast<size_t>(lattice_id_idx)].resize(lattice_m);
           for (auto & lattice_rtm_id :
                lattice_rtm_ids[static_cast<size_t>(lattice_id_idx)]) {
-            lattice_rtm_id.resize(static_cast<size_t>(lattice_n));
+            lattice_rtm_id.resize(lattice_n);
           }
           // Loop over all RTMs
           // Get the RTM node
-          Size rtm_count = 0;
+          size_t rtm_count = 0;
           for (auto const & rtm_node : lattice_node.children("Grid")) {
             // Extract the RTM ID from the name
             // Of the form RTM_XXXXX_YYYYY, where XXXXX is the RTM ID
@@ -721,11 +719,10 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
             // Write the RTM ID to lattice_rtm_ids
             Size const rtm_id = sto<Size>(rtm_name.substr(5, 5));
             {
-              int j = 0;
-              int i = 0;
+              size_t j = 0;
+              size_t i = 0;
               mapLatticeIndexToji(rtm_count, j, i, lattice_m, lattice_n);
-              lattice_rtm_ids[static_cast<size_t>(lattice_id_idx)][static_cast<size_t>(j)]
-                             [static_cast<size_t>(i)] = rtm_id;
+              lattice_rtm_ids[static_cast<size_t>(lattice_id_idx)][j][i] = rtm_id;
             }
             // If the RTM ID is not in rtm_ids
             auto rtm_id_it = std::lower_bound(rtm_ids.begin(), rtm_ids.end(), rtm_id);
@@ -734,21 +731,20 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
               // Insert the ID to rtm_ids
               rtm_ids.insert(rtm_ids.begin() + rtm_id_idx, rtm_id);
               // Get the M by N size of the RTM
-              Size rtm_m = 0;
-              Size rtm_n = 0;
+              size_t rtm_m = 0;
+              size_t rtm_n = 0;
               getMbyN(rtm_m, rtm_n, rtm_node);
               // Allocate rtm_coarse_cell_ids to M by N
               rtm_coarse_cell_ids.insert(rtm_coarse_cell_ids.begin() + rtm_id_idx,
                                          std::vector<std::vector<Size>>());
-              rtm_coarse_cell_ids[static_cast<size_t>(rtm_id_idx)].resize(
-                  static_cast<size_t>(rtm_m));
+              rtm_coarse_cell_ids[static_cast<size_t>(rtm_id_idx)].resize(rtm_m);
               for (auto & rtm_coarse_cell_id :
                    rtm_coarse_cell_ids[static_cast<size_t>(rtm_id_idx)]) {
-                rtm_coarse_cell_id.resize(static_cast<size_t>(rtm_n));
+                rtm_coarse_cell_id.resize(rtm_n);
               }
               // Loop over all coarse cells
               // Get the coarse cell node
-              Size coarse_cell_count = 0;
+              size_t coarse_cell_count = 0;
               for (auto const & coarse_cell_node : rtm_node.children("Grid")) {
                 // Extract the coarse cell ID from the name
                 // Of the form Coarse_Cell_XXXXX_YYYYY, where XXXXX is the
@@ -758,12 +754,11 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
                 // Write the coarse cell ID to rtm_coarse_cell_ids
                 Size const coarse_cell_id = sto<Size>(coarse_cell_name.substr(12, 5));
                 {
-                  int j = 0;
-                  int i = 0;
+                  size_t j = 0;
+                  size_t i = 0;
                   mapLatticeIndexToji(coarse_cell_count, j, i, rtm_m, rtm_n);
-                  rtm_coarse_cell_ids[static_cast<size_t>(rtm_id_idx)]
-                                     [static_cast<size_t>(j)][static_cast<size_t>(i)] =
-                                         coarse_cell_id;
+                  rtm_coarse_cell_ids[static_cast<size_t>(rtm_id_idx)][j][i] =
+                      coarse_cell_id;
                 }
                 // If the coarse cell ID is not in coarse_cell_ids
                 auto coarse_cell_id_it = std::lower_bound(

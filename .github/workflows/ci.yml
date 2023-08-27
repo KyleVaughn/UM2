@@ -22,10 +22,11 @@ jobs:
         build_type: [Debug, Release]
         dev_mode: [ON]
         gmsh: [ON]
+        int64: [OFF, ON]
+        float64: [OFF, ON]
           #PAR_STL
-          #INT64
 
-    name: "${{ matrix.compiler }}-${{ matrix.build_type }},Dev=${{ matrix.dev_mode }},Gmsh=${{ matrix.gmsh }}"
+    name: "${{matrix.compiler}}-${{matrix.build_type}},Dev=${{matrix.dev_mode}},Gmsh=${{matrix.gmsh}},I64=${{matrix.int64}},F64=${{matrix.float64}}"
 
     steps:
       - uses: actions/checkout@v3
@@ -79,8 +80,10 @@ jobs:
           cmake -S . -B build \
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
                 -DUM2_DEV_MODE=${{ matrix.dev_mode }} \
-                -DUM2_ENABLE_GMSH=${{ matrix.gmsh }} \
-                -DUM2_ENABLE_CUDA=OFF
+                -DUM2_USE_GMSH=${{ matrix.gmsh }} \
+                -DUM2_ENABLE_INT64=${{ matrix.int64 }} \
+                -DUM2_ENABLE_FLOAT64=${{ matrix.float64}} \
+                -DUM2_USE_CUDA=OFF
           make -j -C build
 
       - name: Format check
@@ -97,6 +100,6 @@ jobs:
           sudo apt install -y python3 python3-pip
           python3 -m pip install --upgrade pip
           python3 -m pip install cpp-coveralls
-          coveralls -e cmake-build-debug/ -e env/ -e scripts/ -e tpls/ --gcov /usr/bin/gcov-12
+          coveralls -i include/ -i tests/ --gcov /usr/bin/gcov-12
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

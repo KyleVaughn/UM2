@@ -123,7 +123,7 @@ TEST_CASE(makeRTM)
   ASSERT(model.makeCoarseCell(dxdy) == 0);
   ASSERT(model.makeCoarseCell(dxdy) == 1);
   ASSERT(model.numCoarseCells() == 2);
-  std::vector<std::vector<int>> const cc_ids = {
+  std::vector<std::vector<Size>> const cc_ids = {
       {0, 1}
   };
   Size id = model.makeRTM(cc_ids);
