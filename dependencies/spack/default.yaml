@@ -5,7 +5,6 @@ spack:
     - llvm@15
     - gmsh
     - pugixml
-    - cuda@12
     - benchmark
   view: true
   packages:
@@ -14,6 +13,8 @@ spack:
     hdf5:
       require: +cxx+fortran~mpi
     gmsh:
-      require: +openmp+cairo+fltk+opencascade+eigen+hdf5 #^opencascade~visualization~draw~application_framework
+      require: +openmp+cairo+fltk+opencascade+eigen+hdf5 ^scotch~mpi ^opencascade~visualization #~draw~application_framework
+    opengl:
+      buildable: False
   concretizer:
     unify: true

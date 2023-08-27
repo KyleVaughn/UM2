@@ -72,12 +72,17 @@ jobs:
           tar -xzvf gmsh-4.11.1-Linux64-sdk.tgz
           echo "GMSH_ROOT=${PWD}/gmsh-4.11.1-Linux64-sdk" >> $GITHUB_ENV
 
+      - name: Configure with coverage
+        if: matrix.dev_mode == 'ON' && matrix.build_type == 'Debug'  && matrix.compiler == 'gcc'
+        run: |
+          echo "ENABLE_COVERAGE=ON" >> $GITHUB_ENV
+
           #      - name: Vis
           #        shell: bash
           #        if: matrix.vis == 'ON'
           #        run: sudo apt install -y xorg-dev libgl1-mesa-dev
 
-      - name: Configure and build
+      - name: Configure
         run: |
           cmake -S . -B build \
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
@@ -86,15 +91,16 @@ jobs:
                 -DUM2_ENABLE_INT64=${{ matrix.int64 }} \
                 -DUM2_ENABLE_FLOAT64=${{ matrix.float64}} \
                 -DUM2_USE_CUDA=OFF
-          make -j -C build
 
       - name: Format check
         if: matrix.dev_mode == 'ON'
         run: make -C build format-check
 
+      - name: Build
+        run: make -j -C build
+
       - name: Run tests
-        run:
-          make -j -C build test
+        run: make -j -C build test
 
       - name: Upload coverage
         if: matrix.dev_mode == 'ON' && matrix.build_type == 'Debug'  && matrix.compiler == 'gcc'

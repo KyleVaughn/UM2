@@ -28,8 +28,8 @@ macro(add_um2_test FILENAME)
   endif()
 
   if (UM2_USE_COVERAGE)
-    target_link_libraries(${TESTNAME} gcov)
-    target_compile_options(${TESTNAME} PUBLIC --coverage)
+    target_link_libraries(${TESTNAME} PRIVATE gcov)
+    target_compile_options(${TESTNAME} PRIVATE -fprofile-arcs -ftest-coverage) 
   endif ()
 
   # If compiling with CUDA, compile the cpp files as cuda

@@ -30,7 +30,6 @@ option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"  OFF)
 
 option(UM2_BUILD_TESTS      "Build tests"                   ON)
 option(UM2_BUILD_EXAMPLES   "Build examples"                OFF)
-option(UM2_BUILD_DOCS       "Build documentation"           OFF)
 option(UM2_BUILD_BENCHMARKS "Build benchmarks"              OFF)
 
 #===============================================================================
@@ -281,7 +280,7 @@ endif()
 # coverage
 if (UM2_ENABLE_COVERAGE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
-  target_link_libraries(um2 gcov)
+  target_link_libraries(um2 PRIVATE gcov)
 endif()
 
 #===============================================================================
@@ -297,11 +296,6 @@ endif()
 # Examples
 if (UM2_BUILD_EXAMPLES)
   add_subdirectory(examples)
-endif()
-
-# Documentation
-if (UM2_BUILD_DOCS)
-  add_subdirectory(docs)
 endif()
 
 # Benchmarks
