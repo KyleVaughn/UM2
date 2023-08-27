@@ -62,7 +62,7 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(
 
 template <Size D, typename T>
 constexpr RectilinearGrid<D, T>::RectilinearGrid(
-    std::vector<Vec2<T>> const & dxdy, std::vector<std::vector<int>> const & ids)
+    std::vector<Vec2<T>> const & dxdy, std::vector<std::vector<Size>> const & ids)
 {
   static_assert(D == 2);
   // Convert the dxdy to AxisAlignedBoxes
@@ -79,10 +79,10 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(
   T y = 0;
   // Iterate rows in reverse order
   for (size_t i = 0; i < nrows; ++i) {
-    std::vector<int> const & row = ids[nrows - i - 1];
+    std::vector<Size> const & row = ids[nrows - i - 1];
     Vec2<T> minima(static_cast<T>(0), y);
     for (size_t j = 0; j < ncols; ++j) {
-      int const id = row[j];
+      Size const id = row[j];
       Vec2<T> const & dxdy_ij = dxdy[static_cast<size_t>(id)];
       Vec2<T> const maxima = minima + dxdy_ij;
       boxes[static_cast<Size>(i * ncols + j)].minima = minima;

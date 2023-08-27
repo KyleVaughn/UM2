@@ -786,7 +786,11 @@ SpatialPartition::makeRTM(std::vector<std::vector<Size>> const & cc_ids) -> Size
     for (size_t j = 0; j < cc_ids[i].size(); ++j) {
       auto const it = std::find(unique_cc_ids.begin(), unique_cc_ids.end(), cc_ids[i][j]);
       assert(it != unique_cc_ids.end());
+#if UM2_ENABLE_INT64 == 0
       cc_ids_renumbered[i][j] = static_cast<Size>(it - unique_cc_ids.begin());
+#else
+      cc_ids_renumbered[i][j] = it - unique_cc_ids.begin();
+#endif
     }
   }
   // Create the rectilinear grid
