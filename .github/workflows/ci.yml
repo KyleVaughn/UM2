@@ -105,7 +105,8 @@ jobs:
           sudo apt install -y python3 python3-pip
           python3 -m pip install --upgrade pip
           python3 -m pip install cpp-coveralls
-          coveralls -i include -i src --gcov /usr/bin/gcov-12 --dump cpp_cov.json
+          python3 -m pip install coveralls
+          cpp-coveralls -i include -i src --exclude-pattern "/usr/*" --gcov /usr/bin/gcov-12 --dump cpp_cov.json
           coveralls --merge=cpp_cov.json --service=github
 
   finish:
