@@ -19,8 +19,10 @@
 // CUDA
 #cmakedefine01 UM2_USE_CUDA
 
-// Integer/Float types in API
+// Integer type in API
 #cmakedefine01 UM2_ENABLE_INT64
+
+// Floating point type in API
 #cmakedefine01 UM2_ENABLE_FLOAT64
 
 // Logging
