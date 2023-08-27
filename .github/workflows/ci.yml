@@ -13,6 +13,7 @@ env:
   OMP_NUM_THREADS: 2
   ENABLE_COVERAGE: OFF
   COVERALLS_PARALLEL: true
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   main:
@@ -106,7 +107,7 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install cpp-coveralls
           python3 -m pip install coveralls
-          cpp-coveralls -i include -i src --exclude-pattern "/usr/*" --gcov /usr/bin/gcov-12 --dump cpp_cov.json
+          cpp-coveralls -i include -i src -e /usr --gcov /usr/bin/gcov-12 --dump cpp_cov.json 
           coveralls --merge=cpp_cov.json --service=github
 
   finish:
