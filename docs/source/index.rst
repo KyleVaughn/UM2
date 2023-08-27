@@ -7,7 +7,7 @@ calculations on unstructured polygon meshes and CAD models. The library provides
 for automatic Coarse Mesh Finite Difference and Method of Characteristics mesh generation for
 CAD models, as well as tools for fast, robust ray tracing, geometric queries, and mesh analysis.
 
-The library can be interfaced with the `MPACT <https://vera.ornl.gov/mpact/>`_ neutronics code 
+The library can be interfaced with `MPACT <https://vera.ornl.gov/mpact/>`_ 
 to perform 2D/1D calculations on unstructured meshes.
 
 UM\ :sup:`2` \ is developed by members of the `Nuclear Reactor Analysis and Methods
@@ -23,5 +23,5 @@ Group <https://nuram.engin.umich.edu/>`_ at the `University of Michigan
 .. toctree::
     :maxdepth: 1
 
-    quickinstall
+    install
     license
