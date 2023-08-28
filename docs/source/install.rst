@@ -30,16 +30,16 @@ Prerequisites
 
           sudo apt install cmake
 
-    * HDF5_ library for portable binary output format
+    * HDF5_ library for binary data
 
-      UM\:sup:`2`\ uses HDF5 for writing XDMF_ mesh files. 
+      UM\:sup:`2`\ uses HDF5 for large binary data in XDMF_ mesh files. 
       The installed version will need the C++ API.
       If you are using a Debian-based distribution, you can install HDF5 using
       the following command::
 
           sudo apt install libhdf5-dev
 
-    * PugiXML_ library for XML files
+    * PugiXML_ library for XML data
 
       UM\:sup:`2`\ uses PugiXML for reading and writing XML files as a part of XDMF_. 
       If you are using a Debian-based distribution, you can install PugiXML using the following
@@ -62,6 +62,7 @@ Prerequisites
         GMSH_ROOT=${PWD}/gmsh-4.11.1-Linux64-sdk
 
 .. _gcc: https://gcc.gnu.org/
+.. _clang: https://clang.llvm.org/
 .. _CMake: https://cmake.org
 .. _HDF5: https://www.hdfgroup.org/solutions/hdf5/
 .. _XDMF: https://www.xdmf.org/index.php/XDMF_Model_and_Format
