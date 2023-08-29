@@ -105,6 +105,7 @@ setMeshFieldFromGroups(
     gmsh::model::mesh::field::setNumber(fid, "VIn", sizes[i]);
     // Populate each of the fields with the entities in the
     // physical group
+    bool found = false;
     auto const & group_name = groups[i];
     for (auto const & existing_group_dimtag : dimtags) {
       int const existing_group_tag = existing_group_dimtag.second;
@@ -134,10 +135,14 @@ setMeshFieldFromGroups(
           default:
             LOG_ERROR("Invalid dimension");
         } // dim switch
+        found = true;
+        break;
       } // group_name == existing_group_name
     } // existing_group_dimtag : dimtags
-    LOG_ERROR("The model does not contain a " + std::to_string(dim) + 
-        "-dimensional group with name: " + group_name);
+    if (!found) {
+      LOG_ERROR("The model does not contain a " + std::to_string(dim) + 
+          "-dimensional group with name: " + group_name);
+    }
   } // for (size_t i = 0; i < groups.size()) {
   // Create a field that takes the min of each and set as background mesh
   int const fid = gmsh::model::mesh::field::add("Min");
