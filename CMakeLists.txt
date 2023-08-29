@@ -24,7 +24,7 @@ option(UM2_USE_OPENGL       "Enable OpenGL visualization"   OFF)
 option(UM2_ENABLE_FASTMATH  "Enable fast math"              ON) # CPU and GPU
 option(UM2_ENABLE_PAR_STL   "Enable parallel STL"           OFF)
 option(UM2_ENABLE_INT64     "Enable 64-bit integers"        OFF) # For large meshes
-option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"  OFF)
+option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"  ON)
 
 option(UM2_BUILD_TESTS      "Build tests"                   ON)
 option(UM2_BUILD_EXAMPLES   "Build examples"                OFF)
