@@ -101,7 +101,7 @@ jobs:
         run: make -j -C build test
 
       - name: coverage
-        if: matrix.dev_mode == 'ON' && matrix.build_type == 'Debug'  && matrix.compiler == 'gcc'
+        if: matrix.dev_mode == 'ON' && matrix.build_type == 'Debug'  && matrix.compiler == 'gcc' && matrix.int64 == 'OFF' && matrix.float64 == 'OFF'
         run: |
           sudo apt install -y python3 python3-pip
           python3 -m pip install --upgrade pip
@@ -119,5 +119,3 @@ jobs:
         with:
           github-token: ${{ secrets.github_token }}
           parallel-finished: true
-
-          #          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
