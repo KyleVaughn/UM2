@@ -24,10 +24,12 @@ Prerequisites
       The compiling and linking of source files is handled by CMake in a
       platform-independent manner.
 
+
     * HDF5_ library for binary data
 
       UM\ :sup:`2` \ uses HDF5 for large binary data in XDMF_ mesh files. 
       The installed version will need the C++ API.
+
 
     * PugiXML_ library for XML data
 
@@ -65,7 +67,7 @@ be installed with the following commands:
     sudo apt install -y g++-12 cmake libhdf5-dev libpugixml-dev libglu1-mesa
     wget https://gmsh.info/bin/Linux/gmsh-4.11.1-Linux64-sdk.tgz
     tar -xzvf gmsh-4.11.1-Linux64-sdk.tgz
-    # Add to your bachrc to avoid declaring this every time
+    # Add to bachrc to avoid declaring this every time. PWD will need to be updated.
     export GMSH_ROOT=${PWD}/gmsh-4.11.1-Linux64-sdk
 
 .. _installing_prerequisites_with_spack:
@@ -77,12 +79,13 @@ Installing Prerequisites with Spack
 Spack_ is a package management tool designed to support multiple versions and
 configurations of software on a wide variety of platforms and environments.
 
+Prior to installing Spack, ensure that Python 3.6+ is installed.
 To install Spack:
 
 .. code-block:: bash
 
     git clone -c feature.manyFiles=true https://github.com/spack/spack.git 
-    # Ensure python 3.6+ is installed
+    # Add this to your bashrc to avoid entering this every time.
     . spack/share/spack/setup-env.sh
 
 Install and load gcc-12+ or clang-15+:
@@ -96,7 +99,7 @@ Install and load gcc-12+ or clang-15+:
     spack install llvm@15
     spack load llvm@15
     
-Pick the appropriate yaml file in UM2/dependencies/spack for use in the next step. Then:
+Pick the appropriate yaml file in ``UM2/dependencies/spack`` for use in the next step. Then:
 
 .. code-block:: bash
 
@@ -117,12 +120,60 @@ If you're using a yaml file that includes the fltk variant (+fltk), you may need
       - spec: opengl@<OpenGL version on your machine>
         prefix: <path to opengl, such as /usr/x86_64-linux-gnu> 
 
-in :bash:`~/.spack/packages.yaml` .
+in ``~/.spack/packages.yaml``.
 
 .. _Spack: https://spack.readthedocs.io/en/latest/
 
 .. _installing_um2:
 
 ----------------------------------
-Building and nstalling UM\ :sup:`2` \
+Building 
 ----------------------------------
+
+If you installed dependencies with apt, you will need to have defined the ``GMSH_ROOT``
+environment variable.
+To build UM\ :sup:`2` \ :
+
+.. code-block:: bash
+
+    cd UM2
+    mkdir build && cd build
+    cmake ..
+    make -j
+    # Make sure the tests pass
+    ctest
+    make install
+
+
+.. _configuring_um2:
+
+----------------------------------
+Configuring
+----------------------------------
+
+The following options are available for configuration. There are additional options,
+but the other options are either for developer use or are under development.
+
+UM2_USE_OPENMP       
+  Enable shared-memory parallelism with OpenMP. (Default: ON) 
+
+UM2_USE_GMSH         
+  Enable Gmsh for mesh generation. (Default: ON)
+
+UM2_ENABLE_INT64     
+  Set the integer type to 64-bit. (Default: OFF)
+
+UM2_ENABLE_FLOAT64   
+  Set the floating point type to 64-bit. (Default: ON)
+
+UM2_ENABLE_FASTMATH 
+  Enable fast math optimizations. (Default: ON)
+
+UM2_BUILD_TESTS
+  Build tests. (Default: ON)
+
+UM2_BUILD_EXAMPLES
+  Build examples. (Default: OFF)
+
+UM2_BUILD_BENCHMARKS 
+  Build benchmarks. (Default: OFF)
