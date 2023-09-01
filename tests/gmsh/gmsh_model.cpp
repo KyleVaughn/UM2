@@ -33,14 +33,14 @@ TEST_CASE(getMaterials)
   um2::gmsh::model::occ::addDisk(2.0, 0.0, 0.0, 1.0, 1.0);
   um2::gmsh::model::occ::addDisk(4.0, 0.0, 0.0, 1.0, 1.0);
   um2::gmsh::model::occ::synchronize();
-  um2::gmsh::model::addPhysicalGroup(2, {1}, -1, "Material UO2");
+  um2::gmsh::model::addPhysicalGroup(2, {1}, -1, "Material_UO2");
   um2::gmsh::model::setColor(
       {
           {2, 1}
   },
       255, 0, 0);
   um2::Color const red(um2::Colors::Red);
-  um2::gmsh::model::addPhysicalGroup(2, {2, 3}, -1, "Material MOX");
+  um2::gmsh::model::addPhysicalGroup(2, {2, 3}, -1, "Material_MOX");
   um2::gmsh::model::setColor(
       {
           {2, 2},
@@ -70,10 +70,10 @@ TEST_CASE(groupPresFragment_2d2d)
     um2::gmsh::model::occ::synchronize();
     int const group_tag1 = um2::gmsh::model::addPhysicalGroup(2, {tag1, tag2}, -1, "A");
     int const mat_tag1 =
-        um2::gmsh::model::addPhysicalGroup(2, {tag1}, -1, "Material Fuel");
+        um2::gmsh::model::addPhysicalGroup(2, {tag1}, -1, "Material_Fuel");
     int const group_tag2 = um2::gmsh::model::addPhysicalGroup(2, {tag2}, -1, "B");
     int const mat_tag2 =
-        um2::gmsh::model::addPhysicalGroup(2, {tag2}, -1, "Material Moderator");
+        um2::gmsh::model::addPhysicalGroup(2, {tag2}, -1, "Material_Moderator");
     um2::gmsh::vectorpair const object_dimtags = {
         {2, tag1}
     };
@@ -133,7 +133,7 @@ TEST_CASE(groupPresFragment_2d2d)
     tags.clear();
     um2::gmsh::model::getEntitiesForPhysicalGroup(2, mat_tag1, tags);
     um2::gmsh::model::getPhysicalName(2, mat_tag1, name);
-    ASSERT(name == "Material Fuel");
+    ASSERT(name == "Material_Fuel");
     ASSERT(tags.size() == 2);
     ASSERT(tags[0] == 1);
     ASSERT(tags[1] == 2);
@@ -154,7 +154,7 @@ TEST_CASE(groupPresFragment_2d2d)
     tags.clear();
     um2::gmsh::model::getEntitiesForPhysicalGroup(2, mat_tag2, tags);
     um2::gmsh::model::getPhysicalName(2, mat_tag2, name);
-    ASSERT(name == "Material Moderator");
+    ASSERT(name == "Material_Moderator");
     if (i == 0) {
       ASSERT(tags.size() == 2);
       ASSERT(tags[0] == 1);
@@ -186,10 +186,10 @@ TEST_CASE(groupPresFragment_3d3d)
     um2::gmsh::model::occ::synchronize();
     int const group_tag1 = um2::gmsh::model::addPhysicalGroup(3, {tag1, tag2}, -1, "A");
     int const mat_tag1 =
-        um2::gmsh::model::addPhysicalGroup(3, {tag1}, -1, "Material Fuel");
+        um2::gmsh::model::addPhysicalGroup(3, {tag1}, -1, "Material_Fuel");
     int const group_tag2 = um2::gmsh::model::addPhysicalGroup(3, {tag2}, -1, "B");
     int const mat_tag2 =
-        um2::gmsh::model::addPhysicalGroup(3, {tag2}, -1, "Material Moderator");
+        um2::gmsh::model::addPhysicalGroup(3, {tag2}, -1, "Material_Moderator");
     um2::gmsh::vectorpair const object_dimtags = {
         {3, tag1}
     };
@@ -249,7 +249,7 @@ TEST_CASE(groupPresFragment_3d3d)
     tags.clear();
     um2::gmsh::model::getEntitiesForPhysicalGroup(3, mat_tag1, tags);
     um2::gmsh::model::getPhysicalName(3, mat_tag1, name);
-    ASSERT(name == "Material Fuel");
+    ASSERT(name == "Material_Fuel");
     ASSERT(tags.size() == 2);
     ASSERT(tags[0] == 1);
     ASSERT(tags[1] == 2);
@@ -270,7 +270,7 @@ TEST_CASE(groupPresFragment_3d3d)
     tags.clear();
     um2::gmsh::model::getEntitiesForPhysicalGroup(3, mat_tag2, tags);
     um2::gmsh::model::getPhysicalName(3, mat_tag2, name);
-    ASSERT(name == "Material Moderator");
+    ASSERT(name == "Material_Moderator");
     if (i == 0) {
       ASSERT(tags.size() == 2);
       ASSERT(tags[0] == 2);
@@ -302,10 +302,10 @@ TEST_CASE(groupPresIntersect_2d2d)
     um2::gmsh::model::occ::synchronize();
     int const group_tag1 = um2::gmsh::model::addPhysicalGroup(2, {tag1, tag2}, -1, "A");
     int const mat_tag1 =
-        um2::gmsh::model::addPhysicalGroup(2, {tag1}, -1, "Material Fuel");
+        um2::gmsh::model::addPhysicalGroup(2, {tag1}, -1, "Material_Fuel");
     int const group_tag2 = um2::gmsh::model::addPhysicalGroup(2, {tag2}, -1, "B");
     int const mat_tag2 =
-        um2::gmsh::model::addPhysicalGroup(2, {tag2}, -1, "Material Moderator");
+        um2::gmsh::model::addPhysicalGroup(2, {tag2}, -1, "Material_Moderator");
     um2::gmsh::vectorpair const object_dimtags = {
         {2, tag1}
     };
@@ -347,7 +347,7 @@ TEST_CASE(groupPresIntersect_2d2d)
     tags.clear();
     um2::gmsh::model::getEntitiesForPhysicalGroup(2, mat_tag1, tags);
     um2::gmsh::model::getPhysicalName(2, mat_tag1, name);
-    ASSERT(name == "Material Fuel");
+    ASSERT(name == "Material_Fuel");
     ASSERT(tags.size() == 1);
     ASSERT(tags[0] == 1);
     tags.clear();
@@ -364,7 +364,7 @@ TEST_CASE(groupPresIntersect_2d2d)
     if (i == 0) {
       um2::gmsh::model::getEntitiesForPhysicalGroup(2, mat_tag2, tags);
       um2::gmsh::model::getPhysicalName(2, mat_tag2, name);
-      ASSERT(name == "Material Moderator");
+      ASSERT(name == "Material_Moderator");
       ASSERT(tags.size() == 1);
       ASSERT(tags[0] == 1);
     }

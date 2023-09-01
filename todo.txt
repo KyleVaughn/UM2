@@ -1,2 +1,3 @@
 Ensure examples and benchmarks build correctly
 Update examples to match new API
+Add a function for mesh field visualization
