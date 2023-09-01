@@ -1,3 +1,24 @@
 Ensure examples and benchmarks build correctly
 Update examples to match new API
 Add a function for mesh field visualization
+Add stats
+
+MPACT installation:
+
+MPACT
+#############################################################
+SPACK_ENV_DIR=${SPACK_ENV}/.spack-env/view
+despacktivate
+TMP=${PWD}/tmp spack install -j24 gcc@8.3.0
+spack load gcc@8.3.0
+spack compiler find
+spack env activate -p um2 
+HDF5_ROOT=$SPACK_ENV_DIR UM2_ROOT=/home/kcvaughn/UM2-C/build ./build_with_hdf5.sh ./build_with_um2.sh ./build_gnu_debug_omp_all.sh ../MPACT/
+make MPACT
+In the final link step, use gcc12 and instead of libc++ use 
+despacktivate
+GFORTRAN12=$(which gfortran)
+CPPSTDLIB=$(dirname $(dirname $GFORTRAN12))/lib64/libstdc++.so
+
+make VERBOSE=1 MPACT
+cd MPACT_exe/src
