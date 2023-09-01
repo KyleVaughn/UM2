@@ -21,19 +21,9 @@ Prerequisites
 
     * CMake_ cross-platform build system
 
-      The compiling and linking of source files is handled by CMake in a
-      platform-independent manner.
-
-
     * HDF5_ library for binary data
 
-      UM\ :sup:`2` \ uses HDF5 for large binary data in XDMF_ mesh files. 
-      The installed version will need the C++ API.
-
-
     * PugiXML_ library for XML data
-
-      UM\ :sup:`2` \ uses PugiXML for reading and writing XML files as a part of XDMF_. 
 
 .. admonition:: Optional
    :class: note
