@@ -74,7 +74,7 @@ To install Spack:
 
 .. code-block:: bash
 
-    git clone -c feature.manyFiles=true https://github.com/spack/spack.git 
+    git clone --depth=100 --branch=releases/v0.20 https://github.com/spack/spack.git
     # Add this to your bashrc to avoid entering this every time.
     . spack/share/spack/setup-env.sh
 
