@@ -89,7 +89,10 @@ Install and load gcc-12+ or clang-15+:
     spack install llvm@15
     spack load llvm@15
     
-Pick the appropriate yaml file in ``UM2/dependencies/spack`` for use in the next step. Then:
+Pick the appropriate yaml file in ``UM2/dependencies/spack`` for use in the next step. 
+If you're a user, look in the ``user`` directory. If you're a developer, look in the 
+``developer`` directory.
+Then:
 
 .. code-block:: bash
 
