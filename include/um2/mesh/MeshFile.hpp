@@ -168,7 +168,7 @@ struct MeshFile {
   constexpr void
   getSubmesh(std::string const & elset_name, MeshFile<T, I> & submesh) const;
 
-  constexpr void
+  void
   getMaterialNames(std::vector<std::string> & material_names) const;
 
   constexpr void

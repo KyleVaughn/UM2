@@ -11,9 +11,9 @@ namespace um2::gmsh::model
 // colorMaterialPhysicalGroupEntities
 //=============================================================================
 //
-// For a model with physical groups of the form "Material X, Material Y, ...",
+// For a model with physical groups of the form "Material_X, Material_Y, ...",
 // color the entities in each material physical group according to corresponding
-// Material in <materials>.
+// Material_in <materials>.
 
 static void
 colorMaterialPhysicalGroupEntities(std::vector<Material> const & materials)
@@ -21,7 +21,7 @@ colorMaterialPhysicalGroupEntities(std::vector<Material> const & materials)
   size_t const num_materials = materials.size();
   std::vector<std::string> material_names(num_materials);
   for (size_t i = 0; i < num_materials; ++i) {
-    material_names[i] = "Material " + std::string(materials[i].name.data());
+    material_names[i] = "Material_" + std::string(materials[i].name.data());
   }
   std::vector<int> ptags(num_materials, -1);
   gmsh::vectorpair dimtags;
@@ -36,7 +36,7 @@ colorMaterialPhysicalGroupEntities(std::vector<Material> const & materials)
     int const tag = dimtag.second;
     std::string name;
     gmsh::model::getPhysicalName(dim, tag, name);
-    if (name.starts_with("Material ")) {
+    if (name.starts_with("Material_")) {
       auto const it = std::find(material_names.begin(), material_names.end(), name);
       if (it != material_names.end() && *it == name) {
         ptrdiff_t const i = it - material_names.begin();
@@ -331,11 +331,11 @@ processMaterialHierarchy(std::vector<Material> const & material_hierarchy,
     std::vector<size_t> mat_indices(nmats, guard);
     for (size_t i = 0; i < nmats; ++i) {
       Material const & mat = material_hierarchy[i];
-      std::string const & mat_name = "Material " + std::string(mat.name.data());
+      std::string const & mat_name = "Material_" + std::string(mat.name.data());
       auto const it = std::lower_bound(physical_group_names.begin(),
                                        physical_group_names.end(), mat_name);
       if (it == physical_group_names.end() || *it != mat_name) {
-        Log::warn("'Material " + std::string(mat.name.data()) + "' not found in model");
+        Log::warn("'Material_" + std::string(mat.name.data()) + "' not found in model");
       } else {
         mat_indices[i] = static_cast<size_t>(it - physical_group_names.begin());
       }
@@ -594,7 +594,7 @@ addCylindricalPin2D(Point2d const & center, std::vector<double> const & radii,
   // Add materials
   for (size_t i = 0; i < nradii; ++i) {
     addToPhysicalGroup(2, {out_tags[i]}, -1,
-                       "Material " + std::string(materials[i].name.data()));
+                       "Material_" + std::string(materials[i].name.data()));
     // Color entities according to materials
     Color const color = materials[i].color;
     gmsh::model::setColor(
@@ -721,7 +721,7 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
           2,                                                          // dim
           material_ids[i],                                            // tags
           -1,                                                         // tag
-          "Material " + std::string(materials[pin_id][i].name.data()) // name
+          "Material_" + std::string(materials[pin_id][i].name.data()) // name
       );
       // Color entities according to materials
       gmsh::vectorpair mat_dimtags(nents);
@@ -798,7 +798,7 @@ addCylindricalPin(Point3d const & center, double const height,
   // Add materials
   for (size_t i = 0; i < nradii; ++i) {
     addToPhysicalGroup(3, {out_tags[i]}, -1,
-                       "Material " + std::string(materials[i].name.data()));
+                       "Material_" + std::string(materials[i].name.data()));
     // Color entities according to materials
     Color const color = materials[i].color;
     gmsh::model::setColor(
@@ -933,7 +933,7 @@ addCylindricalPin(Point3d const & center, double const height,
 //                         3, // dim
 //                         material_ids[i], // tags
 //                         -1, // tag
-//                         "Material " + to_string(materials[pin_id][i].name) // name
+//                         "Material_" + to_string(materials[pin_id][i].name) // name
 //                         );
 //                 // Color entities according to materials
 //                 gmsh::vectorpair mat_dimtags(nents);
@@ -1123,7 +1123,7 @@ overlaySpatialPartition(mpact::SpatialPartition const & partition,
 
   // Assign physical groups
   // Fill material is assigned to all slice rectangles
-  std::string const fill_mat_full_name = "Material " + fill_material_name;
+  std::string const fill_mat_full_name = "Material_" + fill_material_name;
   addToPhysicalGroup(model_dim, cc_tags, -1, fill_mat_full_name);
   // Add a physical group for each coarse cell
   std::stringstream ss;

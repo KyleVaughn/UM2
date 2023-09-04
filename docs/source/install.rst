@@ -21,19 +21,9 @@ Prerequisites
 
     * CMake_ cross-platform build system
 
-      The compiling and linking of source files is handled by CMake in a
-      platform-independent manner.
-
-
     * HDF5_ library for binary data
 
-      UM\ :sup:`2` \ uses HDF5 for large binary data in XDMF_ mesh files. 
-      The installed version will need the C++ API.
-
-
     * PugiXML_ library for XML data
-
-      UM\ :sup:`2` \ uses PugiXML for reading and writing XML files as a part of XDMF_. 
 
 .. admonition:: Optional
    :class: note
@@ -84,7 +74,7 @@ To install Spack:
 
 .. code-block:: bash
 
-    git clone -c feature.manyFiles=true https://github.com/spack/spack.git 
+    git clone --depth=100 --branch=releases/v0.20 https://github.com/spack/spack.git
     # Add this to your bashrc to avoid entering this every time.
     . spack/share/spack/setup-env.sh
 
@@ -99,7 +89,10 @@ Install and load gcc-12+ or clang-15+:
     spack install llvm@15
     spack load llvm@15
     
-Pick the appropriate yaml file in ``UM2/dependencies/spack`` for use in the next step. Then:
+Pick the appropriate yaml file in ``UM2/dependencies/spack`` for use in the next step. 
+If you're a user, look in the ``user`` directory. If you're a developer, look in the 
+``developer`` directory.
+Then:
 
 .. code-block:: bash
 
