@@ -6,6 +6,7 @@
 
 #include <algorithm> // std::transform
 #include <cstring>   // strcmp
+#include <sstream>   // std::stringstream
 #include <string>
 #include <vector>
 

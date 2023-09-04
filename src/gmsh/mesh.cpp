@@ -18,7 +18,7 @@ setGlobalMeshSize(double const size)
 }
 
 //=============================================================================
-// generateMesh 
+// generateMesh
 //=============================================================================
 
 void
@@ -84,14 +84,12 @@ generateMesh(MeshType const mesh_type, int const opt_iters, int const smooth_ite
 }
 
 //=============================================================================
-// setMeshFieldFromGroups 
+// setMeshFieldFromGroups
 //=============================================================================
 
 auto
-setMeshFieldFromGroups(    
-        int const dim,    
-        std::vector<std::string> const & groups,    
-        std::vector<double> const & sizes) -> std::vector<int>
+setMeshFieldFromGroups(int const dim, std::vector<std::string> const & groups,
+                       std::vector<double> const & sizes) -> std::vector<int>
 {
   // Get all group dimtags for use later
   gmsh::vectorpair dimtags;
@@ -119,29 +117,29 @@ setMeshFieldFromGroups(
         for (size_t j = 0; j < tags.size(); j++) {
           double_tags[j] = static_cast<double>(tags[j]);
         }
-        switch(dim) {
-          case 0:
-            gmsh::model::mesh::field::setNumbers(fid, "PointsList", double_tags);
-            break;
-          case 1:
-            gmsh::model::mesh::field::setNumbers(fid, "CurvesList", double_tags);
-            break;
-          case 2:
-            gmsh::model::mesh::field::setNumbers(fid, "SurfacesList", double_tags);
-            break;
-          case 3:
-            gmsh::model::mesh::field::setNumbers(fid, "VolumesList", double_tags);
-            break;
-          default:
-            LOG_ERROR("Invalid dimension");
+        switch (dim) {
+        case 0:
+          gmsh::model::mesh::field::setNumbers(fid, "PointsList", double_tags);
+          break;
+        case 1:
+          gmsh::model::mesh::field::setNumbers(fid, "CurvesList", double_tags);
+          break;
+        case 2:
+          gmsh::model::mesh::field::setNumbers(fid, "SurfacesList", double_tags);
+          break;
+        case 3:
+          gmsh::model::mesh::field::setNumbers(fid, "VolumesList", double_tags);
+          break;
+        default:
+          LOG_ERROR("Invalid dimension");
         } // dim switch
         found = true;
         break;
       } // group_name == existing_group_name
-    } // existing_group_dimtag : dimtags
+    }   // existing_group_dimtag : dimtags
     if (!found) {
-      LOG_ERROR("The model does not contain a " + std::to_string(dim) + 
-          "-dimensional group with name: " + group_name);
+      LOG_ERROR("The model does not contain a " + std::to_string(dim) +
+                "-dimensional group with name: " + group_name);
     }
   } // for (size_t i = 0; i < groups.size()) {
   // Create a field that takes the min of each and set as background mesh

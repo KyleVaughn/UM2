@@ -268,7 +268,7 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
 //==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
-constexpr void
+void
 MeshFile<T, I>::getMaterialNames(std::vector<std::string> & material_names) const
 {
   std::string const material = "Material";
