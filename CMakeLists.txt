@@ -27,6 +27,7 @@ option(UM2_ENABLE_FASTMATH  "Enable fast math"              ON) # CPU and GPU
 option(UM2_ENABLE_PAR_STL   "Enable parallel STL"           OFF)
 
 option(UM2_BUILD_TESTS      "Build tests"                   ON)
+option(UM2_BUILD_TUTORIAL   "Build tutorial"                ON)
 option(UM2_BUILD_EXAMPLES   "Build examples"                OFF)
 option(UM2_BUILD_BENCHMARKS "Build benchmarks"              OFF)
 
@@ -318,6 +319,11 @@ endif()
 if (UM2_BUILD_TESTS)
   include(CTest)
   add_subdirectory(tests)
+endif()
+
+# Tutorial
+if (UM2_BUILD_TUTORIAL)
+  add_subdirectory(tutorial)
 endif()
 
 # Examples

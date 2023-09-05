@@ -24,4 +24,5 @@ Group <https://nuram.engin.umich.edu/>`_ at the `University of Michigan
     :maxdepth: 1
 
     install
+    tutorial/index
     license

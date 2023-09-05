@@ -12,7 +12,6 @@ env:
   HDF5_ROOT: /usr
   OMP_NUM_THREADS: 2
   ENABLE_COVERAGE: OFF
-  COVERALLS_PARALLEL: true
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
@@ -75,7 +74,7 @@ jobs:
           echo "GMSH_ROOT=${PWD}/gmsh-4.11.1-Linux64-sdk" >> $GITHUB_ENV
 
       - name: Configure with coverage
-        if: matrix.dev_mode == 'ON' && matrix.build_type == 'Debug'  && matrix.compiler == 'gcc'
+        if: matrix.dev_mode == 'ON' && matrix.build_type == 'Debug'  && matrix.compiler == 'gcc' && matrix.int64 == 'OFF' && matrix.float64 == 'OFF'
         run: |
           echo "ENABLE_COVERAGE=ON" >> $GITHUB_ENV
 
@@ -83,6 +82,7 @@ jobs:
         run: |
           cmake -S . -B build \
                 -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+                -DUM2_BUILD_TUTORIAL=OFF \
                 -DUM2_DEV_MODE=${{ matrix.dev_mode }} \
                 -DUM2_USE_GMSH=${{ matrix.gmsh }} \
                 -DUM2_ENABLE_INT64=${{ matrix.int64 }} \
@@ -107,7 +107,7 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install cpp-coveralls
           python3 -m pip install coveralls
-          cpp-coveralls -i include -i src -e /usr --gcov /usr/bin/gcov-12 --dump cpp_cov.json 
+          cpp-coveralls -i include -i src -e /usr --gcov /usr/bin/gcov-12 --dump cpp_cov.json
           coveralls --merge=cpp_cov.json --service=github
 
   finish:
@@ -118,4 +118,3 @@ jobs:
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.github_token }}
-          parallel-finished: true

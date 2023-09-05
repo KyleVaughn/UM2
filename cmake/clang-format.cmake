@@ -10,6 +10,8 @@ set(
   examples/*.cpp
   benchmarks/*.hpp
   benchmarks/*.cpp
+  tutorial/*.hpp
+  tutorial/*.cpp
   CACHE STRING
   "Patterns to format")
 
