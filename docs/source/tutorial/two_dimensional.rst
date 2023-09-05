@@ -23,7 +23,7 @@ VERA Problem 1A
 
 First, we create the CAD model for the VERA problem 1A. This is a simple 2D model of a fuel pin.
 
-.. literalinclude:: ../../tutorial/2d/1a_model.cpp
+.. literalinclude:: ../../../tutorial/2d/1a_model.cpp
     :language: cpp
 
 If the FLTK line is commented out and visibility options changed as indicated, the model should
@@ -35,7 +35,7 @@ look like this:
 
 Then, we create the mesh for the model.
 
-.. literalinclude:: ../../tutorial/2d/1a_mesh.cpp
+.. literalinclude:: ../../../tutorial/2d/1a_mesh.cpp
     :language: cpp
 
 The mesh should look like this:
