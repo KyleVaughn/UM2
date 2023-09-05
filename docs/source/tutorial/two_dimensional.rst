@@ -21,7 +21,7 @@ The models we will create are:
 VERA Problem 1A
 ===============
 
-First, we create the CAD model for the VERA problem 1A. This is a simple 2D model of a fuel pin.
+First, we create the CAD model for VERA problem 1A. This is a simple 2D model of a fuel pin.
 
 .. literalinclude:: ../../../tutorial/2d/1a_model.cpp
     :language: cpp
@@ -30,7 +30,7 @@ If the FLTK line is commented out and visibility options changed as indicated, t
 look like this:
 
 .. image:: ../_images/1a_model.png
-    :width: 400px
+    :width: 300px
     :align: center
 
 Then, we create the mesh for the model.
