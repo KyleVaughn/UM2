@@ -24,12 +24,13 @@ main() -> int
   std::vector<double> const radii = {r_fuel, r_gap, r_clad};
   // Materials need a name and a color. The color can be specified by name
   // (e.g. "forestgreen") or by RGB/RGBA values (e.g. {0.13, 0.55, 0.13, 1.0}).
-  // The color swatches can be found at http://juliagraphics.github.io/Colors.jl/dev/namedcolors/
-  // However, only colors without numbers in their names are supported. For example,
-  // ivory is supported, but ivory1 is not. 
+  // The color swatches can be found at
+  // http://juliagraphics.github.io/Colors.jl/dev/namedcolors/ However, only colors
+  // without numbers in their names are supported. For example, ivory is supported, but
+  // ivory1 is not.
   std::vector<um2::Material> const materials = {
       um2::Material("Fuel", "forestgreen"),
-      um2::Material("Gap", "pink"), 
+      um2::Material("Gap", "pink"),
       um2::Material("Clad", "slategray"),
   };
 
@@ -42,7 +43,7 @@ main() -> int
 
   // Uncomment the following line to view the model in Gmsh. This may not work
   // if you compiled UM2 using the "server.yaml" spack file, which disables fltk.
-  // Ctrl+Shift+N will open the options menu. Geometry->Visibility->Surfaces and 
+  // Ctrl+Shift+N will open the options menu. Geometry->Visibility->Surfaces and
   // Geometry->Aspect->Surface display->Solid may be used to display the model as
   // solid surfaces. The surfaces are colored by material.
   // Ctrl+Shift+V will open the visibility menu. The visibility of the "physical groups",

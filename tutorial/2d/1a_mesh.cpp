@@ -11,7 +11,7 @@ main() -> int
   um2::initialize();
 
   // We import the geometry from the brep file we created in the previous step.
-  // The "extra_info" flag is set to true so that we can import the groups and 
+  // The "extra_info" flag is set to true so that we can import the groups and
   // colors of the entities in the brep file.
   um2::gmsh::open("1a.brep", /*extra_info=*/true);
 
@@ -27,7 +27,7 @@ main() -> int
   model.makeCoarseCell({pitch, pitch});
 
   // The next level of the hierarchy is the ray tracing module (RTM). The RTM
-  // is a 2D array of coarse cells. We can create the RTM by providing 
+  // is a 2D array of coarse cells. We can create the RTM by providing
   // a vector of vectors of coarse cell IDs. In this case, we only have one coarse cell.
   model.makeRTM({{0}});
 
@@ -36,14 +36,14 @@ main() -> int
   // In this case, we only have one RTM.
   model.makeLattice({{0}});
 
-  // The next level of the hierarchy is the assembly. The assembly is a 1D array (a vertical
-  // stack) of lattices. We can create the assembly by providing a vector of lattice IDs.
-  // In 2D problems, each lattice should map one-to-one to an assembly.
+  // The next level of the hierarchy is the assembly. The assembly is a 1D array (a
+  // vertical stack) of lattices. We can create the assembly by providing a vector of
+  // lattice IDs. In 2D problems, each lattice should map one-to-one to an assembly.
   model.makeAssembly({0});
 
   // The next level of the hierarchy is the core. The core is a 2D array of assemblies.
-  // We can create the core by providing a vector of vectors of assembly IDs. In this case,
-  // we only have one assembly.
+  // We can create the core by providing a vector of vectors of assembly IDs. In this
+  // case, we only have one assembly.
   model.makeCore({{0}});
 
   // We finally have the full spatial hierarchy. We will now overlay the spatial
@@ -56,9 +56,9 @@ main() -> int
   // Uncomment the following line to see the spatial partition overlaid on the geometry.
   // um2::gmsh::fltk::run();
 
-  // Our model is now ready to be meshed. We will set the characteristic mesh size 
+  // Our model is now ready to be meshed. We will set the characteristic mesh size
   // to 0.1 cm for the entire model. This is the target mesh edge length.
-  double const lc = 0.1; // Mesh size = 0.1 cm 
+  double const lc = 0.1; // Mesh size = 0.1 cm
   um2::gmsh::model::mesh::setGlobalMeshSize(lc);
 
   // Alternatively, we can set the characteristic mesh size for groups of entities.
@@ -88,21 +88,21 @@ main() -> int
   // Uncomment the following line to see the mesh.
   // um2::gmsh::fltk::run();
 
-  // We can now export the mesh to a file. 
+  // We can now export the mesh to a file.
   um2::gmsh::write("1a.inp");
 
-  // We now have a fine MOC mesh to go inside of each of the CMFD coarse cells, but we need to 
-  // export a model which contains the MPACT spatial hierarchy information. To do this we will
-  // first use the mesh we just created to populate the otherwise empty coarse cells in the
-  // spatial partition.
+  // We now have a fine MOC mesh to go inside of each of the CMFD coarse cells, but we
+  // need to export a model which contains the MPACT spatial hierarchy information. To do
+  // this we will first use the mesh we just created to populate the otherwise empty
+  // coarse cells in the spatial partition.
   model.importCoarseCells("1a.inp");
 
   // We can now export the model to a file. This will create a file called "1a.xdmf".
-  // The XDMF file format consists of an XML file (1a.xdmf) and a binary HDF5 file (1a.h5).
-  // The XML file contains the spatial hierarchy information and the HDF5 file contains
-  // the mesh information. Therefore, both files are required to load the model into MPACT.
-  // Furthermore, the XML file contains the path to the HDF5 file, so if the h5 file is 
-  // renamed, the XML file must be updated to reflect the new name.
+  // The XDMF file format consists of an XML file (1a.xdmf) and a binary HDF5 file
+  // (1a.h5). The XML file contains the spatial hierarchy information and the HDF5 file
+  // contains the mesh information. Therefore, both files are required to load the model
+  // into MPACT. Furthermore, the XML file contains the path to the HDF5 file, so if the
+  // h5 file is renamed, the XML file must be updated to reflect the new name.
   //
   // We choose this format over the Abaqus .inp format or others due to the ability to
   // compress and chunk the HDF5 file. This allows for much faster loading of the model
