@@ -19,6 +19,7 @@ add_um2_test(./common/Log.cpp)
 add_um2_test(./common/ShortString.cpp)
 add_um2_test(./common/Color.cpp)
 add_um2_test(./common/to_vecvec.cpp)
+add_um2_test(./common/histogram.cpp)
 
 #===============================================================================
 # math
@@ -27,6 +28,7 @@ add_um2_test(./common/to_vecvec.cpp)
 add_um2_test(./math/morton.cpp)
 add_um2_test(./math/Vec.cpp)
 add_um2_test(./math/Mat.cpp)
+add_um2_test(./math/stats.cpp)
 
 #===============================================================================
 # geometry
