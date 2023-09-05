@@ -99,7 +99,7 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   capacity() const noexcept -> uint64_t;
 
-  // cppcheck-suppress functionConst justification: can't be const
+  // cppcheck-suppress functionConst; justification: can't be const
   PURE HOSTDEV [[nodiscard]] constexpr auto
   data() noexcept -> char *;
 
@@ -147,7 +147,7 @@ public:
   //==============================================================================
   // Methods
   //==============================================================================
-  // NOLINTBEGIN(readability-identifier-naming) justification: match std::string
+  // NOLINTBEGIN(readability-identifier-naming); justification: match std::string
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   compare(String const & s) const noexcept -> int;
@@ -184,7 +184,7 @@ public:
   getShortCap() noexcept -> uint64_t;
 
   HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  // cppcheck-suppress functionConst justification: can't be const
+  // cppcheck-suppress functionConst; justification: can't be const
   getLongPointer() noexcept -> char *;
 
   HOSTDEV [[nodiscard]] HIDDEN constexpr auto

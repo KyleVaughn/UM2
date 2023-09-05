@@ -14,7 +14,7 @@ TEST_CASE(default_constructor)
   assert(s.size() == 0);
   assert(s.capacity() == 22);
   for (int i = 0; i < 22; ++i) {
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     assert(s.data()[i] == '\0');
   }
 }
@@ -27,22 +27,22 @@ TEST_CASE(const_char_array_constructor)
   assert(s.size() == 5);
   assert(s.capacity() == 22);
   assert(!s.isLong());
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[0] == 'h');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[1] == 'e');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[2] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[3] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[4] == 'o');
 
   um2::String s2("This string will be too long to fit in the small string optimization");
   assert(s2.size() == 68);
   assert(s2.capacity() == 68);
   assert(s2.isLong());
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s2.data()[0] == 'T');
 }
 MAKE_CUDA_KERNEL(const_char_array_constructor);
@@ -56,19 +56,19 @@ TEST_CASE(copy_constructor)
   assert(s.size() == 5);
   assert(s.capacity() == 22);
   assert(!s.isLong());
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[0] == 'h');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[1] == 'e');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[2] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[3] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[4] == 'o');
   // Ensure that s0 is not modified
   s0.data()[0] = 'a';
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[0] == 'h');
 
   um2::String s1("This string will be too long to fit in the small string optimization");
@@ -77,11 +77,11 @@ TEST_CASE(copy_constructor)
   assert(s2.size() == 68);
   assert(s2.capacity() == 68);
   assert(s2.isLong());
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s2.data()[0] == 'T');
   // Check that s1 is not modified
   s1.data()[0] = 'a';
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s2.data()[0] == 'T');
   // clang-tidy says:
   // Potential leak of memory pointed to by 's2._r..l.data'
@@ -103,7 +103,7 @@ TEST_CASE(move_constructor)
   assert(s2.size() == 68);
   assert(s2.capacity() == 68);
   assert(s2.isLong());
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s2.data()[0] == 'T');
 }
 MAKE_CUDA_KERNEL(move_constructor);
@@ -116,7 +116,7 @@ TEST_CASE(const_char_constructor)
   ASSERT(s.size() == 12);
   ASSERT(s.capacity() == 22);
   ASSERT(!s.isLong());
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   ASSERT(s.data()[0] == 'S');
   const char * input2 =
       "This string will be too long to fit in the small string optimization";
@@ -124,7 +124,7 @@ TEST_CASE(const_char_constructor)
   ASSERT(s2.size() == 68);
   ASSERT(s2.capacity() == 68);
   ASSERT(s2.isLong());
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   ASSERT(s2.data()[0] == 'T');
 }
 MAKE_CUDA_KERNEL(const_char_constructor);
@@ -143,21 +143,21 @@ TEST_CASE(assign_operator)
   assert(s.size() == 5);
   assert(s.capacity() == 22);
   assert(!s.isLong());
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[0] == 'h');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[1] == 'e');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[2] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[3] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[4] == 'o');
   // Ensure that s0 is not modified
-  // cppcheck-suppress unreadVariable justification: We are checking that s is not
+  // cppcheck-suppress unreadVariable; justification: We are checking that s is not
   // modified
   s0.data()[0] = 'a';
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[0] == 'h');
 
   um2::String s1("This string will be too long to fit in the small string optimization");
@@ -167,13 +167,13 @@ TEST_CASE(assign_operator)
   assert(s2.size() == 68);
   assert(s2.capacity() == 68);
   assert(s2.isLong());
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s2.data()[0] == 'T');
   // Check that s1 is not modified
-  // cppcheck-suppress unreadVariable justification: We are checking that s2 is not
+  // cppcheck-suppress unreadVariable; justification: We are checking that s2 is not
   // modified
   s1.data()[0] = 'a';
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s2.data()[0] == 'T');
   // For the same reasons as in the copy constructor test, we suppress the clang-tidy
   // warning NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks) justified above

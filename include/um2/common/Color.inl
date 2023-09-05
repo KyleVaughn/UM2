@@ -272,13 +272,13 @@ toColor(ShortString const & name) noexcept -> Color
   // Binary search
   NamedColor const * first = addressof(named_colors[0]);
   NamedColor const * last = first + num_named_colors; // 1 past the end
-  auto length = last - first;
-  while (0 < length) {
-    auto half = length / 2;
+  auto len = last - first;
+  while (0 < len) {
+    auto half = len / 2;
     if (first[half].name < name) {
-      first += length - half;
+      first += len - half;
     }
-    length = half;
+    len = half;
   }
   return first->color;
 }

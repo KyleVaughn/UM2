@@ -50,7 +50,7 @@ TEST_CASE(copy_constructor)
   um2::Vector<T> v2(v);
   ASSERT(v2.size() == 10);
   ASSERT(v2.capacity() == 10);
-  // cppcheck-suppress mismatchingContainerExpression justification: false positive
+  // cppcheck-suppress mismatchingContainerExpression; justification: false positive
   ASSERT(v.cbegin() != v2.cbegin());
   for (int i = 0; i < 10; i++) {
     if constexpr (std::floating_point<T>) {
@@ -123,7 +123,7 @@ TEST_CASE(operator_copy)
   v3 = v;
   ASSERT(v3.size() == 10);
   ASSERT(v3.capacity() == 10);
-  // cppcheck-suppress mismatchingContainerExpression justification: false positive
+  // cppcheck-suppress mismatchingContainerExpression; justification: false positive
   ASSERT(v.cbegin() != v3.cbegin());
   for (int i = 0; i < 10; i++) {
     if constexpr (std::floating_point<T>) {
@@ -150,7 +150,7 @@ TEST_CASE(operator_move)
 // Methods
 //==============================================================================--
 
-// NOLINTBEGIN justification: Just a quick test struct
+// NOLINTBEGIN; justification: Just a quick test struct
 #ifndef __CUDA_ARCH__
 int count = 0;
 #else
@@ -186,17 +186,17 @@ TEST_CASE(resize)
   v.resize(0);
   ASSERT(v.empty());
   ASSERT(v.capacity() == 0);
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   ASSERT(v.data() == nullptr);
   v.resize(1);
   ASSERT(v.size() == 1);
   ASSERT(v.capacity() == 1);
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   ASSERT(v.data() != nullptr);
   v.resize(2);
   ASSERT(v.size() == 2);
   ASSERT(v.capacity() == 2);
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   ASSERT(v.data() != nullptr);
 }
 
@@ -211,7 +211,7 @@ TEST_CASE(push_back)
   if constexpr (std::floating_point<T>) {
     ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
   } else {
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[0] == static_cast<T>(1));
   }
   v.push_back(2);
@@ -221,9 +221,9 @@ TEST_CASE(push_back)
     ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
     ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
   } else {
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[0] == static_cast<T>(1));
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[1] == static_cast<T>(2));
   }
   v.push_back(3);
@@ -234,11 +234,11 @@ TEST_CASE(push_back)
     ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
     ASSERT_NEAR(v.data()[2], static_cast<T>(3), static_cast<T>(1e-6));
   } else {
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[0] == static_cast<T>(1));
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[1] == static_cast<T>(2));
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[2] == static_cast<T>(3));
   }
   v.clear();
@@ -256,15 +256,15 @@ TEST_CASE(push_back)
     ASSERT_NEAR(v.data()[3], static_cast<T>(4), static_cast<T>(1e-6));
     ASSERT_NEAR(v.data()[4], static_cast<T>(5), static_cast<T>(1e-6));
   } else {
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[0] == static_cast<T>(1));
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[1] == static_cast<T>(2));
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[2] == static_cast<T>(3));
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[3] == static_cast<T>(4));
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[4] == static_cast<T>(5));
   }
 }
@@ -283,7 +283,7 @@ TEST_CASE(push_back_rval_ref)
   if constexpr (std::floating_point<T>) {
     ASSERT_NEAR(my_vector.data()[0].data()[0], static_cast<T>(1), static_cast<T>(1e-6));
   } else {
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(my_vector.data()[0].data()[0] == static_cast<T>(1));
   }
 }

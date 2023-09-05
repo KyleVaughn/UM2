@@ -34,21 +34,21 @@ struct Vec {
   //==============================================================================
 
   PURE HOSTDEV constexpr auto
-  // cppcheck-suppress functionConst justification: can't be const
+  // cppcheck-suppress functionConst; justification: can't be const
   operator[](Size i) noexcept -> T &;
 
   PURE HOSTDEV constexpr auto
   operator[](Size i) const noexcept -> T const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  // cppcheck-suppress functionConst justification: can't be const
+  // cppcheck-suppress functionConst; justification: can't be const
   begin() noexcept -> T *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   begin() const noexcept -> T const *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  // cppcheck-suppress functionConst justification: can't be const
+  // cppcheck-suppress functionConst; justification: can't be const
   end() noexcept -> T *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -67,12 +67,12 @@ struct Vec {
   template <class... Is>
     requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
              !(std::same_as<T, Is> && ...))
-  // cppcheck-suppress noExplicitConstructor justified
+  // cppcheck-suppress noExplicitConstructor; justified
   HOSTDEV constexpr Vec(Is const... args) noexcept;
 
   template <class... Ts>
     requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...))
-  // cppcheck-suppress noExplicitConstructor justified
+  // cppcheck-suppress noExplicitConstructor; justified
   HOSTDEV constexpr Vec(Ts const... args) noexcept;
   // NOLINTEND(google-explicit-constructor)
 

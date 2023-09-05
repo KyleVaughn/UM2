@@ -27,6 +27,7 @@ validateMesh(FaceVertexMesh<P, N, D, T, I> & mesh)
   }
   // Revert the scaling
   for (auto & v : vertices_copy) {
+    // cppcheck-suppress useStlAlgorithm; justification: This is less verbose
     v /= normalization;
   }
   Size const num_vertices = mesh.numVertices();

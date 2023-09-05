@@ -35,14 +35,14 @@ struct Mat {
   //==============================================================================
 
   PURE HOSTDEV constexpr auto
-  // cppcheck-suppress functionConst justification: can't be const
+  // cppcheck-suppress functionConst; justification: can't be const
   col(Size i) noexcept -> Col &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   col(Size i) const noexcept -> Col const &;
 
   PURE HOSTDEV constexpr auto
-  // cppcheck-suppress functionConst justification: can't be const
+  // cppcheck-suppress functionConst; justification: can't be const
   operator()(Size i, Size j) noexcept -> T &;
 
   PURE HOSTDEV constexpr auto

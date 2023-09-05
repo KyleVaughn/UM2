@@ -408,7 +408,6 @@ um2MPACTIntersectCoarseCell(void * const model, Int const cc_id, Float const ori
   }
   default:
     um2::Log::error("Mesh type not supported");
-    *ierr = 1;
     break;
   }
   *ierr = 0;
@@ -471,13 +470,10 @@ um2MPACTCoarseCellHeights(void * model, Int * const n, Int ** const cc_ids,
         // For each coarse cell in the rtm
         for (auto const & cc_id : rtm.children) {
           // If the id, dz pair is not in the vector, add it
-          bool add_id = true;
-          for (auto const & pair : id_dz) {
-            if (pair.first == cc_id && std::abs(pair.second - dz) < eps) {
-              add_id = false;
-              break;
-            }
-          }
+          bool const add_id =
+              !std::any_of(id_dz.begin(), id_dz.end(), [cc_id, dz, eps](auto const & p) {
+                return p.first == cc_id && std::abs(p.second - dz) < eps;
+              });
           if (add_id) {
             id_dz.emplace_back(cc_id, dz);
           }
@@ -534,13 +530,10 @@ um2MPACTRTMHeights(void * model, Int * const n, Int ** const rtm_ids, Float ** h
       // For each rtm in the lattice
       for (auto const & rtm_id : lattice.children) {
         // If the id, dz pair is not in the vector, add it
-        bool add_id = true;
-        for (auto const & pair : id_dz) {
-          if (pair.first == rtm_id && std::abs(pair.second - dz) < eps) {
-            add_id = false;
-            break;
-          }
-        }
+        bool const add_id =
+            !std::any_of(id_dz.begin(), id_dz.end(), [rtm_id, dz, eps](auto const & p) {
+              return p.first == rtm_id && std::abs(p.second - dz) < eps;
+            });
         if (add_id) {
           id_dz.emplace_back(rtm_id, dz);
         }
@@ -593,13 +586,10 @@ um2MPACTLatticeHeights(void * model, Int * const n, Int ** const lat_ids,
       auto const bb = assembly.getBox(ilat);
       Float const dz = bb.width();
       // If the id, dz pair is not in the vector, add it
-      bool add_id = true;
-      for (auto const & pair : id_dz) {
-        if (pair.first == lat_id && std::abs(pair.second - dz) < eps) {
-          add_id = false;
-          break;
-        }
-      }
+      bool const add_id =
+          !std::any_of(id_dz.begin(), id_dz.end(), [lat_id, dz, eps](auto const & p) {
+            return p.first == lat_id && std::abs(p.second - dz) < eps;
+          });
       if (add_id) {
         id_dz.emplace_back(lat_id, dz);
       }

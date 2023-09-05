@@ -14,7 +14,7 @@ TEST_CASE(default_constructor)
   assert(s.size() == 0);
   static_assert(s.capacity() == 31);
   for (int i = 0; i < 31; ++i) {
-    // cppcheck-suppress assertWithSideEffect justification: false positive
+    // cppcheck-suppress assertWithSideEffect; justification: false positive
     assert(s.data()[i] == '\0');
   }
 }
@@ -26,15 +26,15 @@ TEST_CASE(const_char_array_constructor)
   um2::ShortString s("hello");
   assert(s.size() == 5);
   static_assert(s.capacity() == 31);
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[0] == 'h');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[1] == 'e');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[2] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[3] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[4] == 'o');
 }
 MAKE_CUDA_KERNEL(const_char_array_constructor);
@@ -45,19 +45,19 @@ TEST_CASE(copy_constructor)
   um2::ShortString s0("hello");
   um2::ShortString s(s0);
   assert(s.size() == 5);
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[0] == 'h');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[1] == 'e');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[2] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[3] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[4] == 'o');
   // Ensure that s0 is not modified
   s0.data()[0] = 'a';
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[0] == 'h');
 }
 MAKE_CUDA_KERNEL(copy_constructor);
@@ -67,15 +67,15 @@ TEST_CASE(const_char_pointer_constructor)
 {
   um2::ShortString s("hello");
   assert(s.size() == 5);
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[0] == 'h');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[1] == 'e');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[2] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[3] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[4] == 'o');
 }
 MAKE_CUDA_KERNEL(const_char_pointer_constructor);
@@ -86,7 +86,7 @@ TEST_CASE(move_constructor)
   um2::ShortString s1("Garbage");
   um2::ShortString s2(um2::move(s1));
   assert(s2.size() == 7);
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s2.data()[0] == 'G');
 }
 MAKE_CUDA_KERNEL(move_constructor);
@@ -102,20 +102,20 @@ TEST_CASE(assign_operator)
   um2::ShortString s("Garbage");
   s = s0;
   assert(s.size() == 5);
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[0] == 'h');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[1] == 'e');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[2] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[3] == 'l');
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[4] == 'o');
   // Ensure that s0 is not modified
-  // cppcheck-suppress unreadVariable justification: checking that s is not modified
+  // cppcheck-suppress unreadVariable; justification: checking that s is not modified
   s0.data()[0] = 'a';
-  // cppcheck-suppress assertWithSideEffect justification: false positive
+  // cppcheck-suppress assertWithSideEffect; justification: false positive
   assert(s.data()[0] == 'h');
 }
 MAKE_CUDA_KERNEL(assign_operator);

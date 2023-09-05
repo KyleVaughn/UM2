@@ -8,9 +8,9 @@
 #include <fstream>
 
 #if UM2_ENABLE_FLOAT64 == 1
-constexpr Float eps = 1e-6;
+constexpr Float test_eps = 1e-6;
 #else
-constexpr auto eps = static_cast<Float>(1e-6);
+constexpr auto test_eps = static_cast<Float>(1e-6);
 #endif
 
 // template <typename T, typename I>
@@ -120,7 +120,9 @@ TEST_CASE(makeRTM)
 {
   um2::mpact::SpatialPartition model;
   um2::Vec2<Float> const dxdy(2, 1);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeCoarseCell(dxdy) == 0);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeCoarseCell(dxdy) == 1);
   ASSERT(model.numCoarseCells() == 2);
   std::vector<std::vector<Size>> const cc_ids = {
@@ -135,20 +137,24 @@ TEST_CASE(makeRTM)
   um2::RectilinearGrid2<Float> const & grid = model.rtms[0].grid;
   ASSERT(grid.divs[0].size() == 3);
   ASSERT(grid.divs[1].size() == 2);
-  ASSERT_NEAR(grid.divs[0][0], 0, eps);
-  ASSERT_NEAR(grid.divs[0][1], 2, eps);
-  ASSERT_NEAR(grid.divs[0][2], 4, eps);
-  ASSERT_NEAR(grid.divs[1][0], 0, eps);
-  ASSERT_NEAR(grid.divs[1][1], 1, eps);
+  ASSERT_NEAR(grid.divs[0][0], 0, test_eps);
+  ASSERT_NEAR(grid.divs[0][1], 2, test_eps);
+  ASSERT_NEAR(grid.divs[0][2], 4, test_eps);
+  ASSERT_NEAR(grid.divs[1][0], 0, test_eps);
+  ASSERT_NEAR(grid.divs[1][1], 1, test_eps);
   model.clear();
 
   std::vector<std::vector<Size>> const cc_ids2 = {
       {2, 3},
       {0, 1}
   };
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeCoarseCell(dxdy) == 0);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeCoarseCell(dxdy) == 1);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeCoarseCell(dxdy) == 2);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeCoarseCell(dxdy) == 3);
   id = model.makeRTM(cc_ids2);
   ASSERT(id == 0);
@@ -161,12 +167,12 @@ TEST_CASE(makeRTM)
   um2::RectilinearGrid2<Float> const & grid2 = model.rtms[0].grid;
   ASSERT(grid2.divs[0].size() == 3);
   ASSERT(grid2.divs[1].size() == 3);
-  ASSERT_NEAR(grid2.divs[0][0], 0, eps);
-  ASSERT_NEAR(grid2.divs[0][1], 2, eps);
-  ASSERT_NEAR(grid2.divs[0][2], 4, eps);
-  ASSERT_NEAR(grid2.divs[1][0], 0, eps);
-  ASSERT_NEAR(grid2.divs[1][1], 1, eps);
-  ASSERT_NEAR(grid2.divs[1][2], 2, eps);
+  ASSERT_NEAR(grid2.divs[0][0], 0, test_eps);
+  ASSERT_NEAR(grid2.divs[0][1], 2, test_eps);
+  ASSERT_NEAR(grid2.divs[0][2], 4, test_eps);
+  ASSERT_NEAR(grid2.divs[1][0], 0, test_eps);
+  ASSERT_NEAR(grid2.divs[1][1], 1, test_eps);
+  ASSERT_NEAR(grid2.divs[1][2], 2, test_eps);
 }
 
 TEST_CASE(makeLattice)
@@ -174,7 +180,9 @@ TEST_CASE(makeLattice)
   um2::mpact::SpatialPartition model;
   um2::Vec2<Float> const dxdy0(3, 3);
   um2::Vec2<Float> const dxdy1(4, 4);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeCoarseCell(dxdy0) == 0);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeCoarseCell(dxdy1) == 1);
   std::vector<std::vector<Size>> const cc_ids_44 = {
       {0, 0, 0, 0},
@@ -187,7 +195,9 @@ TEST_CASE(makeLattice)
       {1, 1, 1},
       {1, 1, 1}
   };
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeRTM(cc_ids_33) == 0);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeRTM(cc_ids_44) == 1);
   std::vector<std::vector<Size>> const rtm_ids = {
       {0, 1}
@@ -201,24 +211,28 @@ TEST_CASE(makeLattice)
   um2::RegularGrid2<Float> const & grid = model.lattices[0].grid;
   ASSERT(grid.numXCells() == 2);
   ASSERT(grid.numYCells() == 1);
-  ASSERT_NEAR(grid.spacing[0], 12, eps);
-  ASSERT_NEAR(grid.spacing[1], 12, eps);
-  ASSERT_NEAR(grid.minima[0], 0, eps);
-  ASSERT_NEAR(grid.minima[1], 0, eps);
+  ASSERT_NEAR(grid.spacing[0], 12, test_eps);
+  ASSERT_NEAR(grid.spacing[1], 12, test_eps);
+  ASSERT_NEAR(grid.minima[0], 0, test_eps);
+  ASSERT_NEAR(grid.minima[1], 0, test_eps);
 }
 
 TEST_CASE(makeAssembly)
 {
   um2::mpact::SpatialPartition model;
   um2::Vec2<Float> const dxdy(1, 1);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeCoarseCell(dxdy) == 0);
   std::vector<std::vector<Size>> const cc_ids = {
       {0, 0},
       {0, 0}
   };
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeRTM(cc_ids) == 0);
   std::vector<std::vector<Size>> const rtm_ids = {{0}};
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeLattice(rtm_ids) == 0);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeLattice(rtm_ids) == 1);
   std::vector<Size> const lat_ids = {0, 1, 0};
   std::vector<Float> const lat_z = {0, 2, 3, 4};
@@ -231,24 +245,28 @@ TEST_CASE(makeAssembly)
   ASSERT(model.assemblies[0].children[2] == 0);
   um2::RectilinearGrid1<Float> const & grid = model.assemblies[0].grid;
   ASSERT(grid.divs[0].size() == 4);
-  ASSERT_NEAR(grid.divs[0][0], 0, eps);
-  ASSERT_NEAR(grid.divs[0][1], 2, eps);
-  ASSERT_NEAR(grid.divs[0][2], 3, eps);
-  ASSERT_NEAR(grid.divs[0][3], 4, eps);
+  ASSERT_NEAR(grid.divs[0][0], 0, test_eps);
+  ASSERT_NEAR(grid.divs[0][1], 2, test_eps);
+  ASSERT_NEAR(grid.divs[0][2], 3, test_eps);
+  ASSERT_NEAR(grid.divs[0][3], 4, test_eps);
 }
 
 TEST_CASE(makeAssembly_2d)
 {
   um2::mpact::SpatialPartition model;
   um2::Vec2<Float> const dxdy(1, 1);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeCoarseCell(dxdy) == 0);
   std::vector<std::vector<Size>> const cc_ids = {
       {0, 0},
       {0, 0}
   };
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeRTM(cc_ids) == 0);
   std::vector<std::vector<Size>> const rtm_ids = {{0}};
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeLattice(rtm_ids) == 0);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeLattice(rtm_ids) == 1);
   std::vector<Size> const lat_ids = {0};
   Size const id = model.makeAssembly(lat_ids);
@@ -258,29 +276,36 @@ TEST_CASE(makeAssembly_2d)
   ASSERT(model.assemblies[0].children[0] == 0);
   um2::RectilinearGrid1<Float> const & grid = model.assemblies[0].grid;
   ASSERT(grid.divs[0].size() == 2);
-  ASSERT_NEAR(grid.divs[0][0], -1, eps);
-  ASSERT_NEAR(grid.divs[0][1], 1, eps);
+  ASSERT_NEAR(grid.divs[0][0], -1, test_eps);
+  ASSERT_NEAR(grid.divs[0][1], 1, test_eps);
 }
 
 TEST_CASE(makeCore)
 {
   um2::mpact::SpatialPartition model;
   um2::Vec2<Float> const dxdy(2, 1);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeCoarseCell(dxdy) == 0);
 
   std::vector<std::vector<Size>> const cc_ids = {{0}};
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeRTM(cc_ids) == 0);
 
   std::vector<std::vector<Size>> const rtm_ids = {{0}};
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeLattice(rtm_ids) == 0);
 
   std::vector<Size> const lat_ids1 = {0, 0, 0};
   std::vector<Float> const lat_z1 = {0, 2, 3, 4};
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeAssembly(lat_ids1, lat_z1) == 0);
   std::vector<Size> const lat_ids2 = {0, 0};
   std::vector<Float> const lat_z2 = {0, 3, 4};
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeAssembly(lat_ids2, lat_z2) == 1);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeAssembly(lat_ids1, lat_z1) == 2);
+  // cppcheck-suppress assertWithSideEffect; justified
   ASSERT(model.makeAssembly(lat_ids2, lat_z2) == 3);
 
   std::vector<std::vector<Size>> const asy_ids = {
@@ -296,12 +321,12 @@ TEST_CASE(makeCore)
   ASSERT(model.core.children[3] == 3);
   ASSERT(model.core.grid.divs[0].size() == 3);
   ASSERT(model.core.grid.divs[1].size() == 3);
-  ASSERT_NEAR(model.core.grid.divs[0][0], 0, eps);
-  ASSERT_NEAR(model.core.grid.divs[0][1], 2, eps);
-  ASSERT_NEAR(model.core.grid.divs[0][2], 4, eps);
-  ASSERT_NEAR(model.core.grid.divs[1][0], 0, eps);
-  ASSERT_NEAR(model.core.grid.divs[1][1], 1, eps);
-  ASSERT_NEAR(model.core.grid.divs[1][2], 2, eps);
+  ASSERT_NEAR(model.core.grid.divs[0][0], 0, test_eps);
+  ASSERT_NEAR(model.core.grid.divs[0][1], 2, test_eps);
+  ASSERT_NEAR(model.core.grid.divs[0][2], 4, test_eps);
+  ASSERT_NEAR(model.core.grid.divs[1][0], 0, test_eps);
+  ASSERT_NEAR(model.core.grid.divs[1][1], 1, test_eps);
+  ASSERT_NEAR(model.core.grid.divs[1][2], 2, test_eps);
 }
 
 TEST_CASE(importCoarseCells)
