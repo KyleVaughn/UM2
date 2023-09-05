@@ -289,7 +289,7 @@ if (UM2_USE_CLANG_TIDY)
 endif()
 
 # cppcheck
-if (UM2_ENABLE_CPPCHECK)
+if (UM2_USE_CPPCHECK)
   # Concatenate the cppcheck arguments into a single string
   string(CONCAT CPPCHECK_ARGS
           "cppcheck"
@@ -306,7 +306,7 @@ if (UM2_ENABLE_CPPCHECK)
 endif()
 
 # coverage
-if (UM2_ENABLE_COVERAGE)
+if (UM2_USE_COVERAGE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
   target_link_libraries(um2 PRIVATE gcov)
 endif()

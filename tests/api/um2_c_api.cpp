@@ -3,9 +3,9 @@
 #include "../test_macros.hpp"
 
 #if UM2_ENABLE_FLOAT64
-constexpr Float eps = 1e-4;
+constexpr Float test_eps = 1e-4;
 #else
-constexpr Float eps = 1e-4F;
+constexpr Float test_eps = 1e-4F;
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -100,7 +100,7 @@ TEST_CASE(import_MPACT_model)
   ASSERT(ierr == 0);
 }
 
-TEST_CASE(num_cells)
+TEST_CASE(mpact_num_cells)
 {
   Int ierr = -1;
   um2Initialize("warn", 1, 2, &ierr);
@@ -224,18 +224,18 @@ TEST_CASE(coarse_cell_functions)
 #else
   Float const expected_dx = 1.26F;
 #endif
-  ASSERT_NEAR(dx, expected_dx, eps);
+  ASSERT_NEAR(dx, expected_dx, test_eps);
   dx = -1;
   um2MPACTRTMWidth(sp, 0, &dx, &ierr);
   ASSERT(ierr == 0);
   ierr = -1;
-  ASSERT_NEAR(dx, expected_dx, eps);
+  ASSERT_NEAR(dx, expected_dx, test_eps);
   dx = -1;
   Float dy = -1;
   um2MPACTCoarseCellHeight(sp, 0, &dy, &ierr);
   ASSERT(ierr == 0);
   ierr = -1;
-  ASSERT_NEAR(dy, expected_dx, eps);
+  ASSERT_NEAR(dy, expected_dx, test_eps);
   dy = -1;
 
   // heights
@@ -249,7 +249,7 @@ TEST_CASE(coarse_cell_functions)
   ASSERT(cc_ids);
   ASSERT(cc_heights);
   ASSERT(cc_ids[0] == 0);
-  ASSERT_NEAR(cc_heights[0], static_cast<Float>(2), eps);
+  ASSERT_NEAR(cc_heights[0], static_cast<Float>(2), test_eps);
   free(cc_ids);
   cc_ids = nullptr;
   free(cc_heights);
@@ -261,7 +261,7 @@ TEST_CASE(coarse_cell_functions)
   ierr = -1;
   ASSERT(n == 1);
   n = -1;
-  ASSERT_NEAR(ass_dzs[0], static_cast<Float>(2), eps);
+  ASSERT_NEAR(ass_dzs[0], static_cast<Float>(2), test_eps);
 
   // Coarse cell face areas
   Float * areas = nullptr;
@@ -274,7 +274,7 @@ TEST_CASE(coarse_cell_functions)
   for (Int i = 0; i < 212; ++i) {
     area_sum += areas[i];
   }
-  ASSERT_NEAR(area_sum, expected_dx * expected_dx, eps);
+  ASSERT_NEAR(area_sum, expected_dx * expected_dx, test_eps);
   free(areas);
   areas = nullptr;
 
@@ -341,20 +341,20 @@ TEST_CASE(intersect)
   ierr = -1;
   ASSERT(n == 4);
   n = buffer_size;
-  ASSERT_NEAR(buffer[0], static_cast<Float>(0.0), eps);
-  ASSERT_NEAR(buffer[1], static_cast<Float>(0.5), eps);
-  ASSERT_NEAR(buffer[2], static_cast<Float>(0.5), eps);
-  ASSERT_NEAR(buffer[3], static_cast<Float>(1.0), eps);
+  ASSERT_NEAR(buffer[0], static_cast<Float>(0.0), test_eps);
+  ASSERT_NEAR(buffer[1], static_cast<Float>(0.5), test_eps);
+  ASSERT_NEAR(buffer[2], static_cast<Float>(0.5), test_eps);
+  ASSERT_NEAR(buffer[3], static_cast<Float>(1.0), test_eps);
 
   um2MPACTIntersectCoarseCell(sp, 1, ox, oy, dx, dy, buffer, &n, &ierr);
   ASSERT(ierr == 0);
   ierr = -1;
   ASSERT(n == 4);
   n = buffer_size;
-  ASSERT_NEAR(buffer[0], static_cast<Float>(0.0), eps);
-  ASSERT_NEAR(buffer[1], static_cast<Float>(0.5), eps);
-  ASSERT_NEAR(buffer[2], static_cast<Float>(0.5), eps);
-  ASSERT_NEAR(buffer[3], static_cast<Float>(1.0), eps);
+  ASSERT_NEAR(buffer[0], static_cast<Float>(0.0), test_eps);
+  ASSERT_NEAR(buffer[1], static_cast<Float>(0.5), test_eps);
+  ASSERT_NEAR(buffer[2], static_cast<Float>(0.5), test_eps);
+  ASSERT_NEAR(buffer[3], static_cast<Float>(1.0), test_eps);
   free(buffer);
 
   Int mesh_type = -1;
@@ -387,14 +387,14 @@ TEST_CASE(intersect)
   ASSERT(vertices);
   auto const zero = static_cast<Float>(0);
   auto const one = static_cast<Float>(1);
-  ASSERT_NEAR(vertices[0], zero, eps);
-  ASSERT_NEAR(vertices[1], zero, eps);
-  ASSERT_NEAR(vertices[2], one, eps);
-  ASSERT_NEAR(vertices[3], zero, eps);
-  ASSERT_NEAR(vertices[4], one, eps);
-  ASSERT_NEAR(vertices[5], one, eps);
-  ASSERT_NEAR(vertices[6], zero, eps);
-  ASSERT_NEAR(vertices[7], one, eps);
+  ASSERT_NEAR(vertices[0], zero, test_eps);
+  ASSERT_NEAR(vertices[1], zero, test_eps);
+  ASSERT_NEAR(vertices[2], one, test_eps);
+  ASSERT_NEAR(vertices[3], zero, test_eps);
+  ASSERT_NEAR(vertices[4], one, test_eps);
+  ASSERT_NEAR(vertices[5], one, test_eps);
+  ASSERT_NEAR(vertices[6], zero, test_eps);
+  ASSERT_NEAR(vertices[7], one, test_eps);
 
   um2Finalize(&ierr);
   ASSERT(ierr == 0);
@@ -406,7 +406,7 @@ TEST_SUITE(c_api)
   TEST(initialize_finalize);
   TEST(new_delete_spatial_partition);
   TEST(import_MPACT_model);
-  TEST(num_cells);
+  TEST(mpact_num_cells);
   TEST(get_child);
   TEST(coarse_cell_functions);
   TEST(intersect);

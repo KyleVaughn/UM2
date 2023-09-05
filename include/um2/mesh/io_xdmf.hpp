@@ -98,6 +98,7 @@ static void writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
   // Create HDF5 data set
   H5::DataSet const h5dataset = h5group.createDataSet("Geometry", h5type, h5space);
   // Create an xy or xyz array
+  // cppcheck-suppress constStatement; justification: cppcheck is scared *const
   T * const xyz = new T[num_verts * dim];
   if (dim == 2) {
     for (size_t i = 0; i < num_verts; ++i) {
