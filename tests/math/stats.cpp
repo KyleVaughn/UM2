@@ -6,7 +6,7 @@
 
 template <std::floating_point T>
 TEST_CASE(mean)
-{ 
+{
   std::vector<T> v{1, 2, 3, 4, 5};
   T const m = um2::mean(v.data(), v.data() + v.size());
   ASSERT_NEAR(m, static_cast<T>(3), static_cast<T>(1e-6));

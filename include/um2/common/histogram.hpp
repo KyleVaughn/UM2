@@ -14,13 +14,14 @@ namespace um2
 {
 
 //==============================================================================
-// HISTOGRAM 
+// HISTOGRAM
 //==============================================================================
 //
 // A stack allocated string that can hold up to 31 characters.
 
 template <std::floating_point T>
-void printHistogram(std::vector<T> const & data, size_t nbins = 15, size_t width = 30)
+void
+printHistogram(std::vector<T> const & data, size_t nbins = 15, size_t width = 30)
 {
   assert(std::is_sorted(data.begin(), data.end()));
 
@@ -44,7 +45,8 @@ void printHistogram(std::vector<T> const & data, size_t nbins = 15, size_t width
   // Normalize the counts
   std::vector<T> normalized_counts(nbins);
   auto const max_count = static_cast<T>(*std::max_element(counts.begin(), counts.end()));
-  std::transform(counts.begin(), counts.end(), normalized_counts.begin(), 
+  std::transform(
+      counts.begin(), counts.end(), normalized_counts.begin(),
       [max_count](auto const & count) { return static_cast<T>(count) / max_count; });
 
   // Write the histogram
@@ -59,16 +61,16 @@ void printHistogram(std::vector<T> const & data, size_t nbins = 15, size_t width
     }
     std::cout << '[';
     if (any_negative && bin_min >= 0) {
-      std::cout << ' '; 
+      std::cout << ' ';
     }
-    std::cout << std::setprecision(3) << std::scientific << bin_min; 
+    std::cout << std::setprecision(3) << std::scientific << bin_min;
 
     T const bin_max = minval + static_cast<T>(i) * bin_width + bin_width;
     std::cout << " - ";
     if (any_negative && bin_max >= 0) {
-      std::cout << ' '; 
+      std::cout << ' ';
     }
-    std::cout << std::scientific << bin_max << ") "; 
+    std::cout << std::scientific << bin_max << ") ";
     // Print the bar
     auto bars = static_cast<int>(normalized_counts[i] * static_cast<T>(8 * width));
     while (bars > 8) {
@@ -80,8 +82,9 @@ void printHistogram(std::vector<T> const & data, size_t nbins = 15, size_t width
     }
     std::cout << counts[i] << '\n';
   }
-  // min: 2.500 ns (0.00% GC); mean: 1.181 μs (0.00% GC); median: 5.334 ns (0.00% GC); max: 3.663 μs (0.00% GC).
-  T const * const begin_ptr = data.data(); 
+  // min: 2.500 ns (0.00% GC); mean: 1.181 μs (0.00% GC); median: 5.334 ns (0.00% GC);
+  // max: 3.663 μs (0.00% GC).
+  T const * const begin_ptr = data.data();
   T const * const end_ptr = data.data() + data.size();
   std::cout << "min: " << minval;
   std::cout << "; mean: " << mean(begin_ptr, end_ptr);

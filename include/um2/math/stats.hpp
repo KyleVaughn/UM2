@@ -41,7 +41,7 @@ median(T const * begin, T const * end) -> T
     return *mid;
   }
   // Otherwise, return the average of the two middle elements.
-  return (*mid + *(mid - 1)) / static_cast<T>(2); 
+  return (*mid + *(mid - 1)) / static_cast<T>(2);
 }
 
 //=============================================================================
@@ -54,9 +54,10 @@ variance(T const * begin, T const * end) -> T
 {
   assert(begin != end);
   auto const m = mean(begin, end);
-  return std::accumulate(begin, end, static_cast<T>(0), [m](auto const acc, auto const x) {
-    return acc + (x - m) * (x - m);
-  }) / static_cast<T>(end - begin - 1);
+  return std::accumulate(
+             begin, end, static_cast<T>(0),
+             [m](auto const acc, auto const x) { return acc + (x - m) * (x - m); }) /
+         static_cast<T>(end - begin - 1);
 }
 
 //=============================================================================
