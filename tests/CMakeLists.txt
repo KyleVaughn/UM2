@@ -5,8 +5,10 @@ include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
 #===============================================================================
 
 add_um2_test(./stdlib/algorithm/copy.cpp)
+add_um2_test(./stdlib/algorithm/sort.cpp)
 add_um2_test(./stdlib/memory/addressof.cpp)
 add_um2_test(./stdlib/memory/construct_at.cpp)
+add_um2_test(./stdlib/numeric/iota.cpp)
 add_um2_test(./stdlib/Vector.cpp)
 add_um2_test(./stdlib/sto.cpp)
 add_um2_test(./stdlib/String.cpp)
@@ -18,6 +20,7 @@ add_um2_test(./stdlib/String.cpp)
 add_um2_test(./common/Log.cpp)
 add_um2_test(./common/ShortString.cpp)
 add_um2_test(./common/Color.cpp)
+add_um2_test(./common/permutation.cpp)
 add_um2_test(./common/to_vecvec.cpp)
 add_um2_test(./common/histogram.cpp)
 

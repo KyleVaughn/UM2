@@ -57,6 +57,21 @@ TEST_CASE(boundingBox)
 }
 
 template <std::floating_point T, std::signed_integral I>
+TEST_CASE(intersect)
+{
+  um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
+  um2::Ray2<T> const ray({static_cast<T>(0), static_cast<T>(0.5)}, {1, 0});
+  um2::Vector<T> intersections(10);
+  Size n = intersections.size();
+  mesh.intersect(ray, intersections.data(), &n);
+  ASSERT(n == 4);
+  ASSERT_NEAR(intersections[0], static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(intersections[1], static_cast<T>(0.5), static_cast<T>(1e-6));
+  ASSERT_NEAR(intersections[2], static_cast<T>(0.5), static_cast<T>(1e-6));
+  ASSERT_NEAR(intersections[3], static_cast<T>(1), static_cast<T>(1e-6));
+}
+
+template <std::floating_point T, std::signed_integral I>
 TEST_CASE(faceContaining)
 {
   um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
@@ -90,6 +105,7 @@ TEST_SUITE(TriMesh)
   TEST((mesh_file_constructor<T, I>));
   TEST_HOSTDEV(accessors, 1, 1, T, I);
   TEST((boundingBox<T, I>));
+  TEST((intersect<T, I>));
   TEST((faceContaining<T, I>));
   TEST((toMeshFile<T, I>));
 }

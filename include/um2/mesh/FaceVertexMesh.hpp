@@ -91,6 +91,10 @@ struct FaceVertexMesh {
 
   [[nodiscard]] constexpr auto
   getFaceAreas() const noexcept -> Vector<T>;
+
+  void
+  intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept;
+
 };
 
 //==============================================================================

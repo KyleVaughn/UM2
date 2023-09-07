@@ -1,0 +1,38 @@
+intersection test for mesh
+Benchmark intersection
+Benchmark intersection for pointer arithmetic version
+Benchmark using insertion sort
+Benchmark with morton ordered mesh
+
+To clarify:
+  morton and not morton ordered
+  sort using std::sort and insertion sort
+  binned and not binned
+
+Make the C API functions for the spatial partition into member functions of the partition
+Benchmark for MPACT model of VERA 2A -> find face and RT
+
+Write up instructions for VERA 2A
+
+Check on status of all code
+  Fix binned mesh
+Work on intersection benchmark and mesh + MPACT stats
+
+Check for unjustified nolints/cppcheck
+
+identify functions for parallelization
+
+Do a CUDA build
+
+GPU version of intersection
+  Just transfer the mesh to the GPU and do operations there
+
+mesh reorder
+
+mesh getUniqueEdges
+
+Meaure using std::sort for intersections vs insertion sort
+  Benchmark this
+  Benchmark also for binned mesh where this will be abigger issue
+
+  apply permutation test

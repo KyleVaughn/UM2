@@ -82,8 +82,6 @@ printHistogram(std::vector<T> const & data, size_t nbins = 15, size_t width = 30
     }
     std::cout << counts[i] << '\n';
   }
-  // min: 2.500 ns (0.00% GC); mean: 1.181 μs (0.00% GC); median: 5.334 ns (0.00% GC);
-  // max: 3.663 μs (0.00% GC).
   T const * const begin_ptr = data.data();
   T const * const end_ptr = data.data() + data.size();
   std::cout << "min: " << minval;

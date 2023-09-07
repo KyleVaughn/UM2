@@ -308,32 +308,6 @@ TEST_CASE(push_back_n)
   ASSERT(non_empty_vector.capacity() == 6);
 }
 
-template <typename T>
-TEST_CASE(sortPermutation)
-{
-  um2::Vector<T> const v{5, 3, 1, 4, 2};
-  um2::Vector<Size> perm;
-  sortPermutation(v, perm);
-  ASSERT(perm.size() == 5);
-  um2::Vector<T> sorted_v(v.size());
-  for (Size i = 0; i < v.size(); ++i) {
-    sorted_v[i] = v[perm[i]];
-  }
-  ASSERT(std::is_sorted(sorted_v.begin(), sorted_v.end()));
-  um2::Vector<Size> const expected_perm{2, 4, 1, 3, 0};
-  ASSERT(perm == expected_perm);
-}
-
-template <typename T>
-TEST_CASE(applyPermutation)
-{
-  um2::Vector<T> v{5, 3, 1, 4, 2};
-  um2::Vector<Size> const perm{2, 4, 1, 3, 0};
-  applyPermutation(v, perm);
-  um2::Vector<T> const expected_v{1, 2, 3, 4, 5};
-  ASSERT(v == expected_v);
-}
-
 //==============================================================================
 // CUDA
 //==============================================================================
@@ -395,8 +369,6 @@ MAKE_CUDA_KERNEL(clear)
   TEST_HOSTDEV(push_back, 1, 1, T)
   TEST_HOSTDEV(push_back_rval_ref, 1, 1, T)
   TEST_HOSTDEV(push_back_n, 1, 1, T)
-  TEST((sortPermutation<T>))
-  TEST((applyPermutation<T>))
 }
 
 auto

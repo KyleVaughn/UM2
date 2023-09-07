@@ -6,7 +6,6 @@
 #include <um2/stdlib/utility.hpp>   // move
 
 #include <initializer_list> // std::initializer_list
-#include <numeric>          // std::iota
 
 namespace um2
 {
@@ -187,15 +186,6 @@ public:
 template <>
 struct Vector<bool> {
 };
-
-// TODO (kcvaughn@umich.edu): Add comparator template parameter
-template <typename T>
-constexpr void
-sortPermutation(Vector<T> const & v, Vector<Size> & perm) noexcept;
-
-template <typename T>
-constexpr void
-applyPermutation(Vector<T> & v, Vector<Size> const & perm) noexcept;
 
 } // namespace um2
 
