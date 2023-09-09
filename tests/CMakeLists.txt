@@ -5,6 +5,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
 #===============================================================================
 
 add_um2_test(./stdlib/algorithm/copy.cpp)
+add_um2_test(./stdlib/algorithm/fill.cpp)
 add_um2_test(./stdlib/algorithm/sort.cpp)
 add_um2_test(./stdlib/memory/addressof.cpp)
 add_um2_test(./stdlib/memory/construct_at.cpp)
@@ -74,6 +75,12 @@ add_um2_test(./mesh/io_xdmf.cpp)
 file(COPY ${PROJECT_SOURCE_DIR}/tests/mpact/mpact_mesh_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_um2_test(./mpact/SpatialPartition.cpp)
+
+#==============================================================================
+# ray_casting
+#==============================================================================
+
+add_um2_test(./ray_casting/AngularQuadrature.cpp)
 
 #==============================================================================
 # gmsh

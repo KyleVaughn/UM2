@@ -907,25 +907,27 @@ readXDMFFile(std::string const & filename, MeshFile<T, I> & mesh)
     Log::error("XDMF XML domain node is not Domain");
     return;
   }
-  std::vector<std::string> material_names;
-  pugi::xml_node const xinfo = xdomain.child("Information");
-  if (strcmp("Information", xinfo.name()) == 0) {
-    // Get the "Name" attribute
-    pugi::xml_attribute const xname = xinfo.attribute("Name");
-    if (strcmp("Materials", xname.value()) == 0) {
-      // Get the material names
-      std::string const materials = xinfo.child_value();
-      std::stringstream ss(materials);
-      std::string material;
-      while (std::getline(ss, material, ',')) {
-        if (material[0] == ' ') {
-          material_names.push_back(material.substr(1));
-        } else {
-          material_names.push_back(material);
-        }
-      }
-    }
-  }
+  
+  //pugi::xml_node const xinfo = xdomain.child("Information");
+
+  //std::vector<std::string> material_names;
+  //if (strcmp("Information", xinfo.name()) == 0) {
+  //  // Get the "Name" attribute
+  //  pugi::xml_attribute const xname = xinfo.attribute("Name");
+  //  if (strcmp("Materials", xname.value()) == 0) {
+  //    // Get the material names
+  //    std::string const materials = xinfo.child_value();
+  //    std::stringstream ss(materials);
+  //    std::string material;
+  //    while (std::getline(ss, material, ',')) {
+  //      if (material[0] == ' ') {
+  //        material_names.push_back(material.substr(1));
+  //      } else {
+  //        material_names.push_back(material);
+  //      }
+  //    }
+  //  }
+  //}
   pugi::xml_node const xgrid = xdomain.child("Grid");
   if (strcmp("Grid", xgrid.name()) != 0) {
     Log::error("XDMF XML grid node is not Grid");

@@ -1,4 +1,5 @@
-#include <um2/stdlib/math/extrema.hpp>
+#pragma once
+
 #include <um2/stdlib/math/hyperbolic.hpp>
 #include <um2/stdlib/math/power.hpp>
 #include <um2/stdlib/math/rounding.hpp>

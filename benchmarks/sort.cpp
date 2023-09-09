@@ -11,7 +11,7 @@ constexpr Size nvals = 1 << 12;
 
 template <typename T>
 static void
-insertion_sort(benchmark::State & state)
+insertionSort(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   um2::Vector<T> vals = makeVectorOfRandomFloats(n, static_cast<T>(0), static_cast<T>(100));
@@ -30,7 +30,7 @@ insertion_sort(benchmark::State & state)
 
 template <typename T>
 static void
-std_sort(benchmark::State & state)
+stdSort(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   um2::Vector<T> vals = makeVectorOfRandomFloats(n, static_cast<T>(0), static_cast<T>(100));
@@ -47,10 +47,10 @@ std_sort(benchmark::State & state)
   }
 }
 
-BENCHMARK_TEMPLATE1(insertion_sort, float)
+BENCHMARK_TEMPLATE1(insertionSort, float)
     ->RangeMultiplier(2)
     ->Range(16, nvals);
-BENCHMARK_TEMPLATE1(std_sort, float)
+BENCHMARK_TEMPLATE1(stdSort, float)
     ->RangeMultiplier(2)
     ->Range(16, nvals);
 BENCHMARK_MAIN();

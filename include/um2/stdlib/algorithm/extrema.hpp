@@ -2,7 +2,7 @@
 
 #include <um2/config.hpp>
 
-#include <cmath>
+#include <algorithm>
 
 namespace um2
 {

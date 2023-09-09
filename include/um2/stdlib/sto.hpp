@@ -15,7 +15,7 @@ template <typename T>
 PURE inline auto
 sto(std::string const & /*s*/) noexcept -> T
 {
-  static_assert(!sizeof(T), "Unsupported type");
+  static_assert(always_false<T>, "Unsupported type");
 }
 
 template <>

@@ -2,7 +2,8 @@
 
 #include <um2/config.hpp>
 
-#include <um2/stdlib/math.hpp>   // um2::sqrt, um2::max, um2::min
+#include <um2/stdlib/algorithm.hpp>    // um2::min, um2::max
+#include <um2/stdlib/math.hpp>   // um2::sqrt
 #include <um2/stdlib/memory.hpp> // addressof
 
 #include <concepts>
@@ -58,6 +59,7 @@ struct Vec {
   // Constructors
   //==============================================================================
 
+  // cppcheck-suppress uninitMemberVar
   constexpr Vec() noexcept = default;
 
   // Allow implicit conversion from integral types.

@@ -38,6 +38,7 @@ boundingBox(benchmark::State & state)
     }
   }
   for (auto s : state) {
+    // cppcheck-suppress useStlAlgorithm; justification: this already uses STL...
     box = um2::boundingBox(points);
   }
   if (!(um2::abs(box.xMin() - xmin) < static_cast<T>(1e-6))) {
