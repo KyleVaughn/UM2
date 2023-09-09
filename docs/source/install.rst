@@ -60,6 +60,26 @@ be installed with the following commands:
     # Add to bachrc to avoid declaring this every time. PWD will need to be updated.
     export GMSH_ROOT=${PWD}/gmsh-4.11.1-Linux64-sdk
 
+
+.. _installing_prerequisites_with_brew:
+
+----------------------------------
+Installing Prerequisites with brew
+----------------------------------
+
+On desktop machines running MacOS, the prerequisites can 
+be installed with the following commands:
+
+.. code-block:: bash
+
+    brew install gcc@12 cmake hdf5 pugixml
+    wget https://gmsh.info/bin/macOS/gmsh-4.11.1-MacOSARM-sdk.tgz # For newer Macs
+    # or for older Macs
+    # wget https://gmsh.info/bin/macOS/gmsh-4.11.1-MacOSX-sdk.tgz
+    tar -xzvf gmsh-4.11.1-*
+    # Add to bachrc or zshrc to avoid declaring this every time. PWD will need to be updated.
+    export GMSH_ROOT=${PWD}/<gmsh directory name> 
+
 .. _installing_prerequisites_with_spack:
 
 ----------------------------------
