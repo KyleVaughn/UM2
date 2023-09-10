@@ -94,6 +94,63 @@ polygonNumEdges() noexcept -> Size
   return N / P;
 }
 
+//==============================================================================
+// interpolate
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T, typename R, typename S>
+PURE HOSTDEV constexpr auto
+interpolate(Polygon<P, N, D, T> const & poly, R r, S s) noexcept -> Point<D, T>;
+
+//==============================================================================
+// jacobian
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T, typename R, typename S>
+PURE HOSTDEV constexpr auto
+jacobian(Polygon<P, N, D, T> const & poly, R r, S s) noexcept -> Mat<D, 2, T>;
+
+//==============================================================================
+// getEdge
+//==============================================================================
+
+template <Size N, Size D, typename T>    
+PURE HOSTDEV constexpr auto    
+getEdge(LinearPolygon<N, D, T> const & p, Size i) noexcept -> LineSegment<D, T>;
+
+template <Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+getEdge(QuadraticPolygon<N, D, T> const & p, Size i) noexcept -> QuadraticSegment<D, T>;
+
+//==============================================================================
+// contains
+//==============================================================================
+
+template <Size N, typename T>    
+PURE HOSTDEV constexpr auto    
+contains(PlanarLinearPolygon<N, T> const & poly, Point2<T> const & p) noexcept -> bool;
+
+template <Size N, typename T>
+PURE HOSTDEV constexpr auto
+contains(PlanarQuadraticPolygon<N, T> const & q, Point2<T> const & p) noexcept -> bool;
+
+//==============================================================================
+// area
+//==============================================================================
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+area(Triangle3<T> const & tri) noexcept -> T;
+
+
+template <Size N, typename T>    
+PURE HOSTDEV constexpr auto    
+area(PlanarLinearPolygon<N, T> const & p) noexcept -> T;
+
+template <Size N, typename T>    
+PURE HOSTDEV constexpr auto    
+area(PlanarQuadraticPolygon<N, T> const & q) noexcept -> T;
+
 } // namespace um2
 
 #include "Polygon.inl"

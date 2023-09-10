@@ -103,25 +103,17 @@ struct Polytope<1, P, N, D, T> {
 // interpolate
 //==============================================================================
 
-template <Size D, typename T, typename R>
+template <Size P, Size N, Size D, typename T, typename R>
 PURE HOSTDEV constexpr auto
-interpolate(LineSegment<D, T> const & l, R r) noexcept -> Point<D, T>;
-
-template <Size D, typename T, typename R>
-PURE HOSTDEV constexpr auto
-interpolate(QuadraticSegment<D, T> const & q, R r) noexcept -> Point<D, T>;
+interpolate(Dion<P, N, D, T> const & dion, R r) noexcept -> Point<D, T>;
 
 //==============================================================================
 // jacobian
 //==============================================================================
 
-template <Size D, typename T, typename R>
+template <Size P, Size N, Size D, typename T, typename R>
 PURE HOSTDEV constexpr auto
-jacobian(LineSegment<D, T> const & l, R /*r*/) noexcept -> Point<D, T>;
-
-template <Size D, typename T, typename R>
-PURE HOSTDEV constexpr auto
-jacobian(QuadraticSegment<D, T> const & q, R r) noexcept -> Point<D, T>;
+jacobian(Dion<P, N, D, T> const & dion, R r) noexcept -> Point<D, T>;
 
 //==============================================================================
 // getRotation
