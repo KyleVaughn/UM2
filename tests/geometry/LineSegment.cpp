@@ -192,7 +192,7 @@ TEST_CASE(distanceTo)
   p0[0] += static_cast<T>(1.5);
   T ref = 0;
   if constexpr (D == 2) {
-    ref = um2::sin(um2::pi<T>() / static_cast<T>(4)) / 2;
+    ref = um2::sin(um2::pi<T> / static_cast<T>(4)) / 2;
   } else {
     // d = (7/6, 1/6, 1/6)
     ref = um2::sqrt(static_cast<T>(6)) / 6;

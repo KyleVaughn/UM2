@@ -1,4 +1,4 @@
-#include <um2/stdlib/algorithm/fill.hpp>
+#include <um2/stdlib/algorithm.hpp>
 
 #include "../../test_macros.hpp"
 

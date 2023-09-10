@@ -61,7 +61,6 @@ struct Color {
 
   // We want to allow for implicit conversion from Colors to Color
   // NOLINTBEGIN(google-explicit-constructor) justified
-  // cppcheck-suppress noExplicitConstructor; justified
   HOSTDEV constexpr Color(Colors color) noexcept;
   // NOLINTEND(google-explicit-constructor)
 

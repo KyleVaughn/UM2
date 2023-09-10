@@ -58,7 +58,6 @@ struct Polytope<1, P, N, D, T> {
   template <class... Pts>
     requires(sizeof...(Pts) == N && (std::same_as<Point<D, T>, Pts> && ...))
   // NOLINTBEGIN(google-explicit-constructor) justification: implicit conversion
-  // cppcheck-suppress noExplicitConstructor; justification: implicit conversion
   HOSTDEV constexpr Polytope(Pts const... args) noexcept
       : v{args...}
   {

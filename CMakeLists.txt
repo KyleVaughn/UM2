@@ -299,6 +299,8 @@ if (UM2_USE_CPPCHECK)
           ";--suppress=missingIncludeSystem"
           ";--suppress=invalidPrintfArgType_float"
           ";--suppress=unmatchedSuppression"
+          ";--suppress=noExplicitConstructor"
+          ";--suppress=functionConst"
           ";--inconclusive"
           ";--inline-suppr"
           ";--error-exitcode=10")

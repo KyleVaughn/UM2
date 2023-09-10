@@ -48,7 +48,6 @@ public:
   PURE HOSTDEV [[nodiscard]] static constexpr auto
   capacity() noexcept -> Size;
 
-  // cppcheck-suppress functionConst; justification: can't be const
   PURE HOSTDEV [[nodiscard]] constexpr auto
   data() noexcept -> char *;
 
@@ -81,7 +80,6 @@ public:
   operator==(std::string const & s) const noexcept -> bool;
 
   HOSTDEV constexpr auto
-  // cppcheck-suppress functionConst; justification: can't be const
   operator[](Size i) noexcept -> char &;
 
   HOSTDEV constexpr auto

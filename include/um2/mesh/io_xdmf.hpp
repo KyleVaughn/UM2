@@ -50,7 +50,7 @@ getH5DataType() -> H5::PredType
   } else if constexpr (std::same_as<T, uint64_t>) {
     return H5::PredType::NATIVE_UINT64;
   } else {
-    static_assert(!sizeof(T), "Unsupported type");
+    static_assert(always_false<T>, "Unsupported type");
     return H5::PredType::NATIVE_FLOAT;
   }
 }

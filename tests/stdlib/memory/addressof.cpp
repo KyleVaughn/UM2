@@ -1,4 +1,4 @@
-#include <um2/stdlib/memory/addressof.hpp>
+#include <um2/stdlib/memory.hpp>
 
 #include "../../test_macros.hpp"
 

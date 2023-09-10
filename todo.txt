@@ -40,6 +40,3 @@ Meaure using std::sort for intersections vs insertion sort
   apply permutation test
 
 move code that can be parallelized to a different directory
-
-Variables constexpr -> pi zero vec
-Pointers to It

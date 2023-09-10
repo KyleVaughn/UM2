@@ -257,7 +257,6 @@ Vector<T>::back() const noexcept -> T const &
 }
 
 template <class T>
-// cppcheck-suppress functionConst; justification: can't be const
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vector<T>::data() noexcept -> T *
 {

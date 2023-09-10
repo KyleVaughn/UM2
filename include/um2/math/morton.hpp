@@ -289,7 +289,7 @@ mortonEncode(T const x, T const y) -> U
   assert(0 <= x && x <= 1);
   assert(0 <= y && y <= 1);
   if constexpr (std::same_as<float, T> && std::same_as<uint64_t, U>) {
-    static_assert(!sizeof(T), "uint64_t -> float conversion can be lossy");
+    static_assert(always_false<T>, "uint64_t -> float conversion can be lossy");
   }
   // Convert x,y in [0,1] to integers in [0 max_2d_morton_coord]
   U const x_m = static_cast<U>(x * max_2d_morton_coord<U>);

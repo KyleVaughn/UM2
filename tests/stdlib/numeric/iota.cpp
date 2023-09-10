@@ -1,4 +1,4 @@
-#include <um2/stdlib/numeric/iota.hpp>
+#include <um2/stdlib/numeric.hpp>
 
 #include "../../test_macros.hpp"
 
