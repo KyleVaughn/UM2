@@ -13,7 +13,6 @@ TEST_CASE(sortPermutation)
   for (Size i = 0; i < v.size(); ++i) {
     sorted_v[i] = v[perm[i]];
   }
-  // cppcheck-suppress assertWithSideEffect; justification: no side effects
   ASSERT(std::is_sorted(sorted_v.begin(), sorted_v.end()));
   um2::Vector<Size> const expected_perm{2, 4, 1, 3, 0};
   ASSERT(perm == expected_perm);

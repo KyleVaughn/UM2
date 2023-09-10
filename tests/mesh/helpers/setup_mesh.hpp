@@ -1,5 +1,5 @@
 template <Size D, std::floating_point T, std::signed_integral I>
-HOSTDEV static auto
+HOSTDEV auto
 makeTriReferenceMesh() -> um2::TriMesh<D, T, I>
 {
   um2::TriMesh<D, T, I> mesh;
@@ -28,7 +28,7 @@ makeTriReferenceMesh() -> um2::TriMesh<D, T, I>
 }
 
 template <Size D, std::floating_point T, std::signed_integral I>
-HOSTDEV static auto
+HOSTDEV auto
 makeQuadReferenceMesh() -> um2::QuadMesh<D, T, I>
 {
   um2::QuadMesh<D, T, I> mesh;
@@ -51,7 +51,7 @@ makeQuadReferenceMesh() -> um2::QuadMesh<D, T, I>
 
 //
 // template <std::floating_point T, std::signed_integral I>
-// HOSTDEV static void makeTriQuadReferenceMesh(um2::TriQuadMesh<T, I> & mesh)
+// HOSTDEV void makeTriQuadReferenceMesh(um2::TriQuadMesh<T, I> & mesh)
 //{
 //   mesh.vertices = {
 //       {0, 0},
@@ -67,7 +67,7 @@ makeQuadReferenceMesh() -> um2::QuadMesh<D, T, I>
 // }
 //
 template <Size D, std::floating_point T, std::signed_integral I>
-HOSTDEV static auto
+HOSTDEV auto
 makeTri6ReferenceMesh() -> um2::QuadraticTriMesh<D, T, I>
 {
   um2::QuadraticTriMesh<D, T, I> mesh;
@@ -92,7 +92,7 @@ makeTri6ReferenceMesh() -> um2::QuadraticTriMesh<D, T, I>
 }
 
 template <Size D, std::floating_point T, std::signed_integral I>
-HOSTDEV static auto
+HOSTDEV auto
 makeQuad8ReferenceMesh() -> um2::QuadraticQuadMesh<D, T, I>
 {
   um2::QuadraticQuadMesh<D, T, I> mesh;
@@ -121,7 +121,7 @@ makeQuad8ReferenceMesh() -> um2::QuadraticQuadMesh<D, T, I>
 }
 
 // template <std::floating_point T, std::signed_integral I>
-// HOSTDEV static void makeTri6Quad8ReferenceMesh(um2::QuadraticTriQuadMesh<T, I> &
+// HOSTDEV void makeTri6Quad8ReferenceMesh(um2::QuadraticTriQuadMesh<T, I> &
 // mesh)
 //{
 //   mesh.vertices = {

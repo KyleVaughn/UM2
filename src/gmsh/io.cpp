@@ -138,7 +138,9 @@ write(std::string const & filename, bool const extra_info)
   info_file.close();
 }
 
-static void
+namespace
+{
+void
 addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
 {
   //==============================================================================
@@ -196,6 +198,7 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
     gmsh::model::addPhysicalGroup(dim, tags, -1, name);
   }
 }
+} // namespace
 
 //==============================================================================
 // open

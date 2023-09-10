@@ -3,7 +3,7 @@
 #include "../test_macros.hpp"
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeGrid() -> um2::RegularGrid<D, T>
 {
   static_assert(1 <= D && D <= 3, "D must be in [1, 3]");

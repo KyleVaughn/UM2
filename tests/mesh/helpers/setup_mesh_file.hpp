@@ -1,5 +1,5 @@
 template <std::floating_point T, std::signed_integral I>
-static void
+void
 makeReferenceTriMeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/tri.inp";
@@ -20,7 +20,7 @@ makeReferenceTriMeshFile(um2::MeshFile<T, I> & mesh)
 }
 
 template <std::floating_point T, std::signed_integral I>
-static void
+void
 makeReferenceQuadMeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/quad.inp";
@@ -43,7 +43,7 @@ makeReferenceQuadMeshFile(um2::MeshFile<T, I> & mesh)
 }
 
 template <std::floating_point T, std::signed_integral I>
-static void
+void
 makeReferenceTriQuadMeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/tri_quad.inp";
@@ -65,7 +65,7 @@ makeReferenceTriQuadMeshFile(um2::MeshFile<T, I> & mesh)
 }
 
 template <std::floating_point T, std::signed_integral I>
-static void
+void
 makeReferenceTri6MeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/tri6.inp";
@@ -91,7 +91,7 @@ makeReferenceTri6MeshFile(um2::MeshFile<T, I> & mesh)
 }
 
 template <std::floating_point T, std::signed_integral I>
-static void
+void
 makeReferenceQuad8MeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/quad8.inp";
@@ -124,7 +124,7 @@ makeReferenceQuad8MeshFile(um2::MeshFile<T, I> & mesh)
 }
 
 template <std::floating_point T, std::signed_integral I>
-static void
+void
 makeReferenceTri6Quad8MeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/tri6_quad8.inp";

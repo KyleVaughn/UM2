@@ -3,7 +3,7 @@
 #include "../test_macros.hpp"
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeTri() -> um2::Triangle<D, T>
 {
   um2::Triangle<D, T> this_tri;

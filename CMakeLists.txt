@@ -290,6 +290,7 @@ endif()
 
 # cppcheck
 if (UM2_USE_CPPCHECK)
+  find_program(CMAKE_CXX_CPPCHECK NAMES cppcheck)
   # Copy the cppcheck-suppressions file to the build directory
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppcheck-suppressions
                  ${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions COPYONLY)
@@ -300,7 +301,7 @@ if (UM2_USE_CPPCHECK)
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions "${CPPCHECK_SUPPRESS}")
   # Concatenate the cppcheck arguments into a single string
   string(CONCAT CPPCHECK_ARGS
-          "cppcheck"
+          ${CMAKE_CXX_CPPCHECK}
           ";--enable=all"
           ";--std=c++20"
           ";--language=c++"

@@ -15,7 +15,9 @@ namespace um2::gmsh::model
 // color the entities in each material physical group according to corresponding
 // Material_in <materials>.
 
-static void
+namespace
+{
+void
 colorMaterialPhysicalGroupEntities(std::vector<Material> const & materials)
 {
   size_t const num_materials = materials.size();
@@ -62,6 +64,7 @@ colorMaterialPhysicalGroupEntities(std::vector<Material> const & materials)
     }
   }
 }
+} // namespace
 
 //=============================================================================
 // addToPhysicalGroup
@@ -144,7 +147,9 @@ namespace occ
 // groupPreservingInputChecking
 //=============================================================================
 
-static auto
+namespace
+{
+auto
 groupPreservingInputChecking(gmsh::vectorpair const & object_dimtags,
                              gmsh::vectorpair const & tool_dimtags) -> int
 {
@@ -201,7 +206,7 @@ groupPreservingInputChecking(gmsh::vectorpair const & object_dimtags,
 // getPhysicalGroupInfo
 //=============================================================================
 
-static void
+void
 getPhysicalGroupInfo(std::vector<std::string> & physical_group_names,
                      std::vector<int> & physical_group_tag,
                      std::vector<std::vector<int>> & physical_group_ent_tags,
@@ -232,7 +237,7 @@ getPhysicalGroupInfo(std::vector<std::string> & physical_group_names,
 // getNewPhysicalGroups
 //=============================================================================
 
-static void
+void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 getNewPhysicalGroups(gmsh::vectorpair const & object_dimtags,
                      gmsh::vectorpair const & tool_dimtags, size_t const num_groups,
@@ -313,7 +318,7 @@ getNewPhysicalGroups(gmsh::vectorpair const & object_dimtags,
 // processMaterialHierarchy
 //=============================================================================
 
-static void
+void
 processMaterialHierarchy(std::vector<Material> const & material_hierarchy,
                          std::vector<std::string> const & physical_group_names,
                          std::vector<std::vector<int>> & post_physical_group_ent_tags)
@@ -365,6 +370,8 @@ processMaterialHierarchy(std::vector<Material> const & material_hierarchy,
     }
   } // material hierarchy
 }
+
+} // namespace
 
 //=============================================================================
 // groupPreservingFragment
@@ -774,14 +781,14 @@ addCylindricalPin(Point3d const & center, double const height,
   int const circle0_tag = gmsh::model::occ::addCircle(x, y, z, radii[0]);
   int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
   int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
-  dimtags_2d.push_back({2, disk_tag});
+  dimtags_2d.emplace_back(2, disk_tag);
   // Do the annuli
   int prev_loop_tag = loop0_tag;
   for (size_t i = 1; i < nradii; ++i) {
     int const circle_tag = gmsh::model::occ::addCircle(x, y, z, radii[i]);
     int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
     int const annulus_tag = gmsh::model::occ::addPlaneSurface({loop_tag, prev_loop_tag});
-    dimtags_2d.push_back({2, annulus_tag});
+    dimtags_2d.emplace_back(2, annulus_tag);
     prev_loop_tag = loop_tag;
   }
   gmsh::vectorpair out_dimtags;

@@ -1,8 +1,4 @@
-gcc@13 install -> build
-llvm16 install -> build
-Add to github?
-
-
+Take care of nolints
 
 intersection test for mesh: quad, tri6, quad8
 Need to generate images before modular rays
@@ -26,11 +22,7 @@ Check on status of all code
   Fix binned mesh
 Work on intersection benchmark and mesh + MPACT stats
 
-Check for unjustified nolints/cppcheck
-
 identify functions for parallelization
-
-Do a CUDA build
 
 GPU version of intersection
   Just transfer the mesh to the GPU and do operations there

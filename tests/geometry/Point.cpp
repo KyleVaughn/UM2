@@ -3,7 +3,7 @@
 #include "../test_macros.hpp"
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makep1() -> um2::Point<D, T>
 {
   um2::Point<D, T> v;
@@ -14,7 +14,7 @@ makep1() -> um2::Point<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makep2() -> um2::Point<D, T>
 {
   um2::Point<D, T> v;

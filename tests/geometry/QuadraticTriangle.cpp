@@ -3,7 +3,7 @@
 #include "../test_macros.hpp"
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeTri() -> um2::QuadraticTriangle<D, T>
 {
   um2::QuadraticTriangle<D, T> this_tri;
@@ -21,7 +21,7 @@ makeTri() -> um2::QuadraticTriangle<D, T>
 
 // P4 = (0.7, 0.8)
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeTri2() -> um2::QuadraticTriangle<D, T>
 {
   um2::QuadraticTriangle<D, T> this_tri;

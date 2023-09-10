@@ -80,14 +80,14 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(
   // Iterate rows in reverse order
   for (size_t i = 0; i < nrows; ++i) {
     std::vector<Size> const & row = ids[nrows - i - 1];
-    Vec2<T> minima(static_cast<T>(0), y);
+    Vec2<T> lo(static_cast<T>(0), y);
     for (size_t j = 0; j < ncols; ++j) {
       Size const id = row[j];
       Vec2<T> const & dxdy_ij = dxdy[static_cast<size_t>(id)];
-      Vec2<T> const maxima = minima + dxdy_ij;
-      boxes[static_cast<Size>(i * ncols + j)].minima = minima;
-      boxes[static_cast<Size>(i * ncols + j)].maxima = maxima;
-      minima[0] = maxima[0];
+      Vec2<T> const hi = lo + dxdy_ij;
+      boxes[static_cast<Size>(i * ncols + j)].minima = lo;
+      boxes[static_cast<Size>(i * ncols + j)].maxima = hi;
+      lo[0] = hi[0];
     }
     y += dxdy[static_cast<size_t>(row[0])][1];
   }

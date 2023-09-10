@@ -49,8 +49,10 @@ namespace um2
 
 enum class AngularQuadratureType { Chebyshev };
 
+namespace
+{
 template <std::floating_point T>
-static void
+HOSTDEV constexpr void
 setChebyshevAngularQuadrature(Size degree, um2::Vector<T> & weights,
                               um2::Vector<T> & angles)
 {
@@ -70,6 +72,7 @@ setChebyshevAngularQuadrature(Size degree, um2::Vector<T> & weights,
     angles[i] = pi_deg * static_cast<T>(2 * i - 1);
   }
 }
+} // namespace
 
 template <std::floating_point T>
 struct ProductAngularQuadrature {
@@ -84,9 +87,10 @@ struct ProductAngularQuadrature {
 
   constexpr ProductAngularQuadrature() noexcept = default;
 
-  constexpr ProductAngularQuadrature(AngularQuadratureType azi_form, Size azi_degree,
-                                     AngularQuadratureType pol_form,
-                                     Size pol_degree) noexcept
+  HOSTDEV constexpr ProductAngularQuadrature(AngularQuadratureType azi_form,
+                                             Size azi_degree,
+                                             AngularQuadratureType pol_form,
+                                             Size pol_degree) noexcept
   {
     if (azi_form == AngularQuadratureType::Chebyshev) {
       setChebyshevAngularQuadrature(azi_degree, wazi, azi);

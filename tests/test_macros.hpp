@@ -45,9 +45,9 @@
     assert(diff < (eps));                                                                \
   }
 
-#define TEST_CASE(name) static void name()
+#define TEST_CASE(name) void name()
 
-#define TEST_SUITE(name) static void name()
+#define TEST_SUITE(name) void name()
 
 #define TEST(name)                                                                       \
   printf("Running test case '%s'\n", #name);                                             \

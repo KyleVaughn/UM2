@@ -103,8 +103,8 @@ struct Polytope<1, P, N, D, T> {
 // interpolate
 //==============================================================================
 
-template <Size D, typename T, typename R>    
-PURE HOSTDEV constexpr auto    
+template <Size D, typename T, typename R>
+PURE HOSTDEV constexpr auto
 interpolate(LineSegment<D, T> const & l, R r) noexcept -> Point<D, T>;
 
 template <Size D, typename T, typename R>
@@ -115,13 +115,116 @@ interpolate(QuadraticSegment<D, T> const & q, R r) noexcept -> Point<D, T>;
 // jacobian
 //==============================================================================
 
-template <Size D, typename T, typename R>    
-PURE HOSTDEV constexpr auto    
+template <Size D, typename T, typename R>
+PURE HOSTDEV constexpr auto
 jacobian(LineSegment<D, T> const & l, R /*r*/) noexcept -> Point<D, T>;
 
 template <Size D, typename T, typename R>
 PURE HOSTDEV constexpr auto
 jacobian(QuadraticSegment<D, T> const & q, R r) noexcept -> Point<D, T>;
+
+//==============================================================================
+// getRotation
+//==============================================================================
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+getRotation(LineSegment2<T> const & l) noexcept -> Mat2x2<T>;
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+getRotation(QuadraticSegment2<T> const & q) noexcept -> Mat2x2<T>;
+
+//==============================================================================
+// pointIsLeft
+//==============================================================================
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+pointIsLeft(LineSegment2<T> const & l, Point2<T> const & p) noexcept -> bool;
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> bool;
+
+//==============================================================================
+// length
+//==============================================================================
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+length(LineSegment<D, T> const & l) noexcept -> T;
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+length(QuadraticSegment<D, T> const & q) noexcept -> T;
+
+//==============================================================================
+// boundingBox
+//==============================================================================
+
+// Defined in Polytope.hpp for the line segment, since for all linear polytopes
+// the bounding box is simply the bounding box of the vertices.
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+boundingBox(QuadraticSegment<D, T> const & q) noexcept -> AxisAlignedBox<D, T>;
+
+//==============================================================================
+// pointClosestTo
+//==============================================================================
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+pointClosestTo(LineSegment<D, T> const & l, Point<D, T> const & p) noexcept -> T;
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept -> T;
+
+//==============================================================================
+// isStraight
+//==============================================================================
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+isStraight(QuadraticSegment<D, T> const & q) noexcept -> bool;
+
+//==============================================================================
+// getBezierControlPoint
+//==============================================================================
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+getBezierControlPoint(QuadraticSegment<D, T> const & q) noexcept -> Point<D, T>;
+
+//==============================================================================
+// enclosedArea
+//==============================================================================
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+enclosedArea(QuadraticSegment2<T> const & q) noexcept -> T;
+
+//==============================================================================
+// enclosedCentroid
+//==============================================================================
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+enclosedCentroid(QuadraticSegment2<T> const & q) noexcept -> Point2<T>;
+
+//==============================================================================
+// intersect
+//==============================================================================
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+intersect(LineSegment2<T> const & line, Ray2<T> const & ray) noexcept -> T;
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+intersect(QuadraticSegment2<T> const & q, Ray2<T> const & ray) noexcept -> Vec2<T>;
 
 } // namespace um2
 

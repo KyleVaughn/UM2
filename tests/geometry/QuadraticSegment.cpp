@@ -23,7 +23,7 @@
 // 8) A segment (0,0) -> (2, 0) -> (4, 3)
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeBaseSeg() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q;
@@ -35,7 +35,7 @@ makeBaseSeg() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg1() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -44,7 +44,7 @@ makeSeg1() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg2() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -54,7 +54,7 @@ makeSeg2() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg3() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -64,7 +64,7 @@ makeSeg3() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg4() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -74,7 +74,7 @@ makeSeg4() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg5() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -84,7 +84,7 @@ makeSeg5() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg6() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -94,7 +94,7 @@ makeSeg6() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg7() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -104,7 +104,7 @@ makeSeg7() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg8() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
