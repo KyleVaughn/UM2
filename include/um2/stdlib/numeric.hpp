@@ -8,12 +8,12 @@ namespace um2
 {
 
 //==============================================================================
-// iota 
+// iota
 //==============================================================================
 
 template <class T>
-HOSTDEV constexpr
-void iota(T * first, T * const last, T value)
+HOSTDEV constexpr void
+iota(T * first, T * const last, T value)
 {
   while (first != last) {
     *first++ = value;

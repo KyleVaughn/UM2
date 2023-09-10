@@ -14,7 +14,8 @@ static void
 insertionSort(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<T> vals = makeVectorOfRandomFloats(n, static_cast<T>(0), static_cast<T>(100));
+  um2::Vector<T> vals =
+      makeVectorOfRandomFloats(n, static_cast<T>(0), static_cast<T>(100));
   std::random_device rd;
   std::mt19937 g(rd());
   for (auto s : state) {
@@ -33,7 +34,8 @@ static void
 stdSort(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
-  um2::Vector<T> vals = makeVectorOfRandomFloats(n, static_cast<T>(0), static_cast<T>(100));
+  um2::Vector<T> vals =
+      makeVectorOfRandomFloats(n, static_cast<T>(0), static_cast<T>(100));
   std::random_device rd;
   std::mt19937 g(rd());
   for (auto s : state) {
@@ -47,10 +49,6 @@ stdSort(benchmark::State & state)
   }
 }
 
-BENCHMARK_TEMPLATE1(insertionSort, float)
-    ->RangeMultiplier(2)
-    ->Range(16, nvals);
-BENCHMARK_TEMPLATE1(stdSort, float)
-    ->RangeMultiplier(2)
-    ->Range(16, nvals);
+BENCHMARK_TEMPLATE1(insertionSort, float)->RangeMultiplier(2)->Range(16, nvals);
+BENCHMARK_TEMPLATE1(stdSort, float)->RangeMultiplier(2)->Range(16, nvals);
 BENCHMARK_MAIN();

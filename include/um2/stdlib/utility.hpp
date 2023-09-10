@@ -37,18 +37,18 @@ forward(std::remove_reference_t<T> && t) noexcept -> T &&
   return static_cast<T &&>(t);
 }
 
-//==============================================================================---    
-// move    
-//==============================================================================---    
-//    
-// https://en.cppreference.com/w/cpp/utility/move    
-    
-template <class T>    
-HOSTDEV constexpr auto    
-move(T && t) noexcept -> std::remove_reference_t<T> &&    
-{    
-  return static_cast<std::remove_reference_t<T> &&>(t);    
-} 
+//==============================================================================---
+// move
+//==============================================================================---
+//
+// https://en.cppreference.com/w/cpp/utility/move
+
+template <class T>
+HOSTDEV constexpr auto
+move(T && t) noexcept -> std::remove_reference_t<T> &&
+{
+  return static_cast<std::remove_reference_t<T> &&>(t);
+}
 
 //==============================================================================---
 // swap

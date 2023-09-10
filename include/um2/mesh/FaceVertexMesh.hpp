@@ -94,7 +94,6 @@ struct FaceVertexMesh {
 
   void
   intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept;
-
 };
 
 //==============================================================================

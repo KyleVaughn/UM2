@@ -1,5 +1,5 @@
-#include <um2/stdlib/Vector.hpp>
 #include <um2/common/permutation.hpp>
+#include <um2/stdlib/Vector.hpp>
 
 #include "../test_macros.hpp"
 
@@ -19,27 +19,27 @@ TEST_CASE(sortPermutation)
   ASSERT(perm == expected_perm);
 }
 
-//template <typename T>
-//TEST_CASE(applyPermutation)
+// template <typename T>
+// TEST_CASE(applyPermutation)
 //{
-//  um2::Vector<T> v{5, 3, 1, 4, 2};
-//  um2::Vector<Size> const perm{2, 4, 1, 3, 0};
-//  applyPermutation(v, perm);
-//  um2::Vector<T> const expected_v{1, 2, 3, 4, 5};
-//  ASSERT(v == expected_v);
-//}
+//   um2::Vector<T> v{5, 3, 1, 4, 2};
+//   um2::Vector<Size> const perm{2, 4, 1, 3, 0};
+//   applyPermutation(v, perm);
+//   um2::Vector<T> const expected_v{1, 2, 3, 4, 5};
+//   ASSERT(v == expected_v);
+// }
 
 //==============================================================================
 // CUDA
 //==============================================================================
-//#if UM2_USE_CUDA
-//#endif // UM2_USE_CUDA
+// #if UM2_USE_CUDA
+// #endif // UM2_USE_CUDA
 
 template <class T>
 TEST_SUITE(sort)
 {
   TEST((sortPermutation<T>))
-//  TEST((applyPermutation<T>))
+  //  TEST((applyPermutation<T>))
 }
 
 auto

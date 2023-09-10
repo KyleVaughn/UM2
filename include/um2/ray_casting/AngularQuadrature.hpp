@@ -2,16 +2,16 @@
 
 #include <um2/config.hpp>
 
-#include <um2/stdlib/math.hpp>
-#include <um2/stdlib/algorithm.hpp>
-#include <um2/stdlib/Vector.hpp>
 #include <um2/common/Log.hpp>
+#include <um2/stdlib/Vector.hpp>
+#include <um2/stdlib/algorithm.hpp>
+#include <um2/stdlib/math.hpp>
 
-namespace um2 
+namespace um2
 {
 
-// Angular quadrature defined on the unit sphere octant in the upper right, 
-// closest to the viewer. The angles and weights are transformed to the other 
+// Angular quadrature defined on the unit sphere octant in the upper right,
+// closest to the viewer. The angles and weights are transformed to the other
 // octants by symmetry.
 //     +----+----+
 //    /    /    /|
@@ -47,18 +47,14 @@ namespace um2
 //  𝘷                                   //
 //  k                                   //
 
-enum class AngularQuadratureType
-{
-  Chebyshev
-};
+enum class AngularQuadratureType { Chebyshev };
 
 template <std::floating_point T>
-static void 
-setChebyshevAngularQuadrature(Size degree,
-    um2::Vector<T> & weights, 
-    um2::Vector<T> & angles) 
+static void
+setChebyshevAngularQuadrature(Size degree, um2::Vector<T> & weights,
+                              um2::Vector<T> & angles)
 {
-  // A Chebyshev-type quadrature for a given weight function is a quadrature formula 
+  // A Chebyshev-type quadrature for a given weight function is a quadrature formula
   // with equal weights. This function produces evenly spaced angles with equal weights.
 
   // Weights
@@ -69,20 +65,18 @@ setChebyshevAngularQuadrature(Size degree,
   // Angles
   angles.resize(degree);
   T const degree_4 = static_cast<T>(degree) / static_cast<T>(4);
-  T const pi_deg = pi<T> * degree_4; 
+  T const pi_deg = pi<T> * degree_4;
   for (Size i = 0; i < degree; ++i) {
     angles[i] = pi_deg * static_cast<T>(2 * i - 1);
   }
 }
 
 template <std::floating_point T>
-struct ProductAngularQuadrature
-{
+struct ProductAngularQuadrature {
   um2::Vector<T> wazi; // Weights for the azimuthal angles
   um2::Vector<T> azi;  // Azimuthal angles, γ ∈ (0, π/2)
   um2::Vector<T> wpol; // Weights for the polar angles
   um2::Vector<T> pol;  // Polar angles, θ ∈ (0, π/2)
-  
 
   //============================================================================
   // Constructors
@@ -91,19 +85,18 @@ struct ProductAngularQuadrature
   constexpr ProductAngularQuadrature() noexcept = default;
 
   constexpr ProductAngularQuadrature(AngularQuadratureType azi_form, Size azi_degree,
-                                     AngularQuadratureType pol_form, Size pol_degree) noexcept
+                                     AngularQuadratureType pol_form,
+                                     Size pol_degree) noexcept
   {
     if (azi_form == AngularQuadratureType::Chebyshev) {
       setChebyshevAngularQuadrature(azi_degree, wazi, azi);
-    }
-    else {
+    } else {
       Log::error("Cannot identify azimuthal quadrature.");
     }
 
     if (pol_form == AngularQuadratureType::Chebyshev) {
       setChebyshevAngularQuadrature(pol_degree, wpol, pol);
-    }
-    else {
+    } else {
       Log::error("Cannot identify polar quadrature.");
     }
   }

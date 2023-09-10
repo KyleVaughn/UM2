@@ -1,3 +1,9 @@
+gcc@13 install -> build
+llvm16 install -> build
+Add to github?
+
+
+
 intersection test for mesh: quad, tri6, quad8
 Need to generate images before modular rays
 Need to generate rays before benchmark

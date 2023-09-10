@@ -60,6 +60,17 @@ sto<uint64_t>(std::string const & s) noexcept -> uint64_t
   return std::stoul(s);
 }
 
+// If on a Mac, size_t and uint64_t are NOT the same, even though they are both
+// 64-bit unsigned integers.
+#if defined(__APPLE__)
+template <>
+PURE inline auto
+sto<size_t>(std::string const & s) noexcept -> size_t
+{
+  return static_cast<size_t>(std::stoul(s));
+}
+#endif
+
 template <>
 PURE inline auto
 sto<float>(std::string const & s) noexcept -> float

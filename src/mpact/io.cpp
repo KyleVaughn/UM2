@@ -56,6 +56,7 @@ writeCoarseCell(Size rtm_id, mpact::SpatialPartition const & model, Size ix, Siz
   for (auto const & mat_id : mat_ids) {
     if (!std::any_of(unique_mat_ids.begin(), unique_mat_ids.end(),
                      [mat_id](MaterialID const & id) { return id == mat_id; })) {
+      // cppcheck-suppress useStlAlgorithm; justification: verbosity
       unique_mat_ids.push_back(mat_id);
     }
   }
@@ -395,7 +396,7 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
   }
 
   // Open the XDMF file
-  std::ifstream file(path);
+  std::ifstream const file(path);
   if (!file.is_open()) {
     Log::error("Could not open file: " + path);
     return;

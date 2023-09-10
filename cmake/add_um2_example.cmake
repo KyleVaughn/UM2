@@ -19,7 +19,7 @@ macro(add_um2_example FILENAME)
 
   # cppcheck
   if (UM2_USE_CPPCHECK)    
-    set_target_properties(${EXAMPLE} PROPERTIES CXX_CPPCHECK "${CPPCHECK_ARGS}")       
+    set_cppcheck_properties(${EXAMPLE})
   endif()                                        
 
   # If compiling with CUDA, compile the cpp files as cuda    

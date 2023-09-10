@@ -587,7 +587,7 @@ addElementsToMesh(size_t const num_elements, std::string const & topology_type,
   if (topology_type == "Mixed") {
     mesh.element_types.insert(mesh.element_types.end(), num_elements, MeshType::None);
     // Expect dims to be one number
-    size_t const conn_length = sto<size_t>(dimensions);
+    auto const conn_length = sto<size_t>(dimensions);
     V * data = new V[conn_length];
     dataset.read(data, datatype);
     // Add the elements to the mesh
@@ -613,8 +613,8 @@ addElementsToMesh(size_t const num_elements, std::string const & topology_type,
     delete[] data;
   } else {
     size_t const split = dimensions.find_last_of(' ');
-    size_t const ncells = sto<size_t>(dimensions.substr(0, split));
-    size_t const nverts = sto<size_t>(dimensions.substr(split + 1));
+    auto const ncells = sto<size_t>(dimensions.substr(0, split));
+    auto const nverts = sto<size_t>(dimensions.substr(split + 1));
     if (ncells != num_elements) {
       Log::error("Mismatch in number of elements");
       return;
@@ -907,27 +907,27 @@ readXDMFFile(std::string const & filename, MeshFile<T, I> & mesh)
     Log::error("XDMF XML domain node is not Domain");
     return;
   }
-  
-  //pugi::xml_node const xinfo = xdomain.child("Information");
 
-  //std::vector<std::string> material_names;
-  //if (strcmp("Information", xinfo.name()) == 0) {
-  //  // Get the "Name" attribute
-  //  pugi::xml_attribute const xname = xinfo.attribute("Name");
-  //  if (strcmp("Materials", xname.value()) == 0) {
-  //    // Get the material names
-  //    std::string const materials = xinfo.child_value();
-  //    std::stringstream ss(materials);
-  //    std::string material;
-  //    while (std::getline(ss, material, ',')) {
-  //      if (material[0] == ' ') {
-  //        material_names.push_back(material.substr(1));
-  //      } else {
-  //        material_names.push_back(material);
-  //      }
-  //    }
-  //  }
-  //}
+  // pugi::xml_node const xinfo = xdomain.child("Information");
+  // std::vector<std::string> material_names;
+  // if (strcmp("Information", xinfo.name()) == 0) {
+  //   // Get the "Name" attribute
+  //   pugi::xml_attribute const xname = xinfo.attribute("Name");
+  //   if (strcmp("Materials", xname.value()) == 0) {
+  //     // Get the material names
+  //     std::string const materials = xinfo.child_value();
+  //     std::stringstream ss(materials);
+  //     std::string material;
+  //     while (std::getline(ss, material, ',')) {
+  //       if (material[0] == ' ') {
+  //         material_names.push_back(material.substr(1));
+  //       } else {
+  //         material_names.push_back(material);
+  //       }
+  //     }
+  //   }
+  // }
+
   pugi::xml_node const xgrid = xdomain.child("Grid");
   if (strcmp("Grid", xgrid.name()) != 0) {
     Log::error("XDMF XML grid node is not Grid");

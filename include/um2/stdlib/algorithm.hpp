@@ -83,8 +83,9 @@ fill(ForwardIt first, ForwardIt last, T const & value)
 //==============================================================================
 
 template <typename T>
-HOSTDEV constexpr
-void insertionSort(T * const first, T * const last) {
+HOSTDEV constexpr void
+insertionSort(T * const first, T * const last)
+{
   if (first == last) {
     return;
   }

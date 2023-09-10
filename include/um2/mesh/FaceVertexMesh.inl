@@ -131,8 +131,8 @@ FaceVertexMesh<P, N, D, T, I>::getFaceAreas() const noexcept -> Vector<T>
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 void
-FaceVertexMesh<P, N, D, T, I>::intersect(Ray<D, T> const & ray,
-                                         T * intersections, Size * const n) const noexcept
+FaceVertexMesh<P, N, D, T, I>::intersect(Ray<D, T> const & ray, T * intersections,
+                                         Size * const n) const noexcept
 {
   um2::intersect(*this, ray, intersections, n);
 }

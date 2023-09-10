@@ -1,0 +1,8 @@
+functionConst
+missingIncludeSystem
+noExplicitConstructor
+unusedFunction
+
+unmatchedSuppression:*
+unmatchedSuppression:UM2_DIR/src/mpact/io.cpp
+unmatchedSuppression:UM2_DIR/tests/stdlib/memory/addressof.cpp

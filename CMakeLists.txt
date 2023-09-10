@@ -290,21 +290,28 @@ endif()
 
 # cppcheck
 if (UM2_USE_CPPCHECK)
+  # Copy the cppcheck-suppressions file to the build directory
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppcheck-suppressions
+                 ${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions COPYONLY)
+  # Search and replace UM2_DIR with the absolute path to the project root
+  file(READ ${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions CPPCHECK_SUPPRESS)
+  string(REPLACE "UM2_DIR" "${CMAKE_CURRENT_SOURCE_DIR}" CPPCHECK_SUPPRESS
+         "${CPPCHECK_SUPPRESS}")
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions "${CPPCHECK_SUPPRESS}")
   # Concatenate the cppcheck arguments into a single string
   string(CONCAT CPPCHECK_ARGS
           "cppcheck"
-          ";--enable=warning,style,information,missingInclude"
+          ";--enable=all"
           ";--std=c++20"
           ";--language=c++"
-          ";--suppress=missingIncludeSystem"
-          ";--suppress=invalidPrintfArgType_float"
-          ";--suppress=unmatchedSuppression"
-          ";--suppress=noExplicitConstructor"
-          ";--suppress=functionConst"
+          ";--suppressions-list=${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions"
           ";--inconclusive"
           ";--inline-suppr"
           ";--error-exitcode=10")
-  set_target_properties(um2 PROPERTIES CXX_CPPCHECK "${CPPCHECK_ARGS}")
+  macro(set_cppcheck_properties CPPCHECK_TARGET)
+    set_target_properties(${CPPCHECK_TARGET} PROPERTIES CXX_CPPCHECK "${CPPCHECK_ARGS}")
+  endmacro()
+  set_cppcheck_properties(um2)
 endif()
 
 # coverage
