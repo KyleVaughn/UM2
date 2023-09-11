@@ -103,6 +103,27 @@ ShortString::operator==(std::string const & s) const noexcept -> bool
   return true;
 }
 
+template <uint64_t N>
+HOSTDEV constexpr auto
+ShortString::operator==(char const (&s)[N]) const noexcept -> bool
+{
+  static_assert(N - 1 <= capacity(), "String too long");
+  Size const l_size = size();
+  if (l_size != N - 1) {
+    return false;
+  }
+  char const * l_data = data();
+  char const * r_data = addressof(s[0]);
+  for (Size i = 0; i < l_size; ++i) {
+    if (*l_data != *r_data) {
+      return false;
+    }
+    ++l_data;
+    ++r_data;
+  }
+  return true;
+}
+
 HOSTDEV constexpr auto
 ShortString::operator!=(ShortString const & s) const noexcept -> bool
 {

@@ -14,10 +14,14 @@ namespace um2
 {
 
 //==============================================================================
-// HISTOGRAM
+// printHistogram 
 //==============================================================================
 //
-// A stack allocated string that can hold up to 31 characters.
+// Given an std::vector of data floats, print a histogram of the data to stdout.
+// This histogram includes the min, max, mean, median, and standard deviation, as
+// well as the counts in each bin and the bin ranges.
+// The histogram is normalized to print with a maximum bar width of 30 characters.
+// The number of bins is 15 by default.
 
 template <std::floating_point T>
 void

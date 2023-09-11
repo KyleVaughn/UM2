@@ -8,7 +8,7 @@ makeQuad() -> um2::QuadraticQuadrilateral<D, T>
 {
   um2::QuadraticQuadrilateral<D, T> this_quad;
   for (Size i = 0; i < 8; ++i) {
-    this_quad[i] = um2::zeroVec<D, T>();
+    this_quad[i] = um2::Vec<D, T>::zero();
   }
   this_quad[1][0] = static_cast<T>(1);
   this_quad[2][0] = static_cast<T>(1);

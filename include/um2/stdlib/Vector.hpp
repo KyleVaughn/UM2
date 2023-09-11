@@ -43,7 +43,6 @@ public:
 
   HOSTDEV constexpr Vector(Vector && v) noexcept;
 
-  // Initializer-list constructor should not be explicit
   HOSTDEV constexpr Vector(std::initializer_list<T> const & list) noexcept;
 
   //==============================================================================

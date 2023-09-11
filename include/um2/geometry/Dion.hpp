@@ -57,17 +57,17 @@ struct Polytope<1, P, N, D, T> {
 
   template <class... Pts>
     requires(sizeof...(Pts) == N && (std::same_as<Point<D, T>, Pts> && ...))
-  // NOLINTBEGIN(google-explicit-constructor) justification: implicit conversion
+  // NOLINTNEXTLINE(google-explicit-constructor) justified: implicit conversion desired
   HOSTDEV constexpr Polytope(Pts const... args) noexcept
       : v{args...}
   {
   }
-  // NOLINTEND(google-explicit-constructor)
 
   //==============================================================================
   // Methods
   //==============================================================================
 
+  // Interpolate the polytope at the given parameter value.
   template <typename R>
   PURE HOSTDEV constexpr auto
   operator()(R r) const noexcept -> Point<D, T>;
@@ -119,37 +119,25 @@ jacobian(Dion<P, N, D, T> const & dion, R r) noexcept -> Point<D, T>;
 // getRotation
 //==============================================================================
 
-template <typename T>
+template <Size P, Size N, typename T>
 PURE HOSTDEV constexpr auto
-getRotation(LineSegment2<T> const & l) noexcept -> Mat2x2<T>;
-
-template <typename T>
-PURE HOSTDEV constexpr auto
-getRotation(QuadraticSegment2<T> const & q) noexcept -> Mat2x2<T>;
+getRotation(PlanarDion<P, N, T> const & dion) noexcept -> Mat2x2<T>;
 
 //==============================================================================
 // pointIsLeft
 //==============================================================================
 
-template <typename T>
+template <Size P, Size N, typename T>
 PURE HOSTDEV constexpr auto
-pointIsLeft(LineSegment2<T> const & l, Point2<T> const & p) noexcept -> bool;
-
-template <typename T>
-PURE HOSTDEV constexpr auto
-pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> bool;
+pointIsLeft(PlanarDion<P, N, T> const & dion, Point2<T> const & p) noexcept -> bool;
 
 //==============================================================================
 // length
 //==============================================================================
 
-template <Size D, typename T>
+template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-length(LineSegment<D, T> const & l) noexcept -> T;
-
-template <Size D, typename T>
-PURE HOSTDEV constexpr auto
-length(QuadraticSegment<D, T> const & q) noexcept -> T;
+length(Dion<P, N, D, T> const & dion) noexcept -> T;
 
 //==============================================================================
 // boundingBox

@@ -114,8 +114,8 @@ jacobian(Polygon<P, N, D, T> const & poly, R r, S s) noexcept -> Mat<D, 2, T>;
 // getEdge
 //==============================================================================
 
-template <Size N, Size D, typename T>    
-PURE HOSTDEV constexpr auto    
+template <Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
 getEdge(LinearPolygon<N, D, T> const & p, Size i) noexcept -> LineSegment<D, T>;
 
 template <Size N, Size D, typename T>
@@ -126,8 +126,8 @@ getEdge(QuadraticPolygon<N, D, T> const & p, Size i) noexcept -> QuadraticSegmen
 // contains
 //==============================================================================
 
-template <Size N, typename T>    
-PURE HOSTDEV constexpr auto    
+template <Size N, typename T>
+PURE HOSTDEV constexpr auto
 contains(PlanarLinearPolygon<N, T> const & poly, Point2<T> const & p) noexcept -> bool;
 
 template <Size N, typename T>
@@ -142,14 +142,44 @@ template <typename T>
 PURE HOSTDEV constexpr auto
 area(Triangle3<T> const & tri) noexcept -> T;
 
-
-template <Size N, typename T>    
-PURE HOSTDEV constexpr auto    
+template <Size N, typename T>
+PURE HOSTDEV constexpr auto
 area(PlanarLinearPolygon<N, T> const & p) noexcept -> T;
 
+template <Size N, typename T>
+PURE HOSTDEV constexpr auto
+area(PlanarQuadraticPolygon<N, T> const & q) noexcept -> T;
+
+//==============================================================================
+// centroid
+//==============================================================================
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+centroid(Triangle3<T> const & tri) noexcept -> Point3<T>;
+
+template <Size P, Size N, typename T>
+PURE HOSTDEV constexpr auto
+centroid(PlanarPolygon<P, N, T> const & p) noexcept -> Point2<T>;
+
+//==============================================================================
+// boundingBox
+//==============================================================================
+
+// Defined in Polytope.hpp for linear polygons, since for all linear polytopes
+// the bounding box is simply the bounding box of the vertices.
+
 template <Size N, typename T>    
 PURE HOSTDEV constexpr auto    
-area(PlanarQuadraticPolygon<N, T> const & q) noexcept -> T;
+boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept -> AxisAlignedBox2<T>;
+
+//==============================================================================
+// isCCW
+//==============================================================================
+
+template <Size P, Size N, typename T>
+PURE HOSTDEV constexpr auto    
+isCCW(PlanarPolygon<P, N, T> const & p) noexcept -> bool;
 
 } // namespace um2
 

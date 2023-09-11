@@ -40,9 +40,9 @@ HOSTDEV static constexpr auto
 makeBaseSeg() -> um2::QuadraticSegment2<T>
 {
   um2::QuadraticSegment2<T> q;
-  q[0] = um2::zeroVec<2, T>();
-  q[1] = um2::zeroVec<2, T>();
-  q[2] = um2::zeroVec<2, T>();
+  q[0] = um2::Vec<2, T>::zero();
+  q[1] = um2::Vec<2, T>::zero();
+  q[2] = um2::Vec<2, T>::zero();
   q[1][0] = static_cast<T>(2);
   return q;
 }

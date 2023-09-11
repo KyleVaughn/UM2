@@ -1,4 +1,3 @@
-
 intersection test for mesh: quad, tri6, quad8
 Need to generate images before modular rays
 Need to generate rays before benchmark
@@ -37,3 +36,5 @@ Meaure using std::sort for intersections vs insertion sort
   apply permutation test
 
 move code that can be parallelized to a different directory
+
+nolints/cppchecks make sure all are justified

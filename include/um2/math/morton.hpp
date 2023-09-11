@@ -23,10 +23,10 @@ namespace um2
 // Therefore, the max coordinate value is 2^(X / N) - 1.
 
 template <std::unsigned_integral U>
-static constexpr U max_2d_morton_coord = (static_cast<U>(1) << (4 * sizeof(U))) - 1;
+constexpr U max_2d_morton_coord = (static_cast<U>(1) << (4 * sizeof(U))) - 1;
 
 template <std::unsigned_integral U>
-static constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 3)) - 1;
+constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 3)) - 1;
 
 #if defined(__BMI2__) && !UM2_USE_CUDA // && !defined(__CUDA_ARCH__)
 

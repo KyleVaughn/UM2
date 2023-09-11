@@ -113,6 +113,9 @@ struct Vec {
   // Methods
   //==============================================================================
 
+  HOSTDEV static constexpr auto
+  zero() noexcept -> Vec<D, T>;
+
   HOSTDEV constexpr auto
   min(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
 
@@ -147,26 +150,6 @@ struct Vec {
   distanceTo(Vec<D, T> const & v) const noexcept -> T;
 
 }; // struct Vec
-
-// Zero vector
-template <Size D, class T>
-HOSTDEV constexpr auto
-zeroVec() noexcept -> Vec<D, T>
-{
-  // There has to be a better way to do this...
-  if constexpr (D == 1) {
-    return Vec<D, T>(0);
-  } else if constexpr (D == 2) {
-    return Vec<D, T>(0, 0);
-  } else if constexpr (D == 3) {
-    return Vec<D, T>(0, 0, 0);
-  } else if constexpr (D == 4) {
-    return Vec<D, T>(0, 0, 0, 0);
-  } else {
-    static_assert(D == 1 || D == 2 || D == 3 || D == 4, "Invalid dimension");
-    return Vec<D, T>();
-  }
-}
 
 //==============================================================================
 // Aliases

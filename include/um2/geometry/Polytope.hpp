@@ -40,6 +40,7 @@ template <Size K, Size N, Size D, typename T>
 using LinearPolytope = Polytope<K, 1, N, D, T>;
 
 // K-Polytopes
+//-----------------------------------------------------------------------------
 template <Size P, Size N, Size D, typename T>
 using Dion = Polytope<1, P, N, D, T>;
 template <Size P, Size N, Size D, typename T>
@@ -48,11 +49,21 @@ template <Size P, Size N, Size D, typename T>
 using Polyhedron = Polytope<3, P, N, D, T>;
 
 // Dions
+//-----------------------------------------------------------------------------
 template <Size D, typename T>
 using LineSegment = Dion<1, 2, D, T>;
 template <Size D, typename T>
 using QuadraticSegment = Dion<2, 3, D, T>;
 
+// Planar dions
+template <Size P, Size N, typename T>
+using PlanarDion = Dion<P, N, 2, T>;
+template <Size N, typename T>
+using PlanarLineSegment = LineSegment<2, T>;
+template <Size N, typename T>
+using PlanarQuadraticSegment = QuadraticSegment<2, T>;
+
+// Dimension/data type specific aliases
 template <typename T>
 using LineSegment2 = LineSegment<2, T>;
 using LineSegment2f = LineSegment2<float>;
@@ -63,16 +74,21 @@ using QuadraticSegment2f = QuadraticSegment2<float>;
 using QuadraticSegment2d = QuadraticSegment2<double>;
 
 // Polygons
+//-----------------------------------------------------------------------------
 template <Size N, Size D, typename T>
 using LinearPolygon = Polygon<1, N, D, T>;
 template <Size N, Size D, typename T>
 using QuadraticPolygon = Polygon<2, N, D, T>;
 
+// Planar polygons
+template <Size P, Size N, typename T>
+using PlanarPolygon = Polygon<P, N, 2, T>;
 template <Size N, typename T>
 using PlanarLinearPolygon = LinearPolygon<N, 2, T>;
 template <Size N, typename T>
 using PlanarQuadraticPolygon = QuadraticPolygon<N, 2, T>;
 
+// N-vertex polygons
 template <Size D, typename T>
 using Triangle = LinearPolygon<3, D, T>;
 template <Size D, typename T>
@@ -82,6 +98,7 @@ using QuadraticTriangle = QuadraticPolygon<6, D, T>;
 template <Size D, typename T>
 using QuadraticQuadrilateral = QuadraticPolygon<8, D, T>;
 
+// Dimension/data type specific aliases
 template <typename T>
 using Triangle2 = Triangle<2, T>;
 using Triangle2f = Triangle2<float>;
@@ -112,11 +129,13 @@ using QuadraticQuadrilateral3f = QuadraticQuadrilateral3<float>;
 using QuadraticQuadrilateral3d = QuadraticQuadrilateral3<double>;
 
 // Polyhedrons
+//-----------------------------------------------------------------------------
 template <Size N, Size D, typename T>
 using LinearPolyhedron = Polyhedron<1, N, D, T>;
 template <Size N, Size D, typename T>
 using QuadraticPolyhedron = Polyhedron<2, N, D, T>;
 
+// N-vertex polyhedrons
 // Only allow embedding in 3D for now
 template <typename T>
 using Tetrahedron = LinearPolyhedron<4, 3, T>;
