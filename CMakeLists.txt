@@ -16,20 +16,19 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 # User options
 #===============================================================================
 
-option(UM2_USE_OPENMP       "Enable OpenMP"                 ON)
-option(UM2_USE_GMSH         "Enable Gmsh"                   ON)
-option(UM2_USE_CUDA         "Enable CUDA"                   OFF)
-option(UM2_USE_OPENGL       "Enable OpenGL visualization"   OFF)
+option(UM2_USE_TBB          "Enable Intel TBB for parallel STL" ON)
+option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
+option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
+option(UM2_USE_OPENGL       "Enable OpenGL visualization"       OFF)
 
-option(UM2_ENABLE_INT64     "Enable 64-bit integers"        OFF) # For large meshes
-option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"  ON)
-option(UM2_ENABLE_FASTMATH  "Enable fast math"              ON) # CPU and GPU
-option(UM2_ENABLE_PAR_STL   "Enable parallel STL"           OFF)
+option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large meshes
+option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"      ON)
+option(UM2_ENABLE_FASTMATH  "Enable fast math"                  ON) # CPU and GPU
 
-option(UM2_BUILD_TESTS      "Build tests"                   ON)
-option(UM2_BUILD_TUTORIAL   "Build tutorial"                ON)
-option(UM2_BUILD_EXAMPLES   "Build examples"                OFF)
-option(UM2_BUILD_BENCHMARKS "Build benchmarks"              OFF)
+option(UM2_BUILD_TESTS      "Build tests"                       ON)
+option(UM2_BUILD_TUTORIAL   "Build tutorial"                    ON)
+option(UM2_BUILD_EXAMPLES   "Build examples"                    OFF)
+option(UM2_BUILD_BENCHMARKS "Build benchmarks"                  OFF)
 
 #===============================================================================
 # Developer options
@@ -174,10 +173,19 @@ target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
 # Optional dependencies
 #===============================================================================
 
-# OpenMP
-if (UM2_USE_OPENMP)
-  find_package(OpenMP REQUIRED)
-  target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
+## OpenMP
+#if (UM2_USE_OPENMP)
+#  find_package(OpenMP REQUIRED)
+#  target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
+#endif()
+
+# TBB
+if (UM2_USE_TBB)
+  find_package(TBB REQUIRED)
+  # Tell the user where TBB was found
+  message(STATUS "Found TBB: ${TBB_DIR}")
+  target_link_libraries(um2 PUBLIC TBB::tbb)
+  #  target_include_directories(um2 SYSTEM PUBLIC "${TBB_INC}")
 endif()
 
 # Gmsh
@@ -233,11 +241,6 @@ if (UM2_ENABLE_FASTMATH)
   endif()
 endif()
 
-# If OpenMP and parallel STL are enabled
-if (UM2_USE_OPENMP AND UM2_ENABLE_PAR_STL)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_PARALLEL")
-endif()
-
 # Set release flags
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
 
@@ -262,10 +265,10 @@ if (UM2_USE_CUDA)
     "${CMAKE_CUDA_FLAGS_RELEASE} -Xcompiler \"${CMAKE_CXX_FLAGS_RELEASE}\"")
   set(CMAKE_CUDA_FLAGS_DEBUG 
     "${CMAKE_CUDA_FLAGS_DEBUG} -Xcompiler \"${CMAKE_CXX_FLAGS_DEBUG}\"")
-  # If OpenMP is enabled, -fopenmp is passed via -Xcompiler
-  if (UM2_USE_OPENMP)
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -fopenmp")
-  endif()
+  #  # If OpenMP is enabled, -fopenmp is passed via -Xcompiler
+  #  if (UM2_USE_OPENMP)
+  #    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -fopenmp")
+  #  endif()
 endif()
 
 #===============================================================================

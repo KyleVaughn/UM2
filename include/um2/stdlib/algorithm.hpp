@@ -51,12 +51,10 @@ clamp(T const & v, T const & lo, T const & hi) noexcept -> T
 // does nothing.
 //
 // https://en.cppreference.com/w/cpp/algorithm/copy
-//
-// We use __restrict__ to tell the compiler that the ranges do not overlap.
 
 template <typename InputIt, typename OutputIt>
 HOSTDEV constexpr auto
-copy(InputIt __restrict__ first, InputIt last, OutputIt __restrict__ d_first) noexcept
+copy(InputIt first, InputIt last, OutputIt d_first) noexcept
     -> OutputIt
 {
   for (; first != last; ++first, ++d_first) {

@@ -15,7 +15,11 @@ macro(add_um2_benchmark FILENAME)
 
   find_package(benchmark REQUIRED)
 
-  target_link_libraries(${BENCHNAME} um2 benchmark::benchmark benchmark::benchmark_main)
+  if (UM2_USE_TBB)    
+    target_link_libraries(${BENCHNAME} um2 benchmark::benchmark benchmark::benchmark_main TBB::tbb)
+  else()
+    target_link_libraries(${BENCHNAME} um2 benchmark::benchmark benchmark::benchmark_main)
+  endif()
   set_target_properties(${BENCHNAME} PROPERTIES CXX_STANDARD ${UM2_CXX_STANDARD})
 
   # clang-tidy

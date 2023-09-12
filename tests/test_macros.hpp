@@ -10,12 +10,16 @@
 // TODO(kcvaughn@umich.edu): Write our own assert. How can we do this without exit and
 // abort?
 //                             maybe a trap instruction?
+
+#include <um2/stdlib/math.hpp> // abs
 #ifndef UM2_USE_CUDA
 #  error("test_macros.hpp must be included after any UM2 files since it undefs NDEBUG")
 #endif
 
 #include <cstdio>  // printf
 #include <cstdlib> // exit
+
+#include <iostream> // std::cout, std::endl
 
 #undef NDEBUG
 #include <cassert>
@@ -41,8 +45,8 @@
   {                                                                                      \
     auto const a_eval = (a);                                                             \
     auto const b_eval = (b);                                                             \
-    auto const diff = a_eval > b_eval ? a_eval - b_eval : b_eval - a_eval;               \
-    assert(diff < (eps));                                                                \
+    auto const diff = um2::abs(a_eval - b_eval);                                         \
+    assert(diff <= (eps));                                                               \
   }
 
 #define TEST_CASE(name) void name()

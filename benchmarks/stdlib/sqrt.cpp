@@ -14,7 +14,7 @@ constexpr int lo = 0;
 constexpr int hi = 10000;
 
 template <typename T>
-static void
+void
 sqrtCPU(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -26,9 +26,9 @@ sqrtCPU(benchmark::State & state)
   }
 }
 
-#if UM2_USE_OPENMP
+#if UM2_USE_TBB
 template <typename T>
-static void
+void
 sqrtCPUThreads(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -36,7 +36,8 @@ sqrtCPUThreads(benchmark::State & state)
       makeVectorOfRandomFloats<T>(n, static_cast<T>(lo), static_cast<T>(hi));
   um2::Vector<T> sqrtx(n);
   for (auto s : state) {
-    __gnu_parallel::transform(x.begin(), x.end(), sqrtx.begin(), um2::sqrt<T>);
+    std::transform(std::execution::par_unseq, 
+        x.begin(), x.end(), sqrtx.begin(), um2::sqrt<T>);
   }
 }
 #endif
@@ -53,7 +54,7 @@ sqrtFloatKernel(T * x, T * sqrtx, Size const n)
 }
 
 template <typename T>
-static void
+void
 sqrtFloatCUDA(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -88,7 +89,7 @@ BENCHMARK_TEMPLATE(sqrtCPU, double)
     ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
 
-#if UM2_USE_OPENMP
+#if UM2_USE_TBB
 BENCHMARK_TEMPLATE(sqrtCPUThreads, float)
     ->RangeMultiplier(4)
     ->Range(1024, npoints)

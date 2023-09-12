@@ -5,8 +5,9 @@
 
 #include <algorithm> // std::sort
 
-#if UM2_USE_OPENMP
-#  include <parallel/algorithm> // __gnu_parallel::sort
+#if UM2_USE_TBB
+#  include <execution>
+//#  include <parallel/algorithm> // __gnu_parallel::sort
 #endif
 
 #if UM2_USE_CUDA
@@ -70,12 +71,13 @@ mortonSort(Point<D, T> * begin, Point<D, T> * end)
   std::sort(begin, end, mortonLess<U, D, T>);
 }
 
-#if UM2_USE_OPENMP
+#if UM2_USE_TBB
 template <std::unsigned_integral U, Size D, std::floating_point T>
 void
 mortonSortParallel(Point<D, T> * begin, Point<D, T> * end)
 {
-  __gnu_parallel::sort(begin, end, mortonLess<U, D, T>);
+  std::sort(std::execution::par, begin, end, mortonLess<U, D, T>);
+//  __gnu_parallel::sort(begin, end, mortonLess<U, D, T>);
 }
 #endif
 

@@ -1,16 +1,17 @@
 #pragma once
-
-#include <um2/config.hpp>
-
-#include <um2/stdlib/math.hpp>
-
-#include <algorithm>
-#include <cassert>
-#include <concepts>
-#include <functional>
+    
+#include <um2/config.hpp>    
+    
+#include <um2/stdlib/math.hpp>    
+    
+#include <algorithm>    
+#include <cassert>    
+#include <concepts>    
+#include <execution>
+#include <functional>    
 #include <numeric>
 
-namespace um2
+namespace um2::parallel
 {
 
 //=============================================================================
@@ -22,27 +23,8 @@ constexpr auto
 mean(T const * begin, T const * end) -> T
 {
   assert(begin != end);
-  return std::reduce(begin, end, static_cast<T>(0)) / static_cast<T>(end - begin);
-}
-
-//=============================================================================
-// median
-//=============================================================================
-
-template <std::floating_point T>
-constexpr auto
-median(T const * begin, T const * end) -> T
-{
-  assert(begin != end);
-  assert(std::is_sorted(begin, end));
-  auto const size = end - begin;
-  auto const mid = begin + size / 2;
-  // If the size is odd, return the middle element.
-  if (size % 2 == 1) {
-    return *mid;
-  }
-  // Otherwise, return the average of the two middle elements.
-  return (*mid + *(mid - 1)) / static_cast<T>(2);
+  return std::reduce(std::execution::par_unseq, 
+      begin, end, static_cast<T>(0)) / static_cast<T>(end - begin);
 }
 
 //=============================================================================
@@ -54,8 +36,9 @@ constexpr auto
 variance(T const * begin, T const * end) -> T
 {
   assert(begin != end);
-  auto const m = mean(begin, end);
+  auto const m = um2::parallel::mean(begin, end);
   return std::transform_reduce(
+      std::execution::par_unseq,
       begin, end, static_cast<T>(0),
       std::plus<T>{},
       [m](auto const x) { return (x - m) * (x - m); }) /
@@ -70,7 +53,7 @@ template <std::floating_point T>
 constexpr auto
 stdDev(T const * begin, T const * end) -> T
 {
-  return um2::sqrt(variance(begin, end));
+  return um2::sqrt(um2::parallel::variance(begin, end));
 }
 
-} // namespace um2
+} // namespace um2::parallel

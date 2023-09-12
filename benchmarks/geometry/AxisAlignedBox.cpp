@@ -13,7 +13,7 @@ constexpr int lo = -100;
 constexpr int hi = 100;
 
 template <typename T>
-static void
+void
 boundingBox(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));

@@ -10,8 +10,11 @@
 // CMake defines
 //==============================================================================
 
-// OpenMP
-#cmakedefine01 UM2_USE_OPENMP
+//// OpenMP
+//#cmakedefine01 UM2_USE_OPENMP
+
+// TBB
+#cmakedefine01 UM2_USE_TBB
 
 // Gmsh
 #cmakedefine01 UM2_USE_GMSH

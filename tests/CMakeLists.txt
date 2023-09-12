@@ -33,6 +33,9 @@ add_um2_test(./math/morton.cpp)
 add_um2_test(./math/Vec.cpp)
 add_um2_test(./math/Mat.cpp)
 add_um2_test(./math/stats.cpp)
+if (UM2_USE_TBB)
+  add_um2_test(./parallel/math/parallel_stats.cpp)
+endif()
 
 #===============================================================================
 # geometry

@@ -15,7 +15,7 @@ constexpr int lo = -3;
 constexpr int hi = 3;
 
 template <typename T>
-static void
+void
 expCPU(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -27,9 +27,9 @@ expCPU(benchmark::State & state)
   }
 }
 
-#if UM2_USE_OPENMP
+#if UM2_USE_TBB
 template <typename T>
-static void
+void
 expCPUThreads(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -37,7 +37,7 @@ expCPUThreads(benchmark::State & state)
       makeVectorOfRandomFloats<T>(n, static_cast<T>(lo), static_cast<T>(hi));
   um2::Vector<T> expx(n);
   for (auto s : state) {
-    __gnu_parallel::transform(x.begin(), x.end(), expx.begin(), um2::exp<T>);
+    std::transform(std::execution::par_unseq, x.begin(), x.end(), expx.begin(), um2::exp<T>);
   }
 }
 #endif
@@ -54,7 +54,7 @@ expFloatKernel(T * x, T * expx, Size const n)
 }
 
 template <typename T>
-static void
+void
 expFloatCUDA(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -88,7 +88,7 @@ BENCHMARK_TEMPLATE(expCPU, double)
     ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
 
-#if UM2_USE_OPENMP
+#if UM2_USE_TBB
 BENCHMARK_TEMPLATE(expCPUThreads, float)
     ->RangeMultiplier(4)
     ->Range(1024, npoints)

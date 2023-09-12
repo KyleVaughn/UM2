@@ -5,7 +5,7 @@ constexpr int lo = -10;
 constexpr int hi = 10;
 
 template <typename T>
-static void
+void
 crossCPU(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));

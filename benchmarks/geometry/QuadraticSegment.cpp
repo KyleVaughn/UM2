@@ -27,7 +27,9 @@
 #include "../helpers.hpp"
 
 #include <iostream>
+#if UM2_USE_CUDA
 #include <thrust/complex.h>
+#endif
 
 constexpr Size npoints = 1 << 18;
 // BB of base seg is [0, 0] to [2, 1]
@@ -36,7 +38,7 @@ constexpr int lo = 0;
 constexpr int hi = 3;
 
 template <typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeBaseSeg() -> um2::QuadraticSegment2<T>
 {
   um2::QuadraticSegment2<T> q;
@@ -48,7 +50,7 @@ makeBaseSeg() -> um2::QuadraticSegment2<T>
 }
 
 template <typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg4() -> um2::QuadraticSegment2<T>
 {
   um2::QuadraticSegment2<T> q = makeBaseSeg<T>();
@@ -81,7 +83,7 @@ isLeftOld(um2::QuadraticSegment2<T> const & q, um2::Point2<T> const & p) -> bool
 }
 
 template <typename T>
-static void
+void
 isLeftBenchWellBehaved(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -100,7 +102,7 @@ isLeftBenchWellBehaved(benchmark::State & state)
 }
 
 template <typename T>
-static void
+void
 isLeftBenchPoorlyBehaved(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -118,7 +120,7 @@ isLeftBenchPoorlyBehaved(benchmark::State & state)
 }
 
 template <typename T>
-static void
+void
 isLeftOldWellBehavedBench(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -136,7 +138,7 @@ isLeftOldWellBehavedBench(benchmark::State & state)
 }
 
 template <typename T>
-static void
+void
 isLeftOldPoorlyBehavedBench(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));

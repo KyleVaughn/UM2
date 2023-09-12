@@ -1,8 +1,6 @@
 #include <um2/mpact/SpatialPartition.hpp>
 #include <um2/mpact/io.hpp>
 
-#include <iostream>
-
 #include "../test_macros.hpp"
 
 #include <fstream>

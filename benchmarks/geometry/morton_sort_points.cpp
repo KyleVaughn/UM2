@@ -29,7 +29,7 @@
 constexpr Size npoints = 1 << 22;
 
 template <typename T, typename U>
-static void
+void
 mortonSortSerial(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -48,9 +48,9 @@ mortonSortSerial(benchmark::State & state)
   }
 }
 
-#if UM2_USE_OPENMP
+#if UM2_USE_TBB
 template <typename T, typename U>
-static void
+void
 mortonSortParallel(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -72,7 +72,7 @@ mortonSortParallel(benchmark::State & state)
 
 #if UM2_USE_CUDA
 template <typename T, typename U>
-static void
+void
 mortonSortCuda(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -110,7 +110,7 @@ BENCHMARK_TEMPLATE2(mortonSortSerial, double, uint64_t)
 //   ->Range(1024, npoints)
 //   ->Unit(benchmark::kMicrosecond);
 //
-#if UM2_USE_OPENMP
+#if UM2_USE_TBB
 BENCHMARK_TEMPLATE2(mortonSortParallel, double, uint64_t)
     ->RangeMultiplier(4)
     ->Range(1024, npoints)
