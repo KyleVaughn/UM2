@@ -465,7 +465,7 @@ PURE HOSTDEV constexpr auto
 pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept -> T
 {
 
-  // We want to use the complex funcstions in the std or cuda::std namespace
+  // We want to use the complex functions in the std or cuda::std namespace
   // depending on if we're using CUDA
   // NOLINTBEGIN(google-build-using-namespace) justified
 #if UM2_USE_CUDA
@@ -876,6 +876,7 @@ Dion<P, N, D, T>::jacobian(R const r) const noexcept -> Vec<D, T>
 template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
 Dion<P, N, D, T>::getRotation() const noexcept -> Mat<D, D, T>
+requires(D == 2)
 {
   return um2::getRotation(*this);
 }
@@ -887,6 +888,7 @@ Dion<P, N, D, T>::getRotation() const noexcept -> Mat<D, D, T>
 template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
 Dion<P, N, D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool
+requires(D == 2)
 {
   return pointIsLeft(*this, p);
 }

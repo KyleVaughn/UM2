@@ -77,10 +77,12 @@ struct Polytope<1, P, N, D, T> {
   jacobian(R r) const noexcept -> Vec<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getRotation() const noexcept -> Mat<D, D, T>;
+  getRotation() const noexcept -> Mat<D, D, T>
+  requires (D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isLeft(Point<D, T> const & p) const noexcept -> bool;
+  isLeft(Point<D, T> const & p) const noexcept -> bool
+  requires (D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   length() const noexcept -> T;
@@ -154,13 +156,9 @@ boundingBox(QuadraticSegment<D, T> const & q) noexcept -> AxisAlignedBox<D, T>;
 // pointClosestTo
 //==============================================================================
 
-template <Size D, typename T>
+template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-pointClosestTo(LineSegment<D, T> const & l, Point<D, T> const & p) noexcept -> T;
-
-template <Size D, typename T>
-PURE HOSTDEV constexpr auto
-pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept -> T;
+pointClosestTo(Dion<P, N, D, T> const & dion, Point<D, T> const & p) noexcept -> T;
 
 //==============================================================================
 // isStraight

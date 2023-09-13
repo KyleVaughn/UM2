@@ -32,14 +32,15 @@ void
 intersect(PlanarLinearPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
           T * const intersections, Size * const n) noexcept
 {
-  T const r_miss = infiniteDistance<T>();
+  T constexpr r_miss = infiniteDistance<T>();
   Size nintersect = 0;
 #ifndef NDEBUG
   Size const n0 = *n;
 #endif
+  Size constexpr edges_per_face = PlanarLinearPolygonMesh<N, T, I>::Face::numEdges();
   for (Size i = 0; i < numFaces(mesh); ++i) {
     auto const face = mesh.getFace(i);
-    for (Size j = 0; j < polygonNumEdges<1, N>(); ++j) {
+    for (Size j = 0; j < edges_per_face; ++j) {
       auto const edge = face.getEdge(j);
       T const r = intersect(edge, ray);
       if (r < r_miss) {
@@ -57,14 +58,15 @@ void
 intersect(PlanarQuadraticPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
           T * const intersections, Size * const n) noexcept
 {
-  T const r_miss = infiniteDistance<T>();
+  T constexpr r_miss = infiniteDistance<T>();
   Size nintersect = 0;
 #ifndef NDEBUG
   Size const n0 = *n;
 #endif
+  Size constexpr edges_per_face = PlanarQuadraticPolygonMesh<N, T, I>::Face::numEdges();
   for (Size i = 0; i < numFaces(mesh); ++i) {
     auto const face = mesh.getFace(i);
-    for (Size j = 0; j < polygonNumEdges<2, N>(); ++j) {
+    for (Size j = 0; j < edges_per_face; ++j) {
       auto const edge = face.getEdge(j);
       auto const r = intersect(edge, ray);
       if (r[0] < r_miss) {

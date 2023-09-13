@@ -29,6 +29,9 @@ struct Polytope<2, P, N, D, T> {
   // Accessors
   //==============================================================================
 
+  CONST HOSTDEV static constexpr auto
+  numEdges() noexcept -> Size;
+
   PURE HOSTDEV constexpr auto
   operator[](Size i) noexcept -> Point<D, T> &;
 
@@ -66,7 +69,8 @@ struct Polytope<2, P, N, D, T> {
   getEdge(Size i) const noexcept -> Edge;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  contains(Point<D, T> const & p) const noexcept -> bool;
+  contains(Point<D, T> const & p) const noexcept -> bool
+  requires (D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   area() const noexcept -> T;
@@ -78,21 +82,10 @@ struct Polytope<2, P, N, D, T> {
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isCCW() const noexcept -> bool;
+  isCCW() const noexcept -> bool
+  requires (D == 2);
 
 }; // Polygon
-
-//==============================================================================
-// Methods
-//==============================================================================
-
-template <Size P, Size N>
-PURE HOSTDEV constexpr auto
-polygonNumEdges() noexcept -> Size
-{
-  static_assert(P == 1 || P == 2, "Only P = 1 or P = 2 supported");
-  return N / P;
-}
 
 //==============================================================================
 // interpolate
@@ -126,13 +119,9 @@ getEdge(QuadraticPolygon<N, D, T> const & p, Size i) noexcept -> QuadraticSegmen
 // contains
 //==============================================================================
 
-template <Size N, typename T>
+template <Size P, Size N, typename T>
 PURE HOSTDEV constexpr auto
-contains(PlanarLinearPolygon<N, T> const & poly, Point2<T> const & p) noexcept -> bool;
-
-template <Size N, typename T>
-PURE HOSTDEV constexpr auto
-contains(PlanarQuadraticPolygon<N, T> const & q, Point2<T> const & p) noexcept -> bool;
+contains(PlanarPolygon<P, N, T> const & poly, Point2<T> const & p) noexcept -> bool;
 
 //==============================================================================
 // area
@@ -142,13 +131,9 @@ template <typename T>
 PURE HOSTDEV constexpr auto
 area(Triangle3<T> const & tri) noexcept -> T;
 
-template <Size N, typename T>
+template <Size P, Size N, typename T>
 PURE HOSTDEV constexpr auto
-area(PlanarLinearPolygon<N, T> const & p) noexcept -> T;
-
-template <Size N, typename T>
-PURE HOSTDEV constexpr auto
-area(PlanarQuadraticPolygon<N, T> const & q) noexcept -> T;
+area(PlanarPolygon<P, N, T> const & p) noexcept -> T;
 
 //==============================================================================
 // centroid
@@ -180,6 +165,34 @@ boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept -> AxisAlignedBox2<
 template <Size P, Size N, typename T>
 PURE HOSTDEV constexpr auto
 isCCW(PlanarPolygon<P, N, T> const & p) noexcept -> bool;
+
+//==============================================================================
+// flipFace
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T>
+HOSTDEV constexpr void
+flipFace(Polygon<P, N, D, T> & p) noexcept;
+
+//==============================================================================
+// isConvex
+//==============================================================================
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+isConvex(Quadrilateral2<T> const & q) noexcept -> bool;
+
+//==============================================================================
+// linearPolygon
+//==============================================================================
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+linearPolygon(QuadraticTriangle<D, T> const & q) noexcept -> Triangle<D, T>;
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+linearPolygon(QuadraticQuadrilateral<D, T> const & q) noexcept -> Quadrilateral<D, T>;
 
 } // namespace um2
 

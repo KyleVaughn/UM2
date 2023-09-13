@@ -3,10 +3,6 @@ parallel
   sortPermutation
   boundingBox(Vector<Point>)
 
-Requires for the member functions of dions and polygons
-
-Check on implicit vs explicit converions in constructions
-
 Need to generate images before modular rays
 Need to generate rays before benchmark
 Benchmark intersection
@@ -22,8 +18,7 @@ To clarify:
 Make the C API functions for the spatial partition into member functions of the partition
 Benchmark for MPACT model of VERA 2A -> find face and RT
 
-Check on status of all code
-  Fix binned mesh
+Fix binned mesh
 Work on intersection benchmark and mesh + MPACT stats
 
 GPU version of intersection
