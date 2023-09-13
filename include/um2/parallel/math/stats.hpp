@@ -1,15 +1,18 @@
 #pragma once
-    
-#include <um2/config.hpp>    
-    
-#include <um2/stdlib/math.hpp>    
-    
-#include <algorithm>    
-#include <cassert>    
-#include <concepts>    
-#include <execution>
-#include <functional>    
+
+#include <um2/config.hpp>
+
+#include <um2/stdlib/math.hpp>
+
+#include <algorithm>
+#include <cassert>
+#include <concepts>
+#include <functional>
 #include <numeric>
+
+#if UM2_USE_TBB
+#  include <execution>
+#endif
 
 namespace um2::parallel
 {
@@ -23,8 +26,8 @@ constexpr auto
 mean(T const * begin, T const * end) -> T
 {
   assert(begin != end);
-  return std::reduce(std::execution::par_unseq, 
-      begin, end, static_cast<T>(0)) / static_cast<T>(end - begin);
+  return std::reduce(std::execution::par_unseq, begin, end, static_cast<T>(0)) /
+         static_cast<T>(end - begin);
 }
 
 //=============================================================================
@@ -37,11 +40,9 @@ variance(T const * begin, T const * end) -> T
 {
   assert(begin != end);
   auto const m = um2::parallel::mean(begin, end);
-  return std::transform_reduce(
-      std::execution::par_unseq,
-      begin, end, static_cast<T>(0),
-      std::plus<T>{},
-      [m](auto const x) { return (x - m) * (x - m); }) /
+  return std::transform_reduce(std::execution::par_unseq, begin, end, static_cast<T>(0),
+                               std::plus<T>{},
+                               [m](auto const x) { return (x - m) * (x - m); }) /
          static_cast<T>(end - begin - 1);
 }
 

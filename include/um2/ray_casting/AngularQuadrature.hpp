@@ -89,16 +89,14 @@ struct ProductAngularQuadrature {
                                              AngularQuadratureType pol_form,
                                              Size pol_degree) noexcept
   {
+    assert(azi_form == AngularQuadratureType::Chebyshev);
     if (azi_form == AngularQuadratureType::Chebyshev) {
       setChebyshevAngularQuadrature(azi_degree, wazi, azi);
-    } else {
-      Log::error("Cannot identify azimuthal quadrature.");
     }
 
+    assert(pol_form == AngularQuadratureType::Chebyshev);
     if (pol_form == AngularQuadratureType::Chebyshev) {
       setChebyshevAngularQuadrature(pol_degree, wpol, pol);
-    } else {
-      Log::error("Cannot identify polar quadrature.");
     }
   }
 };

@@ -169,8 +169,8 @@ centroid(PlanarPolygon<P, N, T> const & p) noexcept -> Point2<T>;
 // Defined in Polytope.hpp for linear polygons, since for all linear polytopes
 // the bounding box is simply the bounding box of the vertices.
 
-template <Size N, typename T>    
-PURE HOSTDEV constexpr auto    
+template <Size N, typename T>
+PURE HOSTDEV constexpr auto
 boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept -> AxisAlignedBox2<T>;
 
 //==============================================================================
@@ -178,7 +178,7 @@ boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept -> AxisAlignedBox2<
 //==============================================================================
 
 template <Size P, Size N, typename T>
-PURE HOSTDEV constexpr auto    
+PURE HOSTDEV constexpr auto
 isCCW(PlanarPolygon<P, N, T> const & p) noexcept -> bool;
 
 } // namespace um2

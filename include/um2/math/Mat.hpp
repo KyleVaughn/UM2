@@ -14,7 +14,7 @@ namespace um2
 // This struct is used for VERY small matrices, where the matrix size is known
 // at compile time. The matrix is stored in column-major order.
 //
-// Anything beyond very small matrices should be done using something like 
+// Anything beyond very small matrices should be done using something like
 // OpenBLAS, cuBLAS, Eigen, etc. We currently only use this for 2x2 and 3x3.
 
 template <Size M, Size N, typename T>

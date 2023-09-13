@@ -55,10 +55,8 @@ variance(T const * begin, T const * end) -> T
 {
   assert(begin != end);
   auto const m = mean(begin, end);
-  return std::transform_reduce(
-      begin, end, static_cast<T>(0),
-      std::plus<T>{},
-      [m](auto const x) { return (x - m) * (x - m); }) /
+  return std::transform_reduce(begin, end, static_cast<T>(0), std::plus<T>{},
+                               [m](auto const x) { return (x - m) * (x - m); }) /
          static_cast<T>(end - begin - 1);
 }
 

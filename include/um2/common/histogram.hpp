@@ -14,7 +14,7 @@ namespace um2
 {
 
 //==============================================================================
-// printHistogram 
+// printHistogram
 //==============================================================================
 //
 // Given an std::vector of data floats, print a histogram of the data to stdout.

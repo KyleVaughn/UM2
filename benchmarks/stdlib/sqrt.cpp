@@ -36,8 +36,8 @@ sqrtCPUThreads(benchmark::State & state)
       makeVectorOfRandomFloats<T>(n, static_cast<T>(lo), static_cast<T>(hi));
   um2::Vector<T> sqrtx(n);
   for (auto s : state) {
-    std::transform(std::execution::par_unseq, 
-        x.begin(), x.end(), sqrtx.begin(), um2::sqrt<T>);
+    std::transform(std::execution::par_unseq, x.begin(), x.end(), sqrtx.begin(),
+                   um2::sqrt<T>);
   }
 }
 #endif

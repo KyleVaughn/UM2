@@ -67,7 +67,6 @@ stdSortPar(benchmark::State & state)
   }
   if (!std::is_sorted(vals.begin(), vals.end())) {
     std::cout << "Not sorted" << std::endl;
-
   }
 }
 #endif

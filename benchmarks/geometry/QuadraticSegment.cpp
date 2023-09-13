@@ -28,7 +28,7 @@
 
 #include <iostream>
 #if UM2_USE_CUDA
-#include <thrust/complex.h>
+#  include <cuda/std/complex>
 #endif
 
 constexpr Size npoints = 1 << 18;

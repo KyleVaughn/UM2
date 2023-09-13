@@ -8,7 +8,7 @@ namespace um2
 
 //==============================================================================
 //==============================================================================
-// Free functions 
+// Free functions
 //==============================================================================
 //==============================================================================
 
@@ -16,22 +16,22 @@ namespace um2
 // interpolation
 //==============================================================================
 
-template <Size D, typename T, typename R, typename S>    
-PURE HOSTDEV constexpr auto    
-interpolate(Triangle<D, T> const & tri, R const r, S const s) noexcept -> Point<D, T>    
-{    
-  // (1 - r - s) v0 + r v1 + s v2    
-  T const rr = static_cast<T>(r);    
-  T const ss = static_cast<T>(s);    
-  T const w0 = 1 - rr - ss;    
-  // T const w1 = rr;    
-  // T const w2 = ss;    
-  Point<D, T> result;    
-  for (Size i = 0; i < D; ++i) {    
-    result[i] = w0 * tri[0][i] + rr * tri[1][i] + ss * tri[2][i];    
-  }    
-  return result;    
-} 
+template <Size D, typename T, typename R, typename S>
+PURE HOSTDEV constexpr auto
+interpolate(Triangle<D, T> const & tri, R const r, S const s) noexcept -> Point<D, T>
+{
+  // (1 - r - s) v0 + r v1 + s v2
+  T const rr = static_cast<T>(r);
+  T const ss = static_cast<T>(s);
+  T const w0 = 1 - rr - ss;
+  // T const w1 = rr;
+  // T const w2 = ss;
+  Point<D, T> result;
+  for (Size i = 0; i < D; ++i) {
+    result[i] = w0 * tri[0][i] + rr * tri[1][i] + ss * tri[2][i];
+  }
+  return result;
+}
 
 template <Size D, typename T, typename R, typename S>
 PURE HOSTDEV constexpr auto
@@ -106,20 +106,20 @@ interpolate(QuadraticQuadrilateral<D, T> const & quad8, R const r, S const s) no
 // jacobian
 //==============================================================================
 
-template <Size D, typename T, typename R, typename S>    
-PURE HOSTDEV constexpr auto    
-jacobian(Triangle<D, T> const & t, R /*r*/, S /*s*/) noexcept -> Mat<D, 2, T>    
-{    
-  return Mat<D, 2, T>(t[1] - t[0], t[2] - t[0]);    
+template <Size D, typename T, typename R, typename S>
+PURE HOSTDEV constexpr auto
+jacobian(Triangle<D, T> const & t, R /*r*/, S /*s*/) noexcept -> Mat<D, 2, T>
+{
+  return Mat<D, 2, T>(t[1] - t[0], t[2] - t[0]);
 }
 
-template <Size D, typename T, typename R, typename S>    
-PURE HOSTDEV constexpr auto    
-jacobian(Quadrilateral<D, T> const & q, R const r, S const s) noexcept -> Mat<D, 2, T>    
-{    
-  // jac.col(0) = (v1 - v0) - s (v3 - v2)    
-  // jac.col(1) = (v3 - v0) - r (v1 - v2)    
-  T const rr = static_cast<T>(r);    
+template <Size D, typename T, typename R, typename S>
+PURE HOSTDEV constexpr auto
+jacobian(Quadrilateral<D, T> const & q, R const r, S const s) noexcept -> Mat<D, 2, T>
+{
+  // jac.col(0) = (v1 - v0) - s (v3 - v2)
+  // jac.col(1) = (v3 - v0) - r (v1 - v2)
+  T const rr = static_cast<T>(r);
   T const ss = static_cast<T>(s);
   T const w0 = 1 - ss;
   // T const w1 = ss;
@@ -187,24 +187,24 @@ jacobian(QuadraticQuadrilateral<D, T> const & q, R const r, S const s) noexcept
 // getEdge
 //==============================================================================
 
-template <Size N, Size D, typename T>    
-PURE HOSTDEV constexpr auto    
-getEdge(LinearPolygon<N, D, T> const & p, Size const i) noexcept -> LineSegment<D, T>    
-{                       
-  assert(0 <= i && i < N);    
-  return (i < N - 1) ? LineSegment<D, T>(p[i], p[i + 1])    
-                     : LineSegment<D, T>(p[N - 1], p[0]);    
-}                       
-                        
-template <Size N, Size D, typename T>    
-PURE HOSTDEV constexpr auto    
-getEdge(QuadraticPolygon<N, D, T> const & p, Size const i) noexcept    
-    -> QuadraticSegment<D, T>    
-{                       
-  assert(0 <= i && i < N);    
-  constexpr Size m = N / 2;    
-  return (i < m - 1) ? QuadraticSegment<D, T>(p[i], p[i + 1], p[i + m])    
-                     : QuadraticSegment<D, T>(p[m - 1], p[0], p[N - 1]);    
+template <Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+getEdge(LinearPolygon<N, D, T> const & p, Size const i) noexcept -> LineSegment<D, T>
+{
+  assert(0 <= i && i < N);
+  return (i < N - 1) ? LineSegment<D, T>(p[i], p[i + 1])
+                     : LineSegment<D, T>(p[N - 1], p[0]);
+}
+
+template <Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+getEdge(QuadraticPolygon<N, D, T> const & p, Size const i) noexcept
+    -> QuadraticSegment<D, T>
+{
+  assert(0 <= i && i < N);
+  constexpr Size m = N / 2;
+  return (i < m - 1) ? QuadraticSegment<D, T>(p[i], p[i + 1], p[i + m])
+                     : QuadraticSegment<D, T>(p[m - 1], p[0], p[N - 1]);
 }
 
 //==============================================================================
@@ -215,7 +215,7 @@ template <typename T>
 PURE HOSTDEV constexpr auto
 contains(Triangle2<T> const & tri, Point2<T> const & p) noexcept -> bool
 {
-  // Benchmarking shows it is faster to compute the areCCW() test for each 
+  // Benchmarking shows it is faster to compute the areCCW() test for each
   // edge, then return based on the AND of the results, rather than compute
   // the areCCW one at a time and return as soon as one is false.
   bool const b0 = areCCW(tri[0], tri[1], p);
@@ -230,7 +230,7 @@ contains(Quadrilateral2<T> const & tri, Point2<T> const & p) noexcept -> bool
 {
   bool const b0 = areCCW(tri[0], tri[1], p);
   bool const b1 = areCCW(tri[1], tri[2], p);
-  bool const b2 = areCCW(tri[2], tri[3], p);    
+  bool const b2 = areCCW(tri[2], tri[3], p);
   bool const b3 = areCCW(tri[3], tri[0], p);
   return b0 && b1 && b2 && b3;
 }
@@ -278,7 +278,7 @@ PURE HOSTDEV constexpr auto
 area(Quadrilateral2<T> const & q) noexcept -> T
 {
   assert(isConvex(q));
-  // (v2 - v0).cross(v3 - v1) / 2 
+  // (v2 - v0).cross(v3 - v1) / 2
   Vec2<T> const v20 = q[2] - q[0];
   Vec2<T> const v31 = q[3] - q[1];
   return v20.cross(v31) / 2;
@@ -343,25 +343,25 @@ PURE HOSTDEV constexpr auto
 centroid(Quadrilateral2<T> const & quad) noexcept -> Point2<T>
 {
   // Algorithm: Decompose the quadrilateral into two triangles and
-  // compute the centroid of each triangle. The centroid of the   
-  // quadrilateral is the weighted average of the centroids of the   
+  // compute the centroid of each triangle. The centroid of the
+  // quadrilateral is the weighted average of the centroids of the
   // two triangles, where the weights are the areas of the triangles.
   assert(isConvex(quad));
-  // If the quadrilateral is not convex, then we need to choose the correct 
+  // If the quadrilateral is not convex, then we need to choose the correct
   // two triangles to decompose the quadrilateral into. If the quadrilateral
   // is convex, any two triangles will do.
   Vec2<T> const v10 = quad[1] - quad[0];
   Vec2<T> const v20 = quad[2] - quad[0];
-  Vec2<T> const v30 = quad[3] - quad[0];  
+  Vec2<T> const v30 = quad[3] - quad[0];
   // Compute the area of each triangle
-  T const a1 = v10.cross(v20);    
+  T const a1 = v10.cross(v20);
   T const a2 = v20.cross(v30);
-  T const a12 = a1 + a2;                      
+  T const a12 = a1 + a2;
   // Compute the centroid of each triangle
-  // (v0 + v1 + v2) / 3                                                   
+  // (v0 + v1 + v2) / 3
   // Each triangle shares v0 and v2, so we factor out the common terms
-  Point2<T> result;                 
-  for (Size i = 0; i < 2; ++i) {                                                        
+  Point2<T> result;
+  for (Size i = 0; i < 2; ++i) {
     result[i] = a1 * quad[1][i] + a2 * quad[3][i] + a12 * (quad[0][i] + quad[2][i]);
   }
   return result /= (3 * a12);
@@ -401,50 +401,49 @@ centroid(PlanarQuadraticPolygon<N, T> const & q) noexcept -> Point2<T>
   return centroid_sum / area_sum;
 }
 
-
 //==============================================================================
 // boundingBox
 //==============================================================================
 
-template <Size N, typename T>    
-PURE HOSTDEV constexpr auto    
-boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept -> AxisAlignedBox2<T>    
-{    
-  AxisAlignedBox2<T> box = boundingBox(getEdge(p, 0));    
-  Size const num_edges = polygonNumEdges<2, N>();    
-  for (Size i = 1; i < num_edges; ++i) {    
-    box += boundingBox(getEdge(p, i));    
-  }    
-  return box;    
+template <Size N, typename T>
+PURE HOSTDEV constexpr auto
+boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept -> AxisAlignedBox2<T>
+{
+  AxisAlignedBox2<T> box = boundingBox(getEdge(p, 0));
+  Size const num_edges = polygonNumEdges<2, N>();
+  for (Size i = 1; i < num_edges; ++i) {
+    box += boundingBox(getEdge(p, i));
+  }
+  return box;
 }
 
 //==============================================================================
 // isCCW
 //==============================================================================
 
-template <typename T>    
-PURE HOSTDEV constexpr auto    
-isCCW(Triangle2<T> const & t) noexcept -> bool    
-{    
-  return areCCW(t[0], t[1], t[2]);    
-}    
-    
-template <typename T>    
-PURE HOSTDEV constexpr auto    
-isCCW(Quadrilateral2<T> const & q) noexcept -> bool    
-{    
-  bool const b0 = areCCW(q[0], q[1], q[2]);    
-  bool const b1 = areCCW(q[0], q[2], q[3]);    
-  return b0 && b1;    
-}    
-    
-template <Size N, typename T>    
-PURE HOSTDEV constexpr auto    
-isCCW(PlanarQuadraticPolygon<N, T> const & q) noexcept -> bool    
-{    
-  return isCCW(linearPolygon(q));    
-}    
-    
+template <typename T>
+PURE HOSTDEV constexpr auto
+isCCW(Triangle2<T> const & t) noexcept -> bool
+{
+  return areCCW(t[0], t[1], t[2]);
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+isCCW(Quadrilateral2<T> const & q) noexcept -> bool
+{
+  bool const b0 = areCCW(q[0], q[1], q[2]);
+  bool const b1 = areCCW(q[0], q[2], q[3]);
+  return b0 && b1;
+}
+
+template <Size N, typename T>
+PURE HOSTDEV constexpr auto
+isCCW(PlanarQuadraticPolygon<N, T> const & q) noexcept -> bool
+{
+  return isCCW(linearPolygon(q));
+}
+
 //==============================================================================
 //==============================================================================
 // Member functions

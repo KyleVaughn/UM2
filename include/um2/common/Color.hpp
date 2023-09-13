@@ -65,7 +65,7 @@ struct Color {
 
   HOSTDEV constexpr Color(ShortString const & name) noexcept;
   // NOLINTEND(google-explicit-constructor)
-  
+
   //==============================================================================
   // Accessors
   //==============================================================================

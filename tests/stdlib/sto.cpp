@@ -45,8 +45,8 @@ TEST_CASE(sto_uint64)
 }
 
 #ifndef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
 #endif
 
 TEST_CASE(sto_float)
@@ -84,5 +84,5 @@ main() -> int
 }
 
 #ifndef __clang__
-#pragma GCC diagnostic pop
+#  pragma GCC diagnostic pop
 #endif

@@ -54,8 +54,7 @@ clamp(T const & v, T const & lo, T const & hi) noexcept -> T
 
 template <typename InputIt, typename OutputIt>
 HOSTDEV constexpr auto
-copy(InputIt first, InputIt last, OutputIt d_first) noexcept
-    -> OutputIt
+copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
   for (; first != last; ++first, ++d_first) {
     *d_first = *first;

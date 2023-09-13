@@ -37,7 +37,7 @@ jobs:
         shell: bash
         run: |
           sudo apt -y update
-          sudo apt install -y libhdf5-dev libpugixml-dev
+          sudo apt install -y libhdf5-dev libpugixml-dev libtbb-dev
 
       - name: gcc
         shell: bash

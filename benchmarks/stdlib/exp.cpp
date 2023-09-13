@@ -37,7 +37,8 @@ expCPUThreads(benchmark::State & state)
       makeVectorOfRandomFloats<T>(n, static_cast<T>(lo), static_cast<T>(hi));
   um2::Vector<T> expx(n);
   for (auto s : state) {
-    std::transform(std::execution::par_unseq, x.begin(), x.end(), expx.begin(), um2::exp<T>);
+    std::transform(std::execution::par_unseq, x.begin(), x.end(), expx.begin(),
+                   um2::exp<T>);
   }
 }
 #endif

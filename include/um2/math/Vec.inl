@@ -193,11 +193,11 @@ operator/(Vec<D, T> u, Scalar s) noexcept -> Vec<D, T>
 //==============================================================================
 
 template <Size D, class T>
-HOSTDEV constexpr auto    
-Vec<D, T>::zero() noexcept -> Vec<D, T>    
-{    
-  return Vec<D, T>{}; // Zero-initialize.    
-} 
+HOSTDEV constexpr auto
+Vec<D, T>::zero() noexcept -> Vec<D, T>
+{
+  return Vec<D, T>{}; // Zero-initialize.
+}
 
 template <Size D, class T>
 HOSTDEV constexpr auto
