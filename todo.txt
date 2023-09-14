@@ -1,34 +1,51 @@
+Consolidate FaceVertexMesh
+
 parallel
-  histogram
-  sortPermutation
-  boundingBox(Vector<Point>)
+  threads
+    histogram
+    sortPermutation
+    boundingBox(Vector<Point>)
+    boundingBox(Mesh)
+  GPU
 
-Need to generate images before modular rays
-Need to generate rays before benchmark
-Benchmark intersection
-Benchmark intersection for pointer arithmetic version
-Benchmark using insertion sort
-Benchmark with morton ordered mesh
+Identify par functions
+  mesh
+  physics
+  mpact
+  ray_casting
+  visualization
 
-To clarify:
-  morton and not morton ordered
-  sort using std::sort and insertion sort
-  binned and not binned
+Stack of todo:
+  Generate images of line segments
+  Generate modular rays and visualize to verify 
+  Benchmark intersection using modular rays
+  Benchmark intersection for pointer arithmetic version of intersect
+  Morton sort for mesh
+  Benchmark morton sorted vs unsorted intersection
+  Benchmark using insertion sort vs std::sort on morton sorted mesh vs unsorted
+  Benchmark insertion vs non-insertion and morton vs non-morton for binned and non-binned
+
+Alternative stack:
+  FaceVertexMesh.getUniqueEdges
+  FaceVertexMesh.getUniqueEdgeLengths
+  histogram for mesh
+  histogram for mesh by material
+  histogram of spatial partition
+
+Change functions returning a vector to accept a vector by reference and resize
+  just getFaceAreas
 
 Make the C API functions for the spatial partition into member functions of the partition
-Benchmark for MPACT model of VERA 2A -> find face and RT
 
-Fix binned mesh
-Work on intersection benchmark and mesh + MPACT stats
+Benchmark for SpatialPartition model of VERA 2A -> find face and RT
 
-GPU version of intersection
-  Just transfer the mesh to the GPU and do operations there
+Print histogram of mesh edge lengths and face areas.
+Print for each material
 
-mesh reorder
-
-mesh getUniqueEdges
-
-apply permutation test
+// GPU version of intersection
+//   Just transfer the mesh to the GPU and do operations there
+// 
+// apply permutation test
 
 nolints/cppchecks make sure all are justified
 Check pragma diagnostic push/pop

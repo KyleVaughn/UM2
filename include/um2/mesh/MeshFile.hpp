@@ -6,11 +6,12 @@
 #include <um2/stdlib/memory.hpp>
 
 #include <algorithm>
-#ifdef UM2_USE_OPENMP
-#  include <parallel/algorithm>
-#endif
 #include <string>
 #include <vector>
+
+#if UM2_USE_TBB
+# include <execution>
+#endif
 
 namespace um2
 {
@@ -165,7 +166,7 @@ struct MeshFile {
   constexpr void
   sortElsets();
 
-  constexpr void
+  void
   getSubmesh(std::string const & elset_name, MeshFile<T, I> & submesh) const;
 
   void

@@ -32,3 +32,4 @@ add_um2_benchmark(./geometry/QuadraticSegment.cpp)
 file(COPY ${PROJECT_SOURCE_DIR}/benchmarks/mesh/mesh_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})    
 
 add_um2_benchmark(./mesh/tri6_faceContaining.cpp)
+add_um2_benchmark(./mesh/MeshFile_getSubmesh.cpp)

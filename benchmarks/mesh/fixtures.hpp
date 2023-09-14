@@ -6,6 +6,7 @@
 class Pin268Fixture : public benchmark::Fixture
 {
 public:
+  um2::MeshFile<float, int32_t> meshfile;
   um2::QuadraticTriMesh<2, float, int32_t> mesh;
 
   void
@@ -13,7 +14,6 @@ public:
   {
     um2::Log::setMaxVerbosityLevel(um2::LogVerbosity::Warn);
     std::string const filename = "./mesh_files/tri6_pin_268.inp";
-    um2::MeshFile<float, int32_t> meshfile;
     um2::readAbaqusFile(filename, meshfile);
     mesh = um2::QuadraticTriMesh<2, float, int32_t>(meshfile);
   }
@@ -27,6 +27,7 @@ public:
 class Pin1656Fixture : public benchmark::Fixture
 {
 public:
+  um2::MeshFile<float, int32_t> meshfile;
   um2::QuadraticTriMesh<2, float, int32_t> mesh;
 
   void
@@ -34,7 +35,6 @@ public:
   {
     um2::Log::setMaxVerbosityLevel(um2::LogVerbosity::Warn);
     std::string const filename = "./mesh_files/tri6_pin_1656.inp";
-    um2::MeshFile<float, int32_t> meshfile;
     um2::readAbaqusFile(filename, meshfile);
     mesh = um2::QuadraticTriMesh<2, float, int32_t>(meshfile);
   }
@@ -48,6 +48,7 @@ public:
 class Lattice76790Fixture : public benchmark::Fixture
 {
 public:
+  um2::MeshFile<float, int32_t> meshfile;
   um2::QuadraticTriMesh<2, float, int32_t> mesh;
 
   void
@@ -55,7 +56,6 @@ public:
   {
     um2::Log::setMaxVerbosityLevel(um2::LogVerbosity::Warn);
     std::string const filename = "./mesh_files/tri6_lattice_76790.inp";
-    um2::MeshFile<float, int32_t> meshfile;
     um2::readAbaqusFile(filename, meshfile);
     mesh = um2::QuadraticTriMesh<2, float, int32_t>(meshfile);
   }

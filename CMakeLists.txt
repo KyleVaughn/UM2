@@ -16,7 +16,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 # User options
 #===============================================================================
 
-option(UM2_USE_TBB          "Enable Intel TBB for parallel STL" ON)
+option(UM2_USE_OPENMP       "Enable OpenMP"                     ON)
+option(UM2_USE_TBB          "Enable Intel TBB (parallel STL)"   ON)
 option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
 option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
 option(UM2_USE_OPENGL       "Enable OpenGL visualization"       OFF)
@@ -173,11 +174,11 @@ target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
 # Optional dependencies
 #===============================================================================
 
-## OpenMP
-#if (UM2_USE_OPENMP)
-#  find_package(OpenMP REQUIRED)
-#  target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
-#endif()
+# OpenMP
+if (UM2_USE_OPENMP)
+  find_package(OpenMP REQUIRED)
+  target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
+endif()
 
 # TBB
 if (UM2_USE_TBB)
@@ -265,10 +266,10 @@ if (UM2_USE_CUDA)
     "${CMAKE_CUDA_FLAGS_RELEASE} -Xcompiler \"${CMAKE_CXX_FLAGS_RELEASE}\"")
   set(CMAKE_CUDA_FLAGS_DEBUG 
     "${CMAKE_CUDA_FLAGS_DEBUG} -Xcompiler \"${CMAKE_CXX_FLAGS_DEBUG}\"")
-  #  # If OpenMP is enabled, -fopenmp is passed via -Xcompiler
-  #  if (UM2_USE_OPENMP)
-  #    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -fopenmp")
-  #  endif()
+  # If OpenMP is enabled, -fopenmp is passed via -Xcompiler
+  if (UM2_USE_OPENMP)
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -fopenmp")
+  endif()
 endif()
 
 #===============================================================================

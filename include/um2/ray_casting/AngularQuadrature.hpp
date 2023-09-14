@@ -47,7 +47,10 @@ namespace um2
 //  𝘷                                   //
 //  k                                   //
 
-enum class AngularQuadratureType { Chebyshev };
+enum class AngularQuadratureType { 
+  None,
+  Chebyshev 
+};
 
 template <std::floating_point T>
 HOSTDEV constexpr static void
@@ -89,14 +92,22 @@ struct ProductAngularQuadrature {
                                              AngularQuadratureType pol_form,
                                              Size pol_degree) noexcept
   {
-    assert(azi_form == AngularQuadratureType::Chebyshev);
-    if (azi_form == AngularQuadratureType::Chebyshev) {
+    switch(azi_form) {
+    case AngularQuadratureType::Chebyshev:
       setChebyshevAngularQuadrature(azi_degree, wazi, azi);
+      break;
+    default:
+      assert(false);
+      break;
     }
 
-    assert(pol_form == AngularQuadratureType::Chebyshev);
-    if (pol_form == AngularQuadratureType::Chebyshev) {
+    switch(pol_form) {
+    case AngularQuadratureType::Chebyshev:
       setChebyshevAngularQuadrature(pol_degree, wpol, pol);
+      break;
+    default:
+      assert(false);
+      break;
     }
   }
 };
