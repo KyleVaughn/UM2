@@ -81,7 +81,8 @@ struct FaceVertexMesh {
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
 
   PURE [[nodiscard]] constexpr auto
-  faceContaining(Point<D, T> const & p) const noexcept -> Size;
+  faceContaining(Point<D, T> const & p) const noexcept -> Size
+    requires(D == 2);
 
   void
   flipFace(Size i) noexcept;
@@ -91,6 +92,10 @@ struct FaceVertexMesh {
 
   [[nodiscard]] constexpr auto
   getFaceAreas() const noexcept -> Vector<T>;
+
+  void
+  intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept
+    requires(D == 2);
 };
 
 //==============================================================================
@@ -120,6 +125,57 @@ template <Size N, std::floating_point T, std::signed_integral I>
 using PlanarLinearPolygonMesh = FaceVertexMesh<1, N, 2, T, I>;
 template <Size N, std::floating_point T, std::signed_integral I>
 using PlanarQuadraticPolygonMesh = FaceVertexMesh<2, N, 2, T, I>;
+
+//==============================================================================
+// numVertices
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+PURE HOSTDEV constexpr auto
+numVertices(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept -> Size;
+
+//==============================================================================
+// numFaces
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+PURE HOSTDEV constexpr auto
+numFaces(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept -> Size;
+
+//==============================================================================
+// getFace
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+PURE HOSTDEV constexpr auto
+getFace(FaceVertexMesh<P, N, D, T, I> const & mesh, Size i) noexcept
+    -> Polygon<P, N, D, T>;
+
+//==============================================================================
+// boundingBox
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+PURE constexpr auto
+boundingBox(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept -> AxisAlignedBox<D, T>;
+
+//==============================================================================
+// faceContaining
+//==============================================================================
+
+template <Size P, Size N, std::floating_point T, std::signed_integral I>
+PURE constexpr auto
+faceContaining(PlanarPolygonMesh<P, N, T, I> const & mesh, Point2<T> const & p) noexcept
+    -> Size;
+
+//==============================================================================
+// intersect
+//==============================================================================
+
+template <Size P, Size N, std::floating_point T, std::signed_integral I>
+void
+intersect(PlanarPolygonMesh<P, N, T, I> const & mesh, Ray2<T> const & ray,
+          T * intersections, Size * n) noexcept;
 
 } // namespace um2
 

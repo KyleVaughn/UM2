@@ -44,11 +44,17 @@ TEST_CASE(sto_uint64)
   assert(i == 123);
 }
 
+#ifndef __clang__
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#endif
+
 TEST_CASE(sto_float)
 {
   float f = 0;
   f = um2::sto<float>("123.456");
-  ASSERT_NEAR(f, 123.456F, 1e-6F);
+  float const f_expected = 123.456F;
+  ASSERT_NEAR(f, f_expected, 1e-6F);
 }
 
 TEST_CASE(sto_double)
@@ -76,3 +82,7 @@ main() -> int
   RUN_SUITE(sto);
   return 0;
 }
+
+#ifndef __clang__
+#  pragma GCC diagnostic pop
+#endif

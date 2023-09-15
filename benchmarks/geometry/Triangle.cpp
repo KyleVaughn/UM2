@@ -48,7 +48,7 @@ triContainsNoShortCCW(um2::Triangle2<T> const & tri, um2::Point2<T> const & p) -
 }
 
 template <typename T>
-static void
+void
 containsBary(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -66,7 +66,7 @@ containsBary(benchmark::State & state)
 }
 
 template <typename T>
-static void
+void
 containsCCW(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -84,7 +84,7 @@ containsCCW(benchmark::State & state)
 }
 
 template <typename T>
-static void
+void
 containsNoShortCCW(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));

@@ -6,7 +6,6 @@
 #include <um2/stdlib/utility.hpp>   // move
 
 #include <initializer_list> // std::initializer_list
-#include <numeric>          // std::iota
 
 namespace um2
 {
@@ -44,8 +43,6 @@ public:
 
   HOSTDEV constexpr Vector(Vector && v) noexcept;
 
-  // Initializer-list constructor should not be explicit
-  // cppcheck-suppress noExplicitConstructor; justified
   HOSTDEV constexpr Vector(std::initializer_list<T> const & list) noexcept;
 
   //==============================================================================
@@ -64,14 +61,12 @@ public:
   max_size() noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  // cppcheck-suppress functionConst; justification: cannot be const
   begin() noexcept -> T *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   begin() const noexcept -> T const *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  // cppcheck-suppress functionConst; justification: cannot be const
   end() noexcept -> T *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -93,21 +88,18 @@ public:
   cend() const noexcept -> T const *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  // cppcheck-suppress functionConst; justification: cannot be const
   front() noexcept -> T &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   front() const noexcept -> T const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  // cppcheck-suppress functionConst; justification: cannot be const
   back() noexcept -> T &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   back() const noexcept -> T const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  // cppcheck-suppress functionConst; justification: cannot be const
   data() noexcept -> T *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -137,7 +129,6 @@ public:
   //==============================================================================
 
   PURE HOSTDEV constexpr auto
-  // cppcheck-suppress functionConst; justification: cannot be const
   operator[](Size i) noexcept -> T &;
 
   PURE HOSTDEV constexpr auto
@@ -187,15 +178,6 @@ public:
 template <>
 struct Vector<bool> {
 };
-
-// TODO (kcvaughn@umich.edu): Add comparator template parameter
-template <typename T>
-constexpr void
-sortPermutation(Vector<T> const & v, Vector<Size> & perm) noexcept;
-
-template <typename T>
-constexpr void
-applyPermutation(Vector<T> & v, Vector<Size> const & perm) noexcept;
 
 } // namespace um2
 

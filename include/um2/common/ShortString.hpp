@@ -33,10 +33,13 @@ public:
 
   HOSTDEV constexpr ShortString() noexcept;
 
+  // We want to allow implicit conversions from string literals.
+  // NOLINTBEGIN(google-explicit-constructor) justified above.
   template <uint64_t N>
-  HOSTDEV constexpr explicit ShortString(char const (&s)[N]) noexcept;
+  HOSTDEV constexpr ShortString(char const (&s)[N]) noexcept;
 
-  HOSTDEV constexpr explicit ShortString(char const * s) noexcept;
+  HOSTDEV constexpr ShortString(char const * s) noexcept;
+  // NOLINTEND(google-explicit-constructor)
 
   //==============================================================================
   // Accessors
@@ -48,7 +51,6 @@ public:
   PURE HOSTDEV [[nodiscard]] static constexpr auto
   capacity() noexcept -> Size;
 
-  // cppcheck-suppress functionConst; justification: can't be const
   PURE HOSTDEV [[nodiscard]] constexpr auto
   data() noexcept -> char *;
 
@@ -80,8 +82,11 @@ public:
   constexpr auto
   operator==(std::string const & s) const noexcept -> bool;
 
+  template <uint64_t N>
   HOSTDEV constexpr auto
-  // cppcheck-suppress functionConst; justification: can't be const
+  operator==(char const (&s)[N]) const noexcept -> bool;
+
+  HOSTDEV constexpr auto
   operator[](Size i) noexcept -> char &;
 
   HOSTDEV constexpr auto

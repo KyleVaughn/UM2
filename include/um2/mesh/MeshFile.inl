@@ -135,6 +135,8 @@ MeshFile<T, I>::sortElsets()
         elset_names[i], std::make_pair(elset_offsets[i], elset_offsets[i + 1]));
   }
   // Sort the vector by the elset names.
+  // This is only of length num_elsets, so it should be fast. No need to
+  // parallelize.
   std::sort(elset_name_offsets_pairs.begin(), elset_name_offsets_pairs.end(),
             [](NameOffsetsPair const & a, NameOffsetsPair const & b) -> bool {
               return a.first < b.first;
@@ -162,10 +164,11 @@ MeshFile<T, I>::sortElsets()
 //==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
-constexpr void
+void
 MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & submesh) const
 {
   LOG_DEBUG("Extracting submesh for elset: " + elset_name);
+
   // Find the elset with the given name.
   auto const elset_it = std::find(elset_names.cbegin(), elset_names.cend(), elset_name);
   if (elset_it == elset_names.cend()) {
@@ -186,7 +189,11 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
   for (size_t i = 0; i < submesh_num_elements; ++i) {
     element_ids[i] = elset_ids[submesh_elset_start + i];
   }
+#if UM2_USE_TBB
+  std::sort(std::execution::par_unseq, element_ids.begin(), element_ids.end());
+#else
   std::sort(element_ids.begin(), element_ids.end());
+#endif
 
   // Get the element connectivity and remap the vertex ids.
   submesh.element_types.resize(submesh_num_elements);
@@ -194,6 +201,7 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
   submesh.element_offsets[0] = 0;
   submesh.element_conn.reserve(3 *
                                submesh_num_elements); // 3 is the min vertices per element
+  // push_back creates race condition. Don't parallelize.
   for (size_t i = 0; i < submesh_num_elements; ++i) {
     auto const element_id = static_cast<size_t>(element_ids[i]);
     submesh.element_types[i] = element_types[element_id];
@@ -209,11 +217,21 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
   }
   // Get the unique vertex ids.
   std::vector<I> all_vertex_ids = submesh.element_conn;
+#if UM2_USE_TBB
+  std::sort(std::execution::par_unseq, all_vertex_ids.begin(), all_vertex_ids.end());
+  auto const last = std::unique(std::execution::par_unseq, all_vertex_ids.begin(),
+                                all_vertex_ids.end());
+#else
   std::sort(all_vertex_ids.begin(), all_vertex_ids.end());
   auto const last = std::unique(all_vertex_ids.begin(), all_vertex_ids.end());
+#endif
+  // This is an unnecessary copy
   std::vector<I> unique_vertex_ids(all_vertex_ids.begin(), last);
   // We now have the unique vertex ids. We need to remap the connectivity.
   // unique_vertex_ids[i] is the old vertex id, and i is the new vertex id.
+#if UM2_USE_OPENMP
+#  pragma omp parallel for
+#endif
   for (size_t i = 0; i < submesh.element_conn.size(); ++i) {
     I const old_vertex_id = submesh.element_conn[i];
     auto const it = std::lower_bound(unique_vertex_ids.begin(), unique_vertex_ids.end(),
@@ -234,6 +252,8 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
   // If the intersection of this elset and another elset is non-empty, then we need to
   // add the itersection as an elset and remap the elset IDs using the element_ids vector.
   // element_ids[i] is the old element id, and i is the new element id.
+  //
+  // push_back causes race condition. Don't parallelize.
   for (size_t i = 0; i < num_elsets; ++i) {
     if (i == elset_index) {
       continue;

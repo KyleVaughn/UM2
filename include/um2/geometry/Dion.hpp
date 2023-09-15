@@ -57,18 +57,17 @@ struct Polytope<1, P, N, D, T> {
 
   template <class... Pts>
     requires(sizeof...(Pts) == N && (std::same_as<Point<D, T>, Pts> && ...))
-  // NOLINTBEGIN(google-explicit-constructor) justification: implicit conversion
-  // cppcheck-suppress noExplicitConstructor; justification: implicit conversion
+  // NOLINTNEXTLINE(google-explicit-constructor) justified: implicit conversion desired
   HOSTDEV constexpr Polytope(Pts const... args) noexcept
       : v{args...}
   {
   }
-  // NOLINTEND(google-explicit-constructor)
 
   //==============================================================================
   // Methods
   //==============================================================================
 
+  // Interpolate the polytope at the given parameter value.
   template <typename R>
   PURE HOSTDEV constexpr auto
   operator()(R r) const noexcept -> Point<D, T>;
@@ -78,10 +77,12 @@ struct Polytope<1, P, N, D, T> {
   jacobian(R r) const noexcept -> Vec<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getRotation() const noexcept -> Mat<D, D, T>;
+  getRotation() const noexcept -> Mat<D, D, T>
+    requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isLeft(Point<D, T> const & p) const noexcept -> bool;
+  isLeft(Point<D, T> const & p) const noexcept -> bool
+    requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   length() const noexcept -> T;
@@ -99,6 +100,109 @@ struct Polytope<1, P, N, D, T> {
   distanceTo(Point<D, T> const & p) const noexcept -> T;
 
 }; // Dion
+
+//==============================================================================
+// interpolate
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T, typename R>
+PURE HOSTDEV constexpr auto
+interpolate(Dion<P, N, D, T> const & dion, R r) noexcept -> Point<D, T>;
+
+//==============================================================================
+// jacobian
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T, typename R>
+PURE HOSTDEV constexpr auto
+jacobian(Dion<P, N, D, T> const & dion, R r) noexcept -> Point<D, T>;
+
+//==============================================================================
+// getRotation
+//==============================================================================
+
+template <Size P, Size N, typename T>
+PURE HOSTDEV constexpr auto
+getRotation(PlanarDion<P, N, T> const & dion) noexcept -> Mat2x2<T>;
+
+//==============================================================================
+// pointIsLeft
+//==============================================================================
+
+template <Size P, Size N, typename T>
+PURE HOSTDEV constexpr auto
+pointIsLeft(PlanarDion<P, N, T> const & dion, Point2<T> const & p) noexcept -> bool;
+
+//==============================================================================
+// length
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+length(Dion<P, N, D, T> const & dion) noexcept -> T;
+
+//==============================================================================
+// boundingBox
+//==============================================================================
+
+// Defined in Polytope.hpp for the line segment, since for all linear polytopes
+// the bounding box is simply the bounding box of the vertices.
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+boundingBox(QuadraticSegment<D, T> const & q) noexcept -> AxisAlignedBox<D, T>;
+
+//==============================================================================
+// pointClosestTo
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+pointClosestTo(Dion<P, N, D, T> const & dion, Point<D, T> const & p) noexcept -> T;
+
+//==============================================================================
+// isStraight
+//==============================================================================
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+isStraight(QuadraticSegment<D, T> const & q) noexcept -> bool;
+
+//==============================================================================
+// getBezierControlPoint
+//==============================================================================
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+getBezierControlPoint(QuadraticSegment<D, T> const & q) noexcept -> Point<D, T>;
+
+//==============================================================================
+// enclosedArea
+//==============================================================================
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+enclosedArea(QuadraticSegment2<T> const & q) noexcept -> T;
+
+//==============================================================================
+// enclosedCentroid
+//==============================================================================
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+enclosedCentroid(QuadraticSegment2<T> const & q) noexcept -> Point2<T>;
+
+//==============================================================================
+// intersect
+//==============================================================================
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+intersect(LineSegment2<T> const & line, Ray2<T> const & ray) noexcept -> T;
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+intersect(QuadraticSegment2<T> const & q, Ray2<T> const & ray) noexcept -> Vec2<T>;
 
 } // namespace um2
 

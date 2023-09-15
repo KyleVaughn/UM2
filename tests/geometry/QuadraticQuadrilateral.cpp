@@ -3,12 +3,12 @@
 #include "../test_macros.hpp"
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeQuad() -> um2::QuadraticQuadrilateral<D, T>
 {
   um2::QuadraticQuadrilateral<D, T> this_quad;
   for (Size i = 0; i < 8; ++i) {
-    this_quad[i] = um2::zeroVec<D, T>();
+    this_quad[i] = um2::Vec<D, T>::zero();
   }
   this_quad[1][0] = static_cast<T>(1);
   this_quad[2][0] = static_cast<T>(1);
@@ -25,7 +25,7 @@ makeQuad() -> um2::QuadraticQuadrilateral<D, T>
 
 // P6 = (0.8, 1.5)
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeQuad2() -> um2::QuadraticQuadrilateral<D, T>
 {
   um2::QuadraticQuadrilateral<D, T> this_quad = makeQuad<D, T>();

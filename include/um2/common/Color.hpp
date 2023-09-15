@@ -59,16 +59,12 @@ struct Color {
   template <std::floating_point T>
   HOSTDEV constexpr Color(T r_in, T g_in, T b_in, T a_in = 1) noexcept;
 
-  // We want to allow for implicit conversion from Colors to Color
+  // We want to allow for implicit conversion for some cases
   // NOLINTBEGIN(google-explicit-constructor) justified
-  // cppcheck-suppress noExplicitConstructor; justified
   HOSTDEV constexpr Color(Colors color) noexcept;
+
+  HOSTDEV constexpr Color(ShortString const & name) noexcept;
   // NOLINTEND(google-explicit-constructor)
-
-  template <size_t N>
-  HOSTDEV constexpr explicit Color(char const (&name)[N]) noexcept;
-
-  HOSTDEV constexpr explicit Color(ShortString const & name) noexcept;
 
   //==============================================================================
   // Accessors

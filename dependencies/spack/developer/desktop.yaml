@@ -3,6 +3,7 @@ spack:
     - cmake
     - hdf5
     - llvm@15
+    - tbb
     - gmsh
     - pugixml
     - benchmark

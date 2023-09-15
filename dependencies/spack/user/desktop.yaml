@@ -3,6 +3,7 @@ spack:
     - cmake
     - hdf5
     - gmsh
+    - tbb
     - pugixml
   view: true
   concretizer:

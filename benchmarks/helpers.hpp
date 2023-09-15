@@ -7,8 +7,8 @@
 #include <um2/stdlib/Vector.hpp>
 
 #include <algorithm>
-#if UM2_USE_OPENMP
-#  include <parallel/algorithm>
+#if UM2_USE_TBB
+#  include <execution>
 #endif
 #include <random>
 

@@ -13,6 +13,9 @@
 // OpenMP
 #cmakedefine01 UM2_USE_OPENMP
 
+// TBB
+#cmakedefine01 UM2_USE_TBB
+
 // Gmsh
 #cmakedefine01 UM2_USE_GMSH
 
@@ -47,7 +50,6 @@
 #undef HOSTDEV
 #undef GLOBAL
 #if UM2_USE_CUDA
-#  include <cuda_runtime.h>
 #  define HOST    __host__
 #  define DEVICE  __device__
 #  define HOSTDEV __host__ __device__
@@ -98,4 +100,19 @@ using Float = float; // Floating point type in API
 // Integer type for material IDs.
 using MaterialID = int8_t;
 
+template <class... T>
+constexpr bool always_false = false;
+
 // NOLINTEND(modernize-macro-to-enum)
+
+//==============================================================================
+// Includes
+//==============================================================================
+
+#if UM2_USE_OPENMP
+#  include <omp.h>
+#endif
+
+#if UM2_USE_CUDA
+#  include <cuda_runtime.h>
+#endif

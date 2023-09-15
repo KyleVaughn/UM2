@@ -3,7 +3,7 @@
 #include "../test_macros.hpp"
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeTri() -> um2::Triangle<D, T>
 {
   um2::Triangle<D, T> this_tri;
@@ -117,6 +117,20 @@ TEST_CASE(area)
 }
 
 //==============================================================================
+// perimeter
+//==============================================================================
+
+template <Size D, typename T>
+HOSTDEV
+TEST_CASE(perimeter)
+{
+  um2::Triangle<D, T> const tri = makeTri<D, T>();
+  T const two = static_cast<T>(2);
+  T const ref = two + um2::sqrt(two);
+  ASSERT_NEAR(tri.perimeter(), ref, static_cast<T>(1e-5));
+}
+
+//==============================================================================
 // centroid
 //==============================================================================
 
@@ -162,6 +176,20 @@ TEST_CASE(isCCW_flipFace)
   ASSERT(tri.isCCW());
 }
 
+//==============================================================================
+// meanChordLength
+//==============================================================================
+
+template <typename T>
+HOSTDEV
+TEST_CASE(meanChordLength)
+{
+  um2::Triangle<2, T> const tri = makeTri<2, T>();
+  T const two = static_cast<T>(2);
+  T const ref = two / (two + um2::sqrt(two));
+  ASSERT_NEAR(tri.meanChordLength(), ref, static_cast<T>(1e-5));
+}
+
 #if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(interpolate, D, T);
@@ -179,6 +207,9 @@ template <Size D, typename T>
 MAKE_CUDA_KERNEL(area, D, T);
 
 template <Size D, typename T>
+MAKE_CUDA_KERNEL(perimeter, D, T);
+
+template <Size D, typename T>
 MAKE_CUDA_KERNEL(centroid, D, T);
 
 template <Size D, typename T>
@@ -186,6 +217,9 @@ MAKE_CUDA_KERNEL(boundingBox, D, T);
 
 template <typename T>
 MAKE_CUDA_KERNEL(isCCW_flipFace, T);
+
+template <typename T>
+MAKE_CUDA_KERNEL(meanChordLength, T);
 #endif
 
 template <Size D, typename T>
@@ -197,8 +231,10 @@ TEST_SUITE(Triangle)
   if constexpr (D == 2) {
     TEST_HOSTDEV(contains, 1, 1, T);
     TEST_HOSTDEV(isCCW_flipFace, 1, 1, T);
+    TEST_HOSTDEV(meanChordLength, 1, 1, T);
   }
   TEST_HOSTDEV(area, 1, 1, D, T);
+  TEST_HOSTDEV(perimeter, 1, 1, D, T);
   TEST_HOSTDEV(centroid, 1, 1, D, T);
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
 }

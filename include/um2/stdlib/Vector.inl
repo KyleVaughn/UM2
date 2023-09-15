@@ -257,7 +257,6 @@ Vector<T>::back() const noexcept -> T const &
 }
 
 template <class T>
-// cppcheck-suppress functionConst; justification: can't be const
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vector<T>::data() noexcept -> T *
 {
@@ -402,49 +401,6 @@ Vector<T>::push_back(Size const n, T const & value) noexcept
   }
   // Construct the new elements
   construct_at_end(n, value);
-}
-
-template <typename T>
-constexpr void
-sortPermutation(Vector<T> const & v, Vector<Size> & perm) noexcept
-{
-  perm.resize(v.size());
-  std::iota(perm.begin(), perm.end(), 0);
-  std::sort(perm.begin(), perm.end(),
-            [&v](Size const i, Size const j) { return v[i] < v[j]; });
-}
-
-template <typename T>
-constexpr void
-applyPermutation(Vector<T> & v, Vector<Size> const & perm) noexcept
-{
-  // Verify that perm is a permutation
-  // (contains all elements of [0, v.size()) exactly once)
-#ifndef NDEBUG
-  Vector<int8_t> seen(v.size(), 0);
-  for (Size const i : perm) {
-    assert(i < v.size());
-    assert(seen[i] == 0);
-    seen[i] = 1;
-  }
-  assert(std::count(seen.cbegin(), seen.cend(), 1) == v.size());
-#endif
-  // Apply the permutation in-place by iterating over cycles.
-  Vector<int8_t> done(v.size());
-  for (Size i = 0; i < v.size(); ++i) {
-    if (done[i] == 1) {
-      continue;
-    }
-    done[i] = true;
-    Size prev_j = i;
-    Size j = perm[i];
-    while (i != j) {
-      std::swap(v[prev_j], v[j]);
-      done[j] = true;
-      prev_j = j;
-      j = perm[j];
-    }
-  }
 }
 
 } // namespace um2

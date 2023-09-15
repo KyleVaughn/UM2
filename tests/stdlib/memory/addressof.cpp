@@ -1,4 +1,4 @@
-#include <um2/stdlib/memory/addressof.hpp>
+#include <um2/stdlib/memory.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -14,6 +14,7 @@ struct Nothing {
   explicit
   operator char &()
   {
+    // cppcheck-suppress unassignedVariable; justification: don't care in this case
     static char c;
     return c;
   }

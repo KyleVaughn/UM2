@@ -3,7 +3,7 @@
 #include "../test_macros.hpp"
 
 template <Size D, std::floating_point T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeBox() -> um2::AxisAlignedBox<D, T>
 {
   um2::Point<D, T> minima;

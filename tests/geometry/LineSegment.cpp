@@ -3,7 +3,7 @@
 #include "../test_macros.hpp"
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeLine() -> um2::LineSegment<D, T>
 {
   um2::LineSegment<D, T> line;
@@ -77,13 +77,13 @@ TEST_CASE(getRotation)
   um2::LineSegment<2, T> line_rot(rot * line[0], rot * line[1]);
   ASSERT_NEAR(line_rot[0][1], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot[1][1], static_cast<T>(0), static_cast<T>(1e-5));
-  um2::LineSegment<2, T> line_rot2(um2::zeroVec<2, T>(), rot * (line[1] - line[0]));
+  um2::LineSegment<2, T> line_rot2(um2::Vec<2, T>::zero(), rot * (line[1] - line[0]));
   ASSERT_NEAR(line_rot2[0][0], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot2[0][1], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot2[1][1], static_cast<T>(0), static_cast<T>(1e-5));
   line[0][0] = static_cast<T>(10);
   rot = line.getRotation();
-  um2::LineSegment<2, T> line_rot3(um2::zeroVec<2, T>(), rot * (line[1] - line[0]));
+  um2::LineSegment<2, T> line_rot3(um2::Vec<2, T>::zero(), rot * (line[1] - line[0]));
   ASSERT_NEAR(line_rot3[0][0], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot3[0][1], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(line_rot3[1][1], static_cast<T>(0), static_cast<T>(1e-5));
@@ -192,7 +192,7 @@ TEST_CASE(distanceTo)
   p0[0] += static_cast<T>(1.5);
   T ref = 0;
   if constexpr (D == 2) {
-    ref = um2::sin(um2::pi<T>() / static_cast<T>(4)) / 2;
+    ref = um2::sin(um2::pi<T> / static_cast<T>(4)) / 2;
   } else {
     // d = (7/6, 1/6, 1/6)
     ref = um2::sqrt(static_cast<T>(6)) / 6;

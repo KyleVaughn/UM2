@@ -3,7 +3,7 @@
 #include "../test_macros.hpp"
 
 template <Size D, typename T, typename P>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makePart() -> um2::RegularPartition<D, T, P>
 {
   static_assert(1 <= D && D <= 3, "D must be in [1, 3]");

@@ -16,20 +16,20 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 # User options
 #===============================================================================
 
-option(UM2_USE_OPENMP       "Enable OpenMP"                 ON)
-option(UM2_USE_GMSH         "Enable Gmsh"                   ON)
-option(UM2_USE_CUDA         "Enable CUDA"                   OFF)
-option(UM2_USE_OPENGL       "Enable OpenGL visualization"   OFF)
+option(UM2_USE_OPENMP       "Enable OpenMP"                     ON)
+option(UM2_USE_TBB          "Enable Intel TBB (parallel STL)"   ON)
+option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
+option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
+option(UM2_USE_OPENGL       "Enable OpenGL visualization"       OFF)
 
-option(UM2_ENABLE_INT64     "Enable 64-bit integers"        OFF) # For large meshes
-option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"  ON)
-option(UM2_ENABLE_FASTMATH  "Enable fast math"              ON) # CPU and GPU
-option(UM2_ENABLE_PAR_STL   "Enable parallel STL"           OFF)
+option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large meshes
+option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"      ON)
+option(UM2_ENABLE_FASTMATH  "Enable fast math"                  ON) # CPU and GPU
 
-option(UM2_BUILD_TESTS      "Build tests"                   ON)
-option(UM2_BUILD_TUTORIAL   "Build tutorial"                ON)
-option(UM2_BUILD_EXAMPLES   "Build examples"                OFF)
-option(UM2_BUILD_BENCHMARKS "Build benchmarks"              OFF)
+option(UM2_BUILD_TESTS      "Build tests"                       ON)
+option(UM2_BUILD_TUTORIAL   "Build tutorial"                    ON)
+option(UM2_BUILD_EXAMPLES   "Build examples"                    OFF)
+option(UM2_BUILD_BENCHMARKS "Build benchmarks"                  OFF)
 
 #===============================================================================
 # Developer options
@@ -178,6 +178,16 @@ target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
 if (UM2_USE_OPENMP)
   find_package(OpenMP REQUIRED)
   target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
+  target_include_directories(um2 SYSTEM PUBLIC "${OpenMP_CXX_INCLUDE_DIRS}")
+endif()
+
+# TBB
+if (UM2_USE_TBB)
+  find_package(TBB REQUIRED)
+  # Tell the user where TBB was found
+  message(STATUS "Found TBB: ${TBB_DIR}")
+  target_link_libraries(um2 PUBLIC TBB::tbb)
+  #  target_include_directories(um2 SYSTEM PUBLIC "${TBB_INC}")
 endif()
 
 # Gmsh
@@ -233,11 +243,6 @@ if (UM2_ENABLE_FASTMATH)
   endif()
 endif()
 
-# If OpenMP and parallel STL are enabled
-if (UM2_USE_OPENMP AND UM2_ENABLE_PAR_STL)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_PARALLEL")
-endif()
-
 # Set release flags
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
 
@@ -290,19 +295,29 @@ endif()
 
 # cppcheck
 if (UM2_USE_CPPCHECK)
+  find_program(CMAKE_CXX_CPPCHECK NAMES cppcheck)
+  # Copy the cppcheck-suppressions file to the build directory
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppcheck-suppressions
+                 ${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions COPYONLY)
+  # Search and replace UM2_DIR with the absolute path to the project root
+  file(READ ${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions CPPCHECK_SUPPRESS)
+  string(REPLACE "UM2_DIR" "${CMAKE_CURRENT_SOURCE_DIR}" CPPCHECK_SUPPRESS
+         "${CPPCHECK_SUPPRESS}")
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions "${CPPCHECK_SUPPRESS}")
   # Concatenate the cppcheck arguments into a single string
   string(CONCAT CPPCHECK_ARGS
-          "cppcheck"
-          ";--enable=warning,style,information,missingInclude"
+          ${CMAKE_CXX_CPPCHECK}
+          ";--enable=all"
           ";--std=c++20"
           ";--language=c++"
-          ";--suppress=missingIncludeSystem"
-          ";--suppress=invalidPrintfArgType_float"
-          ";--suppress=unmatchedSuppression"
+          ";--suppressions-list=${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions"
           ";--inconclusive"
           ";--inline-suppr"
           ";--error-exitcode=10")
-  set_target_properties(um2 PROPERTIES CXX_CPPCHECK "${CPPCHECK_ARGS}")
+  macro(set_cppcheck_properties CPPCHECK_TARGET)
+    set_target_properties(${CPPCHECK_TARGET} PROPERTIES CXX_CPPCHECK "${CPPCHECK_ARGS}")
+  endmacro()
+  set_cppcheck_properties(um2)
 endif()
 
 # coverage

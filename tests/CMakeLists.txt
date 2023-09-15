@@ -5,8 +5,11 @@ include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
 #===============================================================================
 
 add_um2_test(./stdlib/algorithm/copy.cpp)
+add_um2_test(./stdlib/algorithm/fill.cpp)
+add_um2_test(./stdlib/algorithm/sort.cpp)
 add_um2_test(./stdlib/memory/addressof.cpp)
 add_um2_test(./stdlib/memory/construct_at.cpp)
+add_um2_test(./stdlib/numeric/iota.cpp)
 add_um2_test(./stdlib/Vector.cpp)
 add_um2_test(./stdlib/sto.cpp)
 add_um2_test(./stdlib/String.cpp)
@@ -18,7 +21,9 @@ add_um2_test(./stdlib/String.cpp)
 add_um2_test(./common/Log.cpp)
 add_um2_test(./common/ShortString.cpp)
 add_um2_test(./common/Color.cpp)
+add_um2_test(./common/permutation.cpp)
 add_um2_test(./common/to_vecvec.cpp)
+#add_um2_test(./common/histogram.cpp)
 
 #===============================================================================
 # math
@@ -27,6 +32,11 @@ add_um2_test(./common/to_vecvec.cpp)
 add_um2_test(./math/morton.cpp)
 add_um2_test(./math/Vec.cpp)
 add_um2_test(./math/Mat.cpp)
+add_um2_test(./math/stats.cpp)
+if (UM2_USE_TBB)
+  add_um2_test(./parallel/math/parallel_stats.cpp)
+endif()
+add_um2_test(./math/AngularQuadrature.cpp)
 
 #===============================================================================
 # geometry
@@ -34,6 +44,9 @@ add_um2_test(./math/Mat.cpp)
 
 add_um2_test(./geometry/Point.cpp)
 add_um2_test(./geometry/morton_sort_points.cpp)
+if (UM2_USE_TBB OR UM2_USE_CUDA)
+  add_um2_test(./parallel/geometry/parallel_morton_sort_points.cpp)
+endif()
 add_um2_test(./geometry/AxisAlignedBox.cpp)
 add_um2_test(./geometry/LineSegment.cpp)
 add_um2_test(./geometry/Triangle.cpp)
@@ -69,6 +82,11 @@ add_um2_test(./mesh/io_xdmf.cpp)
 file(COPY ${PROJECT_SOURCE_DIR}/tests/mpact/mpact_mesh_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_um2_test(./mpact/SpatialPartition.cpp)
+
+##==============================================================================
+## ray_casting
+##==============================================================================
+
 
 #==============================================================================
 # gmsh

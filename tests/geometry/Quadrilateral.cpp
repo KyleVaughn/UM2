@@ -3,7 +3,7 @@
 #include "../test_macros.hpp"
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeQuad() -> um2::Quadrilateral<D, T>
 {
   um2::Quadrilateral<D, T> quad;
@@ -20,7 +20,7 @@ makeQuad() -> um2::Quadrilateral<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeTriQuad() -> um2::Quadrilateral<D, T>
 {
   um2::Quadrilateral<D, T> quad;
@@ -153,6 +153,17 @@ TEST_CASE(area)
 }
 
 //==============================================================================
+// perimeter
+//==============================================================================
+template <Size D, typename T>
+HOSTDEV
+TEST_CASE(perimeter)
+{
+  um2::Quadrilateral<D, T> const quad = makeQuad<D, T>();
+  ASSERT_NEAR(quad.perimeter(), static_cast<T>(4), static_cast<T>(1e-5));
+}
+
+//==============================================================================
 // centroid
 //==============================================================================
 
@@ -207,6 +218,18 @@ TEST_CASE(isCCW_flipFace)
   ASSERT(quad.isCCW());
 }
 
+//==============================================================================
+// meanChordLength
+//==============================================================================
+
+template <typename T>
+HOSTDEV
+TEST_CASE(meanChordLength)
+{
+  um2::Quadrilateral<2, T> const quad = makeQuad<2, T>();
+  ASSERT_NEAR(quad.meanChordLength(), static_cast<T>(1), static_cast<T>(1e-5));
+}
+
 #if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(interpolate, D, T);
@@ -227,6 +250,9 @@ template <Size D, typename T>
 MAKE_CUDA_KERNEL(area, D, T);
 
 template <Size D, typename T>
+MAKE_CUDA_KERNEL(perimeter, D, T);
+
+template <Size D, typename T>
 MAKE_CUDA_KERNEL(centroid, D, T);
 
 template <Size D, typename T>
@@ -234,6 +260,9 @@ MAKE_CUDA_KERNEL(boundingBox, D, T);
 
 template <typename T>
 MAKE_CUDA_KERNEL(isCCW_flipFace, T);
+
+template <typename T>
+MAKE_CUDA_KERNEL(meanChordLength, T);
 #endif
 
 template <Size D, typename T>
@@ -248,8 +277,10 @@ TEST_SUITE(Quadrilateral)
     TEST_HOSTDEV(isCCW_flipFace, 1, 1, T);
   }
   TEST_HOSTDEV(area, 1, 1, D, T);
+  TEST_HOSTDEV(perimeter, 1, 1, D, T);
   if constexpr (D == 2) {
     TEST_HOSTDEV(centroid, 1, 1, D, T);
+    TEST_HOSTDEV(meanChordLength, 1, 1, T);
   }
   TEST_HOSTDEV(boundingBox, 1, 1, D, T);
 }

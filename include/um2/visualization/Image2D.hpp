@@ -23,8 +23,7 @@ namespace um2
 // etc.
 //
 // NOTE: We must apply the constraint that spacing[0] == spacing[1] to ensure that the
-// image
-//      is not distorted.
+// image is not distorted.
 template <std::floating_point T>
 struct Image2D : public RegularPartition<2, T, Color> {
 

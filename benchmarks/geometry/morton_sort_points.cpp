@@ -22,6 +22,7 @@
 
 #include "../helpers.hpp"
 #include <um2/geometry/morton_sort_points.hpp>
+#include <um2/parallel/geometry/morton_sort_points.hpp>
 
 #include <execution>
 #include <iostream>
@@ -29,7 +30,7 @@
 constexpr Size npoints = 1 << 22;
 
 template <typename T, typename U>
-static void
+void
 mortonSortSerial(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -48,9 +49,9 @@ mortonSortSerial(benchmark::State & state)
   }
 }
 
-#if UM2_USE_OPENMP
+#if UM2_USE_TBB
 template <typename T, typename U>
-static void
+void
 mortonSortParallel(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -62,7 +63,7 @@ mortonSortParallel(benchmark::State & state)
     state.PauseTiming();
     std::shuffle(points.begin(), points.end(), g);
     state.ResumeTiming();
-    um2::mortonSortParallel<U>(points.begin(), points.end());
+    um2::parallel::mortonSort<U>(points.begin(), points.end());
   }
   if (!std::is_sorted(points.begin(), points.end(), um2::mortonLess<U, 2, T>)) {
     std::cout << "Not sorted" << std::endl;
@@ -72,7 +73,7 @@ mortonSortParallel(benchmark::State & state)
 
 #if UM2_USE_CUDA
 template <typename T, typename U>
-static void
+void
 mortonSortCuda(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -89,7 +90,7 @@ mortonSortCuda(benchmark::State & state)
     // to the device again
     transferToDevice(&d_points, points);
     state.ResumeTiming();
-    um2::deviceMortonSort<U>(d_points, d_points + points.size());
+    um2::parallel::deviceMortonSort<U>(d_points, d_points + points.size());
     cudaDeviceSynchronize();
   }
 
@@ -110,7 +111,7 @@ BENCHMARK_TEMPLATE2(mortonSortSerial, double, uint64_t)
 //   ->Range(1024, npoints)
 //   ->Unit(benchmark::kMicrosecond);
 //
-#if UM2_USE_OPENMP
+#if UM2_USE_TBB
 BENCHMARK_TEMPLATE2(mortonSortParallel, double, uint64_t)
     ->RangeMultiplier(4)
     ->Range(1024, npoints)

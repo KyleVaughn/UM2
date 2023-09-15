@@ -24,7 +24,7 @@ macro(add_um2_test FILENAME)
 
   # cppcheck
   if (UM2_USE_CPPCHECK)
-    set_target_properties(${TESTNAME} PROPERTIES CXX_CPPCHECK "${CPPCHECK_ARGS}")
+    set_cppcheck_properties(${TESTNAME})
   endif()
 
   if (UM2_USE_COVERAGE)

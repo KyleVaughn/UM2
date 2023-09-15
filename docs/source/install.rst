@@ -28,6 +28,8 @@ Prerequisites
 .. admonition:: Optional
    :class: note
 
+    * TBB_ for shared-memory parallelism in the C++ standard library
+
     * Gmsh_ for mesh generation
 
       UM\ :sup:`2` \ uses Gmsh for CAD model mesh generation. Meshes can still be imported, 
@@ -39,6 +41,7 @@ Prerequisites
 .. _HDF5: https://www.hdfgroup.org/solutions/hdf5/
 .. _XDMF: https://www.xdmf.org/index.php/XDMF_Model_and_Format
 .. _PugiXML: https://pugixml.org/
+.. _TBB: https://github.com/oneapi-src/oneTBB 
 .. _Gmsh: https://gmsh.info/
 
 
@@ -54,12 +57,11 @@ be installed with the following commands:
 .. code-block:: bash
 
     sudo apt -y update
-    sudo apt install -y g++-12 cmake libhdf5-dev libpugixml-dev libglu1-mesa
+    sudo apt install -y g++-12 cmake libhdf5-dev libpugixml-dev  libtbb-dev libglu1-mesa
     wget https://gmsh.info/bin/Linux/gmsh-4.11.1-Linux64-sdk.tgz
     tar -xzvf gmsh-4.11.1-Linux64-sdk.tgz
     # Add to bachrc to avoid declaring this every time. PWD will need to be updated.
     export GMSH_ROOT=${PWD}/gmsh-4.11.1-Linux64-sdk
-
 
 .. _installing_prerequisites_with_brew:
 
@@ -72,7 +74,7 @@ be installed with the following commands:
 
 .. code-block:: bash
 
-    brew install gcc@12 cmake hdf5 pugixml
+    brew install gcc@12 cmake hdf5 pugixml tbb
     wget https://gmsh.info/bin/macOS/gmsh-4.11.1-MacOSARM-sdk.tgz # For newer Macs
     # or for older Macs
     # wget https://gmsh.info/bin/macOS/gmsh-4.11.1-MacOSX-sdk.tgz

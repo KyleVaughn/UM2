@@ -1,4 +1,4 @@
-#include <um2/stdlib/algorithm/copy.hpp>
+#include <um2/stdlib/algorithm.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -82,7 +82,7 @@ MAKE_CUDA_KERNEL(copy_nontrivial, T);
 #endif
 
 template <typename T>
-TEST_SUITE(copy_suite)
+TEST_SUITE(copy)
 {
   TEST_HOSTDEV(copy_trivial, 1, 1, T);
   TEST_HOSTDEV(copy_nontrivial, 1, 1, T);
@@ -91,6 +91,6 @@ TEST_SUITE(copy_suite)
 auto
 main() -> int
 {
-  RUN_SUITE(copy_suite<int64_t>);
+  RUN_SUITE(copy<int64_t>);
   return 0;
 }

@@ -7,7 +7,9 @@ namespace um2
 // writeCoarseCell
 //==============================================================================
 
-static void
+namespace
+{
+void
 writeCoarseCell(Size rtm_id, mpact::SpatialPartition const & model, Size ix, Size iy,
                 Vector<Int> & cc_found, Point2<Float> const & prev_ll,
                 std::vector<std::string> const & mat_names, Float const cut_z,
@@ -56,6 +58,7 @@ writeCoarseCell(Size rtm_id, mpact::SpatialPartition const & model, Size ix, Siz
   for (auto const & mat_id : mat_ids) {
     if (!std::any_of(unique_mat_ids.begin(), unique_mat_ids.end(),
                      [mat_id](MaterialID const & id) { return id == mat_id; })) {
+      // cppcheck-suppress useStlAlgorithm; justification: verbosity
       unique_mat_ids.push_back(mat_id);
     }
   }
@@ -99,7 +102,7 @@ writeCoarseCell(Size rtm_id, mpact::SpatialPartition const & model, Size ix, Siz
 // writeRTM
 //==============================================================================
 
-static void
+void
 writeRTM(Size lat_id, mpact::SpatialPartition const & model, Size ix, Size iy,
          Vector<Int> & cc_found, Vector<Int> & rtm_found, Point2<Float> const & asy_ll,
          std::vector<std::string> const & mat_names, Float const cut_z,
@@ -159,7 +162,7 @@ writeRTM(Size lat_id, mpact::SpatialPartition const & model, Size ix, Size iy,
 // writeLattice
 //==============================================================================
 
-static void
+void
 writeLattice(Size asy_id, mpact::SpatialPartition const & model, Size iz,
              Vector<Int> & cc_found, Vector<Int> & rtm_found, Vector<Int> & lat_found,
              Point2<Float> const & asy_ll, std::vector<std::string> const & mat_names,
@@ -215,6 +218,8 @@ writeLattice(Size asy_id, mpact::SpatialPartition const & model, Size iz,
     } // rtm
   }   // rtm
 }
+
+} // namespace
 
 //==============================================================================
 // writeXDMFFile
@@ -346,7 +351,9 @@ exportMesh(std::string const & path, mpact::SpatialPartition const & model)
 // mapLatticeIndexToji
 //==============================================================================
 
-static inline void
+namespace
+{
+inline void
 mapLatticeIndexToji(size_t const idx, size_t & j, size_t & i, size_t const m,
                     size_t const n)
 {
@@ -360,7 +367,7 @@ mapLatticeIndexToji(size_t const idx, size_t & j, size_t & i, size_t const m,
 // getMbyN
 //==============================================================================
 
-static inline void
+inline void
 getMbyN(size_t & m, size_t & n, pugi::xml_node const & x)
 {
   pugi::xml_node const x_mn = x.child("Information");
@@ -379,6 +386,7 @@ getMbyN(size_t & m, size_t & n, pugi::xml_node const & x)
     Log::error("Expected core Information Name=M_by_N");
   }
 }
+} // namespace
 
 //==============================================================================
 // readXDMFFile
@@ -395,7 +403,7 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
   }
 
   // Open the XDMF file
-  std::ifstream file(path);
+  std::ifstream const file(path);
   if (!file.is_open()) {
     Log::error("Could not open file: " + path);
     return;

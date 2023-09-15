@@ -147,7 +147,9 @@ Log::getNumWarnings() -> size_t
 
 // -- Message handling --
 
-static auto
+namespace
+{
+auto
 logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
                    std::string const & message) -> std::string
 {
@@ -231,7 +233,7 @@ logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
   return ss.str();
 }
 
-static void
+void
 printLogMessage(LogVerbosity const verbosity, LogTimePoint const time,
                 std::string const & message)
 {
@@ -242,6 +244,7 @@ printLogMessage(LogVerbosity const verbosity, LogTimePoint const time,
     std::cout << log_message << std::endl;
   }
 }
+} // namespace
 
 void
 Log::flush()

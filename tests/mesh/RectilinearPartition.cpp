@@ -3,7 +3,7 @@
 #include "../test_macros.hpp"
 
 template <Size D, typename T, std::integral P>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makePartition() -> um2::RectilinearPartition<D, T, P>
 {
   um2::RectilinearPartition<D, T, P> partition;

@@ -23,19 +23,19 @@
 // 8) A segment (0,0) -> (2, 0) -> (4, 3)
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeBaseSeg() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q;
-  q[0] = um2::zeroVec<D, T>();
-  q[1] = um2::zeroVec<D, T>();
-  q[2] = um2::zeroVec<D, T>();
+  q[0] = um2::Vec<D, T>::zero();
+  q[1] = um2::Vec<D, T>::zero();
+  q[2] = um2::Vec<D, T>::zero();
   q[1][0] = static_cast<T>(2);
   return q;
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg1() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -44,7 +44,7 @@ makeSeg1() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg2() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -54,7 +54,7 @@ makeSeg2() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg3() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -64,7 +64,7 @@ makeSeg3() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg4() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -74,7 +74,7 @@ makeSeg4() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg5() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -84,7 +84,7 @@ makeSeg5() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg6() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -94,7 +94,7 @@ makeSeg6() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg7() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -104,7 +104,7 @@ makeSeg7() -> um2::QuadraticSegment<D, T>
 }
 
 template <Size D, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeSeg8() -> um2::QuadraticSegment<D, T>
 {
   um2::QuadraticSegment<D, T> q = makeBaseSeg<D, T>();
@@ -127,7 +127,7 @@ TEST_CASE(interpolate)
   for (Size i = 0; i < 5; ++i) {
     T r = static_cast<T>(i) / static_cast<T>(4);
     um2::Point<D, T> const p = seg(r);
-    um2::Point<D, T> p_ref = um2::zeroVec<D, T>();
+    um2::Point<D, T> p_ref = um2::Vec<D, T>::zero();
     p_ref[0] = 2 * r;
     p_ref[1] = 4 * r * (1 - r);
     ASSERT(um2::isApprox(p, p_ref));
@@ -146,7 +146,7 @@ TEST_CASE(jacobian)
   um2::Vec<D, T> j0 = seg.jacobian(0);
   um2::Vec<D, T> j12 = seg.jacobian(static_cast<T>(0.5));
   um2::Vec<D, T> j1 = seg.jacobian(1);
-  um2::Vec<D, T> j_ref = um2::zeroVec<D, T>();
+  um2::Vec<D, T> j_ref = um2::Vec<D, T>::zero();
   j_ref[0] = static_cast<T>(2);
   ASSERT(um2::isApprox(j0, j_ref));
   ASSERT(um2::isApprox(j12, j_ref));
@@ -204,7 +204,7 @@ TEST_CASE(boundingBox)
 
   um2::QuadraticSegment<D, T> const seg8 = makeSeg8<D, T>();
   um2::AxisAlignedBox<D, T> const bb8 = seg8.boundingBox();
-  um2::AxisAlignedBox<D, T> bb_ref8(um2::zeroVec<D, T>(), um2::zeroVec<D, T>());
+  um2::AxisAlignedBox<D, T> bb_ref8(um2::Vec<D, T>::zero(), um2::Vec<D, T>::zero());
   bb_ref8.maxima[0] = static_cast<T>(4.083334);
   bb_ref8.maxima[1] = static_cast<T>(3);
   ASSERT(um2::isApprox(bb8, bb_ref8));

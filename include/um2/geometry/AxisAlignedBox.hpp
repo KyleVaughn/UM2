@@ -4,6 +4,7 @@
 
 #include <um2/geometry/Point.hpp>
 #include <um2/stdlib/Vector.hpp>
+#include <um2/stdlib/numeric.hpp>
 
 namespace um2
 {

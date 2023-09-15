@@ -3,7 +3,7 @@
 #include "../test_macros.hpp"
 
 template <Size M, Size N, typename T>
-HOSTDEV static constexpr auto
+HOSTDEV constexpr auto
 makeMat() -> um2::Mat<M, N, T>
 {
   um2::Mat<M, N, T> m;

@@ -186,17 +186,14 @@ TEST_CASE(resize)
   v.resize(0);
   ASSERT(v.empty());
   ASSERT(v.capacity() == 0);
-  // cppcheck-suppress assertWithSideEffect; justification: false positive
   ASSERT(v.data() == nullptr);
   v.resize(1);
   ASSERT(v.size() == 1);
   ASSERT(v.capacity() == 1);
-  // cppcheck-suppress assertWithSideEffect; justification: false positive
   ASSERT(v.data() != nullptr);
   v.resize(2);
   ASSERT(v.size() == 2);
   ASSERT(v.capacity() == 2);
-  // cppcheck-suppress assertWithSideEffect; justification: false positive
   ASSERT(v.data() != nullptr);
 }
 
@@ -211,7 +208,6 @@ TEST_CASE(push_back)
   if constexpr (std::floating_point<T>) {
     ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
   } else {
-    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[0] == static_cast<T>(1));
   }
   v.push_back(2);
@@ -221,9 +217,7 @@ TEST_CASE(push_back)
     ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
     ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
   } else {
-    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[0] == static_cast<T>(1));
-    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[1] == static_cast<T>(2));
   }
   v.push_back(3);
@@ -234,11 +228,8 @@ TEST_CASE(push_back)
     ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
     ASSERT_NEAR(v.data()[2], static_cast<T>(3), static_cast<T>(1e-6));
   } else {
-    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[0] == static_cast<T>(1));
-    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[1] == static_cast<T>(2));
-    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[2] == static_cast<T>(3));
   }
   v.clear();
@@ -256,15 +247,10 @@ TEST_CASE(push_back)
     ASSERT_NEAR(v.data()[3], static_cast<T>(4), static_cast<T>(1e-6));
     ASSERT_NEAR(v.data()[4], static_cast<T>(5), static_cast<T>(1e-6));
   } else {
-    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[0] == static_cast<T>(1));
-    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[1] == static_cast<T>(2));
-    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[2] == static_cast<T>(3));
-    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[3] == static_cast<T>(4));
-    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(v.data()[4] == static_cast<T>(5));
   }
 }
@@ -283,7 +269,6 @@ TEST_CASE(push_back_rval_ref)
   if constexpr (std::floating_point<T>) {
     ASSERT_NEAR(my_vector.data()[0].data()[0], static_cast<T>(1), static_cast<T>(1e-6));
   } else {
-    // cppcheck-suppress assertWithSideEffect; justification: false positive
     ASSERT(my_vector.data()[0].data()[0] == static_cast<T>(1));
   }
 }
@@ -306,32 +291,6 @@ TEST_CASE(push_back_n)
   non_empty_vector.push_back(2, static_cast<T>(5));
   ASSERT(non_empty_vector.size() == 5);
   ASSERT(non_empty_vector.capacity() == 6);
-}
-
-template <typename T>
-TEST_CASE(sortPermutation)
-{
-  um2::Vector<T> const v{5, 3, 1, 4, 2};
-  um2::Vector<Size> perm;
-  sortPermutation(v, perm);
-  ASSERT(perm.size() == 5);
-  um2::Vector<T> sorted_v(v.size());
-  for (Size i = 0; i < v.size(); ++i) {
-    sorted_v[i] = v[perm[i]];
-  }
-  ASSERT(std::is_sorted(sorted_v.begin(), sorted_v.end()));
-  um2::Vector<Size> const expected_perm{2, 4, 1, 3, 0};
-  ASSERT(perm == expected_perm);
-}
-
-template <typename T>
-TEST_CASE(applyPermutation)
-{
-  um2::Vector<T> v{5, 3, 1, 4, 2};
-  um2::Vector<Size> const perm{2, 4, 1, 3, 0};
-  applyPermutation(v, perm);
-  um2::Vector<T> const expected_v{1, 2, 3, 4, 5};
-  ASSERT(v == expected_v);
 }
 
 //==============================================================================
@@ -395,8 +354,6 @@ MAKE_CUDA_KERNEL(clear)
   TEST_HOSTDEV(push_back, 1, 1, T)
   TEST_HOSTDEV(push_back_rval_ref, 1, 1, T)
   TEST_HOSTDEV(push_back_n, 1, 1, T)
-  TEST((sortPermutation<T>))
-  TEST((applyPermutation<T>))
 }
 
 auto

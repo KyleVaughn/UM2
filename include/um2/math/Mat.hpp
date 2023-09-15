@@ -14,9 +14,8 @@ namespace um2
 // This struct is used for VERY small matrices, where the matrix size is known
 // at compile time. The matrix is stored in column-major order.
 //
-// Note that there is not a general matmul or matvec function. Anything beyond
-// very small matrices should be done using something like OpenBLAS, cuBLAS, Eigen,
-// etc.
+// Anything beyond very small matrices should be done using something like
+// OpenBLAS, cuBLAS, Eigen, etc. We currently only use this for 2x2 and 3x3.
 
 template <Size M, Size N, typename T>
 struct Mat {
@@ -35,14 +34,12 @@ struct Mat {
   //==============================================================================
 
   PURE HOSTDEV constexpr auto
-  // cppcheck-suppress functionConst; justification: can't be const
   col(Size i) noexcept -> Col &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   col(Size i) const noexcept -> Col const &;
 
   PURE HOSTDEV constexpr auto
-  // cppcheck-suppress functionConst; justification: can't be const
   operator()(Size i, Size j) noexcept -> T &;
 
   PURE HOSTDEV constexpr auto
@@ -75,8 +72,7 @@ using Mat3x3 = Mat<3, 3, T>;
 
 template <Size M, Size N, typename T>
 PURE HOSTDEV constexpr auto
-// NOLINTNEXTLINE(readability-identifier-naming) justification: capitalize matrix var.
-operator*(Mat<M, N, T> const & A, Vec<N, T> const & x) noexcept -> Vec<M, T>;
+operator*(Mat<M, N, T> const & a, Vec<N, T> const & x) noexcept -> Vec<M, T>;
 
 } // namespace um2
 

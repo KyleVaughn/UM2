@@ -1,0 +1,17 @@
+functionConst
+missingIncludeSystem
+noExplicitConstructor
+unusedFunction
+
+unmatchedSuppression:*
+unmatchedSuppression:UM2_DIR/src/mpact/io.cpp
+unmatchedSuppression:UM2_DIR/tests/stdlib/memory/addressof.cpp
+unmatchedSuppression:UM2_DIR/tests/stdlib/Vector.cpp
+unmatchedSuppression:UM2_DIR/tests/stdlib/String.cpp
+unmatchedSuppression:UM2_DIR/tests/common/ShortString.cpp
+unmatchedSuppression:UM2_DIR/tests/common/permutation.cpp
+
+assertWithSideEffect:UM2_DIR/tests/stdlib/Vector.cpp
+assertWithSideEffect:UM2_DIR/tests/stdlib/String.cpp
+assertWithSideEffect:UM2_DIR/tests/common/ShortString.cpp
+assertWithSideEffect:UM2_DIR/tests/common/permutation.cpp

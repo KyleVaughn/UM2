@@ -66,7 +66,7 @@ containsCCWNoShortCircuit(um2::Quadrilateral2<T> const & quad, um2::Point2<T> co
 }
 
 template <typename T>
-static void
+void
 triangleDecomp(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -84,7 +84,7 @@ triangleDecomp(benchmark::State & state)
 }
 
 template <typename T>
-static void
+void
 ccwShortCircuit(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -102,7 +102,7 @@ ccwShortCircuit(benchmark::State & state)
 }
 
 template <typename T>
-static void
+void
 ccwNoShortCircuit(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -136,7 +136,7 @@ CCWShortCircuitGPUKernel(um2::Quadrilateral2<T> * quads, um2::Point2<T> * points
 }
 
 template <typename T>
-static void
+void
 CCWShortCircuitGPU(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
@@ -183,7 +183,7 @@ CCWNoShortCircuitGPUKernel(um2::Quadrilateral2<T> * quads, um2::Point2<T> * poin
 }
 
 template <typename T>
-static void
+void
 CCWNoShortCircuitGPU(benchmark::State & state)
 {
 

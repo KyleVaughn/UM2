@@ -8,14 +8,18 @@ macro(add_um2_benchmark FILENAME)
   set(BENCHNAME ${FILENAME})
   get_filename_component(BENCHNAME ${BENCHNAME} NAME_WE)
   get_filename_component(BENCHNAME ${BENCHNAME} NAME_WLE)
-  # Prepend "benchmark_" to the test name    
-  set(BENCHNAME "benchmark_${BENCHNAME}")    
+  # Prepend "benchmark_" to the test name
+  set(BENCHNAME "benchmark_${BENCHNAME}")
 
   add_executable(${BENCHNAME} ${FILENAME})
 
   find_package(benchmark REQUIRED)
 
-  target_link_libraries(${BENCHNAME} um2 benchmark::benchmark benchmark::benchmark_main)
+  if (UM2_USE_TBB)    
+    target_link_libraries(${BENCHNAME} um2 benchmark::benchmark benchmark::benchmark_main TBB::tbb)
+  else()
+    target_link_libraries(${BENCHNAME} um2 benchmark::benchmark benchmark::benchmark_main)
+  endif()
   set_target_properties(${BENCHNAME} PROPERTIES CXX_STANDARD ${UM2_CXX_STANDARD})
 
   # clang-tidy
@@ -25,7 +29,7 @@ macro(add_um2_benchmark FILENAME)
 
   # cppcheck
   if (UM2_USE_CPPCHECK)
-    set_target_properties(${BENCHNAME} PROPERTIES CXX_CPPCHECK "${CPPCHECK_ARGS}")
+    set_cppcheck_properties(${BENCHNAME})
   endif()
 
   # If compiling with CUDA, compile the cpp files as cuda
