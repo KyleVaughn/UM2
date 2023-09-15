@@ -86,8 +86,8 @@ struct RectilinearGrid {
 
   template <typename... Args>
     requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  getBox(Args... args) const noexcept -> AxisAlignedBox<D, T>;
+  PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
+      -> AxisAlignedBox<D, T>;
 
   //==============================================================================
   // Methods

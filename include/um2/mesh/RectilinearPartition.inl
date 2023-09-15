@@ -157,8 +157,9 @@ RectilinearPartition<D, T, P>::boundingBox() const noexcept -> AxisAlignedBox<D,
 template <Size D, typename T, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto
-RectilinearPartition<D, T, P>::getBox(Args... args) const noexcept -> AxisAlignedBox<D, T>
+PURE HOSTDEV
+    constexpr auto RectilinearPartition<D, T, P>::getBox(Args... args) const noexcept
+    -> AxisAlignedBox<D, T>
 {
   return grid.getBox(args...);
 }
@@ -166,8 +167,8 @@ RectilinearPartition<D, T, P>::getBox(Args... args) const noexcept -> AxisAligne
 template <Size D, typename T, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto
-RectilinearPartition<D, T, P>::getFlatIndex(Args... args) const noexcept -> Size
+PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getFlatIndex(
+    Args... args) const noexcept -> Size
 {
   Point<D, Size> const index{args...};
   for (Size i = 0; i < D; ++i) {
@@ -214,8 +215,8 @@ RectilinearPartition<D, T, P>::getFlatIndex(Vec<D, Size> const & index) const no
 template <Size D, typename T, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto
-RectilinearPartition<D, T, P>::getChild(Args... args) noexcept -> P &
+PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) noexcept
+    -> P &
 {
   return children[getFlatIndex(args...)];
 }
@@ -223,8 +224,9 @@ RectilinearPartition<D, T, P>::getChild(Args... args) noexcept -> P &
 template <Size D, typename T, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto
-RectilinearPartition<D, T, P>::getChild(Args... args) const noexcept -> P const &
+PURE HOSTDEV
+    constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) const noexcept
+    -> P const &
 {
   return children[getFlatIndex(args...)];
 }

@@ -81,7 +81,8 @@ struct FaceVertexMesh {
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
 
   PURE [[nodiscard]] constexpr auto
-  faceContaining(Point<D, T> const & p) const noexcept -> Size;
+  faceContaining(Point<D, T> const & p) const noexcept -> Size
+    requires(D == 2);
 
   void
   flipFace(Size i) noexcept;
@@ -93,7 +94,8 @@ struct FaceVertexMesh {
   getFaceAreas() const noexcept -> Vector<T>;
 
   void
-  intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept;
+  intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept
+    requires(D == 2);
 };
 
 //==============================================================================
@@ -165,6 +167,15 @@ template <Size P, Size N, std::floating_point T, std::signed_integral I>
 PURE constexpr auto
 faceContaining(PlanarPolygonMesh<P, N, T, I> const & mesh, Point2<T> const & p) noexcept
     -> Size;
+
+//==============================================================================
+// intersect
+//==============================================================================
+
+template <Size P, Size N, std::floating_point T, std::signed_integral I>
+void
+intersect(PlanarPolygonMesh<P, N, T, I> const & mesh, Ray2<T> const & ray,
+          T * intersections, Size * n) noexcept;
 
 } // namespace um2
 

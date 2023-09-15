@@ -61,10 +61,9 @@ getH5DataType() -> H5::PredType
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
-static void
-writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
-                  std::string const & h5filename, std::string const & h5path,
-                  MeshFile<T, I> const & mesh)
+static void writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
+                              std::string const & h5filename, std::string const & h5path,
+                              MeshFile<T, I> const & mesh)
 {
   LOG_DEBUG("Writing XDMF geometry");
   size_t const num_verts = mesh.vertices.size();
@@ -126,10 +125,9 @@ writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
-static void
-writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
-                  std::string const & h5filename, std::string const & h5path,
-                  MeshFile<T, I> const & mesh)
+static void writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
+                              std::string const & h5filename, std::string const & h5path,
+                              MeshFile<T, I> const & mesh)
 {
   LOG_DEBUG("Writing XDMF topology");
   // Create XDMF Topology node
@@ -220,11 +218,10 @@ writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
-static void
-writeXDMFMaterials(pugi::xml_node & xgrid, H5::Group & h5group,
-                   std::string const & h5filename, std::string const & h5path,
-                   MeshFile<T, I> const & mesh,
-                   std::vector<std::string> const & material_names)
+static void writeXDMFMaterials(pugi::xml_node & xgrid, H5::Group & h5group,
+                               std::string const & h5filename, std::string const & h5path,
+                               MeshFile<T, I> const & mesh,
+                               std::vector<std::string> const & material_names)
 {
   LOG_DEBUG("Writing XDMF materials");
   // Create material array
@@ -284,10 +281,9 @@ writeXDMFMaterials(pugi::xml_node & xgrid, H5::Group & h5group,
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
-static void
-writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
-                std::string const & h5filename, std::string const & h5path,
-                MeshFile<T, I> const & mesh)
+static void writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
+                            std::string const & h5filename, std::string const & h5path,
+                            MeshFile<T, I> const & mesh)
 {
   LOG_DEBUG("Writing XDMF elsets");
   for (size_t i = 0; i < mesh.elset_names.size(); ++i) {
@@ -490,9 +486,8 @@ addNodesToMesh(MeshFile<T, I> & mesh, size_t const num_verts, size_t const num_d
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
-static void
-readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
-                 std::string const & h5filename, MeshFile<T, I> & mesh)
+static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+                             std::string const & h5filename, MeshFile<T, I> & mesh)
 {
   LOG_DEBUG("Reading XDMF geometry");
   pugi::xml_node const xgeometry = xgrid.child("Geometry");
@@ -659,9 +654,8 @@ addElementsToMesh(size_t const num_elements, std::string const & topology_type,
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
-static void
-readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
-                 std::string const & h5filename, MeshFile<T, I> & mesh)
+static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+                             std::string const & h5filename, MeshFile<T, I> & mesh)
 {
   LOG_DEBUG("Reading XDMF topology");
   pugi::xml_node const xtopology = xgrid.child("Topology");
@@ -768,9 +762,8 @@ addElsetToMesh(MeshFile<T, I> & mesh, size_t const num_elements,
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
-static void
-readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
-               std::string const & h5filename, MeshFile<T, I> & mesh)
+static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+                           std::string const & h5filename, MeshFile<T, I> & mesh)
 {
   LOG_DEBUG("Reading XDMF elsets");
   // Loop over all nodes to find the elsets
@@ -865,11 +858,10 @@ readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
 
 template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
-void
-readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file,
-                    std::string const & h5filename,
-                    //    std::vector<std::string> const & material_names,
-                    MeshFile<T, I> & mesh)
+void readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+                         std::string const & h5filename,
+                         //    std::vector<std::string> const & material_names,
+                         MeshFile<T, I> & mesh)
 {
   readXDMFGeometry(xgrid, h5file, h5filename, mesh);
   readXDMFTopology(xgrid, h5file, h5filename, mesh);
