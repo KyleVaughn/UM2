@@ -178,6 +178,7 @@ target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
 if (UM2_USE_OPENMP)
   find_package(OpenMP REQUIRED)
   target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
+  target_include_directories(um2 SYSTEM PUBLIC "${OpenMP_CXX_INCLUDE_DIRS}")
 endif()
 
 # TBB

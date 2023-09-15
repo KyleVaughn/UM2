@@ -1,4 +1,4 @@
-#include <um2/ray_casting/AngularQuadrature.hpp>
+#include <um2/math/AngularQuadrature.hpp>
 
 #include "../test_macros.hpp"
 

@@ -36,6 +36,7 @@ add_um2_test(./math/stats.cpp)
 if (UM2_USE_TBB)
   add_um2_test(./parallel/math/parallel_stats.cpp)
 endif()
+add_um2_test(./math/AngularQuadrature.cpp)
 
 #===============================================================================
 # geometry
@@ -82,11 +83,10 @@ file(COPY ${PROJECT_SOURCE_DIR}/tests/mpact/mpact_mesh_files DESTINATION ${CMAKE
 
 add_um2_test(./mpact/SpatialPartition.cpp)
 
-#==============================================================================
-# ray_casting
-#==============================================================================
+##==============================================================================
+## ray_casting
+##==============================================================================
 
-add_um2_test(./ray_casting/AngularQuadrature.cpp)
 
 #==============================================================================
 # gmsh

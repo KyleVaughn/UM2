@@ -6,9 +6,11 @@
 
 // Contains:
 //  abs
+//  atan
 //  atanh
 //  cbrt
 //  ceil
+//  cos
 //  exp
 //  floor
 //  sin

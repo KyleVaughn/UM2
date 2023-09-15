@@ -237,7 +237,7 @@ contains(PlanarQuadraticPolygon<N, T> const & q, Point2<T> const & p) noexcept -
   // Benchmarking shows that the opposite conclusion is true for quadratic
   // polygons: it is faster to compute the areCCW() test for each edge, short
   // circuiting as soon as one is false, rather than compute all of them.
-  Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges(); 
+  Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges();
   for (Size i = 0; i < num_edges; ++i) {
     if (!getEdge(q, i).isLeft(p)) {
       return false;
@@ -298,9 +298,25 @@ PURE HOSTDEV constexpr auto
 area(PlanarQuadraticPolygon<N, T> const & q) noexcept -> T
 {
   T result = area(linearPolygon(q));
-  Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges(); 
+  Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges();
   for (Size i = 0; i < num_edges; ++i) {
     result += enclosedArea(getEdge(q, i));
+  }
+  return result;
+}
+
+//==============================================================================
+// perimeter
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+perimeter(Polygon<P, N, D, T> const & p) noexcept -> T
+{
+  Size constexpr num_edges = Polygon<P, N, D, T>::numEdges();
+  T result = p.getEdge(0).length();
+  for (Size i = 1; i < num_edges; ++i) {
+    result += p.getEdge(i).length();
   }
   return result;
 }
@@ -386,7 +402,7 @@ centroid(PlanarQuadraticPolygon<N, T> const & q) noexcept -> Point2<T>
   auto lin_poly = linearPolygon(q);
   T area_sum = lin_poly.area();
   Point2<T> centroid_sum = area_sum * centroid(lin_poly);
-  Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges(); 
+  Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges();
   for (Size i = 0; i < num_edges; ++i) {
     auto const e = getEdge(q, i);
     T const a = enclosedArea(e);
@@ -405,7 +421,7 @@ PURE HOSTDEV constexpr auto
 boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept -> AxisAlignedBox2<T>
 {
   AxisAlignedBox2<T> box = boundingBox(getEdge(p, 0));
-  Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges(); 
+  Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges();
   for (Size i = 1; i < num_edges; ++i) {
     box += boundingBox(getEdge(p, i));
   }
@@ -443,70 +459,91 @@ isCCW(PlanarQuadraticPolygon<N, T> const & q) noexcept -> bool
 // flipFace
 //==============================================================================
 
-template <Size D, typename T>    
-HOSTDEV constexpr void    
-flipFace(Triangle<D, T> & t) noexcept    
-{    
-  um2::swap(t[1], t[2]);    
-}    
-    
-template <Size D, typename T>    
-HOSTDEV constexpr void    
-flipFace(Quadrilateral<D, T> & q) noexcept    
-{    
-  um2::swap(q[1], q[3]);    
-}    
-    
-template <Size D, typename T>    
-HOSTDEV constexpr void    
-flipFace(QuadraticTriangle<D, T> & q) noexcept    
-{    
-  um2::swap(q[1], q[2]);    
-  um2::swap(q[3], q[5]);    
-}    
-    
-template <Size D, typename T>    
-HOSTDEV constexpr void    
-flipFace(QuadraticQuadrilateral<D, T> & q) noexcept    
-{    
-  um2::swap(q[1], q[3]);    
-  um2::swap(q[4], q[7]);    
+template <Size D, typename T>
+HOSTDEV constexpr void
+flipFace(Triangle<D, T> & t) noexcept
+{
+  um2::swap(t[1], t[2]);
+}
+
+template <Size D, typename T>
+HOSTDEV constexpr void
+flipFace(Quadrilateral<D, T> & q) noexcept
+{
+  um2::swap(q[1], q[3]);
+}
+
+template <Size D, typename T>
+HOSTDEV constexpr void
+flipFace(QuadraticTriangle<D, T> & q) noexcept
+{
+  um2::swap(q[1], q[2]);
+  um2::swap(q[3], q[5]);
+}
+
+template <Size D, typename T>
+HOSTDEV constexpr void
+flipFace(QuadraticQuadrilateral<D, T> & q) noexcept
+{
+  um2::swap(q[1], q[3]);
+  um2::swap(q[4], q[7]);
 }
 
 //==============================================================================
 // isConvex
 //==============================================================================
 
-template <typename T>    
-PURE HOSTDEV constexpr auto    
-isConvex(Quadrilateral2<T> const & q) noexcept -> bool    
-{    
-  // Benchmarking shows it is faster to compute the areCCW() test for each    
-  // edge, then return based on the AND of the results, rather than compute    
-  // the areCCW one at a time and return as soon as one is false.    
-  bool const b0 = areCCW(q[0], q[1], q[2]);    
-  bool const b1 = areCCW(q[1], q[2], q[3]);    
-  bool const b2 = areCCW(q[2], q[3], q[0]);    
-  bool const b3 = areCCW(q[3], q[0], q[1]);    
-  return b0 && b1 && b2 && b3;    
-} 
+template <typename T>
+PURE HOSTDEV constexpr auto
+isConvex(Quadrilateral2<T> const & q) noexcept -> bool
+{
+  // Benchmarking shows it is faster to compute the areCCW() test for each
+  // edge, then return based on the AND of the results, rather than compute
+  // the areCCW one at a time and return as soon as one is false.
+  bool const b0 = areCCW(q[0], q[1], q[2]);
+  bool const b1 = areCCW(q[1], q[2], q[3]);
+  bool const b2 = areCCW(q[2], q[3], q[0]);
+  bool const b3 = areCCW(q[3], q[0], q[1]);
+  return b0 && b1 && b2 && b3;
+}
 
 //==============================================================================
 // linearPolygon
 //==============================================================================
 
-template <Size D, typename T>    
-PURE HOSTDEV constexpr auto    
-linearPolygon(QuadraticTriangle<D, T> const & q) noexcept -> Triangle<D, T>    
-{    
-  return Triangle<D, T>(q[0], q[1], q[2]);    
-}    
-    
-template <Size D, typename T>    
-PURE HOSTDEV constexpr auto    
-linearPolygon(QuadraticQuadrilateral<D, T> const & q) noexcept -> Quadrilateral<D, T>    
-{    
-  return Quadrilateral<D, T>(q[0], q[1], q[2], q[3]);    
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+linearPolygon(QuadraticTriangle<D, T> const & q) noexcept -> Triangle<D, T>
+{
+  return Triangle<D, T>(q[0], q[1], q[2]);
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+linearPolygon(QuadraticQuadrilateral<D, T> const & q) noexcept -> Quadrilateral<D, T>
+{
+  return Quadrilateral<D, T>(q[0], q[1], q[2], q[3]);
+}
+
+//==============================================================================
+// meanChordLength
+//==============================================================================
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+meanChordLength(Triangle2<T> const & tri) noexcept -> T
+{
+  // The mean chord length of a convex body is 4 Volume / Surface area (Dirac, 1943)
+  return static_cast<T>(4) * area(tri) / perimeter(tri);
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+meanChordLength(Quadrilateral2<T> const & quad) noexcept -> T
+{
+  // The mean chord length of a convex body is 4 Volume / Surface area (Dirac, 1943)
+  assert(isConvex(quad));
+  return static_cast<T>(4) * area(quad) / perimeter(quad);
 }
 
 //==============================================================================
@@ -523,8 +560,8 @@ template <Size P, Size N, Size D, typename T>
 CONST HOSTDEV constexpr auto
 Polygon<P, N, D, T>::numEdges() noexcept -> Size
 {
-  static_assert(P == 1 || P == 2, "Only P = 1 or P = 2 supported");    
-  return N / P;      
+  static_assert(P == 1 || P == 2, "Only P = 1 or P = 2 supported");
+  return N / P;
 }
 
 template <Size P, Size N, Size D, typename T>
@@ -600,6 +637,17 @@ Polygon<P, N, D, T>::area() const noexcept -> T
 }
 
 //==============================================================================
+// perimeter
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+Polygon<P, N, D, T>::perimeter() const noexcept -> T
+{
+  return um2::perimeter(*this);
+}
+
+//==============================================================================
 // centroid
 //==============================================================================
 
@@ -631,6 +679,18 @@ Polygon<P, N, D, T>::isCCW() const noexcept -> bool
 requires (D == 2)
 {
   return um2::isCCW(*this);
+}
+
+//==============================================================================
+// meanChordLength
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+Polygon<P, N, D, T>::meanChordLength() const noexcept -> T
+requires (D == 2)
+{
+  return um2::meanChordLength(*this);
 }
 
 } // namespace um2

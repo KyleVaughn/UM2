@@ -1,20 +1,3 @@
-Consolidate FaceVertexMesh
-
-parallel
-  threads
-    histogram
-    sortPermutation
-    boundingBox(Vector<Point>)
-    boundingBox(Mesh)
-  GPU
-
-Identify par functions
-  mesh
-  physics
-  mpact
-  ray_casting
-  visualization
-
 Stack of todo:
   Generate images of line segments
   Generate modular rays and visualize to verify 
@@ -24,6 +7,20 @@ Stack of todo:
   Benchmark morton sorted vs unsorted intersection
   Benchmark using insertion sort vs std::sort on morton sorted mesh vs unsorted
   Benchmark insertion vs non-insertion and morton vs non-morton for binned and non-binned
+
+
+Work through rest of code and add to todo list
+
+meanchordlength
+
+Add pre and post-conditions to vector
+
+parallel
+  threads
+    histogram
+    sortPermutation
+    boundingBox(Mesh)
+  GPU
 
 Alternative stack:
   FaceVertexMesh.getUniqueEdges
@@ -49,3 +46,8 @@ Print for each material
 
 nolints/cppchecks make sure all are justified
 Check pragma diagnostic push/pop
+
+MPACT to meshfile?
+
+RECONSTRUCT PINS USING TOUCHING FUEL MATERIALS
+Or allow labeling

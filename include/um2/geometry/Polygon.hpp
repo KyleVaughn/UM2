@@ -76,6 +76,9 @@ struct Polytope<2, P, N, D, T> {
   area() const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
+  perimeter() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   centroid() const noexcept -> Point<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -83,6 +86,10 @@ struct Polytope<2, P, N, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isCCW() const noexcept -> bool
+  requires (D == 2);
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  meanChordLength() const noexcept -> T
   requires (D == 2);
 
 }; // Polygon
@@ -134,6 +141,14 @@ area(Triangle3<T> const & tri) noexcept -> T;
 template <Size P, Size N, typename T>
 PURE HOSTDEV constexpr auto
 area(PlanarPolygon<P, N, T> const & p) noexcept -> T;
+
+//==============================================================================
+// perimeter
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+perimeter(Polygon<P, N, D, T> const & p) noexcept -> T;
 
 //==============================================================================
 // centroid
@@ -193,6 +208,14 @@ linearPolygon(QuadraticTriangle<D, T> const & q) noexcept -> Triangle<D, T>;
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 linearPolygon(QuadraticQuadrilateral<D, T> const & q) noexcept -> Quadrilateral<D, T>;
+
+//==============================================================================
+// meanChordLength
+//==============================================================================
+
+template <Size P, Size N, typename T>
+PURE HOSTDEV constexpr auto
+meanChordLength(PlanarPolygon<P, N, T> const & p) noexcept -> T;
 
 } // namespace um2
 
