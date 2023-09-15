@@ -135,7 +135,7 @@ MeshFile<T, I>::sortElsets()
         elset_names[i], std::make_pair(elset_offsets[i], elset_offsets[i + 1]));
   }
   // Sort the vector by the elset names.
-  // This is only of length num_elsets, so it should be fast. No need to 
+  // This is only of length num_elsets, so it should be fast. No need to
   // parallelize.
   std::sort(elset_name_offsets_pairs.begin(), elset_name_offsets_pairs.end(),
             [](NameOffsetsPair const & a, NameOffsetsPair const & b) -> bool {
@@ -230,7 +230,7 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
   // We now have the unique vertex ids. We need to remap the connectivity.
   // unique_vertex_ids[i] is the old vertex id, and i is the new vertex id.
 #if UM2_USE_OPENMP
-  # pragma omp parallel for
+#  pragma omp parallel for
 #endif
   for (size_t i = 0; i < submesh.element_conn.size(); ++i) {
     I const old_vertex_id = submesh.element_conn[i];

@@ -230,7 +230,6 @@ TEST_CASE(meanChordLength)
   ASSERT_NEAR(quad.meanChordLength(), static_cast<T>(1), static_cast<T>(1e-5));
 }
 
-
 #if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(interpolate, D, T);

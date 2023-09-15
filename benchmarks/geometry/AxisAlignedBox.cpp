@@ -111,15 +111,15 @@ boundingBoxParallel(benchmark::State & state)
 #endif
 
 BENCHMARK_TEMPLATE(boundingBox, double)
-  ->RangeMultiplier(4)
-  ->Range(1024, npoints)
-  ->Unit(benchmark::kMicrosecond);
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
+    ->Unit(benchmark::kMicrosecond);
 
 #if UM2_USE_TBB
 BENCHMARK_TEMPLATE(boundingBoxParallel, double)
-  ->RangeMultiplier(4)
-  ->Range(1024, npoints)
-  ->Unit(benchmark::kMicrosecond);
+    ->RangeMultiplier(4)
+    ->Range(1024, npoints)
+    ->Unit(benchmark::kMicrosecond);
 #endif
 
 BENCHMARK_MAIN();

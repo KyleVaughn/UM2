@@ -41,15 +41,14 @@ Step 2B:
     despacktivate
     spack load gcc@12 <-- Installed during UM2 build
     spack install mpich@3.3%gcc@12
-    spack compiler find
     spack install gcc@8
     spack load gcc@8
     spack compiler find
     spack install mpich@3.3%gcc@8
     spack load mpich@3.3%gcc@8
     spack compiler find
-    SPACK_VIEW_DIR=${SPACK_ENV}/.spack-env/view
     spacktivate -p um2
+    SPACK_VIEW_DIR=${SPACK_ENV}/.spack-env/view
     cd MPACT && mkdir build && cd build
     HDF5_ROOT=$SPACK_VIEW_DIR UM2_ROOT=<path/to/um2/build> ./build_with_hdf5.sh ./build_with_um2.sh <mpi_build_script> ..
     make -j MPACT
@@ -59,7 +58,7 @@ Step 3B:
   Enter the following commands:    
     despacktivate    
     spack load gcc@12
-    spack load mpich3.3@gcc@12 
+    spack load mpich@3.3%gcc@12 
     MPIF90=$(which mpif90)
     spacktivate -p um2    
     cd MPACT_exe/src    

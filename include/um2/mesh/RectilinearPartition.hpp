@@ -101,25 +101,26 @@ struct RectilinearPartition {
 
   template <typename... Args>
     requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
-      -> AxisAlignedBox<D, T>;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getBox(Args... args) const noexcept -> AxisAlignedBox<D, T>;
 
   template <typename... Args>
     requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getFlatIndex(Args... args) const noexcept
-      -> Size;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getFlatIndex(Args... args) const noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size;
 
   template <typename... Args>
     requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getChild(Args... args) noexcept -> P &;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getChild(Args... args) noexcept -> P &;
 
   template <typename... Args>
     requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getChild(Args... args) const noexcept
-      -> P const &;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getChild(Args... args) const noexcept -> P const &;
 
   //==============================================================================
   // Methods

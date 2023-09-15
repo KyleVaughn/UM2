@@ -876,7 +876,7 @@ Dion<P, N, D, T>::jacobian(R const r) const noexcept -> Vec<D, T>
 template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
 Dion<P, N, D, T>::getRotation() const noexcept -> Mat<D, D, T>
-requires(D == 2)
+  requires(D == 2)
 {
   return um2::getRotation(*this);
 }
@@ -888,7 +888,7 @@ requires(D == 2)
 template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
 Dion<P, N, D, T>::isLeft(Point<D, T> const & p) const noexcept -> bool
-requires(D == 2)
+  requires(D == 2)
 {
   return pointIsLeft(*this, p);
 }

@@ -22,7 +22,6 @@ BENCHMARK_DEFINE_F(Lattice76790Fixture, getSubmesh)(benchmark::State & state)
   }
 }
 
-BENCHMARK_REGISTER_F(Lattice76790Fixture, getSubmesh)
-    ->Unit(benchmark::kMillisecond);
+BENCHMARK_REGISTER_F(Lattice76790Fixture, getSubmesh)->Unit(benchmark::kMillisecond);
 
 BENCHMARK_MAIN();

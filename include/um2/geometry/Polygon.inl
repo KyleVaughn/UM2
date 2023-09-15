@@ -620,7 +620,7 @@ Polygon<P, N, D, T>::getEdge(Size i) const noexcept -> Edge
 template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
 Polygon<P, N, D, T>::contains(Point<D, T> const & p) const noexcept -> bool
-requires (D == 2)
+  requires(D == 2)
 {
   return um2::contains(*this, p);
 }
@@ -676,7 +676,7 @@ Polygon<P, N, D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
 Polygon<P, N, D, T>::isCCW() const noexcept -> bool
-requires (D == 2)
+  requires(D == 2)
 {
   return um2::isCCW(*this);
 }
@@ -688,7 +688,7 @@ requires (D == 2)
 template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
 Polygon<P, N, D, T>::meanChordLength() const noexcept -> T
-requires (D == 2)
+  requires(D == 2)
 {
   return um2::meanChordLength(*this);
 }

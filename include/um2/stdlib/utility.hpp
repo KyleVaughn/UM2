@@ -61,7 +61,8 @@ move(T && t) noexcept -> std::remove_reference_t<T> &&
 template <class T>
   requires(std::is_trivially_move_constructible_v<T> &&
            std::is_trivially_move_assignable_v<T>)
-DEVICE constexpr void swap(T & a, T & b) noexcept
+DEVICE constexpr void
+swap(T & a, T & b) noexcept
 {
   T tmp = um2::move(a);
   a = um2::move(b);

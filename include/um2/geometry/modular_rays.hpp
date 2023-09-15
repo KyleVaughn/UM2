@@ -1,21 +1,20 @@
 #pragma once
 
-#include <um2/stdlib/math.hpp>
-#include <um2/math/AngularQuadrature.hpp>
-#include <um2/geometry/Ray.hpp>
 #include <um2/geometry/AxisAlignedBox.hpp>
+#include <um2/geometry/Ray.hpp>
+#include <um2/math/AngularQuadrature.hpp>
+#include <um2/stdlib/math.hpp>
 
 namespace um2
 {
 
 // Modular ray parameters for a single angle
 template <typename T>
-struct ModularRayParams
-{
+struct ModularRayParams {
   Vec2<Size> num_rays; // Number of rays in x and y
-  Vec2<T> spacing;    // Spacing between rays in x and y
-  Vec2<T> origin;     // Origin of first ray
-  Vec2<T> direction;  // Direction of rays
+  Vec2<T> spacing;     // Spacing between rays in x and y
+  Vec2<T> origin;      // Origin of first ray
+  Vec2<T> direction;   // Direction of rays
 }
 
 // a: azimuthal angle γ ∈ (0, π/2)
@@ -37,8 +36,8 @@ getModularRayParams(T const a, T const s, T const w, T const h) -> ModularRayPar
 
   // Effective angle to ensure cyclic rays
   T const a_eff = um2::atan((h * nx_t) / (w * ny_t));
-  res.direction[0] =um2::cos(a_eff);
-  res.direction[1] =um2::sin(a_eff);
+  res.direction[0] = um2::cos(a_eff);
+  res.direction[1] = um2::sin(a_eff);
 
   res.spacing[0] = -w / nx_t;
   res.spacing[1] = h / ny_t;

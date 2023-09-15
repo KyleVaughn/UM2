@@ -2,8 +2,8 @@
 
 #include <um2/geometry/AxisAlignedBox.hpp>
 
-#if UM2_USE_TBB    
-#  include <execution>    
+#if UM2_USE_TBB
+#  include <execution>
 #endif
 
 namespace um2::parallel
@@ -43,8 +43,7 @@ boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>
     }
   };
 
-  return std::reduce(std::execution::par_unseq,
-                      points.begin(), points.end(),
+  return std::reduce(std::execution::par_unseq, points.begin(), points.end(),
                      AxisAlignedBox<D, T>{points[0], points[0]}, ReduceFunctor{});
 }
 

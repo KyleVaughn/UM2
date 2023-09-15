@@ -146,7 +146,8 @@ numFaces(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept -> Size;
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 PURE HOSTDEV constexpr auto
-getFace(FaceVertexMesh<P, N, D, T, I> const & mesh, Size i) noexcept -> Polygon<P, N, D, T>;
+getFace(FaceVertexMesh<P, N, D, T, I> const & mesh, Size i) noexcept
+    -> Polygon<P, N, D, T>;
 
 //==============================================================================
 // boundingBox
@@ -160,10 +161,10 @@ boundingBox(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept -> AxisAlignedB
 // faceContaining
 //==============================================================================
 
-template <Size P, Size N, std::floating_point T, std::signed_integral I>    
-PURE constexpr auto    
+template <Size P, Size N, std::floating_point T, std::signed_integral I>
+PURE constexpr auto
 faceContaining(PlanarPolygonMesh<P, N, T, I> const & mesh, Point2<T> const & p) noexcept
- -> Size;
+    -> Size;
 
 } // namespace um2
 

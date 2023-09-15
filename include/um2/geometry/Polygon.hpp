@@ -70,7 +70,7 @@ struct Polytope<2, P, N, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   contains(Point<D, T> const & p) const noexcept -> bool
-  requires (D == 2);
+    requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   area() const noexcept -> T;
@@ -86,11 +86,11 @@ struct Polytope<2, P, N, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isCCW() const noexcept -> bool
-  requires (D == 2);
+    requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   meanChordLength() const noexcept -> T
-  requires (D == 2);
+    requires(D == 2);
 
 }; // Polygon
 

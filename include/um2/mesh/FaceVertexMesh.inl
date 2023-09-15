@@ -139,101 +139,101 @@ faceContaining(PlanarPolygonMesh<P, N, T, I> const & mesh, Point2<T> const & p) 
 // validateMesh
 //==============================================================================
 
-template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>    
-void    
-validateMesh(FaceVertexMesh<P, N, D, T, I> & mesh)    
-{    
-#ifndef NDEBUG    
-  // Check for repeated vertices.    
-  // This is not technically an error, but it is a sign that the mesh may    
-  // cause problems for some algorithms. Hence, we warn the user.    
-  auto const bbox = boundingBox(mesh);    
-  Vec<D, T> normalization;    
-  for (Size i = 0; i < D; ++i) {    
-    normalization[i] = static_cast<T>(1) / (bbox.maxima[i] - bbox.minima[i]);    
-  }    
-  Vector<Point<D, T>> vertices_copy = mesh.vertices;    
-  // Transform the points to be in the unit cube    
-  for (auto & v : vertices_copy) {    
-    v -= bbox.minima;    
-    v *= normalization;    
-  }    
-  if constexpr (std::same_as<T, float>) {    
-    mortonSort<uint32_t>(vertices_copy.begin(), vertices_copy.end());    
-  } else {    
-    mortonSort<uint64_t>(vertices_copy.begin(), vertices_copy.end());    
-  }    
-  // Revert the scaling    
-  for (auto & v : vertices_copy) {    
-    // cppcheck-suppress useStlAlgorithm; justification: This is less verbose    
-    v /= normalization;    
-  }    
-  Size const num_vertices = mesh.numVertices();    
-  for (Size i = 0; i < num_vertices - 1; ++i) {    
-    if (isApprox(vertices_copy[i], vertices_copy[i + 1])) {    
-      Log::warn("Vertex " + std::to_string(i) + " and " + std::to_string(i + 1) +    
-                " are effectively equivalent");    
-    }    
-  }    
-#endif    
-    
-  // Check that the vertices are in counter-clockwise order.    
-  // If the area of the face is negative, then the vertices are in clockwise    
-  Size const num_faces = mesh.numFaces();    
-  for (Size i = 0; i < num_faces; ++i) {    
-    if (!mesh.getFace(i).isCCW()) {    
-      Log::warn("Face " + std::to_string(i) +    
-                " has vertices in clockwise order. Reordering");    
-      mesh.flipFace(i);    
-    }    
-  }    
-    
-  // Convexity check    
-  // if (file.type == MeshType::Quad) {    
-  if constexpr (N == 4) {    
-    for (Size i = 0; i < num_faces; ++i) {    
-      if (!isConvex(mesh.getFace(i))) {    
-        Log::warn("Face " + std::to_string(i) + " is not convex");    
-      }    
-    }    
-  }    
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
+validateMesh(FaceVertexMesh<P, N, D, T, I> & mesh)
+{
+#ifndef NDEBUG
+  // Check for repeated vertices.
+  // This is not technically an error, but it is a sign that the mesh may
+  // cause problems for some algorithms. Hence, we warn the user.
+  auto const bbox = boundingBox(mesh);
+  Vec<D, T> normalization;
+  for (Size i = 0; i < D; ++i) {
+    normalization[i] = static_cast<T>(1) / (bbox.maxima[i] - bbox.minima[i]);
+  }
+  Vector<Point<D, T>> vertices_copy = mesh.vertices;
+  // Transform the points to be in the unit cube
+  for (auto & v : vertices_copy) {
+    v -= bbox.minima;
+    v *= normalization;
+  }
+  if constexpr (std::same_as<T, float>) {
+    mortonSort<uint32_t>(vertices_copy.begin(), vertices_copy.end());
+  } else {
+    mortonSort<uint64_t>(vertices_copy.begin(), vertices_copy.end());
+  }
+  // Revert the scaling
+  for (auto & v : vertices_copy) {
+    // cppcheck-suppress useStlAlgorithm; justification: This is less verbose
+    v /= normalization;
+  }
+  Size const num_vertices = mesh.numVertices();
+  for (Size i = 0; i < num_vertices - 1; ++i) {
+    if (isApprox(vertices_copy[i], vertices_copy[i + 1])) {
+      Log::warn("Vertex " + std::to_string(i) + " and " + std::to_string(i + 1) +
+                " are effectively equivalent");
+    }
+  }
+#endif
+
+  // Check that the vertices are in counter-clockwise order.
+  // If the area of the face is negative, then the vertices are in clockwise
+  Size const num_faces = mesh.numFaces();
+  for (Size i = 0; i < num_faces; ++i) {
+    if (!mesh.getFace(i).isCCW()) {
+      Log::warn("Face " + std::to_string(i) +
+                " has vertices in clockwise order. Reordering");
+      mesh.flipFace(i);
+    }
+  }
+
+  // Convexity check
+  // if (file.type == MeshType::Quad) {
+  if constexpr (N == 4) {
+    for (Size i = 0; i < num_faces; ++i) {
+      if (!isConvex(mesh.getFace(i))) {
+        Log::warn("Face " + std::to_string(i) + " is not convex");
+      }
+    }
+  }
 }
 
 //==============================================================================
 // toFaceVertexMesh
 //==============================================================================
 
-// Return true if the MeshType and P, N are compatible.    
-template <Size P, Size N>    
-constexpr auto    
-validateMeshFileType(MeshType const type) -> bool    
-{    
-  if constexpr (P == 1 && N == 3) {    
-    return type == MeshType::Tri;    
-  } else if constexpr (P == 1 && N == 4) {    
-    return type == MeshType::Quad;    
-  } else if constexpr (P == 2 && N == 6) {    
-    return type == MeshType::QuadraticTri;    
-  } else if constexpr (P == 2 && N == 8) {     
-    return type == MeshType::QuadraticQuad;    
-  }    
-  return false;    
-}    
-    
-template <Size P, Size N>    
-constexpr auto    
-getMeshType() -> MeshType    
-{    
-  if constexpr (P == 1 && N == 3) {    
-    return MeshType::Tri;    
-  } else if constexpr (P == 1 && N == 4) {    
-    return MeshType::Quad;    
-  } else if constexpr (P == 2 && N == 6) {    
-    return MeshType::QuadraticTri;    
-  } else if constexpr (P == 2 && N == 8) {    
-    return MeshType::QuadraticQuad;    
-  }    
-  return MeshType::None;    
+// Return true if the MeshType and P, N are compatible.
+template <Size P, Size N>
+constexpr auto
+validateMeshFileType(MeshType const type) -> bool
+{
+  if constexpr (P == 1 && N == 3) {
+    return type == MeshType::Tri;
+  } else if constexpr (P == 1 && N == 4) {
+    return type == MeshType::Quad;
+  } else if constexpr (P == 2 && N == 6) {
+    return type == MeshType::QuadraticTri;
+  } else if constexpr (P == 2 && N == 8) {
+    return type == MeshType::QuadraticQuad;
+  }
+  return false;
+}
+
+template <Size P, Size N>
+constexpr auto
+getMeshType() -> MeshType
+{
+  if constexpr (P == 1 && N == 3) {
+    return MeshType::Tri;
+  } else if constexpr (P == 1 && N == 4) {
+    return MeshType::Quad;
+  } else if constexpr (P == 2 && N == 6) {
+    return MeshType::QuadraticTri;
+  } else if constexpr (P == 2 && N == 8) {
+    return MeshType::QuadraticQuad;
+  }
+  return MeshType::None;
 }
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
@@ -309,42 +309,42 @@ toFaceVertexMesh(MeshFile<T, I> const & file,
 // toMeshFile
 //==============================================================================
 
-template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>    
-void    
-toMeshFile(FaceVertexMesh<P, N, D, T, I> const & mesh, MeshFile<T, I> & file) noexcept    
-{    
-  // Default to XDMf    
-  file.format = MeshFileFormat::XDMF;    
-    
-  // Vertices    
-  if constexpr (D == 3) {    
-    file.vertices = mesh.vertices;    
-  } else {    
-    file.vertices.resize(static_cast<size_t>(mesh.numVertices()));    
-    for (Size i = 0; i < mesh.numVertices(); ++i) {    
-      file.vertices[static_cast<size_t>(i)][0] = mesh.vertices[i][0];    
-      file.vertices[static_cast<size_t>(i)][1] = mesh.vertices[i][1];    
-      file.vertices[static_cast<size_t>(i)][2] = 0;    
-    }    
-  }    
-    
-  // Faces    
-  // NOLINTBEGIN(bugprone-misplaced-widening-cast) justification: It's not misplaced...    
-  auto const nfaces = static_cast<size_t>(mesh.numFaces());    
-  auto const n = static_cast<size_t>(N);    
-  auto const len = nfaces * n;    
-  MeshType const mesh_type = getMeshType<P, N>();    
-  file.element_types.resize(nfaces, mesh_type);    
-  file.element_offsets.resize(nfaces + 1U);    
-  file.element_conn.resize(len);    
-  for (size_t i = 0; i < nfaces; ++i) {    
-    file.element_offsets[i] = static_cast<I>(i * n);    
-    for (size_t j = 0; j < n; ++j) {    
-      file.element_conn[i * n + j] = mesh.fv[static_cast<Size>(i)][static_cast<Size>(j)];    
-    }    
-  }    
-  file.element_offsets[nfaces] = static_cast<I>(len);    
-  // NOLINTEND(bugprone-misplaced-widening-cast)    
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
+toMeshFile(FaceVertexMesh<P, N, D, T, I> const & mesh, MeshFile<T, I> & file) noexcept
+{
+  // Default to XDMf
+  file.format = MeshFileFormat::XDMF;
+
+  // Vertices
+  if constexpr (D == 3) {
+    file.vertices = mesh.vertices;
+  } else {
+    file.vertices.resize(static_cast<size_t>(mesh.numVertices()));
+    for (Size i = 0; i < mesh.numVertices(); ++i) {
+      file.vertices[static_cast<size_t>(i)][0] = mesh.vertices[i][0];
+      file.vertices[static_cast<size_t>(i)][1] = mesh.vertices[i][1];
+      file.vertices[static_cast<size_t>(i)][2] = 0;
+    }
+  }
+
+  // Faces
+  // NOLINTBEGIN(bugprone-misplaced-widening-cast) justification: It's not misplaced...
+  auto const nfaces = static_cast<size_t>(mesh.numFaces());
+  auto const n = static_cast<size_t>(N);
+  auto const len = nfaces * n;
+  MeshType const mesh_type = getMeshType<P, N>();
+  file.element_types.resize(nfaces, mesh_type);
+  file.element_offsets.resize(nfaces + 1U);
+  file.element_conn.resize(len);
+  for (size_t i = 0; i < nfaces; ++i) {
+    file.element_offsets[i] = static_cast<I>(i * n);
+    for (size_t j = 0; j < n; ++j) {
+      file.element_conn[i * n + j] = mesh.fv[static_cast<Size>(i)][static_cast<Size>(j)];
+    }
+  }
+  file.element_offsets[nfaces] = static_cast<I>(len);
+  // NOLINTEND(bugprone-misplaced-widening-cast)
 }
 
 //==============================================================================

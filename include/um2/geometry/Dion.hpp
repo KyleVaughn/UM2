@@ -78,11 +78,11 @@ struct Polytope<1, P, N, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getRotation() const noexcept -> Mat<D, D, T>
-  requires (D == 2);
+    requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isLeft(Point<D, T> const & p) const noexcept -> bool
-  requires (D == 2);
+    requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   length() const noexcept -> T;
