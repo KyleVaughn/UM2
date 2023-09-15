@@ -2,7 +2,7 @@ Step 1:
   Install UM2 using the instructions at:
   https://univeristy-of-michigan-unstructured-mesh-code.readthedocs.io/en/main/install.html
 
-If building serial, see steps 2A and 3B. If building with MPI, see steps 2B and 3B.
+If building serial, see steps 2A and 3A. If building with MPI, see steps 2B and 3B.
 
 Step 2A:
   MPACT needs to be built with gcc@8, but linked with gcc@12 due to UM2's use of C++20.
