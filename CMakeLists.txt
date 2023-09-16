@@ -17,10 +17,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 #===============================================================================
 
 option(UM2_USE_OPENMP       "Enable OpenMP"                     ON)
-option(UM2_USE_TBB          "Enable Intel TBB (parallel STL)"   ON)
+option(UM2_USE_TBB          "Enable Intel TBB"                  ON)
 option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
 option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
-option(UM2_USE_OPENGL       "Enable OpenGL visualization"       OFF)
+option(UM2_USE_OPENGL       "Enable OpenGL"                     OFF)
 
 option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large meshes
 option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"      ON)
@@ -55,14 +55,14 @@ endif()
 #===============================================================================
 
 # minimum log level for compile-time filtering of log messages
-# Off = 0,        // no messages    
-# Error = 1,      // only errors    
-# Warn = 2,       // errors and warnings    
-# Info = 3,       // errors, warnings and info    
-# Debug = 4,      // errors, warnings, info and debug    
-# Trace = 5,      // errors, warnings, info, debug and trace    
+# Off = 0,        // no messages
+# Error = 1,      // only errors
+# Warn = 2,       // errors and warnings
+# Info = 3,       // errors, warnings and info
+# Debug = 4,      // errors, warnings, info and debug
+# Trace = 5,      // errors, warnings, info, debug and trace
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(UM2_MIN_LOG_LEVEL 5) 
+  set(UM2_MIN_LOG_LEVEL 5)
 else()
   set(UM2_MIN_LOG_LEVEL 3)
 endif()
@@ -82,8 +82,8 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     message(FATAL_ERROR "Clang version must be at least ${UM2_MIN_CLANG_VERSION}")
   endif()
 else()
-  message(WARNING 
-          "You are using an unsupported compiler! " 
+  message(WARNING
+          "You are using an unsupported compiler! "
           "Please use GCC >= 12.0 or Clang >= 15.0")
 endif()
 
@@ -121,7 +121,7 @@ endif()
 #===============================================================================
 
 # Sources
-set(UM2_SOURCES        
+set(UM2_SOURCES
     # common
     "src/common/Log.cpp"
     # mpact
@@ -132,23 +132,23 @@ set(UM2_SOURCES
     "src/gmsh/io.cpp"
     "src/gmsh/model.cpp"
     "src/gmsh/mesh.cpp"
-  #    # visualization
-  #    "src/visualization/Image2D.cpp"
+    # visualization
+    "src/visualization/Image2D.cpp"
     # api
     "src/um2.cpp"
     "src/um2c.cpp"
-  ) 
+  )
 
 add_library(um2 SHARED ${UM2_SOURCES})
 add_library(UM2::um2 ALIAS um2)
 
-target_include_directories(um2 
+target_include_directories(um2
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
 # Set C++ standard
-set(UM2_CXX_STANDARD 20) 
+set(UM2_CXX_STANDARD 20)
 set_target_properties(um2 PROPERTIES CXX_STANDARD ${UM2_CXX_STANDARD})
 
 # config.hpp
@@ -157,7 +157,7 @@ configure_file(
         "${PROJECT_SOURCE_DIR}/include/um2/config.hpp")
 
 #===============================================================================
-# Mandatory dependencies 
+# Mandatory dependencies
 #===============================================================================
 
 # HDF5
@@ -169,6 +169,11 @@ target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
 find_package(PugiXML REQUIRED)
 target_link_libraries(um2 PUBLIC "${PUGIXML_LIB}")
 target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
+
+# libpng
+find_package(PNG REQUIRED)
+target_link_libraries(um2 PUBLIC "${PNG_LIBRARIES}")
+target_include_directories(um2 SYSTEM PUBLIC "${PNG_INCLUDE_DIRS}")
 
 #===============================================================================
 # Optional dependencies
@@ -193,7 +198,7 @@ endif()
 # Gmsh
 if (UM2_USE_GMSH)
   find_package(Gmsh REQUIRED)
-  target_link_libraries(um2 PUBLIC "${GMSH_LIB}") 
+  target_link_libraries(um2 PUBLIC "${GMSH_LIB}")
   target_include_directories(um2 SYSTEM PUBLIC "${GMSH_INC}")
 endif()
 
@@ -215,7 +220,7 @@ if (UM2_USE_CUDA)
   enable_language(CUDA)
 
   # Set CUDA standard to the same as the C++ standard
-  set(UM2_CUDA_STANDARD ${UM2_CXX_STANDARD}) 
+  set(UM2_CUDA_STANDARD ${UM2_CXX_STANDARD})
 
   # Macro for treating the given target as CUDA code
   macro(set_cuda_properties CUDA_TARGET)
@@ -251,7 +256,7 @@ if (!UM2_USE_CUDA)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined")
 endif()
 
-# Set compiler-specific warning flags 
+# Set compiler-specific warning flags
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   include(cmake/clang-cxx-flags.cmake)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UM2_CLANG_FLAGS}")
@@ -263,9 +268,9 @@ endif()
 # If CUDA is enabled, pass the CXX flags via -Xcompiler
 if (UM2_USE_CUDA)
   set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler \"${CMAKE_CXX_FLAGS}\"")
-  set(CMAKE_CUDA_FLAGS_RELEASE 
+  set(CMAKE_CUDA_FLAGS_RELEASE
     "${CMAKE_CUDA_FLAGS_RELEASE} -Xcompiler \"${CMAKE_CXX_FLAGS_RELEASE}\"")
-  set(CMAKE_CUDA_FLAGS_DEBUG 
+  set(CMAKE_CUDA_FLAGS_DEBUG
     "${CMAKE_CUDA_FLAGS_DEBUG} -Xcompiler \"${CMAKE_CXX_FLAGS_DEBUG}\"")
   # If OpenMP is enabled, -fopenmp is passed via -Xcompiler
   if (UM2_USE_OPENMP)
@@ -360,7 +365,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # For IDE users
 # Install the library
 install(TARGETS um2
         EXPORT um2-targets
-        RUNTIME DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin 
+        RUNTIME DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin
         LIBRARY DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lib
         ARCHIVE DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lib)
 install(DIRECTORY include/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include)

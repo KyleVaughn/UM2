@@ -6,6 +6,7 @@ spack:
     - tbb
     - gmsh
     - pugixml
+    - libpng
     - benchmark
     - cuda@12
   view: true

@@ -5,6 +5,7 @@ spack:
     - gmsh
     - tbb
     - pugixml
+    - libpng
   view: true
   concretizer:
     unify: true

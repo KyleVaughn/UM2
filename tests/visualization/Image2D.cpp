@@ -24,6 +24,26 @@ TEST_CASE(writePPM)
 }
 
 template <typename T>
+TEST_CASE(writePNG)
+{
+  um2::Image2D<T> image;
+  image.grid.num_cells[0] = 10;
+  image.grid.num_cells[1] = 10;
+  image.children.resize(100);
+  image.getChild(0, 0) = um2::Color("red");
+  image.getChild(9, 0) = um2::Color("green");
+  image.getChild(0, 9) = um2::Color("blue");
+  image.getChild(9, 9) = um2::Color("white");
+  image.write("test.png");
+  {
+    std::ifstream file("test.png");
+    ASSERT(file.is_open());
+  }
+  int const stat = std::remove("test.png");
+  ASSERT(stat == 0);
+}
+
+template <typename T>
 TEST_CASE(rasterizePoint)
 {
   um2::Image2D<T> image;
@@ -36,28 +56,34 @@ TEST_CASE(rasterizePoint)
   image.children.resize(100 * 100);
 
   T r = 10;
-  image.rasterize(um2::Point2<T>(0, 0), r, um2::Color("red"));
+  image.rasterizeAsDisk(um2::Point2<T>(0, 0), r, um2::Color("red"));
   r = 5;
-  image.rasterize(um2::Point2<T>(99, 0), r, um2::Color("green"));
+  image.rasterizeAsDisk(um2::Point2<T>(99, 0), r, um2::Color("green"));
   r = 20;
-  image.rasterize(um2::Point2<T>(0, 99), r, um2::Color("blue"));
+  image.rasterizeAsDisk(um2::Point2<T>(0, 99), r, um2::Color("blue"));
   r = 30;
-  image.rasterize(um2::Point2<T>(99, 99), r, um2::Color("white"));
-  r = 2;
-  image.rasterize(um2::Point2<T>(50, 50), r, um2::Color("yellow"));
-  image.write("test.ppm");
+  image.rasterizeAsDisk(um2::Point2<T>(99, 99), r, um2::Color("white"));
+  image.rasterize(um2::Point2<T>(50, 50), um2::Color("yellow"));
+  image.write("test.png");
   {
-    std::ifstream file("test.ppm");
+    std::ifstream file("test.png");
     ASSERT(file.is_open());
   }
-  int const stat = std::remove("test.ppm");
+  int const stat = std::remove("test.png");
   ASSERT(stat == 0);
+}
+
+template <typename T>
+TEST_CASE(rasterizeLine)
+{
+
 }
 
 template <typename T>
 TEST_SUITE(Image2D)
 {
   TEST((writePPM<T>));
+  TEST((writePNG<T>));
   TEST((rasterizePoint<T>));
 }
 

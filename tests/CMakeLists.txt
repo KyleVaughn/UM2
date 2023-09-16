@@ -96,12 +96,12 @@ add_um2_test(./gmsh/base_gmsh_api.cpp)
 add_um2_test(./gmsh/gmsh_io.cpp)
 add_um2_test(./gmsh/gmsh_model.cpp)
 
-###==============================================================================
-### visualization
-###==============================================================================
-##add_um2_test(./visualization/Image2D.cpp)
-##
-###
+#==============================================================================
+# visualization
+#==============================================================================
+
+add_um2_test(./visualization/Image2D.cpp)
+
 ###if (UM2_ENABLE_VIS)
 ###  add_um2_test(shader ./visualization/shader.cpp)
 ###endif()

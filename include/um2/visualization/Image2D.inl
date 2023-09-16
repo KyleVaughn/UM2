@@ -2,42 +2,48 @@ namespace um2
 {
 
 void
-writePPM(Vector<Color> const & buffer, Size nx, Size ny, String const & filename);
+writePPM(Vector<Color> const & buffer, Size nx, Size ny, std::string const & filename);
+
+// PNG functions are not const, so we have to pass a copy of the buffer
+void
+writePNG(Vector<Color> buffer, Size nx, Size ny, std::string const & filename);
+
+//==============================================================================
+// write
+//==============================================================================
 
 template <std::floating_point T>
-template <uint64_t N>
 void
-Image2D<T>::write(char const (&filename)[N]) const
+Image2D<T>::write(std::string const & filename) const
 {
-  write(String(filename));
-}
-
-template <std::floating_point T>
-void
-Image2D<T>::write(String const & filename) const
-{
-  if (filename.ends_with("ppm")) {
+  if (filename.ends_with("png")) {
+    writePNG(this->children, this->grid.num_cells[0], this->grid.num_cells[1], filename);
+  } else if (filename.ends_with("ppm")) {
     writePPM(this->children, this->grid.num_cells[0], this->grid.num_cells[1], filename);
-  }
-  //  else if (filename.ends_with("png"))
-  //  {
-  //    write_png(filename);
-  //  }
-  else {
+  } else {
     Log::error("Image2D::write(): unknown file extension");
     exit(EXIT_FAILURE);
   }
 }
 
+//==============================================================================
+// rasterize point
+//==============================================================================
+
+// Assumes p is in the image
 template <std::floating_point T>
 void
-Image2D<T>::rasterize(Point2<T> const & p, T const r, Color const c)
+Image2D<T>::rasterize(Point2<T> const & p, Color const c)
 {
-  if (p[0] < this->xMin() || p[0] >= this->xMax() || p[1] < this->yMin() ||
-      p[1] >= this->yMax()) {
-    return;
-  }
+  auto const idx = this->getCellIndexContaining(p);
+  this->getChild(idx[0], idx[1]) = c;
+}
 
+// Assumes p is in the image, but some of the disk may not be
+template <std::floating_point T>
+void
+Image2D<T>::rasterizeAsDisk(Point2<T> const & p, T const r, Color const c)
+{
   // Get the bounding box of the circle
   AxisAlignedBox2<T> const bb({p[0] - r, p[1] - r}, {p[0] + r, p[1] + r});
   auto const range = this->getCellIndicesIntersecting(bb);
@@ -64,5 +70,19 @@ Image2D<T>::rasterize(Point2<T> const & p, T const r, Color const c)
   auto const idx = this->getCellIndexContaining(p);
   this->getChild(idx[0], idx[1]) = c;
 }
+
+//==============================================================================
+// rasterize line segment
+//==============================================================================
+
+//// Assumes some part of the line segment is in the image
+//template <std::floating_point T>
+//void
+//Image2D<T>::rasterize(LineSegment2<T> const & line, Color const c)
+//{
+//  // We want to iterate over
+//  T const dx = line.p1[0] - line.p0[0]; // x1 - x0
+//  T const dy = line.p1[1] - line.p0[1]; // y1 - y0
+//  T const d = std::sqrt(dx * dx + dy * dy); // length of line segment
 
 } // namespace um2
