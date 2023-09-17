@@ -75,14 +75,67 @@ Image2D<T>::rasterizeAsDisk(Point2<T> const & p, T const r, Color const c)
 // rasterize line segment
 //==============================================================================
 
-//// Assumes some part of the line segment is in the image
-//template <std::floating_point T>
-//void
-//Image2D<T>::rasterize(LineSegment2<T> const & line, Color const c)
-//{
-//  // We want to iterate over
-//  T const dx = line.p1[0] - line.p0[0]; // x1 - x0
-//  T const dy = line.p1[1] - line.p0[1]; // y1 - y0
-//  T const d = std::sqrt(dx * dx + dy * dy); // length of line segment
+// Assumes the line is in the image
+template <std::floating_point T>
+void
+Image2D<T>::rasterize(LineSegment2<T> const & l, Color const c)
+{
 
+  // Handle vertical and horizontal lines separately
+
+  // Want to color any pixel that the line segment intersects.
+  // L(r) = P0 + r(P1 - P0), r in [0, 1]
+  // We can find the set of r that intersect the x and y boundaries of each pixel.
+  // Then, we can walk through the set of rx and ry in order, and color the pixel.
+  // i * spacing + origin_x = x0 + rx * (x1 - x0)
+  // i0 = start index (not necessarily min)
+  // i0 = floor((x0 - origin_x) / spacing)
+  // i1 = end index (not necessarily max)
+  // i1 = floor((x1 - origin_x) / spacing)
+  // Note for an image dx == dy == spacing
+
+  T const spacing = this->dx();
+  T const inv_spacing = static_cast<T>(1) / spacing;
+  auto p0_shifted = l[0] - this->grid.minima;
+  auto p1_shifted = l[1] - this->grid.minima;
+  Vec2<T> p01 = p1_shifted - p0_shifted;
+  if (p01[0] < 0) {
+    um2::swap(p0_shifted, p1_shifted);
+    p01 *= -1;
+  }
+  // Prevent division by zero
+  if (um2::abs(p01[0]) < epsilonDistance<T>()) {
+    p01[0] = epsilonDistance<T>();
+  }
+  if (um2::abs(p01[1]) < epsilonDistance<T>()) {
+    p01[1] = epsilonDistance<T>();
+  }
+  // Get the start i and j indices
+  auto i = static_cast<Size>(um2::floor(p0_shifted[0] * inv_spacing));
+  auto j = static_cast<Size>(um2::floor(p0_shifted[1] * inv_spacing));
+  this->getChild(i, j) = c;
+  // Get the end i and j indices
+  auto const iend = static_cast<Size>(um2::floor(p1_shifted[0] * inv_spacing));
+  auto const jend = static_cast<Size>(um2::floor(p1_shifted[1] * inv_spacing));
+  this->getChild(iend, jend) = c;
+  Size const di = i < iend ? 1 : -1;
+  Size const dj = j < jend ? 1 : -1;
+  Vec2<T> const inv_p01(static_cast<T>(1) / p01[0], static_cast<T>(1) / p01[1]);
+  T const drx = static_cast<T>(di) * spacing * inv_p01[0];
+  T const dry = static_cast<T>(dj) * spacing * inv_p01[1];
+  // Get the first valid rx and ry
+  T rx = (spacing * static_cast<T>(i) - p0_shifted[0]) * inv_p01[0];
+  T ry = (spacing * static_cast<T>(j) - p0_shifted[1]) * inv_p01[1];
+  // Effectively set_intersection
+  while (i != iend || j != jend) {
+    this->getChild(i, j) = c;
+    if (um2::abs(rx + drx) < um2::abs(ry + dry)) {
+      i += di;
+      rx += drx;
+    } else {
+      j += dj;
+      ry += dry;
+    }
+  }
+}
 } // namespace um2

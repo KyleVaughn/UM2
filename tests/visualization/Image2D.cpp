@@ -76,7 +76,35 @@ TEST_CASE(rasterizePoint)
 template <typename T>
 TEST_CASE(rasterizeLine)
 {
+  um2::Image2D<T> image;
+  image.grid.minima[0] = static_cast<T>(0);
+  image.grid.minima[1] = static_cast<T>(0);
+  image.grid.spacing[0] = static_cast<T>(1);
+  image.grid.spacing[1] = static_cast<T>(1);
+  image.grid.num_cells[0] = 4;
+  image.grid.num_cells[1] = 4;
+  image.children.resize(16);
+  for (Size i = 0; i < 16; ++i) {
+    image.children[i] = um2::Color("red");
+  }
 
+  um2::Point2<T> const p0(static_cast<T>(0.5), static_cast<T>(0.5));
+  um2::Point2<T> const p1(static_cast<T>(0.5), static_cast<T>(3.5));
+  um2::LineSegment2<T> const lf(p0, p1);
+  image.rasterize(lf);
+  image.write("lf.png");
+  for (Size i = 0; i < 16; ++i) {
+    image.children[i] = um2::Color("red");
+  }
+  um2::LineSegment2<T> const lb(p1, p0);
+  image.rasterize(lb);
+  image.write("lb.png");
+  {
+    std::ifstream file("lf.png");
+    ASSERT(file.is_open());
+  }
+  int const stat = std::remove("test.png");
+  ASSERT(stat == 0);
 }
 
 template <typename T>
@@ -85,6 +113,7 @@ TEST_SUITE(Image2D)
   TEST((writePPM<T>));
   TEST((writePNG<T>));
   TEST((rasterizePoint<T>));
+  TEST((rasterizeLine<T>));
 }
 
 auto

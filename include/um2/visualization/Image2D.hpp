@@ -10,6 +10,8 @@
 #include <cstdlib> // exit
 #include <string>  // string
 
+#include <iostream> // cout
+
 namespace um2
 {
 
@@ -61,8 +63,8 @@ struct Image2D : public RegularPartition<2, T, Color> {
   rasterizeAsDisk(Point2<T> const & p, T r = default_point_radius,
                   Color c = default_point_color);
 
-  //  void
-  //  rasterize(LineSegment2<T> const & l, Color c = default_line_color);
+  void
+  rasterize(LineSegment2<T> const & l, Color c = default_line_color);
 };
 
 } // namespace um2
