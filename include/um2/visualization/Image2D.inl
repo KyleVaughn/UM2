@@ -91,12 +91,10 @@ template <std::floating_point T>
 void
 Image2D<T>::rasterize(LineSegment2<T> const & l, Color const c)
 {
-
-  // Handle vertical and horizontal lines separately
-
-  // Want to color any pixel that the line segment intersects.
-  // L(r) = P0 + r(P1 - P0), r in [0, 1]
-  // We can find the set of r that intersect the x and y boundaries of each pixel.
+  // Color any pixel that the line segment intersects.
+  // This is different than many rasterization algorithms, which will omit a pixel that
+  // only has a single corner of the line segment in it. L(r) = P0 + r(P1 - P0), r in [0,
+  // 1] We can find the set of r that intersect the x and y boundaries of each pixel.
   // Then, we can walk through the set of rx and ry in order, and color the pixel.
   // i * spacing + origin_x = x0 + rx * (x1 - x0)
   // i0 = start index (not necessarily min)
@@ -136,16 +134,31 @@ Image2D<T>::rasterize(LineSegment2<T> const & l, Color const c)
   T const dry = static_cast<T>(dj) * spacing * inv_p01[1];
   T rx = (spacing * static_cast<T>(i) - p0_shifted[0]) * inv_p01[0];
   T ry = (spacing * static_cast<T>(j) - p0_shifted[1]) * inv_p01[1];
-  // Effectively set_intersection
-  while (i != iend || j != jend) {
+  if (rx < 0) {
+    rx += drx;
+  }
+  if (ry < 0) {
+    ry += dry;
+  }
+  // Effectively set_intersection of rx and ry
+  while (i != iend && j != jend) {
     this->getChild(i, j) = c;
-    if (um2::abs(rx + drx) < um2::abs(ry + dry)) {
+    if (rx < ry) {
       i += di;
       rx += drx;
     } else {
       j += dj;
       ry += dry;
     }
+  }
+  // Finish up the index that hasn't reached its end
+  while (i != iend) {
+    this->getChild(i, j) = c;
+    i += di;
+  }
+  while (j != jend) {
+    this->getChild(i, j) = c;
+    j += dj;
   }
 }
 } // namespace um2

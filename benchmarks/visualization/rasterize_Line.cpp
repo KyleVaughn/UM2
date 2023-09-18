@@ -8,7 +8,7 @@
 
 #define T float
 
-constexpr Size npoints = 1 << 16;
+constexpr Size nlines = 1 << 14;
 constexpr Size lo = 0;
 constexpr Size hi = 1024;
 
@@ -40,11 +40,15 @@ BENCHMARK_DEFINE_F(ImageFixture, rasterize)(benchmark::State & state)
 {
   Size const n = static_cast<Size>(state.range(0));
   um2::AxisAlignedBox2<T> const box({lo, lo}, {hi, hi});
-  auto const points = makeVectorOfRandomPoints(n, box);
+  auto const points = makeVectorOfRandomPoints(2 * n, box);
+  um2::Vector<um2::LineSegment2<T>> lines(n);
+  for (Size i = 0; i < n; ++i) {
+    lines[i] = um2::LineSegment2<T>(points[2 * i], points[2 * i + 1]);
+  }
   // NOLINTNEXTLINE
   for (auto s : state) {
-    for (auto const & p : points) {
-      image.rasterizeAsDisk(p, static_cast<T>(5));
+    for (auto const & l : lines) {
+      image.rasterize(l);
     }
     state.PauseTiming();
     image.clear();
@@ -54,6 +58,6 @@ BENCHMARK_DEFINE_F(ImageFixture, rasterize)(benchmark::State & state)
 
 BENCHMARK_REGISTER_F(ImageFixture, rasterize)
     ->RangeMultiplier(4)
-    ->Range(1024, npoints)
+    ->Range(1024, nlines)
     ->Unit(benchmark::kMicrosecond);
 BENCHMARK_MAIN();

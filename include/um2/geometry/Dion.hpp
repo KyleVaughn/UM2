@@ -10,6 +10,8 @@
 #  include <complex>
 #endif
 
+#include <iostream>
+
 //==============================================================================
 // DION
 //==============================================================================
@@ -203,6 +205,10 @@ intersect(LineSegment2<T> const & line, Ray2<T> const & ray) noexcept -> T;
 template <typename T>
 PURE HOSTDEV constexpr auto
 intersect(QuadraticSegment2<T> const & q, Ray2<T> const & ray) noexcept -> Vec2<T>;
+
+template <typename T>
+PURE HOSTDEV auto
+intersect(AxisAlignedBox2<T> const & box, Ray2<T> const & ray) noexcept -> Vec2<T>;
 
 } // namespace um2
 

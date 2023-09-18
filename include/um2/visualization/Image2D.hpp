@@ -10,8 +10,6 @@
 #include <cstdlib> // exit
 #include <string>  // string
 
-#include <iostream> // cout
-
 namespace um2
 {
 
