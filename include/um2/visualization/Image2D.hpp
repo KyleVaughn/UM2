@@ -54,6 +54,9 @@ struct Image2D : public RegularPartition<2, T, Color> {
   //============================================================================
 
   void
+  clear(Color c = Colors::Black);
+
+  void
   write(std::string const & filename) const;
 
   void

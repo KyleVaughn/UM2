@@ -102,9 +102,15 @@ TEST_CASE(rasterizeLine)
   {
     std::ifstream file("lf.png");
     ASSERT(file.is_open());
+    int const stat = std::remove("lf.png");
+    ASSERT(stat == 0);
   }
-  int const stat = std::remove("test.png");
-  ASSERT(stat == 0);
+  {
+    std::ifstream file("lb.png");
+    ASSERT(file.is_open());
+    int const stat = std::remove("lb.png");
+    ASSERT(stat == 0);
+  }
 }
 
 template <typename T>

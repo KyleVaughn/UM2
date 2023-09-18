@@ -1,6 +1,17 @@
 namespace um2
 {
 
+//==============================================================================
+// clear
+//==============================================================================
+
+template <std::floating_point T>
+void
+Image2D<T>::clear(Color const c)
+{
+  um2::fill(this->children.begin(), this->children.end(), c);
+}
+
 void
 writePPM(Vector<Color> const & buffer, Size nx, Size ny, std::string const & filename);
 
@@ -123,7 +134,6 @@ Image2D<T>::rasterize(LineSegment2<T> const & l, Color const c)
   Vec2<T> const inv_p01(static_cast<T>(1) / p01[0], static_cast<T>(1) / p01[1]);
   T const drx = static_cast<T>(di) * spacing * inv_p01[0];
   T const dry = static_cast<T>(dj) * spacing * inv_p01[1];
-  // Get the first valid rx and ry
   T rx = (spacing * static_cast<T>(i) - p0_shifted[0]) * inv_p01[0];
   T ry = (spacing * static_cast<T>(j) - p0_shifted[1]) * inv_p01[1];
   // Effectively set_intersection

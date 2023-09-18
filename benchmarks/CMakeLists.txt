@@ -33,3 +33,9 @@ file(COPY ${PROJECT_SOURCE_DIR}/benchmarks/mesh/mesh_files DESTINATION ${CMAKE_C
 
 add_um2_benchmark(./mesh/tri6_faceContaining.cpp)
 add_um2_benchmark(./mesh/MeshFile_getSubmesh.cpp)
+
+#===============================================================================
+# visualization
+#===============================================================================
+
+add_um2_benchmark(./visualization/rasterize_Point.cpp)
