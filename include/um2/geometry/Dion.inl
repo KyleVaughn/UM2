@@ -821,6 +821,27 @@ intersect(QuadraticSegment2<T> const & q, Ray2<T> const & ray) noexcept -> Vec2<
   return result;
 }
 
+template <typename T>
+PURE HOSTDEV auto
+intersect(AxisAlignedBox2<T> const & box, Ray2<T> const & ray) noexcept -> Vec2<T>
+{
+  // Inspired by https://tavianator.com/2022/ray_box_boundary.html
+  T tmin = static_cast<T>(0);
+  T tmax = infiniteDistance<T>();
+  T const inv_x = static_cast<T>(1) / ray.d[0];
+  T const inv_y = static_cast<T>(1) / ray.d[1];
+  T const t1x = (box.minima[0] - ray.o[0]) * inv_x;
+  T const t2x = (box.maxima[0] - ray.o[0]) * inv_x;
+  T const t1y = (box.minima[1] - ray.o[1]) * inv_y;
+  T const t2y = (box.maxima[1] - ray.o[1]) * inv_y;
+  tmin = um2::max(tmin, um2::min(t1x, t2x));
+  tmax = um2::min(tmax, um2::max(t1x, t2x));
+  tmin = um2::max(tmin, um2::min(t1y, t2y));
+  tmax = um2::min(tmax, um2::max(t1y, t2y));
+  return tmin <= tmax ? Vec2<T>(tmin, tmax)
+                      : Vec2<T>(infiniteDistance<T>(), infiniteDistance<T>());
+}
+
 //==============================================================================
 //==============================================================================
 // Member functions
