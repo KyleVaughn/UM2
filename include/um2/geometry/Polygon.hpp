@@ -1,6 +1,7 @@
 #pragma once
 
 #include <um2/geometry/Dion.hpp>
+#include <um2/geometry/modular_rays.hpp>
 
 //==============================================================================
 // Polygon

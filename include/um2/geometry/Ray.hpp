@@ -17,6 +17,13 @@ struct Ray {
 
   HOSTDEV constexpr Ray(Point<D, T> const & origin, Vec<D, T> const & direction) noexcept;
 
+  //============================================================================
+  // Methods
+  //============================================================================
+
+  HOSTDEV constexpr auto
+  operator()(T r) const noexcept -> Point<D, T>;
+
 }; // struct Ray
 
 //==============================================================================
