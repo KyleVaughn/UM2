@@ -3,6 +3,7 @@
 #include <um2/config.hpp>
 
 #include <cmath>
+#include <concepts>
 
 // Contains:
 //  abs
