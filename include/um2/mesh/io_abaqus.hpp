@@ -117,6 +117,7 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   for (size_t i = 0; i < num_elements; ++i) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
+    // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
     auto const ip1 = static_cast<I>(i + 1U);
     mesh.element_offsets[offsets_size + i] = offset_back + ip1 * offset;
 #pragma GCC diagnostic pop

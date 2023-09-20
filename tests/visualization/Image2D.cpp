@@ -18,7 +18,7 @@ TEST_CASE(writePPM)
   image.getChild(9, 9) = um2::Color("white");
   image.write("test.ppm");
   {
-    std::ifstream file("test.ppm");
+    std::ifstream const file("test.ppm");
     ASSERT(file.is_open());
   }
   int const stat = std::remove("test.ppm");
@@ -38,7 +38,7 @@ TEST_CASE(writePNG)
   image.getChild(9, 9) = um2::Color("white");
   image.write("test.png");
   {
-    std::ifstream file("test.png");
+    std::ifstream const file("test.png");
     ASSERT(file.is_open());
   }
   int const stat = std::remove("test.png");
@@ -68,7 +68,7 @@ TEST_CASE(rasterizePoint)
   image.rasterize(um2::Point2<T>(50, 50), um2::Color("yellow"));
   image.write("test.png");
   {
-    std::ifstream file("test.png");
+    std::ifstream const file("test.png");
     ASSERT(file.is_open());
   }
   int const stat = std::remove("test.png");
