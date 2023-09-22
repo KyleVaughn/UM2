@@ -40,3 +40,4 @@ add_um2_benchmark(./mesh/MeshFile_getSubmesh.cpp)
 
 add_um2_benchmark(./visualization/rasterize_Point.cpp)
 add_um2_benchmark(./visualization/rasterize_Line.cpp)
+add_um2_benchmark(./visualization/rasterize_Polygon.cpp)

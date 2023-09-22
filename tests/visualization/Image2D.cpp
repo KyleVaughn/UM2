@@ -190,12 +190,81 @@ TEST_CASE(rasterizeLine)
 }
 
 template <typename T>
+TEST_CASE(rasterizePlanarPolygon)
+{
+  um2::Image2D<T> image;
+
+  um2::Triangle2<T> tri1;
+  um2::Triangle2<T> tri2;
+  um2::Triangle2<T> tri3;
+  um2::Quadrilateral2<T> quad1;
+  um2::QuadraticTriangle2<T> quadtri1;
+  um2::QuadraticTriangle2<T> quadtri2;
+
+  for (Size i = 0; i < 3; ++i) {
+    for (Size j = 0; j < 2; ++j) {
+      tri1[i][j] = static_cast<T>(0);
+      tri2[i][j] = static_cast<T>(0);
+      tri3[i][j] = static_cast<T>(0);
+    }
+  }
+  tri1[1][0] = static_cast<T>(10);
+  tri1[2][1] = static_cast<T>(10);
+
+  tri2[1][0] = static_cast<T>(10);
+  tri2[2][0] = static_cast<T>(5);
+  tri2[2][1] = static_cast<T>(5);
+
+  tri3[0] = um2::Point2<T>(10,30);
+  tri3[1] = um2::Point2<T>(5,2);
+  tri3[2] = um2::Point2<T>(20,15);
+
+  quad1[0] = um2::Point2<T>(20,50);
+  quad1[1] = um2::Point2<T>(40,40);
+  quad1[2] = um2::Point2<T>(30,60);
+  quad1[3] = um2::Point2<T>(20,60);
+
+  
+  quadtri1[0] = um2::Point2<T>(60,90);
+  quadtri1[1] = um2::Point2<T>(90,60);
+  quadtri1[2] = um2::Point2<T>(90,90);
+  quadtri1[3] = um2::Point2<T>(70,70);
+  quadtri1[4] = um2::Point2<T>(90,70);
+  quadtri1[5] = um2::Point2<T>(70,90);
+
+  
+  quadtri2[0] = um2::Point2<T>(60,40);
+  quadtri2[1] = um2::Point2<T>(90,10);
+  quadtri2[2] = um2::Point2<T>(90,40);
+  quadtri2[3] = um2::Point2<T>(78,20);
+  quadtri2[4] = um2::Point2<T>(86,20);
+  quadtri2[5] = um2::Point2<T>(75,45);
+
+  image.grid.minima[0] = static_cast<T>(0);
+  image.grid.minima[1] = static_cast<T>(0);
+  image.grid.spacing[0] = static_cast<T>(0.1);
+  image.grid.spacing[1] = static_cast<T>(0.1);
+  image.grid.num_cells[0] = 1000;
+  image.grid.num_cells[1] = 1000;
+  image.children.resize(1000 * 1000);
+
+  image.rasterize(tri1);
+  image.rasterize(tri2, um2::Color("yellow"));
+  image.rasterize(tri3, um2::Color("red"));
+  image.rasterize(quad1, um2::Color("green"));
+  image.rasterize(quadtri1, um2::Color("orange"));
+  image.rasterize(quadtri2, um2::Color("purple"));
+  image.write("test.png");
+}
+
+template <typename T>
 TEST_SUITE(Image2D)
 {
   TEST((writePPM<T>));
   TEST((writePNG<T>));
   TEST((rasterizePoint<T>));
   TEST((rasterizeLine<T>));
+  TEST((rasterizePlanarPolygon<T>));
 }
 
 auto

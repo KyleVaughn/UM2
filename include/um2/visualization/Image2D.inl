@@ -70,8 +70,8 @@ Image2D<T>::rasterizeAsDisk(Point2<T> const & p, T const r, Color const c)
     // pixels between ixmin and ixmax. That could be faster than this approach, especially
     // for large radii.
     for (Size ix = ixmin; ix <= ixmax; ++ix) {
-      Point2<T> const centroid = this->getCellCentroid(ix, iy);
-      if (p.distanceTo(centroid) <= r) {
+      Point2<T> const center = this->getCellCentroid(ix, iy);
+      if (p.distanceTo(center) <= r) {
         this->getChild(ix, iy) = c;
       }
     }
@@ -161,4 +161,26 @@ Image2D<T>::rasterize(LineSegment2<T> const & l, Color const c)
     j += dj;
   }
 }
+
+//==============================================================================
+// rasterize polygon
+//==============================================================================
+template <std::floating_point T>
+template <Size P, Size N> 
+void Image2D<T>::rasterize(PlanarPolygon<P, N, T> const & face, Color c){
+  AxisAlignedBox2<T> const aabb = face.boundingBox();
+  auto const indices = this->getCellIndicesIntersecting(aabb);
+  Size const ixmin = indices[0];
+  Size const iymin = indices[1];
+  Size const ixmax = indices[2];
+  Size const iymax = indices[3];
+  for (Size iy = iymin; iy <= iymax; ++iy) {
+    for (Size ix = ixmin; ix <= ixmax; ++ix) {
+      if(face.contains(this->getCellCentroid(ix, iy))){
+        this->getChild(ix, iy) = c;
+      }
+    }
+  }
+}
+
 } // namespace um2

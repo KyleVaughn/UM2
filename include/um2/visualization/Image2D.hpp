@@ -4,7 +4,7 @@
 
 #include <um2/common/Color.hpp>
 #include <um2/common/Log.hpp>
-#include <um2/geometry/Dion.hpp>
+#include <um2/geometry/Polygon.hpp>
 #include <um2/mesh/RegularPartition.hpp>
 
 #include <cstdlib> // exit
@@ -45,6 +45,11 @@ struct Image2D : public RegularPartition<2, T, Color> {
   static constexpr T default_line_thickness = static_cast<T>(0.01);
   static constexpr Colors default_line_color = Colors::White;
 
+  //============================================================================
+  // Default traingle rasterization parameters
+  //============================================================================
+
+  static constexpr Colors default_face_color = Colors::White;
   constexpr Image2D() noexcept = default;
 
   //============================================================================
@@ -66,6 +71,13 @@ struct Image2D : public RegularPartition<2, T, Color> {
 
   void
   rasterize(LineSegment2<T> const & l, Color c = default_line_color);
+
+  template <Size P, Size N>
+
+  void rasterize(PlanarPolygon<P, N, T> const & face, Color c = default_face_color);
+
+  // void
+  // rasterize(Traingle2<T> const & tri, Color c = default_face_color);
 };
 
 } // namespace um2

@@ -4,7 +4,6 @@
 
 #if UM2_USE_TBB
 #  include <execution>
-#endif
 
 namespace um2::parallel
 {
@@ -48,3 +47,4 @@ boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>
 }
 
 } // namespace um2::parallel
+#endif
