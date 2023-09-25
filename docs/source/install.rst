@@ -8,13 +8,29 @@ Installation and Configuration
    :local:
    :depth: 1
 
+.. _cloning_the_repository:
+
+--------------------------
+Cloning the Repository
+--------------------------
+
+The first step to building UM\ :sup:`2` \ is to clone the repository. 
+The UM\ :sup:`2` \ source code is hosted on `GitHub <https://github.com/KyleVaughn/UM2>_`. 
+Assuming you have git_ installed, to clone the repository, run the following command:
+
+.. code-block:: bash
+
+    git clone https://github.com/KyleVaughn/UM2.git
+
+.. _git: https://git-scm.com/
+
 .. _prerequisites:
 
 ----------------------------------
 Prerequisites
 ----------------------------------
 
-If it is your first time using UM\ :sup:`2` \ , we recommend that you install the
+If it is your first time using UM\ :sup:`2` \, we recommend that you install the
 prerequisites using the Spack_ instructions below.
 
 UM\ :sup:`2` \ requires the following software to be installed:
@@ -123,42 +139,6 @@ If you are a developer, you will also need to install the following:
 Scripts to perform these steps are available in the ``UM2/dependencies/apt`` directory of the
 git repository.
 
-.. _installing_prerequisites_with_brew:
-
-----------------------------------
-Installing Prerequisites with brew
-----------------------------------
-
-.. admonition:: MacOS
-   :class: note
-
-  Support for MacOS is new and this section may be incomplete. Please report any issues.
-  Suggestions for improvement are also welcome.
-
-On desktop machines running MacOS, the prerequisites can
-be installed with the following commands:
-
-.. code-block:: bash
-
-    brew install gcc@12 cmake hdf5 pugixml tbb libpng
-
-    # In a directory outside of UM2
-    mkdir um2_dependencies && cd um2_dependencies
-    wget https://gmsh.info/bin/macOS/gmsh-4.11.1-MacOSARM-sdk.tgz # For newer Macs
-    # or for older Macs
-    # wget https://gmsh.info/bin/macOS/gmsh-4.11.1-MacOSX-sdk.tgz
-    tar -xzvf gmsh-4.11.1-*
-
-    # Add GMSH_ROOT to your bashrc or zshrc so cmake can find gmsh. PWD will need to be updated
-    # with the full path to the gmsh directory.
-    echo "export GMSH_ROOT=${PWD}/gmsh-4.11.1-MacOSARM-sdk" >> ~/.zshrc && source ~/.zshrc
-
-If you are a developer, you will also need to install the following:
-
-.. code-block:: bash
-
-    brew install clang-format@15 clang-tidy@15 cppcheck
-
 .. _installing_prerequisites_with_spack:
 
 ----------------------------------
@@ -180,6 +160,7 @@ To install Spack:
 
 .. code-block:: bash
 
+    # In a directory outside of UM2
     git clone --depth=100 --branch=releases/v0.20 https://github.com/spack/spack.git
 
     # We will add the following line to your bashrc (or zshrc) so that spack is available
@@ -189,25 +170,40 @@ To install Spack:
     # Verify that spack is installed correctly
     spack --version # Expect 0.20
 
-We will now install the prerequisites with Spack. First, we will find the compilers
-available on your machine:
+If you do not have C, C++, and Fortran compilers available,
+install then now, or you will need to modify the compilers.yaml file created in the next step.
+Assuming you're using gcc, to verify that you have the necessary compilers, run the following 
+commands:
+
+.. code-block:: bash
+
+    gcc --version
+    g++ --version
+    gfortran --version
+
+We will now install the prerequisites with Spack. First, we need to make Spack aware of the
+compilers available on your system. To do this, run the following command:
 
 .. code-block:: bash
 
     spack compiler find
 
-There are a number of pre-defined environments for Spack in ``UM2/dependencies/spack``,
-depending on whether you are a user or a developer and depending on whether you're on 
-a desktop machine or a cluster.
-These environments contain the dependencies for UM2 and are defined in yaml files.
-Pick the appropriate yaml file in ``UM2/dependencies/spack`` for use in the next step.
-Then:
+You should have previously cloned the UM2 repository. If not, do so now:
 
 .. code-block:: bash
 
-    spack env create um2 <path/to/yaml/file>
-    spack env activate -p um2
+    git clone https://github.com/KyleVaughn/UM2.git
 
+There are a number of pre-defined environments files for Spack in ``UM2/dependencies/spack``.
+These environments contain the dependencies for UM2 and are defined in yaml files.
+Pick the appropriate yaml file in ``UM2/dependencies/spack`` for use in the next step, then:
+
+.. code-block:: bash
+
+    # Assuming you're a user on desktop machine
+    cd UM2/dependencies/spack/user
+    spack env create um2 desktop.yaml 
+    spack env activate -p um2
 
 We will now tell spack to resolve the dependencies and install them. Please read the 
 potential issues below before continuing.
@@ -227,31 +223,29 @@ potential issues below before continuing.
       ``spack install`` command (``spack install -j 4``).
 
 
+Finally, we will install the dependencies:
+
 .. code-block:: bash
 
     spack spec # This may take a minute or two
-    spack install # This will take a while (15 mins to 2 hours, depending on your machine)
+    spack install # This will take a while (30 mins to 2 hours, depending on your machine)
 
 
 .. admonition:: Stop!
    :class: error
 
-    Before you install, ther
+    Check that the dependencies were installed correctly by running the following commands:
 
-    spack install
+    .. code-block:: bash
 
-If you're using a yaml file that includes the fltk variant (+fltk), you may need to add:
-
-.. code-block:: yaml
-
-   packages:
-    opengl:
-      buildable: false
-      externals:
-      - spec: opengl@<OpenGL version on your machine>
-        prefix: <path to opengl, such as /usr/x86_64-linux-gnu>
-
-in ``~/.spack/packages.yaml``.
+        g++    --version                # Expect 12.X.X
+        ldconfig -p | grep libhdf5      # Expect non-empty output
+        ldconfig -p | grep libpugixml   # Expect non-empty output
+        ldconfig -p | grep libtbb       # Expect non-empty output
+        ldconfig -p | grep libGLU       # Expect non-empty output
+        ldconfig -p | grep libpng       # Expect non-empty output
+        ldconfig -p | grep libgmsh      # Expect non-empty output
+        cmake --version                 # Expect 3.26+
 
 .. _Spack: https://spack.readthedocs.io/en/latest/
 
@@ -261,9 +255,8 @@ in ``~/.spack/packages.yaml``.
 Building
 ----------------------------------
 
-If you installed dependencies with apt, you will need to have defined the ``GMSH_ROOT``
-environment variable.
-To build UM\ :sup:`2` \ :
+
+To build UM\ :sup:`2` \ with the default options, run the following commands:
 
 .. code-block:: bash
 
@@ -275,6 +268,20 @@ To build UM\ :sup:`2` \ :
     ctest
     make install
 
+In the event that you used apt to install the dependencies, you may need to specify the
+compiler to use during the configuration process, e.g. ``CXX=g++-12 cmake ..``.
+
+.. admonition:: CMake Options 
+   :class: note 
+
+    If you want to change the default options, you can do so by passing the appropriate
+    flags to cmake, e.g. ``cmake -DUM2_USE_OPENMP=OFF ..``. The available options are
+    described below.
+
+    Also, note that when specifying a new compiler or changing cmake options once you
+    have already configured, you may need to remove the ``build`` directory and start over
+    for the changes to take effect.
+
 
 .. _configuring_um2:
 
@@ -282,14 +289,21 @@ To build UM\ :sup:`2` \ :
 Configuring
 ----------------------------------
 
-The following options are available for configuration. There are additional options,
-but the other options are either for developer use or are under development.
+The following options are available for configuration. 
+This list is not exhaustive, but many of the other options are for 
+developer use or are under development.
+
+UM2_USE_TBB          
+  Enable shared-memory parallelism with Intel TBB. (Default: ON) 
 
 UM2_USE_OPENMP
   Enable shared-memory parallelism with OpenMP. (Default: ON)
 
 UM2_USE_GMSH
   Enable Gmsh for mesh generation. (Default: ON)
+
+UM2_USE_PNG
+  Enable PNG support. (Default: OFF)
 
 UM2_ENABLE_INT64
   Set the integer type to 64-bit. (Default: OFF)
@@ -302,6 +316,9 @@ UM2_ENABLE_FASTMATH
 
 UM2_BUILD_TESTS
   Build tests. (Default: ON)
+
+UM2_BUILD_TUTORIAL
+  Build tutorial. (Default: ON)
 
 UM2_BUILD_EXAMPLES
   Build examples. (Default: OFF)
