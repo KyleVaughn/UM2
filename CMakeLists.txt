@@ -7,7 +7,7 @@ project(
   LANGUAGES CXX)
 
 # Allow user to specify <project>_ROOT variables
-cmake_policy(SET CMP0074 NEW)
+cmake_policy(SET CMP0144 NEW)
 
 # Set module path
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)

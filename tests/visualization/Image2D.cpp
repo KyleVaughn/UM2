@@ -25,6 +25,7 @@ TEST_CASE(writePPM)
   ASSERT(stat == 0);
 }
 
+#if UM2_USE_PNG
 template <typename T>
 TEST_CASE(writePNG)
 {
@@ -44,6 +45,7 @@ TEST_CASE(writePNG)
   int const stat = std::remove("test.png");
   ASSERT(stat == 0);
 }
+#endif
 
 template <typename T>
 TEST_CASE(rasterizePoint)
@@ -66,12 +68,12 @@ TEST_CASE(rasterizePoint)
   r = 30;
   image.rasterizeAsDisk(um2::Point2<T>(99, 99), r, um2::Color("white"));
   image.rasterize(um2::Point2<T>(50, 50), um2::Color("yellow"));
-  image.write("test.png");
+  image.write("test.ppm");
   {
-    std::ifstream const file("test.png");
+    std::ifstream const file("test.ppm");
     ASSERT(file.is_open());
   }
-  int const stat = std::remove("test.png");
+  int const stat = std::remove("test.ppm");
   ASSERT(stat == 0);
 }
 
@@ -132,8 +134,8 @@ TEST_CASE(rasterizeLine)
       if (image.children[j] != image_ref.children[j]) {
         std::cerr << "Error in rasterizing line (" << l[0][0] << ", " << l[0][1]
                   << ") to (" << l[1][0] << ", " << l[1][1] << ")\n";
-        image.write("line_rasterization_" + std::to_string(i) + ".png");
-        image_ref.write("line_rasterization_ref_" + std::to_string(i) + ".png");
+        image.write("line_rasterization_" + std::to_string(i) + ".ppm");
+        image_ref.write("line_rasterization_ref_" + std::to_string(i) + ".ppm");
         ++num_errors;
         break;
       }
@@ -177,8 +179,8 @@ TEST_CASE(rasterizeLine)
       if (image.children[j] != image_ref.children[j]) {
         std::cerr << "Error in rasterizing line (" << p0[0] << ", " << p0[1] << ") to ("
                   << p1[0] << ", " << p1[1] << ")\n";
-        image.write("line_rasterization_" + std::to_string(i) + ".png");
-        image_ref.write("line_rasterization_ref_" + std::to_string(i) + ".png");
+        image.write("line_rasterization_" + std::to_string(i) + ".ppm");
+        image_ref.write("line_rasterization_ref_" + std::to_string(i) + ".ppm");
         ++num_errors;
         break;
       }
@@ -193,7 +195,9 @@ template <typename T>
 TEST_SUITE(Image2D)
 {
   TEST((writePPM<T>));
+#if UM2_USE_PNG
   TEST((writePNG<T>));
+#endif
   TEST((rasterizePoint<T>));
   TEST((rasterizeLine<T>));
 }
