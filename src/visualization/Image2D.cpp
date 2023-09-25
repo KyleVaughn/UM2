@@ -3,7 +3,9 @@
 #include <bit>     // std::bit_cast
 #include <fstream> // std::ofstream
 
-#include <png.h>
+#if UM2_USE_PNG
+# include <png.h>
+#endif
 
 namespace um2
 {
@@ -27,6 +29,7 @@ writePPM(Vector<Color> const & buffer, Size nx, Size ny, std::string const & fil
   ofs.close();
 }
 
+#if UM2_USE_PNG
 // We don't care about the return value of fclose since we the program will exit anyway
 // NOLINTBEGIN(cert-err33-c) justified above
 void
@@ -96,5 +99,6 @@ writePNG(Vector<Color> buffer, Size nx, Size ny, std::string const & filename)
   fclose(fp);
 }
 // NOLINTEND(cert-err33-c)
+#endif
 
 } // namespace um2

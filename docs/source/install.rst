@@ -14,10 +14,15 @@ Installation and Configuration
 Prerequisites
 ----------------------------------
 
+If it is your first time using UM\ :sup:`2` \ , we recommend that you install the
+prerequisites using the Spack_ instructions below.
+
+UM\ :sup:`2` \ requires the following software to be installed:
+
 .. admonition:: Required
    :class: error
 
-    * A C/C++ compiler (gcc_-12+ or clang_-15+)
+    * A C/C++ compiler (gcc_ version 12+ or clang_ version 15+)
 
     * CMake_ cross-platform build system
 
@@ -25,15 +30,24 @@ Prerequisites
 
     * PugiXML_ library for XML data
 
+Additional software is required for some features:
+
 .. admonition:: Optional
    :class: note
 
     * TBB_ for shared-memory parallelism in the C++ standard library
 
+      This is currently the primary method of parallelism in UM\ :sup:`2` \ . If you have
+      to pick between TBB and OpenMP, we recommend TBB.
+
+    * OpenMP_ for additional shared-memory parallelism
+
     * Gmsh_ for mesh generation
 
       UM\ :sup:`2` \ uses Gmsh for CAD model mesh generation. Meshes can still be imported, 
-      exported, and manipulated without Gmsh, but Gmsh is required for mesh generation. 
+      exported, and manipulated without Gmsh, but Gmsh is required for most mesh generation. 
+
+    * libpng_ for exporting PNG images
 
 .. _gcc: https://gcc.gnu.org/
 .. _clang: https://clang.llvm.org/
@@ -42,8 +56,9 @@ Prerequisites
 .. _XDMF: https://www.xdmf.org/index.php/XDMF_Model_and_Format
 .. _PugiXML: https://pugixml.org/
 .. _TBB: https://github.com/oneapi-src/oneTBB 
+.. _OpenMP: https://www.openmp.org/
 .. _Gmsh: https://gmsh.info/
-
+.. _libpng: http://www.libpng.org/pub/png/libpng.html
 
 .. _installing_prerequisites_with_apt:
 
@@ -51,23 +66,60 @@ Prerequisites
 Installing Prerequisites with apt
 ----------------------------------
 
-On desktop machines running Debian-based Linux distributions, the prerequisites can 
-be installed with the following commands:
+On desktop machines running Debian-based Linux distributions, if you have admin privileges,
+the prerequisites can be installed with the following commands:
 
 .. code-block:: bash
 
     sudo apt -y update
-    sudo apt install -y g++-12 cmake libhdf5-dev libpugixml-dev  libtbb-dev libglu1-mesa
+    sudo apt install -y g++-12 libhdf5-dev libpugixml-dev  libtbb-dev libglu1-mesa
+    # In a directory outside of UM2
+    mkdir um2_dependencies && cd um2_dependencies
+    # Install cmake
+    wget https://github.com/Kitware/CMake/releases/download/v3.27.6/cmake-3.27.6.tar.gz
+    tar -xzvf cmake-3.27.6.tar.gz && cd cmake-3.27.6
+    ./bootstrap && make && sudo make install && cd ..
+    # Install gmsh
     wget https://gmsh.info/bin/Linux/gmsh-4.11.1-Linux64-sdk.tgz
-    tar -xzvf gmsh-4.11.1-Linux64-sdk.tgz
-    # Add to bachrc to avoid declaring this every time. PWD will need to be updated.
-    export GMSH_ROOT=${PWD}/gmsh-4.11.1-Linux64-sdk
+    tar -xzvf gmsh-4.11.1-Linux64-sdk.tgz && cd gmsh-4.11.1-Linux64-sdk
+    # Add GMSH_ROOT to your bashrc so cmake can find gmsh. 
+    echo "export GMSH_ROOT=${PWD}" >> ~/.bashrc && source ~/.bashrc && cd ..
+
+.. admonition:: Stop!
+   :class: error
+  
+    Check that the dependencies were installed correctly by running the following commands:
+
+    .. code-block:: bash
+
+        g++-12 --version                # Expect 12+
+        ldconfig -p | grep libhdf5      # Expect non-empty output
+        ldconfig -p | grep libpugixml   # Expect non-empty output
+        ldconfig -p | grep libtbb       # Expect non-empty output
+        ldconfig -p | grep libGLU       # Expect non-empty output
+        cmake --version                 # Expect 3.27.6 
+        echo $GMSH_ROOT                 # Expect the path to the gmsh directory
+
+If you are a developer, you will also need to install the following:
+
+.. code-block:: bash
+
+    sudo apt install -y clang-15 clang-format-15 clang-tidy-15 libomp-15-dev cppcheck
+    # It may be necessary to symlink clang-format-15 and clang-tidy-15 to clang-format
+    # and clang-tidy, respectively.
+    sudo ln -s /usr/bin/clang-format-15 /usr/bin/clang-format
+    sudo ln -s /usr/bin/clang-tidy-15 /usr/bin/clang-tidy
 
 .. _installing_prerequisites_with_brew:
 
 ----------------------------------
 Installing Prerequisites with brew
 ----------------------------------
+
+.. admonition:: Note
+   :class: note
+
+  Support for MacOS is new and this section may be incomplete. Please report any issues.
 
 On desktop machines running MacOS, the prerequisites can 
 be installed with the following commands:
@@ -79,8 +131,15 @@ be installed with the following commands:
     # or for older Macs
     # wget https://gmsh.info/bin/macOS/gmsh-4.11.1-MacOSX-sdk.tgz
     tar -xzvf gmsh-4.11.1-*
-    # Add to bachrc or zshrc to avoid declaring this every time. PWD will need to be updated.
+    # Add GMSH_ROOT to your bashrc or zshrc so cmake can find gmsh. PWD will need to be updated
+    # with the full path to the gmsh directory.
     export GMSH_ROOT=${PWD}/<gmsh directory name> 
+
+If you are a developer, you will also need to install the following:
+
+.. code-block:: bash
+
+    brew install clang-format@15 clang-tidy@15 cppcheck
 
 .. _installing_prerequisites_with_spack:
 
@@ -92,6 +151,10 @@ Spack_ is a package management tool designed to support multiple versions and
 configurations of software on a wide variety of platforms and environments.
 
 Prior to installing Spack, ensure that Python 3.6+ is installed.
+.. code-block:: bash
+
+    python3 --version
+
 To install Spack:
 
 .. code-block:: bash
@@ -100,7 +163,7 @@ To install Spack:
     # Add this to your bashrc to avoid entering this every time.
     . spack/share/spack/setup-env.sh
 
-Install and load gcc-12+ or clang-15+:
+Install and load gcc-12
 
 .. code-block:: bash
 

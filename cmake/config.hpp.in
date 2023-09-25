@@ -19,6 +19,9 @@
 // Gmsh
 #cmakedefine01 UM2_USE_GMSH
 
+// libpng
+#cmakedefine01 UM2_USE_PNG
+
 // CUDA
 #cmakedefine01 UM2_USE_CUDA
 

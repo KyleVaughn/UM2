@@ -16,11 +16,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 # User options
 #===============================================================================
 
-option(UM2_USE_OPENMP       "Enable OpenMP"                     ON)
 option(UM2_USE_TBB          "Enable Intel TBB"                  ON)
+option(UM2_USE_OPENMP       "Enable OpenMP"                     ON)
 option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
+option(UM2_USE_PNG          "Enable PNG"                        OFF)
 option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
-option(UM2_USE_OPENGL       "Enable OpenGL"                     OFF)
+#option(UM2_USE_OPENGL       "Enable OpenGL"                     OFF)
 
 option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large meshes
 option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"      ON)
@@ -170,11 +171,6 @@ find_package(PugiXML REQUIRED)
 target_link_libraries(um2 PUBLIC "${PUGIXML_LIB}")
 target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
 
-# libpng
-find_package(PNG REQUIRED)
-target_link_libraries(um2 PUBLIC "${PNG_LIBRARIES}")
-target_include_directories(um2 SYSTEM PUBLIC "${PNG_INCLUDE_DIRS}")
-
 #===============================================================================
 # Optional dependencies
 #===============================================================================
@@ -200,6 +196,13 @@ if (UM2_USE_GMSH)
   find_package(Gmsh REQUIRED)
   target_link_libraries(um2 PUBLIC "${GMSH_LIB}")
   target_include_directories(um2 SYSTEM PUBLIC "${GMSH_INC}")
+endif()
+
+# libpng
+if (UM2_USE_LIBPNG)
+  find_package(PNG REQUIRED)
+  target_link_libraries(um2 PUBLIC "${PNG_LIBRARIES}")
+  target_include_directories(um2 SYSTEM PUBLIC "${PNG_INCLUDE_DIRS}")
 endif()
 
 # CUDA

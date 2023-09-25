@@ -15,9 +15,11 @@ Image2D<T>::clear(Color const c)
 void
 writePPM(Vector<Color> const & buffer, Size nx, Size ny, std::string const & filename);
 
+#if UM2_USE_PNG
 // PNG functions are not const, so we have to pass a copy of the buffer
 void
 writePNG(Vector<Color> buffer, Size nx, Size ny, std::string const & filename);
+#endif
 
 //==============================================================================
 // write
@@ -27,14 +29,18 @@ template <std::floating_point T>
 void
 Image2D<T>::write(std::string const & filename) const
 {
+#if UM2_USE_PNG
   if (filename.ends_with("png")) {
     writePNG(this->children, this->grid.num_cells[0], this->grid.num_cells[1], filename);
-  } else if (filename.ends_with("ppm")) {
+    return;
+  } 
+#endif
+  if (filename.ends_with("ppm")) {
     writePPM(this->children, this->grid.num_cells[0], this->grid.num_cells[1], filename);
-  } else {
-    Log::error("Image2D::write(): unknown file extension");
-    exit(EXIT_FAILURE);
+    return;
   }
+  Log::error("Image2D::write(): unknown file extension");
+  exit(EXIT_FAILURE);
 }
 
 //==============================================================================
