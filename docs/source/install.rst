@@ -15,8 +15,8 @@ Cloning the Repository
 --------------------------
 
 The first step to building UM\ :sup:`2` \ is to clone the repository. 
-The UM\ :sup:`2` \ source code is hosted on `GitHub <https://github.com/KyleVaughn/UM2>_`. 
-Assuming you have git_ installed, to clone the repository, run the following command:
+The UM\ :sup:`2` \ source code is hosted on `GitHub <https://github.com/KyleVaughn/UM2>`_. 
+Assuming you have git_ installed, to clone the repository run the following command:
 
 .. code-block:: bash
 
@@ -46,7 +46,7 @@ UM\ :sup:`2` \ requires the following software to be installed:
 
     * PugiXML_ library for XML data
 
-Additional software is required for some features. Note that TBB_, OPENMP_, and GMSH_ are
+Additional software is required for some features. Note that TBB_, OpenMP_, and Gmsh_ are
 enabled by default. If these features are not needed, they can be disabled by setting the
 corresponding CMake variables to ``OFF``.
 
@@ -171,7 +171,7 @@ To install Spack:
     spack --version # Expect 0.20
 
 If you do not have C, C++, and Fortran compilers available,
-install then now, or you will need to modify the compilers.yaml file created in the next step.
+install them now, or you will need to modify the compilers.yaml file created in the next step.
 Assuming you're using gcc, to verify that you have the necessary compilers, run the following 
 commands:
 
@@ -194,13 +194,13 @@ You should have previously cloned the UM2 repository. If not, do so now:
 
     git clone https://github.com/KyleVaughn/UM2.git
 
-There are a number of pre-defined environments files for Spack in ``UM2/dependencies/spack``.
+There are a number of pre-defined environment files for Spack in ``UM2/dependencies/spack``.
 These environments contain the dependencies for UM2 and are defined in yaml files.
 Pick the appropriate yaml file in ``UM2/dependencies/spack`` for use in the next step, then:
 
 .. code-block:: bash
 
-    # Assuming you're a user on desktop machine
+    # Assuming you're a user on a desktop machine
     cd UM2/dependencies/spack/user
     spack env create um2 desktop.yaml 
     spack env activate -p um2
@@ -238,13 +238,13 @@ Finally, we will install the dependencies:
 
     .. code-block:: bash
 
-        g++    --version                # Expect 12.X.X
+        g++ --version                   # Expect 12.X.X
         ldconfig -p | grep libhdf5      # Expect non-empty output
         ldconfig -p | grep libpugixml   # Expect non-empty output
         ldconfig -p | grep libtbb       # Expect non-empty output
         ldconfig -p | grep libGLU       # Expect non-empty output
         ldconfig -p | grep libpng       # Expect non-empty output
-        ldconfig -p | grep libgmsh      # Expect non-empty output
+        gmsh --version                  # Expect 4.10
         cmake --version                 # Expect 3.26+
 
 .. _Spack: https://spack.readthedocs.io/en/latest/
