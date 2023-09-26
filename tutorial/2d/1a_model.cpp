@@ -30,7 +30,7 @@ main() -> int
   // ivory1 is not.
   std::vector<um2::Material> const materials = {
       um2::Material("Fuel", "forestgreen"),
-      um2::Material("Gap", "pink"),
+      um2::Material("Gap", "red"),
       um2::Material("Clad", "slategray"),
   };
 

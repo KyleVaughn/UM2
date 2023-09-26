@@ -629,7 +629,6 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
 {
   // This shouldn't be a problem, since the number of pins should be small.
   Log::info("Adding 2D cylindrical pin lattice");
-  std::vector<int> out_tags;
   // Input checking
   size_t const nunique_pins = radii.size();
   if (nunique_pins == 0) {
@@ -684,15 +683,19 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
 
   RectilinearGrid2d const grid(boxes);
 
+  std::vector<int> out_tags;
   // For each unique pin, loop through the pin_ids_rev array and add the pins.
   for (size_t pin_id = 0; pin_id < nunique_pins; ++pin_id) {
     size_t const nrad = radii[pin_id].size();
+    if (nrad == 0) {
+      continue;
+    }
     std::vector<std::vector<int>> material_ids(nrad);
     for (size_t i = 0; i < nrow; ++i) {
       std::vector<int> const & row = pin_ids_rev[i];
       for (size_t j = 0; j < ncol; ++j) {
         if (row[j] == static_cast<int>(pin_id)) {
-          AxisAlignedBox2d const box = grid.getBox(i, j);
+          AxisAlignedBox2d const box = grid.getBox(j, i);
           double const x = 0.5 * (box.xMin() + box.xMax()) + offset[0];
           double const y = 0.5 * (box.yMin() + box.yMax()) + offset[1];
           // Do the innermost disk
