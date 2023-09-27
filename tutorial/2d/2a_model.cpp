@@ -6,10 +6,15 @@
 #include <um2.hpp>
 
 auto
-//NOLINTNEXTLINE
 main() -> int
 {
   um2::initialize();
+
+  // In this problem, there are 3 unique pin types:
+  // 0: fuel pin
+  // 1: guide tube
+  // 2: instrument tube
+  // We will construct the lattice in terms of these 3 unique pins.
 
   // Parameters
   double const r_fuel = 0.4096;    // Pellet radius = 0.4096 cm (pg. 4)
@@ -20,7 +25,6 @@ main() -> int
   double const r_it_inner = 0.559; // Inner Instrument Tube Radius = 0.559 cm (pg. 5)
   double const r_it_outer = 0.605; // Outer Instrument Tube Radius = 0.605 cm (pg. 5)
   double const pitch = 1.26;       // Pitch = 1.26 cm (pg. 4)
-  double const half_gap = 0.4;     // Inter-Assembly Half Gap  = 0.04 cm (pg. 7)
 
   // Materials
   um2::Material const fuel("Fuel", "forestgreen");
@@ -36,33 +40,36 @@ main() -> int
   std::vector<um2::Material> const p1_mats = {water, clad};
   std::vector<um2::Material> const p2_mats = {water, clad};
 
+  // We will use the pin IDs specified above to construct the lattice.
   // Fuel rod and guide tube layout (pg. 5)
-  // Note that the IDs on the perimeter will change in the mesh
-  // due to the half gap
+  // The following lines convert the pin layout into a vector of vectors,
+  // holding a row of in IDs in each vector.
   std::vector<std::vector<int>> const pin_ids = um2::to_vecvec<int>(R"(
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0
-  0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 1 0 0 1 0 0 2 0 0 1 0 0 1 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0
-  0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)");
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0
+    0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 1 0 0 1 0 0 2 0 0 1 0 0 1 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0
+    0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)");
 
-  std::vector<um2::Vec2d> const dxdy(3, {pitch, pitch});
+  // Each pin will have the same width and height
+  um2::Vec2d const pin_size = {pitch, pitch};
+  // We can then create the lattice using the following function.
   um2::gmsh::model::occ::addCylindricalPinLattice2D(
       {p0_radii, p1_radii, p2_radii}, // radii
       {p0_mats, p1_mats, p2_mats},    // materials
-      dxdy,                           // dx, dy of each pin cell
+      {pin_size, pin_size, pin_size}, // dx, dy of each pin cell
       pin_ids,                        // pin ids
       {half_gap, half_gap}            // offset (account for half gap)
   );

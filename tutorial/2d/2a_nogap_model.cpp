@@ -1,14 +1,20 @@
-// VERA Core Physics Benchmark Progression Problem Specifications
-// Revision 4, August 29, 2014
-// CASL-U-2012-0131-004
+// Model reference:
+//   VERA Core Physics Benchmark Progression Problem Specifications
+//   Revision 4, August 29, 2014
+//   CASL-U-2012-0131-004
 
 #include <um2.hpp>
 
 auto
-//NOLINTNEXTLINE
 main() -> int
 {
   um2::initialize();
+
+  // In this problem, there are 3 unique pin types:
+  // 0: fuel pin
+  // 1: guide tube
+  // 2: instrument tube
+  // We will construct the lattice in terms of these 3 unique pins.
 
   // Parameters
   double const r_fuel = 0.4096;    // Pellet radius = 0.4096 cm (pg. 4)
@@ -34,41 +40,46 @@ main() -> int
   std::vector<um2::Material> const p1_mats = {water, clad};
   std::vector<um2::Material> const p2_mats = {water, clad};
 
+  // We will use the pin IDs specified above to construct the lattice.
   // Fuel rod and guide tube layout (pg. 5)
-  // Note that the IDs on the perimeter will change in the mesh
-  // due to the half gap
+  // The following lines convert the pin layout into a vector of vectors,
+  // holding a row of in IDs in each vector.
   std::vector<std::vector<int>> const pin_ids = um2::to_vecvec<int>(R"(
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0
-  0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 1 0 0 1 0 0 2 0 0 1 0 0 1 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0
-  0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)");
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0
+    0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 1 0 0 1 0 0 2 0 0 1 0 0 1 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0
+    0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)");
 
-  std::vector<um2::Vec2d> const dxdy(3, {pitch, pitch});
+  // Each pin will have the same width and height
+  um2::Vec2d const pin_size = {pitch, pitch};
+
+  // We can then create the lattice using the following function.
   um2::gmsh::model::occ::addCylindricalPinLattice2D(
-      {p0_radii, p1_radii, p2_radii}, // radii
-      {p0_mats, p1_mats, p2_mats},    // materials
-      dxdy,                           // dx, dy of each pin cell
+      {p0_radii, p1_radii, p2_radii}, // radii of each pin
+      {p0_mats, p1_mats, p2_mats},    // materials of each pin
+      {pin_size, pin_size, pin_size}, // dx, dy of each pin cell
       pin_ids                         // pin ids
   );
 
-  // Uncomment the following line to view the model in Gmsh. This line functions the same as the 1a tutorial.
-  um2::gmsh::fltk::run();
 
+  // Uncomment to visualize the model
   // um2::gmsh::fltk::run();
-  um2::gmsh::write("2a_nogap.brep", /*extra_info=*/true);
+
+  // Write the model to a file
+  um2::gmsh::write("2a.brep", /*extra_info=*/true);
 
   um2::finalize();
   return 0;

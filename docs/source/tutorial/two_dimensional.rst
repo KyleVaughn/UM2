@@ -9,11 +9,13 @@ The models we will create are:
 
   1. `VERA benchmark problem 1A <https://corephysics.com/docs/CASL-U-2012-0131-004.pdf>`_
   
-  2. `VERA benchmark problem 2A <https://corephysics.com/docs/CASL-U-2012-0131-004.pdf>`_
-  
-  3. `C5G7 2D <https://doi.org/10.1016/j.pnueene.2004.09.003>`_
+  2. `VERA benchmark problem 2A, without inter-assembly gap <https://corephysics.com/docs/CASL-U-2012-0131-004.pdf>`_
 
-  4. `A 2D CROCUS <https://doi.org/10.1016/j.anucene.2005.09.012>`_ model
+  3. `VERA benchmark problem 2A <https://corephysics.com/docs/CASL-U-2012-0131-004.pdf>`_
+  
+  4. `C5G7 2D <https://doi.org/10.1016/j.pnueene.2004.09.003>`_
+
+  5. `A 2D CROCUS <https://doi.org/10.1016/j.anucene.2005.09.012>`_ model
 
 
 .. _tutorial_2d_1a:
@@ -62,24 +64,25 @@ The mesh should look like this:
     and switch this field to "Surface with Edges".
     You should now be able to visualize the generated mesh by material in each region.
 
-.... _tutorial_2d_2a_nogap:
-..
-..VERA Problem 2A (No Gap)
-..===============
-..
-..Now, we will move onto creating the CAD model for VERA problem 2A with no gaps. This is a simple 2D model of a
-..an array of fuel rods (a fuel lattice). In this model, we will assume that all coarse cells are of identicle size.
-..
-.... literalinclude:: ../../../tutorial/2d/2a_nogap_model.cpp
-..    :language: cpp
-..
-.... If the FLTK line is commented out and visibility options changed as indicated, the model should
-.... look like this:
-..
-.... .. image:: ../_images/1a_model.png
-....     :width: 300px
-....     :align: center
-..
+.. _tutorial_2d_2a_nogap:
+
+VERA Problem 2A (No Gap)
+========================
+
+Now, we will move onto creating the CAD model for VERA problem 2A without the inter-assembly 
+gap. This is a simple 17 by 17 lattice. Since we have omitted the inter-assembly gap, all 
+coarse cells the same size, which will simplify the model.
+
+.. literalinclude:: ../../../tutorial/2d/2a_nogap_model.cpp
+    :language: cpp
+
+If the FLTK line is commented out and visibility options changed as indicated, the model 
+should look like this:
+
+.. image:: ../_images/2a_nogap_model.png
+    :width: 400px
+    :align: center
+
 ..Then, we create the mesh for the model.
 ..
 .... literalinclude:: ../../../tutorial/2d/2a_nogap_mesh.cpp
