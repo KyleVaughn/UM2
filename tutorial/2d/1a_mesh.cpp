@@ -1,7 +1,7 @@
 // Model reference:
-//    VERA Core Physics Benchmark Progression Problem Specifications
-//    Revision 4, August 29, 2014
-//    CASL-U-2012-0131-004
+//  VERA Core Physics Benchmark Progression Problem Specifications
+//  Revision 4, August 29, 2014
+//  CASL-U-2012-0131-004
 
 #include <um2.hpp>
 
@@ -57,8 +57,8 @@ main() -> int
   // um2::gmsh::fltk::run();
 
   // Our model is now ready to be meshed. We will set the characteristic mesh size
-  // to 0.1 cm for the entire model. This is the target mesh edge length.
-  double const lc = 0.1; // Mesh size = 0.1 cm
+  // to 0.15 cm for the entire model. This is the target mesh edge length.
+  double const lc = 0.15; 
   um2::gmsh::model::mesh::setGlobalMeshSize(lc);
 
   // Alternatively, we can set the characteristic mesh size for groups of entities.
@@ -75,14 +75,20 @@ main() -> int
   // QuadraticTri   - Quadratic triangular mesh
   // QuadraticQuad  - Quadratic quadrilateral mesh
   //
-  // It is highly recommended to use a quadratic mesh in order to better
-  // preserve the areas of the materials. For simple problems like this, UM2
-  // has mesh builders that can perfectly preserve the areas of the materials, but
-  // we want to build complexity towards arbitrary geometries, so we will use
-  // the general approach.
-  um2::MeshType const mesh_type = um2::MeshType::Tri;
+  // It is recommended that you use a quadratic triangle mesh when meshing non-trivial
+  // geometries. This will allow for a more accurate representation of the geometry,
+  // minimizing the error introduced by a failure to preserve material areas/volumes.
+  // For common geometries like this, UM2 has mesh builders that can perfectly preserve
+  // material areas/volumes, but this will be covered in a later example.
+  // For now, we will use a general mesh generation approach. This will not preserve
+  // material areas/volumes exactly.
+  um2::MeshType const mesh_type = um2::MeshType::QuadraticTri;
 
   // We can now generate the mesh. This will create a mesh for the entire model.
+  // Note that warnings about a jacobian determinant less than 0 are usually fine for
+  // quadratic elements, since we only care that the mesh is geometrically valid
+  // (no overlapping faces, etc.), not that each face has an invertible transformation
+  // to the reference element.
   um2::gmsh::model::mesh::generateMesh(mesh_type);
 
   // Uncomment the following line to see the mesh.
@@ -91,9 +97,9 @@ main() -> int
   // We can now export the mesh to a file.
   um2::gmsh::write("1a.inp");
 
-  // We now have a fine MOC mesh to go inside of each of the CMFD coarse cells, but we
-  // need to export a model which contains the MPACT spatial hierarchy information. To do
-  // this we will first use the mesh we just created to populate the otherwise empty
+  // We now have a fine MOC mesh to go inside of each of the CMFD coarse cells in our model, 
+  // but we need to export a model which also contains the MPACT spatial hierarchy information. 
+  // To do this we will first use the mesh we just created to populate the otherwise empty
   // coarse cells in the spatial partition.
   model.importCoarseCells("1a.inp");
 

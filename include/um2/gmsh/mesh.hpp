@@ -22,7 +22,8 @@ setMeshFieldFromGroups(int dim, std::vector<std::string> const & groups,
                        std::vector<double> const & sizes) -> std::vector<int>;
 
 void
-generateMesh(MeshType mesh_type, int opt_iters = 5, int smooth_iters = 100);
+generateMesh(MeshType mesh_type, int smooth_iters = 100);
+//generateMesh(MeshType mesh_type, int opt_iters = 5, int smooth_iters = 100);
 
 } // namespace um2::gmsh::model::mesh
 #endif // UM2_USE_GMSH

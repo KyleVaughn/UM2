@@ -1,18 +1,18 @@
 // Model reference:
-//    VERA Core Physics Benchmark Progression Problem Specifications
-//    Revision 4, August 29, 2014
-//    CASL-U-2012-0131-004
+//  VERA Core Physics Benchmark Progression Problem Specifications
+//  Revision 4, August 29, 2014
+//  CASL-U-2012-0131-004
 
 #include <um2.hpp>
 
 auto
 main() -> int
 {
-  // Before using any functions in the C++ API, UM2 must be initialized
+  // Before using any functions in the UM2 C++ API, UM2 must be initialized
   um2::initialize();
 
   // VERA Problem 1A is a single pin-cell problem. To create the CAD model,
-  // we will create everything but the moderator region, which will be
+  // we will add geometry for everything except moderator region, which will be
   // created in a separate step.
 
   // Store the radii of the fuel, gap, and clad
@@ -24,14 +24,16 @@ main() -> int
   std::vector<double> const radii = {r_fuel, r_gap, r_clad};
   // Materials need a name and a color. The color can be specified by name
   // (e.g. "forestgreen") or by RGB/RGBA values (e.g. {0.13, 0.55, 0.13, 1.0}).
-  // The color swatches can be found at
-  // http://juliagraphics.github.io/Colors.jl/dev/namedcolors/ However, only colors
-  // without numbers in their names are supported. For example, ivory is supported, but
-  // ivory1 is not.
+  // The color swatches for named colors can be found at
+  // http://juliagraphics.github.io/Colors.jl/dev/namedcolors/ 
+  // However, only colors without numbers in their names are supported. 
+  // For example, ivory is supported, but ivory1 is not.
+  um2::Color const red(1.0, 0.0, 0.0); // Red using floating point RGB values
+  um2::Color const slategray(112, 128, 144); // Slategray using integer RGB values
   std::vector<um2::Material> const materials = {
       um2::Material("Fuel", "forestgreen"),
-      um2::Material("Gap", "red"),
-      um2::Material("Clad", "slategray"),
+      um2::Material("Gap", red), 
+      um2::Material("Clad", slategray)
   };
 
   // Create a pin with the specified radii and materials centered at half the pitch
@@ -49,6 +51,7 @@ main() -> int
   // Ctrl+Shift+V will open the visibility menu. The visibility of the "physical groups",
   // or labeled groups of surfaces, can be toggled here. The 3 groups are the materials
   // "Material_Fuel", "Material_Gap", and "Material_Clad".
+  //
   // um2::gmsh::fltk::run();
 
   // Write the model to a "brep" file. A "step" file can also be written.
