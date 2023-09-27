@@ -74,7 +74,7 @@ main() -> int
       {half_gap, half_gap}            // offset (account for half gap)
   );
 
-  //uncomment this line to view the output
+  // uncomment this line to view the output
 
   um2::gmsh::fltk::run();
   um2::gmsh::write("2a.brep", /*extra_info=*/true);

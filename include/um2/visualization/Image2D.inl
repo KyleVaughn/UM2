@@ -33,7 +33,7 @@ Image2D<T>::write(std::string const & filename) const
   if (filename.ends_with("png")) {
     writePNG(this->children, this->grid.num_cells[0], this->grid.num_cells[1], filename);
     return;
-  } 
+  }
 #endif
   if (filename.ends_with("ppm")) {
     writePPM(this->children, this->grid.num_cells[0], this->grid.num_cells[1], filename);

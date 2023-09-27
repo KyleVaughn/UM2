@@ -74,12 +74,11 @@ main() -> int
       pin_ids                         // pin ids
   );
 
-
   // Uncomment to visualize the model
   // um2::gmsh::fltk::run();
 
   // Write the model to a file
-  um2::gmsh::write("2a.brep", /*extra_info=*/true);
+  um2::gmsh::write("2a_nogap.brep", /*extra_info=*/true);
 
   um2::finalize();
   return 0;

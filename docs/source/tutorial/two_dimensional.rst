@@ -83,17 +83,17 @@ should look like this:
     :width: 400px
     :align: center
 
-..Then, we create the mesh for the model.
-..
-.... literalinclude:: ../../../tutorial/2d/2a_nogap_mesh.cpp
-..    :language: cpp
-..
-.... The mesh should look like this:
-..
-.... .. image:: ../_images/1a_mesh.png
-....     :width: 400px
-....     :align: center
-..
+Then, we create the mesh for the model.
+
+.. literalinclude:: ../../../tutorial/2d/2a_nogap_mesh.cpp
+    :language: cpp
+
+Visualizing the mesh in paraview should look like this:
+
+.. image:: ../_images/2a_nogap_mesh.png
+    :width: 400px
+    :align: center
+
 .... _tutorial_2d_2a_nogap:
 ..VERA Problem 2A
 ..===============

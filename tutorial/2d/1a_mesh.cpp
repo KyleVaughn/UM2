@@ -58,7 +58,7 @@ main() -> int
 
   // Our model is now ready to be meshed. We will set the characteristic mesh size
   // to 0.15 cm for the entire model. This is the target mesh edge length.
-  double const lc = 0.15; 
+  double const lc = 0.15;
   um2::gmsh::model::mesh::setGlobalMeshSize(lc);
 
   // Alternatively, we can set the characteristic mesh size for groups of entities.
@@ -97,10 +97,10 @@ main() -> int
   // We can now export the mesh to a file.
   um2::gmsh::write("1a.inp");
 
-  // We now have a fine MOC mesh to go inside of each of the CMFD coarse cells in our model, 
-  // but we need to export a model which also contains the MPACT spatial hierarchy information. 
-  // To do this we will first use the mesh we just created to populate the otherwise empty
-  // coarse cells in the spatial partition.
+  // We now have a fine MOC mesh to go inside of each of the CMFD coarse cells in our
+  // model, but we need to export a model which also contains the MPACT spatial hierarchy
+  // information. To do this we will first use the mesh we just created to populate the
+  // otherwise empty coarse cells in the spatial partition.
   model.importCoarseCells("1a.inp");
 
   // We can now export the model to a file. This will create a file called "1a.xdmf".

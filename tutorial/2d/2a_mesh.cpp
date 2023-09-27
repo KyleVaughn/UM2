@@ -5,15 +5,15 @@
 #include <um2.hpp>
 
 auto
-//NOLINTNEXTLINE
+// NOLINTNEXTLINE
 main() -> int
-{  
+{
   um2::initialize();
-  
+
   um2::MeshType const mesh_type = um2::MeshType::Tri;
   double const lc = 0.1;
 
-  //create course cells of different sizes to include case of gaps at the edges
+  // create course cells of different sizes to include case of gaps at the edges
   const double pitch = 1.26;   // Pitch = 1.26 cm (pg. 4)
   const double half_gap = 0.4; // Inter-Assembly Half Gap  = 0.04 cm (pg. 7)
   um2::Vec2<double> const dxdy(pitch, pitch);
@@ -59,8 +59,8 @@ main() -> int
   model.makeCoarseCell(corner_dxdy); // 9
   model.makeCoarseCell(corner_dxdy); // 10
 
-  //Note: All RTM must be identical in size. Since different coarse cells have 
-  //different sizes in this problem, we create a single RTM for all of our course cells
+  // Note: All RTM must be identical in size. Since different coarse cells have
+  // different sizes in this problem, we create a single RTM for all of our course cells
   model.makeRTM(pin_ids);
   model.makeLattice({{0}});
   model.makeAssembly({0});
@@ -71,7 +71,7 @@ main() -> int
 
   // uncomment this line to view the model
   um2::gmsh::fltk::run();
-  
+
   um2::gmsh::write("2a.inp");
   model.importCoarseCells("2a.inp");
   um2::exportMesh("2a.xdmf", model);

@@ -21,7 +21,7 @@ setGlobalMeshSize(double const size)
 // generateMesh
 //=============================================================================
 
-//generateMesh(MeshType const mesh_type, int const opt_iters, int const smooth_iters)
+// generateMesh(MeshType const mesh_type, int const opt_iters, int const smooth_iters)
 void
 generateMesh(MeshType const mesh_type, int const smooth_iters)
 {
@@ -34,10 +34,10 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
     // Delaunay (5) handles large element size gradients better. Maybe use that?
     gmsh::option::setNumber("Mesh.Algorithm", 6);
     gmsh::model::mesh::generate(2);
-//    for (int i = 0; i < opt_iters; ++i) {
-//      gmsh::model::mesh::optimize("Relocate2D");
-//      gmsh::model::mesh::optimize("Laplace2D");
-//    }
+    //    for (int i = 0; i < opt_iters; ++i) {
+    //      gmsh::model::mesh::optimize("Relocate2D");
+    //      gmsh::model::mesh::optimize("Laplace2D");
+    //    }
     break;
   case MeshType::Quad:
     Log::info("Generating quadrilateral mesh");
@@ -46,11 +46,11 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
     gmsh::option::setNumber("Mesh.SubdivisionAlgorithm", 1);   // All quads
     gmsh::option::setNumber("Mesh.RecombinationAlgorithm", 2); // simple full-quad
     gmsh::model::mesh::generate(2);
-//    for (int i = 0; i < opt_iters; ++i) {
-//      //                gmsh::model::mesh::optimize("QuadQuasiStructured");
-//      gmsh::model::mesh::optimize("Relocate2D");
-//      gmsh::model::mesh::optimize("Laplace2D");
-//    }
+    //    for (int i = 0; i < opt_iters; ++i) {
+    //      //                gmsh::model::mesh::optimize("QuadQuasiStructured");
+    //      gmsh::model::mesh::optimize("Relocate2D");
+    //      gmsh::model::mesh::optimize("Laplace2D");
+    //    }
     break;
   case MeshType::QuadraticTri:
     Log::info("Generating quadratic triangle mesh");
@@ -58,11 +58,11 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
     gmsh::model::mesh::generate(2);
     gmsh::option::setNumber("Mesh.HighOrderOptimize", 2); // elastic + opt
     gmsh::model::mesh::setOrder(2);
-//    for (int i = 0; i < opt_iters; ++i) {
-//      gmsh::model::mesh::optimize("HighOrderElastic");
-//      gmsh::model::mesh::optimize("Relocate2D");
-//      gmsh::model::mesh::optimize("HighOrderElastic");
-//    }
+    //    for (int i = 0; i < opt_iters; ++i) {
+    //      gmsh::model::mesh::optimize("HighOrderElastic");
+    //      gmsh::model::mesh::optimize("Relocate2D");
+    //      gmsh::model::mesh::optimize("HighOrderElastic");
+    //    }
     break;
   case MeshType::QuadraticQuad:
     Log::info("Generating quadratic quadrilateral mesh");
@@ -73,11 +73,11 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
     gmsh::model::mesh::generate(2);
     gmsh::option::setNumber("Mesh.HighOrderOptimize", 2); // elastic + opt
     gmsh::model::mesh::setOrder(2);
-//    for (int i = 0; i < opt_iters; ++i) {
-//      gmsh::model::mesh::optimize("HighOrderElastic");
-//      gmsh::model::mesh::optimize("Relocate2D");
-//      gmsh::model::mesh::optimize("HighOrderElastic");
-//    }
+    //    for (int i = 0; i < opt_iters; ++i) {
+    //      gmsh::model::mesh::optimize("HighOrderElastic");
+    //      gmsh::model::mesh::optimize("Relocate2D");
+    //      gmsh::model::mesh::optimize("HighOrderElastic");
+    //    }
     break;
   default:
     Log::error("Invalid mesh type");

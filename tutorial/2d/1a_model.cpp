@@ -25,16 +25,14 @@ main() -> int
   // Materials need a name and a color. The color can be specified by name
   // (e.g. "forestgreen") or by RGB/RGBA values (e.g. {0.13, 0.55, 0.13, 1.0}).
   // The color swatches for named colors can be found at
-  // http://juliagraphics.github.io/Colors.jl/dev/namedcolors/ 
-  // However, only colors without numbers in their names are supported. 
+  // http://juliagraphics.github.io/Colors.jl/dev/namedcolors/
+  // However, only colors without numbers in their names are supported.
   // For example, ivory is supported, but ivory1 is not.
-  um2::Color const red(1.0, 0.0, 0.0); // Red using floating point RGB values
+  um2::Color const red(1.0, 0.0, 0.0);       // Red using floating point RGB values
   um2::Color const slategray(112, 128, 144); // Slategray using integer RGB values
-  std::vector<um2::Material> const materials = {
-      um2::Material("Fuel", "forestgreen"),
-      um2::Material("Gap", red), 
-      um2::Material("Clad", slategray)
-  };
+  std::vector<um2::Material> const materials = {um2::Material("Fuel", "forestgreen"),
+                                                um2::Material("Gap", red),
+                                                um2::Material("Clad", slategray)};
 
   // Create a pin with the specified radii and materials centered at half the pitch
   // of the pin-cell. UM2 assumes that the lower left corner of the model is at (0, 0),

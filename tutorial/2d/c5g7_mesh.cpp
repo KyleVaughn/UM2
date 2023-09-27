@@ -14,7 +14,7 @@ main()
   double const lc = 0.1;
 
   // Construct the MPACT spatial partition using pin-modular ray tracing
-  double const pin_pitch = 1.26; // Pitch = 1.26 cm (pg. 3)
+  double const pin_pitch = 1.26;               // Pitch = 1.26 cm (pg. 3)
   um2::Vec2d const dxdy(pin_pitch, pin_pitch); // Pin pitch in x and y directions
   um2::mpact::SpatialPartition model;
   // Construct coarse cells
@@ -104,22 +104,22 @@ main()
   model.makeLattice(uo2_rtm_ids);
   model.makeLattice(mox_rtm_ids);
   model.makeLattice(mod_rtm_ids);
-//   // Make assemblies
-//   size_t const num_axial_segments = 10;
-//   size_t const num_water_segments = num_axial_segments / 10;
-//   size_t const num_fuel_segments = num_axial_segments - num_water_segments;
-//   double const slice_height = model_height / num_axial_segments;
-//   std::vector<double> axial_slice_heights(num_axial_segments + 1);
-//   for (size_t i = 0; i < num_axial_segments + 1; ++i) {
-//     axial_slice_heights[i] = i * slice_height;
-//   }
-//   std::vector<int> uo2_lattice_ids(num_fuel_segments, 0);
-//   uo2_lattice_ids.insert(uo2_lattice_ids.end(), num_water_segments, 2);
-//   std::vector<int> mox_lattice_ids(num_fuel_segments, 1);
-//   mox_lattice_ids.insert(mox_lattice_ids.end(), num_water_segments, 2);
-//   std::vector<int> mod_lattice_ids(num_axial_segments, 2);
-//   model.make_assembly(uo2_lattice_ids, axial_slice_heights);
-//   model.make_assembly(mox_lattice_ids, axial_slice_heights);
+  //   // Make assemblies
+  //   size_t const num_axial_segments = 10;
+  //   size_t const num_water_segments = num_axial_segments / 10;
+  //   size_t const num_fuel_segments = num_axial_segments - num_water_segments;
+  //   double const slice_height = model_height / num_axial_segments;
+  //   std::vector<double> axial_slice_heights(num_axial_segments + 1);
+  //   for (size_t i = 0; i < num_axial_segments + 1; ++i) {
+  //     axial_slice_heights[i] = i * slice_height;
+  //   }
+  //   std::vector<int> uo2_lattice_ids(num_fuel_segments, 0);
+  //   uo2_lattice_ids.insert(uo2_lattice_ids.end(), num_water_segments, 2);
+  //   std::vector<int> mox_lattice_ids(num_fuel_segments, 1);
+  //   mox_lattice_ids.insert(mox_lattice_ids.end(), num_water_segments, 2);
+  //   std::vector<int> mod_lattice_ids(num_axial_segments, 2);
+  //   model.make_assembly(uo2_lattice_ids, axial_slice_heights);
+  //   model.make_assembly(mox_lattice_ids, axial_slice_heights);
   model.makeAssembly({0});
   model.makeAssembly({1});
   model.makeAssembly({2});
