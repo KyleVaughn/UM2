@@ -188,32 +188,8 @@ compilers available on your system. To do this, run the following command:
 
     spack compiler find
 
-You should have previously cloned the UM2 repository. If not, do so now:
 
-.. code-block:: bash
-
-    git clone https://github.com/KyleVaughn/UM2.git
-
-There are a number of pre-defined environment files for Spack in ``UM2/dependencies/spack``.
-These environments contain the dependencies for UM2 and are defined in yaml files.
-Pick the appropriate yaml file in ``UM2/dependencies/spack`` for use in the next step, then:
-
-.. code-block:: bash
-
-    spack install gcc@12.3.0
-    spack load gcc@12.3.0
-    spack compiler find
-    # Assuming you're a user on a desktop machine
-    cd UM2/dependencies/spack/user
-    spack env create um2 desktop.yaml 
-    spack env activate -p um2
-    # If you don't plan to build MPACT with UM2, you can add gcc@12.3.0 to the environment
-    spack add gcc@12.3.0
-    # Otherwise, you will need to load gcc@12.3.0 when you want to build/use UM2
-    echo "spack load gcc@12.3.0" >> ~/.bashrc 
-
-We will now tell spack to resolve the dependencies and install them. Please read the 
-potential issues below before continuing.
+Next, we will install gcc 12. But first, please examine the potential issues below.
 
 .. admonition:: Potential Issues
    :class: warning
@@ -229,8 +205,36 @@ potential issues below before continuing.
       may want to limit the number of cores used by adding ``-j <number of cores>`` to the
       ``spack install`` command (``spack install -j 4``).
 
+.. code-block:: bash
 
-Finally, we will install the dependencies:
+    spack install gcc@12.3.0 # This may take a while
+    spack load gcc@12.3.0
+    spack compiler find
+    # Verify that gcc 12 is the default gcc 
+    gcc --version # Expect 12.3.0
+
+You should have previously cloned the UM2 repository. If not, do so now:
+
+.. code-block:: bash
+
+    git clone https://github.com/KyleVaughn/UM2.git
+
+There are a number of pre-defined environment files for Spack in ``UM2/dependencies/spack``.
+These environments contain the dependencies for UM2 and are defined in yaml files.
+Pick the appropriate yaml file in ``UM2/dependencies/spack`` for use in the next step, then:
+
+.. code-block:: bash
+
+    # Assuming you're a user on a desktop machine
+    cd UM2/dependencies/spack/user
+    spack env create um2 desktop.yaml 
+    spack env activate -p um2
+    # If you don't plan to build MPACT with UM2, you can add gcc@12.3.0 to the environment
+    spack add gcc@12.3.0
+    # Otherwise, you will need to load gcc@12.3.0 when you want to build/use UM2
+    echo "spack load gcc@12.3.0" >> ~/.bashrc 
+
+We will now tell spack to resolve the dependencies and install them.
 
 .. code-block:: bash
 
