@@ -238,14 +238,14 @@ Finally, we will install the dependencies:
 
     .. code-block:: bash
 
-        g++ --version                   # Expect 12.X.X
-        ldconfig -p | grep libhdf5      # Expect non-empty output
-        ldconfig -p | grep libpugixml   # Expect non-empty output
-        ldconfig -p | grep libtbb       # Expect non-empty output
-        ldconfig -p | grep libGLU       # Expect non-empty output
-        ldconfig -p | grep libpng       # Expect non-empty output
-        gmsh --version                  # Expect 4.10
-        cmake --version                 # Expect 3.26+
+        g++ --version                     # Expect 12.X.X
+        find $SPACK_ENV -name libhdf5*    # Expect non-empty output
+        find $SPACK_ENV -name libpugixml* # Expect non-empty output
+        find $SPACK_ENV -name libtbb*     # Expect non-empty output
+        find $SPACK_ENV -name libGLU*     # Expect non-empty if you used desktop.yaml
+        find $SPACK_ENV -name libpng*     # Expect non-empty output
+        gmsh --version                    # Expect 4.10
+        cmake --version                   # Expect 3.26+
 
 .. _Spack: https://spack.readthedocs.io/en/latest/
 

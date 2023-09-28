@@ -1,7 +1,7 @@
 // Model reference:
-//   VERA Core Physics Benchmark Progression Problem Specifications
-//   Revision 4, August 29, 2014
-//   CASL-U-2012-0131-004
+//  VERA Core Physics Benchmark Progression Problem Specifications
+//  Revision 4, August 29, 2014
+//  CASL-U-2012-0131-004
 
 #include <um2.hpp>
 
@@ -10,11 +10,25 @@ main() -> int
 {
   um2::initialize();
 
-  // In this problem, there are 3 unique pin types:
+  // VERA Problem 2A is a 2D 17 by 17 fuel lattice with 3 unique pin types:
   // 0: fuel pin
   // 1: guide tube
   // 2: instrument tube
-  // We will construct the lattice in terms of these 3 unique pins.
+  // We can utilize one of UM2's convenience functions to easily create the geometry.
+  // We will call the function addCylindricalPinLattice2D, which takes 4 arguments and
+  // one optional argument:
+  //  - radii (std::vector<std::vector<double>>)
+  //      A vector of radii for each unique pin in the lattice.
+  //  - materials (std::vector<std::vector<um2::Material>>)
+  //      A vector of materials for each unique pin in the lattice.
+  //  - dxdy (std::vector<um2::Vec2d>)
+  //      A vector of the width and height of each unique pin in the lattice.
+  //  - pin_ids (std::vector<std::vector<int>>)
+  //      A vector of vectors, where each vector represents a row of pin IDs.
+  //      Note that each row must have the same number of IDs (a rectangular lattice).
+  //  - offset (um2::Vec2d)
+  //      An optional argument that specifies the offset of the lattice from the origin.
+  //      This is the offset of the lower left corner of the lattice.
 
   // Parameters
   double const r_fuel = 0.4096;    // Pellet radius = 0.4096 cm (pg. 4)

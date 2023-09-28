@@ -70,8 +70,7 @@ VERA Problem 2A (No Gap)
 ========================
 
 Now, we will move onto creating the CAD model for VERA problem 2A without the inter-assembly 
-gap. This is a simple 17 by 17 lattice. Since we have omitted the inter-assembly gap, all 
-coarse cells the same size, which will simplify the model.
+gap. 
 
 .. literalinclude:: ../../../tutorial/2d/2a_nogap_model.cpp
     :language: cpp
@@ -88,54 +87,24 @@ Then, we create the mesh for the model.
 .. literalinclude:: ../../../tutorial/2d/2a_nogap_mesh.cpp
     :language: cpp
 
-Visualizing the mesh in paraview should look like this:
+.. _tutorial_2d_2a:
 
-.. image:: ../_images/2a_nogap_mesh.png
-    :width: 400px
-    :align: center
+VERA Problem 2A
+===============
+Next, we will create the proper VERA problem 2A mesh for the full 17 by 17 assembly problem.
 
-.... _tutorial_2d_2a_nogap:
-..VERA Problem 2A
-..===============
-..Next, we will create the VERA problem 2A while including the gaps at the edges. In this model, 
-..the coarse cells WILL NOT be of identicle size.
-..
-.... literalinclude:: ../../../tutorial/2d/2a_model.cpp
-..    :language: cpp
-..
-.... If the FLTK line is commented out and visibility options changed as indicated, the model should
-.... look like this:
-..
-.... .. image:: ../_images/1a_model.png
-....     :width: 300px
-....     :align: center
-..
-..Then, we create the mesh for the model.
-..
-.... literalinclude:: ../../../tutorial/2d/2a_mesh.cpp
-..    :language: cpp
-..
-.... note::
-..
-..    All RTM (Ray Tracing Modules) must be identical in size. Since different coarse cells have 
-..    different sizes in this problem, we create a single RTM for all of our course cells.
-..
-.... _tutorial_2d_c5g7:
-..
-.... The mesh should look like this:
-..
-.... .. image:: ../_images/1a_mesh.png
-....     :width: 400px
-....     :align: center
-..
-..C5G7 2D
-..=======
-..
-..Coming soon!
-..
-.... _tutorial_2d_crocus:
-..
-..CROCUS 2D
-..=========
-..
-..Coming soon!
+.. literalinclude:: ../../../tutorial/2d/2a.cpp
+    :language: cpp
+
+
+C5G7 2D
+=======
+
+Coming soon!
+
+.. _tutorial_2d_crocus:
+
+CROCUS 2D
+=========
+
+Coming soon!
