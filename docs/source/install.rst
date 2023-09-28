@@ -200,10 +200,17 @@ Pick the appropriate yaml file in ``UM2/dependencies/spack`` for use in the next
 
 .. code-block:: bash
 
+    spack install gcc@12.3.0
+    spack load gcc@12.3.0
+    spack compiler find
     # Assuming you're a user on a desktop machine
     cd UM2/dependencies/spack/user
     spack env create um2 desktop.yaml 
     spack env activate -p um2
+    # If you don't plan to build MPACT with UM2, you can add gcc@12.3.0 to the environment
+    spack add gcc@12.3.0
+    # Otherwise, you will need to load gcc@12.3.0 when you want to build/use UM2
+    echo "spack load gcc@12.3.0" >> ~/.bashrc 
 
 We will now tell spack to resolve the dependencies and install them. Please read the 
 potential issues below before continuing.
@@ -229,7 +236,6 @@ Finally, we will install the dependencies:
 
     spack spec # This may take a minute or two
     spack install # This will take a while (30 mins to 2 hours, depending on your machine)
-
 
 .. admonition:: Stop!
    :class: error
@@ -268,8 +274,8 @@ To build UM\ :sup:`2` \ with the default options, run the following commands:
     ctest
     make install
 
-In the event that you used apt to install the dependencies, you may need to specify the
-compiler to use during the configuration process, e.g. ``CXX=g++-12 cmake ..``.
+You may need to specify the compiler to use during the configuration process, 
+e.g. ``CXX=g++-12 cmake ..``.
 
 .. admonition:: CMake Options 
    :class: note 

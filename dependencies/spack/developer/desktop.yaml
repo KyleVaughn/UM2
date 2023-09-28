@@ -1,6 +1,5 @@
 spack:
   specs:
-    - gcc@12
     - cmake
     - hdf5
     - llvm@15
@@ -10,6 +9,7 @@ spack:
     - libpng
     - benchmark
     - cuda@12
+    - cppcheck
   view: true
   concretizer:
     unify: true

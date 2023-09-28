@@ -64,14 +64,13 @@ auto
 addCylindricalPin(Point3d const & center, double height,
                   std::vector<double> const & radii,
                   std::vector<Material> const & materials) -> std::vector<int>;
-//
-//    std::vector<int> add_cylindrical_pin_lattice(
-//            std::vector<std::vector<double>> const & radii,
-//            std::vector<std::vector<Material>> const & materials,
-//            double const height,
-//            std::vector<Vec2d> const & dxdy,
-//            std::vector<std::vector<int>> const & pin_ids,
-//            Point3d const & offset = {0.0, 0.0, 0.0});
+
+auto
+addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
+                         std::vector<std::vector<Material>> const & materials,
+                         double height, std::vector<Vec2d> const & dxdy,
+                         std::vector<std::vector<int>> const & pin_ids,
+                         Point3d const & offset = {0.0, 0.0, 0.0}) -> std::vector<int>;
 
 void
 overlaySpatialPartition(mpact::SpatialPartition const & partition,

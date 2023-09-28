@@ -1,6 +1,5 @@
 spack:
   specs:
-    - gcc@12
     - cmake
     - hdf5
     - gmsh
