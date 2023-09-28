@@ -27,9 +27,10 @@ main() -> int
   // BUT ARE NOT NECESSARILY the same. If the same geometry is meshed in two different
   // ways, the coarse cells are not the same.
   //
-  // In this case, we have 289 coarse cells, but only 3 of them contain unique geometry.
-  // We therefore have the opportunity to dramatically reduce the time and memory
-  // necessary to simulate the problem by only creating 3 fine meshes.
+  // If we use the standard coarse mesh of one pin centered in each coarse cell, then we
+  // have 289 coarse cells, but only 3 of them contain unique geometry. We therefore
+  // have the opportunity to dramatically reduce the time and memory necessary to
+  // simulate the problem by only creating 3 fine meshes.
   //
   // Fuel rod and guide tube layout (pg. 5)
   std::vector<std::vector<int>> const cc_ids = um2::to_vecvec<int>(R"(

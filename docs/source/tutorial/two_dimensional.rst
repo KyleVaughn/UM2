@@ -49,14 +49,14 @@ The mesh should look like this:
 .. note::
 
     `ParaView <https://www.paraview.org/>`_ is a useful tool for visualizing XDMF files of the 
-    final mesh. You can use the following command to visualize a .xdmf file.
+    final mesh. You can use the following command to visualize the file.
     
     .. code-block:: bash
         
         paraview 1a.xdmf
  
 
-    In the paraview gui, you will be recieve a prompt "Open data with...". Select the 
+    In Paraview, you will be recieve a prompt "Open data with...". Select the 
     "XDMF Reader" option and hit okay. 
     After opening, hit the Apply button which should appear on the left hand side. 
     Next, at the top select the drop down menu which has "vtkBlockColors" and swicth this 
@@ -91,20 +91,36 @@ Then, we create the mesh for the model.
 
 VERA Problem 2A
 ===============
-Next, we will create the proper VERA problem 2A mesh for the full 17 by 17 assembly problem.
 
 .. literalinclude:: ../../../tutorial/2d/2a.cpp
     :language: cpp
 
 
+.. _tutorial_2d_c5g7:
+
 C5G7 2D
 =======
 
-Coming soon!
+.. literalinclude:: ../../../tutorial/2d/c5g7_2d.cpp
+    :language: cpp
+
+.. image:: ../_images/c5g7_2d.png
+    :width: 400px
+    :align: center
 
 .. _tutorial_2d_crocus:
 
 CROCUS 2D
 =========
 
-Coming soon!
+.. literalinclude:: ../../../tutorial/2d/crocus_2d.cpp
+    :language: cpp
+
+
+We can visualize the mesh in Paraview, coloring by block, to see how the grid overlay has
+cut the geometry. This grid overlay and handling of arbitrary CAD geometries is a unique
+feature of the meshing capabilities of UM2.
+
+.. image:: ../_images/crocus_2d.png
+    :width: 400px
+    :align: center

@@ -118,7 +118,7 @@ main() -> int
   model.makeCoarseCell(corner_dxdy);   // 10
 
   // All ray tracing modules must be identical in size. Therefore, we cannot map
-  // the coarse cells one-to-one like in the model without the gap. Instead, we
+  // the coarse cells one-to-one to RTMS, like in the model without the gap. Instead, we
   // create a single RTM corresponding to the entire lattice
   model.makeRTM(cc_ids);
   model.makeLattice({{0}});

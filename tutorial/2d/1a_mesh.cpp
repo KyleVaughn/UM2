@@ -27,9 +27,10 @@ main() -> int
   //    must have the same start and stop heights.
   //  2. Assemblies
   //    Each assembly is a rectilinear partition of the Z-domain into 2D axial slices.
+  //    These axial slices are called "lattices".
   //  3. Lattices
   //    A regular partition of the XY-domain into equal-sized axis-aligned
-  //    rectangles, also known as "ray tracing modules" (RTMs).
+  //    rectangles, also known as "ray tracing modules".
   //  4. Ray tracing modules (RTMs)
   //    A rectilinear partition of the XY-domain into coarse cells.
   //    Every RTM is exactly the same width and height in all lattices.
@@ -40,7 +41,7 @@ main() -> int
   //    up of fine cells (triangles, quadrilaterals, etc.).
   //
   //  In MPACT, the coarse cells typically contain the geometry for a single
-  //  pin, centered in middle of the coarse cell. However, UM2 allows the coarse
+  //  pin, centered in the middle of the coarse cell. However, UM2 allows the coarse
   //  cells to contain a piece of a pin, multiple pins, or any other arbitrary
   //  geometry.
 
@@ -77,6 +78,9 @@ main() -> int
   // unique coarse cell. During this process, any area that does not already
   // have a material is assigned "Material_Moderator" and the color "royalblue".
   // This can be changed by providing optional arguments to the function.
+  // UM2 assumes that the bottom left corner of the domain is at (0, 0, 0).
+  // Using this assumption the position of all coarse cells, RTMs, lattices,
+  // etc. can be calculated.
   um2::gmsh::model::occ::overlaySpatialPartition(model);
 
   // Uncomment the following line to see the spatial partition overlaid on the geometry.
