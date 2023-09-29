@@ -1,5 +1,7 @@
 #include <um2/visualization/Image2D.hpp>
 
+#include <um2/geometry/Polygon.hpp>
+
 #include "../test_macros.hpp"
 #include <fstream>
 #include <iostream>
@@ -192,6 +194,85 @@ TEST_CASE(rasterizeLine)
 }
 
 template <typename T>
+TEST_CASE(modular_rays)
+{
+  um2::QuadraticTriangle<2, T> const tri(
+      um2::Point2<T>(static_cast<T>(0), static_cast<T>(0)),
+      um2::Point2<T>(static_cast<T>(1), static_cast<T>(0)),
+      um2::Point2<T>(static_cast<T>(0), static_cast<T>(1)),
+      um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0)),
+      um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.5)),
+      um2::Point2<T>(static_cast<T>(0), static_cast<T>(0.5)));
+  auto const box = tri.boundingBox();
+  T const res = static_cast<T>(0.00125);
+  um2::Image2D<T> image;
+  image.grid.minima = box.minima;
+  image.grid.spacing[0] = res;
+  image.grid.spacing[1] = res;
+  image.grid.num_cells[0] = static_cast<Size>(std::floor(box.width() / res)) + 1;
+  image.grid.num_cells[1] = static_cast<Size>(std::floor(box.height() / res)) + 1;
+  image.children.resize(image.grid.num_cells[0] * image.grid.num_cells[1]);
+  image.clear(um2::Colors::Red);
+  std::cerr << "Image size: " << image.grid.num_cells[0] << " x " << image.grid.num_cells[1]
+            << "\n";
+  ASSERT(image.grid.num_cells[0] == 801);
+  ASSERT(image.grid.num_cells[1] == 801);
+
+  // Parameters
+  Size constexpr num_angles = 6; // Angles γ ∈ (0, π/2). Total angles is 2 * num_angles
+  Size constexpr rays_per_longest_edge = 10;
+
+  auto const aabb = boundingBox(tri);
+  T const xmax = aabb.maxima[0];
+  T const xmin = aabb.minima[0];
+//  T const ymax = aabb.maxima[1];
+  T const ymin = aabb.minima[1];
+  auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
+  auto const spacing = longest_edge / static_cast<T>(rays_per_longest_edge);
+  T const pi_deg = um2::pi<T> / (static_cast<T>(num_angles) * static_cast<T>(4));
+  // For each angle
+  for (Size ia = 0; ia < num_angles; ++ia) {
+    T const angle = pi_deg * static_cast<T>(2 * ia + 1);
+    auto const params = um2::getModularRayParams(angle, spacing, aabb);
+    // For each ray
+    for (Size ix = 0; ix < params.num_rays[0]; ++ix) {
+      T const x0 = xmax - params.spacing[0] * (static_cast<T>(ix) + static_cast<T>(0.5));
+      T const y0 = ymin;
+      um2::Ray2<T> const ray(um2::Point2<T>(x0, y0), params.direction);
+      um2::Vec2<T> const intersections = intersect(aabb, ray);
+      image.rasterize(um2::LineSegment2<T>(ray(intersections[0]), ray(intersections[1])));
+    }
+    for (Size iy = 0; iy < params.num_rays[1]; ++iy) {
+      T const x0 = xmin;
+      T const y0 = ymin + params.spacing[1] * (static_cast<T>(iy) + static_cast<T>(0.5));
+      um2::Ray2<T> const ray(um2::Point2<T>(x0, y0), params.direction);
+      um2::Vec2<T> const intersections = intersect(aabb, ray);
+      image.rasterize(um2::LineSegment2<T>(ray(intersections[0]), ray(intersections[1])));
+    }
+    // Repeat for complementary angle
+//    T const angle_c = um2::pi<T> - angle;
+    auto params_c = params;
+    params_c.direction[0] = -params_c.direction[0];
+//    auto const params_c = um2::getModularRayParams(angle_c, spacing, aabb);
+    for (Size ix = 0; ix < params_c.num_rays[0]; ++ix) {
+      T const x0 = xmin + params_c.spacing[0] * (static_cast<T>(ix) + static_cast<T>(0.5));
+      T const y0 = ymin;
+      um2::Ray2<T> const ray(um2::Point2<T>(x0, y0), params_c.direction);
+      um2::Vec2<T> const intersections = intersect(aabb, ray);
+      image.rasterize(um2::LineSegment2<T>(ray(intersections[0]), ray(intersections[1])));
+    }
+    for (Size iy = 0; iy < params_c.num_rays[1]; ++iy) {
+      T const x0 = xmax;
+      T const y0 = ymin + params_c.spacing[1] * (static_cast<T>(iy) + static_cast<T>(0.5));
+      um2::Ray2<T> const ray(um2::Point2<T>(x0, y0), params_c.direction);
+      um2::Vec2<T> const intersections = intersect(aabb, ray);
+      image.rasterize(um2::LineSegment2<T>(ray(intersections[0]), ray(intersections[1])));
+    }
+    image.write("modular_rays_" + std::to_string(ia) + ".png");
+  }
+}
+
+template <typename T>
 TEST_SUITE(Image2D)
 {
   TEST((writePPM<T>));
@@ -200,6 +281,7 @@ TEST_SUITE(Image2D)
 #endif
   TEST((rasterizePoint<T>));
   TEST((rasterizeLine<T>));
+  TEST((modular_rays<T>));
 }
 
 auto

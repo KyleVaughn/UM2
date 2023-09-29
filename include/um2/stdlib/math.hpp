@@ -53,6 +53,45 @@ abs(double x) noexcept -> double
 #endif
 
 //==============================================================================
+// atan
+//==============================================================================
+
+#ifndef __CUDA_ARCH__
+
+template <typename T>
+PURE HOST constexpr auto
+atan(T x) noexcept -> T
+{
+  return std::atan(x);
+}
+
+#else
+
+template <typename T>
+PURE HOST constexpr auto
+atan(T x) noexcept -> T
+{
+  static_assert(always_false<T>, "atan is not implemented for this type");
+  return T();
+}
+
+template <>
+PURE DEVICE constexpr auto
+atan(float x) noexcept -> float
+{
+  return ::atanf(x);
+}
+
+template <>
+PURE DEVICE constexpr auto
+atan(double x) noexcept -> double
+{
+  return ::atan(x);
+}
+
+#endif
+
+//==============================================================================
 // atanh
 //==============================================================================
 
@@ -155,6 +194,45 @@ PURE DEVICE constexpr auto
 ceil(double x) noexcept -> double
 {
   return ::ceil(x);
+}
+
+#endif
+
+//==============================================================================
+// cos
+//==============================================================================
+
+#ifndef __CUDA_ARCH__
+
+template <typename T>
+PURE HOST constexpr auto
+cos(T x) noexcept -> T
+{
+  return std::cos(x);
+}
+
+#else
+
+template <typename T>
+PURE HOST constcosr auto
+cos(T x) noexcept -> T
+{
+  static_assert(always_false<T>, "cos is not implemented for this type");
+  return T();
+}
+
+template <>
+PURE DEVICE constcosr auto
+cos(float x) noexcept -> float
+{
+  return ::cosf(x);
+}
+
+template <>
+PURE DEVICE constcosr auto
+cos(double x) noexcept -> double
+{
+  return ::cos(x);
 }
 
 #endif

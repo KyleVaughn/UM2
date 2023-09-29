@@ -546,6 +546,37 @@ meanChordLength(Quadrilateral2<T> const & quad) noexcept -> T
   return static_cast<T>(4) * area(quad) / perimeter(quad);
 }
 
+template <typename T>
+PURE HOSTDEV constexpr auto
+meanChordLength(QuadraticTriangle2<T> const & tri) noexcept -> T
+{
+//  // Algorithm:
+//  // total_rays = 0
+//  // total_chord_length = 0
+//  // For each angle
+//  //  Compute modular ray parameters
+//  //  total_rays += num_rays 
+//  //  For each ray
+//  //    Compute intersections with edges
+//  //    Compute chord length
+//  //    total_chord_length += chord_length
+//  // return total_chord_length / total_rays
+//
+//  // Parameters
+//  Size constexpr num_angles = 1; // Angles γ ∈ (0, π/2). Total angles is 2 * num_angles
+//  Size constexpr rays_per_longest_edge = 4; 
+//
+//  auto const aabb = boundingBox(tri);
+//  T const pi_deg = pi<T> / (static_cast<T>(num_angles) * static_cast<T>(4));
+//  // For each angle,
+//  for (Size i = 0; i < num_angles; ++i) {    
+////    T const angle = pi_deg * static_cast<T>(2 * i + 1);
+//  } 
+////  
+////  ProductAngularQuadrature<T> const ang_quad
+  return static_cast<T>(4) * area(tri) / perimeter(tri);  
+}
+
 //==============================================================================
 //==============================================================================
 // Member functions
