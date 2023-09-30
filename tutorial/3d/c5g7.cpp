@@ -165,8 +165,8 @@ main() -> int
   for (size_t i = num_fuel_divs; i < num_axial_divs; ++i) {
     uo2_assembly[i] = 2;
     mox_assembly[i] = 2;
-  } 
-  // Get the start/stop height of each of the axial divisions 
+  }
+  // Get the start/stop height of each of the axial divisions
   double const dh = model_height / static_cast<double>(num_axial_divs);
   std::vector<double> axial_div_heights(num_axial_divs + 1);
   for (size_t i = 0; i < num_axial_divs + 1; ++i) {

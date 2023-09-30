@@ -207,8 +207,8 @@ TEST_CASE(meanChordLength)
 {
   auto const tri = makeTri<2, T>();
   T const two = static_cast<T>(2);
-  T const ref = two / (two + um2::sqrt(two));
-  ASSERT_NEAR(tri.meanChordLength(), ref, static_cast<T>(1e-5));
+  T const ref = um2::pi<T> / (two * (two + um2::sqrt(two)));
+  ASSERT_NEAR(tri.meanChordLength(), ref, static_cast<T>(1e-3));
 }
 
 #if UM2_USE_CUDA

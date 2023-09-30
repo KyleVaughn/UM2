@@ -456,6 +456,35 @@ isCCW(PlanarQuadraticPolygon<N, T> const & q) noexcept -> bool
 }
 
 //==============================================================================
+// intersect
+//==============================================================================
+
+template <Size N, typename T>
+PURE HOSTDEV constexpr auto
+intersect(PlanarLinearPolygon<N, T> const & p, Ray2<T> const & ray) noexcept -> Vec<N, T>
+{
+  Vec<N, T> result;
+  for (Size i = 0; i < N; ++i) {
+    result[i] = intersect(p.getEdge(i), ray);
+  }
+  return result;
+}
+
+template <Size N, typename T>
+PURE HOSTDEV constexpr auto
+intersect(PlanarQuadraticPolygon<N, T> const & p, Ray2<T> const & ray) noexcept
+    -> Vec<N, T>
+{
+  Vec<N, T> result;
+  for (Size i = 0; i < p.numEdges(); ++i) {
+    Vec2<T> const v = intersect(p.getEdge(i), ray);
+    result[2 * i] = v[0];
+    result[2 * i + 1] = v[1];
+  }
+  return result;
+}
+
+//==============================================================================
 // flipFace
 //==============================================================================
 
@@ -533,48 +562,84 @@ template <typename T>
 PURE HOSTDEV constexpr auto
 meanChordLength(Triangle2<T> const & tri) noexcept -> T
 {
-  // The mean chord length of a convex body is 4 Volume / Surface area (Dirac, 1943)
-  return static_cast<T>(4) * area(tri) / perimeter(tri);
+  // De Kruijf, W. J. M., and J. L. Kloosterman.
+  // "On the average chord length in reactor physics." Annals of Nuclear Energy 30.5
+  // (2003): 549-553.
+  return pi<T> * area(tri) / perimeter(tri);
 }
 
 template <typename T>
 PURE HOSTDEV constexpr auto
 meanChordLength(Quadrilateral2<T> const & quad) noexcept -> T
 {
-  // The mean chord length of a convex body is 4 Volume / Surface area (Dirac, 1943)
+  // De Kruijf, W. J. M., and J. L. Kloosterman.
+  // "On the average chord length in reactor physics." Annals of Nuclear Energy 30.5
+  // (2003): 549-553.
   assert(isConvex(quad));
-  return static_cast<T>(4) * area(quad) / perimeter(quad);
+  return pi<T> * area(quad) / perimeter(quad);
 }
 
-template <typename T>
+template <Size N, typename T>
 PURE HOSTDEV constexpr auto
-meanChordLength(QuadraticTriangle2<T> const & tri) noexcept -> T
+meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
 {
-//  // Algorithm:
-//  // total_rays = 0
-//  // total_chord_length = 0
-//  // For each angle
-//  //  Compute modular ray parameters
-//  //  total_rays += num_rays 
-//  //  For each ray
-//  //    Compute intersections with edges
-//  //    Compute chord length
-//  //    total_chord_length += chord_length
-//  // return total_chord_length / total_rays
-//
-//  // Parameters
-//  Size constexpr num_angles = 1; // Angles γ ∈ (0, π/2). Total angles is 2 * num_angles
-//  Size constexpr rays_per_longest_edge = 4; 
-//
-//  auto const aabb = boundingBox(tri);
-//  T const pi_deg = pi<T> / (static_cast<T>(num_angles) * static_cast<T>(4));
-//  // For each angle,
-//  for (Size i = 0; i < num_angles; ++i) {    
-////    T const angle = pi_deg * static_cast<T>(2 * i + 1);
-//  } 
-////  
-////  ProductAngularQuadrature<T> const ang_quad
-  return static_cast<T>(4) * area(tri) / perimeter(tri);  
+  // Algorithm:
+  // total_rays = 0
+  // total_chord_length = 0
+  // For each angle
+  //  Compute modular ray parameters
+  //  For each ray
+  //    Compute intersections with edges
+  //    Compute chord length
+  //    total_chord_length += chord_length
+  //    total_rays += 1
+  // return total_chord_length / total_rays
+
+  // Parameters
+  Size constexpr num_angles = 64; // Angles γ ∈ (0, π/2). Total angles is 2 * num_angles
+  Size constexpr rays_per_longest_edge = 1000;
+
+  Size total_rays = 0;
+  T total_length = static_cast<T>(0);
+  auto const aabb = boundingBox(p);
+  auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
+  auto const spacing = longest_edge / static_cast<T>(rays_per_longest_edge);
+  T const pi_deg = um2::pi<T> / (static_cast<T>(num_angles) * static_cast<T>(4));
+  // For each angle
+  for (Size ia = 0; ia < num_angles; ++ia) {
+    T const angle = pi_deg * static_cast<T>(2 * ia + 1);
+    // Compute modular ray parameters
+    auto params = um2::getModularRayParams(angle, spacing, aabb);
+    Size const num_rays = params.num_rays[0] + params.num_rays[1];
+    // For the angle and complementary angle
+    for (Size ip = 0; ip < 2; ++ip) {
+      if (ip == 1) {
+        params.direction[0] *= -1;
+      }
+      // For each ray
+      for (Size i = 0; i < num_rays; ++i) {
+        auto const ray = params.getRay(i);
+        auto intersections = intersect(p, ray);
+        um2::insertionSort(intersections.begin(), intersections.end());
+        // Get the number of intersections
+        Size num_intersections = 0;
+        for (Size j = 0; j < intersections.size(); ++j) {
+          if (intersections[j] < um2::infiniteDistance<T>()) {
+            ++num_intersections;
+          }
+        }
+        for (Size j = 0; j < num_intersections; j += 2) {
+          auto const p0 = ray(intersections[j]);
+          auto const p1 = ray(intersections[j + 1]);
+          um2::LineSegment2<T> const l(p0, p1);
+          total_length += l.length();
+          total_rays += 1;
+        }
+      }
+    }
+  }
+  return total_length / static_cast<T>(total_rays);
+  //  return pi<T> * area(p) / perimeter(p);
 }
 
 //==============================================================================
@@ -710,6 +775,18 @@ Polygon<P, N, D, T>::isCCW() const noexcept -> bool
   requires(D == 2)
 {
   return um2::isCCW(*this);
+}
+
+//==============================================================================
+// intersect
+//==============================================================================
+
+template <Size P, Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+Polygon<P, N, D, T>::intersect(Ray2<T> const & ray) const noexcept -> Vec<N, T>
+  requires(D == 2)
+{
+  return um2::intersect(*this, ray);
 }
 
 //==============================================================================

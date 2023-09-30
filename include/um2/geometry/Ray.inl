@@ -19,14 +19,14 @@ HOSTDEV constexpr Ray<D, T>::Ray(Point<D, T> const & origin,
 //==============================================================================
 
 template <Size D, typename T>
-HOSTDEV constexpr auto 
-Ray<D, T>::operator()(T const r) const noexcept -> Point<D, T> 
+HOSTDEV constexpr auto
+Ray<D, T>::operator()(T const r) const noexcept -> Point<D, T>
 {
   Point<D, T> res;
-  for (Size i = 0; i < D; ++i) { 
+  for (Size i = 0; i < D; ++i) {
     res[i] = o[i] + r * d[i];
   }
-  return res; 
+  return res;
 }
 
 } // namespace um2

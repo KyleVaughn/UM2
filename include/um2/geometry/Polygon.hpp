@@ -1,5 +1,7 @@
 #pragma once
 
+#include <um2/stdlib/algorithm.hpp> // insertionSort
+
 #include <um2/geometry/Dion.hpp>
 #include <um2/geometry/modular_rays.hpp>
 
@@ -87,6 +89,10 @@ struct Polytope<2, P, N, D, T> {
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isCCW() const noexcept -> bool
+    requires(D == 2);
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  intersect(Ray2<T> const & ray) const noexcept -> Vec<N, T>
     requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -213,6 +219,13 @@ linearPolygon(QuadraticQuadrilateral<D, T> const & q) noexcept -> Quadrilateral<
 //==============================================================================
 // meanChordLength
 //==============================================================================
+//
+// For a convex polygon, the mean chord length is simply pi * area / perimeter.
+// De Kruijf, W. J. M., and J. L. Kloosterman.
+// "On the average chord length in reactor physics." Annals of Nuclear Energy 30.5 (2003):
+// 549-553.
+//
+// For a non-convex polygon, we shoot modular rays from the bounding box and average.
 
 template <Size P, Size N, typename T>
 PURE HOSTDEV constexpr auto

@@ -52,6 +52,9 @@ struct Vec {
   PURE HOSTDEV [[nodiscard]] constexpr auto
   end() const noexcept -> T const *;
 
+  HOSTDEV [[nodiscard]] static constexpr auto
+  size() noexcept -> Size;
+
   //==============================================================================
   // Constructors
   //==============================================================================

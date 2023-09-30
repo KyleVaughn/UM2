@@ -49,6 +49,13 @@ Vec<D, T>::end() const noexcept -> T const *
   return addressof(data[0]) + D;
 }
 
+template <Size D, class T>
+HOSTDEV [[nodiscard]] constexpr auto
+Vec<D, T>::size() noexcept -> Size
+{
+  return D;
+}
+
 //==============================================================================
 // Constructors
 //==============================================================================

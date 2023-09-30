@@ -23,6 +23,9 @@ namespace um2
 template <std::floating_point T>
 constexpr T pi = static_cast<T>(3.14159265358979323846);
 
+template <std::floating_point T>
+constexpr T pi_2 = static_cast<T>(1.57079632679489661923);
+
 //==============================================================================
 // abs
 //==============================================================================
