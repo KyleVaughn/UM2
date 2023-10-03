@@ -139,9 +139,9 @@ main() -> int
 
   // Uncomment to view the geometry in Gmsh
   // um2::gmsh::fltk::run();
-  
-  // There is a bug (believed to be in Gmsh) that causes sometimes when geometry is
-  // created and overlaySpatialPartition is called in the same program. See the 
+
+  // There is a bug (believed to be in Gmsh) that occurs sometimes when geometry is
+  // created and overlaySpatialPartition is called in the same program. See the
   // Known Issues section of the documentation for more information.
   //
   // The workaround is to write the geometry to a file, finalize Gmsh, and then
