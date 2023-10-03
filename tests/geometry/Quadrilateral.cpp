@@ -227,7 +227,8 @@ HOSTDEV
 TEST_CASE(meanChordLength)
 {
   um2::Quadrilateral<2, T> const quad = makeQuad<2, T>();
-  ASSERT_NEAR(quad.meanChordLength(), static_cast<T>(1), static_cast<T>(1e-5));
+  ASSERT_NEAR(quad.meanChordLength(), um2::pi<T> / static_cast<T>(4),
+              static_cast<T>(1e-5));
 }
 
 #if UM2_USE_CUDA

@@ -197,6 +197,20 @@ TEST_CASE(isCCW_flipFace)
   ASSERT(tri.isCCW());
 }
 
+//==============================================================================
+// meanChordLength
+//==============================================================================
+
+template <typename T>
+HOSTDEV
+TEST_CASE(meanChordLength)
+{
+  auto const tri = makeTri<2, T>();
+  T const two = static_cast<T>(2);
+  T const ref = um2::pi<T> / (two * (two + um2::sqrt(two)));
+  ASSERT_NEAR(tri.meanChordLength(), ref, static_cast<T>(1e-3));
+}
+
 #if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(interpolate, D, T);
@@ -221,6 +235,9 @@ MAKE_CUDA_KERNEL(boundingBox, T);
 
 template <typename T>
 MAKE_CUDA_KERNEL(isCCW_flipFace, T);
+
+template <typename T>
+MAKE_CUDA_KERNEL(meanChordLength, T);
 #endif // UM2_USE_CUDA
 
 template <Size D, typename T>
@@ -235,6 +252,7 @@ TEST_SUITE(QuadraticTriangle)
     TEST_HOSTDEV(centroid, 1, 1, T);
     TEST_HOSTDEV(boundingBox, 1, 1, T);
     TEST_HOSTDEV(isCCW_flipFace, 1, 1, T);
+    TEST_HOSTDEV(meanChordLength, 1, 1, T);
   }
 }
 

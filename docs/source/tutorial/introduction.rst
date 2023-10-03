@@ -42,12 +42,26 @@ Known Issues/Pain Points
    Ask Kyle (kcvaughn@umich.edu) if you need help with this so he finally gets around to writing
    a tutorial on it.
 
-2. Gmsh's quadrilateral mesh algorithms are not perfect, and will sometimes silently
+2. Gmsh maintains an internal geometry representation (``geo`` namespace functions) in addition to the OpenCascade 
+   CAD representation (``occ`` namespace functions). As a result, changes made to one representation must be 
+   propagated to the other using the ``synchronize()`` function. There is a bug (believed to be in Gmsh) that
+   causes a double pointer free (crash) in some circumstances when dealing with the OpenCascade representation. The two
+   cases where this has been found to occur are:
+  
+    1. When cleaning up after calling ``um2::finalize()``. This is not a problem if you are only using UM\ :sup:`2` \ 
+       to generate meshes, since by this point the mesh will already have been written to disk.
+
+    2. When using the ``occ`` namespace functions to create geometry (used by all UM2 geometry functions) 
+       and ``overlaySpatialPartition`` in the same program. The fix for this is to use a ``model.cpp`` file, which 
+       creates the geometry and writes it to disk, and a ``mesh.cpp`` file, which reads the geometry from disk, 
+       overlays the spatial partition, and generates the mesh. This is also the recommended way to use UM\ :sup:`2` \.
+
+3. Gmsh's quadrilateral mesh algorithms are not perfect, and will sometimes silently
    create overlapping elements if the geometry is small relative to the mesh size, such as in the
    helium gap of a fuel rod. This will lead to inaccurate results or even a crash. Work is underway
    to detect and fix this issue, but for now, I would recommend sticking to triangular meshes.
 
-3. Creating models for use with `MPACT <https://vera.ornl.gov/mpact/>`_ is a bit more complicated
+4. Creating models for use with `MPACT <https://vera.ornl.gov/mpact/>`_ is a bit more complicated
    than it need be. Work is underway to bundle function calls and hide some of the complexity to
    create a more user-friendly interface. If you encounter any issues, or have ideas for how to
    make modeling for MPACT easier, please email Kyle (kcvaughn@umich.edu) or open an issue on

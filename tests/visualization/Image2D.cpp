@@ -1,5 +1,7 @@
 #include <um2/visualization/Image2D.hpp>
 
+#include <um2/geometry/Polygon.hpp>
+
 #include "../test_macros.hpp"
 #include <fstream>
 #include <iostream>
@@ -25,6 +27,7 @@ TEST_CASE(writePPM)
   ASSERT(stat == 0);
 }
 
+#if UM2_USE_PNG
 template <typename T>
 TEST_CASE(writePNG)
 {
@@ -44,6 +47,7 @@ TEST_CASE(writePNG)
   int const stat = std::remove("test.png");
   ASSERT(stat == 0);
 }
+#endif
 
 template <typename T>
 TEST_CASE(rasterizePoint)
@@ -66,12 +70,12 @@ TEST_CASE(rasterizePoint)
   r = 30;
   image.rasterizeAsDisk(um2::Point2<T>(99, 99), r, um2::Color("white"));
   image.rasterize(um2::Point2<T>(50, 50), um2::Color("yellow"));
-  image.write("test.png");
+  image.write("test.ppm");
   {
-    std::ifstream const file("test.png");
+    std::ifstream const file("test.ppm");
     ASSERT(file.is_open());
   }
-  int const stat = std::remove("test.png");
+  int const stat = std::remove("test.ppm");
   ASSERT(stat == 0);
 }
 
@@ -132,8 +136,8 @@ TEST_CASE(rasterizeLine)
       if (image.children[j] != image_ref.children[j]) {
         std::cerr << "Error in rasterizing line (" << l[0][0] << ", " << l[0][1]
                   << ") to (" << l[1][0] << ", " << l[1][1] << ")\n";
-        image.write("line_rasterization_" + std::to_string(i) + ".png");
-        image_ref.write("line_rasterization_ref_" + std::to_string(i) + ".png");
+        image.write("line_rasterization_" + std::to_string(i) + ".ppm");
+        image_ref.write("line_rasterization_ref_" + std::to_string(i) + ".ppm");
         ++num_errors;
         break;
       }
@@ -177,8 +181,8 @@ TEST_CASE(rasterizeLine)
       if (image.children[j] != image_ref.children[j]) {
         std::cerr << "Error in rasterizing line (" << p0[0] << ", " << p0[1] << ") to ("
                   << p1[0] << ", " << p1[1] << ")\n";
-        image.write("line_rasterization_" + std::to_string(i) + ".png");
-        image_ref.write("line_rasterization_ref_" + std::to_string(i) + ".png");
+        image.write("line_rasterization_" + std::to_string(i) + ".ppm");
+        image_ref.write("line_rasterization_ref_" + std::to_string(i) + ".ppm");
         ++num_errors;
         break;
       }
@@ -189,13 +193,96 @@ TEST_CASE(rasterizeLine)
   ASSERT(num_errors == 0);
 }
 
+// template <typename T>
+//// NOLINTNEXTLINE
+// TEST_CASE(modular_rays)
+//{
+//   um2::QuadraticTriangle<2, T> const tri(
+//       um2::Point2<T>(static_cast<T>(0), static_cast<T>(0)),
+//       um2::Point2<T>(static_cast<T>(1), static_cast<T>(0)),
+//       um2::Point2<T>(static_cast<T>(0), static_cast<T>(1)),
+//       um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0)),
+//       um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.5)),
+//       um2::Point2<T>(static_cast<T>(0), static_cast<T>(0.5)));
+//   auto const box = tri.boundingBox();
+//   T const res = static_cast<T>(0.000625);
+//   um2::Image2D<T> image;
+//   image.grid.minima = box.minima;
+//   image.grid.spacing[0] = res;
+//   image.grid.spacing[1] = res;
+//   image.grid.num_cells[0] = static_cast<Size>(std::floor(box.width() / res)) + 1;
+//   image.grid.num_cells[1] = static_cast<Size>(std::floor(box.height() / res)) + 1;
+//   image.children.resize(image.grid.num_cells[0] * image.grid.num_cells[1]);
+//   image.clear(um2::Colors::Red);
+//   std::cerr << "Image size: " << image.grid.num_cells[0] << " x " <<
+//   image.grid.num_cells[1]
+//             << "\n";
+//   ASSERT(image.grid.num_cells[0] == 1601);
+//   ASSERT(image.grid.num_cells[1] == 1601);
+//
+//   // Parameters
+//   Size constexpr num_angles = 32; // Angles γ ∈ (0, π/2). Total angles is 2 *
+//   num_angles Size constexpr rays_per_longest_edge = 1000;
+//
+//   T total_length = static_cast<T>(0);
+//   Size total_num_rays = 0;
+//
+//   auto const aabb = boundingBox(tri);
+//   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() :
+//   aabb.height(); auto const spacing = longest_edge /
+//   static_cast<T>(rays_per_longest_edge); T const pi_deg = um2::pi<T> /
+//   (static_cast<T>(num_angles) * static_cast<T>(4));
+//   // For each angle
+//   for (Size ia = 0; ia < num_angles; ++ia) {
+//     T const angle = pi_deg * static_cast<T>(2 * ia + 1);
+//     auto params = um2::getModularRayParams(angle, spacing, aabb);
+//     Size const num_rays = params.num_rays[0] + params.num_rays[1];
+//
+//     // For the angle and complementary angle
+//     for (Size ip = 0; ip < 2; ++ip) {
+//       if (ip == 1) {
+//         params.direction[0] *= -1;
+//       }
+//       // For each ray
+//       for (Size i = 0; i < num_rays; ++i) {
+//         auto const ray = params.getRay(i);
+//         auto intersections = intersect(tri, ray);
+//         um2::insertionSort(intersections.begin(), intersections.end());
+//         // Get the number of intersections
+//         Size num_intersections = 0;
+//         for (Size j = 0; j < intersections.size(); ++j) {
+//           if (intersections[j] < um2::infiniteDistance<T>()) {
+//             ++num_intersections;
+//           }
+//         }
+//         for (Size j = 0; j < num_intersections; j += 2) {
+//           auto const p0 = ray(intersections[j]);
+//           auto const p1 = ray(intersections[j + 1]);
+//           um2::LineSegment2<T> const l(p0, p1);
+//           total_length += l.length();
+//           total_num_rays += 1;
+//           image.rasterize(l);
+//         }
+//       }
+//     }
+//     image.write("modular_rays_" + std::to_string(ia) + ".ppm");
+//     std::cerr << "Mean chord length: " << total_length / static_cast<T>(total_num_rays)
+//     << "\n";
+//   }
+//   std::cerr << "pi * area / perimeter: " << um2::pi<T> * tri.area() / tri.perimeter()
+//   << "\n";
+// }
+
 template <typename T>
 TEST_SUITE(Image2D)
 {
   TEST((writePPM<T>));
+#if UM2_USE_PNG
   TEST((writePNG<T>));
+#endif
   TEST((rasterizePoint<T>));
   TEST((rasterizeLine<T>));
+  //  TEST((modular_rays<T>));
 }
 
 auto

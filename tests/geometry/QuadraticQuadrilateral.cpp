@@ -196,6 +196,19 @@ TEST_CASE(isCCW_flipFace)
   ASSERT(quad.isCCW());
 }
 
+//==============================================================================
+// meanChordLength
+//==============================================================================
+
+template <typename T>
+HOSTDEV
+TEST_CASE(meanChordLength)
+{
+  auto const quad = makeQuad<2, T>();
+  T const ref = um2::pi<T> / static_cast<T>(4);
+  ASSERT_NEAR(quad.meanChordLength(), ref, static_cast<T>(1e-3));
+}
+
 #if UM2_USE_CUDA
 template <Size D, typename T>
 MAKE_CUDA_KERNEL(interpolate, D, T);
@@ -234,6 +247,7 @@ TEST_SUITE(QuadraticQuadrilateral)
     TEST_HOSTDEV(centroid, 1, 1, T);
     TEST_HOSTDEV(boundingBox, 1, 1, T);
     TEST_HOSTDEV(isCCW_flipFace, 1, 1, T);
+    TEST_HOSTDEV(meanChordLength, 1, 1, T);
   }
 }
 

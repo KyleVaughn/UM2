@@ -1,7 +1,7 @@
 // Model reference:
-//    VERA Core Physics Benchmark Progression Problem Specifications
-//    Revision 4, August 29, 2014
-//    CASL-U-2012-0131-004
+//  VERA Core Physics Benchmark Progression Problem Specifications
+//  Revision 4, August 29, 2014
+//  CASL-U-2012-0131-004
 
 #include <um2.hpp>
 
@@ -10,18 +10,45 @@ main() -> int
 {
   um2::initialize();
 
-  // We import the geometry from the brep file we created in the previous step.
+  // Import the geometry from the brep file we created in the previous step.
   // The "extra_info" flag is set to true so that we can import the groups and
-  // colors of the entities in the brep file.
+  // colors of the geometric entities in the brep file.
   um2::gmsh::open("1a.brep", /*extra_info=*/true);
 
-  // We want to map the CAD geometry to MPACT's spatial hierarchy so that we can
-  // use it in our simulation. We first create a spatial partition object.
+  // Our goal is to create a model which can be used in an MPACT simulation.
+  // Therefore, we need to partition the domain in a way that maps to MPACT's
+  // spatial hierarchy. MPACT is a 2D/1D code, so we will effectively be creating
+  // a stack of 2D meshes (axial slices). In this case, since the model is 2D, we just
+  // have one slice.
+  //
+  // The MPACT spatial partition consists of:
+  //  1. The core
+  //    A rectilinear partition of the XY-domain into assemblies. All assemblies
+  //    must have the same start and stop heights.
+  //  2. Assemblies
+  //    Each assembly is a rectilinear partition of the Z-domain into 2D axial slices.
+  //    These axial slices are called "lattices".
+  //  3. Lattices
+  //    A regular partition of the XY-domain into equal-sized axis-aligned
+  //    rectangles, also known as "ray tracing modules".
+  //  4. Ray tracing modules (RTMs)
+  //    A rectilinear partition of the XY-domain into coarse cells.
+  //    Every RTM is exactly the same width and height in all lattices.
+  //    This property is a necessity for modular ray tracing.
+  //  5. Coarse cells
+  //    A 2D axis-aligned box (AABB), containing a mesh which completely
+  //    fills the box's interior. This mesh is the "fine mesh". It is made
+  //    up of fine cells (triangles, quadrilaterals, etc.).
+  //
+  //  In MPACT, the coarse cells typically contain the geometry for a single
+  //  pin, centered in the middle of the coarse cell. However, UM2 allows the coarse
+  //  cells to contain a piece of a pin, multiple pins, or any other arbitrary
+  //  geometry.
+
+  // We will now build the model from the ground up, starting with the coarse cells.
   um2::mpact::SpatialPartition model;
 
-  // The lowest level of the hierarchy is the coarse cell. These are the cells
-  // that are used in Coarse Mesh Finite Difference (CMFD) acceleration. We will
-  // create a coarse cell that is 1.26 cm x 1.26 cm in size. It is implicitly
+  // We create a coarse cell that is 1.26 cm x 1.26 cm in size. It is implicitly
   // given the ID of 0.
   double const pitch = 1.26; // Pitch = 1.26 cm (pg. 4)
   model.makeCoarseCell({pitch, pitch});
@@ -51,14 +78,17 @@ main() -> int
   // unique coarse cell. During this process, any area that does not already
   // have a material is assigned "Material_Moderator" and the color "royalblue".
   // This can be changed by providing optional arguments to the function.
+  // UM2 assumes that the bottom left corner of the domain is at (0, 0, 0).
+  // Using this assumption the position of all coarse cells, RTMs, lattices,
+  // etc. can be calculated.
   um2::gmsh::model::occ::overlaySpatialPartition(model);
 
   // Uncomment the following line to see the spatial partition overlaid on the geometry.
   // um2::gmsh::fltk::run();
 
   // Our model is now ready to be meshed. We will set the characteristic mesh size
-  // to 0.1 cm for the entire model. This is the target mesh edge length.
-  double const lc = 0.1; // Mesh size = 0.1 cm
+  // to 0.15 cm for the entire model. This is the target mesh edge length.
+  double const lc = 0.15;
   um2::gmsh::model::mesh::setGlobalMeshSize(lc);
 
   // Alternatively, we can set the characteristic mesh size for groups of entities.
@@ -75,14 +105,20 @@ main() -> int
   // QuadraticTri   - Quadratic triangular mesh
   // QuadraticQuad  - Quadratic quadrilateral mesh
   //
-  // It is highly recommended to use a quadratic mesh in order to better
-  // preserve the areas of the materials. For simple problems like this, UM2
-  // has mesh builders that can perfectly preserve the areas of the materials, but
-  // we want to build complexity towards arbitrary geometries, so we will use
-  // the general approach.
-  um2::MeshType const mesh_type = um2::MeshType::Tri;
+  // It is recommended that you use a quadratic triangle mesh when meshing non-trivial
+  // geometries. This will allow for a more accurate representation of the geometry,
+  // minimizing the error introduced by a failure to preserve material areas/volumes.
+  // For common geometries like this, UM2 has mesh builders that can perfectly preserve
+  // material areas/volumes, but this will be covered in a later example.
+  // For now, we will use a general mesh generation approach. This will not preserve
+  // material areas/volumes exactly.
+  um2::MeshType const mesh_type = um2::MeshType::QuadraticTri;
 
   // We can now generate the mesh. This will create a mesh for the entire model.
+  // Note that warnings about a jacobian determinant less than 0 are usually fine for
+  // quadratic elements, since we only care that the mesh is geometrically valid
+  // (no overlapping faces, etc.), not that each face has an invertible transformation
+  // to the reference element.
   um2::gmsh::model::mesh::generateMesh(mesh_type);
 
   // Uncomment the following line to see the mesh.
@@ -91,10 +127,10 @@ main() -> int
   // We can now export the mesh to a file.
   um2::gmsh::write("1a.inp");
 
-  // We now have a fine MOC mesh to go inside of each of the CMFD coarse cells, but we
-  // need to export a model which contains the MPACT spatial hierarchy information. To do
-  // this we will first use the mesh we just created to populate the otherwise empty
-  // coarse cells in the spatial partition.
+  // We now have a fine MOC mesh to go inside of each of the coarse cells in our
+  // model, but we need to export a model which also contains the MPACT spatial hierarchy
+  // information. To do this we will first use the mesh we just created to populate the
+  // otherwise empty coarse cells in the spatial partition.
   model.importCoarseCells("1a.inp");
 
   // We can now export the model to a file. This will create a file called "1a.xdmf".

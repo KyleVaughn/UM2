@@ -186,7 +186,7 @@ TEST_CASE(meanChordLength)
 {
   um2::Triangle<2, T> const tri = makeTri<2, T>();
   T const two = static_cast<T>(2);
-  T const ref = two / (two + um2::sqrt(two));
+  T const ref = um2::pi<T> / (two * (two + um2::sqrt(two)));
   ASSERT_NEAR(tri.meanChordLength(), ref, static_cast<T>(1e-5));
 }
 

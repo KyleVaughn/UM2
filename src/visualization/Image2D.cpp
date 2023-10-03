@@ -3,7 +3,9 @@
 #include <bit>     // std::bit_cast
 #include <fstream> // std::ofstream
 
-#include <png.h>
+#if UM2_USE_PNG
+#  include <png.h>
+#endif
 
 namespace um2
 {
@@ -27,6 +29,7 @@ writePPM(Vector<Color> const & buffer, Size nx, Size ny, std::string const & fil
   ofs.close();
 }
 
+#if UM2_USE_PNG
 // We don't care about the return value of fclose since we the program will exit anyway
 // NOLINTBEGIN(cert-err33-c) justified above
 void
@@ -77,12 +80,12 @@ writePNG(Vector<Color> buffer, Size nx, Size ny, std::string const & filename)
   // reverse order
 
   // Point to the last line of the buffer
-#if UM2_ENABLE_INT64
+#  if UM2_ENABLE_INT64
   ptrdiff_t const stride = nx * static_cast<ptrdiff_t>(sizeof(Color));
-#else
+#  else
   ptrdiff_t const stride =
       static_cast<ptrdiff_t>(nx) * static_cast<ptrdiff_t>(sizeof(Color));
-#endif
+#  endif
   auto * data_ptr = reinterpret_cast<png_bytep>(buffer.end()) - stride;
   for (Size y = 0; y < ny; ++y) {
     png_write_row(png, data_ptr);
@@ -96,5 +99,6 @@ writePNG(Vector<Color> buffer, Size nx, Size ny, std::string const & filename)
   fclose(fp);
 }
 // NOLINTEND(cert-err33-c)
+#endif
 
 } // namespace um2
