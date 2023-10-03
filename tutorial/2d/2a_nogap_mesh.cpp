@@ -107,6 +107,7 @@ main() -> int
 
   // May segfault upon clean up of Gmsh due to a bug with deleting entities in the
   // CAD kernel. We have already written the mesh to file, so we can safely ignore this.
+  // See Known Issues in the documentation for more information.
   um2::finalize();
   return 0;
 }
