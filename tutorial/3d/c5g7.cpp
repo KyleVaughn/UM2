@@ -8,7 +8,7 @@
 auto
 main() -> int
 {
-  um2::initialize("debug");
+  um2::initialize();
 
   // Parameters
   double const radius = 0.54;            // Pin radius = 0.54 cm (pg. 3)
@@ -139,6 +139,18 @@ main() -> int
 
   // Uncomment to view the geometry in Gmsh
   // um2::gmsh::fltk::run();
+  
+  // There is a bug (believed to be in Gmsh) that causes sometimes when geometry is
+  // created and overlaySpatialPartition is called in the same program. See the 
+  // Known Issues section of the documentation for more information.
+  //
+  // The workaround is to write the geometry to a file, finalize Gmsh, and then
+  // re-initialize Gmsh and open the file.
+  //
+  um2::gmsh::write("c5g7.brep", /*extra_info=*/true);
+  um2::gmsh::finalize();
+  um2::gmsh::initialize();
+  um2::gmsh::open("c5g7.brep", /*extra_info=*/true);
 
   // Construct the MPACT spatial partition using pin-modular ray tracing
   // (coarse cells map one-to-one with ray tracing modules)
@@ -190,13 +202,14 @@ main() -> int
   // Overlay the spatial partition onto the domain
   um2::gmsh::model::occ::overlaySpatialPartition(model);
 
-  um2::gmsh::fltk::run();
-  // um2::gmsh::model::mesh::setGlobalMeshSize(0.25);
-  // um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
+  // Create the mesh
+  um2::gmsh::model::mesh::setGlobalMeshSize(0.25);
+  um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
 
-  // um2::gmsh::write("c5g7.inp");
-  // model.importCoarseCells("c5g7.inp");
-  // um2::exportMesh("c5g7.xdmf", model);
+  // Write the mesh to file
+  um2::gmsh::write("c5g7.inp");
+  model.importCoarseCells("c5g7.inp");
+  um2::exportMesh("c5g7.xdmf", model);
   um2::finalize();
   return 0;
 }

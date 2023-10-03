@@ -948,8 +948,9 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
           ++ctr;
         }
       }
+      assert(ctr == nents);
       addToPhysicalGroup(
-          2,                                                          // dim
+          3,                                                          // dim
           material_ids[i],                                            // tags
           -1,                                                         // tag
           "Material_" + std::string(materials[pin_id][i].name.data()) // name
