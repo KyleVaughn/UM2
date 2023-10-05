@@ -2,14 +2,17 @@
 
 #include <um2/common/Color.hpp>
 #include <um2/common/ShortString.hpp>
+#include <um2/physics/CrossSection.hpp>
 
 namespace um2
 {
 
+template <typename T>
 struct Material {
 
   ShortString name;
   Color color;
+  CrossSection<T> xs;
 
   // ---------------------------------------------------------------------
   // Constructors
@@ -38,14 +41,16 @@ struct Material {
   }
 };
 
+template <typename T>
 PURE HOSTDEV constexpr auto
-operator==(Material const & lhs, Material const & rhs) -> bool
+operator==(Material<T> const & lhs, Material<T> const & rhs) -> bool
 {
   return lhs.color == rhs.color && lhs.name == rhs.name;
 }
 
+template <typename T>
 PURE HOSTDEV constexpr auto
-operator!=(Material const & lhs, Material const & rhs) -> bool
+operator!=(Material<T> const & lhs, Material<T> const & rhs) -> bool
 {
   return !(lhs == rhs);
 }

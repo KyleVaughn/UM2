@@ -709,6 +709,7 @@ printStats(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept
 
   // Mean chord length
   data.resize(mesh.numFaces());
+  #pragma omp parallel for
   for (Size i = 0; i < mesh.numFaces(); ++i) {
     data[i] = mesh.getFace(i).meanChordLength();
   }
@@ -717,6 +718,16 @@ printStats(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept
   std::sort(std_data.begin(), std_data.end());
   std::cout << "\nMean chord lengths:\n";
   printHistogram(std_data);
+
+  // Print each mcl to std cout
+  std::cout << "\nMCL:\n";
+  for (Size i = 0; i < mesh.numFaces(); ++i) {
+    std::cout << data[i] << '\n';
+  }
+  std::cout << "\nLinear MCL:\n";
+  for (Size i = 0; i < mesh.numFaces(); ++i) {
+    std::cout << linearPolygon(mesh.getFace(i)).meanChordLength() << '\n';
+  }
 }
 
 } // namespace um2

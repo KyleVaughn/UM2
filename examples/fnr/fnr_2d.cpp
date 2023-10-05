@@ -175,7 +175,7 @@ main() -> int
   std::vector<int> clad_tags;
   std::vector<int> fuel_tags;
 
-  double const center = 6.0;
+  double const center = 5.0;
 
   double const x0 = center - side_plate_thickness - side_plate_to_plate_spacing / 2.0;
   double const y0 = center - side_plate_width / 2.0; 
@@ -209,7 +209,7 @@ main() -> int
 
   // Overlay a regular grid on the geometry
   um2::mpact::SpatialPartition model;
-  size_t const num_cells = 10;
+  size_t const num_cells = 2;
 
   // Size of the coarse cells
   double const dx = 2.0 * center / static_cast<double>(num_cells);
@@ -230,15 +230,19 @@ main() -> int
   // Overlay the spatial partition
   um2::gmsh::model::occ::overlaySpatialPartition(model);
 
-  // Uncomment to visualize the geometry after the spatial partition has been overlaid
-  // um2::gmsh::fltk::run();
-
-  um2::gmsh::model::mesh::setGlobalMeshSize(0.2);
+  um2::gmsh::model::mesh::setGlobalMeshSize(0.05);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
+  um2::gmsh::fltk::run();
 
   um2::gmsh::write("fnr.inp");
-  model.importCoarseCells("fnr.inp");
-  um2::exportMesh("fnr.xdmf", model);
+
+  um2::MeshFile<double, int> meshfile;
+  um2::importMesh("fnr.inp", meshfile);
+  um2::QuadraticTriMesh<2, double, int> const mesh(meshfile);
+  um2::printStats(mesh);
+
+//  model.importCoarseCells("fnr.inp");
+//  um2::exportMesh("fnr.xdmf", model);
   um2::finalize();
   return 0;
 }
