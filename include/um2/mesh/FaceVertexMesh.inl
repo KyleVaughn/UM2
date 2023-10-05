@@ -462,10 +462,10 @@ getUniqueEdges(LinearPolygonMesh<N, D, T, I> const & mesh,
   }
 
   // Sort the edges by the first vertex index, then the second vertex index.
-  std::sort(edge_conn_vec.begin(), edge_conn_vec.end(), 
-  [](auto const & a, auto const & b) {
-    return a[0] < b[0] || (a[0] == b[0] && a[1] < b[1]);
-  });
+  std::sort(edge_conn_vec.begin(), edge_conn_vec.end(),
+            [](auto const & a, auto const & b) {
+              return a[0] < b[0] || (a[0] == b[0] && a[1] < b[1]);
+            });
 
   // Get the unique edges.
   auto last = std::unique(edge_conn_vec.begin(), edge_conn_vec.end());
@@ -475,8 +475,8 @@ getUniqueEdges(LinearPolygonMesh<N, D, T, I> const & mesh,
   edges.resize(nunique_edges);
   for (Size i = 0; i < nunique_edges; ++i) {
     auto const edge_conn = edge_conn_vec[i];
-    edges[i] = LineSegment<D, T>(mesh.vertices[edge_conn[0]], 
-                                 mesh.vertices[edge_conn[1]]);
+    edges[i] =
+        LineSegment<D, T>(mesh.vertices[edge_conn[0]], mesh.vertices[edge_conn[1]]);
   }
 }
 
@@ -499,8 +499,7 @@ getUniqueEdges(QuadraticPolygonMesh<N, D, T, I> const & mesh,
       }
       edge_conn_vec[iface * edges_per_face + iedge] = edge_conn;
     }
-    Vec3<I> edge_conn(face_conn[edges_per_face - 1], face_conn[0],
-        face_conn[N - 1]);
+    Vec3<I> edge_conn(face_conn[edges_per_face - 1], face_conn[0], face_conn[N - 1]);
     if (edge_conn[0] > edge_conn[1]) {
       std::swap(edge_conn[0], edge_conn[1]);
     }
@@ -508,11 +507,11 @@ getUniqueEdges(QuadraticPolygonMesh<N, D, T, I> const & mesh,
   }
 
   // Sort the edges by the first vertex index, then the second vertex index.
-  std::sort(edge_conn_vec.begin(), edge_conn_vec.end(), 
-  [](auto const & a, auto const & b) {
-    return a[0] < b[0] || (a[0] == b[0] && a[1] < b[1]) ||
-           (a[0] == b[0] && a[1] == b[1] && a[2] < b[2]);
-  });
+  std::sort(edge_conn_vec.begin(), edge_conn_vec.end(),
+            [](auto const & a, auto const & b) {
+              return a[0] < b[0] || (a[0] == b[0] && a[1] < b[1]) ||
+                     (a[0] == b[0] && a[1] == b[1] && a[2] < b[2]);
+            });
 
   // Get the unique edges.
   auto last = std::unique(edge_conn_vec.begin(), edge_conn_vec.end());
@@ -522,9 +521,9 @@ getUniqueEdges(QuadraticPolygonMesh<N, D, T, I> const & mesh,
   edges.resize(nunique_edges);
   for (Size i = 0; i < nunique_edges; ++i) {
     auto const edge_conn = edge_conn_vec[i];
-    edges[i] = QuadraticSegment<D, T>(mesh.vertices[edge_conn[0]], 
-                                      mesh.vertices[edge_conn[1]],
-                                      mesh.vertices[edge_conn[2]]);
+    edges[i] =
+        QuadraticSegment<D, T>(mesh.vertices[edge_conn[0]], mesh.vertices[edge_conn[1]],
+                               mesh.vertices[edge_conn[2]]);
   }
 }
 
@@ -686,7 +685,7 @@ printStats(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept
   // num faces & vertices
   std::cout << "num faces: " << mesh.numFaces() << '\n';
   std::cout << "num vertices: " << mesh.numVertices() << '\n';
-  
+
   // Face areas
   mesh.getFaceAreas(data);
   std_data.resize(static_cast<size_t>(data.size()));

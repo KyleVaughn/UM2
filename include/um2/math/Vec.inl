@@ -181,7 +181,7 @@ template <Size D, std::integral T>
 HOSTDEV constexpr auto
 operator!=(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> bool
 {
-  return !(u == v); 
+  return !(u == v);
 }
 
 template <Size D, class T>

@@ -92,7 +92,7 @@ struct FaceVertexMesh {
   void
   toMeshFile(MeshFile<T, I> & file) const noexcept;
 
-  void 
+  void
   getFaceAreas(Vector<T> & areas) const noexcept;
 
   void

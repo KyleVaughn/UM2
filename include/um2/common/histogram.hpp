@@ -2,8 +2,8 @@
 
 #include <um2/config.hpp>
 
-#include <um2/math/stats.hpp>
 #include <um2/common/Log.hpp>
+#include <um2/math/stats.hpp>
 
 #include <algorithm>
 #include <cstddef>

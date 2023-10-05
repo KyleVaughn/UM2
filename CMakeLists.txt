@@ -17,6 +17,8 @@ endif()
 # Set module path
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # For IDE users
+
 #===============================================================================
 # User options
 #===============================================================================
@@ -363,8 +365,6 @@ endif()
 if (UM2_BUILD_BENCHMARKS)
   add_subdirectory(benchmarks)
 endif()
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # For IDE users
 
 #===============================================================================
 # Install

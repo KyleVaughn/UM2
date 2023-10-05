@@ -130,10 +130,6 @@ main() -> int
 
   um2::gmsh::write("2a.inp");
   model.importCoarseCells("2a.inp");
-
-  // Print mesh statistics
-  um2::printStats(model.quadratic_tri[0]);
-
   um2::exportMesh("2a.xdmf", model);
   um2::finalize();
   return 0;

@@ -637,7 +637,7 @@ meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
           if (len < static_cast<T>(1e5)) { // In case of numerical issues
             total_length += len;
             total_rays += 1;
-          } 
+          }
         }
       }
     }
