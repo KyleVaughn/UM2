@@ -5,16 +5,18 @@
 namespace um2
 {
 
-template <typename T>
 struct CrossSection {
 
-  Vector<T> t; // Macroscopic total cross section
+  Vector<Float> t; // Macroscopic total cross section
 
   // ---------------------------------------------------------------------
   // Constructors
   // ---------------------------------------------------------------------
 
   constexpr CrossSection() noexcept = default;
+
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr CrossSection(Vector<Float> const & t_in) noexcept : t(t_in) {}
 
 };
 
