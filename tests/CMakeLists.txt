@@ -23,7 +23,7 @@ add_um2_test(./common/ShortString.cpp)
 add_um2_test(./common/Color.cpp)
 add_um2_test(./common/permutation.cpp)
 add_um2_test(./common/to_vecvec.cpp)
-#add_um2_test(./common/histogram.cpp)
+add_um2_test(./common/histogram.cpp)
 
 #===============================================================================
 # math

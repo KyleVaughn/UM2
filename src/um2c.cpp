@@ -252,19 +252,19 @@ um2MPACTCoarseCellFaceAreas(void * const model, Int const cc_id, Int * const n,
     // NOLINTBEGIN(bugprone-branch-clone)
     switch (cc.mesh_type) {
     case um2::MeshType::Tri: {
-      areas_vec = sp.tri[mesh_id].getFaceAreas();
+      sp.tri[mesh_id].getFaceAreas(areas_vec);
       break;
     }
     case um2::MeshType::Quad: {
-      areas_vec = sp.quad[mesh_id].getFaceAreas();
+      sp.quad[mesh_id].getFaceAreas(areas_vec);
       break;
     }
     case um2::MeshType::QuadraticTri: {
-      areas_vec = sp.quadratic_tri[mesh_id].getFaceAreas();
+      sp.quadratic_tri[mesh_id].getFaceAreas(areas_vec);
       break;
     }
     case um2::MeshType::QuadraticQuad: {
-      areas_vec = sp.quadratic_quad[mesh_id].getFaceAreas();
+      sp.quadratic_quad[mesh_id].getFaceAreas(areas_vec);
       break;
     }
     default:

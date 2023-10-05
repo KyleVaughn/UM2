@@ -3,6 +3,7 @@
 #include <um2/config.hpp>
 
 #include <um2/math/stats.hpp>
+#include <um2/common/Log.hpp>
 
 #include <algorithm>
 #include <cstddef>
@@ -27,7 +28,9 @@ template <std::floating_point T>
 void
 printHistogram(std::vector<T> const & data, size_t nbins = 15, size_t width = 30)
 {
-  assert(std::is_sorted(data.begin(), data.end()));
+  if (!std::is_sorted(data.begin(), data.end())) {
+    Log::error("printHistogram: data must be sorted");
+  }
 
   // Get the counts for each bin
   std::vector<size_t> counts(nbins); // zero initialized
@@ -91,8 +94,8 @@ printHistogram(std::vector<T> const & data, size_t nbins = 15, size_t width = 30
   std::cout << "min: " << minval;
   std::cout << "; mean: " << mean(begin_ptr, end_ptr);
   std::cout << "; median: " << median(begin_ptr, end_ptr);
-  std::cout << "; max: " << maxval << ".\n";
-  std::cout << "std. dev.: " << stdDev(begin_ptr, end_ptr) << std::endl;
+  std::cout << "; max: " << maxval << "\n";
+  std::cout << "std dev: " << stdDev(begin_ptr, end_ptr) << std::endl;
 }
 
 } // namespace um2

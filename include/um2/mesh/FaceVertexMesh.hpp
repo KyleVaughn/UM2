@@ -1,5 +1,6 @@
 #pragma once
 
+#include <um2/common/histogram.hpp>
 #include <um2/geometry/Polygon.hpp>
 #include <um2/geometry/morton_sort_points.hpp>
 #include <um2/mesh/MeshFile.hpp>
@@ -46,6 +47,7 @@ struct FaceVertexMesh {
 
   using FaceConn = Vec<N, I>;
   using Face = Polygon<P, N, D, T>;
+  using Edge = typename Polygon<P, N, D, T>::Edge;
 
   Vector<Point<D, T>> vertices;
   Vector<FaceConn> fv;
@@ -90,8 +92,11 @@ struct FaceVertexMesh {
   void
   toMeshFile(MeshFile<T, I> & file) const noexcept;
 
-  [[nodiscard]] constexpr auto
-  getFaceAreas() const noexcept -> Vector<T>;
+  void 
+  getFaceAreas(Vector<T> & areas) const noexcept;
+
+  void
+  getUniqueEdges(Vector<Edge> & edges) const noexcept;
 
   void
   intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept
@@ -176,6 +181,14 @@ template <Size P, Size N, std::floating_point T, std::signed_integral I>
 void
 intersect(PlanarPolygonMesh<P, N, T, I> const & mesh, Ray2<T> const & ray,
           T * intersections, Size * n) noexcept;
+
+//==============================================================================
+// printStats
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
+printStats(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept;
 
 } // namespace um2
 

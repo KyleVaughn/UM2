@@ -191,6 +191,14 @@ using Vec4u = Vec4<unsigned>;
 // Binary operators
 //==============================================================================
 
+template <Size D, std::integral T>
+HOSTDEV constexpr auto
+operator==(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> bool;
+
+template <Size D, std::integral T>
+HOSTDEV constexpr auto
+operator!=(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> bool;
+
 template <Size D, class T>
 HOSTDEV constexpr auto
 operator+(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>;

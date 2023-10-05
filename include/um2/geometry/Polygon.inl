@@ -581,6 +581,7 @@ meanChordLength(Quadrilateral2<T> const & quad) noexcept -> T
 
 template <Size N, typename T>
 PURE HOSTDEV constexpr auto
+// NOLINTNEXTLINE
 meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
 {
   // Algorithm:
@@ -632,8 +633,11 @@ meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
           auto const p0 = ray(intersections[j]);
           auto const p1 = ray(intersections[j + 1]);
           um2::LineSegment2<T> const l(p0, p1);
-          total_length += l.length();
-          total_rays += 1;
+          T const len = l.length();
+          if (len < static_cast<T>(1e5)) { // In case of numerical issues
+            total_length += len;
+            total_rays += 1;
+          } 
         }
       }
     }

@@ -165,6 +165,25 @@ HOSTDEV constexpr auto Vec<D, T>::operator/=(S const & s) noexcept -> Vec<D, T> 
   return *this;
 }
 
+template <Size D, std::integral T>
+HOSTDEV constexpr auto
+operator==(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> bool
+{
+  for (Size i = 0; i < D; ++i) {
+    if (u[i] != v[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <Size D, std::integral T>
+HOSTDEV constexpr auto
+operator!=(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> bool
+{
+  return !(u == v); 
+}
+
 template <Size D, class T>
 HOSTDEV constexpr auto
 operator+(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
