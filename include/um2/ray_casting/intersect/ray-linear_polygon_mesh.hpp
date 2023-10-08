@@ -43,7 +43,7 @@ intersect(
     Ray2<T> const & ray, TriMesh<T, I> const & mesh, T * const intersections,
     int * const n) // length of intersections on input, number of intersections on output
 {
-  T const r_miss = infiniteDistance<T>();
+  T const r_miss = inf_distance<T>;
   int nintersect = 0;
   for (len_t iface = 0; iface < numFaces(mesh); ++iface) {
     auto const & v0 = mesh.vertices[mesh.fv[3 * iface]];
@@ -76,7 +76,7 @@ intersect(
     Ray2<T> const & ray, QuadMesh<T, I> const & mesh, T * const intersections,
     int * const n) // length of intersections on input, number of intersections on output
 {
-  T const r_miss = infiniteDistance<T>();
+  T const r_miss = inf_distance<T>;
   int nintersect = 0;
   for (len_t iface = 0; iface < numFaces(mesh); ++iface) {
     auto const & v0 = mesh.vertices[mesh.fv[4 * iface]];
@@ -114,7 +114,7 @@ intersect(
     Ray2<T> const & ray, TriQuadMesh<T, I> const & mesh, T * const intersections,
     int * const n) // length of intersections on input, number of intersections on output
 {
-  T const r_miss = infiniteDistance<T>();
+  T const r_miss = inf_distance<T>;
   int nintersect = 0;
   for (len_t iface = 0; iface < numFaces(mesh); ++iface) {
     auto const offset0 = mesh.fv_offsets[iface];

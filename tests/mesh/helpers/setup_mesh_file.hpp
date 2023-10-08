@@ -4,7 +4,6 @@ makeReferenceTriMeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/tri.inp";
   mesh.name = "tri";
-  mesh.format = um2::MeshFileFormat::Abaqus;
   mesh.vertices = {
       {0, 0, 0},
       {1, 0, 0},
@@ -25,7 +24,6 @@ makeReferenceQuadMeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/quad.inp";
   mesh.name = "quad";
-  mesh.format = um2::MeshFileFormat::Abaqus;
   mesh.vertices = {
       {0, 0, 0},
       {1, 0, 0},
@@ -48,7 +46,6 @@ makeReferenceTriQuadMeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/tri_quad.inp";
   mesh.name = "tri_quad";
-  mesh.format = um2::MeshFileFormat::Abaqus;
   mesh.vertices = {
       {0, 0, 0},
       {1, 0, 0},
@@ -70,7 +67,6 @@ makeReferenceTri6MeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/tri6.inp";
   mesh.name = "tri6";
-  mesh.format = um2::MeshFileFormat::Abaqus;
   mesh.vertices = {
       {                  0,                   0,                 0},
       {                  1,                   0,                 0},
@@ -96,7 +92,6 @@ makeReferenceQuad8MeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/quad8.inp";
   mesh.name = "quad8";
-  mesh.format = um2::MeshFileFormat::Abaqus;
   mesh.vertices = {
       {                  0,                   0,                 0},
       {                  1,                   0,                 0},
@@ -129,7 +124,6 @@ makeReferenceTri6Quad8MeshFile(um2::MeshFile<T, I> & mesh)
 {
   mesh.filepath = "./mesh_files/tri6_quad8.inp";
   mesh.name = "tri6_quad8";
-  mesh.format = um2::MeshFileFormat::Abaqus;
   mesh.vertices = {
       {                  0,                   0,                 0},
       {                  1,                   0,                 0},

@@ -51,7 +51,7 @@ TEST_CASE(compareGeometry)
   tri.vertices.push_back(um2::Point3<T>{0, 0, 0});
   ASSERT(um2::compareGeometry(tri, tri_ref) == 1);
   tri.vertices.pop_back();
-  T const eps = um2::epsilonDistance<T>();
+  T const eps = um2::eps_distance<T>;
   tri.vertices[0][0] += (eps / 2);
   ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
   tri.vertices[0][0] += (eps * 2);
@@ -103,7 +103,6 @@ TEST_CASE(getSubmesh)
   tri_quad.getSubmesh("A", tri_quad_a);
   ASSERT(tri_quad_a.filepath == "");
   ASSERT(tri_quad_a.name == "A");
-  ASSERT(tri_quad_a.format == tri_quad.format);
   ASSERT(um2::compareGeometry(tri_quad_a, tri_quad_a) == 0);
   ASSERT(um2::compareTopology(tri_quad_a, tri_quad_a) == 0);
   ASSERT(tri_quad_a.elset_names.size() == 3);
@@ -119,7 +118,6 @@ TEST_CASE(getSubmesh)
   tri_quad.getSubmesh("Material_H2O", tri_quad_h2o);
   ASSERT(tri_quad_h2o.filepath == "");
   ASSERT(tri_quad_h2o.name == "Material_H2O");
-  ASSERT(tri_quad_h2o.format == tri_quad.format);
   ASSERT(tri_quad_h2o.vertices.size() == 3);
   // (1,0), (2,0), (1,1)
   ASSERT_NEAR(tri_quad_h2o.vertices[0][0], static_cast<T>(1), static_cast<T>(1e-6));

@@ -5,6 +5,7 @@
 
 #include "../../test_macros.hpp"
 
+#if UM2_USE_TBB
 template <std::unsigned_integral U, std::floating_point T>
 TEST_CASE(mortonSort2D)
 {
@@ -66,6 +67,7 @@ TEST_CASE(mortonSort3D)
   ASSERT(um2::isApprox(points[14], um2::Point3<T>(2, 1, 1) / 3));
   ASSERT(um2::isApprox(points[15], um2::Point3<T>(3, 1, 1) / 3));
 }
+#endif // UM2_USE_TBB
 
 #if UM2_USE_CUDA
 template <std::unsigned_integral U, std::floating_point T>

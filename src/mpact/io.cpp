@@ -780,7 +780,6 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
                                          coarse_cell_id);
                   // Read the mesh into a MeshFile object using readXDMFUniformGrid
                   MeshFile<Float, Int> coarse_cell_mesh;
-                  coarse_cell_mesh.format = MeshFileFormat::XDMF;
                   readXDMFUniformGrid(coarse_cell_node, h5file, h5filename,
                                       coarse_cell_mesh);
                   // Set the coarse cell mesh type, mesh id, and material IDs

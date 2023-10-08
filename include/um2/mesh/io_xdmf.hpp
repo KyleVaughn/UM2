@@ -69,7 +69,7 @@ static void writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
   size_t const num_verts = mesh.vertices.size();
   bool const is_2d =
       std::count_if(mesh.vertices.cbegin(), mesh.vertices.cend(), [](auto const & v) {
-        return um2::abs(v[2]) < epsilonDistance<T>();
+        return um2::abs(v[2]) < eps_distance<T>;
       }) == static_cast<int64_t>(num_verts);
   size_t const dim = is_2d ? 2 : 3;
   // Create XDMF Geometry node
@@ -164,7 +164,7 @@ static void writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
     // Create the topology array (type id + node ids)
     size_t topo_ctr = 0;
     for (size_t i = 0; i < ncells; ++i) {
-      int8_t const topo_type = meshTypeToXDMFCellType(mesh.element_types[i]);
+      int8_t const topo_type = meshTypeToXDMFElemType(mesh.element_types[i]);
       if (topo_type == -1) {
         Log::error("Unsupported mesh type");
       }
@@ -367,29 +367,7 @@ void
 writeXDMFFile(MeshFile<T, I> & mesh)
 {
 
-  // If format is Abaqus, convert to XDMF
-  if (mesh.format == MeshFileFormat::Abaqus) {
-    Log::info("Converting Abaqus mesh to XDMF");
-    // Change the filepath ending if it is .inp
-    auto const path_size = static_cast<size_t>(mesh.filepath.size());
-    if (mesh.filepath.ends_with(".inp")) {
-      mesh.filepath.data()[path_size - 3] = 'x';
-      mesh.filepath.data()[path_size - 2] = 'd';
-      mesh.filepath.data()[path_size - 1] = 'm';
-      mesh.filepath.push_back('f');
-    }
-    // Change the format
-    mesh.format = MeshFileFormat::XDMF;
-  }
-
   Log::info("Writing XDMF file: " + mesh.filepath);
-
-  // Check valid format
-  if (mesh.format != MeshFileFormat::XDMF) {
-    Log::error("Invalid mesh format: " +
-               std::to_string(static_cast<int8_t>(mesh.format)));
-    return;
-  }
 
   // Setup HDF5 file
   // Get the h5 file name
@@ -598,7 +576,7 @@ addElementsToMesh(size_t const num_elements, std::string const & topology_type,
     size_t position = 0;
     for (size_t i = 0; i < num_elements; ++i) {
       auto const element_type = static_cast<int8_t>(data[position]);
-      MeshType const mesh_type = xdmfCellTypeToMeshType(element_type);
+      MeshType const mesh_type = xdmfElemTypeToMeshType(element_type);
       mesh.element_types[prev_num_elements + i] = mesh_type;
       auto const npoints = static_cast<size_t>(verticesPerCell(mesh_type));
       for (size_t j = 0; j < npoints; ++j) {
@@ -886,9 +864,8 @@ readXDMFFile(std::string const & filename, MeshFile<T, I> & mesh)
   LOG_DEBUG("H5 filename: " + h5filename);
   H5::H5File const h5file(h5filepath + h5filename, H5F_ACC_RDONLY);
 
-  // Set filepath and format
+  // Set filepath
   mesh.filepath = filename;
-  mesh.format = MeshFileFormat::XDMF;
 
   // Setup XML file
   pugi::xml_document xdoc;

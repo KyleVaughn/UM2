@@ -178,7 +178,6 @@ MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & subm
 
   submesh.filepath = "";
   submesh.name = elset_name;
-  submesh.format = format;
 
   // Get the element ids in the elset.
   auto const elset_index = static_cast<size_t>(elset_it - elset_names.cbegin());

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert> // assert
+#include <concepts> // std::is_fundamental_v
 #include <cstdint> // int32_t, int64_t
 
 // Ignore clang-tidy in this case, since these are CMake defines
@@ -105,6 +106,12 @@ using MaterialID = int8_t;
 
 template <class... T>
 constexpr bool always_false = false;
+
+namespace um2
+{
+  template <class T>
+  concept fundamental = std::is_fundamental_v<T>;
+} // namespace um2
 
 // NOLINTEND(modernize-macro-to-enum)
 

@@ -11,13 +11,12 @@ TEST_CASE(tri_mesh)
 {
   um2::MeshFile<T, I> mesh_ref;
   makeReferenceTriMeshFile(mesh_ref);
-  mesh_ref.filepath = "./tri.inp";
+  mesh_ref.filepath = "./tri.xdmf";
   um2::writeXDMFFile<T, I>(mesh_ref);
 
   um2::MeshFile<T, I> mesh;
   um2::readXDMFFile("./tri.xdmf", mesh);
   ASSERT(mesh.filepath == "./tri.xdmf");
-  ASSERT(mesh.format == um2::MeshFileFormat::XDMF);
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
@@ -36,13 +35,12 @@ TEST_CASE(quad_mesh)
 {
   um2::MeshFile<T, I> mesh_ref;
   makeReferenceQuadMeshFile(mesh_ref);
-  mesh_ref.filepath = "./quad.inp";
+  mesh_ref.filepath = "./quad.xdmf";
   um2::writeXDMFFile<T, I>(mesh_ref);
 
   um2::MeshFile<T, I> mesh;
   um2::readXDMFFile("./quad.xdmf", mesh);
   ASSERT(mesh.filepath == "./quad.xdmf");
-  ASSERT(mesh.format == um2::MeshFileFormat::XDMF);
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
@@ -61,13 +59,12 @@ TEST_CASE(tri_quad_mesh)
 {
   um2::MeshFile<T, I> mesh_ref;
   makeReferenceTriQuadMeshFile(mesh_ref);
-  mesh_ref.filepath = "./tri_quad.inp";
+  mesh_ref.filepath = "./tri_quad.xdmf";
   um2::writeXDMFFile<T, I>(mesh_ref);
 
   um2::MeshFile<T, I> mesh;
   um2::readXDMFFile("./tri_quad.xdmf", mesh);
   ASSERT(mesh.filepath == "./tri_quad.xdmf");
-  ASSERT(mesh.format == um2::MeshFileFormat::XDMF);
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
@@ -86,13 +83,12 @@ TEST_CASE(tri6_mesh)
 {
   um2::MeshFile<T, I> mesh_ref;
   makeReferenceTri6MeshFile(mesh_ref);
-  mesh_ref.filepath = "./tri6.inp";
+  mesh_ref.filepath = "./tri6.xdmf";
   um2::writeXDMFFile<T, I>(mesh_ref);
 
   um2::MeshFile<T, I> mesh;
   um2::readXDMFFile("./tri6.xdmf", mesh);
   ASSERT(mesh.filepath == "./tri6.xdmf");
-  ASSERT(mesh.format == um2::MeshFileFormat::XDMF);
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
@@ -111,13 +107,12 @@ TEST_CASE(quad8_mesh)
 {
   um2::MeshFile<T, I> mesh_ref;
   makeReferenceQuad8MeshFile(mesh_ref);
-  mesh_ref.filepath = "./quad8.inp";
+  mesh_ref.filepath = "./quad8.xdmf";
   um2::writeXDMFFile<T, I>(mesh_ref);
 
   um2::MeshFile<T, I> mesh;
   um2::readXDMFFile("./quad8.xdmf", mesh);
   ASSERT(mesh.filepath == "./quad8.xdmf");
-  ASSERT(mesh.format == um2::MeshFileFormat::XDMF);
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
@@ -136,13 +131,12 @@ TEST_CASE(tri6_quad8_mesh)
 {
   um2::MeshFile<T, I> mesh_ref;
   makeReferenceTri6Quad8MeshFile(mesh_ref);
-  mesh_ref.filepath = "./tri6_quad8.inp";
+  mesh_ref.filepath = "./tri6_quad8.xdmf";
   um2::writeXDMFFile<T, I>(mesh_ref);
 
   um2::MeshFile<T, I> mesh;
   um2::readXDMFFile("./tri6_quad8.xdmf", mesh);
   ASSERT(mesh.filepath == "./tri6_quad8.xdmf");
-  ASSERT(mesh.format == um2::MeshFileFormat::XDMF);
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);

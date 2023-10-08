@@ -70,10 +70,10 @@ TEST_CASE(isApprox)
   ASSERT(!um2::isApprox(p1, p2));
   // Non-trivial equality
   p2 = p1;
-  p2[0] += um2::epsilonDistance<T>() / 2;
+  p2[0] += um2::eps_distance<T> / 2;
   ASSERT(um2::isApprox(p1, p2));
   // Non-trivial inequality
-  p2[0] += um2::epsilonDistance<T>();
+  p2[0] += um2::eps_distance<T>;
   ASSERT(!um2::isApprox(p1, p2));
 }
 

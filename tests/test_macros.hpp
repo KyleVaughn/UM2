@@ -8,8 +8,7 @@
 // to check this condition.
 //
 // TODO(kcvaughn@umich.edu): Write our own assert. How can we do this without exit and
-// abort?
-//                             maybe a trap instruction?
+// abort? maybe a trap instruction?
 
 #include <um2/stdlib/math.hpp> // abs
 #ifndef UM2_USE_CUDA
@@ -41,12 +40,22 @@
 
 #define ASSERT(cond) assert(cond)
 
+#define STATIC_ASSERT(cond) static_assert(cond)
+
 #define ASSERT_NEAR(a, b, eps)                                                           \
   {                                                                                      \
     auto const a_eval = (a);                                                             \
     auto const b_eval = (b);                                                             \
     auto const diff = um2::abs(a_eval - b_eval);                                         \
     assert(diff <= (eps));                                                               \
+  }
+
+#define STATIC_ASSERT_NEAR(a, b, eps)                                                    \
+  {                                                                                      \
+    auto constexpr a_eval = (a);                                                         \
+    auto constexpr b_eval = (b);                                                         \
+    auto constexpr diff = um2::abs(a_eval - b_eval);                                     \
+    static_assert(diff <= (eps));                                                        \
   }
 
 #define TEST_CASE(name) void name()

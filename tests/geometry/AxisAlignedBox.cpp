@@ -71,9 +71,9 @@ TEST_CASE(contains)
     p[i] = static_cast<T>(i);
   }
   ASSERT(box.contains(p));
-  p[0] += static_cast<T>(0.5) * um2::epsilonDistance<T>();
+  p[0] += static_cast<T>(0.5) * um2::eps_distance<T>;
   ASSERT(box.contains(p));
-  p[0] -= static_cast<T>(2.5) * um2::epsilonDistance<T>();
+  p[0] -= static_cast<T>(2.5) * um2::eps_distance<T>;
   ASSERT(!box.contains(p));
 }
 
@@ -84,9 +84,9 @@ TEST_CASE(is_approx)
   um2::AxisAlignedBox<D, T> const box1 = makeBox<D, T>();
   um2::AxisAlignedBox<D, T> box2 = makeBox<D, T>();
   ASSERT(isApprox(box1, box2));
-  box2.maxima[0] += um2::epsilonDistance<T>() / 2;
+  box2.maxima[0] += um2::eps_distance<T> / 2;
   ASSERT(isApprox(box1, box2));
-  box2.maxima[0] += um2::epsilonDistance<T>();
+  box2.maxima[0] += um2::eps_distance<T>;
   ASSERT(!isApprox(box1, box2));
 }
 

@@ -104,13 +104,13 @@ using AxisAlignedBox2d = AxisAlignedBox2<double>;
 using AxisAlignedBox3f = AxisAlignedBox3<float>;
 using AxisAlignedBox3d = AxisAlignedBox3<double>;
 
+//==============================================================================
+// Methods
+//==============================================================================
+
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 isApprox(AxisAlignedBox<D, T> const & a, AxisAlignedBox<D, T> const & b) noexcept -> bool;
-
-//==============================================================================
-// Bounding box
-//==============================================================================
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto

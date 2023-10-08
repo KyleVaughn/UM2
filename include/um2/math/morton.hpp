@@ -23,10 +23,10 @@ namespace um2
 // Therefore, the max coordinate value is 2^(X / N) - 1.
 
 template <std::unsigned_integral U>
-constexpr U max_2d_morton_coord = (static_cast<U>(1) << (4 * sizeof(U))) - 1;
+inline constexpr U max_2d_morton_coord = (static_cast<U>(1) << (4 * sizeof(U))) - 1;
 
 template <std::unsigned_integral U>
-constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 3)) - 1;
+inline constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 3)) - 1;
 
 #if defined(__BMI2__) && !UM2_USE_CUDA // && !defined(__CUDA_ARCH__)
 
@@ -63,19 +63,19 @@ pext(uint64_t source, uint64_t mask) noexcept -> uint64_t
 #  pragma GCC diagnostic pop
 
 template <std::unsigned_integral U>
-static constexpr U bmi_2d_x_mask = static_cast<U>(0x5555555555555555);
+inline static constexpr U bmi_2d_x_mask = static_cast<U>(0x5555555555555555);
 
 template <std::unsigned_integral U>
-static constexpr U bmi_2d_y_mask = static_cast<U>(0xAAAAAAAAAAAAAAAA);
+inline static constexpr U bmi_2d_y_mask = static_cast<U>(0xAAAAAAAAAAAAAAAA);
 
 template <std::unsigned_integral U>
-static constexpr U bmi_3d_x_mask = static_cast<U>(0x9249249249249249);
+inline static constexpr U bmi_3d_x_mask = static_cast<U>(0x9249249249249249);
 
 template <std::unsigned_integral U>
-static constexpr U bmi_3d_y_mask = static_cast<U>(0x2492492492492492);
+inline static constexpr U bmi_3d_y_mask = static_cast<U>(0x2492492492492492);
 
 template <std::unsigned_integral U>
-static constexpr U bmi_3d_z_mask = static_cast<U>(0x4924924924924924);
+inline static constexpr U bmi_3d_z_mask = static_cast<U>(0x4924924924924924);
 
 //==============================================================================
 // Morton encoding/decoding

@@ -256,7 +256,7 @@ toFaceVertexMesh(MeshFile<T, I> const & file,
   // Ensure each of the vertices has approximately the same z
   if constexpr (D == 2) {
 #ifndef NDEBUG
-    T const eps = epsilonDistance<T>();
+    T const eps = eps_distance<T>;
     T const z = file.vertices[0][2];
     for (auto const & v : file.vertices) {
       assert(std::abs(v[2] - z) < eps);
@@ -312,9 +312,6 @@ template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 void
 toMeshFile(FaceVertexMesh<P, N, D, T, I> const & mesh, MeshFile<T, I> & file) noexcept
 {
-  // Default to XDMf
-  file.format = MeshFileFormat::XDMF;
-
   // Vertices
   if constexpr (D == 3) {
     file.vertices = mesh.vertices;
@@ -355,7 +352,7 @@ toMeshFile(FaceVertexMesh<P, N, D, T, I> const & mesh, MeshFile<T, I> & file) no
 // intersect(PlanarLinearPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
 //           T * intersections, Size * const n) noexcept
 //{
-//   T const r_miss = infiniteDistance<T>();
+//   T const r_miss = inf_distance<T>;
 //   // cppcheck-suppress constStatement; justification: false positive
 //   T * const start = intersections;
 // #ifndef NDEBUG
@@ -381,7 +378,7 @@ void
 intersect(PlanarLinearPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
           T * const intersections, Size * const n) noexcept
 {
-  T constexpr r_miss = infiniteDistance<T>();
+  T constexpr r_miss = inf_distance<T>;
   Size nintersect = 0;
 #ifndef NDEBUG
   Size const n0 = *n;
@@ -407,7 +404,7 @@ void
 intersect(PlanarQuadraticPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
           T * const intersections, Size * const n) noexcept
 {
-  T constexpr r_miss = infiniteDistance<T>();
+  T constexpr r_miss = inf_distance<T>;
   Size nintersect = 0;
 #ifndef NDEBUG
   Size const n0 = *n;
@@ -709,7 +706,6 @@ printStats(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept
 
   // Mean chord length
   data.resize(mesh.numFaces());
-  #pragma omp parallel for
   for (Size i = 0; i < mesh.numFaces(); ++i) {
     data[i] = mesh.getFace(i).meanChordLength();
   }

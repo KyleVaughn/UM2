@@ -62,6 +62,8 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   //  Hence, line[18] is the offset of the element type
   //  ASCII code for '0' is 48, so line[18] - 48 is the offset
   //  as an integer
+  //
+  assert(line[15] == 'C' && line[16] == 'P' && line[17] == 'S');
   I const offset = static_cast<I>(line[18]) - 48;
   MeshType this_type = MeshType::None;
   switch (offset) {
@@ -188,9 +190,8 @@ readAbaqusFile(std::string const & filename, MeshFile<T, I> & mesh)
     return;
   }
 
-  // Set filepath and format
+  // Set filepath
   mesh.filepath = filename;
-  mesh.format = MeshFileFormat::Abaqus;
 
   // Read file
   std::string line;

@@ -585,7 +585,7 @@ PURE HOSTDEV constexpr auto
 meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
 {
   // Algorithm:
-  // total_rays = 0
+  // total_chords = 0
   // total_chord_length = 0
   // For each angle
   //  Compute modular ray parameters
@@ -593,14 +593,14 @@ meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
   //    Compute intersections with edges
   //    Compute chord length
   //    total_chord_length += chord_length
-  //    total_rays += 1
-  // return total_chord_length / total_rays
+  //    total_chords += 1
+  // return total_chord_length / total_chords
 
   // Parameters
   Size constexpr num_angles = 64; // Angles γ ∈ (0, π/2). Total angles is 2 * num_angles
   Size constexpr rays_per_longest_edge = 1000;
 
-  Size total_rays = 0;
+  Size total_chords = 0;
   T total_length = static_cast<T>(0);
   auto const aabb = boundingBox(p);
   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
@@ -625,24 +625,23 @@ meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
         // Get the number of intersections
         Size num_intersections = 0;
         for (Size j = 0; j < intersections.size(); ++j) {
-          if (intersections[j] < um2::infiniteDistance<T>()) {
+          if (intersections[j] < um2::inf_distance<T>) {
             ++num_intersections;
           }
         }
         for (Size j = 0; j < num_intersections; j += 2) {
           auto const p0 = ray(intersections[j]);
           auto const p1 = ray(intersections[j + 1]);
-          um2::LineSegment2<T> const l(p0, p1);
-          T const len = l.length();
+          T const len = p0.distanceTo(p1);
           if (len < static_cast<T>(1e5)) { // In case of numerical issues
             total_length += len;
-            total_rays += 1;
+            total_chords += 1;
           }
         }
       }
     }
   }
-  return total_length / static_cast<T>(total_rays);
+  return total_length / static_cast<T>(total_chords);
   //  return pi<T> * area(p) / perimeter(p);
 }
 

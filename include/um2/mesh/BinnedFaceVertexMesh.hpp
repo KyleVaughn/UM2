@@ -412,7 +412,7 @@ faceContaining(BinnedPlanarPolygonMesh<P, N, T, I> const & bmesh,
 //   // Ensure each of the vertices has approximately the same z
 //   if constexpr (D == 2) {
 // #ifndef NDEBUG
-//     T const eps = epsilonDistance<T>();
+//     T const eps = eps_distance<T>;
 //     T const z = file.vertices[0][2];
 //     for (auto const & v : file.vertices) {
 //       assert(std::abs(v[2] - z) < eps);

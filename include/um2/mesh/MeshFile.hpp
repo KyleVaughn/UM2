@@ -19,43 +19,23 @@ namespace um2
 //==============================================================================
 // MESH FILE
 //==============================================================================
-// An intermediate representation of a mesh that can be used to:
-// - read a mesh from a file
-// - write a mesh to a file
-// - convert a mesh to another format
 //
+// An intermediate representation of a mesh and mesh data that can be used to:
+// - read/write a mesh and its data from/to a file
+// - convert between mesh data structures
+// - generate submeshes
+// - perform mesh operations without assumptions about manifoldness, etc.
+//
+// Note: due to the generality of the data structure, there is effectively a
+// switch statement in every method that operates on the mesh. This is not ideal for
+// performance. See FaceVertexMesh for a more efficient, but less general, data
+// structure.
 
-enum class MeshFileFormat : int8_t {
-  None = 0,
-  Abaqus = 1,
-  XDMF = 2,
-};
+//==============================================================================
+// Element topology identifiers
+//==============================================================================
 
-enum class VTKCellType : int8_t {
-
-  // Linear cells
-  Triangle = 5,
-  Quad = 9,
-
-  // Quadratic, isoparametric cells
-  QuadraticTriangle = 22,
-  QuadraticQuad = 23
-
-};
-
-enum class AbaqusCellType : int8_t {
-
-  // Linear cells
-  CPS3 = static_cast<int8_t>(VTKCellType::Triangle),
-  CPS4 = static_cast<int8_t>(VTKCellType::Quad),
-
-  // Quadratic, isoparametric cells
-  CPS6 = static_cast<int8_t>(VTKCellType::QuadraticTriangle),
-  CPS8 = static_cast<int8_t>(VTKCellType::QuadraticQuad)
-
-};
-
-enum class XDMFCellType : int8_t {
+enum class XDMFElemType : int8_t {
 
   // Linear cells
   Triangle = 4,
@@ -96,16 +76,16 @@ verticesPerCell(MeshType const type) -> Size
 }
 
 constexpr auto
-xdmfCellTypeToMeshType(int8_t x) -> MeshType
+xdmfElemTypeToMeshType(int8_t x) -> MeshType
 {
   switch (x) {
-  case static_cast<int8_t>(XDMFCellType::Triangle):
+  case static_cast<int8_t>(XDMFElemType::Triangle):
     return MeshType::Tri;
-  case static_cast<int8_t>(XDMFCellType::Quad):
+  case static_cast<int8_t>(XDMFElemType::Quad):
     return MeshType::Quad;
-  case static_cast<int8_t>(XDMFCellType::QuadraticTriangle):
+  case static_cast<int8_t>(XDMFElemType::QuadraticTriangle):
     return MeshType::QuadraticTri;
-  case static_cast<int8_t>(XDMFCellType::QuadraticQuad):
+  case static_cast<int8_t>(XDMFElemType::QuadraticQuad):
     return MeshType::QuadraticQuad;
   default:
     assert(false);
@@ -114,17 +94,17 @@ xdmfCellTypeToMeshType(int8_t x) -> MeshType
 }
 
 constexpr auto
-meshTypeToXDMFCellType(MeshType x) -> int8_t
+meshTypeToXDMFElemType(MeshType x) -> int8_t
 {
   switch (x) {
   case MeshType::Tri:
-    return static_cast<int8_t>(XDMFCellType::Triangle);
+    return static_cast<int8_t>(XDMFElemType::Triangle);
   case MeshType::Quad:
-    return static_cast<int8_t>(XDMFCellType::Quad);
+    return static_cast<int8_t>(XDMFElemType::Quad);
   case MeshType::QuadraticTri:
-    return static_cast<int8_t>(XDMFCellType::QuadraticTriangle);
+    return static_cast<int8_t>(XDMFElemType::QuadraticTriangle);
   case MeshType::QuadraticQuad:
-    return static_cast<int8_t>(XDMFCellType::QuadraticQuad);
+    return static_cast<int8_t>(XDMFElemType::QuadraticQuad);
   default:
     assert(false);
     return -1;
@@ -134,10 +114,8 @@ meshTypeToXDMFCellType(MeshType x) -> int8_t
 template <std::floating_point T, std::signed_integral I>
 struct MeshFile {
 
-  std::string filepath; // path to the mesh file, including file name
-  std::string name;     // name of the mesh
-
-  MeshFileFormat format = MeshFileFormat::None;
+  std::string filepath; // full path to the mesh file, including the filename
+  std::string name;     // name of the mesh (not necessarily the same as the filename)
 
   std::vector<Point3<T>> vertices;
   std::vector<MeshType> element_types;
@@ -150,6 +128,10 @@ struct MeshFile {
   std::vector<std::string> elset_names;
   std::vector<I> elset_offsets; // size = num_elsets + 1
   std::vector<I> elset_ids;     // size = elset_offsets[num_elsets]
+
+  // Face data sets (optional)
+  std::vector<std::string> face_data_names;
+  std::vector<std::vector<T>> face_data; // each std::vector<T> has size = num_faces
 
   constexpr MeshFile() = default;
 

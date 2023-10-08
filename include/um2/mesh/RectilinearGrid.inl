@@ -19,7 +19,7 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(
     Vector<AxisAlignedBox<D, T>> const & boxes)
 {
   // Create divs by finding the unique planar divisions
-  T constexpr eps = epsilonDistance<T>();
+  T constexpr eps = eps_distance<T>;
   for (Size i = 0; i < boxes.size(); ++i) {
     AxisAlignedBox<D, T> const & box = boxes[i];
     for (Size d = 0; d < D; ++d) {

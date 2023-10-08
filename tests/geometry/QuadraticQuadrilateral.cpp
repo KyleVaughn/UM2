@@ -233,6 +233,9 @@ MAKE_CUDA_KERNEL(boundingBox, T);
 
 template <typename T>
 MAKE_CUDA_KERNEL(isCCW_flipFace, T);
+
+template <typename T>
+MAKE_CUDA_KERNEL(meanChordLength, T);
 #endif
 
 template <Size D, typename T>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/stdlib/algorithm.hpp> // insertionSort
+#include <um2/common/sort.hpp> // insertionSort
 
 #include <um2/geometry/Dion.hpp>
 #include <um2/geometry/modular_rays.hpp>
@@ -220,7 +220,7 @@ linearPolygon(QuadraticQuadrilateral<D, T> const & q) noexcept -> Quadrilateral<
 // meanChordLength
 //==============================================================================
 //
-// For a convex polygon, the mean chord length is simply pi * area / perimeter.
+// For a convex planar polygon, the mean chord length is simply pi * area / perimeter.
 // De Kruijf, W. J. M., and J. L. Kloosterman.
 // "On the average chord length in reactor physics." Annals of Nuclear Energy 30.5 (2003):
 // 549-553.

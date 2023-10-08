@@ -182,7 +182,7 @@ pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> boo
   }
   // If v2_r[1] < epsilonDistance, then the segment is straight and we can use the cross
   // product test to return early.
-  bool const is_straight = v2_r[1] <= epsilonDistance<T>();
+  bool const is_straight = v2_r[1] <= eps_distance<T>;
   if (is_straight) {
     // if !curves_right, we flipped the y-coordinates, so we need to flip the sign of the
     // cross product.
@@ -245,7 +245,7 @@ pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> boo
   //   T xmax = v1_r[0];
   //   // A is effectively 4 * (midpoint of v01 - v2_r), hence if Ax is small, then the
   //   // segment is effectively straight and we known xmin = 0 and xmax = v1_r[0]
-  //   if (um2::abs(Ax) > 4 * epsilonDistance<T>()) {
+  //   if (um2::abs(Ax) > 4 * eps_distance<T>) {
   //     // r_i = -B_i / (2A_i)
   //     T const half_b = Bx / 2;
   //     T const rx = -half_b / Ax;
@@ -272,7 +272,7 @@ pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> boo
   // r = (-b ± √(b² - 4ac)) / 2a
   // if A[0] == 0, then we have a well-behaved quadratic segment, and there is one root.
   // This is the expected case.
-  if (um2::abs(Ax) < 4 * epsilonDistance<T>()) {
+  if (um2::abs(Ax) < 4 * eps_distance<T>) {
     // This is a linear equation, so there is only one root.
     T const r = p_r[0] / Bx; // B[0] != 0, otherwise the segment would be degenerate.
     // We know the point is in the AABB of the segment, so we expect r to be in [0, 1]
@@ -384,7 +384,7 @@ length(QuadraticSegment<D, T> const & q) noexcept -> T
   T const atanh_l = um2::atanh(arg_l);
   T const atanh_u = um2::atanh(arg_u);
   T const result = um2::sqrt(a) * (U + lb * (U - L) + c1 * (atanh_u - atanh_l)) / 2;
-  assert(0 <= result && result <= infiniteDistance<T>());
+  assert(0 <= result && result <= inf_distance<T>);
   return result;
   // NOLINTEND(readability-identifier-naming)
 }
@@ -415,7 +415,7 @@ boundingBox(QuadraticSegment<D, T> const & q) noexcept -> AxisAlignedBox<D, T>
   Point<D, T> maxima = um2::max(q[0], q[1]);
   for (Size i = 0; i < D; ++i) {
     T const a = -2 * (v02[i] + v12[i]);
-    if (um2::abs(a) < 4 * epsilonDistance<T>()) {
+    if (um2::abs(a) < 4 * eps_distance<T>) {
       // The segment is almost a straight line, so the extrema are the endpoints.
       continue;
     }
@@ -515,7 +515,7 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
   // A = 4(midpoint of line - p3) -> a = 32 ‖midpoint of line - p3‖²
   // if a is small, then the segment is almost a straight line, and we should use the
   // line segment method
-  if (a < 32 * epsilonDistanceSquared<T>()) {
+  if (a < 32 * eps_distance2<T>) {
     Vec<D, T> const ab = q[1] - q[0];
     T r = (p - q[0]).dot(ab) / ab.squaredNorm();
     if (r < 0) {
@@ -740,7 +740,7 @@ intersect(LineSegment2<T> const & line, Ray2<T> const & ray) noexcept -> T
   T r = u.cross(v) / z;
 
   if (s < 0 || 1 < s) {
-    r = infiniteDistance<T>();
+    r = inf_distance<T>;
   }
   return r;
 }
@@ -792,7 +792,7 @@ intersect(QuadraticSegment2<T> const & q, Ray2<T> const & ray) noexcept -> Vec2<
   T const b = B.cross(ray.d);   // (B × D)ₖ
   T const c = voc.cross(ray.d); // ((C - O) × D)ₖ
 
-  Vec2<T> result(infiniteDistance<T>(), infiniteDistance<T>());
+  Vec2<T> result(inf_distance<T>, inf_distance<T>);
 
   if (um2::abs(a) < static_cast<T>(1e-8)) {
     T const s = -c / b;
@@ -827,7 +827,7 @@ intersect(AxisAlignedBox2<T> const & box, Ray2<T> const & ray) noexcept -> Vec2<
 {
   // Inspired by https://tavianator.com/2022/ray_box_boundary.html
   T tmin = static_cast<T>(0);
-  T tmax = infiniteDistance<T>();
+  T tmax = inf_distance<T>;
   T const inv_x = static_cast<T>(1) / ray.d[0];
   T const inv_y = static_cast<T>(1) / ray.d[1];
   T const t1x = (box.minima[0] - ray.o[0]) * inv_x;
@@ -839,7 +839,7 @@ intersect(AxisAlignedBox2<T> const & box, Ray2<T> const & ray) noexcept -> Vec2<
   tmin = um2::max(tmin, um2::min(t1y, t2y));
   tmax = um2::min(tmax, um2::max(t1y, t2y));
   return tmin <= tmax ? Vec2<T>(tmin, tmax)
-                      : Vec2<T>(infiniteDistance<T>(), infiniteDistance<T>());
+                      : Vec2<T>(inf_distance<T>, inf_distance<T>);
 }
 
 //==============================================================================

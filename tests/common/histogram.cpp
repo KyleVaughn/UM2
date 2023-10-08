@@ -1,22 +1,22 @@
 #include <um2/common/histogram.hpp>
+#include <um2/stdlib/Vector.hpp>
 
 #include "../test_macros.hpp"
 
 #include <random>
-#include <vector>
 
 template <typename T>
 TEST_CASE(vector_constructor)
 {
   // Generate random data
   size_t const n = 100;
-  std::vector<T> data(n);
+  um2::Vector<T> data(n);
   // NOLINTNEXTLINE
   std::default_random_engine generator;
   std::normal_distribution<T> distribution(0.0, 1.0);
   std::generate(data.begin(), data.end(), [&]() { return distribution(generator); });
   std::sort(data.begin(), data.end());
-  um2::printHistogram(data, 11);
+  um2::printHistogram(data.begin(), data.end(), 11);
 }
 
 template <typename T>

@@ -6,8 +6,6 @@
 #include <um2/stdlib/math.hpp>      // um2::sqrt
 #include <um2/stdlib/memory.hpp>    // addressof
 
-#include <concepts>
-
 namespace um2
 {
 

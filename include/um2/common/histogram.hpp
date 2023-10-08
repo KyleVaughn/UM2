@@ -26,22 +26,22 @@ namespace um2
 
 template <std::floating_point T>
 void
-printHistogram(std::vector<T> const & data, size_t nbins = 15, size_t width = 30)
+printHistogram(T * first, T * last, size_t nbins = 15, size_t width = 30)
 {
-  if (!std::is_sorted(data.begin(), data.end())) {
+  if (!std::is_sorted(first, last)) {
     Log::error("printHistogram: data must be sorted");
   }
 
   // Get the counts for each bin
   std::vector<size_t> counts(nbins); // zero initialized
-  T const minval = data.front();
-  T const maxval = data.back();
+  T const minval = *first; 
+  T const maxval = *(last - 1);
   T const bin_width = (maxval - minval) / static_cast<T>(nbins);
   {
     size_t ctr = 0;
     T bin_max = minval + bin_width;
-    for (auto const & val : data) {
-      while (val >= bin_max) {
+    for (T * it = first; it != last; ++it) {
+      while (*it >= bin_max) {
         ++ctr;
         bin_max += bin_width;
       }
@@ -58,7 +58,7 @@ printHistogram(std::vector<T> const & data, size_t nbins = 15, size_t width = 30
 
   // Write the histogram
   std::vector<std::string> const blocks = {" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█"};
-  std::cout << "Histogram with " << data.size() << " counts" << std::endl;
+  std::cout << "Histogram with " << last - first << " counts" << std::endl;
   bool any_negative = false;
   for (size_t i = 0; i < nbins; ++i) {
     // Print the range of each bin in scientific notation with 3 decimal places
@@ -89,13 +89,11 @@ printHistogram(std::vector<T> const & data, size_t nbins = 15, size_t width = 30
     }
     std::cout << counts[i] << '\n';
   }
-  T const * const begin_ptr = data.data();
-  T const * const end_ptr = data.data() + data.size();
   std::cout << "min: " << minval;
-  std::cout << "; mean: " << mean(begin_ptr, end_ptr);
-  std::cout << "; median: " << median(begin_ptr, end_ptr);
+  std::cout << "; mean: " << mean(first, last);
+  std::cout << "; median: " << median(first, last);
   std::cout << "; max: " << maxval << "\n";
-  std::cout << "std dev: " << stdDev(begin_ptr, end_ptr) << std::endl;
+  std::cout << "std dev: " << stdDev(first, last) << std::endl;
 }
 
 } // namespace um2

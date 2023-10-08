@@ -17,7 +17,6 @@ TEST_CASE(tri_mesh)
   um2::readAbaqusFile(filename, mesh);
 
   ASSERT(mesh.filepath == mesh_ref.filepath);
-  ASSERT(mesh.format == um2::MeshFileFormat::Abaqus);
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
@@ -37,7 +36,6 @@ TEST_CASE(quad_mesh)
   um2::readAbaqusFile(filename, mesh);
 
   ASSERT(mesh.filepath == mesh_ref.filepath);
-  ASSERT(mesh.format == um2::MeshFileFormat::Abaqus);
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
@@ -57,7 +55,6 @@ TEST_CASE(tri_quad_mesh)
   um2::readAbaqusFile(filename, mesh);
 
   ASSERT(mesh.filepath == mesh_ref.filepath);
-  ASSERT(mesh.format == um2::MeshFileFormat::Abaqus);
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
@@ -77,7 +74,6 @@ TEST_CASE(tri6_mesh)
   um2::readAbaqusFile(filename, mesh);
 
   ASSERT(mesh.filepath == mesh_ref.filepath);
-  ASSERT(mesh.format == um2::MeshFileFormat::Abaqus);
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
@@ -97,7 +93,6 @@ TEST_CASE(quad8_mesh)
   um2::readAbaqusFile(filename, mesh);
 
   ASSERT(mesh.filepath == mesh_ref.filepath);
-  ASSERT(mesh.format == um2::MeshFileFormat::Abaqus);
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
@@ -117,7 +112,6 @@ TEST_CASE(tri6_quad8_mesh)
   um2::readAbaqusFile(filename, mesh);
 
   ASSERT(mesh.filepath == mesh_ref.filepath);
-  ASSERT(mesh.format == um2::MeshFileFormat::Abaqus);
   ASSERT(mesh.name == mesh_ref.name);
   ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
   ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);

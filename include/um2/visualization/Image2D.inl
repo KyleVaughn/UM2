@@ -128,11 +128,11 @@ Image2D<T>::rasterize(LineSegment2<T> l, Color const c)
     p01 *= -1;
   }
   // Prevent division by zero
-  if (um2::abs(p01[0]) < epsilonDistance<T>()) {
-    p01[0] = epsilonDistance<T>();
+  if (um2::abs(p01[0]) < eps_distance<T>) {
+    p01[0] = eps_distance<T>;
   }
-  if (um2::abs(p01[1]) < epsilonDistance<T>()) {
-    p01[1] = epsilonDistance<T>();
+  if (um2::abs(p01[1]) < eps_distance<T>) {
+    p01[1] = eps_distance<T>;
   }
   // Get the start i and j indices
   auto i = static_cast<Size>(um2::floor(p0_shifted[0] * inv_spacing));

@@ -1,0 +1,7 @@
+Review for tests, parallelism, performance, comments, and structure
+static_assert
+
+
+move to_vecvec elsewhere
+getStats and print for mesh
+histogram class

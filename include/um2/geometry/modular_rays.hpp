@@ -63,7 +63,7 @@ struct ModularRayParams {
   }
 };
 
-// a: azimuthal angle γ ∈ (0, π/2)
+// a: azimuthal angle γ ∈ (0, π)
 // s: ray spacing
 // w: width of ray tracing module
 // h: height of ray tracing module

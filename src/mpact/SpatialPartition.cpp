@@ -797,7 +797,7 @@ SpatialPartition::makeRTM(std::vector<std::vector<Size>> const & cc_ids) -> Size
   RectilinearGrid2<Float> grid(dxdy, cc_ids_renumbered);
   // Ensure the grid has the same dxdy as all other RTMs
   if (!rtms.empty()) {
-    auto const eps = epsilonDistance<Float>();
+    auto const eps = eps_distance<Float>;
     if (um2::abs(grid.width() - rtms[0].width()) > eps ||
         um2::abs(grid.height() - rtms[0].height()) > eps) {
       Log::error("All RTMs must have the same dxdy");
@@ -903,7 +903,7 @@ SpatialPartition::makeAssembly(std::vector<Size> const & lat_ids,
   }
   // Ensure this assembly is the same height as all other assemblies
   if (!assemblies.empty()) {
-    auto const eps = epsilonDistance<Float>();
+    auto const eps = eps_distance<Float>;
     Float const assem_top = assemblies[0].xMax();
     Float const assem_bot = assemblies[0].xMin();
     if (um2::abs(z.back() - assem_top) > eps || um2::abs(z.front() - assem_bot) > eps) {

@@ -4,9 +4,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
 # stdlib
 #===============================================================================
 
-add_um2_test(./stdlib/algorithm/copy.cpp)
-add_um2_test(./stdlib/algorithm/fill.cpp)
-add_um2_test(./stdlib/algorithm/sort.cpp)
+add_um2_test(./stdlib/algorithm.cpp)
 add_um2_test(./stdlib/memory/addressof.cpp)
 add_um2_test(./stdlib/memory/construct_at.cpp)
 add_um2_test(./stdlib/numeric/iota.cpp)
