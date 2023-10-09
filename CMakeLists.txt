@@ -7,7 +7,6 @@ project(
   LANGUAGES CXX)
 
 # Allow user to specify <project>_ROOT variables
-# Allow user to specify <project>_ROOT variables
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.27)
   cmake_policy(SET CMP0144 NEW)
 else()
