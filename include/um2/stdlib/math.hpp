@@ -25,6 +25,9 @@ inline constexpr T pi = static_cast<T>(3.14159265358979323846);
 template <std::floating_point T>
 inline constexpr T pi_2 = static_cast<T>(1.57079632679489661923);
 
+template <std::floating_point T>
+inline constexpr T pi_4 = static_cast<T>(0.785398163397448309616);
+
 //==============================================================================
 // abs
 //==============================================================================
@@ -39,6 +42,13 @@ abs(T x) noexcept -> T
 }
 
 #else
+
+template <std::integral T>
+CONST DEVICE constexpr auto
+abs(T x) noexcept -> T
+{
+  return ::abs(x);
+}
 
 CONST DEVICE constexpr auto
 abs(float x) noexcept -> float

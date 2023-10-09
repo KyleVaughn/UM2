@@ -60,7 +60,7 @@ TEST_CASE(copy_nontrivial)
     }
     HOSTDEV
     A(A const & other) = default;
-    
+
     HOSTDEV
     A(A && other)
     noexcept
@@ -165,10 +165,7 @@ TEST_SUITE(copy)
   TEST_HOSTDEV(copy_nontrivial);
 }
 
-TEST_SUITE(fill)
-{
-  TEST_HOSTDEV(fill_int);
-}
+TEST_SUITE(fill) { TEST_HOSTDEV(fill_int); }
 
 TEST_SUITE(maxmin)
 {

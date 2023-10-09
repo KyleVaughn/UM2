@@ -16,8 +16,10 @@ struct CrossSection {
   constexpr CrossSection() noexcept = default;
 
   // NOLINTNEXTLINE(google-explicit-constructor)
-  constexpr CrossSection(Vector<Float> const & t_in) noexcept : t(t_in) {}
-
+  constexpr CrossSection(Vector<Float> const & t_in) noexcept
+      : t(t_in)
+  {
+  }
 };
 
 } // namespace um2

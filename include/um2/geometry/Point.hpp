@@ -41,7 +41,7 @@ template <std::floating_point T>
 inline constexpr T eps_distance = static_cast<T>(1e-6); // 0.1 micron
 
 template <std::floating_point T>
-inline constexpr T eps_distance2 = static_cast<T>(1e-12); 
+inline constexpr T eps_distance2 = static_cast<T>(1e-12);
 
 template <std::floating_point T>
 inline constexpr T inf_distance = static_cast<T>(1e10);
@@ -70,7 +70,7 @@ template <class T>
 PURE HOSTDEV constexpr auto
 areCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept -> bool
 {
-  // 2D cross product, of (b - a) and (c - a). 
+  // 2D cross product, of (b - a) and (c - a).
   T const ab_x = b[0] - a[0];
   T const ab_y = b[1] - a[1];
   T const ac_x = c[0] - a[0];

@@ -4,10 +4,11 @@ include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
 # stdlib
 #===============================================================================
 
+add_um2_test(./stdlib/utility.cpp)
 add_um2_test(./stdlib/algorithm.cpp)
-add_um2_test(./stdlib/memory/addressof.cpp)
-add_um2_test(./stdlib/memory/construct_at.cpp)
-add_um2_test(./stdlib/numeric/iota.cpp)
+add_um2_test(./stdlib/math.cpp)
+add_um2_test(./stdlib/memory.cpp)
+add_um2_test(./stdlib/numeric.cpp)
 add_um2_test(./stdlib/Vector.cpp)
 add_um2_test(./stdlib/sto.cpp)
 add_um2_test(./stdlib/String.cpp)

@@ -1,6 +1,6 @@
 Review for tests, parallelism, performance, comments, and structure
-static_assert
-
+  finished:
+    stdlib
 
 move to_vecvec elsewhere
 getStats and print for mesh

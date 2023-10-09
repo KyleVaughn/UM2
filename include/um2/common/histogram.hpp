@@ -34,7 +34,7 @@ printHistogram(T * first, T * last, size_t nbins = 15, size_t width = 30)
 
   // Get the counts for each bin
   std::vector<size_t> counts(nbins); // zero initialized
-  T const minval = *first; 
+  T const minval = *first;
   T const maxval = *(last - 1);
   T const bin_width = (maxval - minval) / static_cast<T>(nbins);
   {

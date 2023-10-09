@@ -17,20 +17,26 @@ main() -> int
 
   // Cross sections
   // We only need total cross section to compute the Knudsen number
-  um2::Vector<double> const uo2_xs =
-    {2.12450e-01, 3.55470e-01, 4.85540e-01, 5.59400e-01, 3.18030e-01, 4.01460e-01, 5.70610e-01};
-  um2::Vector<double> const mox43_xs =
-    {2.11920e-01, 3.55810e-01, 4.88900e-01, 5.71940e-01, 4.32390e-01, 6.84950e-01, 6.88910e-01};
-  um2::Vector<double> const mox70_xs =
-    {2.14540e-01, 3.59350e-01, 4.98910e-01, 5.96220e-01, 4.80350e-01, 8.39360e-01, 8.59480e-01};
-  um2::Vector<double> const mox87_xs =
-    {2.16280e-01, 3.61700e-01, 5.05630e-01, 6.11170e-01, 5.08900e-01, 9.26670e-01, 9.60990e-01};
-  um2::Vector<double> const fiss_chamber_xs =
-    {1.90730e-01, 4.56520e-01, 6.40700e-01, 6.49840e-01, 6.70630e-01, 8.75060e-01, 1.43450e+00};
-  um2::Vector<double> const guide_tube_xs =
-    {1.90730e-01, 4.56520e-01, 6.40670e-01, 6.49670e-01, 6.70580e-01, 8.75050e-01, 1.43450e+00};
-  um2::Vector<double> const moderator_xs =
-    {2.30070e-01, 7.76460e-01, 1.48420e+00, 1.50520e+00, 1.55920e+00, 2.02540e+00, 3.30570e+00};
+  um2::Vector<double> const uo2_xs = {2.12450e-01, 3.55470e-01, 4.85540e-01, 5.59400e-01,
+                                      3.18030e-01, 4.01460e-01, 5.70610e-01};
+  um2::Vector<double> const mox43_xs = {2.11920e-01, 3.55810e-01, 4.88900e-01,
+                                        5.71940e-01, 4.32390e-01, 6.84950e-01,
+                                        6.88910e-01};
+  um2::Vector<double> const mox70_xs = {2.14540e-01, 3.59350e-01, 4.98910e-01,
+                                        5.96220e-01, 4.80350e-01, 8.39360e-01,
+                                        8.59480e-01};
+  um2::Vector<double> const mox87_xs = {2.16280e-01, 3.61700e-01, 5.05630e-01,
+                                        6.11170e-01, 5.08900e-01, 9.26670e-01,
+                                        9.60990e-01};
+  um2::Vector<double> const fiss_chamber_xs = {1.90730e-01, 4.56520e-01, 6.40700e-01,
+                                               6.49840e-01, 6.70630e-01, 8.75060e-01,
+                                               1.43450e+00};
+  um2::Vector<double> const guide_tube_xs = {1.90730e-01, 4.56520e-01, 6.40670e-01,
+                                             6.49670e-01, 6.70580e-01, 8.75050e-01,
+                                             1.43450e+00};
+  um2::Vector<double> const moderator_xs = {2.30070e-01, 7.76460e-01, 1.48420e+00,
+                                            1.50520e+00, 1.55920e+00, 2.02540e+00,
+                                            3.30570e+00};
 
   // Materials
   um2::Material uo2("UO2", "forestgreen");
@@ -50,7 +56,8 @@ main() -> int
   guide_tube.xs.t = guide_tube_xs;
   moderator.xs.t = moderator_xs;
 
-  std::vector<um2::Material> const materials = {uo2, mox43, mox70, mox87, fiss_chamber, guide_tube, moderator};
+  std::vector<um2::Material> const materials = {uo2,          mox43,      mox70,    mox87,
+                                                fiss_chamber, guide_tube, moderator};
 
   // Pin ID  |  Material
   // --------+----------------
@@ -206,23 +213,23 @@ main() -> int
     double sigma_t = 0.0;
 
     // max xsec
-//    for (auto const & sig_t : mat.xs.t) {
-//      sigma_t = std::max(sig_t, sigma_t);
-//    }
+    //    for (auto const & sig_t : mat.xs.t) {
+    //      sigma_t = std::max(sig_t, sigma_t);
+    //    }
     // mean xsec
     for (auto const & sig_t : mat.xs.t) {
       // cppcheck-suppress useStlAlgorithm
       sigma_t += sig_t;
     }
     sigma_t /= static_cast<double>(mat.xs.t.size());
-  
-    double const lc  = 12.0 / (um2::pi<double> * std::sqrt(3.0) * target_kn * sigma_t);
+
+    double const lc = 12.0 / (um2::pi<double> * std::sqrt(3.0) * target_kn * sigma_t);
     std::cout << material_names.back() << " " << lc << std::endl;
     mesh_sizes.push_back(lc);
   }
-  
-//  um2::gmsh::model::mesh::setGlobalMeshSize(0.25);
-  um2::gmsh::model::mesh::setMeshFieldFromGroups(2, material_names, mesh_sizes); 
+
+  //  um2::gmsh::model::mesh::setGlobalMeshSize(0.25);
+  um2::gmsh::model::mesh::setMeshFieldFromGroups(2, material_names, mesh_sizes);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
   um2::gmsh::fltk::run();
 

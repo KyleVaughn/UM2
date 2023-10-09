@@ -838,8 +838,7 @@ intersect(AxisAlignedBox2<T> const & box, Ray2<T> const & ray) noexcept -> Vec2<
   tmax = um2::min(tmax, um2::max(t1x, t2x));
   tmin = um2::max(tmin, um2::min(t1y, t2y));
   tmax = um2::min(tmax, um2::max(t1y, t2y));
-  return tmin <= tmax ? Vec2<T>(tmin, tmax)
-                      : Vec2<T>(inf_distance<T>, inf_distance<T>);
+  return tmin <= tmax ? Vec2<T>(tmin, tmax) : Vec2<T>(inf_distance<T>, inf_distance<T>);
 }
 
 //==============================================================================

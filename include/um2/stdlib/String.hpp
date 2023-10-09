@@ -30,6 +30,7 @@ private:
   ///////////////////////////////
   // This should be true for all x86 processors and NVIDIA GPUs.
 
+  // Heap-allocated string representation.
   struct Long {
     uint64_t is_long : 1;
     uint64_t cap : 63;
@@ -39,16 +40,19 @@ private:
 
   static uint64_t constexpr min_cap = sizeof(Long) - 1;
 
+  // Stack-allocated string representation.
   struct Short {
     uint8_t is_long : 1;
     uint8_t size : 7;
     char data[min_cap];
   };
 
+  // Raw representation of the string.
   struct Raw {
     uint64_t raw[3];
   };
 
+  // Union of all representations.
   struct Rep {
     union {
       Long l;

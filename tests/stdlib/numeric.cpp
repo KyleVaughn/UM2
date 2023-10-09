@@ -1,6 +1,6 @@
 #include <um2/stdlib/numeric.hpp>
 
-#include "../../test_macros.hpp"
+#include "../test_macros.hpp"
 
 HOSTDEV
 TEST_CASE(iota)

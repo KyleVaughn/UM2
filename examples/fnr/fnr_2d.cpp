@@ -178,7 +178,7 @@ main() -> int
   double const center = 5.0;
 
   double const x0 = center - side_plate_thickness - side_plate_to_plate_spacing / 2.0;
-  double const y0 = center - side_plate_width / 2.0; 
+  double const y0 = center - side_plate_width / 2.0;
   addFuelAssembly(x0, y0, clad_tags, fuel_tags);
 
   // Set the physical groups
@@ -205,7 +205,6 @@ main() -> int
   std::vector<um2::gmsh::vectorpair> out_dimtags_map;
   um2::gmsh::model::occ::groupPreservingFragment(fuel_dimtags, clad_dimtags, out_dimtags,
                                                  out_dimtags_map, {fuel, clad});
-
 
   // Overlay a regular grid on the geometry
   um2::mpact::SpatialPartition model;
@@ -241,8 +240,8 @@ main() -> int
   um2::QuadraticTriMesh<2, double, int> const mesh(meshfile);
   um2::printStats(mesh);
 
-//  model.importCoarseCells("fnr.inp");
-//  um2::exportMesh("fnr.xdmf", model);
+  //  model.importCoarseCells("fnr.inp");
+  //  um2::exportMesh("fnr.xdmf", model);
   um2::finalize();
   return 0;
 }
