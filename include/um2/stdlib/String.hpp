@@ -107,10 +107,10 @@ public:
   isLong() const noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  size() const noexcept -> uint64_t;
+  size() const noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  capacity() const noexcept -> uint64_t;
+  capacity() const noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   data() noexcept -> char *;

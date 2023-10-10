@@ -64,7 +64,6 @@ struct Color {
 
   HOSTDEV [[nodiscard]] constexpr auto
   a() const noexcept -> uint8_t;
-
 };
 
 //==============================================================================

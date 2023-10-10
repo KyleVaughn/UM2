@@ -32,7 +32,8 @@ initialize(std::string const & verbosity)
     Log::setMaxVerbosityLevel(LogVerbosity::Off);
   } else {
     Log::setMaxVerbosityLevel(LogVerbosity::Info);
-    Log::warn("Invalid verbosity level: " + String(verbosity.c_str()) + ". Defaulting to INFO.");
+    Log::warn("Invalid verbosity level: " + String(verbosity.c_str()) +
+              ". Defaulting to INFO.");
   }
   Log::info("Initializing UM2");
 #if UM2_USE_GMSH

@@ -82,13 +82,13 @@ HOSTDEV constexpr String::String(char const * s) noexcept
 // TODO(kcvaughn): write these without std::to_string
 template <std::integral T>
 constexpr String::String(T x) noexcept
-: String(std::to_string(x).c_str())
+    : String(std::to_string(x).c_str())
 {
 }
 
 template <std::floating_point T>
 constexpr String::String(T x) noexcept
-: String(std::to_string(x).c_str())
+    : String(std::to_string(x).c_str())
 {
 }
 
@@ -103,16 +103,16 @@ String::isLong() const noexcept -> bool
 }
 
 PURE HOSTDEV constexpr auto
-String::size() const noexcept -> uint64_t
+String::size() const noexcept -> Size
 {
-  return isLong() ? getLongSize() : getShortSize();
+  return isLong() ? static_cast<Size>(getLongSize()) : static_cast<Size>(getShortSize());
 }
 
 // Allocated bytes - 1 for null terminator
 PURE HOSTDEV constexpr auto
-String::capacity() const noexcept -> uint64_t
+String::capacity() const noexcept -> Size
 {
-  return isLong() ? getLongCap() : getShortCap();
+  return isLong() ? static_cast<Size>(getLongCap()) : static_cast<Size>(getShortCap());
 }
 
 PURE HOSTDEV constexpr auto
@@ -200,14 +200,14 @@ String::operator=(char const (&s)[N]) noexcept -> String &
 PURE HOSTDEV constexpr auto
 String::operator==(String const & s) const noexcept -> bool
 {
-  uint64_t const l_size = size();
-  uint64_t const r_size = s.size();
+  Size const l_size = size();
+  Size const r_size = s.size();
   if (l_size != r_size) {
     return false;
   }
   char const * l_data = data();
   char const * r_data = s.data();
-  for (uint64_t i = 0; i < l_size; ++i) {
+  for (Size i = 0; i < l_size; ++i) {
     if (*l_data != *r_data) {
       return false;
     }
@@ -265,16 +265,16 @@ String::operator+=(String const & s) noexcept -> String &
 {
   // If this is a short string and the size of the new string is less than
   // the capacity of the short string, we can just append the new string.
-  uint64_t const new_size = size() + s.size();
+  auto const new_size = static_cast<uint64_t>(size() + s.size());
   if (fitsInShort(new_size + 1)) {
     assert(!isLong());
-    memcpy(getPointer() + size(), s.data(), s.size() + 1);
+    memcpy(getPointer() + size(), s.data(), static_cast<uint64_t>(s.size() + 1));
     _r.s.size = static_cast<uint8_t>(new_size);
   } else {
     // Otherwise, we need to allocate a new string and copy the data.
     char * tmp = static_cast<char *>(::operator new(new_size + 1));
-    memcpy(tmp, data(), size());
-    memcpy(tmp + size(), s.data(), s.size() + 1);
+    memcpy(tmp, data(), static_cast<uint64_t>(size()));
+    memcpy(tmp + size(), s.data(), static_cast<uint64_t>(s.size() + 1));
     if (isLong()) {
       ::operator delete(_r.l.data);
     }
@@ -294,12 +294,12 @@ String::operator+=(String const & s) noexcept -> String &
 PURE HOSTDEV constexpr auto
 String::compare(String const & s) const noexcept -> int
 {
-  uint64_t const l_size = size();
-  uint64_t const r_size = s.size();
-  uint64_t const min_size = um2::min(l_size, r_size);
+  Size const l_size = size();
+  Size const r_size = s.size();
+  Size const min_size = um2::min(l_size, r_size);
   char const * l_data = data();
   char const * r_data = s.data();
-  for (uint64_t i = 0; i < min_size; ++i) {
+  for (Size i = 0; i < min_size; ++i) {
     if (*l_data != *r_data) {
       return static_cast<int>(*l_data) - static_cast<int>(*r_data);
     }
@@ -323,7 +323,7 @@ String::starts_with(String const & s) const noexcept -> bool
   }
   char const * l_data = data();
   char const * r_data = s.data();
-  for (uint64_t i = 0; i < s.size(); ++i) {
+  for (Size i = 0; i < s.size(); ++i) {
     if (*l_data != *r_data) {
       return false;
     }
@@ -336,14 +336,14 @@ String::starts_with(String const & s) const noexcept -> bool
 PURE HOSTDEV constexpr auto
 String::ends_with(String const & s) const noexcept -> bool
 {
-  uint64_t const l_size = size();
-  uint64_t const r_size = s.size();
+  Size const l_size = size();
+  Size const r_size = s.size();
   if (l_size < r_size) {
     return false;
   }
   char const * l_data = data() + l_size - r_size;
   char const * r_data = s.data();
-  for (uint64_t i = 0; i < r_size; ++i) {
+  for (Size i = 0; i < r_size; ++i) {
     if (*l_data != *r_data) {
       return false;
     }

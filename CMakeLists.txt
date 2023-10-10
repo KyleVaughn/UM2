@@ -350,20 +350,20 @@ if (UM2_BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 
-## Tutorial
-#if (UM2_BUILD_TUTORIAL)
-#  add_subdirectory(tutorial)
-#endif()
-#
-## Examples
-#if (UM2_BUILD_EXAMPLES)
-#  add_subdirectory(examples)
-#endif()
-#
-## Benchmarks
-#if (UM2_BUILD_BENCHMARKS)
-#  add_subdirectory(benchmarks)
-#endif()
+# Tutorial
+if (UM2_BUILD_TUTORIAL)
+  add_subdirectory(tutorial)
+endif()
+
+# Examples
+if (UM2_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+
+# Benchmarks
+if (UM2_BUILD_BENCHMARKS)
+  add_subdirectory(benchmarks)
+endif()
 
 #===============================================================================
 # Install

@@ -20,7 +20,7 @@ namespace um2::gmsh
 void
 write(std::string const & filename, bool const extra_info)
 {
-  Log::info("Writing file: " + String(filename.c_str())); 
+  Log::info("Writing file: " + String(filename.c_str()));
   gmsh::write(filename);
   if (!extra_info) {
     return;
@@ -149,7 +149,7 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
   std::string line;
   std::getline(info_file, line);
   if (!line.starts_with("PHYSICAL_GROUPS")) {
-    Log::error("Could not read PHYSICAL_GROUPS from " + String(info_filename.c_str())); 
+    Log::error("Could not read PHYSICAL_GROUPS from " + String(info_filename.c_str()));
     return;
   }
   size_t const num_groups = sto<size_t>(line.substr(16));

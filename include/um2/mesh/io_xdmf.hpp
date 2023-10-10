@@ -507,13 +507,13 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
     return;
   }
   if (geometry_type == "XY" && num_dimensions != 2) {
-    Log::error("XDMF geometry dimensions not supported: " + String(dimensions.c_str())); 
+    Log::error("XDMF geometry dimensions not supported: " + String(dimensions.c_str()));
     return;
   }
   // Get the format
   std::string const format = xdataitem.attribute("Format").value();
   if (format != "HDF") {
-    Log::error("XDMF geometry format not supported: " + String(format.c_str())); 
+    Log::error("XDMF geometry format not supported: " + String(format.c_str()));
     return;
   }
   // Get the h5 dataset path
@@ -666,7 +666,7 @@ static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5
   // Get the format
   std::string const format = xdataitem.attribute("Format").value();
   if (format != "HDF") {
-    Log::error("XDMF geometry format not supported: " + String(format.c_str())); 
+    Log::error("XDMF geometry format not supported: " + String(format.c_str()));
     return;
   }
   // Get the h5 dataset path
@@ -771,13 +771,13 @@ static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5fi
     // Get the data type
     std::string const data_type = xdataitem.attribute("DataType").value();
     if (data_type != "Int") {
-      Log::error("XDMF elset data type not supported: " + String(data_type.c_str())); 
+      Log::error("XDMF elset data type not supported: " + String(data_type.c_str()));
       return;
     }
     // Get the precision
     std::string const precision = xdataitem.attribute("Precision").value();
     if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
-      Log::error("XDMF elset precision not supported: " + String(precision.c_str())); 
+      Log::error("XDMF elset precision not supported: " + String(precision.c_str()));
       return;
     }
     // Get the format

@@ -405,7 +405,7 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
   // Open the XDMF file
   std::ifstream const file(path);
   if (!file.is_open()) {
-    Log::error("Could not open file: " + String(path.c_str())); 
+    Log::error("Could not open file: " + String(path.c_str()));
     return;
   }
   // Open the HDF5 file

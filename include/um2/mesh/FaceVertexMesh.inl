@@ -181,8 +181,7 @@ validateMesh(FaceVertexMesh<P, N, D, T, I> & mesh)
   Size const num_faces = mesh.numFaces();
   for (Size i = 0; i < num_faces; ++i) {
     if (!mesh.getFace(i).isCCW()) {
-      Log::warn("Face " + toString(i) +
-                " has vertices in clockwise order. Reordering");
+      Log::warn("Face " + toString(i) + " has vertices in clockwise order. Reordering");
       mesh.flipFace(i);
     }
   }
@@ -325,7 +324,6 @@ toMeshFile(FaceVertexMesh<P, N, D, T, I> const & mesh, MeshFile<T, I> & file) no
   }
 
   // Faces
-  // NOLINTBEGIN(bugprone-misplaced-widening-cast) justification: It's not misplaced...
   auto const nfaces = static_cast<size_t>(mesh.numFaces());
   auto const n = static_cast<size_t>(N);
   auto const len = nfaces * n;
@@ -340,7 +338,6 @@ toMeshFile(FaceVertexMesh<P, N, D, T, I> const & mesh, MeshFile<T, I> & file) no
     }
   }
   file.element_offsets[nfaces] = static_cast<I>(len);
-  // NOLINTEND(bugprone-misplaced-widening-cast)
 }
 
 //==============================================================================

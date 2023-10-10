@@ -532,7 +532,6 @@ faceContaining(BinnedPlanarPolygonMesh<P, N, T, I> const & bmesh,
 //   }
 //
 //   // Faces
-//   // NOLINTBEGIN(bugprone-misplaced-widening-cast) justification: It's not misplaced...
 //   auto const len = static_cast<size_t>(mesh.numFaces() * N);
 //   file.element_conn.resize(len);
 //   for (Size i = 0; i < mesh.numFaces(); ++i) {
@@ -540,7 +539,6 @@ faceContaining(BinnedPlanarPolygonMesh<P, N, T, I> const & bmesh,
 //       file.element_conn[static_cast<size_t>(i * N + j)] = mesh.fv[i][j];
 //     }
 //   }
-//   // NOLINTEND(bugprone-misplaced-widening-cast)
 // }
 //
 } // namespace um2

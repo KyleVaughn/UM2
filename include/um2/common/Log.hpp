@@ -46,10 +46,10 @@ class Log
   // We need the global log options to be accessible from anywhere in the code
   // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables) justified
   static LogVerbosity max_verbosity_level;
-  static bool buffered;          // messages are buffered until flush() is called
-  static bool timestamped;       // messages are prefixed with a timestamp
-  static bool colorized;         // messages are colorized based on their verbosity level
-  static bool exit_on_error;     // the program exits after an error is logged
+  static bool buffered;        // messages are buffered until flush() is called
+  static bool timestamped;     // messages are prefixed with a timestamp
+  static bool colorized;       // messages are colorized based on their verbosity level
+  static bool exit_on_error;   // the program exits after an error is logged
   static Size flush_threshold; // flush after this many messages
 
   // Data

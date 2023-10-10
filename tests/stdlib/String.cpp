@@ -118,14 +118,6 @@ TEST_CASE(copy_constructor)
   // Check that s1 is not modified
   s1.data()[0] = 'a';
   assert(s2.data()[0] == 'T');
-
-
-
-
-
-
-
-
 }
 MAKE_CUDA_KERNEL(copy_constructor);
 

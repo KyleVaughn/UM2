@@ -161,8 +161,7 @@ logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
     Size const hours = static_cast<Size>(elapsed_seconds.count()) / 3600;
     Size const minutes = (static_cast<Size>(elapsed_seconds.count()) / 60) % 60;
     Size const seconds = static_cast<Size>(elapsed_seconds.count()) % 60;
-    Size const milliseconds =
-        static_cast<Size>(elapsed_seconds.count() * 1000) % 1000;
+    Size const milliseconds = static_cast<Size>(elapsed_seconds.count() * 1000) % 1000;
     std::stringstream ss;
     ss << "[" << std::setw(2) << std::setfill('0') << hours << ":" << std::setw(2)
        << std::setfill('0') << minutes << ":" << std::setw(2) << std::setfill('0')
@@ -229,7 +228,8 @@ logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
   }
   // Message
   std::stringstream ss;
-  ss << c0.c_str() << time_str.c_str() << verbosity_str.c_str() << ": " << message.c_str() << c1.c_str();
+  ss << c0.c_str() << time_str.c_str() << verbosity_str.c_str() << ": " << message.c_str()
+     << c1.c_str();
   return {ss.str().c_str()};
 }
 

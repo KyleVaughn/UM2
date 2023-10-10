@@ -257,9 +257,11 @@ TEST_CASE(groupPresFragment_3d3d)
       int b = 0;
       int a = 0;
       um2::gmsh::model::getColor(3, 1, r, g, b, a);
-      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() && a == um2::red.a());
+      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() &&
+             a == um2::red.a());
       um2::gmsh::model::getColor(3, 2, r, g, b, a);
-      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() && a == um2::red.a());
+      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() &&
+             a == um2::red.a());
     }
     // if material hierarchy is used, Material Moderator should have 1 entity: {3}
     // if material hierarchy is not used, Material Moderator should have 2 entities:
@@ -280,7 +282,8 @@ TEST_CASE(groupPresFragment_3d3d)
       int b = 0;
       int a = 0;
       um2::gmsh::model::getColor(3, 3, r, g, b, a);
-      ASSERT(r == um2::blue.r() && g == um2::blue.g() && b == um2::blue.b() && a == um2::blue.a());
+      ASSERT(r == um2::blue.r() && g == um2::blue.g() && b == um2::blue.b() &&
+             a == um2::blue.a());
     }
     um2::gmsh::finalize();
   }
@@ -353,7 +356,8 @@ TEST_CASE(groupPresIntersect_2d2d)
       int b = 0;
       int a = 0;
       um2::gmsh::model::getColor(2, 1, r, g, b, a);
-      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() && a == um2::red.a());
+      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() &&
+             a == um2::red.a());
     }
     tags.clear();
     if (i == 0) {
