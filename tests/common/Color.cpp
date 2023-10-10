@@ -130,20 +130,6 @@ TEST_CASE(color_comparison)
 }
 MAKE_CUDA_KERNEL(color_comparison)
 
-TEST_CASE(colors_enum)
-{
-  um2::Color const black(0, 0, 0);
-  ASSERT(black.rep.u32 == static_cast<uint32_t>(um2::Colors::Black));
-  um2::Color const white(255, 255, 255);
-  ASSERT(white.rep.u32 == static_cast<uint32_t>(um2::Colors::White));
-  um2::Color const red(255, 0, 0);
-  ASSERT(red.rep.u32 == static_cast<uint32_t>(um2::Colors::Red));
-  um2::Color const green(0, 255, 0);
-  ASSERT(green.rep.u32 == static_cast<uint32_t>(um2::Colors::Green));
-  um2::Color const blue(0, 0, 255);
-  ASSERT(blue.rep.u32 == static_cast<uint32_t>(um2::Colors::Blue));
-}
-
 // NOLINTEND(cert-dcl03-c,misc-static-assert)
 
 TEST_SUITE(color)
@@ -155,7 +141,6 @@ TEST_SUITE(color)
   TEST_HOSTDEV(toColor);
   TEST_HOSTDEV(color_string_constructor);
   TEST_HOSTDEV(color_comparison);
-  TEST(colors_enum);
 }
 
 auto

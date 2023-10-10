@@ -170,7 +170,7 @@ validateMesh(FaceVertexMesh<P, N, D, T, I> & mesh)
   Size const num_vertices = mesh.numVertices();
   for (Size i = 0; i < num_vertices - 1; ++i) {
     if (isApprox(vertices_copy[i], vertices_copy[i + 1])) {
-      Log::warn("Vertex " + std::to_string(i) + " and " + std::to_string(i + 1) +
+      Log::warn("Vertex " + toString(i) + " and " + toString(i + 1) +
                 " are effectively equivalent");
     }
   }
@@ -181,7 +181,7 @@ validateMesh(FaceVertexMesh<P, N, D, T, I> & mesh)
   Size const num_faces = mesh.numFaces();
   for (Size i = 0; i < num_faces; ++i) {
     if (!mesh.getFace(i).isCCW()) {
-      Log::warn("Face " + std::to_string(i) +
+      Log::warn("Face " + toString(i) +
                 " has vertices in clockwise order. Reordering");
       mesh.flipFace(i);
     }
@@ -192,7 +192,7 @@ validateMesh(FaceVertexMesh<P, N, D, T, I> & mesh)
   if constexpr (N == 4) {
     for (Size i = 0; i < num_faces; ++i) {
       if (!isConvex(mesh.getFace(i))) {
-        Log::warn("Face " + std::to_string(i) + " is not convex");
+        Log::warn("Face " + toString(i) + " is not convex");
       }
     }
   }

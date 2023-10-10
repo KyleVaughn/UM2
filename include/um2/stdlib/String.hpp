@@ -31,6 +31,7 @@ private:
   // This should be true for all x86 processors and NVIDIA GPUs.
 
   // Heap-allocated string representation.
+  // 24 bytes
   struct Long {
     uint64_t is_long : 1;
     uint64_t cap : 63;
@@ -80,6 +81,12 @@ public:
 
   HOSTDEV constexpr String(char const * s) noexcept;
   // NOLINTEND(google-explicit-constructor)
+
+  template <std::integral T>
+  explicit constexpr String(T x) noexcept;
+
+  template <std::floating_point T>
+  explicit constexpr String(T x) noexcept;
 
   //==============================================================================
   // Destructor
@@ -149,6 +156,15 @@ public:
   PURE HOSTDEV constexpr auto
   operator>=(String const & s) const noexcept -> bool;
 
+  PURE HOSTDEV constexpr auto
+  operator[](Size i) noexcept -> char &;
+
+  PURE HOSTDEV constexpr auto
+  operator[](Size i) const noexcept -> char const &;
+
+  HOSTDEV constexpr auto
+  operator+=(String const & s) noexcept -> String &;
+
   //==============================================================================
   // Methods
   //==============================================================================
@@ -216,6 +232,21 @@ public:
   initLong(uint64_t n) noexcept;
 
 }; // struct String
+
+template <typename T>
+constexpr auto
+toString(T const & t) noexcept -> String;
+
+constexpr auto
+operator+(String l, String const & r) noexcept -> String;
+
+template <uint64_t N>
+constexpr auto
+operator+(String l, char const (&r)[N]) noexcept -> String;
+
+template <uint64_t N>
+constexpr auto
+operator+(char const (&l)[N], String r) noexcept -> String;
 
 } // namespace um2
 

@@ -10,26 +10,11 @@ namespace um2
 {
 
 //==============================================================================
-// Common colors
-//==============================================================================
-
-// 0xAABBGGRR
-enum class Colors : uint32_t {
-  Black = 0xFF000000,
-  White = 0xFFFFFFFF,
-  Red = 0xFF0000FF,
-  Green = 0xFF00FF00,
-  Blue = 0xFFFF0000,
-  Yellow = 0xFF00FFFF,
-  Magenta = 0xFFFF00FF,
-  Cyan = 0xFFFFFF00,
-};
-
-//==============================================================================
 // COLOR
 //==============================================================================
 // A 4 byte RGBA color.
 // Little endian: 0xAABBGGRR
+// Common colors are defined in the .inl file
 
 struct Color {
 
@@ -61,8 +46,6 @@ struct Color {
 
   // We want to allow for implicit conversion for some cases
   // NOLINTBEGIN(google-explicit-constructor) justified
-  HOSTDEV constexpr Color(Colors color) noexcept;
-
   HOSTDEV constexpr Color(ShortString const & name) noexcept;
   // NOLINTEND(google-explicit-constructor)
 
@@ -82,12 +65,6 @@ struct Color {
   HOSTDEV [[nodiscard]] constexpr auto
   a() const noexcept -> uint8_t;
 
-  //==============================================================================
-  // Operators
-  //==============================================================================
-
-  HOSTDEV constexpr auto
-  operator=(Colors color) noexcept -> Color &;
 };
 
 //==============================================================================

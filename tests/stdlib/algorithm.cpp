@@ -2,6 +2,8 @@
 
 #include "../test_macros.hpp"
 
+// NOLINTBEGIN(cert-dcl03-c,misc-static-assert); justification: compiler-dependent
+
 //=============================================================================
 // clamp
 //=============================================================================
@@ -42,6 +44,7 @@ TEST_CASE(copy_trivial)
 }
 
 HOSTDEV
+// NOLINTBEGIN(cppcoreguidelines-special-member-functions) justification: test
 TEST_CASE(copy_nontrivial)
 {
   struct A {
@@ -85,7 +88,6 @@ TEST_CASE(copy_nontrivial)
       b = other.b;
       return *this;
     }
-    ~A() = default;
   };
   A a[5] = {A(0, 0), A(1, 1), A(2, 2), A(3, 3), A(4, 4)};
   A b[5] = {A(0, 0), A(0, 0), A(0, 0), A(0, 0), A(0, 0)};
@@ -95,6 +97,7 @@ TEST_CASE(copy_nontrivial)
     ASSERT(a[i].b == b[i].b);
   }
 }
+// NOLINTEND(cppcoreguidelines-special-member-functions)
 
 //=============================================================================
 // fill
@@ -182,3 +185,5 @@ main() -> int
   RUN_SUITE(maxmin);
   return 0;
 }
+
+// NOLINTEND(cert-dcl03-c,misc-static-assert)

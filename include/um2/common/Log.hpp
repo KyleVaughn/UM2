@@ -1,10 +1,9 @@
 #pragma once
 
-#include <um2/config.hpp>
+#include <um2/stdlib/String.hpp>
+#include <um2/stdlib/Vector.hpp>
 
 #include <chrono>
-#include <string>
-#include <vector>
 
 namespace um2
 {
@@ -51,21 +50,21 @@ class Log
   static bool timestamped;       // messages are prefixed with a timestamp
   static bool colorized;         // messages are colorized based on their verbosity level
   static bool exit_on_error;     // the program exits after an error is logged
-  static size_t flush_threshold; // flush after this many messages
+  static Size flush_threshold; // flush after this many messages
 
   // Data
   static LogTimePoint start_time;
-  static size_t num_errors;
-  static size_t num_warnings;
-  static std::vector<LogVerbosity> verbosity_levels;
-  static std::vector<LogTimePoint> times;
-  static std::vector<std::string> messages;
+  static Size num_errors;
+  static Size num_warnings;
+  static Vector<LogVerbosity> verbosity_levels;
+  static Vector<LogTimePoint> times;
+  static Vector<String> messages;
   // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
   // -- Methods --
 
   static void
-  handleMessage(LogVerbosity verbosity, std::string const & msg);
+  handleMessage(LogVerbosity verbosity, String const & msg);
 
 public:
   Log() = delete;
@@ -86,7 +85,7 @@ public:
   static void
   setExitOnError(bool val);
   static void
-  setFlushThreshold(size_t val);
+  setFlushThreshold(Size val);
 
   // -- Getters --
 
@@ -101,29 +100,29 @@ public:
   PURE static auto
   isExitOnError() -> bool;
   PURE static auto
-  getFlushThreshold() -> size_t;
+  getFlushThreshold() -> Size;
 
   PURE static auto
   getStartTime() -> LogTimePoint;
   PURE static auto
-  getNumErrors() -> size_t;
+  getNumErrors() -> Size;
   PURE static auto
-  getNumWarnings() -> size_t;
+  getNumWarnings() -> Size;
 
   // -- Methods --
 
   static void
   flush();
   static void
-  error(std::string const & msg);
+  error(String const & msg);
   static void
-  warn(std::string const & msg);
+  warn(String const & msg);
   static void
-  info(std::string const & msg);
+  info(String const & msg);
   static void
-  debug(std::string const & msg);
+  debug(String const & msg);
   static void
-  trace(std::string const & msg);
+  trace(String const & msg);
 
   // -- Destructor --
 

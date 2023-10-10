@@ -36,14 +36,14 @@ struct Image2D : public RegularPartition<2, T, Color> {
   //============================================================================
 
   static constexpr T default_point_radius = static_cast<T>(0.05);
-  static constexpr Colors default_point_color = Colors::White;
+  static constexpr Color default_point_color = white;
 
   //============================================================================
   // Default line rasterization parameters
   //============================================================================
 
   static constexpr T default_line_thickness = static_cast<T>(0.01);
-  static constexpr Colors default_line_color = Colors::White;
+  static constexpr Color default_line_color = white;
 
   constexpr Image2D() noexcept = default;
 
@@ -52,7 +52,7 @@ struct Image2D : public RegularPartition<2, T, Color> {
   //============================================================================
 
   void
-  clear(Color c = Colors::Black);
+  clear(Color c = black);
 
   void
   write(std::string const & filename) const;

@@ -79,6 +79,19 @@ HOSTDEV constexpr String::String(char const * s) noexcept
 #pragma GCC diagnostic pop
 }
 
+// TODO(kcvaughn): write these without std::to_string
+template <std::integral T>
+constexpr String::String(T x) noexcept
+: String(std::to_string(x).c_str())
+{
+}
+
+template <std::floating_point T>
+constexpr String::String(T x) noexcept
+: String(std::to_string(x).c_str())
+{
+}
+
 //==============================================================================
 // Accessors
 //==============================================================================
@@ -151,8 +164,11 @@ String::operator=(String && s) noexcept -> String &
     // Since the data is a pointer, we can just copy the pointer.
     // Therefore, either way, we can just copy the whole struct.
     _r.r = s._r.r;
+    // We are moving the data, so we there will not be a leak
+    // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
     s._r.l.is_long = 0;
     s._r.l.data = nullptr;
+    // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
   }
   return *this;
 }
@@ -230,6 +246,46 @@ String::operator>=(String const & s) const noexcept -> bool
 {
   return compare(s) >= 0;
 }
+
+PURE HOSTDEV constexpr auto
+String::operator[](Size i) noexcept -> char &
+{
+  return data()[i];
+}
+
+PURE HOSTDEV constexpr auto
+String::operator[](Size i) const noexcept -> char const &
+{
+  return data()[i];
+}
+
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
+HOSTDEV constexpr auto
+String::operator+=(String const & s) noexcept -> String &
+{
+  // If this is a short string and the size of the new string is less than
+  // the capacity of the short string, we can just append the new string.
+  uint64_t const new_size = size() + s.size();
+  if (fitsInShort(new_size + 1)) {
+    assert(!isLong());
+    memcpy(getPointer() + size(), s.data(), s.size() + 1);
+    _r.s.size = static_cast<uint8_t>(new_size);
+  } else {
+    // Otherwise, we need to allocate a new string and copy the data.
+    char * tmp = static_cast<char *>(::operator new(new_size + 1));
+    memcpy(tmp, data(), size());
+    memcpy(tmp + size(), s.data(), s.size() + 1);
+    if (isLong()) {
+      ::operator delete(_r.l.data);
+    }
+    _r.l.is_long = 1;
+    _r.l.cap = new_size + 1;
+    _r.l.size = new_size;
+    _r.l.data = tmp;
+  }
+  return *this;
+}
+// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
 //==============================================================================
 // Methods
@@ -375,6 +431,36 @@ CONST HOSTDEV HIDDEN constexpr auto
 String::fitsInShort(uint64_t n) noexcept -> bool
 {
   return n <= min_cap;
+}
+
+template <typename T>
+constexpr auto
+toString(T const & t) noexcept -> String
+{
+  return String(t);
+}
+
+constexpr auto
+operator+(String l, String const & r) noexcept -> String
+{
+  l += r;
+  return l;
+}
+
+template <uint64_t N>
+constexpr auto
+operator+(String l, char const (&r)[N]) noexcept -> String
+{
+  l += String(r);
+  return l;
+}
+
+template <uint64_t N>
+constexpr auto
+operator+(char const (&l)[N], String r) noexcept -> String
+{
+  r += String(l);
+  return r;
 }
 
 } // namespace um2

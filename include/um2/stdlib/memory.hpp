@@ -44,7 +44,7 @@ HOSTDEV constexpr auto
 construct_at(T * p, Args &&... args) noexcept -> T *
 {
   assert(p != nullptr && "null pointer given to construct_at");
-  return ::new (static_cast<void *>(p)) T(forward<Args>(args)...);
+  return ::new (static_cast<void *>(p)) T(um2::forward<Args>(args)...);
 }
 
 //==============================================================================
@@ -65,7 +65,7 @@ destroy_at(T * p) noexcept
 {
   if constexpr (std::is_array_v<T>) {
     for (auto & elem : *p) {
-      destroy_at(addressof(elem));
+      destroy_at(um2::addressof(elem));
     }
   } else {
     p->~T();
@@ -85,7 +85,7 @@ HOSTDEV constexpr void
 destroy(ForwardIt first, ForwardIt last) noexcept
 {
   for (; first != last; ++first) {
-    destroy_at(addressof(*first));
+    um2::destroy_at(um2::addressof(*first));
   }
 }
 

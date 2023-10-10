@@ -2,7 +2,7 @@
 
 #include <iomanip>  // std::setw, std::setfill
 #include <iostream> // std::cout, std::endl, std::cerr
-#include <sstream>  // std::stringstream
+#include <sstream>  // Stringstream
 
 namespace um2
 {
@@ -16,7 +16,7 @@ static constexpr bool log_default_buffered = false;
 static constexpr bool log_default_timestamped = true;
 static constexpr bool log_default_colorized = true;
 static constexpr bool log_default_exit_on_error = true;
-static constexpr size_t log_default_flush_threshold = 20; // flush after 20 messages
+static constexpr Size log_default_flush_threshold = 20; // flush after 20 messages
 
 //==============================================================================
 // Initialize static members
@@ -29,14 +29,14 @@ bool Log::buffered = log_default_buffered;
 bool Log::timestamped = log_default_timestamped;
 bool Log::colorized = log_default_colorized;
 bool Log::exit_on_error = log_default_exit_on_error;
-size_t Log::flush_threshold = log_default_flush_threshold;
+Size Log::flush_threshold = log_default_flush_threshold;
 
 LogTimePoint Log::start_time = LogClock::now();
-size_t Log::num_errors = 0;
-size_t Log::num_warnings = 0;
-std::vector<LogVerbosity> Log::verbosity_levels;
-std::vector<LogTimePoint> Log::times;
-std::vector<std::string> Log::messages;
+Size Log::num_errors = 0;
+Size Log::num_warnings = 0;
+Vector<LogVerbosity> Log::verbosity_levels;
+Vector<LogTimePoint> Log::times;
+Vector<String> Log::messages;
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 //==============================================================================
@@ -91,7 +91,7 @@ Log::setExitOnError(bool val)
   exit_on_error = val;
 }
 void
-Log::setFlushThreshold(size_t val)
+Log::setFlushThreshold(Size val)
 {
   flush_threshold = val;
 }
@@ -125,7 +125,7 @@ Log::isExitOnError() -> bool
   return exit_on_error;
 }
 PURE auto
-Log::getFlushThreshold() -> size_t
+Log::getFlushThreshold() -> Size
 {
   return flush_threshold;
 }
@@ -135,12 +135,12 @@ Log::getStartTime() -> LogTimePoint
   return start_time;
 }
 PURE auto
-Log::getNumErrors() -> size_t
+Log::getNumErrors() -> Size
 {
   return num_errors;
 }
 PURE auto
-Log::getNumWarnings() -> size_t
+Log::getNumWarnings() -> Size
 {
   return num_warnings;
 }
@@ -151,18 +151,18 @@ namespace
 {
 auto
 logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
-                   std::string const & message) -> std::string
+                   String const & message) -> String
 {
   // Time
-  std::string time_str;
+  String time_str;
   if (Log::isTimestamped()) {
     LogTimePoint const start_time = Log::getStartTime();
     LogDuration const elapsed_seconds = time - start_time;
-    size_t const hours = static_cast<size_t>(elapsed_seconds.count()) / 3600;
-    size_t const minutes = (static_cast<size_t>(elapsed_seconds.count()) / 60) % 60;
-    size_t const seconds = static_cast<size_t>(elapsed_seconds.count()) % 60;
-    size_t const milliseconds =
-        static_cast<size_t>(elapsed_seconds.count() * 1000) % 1000;
+    Size const hours = static_cast<Size>(elapsed_seconds.count()) / 3600;
+    Size const minutes = (static_cast<Size>(elapsed_seconds.count()) / 60) % 60;
+    Size const seconds = static_cast<Size>(elapsed_seconds.count()) % 60;
+    Size const milliseconds =
+        static_cast<Size>(elapsed_seconds.count() * 1000) % 1000;
     std::stringstream ss;
     ss << "[" << std::setw(2) << std::setfill('0') << hours << ":" << std::setw(2)
        << std::setfill('0') << minutes << ":" << std::setw(2) << std::setfill('0')
@@ -172,7 +172,7 @@ logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
     time_str = "";
   }
   // Verbosity
-  std::string verbosity_str;
+  String verbosity_str;
   switch (verbosity) {
   case LogVerbosity::Error:
     verbosity_str = "ERROR";
@@ -194,8 +194,8 @@ logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
     break;
   }
   // Color
-  std::string c0;
-  std::string c1;
+  String c0;
+  String c1;
   if (Log::isColorized()) {
     switch (verbosity) {
     case LogVerbosity::Error: // RED
@@ -229,19 +229,19 @@ logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
   }
   // Message
   std::stringstream ss;
-  ss << c0 << time_str << verbosity_str << ": " << message << c1;
-  return ss.str();
+  ss << c0.c_str() << time_str.c_str() << verbosity_str.c_str() << ": " << message.c_str() << c1.c_str();
+  return {ss.str().c_str()};
 }
 
 void
 printLogMessage(LogVerbosity const verbosity, LogTimePoint const time,
-                std::string const & message)
+                String const & message)
 {
-  std::string const log_message = logMessageToString(verbosity, time, message);
+  String const log_message = logMessageToString(verbosity, time, message);
   if (verbosity == LogVerbosity::Error) {
-    std::cerr << log_message << std::endl;
+    std::cerr << log_message.c_str() << std::endl;
   } else {
-    std::cout << log_message << std::endl;
+    std::cout << log_message.c_str() << std::endl;
   }
 }
 } // namespace
@@ -249,7 +249,7 @@ printLogMessage(LogVerbosity const verbosity, LogTimePoint const time,
 void
 Log::flush()
 {
-  for (size_t i = 0; i < messages.size(); ++i) {
+  for (Size i = 0; i < messages.size(); ++i) {
     printLogMessage(verbosity_levels[i], times[i], messages[i]);
   }
   verbosity_levels.clear();
@@ -260,7 +260,7 @@ Log::flush()
 // Handle the messages from error, warn, etc. and store or print them
 // depending on the Log configuration.
 void
-Log::handleMessage(LogVerbosity const verbosity, std::string const & msg)
+Log::handleMessage(LogVerbosity const verbosity, String const & msg)
 {
   if (verbosity <= max_verbosity_level) {
     if (buffered) {
@@ -277,7 +277,7 @@ Log::handleMessage(LogVerbosity const verbosity, std::string const & msg)
 }
 
 void
-Log::error(std::string const & msg)
+Log::error(String const & msg)
 {
   num_errors += 1;
   handleMessage(LogVerbosity::Error, msg);
@@ -287,26 +287,26 @@ Log::error(std::string const & msg)
 }
 
 void
-Log::warn(std::string const & msg)
+Log::warn(String const & msg)
 {
   num_warnings += 1;
   handleMessage(LogVerbosity::Warn, msg);
 }
 
 void
-Log::info(std::string const & msg)
+Log::info(String const & msg)
 {
   handleMessage(LogVerbosity::Info, msg);
 }
 
 void
-Log::debug(std::string const & msg)
+Log::debug(String const & msg)
 {
   handleMessage(LogVerbosity::Debug, msg);
 }
 
 void
-Log::trace(std::string const & msg)
+Log::trace(String const & msg)
 {
   handleMessage(LogVerbosity::Trace, msg);
 }

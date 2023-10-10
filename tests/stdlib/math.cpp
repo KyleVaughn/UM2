@@ -2,6 +2,8 @@
 
 #include "../test_macros.hpp"
 
+// NOLINTBEGIN(cert-dcl03-c,misc-static-assert); justification: compiler-dependent
+
 //=============================================================================
 // abs
 //=============================================================================
@@ -169,3 +171,5 @@ main() -> int
   RUN_SUITE(sqrt);
   return 0;
 }
+
+// NOLINTEND(cert-dcl03-c,misc-static-assert)
