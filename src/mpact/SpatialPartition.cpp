@@ -728,11 +728,11 @@ SpatialPartition::makeCoarseCell(Vec2<Float> const dxdy, MeshType const mesh_typ
                                  Vector<MaterialID> const & material_ids) -> Size
 {
   Size const cc_id = coarse_cells.size();
-  Log::info("Making coarse cell " + std::to_string(cc_id));
+  Log::info("Making coarse cell " + toString(cc_id));
   // Ensure dx and dy are positive
   if (dxdy[0] <= 0 || dxdy[1] <= 0) {
-    Log::error("dx and dy must be positive:; " + std::to_string(dxdy[0]) + ", " +
-               std::to_string(dxdy[1]));
+    Log::error("dx and dy must be positive:; " + toString(dxdy[0]) + ", " +
+               toString(dxdy[1]));
     return -1;
   }
   // Ensure that the mesh exists
@@ -758,7 +758,7 @@ auto
 SpatialPartition::makeRTM(std::vector<std::vector<Size>> const & cc_ids) -> Size
 {
   Size const rtm_id = rtms.size();
-  Log::info("Making ray tracing module " + std::to_string(rtm_id));
+  Log::info("Making ray tracing module " + toString(rtm_id));
   std::vector<Size> unique_cc_ids;
   std::vector<Vec2<Float>> dxdy;
   // Ensure that all coarse cells exist
@@ -766,7 +766,7 @@ SpatialPartition::makeRTM(std::vector<std::vector<Size>> const & cc_ids) -> Size
   for (auto const & cc_ids_row : cc_ids) {
     for (auto const & id : cc_ids_row) {
       if (id < 0 || id >= num_cc) {
-        Log::error("Coarse cell " + std::to_string(id) + " does not exist");
+        Log::error("Coarse cell " + toString(id) + " does not exist");
         return -1;
       }
       auto const it = std::find(unique_cc_ids.begin(), unique_cc_ids.end(), id);
@@ -829,7 +829,7 @@ auto
 SpatialPartition::makeLattice(std::vector<std::vector<Size>> const & rtm_ids) -> Size
 {
   Size const lat_id = lattices.size();
-  Log::info("Making lattice " + std::to_string(lat_id));
+  Log::info("Making lattice " + toString(lat_id));
   // Ensure that all RTMs exist
   Size const num_rtm = rtms.size();
   for (auto const & rtm_ids_row : rtm_ids) {
@@ -837,7 +837,7 @@ SpatialPartition::makeLattice(std::vector<std::vector<Size>> const & rtm_ids) ->
         std::find_if(rtm_ids_row.begin(), rtm_ids_row.end(),
                      [num_rtm](Size const id) { return id < 0 || id >= num_rtm; });
     if (it != rtm_ids_row.end()) {
-      Log::error("RTM " + std::to_string(*it) + " does not exist");
+      Log::error("RTM " + toString(*it) + " does not exist");
       return -1;
     }
   }
@@ -879,7 +879,7 @@ SpatialPartition::makeAssembly(std::vector<Size> const & lat_ids,
                                std::vector<Float> const & z) -> Size
 {
   Size const asy_id = assemblies.size();
-  Log::info("Making assembly " + std::to_string(asy_id));
+  Log::info("Making assembly " + toString(asy_id));
   // Ensure that all lattices exist
   Size const num_lat = lattices.size();
   {
@@ -887,7 +887,7 @@ SpatialPartition::makeAssembly(std::vector<Size> const & lat_ids,
         std::find_if(lat_ids.cbegin(), lat_ids.cend(),
                      [num_lat](Size const id) { return id < 0 || id >= num_lat; });
     if (it != lat_ids.end()) {
-      Log::error("Lattice " + std::to_string(*it) + " does not exist");
+      Log::error("Lattice " + toString(*it) + " does not exist");
       return -1;
     }
   }
@@ -958,7 +958,7 @@ SpatialPartition::makeCore(std::vector<std::vector<Size>> const & asy_ids) -> Si
         std::find_if(asy_ids_row.cbegin(), asy_ids_row.cend(),
                      [num_asy](Size const id) { return id < 0 || id >= num_asy; });
     if (it != asy_ids_row.end()) {
-      Log::error("Assembly " + std::to_string(*it) + " does not exist");
+      Log::error("Assembly " + toString(*it) + " does not exist");
       return -1;
     }
   }
@@ -1002,7 +1002,7 @@ SpatialPartition::makeCore(std::vector<std::vector<Size>> const & asy_ids) -> Si
 void
 SpatialPartition::importCoarseCells(std::string const & filename)
 {
-  Log::info("Importing coarse cells from " + filename);
+  Log::info("Importing coarse cells from " + String(filename.c_str()));
   MeshFile<Float, Int> mesh_file;
   importMesh(filename, mesh_file);
 

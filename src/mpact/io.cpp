@@ -228,13 +228,13 @@ writeLattice(Size asy_id, mpact::SpatialPartition const & model, Size iz,
 void
 writeXDMFFile(std::string const & path, mpact::SpatialPartition const & model)
 {
-  Log::info("Writing MPACT model to XDMF file: " + path);
+  Log::info("Writing MPACT model to XDMF file: " + String(path.c_str()));
 
   size_t const h5filepath_end = path.find_last_of('/') + 1;
   std::string const name = path.substr(h5filepath_end, path.size() - 5 - h5filepath_end);
   std::string const h5filename = name + ".h5";
   std::string const h5filepath = path.substr(0, h5filepath_end);
-  LOG_DEBUG("H5 filename: " + h5filename);
+  LOG_DEBUG("H5 filename: " + String(h5filename.c_str()));
   H5::H5File h5file(h5filepath + h5filename, H5F_ACC_TRUNC);
 
   // Setup XML file
@@ -396,7 +396,7 @@ void
 // NOLINTNEXTLINE
 readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
 {
-  Log::info("Importing MPACT model from file: " + path);
+  Log::info("Importing MPACT model from file: " + String(path.c_str()));
   if (!path.ends_with(".xdmf")) {
     Log::error("Unsupported file format.");
     return;
@@ -405,7 +405,7 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
   // Open the XDMF file
   std::ifstream const file(path);
   if (!file.is_open()) {
-    Log::error("Could not open file: " + path);
+    Log::error("Could not open file: " + String(path.c_str())); 
     return;
   }
   // Open the HDF5 file
@@ -413,15 +413,15 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
   std::string const h5filename =
       path.substr(h5filepath_end, path.size() - 4 - h5filepath_end) + "h5";
   std::string const h5filepath = path.substr(0, h5filepath_end);
-  LOG_DEBUG("H5 filename: " + h5filename);
+  LOG_DEBUG("H5 filename: " + String(h5filename.c_str()));
   H5::H5File const h5file(h5filepath + h5filename, H5F_ACC_RDONLY);
 
   // Setup XML document
   pugi::xml_document xdoc;
   pugi::xml_parse_result const result = xdoc.load_file(path.c_str());
   if (!result) {
-    Log::error("XDMF XML parse error: " + std::string(result.description()) +
-               ", character pos= " + std::to_string(result.offset));
+    Log::error("XDMF XML parse error: " + String(result.description()) +
+               ", character pos= " + toString(result.offset));
   }
   pugi::xml_node const xroot = xdoc.child("Xdmf");
   if (strcmp("Xdmf", xroot.name()) != 0) {

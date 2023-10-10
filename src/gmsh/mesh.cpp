@@ -139,8 +139,8 @@ setMeshFieldFromGroups(int const dim, std::vector<std::string> const & groups,
       } // group_name == existing_group_name
     }   // existing_group_dimtag : dimtags
     if (!found) {
-      LOG_ERROR("The model does not contain a " + std::to_string(dim) +
-                "-dimensional group with name: " + group_name);
+      LOG_ERROR("The model does not contain a " + toString(dim) +
+                "-dimensional group with name: " + String(group_name.c_str()));
     }
   } // for (size_t i = 0; i < groups.size()) {
   // Create a field that takes the min of each and set as background mesh

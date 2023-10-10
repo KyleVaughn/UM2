@@ -20,7 +20,7 @@ namespace um2::gmsh
 void
 write(std::string const & filename, bool const extra_info)
 {
-  Log::info("Writing file: " + filename);
+  Log::info("Writing file: " + String(filename.c_str())); 
   gmsh::write(filename);
   if (!extra_info) {
     return;
@@ -29,7 +29,7 @@ write(std::string const & filename, bool const extra_info)
       filename.substr(0, filename.find_last_of('.')) + ".info";
   std::ofstream info_file(info_filename);
   if (!info_file.is_open()) {
-    Log::error("Could not open file " + info_filename);
+    Log::error("Could not open file " + String(info_filename.c_str()));
     return;
   }
   //==============================================================================
@@ -149,7 +149,7 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
   std::string line;
   std::getline(info_file, line);
   if (!line.starts_with("PHYSICAL_GROUPS")) {
-    Log::error("Could not read PHYSICAL_GROUPS from " + info_filename);
+    Log::error("Could not read PHYSICAL_GROUPS from " + String(info_filename.c_str())); 
     return;
   }
   size_t const num_groups = sto<size_t>(line.substr(16));
@@ -157,7 +157,7 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
   for (size_t i = 0; i < num_groups; ++i) {
     std::getline(info_file, line);
     if (!line.starts_with("PHYSICAL_GROUP")) {
-      Log::error("Could not read PHYSICAL_GROUP from " + info_filename);
+      Log::error("Could not read PHYSICAL_GROUP from " + String(info_filename.c_str()));
       return;
     }
     size_t const name_start = line.find('"') + 1;
@@ -207,12 +207,12 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
 void
 open(std::string const & filename, bool const extra_info)
 {
-  Log::info("Opening file: " + filename);
+  Log::info("Opening file: " + String(filename.c_str()));
   // Warn if the file doesn't exist, because Gmsh doesn't...
   {
     std::ifstream const file(filename);
     if (!file.good()) {
-      Log::error("File " + filename + " does not exist.");
+      Log::error("File " + String(filename.c_str()) + " does not exist.");
     }
   }
   gmsh::open(filename);
@@ -224,7 +224,7 @@ open(std::string const & filename, bool const extra_info)
       filename.substr(0, filename.find_last_of('.')) + ".info";
   std::ifstream info_file(info_filename);
   if (!info_file.is_open()) {
-    Log::error("Could not open file " + info_filename);
+    Log::error("Could not open file " + String(info_filename.c_str()));
     return;
   }
   //==============================================================================
@@ -239,14 +239,14 @@ open(std::string const & filename, bool const extra_info)
     std::string line;
     std::getline(info_file, line);
     if (!line.starts_with("ENTITY_COLORS")) {
-      Log::error("Could not read ENTITY_COLORS from " + info_filename);
+      Log::error("Could not read ENTITY_COLORS from " + String(info_filename.c_str()));
       return;
     }
     size_t const num_colors = sto<size_t>(line.substr(14));
     for (size_t i = 0; i < num_colors; ++i) {
       std::getline(info_file, line);
       if (!line.starts_with("ENTITY_COLOR")) {
-        Log::error("Could not read ENTITY_COLOR from " + info_filename);
+        Log::error("Could not read ENTITY_COLOR from " + String(info_filename.c_str()));
         return;
       }
       size_t token_start = 13;

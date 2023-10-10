@@ -167,12 +167,12 @@ template <std::floating_point T, std::signed_integral I>
 void
 MeshFile<T, I>::getSubmesh(std::string const & elset_name, MeshFile<T, I> & submesh) const
 {
-  LOG_DEBUG("Extracting submesh for elset: " + elset_name);
+  LOG_DEBUG("Extracting submesh for elset: " + String(elset_name.c_str()));
 
   // Find the elset with the given name.
   auto const elset_it = std::find(elset_names.cbegin(), elset_names.cend(), elset_name);
   if (elset_it == elset_names.cend()) {
-    Log::error("getSubmesh: Elset '" + elset_name + "' not found");
+    Log::error("getSubmesh: Elset '" + String(elset_name.c_str()) + "' not found");
     return;
   }
 
@@ -321,7 +321,7 @@ MeshFile<T, I>::getMaterialIDs(std::vector<MaterialID> & material_ids,
         for (size_t k = start; k < end; ++k) {
           auto const elem = static_cast<size_t>(this->elset_ids[k]);
           if (material_ids[elem] != -1) {
-            Log::error("Element " + std::to_string(elem) + " has multiple materials");
+            Log::error("Element " + toString(elem) + " has multiple materials");
           }
           material_ids[elem] = static_cast<MaterialID>(i);
         } // for k

@@ -241,7 +241,7 @@ static void writeXDMFMaterials(pugi::xml_node & xgrid, H5::Group & h5group,
         for (size_t k = start; k < end; ++k) {
           auto const elem = static_cast<size_t>(mesh.elset_ids[k]);
           if (materials[elem] != -1) {
-            Log::error("Element " + std::to_string(elem) + " has multiple materials");
+            Log::error("Element " + toString(elem) + " has multiple materials");
           }
           materials[elem] = static_cast<MaterialID>(i);
         } // for k
@@ -367,7 +367,7 @@ void
 writeXDMFFile(MeshFile<T, I> & mesh)
 {
 
-  Log::info("Writing XDMF file: " + mesh.filepath);
+  Log::info("Writing XDMF file: " + String(mesh.filepath.c_str()));
 
   // Setup HDF5 file
   // Get the h5 file name
@@ -376,7 +376,7 @@ writeXDMFFile(MeshFile<T, I> & mesh)
       mesh.filepath.substr(h5filepath_end, mesh.filepath.size() - 5 - h5filepath_end) +
       ".h5";
   std::string const h5filepath = mesh.filepath.substr(0, h5filepath_end);
-  LOG_DEBUG("H5 filename: " + h5filename);
+  LOG_DEBUG("H5 filename: " + String(h5filename.c_str()));
   H5::H5File h5file(h5filepath + h5filename, H5F_ACC_TRUNC);
 
   // Setup XML file
@@ -476,7 +476,7 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
   // Get the geometry type
   std::string const geometry_type = xgeometry.attribute("GeometryType").value();
   if (geometry_type != "XYZ" && geometry_type != "XY") {
-    Log::error("XDMF geometry type not supported: " + geometry_type);
+    Log::error("XDMF geometry type not supported: " + String(geometry_type.c_str()));
     return;
   }
   // Get the DataItem node
@@ -488,13 +488,13 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
   // Get the data type
   std::string const data_type = xdataitem.attribute("DataType").value();
   if (data_type != "Float") {
-    Log::error("XDMF geometry data type not supported: " + data_type);
+    Log::error("XDMF geometry data type not supported: " + String(data_type.c_str()));
     return;
   }
   // Get the precision
   std::string const precision = xdataitem.attribute("Precision").value();
   if (precision != "4" && precision != "8") {
-    Log::error("XDMF geometry precision not supported: " + precision);
+    Log::error("XDMF geometry precision not supported: " + String(precision.c_str()));
     return;
   }
   // Get the dimensions
@@ -503,17 +503,17 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
   size_t const num_verts = std::stoul(dimensions.substr(0, split));
   size_t const num_dimensions = std::stoul(dimensions.substr(split + 1));
   if (geometry_type == "XYZ" && num_dimensions != 3) {
-    Log::error("XDMF geometry dimensions not supported: " + dimensions);
+    Log::error("XDMF geometry dimensions not supported: " + String(dimensions.c_str()));
     return;
   }
   if (geometry_type == "XY" && num_dimensions != 2) {
-    Log::error("XDMF geometry dimensions not supported: " + dimensions);
+    Log::error("XDMF geometry dimensions not supported: " + String(dimensions.c_str())); 
     return;
   }
   // Get the format
   std::string const format = xdataitem.attribute("Format").value();
   if (format != "HDF") {
-    Log::error("XDMF geometry format not supported: " + format);
+    Log::error("XDMF geometry format not supported: " + String(format.c_str())); 
     return;
   }
   // Get the h5 dataset path
@@ -654,19 +654,19 @@ static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5
   // Get the data type
   std::string const data_type = xdataitem.attribute("DataType").value();
   if (data_type != "Int") {
-    Log::error("XDMF topology data type not supported: " + data_type);
+    Log::error("XDMF topology data type not supported: " + String(data_type.c_str()));
     return;
   }
   // Get the precision
   std::string const precision = xdataitem.attribute("Precision").value();
   if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
-    Log::error("XDMF topology precision not supported: " + precision);
+    Log::error("XDMF topology precision not supported: " + String(precision.c_str()));
     return;
   }
   // Get the format
   std::string const format = xdataitem.attribute("Format").value();
   if (format != "HDF") {
-    Log::error("XDMF geometry format not supported: " + format);
+    Log::error("XDMF geometry format not supported: " + String(format.c_str())); 
     return;
   }
   // Get the h5 dataset path
@@ -771,19 +771,19 @@ static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5fi
     // Get the data type
     std::string const data_type = xdataitem.attribute("DataType").value();
     if (data_type != "Int") {
-      Log::error("XDMF elset data type not supported: " + data_type);
+      Log::error("XDMF elset data type not supported: " + String(data_type.c_str())); 
       return;
     }
     // Get the precision
     std::string const precision = xdataitem.attribute("Precision").value();
     if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
-      Log::error("XDMF elset precision not supported: " + precision);
+      Log::error("XDMF elset precision not supported: " + String(precision.c_str())); 
       return;
     }
     // Get the format
     std::string const format = xdataitem.attribute("Format").value();
     if (format != "HDF") {
-      Log::error("XDMF elset format not supported: " + format);
+      Log::error("XDMF elset format not supported: " + String(format.c_str()));
       return;
     }
     // Get the h5 dataset path
@@ -854,14 +854,14 @@ template <std::floating_point T, std::signed_integral I>
 void
 readXDMFFile(std::string const & filename, MeshFile<T, I> & mesh)
 {
-  Log::info("Reading XDMF mesh file: " + filename);
+  Log::info("Reading XDMF mesh file: " + String(filename.c_str()));
 
   // Open HDF5 file
   size_t const h5filepath_end = filename.find_last_of('/') + 1;
   std::string const h5filename =
       filename.substr(h5filepath_end, filename.size() - 4 - h5filepath_end) + "h5";
   std::string const h5filepath = filename.substr(0, h5filepath_end);
-  LOG_DEBUG("H5 filename: " + h5filename);
+  LOG_DEBUG("H5 filename: " + String(h5filename.c_str()));
   H5::H5File const h5file(h5filepath + h5filename, H5F_ACC_RDONLY);
 
   // Set filepath
@@ -871,8 +871,8 @@ readXDMFFile(std::string const & filename, MeshFile<T, I> & mesh)
   pugi::xml_document xdoc;
   pugi::xml_parse_result const result = xdoc.load_file(filename.c_str());
   if (!result) {
-    Log::error("XDMF XML parse error: " + std::string(result.description()) +
-               ", character pos= " + std::to_string(result.offset));
+    Log::error("XDMF XML parse error: " + String(result.description()) +
+               ", character pos= " + toString(result.offset));
   }
   pugi::xml_node const xroot = xdoc.child("Xdmf");
   if (strcmp("Xdmf", xroot.name()) != 0) {

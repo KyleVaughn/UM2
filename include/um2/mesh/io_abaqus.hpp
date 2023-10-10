@@ -80,13 +80,13 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     this_type = MeshType::QuadraticQuad;
     break;
   default: {
-    LOG_ERROR("AbaqusCellType CPS" + std::to_string(offset) + " is not supported");
+    LOG_ERROR("AbaqusCellType CPS" + toString(offset) + " is not supported");
     break;
   }
   }
   size_t num_elements = 0;
   while (std::getline(file, line) && line[0] != '*') {
-    LOG_TRACE("Line: " + line);
+    LOG_TRACE("Line: " + String(line.c_str()));
     std::string_view const line_view = line;
     // For each element, read the element ID and the node IDs
     // Format: id, n1, n2, n3, n4, n5 ...
@@ -96,7 +96,7 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     I id = -1;
     while (next != std::string::npos) {
       std::from_chars(line_view.data() + last + 2, line_view.data() + next, id);
-      LOG_TRACE("Node ID: " + std::to_string(id));
+      LOG_TRACE("Node ID: " + toString(id));
       assert(id > 0);
       mesh.element_conn.push_back(id - 1); // ABAQUS is 1-indexed
       last = next;
@@ -181,12 +181,12 @@ template <std::floating_point T, std::signed_integral I>
 void
 readAbaqusFile(std::string const & filename, MeshFile<T, I> & mesh)
 {
-  LOG_INFO("Reading Abaqus mesh file: " + filename);
+  LOG_INFO("Reading Abaqus mesh file: " + String(filename.c_str()));
 
   // Open file
   std::ifstream file(filename);
   if (!file.is_open()) {
-    LOG_ERROR("Could not open file: " + filename);
+    LOG_ERROR("Could not open file: " + String(filename.c_str()));
     return;
   }
 

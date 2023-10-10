@@ -13,7 +13,7 @@ namespace um2
 void
 writePPM(Vector<Color> const & buffer, Size nx, Size ny, std::string const & filename)
 {
-  LOG_INFO("Writing image to file: " + filename);
+  LOG_INFO("Writing image to file: " + String(filename.c_str()));
   std::ofstream ofs(filename.c_str(), std::ios::out | std::ios::binary);
   assert(ofs.is_open() && "Could not open file for writing");
   ofs << "P6\n" << nx << " " << ny << "\n255\n";

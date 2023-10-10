@@ -74,7 +74,7 @@ void
 addToPhysicalGroup(int const dim, std::vector<int> const & tags, int const tag,
                    std::string const & name)
 {
-  Log::debug("Adding entities to physical group \"" + name + "\"");
+  Log::debug("Adding entities to physical group \"" + String(name.c_str()) + "\"");
   assert(std::is_sorted(tags.begin(), tags.end()));
   gmsh::vectorpair dimtags;
   gmsh::model::getPhysicalGroups(dimtags, dim);
@@ -340,7 +340,7 @@ processMaterialHierarchy(std::vector<Material> const & material_hierarchy,
       auto const it = std::lower_bound(physical_group_names.begin(),
                                        physical_group_names.end(), mat_name);
       if (it == physical_group_names.end() || *it != mat_name) {
-        Log::warn("'Material_" + std::string(mat.name.data()) + "' not found in model");
+        Log::warn("'Material_" + String(mat.name.data()) + "' not found in model");
       } else {
         mat_indices[i] = static_cast<size_t>(it - physical_group_names.begin());
       }
@@ -414,8 +414,8 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
   size_t const nobject = object_dimtags.size();
   size_t const ntool = tool_dimtags.size();
 
-  Log::info("Fragmenting " + std::to_string(nobject) + " object entities and " +
-            std::to_string(ntool) + " tool entities");
+  Log::info("Fragmenting " + toString(nobject) + " object entities and " +
+            toString(ntool) + " tool entities");
   gmsh::model::removePhysicalGroups();
 
   gmsh::model::occ::fragment(object_dimtags, tool_dimtags, out_dimtags, out_dimtags_map,
@@ -504,8 +504,8 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
   size_t const num_groups = physical_group_names.size();
   size_t const nobject = object_dimtags.size();
   size_t const ntool = tool_dimtags.size();
-  Log::info("Intersecting " + std::to_string(nobject) + " object entities and " +
-            std::to_string(ntool) + " tool entities");
+  Log::info("Intersecting " + toString(nobject) + " object entities and " +
+            toString(ntool) + " tool entities");
   gmsh::model::removePhysicalGroups();
   gmsh::model::occ::intersect(object_dimtags, tool_dimtags, out_dimtags, out_dimtags_map,
                               tag, remove_object, remove_tool);
@@ -1103,7 +1103,7 @@ overlaySpatialPartition(mpact::SpatialPartition const & partition,
       // it is the fill material
       std::swap(materials[i], materials[num_materials - 1]);
       fill_exists = true;
-      Log::debug("Found fill material: " + fill_material_name);
+      Log::debug("Found fill material: " + String(fill_material_name.c_str()));
       break;
     }
   }

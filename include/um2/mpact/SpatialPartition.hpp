@@ -154,22 +154,22 @@ struct SpatialPartition {
     switch (mesh_type) {
     case MeshType::Tri:
       if (0 > mesh_id || mesh_id >= this->tri.size()) {
-        Log::error("Tri mesh " + std::to_string(mesh_id) + " does not exist");
+        Log::error("Tri mesh " + toString(mesh_id) + " does not exist");
       }
       break;
     case MeshType::Quad:
       if (0 > mesh_id || mesh_id >= this->quad.size()) {
-        Log::error("Quad mesh " + std::to_string(mesh_id) + " does not exist");
+        Log::error("Quad mesh " + toString(mesh_id) + " does not exist");
       }
       break;
     case MeshType::QuadraticTri:
       if (0 > mesh_id || mesh_id >= this->quadratic_tri.size()) {
-        Log::error("Quadratic tri mesh " + std::to_string(mesh_id) + " does not exist");
+        Log::error("Quadratic tri mesh " + toString(mesh_id) + " does not exist");
       }
       break;
     case MeshType::QuadraticQuad:
       if (0 > mesh_id || mesh_id >= this->quadratic_quad.size()) {
-        Log::error("Quadratic quad mesh " + std::to_string(mesh_id) + " does not exist");
+        Log::error("Quadratic quad mesh " + toString(mesh_id) + " does not exist");
       }
       break;
     default:

@@ -131,19 +131,19 @@ endif()
 set(UM2_SOURCES
     # common
     "src/common/Log.cpp"
-    #    # mpact
-    #    "src/mpact/SpatialPartition.cpp"
-    #    "src/mpact/io.cpp"
-    #    # gmsh
-    #    "src/gmsh/base_gmsh_api.cpp"
-    #    "src/gmsh/io.cpp"
-    #    "src/gmsh/model.cpp"
-    #    "src/gmsh/mesh.cpp"
-    #    # visualization
-    #    "src/visualization/Image2D.cpp"
-    #    # api
-    #    "src/um2.cpp"
-    #    "src/um2c.cpp"
+    # mpact
+    "src/mpact/SpatialPartition.cpp"
+    "src/mpact/io.cpp"
+    # gmsh
+    "src/gmsh/base_gmsh_api.cpp"
+    "src/gmsh/io.cpp"
+    "src/gmsh/model.cpp"
+    "src/gmsh/mesh.cpp"
+    # visualization
+    "src/visualization/Image2D.cpp"
+    # api
+    "src/um2.cpp"
+    "src/um2c.cpp"
   )
 
 add_library(um2 SHARED ${UM2_SOURCES})
