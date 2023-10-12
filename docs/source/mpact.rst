@@ -39,6 +39,7 @@ This is a horrible hack, but until MPACT is updated to use a newer version of gc
     # Install gcc@8
     spack install gcc@8.5.0
     spack load gcc@8.5.0
+    spack compiler find
     # Install mpich@3.3
     spack install mpich@3.3%gcc@8.5.0
     spack load mpich@3.3%gcc@8.5.0
