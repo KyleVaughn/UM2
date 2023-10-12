@@ -32,4 +32,4 @@ spack load mpich@3.3%gcc@12.3.0
 spack env activate -p um2
 cd ./MPACT/build/MPACT_exe/src
 make MPACT VERBOSE=1
-echo "Now copy the command and use you local mpif90"
+echo "Now copy the mpif90 final linking command for MPACT.exe and remove the absolute path for mpif90, leaving only 'mpif90 -cpp ...'"

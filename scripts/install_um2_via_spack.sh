@@ -33,6 +33,7 @@ spack spec
 echo "spack install"
 spack install
 
+echo "building UM2"
 cd UM2
 mkdir build
 cd build
