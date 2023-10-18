@@ -10,8 +10,8 @@
 namespace um2::gmsh
 {
 
-// Extend the gmsh::write function such that it has the option to preserve CAD entity
-// physical groups via extra_info = true
+// Extend the gmsh::write function so that it has the option to preserve
+// physical groups and colors via extra_info = true
 void
 write(std::string const & filename, bool extra_info);
 

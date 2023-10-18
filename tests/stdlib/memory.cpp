@@ -14,7 +14,6 @@ struct Nothing {
   explicit
   operator char &()
   {
-    // cppcheck-suppress unassignedVariable; justification: don't care in this case
     static char c;
     return c;
   }

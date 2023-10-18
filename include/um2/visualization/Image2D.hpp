@@ -28,22 +28,18 @@ namespace um2
 //
 // NOTE: We must apply the constraint that spacing[0] == spacing[1] to ensure that the
 // image is not distorted.
+//
+
+// CUDA has trouble with static constexpt Colors, so we make our constants
+// the old fashion way.
+#define DEFAULT_POINT_COLOR Color(255, 255, 255, 255)
+#define DEFAULT_LINE_COLOR  Color(255, 255, 255, 255)
+
 template <std::floating_point T>
 struct Image2D : public RegularPartition<2, T, Color> {
 
-  //============================================================================
-  // Default point rasterization parameters
-  //============================================================================
-
   static constexpr T default_point_radius = static_cast<T>(0.05);
-  static constexpr Color default_point_color = white;
-
-  //============================================================================
-  // Default line rasterization parameters
-  //============================================================================
-
   static constexpr T default_line_thickness = static_cast<T>(0.01);
-  static constexpr Color default_line_color = white;
 
   constexpr Image2D() noexcept = default;
 
@@ -52,20 +48,20 @@ struct Image2D : public RegularPartition<2, T, Color> {
   //============================================================================
 
   void
-  clear(Color c = black);
+  clear(Color c = Color(0, 0, 0, 255));
 
   void
   write(std::string const & filename) const;
 
   void
-  rasterize(Point2<T> const & p, Color c = default_point_color);
+  rasterize(Point2<T> const & p, Color c = DEFAULT_POINT_COLOR);
 
   void
   rasterizeAsDisk(Point2<T> const & p, T r = default_point_radius,
-                  Color c = default_point_color);
+                  Color c = DEFAULT_POINT_COLOR);
 
   void
-  rasterize(LineSegment2<T> l, Color c = default_line_color);
+  rasterize(LineSegment2<T> l, Color c = DEFAULT_LINE_COLOR);
 };
 
 } // namespace um2

@@ -190,7 +190,7 @@ String::operator=(std::string && s) noexcept -> String &
 }
 
 template <uint64_t N>
-constexpr auto
+HOSTDEV constexpr auto
 String::operator=(char const (&s)[N]) noexcept -> String &
 {
   String tmp(s);
@@ -263,6 +263,9 @@ String::operator[](Size i) const noexcept -> char const &
 HOSTDEV constexpr auto
 String::operator+=(String const & s) noexcept -> String &
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+
   // If this is a short string and the size of the new string is less than
   // the capacity of the short string, we can just append the new string.
   auto const new_size = static_cast<uint64_t>(size() + s.size());
@@ -284,6 +287,7 @@ String::operator+=(String const & s) noexcept -> String &
     _r.l.data = tmp;
   }
   return *this;
+#pragma GCC diagnostic pop
 }
 // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
@@ -440,7 +444,7 @@ toString(T const & t) noexcept -> String
   return String(t);
 }
 
-constexpr auto
+HOSTDEV constexpr auto
 operator+(String l, String const & r) noexcept -> String
 {
   l += r;
@@ -448,7 +452,7 @@ operator+(String l, String const & r) noexcept -> String
 }
 
 template <uint64_t N>
-constexpr auto
+HOSTDEV constexpr auto
 operator+(String l, char const (&r)[N]) noexcept -> String
 {
   l += String(r);
@@ -456,7 +460,7 @@ operator+(String l, char const (&r)[N]) noexcept -> String
 }
 
 template <uint64_t N>
-constexpr auto
+HOSTDEV constexpr auto
 operator+(char const (&l)[N], String r) noexcept -> String
 {
   r += String(l);

@@ -268,14 +268,16 @@ toColor(ShortString const & name) noexcept -> Color
 //=============================================================================
 // Common colors
 //=============================================================================
+// Would love to make this inline constexpr instead of a macro, but CUDA 12.2.1
+// has trouble.
 
-inline constexpr Color black(0, 0, 0, 255);
-inline constexpr Color white(255, 255, 255, 255);
-inline constexpr Color red(255, 0, 0, 255);
-inline constexpr Color green(0, 255, 0, 255);
-inline constexpr Color blue(0, 0, 255, 255);
-inline constexpr Color yellow(255, 255, 0, 255);
-inline constexpr Color cyan(0, 255, 255, 255);
-inline constexpr Color magenta(255, 0, 255, 255);
+#define BLACK   um2::Color(0, 0, 0, 255)
+#define WHITE   um2::Color(255, 255, 255, 255)
+#define RED     um2::Color(255, 0, 0, 255)
+#define GREEN   um2::Color(0, 255, 0, 255)
+#define BLUE    um2::Color(0, 0, 255, 255)
+#define YELLOW  um2::Color(255, 255, 0, 255)
+#define CYAN    um2::Color(0, 255, 255, 255)
+#define MAGENTA um2::Color(255, 0, 255, 255)
 
 } // namespace um2

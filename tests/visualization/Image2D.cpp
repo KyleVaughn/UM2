@@ -35,10 +35,10 @@ TEST_CASE(writePNG)
   image.grid.num_cells[0] = 10;
   image.grid.num_cells[1] = 10;
   image.children.resize(100);
-  image.getChild(0, 0) = um2::red;
-  image.getChild(9, 0) = um2::green;
-  image.getChild(0, 9) = um2::blue;
-  image.getChild(9, 9) = um2::white;
+  image.getChild(0, 0) = RED;
+  image.getChild(9, 0) = GREEN;
+  image.getChild(0, 9) = BLUE;
+  image.getChild(9, 9) = WHITE;
   image.write("test.png");
   {
     std::ifstream const file("test.png");
@@ -62,14 +62,14 @@ TEST_CASE(rasterizePoint)
   image.children.resize(100 * 100);
 
   T r = 10;
-  image.rasterizeAsDisk(um2::Point2<T>(0, 0), r, um2::red);
+  image.rasterizeAsDisk(um2::Point2<T>(0, 0), r, RED);
   r = 5;
-  image.rasterizeAsDisk(um2::Point2<T>(99, 0), r, um2::green);
+  image.rasterizeAsDisk(um2::Point2<T>(99, 0), r, GREEN);
   r = 20;
-  image.rasterizeAsDisk(um2::Point2<T>(0, 99), r, um2::blue);
+  image.rasterizeAsDisk(um2::Point2<T>(0, 99), r, BLUE);
   r = 30;
-  image.rasterizeAsDisk(um2::Point2<T>(99, 99), r, um2::white);
-  image.rasterize(um2::Point2<T>(50, 50), um2::yellow);
+  image.rasterizeAsDisk(um2::Point2<T>(99, 99), r, WHITE);
+  image.rasterize(um2::Point2<T>(50, 50), YELLOW);
   image.write("test.ppm");
   {
     std::ifstream const file("test.ppm");
@@ -93,7 +93,7 @@ TEST_CASE(rasterizeLine)
   image.grid.num_cells[0] = npixel;
   image.grid.num_cells[1] = npixel;
   image.children.resize(npixel * npixel);
-  image.clear(um2::red);
+  image.clear(RED);
   um2::Image2D<T> image_ref;
   image_ref.grid.minima[0] = static_cast<T>(0);
   image_ref.grid.minima[1] = static_cast<T>(0);
@@ -102,7 +102,7 @@ TEST_CASE(rasterizeLine)
   image_ref.grid.num_cells[0] = npixel;
   image_ref.grid.num_cells[1] = npixel;
   image_ref.children.resize(npixel * npixel);
-  image_ref.clear(um2::red);
+  image_ref.clear(RED);
 
   // Check a few reference lines which have caused problems in the past.
   um2::Vector<um2::LineSegment2<T>> lines;
@@ -126,7 +126,7 @@ TEST_CASE(rasterizeLine)
         auto const valid0 = 0 <= intersections[0] && intersections[0] <= l.length();
         auto const valid1 = 0 <= intersections[1] && intersections[1] <= l.length();
         if (valid0 || valid1) {
-          image_ref.getChild(ix, iy) = um2::white;
+          image_ref.getChild(ix, iy) = WHITE;
         }
       }
     }
@@ -142,8 +142,8 @@ TEST_CASE(rasterizeLine)
         break;
       }
     }
-    image.clear(um2::red);
-    image_ref.clear(um2::red);
+    image.clear(RED);
+    image_ref.clear(RED);
   }
   ASSERT(num_errors == 0);
 
@@ -171,7 +171,7 @@ TEST_CASE(rasterizeLine)
         auto const valid0 = 0 <= intersections[0] && intersections[0] <= line.length();
         auto const valid1 = 0 <= intersections[1] && intersections[1] <= line.length();
         if (valid0 || valid1) {
-          image_ref.getChild(ix, iy) = um2::white;
+          image_ref.getChild(ix, iy) = WHITE;
         }
       }
     }
@@ -187,8 +187,8 @@ TEST_CASE(rasterizeLine)
         break;
       }
     }
-    image.clear(um2::red);
-    image_ref.clear(um2::red);
+    image.clear(RED);
+    image_ref.clear(RED);
   }
   ASSERT(num_errors == 0);
 }

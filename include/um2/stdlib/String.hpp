@@ -135,7 +135,7 @@ public:
   operator=(std::string && s) noexcept -> String &;
 
   template <uint64_t N>
-  constexpr auto
+  HOSTDEV constexpr auto
   operator=(char const (&s)[N]) noexcept -> String &;
 
   PURE HOSTDEV constexpr auto
@@ -237,15 +237,15 @@ template <typename T>
 constexpr auto
 toString(T const & t) noexcept -> String;
 
-constexpr auto
+HOSTDEV constexpr auto
 operator+(String l, String const & r) noexcept -> String;
 
 template <uint64_t N>
-constexpr auto
+HOSTDEV constexpr auto
 operator+(String l, char const (&r)[N]) noexcept -> String;
 
 template <uint64_t N>
-constexpr auto
+HOSTDEV constexpr auto
 operator+(char const (&l)[N], String r) noexcept -> String;
 
 } // namespace um2

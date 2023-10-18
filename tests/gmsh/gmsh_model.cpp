@@ -50,9 +50,9 @@ TEST_CASE(getMaterials)
   um2::gmsh::model::getMaterials(materials);
   ASSERT(materials.size() == 2);
   ASSERT(materials[0].name == "UO2");
-  ASSERT(materials[0].color == um2::red);
+  ASSERT(materials[0].color == RED);
   ASSERT(materials[1].name == "MOX");
-  ASSERT(materials[1].color == um2::blue);
+  ASSERT(materials[1].color == BLUE);
   um2::gmsh::finalize();
 }
 
@@ -136,15 +136,14 @@ TEST_CASE(groupPresFragment_2d2d)
     ASSERT(tags[0] == 1);
     ASSERT(tags[1] == 2);
     if (i == 1) {
-      um2::Color const red("red");
       int r = 0;
       int g = 0;
       int b = 0;
       int a = 0;
       um2::gmsh::model::getColor(2, 1, r, g, b, a);
-      ASSERT(r == red.r() && g == red.g() && b == red.b() && a == red.a());
+      ASSERT(r == RED.r() && g == RED.g() && b == RED.b() && a == RED.a());
       um2::gmsh::model::getColor(2, 2, r, g, b, a);
-      ASSERT(r == red.r() && g == red.g() && b == red.b() && a == red.a());
+      ASSERT(r == RED.r() && g == RED.g() && b == RED.b() && a == RED.a());
     }
     // if material hierarchy is used, Material Moderator should have 1 entity: {3}
     // if material hierarchy is not used, Material Moderator should have 2 entities:
@@ -257,11 +256,9 @@ TEST_CASE(groupPresFragment_3d3d)
       int b = 0;
       int a = 0;
       um2::gmsh::model::getColor(3, 1, r, g, b, a);
-      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() &&
-             a == um2::red.a());
+      ASSERT(r == RED.r() && g == RED.g() && b == RED.b() && a == RED.a());
       um2::gmsh::model::getColor(3, 2, r, g, b, a);
-      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() &&
-             a == um2::red.a());
+      ASSERT(r == RED.r() && g == RED.g() && b == RED.b() && a == RED.a());
     }
     // if material hierarchy is used, Material Moderator should have 1 entity: {3}
     // if material hierarchy is not used, Material Moderator should have 2 entities:
@@ -282,8 +279,7 @@ TEST_CASE(groupPresFragment_3d3d)
       int b = 0;
       int a = 0;
       um2::gmsh::model::getColor(3, 3, r, g, b, a);
-      ASSERT(r == um2::blue.r() && g == um2::blue.g() && b == um2::blue.b() &&
-             a == um2::blue.a());
+      ASSERT(r == BLUE.r() && g == BLUE.g() && b == BLUE.b() && a == BLUE.a());
     }
     um2::gmsh::finalize();
   }
@@ -356,8 +352,7 @@ TEST_CASE(groupPresIntersect_2d2d)
       int b = 0;
       int a = 0;
       um2::gmsh::model::getColor(2, 1, r, g, b, a);
-      ASSERT(r == um2::red.r() && g == um2::red.g() && b == um2::red.b() &&
-             a == um2::red.a());
+      ASSERT(r == RED.r() && g == RED.g() && b == RED.b() && a == RED.a());
     }
     tags.clear();
     if (i == 0) {
