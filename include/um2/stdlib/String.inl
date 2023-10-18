@@ -461,10 +461,11 @@ operator+(String l, char const (&r)[N]) noexcept -> String
 
 template <uint64_t N>
 HOSTDEV constexpr auto
-operator+(char const (&l)[N], String r) noexcept -> String
+operator+(char const (&l)[N], String const & r) noexcept -> String
 {
-  r += String(l);
-  return r;
+  String tmp(l);
+  tmp += r;
+  return tmp;
 }
 
 } // namespace um2
