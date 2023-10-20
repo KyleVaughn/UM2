@@ -259,7 +259,8 @@ TEST_CASE(std_string_assign_operator)
   assert(s.data()[3] == 'l');
   assert(s.data()[4] == 'o');
 
-  std::string const s1("This string will be too long to fit in the small string optimization");
+  std::string const s1(
+      "This string will be too long to fit in the small string optimization");
   um2::String s2;
   s2 = s1;
   assert(s2.size() == 68);

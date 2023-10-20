@@ -45,9 +45,9 @@ private:
 
   // Stack-allocated string representation.
   struct Short {
-    uint8_t is_long : 1;  // Single bit for representation flag.
-    uint8_t size : 7;     // 7 bits for the size of the string.
-    char data[min_cap];   // Data of the string.
+    uint8_t is_long : 1; // Single bit for representation flag.
+    uint8_t size : 7;    // 7 bits for the size of the string.
+    char data[min_cap];  // Data of the string.
   };
 
   // Raw representation of the string.

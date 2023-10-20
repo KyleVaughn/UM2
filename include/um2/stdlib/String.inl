@@ -197,21 +197,21 @@ String::operator=(char const (&s)[N]) noexcept -> String &
   if (isLong()) {
     ::operator delete(_r.l.data);
   }
-  // Short string    
-  if constexpr (N <= min_cap) {    
-    _r.s.is_long = 0;    
-    _r.s.size = N - 1;    
-    copy(addressof(s[0]), addressof(s[0]) + N, addressof(_r.s.data[0]));    
-    assert(_r.s.data[N - 1] == '\0');    
-  } else {    
-    _r.l.is_long = 1;    
-    _r.l.cap = N - 1;    
-    _r.l.size = N - 1;    
-    _r.l.data = static_cast<char *>(::operator new(N));    
-    copy(addressof(s[0]), addressof(s[0]) + N, _r.l.data);    
-    assert(_r.l.data[N - 1] == '\0');    
-  } 
-  return *this; 
+  // Short string
+  if constexpr (N <= min_cap) {
+    _r.s.is_long = 0;
+    _r.s.size = N - 1;
+    copy(addressof(s[0]), addressof(s[0]) + N, addressof(_r.s.data[0]));
+    assert(_r.s.data[N - 1] == '\0');
+  } else {
+    _r.l.is_long = 1;
+    _r.l.cap = N - 1;
+    _r.l.size = N - 1;
+    _r.l.data = static_cast<char *>(::operator new(N));
+    copy(addressof(s[0]), addressof(s[0]) + N, _r.l.data);
+    assert(_r.l.data[N - 1] == '\0');
+  }
+  return *this;
 }
 
 PURE HOSTDEV constexpr auto
