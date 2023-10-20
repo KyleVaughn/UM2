@@ -38,6 +38,15 @@ struct Material {
         color(color_in)
   {
   }
+
+  //======================================================================
+  // Methods
+  //======================================================================
+
+  [[nodiscard]] auto HOSTDEV constexpr hasTotalCrossSection() const noexcept -> bool
+  {
+    return !xs.t.empty();
+  }
 };
 
 PURE HOSTDEV constexpr auto

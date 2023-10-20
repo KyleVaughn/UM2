@@ -8,4 +8,4 @@ include(${PROJECT_SOURCE_DIR}/cmake/add_um2_example.cmake)
 #==============================================================================
 # CROCUS
 #==============================================================================
-add_um2_example(./crocus/3d_NECTAR_OCRefl_make_cad_model.cpp)
+add_um2_example(./crocus/3d_NECTAR_OCRefl.cpp)

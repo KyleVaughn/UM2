@@ -157,5 +157,89 @@ setMeshFieldFromGroups(int const dim, std::vector<std::string> const & groups,
   return field_ids;
 }
 
+//=============================================================================
+// setMeshFieldFromKnudsenNumber
+//=============================================================================
+
+auto
+setMeshFieldFromKnudsenNumber(int const dim, std::vector<Material> const & materials,
+                              double const kn_target, KnudsenStrategy const strategy)
+    -> std::vector<int>
+{
+  // Check that each material has a cross section
+  for (auto const & mat : materials) {
+    if (!mat.hasTotalCrossSection()) {
+      LOG_ERROR("Material " + String(mat.name.data()) +
+                " does not have a total cross section");
+    }
+  }
+
+  // Check that each material exists as a physical group
+  gmsh::vectorpair dimtags;
+  gmsh::model::getPhysicalGroups(dimtags, dim);
+  std::vector<std::string> material_group_names;
+  for (auto const & dimtag : dimtags) {
+    int const tag = dimtag.second;
+    std::string name;
+    gmsh::model::getPhysicalName(dim, tag, name);
+    if (name.starts_with("Material")) {
+      material_group_names.push_back(name);
+    }
+  }
+  size_t const num_materials = materials.size();
+  std::vector<std::string> material_names(num_materials);
+  for (size_t i = 0; i < num_materials; ++i) {
+    material_names[i] = std::string("Material_") + materials[i].name.data();
+  }
+  for (auto const & material_name : material_names) {
+    if (std::find(material_group_names.begin(), material_group_names.end(),
+                  material_name) == material_group_names.end()) {
+      LOG_ERROR("Material " + String(material_name.data()) +
+                " does not exist as a physical group");
+    }
+  }
+
+  if (kn_target <= 0.0) {
+    LOG_ERROR("Knudsen number must be positive");
+  }
+
+  std::vector<double> lcs(num_materials);
+  // If using average MFP, we need the average Sigma_t for each material
+  if (strategy == KnudsenStrategy::GroupwiseAvgMeanFreePath) {
+    LOG_INFO("Computing Knudsen number using groupwise average mean free path");
+    for (size_t i = 0; i < num_materials; ++i) {
+      auto const & mg_total_xsec = materials[i].xs.t;
+      double const sigma_t = um2::mean(mg_total_xsec.begin(), mg_total_xsec.end());
+      //      sigma_t /= static_cast<double>(materials[i].xs.t.size());
+      // The mean chord length of an equilateral triangle with side length l:
+      // s = pi * A/ 3l = pi * sqrt(3) * l / 12
+      //
+      // Kn = MFP / MCL = 1 / (sigma_t * s)
+      //
+      // s = 1 / (sigma_t * Kn)
+      // l = 12 / (sigma_t * kn * sqrt(3) * pi)
+      lcs[i] = 12.0 / (um2::pi<double> * std::sqrt(3.0) * kn_target * sigma_t);
+    }
+  } else if (strategy == KnudsenStrategy::GroupwiseMinMeanFreePath) {
+    LOG_INFO("Computing Knudsen number using groupwise minimum mean free path");
+    for (size_t i = 0; i < num_materials; ++i) {
+      auto const & mg_total_xsec = materials[i].xs.t;
+      double const sigma_t =
+          *std::max_element(mg_total_xsec.begin(), mg_total_xsec.end());
+      // The mean chord length of an equilateral triangle with side length l:
+      // s = pi * A/ 3l = pi * sqrt(3) * l / 12
+      //
+      // Kn = MFP / MCL = 1 / (sigma_t * s)
+      //
+      // s = 1 / (sigma_t * Kn)
+      // l = 12 / (sigma_t * kn * sqrt(3) * pi)
+      lcs[i] = 12.0 / (um2::pi<double> * std::sqrt(3.0) * kn_target * sigma_t);
+    }
+  } else {
+    LOG_ERROR("Invalid Knudsen number computation strategy");
+  }
+  return setMeshFieldFromGroups(dim, material_names, lcs);
+}
+
 } // namespace um2::gmsh::model::mesh
 #endif // UM2_USE_GMSH

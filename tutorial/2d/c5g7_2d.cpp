@@ -48,7 +48,6 @@ main() -> int
   um2::Material moderator("Moderator", "royalblue");
 
   uo2.xs.t = uo2_xs;
-  std::cout << uo2.xs.t.size() << std::endl;
   mox43.xs.t = mox43_xs;
   mox70.xs.t = mox70_xs;
   mox87.xs.t = mox87_xs;
@@ -204,34 +203,12 @@ main() -> int
   // Overlay the spatial partition onto the domain
   um2::gmsh::model::occ::overlaySpatialPartition(model);
 
-  // Target Kn
+  // Create the mesh
   double const target_kn = 10.0;
-  std::vector<std::string> material_names;
-  std::vector<double> mesh_sizes;
-  for (auto const & mat : materials) {
-    material_names.push_back("Material_" + std::string(mat.name.data()));
-    double sigma_t = 0.0;
-
-    // max xsec
-    //    for (auto const & sig_t : mat.xs.t) {
-    //      sigma_t = std::max(sig_t, sigma_t);
-    //    }
-    // mean xsec
-    for (auto const & sig_t : mat.xs.t) {
-      // cppcheck-suppress useStlAlgorithm
-      sigma_t += sig_t;
-    }
-    sigma_t /= static_cast<double>(mat.xs.t.size());
-
-    double const lc = 12.0 / (um2::pi<double> * std::sqrt(3.0) * target_kn * sigma_t);
-    std::cout << material_names.back() << " " << lc << std::endl;
-    mesh_sizes.push_back(lc);
-  }
-
-  //  um2::gmsh::model::mesh::setGlobalMeshSize(0.25);
-  um2::gmsh::model::mesh::setMeshFieldFromGroups(2, material_names, mesh_sizes);
+  KnudsenStrategy const kn_strategy = KnudsenStrategy::GroupwiseMinMeanFreePath;
+  um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, materials, target_kn,
+                                                        kn_strategy);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
-  um2::gmsh::fltk::run();
 
   um2::gmsh::write("c5g7.inp");
   model.importCoarseCells("c5g7.inp");

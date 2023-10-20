@@ -5,11 +5,15 @@
 #if UM2_USE_GMSH
 #  include <um2/common/Log.hpp>
 #  include <um2/gmsh/base_gmsh_api.hpp>
+#  include <um2/math/stats.hpp>
 #  include <um2/mesh/MeshFile.hpp>
+#  include <um2/physics/Material.hpp>
 
 #  include <concepts> // std::floating_point, std::unsigned_integral
 #  include <string>   // std::string
 #  include <vector>   // std::vector
+
+enum class KnudsenStrategy { GroupwiseMinMeanFreePath, GroupwiseAvgMeanFreePath };
 
 namespace um2::gmsh::model::mesh
 {
@@ -20,6 +24,12 @@ setGlobalMeshSize(double size);
 auto
 setMeshFieldFromGroups(int dim, std::vector<std::string> const & groups,
                        std::vector<double> const & sizes) -> std::vector<int>;
+
+auto
+setMeshFieldFromKnudsenNumber(
+    int dim, std::vector<Material> const & materials, double kn_target,
+    KnudsenStrategy strategy = KnudsenStrategy::GroupwiseAvgMeanFreePath)
+    -> std::vector<int>;
 
 void
 generateMesh(MeshType mesh_type, int smooth_iters = 100);

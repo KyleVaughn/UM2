@@ -78,7 +78,11 @@ main() -> int
   std::vector<double> const umetal_radii = {r_fuel, r_gap, r_innerclad};
   std::vector<um2::Material> const umetal_mats = {umet, air, clad};
   // Integer coordinates in the lattice
-  um2::gmsh::vectorpair const umetal_coords = {{2, 1}, {1, 2}, {2, 2}};
+  um2::gmsh::vectorpair const umetal_coords = {
+      {2, 1},
+      {1, 2},
+      {2, 2}
+  };
 
   // NECTAR pin radii, materials, and coordinates
   // The dosimeter contains 6 concentric rings and 8 azimuthal divisions
@@ -102,7 +106,8 @@ main() -> int
   double constexpr fuel_sec_thick = holder_height - cladax_height;
 
   // Then the pin transitions to a region of double clad
-  std::vector<double> const double_clad_radii = {r_fuel, r_gap, r_innerclad, r_interclad, r_outerclad};
+  std::vector<double> const double_clad_radii = {r_fuel, r_gap, r_innerclad, r_interclad,
+                                                 r_outerclad};
   std::vector<um2::Material> const double_clad_mats = {umet, air, clad, air, clad};
   um2::Point3d const double_clad_top(xn, xn, half_height + holder_height + holder_thick);
   um2::Point3d const double_clad_bot(xn, xn, half_height - half_height);
@@ -137,7 +142,8 @@ main() -> int
   // Add boxes which will be used to slice the dosimeter azimuthally
   um2::gmsh::vectorpair box_dim_tags;
   for (int i = 0; i < 8; ++i) {
-    int const tag = factory::addBox(xn, yn, half_height, pin_pitch, pin_pitch, dosi_height);
+    int const tag =
+        factory::addBox(xn, yn, half_height, pin_pitch, pin_pitch, dosi_height);
     std::pair<int, int> const box_dimtag = {3, tag};
     factory::rotate({box_dimtag}, xn, yn, half_height, 0, 0, 1, i * um2::pi_4<double>);
     box_dim_tags.push_back(box_dimtag);
@@ -145,11 +151,12 @@ main() -> int
   // Use boolean operations to slice the dosimeter axially and radially
   um2::gmsh::vectorpair out_dim_tags;
   std::vector<um2::gmsh::vectorpair> out_dim_tags_map;
-  um2::gmsh::model::occ::intersect(cyl_dim_tags, box_dim_tags, out_dim_tags, out_dim_tags_map);
+  um2::gmsh::model::occ::intersect(cyl_dim_tags, box_dim_tags, out_dim_tags,
+                                   out_dim_tags_map);
 
   // Add the clad and use a boolean fragment with the dosimeter to create the pin
-  int const tag =
-    factory::addCylinder(1.5 * pin_pitch, 1.5 * pin_pitch, half_height, 0, 0, dosi_height, r_outerclad);
+  int const tag = factory::addCylinder(1.5 * pin_pitch, 1.5 * pin_pitch, half_height, 0,
+                                       0, dosi_height, r_outerclad);
   out_dim_tags.push_back({3, tag});
   um2::gmsh::vectorpair const all_ents = out_dim_tags;
   out_dim_tags.clear();
@@ -164,16 +171,12 @@ main() -> int
   }
 
   um2::gmsh::model::addToPhysicalGroup(3, out_tags, -1, "Material_Gold");
-  um2::gmsh::model::setColor(out_dim_tags,
-    gold.color.r(),
-    gold.color.g(),
-    gold.color.b(), 255, /*recursive=*/true);
+  um2::gmsh::model::setColor(out_dim_tags, gold.color.r(), gold.color.g(), gold.color.b(),
+                             255, /*recursive=*/true);
 
   um2::gmsh::model::addToPhysicalGroup(3, {out_tags.back()}, -1, "Material_Clad");
-  um2::gmsh::model::setColor({out_dim_tags.back()},
-    clad.color.r(),
-    clad.color.g(),
-    clad.color.b(), 255, /*recursive=*/true);
+  um2::gmsh::model::setColor({out_dim_tags.back()}, clad.color.r(), clad.color.g(),
+                             clad.color.b(), 255, /*recursive=*/true);
 
   // Add the top and bottom of the dosimeter/holder (all clad)
   factory::addCylindricalPin(dosi_top, dosi_top_thick, dosi_cap_radii, dosi_cap_mats);
@@ -182,8 +185,10 @@ main() -> int
   factory::addCylindricalPin(fuel_top, fuel_sec_thick, umetal_radii, umetal_mats);
   factory::addCylindricalPin(fuel_bot, fuel_sec_thick, umetal_radii, umetal_mats);
   // Add the double clad section above and below the fuel
-  factory::addCylindricalPin(double_clad_top, double_clad_thick, double_clad_radii, double_clad_mats);
-  factory::addCylindricalPin(double_clad_bot, double_clad_thick, double_clad_radii, double_clad_mats);
+  factory::addCylindricalPin(double_clad_top, double_clad_thick, double_clad_radii,
+                             double_clad_mats);
+  factory::addCylindricalPin(double_clad_bot, double_clad_thick, double_clad_radii,
+                             double_clad_mats);
 
   um2::gmsh::model::occ::synchronize();
   um2::gmsh::write("3d_NECTAR_OCRefl.brep", /*extra_info=*/true);
@@ -191,6 +196,7 @@ main() -> int
   um2::gmsh::finalize();
   um2::gmsh::initialize();
   um2::gmsh::open("3d_NECTAR_OCRefl.brep", /*extra_info=*/true);
+  um2::gmsh::fltk::run();
 
   //============================================================================
   // Create the MPACT spatial partition
@@ -203,9 +209,8 @@ main() -> int
   // 2. The dosimeter bottom and bottom
   //
   // We will only use 1 axial division for the dosimeter region and we will
-  // use an additional axial division to create a region below the dosimeter of the same thickness
-  // for symmetry.
-  // This means we will need 5 unique lattices.
+  // use an additional axial division to create a region below the dosimeter of the same
+  // thickness for symmetry. This means we will need 5 unique lattices.
   //
   // We will create the following unique pin meshes:
   // 0. The water region
