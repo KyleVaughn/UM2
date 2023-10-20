@@ -1,6 +1,5 @@
 #pragma once
 
-#include <um2/common/histogram.hpp>
 #include <um2/geometry/Polygon.hpp>
 #include <um2/geometry/morton_sort_points.hpp>
 #include <um2/mesh/MeshFile.hpp>

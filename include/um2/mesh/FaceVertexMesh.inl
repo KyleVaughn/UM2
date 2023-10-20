@@ -668,59 +668,59 @@ FaceVertexMesh<P, N, D, T, I>::intersect(Ray<D, T> const & ray, T * intersection
 // printStats
 //==============================================================================
 
-template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
-void
-printStats(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept
-{
-  using Edge = typename FaceVertexMesh<P, N, D, T, I>::Edge;
-  Vector<T> data;
-  std::vector<T> std_data;
-
-  // num faces & vertices
-  std::cout << "num faces: " << mesh.numFaces() << '\n';
-  std::cout << "num vertices: " << mesh.numVertices() << '\n';
-
-  // Face areas
-  mesh.getFaceAreas(data);
-  std_data.resize(static_cast<size_t>(data.size()));
-  std::copy(data.begin(), data.end(), std_data.begin());
-  std::sort(std_data.begin(), std_data.end());
-  std::cout << "\nFace areas:\n";
-  printHistogram(std_data);
-
-  // Edge lengths
-  Vector<Edge> unique_edges;
-  mesh.getUniqueEdges(unique_edges);
-  data.resize(unique_edges.size());
-  for (Size i = 0; i < unique_edges.size(); ++i) {
-    data[i] = unique_edges[i].length();
-  }
-  std_data.resize(static_cast<size_t>(data.size()));
-  std::copy(data.begin(), data.end(), std_data.begin());
-  std::sort(std_data.begin(), std_data.end());
-  std::cout << "\nEdge lengths:\n";
-  printHistogram(std_data);
-
-  // Mean chord length
-  data.resize(mesh.numFaces());
-  for (Size i = 0; i < mesh.numFaces(); ++i) {
-    data[i] = mesh.getFace(i).meanChordLength();
-  }
-  std_data.resize(static_cast<size_t>(data.size()));
-  std::copy(data.begin(), data.end(), std_data.begin());
-  std::sort(std_data.begin(), std_data.end());
-  std::cout << "\nMean chord lengths:\n";
-  printHistogram(std_data);
-
-  // Print each mcl to std cout
-  std::cout << "\nMCL:\n";
-  for (Size i = 0; i < mesh.numFaces(); ++i) {
-    std::cout << data[i] << '\n';
-  }
-  std::cout << "\nLinear MCL:\n";
-  for (Size i = 0; i < mesh.numFaces(); ++i) {
-    std::cout << linearPolygon(mesh.getFace(i)).meanChordLength() << '\n';
-  }
-}
+//template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+//void
+//printStats(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept
+//{
+//  using Edge = typename FaceVertexMesh<P, N, D, T, I>::Edge;
+//  Vector<T> data;
+//  std::vector<T> std_data;
+//
+//  // num faces & vertices
+//  std::cout << "num faces: " << mesh.numFaces() << '\n';
+//  std::cout << "num vertices: " << mesh.numVertices() << '\n';
+//
+//  // Face areas
+//  mesh.getFaceAreas(data);
+//  std_data.resize(static_cast<size_t>(data.size()));
+//  std::copy(data.begin(), data.end(), std_data.begin());
+//  std::sort(std_data.begin(), std_data.end());
+//  std::cout << "\nFace areas:\n";
+//  printHistogram(std_data);
+//
+//  // Edge lengths
+//  Vector<Edge> unique_edges;
+//  mesh.getUniqueEdges(unique_edges);
+//  data.resize(unique_edges.size());
+//  for (Size i = 0; i < unique_edges.size(); ++i) {
+//    data[i] = unique_edges[i].length();
+//  }
+//  std_data.resize(static_cast<size_t>(data.size()));
+//  std::copy(data.begin(), data.end(), std_data.begin());
+//  std::sort(std_data.begin(), std_data.end());
+//  std::cout << "\nEdge lengths:\n";
+//  printHistogram(std_data);
+//
+//  // Mean chord length
+//  data.resize(mesh.numFaces());
+//  for (Size i = 0; i < mesh.numFaces(); ++i) {
+//    data[i] = mesh.getFace(i).meanChordLength();
+//  }
+//  std_data.resize(static_cast<size_t>(data.size()));
+//  std::copy(data.begin(), data.end(), std_data.begin());
+//  std::sort(std_data.begin(), std_data.end());
+//  std::cout << "\nMean chord lengths:\n";
+//  printHistogram(std_data);
+//
+//  // Print each mcl to std cout
+//  std::cout << "\nMCL:\n";
+//  for (Size i = 0; i < mesh.numFaces(); ++i) {
+//    std::cout << data[i] << '\n';
+//  }
+//  std::cout << "\nLinear MCL:\n";
+//  for (Size i = 0; i < mesh.numFaces(); ++i) {
+//    std::cout << linearPolygon(mesh.getFace(i)).meanChordLength() << '\n';
+//  }
+//}
 
 } // namespace um2

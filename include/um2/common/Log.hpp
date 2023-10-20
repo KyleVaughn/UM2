@@ -131,31 +131,31 @@ public:
 }; // class Log
 
 #if MIN_LOG_LEVEL > 0
-#  define LOG_ERROR(msg) Log::error(msg)
+#  define LOG_ERROR(msg) um2::Log::error(msg)
 #else
 #  define LOG_ERROR(msg)
 #endif
 
 #if MIN_LOG_LEVEL > 1
-#  define LOG_WARN(msg) Log::warn(msg)
+#  define LOG_WARN(msg) um2::Log::warn(msg)
 #else
 #  define LOG_WARN(msg)
 #endif
 
 #if MIN_LOG_LEVEL > 2
-#  define LOG_INFO(msg) Log::info(msg)
+#  define LOG_INFO(msg) um2::Log::info(msg)
 #else
 #  define LOG_INFO(msg)
 #endif
 
 #if MIN_LOG_LEVEL > 3
-#  define LOG_DEBUG(msg) Log::debug(msg)
+#  define LOG_DEBUG(msg) um2::Log::debug(msg)
 #else
 #  define LOG_DEBUG(msg)
 #endif
 
 #if MIN_LOG_LEVEL > 4
-#  define LOG_TRACE(msg) Log::trace(msg)
+#  define LOG_TRACE(msg) um2::Log::trace(msg)
 #else
 #  define LOG_TRACE(msg)
 #endif

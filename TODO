@@ -2,18 +2,12 @@ MeshFile -> UnstructuredMesh?
   Polymorphic?
   Polytope soup
 
-
-
-
 Review for tests, parallelism, performance, comments, and structure, replace std::string and std::vector 
   finished:
     stdlib
+    common
     math
     geometry
 
-move to_vecvec elsewhere
-getStats and print for mesh
-histogram class
-Move or refine many of the files in common
 
 Take care of nolints, pragma diagnostic push, cppcheck suppress
