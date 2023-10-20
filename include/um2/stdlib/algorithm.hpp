@@ -32,28 +32,59 @@ clamp(T v, T lo, T hi) noexcept -> T
 // copy
 //==============================================================================
 
+#ifndef __CUDA_ARCH__
+
 template <typename InputIt, typename OutputIt>
-HOSTDEV constexpr auto
+HOST constexpr auto
 copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
-  for (; first != last; ++first, ++d_first) {
+  // std::copy optimizes to memmove when possible.
+  // False positive of memory leak here.
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks) justified above
+  return std::copy(first, last, d_first); 
+}
+
+#else
+
+template <typename InputIt, typename OutputIt>
+DEVICE constexpr auto
+copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
+{
+  while (first != last) {
     *d_first = *first;
+    ++first;
+    ++d_first;
   }
   return d_first;
 }
+
+#endif
 
 //==============================================================================
 // fill
 //==============================================================================
 
+#ifndef __CUDA_ARCH__
+
 template <typename ForwardIt, typename T>
-HOSTDEV constexpr void
+HOST constexpr void
+fill(ForwardIt first, ForwardIt last, T const & value)
+{
+  std::fill(first, last, value);
+}
+
+#else
+
+template <typename ForwardIt, typename T>
+DEVICE constexpr void
 fill(ForwardIt first, ForwardIt last, T const & value)
 {
   for (; first != last; ++first) {
     *first = value;
   }
 }
+
+#endif
 
 //==============================================================================
 // max

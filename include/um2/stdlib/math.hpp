@@ -19,6 +19,7 @@
 namespace um2
 {
 
+// These should technically be elsewhere, but they're here for now.
 template <std::floating_point T>
 inline constexpr T pi = static_cast<T>(3.14159265358979323846);
 

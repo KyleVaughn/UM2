@@ -5,7 +5,6 @@
 // clang-tidy says:
 // Potential leak of memory pointed to by '_r..l.data'
 // But this is a false positive, since the memory is freed in the destructor.
-// if isLong() is true, so when the destructor is called, it will do:
 // if (isLong()) {
 //   ::operator delete(_r.l.data);
 // }
@@ -246,6 +245,46 @@ TEST_CASE(assign_operator)
 }
 MAKE_CUDA_KERNEL(assign_operator);
 
+TEST_CASE(std_string_assign_operator)
+{
+  std::string s0("hello");
+  um2::String s("This string will be too long to fit in the small string optimization");
+  s = s0;
+  assert(s.size() == 5);
+  assert(s.capacity() == 22);
+  assert(!s.isLong());
+  assert(s.data()[0] == 'h');
+  assert(s.data()[1] == 'e');
+  assert(s.data()[2] == 'l');
+  assert(s.data()[3] == 'l');
+  assert(s.data()[4] == 'o');
+
+  std::string const s1("This string will be too long to fit in the small string optimization");
+  um2::String s2;
+  s2 = s1;
+  assert(s2.size() == 68);
+  assert(s2.capacity() == 68);
+  assert(s2.isLong());
+  assert(s2.data()[0] == 'T');
+
+  // Move assignment
+  um2::String s3;
+  s3 = um2::move(s0);
+  assert(s3.size() == 5);
+  assert(s3.capacity() == 22);
+  assert(!s3.isLong());
+  assert(s3.data()[0] == 'h');
+  assert(s3.data()[1] == 'e');
+  assert(s3.data()[2] == 'l');
+
+  um2::String s4;
+  s4 = um2::move(s1);
+  assert(s4.size() == 68);
+  assert(s4.capacity() == 68);
+  assert(s4.isLong());
+  assert(s4.data()[0] == 'T');
+}
+
 HOSTDEV
 TEST_CASE(equals_operator)
 {
@@ -293,6 +332,7 @@ TEST_SUITE(String)
 
   // Operators
   TEST_HOSTDEV(assign_operator)
+  TEST(std_string_assign_operator)
   TEST_HOSTDEV(equals_operator)
   TEST_HOSTDEV(comparison)
   TEST_HOSTDEV(index_operator)

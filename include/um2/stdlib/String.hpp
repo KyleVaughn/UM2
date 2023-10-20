@@ -33,22 +33,25 @@ private:
   // Heap-allocated string representation.
   // 24 bytes
   struct Long {
-    uint64_t is_long : 1;
-    uint64_t cap : 63;
-    uint64_t size;
-    char * data;
+    uint64_t is_long : 1; // Single bit for representation flag.
+    uint64_t cap : 63;    // Capacity of the string.
+    uint64_t size;        // Size of the string.
+    char * data;          // Pointer to the string data.
   };
 
+  // The maximum capacity of a short string.
+  // 24 bytes - 1 byte = 23 bytes
   static uint64_t constexpr min_cap = sizeof(Long) - 1;
 
   // Stack-allocated string representation.
   struct Short {
-    uint8_t is_long : 1;
-    uint8_t size : 7;
-    char data[min_cap];
+    uint8_t is_long : 1;  // Single bit for representation flag.
+    uint8_t size : 7;     // 7 bits for the size of the string.
+    char data[min_cap];   // Data of the string.
   };
 
   // Raw representation of the string.
+  // For the purpose of copying and moving.
   struct Raw {
     uint64_t raw[3];
   };
@@ -82,9 +85,11 @@ public:
   HOSTDEV constexpr String(char const * s) noexcept;
   // NOLINTEND(google-explicit-constructor)
 
+  // integer to string
   template <std::integral T>
   explicit constexpr String(T x) noexcept;
 
+  // floating point to string
   template <std::floating_point T>
   explicit constexpr String(T x) noexcept;
 

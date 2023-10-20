@@ -173,8 +173,9 @@ String::operator=(String && s) noexcept -> String &
   return *this;
 }
 
-// These can be done better. If we use the same short string optimization,
-// we should be able to do this more efficiently.
+// These std::string assignment operators are a bit inefficient, but the number of
+// heap allocations is the same as if we had just copied the string, so it's not
+// too bad.
 constexpr auto
 String::operator=(std::string const & s) noexcept -> String &
 {
@@ -193,8 +194,24 @@ template <uint64_t N>
 HOSTDEV constexpr auto
 String::operator=(char const (&s)[N]) noexcept -> String &
 {
-  String tmp(s);
-  return *this = um2::move(tmp);
+  if (isLong()) {
+    ::operator delete(_r.l.data);
+  }
+  // Short string    
+  if constexpr (N <= min_cap) {    
+    _r.s.is_long = 0;    
+    _r.s.size = N - 1;    
+    copy(addressof(s[0]), addressof(s[0]) + N, addressof(_r.s.data[0]));    
+    assert(_r.s.data[N - 1] == '\0');    
+  } else {    
+    _r.l.is_long = 1;    
+    _r.l.cap = N - 1;    
+    _r.l.size = N - 1;    
+    _r.l.data = static_cast<char *>(::operator new(N));    
+    copy(addressof(s[0]), addressof(s[0]) + N, _r.l.data);    
+    assert(_r.l.data[N - 1] == '\0');    
+  } 
+  return *this; 
 }
 
 PURE HOSTDEV constexpr auto
