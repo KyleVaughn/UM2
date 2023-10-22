@@ -64,8 +64,7 @@ setChebyshevAngularQuadrature(Size degree, um2::Vector<T> & weights,
 
   // Angles
   angles.resize(degree);
-  T const degree_4 = static_cast<T>(degree) * static_cast<T>(4);
-  T const pi_deg = pi<T> / degree_4;
+  T const pi_deg = pi_4<T> * wt; 
   for (Size i = 0; i < degree; ++i) {
     angles[i] = pi_deg * static_cast<T>(2 * i + 1);
   }

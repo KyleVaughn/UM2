@@ -1,7 +1,5 @@
 #pragma once
 
-#include <um2/config.hpp>
-
 #include <um2/stdlib/algorithm.hpp> // um2::min, um2::max
 #include <um2/stdlib/math.hpp>      // um2::sqrt
 #include <um2/stdlib/memory.hpp>    // addressof

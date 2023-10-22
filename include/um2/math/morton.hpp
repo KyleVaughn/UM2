@@ -34,7 +34,8 @@ inline constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 
 // BMI2 intrinsics
 //==============================================================================
 
-// False positive for -Wunused-function
+// False positive for -Wunused-function. These can be used depending on the
+// compile-time configuration or user's choice.
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wunused-function"
 static inline auto
@@ -288,9 +289,8 @@ mortonEncode(T const x, T const y) -> U
 {
   assert(0 <= x && x <= 1);
   assert(0 <= y && y <= 1);
-  if constexpr (std::same_as<float, T> && std::same_as<uint64_t, U>) {
-    static_assert(always_false<T>, "uint64_t -> float conversion can be lossy");
-  }
+  static_assert(!(std::same_as<float, T> && std::same_as<uint64_t, U>),
+                "uint64_t -> float conversion can be lossy");
   // Convert x,y in [0,1] to integers in [0 max_2d_morton_coord]
   U const x_m = static_cast<U>(x * max_2d_morton_coord<U>);
   U const y_m = static_cast<U>(y * max_2d_morton_coord<U>);

@@ -1,14 +1,7 @@
 #pragma once
 
-#include <um2/config.hpp>
-
+#include <um2/stdlib/algorithm.hpp>
 #include <um2/stdlib/math.hpp>
-
-#include <algorithm>
-#include <cassert>
-#include <concepts>
-#include <functional>
-#include <numeric>
 
 namespace um2
 {
@@ -18,11 +11,17 @@ namespace um2
 //=============================================================================
 
 template <std::floating_point T>
-constexpr auto
+HOSTDEV constexpr auto
 mean(T const * begin, T const * end) -> T
 {
   assert(begin != end);
-  return std::reduce(begin, end, static_cast<T>(0)) / static_cast<T>(end - begin);
+  T const n = static_cast<T>(end - begin);
+  T result = static_cast<T>(0);
+  while (begin != end) {
+    result += *begin;
+    ++begin;
+  }
+  return result / n;
 }
 
 //=============================================================================
@@ -30,11 +29,11 @@ mean(T const * begin, T const * end) -> T
 //=============================================================================
 
 template <std::floating_point T>
-constexpr auto
+HOSTDEV constexpr auto
 median(T const * begin, T const * end) -> T
 {
   assert(begin != end);
-  assert(std::is_sorted(begin, end));
+  assert(um2::is_sorted(begin, end));
   auto const size = end - begin;
   auto const mid = begin + size / 2;
   // If the size is odd, return the middle element.
@@ -50,14 +49,19 @@ median(T const * begin, T const * end) -> T
 //=============================================================================
 
 template <std::floating_point T>
-constexpr auto
+HOSTDEV constexpr auto
 variance(T const * begin, T const * end) -> T
 {
   assert(begin != end);
-  auto const m = mean(begin, end);
-  return std::transform_reduce(begin, end, static_cast<T>(0), std::plus<T>{},
-                               [m](auto const x) { return (x - m) * (x - m); }) /
-         static_cast<T>(end - begin - 1);
+  T const n_minus_1 = static_cast<T>(end - begin - 1);
+  auto const xbar = um2::mean(begin, end);
+  T result = static_cast<T>(0);
+  while (begin != end) {
+    T const x_minus_xbar = *begin - xbar;
+    ++begin;
+    result += x_minus_xbar * x_minus_xbar;
+  }
+  return result / n_minus_1;
 }
 
 //=============================================================================
@@ -65,10 +69,10 @@ variance(T const * begin, T const * end) -> T
 //=============================================================================
 
 template <std::floating_point T>
-constexpr auto
+HOSTDEV constexpr auto
 stdDev(T const * begin, T const * end) -> T
 {
-  return um2::sqrt(variance(begin, end));
+  return um2::sqrt(um2::variance(begin, end));
 }
 
 } // namespace um2

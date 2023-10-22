@@ -118,6 +118,19 @@ TEST_CASE(fill_int)
 }
 
 //=============================================================================
+// is_sorted
+//=============================================================================
+
+HOSTDEV
+TEST_CASE(is_sorted_int)
+{
+  int a[10] = {0, 1, 2, 3, 4, 5, 6, 7, 9, 8};
+  ASSERT(!um2::is_sorted(&a[0], &a[0] + 10));
+  um2::swap(a[8], a[9]);
+  ASSERT(um2::is_sorted(&a[0], &a[0] + 10));
+}
+
+//=============================================================================
 // min/max
 //=============================================================================
 
@@ -152,6 +165,8 @@ MAKE_CUDA_KERNEL(copy_nontrivial);
 
 MAKE_CUDA_KERNEL(fill_int);
 
+MAKE_CUDA_KERNEL(is_sorted_int);
+
 MAKE_CUDA_KERNEL(maxmin_int);
 MAKE_CUDA_KERNEL(maxmin_float);
 #endif
@@ -170,6 +185,8 @@ TEST_SUITE(copy)
 
 TEST_SUITE(fill) { TEST_HOSTDEV(fill_int); }
 
+TEST_SUITE(is_sorted) { TEST_HOSTDEV(is_sorted_int); }
+
 TEST_SUITE(maxmin)
 {
   TEST_HOSTDEV(maxmin_int);
@@ -182,6 +199,7 @@ main() -> int
   RUN_SUITE(clamp);
   RUN_SUITE(copy);
   RUN_SUITE(fill);
+  RUN_SUITE(is_sorted);
   RUN_SUITE(maxmin);
   return 0;
 }

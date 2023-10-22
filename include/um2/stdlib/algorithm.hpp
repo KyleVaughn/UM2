@@ -8,6 +8,7 @@
 //  clamp
 //  copy
 //  fill
+//  is_sorted
 //  max
 //  min
 
@@ -85,6 +86,49 @@ fill(ForwardIt first, ForwardIt last, T const & value)
 }
 
 #endif
+
+//==============================================================================
+// is_sorted
+//==============================================================================
+
+// NOLINTBEGIN(readability-identifier-naming) justification: match std::is_sorted
+
+#ifndef __CUDA_ARCH__
+
+template <typename ForwardIt>
+PURE HOST constexpr auto
+is_sorted(ForwardIt first, ForwardIt last) noexcept -> bool
+{
+  return std::is_sorted(first, last);
+}
+
+#else
+
+template <typename ForwardIt>
+PURE DEVICE constexpr auto
+is_sorted(ForwardIt first, ForwardIt last) noexcept -> bool
+{
+  if (first == last) {
+    return true;
+  }
+
+  auto next = first;
+  ++next;
+
+  while (next != last) {
+    if (*next < *first) {
+      return false;
+    }
+    ++first;
+    ++next;
+  }
+
+  return true;
+}
+
+#endif
+
+// NOLINTEND(readability-identifier-naming)
 
 //==============================================================================
 // max

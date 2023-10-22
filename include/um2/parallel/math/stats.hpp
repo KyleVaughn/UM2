@@ -1,14 +1,7 @@
 #pragma once
 
-#include <um2/config.hpp>
-
+#include <um2/stdlib/algorithm.hpp>
 #include <um2/stdlib/math.hpp>
-
-#include <algorithm>
-#include <cassert>
-#include <concepts>
-#include <functional>
-#include <numeric>
 
 #if UM2_USE_TBB
 #  include <execution>
