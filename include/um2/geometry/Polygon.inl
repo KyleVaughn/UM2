@@ -605,7 +605,7 @@ meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
   auto const aabb = boundingBox(p);
   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
   auto const spacing = longest_edge / static_cast<T>(rays_per_longest_edge);
-  T const pi_deg = um2::pi<T> / (static_cast<T>(num_angles) * static_cast<T>(4));
+  T const pi_deg = um2::pi_4<T> / static_cast<T>(num_angles);
   // For each angle
   for (Size ia = 0; ia < num_angles; ++ia) {
     T const angle = pi_deg * static_cast<T>(2 * ia + 1);

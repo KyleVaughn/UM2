@@ -1,4 +1,13 @@
-MeshFile -> UnstructuredMesh?
+NOLINT
+diagnostic push
+suppress
+
+modular ray tests
+  
+
+Move to_vecvec to API or gmsh
+
+MeshFile -> PolytopeSoup 
   Polymorphic?
   Polytope soup
 

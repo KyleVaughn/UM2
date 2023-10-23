@@ -3,7 +3,7 @@
 #include <um2/config.hpp>
 
 #include <um2/common/Log.hpp>
-#include <um2/mesh/MeshFile.hpp>
+#include <um2/mesh/PolytopeSoup.hpp>
 #include <um2/stdlib/sto.hpp>
 
 #include <charconv>
@@ -26,7 +26,7 @@ namespace um2
 
 template <std::floating_point T, std::signed_integral I>
 static void
-parseNodes(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
+parseNodes(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & file)
 {
   // Would love to use chars_format here, but it bugs out on "0.5" occasionally
   LOG_DEBUG("Parsing nodes");
@@ -41,7 +41,7 @@ parseNodes(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     next = line.find(',', last + 2);
     T const y = sto<T>(line.substr(last + 2, next - last - 2));
     T const z = sto<T>(line.substr(next + 2));
-    mesh.vertices.emplace_back(x, y, z);
+    mesh.vertices.push_back(Point3<T>(x, y, z));
   }
 }
 
@@ -51,7 +51,7 @@ parseNodes(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
 
 template <std::floating_point T, std::signed_integral I>
 static void
-parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
+parseElements(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & file)
 {
   LOG_DEBUG("Parsing elements");
   //  "*ELEMENT, type=CPS".size() = 18
@@ -65,26 +65,26 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
   //
   assert(line[15] == 'C' && line[16] == 'P' && line[17] == 'S');
   I const offset = static_cast<I>(line[18]) - 48;
-  MeshType this_type = MeshType::None;
+  VTKElemType this_type = VTKElemType::Vertex;
   switch (offset) {
   case 3:
-    this_type = MeshType::Tri;
+    this_type = VTKElemType::Triangle;
     break;
   case 4:
-    this_type = MeshType::Quad;
+    this_type = VTKElemType::Quad;
     break;
   case 6:
-    this_type = MeshType::QuadraticTri;
+    this_type = VTKElemType::QuadraticTriangle;
     break;
   case 8:
-    this_type = MeshType::QuadraticQuad;
+    this_type = VTKElemType::QuadraticQuad;
     break;
   default: {
     LOG_ERROR("AbaqusCellType CPS" + toString(offset) + " is not supported");
     break;
   }
   }
-  size_t num_elements = 0;
+  Size num_elements = 0;
   while (std::getline(file, line) && line[0] != '*') {
     LOG_TRACE("Line: " + String(line.c_str()));
     std::string_view const line_view = line;
@@ -108,20 +108,23 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     mesh.element_conn.push_back(id - 1); // ABAQUS is 1-indexed
     ++num_elements;
   }
-  mesh.element_types.insert(mesh.element_types.end(), num_elements, this_type);
-  size_t offsets_size = mesh.element_offsets.size();
+  mesh.element_types.push_back(num_elements, this_type);
+  Size offsets_size = mesh.element_offsets.size();
   if (offsets_size == 0) {
     mesh.element_offsets.push_back(0);
     offsets_size = 1;
   }
   I const offset_back = mesh.element_offsets.back();
   mesh.element_offsets.resize(offsets_size + num_elements);
-  for (size_t i = 0; i < num_elements; ++i) {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-    auto const ip1 = static_cast<I>(i + 1U);
+  for (Size i = 0; i < num_elements; ++i) {
+    // offsets_size and i are of type Size
+    // offset_back, ip1, and ofset are of type I.
+    // How does FMA of I change its type to Size?
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wconversion"
+    auto const ip1 = static_cast<I>(i + 1);
     mesh.element_offsets[offsets_size + i] = offset_back + ip1 * offset;
-#pragma GCC diagnostic pop
+    #pragma GCC diagnostic pop
   }
 }
 
@@ -131,13 +134,13 @@ parseElements(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
 
 template <std::floating_point T, std::signed_integral I>
 static void
-parseElsets(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
+parseElsets(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & file)
 {
   LOG_DEBUG("Parsing elsets");
   std::string_view line_view = line;
   // "*ELSET,ELSET=".size() = 13
   std::string const elset_name{line_view.substr(13, line_view.size() - 13)};
-  mesh.elset_names.emplace_back(elset_name);
+  mesh.elset_names.push_back(String(elset_name.c_str()));
   if (mesh.elset_offsets.size() == 0) {
     mesh.elset_offsets.push_back(0);
   }
@@ -155,21 +158,21 @@ parseElsets(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
     std::from_chars(line_view.data(), line_view.data() + next, id);
     assert(id > 0);
     mesh.elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
-    num_elements++;
+    ++num_elements;
     last = next;
     next = line_view.find(',', last + 1);
     while (next != std::string::npos) {
       std::from_chars(line_view.data() + last + 2, line_view.data() + next, id);
       assert(id > 0);
       mesh.elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
-      num_elements++;
+      ++num_elements;
       last = next;
       next = line_view.find(',', last + 1);
     }
   }
   mesh.elset_offsets.push_back(offset_back + num_elements);
   // Ensure the elset is sorted
-  assert(std::is_sorted(mesh.elset_ids.cbegin() + offset_back, mesh.elset_ids.cend()));
+  assert(um2::is_sorted(mesh.elset_ids.cbegin() + offset_back, mesh.elset_ids.cend()));
 }
 
 //==============================================================================
@@ -178,34 +181,23 @@ parseElsets(MeshFile<T, I> & mesh, std::string & line, std::ifstream & file)
 
 template <std::floating_point T, std::signed_integral I>
 void
-readAbaqusFile(std::string const & filename, MeshFile<T, I> & mesh)
+readAbaqusFile(String const & filename, PolytopeSoup<T, I> & mesh)
 {
-  LOG_INFO("Reading Abaqus mesh file: " + String(filename.c_str()));
+  LOG_INFO("Reading Abaqus mesh file: " + filename);
 
   // Open file
-  std::ifstream file(filename);
+  std::ifstream file(filename.c_str());
   if (!file.is_open()) {
-    LOG_ERROR("Could not open file: " + String(filename.c_str()));
+    LOG_ERROR("Could not open file: " + filename);
     return;
   }
-
-  // Set filepath
-  mesh.filepath = filename;
 
   // Read file
   std::string line;
   bool loop_again = false;
   while (loop_again || std::getline(file, line)) {
     loop_again = false;
-    if (line.starts_with("*Heading")) {
-      std::getline(file, line);
-      size_t nchars = line.size() - 1; // Omit leading space
-      // If name ends in .inp, remove it
-      if (line.ends_with(".inp")) {
-        nchars -= 4;
-      }
-      mesh.name = line.substr(1, nchars);
-    } else if (line.starts_with("*NODE")) {
+    if (line.starts_with("*NODE")) {
       parseNodes<T>(mesh, line, file);
       loop_again = true;
     } else if (line.starts_with("*ELEMENT")) {
@@ -218,6 +210,7 @@ readAbaqusFile(std::string const & filename, MeshFile<T, I> & mesh)
   }
   mesh.sortElsets();
   file.close();
+  LOG_INFO("Finished reading Abaqus mesh file: " + filename);
 } // readAbaqusFile
 
 } // namespace um2

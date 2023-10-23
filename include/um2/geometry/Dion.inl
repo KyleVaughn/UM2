@@ -1,4 +1,3 @@
-// Member functions
 namespace um2
 {
 

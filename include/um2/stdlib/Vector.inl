@@ -22,7 +22,7 @@ Vector<T>::construct_at_end(Size n) noexcept
 {
   Ptr new_end = _end + n;
   for (Ptr pos = _end; pos != new_end; ++pos) {
-    construct_at(pos);
+    um2::construct_at(pos);
   }
   _end = new_end;
 }
@@ -33,7 +33,7 @@ Vector<T>::construct_at_end(Size n, T const & value) noexcept
 {
   Ptr new_end = _end + n;
   for (Ptr pos = _end; pos != new_end; ++pos) {
-    construct_at(pos, value);
+    um2::construct_at(pos, value);
   }
   _end = new_end;
 }
