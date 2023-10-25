@@ -1,6 +1,10 @@
 #pragma once
 
 #include <um2/mesh/PolytopeSoup.hpp>
+
+
+#include <iostream>
+
 //#include <um2/stdlib/sto.hpp>
 //
 //#include <cstring>   // strcmp
@@ -317,44 +321,34 @@ getH5DataType() -> H5::PredType
 //  }
 //} // writeXDMFelsets
 //
-////==============================================================================
-//// writeXDMFUniformGrid
-////==============================================================================
-//
-//template <std::floating_point T, std::signed_integral I>
-//static void
-//writeXDMFUniformGrid(pugi::xml_node & xdomain, H5::H5File & h5file,
-//                     std::string const & h5filename, std::string const & h5path,
-//                     PolytopeSoup<T, I> const & mesh,
-//                     std::vector<std::string> const & material_names)
-//{
-//  LOG_DEBUG("Writing XDMF uniform grid");
-//
-//  // Remove any leading slashes from the mesh name
-//  std::string const name_str = mesh.name;
-//  size_t name_end = name_str.find_last_of('/');
-//  std::string name;
-//  if (name_end == std::string::npos) {
-//    name = name_str;
-//  } else {
-//    name_end += 1;
-//    name = name_str.substr(name_end, name_str.size() - name_end);
-//  }
-//
-//  // Grid
-//  pugi::xml_node xgrid = xdomain.append_child("Grid");
-//  xgrid.append_attribute("Name") = name.c_str();
-//  xgrid.append_attribute("GridType") = "Uniform";
-//
-//  // h5
-//  std::string const h5grouppath = h5path + "/" + name;
-//  H5::Group h5group = h5file.createGroup(h5grouppath);
-//
+//==============================================================================
+// writeXDMFUniformGrid
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+static void
+writeXDMFUniformGrid(pugi::xml_node & xdomain, H5::H5File & /*h5file*/,
+                     String const & /*h5filename*/, String const & /*h5path*/,
+                     PolytopeSoup<T, I> const & /*mesh*/,
+                     String const & name,
+                     Vector<String> const & /*material_names*/)
+{
+  LOG_DEBUG("Writing XDMF uniform grid");
+
+  // Grid
+  pugi::xml_node xgrid = xdomain.append_child("Grid");
+  xgrid.append_attribute("Name") = name.c_str();
+  xgrid.append_attribute("GridType") = "Uniform";
+
+  // h5
+//  String const h5grouppath = h5path + "/" + name;
+//  H5::Group const h5group = h5file.createGroup(h5grouppath.c_str());
+
 //  writeXDMFGeometry(xgrid, h5group, h5filename, h5grouppath, mesh);
 //  writeXDMFTopology(xgrid, h5group, h5filename, h5grouppath, mesh);
 //  writeXDMFMaterials(xgrid, h5group, h5filename, h5grouppath, mesh, material_names);
 //  writeXDMFElsets(xgrid, h5group, h5filename, h5grouppath, mesh);
-//} // writeXDMFUniformGrid
+} // writeXDMFUniformGrid
 
 //==============================================================================
 // writeXDMFFile
@@ -362,64 +356,73 @@ getH5DataType() -> H5::PredType
 
 template <std::floating_point T, std::signed_integral I>
 void
-writeXDMFFile(String const & filepath, PolytopeSoup<T, I> & /*soup*/)
+writeXDMFFile(String const & filepath, PolytopeSoup<T, I> & soup, String const & name = "UM2")
 {
 
   Log::info("Writing XDMF file: " + filepath);
 
-//  // Setup HDF5 file
-//  // Get the h5 file name
-//  Size const h5filepath_end = filepath.find_last_of('/') + 1;
-//  String const h5filename =
-//      filepath.substr(h5filepath_end, filepath.size() - 5 - h5filepath_end) +
-//      ".h5";
-//  String const h5filepath = filepath.substr(0, h5filepath_end);
-//  LOG_DEBUG("H5 filename: " + h5filename);
-//  H5::H5File h5file((h5filepath + h5filename).c_str(), H5F_ACC_TRUNC);
-//
-//  // Setup XML file
-//  pugi::xml_document xdoc;
-//
-//  // XDMF root node
-//  pugi::xml_node xroot = xdoc.append_child("Xdmf");
-//  xroot.append_attribute("Version") = "3.0";
-//
-//  // Domain node
-//  pugi::xml_node xdomain = xroot.append_child("Domain");
-//
-//  // Get the material names from the mesh file elset names, in alphabetical order.
-//  Vector<String> material_names;
-//  soup.getMaterialNames(material_names);
-//  std::sort(material_names.begin(), material_names.end());
-//  // Remove "Material_" from the beginning of each material name
-//  for (auto & name : material_names) {
-//    name = name.substr(9, name.size() - 9);
-//  }
-//
-//  // If there are any materials, add an information node listing them
-//  if (!material_names.empty()) {
-//    pugi::xml_node xinfo = xdomain.append_child("Information");
-//    xinfo.append_attribute("Name") = "Materials";
-//    String materials;
-//    for (Size i = 0; i < material_names.size(); ++i) {
-//      materials += material_names[i];
-//      if (i + 1 < material_names.size()) {
-//        materials += ", ";
-//      }
-//    }
-//    xinfo.append_child(pugi::node_pcdata).set_value(materials.c_str());
-//  }
-//
-////  // Add the mesh as a uniform grid
-////  std::string const h5path;
-////  writeXDMFUniformGrid(xdomain, h5file, h5filename, h5path, mesh, material_names);
-////
-//  // Write the XML file
-//  xdoc.save_file(filepath.c_str(), "  ");
-//
-//  // Close the HDF5 file
-//  h5file.close();
+  // Setup HDF5 file
+  // Get the h5 file name
+  Size const h5filepath_end = filepath.find_last_of('/') + 1;
+  String const h5filename =
+      filepath.substr(h5filepath_end, filepath.size() - 5 - h5filepath_end) +
+      ".h5";
+  String const h5filepath = filepath.substr(0, h5filepath_end);
+  LOG_DEBUG("H5 filename: " + h5filename);
+  H5::H5File h5file((h5filepath + h5filename).c_str(), H5F_ACC_TRUNC);
 
+  // Setup XML file
+  pugi::xml_document xdoc;
+
+  // XDMF root node
+  pugi::xml_node xroot = xdoc.append_child("Xdmf");
+  xroot.append_attribute("Version") = "3.0";
+
+  // Domain node
+  pugi::xml_node xdomain = xroot.append_child("Domain");
+
+  // Get the material names from elset names, in alphabetical order.
+  Vector<String> material_names;
+  soup.getMaterialNames(material_names);
+  std::sort(material_names.begin(), material_names.end());
+  // Remove "Material_" from the beginning of each material name
+  for (auto & mat_name : material_names) {
+    std::cerr << mat_name.c_str() << std::endl;
+    std::cerr << mat_name.size() << std::endl;
+    String const short_name = mat_name.substr(9, mat_name.size() - 9);
+    std::cerr << short_name.c_str() << std::endl;
+    std::cerr << short_name.size() << std::endl;
+    mat_name = short_name; 
+  }
+
+  // If there are any materials, add an information node listing them
+  if (!material_names.empty()) {
+    pugi::xml_node xinfo = xdomain.append_child("Information");
+    xinfo.append_attribute("Name") = "Materials";
+    String materials;
+    for (Size i = 0; i < material_names.size(); ++i) {
+      materials += material_names[i];
+      if (i + 1 < material_names.size()) {
+        materials += ", ";
+      }
+    }
+    xinfo.append_child(pugi::node_pcdata).set_value(materials.c_str());
+  }
+
+  // Add a uniform grid
+  String const h5path;
+  writeXDMFUniformGrid(xdomain, h5file, h5filename, h5path, soup, name, material_names);
+
+  // Write the XML file
+  xdoc.save_file(filepath.c_str(), "  ");
+
+  // Close the HDF5 file
+  h5file.close();
+
+  // Clang flags many string operations as potential memory leaks due to the conditional
+  // free of the pointer in the long string representation. Valgrind does not report any
+  // memory leaks.
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks) justified above
 } // writeXDMFfile
 
 ////==============================================================================

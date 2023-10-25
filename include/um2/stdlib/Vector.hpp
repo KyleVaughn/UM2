@@ -124,6 +124,13 @@ public:
   HOSTDEV constexpr void
   push_back(Size n, T const & value) noexcept;
 
+  template <typename... Args>
+  HOSTDEV constexpr void
+  emplace_back(Args &&... args) noexcept;
+
+  HOSTDEV constexpr void
+  pop_back() noexcept;
+
   //==============================================================================
   // Operators
   //==============================================================================

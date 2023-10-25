@@ -11,6 +11,8 @@
 #include <cstring> // memcpy, strcmp
 #include <string>  // std::string
 
+#include <iostream>
+
 namespace um2
 {
 
@@ -68,6 +70,10 @@ private:
   Rep _r;
 
 public:
+
+  // The maximum capacity of a long string.
+  static Size constexpr npos = sizeMax();
+
   //==============================================================================
   // Constructors
   //==============================================================================
@@ -84,6 +90,8 @@ public:
 
   HOSTDEV constexpr String(char const * s) noexcept;
   // NOLINTEND(google-explicit-constructor)
+
+  HOSTDEV constexpr String(char const * s, Size n) noexcept;
 
   // integer to string
   template <std::integral T>
@@ -190,6 +198,12 @@ public:
   template <uint64_t N>
   PURE HOSTDEV [[nodiscard]] auto
   ends_with(char const (&s)[N]) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  substr(Size pos, Size len = npos) const -> String;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  find_last_of(char c) const noexcept -> Size;
 
   // NOLINTEND(readability-identifier-naming)
 

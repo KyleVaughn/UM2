@@ -41,7 +41,7 @@ copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
   // std::copy optimizes to memmove when possible.
   // False positive of memory leak here.
-  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks) justified above
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks) justified
   return std::copy(first, last, d_first);
 }
 

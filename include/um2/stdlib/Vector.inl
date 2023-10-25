@@ -73,6 +73,7 @@ Vector<T>::grow(Size n) noexcept
   // Destroy the old elements
   destruct_at_end(_begin);
   // Update the pointers
+  delete _begin;
   _begin = new_begin;
   _end = new_end;
   _end_cap = _begin + new_capacity;
@@ -401,6 +402,26 @@ Vector<T>::push_back(Size const n, T const & value) noexcept
   }
   // Construct the new elements
   construct_at_end(n, value);
+}
+
+template <class T>
+template <class... Args>
+HOSTDEV constexpr void
+Vector<T>::emplace_back(Args &&... args) noexcept
+{
+  if (_end == _end_cap) {
+    grow(1);
+  }
+  um2::construct_at(_end, um2::forward<Args>(args)...);
+  ++_end;
+}
+
+template <class T>
+HOSTDEV constexpr void
+Vector<T>::pop_back() noexcept
+{
+  assert(size() > 0);
+  um2::destroy_at(--_end);
 }
 
 } // namespace um2

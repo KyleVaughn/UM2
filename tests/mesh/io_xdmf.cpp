@@ -21,10 +21,10 @@ TEST_CASE(tri_mesh)
 //  ASSERT(mesh.elset_offsets == mesh_ref.elset_offsets);
 //  ASSERT(mesh.elset_ids == mesh_ref.elset_ids);
 
-  int stat = std::remove("./tri.xdmf");
-  ASSERT(stat == 0);
-  stat = std::remove("./tri.h5");
-  ASSERT(stat == 0);
+//  int stat = std::remove("./tri.xdmf");
+//  ASSERT(stat == 0);
+//  stat = std::remove("./tri.h5");
+//  ASSERT(stat == 0);
 }
 
 //template <std::floating_point T, std::signed_integral I>

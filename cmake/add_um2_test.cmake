@@ -42,7 +42,7 @@ macro(add_um2_test FILENAME)
   #    target_link_libraries(${TESTNAME} ${UM2_VIS_LIBRARIES})
   #  endif()
 
-  add_test(NAME ${TESTNAME}_valgrind
+  add_test(NAME valgrind_${TESTNAME}
     COMMAND valgrind
       --error-exitcode=1
       --tool=memcheck
