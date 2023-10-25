@@ -15,10 +15,8 @@ namespace um2
 {
 
 //==============================================================================-
-// ABAQUS mesh file
+// IO for ABAQUS files.
 //==============================================================================
-//
-// IO for ABAQUS mesh files.
 
 //==============================================================================-
 // parseNodes
@@ -26,7 +24,7 @@ namespace um2
 
 template <std::floating_point T, std::signed_integral I>
 static void
-parseNodes(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & file)
+parseNodes(PolytopeSoup<T, I> & soup, std::string & line, std::ifstream & file)
 {
   // Would love to use chars_format here, but it bugs out on "0.5" occasionally
   LOG_DEBUG("Parsing nodes");
@@ -41,7 +39,7 @@ parseNodes(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & file)
     next = line.find(',', last + 2);
     T const y = sto<T>(line.substr(last + 2, next - last - 2));
     T const z = sto<T>(line.substr(next + 2));
-    mesh.vertices.push_back(Point3<T>(x, y, z));
+    soup.vertices.emplace_back(x, y, z);
   }
 }
 
@@ -51,7 +49,7 @@ parseNodes(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & file)
 
 template <std::floating_point T, std::signed_integral I>
 static void
-parseElements(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & file)
+parseElements(PolytopeSoup<T, I> & soup, std::string & line, std::ifstream & file)
 {
   LOG_DEBUG("Parsing elements");
   //  "*ELEMENT, type=CPS".size() = 18
@@ -98,24 +96,24 @@ parseElements(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & fil
       std::from_chars(line_view.data() + last + 2, line_view.data() + next, id);
       LOG_TRACE("Node ID: " + toString(id));
       assert(id > 0);
-      mesh.element_conn.push_back(id - 1); // ABAQUS is 1-indexed
+      soup.element_conn.push_back(id - 1); // ABAQUS is 1-indexed
       last = next;
       next = line_view.find(',', last + 2);
     }
     // Read last node ID
     std::from_chars(line_view.data() + last + 2, line_view.data() + line_view.size(), id);
     assert(id > 0);
-    mesh.element_conn.push_back(id - 1); // ABAQUS is 1-indexed
+    soup.element_conn.push_back(id - 1); // ABAQUS is 1-indexed
     ++num_elements;
   }
-  mesh.element_types.push_back(num_elements, this_type);
-  Size offsets_size = mesh.element_offsets.size();
+  soup.element_types.push_back(num_elements, this_type);
+  Size offsets_size = soup.element_offsets.size();
   if (offsets_size == 0) {
-    mesh.element_offsets.push_back(0);
+    soup.element_offsets.push_back(0);
     offsets_size = 1;
   }
-  I const offset_back = mesh.element_offsets.back();
-  mesh.element_offsets.resize(offsets_size + num_elements);
+  I const offset_back = soup.element_offsets.back();
+  soup.element_offsets.resize(offsets_size + num_elements);
   for (Size i = 0; i < num_elements; ++i) {
     // offsets_size and i are of type Size
     // offset_back, ip1, and ofset are of type I.
@@ -123,7 +121,7 @@ parseElements(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & fil
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wconversion"
     auto const ip1 = static_cast<I>(i + 1);
-    mesh.element_offsets[offsets_size + i] = offset_back + ip1 * offset;
+    soup.element_offsets[offsets_size + i] = offset_back + ip1 * offset;
     #pragma GCC diagnostic pop
   }
 }
@@ -134,18 +132,14 @@ parseElements(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & fil
 
 template <std::floating_point T, std::signed_integral I>
 static void
-parseElsets(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & file)
+parseElsets(PolytopeSoup<T, I> & soup, std::string & line, std::ifstream & file)
 {
   LOG_DEBUG("Parsing elsets");
   std::string_view line_view = line;
   // "*ELSET,ELSET=".size() = 13
-  std::string const elset_name{line_view.substr(13, line_view.size() - 13)};
-  mesh.elset_names.push_back(String(elset_name.c_str()));
-  if (mesh.elset_offsets.size() == 0) {
-    mesh.elset_offsets.push_back(0);
-  }
-  I const offset_back = mesh.elset_offsets.back();
-  I num_elements = 0;
+  std::string const elset_name_std{line_view.substr(13, line_view.size() - 13)};
+  String const elset_name(elset_name_std.c_str());
+  Vector<I> elset_ids;
   while (std::getline(file, line) && line[0] != '*') {
     line_view = line;
     // Add each element ID to the elset
@@ -157,22 +151,20 @@ parseElsets(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & file)
     I id;
     std::from_chars(line_view.data(), line_view.data() + next, id);
     assert(id > 0);
-    mesh.elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
-    ++num_elements;
+    elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
     last = next;
     next = line_view.find(',', last + 1);
     while (next != std::string::npos) {
       std::from_chars(line_view.data() + last + 2, line_view.data() + next, id);
       assert(id > 0);
-      mesh.elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
-      ++num_elements;
+      elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
       last = next;
       next = line_view.find(',', last + 1);
     }
   }
-  mesh.elset_offsets.push_back(offset_back + num_elements);
+  soup.addElset(elset_name, elset_ids);
   // Ensure the elset is sorted
-  assert(um2::is_sorted(mesh.elset_ids.cbegin() + offset_back, mesh.elset_ids.cend()));
+  assert(um2::is_sorted(elset_ids.cbegin(), elset_ids.cend()));
 }
 
 //==============================================================================
@@ -181,9 +173,9 @@ parseElsets(PolytopeSoup<T, I> & mesh, std::string & line, std::ifstream & file)
 
 template <std::floating_point T, std::signed_integral I>
 void
-readAbaqusFile(String const & filename, PolytopeSoup<T, I> & mesh)
+readAbaqusFile(String const & filename, PolytopeSoup<T, I> & soup)
 {
-  LOG_INFO("Reading Abaqus mesh file: " + filename);
+  LOG_INFO("Reading Abaqus file: " + filename);
 
   // Open file
   std::ifstream file(filename.c_str());
@@ -198,19 +190,19 @@ readAbaqusFile(String const & filename, PolytopeSoup<T, I> & mesh)
   while (loop_again || std::getline(file, line)) {
     loop_again = false;
     if (line.starts_with("*NODE")) {
-      parseNodes<T>(mesh, line, file);
+      parseNodes<T>(soup, line, file);
       loop_again = true;
     } else if (line.starts_with("*ELEMENT")) {
-      parseElements<T, I>(mesh, line, file);
+      parseElements<T, I>(soup, line, file);
       loop_again = true;
     } else if (line.starts_with("*ELSET")) {
-      parseElsets<T, I>(mesh, line, file);
+      parseElsets<T, I>(soup, line, file);
       loop_again = true;
     }
   }
-  mesh.sortElsets();
+  soup.sortElsets();
   file.close();
-  LOG_INFO("Finished reading Abaqus mesh file: " + filename);
+  LOG_INFO("Finished reading Abaqus file: " + filename);
 } // readAbaqusFile
 
 } // namespace um2

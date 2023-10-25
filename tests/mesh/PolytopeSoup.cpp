@@ -1,6 +1,6 @@
 #include <um2/mesh/PolytopeSoup.hpp>
 
-//#include "./helpers/setup_mesh_file.hpp"
+#include "./helpers/setup_polytope_soup.hpp"
 
 #include "../test_macros.hpp"
 
@@ -43,42 +43,42 @@ TEST_CASE(verticesPerElem)
 //  ASSERT(tri6_quad8.getMeshType() == um2::MeshType::QuadraticTriQuad);
 //}
 //
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(compareGeometry)
-//{
-//  um2::PolytopeSoup<T, I> tri_ref;
-//  makeReferenceTriPolytopeSoup(tri_ref);
-//  um2::PolytopeSoup<T, I> tri;
-//  makeReferenceTriPolytopeSoup(tri);
-//  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
-//  tri.vertices.push_back(um2::Point3<T>{0, 0, 0});
-//  ASSERT(um2::compareGeometry(tri, tri_ref) == 1);
-//  tri.vertices.pop_back();
-//  T const eps = um2::eps_distance<T>;
-//  tri.vertices[0][0] += (eps / 2);
-//  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
-//  tri.vertices[0][0] += (eps * 2);
-//  ASSERT(um2::compareGeometry(tri, tri_ref) == 2);
-//}
-//
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(compareTopology)
-//{
-//  um2::PolytopeSoup<T, I> tri_ref;
-//  makeReferenceTriPolytopeSoup(tri_ref);
-//  um2::PolytopeSoup<T, I> tri;
-//  makeReferenceTriPolytopeSoup(tri);
-//  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
-//  tri.element_types.push_back(um2::MeshType::Quad);
-//  ASSERT(um2::compareTopology(tri, tri_ref) == 1);
-//  tri.element_types.pop_back();
-//  tri.element_types[0] = um2::MeshType::Quad;
-//  ASSERT(um2::compareTopology(tri, tri_ref) == 2);
-//  tri.element_types[0] = um2::MeshType::Tri;
-//  tri.element_conn[0] += 1;
-//  ASSERT(um2::compareTopology(tri, tri_ref) == 3);
-//}
-//
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(compareGeometry)
+{
+  um2::PolytopeSoup<T, I> tri_ref;
+  makeReferenceTriPolytopeSoup(tri_ref);
+  um2::PolytopeSoup<T, I> tri;
+  makeReferenceTriPolytopeSoup(tri);
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
+  tri.vertices.push_back(um2::Point3<T>{0, 0, 0});
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 1);
+  tri.vertices.pop_back();
+  T const eps = um2::eps_distance<T>;
+  tri.vertices[0][0] += (eps / 2);
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
+  tri.vertices[0][0] += (eps * 2);
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 2);
+}
+
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(compareTopology)
+{
+  um2::PolytopeSoup<T, I> tri_ref;
+  makeReferenceTriPolytopeSoup(tri_ref);
+  um2::PolytopeSoup<T, I> tri;
+  makeReferenceTriPolytopeSoup(tri);
+  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
+  tri.element_types.push_back(um2::VTKElemType::Quad);
+  ASSERT(um2::compareTopology(tri, tri_ref) == 1);
+  tri.element_types.pop_back();
+  tri.element_types[0] = um2::VTKElemType::Quad;
+  ASSERT(um2::compareTopology(tri, tri_ref) == 2);
+  tri.element_types[0] = um2::VTKElemType::Triangle;
+  tri.element_conn[0] += 1;
+  ASSERT(um2::compareTopology(tri, tri_ref) == 3);
+}
+
 template <std::floating_point T, std::signed_integral I>
 TEST_CASE(sortElsets)
 {
@@ -147,17 +147,17 @@ TEST_CASE(sortElsets)
 //  ASSERT(tri_quad_h2o.elset_ids[1] == 0);
 //}
 //
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(getMaterialNames)
-//{
-//  um2::PolytopeSoup<T, I> tri_ref;
-//  makeReferenceTriPolytopeSoup(tri_ref);
-//  std::vector<std::string> const mat_names_ref = {"Material_H2O", "Material_UO2"};
-//  std::vector<std::string> mat_names;
-//  tri_ref.getMaterialNames(mat_names);
-//  ASSERT(mat_names == mat_names_ref);
-//}
-//
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(getMaterialNames)
+{
+  um2::PolytopeSoup<T, I> tri_ref;
+  makeReferenceTriPolytopeSoup(tri_ref);
+  um2::Vector<um2::String> const mat_names_ref = {"Material_H2O", "Material_UO2"};
+  um2::Vector<um2::String> mat_names;
+  tri_ref.getMaterialNames(mat_names);
+  ASSERT(mat_names == mat_names_ref);
+}
+
 //template <std::floating_point T, std::signed_integral I>
 //TEST_CASE(getMaterialIDs)
 //{
@@ -180,11 +180,11 @@ TEST_SUITE(PolytopeSoup)
 {
   TEST(verticesPerElem);
 ///  TEST((getMeshType<T, I>));
-///  TEST((compareGeometry<T, I>));
-///  TEST((compareTopology<T, I>));
-///  TEST((sortElsets<T, I>));
+  TEST((compareGeometry<T, I>));
+  TEST((compareTopology<T, I>));
+  TEST((sortElsets<T, I>));
 ///  TEST((getSubmesh<T, I>));
-///  TEST((getMaterialNames<T, I>));
+  TEST((getMaterialNames<T, I>));
 ///  TEST((getMaterialIDs<T, I>));
 }
 

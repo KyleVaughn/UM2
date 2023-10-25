@@ -12,6 +12,18 @@ PolytopeSoup<T, I>::numElems() const -> Size
   return element_types.size();
 }
 
+//==============================================================================
+// hasElsetData
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+PURE constexpr auto
+PolytopeSoup<T, I>::hasElsetData() const -> bool
+{
+  return std::ranges::any_of(elset_data.cbegin(), elset_data.cend(),
+                      [](auto const & data) { return !data.empty(); });
+}
+
 ////==============================================================================
 //// getMeshType
 ////==============================================================================
@@ -119,6 +131,48 @@ compareTopology(PolytopeSoup<T, I> const & lhs, PolytopeSoup<T, I> const & rhs) 
 }
 
 //==============================================================================
+// addElset
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+constexpr void
+PolytopeSoup<T, I>::addElset(String const & name, Vector<I> const & ids, Vector<T> data)
+{
+  LOG_DEBUG("Adding elset: " + name);
+
+  for (auto const & this_name : elset_names) {
+    // cppcheck-suppress useStlAlgorithm; justification: This is more clear.
+    if (this_name == name) {
+      LOG_ERROR("Elset " + name + " already exists.");
+      return;
+    }
+  }
+
+  Size const num_ids = ids.size();
+  if (num_ids == 0) {
+    LOG_ERROR("Elset ids" + name + " is empty.");
+    return;
+  }
+
+  if (!data.empty() && (data.size() != num_ids)) {
+    LOG_ERROR("Elset data size does not match the number of ids.");
+    return;
+  }
+
+  elset_names.emplace_back(name);
+  if (elset_offsets.empty()) {
+    elset_offsets.push_back(0);
+  }
+
+  Size const old_num_ids = elset_ids.size();
+  Size const new_num_ids = old_num_ids + num_ids;
+  elset_offsets.push_back(static_cast<I>(new_num_ids));
+  elset_ids.resize(new_num_ids);
+  um2::copy(ids.begin(), ids.end(), elset_ids.data() + old_num_ids);
+  elset_data.emplace_back(um2::move(data));
+}
+
+//==============================================================================
 // sortElsets
 //==============================================================================
 
@@ -159,6 +213,27 @@ PolytopeSoup<T, I>::sortElsets()
          elset_ids_copy_ptr + offset_pair.second,
          elset_ids_ptr + offset);
     offset += len;
+  }
+  if (hasElsetData()) {
+    Log::warn("PolytopeSoup.sortElsets: elset data is not currently sorted");
+  }
+}
+
+//==============================================================================
+// getMaterialNames
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+void
+PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
+{
+  material_names.clear();
+  String const mat_prefix = "Material_";
+  for (auto const & elset_name : elset_names) {
+    if (elset_name.starts_with(mat_prefix)) {
+      // cppcheck-suppress useStlAlgorithm; justification: Different behavior.
+      material_names.emplace_back(elset_name);
+    }
   }
 }
 

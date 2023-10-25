@@ -68,8 +68,8 @@ add_um2_test(./mesh/PolytopeSoup.cpp)
 #add_um2_test(./mesh/QuadraticTriMesh.cpp)
 #add_um2_test(./mesh/QuadraticQuadMesh.cpp)
 add_um2_test(./mesh/io_abaqus.cpp)
-#add_um2_test(./mesh/io_xdmf.cpp)
-#
+add_um2_test(./mesh/io_xdmf.cpp)
+
 ##==============================================================================
 ## mpact
 ##==============================================================================

@@ -254,7 +254,7 @@ TEST_CASE(push_back)
     ASSERT(v.data()[4] == static_cast<T>(5));
   }
 }
-//
+
 template <class T>
 HOSTDEV
 TEST_CASE(push_back_rval_ref)
@@ -291,6 +291,22 @@ TEST_CASE(push_back_n)
   non_empty_vector.push_back(2, static_cast<T>(5));
   ASSERT(non_empty_vector.size() == 5);
   ASSERT(non_empty_vector.capacity() == 6);
+}
+
+HOSTDEV
+TEST_CASE(emplace_back)
+{
+  struct TestStruct {
+    int a;
+    float b;
+    double c;
+    TestStruct(int ia, float ib, double ic) : a(ia), b(ib), c(ic) {}
+  };
+  um2::Vector<TestStruct> v;
+  v.emplace_back(1, 2.0F, 3.0);
+  ASSERT(v.size() == 1);
+  ASSERT(v.capacity() == 1);
+  ASSERT(v.data()[0].a == 1);
 }
 
 //==============================================================================
@@ -332,6 +348,7 @@ MAKE_CUDA_KERNEL(clear)
     template <class T>
     MAKE_CUDA_KERNEL(push_back_n, T)
 
+MAKE_CUDA_KERNEL(emplace_back)
 #endif // UM2_USE_CUDA
 
     template <class T>
@@ -354,6 +371,7 @@ MAKE_CUDA_KERNEL(clear)
   TEST_HOSTDEV(push_back, 1, 1, T)
   TEST_HOSTDEV(push_back_rval_ref, 1, 1, T)
   TEST_HOSTDEV(push_back_n, 1, 1, T)
+  TEST_HOSTDEV(emplace_back)
 }
 
 auto

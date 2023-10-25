@@ -141,7 +141,7 @@ struct PolytopeSoup {
   Vector<String> elset_names;
   Vector<I> elset_offsets; // A prefix sum of the number of elements in each elset
   Vector<I> elset_ids; // Element IDs of each elset
-  Vector<Vector<T>> elset_data; // each std::vector<T> has size = num_elements
+  Vector<Vector<T>> elset_data; // Data associated with each elset
 
   constexpr PolytopeSoup() = default;
 
@@ -151,12 +151,22 @@ struct PolytopeSoup {
 
   PURE [[nodiscard]] constexpr auto
   numElems() const -> Size;
-//
+
+  PURE [[nodiscard]] constexpr auto
+  hasElsetData() const -> bool;
+
 //  PURE [[nodiscard]] constexpr auto
 //  getMeshType() const -> MeshType;
 //
+    
+  constexpr void
+  addElset(String const & name, Vector<I> const & ids, Vector<T> data = {});
+
   constexpr void
   sortElsets();
+
+  void
+  getMaterialNames(Vector<String> & material_names) const;
 //
 //  void
 //  getSubmesh(std::string const & elset_name, PolytopeSoup<T, I> & submesh) const;

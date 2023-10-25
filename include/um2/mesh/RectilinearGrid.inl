@@ -31,7 +31,7 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(
         }
       }
       if (!min_found) {
-        this->divs[d].push_back(box.minima[d]);
+        this->divs[d].emplace_back(box.minima[d]);
       }
       bool max_found = false;
       for (Size j = 0; j < divs[d].size(); ++j) {
@@ -41,7 +41,7 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(
         }
       }
       if (!max_found) {
-        this->divs[d].push_back(box.maxima[d]);
+        this->divs[d].emplace_back(box.maxima[d]);
       }
     }
   }

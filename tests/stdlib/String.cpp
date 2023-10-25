@@ -321,6 +321,33 @@ TEST_CASE(starts_ends_with)
 }
 MAKE_CUDA_KERNEL(starts_ends_with);
 
+HOSTDEV
+TEST_CASE(substr)
+{
+  um2::String const s("hello");
+  um2::String const s0 = s.substr(1);
+  ASSERT(s0.size() == 4);
+  ASSERT(s0[0] == 'e');
+  ASSERT(s0[1] == 'l');
+  ASSERT(s0[2] == 'l');
+  ASSERT(s0[3] == 'o');
+  um2::String const s1 = s.substr(1, 2);
+  ASSERT(s1.size() == 2);
+  ASSERT(s1[0] == 'e');
+  ASSERT(s1[1] == 'l');
+}
+MAKE_CUDA_KERNEL(substr);
+
+HOSTDEV
+TEST_CASE(find_last_of)
+{
+  um2::String const s("hello");
+  ASSERT(s.find_last_of('l') == 3);
+  ASSERT(s.find_last_of('o') == 4);
+  ASSERT(s.find_last_of('h') == 0);
+  ASSERT(s.find_last_of('a') == um2::String::npos);
+}
+
 TEST_SUITE(String)
 {
   // Constructors
@@ -341,6 +368,7 @@ TEST_SUITE(String)
 
   // Methods
   TEST(starts_ends_with)
+  TEST_HOSTDEV(substr)
 }
 
 auto

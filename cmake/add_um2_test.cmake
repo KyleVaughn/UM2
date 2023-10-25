@@ -41,4 +41,12 @@ macro(add_um2_test FILENAME)
   #  if (UM2_ENABLE_VIS)
   #    target_link_libraries(${TESTNAME} ${UM2_VIS_LIBRARIES})
   #  endif()
+
+  add_test(NAME ${TESTNAME}_valgrind
+    COMMAND valgrind
+      --error-exitcode=1
+      --tool=memcheck
+      --leak-check=full
+      --errors-for-leak-kinds=definite
+      --show-leak-kinds=definite $<TARGET_FILE:${TESTNAME}>)
 endmacro()
