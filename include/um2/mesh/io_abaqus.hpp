@@ -115,14 +115,14 @@ parseElements(PolytopeSoup<T, I> & soup, std::string & line, std::ifstream & fil
   I const offset_back = soup.element_offsets.back();
   soup.element_offsets.resize(offsets_size + num_elements);
   for (Size i = 0; i < num_elements; ++i) {
-    // offsets_size and i are of type Size
-    // offset_back, ip1, and ofset are of type I.
-    // How does FMA of I change its type to Size?
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wconversion"
+// offsets_size and i are of type Size
+// offset_back, ip1, and ofset are of type I.
+// How does FMA of I change its type to Size?
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
     auto const ip1 = static_cast<I>(i + 1);
     soup.element_offsets[offsets_size + i] = offset_back + ip1 * offset;
-    #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
   }
 }
 

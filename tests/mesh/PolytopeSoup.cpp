@@ -15,33 +15,33 @@ TEST_CASE(verticesPerElem)
   static_assert(um2::verticesPerElem(um2::VTKElemType::QuadraticQuad) == 8);
 }
 
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(getMeshType)
+// template <std::floating_point T, std::signed_integral I>
+// TEST_CASE(getMeshType)
 //{
-//  um2::PolytopeSoup<T, I> tri;
-//  makeReferenceTriPolytopeSoup(tri);
-//  ASSERT(tri.getMeshType() == um2::MeshType::Tri);
+//   um2::PolytopeSoup<T, I> tri;
+//   makeReferenceTriPolytopeSoup(tri);
+//   ASSERT(tri.getMeshType() == um2::MeshType::Tri);
 //
-//  um2::PolytopeSoup<T, I> quad;
-//  makeReferenceQuadPolytopeSoup(quad);
-//  ASSERT(quad.getMeshType() == um2::MeshType::Quad);
+//   um2::PolytopeSoup<T, I> quad;
+//   makeReferenceQuadPolytopeSoup(quad);
+//   ASSERT(quad.getMeshType() == um2::MeshType::Quad);
 //
-//  um2::PolytopeSoup<T, I> tri_quad;
-//  makeReferenceTriQuadPolytopeSoup(tri_quad);
-//  ASSERT(tri_quad.getMeshType() == um2::MeshType::TriQuad);
+//   um2::PolytopeSoup<T, I> tri_quad;
+//   makeReferenceTriQuadPolytopeSoup(tri_quad);
+//   ASSERT(tri_quad.getMeshType() == um2::MeshType::TriQuad);
 //
-//  um2::PolytopeSoup<T, I> tri6;
-//  makeReferenceTri6PolytopeSoup(tri6);
-//  ASSERT(tri6.getMeshType() == um2::MeshType::QuadraticTri);
+//   um2::PolytopeSoup<T, I> tri6;
+//   makeReferenceTri6PolytopeSoup(tri6);
+//   ASSERT(tri6.getMeshType() == um2::MeshType::QuadraticTri);
 //
-//  um2::PolytopeSoup<T, I> quad8;
-//  makeReferenceQuad8PolytopeSoup(quad8);
-//  ASSERT(quad8.getMeshType() == um2::MeshType::QuadraticQuad);
+//   um2::PolytopeSoup<T, I> quad8;
+//   makeReferenceQuad8PolytopeSoup(quad8);
+//   ASSERT(quad8.getMeshType() == um2::MeshType::QuadraticQuad);
 //
-//  um2::PolytopeSoup<T, I> tri6_quad8;
-//  makeReferenceTri6Quad8PolytopeSoup(tri6_quad8);
-//  ASSERT(tri6_quad8.getMeshType() == um2::MeshType::QuadraticTriQuad);
-//}
+//   um2::PolytopeSoup<T, I> tri6_quad8;
+//   makeReferenceTri6Quad8PolytopeSoup(tri6_quad8);
+//   ASSERT(tri6_quad8.getMeshType() == um2::MeshType::QuadraticTriQuad);
+// }
 //
 template <std::floating_point T, std::signed_integral I>
 TEST_CASE(compareGeometry)
@@ -96,56 +96,56 @@ TEST_CASE(sortElsets)
   ASSERT(tri.elset_ids == tri_ref.elset_ids);
 }
 
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(getSubmesh)
+// template <std::floating_point T, std::signed_integral I>
+// TEST_CASE(getSubmesh)
 //{
-//  um2::PolytopeSoup<T, I> tri_quad;
-//  makeReferenceTriQuadPolytopeSoup(tri_quad);
-//  um2::PolytopeSoup<T, I> tri_quad_a;
+//   um2::PolytopeSoup<T, I> tri_quad;
+//   makeReferenceTriQuadPolytopeSoup(tri_quad);
+//   um2::PolytopeSoup<T, I> tri_quad_a;
 //
-//  tri_quad.getSubmesh("A", tri_quad_a);
-//  ASSERT(tri_quad_a.filepath == "");
-//  ASSERT(tri_quad_a.name == "A");
-//  ASSERT(um2::compareGeometry(tri_quad_a, tri_quad_a) == 0);
-//  ASSERT(um2::compareTopology(tri_quad_a, tri_quad_a) == 0);
-//  ASSERT(tri_quad_a.elset_names.size() == 3);
-//  ASSERT(tri_quad_a.elset_names[0] == "B");
-//  ASSERT(tri_quad_a.elset_names[1] == "Material_H2O");
-//  ASSERT(tri_quad_a.elset_names[2] == "Material_UO2");
-//  std::vector<I> const elset_offsets_ref = {0, 1, 2, 3};
-//  ASSERT(tri_quad_a.elset_offsets == elset_offsets_ref);
-//  std::vector<I> const elset_ids_ref = {1, 1, 0};
-//  ASSERT(tri_quad_a.elset_ids == elset_ids_ref);
+//   tri_quad.getSubmesh("A", tri_quad_a);
+//   ASSERT(tri_quad_a.filepath == "");
+//   ASSERT(tri_quad_a.name == "A");
+//   ASSERT(um2::compareGeometry(tri_quad_a, tri_quad_a) == 0);
+//   ASSERT(um2::compareTopology(tri_quad_a, tri_quad_a) == 0);
+//   ASSERT(tri_quad_a.elset_names.size() == 3);
+//   ASSERT(tri_quad_a.elset_names[0] == "B");
+//   ASSERT(tri_quad_a.elset_names[1] == "Material_H2O");
+//   ASSERT(tri_quad_a.elset_names[2] == "Material_UO2");
+//   std::vector<I> const elset_offsets_ref = {0, 1, 2, 3};
+//   ASSERT(tri_quad_a.elset_offsets == elset_offsets_ref);
+//   std::vector<I> const elset_ids_ref = {1, 1, 0};
+//   ASSERT(tri_quad_a.elset_ids == elset_ids_ref);
 //
-//  um2::PolytopeSoup<T, I> tri_quad_h2o;
-//  tri_quad.getSubmesh("Material_H2O", tri_quad_h2o);
-//  ASSERT(tri_quad_h2o.filepath == "");
-//  ASSERT(tri_quad_h2o.name == "Material_H2O");
-//  ASSERT(tri_quad_h2o.vertices.size() == 3);
-//  // (1,0), (2,0), (1,1)
-//  ASSERT_NEAR(tri_quad_h2o.vertices[0][0], static_cast<T>(1), static_cast<T>(1e-6));
-//  ASSERT_NEAR(tri_quad_h2o.vertices[0][1], static_cast<T>(0), static_cast<T>(1e-6));
-//  ASSERT_NEAR(tri_quad_h2o.vertices[0][2], static_cast<T>(0), static_cast<T>(1e-6));
-//  ASSERT_NEAR(tri_quad_h2o.vertices[1][0], static_cast<T>(1), static_cast<T>(1e-6));
-//  ASSERT_NEAR(tri_quad_h2o.vertices[1][1], static_cast<T>(1), static_cast<T>(1e-6));
-//  ASSERT_NEAR(tri_quad_h2o.vertices[1][2], static_cast<T>(0), static_cast<T>(1e-6));
-//  ASSERT_NEAR(tri_quad_h2o.vertices[2][0], static_cast<T>(2), static_cast<T>(1e-6));
-//  ASSERT_NEAR(tri_quad_h2o.vertices[2][1], static_cast<T>(0), static_cast<T>(1e-6));
-//  ASSERT_NEAR(tri_quad_h2o.vertices[2][2], static_cast<T>(0), static_cast<T>(1e-6));
-//  ASSERT(tri_quad_h2o.element_conn[0] == 0);
-//  ASSERT(tri_quad_h2o.element_conn[1] == 2);
-//  ASSERT(tri_quad_h2o.element_conn[2] == 1);
-//  ASSERT(tri_quad_h2o.elset_names.size() == 2);
-//  ASSERT(tri_quad_h2o.elset_names[0] == "A");
-//  ASSERT(tri_quad_h2o.elset_names[1] == "B");
-//  ASSERT(tri_quad_h2o.elset_offsets.size() == 3);
-//  ASSERT(tri_quad_h2o.elset_offsets[0] == 0);
-//  ASSERT(tri_quad_h2o.elset_offsets[1] == 1);
-//  ASSERT(tri_quad_h2o.elset_offsets[2] == 2);
-//  ASSERT(tri_quad_h2o.elset_ids.size() == 2);
-//  ASSERT(tri_quad_h2o.elset_ids[0] == 0);
-//  ASSERT(tri_quad_h2o.elset_ids[1] == 0);
-//}
+//   um2::PolytopeSoup<T, I> tri_quad_h2o;
+//   tri_quad.getSubmesh("Material_H2O", tri_quad_h2o);
+//   ASSERT(tri_quad_h2o.filepath == "");
+//   ASSERT(tri_quad_h2o.name == "Material_H2O");
+//   ASSERT(tri_quad_h2o.vertices.size() == 3);
+//   // (1,0), (2,0), (1,1)
+//   ASSERT_NEAR(tri_quad_h2o.vertices[0][0], static_cast<T>(1), static_cast<T>(1e-6));
+//   ASSERT_NEAR(tri_quad_h2o.vertices[0][1], static_cast<T>(0), static_cast<T>(1e-6));
+//   ASSERT_NEAR(tri_quad_h2o.vertices[0][2], static_cast<T>(0), static_cast<T>(1e-6));
+//   ASSERT_NEAR(tri_quad_h2o.vertices[1][0], static_cast<T>(1), static_cast<T>(1e-6));
+//   ASSERT_NEAR(tri_quad_h2o.vertices[1][1], static_cast<T>(1), static_cast<T>(1e-6));
+//   ASSERT_NEAR(tri_quad_h2o.vertices[1][2], static_cast<T>(0), static_cast<T>(1e-6));
+//   ASSERT_NEAR(tri_quad_h2o.vertices[2][0], static_cast<T>(2), static_cast<T>(1e-6));
+//   ASSERT_NEAR(tri_quad_h2o.vertices[2][1], static_cast<T>(0), static_cast<T>(1e-6));
+//   ASSERT_NEAR(tri_quad_h2o.vertices[2][2], static_cast<T>(0), static_cast<T>(1e-6));
+//   ASSERT(tri_quad_h2o.element_conn[0] == 0);
+//   ASSERT(tri_quad_h2o.element_conn[1] == 2);
+//   ASSERT(tri_quad_h2o.element_conn[2] == 1);
+//   ASSERT(tri_quad_h2o.elset_names.size() == 2);
+//   ASSERT(tri_quad_h2o.elset_names[0] == "A");
+//   ASSERT(tri_quad_h2o.elset_names[1] == "B");
+//   ASSERT(tri_quad_h2o.elset_offsets.size() == 3);
+//   ASSERT(tri_quad_h2o.elset_offsets[0] == 0);
+//   ASSERT(tri_quad_h2o.elset_offsets[1] == 1);
+//   ASSERT(tri_quad_h2o.elset_offsets[2] == 2);
+//   ASSERT(tri_quad_h2o.elset_ids.size() == 2);
+//   ASSERT(tri_quad_h2o.elset_ids[0] == 0);
+//   ASSERT(tri_quad_h2o.elset_ids[1] == 0);
+// }
 //
 template <std::floating_point T, std::signed_integral I>
 TEST_CASE(getMaterialNames)
@@ -158,34 +158,34 @@ TEST_CASE(getMaterialNames)
   ASSERT(mat_names == mat_names_ref);
 }
 
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(getMaterialIDs)
+// template <std::floating_point T, std::signed_integral I>
+// TEST_CASE(getMaterialIDs)
 //{
-//  um2::PolytopeSoup<T, I> tri_ref;
-//  makeReferenceTriPolytopeSoup(tri_ref);
-//  std::vector<MaterialID> mat_ids;
-//  tri_ref.getMaterialIDs(mat_ids,
-//                         std::vector<std::string>{"Material_H2O", "Material_UO2"});
-//  std::vector<MaterialID> const mat_ids_ref = {1, 0};
-//  ASSERT(mat_ids == mat_ids_ref);
-//  mat_ids.clear();
-//  tri_ref.getMaterialIDs(mat_ids,
-//                         std::vector<std::string>{"Material_UO2", "Material_H2O"});
-//  std::vector<MaterialID> const mat_ids_ref2 = {0, 1};
-//  ASSERT(mat_ids == mat_ids_ref2);
-//}
+//   um2::PolytopeSoup<T, I> tri_ref;
+//   makeReferenceTriPolytopeSoup(tri_ref);
+//   std::vector<MaterialID> mat_ids;
+//   tri_ref.getMaterialIDs(mat_ids,
+//                          std::vector<std::string>{"Material_H2O", "Material_UO2"});
+//   std::vector<MaterialID> const mat_ids_ref = {1, 0};
+//   ASSERT(mat_ids == mat_ids_ref);
+//   mat_ids.clear();
+//   tri_ref.getMaterialIDs(mat_ids,
+//                          std::vector<std::string>{"Material_UO2", "Material_H2O"});
+//   std::vector<MaterialID> const mat_ids_ref2 = {0, 1};
+//   ASSERT(mat_ids == mat_ids_ref2);
+// }
 
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(PolytopeSoup)
 {
   TEST(verticesPerElem);
-///  TEST((getMeshType<T, I>));
+  ///  TEST((getMeshType<T, I>));
   TEST((compareGeometry<T, I>));
   TEST((compareTopology<T, I>));
   TEST((sortElsets<T, I>));
-///  TEST((getSubmesh<T, I>));
+  ///  TEST((getSubmesh<T, I>));
   TEST((getMaterialNames<T, I>));
-///  TEST((getMaterialIDs<T, I>));
+  ///  TEST((getMaterialIDs<T, I>));
 }
 
 auto

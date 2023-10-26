@@ -300,7 +300,12 @@ TEST_CASE(emplace_back)
     int a;
     float b;
     double c;
-    TestStruct(int ia, float ib, double ic) : a(ia), b(ib), c(ic) {}
+    TestStruct(int ia, float ib, double ic)
+        : a(ia),
+          b(ib),
+          c(ic)
+    {
+    }
   };
   um2::Vector<TestStruct> v;
   v.emplace_back(1, 2.0F, 3.0);
@@ -348,11 +353,11 @@ MAKE_CUDA_KERNEL(clear)
     template <class T>
     MAKE_CUDA_KERNEL(push_back_n, T)
 
-MAKE_CUDA_KERNEL(emplace_back)
+    MAKE_CUDA_KERNEL(emplace_back)
 #endif // UM2_USE_CUDA
 
-    template <class T>
-    TEST_SUITE(Vector)
+        template <class T>
+        TEST_SUITE(Vector)
 {
   // Constructors
   TEST_HOSTDEV(constructor_Size, 1, 1, T)

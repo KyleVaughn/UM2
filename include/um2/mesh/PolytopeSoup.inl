@@ -21,60 +21,39 @@ PURE constexpr auto
 PolytopeSoup<T, I>::hasElsetData() const -> bool
 {
   return std::ranges::any_of(elset_data.cbegin(), elset_data.cend(),
-                      [](auto const & data) { return !data.empty(); });
+                             [](auto const & data) { return !data.empty(); });
 }
 
-////==============================================================================
-//// getMeshType
-////==============================================================================
-//
-//template <std::floating_point T, std::signed_integral I>
-//PURE constexpr auto
-//PolytopeSoup<T, I>::getMeshType() const -> MeshType
-//{
-//  // Loop throught the element types to determine which 1 or 2 mesh types are
-//  // present.
-//  MeshType type1 = MeshType::None;
-//  MeshType type2 = MeshType::None;
-//  for (auto const & this_type : element_types) {
-//    if (type1 == MeshType::None) {
-//      type1 = this_type;
-//    }
-//    if (type1 == this_type) {
-//      continue;
-//    }
-//    if (type2 == MeshType::None) {
-//      type2 = this_type;
-//    }
-//    if (type2 == this_type) {
-//      continue;
-//    }
-//    return MeshType::None;
-//  }
-//  // Determine the mesh type from the 1 or 2 mesh types.
-//  if (type1 == MeshType::Tri && type2 == MeshType::None) {
-//    return MeshType::Tri;
-//  }
-//  if (type1 == MeshType::Quad && type2 == MeshType::None) {
-//    return MeshType::Quad;
-//  }
-//  if ((type1 == MeshType::Tri && type2 == MeshType::Quad) ||
-//      (type1 == MeshType::Quad && type2 == MeshType::Tri)) {
-//    return MeshType::TriQuad;
-//  }
-//  if (type1 == MeshType::QuadraticTri && type2 == MeshType::None) {
-//    return MeshType::QuadraticTri;
-//  }
-//  if (type1 == MeshType::QuadraticQuad && type2 == MeshType::None) {
-//    return MeshType::QuadraticQuad;
-//  }
-//  if ((type1 == MeshType::QuadraticTri && type2 == MeshType::QuadraticQuad) ||
-//      (type1 == MeshType::QuadraticQuad && type2 == MeshType::QuadraticTri)) {
-//    return MeshType::QuadraticTriQuad;
-//  }
-//  return MeshType::None;
-//}
-//
+//==============================================================================
+// getMeshType
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+PURE constexpr auto
+PolytopeSoup<T, I>::getElemTypes() const -> Vec<8, VTKElemType>
+{
+  Vec<8, VTKElemType> el_types;
+  um2::fill(el_types.begin(), el_types.end(), VTKElemType::None);
+  for (auto const & this_type : element_types) {
+    bool found = false;
+    for (Size i = 0; i < 8; ++i) {
+      if (this_type == el_types[i]) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      for (Size i = 0; i < 8; ++i) {
+        if (el_types[i] == VTKElemType::None) {
+          el_types[i] = this_type;
+          break;
+        }
+      }
+    }
+  }
+  return el_types;
+}
+
 //==============================================================================
 // compareGeometry
 //==============================================================================
@@ -191,8 +170,7 @@ PolytopeSoup<T, I>::sortElsets()
   // Sort the vector by the elset names.
   // This is only of length num_elsets, so it should be fast. No need to
   // parallelize.
-  std::sort(elset_name_offsets_pairs.begin(), 
-            elset_name_offsets_pairs.end(),
+  std::sort(elset_name_offsets_pairs.begin(), elset_name_offsets_pairs.end(),
             [](NameOffsetsPair const & a, NameOffsetsPair const & b) -> bool {
               return a.first < b.first;
             });
@@ -209,8 +187,7 @@ PolytopeSoup<T, I>::sortElsets()
     I const len = offset_pair.second - offset_pair.first;
     elset_offsets[i] = offset;
     elset_offsets[i + 1] = offset + len;
-    copy(elset_ids_copy_ptr + offset_pair.first,
-         elset_ids_copy_ptr + offset_pair.second,
+    copy(elset_ids_copy_ptr + offset_pair.first, elset_ids_copy_ptr + offset_pair.second,
          elset_ids_ptr + offset);
     offset += len;
   }
@@ -241,9 +218,10 @@ PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
 //// getSubmesh
 ////==============================================================================
 //
-//template <std::floating_point T, std::signed_integral I>
-//void
-//PolytopeSoup<T, I>::getSubmesh(std::string const & elset_name, PolytopeSoup<T, I> & submesh) const
+// template <std::floating_point T, std::signed_integral I>
+// void
+// PolytopeSoup<T, I>::getSubmesh(std::string const & elset_name, PolytopeSoup<T, I> &
+// submesh) const
 //{
 //  LOG_DEBUG("Extracting submesh for elset: " + String(elset_name.c_str()));
 //
@@ -266,18 +244,19 @@ PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
 //  for (size_t i = 0; i < submesh_num_elements; ++i) {
 //    element_ids[i] = elset_ids[submesh_elset_start + i];
 //  }
-//#if UM2_USE_TBB
+// #if UM2_USE_TBB
 //  std::sort(std::execution::par_unseq, element_ids.begin(), element_ids.end());
-//#else
+// #else
 //  std::sort(element_ids.begin(), element_ids.end());
-//#endif
+// #endif
 //
 //  // Get the element connectivity and remap the vertex ids.
 //  submesh.element_types.resize(submesh_num_elements);
 //  submesh.element_offsets.resize(submesh_num_elements + 1);
 //  submesh.element_offsets[0] = 0;
 //  submesh.element_conn.reserve(3 *
-//                               submesh_num_elements); // 3 is the min vertices per element
+//                               submesh_num_elements); // 3 is the min vertices per
+//                               element
 //  // push_back creates race condition. Don't parallelize.
 //  for (size_t i = 0; i < submesh_num_elements; ++i) {
 //    auto const element_id = static_cast<size_t>(element_ids[i]);
@@ -294,21 +273,21 @@ PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
 //  }
 //  // Get the unique vertex ids.
 //  std::vector<I> all_vertex_ids = submesh.element_conn;
-//#if UM2_USE_TBB
+// #if UM2_USE_TBB
 //  std::sort(std::execution::par_unseq, all_vertex_ids.begin(), all_vertex_ids.end());
 //  auto const last = std::unique(std::execution::par_unseq, all_vertex_ids.begin(),
 //                                all_vertex_ids.end());
-//#else
+// #else
 //  std::sort(all_vertex_ids.begin(), all_vertex_ids.end());
 //  auto const last = std::unique(all_vertex_ids.begin(), all_vertex_ids.end());
-//#endif
+// #endif
 //  // This is an unnecessary copy
 //  std::vector<I> unique_vertex_ids(all_vertex_ids.begin(), last);
 //  // We now have the unique vertex ids. We need to remap the connectivity.
 //  // unique_vertex_ids[i] is the old vertex id, and i is the new vertex id.
-//#if UM2_USE_OPENMP
-//#  pragma omp parallel for
-//#endif
+// #if UM2_USE_OPENMP
+// #  pragma omp parallel for
+// #endif
 //  for (size_t i = 0; i < submesh.element_conn.size(); ++i) {
 //    I const old_vertex_id = submesh.element_conn[i];
 //    auto const it = std::lower_bound(unique_vertex_ids.begin(), unique_vertex_ids.end(),
@@ -327,7 +306,8 @@ PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
 //
 //  size_t const num_elsets = elset_names.size();
 //  // If the intersection of this elset and another elset is non-empty, then we need to
-//  // add the itersection as an elset and remap the elset IDs using the element_ids vector.
+//  // add the itersection as an elset and remap the elset IDs using the element_ids
+//  vector.
 //  // element_ids[i] is the old element id, and i is the new element id.
 //  //
 //  // push_back causes race condition. Don't parallelize.
@@ -364,9 +344,9 @@ PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
 //// getMaterialNames
 ////==============================================================================
 //
-//template <std::floating_point T, std::signed_integral I>
-//void
-//PolytopeSoup<T, I>::getMaterialNames(std::vector<std::string> & material_names) const
+// template <std::floating_point T, std::signed_integral I>
+// void
+// PolytopeSoup<T, I>::getMaterialNames(std::vector<std::string> & material_names) const
 //{
 //  std::string const material = "Material";
 //  for (auto const & elset_name : elset_names) {
@@ -383,9 +363,9 @@ PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
 //// getMaterialIDs
 ////==============================================================================
 //
-//template <std::floating_point T, std::signed_integral I>
-//constexpr void
-//PolytopeSoup<T, I>::getMaterialIDs(std::vector<MaterialID> & material_ids,
+// template <std::floating_point T, std::signed_integral I>
+// constexpr void
+// PolytopeSoup<T, I>::getMaterialIDs(std::vector<MaterialID> & material_ids,
 //                               std::vector<std::string> const & material_names) const
 //{
 //  material_ids.resize(numElems(), static_cast<MaterialID>(-1));

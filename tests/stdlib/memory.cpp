@@ -14,7 +14,7 @@ struct Nothing {
   explicit
   operator char &()
   {
-    static char c;
+    static char c = 'a';
     return c;
   }
 };

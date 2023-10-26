@@ -70,7 +70,6 @@ private:
   Rep _r;
 
 public:
-
   // The maximum capacity of a long string.
   static Size constexpr npos = sizeMax();
 
@@ -88,7 +87,7 @@ public:
   template <uint64_t N>
   HOSTDEV constexpr String(char const (&s)[N]) noexcept;
   // NOLINTEND(google-explicit-constructor)
- 
+
   HOSTDEV constexpr explicit String(char const * s) noexcept;
 
   HOSTDEV constexpr String(char const * s, Size n) noexcept;
@@ -177,6 +176,9 @@ public:
 
   HOSTDEV constexpr auto
   operator+=(String const & s) noexcept -> String &;
+
+  HOSTDEV constexpr auto
+  operator+=(char c) noexcept -> String &;
 
   //==============================================================================
   // Methods

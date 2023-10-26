@@ -117,7 +117,7 @@ constexpr String::String(T x) noexcept
     _r.s.data[cap] = '\0';
   } else {
     _r.l.is_long = 1;
-    _r.l.cap = cap; 
+    _r.l.cap = cap;
     _r.l.size = cap;
     _r.l.data = static_cast<char *>(::operator new(cap + 1));
     copy(s.data(), s.data() + (cap + 1), _r.l.data);
@@ -137,7 +137,7 @@ constexpr String::String(T x) noexcept
     _r.s.data[cap] = '\0';
   } else {
     _r.l.is_long = 1;
-    _r.l.cap = cap; 
+    _r.l.cap = cap;
     _r.l.size = cap;
     _r.l.data = static_cast<char *>(::operator new(cap + 1));
     copy(s.data(), s.data() + (cap + 1), _r.l.data);
@@ -331,12 +331,11 @@ String::operator[](Size i) const noexcept -> char const &
 }
 
 // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
 HOSTDEV constexpr auto
 String::operator+=(String const & s) noexcept -> String &
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-
   // If this is a short string and the size of the new string is less than
   // the capacity of the short string, we can just append the new string.
   auto const new_size = static_cast<uint64_t>(size() + s.size());
@@ -358,8 +357,36 @@ String::operator+=(String const & s) noexcept -> String &
     _r.l.data = tmp;
   }
   return *this;
-#pragma GCC diagnostic pop
 }
+
+HOSTDEV constexpr auto
+String::operator+=(char const c) noexcept -> String &
+{
+  // If this is a short string and the size of the new string is less than
+  // the capacity of the short string, we can just append the new string.
+  auto const new_size = static_cast<uint64_t>(size() + 1);
+  if (fitsInShort(new_size + 1)) {
+    assert(!isLong());
+    _r.s.data[size()] = c;
+    _r.s.data[size() + 1] = '\0';
+    _r.s.size += 1;
+  } else {
+    // Otherwise, we need to allocate a new string and copy the data.
+    char * tmp = static_cast<char *>(::operator new(new_size + 1));
+    memcpy(tmp, data(), static_cast<uint64_t>(size()));
+    tmp[size()] = c;
+    tmp[size() + 1] = '\0';
+    if (isLong()) {
+      ::operator delete(_r.l.data);
+    }
+    _r.l.is_long = 1;
+    _r.l.cap = new_size + 1;
+    _r.l.size = new_size;
+    _r.l.data = tmp;
+  }
+  return *this;
+}
+#pragma GCC diagnostic pop
 // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
 //==============================================================================
@@ -436,7 +463,7 @@ String::ends_with(char const (&s)[N]) const noexcept -> bool
   return ends_with(String(s));
 }
 
-PURE HOSTDEV constexpr auto    
+PURE HOSTDEV constexpr auto
 String::substr(Size pos, Size len) const -> String
 {
   assert(pos <= size());
@@ -456,7 +483,7 @@ String::find_last_of(char const c) const noexcept -> Size
       return i - 1;
     }
   }
-  return npos; 
+  return npos;
 }
 
 //==============================================================================
