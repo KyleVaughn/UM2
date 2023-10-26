@@ -313,9 +313,9 @@ MAKE_CUDA_KERNEL(comparison);
 HOSTDEV
 TEST_CASE(starts_ends_with)
 {
-  um2::String const s("hello");
-  ASSERT(s.starts_with(um2::String("he")));
-  ASSERT(!s.starts_with(um2::String("eh")));
+  um2::String const s = "hello";
+  ASSERT(s.starts_with("he"));
+  ASSERT(!s.starts_with("eh"));
   ASSERT(s.ends_with("lo"));
   ASSERT(!s.ends_with("ol"));
 }

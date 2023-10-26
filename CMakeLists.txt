@@ -27,14 +27,13 @@ option(UM2_USE_OPENMP       "Enable OpenMP"                     ON)
 option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
 option(UM2_USE_PNG          "Enable PNG"                        OFF)
 option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
-#option(UM2_USE_OPENGL       "Enable OpenGL"                     OFF)
 
 option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large meshes
 option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"      ON)
 option(UM2_ENABLE_FASTMATH  "Enable fast math"                  ON) # CPU and GPU
 
 option(UM2_BUILD_TESTS      "Build tests"                       ON)
-option(UM2_BUILD_TUTORIAL   "Build tutorial"                    ON)
+option(UM2_BUILD_TUTORIAL   "Build tutorial"                    OFF)
 option(UM2_BUILD_EXAMPLES   "Build examples"                    OFF)
 option(UM2_BUILD_BENCHMARKS "Build benchmarks"                  OFF)
 
@@ -131,19 +130,19 @@ endif()
 set(UM2_SOURCES
     # common
     "src/common/Log.cpp"
-    # mpact
-    "src/mpact/SpatialPartition.cpp"
-    "src/mpact/io.cpp"
-    # gmsh
-    "src/gmsh/base_gmsh_api.cpp"
-    "src/gmsh/io.cpp"
-    "src/gmsh/model.cpp"
-    "src/gmsh/mesh.cpp"
-    # visualization
-    "src/visualization/Image2D.cpp"
-    # api
-    "src/um2.cpp"
-    "src/um2c.cpp"
+    #    # mpact
+    #    "src/mpact/SpatialPartition.cpp"
+    #    "src/mpact/io.cpp"
+    #    # gmsh
+    #    "src/gmsh/base_gmsh_api.cpp"
+    #    "src/gmsh/io.cpp"
+    #    "src/gmsh/model.cpp"
+    #    "src/gmsh/mesh.cpp"
+    #    # visualization
+    #    "src/visualization/Image2D.cpp"
+    #    # api
+    #    "src/um2.cpp"
+    #    "src/um2c.cpp"
   )
 
 add_library(um2 SHARED ${UM2_SOURCES})

@@ -35,15 +35,28 @@ clamp(T v, T lo, T hi) noexcept -> T
 
 #ifndef __CUDA_ARCH__
 
+
+// gcc seems to have a bug that causes it to generate a call to memmove that
+// is out of bounds
 template <typename InputIt, typename OutputIt>
 HOST constexpr auto
 copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
-  // std::copy optimizes to memmove when possible.
-  // False positive of memory leak here.
-  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks) justified
-  return std::copy(first, last, d_first);
+  while (first != last) {
+    *d_first = *first;
+    ++first;
+    ++d_first;
+  }
+  return d_first;
 }
+
+//template <typename InputIt, typename OutputIt>
+//HOST constexpr auto
+//copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
+//{
+//  // NOLINTNEXTLINE
+//  return std::copy(first, last, d_first);
+//}
 
 #else
 

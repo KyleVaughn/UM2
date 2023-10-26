@@ -122,12 +122,13 @@ using MaterialID = int8_t;
 template <class... T>
 constexpr bool always_false = false;
 
-// A concept for fundamental types, which surprisingly doesn't exist in the
-// standard library.
 namespace um2
 {
   template <class T>
   concept fundamental = std::is_fundamental_v<T>;
+
+  template <class T>
+  concept trivially_copyable = std::is_trivially_copyable_v<T>;
 } // namespace um2
 
 // NOLINTEND(modernize-macro-to-enum)

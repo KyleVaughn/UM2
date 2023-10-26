@@ -167,8 +167,6 @@ logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
        << std::setfill('0') << minutes << ":" << std::setw(2) << std::setfill('0')
        << seconds << "." << std::setw(3) << std::setfill('0') << milliseconds << "] ";
     time_str = ss.str();
-  } else {
-    time_str = "";
   }
   // Verbosity
   String verbosity_str;
@@ -205,10 +203,6 @@ logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
       c0 = "\033[1;33m";
       c1 = "\033[0m";
       break;
-    case LogVerbosity::Info: // NO COLOR
-      c0 = "";
-      c1 = "";
-      break;
     case LogVerbosity::Debug: // MAGENTA
       c0 = "\033[1;35m";
       c1 = "\033[0m";
@@ -218,19 +212,14 @@ logMessageToString(LogVerbosity const verbosity, LogTimePoint const time,
       c1 = "\033[0m";
       break;
     default: // NO COLOR
-      c0 = "";
-      c1 = "";
       break;
     }
-  } else {
-    c0 = "";
-    c1 = "";
   }
   // Message
   std::stringstream ss;
   ss << c0.c_str() << time_str.c_str() << verbosity_str.c_str() << ": " << message.c_str()
      << c1.c_str();
-  return {ss.str().c_str()};
+  return String(ss.str().c_str());
 }
 
 void

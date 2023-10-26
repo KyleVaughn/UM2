@@ -3,7 +3,9 @@ diagnostic push
 suppress
 
 modular ray tests
-  
+
+Make a function to init string from pointer and size for small and big string
+this will avoid repeated code.
 
 Move to_vecvec to API or gmsh
 

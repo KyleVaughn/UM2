@@ -87,9 +87,9 @@ public:
   // NOLINTBEGIN(google-explicit-constructor); justification: match std::string
   template <uint64_t N>
   HOSTDEV constexpr String(char const (&s)[N]) noexcept;
-
-  HOSTDEV constexpr String(char const * s) noexcept;
   // NOLINTEND(google-explicit-constructor)
+ 
+  HOSTDEV constexpr explicit String(char const * s) noexcept;
 
   HOSTDEV constexpr String(char const * s, Size n) noexcept;
 

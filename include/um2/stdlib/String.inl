@@ -8,6 +8,9 @@ namespace um2
 HOSTDEV constexpr String::String() noexcept
     : _r()
 {
+  _r.s.is_long = 0;
+  _r.s.size = 0;
+  _r.s.data[0] = '\0';
 }
 
 HOSTDEV constexpr String::String(String const & s) noexcept
@@ -65,6 +68,7 @@ HOSTDEV constexpr String::String(char const * s) noexcept
   while (s[n] != '\0') {
     ++n;
   }
+  assert(n > 0);
   // Short string
   if (n + 1 <= min_cap) {
     _r.s.is_long = 0;
@@ -76,7 +80,7 @@ HOSTDEV constexpr String::String(char const * s) noexcept
     _r.l.cap = n;
     _r.l.size = n;
     _r.l.data = static_cast<char *>(::operator new(n + 1));
-    copy(s, s + (n + 1), _r.l.data);
+    copy(s, s + (n + 1), addressof(_r.l.data[0]));
     assert(_r.l.data[n] == '\0');
   }
 }
@@ -100,20 +104,47 @@ HOSTDEV constexpr String::String(char const * s, Size const n) noexcept
   }
 }
 
-#pragma GCC diagnostic pop
-
 // TODO(kcvaughn): write these without std::to_string
 template <std::integral T>
 constexpr String::String(T x) noexcept
-    : String(std::to_string(x).c_str())
 {
+  std::string const s = std::to_string(x);
+  auto const cap = s.size();
+  if (cap + 1 <= min_cap) {
+    _r.s.is_long = 0;
+    _r.s.size = static_cast<uint8_t>(cap);
+    copy(s.data(), s.data() + (cap + 1), addressof(_r.s.data[0]));
+    _r.s.data[cap] = '\0';
+  } else {
+    _r.l.is_long = 1;
+    _r.l.cap = cap; 
+    _r.l.size = cap;
+    _r.l.data = static_cast<char *>(::operator new(cap + 1));
+    copy(s.data(), s.data() + (cap + 1), _r.l.data);
+    _r.l.data[cap] = '\0';
+  }
 }
 
 template <std::floating_point T>
 constexpr String::String(T x) noexcept
-    : String(std::to_string(x).c_str())
 {
+  std::string const s = std::to_string(x);
+  auto const cap = s.size();
+  if (cap + 1 <= min_cap) {
+    _r.s.is_long = 0;
+    _r.s.size = static_cast<uint8_t>(cap);
+    copy(s.data(), s.data() + (cap + 1), addressof(_r.s.data[0]));
+    _r.s.data[cap] = '\0';
+  } else {
+    _r.l.is_long = 1;
+    _r.l.cap = cap; 
+    _r.l.size = cap;
+    _r.l.data = static_cast<char *>(::operator new(cap + 1));
+    copy(s.data(), s.data() + (cap + 1), _r.l.data);
+    _r.l.data[cap] = '\0';
+  }
 }
+#pragma GCC diagnostic pop
 
 //==============================================================================
 // Accessors
