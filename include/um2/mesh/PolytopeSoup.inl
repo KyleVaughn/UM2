@@ -25,7 +25,7 @@ PolytopeSoup<T, I>::hasElsetData() const -> bool
 }
 
 //==============================================================================
-// getMeshType
+// getElemTypes
 //==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
@@ -53,6 +53,58 @@ PolytopeSoup<T, I>::getElemTypes() const -> Vec<8, VTKElemType>
   }
   return el_types;
 }
+
+//==============================================================================
+// getMeshType
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+PURE constexpr auto
+MeshFile<T, I>::getMeshType() const -> MeshType
+{
+  // Loop throught the element types to determine which 1 or 2 mesh types are
+  // present.
+  MeshType type1 = MeshType::None;
+  MeshType type2 = MeshType::None;
+  for (auto const & this_type : element_types) {
+    if (type1 == MeshType::None) {
+      type1 = this_type;
+    }
+    if (type1 == this_type) {
+      continue;
+    }
+    if (type2 == MeshType::None) {
+      type2 = this_type;
+    }
+    if (type2 == this_type) {
+      continue;
+    }
+    return MeshType::None;
+  }
+  // Determine the mesh type from the 1 or 2 mesh types.
+  if (type1 == MeshType::Tri && type2 == MeshType::None) {
+    return MeshType::Tri;
+  }
+  if (type1 == MeshType::Quad && type2 == MeshType::None) {
+    return MeshType::Quad;
+  }
+  if ((type1 == MeshType::Tri && type2 == MeshType::Quad) ||
+      (type1 == MeshType::Quad && type2 == MeshType::Tri)) {
+    return MeshType::TriQuad;
+  }
+  if (type1 == MeshType::QuadraticTri && type2 == MeshType::None) {
+    return MeshType::QuadraticTri;
+  }
+  if (type1 == MeshType::QuadraticQuad && type2 == MeshType::None) {
+    return MeshType::QuadraticQuad;
+  }
+  if ((type1 == MeshType::QuadraticTri && type2 == MeshType::QuadraticQuad) ||
+      (type1 == MeshType::QuadraticQuad && type2 == MeshType::QuadraticTri)) {
+    return MeshType::QuadraticTriQuad;
+  }
+  return MeshType::None;
+}
+
 
 //==============================================================================
 // compareGeometry
@@ -338,25 +390,6 @@ PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
 //      submesh.elset_ids.push_back(static_cast<I>(it - element_ids.begin()));
 //    }
 //  }
-//}
-//
-////==============================================================================
-//// getMaterialNames
-////==============================================================================
-//
-// template <std::floating_point T, std::signed_integral I>
-// void
-// PolytopeSoup<T, I>::getMaterialNames(std::vector<std::string> & material_names) const
-//{
-//  std::string const material = "Material";
-//  for (auto const & elset_name : elset_names) {
-//    size_t const name_len = elset_name.size();
-//    if (name_len >= 10 && elset_name.starts_with(material)) {
-//      material_names.push_back(elset_name);
-//    }
-//  }
-//  // Should already be sorted
-//  assert(std::is_sorted(material_names.begin(), material_names.end()));
 //}
 //
 ////==============================================================================

@@ -57,16 +57,15 @@ enum class XDMFElemType : int8_t {
 
 };
 
-// enum class MeshType : int8_t {
-//   None = 0,
-//   Tri = 3,
-//   Quad = 4,
-//   TriQuad = 7,
-//   QuadraticTri = 6,
-//   QuadraticQuad = 8,
-//   QuadraticTriQuad = 14
-// };
-//
+enum class MeshType : int8_t {
+  None = 0,
+  Tri = 3,
+  Quad = 4,
+  TriQuad = 7,
+  QuadraticTri = 6,
+  QuadraticQuad = 8,
+  QuadraticTriQuad = 14
+};
 
 constexpr auto
 verticesPerElem(VTKElemType const type) -> Size
@@ -171,6 +170,9 @@ struct PolytopeSoup {
   PURE [[nodiscard]] constexpr auto
   getElemTypes() const -> Vec<8, VTKElemType>;
 
+  PURE [[nodiscard]] constexpr auto
+  getMeshType() const -> MeshType;
+
   constexpr void
   addElset(String const & name, Vector<I> const & ids, Vector<T> data = {});
 
@@ -182,9 +184,6 @@ struct PolytopeSoup {
   //
   //  void
   //  getSubmesh(std::string const & elset_name, PolytopeSoup<T, I> & submesh) const;
-  //
-  //  void
-  //  getMaterialNames(std::vector<std::string> & material_names) const;
   //
   //  constexpr void
   //  getMaterialIDs(std::vector<MaterialID> & material_ids,

@@ -2,7 +2,7 @@
 
 #include <um2/geometry/Polygon.hpp>
 #include <um2/geometry/morton_sort_points.hpp>
-#include <um2/mesh/MeshFile.hpp>
+#include <um2/mesh/PolytopeSoup.hpp>
 #include <um2/stdlib/Vector.hpp>
 
 namespace um2
@@ -59,7 +59,7 @@ struct FaceVertexMesh {
 
   constexpr FaceVertexMesh() noexcept = default;
 
-  explicit FaceVertexMesh(MeshFile<T, I> const & file);
+  explicit FaceVertexMesh(PolytopeSoup<T, I> const & soup);
 
   //==============================================================================
   // Accessors
@@ -78,28 +78,28 @@ struct FaceVertexMesh {
   // Methods
   //===========================================================================
 
-  PURE [[nodiscard]] constexpr auto
-  boundingBox() const noexcept -> AxisAlignedBox<D, T>;
-
-  PURE [[nodiscard]] constexpr auto
-  faceContaining(Point<D, T> const & p) const noexcept -> Size
-    requires(D == 2);
-
-  void
-  flipFace(Size i) noexcept;
-
-  void
-  toMeshFile(MeshFile<T, I> & file) const noexcept;
-
-  void
-  getFaceAreas(Vector<T> & areas) const noexcept;
-
-  void
-  getUniqueEdges(Vector<Edge> & edges) const noexcept;
-
-  void
-  intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept
-    requires(D == 2);
+//  PURE [[nodiscard]] constexpr auto
+//  boundingBox() const noexcept -> AxisAlignedBox<D, T>;
+//
+//  PURE [[nodiscard]] constexpr auto
+//  faceContaining(Point<D, T> const & p) const noexcept -> Size
+//    requires(D == 2);
+//
+//  void
+//  flipFace(Size i) noexcept;
+//
+//  void
+//  toPolytopeSoup(PolytopeSoup<T, I> & soup) const noexcept;
+//
+//  void
+//  getFaceAreas(Vector<T> & areas) const noexcept;
+//
+//  void
+//  getUniqueEdges(Vector<Edge> & edges) const noexcept;
+//
+//  void
+//  intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept
+//    requires(D == 2);
 };
 
 //==============================================================================
@@ -181,13 +181,13 @@ void
 intersect(PlanarPolygonMesh<P, N, T, I> const & mesh, Ray2<T> const & ray,
           T * intersections, Size * n) noexcept;
 
-//==============================================================================
-// printStats
-//==============================================================================
-
-template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
-void
-printStats(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept;
+////==============================================================================
+//// printStats
+////==============================================================================
+//
+//template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+//void
+//printStats(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept;
 
 } // namespace um2
 
