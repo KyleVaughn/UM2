@@ -6,9 +6,6 @@
 #include <um2/mesh/io.hpp>
 #include <um2/physics/Material.hpp>
 
-#include <iomanip>
-#include <string>
-
 namespace um2::mpact
 {
 
@@ -177,9 +174,9 @@ struct SpatialPartition {
     }
   }
 
-  //    int make_cylindrical_pin_mesh(std::vector<double> const & radii,
+  //    int make_cylindrical_pin_mesh(Vector<double> const & radii,
   //                                  double const pitch,
-  //                                  std::vector<int> const & num_rings,
+  //                                  Vector<int> const & num_rings,
   //                                  int const num_azimuthal,
   //                                  int const mesh_order = 1);
   //
@@ -192,20 +189,20 @@ struct SpatialPartition {
                  Vector<MaterialID> const & material_ids = {}) -> Size;
 
   auto
-  makeRTM(std::vector<std::vector<Size>> const & cc_ids) -> Size;
+  makeRTM(Vector<Vector<Size>> const & cc_ids) -> Size;
 
   auto
-  makeLattice(std::vector<std::vector<Size>> const & rtm_ids) -> Size;
+  makeLattice(Vector<Vector<Size>> const & rtm_ids) -> Size;
 
   auto
-  makeAssembly(std::vector<Size> const & lat_ids, std::vector<Float> const & z = {-1, 1})
+  makeAssembly(Vector<Size> const & lat_ids, Vector<Float> const & z = {-1, 1})
       -> Size;
 
   auto
-  makeCore(std::vector<std::vector<Size>> const & asy_ids) -> Size;
+  makeCore(Vector<Vector<Size>> const & asy_ids) -> Size;
 
   void
-  importCoarseCells(std::string const & filename);
+  importCoarseCells(String const & filename);
 
 }; // struct SpatialPartition
 

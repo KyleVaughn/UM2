@@ -1,17 +1,17 @@
 #include <um2/mesh/FaceVertexMesh.hpp>
 
 #include "./helpers/setup_mesh.hpp"
-#include "./helpers/setup_mesh_file.hpp"
+#include "./helpers/setup_polytope_soup.hpp"
 
 #include "../test_macros.hpp"
 
 template <std::floating_point T, std::signed_integral I>
-TEST_CASE(mesh_file_constructor)
+TEST_CASE(poly_soup_constructor)
 {
-  um2::MeshFile<T, I> mesh_file;
-  makeReferenceTri6MeshFile(mesh_file);
+  um2::PolytopeSoup<T, I> poly_soup;
+  makeReferenceTri6PolytopeSoup(poly_soup);
   um2::QuadraticTriMesh<2, T, I> mesh_ref = makeTri6ReferenceMesh<2, T, I>();
-  um2::QuadraticTriMesh<2, T, I> mesh(mesh_file);
+  um2::QuadraticTriMesh<2, T, I> mesh(poly_soup);
   ASSERT(mesh.numVertices() == mesh_ref.numVertices());
   for (Size i = 0; i < mesh.numVertices(); ++i) {
     ASSERT(um2::isApprox(mesh.vertices[i], mesh_ref.vertices[i]));
@@ -77,16 +77,16 @@ TEST_CASE(faceContaining)
 }
 
 template <std::floating_point T, std::signed_integral I>
-TEST_CASE(toMeshFile)
+TEST_CASE(toPolytopeSoup)
 {
   um2::QuadraticTriMesh<2, T, I> const quad_mesh = makeTri6ReferenceMesh<2, T, I>();
-  um2::MeshFile<T, I> quad_mesh_file_ref;
-  makeReferenceTri6MeshFile(quad_mesh_file_ref);
-  um2::MeshFile<T, I> quad_mesh_file;
-  quad_mesh.toMeshFile(quad_mesh_file);
-  ASSERT(um2::compareGeometry(quad_mesh_file, quad_mesh_file_ref) == 0);
-  ASSERT(um2::compareTopology(quad_mesh_file, quad_mesh_file_ref) == 0);
-  ASSERT(quad_mesh_file.getMeshType() == um2::MeshType::QuadraticTri);
+  um2::PolytopeSoup<T, I> quad_poly_soup_ref;
+  makeReferenceTri6PolytopeSoup(quad_poly_soup_ref);
+  um2::PolytopeSoup<T, I> quad_poly_soup;
+  quad_mesh.toPolytopeSoup(quad_poly_soup);
+  ASSERT(um2::compareGeometry(quad_poly_soup, quad_poly_soup_ref) == 0);
+  ASSERT(um2::compareTopology(quad_poly_soup, quad_poly_soup_ref) == 0);
+  ASSERT(quad_poly_soup.getMeshType() == um2::MeshType::QuadraticTri);
 }
 
 #if UM2_USE_CUDA
@@ -97,11 +97,11 @@ MAKE_CUDA_KERNEL(accessors, T, I)
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(QuadraticTriMesh)
 {
-  TEST((mesh_file_constructor<T, I>));
+  TEST((poly_soup_constructor<T, I>));
   TEST_HOSTDEV(accessors, 1, 1, T, I);
   TEST((boundingBox<T, I>));
   TEST((faceContaining<T, I>));
-  TEST((toMeshFile<T, I>));
+  TEST((toPolytopeSoup<T, I>));
 }
 
 auto

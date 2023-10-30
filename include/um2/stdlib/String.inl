@@ -108,21 +108,14 @@ HOSTDEV constexpr String::String(char const * s, Size const n) noexcept
 template <std::integral T>
 constexpr String::String(T x) noexcept
 {
+  // A 64-bit integer can have at most 20 digits
   std::string const s = std::to_string(x);
   auto const cap = s.size();
-  if (cap + 1 <= min_cap) {
-    _r.s.is_long = 0;
-    _r.s.size = static_cast<uint8_t>(cap);
-    copy(s.data(), s.data() + (cap + 1), addressof(_r.s.data[0]));
-    _r.s.data[cap] = '\0';
-  } else {
-    _r.l.is_long = 1;
-    _r.l.cap = cap;
-    _r.l.size = cap;
-    _r.l.data = static_cast<char *>(::operator new(cap + 1));
-    copy(s.data(), s.data() + (cap + 1), _r.l.data);
-    _r.l.data[cap] = '\0';
-  }
+  assert(cap < min_cap);
+  _r.s.is_long = 0;
+  _r.s.size = static_cast<uint8_t>(cap);
+  copy(s.data(), s.data() + (cap + 1), addressof(_r.s.data[0]));
+  _r.s.data[cap] = '\0';
 }
 
 template <std::floating_point T>
@@ -130,19 +123,11 @@ constexpr String::String(T x) noexcept
 {
   std::string const s = std::to_string(x);
   auto const cap = s.size();
-  if (cap + 1 <= min_cap) {
-    _r.s.is_long = 0;
-    _r.s.size = static_cast<uint8_t>(cap);
-    copy(s.data(), s.data() + (cap + 1), addressof(_r.s.data[0]));
-    _r.s.data[cap] = '\0';
-  } else {
-    _r.l.is_long = 1;
-    _r.l.cap = cap;
-    _r.l.size = cap;
-    _r.l.data = static_cast<char *>(::operator new(cap + 1));
-    copy(s.data(), s.data() + (cap + 1), _r.l.data);
-    _r.l.data[cap] = '\0';
-  }
+  assert(cap < min_cap);
+  _r.s.is_long = 0;
+  _r.s.size = static_cast<uint8_t>(cap);
+  copy(s.data(), s.data() + (cap + 1), addressof(_r.s.data[0]));
+  _r.s.data[cap] = '\0';
 }
 #pragma GCC diagnostic pop
 

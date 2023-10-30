@@ -371,6 +371,15 @@ Vector<T>::resize(Size const n) noexcept
 
 template <class T>
 HOSTDEV constexpr void
+Vector<T>::reserve(Size const n) noexcept
+{
+  if (n > capacity()) {
+    grow(n - size()); 
+  }
+}
+
+template <class T>
+HOSTDEV constexpr void
 Vector<T>::push_back(T const & value) noexcept
 {
   if (_end == _end_cap) {

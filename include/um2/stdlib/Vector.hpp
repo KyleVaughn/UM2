@@ -116,6 +116,9 @@ public:
   resize(Size n) noexcept;
 
   HOSTDEV constexpr void
+  reserve(Size n) noexcept;
+
+  HOSTDEV constexpr void
   push_back(T const & value) noexcept;
 
   HOSTDEV constexpr void

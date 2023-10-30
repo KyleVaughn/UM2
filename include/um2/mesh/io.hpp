@@ -6,13 +6,9 @@
 namespace um2
 {
 
-//==============================================================================
-// IO for mesh files
-//==============================================================================
-
 template <std::floating_point T, std::signed_integral I>
 void
-importMesh(std::string const & path, MeshFile<T, I> & mesh)
+importMesh(String const & path, PolytopeSoup<T, I> & mesh)
 {
   if (path.ends_with(".inp")) {
     readAbaqusFile<T, I>(path, mesh);
@@ -25,11 +21,10 @@ importMesh(std::string const & path, MeshFile<T, I> & mesh)
 
 template <std::floating_point T, std::signed_integral I>
 void
-exportMesh(std::string const & path, MeshFile<T, I> & mesh)
+exportMesh(String const & path, PolytopeSoup<T, I> const & mesh)
 {
   if (path.ends_with(".xdmf")) {
-    mesh.filepath = path;
-    writeXDMFFile<T, I>(mesh);
+    writeXDMFFile<T, I>(path, mesh);
   } else {
     Log::error("Unsupported file format.");
   }

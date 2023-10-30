@@ -7,7 +7,7 @@ namespace um2
 
 template <Size D, typename T, typename P>
 constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
-    std::vector<Vec2<T>> const & dxdy, std::vector<std::vector<Size>> const & ids)
+    Vector<Vec2<T>> const & dxdy, Vector<Vector<Size>> const & ids)
     : grid(dxdy, ids)
 {
   static_assert(D == 2);
@@ -18,8 +18,7 @@ constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
   children.resize(nx * ny);
   for (Size i = 0; i < ny; ++i) {
     for (Size j = 0; j < nx; ++j) {
-      children[i * nx + j] =
-          static_cast<P>(ids[static_cast<size_t>(ny - 1 - i)][static_cast<size_t>(j)]);
+      children[i * nx + j] = static_cast<P>(ids[ny - 1 - i][j]);
     }
   }
 }

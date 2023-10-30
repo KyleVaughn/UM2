@@ -92,6 +92,24 @@ verticesPerElem(VTKElemType const type) -> Size
 }
 
 constexpr auto
+verticesPerElem(MeshType const type) -> Size
+{
+  switch (type) {
+  case MeshType::Tri:
+    return 3;
+  case MeshType::Quad:
+    return 4;
+  case MeshType::QuadraticTri:
+    return 6;
+  case MeshType::QuadraticQuad:
+    return 8;
+  default:
+    assert(false);
+    return -1;
+  }
+}
+
+constexpr auto
 xdmfToVTKElemType(int8_t x) -> VTKElemType
 {
   switch (x) {
@@ -181,9 +199,9 @@ struct PolytopeSoup {
 
   void
   getMaterialNames(Vector<String> & material_names) const;
-  //
-  //  void
-  //  getSubmesh(std::string const & elset_name, PolytopeSoup<T, I> & submesh) const;
+  
+  void
+  getSubmesh(String const & elset_name, PolytopeSoup<T, I> & submesh) const;
   //
   //  constexpr void
   //  getMaterialIDs(std::vector<MaterialID> & material_ids,

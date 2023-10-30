@@ -43,12 +43,12 @@ TEST_CASE(clear)
 template <typename T, std::integral P>
 TEST_CASE(id_array_constructor)
 {
-  std::vector<std::vector<Size>> const ids = {
+  um2::Vector<um2::Vector<Size>> const ids = {
       {0, 1, 2, 0},
       {0, 2, 0, 2},
       {0, 1, 0, 1},
   };
-  std::vector<um2::Vec2<T>> const dxdy = {
+  um2::Vector<um2::Vec2<T>> const dxdy = {
       {2, 1},
       {2, 1},
       {2, 1},

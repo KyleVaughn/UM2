@@ -78,28 +78,28 @@ struct FaceVertexMesh {
   // Methods
   //===========================================================================
 
-//  PURE [[nodiscard]] constexpr auto
-//  boundingBox() const noexcept -> AxisAlignedBox<D, T>;
-//
-//  PURE [[nodiscard]] constexpr auto
-//  faceContaining(Point<D, T> const & p) const noexcept -> Size
-//    requires(D == 2);
-//
-//  void
-//  flipFace(Size i) noexcept;
-//
-//  void
-//  toPolytopeSoup(PolytopeSoup<T, I> & soup) const noexcept;
-//
+  PURE [[nodiscard]] constexpr auto
+  boundingBox() const noexcept -> AxisAlignedBox<D, T>;
+
+  PURE [[nodiscard]] constexpr auto
+  faceContaining(Point<D, T> const & p) const noexcept -> Size
+    requires(D == 2);
+
+  void
+  flipFace(Size i) noexcept;
+
+  void
+  toPolytopeSoup(PolytopeSoup<T, I> & soup) const noexcept;
+
 //  void
 //  getFaceAreas(Vector<T> & areas) const noexcept;
 //
 //  void
 //  getUniqueEdges(Vector<Edge> & edges) const noexcept;
 //
-//  void
-//  intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept
-//    requires(D == 2);
+  void
+  intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept
+    requires(D == 2);
 };
 
 //==============================================================================

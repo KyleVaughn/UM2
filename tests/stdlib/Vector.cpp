@@ -199,6 +199,36 @@ TEST_CASE(resize)
 
 template <class T>
 HOSTDEV
+TEST_CASE(reserve)
+{
+
+  um2::Vector<T> v;
+  v.reserve(1);
+  ASSERT(v.empty());
+  ASSERT(v.capacity() == 1);
+  ASSERT(v.data() != nullptr);
+  v.reserve(2);
+  v.push_back(static_cast<T>(1));
+  ASSERT(v.size() == 1);
+  ASSERT(v.capacity() == 2);
+  ASSERT(v.data() != nullptr);
+  v.reserve(5);
+  v.push_back(static_cast<T>(1));
+  ASSERT(v.size() == 2);
+  ASSERT(v.capacity() == 5);
+  ASSERT(v.data() != nullptr);
+  v.reserve(7);
+  ASSERT(v.size() == 2); 
+  ASSERT(v.capacity() == 10);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
+  } else {
+    ASSERT(v.data()[0] == static_cast<T>(1));
+  }
+}
+
+template <class T>
+HOSTDEV
 TEST_CASE(push_back)
 {
   um2::Vector<T> v;
@@ -345,6 +375,9 @@ MAKE_CUDA_KERNEL(clear)
     MAKE_CUDA_KERNEL(resize, T)
 
     template <class T>
+    MAKE_CUDA_KERNEL(reserve, T)
+
+    template <class T>
     MAKE_CUDA_KERNEL(push_back, T)
 
     template <class T>
@@ -373,6 +406,7 @@ MAKE_CUDA_KERNEL(clear)
   // Methods
   TEST_HOSTDEV(clear)
   TEST_HOSTDEV(resize, 1, 1, T)
+  TEST_HOSTDEV(reserve, 1, 1, T)
   TEST_HOSTDEV(push_back, 1, 1, T)
   TEST_HOSTDEV(push_back_rval_ref, 1, 1, T)
   TEST_HOSTDEV(push_back_n, 1, 1, T)

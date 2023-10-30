@@ -1,3 +1,10 @@
+get back to full functionality first.
+Then do the vis.
+Then do chores below
+
+Make Spatial partition templated again.
+
+
 NOLINT
 diagnostic push
 suppress
@@ -9,9 +16,8 @@ this will avoid repeated code.
 
 Move to_vecvec to API or gmsh
 
-MeshFile -> PolytopeSoup 
-  Polymorphic?
-  Polytope soup
+Pointer arithmetic for face vertex mesh intersect
+Don't make the face or call getEdge. Just make the edge in the same memory location?
 
 Review for tests, parallelism, performance, comments, and structure, replace std::string and std::vector 
   finished:
@@ -19,6 +25,3 @@ Review for tests, parallelism, performance, comments, and structure, replace std
     common
     math
     geometry
-
-
-Take care of nolints, pragma diagnostic push, cppcheck suppress

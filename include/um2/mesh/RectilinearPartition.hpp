@@ -38,8 +38,8 @@ struct RectilinearPartition {
   constexpr RectilinearPartition() noexcept = default;
 
   // dydy and an array of IDs, mapping to the dxdy
-  constexpr RectilinearPartition(std::vector<Vec2<T>> const & dxdy,
-                                 std::vector<std::vector<Size>> const & ids);
+  constexpr RectilinearPartition(Vector<Vec2<T>> const & dxdy,
+                                 Vector<Vector<Size>> const & ids);
 
   //==============================================================================
   // Accessors

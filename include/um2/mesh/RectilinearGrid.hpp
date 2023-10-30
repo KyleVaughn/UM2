@@ -32,8 +32,8 @@ struct RectilinearGrid {
   constexpr explicit RectilinearGrid(Vector<AxisAlignedBox<D, T>> const & boxes);
 
   // dxdy and an array of IDs, mapping to the dxdy
-  constexpr RectilinearGrid(std::vector<Vec2<T>> const & dxdy,
-                            std::vector<std::vector<Size>> const & ids);
+  constexpr RectilinearGrid(Vector<Vec2<T>> const & dxdy,
+                            Vector<Vector<Size>> const & ids);
 
   //==============================================================================
   // Accessors

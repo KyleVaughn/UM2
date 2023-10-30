@@ -130,8 +130,8 @@ endif()
 set(UM2_SOURCES
     # common
     "src/common/Log.cpp"
-    #    # mpact
-    #    "src/mpact/SpatialPartition.cpp"
+    # mpact
+    "src/mpact/SpatialPartition.cpp"
     #    "src/mpact/io.cpp"
     #    # gmsh
     #    "src/gmsh/base_gmsh_api.cpp"

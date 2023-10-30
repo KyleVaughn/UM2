@@ -60,20 +60,20 @@ PolytopeSoup<T, I>::getElemTypes() const -> Vec<8, VTKElemType>
 
 template <std::floating_point T, std::signed_integral I>
 PURE constexpr auto
-MeshFile<T, I>::getMeshType() const -> MeshType
+PolytopeSoup<T, I>::getMeshType() const -> MeshType
 {
   // Loop throught the element types to determine which 1 or 2 mesh types are
   // present.
-  MeshType type1 = MeshType::None;
-  MeshType type2 = MeshType::None;
+  VTKElemType type1 = VTKElemType::None;
+  VTKElemType type2 = VTKElemType::None;
   for (auto const & this_type : element_types) {
-    if (type1 == MeshType::None) {
+    if (type1 == VTKElemType::None) {
       type1 = this_type;
     }
     if (type1 == this_type) {
       continue;
     }
-    if (type2 == MeshType::None) {
+    if (type2 == VTKElemType::None) {
       type2 = this_type;
     }
     if (type2 == this_type) {
@@ -81,30 +81,29 @@ MeshFile<T, I>::getMeshType() const -> MeshType
     }
     return MeshType::None;
   }
-  // Determine the mesh type from the 1 or 2 mesh types.
-  if (type1 == MeshType::Tri && type2 == MeshType::None) {
+  // Determine the mesh type from the 1 or 2 VTK elem types.
+  if (type1 == VTKElemType::Triangle && type2 == VTKElemType::None) {
     return MeshType::Tri;
   }
-  if (type1 == MeshType::Quad && type2 == MeshType::None) {
+  if (type1 == VTKElemType::Quad && type2 == VTKElemType::None) {
     return MeshType::Quad;
   }
-  if ((type1 == MeshType::Tri && type2 == MeshType::Quad) ||
-      (type1 == MeshType::Quad && type2 == MeshType::Tri)) {
+  if ((type1 == VTKElemType::Triangle && type2 == VTKElemType::Quad) ||
+      (type2 == VTKElemType::Triangle && type1 == VTKElemType::Quad)) {
     return MeshType::TriQuad;
   }
-  if (type1 == MeshType::QuadraticTri && type2 == MeshType::None) {
+  if (type1 == VTKElemType::QuadraticTriangle && type2 == VTKElemType::None) {
     return MeshType::QuadraticTri;
   }
-  if (type1 == MeshType::QuadraticQuad && type2 == MeshType::None) {
+  if (type1 == VTKElemType::QuadraticQuad && type2 == VTKElemType::None) {
     return MeshType::QuadraticQuad;
   }
-  if ((type1 == MeshType::QuadraticTri && type2 == MeshType::QuadraticQuad) ||
-      (type1 == MeshType::QuadraticQuad && type2 == MeshType::QuadraticTri)) {
+  if ((type1 == VTKElemType::QuadraticTriangle && type2 == VTKElemType::QuadraticQuad) ||
+      (type2 == VTKElemType::QuadraticTriangle && type1 == VTKElemType::QuadraticQuad)) {
     return MeshType::QuadraticTriQuad;
   }
   return MeshType::None;
 }
-
 
 //==============================================================================
 // compareGeometry
@@ -266,131 +265,126 @@ PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
   }
 }
 
-////==============================================================================
-//// getSubmesh
-////==============================================================================
-//
-// template <std::floating_point T, std::signed_integral I>
-// void
-// PolytopeSoup<T, I>::getSubmesh(std::string const & elset_name, PolytopeSoup<T, I> &
-// submesh) const
-//{
-//  LOG_DEBUG("Extracting submesh for elset: " + String(elset_name.c_str()));
-//
-//  // Find the elset with the given name.
-//  auto const elset_it = std::find(elset_names.cbegin(), elset_names.cend(), elset_name);
-//  if (elset_it == elset_names.cend()) {
-//    Log::error("getSubmesh: Elset '" + String(elset_name.c_str()) + "' not found");
-//    return;
-//  }
-//
-//  submesh.filepath = "";
-//  submesh.name = elset_name;
-//
-//  // Get the element ids in the elset.
-//  auto const elset_index = static_cast<size_t>(elset_it - elset_names.cbegin());
-//  auto const submesh_elset_start = static_cast<size_t>(elset_offsets[elset_index]);
-//  auto const submesh_elset_end = static_cast<size_t>(elset_offsets[elset_index + 1]);
-//  auto const submesh_num_elements = submesh_elset_end - submesh_elset_start;
-//  std::vector<I> element_ids(submesh_num_elements);
-//  for (size_t i = 0; i < submesh_num_elements; ++i) {
-//    element_ids[i] = elset_ids[submesh_elset_start + i];
-//  }
-// #if UM2_USE_TBB
-//  std::sort(std::execution::par_unseq, element_ids.begin(), element_ids.end());
-// #else
-//  std::sort(element_ids.begin(), element_ids.end());
-// #endif
-//
-//  // Get the element connectivity and remap the vertex ids.
-//  submesh.element_types.resize(submesh_num_elements);
-//  submesh.element_offsets.resize(submesh_num_elements + 1);
-//  submesh.element_offsets[0] = 0;
-//  submesh.element_conn.reserve(3 *
-//                               submesh_num_elements); // 3 is the min vertices per
-//                               element
-//  // push_back creates race condition. Don't parallelize.
-//  for (size_t i = 0; i < submesh_num_elements; ++i) {
-//    auto const element_id = static_cast<size_t>(element_ids[i]);
-//    submesh.element_types[i] = element_types[element_id];
-//    auto const element_start = static_cast<size_t>(element_offsets[element_id]);
-//    auto const element_end = static_cast<size_t>(element_offsets[element_id + 1]);
-//    auto const element_len = element_end - element_start;
-//    submesh.element_offsets[i + 1] =
-//        submesh.element_offsets[i] + static_cast<I>(element_len);
-//    for (size_t j = 0; j < element_len; ++j) {
-//      I const vertex_id = element_conn[element_start + j];
-//      submesh.element_conn.push_back(vertex_id);
-//    }
-//  }
-//  // Get the unique vertex ids.
-//  std::vector<I> all_vertex_ids = submesh.element_conn;
-// #if UM2_USE_TBB
-//  std::sort(std::execution::par_unseq, all_vertex_ids.begin(), all_vertex_ids.end());
-//  auto const last = std::unique(std::execution::par_unseq, all_vertex_ids.begin(),
-//                                all_vertex_ids.end());
-// #else
-//  std::sort(all_vertex_ids.begin(), all_vertex_ids.end());
-//  auto const last = std::unique(all_vertex_ids.begin(), all_vertex_ids.end());
-// #endif
-//  // This is an unnecessary copy
-//  std::vector<I> unique_vertex_ids(all_vertex_ids.begin(), last);
-//  // We now have the unique vertex ids. We need to remap the connectivity.
-//  // unique_vertex_ids[i] is the old vertex id, and i is the new vertex id.
-// #if UM2_USE_OPENMP
-// #  pragma omp parallel for
-// #endif
-//  for (size_t i = 0; i < submesh.element_conn.size(); ++i) {
-//    I const old_vertex_id = submesh.element_conn[i];
-//    auto const it = std::lower_bound(unique_vertex_ids.begin(), unique_vertex_ids.end(),
-//                                     old_vertex_id);
-//    auto const new_vertex_id = static_cast<I>(it - unique_vertex_ids.begin());
-//    assert(*it == old_vertex_id);
-//    submesh.element_conn[i] = new_vertex_id;
-//  }
-//
-//  // Get the x, y, z coordinates for the vertices.
-//  submesh.vertices.resize(unique_vertex_ids.size());
-//  for (size_t i = 0; i < unique_vertex_ids.size(); ++i) {
-//    auto const vertex_id = static_cast<size_t>(unique_vertex_ids[i]);
-//    submesh.vertices[i] = vertices[vertex_id];
-//  }
-//
-//  size_t const num_elsets = elset_names.size();
-//  // If the intersection of this elset and another elset is non-empty, then we need to
-//  // add the itersection as an elset and remap the elset IDs using the element_ids
-//  vector.
-//  // element_ids[i] is the old element id, and i is the new element id.
-//  //
-//  // push_back causes race condition. Don't parallelize.
-//  for (size_t i = 0; i < num_elsets; ++i) {
-//    if (i == elset_index) {
-//      continue;
-//    }
-//    auto const elset_start = static_cast<size_t>(elset_offsets[i]);
-//    auto const elset_end = static_cast<size_t>(elset_offsets[i + 1]);
-//    std::vector<I> intersection;
-//    std::set_intersection(
-//        element_ids.begin(), element_ids.end(), addressof(elset_ids[elset_start]),
-//        addressof(elset_ids[elset_end]), std::back_inserter(intersection));
-//    if (intersection.empty()) {
-//      continue;
-//    }
-//    // We have an intersection. Add the elset.
-//    submesh.elset_names.push_back(elset_names[i]);
-//    if (submesh.elset_offsets.empty()) {
-//      submesh.elset_offsets.push_back(0);
-//    }
-//    submesh.elset_offsets.push_back(submesh.elset_offsets.back() +
-//                                    static_cast<I>(intersection.size()));
-//    for (size_t j = 0; j < intersection.size(); ++j) {
-//      I const old_element_id = intersection[j];
-//      auto const it =
-//          std::lower_bound(element_ids.begin(), element_ids.end(), old_element_id);
-//      submesh.elset_ids.push_back(static_cast<I>(it - element_ids.begin()));
-//    }
-//  }
-//}
+//==============================================================================
+// getSubmesh
+//==============================================================================
+
+ template <std::floating_point T, std::signed_integral I>
+ void
+PolytopeSoup<T, I>::getSubmesh(String const & elset_name, PolytopeSoup<T, I> &
+submesh) const
+{
+  LOG_DEBUG("Extracting submesh for elset: " + elset_name);
+
+  // Find the elset with the given name.
+  auto const * const elset_it = std::find(elset_names.cbegin(), elset_names.cend(), elset_name);
+  if (elset_it == elset_names.cend()) {
+    Log::error("getSubmesh: Elset '" + elset_name + "' not found");
+    return;
+  }
+
+  // Get the element ids in the elset.
+  auto const elset_index = static_cast<Size>(elset_it - elset_names.cbegin());
+  auto const submesh_elset_start = static_cast<Size>(elset_offsets[elset_index]);
+  auto const submesh_elset_end = static_cast<Size>(elset_offsets[elset_index + 1]);
+  auto const submesh_num_elements = submesh_elset_end - submesh_elset_start;
+  Vector<I> element_ids(submesh_num_elements);
+  for (Size i = 0; i < submesh_num_elements; ++i) {
+    element_ids[i] = elset_ids[submesh_elset_start + i];
+  }
+ #if UM2_USE_TBB
+  std::sort(std::execution::par_unseq, element_ids.begin(), element_ids.end());
+ #else
+  std::sort(element_ids.begin(), element_ids.end());
+ #endif
+
+  // Get the element connectivity and remap the vertex ids.
+  submesh.element_types.resize(submesh_num_elements);
+  submesh.element_offsets.resize(submesh_num_elements + 1);
+  submesh.element_offsets[0] = 0;
+  submesh.element_conn.reserve(3 * submesh_num_elements);
+  // push_back creates race condition. Don't parallelize.
+  for (Size i = 0; i < submesh_num_elements; ++i) {
+    auto const element_id = static_cast<Size>(element_ids[i]);
+    submesh.element_types[i] = element_types[element_id];
+    auto const element_start = static_cast<Size>(element_offsets[element_id]);
+    auto const element_end = static_cast<Size>(element_offsets[element_id + 1]);
+    auto const element_len = element_end - element_start;
+    submesh.element_offsets[i + 1] =
+        submesh.element_offsets[i] + static_cast<I>(element_len);
+    for (Size j = 0; j < element_len; ++j) {
+      I const vertex_id = element_conn[element_start + j];
+      submesh.element_conn.push_back(vertex_id);
+    }
+  }
+  // Get the unique vertex ids.
+  Vector<I> unique_vertex_ids = submesh.element_conn;
+ #if UM2_USE_TBB
+  std::sort(std::execution::par_unseq, unique_vertex_ids.begin(), unique_vertex_ids.end());
+  auto * const last = std::unique(std::execution::par_unseq, unique_vertex_ids.begin(),
+                                unique_vertex_ids.end());
+ #else
+  std::sort(unique_vertex_ids.begin(), unique_vertex_ids.end());
+  auto * const last = std::unique(unique_vertex_ids.begin(), unique_vertex_ids.end());
+ #endif
+  auto const num_unique_verts = static_cast<Size>(last - unique_vertex_ids.cbegin());
+  // We now have the unique vertex ids. We need to remap the connectivity.
+  // unique_vertex_ids[i] is the old vertex id, and i is the new vertex id.
+ #if UM2_USE_OPENMP
+ #  pragma omp parallel for
+ #endif
+  for (Size i = 0; i < submesh.element_conn.size(); ++i) {
+    I const old_vertex_id = submesh.element_conn[i];
+    auto * const it = std::lower_bound(unique_vertex_ids.begin(), last, old_vertex_id);
+    auto const new_vertex_id = static_cast<I>(it - unique_vertex_ids.cbegin());
+    assert(*it == old_vertex_id);
+    submesh.element_conn[i] = new_vertex_id;
+  }
+
+  // Get the x, y, z coordinates for the vertices.
+  submesh.vertices.resize(num_unique_verts);
+  for (Size i = 0; i < num_unique_verts; ++i) {
+    auto const vertex_id = static_cast<Size>(unique_vertex_ids[i]);
+    submesh.vertices[i] = vertices[vertex_id];
+  }
+
+  Size const num_elsets = elset_names.size();
+  // If the intersection of this elset and another elset is non-empty, then we need to
+  // add the itersection as an elset and remap the elset IDs using the element_ids
+  // vector.
+  // element_ids[i] is the old element id, and i is the new element id.
+  //
+  // push_back causes race condition. Don't parallelize.
+  for (Size i = 0; i < num_elsets; ++i) {
+    if (i == elset_index) {
+      continue;
+    }
+    auto const elset_start = static_cast<Size>(elset_offsets[i]);
+    auto const elset_end = static_cast<Size>(elset_offsets[i + 1]);
+    auto * const elset_ids_begin = addressof(elset_ids[elset_start]);
+    auto * const elset_ids_end = elset_ids_begin + (elset_end - elset_start);
+    std::vector<I> intersection;
+    std::set_intersection(
+        element_ids.begin(), element_ids.end(), 
+        elset_ids_begin, elset_ids_end, std::back_inserter(intersection));
+    if (intersection.empty()) {
+      continue;
+    }
+    // We have an intersection. Add the elset.
+    submesh.elset_names.push_back(elset_names[i]);
+    if (submesh.elset_offsets.empty()) {
+      submesh.elset_offsets.push_back(0);
+    }
+    submesh.elset_offsets.push_back(submesh.elset_offsets.back() +
+                                    static_cast<I>(intersection.size()));
+    for (size_t j = 0; j < intersection.size(); ++j) {
+      I const old_element_id = intersection[j];
+      auto * const it =
+          std::lower_bound(element_ids.begin(), element_ids.end(), old_element_id);
+      submesh.elset_ids.push_back(static_cast<I>(it - element_ids.begin()));
+    }
+  }
+}
 //
 ////==============================================================================
 //// getMaterialIDs
@@ -398,8 +392,8 @@ PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
 //
 // template <std::floating_point T, std::signed_integral I>
 // constexpr void
-// PolytopeSoup<T, I>::getMaterialIDs(std::vector<MaterialID> & material_ids,
-//                               std::vector<std::string> const & material_names) const
+// PolytopeSoup<T, I>::getMaterialIDs(Vector<MaterialID> & material_ids,
+//                               Vector<std::string> const & material_names) const
 //{
 //  material_ids.resize(numElems(), static_cast<MaterialID>(-1));
 //  size_t const nmats = material_names.size();

@@ -64,21 +64,21 @@ add_um2_test(./mesh/RectilinearGrid.cpp)
 add_um2_test(./mesh/RectilinearPartition.cpp)
 add_um2_test(./mesh/PolytopeSoup.cpp)
 add_um2_test(./mesh/TriMesh.cpp)
-#add_um2_test(./mesh/QuadMesh.cpp)
-#add_um2_test(./mesh/QuadraticTriMesh.cpp)
-#add_um2_test(./mesh/QuadraticQuadMesh.cpp)
+add_um2_test(./mesh/QuadMesh.cpp)
+add_um2_test(./mesh/QuadraticTriMesh.cpp)
+add_um2_test(./mesh/QuadraticQuadMesh.cpp)
 add_um2_test(./mesh/io_abaqus.cpp)
 add_um2_test(./mesh/io_xdmf.cpp)
 
-##==============================================================================
-## mpact
-##==============================================================================
-#
-## Copy the mesh files to the built test directory
-#file(COPY ${PROJECT_SOURCE_DIR}/tests/mpact/mpact_mesh_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-#
-#add_um2_test(./mpact/SpatialPartition.cpp)
-#
+#==============================================================================
+# mpact
+#==============================================================================
+
+# Copy the mesh files to the built test directory
+file(COPY ${PROJECT_SOURCE_DIR}/tests/mpact/mpact_mesh_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+add_um2_test(./mpact/SpatialPartition.cpp)
+
 ###==============================================================================
 ### ray_casting
 ###==============================================================================
