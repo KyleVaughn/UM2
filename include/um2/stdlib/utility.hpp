@@ -3,7 +3,6 @@
 #include <um2/config.hpp>
 
 #include <type_traits>
-#include <utility>
 
 // Contains:
 //  forward
@@ -56,22 +55,14 @@ move(T && t) noexcept -> std::remove_reference_t<T> &&
 //
 // https://en.cppreference.com/w/cpp/utility/swap
 
-#ifdef __CUDA_ARCH__
-
 template <class T>
   requires(std::is_trivially_move_constructible_v<T> &&
            std::is_trivially_move_assignable_v<T>)
-DEVICE constexpr void swap(T & a, T & b) noexcept
+HOSTDEV constexpr void swap(T & a, T & b) noexcept
 {
   T tmp = um2::move(a);
   a = um2::move(b);
   b = um2::move(tmp);
 }
-
-#else
-
-using std::swap;
-
-#endif
 
 } // namespace um2

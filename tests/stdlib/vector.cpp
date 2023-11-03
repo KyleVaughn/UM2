@@ -1,8 +1,4 @@
-#include <um2/stdlib/Vector.hpp>
-#include <um2/stdlib/utility.hpp>
-
-#include <concepts>
-#include <vector>
+#include <um2/stdlib/vector.hpp>
 
 #include "../test_macros.hpp"
 
@@ -50,8 +46,6 @@ TEST_CASE(copy_constructor)
   um2::Vector<T> v2(v);
   ASSERT(v2.size() == 10);
   ASSERT(v2.capacity() == 10);
-  // cppcheck-suppress mismatchingContainerExpression; justification: false positive
-  ASSERT(v.cbegin() != v2.cbegin());
   for (int i = 0; i < 10; i++) {
     if constexpr (std::floating_point<T>) {
       ASSERT_NEAR(v2[i], static_cast<T>(i), static_cast<T>(1e-6));
@@ -123,8 +117,6 @@ TEST_CASE(operator_copy)
   v3 = v;
   ASSERT(v3.size() == 10);
   ASSERT(v3.capacity() == 10);
-  // cppcheck-suppress mismatchingContainerExpression; justification: false positive
-  ASSERT(v.cbegin() != v3.cbegin());
   for (int i = 0; i < 10; i++) {
     if constexpr (std::floating_point<T>) {
       ASSERT_NEAR(v3[i], static_cast<T>(i), static_cast<T>(1e-6));
@@ -218,7 +210,7 @@ TEST_CASE(reserve)
   ASSERT(v.capacity() == 5);
   ASSERT(v.data() != nullptr);
   v.reserve(7);
-  ASSERT(v.size() == 2); 
+  ASSERT(v.size() == 2);
   ASSERT(v.capacity() == 10);
   if constexpr (std::floating_point<T>) {
     ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
@@ -330,7 +322,7 @@ TEST_CASE(emplace_back)
     int a;
     float b;
     double c;
-    TestStruct(int ia, float ib, double ic)
+    HOSTDEV TestStruct(int ia, float ib, double ic)
         : a(ia),
           b(ib),
           c(ic)

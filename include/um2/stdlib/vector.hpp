@@ -1,5 +1,194 @@
+#pragma once
+
+#include <um2/stdlib/algorithm.hpp> // copy
+#include <um2/stdlib/assert.hpp>    // ASSERT
+#include <um2/stdlib/math.hpp>      // max
+#include <um2/stdlib/memory.hpp>    // addressof
+#include <um2/stdlib/utility.hpp>   // move
+
+#include <initializer_list> // std::initializer_list
+
 namespace um2
 {
+
+//==============================================================================
+// VECTOR
+//==============================================================================
+// An std::vector-like class without and Allocator template parameter.
+//
+// https://en.cppreference.com/w/cpp/container/vector
+
+template <typename T>
+struct Vector {
+
+  using Ptr = T *;
+  using ConstPtr = T const *;
+
+private:
+  Ptr _begin = nullptr;
+  Ptr _end = nullptr;
+  Ptr _end_cap = nullptr;
+
+public:
+  //==============================================================================
+  // Constructors
+  //==============================================================================
+
+  constexpr Vector() noexcept = default;
+
+  HOSTDEV explicit constexpr Vector(Size n) noexcept;
+
+  HOSTDEV constexpr Vector(Size n, T const & value) noexcept;
+
+  HOSTDEV constexpr Vector(Vector const & v) noexcept;
+
+  HOSTDEV constexpr Vector(Vector && v) noexcept;
+
+  HOSTDEV constexpr Vector(std::initializer_list<T> const & list) noexcept;
+
+  //==============================================================================
+  // Destructor
+  //==============================================================================
+
+  HOSTDEV constexpr ~Vector() noexcept;
+
+  //==============================================================================
+  // Accessors
+  //==============================================================================
+
+  // NOLINTBEGIN(readability-identifier-naming) justification: match stdlib
+
+  PURE HOSTDEV [[nodiscard]] static constexpr auto
+  max_size() noexcept -> Size;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  begin() noexcept -> T *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  begin() const noexcept -> T const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  end() noexcept -> T *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  end() const noexcept -> T const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  size() const noexcept -> Size;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  capacity() const noexcept -> Size;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  empty() const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  cbegin() const noexcept -> T const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  cend() const noexcept -> T const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  front() noexcept -> T &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  front() const noexcept -> T const &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  back() noexcept -> T &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  back() const noexcept -> T const &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  data() noexcept -> T *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  data() const noexcept -> T const *;
+
+  //==============================================================================
+  // Methods
+  //==============================================================================
+
+  HOSTDEV constexpr void
+  clear() noexcept;
+
+  HOSTDEV constexpr void
+  resize(Size n) noexcept;
+
+  HOSTDEV constexpr void
+  reserve(Size n) noexcept;
+
+  HOSTDEV constexpr void
+  push_back(T const & value) noexcept;
+
+  HOSTDEV constexpr void
+  push_back(T && value) noexcept;
+
+  HOSTDEV constexpr void
+  push_back(Size n, T const & value) noexcept;
+
+  template <typename... Args>
+  HOSTDEV constexpr void
+  emplace_back(Args &&... args) noexcept;
+
+  HOSTDEV constexpr void
+  pop_back() noexcept;
+
+  //==============================================================================
+  // Operators
+  //==============================================================================
+
+  PURE HOSTDEV constexpr auto
+  operator[](Size i) noexcept -> T &;
+
+  PURE HOSTDEV constexpr auto
+  operator[](Size i) const noexcept -> T const &;
+
+  HOSTDEV constexpr auto
+  operator=(Vector const & v) noexcept -> Vector &;
+
+  HOSTDEV constexpr auto
+  operator=(Vector && v) noexcept -> Vector &;
+
+  HOSTDEV constexpr auto
+  operator=(std::initializer_list<T> const & list) noexcept -> Vector &;
+
+  constexpr auto
+  operator==(Vector const & v) const noexcept -> bool;
+
+  //==============================================================================
+  // Hidden
+  //==============================================================================
+
+  HOSTDEV HIDDEN constexpr void
+  allocate(Size n) noexcept;
+
+  HOSTDEV HIDDEN constexpr void
+  construct_at_end(Size n) noexcept;
+
+  HOSTDEV HIDDEN constexpr void
+  construct_at_end(Size n, T const & value) noexcept;
+
+  HOSTDEV HIDDEN constexpr void
+  destruct_at_end(Ptr new_last) noexcept;
+
+  HOSTDEV HIDDEN constexpr void
+  grow(Size n) noexcept;
+
+  PURE HOSTDEV [[nodiscard]] HIDDEN constexpr auto
+  recommend(Size new_size) const noexcept -> Size;
+
+  HOSTDEV HIDDEN constexpr void
+  append_default(Size n) noexcept;
+
+  // NOLINTEND(readability-identifier-naming)
+}; // struct Vector
+
+// Vector<bool> is a specialization that is not supported
+template <>
+struct Vector<bool> {
+};
 
 //==============================================================================
 // Hidden
@@ -9,8 +198,8 @@ template <class T>
 HOSTDEV constexpr void
 Vector<T>::allocate(Size n) noexcept
 {
-  assert(n < max_size());
-  assert(_begin == nullptr);
+  ASSERT(n < max_size());
+  ASSERT(_begin == nullptr);
   _begin = static_cast<T *>(::operator new(static_cast<size_t>(n) * sizeof(T)));
   _end = _begin;
   _end_cap = _begin + n;
@@ -92,9 +281,9 @@ Vector<T>::append_default(Size n) noexcept
   construct_at_end(n);
 }
 
-//==============================================================================-
+//==============================================================================
 // Constructors
-//==============================================================================-
+//==============================================================================
 
 template <class T>
 HOSTDEV constexpr Vector<T>::Vector(Size const n) noexcept
@@ -245,7 +434,7 @@ template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vector<T>::back() noexcept -> T &
 {
-  assert(size() > 0);
+  ASSERT(size() > 0);
   return *(_end - 1);
 }
 
@@ -253,7 +442,7 @@ template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vector<T>::back() const noexcept -> T const &
 {
-  assert(size() > 0);
+  ASSERT(size() > 0);
   return *(_end - 1);
 }
 
@@ -279,7 +468,7 @@ template <class T>
 PURE HOSTDEV constexpr auto
 Vector<T>::operator[](Size const i) noexcept -> T &
 {
-  assert(i < size());
+  ASSERT(i < size());
   return _begin[i];
 }
 
@@ -287,7 +476,7 @@ template <class T>
 PURE HOSTDEV constexpr auto
 Vector<T>::operator[](Size const i) const noexcept -> T const &
 {
-  assert(i < size());
+  ASSERT(i < size());
   return _begin[i];
 }
 
@@ -374,7 +563,7 @@ HOSTDEV constexpr void
 Vector<T>::reserve(Size const n) noexcept
 {
   if (n > capacity()) {
-    grow(n - size()); 
+    grow(n - size());
   }
 }
 
@@ -429,7 +618,7 @@ template <class T>
 HOSTDEV constexpr void
 Vector<T>::pop_back() noexcept
 {
-  assert(size() > 0);
+  ASSERT(size() > 0);
   um2::destroy_at(--_end);
 }
 

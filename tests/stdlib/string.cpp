@@ -1,4 +1,4 @@
-#include <um2/stdlib/String.hpp>
+#include <um2/stdlib/string.hpp>
 
 #include "../test_macros.hpp"
 
@@ -19,10 +19,10 @@ TEST_CASE(default_constructor)
 {
   um2::String s;
   static_assert(sizeof(s) == 24);
-  assert(s.size() == 0);
-  assert(s.capacity() == 22);
+  ASSERT(s.size() == 0);
+  ASSERT(s.capacity() == 22);
   for (int i = 0; i < 22; ++i) {
-    assert(s.data()[i] == '\0');
+    ASSERT(s.data()[i] == '\0');
   }
 }
 MAKE_CUDA_KERNEL(default_constructor)
@@ -31,20 +31,20 @@ HOSTDEV
 TEST_CASE(const_char_array_constructor)
 {
   um2::String s("hello");
-  assert(s.size() == 5);
-  assert(s.capacity() == 22);
-  assert(!s.isLong());
-  assert(s.data()[0] == 'h');
-  assert(s.data()[1] == 'e');
-  assert(s.data()[2] == 'l');
-  assert(s.data()[3] == 'l');
-  assert(s.data()[4] == 'o');
+  ASSERT(s.size() == 5);
+  ASSERT(s.capacity() == 22);
+  ASSERT(!s.isLong());
+  ASSERT(s.data()[0] == 'h');
+  ASSERT(s.data()[1] == 'e');
+  ASSERT(s.data()[2] == 'l');
+  ASSERT(s.data()[3] == 'l');
+  ASSERT(s.data()[4] == 'o');
 
   um2::String s2("This string will be too long to fit in the small string optimization");
-  assert(s2.size() == 68);
-  assert(s2.capacity() == 68);
-  assert(s2.isLong());
-  assert(s2.data()[0] == 'T');
+  ASSERT(s2.size() == 68);
+  ASSERT(s2.capacity() == 68);
+  ASSERT(s2.isLong());
+  ASSERT(s2.data()[0] == 'T');
 }
 MAKE_CUDA_KERNEL(const_char_array_constructor);
 
@@ -52,40 +52,40 @@ TEST_CASE(int_float_constructors)
 {
   {
     um2::String const s(5);
-    assert(s.size() == 1);
-    assert(s[0] == '5');
+    ASSERT(s.size() == 1);
+    ASSERT(s[0] == '5');
   }
   {
     um2::String const s(-5);
-    assert(s.size() == 2);
-    assert(s[0] == '-');
-    assert(s[1] == '5');
+    ASSERT(s.size() == 2);
+    ASSERT(s[0] == '-');
+    ASSERT(s[1] == '5');
   }
   {
     um2::String const s(15);
-    assert(s.size() == 2);
-    assert(s[0] == '1');
-    assert(s[1] == '5');
+    ASSERT(s.size() == 2);
+    ASSERT(s[0] == '1');
+    ASSERT(s[1] == '5');
   }
   {
     um2::String const s(-15);
-    assert(s.size() == 3);
-    assert(s[0] == '-');
-    assert(s[1] == '1');
-    assert(s[2] == '5');
+    ASSERT(s.size() == 3);
+    ASSERT(s[0] == '-');
+    ASSERT(s[1] == '1');
+    ASSERT(s[2] == '5');
   }
   {
     um2::String const s(1.5F);
-    assert(s[0] == '1');
-    assert(s[1] == '.');
-    assert(s[2] == '5');
+    ASSERT(s[0] == '1');
+    ASSERT(s[1] == '.');
+    ASSERT(s[2] == '5');
   }
   {
     um2::String const s(-1.5F);
-    assert(s[0] == '-');
-    assert(s[1] == '1');
-    assert(s[2] == '.');
-    assert(s[3] == '5');
+    ASSERT(s[0] == '-');
+    ASSERT(s[1] == '1');
+    ASSERT(s[2] == '.');
+    ASSERT(s[3] == '5');
   }
 }
 
@@ -93,30 +93,30 @@ HOSTDEV
 TEST_CASE(copy_constructor)
 {
   um2::String s0("hello");
-  assert(!s0.isLong());
+  ASSERT(!s0.isLong());
   um2::String s(s0);
-  assert(s.size() == 5);
-  assert(s.capacity() == 22);
-  assert(!s.isLong());
-  assert(s.data()[0] == 'h');
-  assert(s.data()[1] == 'e');
-  assert(s.data()[2] == 'l');
-  assert(s.data()[3] == 'l');
-  assert(s.data()[4] == 'o');
+  ASSERT(s.size() == 5);
+  ASSERT(s.capacity() == 22);
+  ASSERT(!s.isLong());
+  ASSERT(s.data()[0] == 'h');
+  ASSERT(s.data()[1] == 'e');
+  ASSERT(s.data()[2] == 'l');
+  ASSERT(s.data()[3] == 'l');
+  ASSERT(s.data()[4] == 'o');
   // Ensure that s0 is not modified
   s0.data()[0] = 'a';
-  assert(s.data()[0] == 'h');
+  ASSERT(s.data()[0] == 'h');
 
   um2::String s1("This string will be too long to fit in the small string optimization");
-  assert(s1.isLong());
+  ASSERT(s1.isLong());
   um2::String s2(s1);
-  assert(s2.size() == 68);
-  assert(s2.capacity() == 68);
-  assert(s2.isLong());
-  assert(s2.data()[0] == 'T');
+  ASSERT(s2.size() == 68);
+  ASSERT(s2.capacity() == 68);
+  ASSERT(s2.isLong());
+  ASSERT(s2.data()[0] == 'T');
   // Check that s1 is not modified
   s1.data()[0] = 'a';
-  assert(s2.data()[0] == 'T');
+  ASSERT(s2.data()[0] == 'T');
 }
 MAKE_CUDA_KERNEL(copy_constructor);
 
@@ -124,12 +124,12 @@ HOSTDEV
 TEST_CASE(move_constructor)
 {
   um2::String s1("This string will be too long to fit in the small string optimization");
-  assert(s1.isLong());
+  ASSERT(s1.isLong());
   um2::String s2(um2::move(s1));
-  assert(s2.size() == 68);
-  assert(s2.capacity() == 68);
-  assert(s2.isLong());
-  assert(s2.data()[0] == 'T');
+  ASSERT(s2.size() == 68);
+  ASSERT(s2.capacity() == 68);
+  ASSERT(s2.isLong());
+  ASSERT(s2.data()[0] == 'T');
 }
 MAKE_CUDA_KERNEL(move_constructor);
 
@@ -160,13 +160,13 @@ HOSTDEV
 TEST_CASE(index_operator)
 {
   um2::String s("hello");
-  assert(s[0] == 'h');
-  assert(s[1] == 'e');
-  assert(s[2] == 'l');
-  assert(s[3] == 'l');
-  assert(s[4] == 'o');
+  ASSERT(s[0] == 'h');
+  ASSERT(s[1] == 'e');
+  ASSERT(s[2] == 'l');
+  ASSERT(s[3] == 'l');
+  ASSERT(s[4] == 'o');
   s[0] = 'a';
-  assert(s[0] == 'a');
+  ASSERT(s[0] == 'a');
 }
 MAKE_CUDA_KERNEL(index_operator);
 
@@ -176,35 +176,35 @@ TEST_CASE(addition_operator)
   um2::String s0("hi");
   um2::String const s1(" there");
   s0 += s1;
-  assert(s0.size() == 8);
-  assert(s0[0] == 'h');
-  assert(s0[1] == 'i');
-  assert(s0[2] == ' ');
-  assert(s0[3] == 't');
-  assert(s0[4] == 'h');
-  assert(s0[5] == 'e');
-  assert(s0[6] == 'r');
-  assert(s0[7] == 'e');
+  ASSERT(s0.size() == 8);
+  ASSERT(s0[0] == 'h');
+  ASSERT(s0[1] == 'i');
+  ASSERT(s0[2] == ' ');
+  ASSERT(s0[3] == 't');
+  ASSERT(s0[4] == 'h');
+  ASSERT(s0[5] == 'e');
+  ASSERT(s0[6] == 'r');
+  ASSERT(s0[7] == 'e');
   s0 = "hi";
-  assert(s0.size() == 2);
+  ASSERT(s0.size() == 2);
   s0 += " there";
-  assert(s0.size() == 8);
-  assert(s0[0] == 'h');
-  assert(s0[1] == 'i');
-  assert(s0[2] == ' ');
-  assert(s0[3] == 't');
-  assert(s0[4] == 'h');
-  assert(s0[5] == 'e');
-  assert(s0[6] == 'r');
-  assert(s0[7] == 'e');
+  ASSERT(s0.size() == 8);
+  ASSERT(s0[0] == 'h');
+  ASSERT(s0[1] == 'i');
+  ASSERT(s0[2] == ' ');
+  ASSERT(s0[3] == 't');
+  ASSERT(s0[4] == 'h');
+  ASSERT(s0[5] == 'e');
+  ASSERT(s0[6] == 'r');
+  ASSERT(s0[7] == 'e');
   s0 = "hi";
-  assert(s0.size() == 2);
+  ASSERT(s0.size() == 2);
   um2::String s2 = s0 + s1;
-  assert(s2.size() == 8);
-  assert(s2[0] == 'h');
-  assert(s2[1] == 'i');
-  assert(s2[2] == ' ');
-  assert(s2[3] == 't');
+  ASSERT(s2.size() == 8);
+  ASSERT(s2[0] == 'h');
+  ASSERT(s2[1] == 'i');
+  ASSERT(s2[2] == ' ');
+  ASSERT(s2[3] == 't');
 }
 MAKE_CUDA_KERNEL(addition_operator);
 
@@ -212,36 +212,36 @@ HOSTDEV
 TEST_CASE(assign_operator)
 {
   um2::String s0("hello");
-  assert(!s0.isLong());
+  ASSERT(!s0.isLong());
   um2::String s("This string will be too long to fit in the small string optimization");
   s = s0;
-  assert(s.size() == 5);
-  assert(s.capacity() == 22);
-  assert(!s.isLong());
-  assert(s.data()[0] == 'h');
-  assert(s.data()[1] == 'e');
-  assert(s.data()[2] == 'l');
-  assert(s.data()[3] == 'l');
-  assert(s.data()[4] == 'o');
+  ASSERT(s.size() == 5);
+  ASSERT(s.capacity() == 22);
+  ASSERT(!s.isLong());
+  ASSERT(s.data()[0] == 'h');
+  ASSERT(s.data()[1] == 'e');
+  ASSERT(s.data()[2] == 'l');
+  ASSERT(s.data()[3] == 'l');
+  ASSERT(s.data()[4] == 'o');
   // Ensure that s0 is not modified
   // cppcheck-suppress unreadVariable; justification: We are checking that s is not
   // modified
   s0.data()[0] = 'a';
-  assert(s.data()[0] == 'h');
+  ASSERT(s.data()[0] == 'h');
 
   um2::String s1("This string will be too long to fit in the small string optimization");
-  assert(s1.isLong());
+  ASSERT(s1.isLong());
   um2::String s2;
   s2 = s1;
-  assert(s2.size() == 68);
-  assert(s2.capacity() == 68);
-  assert(s2.isLong());
-  assert(s2.data()[0] == 'T');
+  ASSERT(s2.size() == 68);
+  ASSERT(s2.capacity() == 68);
+  ASSERT(s2.isLong());
+  ASSERT(s2.data()[0] == 'T');
   // Check that s1 is not modified
   // cppcheck-suppress unreadVariable; justification: We are checking that s2 is not
   // modified
   s1.data()[0] = 'a';
-  assert(s2.data()[0] == 'T');
+  ASSERT(s2.data()[0] == 'T');
 }
 MAKE_CUDA_KERNEL(assign_operator);
 
@@ -250,40 +250,40 @@ TEST_CASE(std_string_assign_operator)
   std::string s0("hello");
   um2::String s("This string will be too long to fit in the small string optimization");
   s = s0;
-  assert(s.size() == 5);
-  assert(s.capacity() == 22);
-  assert(!s.isLong());
-  assert(s.data()[0] == 'h');
-  assert(s.data()[1] == 'e');
-  assert(s.data()[2] == 'l');
-  assert(s.data()[3] == 'l');
-  assert(s.data()[4] == 'o');
+  ASSERT(s.size() == 5);
+  ASSERT(s.capacity() == 22);
+  ASSERT(!s.isLong());
+  ASSERT(s.data()[0] == 'h');
+  ASSERT(s.data()[1] == 'e');
+  ASSERT(s.data()[2] == 'l');
+  ASSERT(s.data()[3] == 'l');
+  ASSERT(s.data()[4] == 'o');
 
   std::string const s1(
       "This string will be too long to fit in the small string optimization");
   um2::String s2;
   s2 = s1;
-  assert(s2.size() == 68);
-  assert(s2.capacity() == 68);
-  assert(s2.isLong());
-  assert(s2.data()[0] == 'T');
+  ASSERT(s2.size() == 68);
+  ASSERT(s2.capacity() == 68);
+  ASSERT(s2.isLong());
+  ASSERT(s2.data()[0] == 'T');
 
   // Move assignment
   um2::String s3;
   s3 = um2::move(s0);
-  assert(s3.size() == 5);
-  assert(s3.capacity() == 22);
-  assert(!s3.isLong());
-  assert(s3.data()[0] == 'h');
-  assert(s3.data()[1] == 'e');
-  assert(s3.data()[2] == 'l');
+  ASSERT(s3.size() == 5);
+  ASSERT(s3.capacity() == 22);
+  ASSERT(!s3.isLong());
+  ASSERT(s3.data()[0] == 'h');
+  ASSERT(s3.data()[1] == 'e');
+  ASSERT(s3.data()[2] == 'l');
 
   um2::String s4;
   s4 = um2::move(s1);
-  assert(s4.size() == 68);
-  assert(s4.capacity() == 68);
-  assert(s4.isLong());
-  assert(s4.data()[0] == 'T');
+  ASSERT(s4.size() == 68);
+  ASSERT(s4.capacity() == 68);
+  ASSERT(s4.isLong());
+  ASSERT(s4.data()[0] == 'T');
 }
 
 HOSTDEV

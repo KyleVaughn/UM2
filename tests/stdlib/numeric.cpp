@@ -9,7 +9,7 @@ TEST_CASE(iota)
   int a[n] = {0};
   um2::iota(a, a + n, 1);
   for (int i = 0; i < n; ++i) {
-    assert(a[i] == i + 1);
+    ASSERT(a[i] == i + 1);
   }
 }
 MAKE_CUDA_KERNEL(iota);

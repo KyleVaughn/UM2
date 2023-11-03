@@ -1,28 +1,5 @@
 #pragma once
 
-// In order for assert to work, NDEBUG cannot be defined.
-// However, NDEBUG is defined for Release builds.
-// In order to safely undef NDEBUG, allowing assert to work, all of the code we wish to
-// test must be included prior to undefing NDEBUG.
-// Therefore, we check that UM2_USE_CUDA, a macro defined in all UM2 files, is defined
-// to check this condition.
-//
-// TODO(kcvaughn@umich.edu): Write our own assert. How can we do this without exit and
-// abort? maybe a trap instruction?
-
-#include <um2/stdlib/math.hpp> // abs
-#ifndef UM2_USE_CUDA
-#  error("test_macros.hpp must be included after any UM2 files since it undefs NDEBUG")
-#endif
-
-#include <cstdio>  // printf
-#include <cstdlib> // exit
-
-#include <iostream> // std::cout, std::endl
-
-#undef NDEBUG
-#include <cassert>
-
 // Overview:
 // 1. Use TEST_CASE(name) to define a test case containing one or more 'ASSERT'
 // 2. Use MAKE_CUDA_KERNEL(name) to create a CUDA kernel from a test case, provided that
@@ -38,25 +15,7 @@
 // Additional notes:
 // - TEST_HOSTDEV(name) is a shortcut for "TEST(name); TEST_CUDA_KERNEL(name)".
 
-#define ASSERT(cond) assert(cond)
-
-#define STATIC_ASSERT(cond) static_assert(cond)
-
-#define ASSERT_NEAR(a, b, eps)                                                           \
-  {                                                                                      \
-    auto const a_eval = (a);                                                             \
-    auto const b_eval = (b);                                                             \
-    auto const diff = um2::abs(a_eval - b_eval);                                         \
-    assert(diff <= (eps));                                                               \
-  }
-
-#define STATIC_ASSERT_NEAR(a, b, eps)                                                    \
-  {                                                                                      \
-    auto constexpr a_eval = (a);                                                         \
-    auto constexpr b_eval = (b);                                                         \
-    auto constexpr diff = um2::abs(a_eval - b_eval);                                     \
-    static_assert(diff <= (eps));                                                        \
-  }
+#include <um2/stdlib/assert.hpp> // ASSERT, ASSERT_NEAR
 
 #define TEST_CASE(name) void name()
 

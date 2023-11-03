@@ -22,9 +22,9 @@ namespace um2
 // We deviate from the std::clamp implementation, passing the arguments by
 // value instead of by const reference for fundamental types.
 
-template <um2::fundamental T>
-CONST HOSTDEV constexpr auto
-clamp(T v, T lo, T hi) noexcept -> T
+template <typename T>
+  requires(std::is_fundamental_v<T>)
+CONST HOSTDEV constexpr auto clamp(T v, T lo, T hi) noexcept -> T
 {
   return v < lo ? lo : (hi < v ? hi : v);
 }

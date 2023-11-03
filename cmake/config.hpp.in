@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cassert> // assert
 #include <concepts> // std::is_fundamental_v
+#include <cstdlib> // exit
+#include <cstdio> // printf
 #include <cstdint> // int32_t, int64_t
 
 // Ignore clang-tidy in this case, since these are CMake defines
@@ -11,28 +12,21 @@
 // CMake defines
 //==============================================================================
 
-// OpenMP
-#cmakedefine01 UM2_USE_OPENMP
-
-// TBB
+// Use external dependencies
 #cmakedefine01 UM2_USE_TBB
-
-// Gmsh
+#cmakedefine01 UM2_USE_OPENMP
 #cmakedefine01 UM2_USE_GMSH
-
-// libpng
 #cmakedefine01 UM2_USE_PNG
-
-// CUDA
 #cmakedefine01 UM2_USE_CUDA
 
-// Integer type in API
+// Enable/disable features
 #cmakedefine01 UM2_ENABLE_INT64
-
-// Floating point type in API
 #cmakedefine01 UM2_ENABLE_FLOAT64
 
-// Logging
+// Enable DBC
+#cmakedefine01 UM2_ENABLE_DBC
+
+// Set compile-time filtering of log messages
 #define MIN_LOG_LEVEL @UM2_MIN_LOG_LEVEL@
 
 //==============================================================================
@@ -52,19 +46,32 @@
 //==============================================================================
 
 // Optimization
-#undef PURE
-#undef CONST
-#undef HOT
-#undef HIDDEN
+#ifdef PURE
+#  error "PURE already defined"
+#endif
+#ifdef CONST
+#  error "CONST already defined"
+#endif
+#ifdef HOT
+#  error "HOT already defined"
+#endif
 #define PURE  [[gnu::pure]]
 #define CONST [[gnu::const]]
 #define HOT   [[gnu::hot]]
 
 // CUDA
-#undef HOST
-#undef DEVICE
-#undef HOSTDEV
-#undef GLOBAL
+#ifdef HOST
+#  error "HOST already defined"
+#endif
+#ifdef DEVICE
+#  error "DEVICE already defined"
+#endif
+#ifdef HOSTDEV
+#  error "HOSTDEV already defined"
+#endif
+#ifdef GLOBAL
+#  error "GLOBAL already defined"
+#endif
 #if UM2_USE_CUDA
 #  define HOST    __host__
 #  define DEVICE  __device__
@@ -78,6 +85,9 @@
 #endif
 
 // API
+#ifdef HIDDEN
+#  error "HIDDEN already defined"
+#endif
 #define HIDDEN __attribute__((visibility("hidden")))
 
 //==============================================================================
@@ -105,7 +115,6 @@ HOSTDEV sizeMax() -> Size
 {
   return 0x7FFFFFFF;
 }
-
 #endif
 
 // Floating point type in API.
@@ -121,14 +130,5 @@ using MaterialID = int8_t;
 // For static_asserts which are always false.
 template <class... T>
 constexpr bool always_false = false;
-
-namespace um2
-{
-  template <class T>
-  concept fundamental = std::is_fundamental_v<T>;
-
-  template <class T>
-  concept trivially_copyable = std::is_trivially_copyable_v<T>;
-} // namespace um2
 
 // NOLINTEND(modernize-macro-to-enum)

@@ -6,42 +6,42 @@ TEST_CASE(sto_int16)
 {
   int16_t i = 0;
   i = um2::sto<int16_t>("123");
-  assert(i == 123);
+  ASSERT(i == 123);
 }
 
 TEST_CASE(sto_int32)
 {
   int32_t i = 0;
   i = um2::sto<int32_t>("123");
-  assert(i == 123);
+  ASSERT(i == 123);
 }
 
 TEST_CASE(sto_int64)
 {
   int64_t i = 0;
   i = um2::sto<int64_t>("123");
-  assert(i == 123);
+  ASSERT(i == 123);
 }
 
 TEST_CASE(sto_uint16)
 {
   uint16_t i = 0;
   i = um2::sto<uint16_t>("123");
-  assert(i == 123);
+  ASSERT(i == 123);
 }
 
 TEST_CASE(sto_uint32)
 {
   uint32_t i = 0;
   i = um2::sto<uint32_t>("123");
-  assert(i == 123);
+  ASSERT(i == 123);
 }
 
 TEST_CASE(sto_uint64)
 {
   uint64_t i = 0;
   i = um2::sto<uint64_t>("123");
-  assert(i == 123);
+  ASSERT(i == 123);
 }
 
 #ifndef __clang__

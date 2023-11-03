@@ -1,20 +1,13 @@
-include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
+add_um2_test(./utility.cpp)
+add_um2_test(./algorithm.cpp)
+add_um2_test(./math.cpp)
+add_um2_test(./memory.cpp)
+add_um2_test(./numeric.cpp)
+add_um2_test(./vector.cpp)
+add_um2_test(./sto.cpp)
+add_um2_test(./ato.cpp)
+add_um2_test(./string.cpp)
 
-add_subdirectory(./stdlib)
-
-#===============================================================================
-# stdlib
-#===============================================================================
-
-#add_um2_test(./stdlib/utility.cpp)
-#add_um2_test(./stdlib/algorithm.cpp)
-#add_um2_test(./stdlib/math.cpp)
-#add_um2_test(./stdlib/memory.cpp)
-#add_um2_test(./stdlib/numeric.cpp)
-#add_um2_test(./stdlib/Vector.cpp)
-#add_um2_test(./stdlib/sto.cpp)
-#add_um2_test(./stdlib/String.cpp)
-#
 ##===============================================================================
 ## common
 ##===============================================================================

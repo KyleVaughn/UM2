@@ -1,5 +1,6 @@
 #pragma once
 
+#include <um2/stdlib/assert.hpp>
 #include <um2/stdlib/utility.hpp>
 
 #include <new>
@@ -43,7 +44,7 @@ HOSTDEV constexpr auto
 // NOLINTNEXTLINE(readability-identifier-naming) justification: match std
 construct_at(T * p, Args &&... args) noexcept -> T *
 {
-  assert(p != nullptr && "null pointer given to construct_at");
+  ASSERT(p != nullptr && "null pointer given to construct_at");
   return ::new (static_cast<void *>(p)) T(um2::forward<Args>(args)...);
 }
 
