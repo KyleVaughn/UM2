@@ -574,11 +574,11 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
     return;
   }
 
-
   // Get the h5 dataset path
   String const h5dataset(xdataitem.child_value());
   // Read the data
-  H5::DataSet const dataset = h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
+  H5::DataSet const dataset =
+      h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
 #ifndef NDEBUG
   H5T_class_t const type_class = dataset.getTypeClass();
   assert(type_class == H5T_FLOAT);
@@ -609,9 +609,9 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
 // addElementsToMesh
 //==============================================================================
 
- template <std::floating_point T, std::signed_integral I, std::signed_integral V>
- static void
- addElementsToMesh(Size const num_elements, String const & topology_type,
+template <std::floating_point T, std::signed_integral I, std::signed_integral V>
+static void
+addElementsToMesh(Size const num_elements, String const & topology_type,
                   std::string const & dimensions, PolytopeSoup<T, I> & soup,
                   H5::DataSet const & dataset, H5::IntType const & datatype)
 {
@@ -685,9 +685,9 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
 // readXDMFTopology
 //==============================================================================
 
- template <std::floating_point T, std::signed_integral I>
+template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
- static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
                              String const & h5filename, PolytopeSoup<T, I> & soup)
 {
   LOG_DEBUG("Reading XDMF topology");
@@ -727,7 +727,8 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
   // Get the h5 dataset path
   String const h5dataset(xdataitem.child_value());
   // Read the data
-  H5::DataSet const dataset = h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
+  H5::DataSet const dataset =
+      h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
 #ifndef NDEBUG
   H5T_class_t const type_class = dataset.getTypeClass();
   assert(type_class == H5T_INTEGER);
@@ -773,10 +774,11 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
 // addElsetToMesh
 //==============================================================================
 
- template <std::floating_point T, std::signed_integral I, std::signed_integral V>
- static void
- addElsetToMesh(PolytopeSoup<T, I> & soup, Size const num_elements,
-               H5::DataSet const & dataset, H5::IntType const & datatype, String const & elset_name)
+template <std::floating_point T, std::signed_integral I, std::signed_integral V>
+static void
+addElsetToMesh(PolytopeSoup<T, I> & soup, Size const num_elements,
+               H5::DataSet const & dataset, H5::IntType const & datatype,
+               String const & elset_name)
 {
   Vector<V> data_vec(num_elements);
   dataset.read(data_vec.data(), datatype);
@@ -791,14 +793,15 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
 // readXDMFElsets
 //==============================================================================
 
- template <std::floating_point T, std::signed_integral I>
+template <std::floating_point T, std::signed_integral I>
   requires(sizeof(T) == 4 || sizeof(T) == 8)
- static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
                            String const & h5filename, PolytopeSoup<T, I> & soup)
 {
   LOG_DEBUG("Reading XDMF elsets");
   // Loop over all nodes to find the elsets
-  for (pugi::xml_node xelset = xgrid.first_child(); xelset; xelset = xelset.next_sibling()) {
+  for (pugi::xml_node xelset = xgrid.first_child(); xelset;
+       xelset = xelset.next_sibling()) {
     if (strcmp(xelset.name(), "Set") != 0) {
       continue;
     }
@@ -843,25 +846,25 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
     // Read the data
     H5::DataSet const dataset =
         h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
- #ifndef NDEBUG
+#ifndef NDEBUG
     H5T_class_t const type_class = dataset.getTypeClass();
     assert(type_class == H5T_INTEGER);
- #endif
+#endif
     H5::IntType const datatype = dataset.getIntType();
     size_t const datatype_size = datatype.getSize();
     assert(datatype_size == std::stoul(precision));
     H5::DataSpace const dataspace = dataset.getSpace();
- #ifndef NDEBUG
+#ifndef NDEBUG
     int const rank = dataspace.getSimpleExtentNdims();
     assert(rank == 1);
- #endif
+#endif
     hsize_t dims[1];
- #ifndef NDEBUG
+#ifndef NDEBUG
     int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
     assert(ndims == 1);
- #else
+#else
     dataspace.getSimpleExtentDims(dims, nullptr);
- #endif
+#endif
     // Get the dimensions
     std::string const dimensions = xdataitem.attribute("Dimensions").value();
     auto const num_elements = static_cast<Size>(dims[0]);

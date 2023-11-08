@@ -199,7 +199,7 @@ struct PolytopeSoup {
 
   void
   getMaterialNames(Vector<String> & material_names) const;
-  
+
   void
   getSubmesh(String const & elset_name, PolytopeSoup<T, I> & submesh) const;
   //

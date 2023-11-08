@@ -195,8 +195,7 @@ struct SpatialPartition {
   makeLattice(Vector<Vector<Size>> const & rtm_ids) -> Size;
 
   auto
-  makeAssembly(Vector<Size> const & lat_ids, Vector<Float> const & z = {-1, 1})
-      -> Size;
+  makeAssembly(Vector<Size> const & lat_ids, Vector<Float> const & z = {-1, 1}) -> Size;
 
   auto
   makeCore(Vector<Vector<Size>> const & asy_ids) -> Size;

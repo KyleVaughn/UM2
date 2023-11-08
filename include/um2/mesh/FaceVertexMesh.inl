@@ -320,7 +320,8 @@ toFaceVertexMesh(PolytopeSoup<T, I> const & soup,
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 void
-toPolytopeSoup(FaceVertexMesh<P, N, D, T, I> const & mesh, PolytopeSoup<T, I> & soup) noexcept
+toPolytopeSoup(FaceVertexMesh<P, N, D, T, I> const & mesh,
+               PolytopeSoup<T, I> & soup) noexcept
 {
   // Vertices
   if constexpr (D == 3) {
@@ -374,43 +375,43 @@ toPolytopeSoup(FaceVertexMesh<P, N, D, T, I> const & mesh, PolytopeSoup<T, I> & 
 //   std::sort(start, intersections);
 // }
 
-//template <std::floating_point T, std::signed_integral I>
-//void
-//intersect(TriMesh<2, T, I> const & mesh, Ray2<T> const & ray,
-//          T * const intersections, Size * const n) noexcept
+// template <std::floating_point T, std::signed_integral I>
+// void
+// intersect(TriMesh<2, T, I> const & mesh, Ray2<T> const & ray,
+//           T * const intersections, Size * const n) noexcept
 //{
-//  T constexpr r_miss = inf_distance<T>;
-//  Size nintersect = 0;
-//#ifndef NDEBUG
-//  Size const n0 = *n;
-//#endif
-//  for (Size i = 0; i < numFaces(mesh); ++i) {
-//    auto const & face_conn = mesh.fv[i];
-//    auto const & v0 = mesh.vertices[face_conn[0]];
-//    auto const & v1 = mesh.vertices[face_conn[1]];
-//    auto const & v2 = mesh.vertices[face_conn[2]];
-//    LineSegment2<T> l(v0, v1);
-//    T r = intersect(l, ray);
-//    if (r < r_miss) {
-//      assert(nintersect < n0);
-//      intersections[nintersect++] = r;
-//    }
-//    l = LineSegment2<T>(v1, v2);
-//    r = intersect(l, ray);
-//    if (r < r_miss) {
-//      assert(nintersect < n0);
-//      intersections[nintersect++] = r;
-//    }
-//    l = LineSegment2<T>(v2, v0);
-//    r = intersect(l, ray);
-//    if (r < r_miss) {
-//      assert(nintersect < n0);
-//      intersections[nintersect++] = r;
-//    }
-//  }
-//  *n = nintersect;
-//  std::sort(intersections, intersections + nintersect);
-//}
+//   T constexpr r_miss = inf_distance<T>;
+//   Size nintersect = 0;
+// #ifndef NDEBUG
+//   Size const n0 = *n;
+// #endif
+//   for (Size i = 0; i < numFaces(mesh); ++i) {
+//     auto const & face_conn = mesh.fv[i];
+//     auto const & v0 = mesh.vertices[face_conn[0]];
+//     auto const & v1 = mesh.vertices[face_conn[1]];
+//     auto const & v2 = mesh.vertices[face_conn[2]];
+//     LineSegment2<T> l(v0, v1);
+//     T r = intersect(l, ray);
+//     if (r < r_miss) {
+//       assert(nintersect < n0);
+//       intersections[nintersect++] = r;
+//     }
+//     l = LineSegment2<T>(v1, v2);
+//     r = intersect(l, ray);
+//     if (r < r_miss) {
+//       assert(nintersect < n0);
+//       intersections[nintersect++] = r;
+//     }
+//     l = LineSegment2<T>(v2, v0);
+//     r = intersect(l, ray);
+//     if (r < r_miss) {
+//       assert(nintersect < n0);
+//       intersections[nintersect++] = r;
+//     }
+//   }
+//   *n = nintersect;
+//   std::sort(intersections, intersections + nintersect);
+// }
 
 template <Size N, std::floating_point T, std::signed_integral I>
 void
@@ -472,9 +473,9 @@ intersect(PlanarQuadraticPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
 //// getUniqueEdges
 ////==============================================================================
 //
-//template <Size N, Size D, std::floating_point T, std::signed_integral I>
-//void
-//getUniqueEdges(LinearPolygonMesh<N, D, T, I> const & mesh,
+// template <Size N, Size D, std::floating_point T, std::signed_integral I>
+// void
+// getUniqueEdges(LinearPolygonMesh<N, D, T, I> const & mesh,
 //               Vector<LineSegment<D, T>> & edges)
 //{
 //  Size const edges_per_face = N;
@@ -516,9 +517,9 @@ intersect(PlanarQuadraticPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
 //  }
 //}
 //
-//template <Size N, Size D, std::floating_point T, std::signed_integral I>
-//void
-//getUniqueEdges(QuadraticPolygonMesh<N, D, T, I> const & mesh,
+// template <Size N, Size D, std::floating_point T, std::signed_integral I>
+// void
+// getUniqueEdges(QuadraticPolygonMesh<N, D, T, I> const & mesh,
 //               Vector<QuadraticSegment<D, T>> & edges)
 //{
 //  Size const edges_per_face = N / 2;
@@ -672,9 +673,9 @@ FaceVertexMesh<P, N, D, T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const n
 //// getFaceAreas
 ////==============================================================================
 //
-//template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
-//void
-//FaceVertexMesh<P, N, D, T, I>::getFaceAreas(Vector<T> & areas) const noexcept
+// template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+// void
+// FaceVertexMesh<P, N, D, T, I>::getFaceAreas(Vector<T> & areas) const noexcept
 //{
 //  areas.resize(numFaces());
 //  for (Size i = 0; i < numFaces(); ++i) {
@@ -686,9 +687,9 @@ FaceVertexMesh<P, N, D, T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const n
 //// getUniqueEdges
 ////==============================================================================
 //
-//template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
-//void
-//FaceVertexMesh<P, N, D, T, I>::getUniqueEdges(Vector<Edge> & edges) const noexcept
+// template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+// void
+// FaceVertexMesh<P, N, D, T, I>::getUniqueEdges(Vector<Edge> & edges) const noexcept
 //{
 //  um2::getUniqueEdges(*this, edges);
 //}

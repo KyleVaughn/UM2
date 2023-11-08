@@ -61,8 +61,8 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(
 }
 
 template <Size D, typename T>
-constexpr RectilinearGrid<D, T>::RectilinearGrid(
-    Vector<Vec2<T>> const & dxdy, Vector<Vector<Size>> const & ids)
+constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<Vec2<T>> const & dxdy,
+                                                 Vector<Vector<Size>> const & ids)
 {
   static_assert(D == 2);
   // Convert the dxdy to AxisAlignedBoxes

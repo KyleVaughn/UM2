@@ -269,15 +269,16 @@ PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
 // getSubmesh
 //==============================================================================
 
- template <std::floating_point T, std::signed_integral I>
- void
-PolytopeSoup<T, I>::getSubmesh(String const & elset_name, PolytopeSoup<T, I> &
-submesh) const
+template <std::floating_point T, std::signed_integral I>
+void
+PolytopeSoup<T, I>::getSubmesh(String const & elset_name,
+                               PolytopeSoup<T, I> & submesh) const
 {
   LOG_DEBUG("Extracting submesh for elset: " + elset_name);
 
   // Find the elset with the given name.
-  auto const * const elset_it = std::find(elset_names.cbegin(), elset_names.cend(), elset_name);
+  auto const * const elset_it =
+      std::find(elset_names.cbegin(), elset_names.cend(), elset_name);
   if (elset_it == elset_names.cend()) {
     Log::error("getSubmesh: Elset '" + elset_name + "' not found");
     return;
@@ -292,11 +293,11 @@ submesh) const
   for (Size i = 0; i < submesh_num_elements; ++i) {
     element_ids[i] = elset_ids[submesh_elset_start + i];
   }
- #if UM2_USE_TBB
+#if UM2_USE_TBB
   std::sort(std::execution::par_unseq, element_ids.begin(), element_ids.end());
- #else
+#else
   std::sort(element_ids.begin(), element_ids.end());
- #endif
+#endif
 
   // Get the element connectivity and remap the vertex ids.
   submesh.element_types.resize(submesh_num_elements);
@@ -319,20 +320,21 @@ submesh) const
   }
   // Get the unique vertex ids.
   Vector<I> unique_vertex_ids = submesh.element_conn;
- #if UM2_USE_TBB
-  std::sort(std::execution::par_unseq, unique_vertex_ids.begin(), unique_vertex_ids.end());
+#if UM2_USE_TBB
+  std::sort(std::execution::par_unseq, unique_vertex_ids.begin(),
+            unique_vertex_ids.end());
   auto * const last = std::unique(std::execution::par_unseq, unique_vertex_ids.begin(),
-                                unique_vertex_ids.end());
- #else
+                                  unique_vertex_ids.end());
+#else
   std::sort(unique_vertex_ids.begin(), unique_vertex_ids.end());
   auto * const last = std::unique(unique_vertex_ids.begin(), unique_vertex_ids.end());
- #endif
+#endif
   auto const num_unique_verts = static_cast<Size>(last - unique_vertex_ids.cbegin());
   // We now have the unique vertex ids. We need to remap the connectivity.
   // unique_vertex_ids[i] is the old vertex id, and i is the new vertex id.
- #if UM2_USE_OPENMP
- #  pragma omp parallel for
- #endif
+#if UM2_USE_OPENMP
+#  pragma omp parallel for
+#endif
   for (Size i = 0; i < submesh.element_conn.size(); ++i) {
     I const old_vertex_id = submesh.element_conn[i];
     auto * const it = std::lower_bound(unique_vertex_ids.begin(), last, old_vertex_id);
@@ -364,9 +366,8 @@ submesh) const
     auto * const elset_ids_begin = addressof(elset_ids[elset_start]);
     auto * const elset_ids_end = elset_ids_begin + (elset_end - elset_start);
     std::vector<I> intersection;
-    std::set_intersection(
-        element_ids.begin(), element_ids.end(), 
-        elset_ids_begin, elset_ids_end, std::back_inserter(intersection));
+    std::set_intersection(element_ids.begin(), element_ids.end(), elset_ids_begin,
+                          elset_ids_end, std::back_inserter(intersection));
     if (intersection.empty()) {
       continue;
     }
