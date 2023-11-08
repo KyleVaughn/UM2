@@ -1,9 +1,9 @@
 #pragma once
 
-#include <concepts> // std::is_fundamental_v
-#include <cstdlib> // exit
-#include <cstdio> // printf
+#include <cmath> // abs
 #include <cstdint> // int32_t, int64_t
+#include <cstdio> // printf
+#include <cstdlib> // exit
 
 // Ignore clang-tidy in this case, since these are CMake defines
 // NOLINTBEGIN(modernize-macro-to-enum) justified
@@ -59,6 +59,24 @@
 #define CONST [[gnu::const]]
 #define HOT   [[gnu::hot]]
 
+// Once C++23 is supported, we can use [[assume(expr)]] instead.
+// https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1774r8.pdf
+#ifdef ASSUME
+#  error "ASSUME already defined"
+#endif
+#if defined(__clang__)
+# define ASSUME(expr) __builtin_assume(expr)
+#elif defined(__GNUC__) 
+# define ASSUME(expr) if (expr) {} else { __builtin_unreachable(); }
+#elif defined(__CUDACC__)
+# define ASSUME(expr) __assume(expr)
+#else
+# ifndef __clang_tidy__
+# error "Unable to determine compiler"
+# endif
+# define ASSUME(expr)
+#endif
+
 // CUDA
 #ifdef HOST
 #  error "HOST already defined"
@@ -98,18 +116,14 @@
 #if UM2_ENABLE_INT64
 using Size = int64_t; // Index type
 using Int = int64_t;  // Integer type in API
-
 HOSTDEV consteval auto
 sizeMax() -> Size
 {
   return 0x7FFFFFFFFFFFFFFF;
 }
-
 #else
-
 using Size = int32_t; // Index type
 using Int = int32_t;  // Integer type in API
-
 consteval auto
 HOSTDEV sizeMax() -> Size
 {
@@ -130,5 +144,94 @@ using MaterialID = int8_t;
 // For static_asserts which are always false.
 template <class... T>
 constexpr bool always_false = false;
+
+//==============================================================================
+// Assertions
+//==============================================================================
+    
+// We need abs() for host and device code.
+namespace um2 {
+#ifndef __CUDA_ARCH__    
+template <typename T>    
+CONST HOST constexpr auto    
+abs(T x) noexcept -> T    
+{    
+  return std::abs(x);    
+}    
+#else    
+template <std::integral T>    
+CONST DEVICE constexpr auto    
+abs(T x) noexcept -> T    
+{    
+  return ::abs(x);    
+}    
+CONST DEVICE constexpr auto    
+abs(float x) noexcept -> float    
+{    
+  return ::fabsf(x);    
+}    
+CONST DEVICE constexpr auto
+abs(double x) noexcept -> double
+{
+  return ::fabs(x);
+}
+#endif
+} // namespace um2
+
+#if !UM2_ENABLE_DBC
+#  define ASSERT(expr)
+#  define ASSERT_NEAR(a, b, eps)
+#else
+// If we are not using CUDA, assertions can be [[noreturn]].
+namespace um2 {
+#if UM2_USE_CUDA
+HOSTDEV inline void
+#else
+[[noreturn]] inline void
+#endif
+failedAssert(char const * const file, int const line, char const * const msg)
+{
+  printf("Assertion failed: %s:%d: %s\n", file, line, msg);
+#ifdef __CUDA_ARCH__
+  __threadfence();
+  asm("trap;");
+#else
+  exit(1);
+#endif
+}
+
+#if UM2_USE_CUDA
+HOSTDEV inline void
+#else
+[[noreturn]] inline void
+#endif
+failedAssertNear(char const * const file, int const line, char const * const a,
+                 char const * const b, char const * const eps)
+{
+  printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b, eps);
+#ifdef __CUDA_ARCH__
+  __threadfence();
+  asm("trap;");
+#else
+  exit(1);
+#endif        
+}
+} // namespace um2
+
+#define ASSERT(cond)                                                                     \
+  if (!(cond)) {                                                                         \
+    um2::failedAssert(__FILE__, __LINE__, #cond);                                        \
+  }
+
+#define ASSERT_NEAR(a, b, eps)                                                           \
+  {                                                                                      \
+    auto const a_eval = (a);                                                             \
+    auto const b_eval = (b);                                                             \
+    auto const diff = um2::abs(a_eval - b_eval);                                         \
+    if (diff > (eps)) {                                                                  \
+      um2::failedAssertNear(__FILE__, __LINE__, #a, #b, #eps);                           \
+    }                                                                                    \
+  }
+#endif // UM2_ENABLE_DBC
 
 // NOLINTEND(modernize-macro-to-enum)
