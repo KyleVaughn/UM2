@@ -1,7 +1,6 @@
 #pragma once
 
 #include <um2/stdlib/algorithm.hpp> // copy
-#include <um2/stdlib/assert.hpp>    // ASSERT
 #include <um2/stdlib/math.hpp>      // max
 #include <um2/stdlib/memory.hpp>    // addressof
 #include <um2/stdlib/utility.hpp>   // move
@@ -198,7 +197,7 @@ template <class T>
 HOSTDEV constexpr void
 Vector<T>::allocate(Size n) noexcept
 {
-  ASSERT(n < max_size());
+  ASSERT_ASSUME(n < max_size());
   ASSERT(_begin == nullptr);
   _begin = static_cast<T *>(::operator new(static_cast<size_t>(n) * sizeof(T)));
   _end = _begin;

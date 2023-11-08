@@ -322,7 +322,8 @@ TEST_CASE(emplace_back)
     int a;
     float b;
     double c;
-    HOSTDEV TestStruct(int ia, float ib, double ic)
+    HOSTDEV
+    TestStruct(int ia, float ib, double ic)
         : a(ia),
           b(ib),
           c(ic)

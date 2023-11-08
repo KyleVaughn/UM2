@@ -17,30 +17,25 @@ macro(add_um2_test FILENAME)
   add_test(${TESTNAME} ${TESTNAME})
   set_target_properties(${TESTNAME} PROPERTIES CXX_STANDARD ${UM2_CXX_STANDARD})
 
-  #  # clang-tidy
-  #  if (UM2_USE_CLANG_TIDY)
-  #    set_clang_tidy_properties(${TESTNAME})
-  #  endif()
-  #
-  #  # cppcheck
-  #  if (UM2_USE_CPPCHECK)
-  #    set_cppcheck_properties(${TESTNAME})
-  #  endif()
-  #
-  #  if (UM2_USE_COVERAGE)
-  #    target_link_libraries(${TESTNAME} PRIVATE gcov)
-  #    target_compile_options(${TESTNAME} PRIVATE --coverage)
-  #  endif ()
-  #
+  # clang-tidy
+  if (UM2_USE_CLANG_TIDY)
+    set_clang_tidy_properties(${TESTNAME})
+  endif()
+  
+  # cppcheck
+  if (UM2_USE_CPPCHECK)
+    set_cppcheck_properties(${TESTNAME})
+  endif()
+  
+  if (UM2_USE_COVERAGE)
+    target_link_libraries(${TESTNAME} PRIVATE gcov)
+    target_compile_options(${TESTNAME} PRIVATE --coverage)
+  endif ()
+  
   # If compiling with CUDA, compile the cpp files as cuda
   if (UM2_USE_CUDA)
     set_cuda_properties(${TESTNAME} ${FILENAME})
   endif()
-  #
-  #  # If visualization is enabled, line the necessary libraries
-  #  #  if (UM2_ENABLE_VIS)
-  #  #    target_link_libraries(${TESTNAME} ${UM2_VIS_LIBRARIES})
-  #  #  endif()
   #
   #  if (UM2_DEV_MODE)
   #    add_test(NAME valgrind_${TESTNAME}

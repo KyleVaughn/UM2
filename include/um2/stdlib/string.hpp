@@ -291,12 +291,12 @@ HOSTDEV constexpr String::String(String const & s) noexcept
   }
 }
 
-HOSTDEV constexpr String::String(String && s) noexcept    
-{    
-  // If short string, we can copy trivially    
-  // If long string, we need to move the data.    
-  // Since the data is a pointer, we can just copy the pointer.    
-  // Therefore, either way, we can just copy the whole struct.    
+HOSTDEV constexpr String::String(String && s) noexcept
+{
+  // If short string, we can copy trivially
+  // If long string, we need to move the data.
+  // Since the data is a pointer, we can just copy the pointer.
+  // Therefore, either way, we can just copy the whole struct.
   _r.r = s._r.r;
   s._r.l.is_long = 0;
   s._r.l.data = nullptr;
@@ -375,7 +375,7 @@ constexpr String::String(T x) noexcept
   // A 64-bit integer can have at most 20 digits
   std::string const s = std::to_string(x);
   auto const cap = s.size();
-  ASSERT(cap < min_cap);
+  ASSERT_ASSUME(cap < min_cap);
   _r.s.is_long = 0;
   _r.s.size = static_cast<uint8_t>(cap);
   copy(s.data(), s.data() + (cap + 1), addressof(_r.s.data[0]));
@@ -387,7 +387,7 @@ constexpr String::String(T x) noexcept
 {
   std::string const s = std::to_string(x);
   auto const cap = s.size();
-  ASSERT(cap < min_cap);
+  ASSERT_ASSUME(cap < min_cap);
   _r.s.is_long = 0;
   _r.s.size = static_cast<uint8_t>(cap);
   copy(s.data(), s.data() + (cap + 1), addressof(_r.s.data[0]));
@@ -484,7 +484,7 @@ String::operator=(std::string const & s) noexcept -> String &
 {
   String tmp(s.c_str());
   return *this = um2::move(tmp);
-}                                                                                                             
+}
 
 constexpr auto
 String::operator=(std::string && s) noexcept -> String &
@@ -715,7 +715,7 @@ String::ends_with(char const (&s)[N]) const noexcept -> bool
 PURE HOSTDEV constexpr auto
 String::substr(Size pos, Size len) const -> String
 {
-  ASSERT(pos <= size());
+  ASSERT_ASSUME(pos <= size());
   if (len == npos || pos + len > size()) {
     len = size() - pos;
   }

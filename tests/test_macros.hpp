@@ -1,5 +1,26 @@
 #pragma once
 
+// This test framework utilizes <cassert> to implement assertions.
+// In order for "assert" to function correctly, NDEBUG cannot be defined.
+// However, NDEBUG is defined for Release builds.
+//
+// Currently, UM2 does not depend on NDEBUG, but to prevent future issues, we
+// undef NDEBUG in this file. To ensure that this does not affect the UM2 library
+// code, we must include test_macros.hpp after all UM2 files. Therefore, we check
+// that UM2_USE_CUDA, a macro defined in all UM2 files, is defined to check this
+// condition.
+
+#include <um2/stdlib/math.hpp> // um2::abs
+#ifndef UM2_USE_CUDA
+#  error("test_macros.hpp must be included after any UM2 files since it undefs NDEBUG")
+#endif
+
+#include <cstdio>  // printf
+#include <cstdlib> // exit
+
+#undef NDEBUG
+#include <cassert>
+
 // Overview:
 // 1. Use TEST_CASE(name) to define a test case containing one or more 'ASSERT'
 // 2. Use MAKE_CUDA_KERNEL(name) to create a CUDA kernel from a test case, provided that
@@ -15,7 +36,18 @@
 // Additional notes:
 // - TEST_HOSTDEV(name) is a shortcut for "TEST(name); TEST_CUDA_KERNEL(name)".
 
-#include <um2/stdlib/assert.hpp> // ASSERT, ASSERT_NEAR
+#undef ASSERT
+#undef ASSERT_NEAR
+
+#define ASSERT(cond) assert(cond)
+
+#define ASSERT_NEAR(a, b, eps)                                                           \
+  {                                                                                      \
+    auto const a_eval = (a);                                                             \
+    auto const b_eval = (b);                                                             \
+    auto const diff = um2::abs(a_eval - b_eval);                                         \
+    assert(diff <= (eps));                                                               \
+  }
 
 #define TEST_CASE(name) void name()
 

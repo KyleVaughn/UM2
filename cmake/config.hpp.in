@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cmath> // abs
+#include <cmath>   // abs
 #include <cstdint> // int32_t, int64_t
-#include <cstdio> // printf
+#include <cstdio>  // printf
 #include <cstdlib> // exit
 
 // Ignore clang-tidy in this case, since these are CMake defines
@@ -18,6 +18,7 @@
 #cmakedefine01 UM2_USE_GMSH
 #cmakedefine01 UM2_USE_PNG
 #cmakedefine01 UM2_USE_CUDA
+#cmakedefine01 UM2_USE_CLANG_TIDY
 
 // Enable/disable features
 #cmakedefine01 UM2_ENABLE_INT64
@@ -65,16 +66,20 @@
 #  error "ASSUME already defined"
 #endif
 #if defined(__clang__)
-# define ASSUME(expr) __builtin_assume(expr)
-#elif defined(__GNUC__) 
-# define ASSUME(expr) if (expr) {} else { __builtin_unreachable(); }
+#  define ASSUME(expr) __builtin_assume(expr)
+#elif defined(__GNUC__)
+#  define ASSUME(expr)                                                                   \
+    if (expr) {                                                                          \
+    } else {                                                                             \
+      __builtin_unreachable();                                                           \
+    }
 #elif defined(__CUDACC__)
-# define ASSUME(expr) __assume(expr)
+#  define ASSUME(expr) __assume(expr)
 #else
-# ifndef __clang_tidy__
-# error "Unable to determine compiler"
-# endif
-# define ASSUME(expr)
+#  if !UM2_USE_CLANG_TIDY
+#    error "Unable to determine compiler"
+#  endif
+#  define ASSUME(expr)
 #endif
 
 // CUDA
@@ -124,8 +129,8 @@ sizeMax() -> Size
 #else
 using Size = int32_t; // Index type
 using Int = int32_t;  // Integer type in API
-consteval auto
-HOSTDEV sizeMax() -> Size
+HOSTDEV consteval auto
+sizeMax() -> Size
 {
   return 0x7FFFFFFF;
 }
@@ -148,28 +153,39 @@ constexpr bool always_false = false;
 //==============================================================================
 // Assertions
 //==============================================================================
-    
+//
+// ASSERT(expr) - Asserts that expr is true.
+//  If UM2_ENABLE_DBC is 0, this is a no-op.
+// 
+// ASSERT_NEAR(a, b, eps) - Asserts that a and b are within eps of each other.
+//  If UM2_ENABLE_DBC is 0, this is a no-op.
+//
+// ASSERT_ASSUME(expr) - Asserts that expr is true.
+//  If UM2_ENABLE_DBC is 1, this is equivalent to ASSERT(expr).
+//  If UM2_ENABLE_DBC is 0, this is equivalent to ASSUME(expr).
+
 // We need abs() for host and device code.
-namespace um2 {
-#ifndef __CUDA_ARCH__    
-template <typename T>    
-CONST HOST constexpr auto    
-abs(T x) noexcept -> T    
-{    
-  return std::abs(x);    
-}    
-#else    
-template <std::integral T>    
-CONST DEVICE constexpr auto    
-abs(T x) noexcept -> T    
-{    
-  return ::abs(x);    
-}    
-CONST DEVICE constexpr auto    
-abs(float x) noexcept -> float    
-{    
-  return ::fabsf(x);    
-}    
+namespace um2
+{
+#ifndef __CUDA_ARCH__
+template <typename T>
+CONST HOST constexpr auto
+abs(T x) noexcept -> T
+{
+  return std::abs(x);
+}
+#else
+template <std::integral T>
+CONST DEVICE constexpr auto
+abs(T x) noexcept -> T
+{
+  return ::abs(x);
+}
+CONST DEVICE constexpr auto
+abs(float x) noexcept -> float
+{
+  return ::fabsf(x);
+}
 CONST DEVICE constexpr auto
 abs(double x) noexcept -> double
 {
@@ -181,57 +197,61 @@ abs(double x) noexcept -> double
 #if !UM2_ENABLE_DBC
 #  define ASSERT(expr)
 #  define ASSERT_NEAR(a, b, eps)
+#  define ASSERT_ASSUME(expr) ASSUME(expr)
 #else
 // If we are not using CUDA, assertions can be [[noreturn]].
-namespace um2 {
-#if UM2_USE_CUDA
+namespace um2
+{
+#  if UM2_USE_CUDA
 HOSTDEV inline void
-#else
+#  else
 [[noreturn]] inline void
-#endif
+#  endif
 failedAssert(char const * const file, int const line, char const * const msg)
 {
   printf("Assertion failed: %s:%d: %s\n", file, line, msg);
-#ifdef __CUDA_ARCH__
+#  ifdef __CUDA_ARCH__
   __threadfence();
   asm("trap;");
-#else
+#  else
   exit(1);
-#endif
+#  endif
 }
 
-#if UM2_USE_CUDA
+#  if UM2_USE_CUDA
 HOSTDEV inline void
-#else
+#  else
 [[noreturn]] inline void
-#endif
+#  endif
 failedAssertNear(char const * const file, int const line, char const * const a,
                  char const * const b, char const * const eps)
 {
   printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b, eps);
-#ifdef __CUDA_ARCH__
+#  ifdef __CUDA_ARCH__
   __threadfence();
   asm("trap;");
-#else
+#  else
   exit(1);
-#endif        
+#  endif
 }
 } // namespace um2
 
-#define ASSERT(cond)                                                                     \
-  if (!(cond)) {                                                                         \
-    um2::failedAssert(__FILE__, __LINE__, #cond);                                        \
-  }
+#  define ASSERT(cond)                                                                   \
+    if (!(cond)) {                                                                       \
+      um2::failedAssert(__FILE__, __LINE__, #cond);                                      \
+    }
 
-#define ASSERT_NEAR(a, b, eps)                                                           \
-  {                                                                                      \
-    auto const a_eval = (a);                                                             \
-    auto const b_eval = (b);                                                             \
-    auto const diff = um2::abs(a_eval - b_eval);                                         \
-    if (diff > (eps)) {                                                                  \
-      um2::failedAssertNear(__FILE__, __LINE__, #a, #b, #eps);                           \
-    }                                                                                    \
-  }
+#  define ASSERT_NEAR(a, b, eps)                                                         \
+    {                                                                                    \
+      auto const a_eval = (a);                                                           \
+      auto const b_eval = (b);                                                           \
+      auto const diff = um2::abs(a_eval - b_eval);                                       \
+      if (diff > (eps)) {                                                                \
+        um2::failedAssertNear(__FILE__, __LINE__, #a, #b, #eps);                         \
+      }                                                                                  \
+    }
+
+#define ASSERT_ASSUME(expr) ASSERT(expr)
+
 #endif // UM2_ENABLE_DBC
-
 // NOLINTEND(modernize-macro-to-enum)

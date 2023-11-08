@@ -5,7 +5,7 @@
 #include <cmath>
 
 // Contains:
-//  abs
+//  abs (from config.hpp)
 //  atan
 //  atanh
 //  cbrt
@@ -28,42 +28,6 @@ inline constexpr T pi_2 = static_cast<T>(1.57079632679489661923);
 
 template <std::floating_point T>
 inline constexpr T pi_4 = static_cast<T>(0.785398163397448309616);
-
-//==============================================================================
-// abs
-//==============================================================================
-
-#ifndef __CUDA_ARCH__
-
-template <typename T>
-CONST HOST constexpr auto
-abs(T x) noexcept -> T
-{
-  return std::abs(x);
-}
-
-#else
-
-template <std::integral T>
-CONST DEVICE constexpr auto
-abs(T x) noexcept -> T
-{
-  return ::abs(x);
-}
-
-CONST DEVICE constexpr auto
-abs(float x) noexcept -> float
-{
-  return ::fabsf(x);
-}
-
-CONST DEVICE constexpr auto
-abs(double x) noexcept -> double
-{
-  return ::fabs(x);
-}
-
-#endif
 
 //==============================================================================
 // atan

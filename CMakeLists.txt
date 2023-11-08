@@ -371,10 +371,11 @@ endif()
 ##  add_subdirectory(examples)
 ##endif()
 ##
-### Benchmarks
-##if (UM2_BUILD_BENCHMARKS)
-##  add_subdirectory(benchmarks)
-##endif()
+# Benchmarks
+if (UM2_BUILD_BENCHMARKS)
+  find_package(benchmark REQUIRED)
+  add_subdirectory(benchmarks)
+endif()
 #
 ##===============================================================================
 ## Install

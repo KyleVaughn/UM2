@@ -12,7 +12,8 @@ default(
   include/*.h      
   include/*.inl    
   tests/*.hpp      
-  tests/*.cpp)
+  tests/*.cpp
+  cmake/*.hpp.in)
 default(FIX NO)
 
 set(flag --output-replacements-xml)
