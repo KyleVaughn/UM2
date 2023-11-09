@@ -66,6 +66,7 @@ option(UM2_USE_CLANG_FORMAT  "Enable clang-format targets"     ${UM2_DEV_MODE})
 option(UM2_USE_CLANG_TIDY    "Enable clang-tidy"               ${UM2_DEV_MODE})
 option(UM2_USE_CPPCHECK      "Enable cppcheck"                 ${UM2_DEV_MODE})
 option(UM2_USE_COVERAGE      "Enable coverage"                 OFF)
+option(UM2_USE_VALGRIND      "Enable valgrind"                 ${UM2_DEV_MODE})
 
 
 # If CMAKE_BUILD_TYPE is Debug, then turn on DBC by default
@@ -140,9 +141,7 @@ endif()
 
 # Sources
 set(UM2_SOURCES
-    "src/dummy.cpp"
-    # common
-    #"src/common/Log.cpp"
+    "src/common/log.cpp"
     # mpact
     #"src/mpact/SpatialPartition.cpp"
     #    "src/mpact/io.cpp"
@@ -333,6 +332,7 @@ if (UM2_USE_CPPCHECK)
   string(CONCAT CPPCHECK_ARGS
           ${CMAKE_CXX_CPPCHECK}
           ";--enable=all"
+          ";--force"
           ";--std=c++${UM2_CXX_STANDARD}"
           ";--language=c++"
           ";--suppressions-list=${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions"

@@ -467,7 +467,8 @@ template <class T>
 PURE HOSTDEV constexpr auto
 Vector<T>::operator[](Size const i) noexcept -> T &
 {
-  ASSERT(i < size());
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < size());
   return _begin[i];
 }
 
@@ -475,7 +476,8 @@ template <class T>
 PURE HOSTDEV constexpr auto
 Vector<T>::operator[](Size const i) const noexcept -> T const &
 {
-  ASSERT(i < size());
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < size());
   return _begin[i];
 }
 

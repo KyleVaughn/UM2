@@ -1,45 +1,10 @@
 include(${PROJECT_SOURCE_DIR}/cmake/add_um2_test.cmake)
 
 add_subdirectory(./stdlib)
+add_subdirectory(./common)
+add_subdirectory(./math)
+add_subdirectory(./geometry)
 
-##===============================================================================
-## common
-##===============================================================================
-#
-#add_um2_test(./common/Log.cpp)
-#add_um2_test(./common/ShortString.cpp)
-#add_um2_test(./common/Color.cpp)
-#
-##===============================================================================
-## math
-##===============================================================================
-#
-#add_um2_test(./math/morton.cpp)
-#add_um2_test(./math/stats.cpp)
-#add_um2_test(./math/Vec.cpp)
-#add_um2_test(./math/Mat.cpp)
-#if (UM2_USE_TBB)
-#  add_um2_test(./parallel/math/parallel_stats.cpp)
-#endif()
-#add_um2_test(./math/AngularQuadrature.cpp)
-#
-##===============================================================================
-## geometry
-##===============================================================================
-#
-#add_um2_test(./geometry/Point.cpp)
-#add_um2_test(./geometry/morton_sort_points.cpp)
-#if (UM2_USE_TBB OR UM2_USE_CUDA)
-#  add_um2_test(./parallel/geometry/parallel_morton_sort_points.cpp)
-#endif()
-#add_um2_test(./geometry/AxisAlignedBox.cpp)
-#add_um2_test(./geometry/LineSegment.cpp)
-#add_um2_test(./geometry/Triangle.cpp)
-#add_um2_test(./geometry/Quadrilateral.cpp)
-#add_um2_test(./geometry/QuadraticSegment.cpp)
-#add_um2_test(./geometry/QuadraticTriangle.cpp)
-#add_um2_test(./geometry/QuadraticQuadrilateral.cpp)
-#
 ##==============================================================================
 ## mesh
 ##==============================================================================

@@ -36,14 +36,14 @@ macro(add_um2_test FILENAME)
   if (UM2_USE_CUDA)
     set_cuda_properties(${TESTNAME} ${FILENAME})
   endif()
-  #
-  #  if (UM2_DEV_MODE)
-  #    add_test(NAME valgrind_${TESTNAME}
-  #      COMMAND valgrind
-  #        --error-exitcode=1
-  #        --tool=memcheck
-  #        --leak-check=full
-  #        --errors-for-leak-kinds=definite
-  #        --show-leak-kinds=definite $<TARGET_FILE:${TESTNAME}>)
-  #  endif()
+  
+  if (UM2_USE_VALGRIND)
+    add_test(NAME valgrind_${TESTNAME}
+      COMMAND valgrind
+        --error-exitcode=1
+        --tool=memcheck
+        --leak-check=full
+        --errors-for-leak-kinds=definite
+        --show-leak-kinds=definite $<TARGET_FILE:${TESTNAME}>)
+  endif()
 endmacro()
