@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/geometry/Point.hpp>
+#include <um2/geometry/point.hpp>
 #include <um2/math/morton.hpp>
 
 #include <algorithm> // std::sort

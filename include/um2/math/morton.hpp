@@ -8,6 +8,7 @@
 // NOTE: we temporarily disable BMI2 intrinsics when compiling for CUDA because
 // including <immintrin.h> causes compilation errors due to conflicting
 // definitions for 16-bit types
+// See https://github.com/KyleVaughn/UM2/issues/130
 #if defined(__BMI2__) && !UM2_USE_CUDA // && !defined(__CUDA_ARCH__)
 #  define BMI2_HOSTDEV DEVICE
 #  include <immintrin.h> // _pdep_u64, _pext_u64, _pdep_u32, _pext_u32
@@ -86,7 +87,8 @@ template <std::unsigned_integral U>
 CONST inline auto
 mortonEncode(U const x, U const y) -> U
 {
-  assert(x <= max_2d_morton_coord<U> && y <= max_2d_morton_coord<U>);
+  ASSERT_ASSUME(x <= max_2d_morton_coord<U>);
+  ASSERT_ASSUME(y <= max_2d_morton_coord<U>);
   return pdep(x, bmi_2d_x_mask<U>) | pdep(y, bmi_2d_y_mask<U>);
 }
 
@@ -94,8 +96,9 @@ template <std::unsigned_integral U>
 CONST inline auto
 mortonEncode(U const x, U const y, U const z) -> U
 {
-  assert(x <= max_3d_morton_coord<U> && y <= max_3d_morton_coord<U> &&
-         z <= max_3d_morton_coord<U>);
+  ASSERT_ASSUME(x <= max_3d_morton_coord<U>);
+  ASSERT_ASSUME(y <= max_3d_morton_coord<U>);
+  ASSERT_ASSUME(z <= max_3d_morton_coord<U>);
   return pdep(x, bmi_3d_x_mask<U>) | pdep(y, bmi_3d_y_mask<U>) |
          pdep(z, bmi_3d_z_mask<U>);
 }
@@ -129,7 +132,7 @@ mortonDecode(U const morton, U & x, U & y, U & z)
 CONST BMI2_HOSTDEV static constexpr auto
 pdep0x55555555(uint32_t x) -> uint32_t
 {
-  assert(x <= max_2d_morton_coord<uint32_t>);
+  ASSERT_ASSUME(x <= max_2d_morton_coord<uint32_t>);
   x = (x | (x << 8)) & 0x00ff00ff;
   x = (x | (x << 4)) & 0x0f0f0f0f;
   x = (x | (x << 2)) & 0x33333333;
@@ -140,7 +143,7 @@ pdep0x55555555(uint32_t x) -> uint32_t
 CONST BMI2_HOSTDEV static constexpr auto
 pdep0x5555555555555555(uint64_t x) -> uint64_t
 {
-  assert(x <= max_2d_morton_coord<uint64_t>);
+  ASSERT_ASSUME(x <= max_2d_morton_coord<uint64_t>);
   x = (x | (x << 16)) & 0x0000ffff0000ffff;
   x = (x | (x << 8)) & 0x00ff00ff00ff00ff;
   x = (x | (x << 4)) & 0x0f0f0f0f0f0f0f0f;
@@ -175,7 +178,7 @@ pext0x5555555555555555(uint64_t x) -> uint64_t
 CONST BMI2_HOSTDEV static constexpr auto
 pdep0x92492492(uint32_t x) -> uint32_t
 {
-  assert(x <= max_3d_morton_coord<uint32_t>);
+  ASSERT_ASSUME(x <= max_3d_morton_coord<uint32_t>);
   x = (x | (x << 16)) & 0x030000ff;
   x = (x | (x << 8)) & 0x0300f00f;
   x = (x | (x << 4)) & 0x030c30c3;
@@ -186,7 +189,7 @@ pdep0x92492492(uint32_t x) -> uint32_t
 CONST BMI2_HOSTDEV static constexpr auto
 pdep0x9249249249249249(uint64_t x) -> uint64_t
 {
-  assert(x <= max_3d_morton_coord<uint64_t>);
+  ASSERT_ASSUME(x <= max_3d_morton_coord<uint64_t>);
   x = (x | (x << 32)) & 0x001f00000000ffff;
   x = (x | (x << 16)) & 0x001f0000ff0000ff;
   x = (x | (x << 8)) & 0x100f00f00f00f00f;
@@ -287,8 +290,10 @@ template <std::unsigned_integral U, std::floating_point T>
 CONST HOSTDEV auto
 mortonEncode(T const x, T const y) -> U
 {
-  assert(0 <= x && x <= 1);
-  assert(0 <= y && y <= 1);
+  ASSERT_ASSUME(0 <= x);
+  ASSERT_ASSUME(0 <= y);
+  ASSERT_ASSUME(x <= 1);
+  ASSERT_ASSUME(y <= 1);
   static_assert(!(std::same_as<float, T> && std::same_as<uint64_t, U>),
                 "uint64_t -> float conversion can be lossy");
   // Convert x,y in [0,1] to integers in [0 max_2d_morton_coord]
@@ -312,9 +317,12 @@ template <std::unsigned_integral U, std::floating_point T>
 CONST HOSTDEV auto
 mortonEncode(T const x, T const y, T const z) -> U
 {
-  assert(0 <= x && x <= 1);
-  assert(0 <= y && y <= 1);
-  assert(0 <= z && z <= 1);
+  ASSERT_ASSUME(0 <= x);
+  ASSERT_ASSUME(0 <= y);
+  ASSERT_ASSUME(0 <= z);
+  ASSERT_ASSUME(x <= 1);
+  ASSERT_ASSUME(y <= 1);
+  ASSERT_ASSUME(z <= 1);
   U const x_m = static_cast<U>(x * max_3d_morton_coord<U>);
   U const y_m = static_cast<U>(y * max_3d_morton_coord<U>);
   U const z_m = static_cast<U>(z * max_3d_morton_coord<U>);

@@ -1,6 +1,6 @@
-#include <um2/stdlib/algorithm.hpp>
+#include <um2/common/sort.hpp>
 
-#include "../../test_macros.hpp"
+#include "../test_macros.hpp"
 
 HOSTDEV
 TEST_CASE(insertionSort)

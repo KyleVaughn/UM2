@@ -10,25 +10,25 @@ TEST_CASE(mortonEncode)
   using namespace um2;
 
   // 2D
-  assert(mortonEncode(static_cast<U>(0), static_cast<U>(0)) == 0);
-  assert(mortonEncode(static_cast<U>(1), static_cast<U>(0)) == 1);
-  assert(mortonEncode(static_cast<U>(0), static_cast<U>(1)) == 2);
-  assert(mortonEncode(static_cast<U>(1), static_cast<U>(1)) == 3);
-  assert(mortonEncode(static_cast<U>(2), static_cast<U>(2)) == 12);
-  assert(mortonEncode(static_cast<U>(3), static_cast<U>(3)) == 15);
+  ASSERT(mortonEncode(static_cast<U>(0), static_cast<U>(0)) == 0);
+  ASSERT(mortonEncode(static_cast<U>(1), static_cast<U>(0)) == 1);
+  ASSERT(mortonEncode(static_cast<U>(0), static_cast<U>(1)) == 2);
+  ASSERT(mortonEncode(static_cast<U>(1), static_cast<U>(1)) == 3);
+  ASSERT(mortonEncode(static_cast<U>(2), static_cast<U>(2)) == 12);
+  ASSERT(mortonEncode(static_cast<U>(3), static_cast<U>(3)) == 15);
 
   // 3D
-  assert(mortonEncode(static_cast<U>(0), static_cast<U>(0), static_cast<U>(0)) == 0);
-  assert(mortonEncode(static_cast<U>(1), static_cast<U>(0), static_cast<U>(0)) == 1);
-  assert(mortonEncode(static_cast<U>(0), static_cast<U>(1), static_cast<U>(0)) == 2);
-  assert(mortonEncode(static_cast<U>(1), static_cast<U>(1), static_cast<U>(0)) == 3);
-  assert(mortonEncode(static_cast<U>(0), static_cast<U>(0), static_cast<U>(1)) == 4);
-  assert(mortonEncode(static_cast<U>(1), static_cast<U>(0), static_cast<U>(1)) == 5);
-  assert(mortonEncode(static_cast<U>(0), static_cast<U>(1), static_cast<U>(1)) == 6);
-  assert(mortonEncode(static_cast<U>(1), static_cast<U>(1), static_cast<U>(1)) == 7);
-  assert(mortonEncode(static_cast<U>(2), static_cast<U>(0), static_cast<U>(0)) == 8);
-  assert(mortonEncode(static_cast<U>(2), static_cast<U>(2), static_cast<U>(2)) == 56);
-  assert(mortonEncode(static_cast<U>(3), static_cast<U>(3), static_cast<U>(3)) == 63);
+  ASSERT(mortonEncode(static_cast<U>(0), static_cast<U>(0), static_cast<U>(0)) == 0);
+  ASSERT(mortonEncode(static_cast<U>(1), static_cast<U>(0), static_cast<U>(0)) == 1);
+  ASSERT(mortonEncode(static_cast<U>(0), static_cast<U>(1), static_cast<U>(0)) == 2);
+  ASSERT(mortonEncode(static_cast<U>(1), static_cast<U>(1), static_cast<U>(0)) == 3);
+  ASSERT(mortonEncode(static_cast<U>(0), static_cast<U>(0), static_cast<U>(1)) == 4);
+  ASSERT(mortonEncode(static_cast<U>(1), static_cast<U>(0), static_cast<U>(1)) == 5);
+  ASSERT(mortonEncode(static_cast<U>(0), static_cast<U>(1), static_cast<U>(1)) == 6);
+  ASSERT(mortonEncode(static_cast<U>(1), static_cast<U>(1), static_cast<U>(1)) == 7);
+  ASSERT(mortonEncode(static_cast<U>(2), static_cast<U>(0), static_cast<U>(0)) == 8);
+  ASSERT(mortonEncode(static_cast<U>(2), static_cast<U>(2), static_cast<U>(2)) == 56);
+  ASSERT(mortonEncode(static_cast<U>(3), static_cast<U>(3), static_cast<U>(3)) == 63);
 }
 
 template <std::unsigned_integral U>
@@ -43,38 +43,38 @@ TEST_CASE(mortonDecode)
   U x;
   U y;
   mortonDecode(static_cast<U>(0), x, y);
-  assert(x == 0 && y == 0);
+  ASSERT(x == 0 && y == 0);
   mortonDecode(static_cast<U>(1), x, y);
-  assert(x == 1 && y == 0);
+  ASSERT(x == 1 && y == 0);
   mortonDecode(static_cast<U>(2), x, y);
-  assert(x == 0 && y == 1);
+  ASSERT(x == 0 && y == 1);
   mortonDecode(static_cast<U>(3), x, y);
-  assert(x == 1 && y == 1);
+  ASSERT(x == 1 && y == 1);
   mortonDecode(static_cast<U>(12), x, y);
-  assert(x == 2 && y == 2);
+  ASSERT(x == 2 && y == 2);
   mortonDecode(static_cast<U>(15), x, y);
-  assert(x == 3 && y == 3);
+  ASSERT(x == 3 && y == 3);
 
   // 3D
   U z;
   mortonDecode(static_cast<U>(0), x, y, z);
-  assert(x == 0 && y == 0 && z == 0);
+  ASSERT(x == 0 && y == 0 && z == 0);
   mortonDecode(static_cast<U>(1), x, y, z);
-  assert(x == 1 && y == 0 && z == 0);
+  ASSERT(x == 1 && y == 0 && z == 0);
   mortonDecode(static_cast<U>(2), x, y, z);
-  assert(x == 0 && y == 1 && z == 0);
+  ASSERT(x == 0 && y == 1 && z == 0);
   mortonDecode(static_cast<U>(3), x, y, z);
-  assert(x == 1 && y == 1 && z == 0);
+  ASSERT(x == 1 && y == 1 && z == 0);
   mortonDecode(static_cast<U>(4), x, y, z);
-  assert(x == 0 && y == 0 && z == 1);
+  ASSERT(x == 0 && y == 0 && z == 1);
   mortonDecode(static_cast<U>(5), x, y, z);
-  assert(x == 1 && y == 0 && z == 1);
+  ASSERT(x == 1 && y == 0 && z == 1);
   mortonDecode(static_cast<U>(6), x, y, z);
-  assert(x == 0 && y == 1 && z == 1);
+  ASSERT(x == 0 && y == 1 && z == 1);
   mortonDecode(static_cast<U>(7), x, y, z);
-  assert(x == 1 && y == 1 && z == 1);
+  ASSERT(x == 1 && y == 1 && z == 1);
   mortonDecode(static_cast<U>(56), x, y, z);
-  assert(x == 2 && y == 2 && z == 2);
+  ASSERT(x == 2 && y == 2 && z == 2);
 }
 
 template <std::unsigned_integral U, std::floating_point T>
@@ -86,25 +86,25 @@ TEST_CASE(mortonEncodeFloat)
 
   T const zero = static_cast<T>(0);
   T const one = static_cast<T>(1);
-  assert((mortonEncode<U, T>(zero, zero) == static_cast<U>(0x0000000000000000)));
-  assert((mortonEncode<U, T>(one, zero) == static_cast<U>(0x5555555555555555)));
-  assert((mortonEncode<U, T>(zero, one) == static_cast<U>(0xAAAAAAAAAAAAAAAA)));
-  assert((mortonEncode<U, T>(one, one) == static_cast<U>(0xFFFFFFFFFFFFFFFF)));
+  ASSERT((mortonEncode<U, T>(zero, zero) == static_cast<U>(0x0000000000000000)));
+  ASSERT((mortonEncode<U, T>(one, zero) == static_cast<U>(0x5555555555555555)));
+  ASSERT((mortonEncode<U, T>(zero, one) == static_cast<U>(0xAAAAAAAAAAAAAAAA)));
+  ASSERT((mortonEncode<U, T>(one, one) == static_cast<U>(0xFFFFFFFFFFFFFFFF)));
 
   // 3D
   U value = 100;
-  assert((mortonEncode<U, T>(zero, zero, zero) == static_cast<U>(0x0000000000000000)));
+  ASSERT((mortonEncode<U, T>(zero, zero, zero) == static_cast<U>(0x0000000000000000)));
   value = mortonEncode<U, T>(one, one, one);
   if constexpr (std::same_as<uint32_t, U>) {
-    assert(value == static_cast<U>(0x3fffffff));
+    ASSERT(value == static_cast<U>(0x3fffffff));
   } else {
-    assert(value == static_cast<U>(0x7fffffffffffffff));
+    ASSERT(value == static_cast<U>(0x7fffffffffffffff));
   }
   value = mortonEncode<U, T>(one, zero, zero);
   if constexpr (std::same_as<uint32_t, U>) {
-    assert(value == static_cast<U>(0x9249249));
+    ASSERT(value == static_cast<U>(0x9249249));
   } else {
-    assert(value == static_cast<U>(0x1249249249249249));
+    ASSERT(value == static_cast<U>(0x1249249249249249));
   }
 }
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <um2/geometry/AxisAlignedBox.hpp>
-#include <um2/geometry/Ray.hpp>
-#include <um2/math/AngularQuadrature.hpp>
+#include <um2/geometry/axis_aligned_box.hpp>
+#include <um2/geometry/ray.hpp>
+#include <um2/math/angular_quadrature.hpp>
 #include <um2/stdlib/math.hpp>
 
 namespace um2
@@ -11,6 +11,7 @@ namespace um2
 // Modular ray parameters for a single angle
 template <typename T>
 struct ModularRayParams {
+
   AxisAlignedBox2<T> box;
   Vec2<Size> num_rays; // Number of rays in x and y
   Vec2<T> spacing;     // Spacing between rays in x and y
@@ -38,7 +39,7 @@ struct ModularRayParams {
     // i >= ny (Case 3)
     // x0 = x_max
     // y0 = y_min + (i - ny + 0.5) * dy
-    assert(i < num_rays[0] + num_rays[1]);
+    ASSERT_ASSUME(i < num_rays[0] + num_rays[1]);
     int case_id = i < num_rays[0] ? 0 : 1;
     case_id += direction[0] < 0 ? 2 : 0;
     Ray2<T> res(box.minima, direction);
@@ -57,7 +58,7 @@ struct ModularRayParams {
       res.o[1] += spacing[1] * (static_cast<T>(i - num_rays[0]) + static_cast<T>(0.5));
       break;
     default:
-      assert(false);
+      __builtin_unreachable();
     }
     return res;
   }
@@ -72,8 +73,9 @@ HOSTDEV constexpr auto
 getModularRayParams(T const a, T const s, AxisAlignedBox2<T> const box)
     -> ModularRayParams<T>
 {
-  assert(0 < a && a < pi<T>);
-  assert(0 < s);
+  ASSERT_ASSUME(0 < a);
+  ASSERT_ASSUME(a < pi<T>);
+  ASSERT_ASSUME(0 < s);
 
   T const w = box.width();
   T const h = box.height();

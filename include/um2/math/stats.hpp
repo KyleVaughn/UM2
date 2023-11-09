@@ -14,7 +14,7 @@ template <std::floating_point T>
 HOSTDEV constexpr auto
 mean(T const * begin, T const * end) -> T
 {
-  assert(begin != end);
+  ASSERT_ASSUME(begin != end);
   T const n = static_cast<T>(end - begin);
   T result = static_cast<T>(0);
   while (begin != end) {
@@ -32,8 +32,8 @@ template <std::floating_point T>
 HOSTDEV constexpr auto
 median(T const * begin, T const * end) -> T
 {
-  assert(begin != end);
-  assert(um2::is_sorted(begin, end));
+  ASSERT_ASSUME(begin != end);
+  ASSERT(um2::is_sorted(begin, end));
   auto const size = end - begin;
   auto const mid = begin + size / 2;
   // If the size is odd, return the middle element.
@@ -52,14 +52,14 @@ template <std::floating_point T>
 HOSTDEV constexpr auto
 variance(T const * begin, T const * end) -> T
 {
-  assert(begin != end);
+  ASSERT_ASSUME(begin != end);
   T const n_minus_1 = static_cast<T>(end - begin - 1);
   auto const xbar = um2::mean(begin, end);
   T result = static_cast<T>(0);
   while (begin != end) {
     T const x_minus_xbar = *begin - xbar;
-    ++begin;
     result += x_minus_xbar * x_minus_xbar;
+    ++begin;
   }
   return result / n_minus_1;
 }

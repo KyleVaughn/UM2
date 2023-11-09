@@ -1,5 +1,5 @@
 #include <um2/math/stats.hpp>
-#include <um2/stdlib/Vector.hpp>
+#include <um2/stdlib/vector.hpp>
 
 #include "../test_macros.hpp"
 
