@@ -1,8 +1,8 @@
 #include <benchmark/benchmark.h>
 
 //#include <um2/common/Log.hpp>
-//#include <um2/geometry/AxisAlignedBox.hpp>
-//#include <um2/geometry/Point.hpp>
+#include <um2/geometry/axis_aligned_box.hpp>
+#include <um2/geometry/point.hpp>
 //#include <um2/geometry/Polygon.hpp>
 #include <um2/stdlib/vector.hpp>
 //
@@ -56,30 +56,30 @@ makeVectorOfRandomInts(Size size) -> um2::Vector<T>
   return v;
 }
 
-//template <Size D, typename T>
-//auto
-//randomPoint() -> um2::Point<D, T>
-//{
-//  um2::Point<D, T> p;
-//  std::generate(p.begin(), p.end(), randomFloat<T>);
-//  return p;
-//}
-//
-//template <Size D, typename T>
-//auto
-//makeVectorOfRandomPoints(Size size, um2::AxisAlignedBox<D, T> box)
-//    -> um2::Vector<um2::Point<D, T>>
-//{
-//  um2::Vector<um2::Point<D, T>> v(size);
-//  std::generate(v.begin(), v.end(), randomPoint<D, T>);
-//  auto const box_size = box.maxima - box.minima;
-//  for (auto & p : v) {
-//    p *= box_size;
-//    p += box.minima;
-//  }
-//  return v;
-//}
-//
+template <Size D, typename T>
+auto
+randomPoint() -> um2::Point<D, T>
+{
+  um2::Point<D, T> p;
+  std::generate(p.begin(), p.end(), randomFloat<T>);
+  return p;
+}
+
+template <Size D, typename T>
+auto
+makeVectorOfRandomPoints(Size size, um2::AxisAlignedBox<D, T> box)
+    -> um2::Vector<um2::Point<D, T>>
+{
+  um2::Vector<um2::Point<D, T>> v(size);
+  std::generate(v.begin(), v.end(), randomPoint<D, T>);
+  auto const box_size = box.maxima - box.minima;
+  for (auto & p : v) {
+    p *= box_size;
+    p += box.minima;
+  }
+  return v;
+}
+
 //template <typename T>
 //auto
 //makeVectorOfRandomTriangles(Size size, um2::AxisAlignedBox2<T> box)
@@ -98,29 +98,3 @@ makeVectorOfRandomInts(Size size) -> um2::Vector<T>
 //  }
 //  return v;
 //}
-//
-#if UM2_USE_CUDA
-template <typename T>
-void
-transferToDevice(T ** d_v, um2::Vector<T> const & v)
-{
-  size_t const size_in_bytes = static_cast<size_t>(v.size()) * sizeof(T);
-  cudaMalloc(d_v, size_in_bytes);
-  cudaMemcpy(*d_v, v.data(), size_in_bytes, cudaMemcpyHostToDevice);
-}
-
-template <typename T>
-void
-transferFromDevice(um2::Vector<T> & v, T const * d_v)
-{
-  if (v.empty()) {
-    std::cerr << "Cannot transfer from device to host, vector is empty."
-              << std::endl;
-    exit(1);
-    return;
-  }
-  size_t const size_in_bytes = static_cast<size_t>(v.size()) * sizeof(T);
-  cudaMemcpy(v.data(), d_v, size_in_bytes, cudaMemcpyDeviceToHost);
-}
-
-#endif // UM2_USE_CUDA

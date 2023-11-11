@@ -1,4 +1,4 @@
-#include <um2/mesh/RegularPartition.hpp>
+#include <um2/mesh/regular_partition.hpp>
 
 #include "../test_macros.hpp"
 

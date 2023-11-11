@@ -1,4 +1,4 @@
-#include <um2/mesh/FaceVertexMesh.hpp>
+#include <um2/mesh/face_vertex_mesh.hpp>
 
 #include "./helpers/setup_mesh.hpp"
 #include "./helpers/setup_polytope_soup.hpp"

@@ -142,8 +142,7 @@ endif()
 # Sources
 set(UM2_SOURCES
     "src/common/log.cpp"
-    # mpact
-    #"src/mpact/SpatialPartition.cpp"
+    "src/mpact/spatial_partition.cpp"
     #    "src/mpact/io.cpp"
     #    # gmsh
     #    "src/gmsh/base_gmsh_api.cpp"
@@ -174,20 +173,20 @@ configure_file(
   "${PROJECT_SOURCE_DIR}/cmake/config.hpp.in"
   "${PROJECT_SOURCE_DIR}/include/um2/config.hpp")
 
-##===============================================================================
-## Mandatory dependencies
-##===============================================================================
-#
-## HDF5
-#find_package(HDF5 REQUIRED COMPONENTS CXX)
-#target_link_libraries(um2 PUBLIC "${HDF5_CXX_LIBRARIES}")
-#target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
-#
-## pugixml
-#find_package(PugiXML REQUIRED)
-#target_link_libraries(um2 PUBLIC "${PUGIXML_LIB}")
-#target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
-#
+#===============================================================================
+# Mandatory dependencies
+#===============================================================================
+
+# HDF5
+find_package(HDF5 REQUIRED COMPONENTS CXX)
+target_link_libraries(um2 PUBLIC "${HDF5_CXX_LIBRARIES}")
+target_include_directories(um2 SYSTEM PUBLIC "${HDF5_INCLUDE_DIRS}")
+
+# pugixml
+find_package(PugiXML REQUIRED)
+target_link_libraries(um2 PUBLIC "${PUGIXML_LIB}")
+target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
+
 #===============================================================================
 # Optional dependencies
 #===============================================================================
@@ -376,15 +375,15 @@ if (UM2_BUILD_BENCHMARKS)
   find_package(benchmark REQUIRED)
   add_subdirectory(benchmarks)
 endif()
-#
-##===============================================================================
-## Install
-##===============================================================================
-#
-## Install the library
-#install(TARGETS um2
-#        EXPORT um2-targets
-#        RUNTIME DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin
-#        LIBRARY DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lib
-#        ARCHIVE DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lib)
-#install(DIRECTORY include/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include)
+
+#===============================================================================
+# Install
+#===============================================================================
+
+# Install the library
+install(TARGETS um2
+        EXPORT um2-targets
+        RUNTIME DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/bin
+        LIBRARY DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lib
+        ARCHIVE DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lib)
+install(DIRECTORY include/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include)

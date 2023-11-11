@@ -27,8 +27,4 @@ macro(add_um2_tutorial FILENAME)
     set_cuda_properties(${TUTORIAL} ${ARGN})
   endif()
 
-  ## If vis is enabled, link the necessary libraries
-  #if (UM2_USE_VIS)
-  #  target_link_libraries(${TUTORIAL} ${UM2_VIS_LIBRARIES})
-  #endif()
 endmacro()

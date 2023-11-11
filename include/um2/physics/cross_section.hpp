@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/stdlib/Vector.hpp>
+#include <um2/stdlib/vector.hpp>
 
 namespace um2
 {
@@ -9,9 +9,9 @@ struct CrossSection {
 
   Vector<Float> t; // Macroscopic total cross section
 
-  // ---------------------------------------------------------------------
+  //======================================================================
   // Constructors
-  // ---------------------------------------------------------------------
+  //======================================================================
 
   constexpr CrossSection() noexcept = default;
 

@@ -1,4 +1,4 @@
-#include <um2/mesh/RegularGrid.hpp>
+#include <um2/mesh/regular_grid.hpp>
 
 #include "../test_macros.hpp"
 

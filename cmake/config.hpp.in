@@ -156,7 +156,7 @@ constexpr bool always_false = false;
 //
 // ASSERT(expr) - Asserts that expr is true.
 //  If UM2_ENABLE_DBC is 0, this is a no-op.
-// 
+//
 // ASSERT_NEAR(a, b, eps) - Asserts that a and b are within eps of each other.
 //  If UM2_ENABLE_DBC is 0, this is a no-op.
 //
@@ -254,4 +254,21 @@ failedAssertNear(char const * const file, int const line, char const * const a,
 #define ASSERT_ASSUME(expr) ASSERT(expr)
 
 #endif // UM2_ENABLE_DBC
+
+//==============================================================================
+// CUDA error checking
+//==============================================================================
+
+#if UM2_USE_CUDA && UM2_ENABLE_DBC
+#  define CUDA_CHECK_ERROR(status)                                                       \
+    {                                                                                    \
+      if (status != cudaSuccess) {                                                       \
+        printf("CUDA error: %s:%d: %s\n", __FILE__, __LINE__, cudaGetErrorString(status)); \
+        exit(1);                                                                         \
+      }                                                                                  \
+    }
+#else
+#  define CUDA_CHECK_ERROR(status)
+#endif
+
 // NOLINTEND(modernize-macro-to-enum)

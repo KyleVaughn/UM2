@@ -1,11 +1,10 @@
 #pragma once
 
-#include <um2/mesh/PolytopeSoup.hpp>
-
+#include <um2/mesh/polytope_soup.hpp>
 #include <um2/stdlib/sto.hpp>
 
-// #include <cstring>   // strcmp
-// #include <sstream>   // std::stringstream
+#include <cstring>   // strcmp
+#include <sstream>   // std::stringstream
 
 // External dependencies
 #include <H5Cpp.h>     // H5::H5File, H5::DataSet, H5::DataSpace, H5::DataType
@@ -581,20 +580,20 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
       h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
 #ifndef NDEBUG
   H5T_class_t const type_class = dataset.getTypeClass();
-  assert(type_class == H5T_FLOAT);
+  ASSERT(type_class == H5T_FLOAT);
 #endif
   H5::FloatType const datatype = dataset.getFloatType();
   size_t const datatype_size = datatype.getSize();
 #ifndef NDEBUG
-  assert(datatype_size == std::stoul(precision));
+  ASSERT(datatype_size == std::stoul(precision));
   H5::DataSpace const dataspace = dataset.getSpace();
   int const rank = dataspace.getSimpleExtentNdims();
-  assert(rank == 2);
+  ASSERT(rank == 2);
   hsize_t dims[2];
   int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
-  assert(ndims == 2);
-  assert(dims[0] == static_cast<hsize_t>(num_verts));
-  assert(dims[1] == static_cast<hsize_t>(num_dimensions));
+  ASSERT(ndims == 2);
+  ASSERT(dims[0] == static_cast<hsize_t>(num_verts));
+  ASSERT(dims[1] == static_cast<hsize_t>(num_dimensions));
 #endif
   if (datatype_size == 4) {
     addNodesToMesh<T, I, float>(soup, num_verts, num_dimensions, dataset, datatype,
@@ -731,24 +730,24 @@ static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5
       h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
 #ifndef NDEBUG
   H5T_class_t const type_class = dataset.getTypeClass();
-  assert(type_class == H5T_INTEGER);
+  ASSERT(type_class == H5T_INTEGER);
 #endif
   H5::IntType const datatype = dataset.getIntType();
   size_t const datatype_size = datatype.getSize();
 #ifndef NDEBUG
-  assert(datatype_size == std::stoul(precision));
+  ASSERT(datatype_size == std::stoul(precision));
   H5::DataSpace const dataspace = dataset.getSpace();
   int const rank = dataspace.getSimpleExtentNdims();
   if (topology_type == "Mixed") {
-    assert(rank == 1);
+    ASSERT(rank == 1);
     hsize_t dims[1];
     int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
-    assert(ndims == 1);
+    ASSERT(ndims == 1);
   } else {
-    assert(rank == 2);
+    ASSERT(rank == 2);
     hsize_t dims[2];
     int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
-    assert(ndims == 2);
+    ASSERT(ndims == 2);
   }
 #endif
   // Get the dimensions
@@ -848,27 +847,29 @@ static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5fi
         h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
 #ifndef NDEBUG
     H5T_class_t const type_class = dataset.getTypeClass();
-    assert(type_class == H5T_INTEGER);
+    ASSERT(type_class == H5T_INTEGER);
 #endif
     H5::IntType const datatype = dataset.getIntType();
     size_t const datatype_size = datatype.getSize();
-    assert(datatype_size == std::stoul(precision));
+    ASSERT(datatype_size == std::stoul(precision));
     H5::DataSpace const dataspace = dataset.getSpace();
 #ifndef NDEBUG
     int const rank = dataspace.getSimpleExtentNdims();
-    assert(rank == 1);
+    ASSERT(rank == 1);
 #endif
+
     hsize_t dims[1];
 #ifndef NDEBUG
     int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
-    assert(ndims == 1);
+    ASSERT(ndims == 1);
+    std::string const dimensions = xdataitem.attribute("Dimensions").value();
 #else
     dataspace.getSimpleExtentDims(dims, nullptr);
 #endif
-    // Get the dimensions
-    std::string const dimensions = xdataitem.attribute("Dimensions").value();
     auto const num_elements = static_cast<Size>(dims[0]);
-    assert(num_elements == sto<Size>(dimensions));
+    ASSERT(num_elements == sto<Size>(dimensions));
+
+    // Get the dimensions
     if (datatype_size == 1) {
       addElsetToMesh<T, I, int8_t>(soup, num_elements, dataset, datatype, name);
     } else if (datatype_size == 2) {

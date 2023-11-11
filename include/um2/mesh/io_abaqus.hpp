@@ -1,9 +1,7 @@
 #pragma once
 
-#include <um2/config.hpp>
-
-#include <um2/common/Log.hpp>
-#include <um2/mesh/PolytopeSoup.hpp>
+#include <um2/common/log.hpp>
+#include <um2/mesh/polytope_soup.hpp>
 #include <um2/stdlib/sto.hpp>
 
 #include <charconv>
@@ -61,7 +59,10 @@ parseElements(PolytopeSoup<T, I> & soup, std::string & line, std::ifstream & fil
   //  ASCII code for '0' is 48, so line[18] - 48 is the offset
   //  as an integer
   //
-  assert(line[15] == 'C' && line[16] == 'P' && line[17] == 'S');
+  if (line[15] != 'C' || line[16] != 'P' || line[17] != 'S') {
+    LOG_ERROR("Only CPS elements are supported");
+    return;
+  }
   I const offset = static_cast<I>(line[18]) - 48;
   VTKElemType this_type = VTKElemType::Vertex;
   switch (offset) {
@@ -95,14 +96,14 @@ parseElements(PolytopeSoup<T, I> & soup, std::string & line, std::ifstream & fil
     while (next != std::string::npos) {
       std::from_chars(line_view.data() + last + 2, line_view.data() + next, id);
       LOG_TRACE("Node ID: " + toString(id));
-      assert(id > 0);
+      ASSERT(id > 0);
       soup.element_conn.push_back(id - 1); // ABAQUS is 1-indexed
       last = next;
       next = line_view.find(',', last + 2);
     }
     // Read last node ID
     std::from_chars(line_view.data() + last + 2, line_view.data() + line_view.size(), id);
-    assert(id > 0);
+    ASSERT(id > 0);
     soup.element_conn.push_back(id - 1); // ABAQUS is 1-indexed
     ++num_elements;
   }
@@ -150,13 +151,13 @@ parseElsets(PolytopeSoup<T, I> & soup, std::string & line, std::ifstream & file)
     size_t next = line_view.find(',');
     I id;
     std::from_chars(line_view.data(), line_view.data() + next, id);
-    assert(id > 0);
+    ASSERT(id > 0);
     elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
     last = next;
     next = line_view.find(',', last + 1);
     while (next != std::string::npos) {
       std::from_chars(line_view.data() + last + 2, line_view.data() + next, id);
-      assert(id > 0);
+      ASSERT(id > 0);
       elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
       last = next;
       next = line_view.find(',', last + 1);
@@ -164,7 +165,7 @@ parseElsets(PolytopeSoup<T, I> & soup, std::string & line, std::ifstream & file)
   }
   soup.addElset(elset_name, elset_ids);
   // Ensure the elset is sorted
-  assert(um2::is_sorted(elset_ids.cbegin(), elset_ids.cend()));
+  ASSERT(um2::is_sorted(elset_ids.cbegin(), elset_ids.cend()));
 }
 
 //==============================================================================

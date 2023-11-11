@@ -1,4 +1,4 @@
-#include <um2/mesh/RectilinearGrid.hpp>
+#include <um2/mesh/rectilinear_grid.hpp>
 
 #include "../test_macros.hpp"
 

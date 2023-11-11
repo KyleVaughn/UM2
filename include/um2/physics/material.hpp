@@ -1,8 +1,8 @@
 #pragma once
 
-#include <um2/common/Color.hpp>
-#include <um2/common/ShortString.hpp>
-#include <um2/physics/CrossSection.hpp>
+#include <um2/common/color.hpp>
+#include <um2/common/shortstring.hpp>
+#include <um2/physics/cross_section.hpp>
 
 namespace um2
 {
@@ -13,9 +13,9 @@ struct Material {
   Color color;
   CrossSection xs;
 
-  // ---------------------------------------------------------------------
+  //======================================================================
   // Constructors
-  // ---------------------------------------------------------------------
+  //======================================================================
 
   constexpr Material() noexcept = default;
 
@@ -25,28 +25,30 @@ struct Material {
   {
   }
 
-  HOSTDEV constexpr Material(ShortString const & name_in,
-                             ShortString const & color_in) noexcept
-      : name(name_in),
-        color(color_in)
-  {
-  }
-
-  template <uint64_t M, uint64_t N>
-  HOSTDEV constexpr Material(char const (&name_in)[M], char const (&color_in)[N]) noexcept
-      : name(name_in),
-        color(color_in)
-  {
-  }
+//  HOSTDEV constexpr Material(ShortString const & name_in,
+//                             ShortString const & color_in) noexcept
+//      : name(name_in),
+//        color(color_in)
+//  {
+//  }
+//
+//  template <uint64_t M, uint64_t N>
+//  HOSTDEV constexpr Material(char const (&name_in)[M], char const (&color_in)[N]) noexcept
+//      : name(name_in),
+//        color(color_in)
+//  {
+//  }
 
   //======================================================================
   // Methods
   //======================================================================
 
-  [[nodiscard]] auto HOSTDEV constexpr hasTotalCrossSection() const noexcept -> bool
+  HOSTDEV [[nodiscard]] constexpr auto
+  hasTotalCrossSection() const noexcept -> bool
   {
     return !xs.t.empty();
   }
+
 };
 
 PURE HOSTDEV constexpr auto

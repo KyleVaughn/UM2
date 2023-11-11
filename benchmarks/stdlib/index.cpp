@@ -64,7 +64,7 @@ constexpr Size vals = 1 << 17;
 
 template <typename T>
 HOSTDEV
-T mix(T a, T b, T c)
+auto mix(T a, T b, T c) -> T
 {
   // Some hash function ripped from the internet + a division at the end.
   // We're just trying to do a non-trivial amount of arithmetic.
@@ -119,10 +119,13 @@ arithmeticCUDA(benchmark::State & state)
   T * x_d;
   T * y_d;
   T * z_d;
-  transferToDevice(&x_d, x);
-  transferToDevice(&y_d, y);
-  transferToDevice(&z_d, z);
-
+  size_t const size_in_bytes = static_cast<size_t>(n) * sizeof(T);
+  cudaMalloc(&x_d, size_in_bytes);
+  cudaMalloc(&y_d, size_in_bytes);
+  cudaMalloc(&z_d, size_in_bytes);
+  cudaMemcpy(x_d, x.data(), size_in_bytes, cudaMemcpyHostToDevice);
+  cudaMemcpy(y_d, y.data(), size_in_bytes, cudaMemcpyHostToDevice);
+  cudaMemcpy(z_d, z.data(), size_in_bytes, cudaMemcpyHostToDevice);
   constexpr uint32_t tpb = 256; // threads per block
   for (auto s : state) {
     arithmeticKernel<<<1, tpb>>>(x_d, y_d, z_d, n);

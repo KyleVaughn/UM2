@@ -1,4 +1,4 @@
-#include <um2/mesh/RectilinearPartition.hpp>
+#include <um2/mesh/rectilinear_partition.hpp>
 
 #include "../test_macros.hpp"
 

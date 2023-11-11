@@ -197,7 +197,7 @@ template <class T>
 HOSTDEV constexpr void
 Vector<T>::allocate(Size n) noexcept
 {
-  ASSERT_ASSUME(n < max_size());
+  ASSERT(n < max_size());
   ASSERT(_begin == nullptr);
   _begin = static_cast<T *>(::operator new(static_cast<size_t>(n) * sizeof(T)));
   _end = _begin;

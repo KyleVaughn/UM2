@@ -1,5 +1,5 @@
-#include <um2/mpact/SpatialPartition.hpp>
-#include <um2/mpact/io.hpp>
+#include <um2/mpact/spatial_partition.hpp>
+//#include <um2/mpact/io.hpp>
 
 #include "../test_macros.hpp"
 
@@ -8,7 +8,7 @@
 #if UM2_ENABLE_FLOAT64 == 1
 constexpr Float test_eps = 1e-6;
 #else
-constexpr auto test_eps = static_cast<Float>(1e-6);
+constexpr Float test_eps = 1e-6F; 
 #endif
 
 // template <typename T, typename I>

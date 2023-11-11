@@ -1,4 +1,4 @@
-#include <um2/mesh/PolytopeSoup.hpp>
+#include <um2/mesh/polytope_soup.hpp>
 
 #include "./helpers/setup_polytope_soup.hpp"
 
@@ -154,22 +154,20 @@ TEST_CASE(getMaterialNames)
   ASSERT(mat_names == mat_names_ref);
 }
 
-// template <std::floating_point T, std::signed_integral I>
-// TEST_CASE(getMaterialIDs)
-//{
-//   um2::PolytopeSoup<T, I> tri_ref;
-//   makeReferenceTriPolytopeSoup(tri_ref);
-//   um2::Vector<MaterialID> mat_ids;
-//   tri_ref.getMaterialIDs(mat_ids,
-//                          um2::Vector<std::string>{"Material_H2O", "Material_UO2"});
-//   um2::Vector<MaterialID> const mat_ids_ref = {1, 0};
-//   ASSERT(mat_ids == mat_ids_ref);
-//   mat_ids.clear();
-//   tri_ref.getMaterialIDs(mat_ids,
-//                          um2::Vector<std::string>{"Material_UO2", "Material_H2O"});
-//   um2::Vector<MaterialID> const mat_ids_ref2 = {0, 1};
-//   ASSERT(mat_ids == mat_ids_ref2);
-// }
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(getMaterialIDs)
+{
+   um2::PolytopeSoup<T, I> tri_ref;
+   makeReferenceTriPolytopeSoup(tri_ref);
+   um2::Vector<MaterialID> mat_ids;
+   tri_ref.getMaterialIDs(mat_ids, {"Material_H2O", "Material_UO2"});
+   um2::Vector<MaterialID> const mat_ids_ref = {1, 0};
+   ASSERT(mat_ids == mat_ids_ref);
+   mat_ids.clear();
+   tri_ref.getMaterialIDs(mat_ids, {"Material_UO2", "Material_H2O"});
+   um2::Vector<MaterialID> const mat_ids_ref2 = {0, 1};
+   ASSERT(mat_ids == mat_ids_ref2);
+ }
 
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(PolytopeSoup)
@@ -181,7 +179,7 @@ TEST_SUITE(PolytopeSoup)
   TEST((sortElsets<T, I>));
   TEST((getSubmesh<T, I>));
   TEST((getMaterialNames<T, I>));
-  ///  TEST((getMaterialIDs<T, I>));
+  TEST((getMaterialIDs<T, I>));
 }
 
 auto

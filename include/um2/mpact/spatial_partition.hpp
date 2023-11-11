@@ -1,10 +1,10 @@
 #pragma once
 
-#include <um2/mesh/FaceVertexMesh.hpp>
-#include <um2/mesh/RectilinearPartition.hpp>
-#include <um2/mesh/RegularPartition.hpp>
+#include <um2/mesh/face_vertex_mesh.hpp>
+#include <um2/mesh/rectilinear_partition.hpp>
+#include <um2/mesh/regular_partition.hpp>
 #include <um2/mesh/io.hpp>
-#include <um2/physics/Material.hpp>
+#include <um2/physics/material.hpp>
 
 namespace um2::mpact
 {

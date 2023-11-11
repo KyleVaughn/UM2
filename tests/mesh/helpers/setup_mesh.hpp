@@ -3,21 +3,12 @@ HOSTDEV auto
 makeTriReferenceMesh() -> um2::TriMesh<D, T, I>
 {
   um2::TriMesh<D, T, I> mesh;
-  if constexpr (D == 2) {
-    mesh.vertices = {
-        {0, 0},
-        {1, 0},
-        {1, 1},
-        {0, 1}
-    };
-  } else {
-    mesh.vertices = {
-        {0, 0, 0},
-        {1, 0, 0},
-        {1, 1, 0},
-        {0, 1, 0}
-    };
-  }
+  mesh.vertices = {
+      {0, 0},
+      {1, 0},
+      {1, 1},
+      {0, 1}
+  };
   mesh.fv = {
       {0, 1, 2},
       {2, 3, 0}

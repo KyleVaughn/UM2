@@ -1,4 +1,15 @@
 Change valgrind to be optional
 
+old benchmarks to archive
+
+iterators
+
+Make getElemTypes return a Vector
+
 ray tests
 modular ray tests
+cross section tests
+material tests
+
+test pointer arithmetic versus index for ray/mesh intersection
+test iterating over edges with getEdge vs just manually making them

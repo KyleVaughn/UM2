@@ -1,4 +1,6 @@
-#include <um2/mpact/SpatialPartition.hpp>
+#include <um2/mpact/spatial_partition.hpp>
+
+#include <iomanip>
 
 namespace um2::mpact
 {
@@ -786,7 +788,7 @@ SpatialPartition::makeRTM(Vector<Vector<Size>> const & cc_ids) -> Size
     for (Size j = 0; j < cc_ids[i].size(); ++j) {
       auto * const it =
           std::find(unique_cc_ids.begin(), unique_cc_ids.end(), cc_ids[i][j]);
-      assert(it != unique_cc_ids.cend());
+      ASSERT(it != unique_cc_ids.cend());
 #if UM2_ENABLE_INT64 == 0
       cc_ids_renumbered[i][j] = static_cast<Size>(it - unique_cc_ids.begin());
 #else
@@ -1013,74 +1015,76 @@ SpatialPartition::importCoarseCells(String const & filename)
     this_name = ShortString(material_names[i].substr(9).c_str());
   }
 
-  //  // For each coarse cell
-  //  Stringstream ss;
-  //  Size const num_coarse_cells = numCoarseCells();
-  //  for (Size i = 0; i < num_coarse_cells; ++i) {
-  //    // Get the submesh for the coarse cell
-  //    ss.str("");
-  //    ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << i;
-  //    PolytopeSoup<Float, Int> cc_submesh;
-  //    mesh_file.getSubmesh(ss.str(), cc_submesh);
-  //
-  //    // Get the mesh type and material IDs
-  //    MeshType const mesh_type = cc_submesh.getMeshType();
-  //    CoarseCell & cc = coarse_cells[i];
-  //    cc.mesh_type = mesh_type;
-  //    Vector<MaterialID> mat_ids;
-  //    cc_submesh.getMaterialIDs(mat_ids, material_names);
-  //    cc.material_ids.resize(static_cast<Size>(mat_ids.size()));
-  //    std::copy(mat_ids.cbegin(), mat_ids.cend(), cc.material_ids.begin());
-  //
-  //    // Create the FaceVertexMesh and shift it from global coordinates to local
-  //    // coordinates, with the bottom left corner of the AABB at the origin
-  //    AxisAlignedBox2<Float> bb;
-  //    Point2<Float> * vertices = nullptr;
-  //    size_t const num_verts = cc_submesh.vertices.size();
-  //    // clang-tidy false positive
-  //    // NOLINTBEGIN(bugprone-branch-clone) justified above
-  //    switch (mesh_type) {
-  //    case MeshType::Tri: {
-  //      cc.mesh_id = tri.size();
-  //      tri.push_back(um2::move(TriMesh<2, Float, Int>(cc_submesh)));
-  //      bb = tri.back().boundingBox();
-  //      vertices = tri.back().vertices.data();
-  //      break;
-  //    }
-  //    case MeshType::Quad: {
-  //      cc.mesh_id = quad.size();
-  //      quad.push_back(um2::move(QuadMesh<2, Float, Int>(cc_submesh)));
-  //      bb = quad.back().boundingBox();
-  //      vertices = quad.back().vertices.data();
-  //      break;
-  //    }
-  //    case MeshType::QuadraticTri: {
-  //      cc.mesh_id = quadratic_tri.size();
-  //      quadratic_tri.push_back(um2::move(QuadraticTriMesh<2, Float, Int>(cc_submesh)));
-  //      bb = quadratic_tri.back().boundingBox();
-  //      vertices = quadratic_tri.back().vertices.data();
-  //      break;
-  //    }
-  //    case MeshType::QuadraticQuad: {
-  //      cc.mesh_id = quadratic_quad.size();
-  //      quadratic_quad.push_back(um2::move(QuadraticQuadMesh<2, Float,
-  //      Int>(cc_submesh))); bb = quadratic_quad.back().boundingBox(); vertices =
-  //      quadratic_quad.back().vertices.data(); break;
-  //    }
-  //    // NOLINTEND(bugprone-branch-clone)
-  //    default:
-  //      Log::error("Mesh type not supported");
-  //    }
-  //
-  //    // Shift the points so that the min point is at the origin.
-  //    Point2<Float> const min_point = bb.minima;
-  //    for (size_t ip = 0; ip < num_verts; ++ip) {
-  //      vertices[ip] -= min_point;
-  //    }
-  // #ifndef NDEBUG
-  //    Point2<Float> const dxdy = bb.maxima - bb.minima;
-  //    assert(isApprox(dxdy, cc.dxdy));
-  // #endif
-  //  }
+  // For each coarse cell
+  std::stringstream ss;
+  Size const num_coarse_cells = numCoarseCells();
+  for (Size i = 0; i < num_coarse_cells; ++i) {
+    // Get the submesh for the coarse cell
+    ss.str("");
+    ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << i;
+    String const cc_name(ss.str().c_str());
+    PolytopeSoup<Float, Int> cc_submesh;
+    mesh_file.getSubmesh(cc_name, cc_submesh);
+
+    // Get the mesh type and material IDs
+    MeshType const mesh_type = cc_submesh.getMeshType();
+    CoarseCell & cc = coarse_cells[i];
+    cc.mesh_type = mesh_type;
+    Vector<MaterialID> mat_ids;
+    cc_submesh.getMaterialIDs(mat_ids, material_names);
+    cc.material_ids.resize(mat_ids.size());
+    std::copy(mat_ids.cbegin(), mat_ids.cend(), cc.material_ids.begin());
+
+    // Create the FaceVertexMesh and shift it from global coordinates to local
+    // coordinates, with the bottom left corner of the AABB at the origin
+    AxisAlignedBox2<Float> bb;
+    Point2<Float> * vertices = nullptr;
+    Size const num_verts = cc_submesh.vertices.size();
+    // clang-tidy false positive
+    // NOLINTBEGIN(bugprone-branch-clone) justified above
+    switch (mesh_type) {
+    case MeshType::Tri: {
+      cc.mesh_id = tri.size();
+      tri.push_back(um2::move(TriMesh<2, Float, Int>(cc_submesh)));
+      bb = tri.back().boundingBox();
+      vertices = tri.back().vertices.data();
+      break;
+    }
+    case MeshType::Quad: {
+      cc.mesh_id = quad.size();
+      quad.push_back(um2::move(QuadMesh<2, Float, Int>(cc_submesh)));
+      bb = quad.back().boundingBox();
+      vertices = quad.back().vertices.data();
+      break;
+    }
+    case MeshType::QuadraticTri: {
+      cc.mesh_id = quadratic_tri.size();
+      quadratic_tri.push_back(um2::move(QuadraticTriMesh<2, Float, Int>(cc_submesh)));
+      bb = quadratic_tri.back().boundingBox();
+      vertices = quadratic_tri.back().vertices.data();
+      break;
+    }
+    case MeshType::QuadraticQuad: {
+      cc.mesh_id = quadratic_quad.size();
+      quadratic_quad.push_back(um2::move(QuadraticQuadMesh<2, Float, Int>(cc_submesh)));
+      bb = quadratic_quad.back().boundingBox();
+      vertices = quadratic_quad.back().vertices.data();
+      break;
+    }
+    // NOLINTEND(bugprone-branch-clone)
+    default:
+      Log::error("Mesh type not supported");
+    }
+
+    // Shift the points so that the min point is at the origin.
+    Point2<Float> const min_point = bb.minima;
+    for (Size ip = 0; ip < num_verts; ++ip) {
+      vertices[ip] -= min_point;
+    }
+    #ifndef NDEBUG
+    Point2<Float> const dxdy = bb.maxima - bb.minima;
+    ASSERT(isApprox(dxdy, cc.dxdy));
+    #endif
+  }
 }
 } // namespace um2::mpact
