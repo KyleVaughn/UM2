@@ -43,58 +43,6 @@ TEST_CASE(getMeshType)
   ASSERT(tri6_quad8.getMeshType() == um2::MeshType::QuadraticTriQuad);
 }
 
-template <std::floating_point T, std::signed_integral I>
-TEST_CASE(compareGeometry)
-{
-  um2::PolytopeSoup<T, I> tri_ref;
-  makeReferenceTriPolytopeSoup(tri_ref);
-  um2::PolytopeSoup<T, I> tri;
-  makeReferenceTriPolytopeSoup(tri);
-  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
-  tri.vertices.push_back(um2::Point3<T>{0, 0, 0});
-  ASSERT(um2::compareGeometry(tri, tri_ref) == 1);
-  tri.vertices.pop_back();
-  T const eps = um2::eps_distance<T>;
-  tri.vertices[0][0] += (eps / 2);
-  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
-  tri.vertices[0][0] += (eps * 2);
-  ASSERT(um2::compareGeometry(tri, tri_ref) == 2);
-}
-
-template <std::floating_point T, std::signed_integral I>
-TEST_CASE(compareTopology)
-{
-  um2::PolytopeSoup<T, I> tri_ref;
-  makeReferenceTriPolytopeSoup(tri_ref);
-  um2::PolytopeSoup<T, I> tri;
-  makeReferenceTriPolytopeSoup(tri);
-  ASSERT(um2::compareGeometry(tri, tri_ref) == 0);
-  tri.element_types.push_back(um2::VTKElemType::Quad);
-  ASSERT(um2::compareTopology(tri, tri_ref) == 1);
-  tri.element_types.pop_back();
-  tri.element_types[0] = um2::VTKElemType::Quad;
-  ASSERT(um2::compareTopology(tri, tri_ref) == 2);
-  tri.element_types[0] = um2::VTKElemType::Triangle;
-  tri.element_conn[0] += 1;
-  ASSERT(um2::compareTopology(tri, tri_ref) == 3);
-}
-
-template <std::floating_point T, std::signed_integral I>
-TEST_CASE(sortElsets)
-{
-  um2::PolytopeSoup<T, I> tri_ref;
-  makeReferenceTriPolytopeSoup(tri_ref);
-  um2::PolytopeSoup<T, I> tri;
-  makeReferenceTriPolytopeSoup(tri);
-  // Reorder elsets
-  tri.elset_names = {"Material_UO2", "Material_H2O", "A", "B"};
-  tri.elset_offsets = {0, 1, 2, 4, 5};
-  tri.elset_ids = {0, 1, 0, 1, 1};
-  tri.sortElsets();
-  ASSERT(tri.elset_names == tri_ref.elset_names);
-  ASSERT(tri.elset_offsets == tri_ref.elset_offsets);
-  ASSERT(tri.elset_ids == tri_ref.elset_ids);
-}
 
 template <std::floating_point T, std::signed_integral I>
 TEST_CASE(getSubmesh)

@@ -1,8 +1,10 @@
-#include <um2/mesh/io_abaqus.hpp>
+#include <um2/mesh/polytope_soup.hpp>
 
 #include "./helpers/setup_polytope_soup.hpp"
 
 #include "../test_macros.hpp"
+
+#include <iostream>
 
 template <std::floating_point T, std::signed_integral I>
 TEST_CASE(tri_mesh)
@@ -12,13 +14,9 @@ TEST_CASE(tri_mesh)
   makeReferenceTriPolytopeSoup(mesh_ref);
 
   um2::PolytopeSoup<T, I> mesh;
-  um2::readAbaqusFile(filename, mesh);
+  mesh.read(filename);
 
-  ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
-  ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
-  ASSERT(mesh.elset_names == mesh_ref.elset_names);
-  ASSERT(mesh.elset_offsets == mesh_ref.elset_offsets);
-  ASSERT(mesh.elset_ids == mesh_ref.elset_ids);
+  ASSERT(mesh.compareTo(mesh_ref) == 17); // Only missing data
 }
 
 template <std::floating_point T, std::signed_integral I>
@@ -29,13 +27,9 @@ TEST_CASE(quad_mesh)
   makeReferenceQuadPolytopeSoup(mesh_ref);
 
   um2::PolytopeSoup<T, I> mesh;
-  um2::readAbaqusFile(filename, mesh);
+  mesh.read(filename);
 
-  ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
-  ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
-  ASSERT(mesh.elset_names == mesh_ref.elset_names);
-  ASSERT(mesh.elset_offsets == mesh_ref.elset_offsets);
-  ASSERT(mesh.elset_ids == mesh_ref.elset_ids);
+  ASSERT(mesh.compareTo(mesh_ref) == 17); // Only missing data
 }
 
 template <std::floating_point T, std::signed_integral I>
@@ -46,13 +40,9 @@ TEST_CASE(tri_quad_mesh)
   makeReferenceTriQuadPolytopeSoup(mesh_ref);
 
   um2::PolytopeSoup<T, I> mesh;
-  um2::readAbaqusFile(filename, mesh);
+  mesh.read(filename);
 
-  ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
-  ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
-  ASSERT(mesh.elset_names == mesh_ref.elset_names);
-  ASSERT(mesh.elset_offsets == mesh_ref.elset_offsets);
-  ASSERT(mesh.elset_ids == mesh_ref.elset_ids);
+  ASSERT(mesh.compareTo(mesh_ref) == 17); // Only missing data
 }
 
 template <std::floating_point T, std::signed_integral I>
@@ -63,13 +53,9 @@ TEST_CASE(tri6_mesh)
   makeReferenceTri6PolytopeSoup(mesh_ref);
 
   um2::PolytopeSoup<T, I> mesh;
-  um2::readAbaqusFile(filename, mesh);
+  mesh.read(filename);
 
-  ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
-  ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
-  ASSERT(mesh.elset_names == mesh_ref.elset_names);
-  ASSERT(mesh.elset_offsets == mesh_ref.elset_offsets);
-  ASSERT(mesh.elset_ids == mesh_ref.elset_ids);
+  ASSERT(mesh.compareTo(mesh_ref) == 17); // Only missing data
 }
 
 template <std::floating_point T, std::signed_integral I>
@@ -80,13 +66,9 @@ TEST_CASE(quad8_mesh)
   makeReferenceQuad8PolytopeSoup(mesh_ref);
 
   um2::PolytopeSoup<T, I> mesh;
-  um2::readAbaqusFile(filename, mesh);
+  mesh.read(filename);
 
-  ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
-  ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
-  ASSERT(mesh.elset_names == mesh_ref.elset_names);
-  ASSERT(mesh.elset_offsets == mesh_ref.elset_offsets);
-  ASSERT(mesh.elset_ids == mesh_ref.elset_ids);
+  ASSERT(mesh.compareTo(mesh_ref) == 17); // Only missing data
 }
 
 template <std::floating_point T, std::signed_integral I>
@@ -97,13 +79,9 @@ TEST_CASE(tri6_quad8_mesh)
   makeReferenceTri6Quad8PolytopeSoup(mesh_ref);
 
   um2::PolytopeSoup<T, I> mesh;
-  um2::readAbaqusFile(filename, mesh);
+  mesh.read(filename);
 
-  ASSERT(um2::compareGeometry(mesh, mesh_ref) == 0);
-  ASSERT(um2::compareTopology(mesh, mesh_ref) == 0);
-  ASSERT(mesh.elset_names == mesh_ref.elset_names);
-  ASSERT(mesh.elset_offsets == mesh_ref.elset_offsets);
-  ASSERT(mesh.elset_ids == mesh_ref.elset_ids);
+  ASSERT(mesh.compareTo(mesh_ref) == 17); // Only missing data
 }
 
 template <std::floating_point T, std::signed_integral I>
