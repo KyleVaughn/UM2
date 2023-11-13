@@ -2,6 +2,8 @@
 
 #include <um2/common/log.hpp>
 #include <um2/geometry/point.hpp>
+#include <um2/geometry/polygon.hpp>    
+#include <um2/geometry/morton_sort_points.hpp>
 #include <um2/mesh/element_types.hpp>
 #include <um2/stdlib/algorithm.hpp>
 #include <um2/stdlib/memory.hpp>
@@ -47,7 +49,7 @@ namespace um2
 template <std::floating_point T, std::signed_integral I>
 class PolytopeSoup {
 
-  bool _is_sorted = false;
+  bool _is_morton_sorted = false;
   Vector<Point3<T>> _vertices;
   Vector<VTKElemType> _element_types;
   Vector<I> _element_offsets; // A prefix sum of the number of vertices in each element
@@ -59,6 +61,11 @@ class PolytopeSoup {
   Vector<Vector<T>> _elset_data; // Data associated with each elset
 
   public:
+
+  //==============================================================================
+  // Constructors
+  //==============================================================================
+
   constexpr PolytopeSoup() = default;
 
   //==============================================================================
@@ -354,7 +361,7 @@ auto
 PolytopeSoup<T, I>::compareTo(PolytopeSoup<T, I> const & other) const -> int
 {
 
-  if (_is_sorted != other._is_sorted) {
+  if (_is_morton_sorted != other._is_morton_sorted) {
     return 1;
   }
   if (_vertices.size() != other._vertices.size()) {

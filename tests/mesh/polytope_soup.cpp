@@ -263,11 +263,11 @@ TEST_SUITE(PolytopeSoup)
 auto
 main() -> int
 {
-//  RUN_SUITE((PolytopeSoup<float, int16_t>));
-//  RUN_SUITE((PolytopeSoup<float, int32_t>));
-//  RUN_SUITE((PolytopeSoup<float, int64_t>));
-//  RUN_SUITE((PolytopeSoup<double, int16_t>));
-//  RUN_SUITE((PolytopeSoup<double, int32_t>));
+  RUN_SUITE((PolytopeSoup<float, int16_t>));
+  RUN_SUITE((PolytopeSoup<float, int32_t>));
+  RUN_SUITE((PolytopeSoup<float, int64_t>));
+  RUN_SUITE((PolytopeSoup<double, int16_t>));
+  RUN_SUITE((PolytopeSoup<double, int32_t>));
   RUN_SUITE((PolytopeSoup<double, int64_t>));
   return 0;
 }
