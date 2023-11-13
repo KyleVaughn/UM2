@@ -2,6 +2,7 @@
 
 #include <um2/common/log.hpp>
 #include <um2/geometry/point.hpp>
+#include <um2/mesh/element_types.hpp>
 #include <um2/stdlib/algorithm.hpp>
 #include <um2/stdlib/memory.hpp>
 #include <um2/stdlib/sto.hpp>
@@ -43,133 +44,6 @@ namespace um2
 // See FaceVertexMesh for a more efficient, but less general, data
 // structure.
 
-//==============================================================================
-// Element topology identifiers
-//==============================================================================
-
-enum class VTKElemType : int8_t {
-  None = 0,
-  Vertex = 1,
-  Line = 3,
-  Triangle = 5,
-  Quad = 9,
-  QuadraticEdge = 21,
-  QuadraticTriangle = 22,
-  QuadraticQuad = 23
-};
-
-enum class XDMFElemType : int8_t {
-  None = 0,
-  Vertex = 1,
-  Line = 2,
-  Triangle = 4,
-  Quad = 5,
-  QuadraticEdge = 34,
-  QuadraticTriangle = 36,
-  QuadraticQuad = 37
-
-};
-
-enum class MeshType : int8_t {
-  None = 0,
-  Tri = 3,
-  Quad = 4,
-  TriQuad = 7,
-  QuadraticTri = 6,
-  QuadraticQuad = 8,
-  QuadraticTriQuad = 14
-};
-
-constexpr auto
-verticesPerElem(VTKElemType const type) -> Size
-{
-  switch (type) {
-  case VTKElemType::Vertex:
-    return 1;
-  case VTKElemType::Line:
-    return 2;
-  case VTKElemType::Triangle:
-    return 3;
-  case VTKElemType::Quad:
-    return 4;
-  case VTKElemType::QuadraticEdge:
-    return 3;
-  case VTKElemType::QuadraticTriangle:
-    return 6;
-  case VTKElemType::QuadraticQuad:
-    return 8;
-  default:
-    ASSERT(false);
-    return -1;
-  }
-}
-//
-//constexpr auto
-//verticesPerElem(MeshType const type) -> Size
-//{
-//  switch (type) {
-//  case MeshType::Tri:
-//    return 3;
-//  case MeshType::Quad:
-//    return 4;
-//  case MeshType::QuadraticTri:
-//    return 6;
-//  case MeshType::QuadraticQuad:
-//    return 8;
-//  default:
-//    ASSERT(false);
-//    return -1;
-//  }
-//}
-
-constexpr auto
-xdmfToVTKElemType(int8_t x) -> VTKElemType
-{
-  switch (x) {
-  case static_cast<int8_t>(XDMFElemType::Vertex):
-    return VTKElemType::Vertex;
-  case static_cast<int8_t>(XDMFElemType::Line):
-    return VTKElemType::Line;
-  case static_cast<int8_t>(XDMFElemType::Triangle):
-    return VTKElemType::Triangle;
-  case static_cast<int8_t>(XDMFElemType::Quad):
-    return VTKElemType::Quad;
-  case static_cast<int8_t>(XDMFElemType::QuadraticEdge):
-    return VTKElemType::QuadraticEdge;
-  case static_cast<int8_t>(XDMFElemType::QuadraticTriangle):
-    return VTKElemType::QuadraticTriangle;
-  case static_cast<int8_t>(XDMFElemType::QuadraticQuad):
-    return VTKElemType::QuadraticQuad;
-  default:
-    ASSERT(false);
-    return VTKElemType::None;
-  }
-}
-
-constexpr auto
-vtkToXDMFElemType(VTKElemType x) -> XDMFElemType
-{
-  switch (x) {
-  case VTKElemType::Vertex:
-    return XDMFElemType::Vertex;
-  case VTKElemType::Line:
-    return XDMFElemType::Line;
-  case VTKElemType::Triangle:
-    return XDMFElemType::Triangle;
-  case VTKElemType::Quad:
-    return XDMFElemType::Quad;
-  case VTKElemType::QuadraticEdge:
-    return XDMFElemType::QuadraticEdge;
-  case VTKElemType::QuadraticTriangle:
-    return XDMFElemType::QuadraticTriangle;
-  case VTKElemType::QuadraticQuad:
-    return XDMFElemType::QuadraticQuad;
-  default:
-    ASSERT(false);
-    return XDMFElemType::None;
-  }
-}
-
 template <std::floating_point T, std::signed_integral I>
 class PolytopeSoup {
 
@@ -188,62 +62,73 @@ class PolytopeSoup {
   constexpr PolytopeSoup() = default;
 
   //==============================================================================
-  // Operators
+  // Methods 
   //==============================================================================
+
+  auto 
+  addElement(VTKElemType type, Vector<I> const & conn) -> Size;
 
   auto
-  operator==(PolytopeSoup const & other) const -> bool;
+  addElset(String const & name, Vector<I> const & ids, Vector<T> data = {}) -> Size;
 
-  //==============================================================================
-  // Methods
-  //==============================================================================
+  auto
+  addVertex(T x, T y, T z = 0) -> Size;
 
-  void
-  read(String const & filename);
-
-  void
-  write(String const & filename) const;
-
-  void
-  addVertex(T x, T y, T z = 0);
-
-  void
-  addElement(VTKElemType type, Vector<I> const & conn);
-
-  void
-  addElset(String const & name, Vector<I> const & ids, Vector<T> data = {});
+  auto
+  addVertex(Point3<T> const & p) -> Size;
 
   [[nodiscard]] auto
   compareTo(PolytopeSoup const & other) const -> int;
 
   void
-  sortElsets();
+  getElement(Size i, VTKElemType & type, Vector<I> & conn) const; 
+
+  PURE [[nodiscard]] constexpr auto
+  getElemTypes() const -> Vector<VTKElemType>;
+
+  void
+  getElset(Size i, String & name, Vector<I> & ids, Vector<T> & data) const;
+
+  void
+  getMaterialIDs(Vector<MaterialID> & material_ids,
+                 Vector<String> const & material_names) const;
 
   void
   getMaterialNames(Vector<String> & material_names) const;
 
   PURE [[nodiscard]] constexpr auto
+  getMeshType() const -> MeshType;
+
+  void
+  getSubmesh(String const & elset_name, PolytopeSoup<T, I> & submesh) const;
+
+  PURE [[nodiscard]] constexpr auto
+  getVertex(Size i) const -> Point3<T> const &;
+
+  PURE [[nodiscard]] constexpr auto
   numElems() const -> Size;
 
-//  PURE [[nodiscard]] constexpr auto
-//  hasElsetData() const -> bool;
-//
   PURE [[nodiscard]] constexpr auto
-  getElemTypes() const -> Vector<VTKElemType>;
+  numElsets() const -> Size;
 
-//  PURE [[nodiscard]] constexpr auto
-//  getMeshType() const -> MeshType;
-//
-//
+  PURE [[nodiscard]] constexpr auto
+  numVerts() const -> Size;
+  
+  void
+  read(String const & filename);
 
+  void
+  sortElsets();
 
-//
-//  void
-//  getSubmesh(String const & elset_name, PolytopeSoup<T, I> & submesh) const;
-//
-//  void
-//  getMaterialIDs(Vector<MaterialID> & material_ids,
-//                 Vector<String> const & material_names) const;
+  void
+  write(String const & filename) const;
+
+  //==============================================================================
+  // Operators
+  //==============================================================================
+
+  auto
+  operator==(PolytopeSoup const & other) const -> bool;
 
   //============================================================================
   // Hidden Methods
@@ -286,6 +171,81 @@ class PolytopeSoup {
 }; // struct PolytopeSoup
 
 //==============================================================================
+// Methods 
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+PURE constexpr auto
+PolytopeSoup<T, I>::numVerts() const -> Size
+{
+  return _vertices.size();
+}
+
+template <std::floating_point T, std::signed_integral I>
+PURE constexpr auto
+PolytopeSoup<T, I>::numElsets() const -> Size
+{
+  return _elset_names.size();
+}
+
+template <std::floating_point T, std::signed_integral I>
+PURE constexpr auto
+PolytopeSoup<T, I>::numElems() const -> Size
+{
+  return _element_types.size();
+}
+
+template <std::floating_point T, std::signed_integral I>
+void 
+PolytopeSoup<T, I>::getElement(Size const i, VTKElemType & type, Vector<I> & conn) const
+{
+  ASSERT(i < _element_types.size());
+  type = _element_types[i];
+  Size const istart = static_cast<Size>(_element_offsets[i]); 
+  Size const iend = static_cast<Size>(_element_offsets[i + 1]);
+  auto const n = iend - istart; 
+  if (n != conn.size()) {
+    conn.resize(n);
+  }
+  for (Size j = 0; j < n; ++j) {
+    conn[j] = _element_conn[istart + j];
+  }
+}
+
+template <std::floating_point T, std::signed_integral I>
+void 
+PolytopeSoup<T, I>::getElset(Size const i, String & name, Vector<I> & ids, Vector<T> & data) const
+{
+  ASSERT(i < _elset_names.size());
+  name = _elset_names[i];
+  Size const istart = static_cast<Size>(_elset_offsets[i]);
+  Size const iend = static_cast<Size>(_elset_offsets[i + 1]);
+  auto const n = iend - istart;
+  if (n != ids.size()) {
+    ids.resize(n);
+  }
+  for (Size j = 0; j < n; ++j) {
+    ids[j] = _elset_ids[istart + j];
+  }
+  if (!_elset_data[i].empty()) {
+    if (data.size() != n) {
+      data.resize(n);
+    }
+    for (Size j = 0; j < n; ++j) {
+      data[j] = _elset_data[i][istart + j];
+    }
+  }
+}
+
+template <std::floating_point T, std::signed_integral I>
+PURE constexpr auto
+PolytopeSoup<T, I>::getVertex(Size const i) const -> Point3<T> const &
+{
+  ASSERT(i < _vertices.size());
+  return _vertices[i];
+}
+
+//==============================================================================
 // Operators
 //==============================================================================
 
@@ -301,10 +261,19 @@ PolytopeSoup<T, I>::operator==(PolytopeSoup const & other) const -> bool
 //==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
-void
-PolytopeSoup<T, I>::addVertex(T x, T y, T z)
+auto
+PolytopeSoup<T, I>::addVertex(T x, T y, T z) -> Size
 {
   _vertices.emplace_back(x, y, z);
+  return _vertices.size() - 1;
+}
+
+template <std::floating_point T, std::signed_integral I>
+auto
+PolytopeSoup<T, I>::addVertex(Point3<T> const & p) -> Size
+{
+  _vertices.push_back(p);
+  return _vertices.size() - 1;
 }
 
 //==============================================================================
@@ -312,8 +281,8 @@ PolytopeSoup<T, I>::addVertex(T x, T y, T z)
 //==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
-void
-PolytopeSoup<T, I>::addElement(VTKElemType const type, Vector<I> const & conn)
+auto
+PolytopeSoup<T, I>::addElement(VTKElemType const type, Vector<I> const & conn) -> Size
 {
   _element_types.push_back(type);
   if (_element_offsets.empty()) {
@@ -325,6 +294,7 @@ PolytopeSoup<T, I>::addElement(VTKElemType const type, Vector<I> const & conn)
     // cppcheck-suppress useStlAlgorithm;
     _element_conn.push_back(id);
   }
+  return _element_types.size() - 1;
 }
 
 //==============================================================================
@@ -332,8 +302,8 @@ PolytopeSoup<T, I>::addElement(VTKElemType const type, Vector<I> const & conn)
 //==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
-void
-PolytopeSoup<T, I>::addElset(String const & name, Vector<I> const & ids, Vector<T> data)
+auto
+PolytopeSoup<T, I>::addElset(String const & name, Vector<I> const & ids, Vector<T> data) -> Size
 {
   LOG_DEBUG("Adding elset: " + name);
 
@@ -341,19 +311,19 @@ PolytopeSoup<T, I>::addElset(String const & name, Vector<I> const & ids, Vector<
     // cppcheck-suppress useStlAlgorithm; justification: This is more clear.
     if (this_name == name) {
       LOG_ERROR("Elset " + name + " already exists.");
-      return;
+      return -1;
     }
   }
 
   Size const num_ids = ids.size();
   if (num_ids == 0) {
     LOG_ERROR("Elset ids" + name + " is empty.");
-    return;
+    return -1;
   }
 
   if (!data.empty() && (data.size() != num_ids)) {
     LOG_ERROR("Elset data size does not match the number of ids.");
-    return;
+    return -1;
   }
 
   _elset_names.emplace_back(name);
@@ -372,6 +342,7 @@ PolytopeSoup<T, I>::addElset(String const & name, Vector<I> const & ids, Vector<
   }
 #endif
   _elset_data.emplace_back(um2::move(data));
+  return _elset_names.size() - 1;
 }
 
 //==============================================================================
@@ -449,29 +420,6 @@ PolytopeSoup<T, I>::compareTo(PolytopeSoup<T, I> const & other) const -> int
 }
 
 //==============================================================================
-// numElems
-//==============================================================================
-
-template <std::floating_point T, std::signed_integral I>
-PURE constexpr auto
-PolytopeSoup<T, I>::numElems() const -> Size
-{
-  return _element_types.size();
-}
-
-////==============================================================================
-//// hasElsetData
-////==============================================================================
-//
-//template <std::floating_point T, std::signed_integral I>
-//PURE constexpr auto
-//PolytopeSoup<T, I>::hasElsetData() const -> bool
-//{
-//  return std::ranges::any_of(elset_data.cbegin(), elset_data.cend(),
-//                             [](auto const & data) { return !data.empty(); });
-//}
-//
-//==============================================================================
 // getElemTypes
 //==============================================================================
 // Get all the element types in the mesh.
@@ -497,56 +445,56 @@ PolytopeSoup<T, I>::getElemTypes() const -> Vector<VTKElemType>
   return el_types;
 }
 
-////==============================================================================
-//// getMeshType
-////==============================================================================
-//
-//template <std::floating_point T, std::signed_integral I>
-//PURE constexpr auto
-//PolytopeSoup<T, I>::getMeshType() const -> MeshType
-//{
-//  // Loop through the element types to determine which 1 or 2 mesh types are
-//  // present.
-//  VTKElemType type1 = VTKElemType::None;
-//  VTKElemType type2 = VTKElemType::None;
-//  for (auto const & this_type : element_types) {
-//    if (type1 == VTKElemType::None) {
-//      type1 = this_type;
-//    }
-//    if (type1 == this_type) {
-//      continue;
-//    }
-//    if (type2 == VTKElemType::None) {
-//      type2 = this_type;
-//    }
-//    if (type2 == this_type) {
-//      continue;
-//    }
-//    return MeshType::None;
-//  }
-//  // Determine the mesh type from the 1 or 2 VTK elem types.
-//  if (type1 == VTKElemType::Triangle && type2 == VTKElemType::None) {
-//    return MeshType::Tri;
-//  }
-//  if (type1 == VTKElemType::Quad && type2 == VTKElemType::None) {
-//    return MeshType::Quad;
-//  }
-//  if ((type1 == VTKElemType::Triangle && type2 == VTKElemType::Quad) ||
-//      (type2 == VTKElemType::Triangle && type1 == VTKElemType::Quad)) {
-//    return MeshType::TriQuad;
-//  }
-//  if (type1 == VTKElemType::QuadraticTriangle && type2 == VTKElemType::None) {
-//    return MeshType::QuadraticTri;
-//  }
-//  if (type1 == VTKElemType::QuadraticQuad && type2 == VTKElemType::None) {
-//    return MeshType::QuadraticQuad;
-//  }
-//  if ((type1 == VTKElemType::QuadraticTriangle && type2 == VTKElemType::QuadraticQuad) ||
-//      (type2 == VTKElemType::QuadraticTriangle && type1 == VTKElemType::QuadraticQuad)) {
-//    return MeshType::QuadraticTriQuad;
-//  }
-//  return MeshType::None;
-//}
+//==============================================================================
+// getMeshType
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+PURE constexpr auto
+PolytopeSoup<T, I>::getMeshType() const -> MeshType
+{
+  // Loop through the element types to determine which 1 or 2 mesh types are
+  // present.
+  VTKElemType type1 = VTKElemType::None;
+  VTKElemType type2 = VTKElemType::None;
+  for (auto const & this_type : _element_types) {
+    if (type1 == VTKElemType::None) {
+      type1 = this_type;
+    }
+    if (type1 == this_type) {
+      continue;
+    }
+    if (type2 == VTKElemType::None) {
+      type2 = this_type;
+    }
+    if (type2 == this_type) {
+      continue;
+    }
+    return MeshType::None;
+  }
+  // Determine the mesh type from the 1 or 2 VTK elem types.
+  if (type1 == VTKElemType::Triangle && type2 == VTKElemType::None) {
+    return MeshType::Tri;
+  }
+  if (type1 == VTKElemType::Quad && type2 == VTKElemType::None) {
+    return MeshType::Quad;
+  }
+  if ((type1 == VTKElemType::Triangle && type2 == VTKElemType::Quad) ||
+      (type2 == VTKElemType::Triangle && type1 == VTKElemType::Quad)) {
+    return MeshType::TriQuad;
+  }
+  if (type1 == VTKElemType::QuadraticTriangle && type2 == VTKElemType::None) {
+    return MeshType::QuadraticTri;
+  }
+  if (type1 == VTKElemType::QuadraticQuad && type2 == VTKElemType::None) {
+    return MeshType::QuadraticQuad;
+  }
+  if ((type1 == VTKElemType::QuadraticTriangle && type2 == VTKElemType::QuadraticQuad) ||
+      (type2 == VTKElemType::QuadraticTriangle && type1 == VTKElemType::QuadraticQuad)) {
+    return MeshType::QuadraticTriQuad;
+  }
+  return MeshType::None;
+}
 
 //==============================================================================
 // sortElsets
@@ -609,162 +557,172 @@ PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
   }
 }
 
-////==============================================================================
-//// getSubmesh
-////==============================================================================
-//
-//template <std::floating_point T, std::signed_integral I>
-//void
-//PolytopeSoup<T, I>::getSubmesh(String const & elset_name,
-//                               PolytopeSoup<T, I> & submesh) const
-//{
-//  LOG_DEBUG("Extracting submesh for elset: " + elset_name);
-//
-//  // Find the elset with the given name.
-//  auto const * const elset_it =
-//      std::find(elset_names.cbegin(), elset_names.cend(), elset_name);
-//  if (elset_it == elset_names.cend()) {
-//    Log::error("getSubmesh: Elset '" + elset_name + "' not found");
-//    return;
-//  }
-//
-//  // Get the element ids in the elset.
-//  auto const elset_index = static_cast<Size>(elset_it - elset_names.cbegin());
-//  auto const submesh_elset_start = static_cast<Size>(elset_offsets[elset_index]);
-//  auto const submesh_elset_end = static_cast<Size>(elset_offsets[elset_index + 1]);
-//  auto const submesh_num_elements = submesh_elset_end - submesh_elset_start;
-//  Vector<I> element_ids(submesh_num_elements);
-//  for (Size i = 0; i < submesh_num_elements; ++i) {
-//    element_ids[i] = elset_ids[submesh_elset_start + i];
-//  }
-//#if UM2_USE_TBB
-//  std::sort(std::execution::par_unseq, element_ids.begin(), element_ids.end());
-//#else
-//  std::sort(element_ids.begin(), element_ids.end());
-//#endif
-//
-//  // Get the element connectivity and remap the vertex ids.
-//  submesh.element_types.resize(submesh_num_elements);
-//  submesh.element_offsets.resize(submesh_num_elements + 1);
-//  submesh.element_offsets[0] = 0;
-//  submesh.element_conn.reserve(3 * submesh_num_elements);
-//  // push_back creates race condition. Don't parallelize.
-//  for (Size i = 0; i < submesh_num_elements; ++i) {
-//    auto const element_id = static_cast<Size>(element_ids[i]);
-//    submesh.element_types[i] = element_types[element_id];
-//    auto const element_start = static_cast<Size>(element_offsets[element_id]);
-//    auto const element_end = static_cast<Size>(element_offsets[element_id + 1]);
-//    auto const element_len = element_end - element_start;
-//    submesh.element_offsets[i + 1] =
-//        submesh.element_offsets[i] + static_cast<I>(element_len);
-//    for (Size j = 0; j < element_len; ++j) {
-//      I const vertex_id = element_conn[element_start + j];
-//      submesh.element_conn.push_back(vertex_id);
-//    }
-//  }
-//  // Get the unique vertex ids.
-//  Vector<I> unique_vertex_ids = submesh.element_conn;
-//#if UM2_USE_TBB
-//  std::sort(std::execution::par_unseq, unique_vertex_ids.begin(),
-//            unique_vertex_ids.end());
-//  auto * const last = std::unique(std::execution::par_unseq, unique_vertex_ids.begin(),
-//                                  unique_vertex_ids.end());
-//#else
-//  std::sort(unique_vertex_ids.begin(), unique_vertex_ids.end());
-//  auto * const last = std::unique(unique_vertex_ids.begin(), unique_vertex_ids.end());
-//#endif
-//  auto const num_unique_verts = static_cast<Size>(last - unique_vertex_ids.cbegin());
-//  // We now have the unique vertex ids. We need to remap the connectivity.
-//  // unique_vertex_ids[i] is the old vertex id, and i is the new vertex id.
-//#if UM2_USE_OPENMP
-//#  pragma omp parallel for
-//#endif
-//  for (Size i = 0; i < submesh.element_conn.size(); ++i) {
-//    I const old_vertex_id = submesh.element_conn[i];
-//    auto * const it = std::lower_bound(unique_vertex_ids.begin(), last, old_vertex_id);
-//    auto const new_vertex_id = static_cast<I>(it - unique_vertex_ids.cbegin());
-//    ASSERT(*it == old_vertex_id);
-//    submesh.element_conn[i] = new_vertex_id;
-//  }
-//
-//  // Get the x, y, z coordinates for the vertices.
-//  submesh.vertices.resize(num_unique_verts);
-//  for (Size i = 0; i < num_unique_verts; ++i) {
-//    auto const vertex_id = static_cast<Size>(unique_vertex_ids[i]);
-//    submesh.vertices[i] = vertices[vertex_id];
-//  }
-//
-//  Size const num_elsets = elset_names.size();
-//  // If the intersection of this elset and another elset is non-empty, then we need to
-//  // add the itersection as an elset and remap the elset IDs using the element_ids
-//  // vector.
-//  // element_ids[i] is the old element id, and i is the new element id.
-//  //
-//  // push_back causes race condition. Don't parallelize.
-//  for (Size i = 0; i < num_elsets; ++i) {
-//    if (i == elset_index) {
-//      continue;
-//    }
-//    auto const elset_start = static_cast<Size>(elset_offsets[i]);
-//    auto const elset_end = static_cast<Size>(elset_offsets[i + 1]);
-//    auto * const elset_ids_begin = addressof(elset_ids[elset_start]);
-//    auto * const elset_ids_end = elset_ids_begin + (elset_end - elset_start);
-//    std::vector<I> intersection;
-//    std::set_intersection(element_ids.begin(), element_ids.end(), elset_ids_begin,
-//                          elset_ids_end, std::back_inserter(intersection));
-//    if (intersection.empty()) {
-//      continue;
-//    }
-//    // We have an intersection. Add the elset.
-//    submesh.elset_names.push_back(elset_names[i]);
-//    if (submesh.elset_offsets.empty()) {
-//      submesh.elset_offsets.push_back(0);
-//    }
-//    submesh.elset_offsets.push_back(submesh.elset_offsets.back() +
-//                                    static_cast<I>(intersection.size()));
-//    for (size_t j = 0; j < intersection.size(); ++j) {
-//      I const old_element_id = intersection[j];
-//      auto * const it =
-//          std::lower_bound(element_ids.begin(), element_ids.end(), old_element_id);
-//      submesh.elset_ids.push_back(static_cast<I>(it - element_ids.begin()));
-//    }
-//  }
-//}
-//
-////==============================================================================
-//// getMaterialIDs
-////==============================================================================
-//
-// template <std::floating_point T, std::signed_integral I>
-//void
-// PolytopeSoup<T, I>::getMaterialIDs(Vector<MaterialID> & material_ids,
-//                                    Vector<String> const & material_names) const
-//{
-//  material_ids.resize(numElems());
-//  um2::fill(material_ids.begin(), material_ids.end(), static_cast<MaterialID>(-1));
-//  Size const nmats = material_names.size();
-//  for (Size i = 0; i < nmats; ++i) {
-//    String const & mat_name = material_names[i];
-//    for (Size j = 0; j < elset_names.size(); ++j) {
-//      if (elset_names[j] == mat_name) {
-//        auto const start = static_cast<Size>(this->elset_offsets[j]);
-//        auto const end = static_cast<Size>(this->elset_offsets[j + 1]);
-//        for (Size k = start; k < end; ++k) {
-//          auto const elem = static_cast<Size>(this->elset_ids[k]);
-//          if (material_ids[elem] != -1) {
-//            Log::error("Element " + toString(elem) + " has multiple materials");
-//          }
-//          material_ids[elem] = static_cast<MaterialID>(i);
-//        } // for k
-//        break;
-//      } // if elset_names[j] == mat_name
-//    }   // for j
-//  }     // for i
-//  if (std::any_of(material_ids.cbegin(), material_ids.cend(),
-//                  [](MaterialID const mat_id) { return mat_id == -1; })) {
-//    Log::error("Some elements have no material");
-//  }
-//}
+//==============================================================================
+// getSubmesh
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+void
+PolytopeSoup<T, I>::getSubmesh(String const & elset_name,
+                               PolytopeSoup<T, I> & submesh) const
+{
+  LOG_DEBUG("Extracting submesh for elset: " + elset_name);
+
+  // Find the elset with the given name.
+  Size elset_index = 0;
+  bool found = false;
+  for (Size i = 0; i < _elset_names.size(); ++i) {
+    if (_elset_names[i] == elset_name) {
+      elset_index = i;
+      found = true;
+    }
+  }
+  if (!found) {
+    Log::error("getSubmesh: Elset '" + elset_name + "' not found");
+    return;
+  }
+
+  auto const submesh_elset_start = static_cast<Size>(_elset_offsets[elset_index]);
+  auto const submesh_elset_end = static_cast<Size>(_elset_offsets[elset_index + 1]);
+  auto const submesh_num_elements = submesh_elset_end - submesh_elset_start;
+  Vector<I> element_ids(submesh_num_elements);
+  for (Size i = 0; i < submesh_num_elements; ++i) {
+    element_ids[i] = _elset_ids[submesh_elset_start + i];
+  }
+  ASSERT(um2::is_sorted(element_ids.cbegin(), element_ids.cend()));
+
+  // Get the unique vertices in all the elements.
+  Vector<I> vertex_ids;
+  vertex_ids.reserve(submesh_num_elements * 3);
+  for (Size i = 0; i < submesh_num_elements; ++i) {
+    auto const element_id = static_cast<Size>(element_ids[i]);
+    auto const element_start = static_cast<Size>(_element_offsets[element_id]);
+    auto const element_end = static_cast<Size>(_element_offsets[element_id + 1]);
+    auto const element_len = element_end - element_start;
+    for (Size j = 0; j < element_len; ++j) {
+      I const vertex_id = _element_conn[element_start + j];
+      vertex_ids.push_back(vertex_id);
+    }
+  }
+  std::sort(vertex_ids.begin(), vertex_ids.end());
+  Vector<I> unique_vertex_ids = vertex_ids; 
+  auto * const last = std::unique(unique_vertex_ids.begin(), unique_vertex_ids.end());
+  auto const num_unique_verts = static_cast<Size>(last - unique_vertex_ids.cbegin());
+  
+  // Add each of the vertices to the submesh.
+  for (Size i = 0; i < num_unique_verts; ++i) {
+    auto const vertex_id = static_cast<Size>(unique_vertex_ids[i]);
+    auto const & vertex = _vertices[vertex_id];
+    submesh.addVertex(vertex);
+  }
+
+  // For each element, add it to the submesh, remapping the vertex IDs
+  // unique_vertex_ids[i] is the old vertex id, and i is the new vertex id.
+  Size conn_len = 0;
+  Vector<I> conn;
+  for (Size i = 0; i < submesh_num_elements; ++i) {
+    auto const element_id = static_cast<Size>(element_ids[i]);
+    auto const element_type = _element_types[element_id];
+    auto const element_start = static_cast<Size>(_element_offsets[element_id]);
+    auto const element_end = static_cast<Size>(_element_offsets[element_id + 1]);
+    auto const element_len = element_end - element_start;
+    if (element_len != conn_len) {
+      conn.resize(element_len);
+      conn_len = element_len;
+    }
+    for (Size j = 0; j < element_len; ++j) {
+      I const old_vertex_id = _element_conn[element_start + j];
+      auto * const it = std::lower_bound(unique_vertex_ids.begin(), last, old_vertex_id);
+      auto const new_vertex_id = static_cast<I>(it - unique_vertex_ids.cbegin());
+      ASSERT(*it == old_vertex_id);
+      conn[j] = new_vertex_id;
+    }
+    submesh.addElement(element_type, conn);
+  }
+
+  // If the intersection of this elset and another elset is non-empty, then we need to
+  // add the itersection as an elset and remap the elset IDs using the element_ids
+  // vector.
+  //
+  // element_ids[i] is the old element id, and i is the new element id.
+  Size const num_elsets = _elset_names.size();
+  for (Size i = 0; i < num_elsets; ++i) {
+    if (i == elset_index) {
+      continue;
+    }
+    auto const elset_start = static_cast<Size>(_elset_offsets[i]);
+    auto const elset_end = static_cast<Size>(_elset_offsets[i + 1]);
+    auto * const elset_ids_begin = addressof(_elset_ids[elset_start]);
+    auto * const elset_ids_end = elset_ids_begin + (elset_end - elset_start);
+    std::vector<I> intersection;
+    std::set_intersection(element_ids.begin(), element_ids.end(), elset_ids_begin,
+                          elset_ids_end, std::back_inserter(intersection));
+    if (intersection.empty()) {
+      continue;
+    }
+    auto const & name = _elset_names[i];
+    auto const num_ids = static_cast<Size>(intersection.size());
+    Vector<I> ids(num_ids);
+    // Remap the element IDs
+    for (Size j = 0; j < num_ids; ++j) {
+      I const old_element_id = intersection[static_cast<size_t>(j)];
+      auto * const it = std::lower_bound(element_ids.cbegin(), element_ids.cend(), old_element_id);
+      auto const new_element_id = static_cast<I>(it - element_ids.cbegin());
+      ASSERT(*it == old_element_id);
+      ids[j] = new_element_id;
+    }
+    if (_elset_data[i].empty()) {
+      submesh.addElset(name, ids);
+      continue;
+    } 
+    // There is data
+    Vector<T> elset_data(num_ids);
+    Vector<T> const & this_elset_data = _elset_data[i];
+    for (Size j = 0; j < num_ids; ++j) {
+      I const old_element_id = intersection[static_cast<size_t>(j)];
+      auto * const it = std::lower_bound(elset_ids_begin, elset_ids_end, old_element_id);
+      ASSERT(*it == old_element_id);
+      auto const idx = static_cast<Size>(it - elset_ids_begin);
+      elset_data[j] = this_elset_data[idx];
+    }
+    submesh.addElset(name, ids, elset_data);
+  }
+}
+
+//==============================================================================
+// getMaterialIDs
+//==============================================================================
+
+ template <std::floating_point T, std::signed_integral I>
+void
+ PolytopeSoup<T, I>::getMaterialIDs(Vector<MaterialID> & material_ids,
+                                    Vector<String> const & material_names) const
+{
+  material_ids.resize(numElems());
+  um2::fill(material_ids.begin(), material_ids.end(), static_cast<MaterialID>(-1));
+  Size const nmats = material_names.size();
+  for (Size i = 0; i < nmats; ++i) {
+    String const & mat_name = material_names[i];
+    for (Size j = 0; j < _elset_names.size(); ++j) {
+      if (_elset_names[j] == mat_name) {
+        auto const start = static_cast<Size>(_elset_offsets[j]);
+        auto const end = static_cast<Size>(_elset_offsets[j + 1]);
+        for (Size k = start; k < end; ++k) {
+          auto const elem = static_cast<Size>(_elset_ids[k]);
+          if (material_ids[elem] != -1) {
+            Log::error("Element " + toString(elem) + " has multiple materials");
+          }
+          material_ids[elem] = static_cast<MaterialID>(i);
+        } // for k
+        break;
+      } // if elset_names[j] == mat_name
+    }   // for j
+  }     // for i
+  if (std::any_of(material_ids.cbegin(), material_ids.cend(),
+                  [](MaterialID const mat_id) { return mat_id == -1; })) {
+    Log::error("Some elements have no material");
+  }
+}
 
 //==============================================================================-
 // IO for ABAQUS files.
@@ -1027,6 +985,7 @@ PolytopeSoup<T, I>::writeXDMFGeometry(
   }
   // Write HDF5 data set
   h5dataset.write(xyz.data(), h5type, h5space);
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
 } // writeXDMFgeometry
 
 template <std::floating_point T, std::signed_integral I>
@@ -1123,6 +1082,7 @@ PolytopeSoup<T, I>::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5grou
     // Write HDF5 data set
     h5dataset.write(topology.data(), h5type, h5space);
   }
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
 } // writeXDMFTopology
 
 template <std::floating_point T, std::signed_integral I>
@@ -1194,6 +1154,7 @@ PolytopeSoup<T, I>::writeXDMFElsets(
       xdata2.append_child(pugi::node_pcdata).set_value(h5elsetdatapath.c_str());
     }
 
+    // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
     if (name.starts_with("Material_")) {
       // Get the index of the material in the material_names vector
       Size index = -1;
@@ -1487,6 +1448,7 @@ addElementsToMesh(Size const num_elements, String const & topology_type,
     // Add the elements to the soup
     for (Size i = 0; i < ncells; ++i) {
       for (Size j = 0; j < nverts; ++j) {
+        // NOLINTNEXTLINE
         conn[j] = static_cast<I>(data_vec[i * nverts + j]);
       }
       soup.addElement(elem_type, conn);
@@ -1722,7 +1684,7 @@ readXDMFFile(String const & filename, PolytopeSoup<T, I> & soup)
       filename.substr(h5filepath_end, filename.size() - 4 - h5filepath_end) + "h5";
   String const h5filepath = filename.substr(0, h5filepath_end);
   LOG_DEBUG("H5 filename: " + h5filename);
-  H5::H5File const h5file((h5filepath + h5filename).c_str(), H5F_ACC_RDONLY);
+  H5::H5File h5file((h5filepath + h5filename).c_str(), H5F_ACC_RDONLY);
 
   // Setup XML file
   pugi::xml_document xdoc;
@@ -1754,6 +1716,10 @@ readXDMFFile(String const & filename, PolytopeSoup<T, I> & soup)
   } else {
     Log::error("XDMF XML grid type is not Uniform or Tree");
   }
+  // Close HDF5 file
+  h5file.close();
+  // Close XML file
+  xdoc.reset();
 }
 
 #if defined(__GNUC__) && !defined(__clang__)

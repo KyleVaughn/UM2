@@ -105,6 +105,7 @@ public:
     if (isLong()) {
       ::operator delete(_r.l.data);
     }
+    // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
   }
 
   //==============================================================================
@@ -452,6 +453,7 @@ String::operator=(String const & s) noexcept -> String &
       memcpy(_r.l.data, s._r.l.data, s._r.l.size + 1);
     }
   }
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
   return *this;
 }
 

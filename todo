@@ -2,9 +2,9 @@ Change valgrind to be optional
 
 old benchmarks to archive
 
-iterators
+reserve elements/vertices for submesh and read: abaqus, xdmf
 
-Make getElemTypes return a Vector
+iterators
 
 ray tests
 modular ray tests
@@ -13,3 +13,5 @@ material tests
 
 test pointer arithmetic versus index for ray/mesh intersection
 test iterating over edges with getEdge vs just manually making them
+
+effect test of morton order on intersect
