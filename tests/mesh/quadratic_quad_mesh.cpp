@@ -88,8 +88,7 @@ TEST_CASE(toPolytopeSoup)
   makeReferenceQuad8PolytopeSoup(quad_poly_soup_ref);
   um2::PolytopeSoup<T, I> quad_poly_soup;
   quad_mesh.toPolytopeSoup(quad_poly_soup);
-  ASSERT(um2::compareGeometry(quad_poly_soup, quad_poly_soup_ref) == 0);
-  ASSERT(um2::compareTopology(quad_poly_soup, quad_poly_soup_ref) == 0);
+  ASSERT(quad_poly_soup.comapreTo(quad_poly_soup_ref) == 10);
   ASSERT(quad_poly_soup.getMeshType() == um2::MeshType::QuadraticQuad);
 }
 

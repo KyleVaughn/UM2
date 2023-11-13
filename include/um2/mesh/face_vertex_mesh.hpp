@@ -85,18 +85,18 @@ struct FaceVertexMesh {
   void
   flipFace(Size i) noexcept;
 
-//  void
-//  toPolytopeSoup(PolytopeSoup<T, I> & soup) const noexcept;
-//
+  void
+  toPolytopeSoup(PolytopeSoup<T, I> & soup) const noexcept;
+
 //  //  void
 //  //  getFaceAreas(Vector<T> & areas) const noexcept;
 //  //
 //  //  void
 //  //  getUniqueEdges(Vector<Edge> & edges) const noexcept;
 //  //
-//  void
-//  intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept
-//    requires(D == 2);
+  void
+  intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept
+    requires(D == 2);
 };
 
 //==============================================================================
@@ -307,39 +307,39 @@ template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 void
 validateMesh(FaceVertexMesh<P, N, D, T, I> & mesh)
 {
-//#ifndef NDEBUG
-//  // Check for repeated vertices.
-//  // This is not technically an error, but it is a sign that the mesh may
-//  // cause problems for some algorithms. Hence, we warn the user.
-//  auto const bbox = boundingBox(mesh);
-//  Vec<D, T> normalization;
-//  for (Size i = 0; i < D; ++i) {
-//    normalization[i] = static_cast<T>(1) / (bbox.maxima[i] - bbox.minima[i]);
-//  }
-//  Vector<Point<D, T>> vertices_copy = mesh.vertices;
-//  // Transform the points to be in the unit cube
-//  for (auto & v : vertices_copy) {
-//    v -= bbox.minima;
-//    v *= normalization;
-//  }
-//  if constexpr (std::same_as<T, float>) {
-//    mortonSort<uint32_t>(vertices_copy.begin(), vertices_copy.end());
-//  } else {
-//    mortonSort<uint64_t>(vertices_copy.begin(), vertices_copy.end());
-//  }
-//  // Revert the scaling
-//  for (auto & v : vertices_copy) {
-//    // cppcheck-suppress useStlAlgorithm; justification: This is less verbose
-//    v /= normalization;
-//  }
-//  Size const num_vertices = mesh.numVertices();
-//  for (Size i = 0; i < num_vertices - 1; ++i) {
-//    if (isApprox(vertices_copy[i], vertices_copy[i + 1])) {
-//      Log::warn("Vertex " + toString(i) + " and " + toString(i + 1) +
-//                " are effectively equivalent");
-//    }
-//  }
-//#endif
+#ifndef NDEBUG
+  // Check for repeated vertices.
+  // This is not technically an error, but it is a sign that the mesh may
+  // cause problems for some algorithms. Hence, we warn the user.
+  auto const bbox = boundingBox(mesh);
+  Vec<D, T> normalization;
+  for (Size i = 0; i < D; ++i) {
+    normalization[i] = static_cast<T>(1) / (bbox.maxima[i] - bbox.minima[i]);
+  }
+  Vector<Point<D, T>> vertices_copy = mesh.vertices;
+  // Transform the points to be in the unit cube
+  for (auto & v : vertices_copy) {
+    v -= bbox.minima;
+    v *= normalization;
+  }
+  if constexpr (std::same_as<T, float>) {
+    mortonSort<uint32_t>(vertices_copy.begin(), vertices_copy.end());
+  } else {
+    mortonSort<uint64_t>(vertices_copy.begin(), vertices_copy.end());
+  }
+  // Revert the scaling
+  for (auto & v : vertices_copy) {
+    // cppcheck-suppress useStlAlgorithm; justification: This is less verbose
+    v /= normalization;
+  }
+  Size const num_vertices = mesh.numVertices();
+  for (Size i = 0; i < num_vertices - 1; ++i) {
+    if (isApprox(vertices_copy[i], vertices_copy[i + 1])) {
+      Log::warn("Vertex " + toString(i) + " and " + toString(i + 1) +
+                " are effectively equivalent");
+    }
+  }
+#endif
 
   // Check that the vertices are in counter-clockwise order.
   // If the area of the face is negative, then the vertices are in clockwise
@@ -361,10 +361,10 @@ validateMesh(FaceVertexMesh<P, N, D, T, I> & mesh)
   }
 }
 
-////==============================================================================
-//// toFaceVertexMesh
-////==============================================================================
-//
+//==============================================================================
+// toFaceVertexMesh
+//==============================================================================
+
 // Return true if the MeshType and P, N are compatible.
 template <Size P, Size N>
 constexpr auto
@@ -399,23 +399,23 @@ validateMeshType(MeshType const type) -> bool
 //  ASSERT(false);
 //  return MeshType::None;
 //}
-//
-//template <Size P, Size N>
-//constexpr auto
-//getVTKElemType() -> VTKElemType
-//{
-//  if constexpr (P == 1 && N == 3) {
-//    return VTKElemType::Triangle;
-//  } else if constexpr (P == 1 && N == 4) {
-//    return VTKElemType::Quad;
-//  } else if constexpr (P == 2 && N == 6) {
-//    return VTKElemType::QuadraticTriangle;
-//  } else if constexpr (P == 2 && N == 8) {
-//    return VTKElemType::QuadraticQuad;
-//  }
-//  ASSERT(false);
-//  return VTKElemType::None;
-//}
+
+template <Size P, Size N>
+constexpr auto
+getVTKElemType() -> VTKElemType
+{
+  if constexpr (P == 1 && N == 3) {
+    return VTKElemType::Triangle;
+  } else if constexpr (P == 1 && N == 4) {
+    return VTKElemType::Quad;
+  } else if constexpr (P == 2 && N == 6) {
+    return VTKElemType::QuadraticTriangle;
+  } else if constexpr (P == 2 && N == 8) {
+    return VTKElemType::QuadraticQuad;
+  }
+  ASSERT(false);
+  return VTKElemType::None;
+}
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 void
@@ -498,118 +498,113 @@ FaceVertexMesh<P, N, D, T, I>::FaceVertexMesh(PolytopeSoup<T, I> const & soup)
   um2::toFaceVertexMesh(soup, *this);
 }
 
-////==============================================================================
-//// toPolytopeSoup
-////==============================================================================
-//
-//template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
-//void
-//toPolytopeSoup(FaceVertexMesh<P, N, D, T, I> const & mesh,
-//               PolytopeSoup<T, I> & soup) noexcept
-//{
-//  // Vertices
-//  if constexpr (D == 3) {
-//    soup.vertices = mesh.vertices;
-//  } else {
-//    soup.vertices.resize(mesh.numVertices());
-//    for (Size i = 0; i < mesh.numVertices(); ++i) {
-//      soup.vertices[i][0] = mesh.vertices[i][0];
-//      soup.vertices[i][1] = mesh.vertices[i][1];
-//      soup.vertices[i][2] = 0;
-//    }
-//  }
-//
-//  // Faces
-//  auto const nfaces = mesh.numFaces();
-//  auto const len = nfaces * N;
-//  VTKElemType const elem_type = getVTKElemType<P, N>();
-//  soup.element_types.resize(nfaces);
-//  um2::fill(soup.element_types.begin(), soup.element_types.end(), elem_type);
-//  soup.element_offsets.resize(nfaces + 1);
-//  soup.element_conn.resize(len);
-//  for (Size i = 0; i < nfaces; ++i) {
-//    soup.element_offsets[i] = static_cast<I>(i * N);
-//    for (Size j = 0; j < N; ++j) {
-//      soup.element_conn[i * N + j] = mesh.fv[i][j];
-//    }
-//  }
-//  soup.element_offsets[nfaces] = static_cast<I>(len);
-//}
-//
-//template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
-//void
-//FaceVertexMesh<P, N, D, T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const noexcept
-//{
-//  um2::toPolytopeSoup(*this, soup);
-//}
-//
-////==============================================================================
-//// intersect
-////==============================================================================
-//
-//template <Size N, std::floating_point T, std::signed_integral I>
-//void
-//intersect(PlanarLinearPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
-//          T * const intersections, Size * const n) noexcept
-//{
-//  T constexpr r_miss = inf_distance<T>;
-//  Size nintersect = 0;
-//#ifndef NDEBUG
-//  Size const n0 = *n;
-//#endif
-//  Size constexpr edges_per_face = PlanarLinearPolygonMesh<N, T, I>::Face::numEdges();
-//  for (Size i = 0; i < numFaces(mesh); ++i) {
-//    auto const face = mesh.getFace(i);
-//    for (Size j = 0; j < edges_per_face; ++j) {
-//      auto const edge = face.getEdge(j);
-//      T const r = intersect(edge, ray);
-//      if (r < r_miss) {
-//        ASSERT(nintersect < n0);
-//        intersections[nintersect++] = r;
-//      }
-//    }
-//  }
-//  *n = nintersect;
-//  std::sort(intersections, intersections + nintersect);
-//}
-//
-//template <Size N, std::floating_point T, std::signed_integral I>
-//void
-//intersect(PlanarQuadraticPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
-//          T * const intersections, Size * const n) noexcept
-//{
-//  T constexpr r_miss = inf_distance<T>;
-//  Size nintersect = 0;
-//#ifndef NDEBUG
-//  Size const n0 = *n;
-//#endif
-//  Size constexpr edges_per_face = PlanarQuadraticPolygonMesh<N, T, I>::Face::numEdges();
-//  for (Size i = 0; i < numFaces(mesh); ++i) {
-//    auto const face = mesh.getFace(i);
-//    for (Size j = 0; j < edges_per_face; ++j) {
-//      auto const edge = face.getEdge(j);
-//      auto const r = intersect(edge, ray);
-//      if (r[0] < r_miss) {
-//        ASSERT(nintersect < n0);
-//        intersections[nintersect++] = r[0];
-//      }
-//      if (r[1] < r_miss) {
-//        ASSERT(nintersect < n0);
-//        intersections[nintersect++] = r[1];
-//      }
-//    }
-//  }
-//  *n = nintersect;
-//  std::sort(intersections, intersections + nintersect);
-//}
-//
-//template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
-//void
-//FaceVertexMesh<P, N, D, T, I>::intersect(Ray<D, T> const & ray, T * intersections,
-//                                         Size * const n) const noexcept
-//  requires(D == 2)
-//{
-//  um2::intersect(*this, ray, intersections, n);
-//}
+//==============================================================================
+// toPolytopeSoup
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
+toPolytopeSoup(FaceVertexMesh<P, N, D, T, I> const & mesh,
+               PolytopeSoup<T, I> & soup) noexcept
+{
+  // Vertices
+  if constexpr (D == 3) {
+    for (Size i = 0; i < mesh.numVertices(); ++i) {
+      soup.addVertex(mesh.vertices[i]);
+    }
+  } else {
+    for (Size i = 0; i < mesh.numVertices(); ++i) {
+      auto const & p = mesh.vertices[i];
+      soup.addVertex(p[0], p[1]);
+    }
+  }
+
+  // Faces
+  auto const nfaces = mesh.numFaces();
+  VTKElemType const elem_type = getVTKElemType<P, N>();
+  Vector<I> conn(N);
+  for (Size i = 0; i < nfaces; ++i) {
+    for (Size j = 0; j < N; ++j) {
+      conn[j] = mesh.fv[i][j];
+    }
+    soup.addElement(elem_type, conn);
+  }
+}
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
+FaceVertexMesh<P, N, D, T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const noexcept
+{
+  um2::toPolytopeSoup(*this, soup);
+}
+
+//==============================================================================
+// intersect
+//==============================================================================
+
+template <Size N, std::floating_point T, std::signed_integral I>
+void
+intersect(PlanarLinearPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
+          T * const intersections, Size * const n) noexcept
+{
+  T constexpr r_miss = inf_distance<T>;
+  Size nintersect = 0;
+#ifndef NDEBUG
+  Size const n0 = *n;
+#endif
+  Size constexpr edges_per_face = PlanarLinearPolygonMesh<N, T, I>::Face::numEdges();
+  for (Size i = 0; i < numFaces(mesh); ++i) {
+    auto const face = mesh.getFace(i);
+    for (Size j = 0; j < edges_per_face; ++j) {
+      auto const edge = face.getEdge(j);
+      T const r = intersect(edge, ray);
+      if (r < r_miss) {
+        ASSERT(nintersect < n0);
+        intersections[nintersect++] = r;
+      }
+    }
+  }
+  *n = nintersect;
+  std::sort(intersections, intersections + nintersect);
+}
+
+template <Size N, std::floating_point T, std::signed_integral I>
+void
+intersect(PlanarQuadraticPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
+          T * const intersections, Size * const n) noexcept
+{
+  T constexpr r_miss = inf_distance<T>;
+  Size nintersect = 0;
+#ifndef NDEBUG
+  Size const n0 = *n;
+#endif
+  Size constexpr edges_per_face = PlanarQuadraticPolygonMesh<N, T, I>::Face::numEdges();
+  for (Size i = 0; i < numFaces(mesh); ++i) {
+    auto const face = mesh.getFace(i);
+    for (Size j = 0; j < edges_per_face; ++j) {
+      auto const edge = face.getEdge(j);
+      auto const r = intersect(edge, ray);
+      if (r[0] < r_miss) {
+        ASSERT(nintersect < n0);
+        intersections[nintersect++] = r[0];
+      }
+      if (r[1] < r_miss) {
+        ASSERT(nintersect < n0);
+        intersections[nintersect++] = r[1];
+      }
+    }
+  }
+  *n = nintersect;
+  std::sort(intersections, intersections + nintersect);
+}
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
+FaceVertexMesh<P, N, D, T, I>::intersect(Ray<D, T> const & ray, T * intersections,
+                                         Size * const n) const noexcept
+  requires(D == 2)
+{
+  um2::intersect(*this, ray, intersections, n);
+}
 
 } // namespace um2

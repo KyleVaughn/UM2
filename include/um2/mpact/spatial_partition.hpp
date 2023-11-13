@@ -3,7 +3,6 @@
 #include <um2/mesh/face_vertex_mesh.hpp>
 #include <um2/mesh/rectilinear_partition.hpp>
 #include <um2/mesh/regular_partition.hpp>
-#include <um2/mesh/io.hpp>
 #include <um2/physics/material.hpp>
 
 namespace um2::mpact
@@ -56,11 +55,12 @@ namespace um2::mpact
 //          cells may contain a piece of a pin, multiple pins, or any other
 //          arbitrary geometry.
 //
+
+template <std:floating_point T, std::integral I>
 struct SpatialPartition {
 
-  // Take this out of the struct?
   struct CoarseCell {
-    Vec2<Float> dxdy; // dx, dy
+    Vec2<T> dxdy; // dx, dy
     MeshType mesh_type = MeshType::None;
     Size mesh_id = -1;               // index into the corresponding mesh array
     Vector<MaterialID> material_ids; // size = mesh.numFaces()
@@ -71,15 +71,15 @@ struct SpatialPartition {
       return material_ids.size();
     }
   };
-  using RTM = RectilinearPartition2<Float, Int>;
-  using Lattice = RegularPartition2<Float, Int>;
-  using Assembly = RectilinearPartition1<Float, Int>;
+  using RTM = RectilinearPartition2<T, I>;
+  using Lattice = RegularPartition2<T, I>;
+  using Assembly = RectilinearPartition1<T, I>;
 
   // The children IDs are used to index the corresponding array.
   // Child ID = -1 indicates that the child does not exist. This is used
   // for when the child should be generated automatically.
 
-  RectilinearPartition2<Float, Int> core;
+  RectilinearPartition2<T, I> core;
   Vector<Assembly> assemblies;
   Vector<Lattice> lattices;
   Vector<RTM> rtms;
@@ -87,10 +87,10 @@ struct SpatialPartition {
 
   Vector<Material> materials;
 
-  Vector<TriMesh<2, Float, Int>> tri;
-  Vector<QuadMesh<2, Float, Int>> quad;
-  Vector<QuadraticTriMesh<2, Float, Int>> quadratic_tri;
-  Vector<QuadraticQuadMesh<2, Float, Int>> quadratic_quad;
+  Vector<TriMesh<2, T, I>> tri;
+  Vector<QuadMesh<2, T, I>> quad;
+  Vector<QuadraticTriMesh<2, T, I>> quadratic_tri;
+  Vector<QuadraticQuadMesh<2, T, I>> quadratic_quad;
 
   // -----------------------------------------------------------------------------
   // Constructors
@@ -98,110 +98,110 @@ struct SpatialPartition {
 
   constexpr SpatialPartition() noexcept = default;
 
-  // -----------------------------------------------------------------------------
-  // Accessors
-  // -----------------------------------------------------------------------------
-
-  PURE [[nodiscard]] constexpr auto
-  numCoarseCells() const noexcept -> Size
-  {
-    return coarse_cells.size();
-  }
-
-  PURE [[nodiscard]] constexpr auto
-  numRTMs() const noexcept -> Size
-  {
-    return rtms.size();
-  }
-
-  PURE [[nodiscard]] constexpr auto
-  numLattices() const noexcept -> Size
-  {
-    return lattices.size();
-  }
-
-  PURE [[nodiscard]] constexpr auto
-  numAssemblies() const noexcept -> Size
-  {
-    return assemblies.size();
-  }
-
-  // -----------------------------------------------------------------------------
-  // Methods
-  // -----------------------------------------------------------------------------
-
-  HOSTDEV constexpr void
-  clear() noexcept
-  {
-    core.clear();
-    assemblies.clear();
-    lattices.clear();
-    rtms.clear();
-    coarse_cells.clear();
-
-    tri.clear();
-    quad.clear();
-    quadratic_tri.clear();
-    quadratic_quad.clear();
-  }
-
-  inline void
-  checkMeshExists(MeshType mesh_type, Size mesh_id) const
-  {
-    switch (mesh_type) {
-    case MeshType::Tri:
-      if (0 > mesh_id || mesh_id >= this->tri.size()) {
-        Log::error("Tri mesh " + toString(mesh_id) + " does not exist");
-      }
-      break;
-    case MeshType::Quad:
-      if (0 > mesh_id || mesh_id >= this->quad.size()) {
-        Log::error("Quad mesh " + toString(mesh_id) + " does not exist");
-      }
-      break;
-    case MeshType::QuadraticTri:
-      if (0 > mesh_id || mesh_id >= this->quadratic_tri.size()) {
-        Log::error("Quadratic tri mesh " + toString(mesh_id) + " does not exist");
-      }
-      break;
-    case MeshType::QuadraticQuad:
-      if (0 > mesh_id || mesh_id >= this->quadratic_quad.size()) {
-        Log::error("Quadratic quad mesh " + toString(mesh_id) + " does not exist");
-      }
-      break;
-    default:
-      Log::error("Invalid mesh type");
-    }
-  }
-
-  //    int make_cylindrical_pin_mesh(Vector<double> const & radii,
-  //                                  double const pitch,
-  //                                  Vector<int> const & num_rings,
-  //                                  int const num_azimuthal,
-  //                                  int const mesh_order = 1);
-  //
-  //    int make_rectangular_pin_mesh(Vec2<Float> const dxdy,
-  //                                  int const nx,
-  //                                  int const ny);
-  //
-  auto
-  makeCoarseCell(Vec2<Float> dxdy, MeshType mesh_type = MeshType::None, Size mesh_id = -1,
-                 Vector<MaterialID> const & material_ids = {}) -> Size;
-
-  auto
-  makeRTM(Vector<Vector<Size>> const & cc_ids) -> Size;
-
-  auto
-  makeLattice(Vector<Vector<Size>> const & rtm_ids) -> Size;
-
-  auto
-  makeAssembly(Vector<Size> const & lat_ids, Vector<Float> const & z = {-1, 1}) -> Size;
-
-  auto
-  makeCore(Vector<Vector<Size>> const & asy_ids) -> Size;
-
-  void
-  importCoarseCells(String const & filename);
+//  // -----------------------------------------------------------------------------
+//  // Accessors
+//  // -----------------------------------------------------------------------------
+//
+//  PURE [[nodiscard]] constexpr auto
+//  numCoarseCells() const noexcept -> Size
+//  {
+//    return coarse_cells.size();
+//  }
+//
+//  PURE [[nodiscard]] constexpr auto
+//  numRTMs() const noexcept -> Size
+//  {
+//    return rtms.size();
+//  }
+//
+//  PURE [[nodiscard]] constexpr auto
+//  numLattices() const noexcept -> Size
+//  {
+//    return lattices.size();
+//  }
+//
+//  PURE [[nodiscard]] constexpr auto
+//  numAssemblies() const noexcept -> Size
+//  {
+//    return assemblies.size();
+//  }
+//
+//  // -----------------------------------------------------------------------------
+//  // Methods
+//  // -----------------------------------------------------------------------------
+//
+//  HOSTDEV constexpr void
+//  clear() noexcept
+//  {
+//    core.clear();
+//    assemblies.clear();
+//    lattices.clear();
+//    rtms.clear();
+//    coarse_cells.clear();
+//
+//    tri.clear();
+//    quad.clear();
+//    quadratic_tri.clear();
+//    quadratic_quad.clear();
+//  }
+//
+//  inline void
+//  checkMeshExists(MeshType mesh_type, Size mesh_id) const
+//  {
+//    switch (mesh_type) {
+//    case MeshType::Tri:
+//      if (0 > mesh_id || mesh_id >= this->tri.size()) {
+//        Log::error("Tri mesh " + toString(mesh_id) + " does not exist");
+//      }
+//      break;
+//    case MeshType::Quad:
+//      if (0 > mesh_id || mesh_id >= this->quad.size()) {
+//        Log::error("Quad mesh " + toString(mesh_id) + " does not exist");
+//      }
+//      break;
+//    case MeshType::QuadraticTri:
+//      if (0 > mesh_id || mesh_id >= this->quadratic_tri.size()) {
+//        Log::error("Quadratic tri mesh " + toString(mesh_id) + " does not exist");
+//      }
+//      break;
+//    case MeshType::QuadraticQuad:
+//      if (0 > mesh_id || mesh_id >= this->quadratic_quad.size()) {
+//        Log::error("Quadratic quad mesh " + toString(mesh_id) + " does not exist");
+//      }
+//      break;
+//    default:
+//      Log::error("Invalid mesh type");
+//    }
+//  }
+//
+//  //    int make_cylindrical_pin_mesh(Vector<double> const & radii,
+//  //                                  double const pitch,
+//  //                                  Vector<int> const & num_rings,
+//  //                                  int const num_azimuthal,
+//  //                                  int const mesh_order = 1);
+//  //
+//  //    int make_rectangular_pin_mesh(Vec2<T> const dxdy,
+//  //                                  int const nx,
+//  //                                  int const ny);
+//  //
+//  auto
+//  makeCoarseCell(Vec2<T> dxdy, MeshType mesh_type = MeshType::None, Size mesh_id = -1,
+//                 Vector<MaterialID> const & material_ids = {}) -> Size;
+//
+//  auto
+//  makeRTM(Vector<Vector<Size>> const & cc_ids) -> Size;
+//
+//  auto
+//  makeLattice(Vector<Vector<Size>> const & rtm_ids) -> Size;
+//
+//  auto
+//  makeAssembly(Vector<Size> const & lat_ids, Vector<T> const & z = {-1, 1}) -> Size;
+//
+//  auto
+//  makeCore(Vector<Vector<Size>> const & asy_ids) -> Size;
+//
+//  void
+//  importCoarseCells(String const & filename);
 
 }; // struct SpatialPartition
 

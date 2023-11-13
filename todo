@@ -3,8 +3,7 @@ Change valgrind to be optional
 old benchmarks to archive
 
 mortonsort for polytope soup
-
-reserve elements/vertices for submesh and read: abaqus, xdmf
+reserve elements/vertices for submesh and read: abaqus, xdmf, FVM.toPolytopesoup
 
 iterators
 
@@ -17,3 +16,8 @@ test pointer arithmetic versus index for ray/mesh intersection
 test iterating over edges with getEdge vs just manually making them
 
 effect test of morton order on intersect
+
+is_morton_ordered to fvm
+
+binned fvm
+

@@ -4,13 +4,9 @@ add_subdirectory(./stdlib)
 add_subdirectory(./common)
 add_subdirectory(./math)
 add_subdirectory(./geometry)
+add_subdirectory(./physics)
 add_subdirectory(./mesh)
-#add_subdirectory(./mpact)
-####==============================================================================
-#### ray_casting
-####==============================================================================
-##
-##
+add_subdirectory(./mpact)
 ###==============================================================================
 ### gmsh
 ###==============================================================================

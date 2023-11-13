@@ -64,38 +64,35 @@ TEST_CASE(faceContaining)
   ASSERT(mesh.faceContaining(p) == 0);
   p = um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.75));
   ASSERT(mesh.faceContaining(p) == 1);
-  // pick up here
-  ASSERT(mesh.faceContaining(p) == 2);
 }
 
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(intersect)
-//{
-//  um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
-//  um2::Ray2<T> const ray({static_cast<T>(0), static_cast<T>(0.5)}, {1, 0});
-//  um2::Vector<T> intersections(10);
-//  Size n = intersections.size();
-//  mesh.intersect(ray, intersections.data(), &n);
-//  ASSERT(n == 4);
-//  ASSERT_NEAR(intersections[0], static_cast<T>(0), static_cast<T>(1e-6));
-//  ASSERT_NEAR(intersections[1], static_cast<T>(0.5), static_cast<T>(1e-6));
-//  ASSERT_NEAR(intersections[2], static_cast<T>(0.5), static_cast<T>(1e-6));
-//  ASSERT_NEAR(intersections[3], static_cast<T>(1), static_cast<T>(1e-6));
-//}
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(intersect)
+{
+  um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
+  um2::Ray2<T> const ray({static_cast<T>(0), static_cast<T>(0.5)}, {1, 0});
+  um2::Vector<T> intersections(10);
+  Size n = intersections.size();
+  mesh.intersect(ray, intersections.data(), &n);
+  ASSERT(n == 4);
+  ASSERT_NEAR(intersections[0], static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(intersections[1], static_cast<T>(0.5), static_cast<T>(1e-6));
+  ASSERT_NEAR(intersections[2], static_cast<T>(0.5), static_cast<T>(1e-6));
+  ASSERT_NEAR(intersections[3], static_cast<T>(1), static_cast<T>(1e-6));
+}
 
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(toPolytopeSoup)
-//{
-//  um2::TriMesh<2, T, I> const tri_mesh = makeTriReferenceMesh<2, T, I>();
-//  um2::PolytopeSoup<T, I> tri_poly_soup_ref;
-//  makeReferenceTriPolytopeSoup(tri_poly_soup_ref);
-//  um2::PolytopeSoup<T, I> tri_poly_soup;
-//  tri_mesh.toPolytopeSoup(tri_poly_soup);
-//  ASSERT(um2::compareGeometry(tri_poly_soup, tri_poly_soup_ref) == 0);
-//  ASSERT(um2::compareTopology(tri_poly_soup, tri_poly_soup_ref) == 0);
-//  ASSERT(tri_poly_soup.getMeshType() == um2::MeshType::Tri);
-//}
-//
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(toPolytopeSoup)
+{
+  um2::TriMesh<2, T, I> const tri_mesh = makeTriReferenceMesh<2, T, I>();
+  um2::PolytopeSoup<T, I> tri_poly_soup_ref;
+  makeReferenceTriPolytopeSoup(tri_poly_soup_ref);
+  um2::PolytopeSoup<T, I> tri_poly_soup;
+  tri_mesh.toPolytopeSoup(tri_poly_soup);
+  ASSERT(tri_poly_soup.compareTo(tri_poly_soup_ref) == 10);
+  ASSERT(tri_poly_soup.getMeshType() == um2::MeshType::Tri);
+}
+
 #if UM2_USE_CUDA
 template <std::floating_point T, std::signed_integral I>
 MAKE_CUDA_KERNEL(accessors, T, I)
@@ -108,18 +105,18 @@ TEST_SUITE(TriMesh)
   TEST((poly_soup_constructor<T, I>));
   TEST((boundingBox<T, I>));
   TEST((faceContaining<T, I>));
-//  TEST((intersect<T, I>));
-//  TEST((toPolytopeSoup<T, I>));
+  TEST((intersect<T, I>));
+  TEST((toPolytopeSoup<T, I>));
 }
 
 auto
 main() -> int
 {
-//  RUN_SUITE((TriMesh<float, int16_t>));
-//  RUN_SUITE((TriMesh<float, int32_t>));
-//  RUN_SUITE((TriMesh<float, int64_t>));
-//  RUN_SUITE((TriMesh<double, int16_t>));
-//  RUN_SUITE((TriMesh<double, int32_t>));
+  RUN_SUITE((TriMesh<float, int16_t>));
+  RUN_SUITE((TriMesh<float, int32_t>));
+  RUN_SUITE((TriMesh<float, int64_t>));
+  RUN_SUITE((TriMesh<double, int16_t>));
+  RUN_SUITE((TriMesh<double, int32_t>));
   RUN_SUITE((TriMesh<double, int64_t>));
   return 0;
 }

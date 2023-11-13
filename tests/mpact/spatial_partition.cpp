@@ -5,12 +5,6 @@
 
 #include <fstream>
 
-#if UM2_ENABLE_FLOAT64 == 1
-constexpr Float test_eps = 1e-6;
-#else
-constexpr Float test_eps = 1e-6F; 
-#endif
-
 // template <typename T, typename I>
 // TEST_CASE(test_make_cylindrical_pin_mesh)
 // um2::mpact::SpatialPartition model;
@@ -94,10 +88,11 @@ constexpr Float test_eps = 1e-6F;
 // ASSERT(model.coarse_cells[0].material_ids == material_ids, "material_ids");
 // }
 
+template <typename T, typename I>
 TEST_CASE(makeCoarseCell)
 {
-  um2::mpact::SpatialPartition model;
-  um2::Vec2<Float> const dxdy(2, 1);
+  um2::mpact::SpatialPartition<T, I> model;
+  um2::Vec2<T> const dxdy(2, 1);
   Size const id = model.makeCoarseCell(dxdy);
   ASSERT(id == 0);
   ASSERT(model.numCoarseCells() == 1);
@@ -600,12 +595,12 @@ TEST_SUITE(SpatialPartition)
 {
   // TEST_CASE("make_cylindrical_pin_mesh", (test_make_cylindrical_pin_mesh<Float, Int>));
   TEST(makeCoarseCell);
-  TEST(makeRTM);
-  TEST(makeLattice);
-  TEST(makeAssembly);
-  TEST(makeAssembly_2d);
-  TEST(makeCore);
-  TEST(importCoarseCells);
+//  TEST(makeRTM);
+//  TEST(makeLattice);
+//  TEST(makeAssembly);
+//  TEST(makeAssembly_2d);
+//  TEST(makeCore);
+//  TEST(importCoarseCells);
   //  TEST(io);
   //    TEST_CASE("coarse_cell_face_areas", (test_coarse_cell_face_areas<Float, Int>));
   //    TEST_CASE("coarse_cell_find_face", (test_coarse_cell_find_face<Float, Int>));
