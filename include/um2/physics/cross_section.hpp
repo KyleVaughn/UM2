@@ -28,7 +28,7 @@ struct CrossSection {
       : t(t_in)
   {
     ASSERT(!t.empty());
-    for (auto & t_i : t) {
+    for (auto const & t_i : t) {
       ASSERT(t_i >= 0); 
     }
   }

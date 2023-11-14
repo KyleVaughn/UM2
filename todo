@@ -3,7 +3,7 @@ Change valgrind to be optional
 old benchmarks to archive
 
 mortonsort for polytope soup
-reserve elements/vertices for submesh and read: abaqus, xdmf, FVM.toPolytopesoup
+reserve elements/vertices for submesh and read: abaqus, xdmf, FVM.toPolytopesoup, spatial_part.toPolytopeSoup
 
 iterators
 

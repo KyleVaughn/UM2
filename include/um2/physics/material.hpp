@@ -7,11 +7,12 @@
 namespace um2
 {
 
+template <std::floating_point T>
 struct Material {
 
   ShortString name;
   Color color;
-  CrossSection xs;
+  CrossSection<T> xs;
 
   //======================================================================
   // Constructors

@@ -907,7 +907,7 @@ template <typename T>
 static inline auto
 getH5DataType() -> H5::PredType
 {
-  // NOLINTNEXTLINE(bugprone-branch-clone) justification: Need a default case
+  // NOLINTNEXTLINE(bugprone-branch-clone) 
   if constexpr (std::same_as<T, float>) {
     return H5::PredType::NATIVE_FLOAT;
   } else if constexpr (std::same_as<T, double>) {
