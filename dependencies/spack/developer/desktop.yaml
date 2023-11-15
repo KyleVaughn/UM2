@@ -9,6 +9,7 @@ spack:
     - libpng
     - benchmark
     - cuda@12
+    - cppcheck
   view: true
   concretizer:
     unify: true

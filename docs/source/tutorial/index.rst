@@ -10,3 +10,4 @@ Tutorial
 
     introduction
     two_dimensional
+    three_dimensional

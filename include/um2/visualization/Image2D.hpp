@@ -70,7 +70,6 @@ struct Image2D : public RegularPartition<2, T, Color> {
                   Color c = default_point_color);
 
   void
-  rasterize(LineSegment2<T> const & l, Color c = default_line_color);
 
   template <Size P, Size N>
 
@@ -78,6 +77,7 @@ struct Image2D : public RegularPartition<2, T, Color> {
 
   // void
   // rasterize(Traingle2<T> const & tri, Color c = default_face_color);
+  rasterize(LineSegment2<T> l, Color c = default_line_color);
 };
 
 } // namespace um2
