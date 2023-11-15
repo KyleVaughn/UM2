@@ -4,12 +4,7 @@
 // Mandatory includes
 //==============================================================================
 #include <um2/common/to_vecvec.hpp>
-#include <um2/config.hpp>
-#include <um2/mpact/SpatialPartition.hpp>
-#include <um2/mpact/io.hpp>
-#include <um2/physics/Material.hpp>
-
-#include <string>
+#include <um2/mpact/spatial_partition.hpp>
 
 //==============================================================================
 // Optional includes
@@ -26,10 +21,10 @@ namespace um2
 
 void
 #if UM2_USE_GMSH
-initialize(std::string const & verbosity = "info", bool init_gmsh = true,
-           Int gmsh_verbosity = 2);
+initialize(String const & verbosity = "info", bool init_gmsh = true,
+           int gmsh_verbosity = 2);
 #else
-initialize(std::string const & verbosity = "info");
+initialize(String const & verbosity = "info");
 #endif
 
 void

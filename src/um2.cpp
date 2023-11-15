@@ -1,5 +1,5 @@
 #include <um2.hpp>
-#include <um2/common/Log.hpp>
+#include <um2/common/log.hpp>
 
 #include <algorithm>
 
@@ -8,16 +8,17 @@ namespace um2
 
 void
 #if UM2_USE_GMSH
-initialize(std::string const & verbosity, bool init_gmsh, Int gmsh_verbosity)
+initialize(String const & verbosity, bool init_gmsh, int gmsh_verbosity)
 #else
-initialize(std::string const & verbosity)
+initialize(String const & verbosity)
 #endif
 {
   Log::reset();
   // Set verbosity
   // Make uppercase for comparison
-  std::string verbosity_upper = verbosity;
-  std::transform(verbosity.begin(), verbosity.end(), verbosity_upper.begin(), ::toupper);
+  String verbosity_upper = verbosity;
+  std::transform(verbosity.data(), verbosity.data() + verbosity.size(), 
+      verbosity_upper.data(), ::toupper);
   if (verbosity_upper == "TRACE") {
     Log::setMaxVerbosityLevel(LogVerbosity::Trace);
   } else if (verbosity_upper == "DEBUG") {
@@ -32,7 +33,7 @@ initialize(std::string const & verbosity)
     Log::setMaxVerbosityLevel(LogVerbosity::Off);
   } else {
     Log::setMaxVerbosityLevel(LogVerbosity::Info);
-    Log::warn("Invalid verbosity level: " + String(verbosity.c_str()) +
+    Log::warn("Invalid verbosity level: " + verbosity +
               ". Defaulting to INFO.");
   }
   Log::info("Initializing UM2");
@@ -41,14 +42,10 @@ initialize(std::string const & verbosity)
     gmsh::initialize();
     gmsh::option::setNumber("General.NumThreads", 0);   // System default
     gmsh::option::setNumber("Geometry.OCCParallel", 1); // Parallelize OCC
-#  if UM2_ENABLE_INT64 == 1
-    gmsh::option::setNumber("General.Verbosity",
-                            static_cast<int>(gmsh_verbosity)); // Errors + warnings
-#  else
     gmsh::option::setNumber("General.Verbosity", gmsh_verbosity); // Errors + warnings
-#  endif
   }
 #endif
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
 }
 
 void

@@ -1,5 +1,4 @@
 #include <um2/common/to_vecvec.hpp>
-#include <um2/config.hpp>
 
 #include "../test_macros.hpp"
 

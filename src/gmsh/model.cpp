@@ -18,7 +18,7 @@ namespace um2::gmsh::model
 namespace
 {
 void
-colorMaterialPhysicalGroupEntities(std::vector<Material> const & materials)
+colorMaterialPhysicalGroupEntities(std::vector<Material<Float>> const & materials)
 {
   size_t const num_materials = materials.size();
   std::vector<std::string> material_names(num_materials);
@@ -75,7 +75,7 @@ addToPhysicalGroup(int const dim, std::vector<int> const & tags, int const tag,
                    std::string const & name)
 {
   Log::debug("Adding entities to physical group \"" + String(name.c_str()) + "\"");
-  assert(std::is_sorted(tags.begin(), tags.end()));
+  ASSERT(std::is_sorted(tags.begin(), tags.end()));
   gmsh::vectorpair dimtags;
   gmsh::model::getPhysicalGroups(dimtags, dim);
   for (auto const & existing_group_dimtag : dimtags) {
@@ -94,7 +94,7 @@ addToPhysicalGroup(int const dim, std::vector<int> const & tags, int const tag,
 #  ifndef NDEBUG
       int const new_tag =
           gmsh::model::addPhysicalGroup(dim, new_tags, existing_group_tag, name);
-      assert(new_tag == existing_group_tag);
+      ASSERT(new_tag == existing_group_tag);
 #  else
       gmsh::model::addPhysicalGroup(dim, new_tags, existing_group_tag, name);
 #  endif
@@ -110,7 +110,7 @@ addToPhysicalGroup(int const dim, std::vector<int> const & tags, int const tag,
 //=============================================================================
 
 void
-getMaterials(std::vector<Material> & materials)
+getMaterials(std::vector<Material<Float>> & materials)
 {
   gmsh::vectorpair dimtags;
   gmsh::model::getPhysicalGroups(dimtags);
@@ -124,7 +124,7 @@ getMaterials(std::vector<Material> & materials)
       gmsh::model::getEntitiesForPhysicalGroup(dim, tag, tags);
       std::string const material_name = name.substr(9);
       auto const it = std::find_if(materials.begin(), materials.end(),
-                                   [&material_name](Material const & material) {
+                                   [&material_name](Material<Float> const & material) {
                                      return material.name == material_name;
                                    });
       if (it == materials.end()) {
@@ -319,7 +319,7 @@ getNewPhysicalGroups(gmsh::vectorpair const & object_dimtags,
 //=============================================================================
 
 void
-processMaterialHierarchy(std::vector<Material> const & material_hierarchy,
+processMaterialHierarchy(std::vector<Material<Float>> const & material_hierarchy,
                          std::vector<std::string> const & physical_group_names,
                          std::vector<std::vector<int>> & post_physical_group_ent_tags)
 {
@@ -335,7 +335,7 @@ processMaterialHierarchy(std::vector<Material> const & material_hierarchy,
     constexpr size_t guard = std::numeric_limits<size_t>::max();
     std::vector<size_t> mat_indices(nmats, guard);
     for (size_t i = 0; i < nmats; ++i) {
-      Material const & mat = material_hierarchy[i];
+      Material<Float> const & mat = material_hierarchy[i];
       std::string const & mat_name = "Material_" + std::string(mat.name.data());
       auto const it = std::lower_bound(physical_group_names.begin(),
                                        physical_group_names.end(), mat_name);
@@ -390,7 +390,7 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
                         gmsh::vectorpair const & tool_dimtags,
                         gmsh::vectorpair & out_dimtags,
                         std::vector<gmsh::vectorpair> & out_dimtags_map,
-                        std::vector<Material> const & material_hierarchy, int const tag,
+                        std::vector<Material<Float>> const & material_hierarchy, int const tag,
                         bool const remove_object, bool const remove_tool)
 {
 
@@ -447,7 +447,7 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
         post_physical_group_ent_tags[i], // Tags of the entities in the group
         physical_group_tag[i],           // Old tag of the physical group
         physical_group_names[i]);        // Name of the physical group
-    assert(pgroup_tag == physical_group_tag[i]);
+    ASSERT(pgroup_tag == physical_group_tag[i]);
 #  else
     gmsh::model::addPhysicalGroup(
         model_dim,                       // Dimension of the physical group
@@ -481,7 +481,7 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
                          gmsh::vectorpair const & tool_dimtags,
                          gmsh::vectorpair & out_dimtags,
                          std::vector<gmsh::vectorpair> & out_dimtags_map,
-                         std::vector<Material> const & material_hierarchy, int const tag,
+                         std::vector<Material<Float>> const & material_hierarchy, int const tag,
                          bool const remove_object, bool const remove_tool)
 {
 
@@ -536,7 +536,7 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
         post_physical_group_ent_tags[i], // Tags of the entities in the group
         physical_group_tag[i],           // Old tag of the physical group
         physical_group_names[i]);        // Name of the physical group
-    assert(pgroup_tag == physical_group_tag[i]);
+    ASSERT(pgroup_tag == physical_group_tag[i]);
 #  else
     gmsh::model::addPhysicalGroup(
         model_dim,                       // Dimension of the physical group
@@ -559,7 +559,7 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
 
 auto
 addCylindricalPin2D(Point2d const & center, std::vector<double> const & radii,
-                    std::vector<Material> const & materials) -> std::vector<int>
+                    std::vector<Material<Float>> const & materials) -> std::vector<int>
 {
   Log::info("Adding 2D cylindrical pin");
   // Input checking
@@ -622,7 +622,7 @@ addCylindricalPin2D(Point2d const & center, std::vector<double> const & radii,
 auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
-                           std::vector<std::vector<Material>> const & materials,
+                           std::vector<std::vector<Material<Float>>> const & materials,
                            std::vector<Vec2d> const & dxdy,
                            std::vector<std::vector<int>> const & pin_ids,
                            Point2d const & offset) -> std::vector<int>
@@ -754,7 +754,7 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
 auto
 addCylindricalPin(Point3d const & center, double const height,
                   std::vector<double> const & radii,
-                  std::vector<Material> const & materials) -> std::vector<int>
+                  std::vector<Material<Float>> const & materials) -> std::vector<int>
 {
   LOG_INFO("Adding cylindrical pin");
   // Input checking
@@ -824,7 +824,7 @@ addCylindricalPin(Point3d const & center, double const height,
 auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
-                         std::vector<std::vector<Material>> const & materials,
+                         std::vector<std::vector<Material<Float>>> const & materials,
                          double const height, std::vector<Vec2d> const & dxdy,
                          std::vector<std::vector<int>> const & pin_ids,
                          Point3d const & offset) -> std::vector<int>
@@ -948,7 +948,7 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
           ++ctr;
         }
       }
-      assert(ctr == nents);
+      ASSERT(ctr == nents);
       addToPhysicalGroup(
           3,                                                          // dim
           material_ids[i],                                            // tags
@@ -975,7 +975,7 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
 
 void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-overlaySpatialPartition(mpact::SpatialPartition const & partition,
+overlaySpatialPartition(mpact::SpatialPartition<Float, Int> const & partition,
                         std::string const & fill_material_name,
                         Color const fill_material_color)
 {
@@ -1092,7 +1092,7 @@ overlaySpatialPartition(mpact::SpatialPartition const & partition,
   // Get materials and see if the fill material already exists
   // If it does, move it to the end of the material hierarchy, otherwise
   // append it to the end.
-  std::vector<Material> materials;
+  std::vector<Material<Float>> materials;
   um2::gmsh::model::getMaterials(materials);
   bool fill_exists = false;
   size_t const num_materials = materials.size();
@@ -1165,7 +1165,7 @@ overlaySpatialPartition(mpact::SpatialPartition const & partition,
   gmsh::model::getPhysicalGroups(group_dimtags, model_dim);
   for (auto const & dimtag : group_dimtags) {
     int const dim = dimtag.first;
-    assert(dim == model_dim);
+    ASSERT(dim == model_dim);
     int const tag = dimtag.second;
     std::string name;
     // We do not expect entities to have many physical groups. Therefore,
@@ -1205,7 +1205,7 @@ overlaySpatialPartition(mpact::SpatialPartition const & partition,
     gmsh::model::getPhysicalGroups(group_dimtags);
     for (auto const & dimtag : group_dimtags) {
       int const dim = dimtag.first;
-      assert(dim == 3);
+      ASSERT(dim == 3);
       int const tag = dimtag.second;
       std::string name;
       gmsh::model::getPhysicalName(dim, tag, name);

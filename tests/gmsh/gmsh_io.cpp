@@ -1,4 +1,4 @@
-#include <um2/common/Log.hpp>
+#include <um2/common/log.hpp>
 #include <um2/config.hpp>
 #if UM2_USE_GMSH
 #  include <um2/gmsh/io.hpp>

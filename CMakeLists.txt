@@ -142,22 +142,17 @@ endif()
 # Sources
 set(UM2_SOURCES
     "src/common/log.cpp"
-    # "src/mpact/spatial_partition.cpp"
-    #    "src/mpact/io.cpp"
-    #    # gmsh
-    #    "src/gmsh/base_gmsh_api.cpp"
-    #    "src/gmsh/io.cpp"
-    #    "src/gmsh/model.cpp"
-    #    "src/gmsh/mesh.cpp"
+    "src/gmsh/base_gmsh_api.cpp"
+    "src/gmsh/io.cpp"
+    "src/gmsh/model.cpp"
+    "src/gmsh/mesh.cpp"
     #    # visualization
     #    "src/visualization/Image2D.cpp"
-    #    # api
-    #    "src/um2.cpp"
+    "src/um2.cpp"
     #    "src/um2c.cpp"
   )
 
 add_library(um2 SHARED ${UM2_SOURCES})
-#add_library(UM2::um2 ALIAS um2)
 
 target_include_directories(um2
   PUBLIC
@@ -360,10 +355,10 @@ if (UM2_BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 
-### Tutorial
-##if (UM2_BUILD_TUTORIAL)
-##  add_subdirectory(tutorial)
-##endif()
+# Tutorial
+if (UM2_BUILD_TUTORIAL)
+  add_subdirectory(tutorial)
+endif()
 ##
 ### Examples
 ##if (UM2_BUILD_EXAMPLES)

@@ -259,12 +259,12 @@ namespace um2::mpact
 //         faces[ir * na + ia] = {p0, p1, p2, p3};
 //       }
 //     }
-//     Vector<Point2<Float>> vertices_t(static_cast<Size>(num_points));
+//     Vector<Point2<T>> vertices_t(static_cast<Size>(num_points));
 //     double const half_pitch = pitch / 2;
 //     for (size_t i = 0; i < num_points; ++i)
 //     {
-//       vertices_t[i] = {static_cast<Float>(vertices[i][0] + half_pitch),
-//                        static_cast<Float>(vertices[i][1] + half_pitch)};
+//       vertices_t[i] = {static_cast<T>(vertices[i][0] + half_pitch),
+//                        static_cast<T>(vertices[i][1] + half_pitch)};
 //       // Fix close to zero values
 //       if (std::abs(vertices_t[i][0]) < 1e-6)
 //       {
@@ -275,15 +275,15 @@ namespace um2::mpact
 //         vertices_t[i][1] = 0;
 //       }
 //     }
-//     Vector<Int> faces_t(static_cast<Size>(num_faces * 4));
+//     Vector<I> faces_t(static_cast<Size>(num_faces * 4));
 //     for (size_t i = 0; i < num_faces; ++i)
 //     {
-//       faces_t[4 * i    ] = static_cast<Int>(faces[i][0]);
-//       faces_t[4 * i + 1] = static_cast<Int>(faces[i][1]);
-//       faces_t[4 * i + 2] = static_cast<Int>(faces[i][2]);
-//       faces_t[4 * i + 3] = static_cast<Int>(faces[i][3]);
+//       faces_t[4 * i    ] = static_cast<I>(faces[i][0]);
+//       faces_t[4 * i + 1] = static_cast<I>(faces[i][1]);
+//       faces_t[4 * i + 2] = static_cast<I>(faces[i][2]);
+//       faces_t[4 * i + 3] = static_cast<I>(faces[i][3]);
 //     }
-//     this->quad.push_back(QuadMesh<Float, Int>(vertices_t, {}, faces_t));
+//     this->quad.push_back(QuadMesh<T, I>(vertices_t, {}, faces_t));
 //     return mesh_id;
 //   } else if (mesh_order == 2) {
 //     // Get the equivalent radius of each ring if it were a quadratic quadrilateral
@@ -550,12 +550,12 @@ namespace um2::mpact
 //       std::to_string(faces[i][7]));
 //     }
 //
-//     Vector<Point2<Float>> vertices_t(static_cast<Size>(num_points));
+//     Vector<Point2<T>> vertices_t(static_cast<Size>(num_points));
 //     double const half_pitch = pitch / 2;
 //     for (size_t i = 0; i < num_points; ++i)
 //     {
-//       vertices_t[i] = {static_cast<Float>(vertices[i][0] + half_pitch),
-//                        static_cast<Float>(vertices[i][1] + half_pitch)};
+//       vertices_t[i] = {static_cast<T>(vertices[i][0] + half_pitch),
+//                        static_cast<T>(vertices[i][1] + half_pitch)};
 //       // Fix close to zero values
 //       if (std::abs(vertices_t[i][0]) < 1e-6)
 //       {
@@ -566,19 +566,19 @@ namespace um2::mpact
 //         vertices_t[i][1] = 0;
 //       }
 //     }
-//     Vector<Int> faces_t(static_cast<Size>(num_faces * 8));
+//     Vector<I> faces_t(static_cast<Size>(num_faces * 8));
 //     for (size_t i = 0; i < num_faces; ++i)
 //     {
-//       faces_t[8 * i    ] = static_cast<Int>(faces[i][0]);
-//       faces_t[8 * i + 1] = static_cast<Int>(faces[i][1]);
-//       faces_t[8 * i + 2] = static_cast<Int>(faces[i][2]);
-//       faces_t[8 * i + 3] = static_cast<Int>(faces[i][3]);
-//       faces_t[8 * i + 4] = static_cast<Int>(faces[i][4]);
-//       faces_t[8 * i + 5] = static_cast<Int>(faces[i][5]);
-//       faces_t[8 * i + 6] = static_cast<Int>(faces[i][6]);
-//       faces_t[8 * i + 7] = static_cast<Int>(faces[i][7]);
+//       faces_t[8 * i    ] = static_cast<I>(faces[i][0]);
+//       faces_t[8 * i + 1] = static_cast<I>(faces[i][1]);
+//       faces_t[8 * i + 2] = static_cast<I>(faces[i][2]);
+//       faces_t[8 * i + 3] = static_cast<I>(faces[i][3]);
+//       faces_t[8 * i + 4] = static_cast<I>(faces[i][4]);
+//       faces_t[8 * i + 5] = static_cast<I>(faces[i][5]);
+//       faces_t[8 * i + 6] = static_cast<I>(faces[i][6]);
+//       faces_t[8 * i + 7] = static_cast<I>(faces[i][7]);
 //     }
-//     this->quadratic_quad.push_back(QuadraticQuadMesh<Float, Int>(vertices_t, {},
+//     this->quadratic_quad.push_back(QuadraticQuadMesh<T, I>(vertices_t, {},
 //     faces_t)); return mesh_id;
 //   } else {
 //     Log::error("Only linear meshes are supported for cylindrical pin meshes.");
@@ -588,7 +588,7 @@ namespace um2::mpact
 // }
 //
 // template <std::floating_point T, std::signed_integral I>
-// int SpatialPartition::make_rectangular_pin_mesh(Vec2<Float> const dxdy,
+// int SpatialPartition::make_rectangular_pin_mesh(Vec2<T> const dxdy,
 //                                                       int const nx,
 //                                                       int const ny)
 //{
@@ -605,9 +605,9 @@ namespace um2::mpact
 //   Log::info("Making rectangular pin mesh " + std::to_string(mesh_id));
 //
 //   // Make the vertices
-//   Vector<Point2<Float>> vertices(static_cast<Size>((nx + 1) * (ny + 1)));
-//   Float const delta_x = dxdy[0] / nx;
-//   Float const delta_y = dxdy[1] / ny;
+//   Vector<Point2<T>> vertices(static_cast<Size>((nx + 1) * (ny + 1)));
+//   T const delta_x = dxdy[0] / nx;
+//   T const delta_y = dxdy[1] / ny;
 //   for (Size j = 0; j < ny + 1; ++j)
 //   {
 //     for (Size i = 0; i < nx + 1; ++i)
@@ -616,7 +616,7 @@ namespace um2::mpact
 //     }
 //   }
 //   // Make the faces
-//   Vector<Int> faces(4 * static_cast<Size>(nx * ny));
+//   Vector<I> faces(4 * static_cast<Size>(nx * ny));
 //   // Left to right, bottom to top
 //   for (Size j = 0; j < ny; ++j)
 //   {
@@ -628,7 +628,7 @@ namespace um2::mpact
 //       faces[4 * (j * nx + i) + 3] = (j + 1) * (nx + 1) + i    ;
 //     }
 //   }
-//   this->quad.push_back(QuadMesh<Float, Int>(vertices, {}, faces));
+//   this->quad.push_back(QuadMesh<T, I>(vertices, {}, faces));
 //   return mesh_id;
 // }
 //
@@ -649,7 +649,7 @@ namespace um2::mpact
 //         }
 //     }
 //     // Ensure that the mesh exists and get its AABB
-//     AABox2<Float> aabb;
+//     AABox2<T> aabb;
 //     if (mesh_id != -1) {
 //         switch (mesh_type) {
 //             case 1:
@@ -720,371 +720,4 @@ namespace um2::mpact
 //     return cc_id;
 // }
 
-//=============================================================================
-// makeCoarseCell
-//=============================================================================
-
-auto
-SpatialPartition::makeCoarseCell(Vec2<Float> const dxdy, MeshType const mesh_type,
-                                 Size const mesh_id,
-                                 Vector<MaterialID> const & material_ids) -> Size
-{
-  Size const cc_id = coarse_cells.size();
-  Log::info("Making coarse cell " + toString(cc_id));
-  // Ensure dx and dy are positive
-  if (dxdy[0] <= 0 || dxdy[1] <= 0) {
-    Log::error("dx and dy must be positive:; " + toString(dxdy[0]) + ", " +
-               toString(dxdy[1]));
-    return -1;
-  }
-  // Ensure that the mesh exists
-  if (mesh_id != -1) {
-    checkMeshExists(mesh_type, mesh_id);
-    // Make sure materials are specified
-    if (material_ids.empty()) {
-      Log::error("No materials specified");
-      return -1;
-    }
-  }
-
-  // Create the coarse cell
-  this->coarse_cells.push_back(CoarseCell{dxdy, mesh_type, mesh_id, material_ids});
-  return cc_id;
-}
-
-//=============================================================================
-// makeRTM
-//=============================================================================
-
-auto
-SpatialPartition::makeRTM(Vector<Vector<Size>> const & cc_ids) -> Size
-{
-  Size const rtm_id = rtms.size();
-  Log::info("Making ray tracing module " + toString(rtm_id));
-  Vector<Size> unique_cc_ids;
-  Vector<Vec2<Float>> dxdy;
-  // Ensure that all coarse cells exist
-  Size const num_cc = coarse_cells.size();
-  for (auto const & cc_ids_row : cc_ids) {
-    for (auto const & id : cc_ids_row) {
-      if (id < 0 || id >= num_cc) {
-        Log::error("Coarse cell " + toString(id) + " does not exist");
-        return -1;
-      }
-      auto * const it = std::find(unique_cc_ids.begin(), unique_cc_ids.end(), id);
-      if (it == unique_cc_ids.end()) {
-        unique_cc_ids.push_back(id);
-        // We know id > 0, so subtracting 1 is safe
-        dxdy.push_back(coarse_cells[id].dxdy);
-      }
-    }
-  }
-  // For a max pin ID N, the RectilinearGrid constructor needs all dxdy from 0 to N.
-  // To get around this requirement, we will renumber the coarse cells to be 0, 1, 2,
-  // 3, ..., and then use the renumbered IDs to create the RectilinearGrid.
-  Vector<Vector<Size>> cc_ids_renumbered(cc_ids.size());
-  for (Size i = 0; i < cc_ids.size(); ++i) {
-    cc_ids_renumbered[i].resize(cc_ids[i].size());
-    for (Size j = 0; j < cc_ids[i].size(); ++j) {
-      auto * const it =
-          std::find(unique_cc_ids.begin(), unique_cc_ids.end(), cc_ids[i][j]);
-      ASSERT(it != unique_cc_ids.cend());
-#if UM2_ENABLE_INT64 == 0
-      cc_ids_renumbered[i][j] = static_cast<Size>(it - unique_cc_ids.begin());
-#else
-      cc_ids_renumbered[i][j] = it - unique_cc_ids.begin();
-#endif
-    }
-  }
-  // Create the rectilinear grid
-  RectilinearGrid2<Float> grid(dxdy, cc_ids_renumbered);
-  // Ensure the grid has the same dxdy as all other RTMs
-  if (!rtms.empty()) {
-    auto const eps = eps_distance<Float>;
-    if (um2::abs(grid.width() - rtms[0].width()) > eps ||
-        um2::abs(grid.height() - rtms[0].height()) > eps) {
-      Log::error("All RTMs must have the same dxdy");
-      return -1;
-    }
-  }
-  // Flatten the coarse cell IDs (rows are reversed)
-  Size const num_rows = cc_ids.size();
-  Size const num_cols = cc_ids[0].size();
-  Vector<Int> cc_ids_flat(num_rows * num_cols);
-  for (Size i = 0; i < num_rows; ++i) {
-    for (Size j = 0; j < num_cols; ++j) {
-      cc_ids_flat[i * num_cols + j] = static_cast<Int>(cc_ids[num_rows - 1 - i][j]);
-    }
-  }
-  RTM rtm;
-  rtm.grid = um2::move(grid);
-  rtm.children = um2::move(cc_ids_flat);
-  rtms.push_back(um2::move(rtm));
-  return rtm_id;
-}
-
-//=============================================================================
-// makeLattice
-//=============================================================================
-
-auto
-SpatialPartition::makeLattice(Vector<Vector<Size>> const & rtm_ids) -> Size
-{
-  Size const lat_id = lattices.size();
-  Log::info("Making lattice " + toString(lat_id));
-  // Ensure that all RTMs exist
-  Size const num_rtm = rtms.size();
-  for (auto const & rtm_ids_row : rtm_ids) {
-    auto const * const it =
-        std::find_if(rtm_ids_row.begin(), rtm_ids_row.end(),
-                     [num_rtm](Size const id) { return id < 0 || id >= num_rtm; });
-    if (it != rtm_ids_row.cend()) {
-      Log::error("RTM " + toString(*it) + " does not exist");
-      return -1;
-    }
-  }
-  // Create the lattice
-  // Ensure each row has the same number of columns
-  Point2<Float> const minima(0, 0);
-  Vec2<Float> const spacing(rtms[0].width(), rtms[0].height());
-  Size const num_rows = rtm_ids.size();
-  Size const num_cols = rtm_ids[0].size();
-  for (Size i = 1; i < num_rows; ++i) {
-    if (rtm_ids[i].size() != num_cols) {
-      Log::error("Each row must have the same number of columns");
-      return -1;
-    }
-  }
-  Vec2<Size> const num_cells(num_cols, num_rows);
-  RegularGrid2<Float> grid(minima, spacing, num_cells);
-  // Flatten the RTM IDs (rows are reversed)
-  Vector<Int> rtm_ids_flat(num_rows * num_cols);
-  for (Size i = 0; i < num_rows; ++i) {
-    for (Size j = 0; j < num_cols; ++j) {
-      rtm_ids_flat[i * num_cols + j] = static_cast<Int>(rtm_ids[num_rows - 1 - i][j]);
-    }
-  }
-  Lattice lat;
-  lat.grid = um2::move(grid);
-  lat.children = um2::move(rtm_ids_flat);
-  lattices.push_back(um2::move(lat));
-  return lat_id;
-}
-
-//=============================================================================
-// makeAssembly
-//=============================================================================
-
-auto
-SpatialPartition::makeAssembly(Vector<Size> const & lat_ids, Vector<Float> const & z)
-    -> Size
-{
-  Size const asy_id = assemblies.size();
-  Log::info("Making assembly " + toString(asy_id));
-  // Ensure that all lattices exist
-  Size const num_lat = lattices.size();
-  {
-    auto const * const it =
-        std::find_if(lat_ids.cbegin(), lat_ids.cend(),
-                     [num_lat](Size const id) { return id < 0 || id >= num_lat; });
-    if (it != lat_ids.end()) {
-      Log::error("Lattice " + toString(*it) + " does not exist");
-      return -1;
-    }
-  }
-  // Ensure the number of lattices is 1 less than the number of z-planes
-  if (lat_ids.size() + 1 != z.size()) {
-    Log::error("The number of lattices must be 1 less than the number of z-planes");
-    return -1;
-  }
-  // Ensure all z-planes are in ascending order
-  if (!std::is_sorted(z.begin(), z.end())) {
-    Log::error("The z-planes must be in ascending order");
-    return -1;
-  }
-  // Ensure this assembly is the same height as all other assemblies
-  if (!assemblies.empty()) {
-    auto const eps = eps_distance<Float>;
-    Float const assem_top = assemblies[0].xMax();
-    Float const assem_bot = assemblies[0].xMin();
-    if (um2::abs(z.back() - assem_top) > eps || um2::abs(z.front() - assem_bot) > eps) {
-      Log::error("All assemblies must have the same height");
-      return -1;
-    }
-  }
-  // Ensure the lattices all have the same dimensions. Since they are composed of RTMs,
-  // it is sufficient to check numXCells and numYCells.
-  {
-    Size const num_xcells = lattices[lat_ids[0]].numXCells();
-    Size const num_ycells = lattices[lat_ids[0]].numYCells();
-    auto const * const it = std::find_if(
-        lat_ids.cbegin(), lat_ids.cend(), [num_xcells, num_ycells, this](Size const id) {
-          return this->lattices[id].numXCells() != num_xcells ||
-                 this->lattices[id].numYCells() != num_ycells;
-        });
-    if (it != lat_ids.end()) {
-      Log::error("All lattices must have the same xy-dimensions");
-      return -1;
-    }
-  }
-
-  // Clean this up. Too many static_casts.
-  Vector<Int> lat_ids_i(lat_ids.size());
-  for (Size i = 0; i < lat_ids.size(); ++i) {
-    lat_ids_i[i] = static_cast<Int>(lat_ids[i]);
-  }
-
-  RectilinearGrid1<Float> grid;
-  grid.divs[0].resize(z.size());
-  um2::copy(z.cbegin(), z.cend(), grid.divs[0].begin());
-  Assembly asy;
-  asy.grid = um2::move(grid);
-  asy.children = um2::move(lat_ids_i);
-  assemblies.push_back(um2::move(asy));
-  return asy_id;
-}
-
-//=============================================================================
-// makeCore
-//=============================================================================
-
-auto
-SpatialPartition::makeCore(Vector<Vector<Size>> const & asy_ids) -> Size
-{
-  Log::info("Making core");
-  // Ensure that all assemblies exist
-  Size const num_asy = assemblies.size();
-  for (auto const & asy_ids_row : asy_ids) {
-    auto const * const it =
-        std::find_if(asy_ids_row.cbegin(), asy_ids_row.cend(),
-                     [num_asy](Size const id) { return id < 0 || id >= num_asy; });
-    if (it != asy_ids_row.end()) {
-      Log::error("Assembly " + toString(*it) + " does not exist");
-      return -1;
-    }
-  }
-  Vector<Vec2<Float>> dxdy(num_asy);
-  for (Size i = 0; i < num_asy; ++i) {
-#if defined(__GNUC__) && !defined(__clang__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wuseless-cast"
-#endif
-    auto const lat_id = static_cast<Size>(assemblies[i].getChild(0));
-#if defined(__GNUC__) && !defined(__clang__)
-#  pragma GCC diagnostic pop
-#endif
-    dxdy[i] = {lattices[lat_id].width(), lattices[lat_id].height()};
-  }
-  // Create the rectilinear grid
-  RectilinearGrid2<Float> grid(dxdy, asy_ids);
-  // Flatten the assembly IDs (rows are reversed)
-  Size const num_rows = asy_ids.size();
-  Size const num_cols = asy_ids[0].size();
-  Vector<Int> asy_ids_flat(num_rows * num_cols);
-  for (Size i = 0; i < num_rows; ++i) {
-    if (asy_ids[i].size() != num_cols) {
-      Log::error("Each row must have the same number of columns");
-      return -1;
-    }
-    for (Size j = 0; j < num_cols; ++j) {
-      asy_ids_flat[i * num_cols + j] = static_cast<Int>(asy_ids[num_rows - 1 - i][j]);
-    }
-  }
-  core.grid = um2::move(grid);
-  core.children = um2::move(asy_ids_flat);
-  return 0;
-}
-
-//=============================================================================
-// importCoarseCells
-//=============================================================================
-
-void
-SpatialPartition::importCoarseCells(String const & filename)
-{
-  Log::info("Importing coarse cells from " + filename);
-  PolytopeSoup<Float, Int> mesh_file;
-  importMesh(filename, mesh_file);
-
-  // Get the materials
-  Vector<String> material_names;
-  mesh_file.getMaterialNames(material_names);
-  materials.resize(material_names.size());
-  for (Size i = 0; i < material_names.size(); ++i) {
-    ShortString & this_name = materials[i].name;
-    this_name = ShortString(material_names[i].substr(9).c_str());
-  }
-
-  // For each coarse cell
-  std::stringstream ss;
-  Size const num_coarse_cells = numCoarseCells();
-  for (Size i = 0; i < num_coarse_cells; ++i) {
-    // Get the submesh for the coarse cell
-    ss.str("");
-    ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << i;
-    String const cc_name(ss.str().c_str());
-    PolytopeSoup<Float, Int> cc_submesh;
-    mesh_file.getSubmesh(cc_name, cc_submesh);
-
-    // Get the mesh type and material IDs
-    MeshType const mesh_type = cc_submesh.getMeshType();
-    CoarseCell & cc = coarse_cells[i];
-    cc.mesh_type = mesh_type;
-    Vector<MaterialID> mat_ids;
-    cc_submesh.getMaterialIDs(mat_ids, material_names);
-    cc.material_ids.resize(mat_ids.size());
-    std::copy(mat_ids.cbegin(), mat_ids.cend(), cc.material_ids.begin());
-
-    // Create the FaceVertexMesh and shift it from global coordinates to local
-    // coordinates, with the bottom left corner of the AABB at the origin
-    AxisAlignedBox2<Float> bb;
-    Point2<Float> * vertices = nullptr;
-    Size const num_verts = cc_submesh.vertices.size();
-    // clang-tidy false positive
-    // NOLINTBEGIN(bugprone-branch-clone) justified above
-    switch (mesh_type) {
-    case MeshType::Tri: {
-      cc.mesh_id = tri.size();
-      tri.push_back(um2::move(TriMesh<2, Float, Int>(cc_submesh)));
-      bb = tri.back().boundingBox();
-      vertices = tri.back().vertices.data();
-      break;
-    }
-    case MeshType::Quad: {
-      cc.mesh_id = quad.size();
-      quad.push_back(um2::move(QuadMesh<2, Float, Int>(cc_submesh)));
-      bb = quad.back().boundingBox();
-      vertices = quad.back().vertices.data();
-      break;
-    }
-    case MeshType::QuadraticTri: {
-      cc.mesh_id = quadratic_tri.size();
-      quadratic_tri.push_back(um2::move(QuadraticTriMesh<2, Float, Int>(cc_submesh)));
-      bb = quadratic_tri.back().boundingBox();
-      vertices = quadratic_tri.back().vertices.data();
-      break;
-    }
-    case MeshType::QuadraticQuad: {
-      cc.mesh_id = quadratic_quad.size();
-      quadratic_quad.push_back(um2::move(QuadraticQuadMesh<2, Float, Int>(cc_submesh)));
-      bb = quadratic_quad.back().boundingBox();
-      vertices = quadratic_quad.back().vertices.data();
-      break;
-    }
-    // NOLINTEND(bugprone-branch-clone)
-    default:
-      Log::error("Mesh type not supported");
-    }
-
-    // Shift the points so that the min point is at the origin.
-    Point2<Float> const min_point = bb.minima;
-    for (Size ip = 0; ip < num_verts; ++ip) {
-      vertices[ip] -= min_point;
-    }
-    #ifndef NDEBUG
-    Point2<Float> const dxdy = bb.maxima - bb.minima;
-    ASSERT(isApprox(dxdy, cc.dxdy));
-    #endif
-  }
-}
 } // namespace um2::mpact

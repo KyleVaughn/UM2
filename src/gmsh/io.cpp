@@ -1,7 +1,7 @@
 #include <um2/gmsh/io.hpp>
 
-#include <um2/common/Color.hpp>
-#include <um2/common/Log.hpp>
+#include <um2/common/color.hpp>
+#include <um2/common/log.hpp>
 #include <um2/stdlib/sto.hpp>
 
 #include <algorithm> // std::sort
@@ -166,7 +166,9 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
     // dim is 1, 2, or 3 and is 2 characters after the end of the name.
     size_t const dim_start = name_end + 2;
     int const dim = sto<int>(line.substr(dim_start, 1));
-    assert(dim == 1 || dim == 2 || dim == 3);
+    ASSERT(dim > 0);
+    ASSERT(dim < 4);
+
     size_t const num_tags_start = dim_start + 2;
     size_t const num_tags = sto<size_t>(line.substr(num_tags_start));
     tags.resize(num_tags);

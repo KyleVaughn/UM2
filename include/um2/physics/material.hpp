@@ -26,19 +26,21 @@ struct Material {
   {
   }
 
-//  HOSTDEV constexpr Material(ShortString const & name_in,
-//                             ShortString const & color_in) noexcept
-//      : name(name_in),
-//        color(color_in)
-//  {
-//  }
-//
-//  template <uint64_t M, uint64_t N>
-//  HOSTDEV constexpr Material(char const (&name_in)[M], char const (&color_in)[N]) noexcept
-//      : name(name_in),
-//        color(color_in)
-//  {
-//  }
+  // TODO(kcvaughn): implicitly convert for name and color
+
+  HOSTDEV constexpr Material(ShortString const & name_in,
+                             ShortString const & color_in) noexcept
+      : name(name_in),
+        color(color_in)
+  {
+  }
+
+  template <uint64_t M, uint64_t N>
+  HOSTDEV constexpr Material(char const (&name_in)[M], char const (&color_in)[N]) noexcept
+      : name(name_in),
+        color(color_in)
+  {
+  }
 
   //======================================================================
   // Methods

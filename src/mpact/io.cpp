@@ -11,8 +11,8 @@ namespace
 {
 void
 writeCoarseCell(Size rtm_id, mpact::SpatialPartition const & model, Size ix, Size iy,
-                Vector<Int> & cc_found, Point2<Float> const & prev_ll,
-                std::vector<std::string> const & mat_names, Float const cut_z,
+                Vector<I> & cc_found, Point2<T> const & prev_ll,
+                std::vector<std::string> const & mat_names, T const cut_z,
                 std::stringstream & ss, pugi::xml_node & xrtm_grid, H5::H5File & h5file,
                 std::string const & h5filename, std::string const & h5rtm_grouppath,
                 std::vector<std::string> const & mat_names_short)
@@ -23,17 +23,17 @@ writeCoarseCell(Size rtm_id, mpact::SpatialPartition const & model, Size ix, Siz
   auto const & cell_id = static_cast<Size>(rtm.getChild(ix, iy));
   // Increment the number of copies of this coarse cell that we have found
   cc_found[cell_id] += 1;
-  Int const cell_id_ctr = cc_found[cell_id];
+  I const cell_id_ctr = cc_found[cell_id];
   // Get the bounding box of the coarse cell
   auto const cell_bb = rtm.getBox(ix, iy);
   // Add the lower left corner of the rtm to the lower left corner of the cell
   // to get the global coordinate shift
-  Point2<Float> const ll = prev_ll + cell_bb.minima;
+  Point2<T> const ll = prev_ll + cell_bb.minima;
   // Get the mesh type and id of the coarse cell. Convert the mesh to a
   // mesh file
   MeshType const mesh_type = model.coarse_cells[cell_id].mesh_type;
   Size const mesh_id = model.coarse_cells[cell_id].mesh_id;
-  MeshFile<Float, Int> mesh_file;
+  MeshFile<T, I> mesh_file;
   switch (mesh_type) {
   case MeshType::Tri:
     model.tri[mesh_id].toMeshFile(mesh_file);
@@ -104,8 +104,8 @@ writeCoarseCell(Size rtm_id, mpact::SpatialPartition const & model, Size ix, Siz
 
 void
 writeRTM(Size lat_id, mpact::SpatialPartition const & model, Size ix, Size iy,
-         Vector<Int> & cc_found, Vector<Int> & rtm_found, Point2<Float> const & asy_ll,
-         std::vector<std::string> const & mat_names, Float const cut_z,
+         Vector<I> & cc_found, Vector<I> & rtm_found, Point2<T> const & asy_ll,
+         std::vector<std::string> const & mat_names, T const cut_z,
          std::stringstream & ss, pugi::xml_node & xlat_grid, H5::H5File & h5file,
          std::string const & h5filename, std::string const & h5lat_grouppath,
          std::vector<std::string> const & mat_names_short)
@@ -116,7 +116,7 @@ writeRTM(Size lat_id, mpact::SpatialPartition const & model, Size ix, Size iy,
   auto const rtm_id = static_cast<Size>(lattice.getChild(ix, iy));
   // Increment the number of copies of this coarse cell that we have found
   rtm_found[rtm_id] += 1;
-  Int const rtm_id_ctr = rtm_found[rtm_id];
+  I const rtm_id_ctr = rtm_found[rtm_id];
   // Create the XML and HDF5 groups for the rtm
   ss.str("");
   ss << "RTM_" << std::setw(5) << std::setfill('0') << rtm_id << "_" << std::setw(5)
@@ -130,8 +130,8 @@ writeRTM(Size lat_id, mpact::SpatialPartition const & model, Size ix, Size iy,
   auto const rtm_bb = lattice.getBox(ix, iy);
   // Get the lower left corner of the bounding box to be used as part of
   // shifting the coarse cell mesh to global coordinates
-  Point2<Float> const rtm_ll = rtm_bb.minima; // Lower left corner
-  Point2<Float> const prev_ll = asy_ll + rtm_ll;
+  Point2<T> const rtm_ll = rtm_bb.minima; // Lower left corner
+  Point2<T> const prev_ll = asy_ll + rtm_ll;
   // Get the rtm
   auto const & rtm = model.rtms[rtm_id];
   if (rtm.children.empty()) {
@@ -164,8 +164,8 @@ writeRTM(Size lat_id, mpact::SpatialPartition const & model, Size ix, Size iy,
 
 void
 writeLattice(Size asy_id, mpact::SpatialPartition const & model, Size iz,
-             Vector<Int> & cc_found, Vector<Int> & rtm_found, Vector<Int> & lat_found,
-             Point2<Float> const & asy_ll, std::vector<std::string> const & mat_names,
+             Vector<I> & cc_found, Vector<I> & rtm_found, Vector<I> & lat_found,
+             Point2<T> const & asy_ll, std::vector<std::string> const & mat_names,
              std::stringstream & ss, pugi::xml_node & xasy_grid, H5::H5File & h5file,
              std::string const & h5filename, std::string const & h5asy_grouppath,
              std::vector<std::string> const & mat_names_short)
@@ -176,7 +176,7 @@ writeLattice(Size asy_id, mpact::SpatialPartition const & model, Size iz,
   auto const lat_id = static_cast<Size>(assembly.children[iz]);
   // Increment the number of copies of this lattice that we have found
   lat_found[lat_id] += 1;
-  Int const lat_id_ctr = lat_found[lat_id];
+  I const lat_id_ctr = lat_found[lat_id];
   // Create the XML and HDF5 groups for the lattice
   pugi::xml_node xlat_grid = xasy_grid.append_child("Grid");
   ss.str("");
@@ -188,9 +188,9 @@ writeLattice(Size asy_id, mpact::SpatialPartition const & model, Size iz,
   H5::Group const h5lat_group = h5file.createGroup(h5lat_grouppath);
   // Get the bounding box and midpoint of the lattice.
   // The midplane is the location that the geometry was sampled at.
-  Float const low_z = assembly.grid.divs[0][iz];
-  Float const high_z = assembly.grid.divs[0][iz + 1];
-  Float const cut_z = (low_z + high_z) / 2;
+  T const low_z = assembly.grid.divs[0][iz];
+  T const high_z = assembly.grid.divs[0][iz + 1];
+  T const cut_z = (low_z + high_z) / 2;
   pugi::xml_node xlat_info = xlat_grid.append_child("Information");
   xlat_info.append_attribute("Name") = "Z";
   std::string const z_values = std::to_string(low_z) + ", " + std::to_string(cut_z) +
@@ -274,10 +274,10 @@ writeXDMFFile(std::string const & path, mpact::SpatialPartition const & model)
   H5::Group const h5core_group = h5file.createGroup(name);
   std::string const h5core_grouppath = "/" + name;
 
-  Vector<Int> cc_found(model.coarse_cells.size(), -1);
-  Vector<Int> rtm_found(model.rtms.size(), -1);
-  Vector<Int> lat_found(model.lattices.size(), -1);
-  Vector<Int> asy_found(model.assemblies.size(), -1);
+  Vector<I> cc_found(model.coarse_cells.size(), -1);
+  Vector<I> rtm_found(model.rtms.size(), -1);
+  Vector<I> lat_found(model.lattices.size(), -1);
+  Vector<I> asy_found(model.assemblies.size(), -1);
   auto const & core = model.core;
   if (core.children.empty()) {
     Log::error("Core has no children");
@@ -294,9 +294,9 @@ writeXDMFFile(std::string const & path, mpact::SpatialPartition const & model)
   // For each assembly
   for (Size iyasy = 0; iyasy < nyasy; ++iyasy) {
     for (Size ixasy = 0; ixasy < nxasy; ++ixasy) {
-      Int const asy_id = core.getChild(ixasy, iyasy);
+      I const asy_id = core.getChild(ixasy, iyasy);
       asy_found[static_cast<Size>(asy_id)] += 1;
-      Int const asy_id_ctr = asy_found[static_cast<Size>(asy_id)];
+      I const asy_id_ctr = asy_found[static_cast<Size>(asy_id)];
       pugi::xml_node xasy_grid = xcore_grid.append_child("Grid");
       ss.str("");
       ss << "Assembly_" << std::setw(5) << std::setfill('0') << asy_id << "_"
@@ -305,8 +305,8 @@ writeXDMFFile(std::string const & path, mpact::SpatialPartition const & model)
       xasy_grid.append_attribute("GridType") = "Tree";
       std::string const h5asy_grouppath = h5core_grouppath + "/" + ss.str();
       H5::Group const h5asy_group = h5file.createGroup(h5asy_grouppath);
-      AxisAlignedBox2<Float> const asy_bb = core.getBox(ixasy, iyasy);
-      Point2<Float> const asy_ll = asy_bb.minima; // Lower left corner
+      AxisAlignedBox2<T> const asy_bb = core.getBox(ixasy, iyasy);
+      Point2<T> const asy_ll = asy_bb.minima; // Lower left corner
       auto const & assembly = model.assemblies[asy_id];
       if (assembly.children.empty()) {
         Log::error("Assembly has no children");
@@ -549,7 +549,7 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
   // 1D map of the IDs of each lattice in each assembly
   std::vector<std::vector<Size>> assembly_lattice_ids;
   // Z coordinates of each lattice in each assembly
-  std::vector<std::vector<Float>> assembly_lattice_zs;
+  std::vector<std::vector<T>> assembly_lattice_zs;
   // 2D layout of the IDs of each RTM in each lattice
   std::vector<std::vector<std::vector<Size>>> lattice_rtm_ids;
   // 2D layout of the IDs of each coarse cell in each RTM
@@ -560,16 +560,16 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
   std::vector<Size> rtm_ids;         // IDs of all RTMs
   std::vector<Size> coarse_cell_ids; // IDs of all coarse cells
 
-  std::vector<Vec2<Float>> coarse_cell_dxdys; // dx and dy of each coarse cell
+  std::vector<Vec2<T>> coarse_cell_dxdys; // dx and dy of each coarse cell
   std::vector<MeshType> coarse_cell_mesh_types;
   std::vector<Size> coarse_cell_mesh_ids; // Mesh ID in each coarse cell
   std::vector<std::vector<MaterialID>>
       coarse_cell_material_ids; // Material IDs in each coarse cell
   // We also store a Vector of Mesh objects for each mesh type
-  Vector<TriMesh<2, Float, Int>> tri;
-  Vector<QuadMesh<2, Float, Int>> quad;
-  Vector<QuadraticTriMesh<2, Float, Int>> quadratic_tri;
-  Vector<QuadraticQuadMesh<2, Float, Int>> quadratic_quad;
+  Vector<TriMesh<2, T, I>> tri;
+  Vector<QuadMesh<2, T, I>> quad;
+  Vector<QuadraticTriMesh<2, T, I>> quadratic_tri;
+  Vector<QuadraticQuadMesh<2, T, I>> quadratic_quad;
 
   // Get the core node
   pugi::xml_node const xcore = xdomain.child("Grid");
@@ -626,7 +626,7 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
       assembly_lattice_ids[static_cast<size_t>(assembly_id_idx)].resize(assembly_m);
       // Allocate assembly_lattice_zs to M + 1
       assembly_lattice_zs.insert(assembly_lattice_zs.begin() + assembly_id_idx,
-                                 std::vector<Float>());
+                                 std::vector<T>());
       assembly_lattice_zs[static_cast<size_t>(assembly_id_idx)].resize(assembly_m + 1U);
       // Loop over all lattices
       // Get the lattice node
@@ -644,8 +644,8 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
         auto lattice_z_low = 1e10;
         auto lattice_z_high = -1e10;
 #else
-        auto lattice_z_low = static_cast<Float>(1e100);
-        auto lattice_z_high = static_cast<Float>(-1e100);
+        auto lattice_z_low = static_cast<T>(1e100);
+        auto lattice_z_high = static_cast<T>(-1e100);
 #endif
         {
           pugi::xml_node const xlattice_zs = lattice_node.child("Information");
@@ -655,10 +655,10 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
             std::stringstream ss(xlattice_zs_value);
             std::string token;
             std::getline(ss, token, ',');
-            lattice_z_low = sto<Float>(token);
+            lattice_z_low = sto<T>(token);
             std::getline(ss, token, ',');
             std::getline(ss, token, ',');
-            lattice_z_high = sto<Float>(token);
+            lattice_z_high = sto<T>(token);
           } else {
             Log::error("Expected assembly Information Name=Z");
             return;
@@ -668,8 +668,8 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
           assert(lattice_z_low < 1e9);
           assert(lattice_z_high > -1e9);
 #else
-          assert(lattice_z_low < static_cast<Float>(1e9));
-          assert(lattice_z_high > static_cast<Float>(-1e9));
+          assert(lattice_z_low < static_cast<T>(1e9));
+          assert(lattice_z_high > static_cast<T>(-1e9));
 #endif
         }
         // If this is the first lattice write the top and bottom Z positions to
@@ -779,7 +779,7 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
                   coarse_cell_ids.insert(coarse_cell_ids.begin() + coarse_cell_id_idx,
                                          coarse_cell_id);
                   // Read the mesh into a MeshFile object using readXDMFUniformGrid
-                  MeshFile<Float, Int> coarse_cell_mesh;
+                  MeshFile<T, I> coarse_cell_mesh;
                   readXDMFUniformGrid(coarse_cell_node, h5file, h5filename,
                                       coarse_cell_mesh);
                   // Set the coarse cell mesh type, mesh id, and material IDs
@@ -790,10 +790,10 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
                       coarse_cell_material_ids[static_cast<size_t>(coarse_cell_id_idx)],
                       long_material_names);
                   coarse_cell_dxdys.insert(coarse_cell_dxdys.begin() + coarse_cell_id_idx,
-                                           Vec2<Float>(0, 0));
-                  AxisAlignedBox2<Float> bb;
+                                           Vec2<T>(0, 0));
+                  AxisAlignedBox2<T> bb;
                   Size num_verts = 0;
-                  Point2<Float> * vertices = nullptr;
+                  Point2<T> * vertices = nullptr;
                   switch (coarse_cell_mesh.getMeshType()) {
                   case MeshType::Tri: {
                     coarse_cell_mesh_types.insert(coarse_cell_mesh_types.begin() +
@@ -801,7 +801,7 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
                                                   MeshType::Tri);
                     coarse_cell_mesh_ids.insert(
                         coarse_cell_mesh_ids.begin() + coarse_cell_id_idx, tri.size());
-                    tri.push_back(um2::move(TriMesh<2, Float, Int>(coarse_cell_mesh)));
+                    tri.push_back(um2::move(TriMesh<2, T, I>(coarse_cell_mesh)));
                     // Shift the points so that the min point is at the origin.
                     bb = tri.back().boundingBox();
                     num_verts = tri.back().vertices.size();
@@ -814,7 +814,7 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
                                                   MeshType::Quad);
                     coarse_cell_mesh_ids.insert(
                         coarse_cell_mesh_ids.begin() + coarse_cell_id_idx, quad.size());
-                    quad.push_back(um2::move(QuadMesh<2, Float, Int>(coarse_cell_mesh)));
+                    quad.push_back(um2::move(QuadMesh<2, T, I>(coarse_cell_mesh)));
                     // Shift the points so that the min point is at the origin.
                     bb = quad.back().boundingBox();
                     num_verts = quad.back().vertices.size();
@@ -829,7 +829,7 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
                                                     coarse_cell_id_idx,
                                                 quadratic_tri.size());
                     quadratic_tri.push_back(
-                        um2::move(QuadraticTriMesh<2, Float, Int>(coarse_cell_mesh)));
+                        um2::move(QuadraticTriMesh<2, T, I>(coarse_cell_mesh)));
                     // Shift the points so that the min point is at the origin.
                     bb = quadratic_tri.back().boundingBox();
                     num_verts = quadratic_tri.back().vertices.size();
@@ -844,7 +844,7 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
                                                     coarse_cell_id_idx,
                                                 quadratic_quad.size());
                     quadratic_quad.push_back(
-                        um2::move(QuadraticQuadMesh<2, Float, Int>(coarse_cell_mesh)));
+                        um2::move(QuadraticQuadMesh<2, T, I>(coarse_cell_mesh)));
                     // Shift the points so that the min point is at the origin.
                     bb = quadratic_quad.back().boundingBox();
                     num_verts = quadratic_quad.back().vertices.size();
@@ -856,11 +856,11 @@ readXDMFFile(std::string const & path, mpact::SpatialPartition & model)
                     return;
                   }
                   // Shift the points so that the min point is at the origin.
-                  Point2<Float> const min_point = bb.minima;
+                  Point2<T> const min_point = bb.minima;
                   for (Size ip = 0; ip < num_verts; ++ip) {
                     vertices[ip] -= min_point;
                   }
-                  Point2<Float> const dxdy = bb.maxima - bb.minima;
+                  Point2<T> const dxdy = bb.maxima - bb.minima;
                   coarse_cell_dxdys[static_cast<size_t>(coarse_cell_id_idx)] = dxdy;
                 } // if (coarse_cell_id_it == coarse_cell_ids.end())
                 coarse_cell_count++;

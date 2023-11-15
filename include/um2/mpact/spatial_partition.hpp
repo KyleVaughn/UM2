@@ -147,16 +147,22 @@ struct SpatialPartition {
   makeLattice(Vector<Vector<Size>> const & rtm_ids) -> Size;
 
   auto
+  stdMakeLattice(std::vector<std::vector<Size>> const & rtm_ids) -> Size;
+
+  auto
   makeAssembly(Vector<Size> const & lat_ids, Vector<T> const & z = {-1, 1}) -> Size;
 
   auto
   makeCore(Vector<Vector<Size>> const & asy_ids) -> Size;
 
+  auto
+  stdMakeCore(std::vector<std::vector<Size>> const & asy_ids) -> Size;
+
   void
   importCoarseCells(String const & filename);
 
   void
-  toPolytopeSoup(PolytopeSoup<T, I> & soup) const;
+  toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn = false) const;
 
 }; // struct SpatialPartition
 
@@ -355,6 +361,22 @@ SpatialPartition<T, I>::makeRTM(Vector<Vector<Size>> const & cc_ids) -> Size
 
 template<std::floating_point T, std::integral I>
 auto
+SpatialPartition<T, I>::stdMakeLattice(std::vector<std::vector<Size>> const & rtm_ids) -> Size
+{
+  // Convert to um2::Vector
+  Vector<Vector<Size>> rtm_ids_um2(static_cast<Size>(rtm_ids.size()));
+  for (size_t i = 0; i < rtm_ids.size(); ++i) {
+    rtm_ids_um2[static_cast<Size>(i)].resize(static_cast<Size>(rtm_ids[i].size()));
+    for (size_t j = 0; j < rtm_ids[i].size(); ++j) {
+      rtm_ids_um2[static_cast<Size>(i)][static_cast<Size>(j)] =
+          static_cast<Size>(rtm_ids[i][j]);
+    }
+  }
+  return makeLattice(rtm_ids_um2);
+}
+
+template<std::floating_point T, std::integral I>
+auto
 SpatialPartition<T, I>::makeLattice(Vector<Vector<Size>> const & rtm_ids) -> Size
 {
   Size const lat_id = lattices.size();
@@ -474,6 +496,22 @@ SpatialPartition<T, I>::makeAssembly(Vector<Size> const & lat_ids, Vector<T> con
 //=============================================================================
 // makeCore
 //=============================================================================
+
+template<std::floating_point T, std::integral I>
+auto
+SpatialPartition<T, I>::stdMakeCore(std::vector<std::vector<Size>> const & asy_ids) -> Size
+{
+  // Convert to um2::Vector
+  Vector<Vector<Size>> asy_ids_um2(static_cast<Size>(asy_ids.size()));
+  for (size_t i = 0; i < asy_ids.size(); ++i) {
+    asy_ids_um2[static_cast<Size>(i)].resize(static_cast<Size>(asy_ids[i].size()));
+    for (size_t j = 0; j < asy_ids[i].size(); ++j) {
+      asy_ids_um2[static_cast<Size>(i)][static_cast<Size>(j)] =
+          static_cast<Size>(asy_ids[i][j]);
+    }
+  }
+  return makeCore(asy_ids_um2);
+}
 
 template<std::floating_point T, std::integral I>
 auto
@@ -610,7 +648,7 @@ SpatialPartition<T, I>::importCoarseCells(String const & filename)
 template<std::floating_point T, std::integral I>
 void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
+SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn) const
 {
   LOG_DEBUG("Converting spatial partition to polytope soup");
 
@@ -627,6 +665,8 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
   std::stringstream ss;
   Size total_num_faces = 0;
   Vector<Vector<I>> material_elsets(materials.size());
+  Vector<T> kn_max;
+  Vector<T> kn_mean;
 
   // We will encode the M by N dimensions of each assembly, lattice,
   // etc. as elset data.
@@ -643,6 +683,7 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
       ss << "Assembly_" << std::setw(5) << std::setfill('0') << asy_id << "_"
          << std::setw(5) << std::setfill('0') << asy_id_ctr;
       String const asy_name(ss.str().c_str());
+      LOG_DEBUG("Assembly name: " + asy_name);
       // Get the assembly offset (lower left corner)
       AxisAlignedBox2<T> const asy_bb = core.getBox(ixasy, iyasy);
       Point2<T> const asy_ll = asy_bb.minima; // Lower left corner
@@ -664,6 +705,7 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
         ss << "Lattice_" << std::setw(5) << std::setfill('0') << lat_id << "_" << std::setw(5)
            << std::setfill('0') << lat_id_ctr;
         String const lat_name(ss.str().c_str());
+        LOG_DEBUG("Lattice name: " + lat_name);
         // Get the lattice offset (z direction)
         // The midplane is the location that the geometry was sampled at.
         T const low_z = assembly.grid.divs[0][izlat];
@@ -689,6 +731,7 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
             ss << "RTM_" << std::setw(5) << std::setfill('0') << rtm_id << "_" << std::setw(5)
                << std::setfill('0') << rtm_id_ctr;
             String const rtm_name(ss.str().c_str());
+            LOG_DEBUG("RTM name: " + rtm_name);
             // Get the RTM offset (lower left corner)
             auto const rtm_bb = lattice.getBox(ixrtm, iyrtm);
             Point2<T> const rtm_ll = rtm_bb.minima; // Lower left corner
@@ -711,11 +754,12 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
                 ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id << "_"
                    << std::setw(5) << std::setfill('0') << cell_id_ctr;
                 String const cell_name(ss.str().c_str());
-                // Get the cell offset (lower left corner) 
+                LOG_DEBUG("Coarse cell name: " + cell_name);
+                // Get the cell offset (lower left corner)
                 auto const cell_bb = rtm.getBox(ixcell, iycell);
-                Point2<T> const cell_ll = cell_bb.minima; // Lower left corner 
+                Point2<T> const cell_ll = cell_bb.minima; // Lower left corner
 
-                // Get the mesh type and id of the coarse cell. 
+                // Get the mesh type and id of the coarse cell.
                 MeshType const mesh_type = coarse_cells[cell_id].mesh_type;
                 Size const mesh_id = coarse_cells[cell_id].mesh_id;
                 // Add to material elsets
@@ -756,7 +800,7 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
                 for (auto it = fvm_vertices_begin; it != fvm_vertices_end; ++it) {
                   Point2<T> const p = *it + xy_offset;
                   soup.addVertex(p[0], p[1], lat_z);
-                } 
+                }
 
                 // Add each face to the PolytopeSoup, offsetting by num_verts_prev
                 switch (mesh_type) {
@@ -771,7 +815,15 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
                       conn[i] = face_conn[i] + num_verts_prev;
                     }
                     soup.addElement(elem_type, conn);
-                  } 
+                    if (write_kn) {
+                      T const mcl = tri[mesh_id].getFace(iface).meanChordLength();
+                      auto const mat_id = static_cast<Size>(static_cast<unsigned char>(cell_materials[iface]));
+                      T const t_max = materials[mat_id].xs.getOneGroupTotalXS(XSReductionStrategy::Max);
+                      T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(XSReductionStrategy::Mean);
+                      kn_max.push_back(static_cast<T>(1) / (t_max * mcl));
+                      kn_mean.push_back(static_cast<T>(1) / (t_mean * mcl));
+                    }
+                  }
                   }
                   break;
                 case MeshType::Quad:
@@ -779,12 +831,21 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
                   Size const verts_per_face = 4;
                   VTKElemType const elem_type = VTKElemType::Quad;
                   Vector<I> conn(verts_per_face);
-                  for (auto const & face_conn : quad[mesh_id].fv) {
+                  for (Size iface = 0; iface < quad[mesh_id].fv.size(); ++iface) {
+                    auto const & face_conn = quad[mesh_id].fv[iface];
                     for (Size i = 0; i < verts_per_face; ++i) {
                       conn[i] = face_conn[i] + num_verts_prev;
                     }
                     soup.addElement(elem_type, conn);
-                  } 
+                    if (write_kn) {
+                      T const mcl = quad[mesh_id].getFace(iface).meanChordLength();
+                      auto const mat_id = static_cast<Size>(static_cast<unsigned char>(cell_materials[iface]));
+                      T const t_max = materials[mat_id].xs.getOneGroupTotalXS(XSReductionStrategy::Max);
+                      T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(XSReductionStrategy::Mean);
+                      kn_max.push_back(static_cast<T>(1) / (t_max * mcl));
+                      kn_mean.push_back(static_cast<T>(1) / (t_mean * mcl));
+                    }
+                  }
                   }
                   break;
                 case MeshType::QuadraticTri:
@@ -792,11 +853,20 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
                   Size const verts_per_face = 6;
                   VTKElemType const elem_type = VTKElemType::QuadraticTriangle;
                   Vector<I> conn(verts_per_face);
-                  for (auto const & face_conn : quadratic_tri[mesh_id].fv) {
+                  for (Size iface = 0; iface < quadratic_tri[mesh_id].fv.size(); ++iface) {
+                    auto const & face_conn = quadratic_tri[mesh_id].fv[iface];
                     for (Size i = 0; i < verts_per_face; ++i) {
                       conn[i] = face_conn[i] + num_verts_prev;
                     }
                     soup.addElement(elem_type, conn);
+                    if (write_kn) {
+                      T const mcl = quadratic_tri[mesh_id].getFace(iface).meanChordLength();
+                      auto const mat_id = static_cast<Size>(static_cast<unsigned char>(cell_materials[iface]));
+                      T const t_max = materials[mat_id].xs.getOneGroupTotalXS(XSReductionStrategy::Max);
+                      T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(XSReductionStrategy::Mean);
+                      kn_max.push_back(static_cast<T>(1) / (t_max * mcl));
+                      kn_mean.push_back(static_cast<T>(1) / (t_mean * mcl));
+                    }
                   }
                   }
                   break;
@@ -805,11 +875,20 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
                   Size const verts_per_face = 8;
                   VTKElemType const elem_type = VTKElemType::QuadraticQuad;
                   Vector<I> conn(verts_per_face);
-                  for (auto const & face_conn : quadratic_quad[mesh_id].fv) {
+                  for (Size iface = 0; iface < quadratic_quad[mesh_id].fv.size(); ++iface) {
+                    auto const & face_conn = quadratic_quad[mesh_id].fv[iface];
                     for (Size i = 0; i < verts_per_face; ++i) {
                       conn[i] = face_conn[i] + num_verts_prev;
                     }
                     soup.addElement(elem_type, conn);
+                    if (write_kn) {
+                      T const mcl = quadratic_quad[mesh_id].getFace(iface).meanChordLength();
+                      auto const mat_id = static_cast<Size>(static_cast<unsigned char>(cell_materials[iface]));
+                      T const t_max = materials[mat_id].xs.getOneGroupTotalXS(XSReductionStrategy::Max);
+                      T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(XSReductionStrategy::Mean);
+                      kn_max.push_back(static_cast<T>(1) / (t_max * mcl));
+                      kn_mean.push_back(static_cast<T>(1) / (t_mean * mcl));
+                    }
                   }
                   }
                   break;
@@ -822,7 +901,7 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
                 // Add an elset for the cell
                 Vector<I> cell_ids(num_faces);
                 um2::iota(cell_ids.begin(), cell_ids.end(), static_cast<I>(cell_faces_prev));
-                soup.addElset(cell_name, cell_ids); 
+                soup.addElset(cell_name, cell_ids);
                 total_num_faces += num_faces;
 
               } // for (ixcell)
@@ -840,7 +919,7 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
         um2::iota(lat_ids.begin(), lat_ids.end(), static_cast<I>(lat_faces_prev));
         soup.addElset(lat_name, lat_ids);
       } // for (izlat)
-      
+
       // Add the assembly elset
       Vector<I> asy_ids(total_num_faces - asy_faces_prev);
       um2::iota(asy_ids.begin(), asy_ids.end(), static_cast<I>(asy_faces_prev));
@@ -849,9 +928,17 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup) const
   } // for (iyasy)
 
   // Add the material elsets
-  for (Size imat = 0; imat < materials.size(); ++imat) { 
+  for (Size imat = 0; imat < materials.size(); ++imat) {
     String const mat_name = "Material_" + String(materials[imat].name.data());
     soup.addElset(mat_name, material_elsets[imat]);
+  }
+
+  Vector<I> all_ids(total_num_faces);
+  um2::iota(all_ids.begin(), all_ids.end(), static_cast<I>(0));
+  // Add the knudsen number elsets
+  if (write_kn) {
+    soup.addElset("Knudsen_Max", all_ids, kn_max);
+    soup.addElset("Knudsen_Mean", all_ids, kn_mean);
   }
 
   soup.sortElsets();

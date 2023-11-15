@@ -3,17 +3,15 @@
 #include <um2/config.hpp> // UM2_USE_GMSH
 
 #if UM2_USE_GMSH
-#  include <um2/common/Log.hpp>
+#  include <um2/common/log.hpp>
 #  include <um2/gmsh/base_gmsh_api.hpp>
 #  include <um2/math/stats.hpp>
-#  include <um2/mesh/MeshFile.hpp>
-#  include <um2/physics/Material.hpp>
+#  include <um2/mesh/element_types.hpp>
+#  include <um2/physics/material.hpp>
 
 #  include <concepts> // std::floating_point, std::unsigned_integral
 #  include <string>   // std::string
 #  include <vector>   // std::vector
-
-enum class KnudsenStrategy { GroupwiseMinMeanFreePath, GroupwiseAvgMeanFreePath };
 
 namespace um2::gmsh::model::mesh
 {
@@ -27,8 +25,8 @@ setMeshFieldFromGroups(int dim, std::vector<std::string> const & groups,
 
 auto
 setMeshFieldFromKnudsenNumber(
-    int dim, std::vector<Material> const & materials, double kn_target,
-    KnudsenStrategy strategy = KnudsenStrategy::GroupwiseAvgMeanFreePath)
+    int dim, std::vector<Material<Float>> const & materials, double kn_target,
+    XSReductionStrategy strategy = XSReductionStrategy::Mean)
     -> std::vector<int>;
 
 void

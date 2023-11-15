@@ -46,7 +46,7 @@ TEST_CASE(getMaterials)
           {2, 3}
   },
       0, 0, 255);
-  std::vector<um2::Material> materials;
+  std::vector<um2::Material<Float>> materials;
   um2::gmsh::model::getMaterials(materials);
   ASSERT(materials.size() == 2);
   ASSERT(materials[0].name == "UO2");
@@ -58,8 +58,8 @@ TEST_CASE(getMaterials)
 
 TEST_CASE(groupPresFragment_2d2d)
 {
-  std::vector<um2::Material> const materials = {um2::Material("Fuel", "red"),
-                                                um2::Material("Moderator", "blue")};
+  std::vector<um2::Material<Float>> const materials = {um2::Material<Float>("Fuel", "red"),
+                                                um2::Material<Float>("Moderator", "blue")};
   // First pass no material hierarchy, second pass with material hierarchy
   for (size_t i = 0; i < 2; ++i) {
     um2::gmsh::initialize();
@@ -173,8 +173,8 @@ TEST_CASE(groupPresFragment_2d2d)
 
 TEST_CASE(groupPresFragment_3d3d)
 {
-  std::vector<um2::Material> const materials = {um2::Material("Fuel", "red"),
-                                                um2::Material("Moderator", "blue")};
+  std::vector<um2::Material<Float>> const materials = {um2::Material<Float>("Fuel", "red"),
+                                                um2::Material<Float>("Moderator", "blue")};
   // First pass no material hierarchy, second pass with material hierarchy
   for (size_t i = 0; i < 2; ++i) {
     um2::gmsh::initialize();
@@ -287,8 +287,8 @@ TEST_CASE(groupPresFragment_3d3d)
 
 TEST_CASE(groupPresIntersect_2d2d)
 {
-  std::vector<um2::Material> const materials = {um2::Material("Fuel", "red"),
-                                                um2::Material("Moderator", "blue")};
+  std::vector<um2::Material<Float>> const materials = {um2::Material<Float>("Fuel", "red"),
+                                                um2::Material<Float>("Moderator", "blue")};
   // First pass no material hierarchy, second pass with material hierarchy
   for (size_t i = 0; i < 2; ++i) {
     um2::gmsh::initialize();
