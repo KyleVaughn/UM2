@@ -17,8 +17,8 @@ initialize(String const & verbosity)
   // Set verbosity
   // Make uppercase for comparison
   String verbosity_upper = verbosity;
-  std::transform(verbosity.data(), verbosity.data() + verbosity.size(), 
-      verbosity_upper.data(), ::toupper);
+  std::transform(verbosity.data(), verbosity.data() + verbosity.size(),
+                 verbosity_upper.data(), ::toupper);
   if (verbosity_upper == "TRACE") {
     Log::setMaxVerbosityLevel(LogVerbosity::Trace);
   } else if (verbosity_upper == "DEBUG") {
@@ -33,15 +33,14 @@ initialize(String const & verbosity)
     Log::setMaxVerbosityLevel(LogVerbosity::Off);
   } else {
     Log::setMaxVerbosityLevel(LogVerbosity::Info);
-    Log::warn("Invalid verbosity level: " + verbosity +
-              ". Defaulting to INFO.");
+    Log::warn("Invalid verbosity level: " + verbosity + ". Defaulting to INFO.");
   }
   Log::info("Initializing UM2");
 #if UM2_USE_GMSH
   if (init_gmsh && gmsh::isInitialized() == 0) {
     gmsh::initialize();
-    gmsh::option::setNumber("General.NumThreads", 0);   // System default
-    gmsh::option::setNumber("Geometry.OCCParallel", 1); // Parallelize OCC
+    gmsh::option::setNumber("General.NumThreads", 0);             // System default
+    gmsh::option::setNumber("Geometry.OCCParallel", 1);           // Parallelize OCC
     gmsh::option::setNumber("General.Verbosity", gmsh_verbosity); // Errors + warnings
   }
 #endif

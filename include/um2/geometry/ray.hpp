@@ -17,7 +17,7 @@ struct Ray {
 
   HOSTDEV constexpr Ray(Point<D, T> const & origin, Vec<D, T> const & direction) noexcept
       : o(origin),
-      d(direction)
+        d(direction)
   {
     ASSERT(um2::abs(direction.squaredNorm() - static_cast<T>(1)) < static_cast<T>(1e-5));
   }

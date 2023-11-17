@@ -34,8 +34,8 @@ deviceMortonSort(Point<D, T> * const begin, Point<D, T> * const end)
   void * d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
   cudaError_t error = cudaSuccess;
-  error = cub::DeviceMergeSort::SortKeys(d_temp_storage, temp_storage_bytes, begin, num_points,
-                                 MortonLessFunctor<U, D, T>{});
+  error = cub::DeviceMergeSort::SortKeys(d_temp_storage, temp_storage_bytes, begin,
+                                         num_points, MortonLessFunctor<U, D, T>{});
   CUDA_CHECK_ERROR(error);
 
   // Allocate temporary storage
@@ -43,8 +43,8 @@ deviceMortonSort(Point<D, T> * const begin, Point<D, T> * const end)
   CUDA_CHECK_ERROR(error);
 
   // Sort the keys
-  error = cub::DeviceMergeSort::SortKeys(d_temp_storage, temp_storage_bytes, begin, num_points,
-                                 MortonLessFunctor<U, D, T>{});
+  error = cub::DeviceMergeSort::SortKeys(d_temp_storage, temp_storage_bytes, begin,
+                                         num_points, MortonLessFunctor<U, D, T>{});
   CUDA_CHECK_ERROR(error);
 
   // Free temporary storage

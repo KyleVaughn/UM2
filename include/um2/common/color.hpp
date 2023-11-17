@@ -73,76 +73,76 @@ struct Color {
 PURE HOSTDEV constexpr auto
 toColor(ShortString const & name) noexcept -> Color;
 
-//==============================================================================    
-// Constructors    
-//==============================================================================    
-    
-HOSTDEV constexpr Color::Color() noexcept    
-{    
-  rep.u32 = 0xFF000000; // 0xAAGGBBRR    
-}    
-    
-template <std::integral I>    
-HOSTDEV constexpr Color::Color(I r_in, I g_in, I b_in, I a_in) noexcept    
-{    
-  rep.rgba.r = static_cast<uint8_t>(r_in);    
-  rep.rgba.g = static_cast<uint8_t>(g_in);    
-  rep.rgba.b = static_cast<uint8_t>(b_in);    
-  rep.rgba.a = static_cast<uint8_t>(a_in);    
-}    
-    
-template <std::floating_point T>    
-HOSTDEV constexpr Color::Color(T r_in, T g_in, T b_in, T a_in) noexcept    
-{    
-  rep.rgba.r = static_cast<uint8_t>(r_in * 255);    
-  rep.rgba.g = static_cast<uint8_t>(g_in * 255);    
-  rep.rgba.b = static_cast<uint8_t>(b_in * 255);    
-  rep.rgba.a = static_cast<uint8_t>(a_in * 255);    
-}    
-    
-HOSTDEV constexpr Color::Color(ShortString const & name) noexcept    
-    : Color()    
-{    
-  *this = toColor(name);    
-}    
-    
-//==============================================================================    
-// Accessors    
-//==============================================================================    
-    
-HOSTDEV constexpr auto    
-Color::r() const noexcept -> uint8_t    
-{       
-  return rep.rgba.r;    
-}    
-    
-HOSTDEV constexpr auto        
-Color::g() const noexcept -> uint8_t    
-{    
-  return rep.rgba.g;    
-}    
-    
-HOSTDEV constexpr auto    
-Color::b() const noexcept -> uint8_t    
-{    
-  return rep.rgba.b;    
-}    
-    
-HOSTDEV constexpr auto    
-Color::a() const noexcept -> uint8_t    
-{    
-  return rep.rgba.a;    
-} 
+//==============================================================================
+// Constructors
+//==============================================================================
+
+HOSTDEV constexpr Color::Color() noexcept
+{
+  rep.u32 = 0xFF000000; // 0xAAGGBBRR
+}
+
+template <std::integral I>
+HOSTDEV constexpr Color::Color(I r_in, I g_in, I b_in, I a_in) noexcept
+{
+  rep.rgba.r = static_cast<uint8_t>(r_in);
+  rep.rgba.g = static_cast<uint8_t>(g_in);
+  rep.rgba.b = static_cast<uint8_t>(b_in);
+  rep.rgba.a = static_cast<uint8_t>(a_in);
+}
+
+template <std::floating_point T>
+HOSTDEV constexpr Color::Color(T r_in, T g_in, T b_in, T a_in) noexcept
+{
+  rep.rgba.r = static_cast<uint8_t>(r_in * 255);
+  rep.rgba.g = static_cast<uint8_t>(g_in * 255);
+  rep.rgba.b = static_cast<uint8_t>(b_in * 255);
+  rep.rgba.a = static_cast<uint8_t>(a_in * 255);
+}
+
+HOSTDEV constexpr Color::Color(ShortString const & name) noexcept
+    : Color()
+{
+  *this = toColor(name);
+}
+
+//==============================================================================
+// Accessors
+//==============================================================================
+
+HOSTDEV constexpr auto
+Color::r() const noexcept -> uint8_t
+{
+  return rep.rgba.r;
+}
+
+HOSTDEV constexpr auto
+Color::g() const noexcept -> uint8_t
+{
+  return rep.rgba.g;
+}
+
+HOSTDEV constexpr auto
+Color::b() const noexcept -> uint8_t
+{
+  return rep.rgba.b;
+}
+
+HOSTDEV constexpr auto
+Color::a() const noexcept -> uint8_t
+{
+  return rep.rgba.a;
+}
 
 //==============================================================================
 // Operators
 //==============================================================================
 
-CONST HOSTDEV constexpr auto    
-operator==(Color const lhs, Color const rhs) noexcept -> bool    
-{    
-  return lhs.rep.u32 == rhs.rep.u32;    
-}    
+CONST HOSTDEV constexpr auto
+operator==(Color const lhs, Color const rhs) noexcept -> bool
+{
+  return lhs.rep.u32 == rhs.rep.u32;
+}
 
 CONST HOSTDEV constexpr auto
 operator!=(Color const lhs, Color const rhs) noexcept -> bool

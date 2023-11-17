@@ -228,8 +228,8 @@ printLogMessage(LogVerbosity const verbosity, LogTimePoint const time,
   } else {
     std::cout << log_message.c_str() << std::endl;
   }
-// Valgrind says no memory leaks here
-// NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks) justification: see above
+  // Valgrind says no memory leaks here
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks) justification: see above
 }
 } // namespace
 

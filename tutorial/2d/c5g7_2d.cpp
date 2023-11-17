@@ -5,10 +5,12 @@
 
 #include <um2.hpp>
 
+#include <iostream>
+
 auto
 main() -> int
 {
-  um2::initialize("debug");
+  um2::initialize("trace");
 
   // Parameters
   double const radius = 0.54;          // Pin radius = 0.54 cm (pg. 3)
@@ -55,8 +57,8 @@ main() -> int
   guide_tube.xs.t = guide_tube_xs;
   moderator.xs.t = moderator_xs;
 
-  std::vector<um2::Material<double>> const materials = {uo2, mox43, mox70,  mox87,
-                                                fiss_chamber, guide_tube, moderator};
+  std::vector<um2::Material<double>> const materials = {
+      uo2, mox43, mox70, mox87, fiss_chamber, guide_tube, moderator};
 
   // Pin ID  |  Material
   // --------+----------------
@@ -212,10 +214,17 @@ main() -> int
 
   um2::gmsh::write("c5g7.inp");
   model.importCoarseCells("c5g7.inp");
+  model.materials[6].xs.t = uo2_xs;
+  model.materials[2].xs.t = mox43_xs;
+  model.materials[3].xs.t = mox70_xs;
+  model.materials[4].xs.t = mox87_xs;
+  model.materials[0].xs.t = fiss_chamber_xs;
+  model.materials[1].xs.t = guide_tube_xs;
+  model.materials[5].xs.t = moderator_xs;
   um2::PolytopeSoup<double, int> soup;
   model.toPolytopeSoup(soup, /*write_kn=*/true);
   soup.write("c5g7.xdmf");
-//  um2::exportMesh("c5g7.xdmf", model);
+  //  um2::exportMesh("c5g7.xdmf", model);
   um2::finalize();
   return 0;
 }

@@ -42,7 +42,7 @@ struct RectilinearPartition {
                                  Vector<Vector<Size>> const & ids);
 
   //==============================================================================
-  // Methods 
+  // Methods
   //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto

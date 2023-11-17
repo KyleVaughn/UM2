@@ -1,15 +1,15 @@
 #include <benchmark/benchmark.h>
 
-//#include <um2/common/Log.hpp>
+// #include <um2/common/Log.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/point.hpp>
-//#include <um2/geometry/Polygon.hpp>
+// #include <um2/geometry/Polygon.hpp>
 #include <um2/stdlib/vector.hpp>
 //
-//#include <algorithm>
-//#if UM2_USE_TBB
-//#  include <execution>
-//#endif
+// #include <algorithm>
+// #if UM2_USE_TBB
+// #  include <execution>
+// #endif
 
 #include <iostream>
 #include <random>
@@ -80,21 +80,21 @@ makeVectorOfRandomPoints(Size size, um2::AxisAlignedBox<D, T> box)
   return v;
 }
 
-//template <typename T>
-//auto
-//makeVectorOfRandomTriangles(Size size, um2::AxisAlignedBox2<T> box)
-//    -> um2::Vector<um2::Triangle2<T>>
+// template <typename T>
+// auto
+// makeVectorOfRandomTriangles(Size size, um2::AxisAlignedBox2<T> box)
+//     -> um2::Vector<um2::Triangle2<T>>
 //{
-//  um2::Vector<um2::Triangle2<T>> v(size);
-//  auto const box_size = box.maxima - box.minima;
-//  for (auto & t : v) {
-//    t[0] = box.minima + randomPoint<2, T>() *= box_size;
-//    t[1] = box.minima + randomPoint<2, T>() *= box_size;
-//    // We require that the third point is CCW from the first two.
-//    t[2] = box.minima + randomPoint<2, T>() *= box_size;
-//    while (!um2::areCCW(t[0], t[1], t[2])) {
-//      t[2] = box.minima + randomPoint<2, T>() *= box_size;
-//    }
-//  }
-//  return v;
-//}
+//   um2::Vector<um2::Triangle2<T>> v(size);
+//   auto const box_size = box.maxima - box.minima;
+//   for (auto & t : v) {
+//     t[0] = box.minima + randomPoint<2, T>() *= box_size;
+//     t[1] = box.minima + randomPoint<2, T>() *= box_size;
+//     // We require that the third point is CCW from the first two.
+//     t[2] = box.minima + randomPoint<2, T>() *= box_size;
+//     while (!um2::areCCW(t[0], t[1], t[2])) {
+//       t[2] = box.minima + randomPoint<2, T>() *= box_size;
+//     }
+//   }
+//   return v;
+// }

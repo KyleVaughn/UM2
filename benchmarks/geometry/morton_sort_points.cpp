@@ -8,13 +8,13 @@
 //  - CPU (single and multi-threaded) and GPU sorting
 //  - BMI2 vs non-BMI2 instructions
 //  - 32-bit vs 64-bit integers and floats
-// Sorting points in morton order has a performance benefit for spatial queries, 
+// Sorting points in morton order has a performance benefit for spatial queries,
 // but the benefit must outweigh the cost of sorting. Hence, we need to know the
 // make sorting as fast as possible.
 //
 // Description:
 // ------------
-// Test the performance of sorting random points in morton order. The number of 
+// Test the performance of sorting random points in morton order. The number of
 // points is varied from 1024 to 4 million.
 //
 // Results:
@@ -140,14 +140,14 @@
 //    much faster, so we should use 32-bit numbers for GPU sorting.
 //
 // 2. BMI instructions should be used for CPU sorting if available.
-//    
+//
 // 3. GPU sorting is much faster than CPU sorting, so we should use GPU sorting if
 //    possible.
 
 #include "../helpers.hpp"
+#include <iostream>
 #include <um2/geometry/morton_sort_points.hpp>
 #include <um2/parallel/geometry/morton_sort_points.hpp>
-#include <iostream>
 
 constexpr Size npoints = 1 << 22;
 
@@ -204,7 +204,7 @@ mortonSortCuda(benchmark::State & state)
   um2::Vector<um2::Point2<T>> after(n);
 
   um2::Point2<T> * d_points;
-  size_t const size_in_bytes = static_cast<size_t>(n) * sizeof(um2::Point2<T>); 
+  size_t const size_in_bytes = static_cast<size_t>(n) * sizeof(um2::Point2<T>);
   cudaError_t error = cudaSuccess;
   error = cudaMalloc(&d_points, size_in_bytes);
   CUDA_CHECK_ERROR(error);
@@ -238,18 +238,18 @@ BENCHMARK_TEMPLATE2(mortonSortSerial, double, uint64_t)
     ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE2(mortonSortSerial, double, uint32_t)
-  ->RangeMultiplier(8)
-  ->Range(1024, npoints)
-  ->Unit(benchmark::kMicrosecond);
+    ->RangeMultiplier(8)
+    ->Range(1024, npoints)
+    ->Unit(benchmark::kMicrosecond);
 // Lossy
-//BENCHMARK_TEMPLATE2(mortonSortSerial, float, uint64_t)
+// BENCHMARK_TEMPLATE2(mortonSortSerial, float, uint64_t)
 //  ->RangeMultiplier(8)
 //  ->Range(1024, npoints)
 //  ->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE2(mortonSortSerial, float, uint32_t)
-  ->RangeMultiplier(8)
-  ->Range(1024, npoints)
-  ->Unit(benchmark::kMicrosecond);
+    ->RangeMultiplier(8)
+    ->Range(1024, npoints)
+    ->Unit(benchmark::kMicrosecond);
 
 #if UM2_USE_TBB
 BENCHMARK_TEMPLATE2(mortonSortParallel, double, uint64_t)
@@ -260,10 +260,10 @@ BENCHMARK_TEMPLATE2(mortonSortParallel, double, uint32_t)
     ->RangeMultiplier(8)
     ->Range(1024, npoints)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE2(mortonSortParallel, float, uint32_t)    
-  ->RangeMultiplier(8)    
-  ->Range(1024, npoints)    
-  ->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE2(mortonSortParallel, float, uint32_t)
+    ->RangeMultiplier(8)
+    ->Range(1024, npoints)
+    ->Unit(benchmark::kMicrosecond);
 #endif
 #if UM2_USE_CUDA
 BENCHMARK_TEMPLATE2(mortonSortCuda, double, uint64_t)

@@ -51,7 +51,6 @@ struct Material {
   {
     return !xs.t.empty();
   }
-
 };
 
 // PURE HOSTDEV constexpr auto
@@ -59,7 +58,7 @@ struct Material {
 // {
 //   return lhs.color == rhs.color && lhs.name == rhs.name;
 // }
-// 
+//
 // PURE HOSTDEV constexpr auto
 // operator!=(Material const & lhs, Material const & rhs) -> bool
 // {

@@ -162,7 +162,8 @@ setMeshFieldFromGroups(int const dim, std::vector<std::string> const & groups,
 //=============================================================================
 
 auto
-setMeshFieldFromKnudsenNumber(int const dim, std::vector<Material<Float>> const & materials,
+setMeshFieldFromKnudsenNumber(int const dim,
+                              std::vector<Material<Float>> const & materials,
                               double const kn_target, XSReductionStrategy const strategy)
     -> std::vector<int>
 {
@@ -205,7 +206,7 @@ setMeshFieldFromKnudsenNumber(int const dim, std::vector<Material<Float>> const 
 
   std::vector<double> lcs(num_materials);
   // If using average MFP, we need the average Sigma_t for each material
-  if (strategy == XSReductionStrategy::Mean) { 
+  if (strategy == XSReductionStrategy::Mean) {
     LOG_INFO("Computing Knudsen number using groupwise average mean free path");
     for (size_t i = 0; i < num_materials; ++i) {
       double const sigma_t = materials[i].xs.getOneGroupTotalXS(strategy);
@@ -218,7 +219,7 @@ setMeshFieldFromKnudsenNumber(int const dim, std::vector<Material<Float>> const 
       // l = 12 / (sigma_t * kn * sqrt(3) * pi)
       lcs[i] = 12.0 / (um2::pi<double> * std::sqrt(3.0) * kn_target * sigma_t);
     }
-  } else if (strategy == XSReductionStrategy::Max) { 
+  } else if (strategy == XSReductionStrategy::Max) {
     LOG_INFO("Computing Knudsen number using groupwise minimum mean free path");
     for (size_t i = 0; i < num_materials; ++i) {
       double const sigma_t = materials[i].xs.getOneGroupTotalXS(strategy);

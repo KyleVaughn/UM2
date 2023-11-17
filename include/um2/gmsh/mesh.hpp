@@ -24,9 +24,9 @@ setMeshFieldFromGroups(int dim, std::vector<std::string> const & groups,
                        std::vector<double> const & sizes) -> std::vector<int>;
 
 auto
-setMeshFieldFromKnudsenNumber(
-    int dim, std::vector<Material<Float>> const & materials, double kn_target,
-    XSReductionStrategy strategy = XSReductionStrategy::Mean)
+setMeshFieldFromKnudsenNumber(int dim, std::vector<Material<Float>> const & materials,
+                              double kn_target,
+                              XSReductionStrategy strategy = XSReductionStrategy::Mean)
     -> std::vector<int>;
 
 void

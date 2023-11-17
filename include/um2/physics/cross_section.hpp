@@ -6,8 +6,7 @@
 namespace um2
 {
 
-enum class XSReductionStrategy
-{
+enum class XSReductionStrategy {
   Max,
   Mean,
 };
@@ -27,26 +26,27 @@ struct CrossSection {
   constexpr CrossSection(Vector<T> const & t_in) noexcept
       : t(t_in)
   {
+#if UM2_ENABLE_DBC
     ASSERT(!t.empty());
     for (auto const & t_i : t) {
-      ASSERT(t_i >= 0); 
+      ASSERT(t_i >= 0);
     }
+#endif
   }
 
   //======================================================================
   // Methods
   //======================================================================
 
-  [[nodiscard]] auto constexpr
-  getOneGroupTotalXS(XSReductionStrategy const strategy = XSReductionStrategy::Mean)
-    const noexcept -> T 
+  [[nodiscard]] auto constexpr getOneGroupTotalXS(
+      XSReductionStrategy const strategy = XSReductionStrategy::Mean) const noexcept -> T
   {
+    ASSERT(!t.empty());
     if (strategy == XSReductionStrategy::Max) {
-      return *std::max_element(t.cbegin(), t.cend()); 
-    } 
+      return *std::max_element(t.cbegin(), t.cend());
+    }
     return um2::mean(t.cbegin(), t.cend());
   }
-
 };
 
 } // namespace um2

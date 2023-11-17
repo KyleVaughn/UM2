@@ -390,8 +390,8 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
                         gmsh::vectorpair const & tool_dimtags,
                         gmsh::vectorpair & out_dimtags,
                         std::vector<gmsh::vectorpair> & out_dimtags_map,
-                        std::vector<Material<Float>> const & material_hierarchy, int const tag,
-                        bool const remove_object, bool const remove_tool)
+                        std::vector<Material<Float>> const & material_hierarchy,
+                        int const tag, bool const remove_object, bool const remove_tool)
 {
 
   //==============================================================================
@@ -481,8 +481,8 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
                          gmsh::vectorpair const & tool_dimtags,
                          gmsh::vectorpair & out_dimtags,
                          std::vector<gmsh::vectorpair> & out_dimtags_map,
-                         std::vector<Material<Float>> const & material_hierarchy, int const tag,
-                         bool const remove_object, bool const remove_tool)
+                         std::vector<Material<Float>> const & material_hierarchy,
+                         int const tag, bool const remove_object, bool const remove_tool)
 {
 
   //==============================================================================-

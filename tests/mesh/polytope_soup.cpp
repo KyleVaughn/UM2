@@ -31,7 +31,7 @@ TEST_CASE(addElement)
   conn = {0, 1, 2};
   ASSERT(soup.addElement(um2::VTKElemType::Triangle, conn) == 2);
 
-  um2::VTKElemType elem_type= um2::VTKElemType::None;
+  um2::VTKElemType elem_type = um2::VTKElemType::None;
   soup.getElement(0, elem_type, conn);
   ASSERT(elem_type == um2::VTKElemType::Vertex);
   um2::Vector<I> conn_ref = {0};
@@ -205,14 +205,14 @@ TEST_CASE(getSubmesh)
   tri_quad_h2o.getElement(0, elem_type, conn);
   ASSERT(elem_type == um2::VTKElemType::Triangle);
   ASSERT(conn == um2::Vector<I>({0, 2, 1}));
-  
+
   ASSERT(tri_quad_h2o.numElsets() == 2);
   tri_quad_h2o.getElset(0, name, ids, elset_data);
   ASSERT(name == "A");
   ASSERT(ids == um2::Vector<I>({0}));
   ASSERT(elset_data.size() == 1);
   ASSERT_NEAR(elset_data[0], 2, static_cast<T>(1e-6));
-  
+
   elset_data.clear();
   tri_quad_h2o.getElset(1, name, ids, elset_data);
   ASSERT(name == "B");

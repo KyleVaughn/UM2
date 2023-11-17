@@ -1,5 +1,5 @@
 #include <um2/mpact/spatial_partition.hpp>
-//#include <um2/mpact/io.hpp>
+// #include <um2/mpact/io.hpp>
 
 #include "../test_macros.hpp"
 
@@ -389,7 +389,7 @@ TEST_CASE(importCoarseCells)
 template <typename T, typename I>
 TEST_CASE(toPolytopeSoup)
 {
-//  using CoarseCell = typename um2::mpact::SpatialPartition<T, I>::CoarseCell;
+  //  using CoarseCell = typename um2::mpact::SpatialPartition<T, I>::CoarseCell;
   um2::mpact::SpatialPartition<T, I> model_out;
   model_out.makeCoarseCell({1, 1});
   model_out.makeCoarseCell({1, 1});
@@ -405,76 +405,76 @@ TEST_CASE(toPolytopeSoup)
   um2::PolytopeSoup<T, I> soup;
   model_out.toPolytopeSoup(soup);
   soup.write("./mpact_export_test_model.xdmf");
-  
-//  um2::exportMesh(filepath, model_out);
-//  um2::mpact::SpatialPartition model;
-//  um2::importMesh(filepath, model);
-//
-//  ASSERT(model.numAssemblies() == 1);
-//  ASSERT(model.numLattices() == 1);
-//  ASSERT(model.numRTMs() == 1);
-//  ASSERT(model.numCoarseCells() == 3);
-//
-//  ASSERT(model.tri.size() == 2);
-//  CoarseCell const & cell = model.coarse_cells[0];
-//  ASSERT(cell.mesh_type == um2::MeshType::Tri);
-//  ASSERT(cell.mesh_id == 0);
-//  ASSERT(cell.material_ids.size() == 2);
-//  ASSERT(cell.material_ids[0] == 1);
-//  ASSERT(cell.material_ids[1] == 2);
-//  um2::TriMesh<2, T, I> const & tri_mesh = model.tri[0];
-//  ASSERT(tri_mesh.numVertices() == 4);
-//  ASSERT(um2::isApprox(tri_mesh.vertices[0], {0, 0}));
-//  ASSERT(um2::isApprox(tri_mesh.vertices[1], {1, 0}));
-//  ASSERT(um2::isApprox(tri_mesh.vertices[2], {1, 1}));
-//  ASSERT(um2::isApprox(tri_mesh.vertices[3], {0, 1}));
-//  ASSERT(tri_mesh.fv[0][0] == 0);
-//  ASSERT(tri_mesh.fv[0][1] == 1);
-//  ASSERT(tri_mesh.fv[0][2] == 2);
-//  ASSERT(tri_mesh.fv[1][0] == 2);
-//  ASSERT(tri_mesh.fv[1][1] == 3);
-//  ASSERT(tri_mesh.fv[1][2] == 0);
-//
-//  CoarseCell const & cell1 = model.coarse_cells[1];
-//  ASSERT(cell1.mesh_type == um2::MeshType::Tri);
-//  ASSERT(cell1.mesh_id == 1);
-//  ASSERT(cell1.material_ids.size() == 2);
-//  ASSERT(cell1.material_ids[0] == 1);
-//  ASSERT(cell1.material_ids[1] == 0);
-//  um2::TriMesh<2, T, I> const & tri_mesh1 = model.tri[1];
-//  ASSERT(tri_mesh1.vertices.size() == 4);
-//  ASSERT(um2::isApprox(tri_mesh1.vertices[0], {0, 0}));
-//  ASSERT(um2::isApprox(tri_mesh1.vertices[1], {0, 1}));
-//  ASSERT(um2::isApprox(tri_mesh1.vertices[2], {1, 0}));
-//  ASSERT(um2::isApprox(tri_mesh1.vertices[3], {1, 1}));
-//  ASSERT(tri_mesh1.fv[0][0] == 0);
-//  ASSERT(tri_mesh1.fv[0][1] == 2);
-//  ASSERT(tri_mesh1.fv[0][2] == 1);
-//  ASSERT(tri_mesh1.fv[1][0] == 2);
-//  ASSERT(tri_mesh1.fv[1][1] == 3);
-//  ASSERT(tri_mesh1.fv[1][2] == 1);
-//
-//  CoarseCell const & cell2 = model.coarse_cells[2];
-//  ASSERT(cell2.mesh_type == um2::MeshType::Quad);
-//  ASSERT(cell2.mesh_id == 0);
-//  ASSERT(cell2.material_ids.size() == 1);
-//  ASSERT(cell2.material_ids[0] == 0);
-//  um2::QuadMesh<2, T, I> const & quad_mesh = model.quad[0];
-//  ASSERT(quad_mesh.vertices.size() == 4);
-//  ASSERT(um2::isApprox(quad_mesh.vertices[0], {1, 0}));
-//  ASSERT(um2::isApprox(quad_mesh.vertices[1], {0, 0}));
-//  ASSERT(um2::isApprox(quad_mesh.vertices[2], {1, 1}));
-//  ASSERT(um2::isApprox(quad_mesh.vertices[3], {0, 1}));
-//  ASSERT(quad_mesh.fv.size() == 1);
-//  ASSERT(quad_mesh.fv[0][0] == 1);
-//  ASSERT(quad_mesh.fv[0][1] == 0);
-//  ASSERT(quad_mesh.fv[0][2] == 2);
-//  ASSERT(quad_mesh.fv[0][3] == 3);
-//
-//  int stat = std::remove("./mpact_export_test_model.xdmf");
-//  ASSERT(stat == 0);
-//  stat = std::remove("./mpact_export_test_model.h5");
-//  ASSERT(stat == 0);
+
+  //  um2::exportMesh(filepath, model_out);
+  //  um2::mpact::SpatialPartition model;
+  //  um2::importMesh(filepath, model);
+  //
+  //  ASSERT(model.numAssemblies() == 1);
+  //  ASSERT(model.numLattices() == 1);
+  //  ASSERT(model.numRTMs() == 1);
+  //  ASSERT(model.numCoarseCells() == 3);
+  //
+  //  ASSERT(model.tri.size() == 2);
+  //  CoarseCell const & cell = model.coarse_cells[0];
+  //  ASSERT(cell.mesh_type == um2::MeshType::Tri);
+  //  ASSERT(cell.mesh_id == 0);
+  //  ASSERT(cell.material_ids.size() == 2);
+  //  ASSERT(cell.material_ids[0] == 1);
+  //  ASSERT(cell.material_ids[1] == 2);
+  //  um2::TriMesh<2, T, I> const & tri_mesh = model.tri[0];
+  //  ASSERT(tri_mesh.numVertices() == 4);
+  //  ASSERT(um2::isApprox(tri_mesh.vertices[0], {0, 0}));
+  //  ASSERT(um2::isApprox(tri_mesh.vertices[1], {1, 0}));
+  //  ASSERT(um2::isApprox(tri_mesh.vertices[2], {1, 1}));
+  //  ASSERT(um2::isApprox(tri_mesh.vertices[3], {0, 1}));
+  //  ASSERT(tri_mesh.fv[0][0] == 0);
+  //  ASSERT(tri_mesh.fv[0][1] == 1);
+  //  ASSERT(tri_mesh.fv[0][2] == 2);
+  //  ASSERT(tri_mesh.fv[1][0] == 2);
+  //  ASSERT(tri_mesh.fv[1][1] == 3);
+  //  ASSERT(tri_mesh.fv[1][2] == 0);
+  //
+  //  CoarseCell const & cell1 = model.coarse_cells[1];
+  //  ASSERT(cell1.mesh_type == um2::MeshType::Tri);
+  //  ASSERT(cell1.mesh_id == 1);
+  //  ASSERT(cell1.material_ids.size() == 2);
+  //  ASSERT(cell1.material_ids[0] == 1);
+  //  ASSERT(cell1.material_ids[1] == 0);
+  //  um2::TriMesh<2, T, I> const & tri_mesh1 = model.tri[1];
+  //  ASSERT(tri_mesh1.vertices.size() == 4);
+  //  ASSERT(um2::isApprox(tri_mesh1.vertices[0], {0, 0}));
+  //  ASSERT(um2::isApprox(tri_mesh1.vertices[1], {0, 1}));
+  //  ASSERT(um2::isApprox(tri_mesh1.vertices[2], {1, 0}));
+  //  ASSERT(um2::isApprox(tri_mesh1.vertices[3], {1, 1}));
+  //  ASSERT(tri_mesh1.fv[0][0] == 0);
+  //  ASSERT(tri_mesh1.fv[0][1] == 2);
+  //  ASSERT(tri_mesh1.fv[0][2] == 1);
+  //  ASSERT(tri_mesh1.fv[1][0] == 2);
+  //  ASSERT(tri_mesh1.fv[1][1] == 3);
+  //  ASSERT(tri_mesh1.fv[1][2] == 1);
+  //
+  //  CoarseCell const & cell2 = model.coarse_cells[2];
+  //  ASSERT(cell2.mesh_type == um2::MeshType::Quad);
+  //  ASSERT(cell2.mesh_id == 0);
+  //  ASSERT(cell2.material_ids.size() == 1);
+  //  ASSERT(cell2.material_ids[0] == 0);
+  //  um2::QuadMesh<2, T, I> const & quad_mesh = model.quad[0];
+  //  ASSERT(quad_mesh.vertices.size() == 4);
+  //  ASSERT(um2::isApprox(quad_mesh.vertices[0], {1, 0}));
+  //  ASSERT(um2::isApprox(quad_mesh.vertices[1], {0, 0}));
+  //  ASSERT(um2::isApprox(quad_mesh.vertices[2], {1, 1}));
+  //  ASSERT(um2::isApprox(quad_mesh.vertices[3], {0, 1}));
+  //  ASSERT(quad_mesh.fv.size() == 1);
+  //  ASSERT(quad_mesh.fv[0][0] == 1);
+  //  ASSERT(quad_mesh.fv[0][1] == 0);
+  //  ASSERT(quad_mesh.fv[0][2] == 2);
+  //  ASSERT(quad_mesh.fv[0][3] == 3);
+  //
+  //  int stat = std::remove("./mpact_export_test_model.xdmf");
+  //  ASSERT(stat == 0);
+  //  stat = std::remove("./mpact_export_test_model.h5");
+  //  ASSERT(stat == 0);
 }
 ////// template <typename T, typename I>
 ////// TEST_CASE(test_coarse_cell_face_areas)
@@ -560,7 +560,7 @@ TEST_CASE(toPolytopeSoup)
 //////
 ////// um2::Ray2<T> ray(um2::Point2<T>(static_cast<T>(0),
 ///// static_cast<T>(0.5)), /                  um2::Vec2<T>(1, 0)); / int n = 8; /
-///T
+/// T
 /////* intersections = new T[n]; / model.intersect_coarse_cell(0, ray, intersections, &n);
 ////// ASSERT(n == 4, "intersections");
 ////// for (int i = 0; i < n; i++)

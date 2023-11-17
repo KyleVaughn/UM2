@@ -153,14 +153,15 @@ constexpr bool always_false = false;
 //==============================================================================
 // Assertions
 //==============================================================================
+//    
+// ASSERT(expr) - Asserts that expr is true.    
+//  If UM2_ENABLE_DBC is 0, ASSERT does nothing and expr is not evaluated.    
+//    
+// ASSERT_NEAR(a, b, eps) - Asserts that a and b are within eps of each other.    
+//  If UM2_ENABLE_DBC is 0, ASSERT_NEAR does nothing and a, b, and eps are not    
+//  evaluated.    
 //
-// ASSERT(expr) - Asserts that expr is true.
-//  If UM2_ENABLE_DBC is 0, this is a no-op.
-//
-// ASSERT_NEAR(a, b, eps) - Asserts that a and b are within eps of each other.
-//  If UM2_ENABLE_DBC is 0, this is a no-op.
-//
-// ASSERT_ASSUME(expr) - Asserts that expr is true.
+// ASSERT_ASSUME(expr) - Asserts that expr is true, with varying effects.
 //  If UM2_ENABLE_DBC is 1, this is equivalent to ASSERT(expr).
 //  If UM2_ENABLE_DBC is 0, this is equivalent to ASSUME(expr).
 

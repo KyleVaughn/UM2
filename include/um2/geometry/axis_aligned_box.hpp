@@ -1,8 +1,8 @@
 #pragma once
 
 #include <um2/geometry/point.hpp>
-#include <um2/stdlib/vector.hpp>
 #include <um2/stdlib/numeric.hpp>
+#include <um2/stdlib/vector.hpp>
 
 namespace um2
 {
@@ -167,11 +167,11 @@ HOSTDEV constexpr AxisAlignedBox<D, T>::AxisAlignedBox(Point<D, T> const & min,
   }
 }
 
-//==============================================================================    
-// Operators    
-//==============================================================================    
-    
-template <Size D, typename T>    
+//==============================================================================
+// Operators
+//==============================================================================
+
+template <Size D, typename T>
 HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::operator+=(Point<D, T> const & p) noexcept -> AxisAlignedBox &
 {

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <um2/common/log.hpp>
-#include <um2/geometry/point.hpp>
-#include <um2/geometry/polygon.hpp>    
 #include <um2/geometry/morton_sort_points.hpp>
+#include <um2/geometry/point.hpp>
+#include <um2/geometry/polygon.hpp>
 #include <um2/mesh/element_types.hpp>
 #include <um2/stdlib/algorithm.hpp>
 #include <um2/stdlib/memory.hpp>
@@ -11,13 +11,13 @@
 #include <um2/stdlib/string.hpp>
 #include <um2/stdlib/vector.hpp>
 
-#include <cstring>
 #include <charconv>
 #include <concepts>
+#include <cstring>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
 
 // External dependencies
 #include <H5Cpp.h>
@@ -47,7 +47,8 @@ namespace um2
 // structure.
 
 template <std::floating_point T, std::signed_integral I>
-class PolytopeSoup {
+class PolytopeSoup
+{
 
   bool _is_morton_sorted = false;
   Vector<Point3<T>> _vertices;
@@ -60,8 +61,7 @@ class PolytopeSoup {
   Vector<I> _elset_ids;          // Element IDs of each elset
   Vector<Vector<T>> _elset_data; // Data associated with each elset
 
-  public:
-
+public:
   //==============================================================================
   // Constructors
   //==============================================================================
@@ -69,10 +69,10 @@ class PolytopeSoup {
   constexpr PolytopeSoup() = default;
 
   //==============================================================================
-  // Methods 
+  // Methods
   //==============================================================================
 
-  auto 
+  auto
   addElement(VTKElemType type, Vector<I> const & conn) -> Size;
 
   auto
@@ -88,7 +88,7 @@ class PolytopeSoup {
   compareTo(PolytopeSoup const & other) const -> int;
 
   void
-  getElement(Size i, VTKElemType & type, Vector<I> & conn) const; 
+  getElement(Size i, VTKElemType & type, Vector<I> & conn) const;
 
   PURE [[nodiscard]] constexpr auto
   getElemTypes() const -> Vector<VTKElemType>;
@@ -120,7 +120,7 @@ class PolytopeSoup {
 
   PURE [[nodiscard]] constexpr auto
   numVerts() const -> Size;
-  
+
   void
   read(String const & filename);
 
@@ -145,40 +145,26 @@ class PolytopeSoup {
   writeXDMF(String const & filepath) const;
 
   HIDDEN void
-  writeXDMFUniformGrid(
-     String const & name,
-     Vector<String> const & material_names,
-     pugi::xml_node & xdomain,
-     H5::H5File & h5file,
-     String const & h5filename,
-     String const & h5path) const;
+  writeXDMFUniformGrid(String const & name, Vector<String> const & material_names,
+                       pugi::xml_node & xdomain, H5::H5File & h5file,
+                       String const & h5filename, String const & h5path) const;
 
   HIDDEN void
-  writeXDMFGeometry(
-      pugi::xml_node & xgrid,
-      H5::Group & h5group,
-      String const & h5filename,
-      String const & h5path) const;
+  writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
+                    String const & h5filename, String const & h5path) const;
 
   HIDDEN void
-  writeXDMFTopology(
-      pugi::xml_node & xgrid,
-      H5::Group & h5group,
-      String const & h5filename,
-      String const & h5path) const;
+  writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
+                    String const & h5filename, String const & h5path) const;
 
   HIDDEN void
-  writeXDMFElsets(
-      pugi::xml_node & xgrid,
-      H5::Group & h5group,
-      String const & h5filename,
-      String const & h5path,
-      Vector<String> const & material_names) const;
+  writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group, String const & h5filename,
+                  String const & h5path, Vector<String> const & material_names) const;
 
 }; // struct PolytopeSoup
 
 //==============================================================================
-// Methods 
+// Methods
 //==============================================================================
 
 template <std::floating_point T, std::signed_integral I>
@@ -203,14 +189,14 @@ PolytopeSoup<T, I>::numElems() const -> Size
 }
 
 template <std::floating_point T, std::signed_integral I>
-void 
+void
 PolytopeSoup<T, I>::getElement(Size const i, VTKElemType & type, Vector<I> & conn) const
 {
   ASSERT(i < _element_types.size());
   type = _element_types[i];
-  Size const istart = static_cast<Size>(_element_offsets[i]); 
+  Size const istart = static_cast<Size>(_element_offsets[i]);
   Size const iend = static_cast<Size>(_element_offsets[i + 1]);
-  auto const n = iend - istart; 
+  auto const n = iend - istart;
   if (n != conn.size()) {
     conn.resize(n);
   }
@@ -220,8 +206,9 @@ PolytopeSoup<T, I>::getElement(Size const i, VTKElemType & type, Vector<I> & con
 }
 
 template <std::floating_point T, std::signed_integral I>
-void 
-PolytopeSoup<T, I>::getElset(Size const i, String & name, Vector<I> & ids, Vector<T> & data) const
+void
+PolytopeSoup<T, I>::getElset(Size const i, String & name, Vector<I> & ids,
+                             Vector<T> & data) const
 {
   ASSERT(i < _elset_names.size());
   name = _elset_names[i];
@@ -310,7 +297,8 @@ PolytopeSoup<T, I>::addElement(VTKElemType const type, Vector<I> const & conn) -
 
 template <std::floating_point T, std::signed_integral I>
 auto
-PolytopeSoup<T, I>::addElset(String const & name, Vector<I> const & ids, Vector<T> data) -> Size
+PolytopeSoup<T, I>::addElset(String const & name, Vector<I> const & ids, Vector<T> data)
+    -> Size
 {
   LOG_DEBUG("Adding elset: " + name);
 
@@ -412,15 +400,13 @@ PolytopeSoup<T, I>::compareTo(PolytopeSoup<T, I> const & other) const -> int
   if (_elset_ids.size() != other._elset_ids.size()) {
     return 14;
   }
-  if (!std::equal(_elset_ids.cbegin(), _elset_ids.cend(),
-                  other._elset_ids.cbegin())) {
+  if (!std::equal(_elset_ids.cbegin(), _elset_ids.cend(), other._elset_ids.cbegin())) {
     return 15;
   }
   if (_elset_data.size() != other._elset_data.size()) {
     return 16;
   }
-  if (!std::equal(_elset_data.cbegin(), _elset_data.cend(),
-                  other._elset_data.cbegin())) {
+  if (!std::equal(_elset_data.cbegin(), _elset_data.cend(), other._elset_data.cbegin())) {
     return 17;
   }
   return 0;
@@ -612,10 +598,10 @@ PolytopeSoup<T, I>::getSubmesh(String const & elset_name,
     }
   }
   std::sort(vertex_ids.begin(), vertex_ids.end());
-  Vector<I> unique_vertex_ids = vertex_ids; 
+  Vector<I> unique_vertex_ids = vertex_ids;
   auto * const last = std::unique(unique_vertex_ids.begin(), unique_vertex_ids.end());
   auto const num_unique_verts = static_cast<Size>(last - unique_vertex_ids.cbegin());
-  
+
   // Add each of the vertices to the submesh.
   for (Size i = 0; i < num_unique_verts; ++i) {
     auto const vertex_id = static_cast<Size>(unique_vertex_ids[i]);
@@ -673,7 +659,8 @@ PolytopeSoup<T, I>::getSubmesh(String const & elset_name,
     // Remap the element IDs
     for (Size j = 0; j < num_ids; ++j) {
       I const old_element_id = intersection[static_cast<size_t>(j)];
-      auto * const it = std::lower_bound(element_ids.cbegin(), element_ids.cend(), old_element_id);
+      auto * const it =
+          std::lower_bound(element_ids.cbegin(), element_ids.cend(), old_element_id);
       auto const new_element_id = static_cast<I>(it - element_ids.cbegin());
       ASSERT(*it == old_element_id);
       ids[j] = new_element_id;
@@ -681,7 +668,7 @@ PolytopeSoup<T, I>::getSubmesh(String const & elset_name,
     if (_elset_data[i].empty()) {
       submesh.addElset(name, ids);
       continue;
-    } 
+    }
     // There is data
     Vector<T> elset_data(num_ids);
     Vector<T> const & this_elset_data = _elset_data[i];
@@ -700,10 +687,10 @@ PolytopeSoup<T, I>::getSubmesh(String const & elset_name,
 // getMaterialIDs
 //==============================================================================
 
- template <std::floating_point T, std::signed_integral I>
+template <std::floating_point T, std::signed_integral I>
 void
- PolytopeSoup<T, I>::getMaterialIDs(Vector<MaterialID> & material_ids,
-                                    Vector<String> const & material_names) const
+PolytopeSoup<T, I>::getMaterialIDs(Vector<MaterialID> & material_ids,
+                                   Vector<String> const & material_names) const
 {
   material_ids.resize(numElems());
   um2::fill(material_ids.begin(), material_ids.end(), static_cast<MaterialID>(-1));
@@ -907,7 +894,7 @@ template <typename T>
 static inline auto
 getH5DataType() -> H5::PredType
 {
-  // NOLINTNEXTLINE(bugprone-branch-clone) 
+  // NOLINTNEXTLINE(bugprone-branch-clone)
   if constexpr (std::same_as<T, float>) {
     return H5::PredType::NATIVE_FLOAT;
   } else if constexpr (std::same_as<T, double>) {
@@ -936,20 +923,16 @@ getH5DataType() -> H5::PredType
 
 template <std::floating_point T, std::signed_integral I>
 HIDDEN void
-PolytopeSoup<T, I>::writeXDMFGeometry(
-    pugi::xml_node & xgrid,
-    H5::Group & h5group,
-    String const & h5filename,
-    String const & h5path) const
+PolytopeSoup<T, I>::writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
+                                      String const & h5filename,
+                                      String const & h5path) const
 
 {
   LOG_DEBUG("Writing XDMF geometry");
   Size const num_verts = _vertices.size();
   bool const is_3d =
       std::any_of(_vertices.cbegin(), _vertices.cend(),
-          [](auto const & v) {
-              return um2::abs(v[2]) > eps_distance<T>;
-          });
+                  [](auto const & v) { return um2::abs(v[2]) > eps_distance<T>; });
   Size const dim = is_3d ? 3 : 2;
   // Create XDMF Geometry node
   auto xgeom = xgrid.append_child("Geometry");
@@ -998,7 +981,8 @@ PolytopeSoup<T, I>::writeXDMFGeometry(
 template <std::floating_point T, std::signed_integral I>
 HIDDEN void
 PolytopeSoup<T, I>::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
-                  String const & h5filename, String const & h5path) const
+                                      String const & h5filename,
+                                      String const & h5path) const
 {
   LOG_DEBUG("Writing XDMF topology");
   // Create XDMF Topology node
@@ -1051,8 +1035,7 @@ PolytopeSoup<T, I>::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5grou
       }
       topology[topo_ctr] = static_cast<I>(static_cast<unsigned int>(topo_type));
       auto const offset = static_cast<Size>(_element_offsets[i]);
-      auto const npts =
-          static_cast<Size>(_element_offsets[i + 1] - _element_offsets[i]);
+      auto const npts = static_cast<Size>(_element_offsets[i + 1] - _element_offsets[i]);
       for (Size j = 0; j < npts; ++j) {
         topology[topo_ctr + j + 1] = _element_conn[offset + j];
       }
@@ -1094,10 +1077,9 @@ PolytopeSoup<T, I>::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5grou
 
 template <std::floating_point T, std::signed_integral I>
 HIDDEN void
-PolytopeSoup<T, I>::writeXDMFElsets(
-                            pugi::xml_node & xgrid, H5::Group & h5group,
-                            String const & h5filename, String const & h5path,
-                            Vector<String> const & material_names) const
+PolytopeSoup<T, I>::writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
+                                    String const & h5filename, String const & h5path,
+                                    Vector<String> const & material_names) const
 {
   LOG_DEBUG("Writing XDMF elsets");
   for (Size i = 0; i < _elset_names.size(); ++i) {
@@ -1206,13 +1188,11 @@ PolytopeSoup<T, I>::writeXDMFElsets(
 
 template <std::floating_point T, std::signed_integral I>
 HIDDEN void
-PolytopeSoup<T, I>::writeXDMFUniformGrid(
-                     String const & name,
-                     Vector<String> const & material_names,
-                     pugi::xml_node & xdomain,
-                     H5::H5File & h5file,
-                     String const & h5filename,
-                     String const & h5path) const
+PolytopeSoup<T, I>::writeXDMFUniformGrid(String const & name,
+                                         Vector<String> const & material_names,
+                                         pugi::xml_node & xdomain, H5::H5File & h5file,
+                                         String const & h5filename,
+                                         String const & h5path) const
 {
   LOG_DEBUG("Writing XDMF uniform grid");
 
@@ -1238,11 +1218,17 @@ PolytopeSoup<T, I>::writeXDMF(String const & filepath) const
 
   // Setup HDF5 file
   // Get the h5 file name
-  Size const h5filepath_end = filepath.find_last_of('/') + 1;
+  Size last_slash = filepath.find_last_of('/');
+  if (last_slash == String::npos) {
+    last_slash = 0;
+  }
+  Size const h5filepath_end = last_slash == 0 ? 0 : last_slash + 1;
+  LOG_DEBUG("h5filepath_end: " + toString(h5filepath_end));
   String const h5filename =
       filepath.substr(h5filepath_end, filepath.size() - 5 - h5filepath_end) + ".h5";
+  LOG_DEBUG("h5filename: " + h5filename);
   String const h5filepath = filepath.substr(0, h5filepath_end);
-  LOG_DEBUG("H5 filename: " + h5filename);
+  LOG_DEBUG("h5filepath: " + h5filepath);
   H5::H5File h5file((h5filepath + h5filename).c_str(), H5F_ACC_TRUNC);
 
   // Setup XML file
@@ -1287,7 +1273,7 @@ PolytopeSoup<T, I>::writeXDMF(String const & filepath) const
   // Close the HDF5 file
   h5file.close();
 } // writeXDMF
-    
+
 template <std::floating_point T, std::signed_integral I, std::floating_point V>
 static void
 addNodesToMesh(PolytopeSoup<T, I> & mesh, Size const num_verts, Size const num_dimensions,
@@ -1300,12 +1286,12 @@ addNodesToMesh(PolytopeSoup<T, I> & mesh, Size const num_verts, Size const num_d
   if (xyz) {
     for (Size i = 0; i < num_verts; ++i) {
       T const x = static_cast<T>(data_vec[i * 3]);
-      T const y = static_cast<T>(data_vec[i * 3 + 1]);  
+      T const y = static_cast<T>(data_vec[i * 3 + 1]);
       T const z = static_cast<T>(data_vec[i * 3 + 2]);
       mesh.addVertex(x, y, z);
     }
   } else { // XY
-    for (Size i = 0; i < num_verts; ++i) {            
+    for (Size i = 0; i < num_verts; ++i) {
       T const x = static_cast<T>(data_vec[i * 2]);
       T const y = static_cast<T>(data_vec[i * 2 + 1]);
       mesh.addVertex(x, y);
@@ -1423,8 +1409,7 @@ addElementsToMesh(Size const num_elements, String const & topology_type,
         num_vertices = npoints;
       }
       for (Size j = 0; j < npoints; ++j) {
-        conn[j] =
-            static_cast<I>(static_cast<unsigned int>(data_vec[position + j + 1]));
+        conn[j] = static_cast<I>(static_cast<unsigned int>(data_vec[position + j + 1]));
       }
       position += npoints + 1;
       soup.addElement(elem_type, conn);

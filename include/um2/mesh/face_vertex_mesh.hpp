@@ -88,12 +88,12 @@ struct FaceVertexMesh {
   void
   toPolytopeSoup(PolytopeSoup<T, I> & soup) const noexcept;
 
-//  //  void
-//  //  getFaceAreas(Vector<T> & areas) const noexcept;
-//  //
-//  //  void
-//  //  getUniqueEdges(Vector<Edge> & edges) const noexcept;
-//  //
+  //  //  void
+  //  //  getFaceAreas(Vector<T> & areas) const noexcept;
+  //  //
+  //  //  void
+  //  //  getUniqueEdges(Vector<Edge> & edges) const noexcept;
+  //  //
   void
   intersect(Ray<D, T> const & ray, T * intersections, Size * n) const noexcept
     requires(D == 2);
@@ -383,22 +383,22 @@ validateMeshType(MeshType const type) -> bool
   return false;
 }
 
-//template <Size P, Size N>
-//constexpr auto
-//getMeshType() -> MeshType
+// template <Size P, Size N>
+// constexpr auto
+// getMeshType() -> MeshType
 //{
-//  if constexpr (P == 1 && N == 3) {
-//    return MeshType::Tri;
-//  } else if constexpr (P == 1 && N == 4) {
-//    return MeshType::Quad;
-//  } else if constexpr (P == 2 && N == 6) {
-//    return MeshType::QuadraticTri;
-//  } else if constexpr (P == 2 && N == 8) {
-//    return MeshType::QuadraticQuad;
-//  }
-//  ASSERT(false);
-//  return MeshType::None;
-//}
+//   if constexpr (P == 1 && N == 3) {
+//     return MeshType::Tri;
+//   } else if constexpr (P == 1 && N == 4) {
+//     return MeshType::Quad;
+//   } else if constexpr (P == 2 && N == 6) {
+//     return MeshType::QuadraticTri;
+//   } else if constexpr (P == 2 && N == 8) {
+//     return MeshType::QuadraticQuad;
+//   }
+//   ASSERT(false);
+//   return MeshType::None;
+// }
 
 template <Size P, Size N>
 constexpr auto

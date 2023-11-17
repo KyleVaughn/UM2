@@ -105,7 +105,7 @@ struct Polytope<2, P, N, D, T> {
 //==============================================================================
 
 template <Size P, Size N, Size D, typename T>
-CONST HOSTDEV constexpr auto   
+CONST HOSTDEV constexpr auto
 Polygon<P, N, D, T>::numEdges() noexcept -> Size
 {
   static_assert(P == 1 || P == 2, "Only P = 1 or P = 2 supported");
@@ -123,7 +123,7 @@ Polygon<P, N, D, T>::operator[](Size i) noexcept -> Point<D, T> &
 
 template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-Polygon<P, N, D, T>::operator[](Size i) const noexcept -> Point<D, T> const &   
+Polygon<P, N, D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);

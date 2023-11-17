@@ -1,3 +1,10 @@
+std::vector insert
+
+Organize string alphavetically
+
+
+
+
 Change valgrind to be optional
 
 old benchmarks to archive
@@ -5,7 +12,7 @@ old benchmarks to archive
 mortonsort for polytope soup
 reserve elements/vertices for submesh and read: abaqus, xdmf, FVM.toPolytopesoup, spatial_part.toPolytopeSoup
 
-iterators
+iterators for edges and faces
 
 ray tests
 modular ray tests

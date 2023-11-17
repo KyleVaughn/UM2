@@ -340,6 +340,7 @@ TEST_CASE(emplace_back)
 //==============================================================================
 // CUDA
 //==============================================================================
+
 #if UM2_USE_CUDA
 template <class T>
 MAKE_CUDA_KERNEL(constructor_Size, T)
@@ -362,22 +363,22 @@ MAKE_CUDA_KERNEL(operator_copy, T)
 template <class T>
 MAKE_CUDA_KERNEL(operator_move, T)
 
+template <class T>
+MAKE_CUDA_KERNEL(resize, T)
+
+template <class T>
+MAKE_CUDA_KERNEL(reserve, T)
+
+template <class T>
+MAKE_CUDA_KERNEL(push_back, T)
+
+template <class T>
+MAKE_CUDA_KERNEL(push_back_rval_ref, T)
+
+template <class T>
+MAKE_CUDA_KERNEL(push_back_n, T)
+
 MAKE_CUDA_KERNEL(clear)
-
-    template <class T>
-    MAKE_CUDA_KERNEL(resize, T)
-
-    template <class T>
-    MAKE_CUDA_KERNEL(reserve, T)
-
-    template <class T>
-    MAKE_CUDA_KERNEL(push_back, T)
-
-    template <class T>
-    MAKE_CUDA_KERNEL(push_back_rval_ref, T)
-
-    template <class T>
-    MAKE_CUDA_KERNEL(push_back_n, T)
 
     MAKE_CUDA_KERNEL(emplace_back)
 #endif // UM2_USE_CUDA

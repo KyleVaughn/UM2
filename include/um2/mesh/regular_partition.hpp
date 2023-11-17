@@ -36,7 +36,7 @@ struct RegularPartition {
   constexpr RegularPartition() noexcept = default;
 
   //==============================================================================--------
-  // Methods 
+  // Methods
   //==============================================================================--------
 
   PURE HOSTDEV [[nodiscard]] constexpr auto

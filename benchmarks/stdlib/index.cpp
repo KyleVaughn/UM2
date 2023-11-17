@@ -63,21 +63,39 @@
 constexpr Size vals = 1 << 17;
 
 template <typename T>
-HOSTDEV
-auto mix(T a, T b, T c) -> T
+HOSTDEV auto
+mix(T a, T b, T c) -> T
 {
   // Some hash function ripped from the internet + a division at the end.
   // We're just trying to do a non-trivial amount of arithmetic.
-  a=a-b;  a=a-c;  a=a^(c >> 13);
-  b=b-c;  b=b-a;  b=b^(a << 8);
-  c=c-a;  c=c-b;  c=c^(b >> 13);
-  a=a-b;  a=a-c;  a=a^(c >> 12);
-  b=b-c;  b=b-a;  b=b^(a << 16);
-  c=c-a;  c=c-b;  c=c^(b >> 5);
-  a=a-b;  a=a-c;  a=a^(c >> 3);
-  b=b-c;  b=b-a;  b=b^(a << 10);
-  c=c-a;  c=c-b;  c=c^(b >> 15);
-  return c/a;
+  a = a - b;
+  a = a - c;
+  a = a ^ (c >> 13);
+  b = b - c;
+  b = b - a;
+  b = b ^ (a << 8);
+  c = c - a;
+  c = c - b;
+  c = c ^ (b >> 13);
+  a = a - b;
+  a = a - c;
+  a = a ^ (c >> 12);
+  b = b - c;
+  b = b - a;
+  b = b ^ (a << 16);
+  c = c - a;
+  c = c - b;
+  c = c ^ (b >> 5);
+  a = a - b;
+  a = a - c;
+  a = a ^ (c >> 3);
+  b = b - c;
+  b = b - a;
+  b = b ^ (a << 10);
+  c = c - a;
+  c = c - b;
+  c = c ^ (b >> 15);
+  return c / a;
 }
 
 template <typename T>
@@ -131,9 +149,9 @@ arithmeticCUDA(benchmark::State & state)
     arithmeticKernel<<<1, tpb>>>(x_d, y_d, z_d, n);
     cudaDeviceSynchronize();
   }
-   cudaFree(x_d);
-   cudaFree(y_d);
-   cudaFree(z_d);
+  cudaFree(x_d);
+  cudaFree(y_d);
+  cudaFree(z_d);
 }
 #endif
 
