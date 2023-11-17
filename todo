@@ -1,8 +1,10 @@
+String -> Check that N is correct for constructors
+Replace allocate and copy with macro
+deal with HOSTDEV constexpr String(char const * s, Size n) noexcept;
+
+Pick up at +=
+
 std::vector insert
-
-Organize string alphavetically
-
-
 
 
 Change valgrind to be optional

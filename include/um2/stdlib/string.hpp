@@ -9,6 +9,10 @@
 #include <cstring> // memcpy, strcmp
 #include <string>  // std::string
 
+// clang-tidy does poorly with conditional deletions and claims there are leaks.
+// Valgrind shows no leaks.
+// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
+
 namespace um2
 {
 
@@ -16,6 +20,9 @@ namespace um2
 // STRING
 //==============================================================================
 // A std::string-like class, but without an allocator template parameter.
+//
+// NOTE: ASSUMES LITTLE ENDIAN
+// This should be true for all x86 processors and NVIDIA GPUs.
 
 static_assert(std::endian::native == std::endian::little,
               "Only little endian is supported.");
@@ -23,10 +30,6 @@ static_assert(std::endian::native == std::endian::little,
 struct String {
 
 private:
-  ////////////////////////////////
-  // NOTE: ASSUMES LITTLE ENDIAN
-  ///////////////////////////////
-  // This should be true for all x86 processors and NVIDIA GPUs.
 
   // Heap-allocated string representation.
   // 24 bytes
@@ -37,7 +40,8 @@ private:
     char * data;          // Pointer to the string data.
   };
 
-  static uint64_t constexpr long_cap_mask = 0x7FFFFFFFFFFFFFFF; 
+  // Mask to convert to a 63-bit unsigned integer.
+  static uint64_t constexpr long_cap_mask = 0x7FFFFFFFFFFFFFFF;
 
   // The maximum capacity of a short string.
   // 24 bytes - 1 byte = 23 bytes
@@ -50,6 +54,7 @@ private:
     char data[min_cap];  // Data of the string.
   };
 
+  // Mask to convert to a 7-bit unsigned integer.
   static uint8_t constexpr short_size_mask = 0x7F;
 
   // Raw representation of the string.
@@ -92,11 +97,9 @@ public:
 
   HOSTDEV constexpr String(char const * s, Size n) noexcept;
 
-  // integer to string
   template <std::integral T>
   explicit constexpr String(T x) noexcept;
 
-  // floating point to string
   template <std::floating_point T>
   explicit constexpr String(T x) noexcept;
 
@@ -212,19 +215,12 @@ public:
   //==============================================================================
   // HIDDEN
   //==============================================================================
-  // TODO(kcvaughn): Alphabetic order (implementations too).
 
-  PURE HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getLongSize() const noexcept -> uint64_t;
-
-  PURE HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getShortSize() const noexcept -> uint8_t;
+  CONST HOSTDEV HIDDEN static constexpr auto
+  fitsInShort(uint64_t n) noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] HIDDEN constexpr auto
   getLongCap() const noexcept -> uint64_t;
-
-  HOSTDEV [[nodiscard]] HIDDEN constexpr static auto
-  getShortCap() noexcept -> uint64_t;
 
   HOSTDEV [[nodiscard]] HIDDEN constexpr auto
   getLongPointer() noexcept -> char *;
@@ -232,11 +228,8 @@ public:
   HOSTDEV [[nodiscard]] HIDDEN constexpr auto
   getLongPointer() const noexcept -> char const *;
 
-  HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getShortPointer() noexcept -> char *;
-
-  HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getShortPointer() const noexcept -> char const *;
+  PURE HOSTDEV [[nodiscard]] HIDDEN constexpr auto
+  getLongSize() const noexcept -> uint64_t;
 
   HOSTDEV [[nodiscard]] HIDDEN constexpr auto
   getPointer() noexcept -> char *;
@@ -244,23 +237,30 @@ public:
   HOSTDEV [[nodiscard]] HIDDEN constexpr auto
   getPointer() const noexcept -> char const *;
 
-  CONST HOSTDEV HIDDEN static constexpr auto
-  fitsInShort(uint64_t n) noexcept -> bool;
+  HOSTDEV [[nodiscard]] HIDDEN constexpr static auto
+  getShortCap() noexcept -> uint64_t;
 
-  HOSTDEV HIDDEN constexpr void
-  initShort(uint64_t n) noexcept;
+  HOSTDEV [[nodiscard]] HIDDEN constexpr auto
+  getShortPointer() noexcept -> char *;
+
+  HOSTDEV [[nodiscard]] HIDDEN constexpr auto
+  getShortPointer() const noexcept -> char const *;
+
+  PURE HOSTDEV [[nodiscard]] HIDDEN constexpr auto
+  getShortSize() const noexcept -> uint8_t;
 
   HOSTDEV HIDDEN constexpr void
   initLong(uint64_t n) noexcept;
 
-//  HOSTDEV HIDDEN constexpr void
-//  allocateAndCopy(uint64_t n, char const * s) noexcept;
+  HOSTDEV HIDDEN constexpr void
+  initShort(uint64_t n) noexcept;
 
 }; // struct String
 
-template <typename T>
-constexpr auto
-toString(T const & t) noexcept -> String;
+
+//==============================================================================
+// Non-member operators
+//==============================================================================
 
 HOSTDEV constexpr auto
 operator+(String l, String const & r) noexcept -> String;
@@ -272,6 +272,39 @@ operator+(String l, char const (&r)[N]) noexcept -> String;
 template <uint64_t N>
 HOSTDEV constexpr auto
 operator+(char const (&l)[N], String const & r) noexcept -> String;
+
+//==============================================================================
+// Non-member methods
+//==============================================================================
+
+template <typename T>
+constexpr auto
+toString(T const & t) noexcept -> String;
+
+//==============================================================================
+// MACROS
+//==============================================================================
+// To maintain constexpr-ness and readability, we define a few macros to avoid
+// repeating ourselves
+
+// mimic allocateAndCopy(char const *, uint64_t)
+#define LONG_ALLOCATE_AND_COPY(ptr, num_elem)                             \
+     char const * ss = (ptr);                                             \
+     uint64_t const nn = (num_elem);                                      \
+     ASSERT_ASSUME(nn > 0);                                               \
+    _r.l.is_long = 1;                                                     \
+    _r.l.cap = (nn - 1) & long_cap_mask;                                  \
+    _r.l.size = nn - 1;                                                   \
+    _r.l.data = static_cast<char *>(::operator new(nn));                  \
+    copy(ss, ss + nn, _r.l.data);
+
+#define SHORT_COPY(ptr, num_elem)                                         \
+    char const * ss = (ptr);                                              \
+    uint64_t const nn = (num_elem);                                       \
+    ASSERT_ASSUME(nn > 0);                                                \
+    _r.s.is_long = 0;                                                     \
+    _r.s.size = (nn - 1) & short_size_mask;                               \
+    copy(ss, ss + nn, addressof(_r.s.data[0]));
 
 //==============================================================================
 // Constructors
@@ -292,12 +325,7 @@ HOSTDEV constexpr String::String(String const & s) noexcept
     // If this is a short string, it is trivially copyable
     _r.r = s._r.r;
   } else {
-    _r.l.is_long = s._r.l.is_long;
-    _r.l.cap = s._r.l.cap;
-    _r.l.size = s._r.l.size;
-    // Allocate cap + 1 to make room for null terminator
-    _r.l.data = static_cast<char *>(::operator new(s._r.l.cap + 1));
-    memcpy(_r.l.data, s._r.l.data, s._r.l.size + 1);
+    LONG_ALLOCATE_AND_COPY(s._r.l.data, s._r.l.size + 1);
     ASSERT(_r.l.data[_r.l.size] == '\0');
   }
 }
@@ -316,41 +344,29 @@ template <uint64_t N>
 HOSTDEV constexpr String::String(char const (&s)[N]) noexcept
 {
   // N includes the null terminator
-  // Short string
+  char const * p = addressof(s[0]);
   if constexpr (N <= min_cap) {
-    _r.s.is_long = 0;
-    _r.s.size = N - 1;
-    copy(addressof(s[0]), addressof(s[0]) + N, addressof(_r.s.data[0]));
+    SHORT_COPY(p, N);
     ASSERT(_r.s.data[N - 1] == '\0');
   } else {
-    _r.l.is_long = 1;
-    _r.l.cap = N - 1;
-    _r.l.size = N - 1;
-    _r.l.data = static_cast<char *>(::operator new(N));
-    copy(addressof(s[0]), addressof(s[0]) + N, _r.l.data);
+    LONG_ALLOCATE_AND_COPY(p, N);
     ASSERT(_r.l.data[N - 1] == '\0');
   }
 }
 
 HOSTDEV constexpr String::String(char const * s) noexcept
 {
+  // Get the length of the string (not including null terminator)
   uint64_t n = 0;
   while (s[n] != '\0') {
     ++n;
   }
   ASSERT(n > 0);
-  // Short string
   if (n + 1 <= min_cap) {
-    _r.s.is_long = 0;
-    _r.s.size = n & short_size_mask;
-    copy(s, s + (n + 1), addressof(_r.s.data[0]));
+    SHORT_COPY(s, n + 1);
     ASSERT(_r.s.data[n] == '\0');
   } else {
-    _r.l.is_long = 1;
-    _r.l.cap = n & long_cap_mask; 
-    _r.l.size = n;
-    _r.l.data = static_cast<char *>(::operator new(n + 1));
-    copy(s, s + (n + 1), _r.l.data);
+    LONG_ALLOCATE_AND_COPY(s, n + 1);
     ASSERT(_r.l.data[n] == '\0');
   }
 }
@@ -360,16 +376,10 @@ HOSTDEV constexpr String::String(char const * s, Size const n) noexcept
   // Short string
   auto const cap = static_cast<uint64_t>(n);
   if (cap + 1 <= min_cap) {
-    _r.s.is_long = 0;
-    _r.s.size = cap & short_size_mask;
-    copy(s, s + (cap + 1), addressof(_r.s.data[0]));
+    SHORT_COPY(s, cap + 1);
     _r.s.data[cap] = '\0';
   } else {
-    _r.l.is_long = 1;
-    _r.l.cap = cap & long_cap_mask;
-    _r.l.size = cap;
-    _r.l.data = static_cast<char *>(::operator new(cap + 1));
-    copy(s, s + (cap + 1), _r.l.data);
+    LONG_ALLOCATE_AND_COPY(s, cap + 1);
     _r.l.data[cap] = '\0';
   }
 }
@@ -382,9 +392,7 @@ constexpr String::String(T x) noexcept
   std::string const s = std::to_string(x);
   auto const cap = s.size();
   ASSERT_ASSUME(cap < min_cap);
-  _r.s.is_long = 0;
-  _r.s.size = cap & short_size_mask; 
-  copy(s.data(), s.data() + (cap + 1), addressof(_r.s.data[0]));
+  SHORT_COPY(s.data(), cap + 1);
   _r.s.data[cap] = '\0';
 }
 
@@ -394,9 +402,7 @@ constexpr String::String(T x) noexcept
   std::string const s = std::to_string(x);
   auto const cap = s.size();
   ASSERT_ASSUME(cap < min_cap);
-  _r.s.is_long = 0;
-  _r.s.size = cap & short_size_mask; 
-  copy(s.data(), s.data() + (cap + 1), addressof(_r.s.data[0]));
+  SHORT_COPY(s.data(), cap + 1);
   _r.s.data[cap] = '\0';
 }
 
@@ -450,11 +456,7 @@ String::operator=(String const & s) noexcept -> String &
       // If this is a short string, it is trivially copyable
       _r.r = s._r.r;
     } else {
-      _r.l.is_long = s._r.l.is_long;
-      _r.l.cap = s._r.l.cap;
-      _r.l.size = s._r.l.size;
-      _r.l.data = static_cast<char *>(::operator new(s._r.l.cap + 1));
-      memcpy(_r.l.data, s._r.l.data, s._r.l.size + 1);
+      LONG_ALLOCATE_AND_COPY(s._r.l.data, s._r.l.size + 1);
     }
   }
   return *this;
@@ -471,12 +473,9 @@ String::operator=(String && s) noexcept -> String &
     // If long string, we need to move the data.
     // Since the data is a pointer, we can just copy the pointer.
     // Therefore, either way, we can just copy the whole struct.
-    _r.r = s._r.r;
-    // We need to zero out the moved-from string so that it doesn't
+    _r = um2::move(s._r); 
     // delete the data when it goes out of scope.
-    s._r.r.raw[0] = 0;
-    s._r.r.raw[1] = 0;
-    s._r.r.raw[2] = 0;
+    s._r = Rep();
   }
   return *this;
 }
@@ -507,16 +506,10 @@ String::operator=(char const (&s)[N]) noexcept -> String &
   }
   // Short string
   if constexpr (N <= min_cap) {
-    _r.s.is_long = 0;
-    _r.s.size = N - 1;
-    copy(addressof(s[0]), addressof(s[0]) + N, addressof(_r.s.data[0]));
+    SHORT_COPY(s, N);
     ASSERT(_r.s.data[N - 1] == '\0');
   } else {
-    _r.l.is_long = 1;
-    _r.l.cap = N - 1;
-    _r.l.size = N - 1;
-    _r.l.data = static_cast<char *>(::operator new(N));
-    copy(addressof(s[0]), addressof(s[0]) + N, _r.l.data);
+    LONG_ALLOCATE_AND_COPY(s, N);
     ASSERT(_r.l.data[N - 1] == '\0');
   }
   return *this;
@@ -584,20 +577,17 @@ String::operator[](Size i) const noexcept -> char const &
   return data()[i];
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
 HOSTDEV constexpr auto
 String::operator+=(String const & s) noexcept -> String &
 {
-  // If this is a short string and the size of the new string is less than
-  // the capacity of the short string, we can just append the new string.
   auto const new_size = static_cast<uint64_t>(size() + s.size());
   if (fitsInShort(new_size + 1)) {
+    // This must be a short string, so we can just copy the data.
     ASSERT(!isLong());
     ASSERT(!s.isLong());
     ASSERT(new_size < min_cap);
     memcpy(getPointer() + size(), s.data(), static_cast<uint64_t>(s.size() + 1));
-    _r.s.size = static_cast<uint8_t>(new_size);
+    _r.s.size = new_size & short_size_mask;
   } else {
     // Otherwise, we need to allocate a new string and copy the data.
     char * tmp = static_cast<char *>(::operator new(new_size + 1));
@@ -607,7 +597,7 @@ String::operator+=(String const & s) noexcept -> String &
       ::operator delete(_r.l.data);
     }
     _r.l.is_long = 1;
-    _r.l.cap = new_size + 1;
+    _r.l.cap = (new_size + 1) & long_cap_mask;
     _r.l.size = new_size;
     _r.l.data = tmp;
   }
@@ -635,13 +625,12 @@ String::operator+=(char const c) noexcept -> String &
       ::operator delete(_r.l.data);
     }
     _r.l.is_long = 1;
-    _r.l.cap = new_size + 1;
+    _r.l.cap = (new_size + 1) & long_cap_mask;
     _r.l.size = new_size;
     _r.l.data = tmp;
   }
   return *this;
 }
-#pragma GCC diagnostic pop
 
 //==============================================================================
 // Methods
@@ -812,22 +801,6 @@ String::fitsInShort(uint64_t n) noexcept -> bool
   return n <= min_cap;
 }
 
-
-//HOSTDEV HIDDEN constexpr void
-//String::allocateAndCopy(uint64_t n, char const * s) noexcept
-//{
-//  if (_r.l.data != nullptr) {
-//    ::operator delete(_r.l.data);
-//  }
-//  _r.l.is_long = 1;
-//  _r.l.cap = N - 1;
-//  _r.l.size = N - 1;
-//  _r.l.data = static_cast<char *>(::operator new(N));
-//  copy(addressof(s[0]), addressof(s[0]) + N, _r.l.data);
-//  ASSERT(_r.l.data[N - 1] == '\0');
-//}
-
-
 template <typename T>
 constexpr auto
 toString(T const & t) noexcept -> String
@@ -860,3 +833,4 @@ operator+(char const (&l)[N], String const & r) noexcept -> String
 }
 
 } // namespace um2
+// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)

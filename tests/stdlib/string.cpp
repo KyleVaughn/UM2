@@ -2,13 +2,11 @@
 
 #include "../test_macros.hpp"
 
-// clang-tidy says:
-// Potential leak of memory pointed to by '_r..l.data'
-// But this is a false positive, since the memory is freed in the destructor.
-// if (isLong()) {
-//   ::operator delete(_r.l.data);
-// }
+// clang-tidy does poorly with branched code like string. Valgrind and gcc's
+// address sanitizer say that there are no leaks or undefined behavior, so
+// we disable the warnings for this file.
 // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks) justified above
+// NOLINTBEGIN(clang-analyzer-core.UndefinedBinaryOperatorResult) justified above
 
 //==============================================================================
 // Constructors
@@ -113,7 +111,8 @@ TEST_CASE(copy_constructor)
   ASSERT(s2.size() == 68);
   ASSERT(s2.capacity() == 68);
   ASSERT(s2.isLong());
-  ASSERT(s2.data()[0] == 'T');
+  char * data = s2.data();
+  ASSERT(data[0] == 'T');
   // Check that s1 is not modified
   s1.data()[0] = 'a';
   ASSERT(s2.data()[0] == 'T');
@@ -378,4 +377,5 @@ main() -> int
   return 0;
 }
 
+// NOLINTEND(clang-analyzer-core.UndefinedBinaryOperatorResult)
 // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
