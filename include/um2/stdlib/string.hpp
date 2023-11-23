@@ -30,7 +30,6 @@ static_assert(std::endian::native == std::endian::little,
 struct String {
 
 private:
-
   // Heap-allocated string representation.
   // 24 bytes
   struct Long {
@@ -257,7 +256,6 @@ public:
 
 }; // struct String
 
-
 //==============================================================================
 // Non-member operators
 //==============================================================================
@@ -288,23 +286,23 @@ toString(T const & t) noexcept -> String;
 // repeating ourselves
 
 // mimic allocateAndCopy(char const *, uint64_t)
-#define LONG_ALLOCATE_AND_COPY(ptr, num_elem)                             \
-     char const * ss = (ptr);                                             \
-     uint64_t const nn = (num_elem);                                      \
-     ASSERT_ASSUME(nn > 0);                                               \
-    _r.l.is_long = 1;                                                     \
-    _r.l.cap = (nn - 1) & long_cap_mask;                                  \
-    _r.l.size = nn - 1;                                                   \
-    _r.l.data = static_cast<char *>(::operator new(nn));                  \
-    copy(ss, ss + nn, _r.l.data);
+#define LONG_ALLOCATE_AND_COPY(ptr, num_elem)                                            \
+  char const * ss = (ptr);                                                               \
+  uint64_t const nn = (num_elem);                                                        \
+  ASSERT_ASSUME(nn > 0);                                                                 \
+  _r.l.is_long = 1;                                                                      \
+  _r.l.cap = (nn - 1) & long_cap_mask;                                                   \
+  _r.l.size = nn - 1;                                                                    \
+  _r.l.data = static_cast<char *>(::operator new(nn));                                   \
+  copy(ss, ss + nn, _r.l.data);
 
-#define SHORT_COPY(ptr, num_elem)                                         \
-    char const * ss = (ptr);                                              \
-    uint64_t const nn = (num_elem);                                       \
-    ASSERT_ASSUME(nn > 0);                                                \
-    _r.s.is_long = 0;                                                     \
-    _r.s.size = (nn - 1) & short_size_mask;                               \
-    copy(ss, ss + nn, addressof(_r.s.data[0]));
+#define SHORT_COPY(ptr, num_elem)                                                        \
+  char const * ss = (ptr);                                                               \
+  uint64_t const nn = (num_elem);                                                        \
+  ASSERT_ASSUME(nn > 0);                                                                 \
+  _r.s.is_long = 0;                                                                      \
+  _r.s.size = (nn - 1) & short_size_mask;                                                \
+  copy(ss, ss + nn, addressof(_r.s.data[0]));
 
 //==============================================================================
 // Constructors
@@ -331,7 +329,7 @@ HOSTDEV constexpr String::String(String const & s) noexcept
 }
 
 HOSTDEV constexpr String::String(String && s) noexcept
-  : _r(um2::move(s._r))
+    : _r(um2::move(s._r))
 {
   // If short string, we can copy trivially
   // If long string, we need to move the data.
@@ -473,7 +471,7 @@ String::operator=(String && s) noexcept -> String &
     // If long string, we need to move the data.
     // Since the data is a pointer, we can just copy the pointer.
     // Therefore, either way, we can just copy the whole struct.
-    _r = um2::move(s._r); 
+    _r = um2::move(s._r);
     // delete the data when it goes out of scope.
     s._r = Rep();
   }

@@ -86,6 +86,9 @@ struct FaceVertexMesh {
   flipFace(Size i) noexcept;
 
   void
+  populateVF() noexcept;
+
+  void
   toPolytopeSoup(PolytopeSoup<T, I> & soup) const noexcept;
 
   //  //  void
@@ -467,28 +470,7 @@ toFaceVertexMesh(PolytopeSoup<T, I> const & soup,
     }
   }
 
-  // -- Vertex/Face connectivity --
-  Vector<I> vert_counts(num_vertices, 0);
-  for (Size i = 0; i < num_faces; ++i) {
-    for (Size j = 0; j < N; ++j) {
-      ++vert_counts[static_cast<Size>(mesh.fv[i][j])];
-    }
-  }
-  mesh.vf_offsets.resize(num_vertices + 1);
-  mesh.vf_offsets[0] = 0;
-  std::inclusive_scan(vert_counts.cbegin(), vert_counts.cend(),
-                      mesh.vf_offsets.begin() + 1);
-  mesh.vf.resize(static_cast<Size>(mesh.vf_offsets[num_vertices]));
-  // Copy vf_offsets to vert_offsets
-  Vector<I> vert_offsets = mesh.vf_offsets;
-  for (Size i = 0; i < num_faces; ++i) {
-    auto const & face = mesh.fv[i];
-    for (Size j = 0; j < N; ++j) {
-      auto const vert = static_cast<Size>(face[j]);
-      mesh.vf[static_cast<Size>(vert_offsets[vert])] = static_cast<I>(i);
-      ++vert_offsets[vert];
-    }
-  }
+  mesh.populateVF();
   validateMesh(mesh);
 }
 
@@ -496,6 +478,43 @@ template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 FaceVertexMesh<P, N, D, T, I>::FaceVertexMesh(PolytopeSoup<T, I> const & soup)
 {
   um2::toFaceVertexMesh(soup, *this);
+}
+
+//==============================================================================
+// populateVF
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
+FaceVertexMesh<P, N, D, T, I>::populateVF() noexcept
+{
+  ASSERT(vf_offsets.empty());
+  ASSERT(vf.empty());
+
+  Size const num_vertices = vertices.size();
+  Size const num_faces = fv.size();
+
+  // -- Vertex/Face connectivity --
+  Vector<I> vert_counts(num_vertices, 0);
+  for (Size i = 0; i < num_faces; ++i) {
+    for (Size j = 0; j < N; ++j) {
+      ++vert_counts[static_cast<Size>(fv[i][j])];
+    }
+  }
+  vf_offsets.resize(num_vertices + 1);
+  vf_offsets[0] = 0;
+  std::inclusive_scan(vert_counts.cbegin(), vert_counts.cend(), vf_offsets.begin() + 1);
+  vf.resize(static_cast<Size>(vf_offsets[num_vertices]));
+  // Copy vf_offsets to vert_offsets
+  Vector<I> vert_offsets = vf_offsets;
+  for (Size i = 0; i < num_faces; ++i) {
+    auto const & face = fv[i];
+    for (Size j = 0; j < N; ++j) {
+      auto const vert = static_cast<Size>(face[j]);
+      vf[static_cast<Size>(vert_offsets[vert])] = static_cast<I>(i);
+      ++vert_offsets[vert];
+    }
+  }
 }
 
 //==============================================================================

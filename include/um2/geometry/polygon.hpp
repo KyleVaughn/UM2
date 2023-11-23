@@ -464,7 +464,7 @@ template <typename T>
 PURE HOSTDEV constexpr auto
 area(Quadrilateral2<T> const & q) noexcept -> T
 {
-  ASSERT(isConvex(q));
+  //  ASSERT(isConvex(q));
   // (v2 - v0).cross(v3 - v1) / 2
   Vec2<T> const v20 = q[2] - q[0];
   Vec2<T> const v31 = q[3] - q[1];
@@ -779,7 +779,7 @@ template <typename T>
 PURE HOSTDEV constexpr auto
 meanChordLength(Quadrilateral2<T> const & quad) noexcept -> T
 {
-  ASSERT(isConvex(quad));
+  //  ASSERT(isConvex(quad));
   return pi<T> * area(quad) / perimeter(quad);
 }
 

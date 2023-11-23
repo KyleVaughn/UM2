@@ -1,3 +1,9 @@
+ADD TRACE statements to routines
+
+add approximately convex routine for quadrilateral
+  -> area
+  -> meanchordlength
+
 String -> Check that N is correct for constructors
 Replace allocate and copy with macro
 deal with HOSTDEV constexpr String(char const * s, Size n) noexcept;
