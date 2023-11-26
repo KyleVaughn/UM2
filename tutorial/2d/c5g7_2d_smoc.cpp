@@ -86,6 +86,7 @@ main() -> int
   model.makeCylindricalPinMesh({radius, water_radius}, pin_pitch,
                                {num_fuel_rings, num_water_rings}, num_azimuthal, 2);
   Size const nfaces = model.quadratic_quad.back().numFaces();
+  model.makeRectangularPinMesh(pin_size, 5, 5);
 
   // Make the coarse cells
   um2::Vector<MaterialID> mat_ids(nfaces, 6);
@@ -96,6 +97,10 @@ main() -> int
     model.makeCoarseCell(pin_size, um2::MeshType::QuadraticQuad, 0, mat_ids);
     model.makeRTM({{i}});
   }
+  mat_ids.resize(25);
+  um2::fill(mat_ids.begin(), mat_ids.end(), 6);
+  model.makeCoarseCell(pin_size, um2::MeshType::Quad, 0, mat_ids);
+  model.makeRTM({{6}});
 
   // UO2 lattice pins (pg. 7)
   std::vector<std::vector<int>> const uo2_lattice = um2::to_vecvec<int>(R"(
@@ -139,46 +144,42 @@ main() -> int
       1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
     )");
 
-  //  // Moderator lattice
-  //  std::vector<std::vector<int>> const h2o_lattice = um2::to_vecvec<int>(R"(
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
-  //    )");
+  // Moderator lattice
+  std::vector<std::vector<int>> const h2o_lattice = um2::to_vecvec<int>(R"(
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+      6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6
+    )");
 
   model.stdMakeLattice(uo2_lattice);
   model.stdMakeLattice(mox_lattice);
-  //  model.stdMakeLattice(h2o_lattice);
+  model.stdMakeLattice(h2o_lattice);
 
   // The problem is 2D, so we may map each lattice one-to-one to an assembly
   model.makeAssembly({0}); // UO2
   model.makeAssembly({1}); // MOX
-                           //  model.makeAssembly({2}); // H2O
+  model.makeAssembly({2}); // H2O
 
   // Make core
   // Core assembly IDs (pg. 6)
-  //  std::vector<std::vector<int>> const core_assembly_ids = um2::to_vecvec<int>(R"(
-  //      0 1 2
-  //      1 0 2
-  //      2 2 2
-  //    )");
   std::vector<std::vector<int>> const core_assembly_ids = um2::to_vecvec<int>(R"(
-      0 1
-      1 0
+      0 1 2
+      1 0 2
+      2 2 2
     )");
   model.stdMakeCore(core_assembly_ids);
 

@@ -206,7 +206,7 @@ main() -> int
   um2::gmsh::model::occ::overlaySpatialPartition(model);
 
   // Create the mesh
-  double const target_kn = 10.0;
+  double const target_kn = 12.0;
   um2::XSReductionStrategy const kn_strategy = um2::XSReductionStrategy::Mean;
   um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, materials, target_kn,
                                                         kn_strategy);

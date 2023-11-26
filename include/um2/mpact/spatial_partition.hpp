@@ -130,9 +130,8 @@ struct SpatialPartition {
   makeCylindricalPinMesh(Vector<T> const & radii, T pitch, Vector<Size> const & num_rings,
                          Size num_azimuthal, Size mesh_order = 1) -> Size;
 
-  //  //    int make_rectangular_pin_mesh(Vec2<T> const dxdy,
-  //  //                                  int const nx,
-  //  //                                  int const ny);
+  auto
+  makeRectangularPinMesh(Vec2<T> dxdy, Size nx, Size ny);
 
   auto
   makeCoarseCell(Vec2<T> dxdy, MeshType mesh_type = MeshType::None, Size mesh_id = -1,
@@ -734,6 +733,51 @@ SpatialPartition<T, I>::makeCylindricalPinMesh(Vector<T> const & radii, T const 
   }
   Log::error("Only linear and quadratic meshes are supported for a cylindrical pin mesh");
   return -1;
+}
+
+//=============================================================================
+// makeRectangularPinMesh
+//=============================================================================
+
+template <std::floating_point T, std::integral I>
+auto
+SpatialPartition<T, I>::makeRectangularPinMesh(Vec2<T> dxdy, Size nx, Size ny)
+{
+  if (dxdy[0] <= 0 || dxdy[1] <= 0) {
+    Log::error("Pin dimensions must be positive");
+  }
+  if (nx <= 0 || ny <= 0) {
+    Log::error("Number of divisions in x and y must be positive");
+  }
+
+  Size const mesh_id = this->quad.size();
+  Log::info("Making rectangular pin mesh " + toString(mesh_id));
+
+  // Make the vertices
+  Vector<Point2<T>> vertices((nx + 1) * (ny + 1));
+  T const delta_x = dxdy[0] / nx;
+  T const delta_y = dxdy[1] / ny;
+  for (Size j = 0; j < ny + 1; ++j) {
+    for (Size i = 0; i < nx + 1; ++i) {
+      vertices[j * (nx + 1) + i] = {i * delta_x, j * delta_y};
+    }
+  }
+  // Make the faces
+  Vector<Vec<4, I>> faces(nx * ny);
+  // Left to right, bottom to top
+  for (Size j = 0; j < ny; ++j) {
+    for (Size i = 0; i < nx; ++i) {
+      faces[j * nx + i] = {(j) * (nx + 1) + i, (j) * (nx + 1) + i + 1,
+                           (j + 1) * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i};
+    }
+  }
+  QuadMesh<2, T, I> mesh;
+  mesh.vertices = vertices;
+  mesh.fv = faces;
+  mesh.populateVF();
+  this->quad.push_back(um2::move(mesh));
+  LOG_TRACE("Finished creating mesh");
+  return mesh_id;
 }
 
 //=============================================================================
