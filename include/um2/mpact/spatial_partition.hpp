@@ -161,6 +161,15 @@ struct SpatialPartition {
   void
   toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn = false) const;
 
+  void
+  getMaterialNames(Vector<String> & material_names) const;
+
+  void
+  write(String const & filename, bool write_kn = false) const;
+
+  void
+  writeXDMF(String const & filepath, bool write_kn = false) const;
+
 }; // struct SpatialPartition
 
 //=============================================================================
@@ -1319,7 +1328,7 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn)
                 ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id
                    << "_" << std::setw(5) << std::setfill('0') << cell_id_ctr;
                 String const cell_name(ss.str().c_str());
-                LOG_DEBUG("Coarse cell name: " + toString(cell_name));
+                LOG_DEBUG("Coarse cell name: " + cell_name);
                 // Get the cell offset (lower left corner)
                 auto const cell_bb = rtm.getBox(ixcell, iycell);
                 Point2<T> const cell_ll = cell_bb.minima; // Lower left corner
@@ -1334,7 +1343,7 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn)
                 LOG_TRACE("cell_materials.size() = " + toString(cell_materials.size()));
                 for (Size iface = 0; iface < cell_materials.size(); ++iface) {
                   auto const mat_id = static_cast<Size>(
-                      static_cast<unsigned char>(cell_materials[iface]));
+                      static_cast<uint32_t>(cell_materials[iface]));
                   material_elsets[mat_id].push_back(
                       static_cast<I>(iface + cell_faces_prev));
                 }
@@ -1398,7 +1407,7 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn)
                       for (Size iface = 0; iface < tri[mesh_id].fv.size(); ++iface) {
                         T const mcl = tri[mesh_id].getFace(iface).meanChordLength();
                         auto const mat_id = static_cast<Size>(
-                            static_cast<unsigned char>(cell_materials[iface]));
+                            static_cast<uint32_t>(cell_materials[iface]));
                         T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
                             XSReductionStrategy::Max);
                         T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
@@ -1439,7 +1448,7 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn)
                                   toString(quad[mesh_id].fv[iface][3]));
                         T const mcl = quad[mesh_id].getFace(iface).meanChordLength();
                         auto const mat_id = static_cast<Size>(
-                            static_cast<unsigned char>(cell_materials[iface]));
+                            static_cast<uint32_t>(cell_materials[iface]));
                         T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
                             XSReductionStrategy::Max);
                         T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
@@ -1479,7 +1488,7 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn)
                         T const mcl =
                             quadratic_tri[mesh_id].getFace(iface).meanChordLength();
                         auto const mat_id = static_cast<Size>(
-                            static_cast<unsigned char>(cell_materials[iface]));
+                            static_cast<uint32_t>(cell_materials[iface]));
                         T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
                             XSReductionStrategy::Max);
                         T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
@@ -1519,7 +1528,7 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn)
                         T const mcl =
                             quadratic_quad[mesh_id].getFace(iface).meanChordLength();
                         auto const mat_id = static_cast<Size>(
-                            static_cast<unsigned char>(cell_materials[iface]));
+                            static_cast<uint32_t>(cell_materials[iface]));
                         T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
                             XSReductionStrategy::Max);
                         T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
@@ -1590,6 +1599,422 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn)
   }
 
   soup.sortElsets();
+} // toPolytopeSoup
+
+//==============================================================================
+// getMaterialNames
+//==============================================================================
+
+template <std::floating_point T, std::integral I>
+void
+SpatialPartition<T, I>::getMaterialNames(Vector<String> & material_names) const
+{
+  material_names.clear();
+  String const mat_prefix = "Material_";
+  for (auto const & material : materials) {
+    String const mat_suffix(material.name.data());
+    material_names.push_back(mat_prefix + mat_suffix);
+  }
+  std::sort(material_names.begin(), material_names.end());
+} // getMaterialNames
+
+//==============================================================================
+// writeXDMF
+//==============================================================================
+
+template <std::floating_point T, std::integral I>
+void
+// NOLINTNEXTLINE
+SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
+{
+  Log::info("Writing XDMF file: " + filepath);
+
+  // Setup HDF5 file
+  // Get the h5 file name
+  Size last_slash = filepath.find_last_of('/');
+  if (last_slash == String::npos) {
+    last_slash = 0;
+  }
+  Size const h5filepath_end = last_slash == 0 ? 0 : last_slash + 1;
+  LOG_DEBUG("h5filepath_end: " + toString(h5filepath_end));
+  String const h5filename =
+      filepath.substr(h5filepath_end, filepath.size() - 5 - h5filepath_end) + ".h5";
+  LOG_DEBUG("h5filename: " + h5filename);
+  String const h5filepath = filepath.substr(0, h5filepath_end);
+  LOG_DEBUG("h5filepath: " + h5filepath);
+  H5::H5File h5file((h5filepath + h5filename).c_str(), H5F_ACC_TRUNC);
+
+  // Setup XML file
+  pugi::xml_document xdoc;
+
+  // XDMF root node
+  pugi::xml_node xroot = xdoc.append_child("Xdmf");
+  xroot.append_attribute("Version") = "3.0";
+
+  // Domain node
+  pugi::xml_node xdomain = xroot.append_child("Domain");
+
+  // Get the material names from elset names, in alphabetical order.
+  Vector<String> material_names;
+  getMaterialNames(material_names);
+  std::sort(material_names.begin(), material_names.end());
+
+  // If there are any materials, add an information node listing them
+  if (!material_names.empty()) {
+    pugi::xml_node xinfo = xdomain.append_child("Information");
+    xinfo.append_attribute("Name") = "Materials";
+    String mats;
+    for (Size i = 0; i < material_names.size(); ++i) {
+      auto const & mat_name = material_names[i];
+      String const short_name = mat_name.substr(9, mat_name.size() - 9);
+      mats += short_name;
+      if (i + 1 < material_names.size()) {
+        mats += ", ";
+      }
+    }
+    xinfo.append_child(pugi::node_pcdata).set_value(mats.c_str());
+  }
+
+  String const name = h5filename.substr(0, h5filename.size() - 3);
+
+  // Core grid
+  pugi::xml_node xcore_grid = xdomain.append_child("Grid");
+  xcore_grid.append_attribute("Name") = name.c_str();
+  xcore_grid.append_attribute("GridType") = "Tree";
+
+  // h5
+  H5::Group const h5core_group = h5file.createGroup(name.c_str());
+  String const h5core_grouppath = "/" + name;
+
+  // Allocate counters for each assembly, lattice, etc.
+  Vector<I> asy_found(assemblies.size(), -1);
+  Vector<I> lat_found(lattices.size(), -1);
+  Vector<I> rtm_found(rtms.size(), -1);
+  Vector<I> cc_found(coarse_cells.size(), -1);
+
+  std::stringstream ss;
+  Vector<Vector<T>> cc_kns_max(coarse_cells.size());
+  Vector<Vector<T>> cc_kns_mean(coarse_cells.size());
+
+  if (core.children.empty()) {
+    Log::error("Core has no children");
+    return;
+  }
+  Size const nyasy = core.numYCells();
+  Size const nxasy = core.numXCells();
+  // Core M by N
+  pugi::xml_node xcore_info = xcore_grid.append_child("Information");
+  xcore_info.append_attribute("Name") = "M_by_N";
+  String const core_mn_str = toString(nyasy) + " x " + toString(nxasy);
+  xcore_info.append_child(pugi::node_pcdata).set_value(core_mn_str.c_str());
+  // For each assembly
+  for (Size iyasy = 0; iyasy < nyasy; ++iyasy) {
+    for (Size ixasy = 0; ixasy < nxasy; ++ixasy) {
+      auto const asy_id = static_cast<Size>(core.getChild(ixasy, iyasy));
+      I const asy_id_ctr = ++asy_found[asy_id];
+      // Get elset name
+      ss.str("");
+      ss << "Assembly_" << std::setw(5) << std::setfill('0') << asy_id << "_"
+         << std::setw(5) << std::setfill('0') << asy_id_ctr;
+      String const asy_name(ss.str().c_str());
+      LOG_DEBUG("Assembly name: " + asy_name);
+      // Get the assembly offset (lower left corner)
+      AxisAlignedBox2<T> const asy_bb = core.getBox(ixasy, iyasy);
+      Point2<T> const asy_ll = asy_bb.minima; // Lower left corner
+
+      auto const & assembly = assemblies[asy_id];
+      if (assembly.children.empty()) {
+        Log::error("Assembly has no children");
+        return;
+      }
+
+      // Create the XML grid
+      pugi::xml_node xasy_grid = xcore_grid.append_child("Grid");
+      xasy_grid.append_attribute("Name") = ss.str().c_str();
+      xasy_grid.append_attribute("GridType") = "Tree";
+
+      // Write the M by N information
+      Size const nzlat = assembly.numXCells();
+      pugi::xml_node xasy_info = xasy_grid.append_child("Information");
+      xasy_info.append_attribute("Name") = "M_by_N";
+      String const asy_mn_str = toString(nzlat) + " x 1";
+      xasy_info.append_child(pugi::node_pcdata).set_value(asy_mn_str.c_str());
+
+      // Create the h5 group
+      String const h5asy_grouppath = h5core_grouppath + "/" + String(ss.str().c_str());
+      H5::Group const h5asy_group = h5file.createGroup(h5asy_grouppath.c_str());
+
+      // For each lattice
+      for (Size izlat = 0; izlat < nzlat; ++izlat) {
+        auto const lat_id = static_cast<Size>(assembly.getChild(izlat));
+        I const lat_id_ctr = ++lat_found[lat_id];
+        // Get elset name
+        ss.str("");
+        ss << "Lattice_" << std::setw(5) << std::setfill('0') << lat_id << "_"
+           << std::setw(5) << std::setfill('0') << lat_id_ctr;
+        String const lat_name(ss.str().c_str());
+        LOG_DEBUG("Lattice name: " + lat_name);
+        // Get the lattice offset (z direction)
+        // The midplane is the location that the geometry was sampled at.
+        T const low_z = assembly.grid.divs[0][izlat];
+        T const high_z = assembly.grid.divs[0][izlat + 1];
+        T const lat_z = (low_z + high_z) / 2;
+
+        // Get the lattice
+        auto const & lattice = lattices[lat_id];
+        if (lattice.children.empty()) {
+          Log::error("Lattice has no children");
+          return;
+        }
+
+        // Create the XML grid
+        pugi::xml_node xlat_grid = xasy_grid.append_child("Grid");
+        xlat_grid.append_attribute("Name") = ss.str().c_str();
+        xlat_grid.append_attribute("GridType") = "Tree";
+
+        // Add the Z information for the lattice
+        pugi::xml_node xlat_info = xlat_grid.append_child("Information");
+        xlat_info.append_attribute("Name") = "Z";
+        String const z_values = toString(low_z) + ", " + toString(lat_z) + ", " + toString(high_z);
+        xlat_info.append_child(pugi::node_pcdata).set_value(z_values.c_str());
+
+        // Write the M by N information
+        Size const nyrtm = lattice.numYCells();
+        Size const nxrtm = lattice.numXCells();
+        pugi::xml_node xlat_mn_info = xlat_grid.append_child("Information");
+        xlat_mn_info.append_attribute("Name") = "M_by_N";
+        String const lat_mn_str = toString(nyrtm) + " x " + toString(nxrtm);
+        xlat_mn_info.append_child(pugi::node_pcdata).set_value(lat_mn_str.c_str());
+
+        // Create the h5 group
+        String const h5lat_grouppath = h5asy_grouppath + "/" + String(ss.str().c_str());
+        H5::Group const h5lat_group = h5file.createGroup(h5lat_grouppath.c_str());
+
+        // For each RTM
+        for (Size iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
+          for (Size ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
+            auto const rtm_id = static_cast<Size>(lattice.getChild(ixrtm, iyrtm));
+            I const rtm_id_ctr = ++rtm_found[rtm_id];
+            ss.str("");
+            ss << "RTM_" << std::setw(5) << std::setfill('0') << rtm_id << "_"
+               << std::setw(5) << std::setfill('0') << rtm_id_ctr;
+            String const rtm_name(ss.str().c_str());
+            LOG_DEBUG("RTM name: " + rtm_name);
+            // Get the RTM offset (lower left corner)
+            auto const rtm_bb = lattice.getBox(ixrtm, iyrtm);
+            Point2<T> const rtm_ll = rtm_bb.minima; // Lower left corner
+
+            // Get the rtm
+            auto const & rtm = rtms[rtm_id];
+            if (rtm.children.empty()) {
+              Log::error("RTM has no children");
+              return;
+            }
+
+            // Create the XML grid
+            pugi::xml_node xrtm_grid = xlat_grid.append_child("Grid");
+            xrtm_grid.append_attribute("Name") = ss.str().c_str();
+            xrtm_grid.append_attribute("GridType") = "Tree";
+
+            // Write the M by N information
+            Size const nycells = rtm.numYCells();
+            Size const nxcells = rtm.numXCells();
+            pugi::xml_node xrtm_mn_info = xrtm_grid.append_child("Information");
+            xrtm_mn_info.append_attribute("Name") = "M_by_N";
+            String const rtm_mn_str = toString(nycells) + " x " + toString(nxcells);
+            xrtm_mn_info.append_child(pugi::node_pcdata).set_value(rtm_mn_str.c_str());
+
+            // Create the h5 group
+            String const h5rtm_grouppath = h5lat_grouppath + "/" + String(ss.str().c_str());
+            H5::Group const h5rtm_group = h5file.createGroup(h5rtm_grouppath.c_str());
+
+            for (Size iycell = 0; iycell < nycells; ++iycell) {
+              for (Size ixcell = 0; ixcell < nxcells; ++ixcell) {
+                auto const & cell_id = static_cast<Size>(rtm.getChild(ixcell, iycell));
+                I const cell_id_ctr = ++cc_found[cell_id];
+                ss.str("");
+                ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id
+                   << "_" << std::setw(5) << std::setfill('0') << cell_id_ctr;
+                String const cell_name(ss.str().c_str());
+                LOG_DEBUG("Coarse cell name: " + cell_name);
+                // Get the cell offset (lower left corner)
+                auto const cell_bb = rtm.getBox(ixcell, iycell);
+                Point2<T> const cell_ll = cell_bb.minima; // Lower left corner
+
+                // Get the mesh type and id of the coarse cell.
+                MeshType const mesh_type = coarse_cells[cell_id].mesh_type;
+                Size const mesh_id = coarse_cells[cell_id].mesh_id;
+                LOG_TRACE("mesh_id = " + toString(mesh_id));
+                // Add to material elsets
+                Vector<MaterialID> const & cell_materials =
+                    coarse_cells[cell_id].material_ids;
+                LOG_TRACE("cell_materials.size() = " + toString(cell_materials.size()));
+
+                // Convert the mesh into PolytopeSoup
+                PolytopeSoup<T, I> soup;
+                switch (mesh_type) {
+                case MeshType::Tri:
+                  LOG_TRACE("Mesh type: Tri");
+                  tri[mesh_id].toPolytopeSoup(soup);
+                  if (write_kn) {
+                    if (cc_kns_max[cell_id].empty()) {
+                      LOG_TRACE("Computing Knudsen numbers");
+                      for (Size iface = 0; iface < tri[mesh_id].fv.size(); ++iface) {
+                        T const mcl = tri[mesh_id].getFace(iface).meanChordLength();
+                        auto const mat_id = static_cast<Size>(
+                            static_cast<uint32_t>(cell_materials[iface]));
+                        T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
+                            XSReductionStrategy::Max);
+                        T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
+                            XSReductionStrategy::Mean);
+                        cc_kns_max[cell_id].push_back(static_cast<T>(1) / (t_max * mcl));
+                        cc_kns_mean[cell_id].push_back(static_cast<T>(1) /
+                                                       (t_mean * mcl));
+                      }
+                    }
+                  }
+                  break;
+                case MeshType::Quad:
+                  LOG_TRACE("Mesh type: Quad");
+                  quad[mesh_id].toPolytopeSoup(soup);
+                  if (write_kn) {
+                    if (cc_kns_max[cell_id].empty()) {
+                      LOG_TRACE("Computing Knudsen numbers");
+                      for (Size iface = 0; iface < quad[mesh_id].fv.size(); ++iface) {
+                        T const mcl = quad[mesh_id].getFace(iface).meanChordLength();
+                        auto const mat_id = static_cast<Size>(
+                            static_cast<uint32_t>(cell_materials[iface]));
+                        T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
+                            XSReductionStrategy::Max);
+                        T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
+                            XSReductionStrategy::Mean);
+                        cc_kns_max[cell_id].push_back(static_cast<T>(1) / (t_max * mcl));
+                        cc_kns_mean[cell_id].push_back(static_cast<T>(1) /
+                                                       (t_mean * mcl));
+                      }
+                    }
+                  }
+                  break;
+                case MeshType::QuadraticTri:
+                  LOG_TRACE("Mesh type: QuadraticTri");
+                  quadratic_tri[mesh_id].toPolytopeSoup(soup);
+                  if (write_kn) {
+                    if (cc_kns_max[cell_id].empty()) {
+                      LOG_TRACE("Computing Knudsen numbers");
+                      for (Size iface = 0; iface < quadratic_tri[mesh_id].fv.size(); ++iface) {
+                        T const mcl = quadratic_tri[mesh_id].getFace(iface).meanChordLength();
+                        auto const mat_id = static_cast<Size>(
+                            static_cast<uint32_t>(cell_materials[iface]));
+                        T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
+                            XSReductionStrategy::Max);
+                        T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
+                            XSReductionStrategy::Mean);
+                        cc_kns_max[cell_id].push_back(static_cast<T>(1) / (t_max * mcl));
+                        cc_kns_mean[cell_id].push_back(static_cast<T>(1) /
+                                                       (t_mean * mcl));
+                      }
+                    }
+                  }
+                  break;
+                case MeshType::QuadraticQuad:
+                  LOG_TRACE("Mesh type: QuadraticQuad");
+                  quadratic_quad[mesh_id].toPolytopeSoup(soup);
+                  if (write_kn) {
+                    if (cc_kns_max[cell_id].empty()) {
+                      LOG_TRACE("Computing Knudsen numbers");
+                      for (Size iface = 0; iface < quadratic_quad[mesh_id].fv.size(); ++iface) {
+                        T const mcl = quadratic_quad[mesh_id].getFace(iface).meanChordLength();
+                        auto const mat_id = static_cast<Size>(
+                            static_cast<uint32_t>(cell_materials[iface]));
+                        T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
+                            XSReductionStrategy::Max);
+                        T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
+                            XSReductionStrategy::Mean);
+                        cc_kns_max[cell_id].push_back(static_cast<T>(1) / (t_max * mcl));
+                        cc_kns_mean[cell_id].push_back(static_cast<T>(1) /
+                                                       (t_mean * mcl));
+                      }
+                    }
+                  }
+                  break;
+                default:
+                  Log::error("Unsupported mesh type");
+                  return;
+                } // switch (mesh_type)
+
+                // add Material elsets
+                Size const cc_nfaces = cell_materials.size();
+                Vector<I> cc_mats(cc_nfaces);
+                for (Size i = 0; i < cc_nfaces; ++i) {
+                  cc_mats[i] = static_cast<I>(static_cast<uint32_t>(cell_materials[i]));
+                }
+                // Get the unique material ids
+                Vector<I> cc_mats_sorted = cc_mats;
+                std::sort(cc_mats_sorted.begin(), cc_mats_sorted.end());
+                auto * it = std::unique(cc_mats_sorted.begin(), cc_mats_sorted.end());
+                Size const cc_nunique = static_cast<Size>(it - cc_mats_sorted.begin());
+                Vector<I> cc_mats_unique(cc_nunique);
+                for (Size i = 0; i < cc_nunique; ++i) {
+                  cc_mats_unique[i] = cc_mats_sorted[i];
+                }
+                // Create a vector with the face ids for each material
+                Vector<Vector<I>> cc_mats_split(cc_nunique);
+                for (Size i = 0; i < cc_nfaces; ++i) {
+                  I const mat_id = cc_mats[i];
+                  auto * mat_it = std::find(cc_mats_unique.begin(), cc_mats_unique.end(), mat_id);
+                  Size const mat_idx = static_cast<Size>(mat_it - cc_mats_unique.begin());
+                  cc_mats_split[mat_idx].push_back(i);
+                }
+                // add each material elset
+                for (Size i = 0; i < cc_nunique; ++i) {
+                  I const mat_id = cc_mats_unique[i];
+                  Vector<I> const & mat_faces = cc_mats_split[i];
+                  String const mat_name = "Material_" + String(materials[mat_id].name.data());
+                  soup.addElset(mat_name, mat_faces);
+                }
+
+                if (write_kn) {
+                  Vector<I> all_faces(cc_nfaces);
+                  um2::iota(all_faces.begin(), all_faces.end(), 0);
+                  soup.addElset("Knudsen_Max", all_faces, cc_kns_max[cell_id]);
+                  soup.addElset("Knudsen_Mean", all_faces, cc_kns_mean[cell_id]);
+                }
+                
+                // Shift the mesh to global coordinates
+                Point2<T> const xy_offset = cell_ll + rtm_ll + asy_ll;
+                Point3<T> const shift = Point3<T>(xy_offset[0], xy_offset[1], lat_z);
+                soup.translate(shift);
+                soup.writeXDMFUniformGrid(cell_name, material_names, xrtm_grid, h5file,
+                                          h5filename, h5rtm_grouppath); 
+
+              } // for (ixcell)
+            } // for (iycell)
+          } // for (ixrtm)
+        } // for (iyrtm)
+      } // for (izlat)
+    }  // for (ixasy)
+  } // for (iyasy)      
+
+  // Write the XML file
+  xdoc.save_file(filepath.c_str(), "  ");
+
+  // Close the HDF5 file
+  h5file.close();
+} // writeXDMF
+
+//==============================================================================
+// write
+//==============================================================================
+
+template <std::floating_point T, std::integral I>
+void
+SpatialPartition<T, I>::write(String const & filename, bool write_kn) const
+{
+  if (filename.ends_with(".xdmf")) {
+    writeXDMF(filename, write_kn);
+  } else {
+    Log::error("Unsupported file format.");
+  }
 }
 
 } // namespace um2::mpact

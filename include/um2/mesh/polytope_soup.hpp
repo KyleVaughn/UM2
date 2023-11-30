@@ -128,6 +128,9 @@ public:
   sortElsets();
 
   void
+  translate(Vec3<T> const & v);
+
+  void
   write(String const & filename) const;
 
   //==============================================================================
@@ -530,6 +533,20 @@ PolytopeSoup<T, I>::sortElsets()
   _elset_offsets = um2::move(elset_offsets);
   _elset_ids = um2::move(elset_ids);
   _elset_data = um2::move(elset_data);
+}
+
+//==============================================================================
+// translate
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+void
+PolytopeSoup<T, I>::translate(Vec3<T> const & v)
+{
+  for (auto & vertex : _vertices) {
+    // cppcheck-suppress useStlAlgorithm;
+    vertex += v;
+  }
 }
 
 //==============================================================================
@@ -1033,7 +1050,7 @@ PolytopeSoup<T, I>::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5grou
       if (topo_type == -1) {
         Log::error("Unsupported polytope type");
       }
-      topology[topo_ctr] = static_cast<I>(static_cast<unsigned int>(topo_type));
+      topology[topo_ctr] = static_cast<I>(static_cast<uint32_t>(topo_type));
       auto const offset = static_cast<Size>(_element_offsets[i]);
       auto const npts = static_cast<Size>(_element_offsets[i + 1] - _element_offsets[i]);
       for (Size j = 0; j < npts; ++j) {
@@ -1264,7 +1281,7 @@ PolytopeSoup<T, I>::writeXDMF(String const & filepath) const
 
   // Add a uniform grid
   String const h5path;
-  String const name = "UM2_mesh";
+  String const name = h5filename.substr(0, h5filename.size() - 3);
   writeXDMFUniformGrid(name, material_names, xdomain, h5file, h5filename, h5path);
 
   // Write the XML file
@@ -1409,7 +1426,7 @@ addElementsToMesh(Size const num_elements, String const & topology_type,
         num_vertices = npoints;
       }
       for (Size j = 0; j < npoints; ++j) {
-        conn[j] = static_cast<I>(static_cast<unsigned int>(data_vec[position + j + 1]));
+        conn[j] = static_cast<I>(static_cast<uint32_t>(data_vec[position + j + 1]));
       }
       position += npoints + 1;
       soup.addElement(elem_type, conn);

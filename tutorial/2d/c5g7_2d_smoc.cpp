@@ -183,9 +183,10 @@ main() -> int
     )");
   model.stdMakeCore(core_assembly_ids);
 
-  um2::PolytopeSoup<double, int> soup;
-  model.toPolytopeSoup(soup, /*write_kn=*/true);
-  soup.write("c5g7.xdmf");
+  // um2::PolytopeSoup<double, int> soup;
+  // model.toPolytopeSoup(soup, /*write_kn=*/true);
+  // soup.write("c5g7.xdmf");
+  model.write("c5g7.xdmf", /*write_kn=*/true);
   um2::finalize();
   return 0;
 }

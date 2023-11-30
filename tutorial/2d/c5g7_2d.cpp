@@ -214,17 +214,17 @@ main() -> int
 
   um2::gmsh::write("c5g7.inp");
   model.importCoarseCells("c5g7.inp");
-  model.materials[6].xs.t = uo2_xs;
-  model.materials[2].xs.t = mox43_xs;
-  model.materials[3].xs.t = mox70_xs;
-  model.materials[4].xs.t = mox87_xs;
-  model.materials[0].xs.t = fiss_chamber_xs;
-  model.materials[1].xs.t = guide_tube_xs;
-  model.materials[5].xs.t = moderator_xs;
-  um2::PolytopeSoup<double, int> soup;
-  model.toPolytopeSoup(soup, /*write_kn=*/true);
-  soup.write("c5g7.xdmf");
-  //  um2::exportMesh("c5g7.xdmf", model);
+  // model.materials[6].xs.t = uo2_xs;
+  // model.materials[2].xs.t = mox43_xs;
+  // model.materials[3].xs.t = mox70_xs;
+  // model.materials[4].xs.t = mox87_xs;
+  // model.materials[0].xs.t = fiss_chamber_xs;
+  // model.materials[1].xs.t = guide_tube_xs;
+  // model.materials[5].xs.t = moderator_xs;
+  // um2::PolytopeSoup<double, int> soup;
+  // model.toPolytopeSoup(soup, /*write_kn=*/true);
+  // soup.write("c5g7.xdmf");
+  model.write("c5g7.xdmf");
   um2::finalize();
   return 0;
 }

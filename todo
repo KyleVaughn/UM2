@@ -14,7 +14,7 @@ add approximately convex routine for quadrilateral
   -> meanchordlength
 
 
-
+make spatial partition a class
 
 
 std::vector insert
