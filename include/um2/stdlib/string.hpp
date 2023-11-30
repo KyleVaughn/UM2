@@ -11,7 +11,6 @@
 
 // clang-tidy does poorly with conditional deletions and claims there are leaks.
 // Valgrind shows no leaks.
-// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
 
 namespace um2
 {
@@ -831,4 +830,3 @@ operator+(char const (&l)[N], String const & r) noexcept -> String
 }
 
 } // namespace um2
-// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)

@@ -46,7 +46,7 @@
 //    32-bit integer arithmetic. This means that the increased memory bandwidth
 //    required to load/store 64-bit integers plays a non-trivial role in the
 //    performance difference between 32-bit and 64-bit integers. However,
-//    I would expect this different to be less that the 69%-76% reported here.
+//    I would expect this difference to be less that the 69%-76% reported here.
 //
 // Conclusions:
 // ------------

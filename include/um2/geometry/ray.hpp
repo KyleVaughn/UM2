@@ -19,6 +19,7 @@ struct Ray {
       : o(origin),
         d(direction)
   {
+    // Check that the direction is a unit vector
     ASSERT(um2::abs(direction.squaredNorm() - static_cast<T>(1)) < static_cast<T>(1e-5));
   }
 

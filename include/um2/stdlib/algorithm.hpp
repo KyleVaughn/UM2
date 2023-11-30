@@ -36,7 +36,7 @@ CONST HOSTDEV constexpr auto clamp(T v, T lo, T hi) noexcept -> T
 #ifndef __CUDA_ARCH__
 
 // gcc seems to have a bug that causes it to generate a call to memmove that
-// is out of bounds when using -O3. This is a workaround.
+// is out of bounds when using std::copy with -O3. This is a workaround.
 template <typename InputIt, typename OutputIt>
 HOST constexpr auto
 copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
@@ -53,7 +53,6 @@ copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 // HOST constexpr auto
 // copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 //{
-//   // NOLINTNEXTLINE
 //   return std::copy(first, last, d_first);
 // }
 

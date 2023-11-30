@@ -1,19 +1,23 @@
+Currently working through polygon/geometry
+
+NOLINTS, cppcheck, diagnostic
 ADD TRACE statements to routines
 
+Check that no pure functions invoke the logger
+
+to_vecvec with Vector
+
+
+isApproxConvex
 add approximately convex routine for quadrilateral
   -> area
   -> meanchordlength
 
-String -> Check that N is correct for constructors
-Replace allocate and copy with macro
-deal with HOSTDEV constexpr String(char const * s, Size n) noexcept;
 
-Pick up at +=
+
+
 
 std::vector insert
-
-
-Change valgrind to be optional
 
 old benchmarks to archive
 

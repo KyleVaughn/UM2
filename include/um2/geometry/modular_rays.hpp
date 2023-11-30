@@ -94,7 +94,7 @@ getModularRayParams(T const a, T const s, AxisAlignedBox2<T> const box)
   // Effective angle to ensure cyclic rays
   T const a_eff = um2::atan(res.spacing[1] / res.spacing[0]);
   res.direction[0] = um2::cos(a_eff);
-  if (a > pi<T> / 2) {
+  if (a > pi_2<T>) {
     res.direction[0] *= -1;
   }
   res.direction[1] = um2::sin(a_eff);
