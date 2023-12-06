@@ -54,6 +54,7 @@ variance(T const * begin, T const * end) -> T
 {
   ASSERT_ASSUME(begin != end);
   T const n_minus_1 = static_cast<T>(end - begin - 1);
+  ASSERT(n_minus_1 > 0);
   auto const xbar = um2::mean(begin, end);
   T result = static_cast<T>(0);
   while (begin != end) {

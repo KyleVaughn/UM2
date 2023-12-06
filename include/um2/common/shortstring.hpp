@@ -17,9 +17,8 @@ namespace um2
 //
 // A stack allocated string that can hold up to 31 characters.
 
-struct ShortString {
+class ShortString {
 
-private:
   char _c[32];
   // data[31] is used to store the remaining capacity of the string.
   // In the event that the array is full, data[31] will be 0, a null terminator.
@@ -97,7 +96,7 @@ public:
   HOSTDEV [[nodiscard]] constexpr auto
   compare(ShortString const & s) const noexcept -> int;
 
-}; // struct ShortString
+}; // class ShortString
 
 //==============================================================================
 // Constructors
@@ -257,7 +256,7 @@ HOSTDEV constexpr auto
 ShortString::operator[](Size const i) noexcept -> char &
 {
   ASSERT_ASSUME(0 <= i);
-  ASSERT_ASSUME(i < size());
+  ASSERT(i < size());
   return _c[i];
 }
 
@@ -265,7 +264,7 @@ HOSTDEV constexpr auto
 ShortString::operator[](Size const i) const noexcept -> char const &
 {
   ASSERT_ASSUME(0 <= i);
-  ASSERT_ASSUME(i < size());
+  ASSERT(i < size());
   return _c[i];
 }
 

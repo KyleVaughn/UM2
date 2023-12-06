@@ -14,10 +14,12 @@ namespace um2
 template <Size D, typename T>
 // clang-tidy complaing about '__i0' in the name of the struct
 // NOLINTNEXTLINE justified above
-struct RectilinearGrid {
+class RectilinearGrid {
 
   // Divisions along each axis
-  Vector<T> divs[D];
+  Vector<T> _divs[D];
+
+public:
 
   //==============================================================================
   // Constructors
@@ -36,6 +38,12 @@ struct RectilinearGrid {
   //==============================================================================
   // Methods
   //==============================================================================
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  divs(Size i) noexcept -> Vector<T> &;
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  divs(Size i) const noexcept -> Vector<T> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   xMin() const noexcept -> T;
@@ -121,7 +129,7 @@ template <Size D, typename T>
 constexpr RectilinearGrid<D, T>::RectilinearGrid(AxisAlignedBox<D, T> const & box)
 {
   for (Size i = 0; i < D; ++i) {
-    divs[i] = {box.minima[i], box.maxima[i]};
+    _divs[i] = {box.minima[i], box.maxima[i]};
     ASSERT(box.minima[i] < box.maxima[i]);
   }
 }
@@ -130,44 +138,44 @@ template <Size D, typename T>
 constexpr RectilinearGrid<D, T>::RectilinearGrid(
     Vector<AxisAlignedBox<D, T>> const & boxes)
 {
-  // Create divs by finding the unique planar divisions
+  // Create _divs by finding the unique planar divisions
   T constexpr eps = eps_distance<T>;
   for (Size i = 0; i < boxes.size(); ++i) {
     AxisAlignedBox<D, T> const & box = boxes[i];
     for (Size d = 0; d < D; ++d) {
       bool min_found = false;
-      for (Size j = 0; j < divs[d].size(); ++j) {
-        if (std::abs(divs[d][j] - box.minima[d]) < eps) {
+      for (Size j = 0; j < _divs[d].size(); ++j) {
+        if (std::abs(_divs[d][j] - box.minima[d]) < eps) {
           min_found = true;
           break;
         }
       }
       if (!min_found) {
-        this->divs[d].emplace_back(box.minima[d]);
+        this->_divs[d].emplace_back(box.minima[d]);
       }
       bool max_found = false;
-      for (Size j = 0; j < divs[d].size(); ++j) {
-        if (std::abs(divs[d][j] - box.maxima[d]) < eps) {
+      for (Size j = 0; j < _divs[d].size(); ++j) {
+        if (std::abs(_divs[d][j] - box.maxima[d]) < eps) {
           max_found = true;
           break;
         }
       }
       if (!max_found) {
-        this->divs[d].emplace_back(box.maxima[d]);
+        this->_divs[d].emplace_back(box.maxima[d]);
       }
     }
   }
   // We now have the unique divisions for each dimension. Sort them.
   for (Size i = 0; i < D; ++i) {
-    std::sort(divs[i].begin(), divs[i].end());
+    std::sort(_divs[i].begin(), _divs[i].end());
   }
   // Ensure that the boxes completely cover the grid
-  // all num_divs >= 2
-  // n = ∏(num_divs[i] - 1)
+  // all num__divs >= 2
+  // n = ∏(num__divs[i] - 1)
   Size ncells_total = 1;
   for (Size i = 0; i < D; ++i) {
-    ASSERT(divs[i].size() >= 2);
-    ncells_total *= divs[i].size() - 1;
+    ASSERT(_divs[i].size() >= 2);
+    ncells_total *= _divs[i].size() - 1;
   }
   ASSERT(ncells_total == boxes.size());
 }
@@ -211,10 +219,30 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<Vec2<T>> const & dxdy,
 //==============================================================================
 
 template <Size D, typename T>
+HOSTDEV constexpr auto
+RectilinearGrid<D, T>::divs(Size i) noexcept -> Vector<T> &
+{
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < D);
+  // cppcheck-suppress arrayIndexOutOfBoundsCond; justification: this is correct
+  return _divs[i];
+}
+
+template <Size D, typename T>
+HOSTDEV constexpr auto
+RectilinearGrid<D, T>::divs(Size i) const noexcept -> Vector<T> const &
+{
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < D);
+  // cppcheck-suppress arrayIndexOutOfBoundsCond; justification: this is correct
+  return _divs[i];
+}
+
+template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 RectilinearGrid<D, T>::xMin() const noexcept -> T
 {
-  return divs[0].front();
+  return _divs[0].front();
 }
 
 template <Size D, typename T>
@@ -222,7 +250,7 @@ PURE HOSTDEV constexpr auto
 RectilinearGrid<D, T>::yMin() const noexcept -> T
 {
   static_assert(2 <= D);
-  return divs[1].front();
+  return _divs[1].front();
 }
 
 template <Size D, typename T>
@@ -230,7 +258,7 @@ PURE HOSTDEV constexpr auto
 RectilinearGrid<D, T>::zMin() const noexcept -> T
 {
   static_assert(3 <= D);
-  return divs[2].front();
+  return _divs[2].front();
 }
 
 template <Size D, typename T>
@@ -239,7 +267,7 @@ RectilinearGrid<D, T>::minima() const noexcept -> Vec<D, T>
 {
   Vec<D, T> mins;
   for (Size i = 0; i < D; ++i) {
-    mins[i] = divs[i].front();
+    mins[i] = _divs[i].front();
   }
   return mins;
 }
@@ -248,7 +276,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 RectilinearGrid<D, T>::xMax() const noexcept -> T
 {
-  return divs[0].back();
+  return _divs[0].back();
 }
 
 template <Size D, typename T>
@@ -256,7 +284,7 @@ PURE HOSTDEV constexpr auto
 RectilinearGrid<D, T>::yMax() const noexcept -> T
 {
   static_assert(2 <= D);
-  return divs[1].back();
+  return _divs[1].back();
 }
 
 template <Size D, typename T>
@@ -264,7 +292,7 @@ PURE HOSTDEV constexpr auto
 RectilinearGrid<D, T>::zMax() const noexcept -> T
 {
   static_assert(3 <= D);
-  return divs[2].back();
+  return _divs[2].back();
 }
 
 template <Size D, typename T>
@@ -273,7 +301,7 @@ RectilinearGrid<D, T>::maxima() const noexcept -> Vec<D, T>
 {
   Vec<D, T> maxs;
   for (Size i = 0; i < D; ++i) {
-    maxs[i] = divs[i].back();
+    maxs[i] = _divs[i].back();
   }
   return maxs;
 }
@@ -283,7 +311,7 @@ PURE HOSTDEV constexpr auto
 RectilinearGrid<D, T>::numXCells() const noexcept -> Size
 {
   static_assert(1 <= D);
-  return divs[0].size() - 1;
+  return _divs[0].size() - 1;
 }
 
 template <Size D, typename T>
@@ -291,7 +319,7 @@ PURE HOSTDEV constexpr auto
 RectilinearGrid<D, T>::numYCells() const noexcept -> Size
 {
   static_assert(2 <= D);
-  return divs[1].size() - 1;
+  return _divs[1].size() - 1;
 }
 
 template <Size D, typename T>
@@ -299,7 +327,7 @@ PURE HOSTDEV constexpr auto
 RectilinearGrid<D, T>::numZCells() const noexcept -> Size
 {
   static_assert(3 <= D);
-  return divs[2].size() - 1;
+  return _divs[2].size() - 1;
 }
 
 template <Size D, typename T>
@@ -308,7 +336,7 @@ RectilinearGrid<D, T>::numCells() const noexcept -> Vec<D, Size>
 {
   Vec<D, Size> num_cells;
   for (Size i = 0; i < D; ++i) {
-    num_cells[i] = divs[i].size() - 1;
+    num_cells[i] = _divs[i].size() - 1;
   }
   return num_cells;
 }
@@ -341,7 +369,7 @@ HOSTDEV constexpr void
 RectilinearGrid<D, T>::clear() noexcept
 {
   for (Size i = 0; i < D; ++i) {
-    divs[i].clear();
+    _divs[i].clear();
   }
 }
 
@@ -360,12 +388,12 @@ PURE HOSTDEV constexpr auto RectilinearGrid<D, T>::getBox(Args... args) const no
 {
   Point<D, Size> const index{args...};
   for (Size i = 0; i < D; ++i) {
-    ASSERT(index[i] + 1 < divs[i].size());
+    ASSERT(index[i] + 1 < _divs[i].size());
   }
   AxisAlignedBox<D, T> result;
   for (Size i = 0; i < D; ++i) {
-    result.minima[i] = divs[i][index[i]];
-    result.maxima[i] = divs[i][index[i] + 1];
+    result.minima[i] = _divs[i][index[i]];
+    result.maxima[i] = _divs[i][index[i] + 1];
   }
   return result;
 }

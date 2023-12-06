@@ -3,6 +3,7 @@
 #include <um2/common/sort.hpp> // insertionSort
 #include <um2/geometry/dion.hpp>
 #include <um2/geometry/modular_rays.hpp>
+#include <um2/common/log.hpp>
 
 //==============================================================================
 // Polygon
@@ -145,6 +146,20 @@ isConvex(Quadrilateral2<T> const & q) noexcept -> bool
   bool const b1 = areCCW(q[1], q[2], q[3]);
   bool const b2 = areCCW(q[2], q[3], q[0]);
   bool const b3 = areCCW(q[3], q[0], q[1]);
+  return b0 && b1 && b2 && b3;
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+isApproxConvex(Quadrilateral2<T> const & q) noexcept -> bool
+{
+  // Benchmarking shows it is faster to compute the areCCW() test for each
+  // edge, then return based on the AND of the results, rather than compute
+  // the areCCW one at a time and return as soon as one is false.
+  bool const b0 = areApproxCCW(q[0], q[1], q[2]);
+  bool const b1 = areApproxCCW(q[1], q[2], q[3]);
+  bool const b2 = areApproxCCW(q[2], q[3], q[0]);
+  bool const b3 = areApproxCCW(q[3], q[0], q[1]);
   return b0 && b1 && b2 && b3;
 }
 
@@ -464,7 +479,7 @@ template <typename T>
 PURE HOSTDEV constexpr auto
 area(Quadrilateral2<T> const & q) noexcept -> T
 {
-  //  ASSERT(isConvex(q));
+  ASSERT(isApproxConvex(q));
   // (v2 - v0).cross(v3 - v1) / 2
   Vec2<T> const v20 = q[2] - q[0];
   Vec2<T> const v31 = q[3] - q[1];
@@ -563,7 +578,7 @@ centroid(Quadrilateral2<T> const & quad) noexcept -> Point2<T>
   // compute the centroid of each triangle. The centroid of the
   // quadrilateral is the weighted average of the centroids of the
   // two triangles, where the weights are the areas of the triangles.
-  ASSERT(isConvex(quad));
+  ASSERT(isApproxConvex(quad));
   // If the quadrilateral is not convex, then we need to choose the correct
   // two triangles to decompose the quadrilateral into. If the quadrilateral
   // is convex, any two triangles will do.
@@ -779,7 +794,7 @@ template <typename T>
 PURE HOSTDEV constexpr auto
 meanChordLength(Quadrilateral2<T> const & quad) noexcept -> T
 {
-  //  ASSERT(isConvex(quad));
+  ASSERT(isApproxConvex(quad));
   return pi<T> * area(quad) / perimeter(quad);
 }
 
@@ -818,23 +833,31 @@ meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
     // For the angle and complementary angle
     for (Size ip = 0; ip < 2; ++ip) {
       if (ip == 1) {
-        params.direction[0] *= -1;
+        params.direction[0] = -params.direction[0];
       }
       // For each ray
       for (Size i = 0; i < num_rays; ++i) {
         auto const ray = params.getRay(i);
         auto intersections = intersect(p, ray);
         um2::insertionSort(intersections.begin(), intersections.end());
-        // Get the number of intersections
+//        if (intersections[0] < 0) {
+//          ASSERT(intersections[0] > -um2::eps_distance2<T>);
+//          ASSERT(intersections[1] > 0);
+//          // If the first intersection is negative, it better be -0
+//          intersections[0] = 0;
+//        }
         auto p0 = ray(intersections[0]);
         for (Size j = 0; j < intersections.size() - 1; ++j) {
-          auto const p1 = ray(intersections[j + 1]);
-          T const len = p0.distanceTo(p1);
-          if (0 < len && len < um2::inf_distance<T> / 10) {
+          T const r1 = intersections[j + 1];
+          // A miss is indicated with inf_distance. We use a smaller value to avoid
+          // numerical issues.
+          if (r1 < um2::inf_distance<T> / 10) {
+            auto const p1 = ray(r1);
+            T const len = p0.distanceTo(p1);
+            p0 = p1;
             total_length += len;
             total_chords += 1;
           }
-          p0 = p1;
         }
       }
     }

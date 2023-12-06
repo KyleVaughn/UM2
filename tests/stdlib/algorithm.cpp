@@ -156,6 +156,20 @@ TEST_CASE(maxmin_float)
   ASSERT_NEAR(um2::max(0.0F, 0.0F), 0.0F, 1e-6F);
 }
 
+//=============================================================================
+// max_element
+//=============================================================================
+
+HOSTDEV
+TEST_CASE(max_element_int)
+{
+  int a[10] = {0, 1, 2, 3, 4, 5, 6, 7, 9, 8};
+  ASSERT(um2::max_element(&a[0], &a[0] + 10) == &a[8]);
+
+  int b[10] = {0, 2, 4, 3, 4, 5, 9, 9, 7, 8};
+  ASSERT(um2::max_element(&b[0], &b[0] + 10) == &b[6]);
+}
+
 #if UM2_USE_CUDA
 MAKE_CUDA_KERNEL(clamp_int);
 MAKE_CUDA_KERNEL(clamp_float);
@@ -169,6 +183,8 @@ MAKE_CUDA_KERNEL(is_sorted_int);
 
 MAKE_CUDA_KERNEL(maxmin_int);
 MAKE_CUDA_KERNEL(maxmin_float);
+
+MAKE_CUDA_LAUNCHER(max_element_int);
 #endif
 
 TEST_SUITE(clamp)
@@ -193,6 +209,8 @@ TEST_SUITE(maxmin)
   TEST_HOSTDEV(maxmin_float);
 }
 
+TEST_SUITE(max_element) { TEST_HOSTDEV(max_element_int); }
+
 auto
 main() -> int
 {
@@ -201,6 +219,7 @@ main() -> int
   RUN_SUITE(fill);
   RUN_SUITE(is_sorted);
   RUN_SUITE(maxmin);
+  RUN_SUITE(max_element);
   return 0;
 }
 

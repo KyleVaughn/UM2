@@ -4,12 +4,12 @@
 
 #include <algorithm>
 
-// Contains:
 //  clamp
 //  copy
 //  fill
 //  is_sorted
 //  max
+//  max_element
 //  min
 
 namespace um2
@@ -176,6 +176,46 @@ max(T x, T y) noexcept -> T
 }
 
 #endif
+
+//==============================================================================
+// max_element
+//==============================================================================
+
+// NOLINTBEGIN(readability-identifier-naming) justification: match std::max_element
+#ifndef __CUDA_ARCH__
+
+template <typename ForwardIt>
+CONST HOST constexpr auto
+max_element(ForwardIt first, ForwardIt last) noexcept -> ForwardIt
+{
+  return std::max_element(first, last);
+}
+
+#else
+
+template <typename ForwardIt>
+CONST DEVICE constexpr auto
+max_element(ForwardIt first, ForwardIt last) noexcept -> ForwardIt
+{
+  if (first == last) {
+    return last;
+  }
+
+  auto largest = first;
+  ++first;
+
+  while (first != last) {
+    if (*largest < *first) {
+      largest = first;
+    }
+    ++first;
+  }
+
+  return largest;
+}
+
+#endif
+// NOLINTEND(readability-identifier-naming)
 
 //==============================================================================
 // min

@@ -14,11 +14,11 @@ namespace um2
 // This struct is used for VERY small matrices, where the matrix size is known
 // at compile time. The matrix is stored in column-major order.
 //
-// Anything beyond very small matrices should be done using something like
+// Anything larger than a very small matrix handled using something like
 // OpenBLAS, cuBLAS, Eigen, etc. We currently only use this for 2x2 and 3x3.
 
 template <Size M, Size N, typename T>
-struct Mat {
+class Mat {
 
   using Col = Vec<M, T>;
 
@@ -27,7 +27,9 @@ struct Mat {
   // 1 4
   // 2 5
 
-  Col cols[N];
+  Col _cols[N];
+
+public:
 
   //==============================================================================
   // Accessors
@@ -53,7 +55,7 @@ struct Mat {
 
   template <std::same_as<Col>... Cols>
     requires(sizeof...(Cols) == N)
-  HOSTDEV constexpr explicit Mat(Cols... in_cols) noexcept;
+  HOSTDEV constexpr explicit Mat(Cols... cols) noexcept;
 };
 
 //==============================================================================
@@ -74,16 +76,20 @@ template <Size M, Size N, typename T>
 PURE HOSTDEV constexpr auto
 Mat<M, N, T>::col(Size i) noexcept -> typename Mat<M, N, T>::Col &
 {
+  ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  return cols[i];
+  // cppcheck-suppress arrayIndexOutOfBoundsCond; justification: this is correct
+  return _cols[i];
 }
 
 template <Size M, Size N, typename T>
 PURE HOSTDEV constexpr auto
 Mat<M, N, T>::col(Size i) const noexcept -> typename Mat<M, N, T>::Col const &
 {
+  ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  return cols[i];
+  // cppcheck-suppress arrayIndexOutOfBoundsCond; justification: this is correct
+  return _cols[i];
 }
 
 template <Size M, Size N, typename T>
@@ -94,7 +100,7 @@ Mat<M, N, T>::operator()(Size i, Size j) noexcept -> T &
   ASSERT_ASSUME(0 <= j);
   ASSERT_ASSUME(i < M);
   ASSERT_ASSUME(j < N);
-  return cols[j][i];
+  return _cols[j][i];
 }
 
 template <Size M, Size N, typename T>
@@ -105,7 +111,7 @@ Mat<M, N, T>::operator()(Size i, Size j) const noexcept -> T const &
   ASSERT_ASSUME(0 <= j);
   ASSERT_ASSUME(i < M);
   ASSERT_ASSUME(j < N);
-  return cols[j][i];
+  return _cols[j][i];
 }
 
 //==============================================================================
@@ -116,8 +122,8 @@ Mat<M, N, T>::operator()(Size i, Size j) const noexcept -> T const &
 template <Size M, Size N, typename T>
 template <std::same_as<Vec<M, T>>... Cols>
   requires(sizeof...(Cols) == N)
-HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... in_cols) noexcept
-    : cols{in_cols...}
+HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... cols) noexcept
+    : _cols{cols...}
 {
 }
 

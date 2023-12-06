@@ -110,6 +110,7 @@ template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
 Dion<P, N, D, T>::operator[](Size i) noexcept -> Point<D, T> &
 {
+  ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
   return v[i];
 }
@@ -118,6 +119,7 @@ template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
 Dion<P, N, D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
 {
+  ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
   return v[i];
 }
@@ -465,7 +467,6 @@ length(QuadraticSegment<D, T> const & q) noexcept -> T
   for (Size i = 0; i < D; ++i) {
     A[i] = -2 * (v13[i] + v23[i]);
   }
-  // Move computation of B to after exit.
 
   // ‖Q′(r)‖ =  √(4(A ⋅A)r² + 4(A ⋅B)r + B ⋅B) = √(ar² + br + c)
   // where

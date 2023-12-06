@@ -13,6 +13,8 @@ template <typename T>
 HOSTDEV constexpr void
 insertionSort(T * const first, T const * const last)
 {
+  // Not the clearest implementation, but the assembly is much better than
+  // the obvious implementation.
   if (first == last) {
     return;
   }

@@ -23,25 +23,29 @@ struct ModularRayParams {
     // Angle < π/2
     //
     // i < nx (Case 0)
+    // Moving from x_max to x_min along x-axis
     // x0 = x_max - (i + 0.5) * dx
     // y0 = y_min
     //
     // i >= nx (Case 1)
+    // Moving from y_min to y_max along y-axis
     // x0 = x_min
     // y0 = y_min + (i - nx + 0.5) * dy
     //
     // Angle > π/2
     //
     // i < ny (Case 2)
+    // Moving from x_min to x_max along x-axis
     // x0 = x_min + (i + 0.5) * dx
     // y0 = y_min
     //
     // i >= ny (Case 3)
+    // Moving from y_min to y_max along y-axis
     // x0 = x_max
     // y0 = y_min + (i - ny + 0.5) * dy
     ASSERT_ASSUME(i < num_rays[0] + num_rays[1]);
-    int case_id = i < num_rays[0] ? 0 : 1;
-    case_id += direction[0] < 0 ? 2 : 0;
+    int case_id = (i < num_rays[0]) ? 0 : 1;
+    case_id += (direction[0] < 0) ? 2 : 0;
     Ray2<T> res(box.minima, direction);
     switch (case_id) {
     case 0:
@@ -95,7 +99,7 @@ getModularRayParams(T const a, T const s, AxisAlignedBox2<T> const box)
   T const a_eff = um2::atan(res.spacing[1] / res.spacing[0]);
   res.direction[0] = um2::cos(a_eff);
   if (a > pi_2<T>) {
-    res.direction[0] *= -1;
+    res.direction[0] = -res.direction[0];
   }
   res.direction[1] = um2::sin(a_eff);
 

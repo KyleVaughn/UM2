@@ -4,7 +4,6 @@
 
 #include <type_traits>
 
-// Contains:
 //  forward
 //  move
 //  swap

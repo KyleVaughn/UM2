@@ -1,13 +1,12 @@
 #include <um2/geometry/morton_sort_points.hpp>
 #include <um2/stdlib/vector.hpp>
 
-#include <random>
-
 #include "../test_macros.hpp"
 
 template <std::unsigned_integral U, std::floating_point T>
 TEST_CASE(mortonSort2D)
 {
+  // Map a 4 by 4 grid of points to the unit square and sort them by Morton code.
   um2::Vector<um2::Point2<T>> points(16);
   for (Size i = 0; i < 4; ++i) {
     for (Size j = 0; j < 4; ++j) {
@@ -36,6 +35,7 @@ TEST_CASE(mortonSort2D)
 template <std::unsigned_integral U, std::floating_point T>
 TEST_CASE(mortonSort3D)
 {
+  // Map a 4 by 4 by 4 grid of points to the unit cube and sort them by Morton code.
   um2::Vector<um2::Point3<T>> points(64);
   for (Size i = 0; i < 4; ++i) {
     for (Size j = 0; j < 4; ++j) {
@@ -45,9 +45,6 @@ TEST_CASE(mortonSort3D)
       }
     }
   }
-  std::random_device rd;
-  std::mt19937 g(rd());
-  std::shuffle(points.begin(), points.end(), g);
   um2::mortonSort<U>(points.begin(), points.end());
   ASSERT(um2::isApprox(points[0], um2::Point3<T>(0, 0, 0) / 3));
   ASSERT(um2::isApprox(points[1], um2::Point3<T>(1, 0, 0) / 3));

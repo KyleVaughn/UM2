@@ -14,7 +14,7 @@ namespace um2
 // Little endian: 0xAABBGGRR
 // Common colors are defined in the .inl file
 
-struct Color {
+class Color {
 
   struct RGBA {
     uint8_t r, g, b, a;
@@ -27,8 +27,9 @@ struct Color {
     };
   };
 
-  Rep rep;
+  Rep _rep;
 
+public:
   //==============================================================================
   // Constructors
   //==============================================================================
@@ -62,6 +63,12 @@ struct Color {
 
   HOSTDEV [[nodiscard]] constexpr auto
   a() const noexcept -> uint8_t;
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  u32() const noexcept -> uint32_t
+  {
+    return _rep.u32;
+  }
 };
 
 //==============================================================================
@@ -79,25 +86,25 @@ toColor(ShortString const & name) noexcept -> Color;
 
 HOSTDEV constexpr Color::Color() noexcept
 {
-  rep.u32 = 0xFF000000; // 0xAAGGBBRR
+  _rep.u32 = 0xFF000000; // 0xAAGGBBRR
 }
 
 template <std::integral I>
 HOSTDEV constexpr Color::Color(I r_in, I g_in, I b_in, I a_in) noexcept
 {
-  rep.rgba.r = static_cast<uint8_t>(r_in);
-  rep.rgba.g = static_cast<uint8_t>(g_in);
-  rep.rgba.b = static_cast<uint8_t>(b_in);
-  rep.rgba.a = static_cast<uint8_t>(a_in);
+  _rep.rgba.r = static_cast<uint8_t>(r_in);
+  _rep.rgba.g = static_cast<uint8_t>(g_in);
+  _rep.rgba.b = static_cast<uint8_t>(b_in);
+  _rep.rgba.a = static_cast<uint8_t>(a_in);
 }
 
 template <std::floating_point T>
 HOSTDEV constexpr Color::Color(T r_in, T g_in, T b_in, T a_in) noexcept
 {
-  rep.rgba.r = static_cast<uint8_t>(r_in * 255);
-  rep.rgba.g = static_cast<uint8_t>(g_in * 255);
-  rep.rgba.b = static_cast<uint8_t>(b_in * 255);
-  rep.rgba.a = static_cast<uint8_t>(a_in * 255);
+  _rep.rgba.r = static_cast<uint8_t>(r_in * 255);
+  _rep.rgba.g = static_cast<uint8_t>(g_in * 255);
+  _rep.rgba.b = static_cast<uint8_t>(b_in * 255);
+  _rep.rgba.a = static_cast<uint8_t>(a_in * 255);
 }
 
 HOSTDEV constexpr Color::Color(ShortString const & name) noexcept
@@ -113,25 +120,25 @@ HOSTDEV constexpr Color::Color(ShortString const & name) noexcept
 HOSTDEV constexpr auto
 Color::r() const noexcept -> uint8_t
 {
-  return rep.rgba.r;
+  return _rep.rgba.r;
 }
 
 HOSTDEV constexpr auto
 Color::g() const noexcept -> uint8_t
 {
-  return rep.rgba.g;
+  return _rep.rgba.g;
 }
 
 HOSTDEV constexpr auto
 Color::b() const noexcept -> uint8_t
 {
-  return rep.rgba.b;
+  return _rep.rgba.b;
 }
 
 HOSTDEV constexpr auto
 Color::a() const noexcept -> uint8_t
 {
-  return rep.rgba.a;
+  return _rep.rgba.a;
 }
 
 //==============================================================================
@@ -141,7 +148,7 @@ Color::a() const noexcept -> uint8_t
 CONST HOSTDEV constexpr auto
 operator==(Color const lhs, Color const rhs) noexcept -> bool
 {
-  return lhs.rep.u32 == rhs.rep.u32;
+  return lhs.u32() == rhs.u32();
 }
 
 CONST HOSTDEV constexpr auto

@@ -26,16 +26,21 @@ namespace um2
 //  * is where grid.minima is located
 
 template <Size D, typename T, typename P>
-struct RectilinearPartition {
+class RectilinearPartition {
 
-  RectilinearGrid<D, T> grid;
-  Vector<P> children;
+  RectilinearGrid<D, T> _grid;
+  Vector<P> _children;
+
+public:
 
   //==============================================================================
   // Constructors
   //==============================================================================
 
   constexpr RectilinearPartition() noexcept = default;
+
+  constexpr RectilinearPartition(RectilinearGrid<D, T> const & grid,
+                                 Vector<P> const & children) noexcept;
 
   // dydy and an array of IDs, mapping to the dxdy
   constexpr RectilinearPartition(Vector<Vec2<T>> const & dxdy,
@@ -44,6 +49,12 @@ struct RectilinearPartition {
   //==============================================================================
   // Methods
   //==============================================================================
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  grid() const noexcept -> RectilinearGrid<D, T> const &;
+  
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  children() const noexcept -> Vector<P> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   xMin() const noexcept -> T;
@@ -158,18 +169,25 @@ using RectilinearPartition3d = RectilinearPartition3<double, P>;
 
 template <Size D, typename T, typename P>
 constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
+    RectilinearGrid<D, T> const & grid, Vector<P> const & children) noexcept
+    : _grid(grid), _children(children)
+{
+}
+
+template <Size D, typename T, typename P>
+constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
     Vector<Vec2<T>> const & dxdy, Vector<Vector<Size>> const & ids)
-    : grid(dxdy, ids)
+    : _grid(dxdy, ids)
 {
   static_assert(D == 2);
   // Flatten the ids to get the children
   // The rows are in reverse order
-  Size const nx = grid.numXCells();
-  Size const ny = grid.numYCells();
-  children.resize(nx * ny);
+  Size const nx = _grid.numXCells();
+  Size const ny = _grid.numYCells();
+  _children.resize(nx * ny);
   for (Size i = 0; i < ny; ++i) {
     for (Size j = 0; j < nx; ++j) {
-      children[i * nx + j] = static_cast<P>(ids[ny - 1 - i][j]);
+      _children[i * nx + j] = static_cast<P>(ids[ny - 1 - i][j]);
     }
   }
 }
@@ -180,128 +198,142 @@ constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
+RectilinearPartition<D, T, P>::grid() const noexcept -> RectilinearGrid<D, T> const &
+{
+  return _grid;
+}
+
+template <Size D, typename T, typename P>
+PURE HOSTDEV constexpr auto
+RectilinearPartition<D, T, P>::children() const noexcept -> Vector<P> const &
+{
+  return _children;
+}
+
+template <Size D, typename T, typename P>
+PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::xMin() const noexcept -> T
 {
-  return grid.xMin();
+  return _grid.xMin();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::yMin() const noexcept -> T
 {
-  return grid.yMin();
+  return _grid.yMin();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::zMin() const noexcept -> T
 {
-  return grid.zMin();
+  return _grid.zMin();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::dx() const noexcept -> T
 {
-  return grid.dx();
+  return _grid.dx();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::dy() const noexcept -> T
 {
-  return grid.dy();
+  return _grid.dy();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::dz() const noexcept -> T
 {
-  return grid.dz();
+  return _grid.dz();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::numXCells() const noexcept -> Size
 {
-  return grid.numXCells();
+  return _grid.numXCells();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::numYCells() const noexcept -> Size
 {
-  return grid.numYCells();
+  return _grid.numYCells();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::numZCells() const noexcept -> Size
 {
-  return grid.numZCells();
+  return _grid.numZCells();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::numCells() const noexcept -> Vec<D, Size>
 {
-  return grid.numCells();
+  return _grid.numCells();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::width() const noexcept -> T
 {
-  return grid.width();
+  return _grid.width();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::height() const noexcept -> T
 {
-  return grid.height();
+  return _grid.height();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::depth() const noexcept -> T
 {
-  return grid.depth();
+  return _grid.depth();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::xMax() const noexcept -> T
 {
-  return grid.xMax();
+  return _grid.xMax();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::yMax() const noexcept -> T
 {
-  return grid.yMax();
+  return _grid.yMax();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::zMax() const noexcept -> T
 {
-  return grid.zMax();
+  return _grid.zMax();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::maxima() const noexcept -> Point<D, T>
 {
-  return grid.maxima();
+  return _grid.maxima();
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
 RectilinearPartition<D, T, P>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
 {
-  return grid.boundingBox();
+  return _grid.boundingBox();
 }
 
 template <Size D, typename T, typename P>
@@ -311,7 +343,7 @@ PURE HOSTDEV
     constexpr auto RectilinearPartition<D, T, P>::getBox(Args... args) const noexcept
     -> AxisAlignedBox<D, T>
 {
-  return grid.getBox(args...);
+  return _grid.getBox(args...);
 }
 
 template <Size D, typename T, typename P>
@@ -322,7 +354,7 @@ PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getFlatIndex(
 {
   Point<D, Size> const index{args...};
   for (Size i = 0; i < D; ++i) {
-    ASSERT(index[i] < grid.divs[i].size());
+    ASSERT(index[i] < _grid.divs(i).size());
   }
   if constexpr (D == 1) {
     return index[0];
@@ -333,7 +365,7 @@ PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getFlatIndex(
     Point<D, Size> exclusive_scan_prod;
     exclusive_scan_prod[0] = 1;
     for (Size i = 1; i < D; ++i) {
-      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * grid.num_cells[i - 1];
+      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * _grid.num_cells[i - 1];
     }
     return index.dot(exclusive_scan_prod);
   }
@@ -345,7 +377,7 @@ RectilinearPartition<D, T, P>::getFlatIndex(Vec<D, Size> const & index) const no
     -> Size
 {
   for (Size i = 0; i < D; ++i) {
-    ASSERT(index[i] < grid.divs[i].size());
+    ASSERT(index[i] < _grid.divs(i).size());
   }
   if constexpr (D == 1) {
     return index[0];
@@ -356,7 +388,7 @@ RectilinearPartition<D, T, P>::getFlatIndex(Vec<D, Size> const & index) const no
     Point<D, Size> exclusive_scan_prod;
     exclusive_scan_prod[0] = 1;
     for (Size i = 1; i < D; ++i) {
-      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * grid.num_cells[i - 1];
+      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * _grid.num_cells[i - 1];
     }
     return index.dot(exclusive_scan_prod);
   }
@@ -368,7 +400,7 @@ template <typename... Args>
 PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) noexcept
     -> P &
 {
-  return children[getFlatIndex(args...)];
+  return _children[getFlatIndex(args...)];
 }
 
 template <Size D, typename T, typename P>
@@ -378,15 +410,15 @@ PURE HOSTDEV
     constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) const noexcept
     -> P const &
 {
-  return children[getFlatIndex(args...)];
+  return _children[getFlatIndex(args...)];
 }
 
 template <Size D, typename T, typename P>
 HOSTDEV constexpr void
 RectilinearPartition<D, T, P>::clear() noexcept
 {
-  grid.clear();
-  children.clear();
+  _grid.clear();
+  _children.clear();
 }
 
 } // namespace um2

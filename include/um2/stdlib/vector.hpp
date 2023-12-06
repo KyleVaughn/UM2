@@ -18,15 +18,41 @@ namespace um2
 // https://en.cppreference.com/w/cpp/container/vector
 
 template <typename T>
-struct Vector {
+class Vector {
 
   using Ptr = T *;
   using ConstPtr = T const *;
 
-private:
   Ptr _begin = nullptr;
   Ptr _end = nullptr;
   Ptr _end_cap = nullptr;
+
+
+  //==============================================================================
+  // Private methods
+  //==============================================================================
+  // NOLINTBEGIN(readability-identifier-naming) justification: match stdlib
+
+  HOSTDEV constexpr void
+  allocate(Size n) noexcept;
+
+  HOSTDEV constexpr void
+  construct_at_end(Size n) noexcept;
+
+  HOSTDEV constexpr void
+  construct_at_end(Size n, T const & value) noexcept;
+
+  HOSTDEV constexpr void
+  destruct_at_end(Ptr new_last) noexcept;
+
+  HOSTDEV constexpr void
+  grow(Size n) noexcept;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  recommend(Size new_size) const noexcept -> Size;
+
+  HOSTDEV constexpr void
+  append_default(Size n) noexcept;
 
 public:
   //==============================================================================
@@ -55,7 +81,6 @@ public:
   // Accessors
   //==============================================================================
 
-  // NOLINTBEGIN(readability-identifier-naming) justification: match stdlib
 
   PURE HOSTDEV [[nodiscard]] static constexpr auto
   max_size() noexcept -> Size;
@@ -156,31 +181,6 @@ public:
   constexpr auto
   operator==(Vector const & v) const noexcept -> bool;
 
-  //==============================================================================
-  // Hidden
-  //==============================================================================
-
-  HOSTDEV HIDDEN constexpr void
-  allocate(Size n) noexcept;
-
-  HOSTDEV HIDDEN constexpr void
-  construct_at_end(Size n) noexcept;
-
-  HOSTDEV HIDDEN constexpr void
-  construct_at_end(Size n, T const & value) noexcept;
-
-  HOSTDEV HIDDEN constexpr void
-  destruct_at_end(Ptr new_last) noexcept;
-
-  HOSTDEV HIDDEN constexpr void
-  grow(Size n) noexcept;
-
-  PURE HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  recommend(Size new_size) const noexcept -> Size;
-
-  HOSTDEV HIDDEN constexpr void
-  append_default(Size n) noexcept;
-
   // NOLINTEND(readability-identifier-naming)
 }; // struct Vector
 
@@ -190,7 +190,7 @@ struct Vector<bool> {
 };
 
 //==============================================================================
-// Hidden
+// Private methods
 //==============================================================================
 
 // Allocate memory for n elements
@@ -608,7 +608,7 @@ HOSTDEV constexpr void
 Vector<T>::push_back(T && value) noexcept
 {
   if (_end == _end_cap) {
-    this->grow(1);
+    grow(1);
   }
   um2::construct_at(_end, um2::move(value));
   ++_end;
@@ -621,7 +621,7 @@ Vector<T>::push_back(Size const n, T const & value) noexcept
   // If we have enough capacity, just construct the new elements
   // Otherwise, allocate a new buffer and move the elements over
   if (static_cast<Size>(_end_cap - _end) < n) {
-    this->grow(n);
+    grow(n);
   }
   // Construct the new elements
   construct_at_end(n, value);

@@ -44,11 +44,6 @@ TEST_CASE(sto_uint64)
   ASSERT(i == 123);
 }
 
-#ifndef __clang__
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
-#endif
-
 TEST_CASE(sto_float)
 {
   float f = 0;
@@ -82,7 +77,3 @@ main() -> int
   RUN_SUITE(sto);
   return 0;
 }
-
-#ifndef __clang__
-#  pragma GCC diagnostic pop
-#endif

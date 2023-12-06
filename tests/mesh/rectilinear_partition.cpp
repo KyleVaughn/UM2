@@ -6,25 +6,29 @@ template <Size D, typename T, std::integral P>
 HOSTDEV constexpr auto
 makePartition() -> um2::RectilinearPartition<D, T, P>
 {
-  um2::RectilinearPartition<D, T, P> partition;
+  um2::RectilinearGrid<D, T> grid;
   if constexpr (D >= 1) {
-    partition.grid.divs[0] = {0, 1};
+    grid.divs(0) = {0, 1};
   }
   if constexpr (D >= 2) {
-    partition.grid.divs[1] = {0, 1, 2};
+    grid.divs(1) = {0, 1, 2};
   }
   if constexpr (D >= 3) {
-    partition.grid.divs[2] = {0, 1, 2, 3};
+    grid.divs(2) = {0, 1, 2, 3};
   }
+
+  um2::Vector<P> children;
   if constexpr (D == 1) {
-    partition.children = {1};
+    children = {1};
   } else if constexpr (D == 2) {
-    partition.children = {1, 2};
+    children = {1, 2};
   } else if constexpr (D == 3) {
-    partition.children = {1, 2, 3, 4, 5, 6};
+    children = {1, 2, 3, 4, 5, 6};
   } else {
     static_assert(!D, "Invalid dimension");
   }
+
+  um2::RectilinearPartition<D, T, P> partition(grid, children);
   return partition;
 }
 
@@ -35,9 +39,9 @@ TEST_CASE(clear)
   um2::RectilinearPartition<D, T, P> part = makePartition<D, T, P>();
   part.clear();
   for (Size i = 0; i < D; ++i) {
-    ASSERT(part.grid.divs[i].empty());
+    ASSERT(part.grid().divs(i).empty());
   }
-  ASSERT(part.children.empty());
+  ASSERT(part.children().empty());
 }
 
 template <typename T, std::integral P>
@@ -57,18 +61,18 @@ TEST_CASE(id_array_constructor)
   um2::Vector<P> const expected = {0, 1, 0, 1, 0, 2, 0, 2, 0, 1, 2, 0};
   um2::RectilinearPartition2<T, P> const part(dxdy, ids);
 
-  ASSERT(part.grid.divs[0].size() == 5);
+  ASSERT(part.grid().divs(0).size() == 5);
   T const xref[5] = {0, 2, 4, 6, 8};
   for (Size i = 0; i < 5; ++i) {
-    ASSERT_NEAR(part.grid.divs[0][i], xref[i], static_cast<T>(1e-6));
+    ASSERT_NEAR(part.grid().divs(0)[i], xref[i], static_cast<T>(1e-6));
   }
-  ASSERT(part.grid.divs[1].size() == 4);
+  ASSERT(part.grid().divs(1).size() == 4);
   T const yref[4] = {0, 1, 2, 3};
   for (Size i = 0; i < 4; ++i) {
-    ASSERT_NEAR(part.grid.divs[1][i], yref[i], static_cast<T>(1e-6));
+    ASSERT_NEAR(part.grid().divs(1)[i], yref[i], static_cast<T>(1e-6));
   }
   for (Size i = 0; i < 12; ++i) {
-    ASSERT(part.children[i] == expected[i]);
+    ASSERT(part.children()[i] == expected[i]);
   }
 }
 
@@ -82,13 +86,15 @@ TEST_CASE(getBoxAndChild)
   T const one = static_cast<T>(1);
   T const half = static_cast<T>(0.5);
   T const forth = static_cast<T>(0.25);
-  um2::RectilinearPartition2<T, P> part;
-  part.grid.divs[0] = {1.0, 1.5, 2.0, 2.5, 3.0};
-  part.grid.divs[1] = {-1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0};
-  part.children.resize(32);
+  um2::RectilinearGrid2<T> grid;
+  grid.divs(0) = {1.0, 1.5, 2.0, 2.5, 3.0};
+  grid.divs(1) = {-1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0};
+  um2::Vector<P> children(32);
   for (Size i = 0; i < 32; ++i) {
-    part.children[i] = static_cast<P>(i);
+    children[i] = static_cast<P>(i);
   }
+
+  um2::RectilinearPartition2<T, P> part(grid, children);
   um2::AxisAlignedBox2<T> box = part.getBox(0, 0);
   um2::AxisAlignedBox2<T> box_ref = {
       {         1,             -1},

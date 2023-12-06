@@ -4,7 +4,6 @@
 
 #include <new>
 
-// Contains:
 //  addressof
 //  construct_at
 //  destroy_at

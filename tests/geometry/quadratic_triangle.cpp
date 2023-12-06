@@ -1,5 +1,6 @@
 #include <um2/geometry/polygon.hpp>
 
+#include <iostream>
 #include "../test_macros.hpp"
 
 template <Size D, typename T>
@@ -208,6 +209,8 @@ TEST_CASE(meanChordLength)
   auto const tri = makeTri<2, T>();
   T const two = static_cast<T>(2);
   T const ref = um2::pi<T> / (two * (two + um2::sqrt(two)));
+  std::cout << ref << std::endl;
+  std::cout << tri.meanChordLength() << std::endl;
   ASSERT_NEAR(tri.meanChordLength(), ref, static_cast<T>(1e-3));
 }
 

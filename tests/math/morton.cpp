@@ -116,35 +116,37 @@ TEST_CASE(mortonDecodeFloat)
   // NOLINTNEXTLINE justification: reduce clutter
   using namespace um2;
 
+  T constexpr eps = static_cast<T>(1e-6);
+
   T x;
   T y;
   mortonDecode<U, T>(static_cast<U>(0x0000000000000000), x, y);
-  ASSERT_NEAR(x, static_cast<T>(0), static_cast<T>(1e-6));
-  ASSERT_NEAR(y, static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(x, static_cast<T>(0), eps);
+  ASSERT_NEAR(y, static_cast<T>(0), eps);
   mortonDecode<U, T>(static_cast<U>(0xFFFFFFFFFFFFFFFF), x, y);
-  ASSERT_NEAR(x, static_cast<T>(1), static_cast<T>(1e-6));
-  ASSERT_NEAR(y, static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(x, static_cast<T>(1), eps);
+  ASSERT_NEAR(y, static_cast<T>(1), eps);
   mortonDecode<U, T>(static_cast<U>(0x5555555555555555), x, y);
-  ASSERT_NEAR(x, static_cast<T>(1), static_cast<T>(1e-6));
-  ASSERT_NEAR(y, static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(x, static_cast<T>(1), eps);
+  ASSERT_NEAR(y, static_cast<T>(0), eps);
   mortonDecode<U, T>(static_cast<U>(0xAAAAAAAAAAAAAAAA), x, y);
-  ASSERT_NEAR(x, static_cast<T>(0), static_cast<T>(1e-6));
-  ASSERT_NEAR(y, static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(x, static_cast<T>(0), eps);
+  ASSERT_NEAR(y, static_cast<T>(1), eps);
 
   // 3D
   T z;
   mortonDecode<U, T>(static_cast<U>(0x0000000000000000), x, y, z);
-  ASSERT_NEAR(x, static_cast<T>(0), static_cast<T>(1e-6));
-  ASSERT_NEAR(y, static_cast<T>(0), static_cast<T>(1e-6));
-  ASSERT_NEAR(z, static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(x, static_cast<T>(0), eps);
+  ASSERT_NEAR(y, static_cast<T>(0), eps);
+  ASSERT_NEAR(z, static_cast<T>(0), eps);
   if constexpr (std::same_as<uint32_t, U>) {
     mortonDecode<U, T>(static_cast<U>(0x3fffffff), x, y, z);
   } else {
     mortonDecode<U, T>(static_cast<U>(0x7fffffffffffffff), x, y, z);
   }
-  ASSERT_NEAR(x, static_cast<T>(1), static_cast<T>(1e-6));
-  ASSERT_NEAR(y, static_cast<T>(1), static_cast<T>(1e-6));
-  ASSERT_NEAR(z, static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(x, static_cast<T>(1), eps);
+  ASSERT_NEAR(y, static_cast<T>(1), eps);
+  ASSERT_NEAR(z, static_cast<T>(1), eps);
 }
 
 #if UM2_USE_CUDA

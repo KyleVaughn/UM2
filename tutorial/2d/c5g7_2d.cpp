@@ -10,7 +10,7 @@
 auto
 main() -> int
 {
-  um2::initialize("trace");
+  um2::initialize("info");
 
   // Parameters
   double const radius = 0.54;          // Pin radius = 0.54 cm (pg. 3)
@@ -206,25 +206,29 @@ main() -> int
   um2::gmsh::model::occ::overlaySpatialPartition(model);
 
   // Create the mesh
-  double const target_kn = 12.0;
+  double const target_kn = 12;
   um2::XSReductionStrategy const kn_strategy = um2::XSReductionStrategy::Mean;
   um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, materials, target_kn,
-                                                        kn_strategy);
+                                                       kn_strategy);
+  // um2::gmsh::model::mesh::setGlobalMeshSize(0.06);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
 
   um2::gmsh::write("c5g7.inp");
   model.importCoarseCells("c5g7.inp");
-  // model.materials[6].xs.t = uo2_xs;
-  // model.materials[2].xs.t = mox43_xs;
-  // model.materials[3].xs.t = mox70_xs;
-  // model.materials[4].xs.t = mox87_xs;
-  // model.materials[0].xs.t = fiss_chamber_xs;
-  // model.materials[1].xs.t = guide_tube_xs;
-  // model.materials[5].xs.t = moderator_xs;
+  for (auto const & cc : model.coarse_cells) {
+    um2::Log::info("CC has " + um2::toString(cc.numFaces()) + " faces"); 
+  }
+  model.materials[6].xs.t = uo2_xs;
+  model.materials[2].xs.t = mox43_xs;
+  model.materials[3].xs.t = mox70_xs;
+  model.materials[4].xs.t = mox87_xs;
+  model.materials[0].xs.t = fiss_chamber_xs;
+  model.materials[1].xs.t = guide_tube_xs;
+  model.materials[5].xs.t = moderator_xs;
   // um2::PolytopeSoup<double, int> soup;
   // model.toPolytopeSoup(soup, /*write_kn=*/true);
   // soup.write("c5g7.xdmf");
-  model.write("c5g7.xdmf");
+  model.write("c5g7.xdmf", /*write_kn=*/true);
   um2::finalize();
   return 0;
 }

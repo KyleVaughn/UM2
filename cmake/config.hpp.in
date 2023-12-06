@@ -60,7 +60,7 @@
 #define CONST [[gnu::const]]
 #define HOT   [[gnu::hot]]
 
-// Once C++23 is supported, we can use [[assume(expr)]] instead.
+// TODO(kcvaughn): Once C++23 is supported, we can use [[assume(expr)]] instead.
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1774r8.pdf
 #ifdef ASSUME
 #  error "ASSUME already defined"

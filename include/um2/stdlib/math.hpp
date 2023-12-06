@@ -4,7 +4,6 @@
 
 #include <cmath>
 
-// Contains:
 //  abs (from config.hpp)
 //  atan
 //  atanh

@@ -1693,6 +1693,7 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
   Vector<I> cc_found(coarse_cells.size(), -1);
 
   std::stringstream ss;
+  Vector<PolytopeSoup<T, I>> soups(coarse_cells.size());
   Vector<Vector<T>> cc_kns_max(coarse_cells.size());
   Vector<Vector<T>> cc_kns_mean(coarse_cells.size());
 
@@ -1851,142 +1852,165 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
                 LOG_TRACE("cell_materials.size() = " + toString(cell_materials.size()));
 
                 // Convert the mesh into PolytopeSoup
-                PolytopeSoup<T, I> soup;
-                switch (mesh_type) {
-                case MeshType::Tri:
-                  LOG_TRACE("Mesh type: Tri");
-                  tri[mesh_id].toPolytopeSoup(soup);
-                  if (write_kn) {
-                    if (cc_kns_max[cell_id].empty()) {
-                      LOG_TRACE("Computing Knudsen numbers");
-                      for (Size iface = 0; iface < tri[mesh_id].fv.size(); ++iface) {
-                        T const mcl = tri[mesh_id].getFace(iface).meanChordLength();
-                        auto const mat_id = static_cast<Size>(
-                            static_cast<uint32_t>(cell_materials[iface]));
-                        T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-                            XSReductionStrategy::Max);
-                        T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-                            XSReductionStrategy::Mean);
-                        cc_kns_max[cell_id].push_back(static_cast<T>(1) / (t_max * mcl));
-                        cc_kns_mean[cell_id].push_back(static_cast<T>(1) /
-                                                       (t_mean * mcl));
+                PolytopeSoup<T, I> & soup = soups[cell_id];
+                if (soups[cell_id].numElems() == 0) {
+                  switch (mesh_type) {
+                  case MeshType::Tri:
+                    LOG_TRACE("Mesh type: Tri");
+                    tri[mesh_id].toPolytopeSoup(soup);
+                    if (write_kn) {
+                      if (cc_kns_max[cell_id].empty()) {
+                        LOG_TRACE("Computing Knudsen numbers");
+                        cc_kns_max[cell_id].resize(tri[mesh_id].fv.size());
+                        cc_kns_mean[cell_id].resize(tri[mesh_id].fv.size());
+                        for (Size iface = 0; iface < tri[mesh_id].fv.size(); ++iface) {
+                          T const mcl = tri[mesh_id].getFace(iface).meanChordLength();
+                          auto const mat_id = static_cast<Size>(
+                              static_cast<uint32_t>(cell_materials[iface]));
+                          T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
+                              XSReductionStrategy::Max);
+                          T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
+                              XSReductionStrategy::Mean);
+                          cc_kns_max[cell_id][iface] = static_cast<T>(1) / (t_max * mcl);
+                          cc_kns_mean[cell_id][iface] = static_cast<T>(1) / (t_mean * mcl);
+                        }
                       }
                     }
-                  }
-                  break;
-                case MeshType::Quad:
-                  LOG_TRACE("Mesh type: Quad");
-                  quad[mesh_id].toPolytopeSoup(soup);
-                  if (write_kn) {
-                    if (cc_kns_max[cell_id].empty()) {
-                      LOG_TRACE("Computing Knudsen numbers");
-                      for (Size iface = 0; iface < quad[mesh_id].fv.size(); ++iface) {
-                        T const mcl = quad[mesh_id].getFace(iface).meanChordLength();
-                        auto const mat_id = static_cast<Size>(
-                            static_cast<uint32_t>(cell_materials[iface]));
-                        T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-                            XSReductionStrategy::Max);
-                        T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-                            XSReductionStrategy::Mean);
-                        cc_kns_max[cell_id].push_back(static_cast<T>(1) / (t_max * mcl));
-                        cc_kns_mean[cell_id].push_back(static_cast<T>(1) /
-                                                       (t_mean * mcl));
+                    break;
+                  case MeshType::Quad:
+                    LOG_TRACE("Mesh type: Quad");
+                    quad[mesh_id].toPolytopeSoup(soup);
+                    if (write_kn) {
+                      if (cc_kns_max[cell_id].empty()) {
+                        LOG_TRACE("Computing Knudsen numbers");
+                        cc_kns_max[cell_id].resize(quad[mesh_id].fv.size());
+                        cc_kns_mean[cell_id].resize(quad[mesh_id].fv.size());
+                        for (Size iface = 0; iface < quad[mesh_id].fv.size(); ++iface) {
+                          T const mcl = quad[mesh_id].getFace(iface).meanChordLength();
+                          auto const mat_id = static_cast<Size>(
+                              static_cast<uint32_t>(cell_materials[iface]));
+                          T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
+                              XSReductionStrategy::Max);
+                          T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
+                              XSReductionStrategy::Mean);
+                          cc_kns_max[cell_id][iface] = static_cast<T>(1) / (t_max * mcl);
+                          cc_kns_mean[cell_id][iface] = static_cast<T>(1) / (t_mean * mcl);
+                        }
                       }
                     }
-                  }
-                  break;
-                case MeshType::QuadraticTri:
-                  LOG_TRACE("Mesh type: QuadraticTri");
-                  quadratic_tri[mesh_id].toPolytopeSoup(soup);
-                  if (write_kn) {
-                    if (cc_kns_max[cell_id].empty()) {
-                      LOG_TRACE("Computing Knudsen numbers");
-                      for (Size iface = 0; iface < quadratic_tri[mesh_id].fv.size(); ++iface) {
-                        T const mcl = quadratic_tri[mesh_id].getFace(iface).meanChordLength();
-                        auto const mat_id = static_cast<Size>(
-                            static_cast<uint32_t>(cell_materials[iface]));
-                        T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-                            XSReductionStrategy::Max);
-                        T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-                            XSReductionStrategy::Mean);
-                        cc_kns_max[cell_id].push_back(static_cast<T>(1) / (t_max * mcl));
-                        cc_kns_mean[cell_id].push_back(static_cast<T>(1) /
-                                                       (t_mean * mcl));
+                    break;
+                  case MeshType::QuadraticTri:
+                    LOG_TRACE("Mesh type: QuadraticTri");
+                    quadratic_tri[mesh_id].toPolytopeSoup(soup);
+                    if (write_kn) {
+                      if (cc_kns_max[cell_id].empty()) {
+                        LOG_TRACE("Computing Knudsen numbers");
+                        cc_kns_max[cell_id].resize(quadratic_tri[mesh_id].fv.size());
+                        cc_kns_mean[cell_id].resize(quadratic_tri[mesh_id].fv.size());
+                        for (Size iface = 0; iface < quadratic_tri[mesh_id].fv.size(); ++iface) {
+                          T const mcl = quadratic_tri[mesh_id].getFace(iface).meanChordLength();
+                          auto const mat_id = static_cast<Size>(
+                              static_cast<uint32_t>(cell_materials[iface]));
+                          T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
+                              XSReductionStrategy::Max);
+                          T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
+                              XSReductionStrategy::Mean);
+                          cc_kns_max[cell_id][iface] = static_cast<T>(1) / (t_max * mcl);
+                          cc_kns_mean[cell_id][iface] = static_cast<T>(1) / (t_mean * mcl);
+                        }
                       }
                     }
-                  }
-                  break;
-                case MeshType::QuadraticQuad:
-                  LOG_TRACE("Mesh type: QuadraticQuad");
-                  quadratic_quad[mesh_id].toPolytopeSoup(soup);
-                  if (write_kn) {
-                    if (cc_kns_max[cell_id].empty()) {
-                      LOG_TRACE("Computing Knudsen numbers");
-                      for (Size iface = 0; iface < quadratic_quad[mesh_id].fv.size(); ++iface) {
-                        T const mcl = quadratic_quad[mesh_id].getFace(iface).meanChordLength();
-                        auto const mat_id = static_cast<Size>(
-                            static_cast<uint32_t>(cell_materials[iface]));
-                        T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-                            XSReductionStrategy::Max);
-                        T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-                            XSReductionStrategy::Mean);
-                        cc_kns_max[cell_id].push_back(static_cast<T>(1) / (t_max * mcl));
-                        cc_kns_mean[cell_id].push_back(static_cast<T>(1) /
-                                                       (t_mean * mcl));
+                    break;
+                  case MeshType::QuadraticQuad:
+                    LOG_TRACE("Mesh type: QuadraticQuad");
+                    quadratic_quad[mesh_id].toPolytopeSoup(soup);
+                    if (write_kn) {
+                      if (cc_kns_max[cell_id].empty()) {
+                        LOG_TRACE("Computing Knudsen numbers");
+                        cc_kns_max[cell_id].resize(quadratic_quad[mesh_id].fv.size());
+                        cc_kns_mean[cell_id].resize(quadratic_quad[mesh_id].fv.size());
+                        for (Size iface = 0; iface < quadratic_quad[mesh_id].fv.size(); ++iface) {
+                          T const mcl = quadratic_quad[mesh_id].getFace(iface).meanChordLength();
+                          auto const mat_id = static_cast<Size>(
+                              static_cast<uint32_t>(cell_materials[iface]));
+                          T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
+                              XSReductionStrategy::Max);
+                          T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
+                              XSReductionStrategy::Mean);
+                          cc_kns_max[cell_id][iface] = static_cast<T>(1) / (t_max * mcl);
+                          cc_kns_mean[cell_id][iface] = static_cast<T>(1) / (t_mean * mcl);
+                        }
                       }
                     }
-                  }
-                  break;
-                default:
-                  Log::error("Unsupported mesh type");
-                  return;
-                } // switch (mesh_type)
+                    break;
+                  default:
+                    Log::error("Unsupported mesh type");
+                    return;
+                  } // switch (mesh_type)
 
-                // add Material elsets
-                Size const cc_nfaces = cell_materials.size();
-                Vector<I> cc_mats(cc_nfaces);
-                for (Size i = 0; i < cc_nfaces; ++i) {
-                  cc_mats[i] = static_cast<I>(static_cast<uint32_t>(cell_materials[i]));
-                }
-                // Get the unique material ids
-                Vector<I> cc_mats_sorted = cc_mats;
-                std::sort(cc_mats_sorted.begin(), cc_mats_sorted.end());
-                auto * it = std::unique(cc_mats_sorted.begin(), cc_mats_sorted.end());
-                Size const cc_nunique = static_cast<Size>(it - cc_mats_sorted.begin());
-                Vector<I> cc_mats_unique(cc_nunique);
-                for (Size i = 0; i < cc_nunique; ++i) {
-                  cc_mats_unique[i] = cc_mats_sorted[i];
-                }
-                // Create a vector with the face ids for each material
-                Vector<Vector<I>> cc_mats_split(cc_nunique);
-                for (Size i = 0; i < cc_nfaces; ++i) {
-                  I const mat_id = cc_mats[i];
-                  auto * mat_it = std::find(cc_mats_unique.begin(), cc_mats_unique.end(), mat_id);
-                  Size const mat_idx = static_cast<Size>(mat_it - cc_mats_unique.begin());
-                  cc_mats_split[mat_idx].push_back(i);
-                }
-                // add each material elset
-                for (Size i = 0; i < cc_nunique; ++i) {
-                  I const mat_id = cc_mats_unique[i];
-                  Vector<I> const & mat_faces = cc_mats_split[i];
-                  String const mat_name = "Material_" + String(materials[mat_id].name.data());
-                  soup.addElset(mat_name, mat_faces);
-                }
+                  // add Material elsets
+                  Size const cc_nfaces = cell_materials.size();
+                  Vector<I> cc_mats(cc_nfaces);
+                  for (Size i = 0; i < cc_nfaces; ++i) {
+                    cc_mats[i] = static_cast<I>(static_cast<uint32_t>(cell_materials[i]));
+                  }
+                  // Get the unique material ids
+                  Vector<I> cc_mats_sorted = cc_mats;
+                  std::sort(cc_mats_sorted.begin(), cc_mats_sorted.end());
+                  auto * it = std::unique(cc_mats_sorted.begin(), cc_mats_sorted.end());
+                  Size const cc_nunique = static_cast<Size>(it - cc_mats_sorted.begin());
+                  Vector<I> cc_mats_unique(cc_nunique);
+                  for (Size i = 0; i < cc_nunique; ++i) {
+                    cc_mats_unique[i] = cc_mats_sorted[i];
+                  }
+                  // Create a vector with the face ids for each material
+                  Vector<Vector<I>> cc_mats_split(cc_nunique);
+                  for (Size i = 0; i < cc_nfaces; ++i) {
+                    I const mat_id = cc_mats[i];
+                    auto * mat_it = std::find(cc_mats_unique.begin(), cc_mats_unique.end(), mat_id);
+                    Size const mat_idx = static_cast<Size>(mat_it - cc_mats_unique.begin());
+                    cc_mats_split[mat_idx].push_back(i);
+                  }
+                  // add each material elset
+                  for (Size i = 0; i < cc_nunique; ++i) {
+                    I const mat_id = cc_mats_unique[i];
+                    Vector<I> const & mat_faces = cc_mats_split[i];
+                    String const mat_name = "Material_" + String(materials[mat_id].name.data());
+                    soup.addElset(mat_name, mat_faces);
+                  }
 
-                if (write_kn) {
-                  Vector<I> all_faces(cc_nfaces);
-                  um2::iota(all_faces.begin(), all_faces.end(), 0);
-                  soup.addElset("Knudsen_Max", all_faces, cc_kns_max[cell_id]);
-                  soup.addElset("Knudsen_Mean", all_faces, cc_kns_mean[cell_id]);
+                  if (write_kn) {
+                    Vector<I> all_faces(cc_nfaces);
+                    um2::iota(all_faces.begin(), all_faces.end(), 0);
+                    soup.addElset("Knudsen_Max", all_faces, cc_kns_max[cell_id]);
+                    soup.addElset("Knudsen_Mean", all_faces, cc_kns_mean[cell_id]);
+                    Vector<T> kns_max = cc_kns_max[cell_id];
+                    Vector<T> kns_mean = cc_kns_mean[cell_id];
+                    std::sort(kns_max.begin(), kns_max.end());
+                    std::sort(kns_mean.begin(), kns_mean.end());
+                    T const kn_max_max = kns_max.back();
+                    T const kn_mean_max = kns_mean.back();
+                    T const kn_max_min = kns_max.front();
+                    T const kn_mean_min = kns_mean.front();
+                    T const kn_max_mean = um2::mean(kns_max.begin(), kns_max.end());
+                    T const kn_mean_mean = um2::mean(kns_mean.begin(), kns_mean.end());
+                    LOG_INFO("Coarse Cell " + toString(cell_id) + " " + toString(kn_max_max) + " " + toString(kn_max_min) + " " + toString(kn_max_mean));
+                    LOG_INFO("Coarse Cell " + toString(cell_id) + " " + toString(kn_mean_max) + " " + toString(kn_mean_min) + " " + toString(kn_mean_mean));
+                  }
+
                 }
                 
                 // Shift the mesh to global coordinates
                 Point2<T> const xy_offset = cell_ll + rtm_ll + asy_ll;
                 Point3<T> const shift = Point3<T>(xy_offset[0], xy_offset[1], lat_z);
                 soup.translate(shift);
+
+                // Write the mesh
                 soup.writeXDMFUniformGrid(cell_name, material_names, xrtm_grid, h5file,
                                           h5filename, h5rtm_grouppath); 
 
+                // Shift the mesh back to local coordinates
+                soup.translate(-shift);
               } // for (ixcell)
             } // for (iycell)
           } // for (ixrtm)

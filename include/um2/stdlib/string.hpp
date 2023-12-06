@@ -9,9 +9,6 @@
 #include <cstring> // memcpy, strcmp
 #include <string>  // std::string
 
-// clang-tidy does poorly with conditional deletions and claims there are leaks.
-// Valgrind shows no leaks.
-
 namespace um2
 {
 
@@ -19,6 +16,7 @@ namespace um2
 // STRING
 //==============================================================================
 // A std::string-like class, but without an allocator template parameter.
+// Uses small string optimization.
 //
 // NOTE: ASSUMES LITTLE ENDIAN
 // This should be true for all x86 processors and NVIDIA GPUs.
@@ -26,9 +24,8 @@ namespace um2
 static_assert(std::endian::native == std::endian::little,
               "Only little endian is supported.");
 
-struct String {
+class String {
 
-private:
   // Heap-allocated string representation.
   // 24 bytes
   struct Long {
@@ -72,6 +69,50 @@ private:
 
   Rep _r;
 
+  //==============================================================================
+  // Private methods 
+  //==============================================================================
+  // NOLINTBEGIN(readability-identifier-naming); justification: match std::string
+
+  CONST HOSTDEV static constexpr auto
+  fitsInShort(uint64_t n) noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getLongCap() const noexcept -> uint64_t;
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  getLongPointer() noexcept -> char *;
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  getLongPointer() const noexcept -> char const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getLongSize() const noexcept -> uint64_t;
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  getPointer() noexcept -> char *;
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  getPointer() const noexcept -> char const *;
+
+  HOSTDEV [[nodiscard]] constexpr static auto
+  getShortCap() noexcept -> uint64_t;
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  getShortPointer() noexcept -> char *;
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  getShortPointer() const noexcept -> char const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getShortSize() const noexcept -> uint8_t;
+
+  HOSTDEV constexpr void
+  initLong(uint64_t n) noexcept;
+
+  HOSTDEV constexpr void
+  initShort(uint64_t n) noexcept;
+
 public:
   // The maximum capacity of a long string.
   static Size constexpr npos = sizeMax();
@@ -107,9 +148,12 @@ public:
 
   HOSTDEV constexpr ~String() noexcept
   {
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
     if (isLong()) {
       ::operator delete(_r.l.data);
     }
+    #pragma GCC diagnostic pop
   }
 
   //==============================================================================
@@ -184,7 +228,6 @@ public:
   //==============================================================================
   // Methods
   //==============================================================================
-  // NOLINTBEGIN(readability-identifier-naming); justification: match std::string
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   compare(String const & s) const noexcept -> int;
@@ -209,51 +252,7 @@ public:
   substr(Size pos, Size len = npos) const -> String;
 
   // NOLINTEND(readability-identifier-naming)
-
-  //==============================================================================
-  // HIDDEN
-  //==============================================================================
-
-  CONST HOSTDEV HIDDEN static constexpr auto
-  fitsInShort(uint64_t n) noexcept -> bool;
-
-  PURE HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getLongCap() const noexcept -> uint64_t;
-
-  HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getLongPointer() noexcept -> char *;
-
-  HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getLongPointer() const noexcept -> char const *;
-
-  PURE HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getLongSize() const noexcept -> uint64_t;
-
-  HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getPointer() noexcept -> char *;
-
-  HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getPointer() const noexcept -> char const *;
-
-  HOSTDEV [[nodiscard]] HIDDEN constexpr static auto
-  getShortCap() noexcept -> uint64_t;
-
-  HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getShortPointer() noexcept -> char *;
-
-  HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getShortPointer() const noexcept -> char const *;
-
-  PURE HOSTDEV [[nodiscard]] HIDDEN constexpr auto
-  getShortSize() const noexcept -> uint8_t;
-
-  HOSTDEV HIDDEN constexpr void
-  initLong(uint64_t n) noexcept;
-
-  HOSTDEV HIDDEN constexpr void
-  initShort(uint64_t n) noexcept;
-
-}; // struct String
+}; // class String
 
 //==============================================================================
 // Non-member operators
@@ -302,6 +301,110 @@ toString(T const & t) noexcept -> String;
   _r.s.is_long = 0;                                                                      \
   _r.s.size = (nn - 1) & short_size_mask;                                                \
   copy(ss, ss + nn, addressof(_r.s.data[0]));
+
+
+//==============================================================================
+// Private methods 
+//==============================================================================
+
+PURE HOSTDEV constexpr auto
+String::getLongSize() const noexcept -> uint64_t
+{
+  return this->_r.l.size;
+}
+
+PURE HOSTDEV constexpr auto
+String::getShortSize() const noexcept -> uint8_t
+{
+  return this->_r.s.size;
+}
+
+PURE HOSTDEV constexpr auto
+String::getLongCap() const noexcept -> uint64_t
+{
+  return this->_r.l.cap;
+}
+
+PURE HOSTDEV constexpr auto
+String::getShortCap() noexcept -> uint64_t
+{
+  return sizeof(Short::data) - 1;
+}
+
+PURE HOSTDEV constexpr auto
+// NOLINTNEXTLINE(readability-make-member-function-const) justification: can't be const
+String::getLongPointer() noexcept -> char *
+{
+  return _r.l.data;
+}
+
+PURE HOSTDEV constexpr auto
+String::getLongPointer() const noexcept -> char const *
+{
+  return _r.l.data;
+}
+
+PURE HOSTDEV constexpr auto
+String::getShortPointer() noexcept -> char *
+{
+  return addressof(_r.s.data[0]);
+}
+
+PURE HOSTDEV constexpr auto
+String::getShortPointer() const noexcept -> char const *
+{
+  return addressof(_r.s.data[0]);
+}
+
+PURE HOSTDEV constexpr auto
+String::getPointer() noexcept -> char *
+{
+  return isLong() ? getLongPointer() : getShortPointer();
+}
+
+PURE HOSTDEV constexpr auto
+String::getPointer() const noexcept -> char const *
+{
+  return isLong() ? getLongPointer() : getShortPointer();
+}
+
+// n includes null terminator
+CONST HOSTDEV constexpr auto
+String::fitsInShort(uint64_t n) noexcept -> bool
+{
+  return n <= min_cap;
+}
+
+template <typename T>
+constexpr auto
+toString(T const & t) noexcept -> String
+{
+  return String(t);
+}
+
+HOSTDEV constexpr auto
+operator+(String l, String const & r) noexcept -> String
+{
+  l += r;
+  return l;
+}
+
+template <uint64_t N>
+HOSTDEV constexpr auto
+operator+(String l, char const (&r)[N]) noexcept -> String
+{
+  l += String(r);
+  return l;
+}
+
+template <uint64_t N>
+HOSTDEV constexpr auto
+operator+(char const (&l)[N], String const & r) noexcept -> String
+{
+  String tmp(l);
+  tmp += r;
+  return tmp;
+}
 
 //==============================================================================
 // Constructors
@@ -724,109 +827,6 @@ String::find_last_of(char const c) const noexcept -> Size
     }
   }
   return npos;
-}
-
-//==============================================================================
-// HIDDEN
-//==============================================================================
-
-PURE HOSTDEV HIDDEN constexpr auto
-String::getLongSize() const noexcept -> uint64_t
-{
-  return this->_r.l.size;
-}
-
-PURE HOSTDEV HIDDEN constexpr auto
-String::getShortSize() const noexcept -> uint8_t
-{
-  return this->_r.s.size;
-}
-
-PURE HOSTDEV HIDDEN constexpr auto
-String::getLongCap() const noexcept -> uint64_t
-{
-  return this->_r.l.cap;
-}
-
-PURE HOSTDEV HIDDEN constexpr auto
-String::getShortCap() noexcept -> uint64_t
-{
-  return sizeof(Short::data) - 1;
-}
-
-PURE HOSTDEV HIDDEN constexpr auto
-// NOLINTNEXTLINE(readability-make-member-function-const) justification: can't be const
-String::getLongPointer() noexcept -> char *
-{
-  return _r.l.data;
-}
-
-PURE HOSTDEV HIDDEN constexpr auto
-String::getLongPointer() const noexcept -> char const *
-{
-  return _r.l.data;
-}
-
-PURE HOSTDEV HIDDEN constexpr auto
-String::getShortPointer() noexcept -> char *
-{
-  return addressof(_r.s.data[0]);
-}
-
-PURE HOSTDEV HIDDEN constexpr auto
-String::getShortPointer() const noexcept -> char const *
-{
-  return addressof(_r.s.data[0]);
-}
-
-PURE HOSTDEV HIDDEN constexpr auto
-String::getPointer() noexcept -> char *
-{
-  return isLong() ? getLongPointer() : getShortPointer();
-}
-
-PURE HOSTDEV HIDDEN constexpr auto
-String::getPointer() const noexcept -> char const *
-{
-  return isLong() ? getLongPointer() : getShortPointer();
-}
-
-// n includes null terminator
-CONST HOSTDEV HIDDEN constexpr auto
-String::fitsInShort(uint64_t n) noexcept -> bool
-{
-  return n <= min_cap;
-}
-
-template <typename T>
-constexpr auto
-toString(T const & t) noexcept -> String
-{
-  return String(t);
-}
-
-HOSTDEV constexpr auto
-operator+(String l, String const & r) noexcept -> String
-{
-  l += r;
-  return l;
-}
-
-template <uint64_t N>
-HOSTDEV constexpr auto
-operator+(String l, char const (&r)[N]) noexcept -> String
-{
-  l += String(r);
-  return l;
-}
-
-template <uint64_t N>
-HOSTDEV constexpr auto
-operator+(char const (&l)[N], String const & r) noexcept -> String
-{
-  String tmp(l);
-  tmp += r;
-  return tmp;
 }
 
 } // namespace um2

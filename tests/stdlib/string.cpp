@@ -2,7 +2,7 @@
 
 #include "../test_macros.hpp"
 
-// clang-tidy does poorly with branched code like string. Valgrind and gcc's
+// clang-tidy does poorly with branched code like String. Valgrind and gcc's
 // address sanitizer say that there are no leaks or undefined behavior, so
 // we disable the warnings for this file.
 // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks) justified above

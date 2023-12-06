@@ -90,6 +90,25 @@ TEST_CASE(areCCW)
   ASSERT(b);
 }
 
+template <typename T>
+HOSTDEV
+TEST_CASE(areApproxCCW)
+{
+  um2::Point2<T> const p1(0, 0);
+  um2::Point2<T> const p2(1, 1);
+  um2::Point2<T> p3(2, 2);
+  bool b = um2::areApproxCCW(p1, p2, p3);
+  ASSERT(b);
+  b = um2::areApproxCCW(p1, p3, p2);
+  ASSERT(b);
+  p3[1] -= um2::eps_distance<T> / 2;
+  b = um2::areApproxCCW(p1, p2, p3);
+  ASSERT(b);
+  p3[1] -= um2::eps_distance<T>;
+  b = um2::areApproxCCW(p1, p2, p3);
+  ASSERT(!b);
+}
+
 //==============================================================================
 // CUDA
 //==============================================================================
@@ -106,6 +125,9 @@ MAKE_CUDA_KERNEL(isApprox, D, T);
 
 template <typename T>
 MAKE_CUDA_KERNEL(areCCW, T);
+
+template <typename T>
+MAKE_CUDA_KERNEL(areApproxCCW, T);
 #endif
 
 template <Size D, typename T>
@@ -116,6 +138,7 @@ TEST_SUITE(point)
   TEST_HOSTDEV(isApprox, 1, 1, D, T);
   if constexpr (D == 2) {
     TEST_HOSTDEV(areCCW, 1, 1, T);
+    TEST_HOSTDEV(areApproxCCW, 1, 1, T);
   }
 }
 

@@ -79,4 +79,17 @@ areCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept -
   return 0 <= (ab_x * ac_y - ab_y * ac_x);
 }
 
+template <class T>
+PURE HOSTDEV constexpr auto
+areApproxCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept -> bool
+{
+  // 2D cross product, of (b - a) and (c - a).
+  T const ab_x = b[0] - a[0];
+  T const ab_y = b[1] - a[1];
+  T const ac_x = c[0] - a[0];
+  T const ac_y = c[1] - a[1];
+  // Allow equality, so that we can handle collinear points.
+  return -eps_distance<T> <= (ab_x * ac_y - ab_y * ac_x);
+}
+
 } // namespace um2

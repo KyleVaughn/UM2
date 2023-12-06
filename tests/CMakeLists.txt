@@ -6,9 +6,9 @@ add_subdirectory(./math)
 add_subdirectory(./geometry)
 add_subdirectory(./physics)
 add_subdirectory(./mesh)
-add_subdirectory(./mpact)
-add_subdirectory(./gmsh)
-add_subdirectory(./api)
+#add_subdirectory(./mpact)
+#add_subdirectory(./gmsh)
+#add_subdirectory(./api)
 ###==============================================================================
 ### gmsh
 ###==============================================================================

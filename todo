@@ -1,42 +1,69 @@
-Currently working through polygon/geometry
+Currently working through polytope soup tests 
+  Debug
+  Release
+  CUDA Debug
+  CUDA Release
 
-NOLINTS, cppcheck, diagnostic
-ADD TRACE statements to routines
-
-Check that no pure functions invoke the logger
-
-to_vecvec with Vector
-
-
-isApproxConvex
-add approximately convex routine for quadrilateral
-  -> area
-  -> meanchordlength
-
-
-make spatial partition a class
-
-
-std::vector insert
-
-old benchmarks to archive
+CUDA quadratic segment benchmark
 
 mortonsort for polytope soup
 reserve elements/vertices for submesh and read: abaqus, xdmf, FVM.toPolytopesoup, spatial_part.toPolytopeSoup
 
 iterators for edges and faces
 
-ray tests
-modular ray tests
-cross section tests
-material tests
-
-test pointer arithmetic versus index for ray/mesh intersection
-test iterating over edges with getEdge vs just manually making them
-
 effect test of morton order on intersect
 
-is_morton_ordered to fvm
+===============================================================================
+HOUSE KEEPING
+===============================================================================
+1. Restore scripts dir
+2. NOLINTS, cppcheck, diagnostic
+3. Old benchmarks: reimplement or place in archive
+4. clean archive
+5. ADD TRACE/DEBUG statements to routines. Remove old ones
+6. Ensure each function has a test
+7. struct -> class
 
-binned fvm
+===============================================================================
+BUGS
+===============================================================================
+1. um2::copy/std::copy bug
+2. Point in cell bug for c5g7 mesh
 
+===============================================================================
+POTENTIAL BUGS
+===============================================================================
+1. Check that no pure functions invoke the logger
+
+===============================================================================
+TESTS
+===============================================================================
+1. modular ray tests
+2. string
+3. vector
+4. polytope soup
+
+===============================================================================
+ALGORITHMS
+===============================================================================
+1. is_morton_ordered to fvm
+2. Vector insert?
+3. Consistent testing of mesh point inside.
+      getOrientedEdge -> return bool, pass edge by ref
+
+===============================================================================
+DATA STRUCTURES
+===============================================================================
+1. Make spatial partition a class
+2. Binned FVM
+
+===============================================================================
+BENCHMARKS
+===============================================================================
+1. test pointer arithmetic versus index for ray/mesh intersection
+2. test iterating over edges with getEdge vs just manually making them
+
+===============================================================================
+FUTURE
+===============================================================================
+1. ASSUME C++ 23 support (config.hpp)
