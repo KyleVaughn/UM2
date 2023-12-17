@@ -1,7 +1,7 @@
 #pragma once
 
 #include <um2/common/color.hpp>
-#include <um2/common/shortstring.hpp>
+#include <um2/common/string.hpp>
 #include <um2/physics/cross_section.hpp>
 
 namespace um2
@@ -10,7 +10,7 @@ namespace um2
 template <std::floating_point T>
 struct Material {
 
-  ShortString name;
+  String name;
   Color color;
   CrossSection<T> xs;
 
@@ -20,7 +20,7 @@ struct Material {
 
   constexpr Material() noexcept = default;
 
-  HOSTDEV constexpr Material(ShortString const & name_in, Color color_in) noexcept
+  HOSTDEV constexpr Material(String const & name_in, Color color_in) noexcept
       : name(name_in),
         color(color_in)
   {
@@ -28,19 +28,19 @@ struct Material {
 
   // TODO(kcvaughn): implicitly convert for name and color
 
-  HOSTDEV constexpr Material(ShortString const & name_in,
-                             ShortString const & color_in) noexcept
-      : name(name_in),
-        color(color_in)
-  {
-  }
-
-  template <uint64_t M, uint64_t N>
-  HOSTDEV constexpr Material(char const (&name_in)[M], char const (&color_in)[N]) noexcept
-      : name(name_in),
-        color(color_in)
-  {
-  }
+//  HOSTDEV constexpr Material(ShortString const & name_in,
+//                             ShortString const & color_in) noexcept
+//      : name(name_in),
+//        color(color_in)
+//  {
+//  }
+//
+//  template <uint64_t M, uint64_t N>
+//  HOSTDEV constexpr Material(char const (&name_in)[M], char const (&color_in)[N]) noexcept
+//      : name(name_in),
+//        color(color_in)
+//  {
+//  }
 
 };
 

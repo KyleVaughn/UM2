@@ -50,6 +50,7 @@ TEST_CASE(copy_nontrivial)
   struct A {
     int a;
     int b;
+    HOSTDEV
     A()
         : a(0),
           b(0)
@@ -61,9 +62,6 @@ TEST_CASE(copy_nontrivial)
           b(bb)
     {
     }
-    HOSTDEV
-    A(A const & other) = default;
-
     HOSTDEV
     A(A && other)
     noexcept
@@ -184,7 +182,7 @@ MAKE_CUDA_KERNEL(is_sorted_int);
 MAKE_CUDA_KERNEL(maxmin_int);
 MAKE_CUDA_KERNEL(maxmin_float);
 
-MAKE_CUDA_LAUNCHER(max_element_int);
+MAKE_CUDA_KERNEL(max_element_int);
 #endif
 
 TEST_SUITE(clamp)

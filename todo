@@ -1,17 +1,11 @@
 Currently working through polytope soup tests 
-  Debug
-  Release
-  CUDA Debug
-  CUDA Release
-
-CUDA quadratic segment benchmark
 
 mortonsort for polytope soup
 reserve elements/vertices for submesh and read: abaqus, xdmf, FVM.toPolytopesoup, spatial_part.toPolytopeSoup
 
-iterators for edges and faces
-
 effect test of morton order on intersect
+
+parallelize
 
 ===============================================================================
 HOUSE KEEPING
@@ -21,27 +15,21 @@ HOUSE KEEPING
 3. Old benchmarks: reimplement or place in archive
 4. clean archive
 5. ADD TRACE/DEBUG statements to routines. Remove old ones
-6. Ensure each function has a test
-7. struct -> class
 
 ===============================================================================
 BUGS
 ===============================================================================
-1. um2::copy/std::copy bug
 2. Point in cell bug for c5g7 mesh
 
 ===============================================================================
 POTENTIAL BUGS
 ===============================================================================
-1. Check that no pure functions invoke the logger
 
 ===============================================================================
 TESTS
 ===============================================================================
 1. modular ray tests
-2. string
-3. vector
-4. polytope soup
+2. polytope soup
 
 ===============================================================================
 ALGORITHMS
@@ -56,10 +44,15 @@ DATA STRUCTURES
 ===============================================================================
 1. Make spatial partition a class
 2. Binned FVM
+3. Simd vector
 
 ===============================================================================
 BENCHMARKS
 ===============================================================================
+************
+0. test effect of aligned vectors/vector extensions
+  just write the benchmark
+****************
 1. test pointer arithmetic versus index for ray/mesh intersection
 2. test iterating over edges with getEdge vs just manually making them
 
@@ -67,3 +60,5 @@ BENCHMARKS
 FUTURE
 ===============================================================================
 1. ASSUME C++ 23 support (config.hpp)
+2. Matplotlib
+1. um2::copy/std::copy bug

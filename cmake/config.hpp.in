@@ -12,20 +12,18 @@
 // CMake defines
 //==============================================================================
 
-// Use external dependencies
-#cmakedefine01 UM2_USE_TBB
-#cmakedefine01 UM2_USE_OPENMP
-#cmakedefine01 UM2_USE_GMSH
-#cmakedefine01 UM2_USE_PNG
-#cmakedefine01 UM2_USE_CUDA
-#cmakedefine01 UM2_USE_CLANG_TIDY
-
 // Enable/disable features
-#cmakedefine01 UM2_ENABLE_INT64
-#cmakedefine01 UM2_ENABLE_FLOAT64
-
-// Enable DBC
 #cmakedefine01 UM2_ENABLE_DBC
+#cmakedefine01 UM2_ENABLE_FLOAT64
+#cmakedefine01 UM2_ENABLE_INT64
+
+// Use external dependencies
+#cmakedefine01 UM2_USE_CLANG_TIDY
+#cmakedefine01 UM2_USE_CUDA
+#cmakedefine01 UM2_USE_GMSH
+#cmakedefine01 UM2_USE_OPENMP
+#cmakedefine01 UM2_USE_PNG
+#cmakedefine01 UM2_USE_TBB
 
 // Set compile-time filtering of log messages
 #define MIN_LOG_LEVEL @UM2_MIN_LOG_LEVEL@
@@ -107,15 +105,16 @@
 #  define GLOBAL
 #endif
 
-// API
-#ifdef HIDDEN
-#  error "HIDDEN already defined"
-#endif
-#define HIDDEN __attribute__((visibility("hidden")))
-
 //==============================================================================
 // Typedefs
 //==============================================================================
+
+// Floating point type in API.
+#if UM2_ENABLE_FLOAT64
+using Float = double; // Floating point type in API
+#else
+using Float = float; // Floating point type in API
+#endif
 
 // Integer type for indices and integers in API.
 #if UM2_ENABLE_INT64
@@ -134,13 +133,6 @@ sizeMax() -> Size
 {
   return 0x7FFFFFFF;
 }
-#endif
-
-// Floating point type in API.
-#if UM2_ENABLE_FLOAT64
-using Float = double; // Floating point type in API
-#else
-using Float = float; // Floating point type in API
 #endif
 
 // Integer type for material IDs.
@@ -203,38 +195,42 @@ abs(double x) noexcept -> double
 // If we are not using CUDA, assertions can be [[noreturn]].
 namespace um2
 {
-#  if UM2_USE_CUDA
-HOSTDEV inline void
-#  else
+
+# ifndef __CUDA_ARCH__
 [[noreturn]] inline void
-#  endif
 failedAssert(char const * const file, int const line, char const * const msg)
 {
   printf("Assertion failed: %s:%d: %s\n", file, line, msg);
-#  ifdef __CUDA_ARCH__
-  __threadfence();
-  asm("trap;");
-#  else
   exit(1);
-#  endif
 }
 
-#  if UM2_USE_CUDA
-HOSTDEV inline void
-#  else
 [[noreturn]] inline void
-#  endif
 failedAssertNear(char const * const file, int const line, char const * const a,
                  char const * const b, char const * const eps)
 {
   printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b, eps);
-#  ifdef __CUDA_ARCH__
+  exit(1);
+}
+# endif
+
+#  if UM2_USE_CUDA && defined(__CUDA_ARCH__)
+DEVICE inline void
+failedAssert(char const * const file, int const line, char const * const msg)
+{
+  printf("Assertion failed: %s:%d: %s\n", file, line, msg);
   __threadfence();
   asm("trap;");
-#  else
-  exit(1);
-#  endif
 }
+
+DEVICE inline void
+failedAssertNear(char const * const file, int const line, char const * const a,
+                 char const * const b, char const * const eps)
+{
+  printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b, eps);
+  __threadfence();
+  asm("trap;");
+}
+#  endif
 } // namespace um2
 
 #  define ASSERT(cond)                                                                   \

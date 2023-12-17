@@ -18,8 +18,8 @@ namespace um2
 //
 // Many arithmetic operators are purposely not defined to avoid accidental
 // loss of performance through creation of temporaries, poor vectorization, etc.
-// Ideally we should use expression templates to avoid this, common solutions like
-// Eigen don't play well with CUDA.
+// Ideally we should use expression templates to avoid this, but common solutions
+// like Eigen don't play well with CUDA.
 
 template <Size D, class T>
 class Vec {

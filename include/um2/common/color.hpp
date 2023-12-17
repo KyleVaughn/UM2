@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/common/shortstring.hpp>
+#include <um2/stdlib/string.hpp>
 
 #include <concepts>
 
@@ -45,7 +45,7 @@ public:
 
   // We want to allow for implicit conversion for some cases
   // NOLINTBEGIN(google-explicit-constructor) justified
-  HOSTDEV constexpr Color(ShortString const & name) noexcept;
+  HOSTDEV constexpr Color(String const & name) noexcept;
   // NOLINTEND(google-explicit-constructor)
 
   //==============================================================================
@@ -78,7 +78,7 @@ public:
 // Need to forward declare this if we want to keep the same order as declared
 // above.
 PURE HOSTDEV constexpr auto
-toColor(ShortString const & name) noexcept -> Color;
+toColor(String const & name) noexcept -> Color;
 
 //==============================================================================
 // Constructors
@@ -107,7 +107,7 @@ HOSTDEV constexpr Color::Color(T r_in, T g_in, T b_in, T a_in) noexcept
   _rep.rgba.a = static_cast<uint8_t>(a_in * 255);
 }
 
-HOSTDEV constexpr Color::Color(ShortString const & name) noexcept
+HOSTDEV constexpr Color::Color(String const & name) noexcept
     : Color()
 {
   *this = toColor(name);
@@ -162,11 +162,11 @@ operator!=(Color const lhs, Color const rhs) noexcept -> bool
 //==============================================================================
 
 PURE HOSTDEV constexpr auto
-toColor(ShortString const & name) noexcept -> Color
+toColor(String const & name) noexcept -> Color
 {
 
   struct NamedColor {
-    ShortString name;
+    String name;
     Color color;
   };
 

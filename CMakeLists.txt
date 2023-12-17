@@ -17,6 +17,7 @@ if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
     " Create a separate directory for build files and delete CMakeCache.txt.")
 endif()
 
+# If no build type is specified, default to Release
 if (NOT CMAKE_BUILD_TYPE)
   message(STATUS "No build type selected, defaulting to Release")
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build" FORCE)
@@ -39,35 +40,27 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # User options
 #===============================================================================
 
-# Use external dependencies
-option(UM2_USE_TBB          "Enable Intel TBB"                  ON)
-option(UM2_USE_OPENMP       "Enable OpenMP"                     ON)
-option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
-option(UM2_USE_PNG          "Enable PNG"                        OFF)
-option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
-
-# Enable/disable features
-option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large meshes
-option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"      ON)
-option(UM2_ENABLE_FASTMATH  "Enable fast math"                  ON) # CPU and GPU
-
 # Build options
+option(UM2_BUILD_BENCHMARKS "Build benchmarks"                  OFF)
+option(UM2_BUILD_EXAMPLES   "Build examples"                    OFF)
 option(UM2_BUILD_TESTS      "Build tests"                       ON)
 option(UM2_BUILD_TUTORIAL   "Build tutorial"                    OFF)
-option(UM2_BUILD_EXAMPLES   "Build examples"                    OFF)
-option(UM2_BUILD_BENCHMARKS "Build benchmarks"                  OFF)
+
+# Use external dependencies
+option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
+option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
+option(UM2_USE_OPENMP       "Enable OpenMP"                     ON)
+option(UM2_USE_PNG          "Enable PNG"                        OFF)
+option(UM2_USE_TBB          "Enable Intel TBB"                  ON)
+
+# Enable/disable features
+option(UM2_ENABLE_FASTMATH  "Enable fast math"                  ON) # CPU and GPU
+option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"      ON)
+option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large meshes
 
 #===============================================================================
 # Developer options
 #===============================================================================
-
-option(UM2_DEV_MODE          "Enable development mode"         OFF)
-option(UM2_USE_CLANG_FORMAT  "Enable clang-format targets"     ${UM2_DEV_MODE})
-option(UM2_USE_CLANG_TIDY    "Enable clang-tidy"               ${UM2_DEV_MODE})
-option(UM2_USE_CPPCHECK      "Enable cppcheck"                 ${UM2_DEV_MODE})
-option(UM2_USE_COVERAGE      "Enable coverage"                 OFF)
-option(UM2_USE_VALGRIND      "Enable valgrind"                 ${UM2_DEV_MODE})
-
 
 # If CMAKE_BUILD_TYPE is Debug, then turn on DBC by default
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -75,7 +68,17 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 else()
   set(IS_DEBUG_BUILD OFF)
 endif()
+
+# Enable/disable developer features
 option(UM2_ENABLE_DBC        "Enable DBC"                     ${IS_DEBUG_BUILD}) 
+
+# Use external tools
+option(UM2_DEV_MODE          "Enable development mode"         OFF)
+option(UM2_USE_CLANG_FORMAT  "Enable clang-format targets"     ${UM2_DEV_MODE})
+option(UM2_USE_CLANG_TIDY    "Enable clang-tidy"               ${UM2_DEV_MODE})
+option(UM2_USE_COVERAGE      "Enable coverage"                 OFF)
+option(UM2_USE_CPPCHECK      "Enable cppcheck"                 ${UM2_DEV_MODE})
+option(UM2_USE_VALGRIND      "Enable valgrind"                 ${UM2_DEV_MODE})
 
 #===============================================================================
 # Set minimum logging level
@@ -100,8 +103,8 @@ endif()
 
 # Minimum version for GCC and Clang
 # This is to ensure that the compiler supports the parts of C++20 that we use
-set(UM2_MIN_GCC_VERSION 10.0)
-set(UM2_MIN_CLANG_VERSION 10.0)
+set(UM2_MIN_GCC_VERSION 12.0)
+set(UM2_MIN_CLANG_VERSION 15.0)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${UM2_MIN_GCC_VERSION})
     message(FATAL_ERROR "GCC version must be at least ${UM2_MIN_GCC_VERSION}")
@@ -188,7 +191,7 @@ target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
 
 # OpenMP
 if (UM2_USE_OPENMP)
-  find_package(OpenMP REQUIRED)
+  find_package(OpenMP)
   target_link_libraries(um2 PUBLIC OpenMP::OpenMP_CXX)
   target_include_directories(um2 SYSTEM PUBLIC "${OpenMP_CXX_INCLUDE_DIRS}")
 endif()

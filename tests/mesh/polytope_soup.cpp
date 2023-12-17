@@ -164,6 +164,44 @@ TEST_CASE(sortElsets)
   ASSERT(ids == um2::Vector<I>({0, 1}));
   ASSERT(elset_data == um2::Vector<T>({10, 2}));
 }
+
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(mortonSortVertices)
+{
+  um2::PolytopeSoup<T, I> soup;
+  for (Size j = 0; j < 3; ++j) {
+    for (Size i = 0; i < 3; ++i) {
+        soup.addVertex(um2::Point3<T>(static_cast<T>(i), static_cast<T>(j), static_cast<T>(0)));
+    }
+  }
+  soup.addElement(um2::VTKElemType::Quad, {0, 1, 4, 3});
+  soup.addElement(um2::VTKElemType::Quad, {1, 2, 5, 4});
+  soup.addElement(um2::VTKElemType::Quad, {4, 5, 8, 7});
+  soup.addElement(um2::VTKElemType::Quad, {3, 4, 7, 6});
+  soup.mortonSortVertices();
+  ASSERT(um2::isApprox(soup.getVertex(0), um2::Point3<T>(0, 0, 0)));
+  ASSERT(um2::isApprox(soup.getVertex(1), um2::Point3<T>(1, 0, 0)));
+  ASSERT(um2::isApprox(soup.getVertex(2), um2::Point3<T>(0, 1, 0)));
+  ASSERT(um2::isApprox(soup.getVertex(3), um2::Point3<T>(1, 1, 0)));
+  ASSERT(um2::isApprox(soup.getVertex(4), um2::Point3<T>(0, 0, 1)));
+  ASSERT(um2::isApprox(soup.getVertex(5), um2::Point3<T>(1, 0, 1)));
+  ASSERT(um2::isApprox(soup.getVertex(6), um2::Point3<T>(0, 1, 1)));
+  ASSERT(um2::isApprox(soup.getVertex(7), um2::Point3<T>(1, 1, 1)));
+  ASSERT(um2::isApprox(soup.getVertex(8), um2::Point3<T>(2, 0, 0)));
+  ASSERT(um2::isApprox(soup.getVertex(9), um2::Point3<T>(3, 0, 0)));
+  ASSERT(um2::isApprox(soup.getVertex(10), um2::Point3<T>(2, 1, 0)));
+  ASSERT(um2::isApprox(soup.getVertex(11), um2::Point3<T>(3, 1, 0)));
+  ASSERT(um2::isApprox(soup.getVertex(12), um2::Point3<T>(2, 0, 1)));
+  ASSERT(um2::isApprox(soup.getVertex(13), um2::Point3<T>(3, 0, 1)));
+  ASSERT(um2::isApprox(soup.getVertex(14), um2::Point3<T>(2, 1, 1)));
+  ASSERT(um2::isApprox(soup.getVertex(15), um2::Point3<T>(3, 1, 1)));
+  um2::Vector<I> conn;
+  um2::VTKElemType type = um2::VTKElemType::Triangle;
+  soup.getElement(0, type, conn);
+  ASSERT(type == um2::VTKElemType::Quad);
+  ASSERT(conn == Vector<I>({0, 1, 3, 2}));
+}
+
 //
 //template <std::floating_point T, std::signed_integral I>
 //TEST_CASE(getSubmesh)

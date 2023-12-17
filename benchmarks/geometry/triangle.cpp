@@ -24,15 +24,15 @@
 // containsBary<double>/4194304                 4858 us         4858 us          137
 // containsCCW<double>/4194304                 25221 us        25220 us           28
 // containsCCWNoShort<double>/4194304           5398 us         5398 us          130
-// 
+//
 // containsBary<float>/4194304                  2185 us         2185 us          316
 // containsCCW<float>/4194304                  21576 us        21576 us           32
 // containsCCWNoShort<float>/4194304            2340 us         2340 us          274
-// 
+//
 // containsBaryCUDA<double>/4194304              384 us          384 us         1827
 // containsCCWCUDA<double>/4194304               360 us          360 us         1948
 // containsCCWNoShortCUDA<double>/4194304        397 us          397 us         1768
-// 
+//
 // containsBaryCUDA<float>/4194304              58.7 us         58.7 us        11930
 // containsCCWCUDA<float>/4194304               54.9 us         54.9 us        13032
 // containsCCWNoShortCUDA<float>/4194304        55.5 us         55.5 us        12200
@@ -128,6 +128,7 @@ containsBary(benchmark::State & state)
   for (auto s : state) {
     for (auto const & p : points) {
       if (bary(tri, p)) {
+        // cppcheck-suppress useStlAlgorithm
         ++i;
       }
     }
@@ -150,6 +151,7 @@ containsCCW(benchmark::State & state)
   for (auto s : state) {
     for (auto const & p : points) {
       if (ccw(tri, p)) {
+        // cppcheck-suppress useStlAlgorithm
         ++i;
       }
     }
@@ -172,6 +174,7 @@ containsCCWNoShort(benchmark::State & state)
   for (auto s : state) {
     for (auto const & p : points) {
       if (ccwNoShort(tri, p)) {
+        // cppcheck-suppress useStlAlgorithm
         ++i;
       }
     }
@@ -216,10 +219,10 @@ ccwNoShortKernel(um2::Triangle2<T> * tri, um2::Point2<T> * points, bool * bools,
   bools[index] = ccwNoShort(*tri, points[index]);
 }
 
-template <typename T>    
-void    
-containsBaryCUDA(benchmark::State & state)    
-{    
+template <typename T>
+void
+containsBaryCUDA(benchmark::State & state)
+{
   constexpr um2::Point2<T> p0{0, 0};
   constexpr um2::Point2<T> p1{1, 0};
   constexpr um2::Point2<T> p2{0, 1};
@@ -234,14 +237,14 @@ containsBaryCUDA(benchmark::State & state)
   size_t const size_of_points_in_bytes = static_cast<size_t>(n) * sizeof(um2::Point2<T>);
   size_t const size_of_tri_in_bytes = sizeof(um2::Triangle2<T>);
   size_t const size_of_bools_in_bytes = static_cast<size_t>(n) * sizeof(bool);
-  cudaMalloc(&points_d, size_of_points_in_bytes); 
+  cudaMalloc(&points_d, size_of_points_in_bytes);
   cudaMalloc(&tri_d, size_of_tri_in_bytes);
   cudaMalloc(&bools_d, size_of_bools_in_bytes);
   cudaMemcpy(points_d, points.data(), size_of_points_in_bytes, cudaMemcpyHostToDevice);
   cudaMemcpy(tri_d, &tri, size_of_tri_in_bytes, cudaMemcpyHostToDevice);
   //cudaMemcpy(bools_d, bools.data(), size_of_bools_in_bytes, cudaMemcpyHostToDevice);
   constexpr uint32_t tpb = 256; // threads per block
-  const uint32_t blocks = (n + tpb - 1) / tpb;
+  const uint32_t blocks = (static_cast<uint32_t>(n) + tpb - 1) / tpb;
   for (auto s : state) {
     baryKernel<<<blocks, tpb>>>(tri_d, points_d, bools_d, n);
     cudaDeviceSynchronize();
@@ -251,10 +254,10 @@ containsBaryCUDA(benchmark::State & state)
   cudaFree(bools_d);
 }
 
-template <typename T>    
-void    
-containsCCWCUDA(benchmark::State & state)    
-{    
+template <typename T>
+void
+containsCCWCUDA(benchmark::State & state)
+{
   constexpr um2::Point2<T> p0{0, 0};
   constexpr um2::Point2<T> p1{1, 0};
   constexpr um2::Point2<T> p2{0, 1};
@@ -269,14 +272,14 @@ containsCCWCUDA(benchmark::State & state)
   size_t const size_of_points_in_bytes = static_cast<size_t>(n) * sizeof(um2::Point2<T>);
   size_t const size_of_tri_in_bytes = sizeof(um2::Triangle2<T>);
   size_t const size_of_bools_in_bytes = static_cast<size_t>(n) * sizeof(bool);
-  cudaMalloc(&points_d, size_of_points_in_bytes); 
+  cudaMalloc(&points_d, size_of_points_in_bytes);
   cudaMalloc(&tri_d, size_of_tri_in_bytes);
   cudaMalloc(&bools_d, size_of_bools_in_bytes);
   cudaMemcpy(points_d, points.data(), size_of_points_in_bytes, cudaMemcpyHostToDevice);
   cudaMemcpy(tri_d, &tri, size_of_tri_in_bytes, cudaMemcpyHostToDevice);
   //cudaMemcpy(bools_d, bools.data(), size_of_bools_in_bytes, cudaMemcpyHostToDevice);
   constexpr uint32_t tpb = 256; // threads per block
-  const uint32_t blocks = (n + tpb - 1) / tpb;
+  const uint32_t blocks = (static_cast<uint32_t>(n) + tpb - 1) / tpb;
   for (auto s : state) {
     ccwKernel<<<blocks, tpb>>>(tri_d, points_d, bools_d, n);
     cudaDeviceSynchronize();
@@ -286,10 +289,10 @@ containsCCWCUDA(benchmark::State & state)
   cudaFree(bools_d);
 }
 
-template <typename T>    
-void    
-containsCCWNoShortCUDA(benchmark::State & state)    
-{    
+template <typename T>
+void
+containsCCWNoShortCUDA(benchmark::State & state)
+{
   constexpr um2::Point2<T> p0{0, 0};
   constexpr um2::Point2<T> p1{1, 0};
   constexpr um2::Point2<T> p2{0, 1};
@@ -304,14 +307,14 @@ containsCCWNoShortCUDA(benchmark::State & state)
   size_t const size_of_points_in_bytes = static_cast<size_t>(n) * sizeof(um2::Point2<T>);
   size_t const size_of_tri_in_bytes = sizeof(um2::Triangle2<T>);
   size_t const size_of_bools_in_bytes = static_cast<size_t>(n) * sizeof(bool);
-  cudaMalloc(&points_d, size_of_points_in_bytes); 
+  cudaMalloc(&points_d, size_of_points_in_bytes);
   cudaMalloc(&tri_d, size_of_tri_in_bytes);
   cudaMalloc(&bools_d, size_of_bools_in_bytes);
   cudaMemcpy(points_d, points.data(), size_of_points_in_bytes, cudaMemcpyHostToDevice);
   cudaMemcpy(tri_d, &tri, size_of_tri_in_bytes, cudaMemcpyHostToDevice);
   //cudaMemcpy(bools_d, bools.data(), size_of_bools_in_bytes, cudaMemcpyHostToDevice);
   constexpr uint32_t tpb = 256; // threads per block
-  const uint32_t blocks = (n + tpb - 1) / tpb;
+  const uint32_t blocks = (static_cast<uint32_t>(n) + tpb - 1) / tpb;
   for (auto s : state) {
     ccwNoShortKernel<<<blocks, tpb>>>(tri_d, points_d, bools_d, n);
     cudaDeviceSynchronize();

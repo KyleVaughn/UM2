@@ -39,6 +39,7 @@ public:
 
   constexpr RectilinearPartition() noexcept = default;
 
+  HOSTDEV
   constexpr RectilinearPartition(RectilinearGrid<D, T> const & grid,
                                  Vector<P> const & children) noexcept;
 

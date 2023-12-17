@@ -133,6 +133,12 @@ public:
   PURE [[nodiscard]] constexpr auto
   getVertex(Size i) const -> Point3<T> const &;
 
+  void
+  mortonSortElements();
+
+  void
+  mortonSortVertices();
+
   PURE [[nodiscard]] constexpr auto
   numElems() const -> Size;
 
@@ -247,6 +253,7 @@ PolytopeSoup<T, I>::getVertex(Size const i) const -> Point3<T> const &
   ASSERT(i < _vertices.size());
   return _vertices[i];
 }
+
 // 
 // //==============================================================================
 // // Operators
@@ -499,6 +506,62 @@ PolytopeSoup<T, I>::getMeshType() const -> MeshType
 }
 
 //==============================================================================
+// mortonSortVertices
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+void
+PolytopeSoup<T, I>::mortonSortVertices()
+{
+  // We need to scale the vertices to the unit cube before we can apply 
+  // the morton encoding.
+  auto const aabb = boundingBox(_vertices);
+  Point3<T> inv_scale = aabb.maxima() - aabb.minima();
+  inv_scale[0] = static_cast<T>(1) / inv_scale[0];
+  inv_scale[1] = static_cast<T>(1) / inv_scale[1];
+  inv_scale[2] = static_cast<T>(1) / inv_scale[2];
+  Size const num_verts = numVerts();
+  Vector<Point3<T>> scaled_verts(num_verts);
+  for (Size i = 0; i < num_verts; ++i) {
+    scaled_verts[i] = _vertices[i];
+    scaled_verts[i] *= inv_scale;
+  }
+
+  // Create a vector of Morton codes for the vertices.
+  Vector<uint32_t> morton_codes(num_verts, 0);
+  for (Size i = 0; i < num_verts; ++i) {
+    morton_codes[i] = mortonEncode<uint32_t>(scaled_verts[i]);
+  }
+
+  // Create a vector of indices into the vertices vector.
+  Vector<Size> perm(num_verts);
+
+  // Sort the indices as to create a permutation vector.
+  // perm[new_index] = old_index
+  sortPermutation(morton_codes.cbegin(), morton_codes.cend(), perm.begin());
+  ASSERT(!um2::is_sorted(morton_codes.cbegin(), morton_codes.cend()));
+
+  // We also want the inverse of the permutation vector.
+  // inv_perm[old_index] = new_index
+  // inv_perm[perm[new_index]] = new_index 
+  Vector<Size> inv_perm(num_verts);
+  for (Size i = 0; i < num_verts; ++i) {
+    inv_perm[perm[i]] = i;
+  }
+
+  // Sort the vertices according to the permutation vector.
+  applyPermutation(_vertices, perm);
+  
+  // Map the old vertex indices to the new vertex indices.
+  // From: _element_conn[i] = old_index
+  // To  : _element_conn[i] = inv_perm[_element_conn[i]] = new_index
+  for (auto & conn : _element_conn) {
+    // cppcheck-suppress useStlAlgorithm
+    conn = inv_perm[conn];
+  }
+}
+
+//==============================================================================
 // sortElsets
 //==============================================================================
 
@@ -506,11 +569,12 @@ template <std::floating_point T, std::signed_integral I>
 void
 PolytopeSoup<T, I>::sortElsets()
 {
-  using NameIndexPair = std::pair<String, I>;
+  using NameIndexPair = um2::pair<String, I>;
   Size const num_elsets = _elset_names.size();
   Vector<NameIndexPair> elset_name_index_pairs(num_elsets);
   for (Size i = 0; i < num_elsets; ++i) {
-    elset_name_index_pairs[i] = std::make_pair(_elset_names[i], static_cast<I>(i));
+    elset_name_index_pairs[i] = 
+      um2::make_pair<String, I>(_elset_names[i], static_cast<I>(i));
   }
   // Sort the vector by the elset names.
   std::sort(elset_name_index_pairs.begin(), elset_name_index_pairs.end(),

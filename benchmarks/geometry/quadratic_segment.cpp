@@ -1,26 +1,26 @@
-//=============================================================================    
-// Summary    
-//=============================================================================    
-//    
-// Purpose:    
-// -------    
-// This benchmark is to test the performance of various algorithms for testing    
+//=============================================================================
+// Summary
+//=============================================================================
+//
+// Purpose:
+// -------
+// This benchmark is to test the performance of various algorithms for testing
 // if a 2D point is left of a quadratic segment.
-//    
-// Description:    
-// ------------    
+//
+// Description:
+// ------------
 // Test the performance of the following algorithms:
-// - closestPointOnSegment: 
+// - closestPointOnSegment:
 //    If the point is not in bounding box of the curve, treat the curve as a straight
 //    line. Otherwise, find the point on the segment closest to the point in question.
 //    Test if V0, Vclose, and P are counter-clockwise oriented.
 // - (no longer used) rotatedAABB:
 //    Rotate/translate the curve so that V0 and V1 are on the x-axis.
 //    If the point is not in the bounding box of the curve, treat the curve as a straight
-//    line. Otherwise, solve for the point with the same x-coordinate as P that is 
+//    line. Otherwise, solve for the point with the same x-coordinate as P that is
 //    closest to the curve. Test if V0, Vclose, and P are counter-clockwise oriented.
 //    (In an old benchmark this was close to, but strightly slower than, bezierTriangle.)
-// - bezierTriangle: 
+// - bezierTriangle:
 //    Rotate/translate the curve so that V0 and V1 are on the x-axis.
 //    If the point is not in the triangle formed by the points of the equivalent
 //    bezier triangle, treat the curve as a straight line. Otherwise, solve for the
@@ -48,34 +48,36 @@
 //
 //
 // Test the cases using random points in a box around the curve.
-//    
-// Results:    
-// --------    
-// closestPointOnSegmentWB<float>/262144       1230 us         1230 us          569
-// closestPointOnSegmentPB<float>/262144       9093 us         9092 us           77
-// bezierTriangleWB<float>/262144              86.1 us         86.1 us         8033
-// bezierTrianglePB<float>/262144              1410 us         1410 us          493
-
-// Analysis:    
-// ---------    
-// CPU:    
-//   containsBary is the fastest algorithm for both 32-bit and 64-bit numbers.    
-//    
-// GPU:    
-//   containsCCWCUDA and the version without logical short-circuiting are faster    
-//   than containsBaryCUDA, but not by much.    
-//    
-// 32-bit vs 64-bit:    
-//   32-bit floats are faster than 64-bit floats on CPU by around a factor of 2.    
-//   On GPU, 32-bit floats are faster than 64-bit floats by around a factor of 7.    
-//    
-// Conclusions:    
-// ------------    
-// 1. 32-bit numbers are faster than 64-bit numbers on both CPU and GPU, so    
-//    we should prefer 32-bit numbers.    
 //
-// 2. containsBary is the fastest algorithm on CPU, and is only slightly slower
-//    on GPU, so we should use containsBary.
+// Results:
+// --------
+// closestPointOnSegmentWB<float>/262144           6893 us         6893 us          102
+// closestPointOnSegmentPB<float>/262144           7146 us         7146 us           99
+// bezierTriangleWB<float>/262144                  1867 us         1867 us          377
+// bezierTrianglePB<float>/262144                  1824 us         1824 us          383
+// closestPointOnSegmentWBCUDA<float>/262144       38.8 us         38.8 us        18103
+// closestPointOnSegmentPBCUDA<float>/262144       39.1 us         39.1 us        17999
+// bezierTriangleWBCUDA<float>/262144              7.89 us         7.89 us        89663
+// bezierTrianglePBCUDA<float>/262144              7.89 us         7.89 us        8841
+//
+// closestPointOnSegmentWB<double>/262144           7139 us         7138 us           99
+// closestPointOnSegmentPB<double>/262144           7174 us         7173 us           98
+// bezierTriangleWB<double>/262144                  3190 us         3189 us          216
+// bezierTrianglePB<double>/262144                  3191 us         3190 us          219
+// closestPointOnSegmentWBCUDA<double>/262144        692 us          692 us          993
+// closestPointOnSegmentPBCUDA<double>/262144        690 us          690 us         1012
+// bezierTriangleWBCUDA<double>/262144               128 us          128 us         5083
+// bezierTrianglePBCUDA<double>/262144               125 us          125 us         5555
+//
+// Analysis:
+// ---------
+// The bezierTriangle algorithm is faster than closestPointOnSegment on both CPU and GPU.
+// floats are must faster than doubles on both CPU and GPU.
+// The algorithms are about the same in speed for well behaved curves and poorly behaved curves.
+//
+// Conclusions:
+// ------------
+// Use bezierTriangle for both CPU and GPU.
 
 #include <um2/geometry/dion.hpp>
 #include "../helpers.hpp"
@@ -95,6 +97,8 @@ makeBaseSeg() -> um2::QuadraticSegment2<T>
   q[1] = um2::Vec<2, T>::zero();
   q[2] = um2::Vec<2, T>::zero();
   q[1][0] = static_cast<T>(2);
+  q[2][0] = static_cast<T>(1);
+  q[2][1] = static_cast<T>(1);
   return q;
 }
 
@@ -103,14 +107,13 @@ HOSTDEV constexpr auto
 makeSeg4() -> um2::QuadraticSegment2<T>
 {
   um2::QuadraticSegment2<T> q = makeBaseSeg<T>();
-  q[2][0] = static_cast<T>(2);
-  q[2][1] = static_cast<T>(1);
+  q[1][0] = static_cast<T>(2);
   return q;
 }
 
 template <typename T>
 PURE HOSTDEV auto
-isLeftClosestPointOnSegment(um2::QuadraticSegment2<T> const & q, 
+isLeftClosestPointOnSegment(um2::QuadraticSegment2<T> const & q,
                             um2::Point2<T> const & p) -> bool
 {
   if (!q.boundingBox().contains(p)) {
@@ -134,8 +137,8 @@ closestPointOnSegmentWB(benchmark::State & state)
   int64_t i = 0;
   for (auto s : state) {
     i += std::count_if(points.begin(), points.end(),
-                       [&seg](auto const & p) { 
-                        return isLeftClosestPointOnSegment(seg, p); 
+                       [&seg](auto const & p) {
+                        return isLeftClosestPointOnSegment(seg, p);
                        });
     benchmark::DoNotOptimize(i);
   }
@@ -152,8 +155,8 @@ bezierTriangleWB(benchmark::State & state)
   int64_t i = 0;
   for (auto s : state) {
     i += std::count_if(points.begin(), points.end(),
-                       [&seg](auto const & p) { 
-                        return seg.isLeft(p); 
+                       [&seg](auto const & p) {
+                        return seg.isLeft(p);
                        });
     benchmark::DoNotOptimize(i);
   }
@@ -170,8 +173,8 @@ closestPointOnSegmentPB(benchmark::State & state)
   int64_t i = 0;
   for (auto s : state) {
     i += std::count_if(points.begin(), points.end(),
-                       [&seg](auto const & p) { 
-                        return isLeftClosestPointOnSegment(seg, p); 
+                       [&seg](auto const & p) {
+                        return isLeftClosestPointOnSegment(seg, p);
                        });
     benchmark::DoNotOptimize(i);
   }
@@ -188,27 +191,206 @@ bezierTrianglePB(benchmark::State & state)
   int64_t i = 0;
   for (auto s : state) {
     i += std::count_if(points.begin(), points.end(),
-                       [&seg](auto const & p) { 
-                        return seg.isLeft(p); 
+                       [&seg](auto const & p) {
+                        return seg.isLeft(p);
                        });
     benchmark::DoNotOptimize(i);
   }
 }
-BENCHMARK_TEMPLATE(closestPointOnSegmentWB, float)
+
+#if UM2_USE_CUDA
+template <typename T>
+static __global__ void
+closestPointOnSegmentKernel(um2::QuadraticSegment2<T> const * seg,
+                            um2::Point2<T> const * points,
+                            bool * bools,
+                            Size const n)
+{
+  // Each thread is responsible for 1 point.
+  Size const index = blockIdx.x * blockDim.x + threadIdx.x;
+  if (index >= n) {
+    return;
+  }
+  bools[index] = isLeftClosestPointOnSegment(*seg, points[index]);
+}
+
+template <typename T>
+static __global__ void
+bezierTriangleKernel(um2::QuadraticSegment2<T> const * seg,
+                     um2::Point2<T> const * points,
+                     bool * bools,
+                     Size const n)
+{
+  // Each thread is responsible for 1 point.
+  Size const index = blockIdx.x * blockDim.x + threadIdx.x;
+  if (index >= n) {
+    return;
+  }
+  bools[index] = seg->isLeft(points[index]);
+}
+
+template <typename T>
+void
+closestPointOnSegmentWBCUDA(benchmark::State & state)
+{
+  Size const n = static_cast<Size>(state.range(0));
+  auto const seg = makeBaseSeg<T>();
+  um2::AxisAlignedBox2<T> const box({lo, lo}, {hi, hi});
+  auto const points = makeVectorOfRandomPoints(n, box);
+
+  um2::Point2<T> * points_d;
+  um2::QuadraticSegment2<T> * seg_d;
+  bool * bools_d;
+  size_t const size_of_points_in_bytes = static_cast<size_t>(n) * sizeof(um2::Point2<T>);
+  size_t const size_of_seg_in_bytes = sizeof(um2::QuadraticSegment2<T>);
+  size_t const size_of_bools_in_bytes = static_cast<size_t>(n) * sizeof(bool);
+  cudaMalloc(&points_d, size_of_points_in_bytes);
+  cudaMalloc(&seg_d, size_of_seg_in_bytes);
+  cudaMalloc(&bools_d, size_of_bools_in_bytes);
+  cudaMemcpy(points_d, points.data(), size_of_points_in_bytes, cudaMemcpyHostToDevice);
+  cudaMemcpy(seg_d, &seg, size_of_seg_in_bytes, cudaMemcpyHostToDevice);
+  constexpr uint32_t tpb = 256; // threads per block
+  const uint32_t blocks = (static_cast<uint32_t>(n) + tpb - 1) / tpb;
+  for (auto s : state) {
+    closestPointOnSegmentKernel<<<blocks, tpb>>>(seg_d, points_d, bools_d, n);
+    cudaDeviceSynchronize();
+  }
+  cudaFree(points_d);
+  cudaFree(seg_d);
+  cudaFree(bools_d);
+}
+
+template <typename T>
+void
+closestPointOnSegmentPBCUDA(benchmark::State & state)
+{
+  Size const n = static_cast<Size>(state.range(0));
+  auto const seg = makeSeg4<T>();
+  um2::AxisAlignedBox2<T> const box({lo, lo}, {hi, hi});
+  auto const points = makeVectorOfRandomPoints(n, box);
+
+  um2::Point2<T> * points_d;
+  um2::QuadraticSegment2<T> * seg_d;
+  bool * bools_d;
+  size_t const size_of_points_in_bytes = static_cast<size_t>(n) * sizeof(um2::Point2<T>);
+  size_t const size_of_seg_in_bytes = sizeof(um2::QuadraticSegment2<T>);
+  size_t const size_of_bools_in_bytes = static_cast<size_t>(n) * sizeof(bool);
+  cudaMalloc(&points_d, size_of_points_in_bytes);
+  cudaMalloc(&seg_d, size_of_seg_in_bytes);
+  cudaMalloc(&bools_d, size_of_bools_in_bytes);
+  cudaMemcpy(points_d, points.data(), size_of_points_in_bytes, cudaMemcpyHostToDevice);
+  cudaMemcpy(seg_d, &seg, size_of_seg_in_bytes, cudaMemcpyHostToDevice);
+  constexpr uint32_t tpb = 256; // threads per block
+  const uint32_t blocks = (static_cast<uint32_t>(n) + tpb - 1) / tpb;
+  for (auto s : state) {
+    closestPointOnSegmentKernel<<<blocks, tpb>>>(seg_d, points_d, bools_d, n);
+    cudaDeviceSynchronize();
+  }
+  cudaFree(points_d);
+  cudaFree(seg_d);
+  cudaFree(bools_d);
+}
+
+template <typename T>
+void
+bezierTriangleWBCUDA(benchmark::State & state)
+{
+  Size const n = static_cast<Size>(state.range(0));
+  auto const seg = makeBaseSeg<T>();
+  um2::AxisAlignedBox2<T> const box({lo, lo}, {hi, hi});
+  auto const points = makeVectorOfRandomPoints(n, box);
+
+  um2::Point2<T> * points_d;
+  um2::QuadraticSegment2<T> * seg_d;
+  bool * bools_d;
+  size_t const size_of_points_in_bytes = static_cast<size_t>(n) * sizeof(um2::Point2<T>);
+  size_t const size_of_seg_in_bytes = sizeof(um2::QuadraticSegment2<T>);
+  size_t const size_of_bools_in_bytes = static_cast<size_t>(n) * sizeof(bool);
+  cudaMalloc(&points_d, size_of_points_in_bytes);
+  cudaMalloc(&seg_d, size_of_seg_in_bytes);
+  cudaMalloc(&bools_d, size_of_bools_in_bytes);
+  cudaMemcpy(points_d, points.data(), size_of_points_in_bytes, cudaMemcpyHostToDevice);
+  cudaMemcpy(seg_d, &seg, size_of_seg_in_bytes, cudaMemcpyHostToDevice);
+  constexpr uint32_t tpb = 256; // threads per block
+  const uint32_t blocks = (static_cast<uint32_t>(n) + tpb - 1) / tpb;
+  for (auto s : state) {
+    bezierTriangleKernel<<<blocks, tpb>>>(seg_d, points_d, bools_d, n);
+    cudaDeviceSynchronize();
+  }
+  cudaFree(points_d);
+  cudaFree(seg_d);
+  cudaFree(bools_d);
+}
+
+template <typename T>
+void
+bezierTrianglePBCUDA(benchmark::State & state)
+{
+  Size const n = static_cast<Size>(state.range(0));
+  auto const seg = makeSeg4<T>();
+  um2::AxisAlignedBox2<T> const box({lo, lo}, {hi, hi});
+  auto const points = makeVectorOfRandomPoints(n, box);
+
+  um2::Point2<T> * points_d;
+  um2::QuadraticSegment2<T> * seg_d;
+  bool * bools_d;
+  size_t const size_of_points_in_bytes = static_cast<size_t>(n) * sizeof(um2::Point2<T>);
+  size_t const size_of_seg_in_bytes = sizeof(um2::QuadraticSegment2<T>);
+  size_t const size_of_bools_in_bytes = static_cast<size_t>(n) * sizeof(bool);
+  cudaMalloc(&points_d, size_of_points_in_bytes);
+  cudaMalloc(&seg_d, size_of_seg_in_bytes);
+  cudaMalloc(&bools_d, size_of_bools_in_bytes);
+  cudaMemcpy(points_d, points.data(), size_of_points_in_bytes, cudaMemcpyHostToDevice);
+  cudaMemcpy(seg_d, &seg, size_of_seg_in_bytes, cudaMemcpyHostToDevice);
+  constexpr uint32_t tpb = 256; // threads per block
+  const uint32_t blocks = (static_cast<uint32_t>(n) + tpb - 1) / tpb;
+  for (auto s : state) {
+    bezierTriangleKernel<<<blocks, tpb>>>(seg_d, points_d, bools_d, n);
+    cudaDeviceSynchronize();
+  }
+  cudaFree(points_d);
+  cudaFree(seg_d);
+  cudaFree(bools_d);
+}
+
+#endif
+
+BENCHMARK_TEMPLATE(closestPointOnSegmentWB, double)
     ->RangeMultiplier(4)
     ->Range(65536, npoints)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(closestPointOnSegmentPB, float)
+BENCHMARK_TEMPLATE(closestPointOnSegmentPB, double)
     ->RangeMultiplier(4)
     ->Range(65536, npoints)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(bezierTriangleWB, float)
+BENCHMARK_TEMPLATE(bezierTriangleWB, double)
     ->RangeMultiplier(4)
     ->Range(65536, npoints)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(bezierTrianglePB, float)
+BENCHMARK_TEMPLATE(bezierTrianglePB, double)
     ->RangeMultiplier(4)
     ->Range(65536, npoints)
     ->Unit(benchmark::kMicrosecond);
+
+#if UM2_USE_CUDA
+
+BENCHMARK_TEMPLATE(closestPointOnSegmentWBCUDA, double)
+    ->RangeMultiplier(4)
+    ->Range(65536, npoints)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(closestPointOnSegmentPBCUDA, double)
+    ->RangeMultiplier(4)
+    ->Range(65536, npoints)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(bezierTriangleWBCUDA, double)
+    ->RangeMultiplier(4)
+    ->Range(65536, npoints)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(bezierTrianglePBCUDA, double)
+    ->RangeMultiplier(4)
+    ->Range(65536, npoints)
+    ->Unit(benchmark::kMicrosecond);
+
+#endif
 
 BENCHMARK_MAIN();

@@ -182,11 +182,11 @@ public:
   operator==(Vector const & v) const noexcept -> bool;
 
   // NOLINTEND(readability-identifier-naming)
-}; // struct Vector
+}; // class Vector
 
 // Vector<bool> is a specialization that is not supported
 template <>
-struct Vector<bool> {
+class Vector<bool> {
 };
 
 //==============================================================================

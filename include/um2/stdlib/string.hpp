@@ -107,12 +107,6 @@ class String {
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getShortSize() const noexcept -> uint8_t;
 
-  HOSTDEV constexpr void
-  initLong(uint64_t n) noexcept;
-
-  HOSTDEV constexpr void
-  initShort(uint64_t n) noexcept;
-
 public:
   // The maximum capacity of a long string.
   static Size constexpr npos = sizeMax();
@@ -148,12 +142,16 @@ public:
 
   HOSTDEV constexpr ~String() noexcept
   {
+#ifndef __clang__
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     if (isLong()) {
       ::operator delete(_r.l.data);
     }
+#ifndef __clang__
     #pragma GCC diagnostic pop
+#endif
   }
 
   //==============================================================================
@@ -701,6 +699,7 @@ String::operator+=(String const & s) noexcept -> String &
     _r.l.size = new_size;
     _r.l.data = tmp;
   }
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
   return *this;
 }
 
@@ -729,6 +728,7 @@ String::operator+=(char const c) noexcept -> String &
     _r.l.size = new_size;
     _r.l.data = tmp;
   }
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
   return *this;
 }
 

@@ -37,6 +37,7 @@ public:
 
   constexpr RegularPartition() noexcept = default;
 
+  HOSTDEV
   constexpr RegularPartition(RegularGrid<D, T> const & grid,
                              Vector<P> const & children) noexcept;
 
