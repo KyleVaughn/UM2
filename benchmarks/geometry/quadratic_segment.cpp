@@ -73,14 +73,15 @@
 // ---------
 // The bezierTriangle algorithm is faster than closestPointOnSegment on both CPU and GPU.
 // floats are must faster than doubles on both CPU and GPU.
-// The algorithms are about the same in speed for well behaved curves and poorly behaved curves.
+// The algorithms are about the same in speed for well behaved curves and poorly behaved
+// curves.
 //
 // Conclusions:
 // ------------
 // Use bezierTriangle for both CPU and GPU.
 
-#include <um2/geometry/dion.hpp>
 #include "../helpers.hpp"
+#include <um2/geometry/dion.hpp>
 
 constexpr Size npoints = 1 << 18;
 // BB of base seg is [0, 0] to [2, 1]
@@ -113,8 +114,8 @@ makeSeg4() -> um2::QuadraticSegment2<T>
 
 template <typename T>
 PURE HOSTDEV auto
-isLeftClosestPointOnSegment(um2::QuadraticSegment2<T> const & q,
-                            um2::Point2<T> const & p) -> bool
+isLeftClosestPointOnSegment(um2::QuadraticSegment2<T> const & q, um2::Point2<T> const & p)
+    -> bool
 {
   if (!q.boundingBox().contains(p)) {
     return um2::LineSegment2<T>(q[0], q[1]).isLeft(p);
@@ -136,10 +137,9 @@ closestPointOnSegmentWB(benchmark::State & state)
   auto const points = makeVectorOfRandomPoints(n, box);
   int64_t i = 0;
   for (auto s : state) {
-    i += std::count_if(points.begin(), points.end(),
-                       [&seg](auto const & p) {
-                        return isLeftClosestPointOnSegment(seg, p);
-                       });
+    i += std::count_if(points.begin(), points.end(), [&seg](auto const & p) {
+      return isLeftClosestPointOnSegment(seg, p);
+    });
     benchmark::DoNotOptimize(i);
   }
 }
@@ -155,9 +155,7 @@ bezierTriangleWB(benchmark::State & state)
   int64_t i = 0;
   for (auto s : state) {
     i += std::count_if(points.begin(), points.end(),
-                       [&seg](auto const & p) {
-                        return seg.isLeft(p);
-                       });
+                       [&seg](auto const & p) { return seg.isLeft(p); });
     benchmark::DoNotOptimize(i);
   }
 }
@@ -172,10 +170,9 @@ closestPointOnSegmentPB(benchmark::State & state)
   auto const points = makeVectorOfRandomPoints(n, box);
   int64_t i = 0;
   for (auto s : state) {
-    i += std::count_if(points.begin(), points.end(),
-                       [&seg](auto const & p) {
-                        return isLeftClosestPointOnSegment(seg, p);
-                       });
+    i += std::count_if(points.begin(), points.end(), [&seg](auto const & p) {
+      return isLeftClosestPointOnSegment(seg, p);
+    });
     benchmark::DoNotOptimize(i);
   }
 }
@@ -191,9 +188,7 @@ bezierTrianglePB(benchmark::State & state)
   int64_t i = 0;
   for (auto s : state) {
     i += std::count_if(points.begin(), points.end(),
-                       [&seg](auto const & p) {
-                        return seg.isLeft(p);
-                       });
+                       [&seg](auto const & p) { return seg.isLeft(p); });
     benchmark::DoNotOptimize(i);
   }
 }
@@ -202,9 +197,7 @@ bezierTrianglePB(benchmark::State & state)
 template <typename T>
 static __global__ void
 closestPointOnSegmentKernel(um2::QuadraticSegment2<T> const * seg,
-                            um2::Point2<T> const * points,
-                            bool * bools,
-                            Size const n)
+                            um2::Point2<T> const * points, bool * bools, Size const n)
 {
   // Each thread is responsible for 1 point.
   Size const index = blockIdx.x * blockDim.x + threadIdx.x;
@@ -216,10 +209,8 @@ closestPointOnSegmentKernel(um2::QuadraticSegment2<T> const * seg,
 
 template <typename T>
 static __global__ void
-bezierTriangleKernel(um2::QuadraticSegment2<T> const * seg,
-                     um2::Point2<T> const * points,
-                     bool * bools,
-                     Size const n)
+bezierTriangleKernel(um2::QuadraticSegment2<T> const * seg, um2::Point2<T> const * points,
+                     bool * bools, Size const n)
 {
   // Each thread is responsible for 1 point.
   Size const index = blockIdx.x * blockDim.x + threadIdx.x;

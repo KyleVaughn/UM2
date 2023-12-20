@@ -26,13 +26,13 @@ namespace um2
 //  * is where grid.minima is located
 
 template <Size D, typename T, typename P>
-class RectilinearPartition {
+class RectilinearPartition
+{
 
   RectilinearGrid<D, T> _grid;
   Vector<P> _children;
 
 public:
-
   //==============================================================================
   // Constructors
   //==============================================================================
@@ -53,7 +53,7 @@ public:
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   grid() const noexcept -> RectilinearGrid<D, T> const &;
-  
+
   PURE HOSTDEV [[nodiscard]] constexpr auto
   children() const noexcept -> Vector<P> const &;
 
@@ -171,7 +171,8 @@ using RectilinearPartition3d = RectilinearPartition3<double, P>;
 template <Size D, typename T, typename P>
 constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
     RectilinearGrid<D, T> const & grid, Vector<P> const & children) noexcept
-    : _grid(grid), _children(children)
+    : _grid(grid),
+      _children(children)
 {
 }
 

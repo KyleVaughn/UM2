@@ -12,12 +12,12 @@ enum class XSReductionStrategy {
 };
 
 template <std::floating_point T>
-class CrossSection {
+class CrossSection
+{
 
   Vector<T> _t; // Total macroscopic cross section
 
 public:
-
   //======================================================================
   // Constructors
   //======================================================================

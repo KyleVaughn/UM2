@@ -14,7 +14,8 @@ namespace um2
 // Little endian: 0xAABBGGRR
 // Common colors are defined in the .inl file
 
-class Color {
+class Color
+{
 
   struct RGBA {
     uint8_t r, g, b, a;

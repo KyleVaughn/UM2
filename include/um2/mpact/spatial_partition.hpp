@@ -1205,7 +1205,7 @@ SpatialPartition<T, I>::importCoarseCells(String const & filename)
     for (Size ip = 0; ip < num_verts; ++ip) {
       vertices[ip] -= min_point;
     }
-#ifndef NDEBUG
+#if UM2_ENABLE_DBC
     Point2<T> const dxdy = bb.maxima - bb.minima;
     ASSERT(isApprox(dxdy, cc.dxdy));
 #endif
@@ -1342,8 +1342,8 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn)
                     coarse_cells[cell_id].material_ids;
                 LOG_TRACE("cell_materials.size() = " + toString(cell_materials.size()));
                 for (Size iface = 0; iface < cell_materials.size(); ++iface) {
-                  auto const mat_id = static_cast<Size>(
-                      static_cast<uint32_t>(cell_materials[iface]));
+                  auto const mat_id =
+                      static_cast<Size>(static_cast<uint32_t>(cell_materials[iface]));
                   material_elsets[mat_id].push_back(
                       static_cast<I>(iface + cell_faces_prev));
                 }
@@ -1776,7 +1776,8 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
         // Add the Z information for the lattice
         pugi::xml_node xlat_info = xlat_grid.append_child("Information");
         xlat_info.append_attribute("Name") = "Z";
-        String const z_values = toString(low_z) + ", " + toString(lat_z) + ", " + toString(high_z);
+        String const z_values =
+            toString(low_z) + ", " + toString(lat_z) + ", " + toString(high_z);
         xlat_info.append_child(pugi::node_pcdata).set_value(z_values.c_str());
 
         // Write the M by N information
@@ -1826,7 +1827,8 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
             xrtm_mn_info.append_child(pugi::node_pcdata).set_value(rtm_mn_str.c_str());
 
             // Create the h5 group
-            String const h5rtm_grouppath = h5lat_grouppath + "/" + String(ss.str().c_str());
+            String const h5rtm_grouppath =
+                h5lat_grouppath + "/" + String(ss.str().c_str());
             H5::Group const h5rtm_group = h5file.createGroup(h5rtm_grouppath.c_str());
 
             for (Size iycell = 0; iycell < nycells; ++iycell) {
@@ -1872,7 +1874,8 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
                           T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
                               XSReductionStrategy::Mean);
                           cc_kns_max[cell_id][iface] = static_cast<T>(1) / (t_max * mcl);
-                          cc_kns_mean[cell_id][iface] = static_cast<T>(1) / (t_mean * mcl);
+                          cc_kns_mean[cell_id][iface] =
+                              static_cast<T>(1) / (t_mean * mcl);
                         }
                       }
                     }
@@ -1894,7 +1897,8 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
                           T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
                               XSReductionStrategy::Mean);
                           cc_kns_max[cell_id][iface] = static_cast<T>(1) / (t_max * mcl);
-                          cc_kns_mean[cell_id][iface] = static_cast<T>(1) / (t_mean * mcl);
+                          cc_kns_mean[cell_id][iface] =
+                              static_cast<T>(1) / (t_mean * mcl);
                         }
                       }
                     }
@@ -1907,8 +1911,10 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
                         LOG_TRACE("Computing Knudsen numbers");
                         cc_kns_max[cell_id].resize(quadratic_tri[mesh_id].fv.size());
                         cc_kns_mean[cell_id].resize(quadratic_tri[mesh_id].fv.size());
-                        for (Size iface = 0; iface < quadratic_tri[mesh_id].fv.size(); ++iface) {
-                          T const mcl = quadratic_tri[mesh_id].getFace(iface).meanChordLength();
+                        for (Size iface = 0; iface < quadratic_tri[mesh_id].fv.size();
+                             ++iface) {
+                          T const mcl =
+                              quadratic_tri[mesh_id].getFace(iface).meanChordLength();
                           auto const mat_id = static_cast<Size>(
                               static_cast<uint32_t>(cell_materials[iface]));
                           T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
@@ -1916,7 +1922,8 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
                           T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
                               XSReductionStrategy::Mean);
                           cc_kns_max[cell_id][iface] = static_cast<T>(1) / (t_max * mcl);
-                          cc_kns_mean[cell_id][iface] = static_cast<T>(1) / (t_mean * mcl);
+                          cc_kns_mean[cell_id][iface] =
+                              static_cast<T>(1) / (t_mean * mcl);
                         }
                       }
                     }
@@ -1929,8 +1936,10 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
                         LOG_TRACE("Computing Knudsen numbers");
                         cc_kns_max[cell_id].resize(quadratic_quad[mesh_id].fv.size());
                         cc_kns_mean[cell_id].resize(quadratic_quad[mesh_id].fv.size());
-                        for (Size iface = 0; iface < quadratic_quad[mesh_id].fv.size(); ++iface) {
-                          T const mcl = quadratic_quad[mesh_id].getFace(iface).meanChordLength();
+                        for (Size iface = 0; iface < quadratic_quad[mesh_id].fv.size();
+                             ++iface) {
+                          T const mcl =
+                              quadratic_quad[mesh_id].getFace(iface).meanChordLength();
                           auto const mat_id = static_cast<Size>(
                               static_cast<uint32_t>(cell_materials[iface]));
                           T const t_max = materials[mat_id].xs.getOneGroupTotalXS(
@@ -1938,7 +1947,8 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
                           T const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
                               XSReductionStrategy::Mean);
                           cc_kns_max[cell_id][iface] = static_cast<T>(1) / (t_max * mcl);
-                          cc_kns_mean[cell_id][iface] = static_cast<T>(1) / (t_mean * mcl);
+                          cc_kns_mean[cell_id][iface] =
+                              static_cast<T>(1) / (t_mean * mcl);
                         }
                       }
                     }
@@ -1967,15 +1977,18 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
                   Vector<Vector<I>> cc_mats_split(cc_nunique);
                   for (Size i = 0; i < cc_nfaces; ++i) {
                     I const mat_id = cc_mats[i];
-                    auto * mat_it = std::find(cc_mats_unique.begin(), cc_mats_unique.end(), mat_id);
-                    Size const mat_idx = static_cast<Size>(mat_it - cc_mats_unique.begin());
+                    auto * mat_it =
+                        std::find(cc_mats_unique.begin(), cc_mats_unique.end(), mat_id);
+                    Size const mat_idx =
+                        static_cast<Size>(mat_it - cc_mats_unique.begin());
                     cc_mats_split[mat_idx].push_back(i);
                   }
                   // add each material elset
                   for (Size i = 0; i < cc_nunique; ++i) {
                     I const mat_id = cc_mats_unique[i];
                     Vector<I> const & mat_faces = cc_mats_split[i];
-                    String const mat_name = "Material_" + String(materials[mat_id].name.data());
+                    String const mat_name =
+                        "Material_" + String(materials[mat_id].name.data());
                     soup.addElset(mat_name, mat_faces);
                   }
 
@@ -1994,12 +2007,15 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
                     T const kn_mean_min = kns_mean.front();
                     T const kn_max_mean = um2::mean(kns_max.begin(), kns_max.end());
                     T const kn_mean_mean = um2::mean(kns_mean.begin(), kns_mean.end());
-                    LOG_INFO("Coarse Cell " + toString(cell_id) + " " + toString(kn_max_max) + " " + toString(kn_max_min) + " " + toString(kn_max_mean));
-                    LOG_INFO("Coarse Cell " + toString(cell_id) + " " + toString(kn_mean_max) + " " + toString(kn_mean_min) + " " + toString(kn_mean_mean));
+                    LOG_INFO("Coarse Cell " + toString(cell_id) + " " +
+                             toString(kn_max_max) + " " + toString(kn_max_min) + " " +
+                             toString(kn_max_mean));
+                    LOG_INFO("Coarse Cell " + toString(cell_id) + " " +
+                             toString(kn_mean_max) + " " + toString(kn_mean_min) + " " +
+                             toString(kn_mean_mean));
                   }
-
                 }
-                
+
                 // Shift the mesh to global coordinates
                 Point2<T> const xy_offset = cell_ll + rtm_ll + asy_ll;
                 Point3<T> const shift = Point3<T>(xy_offset[0], xy_offset[1], lat_z);
@@ -2007,17 +2023,17 @@ SpatialPartition<T, I>::writeXDMF(String const & filepath, bool write_kn) const
 
                 // Write the mesh
                 soup.writeXDMFUniformGrid(cell_name, material_names, xrtm_grid, h5file,
-                                          h5filename, h5rtm_grouppath); 
+                                          h5filename, h5rtm_grouppath);
 
                 // Shift the mesh back to local coordinates
                 soup.translate(-shift);
               } // for (ixcell)
-            } // for (iycell)
-          } // for (ixrtm)
-        } // for (iyrtm)
-      } // for (izlat)
-    }  // for (ixasy)
-  } // for (iyasy)      
+            }   // for (iycell)
+          }     // for (ixrtm)
+        }       // for (iyrtm)
+      }         // for (izlat)
+    }           // for (ixasy)
+  }             // for (iyasy)
 
   // Write the XML file
   xdoc.save_file(filepath.c_str(), "  ");

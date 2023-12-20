@@ -24,7 +24,8 @@ namespace um2
 static_assert(std::endian::native == std::endian::little,
               "Only little endian is supported.");
 
-class String {
+class String
+{
 
   // Heap-allocated string representation.
   // 24 bytes
@@ -70,7 +71,7 @@ class String {
   Rep _r;
 
   //==============================================================================
-  // Private methods 
+  // Private methods
   //==============================================================================
   // NOLINTBEGIN(readability-identifier-naming); justification: match std::string
 
@@ -143,14 +144,14 @@ public:
   HOSTDEV constexpr ~String() noexcept
   {
 #ifndef __clang__
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
     if (isLong()) {
       ::operator delete(_r.l.data);
     }
 #ifndef __clang__
-    #pragma GCC diagnostic pop
+#  pragma GCC diagnostic pop
 #endif
   }
 
@@ -300,9 +301,8 @@ toString(T const & t) noexcept -> String;
   _r.s.size = (nn - 1) & short_size_mask;                                                \
   copy(ss, ss + nn, addressof(_r.s.data[0]));
 
-
 //==============================================================================
-// Private methods 
+// Private methods
 //==============================================================================
 
 PURE HOSTDEV constexpr auto

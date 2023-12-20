@@ -209,14 +209,14 @@ main() -> int
   double const target_kn = 12;
   um2::XSReductionStrategy const kn_strategy = um2::XSReductionStrategy::Mean;
   um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, materials, target_kn,
-                                                       kn_strategy);
+                                                        kn_strategy);
   // um2::gmsh::model::mesh::setGlobalMeshSize(0.06);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
 
   um2::gmsh::write("c5g7.inp");
   model.importCoarseCells("c5g7.inp");
   for (auto const & cc : model.coarse_cells) {
-    um2::Log::info("CC has " + um2::toString(cc.numFaces()) + " faces"); 
+    um2::Log::info("CC has " + um2::toString(cc.numFaces()) + " faces");
   }
   model.materials[6].xs.t = uo2_xs;
   model.materials[2].xs.t = mox43_xs;

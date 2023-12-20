@@ -24,13 +24,13 @@ namespace um2
 //  * is where grid.minima is located.
 
 template <Size D, typename T, typename P>
-class RegularPartition {
+class RegularPartition
+{
 
   RegularGrid<D, T> _grid;
   Vector<P> _children;
 
 public:
-
   //==============================================================================
   // Constructors
   //==============================================================================
@@ -166,9 +166,10 @@ using RegularPartition3d = RegularPartition3<double, P>;
 //==============================================================================
 
 template <Size D, typename T, typename P>
-constexpr RegularPartition<D, T, P>::RegularPartition(
-    RegularGrid<D, T> const & grid, Vector<P> const & children) noexcept
-    : _grid(grid), _children(children)
+constexpr RegularPartition<D, T, P>::RegularPartition(RegularGrid<D, T> const & grid,
+                                                      Vector<P> const & children) noexcept
+    : _grid(grid),
+      _children(children)
 {
 }
 

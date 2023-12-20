@@ -18,7 +18,8 @@ namespace um2
 // https://en.cppreference.com/w/cpp/container/vector
 
 template <typename T>
-class Vector {
+class Vector
+{
 
   using Ptr = T *;
   using ConstPtr = T const *;
@@ -26,7 +27,6 @@ class Vector {
   Ptr _begin = nullptr;
   Ptr _end = nullptr;
   Ptr _end_cap = nullptr;
-
 
   //==============================================================================
   // Private methods
@@ -80,7 +80,6 @@ public:
   //==============================================================================
   // Accessors
   //==============================================================================
-
 
   PURE HOSTDEV [[nodiscard]] static constexpr auto
   max_size() noexcept -> Size;
@@ -186,7 +185,8 @@ public:
 
 // Vector<bool> is a specialization that is not supported
 template <>
-class Vector<bool> {
+class Vector<bool>
+{
 };
 
 //==============================================================================

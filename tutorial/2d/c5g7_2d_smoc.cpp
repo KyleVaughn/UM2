@@ -183,7 +183,6 @@ main() -> int
     )");
   model.stdMakeCore(core_assembly_ids);
 
-
   for (auto const & cc : model.coarse_cells) {
     um2::Log::info("CC has " + um2::toString(cc.numFaces()) + " faces");
   }

@@ -35,9 +35,9 @@ TEST_CASE(accessors)
   T constexpr eps = static_cast<T>(1e-6);
   um2::RegularPartition<D, T, P> const part = makePart<D, T, P>();
   if constexpr (D >= 1) {
-    T const xmin = static_cast<T>(1); 
+    T const xmin = static_cast<T>(1);
     ASSERT_NEAR(part.xMin(), xmin, eps);
-    T const dx = static_cast<T>(1); 
+    T const dx = static_cast<T>(1);
     ASSERT_NEAR(part.dx(), dx, eps);
     Size const nx = 1;
     ASSERT(part.numXCells() == nx);

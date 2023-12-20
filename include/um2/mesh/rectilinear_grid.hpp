@@ -14,13 +14,13 @@ namespace um2
 template <Size D, typename T>
 // clang-tidy complaing about '__i0' in the name of the struct
 // NOLINTNEXTLINE justified above
-class RectilinearGrid {
+class RectilinearGrid
+{
 
   // Divisions along each axis
   Vector<T> _divs[D];
 
 public:
-
   //==============================================================================
   // Constructors
   //==============================================================================

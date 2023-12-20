@@ -23,8 +23,8 @@ mortonSort(Point<D, T> * const begin, Point<D, T> * const end)
 #endif
 
 #if UM2_USE_CUDA
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 template <std::unsigned_integral U, Size D, std::floating_point T>
 void
 deviceMortonSort(Point<D, T> * const begin, Point<D, T> * const end)
@@ -53,7 +53,7 @@ deviceMortonSort(Point<D, T> * const begin, Point<D, T> * const end)
   error = cudaFree(d_temp_storage);
   CUDA_CHECK_ERROR(error);
 }
-#pragma GCC diagnostic pop
+#  pragma GCC diagnostic pop
 #endif
 
 } // namespace um2::parallel

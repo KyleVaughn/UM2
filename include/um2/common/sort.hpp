@@ -1,9 +1,9 @@
 #pragma once
 
 #include <um2/stdlib/algorithm.hpp> // std::sort
-#include <um2/stdlib/numeric.hpp> // std::iota
-#include <um2/stdlib/utility.hpp> // um2::move
-#include <um2/stdlib/vector.hpp> // um2::Vector
+#include <um2/stdlib/numeric.hpp>   // std::iota
+#include <um2/stdlib/utility.hpp>   // um2::move
+#include <um2/stdlib/vector.hpp>    // um2::Vector
 
 namespace um2
 {
@@ -88,6 +88,20 @@ applyPermutation(Vector<T> & v, Vector<Size> const & perm) noexcept
       prev_j = j;
       j = perm[j];
     }
+  }
+}
+
+//==============================================================================
+// invertPermutation
+//==============================================================================
+
+template <std::integral I>
+void
+invertPermutation(Vector<I> const & perm, Vector<I> & inv_perm) noexcept
+{
+  ASSERT(perm.size() == inv_perm.size());
+  for (Size i = 0; i < perm.size(); ++i) {
+    inv_perm[perm[i]] = i;
   }
 }
 

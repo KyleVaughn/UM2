@@ -194,8 +194,8 @@ mortonSortParallel(benchmark::State & state)
 #endif
 
 #if UM2_USE_CUDA
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 template <typename T, typename U>
 void
 mortonSortCuda(benchmark::State & state)
@@ -233,7 +233,7 @@ mortonSortCuda(benchmark::State & state)
   }
   cudaFree(d_points);
 }
-#pragma GCC diagnostic pop
+#  pragma GCC diagnostic pop
 #endif
 
 BENCHMARK_TEMPLATE2(mortonSortSerial, double, uint64_t)

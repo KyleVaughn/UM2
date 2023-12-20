@@ -1,6 +1,5 @@
 Currently working through polytope soup tests 
 
-mortonsort for polytope soup
 reserve elements/vertices for submesh and read: abaqus, xdmf, FVM.toPolytopesoup, spatial_part.toPolytopeSoup
 
 effect test of morton order on intersect
@@ -15,6 +14,7 @@ HOUSE KEEPING
 3. Old benchmarks: reimplement or place in archive
 4. clean archive
 5. ADD TRACE/DEBUG statements to routines. Remove old ones
+6. Fix nolints, especially cognitive complexity
 
 ===============================================================================
 BUGS
@@ -29,7 +29,6 @@ POTENTIAL BUGS
 TESTS
 ===============================================================================
 1. modular ray tests
-2. polytope soup
 
 ===============================================================================
 ALGORITHMS

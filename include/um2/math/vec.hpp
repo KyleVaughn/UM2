@@ -22,12 +22,12 @@ namespace um2
 // like Eigen don't play well with CUDA.
 
 template <Size D, class T>
-class Vec {
+class Vec
+{
 
   T _data[D];
 
 public:
-
   //==============================================================================
   // Accessors
   //==============================================================================

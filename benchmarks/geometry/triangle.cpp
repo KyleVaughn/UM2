@@ -209,7 +209,8 @@ ccwKernel(um2::Triangle2<T> * tri, um2::Point2<T> * points, bool * bools, Size c
 
 template <typename T>
 static __global__ void
-ccwNoShortKernel(um2::Triangle2<T> * tri, um2::Point2<T> * points, bool * bools, Size const n)
+ccwNoShortKernel(um2::Triangle2<T> * tri, um2::Point2<T> * points, bool * bools,
+                 Size const n)
 {
   // Each thread is responsible for 1 point.
   Size const index = blockIdx.x * blockDim.x + threadIdx.x;
@@ -242,7 +243,7 @@ containsBaryCUDA(benchmark::State & state)
   cudaMalloc(&bools_d, size_of_bools_in_bytes);
   cudaMemcpy(points_d, points.data(), size_of_points_in_bytes, cudaMemcpyHostToDevice);
   cudaMemcpy(tri_d, &tri, size_of_tri_in_bytes, cudaMemcpyHostToDevice);
-  //cudaMemcpy(bools_d, bools.data(), size_of_bools_in_bytes, cudaMemcpyHostToDevice);
+  // cudaMemcpy(bools_d, bools.data(), size_of_bools_in_bytes, cudaMemcpyHostToDevice);
   constexpr uint32_t tpb = 256; // threads per block
   const uint32_t blocks = (static_cast<uint32_t>(n) + tpb - 1) / tpb;
   for (auto s : state) {
@@ -277,7 +278,7 @@ containsCCWCUDA(benchmark::State & state)
   cudaMalloc(&bools_d, size_of_bools_in_bytes);
   cudaMemcpy(points_d, points.data(), size_of_points_in_bytes, cudaMemcpyHostToDevice);
   cudaMemcpy(tri_d, &tri, size_of_tri_in_bytes, cudaMemcpyHostToDevice);
-  //cudaMemcpy(bools_d, bools.data(), size_of_bools_in_bytes, cudaMemcpyHostToDevice);
+  // cudaMemcpy(bools_d, bools.data(), size_of_bools_in_bytes, cudaMemcpyHostToDevice);
   constexpr uint32_t tpb = 256; // threads per block
   const uint32_t blocks = (static_cast<uint32_t>(n) + tpb - 1) / tpb;
   for (auto s : state) {
@@ -312,7 +313,7 @@ containsCCWNoShortCUDA(benchmark::State & state)
   cudaMalloc(&bools_d, size_of_bools_in_bytes);
   cudaMemcpy(points_d, points.data(), size_of_points_in_bytes, cudaMemcpyHostToDevice);
   cudaMemcpy(tri_d, &tri, size_of_tri_in_bytes, cudaMemcpyHostToDevice);
-  //cudaMemcpy(bools_d, bools.data(), size_of_bools_in_bytes, cudaMemcpyHostToDevice);
+  // cudaMemcpy(bools_d, bools.data(), size_of_bools_in_bytes, cudaMemcpyHostToDevice);
   constexpr uint32_t tpb = 256; // threads per block
   const uint32_t blocks = (static_cast<uint32_t>(n) + tpb - 1) / tpb;
   for (auto s : state) {

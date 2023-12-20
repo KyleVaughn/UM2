@@ -310,7 +310,7 @@ template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 void
 validateMesh(FaceVertexMesh<P, N, D, T, I> & mesh)
 {
-#ifndef NDEBUG
+#if UM2_ENABLE_DBC
   // Check for repeated vertices.
   // This is not technically an error, but it is a sign that the mesh may
   // cause problems for some algorithms. Hence, we warn the user.
@@ -437,7 +437,7 @@ toFaceVertexMesh(PolytopeSoup<T, I> const & soup,
   // -- Vertices --
   // Ensure each of the vertices has approximately the same z
   if constexpr (D == 2) {
-#ifndef NDEBUG
+#if UM2_ENABLE_DBC
     T const eps = eps_distance<T>;
     T const z = soup.getVertex(0)[2];
     for (Size i = 1; i < num_vertices; ++i) {
@@ -568,7 +568,7 @@ intersect(PlanarLinearPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
 {
   T constexpr r_miss = inf_distance<T>;
   Size nintersect = 0;
-#ifndef NDEBUG
+#if UM2_ENABLE_DBC
   Size const n0 = *n;
 #endif
   Size constexpr edges_per_face = PlanarLinearPolygonMesh<N, T, I>::Face::numEdges();
@@ -594,7 +594,7 @@ intersect(PlanarQuadraticPolygonMesh<N, T, I> const & mesh, Ray2<T> const & ray,
 {
   T constexpr r_miss = inf_distance<T>;
   Size nintersect = 0;
-#ifndef NDEBUG
+#if UM2_ENABLE_DBC
   Size const n0 = *n;
 #endif
   Size constexpr edges_per_face = PlanarQuadraticPolygonMesh<N, T, I>::Face::numEdges();

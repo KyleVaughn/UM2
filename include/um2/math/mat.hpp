@@ -18,7 +18,8 @@ namespace um2
 // OpenBLAS, cuBLAS, Eigen, etc. We currently only use this for 2x2 and 3x3.
 
 template <Size M, Size N, typename T>
-class Mat {
+class Mat
+{
 
   using Col = Vec<M, T>;
 
@@ -30,7 +31,6 @@ class Mat {
   Col _cols[N];
 
 public:
-
   //==============================================================================
   // Accessors
   //==============================================================================

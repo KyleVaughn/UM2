@@ -4,7 +4,7 @@
 
 #include <concepts>
 
-// If the CPU supports the BMI2 instruction set, and we are compiling for CPU, then use 
+// If the CPU supports the BMI2 instruction set, and we are compiling for CPU, then use
 // BMI2 intrinsics.
 //
 // NOTE: we temporarily disable BMI2 intrinsics when compiling for CUDA because

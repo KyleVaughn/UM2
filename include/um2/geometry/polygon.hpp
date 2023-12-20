@@ -1,9 +1,9 @@
 #pragma once
 
+#include <um2/common/log.hpp>
 #include <um2/common/sort.hpp> // insertionSort
 #include <um2/geometry/dion.hpp>
 #include <um2/geometry/modular_rays.hpp>
-#include <um2/common/log.hpp>
 
 //==============================================================================
 // Polygon
@@ -840,12 +840,12 @@ meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
         auto const ray = params.getRay(i);
         auto intersections = intersect(p, ray);
         um2::insertionSort(intersections.begin(), intersections.end());
-//        if (intersections[0] < 0) {
-//          ASSERT(intersections[0] > -um2::eps_distance2<T>);
-//          ASSERT(intersections[1] > 0);
-//          // If the first intersection is negative, it better be -0
-//          intersections[0] = 0;
-//        }
+        //        if (intersections[0] < 0) {
+        //          ASSERT(intersections[0] > -um2::eps_distance2<T>);
+        //          ASSERT(intersections[1] > 0);
+        //          // If the first intersection is negative, it better be -0
+        //          intersections[0] = 0;
+        //        }
         auto p0 = ray(intersections[0]);
         for (Size j = 0; j < intersections.size() - 1; ++j) {
           T const r1 = intersections[j + 1];

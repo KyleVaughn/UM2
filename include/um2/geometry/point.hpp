@@ -81,7 +81,8 @@ areCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept -
 
 template <class T>
 PURE HOSTDEV constexpr auto
-areApproxCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept -> bool
+areApproxCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept
+    -> bool
 {
   // 2D cross product, of (b - a) and (c - a).
   T const ab_x = b[0] - a[0];
