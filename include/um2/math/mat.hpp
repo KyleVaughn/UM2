@@ -11,7 +11,7 @@ namespace um2
 //
 // An M by N matrix.
 //
-// This struct is used for VERY small matrices, where the matrix size is known
+// This class is used for VERY small matrices, where the matrix size is known
 // at compile time. The matrix is stored in column-major order.
 //
 // Anything larger than a very small matrix handled using something like

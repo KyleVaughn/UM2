@@ -10,16 +10,14 @@ TEST_CASE(chebyshev_chebyshev)
 
   auto const type = um2::AngularQuadratureType::Chebyshev;
   um2::ProductAngularQuadrature<T> const q(type, 1, type, 2);
-  ASSERT(q.wazi.size() == 1);
-  ASSERT(q.azi.size() == 1);
-  ASSERT(q.wpol.size() == 2);
-  ASSERT(q.pol.size() == 2);
-  ASSERT_NEAR(q.wazi[0], static_cast<T>(1), eps);
-  ASSERT_NEAR(q.azi[0], um2::pi_4<T>, eps);
-  ASSERT_NEAR(q.wpol[0], static_cast<T>(0.5), eps);
-  ASSERT_NEAR(q.wpol[1], static_cast<T>(0.5), eps);
-  ASSERT_NEAR(q.pol[0], um2::pi<T> / static_cast<T>(8), eps);
-  ASSERT_NEAR(q.pol[1], um2::pi<T> * static_cast<T>(3) / static_cast<T>(8), eps);
+  ASSERT(q.azimuthalDegree() == 1);
+  ASSERT(q.polarDegree() == 2);
+  ASSERT_NEAR(q.azimuthalWeights()[0], static_cast<T>(1), eps);
+  ASSERT_NEAR(q.azimuthalAngles()[0], um2::pi_4<T>, eps);
+  ASSERT_NEAR(q.polarWeights()[0], static_cast<T>(0.5), eps);
+  ASSERT_NEAR(q.polarWeights()[1], static_cast<T>(0.5), eps);
+  ASSERT_NEAR(q.polarAngles()[0], um2::pi<T> / static_cast<T>(8), eps);
+  ASSERT_NEAR(q.polarAngles()[1], um2::pi<T> * static_cast<T>(3) / static_cast<T>(8), eps);
 }
 
 //=============================================================================

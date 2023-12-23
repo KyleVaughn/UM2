@@ -7,6 +7,7 @@
 //  forward
 //  move
 //  swap
+//  Pair
 
 namespace um2
 {
@@ -65,12 +66,12 @@ HOSTDEV constexpr void swap(T & a, T & b) noexcept
 }
 
 //==============================================================================
-// pair
+// Pair
 //==============================================================================
 
 // NOLINTBEGIN(readability-identifier-naming) // match std::pair
 template <class T1, class T2>
-struct pair {
+struct Pair {
   using first_type = T1;
   using second_type = T2;
 
@@ -82,120 +83,75 @@ struct pair {
   //============================================================================
 
   HOSTDEV
-  constexpr pair(pair const &) = default;
-
-  HOSTDEV
-  constexpr pair(pair &&) noexcept = default;
-
-  HOSTDEV
-  constexpr pair()
-      : first(),
-        second()
-  {
-  }
-
-  HOSTDEV
-  constexpr pair(T1 x, T2 y)
-      : first(um2::move(x)),
-        second(um2::move(y))
+  constexpr Pair(T1 x, T2 y)
+      : first(x),
+        second(y)
   {
   }
 
   template <class U1, class U2>
-  HOSTDEV constexpr pair(U1 && x, U2 && y)
+  HOSTDEV constexpr Pair(U1 && x, U2 && y)
       : first(um2::forward<U1>(x)),
         second(um2::forward<U2>(y))
   {
   }
 
-  //============================================================================
-  // Destructor
-  //============================================================================
-
-  HOSTDEV
-  ~pair() = default;
-
-  //============================================================================
-  // Operators
-  //============================================================================
-
-  HOSTDEV
-  constexpr auto
-  operator=(pair const & p) -> pair &
-  {
-    if (this != &p) {
-      first = p.first;
-      second = p.second;
-    }
-    return *this;
-  }
-
-  HOSTDEV
-  constexpr auto
-  operator=(pair && p) noexcept -> pair &
-  {
-    first = um2::forward<T1>(p.first);
-    second = um2::forward<T2>(p.second);
-    p.first = T1();
-    p.second = T2();
-    return *this;
-  }
 };
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-operator==(pair<T1, T2> const & x, pair<T1, T2> const & y) -> bool
+operator==(Pair<T1, T2> const & x, Pair<T1, T2> const & y) -> bool
 {
   return x.first == y.first && x.second == y.second;
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-operator!=(pair<T1, T2> const & x, pair<T1, T2> const & y) -> bool
+operator!=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) -> bool
 {
   return !(x == y);
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-operator<(pair<T1, T2> const & x, pair<T1, T2> const & y) -> bool
+operator<(Pair<T1, T2> const & x, Pair<T1, T2> const & y) -> bool
 {
   return x.first < y.first || (!(y.first < x.first) && x.second < y.second);
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-operator>(pair<T1, T2> const & x, pair<T1, T2> const & y) -> bool
+operator>(Pair<T1, T2> const & x, Pair<T1, T2> const & y) -> bool
 {
   return y < x;
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-operator<=(pair<T1, T2> const & x, pair<T1, T2> const & y) -> bool
+operator<=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) -> bool
 {
   return !(y < x);
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-operator>=(pair<T1, T2> const & x, pair<T1, T2> const & y) -> bool
+operator>=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) -> bool
 {
   return !(x < y);
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-make_pair(T1 && x, T2 && y) -> pair<T1, T2>
+make_pair(T1 && x, T2 && y) -> Pair<T1, T2>
 {
-  return pair<T1, T2>(um2::forward<T1>(x), um2::forward<T2>(y));
+  return Pair<T1, T2>(um2::forward<T1>(x), um2::forward<T2>(y));
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-make_pair(T1 const & x, T2 const & y) -> pair<T1, T2>
+make_pair(T1 const & x, T2 const & y) -> Pair<T1, T2>
 {
-  return pair<T1, T2>(x, y);
+  return Pair<T1, T2>(x, y);
 }
 
 // NOLINTEND(readability-identifier-naming)

@@ -1,10 +1,15 @@
+Scripts to install gcc
+
 Currently working through polytope soup tests 
 
-reserve elements/vertices for submesh and read: abaqus, xdmf, FVM.toPolytopesoup, spatial_part.toPolytopeSoup
+reserve elements/vertices for submesh and read: FVM.toPolytopesoup, spatial_part.toPolytopeSoup
 
 effect test of morton order on intersect
 
 parallelize
+
+extents for AABB
+
 
 ===============================================================================
 HOUSE KEEPING

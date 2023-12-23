@@ -211,9 +211,7 @@ failedAssertNear(char const * const file, int const line, char const * const a,
   printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b, eps);
   exit(1);
 }
-# endif
-
-#  if UM2_USE_CUDA && defined(__CUDA_ARCH__)
+# else 
 DEVICE inline void
 failedAssert(char const * const file, int const line, char const * const msg)
 {

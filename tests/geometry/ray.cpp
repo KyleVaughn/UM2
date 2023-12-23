@@ -16,8 +16,8 @@ TEST_CASE(constructor_origin_direction)
   direction[1] = static_cast<T>(1);
 
   um2::Ray<D, T> const ray(origin, direction);
-  ASSERT(um2::isApprox(ray.o, origin));
-  ASSERT(um2::isApprox(ray.d, direction));
+  ASSERT(um2::isApprox(ray.origin(), origin));
+  ASSERT(um2::isApprox(ray.direction(), direction));
 }
 
 //=============================================================================

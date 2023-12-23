@@ -69,12 +69,14 @@ setChebyshevAngularQuadrature(Size degree, um2::Vector<T> & weights,
 }
 
 template <std::floating_point T>
-struct ProductAngularQuadrature {
+class ProductAngularQuadrature {
 
-  um2::Vector<T> wazi; // Weights for the azimuthal angles
-  um2::Vector<T> azi;  // Azimuthal angles, γ ∈ (0, π/2)
-  um2::Vector<T> wpol; // Weights for the polar angles
-  um2::Vector<T> pol;  // Polar angles, θ ∈ (0, π/2)
+  Vector<T> _wazi; // Weights for the azimuthal angles
+  Vector<T> _azi;  // Azimuthal angles, γ ∈ (0, π/2)
+  Vector<T> _wpol; // Weights for the polar angles
+  Vector<T> _pol;  // Polar angles, θ ∈ (0, π/2)
+
+  public:
 
   //============================================================================
   // Constructors
@@ -91,7 +93,7 @@ struct ProductAngularQuadrature {
     ASSERT_ASSUME(pol_degree > 0);
     switch (azi_form) {
     case AngularQuadratureType::Chebyshev:
-      setChebyshevAngularQuadrature(azi_degree, wazi, azi);
+      setChebyshevAngularQuadrature(azi_degree, _wazi, _azi);
       break;
     default:
       __builtin_unreachable();
@@ -99,12 +101,53 @@ struct ProductAngularQuadrature {
 
     switch (pol_form) {
     case AngularQuadratureType::Chebyshev:
-      setChebyshevAngularQuadrature(pol_degree, wpol, pol);
+      setChebyshevAngularQuadrature(pol_degree, _wpol, _pol);
       break;
     default:
       __builtin_unreachable();
     }
   }
+
+  //============================================================================
+  // Accessors
+  //============================================================================
+
+  HOSTDEV [[nodiscard]] constexpr auto 
+  azimuthalDegree() const noexcept -> Size
+  {
+    return _wazi.size();
+  }
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  polarDegree() const noexcept -> Size
+  {
+    return _wpol.size();
+  }
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  azimuthalWeights() const noexcept -> Vector<T> const &
+  {
+    return _wazi;
+  }
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  azimuthalAngles() const noexcept -> Vector<T> const &
+  {
+    return _azi;
+  }
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  polarWeights() const noexcept -> Vector<T> const &
+  {
+    return _wpol;
+  }
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  polarAngles() const noexcept -> Vector<T> const &
+  {
+    return _pol;
+  }
+
 };
 
 } // namespace um2

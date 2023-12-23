@@ -47,15 +47,6 @@ mortonLess(Point<D, T> const & lhs, Point<D, T> const & rhs) -> bool
 }
 
 template <std::unsigned_integral U, Size D, std::floating_point T>
-struct MortonLessFunctor {
-  PURE HOSTDEV auto
-  operator()(Point<D, T> const & lhs, Point<D, T> const & rhs) const -> bool
-  {
-    return mortonEncode<U>(lhs) < mortonEncode<U>(rhs);
-  }
-};
-
-template <std::unsigned_integral U, Size D, std::floating_point T>
 void
 mortonSort(Point<D, T> * const begin, Point<D, T> * const end)
 {
