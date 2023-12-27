@@ -41,7 +41,7 @@ class Log
 
   // -- Options --
 
-  static LogLevel max_level;
+  static LogLevel level;
   static LogTimePoint start_time;
   static bool timestamped;     // messages are prefixed with a timestamp
   static bool colorized;       // messages are colorized based on their verbosity level
@@ -50,7 +50,6 @@ class Log
 
   // -- Message --
 
-  // The message is allocated once and reused for each log message.
   static char buffer[buffer_size];
 
   // -- Methods --
@@ -58,8 +57,14 @@ class Log
   static auto 
   addTimestamp(char * buffer_begin) -> char *;
 
+  static auto
+  addColor(LogLevel msg_level, char * buffer_begin) -> char *;
+
+  static auto
+  addLevel(LogLevel msg_level, char * buffer_begin) -> char *;
+
   static void
-  handleMessage(LogLevel level, char const * msg, Size len);
+  handleMessage(LogLevel msg_level, char const * msg, Size len);
 
 public:
   Log() = delete;
@@ -70,7 +75,7 @@ public:
   // -- Setters --
 
   static void
-  setMaxLevel(LogLevel val);
+  setLevel(LogLevel val);
 
   static void
   setTimestamped(bool val);
@@ -84,7 +89,7 @@ public:
   // -- Getters --
 
   PURE static auto
-  getMaxLevel() -> LogLevel;
+  getLevel() -> LogLevel;
 
   PURE static auto
   getStartTime() -> LogTimePoint;
@@ -133,31 +138,31 @@ public:
 }; // class Log
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
-#if MIN_LOG_LEVEL > 0
+#if LOG_LEVEL > 0
 #  define LOG_ERROR(msg) um2::Log::error(msg)
 #else
 #  define LOG_ERROR(msg)
 #endif
 
-#if MIN_LOG_LEVEL > 1
+#if LOG_LEVEL > 1
 #  define LOG_WARN(msg) um2::Log::warn(msg)
 #else
 #  define LOG_WARN(msg)
 #endif
 
-#if MIN_LOG_LEVEL > 2
+#if LOG_LEVEL > 2
 #  define LOG_INFO(msg) um2::Log::info(msg)
 #else
 #  define LOG_INFO(msg)
 #endif
 
-#if MIN_LOG_LEVEL > 3
+#if LOG_LEVEL > 3
 #  define LOG_DEBUG(msg) um2::Log::debug(msg)
 #else
 #  define LOG_DEBUG(msg)
 #endif
 
-#if MIN_LOG_LEVEL > 4
+#if LOG_LEVEL > 4
 #  define LOG_TRACE(msg) um2::Log::trace(msg)
 #else
 #  define LOG_TRACE(msg)

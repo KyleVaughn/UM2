@@ -11,7 +11,7 @@ namespace um2
 // Default values
 //==============================================================================
 
-static constexpr LogLevel log_default_max_level = LogLevel::Info;
+static constexpr LogLevel log_default_level = LogLevel::Info;
 static constexpr bool log_default_timestamped = true;
 static constexpr bool log_default_colorized = true;
 static constexpr bool log_default_exit_on_error = true;
@@ -22,7 +22,7 @@ static constexpr bool log_default_exit_on_error = true;
 
 // We need log variables to be global
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables) justified
-LogLevel Log::max_level = log_default_max_level;
+LogLevel Log::level = log_default_level;
 LogTimePoint Log::start_time = LogClock::now();
 bool Log::timestamped = true;
 bool Log::colorized = log_default_colorized;
@@ -38,7 +38,7 @@ void
 Log::reset()
 {
   // Reset options to default
-  max_level = log_default_max_level;
+  level = log_default_level;
   timestamped = log_default_timestamped;
   colorized = log_default_colorized;
   exit_on_error = log_default_exit_on_error;
@@ -50,9 +50,9 @@ Log::reset()
 // -- Setters --
 
 void
-Log::setMaxLevel(LogLevel val)
+Log::setLevel(LogLevel val)
 {
-  max_level = val;
+  level = val;
 }
 
 void
@@ -76,9 +76,9 @@ Log::setExitOnError(bool val)
 // -- Getters --
 
 PURE auto
-Log::getMaxLevel() -> LogLevel
+Log::getLevel() -> LogLevel
 {
-  return max_level;
+  return level;
 }
 
 PURE auto
@@ -106,32 +106,6 @@ Log::getStartTime() -> LogTimePoint
 }
 
 // -- Message handling --
-
-//  // Verbosity
-//  String verbosity_str;
-//  switch (verbosity) {
-//  case LogLevel::Error:
-//    verbosity_str = "ERROR";
-//    break;
-//  case LogLevel::Warn:
-//    verbosity_str = "WARN";
-//    break;
-//  case LogLevel::Info:
-//    verbosity_str = "INFO";
-//    break;
-//  case LogLevel::Debug:
-//    verbosity_str = "DEBUG";
-//    break;
-//  case LogLevel::Trace:
-//    verbosity_str = "TRACE";
-//    break;
-//  default:
-//    verbosity_str = "UNKNOWN";
-//    break;
-//  }
-//  return c0 + time_str + verbosity_str + ": " + message + c1;
-//}
-//
 
 auto
 Log::addTimestamp(char * buffer_begin) -> char *
@@ -187,51 +161,122 @@ Log::addTimestamp(char * buffer_begin) -> char *
   return buffer_begin;
 }
 
+auto
+Log::addColor(LogLevel const msg_level,  char * buffer_begin) -> char *
+{
+  if (colorized) {
+      buffer_begin[0] = '\033';
+      buffer_begin[1] = '[';
+      buffer_begin[2] = '1';
+      buffer_begin[3] = ';';
+      buffer_begin[4] = '3';
+      buffer_begin[6] = 'm';
+    switch (msg_level) {
+    case LogLevel::Error: // RED
+      // \033[1;31m
+      buffer_begin[5] = '1';
+      break;
+    case LogLevel::Warn: // YELLOW
+      // \033[1;33m
+      buffer_begin[5] = '3';
+      break;
+    case LogLevel::Debug: // MAGENTA
+      // \033[1;35m
+      buffer_begin[5] = '5';
+      break;
+    case LogLevel::Trace: // CYAN
+      // \033[1;36m
+      buffer_begin[5] = '6';
+      break;
+    default: // NO COLOR
+      buffer_begin -= 7;
+      break;
+    }
+    buffer_begin += 7;
+  } // if (colorized)
+  return buffer_begin;
+}
+
+auto
+Log::addLevel(LogLevel msg_level, char * buffer_begin) -> char *
+{
+  switch (msg_level) {
+  case LogLevel::Error:
+    buffer_begin[0] = 'E';
+    buffer_begin[1] = 'R';
+    buffer_begin[2] = 'R';
+    buffer_begin[3] = 'O';
+    buffer_begin[4] = 'R';
+    buffer_begin += 5;
+    break;
+  case LogLevel::Warn:
+    buffer_begin[0] = 'W';
+    buffer_begin[1] = 'A';
+    buffer_begin[2] = 'R';
+    buffer_begin[3] = 'N';
+    buffer_begin += 4;
+    break;
+  case LogLevel::Info:
+    buffer_begin[0] = 'I';
+    buffer_begin[1] = 'N';
+    buffer_begin[2] = 'F';
+    buffer_begin[3] = 'O';
+    buffer_begin += 4;
+    break;
+  case LogLevel::Debug:
+    buffer_begin[0] = 'D';
+    buffer_begin[1] = 'E';
+    buffer_begin[2] = 'B';
+    buffer_begin[3] = 'U';
+    buffer_begin[4] = 'G';
+    buffer_begin += 5;
+    break;
+  case LogLevel::Trace:
+    buffer_begin[0] = 'T';
+    buffer_begin[1] = 'R';
+    buffer_begin[2] = 'A';
+    buffer_begin[3] = 'C';
+    buffer_begin[4] = 'E';
+    buffer_begin += 5;
+    break;
+  default:
+    buffer_begin[0] = 'U';
+    buffer_begin[1] = 'N';
+    buffer_begin[2] = 'K';
+    buffer_begin[3] = 'N';
+    buffer_begin[4] = 'O';
+    buffer_begin[5] = 'W';
+    buffer_begin[6] = 'N';
+    buffer_begin += 7;
+    break;
+  }
+  buffer_begin[0] = ' ';
+  buffer_begin[1] = '-';
+  buffer_begin[2] = ' ';
+  return buffer_begin + 3;
+}
+
 // Handle the messages from error, warn, etc. and store or print them
 // depending on the Log configuration.
 void
-Log::handleMessage(LogLevel const level, char const * msg, Size len)
+Log::handleMessage(LogLevel const msg_level, char const * msg, Size len)
 {
   ASSERT(msg != nullptr);
   ASSERT(len > 0);
   ASSERT(len < buffer_size);
-  if (level <= max_level) {
+  if (msg_level <= level) {
     char * buffer_begin = addressof(buffer[0]);
-    if (colorized) {
-        buffer_begin[0] = '\033';
-        buffer_begin[1] = '[';
-        buffer_begin[2] = '1';
-        buffer_begin[3] = ';';
-        buffer_begin[4] = '3';
-        buffer_begin[6] = 'm';
-      switch (level) {
-      case LogLevel::Error: // RED
-        // \033[1;31m
-        buffer_begin[5] = '1';
-        break;
-      case LogLevel::Warn: // YELLOW
-        // \033[1;33m
-        buffer_begin[5] = '3';
-        break;
-      case LogLevel::Debug: // MAGENTA
-        // \033[1;35m
-        buffer_begin[5] = '5';
-        break;
-      case LogLevel::Trace: // CYAN
-        // \033[1;36m
-        buffer_begin[5] = '6';
-        break;
-      default: // NO COLOR
-        buffer_begin -= 7;
-        break;
-      }
-      buffer_begin += 7;
-    } // if (colorized)
-    char const * begin = addressof(msg[0]);
-    char const * end = begin + len;
+    buffer_begin = addColor(msg_level, buffer_begin);
     buffer_begin = addTimestamp(buffer_begin);
-    um2::copy(begin, end, buffer_begin);
+    buffer_begin = addLevel(msg_level, buffer_begin);
+
+    // Copy the message to the buffer
+    char const * msg_begin = addressof(msg[0]);
+    char const * msg_end = msg_begin + len;
+    um2::copy(msg_begin, msg_end, buffer_begin);
     buffer_begin += len;
+
+    // Reset color
     if (colorized) {
       buffer_begin[0] = '\033';
       buffer_begin[1] = '[';
@@ -239,9 +284,13 @@ Log::handleMessage(LogLevel const level, char const * msg, Size len)
       buffer_begin[3] = 'm';
       buffer_begin += 4;
     }
+
+    // Ensure null-terminated string
     buffer_begin[0] = '\0';
+
+    // Print the message
     int fprintf_result = 0;
-    if (level == LogLevel::Error) {
+    if (msg_level == LogLevel::Error) {
       fprintf_result = fprintf(stderr, "%s\n", buffer);
     } else {
       fprintf_result = fprintf(stdout, "%s\n", buffer);
@@ -253,7 +302,7 @@ Log::handleMessage(LogLevel const level, char const * msg, Size len)
       exit(1);
     }
 #endif
-  } // level <= max_level
+  } // msg_level <= level
 }
 
 void

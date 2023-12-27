@@ -2,17 +2,19 @@
 
 #include "../test_macros.hpp"
 
+#include <unistd.h>
+
 TEST_CASE(set_get)
 {
   um2::Log::reset();
   // Check defaults and getters
-  ASSERT(um2::Log::getMaxLevel() == um2::LogLevel::Info);
+  ASSERT(um2::Log::getLevel() == um2::LogLevel::Info);
   ASSERT(um2::Log::isTimestamped());
   ASSERT(um2::Log::isColorized());
   ASSERT(um2::Log::isExitOnError());
   // Check setters
-  um2::Log::setMaxLevel(um2::LogLevel::Debug);
-  ASSERT(um2::Log::getMaxLevel() == um2::LogLevel::Debug);
+  um2::Log::setLevel(um2::LogLevel::Debug);
+  ASSERT(um2::Log::getLevel() == um2::LogLevel::Debug);
   um2::Log::setTimestamped(/*val=*/false);
   um2::Log::setColorized(/*val=*/false);
   um2::Log::setExitOnError(/*val=*/false);
@@ -22,6 +24,7 @@ TEST_CASE(set_get)
 
   um2::Log::reset();
   um2::Log::setExitOnError(/*val=*/false);
+  um2::Log::setLevel(um2::LogLevel::Trace);
   um2::Log::trace("trace");
   um2::Log::debug("debug");
   um2::Log::info("info");

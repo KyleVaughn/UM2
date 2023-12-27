@@ -26,7 +26,7 @@
 #cmakedefine01 UM2_USE_TBB
 
 // Set compile-time filtering of log messages
-#define MIN_LOG_LEVEL @UM2_MIN_LOG_LEVEL@
+#define LOG_LEVEL @UM2_LOG_LEVEL@
 
 //==============================================================================
 // Includes

@@ -92,9 +92,9 @@ option(UM2_USE_VALGRIND      "Enable valgrind"                 ${UM2_DEV_MODE})
 # Debug = 4,      // errors, warnings, info and debug
 # Trace = 5,      // errors, warnings, info, debug and trace
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(UM2_MIN_LOG_LEVEL 5)
+  set(UM2_LOG_LEVEL 5)
 else()
-  set(UM2_MIN_LOG_LEVEL 3)
+  set(UM2_LOG_LEVEL 3)
 endif()
 
 #===============================================================================
