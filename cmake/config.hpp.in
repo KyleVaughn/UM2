@@ -13,7 +13,7 @@
 //==============================================================================
 
 // Enable/disable features
-#cmakedefine01 UM2_ENABLE_DBC
+#cmakedefine01 UM2_ENABLE_ASSERTS
 #cmakedefine01 UM2_ENABLE_FLOAT64
 #cmakedefine01 UM2_ENABLE_INT64
 
@@ -147,17 +147,17 @@ constexpr bool always_false = false;
 //==============================================================================
 //    
 // ASSERT(expr) - Asserts that expr is true.    
-//  If UM2_ENABLE_DBC is 0, ASSERT does nothing and expr is not evaluated.    
+//  If UM2_ENABLE_ASSERTS is 0, ASSERT does nothing and expr is not evaluated.    
 //    
 // ASSERT_NEAR(a, b, eps) - Asserts that a and b are within eps of each other.    
-//  If UM2_ENABLE_DBC is 0, ASSERT_NEAR does nothing and a, b, and eps are not    
+//  If UM2_ENABLE_ASSERTS is 0, ASSERT_NEAR does nothing and a, b, and eps are not    
 //  evaluated.    
 //
 // ASSERT_ASSUME(expr) - Asserts that expr is true, with varying effects.
-//  If UM2_ENABLE_DBC is 1, this is equivalent to ASSERT(expr).
-//  If UM2_ENABLE_DBC is 0, this is equivalent to ASSUME(expr).
+//  If UM2_ENABLE_ASSERTS is 1, this is equivalent to ASSERT(expr).
+//  If UM2_ENABLE_ASSERTS is 0, this is equivalent to ASSUME(expr).
 
-// We need abs() for host and device code.
+// Overlead abs() for host and device code.
 namespace um2
 {
 #ifndef __CUDA_ARCH__
@@ -187,7 +187,7 @@ abs(double x) noexcept -> double
 #endif
 } // namespace um2
 
-#if !UM2_ENABLE_DBC
+#if !UM2_ENABLE_ASSERTS
 #  define ASSERT(expr)
 #  define ASSERT_NEAR(a, b, eps)
 #  define ASSERT_ASSUME(expr) ASSUME(expr)
@@ -248,13 +248,13 @@ failedAssertNear(char const * const file, int const line, char const * const a,
 
 #define ASSERT_ASSUME(expr) ASSERT(expr)
 
-#endif // UM2_ENABLE_DBC
+#endif // UM2_ENABLE_ASSERTS
 
 //==============================================================================
 // CUDA error checking
 //==============================================================================
 
-#if UM2_USE_CUDA && UM2_ENABLE_DBC
+#if UM2_USE_CUDA && UM2_ENABLE_ASSERTS
 #  define CUDA_CHECK_ERROR(status)                                                       \
     {                                                                                    \
       if (status != cudaSuccess) {                                                       \

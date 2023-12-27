@@ -62,7 +62,7 @@ option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large
 # Developer options
 #===============================================================================
 
-# If CMAKE_BUILD_TYPE is Debug, then turn on DBC by default
+# If CMAKE_BUILD_TYPE is Debug, then turn on assertions by default
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(IS_DEBUG_BUILD ON)
 else()
@@ -70,7 +70,7 @@ else()
 endif()
 
 # Enable/disable developer features
-option(UM2_ENABLE_DBC        "Enable DBC"                     ${IS_DEBUG_BUILD}) 
+option(UM2_ENABLE_ASSERTS    "Enable assertions"               ${IS_DEBUG_BUILD})
 
 # Use external tools
 option(UM2_DEV_MODE          "Enable development mode"         OFF)

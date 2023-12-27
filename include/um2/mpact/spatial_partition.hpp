@@ -1205,7 +1205,7 @@ SpatialPartition<T, I>::importCoarseCells(String const & filename)
     for (Size ip = 0; ip < num_verts; ++ip) {
       vertices[ip] -= min_point;
     }
-#if UM2_ENABLE_DBC
+#if UM2_ENABLE_ASSERTS
     Point2<T> const dxdy = bb.maxima - bb.minima;
     ASSERT(isApprox(dxdy, cc.dxdy));
 #endif

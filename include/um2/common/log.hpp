@@ -14,15 +14,14 @@ namespace um2
 // A simple logger class for use in host code only.
 // The logger can be configured to:
 //  - log messages of different verbosity levels
-//  - buffer messages until a certain threshold is reached
 //  - prefix messages with a timestamp
 //  - colorize messages based on their verbosity level
 //  - exit the program after an error is logged (or not)
 //
 // The logger is not thread-safe.
-// Verbosity levels may be seen below in the LogVerbosity enum.
+// Verbosity levels may be seen below in the LogLevel enum.
 
-enum class LogVerbosity {
+enum class LogLevel {
   Off = 0,   // no messages
   Error = 1, // only errors
   Warn = 2,  // errors and warnings
@@ -35,36 +34,29 @@ using LogClock = std::chrono::system_clock;
 using LogTimePoint = std::chrono::time_point<LogClock>;
 using LogDuration = std::chrono::duration<double>;
 
-// We don't want to use the default constructor for Log, nor do we want
-// to call the destructor without flushing the messages first, but otherwise
-// have no need for the rule of 5
-// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions) justified
+// We need the global log options to be accessible from anywhere in the code
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables) justified
 class Log
 {
 
-  // Options
-  // We need the global log options to be accessible from anywhere in the code
-  // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables) justified
-  static LogVerbosity max_verbosity_level;
-  static bool buffered;        // messages are buffered until flush() is called
+  // -- Options --
+
+  static LogLevel max_level;
+  static LogTimePoint start_time;
   static bool timestamped;     // messages are prefixed with a timestamp
   static bool colorized;       // messages are colorized based on their verbosity level
   static bool exit_on_error;   // the program exits after an error is logged
-  static Size flush_threshold; // flush after this many messages
+  static constexpr int buffer_size = 256;
 
-  // Data
-  static LogTimePoint start_time;
-  static Size num_errors;
-  static Size num_warnings;
-  static Vector<LogVerbosity> verbosity_levels;
-  static Vector<LogTimePoint> times;
-  static Vector<String> messages;
-  // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
+  // -- Message --
+
+  // The message is allocated once and reused for each log message.
+  static char buffer[buffer_size];
 
   // -- Methods --
 
   static void
-  handleMessage(LogVerbosity verbosity, String const & msg);
+  handleMessage(LogLevel level, char const * msg, Size len);
 
 public:
   Log() = delete;
@@ -75,60 +67,68 @@ public:
   // -- Setters --
 
   static void
-  setMaxVerbosityLevel(LogVerbosity val);
-  static void
-  setBuffered(bool val);
+  setMaxLevel(LogLevel val);
+
   static void
   setTimestamped(bool val);
+
   static void
   setColorized(bool val);
+
   static void
   setExitOnError(bool val);
-  static void
-  setFlushThreshold(Size val);
 
   // -- Getters --
 
   PURE static auto
-  getMaxVerbosityLevel() -> LogVerbosity;
-  PURE static auto
-  isBuffered() -> bool;
-  PURE static auto
-  isTimestamped() -> bool;
-  PURE static auto
-  isColorized() -> bool;
-  PURE static auto
-  isExitOnError() -> bool;
-  PURE static auto
-  getFlushThreshold() -> Size;
+  getMaxLevel() -> LogLevel;
 
   PURE static auto
   getStartTime() -> LogTimePoint;
+
   PURE static auto
-  getNumErrors() -> Size;
+  isTimestamped() -> bool;
+
   PURE static auto
-  getNumWarnings() -> Size;
+  isColorized() -> bool;
+
+  PURE static auto
+  isExitOnError() -> bool;
 
   // -- Methods --
 
   static void
-  flush();
+  error(char const * msg);
+
+  static void
+  warn(char const * msg);
+
+  static void
+  info(char const * msg);
+
+  static void
+  debug(char const * msg);
+
+  static void
+  trace(char const * msg);
+
   static void
   error(String const & msg);
+
   static void
   warn(String const & msg);
+
   static void
   info(String const & msg);
+
   static void
   debug(String const & msg);
+
   static void
   trace(String const & msg);
 
-  // -- Destructor --
-
-  ~Log() { flush(); }
-
 }; // class Log
+// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 #if MIN_LOG_LEVEL > 0
 #  define LOG_ERROR(msg) um2::Log::error(msg)

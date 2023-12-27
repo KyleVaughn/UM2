@@ -505,7 +505,7 @@ PolytopeSoup<T, I>::addElset(String const & name, Vector<I> const & ids, Vector<
   _elset_offsets.push_back(static_cast<I>(new_num_ids));
   _elset_ids.resize(new_num_ids);
   um2::copy(ids.begin(), ids.end(), _elset_ids.data() + old_num_ids);
-#if UM2_ENABLE_DBC
+#if UM2_ENABLE_ASSERTS
   for (auto const & id : _elset_ids) {
     ASSERT(id < _element_types.size());
   }
@@ -1784,13 +1784,13 @@ static void readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5
   // Read the data
   H5::DataSet const dataset =
       h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
-#if UM2_ENABLE_DBC
+#if UM2_ENABLE_ASSERTS
   H5T_class_t const type_class = dataset.getTypeClass();
   ASSERT(type_class == H5T_FLOAT);
 #endif
   H5::FloatType const datatype = dataset.getFloatType();
   size_t const datatype_size = datatype.getSize();
-#if UM2_ENABLE_DBC
+#if UM2_ENABLE_ASSERTS
   ASSERT(datatype_size == std::stoul(precision));
   H5::DataSpace const dataspace = dataset.getSpace();
   int const rank = dataspace.getSimpleExtentNdims();
@@ -1918,13 +1918,13 @@ static void readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5
   // Read the data
   H5::DataSet const dataset =
       h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
-#if UM2_ENABLE_DBC
+#if UM2_ENABLE_ASSERTS
   H5T_class_t const type_class = dataset.getTypeClass();
   ASSERT(type_class == H5T_INTEGER);
 #endif
   H5::IntType const datatype = dataset.getIntType();
   size_t const datatype_size = datatype.getSize();
-#if UM2_ENABLE_DBC
+#if UM2_ENABLE_ASSERTS
   ASSERT(datatype_size == std::stoul(precision));
   H5::DataSpace const dataspace = dataset.getSpace();
   int const rank = dataspace.getSimpleExtentNdims();
@@ -2035,7 +2035,7 @@ static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5fi
     // Read the data
     H5::DataSet const dataset =
         h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
-#if UM2_ENABLE_DBC
+#if UM2_ENABLE_ASSERTS
     H5T_class_t const type_class = dataset.getTypeClass();
     ASSERT(type_class == H5T_INTEGER);
 #endif
@@ -2043,13 +2043,13 @@ static void readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5fi
     size_t const datatype_size = datatype.getSize();
     ASSERT(datatype_size == std::stoul(precision));
     H5::DataSpace const dataspace = dataset.getSpace();
-#if UM2_ENABLE_DBC
+#if UM2_ENABLE_ASSERTS
     int const rank = dataspace.getSimpleExtentNdims();
     ASSERT(rank == 1);
 #endif
 
     hsize_t dims[1];
-#if UM2_ENABLE_DBC
+#if UM2_ENABLE_ASSERTS
     int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
     ASSERT(ndims == 1);
     std::string const dimensions = xdataitem.attribute("Dimensions").value();

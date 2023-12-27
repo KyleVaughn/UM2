@@ -28,7 +28,7 @@ public:
   constexpr CrossSection(Vector<T> const & t) noexcept
       : _t(t)
   {
-#if UM2_ENABLE_DBC
+#if UM2_ENABLE_ASSERTS
     ASSERT(!_t.empty());
     for (auto const & t_i : _t) {
       ASSERT(t_i >= 0);

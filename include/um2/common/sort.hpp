@@ -62,7 +62,7 @@ applyPermutation(Vector<T> & v, Vector<Size> const & perm) noexcept
 {
   // Verify that perm is a permutation
   // (contains all elements of [0, v.size()) exactly once)
-#if UM2_ENABLE_DBC
+#if UM2_ENABLE_ASSERTS
   Vector<int8_t> seen(v.size(), 0);
   for (Size const i : perm) {
     ASSERT(i < v.size());
