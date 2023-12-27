@@ -8,11 +8,13 @@ namespace um2
 {
 
 template <std::floating_point T>
-struct Material {
+class Material {
 
-  String name;
-  Color color;
-  CrossSection<T> xs;
+  String _name;
+  Color _color;
+  CrossSection<T> _xs;
+
+  public:
 
   //======================================================================
   // Constructors
@@ -20,9 +22,9 @@ struct Material {
 
   constexpr Material() noexcept = default;
 
-  HOSTDEV constexpr Material(String const & name_in, Color color_in) noexcept
-      : name(name_in),
-        color(color_in)
+  HOSTDEV constexpr Material(String const & name, Color color) noexcept
+      : _name(name),
+        _color(color)
   {
   }
 

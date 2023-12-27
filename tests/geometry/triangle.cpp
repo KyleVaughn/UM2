@@ -154,10 +154,10 @@ TEST_CASE(boundingBox)
 {
   um2::Triangle<D, T> const tri = makeTri<D, T>();
   um2::AxisAlignedBox<D, T> const box = tri.boundingBox();
-  ASSERT_NEAR(box.xMin(), static_cast<T>(0), static_cast<T>(1e-5));
-  ASSERT_NEAR(box.yMin(), static_cast<T>(0), static_cast<T>(1e-5));
-  ASSERT_NEAR(box.xMax(), static_cast<T>(1), static_cast<T>(1e-5));
-  ASSERT_NEAR(box.yMax(), static_cast<T>(1), static_cast<T>(1e-5));
+  ASSERT_NEAR(box.minima()[0], static_cast<T>(0), static_cast<T>(1e-5));
+  ASSERT_NEAR(box.minima()[1], static_cast<T>(0), static_cast<T>(1e-5));
+  ASSERT_NEAR(box.maxima()[0], static_cast<T>(1), static_cast<T>(1e-5));
+  ASSERT_NEAR(box.maxima()[1], static_cast<T>(1), static_cast<T>(1e-5));
 }
 
 //==============================================================================

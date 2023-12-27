@@ -24,9 +24,9 @@ namespace um2
 // See https://en.wikipedia.org/wiki/Polytope for help with terminology.
 
 template <Size K, Size P, Size N, Size D, typename T>
-struct Polytope {
+class Polytope {
   static_assert(K > 0 && K <= 3, "Polytope dimension must be 1, 2, or 3");
-  Point<D, T> v[N];
+  Point<D, T> _v[N];
 };
 
 //==============================================================================
@@ -151,7 +151,7 @@ template <Size K, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
 boundingBox(LinearPolytope<K, N, D, T> const & polytope) noexcept -> AxisAlignedBox<D, T>
 {
-  return boundingBox(polytope.v);
+  return boundingBox(polytope.vertices());
 }
 
 } // namespace um2

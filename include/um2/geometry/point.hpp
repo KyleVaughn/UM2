@@ -41,7 +41,7 @@ template <std::floating_point T>
 inline constexpr T eps_distance = static_cast<T>(1e-6); // 0.1 micron
 
 template <std::floating_point T>
-inline constexpr T eps_distance2 = static_cast<T>(1e-12);
+inline constexpr T eps_distance2 = eps_distance<T> * eps_distance<T>; 
 
 template <std::floating_point T>
 inline constexpr T inf_distance = static_cast<T>(1e10);

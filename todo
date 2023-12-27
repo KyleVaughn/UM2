@@ -1,3 +1,10 @@
+struct to class
+Log with multiple arguments to the functions, which automatically call toStgring
+
+
+
+
+
 Scripts to install gcc
 
 Currently working through polytope soup tests 
@@ -10,7 +17,6 @@ parallelize
 
 extents for AABB
 alginment
-
 
 ===============================================================================
 HOUSE KEEPING

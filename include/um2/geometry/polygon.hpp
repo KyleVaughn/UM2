@@ -22,11 +22,13 @@ namespace um2
 {
 
 template <Size P, Size N, Size D, typename T>
-struct Polytope<2, P, N, D, T> {
+class Polytope<2, P, N, D, T> {
 
   using Edge = Dion<P, P + 1, D, T>;
 
-  Point<D, T> v[N];
+  Point<D, T> _v[N];
+
+  public:
 
   //==============================================================================
   // Accessors
@@ -41,6 +43,9 @@ struct Polytope<2, P, N, D, T> {
   PURE HOSTDEV constexpr auto
   operator[](Size i) const noexcept -> Point<D, T> const &;
 
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  vertices() const noexcept -> Point<D, T> const (&)[N];
+
   //==============================================================================
   // Constructors
   //==============================================================================
@@ -51,7 +56,7 @@ struct Polytope<2, P, N, D, T> {
     requires(sizeof...(Pts) == N && (std::same_as<Point<D, T>, Pts> && ...))
   // NOLINTBEGIN(google-explicit-constructor) justification: implicit conversion
   HOSTDEV constexpr Polytope(Pts const... args) noexcept
-      : v{args...}
+      : _v{args...}
   {
   }
   // NOLINTEND(google-explicit-constructor)
@@ -119,7 +124,7 @@ Polygon<P, N, D, T>::operator[](Size i) noexcept -> Point<D, T> &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  return v[i];
+  return _v[i];
 }
 
 template <Size P, Size N, Size D, typename T>
@@ -128,7 +133,14 @@ Polygon<P, N, D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  return v[i];
+  return _v[i];
+}
+
+template <Size P, Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+Polygon<P, N, D, T>::vertices() const noexcept -> Point<D, T> const (&)[N]
+{
+  return _v;
 }
 
 //==============================================================================

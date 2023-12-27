@@ -204,7 +204,7 @@ Vec<D, T>::operator[](Size i) noexcept -> T &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
-  // cppcheck-suppress arrayIndexOutOfBoundsCond; justification: this is correct
+  // cppcheck-suppress [arrayIndexOutOfBoundsCond,negativeIndex]; justification: this is correct
   return _data[i];
 }
 
@@ -214,7 +214,7 @@ Vec<D, T>::operator[](Size i) const noexcept -> T const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
-  // cppcheck-suppress arrayIndexOutOfBoundsCond; justification: this is correct
+  // cppcheck-suppress [arrayIndexOutOfBoundsCond,negativeIndex]; justification: this is correct
   return _data[i];
 }
 

@@ -19,6 +19,8 @@ class AxisAlignedBox {
   Point<D, T> _min;
   Point<D, T> _max;
 
+  public:
+
   //==============================================================================
   // Constructors
   //==============================================================================
@@ -129,8 +131,8 @@ template <Size D, typename T>
 HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::operator+=(Point<D, T> const & p) noexcept -> AxisAlignedBox &
 {
-  minima.min(p);
-  maxima.max(p);
+  _min.min(p);
+  _max.max(p);
   return *this;
 }
 
@@ -138,8 +140,8 @@ template <Size D, typename T>
 HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::operator+=(AxisAlignedBox const & box) noexcept -> AxisAlignedBox &
 {
-  minima.min(box._min);
-  maxima.max(box._max);
+  _min.min(box._min);
+  _max.max(box._max);
   return *this;
 }
 

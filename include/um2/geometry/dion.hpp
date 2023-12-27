@@ -36,9 +36,11 @@ namespace um2
 {
 
 template <Size P, Size N, Size D, typename T>
-struct Polytope<1, P, N, D, T> {
+class Polytope<1, P, N, D, T> {
 
-  Point<D, T> v[N];
+  Point<D, T> _v[N];
+
+  public:
 
   //==============================================================================
   // Accessors
@@ -50,6 +52,9 @@ struct Polytope<1, P, N, D, T> {
   PURE HOSTDEV constexpr auto
   operator[](Size i) const noexcept -> Point<D, T> const &;
 
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  vertices() const noexcept -> Point<D, T> const (&)[N];
+
   //==============================================================================
   // Constructors
   //==============================================================================
@@ -60,7 +65,7 @@ struct Polytope<1, P, N, D, T> {
     requires(sizeof...(Pts) == N && (std::same_as<Point<D, T>, Pts> && ...))
   // NOLINTNEXTLINE(google-explicit-constructor) justified: implicit conversion desired
   HOSTDEV constexpr Polytope(Pts const... args) noexcept
-      : v{args...}
+      : _v{args...}
   {
   }
 
@@ -112,7 +117,7 @@ Dion<P, N, D, T>::operator[](Size i) noexcept -> Point<D, T> &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  return v[i];
+  return _v[i];
 }
 
 template <Size P, Size N, Size D, typename T>
@@ -121,7 +126,14 @@ Dion<P, N, D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  return v[i];
+  return _v[i];
+}
+
+template <Size P, Size N, Size D, typename T>
+PURE HOSTDEV constexpr auto
+Dion<P, N, D, T>::vertices() const noexcept -> Point<D, T> const (&)[N]
+{
+  return _v;
 }
 
 //==============================================================================
@@ -856,11 +868,11 @@ PURE HOSTDEV constexpr auto
 intersect(LineSegment2<T> const & line, Ray2<T> const & ray) noexcept -> T
 {
   Vec2<T> const v(line[1][0] - line[0][0], line[1][1] - line[0][1]);
-  Vec2<T> const u(ray.o[0] - line[0][0], ray.o[1] - line[0][1]);
+  Vec2<T> const u(ray.origin()[0] - line[0][0], ray.origin()[1] - line[0][1]);
 
-  T const z = v.cross(ray.d);
+  T const z = v.cross(ray.direction());
 
-  T const s = u.cross(ray.d) / z;
+  T const s = u.cross(ray.direction()) / z;
   T r = u.cross(v) / z;
 
   if (s < 0 || 1 < s) {
@@ -910,11 +922,11 @@ intersect(QuadraticSegment2<T> const & q, Ray2<T> const & ray) noexcept -> Vec2<
   // Vec2<T> const D = ray.d;
   // Vec2<T> const O = ray.o;
 
-  Vec2<T> const voc(q[0][0] - ray.o[0], q[0][1] - ray.o[1]); // C - O
+  Vec2<T> const voc(q[0][0] - ray.origin()[0], q[0][1] - ray.origin()[1]); // C - O
 
-  T const a = A.cross(ray.d);   // (A × D)ₖ
-  T const b = B.cross(ray.d);   // (B × D)ₖ
-  T const c = voc.cross(ray.d); // ((C - O) × D)ₖ
+  T const a = A.cross(ray.direction());   // (A × D)ₖ
+  T const b = B.cross(ray.direction());   // (B × D)ₖ
+  T const c = voc.cross(ray.direction()); // ((C - O) × D)ₖ
 
   Vec2<T> result(inf_distance<T>, inf_distance<T>);
 
@@ -922,7 +934,7 @@ intersect(QuadraticSegment2<T> const & q, Ray2<T> const & ray) noexcept -> Vec2<
     T const s = -c / b;
     if (0 <= s && s <= 1) {
       Point2<T> const P(s * (s * A[0] + B[0]) + voc[0], s * (s * A[1] + B[1]) + voc[1]);
-      result[0] = dot(P, ray.d) / ray.d.squaredNorm();
+      result[0] = dot(P, ray.direction()) / ray.direction().squaredNorm();
     }
     return result;
   }
@@ -935,11 +947,11 @@ intersect(QuadraticSegment2<T> const & q, Ray2<T> const & ray) noexcept -> Vec2<
   T const s2 = (-b + um2::sqrt(disc)) / (2 * a);
   if (0 <= s1 && s1 <= 1) {
     Point2<T> const P(s1 * (s1 * A[0] + B[0]) + voc[0], s1 * (s1 * A[1] + B[1]) + voc[1]);
-    result[0] = dot(P, ray.d) / ray.d.squaredNorm();
+    result[0] = dot(P, ray.direction()) / ray.direction().squaredNorm();
   }
   if (0 <= s2 && s2 <= 1) {
     Point2<T> const P(s2 * (s2 * A[0] + B[0]) + voc[0], s2 * (s2 * A[1] + B[1]) + voc[1]);
-    result[1] = dot(P, ray.d) / ray.d.squaredNorm();
+    result[1] = dot(P, ray.direction()) / ray.direction().squaredNorm();
   }
   // NOLINTEND(readability-identifier-naming)
   return result;

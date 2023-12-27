@@ -22,9 +22,9 @@ static constexpr bool log_default_exit_on_error = true;
 
 // We need log variables to be global
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables) justified
-LogLevel Log::max_level = log_default_max_level; 
+LogLevel Log::max_level = log_default_max_level;
 LogTimePoint Log::start_time = LogClock::now();
-bool Log::timestamped = true; 
+bool Log::timestamped = true;
 bool Log::colorized = log_default_colorized;
 bool Log::exit_on_error = log_default_exit_on_error;
 char Log::buffer[Log::buffer_size] = {0};
@@ -107,8 +107,6 @@ Log::getStartTime() -> LogTimePoint
 
 // -- Message handling --
 
-namespace
-{
 //  // Verbosity
 //  String verbosity_str;
 //  switch (verbosity) {
@@ -131,35 +129,63 @@ namespace
 //    verbosity_str = "UNKNOWN";
 //    break;
 //  }
-//  // Color
-//  String c0;
-//  String c1;
-//  if (Log::isColorized()) {
-//    switch (verbosity) {
-//    case LogLevel::Error: // RED
-//      c0 = "\033[1;31m";
-//      c1 = "\033[0m";
-//      break;
-//    case LogLevel::Warn: // YELLOW
-//      c0 = "\033[1;33m";
-//      c1 = "\033[0m";
-//      break;
-//    case LogLevel::Debug: // MAGENTA
-//      c0 = "\033[1;35m";
-//      c1 = "\033[0m";
-//      break;
-//    case LogLevel::Trace: // CYAN
-//      c0 = "\033[1;36m";
-//      c1 = "\033[0m";
-//      break;
-//    default: // NO COLOR
-//      break;
-//    }
-//  }
 //  return c0 + time_str + verbosity_str + ": " + message + c1;
 //}
 //
-} // namespace
+
+auto
+Log::addTimestamp(char * buffer_begin) -> char *
+{
+  if (timestamped) {
+    LogDuration const elapsed_seconds = LogClock::now() - start_time;
+    Size const hours = static_cast<Size>(elapsed_seconds.count()) / 3600;
+    Size const minutes = (static_cast<Size>(elapsed_seconds.count()) / 60) % 60;
+    Size const seconds = static_cast<Size>(elapsed_seconds.count()) % 60;
+    Size const milliseconds = static_cast<Size>(elapsed_seconds.count() * 1000) % 1000;
+    buffer_begin[0] = '[';
+    if (hours < 10) {
+      buffer_begin[1] = '0';
+      buffer_begin[2] = static_cast<char>(hours + '0');
+    } else {
+      buffer_begin[1] = static_cast<char>(hours / 10 + '0');
+      buffer_begin[2] = static_cast<char>(hours % 10 + '0');
+    }
+    buffer_begin[3] = ':';
+    if (minutes < 10) {
+      buffer_begin[4] = '0';
+      buffer_begin[5] = static_cast<char>(minutes + '0');
+    } else {
+      buffer_begin[4] = static_cast<char>(minutes / 10 + '0');
+      buffer_begin[5] = static_cast<char>(minutes % 10 + '0');
+    }
+    buffer_begin[6] = ':';
+    if (seconds < 10) {
+      buffer_begin[7] = '0';
+      buffer_begin[8] = static_cast<char>(seconds + '0');
+    } else {
+      buffer_begin[7] = static_cast<char>(seconds / 10 + '0');
+      buffer_begin[8] = static_cast<char>(seconds % 10 + '0');
+    }
+    buffer_begin[9] = '.';
+    if (milliseconds < 10) {
+      buffer_begin[10] = '0';
+      buffer_begin[11] = '0';
+      buffer_begin[12] = static_cast<char>(milliseconds + '0');
+    } else if (milliseconds < 100) {
+      buffer_begin[10] = '0';
+      buffer_begin[11] = static_cast<char>(milliseconds / 10 + '0');
+      buffer_begin[12] = static_cast<char>(milliseconds % 10 + '0');
+    } else {
+      buffer_begin[10] = static_cast<char>(milliseconds / 100 + '0');
+      buffer_begin[11] = static_cast<char>((milliseconds % 100) / 10 + '0');
+      buffer_begin[12] = static_cast<char>((milliseconds % 100) % 10 + '0');
+    }
+    buffer_begin[13] = ']';
+    buffer_begin[14] = ' ';
+    buffer_begin += 15;
+  } // timestamped
+  return buffer_begin;
+}
 
 // Handle the messages from error, warn, etc. and store or print them
 // depending on the Log configuration.
@@ -169,7 +195,6 @@ Log::handleMessage(LogLevel const level, char const * msg, Size len)
   ASSERT(msg != nullptr);
   ASSERT(len > 0);
   ASSERT(len < buffer_size);
-
   if (level <= max_level) {
     char * buffer_begin = addressof(buffer[0]);
     if (colorized) {
@@ -196,62 +221,15 @@ Log::handleMessage(LogLevel const level, char const * msg, Size len)
         // \033[1;36m
         buffer_begin[5] = '6';
         break;
-      default: // NO COLOR 
+      default: // NO COLOR
         buffer_begin -= 7;
         break;
       }
       buffer_begin += 7;
     } // if (colorized)
     char const * begin = addressof(msg[0]);
-    char const * end = begin + len; 
-    if (timestamped) {
-      LogDuration const elapsed_seconds = LogClock::now() - start_time;
-      Size const hours = static_cast<Size>(elapsed_seconds.count()) / 3600;
-      Size const minutes = (static_cast<Size>(elapsed_seconds.count()) / 60) % 60;
-      Size const seconds = static_cast<Size>(elapsed_seconds.count()) % 60;
-      Size const milliseconds = static_cast<Size>(elapsed_seconds.count() * 1000) % 1000;
-      buffer_begin[0] = '[';
-      if (hours < 10) {
-        buffer_begin[1] = '0';
-        buffer_begin[2] = static_cast<char>(hours + '0');
-      } else {
-        buffer_begin[1] = static_cast<char>(hours / 10 + '0');
-        buffer_begin[2] = static_cast<char>(hours % 10 + '0');
-      }
-      buffer_begin[3] = ':';
-      if (minutes < 10) {
-        buffer_begin[4] = '0';
-        buffer_begin[5] = static_cast<char>(minutes + '0');
-      } else {
-        buffer_begin[4] = static_cast<char>(minutes / 10 + '0');
-        buffer_begin[5] = static_cast<char>(minutes % 10 + '0');
-      }
-      buffer_begin[6] = ':';
-      if (seconds < 10) {
-        buffer_begin[7] = '0';
-        buffer_begin[8] = static_cast<char>(seconds + '0');
-      } else {
-        buffer_begin[7] = static_cast<char>(seconds / 10 + '0');
-        buffer_begin[8] = static_cast<char>(seconds % 10 + '0');
-      }
-      buffer_begin[9] = '.';
-      if (milliseconds < 10) {
-        buffer_begin[10] = '0';
-        buffer_begin[11] = '0';
-        buffer_begin[12] = static_cast<char>(milliseconds + '0');
-      } else if (milliseconds < 100) {
-        buffer_begin[10] = '0';
-        buffer_begin[11] = static_cast<char>(milliseconds / 10 + '0');
-        buffer_begin[12] = static_cast<char>(milliseconds % 10 + '0');
-      } else {
-        buffer_begin[10] = static_cast<char>(milliseconds / 100 + '0');
-        buffer_begin[11] = static_cast<char>((milliseconds % 100) / 10 + '0');
-        buffer_begin[12] = static_cast<char>((milliseconds % 100) % 10 + '0');
-      }
-      buffer_begin[13] = ']';
-      buffer_begin[14] = ' ';
-      buffer_begin += 15;
-    } // timestamped
+    char const * end = begin + len;
+    buffer_begin = addTimestamp(buffer_begin);
     um2::copy(begin, end, buffer_begin);
     buffer_begin += len;
     if (colorized) {
@@ -268,10 +246,13 @@ Log::handleMessage(LogLevel const level, char const * msg, Size len)
     } else {
       fprintf_result = fprintf(stdout, "%s\n", buffer);
     }
+#if UM2_ENABLE_ASSERTS
     ASSERT(fprintf_result > 0);
+#else
     if (fprintf_result == 0) {
       exit(1);
     }
+#endif
   } // level <= max_level
 }
 

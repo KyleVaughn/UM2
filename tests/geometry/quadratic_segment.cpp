@@ -199,14 +199,16 @@ TEST_CASE(boundingBox)
   um2::QuadraticSegment<D, T> seg2 = makeSeg2<D, T>();
   um2::AxisAlignedBox<D, T> const bb2 = seg2.boundingBox();
   um2::AxisAlignedBox<D, T> bb_ref2(seg2[0], seg2[1]);
-  bb_ref2.maxima.max(seg2[2]);
+  bb_ref2 += seg2[2];
   ASSERT(um2::isApprox(bb2, bb_ref2));
 
   um2::QuadraticSegment<D, T> const seg8 = makeSeg8<D, T>();
   um2::AxisAlignedBox<D, T> const bb8 = seg8.boundingBox();
-  um2::AxisAlignedBox<D, T> bb_ref8(um2::Vec<D, T>::zero(), um2::Vec<D, T>::zero());
-  bb_ref8.maxima[0] = static_cast<T>(4.083334);
-  bb_ref8.maxima[1] = static_cast<T>(3);
+  um2::Point<D, T> const p0 = um2::Vec<D, T>::zero();
+  um2::Point<D, T> p1 = um2::Vec<D, T>::zero();
+  p1[0] = static_cast<T>(4.083334);
+  p1[1] = static_cast<T>(3);
+  um2::AxisAlignedBox<D, T> const bb_ref8(p0, p1);
   ASSERT(um2::isApprox(bb8, bb_ref8));
 }
 

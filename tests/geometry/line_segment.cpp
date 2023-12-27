@@ -8,23 +8,10 @@ makeLine() -> um2::LineSegment<D, T>
 {
   um2::LineSegment<D, T> line;
   for (Size i = 0; i < D; ++i) {
-    line.v[0][i] = static_cast<T>(1);
-    line.v[1][i] = static_cast<T>(2);
+    line[0][i] = static_cast<T>(1);
+    line[1][i] = static_cast<T>(2);
   }
   return line;
-}
-
-//=============================================================================
-// Accessors
-//=============================================================================
-
-template <Size D, typename T>
-HOSTDEV
-TEST_CASE(accessors)
-{
-  um2::LineSegment<D, T> line = makeLine<D, T>();
-  ASSERT(um2::isApprox(line[0], line.v[0]));
-  ASSERT(um2::isApprox(line[1], line.v[1]));
 }
 
 //=============================================================================
@@ -113,11 +100,11 @@ TEST_CASE(boundingBox)
 {
   um2::LineSegment<D, T> line = makeLine<D, T>();
   um2::AxisAlignedBox<D, T> const box = line.boundingBox();
-  ASSERT(um2::isApprox(line[0], box.minima));
-  ASSERT(um2::isApprox(line[1], box.maxima));
+  ASSERT(um2::isApprox(line[0], box.minima()));
+  ASSERT(um2::isApprox(line[1], box.maxima()));
   um2::AxisAlignedBox<D, T> const box2 = um2::boundingBox(line);
-  ASSERT(um2::isApprox(box2.minima, box.minima));
-  ASSERT(um2::isApprox(box2.maxima, box.maxima));
+  ASSERT(um2::isApprox(box2.minima(), box.minima()));
+  ASSERT(um2::isApprox(box2.maxima(), box.maxima()));
 }
 
 //=============================================================================
@@ -224,9 +211,6 @@ TEST_CASE(intersect)
 
 #if UM2_USE_CUDA
 template <Size D, typename T>
-MAKE_CUDA_KERNEL(accessors, D, T);
-
-template <Size D, typename T>
 MAKE_CUDA_KERNEL(interpolate, D, T);
 
 template <Size D, typename T>
@@ -257,7 +241,6 @@ MAKE_CUDA_KERNEL(intersect, T);
 template <Size D, typename T>
 TEST_SUITE(LineSegment)
 {
-  TEST_HOSTDEV(accessors, 1, 1, D, T);
   TEST_HOSTDEV(interpolate, 1, 1, D, T);
   TEST_HOSTDEV(jacobian, 1, 1, D, T);
   TEST_HOSTDEV(getRotation, 1, 1, T);

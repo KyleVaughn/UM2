@@ -46,24 +46,25 @@ struct ModularRayParams {
     ASSERT_ASSUME(i < num_rays[0] + num_rays[1]);
     int case_id = (i < num_rays[0]) ? 0 : 1;
     case_id += (direction[0] < 0) ? 2 : 0;
-    Ray2<T> res(box.minima, direction);
+    Point2<T> origin = box.minima();
     switch (case_id) {
     case 0:
-      res.o[0] = box.maxima[0] - spacing[0] * (static_cast<T>(i) + static_cast<T>(0.5));
+      origin[0] = box.maxima()[0] - spacing[0] * (static_cast<T>(i) + static_cast<T>(0.5));
       break;
     case 1:
-      res.o[1] += spacing[1] * (static_cast<T>(i - num_rays[0]) + static_cast<T>(0.5));
+      origin[1] += spacing[1] * (static_cast<T>(i - num_rays[0]) + static_cast<T>(0.5));
       break;
     case 2:
-      res.o[0] += spacing[0] * (static_cast<T>(i) + static_cast<T>(0.5));
+      origin[0] += spacing[0] * (static_cast<T>(i) + static_cast<T>(0.5));
       break;
     case 3:
-      res.o[0] = box.maxima[0];
-      res.o[1] += spacing[1] * (static_cast<T>(i - num_rays[0]) + static_cast<T>(0.5));
+      origin[0] = box.maxima()[0];
+      origin[1] += spacing[1] * (static_cast<T>(i - num_rays[0]) + static_cast<T>(0.5));
       break;
     default:
       __builtin_unreachable();
     }
+    Ray2<T> res(origin, direction);
     return res;
   }
 };

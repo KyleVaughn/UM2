@@ -55,6 +55,9 @@ class Log
 
   // -- Methods --
 
+  static auto 
+  addTimestamp(char * buffer_begin) -> char *;
+
   static void
   handleMessage(LogLevel level, char const * msg, Size len);
 
