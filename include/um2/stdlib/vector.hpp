@@ -7,15 +7,13 @@
 
 #include <initializer_list> // std::initializer_list
 
-namespace um2
-{
-
 //==============================================================================
 // VECTOR
 //==============================================================================
 // An std::vector-like class without and Allocator template parameter.
-//
-// https://en.cppreference.com/w/cpp/container/vector
+
+namespace um2
+{
 
 template <typename T>
 class Vector

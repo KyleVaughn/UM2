@@ -4,6 +4,11 @@
 
 #include <new>
 
+//==============================================================================
+// MEMORY
+//==============================================================================
+// Implementation of a subset of <memory> which is compatible with CUDA.
+// The following functions are implemented:
 //  addressof
 //  construct_at
 //  destroy_at

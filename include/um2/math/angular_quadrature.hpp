@@ -4,9 +4,9 @@
 #include <um2/stdlib/math.hpp>
 #include <um2/stdlib/vector.hpp>
 
-namespace um2
-{
-
+//==============================================================================
+// ANGULAR QUADRATURE
+//==============================================================================
 // Angular quadrature defined on the unit sphere octant in the upper right,
 // closest to the viewer. The angles and weights are transformed to the other
 // octants by symmetry.
@@ -44,6 +44,9 @@ namespace um2
 //  𝘷                                   //
 //  k                                   //
 
+namespace um2
+{
+
 enum class AngularQuadratureType { Chebyshev };
 
 template <std::floating_point T>
@@ -69,15 +72,15 @@ setChebyshevAngularQuadrature(Size degree, um2::Vector<T> & weights,
 }
 
 template <std::floating_point T>
-class ProductAngularQuadrature {
+class ProductAngularQuadrature
+{
 
   Vector<T> _wazi; // Weights for the azimuthal angles
   Vector<T> _azi;  // Azimuthal angles, γ ∈ (0, π/2)
   Vector<T> _wpol; // Weights for the polar angles
   Vector<T> _pol;  // Polar angles, θ ∈ (0, π/2)
 
-  public:
-
+public:
   //============================================================================
   // Constructors
   //============================================================================
@@ -112,7 +115,7 @@ class ProductAngularQuadrature {
   // Accessors
   //============================================================================
 
-  HOSTDEV [[nodiscard]] constexpr auto 
+  HOSTDEV [[nodiscard]] constexpr auto
   azimuthalDegree() const noexcept -> Size
   {
     return _wazi.size();
@@ -147,7 +150,6 @@ class ProductAngularQuadrature {
   {
     return _pol;
   }
-
 };
 
 } // namespace um2

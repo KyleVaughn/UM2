@@ -1,26 +1,25 @@
 #pragma once
 
-#include <um2/geometry/point.hpp>
+#include <um2/geometry/ray.hpp>
 #include <um2/stdlib/numeric.hpp>
 #include <um2/stdlib/vector.hpp>
-
-namespace um2
-{
 
 //==============================================================================
 // AXIS-ALIGNED BOX
 //==============================================================================
-//
 // A D-dimensional axis-aligned box.
 
+namespace um2
+{
+
 template <Size D, typename T>
-class AxisAlignedBox {
+class AxisAlignedBox
+{
 
   Point<D, T> _min;
   Point<D, T> _max;
 
-  public:
-
+public:
   //==============================================================================
   // Constructors
   //==============================================================================
@@ -33,6 +32,28 @@ class AxisAlignedBox {
   //==============================================================================
   // Accessors
   //==============================================================================
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  xMin() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  yMin() const noexcept -> T
+    requires (D >= 2);
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  zMin() const noexcept -> T
+    requires (D >= 3);
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  xMax() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  yMax() const noexcept -> T
+    requires (D >= 2);
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  zMax() const noexcept -> T
+    requires (D >= 3);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   minima() const noexcept -> Point<D, T> const &;
@@ -58,10 +79,12 @@ class AxisAlignedBox {
   width() const noexcept -> T; // dx
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  height() const noexcept -> T; // dy
+  height() const noexcept -> T
+    requires (D >= 2); // dy 
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  depth() const noexcept -> T; // dz
+  depth() const noexcept -> T
+    requires (D >= 3); // dz
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   centroid() const noexcept -> Point<D, T>;
@@ -69,7 +92,7 @@ class AxisAlignedBox {
   PURE HOSTDEV [[nodiscard]] constexpr auto
   contains(Point<D, T> const & p) const noexcept -> bool;
 
-}; // struct AxisAlignedBox
+}; // class AxisAlignedBox
 
 //==============================================================================
 // Aliases
@@ -93,6 +116,52 @@ using AxisAlignedBox3d = AxisAlignedBox3<double>;
 //==============================================================================
 // Accessors
 //==============================================================================
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+AxisAlignedBox<D, T>::xMin() const noexcept -> T
+{
+  return _min[0];
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+AxisAlignedBox<D, T>::yMin() const noexcept -> T
+requires (D >= 2)
+{
+  return _min[1];
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+AxisAlignedBox<D, T>::zMin() const noexcept -> T
+requires (D >= 3)
+{
+  return _min[2];
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+AxisAlignedBox<D, T>::xMax() const noexcept -> T
+{
+  return _max[0];
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+AxisAlignedBox<D, T>::yMax() const noexcept -> T
+requires (D >= 2)
+{
+  return _max[1];
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+AxisAlignedBox<D, T>::zMax() const noexcept -> T
+requires (D >= 3)
+{
+  return _max[2];
+}
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
@@ -153,23 +222,23 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::width() const noexcept -> T
 {
-  return _max[0] - _min[0];
+  return xMax() - xMin(); 
 }
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::height() const noexcept -> T
+requires (D >= 2)
 {
-  static_assert(2 <= D);
-  return _max[1] - _min[1];
+  return yMax() - yMin();
 }
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::depth() const noexcept -> T
+requires (D >= 3)
 {
-  static_assert(3 <= D);
-  return _max[2] - _min[2];
+  return zMax() - zMin();
 }
 
 template <Size D, typename T>
@@ -282,6 +351,32 @@ boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>
 
   return std::reduce(points.begin(), points.end(),
                      AxisAlignedBox<D, T>{points[0], points[0]}, ReduceFunctor{});
+}
+
+//==============================================================================
+// intersect
+//==============================================================================
+
+// Returns the distance along the ray to the intersection point with the box.
+// r in [0, inf_distance<T>]
+template <typename T>
+PURE HOSTDEV constexpr auto
+intersect(Ray2<T> const & ray, AxisAlignedBox2<T> const & box) noexcept -> Vec2<T>
+{
+  // Inspired by https://tavianator.com/2022/ray_box_boundary.html
+  T tmin = static_cast<T>(0);
+  T tmax = inf_distance<T>;
+  T const inv_x = static_cast<T>(1) / ray.direction()[0];
+  T const inv_y = static_cast<T>(1) / ray.direction()[1];
+  T const t1x = (box.xMin() - ray.origin()[0]) * inv_x;
+  T const t2x = (box.xMax() - ray.origin()[0]) * inv_x;
+  T const t1y = (box.yMin() - ray.origin()[1]) * inv_y;
+  T const t2y = (box.yMax() - ray.origin()[1]) * inv_y;
+  tmin = um2::max(tmin, um2::min(t1x, t2x));
+  tmax = um2::min(tmax, um2::max(t1x, t2x));
+  tmin = um2::max(tmin, um2::min(t1y, t2y));
+  tmax = um2::min(tmax, um2::max(t1y, t2y));
+  return tmin <= tmax ? Vec2<T>(tmin, tmax) : Vec2<T>(inf_distance<T>, inf_distance<T>);
 }
 
 } // namespace um2

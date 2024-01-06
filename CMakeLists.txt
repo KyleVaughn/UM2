@@ -77,7 +77,6 @@ option(UM2_DEV_MODE          "Enable development mode"         OFF)
 option(UM2_USE_CLANG_FORMAT  "Enable clang-format targets"     ${UM2_DEV_MODE})
 option(UM2_USE_CLANG_TIDY    "Enable clang-tidy"               ${UM2_DEV_MODE})
 option(UM2_USE_COVERAGE      "Enable coverage"                 OFF)
-option(UM2_USE_CPPCHECK      "Enable cppcheck"                 ${UM2_DEV_MODE})
 option(UM2_USE_VALGRIND      "Enable valgrind"                 ${UM2_DEV_MODE})
 
 #===============================================================================
@@ -312,34 +311,6 @@ if (UM2_USE_CLANG_TIDY)
             "clang-tidy;--extra-arg=-Wno-unknown-warning-option")
   endmacro()
   set_clang_tidy_properties(um2)
-endif()
-
-# cppcheck
-if (UM2_USE_CPPCHECK)
-  find_program(CMAKE_CXX_CPPCHECK NAMES cppcheck)
-  # Copy the cppcheck-suppressions file to the build directory
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/cppcheck-suppressions
-                 ${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions COPYONLY)
-  # Search and replace UM2_DIR with the absolute path to the project root
-  file(READ ${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions CPPCHECK_SUPPRESS)
-  string(REPLACE "UM2_DIR" "${CMAKE_CURRENT_SOURCE_DIR}" CPPCHECK_SUPPRESS
-         "${CPPCHECK_SUPPRESS}")
-  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions "${CPPCHECK_SUPPRESS}")
-  # Concatenate the cppcheck arguments into a single string
-  string(CONCAT CPPCHECK_ARGS
-          ${CMAKE_CXX_CPPCHECK}
-          ";--enable=all"
-          ";--force"
-          ";--std=c++${UM2_CXX_STANDARD}"
-          ";--language=c++"
-          ";--suppressions-list=${CMAKE_CURRENT_BINARY_DIR}/cppcheck-suppressions"
-          ";--inconclusive"
-          ";--inline-suppr"
-          ";--error-exitcode=10")
-  macro(set_cppcheck_properties CPPCHECK_TARGET)
-    set_target_properties(${CPPCHECK_TARGET} PROPERTIES CXX_CPPCHECK "${CPPCHECK_ARGS}")
-  endmacro()
-  set_cppcheck_properties(um2)
 endif()
 
 # coverage

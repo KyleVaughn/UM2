@@ -3,13 +3,9 @@
 #include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/point.hpp>
 
-namespace um2
-{
-
 //==============================================================================
 // POLYTOPE
 //==============================================================================
-//
 // A K-dimensional polytope, of polynomial order P, represented by the connectivity
 // of its vertices. These N vertices are D-dimensional points of type T.
 //
@@ -23,8 +19,12 @@ namespace um2
 //
 // See https://en.wikipedia.org/wiki/Polytope for help with terminology.
 
+namespace um2
+{
+
 template <Size K, Size P, Size N, Size D, typename T>
-class Polytope {
+class Polytope
+{
   static_assert(K > 0 && K <= 3, "Polytope dimension must be 1, 2, or 3");
   Point<D, T> _v[N];
 };

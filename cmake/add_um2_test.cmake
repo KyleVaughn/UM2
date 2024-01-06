@@ -22,11 +22,6 @@ macro(add_um2_test FILENAME)
     set_clang_tidy_properties(${TESTNAME})
   endif()
   
-  # cppcheck
-  if (UM2_USE_CPPCHECK)
-    set_cppcheck_properties(${TESTNAME})
-  endif()
-  
   if (UM2_USE_COVERAGE)
     target_link_libraries(${TESTNAME} PRIVATE gcov)
     target_compile_options(${TESTNAME} PRIVATE --coverage)

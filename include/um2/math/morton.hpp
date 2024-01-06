@@ -4,28 +4,53 @@
 
 #include <concepts>
 
-// If the CPU supports the BMI2 instruction set, and we are compiling for CPU, then use
-// BMI2 intrinsics.
+//==============================================================================
+// MORTON ENCODING/DECODING
+//==============================================================================
+// This file provides functions for mapping to and from Morton codes.
+// https://en.wikipedia.org/wiki/Z-order_curve
 //
-// NOTE: we temporarily disable BMI2 intrinsics when compiling for CUDA because
+// Let uxx be an unsigned integer type with xx bits and fxx be a floating point
+// type with xx bits. This file provides the following functions:
+//
+// mortonEncode(u32, u32) -> u32
+// mortonEncode(u32, u32, u32) -> u32
+//
+// mortonEncode(u64, u64) -> u64
+// mortonEncode(u64, u64, u64) -> u64
+//
+// mortonEncode(f32, f32) -> u32
+// mortonEncode(f32, f32, f32) -> u32
+//
+// mortonEncode(f64, f64) -> u64
+// mortonEncode(f64, f64, f64) -> u64
+//
+// Morton codes can be efficiently encoded and decoded using the BMI2
+// instruction set for bit manipulation. If this instruction set is not
+// supported (such as on GPU), then we emulate the BMI2 intrinsics using a
+// portable algorithm.
+//
+// NOTE: We cannot use the BMI2 intrinsics when compiling with CUDA because
 // including <immintrin.h> causes compilation errors due to conflicting
 // definitions for 16-bit types
 // See https://github.com/KyleVaughn/UM2/issues/130
-//
-// TODO(kcvaughn): re-enable BMI2 intrinsics for HOST functions when compiling
-// with CUDA when the issue above is resolved.
-//
+
+// If BMI2 is supported and we are not compiling for CUDA, use BMI2.
 #if defined(__BMI2__) && !UM2_USE_CUDA // && !defined(__CUDA_ARCH__)
 // Emulate BMI2 intrinsics for DEVICE functions
 #  define EMULATE_BMI2_HOSTDEV DEVICE
 #  include <immintrin.h> // _pdep_u64, _pext_u64, _pdep_u32, _pext_u32
-#else
+#else                    // Other
 // Emulate BMI2 intrinsics for HOST and DEVICE functions
 #  define EMULATE_BMI2_HOSTDEV HOSTDEV
 #endif
 
 namespace um2
 {
+
+//==============================================================================
+// Maximum coordinate values
+//==============================================================================
 
 // In N dimensions with an X bits morton code, the max bits that may be used to
 // represent a coordinate without loss of precision is X / N.
@@ -37,14 +62,16 @@ inline constexpr U max_2d_morton_coord = (static_cast<U>(1) << (4 * sizeof(U))) 
 template <std::unsigned_integral U>
 inline constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 3)) - 1;
 
+// If BMI2 is supported
 #if defined(__BMI2__) && !UM2_USE_CUDA // && !defined(__CUDA_ARCH__)
 
 //==============================================================================
 // BMI2 intrinsics
 //==============================================================================
+// Wrap pdep and pext for portability.
 
-// False positive for -Wunused-function. These can be used depending on the
-// compile-time configuration or user's choice.
+// These can be used depending on the compile-time configuration or user's
+// choice, so ignore warnings about unused functions.
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wunused-function"
 static inline auto
@@ -72,6 +99,7 @@ pext(uint64_t source, uint64_t mask) noexcept -> uint64_t
 }
 #  pragma GCC diagnostic pop
 
+// Masks for interleaving bits in 2D and 3D morton codes.
 template <std::unsigned_integral U>
 inline static constexpr U bmi_2d_x_mask = static_cast<U>(0x5555555555555555);
 
@@ -128,10 +156,8 @@ mortonDecode(U const morton, U & x, U & y, U & z)
   z = pext(morton, bmi_3d_z_mask<U>);
 }
 
+// If BMI2 is not supported
 #else // this branch if !defined(__BMI2__) && !defined(__CUDA_ARCH__)
-
-// This is the fallback implementation of morton encoding/decoding that
-// mimics the behavior of the BMI2 intrinsics.
 
 //==============================================================================
 // BMI2 intrinsics emulation
@@ -291,7 +317,7 @@ mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y, uint64_t & z)
 #endif // defined(__BMI2__) && !defined(__CUDA_ARCH__)
 
 //==============================================================================
-// Morton encoding/decoding with normalization
+// Morton encoding/decoding floats (normalized to [0,1])
 //==============================================================================
 
 template <std::unsigned_integral U, std::floating_point T>

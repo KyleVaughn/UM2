@@ -17,7 +17,8 @@ TEST_CASE(chebyshev_chebyshev)
   ASSERT_NEAR(q.polarWeights()[0], static_cast<T>(0.5), eps);
   ASSERT_NEAR(q.polarWeights()[1], static_cast<T>(0.5), eps);
   ASSERT_NEAR(q.polarAngles()[0], um2::pi<T> / static_cast<T>(8), eps);
-  ASSERT_NEAR(q.polarAngles()[1], um2::pi<T> * static_cast<T>(3) / static_cast<T>(8), eps);
+  ASSERT_NEAR(q.polarAngles()[1], um2::pi<T> * static_cast<T>(3) / static_cast<T>(8),
+              eps);
 }
 
 //=============================================================================

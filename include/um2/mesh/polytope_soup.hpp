@@ -23,6 +23,8 @@
 #include <H5Cpp.h>
 #include <pugixml.hpp>
 
+// TODO (kcvaughn): Alphabetize functions
+
 namespace um2
 {
 
@@ -230,14 +232,13 @@ PolytopeSoup<T, I>::getElementBoundingBox(Size const i) const -> AxisAlignedBox3
 
   AxisAlignedBox3<T> box;
   T const z = _vertices[static_cast<Size>(_element_conn[istart])][2];
-  box.minima[2] = z;
-  box.maxima[2] = z;
 
   switch (elem_type) {
-  case VTKElemType::Vertex:
-    box.minima = _vertices[static_cast<Size>(_element_conn[istart])];
-    box.maxima = _vertices[static_cast<Size>(_element_conn[istart])];
+  case VTKElemType::Vertex: {
+    Point3<T> const p0 = _vertices[static_cast<Size>(_element_conn[istart])];
+    box = AxisAlignedBox3<T>(p0, p0);
     break;
+  }
   case VTKElemType::Line: {
     auto const p0 = _vertices[static_cast<Size>(_element_conn[istart])];
     auto const p1 = _vertices[static_cast<Size>(_element_conn[istart + 1])];
@@ -263,10 +264,9 @@ PolytopeSoup<T, I>::getElementBoundingBox(Size const i) const -> AxisAlignedBox3
     }
     Quadrilateral2<T> const quad(p2[0], p2[1], p2[2], p2[3]);
     auto const box2 = boundingBox(quad);
-    box.minima[0] = box2.minima[0];
-    box.minima[1] = box2.minima[1];
-    box.maxima[0] = box2.maxima[0];
-    box.maxima[1] = box2.maxima[1];
+    Point3<T> const p0(box2.xMin(), box2.yMin(), z);
+    Point3<T> const p1(box2.xMax(), box2.yMax(), z);
+    box = AxisAlignedBox3<T>(p0, p1);
     break;
   }
   case VTKElemType::QuadraticTriangle: {
@@ -279,10 +279,9 @@ PolytopeSoup<T, I>::getElementBoundingBox(Size const i) const -> AxisAlignedBox3
     }
     QuadraticTriangle2<T> const tri6(p2[0], p2[1], p2[2], p2[3], p2[4], p2[5]);
     auto const box2 = boundingBox(tri6);
-    box.minima[0] = box2.minima[0];
-    box.minima[1] = box2.minima[1];
-    box.maxima[0] = box2.maxima[0];
-    box.maxima[1] = box2.maxima[1];
+    Point3<T> const p0(box2.xMin(), box2.yMin(), z);
+    Point3<T> const p1(box2.xMax(), box2.yMax(), z);
+    box = AxisAlignedBox3<T>(p0, p1);
     break;
   }
   case VTKElemType::QuadraticQuad: {
@@ -296,10 +295,9 @@ PolytopeSoup<T, I>::getElementBoundingBox(Size const i) const -> AxisAlignedBox3
     QuadraticQuadrilateral2<T> const quad8(p2[0], p2[1], p2[2], p2[3], p2[4], p2[5],
                                            p2[6], p2[7]);
     auto const box2 = boundingBox(quad8);
-    box.minima[0] = box2.minima[0];
-    box.minima[1] = box2.minima[1];
-    box.maxima[0] = box2.maxima[0];
-    box.maxima[1] = box2.maxima[1];
+    Point3<T> const p0(box2.xMin(), box2.yMin(), z);
+    Point3<T> const p1(box2.xMax(), box2.yMax(), z);
+    box = AxisAlignedBox3<T>(p0, p1);
     break;
   }
   default:
@@ -459,7 +457,6 @@ PolytopeSoup<T, I>::addElement(VTKElemType const type, Vector<I> const & conn) -
   _element_offsets.push_back(_element_offsets.back() + static_cast<I>(conn.size()));
   for (auto const & id : conn) {
     ASSERT(id < _vertices.size());
-    // cppcheck-suppress useStlAlgorithm;
     _element_conn.push_back(id);
   }
   return _element_types.size() - 1;
@@ -477,7 +474,6 @@ PolytopeSoup<T, I>::addElset(String const & name, Vector<I> const & ids, Vector<
   LOG_DEBUG("Adding elset: " + name);
 
   for (auto const & this_name : _elset_names) {
-    // cppcheck-suppress useStlAlgorithm; justification: This is more clear.
     if (this_name == name) {
       LOG_ERROR("Elset " + name + " already exists.");
       return -1;
@@ -599,7 +595,6 @@ PolytopeSoup<T, I>::getElemTypes() const -> Vector<VTKElemType>
   for (auto const & this_type : _element_types) {
     bool found = false;
     for (auto const & that_type : el_types) {
-      // cppcheck-suppress useStlAlgorithm
       if (this_type == that_type) {
         found = true;
         break;
@@ -699,7 +694,7 @@ PolytopeSoup<T, I>::mortonSortElements()
   for (Size i = 0; i < num_elems; ++i) {
     aabb += getElementBoundingBox(i);
   }
-  Point3<T> inv_scale = aabb.maxima - aabb.minima;
+  Point3<T> inv_scale = aabb.maxima() - aabb.minima();
   inv_scale[0] = static_cast<T>(1) / inv_scale[0];
   inv_scale[1] = static_cast<T>(1) / inv_scale[1];
   if (um2::abs(inv_scale[2]) < eps_distance<T>) {
@@ -709,7 +704,6 @@ PolytopeSoup<T, I>::mortonSortElements()
   }
 
   for (auto & c : centroids) {
-    // cppcheck-suppress useStlAlgorithm
     c *= inv_scale;
   }
 
@@ -759,7 +753,6 @@ PolytopeSoup<T, I>::mortonSortElements()
 
   // Map the old element indices to the new element indices.
   for (auto & el_id : _elset_ids) {
-    // cppcheck-suppress useStlAlgorithm
     el_id = static_cast<I>(inv_perm[static_cast<Size>(el_id)]);
   }
 }
@@ -775,7 +768,7 @@ PolytopeSoup<T, I>::mortonSortVertices()
   // We need to scale the vertices to the unit cube before we can apply
   // the morton encoding.
   auto const aabb = boundingBox(_vertices);
-  Point3<T> inv_scale = aabb.maxima - aabb.minima;
+  Point3<T> inv_scale = aabb.maxima() - aabb.minima();
   inv_scale[0] = static_cast<T>(1) / inv_scale[0];
   inv_scale[1] = static_cast<T>(1) / inv_scale[1];
   if (um2::abs(inv_scale[2]) < eps_distance<T>) {
@@ -817,7 +810,6 @@ PolytopeSoup<T, I>::mortonSortVertices()
   // From: _element_conn[i] = old_index
   // To  : _element_conn[i] = inv_perm[_element_conn[i]] = new_index
   for (auto & conn : _element_conn) {
-    // cppcheck-suppress useStlAlgorithm
     conn = static_cast<I>(inv_perm[static_cast<Size>(conn)]);
   }
 }
@@ -831,7 +823,7 @@ void
 PolytopeSoup<T, I>::sortElsets()
 {
   LOG_TRACE("Sorting elsets");
-  using NameIndexPair = um2::pair<String, I>;
+  using NameIndexPair = um2::Pair<String, I>;
   Size const num_elsets = _elset_names.size();
   Vector<NameIndexPair> elset_name_index_pairs(num_elsets);
   for (Size i = 0; i < num_elsets; ++i) {
@@ -878,7 +870,6 @@ void
 PolytopeSoup<T, I>::translate(Vec3<T> const & v)
 {
   for (auto & vertex : _vertices) {
-    // cppcheck-suppress useStlAlgorithm;
     vertex += v;
   }
 }
@@ -895,7 +886,6 @@ PolytopeSoup<T, I>::getMaterialNames(Vector<String> & material_names) const
   String const mat_prefix = "Material_";
   for (auto const & elset_name : _elset_names) {
     if (elset_name.starts_with(mat_prefix)) {
-      // cppcheck-suppress useStlAlgorithm; justification: Different behavior.
       material_names.emplace_back(elset_name);
     }
   }
@@ -939,7 +929,7 @@ PolytopeSoup<T, I>::getSubmesh(String const & elset_name,
 
   // Get the length of the submesh element connectivity as well as the number of each
   // element type.
-  Vector<um2::pair<VTKElemType, Size>> submesh_elem_type_counts;
+  Vector<um2::Pair<VTKElemType, Size>> submesh_elem_type_counts;
   Size submesh_element_conn_len = 0;
   for (Size i = 0; i < submesh_num_elements; ++i) {
     auto const element_id = static_cast<Size>(element_ids[i]);

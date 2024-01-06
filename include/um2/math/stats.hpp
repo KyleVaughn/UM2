@@ -3,6 +3,17 @@
 #include <um2/stdlib/algorithm.hpp>
 #include <um2/stdlib/math.hpp>
 
+//=============================================================================
+// STATS
+//=============================================================================
+// This file contains functions for computing statistics on a range of values.
+//
+// The following functions are provided:
+// mean
+// median (requires sorted range)
+// variance
+// stdDev
+
 namespace um2
 {
 

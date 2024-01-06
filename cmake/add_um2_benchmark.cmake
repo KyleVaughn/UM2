@@ -27,11 +27,6 @@ macro(add_um2_benchmark FILENAME)
     set_clang_tidy_properties(${BENCHNAME})
   endif()
 
-  # cppcheck
-  if (UM2_USE_CPPCHECK)
-    set_cppcheck_properties(${BENCHNAME})
-  endif()
-
   # If compiling with CUDA, compile the cpp files as cuda
   if (UM2_USE_CUDA)
     set_cuda_properties(${BENCHNAME} ${FILENAME})

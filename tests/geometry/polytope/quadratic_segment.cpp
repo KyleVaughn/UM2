@@ -1,6 +1,6 @@
 #include <um2/geometry/dion.hpp>
 
-#include "../test_macros.hpp"
+#include "../../test_macros.hpp"
 
 // Description of the quadratic segments used in test cases
 // --------------------------------------------------------

@@ -128,7 +128,6 @@ containsBary(benchmark::State & state)
   for (auto s : state) {
     for (auto const & p : points) {
       if (bary(tri, p)) {
-        // cppcheck-suppress useStlAlgorithm
         ++i;
       }
     }
@@ -151,7 +150,6 @@ containsCCW(benchmark::State & state)
   for (auto s : state) {
     for (auto const & p : points) {
       if (ccw(tri, p)) {
-        // cppcheck-suppress useStlAlgorithm
         ++i;
       }
     }
@@ -174,7 +172,6 @@ containsCCWNoShort(benchmark::State & state)
   for (auto s : state) {
     for (auto const & p : points) {
       if (ccwNoShort(tri, p)) {
-        // cppcheck-suppress useStlAlgorithm
         ++i;
       }
     }

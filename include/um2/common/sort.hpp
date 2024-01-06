@@ -5,12 +5,25 @@
 #include <um2/stdlib/utility.hpp>   // um2::move
 #include <um2/stdlib/vector.hpp>    // um2::Vector
 
+//==============================================================================
+// SORT
+//==============================================================================
+// This file contains sorting algorithms and related functions.
+//
+// The following functions are provided:
+// insertionSort
+// sortPermutation
+// applyPermutation
+// invertPermutation
+
 namespace um2
 {
 
 //==============================================================================
 // insertionSort
 //==============================================================================
+// Use the insertion sort algorithm to sort [first, last) in-place.
+// This should be used for small arrays.
 
 template <typename T>
 HOSTDEV constexpr void
@@ -40,6 +53,8 @@ insertionSort(T * const first, T const * const last)
 //==============================================================================
 // sortPermutation
 //==============================================================================
+// Create a permutation that sorts [begin, end) when applied. [begin, end) is
+// not modified.
 
 template <typename T>
 constexpr void
@@ -55,6 +70,7 @@ sortPermutation(T const * const begin, T const * const end,
 //==============================================================================
 // applyPermutation
 //==============================================================================
+// Apply the permutation perm to the vector v in-place.
 
 template <typename T>
 constexpr void
@@ -94,6 +110,7 @@ applyPermutation(Vector<T> & v, Vector<Size> const & perm) noexcept
 //==============================================================================
 // invertPermutation
 //==============================================================================
+// Compute the inverse of the permutation perm and store it in inv_perm.
 
 template <std::integral I>
 void

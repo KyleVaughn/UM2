@@ -17,11 +17,6 @@ macro(add_um2_example FILENAME)
     set_clang_tidy_properties(${EXAMPLE})
   endif()    
 
-  # cppcheck
-  if (UM2_USE_CPPCHECK)    
-    set_cppcheck_properties(${EXAMPLE})
-  endif()                                        
-
   # If compiling with CUDA, compile the cpp files as cuda    
   if (UM2_USE_CUDA)    
     set_cuda_properties(${EXAMPLE} ${ARGN})

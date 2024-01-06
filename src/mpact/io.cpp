@@ -58,7 +58,6 @@ writeCoarseCell(Size rtm_id, mpact::SpatialPartition const & model, Size ix, Siz
   for (auto const & mat_id : mat_ids) {
     if (!std::any_of(unique_mat_ids.begin(), unique_mat_ids.end(),
                      [mat_id](MaterialID const & id) { return id == mat_id; })) {
-      // cppcheck-suppress useStlAlgorithm; justification: verbosity
       unique_mat_ids.push_back(mat_id);
     }
   }

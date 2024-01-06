@@ -1,6 +1,6 @@
 #include <um2/geometry/polygon.hpp>
 
-#include "../test_macros.hpp"
+#include "../../test_macros.hpp"
 
 template <Size D, typename T>
 HOSTDEV constexpr auto
@@ -206,7 +206,7 @@ TEST_CASE(meanChordLength)
 {
   auto const quad = makeQuad<2, T>();
   T const ref = um2::pi<T> / static_cast<T>(4);
-  ASSERT_NEAR(quad.meanChordLength(), ref, static_cast<T>(1e-3));
+  ASSERT_NEAR(quad.meanChordLength(), ref, static_cast<T>(3e-4));
 }
 
 #if UM2_USE_CUDA

@@ -1,19 +1,39 @@
 #include <um2/geometry/polygon.hpp>
 
-#include "../test_macros.hpp"
+#include "../../test_macros.hpp"
 
 template <Size D, typename T>
 HOSTDEV constexpr auto
-makeTri() -> um2::Triangle<D, T>
+makeTri() -> um2::QuadraticTriangle<D, T>
 {
-  um2::Triangle<D, T> this_tri;
-  for (Size i = 0; i < 3; ++i) {
-    for (Size j = 0; j < D; ++j) {
-      this_tri[i][j] = static_cast<T>(0);
-    }
+  um2::QuadraticTriangle<D, T> this_tri;
+  for (Size i = 0; i < 6; ++i) {
+    this_tri[i] = um2::Vec<D, T>::zero();
   }
   this_tri[1][0] = static_cast<T>(1);
   this_tri[2][1] = static_cast<T>(1);
+  this_tri[3][0] = static_cast<T>(0.5);
+  this_tri[4][0] = static_cast<T>(0.5);
+  this_tri[4][1] = static_cast<T>(0.5);
+  this_tri[5][1] = static_cast<T>(0.5);
+  return this_tri;
+}
+
+// P4 = (0.7, 0.8)
+template <Size D, typename T>
+HOSTDEV constexpr auto
+makeTri2() -> um2::QuadraticTriangle<D, T>
+{
+  um2::QuadraticTriangle<D, T> this_tri;
+  for (Size i = 0; i < 6; ++i) {
+    this_tri[i] = um2::Vec<D, T>::zero();
+  }
+  this_tri[1][0] = static_cast<T>(1);
+  this_tri[2][1] = static_cast<T>(1);
+  this_tri[3][0] = static_cast<T>(0.5);
+  this_tri[4][0] = static_cast<T>(0.7);
+  this_tri[4][1] = static_cast<T>(0.8);
+  this_tri[5][1] = static_cast<T>(0.5);
   return this_tri;
 }
 
@@ -25,13 +45,13 @@ template <Size D, typename T>
 HOSTDEV
 TEST_CASE(interpolate)
 {
-  um2::Triangle<D, T> tri = makeTri<D, T>();
-  um2::Point<D, T> const p00 = tri(0, 0);
-  um2::Point<D, T> const p10 = tri(1, 0);
-  um2::Point<D, T> const p01 = tri(0, 1);
-  ASSERT(um2::isApprox(p00, tri[0]));
-  ASSERT(um2::isApprox(p10, tri[1]));
-  ASSERT(um2::isApprox(p01, tri[2]));
+  um2::QuadraticTriangle<D, T> tri = makeTri2<D, T>();
+  ASSERT(um2::isApprox(tri(0, 0), tri[0]));
+  ASSERT(um2::isApprox(tri(1, 0), tri[1]));
+  ASSERT(um2::isApprox(tri(0, 1), tri[2]));
+  ASSERT(um2::isApprox(tri(0.5, 0), tri[3]));
+  ASSERT(um2::isApprox(tri(0.5, 0.5), tri[4]));
+  ASSERT(um2::isApprox(tri(0, 0.5), tri[5]));
 }
 
 //==============================================================================
@@ -43,7 +63,7 @@ HOSTDEV
 TEST_CASE(jacobian)
 {
   // For the reference triangle, the Jacobian is constant.
-  um2::Triangle<D, T> tri = makeTri<D, T>();
+  um2::QuadraticTriangle<D, T> tri = makeTri<D, T>();
   um2::Mat<D, 2, T> jac = tri.jacobian(0, 0);
   ASSERT_NEAR((jac(0, 0)), 1, static_cast<T>(1e-5));
   ASSERT_NEAR((jac(1, 0)), 0, static_cast<T>(1e-5));
@@ -71,16 +91,19 @@ template <Size D, typename T>
 HOSTDEV
 TEST_CASE(edge)
 {
-  um2::Triangle<D, T> tri = makeTri<D, T>();
-  um2::LineSegment<D, T> edge = tri.getEdge(0);
+  um2::QuadraticTriangle<D, T> tri = makeTri2<D, T>();
+  um2::QuadraticSegment<D, T> edge = tri.getEdge(0);
   ASSERT(um2::isApprox(edge[0], tri[0]));
   ASSERT(um2::isApprox(edge[1], tri[1]));
+  ASSERT(um2::isApprox(edge[2], tri[3]));
   edge = tri.getEdge(1);
   ASSERT(um2::isApprox(edge[0], tri[1]));
   ASSERT(um2::isApprox(edge[1], tri[2]));
+  ASSERT(um2::isApprox(edge[2], tri[4]));
   edge = tri.getEdge(2);
   ASSERT(um2::isApprox(edge[0], tri[2]));
   ASSERT(um2::isApprox(edge[1], tri[0]));
+  ASSERT(um2::isApprox(edge[2], tri[5]));
 }
 
 //==============================================================================
@@ -91,7 +114,7 @@ template <typename T>
 HOSTDEV
 TEST_CASE(contains)
 {
-  um2::Triangle<2, T> const tri = makeTri<2, T>();
+  um2::QuadraticTriangle<2, T> const tri = makeTri2<2, T>();
   um2::Point2<T> p = um2::Point2<T>(static_cast<T>(0.25), static_cast<T>(0.25));
   ASSERT(tri.contains(p));
   p = um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.25));
@@ -100,64 +123,61 @@ TEST_CASE(contains)
   ASSERT(!tri.contains(p));
   p = um2::Point2<T>(static_cast<T>(0.25), static_cast<T>(-0.25));
   ASSERT(!tri.contains(p));
+  p = um2::Point2<T>(static_cast<T>(0.6), static_cast<T>(0.6));
+  ASSERT(tri.contains(p));
 }
 
 //==============================================================================
 // area
 //==============================================================================
 
-template <Size D, typename T>
+template <typename T>
 HOSTDEV
 TEST_CASE(area)
 {
-  um2::Triangle<D, T> tri = makeTri<D, T>();
+  um2::QuadraticTriangle<2, T> tri = makeTri<2, T>();
   ASSERT_NEAR(tri.area(), static_cast<T>(0.5), static_cast<T>(1e-5));
-  tri[1][0] = static_cast<T>(2);
-  ASSERT_NEAR(tri.area(), static_cast<T>(1), static_cast<T>(1e-5));
-}
+  tri[3] = um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.05));
+  tri[5] = um2::Point2<T>(static_cast<T>(0.05), static_cast<T>(0.5));
+  ASSERT_NEAR(tri.area(), static_cast<T>(0.4333333333), static_cast<T>(1e-5));
 
-//==============================================================================
-// perimeter
-//==============================================================================
-
-template <Size D, typename T>
-HOSTDEV
-TEST_CASE(perimeter)
-{
-  um2::Triangle<D, T> const tri = makeTri<D, T>();
-  T const two = static_cast<T>(2);
-  T const ref = two + um2::sqrt(two);
-  ASSERT_NEAR(tri.perimeter(), ref, static_cast<T>(1e-5));
+  um2::QuadraticTriangle<2, T> const tri2 = makeTri2<2, T>();
+  ASSERT_NEAR(tri2.area(), static_cast<T>(0.83333333), static_cast<T>(1e-5));
 }
 
 //==============================================================================
 // centroid
 //==============================================================================
 
-template <Size D, typename T>
+template <typename T>
 HOSTDEV
 TEST_CASE(centroid)
 {
-  um2::Triangle<D, T> const tri = makeTri<D, T>();
-  um2::Point<D, T> c = tri.centroid();
+  um2::QuadraticTriangle<2, T> const tri = makeTri<2, T>();
+  um2::Point<2, T> c = tri.centroid();
   ASSERT_NEAR(c[0], static_cast<T>(1.0 / 3.0), static_cast<T>(1e-5));
   ASSERT_NEAR(c[1], static_cast<T>(1.0 / 3.0), static_cast<T>(1e-5));
+
+  um2::QuadraticTriangle<2, T> const tri2 = makeTri2<2, T>();
+  c = tri2.centroid();
+  ASSERT_NEAR(c[0], static_cast<T>(0.432), static_cast<T>(1e-5));
+  ASSERT_NEAR(c[1], static_cast<T>(0.448), static_cast<T>(1e-5));
 }
 
 //==============================================================================
 // boundingBox
 //==============================================================================
 
-template <Size D, typename T>
+template <typename T>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
-  um2::Triangle<D, T> const tri = makeTri<D, T>();
-  um2::AxisAlignedBox<D, T> const box = tri.boundingBox();
+  um2::QuadraticTriangle<2, T> const tri = makeTri2<2, T>();
+  um2::AxisAlignedBox<2, T> const box = tri.boundingBox();
   ASSERT_NEAR(box.minima()[0], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(box.minima()[1], static_cast<T>(0), static_cast<T>(1e-5));
   ASSERT_NEAR(box.maxima()[0], static_cast<T>(1), static_cast<T>(1e-5));
-  ASSERT_NEAR(box.maxima()[1], static_cast<T>(1), static_cast<T>(1e-5));
+  ASSERT_NEAR(box.maxima()[1], static_cast<T>(1.008333), static_cast<T>(1e-5));
 }
 
 //==============================================================================
@@ -168,9 +188,10 @@ template <typename T>
 HOSTDEV
 TEST_CASE(isCCW_flipFace)
 {
-  um2::Triangle<2, T> tri = makeTri<2, T>();
+  auto tri = makeTri<2, T>();
   ASSERT(tri.isCCW());
   um2::swap(tri[1], tri[2]);
+  um2::swap(tri[3], tri[5]);
   ASSERT(!tri.isCCW());
   um2::flipFace(tri);
   ASSERT(tri.isCCW());
@@ -184,10 +205,10 @@ template <typename T>
 HOSTDEV
 TEST_CASE(meanChordLength)
 {
-  um2::Triangle<2, T> const tri = makeTri<2, T>();
+  auto const tri = makeTri<2, T>();
   T const two = static_cast<T>(2);
   T const ref = um2::pi<T> / (two * (two + um2::sqrt(two)));
-  ASSERT_NEAR(tri.meanChordLength(), ref, static_cast<T>(1e-5));
+  ASSERT_NEAR(tri.meanChordLength(), ref, static_cast<T>(1e-4));
 }
 
 #if UM2_USE_CUDA
@@ -203,48 +224,44 @@ MAKE_CUDA_KERNEL(edge, D, T);
 template <typename T>
 MAKE_CUDA_KERNEL(contains, T);
 
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(area, D, T);
+template <typename T>
+MAKE_CUDA_KERNEL(area, T);
 
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(perimeter, D, T);
+template <typename T>
+MAKE_CUDA_KERNEL(centroid, T);
 
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(centroid, D, T);
-
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(boundingBox, D, T);
+template <typename T>
+MAKE_CUDA_KERNEL(boundingBox, T);
 
 template <typename T>
 MAKE_CUDA_KERNEL(isCCW_flipFace, T);
 
 template <typename T>
 MAKE_CUDA_KERNEL(meanChordLength, T);
-#endif
+#endif // UM2_USE_CUDA
 
 template <Size D, typename T>
-TEST_SUITE(Triangle)
+TEST_SUITE(QuadraticTriangle)
 {
   TEST_HOSTDEV(interpolate, 1, 1, D, T);
   TEST_HOSTDEV(jacobian, 1, 1, D, T);
   TEST_HOSTDEV(edge, 1, 1, D, T);
   if constexpr (D == 2) {
     TEST_HOSTDEV(contains, 1, 1, T);
+    TEST_HOSTDEV(area, 1, 1, T);
+    TEST_HOSTDEV(centroid, 1, 1, T);
+    TEST_HOSTDEV(boundingBox, 1, 1, T);
     TEST_HOSTDEV(isCCW_flipFace, 1, 1, T);
     TEST_HOSTDEV(meanChordLength, 1, 1, T);
   }
-  TEST_HOSTDEV(area, 1, 1, D, T);
-  TEST_HOSTDEV(perimeter, 1, 1, D, T);
-  TEST_HOSTDEV(centroid, 1, 1, D, T);
-  TEST_HOSTDEV(boundingBox, 1, 1, D, T);
 }
 
 auto
 main() -> int
 {
-  RUN_SUITE((Triangle<2, float>));
-  RUN_SUITE((Triangle<3, float>));
-  RUN_SUITE((Triangle<2, double>));
-  RUN_SUITE((Triangle<3, double>));
+  RUN_SUITE((QuadraticTriangle<2, float>));
+  RUN_SUITE((QuadraticTriangle<3, float>));
+  RUN_SUITE((QuadraticTriangle<2, double>));
+  RUN_SUITE((QuadraticTriangle<3, double>));
   return 0;
 }

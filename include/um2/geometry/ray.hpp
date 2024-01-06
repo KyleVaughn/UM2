@@ -2,17 +2,22 @@
 
 #include <um2/geometry/point.hpp>
 
+//==============================================================================
+// RAY
+//==============================================================================
+// A ray is a half-line with an origin and a direction.
+
 namespace um2
 {
 
 template <Size D, typename T>
-class Ray {
+class Ray
+{
 
   Point<D, T> _o; // origin
   Vec<D, T> _d;   // direction (unit vector)
 
-  public:
-
+public:
   //============================================================================
   // Constructors
   //============================================================================

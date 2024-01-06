@@ -2,20 +2,22 @@
 
 #include <um2/math/vec.hpp>
 
+//==============================================================================
+// POINT
+//==============================================================================
+// An alias for a D-dimensional vector. This isn't mathematically correct, but it
+// is more efficient to use a vector for a point than to create a separate class
+// and deal with the type conversions.
+
 namespace um2
 {
 
 //==============================================================================
-// POINT
+// Aliases
 //==============================================================================
-//
-// An alias for a D-dimensional vector. This isn't technically correct, but it
-// is more efficient to use a vector for a point than a separate class.
 
 template <Size D, typename T>
 using Point = Vec<D, T>;
-
-// -- Aliases --
 
 template <typename T>
 using Point1 = Point<1, T>;
@@ -37,12 +39,18 @@ using Point3d = Point3<double>;
 // Constants
 //==============================================================================
 
+// Distance between two points, below which they are considered to be equal.
 template <std::floating_point T>
 inline constexpr T eps_distance = static_cast<T>(1e-6); // 0.1 micron
 
+// Squared distance between two points, below which they are considered to be
+// equal.
 template <std::floating_point T>
-inline constexpr T eps_distance2 = eps_distance<T> * eps_distance<T>; 
+inline constexpr T eps_distance2 = eps_distance<T> * eps_distance<T>;
 
+// Distance between two points, above which they are considered to be infinitely
+// far apart. Typically used for invalid points and values.
+//
 template <std::floating_point T>
 inline constexpr T inf_distance = static_cast<T>(1e10);
 
@@ -89,7 +97,6 @@ areApproxCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noex
   T const ab_y = b[1] - a[1];
   T const ac_x = c[0] - a[0];
   T const ac_y = c[1] - a[1];
-  // Allow equality, so that we can handle collinear points.
   return -eps_distance<T> <= (ab_x * ac_y - ab_y * ac_x);
 }
 

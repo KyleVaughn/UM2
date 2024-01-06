@@ -13,20 +13,14 @@
 namespace um2::parallel
 {
 
-
-template <std::unsigned_integral U, Size D, std::floating_point T>    
-struct MortonLessFunctor {    
-  PURE HOSTDEV auto    
-  operator()(Point<D, T> const & lhs, Point<D, T> const & rhs) const -> bool    
-  {    
-    return mortonEncode<U>(lhs) < mortonEncode<U>(rhs);    
-  }    
+template <std::unsigned_integral U, Size D, std::floating_point T>
+struct MortonLessFunctor {
+  PURE HOSTDEV auto
+  operator()(Point<D, T> const & lhs, Point<D, T> const & rhs) const -> bool
+  {
+    return mortonEncode<U>(lhs) < mortonEncode<U>(rhs);
+  }
 };
-
-
-
-
-
 
 #if UM2_USE_TBB
 template <std::unsigned_integral U, Size D, std::floating_point T>

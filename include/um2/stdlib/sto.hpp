@@ -5,8 +5,9 @@
 #include <string> // std::string, std::stoi, std::stod, etc.
 
 //==============================================================================
-// Template stoi, stod, etc. to sto<T> for ease of use
+// STO
 //==============================================================================
+// Templated versions of stoi, stod, etc. to sto<T> for ease of use
 
 namespace um2
 {

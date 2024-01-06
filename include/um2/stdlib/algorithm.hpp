@@ -4,6 +4,11 @@
 
 #include <algorithm>
 
+//==============================================================================
+// ALGORITHM
+//==============================================================================
+// Implementation of a subset of <algorithm> which is compatible with CUDA.
+// The following functions are implemented:
 //  clamp
 //  copy
 //  fill
@@ -20,7 +25,7 @@ namespace um2
 //==============================================================================
 
 template <typename T>
-HOSTDEV constexpr auto 
+HOSTDEV constexpr auto
 clamp(T const & v, T const & lo, T const & hi) noexcept -> T
 {
   return v < lo ? lo : (hi < v ? hi : v);
@@ -34,9 +39,9 @@ clamp(T const & v, T const & lo, T const & hi) noexcept -> T
 
 // gcc seems to have a bug that causes it to generate a call to memmove that
 // is out of bounds when using std::copy with -O3. This is a workaround.
-//template <typename InputIt, typename OutputIt>
-//HOST constexpr auto
-//copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
+// template <typename InputIt, typename OutputIt>
+// HOST constexpr auto
+// copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 //{
 //  while (first != last) {
 //    *d_first = *first;
@@ -50,7 +55,7 @@ template <typename InputIt, typename OutputIt>
 HOST constexpr auto
 copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
-   return std::copy(first, last, d_first);
+  return std::copy(first, last, d_first);
 }
 
 #else

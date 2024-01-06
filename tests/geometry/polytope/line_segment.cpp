@@ -1,6 +1,6 @@
 #include <um2/geometry/dion.hpp>
 
-#include "../test_macros.hpp"
+#include "../../test_macros.hpp"
 
 template <Size D, typename T>
 HOSTDEV constexpr auto
@@ -201,11 +201,11 @@ TEST_CASE(intersect)
 {
   um2::LineSegment2<T> l(um2::Point2<T>(0, 1), um2::Point2<T>(2, -1));
   um2::Ray2<T> const ray(um2::Point2<T>(0, -1), um2::normalized(um2::Point2<T>(1, 1)));
-  T res = um2::intersect(l, ray);
+  T res = um2::intersect(ray, l);
   ASSERT_NEAR(res, um2::sqrt(static_cast<T>(2)), static_cast<T>(1e-4));
 
   l = um2::LineSegment2<T>(um2::Point2<T>(1, -1), um2::Point2<T>(1, 1));
-  res = um2::intersect(l, ray);
+  res = um2::intersect(ray, l);
   ASSERT_NEAR(res, um2::sqrt(static_cast<T>(2)), static_cast<T>(1e-4));
 }
 

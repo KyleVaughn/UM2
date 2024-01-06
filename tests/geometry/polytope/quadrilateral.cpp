@@ -1,6 +1,6 @@
 #include <um2/geometry/polygon.hpp>
 
-#include "../test_macros.hpp"
+#include "../../test_macros.hpp"
 
 template <Size D, typename T>
 HOSTDEV constexpr auto

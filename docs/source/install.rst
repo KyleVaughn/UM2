@@ -128,7 +128,7 @@ If you are a developer, you will also need to install the following:
 
 .. code-block:: bash
 
-    sudo apt install -y clang-15 clang-format-15 clang-tidy-15 libomp-15-dev cppcheck
+    sudo apt install -y clang-15 clang-format-15 clang-tidy-15 libomp-15-dev
 
     # It may be necessary to symlink clang-format-15 and clang-tidy-15 to clang-format
     # and clang-tidy, respectively.

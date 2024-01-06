@@ -2,9 +2,6 @@
 
 #include <um2/mesh/regular_grid.hpp>
 
-namespace um2
-{
-
 //==============================================================================
 // REGULAR PARTITION
 //==============================================================================
@@ -22,6 +19,9 @@ namespace um2
 //  *--------> i
 //
 //  * is where grid.minima is located.
+
+namespace um2
+{
 
 template <Size D, typename T, typename P>
 class RegularPartition
@@ -321,18 +321,18 @@ PURE HOSTDEV
 {
   Point<D, Size> const index{args...};
   for (Size i = 0; i < D; ++i) {
-    ASSERT(index[i] < _grid.num_cells[i]);
+    ASSERT(index[i] < _grid.numCells()[i]);
   }
   if constexpr (D == 1) {
     return index[0];
   } else if constexpr (D == 2) {
-    return index[0] + index[1] * _grid.num_cells[0];
+    return index[0] + index[1] * _grid.numXCells();
   } else { // General case
     // [0, nx, nx*ny, nx*ny*nz, ...]
     Point<D, Size> exclusive_scan_prod;
     exclusive_scan_prod[0] = 1;
     for (Size i = 1; i < D; ++i) {
-      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * _grid.num_cells[i - 1];
+      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * _grid.numCells()[i - 1];
     }
     return index.dot(exclusive_scan_prod);
   }
@@ -348,13 +348,13 @@ RegularPartition<D, T, P>::getFlatIndex(Vec<D, Size> const & index) const noexce
   if constexpr (D == 1) {
     return index[0];
   } else if constexpr (D == 2) {
-    return index[0] + index[1] * _grid.num_cells[0];
+    return index[0] + index[1] * _grid.numXCells();
   } else { // General case
     // [0, nx, nx*ny, nx*ny*nz, ...]
     Point<D, Size> exclusive_scan_prod;
     exclusive_scan_prod[0] = 1;
     for (Size i = 1; i < D; ++i) {
-      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * _grid.num_cells[i - 1];
+      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * _grid.numCells()[i - 1];
     }
     return index.dot(exclusive_scan_prod);
   }

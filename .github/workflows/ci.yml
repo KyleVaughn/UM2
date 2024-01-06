@@ -53,7 +53,7 @@ jobs:
         shell: bash
         if: matrix.dev_mode == 'ON'
         run: |
-          sudo apt install -y clang-tidy-15 clang-format-15 cppcheck libomp-15-dev
+          sudo apt install -y clang-tidy-15 clang-format-15 libomp-15-dev
           sudo rm /usr/bin/clang-tidy
           sudo ln -s /usr/bin/clang-tidy-15 /usr/bin/clang-tidy
           sudo rm /usr/bin/clang-format

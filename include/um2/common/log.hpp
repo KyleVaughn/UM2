@@ -5,21 +5,21 @@
 
 #include <chrono>
 
-namespace um2
-{
-
 //==============================================================================
 // LOG
 //==============================================================================
-// A simple logger class for use in host code only.
+// A simple logger class for use in host code.
 // The logger can be configured to:
 //  - log messages of different verbosity levels
 //  - prefix messages with a timestamp
 //  - colorize messages based on their verbosity level
 //  - exit the program after an error is logged (or not)
 //
+// The logger can be configured at compile time by defining the LOG_LEVEL macro.
 // The logger is not thread-safe.
-// Verbosity levels may be seen below in the LogLevel enum.
+
+namespace um2
+{
 
 enum class LogLevel {
   Off = 0,   // no messages
@@ -43,9 +43,9 @@ class Log
 
   static LogLevel level;
   static LogTimePoint start_time;
-  static bool timestamped;     // messages are prefixed with a timestamp
-  static bool colorized;       // messages are colorized based on their verbosity level
-  static bool exit_on_error;   // the program exits after an error is logged
+  static bool timestamped;   // messages are prefixed with a timestamp
+  static bool colorized;     // messages are colorized based on their verbosity level
+  static bool exit_on_error; // the program exits after an error is logged
   static constexpr int buffer_size = 256;
 
   // -- Message --
@@ -54,7 +54,7 @@ class Log
 
   // -- Methods --
 
-  static auto 
+  static auto
   addTimestamp(char * buffer_begin) -> char *;
 
   static auto

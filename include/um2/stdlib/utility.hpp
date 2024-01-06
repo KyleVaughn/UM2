@@ -4,10 +4,15 @@
 
 #include <type_traits>
 
+//==============================================================================
+// UTILITY
+//==============================================================================
+// Implementation of a subset of <utility> which is compatible with CUDA.
+// The following functions are implemented:
 //  forward
 //  move
 //  swap
-//  Pair
+//  Pair (like std::pair)
 
 namespace um2
 {
@@ -82,10 +87,12 @@ struct Pair {
   // Constructors
   //============================================================================
 
+  constexpr Pair() noexcept = default;
+
   HOSTDEV
   constexpr Pair(T1 x, T2 y)
-      : first(x),
-        second(y)
+      : first(um2::move(x)),
+        second(um2::move(y))
   {
   }
 
@@ -95,7 +102,6 @@ struct Pair {
         second(um2::forward<U2>(y))
   {
   }
-
 };
 
 template <class T1, class T2>

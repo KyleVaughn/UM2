@@ -9,16 +9,16 @@ template <std::floating_point T, std::signed_integral I>
 HOSTDEV
 TEST_CASE(accessors)
 {
-  um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
+  um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
   ASSERT(mesh.numVertices() == 4);
   ASSERT(mesh.numFaces() == 2);
   // face
-  um2::Triangle<2, T> tri0_ref(mesh.vertices[0], mesh.vertices[1], mesh.vertices[2]);
+  um2::Triangle<2, T> tri0_ref(mesh.getVertex(0), mesh.getVertex(1), mesh.getVertex(2));
   auto const tri0 = mesh.getFace(0);
   ASSERT(um2::isApprox(tri0[0], tri0_ref[0]));
   ASSERT(um2::isApprox(tri0[1], tri0_ref[1]));
   ASSERT(um2::isApprox(tri0[2], tri0_ref[2]));
-  um2::Triangle<2, T> tri1_ref(mesh.vertices[2], mesh.vertices[3], mesh.vertices[0]);
+  um2::Triangle<2, T> tri1_ref(mesh.getVertex(2), mesh.getVertex(3), mesh.getVertex(0));
   auto const tri1 = mesh.getFace(1);
   ASSERT(um2::isApprox(tri1[0], tri1_ref[0]));
   ASSERT(um2::isApprox(tri1[1], tri1_ref[1]));
@@ -30,19 +30,19 @@ TEST_CASE(poly_soup_constructor)
 {
   um2::PolytopeSoup<T, I> poly_soup;
   makeReferenceTriPolytopeSoup(poly_soup);
-  um2::TriMesh<2, T, I> mesh_ref = makeTriReferenceMesh<2, T, I>();
-  um2::TriMesh<2, T, I> mesh(poly_soup);
+  um2::TriMesh<2, T, I> const mesh_ref = makeTriReferenceMesh<2, T, I>();
+  um2::TriMesh<2, T, I> const mesh(poly_soup);
   ASSERT(mesh.numVertices() == mesh_ref.numVertices());
   for (Size i = 0; i < mesh.numVertices(); ++i) {
-    ASSERT(um2::isApprox(mesh.vertices[i], mesh_ref.vertices[i]));
+    ASSERT(um2::isApprox(mesh.getVertex(i), mesh_ref.getVertex(i)));
   }
   for (Size i = 0; i < mesh.numFaces(); ++i) {
+    auto const face = mesh.getFace(i);
+    auto const face_ref = mesh_ref.getFace(i);
     for (Size j = 0; j < 3; ++j) {
-      ASSERT(mesh.fv[i][j] == mesh_ref.fv[i][j]);
+      ASSERT(um2::isApprox(face[j], face_ref[j]));
     }
   }
-  ASSERT(mesh.vf_offsets == mesh_ref.vf_offsets);
-  ASSERT(mesh.vf == mesh_ref.vf);
 }
 
 template <std::floating_point T, std::signed_integral I>
@@ -67,46 +67,59 @@ TEST_CASE(faceContaining)
 }
 
 template <std::floating_point T, std::signed_integral I>
+TEST_CASE(populateVF)
+{
+  um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
+  ASSERT(mesh.getVFOffsets().empty());
+  ASSERT(mesh.getVF().empty());
+  mesh.populateVF();
+  um2::Vector<I> const vf_offsets_ref = {0, 2, 3, 5, 6};
+  um2::Vector<I> const vf_ref = {0, 1, 0, 0, 1, 1};
+  ASSERT(mesh.getVFOffsets() == vf_offsets_ref);
+  ASSERT(mesh.getVF() == vf_ref);
+}
+
+template <std::floating_point T, std::signed_integral I>
 TEST_CASE(intersect)
 {
   um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
   um2::Ray2<T> const ray({static_cast<T>(0), static_cast<T>(0.5)}, {1, 0});
-  um2::Vector<T> intersections(10);
-  Size n = intersections.size();
-  mesh.intersect(ray, intersections.data(), &n);
-  ASSERT(n == 4);
+  um2::Vector<T> intersections;
+  um2::intersect(ray, mesh, intersections);
+  ASSERT(intersections.size() == 4);
   ASSERT_NEAR(intersections[0], static_cast<T>(0), static_cast<T>(1e-6));
   ASSERT_NEAR(intersections[1], static_cast<T>(0.5), static_cast<T>(1e-6));
   ASSERT_NEAR(intersections[2], static_cast<T>(0.5), static_cast<T>(1e-6));
   ASSERT_NEAR(intersections[3], static_cast<T>(1), static_cast<T>(1e-6));
 }
 
-template <std::floating_point T, std::signed_integral I>
-TEST_CASE(toPolytopeSoup)
-{
-  um2::TriMesh<2, T, I> const tri_mesh = makeTriReferenceMesh<2, T, I>();
-  um2::PolytopeSoup<T, I> tri_poly_soup_ref;
-  makeReferenceTriPolytopeSoup(tri_poly_soup_ref);
-  um2::PolytopeSoup<T, I> tri_poly_soup;
-  tri_mesh.toPolytopeSoup(tri_poly_soup);
-  ASSERT(tri_poly_soup.compareTo(tri_poly_soup_ref) == 10);
-  ASSERT(tri_poly_soup.getMeshType() == um2::MeshType::Tri);
-}
-
-#if UM2_USE_CUDA
-template <std::floating_point T, std::signed_integral I>
-MAKE_CUDA_KERNEL(accessors, T, I)
-#endif
+//template <std::floating_point T, std::signed_integral I>
+//TEST_CASE(toPolytopeSoup)
+//{
+//  um2::TriMesh<2, T, I> const tri_mesh = makeTriReferenceMesh<2, T, I>();
+//  um2::PolytopeSoup<T, I> tri_poly_soup_ref;
+//  makeReferenceTriPolytopeSoup(tri_poly_soup_ref);
+//  um2::PolytopeSoup<T, I> tri_poly_soup;
+//  tri_mesh.toPolytopeSoup(tri_poly_soup);
+//  ASSERT(tri_poly_soup.compareTo(tri_poly_soup_ref) == 10);
+//  ASSERT(tri_poly_soup.getMeshType() == um2::MeshType::Tri);
+//}
+//
+//#if UM2_USE_CUDA
+//template <std::floating_point T, std::signed_integral I>
+//MAKE_CUDA_KERNEL(accessors, T, I)
+//#endif
 
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(TriMesh)
 {
   TEST_HOSTDEV(accessors, 1, 1, T, I);
-//  TEST((poly_soup_constructor<T, I>));
-//  TEST((boundingBox<T, I>));
-//  TEST((faceContaining<T, I>));
-//  TEST((intersect<T, I>));
-//  TEST((toPolytopeSoup<T, I>));
+  TEST((poly_soup_constructor<T, I>));
+  TEST((boundingBox<T, I>));
+  TEST((faceContaining<T, I>));
+  TEST((populateVF<T, I>));
+  TEST((intersect<T, I>));
+  //  TEST((toPolytopeSoup<T, I>));
 }
 
 auto

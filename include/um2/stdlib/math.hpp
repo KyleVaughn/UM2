@@ -4,6 +4,11 @@
 
 #include <cmath>
 
+//==============================================================================
+// MATH
+//==============================================================================
+// Implementation of a subset of <cmath> which is compatible with CUDA.
+// The following functions are implemented:
 //  abs (from config.hpp)
 //  atan
 //  atanh

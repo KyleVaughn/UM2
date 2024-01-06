@@ -69,18 +69,18 @@ TEST_CASE(boundingBox)
 {
   T constexpr eps = static_cast<T>(1e-6);
   um2::RectilinearGrid<D, T> const grid = makeGrid<D, T>();
-  um2::AxisAlignedBox<D, T> box = grid.boundingBox();
+  um2::AxisAlignedBox<D, T> const box = grid.boundingBox();
   if constexpr (D >= 1) {
-    ASSERT_NEAR(box.minima[0], grid.divs(0)[0], eps);
-    ASSERT_NEAR(box.maxima[0], grid.divs(0)[1], eps);
+    ASSERT_NEAR(box.minima()[0], grid.divs(0)[0], eps);
+    ASSERT_NEAR(box.maxima()[0], grid.divs(0)[1], eps);
   }
   if constexpr (D >= 2) {
-    ASSERT_NEAR(box.minima[1], grid.divs(1)[0], eps);
-    ASSERT_NEAR(box.maxima[1], grid.divs(1)[2], eps);
+    ASSERT_NEAR(box.minima()[1], grid.divs(1)[0], eps);
+    ASSERT_NEAR(box.maxima()[1], grid.divs(1)[2], eps);
   }
   if constexpr (D >= 3) {
-    ASSERT_NEAR(box.minima[2], grid.divs(2)[0], eps);
-    ASSERT_NEAR(box.maxima[2], grid.divs(2)[3], eps);
+    ASSERT_NEAR(box.minima()[2], grid.divs(2)[0], eps);
+    ASSERT_NEAR(box.maxima()[2], grid.divs(2)[3], eps);
   }
 }
 

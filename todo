@@ -1,10 +1,14 @@
+SIMD Vector primitives
+Use std::simd. Want exp(vector), but only implemented by SVML by intel.
+Wait until C++26 or use VCDevel std simd, the implementation that will be in GCC.
+Benchmark
 
+Use assume once C++ 23 is supported. See config file
 
 struct to class
 Log with multiple arguments to the functions, which automatically call toStgring
 
 Re-add the requirements non-spack installed
-
 
 Scripts to install gcc
 
@@ -41,7 +45,6 @@ POTENTIAL BUGS
 ===============================================================================
 TESTS
 ===============================================================================
-1. modular ray tests
 
 ===============================================================================
 ALGORITHMS
@@ -56,21 +59,13 @@ DATA STRUCTURES
 ===============================================================================
 1. Make spatial partition a class
 2. Binned FVM
-3. Simd vector
 
 ===============================================================================
 BENCHMARKS
 ===============================================================================
-************
-0. test effect of aligned vectors/vector extensions
-  just write the benchmark
-****************
-1. test pointer arithmetic versus index for ray/mesh intersection
-2. test iterating over edges with getEdge vs just manually making them
 
 ===============================================================================
 FUTURE
 ===============================================================================
-1. ASSUME C++ 23 support (config.hpp)
 2. Matplotlib
 1. um2::copy/std::copy bug

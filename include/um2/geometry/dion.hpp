@@ -14,7 +14,6 @@
 //==============================================================================
 // DION
 //==============================================================================
-//
 // A 1-dimensional polytope, of polynomial order P, represented by the connectivity
 // of its vertices. These N vertices are D-dimensional points of type T.
 //
@@ -36,12 +35,12 @@ namespace um2
 {
 
 template <Size P, Size N, Size D, typename T>
-class Polytope<1, P, N, D, T> {
+class Polytope<1, P, N, D, T>
+{
 
   Point<D, T> _v[N];
 
-  public:
-
+public:
   //==============================================================================
   // Accessors
   //==============================================================================
@@ -144,6 +143,7 @@ template <Size D, typename T, typename R>
 PURE HOSTDEV constexpr auto
 interpolate(LineSegment<D, T> const & l, R const r) noexcept -> Point<D, T>
 {
+  // L(r) = (1 - r) * v0 + r * v1
   T const rr = static_cast<T>(r);
   Point<D, T> result;
   for (Size i = 0; i < D; ++i) {
@@ -156,6 +156,7 @@ template <Size D, typename T, typename R>
 PURE HOSTDEV constexpr auto
 interpolate(QuadraticSegment<D, T> const & q, R const r) noexcept -> Point<D, T>
 {
+  // Q(r) =
   // (2 * r - 1) * (r - 1) * v0 +
   // (2 * r - 1) *  r      * v1 +
   // -4 * r      * (r - 1) * v2
@@ -268,6 +269,8 @@ Dion<P, N, D, T>::getRotation() const noexcept -> Mat<D, D, T>
 //==============================================================================
 // getBezierControlPoint
 //==============================================================================
+// Get the control point for the quadratic Bezier curve that interpolates the
+// given quadratic segment.
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
@@ -865,7 +868,7 @@ enclosedCentroid(QuadraticSegment2<T> const & q) noexcept -> Point2<T>
 // This result is valid if s ∈ [0, 1]
 template <typename T>
 PURE HOSTDEV constexpr auto
-intersect(LineSegment2<T> const & line, Ray2<T> const & ray) noexcept -> T
+intersect(Ray2<T> const & ray, LineSegment2<T> const & line) noexcept -> T
 {
   Vec2<T> const v(line[1][0] - line[0][0], line[1][1] - line[0][1]);
   Vec2<T> const u(ray.origin()[0] - line[0][0], ray.origin()[1] - line[0][1]);
@@ -907,7 +910,7 @@ intersect(LineSegment2<T> const & line, Ray2<T> const & ray) noexcept -> T
 
 template <typename T>
 PURE HOSTDEV constexpr auto
-intersect(QuadraticSegment2<T> const & q, Ray2<T> const & ray) noexcept -> Vec2<T>
+intersect(Ray2<T> const & ray, QuadraticSegment2<T> const & q) noexcept -> Vec2<T>
 {
   // NOLINTBEGIN(readability-identifier-naming) // justification: mathematical notation
   // This code is called very frequently so we sacrifice readability for speed.
@@ -955,26 +958,6 @@ intersect(QuadraticSegment2<T> const & q, Ray2<T> const & ray) noexcept -> Vec2<
   }
   // NOLINTEND(readability-identifier-naming)
   return result;
-}
-
-template <typename T>
-PURE HOSTDEV auto
-intersect(AxisAlignedBox2<T> const & box, Ray2<T> const & ray) noexcept -> Vec2<T>
-{
-  // Inspired by https://tavianator.com/2022/ray_box_boundary.html
-  T tmin = static_cast<T>(0);
-  T tmax = inf_distance<T>;
-  T const inv_x = static_cast<T>(1) / ray.d[0];
-  T const inv_y = static_cast<T>(1) / ray.d[1];
-  T const t1x = (box.minima[0] - ray.o[0]) * inv_x;
-  T const t2x = (box.maxima[0] - ray.o[0]) * inv_x;
-  T const t1y = (box.minima[1] - ray.o[1]) * inv_y;
-  T const t2y = (box.maxima[1] - ray.o[1]) * inv_y;
-  tmin = um2::max(tmin, um2::min(t1x, t2x));
-  tmax = um2::min(tmax, um2::max(t1x, t2x));
-  tmin = um2::max(tmin, um2::min(t1y, t2y));
-  tmax = um2::min(tmax, um2::max(t1y, t2y));
-  return tmin <= tmax ? Vec2<T>(tmin, tmax) : Vec2<T>(inf_distance<T>, inf_distance<T>);
 }
 
 template <Size P, Size N, Size D, typename T>

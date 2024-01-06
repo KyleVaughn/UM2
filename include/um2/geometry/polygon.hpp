@@ -8,7 +8,6 @@
 //==============================================================================
 // Polygon
 //==============================================================================
-//
 // A 2-dimensional polytope, of polynomial order P, represented by the connectivity
 // of its vertices. These N vertices are D-dimensional points of type T.
 //
@@ -22,14 +21,16 @@ namespace um2
 {
 
 template <Size P, Size N, Size D, typename T>
-class Polytope<2, P, N, D, T> {
+class Polytope<2, P, N, D, T>
+{
 
+public:
   using Edge = Dion<P, P + 1, D, T>;
 
+private:
   Point<D, T> _v[N];
 
-  public:
-
+public:
   //==============================================================================
   // Accessors
   //==============================================================================
@@ -201,7 +202,7 @@ template <Size D, typename T, typename R, typename S>
 PURE HOSTDEV constexpr auto
 interpolate(Triangle<D, T> const & tri, R const r, S const s) noexcept -> Point<D, T>
 {
-  // (1 - r - s) v0 + r v1 + s v2
+  // T(r, s) = (1 - r - s) v0 + r v1 + s v2
   T const rr = static_cast<T>(r);
   T const ss = static_cast<T>(s);
   T const w0 = 1 - rr - ss;
@@ -219,6 +220,7 @@ PURE HOSTDEV constexpr auto
 interpolate(Quadrilateral<D, T> const & quad, R const r, S const s) noexcept
     -> Point<D, T>
 {
+  // Q(r, s) =
   // (1 - r) (1 - s) v0 +
   // (    r) (1 - s) v1 +
   // (    r) (    s) v2 +
@@ -243,7 +245,6 @@ interpolate(QuadraticTriangle<D, T> const & tri6, R const r, S const s) noexcept
 {
   T const rr = static_cast<T>(r);
   T const ss = static_cast<T>(s);
-  // Factoring out the common terms
   T const tt = 1 - rr - ss;
   T const w0 = tt * (2 * tt - 1);
   T const w1 = rr * (2 * rr - 1);
@@ -432,12 +433,12 @@ contains(Triangle2<T> const & tri, Point2<T> const & p) noexcept -> bool
 
 template <typename T>
 PURE HOSTDEV constexpr auto
-contains(Quadrilateral2<T> const & tri, Point2<T> const & p) noexcept -> bool
+contains(Quadrilateral2<T> const & q, Point2<T> const & p) noexcept -> bool
 {
-  bool const b0 = areCCW(tri[0], tri[1], p);
-  bool const b1 = areCCW(tri[1], tri[2], p);
-  bool const b2 = areCCW(tri[2], tri[3], p);
-  bool const b3 = areCCW(tri[3], tri[0], p);
+  bool const b0 = areCCW(q[0], q[1], p);
+  bool const b1 = areCCW(q[1], q[2], p);
+  bool const b2 = areCCW(q[2], q[3], p);
+  bool const b3 = areCCW(q[3], q[0], p);
   return b0 && b1 && b2 && b3;
 }
 
@@ -450,7 +451,7 @@ contains(PlanarQuadraticPolygon<N, T> const & q, Point2<T> const & p) noexcept -
   // circuiting as soon as one is false, rather than compute all of them.
   Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges();
   for (Size i = 0; i < num_edges; ++i) {
-    if (!getEdge(q, i).isLeft(p)) {
+    if (!q.getEdge(i).isLeft(p)) {
       return false;
     }
   }
@@ -519,7 +520,7 @@ area(PlanarQuadraticPolygon<N, T> const & q) noexcept -> T
   T result = area(linearPolygon(q));
   Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges();
   for (Size i = 0; i < num_edges; ++i) {
-    result += enclosedArea(getEdge(q, i));
+    result += enclosedArea(q.getEdge(i));
   }
   return result;
 }
@@ -637,7 +638,7 @@ centroid(PlanarQuadraticPolygon<N, T> const & q) noexcept -> Point2<T>
   Point2<T> centroid_sum = area_sum * centroid(lin_poly);
   Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges();
   for (Size i = 0; i < num_edges; ++i) {
-    auto const e = getEdge(q, i);
+    auto const e = q.getEdge(i);
     T const a = enclosedArea(e);
     area_sum += a;
     centroid_sum += a * enclosedCentroid(e);
@@ -663,10 +664,10 @@ template <Size N, typename T>
 PURE HOSTDEV constexpr auto
 boundingBox(PlanarQuadraticPolygon<N, T> const & p) noexcept -> AxisAlignedBox2<T>
 {
-  AxisAlignedBox2<T> box = boundingBox(getEdge(p, 0));
+  AxisAlignedBox2<T> box = p.getEdge(0).boundingBox();
   Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges();
   for (Size i = 1; i < num_edges; ++i) {
-    box += boundingBox(getEdge(p, i));
+    box += p.getEdge(i).boundingBox();
   }
   return box;
 }
@@ -723,7 +724,7 @@ intersect(PlanarLinearPolygon<N, T> const & p, Ray2<T> const & ray) noexcept -> 
 {
   Vec<N, T> result;
   for (Size i = 0; i < N; ++i) {
-    result[i] = intersect(p.getEdge(i), ray);
+    result[i] = intersect(ray, p.getEdge(i));
   }
   return result;
 }
@@ -735,7 +736,7 @@ intersect(PlanarQuadraticPolygon<N, T> const & p, Ray2<T> const & ray) noexcept
 {
   Vec<N, T> result;
   for (Size i = 0; i < p.numEdges(); ++i) {
-    Vec2<T> const v = intersect(p.getEdge(i), ray);
+    Vec2<T> const v = intersect(ray, p.getEdge(i));
     result[2 * i] = v[0];
     result[2 * i + 1] = v[1];
   }
@@ -815,9 +816,7 @@ PURE HOSTDEV constexpr auto
 meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
 {
   // Algorithm:
-  // total_chords = 0
-  // total_chord_length = 0
-  // For each angle
+  // For equally spaced angles γ ∈ (0, π)
   //  Compute modular ray parameters
   //  For each ray
   //    Compute intersections with edges
@@ -827,7 +826,7 @@ meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
   // return total_chord_length / total_chords
 
   // Parameters
-  Size constexpr num_angles = 64; // Angles γ ∈ (0, π/2). Total angles is 2 * num_angles
+  Size constexpr num_angles = 128; // Angles γ ∈ (0, π).
   Size constexpr rays_per_longest_edge = 1000;
 
   Size total_chords = 0;
@@ -835,41 +834,35 @@ meanChordLength(PlanarQuadraticPolygon<N, T> const & p) noexcept -> T
   auto const aabb = boundingBox(p);
   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
   auto const spacing = longest_edge / static_cast<T>(rays_per_longest_edge);
-  T const pi_deg = um2::pi_4<T> / static_cast<T>(num_angles);
+  T const pi_deg = um2::pi_2<T> / static_cast<T>(num_angles);
   // For each angle
   for (Size ia = 0; ia < num_angles; ++ia) {
     T const angle = pi_deg * static_cast<T>(2 * ia + 1);
     // Compute modular ray parameters
-    auto params = um2::getModularRayParams(angle, spacing, aabb);
-    Size const num_rays = params.num_rays[0] + params.num_rays[1];
-    // For the angle and complementary angle
-    for (Size ip = 0; ip < 2; ++ip) {
-      if (ip == 1) {
-        params.direction[0] = -params.direction[0];
-      }
-      // For each ray
-      for (Size i = 0; i < num_rays; ++i) {
-        auto const ray = params.getRay(i);
-        auto intersections = intersect(p, ray);
-        um2::insertionSort(intersections.begin(), intersections.end());
-        //        if (intersections[0] < 0) {
-        //          ASSERT(intersections[0] > -um2::eps_distance2<T>);
-        //          ASSERT(intersections[1] > 0);
-        //          // If the first intersection is negative, it better be -0
-        //          intersections[0] = 0;
-        //        }
-        auto p0 = ray(intersections[0]);
-        for (Size j = 0; j < intersections.size() - 1; ++j) {
-          T const r1 = intersections[j + 1];
-          // A miss is indicated with inf_distance. We use a smaller value to avoid
-          // numerical issues.
-          if (r1 < um2::inf_distance<T> / 10) {
-            auto const p1 = ray(r1);
-            T const len = p0.distanceTo(p1);
-            p0 = p1;
-            total_length += len;
-            total_chords += 1;
-          }
+    ModularRayParams<T> const params(angle, spacing, aabb);
+    Size const num_rays = params.getTotalNumRays();
+    // For each ray
+    for (Size i = 0; i < num_rays; ++i) {
+      auto const ray = params.getRay(i);
+      auto intersections = intersect(p, ray);
+      um2::insertionSort(intersections.begin(), intersections.end());
+      // if (intersections[0] < 0) {
+      //   ASSERT(intersections[0] > -um2::eps_distance2<T>);
+      //   ASSERT(intersections[1] > 0);
+      //   // If the first intersection is negative, it better be -0
+      //   intersections[0] = 0;
+      // }
+      auto p0 = ray(intersections[0]);
+      for (Size j = 0; j < intersections.size() - 1; ++j) {
+        T const r1 = intersections[j + 1];
+        // A miss is indicated with inf_distance. We use a smaller value to avoid
+        // numerical issues with direct comparison to inf_distance.
+        if (r1 < um2::inf_distance<T> / 10) {
+          auto const p1 = ray(r1);
+          T const len = p0.distanceTo(p1);
+          p0 = p1;
+          total_length += len;
+          total_chords += 1;
         }
       }
     }

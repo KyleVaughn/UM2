@@ -2,20 +2,19 @@
 
 #include <um2/math/vec.hpp>
 
-namespace um2
-{
-
 //==============================================================================
 // MAT
 //==============================================================================
-//
 // An M by N matrix.
 //
 // This class is used for VERY small matrices, where the matrix size is known
 // at compile time. The matrix is stored in column-major order.
 //
-// Anything larger than a very small matrix handled using something like
-// OpenBLAS, cuBLAS, Eigen, etc. We currently only use this for 2x2 and 3x3.
+// Anything larger than a very small matrix should be handled using something
+// like OpenBLAS, cuBLAS, Eigen, etc. We currently only use this for 2x2 and 3x3.
+
+namespace um2
+{
 
 template <Size M, Size N, typename T>
 class Mat
@@ -78,7 +77,6 @@ Mat<M, N, T>::col(Size i) noexcept -> typename Mat<M, N, T>::Col &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  // cppcheck-suppress [arrayIndexOutOfBoundsCond,negativeIndex]; justification: this is correct
   return _cols[i];
 }
 
@@ -88,7 +86,6 @@ Mat<M, N, T>::col(Size i) const noexcept -> typename Mat<M, N, T>::Col const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  // cppcheck-suppress [arrayIndexOutOfBoundsCond,negativeIndex]; justification: this is correct
   return _cols[i];
 }
 

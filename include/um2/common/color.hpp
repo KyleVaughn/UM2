@@ -3,14 +3,13 @@
 #include <um2/stdlib/string.hpp>
 #include <um2/stdlib/utility.hpp>
 
-namespace um2
-{
-
 //==============================================================================
 // COLOR
 //==============================================================================
 // A 4 byte RGBA color.
-// Little endian: 0xAABBGGRR
+
+namespace um2
+{
 
 class Color
 {
@@ -47,7 +46,6 @@ public:
 
   HOSTDEV [[nodiscard]] constexpr auto
   a() const noexcept -> uint8_t;
-
 };
 
 //==============================================================================
@@ -56,19 +54,19 @@ public:
 
 template <std::integral I>
 HOSTDEV constexpr Color::Color(I r, I g, I b, I a) noexcept
-: _r(static_cast<uint8_t>(r)),
-  _g(static_cast<uint8_t>(g)),
-  _b(static_cast<uint8_t>(b)),
-  _a(static_cast<uint8_t>(a))
+    : _r(static_cast<uint8_t>(r)),
+      _g(static_cast<uint8_t>(g)),
+      _b(static_cast<uint8_t>(b)),
+      _a(static_cast<uint8_t>(a))
 {
 }
 
 template <std::floating_point T>
 HOSTDEV constexpr Color::Color(T r, T g, T b, T a) noexcept
-: _r(static_cast<uint8_t>(r * 255)),
-  _g(static_cast<uint8_t>(g * 255)),
-  _b(static_cast<uint8_t>(b * 255)),
-  _a(static_cast<uint8_t>(a * 255))
+    : _r(static_cast<uint8_t>(r * 255)),
+      _g(static_cast<uint8_t>(g * 255)),
+      _b(static_cast<uint8_t>(b * 255)),
+      _a(static_cast<uint8_t>(a * 255))
 {
 }
 
@@ -112,6 +110,8 @@ operator==(Color const lhs, Color const rhs) noexcept -> bool
   bool const same_g = lhs.g() == rhs.g();
   bool const same_b = lhs.b() == rhs.b();
   bool const same_a = lhs.a() == rhs.a();
+  // With optimization this should be the same as 32-bit integer comparison.
+  // Verified with godbolt.
   return same_r && same_g && same_b && same_a;
 }
 
@@ -125,6 +125,7 @@ operator!=(Color const lhs, Color const rhs) noexcept -> bool
 // Common colors
 //=============================================================================
 // All 147 SVG colors + 1 extra. If you can find the extra color you win a prize!
+// ... Please, I want to delete this.
 
 inline constexpr Color aliceblue{240, 248, 255, 255};
 inline constexpr Color antiquewhite{250, 235, 215, 255};

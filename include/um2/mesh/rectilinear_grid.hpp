@@ -3,13 +3,13 @@
 #include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/stdlib/vector.hpp>
 
-namespace um2
-{
-
 //==============================================================================
 // RECTILINEAR GRID
 //==============================================================================
 // A D-dimensional rectilinear grid with data of type T
+
+namespace um2
+{
 
 template <Size D, typename T>
 // clang-tidy complaing about '__i0' in the name of the struct
@@ -129,8 +129,8 @@ template <Size D, typename T>
 constexpr RectilinearGrid<D, T>::RectilinearGrid(AxisAlignedBox<D, T> const & box)
 {
   for (Size i = 0; i < D; ++i) {
-    _divs[i] = {box.minima[i], box.maxima[i]};
-    ASSERT(box.minima[i] < box.maxima[i]);
+    _divs[i] = {box.minima()[i], box.maxima()[i]};
+    ASSERT(box.minima()[i] < box.maxima()[i]);
   }
 }
 
@@ -145,23 +145,23 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(
     for (Size d = 0; d < D; ++d) {
       bool min_found = false;
       for (Size j = 0; j < _divs[d].size(); ++j) {
-        if (std::abs(_divs[d][j] - box.minima[d]) < eps) {
+        if (std::abs(_divs[d][j] - box.minima()[d]) < eps) {
           min_found = true;
           break;
         }
       }
       if (!min_found) {
-        this->_divs[d].emplace_back(box.minima[d]);
+        this->_divs[d].emplace_back(box.minima()[d]);
       }
       bool max_found = false;
       for (Size j = 0; j < _divs[d].size(); ++j) {
-        if (std::abs(_divs[d][j] - box.maxima[d]) < eps) {
+        if (std::abs(_divs[d][j] - box.maxima()[d]) < eps) {
           max_found = true;
           break;
         }
       }
       if (!max_found) {
-        this->_divs[d].emplace_back(box.maxima[d]);
+        this->_divs[d].emplace_back(box.maxima()[d]);
       }
     }
   }
@@ -205,8 +205,7 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<Vec2<T>> const & dxdy,
       Size const id = row[j];
       Vec2<T> const & dxdy_ij = dxdy[id];
       Vec2<T> const hi = lo + dxdy_ij;
-      boxes[i * ncols + j].minima = lo;
-      boxes[i * ncols + j].maxima = hi;
+      boxes[i * ncols + j] = {lo, hi};
       lo[0] = hi[0];
     }
     y += dxdy[row[0]][1];
@@ -224,7 +223,6 @@ RectilinearGrid<D, T>::divs(Size i) noexcept -> Vector<T> &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
-  // cppcheck-suppress arrayIndexOutOfBoundsCond; justification: this is correct
   return _divs[i];
 }
 
@@ -234,7 +232,6 @@ RectilinearGrid<D, T>::divs(Size i) const noexcept -> Vector<T> const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
-  // cppcheck-suppress arrayIndexOutOfBoundsCond; justification: this is correct
   return _divs[i];
 }
 
@@ -390,12 +387,13 @@ PURE HOSTDEV constexpr auto RectilinearGrid<D, T>::getBox(Args... args) const no
   for (Size i = 0; i < D; ++i) {
     ASSERT(index[i] + 1 < _divs[i].size());
   }
-  AxisAlignedBox<D, T> result;
+  Point<D, T> minima;
+  Point<D, T> maxima;
   for (Size i = 0; i < D; ++i) {
-    result.minima[i] = _divs[i][index[i]];
-    result.maxima[i] = _divs[i][index[i] + 1];
+    minima[i] = _divs[i][index[i]];
+    maxima[i] = _divs[i][index[i] + 1];
   }
-  return result;
+  return {minima, maxima};
 }
 
 } // namespace um2

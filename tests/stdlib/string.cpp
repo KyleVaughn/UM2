@@ -223,8 +223,6 @@ TEST_CASE(assign_operator)
   ASSERT(s.data()[3] == 'l');
   ASSERT(s.data()[4] == 'o');
   // Ensure that s0 is not modified
-  // cppcheck-suppress unreadVariable; justification: We are checking that s is not
-  // modified
   s0.data()[0] = 'a';
   ASSERT(s.data()[0] == 'h');
 
@@ -237,8 +235,6 @@ TEST_CASE(assign_operator)
   ASSERT(s2.isLong());
   ASSERT(s2.data()[0] == 'T');
   // Check that s1 is not modified
-  // cppcheck-suppress unreadVariable; justification: We are checking that s2 is not
-  // modified
   s1.data()[0] = 'a';
   ASSERT(s2.data()[0] == 'T');
 }

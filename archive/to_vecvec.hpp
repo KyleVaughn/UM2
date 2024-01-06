@@ -1,5 +1,7 @@
 #pragma once
 
+#include <um2/stdlib/vector.hpp>
+
 #include <charconv>
 #include <string>
 #include <vector>
@@ -16,7 +18,6 @@ namespace um2
 
 template <typename T>
 constexpr auto
-// We have a class named Vec, so we need to use a different name for this function.
 // NOLINTNEXTLINE(readability-identifier-naming) justified
 to_vecvec(std::string const & str, std::string const & delimiter = " ")
     -> std::vector<std::vector<T>>
@@ -71,6 +72,26 @@ to_vecvec(std::string const & str, std::string const & delimiter = " ")
       line_vec.push_back(value);
       result.push_back(line_vec);
     }
+  }
+  return result;
+}
+
+template <typename T>
+constexpr auto
+toVecVec(std::string const & str, std::string const & delimiter = " ")
+    -> Vector<Vector<T>>
+{
+  // Not the most efficient implementation, but this isn't called often.
+  Vector<Vector<T>> result;
+  std::vector<std::vector<T>> const tmp = to_vecvec<T>(str, delimiter);
+  for (size_t irow = 0; irow < tmp.size(); ++irow) {
+    std::vector<T> const & row = tmp[irow];
+    size_t const num_cols = row.size();
+    Vector<T> res_row(static_cast<Size>(num_cols));
+    for (size_t icol = 0; icol < num_cols; ++icol) {
+      res_row[static_cast<Size>(icol)] = row[icol];
+    }
+    result.push_back(move(res_row));
   }
   return result;
 }

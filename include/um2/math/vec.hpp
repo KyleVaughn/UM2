@@ -4,22 +4,21 @@
 #include <um2/stdlib/math.hpp>      // um2::sqrt
 #include <um2/stdlib/memory.hpp>    // addressof
 
-namespace um2
-{
-
 //==============================================================================
 // VEC
 //==============================================================================
-//
 // A D-dimensional vector with data of type T.
 //
 // This class is used for small vectors, where the number of elements is known
-// at compile time.
-//
-// Many arithmetic operators are purposely not defined to avoid accidental
-// loss of performance through creation of temporaries, poor vectorization, etc.
-// Ideally we should use expression templates to avoid this, but common solutions
-// like Eigen don't play well with CUDA.
+// at compile time. The Vec is not aligned, so the compiler does not typically
+// emit vectorized instructions for it. Also, be careful about an accidental
+// loss of performance through the creation of temporaries. In other words,
+// operations like a = b + c + 4 * d are not efficient and should be done element
+// by element in a loop. It is possible to use expression templates to avoid
+// such issues, but common solutions like Eigen don't play well with CUDA.
+
+namespace um2
+{
 
 template <Size D, class T>
 class Vec
@@ -57,7 +56,6 @@ public:
   // Constructors
   //==============================================================================
 
-  // cppcheck-suppress uninitMemberVar; justification: this is correct
   constexpr Vec() noexcept = default;
 
   // Allow implicit conversion from integral types.
@@ -204,7 +202,6 @@ Vec<D, T>::operator[](Size i) noexcept -> T &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
-  // cppcheck-suppress [arrayIndexOutOfBoundsCond,negativeIndex]; justification: this is correct
   return _data[i];
 }
 
@@ -214,7 +211,6 @@ Vec<D, T>::operator[](Size i) const noexcept -> T const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
-  // cppcheck-suppress [arrayIndexOutOfBoundsCond,negativeIndex]; justification: this is correct
   return _data[i];
 }
 

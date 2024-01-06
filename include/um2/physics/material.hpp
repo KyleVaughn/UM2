@@ -4,18 +4,27 @@
 #include <um2/common/string.hpp>
 #include <um2/physics/cross_section.hpp>
 
+//======================================================================
+// MATERIAL
+//======================================================================
+// A physical material with a name, color, and multi-group cross section.
+// The color is used for visualization and in Gmsh related operations.
+// Since many CAD file formats do not support material assignment, but
+// they do support color assignment, we use color as a proxy for
+// material in I/O operations.
+
 namespace um2
 {
 
 template <std::floating_point T>
-class Material {
+class Material
+{
 
   String _name;
   Color _color;
   CrossSection<T> _xs;
 
-  public:
-
+public:
   //======================================================================
   // Constructors
   //======================================================================
@@ -28,22 +37,6 @@ class Material {
   {
   }
 
-  // TODO(kcvaughn): implicitly convert for name and color
-
-  //  HOSTDEV constexpr Material(ShortString const & name_in,
-  //                             ShortString const & color_in) noexcept
-  //      : name(name_in),
-  //        color(color_in)
-  //  {
-  //  }
-  //
-  //  template <uint64_t M, uint64_t N>
-  //  HOSTDEV constexpr Material(char const (&name_in)[M], char const (&color_in)[N])
-  //  noexcept
-  //      : name(name_in),
-  //        color(color_in)
-  //  {
-  //  }
 };
 
 } // namespace um2

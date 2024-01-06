@@ -1,5 +1,5 @@
-#include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/common/log.hpp>
+#include <um2/geometry/axis_aligned_box.hpp>
 
 #include "../test_macros.hpp"
 
@@ -68,11 +68,11 @@ TEST_CASE(is_approx)
   ASSERT(isApprox(box1, box2));
   um2::Point<D, T> p = box2.minima();
   for (Size i = 0; i < D; ++i) {
-    p[i] = p[i] - um2::eps_distance<T> / static_cast<T>(10); 
+    p[i] = p[i] - um2::eps_distance<T> / static_cast<T>(10);
   }
-  box2 += p; 
+  box2 += p;
   ASSERT(isApprox(box1, box2));
-  box2 += 10 * p; 
+  box2 += 10 * p;
   ASSERT(!isApprox(box1, box2));
 }
 
@@ -136,6 +136,37 @@ TEST_CASE(bounding_box_vector)
   ASSERT_NEAR(box.maxima()[1], static_cast<T>(0.2 * (n - 1)), static_cast<T>(1e-6));
 }
 
+template <std::floating_point T>
+HOSTDEV
+TEST_CASE(intersect_ray)
+{
+  um2::AxisAlignedBox<2, T> const box = makeBox<2, T>();
+  auto const ray0 = um2::Ray<2, T>(um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0)),
+                                   um2::Vec2<T>(0, 1));
+
+  auto const intersection0 = um2::intersect(ray0, box);
+  ASSERT_NEAR(intersection0[0], static_cast<T>(1), static_cast<T>(1e-6));
+  ASSERT_NEAR(intersection0[1], static_cast<T>(2), static_cast<T>(1e-6));
+
+  auto const ray1 = um2::Ray<2, T>(
+      um2::Point2<T>(static_cast<T>(-0.5), static_cast<T>(1.5)), um2::Vec2<T>(1, 0));
+  auto const intersection1 = um2::intersect(ray1, box);
+  ASSERT_NEAR(intersection1[0], static_cast<T>(0.5), static_cast<T>(1e-6));
+  ASSERT_NEAR(intersection1[1], static_cast<T>(1.5), static_cast<T>(1e-6));
+
+  auto const ray2 = um2::Ray<2, T>(um2::Point2<T>(0, 1), um2::Vec2<T>(1, 1).normalized());
+  auto const intersection2 = um2::intersect(ray2, box);
+  ASSERT_NEAR(intersection2[0], static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(intersection2[1], um2::sqrt(static_cast<T>(2)), static_cast<T>(1e-6));
+
+  auto const ray3 =
+      um2::Ray<2, T>(um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(1.5)),
+                     um2::Vec2<T>(1, 1).normalized());
+  auto const intersection3 = um2::intersect(ray3, box);
+  ASSERT_NEAR(intersection3[0], static_cast<T>(0), static_cast<T>(1e-6));
+  ASSERT_NEAR(intersection3[1], um2::sqrt(static_cast<T>(2)) / 2, static_cast<T>(1e-6));
+}
+
 #if UM2_USE_CUDA
 template <Size D, std::floating_point T>
 MAKE_CUDA_KERNEL(accessors, D, T);
@@ -158,6 +189,8 @@ MAKE_CUDA_KERNEL(operator_plus, D, T);
 template <Size D, std::floating_point T>
 MAKE_CUDA_KERNEL(bounding_box, D, T);
 
+template <std::floating_point T>
+MAKE_CUDA_KERNEL(intersect_ray, T);
 #endif
 
 template <Size D, std::floating_point T>
@@ -171,6 +204,7 @@ TEST_SUITE(aabb)
   TEST_HOSTDEV(bounding_box, 1, 1, D, T);
   if constexpr (D == 2) {
     TEST((bounding_box_vector<T>));
+    TEST_HOSTDEV(intersect_ray, 1, 1, T);
   }
 }
 

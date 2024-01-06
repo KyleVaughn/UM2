@@ -9,17 +9,17 @@
 #include <cstring> // memcpy, strcmp
 #include <string>  // std::string
 
-namespace um2
-{
-
 //==============================================================================
 // STRING
 //==============================================================================
-// A std::string-like class, but without an allocator template parameter.
+// An std::string-like class, but without an allocator template parameter.
 // Uses small string optimization.
 //
 // NOTE: ASSUMES LITTLE ENDIAN
-// This should be true for all x86 processors and NVIDIA GPUs.
+// This should be true for all x86 and Apple processors and both NVIDIA and AMD GPUs.
+
+namespace um2
+{
 
 static_assert(std::endian::native == std::endian::little,
               "Only little endian is supported.");

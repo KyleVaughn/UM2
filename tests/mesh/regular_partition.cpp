@@ -72,18 +72,18 @@ TEST_CASE(boundingBox)
 {
   T constexpr eps = static_cast<T>(1e-6);
   um2::RegularPartition<D, T, P> const part = makePart<D, T, P>();
-  um2::AxisAlignedBox<D, T> box = part.boundingBox();
+  um2::AxisAlignedBox<D, T> const box = part.boundingBox();
   if constexpr (D >= 1) {
-    ASSERT_NEAR(box.minima[0], part.xMin(), eps);
-    ASSERT_NEAR(box.maxima[0], part.xMax(), eps);
+    ASSERT_NEAR(box.minima()[0], part.xMin(), eps);
+    ASSERT_NEAR(box.maxima()[0], part.xMax(), eps);
   }
   if constexpr (D >= 2) {
-    ASSERT_NEAR(box.minima[1], part.yMin(), eps);
-    ASSERT_NEAR(box.maxima[1], part.yMax(), eps);
+    ASSERT_NEAR(box.minima()[1], part.yMin(), eps);
+    ASSERT_NEAR(box.maxima()[1], part.yMax(), eps);
   }
   if constexpr (D >= 3) {
-    ASSERT_NEAR(box.minima[2], part.zMin(), eps);
-    ASSERT_NEAR(box.maxima[2], part.zMax(), eps);
+    ASSERT_NEAR(box.minima()[2], part.zMin(), eps);
+    ASSERT_NEAR(box.maxima()[2], part.zMax(), eps);
   }
 }
 

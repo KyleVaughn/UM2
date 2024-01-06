@@ -1418,11 +1418,9 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn)
                       }
                     }
                     for (auto const & kn : cc_kns_max[cell_id]) {
-                      // cppcheck-suppress useStlAlgorithm
                       kn_max.push_back(kn);
                     }
                     for (auto const & kn : cc_kns_mean[cell_id]) {
-                      // cppcheck-suppress useStlAlgorithm
                       kn_mean.push_back(kn);
                     }
                   }
@@ -1459,11 +1457,9 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn)
                       }
                     }
                     for (auto const & kn : cc_kns_max[cell_id]) {
-                      // cppcheck-suppress useStlAlgorithm
                       kn_max.push_back(kn);
                     }
                     for (auto const & kn : cc_kns_mean[cell_id]) {
-                      // cppcheck-suppress useStlAlgorithm
                       kn_mean.push_back(kn);
                     }
                   }
@@ -1499,11 +1495,9 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn)
                       }
                     }
                     for (auto const & kn : cc_kns_max[cell_id]) {
-                      // cppcheck-suppress useStlAlgorithm
                       kn_max.push_back(kn);
                     }
                     for (auto const & kn : cc_kns_mean[cell_id]) {
-                      // cppcheck-suppress useStlAlgorithm
                       kn_mean.push_back(kn);
                     }
                   }
@@ -1539,11 +1533,9 @@ SpatialPartition<T, I>::toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn)
                       }
                     }
                     for (auto const & kn : cc_kns_max[cell_id]) {
-                      // cppcheck-suppress useStlAlgorithm
                       kn_max.push_back(kn);
                     }
                     for (auto const & kn : cc_kns_mean[cell_id]) {
-                      // cppcheck-suppress useStlAlgorithm
                       kn_mean.push_back(kn);
                     }
                   }

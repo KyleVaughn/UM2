@@ -152,11 +152,13 @@ TEST_CASE(getBoxAndChild)
 }
 
 #if UM2_USE_CUDA
+
 template <Size D, typename T, std::integral P>
 MAKE_CUDA_KERNEL(clear, D, T, P)
 
 template <typename T, std::integral P>
 MAKE_CUDA_KERNEL(getBoxAndChild, T, P)
+
 #endif
 
 template <Size D, typename T, std::integral P>

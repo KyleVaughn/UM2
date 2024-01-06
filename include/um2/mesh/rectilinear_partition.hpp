@@ -3,9 +3,6 @@
 #include <um2/mesh/rectilinear_grid.hpp>
 #include <um2/stdlib/vector.hpp>
 
-namespace um2
-{
-
 //==============================================================================
 // RECTILINEAR PARTITION
 //==============================================================================
@@ -24,6 +21,9 @@ namespace um2
 //  *-----------> i
 //
 //  * is where grid.minima is located
+
+namespace um2
+{
 
 template <Size D, typename T, typename P>
 class RectilinearPartition

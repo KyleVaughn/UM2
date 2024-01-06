@@ -5,12 +5,13 @@
 
 #include <algorithm> // std::sort
 
+//==============================================================================
+// Morton encoding/decoding
+//==============================================================================
+// Morton encoding and decoding for points in the unit square/cube.
+
 namespace um2
 {
-
-//==============================================================================
-// Morton encoding/decoding with normalization
-//==============================================================================
 
 template <std::unsigned_integral U, Size D, std::floating_point T>
 PURE HOSTDEV auto

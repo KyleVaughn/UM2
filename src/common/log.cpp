@@ -1,9 +1,5 @@
 #include <um2/common/log.hpp>
 
-#include <iomanip>  // std::setw, std::setfill
-#include <iostream> // std::cout, std::endl, std::cerr
-#include <sstream>  // stringstream
-
 namespace um2
 {
 
@@ -162,15 +158,15 @@ Log::addTimestamp(char * buffer_begin) -> char *
 }
 
 auto
-Log::addColor(LogLevel const msg_level,  char * buffer_begin) -> char *
+Log::addColor(LogLevel const msg_level, char * buffer_begin) -> char *
 {
   if (colorized) {
-      buffer_begin[0] = '\033';
-      buffer_begin[1] = '[';
-      buffer_begin[2] = '1';
-      buffer_begin[3] = ';';
-      buffer_begin[4] = '3';
-      buffer_begin[6] = 'm';
+    buffer_begin[0] = '\033';
+    buffer_begin[1] = '[';
+    buffer_begin[2] = '1';
+    buffer_begin[3] = ';';
+    buffer_begin[4] = '3';
+    buffer_begin[6] = 'm';
     switch (msg_level) {
     case LogLevel::Error: // RED
       // \033[1;31m
