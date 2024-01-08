@@ -87,6 +87,9 @@ public:
 
   constexpr PolytopeSoup() = default;
 
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  PolytopeSoup(String const & filename);
+
   //==============================================================================
   // Methods
   //==============================================================================
@@ -177,6 +180,16 @@ public:
   writeXDMF(String const & filepath) const;
 
 }; // struct PolytopeSoup
+
+//==============================================================================
+// Constructors
+//==============================================================================
+
+template <std::floating_point T, std::signed_integral I>
+PolytopeSoup<T, I>::PolytopeSoup(String const & filename)
+{
+  read(filename);
+}
 
 //==============================================================================
 // Methods

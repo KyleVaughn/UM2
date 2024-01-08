@@ -1,3 +1,11 @@
+constexpr everything
+noexcept everything
+
+SIMD ray/mesh intersection. Can do many at once. Make RayPacket class. Write intersection
+routines for edge, polygon, etc.
+
+GPU ray intersect. Need an easy way to get objects on the device. Maybe toDevice() return
+
 SIMD Vector primitives
 Use std::simd. Want exp(vector), but only implemented by SVML by intel.
 Wait until C++26 or use VCDevel std simd, the implementation that will be in GCC.
@@ -6,6 +14,7 @@ Benchmark
 Use assume once C++ 23 is supported. See config file
 
 struct to class
+
 Log with multiple arguments to the functions, which automatically call toStgring
 
 Re-add the requirements non-spack installed
@@ -15,8 +24,6 @@ Scripts to install gcc
 Currently working through polytope soup tests 
 
 reserve elements/vertices for submesh and read: FVM.toPolytopesoup, spatial_part.toPolytopeSoup
-
-effect test of morton order on intersect
 
 parallelize
 
@@ -49,7 +56,6 @@ TESTS
 ===============================================================================
 ALGORITHMS
 ===============================================================================
-1. is_morton_ordered to fvm
 2. Vector insert?
 3. Consistent testing of mesh point inside.
       getOrientedEdge -> return bool, pass edge by ref

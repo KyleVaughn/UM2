@@ -72,10 +72,10 @@ makeVectorOfRandomPoints(Size size, um2::AxisAlignedBox<D, T> box)
 {
   um2::Vector<um2::Point<D, T>> v(size);
   std::generate(v.begin(), v.end(), randomPoint<D, T>);
-  auto const box_size = box.maxima - box.minima;
+  auto const box_size = box.maxima() - box.minima();
   for (auto & p : v) {
     p *= box_size;
-    p += box.minima;
+    p += box.minima();
   }
   return v;
 }

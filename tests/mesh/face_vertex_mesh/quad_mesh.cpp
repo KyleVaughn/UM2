@@ -30,6 +30,36 @@ TEST_CASE(accessors)
 }
 
 template <std::floating_point T, std::signed_integral I>
+HOSTDEV
+TEST_CASE(addVertex_addFace)
+{
+  um2::QuadMesh<2, T, I> mesh;
+  mesh.addVertex({0, 0});
+  mesh.addVertex({1, 0});  
+  mesh.addVertex({1, 1}); 
+  mesh.addVertex({0, 1});
+  mesh.addVertex({2, 0});
+  mesh.addVertex({2, 1});
+  mesh.addFace({0, 1, 2, 3});
+  mesh.addFace({1, 4, 5, 2});
+  // Same as reference mesh. Should make an == operator for meshes.
+  um2::Quadrilateral<2, T> quad0_ref(mesh.getVertex(0), mesh.getVertex(1), mesh.getVertex(2),    
+                                     mesh.getVertex(3));    
+  auto const quad0 = mesh.getFace(0);    
+  ASSERT(um2::isApprox(quad0[0], quad0_ref[0]));    
+  ASSERT(um2::isApprox(quad0[1], quad0_ref[1]));    
+  ASSERT(um2::isApprox(quad0[2], quad0_ref[2]));    
+  ASSERT(um2::isApprox(quad0[3], quad0_ref[3]));    
+  um2::Quadrilateral<2, T> quad1_ref(mesh.getVertex(1), mesh.getVertex(4), mesh.getVertex(5),    
+                                     mesh.getVertex(2));    
+  auto const quad1 = mesh.getFace(1);    
+  ASSERT(um2::isApprox(quad1[0], quad1_ref[0]));    
+  ASSERT(um2::isApprox(quad1[1], quad1_ref[1]));    
+  ASSERT(um2::isApprox(quad1[2], quad1_ref[2]));    
+  ASSERT(um2::isApprox(quad1[3], quad1_ref[3])); 
+}
+
+template <std::floating_point T, std::signed_integral I>
 TEST_CASE(poly_soup_constructor)
 {
   um2::PolytopeSoup<T, I> poly_soup;
@@ -113,15 +143,16 @@ TEST_CASE(intersect)
 //  ASSERT(quad_poly_soup.getMeshType() == um2::MeshType::Quad);
 //}
 //
-//#if UM2_USE_CUDA
-//template <std::floating_point T, std::signed_integral I>
-//MAKE_CUDA_KERNEL(accessors, T, I)
-//#endif
+#if UM2_USE_CUDA
+template <std::floating_point T, std::signed_integral I>
+MAKE_CUDA_KERNEL(accessors, T, I)
+#endif
 
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(QuadMesh)
 {
   TEST_HOSTDEV(accessors, 1, 1, T, I);
+  TEST((addVertex_addFace<T, I>));
   TEST((poly_soup_constructor<T, I>));
   TEST((boundingBox<T, I>));
   TEST((faceContaining<T, I>));

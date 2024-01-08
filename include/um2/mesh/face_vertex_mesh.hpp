@@ -63,6 +63,7 @@ class FaceVertexMesh {
 
   constexpr FaceVertexMesh() noexcept = default;
 
+  HOSTDEV
   constexpr FaceVertexMesh(Vector<Point<D, T>> const & v,
                            Vector<FaceConn> const & fv) noexcept;
 
@@ -82,6 +83,9 @@ class FaceVertexMesh {
   getVertex(Size i) const noexcept -> Point<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
+  getEdge(Size iface, Size iedge) const noexcept -> Edge;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getFace(Size i) const noexcept -> Face;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -94,6 +98,12 @@ class FaceVertexMesh {
   // Methods
   //===========================================================================
 
+  void
+  addVertex(Point<D, T> const & v) noexcept;
+
+  void
+  addFace(FaceConn const & conn) noexcept;
+
   PURE [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
 
@@ -103,6 +113,15 @@ class FaceVertexMesh {
 
   void
   flipFace(Size i) noexcept;
+
+  void
+  mortonSort();
+
+  void
+  mortonSortFaces();
+
+  void
+  mortonSortVertices();
 
   void
   populateVF() noexcept;
@@ -198,22 +217,22 @@ validateMeshType(MeshType const type) -> bool
 //   return MeshType::None;
 // }
 //
-// template <Size P, Size N>
-// constexpr auto
-// getVTKElemType() -> VTKElemType
-// {
-//   if constexpr (P == 1 && N == 3) {
-//     return VTKElemType::Triangle;
-//   } else if constexpr (P == 1 && N == 4) {
-//     return VTKElemType::Quad;
-//   } else if constexpr (P == 2 && N == 6) {
-//     return VTKElemType::QuadraticTriangle;
-//   } else if constexpr (P == 2 && N == 8) {
-//     return VTKElemType::QuadraticQuad;
-//   }
-//   ASSERT(false);
-//   return VTKElemType::None;
-// }
+template <Size P, Size N>
+constexpr auto
+getVTKElemType() -> VTKElemType
+{
+  if constexpr (P == 1 && N == 3) {
+    return VTKElemType::Triangle;
+  } else if constexpr (P == 1 && N == 4) {
+    return VTKElemType::Quad;
+  } else if constexpr (P == 2 && N == 6) {
+    return VTKElemType::QuadraticTriangle;
+  } else if constexpr (P == 2 && N == 8) {
+    return VTKElemType::QuadraticQuad;
+  }
+  ASSERT(false);
+  return VTKElemType::None;
+}
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 FaceVertexMesh<P, N, D, T, I>::FaceVertexMesh(PolytopeSoup<T, I> const & soup)
@@ -229,6 +248,7 @@ FaceVertexMesh<P, N, D, T, I>::FaceVertexMesh(PolytopeSoup<T, I> const & soup)
 
   // -- Vertices --
   // Ensure each of the vertices has approximately the same z
+  _v.resize(num_vertices);
   if constexpr (D == 2) {
 #if UM2_ENABLE_ASSERTS
     T const eps = eps_distance<T>;
@@ -237,7 +257,6 @@ FaceVertexMesh<P, N, D, T, I>::FaceVertexMesh(PolytopeSoup<T, I> const & soup)
       ASSERT(um2::abs(soup.getVertex(i)[2] - z) < eps);
     }
 #endif
-    _v.resize(num_vertices);
     for (Size i = 0; i < num_vertices; ++i) {
       auto const & p = soup.getVertex(i);
       _v[i][0] = p[0];
@@ -255,6 +274,7 @@ FaceVertexMesh<P, N, D, T, I>::FaceVertexMesh(PolytopeSoup<T, I> const & soup)
   _fv.resize(num_faces);
   for (Size i = 0; i < num_faces; ++i) {
     soup.getElement(i, elem_type, conn);
+    ASSERT(elem_type == (getVTKElemType<P, N>())); 
     for (Size j = 0; j < N; ++j) {
       _fv[i][j] = conn[j];
     }
@@ -289,8 +309,27 @@ FaceVertexMesh<P, N, D, T, I>::getVertex(Size i) const noexcept -> Point<D, T>
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 PURE HOSTDEV [[nodiscard]] constexpr auto
+FaceVertexMesh<P, N, D, T, I>::getEdge(Size const iface, Size const iedge) const noexcept -> Edge
+{
+  ASSERT(iface < numFaces());
+  if constexpr (P == 1) {
+    return LineSegment<D, T>(_v[static_cast<Size>(_fv[iface][iedge])],
+                             _v[static_cast<Size>(_fv[iface][(iedge + 1) % N])]);
+  } else if constexpr (P == 2) {
+    Size constexpr m = N / 2;
+    return QuadraticSegment<D, T>(_v[static_cast<Size>(_fv[iface][iedge])],
+                                  _v[static_cast<Size>(_fv[iface][(iedge + 1) % N])],
+                                  _v[static_cast<Size>(_fv[iface][iedge + m])]);
+  } else {
+    __builtin_unreachable();
+  }
+}
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+PURE HOSTDEV [[nodiscard]] constexpr auto
 FaceVertexMesh<P, N, D, T, I>::getFace(Size i) const noexcept -> Face
 {
+  ASSERT(i < numFaces());
   if constexpr (P == 1 && N == 3) {
     return Triangle<D, T>(_v[static_cast<Size>(_fv[i][0])],
                           _v[static_cast<Size>(_fv[i][1])],
@@ -334,6 +373,28 @@ FaceVertexMesh<P, N, D, T, I>::getVF() const noexcept -> Vector<I> const &
 {
   return _vf;
 }
+
+//==============================================================================
+// addVertex
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
+FaceVertexMesh<P, N, D, T, I>::addVertex(Point<D, T> const & v) noexcept
+{
+  _v.push_back(v);
+}
+
+//==============================================================================
+// addFace
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
+FaceVertexMesh<P, N, D, T, I>::addFace(FaceConn const & conn) noexcept
+{
+  _fv.push_back(conn);
+} 
 
 //==============================================================================
 // boundingBox
@@ -397,6 +458,139 @@ FaceVertexMesh<P, N, D, T, I>::flipFace(Size i) noexcept
 }
 
 //==============================================================================
+// mortonSort
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
+FaceVertexMesh<P, N, D, T, I>::mortonSort()
+{
+  LOG_DEBUG("Sorting vertices and faces using morton encoding");
+  mortonSortVertices();
+  mortonSortFaces();
+  _is_morton_sorted = true;
+}
+
+//==============================================================================
+// mortonSortFaces
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
+FaceVertexMesh<P, N, D, T, I>::mortonSortFaces()
+{
+  // We will sort the centroid of each face using the morton encoding.
+  Size const num_faces = numFaces();
+  Vector<Point<D, T>> centroids(num_faces);
+  for (Size i = 0; i < num_faces; ++i) {
+    centroids[i] = getFace(i).centroid();
+  }
+  // We need to scale the centroids to the unit cube before we can apply
+  // the morton encoding. Therefore we need to find the bounding box of
+  // all faces.
+  auto aabb = um2::boundingBox(_v);
+  for (Size i = 0; i < num_faces; ++i) {
+    aabb += getFace(i).boundingBox();
+  }
+  Point<D, T> inv_scale = aabb.maxima() - aabb.minima();
+  inv_scale[0] = static_cast<T>(1) / inv_scale[0];
+  inv_scale[1] = static_cast<T>(1) / inv_scale[1];
+  if constexpr (D == 3) {
+    inv_scale[2] = static_cast<T>(1) / inv_scale[2];
+    if (um2::abs(inv_scale[2]) < eps_distance<T>) {
+      inv_scale[2] = static_cast<T>(1);
+    } else {
+      inv_scale[2] = static_cast<T>(1) / inv_scale[2];
+    }
+  }
+
+  for (auto & c : centroids) {
+    c *= inv_scale;
+  }
+
+  // Create a vector of Morton codes for the centroids.
+  Vector<uint32_t> morton_codes(num_faces, 0);
+  for (Size i = 0; i < num_faces; ++i) {
+    morton_codes[i] = mortonEncode<uint32_t>(centroids[i]);
+  }
+
+  // Create a vector of indices into the centroids vector.
+  Vector<Size> perm(num_faces);
+
+  // Sort the indices as to create a permutation vector.
+  // perm[new_index] = old_index
+  sortPermutation(morton_codes.cbegin(), morton_codes.cend(), perm.begin());
+
+  // Sort the faces according to the permutation vector.
+  applyPermutation(_fv, perm);
+
+  // Invalidate vertex-face connectivity.
+  _has_vf = false;
+}
+
+//==============================================================================
+// mortonSortVertices
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+void
+FaceVertexMesh<P, N, D, T, I>::mortonSortVertices()
+{
+  // We need to scale the vertices to the unit cube before we can apply
+  // the morton encoding.
+  auto const aabb = um2::boundingBox(_v);
+  Point<D, T> inv_scale = aabb.maxima() - aabb.minima();
+  inv_scale[0] = static_cast<T>(1) / inv_scale[0];
+  inv_scale[1] = static_cast<T>(1) / inv_scale[1];
+  if constexpr (D == 3) {
+    if (um2::abs(inv_scale[2]) < eps_distance<T>) {
+      inv_scale[2] = static_cast<T>(1);
+    } else {
+      inv_scale[2] = static_cast<T>(1) / inv_scale[2];
+    }
+  }
+  Size const num_verts = numVertices();
+  Vector<Point<D, T>> scaled_verts(num_verts);
+  for (Size i = 0; i < num_verts; ++i) {
+    scaled_verts[i] = _v[i];
+    scaled_verts[i] *= inv_scale;
+  }
+
+  // Create a vector of Morton codes for the vertices.
+  Vector<uint32_t> morton_codes(num_verts, 0);
+  for (Size i = 0; i < num_verts; ++i) {
+    morton_codes[i] = mortonEncode<uint32_t>(scaled_verts[i]);
+  }
+
+  // Create a vector of indices into the vertices vector.
+  Vector<Size> perm(num_verts);
+
+  // Sort the indices as to create a permutation vector.
+  // perm[new_index] = old_index
+  sortPermutation(morton_codes.cbegin(), morton_codes.cend(), perm.begin());
+  ASSERT(!um2::is_sorted(morton_codes.cbegin(), morton_codes.cend()));
+
+  // We also want the inverse of the permutation vector.
+  // inv_perm[old_index] = new_index
+  // inv_perm[perm[new_index]] = new_index
+  Vector<Size> inv_perm(num_verts);
+  invertPermutation(perm, inv_perm);
+
+  // Sort the vertices according to the permutation vector.
+  applyPermutation(_v, perm);
+
+  // Map the old vertex indices to the new vertex indices.
+  for (auto & face : _fv) {
+    for (auto & vert_id : face) {
+      vert_id = static_cast<I>(inv_perm[static_cast<Size>(vert_id)]);
+    }
+  }
+
+  // Invalidate vertex-face connectivity
+  _has_vf = false;
+}
+
+//==============================================================================
 // populateVF
 //==============================================================================
 
@@ -404,6 +598,7 @@ template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 void
 FaceVertexMesh<P, N, D, T, I>::populateVF() noexcept
 {
+  // Make no assumption about _vf_offsets and _vf being empty.
   Size const num_vertices = numVertices();
   Size const num_faces = numFaces();
 
@@ -428,6 +623,7 @@ FaceVertexMesh<P, N, D, T, I>::populateVF() noexcept
       ++vert_offsets[vert];
     }
   }
+  _has_vf = true;
 }
 
 // //==============================================================================
@@ -515,6 +711,89 @@ intersect(Ray2<T> const & ray, PlanarQuadraticPolygonMesh<N, T, I> const & mesh,
   std::sort(intersections.begin(), intersections.end());
 }
 
+// Input:
+// intersections: A buffer of size n
+// n: The max size of the buffer
+//
+// Output:
+// intersections: The buffer is filled with n intersections
+// n: The number of intersections
+template <Size N, std::floating_point T, std::signed_integral I>
+void
+intersectFixedBuffer(Ray2<T> const & ray, PlanarLinearPolygonMesh<N, T, I> const & mesh,
+          T * const intersections, Size * const n) noexcept
+{
+  Size nintersect = 0;
+#if UM2_ENABLE_ASSERTS
+  Size const n0 = *n;
+#endif
+  Size constexpr edges_per_face = PlanarQuadraticPolygonMesh<N, T, I>::Face::numEdges();
+  for (Size i = 0; i < mesh.numFaces(); ++i) {
+    auto const face = mesh.getFace(i);
+    for (Size j = 0; j < edges_per_face; ++j) {
+      auto const edge = face.getEdge(j);
+      auto const r = intersect(ray, edge);
+      if (r < inf_distance<T>) {
+        ASSERT(nintersect < n0)
+        intersections[nintersect++] = r;
+      }
+    }
+  }
+  *n = nintersect;
+  std::sort(intersections, intersections + nintersect);
+}
+
+// Input:
+// intersections: A buffer of size n
+// n: The max size of the buffer
+//
+// Output:
+// intersections: The buffer is filled with n intersections
+// n: The number of intersections
+template <Size N, std::floating_point T, std::signed_integral I>
+void
+intersectFixedBuffer(Ray2<T> const & ray, PlanarQuadraticPolygonMesh<N, T, I> const & mesh,
+          T * const intersections, Size * const n) noexcept
+{
+  Size nintersect = 0;
+#if UM2_ENABLE_ASSERTS
+  Size const n0 = *n;
+#endif
+  Size constexpr edges_per_face = PlanarQuadraticPolygonMesh<N, T, I>::Face::numEdges();
+//  for (Size i = 0; i < mesh.numFaces(); ++i) {
+//    auto const face = mesh.getFace(i);
+//    for (Size j = 0; j < edges_per_face; ++j) {
+//      auto const edge = face.getEdge(j);
+//      auto const r = intersect(ray, edge);
+//      if (r[0] < inf_distance<T>) {
+//        ASSERT(nintersect < n0)
+//        intersections[nintersect++] = r[0];
+//      }
+//      if (r[1] < inf_distance<T>) {
+//        ASSERT(nintersect < n0)
+//        intersections[nintersect++] = r[1];
+//      }
+//    }
+//  }
+  for (Size i = 0; i < mesh.numFaces(); ++i) {
+    for (Size j = 0; j < edges_per_face; ++j) {
+      auto const edge = mesh.getEdge(i, j);
+      auto const r = intersect(ray, edge);
+      if (r[0] < inf_distance<T>) {
+        ASSERT(nintersect < n0)
+        intersections[nintersect++] = r[0];
+      }
+      if (r[1] < inf_distance<T>) {
+        ASSERT(nintersect < n0)
+        intersections[nintersect++] = r[1];
+      }
+    }
+  }
+
+  *n = nintersect;
+  std::sort(intersections, intersections + nintersect);
+}
+
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 void
 FaceVertexMesh<P, N, D, T, I>::intersect(Ray<D, T> const & ray, Vector<T> & intersections) const noexcept
@@ -527,6 +806,10 @@ FaceVertexMesh<P, N, D, T, I>::intersect(Ray<D, T> const & ray, Vector<T> & inte
 // validate
 //==============================================================================
 
+// Check for:
+// - Repeated vertices (warn)
+// - Counter-clockwise faces (warn and fix)
+// - Convexity (warn, quad mesh only)
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 void
 FaceVertexMesh<P, N, D, T, I>::validate()

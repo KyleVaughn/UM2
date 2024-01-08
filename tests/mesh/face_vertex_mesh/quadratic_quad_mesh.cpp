@@ -40,6 +40,53 @@ TEST_CASE(accessors)
 }
 
 template <std::floating_point T, std::signed_integral I>
+HOSTDEV
+TEST_CASE(addVertex_addFace)
+{
+  um2::QuadraticQuadMesh<2, T, I> mesh;
+  mesh.addVertex({static_cast<T>(0.0), static_cast<T>(0.0)});
+  mesh.addVertex({static_cast<T>(1.0), static_cast<T>(0.0)});
+  mesh.addVertex({static_cast<T>(1.0), static_cast<T>(1.0)});
+  mesh.addVertex({static_cast<T>(0.0), static_cast<T>(1.0)});
+  mesh.addVertex({static_cast<T>(2.0), static_cast<T>(0.0)});
+  mesh.addVertex({static_cast<T>(2.0), static_cast<T>(1.0)});
+  mesh.addVertex({static_cast<T>(0.5), static_cast<T>(0.0)});
+  mesh.addVertex({static_cast<T>(1.1), static_cast<T>(0.6)});
+  mesh.addVertex({static_cast<T>(0.5), static_cast<T>(1.0)});
+  mesh.addVertex({static_cast<T>(0.0), static_cast<T>(0.5)});
+  mesh.addVertex({static_cast<T>(1.5), static_cast<T>(0.0)});
+  mesh.addVertex({static_cast<T>(2.0), static_cast<T>(0.5)});
+  mesh.addVertex({static_cast<T>(1.5), static_cast<T>(1.0)});
+  mesh.addFace({0, 1, 2, 3, 6, 7, 8, 9});
+  mesh.addFace({1, 4, 5, 2, 10, 11, 12, 7});
+  // face
+  um2::QuadraticQuadrilateral<2, T> quad0_ref(
+      mesh.getVertex(0), mesh.getVertex(1), mesh.getVertex(2), mesh.getVertex(3),
+      mesh.getVertex(6), mesh.getVertex(7), mesh.getVertex(8), mesh.getVertex(9));
+  auto const quad0 = mesh.getFace(0);
+  ASSERT(um2::isApprox(quad0[0], quad0_ref[0]));
+  ASSERT(um2::isApprox(quad0[1], quad0_ref[1]));
+  ASSERT(um2::isApprox(quad0[2], quad0_ref[2]));
+  ASSERT(um2::isApprox(quad0[3], quad0_ref[3]));
+  ASSERT(um2::isApprox(quad0[4], quad0_ref[4]));
+  ASSERT(um2::isApprox(quad0[5], quad0_ref[5]));
+  ASSERT(um2::isApprox(quad0[6], quad0_ref[6]));
+  ASSERT(um2::isApprox(quad0[7], quad0_ref[7]));
+  um2::QuadraticQuadrilateral<2, T> quad1_ref(
+      mesh.getVertex(1), mesh.getVertex(4), mesh.getVertex(5), mesh.getVertex(2),
+      mesh.getVertex(10), mesh.getVertex(11), mesh.getVertex(12), mesh.getVertex(7));
+  auto const quad1 = mesh.getFace(1);
+  ASSERT(um2::isApprox(quad1[0], quad1_ref[0]));
+  ASSERT(um2::isApprox(quad1[1], quad1_ref[1]));
+  ASSERT(um2::isApprox(quad1[2], quad1_ref[2]));
+  ASSERT(um2::isApprox(quad1[3], quad1_ref[3]));
+  ASSERT(um2::isApprox(quad1[4], quad1_ref[4]));
+  ASSERT(um2::isApprox(quad1[5], quad1_ref[5]));
+  ASSERT(um2::isApprox(quad1[6], quad1_ref[6]));
+  ASSERT(um2::isApprox(quad1[7], quad1_ref[7]));
+}
+
+template <std::floating_point T, std::signed_integral I>
 TEST_CASE(poly_soup_constructor)
 {
   um2::PolytopeSoup<T, I> poly_soup;
@@ -47,7 +94,7 @@ TEST_CASE(poly_soup_constructor)
   um2::QuadraticQuadMesh<2, T, I> const mesh_ref = makeQuad8ReferenceMesh<2, T, I>();
   um2::QuadraticQuadMesh<2, T, I> const mesh(poly_soup);
   ASSERT(mesh.numVertices() == mesh_ref.numVertices());
-  for (Size i = 0; i < mesh.numVertices(); ++i) {  
+  for (Size i = 0; i < mesh.numVertices(); ++i) {
     ASSERT(um2::isApprox(mesh.getVertex(i), mesh_ref.getVertex(i)));
   }
   for (Size i = 0; i < mesh.numFaces(); ++i) {
@@ -56,7 +103,7 @@ TEST_CASE(poly_soup_constructor)
     for (Size j = 0; j < 8; ++j) {
       ASSERT(um2::isApprox(face[j], face_ref[j]));
     }
-  } 
+  }
 }
 
 template <std::floating_point T, std::signed_integral I>
@@ -112,6 +159,74 @@ TEST_CASE(intersect)
   ASSERT_NEAR(intersections[3], int1, static_cast<T>(1e-6));
   ASSERT_NEAR(intersections[4], int2, static_cast<T>(1e-6));
 }
+
+template <std::floating_point T, std::signed_integral I>
+TEST_CASE(mortonSort)
+{
+  // 16 --- 17 --- 18 --- 19 --- 20
+  //  |             |             |
+  //  |             |             |
+  // 13      F2    14     F1     15
+  //  |             |             |
+  //  |             |             |
+  //  8 ---  9 --- 10 --- 11 --- 12
+  //  |             |             |
+  //  |             |             |
+  //  5      F3     6     F0      7
+  //  |             |             |
+  //  |             |             |
+  //  0 ---  1 ---  2 ---  3 ---  4
+  //
+  um2::QuadraticQuadMesh<2, T, I> mesh;
+  mesh.addVertex({0, 0});
+  mesh.addVertex({1, 0});
+  mesh.addVertex({2, 0});
+  mesh.addVertex({3, 0});
+  mesh.addVertex({4, 0});
+
+  mesh.addVertex({0, 1});
+  mesh.addVertex({2, 1});
+  mesh.addVertex({4, 1});
+
+  mesh.addVertex({0, 2});
+  mesh.addVertex({1, 2});
+  mesh.addVertex({2, 2});
+  mesh.addVertex({3, 2});
+  mesh.addVertex({4, 2});
+
+  mesh.addVertex({0, 3});
+  mesh.addVertex({2, 3});
+  mesh.addVertex({4, 3});
+
+  mesh.addVertex({0, 4});
+  mesh.addVertex({1, 4});
+  mesh.addVertex({2, 4});
+  mesh.addVertex({3, 4});
+  mesh.addVertex({4, 4});
+
+  mesh.addFace({2, 4, 12, 10, 3, 7, 11, 6});
+  mesh.addFace({10, 12, 20, 18, 11, 15, 19, 14});
+  mesh.addFace({8, 10, 18, 16, 9, 14, 17, 13});
+  mesh.addFace({0, 2, 10, 8, 1, 6, 9, 5});
+
+  mesh.mortonSort();
+
+  auto const f0 = mesh.getFace(0);
+  auto const f1 = mesh.getFace(1);
+  auto const f2 = mesh.getFace(2);
+  auto const f3 = mesh.getFace(3);
+  ASSERT(um2::isApprox(f0.centroid(), um2::Point2<T>(1, 1)));
+  ASSERT(um2::isApprox(f1.centroid(), um2::Point2<T>(3, 1)));
+  ASSERT(um2::isApprox(f2.centroid(), um2::Point2<T>(1, 3)));
+  ASSERT(um2::isApprox(f3.centroid(), um2::Point2<T>(3, 3)));
+
+  ASSERT(um2::isApprox(mesh.getVertex(0), um2::Point2<T>(0, 0)));
+  ASSERT(um2::isApprox(mesh.getVertex(1), um2::Point2<T>(1, 0)));
+  ASSERT(um2::isApprox(mesh.getVertex(2), um2::Point2<T>(0, 1)));
+  ASSERT(um2::isApprox(mesh.getVertex(7), um2::Point2<T>(2, 2)));
+  ASSERT(um2::isApprox(mesh.getVertex(20), um2::Point2<T>(4, 4)));
+}
+
 //template <std::floating_point T, std::signed_integral I>
 //TEST_CASE(toPolytopeSoup)
 //{
@@ -123,22 +238,23 @@ TEST_CASE(intersect)
 //  ASSERT(quad_poly_soup.comapreTo(quad_poly_soup_ref) == 10);
 //  ASSERT(quad_poly_soup.getMeshType() == um2::MeshType::QuadraticQuad);
 //}
-//
-//#if UM2_USE_CUDA
-//template <std::floating_point T, std::signed_integral I>
-//MAKE_CUDA_KERNEL(accessors, T, I)
-//#endif
+
+#if UM2_USE_CUDA
+template <std::floating_point T, std::signed_integral I>
+MAKE_CUDA_KERNEL(accessors, T, I)
+#endif
 
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(QuadraticQuadMesh)
 {
   TEST_HOSTDEV(accessors, 1, 1, T, I);
+  TEST((addVertex_addFace<T, I>));
   TEST((poly_soup_constructor<T, I>));
   TEST((boundingBox<T, I>));
   TEST((faceContaining<T, I>));
   TEST((populateVF<T, I>));
   TEST((intersect<T, I>));
-
+  TEST((mortonSort<T, I>));
 }
 
 auto
