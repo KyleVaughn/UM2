@@ -76,6 +76,9 @@ public:
   numCells() const noexcept -> Vec<D, Size>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
+  numTotalCells() const noexcept -> Size;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   width() const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -171,6 +174,10 @@ constexpr RegularPartition<D, T, P>::RegularPartition(RegularGrid<D, T> const & 
     : _grid(grid),
       _children(children)
 {
+  // Check that the number of children is at least equal to the total number of
+  // cells in the grid. children can be used to store additional data in atypical
+  // use cases, but it must be able to store at least one child per cell.
+  ASSERT(_grid.numTotalCells() <= _children.size());
 }
 
 //==============================================================================
@@ -249,6 +256,13 @@ RegularPartition<D, T, P>::numCells() const noexcept -> Vec<D, Size>
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto
+RegularPartition<D, T, P>::numTotalCells() const noexcept -> Size
+{
+  return _grid.numTotalCells();
+}
+
+template <Size D, typename T, typename P>
+PURE HOSTDEV constexpr auto
 RegularPartition<D, T, P>::width() const noexcept -> T
 {
   return _grid.width();
@@ -319,45 +333,14 @@ PURE HOSTDEV
     constexpr auto RegularPartition<D, T, P>::getFlatIndex(Args... args) const noexcept
     -> Size
 {
-  Point<D, Size> const index{args...};
-  for (Size i = 0; i < D; ++i) {
-    ASSERT(index[i] < _grid.numCells()[i]);
-  }
-  if constexpr (D == 1) {
-    return index[0];
-  } else if constexpr (D == 2) {
-    return index[0] + index[1] * _grid.numXCells();
-  } else { // General case
-    // [0, nx, nx*ny, nx*ny*nz, ...]
-    Point<D, Size> exclusive_scan_prod;
-    exclusive_scan_prod[0] = 1;
-    for (Size i = 1; i < D; ++i) {
-      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * _grid.numCells()[i - 1];
-    }
-    return index.dot(exclusive_scan_prod);
-  }
+  return _grid.getFlatIndex(args...);
 }
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 RegularPartition<D, T, P>::getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size
 {
-  for (Size i = 0; i < D; ++i) {
-    ASSERT(index[i] < _grid.num_cells[i]);
-  }
-  if constexpr (D == 1) {
-    return index[0];
-  } else if constexpr (D == 2) {
-    return index[0] + index[1] * _grid.numXCells();
-  } else { // General case
-    // [0, nx, nx*ny, nx*ny*nz, ...]
-    Point<D, Size> exclusive_scan_prod;
-    exclusive_scan_prod[0] = 1;
-    for (Size i = 1; i < D; ++i) {
-      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * _grid.numCells()[i - 1];
-    }
-    return index.dot(exclusive_scan_prod);
-  }
+  return _grid.getFlatIndex(index);
 }
 
 template <Size D, typename T, typename P>

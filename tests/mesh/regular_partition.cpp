@@ -1,5 +1,7 @@
 #include <um2/mesh/regular_partition.hpp>
 
+// #include <um2/common/log.hpp>
+
 #include "../test_macros.hpp"
 
 template <Size D, typename T, typename P>
@@ -16,14 +18,16 @@ makePart() -> um2::RegularPartition<D, T, P>
     num_cells[i] = i + 1;
   }
   um2::Vector<P> children;
-  if constexpr (D >= 1) {
+  if constexpr (D == 1) {
     children = {1};
-  } else if constexpr (D >= 2) {
+  } else if constexpr (D == 2) {
     children = {1, 2};
-  } else if constexpr (D >= 3) {
+  } else if constexpr (D == 3) {
     children = {1, 2, 3, 4, 5, 6};
   }
   um2::RegularGrid<D, T> const grid(minima, spacing, num_cells);
+//  um2::Log::info("Grid size " + um2::toString(grid.numTotalCells()));
+//  um2::Log::info("Children size " + um2::toString(children.size()));
   um2::RegularPartition<D, T, P> part(grid, um2::move(children));
   return part;
 }

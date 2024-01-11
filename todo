@@ -1,6 +1,8 @@
 constexpr everything
 noexcept everything
 
+Use connectivity for ray tracing
+
 SIMD ray/mesh intersection. Can do many at once. Make RayPacket class. Write intersection
 routines for edge, polygon, etc.
 
@@ -30,6 +32,18 @@ parallelize
 extents for AABB
 alginment
 
+VALIDATE RAY TRACING DATA
+  intersect which also returns face IDS
+
+
+Graphics:
+  Highlight the intersected cells
+    Show ray intersect lattice naive gif. Faces are out of order.
+    Show ray intersect lattice morton sorted gif. Better memory access
+    Show ray intersect binned lattice. Highlight the box edges and then highlight
+      tested faces.
+    Show the number of intersected faces each time and the speedup
+
 ===============================================================================
 HOUSE KEEPING
 ===============================================================================
@@ -56,6 +70,7 @@ TESTS
 ===============================================================================
 ALGORITHMS
 ===============================================================================
+1. validate intersect
 2. Vector insert?
 3. Consistent testing of mesh point inside.
       getOrientedEdge -> return bool, pass edge by ref

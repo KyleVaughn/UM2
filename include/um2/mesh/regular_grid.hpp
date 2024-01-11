@@ -74,6 +74,9 @@ class RegularGrid {
   numCells() const noexcept -> Vec<D, Size>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
+  numTotalCells() const noexcept -> Size;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   width() const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -107,6 +110,14 @@ class RegularGrid {
     requires(sizeof...(Args) == D)
   PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
       -> AxisAlignedBox<D, T>;
+
+  template <typename... Args>    
+    requires(sizeof...(Args) == D)    
+  PURE HOSTDEV [[nodiscard]] constexpr auto getFlatIndex(Args... args) const noexcept    
+      -> Size;    
+    
+  PURE HOSTDEV [[nodiscard]] constexpr auto    
+  getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size;
 
   template <typename... Args>
     requires(sizeof...(Args) == D)
@@ -253,6 +264,17 @@ RegularGrid<D, T>::numCells() const noexcept -> Vec<D, Size>
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
+RegularGrid<D, T>::numTotalCells() const noexcept -> Size
+{
+  Size num_total_cells = 1;
+  for (Size i = 0; i < D; ++i) {
+    num_total_cells *= _num_cells[i];
+  }
+  return num_total_cells;
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
 RegularGrid<D, T>::width() const noexcept -> T
 {
   return static_cast<T>(numXCells()) * dx();
@@ -346,6 +368,54 @@ PURE HOSTDEV constexpr auto RegularGrid<D, T>::getBox(Args... args) const noexce
     maxima[i] = minima[i] + _spacing[i];
   }
   return {minima, maxima};
+}
+
+template <Size D, typename T>
+template <typename... Args>
+  requires(sizeof...(Args) == D) 
+PURE HOSTDEV                          
+constexpr auto RegularGrid<D, T>::getFlatIndex(Args... args) const noexcept  
+    -> Size       
+{   
+  Point<D, Size> const index{args...};         
+  for (Size i = 0; i < D; ++i) {                                      
+    ASSERT(index[i] < _num_cells[i]);
+  }                              
+  if constexpr (D == 1) {             
+    return index[0];                                                                   
+  } else if constexpr (D == 2) {
+    return index[0] + index[1] * numXCells();
+  } else { // General case            
+    // [0, nx, nx*ny, nx*ny*nz, ...]                                                 
+    Point<D, Size> exclusive_scan_prod;
+    exclusive_scan_prod[0] = 1;
+    for (Size i = 1; i < D; ++i) {
+      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * _num_cells[i - 1];
+    }                                                                                       
+    return index.dot(exclusive_scan_prod);
+  } 
+}                                              
+                                                                                 
+template <Size D, typename T>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+RegularGrid<D, T>::getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size
+{                                                                                      
+  for (Size i = 0; i < D; ++i) {
+    ASSERT(index[i] < _num_cells[i]);
+  }                                                                                 
+  if constexpr (D == 1) {
+    return index[0];                                                                
+  } else if constexpr (D == 2) {
+    return index[0] + index[1] * numXCells();
+  } else { // General case                              
+    // [0, nx, nx*ny, nx*ny*nz, ...]
+    Point<D, Size> exclusive_scan_prod;
+    exclusive_scan_prod[0] = 1;                         
+    for (Size i = 1; i < D; ++i) {
+      exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * _num_cells[i - 1];
+    }
+    return index.dot(exclusive_scan_prod);
+  }
 }
 
 template <Size D, typename T>

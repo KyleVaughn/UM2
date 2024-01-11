@@ -75,6 +75,12 @@ public:
   // Methods
   //==============================================================================
 
+  HOSTDEV [[nodiscard]] static constexpr auto
+  empty() noexcept -> AxisAlignedBox<D, T>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  extents() const noexcept -> Vec<D, T>; // max - min
+
   PURE HOSTDEV [[nodiscard]] constexpr auto
   width() const noexcept -> T; // dx
 
@@ -217,6 +223,27 @@ AxisAlignedBox<D, T>::operator+=(AxisAlignedBox const & box) noexcept -> AxisAli
 //==============================================================================
 // Methods
 //==============================================================================
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+AxisAlignedBox<D, T>::empty() noexcept -> AxisAlignedBox<D, T>
+{
+  Point<D, T> minima = Point<D, T>::zero();
+  Point<D, T> maxima = Point<D, T>::zero();
+  minima += inf_distance<T>;
+  maxima -= inf_distance<T>;
+  AxisAlignedBox<D, T> box;
+  box._min = minima;
+  box._max = maxima;
+  return box; 
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+AxisAlignedBox<D, T>::extents() const noexcept -> Vec<D, T>
+{
+  return _max - _min;
+}
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
