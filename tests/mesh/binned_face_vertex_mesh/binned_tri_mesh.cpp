@@ -9,6 +9,31 @@ template <Size D, std::floating_point T, std::signed_integral I>
 auto
 makeBinnedTriReferenceMesh() -> um2::BinnedTriMesh<D, T, I>
 {
+  // Mesh
+  // 6 ------- 7 ------- 8
+  // |  \   5  |  \   7  |
+  // |    \    |    \    |
+  // |  4   \  |  6   \  |
+  // 3 ------- 4 ------- 5
+  // |  \   1  |  \   3  |
+  // |    \    |    \    |
+  // |  0   \  |  2   \  |
+  // 0 ------- 1 ------- 2
+  //
+  // Grid
+  // + ------- + ------- +
+  // |         |         | 
+  // |    2    |    3    | 
+  // |         |         | 
+  // + ------- + ------- +
+  // |         |         | 
+  // |    0    |    1    | 
+  // |         |         | 
+  // + ------- + ------- +
+  //
+  // children: 0, 2, 4, 6, 8
+  // face_ids: 0, 1, 2, 3, 4, 5, 6, 7
+
   um2::Vector<um2::Point<D, T>> const v = {
       {0, 0},
       {1, 0},

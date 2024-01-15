@@ -31,7 +31,7 @@ char Log::buffer[Log::buffer_size] = {0};
 //==============================================================================
 
 void
-Log::reset()
+Log::reset() noexcept
 {
   // Reset options to default
   level = log_default_level;
@@ -46,25 +46,25 @@ Log::reset()
 // -- Setters --
 
 void
-Log::setLevel(LogLevel val)
+Log::setLevel(LogLevel val) noexcept
 {
   level = val;
 }
 
 void
-Log::setTimestamped(bool val)
+Log::setTimestamped(bool val) noexcept
 {
   timestamped = val;
 }
 
 void
-Log::setColorized(bool val)
+Log::setColorized(bool val) noexcept
 {
   colorized = val;
 }
 
 void
-Log::setExitOnError(bool val)
+Log::setExitOnError(bool val) noexcept
 {
   exit_on_error = val;
 }
@@ -72,31 +72,31 @@ Log::setExitOnError(bool val)
 // -- Getters --
 
 PURE auto
-Log::getLevel() -> LogLevel
+Log::getLevel() noexcept -> LogLevel
 {
   return level;
 }
 
 PURE auto
-Log::isTimestamped() -> bool
+Log::isTimestamped() noexcept -> bool
 {
   return timestamped;
 }
 
 PURE auto
-Log::isColorized() -> bool
+Log::isColorized() noexcept -> bool
 {
   return colorized;
 }
 
 PURE auto
-Log::isExitOnError() -> bool
+Log::isExitOnError() noexcept -> bool
 {
   return exit_on_error;
 }
 
 PURE auto
-Log::getStartTime() -> LogTimePoint
+Log::getStartTime() noexcept -> LogTimePoint
 {
   return start_time;
 }
@@ -104,7 +104,7 @@ Log::getStartTime() -> LogTimePoint
 // -- Message handling --
 
 auto
-Log::addTimestamp(char * buffer_begin) -> char *
+Log::addTimestamp(char * buffer_begin) noexcept -> char *
 {
   if (timestamped) {
     LogDuration const elapsed_seconds = LogClock::now() - start_time;
@@ -158,7 +158,7 @@ Log::addTimestamp(char * buffer_begin) -> char *
 }
 
 auto
-Log::addColor(LogLevel const msg_level, char * buffer_begin) -> char *
+Log::addColor(LogLevel const msg_level, char * buffer_begin) noexcept -> char *
 {
   if (colorized) {
     buffer_begin[0] = '\033';
@@ -194,7 +194,7 @@ Log::addColor(LogLevel const msg_level, char * buffer_begin) -> char *
 }
 
 auto
-Log::addLevel(LogLevel msg_level, char * buffer_begin) -> char *
+Log::addLevel(LogLevel msg_level, char * buffer_begin) noexcept -> char *
 {
   switch (msg_level) {
   case LogLevel::Error:
@@ -255,7 +255,7 @@ Log::addLevel(LogLevel msg_level, char * buffer_begin) -> char *
 // Handle the messages from error, warn, etc. and store or print them
 // depending on the Log configuration.
 void
-Log::handleMessage(LogLevel const msg_level, char const * msg, Size len)
+Log::handleMessage(LogLevel const msg_level, char const * msg, Size len) noexcept
 {
   ASSERT(msg != nullptr);
   ASSERT(len > 0);
@@ -302,7 +302,7 @@ Log::handleMessage(LogLevel const msg_level, char const * msg, Size len)
 }
 
 void
-Log::error(char const * msg)
+Log::error(char const * msg) noexcept
 {
   Size len = 0;
   while (msg[len] != '\0') {
@@ -315,7 +315,7 @@ Log::error(char const * msg)
 }
 
 void
-Log::warn(char const * msg)
+Log::warn(char const * msg) noexcept
 {
   Size len = 0;
   while (msg[len] != '\0') {
@@ -325,7 +325,7 @@ Log::warn(char const * msg)
 }
 
 void
-Log::info(char const * msg)
+Log::info(char const * msg) noexcept
 {
   Size len = 0;
   while (msg[len] != '\0') {
@@ -335,7 +335,7 @@ Log::info(char const * msg)
 }
 
 void
-Log::debug(char const * msg)
+Log::debug(char const * msg) noexcept
 {
   Size len = 0;
   while (msg[len] != '\0') {
@@ -345,7 +345,7 @@ Log::debug(char const * msg)
 }
 
 void
-Log::trace(char const * msg)
+Log::trace(char const * msg) noexcept
 {
   Size len = 0;
   while (msg[len] != '\0') {
@@ -355,7 +355,7 @@ Log::trace(char const * msg)
 }
 
 void
-Log::error(String const & msg)
+Log::error(String const & msg) noexcept
 {
   handleMessage(LogLevel::Error, msg.data(), msg.size());
   if (exit_on_error) {
@@ -364,25 +364,25 @@ Log::error(String const & msg)
 }
 
 void
-Log::warn(String const & msg)
+Log::warn(String const & msg) noexcept
 {
   handleMessage(LogLevel::Warn, msg.data(), msg.size());
 }
 
 void
-Log::info(String const & msg)
+Log::info(String const & msg) noexcept
 {
   handleMessage(LogLevel::Info, msg.data(), msg.size());
 }
 
 void
-Log::debug(String const & msg)
+Log::debug(String const & msg) noexcept
 {
   handleMessage(LogLevel::Debug, msg.data(), msg.size());
 }
 
 void
-Log::trace(String const & msg)
+Log::trace(String const & msg) noexcept
 {
   handleMessage(LogLevel::Trace, msg.data(), msg.size());
 }

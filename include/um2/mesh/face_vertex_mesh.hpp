@@ -832,9 +832,9 @@ FaceVertexMesh<P, N, D, T, I>::validate()
     v *= normalization;
   }
   if constexpr (std::same_as<T, float>) {
-    mortonSort<uint32_t>(vertices_copy.begin(), vertices_copy.end());
+    um2::mortonSort<uint32_t>(vertices_copy.begin(), vertices_copy.end());
   } else {
-    mortonSort<uint64_t>(vertices_copy.begin(), vertices_copy.end());
+    um2::mortonSort<uint64_t>(vertices_copy.begin(), vertices_copy.end());
   }
   // Revert the scaling
   for (auto & v : vertices_copy) {

@@ -82,7 +82,7 @@ copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 
 template <typename ForwardIt, typename T>
 HOST constexpr void
-fill(ForwardIt first, ForwardIt last, T const & value)
+fill(ForwardIt first, ForwardIt last, T const & value) noexcept
 {
   std::fill(first, last, value);
 }
@@ -91,7 +91,7 @@ fill(ForwardIt first, ForwardIt last, T const & value)
 
 template <typename ForwardIt, typename T>
 DEVICE constexpr void
-fill(ForwardIt first, ForwardIt last, T const & value)
+fill(ForwardIt first, ForwardIt last, T const & value) noexcept
 {
   for (; first != last; ++first) {
     *first = value;

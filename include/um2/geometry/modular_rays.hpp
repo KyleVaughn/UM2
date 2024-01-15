@@ -139,7 +139,7 @@ ModularRayParams<T>::getRay(Size const i) const noexcept -> Ray2<T>
   T const i_half = static_cast<T>(i) + static_cast<T>(0.5);
   switch (case_id) {
   case 0:
-    origin[0] = _box.maxima()[0] - _spacing[0] * i_half;
+    origin[0] = _box.maxima(0) - _spacing[0] * i_half;
     break;
   case 1:
     origin[1] += _spacing[1] * (i_half - static_cast<T>(_num_rays[0]));
@@ -148,7 +148,7 @@ ModularRayParams<T>::getRay(Size const i) const noexcept -> Ray2<T>
     origin[0] += _spacing[0] * i_half;
     break;
   case 3:
-    origin[0] = _box.maxima()[0];
+    origin[0] = _box.maxima(0);
     origin[1] += _spacing[1] * (i_half - static_cast<T>(_num_rays[0]));
     break;
   default:

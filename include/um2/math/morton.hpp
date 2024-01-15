@@ -121,7 +121,7 @@ inline static constexpr U bmi_3d_z_mask = static_cast<U>(0x4924924924924924);
 
 template <std::unsigned_integral U>
 CONST inline auto
-mortonEncode(U const x, U const y) -> U
+mortonEncode(U const x, U const y) noexcept -> U
 {
   ASSERT_ASSUME(x <= max_2d_morton_coord<U>);
   ASSERT_ASSUME(y <= max_2d_morton_coord<U>);
@@ -130,7 +130,7 @@ mortonEncode(U const x, U const y) -> U
 
 template <std::unsigned_integral U>
 CONST inline auto
-mortonEncode(U const x, U const y, U const z) -> U
+mortonEncode(U const x, U const y, U const z) noexcept -> U
 {
   ASSERT_ASSUME(x <= max_3d_morton_coord<U>);
   ASSERT_ASSUME(y <= max_3d_morton_coord<U>);
@@ -141,7 +141,7 @@ mortonEncode(U const x, U const y, U const z) -> U
 
 template <std::unsigned_integral U>
 inline void
-mortonDecode(U const morton, U & x, U & y)
+mortonDecode(U const morton, U & x, U & y) noexcept
 {
   x = pext(morton, bmi_2d_x_mask<U>);
   y = pext(morton, bmi_2d_y_mask<U>);
@@ -149,7 +149,7 @@ mortonDecode(U const morton, U & x, U & y)
 
 template <std::unsigned_integral U>
 inline void
-mortonDecode(U const morton, U & x, U & y, U & z)
+mortonDecode(U const morton, U & x, U & y, U & z) noexcept
 {
   x = pext(morton, bmi_3d_x_mask<U>);
   y = pext(morton, bmi_3d_y_mask<U>);
@@ -164,7 +164,7 @@ mortonDecode(U const morton, U & x, U & y, U & z)
 //==============================================================================
 
 CONST EMULATE_BMI2_HOSTDEV static constexpr auto
-pdep0x55555555(uint32_t x) -> uint32_t
+pdep0x55555555(uint32_t x) noexcept -> uint32_t
 {
   ASSERT_ASSUME(x <= max_2d_morton_coord<uint32_t>);
   x = (x | (x << 8)) & 0x00ff00ff;
@@ -175,7 +175,7 @@ pdep0x55555555(uint32_t x) -> uint32_t
 }
 
 CONST EMULATE_BMI2_HOSTDEV static constexpr auto
-pdep0x5555555555555555(uint64_t x) -> uint64_t
+pdep0x5555555555555555(uint64_t x) noexcept -> uint64_t
 {
   ASSERT_ASSUME(x <= max_2d_morton_coord<uint64_t>);
   x = (x | (x << 16)) & 0x0000ffff0000ffff;
@@ -187,7 +187,7 @@ pdep0x5555555555555555(uint64_t x) -> uint64_t
 }
 
 CONST EMULATE_BMI2_HOSTDEV constexpr static auto
-pext0x55555555(uint32_t x) -> uint32_t
+pext0x55555555(uint32_t x) noexcept -> uint32_t
 {
   x &= 0x55555555;
   x = (x ^ (x >> 1)) & 0x33333333;
@@ -198,7 +198,7 @@ pext0x55555555(uint32_t x) -> uint32_t
 }
 
 CONST EMULATE_BMI2_HOSTDEV constexpr static auto
-pext0x5555555555555555(uint64_t x) -> uint64_t
+pext0x5555555555555555(uint64_t x) noexcept -> uint64_t
 {
   x &= 0x5555555555555555;
   x = (x ^ (x >> 1)) & 0x3333333333333333;
@@ -210,7 +210,7 @@ pext0x5555555555555555(uint64_t x) -> uint64_t
 }
 
 CONST EMULATE_BMI2_HOSTDEV static constexpr auto
-pdep0x92492492(uint32_t x) -> uint32_t
+pdep0x92492492(uint32_t x) noexcept -> uint32_t
 {
   ASSERT_ASSUME(x <= max_3d_morton_coord<uint32_t>);
   x = (x | (x << 16)) & 0x030000ff;
@@ -221,7 +221,7 @@ pdep0x92492492(uint32_t x) -> uint32_t
 }
 
 CONST EMULATE_BMI2_HOSTDEV static constexpr auto
-pdep0x9249249249249249(uint64_t x) -> uint64_t
+pdep0x9249249249249249(uint64_t x) noexcept -> uint64_t
 {
   ASSERT_ASSUME(x <= max_3d_morton_coord<uint64_t>);
   x = (x | (x << 32)) & 0x001f00000000ffff;
@@ -233,7 +233,7 @@ pdep0x9249249249249249(uint64_t x) -> uint64_t
 }
 
 CONST EMULATE_BMI2_HOSTDEV constexpr static auto
-pext0x92492492(uint32_t x) -> uint32_t
+pext0x92492492(uint32_t x) noexcept -> uint32_t
 {
   x &= 0x09249249;
   x = (x ^ (x >> 2)) & 0x030c30c3;
@@ -244,7 +244,7 @@ pext0x92492492(uint32_t x) -> uint32_t
 }
 
 CONST EMULATE_BMI2_HOSTDEV constexpr static auto
-pext0x9249249249249249(uint64_t x) -> uint64_t
+pext0x9249249249249249(uint64_t x) noexcept -> uint64_t
 {
   x &= 0x1249249249249249;
   x = (x ^ (x >> 2)) & 0x10c30c30c30c30c3;
@@ -260,46 +260,46 @@ pext0x9249249249249249(uint64_t x) -> uint64_t
 //==============================================================================
 
 CONST EMULATE_BMI2_HOSTDEV constexpr auto
-mortonEncode(uint32_t const x, uint32_t const y) -> uint32_t
+mortonEncode(uint32_t const x, uint32_t const y) noexcept -> uint32_t
 {
   return pdep0x55555555(x) | (pdep0x55555555(y) << 1);
 }
 
 CONST EMULATE_BMI2_HOSTDEV constexpr auto
-mortonEncode(uint64_t const x, uint64_t const y) -> uint64_t
+mortonEncode(uint64_t const x, uint64_t const y) noexcept -> uint64_t
 {
   return pdep0x5555555555555555(x) | (pdep0x5555555555555555(y) << 1);
 }
 
 EMULATE_BMI2_HOSTDEV constexpr void
-mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y)
+mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y) noexcept
 {
   x = pext0x55555555(morton);
   y = pext0x55555555(morton >> 1);
 }
 
 EMULATE_BMI2_HOSTDEV constexpr void
-mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y)
+mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y) noexcept
 {
   x = pext0x5555555555555555(morton);
   y = pext0x5555555555555555(morton >> 1);
 }
 
 CONST EMULATE_BMI2_HOSTDEV constexpr auto
-mortonEncode(uint32_t const x, uint32_t const y, uint32_t const z) -> uint32_t
+mortonEncode(uint32_t const x, uint32_t const y, uint32_t const z) noexcept -> uint32_t
 {
   return pdep0x92492492(x) | (pdep0x92492492(y) << 1) | (pdep0x92492492(z) << 2);
 }
 
 CONST EMULATE_BMI2_HOSTDEV constexpr auto
-mortonEncode(uint64_t const x, uint64_t const y, uint64_t const z) -> uint64_t
+mortonEncode(uint64_t const x, uint64_t const y, uint64_t const z) noexcept -> uint64_t
 {
   return pdep0x9249249249249249(x) | (pdep0x9249249249249249(y) << 1) |
          (pdep0x9249249249249249(z) << 2);
 }
 
 EMULATE_BMI2_HOSTDEV constexpr void
-mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y, uint32_t & z)
+mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y, uint32_t & z) noexcept
 {
   x = pext0x92492492(morton);
   y = pext0x92492492(morton >> 1);
@@ -307,7 +307,7 @@ mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y, uint32_t & z)
 }
 
 EMULATE_BMI2_HOSTDEV constexpr void
-mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y, uint64_t & z)
+mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y, uint64_t & z) noexcept
 {
   x = pext0x9249249249249249(morton);
   y = pext0x9249249249249249(morton >> 1);
@@ -322,7 +322,7 @@ mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y, uint64_t & z)
 
 template <std::unsigned_integral U, std::floating_point T>
 CONST HOSTDEV auto
-mortonEncode(T const x, T const y) -> U
+mortonEncode(T const x, T const y) noexcept -> U
 {
   ASSERT_ASSUME(0 <= x);
   ASSERT_ASSUME(0 <= y);
@@ -338,7 +338,7 @@ mortonEncode(T const x, T const y) -> U
 
 template <std::unsigned_integral U, std::floating_point T>
 HOSTDEV void
-mortonDecode(U const morton, T & x, T & y)
+mortonDecode(U const morton, T & x, T & y) noexcept
 {
   U x_m;
   U y_m;
@@ -349,7 +349,7 @@ mortonDecode(U const morton, T & x, T & y)
 
 template <std::unsigned_integral U, std::floating_point T>
 CONST HOSTDEV auto
-mortonEncode(T const x, T const y, T const z) -> U
+mortonEncode(T const x, T const y, T const z) noexcept -> U
 {
   ASSERT_ASSUME(0 <= x);
   ASSERT_ASSUME(0 <= y);
@@ -365,7 +365,7 @@ mortonEncode(T const x, T const y, T const z) -> U
 
 template <std::unsigned_integral U, std::floating_point T>
 HOSTDEV void
-mortonDecode(U const morton, T & x, T & y, T & z)
+mortonDecode(U const morton, T & x, T & y, T & z) noexcept
 {
   U x_m;
   U y_m;

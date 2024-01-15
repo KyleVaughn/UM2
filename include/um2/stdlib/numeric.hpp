@@ -20,7 +20,7 @@ namespace um2
 
 template <class T>
 HOSTDEV constexpr void
-iota(T * first, T const * const last, T value)
+iota(T * first, T const * const last, T value) noexcept
 {
   while (first != last) {
     *first++ = value;

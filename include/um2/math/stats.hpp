@@ -23,7 +23,7 @@ namespace um2
 
 template <std::floating_point T>
 HOSTDEV constexpr auto
-mean(T const * begin, T const * end) -> T
+mean(T const * begin, T const * end) noexcept -> T
 {
   ASSERT_ASSUME(begin != end);
   T const n = static_cast<T>(end - begin);
@@ -41,7 +41,7 @@ mean(T const * begin, T const * end) -> T
 
 template <std::floating_point T>
 HOSTDEV constexpr auto
-median(T const * begin, T const * end) -> T
+median(T const * begin, T const * end) noexcept -> T
 {
   ASSERT_ASSUME(begin != end);
   ASSERT(um2::is_sorted(begin, end));
@@ -61,7 +61,7 @@ median(T const * begin, T const * end) -> T
 
 template <std::floating_point T>
 HOSTDEV constexpr auto
-variance(T const * begin, T const * end) -> T
+variance(T const * begin, T const * end) noexcept -> T
 {
   ASSERT_ASSUME(begin != end);
   T const n_minus_1 = static_cast<T>(end - begin - 1);
@@ -82,7 +82,7 @@ variance(T const * begin, T const * end) -> T
 
 template <std::floating_point T>
 HOSTDEV constexpr auto
-stdDev(T const * begin, T const * end) -> T
+stdDev(T const * begin, T const * end) noexcept -> T
 {
   return um2::sqrt(um2::variance(begin, end));
 }

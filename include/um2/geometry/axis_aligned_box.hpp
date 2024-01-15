@@ -61,6 +61,12 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   maxima() const noexcept -> Point<D, T> const &;
 
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  minima(Size i) const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  maxima(Size i) const noexcept -> T;
+
   //==============================================================================
   // Operators
   //===============================================================================
@@ -181,6 +187,20 @@ PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::maxima() const noexcept -> Point<D, T> const &
 {
   return _max;
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+AxisAlignedBox<D, T>::minima(Size i) const noexcept -> T
+{
+  return _min[i];
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
+AxisAlignedBox<D, T>::maxima(Size i) const noexcept -> T
+{
+  return _max[i];
 }
 
 //==============================================================================
@@ -377,7 +397,7 @@ boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>
   };
 
   return std::reduce(points.begin(), points.end(),
-                     AxisAlignedBox<D, T>{points[0], points[0]}, ReduceFunctor{});
+                     AxisAlignedBox<D, T>::empty(), ReduceFunctor{});
 }
 
 //==============================================================================

@@ -27,7 +27,7 @@ namespace um2
 
 template <typename T>
 HOSTDEV constexpr void
-insertionSort(T * const first, T const * const last)
+insertionSort(T * const first, T const * const last) noexcept
 {
   // Not the clearest implementation, but the assembly is much better than
   // the obvious implementation.

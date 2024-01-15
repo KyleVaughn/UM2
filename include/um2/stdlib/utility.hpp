@@ -90,14 +90,14 @@ struct Pair {
   constexpr Pair() noexcept = default;
 
   HOSTDEV
-  constexpr Pair(T1 x, T2 y)
+  constexpr Pair(T1 x, T2 y) noexcept
       : first(um2::move(x)),
         second(um2::move(y))
   {
   }
 
   template <class U1, class U2>
-  HOSTDEV constexpr Pair(U1 && x, U2 && y)
+  HOSTDEV constexpr Pair(U1 && x, U2 && y) noexcept
       : first(um2::forward<U1>(x)),
         second(um2::forward<U2>(y))
   {
@@ -106,56 +106,56 @@ struct Pair {
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-operator==(Pair<T1, T2> const & x, Pair<T1, T2> const & y) -> bool
+operator==(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
 {
   return x.first == y.first && x.second == y.second;
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-operator!=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) -> bool
+operator!=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
 {
   return !(x == y);
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-operator<(Pair<T1, T2> const & x, Pair<T1, T2> const & y) -> bool
+operator<(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
 {
   return x.first < y.first || (!(y.first < x.first) && x.second < y.second);
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-operator>(Pair<T1, T2> const & x, Pair<T1, T2> const & y) -> bool
+operator>(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
 {
   return y < x;
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-operator<=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) -> bool
+operator<=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
 {
   return !(y < x);
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-operator>=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) -> bool
+operator>=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
 {
   return !(x < y);
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-make_pair(T1 && x, T2 && y) -> Pair<T1, T2>
+make_pair(T1 && x, T2 && y) noexcept -> Pair<T1, T2>
 {
   return Pair<T1, T2>(um2::forward<T1>(x), um2::forward<T2>(y));
 }
 
 template <class T1, class T2>
 HOSTDEV constexpr auto
-make_pair(T1 const & x, T2 const & y) -> Pair<T1, T2>
+make_pair(T1 const & x, T2 const & y) noexcept -> Pair<T1, T2>
 {
   return Pair<T1, T2>(x, y);
 }

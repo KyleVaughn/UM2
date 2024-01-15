@@ -55,85 +55,85 @@ class Log
   // -- Methods --
 
   static auto
-  addTimestamp(char * buffer_begin) -> char *;
+  addTimestamp(char * buffer_begin) noexcept -> char *;
 
   static auto
-  addColor(LogLevel msg_level, char * buffer_begin) -> char *;
+  addColor(LogLevel msg_level, char * buffer_begin) noexcept -> char *;
 
   static auto
-  addLevel(LogLevel msg_level, char * buffer_begin) -> char *;
+  addLevel(LogLevel msg_level, char * buffer_begin) noexcept -> char *;
 
   static void
-  handleMessage(LogLevel msg_level, char const * msg, Size len);
+  handleMessage(LogLevel msg_level, char const * msg, Size len) noexcept;
 
 public:
   Log() = delete;
 
   static void
-  reset();
+  reset() noexcept;
 
   // -- Setters --
 
   static void
-  setLevel(LogLevel val);
+  setLevel(LogLevel val) noexcept;
 
   static void
-  setTimestamped(bool val);
+  setTimestamped(bool val) noexcept;
 
   static void
-  setColorized(bool val);
+  setColorized(bool val) noexcept;
 
   static void
-  setExitOnError(bool val);
+  setExitOnError(bool val) noexcept;
 
   // -- Getters --
 
   PURE static auto
-  getLevel() -> LogLevel;
+  getLevel() noexcept -> LogLevel;
 
   PURE static auto
-  getStartTime() -> LogTimePoint;
+  getStartTime() noexcept -> LogTimePoint;
 
   PURE static auto
-  isTimestamped() -> bool;
+  isTimestamped() noexcept -> bool;
 
   PURE static auto
-  isColorized() -> bool;
+  isColorized() noexcept -> bool;
 
   PURE static auto
-  isExitOnError() -> bool;
+  isExitOnError() noexcept -> bool;
 
   // -- Methods --
 
   static void
-  error(char const * msg);
+  error(char const * msg) noexcept;
 
   static void
-  warn(char const * msg);
+  warn(char const * msg) noexcept;
 
   static void
-  info(char const * msg);
+  info(char const * msg) noexcept;
 
   static void
-  debug(char const * msg);
+  debug(char const * msg) noexcept;
 
   static void
-  trace(char const * msg);
+  trace(char const * msg) noexcept;
 
   static void
-  error(String const & msg);
+  error(String const & msg) noexcept;
 
   static void
-  warn(String const & msg);
+  warn(String const & msg) noexcept;
 
   static void
-  info(String const & msg);
+  info(String const & msg) noexcept;
 
   static void
-  debug(String const & msg);
+  debug(String const & msg) noexcept;
 
   static void
-  trace(String const & msg);
+  trace(String const & msg) noexcept;
 
 }; // class Log
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)

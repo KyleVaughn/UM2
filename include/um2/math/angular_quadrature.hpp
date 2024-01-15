@@ -52,7 +52,7 @@ enum class AngularQuadratureType { Chebyshev };
 template <std::floating_point T>
 HOSTDEV constexpr static void
 setChebyshevAngularQuadrature(Size degree, um2::Vector<T> & weights,
-                              um2::Vector<T> & angles)
+                              um2::Vector<T> & angles) noexcept
 {
   ASSERT_ASSUME(degree > 0);
   // A Chebyshev-type quadrature for a given weight function is a quadrature formula

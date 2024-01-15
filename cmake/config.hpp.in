@@ -121,7 +121,7 @@ using Float = float; // Floating point type in API
 using Size = int64_t; // Index type
 using Int = int64_t;  // Integer type in API
 HOSTDEV consteval auto
-sizeMax() -> Size
+sizeMax() noexcept -> Size
 {
   return 0x7FFFFFFFFFFFFFFF;
 }
@@ -129,7 +129,7 @@ sizeMax() -> Size
 using Size = int32_t; // Index type
 using Int = int32_t;  // Integer type in API
 HOSTDEV consteval auto
-sizeMax() -> Size
+sizeMax() noexcept -> Size
 {
   return 0x7FFFFFFF;
 }
@@ -206,7 +206,7 @@ namespace um2
 # ifndef __CUDA_ARCH__
 
 [[noreturn]] inline void
-failedAssert(char const * const file, int const line, char const * const msg)
+failedAssert(char const * const file, int const line, char const * const msg) noexcept
 {
   printf("Assertion failed: %s:%d: %s\n", file, line, msg);
   exit(1);
@@ -214,7 +214,7 @@ failedAssert(char const * const file, int const line, char const * const msg)
 
 [[noreturn]] inline void
 failedAssertNear(char const * const file, int const line, char const * const a,
-                 char const * const b, char const * const eps)
+                 char const * const b, char const * const eps) noexcept
 {
   printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b, eps);
   exit(1);
@@ -223,7 +223,7 @@ failedAssertNear(char const * const file, int const line, char const * const a,
 # else
 
 DEVICE inline void
-failedAssert(char const * const file, int const line, char const * const msg)
+failedAssert(char const * const file, int const line, char const * const msg) noexcept
 {
   printf("Assertion failed: %s:%d: %s\n", file, line, msg);
   __threadfence();
@@ -232,7 +232,7 @@ failedAssert(char const * const file, int const line, char const * const msg)
 
 DEVICE inline void
 failedAssertNear(char const * const file, int const line, char const * const a,
-                 char const * const b, char const * const eps)
+                 char const * const b, char const * const eps) noexcept
 {
   printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b, eps);
   __threadfence();

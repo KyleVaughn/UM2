@@ -1,5 +1,18 @@
-constexpr everything
-noexcept everything
+noexcpet, constexpr everything
+  - stdlib
+  - common
+  - math
+  - geometry
+
+NOLINT, diagnostic
+  - stdlib
+  - common
+  - math
+
+minima()[i], maxima()[], numCells(), etc.
+  - stdlib
+  - common
+  - math
 
 Use connectivity for ray tracing
 
@@ -29,12 +42,8 @@ reserve elements/vertices for submesh and read: FVM.toPolytopesoup, spatial_part
 
 parallelize
 
-extents for AABB
-alginment
-
 VALIDATE RAY TRACING DATA
   intersect which also returns face IDS
-
 
 Graphics:
   Highlight the intersected cells
@@ -48,11 +57,10 @@ Graphics:
 HOUSE KEEPING
 ===============================================================================
 1. Restore scripts dir
-2. NOLINTS, cppcheck, diagnostic
+2. NOLINTS
 3. Old benchmarks: reimplement or place in archive
 4. clean archive
 5. ADD TRACE/DEBUG statements to routines. Remove old ones
-6. Fix nolints, especially cognitive complexity
 
 ===============================================================================
 BUGS

@@ -238,7 +238,7 @@ public:
   ends_with(String const & s) const noexcept -> bool;
 
   template <uint64_t N>
-  PURE HOSTDEV [[nodiscard]] auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   ends_with(char const (&s)[N]) const noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -699,7 +699,7 @@ String::operator+=(String const & s) noexcept -> String &
     _r.l.size = new_size;
     _r.l.data = tmp;
   }
-  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks); Valgrind says this is fine
   return *this;
 }
 
@@ -728,7 +728,7 @@ String::operator+=(char const c) noexcept -> String &
     _r.l.size = new_size;
     _r.l.data = tmp;
   }
-  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks); Valgrind says this is fine
   return *this;
 }
 
@@ -799,7 +799,7 @@ String::ends_with(String const & s) const noexcept -> bool
 }
 
 template <uint64_t N>
-PURE HOSTDEV auto
+PURE HOSTDEV constexpr auto
 // NOLINTNEXTLINE(readability-identifier-naming) justification: mimics std::string
 String::ends_with(char const (&s)[N]) const noexcept -> bool
 {

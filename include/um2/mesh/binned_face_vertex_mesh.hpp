@@ -188,29 +188,24 @@ BinnedFaceVertexMesh<P, N, D, T, I>::BinnedFaceVertexMesh(
     children[i] += children[i - 1];
   }
 
-
-//  // children stores the offsets into face_ids for each bin, so we need
-//  // 1 more element than the total number of bins.
-//  // We count the number of faces in each bin and store the offsets in
-//  // partition.children.
-
-
-//    // Allocate space for the face ids.
-//    face_ids = um2::move(Vector<I>(nfaces, -1));
-//    // Assign the face ids to the bins.
-//    for (Size i = 0; i < nfaces; ++i) {
-//      auto const upper_right_point = mesh.getFace(i).boundingBox().maxima;
-//      auto const index = partition.getCellIndexContaining(upper_right_point);
-//      Size const offset_index = partition.getFlatIndex(index);
-//      auto offset = static_cast<Size>(partition.children[offset_index]);
-//      // Find the first empty slot in the bin.
-//      while (face_ids[offset] != -1) {
-//        ++offset;
-//      }
-//      face_ids[offset] = static_cast<I>(i);
-//    }
-//    assert(std::all_of(face_ids.begin(), face_ids.end(),
-//                       [](auto const & id) { return id != -1; }));
+  // Allocate space for face ids.
+  Vector<I> face_ids(nfaces, -1);
+  // Assign the face ids to the bins.
+  for (Size iface = 0; iface < nfaces; ++iface) {
+    auto const upper_right_point = mesh.getFace(iface).boundingBox().maxima();
+    auto const index = grid.getCellIndexContaining(upper_right_point);
+    Size const flat_index = grid.getFlatIndex(index);
+    auto offset = static_cast<Size>(children[flat_index]);
+    // Find the first empty slot in the bin.
+    while (face_ids[offset] != -1) {
+      ++offset;
+    }
+    face_ids[offset] = static_cast<I>(iface);
+  }
+  for (Size iface = 0; iface < nfaces; ++iface) {
+    ASSERT(face_ids[iface] != -1);
+  }
+  _face_ids = um2::move(face_ids);
 }
 
 //==============================================================================
@@ -264,28 +259,6 @@ BinnedFaceVertexMesh<P, N, D, T, I>::getFace(Size i) const noexcept -> Face
 //////   toFaceVertexMesh(MeshFile)
 //////   toMeshFile(FaceVertexMesh)
 //
-//////==============================================================================
-////// numVertices
-//////==============================================================================
-////
-//// template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
-//// PURE HOSTDEV constexpr auto
-//// numVertices(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept -> Size
-////{
-////  return mesh.vertices.size();
-////}
-////
-//////==============================================================================
-////// numFaces
-//////==============================================================================
-////
-//// template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
-//// PURE HOSTDEV constexpr auto
-//// numFaces(FaceVertexMesh<P, N, D, T, I> const & mesh) noexcept -> Size
-////{
-////  return mesh.fv.size();
-////}
-////
 //////==============================================================================
 ////// boundingBox
 //////==============================================================================

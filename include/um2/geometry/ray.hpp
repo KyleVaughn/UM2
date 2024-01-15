@@ -34,13 +34,13 @@ public:
   // Accessors
   //============================================================================
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   origin() const noexcept -> Point<D, T> const &
   {
     return _o;
   }
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   direction() const noexcept -> Vec<D, T> const &
   {
     return _d;
@@ -50,7 +50,7 @@ public:
   // Methods
   //============================================================================
 
-  HOSTDEV constexpr auto
+  PURE HOSTDEV constexpr auto
   operator()(T r) const noexcept -> Point<D, T>
   {
     Point<D, T> res;

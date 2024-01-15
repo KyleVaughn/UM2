@@ -15,7 +15,7 @@ namespace um2
 
 template <std::unsigned_integral U, Size D, std::floating_point T>
 PURE HOSTDEV auto
-mortonEncode(Point<D, T> const & p) -> U
+mortonEncode(Point<D, T> const & p) noexcept -> U
 {
   if constexpr (D == 2) {
     return mortonEncode<U>(p[0], p[1]);
@@ -29,7 +29,7 @@ mortonEncode(Point<D, T> const & p) -> U
 
 template <std::unsigned_integral U, Size D, std::floating_point T>
 HOSTDEV void
-mortonDecode(U const morton, Point<D, T> & p)
+mortonDecode(U const morton, Point<D, T> & p) noexcept
 {
   if constexpr (D == 2) {
     mortonDecode(morton, p[0], p[1]);
@@ -42,14 +42,14 @@ mortonDecode(U const morton, Point<D, T> & p)
 
 template <std::unsigned_integral U, Size D, std::floating_point T>
 PURE HOSTDEV auto
-mortonLess(Point<D, T> const & lhs, Point<D, T> const & rhs) -> bool
+mortonLess(Point<D, T> const & lhs, Point<D, T> const & rhs) noexcept -> bool
 {
   return mortonEncode<U>(lhs) < mortonEncode<U>(rhs);
 }
 
 template <std::unsigned_integral U, Size D, std::floating_point T>
 void
-mortonSort(Point<D, T> * const begin, Point<D, T> * const end)
+mortonSort(Point<D, T> * const begin, Point<D, T> * const end) noexcept
 {
   std::sort(begin, end, mortonLess<U, D, T>);
 }
