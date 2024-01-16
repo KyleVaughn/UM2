@@ -37,15 +37,15 @@ TEST_CASE(addVertex_addFace)
   mesh.addFace({0, 1, 2});
   mesh.addFace({2, 3, 0});
   // Same as reference mesh. Should make an == operator for meshes.
-  um2::Triangle<2, T> tri0_ref(mesh.getVertex(0), mesh.getVertex(1), mesh.getVertex(2));    
-  auto const tri0 = mesh.getFace(0);    
-  ASSERT(um2::isApprox(tri0[0], tri0_ref[0]));    
-  ASSERT(um2::isApprox(tri0[1], tri0_ref[1]));    
-  ASSERT(um2::isApprox(tri0[2], tri0_ref[2]));    
-  um2::Triangle<2, T> tri1_ref(mesh.getVertex(2), mesh.getVertex(3), mesh.getVertex(0));    
-  auto const tri1 = mesh.getFace(1);    
-  ASSERT(um2::isApprox(tri1[0], tri1_ref[0]));    
-  ASSERT(um2::isApprox(tri1[1], tri1_ref[1]));    
+  um2::Triangle<2, T> tri0_ref(mesh.getVertex(0), mesh.getVertex(1), mesh.getVertex(2));
+  auto const tri0 = mesh.getFace(0);
+  ASSERT(um2::isApprox(tri0[0], tri0_ref[0]));
+  ASSERT(um2::isApprox(tri0[1], tri0_ref[1]));
+  ASSERT(um2::isApprox(tri0[2], tri0_ref[2]));
+  um2::Triangle<2, T> tri1_ref(mesh.getVertex(2), mesh.getVertex(3), mesh.getVertex(0));
+  auto const tri1 = mesh.getFace(1);
+  ASSERT(um2::isApprox(tri1[0], tri1_ref[0]));
+  ASSERT(um2::isApprox(tri1[1], tri1_ref[1]));
   ASSERT(um2::isApprox(tri1[2], tri1_ref[2]));
 }
 
@@ -117,17 +117,17 @@ TEST_CASE(intersect)
   ASSERT_NEAR(intersections[3], static_cast<T>(1), static_cast<T>(1e-6));
 }
 
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(toPolytopeSoup)
+// template <std::floating_point T, std::signed_integral I>
+// TEST_CASE(toPolytopeSoup)
 //{
-//  um2::TriMesh<2, T, I> const tri_mesh = makeTriReferenceMesh<2, T, I>();
-//  um2::PolytopeSoup<T, I> tri_poly_soup_ref;
-//  makeReferenceTriPolytopeSoup(tri_poly_soup_ref);
-//  um2::PolytopeSoup<T, I> tri_poly_soup;
-//  tri_mesh.toPolytopeSoup(tri_poly_soup);
-//  ASSERT(tri_poly_soup.compareTo(tri_poly_soup_ref) == 10);
-//  ASSERT(tri_poly_soup.getMeshType() == um2::MeshType::Tri);
-//}
+//   um2::TriMesh<2, T, I> const tri_mesh = makeTriReferenceMesh<2, T, I>();
+//   um2::PolytopeSoup<T, I> tri_poly_soup_ref;
+//   makeReferenceTriPolytopeSoup(tri_poly_soup_ref);
+//   um2::PolytopeSoup<T, I> tri_poly_soup;
+//   tri_mesh.toPolytopeSoup(tri_poly_soup);
+//   ASSERT(tri_poly_soup.compareTo(tri_poly_soup_ref) == 10);
+//   ASSERT(tri_poly_soup.getMeshType() == um2::MeshType::Tri);
+// }
 //
 #if UM2_USE_CUDA
 template <std::floating_point T, std::signed_integral I>

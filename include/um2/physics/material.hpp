@@ -1,8 +1,8 @@
 #pragma once
 
 #include <um2/common/color.hpp>
-#include <um2/stdlib/string.hpp>
 #include <um2/physics/cross_section.hpp>
+#include <um2/stdlib/string.hpp>
 
 //======================================================================
 // MATERIAL
@@ -32,10 +32,10 @@ public:
   constexpr Material() noexcept = default;
 
   HOSTDEV constexpr Material(String name, Color color) noexcept
-      : _name(um2::move(name)), _color(color)
+      : _name(um2::move(name)),
+        _color(color)
   {
   }
-
 };
 
 } // namespace um2

@@ -40,37 +40,37 @@ HOSTDEV
 TEST_CASE(addVertex_addFace)
 {
   um2::QuadraticTriMesh<2, T, I> mesh;
-  mesh.addVertex({                  0,                   0});    
-  mesh.addVertex({                  1,                   0});    
-  mesh.addVertex({                  0,                   1});    
-  mesh.addVertex({static_cast<T>(0.5), static_cast<T>(0.0)});    
-  mesh.addVertex({static_cast<T>(0.7), static_cast<T>(0.5)});    
-  mesh.addVertex({static_cast<T>(0.0), static_cast<T>(0.5)});    
-  mesh.addVertex({                  1,                   1});    
-  mesh.addVertex({static_cast<T>(1.0), static_cast<T>(0.5)});    
-  mesh.addVertex({static_cast<T>(0.5), static_cast<T>(1.0)});   
+  mesh.addVertex({0, 0});
+  mesh.addVertex({1, 0});
+  mesh.addVertex({0, 1});
+  mesh.addVertex({static_cast<T>(0.5), static_cast<T>(0.0)});
+  mesh.addVertex({static_cast<T>(0.7), static_cast<T>(0.5)});
+  mesh.addVertex({static_cast<T>(0.0), static_cast<T>(0.5)});
+  mesh.addVertex({1, 1});
+  mesh.addVertex({static_cast<T>(1.0), static_cast<T>(0.5)});
+  mesh.addVertex({static_cast<T>(0.5), static_cast<T>(1.0)});
   mesh.addFace({0, 1, 2, 3, 4, 5});
   mesh.addFace({1, 6, 2, 7, 8, 4});
-  um2::QuadraticTriangle<2, T> tri0_ref(mesh.getVertex(0), mesh.getVertex(1),    
-                                        mesh.getVertex(2), mesh.getVertex(3),    
-                                        mesh.getVertex(4), mesh.getVertex(5));    
-  auto const tri0 = mesh.getFace(0);    
-  ASSERT(um2::isApprox(tri0[0], tri0_ref[0]));    
-  ASSERT(um2::isApprox(tri0[1], tri0_ref[1]));    
-  ASSERT(um2::isApprox(tri0[2], tri0_ref[2]));    
-  ASSERT(um2::isApprox(tri0[3], tri0_ref[3]));    
-  ASSERT(um2::isApprox(tri0[4], tri0_ref[4]));    
-  ASSERT(um2::isApprox(tri0[5], tri0_ref[5]));    
-  um2::QuadraticTriangle<2, T> tri1_ref(mesh.getVertex(1), mesh.getVertex(6),    
-                                        mesh.getVertex(2), mesh.getVertex(7),    
-                                        mesh.getVertex(8), mesh.getVertex(4));    
-  auto const tri1 = mesh.getFace(1);    
-  ASSERT(um2::isApprox(tri1[0], tri1_ref[0]));    
-  ASSERT(um2::isApprox(tri1[1], tri1_ref[1]));    
-  ASSERT(um2::isApprox(tri1[2], tri1_ref[2]));    
-  ASSERT(um2::isApprox(tri1[3], tri1_ref[3]));    
-  ASSERT(um2::isApprox(tri1[4], tri1_ref[4]));    
-  ASSERT(um2::isApprox(tri1[5], tri1_ref[5])); 
+  um2::QuadraticTriangle<2, T> tri0_ref(mesh.getVertex(0), mesh.getVertex(1),
+                                        mesh.getVertex(2), mesh.getVertex(3),
+                                        mesh.getVertex(4), mesh.getVertex(5));
+  auto const tri0 = mesh.getFace(0);
+  ASSERT(um2::isApprox(tri0[0], tri0_ref[0]));
+  ASSERT(um2::isApprox(tri0[1], tri0_ref[1]));
+  ASSERT(um2::isApprox(tri0[2], tri0_ref[2]));
+  ASSERT(um2::isApprox(tri0[3], tri0_ref[3]));
+  ASSERT(um2::isApprox(tri0[4], tri0_ref[4]));
+  ASSERT(um2::isApprox(tri0[5], tri0_ref[5]));
+  um2::QuadraticTriangle<2, T> tri1_ref(mesh.getVertex(1), mesh.getVertex(6),
+                                        mesh.getVertex(2), mesh.getVertex(7),
+                                        mesh.getVertex(8), mesh.getVertex(4));
+  auto const tri1 = mesh.getFace(1);
+  ASSERT(um2::isApprox(tri1[0], tri1_ref[0]));
+  ASSERT(um2::isApprox(tri1[1], tri1_ref[1]));
+  ASSERT(um2::isApprox(tri1[2], tri1_ref[2]));
+  ASSERT(um2::isApprox(tri1[3], tri1_ref[3]));
+  ASSERT(um2::isApprox(tri1[4], tri1_ref[4]));
+  ASSERT(um2::isApprox(tri1[5], tri1_ref[5]));
 }
 
 template <std::floating_point T, std::signed_integral I>
@@ -147,17 +147,17 @@ TEST_CASE(intersect)
   ASSERT_NEAR(intersections[4], int2, static_cast<T>(1e-6));
 }
 
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(toPolytopeSoup)
+// template <std::floating_point T, std::signed_integral I>
+// TEST_CASE(toPolytopeSoup)
 //{
-//  um2::QuadraticTriMesh<2, T, I> const quad_mesh = makeTri6ReferenceMesh<2, T, I>();
-//  um2::PolytopeSoup<T, I> quad_poly_soup_ref;
-//  makeReferenceTri6PolytopeSoup(quad_poly_soup_ref);
-//  um2::PolytopeSoup<T, I> quad_poly_soup;
-//  quad_mesh.toPolytopeSoup(quad_poly_soup);
-//  ASSERT(quad_poly_soup.compareTo(quad_poly_soup_ref) == 10);
-//  ASSERT(quad_poly_soup.getMeshType() == um2::MeshType::QuadraticTri);
-//}
+//   um2::QuadraticTriMesh<2, T, I> const quad_mesh = makeTri6ReferenceMesh<2, T, I>();
+//   um2::PolytopeSoup<T, I> quad_poly_soup_ref;
+//   makeReferenceTri6PolytopeSoup(quad_poly_soup_ref);
+//   um2::PolytopeSoup<T, I> quad_poly_soup;
+//   quad_mesh.toPolytopeSoup(quad_poly_soup);
+//   ASSERT(quad_poly_soup.compareTo(quad_poly_soup_ref) == 10);
+//   ASSERT(quad_poly_soup.getMeshType() == um2::MeshType::QuadraticTri);
+// }
 
 #if UM2_USE_CUDA
 template <std::floating_point T, std::signed_integral I>
@@ -175,7 +175,7 @@ TEST_SUITE(QuadraticTriMesh)
   TEST((populateVF<T, I>));
   TEST((intersect<T, I>));
 
-//  TEST((toPolytopeSoup<T, I>));
+  //  TEST((toPolytopeSoup<T, I>));
 }
 
 auto

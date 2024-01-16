@@ -26,8 +26,8 @@ makePart() -> um2::RegularPartition<D, T, P>
     children = {1, 2, 3, 4, 5, 6};
   }
   um2::RegularGrid<D, T> const grid(minima, spacing, num_cells);
-//  um2::Log::info("Grid size " + um2::toString(grid.numTotalCells()));
-//  um2::Log::info("Children size " + um2::toString(children.size()));
+  //  um2::Log::info("Grid size " + um2::toString(grid.numTotalCells()));
+  //  um2::Log::info("Children size " + um2::toString(children.size()));
   um2::RegularPartition<D, T, P> part(grid, um2::move(children));
   return part;
 }

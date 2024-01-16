@@ -54,7 +54,7 @@ class Vector
   HOSTDEV constexpr void
   grow(Size n) noexcept;
 
-  // Return the recommended capacity for a vector of size new_size. 
+  // Return the recommended capacity for a vector of size new_size.
   // Either double the current capacity or use the new_size if it is larger.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   recommend(Size new_size) const noexcept -> Size;

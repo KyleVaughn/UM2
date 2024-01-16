@@ -109,52 +109,52 @@ TEST_CASE(accessors)
   ASSERT(*face_start1 == 7);
 }
 
-//TEST_CASE(boundingBox)
+// TEST_CASE(boundingBox)
 //{
-//  um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
-//  auto const box = mesh.boundingBox();
-//  ASSERT_NEAR(box.xMin(), static_cast<T>(0), static_cast<T>(1e-6));
-//  ASSERT_NEAR(box.xMax(), static_cast<T>(1), static_cast<T>(1e-6));
-//  ASSERT_NEAR(box.yMin(), static_cast<T>(0), static_cast<T>(1e-6));
-//  ASSERT_NEAR(box.yMax(), static_cast<T>(1), static_cast<T>(1e-6));
-//}
+//   um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
+//   auto const box = mesh.boundingBox();
+//   ASSERT_NEAR(box.xMin(), static_cast<T>(0), static_cast<T>(1e-6));
+//   ASSERT_NEAR(box.xMax(), static_cast<T>(1), static_cast<T>(1e-6));
+//   ASSERT_NEAR(box.yMin(), static_cast<T>(0), static_cast<T>(1e-6));
+//   ASSERT_NEAR(box.yMax(), static_cast<T>(1), static_cast<T>(1e-6));
+// }
 //
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(faceContaining)
+// template <std::floating_point T, std::signed_integral I>
+// TEST_CASE(faceContaining)
 //{
-//  um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
-//  um2::Point2<T> p(static_cast<T>(0.5), static_cast<T>(0.25));
-//  ASSERT(mesh.faceContaining(p) == 0);
-//  p = um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.75));
-//  ASSERT(mesh.faceContaining(p) == 1);
-//}
+//   um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
+//   um2::Point2<T> p(static_cast<T>(0.5), static_cast<T>(0.25));
+//   ASSERT(mesh.faceContaining(p) == 0);
+//   p = um2::Point2<T>(static_cast<T>(0.5), static_cast<T>(0.75));
+//   ASSERT(mesh.faceContaining(p) == 1);
+// }
 //
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(populateVF)
+// template <std::floating_point T, std::signed_integral I>
+// TEST_CASE(populateVF)
 //{
-//  um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
-//  ASSERT(mesh.getVFOffsets().empty());
-//  ASSERT(mesh.getVF().empty());
-//  mesh.populateVF();
-//  um2::Vector<I> const vf_offsets_ref = {0, 2, 3, 5, 6};
-//  um2::Vector<I> const vf_ref = {0, 1, 0, 0, 1, 1};
-//  ASSERT(mesh.getVFOffsets() == vf_offsets_ref);
-//  ASSERT(mesh.getVF() == vf_ref);
-//}
+//   um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
+//   ASSERT(mesh.getVFOffsets().empty());
+//   ASSERT(mesh.getVF().empty());
+//   mesh.populateVF();
+//   um2::Vector<I> const vf_offsets_ref = {0, 2, 3, 5, 6};
+//   um2::Vector<I> const vf_ref = {0, 1, 0, 0, 1, 1};
+//   ASSERT(mesh.getVFOffsets() == vf_offsets_ref);
+//   ASSERT(mesh.getVF() == vf_ref);
+// }
 //
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(intersect)
+// template <std::floating_point T, std::signed_integral I>
+// TEST_CASE(intersect)
 //{
-//  um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
-//  um2::Ray2<T> const ray({static_cast<T>(0), static_cast<T>(0.5)}, {1, 0});
-//  um2::Vector<T> intersections;
-//  um2::intersect(ray, mesh, intersections);
-//  ASSERT(intersections.size() == 4);
-//  ASSERT_NEAR(intersections[0], static_cast<T>(0), static_cast<T>(1e-6));
-//  ASSERT_NEAR(intersections[1], static_cast<T>(0.5), static_cast<T>(1e-6));
-//  ASSERT_NEAR(intersections[2], static_cast<T>(0.5), static_cast<T>(1e-6));
-//  ASSERT_NEAR(intersections[3], static_cast<T>(1), static_cast<T>(1e-6));
-//}
+//   um2::TriMesh<2, T, I> const mesh = makeTriReferenceMesh<2, T, I>();
+//   um2::Ray2<T> const ray({static_cast<T>(0), static_cast<T>(0.5)}, {1, 0});
+//   um2::Vector<T> intersections;
+//   um2::intersect(ray, mesh, intersections);
+//   ASSERT(intersections.size() == 4);
+//   ASSERT_NEAR(intersections[0], static_cast<T>(0), static_cast<T>(1e-6));
+//   ASSERT_NEAR(intersections[1], static_cast<T>(0.5), static_cast<T>(1e-6));
+//   ASSERT_NEAR(intersections[2], static_cast<T>(0.5), static_cast<T>(1e-6));
+//   ASSERT_NEAR(intersections[3], static_cast<T>(1), static_cast<T>(1e-6));
+// }
 //
 ////template <std::floating_point T, std::signed_integral I>
 ////TEST_CASE(toPolytopeSoup)
@@ -168,32 +168,32 @@ TEST_CASE(accessors)
 ////  ASSERT(tri_poly_soup.getMeshType() == um2::MeshType::Tri);
 ////}
 ////
-//#if UM2_USE_CUDA
-//template <std::floating_point T, std::signed_integral I>
-//MAKE_CUDA_KERNEL(accessors, T, I)
-//#endif
+// #if UM2_USE_CUDA
+// template <std::floating_point T, std::signed_integral I>
+// MAKE_CUDA_KERNEL(accessors, T, I)
+// #endif
 
 template <std::floating_point T, std::signed_integral I>
 TEST_SUITE(BinnedTriMesh)
 {
   TEST_HOSTDEV(accessors, 1, 1, T, I);
-//  TEST((addVertex_addFace<T, I>));
-//  TEST((poly_soup_constructor<T, I>));
-//  TEST((boundingBox<T, I>));
-//  TEST((faceContaining<T, I>));
-//  TEST((populateVF<T, I>));
-//  TEST((intersect<T, I>));
+  //  TEST((addVertex_addFace<T, I>));
+  //  TEST((poly_soup_constructor<T, I>));
+  //  TEST((boundingBox<T, I>));
+  //  TEST((faceContaining<T, I>));
+  //  TEST((populateVF<T, I>));
+  //  TEST((intersect<T, I>));
   //  TEST((toPolytopeSoup<T, I>));
 }
 
 auto
 main() -> int
 {
-//  RUN_SUITE((BinnedTriMesh<float, int16_t>));
-//  RUN_SUITE((BinnedTriMesh<float, int32_t>));
-//  RUN_SUITE((BinnedTriMesh<float, int64_t>));
-//  RUN_SUITE((BinnedTriMesh<double, int16_t>));
-//  RUN_SUITE((BinnedTriMesh<double, int32_t>));
+  //  RUN_SUITE((BinnedTriMesh<float, int16_t>));
+  //  RUN_SUITE((BinnedTriMesh<float, int32_t>));
+  //  RUN_SUITE((BinnedTriMesh<float, int64_t>));
+  //  RUN_SUITE((BinnedTriMesh<double, int16_t>));
+  //  RUN_SUITE((BinnedTriMesh<double, int32_t>));
   RUN_SUITE((BinnedTriMesh<double, int64_t>));
   return 0;
 }

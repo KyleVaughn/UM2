@@ -75,7 +75,7 @@ public:
   // Methods
   //==============================================================================
 
-  // Interpolate along the segment. 
+  // Interpolate along the segment.
   // r in [0, 1] are valid values.
   // F(r) -> (x, y, z)
   template <typename R>

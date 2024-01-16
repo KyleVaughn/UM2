@@ -227,17 +227,17 @@ TEST_CASE(mortonSort)
   ASSERT(um2::isApprox(mesh.getVertex(20), um2::Point2<T>(4, 4)));
 }
 
-//template <std::floating_point T, std::signed_integral I>
-//TEST_CASE(toPolytopeSoup)
+// template <std::floating_point T, std::signed_integral I>
+// TEST_CASE(toPolytopeSoup)
 //{
-//  um2::QuadraticQuadMesh<2, T, I> const quad_mesh = makeQuadReferenceMesh<2, T, I>();
-//  um2::PolytopeSoup<T, I> quad_poly_soup_ref;
-//  makeReferenceQuad8PolytopeSoup(quad_poly_soup_ref);
-//  um2::PolytopeSoup<T, I> quad_poly_soup;
-//  quad_mesh.toPolytopeSoup(quad_poly_soup);
-//  ASSERT(quad_poly_soup.comapreTo(quad_poly_soup_ref) == 10);
-//  ASSERT(quad_poly_soup.getMeshType() == um2::MeshType::QuadraticQuad);
-//}
+//   um2::QuadraticQuadMesh<2, T, I> const quad_mesh = makeQuadReferenceMesh<2, T, I>();
+//   um2::PolytopeSoup<T, I> quad_poly_soup_ref;
+//   makeReferenceQuad8PolytopeSoup(quad_poly_soup_ref);
+//   um2::PolytopeSoup<T, I> quad_poly_soup;
+//   quad_mesh.toPolytopeSoup(quad_poly_soup);
+//   ASSERT(quad_poly_soup.comapreTo(quad_poly_soup_ref) == 10);
+//   ASSERT(quad_poly_soup.getMeshType() == um2::MeshType::QuadraticQuad);
+// }
 
 #if UM2_USE_CUDA
 template <std::floating_point T, std::signed_integral I>

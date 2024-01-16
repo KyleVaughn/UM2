@@ -91,7 +91,7 @@ class String
   HOSTDEV [[nodiscard]] constexpr auto
   getLongPointer() const noexcept -> char const *;
 
-  // Get the size of the long string. Does not include the null terminator. 
+  // Get the size of the long string. Does not include the null terminator.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getLongSize() const noexcept -> uint64_t;
 
@@ -344,7 +344,8 @@ String::getShortCap() noexcept -> uint64_t
 }
 
 PURE HOSTDEV constexpr auto
-// NOLINTNEXTLINE(readability-make-member-function-const) we offer both const and non-const
+// NOLINTNEXTLINE(readability-make-member-function-const) we offer both const and
+// non-const
 String::getLongPointer() noexcept -> char *
 {
   return _r.l.data;

@@ -39,14 +39,15 @@ namespace um2
 {
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
-class FaceVertexMesh {
+class FaceVertexMesh
+{
 
-  public:
+public:
   using FaceConn = Vec<N, I>;
   using Face = Polygon<P, N, D, T>;
   using Edge = typename Polygon<P, N, D, T>::Edge;
 
-  private:
+private:
   bool _is_morton_sorted = false;
   bool _has_vf = false;
   Vector<Point<D, T>> _v; // vertices
@@ -55,8 +56,7 @@ class FaceVertexMesh {
                           // vertex belongs. size = num_vertices + 1
   Vector<I> _vf;          // vertex-face connectivity
 
-  public:
-
+public:
   //===========================================================================
   // Constructors
   //===========================================================================
@@ -176,10 +176,10 @@ using PlanarQuadraticPolygonMesh = FaceVertexMesh<2, N, 2, T, I>;
 //==============================================================================
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
-constexpr
-FaceVertexMesh<P, N, D, T, I>::FaceVertexMesh(Vector<Point<D, T>> const & v,
-                                              Vector<FaceConn> const & fv) noexcept
-  : _v(v), _fv(fv)
+constexpr FaceVertexMesh<P, N, D, T, I>::FaceVertexMesh(
+    Vector<Point<D, T>> const & v, Vector<FaceConn> const & fv) noexcept
+    : _v(v),
+      _fv(fv)
 {
 }
 
@@ -274,7 +274,7 @@ FaceVertexMesh<P, N, D, T, I>::FaceVertexMesh(PolytopeSoup<T, I> const & soup)
   _fv.resize(num_faces);
   for (Size i = 0; i < num_faces; ++i) {
     soup.getElement(i, elem_type, conn);
-    ASSERT(elem_type == (getVTKElemType<P, N>())); 
+    ASSERT(elem_type == (getVTKElemType<P, N>()));
     for (Size j = 0; j < N; ++j) {
       _fv[i][j] = conn[j];
     }
@@ -309,7 +309,8 @@ FaceVertexMesh<P, N, D, T, I>::getVertex(Size i) const noexcept -> Point<D, T>
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-FaceVertexMesh<P, N, D, T, I>::getEdge(Size const iface, Size const iedge) const noexcept -> Edge
+FaceVertexMesh<P, N, D, T, I>::getEdge(Size const iface, Size const iedge) const noexcept
+    -> Edge
 {
   ASSERT(iface < numFaces());
   if constexpr (P == 1) {
@@ -335,26 +336,20 @@ FaceVertexMesh<P, N, D, T, I>::getFace(Size i) const noexcept -> Face
                           _v[static_cast<Size>(_fv[i][1])],
                           _v[static_cast<Size>(_fv[i][2])]);
   } else if constexpr (P == 1 && N == 4) {
-    return Quadrilateral<D, T>(_v[static_cast<Size>(_fv[i][0])],
-                               _v[static_cast<Size>(_fv[i][1])],
-                               _v[static_cast<Size>(_fv[i][2])],
-                               _v[static_cast<Size>(_fv[i][3])]);
+    return Quadrilateral<D, T>(
+        _v[static_cast<Size>(_fv[i][0])], _v[static_cast<Size>(_fv[i][1])],
+        _v[static_cast<Size>(_fv[i][2])], _v[static_cast<Size>(_fv[i][3])]);
   } else if constexpr (P == 2 && N == 6) {
-    return QuadraticTriangle<D, T>(_v[static_cast<Size>(_fv[i][0])],
-                                   _v[static_cast<Size>(_fv[i][1])],
-                                   _v[static_cast<Size>(_fv[i][2])],
-                                   _v[static_cast<Size>(_fv[i][3])],
-                                   _v[static_cast<Size>(_fv[i][4])],
-                                   _v[static_cast<Size>(_fv[i][5])]);
+    return QuadraticTriangle<D, T>(
+        _v[static_cast<Size>(_fv[i][0])], _v[static_cast<Size>(_fv[i][1])],
+        _v[static_cast<Size>(_fv[i][2])], _v[static_cast<Size>(_fv[i][3])],
+        _v[static_cast<Size>(_fv[i][4])], _v[static_cast<Size>(_fv[i][5])]);
   } else if constexpr (P == 2 && N == 8) {
-    return QuadraticQuadrilateral<D, T>(_v[static_cast<Size>(_fv[i][0])],
-                                        _v[static_cast<Size>(_fv[i][1])],
-                                        _v[static_cast<Size>(_fv[i][2])],
-                                        _v[static_cast<Size>(_fv[i][3])],
-                                        _v[static_cast<Size>(_fv[i][4])],
-                                        _v[static_cast<Size>(_fv[i][5])],
-                                        _v[static_cast<Size>(_fv[i][6])],
-                                        _v[static_cast<Size>(_fv[i][7])]);
+    return QuadraticQuadrilateral<D, T>(
+        _v[static_cast<Size>(_fv[i][0])], _v[static_cast<Size>(_fv[i][1])],
+        _v[static_cast<Size>(_fv[i][2])], _v[static_cast<Size>(_fv[i][3])],
+        _v[static_cast<Size>(_fv[i][4])], _v[static_cast<Size>(_fv[i][5])],
+        _v[static_cast<Size>(_fv[i][6])], _v[static_cast<Size>(_fv[i][7])]);
   } else {
     __builtin_unreachable();
   }
@@ -394,7 +389,7 @@ void
 FaceVertexMesh<P, N, D, T, I>::addFace(FaceConn const & conn) noexcept
 {
   _fv.push_back(conn);
-} 
+}
 
 //==============================================================================
 // boundingBox
@@ -721,7 +716,7 @@ intersect(Ray2<T> const & ray, PlanarQuadraticPolygonMesh<N, T, I> const & mesh,
 template <Size N, std::floating_point T, std::signed_integral I>
 void
 intersectFixedBuffer(Ray2<T> const & ray, PlanarLinearPolygonMesh<N, T, I> const & mesh,
-          T * const intersections, Size * const n) noexcept
+                     T * const intersections, Size * const n) noexcept
 {
   Size nintersect = 0;
 #if UM2_ENABLE_ASSERTS
@@ -752,29 +747,30 @@ intersectFixedBuffer(Ray2<T> const & ray, PlanarLinearPolygonMesh<N, T, I> const
 // n: The number of intersections
 template <Size N, std::floating_point T, std::signed_integral I>
 void
-intersectFixedBuffer(Ray2<T> const & ray, PlanarQuadraticPolygonMesh<N, T, I> const & mesh,
-          T * const intersections, Size * const n) noexcept
+intersectFixedBuffer(Ray2<T> const & ray,
+                     PlanarQuadraticPolygonMesh<N, T, I> const & mesh,
+                     T * const intersections, Size * const n) noexcept
 {
   Size nintersect = 0;
 #if UM2_ENABLE_ASSERTS
   Size const n0 = *n;
 #endif
   Size constexpr edges_per_face = PlanarQuadraticPolygonMesh<N, T, I>::Face::numEdges();
-//  for (Size i = 0; i < mesh.numFaces(); ++i) {
-//    auto const face = mesh.getFace(i);
-//    for (Size j = 0; j < edges_per_face; ++j) {
-//      auto const edge = face.getEdge(j);
-//      auto const r = intersect(ray, edge);
-//      if (r[0] < inf_distance<T>) {
-//        ASSERT(nintersect < n0)
-//        intersections[nintersect++] = r[0];
-//      }
-//      if (r[1] < inf_distance<T>) {
-//        ASSERT(nintersect < n0)
-//        intersections[nintersect++] = r[1];
-//      }
-//    }
-//  }
+  //  for (Size i = 0; i < mesh.numFaces(); ++i) {
+  //    auto const face = mesh.getFace(i);
+  //    for (Size j = 0; j < edges_per_face; ++j) {
+  //      auto const edge = face.getEdge(j);
+  //      auto const r = intersect(ray, edge);
+  //      if (r[0] < inf_distance<T>) {
+  //        ASSERT(nintersect < n0)
+  //        intersections[nintersect++] = r[0];
+  //      }
+  //      if (r[1] < inf_distance<T>) {
+  //        ASSERT(nintersect < n0)
+  //        intersections[nintersect++] = r[1];
+  //      }
+  //    }
+  //  }
   for (Size i = 0; i < mesh.numFaces(); ++i) {
     for (Size j = 0; j < edges_per_face; ++j) {
       auto const edge = mesh.getEdge(i, j);
@@ -796,7 +792,8 @@ intersectFixedBuffer(Ray2<T> const & ray, PlanarQuadraticPolygonMesh<N, T, I> co
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 void
-FaceVertexMesh<P, N, D, T, I>::intersect(Ray<D, T> const & ray, Vector<T> & intersections) const noexcept
+FaceVertexMesh<P, N, D, T, I>::intersect(Ray<D, T> const & ray,
+                                         Vector<T> & intersections) const noexcept
   requires(D == 2)
 {
   um2::intersect(ray, *this, intersections);

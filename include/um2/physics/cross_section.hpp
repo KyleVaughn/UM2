@@ -7,7 +7,7 @@
 // CROSS SECTION
 //======================================================================
 // A multi-group cross section. Currently, we only need the total cross
-// section, but will add scattering, etc. later. 
+// section, but will add scattering, etc. later.
 //
 // Multigroup cross sections are frequently reduced to a one-group cross
 // section for use with the Knudsen number. Hence we provide a

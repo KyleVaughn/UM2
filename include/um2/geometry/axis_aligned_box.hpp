@@ -38,22 +38,22 @@ public:
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   yMin() const noexcept -> T
-    requires (D >= 2);
+    requires(D >= 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   zMin() const noexcept -> T
-    requires (D >= 3);
+    requires(D >= 3);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   xMax() const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   yMax() const noexcept -> T
-    requires (D >= 2);
+    requires(D >= 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   zMax() const noexcept -> T
-    requires (D >= 3);
+    requires(D >= 3);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   minima() const noexcept -> Point<D, T> const &;
@@ -102,12 +102,12 @@ public:
   // yMax() - yMin()
   PURE HOSTDEV [[nodiscard]] constexpr auto
   height() const noexcept -> T
-    requires (D >= 2);
+    requires(D >= 2);
 
   // zMax() - zMin()
   PURE HOSTDEV [[nodiscard]] constexpr auto
   depth() const noexcept -> T
-    requires (D >= 3);
+    requires(D >= 3);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   centroid() const noexcept -> Point<D, T>;
@@ -150,7 +150,7 @@ AxisAlignedBox<D, T>::xMin() const noexcept -> T
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::yMin() const noexcept -> T
-requires (D >= 2)
+  requires(D >= 2)
 {
   return _min[1];
 }
@@ -158,7 +158,7 @@ requires (D >= 2)
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::zMin() const noexcept -> T
-requires (D >= 3)
+  requires(D >= 3)
 {
   return _min[2];
 }
@@ -173,7 +173,7 @@ AxisAlignedBox<D, T>::xMax() const noexcept -> T
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::yMax() const noexcept -> T
-requires (D >= 2)
+  requires(D >= 2)
 {
   return _max[1];
 }
@@ -181,7 +181,7 @@ requires (D >= 2)
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::zMax() const noexcept -> T
-requires (D >= 3)
+  requires(D >= 3)
 {
   return _max[2];
 }
@@ -261,7 +261,7 @@ AxisAlignedBox<D, T>::empty() noexcept -> AxisAlignedBox<D, T>
 {
   AxisAlignedBox<D, T> box;
   for (Size i = 0; i < D; ++i) {
-    box._min[i] = inf_distance<T>; 
+    box._min[i] = inf_distance<T>;
     box._max[i] = -inf_distance<T>;
   }
   return box;
@@ -291,7 +291,7 @@ AxisAlignedBox<D, T>::width() const noexcept -> T
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::height() const noexcept -> T
-requires (D >= 2)
+  requires(D >= 2)
 {
   return yMax() - yMin();
 }
@@ -299,7 +299,7 @@ requires (D >= 2)
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::depth() const noexcept -> T
-requires (D >= 3)
+  requires(D >= 3)
 {
   return zMax() - zMin();
 }
