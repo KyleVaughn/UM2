@@ -35,7 +35,7 @@ using LogTimePoint = std::chrono::time_point<LogClock>;
 using LogDuration = std::chrono::duration<double>;
 
 // We need the global log options to be accessible from anywhere in the code
-// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables) justified
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 class Log
 {
 

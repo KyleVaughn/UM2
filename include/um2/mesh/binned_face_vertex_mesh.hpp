@@ -65,6 +65,10 @@ class BinnedFaceVertexMesh {
                                         // into _face_ids for each bin.
   Vector<I> _face_ids; // The ids of the faces in each bin. size = numFaces(mesh).
 
+  //===========================================================================
+  // Private Methods
+  //===========================================================================
+
 
   public:
 
@@ -88,6 +92,9 @@ class BinnedFaceVertexMesh {
   numFaces() const noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
+  gridNumCells() const noexcept -> Vec<D, Size>;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getVertex(Size i) const noexcept -> Point<D, T>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -96,14 +103,30 @@ class BinnedFaceVertexMesh {
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getFace(Size i) const noexcept -> Face;
 
-//  //===========================================================================
-//  // Methods
-//  //===========================================================================
-//  // PURE [[nodiscard]] constexpr auto
-//  // faceContaining(Point<D, T> const & p) const noexcept -> Size
-//  //{
-//  //  return um2::faceContaining(*this, p);
-//  //}
+  //===========================================================================
+  // Methods
+  //===========================================================================
+
+  template <typename... Args>
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
+      -> AxisAlignedBox<D, T>;
+
+  template <typename... Args>
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto getFlatGridIndex(Args... args) const noexcept
+      -> Size;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getFlatGridIndex(Vec<D, Size> const & index) const noexcept -> Size;
+
+  // Returns pointers to the [first, last) face ids in the bin.
+  // Hence, while(*first != *last) { ... } will iterate over the faces in the bin.
+  template <typename... Args>
+    requires(sizeof...(Args) == D)
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getFaceIDsInBox(Args... args) const noexcept -> Vec<2, I const *>;
+
 }; // class BinnedFaceVertexMesh
 
 //==============================================================================
@@ -173,11 +196,13 @@ BinnedFaceVertexMesh<P, N, D, T, I>::BinnedFaceVertexMesh(
   RegularGrid<D, T> const grid(mesh_box.minima(), bin_size, num_bins);
 
   // Sort the faces into bins based upon the upper right corner of each face's
-  // bounding box.
+  // bounding box. Nudge it back a little bit to ensure floating point errors
+  // are not an issue.
   // We count the number of faces in each bin, storing the counts in children.
   Vector<I> children(total_bins + 1, 0);
   for (Size iface = 0; iface < nfaces; ++iface) {
-    auto const upper_right_point = mesh.getFace(iface).boundingBox().maxima();
+    auto upper_right_point = mesh.getFace(iface).boundingBox().maxima();
+    upper_right_point -= eps_distance<T>;
     auto const index = grid.getCellIndexContaining(upper_right_point);
     Size const flat_index = grid.getFlatIndex(index);
     ++children[flat_index + 1];
@@ -188,11 +213,15 @@ BinnedFaceVertexMesh<P, N, D, T, I>::BinnedFaceVertexMesh(
     children[i] += children[i - 1];
   }
 
+  RegularPartition<D, T, I> const partition(grid, children);
+  _partition = um2::move(partition);
+
   // Allocate space for face ids.
   Vector<I> face_ids(nfaces, -1);
   // Assign the face ids to the bins.
   for (Size iface = 0; iface < nfaces; ++iface) {
-    auto const upper_right_point = mesh.getFace(iface).boundingBox().maxima();
+    auto upper_right_point = mesh.getFace(iface).boundingBox().maxima();
+    upper_right_point -= eps_distance<T>;
     auto const index = grid.getCellIndexContaining(upper_right_point);
     Size const flat_index = grid.getFlatIndex(index);
     auto offset = static_cast<Size>(children[flat_index]);
@@ -228,6 +257,13 @@ BinnedFaceVertexMesh<P, N, D, T, I>::numFaces() const noexcept -> Size
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 PURE HOSTDEV constexpr auto
+BinnedFaceVertexMesh<P, N, D, T, I>::gridNumCells() const noexcept -> Vec<D, Size>
+{
+  return _partition.numCells();
+}
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+PURE HOSTDEV constexpr auto
 BinnedFaceVertexMesh<P, N, D, T, I>::getVertex(Size i) const noexcept -> Point<D, T>
 {
   return _mesh.getVertex(i);
@@ -247,18 +283,55 @@ BinnedFaceVertexMesh<P, N, D, T, I>::getFace(Size i) const noexcept -> Face
   return _mesh.getFace(i);
 }
 
-////==============================================================================
-//// Methods
-////==============================================================================
-//// For all FaceVertexMesh, we define:
-////   numVertices
-//////   numFaces
-//////   getFace
-//////   boundingBox
-//////   faceContaining(Point)
-//////   toFaceVertexMesh(MeshFile)
-//////   toMeshFile(FaceVertexMesh)
-//
+//==============================================================================
+// Methods
+//==============================================================================
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+template <typename... Args>
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto
+BinnedFaceVertexMesh<P, N, D, T, I>::getBox(Args... args) const noexcept
+  -> AxisAlignedBox<D, T>
+{
+  return _partition.getBox(args...);
+}
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+template <typename... Args>
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto
+BinnedFaceVertexMesh<P, N, D, T, I>::getFlatGridIndex(Args... args) const noexcept
+  -> Size
+{
+  return _partition.getFlatIndex(args...);
+}
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+PURE HOSTDEV constexpr auto
+BinnedFaceVertexMesh<P, N, D, T, I>::getFlatGridIndex(Vec<D, Size> const & index) const noexcept
+  -> Size
+{
+  return _partition.getFlatIndex(index);
+}
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+template <typename... Args>
+  requires(sizeof...(Args) == D)
+PURE HOSTDEV constexpr auto
+BinnedFaceVertexMesh<P, N, D, T, I>::getFaceIDsInBox(Args... args) const noexcept -> Vec<2, I const *>
+{
+  Size const flat_index = _partition.getFlatIndex(args...);
+  // _partition.children[flat_index] is the start offset into _face_ids.
+  // _partition.children[flat_index + 1] is the end offset into _face_ids.
+  Vector<I> const & children = _partition.children();
+  I const start = children[flat_index];
+  I const end = children[flat_index + 1];
+  I const * const start_ptr = _face_ids.data() + start;
+  I const * const end_ptr = _face_ids.data() + end;
+  return Vec<2, I const *>(start_ptr, end_ptr);
+}
+
 //////==============================================================================
 ////// boundingBox
 //////==============================================================================

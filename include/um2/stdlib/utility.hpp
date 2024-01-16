@@ -8,6 +8,7 @@
 // UTILITY
 //==============================================================================
 // Implementation of a subset of <utility> which is compatible with CUDA.
+// See https://en.cppreference.com/w/cpp/header/utility for details.
 // The following functions are implemented:
 //  forward
 //  move
@@ -20,8 +21,6 @@ namespace um2
 //==============================================================================
 // forward
 //==============================================================================
-//
-// https://en.cppreference.com/w/cpp/utility/forward
 
 template <class T>
 HOSTDEV [[nodiscard]] constexpr auto
@@ -44,8 +43,6 @@ forward(std::remove_reference_t<T> && t) noexcept -> T &&
 //==============================================================================
 // move
 //==============================================================================
-//
-// https://en.cppreference.com/w/cpp/utility/move
 
 template <class T>
 HOSTDEV constexpr auto
@@ -57,8 +54,6 @@ move(T && t) noexcept -> std::remove_reference_t<T> &&
 //==============================================================================
 // swap
 //==============================================================================
-//
-// https://en.cppreference.com/w/cpp/utility/swap
 
 template <class T>
   requires(std::is_trivially_move_constructible_v<T> &&
@@ -74,7 +69,7 @@ HOSTDEV constexpr void swap(T & a, T & b) noexcept
 // Pair
 //==============================================================================
 
-// NOLINTBEGIN(readability-identifier-naming) // match std::pair
+// NOLINTBEGIN(readability-identifier-naming) match std::pair
 template <class T1, class T2>
 struct Pair {
   using first_type = T1;

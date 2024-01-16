@@ -22,17 +22,17 @@ makeBinnedTriReferenceMesh() -> um2::BinnedTriMesh<D, T, I>
   //
   // Grid
   // + ------- + ------- +
-  // |         |         | 
-  // |    2    |    3    | 
-  // |         |         | 
-  // + ------- + ------- +
-  // |         |         | 
-  // |    0    |    1    | 
-  // |         |         | 
+  // |         |         |
+  // |         |         |
+  // |         |         |
+  // +    0    +    1    +
+  // |         |         |
+  // |         |         |
+  // |         |         |
   // + ------- + ------- +
   //
-  // children: 0, 2, 4, 6, 8
-  // face_ids: 0, 1, 2, 3, 4, 5, 6, 7
+  // children: 0, 4, 8
+  // face_ids: 0, 1, 4, 5, 2, 3, 6, 7
 
   um2::Vector<um2::Point<D, T>> const v = {
       {0, 0},
@@ -77,6 +77,36 @@ TEST_CASE(accessors)
   ASSERT(um2::isApprox(tri1[0], tri1_ref[0]));
   ASSERT(um2::isApprox(tri1[1], tri1_ref[1]));
   ASSERT(um2::isApprox(tri1[2], tri1_ref[2]));
+  // grid
+  auto const num_cells = mesh.gridNumCells();
+  ASSERT(num_cells[0] == 2);
+  ASSERT(num_cells[1] == 1);
+  ASSERT(mesh.getFlatGridIndex(0, 0) == 0);
+  ASSERT(mesh.getFlatGridIndex(1, 0) == 1);
+  auto const face_ids = mesh.getFaceIDsInBox(0, 0);
+  I const * face_start = face_ids[0];
+  I const * face_end = face_ids[1];
+  ASSERT(face_end - face_start == 4);
+  ASSERT(*face_start == 0);
+  face_start++;
+  ASSERT(*face_start == 1);
+  face_start++;
+  ASSERT(*face_start == 4);
+  face_start++;
+  ASSERT(*face_start == 5);
+  face_start++;
+
+  auto const face_ids1 = mesh.getFaceIDsInBox(1, 0);
+  I const * face_start1 = face_ids1[0];
+  I const * face_end1 = face_ids1[1];
+  ASSERT(face_end1 - face_start1 == 4);
+  ASSERT(*face_start1 == 2);
+  face_start1++;
+  ASSERT(*face_start1 == 3);
+  face_start1++;
+  ASSERT(*face_start1 == 6);
+  face_start1++;
+  ASSERT(*face_start1 == 7);
 }
 
 //TEST_CASE(boundingBox)

@@ -147,11 +147,12 @@ using QuadraticHexahedron = QuadraticPolyhedron<20, 3, T>;
 // Methods
 //==============================================================================
 
+// The bounding box of any linear polytope is the bounding box of its vertices.
 template <Size K, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
 boundingBox(LinearPolytope<K, N, D, T> const & polytope) noexcept -> AxisAlignedBox<D, T>
 {
-  return boundingBox(polytope.vertices());
+  return boundingBox(polytope.vertices(), N);
 }
 
 } // namespace um2

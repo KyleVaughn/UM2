@@ -112,7 +112,7 @@ TEST_CASE(bounding_box)
     points[static_cast<size_t>(2 * i + 0)] = p_right;
     points[static_cast<size_t>(2 * i + 1)] = p_left;
   }
-  um2::AxisAlignedBox<D, T> const box4 = um2::boundingBox(points);
+  um2::AxisAlignedBox<D, T> const box4 = um2::boundingBox(points, 2 * D);
   for (Size i = 0; i < D; ++i) {
     ASSERT_NEAR(box4.minima()[i], -static_cast<T>(D), static_cast<T>(1e-6));
     ASSERT_NEAR(box4.maxima()[i], static_cast<T>(D), static_cast<T>(1e-6));

@@ -29,26 +29,39 @@ class Vector
   //==============================================================================
   // Private methods
   //==============================================================================
-  // NOLINTBEGIN(readability-identifier-naming) justification: match stdlib
+  // NOLINTBEGIN(readability-identifier-naming) match std::vector
 
+  // Allocate memory for n elements
   HOSTDEV constexpr void
   allocate(Size n) noexcept;
 
+  // Construct n default-initialized elements at the end of the vector
   HOSTDEV constexpr void
   construct_at_end(Size n) noexcept;
 
+  // Construct n elements at the end of the vector, each with value
   HOSTDEV constexpr void
   construct_at_end(Size n, T const & value) noexcept;
 
+  // Destroy elements at the end of the vector until new_last
+  // Does not change capacity
+  // _begin <= new_last <= _end
   HOSTDEV constexpr void
   destruct_at_end(Ptr new_last) noexcept;
 
+  // Grow the capacity of the vector by n elements
+  // Retains the values of the elements already in the vector
   HOSTDEV constexpr void
   grow(Size n) noexcept;
 
+  // Return the recommended capacity for a vector of size new_size. 
+  // Either double the current capacity or use the new_size if it is larger.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   recommend(Size new_size) const noexcept -> Size;
 
+  // Append n default-initialized elements to the end of the vector
+  // Grows the capacity of the vector if necessary
+  // Retains the values of the elements already in the vector
   HOSTDEV constexpr void
   append_default(Size n) noexcept;
 

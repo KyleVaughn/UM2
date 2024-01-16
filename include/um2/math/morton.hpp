@@ -51,7 +51,6 @@ namespace um2
 //==============================================================================
 // Maximum coordinate values
 //==============================================================================
-
 // In N dimensions with an X bits morton code, the max bits that may be used to
 // represent a coordinate without loss of precision is X / N.
 // Therefore, the max coordinate value is 2^(X / N) - 1.

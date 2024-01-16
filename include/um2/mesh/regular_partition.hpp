@@ -46,6 +46,9 @@ public:
   //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
+  children() const noexcept -> Vector<P> const &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   xMin() const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -183,6 +186,13 @@ constexpr RegularPartition<D, T, P>::RegularPartition(RegularGrid<D, T> const & 
 //==============================================================================
 // Methods
 //==============================================================================
+
+template <Size D, typename T, typename P>
+PURE HOSTDEV constexpr auto
+RegularPartition<D, T, P>::children() const noexcept -> Vector<P> const &
+{
+  return _children;
+}
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto

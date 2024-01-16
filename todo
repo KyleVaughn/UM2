@@ -1,18 +1,49 @@
-noexcpet, constexpr everything
+Back the rays up by -eps
+Make the mpact tests work for more types
+
+SIMD versions of routines for mesh.
+  point in 4 AABB
+  ray intersect 4 lines, etc.
+
+noexcept, constexpr everything
   - stdlib
   - common
   - math
   - geometry
 
-NOLINT, diagnostic
+NOLINT, diagnostic (remove justified)
   - stdlib
   - common
   - math
+  - geometry
 
-minima()[i], maxima()[], numCells(), etc.
+minima()[i], maxima()[], numCells(), origin, direction
   - stdlib
   - common
   - math
+  - geometry
+
+replace std::
+  - stdlib -> std::to_string for int, float conversion
+  - common
+  - math
+  - geometry
+
+ASSERT_ASSUME
+  - stdlib
+  - common
+  - math
+  - geometry
+
+Comment functions
+  - stdlib
+  - common
+  - math
+  - geometry
+
+
+face overlap using connectivity
+  - identify boundary edges which are not on the exterior
 
 Use connectivity for ray tracing
 

@@ -50,7 +50,6 @@ inline constexpr T eps_distance2 = eps_distance<T> * eps_distance<T>;
 
 // Distance between two points, above which they are considered to be infinitely
 // far apart. Typically used for invalid points and values.
-//
 template <std::floating_point T>
 inline constexpr T inf_distance = static_cast<T>(1e10);
 
@@ -74,6 +73,7 @@ isApprox(Point<D, T> const & a, Point<D, T> const & b) noexcept -> bool
   return a.squaredDistanceTo(b) < eps_distance2<T>;
 }
 
+// Are 3 planar points in counter-clockwise order?
 template <class T>
 PURE HOSTDEV constexpr auto
 areCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept -> bool
@@ -87,6 +87,8 @@ areCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept -
   return 0 <= (ab_x * ac_y - ab_y * ac_x);
 }
 
+// Are 3 planar points in counter-clockwise order? We allow for a small amount of
+// floating point error.
 template <class T>
 PURE HOSTDEV constexpr auto
 areApproxCCW(Point2<T> const & a, Point2<T> const & b, Point2<T> const & c) noexcept

@@ -32,7 +32,7 @@ class String
   struct Long {
     uint64_t is_long : 1; // Single bit for representation flag.
     uint64_t cap : 63;    // Capacity of the string. (Does not include null.)
-    uint64_t size;        // Size of the string.
+    uint64_t size;        // Size of the string. (Does not include null.)
     char * data;          // Pointer to the string data.
   };
 
@@ -46,7 +46,7 @@ class String
   // Stack-allocated string representation.
   struct Short {
     uint8_t is_long : 1; // Single bit for representation flag.
-    uint8_t size : 7;    // 7 bits for the size of the string.
+    uint8_t size : 7;    // 7 bits for the size of the string. (Does not include null.)
     char data[min_cap];  // Data of the string.
   };
 
@@ -73,38 +73,49 @@ class String
   //==============================================================================
   // Private methods
   //==============================================================================
-  // NOLINTBEGIN(readability-identifier-naming); justification: match std::string
+  // NOLINTBEGIN(readability-identifier-naming) match std::string
 
+  // Does a string of length n fit in a short string? n includes the null terminator.
   CONST HOSTDEV static constexpr auto
   fitsInShort(uint64_t n) noexcept -> bool;
 
+  // Get the capacity of the long string. Does not include the null terminator.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getLongCap() const noexcept -> uint64_t;
 
+  // Get a pointer to the long string data.
   HOSTDEV [[nodiscard]] constexpr auto
   getLongPointer() noexcept -> char *;
 
+  // Get a pointer to the long string data.
   HOSTDEV [[nodiscard]] constexpr auto
   getLongPointer() const noexcept -> char const *;
 
+  // Get the size of the long string. Does not include the null terminator. 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getLongSize() const noexcept -> uint64_t;
 
+  // Get a pointer to the string data regardless of representation.
   HOSTDEV [[nodiscard]] constexpr auto
   getPointer() noexcept -> char *;
 
+  // Get a pointer to the string data regardless of representation.
   HOSTDEV [[nodiscard]] constexpr auto
   getPointer() const noexcept -> char const *;
 
+  // Get the capacity of the short string. Does not include the null terminator.
   HOSTDEV [[nodiscard]] constexpr static auto
   getShortCap() noexcept -> uint64_t;
 
+  // Get a pointer to the short string data.
   HOSTDEV [[nodiscard]] constexpr auto
   getShortPointer() noexcept -> char *;
 
+  // Get a pointer to the short string data.
   HOSTDEV [[nodiscard]] constexpr auto
   getShortPointer() const noexcept -> char const *;
 
+  // Get the size of the short string. Does not include the null terminator.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getShortSize() const noexcept -> uint8_t;
 
@@ -122,7 +133,7 @@ public:
 
   HOSTDEV constexpr String(String && s) noexcept;
 
-  // NOLINTBEGIN(google-explicit-constructor); justification: match std::string
+  // NOLINTBEGIN(google-explicit-constructor) match std::string
   template <uint64_t N>
   HOSTDEV constexpr String(char const (&s)[N]) noexcept;
   // NOLINTEND(google-explicit-constructor)
@@ -143,6 +154,7 @@ public:
 
   HOSTDEV constexpr ~String() noexcept
   {
+    // Clang can't figure out that isLong() == true implies that data is initialized.
 #ifndef __clang__
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
@@ -159,6 +171,7 @@ public:
   // Accessors
   //==============================================================================
 
+  // Not including the null terminator.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   capacity() const noexcept -> Size;
 
@@ -171,6 +184,7 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isLong() const noexcept -> bool;
 
+  // Not including the null terminator.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   size() const noexcept -> Size;
 
@@ -330,7 +344,7 @@ String::getShortCap() noexcept -> uint64_t
 }
 
 PURE HOSTDEV constexpr auto
-// NOLINTNEXTLINE(readability-make-member-function-const) justification: can't be const
+// NOLINTNEXTLINE(readability-make-member-function-const) we offer both const and non-const
 String::getLongPointer() noexcept -> char *
 {
   return _r.l.data;
@@ -699,7 +713,7 @@ String::operator+=(String const & s) noexcept -> String &
     _r.l.size = new_size;
     _r.l.data = tmp;
   }
-  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks); Valgrind says this is fine
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks) Valgrind says this is fine
   return *this;
 }
 
@@ -728,7 +742,7 @@ String::operator+=(char const c) noexcept -> String &
     _r.l.size = new_size;
     _r.l.data = tmp;
   }
-  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks); Valgrind says this is fine
+  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks) Valgrind says this is fine
   return *this;
 }
 
@@ -800,7 +814,7 @@ String::ends_with(String const & s) const noexcept -> bool
 
 template <uint64_t N>
 PURE HOSTDEV constexpr auto
-// NOLINTNEXTLINE(readability-identifier-naming) justification: mimics std::string
+// NOLINTNEXTLINE(readability-identifier-naming) match std::string
 String::ends_with(char const (&s)[N]) const noexcept -> bool
 {
   return ends_with(String(s));
@@ -809,13 +823,11 @@ String::ends_with(char const (&s)[N]) const noexcept -> bool
 PURE HOSTDEV constexpr auto
 String::substr(Size pos, Size len) const -> String
 {
-  ASSERT_ASSUME(pos <= size());
+  ASSERT(pos <= size());
   if (len == npos || pos + len > size()) {
     len = size() - pos;
   }
-  // It is important that we do not use a braced-init-list here
-  // NOLINTNEXTLINE(modernize-return-braced-init-list) justified
-  return String(data() + pos, len);
+  return String{data() + pos, len};
 }
 
 PURE HOSTDEV constexpr auto

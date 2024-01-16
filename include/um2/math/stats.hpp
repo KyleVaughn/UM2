@@ -20,6 +20,7 @@ namespace um2
 //=============================================================================
 // mean
 //=============================================================================
+// Computes the mean of the values in the range [begin, end).
 
 template <std::floating_point T>
 HOSTDEV constexpr auto
@@ -38,6 +39,8 @@ mean(T const * begin, T const * end) noexcept -> T
 //=============================================================================
 // median
 //=============================================================================
+// Computes the median of the values in the range [begin, end).
+// The range must be sorted.
 
 template <std::floating_point T>
 HOSTDEV constexpr auto
@@ -58,6 +61,7 @@ median(T const * begin, T const * end) noexcept -> T
 //=============================================================================
 // variance
 //=============================================================================
+// Computes the variance of the values in the range [begin, end).
 
 template <std::floating_point T>
 HOSTDEV constexpr auto
@@ -79,6 +83,7 @@ variance(T const * begin, T const * end) noexcept -> T
 //=============================================================================
 // stdDev
 //=============================================================================
+// Computes the standard deviation of the values in the range [begin, end).
 
 template <std::floating_point T>
 HOSTDEV constexpr auto

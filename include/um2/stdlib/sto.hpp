@@ -7,7 +7,8 @@
 //==============================================================================
 // STO
 //==============================================================================
-// Templated versions of stoi, stod, etc. to sto<T> for ease of use
+// Templated versions of stoi, stod, etc. to sto<T> for ease of use.
+// See https://en.cppreference.com/w/cpp/string/basic_string/stol for details.
 
 namespace um2
 {

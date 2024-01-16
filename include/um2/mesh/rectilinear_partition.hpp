@@ -51,6 +51,9 @@ public:
   // Methods
   //==============================================================================
 
+  HOSTDEV [[nodiscard]] constexpr auto
+  divs(Size i) const noexcept -> Vector<T> const &;
+
   PURE HOSTDEV [[nodiscard]] constexpr auto
   grid() const noexcept -> RectilinearGrid<D, T> const &;
 
@@ -197,6 +200,13 @@ constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
 //==============================================================================
 // Methods
 //==============================================================================
+
+template <Size D, typename T, typename P>
+PURE HOSTDEV constexpr auto
+RectilinearPartition<D, T, P>::divs(Size i) const noexcept -> Vector<T> const &
+{
+  return _grid.divs(i);
+}
 
 template <Size D, typename T, typename P>
 PURE HOSTDEV constexpr auto

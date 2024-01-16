@@ -35,17 +35,21 @@ public:
   // Accessors
   //==============================================================================
 
+  // Returns the number of edges in the polygon.
   CONST HOSTDEV static constexpr auto
   numEdges() noexcept -> Size;
 
+  // Returns the i-th vertex of the polygon.
   PURE HOSTDEV constexpr auto
   operator[](Size i) noexcept -> Point<D, T> &;
 
+  // Returns the i-th vertex of the polygon.
   PURE HOSTDEV constexpr auto
   operator[](Size i) const noexcept -> Point<D, T> const &;
 
+  // Returns a pointer to the vertex array.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  vertices() const noexcept -> Point<D, T> const (&)[N];
+  vertices() const noexcept -> Point<D, T> const *;
 
   //==============================================================================
   // Constructors
@@ -55,7 +59,7 @@ public:
 
   template <class... Pts>
     requires(sizeof...(Pts) == N && (std::same_as<Point<D, T>, Pts> && ...))
-  // NOLINTBEGIN(google-explicit-constructor) justification: implicit conversion
+  // NOLINTBEGIN(google-explicit-constructor) implicit conversion is desired
   HOSTDEV constexpr Polytope(Pts const... args) noexcept
       : _v{args...}
   {
@@ -66,14 +70,20 @@ public:
   // Methods
   //==============================================================================
 
+  // Interpolate along the surface of the polygon.
+  // For triangles: r in [0, 1], s in [0, 1], constrained by r + s <= 1
+  // For quads: r in [0, 1], s in [0, 1]
+  // F(r, s) -> (x, y, z)
   template <typename R, typename S>
   PURE HOSTDEV constexpr auto
   operator()(R r, S s) const noexcept -> Point<D, T>;
 
+  // J(r, s) -> [dF/dr, dF/ds]
   template <typename R, typename S>
   PURE HOSTDEV [[nodiscard]] constexpr auto
   jacobian(R r, S s) const noexcept -> Mat<D, 2, T>;
 
+  // Get the i-th edge of the polygon.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getEdge(Size i) const noexcept -> Edge;
 
@@ -93,6 +103,7 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
 
+  // If the polygon is counterclockwise oriented, returns true.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isCCW() const noexcept -> bool
     requires(D == 2);
@@ -101,6 +112,9 @@ public:
   intersect(Ray2<T> const & ray) const noexcept -> Vec<N, T>
     requires(D == 2);
 
+  // See the comments in the implementation for details.
+  // meanChordLength has multiple definitions. Make sure you read the comments to
+  // determine it's the one you want.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   meanChordLength() const noexcept -> T
     requires(D == 2);
@@ -139,7 +153,7 @@ Polygon<P, N, D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
 
 template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-Polygon<P, N, D, T>::vertices() const noexcept -> Point<D, T> const (&)[N]
+Polygon<P, N, D, T>::vertices() const noexcept -> Point<D, T> const *
 {
   return _v;
 }
@@ -788,7 +802,6 @@ flipFace(QuadraticQuadrilateral<D, T> & q) noexcept
 //==============================================================================
 // meanChordLength
 //==============================================================================
-//
 // For a convex planar polygon, the mean chord length is simply pi * area / perimeter.
 // De Kruijf, W. J. M., and J. L. Kloosterman.
 // "On the average chord length in reactor physics." Annals of Nuclear Energy 30.5 (2003):

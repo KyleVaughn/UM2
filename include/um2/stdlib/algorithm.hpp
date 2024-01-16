@@ -8,6 +8,7 @@
 // ALGORITHM
 //==============================================================================
 // Implementation of a subset of <algorithm> which is compatible with CUDA.
+// See https://en.cppreference.com/w/cpp/algorithm for details.
 // The following functions are implemented:
 //  clamp
 //  copy
@@ -104,8 +105,7 @@ fill(ForwardIt first, ForwardIt last, T const & value) noexcept
 // is_sorted
 //==============================================================================
 
-// NOLINTBEGIN(readability-identifier-naming) justification: match std::is_sorted
-
+// NOLINTBEGIN(readability-identifier-naming) match std::is_sorted
 #ifndef __CUDA_ARCH__
 
 template <typename ForwardIt>
@@ -140,7 +140,6 @@ is_sorted(ForwardIt first, ForwardIt last) noexcept -> bool
 }
 
 #endif
-
 // NOLINTEND(readability-identifier-naming)
 
 //==============================================================================
@@ -183,7 +182,7 @@ max(T x, T y) noexcept -> T
 // max_element
 //==============================================================================
 
-// NOLINTBEGIN(readability-identifier-naming) justification: match std::max_element
+// NOLINTBEGIN(readability-identifier-naming) match std::max_element
 #ifndef __CUDA_ARCH__
 
 template <typename ForwardIt>

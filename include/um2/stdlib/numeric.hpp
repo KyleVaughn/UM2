@@ -8,6 +8,7 @@
 // NUMERIC
 //==============================================================================
 // Implementation of a subset of <numeric> which is compatible with CUDA.
+// See https://en.cppreference.com/w/cpp/numeric for details.
 // The following functions are implemented:
 //  iota
 

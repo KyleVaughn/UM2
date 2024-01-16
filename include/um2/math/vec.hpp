@@ -61,7 +61,7 @@ public:
   // Allow implicit conversion from integral types.
   // Otherwise, require explicit conversion to avoid accidental loss of
   // precision/performance.
-  // NOLINTBEGIN(google-explicit-constructor) justified
+  // NOLINTBEGIN(google-explicit-constructor)
   template <class... Is>
     requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
              !(std::same_as<T, Is> && ...))
@@ -83,7 +83,7 @@ public:
   // Binary operators
   //==============================================================================
 
-  // Operators with Vecs
+  // Element-wise operators with Vecs
   HOSTDEV constexpr auto
   operator+=(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
 
@@ -96,7 +96,9 @@ public:
   HOSTDEV constexpr auto
   operator/=(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
 
-  // Operators with scalars
+  // Element-wise operators with scalars
+  // Require that the scalar type is either the same as the vector type or an
+  // integral type.
   template <class S>
     requires(std::same_as<T, S> || std::integral<S>)
   HOSTDEV constexpr auto
@@ -121,39 +123,52 @@ public:
   // Methods
   //==============================================================================
 
+  // The zero vector.
   HOSTDEV [[nodiscard]] static constexpr auto
   zero() noexcept -> Vec<D, T>;
 
+  // Element-wise minimum.
   HOSTDEV constexpr auto
   min(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
 
+  // Element-wise maximum.
   HOSTDEV constexpr auto
   max(Vec<D, T> const & v) noexcept -> Vec<D, T> &;
 
+  // Dot product.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   dot(Vec<D, T> const & v) const noexcept -> T;
 
+  // 2-norm squared.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   squaredNorm() const noexcept -> T;
 
+  // 2-norm.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   norm() const noexcept -> T;
 
+  // Normalize the vector in place.
   HOSTDEV constexpr void
   normalize() noexcept;
 
+  // Return a normalized copy of the vector.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   normalized() const noexcept -> Vec<D, T>;
 
+  // Return the z-component of two planar vectors.
+  // (v0.x * v1.y) - (v0.y * v1.x)
   PURE HOSTDEV [[nodiscard]] constexpr auto
   cross(Vec<2, T> const & v) const noexcept -> T;
 
+  // Cross product.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   cross(Vec<3, T> const & v) const noexcept -> Vec<3, T>;
 
+  // Squared distance to another vector.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   squaredDistanceTo(Vec<D, T> const & v) const noexcept -> T;
 
+  // Distance to another vector.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   distanceTo(Vec<D, T> const & v) const noexcept -> T;
 

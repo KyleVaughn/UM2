@@ -81,22 +81,33 @@ public:
   // Methods
   //==============================================================================
 
+  // Create an empty box, with minima = inf_distance and maxima = -inf_distance.
+  // Therefore, no point can be contained in this box. However box += point will
+  // always result in a box containing the point.
   HOSTDEV [[nodiscard]] static constexpr auto
   empty() noexcept -> AxisAlignedBox<D, T>;
 
+  // _max - _min
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  extents() const noexcept -> Vec<D, T>; // max - min
+  extents() const noexcept -> Vec<D, T>;
 
+  // _max[i] - _min[i]
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  width() const noexcept -> T; // dx
+  extent(Size i) const noexcept -> T;
 
+  // xMax() - xMin()
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  width() const noexcept -> T;
+
+  // yMax() - yMin()
   PURE HOSTDEV [[nodiscard]] constexpr auto
   height() const noexcept -> T
-    requires (D >= 2); // dy 
+    requires (D >= 2);
 
+  // zMax() - zMin()
   PURE HOSTDEV [[nodiscard]] constexpr auto
   depth() const noexcept -> T
-    requires (D >= 3); // dz
+    requires (D >= 3);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   centroid() const noexcept -> Point<D, T>;
@@ -248,14 +259,12 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::empty() noexcept -> AxisAlignedBox<D, T>
 {
-  Point<D, T> minima = Point<D, T>::zero();
-  Point<D, T> maxima = Point<D, T>::zero();
-  minima += inf_distance<T>;
-  maxima -= inf_distance<T>;
   AxisAlignedBox<D, T> box;
-  box._min = minima;
-  box._max = maxima;
-  return box; 
+  for (Size i = 0; i < D; ++i) {
+    box._min[i] = inf_distance<T>; 
+    box._max[i] = -inf_distance<T>;
+  }
+  return box;
 }
 
 template <Size D, typename T>
@@ -267,9 +276,16 @@ AxisAlignedBox<D, T>::extents() const noexcept -> Vec<D, T>
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
+AxisAlignedBox<D, T>::extent(Size i) const noexcept -> T
+{
+  return _max[i] - _min[i];
+}
+
+template <Size D, typename T>
+PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::width() const noexcept -> T
 {
-  return xMax() - xMin(); 
+  return xMax() - xMin();
 }
 
 template <Size D, typename T>
@@ -349,13 +365,13 @@ boundingBox(Point<D, T> const & a, Point<D, T> const & b) noexcept -> AxisAligne
   return AxisAlignedBox<D, T>{um2::min(a, b), um2::max(a, b)};
 }
 
-template <Size D, typename T, Size N>
+template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-boundingBox(Point<D, T> const (&points)[N]) noexcept -> AxisAlignedBox<D, T>
+boundingBox(Point<D, T> const * points, Size const n) noexcept -> AxisAlignedBox<D, T>
 {
   Point<D, T> minima = points[0];
   Point<D, T> maxima = points[0];
-  for (Size i = 1; i < N; ++i) {
+  for (Size i = 1; i < n; ++i) {
     minima.min(points[i]);
     maxima.max(points[i]);
   }
@@ -366,38 +382,7 @@ template <Size D, typename T>
 PURE auto
 boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>
 {
-  struct ReduceFunctor {
-    constexpr auto
-    operator()(AxisAlignedBox<D, T> const & box, Point<D, T> const & p) const noexcept
-        -> AxisAlignedBox<D, T>
-    {
-      return box + p;
-    }
-
-    constexpr auto
-    operator()(Point<D, T> const & p, AxisAlignedBox<D, T> const & box) const noexcept
-        -> AxisAlignedBox<D, T>
-    {
-      return box + p;
-    }
-
-    constexpr auto
-    operator()(AxisAlignedBox<D, T> const & a,
-               AxisAlignedBox<D, T> const & b) const noexcept -> AxisAlignedBox<D, T>
-    {
-      return a + b;
-    }
-
-    constexpr auto
-    operator()(Point<D, T> const & a, Point<D, T> const & b) const noexcept
-        -> AxisAlignedBox<D, T>
-    {
-      return boundingBox(a, b);
-    }
-  };
-
-  return std::reduce(points.begin(), points.end(),
-                     AxisAlignedBox<D, T>::empty(), ReduceFunctor{});
+  return um2::boundingBox(points.data(), points.size());
 }
 
 //==============================================================================

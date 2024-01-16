@@ -45,14 +45,17 @@ public:
   // Accessors
   //==============================================================================
 
+  // Returns the i-th vertex
   PURE HOSTDEV constexpr auto
   operator[](Size i) noexcept -> Point<D, T> &;
 
+  // Returns the i-th vertex
   PURE HOSTDEV constexpr auto
   operator[](Size i) const noexcept -> Point<D, T> const &;
 
+  // Returns a pointer to the vertex array
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  vertices() const noexcept -> Point<D, T> const (&)[N];
+  vertices() const noexcept -> Point<D, T> const *;
 
   //==============================================================================
   // Constructors
@@ -62,7 +65,7 @@ public:
 
   template <class... Pts>
     requires(sizeof...(Pts) == N && (std::same_as<Point<D, T>, Pts> && ...))
-  // NOLINTNEXTLINE(google-explicit-constructor) justified: implicit conversion desired
+  // NOLINTNEXTLINE(google-explicit-constructor) implicit conversion is desired
   HOSTDEV constexpr Polytope(Pts const... args) noexcept
       : _v{args...}
   {
@@ -72,32 +75,46 @@ public:
   // Methods
   //==============================================================================
 
-  // Interpolate the polytope at the given parameter value.
+  // Interpolate along the segment. 
+  // r in [0, 1] are valid values.
+  // F(r) -> (x, y, z)
   template <typename R>
   PURE HOSTDEV constexpr auto
   operator()(R r) const noexcept -> Point<D, T>;
 
+  // dF/dr (r) -> (dx/dr, dy/dr, dz/dr)
   template <typename R>
   PURE HOSTDEV [[nodiscard]] constexpr auto
   jacobian(R r) const noexcept -> Vec<D, T>;
 
+  // Get the matrix that rotates the polytope such that the first and l
+  // We want to transform the segment so that v[0] is at the origin and v[1]
+  // is on the x-axis. We can do this by first translating by -v[0] and then
+  // using a change of basis (rotation) matrix to rotate v[1] onto the x-axis.
+  // The rotation matrix is returned.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getRotation() const noexcept -> Mat<D, D, T>
     requires(D == 2);
 
+  // If a point is to the left of the segment, with the segment oriented from
+  // r = 0 to r = 1.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isLeft(Point<D, T> const & p) const noexcept -> bool
     requires(D == 2);
 
+  // Arc length of the segment
   PURE HOSTDEV [[nodiscard]] constexpr auto
   length() const noexcept -> T;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D, T>;
 
+  // Return the point on the curve that is closest to the given point.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   pointClosestTo(Point<D, T> const & p) const noexcept -> T;
 
+  // Return the squared distance between the given point and the closest point
+  // on the curve.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   squaredDistanceTo(Point<D, T> const & p) const noexcept -> T;
 
@@ -130,7 +147,7 @@ Dion<P, N, D, T>::operator[](Size i) const noexcept -> Point<D, T> const &
 
 template <Size P, Size N, Size D, typename T>
 PURE HOSTDEV constexpr auto
-Dion<P, N, D, T>::vertices() const noexcept -> Point<D, T> const (&)[N]
+Dion<P, N, D, T>::vertices() const noexcept -> Point<D, T> const *
 {
   return _v;
 }
@@ -342,7 +359,7 @@ pointIsLeft(QuadraticSegment2<T> const & q, Point2<T> const & p) noexcept -> boo
   //     v1_r is zero.
   Point2<T> const v1_r(v01_norm, static_cast<T>(0));
   Vec2<T> const v01_normalized = v01 / v01_norm;
-  //     NOLINTBEGIN(readability-identifier-naming) justification: matrix notation
+  //     NOLINTBEGIN(readability-identifier-naming) matrix notation
   Mat2x2<T> const R(Vec2<T>(v01_normalized[0], -v01_normalized[1]),
                     Vec2<T>(v01_normalized[1], v01_normalized[0]));
   Vec2<T> const v02 = q[2] - q[0];
@@ -453,7 +470,7 @@ length(QuadraticSegment<D, T> const & q) noexcept -> T
 {
   // Turn off variable naming convention warning for this function, since we will use
   // capital letters to denote vectors.
-  // NOLINTBEGIN(readability-identifier-naming) justification: mathematical convention
+  // NOLINTBEGIN(readability-identifier-naming) mathematical convention
 
   // The arc length integral may be reduced to an integral over the square root of a
   // quadratic polynomial using ‖𝘅‖ = √(𝘅 ⋅ 𝘅), which has an analytic solution.
@@ -574,7 +591,7 @@ boundingBox(QuadraticSegment<D, T> const & q) noexcept -> AxisAlignedBox<D, T>
     T const r = -half_b / a;
     // if r is not in [0, 1], then the extrema are not on the segment, hence
     // the segment's endpoints are the extrema.
-    // NOLINTNEXTLINE(misc-redundant-expression) justification: false positive
+    // NOLINTNEXTLINE(misc-redundant-expression) false positive
     if (0 < r && r < 1) {
       // x_i = Q(r_i) = P₁ - B² / (4A) = P₁ + r(B/2)
       T const x = q[0][i] + r * half_b;
@@ -609,7 +626,7 @@ pointClosestTo(LineSegment<D, T> const & l, Point<D, T> const & p) noexcept -> T
   return r;
 }
 
-// NOLINTBEGIN(readability-identifier-naming) justification: Mathematical notation
+// NOLINTBEGIN(readability-identifier-naming) Mathematical notation
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept -> T
@@ -617,7 +634,7 @@ pointClosestTo(QuadraticSegment<D, T> const & q, Point<D, T> const & p) noexcept
 
   // We want to use the complex functions in the std or cuda::std namespace
   // depending on if we're using CUDA
-  // NOLINTBEGIN(google-build-using-namespace) justified
+  // NOLINTBEGIN(google-build-using-namespace)
 #if UM2_USE_CUDA
   using namespace cuda::std;
 #else
@@ -830,7 +847,7 @@ enclosedCentroid(QuadraticSegment2<T> const & q) noexcept -> Point2<T>
   Vec2<T> const four_v13 = 4 * (q[2] - q[0]);
   Vec2<T> const u1 = v12.normalized();
   Vec2<T> const u2(-u1[1], u1[0]);
-  // NOLINTBEGIN(readability-identifier-naming) justification: capitalize matrix
+  // NOLINTBEGIN(readability-identifier-naming) capitalize matrix
   Mat2x2<T> const U(u1, u2);
   Vec2<T> const Cu(u1.dot((3 * v12 + four_v13)) / 10, u2.dot(four_v13) / 10);
   return U * Cu + q[0];
@@ -912,8 +929,9 @@ template <typename T>
 PURE HOSTDEV constexpr auto
 intersect(Ray2<T> const & ray, QuadraticSegment2<T> const & q) noexcept -> Vec2<T>
 {
-  // NOLINTBEGIN(readability-identifier-naming) // justification: mathematical notation
+  // NOLINTBEGIN(readability-identifier-naming) mathematical notation
   // This code is called very frequently so we sacrifice readability for speed.
+  // Mainly, we want to ensure temporaries are not created.
   Vec2<T> const v01(q[1][0] - q[0][0], q[1][1] - q[0][1]); // q[1] - q[0]
   Vec2<T> const v02(q[2][0] - q[0][0], q[2][1] - q[0][1]); // q[2] - q[0]
   Vec2<T> const v12(q[2][0] - q[1][0], q[2][1] - q[1][1]); // q[2] - q[1]

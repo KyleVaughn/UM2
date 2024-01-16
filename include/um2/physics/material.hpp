@@ -1,7 +1,7 @@
 #pragma once
 
 #include <um2/common/color.hpp>
-#include <um2/common/string.hpp>
+#include <um2/stdlib/string.hpp>
 #include <um2/physics/cross_section.hpp>
 
 //======================================================================
@@ -31,9 +31,8 @@ public:
 
   constexpr Material() noexcept = default;
 
-  HOSTDEV constexpr Material(String const & name, Color color) noexcept
-      : _name(name),
-        _color(color)
+  HOSTDEV constexpr Material(String name, Color color) noexcept
+      : _name(um2::move(name)), _color(color)
   {
   }
 

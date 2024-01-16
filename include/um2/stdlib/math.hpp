@@ -8,6 +8,7 @@
 // MATH
 //==============================================================================
 // Implementation of a subset of <cmath> which is compatible with CUDA.
+// See https://en.cppreference.com/w/cpp/numeric/math for details.
 // The following functions are implemented:
 //  abs (from config.hpp)
 //  atan

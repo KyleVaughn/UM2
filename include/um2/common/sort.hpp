@@ -23,14 +23,15 @@ namespace um2
 // insertionSort
 //==============================================================================
 // Use the insertion sort algorithm to sort [first, last) in-place.
-// This should be used for small arrays.
+// This should be used for small arrays (size < 20) or when the array is
+// already mostly sorted.
 
 template <typename T>
 HOSTDEV constexpr void
 insertionSort(T * const first, T const * const last) noexcept
 {
   // Not the clearest implementation, but the assembly is much better than
-  // the obvious implementation.
+  // the obvious implementation found on Wikipedia.
   if (first == last) {
     return;
   }
@@ -90,17 +91,17 @@ applyPermutation(Vector<T> & v, Vector<Size> const & perm) noexcept
   }
 #endif
   // Apply the permutation in-place by iterating over cycles.
-  Vector<int8_t> done(v.size());
+  Vector<int8_t> done(v.size(), 0);
   for (Size i = 0; i < v.size(); ++i) {
     if (done[i] == 1) {
       continue;
     }
-    done[i] = true;
+    done[i] = 1;
     Size prev_j = i;
     Size j = perm[i];
     while (i != j) {
       um2::swap(v[prev_j], v[j]);
-      done[j] = true;
+      done[j] = 1;
       prev_j = j;
       j = perm[j];
     }
