@@ -21,13 +21,21 @@ setGlobalMeshSize(double size);
 
 auto
 setMeshFieldFromGroups(int dim, std::vector<std::string> const & groups,
-                       std::vector<double> const & sizes) -> std::vector<int>;
+                       std::vector<double> const & sizes) -> int;
 
 auto
-setMeshFieldFromKnudsenNumber(int dim, std::vector<Material<Float>> const & materials,
+setMeshFieldFromKnudsenNumber(int dim, std::vector<Material<double>> const & materials,
                               double kn_target,
+                              double mfp_threshold = -1.0,
+                              std::vector<int> const & is_fuel = {}, // 1 for fuel, 0 for moderator
                               XSReductionStrategy strategy = XSReductionStrategy::Mean)
-    -> std::vector<int>;
+    -> int;
+
+//auto
+//coarsenModeratorFieldByFuelDistance(int dim, int field_id, 
+//    std::vector<Material<double>> const & fuel_materials,
+//    Material<double> const & moderator)
+//    -> int; 
 
 void
 generateMesh(MeshType mesh_type, int smooth_iters = 100);

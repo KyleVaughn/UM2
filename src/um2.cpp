@@ -19,21 +19,22 @@ initialize(String const & verbosity)
   String verbosity_upper = verbosity;
   std::transform(verbosity.data(), verbosity.data() + verbosity.size(),
                  verbosity_upper.data(), ::toupper);
+  // NOLINTNEXTLINE(bugprone-branch-clone)
   if (verbosity_upper == "TRACE") {
-    Log::setMaxVerbosityLevel(LogVerbosity::Trace);
+    Log::setLevel(LogLevel::Trace);
   } else if (verbosity_upper == "DEBUG") {
-    Log::setMaxVerbosityLevel(LogVerbosity::Debug);
+    Log::setLevel(LogLevel::Debug);
   } else if (verbosity_upper == "INFO") {
-    Log::setMaxVerbosityLevel(LogVerbosity::Info);
+    Log::setLevel(LogLevel::Info);
   } else if (verbosity_upper == "WARN") {
-    Log::setMaxVerbosityLevel(LogVerbosity::Warn);
+    Log::setLevel(LogLevel::Warn);
   } else if (verbosity_upper == "ERROR") {
-    Log::setMaxVerbosityLevel(LogVerbosity::Error);
+    Log::setLevel(LogLevel::Error);
   } else if (verbosity_upper == "OFF") {
-    Log::setMaxVerbosityLevel(LogVerbosity::Off);
+    Log::setLevel(LogLevel::Off);
   } else {
-    Log::setMaxVerbosityLevel(LogVerbosity::Info);
-    Log::warn("Invalid verbosity level: " + verbosity + ". Defaulting to INFO.");
+    Log::setLevel(LogLevel::Info);
+    Log::warn("Invalid log level: " + verbosity + ". Defaulting to Info.");
   }
   Log::info("Initializing UM2");
 #if UM2_USE_GMSH
@@ -51,7 +52,6 @@ void
 finalize()
 {
   Log::info("Finalizing UM2");
-  Log::flush();
 #if UM2_USE_GMSH
   if (gmsh::isInitialized() != 0) {
     gmsh::finalize();
