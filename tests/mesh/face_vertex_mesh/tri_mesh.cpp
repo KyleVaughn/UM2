@@ -94,13 +94,13 @@ template <std::floating_point T, std::signed_integral I>
 TEST_CASE(populateVF)
 {
   um2::TriMesh<2, T, I> mesh = makeTriReferenceMesh<2, T, I>();
-  ASSERT(mesh.getVFOffsets().empty());
-  ASSERT(mesh.getVF().empty());
+  ASSERT(mesh.vertexFaceOffsets().empty());
+  ASSERT(mesh.vertexFaceConn().empty());
   mesh.populateVF();
   um2::Vector<I> const vf_offsets_ref = {0, 2, 3, 5, 6};
   um2::Vector<I> const vf_ref = {0, 1, 0, 0, 1, 1};
-  ASSERT(mesh.getVFOffsets() == vf_offsets_ref);
-  ASSERT(mesh.getVF() == vf_ref);
+  ASSERT(mesh.vertexFaceOffsets() == vf_offsets_ref);
+  ASSERT(mesh.vertexFaceConn() == vf_ref);
 }
 
 template <std::floating_point T, std::signed_integral I>

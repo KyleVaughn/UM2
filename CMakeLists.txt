@@ -144,9 +144,9 @@ endif()
 # Sources
 set(UM2_SOURCES
     "src/common/log.cpp"
-    # "src/gmsh/base_gmsh_api.cpp"
-    # "src/gmsh/io.cpp"
-    # "src/gmsh/model.cpp"
+    "src/gmsh/base_gmsh_api.cpp"
+    "src/gmsh/io.cpp"
+    "src/gmsh/model.cpp"
     # "src/gmsh/mesh.cpp"
     #    # visualization
     #    "src/visualization/Image2D.cpp"

@@ -654,7 +654,7 @@ PURE HOSTDEV constexpr auto BinnedFaceVertexMesh<P, N, D, T, I>::getFaceIDsInBox
 //// template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 //// void
 //// toMeshFile(FaceVertexMesh<P, N, D, T, I> const & mesh, MeshFile<T, I> & file)
-///noexcept
+/// noexcept
 ////{
 ////   // Default to XDMf
 ////   file.format = MeshFileFormat::XDMF;

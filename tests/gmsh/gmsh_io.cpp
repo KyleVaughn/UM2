@@ -1,5 +1,5 @@
 #include <um2/common/log.hpp>
-#include <um2/config.hpp>
+
 #if UM2_USE_GMSH
 #  include <um2/gmsh/io.hpp>
 #endif
@@ -70,7 +70,7 @@ auto
 main() -> int
 {
 #if UM2_USE_GMSH
-  um2::Log::setMaxVerbosityLevel(um2::LogVerbosity::Error);
+  um2::Log::setLevel(um2::LogLevel::Error);
   RUN_SUITE(gmsh_io);
 #endif
   return 0;

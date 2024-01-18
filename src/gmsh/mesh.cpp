@@ -167,14 +167,6 @@ setMeshFieldFromKnudsenNumber(int const dim,
                               double const kn_target, XSReductionStrategy const strategy)
     -> std::vector<int>
 {
-  // Check that each material has a cross section
-  for (auto const & mat : materials) {
-    if (!mat.hasTotalCrossSection()) {
-      LOG_ERROR("Material " + String(mat.name.data()) +
-                " does not have a total cross section");
-    }
-  }
-
   // Check that each material exists as a physical group
   gmsh::vectorpair dimtags;
   gmsh::model::getPhysicalGroups(dimtags, dim);

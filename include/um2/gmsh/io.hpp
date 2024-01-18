@@ -19,4 +19,5 @@ void
 open(std::string const & filename, bool extra_info);
 
 } // namespace um2::gmsh
+
 #endif // UM2_USE_GMSH

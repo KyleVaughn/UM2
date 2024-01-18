@@ -1,7 +1,5 @@
 #include <um2/mesh/regular_partition.hpp>
 
-// #include <um2/common/log.hpp>
-
 #include "../test_macros.hpp"
 
 template <Size D, typename T, typename P>
@@ -26,8 +24,6 @@ makePart() -> um2::RegularPartition<D, T, P>
     children = {1, 2, 3, 4, 5, 6};
   }
   um2::RegularGrid<D, T> const grid(minima, spacing, num_cells);
-  //  um2::Log::info("Grid size " + um2::toString(grid.numTotalCells()));
-  //  um2::Log::info("Children size " + um2::toString(children.size()));
   um2::RegularPartition<D, T, P> part(grid, um2::move(children));
   return part;
 }
@@ -40,33 +36,33 @@ TEST_CASE(accessors)
   um2::RegularPartition<D, T, P> const part = makePart<D, T, P>();
   if constexpr (D >= 1) {
     T const xmin = static_cast<T>(1);
-    ASSERT_NEAR(part.xMin(), xmin, eps);
+    ASSERT_NEAR(part.grid().xMin(), xmin, eps);
     T const dx = static_cast<T>(1);
-    ASSERT_NEAR(part.dx(), dx, eps);
+    ASSERT_NEAR(part.grid().dx(), dx, eps);
     Size const nx = 1;
-    ASSERT(part.numXCells() == nx);
-    ASSERT_NEAR(part.width(), dx * static_cast<T>(nx), eps);
-    ASSERT_NEAR(part.xMax(), xmin + dx * static_cast<T>(nx), eps);
+    ASSERT(part.grid().numXCells() == nx);
+    ASSERT_NEAR(part.grid().width(), dx * static_cast<T>(nx), eps);
+    ASSERT_NEAR(part.grid().xMax(), xmin + dx * static_cast<T>(nx), eps);
   }
   if constexpr (D >= 2) {
     T const ymin = static_cast<T>(2);
-    ASSERT_NEAR(part.yMin(), ymin, eps);
+    ASSERT_NEAR(part.grid().yMin(), ymin, eps);
     T const dy = static_cast<T>(2);
-    ASSERT_NEAR(part.dy(), dy, eps);
+    ASSERT_NEAR(part.grid().dy(), dy, eps);
     Size const ny = 2;
-    ASSERT(part.numYCells() == ny);
-    ASSERT_NEAR(part.height(), dy * static_cast<T>(ny), eps);
-    ASSERT_NEAR(part.yMax(), ymin + dy * static_cast<T>(ny), eps);
+    ASSERT(part.grid().numYCells() == ny);
+    ASSERT_NEAR(part.grid().height(), dy * static_cast<T>(ny), eps);
+    ASSERT_NEAR(part.grid().yMax(), ymin + dy * static_cast<T>(ny), eps);
   }
   if constexpr (D >= 3) {
     T const zmin = static_cast<T>(3);
-    ASSERT_NEAR(part.zMin(), zmin, eps);
+    ASSERT_NEAR(part.grid().zMin(), zmin, eps);
     T const dz = static_cast<T>(3);
-    ASSERT_NEAR(part.dz(), dz, eps);
+    ASSERT_NEAR(part.grid().dz(), dz, eps);
     Size const nz = 3;
-    ASSERT(part.numZCells() == nz);
-    ASSERT_NEAR(part.depth(), dz * static_cast<T>(nz), eps);
-    ASSERT_NEAR(part.zMax(), zmin + dz * static_cast<T>(nz), eps);
+    ASSERT(part.grid().numZCells() == nz);
+    ASSERT_NEAR(part.grid().depth(), dz * static_cast<T>(nz), eps);
+    ASSERT_NEAR(part.grid().zMax(), zmin + dz * static_cast<T>(nz), eps);
   }
 }
 
@@ -76,18 +72,18 @@ TEST_CASE(boundingBox)
 {
   T constexpr eps = static_cast<T>(1e-6);
   um2::RegularPartition<D, T, P> const part = makePart<D, T, P>();
-  um2::AxisAlignedBox<D, T> const box = part.boundingBox();
+  um2::AxisAlignedBox<D, T> const box = part.grid().boundingBox();
   if constexpr (D >= 1) {
-    ASSERT_NEAR(box.minima()[0], part.xMin(), eps);
-    ASSERT_NEAR(box.maxima()[0], part.xMax(), eps);
+    ASSERT_NEAR(box.minima()[0], part.grid().xMin(), eps);
+    ASSERT_NEAR(box.maxima()[0], part.grid().xMax(), eps);
   }
   if constexpr (D >= 2) {
-    ASSERT_NEAR(box.minima()[1], part.yMin(), eps);
-    ASSERT_NEAR(box.maxima()[1], part.yMax(), eps);
+    ASSERT_NEAR(box.minima()[1], part.grid().yMin(), eps);
+    ASSERT_NEAR(box.maxima()[1], part.grid().yMax(), eps);
   }
   if constexpr (D >= 3) {
-    ASSERT_NEAR(box.minima()[2], part.zMin(), eps);
-    ASSERT_NEAR(box.maxima()[2], part.zMax(), eps);
+    ASSERT_NEAR(box.minima()[2], part.grid().zMin(), eps);
+    ASSERT_NEAR(box.maxima()[2], part.grid().zMax(), eps);
   }
 }
 
@@ -110,41 +106,41 @@ TEST_CASE(getBox_and_getChild)
     children[i] = static_cast<P>(i);
   }
   um2::RegularPartition<2, T, P> part(grid, children);
-  um2::AxisAlignedBox2<T> box = part.getBox(0, 0);
+  um2::AxisAlignedBox2<T> box = part.grid().getBox(0, 0);
   um2::AxisAlignedBox2<T> box_ref = {
       {          1,             -1},
       {one + ahalf, -three * forth}
   };
   ASSERT(isApprox(box, box_ref));
-  box = part.getBox(1, 0);
+  box = part.grid().getBox(1, 0);
   //{ { 1.5, -1.0 }, { 2.0, -0.75 } };
   box_ref = {
       {one + ahalf,           -one},
       {        two, -three * forth}
   };
   ASSERT(isApprox(box, box_ref));
-  box = part.getBox(3, 0);
+  box = part.grid().getBox(3, 0);
   // box_ref = { { 2.5, -1.0 }, { 3.0, -0.75 } };
   box_ref = {
       {two + ahalf,           -one},
       {      three, -three * forth}
   };
   ASSERT(isApprox(box, box_ref));
-  box = part.getBox(0, 1);
+  box = part.grid().getBox(0, 1);
   // box_ref = { { 1.0, -0.75 }, { 1.5, -0.5 } };
   box_ref = {
       {        one, -three * forth},
       {one + ahalf,         -ahalf}
   };
   ASSERT(isApprox(box, box_ref));
-  box = part.getBox(0, 7);
+  box = part.grid().getBox(0, 7);
   // box_ref = { { 1.0, 0.75 }, { 1.5, 1.0 } };
   box_ref = {
       {        one, three * forth},
       {one + ahalf,           one}
   };
   ASSERT(isApprox(box, box_ref));
-  box = part.getBox(3, 7);
+  box = part.grid().getBox(3, 7);
   // box_ref = { { 2.5, 0.75 }, { 3.0, 1.0 } };
   box_ref = {
       {two + ahalf, three * forth},

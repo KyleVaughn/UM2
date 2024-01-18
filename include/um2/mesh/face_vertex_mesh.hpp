@@ -82,6 +82,9 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getVertex(Size i) const noexcept -> Point<D, T>;
 
+  HOSTDEV [[nodiscard]] constexpr auto
+  vertices() noexcept -> Vector<Point<D, T>> &;
+
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getEdge(Size iface, Size iedge) const noexcept -> Edge;
 
@@ -89,10 +92,13 @@ public:
   getFace(Size i) const noexcept -> Face;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getVFOffsets() const noexcept -> Vector<I> const &;
+  vertexFaceOffsets() const noexcept -> Vector<I> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getVF() const noexcept -> Vector<I> const &;
+  vertexFaceConn() const noexcept -> Vector<I> const &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  faceVertexConn() const noexcept -> Vector<FaceConn> const &;
 
   //===========================================================================
   // Methods
@@ -308,6 +314,13 @@ FaceVertexMesh<P, N, D, T, I>::getVertex(Size i) const noexcept -> Point<D, T>
 }
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+HOSTDEV [[nodiscard]] constexpr auto
+FaceVertexMesh<P, N, D, T, I>::vertices() noexcept -> Vector<Point<D, T>> &
+{
+  return _v;
+}
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 FaceVertexMesh<P, N, D, T, I>::getEdge(Size const iface, Size const iedge) const noexcept
     -> Edge
@@ -357,16 +370,23 @@ FaceVertexMesh<P, N, D, T, I>::getFace(Size i) const noexcept -> Face
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 PURE HOSTDEV constexpr auto
-FaceVertexMesh<P, N, D, T, I>::getVFOffsets() const noexcept -> Vector<I> const &
+FaceVertexMesh<P, N, D, T, I>::vertexFaceOffsets() const noexcept -> Vector<I> const &
 {
   return _vf_offsets;
 }
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 PURE HOSTDEV constexpr auto
-FaceVertexMesh<P, N, D, T, I>::getVF() const noexcept -> Vector<I> const &
+FaceVertexMesh<P, N, D, T, I>::vertexFaceConn() const noexcept -> Vector<I> const &
 {
   return _vf;
+}
+
+template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
+PURE HOSTDEV constexpr auto
+FaceVertexMesh<P, N, D, T, I>::faceVertexConn() const noexcept -> Vector<FaceConn> const &
+{
+  return _fv;
 }
 
 //==============================================================================

@@ -5,7 +5,7 @@
 #include <um2/mesh/regular_partition.hpp>
 #include <um2/physics/material.hpp>
 
-// #include <iomanip>
+#include <iomanip>
 
 namespace um2::mpact
 {
@@ -133,6 +133,21 @@ public:
   PURE [[nodiscard]] constexpr auto
   getAssembly(Size asy_id) const noexcept -> Assembly const &;
 
+  PURE [[nodiscard]] constexpr auto
+  getCore() const noexcept -> Core const &;
+
+  PURE [[nodiscard]] constexpr auto
+  getTriMesh(Size mesh_id) const noexcept -> TriMesh<2, T, I> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  getQuadMesh(Size mesh_id) const noexcept -> QuadMesh<2, T, I> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  getQuadraticTriMesh(Size mesh_id) const noexcept -> QuadraticTriMesh<2, T, I> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  getQuadraticQuadMesh(Size mesh_id) const noexcept -> QuadraticQuadMesh<2, T, I> const &;
+
   //============================================================================
   // Methods
   //============================================================================
@@ -143,13 +158,15 @@ public:
   inline void
   checkMeshExists(MeshType mesh_type, Size mesh_id) const;
 
-  //  auto
-  //  makeCylindricalPinMesh(Vector<T> const & radii, T pitch, Vector<Size> const &
-  //  num_rings,
-  //                         Size num_azimuthal, Size mesh_order = 1) -> Size;
-  //
-  //  auto
-  //  makeRectangularPinMesh(Vec2<T> dxdy, Size nx, Size ny);
+  auto
+  addMaterial(Material<T> const & material) -> Size;
+
+  auto
+  makeCylindricalPinMesh(Vector<T> const & radii, T pitch, Vector<Size> const & num_rings,
+                         Size num_azimuthal, Size mesh_order = 1) -> Size;
+
+  auto
+  makeRectangularPinMesh(Vec2<T> dxdy, Size nx, Size ny);
 
   auto
   makeCoarseCell(Vec2<T> dxdy, MeshType mesh_type = MeshType::None, Size mesh_id = -1,
@@ -163,19 +180,20 @@ public:
 
   //  auto
   //  stdMakeLattice(std::vector<std::vector<Size>> const & rtm_ids) -> Size;
-  //
+
   auto
   makeAssembly(Vector<Size> const & lat_ids, Vector<T> const & z = {-1, 1}) -> Size;
 
-  //  auto
-  //  makeCore(Vector<Vector<Size>> const & asy_ids) -> Size;
-  //
+  auto
+  makeCore(Vector<Vector<Size>> const & asy_ids) -> Size;
+
   //  auto
   //  stdMakeCore(std::vector<std::vector<Size>> const & asy_ids) -> Size;
-  //
-  //  void
-  //  importCoarseCells(String const & filename);
-  //
+
+  // Import coarse cells and pin meshes from a file.
+  void
+  importCoarseCells(String const & filename);
+
   //  void
   //  toPolytopeSoup(PolytopeSoup<T, I> & soup, bool write_kn = false) const;
   //
@@ -189,6 +207,46 @@ public:
   //  writeXDMF(String const & filepath, bool write_kn = false) const;
   //
 }; // struct SpatialPartition
+
+//=============================================================================
+// checkMeshExists
+//=============================================================================
+
+template <std::floating_point T, std::integral I>
+inline void
+SpatialPartition<T, I>::checkMeshExists(MeshType mesh_type, Size mesh_id) const
+{
+  switch (mesh_type) {
+  case MeshType::Tri:
+    if (0 > mesh_id || mesh_id >= this->_tri.size()) {
+      Log::error("Tri mesh " + toString(mesh_id) + " does not exist");
+    }
+    break;
+  case MeshType::Quad:
+    if (0 > mesh_id || mesh_id >= this->_quad.size()) {
+      Log::error("Quad mesh " + toString(mesh_id) + " does not exist");
+    }
+    break;
+  case MeshType::QuadraticTri:
+    if (0 > mesh_id || mesh_id >= this->_quadratic_tri.size()) {
+      Log::error("Quadratic tri mesh " + toString(mesh_id) + " does not exist");
+    }
+    break;
+  case MeshType::QuadraticQuad:
+    if (0 > mesh_id || mesh_id >= this->_quadratic_quad.size()) {
+      Log::error("Quadratic quad mesh " + toString(mesh_id) + " does not exist");
+    }
+    break;
+  default:
+    Log::error("Invalid mesh type");
+  }
+}
+
+#if UM2_ENABLE_ASSERTS
+#  define CHECK_MESH_EXISTS(mesh_type, mesh_id) checkMeshExists(mesh_type, mesh_id)
+#else
+#  define CHECK_MESH_EXISTS(mesh_type, mesh_id)
+#endif
 
 //=============================================================================
 // Accessors
@@ -250,6 +308,49 @@ SpatialPartition<T, I>::getAssembly(Size asy_id) const noexcept -> Assembly cons
   return _assemblies[asy_id];
 }
 
+template <std::floating_point T, std::integral I>
+PURE [[nodiscard]] constexpr auto
+SpatialPartition<T, I>::getCore() const noexcept -> Core const &
+{
+  return _core;
+}
+
+template <std::floating_point T, std::integral I>
+PURE [[nodiscard]] constexpr auto
+SpatialPartition<T, I>::getTriMesh(Size mesh_id) const noexcept
+    -> TriMesh<2, T, I> const &
+{
+  CHECK_MESH_EXISTS(MeshType::Tri, mesh_id);
+  return _tri[mesh_id];
+}
+
+template <std::floating_point T, std::integral I>
+PURE [[nodiscard]] constexpr auto
+SpatialPartition<T, I>::getQuadMesh(Size mesh_id) const noexcept
+    -> QuadMesh<2, T, I> const &
+{
+  CHECK_MESH_EXISTS(MeshType::Quad, mesh_id);
+  return _quad[mesh_id];
+}
+
+template <std::floating_point T, std::integral I>
+PURE [[nodiscard]] constexpr auto
+SpatialPartition<T, I>::getQuadraticTriMesh(Size mesh_id) const noexcept
+    -> QuadraticTriMesh<2, T, I> const &
+{
+  CHECK_MESH_EXISTS(MeshType::QuadraticTri, mesh_id);
+  return _quadratic_tri[mesh_id];
+}
+
+template <std::floating_point T, std::integral I>
+PURE [[nodiscard]] constexpr auto
+SpatialPartition<T, I>::getQuadraticQuadMesh(Size mesh_id) const noexcept
+    -> QuadraticQuadMesh<2, T, I> const &
+{
+  CHECK_MESH_EXISTS(MeshType::QuadraticQuad, mesh_id);
+  return _quadratic_quad[mesh_id];
+}
+
 //=============================================================================
 // clear
 //=============================================================================
@@ -272,606 +373,580 @@ SpatialPartition<T, I>::clear() noexcept
   _quadratic_quad.clear();
 }
 
-////=============================================================================
-//// makeCylindricalPinMesh
-////=============================================================================
-//
-// template <std::floating_point T, std::integral I>
-// auto
-//// NOLINTNEXTLINE
-// SpatialPartition<T, I>::makeCylindricalPinMesh(Vector<T> const & radii, T const pitch,
-//                                                Vector<Size> const & num_rings,
-//                                                Size const num_azimuthal,
-//                                                Size const mesh_order) -> Size
-//{
-//   LOG_DEBUG("Making cylindrical pin mesh");
-//   if ((num_azimuthal & (num_azimuthal - 1)) != 0) {
-//     Log::error("The number of azimuthal divisions must be a power of 2");
-//     return -1;
-//   }
-//   if (num_azimuthal < 8) {
-//     Log::error("The number of azimuthal divisions must be at least 8");
-//     return -1;
-//   }
-//   if (radii.size() != num_rings.size()) {
-//     Log::error("The number of radii must match the size of num_rings");
-//     return -1;
-//   }
-//   if (std::any_of(radii.begin(), radii.end(),
-//                   [pitch](double r) { return r > pitch / 2; })) {
-//     Log::error("The radii must be less than half the pitch");
-//     return -1;
-//   }
-//
-//   Size mesh_id = -1;
-//   if (mesh_order == 1) {
-//     mesh_id = this->quad.size();
-//     Log::info("Making linear quadrilateral cylindrical pin mesh " + toString(mesh_id));
-//   } else if (mesh_order == 2) {
-//     mesh_id = this->quadratic_quad.size();
-//     Log::info("Making quadratic quadrilateral cylindrical pin mesh " +
-//     toString(mesh_id));
-//   } else {
-//     Log::error("Invalid mesh order");
-//     return -1;
-//   }
-//
-//   // radial region = region containing different materials (rings + outside of
-//   // the last radius)
-//   //
-//   // radial_region_areas = area of each radial region, including outside of the last
-//   // radius
-//   //
-//   // ring = an equal area division of a radial region containing the same material
-//   //
-//   // ring_radii = the radius of each ring, NOT including the outside of the last
-//   // radius
-//   //   ring_areas = the area of each ring, including the outside of the last radius
-//
-//   //---------------------------------------------------------------------------
-//   // Get the area of each radial region (rings + outside of the last ring)
-//   //---------------------------------------------------------------------------
-//   Size const num_radial_regions = radii.size() + 1;
-//   Vector<T> radial_region_areas(num_radial_regions);
-//   // A0 = pi * r0^2
-//   // Ai = pi * (ri^2 - ri-1^2)
-//   radial_region_areas[0] = pi<T> * radii[0] * radii[0];
-//   for (Size i = 1; i < num_radial_regions - 1; ++i) {
-//     radial_region_areas[i] = pi<T> * (radii[i] * radii[i] - radii[i - 1] * radii[i -
-//     1]);
-//   }
-//   radial_region_areas[num_radial_regions - 1] =
-//       pitch * pitch - radial_region_areas[num_radial_regions - 2];
-//
-//   //---------------------------------------------------------------------------
-//   // Get the radii and areas of each ring after splitting the radial regions
-//   // This includes outside of the last ring
-//   //---------------------------------------------------------------------------
-//   Size const total_rings = std::reduce(num_rings.begin(), num_rings.end(), 0);
-//   Vector<T> ring_radii(total_rings);
-//   Vector<T> ring_areas(total_rings + 1);
-//   // Inside the innermost region
-//   ring_areas[0] = radial_region_areas[0] / num_rings[0];
-//   ring_radii[0] = um2::sqrt(ring_areas[0] / pi<T>);
-//   for (Size i = 1; i < num_rings[0]; ++i) {
-//     ring_areas[i] = ring_areas[0];
-//     ring_radii[i] =
-//         um2::sqrt(ring_areas[i] / pi<T> + ring_radii[i - 1] * ring_radii[i - 1]);
-//   }
-//   Size ctr = num_rings[0];
-//   for (Size ireg = 1; ireg < num_radial_regions - 1; ++ireg) {
-//     Size const num_rings_in_region = num_rings[ireg];
-//     T const area_per_ring = radial_region_areas[ireg] / num_rings_in_region;
-//     for (Size iring = 0; iring < num_rings_in_region; ++iring, ++ctr) {
-//       ring_areas[ctr] = area_per_ring;
-//       ring_radii[ctr] =
-//           um2::sqrt(area_per_ring / pi<T> + ring_radii[ctr - 1] * ring_radii[ctr - 1]);
-//     }
-//   }
-//   // Outside of the last ring
-//   ring_areas[ctr] = pitch * pitch - pi<T> * ring_radii.back() * ring_radii.back();
-//   // Log the radii and areas in debug mode
-//   for (Size i = 0; i < total_rings; ++i) {
-//     LOG_TRACE("Ring " + toString(i) + " radius: " + toString(ring_radii[i]));
-//     LOG_TRACE("Ring " + toString(i) + " area: " + toString(ring_areas[i]));
-//   }
-//   LOG_TRACE("The area outside of the last ring is " + toString(ring_areas[ctr]));
-//   // Ensure the sum of the ring areas is equal to pitch^2
-//   T const sum_ring_areas =
-//       std::reduce(ring_areas.begin(), ring_areas.end(), static_cast<T>(0));
-//   ASSERT_NEAR(sum_ring_areas, pitch * pitch, static_cast<T>(1e-6));
-//   if (mesh_order == 1) {
-//     // Get the equivalent radius of each ring if it were a quadrilateral
-//     T const theta = 2 * pi<T> / num_azimuthal;
-//     T const sin_theta = um2::sin(theta);
-//     Vector<T> eq_radii(total_rings);
-//     // The innermost radius is a special case, and is essentially a triangle.
-//     // A_t = l² * sin(θ) / 2
-//     // A_ring = num_azi * A_t = l² * sin(θ) * num_azi / 2
-//     // l = sqrt(2 * A_ring / (sin(θ) * num_azi))
-//     eq_radii[0] = um2::sqrt(2 * ring_areas[0] / (sin_theta * num_azimuthal));
-//     // A_q = (l² - l²₀) * sin(θ) / 2
-//     // A_ring = num_azi * A_q = (l² - l²₀) * sin(θ) * num_azi / 2
-//     // l = sqrt(2 * A_ring / (sin(θ) * num_azi) + l²₀)
-//     for (Size i = 1; i < total_rings; ++i) {
-//       eq_radii[i] = um2::sqrt(2 * ring_areas[i] / (sin_theta * num_azimuthal) +
-//                               eq_radii[i - 1] * eq_radii[i - 1]);
-//     }
-//     for (Size i = 0; i < total_rings; ++i) {
-//       LOG_TRACE("Ring " + toString(i) + " equivalent radius: " +
-//       toString(eq_radii[i]));
-//     }
-//     // If any of the equivalent radii are larger than half the pitch, error
-//     if (std::any_of(eq_radii.begin(), eq_radii.end(),
-//                     [pitch](double r) { return r > pitch / 2; })) {
-//       Log::error("The equivalent radius of a ring is larger than half the pitch");
-//       return -1;
-//     }
-//     // Sanity check: ensure the sum of the quadrilateral areas in a ring is equal to
-//     // the ring area
-//     ASSERT_NEAR(eq_radii[0] * eq_radii[0] * sin_theta / 2, ring_areas[0] /
-//     num_azimuthal,
-//                 static_cast<T>(1e-4));
-//     for (Size i = 1; i < total_rings; ++i) {
-//       T const area =
-//           (eq_radii[i] * eq_radii[i] - eq_radii[i - 1] * eq_radii[i - 1]) * sin_theta /
-//           2;
-//       ASSERT_NEAR(area, ring_areas[i] / num_azimuthal, static_cast<T>(1e-4));
-//     }
-//
-//     //------------------------------------------------------------------------
-//     // Get the points that make up the mesh
-//     //------------------------------------------------------------------------
-//     // The number of points is:
-//     //   Center point
-//     //   num_azimuthal / 2, for the points in the innermost ring to make the quads
-//     //      "triangular"
-//     //   (num_rings + 1) * num_azimuthal
-//     Size const num_points = 1 + (total_rings + 1) * num_azimuthal + num_azimuthal / 2;
-//     Vector<Point2<T>> vertices(num_points);
-//     LOG_TRACE("The number of points is " + toString(num_points));
-//     // Center point
-//     vertices[0] = {0, 0};
-//     // Triangular points
-//     LOG_TRACE("Computing the triangular points");
-//     T const rt = eq_radii[0] / 2;
-//     for (Size ia = 0; ia < num_azimuthal / 2; ++ia) {
-//       T const sin_ia_theta = um2::sin(theta * (2 * ia + 1));
-//       T const cos_ia_theta = um2::cos(theta * (2 * ia + 1));
-//       vertices[1 + ia] = {rt * cos_ia_theta, rt * sin_ia_theta};
-//     }
-//     LOG_TRACE("Computing the quadrilateral points");
-//     // Quadrilateral points
-//     // Points on rings, not including the boundary of the pin (pitch / 2 box)
-//     for (Size ir = 0; ir < total_rings; ++ir) {
-//       Size const num_prev_points = 1 + num_azimuthal / 2 + ir * num_azimuthal;
-//       for (Size ia = 0; ia < num_azimuthal; ++ia) {
-//         T sin_ia_theta = um2::sin(theta * ia);
-//         T cos_ia_theta = um2::cos(theta * ia);
-//         if (um2::abs(sin_ia_theta) < static_cast<T>(1e-6)) {
-//           sin_ia_theta = 0;
-//         }
-//         if (um2::abs(cos_ia_theta) < static_cast<T>(1e-6)) {
-//           cos_ia_theta = 0;
-//         }
-//         vertices[num_prev_points + ia] = {eq_radii[ir] * cos_ia_theta,
-//                                           eq_radii[ir] * sin_ia_theta};
-//       }
-//     }
-//     LOG_TRACE("Computing the boundary points");
-//     // Points on the boundary of the pin (pitch / 2)
-//     Size const num_prev_points = 1 + num_azimuthal / 2 + total_rings * num_azimuthal;
-//     for (Size ia = 0; ia < num_azimuthal; ++ia) {
-//       T sin_ia_theta = std::sin(theta * ia);
-//       T cos_ia_theta = std::cos(theta * ia);
-//       if (um2::abs(sin_ia_theta) < 1e-6) {
-//         sin_ia_theta = 0;
-//       }
-//       if (um2::abs(cos_ia_theta) < 1e-6) {
-//         cos_ia_theta = 0;
-//       }
-//       T const rx = um2::abs(pitch / (2 * cos_ia_theta));
-//       T const ry = um2::abs(pitch / (2 * sin_ia_theta));
-//       T const rb = um2::min(rx, ry);
-//       vertices[num_prev_points + ia] = {rb * cos_ia_theta, rb * sin_ia_theta};
-//     }
-//     for (Size i = 0; i < num_points; ++i) {
-//       LOG_TRACE("Point " + toString(i) + ": " + toString(vertices[i][0]) + ", " +
-//                 toString(vertices[i][1]));
-//     }
-//
-//     //------------------------------------------------------------------------
-//     // Get the faces that make up the mesh
-//     //------------------------------------------------------------------------
-//     Size const num_faces = num_azimuthal * (total_rings + 1);
-//     Vector<Vec<4, I>> faces(num_faces);
-//     // Establish a few aliases
-//     Size const na = num_azimuthal;
-//     Size const nr = total_rings;
-//     Size const ntric = 1 + na / 2; // Number of triangular points + center point
-//     // Triangular quads
-//     for (Size ia = 0; ia < na / 2; ++ia) {
-//       Size const p0 = 0;                  // Center point
-//       Size const p1 = ntric + ia * 2;     // Bottom right point on ring
-//       Size const p2 = ntric + ia * 2 + 1; // Top right point on ring
-//       Size const p3 = 1 + ia;             // The triangular point
-//       Size p4 = ntric + ia * 2 + 2;       // Top left point on ring
-//       // If we're at the end of the ring, wrap around
-//       if (p4 == ntric + na) {
-//         p4 = ntric;
-//       }
-//       faces[2 * ia] = {p0, p1, p2, p3};
-//       faces[2 * ia + 1] = {p0, p3, p2, p4};
-//     }
-//     // Non-boundary and boundary quads
-//     for (Size ir = 1; ir < nr + 1; ++ir) {
-//       for (Size ia = 0; ia < na; ++ia) {
-//         Size const p0 = ntric + (ir - 1) * na + ia; // Bottom left point
-//         Size const p1 = ntric + (ir)*na + ia;       // Bottom right point
-//         Size p2 = ntric + (ir)*na + ia + 1;         // Top right point
-//         Size p3 = ntric + (ir - 1) * na + ia + 1;   // Top left point
-//         // If we're at the end of the ring, wrap around
-//         if (ia + 1 == na) {
-//           p2 -= na;
-//           p3 -= na;
-//         }
-//         faces[ir * na + ia] = {p0, p1, p2, p3};
-//       }
-//     }
-//     // Shift such that the lower left corner is at the origin
-//     T const half_pitch = pitch / 2;
-//     for (Size i = 0; i < num_points; ++i) {
-//       vertices[i] += half_pitch;
-//       // Fix close to zero values
-//       if (um2::abs(vertices[i][0]) < static_cast<T>(1e-6)) {
-//         vertices[i][0] = 0;
-//       }
-//       if (um2::abs(vertices[i][1]) < static_cast<T>(1e-6)) {
-//         vertices[i][1] = 0;
-//       }
-//     }
-//     QuadMesh<2, T, I> mesh;
-//     mesh.vertices = vertices;
-//     mesh.fv = faces;
-//     mesh.populateVF();
-//     this->quad.push_back(um2::move(mesh));
-//     LOG_TRACE("Finished creating mesh");
-//     return mesh_id;
-//   }
-//   if (mesh_order == 2) {
-//     // Get the equivalent radius of each ring if it were a quadratic quadrilateral
-//     T const theta = 2 * pi<T> / num_azimuthal;
-//     T const gamma = theta / 2;
-//     T const sin_gamma = um2::sin(gamma);
-//     T const cos_gamma = um2::cos(gamma);
-//     T const sincos_gamma = sin_gamma * cos_gamma;
-//     Vector<T> eq_radii(total_rings);
-//     // The innermost radius is a special case, and is essentially a triangle.
-//     // Each quadratic shape is made up of the linear shape plus quadratic edges
-//     // A_t = l² * sin(θ) / 2 = l² * sin(θ/2) * cos(θ/2)
-//     // A_q = (l² - l²₀) * sin(θ) / 2 = (l² - l²₀) * sin(θ/2) * cos(θ/2)
-//     // A_edge = (4 / 3) the area of the triangle formed by the vertices of the edge.
-//     //        = (4 / 3) * 2l sin(θ/2) * (L - l cos(θ/2)) / 2
-//     //        = (4 / 3) * l sin(θ/2) * (L - l cos(θ/2))
-//     //
-//     // For N + 1 rings
-//     // A_0 = pi R_0² = Na ( A_t + A_e0)
-//     // A_i = pi (R_i² - R_{i-1}²) = Na ( A_q + A_ei - A_ei-1)
-//     // A_N = P² - pi R_N² = P² - sum_i=0^N A_i
-//     // Constraining L_N to be the value which minimizes the 2-norm of the integral of
-//     // the quadratic segment minus the circle arc is the correct thing to do, but holy
-//     // cow the integral is a mess.
-//     // Therefore we settle for constraining l_i = r_i
-//     T tri_area = ring_radii[0] * ring_radii[0] * sincos_gamma;
-//     T ring_area = ring_areas[0] / num_azimuthal;
-//     T const l0 = ring_radii[0];
-//     eq_radii[0] = 0.75 * (ring_area - tri_area) / (l0 * sin_gamma) + l0 * cos_gamma;
-//     for (Size i = 1; i < total_rings; ++i) {
-//       T const l_im1 = ring_radii[i - 1];
-//       T const ll_im1 = eq_radii[i - 1];
-//       T const a_edge_im1 = (4.0 / 3.0) * l_im1 * sin_gamma * (ll_im1 - l_im1 *
-//       cos_gamma); T const l = ring_radii[i]; T const a_quad = (l * l - l_im1 * l_im1) *
-//       sincos_gamma; T const a_ring = ring_areas[i] / num_azimuthal; eq_radii[i] =
-//           0.75 * (a_ring - a_quad + a_edge_im1) / (l * sin_gamma) + l * cos_gamma;
-//     }
-//     // Log the equivalent radii in debug mode
-//     for (Size i = 0; i < total_rings; ++i) {
-//       Log::debug("Ring " + toString(i) + " equivalent radius: " +
-//       toString(eq_radii[i]));
-//     }
-//     // If any of the equivalent radii are larger than half the pitch, error
-//     if (std::any_of(eq_radii.begin(), eq_radii.end(),
-//                     [pitch](double r) { return r > pitch / 2; })) {
-//       Log::error("The equivalent radius of a ring is larger than half the pitch.");
-//       return -1;
-//     }
-//
-//     //-------------------------------------------------------------------------
-//     // Get the points that make up the mesh
-//     //-------------------------------------------------------------------------
-//     // The number of points is:
-//     //   Center point
-//     //   2 * num_azimuthal for the triangular points inside the first ring
-//     //   2 * num_azimuthal for the triangular points on the first ring
-//     //   3 * num_azimuthal * total_rings
-//     //
-//     // Some aliases to make the code more readable
-//     Size const na = num_azimuthal;
-//     Size const nr = total_rings;
-//     Size const num_points = 1 + 4 * na + 3 * na * nr;
-//     Vector<Point2<T>> vertices(num_points);
-//     // Center point
-//     vertices[0] = {0, 0};
-//     // Triangular points
-//     T const rt = ring_radii[0] / 2;
-//     for (Size ia = 0; ia < na; ++ia) {
-//       T const sin_ia_theta = um2::sin(ia * theta);
-//       T const cos_ia_theta = um2::cos(ia * theta);
-//       // if ia is 0 or even, just do the 1 center point, otherwise we need 3 points
-//       // at (1/4, 2/4, 3/4) of the radius
-//       if (ia % 2 == 0) {
-//         vertices[1 + 2 * ia] = {rt * cos_ia_theta, rt * sin_ia_theta};
-//       } else {
-//         vertices[2 * ia] = {rt * cos_ia_theta / 2, rt * sin_ia_theta / 2};
-//         vertices[2 * ia + 1] = {rt * cos_ia_theta, rt * sin_ia_theta};
-//         vertices[2 * ia + 2] = {3 * rt * cos_ia_theta / 2, 3 * rt * sin_ia_theta / 2};
-//       }
-//     }
-//     // Points on the first ring
-//     Size num_prev_points = 1 + 2 * na;
-//     for (Size ia = 0; ia < 2 * na; ++ia) {
-//       T sin_ia_gamma = um2::sin(ia * gamma);
-//       T cos_ia_gamma = um2::cos(ia * gamma);
-//       if (um2::abs(sin_ia_gamma) < 1e-6) {
-//         sin_ia_gamma = 0;
-//       }
-//       if (um2::abs(cos_ia_gamma) < 1e-6) {
-//         cos_ia_gamma = 0;
-//       }
-//       // if ia is 0 or even, we want the point at ring_radii[ir], otherwise we want
-//       // the point at eq_radii[ir]
-//       if (ia % 2 == 0) {
-//         vertices[num_prev_points + ia] = {ring_radii[0] * cos_ia_gamma,
-//                                           ring_radii[0] * sin_ia_gamma};
-//       } else {
-//         vertices[num_prev_points + ia] = {eq_radii[0] * cos_ia_gamma,
-//                                           eq_radii[0] * sin_ia_gamma};
-//       }
-//     }
-//     // Points on and between the rings
-//     for (Size ir = 1; ir < total_rings; ++ir) {
-//       num_prev_points = 1 + 4 * na + 3 * na * (ir - 1);
-//       // Between the rings
-//       for (Size ia = 0; ia < num_azimuthal; ++ia) {
-//         T sin_ia_theta = um2::sin(ia * theta);
-//         T cos_ia_theta = um2::cos(ia * theta);
-//         if (um2::abs(sin_ia_theta) < 1e-6) {
-//           sin_ia_theta = 0;
-//         }
-//         if (um2::abs(cos_ia_theta) < 1e-6) {
-//           cos_ia_theta = 0;
-//         }
-//         T const r = (ring_radii[ir] + ring_radii[ir - 1]) / 2;
-//         vertices[num_prev_points + ia] = {r * cos_ia_theta, r * sin_ia_theta};
-//       }
-//       num_prev_points += num_azimuthal;
-//       for (Size ia = 0; ia < 2 * num_azimuthal; ++ia) {
-//         T sin_ia_gamma = um2::sin(ia * gamma);
-//         T cos_ia_gamma = um2::cos(ia * gamma);
-//         if (um2::abs(sin_ia_gamma) < 1e-6) {
-//           sin_ia_gamma = 0;
-//         }
-//         if (um2::abs(cos_ia_gamma) < 1e-6) {
-//           cos_ia_gamma = 0;
-//         }
-//         // if ia is 0 or even, we want the point at ring_radii[ir], otherwise we
-//         // want the point at eq_radii[ir]
-//         if (ia % 2 == 0) {
-//           vertices[num_prev_points + ia] = {ring_radii[ir] * cos_ia_gamma,
-//                                             ring_radii[ir] * sin_ia_gamma};
-//         } else {
-//           vertices[num_prev_points + ia] = {eq_radii[ir] * cos_ia_gamma,
-//                                             eq_radii[ir] * sin_ia_gamma};
-//         }
-//       }
-//     }
-//     // Quadratic points before the boundary
-//     num_prev_points = 1 + 4 * na + 3 * na * (total_rings - 1);
-//     for (Size ia = 0; ia < num_azimuthal; ++ia) {
-//       T sin_ia_theta = um2::sin(ia * theta);
-//       T cos_ia_theta = um2::cos(ia * theta);
-//       if (um2::abs(sin_ia_theta) < 1e-6) {
-//         sin_ia_theta = 0;
-//       }
-//       if (um2::abs(cos_ia_theta) < 1e-6) {
-//         cos_ia_theta = 0;
-//       }
-//       // pitch and last ring radius
-//       T const rx = um2::abs(pitch / (2 * cos_ia_theta));
-//       T const ry = um2::abs(pitch / (2 * sin_ia_theta));
-//       T const rb = um2::min(rx, ry);
-//       T const r = (rb + ring_radii[total_rings - 1]) / 2;
-//       vertices[num_prev_points + ia] = {r * cos_ia_theta, r * sin_ia_theta};
-//     }
-//     // Points on the boundary of the pin (pitch / 2)
-//     num_prev_points += num_azimuthal;
-//     for (Size ia = 0; ia < 2 * num_azimuthal; ++ia) {
-//       T sin_ia_gamma = um2::sin(gamma * ia);
-//       T cos_ia_gamma = um2::cos(gamma * ia);
-//       if (um2::abs(sin_ia_gamma) < 1e-6) {
-//         sin_ia_gamma = 0;
-//       }
-//       if (um2::abs(cos_ia_gamma) < 1e-6) {
-//         cos_ia_gamma = 0;
-//       }
-//       T const rx = um2::abs(pitch / (2 * cos_ia_gamma));
-//       T const ry = um2::abs(pitch / (2 * sin_ia_gamma));
-//       T const rb = um2::min(rx, ry);
-//       vertices[num_prev_points + ia] = {rb * cos_ia_gamma, rb * sin_ia_gamma};
-//     }
-//     for (Size i = 0; i < num_points; ++i) {
-//       Log::debug("Point " + um2::toString(i) + ": " + um2::toString(vertices[i][0]) +
-//                  ", " + um2::toString(vertices[i][1]));
-//     }
-//
-//     //-------------------------------------------------------------------------
-//     // Get the faces that make up the mesh
-//     //-------------------------------------------------------------------------
-//     Size const num_faces = na * (nr + 1);
-//     Vector<Vec<8, I>> faces(num_faces);
-//     // Triangular quads
-//     for (Size ia = 0; ia < na / 2; ++ia) {
-//       Size const p0 = 0;                   // Center point
-//       Size const p1 = 1 + 2 * na + 4 * ia; // Bottom right point on ring
-//       Size const p2 = p1 + 2;              // Top right point on ring
-//       Size const p3 = 3 + 4 * ia;          // The triangular point
-//       Size p4 = p2 + 2;                    // Top left point on ring
-//       Size const p5 = 1 + 4 * ia;          // Bottom quadratic point
-//       Size const p6 = p1 + 1;              // Right quadratic point
-//       Size const p7 = p3 + 1;              // Top tri quadratic point
-//       Size const p8 = p3 - 1;              // Bottom tri quadratic point
-//       Size const p9 = p2 + 1;              // Top right quadratic point
-//       Size p10 = p7 + 1;                   // Top left quadratic point
-//       // If we're at the end of the ring, wrap around
-//       if (p10 == 1 + 2 * na) {
-//         p4 -= 2 * na;
-//         p10 -= 2 * na;
-//       }
-//       faces[2 * ia] = {p0, p1, p2, p3, p5, p6, p7, p8};
-//       faces[2 * ia + 1] = {p0, p3, p2, p4, p8, p7, p9, p10};
-//     }
-//     // All other faces
-//     for (Size ir = 1; ir < nr + 1; ++ir) {
-//       Size const np = 1 + 2 * na + 3 * na * (ir - 1);
-//       for (Size ia = 0; ia < na; ++ia) {
-//         Size const p0 = np + 2 * ia;
-//         Size const p1 = p0 + 3 * na;
-//         Size p2 = p1 + 2;
-//         Size p3 = p0 + 2;
-//         Size const p4 = np + 2 * na + ia;
-//         Size const p5 = p1 + 1;
-//         Size p6 = p4 + 1;
-//         Size const p7 = p0 + 1;
-//         // If we're at the end of the ring, wrap around
-//         if (ia + 1 == na) {
-//           p2 -= 2 * na;
-//           p3 -= 2 * na;
-//           p6 -= na;
-//         }
-//         faces[ir * na + ia] = {p0, p1, p2, p3, p4, p5, p6, p7};
-//       }
-//     }
-//     // Print the faces
-//     for (Size i = 0; i < num_faces; ++i) {
-//       Log::debug("Face " + um2::toString(i) + ": " + um2::toString(faces[i][0]) + ", "
-//       +
-//                  um2::toString(faces[i][1]) + ", " + um2::toString(faces[i][2]) + ", "
-//                  + um2::toString(faces[i][3]) + ", " + um2::toString(faces[i][4]) + ",
-//                  " + um2::toString(faces[i][5]) + ", " + um2::toString(faces[i][6]) +
-//                  ", " + um2::toString(faces[i][7]));
-//     }
-//
-//     // Shift such that the lower left corner is at the origin
-//     T const half_pitch = pitch / 2;
-//     for (Size i = 0; i < num_points; ++i) {
-//       vertices[i] += half_pitch;
-//       // Fix close to zero values
-//       if (um2::abs(vertices[i][0]) < 1e-6) {
-//         vertices[i][0] = 0;
-//       }
-//       if (um2::abs(vertices[i][1]) < 1e-6) {
-//         vertices[i][1] = 0;
-//       }
-//     }
-//     QuadraticQuadMesh<2, T, I> mesh;
-//     mesh.vertices = vertices;
-//     mesh.fv = faces;
-//     mesh.populateVF();
-//     this->quadratic_quad.push_back(um2::move(mesh));
-//     LOG_TRACE("Finished creating mesh");
-//     return mesh_id;
-//   }
-//   Log::error("Only linear and quadratic meshes are supported for a cylindrical pin
-//   mesh"); return -1;
-// }
-//
-////=============================================================================
-//// makeRectangularPinMesh
-////=============================================================================
-//
-// template <std::floating_point T, std::integral I>
-// auto
-// SpatialPartition<T, I>::makeRectangularPinMesh(Vec2<T> dxdy, Size nx, Size ny)
-//{
-//  if (dxdy[0] <= 0 || dxdy[1] <= 0) {
-//    Log::error("Pin dimensions must be positive");
-//  }
-//  if (nx <= 0 || ny <= 0) {
-//    Log::error("Number of divisions in x and y must be positive");
-//  }
-//
-//  Size const mesh_id = this->quad.size();
-//  Log::info("Making rectangular pin mesh " + toString(mesh_id));
-//
-//  // Make the vertices
-//  Vector<Point2<T>> vertices((nx + 1) * (ny + 1));
-//  T const delta_x = dxdy[0] / nx;
-//  T const delta_y = dxdy[1] / ny;
-//  for (Size j = 0; j < ny + 1; ++j) {
-//    for (Size i = 0; i < nx + 1; ++i) {
-//      vertices[j * (nx + 1) + i] = {i * delta_x, j * delta_y};
-//    }
-//  }
-//  // Make the faces
-//  Vector<Vec<4, I>> faces(nx * ny);
-//  // Left to right, bottom to top
-//  for (Size j = 0; j < ny; ++j) {
-//    for (Size i = 0; i < nx; ++i) {
-//      faces[j * nx + i] = {(j) * (nx + 1) + i, (j) * (nx + 1) + i + 1,
-//                           (j + 1) * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i};
-//    }
-//  }
-//  QuadMesh<2, T, I> mesh;
-//  mesh.vertices = vertices;
-//  mesh.fv = faces;
-//  mesh.populateVF();
-//  this->quad.push_back(um2::move(mesh));
-//  LOG_TRACE("Finished creating mesh");
-//  return mesh_id;
-//}
-//
 //=============================================================================
-// checkMeshExists
+// addMaterial
 //=============================================================================
 
 template <std::floating_point T, std::integral I>
-inline void
-SpatialPartition<T, I>::checkMeshExists(MeshType mesh_type, Size mesh_id) const
+auto
+SpatialPartition<T, I>::addMaterial(Material<T> const & material) -> Size
 {
-  switch (mesh_type) {
-  case MeshType::Tri:
-    if (0 > mesh_id || mesh_id >= this->_tri.size()) {
-      Log::error("Tri mesh " + toString(mesh_id) + " does not exist");
-    }
-    break;
-  case MeshType::Quad:
-    if (0 > mesh_id || mesh_id >= this->_quad.size()) {
-      Log::error("Quad mesh " + toString(mesh_id) + " does not exist");
-    }
-    break;
-  case MeshType::QuadraticTri:
-    if (0 > mesh_id || mesh_id >= this->_quadratic_tri.size()) {
-      Log::error("Quadratic tri mesh " + toString(mesh_id) + " does not exist");
-    }
-    break;
-  case MeshType::QuadraticQuad:
-    if (0 > mesh_id || mesh_id >= this->_quadratic_quad.size()) {
-      Log::error("Quadratic quad mesh " + toString(mesh_id) + " does not exist");
-    }
-    break;
-  default:
-    Log::error("Invalid mesh type");
+  _materials.push_back(material);
+  return _materials.size() - 1;
+}
+
+//=============================================================================
+// makeCylindricalPinMesh
+//=============================================================================
+
+template <std::floating_point T, std::integral I>
+auto
+// NOLINTNEXTLINE
+SpatialPartition<T, I>::makeCylindricalPinMesh(Vector<T> const & radii, T const pitch,
+                                               Vector<Size> const & num_rings,
+                                               Size const num_azimuthal,
+                                               Size const mesh_order) -> Size
+{
+  LOG_INFO("Making cylindrical pin mesh");
+  if ((num_azimuthal & (num_azimuthal - 1)) != 0) {
+    Log::error("The number of azimuthal divisions must be a power of 2");
+    return -1;
   }
+  if (num_azimuthal < 8) {
+    Log::error("The number of azimuthal divisions must be at least 8");
+    return -1;
+  }
+  if (radii.size() != num_rings.size()) {
+    Log::error("The number of radii must match the size of num_rings");
+    return -1;
+  }
+  if (std::any_of(radii.begin(), radii.end(), [pitch](T r) { return r > pitch / 2; })) {
+    Log::error("The radii must be less than half the pitch");
+    return -1;
+  }
+
+  Size mesh_id = -1;
+  if (mesh_order == 1) {
+    mesh_id = this->_quad.size();
+    Log::info("Making linear quadrilateral cylindrical pin mesh " + toString(mesh_id));
+  } else if (mesh_order == 2) {
+    mesh_id = this->_quadratic_quad.size();
+    Log::info("Making quadratic quadrilateral cylindrical pin mesh " + toString(mesh_id));
+  } else {
+    Log::error("Invalid mesh order");
+    return -1;
+  }
+
+  T const eps = static_cast<T>(1e-6);
+
+  // radial region = region containing different materials (rings + outside of
+  // the last radius)
+  //
+  // radial_region_areas = area of each radial region, including outside of the last
+  // radius
+  //
+  // ring = an equal area division of a radial region containing the same material
+  //
+  // ring_radii = the radius of each ring, NOT including the outside of the last
+  // radius
+  //   ring_areas = the area of each ring, including the outside of the last radius
+
+  //---------------------------------------------------------------------------
+  // Get the area of each radial region (rings + outside of the last ring)
+  //---------------------------------------------------------------------------
+  Size const num_radial_regions = radii.size() + 1;
+  Vector<T> radial_region_areas(num_radial_regions);
+  // A0 = pi * r0^2
+  // Ai = pi * (ri^2 - ri-1^2)
+  radial_region_areas[0] = pi<T> * radii[0] * radii[0];
+  for (Size i = 1; i < num_radial_regions - 1; ++i) {
+    radial_region_areas[i] = pi<T> * (radii[i] * radii[i] - radii[i - 1] * radii[i - 1]);
+  }
+  radial_region_areas[num_radial_regions - 1] =
+      pitch * pitch - radial_region_areas[num_radial_regions - 2];
+
+  //---------------------------------------------------------------------------
+  // Get the radii and areas of each ring after splitting the radial regions
+  // This includes outside of the last ring
+  //---------------------------------------------------------------------------
+  Size const total_rings = std::reduce(num_rings.begin(), num_rings.end(), 0);
+  Vector<T> ring_radii(total_rings);
+  Vector<T> ring_areas(total_rings + 1);
+  // Inside the innermost region
+  ring_areas[0] = radial_region_areas[0] / static_cast<T>(num_rings[0]);
+  ring_radii[0] = um2::sqrt(ring_areas[0] / pi<T>);
+  for (Size i = 1; i < num_rings[0]; ++i) {
+    ring_areas[i] = ring_areas[0];
+    ring_radii[i] =
+        um2::sqrt(ring_areas[i] / pi<T> + ring_radii[i - 1] * ring_radii[i - 1]);
+  }
+  Size ctr = num_rings[0];
+  for (Size ireg = 1; ireg < num_radial_regions - 1; ++ireg) {
+    Size const num_rings_in_region = num_rings[ireg];
+    T const area_per_ring =
+        radial_region_areas[ireg] / static_cast<T>(num_rings_in_region);
+    for (Size iring = 0; iring < num_rings_in_region; ++iring, ++ctr) {
+      ring_areas[ctr] = area_per_ring;
+      ring_radii[ctr] =
+          um2::sqrt(area_per_ring / pi<T> + ring_radii[ctr - 1] * ring_radii[ctr - 1]);
+    }
+  }
+  // Outside of the last ring
+  ring_areas[ctr] = pitch * pitch - pi<T> * ring_radii.back() * ring_radii.back();
+  // Log the radii and areas in debug mode
+  for (Size i = 0; i < total_rings; ++i) {
+    LOG_TRACE("Ring " + toString(i) + " radius: " + toString(ring_radii[i]));
+    LOG_TRACE("Ring " + toString(i) + " area: " + toString(ring_areas[i]));
+  }
+  LOG_TRACE("The area outside of the last ring is " + toString(ring_areas[ctr]));
+  // Ensure the sum of the ring areas is equal to pitch^2
+  T const sum_ring_areas =
+      std::reduce(ring_areas.begin(), ring_areas.end(), static_cast<T>(0));
+  ASSERT_NEAR(sum_ring_areas, pitch * pitch, eps);
+  T const num_azimuthal_t = static_cast<T>(num_azimuthal);
+  if (mesh_order == 1) {
+    // Get the equivalent radius of each ring if it were a quadrilateral
+    T const theta = 2 * pi<T> / num_azimuthal_t;
+    T const sin_theta = um2::sin(theta);
+    Vector<T> eq_radii(total_rings);
+    // The innermost radius is a special case, and is essentially a triangle.
+    // A_t = l² * sin(θ) / 2
+    // A_ring = num_azi * A_t = l² * sin(θ) * num_azi / 2
+    // l = sqrt(2 * A_ring / (sin(θ) * num_azi))
+    eq_radii[0] = um2::sqrt(2 * ring_areas[0] / (sin_theta * num_azimuthal_t));
+    // A_q = (l² - l²₀) * sin(θ) / 2
+    // A_ring = num_azi * A_q = (l² - l²₀) * sin(θ) * num_azi / 2
+    // l = sqrt(2 * A_ring / (sin(θ) * num_azi) + l²₀)
+    for (Size i = 1; i < total_rings; ++i) {
+      eq_radii[i] = um2::sqrt(2 * ring_areas[i] / (sin_theta * num_azimuthal_t) +
+                              eq_radii[i - 1] * eq_radii[i - 1]);
+    }
+    for (Size i = 0; i < total_rings; ++i) {
+      LOG_TRACE("Ring " + toString(i) + " equivalent radius: " + toString(eq_radii[i]));
+    }
+    // If any of the equivalent radii are larger than half the pitch, error
+    if (std::any_of(eq_radii.begin(), eq_radii.end(),
+                    [pitch](T r) { return r > pitch / 2; })) {
+      Log::error("The equivalent radius of a ring is larger than half the pitch");
+      return -1;
+    }
+    // Sanity check: ensure the sum of the quadrilateral areas in a ring is equal to
+    // the ring area
+    ASSERT_NEAR(eq_radii[0] * eq_radii[0] * sin_theta / 2,
+                ring_areas[0] / num_azimuthal_t, static_cast<T>(1e-4));
+    for (Size i = 1; i < total_rings; ++i) {
+      T const area =
+          (eq_radii[i] * eq_radii[i] - eq_radii[i - 1] * eq_radii[i - 1]) * sin_theta / 2;
+      ASSERT_NEAR(area, ring_areas[i] / num_azimuthal_t, static_cast<T>(1e-4));
+    }
+
+    //------------------------------------------------------------------------
+    // Get the points that make up the mesh
+    //------------------------------------------------------------------------
+    // The number of points is:
+    //   Center point
+    //   num_azimuthal / 2, for the points in the innermost ring to make the quads
+    //      "triangular"
+    //   (num_rings + 1) * num_azimuthal
+    Size const num_points = 1 + (total_rings + 1) * num_azimuthal + num_azimuthal / 2;
+    Vector<Point2<T>> vertices(num_points);
+    LOG_TRACE("The number of points is " + toString(num_points));
+    // Center point
+    vertices[0] = {0, 0};
+    // Triangular points
+    LOG_TRACE("Computing the triangular points");
+    T const rt = eq_radii[0] / 2;
+    for (Size ia = 0; ia < num_azimuthal / 2; ++ia) {
+      T const sin_ia_theta = um2::sin(theta * (2 * static_cast<T>(ia) + 1));
+      T const cos_ia_theta = um2::cos(theta * (2 * static_cast<T>(ia) + 1));
+      vertices[1 + ia] = {rt * cos_ia_theta, rt * sin_ia_theta};
+    }
+    LOG_TRACE("Computing the quadrilateral points");
+    // Quadrilateral points
+    // Points on rings, not including the boundary of the pin (pitch / 2 box)
+    for (Size ir = 0; ir < total_rings; ++ir) {
+      Size const num_prev_points = 1 + num_azimuthal / 2 + ir * num_azimuthal;
+      for (Size ia = 0; ia < num_azimuthal; ++ia) {
+        T sin_ia_theta = um2::sin(theta * static_cast<T>(ia));
+        T cos_ia_theta = um2::cos(theta * static_cast<T>(ia));
+        if (um2::abs(sin_ia_theta) < eps) {
+          sin_ia_theta = 0;
+        }
+        if (um2::abs(cos_ia_theta) < eps) {
+          cos_ia_theta = 0;
+        }
+        vertices[num_prev_points + ia] = {eq_radii[ir] * cos_ia_theta,
+                                          eq_radii[ir] * sin_ia_theta};
+      }
+    }
+    LOG_TRACE("Computing the boundary points");
+    // Points on the boundary of the pin (pitch / 2)
+    Size const num_prev_points = 1 + num_azimuthal / 2 + total_rings * num_azimuthal;
+    for (Size ia = 0; ia < num_azimuthal; ++ia) {
+      T sin_ia_theta = std::sin(theta * static_cast<T>(ia));
+      T cos_ia_theta = std::cos(theta * static_cast<T>(ia));
+      if (um2::abs(sin_ia_theta) < eps) {
+        sin_ia_theta = 0;
+      }
+      if (um2::abs(cos_ia_theta) < eps) {
+        cos_ia_theta = 0;
+      }
+      T const rx = um2::abs(pitch / (2 * cos_ia_theta));
+      T const ry = um2::abs(pitch / (2 * sin_ia_theta));
+      T const rb = um2::min(rx, ry);
+      vertices[num_prev_points + ia] = {rb * cos_ia_theta, rb * sin_ia_theta};
+    }
+    for (Size i = 0; i < num_points; ++i) {
+      LOG_TRACE("Point " + toString(i) + ": " + toString(vertices[i][0]) + ", " +
+                toString(vertices[i][1]));
+    }
+
+    //------------------------------------------------------------------------
+    // Get the faces that make up the mesh
+    //------------------------------------------------------------------------
+    Size const num_faces = num_azimuthal * (total_rings + 1);
+    Vector<Vec<4, I>> faces(num_faces);
+    // Establish a few aliases
+    Size const na = num_azimuthal;
+    Size const nr = total_rings;
+    Size const ntric = 1 + na / 2; // Number of triangular points + center point
+    // Triangular quads
+    for (Size ia = 0; ia < na / 2; ++ia) {
+      Size const p0 = 0;                  // Center point
+      Size const p1 = ntric + ia * 2;     // Bottom right point on ring
+      Size const p2 = ntric + ia * 2 + 1; // Top right point on ring
+      Size const p3 = 1 + ia;             // The triangular point
+      Size p4 = ntric + ia * 2 + 2;       // Top left point on ring
+      // If we're at the end of the ring, wrap around
+      if (p4 == ntric + na) {
+        p4 = ntric;
+      }
+      faces[2 * ia] = {p0, p1, p2, p3};
+      faces[2 * ia + 1] = {p0, p3, p2, p4};
+    }
+    // Non-boundary and boundary quads
+    for (Size ir = 1; ir < nr + 1; ++ir) {
+      for (Size ia = 0; ia < na; ++ia) {
+        Size const p0 = ntric + (ir - 1) * na + ia; // Bottom left point
+        Size const p1 = ntric + (ir)*na + ia;       // Bottom right point
+        Size p2 = ntric + (ir)*na + ia + 1;         // Top right point
+        Size p3 = ntric + (ir - 1) * na + ia + 1;   // Top left point
+        // If we're at the end of the ring, wrap around
+        if (ia + 1 == na) {
+          p2 -= na;
+          p3 -= na;
+        }
+        faces[ir * na + ia] = {p0, p1, p2, p3};
+      }
+    }
+    // Shift such that the lower left corner is at the origin
+    T const half_pitch = pitch / 2;
+    for (Size i = 0; i < num_points; ++i) {
+      vertices[i] += half_pitch;
+      // Fix close to zero values
+      if (um2::abs(vertices[i][0]) < eps) {
+        vertices[i][0] = 0;
+      }
+      if (um2::abs(vertices[i][1]) < eps) {
+        vertices[i][1] = 0;
+      }
+    }
+    QuadMesh<2, T, I> mesh(vertices, faces);
+    //     mesh.populateVF();
+    this->_quad.push_back(um2::move(mesh));
+    LOG_TRACE("Finished creating mesh");
+    return mesh_id;
+  }
+  if (mesh_order == 2) {
+    // Get the equivalent radius of each ring if it were a quadratic quadrilateral
+    T const theta = 2 * pi<T> / num_azimuthal_t;
+    T const gamma = theta / 2;
+    T const sin_gamma = um2::sin(gamma);
+    T const cos_gamma = um2::cos(gamma);
+    T const sincos_gamma = sin_gamma * cos_gamma;
+    Vector<T> eq_radii(total_rings);
+    // The innermost radius is a special case, and is essentially a triangle.
+    // Each quadratic shape is made up of the linear shape plus quadratic edges
+    // A_t = l² * sin(θ) / 2 = l² * sin(θ/2) * cos(θ/2)
+    // A_q = (l² - l²₀) * sin(θ) / 2 = (l² - l²₀) * sin(θ/2) * cos(θ/2)
+    // A_edge = (4 / 3) the area of the triangle formed by the vertices of the edge.
+    //        = (4 / 3) * 2l sin(θ/2) * (L - l cos(θ/2)) / 2
+    //        = (4 / 3) * l sin(θ/2) * (L - l cos(θ/2))
+    //
+    // For N + 1 rings
+    // A_0 = pi R_0² = Na ( A_t + A_e0)
+    // A_i = pi (R_i² - R_{i-1}²) = Na ( A_q + A_ei - A_ei-1)
+    // A_N = P² - pi R_N² = P² - sum_i=0^N A_i
+    // Constraining L_N to be the value which minimizes the 2-norm of the integral of
+    // the quadratic segment minus the circle arc is the correct thing to do, but holy
+    // cow the integral is a mess.
+    // Therefore we settle for constraining l_i = r_i
+    T tri_area = ring_radii[0] * ring_radii[0] * sincos_gamma;
+    T ring_area = ring_areas[0] / num_azimuthal_t;
+    T const l0 = ring_radii[0];
+    eq_radii[0] =
+        static_cast<T>(0.75) * (ring_area - tri_area) / (l0 * sin_gamma) + l0 * cos_gamma;
+    for (Size i = 1; i < total_rings; ++i) {
+      T const l_im1 = ring_radii[i - 1];
+      T const ll_im1 = eq_radii[i - 1];
+      T const a_edge_im1 =
+          static_cast<T>(4.0 / 3.0) * l_im1 * sin_gamma * (ll_im1 - l_im1 * cos_gamma);
+      T const l = ring_radii[i];
+      T const a_quad = (l * l - l_im1 * l_im1) * sincos_gamma;
+      T const a_ring = ring_areas[i] / num_azimuthal_t;
+      eq_radii[i] =
+          static_cast<T>(0.75) * (a_ring - a_quad + a_edge_im1) / (l * sin_gamma) +
+          l * cos_gamma;
+    }
+    // Log the equivalent radii in debug mode
+    for (Size i = 0; i < total_rings; ++i) {
+      Log::debug("Ring " + toString(i) + " equivalent radius: " + toString(eq_radii[i]));
+    }
+    // If any of the equivalent radii are larger than half the pitch, error
+    if (std::any_of(eq_radii.begin(), eq_radii.end(),
+                    [pitch](T r) { return r > pitch / 2; })) {
+      Log::error("The equivalent radius of a ring is larger than half the pitch.");
+      return -1;
+    }
+
+    //-------------------------------------------------------------------------
+    // Get the points that make up the mesh
+    //-------------------------------------------------------------------------
+    // The number of points is:
+    //   Center point
+    //   2 * num_azimuthal for the triangular points inside the first ring
+    //   2 * num_azimuthal for the triangular points on the first ring
+    //   3 * num_azimuthal * total_rings
+    //
+    // Some aliases to make the code more readable
+    Size const na = num_azimuthal;
+    Size const nr = total_rings;
+    Size const num_points = 1 + 4 * na + 3 * na * nr;
+    Vector<Point2<T>> vertices(num_points);
+    // Center point
+    vertices[0] = {0, 0};
+    // Triangular points
+    T const rt = ring_radii[0] / 2;
+    for (Size ia = 0; ia < na; ++ia) {
+      T const sin_ia_theta = um2::sin(static_cast<T>(ia) * theta);
+      T const cos_ia_theta = um2::cos(static_cast<T>(ia) * theta);
+      // if ia is 0 or even, just do the 1 center point, otherwise we need 3 points
+      // at (1/4, 2/4, 3/4) of the radius
+      if (ia % 2 == 0) {
+        vertices[1 + 2 * ia] = {rt * cos_ia_theta, rt * sin_ia_theta};
+      } else {
+        vertices[2 * ia] = {rt * cos_ia_theta / 2, rt * sin_ia_theta / 2};
+        vertices[2 * ia + 1] = {rt * cos_ia_theta, rt * sin_ia_theta};
+        vertices[2 * ia + 2] = {3 * rt * cos_ia_theta / 2, 3 * rt * sin_ia_theta / 2};
+      }
+    }
+    // Points on the first ring
+    Size num_prev_points = 1 + 2 * na;
+    for (Size ia = 0; ia < 2 * na; ++ia) {
+      T sin_ia_gamma = um2::sin(static_cast<T>(ia) * gamma);
+      T cos_ia_gamma = um2::cos(static_cast<T>(ia) * gamma);
+      if (um2::abs(sin_ia_gamma) < eps) {
+        sin_ia_gamma = 0;
+      }
+      if (um2::abs(cos_ia_gamma) < eps) {
+        cos_ia_gamma = 0;
+      }
+      // if ia is 0 or even, we want the point at ring_radii[ir], otherwise we want
+      // the point at eq_radii[ir]
+      if (ia % 2 == 0) {
+        vertices[num_prev_points + ia] = {ring_radii[0] * cos_ia_gamma,
+                                          ring_radii[0] * sin_ia_gamma};
+      } else {
+        vertices[num_prev_points + ia] = {eq_radii[0] * cos_ia_gamma,
+                                          eq_radii[0] * sin_ia_gamma};
+      }
+    }
+    // Points on and between the rings
+    for (Size ir = 1; ir < total_rings; ++ir) {
+      num_prev_points = 1 + 4 * na + 3 * na * (ir - 1);
+      // Between the rings
+      for (Size ia = 0; ia < num_azimuthal; ++ia) {
+        T sin_ia_theta = um2::sin(static_cast<T>(ia) * theta);
+        T cos_ia_theta = um2::cos(static_cast<T>(ia) * theta);
+        if (um2::abs(sin_ia_theta) < eps) {
+          sin_ia_theta = 0;
+        }
+        if (um2::abs(cos_ia_theta) < eps) {
+          cos_ia_theta = 0;
+        }
+        T const r = (ring_radii[ir] + ring_radii[ir - 1]) / 2;
+        vertices[num_prev_points + ia] = {r * cos_ia_theta, r * sin_ia_theta};
+      }
+      num_prev_points += num_azimuthal;
+      for (Size ia = 0; ia < 2 * num_azimuthal; ++ia) {
+        T sin_ia_gamma = um2::sin(static_cast<T>(ia) * gamma);
+        T cos_ia_gamma = um2::cos(static_cast<T>(ia) * gamma);
+        if (um2::abs(sin_ia_gamma) < eps) {
+          sin_ia_gamma = 0;
+        }
+        if (um2::abs(cos_ia_gamma) < eps) {
+          cos_ia_gamma = 0;
+        }
+        // if ia is 0 or even, we want the point at ring_radii[ir], otherwise we
+        // want the point at eq_radii[ir]
+        if (ia % 2 == 0) {
+          vertices[num_prev_points + ia] = {ring_radii[ir] * cos_ia_gamma,
+                                            ring_radii[ir] * sin_ia_gamma};
+        } else {
+          vertices[num_prev_points + ia] = {eq_radii[ir] * cos_ia_gamma,
+                                            eq_radii[ir] * sin_ia_gamma};
+        }
+      }
+    }
+    // Quadratic points before the boundary
+    num_prev_points = 1 + 4 * na + 3 * na * (total_rings - 1);
+    for (Size ia = 0; ia < num_azimuthal; ++ia) {
+      T sin_ia_theta = um2::sin(static_cast<T>(ia) * theta);
+      T cos_ia_theta = um2::cos(static_cast<T>(ia) * theta);
+      if (um2::abs(sin_ia_theta) < eps) {
+        sin_ia_theta = 0;
+      }
+      if (um2::abs(cos_ia_theta) < eps) {
+        cos_ia_theta = 0;
+      }
+      // pitch and last ring radius
+      T const rx = um2::abs(pitch / (2 * cos_ia_theta));
+      T const ry = um2::abs(pitch / (2 * sin_ia_theta));
+      T const rb = um2::min(rx, ry);
+      T const r = (rb + ring_radii[total_rings - 1]) / 2;
+      vertices[num_prev_points + ia] = {r * cos_ia_theta, r * sin_ia_theta};
+    }
+    // Points on the boundary of the pin (pitch / 2)
+    num_prev_points += num_azimuthal;
+    for (Size ia = 0; ia < 2 * num_azimuthal; ++ia) {
+      T sin_ia_gamma = um2::sin(gamma * static_cast<T>(ia));
+      T cos_ia_gamma = um2::cos(gamma * static_cast<T>(ia));
+      if (um2::abs(sin_ia_gamma) < eps) {
+        sin_ia_gamma = 0;
+      }
+      if (um2::abs(cos_ia_gamma) < eps) {
+        cos_ia_gamma = 0;
+      }
+      T const rx = um2::abs(pitch / (2 * cos_ia_gamma));
+      T const ry = um2::abs(pitch / (2 * sin_ia_gamma));
+      T const rb = um2::min(rx, ry);
+      vertices[num_prev_points + ia] = {rb * cos_ia_gamma, rb * sin_ia_gamma};
+    }
+    for (Size i = 0; i < num_points; ++i) {
+      Log::debug("Point " + um2::toString(i) + ": " + um2::toString(vertices[i][0]) +
+                 ", " + um2::toString(vertices[i][1]));
+    }
+
+    //-------------------------------------------------------------------------
+    // Get the faces that make up the mesh
+    //-------------------------------------------------------------------------
+    Size const num_faces = na * (nr + 1);
+    Vector<Vec<8, I>> faces(num_faces);
+    // Triangular quads
+    for (Size ia = 0; ia < na / 2; ++ia) {
+      Size const p0 = 0;                   // Center point
+      Size const p1 = 1 + 2 * na + 4 * ia; // Bottom right point on ring
+      Size const p2 = p1 + 2;              // Top right point on ring
+      Size const p3 = 3 + 4 * ia;          // The triangular point
+      Size p4 = p2 + 2;                    // Top left point on ring
+      Size const p5 = 1 + 4 * ia;          // Bottom quadratic point
+      Size const p6 = p1 + 1;              // Right quadratic point
+      Size const p7 = p3 + 1;              // Top tri quadratic point
+      Size const p8 = p3 - 1;              // Bottom tri quadratic point
+      Size const p9 = p2 + 1;              // Top right quadratic point
+      Size p10 = p7 + 1;                   // Top left quadratic point
+      // If we're at the end of the ring, wrap around
+      if (p10 == 1 + 2 * na) {
+        p4 -= 2 * na;
+        p10 -= 2 * na;
+      }
+      faces[2 * ia] = {p0, p1, p2, p3, p5, p6, p7, p8};
+      faces[2 * ia + 1] = {p0, p3, p2, p4, p8, p7, p9, p10};
+    }
+    // All other faces
+    for (Size ir = 1; ir < nr + 1; ++ir) {
+      Size const np = 1 + 2 * na + 3 * na * (ir - 1);
+      for (Size ia = 0; ia < na; ++ia) {
+        Size const p0 = np + 2 * ia;
+        Size const p1 = p0 + 3 * na;
+        Size p2 = p1 + 2;
+        Size p3 = p0 + 2;
+        Size const p4 = np + 2 * na + ia;
+        Size const p5 = p1 + 1;
+        Size p6 = p4 + 1;
+        Size const p7 = p0 + 1;
+        // If we're at the end of the ring, wrap around
+        if (ia + 1 == na) {
+          p2 -= 2 * na;
+          p3 -= 2 * na;
+          p6 -= na;
+        }
+        faces[ir * na + ia] = {p0, p1, p2, p3, p4, p5, p6, p7};
+      }
+    }
+    // Print the faces
+    for (Size i = 0; i < num_faces; ++i) {
+      Log::debug("Face " + um2::toString(i) + ": " + um2::toString(faces[i][0]) + ", " +
+                 um2::toString(faces[i][1]) + ", " + um2::toString(faces[i][2]) + ", " +
+                 um2::toString(faces[i][3]) + ", " + um2::toString(faces[i][4]) + ", " +
+                 um2::toString(faces[i][5]) + ", " + um2::toString(faces[i][6]) + ", " +
+                 um2::toString(faces[i][7]));
+    }
+
+    // Shift such that the lower left corner is at the origin
+    T const half_pitch = pitch / 2;
+    for (Size i = 0; i < num_points; ++i) {
+      vertices[i] += half_pitch;
+      // Fix close to zero values
+      if (um2::abs(vertices[i][0]) < eps) {
+        vertices[i][0] = 0;
+      }
+      if (um2::abs(vertices[i][1]) < eps) {
+        vertices[i][1] = 0;
+      }
+    }
+    QuadraticQuadMesh<2, T, I> mesh(vertices, faces);
+    //     mesh.populateVF();
+    this->_quadratic_quad.push_back(um2::move(mesh));
+    LOG_TRACE("Finished creating mesh");
+    return mesh_id;
+  }
+  Log::error("Only linear and quadratic meshes are supported for a cylindrical pin mesh");
+  return -1;
+}
+
+//=============================================================================
+// makeRectangularPinMesh
+//=============================================================================
+
+template <std::floating_point T, std::integral I>
+auto
+SpatialPartition<T, I>::makeRectangularPinMesh(Vec2<T> dxdy, Size nx, Size ny)
+{
+  if (dxdy[0] <= 0 || dxdy[1] <= 0) {
+    Log::error("Pin dimensions must be positive");
+  }
+  if (nx <= 0 || ny <= 0) {
+    Log::error("Number of divisions in x and y must be positive");
+  }
+
+  Size const mesh_id = _quad.size();
+  Log::info("Making rectangular pin mesh " + toString(mesh_id));
+
+  // Make the vertices
+  Vector<Point2<T>> vertices((nx + 1) * (ny + 1));
+  T const delta_x = dxdy[0] / static_cast<T>(nx);
+  T const delta_y = dxdy[1] / static_cast<T>(ny);
+  for (Size j = 0; j < ny + 1; ++j) {
+    T const y = static_cast<T>(j) * delta_y;
+    for (Size i = 0; i < nx + 1; ++i) {
+      T const x = static_cast<T>(i) * delta_x;
+      vertices[j * (nx + 1) + i] = {x, y};
+    }
+  }
+  // Make the faces
+  Vector<Vec<4, I>> faces(nx * ny);
+  // Left to right, bottom to top
+  for (Size j = 0; j < ny; ++j) {
+    for (Size i = 0; i < nx; ++i) {
+      faces[j * nx + i] = {(j) * (nx + 1) + i, (j) * (nx + 1) + i + 1,
+                           (j + 1) * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i};
+    }
+  }
+  QuadMesh<2, T, I> mesh(vertices, faces);
+  //  mesh.populateVF();
+  _quad.push_back(um2::move(mesh));
+  return mesh_id;
 }
 
 //=============================================================================
@@ -953,8 +1028,8 @@ SpatialPartition<T, I>::makeRTM(Vector<Vector<Size>> const & cc_ids) -> Size
   // Ensure the grid has the same dxdy as all other RTMs
   if (!_rtms.empty()) {
     auto const eps = eps_distance<T>;
-    if (um2::abs(grid.width() - _rtms[0].width()) > eps ||
-        um2::abs(grid.height() - _rtms[0].height()) > eps) {
+    if (um2::abs(grid.width() - _rtms[0].grid().width()) > eps ||
+        um2::abs(grid.height() - _rtms[0].grid().height()) > eps) {
       Log::error("All RTMs must have the same dxdy");
       return -1;
     }
@@ -1014,7 +1089,7 @@ SpatialPartition<T, I>::makeLattice(Vector<Vector<Size>> const & rtm_ids) -> Siz
   // Create the lattice
   // Ensure each row has the same number of columns
   Point2<T> const minima(0, 0);
-  Vec2<T> const spacing(_rtms[0].width(), _rtms[0].height());
+  Vec2<T> const spacing = _rtms[0].grid().extents();
   Size const num_rows = rtm_ids.size();
   Size const num_cols = rtm_ids[0].size();
   for (Size i = 1; i < num_rows; ++i) {
@@ -1072,8 +1147,8 @@ SpatialPartition<T, I>::makeAssembly(Vector<Size> const & lat_ids, Vector<T> con
   // Ensure this assembly is the same height as all other assemblies
   if (!_assemblies.empty()) {
     auto const eps = eps_distance<T>;
-    T const assem_top = _assemblies[0].xMax();
-    T const assem_bot = _assemblies[0].xMin();
+    T const assem_top = _assemblies[0].grid().xMax();
+    T const assem_bot = _assemblies[0].grid().xMin();
     if (um2::abs(z.back() - assem_top) > eps || um2::abs(z.front() - assem_bot) > eps) {
       Log::error("All assemblies must have the same height");
       return -1;
@@ -1082,12 +1157,12 @@ SpatialPartition<T, I>::makeAssembly(Vector<Size> const & lat_ids, Vector<T> con
   // Ensure the lattices all have the same dimensions. Since they are composed of RTMs,
   // it is sufficient to check numXCells and numYCells.
   {
-    Size const num_xcells = _lattices[lat_ids[0]].numXCells();
-    Size const num_ycells = _lattices[lat_ids[0]].numYCells();
+    Size const num_xcells = _lattices[lat_ids[0]].grid().numXCells();
+    Size const num_ycells = _lattices[lat_ids[0]].grid().numYCells();
     auto const * const it = std::find_if(
         lat_ids.cbegin(), lat_ids.cend(), [num_xcells, num_ycells, this](Size const id) {
-          return this->_lattices[id].numXCells() != num_xcells ||
-                 this->_lattices[id].numYCells() != num_ycells;
+          return this->_lattices[id].grid().numXCells() != num_xcells ||
+                 this->_lattices[id].grid().numYCells() != num_ycells;
         });
     if (it != lat_ids.end()) {
       Log::error("All lattices must have the same xy-dimensions");
@@ -1108,10 +1183,10 @@ SpatialPartition<T, I>::makeAssembly(Vector<Size> const & lat_ids, Vector<T> con
   return asy_id;
 }
 
-////=============================================================================
-//// makeCore
-////=============================================================================
-//
+//=============================================================================
+// makeCore
+//=============================================================================
+
 // template <std::floating_point T, std::integral I>
 // auto
 // SpatialPartition<T, I>::stdMakeCore(std::vector<std::vector<Size>> const & asy_ids)
@@ -1128,134 +1203,133 @@ SpatialPartition<T, I>::makeAssembly(Vector<Size> const & lat_ids, Vector<T> con
 //  }
 //  return makeCore(asy_ids_um2);
 //}
-//
-// template <std::floating_point T, std::integral I>
-// auto
-// SpatialPartition<T, I>::makeCore(Vector<Vector<Size>> const & asy_ids) -> Size
-//{
-//  Log::info("Making core");
-//  // Ensure that all assemblies exist
-//  Size const num_asy = assemblies.size();
-//  for (auto const & asy_ids_row : asy_ids) {
-//    auto const * const it =
-//        std::find_if(asy_ids_row.cbegin(), asy_ids_row.cend(),
-//                     [num_asy](Size const id) { return id < 0 || id >= num_asy; });
-//    if (it != asy_ids_row.end()) {
-//      Log::error("Assembly " + toString(*it) + " does not exist");
-//      return -1;
-//    }
-//  }
-//  Vector<Vec2<T>> dxdy(num_asy);
-//  for (Size i = 0; i < num_asy; ++i) {
-//    auto const lat_id = static_cast<Size>(assemblies[i].getChild(0));
-//    dxdy[i] = {lattices[lat_id].width(), lattices[lat_id].height()};
-//  }
-//  // Create the rectilinear grid
-//  RectilinearGrid2<T> grid(dxdy, asy_ids);
-//  // Flatten the assembly IDs (rows are reversed)
-//  Size const num_rows = asy_ids.size();
-//  Size const num_cols = asy_ids[0].size();
-//  Vector<I> asy_ids_flat(num_rows * num_cols);
-//  for (Size i = 0; i < num_rows; ++i) {
-//    if (asy_ids[i].size() != num_cols) {
-//      Log::error("Each row must have the same number of columns");
-//      return -1;
-//    }
-//    for (Size j = 0; j < num_cols; ++j) {
-//      asy_ids_flat[i * num_cols + j] = static_cast<I>(asy_ids[num_rows - 1 - i][j]);
-//    }
-//  }
-//  core.grid = um2::move(grid);
-//  core.children = um2::move(asy_ids_flat);
-//  return 0;
-//}
-//
-////=============================================================================
-//// importCoarseCells
-////=============================================================================
-//
-// template <std::floating_point T, std::integral I>
-// void
-// SpatialPartition<T, I>::importCoarseCells(String const & filename)
-//{
-//  Log::info("Importing coarse cells from " + filename);
-//  PolytopeSoup<T, I> mesh_file;
-//  mesh_file.read(filename);
-//
-//  // Get the materials
-//  Vector<String> material_names;
-//  mesh_file.getMaterialNames(material_names);
-//  materials.resize(material_names.size());
-//  for (Size i = 0; i < material_names.size(); ++i) {
-//    ShortString & this_name = materials[i].name;
-//    this_name = ShortString(material_names[i].substr(9).c_str());
-//  }
-//
-//  // For each coarse cell
-//  std::stringstream ss;
-//  Size const num_coarse_cells = numCoarseCells();
-//  for (Size i = 0; i < num_coarse_cells; ++i) {
-//    // Get the submesh for the coarse cell
-//    ss.str("");
-//    ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << i;
-//    String const cc_name(ss.str().c_str());
-//    PolytopeSoup<T, I> cc_submesh;
-//    mesh_file.getSubmesh(cc_name, cc_submesh);
-//
-//    // Get the mesh type and material IDs
-//    MeshType const mesh_type = cc_submesh.getMeshType();
-//    CoarseCell & cc = coarse_cells[i];
-//    cc.mesh_type = mesh_type;
-//    Vector<MaterialID> mat_ids;
-//    cc_submesh.getMaterialIDs(mat_ids, material_names);
-//    cc.material_ids.resize(mat_ids.size());
-//    um2::copy(mat_ids.cbegin(), mat_ids.cend(), cc.material_ids.begin());
-//
-//    // Create the FaceVertexMesh and shift it from global coordinates to local
-//    // coordinates, with the bottom left corner of the AABB at the origin
-//    AxisAlignedBox2<T> bb;
-//    Point2<T> * vertices = nullptr;
-//    Size const num_verts = cc_submesh.numVerts();
-//    switch (mesh_type) {
-//    case MeshType::Tri:
-//      cc.mesh_id = tri.size();
-//      tri.push_back(um2::move(TriMesh<2, T, I>(cc_submesh)));
-//      bb = tri.back().boundingBox();
-//      vertices = tri.back().vertices.data();
-//      break;
-//    case MeshType::Quad:
-//      cc.mesh_id = quad.size();
-//      quad.push_back(um2::move(QuadMesh<2, T, I>(cc_submesh)));
-//      bb = quad.back().boundingBox();
-//      vertices = quad.back().vertices.data();
-//      break;
-//    case MeshType::QuadraticTri:
-//      cc.mesh_id = quadratic_tri.size();
-//      quadratic_tri.push_back(um2::move(QuadraticTriMesh<2, T, I>(cc_submesh)));
-//      bb = quadratic_tri.back().boundingBox();
-//      vertices = quadratic_tri.back().vertices.data();
-//      break;
-//    case MeshType::QuadraticQuad:
-//      cc.mesh_id = quadratic_quad.size();
-//      quadratic_quad.push_back(um2::move(QuadraticQuadMesh<2, T, I>(cc_submesh)));
-//      bb = quadratic_quad.back().boundingBox();
-//      vertices = quadratic_quad.back().vertices.data();
-//      break;
-//    default:
-//      Log::error("Mesh type not supported");
-//    }
-//
-//    // Shift the points so that the min point is at the origin.
-//    Point2<T> const min_point = bb.minima;
-//    for (Size ip = 0; ip < num_verts; ++ip) {
-//      vertices[ip] -= min_point;
-//    }
-// #if UM2_ENABLE_ASSERTS
-//    Point2<T> const dxdy = bb.maxima - bb.minima;
-//    ASSERT(isApprox(dxdy, cc.dxdy));
-// #endif
-//  }
-//}
+
+template <std::floating_point T, std::integral I>
+auto
+SpatialPartition<T, I>::makeCore(Vector<Vector<Size>> const & asy_ids) -> Size
+{
+  Log::info("Making core");
+  // Ensure that all assemblies exist
+  Size const num_asy = _assemblies.size();
+  for (auto const & asy_ids_row : asy_ids) {
+    auto const * const it =
+        std::find_if(asy_ids_row.cbegin(), asy_ids_row.cend(),
+                     [num_asy](Size const id) { return id < 0 || id >= num_asy; });
+    if (it != asy_ids_row.end()) {
+      Log::error("Assembly " + toString(*it) + " does not exist");
+      return -1;
+    }
+  }
+  Vector<Vec2<T>> dxdy(num_asy);
+  for (Size i = 0; i < num_asy; ++i) {
+    auto const lat_id = static_cast<Size>(_assemblies[i].getChild(0));
+    dxdy[i] = _lattices[lat_id].grid().extents();
+  }
+  // Create the rectilinear grid
+  RectilinearGrid2<T> const grid(dxdy, asy_ids);
+  // Flatten the assembly IDs (rows are reversed)
+  Size const num_rows = asy_ids.size();
+  Size const num_cols = asy_ids[0].size();
+  Vector<I> asy_ids_flat(num_rows * num_cols);
+  for (Size i = 0; i < num_rows; ++i) {
+    if (asy_ids[i].size() != num_cols) {
+      Log::error("Each row must have the same number of columns");
+      return -1;
+    }
+    for (Size j = 0; j < num_cols; ++j) {
+      asy_ids_flat[i * num_cols + j] = static_cast<I>(asy_ids[num_rows - 1 - i][j]);
+    }
+  }
+  Core core(grid, asy_ids_flat);
+  _core = um2::move(core);
+  return 0;
+}
+
+//=============================================================================
+// importCoarseCells
+//=============================================================================
+
+template <std::floating_point T, std::integral I>
+void
+SpatialPartition<T, I>::importCoarseCells(String const & filename)
+{
+  Log::info("Importing coarse cells from " + filename);
+  PolytopeSoup<T, I> mesh_file;
+  mesh_file.read(filename);
+
+  // Get the materials
+  Vector<String> material_names;
+  mesh_file.getMaterialNames(material_names);
+  _materials.resize(material_names.size());
+  for (Size i = 0; i < material_names.size(); ++i) {
+    _materials[i].name() = material_names[i].substr(9).c_str();
+  }
+
+  // For each coarse cell
+  std::stringstream ss;
+  Size const num_coarse_cells = numCoarseCells();
+  for (Size i = 0; i < num_coarse_cells; ++i) {
+    // Get the submesh for the coarse cell
+    ss.str("");
+    ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << i;
+    String const cc_name(ss.str().c_str());
+    PolytopeSoup<T, I> cc_submesh;
+    mesh_file.getSubmesh(cc_name, cc_submesh);
+
+    // Get the mesh type and material IDs
+    MeshType const mesh_type = cc_submesh.getMeshType();
+    CoarseCell & cc = _coarse_cells[i];
+    cc.mesh_type = mesh_type;
+    Vector<MaterialID> mat_ids;
+    cc_submesh.getMaterialIDs(mat_ids, material_names);
+    cc.material_ids.resize(mat_ids.size());
+    um2::copy(mat_ids.cbegin(), mat_ids.cend(), cc.material_ids.begin());
+
+    // Create the FaceVertexMesh and shift it from global coordinates to local
+    // coordinates, with the bottom left corner of the AABB at the origin
+    AxisAlignedBox2<T> bb;
+    Point2<T> * vertices = nullptr;
+    Size const num_verts = cc_submesh.numVerts();
+    switch (mesh_type) {
+    case MeshType::Tri:
+      cc.mesh_id = _tri.size();
+      _tri.push_back(um2::move(TriMesh<2, T, I>(cc_submesh)));
+      bb = _tri.back().boundingBox();
+      vertices = _tri.back().vertices().data();
+      break;
+    case MeshType::Quad:
+      cc.mesh_id = _quad.size();
+      _quad.push_back(um2::move(QuadMesh<2, T, I>(cc_submesh)));
+      bb = _quad.back().boundingBox();
+      vertices = _quad.back().vertices().data();
+      break;
+    case MeshType::QuadraticTri:
+      cc.mesh_id = _quadratic_tri.size();
+      _quadratic_tri.push_back(um2::move(QuadraticTriMesh<2, T, I>(cc_submesh)));
+      bb = _quadratic_tri.back().boundingBox();
+      vertices = _quadratic_tri.back().vertices().data();
+      break;
+    case MeshType::QuadraticQuad:
+      cc.mesh_id = _quadratic_quad.size();
+      _quadratic_quad.push_back(um2::move(QuadraticQuadMesh<2, T, I>(cc_submesh)));
+      bb = _quadratic_quad.back().boundingBox();
+      vertices = _quadratic_quad.back().vertices().data();
+      break;
+    default:
+      Log::error("Mesh type not supported");
+    }
+
+    // Shift the points so that the min point is at the origin.
+    Point2<T> const min_point = bb.minima();
+    for (Size ip = 0; ip < num_verts; ++ip) {
+      vertices[ip] -= min_point;
+    }
+#if UM2_ENABLE_ASSERTS
+    Point2<T> const dxdy = bb.maxima() - bb.minima();
+    ASSERT(isApprox(dxdy, cc.dxdy));
+#endif
+  }
+}
 //
 ////=============================================================================
 //// toPolytopeSoup

@@ -87,24 +87,24 @@ public:
   HOSTDEV [[nodiscard]] static constexpr auto
   empty() noexcept -> AxisAlignedBox<D, T>;
 
-  // _max - _min
+  // The extent of the box in each dimension.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   extents() const noexcept -> Vec<D, T>;
 
-  // _max[i] - _min[i]
+  // The extent of the box in the i-th dimension.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  extent(Size i) const noexcept -> T;
+  extents(Size i) const noexcept -> T;
 
-  // xMax() - xMin()
+  // The x-extent of the box.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   width() const noexcept -> T;
 
-  // yMax() - yMin()
+  // The y-extent of the box.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   height() const noexcept -> T
     requires(D >= 2);
 
-  // zMax() - zMin()
+  // The z-extent of the box.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   depth() const noexcept -> T
     requires(D >= 3);
@@ -276,7 +276,7 @@ AxisAlignedBox<D, T>::extents() const noexcept -> Vec<D, T>
 
 template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-AxisAlignedBox<D, T>::extent(Size i) const noexcept -> T
+AxisAlignedBox<D, T>::extents(Size i) const noexcept -> T
 {
   return _max[i] - _min[i];
 }
@@ -285,7 +285,7 @@ template <Size D, typename T>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::width() const noexcept -> T
 {
-  return xMax() - xMin();
+  return extents(0);
 }
 
 template <Size D, typename T>
@@ -293,7 +293,7 @@ PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::height() const noexcept -> T
   requires(D >= 2)
 {
-  return yMax() - yMin();
+  return extents(1);
 }
 
 template <Size D, typename T>
@@ -301,7 +301,7 @@ PURE HOSTDEV constexpr auto
 AxisAlignedBox<D, T>::depth() const noexcept -> T
   requires(D >= 3)
 {
-  return zMax() - zMin();
+  return extents(2);
 }
 
 template <Size D, typename T>
@@ -391,23 +391,22 @@ boundingBox(Vector<Point<D, T>> const & points) noexcept -> AxisAlignedBox<D, T>
 
 // Returns the distance along the ray to the intersection point with the box.
 // r in [0, inf_distance<T>]
-template <typename T>
+template <Size D, typename T>
 PURE HOSTDEV constexpr auto
-intersect(Ray2<T> const & ray, AxisAlignedBox2<T> const & box) noexcept -> Vec2<T>
+intersect(Ray<D, T> const & ray, AxisAlignedBox<D, T> const & box) noexcept -> Vec2<T>
 {
   // Inspired by https://tavianator.com/2022/ray_box_boundary.html
   T tmin = static_cast<T>(0);
   T tmax = inf_distance<T>;
-  T const inv_x = static_cast<T>(1) / ray.direction()[0];
-  T const inv_y = static_cast<T>(1) / ray.direction()[1];
-  T const t1x = (box.xMin() - ray.origin()[0]) * inv_x;
-  T const t2x = (box.xMax() - ray.origin()[0]) * inv_x;
-  T const t1y = (box.yMin() - ray.origin()[1]) * inv_y;
-  T const t2y = (box.yMax() - ray.origin()[1]) * inv_y;
-  tmin = um2::max(tmin, um2::min(t1x, t2x));
-  tmax = um2::min(tmax, um2::max(t1x, t2x));
-  tmin = um2::max(tmin, um2::min(t1y, t2y));
-  tmax = um2::min(tmax, um2::max(t1y, t2y));
+  Vec<D, T> const inv_dir = static_cast<T>(1) / ray.direction();
+  Vec<D, T> const vt1 = (box.minima() - ray.origin()) * inv_dir;
+  Vec<D, T> const vt2 = (box.maxima() - ray.origin()) * inv_dir;
+  for (Size i = 0; i < D; ++i) {
+    T const tmin_i = um2::min(vt1[i], vt2[i]);
+    T const tmax_i = um2::max(vt1[i], vt2[i]);
+    tmin = um2::max(tmin, tmin_i);
+    tmax = um2::min(tmax, tmax_i);
+  }
   return tmin <= tmax ? Vec2<T>(tmin, tmax) : Vec2<T>(inf_distance<T>, inf_distance<T>);
 }
 

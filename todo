@@ -1,46 +1,42 @@
+double -> d
+Int ->i
+
+Modify the Gmsh functions so that they are templated where necessary
+
+Binned mesh
+  Need vis before to verify
+
+mortonSort as default cmake option
+VF as default cmake option
+
+makeCylindricalPinMesh for non-square pins
+
+MPACT functions -> Gmsh functions -> field
+
 Back the rays up by -eps
+
 Make the mpact tests work for more types
 
 SIMD versions of routines for mesh.
   point in 4 AABB
   ray intersect 4 lines, etc.
 
+regular grid
+  cognitive complex
+
+stdlib -> std::to_string for int, float conversion
+
+
+//===================================================
 noexcept, constexpr everything
-  - stdlib
-  - common
-  - math
-  - geometry
-
 NOLINT, diagnostic (remove justified)
-  - stdlib
-  - common
-  - math
-  - geometry
-
-minima()[i], maxima()[], numCells(), origin, direction
-  - stdlib
-  - common
-  - math
-  - geometry
-
+()[i]
 replace std::
-  - stdlib -> std::to_string for int, float conversion
-  - common
-  - math
-  - geometry
-
 ASSERT_ASSUME
-  - stdlib
-  - common
-  - math
-  - geometry
-
 Comment functions
-  - stdlib
-  - common
-  - math
-  - geometry
 
+Add multidimentional array class with elementwise operations
+  - Use for partition classes with children
 
 face overlap using connectivity
   - identify boundary edges which are not on the exterior
@@ -59,15 +55,14 @@ Benchmark
 
 Use assume once C++ 23 is supported. See config file
 
-struct to class
+Functions to prevent std::string/std::vector usage in examples and tutorials
+  One should bundle functions to hide complexity
 
 Log with multiple arguments to the functions, which automatically call toStgring
 
 Re-add the requirements non-spack installed
 
 Scripts to install gcc
-
-Currently working through polytope soup tests 
 
 reserve elements/vertices for submesh and read: FVM.toPolytopesoup, spatial_part.toPolytopeSoup
 
@@ -91,20 +86,11 @@ HOUSE KEEPING
 2. NOLINTS
 3. Old benchmarks: reimplement or place in archive
 4. clean archive
-5. ADD TRACE/DEBUG statements to routines. Remove old ones
 
 ===============================================================================
 BUGS
 ===============================================================================
 2. Point in cell bug for c5g7 mesh
-
-===============================================================================
-POTENTIAL BUGS
-===============================================================================
-
-===============================================================================
-TESTS
-===============================================================================
 
 ===============================================================================
 ALGORITHMS
@@ -119,10 +105,6 @@ DATA STRUCTURES
 ===============================================================================
 1. Make spatial partition a class
 2. Binned FVM
-
-===============================================================================
-BENCHMARKS
-===============================================================================
 
 ===============================================================================
 FUTURE

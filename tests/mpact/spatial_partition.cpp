@@ -4,88 +4,94 @@
 
 #include <fstream>
 
-// template <typename T, typename I>
-// TEST_CASE(test_make_cylindrical_pin_mesh)
-// um2::mpact::SpatialPartition model;
-// um2::Vector<double> const radii = {0.4096, 0.475, 0.575};
-// double const pitch = 1.26;
-// um2::Vector<int> const num_rings = {3, 1, 1};
-// int const na = 8;
-//
-// int id = -1;
-// id = model.make_cylindrical_pin_mesh(radii, pitch, num_rings, na, 1);
-// ASSERT(id == 0, "id should be 0");
-// ASSERT(model.quad.size() == 1, "size");
-// int total_rings = std::reduce(num_rings.begin(), num_rings.end());
-// int nfaces = (total_rings + 1) * na;
-// ASSERT(num_faces(model.quad[0]) == nfaces, "num_faces");
-// auto aabb = um2::bounding_box(model.quad[0]);
-// ASSERT_NEAR(um2::width(aabb), 1.26, 1e-6, "width");
-// ASSERT_NEAR(um2::height(aabb), 1.26, 1e-6, "height");
-// ASSERT_NEAR(aabb.minima[0], 0, 1e-6, "minima[0]");
-// ASSERT_NEAR(aabb.minima[1], 0, 1e-6, "minima[1]");
-//
-// id = model.make_cylindrical_pin_mesh(radii, pitch, num_rings, na, 2);
-// ASSERT(id == 0, "id should be 0");
-// ASSERT(model.quadratic_quad.size() == 1, "size");
-// ASSERT(num_faces(model.quadratic_quad[0]) == nfaces, "num_faces");
-// aabb = um2::bounding_box(model.quadratic_quad[0]);
-// ASSERT_NEAR(um2::width(aabb), 1.26, 1e-6, "width");
-// ASSERT_NEAR(um2::height(aabb), 1.26, 1e-6, "height");
-// ASSERT_NEAR(aabb.minima[0], 0, 1e-6, "minima[0]");
-// ASSERT_NEAR(aabb.minima[1], 0, 1e-6, "minima[1]");
-//
-// um2::Vector<um2::Material> materials;
-// um2::Vector<int8_t> material_ids;
-// um2::Material uo2("UO2", "forestgreen");
-// um2::Material clad("Clad", "lightgray");
-// um2::Material water("Water", "lightblue");
-// materials.insert(materials.end(), 3 * 8, uo2);
-// materials.insert(materials.end(), 1 * 8, clad);
-// materials.insert(materials.end(), 2 * 8, water);
-// material_ids.insert(material_ids.end(), 3 * 8, 0);
-// material_ids.insert(material_ids.end(), 1 * 8, 1);
-// material_ids.insert(material_ids.end(), 2 * 8, 2);
-// id = model.makeCoarseCell(2, 0, materials);
-// ASSERT(id == 0, "id should be 0");
-// ASSERT_NEAR(model.coarse_cells[0].dxdy[0], pitch, 1e-6, "dxdy");
-// ASSERT_NEAR(model.coarse_cells[0].dxdy[1], pitch, 1e-6, "dxdy");
-// ASSERT(model.coarse_cells[0].mesh_type == 2, "mesh_type");
-// ASSERT(model.coarse_cells[0].mesh_id == 0, "mesh_id");
-// ASSERT(model.coarse_cells[0].material_ids == material_ids, "material_ids");
-// END_TEST_CASE
+template <typename T, typename I>
+TEST_CASE(makeCylindricalPinMesh)
+{
+  um2::mpact::SpatialPartition<T, I> model;
+  T const r0 = static_cast<T>(0.4096);
+  T const r1 = static_cast<T>(0.475);
+  T const r2 = static_cast<T>(0.575);
+  um2::Vector<T> const radii = {r0, r1, r2};
+  T const pitch = static_cast<T>(1.26);
+  um2::Vector<Size> const num_rings = {3, 1, 1};
+  Size const na = 8;
 
-// template <typename T, typename I>
-// TEST_CASE(test_make_rectangular_pin_mesh)
-//{
-// um2::mpact::SpatialPartition model;
-// um2::Vec2<T> dxdy(2, 1);
-//
-// int id = -1;
-// int nx = 1;
-// int ny = 1;
-// id = model.make_rectangular_pin_mesh(dxdy, nx, ny);
-// ASSERT(id == 0, "id should be 0");
-// ASSERT(model.quad.size() == 1, "size");
-// ASSERT(num_faces(model.quad[0]) == nx * ny, "num_faces");
-// auto aabb = um2::bounding_box(model.quad[0]);
-// ASSERT_NEAR(um2::width(aabb), dxdy[0], 1e-6, "width");
-// ASSERT_NEAR(um2::height(aabb), dxdy[1], 1e-6, "height");
-// ASSERT_NEAR(aabb.minima[0], 0, 1e-6, "minima[0]");
-// ASSERT_NEAR(aabb.minima[1], 0, 1e-6, "minima[1]");
-//
-// um2::Vector<um2::Material>
-// materials(nx * ny, um2::Material("A", "red"));
-// um2::Vector<int8_t>
-// material_ids(nx * ny, 0);
-// id = model.makeCoarseCell(2, 0, materials);
-// ASSERT(id == 0, "id should be 0");
-// ASSERT_NEAR(model.coarse_cells[0].dxdy[0], dxdy[0], 1e-6, "dxdy");
-// ASSERT_NEAR(model.coarse_cells[0].dxdy[1], dxdy[1], 1e-6, "dxdy");
-// ASSERT(model.coarse_cells[0].mesh_type == 2, "mesh_type");
-// ASSERT(model.coarse_cells[0].mesh_id == 0, "mesh_id");
-// ASSERT(model.coarse_cells[0].material_ids == material_ids, "material_ids");
-// }
+  Size id = -1;
+  id = model.makeCylindricalPinMesh(radii, pitch, num_rings, na, 1);
+  ASSERT(id == 0);
+  Size const total_rings = std::reduce(num_rings.begin(), num_rings.end());
+  Size const nfaces = (total_rings + 1) * na;
+  ASSERT(model.getQuadMesh(0).numFaces() == nfaces);
+  auto const aabb = model.getQuadMesh(0).boundingBox();
+  T const eps = static_cast<T>(1e-6);
+  ASSERT_NEAR(aabb.width(), pitch, eps);
+  ASSERT_NEAR(aabb.height(), pitch, eps);
+  ASSERT_NEAR(aabb.minima(0), 0, eps);
+  ASSERT_NEAR(aabb.minima(1), 0, eps);
+
+  id = -1;
+  id = model.makeCylindricalPinMesh(radii, pitch, num_rings, na, 2);
+  ASSERT(id == 0);
+  ASSERT(model.getQuadraticQuadMesh(0).numFaces() == nfaces);
+  auto const aabb1 = model.getQuadraticQuadMesh(0).boundingBox();
+  ASSERT_NEAR(aabb1.width(), pitch, eps);
+  ASSERT_NEAR(aabb1.height(), pitch, eps);
+  ASSERT_NEAR(aabb1.minima(0), 0, eps);
+  ASSERT_NEAR(aabb1.minima(1), 0, eps);
+
+  um2::Vector<MaterialID> material_ids;
+  um2::Material<T> const uo2("UO2", um2::forestgreen);
+  um2::Material<T> const clad("Clad", um2::lightgray);
+  um2::Material<T> const water("Water", um2::lightblue);
+  model.addMaterial(uo2);
+  model.addMaterial(clad);
+  model.addMaterial(water);
+  material_ids.push_back(num_rings[0] * na, 0);
+  material_ids.push_back(num_rings[1] * na, 1);
+  material_ids.push_back((num_rings[2] + 1) * na, 2);
+  id = -1;
+  id =
+      model.makeCoarseCell({pitch, pitch}, um2::MeshType::QuadraticQuad, 0, material_ids);
+  ASSERT(id == 0);
+  auto const & coarse_cell = model.getCoarseCell(0);
+  ASSERT_NEAR(coarse_cell.dxdy[0], pitch, eps);
+  ASSERT_NEAR(coarse_cell.dxdy[1], pitch, eps);
+  ASSERT(coarse_cell.mesh_type == um2::MeshType::QuadraticQuad);
+  ASSERT(coarse_cell.mesh_id == 0);
+  ASSERT(coarse_cell.material_ids == material_ids);
+}
+
+template <typename T, typename I>
+TEST_CASE(makeRectangularPinMesh)
+{
+  um2::mpact::SpatialPartition<T, I> model;
+  um2::Vec2<T> dxdy(2, 1);
+
+  Size id = -1;
+  Size const nx = 2;
+  Size const ny = 1;
+  T const eps = static_cast<T>(1e-6);
+  id = model.makeRectangularPinMesh(dxdy, nx, ny);
+  ASSERT(id == 0);
+  auto const & mesh = model.getQuadMesh(0);
+  ASSERT(mesh.numFaces() == nx * ny);
+  auto const aabb = mesh.boundingBox();
+  ASSERT_NEAR(aabb.width(), dxdy[0], eps);
+  ASSERT_NEAR(aabb.height(), dxdy[1], eps);
+  ASSERT_NEAR(aabb.minima(0), 0, eps);
+  ASSERT_NEAR(aabb.minima(1), 0, eps);
+
+  auto quad = mesh.getFace(0);
+  ASSERT_NEAR(quad[0][0], 0, eps);
+  ASSERT_NEAR(quad[0][1], 0, eps);
+  ASSERT_NEAR(quad[2][0], 1, eps);
+  ASSERT_NEAR(quad[2][1], 1, eps);
+  quad = mesh.getFace(1);
+  ASSERT_NEAR(quad[0][0], 1, eps);
+  ASSERT_NEAR(quad[0][1], 0, eps);
+  ASSERT_NEAR(quad[2][0], 2, eps);
+  ASSERT_NEAR(quad[2][1], 1, eps);
+}
 
 template <typename T, typename I>
 TEST_CASE(makeCoarseCell)
@@ -129,13 +135,13 @@ TEST_CASE(makeRTM)
   ASSERT(rtm.children().size() == 2);
   ASSERT(rtm.children()[0] == 0);
   ASSERT(rtm.children()[1] == 1);
-  ASSERT(rtm.numXCells() == 2);
-  ASSERT(rtm.numYCells() == 1);
-  ASSERT_NEAR(rtm.divs(0)[0], 0, eps);
-  ASSERT_NEAR(rtm.divs(0)[1], 2, eps);
-  ASSERT_NEAR(rtm.divs(0)[2], 4, eps);
-  ASSERT_NEAR(rtm.divs(1)[0], 0, eps);
-  ASSERT_NEAR(rtm.divs(1)[1], 1, eps);
+  ASSERT(rtm.grid().numXCells() == 2);
+  ASSERT(rtm.grid().numYCells() == 1);
+  ASSERT_NEAR(rtm.grid().divs(0)[0], 0, eps);
+  ASSERT_NEAR(rtm.grid().divs(0)[1], 2, eps);
+  ASSERT_NEAR(rtm.grid().divs(0)[2], 4, eps);
+  ASSERT_NEAR(rtm.grid().divs(1)[0], 0, eps);
+  ASSERT_NEAR(rtm.grid().divs(1)[1], 1, eps);
   model.clear();
 
   um2::Vector<um2::Vector<Size>> const cc_ids2 = {
@@ -150,20 +156,20 @@ TEST_CASE(makeRTM)
   ASSERT(id == 0);
   ASSERT(model.numRTMs() == 1);
   auto rtm2 = model.getRTM(id);
-  ASSERT(rtm2.numXCells() == 2);
-  ASSERT(rtm2.numYCells() == 2);
+  ASSERT(rtm2.grid().numXCells() == 2);
+  ASSERT(rtm2.grid().numYCells() == 2);
   ASSERT(rtm2.getChild(0, 0) == 0);
   ASSERT(rtm2.getChild(1, 0) == 1);
   ASSERT(rtm2.getChild(0, 1) == 2);
   ASSERT(rtm2.getChild(1, 1) == 3);
-  ASSERT(rtm2.divs(0).size() == 3);
-  ASSERT(rtm2.divs(1).size() == 3);
-  ASSERT_NEAR(rtm2.divs(0)[0], 0, eps);
-  ASSERT_NEAR(rtm2.divs(0)[1], 2, eps);
-  ASSERT_NEAR(rtm2.divs(0)[2], 4, eps);
-  ASSERT_NEAR(rtm2.divs(1)[0], 0, eps);
-  ASSERT_NEAR(rtm2.divs(1)[1], 1, eps);
-  ASSERT_NEAR(rtm2.divs(1)[2], 2, eps);
+  ASSERT(rtm2.grid().divs(0).size() == 3);
+  ASSERT(rtm2.grid().divs(1).size() == 3);
+  ASSERT_NEAR(rtm2.grid().divs(0)[0], 0, eps);
+  ASSERT_NEAR(rtm2.grid().divs(0)[1], 2, eps);
+  ASSERT_NEAR(rtm2.grid().divs(0)[2], 4, eps);
+  ASSERT_NEAR(rtm2.grid().divs(1)[0], 0, eps);
+  ASSERT_NEAR(rtm2.grid().divs(1)[1], 1, eps);
+  ASSERT_NEAR(rtm2.grid().divs(1)[2], 2, eps);
 }
 
 template <typename T, typename I>
@@ -195,14 +201,14 @@ TEST_CASE(makeLattice)
   ASSERT(id == 0);
   ASSERT(model.numLattices() == 1);
   auto const lattice = model.getLattice(id);
-  ASSERT(lattice.numXCells() == 2);
-  ASSERT(lattice.numYCells() == 1);
+  ASSERT(lattice.grid().numXCells() == 2);
+  ASSERT(lattice.grid().numYCells() == 1);
   ASSERT(lattice.getChild(0, 0) == 0);
   ASSERT(lattice.getChild(1, 0) == 1);
-  ASSERT_NEAR(lattice.dx(), 12, eps);
-  ASSERT_NEAR(lattice.dy(), 12, eps);
-  ASSERT_NEAR(lattice.xMin(), 0, eps);
-  ASSERT_NEAR(lattice.yMin(), 0, eps);
+  ASSERT_NEAR(lattice.grid().dx(), 12, eps);
+  ASSERT_NEAR(lattice.grid().dy(), 12, eps);
+  ASSERT_NEAR(lattice.grid().xMin(), 0, eps);
+  ASSERT_NEAR(lattice.grid().yMin(), 0, eps);
 }
 
 template <typename T, typename I>
@@ -226,166 +232,167 @@ TEST_CASE(makeAssembly)
   ASSERT(id == 0);
   auto const & assembly = model.getAssembly(id);
   ASSERT(model.numAssemblies() == 1);
-  ASSERT(assembly.numXCells() == 3);
+  ASSERT(assembly.grid().numXCells() == 3);
   ASSERT(assembly.getChild(0) == 0);
   ASSERT(assembly.getChild(1) == 1);
   ASSERT(assembly.getChild(2) == 0);
-  ASSERT(assembly.divs(0).size() == 4);
-  ASSERT_NEAR(assembly.divs(0)[0], 0, eps);
-  ASSERT_NEAR(assembly.divs(0)[1], 2, eps);
-  ASSERT_NEAR(assembly.divs(0)[2], 3, eps);
-  ASSERT_NEAR(assembly.divs(0)[3], 4, eps);
+  ASSERT(assembly.grid().divs(0).size() == 4);
+  ASSERT_NEAR(assembly.grid().divs(0)[0], 0, eps);
+  ASSERT_NEAR(assembly.grid().divs(0)[1], 2, eps);
+  ASSERT_NEAR(assembly.grid().divs(0)[2], 3, eps);
+  ASSERT_NEAR(assembly.grid().divs(0)[3], 4, eps);
 }
 
-// template <typename T, typename I>
-// TEST_CASE(makeAssembly_2d)
-//{
-//   T const eps = static_cast<T>(1e-6);
-//   um2::mpact::SpatialPartition<T, I> model;
-//   um2::Vec2<T> const dxdy(1, 1);
-//   ASSERT(model.makeCoarseCell(dxdy) == 0);
-//   um2::Vector<um2::Vector<Size>> const cc_ids = {
-//       {0, 0},
-//       {0, 0}
-//   };
-//   ASSERT(model.makeRTM(cc_ids) == 0);
-//   um2::Vector<um2::Vector<Size>> const rtm_ids = {{0}};
-//   ASSERT(model.makeLattice(rtm_ids) == 0);
-//   ASSERT(model.makeLattice(rtm_ids) == 1);
-//   um2::Vector<Size> const lat_ids = {0};
-//   Size const id = model.makeAssembly(lat_ids);
-//   ASSERT(id == 0);
-//   ASSERT(model.assemblies.size() == 1);
-//   ASSERT(model.assemblies[0].children.size() == 1);
-//   ASSERT(model.assemblies[0].children[0] == 0);
-//   um2::RectilinearGrid1<T> const & grid = model.assemblies[0].grid;
-//   ASSERT(grid.divs[0].size() == 2);
-//   ASSERT_NEAR(grid.divs[0][0], -1, eps);
-//   ASSERT_NEAR(grid.divs[0][1], 1, eps);
-// }
-//
-// template <typename T, typename I>
-// TEST_CASE(makeCore)
-//{
-//   T const eps = static_cast<T>(1e-6);
-//   um2::mpact::SpatialPartition<T, I> model;
-//   um2::Vec2<T> const dxdy(2, 1);
-//   ASSERT(model.makeCoarseCell(dxdy) == 0);
-//
-//   um2::Vector<um2::Vector<Size>> const cc_ids = {{0}};
-//   ASSERT(model.makeRTM(cc_ids) == 0);
-//
-//   um2::Vector<um2::Vector<Size>> const rtm_ids = {{0}};
-//   ASSERT(model.makeLattice(rtm_ids) == 0);
-//
-//   um2::Vector<Size> const lat_ids1 = {0, 0, 0};
-//   um2::Vector<T> const lat_z1 = {0, 2, 3, 4};
-//   ASSERT(model.makeAssembly(lat_ids1, lat_z1) == 0);
-//   um2::Vector<Size> const lat_ids2 = {0, 0};
-//   um2::Vector<T> const lat_z2 = {0, 3, 4};
-//   ASSERT(model.makeAssembly(lat_ids2, lat_z2) == 1);
-//   ASSERT(model.makeAssembly(lat_ids1, lat_z1) == 2);
-//   ASSERT(model.makeAssembly(lat_ids2, lat_z2) == 3);
-//
-//   um2::Vector<um2::Vector<Size>> const asy_ids = {
-//       {2, 3},
-//       {0, 1}
-//   };
-//   Size const id = model.makeCore(asy_ids);
-//   ASSERT(id == 0);
-//   ASSERT(model.core.children.size() == 4);
-//   ASSERT(model.core.children[0] == 0);
-//   ASSERT(model.core.children[1] == 1);
-//   ASSERT(model.core.children[2] == 2);
-//   ASSERT(model.core.children[3] == 3);
-//   ASSERT(model.core.grid.divs[0].size() == 3);
-//   ASSERT(model.core.grid.divs[1].size() == 3);
-//   ASSERT_NEAR(model.core.grid.divs[0][0], 0, eps);
-//   ASSERT_NEAR(model.core.grid.divs[0][1], 2, eps);
-//   ASSERT_NEAR(model.core.grid.divs[0][2], 4, eps);
-//   ASSERT_NEAR(model.core.grid.divs[1][0], 0, eps);
-//   ASSERT_NEAR(model.core.grid.divs[1][1], 1, eps);
-//   ASSERT_NEAR(model.core.grid.divs[1][2], 2, eps);
-// }
-//
-// template <typename T, typename I>
-// TEST_CASE(importCoarseCells)
-//{
-//   using CoarseCell = typename um2::mpact::SpatialPartition<T, I>::CoarseCell;
-//   um2::mpact::SpatialPartition<T, I> model;
-//   model.makeCoarseCell({1, 1});
-//   model.makeCoarseCell({1, 1});
-//   model.makeCoarseCell({1, 1});
-//   model.makeRTM({
-//       {2, 2},
-//       {0, 1}
-//   });
-//   model.makeLattice({{0}});
-//   model.makeAssembly({0});
-//   model.makeCore({{0}});
-//   model.importCoarseCells("./mpact_mesh_files/coarse_cells.inp");
-//
-//   ASSERT(model.numAssemblies() == 1);
-//   ASSERT(model.numLattices() == 1);
-//   ASSERT(model.numRTMs() == 1);
-//   ASSERT(model.numCoarseCells() == 3);
-//
-//   ASSERT(model.tri.size() == 2);
-//   CoarseCell const & cell = model.coarse_cells[0];
-//   ASSERT(cell.mesh_type == um2::MeshType::Tri);
-//   ASSERT(cell.mesh_id == 0);
-//   ASSERT(cell.material_ids.size() == 2);
-//   ASSERT(cell.material_ids[0] == 1);
-//   ASSERT(cell.material_ids[1] == 2);
-//   um2::TriMesh<2, T, I> const & tri_mesh = model.tri[0];
-//   ASSERT(tri_mesh.numVertices() == 4);
-//   ASSERT(um2::isApprox(tri_mesh.vertices[0], {0, 0}));
-//   ASSERT(um2::isApprox(tri_mesh.vertices[1], {1, 0}));
-//   ASSERT(um2::isApprox(tri_mesh.vertices[2], {1, 1}));
-//   ASSERT(um2::isApprox(tri_mesh.vertices[3], {0, 1}));
-//   ASSERT(tri_mesh.fv[0][0] == 0);
-//   ASSERT(tri_mesh.fv[0][1] == 1);
-//   ASSERT(tri_mesh.fv[0][2] == 2);
-//   ASSERT(tri_mesh.fv[1][0] == 2);
-//   ASSERT(tri_mesh.fv[1][1] == 3);
-//   ASSERT(tri_mesh.fv[1][2] == 0);
-//
-//   CoarseCell const & cell1 = model.coarse_cells[1];
-//   ASSERT(cell1.mesh_type == um2::MeshType::Tri);
-//   ASSERT(cell1.mesh_id == 1);
-//   ASSERT(cell1.material_ids.size() == 2);
-//   ASSERT(cell1.material_ids[0] == 1);
-//   ASSERT(cell1.material_ids[1] == 0);
-//   um2::TriMesh<2, T, I> const & tri_mesh1 = model.tri[1];
-//   ASSERT(tri_mesh1.vertices.size() == 4);
-//   ASSERT(um2::isApprox(tri_mesh1.vertices[0], {0, 0}));
-//   ASSERT(um2::isApprox(tri_mesh1.vertices[1], {0, 1}));
-//   ASSERT(um2::isApprox(tri_mesh1.vertices[2], {1, 0}));
-//   ASSERT(um2::isApprox(tri_mesh1.vertices[3], {1, 1}));
-//   ASSERT(tri_mesh1.fv[0][0] == 0);
-//   ASSERT(tri_mesh1.fv[0][1] == 2);
-//   ASSERT(tri_mesh1.fv[0][2] == 1);
-//   ASSERT(tri_mesh1.fv[1][0] == 2);
-//   ASSERT(tri_mesh1.fv[1][1] == 3);
-//   ASSERT(tri_mesh1.fv[1][2] == 1);
-//
-//   CoarseCell const & cell2 = model.coarse_cells[2];
-//   ASSERT(cell2.mesh_type == um2::MeshType::Quad);
-//   ASSERT(cell2.mesh_id == 0);
-//   ASSERT(cell2.material_ids.size() == 1);
-//   ASSERT(cell2.material_ids[0] == 0);
-//   um2::QuadMesh<2, T, I> const & quad_mesh = model.quad[0];
-//   ASSERT(quad_mesh.vertices.size() == 4);
-//   ASSERT(um2::isApprox(quad_mesh.vertices[0], {1, 0}));
-//   ASSERT(um2::isApprox(quad_mesh.vertices[1], {0, 0}));
-//   ASSERT(um2::isApprox(quad_mesh.vertices[2], {1, 1}));
-//   ASSERT(um2::isApprox(quad_mesh.vertices[3], {0, 1}));
-//   ASSERT(quad_mesh.fv.size() == 1);
-//   ASSERT(quad_mesh.fv[0][0] == 1);
-//   ASSERT(quad_mesh.fv[0][1] == 0);
-//   ASSERT(quad_mesh.fv[0][2] == 2);
-//   ASSERT(quad_mesh.fv[0][3] == 3);
-// }
+template <typename T, typename I>
+TEST_CASE(makeAssembly_2d)
+{
+  T const eps = static_cast<T>(1e-6);
+  um2::mpact::SpatialPartition<T, I> model;
+  um2::Vec2<T> const dxdy(1, 1);
+  ASSERT(model.makeCoarseCell(dxdy) == 0);
+  um2::Vector<um2::Vector<Size>> const cc_ids = {
+      {0, 0},
+      {0, 0}
+  };
+  ASSERT(model.makeRTM(cc_ids) == 0);
+  um2::Vector<um2::Vector<Size>> const rtm_ids = {{0}};
+  ASSERT(model.makeLattice(rtm_ids) == 0);
+  ASSERT(model.makeLattice(rtm_ids) == 1);
+  um2::Vector<Size> const lat_ids = {0};
+  Size const id = model.makeAssembly(lat_ids);
+  ASSERT(id == 0);
+  auto const & assembly = model.getAssembly(id);
+  ASSERT(model.numAssemblies() == 1);
+  ASSERT(assembly.children().size() == 1);
+  ASSERT(assembly.children()[0] == 0);
+  um2::RectilinearGrid1<T> const & grid = assembly.grid();
+  ASSERT(grid.divs(0).size() == 2);
+  ASSERT_NEAR(grid.divs(0)[0], -1, eps);
+  ASSERT_NEAR(grid.divs(0)[1], 1, eps);
+}
+
+template <typename T, typename I>
+TEST_CASE(makeCore)
+{
+  T const eps = static_cast<T>(1e-6);
+  um2::mpact::SpatialPartition<T, I> model;
+  um2::Vec2<T> const dxdy(2, 1);
+  ASSERT(model.makeCoarseCell(dxdy) == 0);
+
+  um2::Vector<um2::Vector<Size>> const cc_ids = {{0}};
+  ASSERT(model.makeRTM(cc_ids) == 0);
+
+  um2::Vector<um2::Vector<Size>> const rtm_ids = {{0}};
+  ASSERT(model.makeLattice(rtm_ids) == 0);
+
+  um2::Vector<Size> const lat_ids1 = {0, 0, 0};
+  um2::Vector<T> const lat_z1 = {0, 2, 3, 4};
+  ASSERT(model.makeAssembly(lat_ids1, lat_z1) == 0);
+  um2::Vector<Size> const lat_ids2 = {0, 0};
+  um2::Vector<T> const lat_z2 = {0, 3, 4};
+  ASSERT(model.makeAssembly(lat_ids2, lat_z2) == 1);
+  ASSERT(model.makeAssembly(lat_ids1, lat_z1) == 2);
+  ASSERT(model.makeAssembly(lat_ids2, lat_z2) == 3);
+
+  um2::Vector<um2::Vector<Size>> const asy_ids = {
+      {2, 3},
+      {0, 1}
+  };
+  Size const id = model.makeCore(asy_ids);
+  ASSERT(id == 0);
+  auto const & core = model.getCore();
+  ASSERT(core.children().size() == 4);
+  ASSERT(core.children()[0] == 0);
+  ASSERT(core.children()[1] == 1);
+  ASSERT(core.children()[2] == 2);
+  ASSERT(core.children()[3] == 3);
+  ASSERT(core.grid().divs(0).size() == 3);
+  ASSERT(core.grid().divs(1).size() == 3);
+  ASSERT_NEAR(core.grid().divs(0)[0], 0, eps);
+  ASSERT_NEAR(core.grid().divs(0)[1], 2, eps);
+  ASSERT_NEAR(core.grid().divs(0)[2], 4, eps);
+  ASSERT_NEAR(core.grid().divs(1)[0], 0, eps);
+  ASSERT_NEAR(core.grid().divs(1)[1], 1, eps);
+  ASSERT_NEAR(core.grid().divs(1)[2], 2, eps);
+}
+
+template <typename T, typename I>
+TEST_CASE(importCoarseCells)
+{
+  using CoarseCell = typename um2::mpact::SpatialPartition<T, I>::CoarseCell;
+  um2::mpact::SpatialPartition<T, I> model;
+  model.makeCoarseCell({1, 1});
+  model.makeCoarseCell({1, 1});
+  model.makeCoarseCell({1, 1});
+  model.makeRTM({
+      {2, 2},
+      {0, 1}
+  });
+  model.makeLattice({{0}});
+  model.makeAssembly({0});
+  model.makeCore({{0}});
+  model.importCoarseCells("./mpact_mesh_files/coarse_cells.inp");
+
+  ASSERT(model.numAssemblies() == 1);
+  ASSERT(model.numLattices() == 1);
+  ASSERT(model.numRTMs() == 1);
+  ASSERT(model.numCoarseCells() == 3);
+
+  CoarseCell const & cell = model.getCoarseCell(0);
+  ASSERT(cell.mesh_type == um2::MeshType::Tri);
+  ASSERT(cell.mesh_id == 0);
+  ASSERT(cell.material_ids.size() == 2);
+  ASSERT(cell.material_ids[0] == 1);
+  ASSERT(cell.material_ids[1] == 2);
+  um2::TriMesh<2, T, I> const & tri_mesh = model.getTriMesh(0);
+  ASSERT(tri_mesh.numVertices() == 4);
+  ASSERT(um2::isApprox(tri_mesh.getVertex(0), {0, 0}));
+  ASSERT(um2::isApprox(tri_mesh.getVertex(1), {1, 0}));
+  ASSERT(um2::isApprox(tri_mesh.getVertex(2), {1, 1}));
+  ASSERT(um2::isApprox(tri_mesh.getVertex(3), {0, 1}));
+  ASSERT(tri_mesh.faceVertexConn()[0][0] == 0);
+  ASSERT(tri_mesh.faceVertexConn()[0][1] == 1);
+  ASSERT(tri_mesh.faceVertexConn()[0][2] == 2);
+  ASSERT(tri_mesh.faceVertexConn()[1][0] == 2);
+  ASSERT(tri_mesh.faceVertexConn()[1][1] == 3);
+  ASSERT(tri_mesh.faceVertexConn()[1][2] == 0);
+
+  CoarseCell const & cell1 = model.getCoarseCell(1);
+  ASSERT(cell1.mesh_type == um2::MeshType::Tri);
+  ASSERT(cell1.mesh_id == 1);
+  ASSERT(cell1.material_ids.size() == 2);
+  ASSERT(cell1.material_ids[0] == 1);
+  ASSERT(cell1.material_ids[1] == 0);
+  um2::TriMesh<2, T, I> const & tri_mesh1 = model.getTriMesh(1);
+  ASSERT(tri_mesh1.numVertices() == 4);
+  ASSERT(um2::isApprox(tri_mesh1.getVertex(0), {0, 0}));
+  ASSERT(um2::isApprox(tri_mesh1.getVertex(1), {0, 1}));
+  ASSERT(um2::isApprox(tri_mesh1.getVertex(2), {1, 0}));
+  ASSERT(um2::isApprox(tri_mesh1.getVertex(3), {1, 1}));
+  ASSERT(tri_mesh1.faceVertexConn()[0][0] == 0);
+  ASSERT(tri_mesh1.faceVertexConn()[0][1] == 2);
+  ASSERT(tri_mesh1.faceVertexConn()[0][2] == 1);
+  ASSERT(tri_mesh1.faceVertexConn()[1][0] == 2);
+  ASSERT(tri_mesh1.faceVertexConn()[1][1] == 3);
+  ASSERT(tri_mesh1.faceVertexConn()[1][2] == 1);
+
+  CoarseCell const & cell2 = model.getCoarseCell(2);
+  ASSERT(cell2.mesh_type == um2::MeshType::Quad);
+  ASSERT(cell2.mesh_id == 0);
+  ASSERT(cell2.material_ids.size() == 1);
+  ASSERT(cell2.material_ids[0] == 0);
+  um2::QuadMesh<2, T, I> const & quad_mesh = model.getQuadMesh(0);
+  ASSERT(quad_mesh.numVertices() == 4);
+  ASSERT(um2::isApprox(quad_mesh.getVertex(0), {1, 0}));
+  ASSERT(um2::isApprox(quad_mesh.getVertex(1), {0, 0}));
+  ASSERT(um2::isApprox(quad_mesh.getVertex(2), {1, 1}));
+  ASSERT(um2::isApprox(quad_mesh.getVertex(3), {0, 1}));
+  ASSERT(quad_mesh.faceVertexConn().size() == 1);
+  ASSERT(quad_mesh.faceVertexConn()[0][0] == 1);
+  ASSERT(quad_mesh.faceVertexConn()[0][1] == 0);
+  ASSERT(quad_mesh.faceVertexConn()[0][2] == 2);
+  ASSERT(quad_mesh.faceVertexConn()[0][3] == 3);
+}
 //
 // template <typename T, typename I>
 // TEST_CASE(toPolytopeSoup)
@@ -586,14 +593,15 @@ TEST_CASE(makeAssembly)
 template <typename T, typename I>
 TEST_SUITE(SpatialPartition)
 {
-  // TEST_CASE("make_cylindrical_pin_mesh", (test_make_cylindrical_pin_mesh<T, I>));
+  TEST((makeCylindricalPinMesh<T, I>));
+  TEST((makeRectangularPinMesh<T, I>));
   TEST((makeCoarseCell<T, I>));
   TEST((makeRTM<T, I>));
   TEST((makeLattice<T, I>));
   TEST((makeAssembly<T, I>));
-  //  TEST((makeAssembly_2d<T, I>));
-  //  TEST((makeCore<T, I>));
-  //  TEST((importCoarseCells<T, I>));
+  TEST((makeAssembly_2d<T, I>));
+  TEST((makeCore<T, I>));
+  TEST((importCoarseCells<T, I>));
   //  TEST((toPolytopeSoup<T, I>));
   //    TEST_CASE("coarse_cell_face_areas", (test_coarse_cell_face_areas<T, I>));
   //    TEST_CASE("coarse_cell_find_face", (test_coarse_cell_find_face<T, I>));

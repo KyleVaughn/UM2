@@ -344,8 +344,7 @@ String::getShortCap() noexcept -> uint64_t
 }
 
 PURE HOSTDEV constexpr auto
-// NOLINTNEXTLINE(readability-make-member-function-const) we offer both const and
-// non-const
+// NOLINTNEXTLINE(readability-make-member-function-const) we offer const next
 String::getLongPointer() noexcept -> char *
 {
   return _r.l.data;

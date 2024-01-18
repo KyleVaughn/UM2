@@ -1,4 +1,5 @@
 #include <um2/config.hpp>
+
 #if UM2_USE_GMSH
 #  include <um2/gmsh/base_gmsh_api.hpp>
 #endif

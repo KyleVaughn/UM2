@@ -36,6 +36,46 @@ public:
         _color(color)
   {
   }
+
+  //======================================================================
+  // Accessors
+  //======================================================================
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  name() noexcept -> String &
+  {
+    return _name;
+  }
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  name() const noexcept -> String const &
+  {
+    return _name;
+  }
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  color() noexcept -> Color &
+  {
+    return _color;
+  }
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  color() const noexcept -> Color const &
+  {
+    return _color;
+  }
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  xs() noexcept -> CrossSection<T> &
+  {
+    return _xs;
+  }
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  xs() const noexcept -> CrossSection<T> const &
+  {
+    return _xs;
+  }
 };
 
 } // namespace um2

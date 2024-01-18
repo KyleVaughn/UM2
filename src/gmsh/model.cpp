@@ -18,12 +18,12 @@ namespace um2::gmsh::model
 namespace
 {
 void
-colorMaterialPhysicalGroupEntities(std::vector<Material<Float>> const & materials)
+colorMaterialPhysicalGroupEntities(std::vector<Material<double>> const & materials)
 {
   size_t const num_materials = materials.size();
   std::vector<std::string> material_names(num_materials);
   for (size_t i = 0; i < num_materials; ++i) {
-    material_names[i] = "Material_" + std::string(materials[i].name.data());
+    material_names[i] = "Material_" + std::string(materials[i].name().c_str());
   }
   std::vector<int> ptags(num_materials, -1);
   gmsh::vectorpair dimtags;
@@ -57,7 +57,7 @@ colorMaterialPhysicalGroupEntities(std::vector<Material<Float>> const & material
       for (size_t j = 0; j < tags.size(); ++j) {
         mat_dimtags[j] = {dim_max, tags[j]};
       }
-      Color const color = materials[i - 1].color;
+      Color const color = materials[i - 1].color();
       gmsh::model::setColor(mat_dimtags, static_cast<int>(color.r()),
                             static_cast<int>(color.g()), static_cast<int>(color.b()),
                             static_cast<int>(color.a()), /*recursive=*/true);
@@ -110,7 +110,7 @@ addToPhysicalGroup(int const dim, std::vector<int> const & tags, int const tag,
 //=============================================================================
 
 void
-getMaterials(std::vector<Material<Float>> & materials)
+getMaterials(std::vector<Material<double>> & materials)
 {
   gmsh::vectorpair dimtags;
   gmsh::model::getPhysicalGroups(dimtags);
@@ -122,10 +122,10 @@ getMaterials(std::vector<Material<Float>> & materials)
     if (name.starts_with("Material")) {
       std::vector<int> tags;
       gmsh::model::getEntitiesForPhysicalGroup(dim, tag, tags);
-      std::string const material_name = name.substr(9);
+      um2::String const material_name(name.substr(9).c_str());
       auto const it = std::find_if(materials.begin(), materials.end(),
-                                   [&material_name](Material<Float> const & material) {
-                                     return material.name == material_name;
+                                   [&material_name](Material<double> const & material) {
+                                     return material.name() == material_name;
                                    });
       if (it == materials.end()) {
         // Get the color of the first entity in the physical group.
@@ -134,7 +134,7 @@ getMaterials(std::vector<Material<Float>> & materials)
         int b = 0;
         int a = 0;
         gmsh::model::getColor(dim, tags[0], r, g, b, a);
-        materials.emplace_back(ShortString(material_name.c_str()), Color(r, g, b, a));
+        materials.emplace_back(String(material_name.c_str()), Color(r, g, b, a));
       }
     }
   }
@@ -319,7 +319,7 @@ getNewPhysicalGroups(gmsh::vectorpair const & object_dimtags,
 //=============================================================================
 
 void
-processMaterialHierarchy(std::vector<Material<Float>> const & material_hierarchy,
+processMaterialHierarchy(std::vector<Material<double>> const & material_hierarchy,
                          std::vector<std::string> const & physical_group_names,
                          std::vector<std::vector<int>> & post_physical_group_ent_tags)
 {
@@ -335,12 +335,12 @@ processMaterialHierarchy(std::vector<Material<Float>> const & material_hierarchy
     constexpr size_t guard = std::numeric_limits<size_t>::max();
     std::vector<size_t> mat_indices(nmats, guard);
     for (size_t i = 0; i < nmats; ++i) {
-      Material<Float> const & mat = material_hierarchy[i];
-      std::string const & mat_name = "Material_" + std::string(mat.name.data());
+      Material<double> const & mat = material_hierarchy[i];
+      std::string const & mat_name = "Material_" + std::string(mat.name().c_str());
       auto const it = std::lower_bound(physical_group_names.begin(),
                                        physical_group_names.end(), mat_name);
       if (it == physical_group_names.end() || *it != mat_name) {
-        Log::warn("'Material_" + String(mat.name.data()) + "' not found in model");
+        Log::warn("'Material_" + mat.name() + "' not found in model");
       } else {
         mat_indices[i] = static_cast<size_t>(it - physical_group_names.begin());
       }
@@ -390,7 +390,7 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
                         gmsh::vectorpair const & tool_dimtags,
                         gmsh::vectorpair & out_dimtags,
                         std::vector<gmsh::vectorpair> & out_dimtags_map,
-                        std::vector<Material<Float>> const & material_hierarchy,
+                        std::vector<Material<double>> const & material_hierarchy,
                         int const tag, bool const remove_object, bool const remove_tool)
 {
 
@@ -481,7 +481,7 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
                          gmsh::vectorpair const & tool_dimtags,
                          gmsh::vectorpair & out_dimtags,
                          std::vector<gmsh::vectorpair> & out_dimtags_map,
-                         std::vector<Material<Float>> const & material_hierarchy,
+                         std::vector<Material<double>> const & material_hierarchy,
                          int const tag, bool const remove_object, bool const remove_tool)
 {
 
@@ -559,7 +559,7 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
 
 auto
 addCylindricalPin2D(Point2d const & center, std::vector<double> const & radii,
-                    std::vector<Material<Float>> const & materials) -> std::vector<int>
+                    std::vector<Material<double>> const & materials) -> std::vector<int>
 {
   Log::info("Adding 2D cylindrical pin");
   // Input checking
@@ -601,9 +601,9 @@ addCylindricalPin2D(Point2d const & center, std::vector<double> const & radii,
   // Add materials
   for (size_t i = 0; i < nradii; ++i) {
     addToPhysicalGroup(2, {out_tags[i]}, -1,
-                       "Material_" + std::string(materials[i].name.data()));
+                       "Material_" + std::string(materials[i].name().c_str()));
     // Color entities according to materials
-    Color const color = materials[i].color;
+    Color const color = materials[i].color();
     gmsh::model::setColor(
         {
             {2, out_tags[i]}
@@ -622,7 +622,7 @@ addCylindricalPin2D(Point2d const & center, std::vector<double> const & radii,
 auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
-                           std::vector<std::vector<Material<Float>>> const & materials,
+                           std::vector<std::vector<Material<double>>> const & materials,
                            std::vector<Vec2d> const & dxdy,
                            std::vector<std::vector<int>> const & pin_ids,
                            Point2d const & offset) -> std::vector<int>
@@ -727,17 +727,17 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
         continue;
       }
       addToPhysicalGroup(
-          2,                                                          // dim
-          material_ids[i],                                            // tags
-          -1,                                                         // tag
-          "Material_" + std::string(materials[pin_id][i].name.data()) // name
+          2,                                                             // dim
+          material_ids[i],                                               // tags
+          -1,                                                            // tag
+          "Material_" + std::string(materials[pin_id][i].name().c_str()) // name
       );
       // Color entities according to materials
       gmsh::vectorpair mat_dimtags(nents);
       for (size_t j = 0; j < nents; ++j) {
         mat_dimtags[j] = std::make_pair(2, material_ids[i][j]);
       }
-      Color const color = materials[pin_id][i].color;
+      Color const color = materials[pin_id][i].color();
       gmsh::model::setColor(mat_dimtags, static_cast<int>(color.r()),
                             static_cast<int>(color.g()), static_cast<int>(color.b()),
                             static_cast<int>(color.a()), /*recursive=*/true);
@@ -754,7 +754,7 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
 auto
 addCylindricalPin(Point3d const & center, double const height,
                   std::vector<double> const & radii,
-                  std::vector<Material<Float>> const & materials) -> std::vector<int>
+                  std::vector<Material<double>> const & materials) -> std::vector<int>
 {
   LOG_INFO("Adding cylindrical pin");
   // Input checking
@@ -807,9 +807,9 @@ addCylindricalPin(Point3d const & center, double const height,
   // Add materials
   for (size_t i = 0; i < nradii; ++i) {
     addToPhysicalGroup(3, {out_tags[i]}, -1,
-                       "Material_" + std::string(materials[i].name.data()));
+                       "Material_" + std::string(materials[i].name().c_str()));
     // Color entities according to materials
-    Color const color = materials[i].color;
+    Color const color = materials[i].color();
     gmsh::model::setColor(
         {
             {3, out_tags[i]}
@@ -824,7 +824,7 @@ addCylindricalPin(Point3d const & center, double const height,
 auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
-                         std::vector<std::vector<Material<Float>>> const & materials,
+                         std::vector<std::vector<Material<double>>> const & materials,
                          double const height, std::vector<Vec2d> const & dxdy,
                          std::vector<std::vector<int>> const & pin_ids,
                          Point3d const & offset) -> std::vector<int>
@@ -950,17 +950,17 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
       }
       ASSERT(ctr == nents);
       addToPhysicalGroup(
-          3,                                                          // dim
-          material_ids[i],                                            // tags
-          -1,                                                         // tag
-          "Material_" + std::string(materials[pin_id][i].name.data()) // name
+          3,                                                             // dim
+          material_ids[i],                                               // tags
+          -1,                                                            // tag
+          "Material_" + std::string(materials[pin_id][i].name().c_str()) // name
       );
       // Color entities according to materials
       gmsh::vectorpair mat_dimtags(nents);
       for (size_t j = 0; j < nents; ++j) {
         mat_dimtags[j] = std::make_pair(3, material_ids[i][j]);
       }
-      Color const color = materials[pin_id][i].color;
+      Color const color = materials[pin_id][i].color();
       gmsh::model::setColor(mat_dimtags, static_cast<int>(color.r()),
                             static_cast<int>(color.g()), static_cast<int>(color.b()),
                             static_cast<int>(color.a()), /*recursive=*/true);
@@ -975,7 +975,7 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
 
 void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-overlaySpatialPartition(mpact::SpatialPartition<Float, Int> const & partition,
+overlaySpatialPartition(mpact::SpatialPartition<double, int> const & partition,
                         std::string const & fill_material_name,
                         Color const fill_material_color)
 {
@@ -1003,21 +1003,21 @@ overlaySpatialPartition(mpact::SpatialPartition<Float, Int> const & partition,
   }
   // Get the unique coarse cell lower left corners
   Size const num_cc = partition.numCoarseCells();
-  Vector<Point3<Float>> cc_lower_lefts(num_cc); // Of the cut-plane
-  Vector<Vec3<Float>> cc_extents(num_cc);
+  Vector<Point3d> cc_lower_lefts(num_cc); // Of the cut-plane
+  Vector<Vec3d> cc_extents(num_cc);
   Vector<int8_t> cc_found(num_cc, 0);
   Vector<int8_t> rtm_found(partition.numRTMs(), 0);
   Vector<int8_t> lat_found(partition.numLattices(), 0);
   Vector<int8_t> asy_found(partition.numAssemblies(), 0);
 
-  auto const & core = partition.core;
-  if (core.children.empty()) {
+  auto const & core = partition.getCore();
+  if (core.children().empty()) {
     Log::error("Core has no children");
     return;
   }
   // For each assembly
-  Size const nyasy = core.numYCells();
-  Size const nxasy = core.numXCells();
+  Size const nyasy = core.grid().numYCells();
+  Size const nxasy = core.grid().numXCells();
   for (Size iyasy = 0; iyasy < nyasy; ++iyasy) {
     for (Size ixasy = 0; ixasy < nxasy; ++ixasy) {
       auto const asy_id = static_cast<Size>(core.getChild(ixasy, iyasy));
@@ -1025,34 +1025,34 @@ overlaySpatialPartition(mpact::SpatialPartition<Float, Int> const & partition,
         continue;
       }
       asy_found[asy_id] = 1;
-      AxisAlignedBox2<Float> const asy_bb = core.getBox(ixasy, iyasy);
-      Point2<Float> const asy_ll = asy_bb.minima; // Lower left corner
-      auto const & assembly = partition.assemblies[asy_id];
-      if (assembly.children.empty()) {
+      AxisAlignedBox2d const asy_bb = core.grid().getBox(ixasy, iyasy);
+      Point2d const asy_ll = asy_bb.minima(); // Lower left corner
+      auto const & assembly = partition.getAssembly(asy_id);
+      if (assembly.children().empty()) {
         Log::error("Assembly has no children");
         return;
       }
       // For each lattice
-      Size const nzlat = assembly.numXCells();
+      Size const nzlat = assembly.grid().numXCells();
       for (Size izlat = 0; izlat < nzlat; ++izlat) {
         auto const lat_id = static_cast<Size>(assembly.getChild(izlat));
         if (lat_found[lat_id] == 1) {
           continue;
         }
         lat_found[lat_id] = 1;
-        Float const low_z = assembly.grid.divs[0][izlat];
-        Float const high_z = assembly.grid.divs[0][izlat + 1];
-        Float const z_cut = (low_z + high_z) / 2;
+        double const low_z = assembly.grid().divs(0)[izlat];
+        double const high_z = assembly.grid().divs(0)[izlat + 1];
+        double const z_cut = (low_z + high_z) / 2;
         // Only half the thickness, since we want to cut at the midpoint
-        Float const dz = (high_z - low_z) / 2;
-        auto const & lattice = partition.lattices[lat_id];
-        if (lattice.children.empty()) {
+        double const dz = (high_z - low_z) / 2;
+        auto const & lattice = partition.getLattice(lat_id);
+        if (lattice.children().empty()) {
           Log::error("Lattice has no children");
           return;
         }
         // For each RTM
-        Size const nyrtm = lattice.numYCells();
-        Size const nxrtm = lattice.numXCells();
+        Size const nyrtm = lattice.grid().numYCells();
+        Size const nxrtm = lattice.grid().numXCells();
         for (Size iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
           for (Size ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
             auto const rtm_id = static_cast<Size>(lattice.getChild(ixrtm, iyrtm));
@@ -1060,16 +1060,16 @@ overlaySpatialPartition(mpact::SpatialPartition<Float, Int> const & partition,
               continue;
             }
             rtm_found[rtm_id] = 1;
-            AxisAlignedBox2<Float> const rtm_bb = lattice.getBox(ixrtm, iyrtm);
-            Point2<Float> const rtm_ll = rtm_bb.minima; // Lower left corner
-            auto const & rtm = partition.rtms[rtm_id];
-            if (rtm.children.empty()) {
+            AxisAlignedBox2d const rtm_bb = lattice.grid().getBox(ixrtm, iyrtm);
+            Point2d const rtm_ll = rtm_bb.minima(); // Lower left corner
+            auto const & rtm = partition.getRTM(rtm_id);
+            if (rtm.children().empty()) {
               Log::error("RTM has no children");
               return;
             }
             // For each coarse cell
-            Size const nycells = rtm.numYCells();
-            Size const nxcells = rtm.numXCells();
+            Size const nycells = rtm.grid().numYCells();
+            Size const nxcells = rtm.grid().numXCells();
             for (Size iycell = 0; iycell < nycells; ++iycell) {
               for (Size ixcell = 0; ixcell < nxcells; ++ixcell) {
                 auto const cell_id = static_cast<Size>(rtm.getChild(ixcell, iycell));
@@ -1077,8 +1077,8 @@ overlaySpatialPartition(mpact::SpatialPartition<Float, Int> const & partition,
                   continue;
                 }
                 cc_found[cell_id] = 1;
-                AxisAlignedBox2<Float> const cell_bb = rtm.getBox(ixcell, iycell);
-                Point2<Float> const ll = asy_ll + rtm_ll + cell_bb.minima;
+                AxisAlignedBox2d const cell_bb = rtm.grid().getBox(ixcell, iycell);
+                Point2d const ll = asy_ll + rtm_ll + cell_bb.minima();
                 cc_lower_lefts[cell_id] = {ll[0], ll[1], z_cut};
                 cc_extents[cell_id] = {cell_bb.width(), cell_bb.height(), dz};
               } // cell
@@ -1092,12 +1092,12 @@ overlaySpatialPartition(mpact::SpatialPartition<Float, Int> const & partition,
   // Get materials and see if the fill material already exists
   // If it does, move it to the end of the material hierarchy, otherwise
   // append it to the end.
-  std::vector<Material<Float>> materials;
+  std::vector<Material<double>> materials;
   um2::gmsh::model::getMaterials(materials);
   bool fill_exists = false;
   size_t const num_materials = materials.size();
   for (size_t i = 0; i < num_materials; ++i) {
-    std::string const name(materials[i].name.data());
+    std::string const name(materials[i].name().c_str());
     if (name == fill_material_name) {
       // Move the material to the end of the list to ensure
       // it is the fill material
@@ -1108,29 +1108,25 @@ overlaySpatialPartition(mpact::SpatialPartition<Float, Int> const & partition,
     }
   }
   if (!fill_exists) {
-    materials.emplace_back(ShortString(fill_material_name.c_str()), fill_material_color);
+    materials.emplace_back(String(fill_material_name.c_str()), fill_material_color);
   }
   std::vector<int> cc_tags(static_cast<size_t>(num_cc));
   namespace factory = gmsh::model::occ;
   if (model_dim == 2) {
     // Create rectangles
     for (Size i = 0; i < num_cc; ++i) {
-      Point3<Float> const & ll = cc_lower_lefts[i];
-      Vec3<Float> const & ext = cc_extents[i];
+      Point3d const & ll = cc_lower_lefts[i];
+      Vec3d const & ext = cc_extents[i];
       cc_tags[static_cast<size_t>(i)] =
-          factory::addRectangle(static_cast<double>(ll[0]), static_cast<double>(ll[1]),
-                                static_cast<double>(ll[2]), static_cast<double>(ext[0]),
-                                static_cast<double>(ext[1]));
+          factory::addRectangle(ll[0], ll[1], ll[2], ext[0], ext[1]);
     }
   } else {
     // Create boxes
     for (Size i = 0; i < num_cc; ++i) {
-      Point3<Float> const & ll = cc_lower_lefts[i];
-      Vec3<Float> const & ext = cc_extents[i];
+      Point3d const & ll = cc_lower_lefts[i];
+      Vec3d const & ext = cc_extents[i];
       cc_tags[static_cast<size_t>(i)] =
-          factory::addBox(static_cast<double>(ll[0]), static_cast<double>(ll[1]),
-                          static_cast<double>(ll[2]), static_cast<double>(ext[0]),
-                          static_cast<double>(ext[1]), static_cast<double>(ext[2]));
+          factory::addBox(ll[0], ll[1], ll[2], ext[0], ext[1], ext[2]);
     }
   }
   factory::synchronize();
@@ -1234,12 +1230,10 @@ overlaySpatialPartition(mpact::SpatialPartition<Float, Int> const & partition,
     std::vector<int> cc_tags_2d(static_cast<size_t>(num_cc));
     // Create rectangles
     for (Size i = 0; i < num_cc; ++i) {
-      Point3<Float> const & ll = cc_lower_lefts[i];
-      Vec3<Float> const & ext = cc_extents[i];
+      Point3d const & ll = cc_lower_lefts[i];
+      Vec3d const & ext = cc_extents[i];
       cc_tags_2d[static_cast<size_t>(i)] =
-          factory::addRectangle(static_cast<double>(ll[0]), static_cast<double>(ll[1]),
-                                static_cast<double>(ll[2]), static_cast<double>(ext[0]),
-                                static_cast<double>(ext[1]));
+          factory::addRectangle(ll[0], ll[1], ll[2], ext[0], ext[1]);
     }
     factory::synchronize();
     // Don't need to add coarse cell physical groups to the 2D grid. The model

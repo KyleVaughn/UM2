@@ -9,6 +9,7 @@ namespace um2
 // Element topology identifiers
 //==============================================================================
 
+// Element IDs for VTK
 enum class VTKElemType : int8_t {
   None = 0,
   Vertex = 1,
@@ -20,6 +21,7 @@ enum class VTKElemType : int8_t {
   QuadraticQuad = 23
 };
 
+// Element IDs for XDMF
 enum class XDMFElemType : int8_t {
   None = 0,
   Vertex = 1,

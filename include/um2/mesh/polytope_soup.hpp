@@ -140,6 +140,7 @@ public:
   PURE [[nodiscard]] constexpr auto
   getVertex(Size i) const -> Point3<T> const &;
 
+  // Sort the vertices and elements
   void
   mortonSort();
 
@@ -2097,7 +2098,7 @@ template <std::floating_point T, std::signed_integral I>
 void
 readXDMFFile(String const & filename, PolytopeSoup<T, I> & soup)
 {
-  Log::info("Reading XDMF mesh file: " + filename);
+  Log::info("Reading XDMF file: " + filename);
 
   // Open HDF5 file
   Size const h5filepath_end = filename.find_last_of('/') + 1;
@@ -2141,6 +2142,7 @@ readXDMFFile(String const & filename, PolytopeSoup<T, I> & soup)
   h5file.close();
   // Close XML file
   xdoc.reset();
+  Log::info("Finished reading XDMF file: " + filename);
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
