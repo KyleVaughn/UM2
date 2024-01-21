@@ -186,7 +186,7 @@ max(T x, T y) noexcept -> T
 #ifndef __CUDA_ARCH__
 
 template <typename ForwardIt>
-CONST HOST constexpr auto
+PURE HOST constexpr auto
 max_element(ForwardIt first, ForwardIt last) noexcept -> ForwardIt
 {
   return std::max_element(first, last);
@@ -195,7 +195,7 @@ max_element(ForwardIt first, ForwardIt last) noexcept -> ForwardIt
 #else
 
 template <typename ForwardIt>
-CONST DEVICE constexpr auto
+PURE DEVICE constexpr auto
 max_element(ForwardIt first, ForwardIt last) noexcept -> ForwardIt
 {
   if (first == last) {

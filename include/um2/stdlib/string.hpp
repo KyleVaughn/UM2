@@ -84,11 +84,11 @@ class String
   getLongCap() const noexcept -> uint64_t;
 
   // Get a pointer to the long string data.
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getLongPointer() noexcept -> char *;
 
   // Get a pointer to the long string data.
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getLongPointer() const noexcept -> char const *;
 
   // Get the size of the long string. Does not include the null terminator.
@@ -96,23 +96,23 @@ class String
   getLongSize() const noexcept -> uint64_t;
 
   // Get a pointer to the string data regardless of representation.
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getPointer() noexcept -> char *;
 
   // Get a pointer to the string data regardless of representation.
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getPointer() const noexcept -> char const *;
 
   // Get the capacity of the short string. Does not include the null terminator.
-  HOSTDEV [[nodiscard]] constexpr static auto
+  PURE HOSTDEV [[nodiscard]] constexpr static auto
   getShortCap() noexcept -> uint64_t;
 
   // Get a pointer to the short string data.
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getShortPointer() noexcept -> char *;
 
   // Get a pointer to the short string data.
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getShortPointer() const noexcept -> char const *;
 
   // Get the size of the short string. Does not include the null terminator.

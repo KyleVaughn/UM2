@@ -100,42 +100,42 @@ struct Pair {
 };
 
 template <class T1, class T2>
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 operator==(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
 {
   return x.first == y.first && x.second == y.second;
 }
 
 template <class T1, class T2>
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 operator!=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
 {
   return !(x == y);
 }
 
 template <class T1, class T2>
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 operator<(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
 {
   return x.first < y.first || (!(y.first < x.first) && x.second < y.second);
 }
 
 template <class T1, class T2>
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 operator>(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
 {
   return y < x;
 }
 
 template <class T1, class T2>
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 operator<=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
 {
   return !(y < x);
 }
 
 template <class T1, class T2>
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 operator>=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
 {
   return !(x < y);

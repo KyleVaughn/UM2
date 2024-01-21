@@ -23,7 +23,7 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build" FORCE)
 endif()
 
-# Allow user to specify <project>_ROOT variables
+# Allow user to specify <project>_ROOT variables to find dependencies
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.27)
   cmake_policy(SET CMP0144 NEW)
 else()
@@ -71,9 +71,9 @@ endif()
 
 # Enable/disable developer features
 option(UM2_ENABLE_ASSERTS    "Enable assertions"               ${IS_DEBUG_BUILD})
+option(UM2_DEV_MODE          "Enable development mode"         OFF)
 
 # Use external tools
-option(UM2_DEV_MODE          "Enable development mode"         OFF)
 option(UM2_USE_CLANG_FORMAT  "Enable clang-format targets"     ${UM2_DEV_MODE})
 option(UM2_USE_CLANG_TIDY    "Enable clang-tidy"               ${UM2_DEV_MODE})
 option(UM2_USE_COVERAGE      "Enable coverage"                 OFF)
@@ -100,7 +100,7 @@ endif()
 # Check compiler version
 #===============================================================================
 
-# Minimum version for GCC and Clang
+# Minimum version for GCC or Clang
 # This is to ensure that the compiler supports the parts of C++20 that we use
 set(UM2_MIN_GCC_VERSION 12.0)
 set(UM2_MIN_CLANG_VERSION 15.0)
@@ -144,13 +144,13 @@ endif()
 # Sources
 set(UM2_SOURCES
     "src/common/log.cpp"
-    "src/gmsh/base_gmsh_api.cpp"
-    "src/gmsh/io.cpp"
-    "src/gmsh/model.cpp"
-    "src/gmsh/mesh.cpp"
-    #    # visualization
-    #    "src/visualization/Image2D.cpp"
-    "src/um2.cpp"
+    #"src/gmsh/base_gmsh_api.cpp"
+    #"src/gmsh/io.cpp"
+    #"src/gmsh/model.cpp"
+    #"src/gmsh/mesh.cpp"
+    ##    # visualization
+    ##    "src/visualization/Image2D.cpp"
+    #"src/um2.cpp"
     #    "src/um2c.cpp"
   )
 
@@ -198,8 +198,6 @@ endif()
 # TBB
 if (UM2_USE_TBB)
   find_package(TBB REQUIRED)
-  # Tell the user where TBB was found
-  message(STATUS "Found TBB: ${TBB_DIR}")
   target_link_libraries(um2 PUBLIC TBB::tbb)
 endif()
 

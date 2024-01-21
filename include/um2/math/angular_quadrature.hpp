@@ -49,10 +49,23 @@ namespace um2
 
 enum class AngularQuadratureType { Chebyshev };
 
-template <std::floating_point T>
+// Inputs
+//  degree: The number of angles to use in the quadrature
+//  weights: The vector to store the weights in
+//  angles: The vector to store the angles in
+//
+// Preconditions
+//  degree > 0
+//
+// Postconditions
+//  weights.size() == degree
+//  angles.size() == degree
+//  
+// The weights will all be equal to 1/degree.
+// The angles will be evenly spaced in the range (0, π/2).
 HOSTDEV constexpr static void
-setChebyshevAngularQuadrature(Size degree, um2::Vector<T> & weights,
-                              um2::Vector<T> & angles) noexcept
+setChebyshevAngularQuadrature(Size degree, um2::Vector<F> & weights,
+                              um2::Vector<F> & angles) noexcept
 {
   ASSERT_ASSUME(degree > 0);
   // A Chebyshev-type quadrature for a given weight function is a quadrature formula
@@ -60,25 +73,28 @@ setChebyshevAngularQuadrature(Size degree, um2::Vector<T> & weights,
 
   // Weights
   weights.resize(degree);
-  T const wt = static_cast<T>(1) / static_cast<T>(degree);
+  F const wt = static_cast<F>(1) / static_cast<F>(degree);
   um2::fill(weights.begin(), weights.end(), wt);
 
   // Angles
   angles.resize(degree);
-  T const pi_deg = pi_4<T> * wt;
+  F const pi_deg = pi_4<F> * wt;
   for (Size i = 0; i < degree; ++i) {
-    angles[i] = pi_deg * static_cast<T>(2 * i + 1);
+    angles[i] = pi_deg * static_cast<F>(2 * i + 1);
   }
 }
 
-template <std::floating_point T>
+
+// An angular quadrature that is the product of two 1D angular quadratures.
+// Due to symmetry, both polar andazimuthal angles are only stored in the 
+// range (0, π/2).
 class ProductAngularQuadrature
 {
 
-  Vector<T> _wazi; // Weights for the azimuthal angles
-  Vector<T> _azi;  // Azimuthal angles, γ ∈ (0, π/2)
-  Vector<T> _wpol; // Weights for the polar angles
-  Vector<T> _pol;  // Polar angles, θ ∈ (0, π/2)
+  Vector<F> _wazi; // Weights for the azimuthal angles
+  Vector<F> _azi;  // Azimuthal angles, γ ∈ (0, π/2)
+  Vector<F> _wpol; // Weights for the polar angles
+  Vector<F> _pol;  // Polar angles, θ ∈ (0, π/2)
 
 public:
   //============================================================================
@@ -115,38 +131,38 @@ public:
   // Accessors
   //============================================================================
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   azimuthalDegree() const noexcept -> Size
   {
     return _wazi.size();
   }
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   polarDegree() const noexcept -> Size
   {
     return _wpol.size();
   }
 
-  HOSTDEV [[nodiscard]] constexpr auto
-  azimuthalWeights() const noexcept -> Vector<T> const &
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  azimuthalWeights() const noexcept -> Vector<F> const &
   {
     return _wazi;
   }
 
-  HOSTDEV [[nodiscard]] constexpr auto
-  azimuthalAngles() const noexcept -> Vector<T> const &
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  azimuthalAngles() const noexcept -> Vector<F> const &
   {
     return _azi;
   }
 
-  HOSTDEV [[nodiscard]] constexpr auto
-  polarWeights() const noexcept -> Vector<T> const &
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  polarWeights() const noexcept -> Vector<F> const &
   {
     return _wpol;
   }
 
-  HOSTDEV [[nodiscard]] constexpr auto
-  polarAngles() const noexcept -> Vector<T> const &
+  PURE [[nodiscard]] constexpr auto
+  polarAngles() const noexcept -> Vector<F> const &
   {
     return _pol;
   }

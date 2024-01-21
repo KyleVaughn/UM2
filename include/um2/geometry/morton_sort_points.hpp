@@ -9,13 +9,21 @@
 // Morton encoding/decoding
 //==============================================================================
 // Morton encoding and decoding for points in the unit square/cube.
+//
+// Valid mappings without loss of precision are:
+// float -> uint32_t
+// double -> uint64_t or uint32_t
+//
+// On CPU, the double -> uint64_t mapping is used is approximately as performant
+// as double -> uint32_t, but provides a more accurate sorting of points, hence
+// we only provide the double -> uint64_t.
 
 namespace um2
 {
 
-template <std::unsigned_integral U, Size D, std::floating_point T>
+template <Size D>
 PURE HOSTDEV auto
-mortonEncode(Point<D, T> const & p) noexcept -> U
+mortonEncode(Point<D> const & p) noexcept -> U
 {
   if constexpr (D == 2) {
     return mortonEncode<U>(p[0], p[1]);

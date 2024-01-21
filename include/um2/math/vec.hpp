@@ -49,7 +49,7 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   end() const noexcept -> T const *;
 
-  HOSTDEV [[nodiscard]] static constexpr auto
+  CONST HOSTDEV [[nodiscard]] static constexpr auto
   size() noexcept -> Size;
 
   //==============================================================================
@@ -258,7 +258,7 @@ Vec<D, T>::end() const noexcept -> T const *
 }
 
 template <Size D, class T>
-HOSTDEV [[nodiscard]] constexpr auto
+CONST HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::size() noexcept -> Size
 {
   return D;

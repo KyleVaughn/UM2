@@ -125,7 +125,7 @@ operator!=(Color const lhs, Color const rhs) noexcept -> bool
 // Common colors
 //=============================================================================
 // All 147 SVG colors + 1 extra. If you can find the extra color you win a prize!
-// ... Please, I want to delete this.
+// ... Please, I want to delete the extra color.
 
 inline constexpr Color aliceblue{240, 248, 255, 255};
 inline constexpr Color antiquewhite{250, 235, 215, 255};

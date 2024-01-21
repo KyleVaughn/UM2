@@ -5,8 +5,8 @@
 #include <cstdio>  // printf
 #include <cstdlib> // exit
 
-// Ignore clang-tidy in this case, since these are CMake defines
-// NOLINTBEGIN(modernize-macro-to-enum) justified
+// Ignore clang-tidy, since these are CMake defines
+// NOLINTBEGIN(modernize-macro-to-enum)
 
 //==============================================================================
 // CMake defines
@@ -109,17 +109,17 @@
 // Typedefs
 //==============================================================================
 
-// Floating point type in API.
+// Floating point type
 #if UM2_ENABLE_FLOAT64
-using Float = double; // Floating point type in API
+using F = double;
 #else
-using Float = float; // Floating point type in API
+using F = float;
 #endif
 
-// Integer type for indices and integers in API.
+// Integer type for indices and signed integers
 #if UM2_ENABLE_INT64
 using Size = int64_t; // Index type
-using Int = int64_t;  // Integer type in API
+using I = int64_t;
 HOSTDEV consteval auto
 sizeMax() noexcept -> Size
 {
@@ -127,7 +127,7 @@ sizeMax() noexcept -> Size
 }
 #else
 using Size = int32_t; // Index type
-using Int = int32_t;  // Integer type in API
+using I = int32_t;
 HOSTDEV consteval auto
 sizeMax() noexcept -> Size
 {
@@ -156,8 +156,11 @@ constexpr bool always_false = false;
 // ASSERT_ASSUME(expr) - Asserts that expr is true, with varying effects.
 //  If UM2_ENABLE_ASSERTS is 1, this is equivalent to ASSERT(expr).
 //  If UM2_ENABLE_ASSERTS is 0, this is equivalent to ASSUME(expr).
+//
+// NOTE: ASSUME(expr) must be able to be evaluated at compile time. If the
+//  assumption does not hold, the program will be ill-formed.
 
-// Overlead abs() for host and device code.
+// Overload abs() for host and device code. Must be defined here for ASSERT_NEAR.
 namespace um2
 {
 

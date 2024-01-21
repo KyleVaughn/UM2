@@ -3,7 +3,6 @@ set(
   src/*.cpp
   include/*.hpp
   include/*.h
-  include/*.inl
   tests/*.hpp
   tests/*.cpp
   examples/*.hpp

@@ -23,7 +23,7 @@ namespace um2
 // Computes the mean of the values in the range [begin, end).
 
 template <std::floating_point T>
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 mean(T const * begin, T const * end) noexcept -> T
 {
   ASSERT_ASSUME(begin != end);
@@ -43,7 +43,7 @@ mean(T const * begin, T const * end) noexcept -> T
 // The range must be sorted.
 
 template <std::floating_point T>
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 median(T const * begin, T const * end) noexcept -> T
 {
   ASSERT_ASSUME(begin != end);
@@ -64,7 +64,7 @@ median(T const * begin, T const * end) noexcept -> T
 // Computes the variance of the values in the range [begin, end).
 
 template <std::floating_point T>
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 variance(T const * begin, T const * end) noexcept -> T
 {
   ASSERT_ASSUME(begin != end);
@@ -86,7 +86,7 @@ variance(T const * begin, T const * end) noexcept -> T
 // Computes the standard deviation of the values in the range [begin, end).
 
 template <std::floating_point T>
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 stdDev(T const * begin, T const * end) noexcept -> T
 {
   return um2::sqrt(um2::variance(begin, end));

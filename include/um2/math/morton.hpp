@@ -10,8 +10,9 @@
 // This file provides functions for mapping to and from Morton codes.
 // https://en.wikipedia.org/wiki/Z-order_curve
 //
+// Depending on the configuration, the following functions are provided:
 // Let uxx be an unsigned integer type with xx bits and fxx be a floating point
-// type with xx bits. This file provides the following functions:
+// type with xx bits.
 //
 // mortonEncode(u32, u32) -> u32
 // mortonEncode(u32, u32, u32) -> u32
@@ -35,14 +36,8 @@
 // definitions for 16-bit types
 // See https://github.com/KyleVaughn/UM2/issues/130
 
-// If BMI2 is supported and we are not compiling for CUDA, use BMI2.
-#if defined(__BMI2__) && !UM2_USE_CUDA // && !defined(__CUDA_ARCH__)
-// Emulate BMI2 intrinsics for DEVICE functions
-#  define EMULATE_BMI2_HOSTDEV DEVICE
+#if defined(__BMI2__) && !UM2_USE_CUDA
 #  include <immintrin.h> // _pdep_u64, _pext_u64, _pdep_u32, _pext_u32
-#else                    // Other
-// Emulate BMI2 intrinsics for HOST and DEVICE functions
-#  define EMULATE_BMI2_HOSTDEV HOSTDEV
 #endif
 
 namespace um2

@@ -34,6 +34,10 @@ NOLINT, diagnostic (remove justified)
 replace std::
 ASSERT_ASSUME
 Comment functions
+//==
+
+Add multidimensional index operator when C++23
+  -> Matrix
 
 Add multidimentional array class with elementwise operations
   - Use for partition classes with children
