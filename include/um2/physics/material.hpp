@@ -16,13 +16,12 @@
 namespace um2
 {
 
-template <std::floating_point T>
 class Material
 {
 
   String _name;
   Color _color;
-  CrossSection<T> _xs;
+  CrossSection _xs;
 
 public:
   //======================================================================
@@ -66,13 +65,13 @@ public:
   }
 
   HOSTDEV [[nodiscard]] constexpr auto
-  xs() noexcept -> CrossSection<T> &
+  xs() noexcept -> CrossSection &
   {
     return _xs;
   }
 
   HOSTDEV [[nodiscard]] constexpr auto
-  xs() const noexcept -> CrossSection<T> const &
+  xs() const noexcept -> CrossSection const &
   {
     return _xs;
   }

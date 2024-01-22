@@ -3,7 +3,7 @@
 #include <um2/geometry/point.hpp>
 #include <um2/math/morton.hpp>
 
-#include <algorithm> // std::sort
+#include <um2/stdlib/algorithm.hpp>
 
 //==============================================================================
 // Morton encoding/decoding
@@ -21,45 +21,36 @@
 namespace um2
 {
 
+#if UM2_ENABLE_FLOAT64
+using FMortonCode = uint64_t;
+#else
+using FMortonCode = uint32_t;
+#endif
+
+PURE HOSTDEV auto
+mortonEncode(Point2 const & p) noexcept -> FMortonCode; 
+
+PURE HOSTDEV auto
+mortonEncode(Point3 const & p) noexcept -> FMortonCode; 
+
+HOSTDEV void
+mortonDecode(FMortonCode morton, Point2 & p) noexcept;
+
+HOSTDEV void
+mortonDecode(FMortonCode morton, Point3 & p) noexcept;
+
 template <Size D>
 PURE HOSTDEV auto
-mortonEncode(Point<D> const & p) noexcept -> U
+mortonLess(Point<D> const & lhs, Point<D> const & rhs) noexcept -> bool
 {
-  if constexpr (D == 2) {
-    return mortonEncode<U>(p[0], p[1]);
-  } else if constexpr (D == 3) {
-    return mortonEncode<U>(p[0], p[1], p[2]);
-  } else {
-    static_assert(D == 2 || D == 3);
-    return 0;
-  }
+  return mortonEncode(lhs) < mortonEncode(rhs);
 }
 
-template <std::unsigned_integral U, Size D, std::floating_point T>
-HOSTDEV void
-mortonDecode(U const morton, Point<D, T> & p) noexcept
-{
-  if constexpr (D == 2) {
-    mortonDecode(morton, p[0], p[1]);
-  } else if constexpr (D == 3) {
-    mortonDecode(morton, p[0], p[1], p[2]);
-  } else {
-    static_assert(D == 2 || D == 3);
-  }
-}
-
-template <std::unsigned_integral U, Size D, std::floating_point T>
-PURE HOSTDEV auto
-mortonLess(Point<D, T> const & lhs, Point<D, T> const & rhs) noexcept -> bool
-{
-  return mortonEncode<U>(lhs) < mortonEncode<U>(rhs);
-}
-
-template <std::unsigned_integral U, Size D, std::floating_point T>
+template <Size D>
 void
-mortonSort(Point<D, T> * const begin, Point<D, T> * const end) noexcept
+mortonSort(Point<D> * const begin, Point<D> * const end) noexcept
 {
-  std::sort(begin, end, mortonLess<U, D, T>);
+  std::sort(begin, end, mortonLess<D>);
 }
 
 } // namespace um2

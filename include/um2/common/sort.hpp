@@ -113,14 +113,7 @@ applyPermutation(Vector<T> & v, Vector<Size> const & perm) noexcept
 //==============================================================================
 // Compute the inverse of the permutation perm and store it in inv_perm.
 
-template <std::integral I>
 void
-invertPermutation(Vector<I> const & perm, Vector<I> & inv_perm) noexcept
-{
-  ASSERT(perm.size() == inv_perm.size());
-  for (Size i = 0; i < perm.size(); ++i) {
-    inv_perm[perm[i]] = i;
-  }
-}
+invertPermutation(Vector<Size> const & perm, Vector<Size> & inv_perm) noexcept;
 
 } // namespace um2

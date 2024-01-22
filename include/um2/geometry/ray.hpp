@@ -10,24 +10,29 @@
 namespace um2
 {
 
-template <Size D, typename T>
+template <Size D>
 class Ray
 {
 
-  Point<D, T> _o; // origin
-  Vec<D, T> _d;   // direction (unit vector)
+  Point<D> _o; // origin
+  Vec<D, F> _d;   // direction (unit vector)
 
 public:
   //============================================================================
   // Constructors
   //============================================================================
 
-  HOSTDEV constexpr Ray(Point<D, T> const & origin, Vec<D, T> const & direction) noexcept
+  HOSTDEV constexpr Ray(Point<D> const & origin, Vec<D, F> const & direction) noexcept
       : _o(origin),
         _d(direction)
   {
+#if UM2_ENABLE_FLOAT64
+    F constexpr eps = 1e-5;
+#else
+    F constexpr eps = 1e-5f;
+#endif
     // Check that the direction is a unit vector
-    ASSERT(um2::abs(direction.squaredNorm() - static_cast<T>(1)) < static_cast<T>(1e-5));
+    ASSERT(um2::abs(direction.squaredNorm() - static_cast<F>(1)) < eps);
   }
 
   //============================================================================
@@ -35,13 +40,13 @@ public:
   //============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  origin() const noexcept -> Point<D, T> const &
+  origin() const noexcept -> Point<D> const &
   {
     return _o;
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  direction() const noexcept -> Vec<D, T> const &
+  direction() const noexcept -> Vec<D, F> const &
   {
     return _d;
   }
@@ -51,9 +56,9 @@ public:
   //============================================================================
 
   PURE HOSTDEV constexpr auto
-  operator()(T r) const noexcept -> Point<D, T>
+  operator()(F r) const noexcept -> Point<D>
   {
-    Point<D, T> res;
+    Point<D> res;
     for (Size i = 0; i < D; ++i) {
       res[i] = _o[i] + r * _d[i];
     }
@@ -66,16 +71,8 @@ public:
 // Aliases
 //==============================================================================
 
-template <typename T>
-using Ray1 = Ray<1, T>;
-template <typename T>
-using Ray2 = Ray<2, T>;
-template <typename T>
-using Ray3 = Ray<3, T>;
-
-using Ray2f = Ray2<float>;
-using Ray2d = Ray2<double>;
-using Ray3f = Ray3<float>;
-using Ray3d = Ray3<double>;
+using Ray1 = Ray<1>;
+using Ray2 = Ray<2>;
+using Ray3 = Ray<3>;
 
 } // namespace um2

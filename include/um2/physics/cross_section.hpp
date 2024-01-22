@@ -22,11 +22,10 @@ enum class XSReductionStrategy {
   Mean,
 };
 
-template <std::floating_point T>
 class CrossSection
 {
 
-  Vector<T> _t; // Total macroscopic cross section
+  Vector<F> _t; // Total macroscopic cross section
 
 public:
   //======================================================================
@@ -36,7 +35,7 @@ public:
   constexpr CrossSection() noexcept = default;
 
   // NOLINTNEXTLINE(google-explicit-constructor)
-  constexpr CrossSection(Vector<T> const & t) noexcept
+  constexpr CrossSection(Vector<F> const & t) noexcept
       : _t(t)
   {
 #if UM2_ENABLE_ASSERTS
@@ -52,7 +51,7 @@ public:
   //======================================================================
 
   [[nodiscard]] auto constexpr getOneGroupTotalXS(
-      XSReductionStrategy const strategy = XSReductionStrategy::Mean) const noexcept -> T
+      XSReductionStrategy const strategy = XSReductionStrategy::Mean) const noexcept -> F
   {
     ASSERT(!_t.empty());
     if (strategy == XSReductionStrategy::Max) {

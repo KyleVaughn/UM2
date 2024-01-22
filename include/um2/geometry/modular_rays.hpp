@@ -20,14 +20,13 @@ namespace um2
 {
 
 // Modular ray parameters for a single angle
-template <typename T>
 class ModularRayParams
 {
 
-  AxisAlignedBox2<T> _box;
+  AxisAlignedBox2 _box;
   Vec2<Size> _num_rays; // Number of rays spawned on the box's x and y edges
-  Vec2<T> _spacing;     // Spacing between rays in x and y
-  Vec2<T> _direction;   // Direction of rays
+  Vec2<F> _spacing;     // Spacing between rays in x and y
+  Vec2<F> _direction;   // Direction of rays
 
 public:
   //============================================================================
@@ -38,14 +37,14 @@ public:
 
   // a: Target azimuthal angle γ ∈ (0, π)
   // s: Target ray spacing
-  HOSTDEV constexpr ModularRayParams(T a, T s, AxisAlignedBox2<T> box) noexcept;
+  HOSTDEV constexpr ModularRayParams(F a, F s, AxisAlignedBox2 box) noexcept;
 
   //============================================================================
   // Methods
   //============================================================================
 
   HOSTDEV [[nodiscard]] constexpr auto
-  getRay(Size i) const noexcept -> Ray2<T>;
+  getRay(Size i) const noexcept -> Ray2;
 
   HOSTDEV [[nodiscard]] constexpr auto
   getTotalNumRays() const noexcept -> Size;
@@ -57,10 +56,10 @@ public:
   getNumYRays() const noexcept -> Size;
 
   HOSTDEV [[nodiscard]] constexpr auto
-  getSpacing() const noexcept -> Vec2<T>;
+  getSpacing() const noexcept -> Vec2<F>;
 
   HOSTDEV [[nodiscard]] constexpr auto
-  getDirection() const noexcept -> Vec2<T>;
+  getDirection() const noexcept -> Vec2<F>;
 };
 
 //==============================================================================
@@ -71,20 +70,19 @@ public:
 // s: ray spacing
 // w: width of ray tracing module
 // h: height of ray tracing module
-template <typename T>
-HOSTDEV constexpr ModularRayParams<T>::ModularRayParams(
-    T const a, T const s, AxisAlignedBox2<T> const box) noexcept
+HOSTDEV constexpr ModularRayParams::ModularRayParams(
+    F const a, F const s, AxisAlignedBox2 const box) noexcept
     : _box(box)
 {
   ASSERT_ASSUME(0 < a);
-  ASSERT_ASSUME(a < pi<T>);
+  ASSERT_ASSUME(a < pi<F>);
   ASSERT_ASSUME(0 < s);
 
-  T const w = box.width();
-  T const h = box.height();
+  auto const w = box.width();
+  auto const h = box.height();
 
   // Number of rays in the x and y directions
-  Vec2<T> const num_rays_t(um2::ceil(um2::abs(w * um2::sin(a) / s)),
+  Vec2<F> const num_rays_t(um2::ceil(um2::abs(w * um2::sin(a) / s)),
                            um2::ceil(um2::abs(h * um2::cos(a) / s)));
 
   _num_rays[0] = static_cast<Size>(num_rays_t[0]);
@@ -93,9 +91,9 @@ HOSTDEV constexpr ModularRayParams<T>::ModularRayParams(
   _spacing[1] = h / num_rays_t[1];
 
   // Effective angle to ensure cyclic rays
-  T const a_eff = um2::atan(_spacing[1] / _spacing[0]);
+  auto const a_eff = um2::atan(_spacing[1] / _spacing[0]);
   _direction[0] = um2::cos(a_eff);
-  if (a > pi_2<T>) {
+  if (a > pi_2<F>) {
     _direction[0] = -_direction[0];
   }
   _direction[1] = um2::sin(a_eff);
@@ -105,9 +103,8 @@ HOSTDEV constexpr ModularRayParams<T>::ModularRayParams(
 // Methods
 //==============================================================================
 
-template <typename T>
 HOSTDEV constexpr auto
-ModularRayParams<T>::getRay(Size const i) const noexcept -> Ray2<T>
+ModularRayParams::getRay(Size const i) const noexcept -> Ray2
 {
   // Angle < π/2
   //
@@ -135,60 +132,55 @@ ModularRayParams<T>::getRay(Size const i) const noexcept -> Ray2<T>
   ASSERT_ASSUME(i < _num_rays[0] + _num_rays[1]);
   int case_id = (i < _num_rays[0]) ? 0 : 1;
   case_id += (_direction[0] < 0) ? 2 : 0;
-  Point2<T> origin = _box.minima();
-  T const i_half = static_cast<T>(i) + static_cast<T>(0.5);
+  Point2 origin = _box.minima();
+  auto const i_half = static_cast<F>(i) + static_cast<F>(1) / 2;
   switch (case_id) {
   case 0:
     origin[0] = _box.maxima(0) - _spacing[0] * i_half;
     break;
   case 1:
-    origin[1] += _spacing[1] * (i_half - static_cast<T>(_num_rays[0]));
+    origin[1] += _spacing[1] * (i_half - static_cast<F>(_num_rays[0]));
     break;
   case 2:
     origin[0] += _spacing[0] * i_half;
     break;
   case 3:
     origin[0] = _box.maxima(0);
-    origin[1] += _spacing[1] * (i_half - static_cast<T>(_num_rays[0]));
+    origin[1] += _spacing[1] * (i_half - static_cast<F>(_num_rays[0]));
     break;
   default:
     __builtin_unreachable();
   }
-  Ray2<T> res(origin, _direction);
+  Ray2 res(origin, _direction);
   return res;
 }
 
-template <typename T>
 HOSTDEV constexpr auto
-ModularRayParams<T>::getTotalNumRays() const noexcept -> Size
+ModularRayParams::getTotalNumRays() const noexcept -> Size
 {
   return _num_rays[0] + _num_rays[1];
 }
 
-template <typename T>
 HOSTDEV constexpr auto
-ModularRayParams<T>::getNumXRays() const noexcept -> Size
+ModularRayParams::getNumXRays() const noexcept -> Size
 {
   return _num_rays[0];
 }
 
-template <typename T>
 HOSTDEV constexpr auto
-ModularRayParams<T>::getNumYRays() const noexcept -> Size
+ModularRayParams::getNumYRays() const noexcept -> Size
 {
   return _num_rays[1];
 }
 
-template <typename T>
 HOSTDEV constexpr auto
-ModularRayParams<T>::getSpacing() const noexcept -> Vec2<T>
+ModularRayParams::getSpacing() const noexcept -> Vec2<F>
 {
   return _spacing;
 }
 
-template <typename T>
 HOSTDEV constexpr auto
-ModularRayParams<T>::getDirection() const noexcept -> Vec2<T>
+ModularRayParams::getDirection() const noexcept -> Vec2<F>
 {
   return _direction;
 }

@@ -2,27 +2,28 @@
 
 #include "../test_macros.hpp"
 
-template <typename T>
 TEST_CASE(getOneGroupTotalXS)
 {
-  T const eps = static_cast<T>(1e-6);
-  um2::CrossSection<T> const xsec({2, 11, 5, 3, 4});
-  T const max_1g = xsec.getOneGroupTotalXS(um2::XSReductionStrategy::Max);
+#if UM2_ENABLE_FLOAT64
+  F const eps = 1e-6;
+#else
+  F const eps = 1e-6f;
+#endif
+  um2::CrossSection const xsec({2, 11, 5, 3, 4});
+  F const max_1g = xsec.getOneGroupTotalXS(um2::XSReductionStrategy::Max);
   ASSERT_NEAR(max_1g, 11, eps);
-  T const mean_1g = xsec.getOneGroupTotalXS(); // mean by default
+  F const mean_1g = xsec.getOneGroupTotalXS(); // mean by default
   ASSERT_NEAR(mean_1g, 5, eps);
 }
 
-template <typename T>
-TEST_SUITE(cross_section)
+TEST_SUITE(CrossSection)
 {
-  TEST((getOneGroupTotalXS<T>));
+  TEST(getOneGroupTotalXS);
 }
 
 auto
 main() -> int
 {
-  RUN_SUITE(cross_section<float>);
-  RUN_SUITE(cross_section<double>);
+  RUN_SUITE(CrossSection);
   return 0;
 }

@@ -144,6 +144,8 @@ endif()
 # Sources
 set(UM2_SOURCES
     "src/common/log.cpp"
+    "src/common/sort.cpp"
+    "src/geometry/morton_sort_points.cpp"
     #"src/gmsh/base_gmsh_api.cpp"
     #"src/gmsh/io.cpp"
     #"src/gmsh/model.cpp"

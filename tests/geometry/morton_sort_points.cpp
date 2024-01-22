@@ -3,79 +3,75 @@
 
 #include "../test_macros.hpp"
 
-template <std::unsigned_integral U, std::floating_point T>
 TEST_CASE(mortonSort2D)
 {
   // Map a 4 by 4 grid of points to the unit square and sort them by Morton code.
-  um2::Vector<um2::Point2<T>> points(16);
+  um2::Vector<um2::Point2> points(16);
   for (Size i = 0; i < 4; ++i) {
     for (Size j = 0; j < 4; ++j) {
-      points[i * 4 + j] = um2::Point2<T>(static_cast<T>(i), static_cast<T>(j)) / 3;
+      points[i * 4 + j] = um2::Point2(i, j);
+      points[i * 4 + j] /= 3;
     }
   }
-  um2::mortonSort<U>(points.begin(), points.end());
-  ASSERT(um2::isApprox(points[0], um2::Point2<T>(0, 0) / 3));
-  ASSERT(um2::isApprox(points[1], um2::Point2<T>(1, 0) / 3));
-  ASSERT(um2::isApprox(points[2], um2::Point2<T>(0, 1) / 3));
-  ASSERT(um2::isApprox(points[3], um2::Point2<T>(1, 1) / 3));
-  ASSERT(um2::isApprox(points[4], um2::Point2<T>(2, 0) / 3));
-  ASSERT(um2::isApprox(points[5], um2::Point2<T>(3, 0) / 3));
-  ASSERT(um2::isApprox(points[6], um2::Point2<T>(2, 1) / 3));
-  ASSERT(um2::isApprox(points[7], um2::Point2<T>(3, 1) / 3));
-  ASSERT(um2::isApprox(points[8], um2::Point2<T>(0, 2) / 3));
-  ASSERT(um2::isApprox(points[9], um2::Point2<T>(1, 2) / 3));
-  ASSERT(um2::isApprox(points[10], um2::Point2<T>(0, 3) / 3));
-  ASSERT(um2::isApprox(points[11], um2::Point2<T>(1, 3) / 3));
-  ASSERT(um2::isApprox(points[12], um2::Point2<T>(2, 2) / 3));
-  ASSERT(um2::isApprox(points[13], um2::Point2<T>(3, 2) / 3));
-  ASSERT(um2::isApprox(points[14], um2::Point2<T>(2, 3) / 3));
-  ASSERT(um2::isApprox(points[15], um2::Point2<T>(3, 3) / 3));
+  um2::mortonSort(points.begin(), points.end());
+  ASSERT(um2::isApprox(points[0], um2::Point2(0, 0) / 3));
+  ASSERT(um2::isApprox(points[1], um2::Point2(1, 0) / 3));
+  ASSERT(um2::isApprox(points[2], um2::Point2(0, 1) / 3));
+  ASSERT(um2::isApprox(points[3], um2::Point2(1, 1) / 3));
+  ASSERT(um2::isApprox(points[4], um2::Point2(2, 0) / 3));
+  ASSERT(um2::isApprox(points[5], um2::Point2(3, 0) / 3));
+  ASSERT(um2::isApprox(points[6], um2::Point2(2, 1) / 3));
+  ASSERT(um2::isApprox(points[7], um2::Point2(3, 1) / 3));
+  ASSERT(um2::isApprox(points[8], um2::Point2(0, 2) / 3));
+  ASSERT(um2::isApprox(points[9], um2::Point2(1, 2) / 3));
+  ASSERT(um2::isApprox(points[10], um2::Point2(0, 3) / 3));
+  ASSERT(um2::isApprox(points[11], um2::Point2(1, 3) / 3));
+  ASSERT(um2::isApprox(points[12], um2::Point2(2, 2) / 3));
+  ASSERT(um2::isApprox(points[13], um2::Point2(3, 2) / 3));
+  ASSERT(um2::isApprox(points[14], um2::Point2(2, 3) / 3));
+  ASSERT(um2::isApprox(points[15], um2::Point2(3, 3) / 3));
 }
 
-template <std::unsigned_integral U, std::floating_point T>
 TEST_CASE(mortonSort3D)
 {
   // Map a 4 by 4 by 4 grid of points to the unit cube and sort them by Morton code.
-  um2::Vector<um2::Point3<T>> points(64);
+  um2::Vector<um2::Point3> points(64);
   for (Size i = 0; i < 4; ++i) {
     for (Size j = 0; j < 4; ++j) {
       for (Size k = 0; k < 4; ++k) {
-        points[i * 16 + j * 4 + k] =
-            um2::Point3<T>(static_cast<T>(i), static_cast<T>(j), static_cast<T>(k)) / 3;
+        points[i * 16 + j * 4 + k] = um2::Point3(i, j, k);
+        points[i * 16 + j * 4 + k] /= 3;
       }
     }
   }
-  um2::mortonSort<U>(points.begin(), points.end());
-  ASSERT(um2::isApprox(points[0], um2::Point3<T>(0, 0, 0) / 3));
-  ASSERT(um2::isApprox(points[1], um2::Point3<T>(1, 0, 0) / 3));
-  ASSERT(um2::isApprox(points[2], um2::Point3<T>(0, 1, 0) / 3));
-  ASSERT(um2::isApprox(points[3], um2::Point3<T>(1, 1, 0) / 3));
-  ASSERT(um2::isApprox(points[4], um2::Point3<T>(0, 0, 1) / 3));
-  ASSERT(um2::isApprox(points[5], um2::Point3<T>(1, 0, 1) / 3));
-  ASSERT(um2::isApprox(points[6], um2::Point3<T>(0, 1, 1) / 3));
-  ASSERT(um2::isApprox(points[7], um2::Point3<T>(1, 1, 1) / 3));
-  ASSERT(um2::isApprox(points[8], um2::Point3<T>(2, 0, 0) / 3));
-  ASSERT(um2::isApprox(points[9], um2::Point3<T>(3, 0, 0) / 3));
-  ASSERT(um2::isApprox(points[10], um2::Point3<T>(2, 1, 0) / 3));
-  ASSERT(um2::isApprox(points[11], um2::Point3<T>(3, 1, 0) / 3));
-  ASSERT(um2::isApprox(points[12], um2::Point3<T>(2, 0, 1) / 3));
-  ASSERT(um2::isApprox(points[13], um2::Point3<T>(3, 0, 1) / 3));
-  ASSERT(um2::isApprox(points[14], um2::Point3<T>(2, 1, 1) / 3));
-  ASSERT(um2::isApprox(points[15], um2::Point3<T>(3, 1, 1) / 3));
+  um2::mortonSort(points.begin(), points.end());
+  ASSERT(um2::isApprox(points[0], um2::Point3(0, 0, 0) / 3));
+  ASSERT(um2::isApprox(points[1], um2::Point3(1, 0, 0) / 3));
+  ASSERT(um2::isApprox(points[2], um2::Point3(0, 1, 0) / 3));
+  ASSERT(um2::isApprox(points[3], um2::Point3(1, 1, 0) / 3));
+  ASSERT(um2::isApprox(points[4], um2::Point3(0, 0, 1) / 3));
+  ASSERT(um2::isApprox(points[5], um2::Point3(1, 0, 1) / 3));
+  ASSERT(um2::isApprox(points[6], um2::Point3(0, 1, 1) / 3));
+  ASSERT(um2::isApprox(points[7], um2::Point3(1, 1, 1) / 3));
+  ASSERT(um2::isApprox(points[8], um2::Point3(2, 0, 0) / 3));
+  ASSERT(um2::isApprox(points[9], um2::Point3(3, 0, 0) / 3));
+  ASSERT(um2::isApprox(points[10], um2::Point3(2, 1, 0) / 3));
+  ASSERT(um2::isApprox(points[11], um2::Point3(3, 1, 0) / 3));
+  ASSERT(um2::isApprox(points[12], um2::Point3(2, 0, 1) / 3));
+  ASSERT(um2::isApprox(points[13], um2::Point3(3, 0, 1) / 3));
+  ASSERT(um2::isApprox(points[14], um2::Point3(2, 1, 1) / 3));
+  ASSERT(um2::isApprox(points[15], um2::Point3(3, 1, 1) / 3));
 }
 
-template <std::unsigned_integral U, std::floating_point T>
 TEST_SUITE(mortonSort)
 {
-  TEST((mortonSort2D<U, T>));
-  TEST((mortonSort3D<U, T>));
+  TEST(mortonSort2D);
+  TEST(mortonSort3D);
 }
 
 auto
 main() -> int
 {
-  RUN_SUITE((mortonSort<uint32_t, float>));
-  RUN_SUITE((mortonSort<uint32_t, double>));
-  RUN_SUITE((mortonSort<uint64_t, double>));
+  RUN_SUITE(mortonSort);
   return 0;
 }
