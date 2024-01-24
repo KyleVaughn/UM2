@@ -1,0 +1,23 @@
+spack:
+  specs:
+    # Give spack a hint to use gcc@12.3 on all dependencies. For some reason, manually
+    # specifying %gcc@12.3 causes an error, but it can figure it out on its own.
+    - cmake%gcc@12.3
+    - hdf5
+    - llvm@15
+    - tbb
+    - gmsh
+    - pugixml
+    - benchmark
+    - valgrind
+  view: true
+  concretizer:
+    unify: true
+  packages:
+    hdf5:
+      require: +cxx+fortran~mpi
+    gmsh:
+      # Should be able to do ^opencascade~visualization~draw~application_framework
+      require: +openmp+cairo+fltk+opencascade+eigen+hdf5 ^scotch~mpi
+    opengl:
+      buildable: false
