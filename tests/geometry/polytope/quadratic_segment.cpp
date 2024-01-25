@@ -2,13 +2,6 @@
 
 #include "../../test_macros.hpp"
 
-// Ignore useless casts on initialization of points
-// Point(static_cast<D>(0.1), static_cast<F>(0.2)) is not worth addressing
-#ifndef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuseless-cast"
-#endif
-
 // Description of the quadratic segments used in test cases
 // --------------------------------------------------------
 // All segment have P0 = (0, 0) and P1 = (2, 0)
@@ -29,8 +22,8 @@
 //    x_min = -0.25, y_min = -1
 // 8) A segment (0,0) -> (2, 0) -> (4, 3)
 
-F constexpr eps = um2::eps_distance * static_cast<F>(10);
-F constexpr half = static_cast<F>(1) / static_cast<F>(2);
+F constexpr eps = um2::eps_distance * condCast<F>(10);
+F constexpr half = condCast<F>(1) / condCast<F>(2);
 
 template <Size D>
 HOSTDEV constexpr auto
@@ -40,7 +33,7 @@ makeBaseSeg() -> um2::QuadraticSegment<D>
   q[0] = um2::Vec<D, F>::zero();
   q[1] = um2::Vec<D, F>::zero();
   q[2] = um2::Vec<D, F>::zero();
-  q[1][0] = static_cast<F>(2);
+  q[1][0] = condCast<F>(2);
   return q;
 }
 
@@ -49,7 +42,7 @@ HOSTDEV constexpr auto
 makeSeg1() -> um2::QuadraticSegment<D>
 {
   um2::QuadraticSegment<D> q = makeBaseSeg<D>();
-  q[2][0] = static_cast<F>(1);
+  q[2][0] = condCast<F>(1);
   return q;
 }
 
@@ -58,8 +51,8 @@ HOSTDEV constexpr auto
 makeSeg2() -> um2::QuadraticSegment<D>
 {
   um2::QuadraticSegment<D> q = makeBaseSeg<D>();
-  q[2][0] = static_cast<F>(1);
-  q[2][1] = static_cast<F>(1);
+  q[2][0] = condCast<F>(1);
+  q[2][1] = condCast<F>(1);
   return q;
 }
 
@@ -68,8 +61,8 @@ HOSTDEV constexpr auto
 makeSeg3() -> um2::QuadraticSegment<D>
 {
   um2::QuadraticSegment<D> q = makeBaseSeg<D>();
-  q[2][0] = static_cast<F>(1);
-  q[2][1] = static_cast<F>(-1);
+  q[2][0] = condCast<F>(1);
+  q[2][1] = condCast<F>(-1);
   return q;
 }
 
@@ -78,8 +71,8 @@ HOSTDEV constexpr auto
 makeSeg4() -> um2::QuadraticSegment<D>
 {
   um2::QuadraticSegment<D> q = makeBaseSeg<D>();
-  q[2][0] = static_cast<F>(2);
-  q[2][1] = static_cast<F>(1);
+  q[2][0] = condCast<F>(2);
+  q[2][1] = condCast<F>(1);
   return q;
 }
 
@@ -88,8 +81,8 @@ HOSTDEV constexpr auto
 makeSeg5() -> um2::QuadraticSegment<D>
 {
   um2::QuadraticSegment<D> q = makeBaseSeg<D>();
-  q[2][0] = static_cast<F>(2);
-  q[2][1] = static_cast<F>(-1);
+  q[2][0] = condCast<F>(2);
+  q[2][1] = condCast<F>(-1);
   return q;
 }
 
@@ -98,8 +91,8 @@ HOSTDEV constexpr auto
 makeSeg6() -> um2::QuadraticSegment<D>
 {
   um2::QuadraticSegment<D> q = makeBaseSeg<D>();
-  q[2][0] = static_cast<F>(0);
-  q[2][1] = static_cast<F>(1);
+  q[2][0] = condCast<F>(0);
+  q[2][1] = condCast<F>(1);
   return q;
 }
 
@@ -108,8 +101,8 @@ HOSTDEV constexpr auto
 makeSeg7() -> um2::QuadraticSegment<D>
 {
   um2::QuadraticSegment<D> q = makeBaseSeg<D>();
-  q[2][0] = static_cast<F>(0);
-  q[2][1] = static_cast<F>(-1);
+  q[2][0] = condCast<F>(0);
+  q[2][1] = condCast<F>(-1);
   return q;
 }
 
@@ -118,9 +111,9 @@ HOSTDEV constexpr auto
 makeSeg8() -> um2::QuadraticSegment<D>
 {
   um2::QuadraticSegment<D> q = makeBaseSeg<D>();
-  q[1][0] = static_cast<F>(2);
-  q[2][0] = static_cast<F>(4);
-  q[2][1] = static_cast<F>(3);
+  q[1][0] = condCast<F>(2);
+  q[2][0] = condCast<F>(4);
+  q[2][1] = condCast<F>(3);
   return q;
 }
 
@@ -135,7 +128,7 @@ TEST_CASE(interpolate)
 
   um2::QuadraticSegment<D> const seg = makeSeg2<D>();
   for (Size i = 0; i < 5; ++i) {
-    F const r = static_cast<F>(i) / static_cast<F>(4);
+    F const r = condCast<F>(i) / condCast<F>(4);
     um2::Point<D> const p = seg(r);
     um2::Point<D> p_ref = um2::Vec<D, F>::zero();
     p_ref[0] = 2 * r;
@@ -157,7 +150,7 @@ TEST_CASE(jacobian)
   um2::Vec<D, F> j12 = seg.jacobian(half);
   um2::Vec<D, F> j1 = seg.jacobian(1);
   um2::Vec<D, F> j_ref = um2::Vec<D, F>::zero();
-  j_ref[0] = static_cast<F>(2);
+  j_ref[0] = condCast<F>(2);
   ASSERT(um2::isApprox(j0, j_ref));
   ASSERT(um2::isApprox(j12, j_ref));
   ASSERT(um2::isApprox(j1, j_ref));
@@ -166,11 +159,11 @@ TEST_CASE(jacobian)
   j0 = seg2.jacobian(0);
   j12 = seg2.jacobian(half);
   j1 = seg2.jacobian(1);
-  ASSERT_NEAR(j0[0], static_cast<F>(2), eps);
+  ASSERT_NEAR(j0[0], condCast<F>(2), eps);
   ASSERT(j0[1] > 0);
-  ASSERT_NEAR(j12[0], static_cast<F>(2), eps);
-  ASSERT_NEAR(j12[1], static_cast<F>(0), eps);
-  ASSERT_NEAR(j1[0], static_cast<F>(2), eps);
+  ASSERT_NEAR(j12[0], condCast<F>(2), eps);
+  ASSERT_NEAR(j12[1], condCast<F>(0), eps);
+  ASSERT_NEAR(j1[0], condCast<F>(2), eps);
   ASSERT(j1[1] < 0);
 }
 
@@ -183,13 +176,13 @@ HOSTDEV
 TEST_CASE(length)
 {
   um2::QuadraticSegment<D> seg = makeSeg1<D>();
-  F l_ref = static_cast<F>(2);
+  F l_ref = condCast<F>(2);
   F l = seg.length();
   ASSERT_NEAR(l, l_ref, eps);
 
-  seg[2][1] = static_cast<F>(1);
+  seg[2][1] = condCast<F>(1);
   // sqrt(5) + log(2 + sqrt(5)) / 2
-  l_ref = static_cast<F>(2.957885715089195);
+  l_ref = condCast<F>(2.957885715089195);
   l = seg.length();
   ASSERT_NEAR(l, l_ref, eps);
 }
@@ -217,8 +210,8 @@ TEST_CASE(boundingBox)
   um2::AxisAlignedBox<D> const bb8 = seg8.boundingBox();
   um2::Point<D> const p0 = um2::Vec<D, F>::zero();
   um2::Point<D> p1 = um2::Vec<D, F>::zero();
-  p1[0] = static_cast<F>(4.083334);
-  p1[1] = static_cast<F>(3);
+  p1[0] = condCast<F>(4.083334);
+  p1[1] = condCast<F>(3);
   um2::AxisAlignedBox<D> const bb_ref8(p0, p1);
   ASSERT(um2::isApprox(bb8, bb_ref8));
 }
@@ -231,20 +224,20 @@ HOSTDEV
 TEST_CASE(isLeft)
 {
   um2::Vector<um2::Point2> const test_points = {
-      um2::Point2(static_cast<F>(1), static_cast<F>(3)),      // always left
-      um2::Point2(static_cast<F>(1), static_cast<F>(-3)),     // always right
-      um2::Point2(static_cast<F>(-1), half),   // always left
-      um2::Point2(static_cast<F>(-1), static_cast<F>(-0.5)),  // always right
-      um2::Point2(static_cast<F>(3), half),    // always left
-      um2::Point2(static_cast<F>(3), static_cast<F>(-0.5)),   // always right
-      um2::Point2(static_cast<F>(0.1), static_cast<F>(0.9)),  // always left
-      um2::Point2(static_cast<F>(0.1), static_cast<F>(-0.9)), // always right
-      um2::Point2(static_cast<F>(1.9), static_cast<F>(0.9)),  // always left
-      um2::Point2(static_cast<F>(1.9), static_cast<F>(-0.9)), // always right
-      um2::Point2(static_cast<F>(1.1), half),
-      um2::Point2(static_cast<F>(2), half),
-      um2::Point2(static_cast<F>(2.1), static_cast<F>(0.01)),
-      um2::Point2(static_cast<F>(2.1), half),
+      um2::Point2(condCast<F>(1), condCast<F>(3)),      // always left
+      um2::Point2(condCast<F>(1), condCast<F>(-3)),     // always right
+      um2::Point2(condCast<F>(-1), half),   // always left
+      um2::Point2(condCast<F>(-1), condCast<F>(-0.5)),  // always right
+      um2::Point2(condCast<F>(3), half),    // always left
+      um2::Point2(condCast<F>(3), condCast<F>(-0.5)),   // always right
+      um2::Point2(condCast<F>(0.1), condCast<F>(0.9)),  // always left
+      um2::Point2(condCast<F>(0.1), condCast<F>(-0.9)), // always right
+      um2::Point2(condCast<F>(1.9), condCast<F>(0.9)),  // always left
+      um2::Point2(condCast<F>(1.9), condCast<F>(-0.9)), // always right
+      um2::Point2(condCast<F>(1.1), half),
+      um2::Point2(condCast<F>(2), half),
+      um2::Point2(condCast<F>(2.1), condCast<F>(0.01)),
+      um2::Point2(condCast<F>(2.1), half),
   };
 
   // A straight line
@@ -395,22 +388,22 @@ TEST_CASE(pointClosestTo)
   // we will simply test a point, compute the distance, then perturb the value
   // in both directions and ensure that the distance increases.
   um2::Vector<um2::Point2> const test_points = {
-      um2::Point2(static_cast<F>(1), static_cast<F>(3)),      // always left
-      um2::Point2(static_cast<F>(1), static_cast<F>(-3)),     // always right
-      um2::Point2(static_cast<F>(-1), half),   // always left
-      um2::Point2(static_cast<F>(-1), static_cast<F>(-0.5)),  // always right
-      um2::Point2(static_cast<F>(3), half),    // always left
-      um2::Point2(static_cast<F>(3), static_cast<F>(-0.5)),   // always right
-      um2::Point2(static_cast<F>(0.1), static_cast<F>(0.9)),  // always left
-      um2::Point2(static_cast<F>(0.1), static_cast<F>(-0.9)), // always right
-      um2::Point2(static_cast<F>(1.9), static_cast<F>(0.9)),  // always left
-      um2::Point2(static_cast<F>(1.9), static_cast<F>(-0.9)), // always right
-      um2::Point2(static_cast<F>(1.1), half),
-      um2::Point2(static_cast<F>(2), half),
-      um2::Point2(static_cast<F>(2.1), static_cast<F>(0.01)),
-      um2::Point2(static_cast<F>(2.1), half),
+      um2::Point2(condCast<F>(1), condCast<F>(3)),      // always left
+      um2::Point2(condCast<F>(1), condCast<F>(-3)),     // always right
+      um2::Point2(condCast<F>(-1), half),   // always left
+      um2::Point2(condCast<F>(-1), condCast<F>(-0.5)),  // always right
+      um2::Point2(condCast<F>(3), half),    // always left
+      um2::Point2(condCast<F>(3), condCast<F>(-0.5)),   // always right
+      um2::Point2(condCast<F>(0.1), condCast<F>(0.9)),  // always left
+      um2::Point2(condCast<F>(0.1), condCast<F>(-0.9)), // always right
+      um2::Point2(condCast<F>(1.9), condCast<F>(0.9)),  // always left
+      um2::Point2(condCast<F>(1.9), condCast<F>(-0.9)), // always right
+      um2::Point2(condCast<F>(1.1), half),
+      um2::Point2(condCast<F>(2), half),
+      um2::Point2(condCast<F>(2.1), condCast<F>(0.01)),
+      um2::Point2(condCast<F>(2.1), half),
   };
-  F const big_eps = static_cast<F>(1e-2);
+  F const big_eps = condCast<F>(1e-2);
   um2::Vector<um2::QuadraticSegment2> const segments = {
       makeSeg1<2>(), makeSeg2<2>(), makeSeg3<2>(), makeSeg4<2>(),
       makeSeg5<2>(), makeSeg6<2>(), makeSeg7<2>(), makeSeg8<2>(),
@@ -443,12 +436,12 @@ TEST_CASE(enclosedArea)
 {
   um2::QuadraticSegment2 const seg1 = makeSeg1<2>();
   F area = enclosedArea(seg1);
-  F area_ref = static_cast<F>(0);
+  F area_ref = condCast<F>(0);
   ASSERT_NEAR(area, area_ref, eps);
 
   um2::QuadraticSegment2 const seg2 = makeSeg2<2>();
   // 4/3 triangle area = (2 / 3) * b * h
-  area_ref = -static_cast<F>(2.0 / 3.0) * 2 * 1;
+  area_ref = -condCast<F>(2.0 / 3.0) * 2 * 1;
   area = enclosedArea(seg2);
   ASSERT_NEAR(area, area_ref, eps);
 
@@ -457,7 +450,7 @@ TEST_CASE(enclosedArea)
   ASSERT_NEAR(area, area_ref, eps);
 
   um2::QuadraticSegment2 const seg8 = makeSeg8<2>();
-  area_ref = -static_cast<F>(4);
+  area_ref = -condCast<F>(4);
   area = enclosedArea(seg8);
   ASSERT_NEAR(area, area_ref, eps);
 }
@@ -471,15 +464,15 @@ TEST_CASE(enclosedCentroid)
   ASSERT(um2::isApprox(centroid, centroid_ref));
 
   um2::QuadraticSegment2 seg2 = makeSeg2<2>();
-  centroid_ref = um2::Point2(static_cast<F>(1), static_cast<F>(0.4));
+  centroid_ref = um2::Point2(condCast<F>(1), condCast<F>(0.4));
   centroid = enclosedCentroid(seg2);
   ASSERT(um2::isApprox(centroid, centroid_ref));
   // Rotated 45 degrees, translated -1 in x
-  seg2[0][0] = static_cast<F>(-1);
-  seg2[1][0] = um2::sqrt(static_cast<F>(2)) - 1;
-  seg2[1][1] = um2::sqrt(static_cast<F>(2));
-  seg2[2][0] = static_cast<F>(-1);
-  seg2[2][1] = um2::sqrt(static_cast<F>(2));
+  seg2[0][0] = condCast<F>(-1);
+  seg2[1][0] = um2::sqrt(condCast<F>(2)) - 1;
+  seg2[1][1] = um2::sqrt(condCast<F>(2));
+  seg2[2][0] = condCast<F>(-1);
+  seg2[2][1] = um2::sqrt(condCast<F>(2));
   // Compute centroid_ref
   um2::Vec2<F> const u1 = (seg2[1] - seg2[0]).normalized();
   um2::Vec2<F> const u2(-u1[1], u1[0]);
@@ -489,10 +482,6 @@ TEST_CASE(enclosedCentroid)
   centroid = enclosedCentroid(seg2);
   ASSERT(um2::isApprox(centroid, centroid_ref));
 }
-
-#ifndef __clang__
-#pragma GCC diagnostic pop
-#endif
 
 #if UM2_USE_CUDA
 template <Size D>

@@ -9,7 +9,7 @@
 // Polygon
 //==============================================================================
 // A 2-dimensional polytope, of polynomial order P, represented by the connectivity
-// of its vertices. These N vertices are D-dimensional points of type T.
+// of its vertices. These N vertices are D-dimensional points of type F.
 //
 // For Polygons
 //   Triangle (P = 1, N = 3)
@@ -116,7 +116,7 @@ public:
   // See the comments in the implementation for details.
   // meanChordLength has multiple definitions. Make sure you read the comments to
   // determine it's the one you want.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] auto
   meanChordLength() const noexcept -> F
     requires(D == 2);
 
@@ -812,7 +812,7 @@ meanChordLength(Quadrilateral2 const & quad) noexcept -> F
 }
 
 template <Size N>
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV auto
 meanChordLength(PlanarQuadraticPolygon<N> const & p) noexcept -> F
 {
   // Algorithm:
@@ -871,7 +871,7 @@ meanChordLength(PlanarQuadraticPolygon<N> const & p) noexcept -> F
 }
 
 template <Size P, Size N, Size D>
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV auto
 Polygon<P, N, D>::meanChordLength() const noexcept -> F
   requires(D == 2)
 {

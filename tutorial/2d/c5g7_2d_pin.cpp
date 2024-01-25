@@ -20,12 +20,12 @@ main() -> int
   um2::Vector<double> const moderator_sigma_t = {2.30070e-01, 7.76460e-01, 1.48420e+00,
                                             1.50520e+00, 1.55920e+00, 2.02540e+00,
                                             3.30570e+00};
-  um2::CrossSection<double> const uo2_xs(uo2_sigma_t);
-  um2::CrossSection<double> const moderator_xs(moderator_sigma_t);
+  um2::CrossSection const uo2_xs(uo2_sigma_t);
+  um2::CrossSection const moderator_xs(moderator_sigma_t);
 
   // Materials
-  um2::Material<double> uo2("UO2", um2::forestgreen);
-  um2::Material<double> moderator("Moderator", um2::royalblue);
+  um2::Material uo2("UO2", um2::forestgreen);
+  um2::Material moderator("Moderator", um2::royalblue);
 
   // Assign xs
   uo2.xs() = uo2_xs;
@@ -39,7 +39,7 @@ main() -> int
   um2::gmsh::model::occ::addCylindricalPin2D({0.9 * pin_pitch, 0.7 * pin_pitch}, {radius}, {uo2});
   
   // Construct the MPACT spatial partition
-  um2::mpact::SpatialPartition<double, int> model;
+  um2::mpact::SpatialPartition model;
   model.makeCoarseCell(pin_size);
   model.makeRTM({{0}});
   model.makeLattice({{0}});
@@ -52,7 +52,7 @@ main() -> int
   // Create the mesh
   double const target_kn = 8;
   um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, {uo2, moderator}, target_kn,
-      /*mfp_threshold=*/2.0, /*is_fuel=*/{1, 0});
+      /*mfp_threshold=*/3.0, /*mfp_scale=*/2.0, /*is_fuel=*/{1, 0});
 //  um2::gmsh::model::mesh::coarsenModeratorFieldByFuelDistance(2, kn_field, {uo2}, moderator);
   um2::gmsh::model::mesh::generate(2);
   //um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);

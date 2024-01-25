@@ -342,21 +342,6 @@ operator+(AxisAlignedBox<D> box, Point<D> const & p) noexcept
 
 template <Size D>
 PURE HOSTDEV constexpr auto
-operator+(Point<D> const & p, AxisAlignedBox<D> box) noexcept
-    -> AxisAlignedBox<D>
-{
-  return box += p;
-}
-
-template <Size D>
-PURE HOSTDEV constexpr auto
-boundingBox(Point<D> const & a, Point<D> const & b) noexcept -> AxisAlignedBox<D>
-{
-  return AxisAlignedBox<D>{um2::min(a, b), um2::max(a, b)};
-}
-
-template <Size D>
-PURE HOSTDEV constexpr auto
 boundingBox(Point<D> const * points, Size const n) noexcept -> AxisAlignedBox<D>
 {
   Point<D> minima = points[0];
@@ -369,7 +354,7 @@ boundingBox(Point<D> const * points, Size const n) noexcept -> AxisAlignedBox<D>
 }
 
 template <Size D>
-PURE auto
+PURE constexpr auto
 boundingBox(Vector<Point<D>> const & points) noexcept -> AxisAlignedBox<D>
 {
   return um2::boundingBox(points.data(), points.size());

@@ -89,6 +89,16 @@ using QuadraticTriangle = QuadraticPolygon<6, D>;
 template <Size D>
 using QuadraticQuadrilateral = QuadraticPolygon<8, D>;
 
+// N-vertex polygons (shorthand)
+template <Size D>
+using Tri = Triangle<D>;
+template <Size D>
+using Quad = Quadrilateral<D>;
+template <Size D>
+using Tri6 = QuadraticTriangle<D>;
+template <Size D>
+using Quad8 = QuadraticQuadrilateral<D>;
+
 // Dimension specific aliases
 using Triangle2 = Triangle<2>;
 using Triangle3 = Triangle<3>;

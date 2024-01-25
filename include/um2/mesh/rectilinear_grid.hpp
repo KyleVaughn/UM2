@@ -15,7 +15,7 @@
 namespace um2
 {
 
-template <Size D, typename T>
+template <Size D>
 // Odd bug with "declaration uses identifier '__i0', which is a reserved identifier",
 // but obviously RectilinearGrid doesn't use __i0.
 // NOLINTNEXTLINE
@@ -23,7 +23,7 @@ class RectilinearGrid
 {
 
   // Divisions along each axis
-  Vector<T> _divs[D];
+  Vector<F> _divs[D];
 
 public:
   //==============================================================================
@@ -32,9 +32,9 @@ public:
 
   constexpr RectilinearGrid() noexcept = default;
 
-  constexpr explicit RectilinearGrid(AxisAlignedBox<D, T> const & box);
+  constexpr explicit RectilinearGrid(AxisAlignedBox<D> const & box);
 
-  constexpr explicit RectilinearGrid(Vector<AxisAlignedBox<D, T>> const & boxes);
+  constexpr explicit RectilinearGrid(Vector<AxisAlignedBox<D>> const & boxes);
 
   // dxdy: The extents of cell 0, 1, 2 ...
   // ids: The IDs of the cells.
@@ -50,7 +50,7 @@ public:
   //   | 0 2 0 2
   //   | 0 1 0 1
   //   +---------> x
-  constexpr RectilinearGrid(Vector<Vec2<T>> const & dxdy,
+  constexpr RectilinearGrid(Vector<Vec2<F>> const & dxdy,
                             Vector<Vector<Size>> const & ids);
 
   //==============================================================================
@@ -58,22 +58,22 @@ public:
   //==============================================================================
 
   HOSTDEV [[nodiscard]] constexpr auto
-  divs(Size i) noexcept -> Vector<T> &;
+  divs(Size i) noexcept -> Vector<F> &;
 
   HOSTDEV [[nodiscard]] constexpr auto
-  divs(Size i) const noexcept -> Vector<T> const &;
+  divs(Size i) const noexcept -> Vector<F> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  minima() const noexcept -> Point<D, T>;
+  minima() const noexcept -> Point<D>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  minima(Size i) const noexcept -> T;
+  minima(Size i) const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  maxima() const noexcept -> Point<D, T>;
+  maxima() const noexcept -> Point<D>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  maxima(Size i) const noexcept -> T;
+  maxima(Size i) const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   numCells() const noexcept -> Vec<D, Size>;
@@ -82,22 +82,22 @@ public:
   numCells(Size i) const noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  xMin() const noexcept -> T;
+  xMin() const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  yMin() const noexcept -> T;
+  yMin() const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  zMin() const noexcept -> T;
+  zMin() const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  xMax() const noexcept -> T;
+  xMax() const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  yMax() const noexcept -> T;
+  yMax() const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  zMax() const noexcept -> T;
+  zMax() const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   numXCells() const noexcept -> Size;
@@ -113,19 +113,19 @@ public:
   //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  extents() const noexcept -> Vec<D, T>;
+  extents() const noexcept -> Vec<D, F>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  extents(Size i) const noexcept -> T;
+  extents(Size i) const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  width() const noexcept -> T;
+  width() const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  height() const noexcept -> T;
+  height() const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  depth() const noexcept -> T;
+  depth() const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size;
@@ -138,10 +138,10 @@ public:
   template <typename... Args>
     requires(sizeof...(Args) == D)
   PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
-      -> AxisAlignedBox<D, T>;
+      -> AxisAlignedBox<D>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  boundingBox() const noexcept -> AxisAlignedBox<D, T>;
+  boundingBox() const noexcept -> AxisAlignedBox<D>;
 
   // Empty the grid
   HOSTDEV constexpr void
@@ -152,27 +152,16 @@ public:
 // Aliases
 //==============================================================================
 
-template <typename T>
-using RectilinearGrid1 = RectilinearGrid<1, T>;
-template <typename T>
-using RectilinearGrid2 = RectilinearGrid<2, T>;
-template <typename T>
-using RectilinearGrid3 = RectilinearGrid<3, T>;
-
-using RectilinearGrid1f = RectilinearGrid1<float>;
-using RectilinearGrid2f = RectilinearGrid2<float>;
-using RectilinearGrid3f = RectilinearGrid3<float>;
-
-using RectilinearGrid1d = RectilinearGrid1<double>;
-using RectilinearGrid2d = RectilinearGrid2<double>;
-using RectilinearGrid3d = RectilinearGrid3<double>;
+using RectilinearGrid1 = RectilinearGrid<1>;
+using RectilinearGrid2 = RectilinearGrid<2>;
+using RectilinearGrid3 = RectilinearGrid<3>;
 
 //==============================================================================
 // Constructors
 //==============================================================================
 
-template <Size D, typename T>
-constexpr RectilinearGrid<D, T>::RectilinearGrid(AxisAlignedBox<D, T> const & box)
+template <Size D>
+constexpr RectilinearGrid<D>::RectilinearGrid(AxisAlignedBox<D> const & box)
 {
   for (Size i = 0; i < D; ++i) {
     ASSERT(box.minima(i) < box.maxima(i));
@@ -180,14 +169,14 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(AxisAlignedBox<D, T> const & bo
   }
 }
 
-template <Size D, typename T>
-constexpr RectilinearGrid<D, T>::RectilinearGrid(
-    Vector<AxisAlignedBox<D, T>> const & boxes)
+template <Size D>
+constexpr RectilinearGrid<D>::RectilinearGrid(
+    Vector<AxisAlignedBox<D>> const & boxes)
 {
   // Create _divs by finding the unique planar divisions
-  T constexpr eps = eps_distance<T>;
+  F constexpr eps = eps_distance;
   for (Size i = 0; i < boxes.size(); ++i) {
-    AxisAlignedBox<D, T> const & box = boxes[i];
+    AxisAlignedBox<D> const & box = boxes[i];
     for (Size d = 0; d < D; ++d) {
       bool min_found = false;
       for (Size j = 0; j < _divs[d].size(); ++j) {
@@ -226,9 +215,9 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(
   ASSERT(ncells_total == boxes.size());
 }
 
-template <Size D, typename T>
-constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<Vec2<T>> const & dxdy,
-                                                 Vector<Vector<Size>> const & ids)
+template <Size D>
+constexpr RectilinearGrid<D>::RectilinearGrid(Vector<Vec2<F>> const & dxdy,
+                                             Vector<Vector<Size>> const & ids)
 {
   static_assert(D == 2);
   // Convert the dxdy to AxisAlignedBoxes
@@ -241,16 +230,16 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<Vec2<T>> const & dxdy,
       ASSERT(ids[i][j] >= 0);
     }
   }
-  Vector<AxisAlignedBox<D, T>> boxes(nrows * ncols);
-  T y = 0;
+  Vector<AxisAlignedBox<D>> boxes(nrows * ncols);
+  F y = 0;
   // Iterate rows in reverse order
   for (Size i = 0; i < nrows; ++i) {
     Vector<Size> const & row = ids[nrows - i - 1];
-    Vec2<T> lo(static_cast<T>(0), y);
+    Vec2<F> lo(static_cast<F>(0), y);
     for (Size j = 0; j < ncols; ++j) {
       Size const id = row[j];
-      Vec2<T> const & dxdy_ij = dxdy[id];
-      Vec2<T> const hi = lo + dxdy_ij;
+      Vec2<F> const & dxdy_ij = dxdy[id];
+      Vec2<F> const hi = lo + dxdy_ij;
       boxes[i * ncols + j] = {lo, hi};
       lo[0] = hi[0];
     }
@@ -263,67 +252,67 @@ constexpr RectilinearGrid<D, T>::RectilinearGrid(Vector<Vec2<T>> const & dxdy,
 // Accessors
 //==============================================================================
 
-template <Size D, typename T>
+template <Size D>
 HOSTDEV constexpr auto
-RectilinearGrid<D, T>::divs(Size i) noexcept -> Vector<T> &
+RectilinearGrid<D>::divs(Size i) noexcept -> Vector<F> &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
   return _divs[i];
 }
 
-template <Size D, typename T>
+template <Size D>
 HOSTDEV constexpr auto
-RectilinearGrid<D, T>::divs(Size i) const noexcept -> Vector<T> const &
+RectilinearGrid<D>::divs(Size i) const noexcept -> Vector<F> const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
   return _divs[i];
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::minima() const noexcept -> Point<D, T>
+RectilinearGrid<D>::minima() const noexcept -> Point<D>
 {
-  Point<D, T> p;
+  Point<D> p;
   for (Size i = 0; i < D; ++i) {
     p[i] = _divs[i].front();
   }
   return p;
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::minima(Size i) const noexcept -> T
+RectilinearGrid<D>::minima(Size i) const noexcept -> F
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
   return _divs[i].front();
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::maxima() const noexcept -> Point<D, T>
+RectilinearGrid<D>::maxima() const noexcept -> Point<D>
 {
-  Point<D, T> p;
+  Point<D> p;
   for (Size i = 0; i < D; ++i) {
     p[i] = _divs[i].back();
   }
   return p;
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::maxima(Size i) const noexcept -> T
+RectilinearGrid<D>::maxima(Size i) const noexcept -> F
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
   return _divs[i].back();
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::numCells() const noexcept -> Vec<D, Size>
+RectilinearGrid<D>::numCells() const noexcept -> Vec<D, Size>
 {
   Vec<D, Size> ncells;
   for (Size i = 0; i < D; ++i) {
@@ -333,9 +322,9 @@ RectilinearGrid<D, T>::numCells() const noexcept -> Vec<D, Size>
   return ncells;
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::numCells(Size i) const noexcept -> Size
+RectilinearGrid<D>::numCells(Size i) const noexcept -> Size
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
@@ -343,71 +332,71 @@ RectilinearGrid<D, T>::numCells(Size i) const noexcept -> Size
   return _divs[i].size() - 1;
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::xMin() const noexcept -> T
+RectilinearGrid<D>::xMin() const noexcept -> F
 {
   return minima(0);
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::yMin() const noexcept -> T
+RectilinearGrid<D>::yMin() const noexcept -> F
 {
   static_assert(2 <= D);
   return minima(1);
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::zMin() const noexcept -> T
+RectilinearGrid<D>::zMin() const noexcept -> F
 {
   static_assert(3 <= D);
   return minima(2);
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::xMax() const noexcept -> T
+RectilinearGrid<D>::xMax() const noexcept -> F
 {
   return maxima(0);
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::yMax() const noexcept -> T
+RectilinearGrid<D>::yMax() const noexcept -> F
 {
   static_assert(2 <= D);
   return maxima(1);
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::zMax() const noexcept -> T
+RectilinearGrid<D>::zMax() const noexcept -> F
 {
   static_assert(3 <= D);
   return maxima(2);
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::numXCells() const noexcept -> Size
+RectilinearGrid<D>::numXCells() const noexcept -> Size
 {
   static_assert(1 <= D);
   return numCells(0);
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::numYCells() const noexcept -> Size
+RectilinearGrid<D>::numYCells() const noexcept -> Size
 {
   static_assert(2 <= D);
   return numCells(1);
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::numZCells() const noexcept -> Size
+RectilinearGrid<D>::numZCells() const noexcept -> Size
 {
   static_assert(3 <= D);
   return numCells(2);
@@ -417,64 +406,64 @@ RectilinearGrid<D, T>::numZCells() const noexcept -> Size
 // Methods
 //==============================================================================
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::extents() const noexcept -> Vec<D, T>
+RectilinearGrid<D>::extents() const noexcept -> Vec<D, F>
 {
   return maxima() - minima();
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::extents(Size i) const noexcept -> T
+RectilinearGrid<D>::extents(Size i) const noexcept -> F
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
   return maxima(i) - minima(i);
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::width() const noexcept -> T
+RectilinearGrid<D>::width() const noexcept -> F
 {
   return extents(0);
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::height() const noexcept -> T
+RectilinearGrid<D>::height() const noexcept -> F
 {
   static_assert(2 <= D);
   return extents(1);
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::depth() const noexcept -> T
+RectilinearGrid<D>::depth() const noexcept -> F
 {
   static_assert(3 <= D);
   return extents(2);
 }
 
-template <Size D, typename T>
+template <Size D>
 HOSTDEV constexpr void
-RectilinearGrid<D, T>::clear() noexcept
+RectilinearGrid<D>::clear() noexcept
 {
   for (Size i = 0; i < D; ++i) {
     _divs[i].clear();
   }
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D, T>::boundingBox() const noexcept -> AxisAlignedBox<D, T>
+RectilinearGrid<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 {
   return {minima(), maxima()};
 }
 
-template <Size D, typename T>
+template <Size D>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-RectilinearGrid<D, T>::getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size
+RectilinearGrid<D>::getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size
 {
   for (Size i = 0; i < D; ++i) {
     ASSERT(index[i] < _divs[i].size());
@@ -488,7 +477,7 @@ RectilinearGrid<D, T>::getFlatIndex(Vec<D, Size> const & index) const noexcept -
     return index[0] + index[1] * numXCells() + index[2] * numXCells() * numYCells();
   } else { // General case
     // [0, nx, nx*ny, nx*ny*nz, ...]
-    Point<D, Size> exclusive_scan_prod;
+    Vec<D, Size> exclusive_scan_prod;
     exclusive_scan_prod[0] = 1;
     for (Size i = 1; i < D; ++i) {
       exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * numCells(i - 1);
@@ -498,29 +487,29 @@ RectilinearGrid<D, T>::getFlatIndex(Vec<D, Size> const & index) const noexcept -
   }
 }
 
-template <Size D, typename T>
+template <Size D>
 template <typename... Args>
   requires(sizeof...(Args) == D)
 PURE HOSTDEV
-    constexpr auto RectilinearGrid<D, T>::getFlatIndex(Args... args) const noexcept
+    constexpr auto RectilinearGrid<D>::getFlatIndex(Args... args) const noexcept
     -> Size
 {
-  Point<D, Size> const index{args...};
+  Vec<D, Size> const index{args...};
   return getFlatIndex(index);
 }
 
-template <Size D, typename T>
+template <Size D>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RectilinearGrid<D, T>::getBox(Args... args) const noexcept
-    -> AxisAlignedBox<D, T>
+PURE HOSTDEV constexpr auto RectilinearGrid<D>::getBox(Args... args) const noexcept
+    -> AxisAlignedBox<D>
 {
-  Point<D, Size> const index{args...};
+  Vec<D, Size> const index{args...};
   for (Size i = 0; i < D; ++i) {
     ASSERT(index[i] + 1 < _divs[i].size());
   }
-  Point<D, T> minima;
-  Point<D, T> maxima;
+  Point<D> minima;
+  Point<D> maxima;
   for (Size i = 0; i < D; ++i) {
     minima[i] = _divs[i][index[i]];
     maxima[i] = _divs[i][index[i] + 1];

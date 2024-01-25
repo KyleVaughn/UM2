@@ -4,25 +4,25 @@ namespace um2
 {
 
 PURE HOSTDEV auto
-mortonEncode(Point2 const & p) noexcept -> FMortonCode
+mortonEncode(Point2 const & p) noexcept -> MortonCode
 {
-  return mortonEncode<FMortonCode, F>(p[0], p[1]);
+  return mortonEncode<MortonCode, F>(p[0], p[1]);
 }
 
 PURE HOSTDEV auto
-mortonEncode(Point3 const & p) noexcept -> FMortonCode
+mortonEncode(Point3 const & p) noexcept -> MortonCode
 {
-  return mortonEncode<FMortonCode, F>(p[0], p[1], p[2]);
+  return mortonEncode<MortonCode, F>(p[0], p[1], p[2]);
 }
 
 HOSTDEV void
-mortonDecode(FMortonCode const morton, Point2 & p) noexcept
+mortonDecode(MortonCode const morton, Point2 & p) noexcept
 {
   mortonDecode(morton, p[0], p[1]);
 }
 
 HOSTDEV void
-mortonDecode(FMortonCode const morton, Point3 & p) noexcept
+mortonDecode(MortonCode const morton, Point3 & p) noexcept
 {
   mortonDecode(morton, p[0], p[1], p[2]);
 }

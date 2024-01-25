@@ -1,8 +1,7 @@
-template <Size D, std::floating_point T, std::signed_integral I>
-HOSTDEV auto
-makeTriReferenceMesh() -> um2::TriMesh<D, T, I>
+HOSTDEV inline auto
+makeTriReferenceMesh() -> um2::TriFVM
 {
-  um2::Vector<um2::Point<D, T>> const v = {
+  um2::Vector<um2::Point2> const v = {
       {0, 0},
       {1, 0},
       {1, 1},
@@ -17,11 +16,10 @@ makeTriReferenceMesh() -> um2::TriMesh<D, T, I>
   return {v, fv};
 }
 
-template <Size D, std::floating_point T, std::signed_integral I>
-HOSTDEV auto
-makeQuadReferenceMesh() -> um2::QuadMesh<D, T, I>
+HOSTDEV inline auto
+makeQuadReferenceMesh() -> um2::QuadFVM
 {
-  um2::Vector<um2::Point<D, T>> const v = {
+  um2::Vector<um2::Point2> const v = {
       {0, 0},
       {1, 0},
       {1, 1},
@@ -39,7 +37,7 @@ makeQuadReferenceMesh() -> um2::QuadMesh<D, T, I>
 }
 ////
 //// template <std::floating_point T, std::signed_integral I>
-//// HOSTDEV void makeTriQuadReferenceMesh(um2::TriQuadMesh<T, I> & mesh)
+//// HOSTDEV void makeTriQuadReferenceMesh(um2::TriQuadMesh & mesh)
 ////{
 ////   mesh.vertices = {
 ////       {0, 0},
@@ -54,20 +52,19 @@ makeQuadReferenceMesh() -> um2::QuadMesh<D, T, I>
 ////   mesh.vf = {0, 0, 1, 0, 1, 0, 1};
 //// }
 ////
-template <Size D, std::floating_point T, std::signed_integral I>
-HOSTDEV auto
-makeTri6ReferenceMesh() -> um2::QuadraticTriMesh<D, T, I>
+HOSTDEV inline auto
+makeTri6ReferenceMesh() -> um2::Tri6FVM
 {
-  um2::Vector<um2::Point<D, T>> const v = {
+  um2::Vector<um2::Point2> const v = {
       {                  0,                   0},
       {                  1,                   0},
       {                  0,                   1},
-      {static_cast<T>(0.5), static_cast<T>(0.0)},
-      {static_cast<T>(0.7), static_cast<T>(0.5)},
-      {static_cast<T>(0.0), static_cast<T>(0.5)},
+      {condCast<F>(0.5), condCast<F>(0.0)},
+      {condCast<F>(0.7), condCast<F>(0.5)},
+      {condCast<F>(0.0), condCast<F>(0.5)},
       {                  1,                   1},
-      {static_cast<T>(1.0), static_cast<T>(0.5)},
-      {static_cast<T>(0.5), static_cast<T>(1.0)}
+      {condCast<F>(1.0), condCast<F>(0.5)},
+      {condCast<F>(0.5), condCast<F>(1.0)}
   };
   um2::Vector<um2::Vec<6, I>> const fv = {
       {0, 1, 2, 3, 4, 5},
@@ -78,24 +75,23 @@ makeTri6ReferenceMesh() -> um2::QuadraticTriMesh<D, T, I>
   return {v, fv};
 }
 
-template <Size D, std::floating_point T, std::signed_integral I>
-HOSTDEV auto
-makeQuad8ReferenceMesh() -> um2::QuadraticQuadMesh<D, T, I>
+HOSTDEV inline auto
+makeQuad8ReferenceMesh() -> um2::Quad8FVM
 {
-  um2::Vector<um2::Point<D, T>> const v = {
-      {static_cast<T>(0.0), static_cast<T>(0.0)},
-      {static_cast<T>(1.0), static_cast<T>(0.0)},
-      {static_cast<T>(1.0), static_cast<T>(1.0)},
-      {static_cast<T>(0.0), static_cast<T>(1.0)},
-      {static_cast<T>(2.0), static_cast<T>(0.0)},
-      {static_cast<T>(2.0), static_cast<T>(1.0)},
-      {static_cast<T>(0.5), static_cast<T>(0.0)},
-      {static_cast<T>(1.1), static_cast<T>(0.6)},
-      {static_cast<T>(0.5), static_cast<T>(1.0)},
-      {static_cast<T>(0.0), static_cast<T>(0.5)},
-      {static_cast<T>(1.5), static_cast<T>(0.0)},
-      {static_cast<T>(2.0), static_cast<T>(0.5)},
-      {static_cast<T>(1.5), static_cast<T>(1.0)}
+  um2::Vector<um2::Point2> const v = {
+      {condCast<F>(0.0), condCast<F>(0.0)},
+      {condCast<F>(1.0), condCast<F>(0.0)},
+      {condCast<F>(1.0), condCast<F>(1.0)},
+      {condCast<F>(0.0), condCast<F>(1.0)},
+      {condCast<F>(2.0), condCast<F>(0.0)},
+      {condCast<F>(2.0), condCast<F>(1.0)},
+      {condCast<F>(0.5), condCast<F>(0.0)},
+      {condCast<F>(1.1), condCast<F>(0.6)},
+      {condCast<F>(0.5), condCast<F>(1.0)},
+      {condCast<F>(0.0), condCast<F>(0.5)},
+      {condCast<F>(1.5), condCast<F>(0.0)},
+      {condCast<F>(2.0), condCast<F>(0.5)},
+      {condCast<F>(1.5), condCast<F>(1.0)}
   };
   um2::Vector<um2::Vec<8, I>> const fv = {
       {0, 1, 2, 3,  6,  7,  8, 9},
@@ -107,21 +103,21 @@ makeQuad8ReferenceMesh() -> um2::QuadraticQuadMesh<D, T, I>
 }
 
 // template <std::floating_point T, std::signed_integral I>
-// HOSTDEV void makeTri6Quad8ReferenceMesh(um2::QuadraticTriQuadMesh<T, I> &
+// HOSTDEV void makeTri6Quad8ReferenceMesh(um2::QuadraticTriQuadMesh &
 // mesh)
 //{
 //   mesh.vertices = {
-//       {static_cast<T>(0.0), static_cast<T>(0.0)},
-//       {static_cast<T>(1.0), static_cast<T>(0.0)},
-//       {static_cast<T>(1.0), static_cast<T>(1.0)},
-//       {static_cast<T>(0.0), static_cast<T>(1.0)},
-//       {static_cast<T>(2.0), static_cast<T>(0.0)},
-//       {static_cast<T>(0.5), static_cast<T>(0.0)},
-//       {static_cast<T>(0.7), static_cast<T>(0.6)},
-//       {static_cast<T>(0.5), static_cast<T>(1.0)},
-//       {static_cast<T>(0.0), static_cast<T>(0.5)},
-//       {static_cast<T>(1.5), static_cast<T>(0.0)},
-//       {static_cast<T>(1.5), static_cast<T>(0.5)}
+//       {condCast<F>(0.0), condCast<F>(0.0)},
+//       {condCast<F>(1.0), condCast<F>(0.0)},
+//       {condCast<F>(1.0), condCast<F>(1.0)},
+//       {condCast<F>(0.0), condCast<F>(1.0)},
+//       {condCast<F>(2.0), condCast<F>(0.0)},
+//       {condCast<F>(0.5), condCast<F>(0.0)},
+//       {condCast<F>(0.7), condCast<F>(0.6)},
+//       {condCast<F>(0.5), condCast<F>(1.0)},
+//       {condCast<F>(0.0), condCast<F>(0.5)},
+//       {condCast<F>(1.5), condCast<F>(0.0)},
+//       {condCast<F>(1.5), condCast<F>(0.5)}
 //   };
 //   mesh.fv_offsets = {0, 8, 14};
 //   mesh.fv = {0, 1, 2, 3, 5, 6, 7, 8, 1, 4, 2, 9, 10, 6};

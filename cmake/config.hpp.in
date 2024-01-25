@@ -45,6 +45,9 @@
 //==============================================================================
 
 // Optimization
+// Only enable if asserts are disabled. Otherwise, we have to be overly careful
+// with asserts, which make function non-pure.
+#if !UM2_ENABLE_ASSERTS
 #ifdef PURE
 #  error "PURE already defined"
 #endif
@@ -54,9 +57,14 @@
 #ifdef HOT
 #  error "HOT already defined"
 #endif
-#define PURE  [[gnu::pure]]
-#define CONST [[gnu::const]]
-#define HOT   [[gnu::hot]]
+#  define PURE  [[gnu::pure]]
+#  define CONST [[gnu::const]]
+#  define HOT   [[gnu::hot]]
+#else
+#  define PURE
+#  define CONST
+#  define HOT
+#endif
 
 // TODO(kcvaughn): Once C++23 is supported, we can use [[assume(expr)]] instead.
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1774r8.pdf
@@ -116,10 +124,11 @@ using F = double;
 using F = float;
 #endif
 
-// Integer type for indices and signed integers
+// Integer type for indices and integers
 #if UM2_ENABLE_INT64
 using Size = int64_t; // Index type
 using I = int64_t;
+using U = uint64_t;
 HOSTDEV consteval auto
 sizeMax() noexcept -> Size
 {
@@ -128,6 +137,7 @@ sizeMax() noexcept -> Size
 #else
 using Size = int32_t; // Index type
 using I = int32_t;
+using U = uint32_t;
 HOSTDEV consteval auto
 sizeMax() noexcept -> Size
 {
@@ -280,5 +290,22 @@ failedAssertNear(char const * const file, int const line, char const * const a,
 #else
 #  define CUDA_CHECK_ERROR(status)
 #endif
+
+//==============================================================================
+// Misc
+//==============================================================================
+
+// Conditionally static_cast depending on if it is needed.
+
+template <typename To, typename From>
+HOSTDEV constexpr auto
+condCast(From const x) noexcept -> To
+{
+  if constexpr (std::same_as<To, From>) {
+    return x;
+  } else {
+    return static_cast<To>(x);
+  }
+}
 
 // NOLINTEND(modernize-macro-to-enum)

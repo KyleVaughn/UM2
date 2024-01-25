@@ -16,6 +16,7 @@ initialize(String const & verbosity)
   Log::reset();
   // Set verbosity
   // Make uppercase for comparison
+  // NOLINTNEXTLINE
   String verbosity_upper = verbosity;
   std::transform(verbosity.data(), verbosity.data() + verbosity.size(),
                  verbosity_upper.data(), ::toupper);

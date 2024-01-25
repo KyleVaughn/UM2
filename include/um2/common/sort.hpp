@@ -27,7 +27,7 @@ namespace um2
 // already mostly sorted.
 
 template <typename T>
-HOSTDEV constexpr void
+HOSTDEV void
 insertionSort(T * const first, T const * const last) noexcept
 {
   // Not the clearest implementation, but the assembly is much better than
@@ -58,7 +58,7 @@ insertionSort(T * const first, T const * const last) noexcept
 // not modified.
 
 template <typename T>
-constexpr void
+void
 sortPermutation(T const * const begin, T const * const end,
                 Size * const perm_begin) noexcept
 {
@@ -74,7 +74,7 @@ sortPermutation(T const * const begin, T const * const end,
 // Apply the permutation perm to the vector v in-place.
 
 template <typename T>
-constexpr void
+void
 applyPermutation(Vector<T> & v, Vector<Size> const & perm) noexcept
 {
   // Verify that perm is a permutation

@@ -26,13 +26,12 @@ public:
       : _o(origin),
         _d(direction)
   {
-#if UM2_ENABLE_FLOAT64
-    F constexpr eps = 1e-5;
-#else
-    F constexpr eps = 1e-5f;
-#endif
     // Check that the direction is a unit vector
-    ASSERT(um2::abs(direction.squaredNorm() - static_cast<F>(1)) < eps);
+#if UM2_ENABLE_FLOAT64
+    ASSERT(um2::abs(direction.squaredNorm() - static_cast<F>(1)) < 1e-5);
+#else
+    ASSERT(um2::abs(direction.squaredNorm() - static_cast<F>(1)) < 1e-5f);
+#endif
   }
 
   //============================================================================

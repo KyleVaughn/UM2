@@ -44,6 +44,14 @@ spack env activate -p um2
 spack spec
 echo "Installing dependencies. This will take an hour or two."
 time TMP=${PWD}/tmp spack install
+
+# Create an identical spack environment, but with GCC 12.3 added
+spack env create um2_gcc12 ${PWD}/UM2/dependencies/spack/user/server.yaml
+spack env activate -p um2_gcc12
+spack spec
+echo "Installing dependencies. This will take an hour or two."
+time TMP=${PWD}/tmp spack install
+spack add gcc@12.3
 rm -r tmp
 
 # Make a copy of the environment and try to add gcc to it?

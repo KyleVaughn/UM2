@@ -3,7 +3,6 @@
 #include <um2/config.hpp>
 
 #if UM2_USE_GMSH
-#  include <um2/common/log.hpp>
 #  include <um2/geometry/point.hpp>
 #  include <um2/gmsh/base_gmsh_api.hpp>
 #  include <um2/mpact/spatial_partition.hpp>
@@ -17,7 +16,7 @@ addToPhysicalGroup(int dim, std::vector<int> const & tags, int tag = -1,
                    std::string const & name = "");
 
 void
-getMaterials(std::vector<Material<double>> & materials);
+getMaterials(std::vector<Material> & materials);
 
 namespace occ
 {
@@ -32,7 +31,7 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
                         gmsh::vectorpair const & tool_dimtags,
                         gmsh::vectorpair & out_dimtags,
                         std::vector<gmsh::vectorpair> & out_dimtags_map,
-                        std::vector<Material<double>> const & material_hierarchy = {},
+                        std::vector<Material> const & material_hierarchy = {},
                         int tag = -1, bool remove_object = true, bool remove_tool = true);
 
 // A gmsh::model::occ::intersect that preserves the model's physical groups
@@ -45,35 +44,35 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
                          gmsh::vectorpair const & tool_dimtags,
                          gmsh::vectorpair & out_dimtags,
                          std::vector<gmsh::vectorpair> & out_dimtags_map,
-                         std::vector<Material<double>> const & material_hierarchy = {},
+                         std::vector<Material> const & material_hierarchy = {},
                          int tag = -1, bool remove_object = true,
                          bool remove_tool = true);
 
 auto
-addCylindricalPin2D(Point2d const & center, std::vector<double> const & radii,
-                    std::vector<Material<double>> const & materials) -> std::vector<int>;
+addCylindricalPin2D(Vec2d const & center, std::vector<double> const & radii,
+                    std::vector<Material> const & materials) -> std::vector<int>;
 
 auto
 addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
-                           std::vector<std::vector<Material<double>>> const & materials,
+                           std::vector<std::vector<Material>> const & materials,
                            std::vector<Vec2d> const & dxdy,
                            std::vector<std::vector<int>> const & pin_ids,
-                           Point2d const & offset = {0.0, 0.0}) -> std::vector<int>;
+                           Vec2d const & offset = {0.0, 0.0}) -> std::vector<int>;
 
 auto
-addCylindricalPin(Point3d const & center, double height,
+addCylindricalPin(Vec3d const & center, double height,
                   std::vector<double> const & radii,
-                  std::vector<Material<double>> const & materials) -> std::vector<int>;
+                  std::vector<Material> const & materials) -> std::vector<int>;
 
 auto
 addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
-                         std::vector<std::vector<Material<double>>> const & materials,
+                         std::vector<std::vector<Material>> const & materials,
                          double height, std::vector<Vec2d> const & dxdy,
                          std::vector<std::vector<int>> const & pin_ids,
-                         Point3d const & offset = {0.0, 0.0, 0.0}) -> std::vector<int>;
+                         Vec3d const & offset = {0.0, 0.0, 0.0}) -> std::vector<int>;
 
 void
-overlaySpatialPartition(mpact::SpatialPartition<double, int> const & partition,
+overlaySpatialPartition(mpact::SpatialPartition const & partition,
                         std::string const & fill_material_name = "Moderator",
                         Color fill_material_color = royalblue);
 } // namespace occ

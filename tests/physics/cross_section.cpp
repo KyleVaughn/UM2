@@ -4,11 +4,7 @@
 
 TEST_CASE(getOneGroupTotalXS)
 {
-#if UM2_ENABLE_FLOAT64
-  F const eps = 1e-6;
-#else
-  F const eps = 1e-6f;
-#endif
+  F constexpr eps = condCast<F>(1e-6);
   um2::CrossSection const xsec({2, 11, 5, 3, 4});
   F const max_1g = xsec.getOneGroupTotalXS(um2::XSReductionStrategy::Max);
   ASSERT_NEAR(max_1g, 11, eps);

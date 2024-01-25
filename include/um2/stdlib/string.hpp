@@ -17,6 +17,8 @@
 //
 // NOTE: ASSUMES LITTLE ENDIAN
 // This should be true for all x86 and Apple processors and both NVIDIA and AMD GPUs.
+//
+// For developers: clang-tidy is a bit overzealous with its warnings in this file.
 
 namespace um2
 {
@@ -295,6 +297,10 @@ toString(T const & t) noexcept -> String;
 //==============================================================================
 // To maintain constexpr-ness and readability, we define a few macros to avoid
 // repeating ourselves
+//
+// gcc seems to have a bug that causes it to generate a call to memmove that    
+// is out of bounds when using std::copy with -O3. Therefore, we write out a basic
+// copy loop instead.
 
 // mimic allocateAndCopy(char const *, uint64_t)
 #define LONG_ALLOCATE_AND_COPY(ptr, num_elem)                                            \
@@ -305,7 +311,14 @@ toString(T const & t) noexcept -> String;
   _r.l.cap = (nn - 1) & long_cap_mask;                                                   \
   _r.l.size = nn - 1;                                                                    \
   _r.l.data = static_cast<char *>(::operator new(nn));                                   \
-  copy(ss, ss + nn, _r.l.data);
+  auto first = ss;                                                                       \
+  auto last = ss + nn;                                                                   \
+  auto dest = _r.l.data;                                                                 \
+  while (first != last) {                                                                \
+    *dest = *first;                                                                      \
+    ++first;                                                                             \
+    ++dest;                                                                              \
+  }
 
 #define SHORT_COPY(ptr, num_elem)                                                        \
   char const * ss = (ptr);                                                               \
@@ -313,7 +326,14 @@ toString(T const & t) noexcept -> String;
   ASSERT_ASSUME(nn > 0);                                                                 \
   _r.s.is_long = 0;                                                                      \
   _r.s.size = (nn - 1) & short_size_mask;                                                \
-  copy(ss, ss + nn, addressof(_r.s.data[0]));
+  auto first = ss;                                                                       \
+  auto last = ss + nn;                                                                   \
+  auto dest = addressof(_r.s.data[0]);                                                   \
+  while (first != last) {                                                                \
+    *dest = *first;                                                                      \
+    ++first;                                                                             \
+    ++dest;                                                                              \
+  }
 
 //==============================================================================
 // Private methods
@@ -638,6 +658,7 @@ String::operator==(String const & s) const noexcept -> bool
   char const * l_data = data();
   char const * r_data = s.data();
   for (Size i = 0; i < l_size; ++i) {
+    // NOLINTNEXTLINE
     if (*l_data != *r_data) {
       return false;
     }

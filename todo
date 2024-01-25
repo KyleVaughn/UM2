@@ -1,5 +1,10 @@
-double -> d
-Int ->i
+Resolve casts in gmsh API
+
+Add overlap check to face vertex mesh validate routine
+
+Narrowing uint32_t cast
+
+Handle Size == I now
 
 Modify the Gmsh functions so that they are templated where necessary
 
@@ -107,8 +112,7 @@ ALGORITHMS
 ===============================================================================
 DATA STRUCTURES
 ===============================================================================
-1. Make spatial partition a class
-2. Binned FVM
+1. Binned FVM
 
 ===============================================================================
 FUTURE

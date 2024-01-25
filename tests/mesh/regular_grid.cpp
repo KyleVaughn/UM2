@@ -2,95 +2,96 @@
 
 #include "../test_macros.hpp"
 
-template <Size D, typename T>
+F constexpr eps = condCast<F>(1e-6);
+
+template <Size D>
 HOSTDEV constexpr auto
-makeGrid() -> um2::RegularGrid<D, T>
+makeGrid() -> um2::RegularGrid<D>
 {
   static_assert(1 <= D && D <= 3, "D must be in [1, 3]");
-  um2::Point<D, T> minima;
-  um2::Point<D, T> spacing;
-  um2::Point<D, Size> num_cells;
+  um2::Point<D> minima;
+  um2::Point<D> spacing;
+  um2::Vec<D, Size> num_cells;
   for (Size i = 0; i < D; ++i) {
-    minima[i] = static_cast<T>(i + 1);
-    spacing[i] = static_cast<T>(i + 1);
+    minima[i] = condCast<F>(i + 1);
+    spacing[i] = condCast<F>(i + 1);
     num_cells[i] = i + 1;
   }
   return {minima, spacing, num_cells};
 }
 
-template <Size D, typename T>
+template <Size D>
 HOSTDEV
 TEST_CASE(accessors)
 {
-  um2::RegularGrid<D, T> const grid = makeGrid<D, T>();
+  um2::RegularGrid<D> const grid = makeGrid<D>();
   if constexpr (D >= 1) {
-    T const xmin = grid.minima()[0];
-    ASSERT_NEAR(grid.xMin(), xmin, static_cast<T>(1e-6));
-    T const dx = grid.spacing()[0];
-    ASSERT_NEAR(grid.dx(), dx, static_cast<T>(1e-6));
+    F const xmin = grid.minima()[0];
+    ASSERT_NEAR(grid.xMin(), xmin, eps);
+    F const dx = grid.spacing()[0];
+    ASSERT_NEAR(grid.dx(), dx, eps);
     auto const nx = grid.numCells()[0];
     ASSERT(grid.numXCells() == nx);
-    ASSERT_NEAR(grid.width(), dx * static_cast<T>(nx), static_cast<T>(1e-6));
-    ASSERT_NEAR(grid.xMax(), xmin + dx * static_cast<T>(nx), static_cast<T>(1e-6));
+    ASSERT_NEAR(grid.width(), dx * condCast<F>(nx), eps);
+    ASSERT_NEAR(grid.xMax(), xmin + dx * condCast<F>(nx), eps);
   }
   if constexpr (D >= 2) {
-    T const ymin = grid.minima()[1];
-    ASSERT_NEAR(grid.yMin(), ymin, static_cast<T>(1e-6));
-    T const dy = grid.spacing()[1];
-    ASSERT_NEAR(grid.dy(), dy, static_cast<T>(1e-6));
+    F const ymin = grid.minima()[1];
+    ASSERT_NEAR(grid.yMin(), ymin, eps);
+    F const dy = grid.spacing()[1];
+    ASSERT_NEAR(grid.dy(), dy, eps);
     auto const ny = grid.numCells()[1];
     ASSERT(grid.numYCells() == ny);
-    ASSERT_NEAR(grid.height(), dy * static_cast<T>(ny), static_cast<T>(1e-6));
-    ASSERT_NEAR(grid.yMax(), ymin + dy * static_cast<T>(ny), static_cast<T>(1e-6));
+    ASSERT_NEAR(grid.height(), dy * condCast<F>(ny), eps);
+    ASSERT_NEAR(grid.yMax(), ymin + dy * condCast<F>(ny), eps);
   }
   if constexpr (D >= 3) {
-    T const zmin = grid.minima()[2];
-    ASSERT_NEAR(grid.zMin(), zmin, static_cast<T>(1e-6));
-    T const dz = grid.spacing()[2];
-    ASSERT_NEAR(grid.dz(), dz, static_cast<T>(1e-6));
+    F const zmin = grid.minima()[2];
+    ASSERT_NEAR(grid.zMin(), zmin, eps);
+    F const dz = grid.spacing()[2];
+    ASSERT_NEAR(grid.dz(), dz, eps);
     auto const nz = grid.numCells()[2];
     ASSERT(grid.numZCells() == nz);
-    ASSERT_NEAR(grid.depth(), dz * static_cast<T>(nz), static_cast<T>(1e-6));
-    ASSERT_NEAR(grid.zMax(), zmin + dz * static_cast<T>(nz), static_cast<T>(1e-6));
+    ASSERT_NEAR(grid.depth(), dz * condCast<F>(nz), eps);
+    ASSERT_NEAR(grid.zMax(), zmin + dz * condCast<F>(nz), eps);
   }
 }
 
-template <Size D, typename T>
+template <Size D>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
-  um2::RegularGrid<D, T> const grid = makeGrid<D, T>();
-  um2::AxisAlignedBox<D, T> const box = grid.boundingBox();
+  um2::RegularGrid<D> const grid = makeGrid<D>();
+  um2::AxisAlignedBox<D> const box = grid.boundingBox();
   if constexpr (D >= 1) {
-    ASSERT_NEAR(box.minima()[0], grid.xMin(), static_cast<T>(1e-6));
-    ASSERT_NEAR(box.maxima()[0], grid.xMax(), static_cast<T>(1e-6));
+    ASSERT_NEAR(box.minima()[0], grid.xMin(), eps);
+    ASSERT_NEAR(box.maxima()[0], grid.xMax(), eps);
   }
   if constexpr (D >= 2) {
-    ASSERT_NEAR(box.minima()[1], grid.yMin(), static_cast<T>(1e-6));
-    ASSERT_NEAR(box.maxima()[1], grid.yMax(), static_cast<T>(1e-6));
+    ASSERT_NEAR(box.minima()[1], grid.yMin(), eps);
+    ASSERT_NEAR(box.maxima()[1], grid.yMax(), eps);
   }
   if constexpr (D >= 3) {
-    ASSERT_NEAR(box.minima()[2], grid.zMin(), static_cast<T>(1e-6));
-    ASSERT_NEAR(box.maxima()[2], grid.zMax(), static_cast<T>(1e-6));
+    ASSERT_NEAR(box.minima()[2], grid.zMin(), eps);
+    ASSERT_NEAR(box.maxima()[2], grid.zMax(), eps);
   }
 }
 
-template <typename T>
 HOSTDEV
 TEST_CASE(getBox)
 {
   // Declare some variables to avoid a bunch of static casts.
-  T const three = static_cast<T>(3);
-  T const two = static_cast<T>(2);
-  T const one = static_cast<T>(1);
-  T const ahalf = static_cast<T>(0.5);
-  T const forth = static_cast<T>(0.25);
-  um2::Point2<T> const minima = {1, -1};
-  um2::Vec2<T> const spacing = {ahalf, forth};
+  F const three = condCast<F>(3);
+  F const two = condCast<F>(2);
+  F const one = condCast<F>(1);
+  F const ahalf = condCast<F>(1) / condCast<F>(2);
+  F const forth = condCast<F>(1) / condCast<F>(4);
+  um2::Point2 const minima = {1, -1};
+  um2::Vec2<F> const spacing = {ahalf, forth};
   um2::Vec2<Size> const num_cells = {4, 8};
-  um2::RegularGrid2<T> const grid(minima, spacing, num_cells);
-  um2::AxisAlignedBox2<T> box = grid.getBox(0, 0);
-  um2::AxisAlignedBox2<T> box_ref = {
+  um2::RegularGrid2 const grid(minima, spacing, num_cells);
+  um2::AxisAlignedBox2 box = grid.getBox(0, 0);
+  um2::AxisAlignedBox2 box_ref = {
       {          1,             -1},
       {one + ahalf, -three * forth}
   };
@@ -132,36 +133,35 @@ TEST_CASE(getBox)
   ASSERT(isApprox(box, box_ref));
 }
 
-template <Size D, typename T>
+template <Size D>
 HOSTDEV
 TEST_CASE(getCellCentroid)
 {
-  um2::RegularGrid<D, T> const grid = makeGrid<D, T>();
+  um2::RegularGrid<D> const grid = makeGrid<D>();
   if constexpr (D == 1) {
     auto const x = grid.getCellCentroid(0);
-    ASSERT_NEAR(x[0], grid.minima()[0] + grid.spacing()[0] / static_cast<T>(2),
-                static_cast<T>(1e-6));
+    ASSERT_NEAR(x[0], grid.minima()[0] + grid.spacing()[0] / condCast<F>(2),
+                eps);
   }
   if constexpr (D == 2) {
     auto const y = grid.getCellCentroid(0, 0);
-    ASSERT_NEAR(y[1], grid.minima()[1] + grid.spacing()[1] / static_cast<T>(2),
-                static_cast<T>(1e-6));
+    ASSERT_NEAR(y[1], grid.minima()[1] + grid.spacing()[1] / condCast<F>(2),
+                eps);
   }
 }
 
-template <typename T>
 HOSTDEV
 TEST_CASE(getCellIndicesIntersecting)
 {
-  um2::Point2<T> const minima(1, -1);
-  um2::Vec2<T> const spacing(2, 1);
+  um2::Point2 const minima(1, -1);
+  um2::Vec2<F> const spacing(2, 1);
   um2::Vec2<Size> const num_cells(5, 8);
   // Grid ranges from 1 to 11 in x and -1 to 7 in y.
-  um2::RegularGrid2<T> const grid(minima, spacing, num_cells);
+  um2::RegularGrid2 const grid(minima, spacing, num_cells);
 
   // A box in a single cell.
-  um2::AxisAlignedBox2<T> const box0({static_cast<T>(3.1), static_cast<T>(1.1)},
-                                     {static_cast<T>(3.9), static_cast<T>(1.9)});
+  um2::AxisAlignedBox2 const box0({condCast<F>(3.1), condCast<F>(1.1)},
+                                     {condCast<F>(3.9), condCast<F>(1.9)});
   um2::Vec<4, Size> const range0 = grid.getCellIndicesIntersecting(box0);
   ASSERT(range0[0] == 1);
   ASSERT(range0[1] == 2);
@@ -169,8 +169,8 @@ TEST_CASE(getCellIndicesIntersecting)
   ASSERT(range0[3] == 2);
 
   // A box with perfect alignment.
-  um2::AxisAlignedBox2<T> const box1({static_cast<T>(3), static_cast<T>(1)},
-                                     {static_cast<T>(5), static_cast<T>(2)});
+  um2::AxisAlignedBox2 const box1({condCast<F>(3), condCast<F>(1)},
+                                     {condCast<F>(5), condCast<F>(2)});
   um2::Vec<4, Size> const range1 = grid.getCellIndicesIntersecting(box1);
   ASSERT(range1[0] == 0 || range1[0] == 1);
   ASSERT(range1[1] == 1 || range1[1] == 2);
@@ -178,8 +178,8 @@ TEST_CASE(getCellIndicesIntersecting)
   ASSERT(range1[3] == 2 || range1[3] == 3);
 
   // A box in multiple cells.
-  um2::AxisAlignedBox2<T> const box2({static_cast<T>(3.1), static_cast<T>(1.1)},
-                                     {static_cast<T>(5.9), static_cast<T>(1.9)});
+  um2::AxisAlignedBox2 const box2({condCast<F>(3.1), condCast<F>(1.1)},
+                                     {condCast<F>(5.9), condCast<F>(1.9)});
   um2::Vec<4, Size> const range2 = grid.getCellIndicesIntersecting(box2);
   ASSERT(range2[0] == 1);
   ASSERT(range2[1] == 2);
@@ -187,8 +187,8 @@ TEST_CASE(getCellIndicesIntersecting)
   ASSERT(range2[3] == 2);
 
   // A box in 4 cells.
-  um2::AxisAlignedBox2<T> const box3({static_cast<T>(3.1), static_cast<T>(1.1)},
-                                     {static_cast<T>(5.9), static_cast<T>(2.9)});
+  um2::AxisAlignedBox2 const box3({condCast<F>(3.1), condCast<F>(1.1)},
+                                     {condCast<F>(5.9), condCast<F>(2.9)});
   um2::Vec<4, Size> const range3 = grid.getCellIndicesIntersecting(box3);
   ASSERT(range3[0] == 1);
   ASSERT(range3[1] == 2);
@@ -196,68 +196,61 @@ TEST_CASE(getCellIndicesIntersecting)
   ASSERT(range3[3] == 3);
 }
 
-template <typename T>
 HOSTDEV
 TEST_CASE(getCellIndexContaining)
 {
-  um2::Point2<T> const minima(1, -1);
-  um2::Vec2<T> const spacing(2, 1);
+  um2::Point2 const minima(1, -1);
+  um2::Vec2<F> const spacing(2, 1);
   um2::Vec2<Size> const num_cells(5, 8);
   // Grid ranges from 1 to 11 in x and -1 to 7 in y.
-  um2::RegularGrid2<T> const grid(minima, spacing, num_cells);
+  um2::RegularGrid2 const grid(minima, spacing, num_cells);
   um2::Vec<2, Size> id =
-      grid.getCellIndexContaining({static_cast<T>(1.1), static_cast<T>(1.1)});
+      grid.getCellIndexContaining({condCast<F>(1.1), condCast<F>(1.1)});
   ASSERT(id[0] == 0);
   ASSERT(id[1] == 2);
-  id = grid.getCellIndexContaining({static_cast<T>(4.9), static_cast<T>(2.1)});
+  id = grid.getCellIndexContaining({condCast<F>(4.9), condCast<F>(2.1)});
   ASSERT(id[0] == 1);
   ASSERT(id[1] == 3);
 }
 
 #if UM2_USE_CUDA
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(constructor, D, T)
+template <Size D>
+MAKE_CUDA_KERNEL(constructor, D)
 
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(accessors, D, T)
+template <Size D>
+MAKE_CUDA_KERNEL(accessors, D)
 
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(boundingBox, D, T)
+template <Size D>
+MAKE_CUDA_KERNEL(boundingBox, D)
 
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(getCellCentroid, D, T)
+template <Size D>
+MAKE_CUDA_KERNEL(getCellCentroid, D)
 
-template <typename T>
-MAKE_CUDA_KERNEL(getBox, T)
+MAKE_CUDA_KERNEL(getBox)
 
-template <typename T>
-MAKE_CUDA_KERNEL(getCellIndicesIntersecting, T)
+MAKE_CUDA_KERNEL(getCellIndicesIntersecting)
 
-template <typename T>
-MAKE_CUDA_KERNEL(getCellIndexContaining, T)
+MAKE_CUDA_KERNEL(getCellIndexContaining)
 #endif
 
-template <Size D, typename T>
+template <Size D>
 TEST_SUITE(RegularGrid)
 {
-  TEST_HOSTDEV(accessors, 1, 1, D, T);
-  TEST_HOSTDEV(boundingBox, 1, 1, D, T);
-  TEST_HOSTDEV(getCellCentroid, 1, 1, D, T)
+  TEST_HOSTDEV(accessors, 1, 1, D);
+  TEST_HOSTDEV(boundingBox, 1, 1, D);
+  TEST_HOSTDEV(getCellCentroid, 1, 1, D)
   if constexpr (D == 2) {
-    TEST_HOSTDEV(getBox, 1, 1, T);
-    TEST_HOSTDEV(getCellIndicesIntersecting, 1, 1, T);
-    TEST_HOSTDEV(getCellIndexContaining, 1, 1, T);
+    TEST_HOSTDEV(getBox, 1, 1);
+    TEST_HOSTDEV(getCellIndicesIntersecting, 1, 1);
+    TEST_HOSTDEV(getCellIndexContaining, 1, 1);
   }
 }
 
 auto
 main() -> int
 {
-  RUN_SUITE((RegularGrid<1, float>));
-  RUN_SUITE((RegularGrid<1, double>));
-  RUN_SUITE((RegularGrid<2, float>));
-  RUN_SUITE((RegularGrid<2, double>));
-  RUN_SUITE((RegularGrid<3, float>));
-  RUN_SUITE((RegularGrid<3, double>));
+  RUN_SUITE(RegularGrid<1>);
+  RUN_SUITE(RegularGrid<2>);
+  RUN_SUITE(RegularGrid<3>);
   return 0;
 }

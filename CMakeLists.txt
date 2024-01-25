@@ -145,14 +145,19 @@ endif()
 set(UM2_SOURCES
     "src/common/log.cpp"
     "src/common/sort.cpp"
+    "src/math/stats.cpp"
+    "src/math/angular_quadrature.cpp"
     "src/geometry/morton_sort_points.cpp"
-    #"src/gmsh/base_gmsh_api.cpp"
-    #"src/gmsh/io.cpp"
-    #"src/gmsh/model.cpp"
-    #"src/gmsh/mesh.cpp"
+    "src/mesh/polytope_soup.cpp"
+    "src/mesh/face_vertex_mesh.cpp"
+    "src/mpact/spatial_partition.cpp"
+    "src/gmsh/base_gmsh_api.cpp"
+    "src/gmsh/io.cpp"
+    "src/gmsh/model.cpp"
+    "src/gmsh/mesh.cpp"
     ##    # visualization
     ##    "src/visualization/Image2D.cpp"
-    #"src/um2.cpp"
+    "src/um2.cpp"
     #    "src/um2c.cpp"
   )
 

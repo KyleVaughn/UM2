@@ -22,22 +22,22 @@ namespace um2
 {
 
 #if UM2_ENABLE_FLOAT64
-using FMortonCode = uint64_t;
+using MortonCode = uint64_t;
 #else
-using FMortonCode = uint32_t;
+using MortonCode = uint32_t;
 #endif
 
 PURE HOSTDEV auto
-mortonEncode(Point2 const & p) noexcept -> FMortonCode; 
+mortonEncode(Point2 const & p) noexcept -> MortonCode; 
 
 PURE HOSTDEV auto
-mortonEncode(Point3 const & p) noexcept -> FMortonCode; 
+mortonEncode(Point3 const & p) noexcept -> MortonCode; 
 
 HOSTDEV void
-mortonDecode(FMortonCode morton, Point2 & p) noexcept;
+mortonDecode(MortonCode morton, Point2 & p) noexcept;
 
 HOSTDEV void
-mortonDecode(FMortonCode morton, Point3 & p) noexcept;
+mortonDecode(MortonCode morton, Point3 & p) noexcept;
 
 template <Size D>
 PURE HOSTDEV auto

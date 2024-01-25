@@ -27,11 +27,11 @@
 namespace um2
 {
 
-template <Size D, typename T, typename P>
+template <Size D, typename P>
 class RectilinearPartition
 {
 
-  RectilinearGrid<D, T> _grid;
+  RectilinearGrid<D> _grid;
   Vector<P> _children;
 
 public:
@@ -42,11 +42,11 @@ public:
   constexpr RectilinearPartition() noexcept = default;
 
   // See RectilinearGrid constructor for details on dxdy and ids.
-  constexpr RectilinearPartition(Vector<Vec2<T>> const & dxdy,
+  constexpr RectilinearPartition(Vector<Vec2<F>> const & dxdy,
                                  Vector<Vector<Size>> const & ids) noexcept;
 
   HOSTDEV
-  constexpr RectilinearPartition(RectilinearGrid<D, T> const & grid,
+  constexpr RectilinearPartition(RectilinearGrid<D> const & grid,
                                  Vector<P> const & children) noexcept;
 
   //==============================================================================
@@ -54,7 +54,7 @@ public:
   //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  grid() const noexcept -> RectilinearGrid<D, T> const &;
+  grid() const noexcept -> RectilinearGrid<D> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   children() const noexcept -> Vector<P> const &;
@@ -80,44 +80,30 @@ public:
 // Aliases
 //==============================================================================
 
-template <typename T, typename P>
-using RectilinearPartition1 = RectilinearPartition<1, T, P>;
-
-template <typename T, typename P>
-using RectilinearPartition2 = RectilinearPartition<2, T, P>;
-
-template <typename T, typename P>
-using RectilinearPartition3 = RectilinearPartition<3, T, P>;
+template <typename P>
+using RectilinearPartition1 = RectilinearPartition<1, P>;
 
 template <typename P>
-using RectilinearPartition1f = RectilinearPartition1<float, P>;
-template <typename P>
-using RectilinearPartition2f = RectilinearPartition2<float, P>;
-template <typename P>
-using RectilinearPartition3f = RectilinearPartition3<float, P>;
+using RectilinearPartition2 = RectilinearPartition<2, P>;
 
 template <typename P>
-using RectilinearPartition1d = RectilinearPartition1<double, P>;
-template <typename P>
-using RectilinearPartition2d = RectilinearPartition2<double, P>;
-template <typename P>
-using RectilinearPartition3d = RectilinearPartition3<double, P>;
+using RectilinearPartition3 = RectilinearPartition<3, P>;
 
 //==============================================================================
 // Constructors
 //==============================================================================
 
-template <Size D, typename T, typename P>
-constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
-    RectilinearGrid<D, T> const & grid, Vector<P> const & children) noexcept
+template <Size D, typename P>
+constexpr RectilinearPartition<D, P>::RectilinearPartition(
+    RectilinearGrid<D> const & grid, Vector<P> const & children) noexcept
     : _grid(grid),
       _children(children)
 {
 }
 
-template <Size D, typename T, typename P>
-constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
-    Vector<Vec2<T>> const & dxdy, Vector<Vector<Size>> const & ids) noexcept
+template <Size D, typename P>
+constexpr RectilinearPartition<D, P>::RectilinearPartition(
+    Vector<Vec2<F>> const & dxdy, Vector<Vector<Size>> const & ids) noexcept
     : _grid(dxdy, ids)
 {
   static_assert(D == 2);
@@ -137,16 +123,16 @@ constexpr RectilinearPartition<D, T, P>::RectilinearPartition(
 // Accessors
 //==============================================================================
 
-template <Size D, typename T, typename P>
+template <Size D, typename P>
 PURE HOSTDEV constexpr auto
-RectilinearPartition<D, T, P>::grid() const noexcept -> RectilinearGrid<D, T> const &
+RectilinearPartition<D, P>::grid() const noexcept -> RectilinearGrid<D> const &
 {
   return _grid;
 }
 
-template <Size D, typename T, typename P>
+template <Size D, typename P>
 PURE HOSTDEV constexpr auto
-RectilinearPartition<D, T, P>::children() const noexcept -> Vector<P> const &
+RectilinearPartition<D, P>::children() const noexcept -> Vector<P> const &
 {
   return _children;
 }
@@ -155,28 +141,28 @@ RectilinearPartition<D, T, P>::children() const noexcept -> Vector<P> const &
 // Methods
 //==============================================================================
 
-template <Size D, typename T, typename P>
+template <Size D, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) noexcept
+PURE HOSTDEV constexpr auto RectilinearPartition<D, P>::getChild(Args... args) noexcept
     -> P &
 {
   return _children[_grid.getFlatIndex(args...)];
 }
 
-template <Size D, typename T, typename P>
+template <Size D, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
 PURE HOSTDEV
-    constexpr auto RectilinearPartition<D, T, P>::getChild(Args... args) const noexcept
+    constexpr auto RectilinearPartition<D, P>::getChild(Args... args) const noexcept
     -> P const &
 {
   return _children[_grid.getFlatIndex(args...)];
 }
 
-template <Size D, typename T, typename P>
+template <Size D, typename P>
 HOSTDEV constexpr void
-RectilinearPartition<D, T, P>::clear() noexcept
+RectilinearPartition<D, P>::clear() noexcept
 {
   _grid.clear();
   _children.clear();

@@ -8,6 +8,86 @@ namespace um2::gmsh::model
 {
 
 //=============================================================================
+// addToPhysicalGroup
+//=============================================================================
+
+void
+addToPhysicalGroup(int const dim, std::vector<int> const & tags, int const tag,
+                   std::string const & name)
+{
+  Log::debug("Adding entities to physical group \"" + String(name.c_str()) + "\"");
+  ASSERT(std::is_sorted(tags.begin(), tags.end()));
+  gmsh::vectorpair dimtags;
+  gmsh::model::getPhysicalGroups(dimtags, dim);
+  for (auto const & existing_group_dimtag : dimtags) {
+    int const existing_group_tag = existing_group_dimtag.second;
+    std::string existing_group_name;
+    gmsh::model::getPhysicalName(dim, existing_group_tag, existing_group_name);
+    if (existing_group_name == name) {
+      std::vector<int> existing_tags;
+      gmsh::model::getEntitiesForPhysicalGroup(dim, existing_group_tag, existing_tags);
+      std::vector<int> new_tags(tags.size() + existing_tags.size());
+      std::merge(tags.begin(), tags.end(), existing_tags.begin(), existing_tags.end(),
+                 new_tags.begin());
+      gmsh::model::removePhysicalGroups({
+          {dim, existing_group_tag}
+      });
+#  ifndef NDEBUG
+      int const new_tag =
+          gmsh::model::addPhysicalGroup(dim, new_tags, existing_group_tag, name);
+      ASSERT(new_tag == existing_group_tag);
+#  else
+      gmsh::model::addPhysicalGroup(dim, new_tags, existing_group_tag, name);
+#  endif
+      return;
+    }
+  }
+  // If we get here, the physical group does not exist yet.
+  gmsh::model::addPhysicalGroup(dim, tags, tag, name);
+}
+
+//=============================================================================
+// getMaterials
+//=============================================================================
+
+void
+getMaterials(std::vector<Material> & materials)
+{
+  gmsh::vectorpair dimtags;
+  gmsh::model::getPhysicalGroups(dimtags);
+  for (auto const & dimtag : dimtags) {
+    int const dim = dimtag.first;
+    int const tag = dimtag.second;
+    std::string name;
+    gmsh::model::getPhysicalName(dim, tag, name);
+    if (name.starts_with("Material")) {
+      std::vector<int> tags;
+      gmsh::model::getEntitiesForPhysicalGroup(dim, tag, tags);
+      um2::String const material_name(name.substr(9).c_str());
+      auto const it = std::find_if(materials.begin(), materials.end(),
+                                   [&material_name](Material const & material) {
+                                     return material.name() == material_name;
+                                   });
+      if (it == materials.end()) {
+        // Get the color of the first entity in the physical group.
+        int r = 0;
+        int g = 0;
+        int b = 0;
+        int a = 0;
+        gmsh::model::getColor(dim, tags[0], r, g, b, a);
+        materials.emplace_back(String(material_name.c_str()), Color(r, g, b, a));
+      }
+    }
+  }
+}
+
+namespace occ
+{
+
+namespace
+{
+
+//=============================================================================
 // colorMaterialPhysicalGroupEntities
 //=============================================================================
 //
@@ -15,10 +95,8 @@ namespace um2::gmsh::model
 // color the entities in each material physical group according to corresponding
 // Material_in <materials>.
 
-namespace
-{
 void
-colorMaterialPhysicalGroupEntities(std::vector<Material<double>> const & materials)
+colorMaterialPhysicalGroupEntities(std::vector<Material> const & materials)
 {
   size_t const num_materials = materials.size();
   std::vector<std::string> material_names(num_materials);
@@ -64,91 +142,11 @@ colorMaterialPhysicalGroupEntities(std::vector<Material<double>> const & materia
     }
   }
 }
-} // namespace
-
-//=============================================================================
-// addToPhysicalGroup
-//=============================================================================
-
-void
-addToPhysicalGroup(int const dim, std::vector<int> const & tags, int const tag,
-                   std::string const & name)
-{
-  Log::debug("Adding entities to physical group \"" + String(name.c_str()) + "\"");
-  ASSERT(std::is_sorted(tags.begin(), tags.end()));
-  gmsh::vectorpair dimtags;
-  gmsh::model::getPhysicalGroups(dimtags, dim);
-  for (auto const & existing_group_dimtag : dimtags) {
-    int const existing_group_tag = existing_group_dimtag.second;
-    std::string existing_group_name;
-    gmsh::model::getPhysicalName(dim, existing_group_tag, existing_group_name);
-    if (existing_group_name == name) {
-      std::vector<int> existing_tags;
-      gmsh::model::getEntitiesForPhysicalGroup(dim, existing_group_tag, existing_tags);
-      std::vector<int> new_tags(tags.size() + existing_tags.size());
-      std::merge(tags.begin(), tags.end(), existing_tags.begin(), existing_tags.end(),
-                 new_tags.begin());
-      gmsh::model::removePhysicalGroups({
-          {dim, existing_group_tag}
-      });
-#  ifndef NDEBUG
-      int const new_tag =
-          gmsh::model::addPhysicalGroup(dim, new_tags, existing_group_tag, name);
-      ASSERT(new_tag == existing_group_tag);
-#  else
-      gmsh::model::addPhysicalGroup(dim, new_tags, existing_group_tag, name);
-#  endif
-      return;
-    }
-  }
-  // If we get here, the physical group does not exist yet.
-  gmsh::model::addPhysicalGroup(dim, tags, tag, name);
-}
-
-//=============================================================================
-// getMaterials
-//=============================================================================
-
-void
-getMaterials(std::vector<Material<double>> & materials)
-{
-  gmsh::vectorpair dimtags;
-  gmsh::model::getPhysicalGroups(dimtags);
-  for (auto const & dimtag : dimtags) {
-    int const dim = dimtag.first;
-    int const tag = dimtag.second;
-    std::string name;
-    gmsh::model::getPhysicalName(dim, tag, name);
-    if (name.starts_with("Material")) {
-      std::vector<int> tags;
-      gmsh::model::getEntitiesForPhysicalGroup(dim, tag, tags);
-      um2::String const material_name(name.substr(9).c_str());
-      auto const it = std::find_if(materials.begin(), materials.end(),
-                                   [&material_name](Material<double> const & material) {
-                                     return material.name() == material_name;
-                                   });
-      if (it == materials.end()) {
-        // Get the color of the first entity in the physical group.
-        int r = 0;
-        int g = 0;
-        int b = 0;
-        int a = 0;
-        gmsh::model::getColor(dim, tags[0], r, g, b, a);
-        materials.emplace_back(String(material_name.c_str()), Color(r, g, b, a));
-      }
-    }
-  }
-}
-
-namespace occ
-{
 
 //=============================================================================
 // groupPreservingInputChecking
 //=============================================================================
 
-namespace
-{
 auto
 groupPreservingInputChecking(gmsh::vectorpair const & object_dimtags,
                              gmsh::vectorpair const & tool_dimtags) -> int
@@ -319,7 +317,7 @@ getNewPhysicalGroups(gmsh::vectorpair const & object_dimtags,
 //=============================================================================
 
 void
-processMaterialHierarchy(std::vector<Material<double>> const & material_hierarchy,
+processMaterialHierarchy(std::vector<Material> const & material_hierarchy,
                          std::vector<std::string> const & physical_group_names,
                          std::vector<std::vector<int>> & post_physical_group_ent_tags)
 {
@@ -335,7 +333,7 @@ processMaterialHierarchy(std::vector<Material<double>> const & material_hierarch
     constexpr size_t guard = std::numeric_limits<size_t>::max();
     std::vector<size_t> mat_indices(nmats, guard);
     for (size_t i = 0; i < nmats; ++i) {
-      Material<double> const & mat = material_hierarchy[i];
+      Material const & mat = material_hierarchy[i];
       std::string const & mat_name = "Material_" + std::string(mat.name().c_str());
       auto const it = std::lower_bound(physical_group_names.begin(),
                                        physical_group_names.end(), mat_name);
@@ -390,7 +388,7 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
                         gmsh::vectorpair const & tool_dimtags,
                         gmsh::vectorpair & out_dimtags,
                         std::vector<gmsh::vectorpair> & out_dimtags_map,
-                        std::vector<Material<double>> const & material_hierarchy,
+                        std::vector<Material> const & material_hierarchy,
                         int const tag, bool const remove_object, bool const remove_tool)
 {
 
@@ -481,7 +479,7 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
                          gmsh::vectorpair const & tool_dimtags,
                          gmsh::vectorpair & out_dimtags,
                          std::vector<gmsh::vectorpair> & out_dimtags_map,
-                         std::vector<Material<double>> const & material_hierarchy,
+                         std::vector<Material> const & material_hierarchy,
                          int const tag, bool const remove_object, bool const remove_tool)
 {
 
@@ -558,8 +556,8 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
 //=============================================================================
 
 auto
-addCylindricalPin2D(Point2d const & center, std::vector<double> const & radii,
-                    std::vector<Material<double>> const & materials) -> std::vector<int>
+addCylindricalPin2D(Vec2d const & center, std::vector<double> const & radii,
+                    std::vector<Material> const & materials) -> std::vector<int>
 {
   Log::info("Adding 2D cylindrical pin");
   // Input checking
@@ -622,10 +620,10 @@ addCylindricalPin2D(Point2d const & center, std::vector<double> const & radii,
 auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
-                           std::vector<std::vector<Material<double>>> const & materials,
+                           std::vector<std::vector<Material>> const & materials,
                            std::vector<Vec2d> const & dxdy,
                            std::vector<std::vector<int>> const & pin_ids,
-                           Point2d const & offset) -> std::vector<int>
+                           Vec2d const & offset) -> std::vector<int>
 {
   Log::info("Adding 2D cylindrical pin lattice");
   // Input checking
@@ -663,7 +661,7 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
     pin_ids_rev[i] = pin_ids[nrow - i - 1];
   }
   // Construct a RectilinearGrid object using the vector of AxisAlignedBox constructor.
-  Vector<AxisAlignedBox2d> boxes(static_cast<Size>(npins));
+  Vector<AxisAlignedBox2> boxes(static_cast<Size>(npins));
   double ymin = 0.0;
   for (size_t i = 0; i < nrow; ++i) {
     double xmin = 0.0;
@@ -674,13 +672,15 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
       pin_idx = static_cast<size_t>(row[j]);
       double const xmax = xmin + dxdy[pin_idx][0];
       boxes[static_cast<Size>(i * ncol + j)] =
-          AxisAlignedBox2d(Point2d(xmin, ymin), Point2d(xmax, ymax));
+          AxisAlignedBox2(Point2(condCast<F>(xmin), condCast<F>(ymin)),
+                          Point2(condCast<F>(xmax), condCast<F>(ymax)));
+
       xmin = xmax;
     }
     ymin = ymax;
   }
 
-  RectilinearGrid2d const grid(boxes);
+  RectilinearGrid2 const grid(boxes);
 
   std::vector<int> out_tags;
   // For each unique pin, loop through the pin_ids_rev array and add the pins.
@@ -694,9 +694,9 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
       std::vector<int> const & row = pin_ids_rev[i];
       for (size_t j = 0; j < ncol; ++j) {
         if (row[j] == static_cast<int>(pin_id)) {
-          AxisAlignedBox2d const box = grid.getBox(j, i);
-          double const x = 0.5 * (box.xMin() + box.xMax()) + offset[0];
-          double const y = 0.5 * (box.yMin() + box.yMax()) + offset[1];
+          AxisAlignedBox2 const box = grid.getBox(j, i);
+          double const x = 0.5 * condCast<double>(box.xMin() + box.xMax()) + offset[0];
+          double const y = 0.5 * condCast<double>(box.yMin() + box.yMax()) + offset[1];
           // Do the innermost disk
           double const r0 = radii[pin_id][0];
           int const circle0_tag = gmsh::model::occ::addCircle(x, y, 0.0, r0);
@@ -752,9 +752,9 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
 //==============================================================================
 
 auto
-addCylindricalPin(Point3d const & center, double const height,
+addCylindricalPin(Vec3d const & center, double const height,
                   std::vector<double> const & radii,
-                  std::vector<Material<double>> const & materials) -> std::vector<int>
+                  std::vector<Material> const & materials) -> std::vector<int>
 {
   LOG_INFO("Adding cylindrical pin");
   // Input checking
@@ -824,10 +824,10 @@ addCylindricalPin(Point3d const & center, double const height,
 auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
-                         std::vector<std::vector<Material<double>>> const & materials,
+                         std::vector<std::vector<Material>> const & materials,
                          double const height, std::vector<Vec2d> const & dxdy,
                          std::vector<std::vector<int>> const & pin_ids,
-                         Point3d const & offset) -> std::vector<int>
+                         Vec3d const & offset) -> std::vector<int>
 {
   Log::info("Adding 2D cylindrical pin lattice");
   // Input checking
@@ -868,7 +868,7 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
     pin_ids_rev[i] = pin_ids[nrow - i - 1];
   }
   // Construct a RectilinearGrid object using the vector of AxisAlignedBox constructor.
-  Vector<AxisAlignedBox2d> boxes(static_cast<Size>(npins));
+  Vector<AxisAlignedBox2> boxes(static_cast<Size>(npins));
   double ymin = 0.0;
   for (size_t i = 0; i < nrow; ++i) {
     double xmin = 0.0;
@@ -879,13 +879,13 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
       pin_idx = static_cast<size_t>(row[j]);
       double const xmax = xmin + dxdy[pin_idx][0];
       boxes[static_cast<Size>(i * ncol + j)] =
-          AxisAlignedBox2d(Point2d(xmin, ymin), Point2d(xmax, ymax));
+          AxisAlignedBox2(Point2(condCast<F>(xmin), condCast<F>(ymin)), Point2(condCast<F>(xmax), condCast<F>(ymax)));
       xmin = xmax;
     }
     ymin = ymax;
   }
 
-  RectilinearGrid2d const grid(boxes);
+  RectilinearGrid2 const grid(boxes);
 
   std::vector<int> out_tags;
   // For each unique pin, loop through the pin_ids_rev array and add the pins.
@@ -899,9 +899,9 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
       std::vector<int> const & row = pin_ids_rev[i];
       for (size_t j = 0; j < ncol; ++j) {
         if (row[j] == static_cast<int>(pin_id)) {
-          AxisAlignedBox2d const box = grid.getBox(j, i);
-          double const x = 0.5 * (box.xMin() + box.xMax()) + offset[0];
-          double const y = 0.5 * (box.yMin() + box.yMax()) + offset[1];
+          AxisAlignedBox2 const box = grid.getBox(j, i);
+          double const x = 0.5 * condCast<double>(box.xMin() + box.xMax()) + offset[0];
+          double const y = 0.5 * condCast<double>(box.yMin() + box.yMax()) + offset[1];
           double const z = offset[2];
           // Do the innermost disk
           double const r0 = radii[pin_id][0];
@@ -975,7 +975,7 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
 
 void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-overlaySpatialPartition(mpact::SpatialPartition<double, int> const & partition,
+overlaySpatialPartition(mpact::SpatialPartition const & partition,
                         std::string const & fill_material_name,
                         Color const fill_material_color)
 {
@@ -1003,8 +1003,8 @@ overlaySpatialPartition(mpact::SpatialPartition<double, int> const & partition,
   }
   // Get the unique coarse cell lower left corners
   Size const num_cc = partition.numCoarseCells();
-  Vector<Point3d> cc_lower_lefts(num_cc); // Of the cut-plane
-  Vector<Vec3d> cc_extents(num_cc);
+  Vector<Point3> cc_lower_lefts(num_cc); // Of the cut-plane
+  Vector<Vec3<F>> cc_extents(num_cc);
   Vector<int8_t> cc_found(num_cc, 0);
   Vector<int8_t> rtm_found(partition.numRTMs(), 0);
   Vector<int8_t> lat_found(partition.numLattices(), 0);
@@ -1020,13 +1020,13 @@ overlaySpatialPartition(mpact::SpatialPartition<double, int> const & partition,
   Size const nxasy = core.grid().numXCells();
   for (Size iyasy = 0; iyasy < nyasy; ++iyasy) {
     for (Size ixasy = 0; ixasy < nxasy; ++ixasy) {
-      auto const asy_id = static_cast<Size>(core.getChild(ixasy, iyasy));
+      auto const asy_id = core.getChild(ixasy, iyasy);
       if (asy_found[asy_id] == 1) {
         continue;
       }
       asy_found[asy_id] = 1;
-      AxisAlignedBox2d const asy_bb = core.grid().getBox(ixasy, iyasy);
-      Point2d const asy_ll = asy_bb.minima(); // Lower left corner
+      AxisAlignedBox2 const asy_bb = core.grid().getBox(ixasy, iyasy);
+      Point2 const asy_ll = asy_bb.minima(); // Lower left corner
       auto const & assembly = partition.getAssembly(asy_id);
       if (assembly.children().empty()) {
         Log::error("Assembly has no children");
@@ -1035,7 +1035,7 @@ overlaySpatialPartition(mpact::SpatialPartition<double, int> const & partition,
       // For each lattice
       Size const nzlat = assembly.grid().numXCells();
       for (Size izlat = 0; izlat < nzlat; ++izlat) {
-        auto const lat_id = static_cast<Size>(assembly.getChild(izlat));
+        auto const lat_id = assembly.getChild(izlat);
         if (lat_found[lat_id] == 1) {
           continue;
         }
@@ -1055,13 +1055,13 @@ overlaySpatialPartition(mpact::SpatialPartition<double, int> const & partition,
         Size const nxrtm = lattice.grid().numXCells();
         for (Size iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
           for (Size ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
-            auto const rtm_id = static_cast<Size>(lattice.getChild(ixrtm, iyrtm));
+            auto const rtm_id = lattice.getChild(ixrtm, iyrtm);
             if (rtm_found[rtm_id] == 1) {
               continue;
             }
             rtm_found[rtm_id] = 1;
-            AxisAlignedBox2d const rtm_bb = lattice.grid().getBox(ixrtm, iyrtm);
-            Point2d const rtm_ll = rtm_bb.minima(); // Lower left corner
+            AxisAlignedBox2 const rtm_bb = lattice.grid().getBox(ixrtm, iyrtm);
+            Point2 const rtm_ll = rtm_bb.minima(); // Lower left corner
             auto const & rtm = partition.getRTM(rtm_id);
             if (rtm.children().empty()) {
               Log::error("RTM has no children");
@@ -1072,13 +1072,13 @@ overlaySpatialPartition(mpact::SpatialPartition<double, int> const & partition,
             Size const nxcells = rtm.grid().numXCells();
             for (Size iycell = 0; iycell < nycells; ++iycell) {
               for (Size ixcell = 0; ixcell < nxcells; ++ixcell) {
-                auto const cell_id = static_cast<Size>(rtm.getChild(ixcell, iycell));
+                auto const cell_id = rtm.getChild(ixcell, iycell);
                 if (cc_found[cell_id] == 1) {
                   continue;
                 }
                 cc_found[cell_id] = 1;
-                AxisAlignedBox2d const cell_bb = rtm.grid().getBox(ixcell, iycell);
-                Point2d const ll = asy_ll + rtm_ll + cell_bb.minima();
+                AxisAlignedBox2 const cell_bb = rtm.grid().getBox(ixcell, iycell);
+                Point2 const ll = asy_ll + rtm_ll + cell_bb.minima();
                 cc_lower_lefts[cell_id] = {ll[0], ll[1], z_cut};
                 cc_extents[cell_id] = {cell_bb.width(), cell_bb.height(), dz};
               } // cell
@@ -1092,7 +1092,7 @@ overlaySpatialPartition(mpact::SpatialPartition<double, int> const & partition,
   // Get materials and see if the fill material already exists
   // If it does, move it to the end of the material hierarchy, otherwise
   // append it to the end.
-  std::vector<Material<double>> materials;
+  std::vector<Material> materials;
   um2::gmsh::model::getMaterials(materials);
   bool fill_exists = false;
   size_t const num_materials = materials.size();
@@ -1115,16 +1115,16 @@ overlaySpatialPartition(mpact::SpatialPartition<double, int> const & partition,
   if (model_dim == 2) {
     // Create rectangles
     for (Size i = 0; i < num_cc; ++i) {
-      Point3d const & ll = cc_lower_lefts[i];
-      Vec3d const & ext = cc_extents[i];
+      auto const & ll = cc_lower_lefts[i];
+      auto const & ext = cc_extents[i];
       cc_tags[static_cast<size_t>(i)] =
           factory::addRectangle(ll[0], ll[1], ll[2], ext[0], ext[1]);
     }
   } else {
     // Create boxes
     for (Size i = 0; i < num_cc; ++i) {
-      Point3d const & ll = cc_lower_lefts[i];
-      Vec3d const & ext = cc_extents[i];
+      auto const & ll = cc_lower_lefts[i];
+      auto const & ext = cc_extents[i];
       cc_tags[static_cast<size_t>(i)] =
           factory::addBox(ll[0], ll[1], ll[2], ext[0], ext[1], ext[2]);
     }
@@ -1230,8 +1230,8 @@ overlaySpatialPartition(mpact::SpatialPartition<double, int> const & partition,
     std::vector<int> cc_tags_2d(static_cast<size_t>(num_cc));
     // Create rectangles
     for (Size i = 0; i < num_cc; ++i) {
-      Point3d const & ll = cc_lower_lefts[i];
-      Vec3d const & ext = cc_extents[i];
+      auto const & ll = cc_lower_lefts[i];
+      auto const & ext = cc_extents[i];
       cc_tags_2d[static_cast<size_t>(i)] =
           factory::addRectangle(ll[0], ll[1], ll[2], ext[0], ext[1]);
     }

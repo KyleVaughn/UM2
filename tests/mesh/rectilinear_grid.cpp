@@ -2,11 +2,13 @@
 
 #include "../test_macros.hpp"
 
-template <Size D, typename T>
+F constexpr eps = condCast<F>(1e-6);
+
+template <Size D>
 HOSTDEV constexpr auto
-makeGrid() -> um2::RectilinearGrid<D, T>
+makeGrid() -> um2::RectilinearGrid<D>
 {
-  um2::RectilinearGrid<D, T> grid;
+  um2::RectilinearGrid<D> grid;
   if constexpr (D >= 1) {
     grid.divs(0) = {0, 1};
   }
@@ -19,23 +21,22 @@ makeGrid() -> um2::RectilinearGrid<D, T>
   return grid;
 }
 
-template <Size D, typename T>
+template <Size D>
 HOSTDEV
 TEST_CASE(clear)
 {
-  um2::RectilinearGrid<D, T> grid = makeGrid<D, T>();
+  um2::RectilinearGrid<D> grid = makeGrid<D>();
   grid.clear();
   for (Size i = 0; i < D; ++i) {
     ASSERT(grid.divs(i).empty());
   }
 }
 
-template <Size D, typename T>
+template <Size D>
 HOSTDEV
 TEST_CASE(accessors)
 {
-  T constexpr eps = static_cast<T>(1e-6);
-  um2::RectilinearGrid<D, T> grid = makeGrid<D, T>();
+  um2::RectilinearGrid<D> grid = makeGrid<D>();
   um2::Vec<D, Size> const ncells = grid.numCells();
   if constexpr (D >= 1) {
     auto const nx = 1;
@@ -63,13 +64,12 @@ TEST_CASE(accessors)
   }
 }
 
-template <Size D, typename T>
+template <Size D>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
-  T constexpr eps = static_cast<T>(1e-6);
-  um2::RectilinearGrid<D, T> const grid = makeGrid<D, T>();
-  um2::AxisAlignedBox<D, T> const box = grid.boundingBox();
+  um2::RectilinearGrid<D> const grid = makeGrid<D>();
+  um2::AxisAlignedBox<D> const box = grid.boundingBox();
   if constexpr (D >= 1) {
     ASSERT_NEAR(box.minima()[0], grid.divs(0)[0], eps);
     ASSERT_NEAR(box.maxima()[0], grid.divs(0)[1], eps);
@@ -84,21 +84,20 @@ TEST_CASE(boundingBox)
   }
 }
 
-template <typename T>
 HOSTDEV
 TEST_CASE(getBox)
 {
   // Declare some variables to avoid a bunch of static casts.
-  T const three = static_cast<T>(3);
-  T const two = static_cast<T>(2);
-  T const one = static_cast<T>(1);
-  T const half = static_cast<T>(0.5);
-  T const forth = static_cast<T>(0.25);
-  um2::RectilinearGrid2<T> grid;
+  F const three = static_cast<F>(3);
+  F const two = static_cast<F>(2);
+  F const one = static_cast<F>(1);
+  F const half = static_cast<F>(1) / static_cast<F>(2);
+  F const forth = static_cast<F>(1) / static_cast<F>(4);
+  um2::RectilinearGrid2 grid;
   grid.divs(0) = {1.0, 1.5, 2.0, 2.5, 3.0};
   grid.divs(1) = {-1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0};
-  um2::AxisAlignedBox2<T> box = grid.getBox(0, 0);
-  um2::AxisAlignedBox2<T> box_ref = {
+  um2::AxisAlignedBox2 box = grid.getBox(0, 0);
+  um2::AxisAlignedBox2 box_ref = {
       {         1,             -1},
       {one + half, -three * forth}
   };
@@ -140,32 +139,30 @@ TEST_CASE(getBox)
   ASSERT(um2::isApprox(box, box_ref));
 }
 
-template <typename T>
 TEST_CASE(aabb2_constructor)
 {
-  T constexpr eps = static_cast<T>(1e-6);
-  um2::AxisAlignedBox2<T> const b00(um2::Point2<T>(0, 0), um2::Point2<T>(1, 1));
-  um2::AxisAlignedBox2<T> const b10(um2::Point2<T>(1, 0), um2::Point2<T>(2, 1));
-  um2::AxisAlignedBox2<T> const b01(um2::Point2<T>(0, 1), um2::Point2<T>(1, 2));
-  um2::AxisAlignedBox2<T> const b11(um2::Point2<T>(1, 1), um2::Point2<T>(2, 2));
-  um2::AxisAlignedBox2<T> const b02(um2::Point2<T>(0, 2), um2::Point2<T>(1, 3));
-  um2::AxisAlignedBox2<T> const b12(um2::Point2<T>(1, 2), um2::Point2<T>(2, 3));
-  um2::Vector<um2::AxisAlignedBox2<T>> const boxes = {b00, b10, b01, b11, b02, b12};
-  um2::RectilinearGrid2<T> grid(boxes);
+  um2::AxisAlignedBox2 const b00(um2::Point2(0, 0), um2::Point2(1, 1));
+  um2::AxisAlignedBox2 const b10(um2::Point2(1, 0), um2::Point2(2, 1));
+  um2::AxisAlignedBox2 const b01(um2::Point2(0, 1), um2::Point2(1, 2));
+  um2::AxisAlignedBox2 const b11(um2::Point2(1, 1), um2::Point2(2, 2));
+  um2::AxisAlignedBox2 const b02(um2::Point2(0, 2), um2::Point2(1, 3));
+  um2::AxisAlignedBox2 const b12(um2::Point2(1, 2), um2::Point2(2, 3));
+  um2::Vector<um2::AxisAlignedBox2> const boxes = {b00, b10, b01, b11, b02, b12};
+  um2::RectilinearGrid2 grid(boxes);
 
   ASSERT(grid.divs(0).size() == 3);
-  T const xref[3] = {0, 1, 2};
+  F const xref[3] = {0, 1, 2};
   for (Size i = 0; i < 3; ++i) {
     ASSERT_NEAR(grid.divs(0)[i], xref[i], eps);
   }
 
   ASSERT(grid.divs(1).size() == 4);
-  T const yref[4] = {0, 1, 2, 3};
+  F const yref[4] = {0, 1, 2, 3};
   for (Size i = 0; i < 4; ++i) {
     ASSERT_NEAR(grid.divs(1)[i], yref[i], eps);
   }
 
-  um2::RectilinearGrid2<T> grid2(b01);
+  um2::RectilinearGrid2 grid2(b01);
   ASSERT(grid2.divs(0).size() == 2);
   ASSERT(grid2.divs(1).size() == 2);
   ASSERT_NEAR(grid2.divs(0)[0], 0, eps);
@@ -174,7 +171,6 @@ TEST_CASE(aabb2_constructor)
   ASSERT_NEAR(grid2.divs(1)[1], 2, eps);
 }
 
-template <typename T>
 TEST_CASE(id_array_constructor)
 {
   um2::Vector<um2::Vector<Size>> const ids = {
@@ -182,60 +178,56 @@ TEST_CASE(id_array_constructor)
       {0, 2, 0, 2},
       {0, 1, 0, 1},
   };
-  um2::Vector<um2::Vec2<T>> const dxdy = {
+  um2::Vector<um2::Vec2<F>> const dxdy = {
       {2, 1},
       {2, 1},
       {2, 1},
       {2, 1},
   };
-  um2::RectilinearGrid2<T> grid(dxdy, ids);
+  um2::RectilinearGrid2 grid(dxdy, ids);
 
   ASSERT(grid.divs(0).size() == 5);
-  T const xref[5] = {0, 2, 4, 6, 8};
+  F const xref[5] = {0, 2, 4, 6, 8};
   for (Size i = 0; i < 5; ++i) {
-    ASSERT_NEAR(grid.divs(0)[i], xref[i], static_cast<T>(1e-6));
+    ASSERT_NEAR(grid.divs(0)[i], xref[i], eps);
   }
   ASSERT(grid.divs(1).size() == 4);
-  T const yref[4] = {0, 1, 2, 3};
+  F const yref[4] = {0, 1, 2, 3};
   for (Size i = 0; i < 4; ++i) {
-    ASSERT_NEAR(grid.divs(1)[i], yref[i], static_cast<T>(1e-6));
+    ASSERT_NEAR(grid.divs(1)[i], yref[i], eps);
   }
 }
 #if UM2_USE_CUDA
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(clear, D, T)
+template <Size D>
+MAKE_CUDA_KERNEL(clear, D)
 
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(accessors, D, T)
+template <Size D>
+MAKE_CUDA_KERNEL(accessors, D)
 
-template <Size D, typename T>
-MAKE_CUDA_KERNEL(boundingBox, D, T)
+template <Size D>
+MAKE_CUDA_KERNEL(boundingBox, D)
 
-template <typename T>
-MAKE_CUDA_KERNEL(getBox, T)
+MAKE_CUDA_KERNEL(getBox)
 #endif
 
-template <Size D, typename T>
+template <Size D>
 TEST_SUITE(RectilinearGrid)
 {
-  TEST_HOSTDEV(clear, 1, 1, D, T);
-  TEST_HOSTDEV(accessors, 1, 1, D, T);
-  TEST_HOSTDEV(boundingBox, 1, 1, D, T);
+  TEST_HOSTDEV(clear, 1, 1, D);
+  TEST_HOSTDEV(accessors, 1, 1, D);
+  TEST_HOSTDEV(boundingBox, 1, 1, D);
   if constexpr (D == 2) {
-    TEST_HOSTDEV(getBox, 1, 1, T);
-    TEST((aabb2_constructor<T>));
-    TEST((id_array_constructor<T>));
+    TEST_HOSTDEV(getBox);
+    TEST(aabb2_constructor);
+    TEST(id_array_constructor);
   }
 }
 
 auto
 main() -> int
 {
-  RUN_SUITE((RectilinearGrid<1, float>));
-  RUN_SUITE((RectilinearGrid<1, double>));
-  RUN_SUITE((RectilinearGrid<2, float>));
-  RUN_SUITE((RectilinearGrid<2, double>));
-  RUN_SUITE((RectilinearGrid<3, float>));
-  RUN_SUITE((RectilinearGrid<3, double>));
+  RUN_SUITE(RectilinearGrid<1>);
+  RUN_SUITE(RectilinearGrid<2>);
+  RUN_SUITE(RectilinearGrid<3>);
   return 0;
 }

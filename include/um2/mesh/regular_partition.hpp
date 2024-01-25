@@ -28,11 +28,11 @@
 namespace um2
 {
 
-template <Size D, typename T, typename P>
+template <Size D, typename P>
 class RegularPartition
 {
 
-  RegularGrid<D, T> _grid;
+  RegularGrid<D> _grid;
   Vector<P> _children;
 
 public:
@@ -43,7 +43,7 @@ public:
   constexpr RegularPartition() noexcept = default;
 
   HOSTDEV
-  constexpr RegularPartition(RegularGrid<D, T> const & grid,
+  constexpr RegularPartition(RegularGrid<D> const & grid,
                              Vector<P> const & children) noexcept;
 
   //==============================================================================
@@ -51,7 +51,7 @@ public:
   //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  grid() const noexcept -> RegularGrid<D, T> const &;
+  grid() const noexcept -> RegularGrid<D> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   children() const noexcept -> Vector<P> const &;
@@ -74,35 +74,21 @@ public:
 // Aliases
 //==============================================================================
 
-template <typename T, typename P>
-using RegularPartition1 = RegularPartition<1, T, P>;
-
-template <typename T, typename P>
-using RegularPartition2 = RegularPartition<2, T, P>;
-
-template <typename T, typename P>
-using RegularPartition3 = RegularPartition<3, T, P>;
+template <typename P>
+using RegularPartition1 = RegularPartition<1, P>;
 
 template <typename P>
-using RegularPartition1f = RegularPartition1<float, P>;
-template <typename P>
-using RegularPartition2f = RegularPartition2<float, P>;
-template <typename P>
-using RegularPartition3f = RegularPartition3<float, P>;
+using RegularPartition2 = RegularPartition<2, P>;
 
 template <typename P>
-using RegularPartition1d = RegularPartition1<double, P>;
-template <typename P>
-using RegularPartition2d = RegularPartition2<double, P>;
-template <typename P>
-using RegularPartition3d = RegularPartition3<double, P>;
+using RegularPartition3 = RegularPartition<3, P>;
 
 //==============================================================================
 // Constructors
 //==============================================================================
 
-template <Size D, typename T, typename P>
-constexpr RegularPartition<D, T, P>::RegularPartition(RegularGrid<D, T> const & grid,
+template <Size D, typename P>
+constexpr RegularPartition<D, P>::RegularPartition(RegularGrid<D> const & grid,
                                                       Vector<P> const & children) noexcept
     : _grid(grid),
       _children(children)
@@ -117,16 +103,16 @@ constexpr RegularPartition<D, T, P>::RegularPartition(RegularGrid<D, T> const & 
 // Accessors
 //==============================================================================
 
-template <Size D, typename T, typename P>
+template <Size D, typename P>
 PURE HOSTDEV constexpr auto
-RegularPartition<D, T, P>::grid() const noexcept -> RegularGrid<D, T> const &
+RegularPartition<D, P>::grid() const noexcept -> RegularGrid<D> const &
 {
   return _grid;
 }
 
-template <Size D, typename T, typename P>
+template <Size D, typename P>
 PURE HOSTDEV constexpr auto
-RegularPartition<D, T, P>::children() const noexcept -> Vector<P> const &
+RegularPartition<D, P>::children() const noexcept -> Vector<P> const &
 {
   return _children;
 }
@@ -135,20 +121,20 @@ RegularPartition<D, T, P>::children() const noexcept -> Vector<P> const &
 // Methods
 //==============================================================================
 
-template <Size D, typename T, typename P>
+template <Size D, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RegularPartition<D, T, P>::getChild(Args... args) noexcept
+PURE HOSTDEV constexpr auto RegularPartition<D, P>::getChild(Args... args) noexcept
     -> P &
 {
   return _children[_grid.getFlatIndex(args...)];
 }
 
-template <Size D, typename T, typename P>
+template <Size D, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
 PURE HOSTDEV
-    constexpr auto RegularPartition<D, T, P>::getChild(Args... args) const noexcept
+    constexpr auto RegularPartition<D, P>::getChild(Args... args) const noexcept
     -> P const &
 {
   return _children[_grid.getFlatIndex(args...)];

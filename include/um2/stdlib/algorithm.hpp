@@ -38,20 +38,6 @@ clamp(T const & v, T const & lo, T const & hi) noexcept -> T
 
 #ifndef __CUDA_ARCH__
 
-// gcc seems to have a bug that causes it to generate a call to memmove that
-// is out of bounds when using std::copy with -O3. This is a workaround.
-// template <typename InputIt, typename OutputIt>
-// HOST constexpr auto
-// copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
-//{
-//  while (first != last) {
-//    *d_first = *first;
-//    ++first;
-//    ++d_first;
-//  }
-//  return d_first;
-//}
-
 template <typename InputIt, typename OutputIt>
 HOST constexpr auto
 copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt

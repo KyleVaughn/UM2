@@ -16,7 +16,7 @@ not only typical polygons with straight edges, but also polygons with curved
 polynomial edges. Hence, use the polytope as a useful abstraction which is
 specialized via template parameters to triangles, line segments, etc. A
 K-dimensional polytope, of polynomial order P, represented by the connectivity
-of its vertices. These N vertices are D-dimensional points of type T.
+of its vertices. These N vertices are D-dimensional points of type F.
 
 See https://en.wikipedia.org/wiki/Polytope for help with terminology.
 See "The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th

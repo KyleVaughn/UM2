@@ -2,11 +2,7 @@
 
 #include "../test_macros.hpp"
 
-#if UM2_ENABLE_FLOAT64
- F constexpr eps = 1e-6;
-#else
- F constexpr eps = 1e-6f;
-#endif
+F constexpr eps = condCast<F>(1e-6);
 
 HOSTDEV
 TEST_CASE(chebyshev_chebyshev)
