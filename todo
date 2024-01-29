@@ -1,3 +1,9 @@
+Add scattering matrix to Xsec
+Don't store redundant info? Total
+  Optimize to be lower triangular when build without upscatter?
+
+Move the picture of the model to above the code in the tutorial
+
 Resolve casts in gmsh API
 
 Add overlap check to face vertex mesh validate routine

@@ -5,9 +5,9 @@
 //==============================================================================
 // POINT
 //==============================================================================
-// An alias for a D-dimensional vector. This isn't mathematically correct, but it
-// is more efficient to use a vector for a point than to create a separate class
-// and deal with the type conversions.
+// An alias for a D-dimensional vector of type F. This isn't mathematically
+// correct, but it is more efficient to use a vector for a point than to create
+// a separate class and deal with the type conversions.
 
 namespace um2
 {
@@ -26,7 +26,7 @@ using Point3 = Point<3>;
 //==============================================================================
 // Constants
 //==============================================================================
-// eps_distance: 
+// eps_distance:
 //   Distance between two points, below which they are considered to be equal.
 // eps_distance2:
 //   Squared distance between two points, below which they are considered to be
@@ -37,15 +37,9 @@ using Point3 = Point<3>;
 //
 // NOTE: fast-math assumes no infinities, so we need inf_distance to be finite.
 
-#if UM2_ENABLE_FLOAT64
-inline constexpr F eps_distance = 1e-6; // 0.1 micron
-inline constexpr F eps_distance2 = 1e-12;
-inline constexpr F inf_distance = 1e8; // 1000 km 
-#else
-inline constexpr F eps_distance = 1e-6f; // 0.1 micron
-inline constexpr F eps_distance2 = 1e-12f;
-inline constexpr F inf_distance = 1e8f; // 1000 km
-#endif
+inline constexpr F eps_distance = condCast<F>(1e-6); // 0.1 micron
+inline constexpr F eps_distance2 = condCast<F>(1e-12);
+inline constexpr F inf_distance = condCast<F>(1e8); // 1000 km
 
 //==============================================================================
 // Methods

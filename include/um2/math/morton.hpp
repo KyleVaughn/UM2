@@ -10,10 +10,6 @@
 // This file provides functions for mapping to and from Morton codes.
 // https://en.wikipedia.org/wiki/Z-order_curve
 //
-// Depending on the configuration, the following functions are provided:
-// Let uxx be an unsigned integer type with xx bits and fxx be a floating point
-// type with xx bits.
-//
 // mortonEncode(u32, u32) -> u32
 // mortonEncode(u32, u32, u32) -> u32
 //

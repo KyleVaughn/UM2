@@ -1,18 +1,20 @@
 #pragma once
 
+#include <um2/common/log.hpp>
 #include <um2/math/stats.hpp>
 #include <um2/stdlib/vector.hpp>
 
 //======================================================================
 // CROSS SECTION
 //======================================================================
-// A multi-group cross section. Currently, we only need the total cross
-// section, but will add scattering, etc. later.
+// A multi-group cross section that can represent macroscopic or
+// microscopic cross sections.
 //
-// Multigroup cross sections are frequently reduced to a one-group cross
-// section for use with the Knudsen number. Hence we provide a
-// getOneGroupTotalXS() method that accepts an XSReductionStrategy, which
-// will take either the mean or max of the total cross section.
+// Units: [cm^-1] or [barns] depending on whether the cross section is
+// macroscopic or microscopic.
+//
+// Currently, we only need the total cross section, but will add
+// scattering, etc. later.
 
 namespace um2
 {
@@ -24,8 +26,9 @@ enum class XSReductionStrategy {
 
 class CrossSection
 {
+  bool _is_macroscopic = false;
 
-  Vector<F> _t; // Total macroscopic cross section
+  Vector<F> _t; // Total cross section
 
 public:
   //======================================================================
@@ -34,23 +37,47 @@ public:
 
   constexpr CrossSection() noexcept = default;
 
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  constexpr CrossSection(Vector<F> const & t) noexcept
-      : _t(t)
+  //======================================================================
+  // Accessors
+  //======================================================================
+
+  [[nodiscard]] constexpr auto isMacroscopic() const noexcept -> bool
   {
-#if UM2_ENABLE_ASSERTS
-    ASSERT(!_t.empty());
-    for (auto const & t_i : _t) {
-      ASSERT(t_i >= 0);
-    }
-#endif
+    return _is_macroscopic;
+  }
+
+  [[nodiscard]] constexpr auto numGroups() const noexcept -> Size
+  {
+    return _t.size();
+  }
+
+  [[nodiscard]] constexpr auto t() noexcept -> Vector<F> &
+  {
+    return _t;
+  }
+
+  [[nodiscard]] constexpr auto t() const noexcept -> Vector<F> const &
+  {
+    return _t;
   }
 
   //======================================================================
   // Methods
   //======================================================================
 
-  [[nodiscard]] auto constexpr getOneGroupTotalXS(
+  void validate() const noexcept
+  {
+    if (_t.empty()) {
+      LOG_ERROR("Cross section has an empty total XS vector");
+    }
+    for (auto const & t_i : _t) {
+      if (t_i < 0) {
+        LOG_ERROR("Cross section has a negative total XS in one or more groups");
+      }
+    }
+  }
+
+  [[nodiscard]] auto constexpr get1GroupTotalXS(
       XSReductionStrategy const strategy = XSReductionStrategy::Mean) const noexcept -> F
   {
     ASSERT(!_t.empty());
@@ -59,6 +86,6 @@ public:
     }
     return um2::mean(_t.cbegin(), _t.cend());
   }
-};
+}; // class CrossSection
 
 } // namespace um2

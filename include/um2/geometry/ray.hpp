@@ -14,8 +14,8 @@ template <Size D>
 class Ray
 {
 
-  Point<D> _o; // origin
-  Vec<D, F> _d;   // direction (unit vector)
+  Point<D> _o;  // origin
+  Vec<D, F> _d; // direction (unit vector)
 
 public:
   //============================================================================
@@ -27,11 +27,7 @@ public:
         _d(direction)
   {
     // Check that the direction is a unit vector
-#if UM2_ENABLE_FLOAT64
-    ASSERT(um2::abs(direction.squaredNorm() - static_cast<F>(1)) < 1e-5);
-#else
-    ASSERT(um2::abs(direction.squaredNorm() - static_cast<F>(1)) < 1e-5f);
-#endif
+    ASSERT(um2::abs(direction.squaredNorm() - static_cast<F>(1)) < condCast<F>(1e-5));
   }
 
   //============================================================================

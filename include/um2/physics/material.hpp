@@ -1,13 +1,13 @@
 #pragma once
 
 #include <um2/common/color.hpp>
-#include <um2/physics/cross_section.hpp>
 #include <um2/stdlib/string.hpp>
 
 //======================================================================
 // MATERIAL
 //======================================================================
-// A physical material with a name, color, and multi-group cross section.
+//
+// NOTE:
 // The color is used for visualization and in Gmsh related operations.
 // Since many CAD file formats do not support material assignment, but
 // they do support color assignment, we use color as a proxy for
@@ -21,7 +21,9 @@ class Material
 
   String _name;
   Color _color;
-  CrossSection _xs;
+  Vector<I> _zaid; // ZZAAA (Z = atomic number, A = atomic mass number)
+  Vector<F> _
+
 
 public:
   //======================================================================
@@ -29,12 +31,6 @@ public:
   //======================================================================
 
   constexpr Material() noexcept = default;
-
-  HOSTDEV constexpr Material(String name, Color color) noexcept
-      : _name(um2::move(name)),
-        _color(color)
-  {
-  }
 
   //======================================================================
   // Accessors
