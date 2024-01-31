@@ -4,12 +4,12 @@
 
 F constexpr eps = um2::eps_distance * condCast<F>(10);
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeQuad() -> um2::QuadraticQuadrilateral<D>
 {
   um2::QuadraticQuadrilateral<D> this_quad;
-  for (Size i = 0; i < 8; ++i) {
+  for (I i = 0; i < 8; ++i) {
     this_quad[i] = um2::Vec<D, F>::zero();
   }
   this_quad[1][0] = condCast<F>(1);
@@ -26,7 +26,7 @@ makeQuad() -> um2::QuadraticQuadrilateral<D>
 }
 
 // P6 = (0.8, 1.5)
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeQuad2() -> um2::QuadraticQuadrilateral<D>
 {
@@ -40,7 +40,7 @@ makeQuad2() -> um2::QuadraticQuadrilateral<D>
 // Interpolation
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(interpolate)
 {
@@ -59,7 +59,7 @@ TEST_CASE(interpolate)
 // jacobian
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(jacobian)
 {
@@ -85,7 +85,7 @@ TEST_CASE(jacobian)
 // edge
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(edge)
 {
@@ -209,13 +209,13 @@ TEST_CASE(meanChordLength)
 }
 
 #if UM2_USE_CUDA
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(interpolate, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(jacobian, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(edge, D);
 
 MAKE_CUDA_KERNEL(contains);
@@ -231,7 +231,7 @@ MAKE_CUDA_KERNEL(isCCW_flipFace);
 MAKE_CUDA_KERNEL(meanChordLength);
 #endif
 
-template <Size D>
+template <I D>
 TEST_SUITE(QuadraticQuadrilateral)
 {
   TEST_HOSTDEV(interpolate, 1, 1, D);

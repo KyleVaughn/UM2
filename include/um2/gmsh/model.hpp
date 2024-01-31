@@ -60,8 +60,7 @@ addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
                            Vec2d const & offset = {0.0, 0.0}) -> std::vector<int>;
 
 auto
-addCylindricalPin(Vec3d const & center, double height,
-                  std::vector<double> const & radii,
+addCylindricalPin(Vec3d const & center, double height, std::vector<double> const & radii,
                   std::vector<Material> const & materials) -> std::vector<int>;
 
 auto

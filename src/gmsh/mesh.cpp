@@ -165,14 +165,10 @@ setMeshFieldFromGroups(int const dim, std::vector<std::string> const & groups,
 
 auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-setMeshFieldFromKnudsenNumber(int const dim,
-                              std::vector<Material> const & materials,
-                              double const kn_target,
-                              double const mfp_threshold,
-                              double const mfp_scale,
-                              std::vector<int> const & is_fuel,
-                              XSReductionStrategy const strategy)
-    -> int
+setMeshFieldFromKnudsenNumber(int const dim, std::vector<Material> const & materials,
+                              double const kn_target, double const mfp_threshold,
+                              double const mfp_scale, std::vector<int> const & is_fuel,
+                              XSReductionStrategy const strategy) -> int
 {
   //-----------------------------------------------------------------------
   // Check that each material exists as a physical group
@@ -279,7 +275,7 @@ setMeshFieldFromKnudsenNumber(int const dim,
     default:
       LOG_ERROR("Invalid dimension");
     } // dim switch
-  } // for (size_t i = 0; i < num_materials; ++i)
+  }   // for (size_t i = 0; i < num_materials; ++i)
 
   // We now have the target characteristic length for each material. If
   // mfp_threshold > 0.0, then for non-fuel materials, we wish to scale
@@ -299,7 +295,7 @@ setMeshFieldFromKnudsenNumber(int const dim,
     // Ensure there are no duplicates
     std::sort(fuel_ent_tags.begin(), fuel_ent_tags.end());
     for (size_t i = 0; i < fuel_ent_tags.size() - 1; ++i) {
-      if (fuel_ent_tags[i] == fuel_ent_tags[i+1]) {
+      if (fuel_ent_tags[i] == fuel_ent_tags[i + 1]) {
         LOG_ERROR("Duplicate entity tag in fuel material physical group");
       }
     }
@@ -309,16 +305,20 @@ setMeshFieldFromKnudsenNumber(int const dim,
     int const fuel_distance_fid = gmsh::model::mesh::field::add("Distance");
     switch (dim) {
     case 0:
-      gmsh::model::mesh::field::setNumbers(fuel_distance_fid, "PointsList", fuel_ent_tags_d);
+      gmsh::model::mesh::field::setNumbers(fuel_distance_fid, "PointsList",
+                                           fuel_ent_tags_d);
       break;
     case 1:
-      gmsh::model::mesh::field::setNumbers(fuel_distance_fid, "CurvesList", fuel_ent_tags_d);
+      gmsh::model::mesh::field::setNumbers(fuel_distance_fid, "CurvesList",
+                                           fuel_ent_tags_d);
       break;
     case 2:
-      gmsh::model::mesh::field::setNumbers(fuel_distance_fid, "SurfacesList", fuel_ent_tags_d);
+      gmsh::model::mesh::field::setNumbers(fuel_distance_fid, "SurfacesList",
+                                           fuel_ent_tags_d);
       break;
     case 3:
-      gmsh::model::mesh::field::setNumbers(fuel_distance_fid, "VolumesList", fuel_ent_tags_d);
+      gmsh::model::mesh::field::setNumbers(fuel_distance_fid, "VolumesList",
+                                           fuel_ent_tags_d);
       break;
     default:
       LOG_ERROR("Invalid dimension");
@@ -337,20 +337,24 @@ setMeshFieldFromKnudsenNumber(int const dim,
     // |-----x-----------------> sigma_t * d_fuel (mfps)
     // 0   mfp_threshold
     //
-    // lc_linear = lc * sigma_t * mfp_scale * d_fuel +  lc * (1 - mfp_threshold * mfp_scale)
-    // Then, create a field which takes the max(lc, lc_linear)
+    // lc_linear = lc * sigma_t * mfp_scale * d_fuel +  lc * (1 - mfp_threshold *
+    // mfp_scale) Then, create a field which takes the max(lc, lc_linear)
     for (size_t i = 0; i < num_materials; ++i) {
       if (is_fuel[i] == 0) {
-        // Create a field that multiplies the base field by the distance to the fuel material
+        // Create a field that multiplies the base field by the distance to the fuel
+        // material
         int const fid = gmsh::model::mesh::field::add("MathEval");
         double const scale = lcs[i] * sigmas_t[i] * mfp_scale;
         double const offset = lcs[i] * (1.0 - mfp_threshold * mfp_scale);
         ASSERT(offset < 0.0);
-        std::string const math_expr = fuel_distance_name + " * " + std::to_string(scale) + " " + std::to_string(offset);
-        LOG_INFO("Creating linear field for " + materials[i].name() + ": " + String(math_expr.c_str()));
+        std::string const math_expr = fuel_distance_name + " * " + std::to_string(scale) +
+                                      " " + std::to_string(offset);
+        LOG_INFO("Creating linear field for " + materials[i].name() + ": " +
+                 String(math_expr.c_str()));
         gmsh::model::mesh::field::setString(fid, "F", math_expr);
         int const max_fid = gmsh::model::mesh::field::add("Max");
-        std::vector<double> const field_ids_d = {static_cast<double>(field_ids[i]), static_cast<double>(fid)};
+        std::vector<double> const field_ids_d = {static_cast<double>(field_ids[i]),
+                                                 static_cast<double>(fid)};
         gmsh::model::mesh::field::setNumbers(max_fid, "FieldsList", field_ids_d);
         // Replace the base field with the max field
         field_ids[i] = max_fid;

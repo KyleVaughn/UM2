@@ -1,8 +1,10 @@
 #pragma once
 
-#include <um2/stdlib/utility.hpp>
+#include <um2/config.hpp>
 
 #include <algorithm>
+#include <concepts>
+#include <type_traits>
 
 //==============================================================================
 // ALGORITHM
@@ -12,6 +14,7 @@
 // The following functions are implemented:
 //  clamp
 //  copy
+//  fill_n
 //  fill
 //  is_sorted
 //  max
@@ -25,9 +28,9 @@ namespace um2
 // clamp
 //==============================================================================
 
-template <typename T>
+template <class T>
 HOSTDEV constexpr auto
-clamp(T const & v, T const & lo, T const & hi) noexcept -> T
+clamp(T const & v, T const & lo, T const & hi) noexcept -> T const &
 {
   return v < lo ? lo : (hi < v ? hi : v);
 }
@@ -35,10 +38,14 @@ clamp(T const & v, T const & lo, T const & hi) noexcept -> T
 //==============================================================================
 // copy
 //==============================================================================
+// std::copy reduces to a memmove when possible. The mechanism for this is
+// pretty complicated, so I would recommend just using std::copy and settling
+// for a less performance copy on device. If you really need to optimize this,
+// you could overload for pointers to fundamental types.
 
 #ifndef __CUDA_ARCH__
 
-template <typename InputIt, typename OutputIt>
+template <class InputIt, class OutputIt>
 HOST constexpr auto
 copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
@@ -47,7 +54,7 @@ copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 
 #else
 
-template <typename InputIt, typename OutputIt>
+template <class InputIt, class OutputIt>
 DEVICE constexpr auto
 copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
@@ -62,22 +69,26 @@ copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 #endif
 
 //==============================================================================
+// fill_n
+//==============================================================================
+
+template <class OutputIt, class S, class T>
+HOSTDEV constexpr auto
+// NOLINTNEXTLINE(readability-identifier-naming) match std::fill_n
+fill_n(OutputIt first, S n, T const & value) noexcept -> OutputIt
+{
+  for (; n > 0; ++first, --n) {
+    *first = value;
+  }
+  return first;
+}
+
+//==============================================================================
 // fill
 //==============================================================================
 
-#ifndef __CUDA_ARCH__
-
-template <typename ForwardIt, typename T>
-HOST constexpr void
-fill(ForwardIt first, ForwardIt last, T const & value) noexcept
-{
-  std::fill(first, last, value);
-}
-
-#else
-
-template <typename ForwardIt, typename T>
-DEVICE constexpr void
+template <std::forward_iterator ForwardIt, class T>
+HOSTDEV constexpr void
 fill(ForwardIt first, ForwardIt last, T const & value) noexcept
 {
   for (; first != last; ++first) {
@@ -85,26 +96,20 @@ fill(ForwardIt first, ForwardIt last, T const & value) noexcept
   }
 }
 
-#endif
+template <std::random_access_iterator RandomIt, class T>
+HOSTDEV constexpr void
+fill(RandomIt first, RandomIt last, T const & value) noexcept
+{
+  fill_n(first, last - first, value);
+}
 
 //==============================================================================
 // is_sorted
 //==============================================================================
 
-// NOLINTBEGIN(readability-identifier-naming) match std::is_sorted
-#ifndef __CUDA_ARCH__
-
-template <typename ForwardIt>
-PURE HOST constexpr auto
-is_sorted(ForwardIt first, ForwardIt last) noexcept -> bool
-{
-  return std::is_sorted(first, last);
-}
-
-#else
-
-template <typename ForwardIt>
-PURE DEVICE constexpr auto
+template <class ForwardIt>
+PURE HOSTDEV constexpr auto
+// NOLINTNEXTLINE(readability-identifier-naming) match std::is_sorted
 is_sorted(ForwardIt first, ForwardIt last) noexcept -> bool
 {
   if (first == last) {
@@ -125,119 +130,46 @@ is_sorted(ForwardIt first, ForwardIt last) noexcept -> bool
   return true;
 }
 
-#endif
-// NOLINTEND(readability-identifier-naming)
-
 //==============================================================================
 // max
 //==============================================================================
 
-#ifndef __CUDA_ARCH__
-
-template <typename T>
-CONST HOST constexpr auto
-max(T x, T y) noexcept -> T
+template <class T>
+PURE HOSTDEV constexpr auto
+max(T const & a, T const & b) noexcept -> T const &
 {
-  return std::max(x, y);
+  return a < b ? b : a;
 }
-
-#else
-
-CONST DEVICE constexpr auto
-max(float x, float y) noexcept -> float
-{
-  return ::fmaxf(x, y);
-}
-
-CONST DEVICE constexpr auto
-max(double x, double y) noexcept -> double
-{
-  return ::fmax(x, y);
-}
-
-template <std::integral T>
-CONST DEVICE constexpr auto
-max(T x, T y) noexcept -> T
-{
-  return ::max(x, y);
-}
-
-#endif
 
 //==============================================================================
 // max_element
 //==============================================================================
 
-// NOLINTBEGIN(readability-identifier-naming) match std::max_element
-#ifndef __CUDA_ARCH__
-
-template <typename ForwardIt>
-PURE HOST constexpr auto
+template <class ForwardIt>
+PURE HOSTDEV constexpr auto
+// NOLINTNEXTLINE(readability-identifier-naming) match std::max_element
 max_element(ForwardIt first, ForwardIt last) noexcept -> ForwardIt
 {
-  return std::max_element(first, last);
-}
-
-#else
-
-template <typename ForwardIt>
-PURE DEVICE constexpr auto
-max_element(ForwardIt first, ForwardIt last) noexcept -> ForwardIt
-{
-  if (first == last) {
-    return last;
-  }
-
-  auto largest = first;
-  ++first;
-
-  while (first != last) {
-    if (*largest < *first) {
-      largest = first;
+  if (first != last) {
+    ForwardIt i = first;
+    while (++i != last) {
+      if (*first < *i) {
+        first = i;
+      }
     }
-    ++first;
   }
-
-  return largest;
+  return first;
 }
-
-#endif
-// NOLINTEND(readability-identifier-naming)
 
 //==============================================================================
 // min
 //==============================================================================
 
-#ifndef __CUDA_ARCH__
-
-template <typename T>
-CONST HOST constexpr auto
-min(T x, T y) noexcept -> T
+template <class T>
+PURE HOSTDEV constexpr auto
+min(T const & a, T const & b) noexcept -> T const &
 {
-  return std::min(x, y);
+  return b < a ? b : a;
 }
-
-#else
-
-CONST DEVICE constexpr auto
-min(float x, float y) noexcept -> float
-{
-  return ::fminf(x, y);
-}
-
-CONST DEVICE constexpr auto
-min(double x, double y) noexcept -> double
-{
-  return ::fmin(x, y);
-}
-
-template <std::integral T>
-CONST DEVICE constexpr auto
-min(T x, T y) noexcept -> T
-{
-  return ::min(x, y);
-}
-
-#endif
 
 } // namespace um2

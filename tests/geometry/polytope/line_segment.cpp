@@ -5,12 +5,12 @@
 F constexpr eps = um2::eps_distance * static_cast<F>(10);
 F constexpr half = static_cast<F>(1) / static_cast<F>(2);
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeLine() -> um2::LineSegment<D>
 {
   um2::LineSegment<D> line;
-  for (Size i = 0; i < D; ++i) {
+  for (I i = 0; i < D; ++i) {
     line[0][i] = static_cast<F>(1);
     line[1][i] = static_cast<F>(2);
   }
@@ -21,7 +21,7 @@ makeLine() -> um2::LineSegment<D>
 // Interpolation
 //=============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(interpolate)
 {
@@ -39,13 +39,13 @@ TEST_CASE(interpolate)
 // jacobian
 //=============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(jacobian)
 {
   um2::LineSegment<D> line = makeLine<D>();
   um2::Vec<D, F> j_ref;
-  for (Size i = 0; i < D; ++i) {
+  for (I i = 0; i < D; ++i) {
     j_ref[i] = line[1][i] - line[0][i];
   }
   um2::Vec<D, F> const j0 = line.jacobian(0);
@@ -82,7 +82,7 @@ TEST_CASE(getRotation)
 // length
 //=============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(length)
 {
@@ -96,7 +96,7 @@ TEST_CASE(length)
 // boundingBox
 //=============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
@@ -127,7 +127,7 @@ TEST_CASE(isLeft)
   p1[1] -= static_cast<F>(2); // (2, 1)
   ASSERT(line.isLeft(p0));
   ASSERT(!line.isLeft(p1));
-  p1[1] = static_cast<F>(2) + static_cast<F>(1)/100; // (2, 2.01)
+  p1[1] = static_cast<F>(2) + static_cast<F>(1) / 100; // (2, 2.01)
   ASSERT(line.isLeft(p1));
 }
 
@@ -135,7 +135,7 @@ TEST_CASE(isLeft)
 // pointClosestTo
 //=============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(pointClosestTo)
 {
@@ -164,7 +164,7 @@ TEST_CASE(pointClosestTo)
 // distanceTo
 //=============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(distanceTo)
 {
@@ -210,32 +210,32 @@ TEST_CASE(intersect)
 }
 
 #if UM2_USE_CUDA
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(interpolate, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(jacobian, D);
 
 MAKE_CUDA_KERNEL(getRotation);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(length, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(boundingBox, D);
 
 MAKE_CUDA_KERNEL(isLeft);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(distanceTo, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(pointClosestTo, D);
 
 MAKE_CUDA_KERNEL(intersect);
 #endif
 
-template <Size D>
+template <I D>
 TEST_SUITE(LineSegment)
 {
   TEST_HOSTDEV(interpolate, 1, 1, D);

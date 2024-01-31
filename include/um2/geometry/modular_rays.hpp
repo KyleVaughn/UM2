@@ -24,9 +24,9 @@ class ModularRayParams
 {
 
   AxisAlignedBox2 _box;
-  Vec2<Size> _num_rays; // Number of rays spawned on the box's x and y edges
-  Vec2<F> _spacing;     // Spacing between rays in x and y
-  Vec2<F> _direction;   // Direction of rays
+  Vec2<I> _num_rays;  // Number of rays spawned on the box's x and y edges
+  Vec2<F> _spacing;   // Spacing between rays in x and y
+  Vec2<F> _direction; // Direction of rays
 
 public:
   //============================================================================
@@ -44,16 +44,16 @@ public:
   //============================================================================
 
   HOSTDEV [[nodiscard]] constexpr auto
-  getRay(Size i) const noexcept -> Ray2;
+  getRay(I i) const noexcept -> Ray2;
 
   HOSTDEV [[nodiscard]] constexpr auto
-  getTotalNumRays() const noexcept -> Size;
+  getTotalNumRays() const noexcept -> I;
 
   HOSTDEV [[nodiscard]] constexpr auto
-  getNumXRays() const noexcept -> Size;
+  getNumXRays() const noexcept -> I;
 
   HOSTDEV [[nodiscard]] constexpr auto
-  getNumYRays() const noexcept -> Size;
+  getNumYRays() const noexcept -> I;
 
   HOSTDEV [[nodiscard]] constexpr auto
   getSpacing() const noexcept -> Vec2<F>;
@@ -70,8 +70,8 @@ public:
 // s: ray spacing
 // w: width of ray tracing module
 // h: height of ray tracing module
-HOSTDEV constexpr ModularRayParams::ModularRayParams(
-    F const a, F const s, AxisAlignedBox2 const box) noexcept
+HOSTDEV constexpr ModularRayParams::ModularRayParams(F const a, F const s,
+                                                     AxisAlignedBox2 const box) noexcept
     : _box(box)
 {
   ASSERT_ASSUME(0 < a);
@@ -85,8 +85,8 @@ HOSTDEV constexpr ModularRayParams::ModularRayParams(
   Vec2<F> const num_rays_t(um2::ceil(um2::abs(w * um2::sin(a) / s)),
                            um2::ceil(um2::abs(h * um2::cos(a) / s)));
 
-  _num_rays[0] = static_cast<Size>(num_rays_t[0]);
-  _num_rays[1] = static_cast<Size>(num_rays_t[1]);
+  _num_rays[0] = static_cast<I>(num_rays_t[0]);
+  _num_rays[1] = static_cast<I>(num_rays_t[1]);
   _spacing[0] = w / num_rays_t[0];
   _spacing[1] = h / num_rays_t[1];
 
@@ -104,7 +104,7 @@ HOSTDEV constexpr ModularRayParams::ModularRayParams(
 //==============================================================================
 
 HOSTDEV constexpr auto
-ModularRayParams::getRay(Size const i) const noexcept -> Ray2
+ModularRayParams::getRay(I const i) const noexcept -> Ray2
 {
   // Angle < π/2
   //
@@ -156,19 +156,19 @@ ModularRayParams::getRay(Size const i) const noexcept -> Ray2
 }
 
 HOSTDEV constexpr auto
-ModularRayParams::getTotalNumRays() const noexcept -> Size
+ModularRayParams::getTotalNumRays() const noexcept -> I
 {
   return _num_rays[0] + _num_rays[1];
 }
 
 HOSTDEV constexpr auto
-ModularRayParams::getNumXRays() const noexcept -> Size
+ModularRayParams::getNumXRays() const noexcept -> I
 {
   return _num_rays[0];
 }
 
 HOSTDEV constexpr auto
-ModularRayParams::getNumYRays() const noexcept -> Size
+ModularRayParams::getNumYRays() const noexcept -> I
 {
   return _num_rays[1];
 }

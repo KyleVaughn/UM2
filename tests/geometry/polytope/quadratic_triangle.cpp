@@ -4,12 +4,12 @@
 
 F constexpr eps = um2::eps_distance * condCast<F>(10);
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeTri() -> um2::QuadraticTriangle<D>
 {
   um2::QuadraticTriangle<D> this_tri;
-  for (Size i = 0; i < 6; ++i) {
+  for (I i = 0; i < 6; ++i) {
     this_tri[i] = um2::Vec<D, F>::zero();
   }
   this_tri[1][0] = condCast<F>(1);
@@ -22,12 +22,12 @@ makeTri() -> um2::QuadraticTriangle<D>
 }
 
 // P4 = (0.7, 0.8)
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeTri2() -> um2::QuadraticTriangle<D>
 {
   um2::QuadraticTriangle<D> this_tri;
-  for (Size i = 0; i < 6; ++i) {
+  for (I i = 0; i < 6; ++i) {
     this_tri[i] = um2::Vec<D, F>::zero();
   }
   this_tri[1][0] = condCast<F>(1);
@@ -43,7 +43,7 @@ makeTri2() -> um2::QuadraticTriangle<D>
 // Interpolation
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(interpolate)
 {
@@ -60,7 +60,7 @@ TEST_CASE(interpolate)
 // jacobian
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(jacobian)
 {
@@ -89,7 +89,7 @@ TEST_CASE(jacobian)
 // edge
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(edge)
 {
@@ -214,13 +214,13 @@ TEST_CASE(meanChordLength)
 }
 
 #if UM2_USE_CUDA
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(interpolate, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(jacobian, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(edge, D);
 
 MAKE_CUDA_KERNEL(contains);
@@ -236,7 +236,7 @@ MAKE_CUDA_KERNEL(isCCW_flipFace);
 MAKE_CUDA_KERNEL(meanChordLength);
 #endif // UM2_USE_CUDA
 
-template <Size D>
+template <I D>
 TEST_SUITE(QuadraticTriangle)
 {
   TEST_HOSTDEV(interpolate, 1, 1, D);

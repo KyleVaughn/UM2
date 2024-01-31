@@ -4,43 +4,43 @@
 
 F constexpr eps = condCast<F>(1e-6);
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makep1() -> um2::Point<D>
 {
   um2::Point<D> v;
-  for (Size i = 0; i < D; ++i) {
+  for (I i = 0; i < D; ++i) {
     v[i] = static_cast<F>(i + 1);
   }
   return v;
 }
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makep2() -> um2::Point<D>
 {
   um2::Point<D> v;
-  for (Size i = 0; i < D; ++i) {
+  for (I i = 0; i < D; ++i) {
     v[i] = static_cast<F>(i + 2);
   }
   return v;
 }
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(distance)
 {
   um2::Point<D> const p1 = makep1<D>();
   um2::Point<D> const p2 = makep2<D>();
   F const d2 = p1.squaredDistanceTo(p2);
-  ASSERT_NEAR(d2, D, eps); 
+  ASSERT_NEAR(d2, D, eps);
 
   F d = p1.distanceTo(p2);
   d *= d;
-  ASSERT_NEAR(d, static_cast<F>(D), eps); 
+  ASSERT_NEAR(d, static_cast<F>(D), eps);
 }
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(midpoint)
 {
@@ -48,12 +48,12 @@ TEST_CASE(midpoint)
   um2::Point<D> const p2 = makep2<D>();
   um2::Point<D> m = um2::midpoint(p1, p2);
   F const three_half = static_cast<F>(3) / 2;
-  for (Size i = 0; i < D; ++i) {
+  for (I i = 0; i < D; ++i) {
     ASSERT_NEAR(m[i], static_cast<F>(i) + three_half, eps);
   }
 }
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(isApprox)
 {
@@ -107,13 +107,13 @@ TEST_CASE(areApproxCCW)
 //==============================================================================
 
 #if UM2_USE_CUDA
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(distance, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(midpoint, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(isApprox, D);
 
 MAKE_CUDA_KERNEL(areCCW);
@@ -121,7 +121,7 @@ MAKE_CUDA_KERNEL(areCCW);
 MAKE_CUDA_KERNEL(areApproxCCW);
 #endif
 
-template <Size D>
+template <I D>
 TEST_SUITE(point)
 {
   TEST_HOSTDEV(distance, 1, 1, D);

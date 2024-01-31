@@ -16,3 +16,4 @@ docs/_templates/
 docs/html/    
 docs/latex/    
 docs/Doxyfile.bak
+tests/physics/xslibs/*

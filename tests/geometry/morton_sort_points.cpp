@@ -7,8 +7,8 @@ TEST_CASE(mortonSort2D)
 {
   // Map a 4 by 4 grid of points to the unit square and sort them by Morton code.
   um2::Vector<um2::Point2> points(16);
-  for (Size i = 0; i < 4; ++i) {
-    for (Size j = 0; j < 4; ++j) {
+  for (I i = 0; i < 4; ++i) {
+    for (I j = 0; j < 4; ++j) {
       points[i * 4 + j] = um2::Point2(i, j);
       points[i * 4 + j] /= 3;
     }
@@ -36,9 +36,9 @@ TEST_CASE(mortonSort3D)
 {
   // Map a 4 by 4 by 4 grid of points to the unit cube and sort them by Morton code.
   um2::Vector<um2::Point3> points(64);
-  for (Size i = 0; i < 4; ++i) {
-    for (Size j = 0; j < 4; ++j) {
-      for (Size k = 0; k < 4; ++k) {
+  for (I i = 0; i < 4; ++i) {
+    for (I j = 0; j < 4; ++j) {
+      for (I k = 0; k < 4; ++k) {
         points[i * 16 + j * 4 + k] = um2::Point3(i, j, k);
         points[i * 16 + j * 4 + k] /= 3;
       }

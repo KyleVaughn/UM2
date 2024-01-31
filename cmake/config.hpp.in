@@ -18,15 +18,18 @@
 #cmakedefine01 UM2_ENABLE_INT64
 
 // Use external dependencies
-#cmakedefine01 UM2_USE_CLANG_TIDY
 #cmakedefine01 UM2_USE_CUDA
 #cmakedefine01 UM2_USE_GMSH
 #cmakedefine01 UM2_USE_OPENMP
 #cmakedefine01 UM2_USE_PNG
 #cmakedefine01 UM2_USE_TBB
+#cmakedefine01 UM2_USE_XSLIB
 
 // Set compile-time filtering of log messages
-#define LOG_LEVEL @UM2_LOG_LEVEL@
+#define MIN_LOG_LEVEL @UM2_MIN_LOG_LEVEL@
+
+// Set absolute path to the cross-section library
+#define XSLIB_PATH "@XSLIB_PATH@"
 
 //==============================================================================
 // Includes
@@ -60,11 +63,11 @@
 #  define PURE  [[gnu::pure]]
 #  define CONST [[gnu::const]]
 #  define HOT   [[gnu::hot]]
-#else
+#else // UM2_ENABLE_ASSERTS
 #  define PURE
 #  define CONST
 #  define HOT
-#endif
+#endif // UM2_ENABLE_ASSERTS
 
 // TODO(kcvaughn): Once C++23 is supported, we can use [[assume(expr)]] instead.
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1774r8.pdf
@@ -82,9 +85,6 @@
 #elif defined(__CUDACC__)
 #  define ASSUME(expr) __assume(expr)
 #else
-#  if !UM2_USE_CLANG_TIDY
-#    error "Unable to determine compiler"
-#  endif
 #  define ASSUME(expr)
 #endif
 
@@ -124,22 +124,20 @@ using F = double;
 using F = float;
 #endif
 
-// Integer type for indices and integers
+// Integer type
 #if UM2_ENABLE_INT64
-using Size = int64_t; // Index type
 using I = int64_t;
 using U = uint64_t;
 HOSTDEV consteval auto
-sizeMax() noexcept -> Size
+sizeMax() noexcept -> I
 {
   return 0x7FFFFFFFFFFFFFFF;
 }
 #else
-using Size = int32_t; // Index type
 using I = int32_t;
 using U = uint32_t;
 HOSTDEV consteval auto
-sizeMax() noexcept -> Size
+sizeMax() noexcept -> I
 {
   return 0x7FFFFFFF;
 }

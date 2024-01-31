@@ -1,58 +1,85 @@
 #pragma once
 
-#include <um2/physics/cross_section.hpp>
-#include <um2/stdlib/vector.hpp>
+#include <um2/physics/nuclide.hpp>
 
 //======================================================================
 // CROSS SECTION LIBRARY
 //======================================================================
 // A multi-group cross section library.
+//
+// The cross section library is collection of nuclides, each of which
+// have a microscopic XSec object. The nuclides are grouped by
+// temperature.
 
 namespace um2
 {
 
-enum class XSReductionStrategy {
-  Max,
-  Mean,
-};
-
-class CrossSection
+class XSLibrary
 {
 
-  Vector<F> _t; // Total macroscopic cross section
+  Vector<F> _group_bounds; // Energy bounds. size = numGroups()
+  Vector<F> _chi;          // Fission spectrum. size = numGroups()
+  Vector<Nuclide> _nuclides;
 
 public:
   //======================================================================
   // Constructors
   //======================================================================
 
-  constexpr CrossSection() noexcept = default;
+  constexpr XSLibrary() noexcept = default;
 
   // NOLINTNEXTLINE(google-explicit-constructor)
-  constexpr CrossSection(Vector<F> const & t) noexcept
-      : _t(t)
+  XSLibrary(String const & filename);
+
+  //======================================================================
+  // Accessors
+  //======================================================================
+
+  [[nodiscard]] constexpr auto
+  groupBounds() noexcept -> Vector<F> &
   {
-#if UM2_ENABLE_ASSERTS
-    ASSERT(!_t.empty());
-    for (auto const & t_i : _t) {
-      ASSERT(t_i >= 0);
-    }
-#endif
+    return _group_bounds;
+  }
+
+  [[nodiscard]] constexpr auto
+  groupBounds() const noexcept -> Vector<F> const &
+  {
+    return _group_bounds;
+  }
+
+  [[nodiscard]] constexpr auto
+  chi() noexcept -> Vector<F> &
+  {
+    return _chi;
+  }
+
+  [[nodiscard]] constexpr auto
+  chi() const noexcept -> Vector<F> const &
+  {
+    return _chi;
+  }
+
+  [[nodiscard]] constexpr auto
+  nuclides() noexcept -> Vector<Nuclide> &
+  {
+    return _nuclides;
+  }
+
+  [[nodiscard]] constexpr auto
+  nuclides() const noexcept -> Vector<Nuclide> const &
+  {
+    return _nuclides;
+  }
+
+  [[nodiscard]] constexpr auto
+  numGroups() const noexcept -> Size
+  {
+    return _group_bounds.size();
   }
 
   //======================================================================
   // Methods
   //======================================================================
-
-  [[nodiscard]] auto constexpr getOneGroupTotalXS(
-      XSReductionStrategy const strategy = XSReductionStrategy::Mean) const noexcept -> F
-  {
-    ASSERT(!_t.empty());
-    if (strategy == XSReductionStrategy::Max) {
-      return *um2::max_element(_t.cbegin(), _t.cend());
-    }
-    return um2::mean(_t.cbegin(), _t.cend());
-  }
 };
 
 } // namespace um2

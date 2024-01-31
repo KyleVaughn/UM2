@@ -1,3 +1,11 @@
+Method to function
+
+eliminate sto in favor of C functions
+
+On files with a reasonable max line size, use fgets instead of readline
+Then use strtol and friends
+Use snprintf for conversion instead of to_string 
+
 Add scattering matrix to Xsec
 Don't store redundant info? Total
   Optimize to be lower triangular when build without upscatter?
@@ -9,8 +17,6 @@ Resolve casts in gmsh API
 Add overlap check to face vertex mesh validate routine
 
 Narrowing uint32_t cast
-
-Handle Size == I now
 
 Modify the Gmsh functions so that they are templated where necessary
 
@@ -35,8 +41,6 @@ SIMD versions of routines for mesh.
 regular grid
   cognitive complex
 
-stdlib -> std::to_string for int, float conversion
-
 
 //===================================================
 noexcept, constexpr everything
@@ -47,9 +51,6 @@ ASSERT_ASSUME
 Comment functions
 //==
 
-Add multidimensional index operator when C++23
-  -> Matrix
-
 Add multidimentional array class with elementwise operations
   - Use for partition classes with children
 
@@ -57,6 +58,7 @@ face overlap using connectivity
   - identify boundary edges which are not on the exterior
 
 Use connectivity for ray tracing
+  -> Vertex, not edge
 
 SIMD ray/mesh intersection. Can do many at once. Make RayPacket class. Write intersection
 routines for edge, polygon, etc.
@@ -67,8 +69,6 @@ SIMD Vector primitives
 Use std::simd. Want exp(vector), but only implemented by SVML by intel.
 Wait until C++26 or use VCDevel std simd, the implementation that will be in GCC.
 Benchmark
-
-Use assume once C++ 23 is supported. See config file
 
 Functions to prevent std::string/std::vector usage in examples and tutorials
   One should bundle functions to hide complexity
@@ -111,7 +111,6 @@ BUGS
 ALGORITHMS
 ===============================================================================
 1. validate intersect
-2. Vector insert?
 3. Consistent testing of mesh point inside.
       getOrientedEdge -> return bool, pass edge by ref
 
@@ -123,5 +122,4 @@ DATA STRUCTURES
 ===============================================================================
 FUTURE
 ===============================================================================
-2. Matplotlib
-1. um2::copy/std::copy bug
+1. Matplotlib

@@ -38,7 +38,7 @@
 namespace um2
 {
 
-template <Size P, Size N>
+template <I P, I N>
 class FaceVertexMesh
 {
 
@@ -51,10 +51,10 @@ private:
   bool _is_morton_sorted = false;
   bool _has_vf = false;
   Vector<Point2> _v;     // vertices
-  Vector<FaceConn> _fv;   // face-vertex connectivity
-  Vector<I> _vf_offsets;  // A prefix sum of the number of faces to which each
-                          // vertex belongs. size = num_vertices + 1
-  Vector<I> _vf;          // vertex-face connectivity
+  Vector<FaceConn> _fv;  // face-vertex connectivity
+  Vector<I> _vf_offsets; // A prefix sum of the number of faces to which each
+                         // vertex belongs. size = num_vertices + 1
+  Vector<I> _vf;         // vertex-face connectivity
 
 public:
   //===========================================================================
@@ -74,22 +74,22 @@ public:
   //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numVertices() const noexcept -> Size;
+  numVertices() const noexcept -> I;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numFaces() const noexcept -> Size;
+  numFaces() const noexcept -> I;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getVertex(Size i) const noexcept -> Point2;
+  getVertex(I i) const noexcept -> Point2;
 
   HOSTDEV [[nodiscard]] constexpr auto
   vertices() noexcept -> Vector<Point2> &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getEdge(Size iface, Size iedge) const noexcept -> Edge;
+  getEdge(I iface, I iedge) const noexcept -> Edge;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getFace(Size i) const noexcept -> Face;
+  getFace(I i) const noexcept -> Face;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   vertexFaceOffsets() const noexcept -> Vector<I> const &;
@@ -114,10 +114,10 @@ public:
   boundingBox() const noexcept -> AxisAlignedBox2;
 
   PURE [[nodiscard]] auto
-  faceContaining(Point2 const & p) const noexcept -> Size;
+  faceContaining(Point2 const & p) const noexcept -> I;
 
   void
-  flipFace(Size i) noexcept;
+  flipFace(I i) noexcept;
 
   void
   mortonSort();
@@ -133,16 +133,16 @@ public:
 
   void
   validate();
-//  //
-//  //  void
-//  //  toPolytopeSoup(PolytopeSoup & soup) const noexcept;
-//  //
-//  //  //  //  void
-//  //  //  //  getFaceAreas(Vector<F> & areas) const noexcept;
-//  //  //  //
-//  //  //  //  void
-//  //  //  //  getUniqueEdges(Vector<Edge> & edges) const noexcept;
-//  //  //  //
+  //  //
+  //  //  void
+  //  //  toPolytopeSoup(PolytopeSoup & soup) const noexcept;
+  //  //
+  //  //  //  //  void
+  //  //  //  //  getFaceAreas(Vector<F> & areas) const noexcept;
+  //  //  //  //
+  //  //  //  //  void
+  //  //  //  //  getUniqueEdges(Vector<Edge> & edges) const noexcept;
+  //  //  //  //
   void
   intersect(Ray2 const & ray, Vector<F> & intersections) const noexcept;
 };
@@ -151,13 +151,13 @@ public:
 // Aliases
 //==============================================================================
 
-template <Size P, Size N>
+template <I P, I N>
 using FVM = FaceVertexMesh<P, N>;
 
 // Polynomial order
-template <Size N>
+template <I N>
 using LinearFVM = FVM<1, N>;
-template <Size N>
+template <I N>
 using QuadraticFVM = FVM<2, N>;
 
 // Number of vertices per face
@@ -170,9 +170,9 @@ using Quad8FVM = QuadraticFVM<8>;
 // Constructors
 //==============================================================================
 
-template <Size P, Size N>
-constexpr FaceVertexMesh<P, N>::FaceVertexMesh(
-    Vector<Point2> const & v, Vector<FaceConn> const & fv) noexcept
+template <I P, I N>
+constexpr FaceVertexMesh<P, N>::FaceVertexMesh(Vector<Point2> const & v,
+                                               Vector<FaceConn> const & fv) noexcept
     : _v(v),
       _fv(fv)
 {
@@ -182,97 +182,86 @@ constexpr FaceVertexMesh<P, N>::FaceVertexMesh(
 // Accessors
 //==============================================================================
 
-template <Size P, Size N>
+template <I P, I N>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-FaceVertexMesh<P, N>::numVertices() const noexcept -> Size
+FaceVertexMesh<P, N>::numVertices() const noexcept -> I
 {
   return _v.size();
 }
 
- template <Size P, Size N>
+template <I P, I N>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-FaceVertexMesh<P, N>::numFaces() const noexcept -> Size
+FaceVertexMesh<P, N>::numFaces() const noexcept -> I
 {
   return _fv.size();
 }
 
- template <Size P, Size N>
+template <I P, I N>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-FaceVertexMesh<P, N>::getVertex(Size i) const noexcept -> Point2
+FaceVertexMesh<P, N>::getVertex(I i) const noexcept -> Point2
 {
   return _v[i];
 }
 
- template <Size P, Size N>
+template <I P, I N>
 HOSTDEV [[nodiscard]] constexpr auto
 FaceVertexMesh<P, N>::vertices() noexcept -> Vector<Point2> &
 {
   return _v;
 }
 
- template <Size P, Size N>
+template <I P, I N>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-FaceVertexMesh<P, N>::getEdge(Size const iface, Size const iedge) const noexcept
-    -> Edge
+FaceVertexMesh<P, N>::getEdge(I const iface, I const iedge) const noexcept -> Edge
 {
   ASSERT(iface < numFaces());
   if constexpr (P == 1) {
-    return LineSegment2(_v[_fv[iface][iedge]],
-                        _v[_fv[iface][(iedge + 1) % N]]);
+    return LineSegment2(_v[_fv[iface][iedge]], _v[_fv[iface][(iedge + 1) % N]]);
   } else if constexpr (P == 2) {
-    Size constexpr m = N / 2;
-    return QuadraticSegment2(_v[_fv[iface][iedge]],
-                             _v[_fv[iface][(iedge + 1) % N]],
+    I constexpr m = N / 2;
+    return QuadraticSegment2(_v[_fv[iface][iedge]], _v[_fv[iface][(iedge + 1) % N]],
                              _v[_fv[iface][iedge + m]]);
   } else {
     __builtin_unreachable();
   }
 }
 
- template <Size P, Size N>
+template <I P, I N>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-FaceVertexMesh<P, N>::getFace(Size i) const noexcept -> Face
+FaceVertexMesh<P, N>::getFace(I i) const noexcept -> Face
 {
   ASSERT(i < numFaces());
   if constexpr (P == 1 && N == 3) {
-    return Triangle2(_v[_fv[i][0]],
-                          _v[_fv[i][1]],
-                          _v[_fv[i][2]]);
+    return Triangle2(_v[_fv[i][0]], _v[_fv[i][1]], _v[_fv[i][2]]);
   } else if constexpr (P == 1 && N == 4) {
-    return Quadrilateral2(
-        _v[_fv[i][0]], _v[_fv[i][1]],
-        _v[_fv[i][2]], _v[_fv[i][3]]);
+    return Quadrilateral2(_v[_fv[i][0]], _v[_fv[i][1]], _v[_fv[i][2]], _v[_fv[i][3]]);
   } else if constexpr (P == 2 && N == 6) {
-    return QuadraticTriangle2(
-        _v[_fv[i][0]], _v[_fv[i][1]],
-        _v[_fv[i][2]], _v[_fv[i][3]],
-        _v[_fv[i][4]], _v[_fv[i][5]]);
+    return QuadraticTriangle2(_v[_fv[i][0]], _v[_fv[i][1]], _v[_fv[i][2]], _v[_fv[i][3]],
+                              _v[_fv[i][4]], _v[_fv[i][5]]);
   } else if constexpr (P == 2 && N == 8) {
-    return QuadraticQuadrilateral2(
-        _v[_fv[i][0]], _v[_fv[i][1]],
-        _v[_fv[i][2]], _v[_fv[i][3]],
-        _v[_fv[i][4]], _v[_fv[i][5]],
-        _v[_fv[i][6]], _v[_fv[i][7]]);
+    return QuadraticQuadrilateral2(_v[_fv[i][0]], _v[_fv[i][1]], _v[_fv[i][2]],
+                                   _v[_fv[i][3]], _v[_fv[i][4]], _v[_fv[i][5]],
+                                   _v[_fv[i][6]], _v[_fv[i][7]]);
   } else {
     __builtin_unreachable();
   }
 }
 
- template <Size P, Size N>
+template <I P, I N>
 PURE HOSTDEV constexpr auto
 FaceVertexMesh<P, N>::vertexFaceOffsets() const noexcept -> Vector<I> const &
 {
   return _vf_offsets;
 }
 
- template <Size P, Size N>
+template <I P, I N>
 PURE HOSTDEV constexpr auto
 FaceVertexMesh<P, N>::vertexFaceConn() const noexcept -> Vector<I> const &
 {
   return _vf;
 }
 
- template <Size P, Size N>
+template <I P, I N>
 PURE HOSTDEV constexpr auto
 FaceVertexMesh<P, N>::faceVertexConn() const noexcept -> Vector<FaceConn> const &
 {
@@ -283,15 +272,14 @@ FaceVertexMesh<P, N>::faceVertexConn() const noexcept -> Vector<FaceConn> const 
 // Non-member functions
 //==============================================================================
 
-template <Size N>    
-void    
-intersect(Ray2 const & ray, LinearFVM<N> const & mesh,    
+template <I N>
+void
+intersect(Ray2 const & ray, LinearFVM<N> const & mesh,
           Vector<F> & intersections) noexcept;
 
-template <Size N>    
-void    
-intersect(Ray2 const & ray, QuadraticFVM<N> const & mesh,    
-          Vector<F> & intersections) noexcept; 
-
+template <I N>
+void
+intersect(Ray2 const & ray, QuadraticFVM<N> const & mesh,
+          Vector<F> & intersections) noexcept;
 
 } // namespace um2

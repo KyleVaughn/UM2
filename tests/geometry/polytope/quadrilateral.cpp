@@ -4,13 +4,13 @@
 
 F constexpr eps = um2::eps_distance * condCast<F>(10);
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeQuad() -> um2::Quadrilateral<D>
 {
   um2::Quadrilateral<D> quad;
-  for (Size i = 0; i < 4; ++i) {
-    for (Size j = 0; j < D; ++j) {
+  for (I i = 0; i < 4; ++i) {
+    for (I j = 0; j < D; ++j) {
       quad[i][j] = condCast<F>(0);
     }
   }
@@ -21,13 +21,13 @@ makeQuad() -> um2::Quadrilateral<D>
   return quad;
 }
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeTriQuad() -> um2::Quadrilateral<D>
 {
   um2::Quadrilateral<D> quad;
-  for (Size i = 0; i < 4; ++i) {
-    for (Size j = 0; j < D; ++j) {
+  for (I i = 0; i < 4; ++i) {
+    for (I j = 0; j < D; ++j) {
       quad[i][j] = condCast<F>(0);
     }
   }
@@ -43,7 +43,7 @@ makeTriQuad() -> um2::Quadrilateral<D>
 // Interpolation
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(interpolate)
 {
@@ -62,7 +62,7 @@ TEST_CASE(interpolate)
 // jacobian
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(jacobian)
 {
@@ -84,7 +84,7 @@ TEST_CASE(jacobian)
 // edge
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(edge)
 {
@@ -142,7 +142,7 @@ TEST_CASE(contains)
 // area
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(area)
 {
@@ -158,7 +158,7 @@ TEST_CASE(area)
 //==============================================================================
 // perimeter
 //==============================================================================
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(perimeter)
 {
@@ -170,7 +170,7 @@ TEST_CASE(perimeter)
 // centroid
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(centroid)
 {
@@ -193,7 +193,7 @@ TEST_CASE(centroid)
 // boundingBox
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
@@ -228,34 +228,33 @@ HOSTDEV
 TEST_CASE(meanChordLength)
 {
   um2::Quadrilateral<2> const quad = makeQuad<2>();
-  ASSERT_NEAR(quad.meanChordLength(), um2::pi_4<F>, 
-              eps);
+  ASSERT_NEAR(quad.meanChordLength(), um2::pi_4<F>, eps);
 }
 
 #if UM2_USE_CUDA
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(interpolate, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(jacobian, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(edge, D);
 
 MAKE_CUDA_KERNEL(isConvex);
 
 MAKE_CUDA_KERNEL(contains);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(area, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(perimeter, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(centroid, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(boundingBox, D);
 
 MAKE_CUDA_KERNEL(isCCW_flipFace);
@@ -263,7 +262,7 @@ MAKE_CUDA_KERNEL(isCCW_flipFace);
 MAKE_CUDA_KERNEL(meanChordLength);
 #endif
 
-template <Size D>
+template <I D>
 TEST_SUITE(Quadrilateral)
 {
   TEST_HOSTDEV(interpolate, 1, 1, D);

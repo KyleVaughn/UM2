@@ -28,7 +28,7 @@
 namespace um2
 {
 
-template <Size D, typename P>
+template <I D, typename P>
 class RegularPartition
 {
 
@@ -87,9 +87,9 @@ using RegularPartition3 = RegularPartition<3, P>;
 // Constructors
 //==============================================================================
 
-template <Size D, typename P>
+template <I D, typename P>
 constexpr RegularPartition<D, P>::RegularPartition(RegularGrid<D> const & grid,
-                                                      Vector<P> const & children) noexcept
+                                                   Vector<P> const & children) noexcept
     : _grid(grid),
       _children(children)
 {
@@ -103,14 +103,14 @@ constexpr RegularPartition<D, P>::RegularPartition(RegularGrid<D> const & grid,
 // Accessors
 //==============================================================================
 
-template <Size D, typename P>
+template <I D, typename P>
 PURE HOSTDEV constexpr auto
 RegularPartition<D, P>::grid() const noexcept -> RegularGrid<D> const &
 {
   return _grid;
 }
 
-template <Size D, typename P>
+template <I D, typename P>
 PURE HOSTDEV constexpr auto
 RegularPartition<D, P>::children() const noexcept -> Vector<P> const &
 {
@@ -121,20 +121,18 @@ RegularPartition<D, P>::children() const noexcept -> Vector<P> const &
 // Methods
 //==============================================================================
 
-template <Size D, typename P>
+template <I D, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RegularPartition<D, P>::getChild(Args... args) noexcept
-    -> P &
+PURE HOSTDEV constexpr auto RegularPartition<D, P>::getChild(Args... args) noexcept -> P &
 {
   return _children[_grid.getFlatIndex(args...)];
 }
 
-template <Size D, typename P>
+template <I D, typename P>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV
-    constexpr auto RegularPartition<D, P>::getChild(Args... args) const noexcept
+PURE HOSTDEV constexpr auto RegularPartition<D, P>::getChild(Args... args) const noexcept
     -> P const &
 {
   return _children[_grid.getFlatIndex(args...)];

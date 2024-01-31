@@ -56,13 +56,13 @@ HOSTDEV inline auto
 makeTri6ReferenceMesh() -> um2::Tri6FVM
 {
   um2::Vector<um2::Point2> const v = {
-      {                  0,                   0},
-      {                  1,                   0},
-      {                  0,                   1},
+      {               0,                0},
+      {               1,                0},
+      {               0,                1},
       {condCast<F>(0.5), condCast<F>(0.0)},
       {condCast<F>(0.7), condCast<F>(0.5)},
       {condCast<F>(0.0), condCast<F>(0.5)},
-      {                  1,                   1},
+      {               1,                1},
       {condCast<F>(1.0), condCast<F>(0.5)},
       {condCast<F>(0.5), condCast<F>(1.0)}
   };

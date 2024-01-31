@@ -16,7 +16,7 @@ namespace um2
 // Aliases
 //==============================================================================
 
-template <Size D>
+template <I D>
 using Point = Vec<D, F>;
 
 using Point1 = Point<1>;
@@ -45,7 +45,7 @@ inline constexpr F inf_distance = condCast<F>(1e8); // 1000 km
 // Methods
 //==============================================================================
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 midpoint(Point<D> a, Point<D> const & b) noexcept -> Point<D>
 {
@@ -54,7 +54,7 @@ midpoint(Point<D> a, Point<D> const & b) noexcept -> Point<D>
   return a /= 2;
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 isApprox(Point<D> const & a, Point<D> const & b) noexcept -> bool
 {
@@ -77,8 +77,7 @@ areCCW(Point2 const & a, Point2 const & b, Point2 const & c) noexcept -> bool
 // Are 3 planar points in counter-clockwise order? We allow for a small amount of
 // floating point error.
 PURE HOSTDEV constexpr auto
-areApproxCCW(Point2 const & a, Point2 const & b, Point2 const & c) noexcept
-    -> bool
+areApproxCCW(Point2 const & a, Point2 const & b, Point2 const & c) noexcept -> bool
 {
   // 2D cross product, of (b - a) and (c - a).
   auto const ab_x = b[0] - a[0];

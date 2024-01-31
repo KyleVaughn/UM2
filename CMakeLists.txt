@@ -47,16 +47,25 @@ option(UM2_BUILD_TESTS      "Build tests"                       ON)
 option(UM2_BUILD_TUTORIAL   "Build tutorial"                    OFF)
 
 # Use external dependencies
-option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
-option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
-option(UM2_USE_OPENMP       "Enable OpenMP"                     ON)
-option(UM2_USE_PNG          "Enable PNG"                        OFF)
-option(UM2_USE_TBB          "Enable Intel TBB"                  ON)
+option(UM2_USE_CUDA         "Enable CUDA"                                 OFF)
+option(UM2_USE_GMSH         "Enable Gmsh"                                 ON)
+option(UM2_USE_OPENMP       "Enable OpenMP"                               ON)
+option(UM2_USE_PNG          "Enable PNG"                                  OFF)
+option(UM2_USE_TBB          "Enable Intel TBB"                            ON)
+option(UM2_USE_XSLIB        "Enable external cross section library usage" ON)
 
 # Enable/disable features
 option(UM2_ENABLE_FASTMATH  "Enable fast math"                  ON) # CPU and GPU
 option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"      ON)
 option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large meshes
+
+if (UM2_USE_XSLIB)
+  # if XSLibraryPath is not set, set warn the user
+  if (NOT DEFINED XSLIB_PATH)
+    message(WARNING "XSLIB_PATH is not set. Please set it to the absolute path of the " 
+      "desired cross section library, otherwise some features will not be available.")
+  endif()
+endif()
 
 #===============================================================================
 # Developer options
@@ -91,9 +100,9 @@ option(UM2_USE_VALGRIND      "Enable valgrind"                 ${UM2_DEV_MODE})
 # Debug = 4,      // errors, warnings, info and debug
 # Trace = 5,      // errors, warnings, info, debug and trace
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(UM2_LOG_LEVEL 5)
+  set(UM2_MIN_LOG_LEVEL 5)
 else()
-  set(UM2_LOG_LEVEL 3)
+  set(UM2_MIN_LOG_LEVEL 3)
 endif()
 
 #===============================================================================
@@ -143,23 +152,25 @@ endif()
 
 # Sources
 set(UM2_SOURCES
+    "src/common/settings.cpp"
     "src/common/log.cpp"
     "src/common/sort.cpp"
     "src/math/stats.cpp"
     "src/math/angular_quadrature.cpp"
     "src/geometry/morton_sort_points.cpp"
-    "src/physics/nuclide.cpp"
-    #    "src/mesh/polytope_soup.cpp"
-    #    "src/mesh/face_vertex_mesh.cpp"
-    #    "src/mpact/spatial_partition.cpp"
-    "src/gmsh/base_gmsh_api.cpp"
-    #    "src/gmsh/io.cpp"
-    #    "src/gmsh/model.cpp"
-    #    "src/gmsh/mesh.cpp"
-    #    ##    # visualization
-    #    ##    "src/visualization/Image2D.cpp"
-    "src/um2.cpp"
-    #    "src/um2c.cpp"
+    "src/mesh/polytope_soup.cpp"
+    "src/mesh/face_vertex_mesh.cpp"
+    #    "src/physics/nuclide.cpp"
+    #    "src/physics/cross_section_library.cpp"
+    #    #    "src/mpact/spatial_partition.cpp"
+    #    "src/gmsh/base_gmsh_api.cpp"
+    #    #    "src/gmsh/io.cpp"
+    #    #    "src/gmsh/model.cpp"
+    #    #    "src/gmsh/mesh.cpp"
+    #    #    ##    # visualization
+    #    #    ##    "src/visualization/Image2D.cpp"
+    #    "src/um2.cpp"
+    #    #    "src/um2c.cpp"
   )
 
 add_library(um2 SHARED ${UM2_SOURCES})

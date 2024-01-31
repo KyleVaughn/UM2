@@ -93,13 +93,13 @@ TEST_CASE(poly_soup_constructor)
   um2::Quad8FVM const mesh_ref = makeQuad8ReferenceMesh();
   um2::Quad8FVM const mesh(poly_soup);
   ASSERT(mesh.numVertices() == mesh_ref.numVertices());
-  for (Size i = 0; i < mesh.numVertices(); ++i) {
+  for (I i = 0; i < mesh.numVertices(); ++i) {
     ASSERT(um2::isApprox(mesh.getVertex(i), mesh_ref.getVertex(i)));
   }
-  for (Size i = 0; i < mesh.numFaces(); ++i) {
+  for (I i = 0; i < mesh.numFaces(); ++i) {
     auto const face = mesh.getFace(i);
     auto const face_ref = mesh_ref.getFace(i);
-    for (Size j = 0; j < 8; ++j) {
+    for (I j = 0; j < 8; ++j) {
       ASSERT(um2::isApprox(face[j], face_ref[j]));
     }
   }

@@ -4,13 +4,13 @@
 
 F constexpr eps = um2::eps_distance * condCast<F>(10);
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeTri() -> um2::Triangle<D>
 {
   um2::Triangle<D> this_tri;
-  for (Size i = 0; i < 3; ++i) {
-    for (Size j = 0; j < D; ++j) {
+  for (I i = 0; i < 3; ++i) {
+    for (I j = 0; j < D; ++j) {
       this_tri[i][j] = condCast<F>(0);
     }
   }
@@ -23,7 +23,7 @@ makeTri() -> um2::Triangle<D>
 // Interpolation
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(interpolate)
 {
@@ -40,7 +40,7 @@ TEST_CASE(interpolate)
 // jacobian
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(jacobian)
 {
@@ -69,7 +69,7 @@ TEST_CASE(jacobian)
 // edge
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(edge)
 {
@@ -107,7 +107,7 @@ TEST_CASE(contains)
 // area
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(area)
 {
@@ -121,7 +121,7 @@ TEST_CASE(area)
 // perimeter
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(perimeter)
 {
@@ -135,7 +135,7 @@ TEST_CASE(perimeter)
 // centroid
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(centroid)
 {
@@ -149,7 +149,7 @@ TEST_CASE(centroid)
 // boundingBox
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
@@ -190,27 +190,27 @@ TEST_CASE(meanChordLength)
 }
 
 #if UM2_USE_CUDA
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(interpolate, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(jacobian, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(edge, D);
 
 MAKE_CUDA_KERNEL(contains);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(area, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(perimeter, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(centroid, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(boundingBox, D);
 
 MAKE_CUDA_KERNEL(isCCW_flipFace);
@@ -218,7 +218,7 @@ MAKE_CUDA_KERNEL(isCCW_flipFace);
 MAKE_CUDA_KERNEL(meanChordLength);
 #endif
 
-template <Size D>
+template <I D>
 TEST_SUITE(Triangle)
 {
   TEST_HOSTDEV(interpolate, 1, 1, D);

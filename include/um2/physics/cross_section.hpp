@@ -19,12 +19,12 @@
 namespace um2
 {
 
-enum class XSReductionStrategy {
+enum class XSecReduction {
   Max,
   Mean,
 };
 
-class CrossSection
+class XSec
 {
   bool _is_macroscopic = false;
 
@@ -35,28 +35,32 @@ public:
   // Constructors
   //======================================================================
 
-  constexpr CrossSection() noexcept = default;
+  constexpr XSec() noexcept = default;
 
   //======================================================================
   // Accessors
   //======================================================================
 
-  [[nodiscard]] constexpr auto isMacroscopic() const noexcept -> bool
+  [[nodiscard]] constexpr auto
+  isMacroscopic() const noexcept -> bool
   {
     return _is_macroscopic;
   }
 
-  [[nodiscard]] constexpr auto numGroups() const noexcept -> Size
+  [[nodiscard]] constexpr auto
+  numGroups() const noexcept -> Size
   {
     return _t.size();
   }
 
-  [[nodiscard]] constexpr auto t() noexcept -> Vector<F> &
+  [[nodiscard]] constexpr auto
+  t() noexcept -> Vector<F> &
   {
     return _t;
   }
 
-  [[nodiscard]] constexpr auto t() const noexcept -> Vector<F> const &
+  [[nodiscard]] constexpr auto
+  t() const noexcept -> Vector<F> const &
   {
     return _t;
   }
@@ -65,7 +69,8 @@ public:
   // Methods
   //======================================================================
 
-  void validate() const noexcept
+  void
+  validate() const noexcept
   {
     if (_t.empty()) {
       LOG_ERROR("Cross section has an empty total XS vector");
@@ -77,15 +82,15 @@ public:
     }
   }
 
-  [[nodiscard]] auto constexpr get1GroupTotalXS(
-      XSReductionStrategy const strategy = XSReductionStrategy::Mean) const noexcept -> F
+  [[nodiscard]] auto constexpr get1GroupTotalXSec(
+      XSecReduction const strategy = XSecReduction::Mean) const noexcept -> F
   {
     ASSERT(!_t.empty());
-    if (strategy == XSReductionStrategy::Max) {
+    if (strategy == XSecReduction::Max) {
       return *um2::max_element(_t.cbegin(), _t.cend());
     }
     return um2::mean(_t.cbegin(), _t.cend());
   }
-}; // class CrossSection
+}; // class XS
 
 } // namespace um2

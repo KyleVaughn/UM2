@@ -15,10 +15,7 @@ TEST_CASE(toZAID)
   ASSERT(um2::toZAID("U235") == 92235);
 }
 
-TEST_SUITE(Nuclide)
-{
-  TEST(toZAID);
-}
+TEST_SUITE(Nuclide) { TEST(toZAID); }
 
 auto
 main() -> int

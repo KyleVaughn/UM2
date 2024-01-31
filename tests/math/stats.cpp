@@ -33,7 +33,7 @@ TEST_CASE(variance)
 }
 
 #ifndef __clang__
-#pragma GCC diagnostic pop
+#  pragma GCC diagnostic pop
 #endif
 
 #if UM2_USE_CUDA

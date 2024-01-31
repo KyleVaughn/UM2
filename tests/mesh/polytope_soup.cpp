@@ -165,10 +165,9 @@ TEST_CASE(sortElsets)
 TEST_CASE(mortonSortVertices)
 {
   um2::PolytopeSoup soup;
-  for (Size j = 0; j < 3; ++j) {
-    for (Size i = 0; i < 3; ++i) {
-      soup.addVertex(
-          um2::Point3(condCast<F>(i), condCast<F>(j), condCast<F>(0)));
+  for (I j = 0; j < 3; ++j) {
+    for (I i = 0; i < 3; ++i) {
+      soup.addVertex(um2::Point3(condCast<F>(i), condCast<F>(j), condCast<F>(0)));
     }
   }
   soup.addElement(um2::VTKElemType::Quad, {0, 1, 4, 3});
@@ -195,10 +194,9 @@ TEST_CASE(mortonSortVertices)
 TEST_CASE(mortonSortElements)
 {
   um2::PolytopeSoup soup;
-  for (Size j = 0; j < 3; ++j) {
-    for (Size i = 0; i < 3; ++i) {
-      soup.addVertex(
-          um2::Point3(condCast<F>(i), condCast<F>(j), condCast<F>(0)));
+  for (I j = 0; j < 3; ++j) {
+    for (I i = 0; i < 3; ++i) {
+      soup.addVertex(um2::Point3(condCast<F>(i), condCast<F>(j), condCast<F>(0)));
     }
   }
   soup.addElement(um2::VTKElemType::Triangle, {0, 1, 3});

@@ -4,15 +4,15 @@
 
 F constexpr eps = condCast<F>(1e-6);
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeGrid() -> um2::RegularGrid<D>
 {
   static_assert(1 <= D && D <= 3, "D must be in [1, 3]");
   um2::Point<D> minima;
   um2::Point<D> spacing;
-  um2::Vec<D, Size> num_cells;
-  for (Size i = 0; i < D; ++i) {
+  um2::Vec<D, I> num_cells;
+  for (I i = 0; i < D; ++i) {
     minima[i] = condCast<F>(i + 1);
     spacing[i] = condCast<F>(i + 1);
     num_cells[i] = i + 1;
@@ -20,7 +20,7 @@ makeGrid() -> um2::RegularGrid<D>
   return {minima, spacing, num_cells};
 }
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(accessors)
 {
@@ -57,7 +57,7 @@ TEST_CASE(accessors)
   }
 }
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
@@ -88,7 +88,7 @@ TEST_CASE(getBox)
   F const forth = condCast<F>(1) / condCast<F>(4);
   um2::Point2 const minima = {1, -1};
   um2::Vec2<F> const spacing = {ahalf, forth};
-  um2::Vec2<Size> const num_cells = {4, 8};
+  um2::Vec2<I> const num_cells = {4, 8};
   um2::RegularGrid2 const grid(minima, spacing, num_cells);
   um2::AxisAlignedBox2 box = grid.getBox(0, 0);
   um2::AxisAlignedBox2 box_ref = {
@@ -133,20 +133,18 @@ TEST_CASE(getBox)
   ASSERT(isApprox(box, box_ref));
 }
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(getCellCentroid)
 {
   um2::RegularGrid<D> const grid = makeGrid<D>();
   if constexpr (D == 1) {
     auto const x = grid.getCellCentroid(0);
-    ASSERT_NEAR(x[0], grid.minima()[0] + grid.spacing()[0] / condCast<F>(2),
-                eps);
+    ASSERT_NEAR(x[0], grid.minima()[0] + grid.spacing()[0] / condCast<F>(2), eps);
   }
   if constexpr (D == 2) {
     auto const y = grid.getCellCentroid(0, 0);
-    ASSERT_NEAR(y[1], grid.minima()[1] + grid.spacing()[1] / condCast<F>(2),
-                eps);
+    ASSERT_NEAR(y[1], grid.minima()[1] + grid.spacing()[1] / condCast<F>(2), eps);
   }
 }
 
@@ -155,14 +153,14 @@ TEST_CASE(getCellIndicesIntersecting)
 {
   um2::Point2 const minima(1, -1);
   um2::Vec2<F> const spacing(2, 1);
-  um2::Vec2<Size> const num_cells(5, 8);
+  um2::Vec2<I> const num_cells(5, 8);
   // Grid ranges from 1 to 11 in x and -1 to 7 in y.
   um2::RegularGrid2 const grid(minima, spacing, num_cells);
 
   // A box in a single cell.
   um2::AxisAlignedBox2 const box0({condCast<F>(3.1), condCast<F>(1.1)},
-                                     {condCast<F>(3.9), condCast<F>(1.9)});
-  um2::Vec<4, Size> const range0 = grid.getCellIndicesIntersecting(box0);
+                                  {condCast<F>(3.9), condCast<F>(1.9)});
+  um2::Vec<4, I> const range0 = grid.getCellIndicesIntersecting(box0);
   ASSERT(range0[0] == 1);
   ASSERT(range0[1] == 2);
   ASSERT(range0[2] == 1);
@@ -170,8 +168,8 @@ TEST_CASE(getCellIndicesIntersecting)
 
   // A box with perfect alignment.
   um2::AxisAlignedBox2 const box1({condCast<F>(3), condCast<F>(1)},
-                                     {condCast<F>(5), condCast<F>(2)});
-  um2::Vec<4, Size> const range1 = grid.getCellIndicesIntersecting(box1);
+                                  {condCast<F>(5), condCast<F>(2)});
+  um2::Vec<4, I> const range1 = grid.getCellIndicesIntersecting(box1);
   ASSERT(range1[0] == 0 || range1[0] == 1);
   ASSERT(range1[1] == 1 || range1[1] == 2);
   ASSERT(range1[2] == 1 || range1[2] == 2); // Valid in either cell.
@@ -179,8 +177,8 @@ TEST_CASE(getCellIndicesIntersecting)
 
   // A box in multiple cells.
   um2::AxisAlignedBox2 const box2({condCast<F>(3.1), condCast<F>(1.1)},
-                                     {condCast<F>(5.9), condCast<F>(1.9)});
-  um2::Vec<4, Size> const range2 = grid.getCellIndicesIntersecting(box2);
+                                  {condCast<F>(5.9), condCast<F>(1.9)});
+  um2::Vec<4, I> const range2 = grid.getCellIndicesIntersecting(box2);
   ASSERT(range2[0] == 1);
   ASSERT(range2[1] == 2);
   ASSERT(range2[2] == 2);
@@ -188,8 +186,8 @@ TEST_CASE(getCellIndicesIntersecting)
 
   // A box in 4 cells.
   um2::AxisAlignedBox2 const box3({condCast<F>(3.1), condCast<F>(1.1)},
-                                     {condCast<F>(5.9), condCast<F>(2.9)});
-  um2::Vec<4, Size> const range3 = grid.getCellIndicesIntersecting(box3);
+                                  {condCast<F>(5.9), condCast<F>(2.9)});
+  um2::Vec<4, I> const range3 = grid.getCellIndicesIntersecting(box3);
   ASSERT(range3[0] == 1);
   ASSERT(range3[1] == 2);
   ASSERT(range3[2] == 2);
@@ -201,11 +199,10 @@ TEST_CASE(getCellIndexContaining)
 {
   um2::Point2 const minima(1, -1);
   um2::Vec2<F> const spacing(2, 1);
-  um2::Vec2<Size> const num_cells(5, 8);
+  um2::Vec2<I> const num_cells(5, 8);
   // Grid ranges from 1 to 11 in x and -1 to 7 in y.
   um2::RegularGrid2 const grid(minima, spacing, num_cells);
-  um2::Vec<2, Size> id =
-      grid.getCellIndexContaining({condCast<F>(1.1), condCast<F>(1.1)});
+  um2::Vec<2, I> id = grid.getCellIndexContaining({condCast<F>(1.1), condCast<F>(1.1)});
   ASSERT(id[0] == 0);
   ASSERT(id[1] == 2);
   id = grid.getCellIndexContaining({condCast<F>(4.9), condCast<F>(2.1)});
@@ -214,27 +211,27 @@ TEST_CASE(getCellIndexContaining)
 }
 
 #if UM2_USE_CUDA
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(constructor, D)
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(accessors, D)
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(boundingBox, D)
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(getCellCentroid, D)
 
 MAKE_CUDA_KERNEL(getBox)
 
-MAKE_CUDA_KERNEL(getCellIndicesIntersecting)
+    MAKE_CUDA_KERNEL(getCellIndicesIntersecting)
 
-MAKE_CUDA_KERNEL(getCellIndexContaining)
+        MAKE_CUDA_KERNEL(getCellIndexContaining)
 #endif
 
-template <Size D>
-TEST_SUITE(RegularGrid)
+            template <I D>
+            TEST_SUITE(RegularGrid)
 {
   TEST_HOSTDEV(accessors, 1, 1, D);
   TEST_HOSTDEV(boundingBox, 1, 1, D);

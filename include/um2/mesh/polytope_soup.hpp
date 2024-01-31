@@ -10,8 +10,6 @@
 #include <H5Cpp.h>
 #include <pugixml.hpp>
 
-// TODO (kcvaughn): Alphabetize functions
-
 namespace um2
 {
 
@@ -81,34 +79,34 @@ public:
   //==============================================================================
 
   auto
-  addElement(VTKElemType type, Vector<I> const & conn) -> Size;
+  addElement(VTKElemType type, Vector<I> const & conn) -> I;
 
   auto
-  addElset(String const & name, Vector<I> const & ids, Vector<F> data = {}) -> Size;
+  addElset(String const & name, Vector<I> const & ids, Vector<F> data = {}) -> I;
 
   auto
-  addVertex(F x, F y, F z = 0) -> Size;
+  addVertex(F x, F y, F z = 0) -> I;
 
   auto
-  addVertex(Point3 const & p) -> Size;
+  addVertex(Point3 const & p) -> I;
 
   [[nodiscard]] auto
   compareTo(PolytopeSoup const & other) const -> int;
 
   void
-  getElement(Size i, VTKElemType & type, Vector<I> & conn) const;
+  getElement(I i, VTKElemType & type, Vector<I> & conn) const;
 
   [[nodiscard]] auto
-  getElementBoundingBox(Size i) const -> AxisAlignedBox3;
+  getElementBoundingBox(I i) const -> AxisAlignedBox3;
 
   [[nodiscard]] auto
-  getElementCentroid(Size i) const -> Point3;
+  getElementCentroid(I i) const -> Point3;
 
   [[nodiscard]] constexpr auto
   getElemTypes() const -> Vector<VTKElemType>;
 
   void
-  getElset(Size i, String & name, Vector<I> & ids, Vector<F> & data) const;
+  getElset(I i, String & name, Vector<I> & ids, Vector<F> & data) const;
 
   void
   getMaterialIDs(Vector<MaterialID> & material_ids,
@@ -124,7 +122,7 @@ public:
   getSubmesh(String const & elset_name, PolytopeSoup & submesh) const;
 
   PURE [[nodiscard]] constexpr auto
-  getVertex(Size i) const -> Point3 const &;
+  getVertex(I i) const -> Point3 const &;
 
   // Sort the vertices and elements
   void
@@ -137,22 +135,22 @@ public:
   mortonSortVertices();
 
   PURE [[nodiscard]] constexpr auto
-  numElems() const -> Size;
+  numElems() const -> I;
 
   PURE [[nodiscard]] constexpr auto
-  numElsets() const -> Size;
+  numElsets() const -> I;
 
   PURE [[nodiscard]] constexpr auto
-  numVerts() const -> Size;
+  numVerts() const -> I;
 
   void
   read(String const & filename);
 
   void
-  reserveMoreElements(VTKElemType elem_type, Size num_elems);
+  reserveMoreElements(VTKElemType elem_type, I num_elems);
 
   void
-  reserveMoreVertices(Size num_verts);
+  reserveMoreVertices(I num_verts);
 
   void
   sortElsets();
@@ -168,31 +166,30 @@ public:
 
 }; // struct PolytopeSoup
 
-
 //==============================================================================
 // Methods
 //==============================================================================
 
 PURE constexpr auto
-PolytopeSoup::numVerts() const -> Size
+PolytopeSoup::numVerts() const -> I
 {
   return _vertices.size();
 }
 
 PURE constexpr auto
-PolytopeSoup::numElsets() const -> Size
+PolytopeSoup::numElsets() const -> I
 {
   return _elset_names.size();
 }
 
 PURE constexpr auto
-PolytopeSoup::numElems() const -> Size
+PolytopeSoup::numElems() const -> I
 {
   return _element_types.size();
 }
 
 PURE constexpr auto
-PolytopeSoup::getVertex(Size const i) const -> Point3 const &
+PolytopeSoup::getVertex(I const i) const -> Point3 const &
 {
   ASSERT(i < _vertices.size());
   return _vertices[i];

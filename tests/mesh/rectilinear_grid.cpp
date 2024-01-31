@@ -4,7 +4,7 @@
 
 F constexpr eps = condCast<F>(1e-6);
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeGrid() -> um2::RectilinearGrid<D>
 {
@@ -21,23 +21,23 @@ makeGrid() -> um2::RectilinearGrid<D>
   return grid;
 }
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(clear)
 {
   um2::RectilinearGrid<D> grid = makeGrid<D>();
   grid.clear();
-  for (Size i = 0; i < D; ++i) {
+  for (I i = 0; i < D; ++i) {
     ASSERT(grid.divs(i).empty());
   }
 }
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(accessors)
 {
   um2::RectilinearGrid<D> grid = makeGrid<D>();
-  um2::Vec<D, Size> const ncells = grid.numCells();
+  um2::Vec<D, I> const ncells = grid.numCells();
   if constexpr (D >= 1) {
     auto const nx = 1;
     ASSERT_NEAR(grid.xMin(), grid.divs(0)[0], eps);
@@ -64,7 +64,7 @@ TEST_CASE(accessors)
   }
 }
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
@@ -152,13 +152,13 @@ TEST_CASE(aabb2_constructor)
 
   ASSERT(grid.divs(0).size() == 3);
   F const xref[3] = {0, 1, 2};
-  for (Size i = 0; i < 3; ++i) {
+  for (I i = 0; i < 3; ++i) {
     ASSERT_NEAR(grid.divs(0)[i], xref[i], eps);
   }
 
   ASSERT(grid.divs(1).size() == 4);
   F const yref[4] = {0, 1, 2, 3};
-  for (Size i = 0; i < 4; ++i) {
+  for (I i = 0; i < 4; ++i) {
     ASSERT_NEAR(grid.divs(1)[i], yref[i], eps);
   }
 
@@ -173,7 +173,7 @@ TEST_CASE(aabb2_constructor)
 
 TEST_CASE(id_array_constructor)
 {
-  um2::Vector<um2::Vector<Size>> const ids = {
+  um2::Vector<um2::Vector<I>> const ids = {
       {0, 1, 2, 0},
       {0, 2, 0, 2},
       {0, 1, 0, 1},
@@ -188,30 +188,30 @@ TEST_CASE(id_array_constructor)
 
   ASSERT(grid.divs(0).size() == 5);
   F const xref[5] = {0, 2, 4, 6, 8};
-  for (Size i = 0; i < 5; ++i) {
+  for (I i = 0; i < 5; ++i) {
     ASSERT_NEAR(grid.divs(0)[i], xref[i], eps);
   }
   ASSERT(grid.divs(1).size() == 4);
   F const yref[4] = {0, 1, 2, 3};
-  for (Size i = 0; i < 4; ++i) {
+  for (I i = 0; i < 4; ++i) {
     ASSERT_NEAR(grid.divs(1)[i], yref[i], eps);
   }
 }
 #if UM2_USE_CUDA
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(clear, D)
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(accessors, D)
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(boundingBox, D)
 
 MAKE_CUDA_KERNEL(getBox)
 #endif
 
-template <Size D>
-TEST_SUITE(RectilinearGrid)
+    template <I D>
+    TEST_SUITE(RectilinearGrid)
 {
   TEST_HOSTDEV(clear, 1, 1, D);
   TEST_HOSTDEV(accessors, 1, 1, D);

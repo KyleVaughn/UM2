@@ -37,21 +37,21 @@ TEST_CASE(modular_ray_params)
   um2::AxisAlignedBox2 const box11(p32, p64);
   um2::Vector<um2::AxisAlignedBox2> const boxes{box00, box10, box01, box11};
 
-  Size const degree = 2; // azimuthal angles per quadrant
+  I const degree = 2; // azimuthal angles per quadrant
   F const pi_deg = um2::pi_4<F> / degree;
   // pi/8, 3pi/8, 5pi/8, 7pi/8
   um2::Vector<F> const angles{pi_deg, 3 * pi_deg, 5 * pi_deg, 7 * pi_deg};
 
   F const s = static_cast<F>(1) / 2; // ray spacing
   um2::Vector<um2::ModularRayParams> ray_params(4);
-  for (Size i = 0; i < 4; ++i) {
+  for (I i = 0; i < 4; ++i) {
     ray_params[i] = um2::ModularRayParams(angles[0], s, boxes[i]);
   }
 
   // Ensure that all the ray params have the same num_rays, spacing, and direction.
-  Size const nx = ray_params[0].getNumXRays();
-  Size const ny = ray_params[0].getNumYRays();
-  for (Size i = 1; i < 4; ++i) {
+  I const nx = ray_params[0].getNumXRays();
+  I const ny = ray_params[0].getNumYRays();
+  for (I i = 1; i < 4; ++i) {
     ASSERT(ray_params[i].getNumXRays() == nx);
     ASSERT(ray_params[i].getNumYRays() == ny);
     ASSERT(um2::isApprox(ray_params[i].getSpacing(), ray_params[0].getSpacing()));
@@ -76,10 +76,7 @@ TEST_CASE(modular_ray_params)
 MAKE_CUDA_KERNEL(modular_ray_params);
 #endif
 
-TEST_SUITE(ModularRayParams)
-{
-  TEST_HOSTDEV(modular_ray_params);
-}
+TEST_SUITE(ModularRayParams) { TEST_HOSTDEV(modular_ray_params); }
 
 auto
 main() -> int

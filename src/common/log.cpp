@@ -1,117 +1,182 @@
 #include <um2/common/log.hpp>
 
-namespace um2
+#include <um2/stdlib/string.hpp>
+
+namespace um2::log
 {
 
 //==============================================================================
-// Default values
+// Initialize global variables
 //==============================================================================
 
-static constexpr LogLevel log_default_level = LogLevel::Info;
-static constexpr bool log_default_timestamped = true;
-static constexpr bool log_default_colorized = true;
-static constexpr bool log_default_exit_on_error = true;
+// Suppress warnings for non-const global variables, since this is a global logger
+// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 
-//==============================================================================
-// Initialize static members
-//==============================================================================
+int32_t & level = um2::settings::log::level;
+bool & timestamped = um2::settings::log::timestamped;
+bool & colorized = um2::settings::log::colorized;
+bool & exit_on_error = um2::settings::log::exit_on_error;
 
-// We need log variables to be global
-// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables) justified
-LogLevel Log::level = log_default_level;
-LogTimePoint Log::start_time = LogClock::now();
-bool Log::timestamped = true;
-bool Log::colorized = log_default_colorized;
-bool Log::exit_on_error = log_default_exit_on_error;
-char Log::buffer[Log::buffer_size] = {0};
+TimePoint start_time = Clock::now();
+char buffer[buffer_size] = {0};
+char const * const buffer_end = buffer + buffer_size;
+
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 //==============================================================================
-// Member functions
+// Functions
 //==============================================================================
 
 void
-Log::reset() noexcept
+reset() noexcept
 {
   // Reset options to default
-  level = log_default_level;
-  timestamped = log_default_timestamped;
-  colorized = log_default_colorized;
-  exit_on_error = log_default_exit_on_error;
+  level = um2::settings::log::defaults::level;
+  timestamped = um2::settings::log::defaults::timestamped;
+  colorized = um2::settings::log::defaults::colorized;
+  exit_on_error = um2::settings::log::defaults::exit_on_error;
 
   // Reset data
-  start_time = LogClock::now();
+  start_time = Clock::now();
 }
 
-// -- Setters --
+//==============================================================================
+// toBuffer functions
+//==============================================================================
 
-void
-Log::setLevel(LogLevel val) noexcept
-{
-  level = val;
-}
-
-void
-Log::setTimestamped(bool val) noexcept
-{
-  timestamped = val;
-}
-
-void
-Log::setColorized(bool val) noexcept
-{
-  colorized = val;
-}
-
-void
-Log::setExitOnError(bool val) noexcept
-{
-  exit_on_error = val;
-}
-
-// -- Getters --
-
-PURE auto
-Log::getLevel() noexcept -> LogLevel
-{
-  return level;
-}
-
-PURE auto
-Log::isTimestamped() noexcept -> bool
-{
-  return timestamped;
-}
-
-PURE auto
-Log::isColorized() noexcept -> bool
-{
-  return colorized;
-}
-
-PURE auto
-Log::isExitOnError() noexcept -> bool
-{
-  return exit_on_error;
-}
-
-PURE auto
-Log::getStartTime() noexcept -> LogTimePoint
-{
-  return start_time;
-}
-
-// -- Message handling --
-
+// string
+template <>
 auto
-Log::addTimestamp(char * buffer_begin) noexcept -> char *
+toBuffer(char * buffer_begin, char const * const & value) noexcept -> char *
 {
-  if (timestamped) {
-    LogDuration const elapsed_seconds = LogClock::now() - start_time;
-    Size const hours = static_cast<Size>(elapsed_seconds.count()) / 3600;
-    Size const minutes = (static_cast<Size>(elapsed_seconds.count()) / 60) % 60;
-    Size const seconds = static_cast<Size>(elapsed_seconds.count()) % 60;
-    Size const milliseconds = static_cast<Size>(elapsed_seconds.count() * 1000) % 1000;
+  char const * p = value;
+  while (*p != '\0') {
+    *buffer_begin = *p;
+    ++p;
+    ++buffer_begin;
+  }
+  ASSERT(buffer_begin < buffer_end);
+  return buffer_begin;
+}
+
+// Use snprintf to convert the value to a string and store it in the buffer
+template <>
+auto
+toBuffer(char * buffer_begin, int32_t const & value) noexcept -> char *
+{
+  int32_t const len = snprintf(nullptr, 0, "%d", value);
+  int32_t const written = snprintf(
+      buffer_begin, static_cast<uint64_t>(buffer_end - buffer_begin), "%d", value);
+  ASSERT(len == written);
+  ASSERT(buffer_begin + len < buffer_end);
+  return buffer_begin + len;
+}
+
+template <>
+auto
+toBuffer(char * buffer_begin, uint32_t const & value) noexcept -> char *
+{
+  int32_t const len = snprintf(nullptr, 0, "%u", value);
+  int32_t const written = snprintf(
+      buffer_begin, static_cast<uint64_t>(buffer_end - buffer_begin), "%u", value);
+  ASSERT(len == written);
+  ASSERT(buffer_begin + len < buffer_end);
+  return buffer_begin + len;
+}
+
+template <>
+auto
+toBuffer(char * buffer_begin, int64_t const & value) noexcept -> char *
+{
+  int32_t const len = snprintf(nullptr, 0, "%ld", value);
+  int32_t const written = snprintf(
+      buffer_begin, static_cast<uint64_t>(buffer_end - buffer_begin), "%ld", value);
+  ASSERT(len == written);
+  ASSERT(buffer_begin + len < buffer_end);
+  return buffer_begin + len;
+}
+
+template <>
+auto
+toBuffer(char * buffer_begin, uint64_t const & value) noexcept -> char *
+{
+  int32_t const len = snprintf(nullptr, 0, "%lu", value);
+  int32_t const written = snprintf(
+      buffer_begin, static_cast<uint64_t>(buffer_end - buffer_begin), "%lu", value);
+  ASSERT(len == written);
+  ASSERT(buffer_begin + len < buffer_end);
+  return buffer_begin + len;
+}
+
+template <>
+auto
+toBuffer(char * buffer_begin, double const & value) noexcept -> char *
+{
+  int32_t const len = snprintf(nullptr, 0, "%f", value);
+  int32_t const written = snprintf(
+      buffer_begin, static_cast<uint64_t>(buffer_end - buffer_begin), "%f", value);
+  ASSERT(len == written);
+  ASSERT(buffer_begin + len < buffer_end);
+  return buffer_begin + len;
+}
+
+template <>
+auto
+toBuffer(char * buffer_begin, float const & value) noexcept -> char *
+{
+  // snprintf does not support float, so we cast to double
+  auto const dvalue = static_cast<double>(value);
+  return toBuffer(buffer_begin, dvalue);
+}
+
+template <>
+auto
+toBuffer(char * buffer_begin, bool const & value) noexcept -> char *
+{
+  if (value) {
+    buffer_begin[0] = 't';
+    buffer_begin[1] = 'r';
+    buffer_begin[2] = 'u';
+    buffer_begin[3] = 'e';
+    buffer_begin += 4;
+  } else {
+    buffer_begin[0] = 'f';
+    buffer_begin[1] = 'a';
+    buffer_begin[2] = 'l';
+    buffer_begin[3] = 's';
+    buffer_begin[4] = 'e';
+    buffer_begin += 5;
+  }
+  ASSERT(buffer_begin < buffer_end);
+  return buffer_begin;
+}
+
+template <>
+auto
+toBuffer(char * buffer_begin, String const & value) noexcept -> char *
+{
+  char const * p = value.c_str();
+  while (*p != '\0') {
+    *buffer_begin = *p;
+    ++p;
+    ++buffer_begin;
+  }
+  ASSERT(buffer_begin < buffer_end);
+  return buffer_begin;
+}
+
+//==============================================================================
+
+// Add the timestamp to the buffer if the log is timestamped
+auto
+addTimestamp(char * buffer_begin) noexcept -> char *
+{
+  if (um2::settings::log::timestamped) {
+    Duration const elapsed_seconds = Clock::now() - start_time;
+    I const hours = static_cast<I>(elapsed_seconds.count()) / 3600;
+    I const minutes = (static_cast<I>(elapsed_seconds.count()) / 60) % 60;
+    I const seconds = static_cast<I>(elapsed_seconds.count()) % 60;
+    I const milliseconds = static_cast<I>(elapsed_seconds.count() * 1000) % 1000;
     buffer_begin[0] = '[';
     if (hours < 10) {
       buffer_begin[1] = '0';
@@ -155,10 +220,11 @@ Log::addTimestamp(char * buffer_begin) noexcept -> char *
     buffer_begin += 15;
   } // timestamped
   return buffer_begin;
-}
+} // addTimestamp
 
+// Add the color to the buffer if the log is colorized
 auto
-Log::addColor(LogLevel const msg_level, char * buffer_begin) noexcept -> char *
+addColor(int32_t const msg_level, char * buffer_begin) noexcept -> char *
 {
   if (colorized) {
     buffer_begin[0] = '\033';
@@ -168,19 +234,19 @@ Log::addColor(LogLevel const msg_level, char * buffer_begin) noexcept -> char *
     buffer_begin[4] = '3';
     buffer_begin[6] = 'm';
     switch (msg_level) {
-    case LogLevel::Error: // RED
+    case levels::error: // RED
       // \033[1;31m
       buffer_begin[5] = '1';
       break;
-    case LogLevel::Warn: // YELLOW
+    case levels::warn: // YELLOW
       // \033[1;33m
       buffer_begin[5] = '3';
       break;
-    case LogLevel::Debug: // MAGENTA
+    case levels::debug: // MAGENTA
       // \033[1;35m
       buffer_begin[5] = '5';
       break;
-    case LogLevel::Trace: // CYAN
+    case levels::trace: // CYAN
       // \033[1;36m
       buffer_begin[5] = '6';
       break;
@@ -191,13 +257,14 @@ Log::addColor(LogLevel const msg_level, char * buffer_begin) noexcept -> char *
     buffer_begin += 7;
   } // if (colorized)
   return buffer_begin;
-}
+} // addColor
 
+// Add the level to the buffer
 auto
-Log::addLevel(LogLevel msg_level, char * buffer_begin) noexcept -> char *
+addLevel(int32_t const msg_level, char * buffer_begin) noexcept -> char *
 {
   switch (msg_level) {
-  case LogLevel::Error:
+  case levels::error:
     buffer_begin[0] = 'E';
     buffer_begin[1] = 'R';
     buffer_begin[2] = 'R';
@@ -205,21 +272,21 @@ Log::addLevel(LogLevel msg_level, char * buffer_begin) noexcept -> char *
     buffer_begin[4] = 'R';
     buffer_begin += 5;
     break;
-  case LogLevel::Warn:
+  case levels::warn:
     buffer_begin[0] = 'W';
     buffer_begin[1] = 'A';
     buffer_begin[2] = 'R';
     buffer_begin[3] = 'N';
     buffer_begin += 4;
     break;
-  case LogLevel::Info:
+  case levels::info:
     buffer_begin[0] = 'I';
     buffer_begin[1] = 'N';
     buffer_begin[2] = 'F';
     buffer_begin[3] = 'O';
     buffer_begin += 4;
     break;
-  case LogLevel::Debug:
+  case levels::debug:
     buffer_begin[0] = 'D';
     buffer_begin[1] = 'E';
     buffer_begin[2] = 'B';
@@ -227,7 +294,7 @@ Log::addLevel(LogLevel msg_level, char * buffer_begin) noexcept -> char *
     buffer_begin[4] = 'G';
     buffer_begin += 5;
     break;
-  case LogLevel::Trace:
+  case levels::trace:
     buffer_begin[0] = 'T';
     buffer_begin[1] = 'R';
     buffer_begin[2] = 'A';
@@ -250,141 +317,35 @@ Log::addLevel(LogLevel msg_level, char * buffer_begin) noexcept -> char *
   buffer_begin[1] = '-';
   buffer_begin[2] = ' ';
   return buffer_begin + 3;
+} // addLevel
+
+// Set the preamble of the message
+auto
+setPreamble(int32_t const msg_level) noexcept -> char *
+{
+  char * buffer_begin = addressof(buffer[0]);
+  buffer_begin = addColor(msg_level, buffer_begin);
+  buffer_begin = addTimestamp(buffer_begin);
+  buffer_begin = addLevel(msg_level, buffer_begin);
+  return buffer_begin;
 }
 
-// Handle the messages from error, warn, etc. and store or print them
-// depending on the Log configuration.
+// Set the postamble of the message
 void
-Log::handleMessage(LogLevel const msg_level, char const * msg, Size len) noexcept
+setPostamble(char * buffer_begin) noexcept
 {
-  ASSERT(msg != nullptr);
-  ASSERT(len > 0);
-  ASSERT(len < buffer_size);
-  if (msg_level <= level) {
-    char * buffer_begin = addressof(buffer[0]);
-    buffer_begin = addColor(msg_level, buffer_begin);
-    buffer_begin = addTimestamp(buffer_begin);
-    buffer_begin = addLevel(msg_level, buffer_begin);
-
-    // Copy the message to the buffer
-    char const * msg_begin = addressof(msg[0]);
-    char const * msg_end = msg_begin + len;
-    um2::copy(msg_begin, msg_end, buffer_begin);
-    buffer_begin += len;
-
-    // Reset color
-    if (colorized) {
-      buffer_begin[0] = '\033';
-      buffer_begin[1] = '[';
-      buffer_begin[2] = '0';
-      buffer_begin[3] = 'm';
-      buffer_begin += 4;
-    }
-
-    // Ensure null-terminated string
-    buffer_begin[0] = '\0';
-
-    // Print the message
-    int fprintf_result = 0;
-    if (msg_level == LogLevel::Error) {
-      fprintf_result = fprintf(stderr, "%s\n", buffer);
-    } else {
-      fprintf_result = fprintf(stdout, "%s\n", buffer);
-    }
-#if UM2_ENABLE_ASSERTS
-    ASSERT(fprintf_result > 0);
-#else
-    if (fprintf_result == 0) {
-      exit(1);
-    }
-#endif
-  } // msg_level <= level
-}
-
-void
-Log::error(char const * msg) noexcept
-{
-  Size len = 0;
-  while (msg[len] != '\0') {
-    ++len;
+  // Reset color
+  if (colorized) {
+    buffer_begin[0] = '\033';
+    buffer_begin[1] = '[';
+    buffer_begin[2] = '0';
+    buffer_begin[3] = 'm';
+    buffer_begin += 4;
   }
-  handleMessage(LogLevel::Error, msg, len);
-  if (exit_on_error) {
-    exit(1);
-  }
+  ASSERT(buffer_begin < buffer_end);
+
+  // Ensure null-terminated string
+  buffer_begin[0] = '\0';
 }
 
-void
-Log::warn(char const * msg) noexcept
-{
-  Size len = 0;
-  while (msg[len] != '\0') {
-    ++len;
-  }
-  handleMessage(LogLevel::Warn, msg, len);
-}
-
-void
-Log::info(char const * msg) noexcept
-{
-  Size len = 0;
-  while (msg[len] != '\0') {
-    ++len;
-  }
-  handleMessage(LogLevel::Info, msg, len);
-}
-
-void
-Log::debug(char const * msg) noexcept
-{
-  Size len = 0;
-  while (msg[len] != '\0') {
-    ++len;
-  }
-  handleMessage(LogLevel::Debug, msg, len);
-}
-
-void
-Log::trace(char const * msg) noexcept
-{
-  Size len = 0;
-  while (msg[len] != '\0') {
-    ++len;
-  }
-  handleMessage(LogLevel::Trace, msg, len);
-}
-
-void
-Log::error(String const & msg) noexcept
-{
-  handleMessage(LogLevel::Error, msg.data(), msg.size());
-  if (exit_on_error) {
-    exit(1);
-  }
-}
-
-void
-Log::warn(String const & msg) noexcept
-{
-  handleMessage(LogLevel::Warn, msg.data(), msg.size());
-}
-
-void
-Log::info(String const & msg) noexcept
-{
-  handleMessage(LogLevel::Info, msg.data(), msg.size());
-}
-
-void
-Log::debug(String const & msg) noexcept
-{
-  handleMessage(LogLevel::Debug, msg.data(), msg.size());
-}
-
-void
-Log::trace(String const & msg) noexcept
-{
-  handleMessage(LogLevel::Trace, msg.data(), msg.size());
-}
-
-} // namespace um2
+} // namespace um2::log

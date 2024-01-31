@@ -29,10 +29,7 @@ TEST_CASE(chebyshev_chebyshev)
 MAKE_CUDA_KERNEL(chebyshev_chebyshev);
 #endif
 
-TEST_SUITE(AngularQuadrature)
-{
-  TEST_HOSTDEV(chebyshev_chebyshev);
-}
+TEST_SUITE(AngularQuadrature) { TEST_HOSTDEV(chebyshev_chebyshev); }
 
 auto
 main() -> int

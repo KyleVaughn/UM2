@@ -176,35 +176,35 @@ public:
 
   auto
   makeLattice(Vector<Vector<Size>> const & rtm_ids) -> Size;
-//
-//  //  auto
-//  //  stdMakeLattice(std::vector<std::vector<Size>> const & rtm_ids) -> Size;
-//
+  //
+  //  //  auto
+  //  //  stdMakeLattice(std::vector<std::vector<Size>> const & rtm_ids) -> Size;
+  //
   auto
   makeAssembly(Vector<Size> const & lat_ids, Vector<F> const & z = {-1, 1}) -> Size;
 
   auto
   makeCore(Vector<Vector<Size>> const & asy_ids) -> Size;
-//
-//  //  auto
-//  //  stdMakeCore(std::vector<std::vector<Size>> const & asy_ids) -> Size;
+  //
+  //  //  auto
+  //  //  stdMakeCore(std::vector<std::vector<Size>> const & asy_ids) -> Size;
 
   // Import coarse cells and pin meshes from a file.
   void
   importCoarseCells(String const & filename);
 
-//  //  void
-//  //  toPolytopeSoup(PolytopeSoup & soup, bool write_kn = false) const;
-//  //
-//  //  void
-//  //  getMaterialNames(Vector<String> & material_names) const;
-//  //
-//  //  void
-//  //  write(String const & filename, bool write_kn = false) const;
-//  //
-//  //  void
-//  //  writeXDMF(String const & filepath, bool write_kn = false) const;
-//  //
+  //  //  void
+  //  //  toPolytopeSoup(PolytopeSoup & soup, bool write_kn = false) const;
+  //  //
+  //  //  void
+  //  //  getMaterialNames(Vector<String> & material_names) const;
+  //  //
+  //  //  void
+  //  //  write(String const & filename, bool write_kn = false) const;
+  //  //
+  //  //  void
+  //  //  writeXDMF(String const & filepath, bool write_kn = false) const;
+  //  //
 }; // struct SpatialPartition
 
 //=============================================================================

@@ -4,7 +4,7 @@
 
 F constexpr eps = condCast<F>(1e-6);
 
-template <Size D, std::integral P>
+template <I D, std::integral P>
 HOSTDEV constexpr auto
 makePartition() -> um2::RectilinearPartition<D, P>
 {
@@ -34,13 +34,13 @@ makePartition() -> um2::RectilinearPartition<D, P>
   return partition;
 }
 
-template <Size D, std::integral P>
+template <I D, std::integral P>
 HOSTDEV
 TEST_CASE(clear)
 {
   um2::RectilinearPartition<D, P> part = makePartition<D, P>();
   part.clear();
-  for (Size i = 0; i < D; ++i) {
+  for (I i = 0; i < D; ++i) {
     ASSERT(part.grid().divs(i).empty());
   }
   ASSERT(part.children().empty());
@@ -49,7 +49,7 @@ TEST_CASE(clear)
 template <std::integral P>
 TEST_CASE(id_array_constructor)
 {
-  um2::Vector<um2::Vector<Size>> const ids = {
+  um2::Vector<um2::Vector<I>> const ids = {
       {0, 1, 2, 0},
       {0, 2, 0, 2},
       {0, 1, 0, 1},
@@ -65,15 +65,15 @@ TEST_CASE(id_array_constructor)
 
   ASSERT(part.grid().divs(0).size() == 5);
   F const xref[5] = {0, 2, 4, 6, 8};
-  for (Size i = 0; i < 5; ++i) {
+  for (I i = 0; i < 5; ++i) {
     ASSERT_NEAR(part.grid().divs(0)[i], xref[i], eps);
   }
   ASSERT(part.grid().divs(1).size() == 4);
   F const yref[4] = {0, 1, 2, 3};
-  for (Size i = 0; i < 4; ++i) {
+  for (I i = 0; i < 4; ++i) {
     ASSERT_NEAR(part.grid().divs(1)[i], yref[i], eps);
   }
-  for (Size i = 0; i < 12; ++i) {
+  for (I i = 0; i < 12; ++i) {
     ASSERT(part.children()[i] == expected[i]);
   }
 }
@@ -92,7 +92,7 @@ TEST_CASE(getBoxAndChild)
   grid.divs(0) = {1.0, 1.5, 2.0, 2.5, 3.0};
   grid.divs(1) = {-1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0};
   um2::Vector<P> children(32);
-  for (Size i = 0; i < 32; ++i) {
+  for (I i = 0; i < 32; ++i) {
     children[i] = static_cast<P>(i);
   }
 
@@ -155,7 +155,7 @@ TEST_CASE(getBoxAndChild)
 
 #if UM2_USE_CUDA
 
-template <Size D, std::integral P>
+template <I D, std::integral P>
 MAKE_CUDA_KERNEL(clear, D, P)
 
 template <typename T, std::integral P>
@@ -163,7 +163,7 @@ MAKE_CUDA_KERNEL(getBoxAndChild, P)
 
 #endif
 
-template <Size D, std::integral P>
+template <I D, std::integral P>
 TEST_SUITE(RectilinearPartition)
 {
   TEST_HOSTDEV(clear, 1, 1, D, P);

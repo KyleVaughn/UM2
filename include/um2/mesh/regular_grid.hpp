@@ -12,7 +12,7 @@
 namespace um2
 {
 
-template <Size D>
+template <I D>
 class RegularGrid
 {
 
@@ -24,7 +24,7 @@ class RegularGrid
 
   // The number of cells in each direction.
   // Must have at least 1 to form a grid.
-  Vec<D, Size> _num_cells;
+  Vec<D, I> _num_cells;
 
 public:
   //==============================================================================
@@ -34,7 +34,7 @@ public:
   constexpr RegularGrid() noexcept = default;
 
   HOSTDEV constexpr RegularGrid(Point<D> const & minima, Vec<D, F> const & spacing,
-                                Vec<D, Size> const & num_cells) noexcept;
+                                Vec<D, I> const & num_cells) noexcept;
 
   //  HOSTDEV constexpr explicit RegularGrid(AxisAlignedBox<D> const & box) noexcept;
 
@@ -46,19 +46,19 @@ public:
   minima() const noexcept -> Point<D>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  minima(Size i) const noexcept -> F;
+  minima(I i) const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   spacing() const noexcept -> Vec<D, F>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  spacing(Size i) const noexcept -> F;
+  spacing(I i) const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numCells() const noexcept -> Vec<D, Size>;
+  numCells() const noexcept -> Vec<D, I>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numCells(Size i) const noexcept -> Size;
+  numCells(I i) const noexcept -> I;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   xMin() const noexcept -> F;
@@ -83,15 +83,15 @@ public:
 
   // The number of cells in the x direction.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numXCells() const noexcept -> Size;
+  numXCells() const noexcept -> I;
 
   // The number of cells in the y direction.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numYCells() const noexcept -> Size;
+  numYCells() const noexcept -> I;
 
   // The number of cells in the z direction.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numZCells() const noexcept -> Size;
+  numZCells() const noexcept -> I;
 
   //==============================================================================
   // Methods
@@ -99,7 +99,7 @@ public:
 
   // The total number of cells in the grid.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  totalNumCells() const noexcept -> Size;
+  totalNumCells() const noexcept -> I;
 
   // The extent of the grid in each dimension.
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -107,7 +107,7 @@ public:
 
   // The extent of the grid in the i-th dimension.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  extents(Size i) const noexcept -> F;
+  extents(I i) const noexcept -> F;
 
   // The maximum point of the grid.
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -115,7 +115,7 @@ public:
 
   // The maximum value of the grid in the i-th dimension.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  maxima(Size i) const noexcept -> F;
+  maxima(I i) const noexcept -> F;
 
   // The x-extent of the grid.
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -153,13 +153,13 @@ public:
 
   // Get the flat index of the grid cell at the given multidimensional index.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size;
+  getFlatIndex(Vec<D, I> const & index) const noexcept -> I;
 
   // Get the flat index of the grid cell at the given multidimensional index.
   template <typename... Args>
     requires(sizeof...(Args) == D)
   PURE HOSTDEV [[nodiscard]] constexpr auto getFlatIndex(Args... args) const noexcept
-      -> Size;
+      -> I;
 
   // Get the centroid of the grid cell at the given multidimensional index.
   template <typename... Args>
@@ -176,12 +176,12 @@ public:
   // non-intersecting dimension/dimensions.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getCellIndicesIntersecting(AxisAlignedBox<D> const & box) const noexcept
-      -> Vec<2 * D, Size>;
+      -> Vec<2 * D, I>;
 
   // Get the index of the grid cell containing the given point.
   // If the point is outside the grid, returns -1 for the indices.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getCellIndexContaining(Point<D> const & point) const noexcept -> Vec<D, Size>;
+  getCellIndexContaining(Point<D> const & point) const noexcept -> Vec<D, I>;
 }; // RegularGrid
 
 //==============================================================================
@@ -196,29 +196,29 @@ using RegularGrid3 = RegularGrid<3>;
 // Constructors
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr RegularGrid<D>::RegularGrid(Point<D> const & minima,
                                               Vec<D, F> const & spacing,
-                                              Vec<D, Size> const & num_cells) noexcept
+                                              Vec<D, I> const & num_cells) noexcept
     : _minima(minima),
       _spacing(spacing),
       _num_cells(num_cells)
 {
   // Ensure all spacings and num_cells are positive
-  for (Size i = 0; i < D; ++i) {
+  for (I i = 0; i < D; ++i) {
     ASSERT(spacing[i] > 0);
     ASSERT(num_cells[i] > 0);
   }
 }
 
-// template <Size D>
+// template <I D>
 // HOSTDEV constexpr RegularGrid<D>::RegularGrid(
 //     AxisAlignedBox<D> const & box) noexcept
 //     : minima(box.minima),
 //       spacing(box.maxima)
 //{
 //   spacing -= minima;
-//   for (Size i = 0; i < D; ++i) {
+//   for (I i = 0; i < D; ++i) {
 //     num_cells[i] = 1;
 //   }
 // }
@@ -227,56 +227,56 @@ HOSTDEV constexpr RegularGrid<D>::RegularGrid(Point<D> const & minima,
 // Accessors
 //==============================================================================
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::minima() const noexcept -> Point<D>
 {
   return _minima;
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
-RegularGrid<D>::minima(Size const i) const noexcept -> F
+RegularGrid<D>::minima(I const i) const noexcept -> F
 {
   return _minima[i];
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::spacing() const noexcept -> Vec<D, F>
 {
   return _spacing;
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
-RegularGrid<D>::spacing(Size const i) const noexcept -> F
+RegularGrid<D>::spacing(I const i) const noexcept -> F
 {
   return _spacing[i];
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
-RegularGrid<D>::numCells() const noexcept -> Vec<D, Size>
+RegularGrid<D>::numCells() const noexcept -> Vec<D, I>
 {
   return _num_cells;
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
-RegularGrid<D>::numCells(Size const i) const noexcept -> Size
+RegularGrid<D>::numCells(I const i) const noexcept -> I
 {
   return _num_cells[i];
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::xMin() const noexcept -> F
 {
   return _minima[0];
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::yMin() const noexcept -> F
 {
@@ -284,7 +284,7 @@ RegularGrid<D>::yMin() const noexcept -> F
   return _minima[1];
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::zMin() const noexcept -> F
 {
@@ -292,14 +292,14 @@ RegularGrid<D>::zMin() const noexcept -> F
   return _minima[2];
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::dx() const noexcept -> F
 {
   return _spacing[0];
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::dy() const noexcept -> F
 {
@@ -307,7 +307,7 @@ RegularGrid<D>::dy() const noexcept -> F
   return _spacing[1];
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::dz() const noexcept -> F
 {
@@ -315,35 +315,35 @@ RegularGrid<D>::dz() const noexcept -> F
   return _spacing[2];
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
-RegularGrid<D>::numXCells() const noexcept -> Size
+RegularGrid<D>::numXCells() const noexcept -> I
 {
   return _num_cells[0];
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
-RegularGrid<D>::numYCells() const noexcept -> Size
+RegularGrid<D>::numYCells() const noexcept -> I
 {
   static_assert(2 <= D);
   return _num_cells[1];
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
-RegularGrid<D>::numZCells() const noexcept -> Size
+RegularGrid<D>::numZCells() const noexcept -> I
 {
   static_assert(3 <= D);
   return _num_cells[2];
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
-RegularGrid<D>::totalNumCells() const noexcept -> Size
+RegularGrid<D>::totalNumCells() const noexcept -> I
 {
-  Size num_total_cells = 1;
-  for (Size i = 0; i < D; ++i) {
+  I num_total_cells = 1;
+  for (I i = 0; i < D; ++i) {
     num_total_cells *= _num_cells[i];
   }
   return num_total_cells;
@@ -353,50 +353,50 @@ RegularGrid<D>::totalNumCells() const noexcept -> Size
 // Methods
 //==============================================================================
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::extents() const noexcept -> Vec<D, F>
 {
   Vec<D, F> result;
-  for (Size i = 0; i < D; ++i) {
+  for (I i = 0; i < D; ++i) {
     result[i] = extents(i);
   }
   return result;
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
-RegularGrid<D>::extents(Size const i) const noexcept -> F
+RegularGrid<D>::extents(I const i) const noexcept -> F
 {
   return _spacing[i] * static_cast<F>(_num_cells[i]);
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::maxima() const noexcept -> Point<D>
 {
   Point<D> result;
-  for (Size i = 0; i < D; ++i) {
+  for (I i = 0; i < D; ++i) {
     result[i] = maxima(i);
   }
   return result;
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
-RegularGrid<D>::maxima(Size const i) const noexcept -> F
+RegularGrid<D>::maxima(I const i) const noexcept -> F
 {
   return _minima[i] + _spacing[i] * static_cast<F>(_num_cells[i]);
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::width() const noexcept -> F
 {
   return extents(0);
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::height() const noexcept -> F
 {
@@ -404,7 +404,7 @@ RegularGrid<D>::height() const noexcept -> F
   return extents(1);
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::depth() const noexcept -> F
 {
@@ -412,14 +412,14 @@ RegularGrid<D>::depth() const noexcept -> F
   return extents(2);
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::xMax() const noexcept -> F
 {
   return maxima(0);
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::yMax() const noexcept -> F
 {
@@ -427,7 +427,7 @@ RegularGrid<D>::yMax() const noexcept -> F
   return maxima(1);
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::zMax() const noexcept -> F
 {
@@ -435,35 +435,35 @@ RegularGrid<D>::zMax() const noexcept -> F
   return maxima(2);
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 {
   return AxisAlignedBox<D>(_minima, maxima());
 }
 
-template <Size D>
+template <I D>
 template <typename... Args>
   requires(sizeof...(Args) == D)
 PURE HOSTDEV constexpr auto RegularGrid<D>::getBox(Args... args) const noexcept
     -> AxisAlignedBox<D>
 {
-  Vec<D, Size> const index{args...};
-  for (Size i = 0; i < D; ++i) {
+  Vec<D, I> const index{args...};
+  for (I i = 0; i < D; ++i) {
     ASSERT(index[i] < _num_cells[i]);
   }
   Point<D> box_min;
-  for (Size i = 0; i < D; ++i) {
+  for (I i = 0; i < D; ++i) {
     box_min[i] = _minima[i] + _spacing[i] * static_cast<F>(index[i]);
   }
   return {box_min, box_min + _spacing};
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-RegularGrid<D>::getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size
+RegularGrid<D>::getFlatIndex(Vec<D, I> const & index) const noexcept -> I
 {
-  for (Size i = 0; i < D; ++i) {
+  for (I i = 0; i < D; ++i) {
     ASSERT(index[i] < _num_cells[i]);
   }
   // For D = 1, 2, 3, write out the explicit formulas
@@ -475,9 +475,9 @@ RegularGrid<D>::getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size
     return index[0] + index[1] * numXCells() + index[2] * numXCells() * numYCells();
   } else { // General case
     // [0, nx, nx*ny, nx*ny*nz, ...]
-    Vec<D, Size> exclusive_scan_prod;
+    Vec<D, I> exclusive_scan_prod;
     exclusive_scan_prod[0] = 1;
-    for (Size i = 1; i < D; ++i) {
+    for (I i = 1; i < D; ++i) {
       exclusive_scan_prod[i] = exclusive_scan_prod[i - 1] * _num_cells[i - 1];
     }
     // i0 + i1*nx + i2*nx*ny + ...
@@ -485,49 +485,46 @@ RegularGrid<D>::getFlatIndex(Vec<D, Size> const & index) const noexcept -> Size
   }
 }
 
-template <Size D>
+template <I D>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RegularGrid<D>::getFlatIndex(Args... args) const noexcept
-    -> Size
+PURE HOSTDEV constexpr auto RegularGrid<D>::getFlatIndex(Args... args) const noexcept -> I
 {
-  Vec<D, Size> const index{args...};
+  Vec<D, I> const index{args...};
   return getFlatIndex(index);
 }
 
-template <Size D>
+template <I D>
 template <typename... Args>
   requires(sizeof...(Args) == D)
-PURE HOSTDEV
-    constexpr auto RegularGrid<D>::getCellCentroid(Args... args) const noexcept
+PURE HOSTDEV constexpr auto RegularGrid<D>::getCellCentroid(Args... args) const noexcept
     -> Point<D>
 {
   F constexpr half = static_cast<F>(1) / static_cast<F>(2);
-  Vec<D, Size> const index{args...};
-  for (Size i = 0; i < D; ++i) {
+  Vec<D, I> const index{args...};
+  for (I i = 0; i < D; ++i) {
     ASSERT(index[i] < _num_cells[i]);
   }
   Point<D> result;
-  for (Size i = 0; i < D; ++i) {
-    result[i] =
-        _minima[i] + _spacing[i] * (static_cast<F>(index[i]) + half);
+  for (I i = 0; i < D; ++i) {
+    result[i] = _minima[i] + _spacing[i] * (static_cast<F>(index[i]) + half);
   }
   return result;
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-RegularGrid<D>::getCellIndicesIntersecting(
-    AxisAlignedBox<D> const & box) const noexcept -> Vec<2 * D, Size>
+RegularGrid<D>::getCellIndicesIntersecting(AxisAlignedBox<D> const & box) const noexcept
+    -> Vec<2 * D, I>
 {
-  Vec<2 * D, Size> result;
-  Size const zero = 0;
-  for (Size i = 0; i < D; ++i) {
+  Vec<2 * D, I> result;
+  I const zero = 0;
+  for (I i = 0; i < D; ++i) {
     // Determine how many cells over the min and max are, then floor to get the
     // interger indices.
-    result[i] = static_cast<Size>(um2::floor((box.minima(i) - _minima[i]) / _spacing[i]));
+    result[i] = static_cast<I>(um2::floor((box.minima(i) - _minima[i]) / _spacing[i]));
     result[i + D] =
-        static_cast<Size>(um2::floor((box.maxima(i) - _minima[i]) / _spacing[i]));
+        static_cast<I>(um2::floor((box.maxima(i) - _minima[i]) / _spacing[i]));
     // If the result is invalid, set to -1 to indicate no intersection
     // If the min index is greater than the max index (_num_cell[i] - 1)
     // If the max index is less than the min index (0)
@@ -543,15 +540,14 @@ RegularGrid<D>::getCellIndicesIntersecting(
   return result;
 }
 
-template <Size D>
+template <I D>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-RegularGrid<D>::getCellIndexContaining(Point<D> const & point) const noexcept
-    -> Vec<D, Size>
+RegularGrid<D>::getCellIndexContaining(Point<D> const & point) const noexcept -> Vec<D, I>
 {
-  Vec<D, Size> result;
-  Size const zero = 0;
-  for (Size i = 0; i < D; ++i) {
-    result[i] = static_cast<Size>(um2::floor((point[i] - _minima[i]) / _spacing[i]));
+  Vec<D, I> result;
+  I const zero = 0;
+  for (I i = 0; i < D; ++i) {
+    result[i] = static_cast<I>(um2::floor((point[i] - _minima[i]) / _spacing[i]));
     // If the result is invalid, set to -1
     if (_num_cells[i] - 1 < result[i] || result[i] < 0) {
       result[i] = -1;

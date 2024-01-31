@@ -1,52 +1,51 @@
 #include <um2/common/log.hpp>
+#include <um2/stdlib/string.hpp>
 
 #include "../test_macros.hpp"
 
 #include <unistd.h>
 
-TEST_CASE(set_get)
+TEST_CASE(log_test)
 {
-  um2::Log::reset();
-  // Check defaults and getters
-  ASSERT(um2::Log::getLevel() == um2::LogLevel::Info);
-  ASSERT(um2::Log::isTimestamped());
-  ASSERT(um2::Log::isColorized());
-  ASSERT(um2::Log::isExitOnError());
-  // Check setters
-  um2::Log::setLevel(um2::LogLevel::Debug);
-  ASSERT(um2::Log::getLevel() == um2::LogLevel::Debug);
-  um2::Log::setTimestamped(/*val=*/false);
-  um2::Log::setColorized(/*val=*/false);
-  um2::Log::setExitOnError(/*val=*/false);
-  ASSERT(!um2::Log::isTimestamped());
-  ASSERT(!um2::Log::isColorized());
-  ASSERT(!um2::Log::isExitOnError());
+  um2::log::reset();
 
-  um2::Log::reset();
-  um2::Log::setExitOnError(/*val=*/false);
-  um2::Log::setLevel(um2::LogLevel::Trace);
-  um2::Log::trace("trace");
-  um2::Log::debug("debug");
-  um2::Log::info("info");
-  um2::Log::warn("warn");
-  um2::Log::error("error");
-  um2::String msg = "trace";
-  um2::Log::trace(msg);
-  msg = "debug";
-  um2::Log::debug(msg);
-  msg = "info";
-  um2::Log::info(msg);
-  msg = "warn";
-  um2::Log::warn(msg);
-  msg = "error";
-  um2::Log::error(msg);
+  // Check defaults
+  ASSERT(um2::log::level == um2::log::levels::info);
+  ASSERT(um2::log::timestamped);
+  ASSERT(um2::log::colorized);
+  ASSERT(um2::log::exit_on_error);
+
+  // Test printing a string
+  um2::log::exit_on_error = false;
+  um2::log::level = um2::log::levels::trace;
+  um2::log::trace("trace");
+  um2::log::debug("debug");
+  um2::log::info("info");
+  um2::log::warn("warn");
+  um2::log::error("error");
+
+  // Test printing non-string types
+  um2::log::info(1111);
+  um2::log::info(1.0);
+  um2::log::info(true);
+  um2::log::info(false);
+
+  // Test printing multiple arguments
+  um2::log::info("multiple", " arguments");
+  um2::log::info("multiple", " arguments");
+  um2::log::info("1 + 1 = ", 1 + 1);
+
+  // Test um2::String
+  um2::String const s = "um2::String";
+  um2::log::info(s);
+  um2::log::info(s, " with multiple", " arguments");
 }
 
-TEST_SUITE(Log) { TEST(set_get); }
+TEST_SUITE(log) { TEST(log_test); }
 
 auto
 main() -> int
 {
-  RUN_SUITE(Log);
+  RUN_SUITE(log);
   return 0;
 }

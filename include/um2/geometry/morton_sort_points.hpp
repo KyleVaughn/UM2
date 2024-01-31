@@ -28,10 +28,10 @@ using MortonCode = uint32_t;
 #endif
 
 PURE HOSTDEV auto
-mortonEncode(Point2 const & p) noexcept -> MortonCode; 
+mortonEncode(Point2 const & p) noexcept -> MortonCode;
 
 PURE HOSTDEV auto
-mortonEncode(Point3 const & p) noexcept -> MortonCode; 
+mortonEncode(Point3 const & p) noexcept -> MortonCode;
 
 HOSTDEV void
 mortonDecode(MortonCode morton, Point2 & p) noexcept;
@@ -39,14 +39,14 @@ mortonDecode(MortonCode morton, Point2 & p) noexcept;
 HOSTDEV void
 mortonDecode(MortonCode morton, Point3 & p) noexcept;
 
-template <Size D>
+template <I D>
 PURE HOSTDEV auto
 mortonLess(Point<D> const & lhs, Point<D> const & rhs) noexcept -> bool
 {
   return mortonEncode(lhs) < mortonEncode(rhs);
 }
 
-template <Size D>
+template <I D>
 void
 mortonSort(Point<D> * const begin, Point<D> * const end) noexcept
 {

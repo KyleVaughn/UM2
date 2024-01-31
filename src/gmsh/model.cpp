@@ -388,8 +388,8 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
                         gmsh::vectorpair const & tool_dimtags,
                         gmsh::vectorpair & out_dimtags,
                         std::vector<gmsh::vectorpair> & out_dimtags_map,
-                        std::vector<Material> const & material_hierarchy,
-                        int const tag, bool const remove_object, bool const remove_tool)
+                        std::vector<Material> const & material_hierarchy, int const tag,
+                        bool const remove_object, bool const remove_tool)
 {
 
   //==============================================================================
@@ -479,8 +479,8 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
                          gmsh::vectorpair const & tool_dimtags,
                          gmsh::vectorpair & out_dimtags,
                          std::vector<gmsh::vectorpair> & out_dimtags_map,
-                         std::vector<Material> const & material_hierarchy,
-                         int const tag, bool const remove_object, bool const remove_tool)
+                         std::vector<Material> const & material_hierarchy, int const tag,
+                         bool const remove_object, bool const remove_tool)
 {
 
   //==============================================================================-
@@ -879,7 +879,8 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
       pin_idx = static_cast<size_t>(row[j]);
       double const xmax = xmin + dxdy[pin_idx][0];
       boxes[static_cast<Size>(i * ncol + j)] =
-          AxisAlignedBox2(Point2(condCast<F>(xmin), condCast<F>(ymin)), Point2(condCast<F>(xmax), condCast<F>(ymax)));
+          AxisAlignedBox2(Point2(condCast<F>(xmin), condCast<F>(ymin)),
+                          Point2(condCast<F>(xmax), condCast<F>(ymax)));
       xmin = xmax;
     }
     ymin = ymax;

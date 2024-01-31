@@ -22,7 +22,7 @@
 namespace um2
 {
 
-template <Size K, Size P, Size N, Size D>
+template <I K, I P, I N, I D>
 class Polytope
 {
   static_assert(K > 0 && K <= 3, "Polytope dimension must be 1, 2, or 3");
@@ -33,31 +33,31 @@ class Polytope
 // Aliases
 //==============================================================================
 
-template <Size K, Size N, Size D>
+template <I K, I N, I D>
 using LinearPolytope = Polytope<K, 1, N, D>;
 
 // K-Polytopes
 //-----------------------------------------------------------------------------
-template <Size P, Size N, Size D>
+template <I P, I N, I D>
 using Dion = Polytope<1, P, N, D>;
-template <Size P, Size N, Size D>
+template <I P, I N, I D>
 using Polygon = Polytope<2, P, N, D>;
-template <Size P, Size N, Size D>
+template <I P, I N, I D>
 using Polyhedron = Polytope<3, P, N, D>;
 
 // Dions
 //-----------------------------------------------------------------------------
-template <Size D>
+template <I D>
 using LineSegment = Dion<1, 2, D>;
-template <Size D>
+template <I D>
 using QuadraticSegment = Dion<2, 3, D>;
 
 // Planar dions
-template <Size P, Size N>
+template <I P, I N>
 using PlanarDion = Dion<P, N, 2>;
-template <Size N>
+template <I N>
 using PlanarLineSegment = LineSegment<2>;
-template <Size N>
+template <I N>
 using PlanarQuadraticSegment = QuadraticSegment<2>;
 
 // Dimension specific aliases
@@ -66,37 +66,37 @@ using QuadraticSegment2 = QuadraticSegment<2>;
 
 // Polygons
 //-----------------------------------------------------------------------------
-template <Size N, Size D>
+template <I N, I D>
 using LinearPolygon = Polygon<1, N, D>;
-template <Size N, Size D>
+template <I N, I D>
 using QuadraticPolygon = Polygon<2, N, D>;
 
 // Planar polygons
-template <Size P, Size N>
+template <I P, I N>
 using PlanarPolygon = Polygon<P, N, 2>;
-template <Size N>
+template <I N>
 using PlanarLinearPolygon = LinearPolygon<N, 2>;
-template <Size N>
+template <I N>
 using PlanarQuadraticPolygon = QuadraticPolygon<N, 2>;
 
 // N-vertex polygons
-template <Size D>
+template <I D>
 using Triangle = LinearPolygon<3, D>;
-template <Size D>
+template <I D>
 using Quadrilateral = LinearPolygon<4, D>;
-template <Size D>
+template <I D>
 using QuadraticTriangle = QuadraticPolygon<6, D>;
-template <Size D>
+template <I D>
 using QuadraticQuadrilateral = QuadraticPolygon<8, D>;
 
 // N-vertex polygons (shorthand)
-template <Size D>
+template <I D>
 using Tri = Triangle<D>;
-template <Size D>
+template <I D>
 using Quad = Quadrilateral<D>;
-template <Size D>
+template <I D>
 using Tri6 = QuadraticTriangle<D>;
-template <Size D>
+template <I D>
 using Quad8 = QuadraticQuadrilateral<D>;
 
 // Dimension specific aliases
@@ -111,9 +111,9 @@ using QuadraticQuadrilateral3 = QuadraticQuadrilateral<3>;
 
 // Polyhedrons
 //-----------------------------------------------------------------------------
-template <Size N, Size D>
+template <I N, I D>
 using LinearPolyhedron = Polyhedron<1, N, D>;
-template <Size N, Size D>
+template <I N, I D>
 using QuadraticPolyhedron = Polyhedron<2, N, D>;
 
 // N-vertex polyhedrons
@@ -128,7 +128,7 @@ using QuadraticHexahedron = QuadraticPolyhedron<20, 3>;
 //==============================================================================
 
 // The bounding box of any linear polytope is the bounding box of its vertices.
-template <Size K, Size N, Size D>
+template <I K, I N, I D>
 PURE HOSTDEV constexpr auto
 boundingBox(LinearPolytope<K, N, D> const & polytope) noexcept -> AxisAlignedBox<D>
 {

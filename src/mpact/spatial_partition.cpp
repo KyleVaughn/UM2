@@ -49,32 +49,28 @@ SpatialPartition::checkMeshExists(MeshType mesh_type, Size mesh_id) const
 //=============================================================================
 
 PURE [[nodiscard]] auto
-SpatialPartition::getTriMesh(Size mesh_id) const noexcept
-    -> TriFVM const &
+SpatialPartition::getTriMesh(Size mesh_id) const noexcept -> TriFVM const &
 {
   CHECK_MESH_EXISTS(MeshType::Tri, mesh_id);
   return _tris[mesh_id];
 }
 
 PURE [[nodiscard]] auto
-SpatialPartition::getQuadMesh(Size mesh_id) const noexcept
-    -> QuadFVM const &
+SpatialPartition::getQuadMesh(Size mesh_id) const noexcept -> QuadFVM const &
 {
   CHECK_MESH_EXISTS(MeshType::Quad, mesh_id);
   return _quads[mesh_id];
 }
 
 PURE [[nodiscard]] auto
-SpatialPartition::getTri6Mesh(Size mesh_id) const noexcept
-    -> Tri6FVM const &
+SpatialPartition::getTri6Mesh(Size mesh_id) const noexcept -> Tri6FVM const &
 {
   CHECK_MESH_EXISTS(MeshType::QuadraticTri, mesh_id);
   return _tri6s[mesh_id];
 }
 
 PURE [[nodiscard]] auto
-SpatialPartition::getQuad8Mesh(Size mesh_id) const noexcept
-    -> Quad8FVM const &
+SpatialPartition::getQuad8Mesh(Size mesh_id) const noexcept -> Quad8FVM const &
 {
   CHECK_MESH_EXISTS(MeshType::QuadraticQuad, mesh_id);
   return _quad8s[mesh_id];
@@ -119,9 +115,9 @@ SpatialPartition::addMaterial(Material const & material) -> Size
 auto
 // NOLINTNEXTLINE
 SpatialPartition::makeCylindricalPinMesh(Vector<F> const & radii, F const pitch,
-                                               Vector<Size> const & num_rings,
-                                               Size const num_azimuthal,
-                                               Size const mesh_order) -> Size
+                                         Vector<Size> const & num_rings,
+                                         Size const num_azimuthal, Size const mesh_order)
+    -> Size
 {
   LOG_INFO("Making cylindrical pin mesh");
   if ((num_azimuthal & (num_azimuthal - 1)) != 0) {
@@ -406,7 +402,7 @@ SpatialPartition::makeCylindricalPinMesh(Vector<F> const & radii, F const pitch,
     F const tri_area = ring_radii[0] * ring_radii[0] * sincos_gamma;
     F const ring_area = ring_areas[0] / num_azimuthal_t;
     F const l0 = ring_radii[0];
-    F constexpr three_fourths = static_cast<F>(3) / static_cast<F>(4); 
+    F constexpr three_fourths = static_cast<F>(3) / static_cast<F>(4);
     eq_radii[0] =
         three_fourths * (ring_area - tri_area) / (l0 * sin_gamma) + l0 * cos_gamma;
     for (Size i = 1; i < total_rings; ++i) {
@@ -417,9 +413,8 @@ SpatialPartition::makeCylindricalPinMesh(Vector<F> const & radii, F const pitch,
       F const l = ring_radii[i];
       F const a_quad = (l * l - l_im1 * l_im1) * sincos_gamma;
       F const a_ring = ring_areas[i] / num_azimuthal_t;
-      eq_radii[i] =
-          three_fourths * (a_ring - a_quad + a_edge_im1) / (l * sin_gamma) +
-          l * cos_gamma;
+      eq_radii[i] = three_fourths * (a_ring - a_quad + a_edge_im1) / (l * sin_gamma) +
+                    l * cos_gamma;
     }
     // Log the equivalent radii in debug mode
     for (Size i = 0; i < total_rings; ++i) {
@@ -846,8 +841,7 @@ SpatialPartition::makeLattice(Vector<Vector<Size>> const & rtm_ids) -> Size
 //=============================================================================
 
 auto
-SpatialPartition::makeAssembly(Vector<Size> const & lat_ids, Vector<F> const & z)
-    -> Size
+SpatialPartition::makeAssembly(Vector<Size> const & lat_ids, Vector<F> const & z) -> Size
 {
   Size const asy_id = _assemblies.size();
   Log::info("Making assembly " + toString(asy_id));
@@ -1167,16 +1161,14 @@ SpatialPartition::importCoarseCells(String const & filename)
 ////             for (Size iycell = 0; iycell < nycells; ++iycell) {
 ////               for (Size ixcell = 0; ixcell < nxcells; ++ixcell) {
 ////                 Size const cell_faces_prev = total_num_faces;
-////                 auto const & cell_id = static_cast<Size>(rtm.getChild(ixcell, iycell));
-////                 I const cell_id_ctr = ++cc_found[cell_id];
-////                 ss.str("");
-////                 ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id
-////                    << "_" << std::setw(5) << std::setfill('0') << cell_id_ctr;
-////                 String const cell_name(ss.str().c_str());
-////                 LOG_DEBUG("Coarse cell name: " + cell_name);
-////                 // Get the cell offset (lower left corner)
-////                 auto const cell_bb = rtm.getBox(ixcell, iycell);
-////                 Point2 const cell_ll = cell_bb.minima; // Lower left corner
+////                 auto const & cell_id = static_cast<Size>(rtm.getChild(ixcell,
+/// iycell)); /                 I const cell_id_ctr = ++cc_found[cell_id]; / ss.str(""); /
+/// ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id / << "_" <<
+/// std::setw(5) << std::setfill('0') << cell_id_ctr; /                 String const
+/// cell_name(ss.str().c_str()); /                 LOG_DEBUG("Coarse cell name: " +
+/// cell_name); /                 // Get the cell offset (lower left corner) / auto const
+/// cell_bb = rtm.getBox(ixcell, iycell); /                 Point2 const cell_ll =
+/// cell_bb.minima; // Lower left corner
 ////
 ////                 // Get the mesh type and id of the coarse cell.
 ////                 MeshType const mesh_type = coarse_cells[cell_id].mesh_type;
@@ -1189,10 +1181,9 @@ SpatialPartition::importCoarseCells(String const & filename)
 ////                 toString(cell_materials.size())); for (Size iface = 0; iface <
 ////                 cell_materials.size(); ++iface) {
 ////                   auto const mat_id =
-////                       static_cast<Size>(static_cast<uint32_t>(cell_materials[iface]));
-////                   material_elsets[mat_id].push_back(
-////                       static_cast<I>(iface + cell_faces_prev));
-////                 }
+//// static_cast<Size>(static_cast<uint32_t>(cell_materials[iface])); /
+/// material_elsets[mat_id].push_back( /                       static_cast<I>(iface +
+/// cell_faces_prev)); /                 }
 ////
 ////                 Point2 const * fvm_vertices_begin = nullptr;
 ////                 Point2 const * fvm_vertices_end = nullptr;
@@ -1285,12 +1276,10 @@ SpatialPartition::importCoarseCells(String const & filename)
 ////                   if (write_kn) {
 ////                     if (cc_kns_max[cell_id].empty()) {
 ////                       LOG_TRACE("Computing Knudsen numbers");
-////                       for (Size iface = 0; iface < quad[mesh_id].fv.size(); ++iface) {
-////                         LOG_TRACE("face = " + toString(quad[mesh_id].fv[iface][0]) + "
-////                         " +
-////                                   toString(quad[mesh_id].fv[iface][1]) + " " +
-////                                   toString(quad[mesh_id].fv[iface][2]) + " " +
-////                                   toString(quad[mesh_id].fv[iface][3]));
+////                       for (Size iface = 0; iface < quad[mesh_id].fv.size(); ++iface)
+///{ /                         LOG_TRACE("face = " + toString(quad[mesh_id].fv[iface][0])
+///+ " /                         " + / toString(quad[mesh_id].fv[iface][1]) + " " + /
+/// toString(quad[mesh_id].fv[iface][2]) + " " + / toString(quad[mesh_id].fv[iface][3]));
 ////                         F const mcl = quad[mesh_id].getFace(iface).meanChordLength();
 ////                         auto const mat_id = static_cast<Size>(
 ////                             static_cast<uint32_t>(cell_materials[iface]));
@@ -1405,10 +1394,9 @@ SpatialPartition::importCoarseCells(String const & filename)
 ////
 ////             // Add the RTM elset
 ////             Vector<I> rtm_ids(total_num_faces - rtm_faces_prev);
-////             um2::iota(rtm_ids.begin(), rtm_ids.end(), static_cast<I>(rtm_faces_prev));
-////             soup.addElset(rtm_name, rtm_ids);
-////           } // for (ixrtm)
-////         }   // for (iyrtm)
+////             um2::iota(rtm_ids.begin(), rtm_ids.end(),
+/// static_cast<I>(rtm_faces_prev)); /             soup.addElset(rtm_name, rtm_ids); / }
+/// // for (ixrtm) /         }   // for (iyrtm)
 ////
 ////         // Add the lattice elset
 ////         Vector<I> lat_ids(total_num_faces - lat_faces_prev);
@@ -1581,8 +1569,9 @@ SpatialPartition::importCoarseCells(String const & filename)
 ////       xasy_info.append_child(pugi::node_pcdata).set_value(asy_mn_str.c_str());
 ////
 ////       // Create the h5 group
-////       String const h5asy_grouppath = h5core_grouppath + "/" + String(ss.str().c_str());
-////       H5::Group const h5asy_group = h5file.createGroup(h5asy_grouppath.c_str());
+////       String const h5asy_grouppath = h5core_grouppath + "/" +
+/// String(ss.str().c_str()); /       H5::Group const h5asy_group =
+/// h5file.createGroup(h5asy_grouppath.c_str());
 ////
 ////       // For each lattice
 ////       for (Size izlat = 0; izlat < nzlat; ++izlat) {
@@ -1664,25 +1653,24 @@ SpatialPartition::importCoarseCells(String const & filename)
 ////             pugi::xml_node xrtm_mn_info = xrtm_grid.append_child("Information");
 ////             xrtm_mn_info.append_attribute("Name") = "M_by_N";
 ////             String const rtm_mn_str = toString(nycells) + " x " + toString(nxcells);
-////             xrtm_mn_info.append_child(pugi::node_pcdata).set_value(rtm_mn_str.c_str());
+//// xrtm_mn_info.append_child(pugi::node_pcdata).set_value(rtm_mn_str.c_str());
 ////
 ////             // Create the h5 group
 ////             String const h5rtm_grouppath =
 ////                 h5lat_grouppath + "/" + String(ss.str().c_str());
-////             H5::Group const h5rtm_group = h5file.createGroup(h5rtm_grouppath.c_str());
+////             H5::Group const h5rtm_group =
+/// h5file.createGroup(h5rtm_grouppath.c_str());
 ////
 ////             for (Size iycell = 0; iycell < nycells; ++iycell) {
 ////               for (Size ixcell = 0; ixcell < nxcells; ++ixcell) {
-////                 auto const & cell_id = static_cast<Size>(rtm.getChild(ixcell, iycell));
-////                 I const cell_id_ctr = ++cc_found[cell_id];
-////                 ss.str("");
-////                 ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id
-////                    << "_" << std::setw(5) << std::setfill('0') << cell_id_ctr;
-////                 String const cell_name(ss.str().c_str());
-////                 LOG_DEBUG("Coarse cell name: " + cell_name);
-////                 // Get the cell offset (lower left corner)
-////                 auto const cell_bb = rtm.getBox(ixcell, iycell);
-////                 Point2 const cell_ll = cell_bb.minima; // Lower left corner
+////                 auto const & cell_id = static_cast<Size>(rtm.getChild(ixcell,
+/// iycell)); /                 I const cell_id_ctr = ++cc_found[cell_id]; / ss.str(""); /
+/// ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id / << "_" <<
+/// std::setw(5) << std::setfill('0') << cell_id_ctr; /                 String const
+/// cell_name(ss.str().c_str()); /                 LOG_DEBUG("Coarse cell name: " +
+/// cell_name); /                 // Get the cell offset (lower left corner) / auto const
+/// cell_bb = rtm.getBox(ixcell, iycell); /                 Point2 const cell_ll =
+/// cell_bb.minima; // Lower left corner
 ////
 ////                 // Get the mesh type and id of the coarse cell.
 ////                 MeshType const mesh_type = coarse_cells[cell_id].mesh_type;
@@ -1706,99 +1694,59 @@ SpatialPartition::importCoarseCells(String const & filename)
 ////                         LOG_TRACE("Computing Knudsen numbers");
 ////                         cc_kns_max[cell_id].resize(tri[mesh_id].fv.size());
 ////                         cc_kns_mean[cell_id].resize(tri[mesh_id].fv.size());
-////                         for (Size iface = 0; iface < tri[mesh_id].fv.size(); ++iface) {
-////                           F const mcl = tri[mesh_id].getFace(iface).meanChordLength();
-////                           auto const mat_id = static_cast<Size>(
-////                               static_cast<uint32_t>(cell_materials[iface]));
-////                           F const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-////                               XSReductionStrategy::Max);
-////                           F const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-////                               XSReductionStrategy::Mean);
-////                           cc_kns_max[cell_id][iface] = static_cast<F>(1) / (t_max *
-////                           mcl); cc_kns_mean[cell_id][iface] =
-////                               static_cast<F>(1) / (t_mean * mcl);
-////                         }
-////                       }
-////                     }
-////                     break;
-////                   case MeshType::Quad:
-////                     LOG_TRACE("Mesh type: Quad");
-////                     quad[mesh_id].toPolytopeSoup(soup);
-////                     if (write_kn) {
-////                       if (cc_kns_max[cell_id].empty()) {
-////                         LOG_TRACE("Computing Knudsen numbers");
-////                         cc_kns_max[cell_id].resize(quad[mesh_id].fv.size());
-////                         cc_kns_mean[cell_id].resize(quad[mesh_id].fv.size());
-////                         for (Size iface = 0; iface < quad[mesh_id].fv.size(); ++iface)
-////                         {
-////                           F const mcl = quad[mesh_id].getFace(iface).meanChordLength();
-////                           auto const mat_id = static_cast<Size>(
-////                               static_cast<uint32_t>(cell_materials[iface]));
-////                           F const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-////                               XSReductionStrategy::Max);
-////                           F const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-////                               XSReductionStrategy::Mean);
-////                           cc_kns_max[cell_id][iface] = static_cast<F>(1) / (t_max *
-////                           mcl); cc_kns_mean[cell_id][iface] =
-////                               static_cast<F>(1) / (t_mean * mcl);
-////                         }
-////                       }
-////                     }
-////                     break;
-////                   case MeshType::QuadraticTri:
-////                     LOG_TRACE("Mesh type: QuadraticTri");
-////                     quadratic_tri[mesh_id].toPolytopeSoup(soup);
-////                     if (write_kn) {
-////                       if (cc_kns_max[cell_id].empty()) {
-////                         LOG_TRACE("Computing Knudsen numbers");
-////                         cc_kns_max[cell_id].resize(quadratic_tri[mesh_id].fv.size());
-////                         cc_kns_mean[cell_id].resize(quadratic_tri[mesh_id].fv.size());
-////                         for (Size iface = 0; iface < quadratic_tri[mesh_id].fv.size();
-////                              ++iface) {
+////                         for (Size iface = 0; iface < tri[mesh_id].fv.size(); ++iface)
+///{ /                           F const mcl =
+/// tri[mesh_id].getFace(iface).meanChordLength(); /                           auto const
+/// mat_id = static_cast<Size>( / static_cast<uint32_t>(cell_materials[iface])); / F const
+/// t_max = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Max); / F
+/// const t_mean = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Mean);
+/// / cc_kns_max[cell_id][iface] = static_cast<F>(1) / (t_max * / mcl);
+/// cc_kns_mean[cell_id][iface] = /                               static_cast<F>(1) /
+///(t_mean * mcl); /                         } /                       } / } / break; /
+/// case MeshType::Quad: /                     LOG_TRACE("Mesh type: Quad"); /
+/// quad[mesh_id].toPolytopeSoup(soup); /                     if (write_kn) { / if
+///(cc_kns_max[cell_id].empty()) { /                         LOG_TRACE("Computing Knudsen
+/// numbers"); / cc_kns_max[cell_id].resize(quad[mesh_id].fv.size()); /
+/// cc_kns_mean[cell_id].resize(quad[mesh_id].fv.size()); /                         for
+///(Size iface = 0; iface < quad[mesh_id].fv.size(); ++iface) /                         {
 ////                           F const mcl =
-////                               quadratic_tri[mesh_id].getFace(iface).meanChordLength();
-////                           auto const mat_id = static_cast<Size>(
-////                               static_cast<uint32_t>(cell_materials[iface]));
-////                           F const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-////                               XSReductionStrategy::Max);
-////                           F const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-////                               XSReductionStrategy::Mean);
-////                           cc_kns_max[cell_id][iface] = static_cast<F>(1) / (t_max *
-////                           mcl); cc_kns_mean[cell_id][iface] =
-////                               static_cast<F>(1) / (t_mean * mcl);
-////                         }
-////                       }
-////                     }
-////                     break;
-////                   case MeshType::QuadraticQuad:
-////                     LOG_TRACE("Mesh type: QuadraticQuad");
-////                     quadratic_quad[mesh_id].toPolytopeSoup(soup);
-////                     if (write_kn) {
-////                       if (cc_kns_max[cell_id].empty()) {
-////                         LOG_TRACE("Computing Knudsen numbers");
-////                         cc_kns_max[cell_id].resize(quadratic_quad[mesh_id].fv.size());
-////                         cc_kns_mean[cell_id].resize(quadratic_quad[mesh_id].fv.size());
-////                         for (Size iface = 0; iface < quadratic_quad[mesh_id].fv.size();
-////                              ++iface) {
-////                           F const mcl =
-////                               quadratic_quad[mesh_id].getFace(iface).meanChordLength();
-////                           auto const mat_id = static_cast<Size>(
-////                               static_cast<uint32_t>(cell_materials[iface]));
-////                           F const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-////                               XSReductionStrategy::Max);
-////                           F const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-////                               XSReductionStrategy::Mean);
-////                           cc_kns_max[cell_id][iface] = static_cast<F>(1) / (t_max *
-////                           mcl); cc_kns_mean[cell_id][iface] =
-////                               static_cast<F>(1) / (t_mean * mcl);
-////                         }
-////                       }
-////                     }
-////                     break;
-////                   default:
-////                     Log::error("Unsupported mesh type");
-////                     return;
-////                   } // switch (mesh_type)
+/// quad[mesh_id].getFace(iface).meanChordLength(); /                           auto const
+/// mat_id = static_cast<Size>( / static_cast<uint32_t>(cell_materials[iface])); / F const
+/// t_max = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Max); / F
+/// const t_mean = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Mean);
+/// / cc_kns_max[cell_id][iface] = static_cast<F>(1) / (t_max * / mcl);
+/// cc_kns_mean[cell_id][iface] = /                               static_cast<F>(1) /
+///(t_mean * mcl); /                         } /                       } / } / break; /
+/// case MeshType::QuadraticTri: /                     LOG_TRACE("Mesh type:
+/// QuadraticTri"); /                     quadratic_tri[mesh_id].toPolytopeSoup(soup); /
+/// if (write_kn) { /                       if (cc_kns_max[cell_id].empty()) { /
+/// LOG_TRACE("Computing Knudsen numbers"); /
+/// cc_kns_max[cell_id].resize(quadratic_tri[mesh_id].fv.size()); /
+/// cc_kns_mean[cell_id].resize(quadratic_tri[mesh_id].fv.size()); / for (Size iface = 0;
+/// iface < quadratic_tri[mesh_id].fv.size(); /                              ++iface) { /
+/// F const mcl = / quadratic_tri[mesh_id].getFace(iface).meanChordLength(); / auto const
+/// mat_id = static_cast<Size>( / static_cast<uint32_t>(cell_materials[iface])); / F const
+/// t_max = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Max); / F
+/// const t_mean = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Mean);
+/// / cc_kns_max[cell_id][iface] = static_cast<F>(1) / (t_max * / mcl);
+/// cc_kns_mean[cell_id][iface] = /                               static_cast<F>(1) /
+///(t_mean * mcl); /                         } /                       } / } / break; /
+/// case MeshType::QuadraticQuad: /                     LOG_TRACE("Mesh type:
+/// QuadraticQuad"); /                     quadratic_quad[mesh_id].toPolytopeSoup(soup); /
+/// if (write_kn) { /                       if (cc_kns_max[cell_id].empty()) { /
+/// LOG_TRACE("Computing Knudsen numbers"); /
+/// cc_kns_max[cell_id].resize(quadratic_quad[mesh_id].fv.size()); /
+/// cc_kns_mean[cell_id].resize(quadratic_quad[mesh_id].fv.size()); / for (Size iface = 0;
+/// iface < quadratic_quad[mesh_id].fv.size(); /                              ++iface) { /
+/// F const mcl = / quadratic_quad[mesh_id].getFace(iface).meanChordLength(); / auto const
+/// mat_id = static_cast<Size>( / static_cast<uint32_t>(cell_materials[iface])); / F const
+/// t_max = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Max); / F
+/// const t_mean = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Mean);
+/// / cc_kns_max[cell_id][iface] = static_cast<F>(1) / (t_max * / mcl);
+/// cc_kns_mean[cell_id][iface] = /                               static_cast<F>(1) /
+///(t_mean * mcl); /                         } /                       } / } / break; /
+/// default: /                     Log::error("Unsupported mesh type"); / return; / } //
+/// switch (mesh_type)
 ////
 ////                   // add Material elsets
 ////                   Size const cc_nfaces = cell_materials.size();
@@ -1811,14 +1759,12 @@ SpatialPartition::importCoarseCells(String const & filename)
 ////                   Vector<I> cc_mats_sorted = cc_mats;
 ////                   std::sort(cc_mats_sorted.begin(), cc_mats_sorted.end());
 ////                   auto * it = std::unique(cc_mats_sorted.begin(),
-////                   cc_mats_sorted.end()); Size const cc_nunique = static_cast<Size>(it -
-////                   cc_mats_sorted.begin()); Vector<I> cc_mats_unique(cc_nunique); for
-////                   (Size i = 0; i < cc_nunique; ++i) {
-////                     cc_mats_unique[i] = cc_mats_sorted[i];
-////                   }
-////                   // Create a vector with the face ids for each material
-////                   Vector<Vector<I>> cc_mats_split(cc_nunique);
-////                   for (Size i = 0; i < cc_nfaces; ++i) {
+////                   cc_mats_sorted.end()); Size const cc_nunique = static_cast<Size>(it
+///- /                   cc_mats_sorted.begin()); Vector<I> cc_mats_unique(cc_nunique);
+/// for /                   (Size i = 0; i < cc_nunique; ++i) { / cc_mats_unique[i] =
+/// cc_mats_sorted[i]; /                   } /                   // Create a vector with
+/// the face ids for each material /                   Vector<Vector<I>>
+/// cc_mats_split(cc_nunique); /                   for (Size i = 0; i < cc_nfaces; ++i) {
 ////                     I const mat_id = cc_mats[i];
 ////                     auto * mat_it =
 ////                         std::find(cc_mats_unique.begin(), cc_mats_unique.end(),
@@ -1850,13 +1796,12 @@ SpatialPartition::importCoarseCells(String const & filename)
 ////                     F const kn_max_min = kns_max.front();
 ////                     F const kn_mean_min = kns_mean.front();
 ////                     F const kn_max_mean = um2::mean(kns_max.begin(), kns_max.end());
-////                     F const kn_mean_mean = um2::mean(kns_mean.begin(), kns_mean.end());
-////                     LOG_INFO("Coarse Cell " + toString(cell_id) + " " +
-////                              toString(kn_max_max) + " " + toString(kn_max_min) + " " +
-////                              toString(kn_max_mean));
-////                     LOG_INFO("Coarse Cell " + toString(cell_id) + " " +
-////                              toString(kn_mean_max) + " " + toString(kn_mean_min) + " "
-////                              + toString(kn_mean_mean));
+////                     F const kn_mean_mean = um2::mean(kns_mean.begin(),
+/// kns_mean.end()); /                     LOG_INFO("Coarse Cell " + toString(cell_id) + "
+///" + /                              toString(kn_max_max) + " " + toString(kn_max_min) +
+///" " + /                              toString(kn_max_mean)); / LOG_INFO("Coarse Cell "
+///+ toString(cell_id) + " " + /                              toString(kn_mean_max) + " "
+///+ toString(kn_mean_min) + " " /                              + toString(kn_mean_mean));
 ////                   }
 ////                 }
 ////
@@ -1866,8 +1811,8 @@ SpatialPartition::importCoarseCells(String const & filename)
 ////                 soup.translate(shift);
 ////
 ////                 // Write the mesh
-////                 soup.writeXDMFUniformGrid(cell_name, material_names, xrtm_grid, h5file,
-////                                           h5filename, h5rtm_grouppath);
+////                 soup.writeXDMFUniformGrid(cell_name, material_names, xrtm_grid,
+/// h5file, /                                           h5filename, h5rtm_grouppath);
 ////
 ////                 // Shift the mesh back to local coordinates
 ////                 soup.translate(-shift);

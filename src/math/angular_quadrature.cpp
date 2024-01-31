@@ -14,11 +14,11 @@ namespace um2
 // Postconditions
 //  weights.size() == degree
 //  angles.size() == degree
-//  
+//
 // The weights will all be equal to 1/degree.
 // The angles will be evenly spaced in the range (0, π/2).
 HOSTDEV static void
-setChebyshevAngularQuadrature(Size degree, um2::Vector<F> & weights,
+setChebyshevAngularQuadrature(I degree, um2::Vector<F> & weights,
                               um2::Vector<F> & angles) noexcept
 {
   ASSERT_ASSUME(degree > 0);
@@ -33,7 +33,7 @@ setChebyshevAngularQuadrature(Size degree, um2::Vector<F> & weights,
   // Angles
   angles.resize(degree);
   F const pi_deg = pi_4<F> * wt;
-  for (Size i = 0; i < degree; ++i) {
+  for (I i = 0; i < degree; ++i) {
     angles[i] = pi_deg * static_cast<F>(2 * i + 1);
   }
 }
@@ -42,12 +42,11 @@ setChebyshevAngularQuadrature(Size degree, um2::Vector<F> & weights,
 // Constructors
 //============================================================================
 
-
-HOSTDEV 
+HOSTDEV
 ProductAngularQuadrature::ProductAngularQuadrature(AngularQuadratureType azi_form,
-                                           Size azi_degree,
-                                           AngularQuadratureType pol_form,
-                                           Size pol_degree) noexcept
+                                                   I azi_degree,
+                                                   AngularQuadratureType pol_form,
+                                                   I pol_degree) noexcept
 {
   ASSERT_ASSUME(azi_degree > 0);
   ASSERT_ASSUME(pol_degree > 0);

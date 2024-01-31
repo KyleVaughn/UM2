@@ -14,15 +14,15 @@ TEST_CASE(accessors)
   ASSERT(mesh.numVertices() == 6);
   ASSERT(mesh.numFaces() == 2);
   // face
-  um2::Quadrilateral2 quad0_ref(mesh.getVertex(0), mesh.getVertex(1),
-                                     mesh.getVertex(2), mesh.getVertex(3));
+  um2::Quadrilateral2 quad0_ref(mesh.getVertex(0), mesh.getVertex(1), mesh.getVertex(2),
+                                mesh.getVertex(3));
   auto const quad0 = mesh.getFace(0);
   ASSERT(um2::isApprox(quad0[0], quad0_ref[0]));
   ASSERT(um2::isApprox(quad0[1], quad0_ref[1]));
   ASSERT(um2::isApprox(quad0[2], quad0_ref[2]));
   ASSERT(um2::isApprox(quad0[3], quad0_ref[3]));
-  um2::Quadrilateral2 quad1_ref(mesh.getVertex(1), mesh.getVertex(4),
-                                     mesh.getVertex(5), mesh.getVertex(2));
+  um2::Quadrilateral2 quad1_ref(mesh.getVertex(1), mesh.getVertex(4), mesh.getVertex(5),
+                                mesh.getVertex(2));
   auto const quad1 = mesh.getFace(1);
   ASSERT(um2::isApprox(quad1[0], quad1_ref[0]));
   ASSERT(um2::isApprox(quad1[1], quad1_ref[1]));
@@ -43,15 +43,15 @@ TEST_CASE(addVertex_addFace)
   mesh.addFace({0, 1, 2, 3});
   mesh.addFace({1, 4, 5, 2});
   // Same as reference mesh. Should make an == operator for meshes.
-  um2::Quadrilateral2 quad0_ref(mesh.getVertex(0), mesh.getVertex(1),
-                                     mesh.getVertex(2), mesh.getVertex(3));
+  um2::Quadrilateral2 quad0_ref(mesh.getVertex(0), mesh.getVertex(1), mesh.getVertex(2),
+                                mesh.getVertex(3));
   auto const quad0 = mesh.getFace(0);
   ASSERT(um2::isApprox(quad0[0], quad0_ref[0]));
   ASSERT(um2::isApprox(quad0[1], quad0_ref[1]));
   ASSERT(um2::isApprox(quad0[2], quad0_ref[2]));
   ASSERT(um2::isApprox(quad0[3], quad0_ref[3]));
-  um2::Quadrilateral2 quad1_ref(mesh.getVertex(1), mesh.getVertex(4),
-                                     mesh.getVertex(5), mesh.getVertex(2));
+  um2::Quadrilateral2 quad1_ref(mesh.getVertex(1), mesh.getVertex(4), mesh.getVertex(5),
+                                mesh.getVertex(2));
   auto const quad1 = mesh.getFace(1);
   ASSERT(um2::isApprox(quad1[0], quad1_ref[0]));
   ASSERT(um2::isApprox(quad1[1], quad1_ref[1]));
@@ -66,13 +66,13 @@ TEST_CASE(poly_soup_constructor)
   um2::QuadFVM const mesh_ref = makeQuadReferenceMesh();
   um2::QuadFVM const mesh(poly_soup);
   ASSERT(mesh.numVertices() == mesh_ref.numVertices());
-  for (Size i = 0; i < mesh.numVertices(); ++i) {
+  for (I i = 0; i < mesh.numVertices(); ++i) {
     ASSERT(um2::isApprox(mesh.getVertex(i), mesh_ref.getVertex(i)));
   }
-  for (Size i = 0; i < mesh.numFaces(); ++i) {
+  for (I i = 0; i < mesh.numFaces(); ++i) {
     auto const face = mesh.getFace(i);
     auto const face_ref = mesh_ref.getFace(i);
-    for (Size j = 0; j < 4; ++j) {
+    for (I j = 0; j < 4; ++j) {
       ASSERT(um2::isApprox(face[j], face_ref[j]));
     }
   }

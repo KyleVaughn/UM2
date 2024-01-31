@@ -45,7 +45,7 @@ enum class MeshType : int8_t {
 };
 
 constexpr auto
-verticesPerElem(VTKElemType const type) -> Size
+verticesPerElem(VTKElemType const type) -> I
 {
   switch (type) {
   case VTKElemType::Vertex:
@@ -69,7 +69,7 @@ verticesPerElem(VTKElemType const type) -> Size
 }
 
 constexpr auto
-verticesPerElem(MeshType const type) -> Size
+verticesPerElem(MeshType const type) -> I
 {
   switch (type) {
   case MeshType::Tri:

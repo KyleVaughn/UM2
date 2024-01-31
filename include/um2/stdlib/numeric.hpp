@@ -2,8 +2,6 @@
 
 #include <um2/config.hpp>
 
-#include <numeric>
-
 //==============================================================================
 // NUMERIC
 //==============================================================================
@@ -23,9 +21,8 @@ template <class T>
 HOSTDEV constexpr void
 iota(T * first, T const * const last, T value) noexcept
 {
-  while (first != last) {
-    *first++ = value;
-    ++value;
+  for (; first != last; ++first, ++value) {
+    *first = value;
   }
 }
 

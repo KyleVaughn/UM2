@@ -1,10 +1,10 @@
 #include <um2/physics/nuclide.hpp>
 #include <um2/stdlib/sto.hpp>
 
-#include <cctype> // std::toupper
+#include <cctype> // std::isalpha, std::isdigit
 
-namespace um2 {
-
+namespace um2
+{
 
 // The elements of the periodic table
 // Disable clang-format
@@ -63,7 +63,7 @@ toZAID(String str) -> I
     }
   }
   if (!found) {
-    LOG_ERROR("Invalid chemical symbol: " + symbol); 
+    LOG_ERROR("Invalid chemical symbol: " + symbol);
   }
 
   // Extract the mass number

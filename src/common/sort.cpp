@@ -4,10 +4,10 @@ namespace um2
 {
 
 void
-invertPermutation(Vector<Size> const & perm, Vector<Size> & inv_perm) noexcept
+invertPermutation(Vector<I> const & perm, Vector<I> & inv_perm) noexcept
 {
   ASSERT(perm.size() == inv_perm.size());
-  for (Size i = 0; i < perm.size(); ++i) {
+  for (I i = 0; i < perm.size(); ++i) {
     inv_perm[perm[i]] = i;
   }
 }

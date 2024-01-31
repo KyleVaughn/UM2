@@ -25,7 +25,7 @@
 F constexpr eps = um2::eps_distance * condCast<F>(10);
 F constexpr half = condCast<F>(1) / condCast<F>(2);
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeBaseSeg() -> um2::QuadraticSegment<D>
 {
@@ -37,7 +37,7 @@ makeBaseSeg() -> um2::QuadraticSegment<D>
   return q;
 }
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeSeg1() -> um2::QuadraticSegment<D>
 {
@@ -46,7 +46,7 @@ makeSeg1() -> um2::QuadraticSegment<D>
   return q;
 }
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeSeg2() -> um2::QuadraticSegment<D>
 {
@@ -56,7 +56,7 @@ makeSeg2() -> um2::QuadraticSegment<D>
   return q;
 }
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeSeg3() -> um2::QuadraticSegment<D>
 {
@@ -66,7 +66,7 @@ makeSeg3() -> um2::QuadraticSegment<D>
   return q;
 }
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeSeg4() -> um2::QuadraticSegment<D>
 {
@@ -76,7 +76,7 @@ makeSeg4() -> um2::QuadraticSegment<D>
   return q;
 }
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeSeg5() -> um2::QuadraticSegment<D>
 {
@@ -86,7 +86,7 @@ makeSeg5() -> um2::QuadraticSegment<D>
   return q;
 }
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeSeg6() -> um2::QuadraticSegment<D>
 {
@@ -96,7 +96,7 @@ makeSeg6() -> um2::QuadraticSegment<D>
   return q;
 }
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeSeg7() -> um2::QuadraticSegment<D>
 {
@@ -106,7 +106,7 @@ makeSeg7() -> um2::QuadraticSegment<D>
   return q;
 }
 
-template <Size D>
+template <I D>
 HOSTDEV constexpr auto
 makeSeg8() -> um2::QuadraticSegment<D>
 {
@@ -121,13 +121,13 @@ makeSeg8() -> um2::QuadraticSegment<D>
 // Interpolation
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(interpolate)
 {
 
   um2::QuadraticSegment<D> const seg = makeSeg2<D>();
-  for (Size i = 0; i < 5; ++i) {
+  for (I i = 0; i < 5; ++i) {
     F const r = condCast<F>(i) / condCast<F>(4);
     um2::Point<D> const p = seg(r);
     um2::Point<D> p_ref = um2::Vec<D, F>::zero();
@@ -141,7 +141,7 @@ TEST_CASE(interpolate)
 // jacobian
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(jacobian)
 {
@@ -171,7 +171,7 @@ TEST_CASE(jacobian)
 // length
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(length)
 {
@@ -191,7 +191,7 @@ TEST_CASE(length)
 // boundingBox
 //==============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
@@ -226,9 +226,9 @@ TEST_CASE(isLeft)
   um2::Vector<um2::Point2> const test_points = {
       um2::Point2(condCast<F>(1), condCast<F>(3)),      // always left
       um2::Point2(condCast<F>(1), condCast<F>(-3)),     // always right
-      um2::Point2(condCast<F>(-1), half),   // always left
+      um2::Point2(condCast<F>(-1), half),               // always left
       um2::Point2(condCast<F>(-1), condCast<F>(-0.5)),  // always right
-      um2::Point2(condCast<F>(3), half),    // always left
+      um2::Point2(condCast<F>(3), half),                // always left
       um2::Point2(condCast<F>(3), condCast<F>(-0.5)),   // always right
       um2::Point2(condCast<F>(0.1), condCast<F>(0.9)),  // always left
       um2::Point2(condCast<F>(0.1), condCast<F>(-0.9)), // always right
@@ -390,9 +390,9 @@ TEST_CASE(pointClosestTo)
   um2::Vector<um2::Point2> const test_points = {
       um2::Point2(condCast<F>(1), condCast<F>(3)),      // always left
       um2::Point2(condCast<F>(1), condCast<F>(-3)),     // always right
-      um2::Point2(condCast<F>(-1), half),   // always left
+      um2::Point2(condCast<F>(-1), half),               // always left
       um2::Point2(condCast<F>(-1), condCast<F>(-0.5)),  // always right
-      um2::Point2(condCast<F>(3), half),    // always left
+      um2::Point2(condCast<F>(3), half),                // always left
       um2::Point2(condCast<F>(3), condCast<F>(-0.5)),   // always right
       um2::Point2(condCast<F>(0.1), condCast<F>(0.9)),  // always left
       um2::Point2(condCast<F>(0.1), condCast<F>(-0.9)), // always right
@@ -484,16 +484,16 @@ TEST_CASE(enclosedCentroid)
 }
 
 #if UM2_USE_CUDA
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(interpolate, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(jacobian, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(length, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(boundingBox, D);
 
 MAKE_CUDA_KERNEL(isLeft);
@@ -505,7 +505,7 @@ MAKE_CUDA_KERNEL(enclosedCentroid);
 MAKE_CUDA_KERNEL(pointClosestTo);
 #endif
 
-template <Size D>
+template <I D>
 TEST_SUITE(QuadraticSegment)
 {
   TEST_HOSTDEV(interpolate, 1, 1, D);

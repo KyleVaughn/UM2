@@ -1,4 +1,5 @@
 #include <um2/stdlib/algorithm.hpp>
+#include <um2/stdlib/utility.hpp>
 
 #include "../test_macros.hpp"
 
@@ -43,66 +44,30 @@ TEST_CASE(copy_trivial)
   }
 }
 
+//=============================================================================
+// fill_n
+//=============================================================================
+
 HOSTDEV
-// NOLINTBEGIN(cppcoreguidelines-special-member-functions) justification: test
-TEST_CASE(copy_nontrivial)
+TEST_CASE(fill_n)
 {
-  struct A {
-    int a;
-    int b;
-    HOSTDEV
-    A()
-        : a(0),
-          b(0)
-    {
-    }
-    HOSTDEV
-    A(int aa, int bb)
-        : a(aa),
-          b(bb)
-    {
-    }
-    HOSTDEV
-    A(A && other)
-    noexcept
-        : a(other.a),
-          b(other.b)
-    {
-    }
-    HOSTDEV auto
-    operator=(A const & other) -> A &
-    {
-      if (this == &other) {
-        return *this;
-      }
-      a = other.a;
-      b = other.b;
-      return *this;
-    }
-    HOSTDEV auto
-    operator=(A && other) noexcept -> A &
-    {
-      a = other.a;
-      b = other.b;
-      return *this;
-    }
-  };
-  A a[5] = {A(0, 0), A(1, 1), A(2, 2), A(3, 3), A(4, 4)};
-  A b[5] = {A(0, 0), A(0, 0), A(0, 0), A(0, 0), A(0, 0)};
-  um2::copy(&a[0], &a[0] + 5, &b[0]);
+  int a[10] = {0};
+  int * p = um2::fill_n(&a[0], 5, 1);
+  ASSERT(p == &a[5]);
   for (int i = 0; i < 5; ++i) {
-    ASSERT(a[i].a == b[i].a);
-    ASSERT(a[i].b == b[i].b);
+    ASSERT(a[i] == 1);
+  }
+  for (int i = 5; i < 10; ++i) {
+    ASSERT(a[i] == 0);
   }
 }
-// NOLINTEND(cppcoreguidelines-special-member-functions)
 
 //=============================================================================
 // fill
 //=============================================================================
 
 HOSTDEV
-TEST_CASE(fill_int)
+TEST_CASE(fill_test)
 {
   int a[10] = {0};
   um2::fill(&a[0], &a[0] + 10, 1);
@@ -173,7 +138,6 @@ MAKE_CUDA_KERNEL(clamp_int);
 MAKE_CUDA_KERNEL(clamp_float);
 
 MAKE_CUDA_KERNEL(copy_trivial);
-MAKE_CUDA_KERNEL(copy_nontrivial);
 
 MAKE_CUDA_KERNEL(fill_int);
 
@@ -191,13 +155,13 @@ TEST_SUITE(clamp)
   TEST_HOSTDEV(clamp_float);
 }
 
-TEST_SUITE(copy)
-{
-  TEST_HOSTDEV(copy_trivial);
-  TEST_HOSTDEV(copy_nontrivial);
-}
+TEST_SUITE(copy) { TEST_HOSTDEV(copy_trivial); }
 
-TEST_SUITE(fill) { TEST_HOSTDEV(fill_int); }
+TEST_SUITE(fill)
+{
+  TEST_HOSTDEV(fill_n);
+  TEST_HOSTDEV(fill_test);
+}
 
 TEST_SUITE(is_sorted) { TEST_HOSTDEV(is_sorted_int); }
 

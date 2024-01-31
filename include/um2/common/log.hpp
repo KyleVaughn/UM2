@@ -1,171 +1,197 @@
 #pragma once
 
-#include <um2/stdlib/string.hpp>
-#include <um2/stdlib/vector.hpp>
+#include <um2/common/settings.hpp>
 
 #include <chrono>
 
 //==============================================================================
 // LOG
 //==============================================================================
-// A simple logger class for use in host code.
+// A simple logger for use in host code.
 // The logger can be configured to:
 //  - log messages of different verbosity levels
 //  - prefix messages with a timestamp
 //  - colorize messages based on their verbosity level
 //  - exit the program after an error is logged (or not)
 //
-// The logger can be configured at compile time by defining the LOG_LEVEL macro.
+// The logger can be configured at compile time by defining the MIN_LOG_LEVEL macro.
 // The logger is not thread-safe.
 
-namespace um2
+namespace um2::log
 {
 
-enum class LogLevel {
-  Off = 0,   // no messages
-  Error = 1, // only errors
-  Warn = 2,  // errors and warnings
-  Info = 3,  // errors, warnings and info
-  Debug = 4, // errors, warnings, info and debug
-  Trace = 5, // errors, warnings, info, debug and trace
-};
+using Clock = std::chrono::system_clock;
+using TimePoint = std::chrono::time_point<Clock>;
+using Duration = std::chrono::duration<double>;
 
-using LogClock = std::chrono::system_clock;
-using LogTimePoint = std::chrono::time_point<LogClock>;
-using LogDuration = std::chrono::duration<double>;
+namespace levels
+{
+inline constexpr int32_t off = 0;   // no messages
+inline constexpr int32_t error = 1; // only errors
+inline constexpr int32_t warn = 2;  // errors and warnings
+inline constexpr int32_t info = 3;  // errors, warnings and info
+inline constexpr int32_t debug = 4; // errors, warnings, info and debug
+inline constexpr int32_t trace = 5; // errors, warnings, info, debug and trace
+} // namespace levels
 
-// We need the global log options to be accessible from anywhere in the code
+//==============================================================================
+// Global variables
+//==============================================================================
+
+// Suppress warnings for non-const global variables, since this is a global logger
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
-class Log
-{
 
-  // -- Options --
+extern int32_t & level;
+extern bool & timestamped;
+extern bool & colorized;
+extern bool & exit_on_error;
+extern TimePoint start_time;
 
-  static LogLevel level;
-  static LogTimePoint start_time;
-  static bool timestamped;   // messages are prefixed with a timestamp
-  static bool colorized;     // messages are colorized based on their verbosity level
-  static bool exit_on_error; // the program exits after an error is logged
-  static constexpr int buffer_size = 256;
+inline constexpr int32_t buffer_size = 256;
+extern char buffer[buffer_size];
+extern char const * const buffer_end; // 1 past the last valid character in the buffer
 
-  // -- Message --
-
-  static char buffer[buffer_size];
-
-  // -- Methods --
-
-  static auto
-  addTimestamp(char * buffer_begin) noexcept -> char *;
-
-  static auto
-  addColor(LogLevel msg_level, char * buffer_begin) noexcept -> char *;
-
-  static auto
-  addLevel(LogLevel msg_level, char * buffer_begin) noexcept -> char *;
-
-  static void
-  handleMessage(LogLevel msg_level, char const * msg, Size len) noexcept;
-
-public:
-  Log() = delete;
-
-  static void
-  reset() noexcept;
-
-  // -- Setters --
-
-  static void
-  setLevel(LogLevel val) noexcept;
-
-  static void
-  setTimestamped(bool val) noexcept;
-
-  static void
-  setColorized(bool val) noexcept;
-
-  static void
-  setExitOnError(bool val) noexcept;
-
-  // -- Getters --
-
-  PURE static auto
-  getLevel() noexcept -> LogLevel;
-
-  PURE static auto
-  getStartTime() noexcept -> LogTimePoint;
-
-  PURE static auto
-  isTimestamped() noexcept -> bool;
-
-  PURE static auto
-  isColorized() noexcept -> bool;
-
-  PURE static auto
-  isExitOnError() noexcept -> bool;
-
-  // -- Methods --
-
-  static void
-  error(char const * msg) noexcept;
-
-  static void
-  warn(char const * msg) noexcept;
-
-  static void
-  info(char const * msg) noexcept;
-
-  static void
-  debug(char const * msg) noexcept;
-
-  static void
-  trace(char const * msg) noexcept;
-
-  static void
-  error(String const & msg) noexcept;
-
-  static void
-  warn(String const & msg) noexcept;
-
-  static void
-  info(String const & msg) noexcept;
-
-  static void
-  debug(String const & msg) noexcept;
-
-  static void
-  trace(String const & msg) noexcept;
-
-}; // class Log
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
-#if LOG_LEVEL > 0
-#  define LOG_ERROR(msg) um2::Log::error(msg)
+//==============================================================================
+// Functions
+//==============================================================================
+
+// Reset the logger to its default state
+void
+reset() noexcept;
+
+// Write types to the buffer
+template <class T>
+auto
+toBuffer(char * buffer_begin, T const & value) noexcept -> char *;
+
+// Handle fixed-size character arrays by treating them as pointer
+template <uint64_t N>
+auto
+toBuffer(char * buffer_begin, char const (&value)[N]) noexcept -> char *
+{
+  char const * const p = value;
+  return toBuffer(buffer_begin, p);
+}
+
+// Add the timestamp to the buffer if the log is timestamped
+auto
+addTimestamp(char * buffer_begin) noexcept -> char *;
+
+// Add color to the buffer if the log is colorized
+auto
+addColor(int32_t msg_level, char * buffer_begin) noexcept -> char *;
+
+// Add the log level to the buffer
+auto
+addLevel(int32_t msg_level, char * buffer_begin) noexcept -> char *;
+
+// Set the preamble of the message
+auto
+setPreamble(int32_t msg_level) noexcept -> char *;
+
+// Set the postamble of the message
+void
+setPostamble(char * buffer_begin) noexcept;
+
+// Print the message
+template <class... Args>
+void
+printMessage(int32_t const msg_level, Args const &... args) noexcept
+{
+  if (msg_level <= level) {
+    char * buffer_begin = setPreamble(msg_level);
+
+    // Use fold expression to send each argument to the buffer.
+    // We need a lambda function to capture the buffer_begin variable, since it is
+    // not a template parameter.
+    ([&buffer_begin](auto const & arg) { buffer_begin = toBuffer(buffer_begin, arg); }(
+         args),
+     ...);
+
+    setPostamble(buffer_begin);
+
+    // Print the message
+    int fprintf_result = 0;
+    if (msg_level == levels::error) {
+      fprintf_result = fprintf(stderr, "%s\n", buffer);
+    } else {
+      fprintf_result = fprintf(stdout, "%s\n", buffer);
+    }
+#if UM2_ENABLE_ASSERTS
+    ASSERT(fprintf_result > 0);
 #else
-#  define LOG_ERROR(msg)
+    if (fprintf_result == 0) {
+      exit(1);
+    }
+#endif
+  } // msg_level <= level
+} // printMessage
+
+template <class... Args>
+void
+error(Args const &... args) noexcept
+{
+  printMessage(levels::error, args...);
+}
+
+template <class... Args>
+void
+warn(Args const &... args) noexcept
+{
+  printMessage(levels::warn, args...);
+}
+
+template <class... Args>
+void
+info(Args const &... args) noexcept
+{
+  printMessage(levels::info, args...);
+}
+
+template <class... Args>
+void
+debug(Args const &... args) noexcept
+{
+  printMessage(levels::debug, args...);
+}
+
+template <class... Args>
+void
+trace(Args const &... args) noexcept
+{
+  printMessage(levels::trace, args...);
+}
+
+} // namespace um2::log
+
+#if MIN_LOG_LEVEL > 0
+#  define LOG_ERROR(...) um2::log::error(__VA_ARGS__)
+#else
+#  define LOG_ERROR(...)
 #endif
 
-#if LOG_LEVEL > 1
-#  define LOG_WARN(msg) um2::Log::warn(msg)
+#if MIN_LOG_LEVEL > 1
+#  define LOG_WARN(...) um2::log::warn(__VA_ARGS__)
 #else
-#  define LOG_WARN(msg)
+#  define LOG_WARN(...)
 #endif
 
-#if LOG_LEVEL > 2
-#  define LOG_INFO(msg) um2::Log::info(msg)
+#if MIN_LOG_LEVEL > 2
+#  define LOG_INFO(...) um2::log::info(__VA_ARGS__)
 #else
-#  define LOG_INFO(msg)
+#  define LOG_INFO(...)
 #endif
 
-#if LOG_LEVEL > 3
-#  define LOG_DEBUG(msg) um2::Log::debug(msg)
+#if MIN_LOG_LEVEL > 3
+#  define LOG_DEBUG(...) um2::log::debug(__VA_ARGS__)
 #else
-#  define LOG_DEBUG(msg)
+#  define LOG_DEBUG(...)
 #endif
 
-#if LOG_LEVEL > 4
-#  define LOG_TRACE(msg) um2::Log::trace(msg)
+#if MIN_LOG_LEVEL > 4
+#  define LOG_TRACE(...) um2::log::trace(__VA_ARGS__)
 #else
-#  define LOG_TRACE(msg)
+#  define LOG_TRACE(...)
 #endif
-
-} // namespace um2

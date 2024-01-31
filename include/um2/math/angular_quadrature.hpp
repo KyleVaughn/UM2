@@ -50,7 +50,7 @@ namespace um2
 enum class AngularQuadratureType { Chebyshev };
 
 // An angular quadrature that is the product of two 1D angular quadratures.
-// Due to symmetry, both polar andazimuthal angles are only stored in the 
+// Due to symmetry, both polar andazimuthal angles are only stored in the
 // range (0, π/2).
 class ProductAngularQuadrature
 {
@@ -67,23 +67,22 @@ public:
 
   constexpr ProductAngularQuadrature() noexcept = default;
 
-  HOSTDEV ProductAngularQuadrature(AngularQuadratureType azi_form,
-                                             Size azi_degree,
-                                             AngularQuadratureType pol_form,
-                                             Size pol_degree) noexcept;
+  HOSTDEV
+  ProductAngularQuadrature(AngularQuadratureType azi_form, I azi_degree,
+                           AngularQuadratureType pol_form, I pol_degree) noexcept;
 
   //============================================================================
   // Accessors
   //============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  azimuthalDegree() const noexcept -> Size
+  azimuthalDegree() const noexcept -> I
   {
     return _wazi.size();
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  polarDegree() const noexcept -> Size
+  polarDegree() const noexcept -> I
   {
     return _wpol.size();
   }

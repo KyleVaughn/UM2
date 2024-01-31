@@ -57,10 +57,10 @@ TEST_CASE(copy_constructor)
 
 template <class T>
 HOSTDEV auto
-createVector(Size size) -> um2::Vector<T>
+createVector(I size) -> um2::Vector<T>
 {
   um2::Vector<T> v(size);
-  for (Size i = 0; i < size; i++) {
+  for (I i = 0; i < size; i++) {
     v[i] = static_cast<T>(i);
   }
   return v;

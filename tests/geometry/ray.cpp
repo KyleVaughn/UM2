@@ -6,7 +6,7 @@
 // Constructors
 //=============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(constructor_origin_direction)
 {
@@ -24,7 +24,7 @@ TEST_CASE(constructor_origin_direction)
 // Interpolation
 //=============================================================================
 
-template <Size D>
+template <I D>
 HOSTDEV
 TEST_CASE(interpolate)
 {
@@ -39,14 +39,14 @@ TEST_CASE(interpolate)
 }
 
 #if UM2_USE_CUDA
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(constructor_origin_direction, D);
 
-template <Size D>
+template <I D>
 MAKE_CUDA_KERNEL(interpolate, D);
 #endif
 
-template <Size D>
+template <I D>
 TEST_SUITE(Ray)
 {
   TEST_HOSTDEV(constructor_origin_direction, 1, 1, D);

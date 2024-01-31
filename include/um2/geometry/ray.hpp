@@ -10,7 +10,7 @@
 namespace um2
 {
 
-template <Size D>
+template <I D>
 class Ray
 {
 
@@ -54,7 +54,7 @@ public:
   operator()(F r) const noexcept -> Point<D>
   {
     Point<D> res;
-    for (Size i = 0; i < D; ++i) {
+    for (I i = 0; i < D; ++i) {
       res[i] = _o[i] + r * _d[i];
     }
     return res;
