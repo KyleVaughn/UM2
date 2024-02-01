@@ -29,7 +29,7 @@ namespace um2
 //==============================================================================
 
 template <class T>
-HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 clamp(T const & v, T const & lo, T const & hi) noexcept -> T const &
 {
   return v < lo ? lo : (hi < v ? hi : v);
@@ -54,6 +54,9 @@ copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 
 #else
 
+// TODO(kcvaughn): Overload this for cases which reduce to a memmove.
+// https://github.com/KyleVaughn/UM2/issues/141
+
 template <class InputIt, class OutputIt>
 DEVICE constexpr auto
 copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
@@ -72,10 +75,10 @@ copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 // fill_n
 //==============================================================================
 
-template <class OutputIt, class S, class T>
+template <class OutputIt, class Size, class T>
 HOSTDEV constexpr auto
 // NOLINTNEXTLINE(readability-identifier-naming) match std::fill_n
-fill_n(OutputIt first, S n, T const & value) noexcept -> OutputIt
+fill_n(OutputIt first, Size n, T const & value) noexcept -> OutputIt
 {
   for (; n > 0; ++first, --n) {
     *first = value;

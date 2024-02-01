@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cmath>   // abs
-#include <cstdint> // int32_t, int64_t
+#include <cstdint> // int32_t, int64_t, uint32_t, uint64_t
 #include <cstdio>  // printf
 #include <cstdlib> // exit
 
@@ -53,12 +53,13 @@
 #ifdef HOT
 #  error "HOT already defined"
 #endif
-#  define PURE  [[gnu::pure]]
-#  define CONST [[gnu::const]]
-#  define HOT   [[gnu::hot]]
+#define PURE  [[gnu::pure]]
+#define CONST [[gnu::const]]
+#define HOT   [[gnu::hot]]
 
 // TODO(kcvaughn): Once C++23 is supported, we can use [[assume(expr)]] instead.
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1774r8.pdf
+// https://github.com/KyleVaughn/UM2/issues/142
 #ifdef ASSUME
 #  error "ASSUME already defined"
 #endif

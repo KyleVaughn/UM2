@@ -48,7 +48,7 @@ public:
   }
 
   [[nodiscard]] constexpr auto
-  numGroups() const noexcept -> Size
+  numGroups() const noexcept -> I
   {
     return _t.size();
   }

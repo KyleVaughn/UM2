@@ -62,11 +62,11 @@ option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large
 # Developer options
 #===============================================================================
 
-# If CMAKE_BUILD_TYPE is Debug, then turn on assertions by default
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(IS_DEBUG_BUILD ON)
-else()
+# If CMAKE_BUILD_TYPE is Release, then turn off assertions by default
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
   set(IS_DEBUG_BUILD OFF)
+else()
+  set(IS_DEBUG_BUILD ON)
 endif()
 
 # Enable/disable developer features
@@ -90,10 +90,10 @@ option(UM2_USE_VALGRIND      "Enable valgrind"                 ${UM2_DEV_MODE})
 # Info = 3,       // errors, warnings and info
 # Debug = 4,      // errors, warnings, info and debug
 # Trace = 5,      // errors, warnings, info, debug and trace
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(UM2_MIN_LOG_LEVEL 5)
-else()
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
   set(UM2_MIN_LOG_LEVEL 3)
+else()
+  set(UM2_MIN_LOG_LEVEL 5)
 endif()
 
 #===============================================================================
@@ -102,7 +102,7 @@ endif()
 
 # Minimum version for GCC or Clang
 # This is to ensure that the compiler supports the parts of C++20 that we use
-set(UM2_MIN_GCC_VERSION 12.0)
+set(UM2_MIN_GCC_VERSION 12.3)
 set(UM2_MIN_CLANG_VERSION 15.0)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${UM2_MIN_GCC_VERSION})
@@ -152,7 +152,7 @@ set(UM2_SOURCES
     "src/mesh/polytope_soup.cpp"
     "src/mesh/face_vertex_mesh.cpp"
     "src/physics/nuclide.cpp"
-    "src/physics/cross_section_library.cpp"
+    #"src/physics/cross_section_library.cpp"
     #    #    "src/mpact/spatial_partition.cpp"
     #    "src/gmsh/base_gmsh_api.cpp"
     #    #    "src/gmsh/io.cpp"
