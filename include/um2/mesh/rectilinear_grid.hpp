@@ -56,10 +56,10 @@ public:
   // Accessors
   //==============================================================================
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   divs(I i) noexcept -> Vector<F> &;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   divs(I i) const noexcept -> Vector<F> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto

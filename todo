@@ -1,10 +1,10 @@
 Method to function
 
-eliminate sto in favor of C functions
+investigate valgrind release build -> UPGRADE to 3.22
+-> PURE, ASSUME
 
-On files with a reasonable max line size, use fgets instead of readline
-Then use strtol and friends
-Use snprintf for conversion instead of to_string 
+eliminate sto in favor of C functions
+Typically preceded by a substr, which shouldn't alloc
 
 Add scattering matrix to Xsec
 Don't store redundant info? Total
@@ -23,13 +23,6 @@ Modify the Gmsh functions so that they are templated where necessary
 Binned mesh
   Need vis before to verify
 
-mortonSort as default cmake option
-VF as default cmake option
-
-makeCylindricalPinMesh for non-square pins
-
-MPACT functions -> Gmsh functions -> field
-
 Back the rays up by -eps
 
 Make the mpact tests work for more types
@@ -37,22 +30,6 @@ Make the mpact tests work for more types
 SIMD versions of routines for mesh.
   point in 4 AABB
   ray intersect 4 lines, etc.
-
-regular grid
-  cognitive complex
-
-
-//===================================================
-noexcept, constexpr everything
-NOLINT, diagnostic (remove justified)
-()[i]
-replace std::
-ASSERT_ASSUME
-Comment functions
-//==
-
-Add multidimentional array class with elementwise operations
-  - Use for partition classes with children
 
 face overlap using connectivity
   - identify boundary edges which are not on the exterior
@@ -72,8 +49,6 @@ Benchmark
 
 Functions to prevent std::string/std::vector usage in examples and tutorials
   One should bundle functions to hide complexity
-
-Log with multiple arguments to the functions, which automatically call toStgring
 
 Re-add the requirements non-spack installed
 
@@ -99,6 +74,9 @@ HOUSE KEEPING
 ===============================================================================
 1. Restore scripts dir
 2. NOLINTS
+
+PURE CONST
+ -> ASSERTS OK? LOG OK?
 3. Old benchmarks: reimplement or place in archive
 4. clean archive
 

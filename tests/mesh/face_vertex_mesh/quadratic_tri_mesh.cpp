@@ -131,7 +131,7 @@ TEST_CASE(intersect)
   direction.normalize();
   um2::Ray2 const ray(origin, direction);
   um2::Vector<F> intersections;
-  um2::intersect(ray, mesh, intersections);
+  mesh.intersect(ray, intersections);
   ASSERT(intersections.size() == 5);
   F const int1 = um2::sqrt(condCast<F>(0.74));
   F const int2 = 1 / (condCast<F>(0.7) / int1);

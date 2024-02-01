@@ -43,16 +43,16 @@ public:
   // Methods
   //============================================================================
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getRay(I i) const noexcept -> Ray2;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getTotalNumRays() const noexcept -> I;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getNumXRays() const noexcept -> I;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getNumYRays() const noexcept -> I;
 
   HOSTDEV [[nodiscard]] constexpr auto

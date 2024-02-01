@@ -133,16 +133,10 @@ public:
 
   void
   validate();
-  //  //
+  
   //  //  void
   //  //  toPolytopeSoup(PolytopeSoup & soup) const noexcept;
-  //  //
-  //  //  //  //  void
-  //  //  //  //  getFaceAreas(Vector<F> & areas) const noexcept;
-  //  //  //  //
-  //  //  //  //  void
-  //  //  //  //  getUniqueEdges(Vector<Edge> & edges) const noexcept;
-  //  //  //  //
+  
   void
   intersect(Ray2 const & ray, Vector<F> & intersections) const noexcept;
 };
@@ -267,19 +261,5 @@ FaceVertexMesh<P, N>::faceVertexConn() const noexcept -> Vector<FaceConn> const 
 {
   return _fv;
 }
-
-//==============================================================================
-// Non-member functions
-//==============================================================================
-
-template <I N>
-void
-intersect(Ray2 const & ray, LinearFVM<N> const & mesh,
-          Vector<F> & intersections) noexcept;
-
-template <I N>
-void
-intersect(Ray2 const & ray, QuadraticFVM<N> const & mesh,
-          Vector<F> & intersections) noexcept;
 
 } // namespace um2

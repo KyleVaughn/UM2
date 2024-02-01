@@ -52,20 +52,11 @@ option(UM2_USE_GMSH         "Enable Gmsh"                                 ON)
 option(UM2_USE_OPENMP       "Enable OpenMP"                               ON)
 option(UM2_USE_PNG          "Enable PNG"                                  OFF)
 option(UM2_USE_TBB          "Enable Intel TBB"                            ON)
-option(UM2_USE_XSLIB        "Enable external cross section library usage" ON)
 
 # Enable/disable features
 option(UM2_ENABLE_FASTMATH  "Enable fast math"                  ON) # CPU and GPU
 option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"      ON)
 option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large meshes
-
-if (UM2_USE_XSLIB)
-  # if XSLibraryPath is not set, set warn the user
-  if (NOT DEFINED XSLIB_PATH)
-    message(WARNING "XSLIB_PATH is not set. Please set it to the absolute path of the " 
-      "desired cross section library, otherwise some features will not be available.")
-  endif()
-endif()
 
 #===============================================================================
 # Developer options
@@ -160,8 +151,8 @@ set(UM2_SOURCES
     "src/geometry/morton_sort_points.cpp"
     "src/mesh/polytope_soup.cpp"
     "src/mesh/face_vertex_mesh.cpp"
-    #    "src/physics/nuclide.cpp"
-    #    "src/physics/cross_section_library.cpp"
+    "src/physics/nuclide.cpp"
+    "src/physics/cross_section_library.cpp"
     #    #    "src/mpact/spatial_partition.cpp"
     #    "src/gmsh/base_gmsh_api.cpp"
     #    #    "src/gmsh/io.cpp"

@@ -207,22 +207,10 @@ FaceVertexMesh<P, N>::mortonSortFaces()
   inv_scale[0] = static_cast<F>(1) / inv_scale[0];
   inv_scale[1] = static_cast<F>(1) / inv_scale[1];
 
-  for (auto & c : centroids) {
-    c *= inv_scale;
-  }
-
-  // Create a vector of Morton codes for the centroids.
-  Vector<MortonCode> morton_codes(num_faces, 0);
-  for (I i = 0; i < num_faces; ++i) {
-    morton_codes[i] = mortonEncode(centroids[i]);
-  }
-
   // Create a vector of indices into the centroids vector.
-  Vector<I> perm(num_faces);
-
-  // Sort the indices as to create a permutation vector.
   // perm[new_index] = old_index
-  sortPermutation(morton_codes.cbegin(), morton_codes.cend(), perm.begin());
+  Vector<I> perm(num_faces);
+  mortonSortPermutation(centroids.begin(), centroids.end(), perm.begin(), inv_scale);
 
   // Sort the faces according to the permutation vector.
   applyPermutation(_fv, perm);
@@ -246,25 +234,11 @@ FaceVertexMesh<P, N>::mortonSortVertices()
   inv_scale[0] = static_cast<F>(1) / inv_scale[0];
   inv_scale[1] = static_cast<F>(1) / inv_scale[1];
   I const num_verts = numVertices();
-  Vector<Point2> scaled_verts(num_verts);
-  for (I i = 0; i < num_verts; ++i) {
-    scaled_verts[i] = _v[i];
-    scaled_verts[i] *= inv_scale;
-  }
-
-  // Create a vector of Morton codes for the vertices.
-  Vector<MortonCode> morton_codes(num_verts, 0);
-  for (I i = 0; i < num_verts; ++i) {
-    morton_codes[i] = mortonEncode(scaled_verts[i]);
-  }
 
   // Create a vector of indices into the vertices vector.
-  Vector<I> perm(num_verts);
-
-  // Sort the indices as to create a permutation vector.
   // perm[new_index] = old_index
-  sortPermutation(morton_codes.cbegin(), morton_codes.cend(), perm.begin());
-  ASSERT(!um2::is_sorted(morton_codes.cbegin(), morton_codes.cend()));
+  Vector<I> perm(num_verts);
+  mortonSortPermutation(_v.cbegin(), _v.cend(), perm.begin(), inv_scale);
 
   // We also want the inverse of the permutation vector.
   // inv_perm[old_index] = new_index
@@ -367,7 +341,7 @@ FaceVertexMesh<P, N>::populateVF() noexcept
 //==============================================================================
 
 template <I N>
-void
+static void
 intersect(Ray2 const & ray, LinearFVM<N> const & mesh, Vector<F> & intersections) noexcept
 {
   I constexpr edges_per_face = LinearFVM<N>::Face::numEdges();
@@ -385,7 +359,7 @@ intersect(Ray2 const & ray, LinearFVM<N> const & mesh, Vector<F> & intersections
 }
 
 template <I N>
-void
+static void
 intersect(Ray2 const & ray, QuadraticFVM<N> const & mesh,
           Vector<F> & intersections) noexcept
 {

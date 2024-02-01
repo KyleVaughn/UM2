@@ -16,13 +16,17 @@ namespace um2
 //==============================================================================
 // POLYTOPE SOUP
 //==============================================================================
-//
 // A data structure for storing a mesh, or any collection of polytopes, and data
 // associated with the polytopes. This data structure can be used to:
 // - read/write a mesh and its data from/to a file
 // - convert between mesh data structures
 // - generate submeshes
 // - perform mesh operations without assumptions about manifoldness, etc.
+//
+// ASSUMES THAT EACH ELEMENT HAS VERTICES IN THE SAME Z-COOORDINATE PLANE.
+// Element 1 and element 2 can have different z-coordinates, but all vertices
+// of element 1 will have the same z-coordinate, and all vertices of element 2
+// will have the same z-coordinate.
 //
 // Note: due to the generality of the data structure, there is effectively a
 // switch statement in every method. This is not ideal for performance.
@@ -90,7 +94,7 @@ public:
   auto
   addVertex(Point3 const & p) -> I;
 
-  [[nodiscard]] auto
+  PURE [[nodiscard]] auto
   compareTo(PolytopeSoup const & other) const -> int;
 
   void

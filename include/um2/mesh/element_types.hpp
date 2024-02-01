@@ -44,7 +44,7 @@ enum class MeshType : int8_t {
   QuadraticTriQuad = 14
 };
 
-constexpr auto
+PURE constexpr auto
 verticesPerElem(VTKElemType const type) -> I
 {
   switch (type) {
@@ -86,7 +86,7 @@ verticesPerElem(MeshType const type) -> I
   }
 }
 
-constexpr auto
+PURE constexpr auto
 xdmfToVTKElemType(int8_t x) -> VTKElemType
 {
   switch (x) {
@@ -110,7 +110,7 @@ xdmfToVTKElemType(int8_t x) -> VTKElemType
   }
 }
 
-constexpr auto
+PURE constexpr auto
 vtkToXDMFElemType(VTKElemType x) -> XDMFElemType
 {
   switch (x) {

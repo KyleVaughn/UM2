@@ -44,6 +44,14 @@ reset() noexcept
 // toBuffer functions
 //==============================================================================
 
+// When we don't use assertions, suppress warnings for unused variables
+// It's a catch-22, since what are we supposed to do when we aren't using assertions,
+// but the log function failed? We can't log it, since the log is broken. So we just
+// do nothing and hope for the best. The dangers of Release mode.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+// NOLINTBEGIN(clang-analyzer-deadcode.DeadStores,clang-diagnostic-unused-variable)
+
 // string
 template <>
 auto
@@ -55,6 +63,17 @@ toBuffer(char * buffer_begin, char const * const & value) noexcept -> char *
     ++p;
     ++buffer_begin;
   }
+  ASSERT(buffer_begin < buffer_end);
+  return buffer_begin;
+}
+
+// char
+template <>
+auto
+toBuffer(char * buffer_begin, char const & value) noexcept -> char *
+{
+  *buffer_begin = value;
+  ++buffer_begin;
   ASSERT(buffer_begin < buffer_end);
   return buffer_begin;
 }
@@ -164,6 +183,9 @@ toBuffer(char * buffer_begin, String const & value) noexcept -> char *
   ASSERT(buffer_begin < buffer_end);
   return buffer_begin;
 }
+
+// NOLINTEND(clang-analyzer-deadcode.DeadStores,clang-diagnostic-unused-variable)
+#pragma GCC diagnostic pop
 
 //==============================================================================
 

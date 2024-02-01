@@ -23,13 +23,9 @@
 #cmakedefine01 UM2_USE_OPENMP
 #cmakedefine01 UM2_USE_PNG
 #cmakedefine01 UM2_USE_TBB
-#cmakedefine01 UM2_USE_XSLIB
 
 // Set compile-time filtering of log messages
 #define MIN_LOG_LEVEL @UM2_MIN_LOG_LEVEL@
-
-// Set absolute path to the cross-section library
-#define XSLIB_PATH "@XSLIB_PATH@"
 
 //==============================================================================
 // Includes
@@ -48,9 +44,6 @@
 //==============================================================================
 
 // Optimization
-// Only enable if asserts are disabled. Otherwise, we have to be overly careful
-// with asserts, which make function non-pure.
-#if !UM2_ENABLE_ASSERTS
 #ifdef PURE
 #  error "PURE already defined"
 #endif
@@ -63,11 +56,6 @@
 #  define PURE  [[gnu::pure]]
 #  define CONST [[gnu::const]]
 #  define HOT   [[gnu::hot]]
-#else // UM2_ENABLE_ASSERTS
-#  define PURE
-#  define CONST
-#  define HOT
-#endif // UM2_ENABLE_ASSERTS
 
 // TODO(kcvaughn): Once C++23 is supported, we can use [[assume(expr)]] instead.
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1774r8.pdf

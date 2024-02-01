@@ -51,6 +51,7 @@ PolytopeSoup::getElement(I const i, VTKElemType & type, Vector<I> & conn) const
   }
 }
 
+// ASSUMES EACH VERTEX OF AN ELEMENT HAS THE SAME Z-COORDINATE
 auto
 PolytopeSoup::getElementBoundingBox(I const i) const -> AxisAlignedBox3
 {
@@ -60,7 +61,10 @@ PolytopeSoup::getElementBoundingBox(I const i) const -> AxisAlignedBox3
   auto const elem_type = _element_types[i];
   auto const istart = _element_offsets[i];
 
+  // The minimum and maximum z-coordinates of the box should
+  // be the same.
   AxisAlignedBox3 box;
+  // Get the z-coordinate of the first vertex
   F const z = _vertices[_element_conn[istart]][2];
 
   switch (elem_type) {
@@ -70,29 +74,32 @@ PolytopeSoup::getElementBoundingBox(I const i) const -> AxisAlignedBox3
     break;
   }
   case VTKElemType::Line: {
-    auto const p0 = _vertices[_element_conn[istart]];
-    auto const p1 = _vertices[_element_conn[istart + 1]];
-    LineSegment<3> const line(p0, p1);
+    Vec<2, Point3> pts;
+    for (I j = 0; j < 2; ++j) {
+      pts[j] = _vertices[_element_conn[istart + j]];
+    }
+    LineSegment<3> const line(pts);
     box = boundingBox(line);
     break;
   }
   case VTKElemType::Triangle: {
-    auto const p0 = _vertices[_element_conn[istart]];
-    auto const p1 = _vertices[_element_conn[istart + 1]];
-    auto const p2 = _vertices[_element_conn[istart + 2]];
-    Triangle3 const tri(p0, p1, p2);
+    Vec<3, Point3> pts;
+    for (I j = 0; j < 3; ++j) {
+      pts[j] = _vertices[_element_conn[istart + j]];
+    }
+    Triangle3 const tri(pts);
     box = boundingBox(tri);
     break;
   }
   case VTKElemType::Quad: {
-    Vec<4, Point2> p2;
+    Vec<4, Point2> pts;
     for (I j = 0; j < 4; ++j) {
       auto const p = _vertices[_element_conn[istart + j]];
-      p2[j][0] = p[0];
-      p2[j][1] = p[1];
+      pts[j][0] = p[0];
+      pts[j][1] = p[1];
       ASSERT_NEAR(p[2], z, eps_distance);
     }
-    Quadrilateral2 const quad(p2[0], p2[1], p2[2], p2[3]);
+    Quadrilateral2 const quad(pts);
     auto const box2 = boundingBox(quad);
     Point3 const p0(box2.xMin(), box2.yMin(), z);
     Point3 const p1(box2.xMax(), box2.yMax(), z);
@@ -100,14 +107,14 @@ PolytopeSoup::getElementBoundingBox(I const i) const -> AxisAlignedBox3
     break;
   }
   case VTKElemType::QuadraticTriangle: {
-    Vec<6, Point2> p2;
+    Vec<6, Point2> pts;
     for (I j = 0; j < 6; ++j) {
       auto const p = _vertices[_element_conn[istart + j]];
-      p2[j][0] = p[0];
-      p2[j][1] = p[1];
+      pts[j][0] = p[0];
+      pts[j][1] = p[1];
       ASSERT_NEAR(p[2], z, eps_distance);
     }
-    QuadraticTriangle2 const tri6(p2[0], p2[1], p2[2], p2[3], p2[4], p2[5]);
+    QuadraticTriangle2 const tri6(pts);
     auto const box2 = boundingBox(tri6);
     Point3 const p0(box2.xMin(), box2.yMin(), z);
     Point3 const p1(box2.xMax(), box2.yMax(), z);
@@ -115,15 +122,14 @@ PolytopeSoup::getElementBoundingBox(I const i) const -> AxisAlignedBox3
     break;
   }
   case VTKElemType::QuadraticQuad: {
-    Vec<8, Point2> p2;
+    Vec<8, Point2> pts;
     for (I j = 0; j < 8; ++j) {
       auto const p = _vertices[_element_conn[istart + j]];
-      p2[j][0] = p[0];
-      p2[j][1] = p[1];
+      pts[j][0] = p[0];
+      pts[j][1] = p[1];
       ASSERT_NEAR(p[2], z, eps_distance);
     }
-    QuadraticQuadrilateral2 const quad8(p2[0], p2[1], p2[2], p2[3], p2[4], p2[5], p2[6],
-                                        p2[7]);
+    QuadraticQuadrilateral2 const quad8(pts);
     auto const box2 = boundingBox(quad8);
     Point3 const p0(box2.xMin(), box2.yMin(), z);
     Point3 const p1(box2.xMax(), box2.yMax(), z);
@@ -133,18 +139,21 @@ PolytopeSoup::getElementBoundingBox(I const i) const -> AxisAlignedBox3
   default:
     LOG_ERROR("Unsupported element type");
   }
+  // Ensure the z-coordinates are the same
+  ASSERT_NEAR(box.zMin(), box.zMax(), eps_distance);
   return box;
 }
 
 auto
 PolytopeSoup::getElementCentroid(I const i) const -> Point3
 {
-  LOG_TRACE("PolytopeSoup::getElementCentroid(i = " + toString(i) + ")");
+  LOG_TRACE("PolytopeSoup::getElementCentroid(i = ", i, ')');
   ASSERT(i < _element_types.size());
 
   auto const elem_type = _element_types[i];
   auto const istart = _element_offsets[i];
 
+  // The z-coordinate should be the same for all vertices of the element.
   Point3 c;
   F const z = _vertices[_element_conn[istart]][2];
   c[2] = z;
@@ -160,51 +169,51 @@ PolytopeSoup::getElementCentroid(I const i) const -> Point3
     break;
   }
   case VTKElemType::Triangle: {
-    auto const p0 = _vertices[_element_conn[istart]];
-    auto const p1 = _vertices[_element_conn[istart + 1]];
-    auto const p2 = _vertices[_element_conn[istart + 2]];
-    Triangle3 const tri(p0, p1, p2);
+    Vec<3, Point3> pts;
+    for (I j = 0; j < 3; ++j) {
+      pts[j] = _vertices[_element_conn[istart + j]];
+    }
+    Triangle3 const tri(pts);
     c = centroid(tri);
     break;
   }
   case VTKElemType::Quad: {
-    Vec<4, Point2> p2;
+    Vec<4, Point2> pts;
     for (I j = 0; j < 4; ++j) {
       auto const p = _vertices[_element_conn[istart + j]];
-      p2[j][0] = p[0];
-      p2[j][1] = p[1];
+      pts[j][0] = p[0];
+      pts[j][1] = p[1];
       ASSERT_NEAR(p[2], z, eps_distance);
     }
-    Quadrilateral2 const quad(p2[0], p2[1], p2[2], p2[3]);
+    Quadrilateral2 const quad(pts);
     auto const c2 = centroid(quad);
     c[0] = c2[0];
     c[1] = c2[1];
     break;
   }
   case VTKElemType::QuadraticTriangle: {
-    Vec<6, Point2> p2;
+    Vec<6, Point2> pts;
     for (I j = 0; j < 6; ++j) {
       auto const p = _vertices[_element_conn[istart + j]];
-      p2[j][0] = p[0];
-      p2[j][1] = p[1];
+      pts[j][0] = p[0];
+      pts[j][1] = p[1];
       ASSERT_NEAR(p[2], z, eps_distance);
     }
-    QuadraticTriangle2 const tri6(p2[0], p2[1], p2[2], p2[3], p2[4], p2[5]);
+    QuadraticTriangle2 const tri6(pts);
     auto const c2 = centroid(tri6);
     c[0] = c2[0];
     c[1] = c2[1];
     break;
   }
   case VTKElemType::QuadraticQuad: {
-    Vec<8, Point2> p2;
+    Vec<8, Point2> pts;
     for (I j = 0; j < 8; ++j) {
       auto const p = _vertices[_element_conn[istart + j]];
-      p2[j][0] = p[0];
-      p2[j][1] = p[1];
+      pts[j][0] = p[0];
+      pts[j][1] = p[1];
       ASSERT_NEAR(p[2], z, eps_distance);
     }
-    QuadraticQuadrilateral2 const quad8(p2[0], p2[1], p2[2], p2[3], p2[4], p2[5], p2[6],
-                                        p2[7]);
+    QuadraticQuadrilateral2 const quad8(pts);
     auto const c2 = centroid(quad8);
     c[0] = c2[0];
     c[1] = c2[1];
@@ -213,13 +222,14 @@ PolytopeSoup::getElementCentroid(I const i) const -> Point3
   default:
     LOG_ERROR("Unsupported element type");
   }
+  ASSERT_NEAR(c[2], z, eps_distance);
   return c;
 }
 
 void
 PolytopeSoup::getElset(I const i, String & name, Vector<I> & ids, Vector<F> & data) const
 {
-  LOG_TRACE("PolytopeSoup::getElset(i = " + toString(i) + ")");
+  LOG_TRACE("PolytopeSoup::getElset(i = ", i, ')');
   ASSERT(i < _elset_names.size());
   name = _elset_names[i];
   auto const istart = _elset_offsets[i];
@@ -438,22 +448,10 @@ PolytopeSoup::mortonSortElements()
     inv_scale[2] = static_cast<F>(1) / inv_scale[2];
   }
 
-  for (auto & c : centroids) {
-    c *= inv_scale;
-  }
-
-  // Create a vector of Morton codes for the centroids.
-  Vector<MortonCode> morton_codes(num_elems, 0);
-  for (I i = 0; i < num_elems; ++i) {
-    morton_codes[i] = mortonEncode(centroids[i]);
-  }
-
   // Create a vector of indices into the centroids vector.
-  Vector<I> perm(num_elems);
-
-  // Sort the indices as to create a permutation vector.
   // perm[new_index] = old_index
-  sortPermutation(morton_codes.cbegin(), morton_codes.cend(), perm.begin());
+  Vector<I> perm(num_elems);
+  mortonSortPermutation(centroids.cbegin(), centroids.cend(), perm.begin(), inv_scale);
 
   // We also want the inverse of the permutation vector.
   // inv_perm[old_index] = new_index
@@ -510,25 +508,11 @@ PolytopeSoup::mortonSortVertices()
     inv_scale[2] = static_cast<F>(1) / inv_scale[2];
   }
   I const num_verts = numVerts();
-  Vector<Point3> scaled_verts(num_verts);
-  for (I i = 0; i < num_verts; ++i) {
-    scaled_verts[i] = _vertices[i];
-    scaled_verts[i] *= inv_scale;
-  }
-
-  // Create a vector of Morton codes for the vertices.
-  Vector<MortonCode> morton_codes(num_verts, 0);
-  for (I i = 0; i < num_verts; ++i) {
-    morton_codes[i] = mortonEncode(scaled_verts[i]);
-  }
 
   // Create a vector of indices into the vertices vector.
-  Vector<I> perm(num_verts);
-
-  // Sort the indices as to create a permutation vector.
   // perm[new_index] = old_index
-  sortPermutation(morton_codes.cbegin(), morton_codes.cend(), perm.begin());
-  ASSERT(!um2::is_sorted(morton_codes.cbegin(), morton_codes.cend()));
+  Vector<I> perm(num_verts);
+  mortonSortPermutation(_vertices.begin(), _vertices.end(), perm.begin(), inv_scale);
 
   // We also want the inverse of the permutation vector.
   // inv_perm[old_index] = new_index
@@ -579,7 +563,7 @@ PolytopeSoup::sortElsets()
     I const len = _elset_offsets[iold + 1] - _elset_offsets[iold];
     elset_offsets[i] = offset;
     elset_offsets[i + 1] = offset + len;
-    copy(_elset_ids.begin() + _elset_offsets[iold],
+    um2::copy(_elset_ids.begin() + _elset_offsets[iold],
          _elset_ids.begin() + _elset_offsets[iold + 1],
          elset_ids.begin() + elset_offsets[i]);
     std::sort(elset_ids.begin() + elset_offsets[i],
@@ -811,7 +795,7 @@ PolytopeSoup::getMaterialIDs(Vector<MaterialID> & material_ids,
         for (I k = start; k < end; ++k) {
           auto const elem = _elset_ids[k];
           if (material_ids[elem] != -1) {
-            log::error("Element " + toString(elem) + " has multiple materials");
+            log::error("Element ", elem, " has multiple materials");
           }
           material_ids[elem] = static_cast<MaterialID>(i);
         } // for k
@@ -914,7 +898,7 @@ abaqusParseElements(PolytopeSoup & soup, std::string & line, std::ifstream & fil
     this_type = VTKElemType::QuadraticQuad;
     break;
   default: {
-    LOG_ERROR("AbaqusCellType CPS" + toString(offset) + " is not supported");
+    LOG_ERROR("AbaqusCellType CPS", offset, " is not supported");
     break;
   }
   }
@@ -932,7 +916,7 @@ abaqusParseElements(PolytopeSoup & soup, std::string & line, std::ifstream & fil
     // Read the first N-1 node IDs
     for (I i = 0; i < verts_per_elem - 1; ++i) {
       std::from_chars(line_view.data() + last + 2, line_view.data() + next, id);
-      LOG_TRACE("Node ID: " + toString(id));
+      LOG_TRACE("Node ID: ", id);
       ASSERT(id > 0);
       conn[i] = id - 1; // ABAQUS is 1-indexed
       last = next;
@@ -1344,7 +1328,7 @@ PolytopeSoup::writeXDMF(String const & filepath) const
     last_slash = 0;
   }
   I const h5filepath_end = last_slash == 0 ? 0 : last_slash + 1;
-  LOG_TRACE("h5filepath_end: " + toString(h5filepath_end));
+  LOG_TRACE("h5filepath_end: ", h5filepath_end);
   String const h5filename =
       filepath.substr(h5filepath_end, filepath.size() - 5 - h5filepath_end) + ".h5";
   LOG_TRACE("h5filename: " + h5filename);

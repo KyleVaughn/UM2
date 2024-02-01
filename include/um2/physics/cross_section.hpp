@@ -26,8 +26,8 @@ enum class XSecReduction {
 
 class XSec
 {
-  bool _is_macroscopic = false;
 
+  bool _is_macroscopic = false;
   Vector<F> _t; // Total cross section
 
 public:

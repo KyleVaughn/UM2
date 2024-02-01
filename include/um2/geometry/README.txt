@@ -6,14 +6,14 @@ the classes are straight forward, but some deserve a bit of explanation.
 
 Point
 ------
-The Point class is simply an alias to Vec. This is not mathematically correct,
-but it is easier to use this way.
+The Point class is simply an alias to Vec (math/vec.hpp). This is not mathematically 
+correct, but it is easier to use this way.
 
 Polytope
 --------
 Polyhedrons, polygons, etc. can be generalized as polytopes. We wish to model
 not only typical polygons with straight edges, but also polygons with curved
-polynomial edges. Hence, use the polytope as a useful abstraction which is
+polynomial edges. Hence, we use the polytope as a useful abstraction which is
 specialized via template parameters to triangles, line segments, etc. A
 K-dimensional polytope, of polynomial order P, represented by the connectivity
 of its vertices. These N vertices are D-dimensional points of type F.

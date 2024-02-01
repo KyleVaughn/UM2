@@ -65,6 +65,8 @@ public:
   {
   }
   // NOLINTEND(google-explicit-constructor)
+  
+  HOSTDEV constexpr explicit Polytope(Vec<N, Vertex> const & v) noexcept;
 
   //==============================================================================
   // Methods
@@ -120,6 +122,18 @@ public:
     requires(D == 2);
 
 }; // Polygon
+
+//==============================================================================
+// Constructors
+//==============================================================================
+
+template <I P, I N, I D>
+HOSTDEV constexpr Polygon<P, N, D>::Polytope(Vec<N, Vertex> const & v) noexcept
+{
+  for (I i = 0; i < N; ++i) {
+    _v[i] = v[i];
+  }
+}
 
 //==============================================================================
 // Accessors

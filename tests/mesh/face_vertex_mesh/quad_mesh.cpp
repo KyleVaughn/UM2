@@ -117,7 +117,7 @@ TEST_CASE(intersect)
   direction.normalize();
   um2::Ray2 const ray(origin, direction);
   um2::Vector<F> intersections;
-  um2::intersect(ray, mesh, intersections);
+  mesh.intersect(ray, intersections);
   ASSERT(intersections.size() == 4);
   F const sqrt_half = um2::sqrt(condCast<F>(0.5));
   ASSERT_NEAR(intersections[0], sqrt_half, eps);

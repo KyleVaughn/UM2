@@ -75,6 +75,8 @@ public:
   {
   }
 
+  HOSTDEV constexpr explicit Polytope(Vec<N, Vertex> const & v) noexcept;
+
   //==============================================================================
   // Methods
   //==============================================================================
@@ -126,6 +128,18 @@ public:
   distanceTo(Vertex const & p) const noexcept -> F;
 
 }; // Dion
+
+//==============================================================================
+// Constructors
+//==============================================================================
+
+template <I P, I N, I D>
+HOSTDEV constexpr Dion<P, N, D>::Polytope(Vec<N, Vertex> const & v) noexcept
+{
+  for (I i = 0; i < N; ++i) {
+    _v[i] = v[i];
+  }
+}
 
 //==============================================================================
 // Accessors
@@ -319,7 +333,8 @@ PURE HOSTDEV constexpr auto
 pointIsLeft(QuadraticSegment2 const & q, Point2 const & p) noexcept -> bool
 {
   // This routine has previously been a major bottleneck, so some readability
-  // has been sacrificed for performance.
+  // has been sacrificed for performance. Hopefully the extensive comments
+  // will make up for this.
   //
   // The quadratic segment has an equivalent quadratic Bezier curve.
   // The triangle formed by the control points of the quadratic Bezier curve
@@ -331,10 +346,10 @@ pointIsLeft(QuadraticSegment2 const & q, Point2 const & p) noexcept -> bool
   //    We will check that p is in the triangle by checking that p is right of each edge
   //    of the triangle.
   // We manually perform the check for (v0, v1) since we want to reuse v01 and v0p.
-  Vec2<F> const v01(q[1][0] - q[0][0], q[1][1] - q[0][1]);
+  Vec2<F> const v01 = q[1] - q[0];
   Point2 const bcp = getBezierControlPoint(q);
-  Vec2<F> const v0b(bcp[0] - q[0][0], bcp[1] - q[0][1]);
-  Vec2<F> const v0p(p[0] - q[0][0], p[1] - q[0][1]);
+  Vec2<F> const v0b = bcp - q[0];
+  Vec2<F> const v0p = p - q[0];
   bool const tri_is_ccw = v01.cross(v0b) >= 0;
   {
     bool const b0 = v01.cross(v0p) >= 0;  // areCCW(v[0], v[1], p) == Left of edge 0

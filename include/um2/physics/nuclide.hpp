@@ -39,49 +39,49 @@ public:
   // Accessors
   //======================================================================
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   zaid() noexcept -> I &
   {
     return _zaid;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   zaid() const noexcept -> I const &
   {
     return _zaid;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   mass() noexcept -> F &
   {
     return _mass;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   mass() const noexcept -> F const &
   {
     return _mass;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   temperature() noexcept -> Vector<F> &
   {
     return _temperature;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   temperature() const noexcept -> Vector<F> const &
   {
     return _temperature;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   xs() noexcept -> Vector<XSec> &
   {
     return _xs;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   xs() const noexcept -> Vector<XSec> const &
   {
     return _xs;
@@ -95,9 +95,9 @@ public:
   validate() const noexcept
   {
     ASSERT(_zaid > 0);
-    for (auto const & x : _xs) {
-      x.validate();
-      ASSERT(!x.isMacroscopic())
+    for (auto const & xsec : _xs) {
+      xsec.validate();
+      ASSERT(!xsec.isMacroscopic())
     }
     ASSERT(_temperature.size() == _xs.size())
   }

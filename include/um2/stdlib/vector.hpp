@@ -80,6 +80,8 @@ public:
 
   HOSTDEV constexpr Vector(Vector && v) noexcept;
 
+  HOSTDEV constexpr Vector(T const * first, T const * last) noexcept;
+
   HOSTDEV constexpr Vector(std::initializer_list<T> const & list) noexcept;
 
   //==============================================================================
@@ -340,6 +342,15 @@ HOSTDEV constexpr Vector<T>::Vector(Vector<T> && v) noexcept
   v._begin = nullptr;
   v._end = nullptr;
   v._end_cap = nullptr;
+}
+
+template <class T>
+HOSTDEV constexpr Vector<T>::Vector(T const * first, T const * last) noexcept
+{
+  I const n = static_cast<I>(last - first);
+  allocate(n);
+  construct_at_end(n);
+  copy(first, last, _begin);
 }
 
 // Construct from an initializer list
