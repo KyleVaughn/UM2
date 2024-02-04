@@ -30,7 +30,6 @@ TEST_CASE(accessors)
   ASSERT(um2::isApprox(quad1[3], quad1_ref[3]));
 }
 
-HOSTDEV
 TEST_CASE(addVertex_addFace)
 {
   um2::QuadFVM mesh;

@@ -22,8 +22,9 @@
 //    x_min = -0.25, y_min = -1
 // 8) A segment (0,0) -> (2, 0) -> (4, 3)
 
+// CUDA is annoying and defines half, so we have to use ahalf
 F constexpr eps = um2::eps_distance * condCast<F>(10);
-F constexpr half = condCast<F>(1) / condCast<F>(2);
+F constexpr ahalf = condCast<F>(1) / condCast<F>(2);
 
 template <I D>
 HOSTDEV constexpr auto
@@ -147,7 +148,7 @@ TEST_CASE(jacobian)
 {
   um2::QuadraticSegment<D> const seg = makeSeg1<D>();
   um2::Vec<D, F> j0 = seg.jacobian(0);
-  um2::Vec<D, F> j12 = seg.jacobian(half);
+  um2::Vec<D, F> j12 = seg.jacobian(ahalf);
   um2::Vec<D, F> j1 = seg.jacobian(1);
   um2::Vec<D, F> j_ref = um2::Vec<D, F>::zero();
   j_ref[0] = condCast<F>(2);
@@ -157,7 +158,7 @@ TEST_CASE(jacobian)
 
   um2::QuadraticSegment<D> const seg2 = makeSeg2<D>();
   j0 = seg2.jacobian(0);
-  j12 = seg2.jacobian(half);
+  j12 = seg2.jacobian(ahalf);
   j1 = seg2.jacobian(1);
   ASSERT_NEAR(j0[0], condCast<F>(2), eps);
   ASSERT(j0[1] > 0);
@@ -226,18 +227,18 @@ TEST_CASE(isLeft)
   um2::Vector<um2::Point2> const test_points = {
       um2::Point2(condCast<F>(1), condCast<F>(3)),      // always left
       um2::Point2(condCast<F>(1), condCast<F>(-3)),     // always right
-      um2::Point2(condCast<F>(-1), half),               // always left
+      um2::Point2(condCast<F>(-1), ahalf),               // always left
       um2::Point2(condCast<F>(-1), condCast<F>(-0.5)),  // always right
-      um2::Point2(condCast<F>(3), half),                // always left
+      um2::Point2(condCast<F>(3), ahalf),                // always left
       um2::Point2(condCast<F>(3), condCast<F>(-0.5)),   // always right
       um2::Point2(condCast<F>(0.1), condCast<F>(0.9)),  // always left
       um2::Point2(condCast<F>(0.1), condCast<F>(-0.9)), // always right
       um2::Point2(condCast<F>(1.9), condCast<F>(0.9)),  // always left
       um2::Point2(condCast<F>(1.9), condCast<F>(-0.9)), // always right
-      um2::Point2(condCast<F>(1.1), half),
-      um2::Point2(condCast<F>(2), half),
+      um2::Point2(condCast<F>(1.1), ahalf),
+      um2::Point2(condCast<F>(2), ahalf),
       um2::Point2(condCast<F>(2.1), condCast<F>(0.01)),
-      um2::Point2(condCast<F>(2.1), half),
+      um2::Point2(condCast<F>(2.1), ahalf),
   };
 
   // A straight line
@@ -390,18 +391,18 @@ TEST_CASE(pointClosestTo)
   um2::Vector<um2::Point2> const test_points = {
       um2::Point2(condCast<F>(1), condCast<F>(3)),      // always left
       um2::Point2(condCast<F>(1), condCast<F>(-3)),     // always right
-      um2::Point2(condCast<F>(-1), half),               // always left
+      um2::Point2(condCast<F>(-1), ahalf),               // always left
       um2::Point2(condCast<F>(-1), condCast<F>(-0.5)),  // always right
-      um2::Point2(condCast<F>(3), half),                // always left
+      um2::Point2(condCast<F>(3), ahalf),                // always left
       um2::Point2(condCast<F>(3), condCast<F>(-0.5)),   // always right
       um2::Point2(condCast<F>(0.1), condCast<F>(0.9)),  // always left
       um2::Point2(condCast<F>(0.1), condCast<F>(-0.9)), // always right
       um2::Point2(condCast<F>(1.9), condCast<F>(0.9)),  // always left
       um2::Point2(condCast<F>(1.9), condCast<F>(-0.9)), // always right
-      um2::Point2(condCast<F>(1.1), half),
-      um2::Point2(condCast<F>(2), half),
+      um2::Point2(condCast<F>(1.1), ahalf),
+      um2::Point2(condCast<F>(2), ahalf),
       um2::Point2(condCast<F>(2.1), condCast<F>(0.01)),
-      um2::Point2(condCast<F>(2.1), half),
+      um2::Point2(condCast<F>(2.1), ahalf),
   };
   F const big_eps = condCast<F>(1e-2);
   um2::Vector<um2::QuadraticSegment2> const segments = {

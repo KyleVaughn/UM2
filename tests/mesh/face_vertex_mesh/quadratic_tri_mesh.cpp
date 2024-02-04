@@ -36,7 +36,6 @@ TEST_CASE(accessors)
   ASSERT(um2::isApprox(tri1[5], tri1_ref[5]));
 }
 
-HOSTDEV
 TEST_CASE(addVertex_addFace)
 {
   um2::Tri6FVM mesh;
@@ -133,13 +132,13 @@ TEST_CASE(intersect)
   um2::Vector<F> intersections;
   mesh.intersect(ray, intersections);
   ASSERT(intersections.size() == 5);
-  F const int1 = um2::sqrt(condCast<F>(0.74));
-  F const int2 = 1 / (condCast<F>(0.7) / int1);
+  F const it1 = um2::sqrt(condCast<F>(0.74));
+  F const it2 = 1 / (condCast<F>(0.7) / it1);
   ASSERT_NEAR(intersections[0], 0, eps);
   ASSERT_NEAR(intersections[1], 0, eps);
-  ASSERT_NEAR(intersections[2], int1, eps);
-  ASSERT_NEAR(intersections[3], int1, eps);
-  ASSERT_NEAR(intersections[4], int2, eps);
+  ASSERT_NEAR(intersections[2], it1, eps);
+  ASSERT_NEAR(intersections[3], it1, eps);
+  ASSERT_NEAR(intersections[4], it2, eps);
 }
 
 // TEST_CASE(toPolytopeSoup)

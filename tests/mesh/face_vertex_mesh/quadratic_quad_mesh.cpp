@@ -40,7 +40,6 @@ TEST_CASE(accessors)
   ASSERT(um2::isApprox(quad1[7], quad1_ref[7]));
 }
 
-HOSTDEV
 TEST_CASE(addVertex_addFace)
 {
   um2::Quad8FVM mesh;
@@ -146,13 +145,13 @@ TEST_CASE(intersect)
   um2::Vector<F> intersections;
   mesh.intersect(ray, intersections);
   ASSERT(intersections.size() == 5);
-  F const int1 = um2::sqrt(condCast<F>(1.57));
-  F const int2 = 1 / (condCast<F>(0.6) / int1);
+  F const it1 = um2::sqrt(condCast<F>(1.57));
+  F const it2 = 1 / (condCast<F>(0.6) / it1);
   ASSERT_NEAR(intersections[0], 0, eps);
   ASSERT_NEAR(intersections[1], 0, eps);
-  ASSERT_NEAR(intersections[2], int1, eps);
-  ASSERT_NEAR(intersections[3], int1, eps);
-  ASSERT_NEAR(intersections[4], int2, eps);
+  ASSERT_NEAR(intersections[2], it1, eps);
+  ASSERT_NEAR(intersections[3], it1, eps);
+  ASSERT_NEAR(intersections[4], it2, eps);
 }
 
 TEST_CASE(mortonSort)

@@ -105,7 +105,7 @@ public:
     return _wpol;
   }
 
-  PURE [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   polarAngles() const noexcept -> Vector<F> const &
   {
     return _pol;

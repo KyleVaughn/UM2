@@ -26,7 +26,6 @@ TEST_CASE(accessors)
   ASSERT(um2::isApprox(tri1[2], tri1_ref[2]));
 }
 
-HOSTDEV
 TEST_CASE(addVertex_addFace)
 {
   um2::TriFVM mesh;

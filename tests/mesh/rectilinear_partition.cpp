@@ -158,7 +158,7 @@ TEST_CASE(getBoxAndChild)
 template <I D, std::integral P>
 MAKE_CUDA_KERNEL(clear, D, P)
 
-template <typename T, std::integral P>
+template <std::integral P>
 MAKE_CUDA_KERNEL(getBoxAndChild, P)
 
 #endif

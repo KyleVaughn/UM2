@@ -2,8 +2,9 @@
 
 #include "../../test_macros.hpp"
 
-F constexpr eps = um2::eps_distance * static_cast<F>(10);
-F constexpr half = static_cast<F>(1) / static_cast<F>(2);
+// CUDA is annoying and defines half, so we have to use ahalf
+F const eps = um2::eps_distance * static_cast<F>(10);
+F const ahalf = static_cast<F>(1) / static_cast<F>(2);
 
 template <I D>
 HOSTDEV constexpr auto
@@ -30,7 +31,7 @@ TEST_CASE(interpolate)
   ASSERT((um2::isApprox(p0, line[0])));
   um2::Point<D> const p1 = line(1);
   ASSERT((um2::isApprox(p1, line[1])));
-  um2::Point<D> const p05 = um2::interpolate(line, half);
+  um2::Point<D> const p05 = um2::interpolate(line, ahalf);
   um2::Point<D> const mp = um2::midpoint(p0, p1);
   ASSERT((um2::isApprox(p05, mp)));
 }
@@ -148,10 +149,10 @@ TEST_CASE(pointClosestTo)
   p0[0] -= static_cast<F>(1);
   ASSERT_NEAR(line.pointClosestTo(p0), static_cast<F>(0), eps);
   // A point to the right of the left end point
-  p0 = line(half);
+  p0 = line(ahalf);
   p0[0] -= static_cast<F>(1) / 10;
   p0[1] += static_cast<F>(1) / 10;
-  ASSERT_NEAR(line.pointClosestTo(p0), half, eps);
+  ASSERT_NEAR(line.pointClosestTo(p0), ahalf, eps);
 
   // Repeat for the right end point
   um2::Point<D> p1 = line[1];
@@ -177,7 +178,7 @@ TEST_CASE(distanceTo)
   p0[0] -= static_cast<F>(1);
   ASSERT_NEAR(line.distanceTo(p0), static_cast<F>(1), eps);
   // A point to the right of the left end point
-  p0[0] += half * 3;
+  p0[0] += ahalf * 3;
   F ref = 0;
   if constexpr (D == 2) {
     ref = um2::sin(um2::pi<F> / static_cast<F>(4)) / 2;
@@ -192,7 +193,7 @@ TEST_CASE(distanceTo)
   ASSERT_NEAR(line.distanceTo(p1), static_cast<F>(0), eps);
   p1[0] += static_cast<F>(1);
   ASSERT_NEAR(line.distanceTo(p1), static_cast<F>(1), eps);
-  p1[0] -= half * 3;
+  p1[0] -= ahalf * 3;
   ASSERT_NEAR(line.distanceTo(p1), ref, eps);
 }
 
