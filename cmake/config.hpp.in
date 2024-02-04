@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cmath>   // abs
-#include <cstdint> // int32_t, int64_t, uint32_t, uint64_t
+#include <cstdint> // int32_t, int64_t
 #include <cstdio>  // printf
 #include <cstdlib> // exit
 
@@ -26,6 +26,9 @@
 
 // Set compile-time filtering of log messages
 #define MIN_LOG_LEVEL @UM2_MIN_LOG_LEVEL@
+
+// MPACT xslibs path
+#define MPACT_DATA_DIR "@MPACT_DATA@"
 
 //==============================================================================
 // Includes
@@ -116,7 +119,6 @@ using F = float;
 // Integer type
 #if UM2_ENABLE_INT64
 using I = int64_t;
-using U = uint64_t;
 HOSTDEV consteval auto
 sizeMax() noexcept -> I
 {
@@ -124,7 +126,6 @@ sizeMax() noexcept -> I
 }
 #else
 using I = int32_t;
-using U = uint32_t;
 HOSTDEV consteval auto
 sizeMax() noexcept -> I
 {
@@ -178,11 +179,13 @@ abs(T x) noexcept -> T
 {
   return ::abs(x);
 }
+
 CONST DEVICE constexpr auto
 abs(float x) noexcept -> float
 {
   return ::fabsf(x);
 }
+
 CONST DEVICE constexpr auto
 abs(double x) noexcept -> double
 {

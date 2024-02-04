@@ -42,21 +42,38 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Build options
 option(UM2_BUILD_BENCHMARKS "Build benchmarks"                  OFF)
-option(UM2_BUILD_EXAMPLES   "Build examples"                    OFF)
 option(UM2_BUILD_TESTS      "Build tests"                       ON)
 option(UM2_BUILD_TUTORIAL   "Build tutorial"                    OFF)
+option(UM2_BUILD_SHARED     "Build shared library"              ON)
 
 # Use external dependencies
 option(UM2_USE_CUDA         "Enable CUDA"                                 OFF)
 option(UM2_USE_GMSH         "Enable Gmsh"                                 ON)
 option(UM2_USE_OPENMP       "Enable OpenMP"                               ON)
-option(UM2_USE_PNG          "Enable PNG"                                  OFF)
 option(UM2_USE_TBB          "Enable Intel TBB"                            ON)
 
 # Enable/disable features
 option(UM2_ENABLE_FASTMATH  "Enable fast math"                  ON) # CPU and GPU
 option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"      ON)
 option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large meshes
+
+# Minimum log level for compile-time filtering of log messages
+# Off = 0,        // no messages
+# Error = 1,      // only errors
+# Warn = 2,       // errors and warnings
+# Info = 3,       // errors, warnings and info
+# Debug = 4,      // errors, warnings, info and debug
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+  set(UM2_MIN_LOG_LEVEL 3)
+else()
+  set(UM2_MIN_LOG_LEVEL 4)
+endif()
+
+# Path to look for MPACT cross section libraries
+# Default to UM2/MPACT_Extras/xslibs
+if (NOT MPACT_DATA)
+  set(MPACT_DATA "${CMAKE_CURRENT_SOURCE_DIR}/MPACT_Extras/xslibs")
+endif()
 
 #===============================================================================
 # Developer options
@@ -80,29 +97,12 @@ option(UM2_USE_COVERAGE      "Enable coverage"                 OFF)
 option(UM2_USE_VALGRIND      "Enable valgrind"                 ${UM2_DEV_MODE})
 
 #===============================================================================
-# Set minimum logging level
-#===============================================================================
-
-# Minimum log level for compile-time filtering of log messages
-# Off = 0,        // no messages
-# Error = 1,      // only errors
-# Warn = 2,       // errors and warnings
-# Info = 3,       // errors, warnings and info
-# Debug = 4,      // errors, warnings, info and debug
-# Trace = 5,      // errors, warnings, info, debug and trace
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-  set(UM2_MIN_LOG_LEVEL 3)
-else()
-  set(UM2_MIN_LOG_LEVEL 5)
-endif()
-
-#===============================================================================
 # Check compiler version
 #===============================================================================
 
 # Minimum version for GCC or Clang
 # This is to ensure that the compiler supports the parts of C++20 that we use
-set(UM2_MIN_GCC_VERSION 12.3)
+set(UM2_MIN_GCC_VERSION 12.0)
 set(UM2_MIN_CLANG_VERSION 15.0)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${UM2_MIN_GCC_VERSION})
@@ -164,7 +164,18 @@ set(UM2_SOURCES
     #    #    "src/um2c.cpp"
   )
 
-add_library(um2 SHARED ${UM2_SOURCES})
+
+if (UM2_BUILD_SHARED)
+  if (UM2_USE_CUDA)
+    message(WARNING "Shared library is not supported with CUDA." 
+      " Building static library instead.")
+    add_library(um2 STATIC ${UM2_SOURCES})
+  else()
+    add_library(um2 SHARED ${UM2_SOURCES})
+  endif()
+else()
+  add_library(um2 STATIC ${UM2_SOURCES})
+endif()
 
 target_include_directories(um2
   PUBLIC
@@ -198,6 +209,13 @@ target_include_directories(um2 SYSTEM PUBLIC "${PUGIXML_INC}")
 # Optional dependencies
 #===============================================================================
 
+# Gmsh
+if (UM2_USE_GMSH)
+  find_package(Gmsh REQUIRED)
+  target_link_libraries(um2 PUBLIC "${GMSH_LIB}")
+  target_include_directories(um2 SYSTEM PUBLIC "${GMSH_INC}")
+endif()
+
 # OpenMP
 if (UM2_USE_OPENMP)
   find_package(OpenMP)
@@ -209,20 +227,6 @@ endif()
 if (UM2_USE_TBB)
   find_package(TBB REQUIRED)
   target_link_libraries(um2 PUBLIC TBB::tbb)
-endif()
-
-# Gmsh
-if (UM2_USE_GMSH)
-  find_package(Gmsh REQUIRED)
-  target_link_libraries(um2 PUBLIC "${GMSH_LIB}")
-  target_include_directories(um2 SYSTEM PUBLIC "${GMSH_INC}")
-endif()
-
-# libpng
-if (UM2_USE_LIBPNG)
-  find_package(PNG REQUIRED)
-  target_link_libraries(um2 PUBLIC "${PNG_LIBRARIES}")
-  target_include_directories(um2 SYSTEM PUBLIC "${PNG_INCLUDE_DIRS}")
 endif()
 
 # CUDA
@@ -239,7 +243,7 @@ if (UM2_USE_CUDA)
     set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
   endif()
 
-  find_package(CUDA REQUIRED)
+  find_package(CUDAToolkit REQUIRED)
   enable_language(CUDA)
 
   # Set CUDA standard to the same as the C++ standard
@@ -331,6 +335,12 @@ endif()
 # Optional subdirectories
 #===============================================================================
 
+# Benchmarks
+if (UM2_BUILD_BENCHMARKS)
+  find_package(benchmark REQUIRED)
+  add_subdirectory(benchmarks)
+endif()
+
 # Tests
 if (UM2_BUILD_TESTS)
   include(CTest)
@@ -340,17 +350,6 @@ endif()
 # Tutorial
 if (UM2_BUILD_TUTORIAL)
   add_subdirectory(tutorial)
-endif()
-##
-### Examples
-##if (UM2_BUILD_EXAMPLES)
-##  add_subdirectory(examples)
-##endif()
-##
-# Benchmarks
-if (UM2_BUILD_BENCHMARKS)
-  find_package(benchmark REQUIRED)
-  add_subdirectory(benchmarks)
 endif()
 
 #===============================================================================

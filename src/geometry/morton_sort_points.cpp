@@ -75,5 +75,4 @@ mortonSortPermutation(
   }
 } 
 
-
 } // namespace um2

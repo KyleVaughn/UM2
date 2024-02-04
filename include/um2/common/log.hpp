@@ -31,7 +31,6 @@ inline constexpr int32_t error = 1; // only errors
 inline constexpr int32_t warn = 2;  // errors and warnings
 inline constexpr int32_t info = 3;  // errors, warnings and info
 inline constexpr int32_t debug = 4; // errors, warnings, info and debug
-inline constexpr int32_t trace = 5; // errors, warnings, info, debug and trace
 } // namespace levels
 
 //==============================================================================
@@ -157,13 +156,6 @@ debug(Args const &... args) noexcept
   printMessage(levels::debug, args...);
 }
 
-template <class... Args>
-void
-trace(Args const &... args) noexcept
-{
-  printMessage(levels::trace, args...);
-}
-
 } // namespace um2::log
 
 #if MIN_LOG_LEVEL > 0
@@ -188,10 +180,4 @@ trace(Args const &... args) noexcept
 #  define LOG_DEBUG(...) um2::log::debug(__VA_ARGS__)
 #else
 #  define LOG_DEBUG(...)
-#endif
-
-#if MIN_LOG_LEVEL > 4
-#  define LOG_TRACE(...) um2::log::trace(__VA_ARGS__)
-#else
-#  define LOG_TRACE(...)
 #endif

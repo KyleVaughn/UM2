@@ -1,6 +1,0 @@
-HOSTDEV
-ASSUME
-constexpr
-PURE/CONST
-ASSERT/ASSUME
-__builtin_unreachable

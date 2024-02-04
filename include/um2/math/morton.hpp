@@ -164,7 +164,7 @@ pdep0x55555555(uint32_t x) noexcept -> uint32_t
   return x;
 }
 
-CONST static constexpr auto
+CONST HOSTDEV static constexpr auto
 pdep0x5555555555555555(uint64_t x) noexcept -> uint64_t
 {
   ASSERT_ASSUME(x <= max_2d_morton_coord<uint64_t>);
@@ -176,7 +176,7 @@ pdep0x5555555555555555(uint64_t x) noexcept -> uint64_t
   return x;
 }
 
-CONST constexpr static auto
+CONST HOSTDEV constexpr static auto
 pext0x55555555(uint32_t x) noexcept -> uint32_t
 {
   x &= 0x55555555;
@@ -187,7 +187,7 @@ pext0x55555555(uint32_t x) noexcept -> uint32_t
   return x;
 }
 
-CONST constexpr static auto
+CONST HOSTDEV constexpr static auto
 pext0x5555555555555555(uint64_t x) noexcept -> uint64_t
 {
   x &= 0x5555555555555555;
@@ -199,7 +199,7 @@ pext0x5555555555555555(uint64_t x) noexcept -> uint64_t
   return x;
 }
 
-CONST static constexpr auto
+CONST HOSTDEV static constexpr auto
 pdep0x92492492(uint32_t x) noexcept -> uint32_t
 {
   ASSERT_ASSUME(x <= max_3d_morton_coord<uint32_t>);
@@ -210,7 +210,7 @@ pdep0x92492492(uint32_t x) noexcept -> uint32_t
   return x;
 }
 
-CONST static constexpr auto
+CONST HOSTDEV static constexpr auto
 pdep0x9249249249249249(uint64_t x) noexcept -> uint64_t
 {
   ASSERT_ASSUME(x <= max_3d_morton_coord<uint64_t>);
@@ -222,7 +222,7 @@ pdep0x9249249249249249(uint64_t x) noexcept -> uint64_t
   return x;
 }
 
-CONST constexpr static auto
+CONST HOSTDEV constexpr static auto
 pext0x92492492(uint32_t x) noexcept -> uint32_t
 {
   x &= 0x09249249;
@@ -233,7 +233,7 @@ pext0x92492492(uint32_t x) noexcept -> uint32_t
   return x;
 }
 
-CONST constexpr static auto
+CONST HOSTDEV constexpr static auto
 pext0x9249249249249249(uint64_t x) noexcept -> uint64_t
 {
   x &= 0x1249249249249249;
@@ -249,46 +249,46 @@ pext0x9249249249249249(uint64_t x) noexcept -> uint64_t
 // Morton encoding/decoding
 //==============================================================================
 
-CONST constexpr auto
+CONST HOSTDEV constexpr auto
 mortonEncode(uint32_t const x, uint32_t const y) noexcept -> uint32_t
 {
   return pdep0x55555555(x) | (pdep0x55555555(y) << 1);
 }
 
-CONST constexpr auto
+CONST HOSTDEV constexpr auto
 mortonEncode(uint64_t const x, uint64_t const y) noexcept -> uint64_t
 {
   return pdep0x5555555555555555(x) | (pdep0x5555555555555555(y) << 1);
 }
 
-constexpr void
+HOSTDEV constexpr void
 mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y) noexcept
 {
   x = pext0x55555555(morton);
   y = pext0x55555555(morton >> 1);
 }
 
-constexpr void
+HOSTDEV constexpr void
 mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y) noexcept
 {
   x = pext0x5555555555555555(morton);
   y = pext0x5555555555555555(morton >> 1);
 }
 
-CONST constexpr auto
+HOSTDEV CONST constexpr auto
 mortonEncode(uint32_t const x, uint32_t const y, uint32_t const z) noexcept -> uint32_t
 {
   return pdep0x92492492(x) | (pdep0x92492492(y) << 1) | (pdep0x92492492(z) << 2);
 }
 
-CONST constexpr auto
+HOSTDEV CONST constexpr auto
 mortonEncode(uint64_t const x, uint64_t const y, uint64_t const z) noexcept -> uint64_t
 {
   return pdep0x9249249249249249(x) | (pdep0x9249249249249249(y) << 1) |
          (pdep0x9249249249249249(z) << 2);
 }
 
-constexpr void
+HOSTDEV constexpr void
 mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y, uint32_t & z) noexcept
 {
   x = pext0x92492492(morton);
@@ -296,7 +296,7 @@ mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y, uint32_t & z) no
   z = pext0x92492492(morton >> 2);
 }
 
-constexpr void
+HOSTDEV constexpr void
 mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y, uint64_t & z) noexcept
 {
   x = pext0x9249249249249249(morton);

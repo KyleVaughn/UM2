@@ -90,6 +90,28 @@ fill_n(OutputIt first, Size n, T const & value) noexcept -> OutputIt
 // fill
 //==============================================================================
 
+// CUDA doesn't differentiate between random access and forward iterators, so
+// we can't overload on that. We'll just use the forward iterator version.
+#if !UM2_USE_CUDA
+
+template <std::random_access_iterator RandomIt, class T>
+HOST constexpr void
+fill(RandomIt first, RandomIt last, T const & value) noexcept
+{
+  fill_n(first, last - first, value);
+}
+
+template <std::forward_iterator ForwardIt, class T>
+HOST constexpr void
+fill(ForwardIt first, ForwardIt last, T const & value) noexcept
+{
+  for (; first != last; ++first) {
+    *first = value;
+  }
+}
+
+#else
+
 template <std::forward_iterator ForwardIt, class T>
 HOSTDEV constexpr void
 fill(ForwardIt first, ForwardIt last, T const & value) noexcept
@@ -99,12 +121,7 @@ fill(ForwardIt first, ForwardIt last, T const & value) noexcept
   }
 }
 
-template <std::random_access_iterator RandomIt, class T>
-HOSTDEV constexpr void
-fill(RandomIt first, RandomIt last, T const & value) noexcept
-{
-  fill_n(first, last - first, value);
-}
+#endif
 
 //==============================================================================
 // is_sorted

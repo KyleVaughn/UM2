@@ -55,7 +55,6 @@ PolytopeSoup::getElement(I const i, VTKElemType & type, Vector<I> & conn) const
 auto
 PolytopeSoup::getElementBoundingBox(I const i) const -> AxisAlignedBox3
 {
-  LOG_TRACE("PolytopeSoup::getElementBoundingBox(i = ", i, ")");
   ASSERT(i < _element_types.size());
 
   auto const elem_type = _element_types[i];
@@ -147,7 +146,6 @@ PolytopeSoup::getElementBoundingBox(I const i) const -> AxisAlignedBox3
 auto
 PolytopeSoup::getElementCentroid(I const i) const -> Point3
 {
-  LOG_TRACE("PolytopeSoup::getElementCentroid(i = ", i, ')');
   ASSERT(i < _element_types.size());
 
   auto const elem_type = _element_types[i];
@@ -229,7 +227,6 @@ PolytopeSoup::getElementCentroid(I const i) const -> Point3
 void
 PolytopeSoup::getElset(I const i, String & name, Vector<I> & ids, Vector<F> & data) const
 {
-  LOG_TRACE("PolytopeSoup::getElset(i = ", i, ')');
   ASSERT(i < _elset_names.size());
   name = _elset_names[i];
   auto const istart = _elset_offsets[i];
@@ -538,7 +535,6 @@ PolytopeSoup::mortonSortVertices()
 void
 PolytopeSoup::sortElsets()
 {
-  LOG_TRACE("Sorting elsets");
   using NameIndexPair = um2::Pair<String, I>;
   I const num_elsets = _elset_names.size();
   Vector<NameIndexPair> elset_name_index_pairs(num_elsets);
@@ -849,7 +845,6 @@ static void
 abaqusParseNodes(PolytopeSoup & soup, std::string & line, std::ifstream & file)
 {
   // Would love to use chars_format here, but it bugs out on "0.5" occasionally
-  LOG_TRACE("Parsing nodes");
   while (std::getline(file, line) && line[0] != '*') {
     // Format: node_id, x, y, z
     // Skip ID
@@ -868,7 +863,6 @@ abaqusParseNodes(PolytopeSoup & soup, std::string & line, std::ifstream & file)
 static void
 abaqusParseElements(PolytopeSoup & soup, std::string & line, std::ifstream & file)
 {
-  LOG_TRACE("Parsing elements");
   //  "*ELEMENT, type=CPS".size() = 18
   //  CPS3 is a 3-node triangle
   //  CPS4 is a 4-node quadrilateral
@@ -905,7 +899,6 @@ abaqusParseElements(PolytopeSoup & soup, std::string & line, std::ifstream & fil
   I const verts_per_elem = verticesPerElem(this_type);
   Vector<I> conn(verticesPerElem(this_type));
   while (std::getline(file, line) && line[0] != '*') {
-    LOG_TRACE("Line: " + String(line.c_str()));
     std::string_view const line_view = line;
     // For each element, read the element ID and the node IDs
     // Format: id, n1, n2, n3, n4, n5 ...
@@ -916,7 +909,6 @@ abaqusParseElements(PolytopeSoup & soup, std::string & line, std::ifstream & fil
     // Read the first N-1 node IDs
     for (I i = 0; i < verts_per_elem - 1; ++i) {
       std::from_chars(line_view.data() + last + 2, line_view.data() + next, id);
-      LOG_TRACE("Node ID: ", id);
       ASSERT(id > 0);
       conn[i] = id - 1; // ABAQUS is 1-indexed
       last = next;
@@ -933,7 +925,6 @@ abaqusParseElements(PolytopeSoup & soup, std::string & line, std::ifstream & fil
 static void
 abaqusParseElsets(PolytopeSoup & soup, std::string & line, std::ifstream & file)
 {
-  LOG_TRACE("Parsing elsets");
   std::string_view line_view = line;
   // "*ELSET,ELSET=".size() = 13
   std::string const elset_name_std{line_view.substr(13, line_view.size() - 13)};
@@ -1039,7 +1030,6 @@ PolytopeSoup::writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
                                 String const & h5filename, String const & h5path) const
 
 {
-  LOG_TRACE("Writing XDMF geometry");
   I const num_verts = _vertices.size();
   bool const is_3d =
       std::any_of(_vertices.cbegin(), _vertices.cend(),
@@ -1093,7 +1083,6 @@ void
 PolytopeSoup::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
                                 String const & h5filename, String const & h5path) const
 {
-  LOG_TRACE("Writing XDMF topology");
   // Create XDMF Topology node
   auto xtopo = xgrid.append_child("Topology");
   I const nelems = numElems();
@@ -1189,7 +1178,6 @@ PolytopeSoup::writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
                               String const & h5filename, String const & h5path,
                               Vector<String> const & material_names) const
 {
-  LOG_TRACE("Writing XDMF elsets");
   for (I i = 0; i < _elset_names.size(); ++i) {
     String const name = _elset_names[i];
     auto const start = _elset_offsets[i];
@@ -1300,8 +1288,6 @@ PolytopeSoup::writeXDMFUniformGrid(String const & name,
                                    pugi::xml_node & xdomain, H5::H5File & h5file,
                                    String const & h5filename, String const & h5path) const
 {
-  LOG_TRACE("Writing XDMF uniform grid");
-
   // Grid
   pugi::xml_node xgrid = xdomain.append_child("Grid");
   xgrid.append_attribute("Name") = name.c_str();
@@ -1328,12 +1314,9 @@ PolytopeSoup::writeXDMF(String const & filepath) const
     last_slash = 0;
   }
   I const h5filepath_end = last_slash == 0 ? 0 : last_slash + 1;
-  LOG_TRACE("h5filepath_end: ", h5filepath_end);
   String const h5filename =
       filepath.substr(h5filepath_end, filepath.size() - 5 - h5filepath_end) + ".h5";
-  LOG_TRACE("h5filename: " + h5filename);
   String const h5filepath = filepath.substr(0, h5filepath_end);
-  LOG_TRACE("h5filepath: " + h5filepath);
   H5::H5File h5file((h5filepath + h5filename).c_str(), H5F_ACC_TRUNC);
 
   // Setup XML file
@@ -1409,7 +1392,6 @@ static void
 readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
                  String const & h5filename, PolytopeSoup & soup)
 {
-  LOG_TRACE("Reading XDMF geometry");
   pugi::xml_node const xgeometry = xgrid.child("Geometry");
   if (strcmp(xgeometry.name(), "Geometry") != 0) {
     log::error("XDMF geometry node not found");
@@ -1558,7 +1540,6 @@ static void
 readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
                  String const & h5filename, PolytopeSoup & soup)
 {
-  LOG_TRACE("Reading XDMF topology");
   pugi::xml_node const xtopology = xgrid.child("Topology");
   if (strcmp(xtopology.name(), "Topology") != 0) {
     log::error("XDMF topology node not found");
@@ -1766,7 +1747,6 @@ readXDMFFile(String const & filename, PolytopeSoup & soup)
   String const h5filename =
       filename.substr(h5filepath_end, filename.size() - 4 - h5filepath_end) + "h5";
   String const h5filepath = filename.substr(0, h5filepath_end);
-  LOG_TRACE("H5 filename: " + h5filename);
   H5::H5File h5file((h5filepath + h5filename).c_str(), H5F_ACC_RDONLY);
 
   // Setup XML file

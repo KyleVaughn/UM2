@@ -3,8 +3,6 @@
 
 #include "../test_macros.hpp"
 
-#include <unistd.h>
-
 TEST_CASE(log_test)
 {
   um2::log::reset();
@@ -17,8 +15,7 @@ TEST_CASE(log_test)
 
   // Test printing a string
   um2::log::exit_on_error = false;
-  um2::log::level = um2::log::levels::trace;
-  um2::log::trace("trace");
+  um2::log::level = um2::log::levels::debug;
   um2::log::debug("debug");
   um2::log::info("info");
   um2::log::warn("warn");

@@ -1,3 +1,8 @@
+Check that tests are actually using CUDA
+
+No more examples. Make a "models" directory.
+  Add options for each parametric study
+
 Method to function
 
 investigate valgrind release build -> UPGRADE to 3.22

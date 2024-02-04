@@ -32,10 +32,6 @@ TEST_CASE(variance)
   ASSERT_NEAR(m, condCast<F>(2.5), eps);
 }
 
-#ifndef __clang__
-#  pragma GCC diagnostic pop
-#endif
-
 #if UM2_USE_CUDA
 
 MAKE_CUDA_KERNEL(mean);

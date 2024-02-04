@@ -268,10 +268,6 @@ addColor(int32_t const msg_level, char * buffer_begin) noexcept -> char *
       // \033[1;35m
       buffer_begin[5] = '5';
       break;
-    case levels::trace: // CYAN
-      // \033[1;36m
-      buffer_begin[5] = '6';
-      break;
     default: // NO COLOR
       buffer_begin -= 7;
       break;
@@ -314,14 +310,6 @@ addLevel(int32_t const msg_level, char * buffer_begin) noexcept -> char *
     buffer_begin[2] = 'B';
     buffer_begin[3] = 'U';
     buffer_begin[4] = 'G';
-    buffer_begin += 5;
-    break;
-  case levels::trace:
-    buffer_begin[0] = 'T';
-    buffer_begin[1] = 'R';
-    buffer_begin[2] = 'A';
-    buffer_begin[3] = 'C';
-    buffer_begin[4] = 'E';
     buffer_begin += 5;
     break;
   default:

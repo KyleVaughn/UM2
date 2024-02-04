@@ -139,7 +139,8 @@ MAKE_CUDA_KERNEL(clamp_float);
 
 MAKE_CUDA_KERNEL(copy_trivial);
 
-MAKE_CUDA_KERNEL(fill_int);
+MAKE_CUDA_KERNEL(fill_n);
+MAKE_CUDA_KERNEL(fill_test);
 
 MAKE_CUDA_KERNEL(is_sorted_int);
 
