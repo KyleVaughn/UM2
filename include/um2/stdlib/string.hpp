@@ -142,6 +142,8 @@ public:
 
   HOSTDEV constexpr explicit String(char const * s) noexcept;
 
+  HOSTDEV constexpr String(char const * begin, char const * end) noexcept;
+
   HOSTDEV constexpr String(char const * s, I n) noexcept;
 
   template <std::integral T>
@@ -514,6 +516,13 @@ HOSTDEV constexpr String::String(char const * s, I const n) noexcept
     LONG_ALLOCATE_AND_COPY(s, cap + 1);
     _r.l.data[cap] = '\0';
   }
+}
+
+HOSTDEV constexpr String::String(char const * begin, char const * end) noexcept
+{
+  // Call the constructor that takes a pointer and a length
+  String tmp(begin, static_cast<I>(end - begin));
+  *this = um2::move(tmp);
 }
 
 // std::to_string should not allocate here due to small string optimization, so

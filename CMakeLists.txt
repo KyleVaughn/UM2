@@ -44,7 +44,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(UM2_BUILD_BENCHMARKS "Build benchmarks"                  OFF)
 option(UM2_BUILD_TESTS      "Build tests"                       ON)
 option(UM2_BUILD_TUTORIAL   "Build tutorial"                    OFF)
-option(UM2_BUILD_SHARED     "Build shared library"              ON)
+option(UM2_BUILD_SHARED     "Build UM2 as shared library"       ON)
 
 # Use external dependencies
 option(UM2_USE_CUDA         "Enable CUDA"                                 OFF)
@@ -151,8 +151,9 @@ set(UM2_SOURCES
     "src/geometry/morton_sort_points.cpp"
     "src/mesh/polytope_soup.cpp"
     "src/mesh/face_vertex_mesh.cpp"
+    "src/physics/cross_section.cpp"
     "src/physics/nuclide.cpp"
-    #"src/physics/cross_section_library.cpp"
+    "src/physics/cross_section_library.cpp"
     #    #    "src/mpact/spatial_partition.cpp"
     #    "src/gmsh/base_gmsh_api.cpp"
     #    #    "src/gmsh/io.cpp"

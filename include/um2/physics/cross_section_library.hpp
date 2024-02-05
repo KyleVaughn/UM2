@@ -14,6 +14,13 @@
 namespace um2
 {
 
+// Some common cross section libraries.
+namespace mpact
+{
+const String XSLIB_8G = "mpact8g_70s_v4.0m0_02232015.fmt";
+const String XSLIB_51G = "mpact51g_71_v4.2m5_12062016_sph.fmt";
+} // namespace mpact
+
 class XSLibrary
 {
 
@@ -35,44 +42,44 @@ public:
   // Accessors
   //======================================================================
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   groupBounds() noexcept -> Vector<F> &
   {
     return _group_bounds;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   groupBounds() const noexcept -> Vector<F> const &
   {
     return _group_bounds;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   chi() noexcept -> Vector<F> &
   {
     return _chi;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   chi() const noexcept -> Vector<F> const &
   {
     return _chi;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   nuclides() noexcept -> Vector<Nuclide> &
   {
     return _nuclides;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   nuclides() const noexcept -> Vector<Nuclide> const &
   {
     return _nuclides;
   }
 
-  [[nodiscard]] constexpr auto
-  numGroups() const noexcept -> Size
+  PURE [[nodiscard]] constexpr auto
+  numGroups() const noexcept -> I 
   {
     return _group_bounds.size();
   }

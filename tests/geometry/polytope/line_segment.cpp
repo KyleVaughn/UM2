@@ -3,8 +3,8 @@
 #include "../../test_macros.hpp"
 
 // CUDA is annoying and defines half, so we have to use ahalf
-F const eps = um2::eps_distance * static_cast<F>(10);
-F const ahalf = static_cast<F>(1) / static_cast<F>(2);
+F constexpr eps = um2::eps_distance * static_cast<F>(10);
+F constexpr ahalf = static_cast<F>(1) / static_cast<F>(2);
 
 template <I D>
 HOSTDEV constexpr auto

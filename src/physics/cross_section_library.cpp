@@ -2,7 +2,6 @@
 #include <um2/stdlib/sto.hpp>
 
 #include <fstream>
-#include <iostream>
 
 namespace um2
 {
@@ -13,16 +12,45 @@ isSpace(char c) -> bool
   return std::isspace(static_cast<unsigned char>(c)) != 0;
 }
 
+static void 
+getNextToken(char const * & token_start, char const * & token_end) 
+{
+  while (isSpace(*token_start) && *token_start != '\0') {
+    ++token_start;
+  }
+  token_end = token_start;
+  while (!isSpace(*token_end) && *token_end != '\0') {
+    ++token_end;
+  }
+}
+
+static auto
+getNumTokens(char const * start) -> I
+{
+  I num_tokens = 0;
+  char const * token_start = start;
+  char const * token_end = token_start;
+  while (*token_start != '\0') {
+    getNextToken(token_start, token_end);
+    if (token_start == token_end) {
+      break;
+    }
+    ++num_tokens;
+    token_start = token_end;
+  }
+  return num_tokens;
+}
+
 static void
 // NOLINTNEXTLINE
 readMPACTLibrary(String const & filename, XSLibrary & lib)
 {
-  LOG_INFO("Reading MPACT cross section library: " + filename);
+  LOG_INFO("Reading MPACT cross section library: ", filename);
 
   // Open file
   std::ifstream file(filename.c_str());
   if (!file.is_open()) {
-    LOG_ERROR("Could not open file: " + filename);
+    LOG_ERROR("Could not open file: ", filename);
     return;
   }
 
@@ -31,7 +59,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
   std::string line;
   std::getline(file, line);
   if (!line.starts_with("%VER:")) {
-    LOG_ERROR("Invalid MPACT library file: " + filename);
+    LOG_ERROR("Invalid MPACT library file: ", filename);
     return;
   }
   // Make sure that the first non-whitespace character is a 4 (major version)
@@ -41,7 +69,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
       continue;
     }
     if (c != '4') {
-      LOG_ERROR("Invalid MPACT library version: " + filename);
+      LOG_ERROR("Invalid MPACT library version: ", filename);
       return;
     }
     break;
@@ -51,7 +79,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
   // -----------------------------------------------------------
   std::getline(file, line);
   if (!line.starts_with("%DIM:")) {
-    LOG_ERROR("Invalid MPACT library file: " + filename);
+    LOG_ERROR("Invalid MPACT library file: ", filename);
     return;
   }
   std::getline(file, line);
@@ -68,28 +96,18 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
   //  num_flux_lvls: The number of subgroup flux levels
 
   Vector<I> dims(10, 0);
-  {
-    char const * num_start = line.data();
-    for (I idim = 0; idim < 10; ++idim) {
-      // The location of the first digit of the integer
-      while (isSpace(*num_start)) {
-        ++num_start;
-      }
-      // The location of the first space after the integer OR the end of the line
-      char const * num_end = num_start;
-      while (!isSpace(*num_end)) {
-        ++num_end;
-      }
-
-      dims[idim] = sto<I>(std::string(num_start, num_end));
-      ASSERT(dims[idim] >= 0);
-      num_start = num_end;
-    }
+  char const * token_start = line.data();
+  char const * token_end = token_start;
+  for (I idim = 0; idim < 10; ++idim) {
+    getNextToken(token_start, token_end);
+    dims[idim] = sto<I>(std::string(token_start, token_end));
+    ASSERT(dims[idim] >= 0);
+    token_start = token_end;
   }
 
   I const num_groups = dims[0];
   LOG_INFO("Number of energy groups: " + toString(num_groups));
-  //  I const num_nuclides = dims[4];
+  I const num_nuclides = dims[4];
 
   // %GRP
   //-------------------------------------------------------------
@@ -102,26 +120,20 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
   std::getline(file, line);
   auto & group_bounds = lib.groupBounds();
   group_bounds.resize(num_groups);
-  {
-    char const * num_start = line.data();
-    for (I ig = 0; ig < num_groups; ++ig) {
-      // The location of the first digit of the number
-      while (isSpace(*num_start)) {
-        ++num_start;
-      }
-      // The location of the first space after the number OR the end of the line
-      char const * num_end = num_start;
-      while (!isSpace(*num_end)) {
-        ++num_end;
-      }
-
-      group_bounds[ig] = sto<F>(std::string(num_start, num_end));
-      ASSERT(group_bounds[ig] >= 0);
-      if (ig > 0) {
-        ASSERT(group_bounds[ig] < group_bounds[ig - 1]);
-      }
-      num_start = num_end;
+  token_start = line.data();
+  for (I ig = 0; ig < num_groups; ++ig) {
+    getNextToken(token_start, token_end);
+    group_bounds[ig] = sto<F>(std::string(token_start, token_end));
+    ASSERT(group_bounds[ig] >= 0);
+    if (ig > 0) {
+      ASSERT(group_bounds[ig] < group_bounds[ig - 1]);
     }
+    token_start = token_end;
+    // If end of line before all groups are read, then go to the next line
+    if (*token_start == '\0' && ig < num_groups - 1) {
+      std::getline(file, line);
+      token_start = line.data();
+    } 
   }
 
   // %CHI
@@ -129,32 +141,47 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
   // Get the fission spectrum
   std::getline(file, line);
   if (!line.starts_with("%CHI:")) {
-    LOG_ERROR("Invalid MPACT library file: " + filename);
+    LOG_ERROR("Invalid MPACT library file: ", filename);
     return;
   }
   std::getline(file, line);
   auto & chi = lib.chi();
   chi.resize(num_groups);
-  {
-    char const * num_start = line.data();
-    for (I ig = 0; ig < num_groups; ++ig) {
-      // The location of the first digit of the number
-      while (isSpace(*num_start)) {
-        ++num_start;
-      }
-      // The location of the first space after the number OR the end of the line
-      char const * num_end = num_start;
-      while (!isSpace(*num_end)) {
-        ++num_end;
-      }
-
-      chi[ig] = sto<F>(std::string(num_start, num_end));
-      ASSERT(group_bounds[ig] >= 0);
-      num_start = num_end;
-    }
+  token_start = line.data();
+  for (I ig = 0; ig < num_groups; ++ig) {
+    getNextToken(token_start, token_end);
+    chi[ig] = sto<F>(std::string(token_start, token_end));
+    ASSERT(group_bounds[ig] >= 0);
+    token_start = token_end;
+    // If end of line before all groups are read, then go to the next line
+    if (*token_start == '\0' && ig < num_groups - 1) {
+      std::getline(file, line);
+      token_start = line.data();
+    } 
   }
 
   // %DIR
+  //--------------------------------------------------------------------
+  std::getline(file, line);
+  if (!line.starts_with("%DIR:")) {
+    LOG_ERROR("Invalid MPACT library file: ", filename);
+    return;
+  }
+
+  // We don't read these values since they're redundant
+  // Skip to the first %NUC line
+  int ctr = 0;
+  while (std::getline(file, line)) {
+    if (line.starts_with("%NUC")) {
+      break;
+    }
+    ++ctr;
+    if (ctr > 10000) {
+      LOG_ERROR("Invalid MPACT library file: ", filename);
+    }
+  }
+
+  // %NUC
   //--------------------------------------------------------------------
   // Get nuclide metadata
   // 0. index
@@ -166,41 +193,150 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
   // 6. ??
   // 7. num temp
   // 8+. don't use
-  // std::getline(file, line);
-  // if (!line.starts_with("%DIR:")) {
-  //   LOG_ERROR("Invalid MPACT library file: " + filename);
-  //   return;
-  // }
-  // std::getline(file, line);
-  // auto & nuclides = lib.nuclides();
-  // nuclides.resize(num_nuclides);
-  // {
-  // char const * num_start = line.data();
-  // for (I i = 0; i < num_nuclides; ++i) {
-  //   while (isSpace(*num_start)) {
-  //     ++num_start;
-  //   }
-  //   // The location of the first space after the number OR the end of the line
-  //   char const * num_end = num_start;
-  //   while (!isSpace(*num_end)) {
-  //     ++num_end;
-  //   }
-  //
-  //   chi[ig] = sto<F>(std::string(num_start, num_end));
-  //   ASSERT(group_bounds[ig] >= 0);
-  //   num_start = num_end;
-  // }
-  // }
-}
+  I nuclide_ctr = 0;
+  auto & nuclides = lib.nuclides();
+  nuclides.resize(num_nuclides);
+  while (!line.starts_with("%END")) {
+    token_start = line.data() + 5; // Skip the %NUC
+    getNextToken(token_start, token_end);
+
+    // Get the index of the nuclide
+    I const index = sto<I>(std::string(token_start, token_end));
+    ASSERT(index == nuclide_ctr + 1);
+    auto & nuclide = nuclides[nuclide_ctr];
+
+    // Get the ZAID of the nuclide
+    token_start = token_end;
+    getNextToken(token_start, token_end);
+    I const zaid = sto<I>(std::string(token_start, token_end));
+    ASSERT(zaid > 0);
+    nuclide.zaid() = zaid;
+
+    // Get the atomic mass of the nuclide
+    token_start = token_end;
+    getNextToken(token_start, token_end);
+    F const atomic_mass = sto<F>(std::string(token_start, token_end));
+    ASSERT(atomic_mass > 0);
+    nuclide.mass() = atomic_mass;
+
+    // Skip the next 4 numbers
+    for (I i = 0; i < 5; ++i) {
+      token_start = token_end;
+      getNextToken(token_start, token_end);
+    }
+
+    // Get the number of temperatures
+    I const num_temps = sto<I>(std::string(token_start, token_end));
+    ASSERT(num_temps > 0);
+    nuclide.temperatures().resize(num_temps);
+    nuclide.xs().resize(num_temps);
+    for (I itemp = 0; itemp < num_temps; ++itemp) {
+      nuclide.xs()[itemp].t().resize(num_groups);
+    }
+
+    // Read the temperature data
+    std::getline(file, line);
+    token_start = line.data();
+    getNextToken(token_start, token_end);
+    ASSERT(String(token_start, token_end) == "TP1+");
+    std::getline(file, line);
+    token_start = line.data();
+    for (I itemp = 0; itemp < num_temps; ++itemp) {
+      getNextToken(token_start, token_end);
+      F const temp = sto<F>(std::string(token_start, token_end));
+      ASSERT(temp > 0);
+      nuclide.temperatures()[itemp] = temp;
+      token_start = token_end;
+    }
+
+    // Read the cross section data
+    // 0. group index
+    // 1. temperature index
+    // 2. absorption
+    // 3. fission
+    // 4. nu-fission
+    // 5. transport
+    // 6. total scattering
+    // 7+. scatter data we don't use
+    std::getline(file, line);
+    token_start = line.data();
+    getNextToken(token_start, token_end);
+    ASSERT(String(token_start, token_end) == "XSD+");
+    for (I ig = 0; ig < num_groups; ++ig) {
+      for (I itemp = 0; itemp < num_temps; ++itemp) {
+        std::getline(file, line);
+        // Get the number of tokens on the line
+        // If num tokens == 3, then only absorption is given
+        I const num_tokens = getNumTokens(line.data());
+
+        // Group index
+        token_start = line.data();
+        getNextToken(token_start, token_end);
+        I const group_index = sto<I>(std::string(token_start, token_end));
+        ASSERT(group_index == ig + 1);
+
+        // Temperature index
+        token_start = token_end;
+        getNextToken(token_start, token_end);
+        I const temp_index = sto<I>(std::string(token_start, token_end));
+        ASSERT(temp_index == itemp + 1);
+
+        // Absorption
+        token_start = token_end;
+        getNextToken(token_start, token_end);
+        F const absorption = sto<F>(std::string(token_start, token_end));
+        if (absorption < 0) {
+          LOG_DEBUG("Nuclide with ZAID ", zaid, " has negative absorption cross section at group ", ig, " and temperature ", itemp);
+        }
+
+        if (num_tokens == 3) {
+          nuclide.xs()[itemp].t()[ig] = absorption;
+        } else {
+          // Fission
+          token_start = token_end;
+          getNextToken(token_start, token_end);
+          F const fission = sto<F>(std::string(token_start, token_end));
+          if (um2::abs(fission) > condCast<F>(1e-10)) {
+            nuclide.isFissile() = true;
+          }
+
+          // Skip nu-fission and transport
+          for (I i = 0; i < 3; ++i) {
+            token_start = token_end;
+            getNextToken(token_start, token_end);
+          }
+
+          // Total scattering
+          F const total_scatter = sto<F>(std::string(token_start, token_end));
+          if (total_scatter < 0) {
+            LOG_DEBUG("Nuclide with ZAID ", zaid, " has negative P0 scattering cross section at group ", ig, " and temperature ", itemp);
+          }
+
+          F const total = absorption + total_scatter;
+          if (total < 0) {
+            LOG_DEBUG("Nuclide with ZAID ", zaid, " has negative total cross section at group ", ig, " and temperature ", itemp);
+          }
+
+          nuclide.xs()[itemp].t()[ig] = total;
+        } // if (num_tokens == 3)
+      } // for (I itemp = 0; itemp < num_temps; ++itemp)
+    } // for (I ig = 0; ig < num_groups; ++ig)
+
+    // Skip the other sections until we find the next nuclide or the end of the file
+    while (std::getline(file, line)) {
+      if (line.starts_with("%NUC") || line.starts_with("%END")) {
+        break;
+      }
+    }
+
+    ++nuclide_ctr;
+  } // while (!line.starts_with("%END"))
+} // readMPACTLibrary
 
 XSLibrary::XSLibrary(String const & filename)
 {
   // Assume MPACT format for now
   readMPACTLibrary(filename, *this);
 }
-
-//==============================================================================
-// Methods
-//==============================================================================
 
 } // namespace um2

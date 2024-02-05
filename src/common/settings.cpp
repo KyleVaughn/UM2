@@ -5,7 +5,7 @@
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 
 //==============================================================================
-// Log
+// LOG
 //==============================================================================
 
 namespace um2::settings::log
@@ -15,5 +15,15 @@ bool timestamped = defaults::timestamped;
 bool colorized = defaults::colorized;
 bool exit_on_error = defaults::exit_on_error;
 } // namespace um2::settings::log
+
+//==============================================================================
+// CROSS SECTION LIBRARY (XS)
+//==============================================================================
+
+namespace um2::settings::xs
+{
+String library_path = defaults::LIBRARY_PATH;
+String library_name = defaults::LIBRARY_NAME;
+} // namespace um2::settings::xs
 
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)

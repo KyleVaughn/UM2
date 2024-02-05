@@ -11,7 +11,7 @@
 // _zaid: the ZZAAA identifier for the nuclide.
 //
 // _mass: the atomic mass of the nuclide.
-// _temperature: the temperatures at which the microscopic cross section data
+// _temperatures: the temperatures at which the microscopic cross section data
 //               is defined.
 // _xs: the microscopic cross section data at each temperature.
 //
@@ -23,9 +23,10 @@ namespace um2
 
 class Nuclide
 {
+  bool _is_fissile = false;
   I _zaid{};
   F _mass{};
-  Vector<F> _temperature;
+  Vector<F> _temperatures;
   Vector<XSec> _xs;
 
 public:
@@ -38,6 +39,18 @@ public:
   //======================================================================
   // Accessors
   //======================================================================
+
+  PURE [[nodiscard]] constexpr auto
+  isFissile() noexcept -> bool &
+  {
+    return _is_fissile;
+  }
+
+  PURE [[nodiscard]] constexpr auto
+  isFissile() const noexcept -> bool const &
+  {
+    return _is_fissile;
+  }
 
   PURE [[nodiscard]] constexpr auto
   zaid() noexcept -> I &
@@ -64,15 +77,15 @@ public:
   }
 
   PURE [[nodiscard]] constexpr auto
-  temperature() noexcept -> Vector<F> &
+  temperatures() noexcept -> Vector<F> &
   {
-    return _temperature;
+    return _temperatures;
   }
 
   PURE [[nodiscard]] constexpr auto
-  temperature() const noexcept -> Vector<F> const &
+  temperatures() const noexcept -> Vector<F> const &
   {
-    return _temperature;
+    return _temperatures;
   }
 
   PURE [[nodiscard]] constexpr auto
@@ -92,15 +105,10 @@ public:
   //======================================================================
 
   void
-  validate() const noexcept
-  {
-    ASSERT(_zaid > 0);
-    for (auto const & xsec : _xs) {
-      xsec.validate();
-      ASSERT(!xsec.isMacroscopic())
-    }
-    ASSERT(_temperature.size() == _xs.size())
-  }
+  clear() noexcept;
+
+  void
+  validate() const noexcept;
 
 }; // class Nuclide
 

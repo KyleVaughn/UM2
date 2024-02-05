@@ -6,6 +6,40 @@
 namespace um2
 {
 
+
+//==============================================================================
+// Member functions
+//==============================================================================
+
+void
+Nuclide::clear() noexcept
+{
+  _zaid = 0;
+  _mass = 0;
+  _temperatures.clear();
+  _xs.clear();
+}
+
+void
+Nuclide::validate() const noexcept
+{
+  ASSERT(_zaid > 0);
+  ASSERT(_mass > 0);
+  for (auto const & xsec : _xs) {
+    xsec.validate();
+    ASSERT(!xsec.isMacro())
+  }
+  ASSERT(_temperatures.size() == _xs.size())
+  for (auto temp : _temperatures) {
+    ASSERT(temp > 0)
+  }
+  ASSERT(um2::is_sorted(_temperatures.begin(), _temperatures.end()))
+}
+
+//==============================================================================
+// Free functions
+//==============================================================================
+
 // The elements of the periodic table
 // Disable clang-format
 // clang-format off

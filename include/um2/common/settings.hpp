@@ -2,6 +2,8 @@
 
 #include <um2/config.hpp>
 
+#include <um2/stdlib/string.hpp>
+
 //==============================================================================
 // SETTINGS
 //==============================================================================
@@ -13,7 +15,7 @@
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 
 //==============================================================================
-// Log
+// LOG
 //==============================================================================
 
 namespace um2::settings::log
@@ -33,5 +35,24 @@ extern bool colorized;
 extern bool exit_on_error;
 
 } // namespace um2::settings::log
+
+//==============================================================================
+// CROSS SECTION LIBRARY (XS)
+//==============================================================================
+
+namespace um2::settings::xs
+{
+
+namespace defaults
+{
+const String LIBRARY_PATH = MPACT_DATA_DIR;
+const String LIBRARY_NAME = "mpact51g_71_v4.2m5_12062016_sph.fmt";
+} // namespace defaults
+
+// Global settings
+extern String library_path;
+extern String library_name;
+
+} // namespace um2::settings::xs
 
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
