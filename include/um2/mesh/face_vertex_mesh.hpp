@@ -133,10 +133,10 @@ public:
 
   void
   validate();
-  
+
   //  //  void
   //  //  toPolytopeSoup(PolytopeSoup & soup) const noexcept;
-  
+
   void
   intersect(Ray2 const & ray, Vector<F> & intersections) const noexcept;
 };

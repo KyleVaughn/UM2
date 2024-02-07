@@ -65,7 +65,7 @@ public:
   {
   }
   // NOLINTEND(google-explicit-constructor)
-  
+
   HOSTDEV constexpr explicit Polytope(Vec<N, Vertex> const & v) noexcept;
 
   //==============================================================================

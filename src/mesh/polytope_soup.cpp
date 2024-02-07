@@ -560,8 +560,8 @@ PolytopeSoup::sortElsets()
     elset_offsets[i] = offset;
     elset_offsets[i + 1] = offset + len;
     um2::copy(_elset_ids.begin() + _elset_offsets[iold],
-         _elset_ids.begin() + _elset_offsets[iold + 1],
-         elset_ids.begin() + elset_offsets[i]);
+              _elset_ids.begin() + _elset_offsets[iold + 1],
+              elset_ids.begin() + elset_offsets[i]);
     std::sort(elset_ids.begin() + elset_offsets[i],
               elset_ids.begin() + elset_offsets[i + 1]);
     elset_data[i] = um2::move(_elset_data[iold]);

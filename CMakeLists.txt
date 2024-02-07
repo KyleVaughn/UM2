@@ -42,6 +42,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Build options
 option(UM2_BUILD_BENCHMARKS "Build benchmarks"                  OFF)
+option(UM2_BUILD_MODELS     "Build models"                      OFF)
 option(UM2_BUILD_TESTS      "Build tests"                       ON)
 option(UM2_BUILD_TUTORIAL   "Build tutorial"                    OFF)
 option(UM2_BUILD_SHARED     "Build UM2 as shared library"       ON)
@@ -154,14 +155,15 @@ set(UM2_SOURCES
     "src/physics/cross_section.cpp"
     "src/physics/nuclide.cpp"
     "src/physics/cross_section_library.cpp"
+    "src/physics/material.cpp"
     #    #    "src/mpact/spatial_partition.cpp"
-    #    "src/gmsh/base_gmsh_api.cpp"
-    #    #    "src/gmsh/io.cpp"
-    #    #    "src/gmsh/model.cpp"
+    "src/gmsh/base_gmsh_api.cpp"
+    "src/gmsh/io.cpp"
+    "src/gmsh/model.cpp"
     #    #    "src/gmsh/mesh.cpp"
     #    #    ##    # visualization
     #    #    ##    "src/visualization/Image2D.cpp"
-    #    "src/um2.cpp"
+    "src/um2.cpp"
     #    #    "src/um2c.cpp"
   )
 
@@ -340,6 +342,10 @@ endif()
 if (UM2_BUILD_BENCHMARKS)
   find_package(benchmark REQUIRED)
   add_subdirectory(benchmarks)
+endif()
+
+if (UM2_BUILD_MODELS)
+  add_subdirectory(models)
 endif()
 
 # Tests

@@ -79,7 +79,7 @@ public:
   }
 
   PURE [[nodiscard]] constexpr auto
-  numGroups() const noexcept -> I 
+  numGroups() const noexcept -> I
   {
     return _group_bounds.size();
   }

@@ -14,7 +14,7 @@ TEST_CASE(collapse)
   ASSERT_NEAR(mean_1g.t()[0], 5, eps);
 }
 
-TEST_SUITE(XSec) { TEST(collapse); } 
+TEST_SUITE(XSec) { TEST(collapse); }
 
 auto
 main() -> int

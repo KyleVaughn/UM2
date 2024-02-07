@@ -227,9 +227,9 @@ TEST_CASE(isLeft)
   um2::Vector<um2::Point2> const test_points = {
       um2::Point2(condCast<F>(1), condCast<F>(3)),      // always left
       um2::Point2(condCast<F>(1), condCast<F>(-3)),     // always right
-      um2::Point2(condCast<F>(-1), ahalf),               // always left
+      um2::Point2(condCast<F>(-1), ahalf),              // always left
       um2::Point2(condCast<F>(-1), condCast<F>(-0.5)),  // always right
-      um2::Point2(condCast<F>(3), ahalf),                // always left
+      um2::Point2(condCast<F>(3), ahalf),               // always left
       um2::Point2(condCast<F>(3), condCast<F>(-0.5)),   // always right
       um2::Point2(condCast<F>(0.1), condCast<F>(0.9)),  // always left
       um2::Point2(condCast<F>(0.1), condCast<F>(-0.9)), // always right
@@ -391,9 +391,9 @@ TEST_CASE(pointClosestTo)
   um2::Vector<um2::Point2> const test_points = {
       um2::Point2(condCast<F>(1), condCast<F>(3)),      // always left
       um2::Point2(condCast<F>(1), condCast<F>(-3)),     // always right
-      um2::Point2(condCast<F>(-1), ahalf),               // always left
+      um2::Point2(condCast<F>(-1), ahalf),              // always left
       um2::Point2(condCast<F>(-1), condCast<F>(-0.5)),  // always right
-      um2::Point2(condCast<F>(3), ahalf),                // always left
+      um2::Point2(condCast<F>(3), ahalf),               // always left
       um2::Point2(condCast<F>(3), condCast<F>(-0.5)),   // always right
       um2::Point2(condCast<F>(0.1), condCast<F>(0.9)),  // always left
       um2::Point2(condCast<F>(0.1), condCast<F>(-0.9)), // always right

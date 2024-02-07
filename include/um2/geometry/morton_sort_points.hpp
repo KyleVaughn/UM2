@@ -53,23 +53,19 @@ mortonSort(Point<D> * const begin, Point<D> * const end) noexcept
   std::sort(begin, end, mortonLess<D>);
 }
 
-//==============================================================================    
-// sortPermutation    
-//==============================================================================    
-// Create a permutation that sorts [begin, end) when applied. [begin, end) is    
-// not modified. scale is used to scale the points to the unit square/cube 
+//==============================================================================
+// sortPermutation
+//==============================================================================
+// Create a permutation that sorts [begin, end) when applied. [begin, end) is
+// not modified. scale is used to scale the points to the unit square/cube
 // before sorting. If the argument is not provided, the points are assumed to
 // be in the unit square/cube.
 void
-mortonSortPermutation(Point2 const * begin,
-                      Point2 const * end,
-                      I * perm_begin,
-                      Vec2<F> const & scale = {0, 0}) noexcept; 
+mortonSortPermutation(Point2 const * begin, Point2 const * end, I * perm_begin,
+                      Vec2<F> const & scale = {0, 0}) noexcept;
 
 void
-mortonSortPermutation(Point3 const * begin,
-                      Point3 const * end,
-                      I * perm_begin,
+mortonSortPermutation(Point3 const * begin, Point3 const * end, I * perm_begin,
                       Vec3<F> const & scale = {0, 0, 0}) noexcept;
 
 } // namespace um2

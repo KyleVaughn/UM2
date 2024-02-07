@@ -67,6 +67,14 @@ toBuffer(char * buffer_begin, char const * const & value) noexcept -> char *
   return buffer_begin;
 }
 
+// std::string
+template <>
+auto
+toBuffer(char * buffer_begin, std::string const & value) noexcept -> char *
+{
+  return toBuffer(buffer_begin, value.c_str());
+}
+
 // char
 template <>
 auto

@@ -21,7 +21,7 @@ XSec::validate() const noexcept
 }
 
 auto
-XSec::collapse(XSecReduction const strategy) const noexcept-> XSec 
+XSec::collapse(XSecReduction const strategy) const noexcept -> XSec
 {
   XSec result;
   result.isMacro() = isMacro();

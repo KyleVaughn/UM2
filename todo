@@ -1,3 +1,6 @@
+Add material convenience functions that openMC has
+
+Function for plotting XSecs
 Check that tests are actually using CUDA
 
 No more examples. Make a "models" directory.

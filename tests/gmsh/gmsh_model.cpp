@@ -50,17 +50,22 @@ TEST_CASE(getMaterials)
   std::vector<um2::Material> materials;
   um2::gmsh::model::getMaterials(materials);
   ASSERT(materials.size() == 2);
-  ASSERT(materials[0].name() == "UO2");
-  ASSERT(materials[0].color() == um2::red);
-  ASSERT(materials[1].name() == "MOX");
-  ASSERT(materials[1].color() == um2::blue);
+  ASSERT(materials[0].getName() == "UO2");
+  ASSERT(materials[0].getColor() == um2::red);
+  ASSERT(materials[1].getName() == "MOX");
+  ASSERT(materials[1].getColor() == um2::blue);
   um2::gmsh::finalize();
 }
 
 TEST_CASE(groupPresFragment_2d2d)
 {
-  std::vector<um2::Material> const materials = {um2::Material("Fuel", um2::red),
-                                                um2::Material("Moderator", um2::blue)};
+  um2::Material fuel;
+  fuel.setName("Fuel");
+  fuel.setColor(um2::red);
+  um2::Material moderator;
+  moderator.setName("Moderator");
+  moderator.setColor(um2::blue);
+  std::vector<um2::Material> const materials = {fuel, moderator};
   // First pass no material hierarchy, second pass with material hierarchy
   for (size_t i = 0; i < 2; ++i) {
     um2::gmsh::initialize();
@@ -176,8 +181,13 @@ TEST_CASE(groupPresFragment_2d2d)
 
 TEST_CASE(groupPresFragment_3d3d)
 {
-  std::vector<um2::Material> const materials = {um2::Material("Fuel", um2::red),
-                                                um2::Material("Moderator", um2::blue)};
+  um2::Material fuel;
+  fuel.setName("Fuel");
+  fuel.setColor(um2::red);
+  um2::Material moderator;
+  moderator.setName("Moderator");
+  moderator.setColor(um2::blue);
+  std::vector<um2::Material> const materials = {fuel, moderator};
   // First pass no material hierarchy, second pass with material hierarchy
   for (size_t i = 0; i < 2; ++i) {
     um2::gmsh::initialize();
@@ -293,8 +303,13 @@ TEST_CASE(groupPresFragment_3d3d)
 
 TEST_CASE(groupPresIntersect_2d2d)
 {
-  std::vector<um2::Material> const materials = {um2::Material("Fuel", um2::red),
-                                                um2::Material("Moderator", um2::blue)};
+  um2::Material fuel;
+  fuel.setName("Fuel");
+  fuel.setColor(um2::red);
+  um2::Material moderator;
+  moderator.setName("Moderator");
+  moderator.setColor(um2::blue);
+  std::vector<um2::Material> const materials = {fuel, moderator};
   // First pass no material hierarchy, second pass with material hierarchy
   for (size_t i = 0; i < 2; ++i) {
     um2::gmsh::initialize();
@@ -387,7 +402,7 @@ auto
 main() -> int
 {
 #if UM2_USE_GMSH
-  um2::Log::setLevel(um2::LogLevel::Error);
+  um2::log::level = um2::log::levels::error;
   RUN_SUITE(gmsh_model);
 #endif
   return 0;

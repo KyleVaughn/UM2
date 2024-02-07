@@ -70,7 +70,7 @@ auto
 main() -> int
 {
 #if UM2_USE_GMSH
-  um2::Log::setLevel(um2::LogLevel::Error);
+  um2::log::level = um2::log::levels::error;
   RUN_SUITE(gmsh_io);
 #endif
   return 0;

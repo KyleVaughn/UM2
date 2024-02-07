@@ -1,16 +1,14 @@
 #include <um2.hpp>
 #include <um2/common/log.hpp>
 
-#include <algorithm>
-
 namespace um2
 {
 
 void
 initialize()
 {
-  Log::reset();
-  Log::info("Initializing UM2");
+  log::reset();
+  log::info("Initializing UM2");
 #if UM2_USE_GMSH
   if (gmsh::isInitialized() == 0) {
     gmsh::initialize();
@@ -25,7 +23,7 @@ initialize()
 void
 finalize()
 {
-  Log::info("Finalizing UM2");
+  log::info("Finalizing UM2");
 #if UM2_USE_GMSH
   if (gmsh::isInitialized() != 0) {
     gmsh::finalize();

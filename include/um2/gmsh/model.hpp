@@ -5,7 +5,7 @@
 #if UM2_USE_GMSH
 #  include <um2/geometry/point.hpp>
 #  include <um2/gmsh/base_gmsh_api.hpp>
-#  include <um2/mpact/spatial_partition.hpp>
+//#  include <um2/mpact/spatial_partition.hpp>
 #  include <um2/physics/material.hpp>
 
 namespace um2::gmsh::model
@@ -53,6 +53,9 @@ addCylindricalPin2D(Vec2d const & center, std::vector<double> const & radii,
                     std::vector<Material> const & materials) -> std::vector<int>;
 
 auto
+addCylindricalPin2D(Vec2d const & center, Vector<double> const & radii,
+                    Vector<Material> const & materials) -> um2::Vector<int>;
+auto
 addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
                            std::vector<std::vector<Material>> const & materials,
                            std::vector<Vec2d> const & dxdy,
@@ -70,10 +73,10 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
                          std::vector<std::vector<int>> const & pin_ids,
                          Vec3d const & offset = {0.0, 0.0, 0.0}) -> std::vector<int>;
 
-void
-overlaySpatialPartition(mpact::SpatialPartition const & partition,
-                        std::string const & fill_material_name = "Moderator",
-                        Color fill_material_color = royalblue);
+//void
+//overlaySpatialPartition(mpact::SpatialPartition const & partition,
+//                        std::string const & fill_material_name = "Moderator",
+//                        Color fill_material_color = royalblue);
 } // namespace occ
 } // namespace um2::gmsh::model
 #endif // UM2_USE_GMSH

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <um2/common/color.hpp>
+#include <um2/physics/nuclide.hpp>
 #include <um2/stdlib/string.hpp>
 
 //======================================================================
@@ -18,58 +19,93 @@ namespace um2
 
 class Material
 {
+  String _name{};
+  Color _color{};
+  F _temperature{};         // [K]
+  F _density{};             // [g/cm^3]
+  Vector<F> _num_density;   // [atoms/b-cm]
+  Vector<I> _zaid;          // ZZAAA
 
-  String _name;
-  Color _color;
-  Vector<I> _zaid; // ZZAAA (Z = atomic number, A = atomic mass number)
-  Vector<F> _
-
-      public :
-      //======================================================================
-      // Constructors
-      //======================================================================
-
-      constexpr Material() noexcept = default;
-
+public :
   //======================================================================
-  // Accessors
+  // Constructors
   //======================================================================
 
-  HOSTDEV [[nodiscard]] constexpr auto
-  name() noexcept -> String &
+  constexpr Material() noexcept = default;
+
+  //======================================================================
+  // Setters and Getters
+  //======================================================================
+
+  void setName(String const & name) noexcept;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getName() const noexcept -> String const &
   {
     return _name;
   }
 
-  HOSTDEV [[nodiscard]] constexpr auto
-  name() const noexcept -> String const &
+  constexpr void
+  setColor(Color const & color) noexcept
   {
-    return _name;
+    _color = color;
   }
 
-  HOSTDEV [[nodiscard]] constexpr auto
-  color() noexcept -> Color &
+  constexpr void
+  setTemperature(F temperature) noexcept
+  {
+    _temperature = temperature;
+  }
+
+  constexpr void
+  setDensity(F density) noexcept
+  {
+    _density = density;
+  }
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getColor() const noexcept -> Color
   {
     return _color;
   }
 
-  HOSTDEV [[nodiscard]] constexpr auto
-  color() const noexcept -> Color const &
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getTemperature() const noexcept -> F
   {
-    return _color;
+    return _temperature;
   }
 
-  HOSTDEV [[nodiscard]] constexpr auto
-  xs() noexcept -> CrossSection &
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getDensity() const noexcept -> F
   {
-    return _xs;
+    return _density;
   }
 
-  HOSTDEV [[nodiscard]] constexpr auto
-  xs() const noexcept -> CrossSection const &
-  {
-    return _xs;
-  }
+///  PURE HOSTDEV [[nodiscard]] constexpr auto
+///  numDensities() noexcept -> Vector<F> &
+///  {
+///    return _num_density;
+///  }
+///
+///  PURE HOSTDEV [[nodiscard]] constexpr auto
+///  numDensities() const noexcept -> Vector<F> const &
+///  {
+///    return _num_density;
+///  }
+
+  //======================================================================
+  // Methods
+  //======================================================================
+
+  void
+  validate() const noexcept;
+
+  void
+  addNuclide(I zaid, F num_density) noexcept;
+
+  void
+  addNuclide(String const & symbol, F num_density) noexcept;
+
 };
 
 } // namespace um2

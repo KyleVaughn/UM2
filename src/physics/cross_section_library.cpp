@@ -12,8 +12,8 @@ isSpace(char c) -> bool
   return std::isspace(static_cast<unsigned char>(c)) != 0;
 }
 
-static void 
-getNextToken(char const * & token_start, char const * & token_end) 
+static void
+getNextToken(char const *& token_start, char const *& token_end)
 {
   while (isSpace(*token_start) && *token_start != '\0') {
     ++token_start;
@@ -133,7 +133,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
     if (*token_start == '\0' && ig < num_groups - 1) {
       std::getline(file, line);
       token_start = line.data();
-    } 
+    }
   }
 
   // %CHI
@@ -157,7 +157,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
     if (*token_start == '\0' && ig < num_groups - 1) {
       std::getline(file, line);
       token_start = line.data();
-    } 
+    }
   }
 
   // %DIR
@@ -286,7 +286,9 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
         getNextToken(token_start, token_end);
         F const absorption = sto<F>(std::string(token_start, token_end));
         if (absorption < 0) {
-          LOG_DEBUG("Nuclide with ZAID ", zaid, " has negative absorption cross section at group ", ig, " and temperature ", itemp);
+          LOG_DEBUG("Nuclide with ZAID ", zaid,
+                    " has negative absorption cross section at group ", ig,
+                    " and temperature ", itemp);
         }
 
         if (num_tokens == 3) {
@@ -309,18 +311,24 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
           // Total scattering
           F const total_scatter = sto<F>(std::string(token_start, token_end));
           if (total_scatter < 0) {
-            LOG_DEBUG("Nuclide with ZAID ", zaid, " has negative P0 scattering cross section at group ", ig, " and temperature ", itemp);
+            LOG_DEBUG("Nuclide with ZAID ", zaid,
+                      " has negative P0 scattering cross section at group ", ig,
+                      " and temperature ", itemp);
           }
 
           F const total = absorption + total_scatter;
           if (total < 0) {
-            LOG_DEBUG("Nuclide with ZAID ", zaid, " has negative total cross section at group ", ig, " and temperature ", itemp);
+            LOG_DEBUG("Nuclide with ZAID ", zaid,
+                      " has negative total cross section at group ", ig,
+                      " and temperature ", itemp);
           }
 
           nuclide.xs()[itemp].t()[ig] = total;
         } // if (num_tokens == 3)
-      } // for (I itemp = 0; itemp < num_temps; ++itemp)
-    } // for (I ig = 0; ig < num_groups; ++ig)
+      }   // for (I itemp = 0; itemp < num_temps; ++itemp)
+    }     // for (I ig = 0; ig < num_groups; ++ig)
+
+    nuclide.validate();
 
     // Skip the other sections until we find the next nuclide or the end of the file
     while (std::getline(file, line)) {

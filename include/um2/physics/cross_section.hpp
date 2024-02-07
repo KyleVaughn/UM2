@@ -41,31 +41,31 @@ public:
   // Accessors
   //======================================================================
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   isMacro() noexcept -> bool &
   {
     return _is_macroscopic;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   isMacro() const noexcept -> bool
   {
     return _is_macroscopic;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   t() noexcept -> Vector<F> &
   {
     return _t;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   t() const noexcept -> Vector<F> const &
   {
     return _t;
   }
 
-  [[nodiscard]] constexpr auto
+  PURE [[nodiscard]] constexpr auto
   numGroups() const noexcept -> I
   {
     return _t.size();
@@ -79,9 +79,8 @@ public:
   validate() const noexcept;
 
   // Get the 1-group cross section
-  [[nodiscard]] auto 
-  collapse(
-      XSecReduction strategy = XSecReduction::Mean) const noexcept -> XSec;
+  PURE [[nodiscard]] auto
+  collapse(XSecReduction strategy = XSecReduction::Mean) const noexcept -> XSec;
 }; // class XS
 
 } // namespace um2
