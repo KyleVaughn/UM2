@@ -20,6 +20,7 @@
 
 namespace um2::settings::log
 {
+
 namespace defaults
 {
 inline constexpr int32_t level = 3; // 3 == info

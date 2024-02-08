@@ -20,7 +20,7 @@ namespace um2
 {
 
 template <I P, I N, I D>
-class Polytope<2, P, N, D>
+class Polytope<2, P, N, D> // Polygon<P, N, D>
 {
 
 public:
@@ -36,7 +36,7 @@ public:
   //==============================================================================
 
   // Returns the number of edges in the polygon.
-  CONST HOSTDEV static constexpr auto
+  PURE HOSTDEV static constexpr auto
   numEdges() noexcept -> I;
 
   // Returns the i-th vertex of the polygon.
@@ -58,9 +58,9 @@ public:
   constexpr Polytope() noexcept = default;
 
   template <class... Pts>
-    requires(sizeof...(Pts) == N && (std::same_as<Vertex, Pts> && ...))
-  // NOLINTBEGIN(google-explicit-constructor) implicit conversion is desired
-  HOSTDEV constexpr Polytope(Pts const... args) noexcept
+  requires(sizeof...(Pts) == N && (std::same_as<Vertex, Pts> && ...))
+      // NOLINTBEGIN(google-explicit-constructor) implicit conversion is desired
+      HOSTDEV constexpr Polytope(Pts const... args) noexcept
       : _v{args...}
   {
   }
@@ -90,8 +90,7 @@ public:
   getEdge(I i) const noexcept -> Edge;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  contains(Point2 const & p) const noexcept -> bool
-    requires(D == 2);
+  contains(Point2 const & p) const noexcept -> bool requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   area() const noexcept -> F;
@@ -107,19 +106,17 @@ public:
 
   // If the polygon is counterclockwise oriented, returns true.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isCCW() const noexcept -> bool
-    requires(D == 2);
+  isCCW() const noexcept -> bool requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   intersect(Ray2 const & ray) const noexcept -> Vec<N, F>
-    requires(D == 2);
+  requires(D == 2);
 
   // See the comments in the implementation for details.
   // meanChordLength has multiple definitions. Make sure you read the comments to
   // determine it's the one you want.
   PURE HOSTDEV [[nodiscard]] auto
-  meanChordLength() const noexcept -> F
-    requires(D == 2);
+  meanChordLength() const noexcept -> F requires(D == 2);
 
 }; // Polygon
 
@@ -140,7 +137,7 @@ HOSTDEV constexpr Polygon<P, N, D>::Polytope(Vec<N, Vertex> const & v) noexcept
 //==============================================================================
 
 template <I P, I N, I D>
-CONST HOSTDEV constexpr auto
+PURE HOSTDEV constexpr auto
 Polygon<P, N, D>::numEdges() noexcept -> I
 {
   static_assert(P == 1 || P == 2, "Only P = 1 or P = 2 supported");
@@ -479,8 +476,7 @@ contains(PlanarQuadraticPolygon<N> const & q, Point2 const & p) noexcept -> bool
 
 template <I P, I N, I D>
 PURE HOSTDEV constexpr auto
-Polygon<P, N, D>::contains(Point2 const & p) const noexcept -> bool
-  requires(D == 2)
+Polygon<P, N, D>::contains(Point2 const & p) const noexcept -> bool requires(D == 2)
 {
   return um2::contains(*this, p);
 }
@@ -719,8 +715,7 @@ isCCW(PlanarQuadraticPolygon<N> const & q) noexcept -> bool
 
 template <I P, I N, I D>
 PURE HOSTDEV constexpr auto
-Polygon<P, N, D>::isCCW() const noexcept -> bool
-  requires(D == 2)
+Polygon<P, N, D>::isCCW() const noexcept -> bool requires(D == 2)
 {
   return um2::isCCW(*this);
 }
@@ -756,10 +751,7 @@ intersect(PlanarQuadraticPolygon<N> const & p, Ray2 const & ray) noexcept -> Vec
 template <I P, I N, I D>
 PURE HOSTDEV constexpr auto
 Polygon<P, N, D>::intersect(Ray2 const & ray) const noexcept -> Vec<N, F>
-  requires(D == 2)
-{
-  return um2::intersect(*this, ray);
-}
+requires(D == 2) { return um2::intersect(*this, ray); }
 
 //==============================================================================
 // flipFace
@@ -879,8 +871,7 @@ meanChordLength(PlanarQuadraticPolygon<N> const & p) noexcept -> F
 
 template <I P, I N, I D>
 PURE HOSTDEV auto
-Polygon<P, N, D>::meanChordLength() const noexcept -> F
-  requires(D == 2)
+Polygon<P, N, D>::meanChordLength() const noexcept -> F requires(D == 2)
 {
   return um2::meanChordLength(*this);
 }

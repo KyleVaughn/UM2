@@ -20,7 +20,7 @@ namespace um2::gmsh
 void
 write(std::string const & filename, bool const extra_info)
 {
-  log::info("Writing file: ", filename); 
+  log::info("Writing file: ", filename);
   gmsh::write(filename);
   if (!extra_info) {
     return;
@@ -149,7 +149,7 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
   std::string line;
   std::getline(info_file, line);
   if (!line.starts_with("PHYSICAL_GROUPS")) {
-    log::error("Could not read PHYSICAL_GROUPS from ", info_filename); 
+    log::error("Could not read PHYSICAL_GROUPS from ", info_filename);
     return;
   }
   size_t const num_groups = sto<size_t>(line.substr(16));
@@ -209,7 +209,7 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
 void
 open(std::string const & filename, bool const extra_info)
 {
-  log::info("Opening file: ", filename); 
+  log::info("Opening file: ", filename);
   // Warn if the file doesn't exist, because Gmsh doesn't...
   {
     std::ifstream const file(filename);
@@ -248,7 +248,7 @@ open(std::string const & filename, bool const extra_info)
     for (size_t i = 0; i < num_colors; ++i) {
       std::getline(info_file, line);
       if (!line.starts_with("ENTITY_COLOR")) {
-        log::error("Could not read ENTITY_COLOR from ", info_filename); 
+        log::error("Could not read ENTITY_COLOR from ", info_filename);
         return;
       }
       size_t token_start = 13;

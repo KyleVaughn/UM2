@@ -71,7 +71,6 @@ else()
 endif()
 
 # Path to look for MPACT cross section libraries
-# Default to UM2/MPACT_Extras/xslibs
 if (NOT MPACT_DATA)
   set(MPACT_DATA "${CMAKE_CURRENT_SOURCE_DIR}/MPACT_Extras/xslibs")
 endif()

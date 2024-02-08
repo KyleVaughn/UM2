@@ -292,18 +292,18 @@ PolytopeSoup::addElement(VTKElemType const type, Vector<I> const & conn) -> I
 auto
 PolytopeSoup::addElset(String const & name, Vector<I> const & ids, Vector<F> data) -> I
 {
-  LOG_DEBUG("Adding elset: " + name);
+  LOG_DEBUG("Adding elset: ", name);
 
   for (auto const & this_name : _elset_names) {
     if (this_name == name) {
-      LOG_ERROR("Elset " + name + " already exists.");
+      LOG_ERROR("Elset ", name, " already exists.");
       return -1;
     }
   }
 
   I const num_ids = ids.size();
   if (num_ids == 0) {
-    LOG_ERROR("Elset ids" + name + " is empty.");
+    LOG_ERROR("Elset ids", name, " is empty.");
     return -1;
   }
 
@@ -608,7 +608,7 @@ void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) const
 {
-  LOG_DEBUG("Extracting submesh: " + elset_name);
+  LOG_DEBUG("Extracting submesh: ", elset_name);
 
   // Find the elset with the given name.
   I elset_index = 0;
@@ -620,7 +620,7 @@ PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) cons
     }
   }
   if (!found) {
-    LOG_ERROR("getSubmesh: Elset '" + elset_name + "' not found");
+    LOG_ERROR("getSubmesh: Elset '", elset_name, "' not found");
     return;
   }
 
@@ -959,12 +959,12 @@ abaqusParseElsets(PolytopeSoup & soup, std::string & line, std::ifstream & file)
 void
 readAbaqusFile(String const & filename, PolytopeSoup & soup)
 {
-  LOG_INFO("Reading Abaqus file: " + filename);
+  LOG_INFO("Reading Abaqus file: ", filename);
 
   // Open file
   std::ifstream file(filename.c_str());
   if (!file.is_open()) {
-    LOG_ERROR("Could not open file: " + filename);
+    LOG_ERROR("Could not open file: ", filename);
     return;
   }
 
@@ -987,7 +987,7 @@ readAbaqusFile(String const & filename, PolytopeSoup & soup)
   }
   soup.sortElsets();
   file.close();
-  LOG_INFO("Finished reading Abaqus file: " + filename);
+  LOG_INFO("Finished reading Abaqus file: ", filename);
 } // readAbaqusFile
 
 //==============================================================================
@@ -1400,7 +1400,7 @@ readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
   // Get the geometry type
   String const geometry_type(xgeometry.attribute("GeometryType").value());
   if (geometry_type != "XYZ" && geometry_type != "XY") {
-    log::error("XDMF geometry type not supported: " + geometry_type);
+    log::error("XDMF geometry type not supported: ", geometry_type);
     return;
   }
   // Get the DataItem node
@@ -1412,13 +1412,13 @@ readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
   // Get the data type
   String const data_type(xdataitem.attribute("DataType").value());
   if (data_type != "Float") {
-    log::error("XDMF geometry data type not supported: " + data_type);
+    log::error("XDMF geometry data type not supported: ", data_type);
     return;
   }
   // Get the precision
   std::string const precision(xdataitem.attribute("Precision").value());
   if (precision != "4" && precision != "8") {
-    log::error("XDMF geometry precision not supported: " + String(precision.c_str()));
+    log::error("XDMF geometry precision not supported: ", precision);
     return;
   }
   // Get the dimensions
@@ -1427,17 +1427,17 @@ readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
   I const num_verts = sto<I>(dimensions.substr(0, split));
   I const num_dimensions = sto<I>(dimensions.substr(split + 1));
   if (geometry_type == "XYZ" && num_dimensions != 3) {
-    log::error("XDMF geometry dimensions not supported: " + String(dimensions.c_str()));
+    log::error("XDMF geometry dimensions not supported: ", dimensions);
     return;
   }
   if (geometry_type == "XY" && num_dimensions != 2) {
-    log::error("XDMF geometry dimensions not supported: " + String(dimensions.c_str()));
+    log::error("XDMF geometry dimensions not supported: ", dimensions);
     return;
   }
   // Get the format
   String const format(xdataitem.attribute("Format").value());
   if (format != "HDF") {
-    log::error("XDMF geometry format not supported: " + format);
+    log::error("XDMF geometry format not supported: ", format);
     return;
   }
 
@@ -1558,19 +1558,19 @@ readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
   // Get the data type
   String const data_type(xdataitem.attribute("DataType").value());
   if (data_type != "Int") {
-    log::error("XDMF topology data type not supported: " + data_type);
+    log::error("XDMF topology data type not supported: ", data_type);
     return;
   }
   // Get the precision
   std::string const precision(xdataitem.attribute("Precision").value());
   if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
-    log::error("XDMF topology precision not supported: " + String(precision.c_str()));
+    log::error("XDMF topology precision not supported: ", precision);
     return;
   }
   // Get the format
   String const format(xdataitem.attribute("Format").value());
   if (format != "HDF") {
-    log::error("XDMF geometry format not supported: " + format);
+    log::error("XDMF geometry format not supported: ", format);
     return;
   }
   // Get the h5 dataset path
@@ -1667,19 +1667,19 @@ readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
     // Get the data type
     String const data_type(xdataitem.attribute("DataType").value());
     if (data_type != "Int") {
-      log::error("XDMF elset data type not supported: " + data_type);
+      log::error("XDMF elset data type not supported: ", data_type);
       return;
     }
     // Get the precision
     std::string const precision = xdataitem.attribute("Precision").value();
     if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
-      log::error("XDMF elset precision not supported: " + String(precision.c_str()));
+      log::error("XDMF elset precision not supported: ", precision); 
       return;
     }
     // Get the format
     String const format(xdataitem.attribute("Format").value());
     if (format != "HDF") {
-      log::error("XDMF elset format not supported: " + format);
+      log::error("XDMF elset format not supported: ", format);
       return;
     }
     // Get the h5 dataset path
@@ -1753,8 +1753,8 @@ readXDMFFile(String const & filename, PolytopeSoup & soup)
   pugi::xml_document xdoc;
   pugi::xml_parse_result const result = xdoc.load_file(filename.c_str());
   if (!result) {
-    log::error("XDMF XML parse error: " + String(result.description()) +
-               ", character pos= " + toString(result.offset));
+    log::error("XDMF XML parse error: ", result.description(),
+               ", character pos= ", result.offset); 
   }
   pugi::xml_node const xroot = xdoc.child("Xdmf");
   if (strcmp("Xdmf", xroot.name()) != 0) {
@@ -1783,7 +1783,7 @@ readXDMFFile(String const & filename, PolytopeSoup & soup)
   h5file.close();
   // Close XML file
   xdoc.reset();
-  log::info("Finished reading XDMF file: " + filename);
+  log::info("Finished reading XDMF file: ", filename);
 }
 
 //==============================================================================

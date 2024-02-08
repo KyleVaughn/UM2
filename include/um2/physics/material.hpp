@@ -21,12 +21,12 @@ class Material
 {
   String _name{};
   Color _color{};
-  F _temperature{};         // [K]
-  F _density{};             // [g/cm^3]
-  Vector<F> _num_density;   // [atoms/b-cm]
-  Vector<I> _zaid;          // ZZAAA
+  F _temperature{};       // [K]
+  F _density{};           // [g/cm^3]
+  Vector<F> _num_density; // [atoms/b-cm]
+  Vector<I> _zaid;        // ZZAAA
 
-public :
+public:
   //======================================================================
   // Constructors
   //======================================================================
@@ -37,7 +37,8 @@ public :
   // Setters and Getters
   //======================================================================
 
-  void setName(String const & name) noexcept;
+  void
+  setName(String const & name) noexcept;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getName() const noexcept -> String const &
@@ -81,17 +82,17 @@ public :
     return _density;
   }
 
-///  PURE HOSTDEV [[nodiscard]] constexpr auto
-///  numDensities() noexcept -> Vector<F> &
-///  {
-///    return _num_density;
-///  }
-///
-///  PURE HOSTDEV [[nodiscard]] constexpr auto
-///  numDensities() const noexcept -> Vector<F> const &
-///  {
-///    return _num_density;
-///  }
+  ///  PURE HOSTDEV [[nodiscard]] constexpr auto
+  ///  numDensities() noexcept -> Vector<F> &
+  ///  {
+  ///    return _num_density;
+  ///  }
+  ///
+  ///  PURE HOSTDEV [[nodiscard]] constexpr auto
+  ///  numDensities() const noexcept -> Vector<F> const &
+  ///  {
+  ///    return _num_density;
+  ///  }
 
   //======================================================================
   // Methods
@@ -105,7 +106,6 @@ public :
 
   void
   addNuclide(String const & symbol, F num_density) noexcept;
-
 };
 
 } // namespace um2

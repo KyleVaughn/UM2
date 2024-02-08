@@ -35,16 +35,16 @@ public:
   // Accessors
   //==============================================================================
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   r() const noexcept -> uint8_t;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   g() const noexcept -> uint8_t;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   b() const noexcept -> uint8_t;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   a() const noexcept -> uint8_t;
 };
 

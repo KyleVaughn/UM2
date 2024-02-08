@@ -147,8 +147,8 @@ public:
 
   // Get the grid cell at the given index.
   template <typename... Args>
-    requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
+  requires(sizeof...(Args) == D) PURE HOSTDEV
+      [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
       -> AxisAlignedBox<D>;
 
   // Get the flat index of the grid cell at the given multidimensional index.
@@ -157,14 +157,13 @@ public:
 
   // Get the flat index of the grid cell at the given multidimensional index.
   template <typename... Args>
-    requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getFlatIndex(Args... args) const noexcept
-      -> I;
+  requires(sizeof...(Args) == D) PURE HOSTDEV
+      [[nodiscard]] constexpr auto getFlatIndex(Args... args) const noexcept -> I;
 
   // Get the centroid of the grid cell at the given multidimensional index.
   template <typename... Args>
-    requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getCellCentroid(Args... args) const noexcept
+  requires(sizeof...(Args) == D) PURE HOSTDEV
+      [[nodiscard]] constexpr auto getCellCentroid(Args... args) const noexcept
       -> Point<D>;
 
   // Return (ix0, iy0, iz0, ix1, iy1, iz1) where (ix0, iy0, iz0) is the smallest
@@ -444,8 +443,8 @@ RegularGrid<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 
 template <I D>
 template <typename... Args>
-  requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RegularGrid<D>::getBox(Args... args) const noexcept
+requires(sizeof...(Args) == D) PURE HOSTDEV
+    constexpr auto RegularGrid<D>::getBox(Args... args) const noexcept
     -> AxisAlignedBox<D>
 {
   Vec<D, I> const index{args...};
@@ -487,8 +486,8 @@ RegularGrid<D>::getFlatIndex(Vec<D, I> const & index) const noexcept -> I
 
 template <I D>
 template <typename... Args>
-  requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RegularGrid<D>::getFlatIndex(Args... args) const noexcept -> I
+requires(sizeof...(Args) == D) PURE HOSTDEV
+    constexpr auto RegularGrid<D>::getFlatIndex(Args... args) const noexcept -> I
 {
   Vec<D, I> const index{args...};
   return getFlatIndex(index);
@@ -496,8 +495,8 @@ PURE HOSTDEV constexpr auto RegularGrid<D>::getFlatIndex(Args... args) const noe
 
 template <I D>
 template <typename... Args>
-  requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RegularGrid<D>::getCellCentroid(Args... args) const noexcept
+requires(sizeof...(Args) == D) PURE HOSTDEV
+    constexpr auto RegularGrid<D>::getCellCentroid(Args... args) const noexcept
     -> Point<D>
 {
   F constexpr half = static_cast<F>(1) / static_cast<F>(2);

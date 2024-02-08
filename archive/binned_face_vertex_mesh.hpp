@@ -106,14 +106,13 @@ public:
   //===========================================================================
 
   template <typename... Args>
-    requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
+  requires(sizeof...(Args) == D) PURE HOSTDEV
+      [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
       -> AxisAlignedBox<D, T>;
 
   template <typename... Args>
-    requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getFlatGridIndex(Args... args) const noexcept
-      -> Size;
+  requires(sizeof...(Args) == D) PURE HOSTDEV
+      [[nodiscard]] constexpr auto getFlatGridIndex(Args... args) const noexcept -> Size;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getFlatGridIndex(Vec<D, Size> const & index) const noexcept -> Size;
@@ -121,8 +120,8 @@ public:
   // Returns pointers to the [first, last) face ids in the bin.
   // Hence, while(*first != *last) { ... } will iterate over the faces in the bin.
   template <typename... Args>
-    requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getFaceIDsInBox(Args... args) const noexcept
+  requires(sizeof...(Args) == D) PURE HOSTDEV
+      [[nodiscard]] constexpr auto getFaceIDsInBox(Args... args) const noexcept
       -> Vec<2, I const *>;
 
 }; // class BinnedFaceVertexMesh
@@ -288,18 +287,18 @@ BinnedFaceVertexMesh<P, N, D, T, I>::getFace(Size i) const noexcept -> Face
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 template <typename... Args>
-  requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto BinnedFaceVertexMesh<P, N, D, T, I>::getBox(
-    Args... args) const noexcept -> AxisAlignedBox<D, T>
+requires(sizeof...(Args) == D) PURE HOSTDEV
+    constexpr auto BinnedFaceVertexMesh<P, N, D, T, I>::getBox(
+        Args... args) const noexcept -> AxisAlignedBox<D, T>
 {
   return _partition.getBox(args...);
 }
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 template <typename... Args>
-  requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto BinnedFaceVertexMesh<P, N, D, T, I>::getFlatGridIndex(
-    Args... args) const noexcept -> Size
+requires(sizeof...(Args) == D) PURE HOSTDEV
+    constexpr auto BinnedFaceVertexMesh<P, N, D, T, I>::getFlatGridIndex(
+        Args... args) const noexcept -> Size
 {
   return _partition.getFlatIndex(args...);
 }
@@ -314,9 +313,9 @@ BinnedFaceVertexMesh<P, N, D, T, I>::getFlatGridIndex(
 
 template <Size P, Size N, Size D, std::floating_point T, std::signed_integral I>
 template <typename... Args>
-  requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto BinnedFaceVertexMesh<P, N, D, T, I>::getFaceIDsInBox(
-    Args... args) const noexcept -> Vec<2, I const *>
+requires(sizeof...(Args) == D) PURE HOSTDEV
+    constexpr auto BinnedFaceVertexMesh<P, N, D, T, I>::getFaceIDsInBox(
+        Args... args) const noexcept -> Vec<2, I const *>
 {
   Size const flat_index = _partition.getFlatIndex(args...);
   // _partition.children[flat_index] is the start offset into _face_ids.

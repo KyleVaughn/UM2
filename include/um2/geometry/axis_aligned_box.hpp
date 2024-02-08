@@ -16,8 +16,8 @@ template <I D>
 class AxisAlignedBox
 {
 
-  Point<D> _min;
-  Point<D> _max;
+  Point<D> _min; // minima
+  Point<D> _max; // maxima
 
 public:
   //==============================================================================
@@ -36,23 +36,19 @@ public:
   xMin() const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  yMin() const noexcept -> F
-    requires(D >= 2);
+  yMin() const noexcept -> F requires(D >= 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  zMin() const noexcept -> F
-    requires(D >= 3);
+  zMin() const noexcept -> F requires(D >= 3);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   xMax() const noexcept -> F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  yMax() const noexcept -> F
-    requires(D >= 2);
+  yMax() const noexcept -> F requires(D >= 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  zMax() const noexcept -> F
-    requires(D >= 3);
+  zMax() const noexcept -> F requires(D >= 3);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   minima() const noexcept -> Point<D> const &;
@@ -83,7 +79,7 @@ public:
   // Create an empty box, with minima = inf_distance and maxima = -inf_distance.
   // Therefore, no point can be contained in this box. However box += point will
   // always result in a box containing the point.
-  HOSTDEV [[nodiscard]] static constexpr auto
+  PURE HOSTDEV [[nodiscard]] static constexpr auto
   empty() noexcept -> AxisAlignedBox<D>;
 
   // The extent of the box in each dimension.
@@ -100,13 +96,11 @@ public:
 
   // The y-extent of the box.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  height() const noexcept -> F
-    requires(D >= 2);
+  height() const noexcept -> F requires(D >= 2);
 
   // The z-extent of the box.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  depth() const noexcept -> F
-    requires(D >= 3);
+  depth() const noexcept -> F requires(D >= 3);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   centroid() const noexcept -> Point<D>;
@@ -138,16 +132,14 @@ AxisAlignedBox<D>::xMin() const noexcept -> F
 
 template <I D>
 PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::yMin() const noexcept -> F
-  requires(D >= 2)
+AxisAlignedBox<D>::yMin() const noexcept -> F requires(D >= 2)
 {
   return _min[1];
 }
 
 template <I D>
 PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::zMin() const noexcept -> F
-  requires(D >= 3)
+AxisAlignedBox<D>::zMin() const noexcept -> F requires(D >= 3)
 {
   return _min[2];
 }
@@ -161,16 +153,14 @@ AxisAlignedBox<D>::xMax() const noexcept -> F
 
 template <I D>
 PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::yMax() const noexcept -> F
-  requires(D >= 2)
+AxisAlignedBox<D>::yMax() const noexcept -> F requires(D >= 2)
 {
   return _max[1];
 }
 
 template <I D>
 PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::zMax() const noexcept -> F
-  requires(D >= 3)
+AxisAlignedBox<D>::zMax() const noexcept -> F requires(D >= 3)
 {
   return _max[2];
 }
@@ -279,16 +269,14 @@ AxisAlignedBox<D>::width() const noexcept -> F
 
 template <I D>
 PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::height() const noexcept -> F
-  requires(D >= 2)
+AxisAlignedBox<D>::height() const noexcept -> F requires(D >= 2)
 {
   return extents(1);
 }
 
 template <I D>
 PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::depth() const noexcept -> F
-  requires(D >= 3)
+AxisAlignedBox<D>::depth() const noexcept -> F requires(D >= 3)
 {
   return extents(2);
 }

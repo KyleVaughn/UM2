@@ -16,4 +16,5 @@ prefix/
 CMakeLists.txt.user
 CMakeUserPresets.json
 MPACT_Extras/
+MPACT_Extras
 **/.DS_Store

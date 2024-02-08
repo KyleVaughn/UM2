@@ -55,10 +55,10 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getNumYRays() const noexcept -> I;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getSpacing() const noexcept -> Vec2<F>;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getDirection() const noexcept -> Vec2<F>;
 };
 

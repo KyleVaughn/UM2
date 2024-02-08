@@ -37,8 +37,10 @@ macro(add_um2_test FILENAME)
       COMMAND valgrind
         --error-exitcode=1
         --tool=memcheck
+        --track-origins=yes
         --leak-check=full
-        --errors-for-leak-kinds=definite
-        --show-leak-kinds=definite $<TARGET_FILE:${TESTNAME}>)
+        --errors-for-leak-kinds=definite,indirect,possible
+        --show-leak-kinds=definite,indirect,possible
+        $<TARGET_FILE:${TESTNAME}>)
   endif()
 endmacro()

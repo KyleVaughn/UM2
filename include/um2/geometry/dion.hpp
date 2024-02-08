@@ -35,7 +35,7 @@ namespace um2
 {
 
 template <I P, I N, I D>
-class Polytope<1, P, N, D>
+class Polytope<1, P, N, D> // Dion<P, N, D>
 {
 
 public:
@@ -68,9 +68,9 @@ public:
   constexpr Polytope() noexcept = default;
 
   template <class... Pts>
-    requires(sizeof...(Pts) == N && (std::same_as<Vertex, Pts> && ...))
-  // NOLINTNEXTLINE(google-explicit-constructor) implicit conversion is desired
-  HOSTDEV constexpr Polytope(Pts const... args) noexcept
+  requires(sizeof...(Pts) == N && (std::same_as<Vertex, Pts> && ...))
+      // NOLINTNEXTLINE(google-explicit-constructor) implicit conversion is desired
+      HOSTDEV constexpr Polytope(Pts const... args) noexcept
       : _v{args...}
   {
   }
@@ -100,13 +100,12 @@ public:
   // The rotation matrix is returned.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getRotation() const noexcept -> Mat<D, D, F>
-    requires(D == 2);
+  requires(D == 2);
 
   // If a point is to the left of the segment, with the segment oriented from
   // r = 0 to r = 1.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isLeft(Vertex const & p) const noexcept -> bool
-    requires(D == 2);
+  isLeft(Vertex const & p) const noexcept -> bool requires(D == 2);
 
   // Arc length of the segment
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -294,10 +293,7 @@ getRotation(QuadraticSegment2 const & q) noexcept -> Mat2x2<F>
 template <I P, I N, I D>
 PURE HOSTDEV constexpr auto
 Dion<P, N, D>::getRotation() const noexcept -> Mat<D, D, F>
-  requires(D == 2)
-{
-  return um2::getRotation(*this);
-}
+requires(D == 2) { return um2::getRotation(*this); }
 
 //==============================================================================
 // getBezierControlPoint
@@ -462,8 +458,7 @@ pointIsLeft(QuadraticSegment2 const & q, Point2 const & p) noexcept -> bool
 
 template <I P, I N, I D>
 PURE HOSTDEV constexpr auto
-Dion<P, N, D>::isLeft(Vertex const & p) const noexcept -> bool
-  requires(D == 2)
+Dion<P, N, D>::isLeft(Vertex const & p) const noexcept -> bool requires(D == 2)
 {
   return pointIsLeft(*this, p);
 }
@@ -550,11 +545,7 @@ length(QuadraticSegment<D> const & q) noexcept -> F
   F const U = um2::sqrt(c1 + ub * ub);
   // Numerical issues may cause the bounds to be slightly outside the range [-1, 1].
   // If we go too far outside this range, error out as something has gone wrong.
-#if UM2_ENABLE_FLOAT64
-  F constexpr epsilon = 1e-5;
-#else
-  F constexpr epsilon = 1e-5f;
-#endif
+  F constexpr epsilon = condCast<F>(1e-5);
   F const lb_l = lb / L;
   F const ub_u = ub / U;
   F constexpr clamp_bound = static_cast<F>(1) - epsilon;
@@ -980,12 +971,7 @@ intersect(Ray2 const & ray, QuadraticSegment2 const & q) noexcept -> Vec2<F>
   F const c = voc.cross(ray.direction()); // ((C - O) × D)ₖ
 
   Vec2<F> result(inf_distance, inf_distance);
-#if UM2_ENABLE_FLOAT64
-  F constexpr epsilon = 1e-8;
-#else
-  F constexpr epsilon = 1e-8f;
-#endif
-
+  F constexpr epsilon = condCast<F>(1e-8);
   if (um2::abs(a) < epsilon) {
     F const s = -c / b;
     if (0 <= s && s <= 1) {

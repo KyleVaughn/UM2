@@ -66,6 +66,18 @@ public:
   }
 
   PURE [[nodiscard]] constexpr auto
+  t(I g) noexcept -> F &
+  {
+    return _t[g];
+  }
+
+  PURE [[nodiscard]] constexpr auto
+  t(I g) const noexcept -> F
+  {
+    return _t[g];
+  }
+
+  PURE [[nodiscard]] constexpr auto
   numGroups() const noexcept -> I
   {
     return _t.size();

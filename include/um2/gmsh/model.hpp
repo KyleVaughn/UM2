@@ -73,10 +73,10 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
                          std::vector<std::vector<int>> const & pin_ids,
                          Vec3d const & offset = {0.0, 0.0, 0.0}) -> std::vector<int>;
 
-//void
-//overlaySpatialPartition(mpact::SpatialPartition const & partition,
-//                        std::string const & fill_material_name = "Moderator",
-//                        Color fill_material_color = royalblue);
+// void
+// overlaySpatialPartition(mpact::SpatialPartition const & partition,
+//                         std::string const & fill_material_name = "Moderator",
+//                         Color fill_material_color = royalblue);
 } // namespace occ
 } // namespace um2::gmsh::model
 #endif // UM2_USE_GMSH

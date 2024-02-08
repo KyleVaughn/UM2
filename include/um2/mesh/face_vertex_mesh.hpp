@@ -82,7 +82,7 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getVertex(I i) const noexcept -> Point2;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   vertices() noexcept -> Vector<Point2> &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto

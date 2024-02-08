@@ -106,7 +106,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
   }
 
   I const num_groups = dims[0];
-  LOG_INFO("Number of energy groups: " + toString(num_groups));
+  LOG_INFO("Number of energy groups: ", num_groups); 
   I const num_nuclides = dims[4];
 
   // %GRP
@@ -114,7 +114,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
   // Get the energy bounds of the groups
   std::getline(file, line);
   if (!line.starts_with("%GRP:")) {
-    LOG_ERROR("Invalid MPACT library file: " + filename);
+    LOG_ERROR("Invalid MPACT library file: ", filename);
     return;
   }
   std::getline(file, line);
@@ -231,7 +231,7 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
     nuclide.temperatures().resize(num_temps);
     nuclide.xs().resize(num_temps);
     for (I itemp = 0; itemp < num_temps; ++itemp) {
-      nuclide.xs()[itemp].t().resize(num_groups);
+      nuclide.xs(itemp).t().resize(num_groups);
     }
 
     // Read the temperature data
@@ -286,13 +286,13 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
         getNextToken(token_start, token_end);
         F const absorption = sto<F>(std::string(token_start, token_end));
         if (absorption < 0) {
-          LOG_DEBUG("Nuclide with ZAID ", zaid,
+          LOG_WARN("Nuclide with ZAID ", zaid,
                     " has negative absorption cross section at group ", ig,
                     " and temperature ", itemp);
         }
 
         if (num_tokens == 3) {
-          nuclide.xs()[itemp].t()[ig] = absorption;
+          nuclide.xs(itemp).t(ig) = absorption;
         } else {
           // Fission
           token_start = token_end;
@@ -311,19 +311,19 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
           // Total scattering
           F const total_scatter = sto<F>(std::string(token_start, token_end));
           if (total_scatter < 0) {
-            LOG_DEBUG("Nuclide with ZAID ", zaid,
+            LOG_WARN("Nuclide with ZAID ", zaid,
                       " has negative P0 scattering cross section at group ", ig,
                       " and temperature ", itemp);
           }
 
           F const total = absorption + total_scatter;
           if (total < 0) {
-            LOG_DEBUG("Nuclide with ZAID ", zaid,
+            LOG_WARN("Nuclide with ZAID ", zaid,
                       " has negative total cross section at group ", ig,
                       " and temperature ", itemp);
           }
 
-          nuclide.xs()[itemp].t()[ig] = total;
+          nuclide.xs(itemp).t(ig) = total;
         } // if (num_tokens == 3)
       }   // for (I itemp = 0; itemp < num_temps; ++itemp)
     }     // for (I ig = 0; ig < num_groups; ++ig)
@@ -339,6 +339,9 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
 
     ++nuclide_ctr;
   } // while (!line.starts_with("%END"))
+
+  // close the file
+  file.close();
 } // readMPACTLibrary
 
 XSLibrary::XSLibrary(String const & filename)

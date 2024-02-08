@@ -130,13 +130,12 @@ public:
   getFlatIndex(Vec<D, I> const & index) const noexcept -> I;
 
   template <typename... Args>
-    requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getFlatIndex(Args... args) const noexcept
-      -> I;
+  requires(sizeof...(Args) == D) PURE HOSTDEV
+      [[nodiscard]] constexpr auto getFlatIndex(Args... args) const noexcept -> I;
 
   template <typename... Args>
-    requires(sizeof...(Args) == D)
-  PURE HOSTDEV [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
+  requires(sizeof...(Args) == D) PURE HOSTDEV
+      [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
       -> AxisAlignedBox<D>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -487,9 +486,8 @@ RectilinearGrid<D>::getFlatIndex(Vec<D, I> const & index) const noexcept -> I
 
 template <I D>
 template <typename... Args>
-  requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RectilinearGrid<D>::getFlatIndex(Args... args) const noexcept
-    -> I
+requires(sizeof...(Args) == D) PURE HOSTDEV
+    constexpr auto RectilinearGrid<D>::getFlatIndex(Args... args) const noexcept -> I
 {
   Vec<D, I> const index{args...};
   return getFlatIndex(index);
@@ -497,8 +495,8 @@ PURE HOSTDEV constexpr auto RectilinearGrid<D>::getFlatIndex(Args... args) const
 
 template <I D>
 template <typename... Args>
-  requires(sizeof...(Args) == D)
-PURE HOSTDEV constexpr auto RectilinearGrid<D>::getBox(Args... args) const noexcept
+requires(sizeof...(Args) == D) PURE HOSTDEV
+    constexpr auto RectilinearGrid<D>::getBox(Args... args) const noexcept
     -> AxisAlignedBox<D>
 {
   Vec<D, I> const index{args...};

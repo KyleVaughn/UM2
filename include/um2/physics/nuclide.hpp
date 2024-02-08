@@ -89,6 +89,18 @@ public:
   }
 
   PURE [[nodiscard]] constexpr auto
+  temperatures(I i) noexcept -> F &
+  {
+    return _temperatures[i];
+  }
+
+  PURE [[nodiscard]] constexpr auto
+  temperatures(I i) const noexcept -> F
+  {
+    return _temperatures[i];
+  }
+
+  PURE [[nodiscard]] constexpr auto
   xs() noexcept -> Vector<XSec> &
   {
     return _xs;
@@ -98,6 +110,18 @@ public:
   xs() const noexcept -> Vector<XSec> const &
   {
     return _xs;
+  }
+
+  PURE [[nodiscard]] constexpr auto
+  xs(I i) noexcept -> XSec &
+  {
+    return _xs[i];
+  }
+
+  PURE [[nodiscard]] constexpr auto
+  xs(I i) const noexcept -> XSec const &
+  {
+    return _xs[i];
   }
 
   //======================================================================

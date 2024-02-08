@@ -115,6 +115,9 @@ printMessage(int32_t const msg_level, Args const &... args) noexcept
     int fprintf_result = 0;
     if (msg_level == levels::error) {
       fprintf_result = fprintf(stderr, "%s\n", buffer);
+      if (exit_on_error) {
+        exit(1);
+      }
     } else {
       fprintf_result = fprintf(stdout, "%s\n", buffer);
     }

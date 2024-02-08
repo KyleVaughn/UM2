@@ -15,7 +15,7 @@ XSec::validate() const noexcept
   }
   for (auto const & t_i : _t) {
     if (t_i < 0) {
-      LOG_ERROR("Cross section has a negative total XS in one or more groups");
+      LOG_WARN("Cross section has a negative total XS in one or more groups");
     }
   }
 }
