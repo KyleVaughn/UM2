@@ -350,4 +350,41 @@ XSLibrary::XSLibrary(String const & filename)
   readMPACTLibrary(filename, *this);
 }
 
+PURE [[nodiscard]] auto
+XSLibrary::getNuclide(I zaid) const noexcept -> Nuclide const &
+{
+  for (auto const & nuclide : _nuclides) {
+    if (nuclide.zaid() == zaid) {
+      return nuclide;
+    }
+  }
+  LOG_ERROR("Nuclide with ZAID ", zaid, " not found in library");
+  return _nuclides[0];
+}
+
+PURE [[nodiscard]] auto
+XSLibrary::getXS(Material const & material) const noexcept -> XSec
+{
+  material.validate();
+  XSec xs;
+  xs.isMacro() = true;
+  I const num_groups = numGroups();
+  xs.t().resize(num_groups);
+  // For each nuclide in the material:
+  //  find the corresponding nuclide in the library
+  //  interpolate the cross sections to the temperature of the material
+  //  scale the cross sections by the atom density of the nuclide
+  //  reduce
+  I const num_nuclides = material.numNuclides();
+  for (I inuc = 0; inuc < num_nuclides; ++inuc) {
+    auto const zaid = material.zaid(inuc);
+    auto const & lib_nuc = getNuclide(zaid);
+    auto const xs_nuc = lib_nuc.interpXS(material.getTemperature());
+    auto const atom_density = material.numDensity(inuc);
+    for (I ig = 0; ig < num_groups; ++ig) {
+      xs.t(ig) += xs_nuc.t(ig) * atom_density;
+    }
+  }
+  return xs;
+}
 } // namespace um2

@@ -134,6 +134,9 @@ public:
   void
   validate() const noexcept;
 
+  PURE [[nodiscard]] auto
+  interpXS(F temperature) const noexcept -> XSec;
+
 }; // class Nuclide
 
 //======================================================================

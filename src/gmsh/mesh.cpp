@@ -141,8 +141,8 @@ setMeshFieldFromGroups(int const dim, std::vector<std::string> const & groups,
       } // group_name == existing_group_name
     }   // existing_group_dimtag : dimtags
     if (!found) {
-      LOG_ERROR("The model does not contain a " + toString(dim) +
-                "-dimensional group with name: " + String(group_name.c_str()));
+      LOG_ERROR("The model does not contain a ", dim,
+                "-dimensional group with name: ", group_name); 
     }
   } // for (size_t i = 0; i < groups.size()) {
   // Create a field that takes the min of each and set as background mesh
@@ -168,7 +168,7 @@ auto
 setMeshFieldFromKnudsenNumber(int const dim, std::vector<Material> const & materials,
                               double const kn_target, double const mfp_threshold,
                               double const mfp_scale, std::vector<int> const & is_fuel,
-                              XSReductionStrategy const strategy) -> int
+                              XSecReduction const strategy) -> int
 {
   //-----------------------------------------------------------------------
   // Check that each material exists as a physical group
@@ -198,7 +198,7 @@ setMeshFieldFromKnudsenNumber(int const dim, std::vector<Material> const & mater
   // Get the names of all materials in the form of "Material_XXX"
   std::vector<std::string> material_names(num_materials);
   for (size_t i = 0; i < num_materials; ++i) {
-    material_names[i] = std::string("Material_") + materials[i].name().c_str();
+    material_names[i] = std::string("Material_") + materials[i].getName().c_str();
   }
 
   // Check that the names match
@@ -213,7 +213,7 @@ setMeshFieldFromKnudsenNumber(int const dim, std::vector<Material> const & mater
   }
   for (size_t i = 0; i < num_materials; ++i) {
     if (found[i] == 0) {
-      LOG_ERROR(materials[i].name() + " does not exist as a physical group");
+      LOG_ERROR(materials[i].getName(), " does not exist as a physical group");
     }
   }
 
@@ -225,9 +225,9 @@ setMeshFieldFromKnudsenNumber(int const dim, std::vector<Material> const & mater
   std::vector<double> lcs(num_materials, 0.0);
   std::vector<double> sigmas_t(num_materials, 0.0);
   // If using average MFP, we need the average Sigma_t for each material
-  if (strategy == XSReductionStrategy::Mean) {
+  if (strategy == XSecReduction::Mean) {
     LOG_INFO("Computing Knudsen number using groupwise average mean free path");
-  } else if (strategy == XSReductionStrategy::Max) {
+  } else if (strategy == XSecReduction::Max) {
     LOG_INFO("Computing Knudsen number using groupwise minimum mean free path");
   } else {
     LOG_ERROR("Invalid Knudsen number computation strategy");

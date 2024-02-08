@@ -37,6 +37,12 @@ public:
   // Setters and Getters
   //======================================================================
 
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  numNuclides() const noexcept -> I
+  {
+    return _zaid.size();
+  }
+
   void
   setName(String const & name) noexcept;
 
@@ -82,17 +88,53 @@ public:
     return _density;
   }
 
-  ///  PURE HOSTDEV [[nodiscard]] constexpr auto
-  ///  numDensities() noexcept -> Vector<F> &
-  ///  {
-  ///    return _num_density;
-  ///  }
-  ///
-  ///  PURE HOSTDEV [[nodiscard]] constexpr auto
-  ///  numDensities() const noexcept -> Vector<F> const &
-  ///  {
-  ///    return _num_density;
-  ///  }
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  numDensities() noexcept -> Vector<F> &
+  {
+    return _num_density;
+  }
+  
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  numDensities() const noexcept -> Vector<F> const &
+  {
+    return _num_density;
+  }
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  numDensity(I i) noexcept -> F &
+  {
+    return _num_density[i];
+  }
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  numDensity(I i) const noexcept -> F const &
+  {
+    return _num_density[i];
+  }
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  zaids() noexcept -> Vector<I> &
+  {
+    return _zaid;
+  }
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  zaids() const noexcept -> Vector<I> const &
+  {
+    return _zaid;
+  }
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  zaid(I i) noexcept -> I &
+  {
+    return _zaid[i];
+  }
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  zaid(I i) const noexcept -> I const &
+  {
+    return _zaid[i];
+  }
 
   //======================================================================
   // Methods

@@ -35,6 +35,53 @@ Nuclide::validate() const noexcept
   ASSERT(um2::is_sorted(_temperatures.begin(), _temperatures.end()))
 }
 
+PURE [[nodiscard]] auto
+Nuclide::interpXS(F const temperature) const noexcept -> XSec
+{
+  // Linearly interpolate the cross sections over the sqrt of temperature
+  //
+  // XS = XS0 + (sqrt_t - sqrt_t0) / (sqrt_t1 - sqrt_t0) * (XS1 - XS0)
+  //
+  // First, make sure we have enough data to interpolate
+  if (_temperatures.size() == 1) {
+    return _xs[0];
+  }
+
+  // If the requested temperature is outside the range, use the closest value
+  if (temperature <= _temperatures[0]) {
+    return _xs[0];
+  } 
+  if (temperature >= _temperatures.back()) {
+    return _xs.back();
+  }
+
+  // Find the temperature range that contains the requested temperature
+  // We know it's in the range, so we don't need to check for that
+  I i = 0;
+  while (temperature >= _temperatures[i]) {
+    ++i;
+  }
+  // Now i is the index of the upper temperature
+  I const i0 = i - 1;
+  I const i1 = i;
+  F const t0 = _temperatures[i0];
+  F const t1 = _temperatures[i1];
+  F const sqrt_t0 = um2::sqrt(t0);
+  F const sqrt_t1 = um2::sqrt(t1);
+  F const sqrt_t = um2::sqrt(temperature);
+  F const d = (sqrt_t - sqrt_t0) / (sqrt_t1 - sqrt_t0);
+  XSec const & xs0 = _xs[i0];
+  XSec const & xs1 = _xs[i1];
+  XSec xs;
+  I const n = xs0.t().size();
+  ASSERT(n == xs1.t().size());
+  xs.t().resize(n);
+  for (I j = 0; j < n; ++j) {
+    xs.t(j) = xs0.t(j) + d * (xs1.t(j) - xs0.t(j));
+  }
+  return xs;
+}
+
 //==============================================================================
 // Free functions
 //==============================================================================

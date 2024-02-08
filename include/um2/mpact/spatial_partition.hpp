@@ -5,8 +5,6 @@
 #include <um2/mesh/regular_partition.hpp>
 #include <um2/physics/material.hpp>
 
-#include <iomanip>
-
 namespace um2::mpact
 {
 
@@ -64,11 +62,11 @@ public:
   struct CoarseCell {
     Vec2<F> dxdy; // dx, dy
     MeshType mesh_type = MeshType::None;
-    Size mesh_id = -1;               // index into the corresponding mesh array
+    I mesh_id = -1;               // index into the corresponding mesh array
     Vector<MaterialID> material_ids; // size = mesh.numFaces()
 
     PURE [[nodiscard]] constexpr auto
-    numFaces() const noexcept -> Size
+    numFaces() const noexcept -> I
     {
       return material_ids.size();
     }
@@ -109,43 +107,46 @@ public:
   //============================================================================
 
   PURE [[nodiscard]] constexpr auto
-  numCoarseCells() const noexcept -> Size;
+  numCoarseMeshes() const noexcept -> I;
 
   PURE [[nodiscard]] constexpr auto
-  numRTMs() const noexcept -> Size;
+  numCoarseCells() const noexcept -> I;
 
   PURE [[nodiscard]] constexpr auto
-  numLattices() const noexcept -> Size;
+  numRTMs() const noexcept -> I;
 
   PURE [[nodiscard]] constexpr auto
-  numAssemblies() const noexcept -> Size;
+  numLattices() const noexcept -> I;
 
   PURE [[nodiscard]] constexpr auto
-  getCoarseCell(Size cc_id) const noexcept -> CoarseCell const &;
+  numAssemblies() const noexcept -> I;
 
   PURE [[nodiscard]] constexpr auto
-  getRTM(Size rtm_id) const noexcept -> RTM const &;
+  getCoarseCell(I cc_id) const noexcept -> CoarseCell const &;
 
   PURE [[nodiscard]] constexpr auto
-  getLattice(Size lat_id) const noexcept -> Lattice const &;
+  getRTM(I rtm_id) const noexcept -> RTM const &;
 
   PURE [[nodiscard]] constexpr auto
-  getAssembly(Size asy_id) const noexcept -> Assembly const &;
+  getLattice(I lat_id) const noexcept -> Lattice const &;
+
+  PURE [[nodiscard]] constexpr auto
+  getAssembly(I asy_id) const noexcept -> Assembly const &;
 
   PURE [[nodiscard]] constexpr auto
   getCore() const noexcept -> Core const &;
 
   PURE [[nodiscard]] auto
-  getTriMesh(Size mesh_id) const noexcept -> TriFVM const &;
+  getTriMesh(I mesh_id) const noexcept -> TriFVM const &;
 
   PURE [[nodiscard]] auto
-  getQuadMesh(Size mesh_id) const noexcept -> QuadFVM const &;
+  getQuadMesh(I mesh_id) const noexcept -> QuadFVM const &;
 
   PURE [[nodiscard]] auto
-  getTri6Mesh(Size mesh_id) const noexcept -> Tri6FVM const &;
+  getTri6Mesh(I mesh_id) const noexcept -> Tri6FVM const &;
 
   PURE [[nodiscard]] auto
-  getQuad8Mesh(Size mesh_id) const noexcept -> Quad8FVM const &;
+  getQuad8Mesh(I mesh_id) const noexcept -> Quad8FVM const &;
 
   //============================================================================
   // Methods
@@ -155,43 +156,47 @@ public:
   clear() noexcept;
 
   void
-  checkMeshExists(MeshType mesh_type, Size mesh_id) const;
+  checkMeshExists(MeshType mesh_type, I mesh_id) const;
 
   auto
-  addMaterial(Material const & material) -> Size;
+  addMaterial(Material const & material) -> I;
 
   auto
-  makeCylindricalPinMesh(Vector<F> const & radii, F pitch, Vector<Size> const & num_rings,
-                         Size num_azimuthal, Size mesh_order = 1) -> Size;
+  addCylindricalPinMesh(Vector<F> const & radii, F pitch, Vector<I> const & num_rings,
+                         I num_azimuthal, I mesh_order = 1) -> I;
 
   auto
-  makeRectangularPinMesh(Vec2<F> dxdy, Size nx, Size ny) -> Size;
+  addRectangularPinMesh(Vec2<F> dxdy, I nx, I ny) -> I;
 
   auto
-  makeCoarseCell(Vec2<F> dxdy, MeshType mesh_type = MeshType::None, Size mesh_id = -1,
-                 Vector<MaterialID> const & material_ids = {}) -> Size;
+  addCoarseCell(Vec2<F> dxdy, MeshType mesh_type = MeshType::None, I mesh_id = -1,
+                 Vector<MaterialID> const & material_ids = {}) -> I;
 
   auto
-  makeRTM(Vector<Vector<Size>> const & cc_ids) -> Size;
+  addRTM(Vector<Vector<I>> const & cc_ids) -> I;
 
   auto
-  makeLattice(Vector<Vector<Size>> const & rtm_ids) -> Size;
+  addLattice(Vector<Vector<I>> const & rtm_ids) -> I;
   //
   //  //  auto
-  //  //  stdMakeLattice(std::vector<std::vector<Size>> const & rtm_ids) -> Size;
+  //  //  stdMakeLattice(std::vector<std::vector<I>> const & rtm_ids) -> I;
   //
   auto
-  makeAssembly(Vector<Size> const & lat_ids, Vector<F> const & z = {-1, 1}) -> Size;
+  addAssembly(Vector<I> const & lat_ids, Vector<F> const & z = {-1, 1}) -> I;
 
   auto
-  makeCore(Vector<Vector<Size>> const & asy_ids) -> Size;
+  addCore(Vector<Vector<I>> const & asy_ids) -> I;
   //
   //  //  auto
-  //  //  stdMakeCore(std::vector<std::vector<Size>> const & asy_ids) -> Size;
+  //  //  stdMakeCore(std::vector<std::vector<I>> const & asy_ids) -> I;
 
   // Import coarse cells and pin meshes from a file.
   void
   importCoarseCells(String const & filename);
+
+  // Assume everything fits in one of the next highest hierarchy levels.
+  void
+  fillHierarchy();
 
   //  //  void
   //  //  toPolytopeSoup(PolytopeSoup & soup, bool write_kn = false) const;
@@ -212,49 +217,55 @@ public:
 //=============================================================================
 
 PURE [[nodiscard]] constexpr auto
-SpatialPartition::numCoarseCells() const noexcept -> Size
+SpatialPartition::numCoarseMeshes() const noexcept -> I
+{
+  return _tris.size() + _quads.size() + _tri6s.size() + _quad8s.size();
+}
+
+PURE [[nodiscard]] constexpr auto
+SpatialPartition::numCoarseCells() const noexcept -> I
 {
   return _coarse_cells.size();
 }
 
 PURE [[nodiscard]] constexpr auto
-SpatialPartition::numRTMs() const noexcept -> Size
+SpatialPartition::numRTMs() const noexcept -> I
 {
   return _rtms.size();
 }
 
 PURE [[nodiscard]] constexpr auto
-SpatialPartition::numLattices() const noexcept -> Size
+SpatialPartition::numLattices() const noexcept -> I
 {
   return _lattices.size();
 }
 
 PURE [[nodiscard]] constexpr auto
-SpatialPartition::numAssemblies() const noexcept -> Size
+SpatialPartition::numAssemblies() const noexcept -> I
 {
   return _assemblies.size();
 }
 
 PURE [[nodiscard]] constexpr auto
-SpatialPartition::getCoarseCell(Size cc_id) const noexcept -> CoarseCell const &
+SpatialPartition::getCoarseCell(I cc_id) const noexcept -> CoarseCell const &
 {
   return _coarse_cells[cc_id];
 }
 
 PURE [[nodiscard]] constexpr auto
-SpatialPartition::getRTM(Size rtm_id) const noexcept -> RTM const &
+SpatialPartition::getRTM(I rtm_id) const noexcept -> RTM const &
 {
   return _rtms[rtm_id];
 }
 
 PURE [[nodiscard]] constexpr auto
-SpatialPartition::getLattice(Size lat_id) const noexcept -> Lattice const &
+SpatialPartition::getLattice(I lat_id) const noexcept -> Lattice const &
 {
   return _lattices[lat_id];
 }
 
 PURE [[nodiscard]] constexpr auto
-SpatialPartition::getAssembly(Size asy_id) const noexcept -> Assembly const &
+SpatialPartition::getAssembly(I asy_id) const noexcept -> Assembly const &
 {
   return _assemblies[asy_id];
 }

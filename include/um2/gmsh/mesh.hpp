@@ -26,7 +26,7 @@ setMeshFieldFromKnudsenNumber(
     int dim, std::vector<Material> const & materials, double kn_target,
     double mfp_threshold = -1.0, double mfp_scale = -1.0,
     std::vector<int> const & is_fuel = {}, // 1 for fuel, 0 for moderator
-    XSReductionStrategy strategy = XSReductionStrategy::Mean) -> int;
+    XSecReduction strategy = XSecReduction::Mean) -> int;
 
 void
 generateMesh(MeshType mesh_type, int smooth_iters = 100);

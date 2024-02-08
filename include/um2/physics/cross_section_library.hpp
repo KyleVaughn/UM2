@@ -1,6 +1,7 @@
 #pragma once
 
 #include <um2/physics/nuclide.hpp>
+#include <um2/physics/material.hpp>
 
 //======================================================================
 // CROSS SECTION LIBRARY
@@ -83,6 +84,16 @@ public:
   {
     return _group_bounds.size();
   }
+
+  //===========================================================================
+  // Methods
+  //===========================================================================
+
+  PURE [[nodiscard]] auto
+  getNuclide(I zaid) const noexcept -> Nuclide const &;
+
+  PURE [[nodiscard]] auto
+  getXS(Material const & material) const noexcept -> XSec;
 
 };
 

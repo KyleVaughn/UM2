@@ -155,7 +155,7 @@ set(UM2_SOURCES
     "src/physics/nuclide.cpp"
     "src/physics/cross_section_library.cpp"
     "src/physics/material.cpp"
-    #    #    "src/mpact/spatial_partition.cpp"
+    "src/mpact/spatial_partition.cpp"
     "src/gmsh/base_gmsh_api.cpp"
     "src/gmsh/io.cpp"
     "src/gmsh/model.cpp"
