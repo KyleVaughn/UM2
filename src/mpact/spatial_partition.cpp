@@ -1001,7 +1001,7 @@ SpatialPartition::importCoarseCells(String const & filename)
 
     // Create the FaceVertexMesh and shift it from global coordinates to local
     // coordinates, with the bottom left corner of the AABB at the origin
-    AxisAlignedBox2 bb;
+    AxisAlignedBox2 bb = AxisAlignedBox2::empty();
     Point2 * vertices = nullptr;
     I const num_verts = cc_submesh.numVerts();
     switch (mesh_type) {

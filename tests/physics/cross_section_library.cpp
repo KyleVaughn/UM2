@@ -31,20 +31,12 @@ TEST_CASE(getXS)
   fuel.setDensity(10.42); // g/cm^3, Table P1-2 (pg. 20)    
   fuel.setTemperature(565.0); // K, Table P1-1 (pg. 20)    
   fuel.setColor(um2::forestgreen);    
-//  fuel.addNuclide("U234", 6.11864e-6); // Number density in atoms/b-cm    
   fuel.addNuclide("U235", 1.0);    
-//  fuel.addNuclide("U236", 3.29861e-6);    
-//  fuel.addNuclide("U238", 2.21546e-2);    
-//  fuel.addNuclide("O16", 4.57642e-2);
+  fuel.addNuclide("O16", 1.0);
 
-  um2::log::warn("getXS");
   auto const xs = lib8.getXS(fuel);
-  um2::log::warn("xs.isMacro() = ", xs.isMacro());
-//  um2::log::warn("xs.t().size() = ", xs.t().size());
-//  for (auto const sigma_t : xs.t()) {
-//    um2::log::info("sigma_t = ", sigma_t);
-//    ASSERT(sigma_t > 0);
-//  }
+  ASSERT_NEAR(xs.t(0), 9, 1)
+  ASSERT_NEAR(xs.t(1), 14, 1)
 }
 
 TEST_SUITE(XSLibrary) 

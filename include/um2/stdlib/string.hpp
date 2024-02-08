@@ -19,6 +19,9 @@
 // This should be true for all x86 and Apple processors and both NVIDIA and AMD GPUs.
 //
 // For developers: clang-tidy is a bit overzealous with its warnings in this file.
+//
+// TODO(kcvaughn): Most of LONG_COPY and SHORT_COPY contain the same code. For constructors
+// that use these, try to factor out the common code into a separate macro
 
 namespace um2
 {
@@ -520,9 +523,37 @@ HOSTDEV constexpr String::String(char const * s, I const n) noexcept
 
 HOSTDEV constexpr String::String(char const * begin, char const * end) noexcept
 {
-  // Call the constructor that takes a pointer and a length
-  String tmp(begin, static_cast<I>(end - begin));
-  *this = um2::move(tmp);
+  // begin and end are pointers to the first and one past the last character
+  // of the string, respectively.
+  //
+  // "test" -> begin = &t, end = &t + 4
+  // Hence, end is not a valid memory location, nor necessarily the null
+  // terminator.
+  auto const n = static_cast<uint64_t>(end - begin);
+  ASSERT(n > 0);
+  if (n + 1 <= min_cap) {
+    _r.s.is_long = 0;
+    _r.s.size = n & short_size_mask;
+    auto * dest = addressof(_r.s.data[0]); 
+    while (begin != end) {              
+      *dest = *begin;                  
+      ++begin;                        
+      ++dest;                        
+    }
+    *dest = '\0';
+  } else {
+    _r.l.is_long = 1;                
+    _r.l.cap = n & long_cap_mask;   
+    _r.l.size = n;                 
+    _r.l.data = static_cast<char *>(::operator new(n));
+    auto * dest = _r.l.data; 
+    while (begin != end) {              
+      *dest = *begin;                  
+      ++begin;                        
+      ++dest;                        
+    }
+    *dest = '\0';
+  }
 }
 
 // std::to_string should not allocate here due to small string optimization, so
