@@ -27,15 +27,15 @@ main() -> int
   fuel.addNuclide("U238", 2.21546e-2);
   fuel.addNuclide("O16", 4.57642e-2);
 
-  // Gap
-  um2::Material gap;
-  gap.setName("Gap");
-  // "Helium with nominal density" (pg. 22). He at 565 K and 2250 psia, according to NIST
-  // has a density of 0.012768 g/cm^3.
-  gap.setDensity(0.012768); // g/cm^3,
-  gap.setTemperature(565.0); // K, Hot zero power temperature (pg. 20)
-  gap.setColor(um2::red);
-  gap.addNuclide("He4", 2.68714e-5);
+//  // Gap
+//  um2::Material gap;
+//  gap.setName("Gap");
+//  // "Helium with nominal density" (pg. 22). He at 565 K and 2250 psia, according to NIST
+//  // has a density of 0.012768 g/cm^3.
+//  gap.setDensity(0.012768); // g/cm^3,
+//  gap.setTemperature(565.0); // K, Hot zero power temperature (pg. 20)
+//  gap.setColor(um2::red);
+//  gap.addNuclide("He4", 2.68714e-5);
 
   // Clad
   um2::Material clad;
@@ -90,14 +90,16 @@ main() -> int
 
   // Parameters for the pin-cell geometry
   double const r_fuel = 0.4096; // Pellet radius = 0.4096 cm (pg. 4)
-  double const r_gap = 0.418;   // Inner clad radius = 0.418 cm (pg. 4)
+//  double const r_gap = 0.418;   // Inner clad radius = 0.418 cm (pg. 4)
   double const r_clad = 0.475;  // Outer clad radius = 0.475 cm (pg.4)
   double const pitch = 1.26;    // Pitch = 1.26 cm (pg. 4)
 
   um2::Point2 const center = {pitch / 2, pitch / 2};
 
-  um2::Vector<double> const radii = {r_fuel, r_gap, r_clad};
-  um2::Vector<um2::Material> const materials = {fuel, gap, clad};
+//  um2::Vector<double> const radii = {r_fuel, r_gap, r_clad};
+ um2::Vector<double> const radii = {r_fuel, r_clad};
+//  um2::Vector<um2::Material> const materials = {fuel, gap, clad};
+  um2::Vector<um2::Material> const materials = {fuel, clad};
 
   um2::gmsh::model::occ::addCylindricalPin2D(center, radii, materials);
 
@@ -106,24 +108,25 @@ main() -> int
   model.fillHierarchy();
   um2::gmsh::model::occ::overlaySpatialPartition(model);
 
-  um2::XSReductionStrategy const kn_strategy = um2::XSReductionStrategy::Mean;
-  um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, materials, target_kn,
-                                                        kn_strategy);
-  // um2::gmsh::model::mesh::setGlobalMeshSize(0.06);
+  double const target_kn = 12.0;
+  std::vector<um2::Material> const mat = {fuel, clad, moderator};
+  um2::gmsh::model::mesh::setMeshFieldFromKnudsenNumber(2, mat, target_kn);
+//  // um2::gmsh::model::mesh::setGlobalMeshSize(0.06);
   um2::gmsh::model::mesh::generateMesh(um2::MeshType::QuadraticTri);
-
-  um2::gmsh::write("c5g7.inp");
-  model.importCoarseCells("c5g7.inp");
-  for (auto const & cc : model.coarse_cells) {
-    um2::Log::info("CC has " + um2::toString(cc.numFaces()) + " faces");
-  }
-  model.materials[6].xs.t = uo2_xs;
-  model.materials[2].xs.t = mox43_xs;
-  model.materials[3].xs.t = mox70_xs;
-  model.materials[4].xs.t = mox87_xs;
-  model.materials[0].xs.t = fiss_chamber_xs;
-  model.materials[1].xs.t = guide_tube_xs;
-  model.materials[5].xs.t = moderator_xs;
+  um2::gmsh::fltk::run();
+//
+//  um2::gmsh::write("c5g7.inp");
+//  model.importCoarseCells("c5g7.inp");
+//  for (auto const & cc : model.coarse_cells) {
+//    um2::Log::info("CC has " + um2::toString(cc.numFaces()) + " faces");
+//  }
+//  model.materials[6].xs.t = uo2_xs;
+//  model.materials[2].xs.t = mox43_xs;
+//  model.materials[3].xs.t = mox70_xs;
+//  model.materials[4].xs.t = mox87_xs;
+//  model.materials[0].xs.t = fiss_chamber_xs;
+//  model.materials[1].xs.t = guide_tube_xs;
+//  model.materials[5].xs.t = moderator_xs;
   // um2::PolytopeSoup<double, int> soup;
   // model.toPolytopeSoup(soup, /*write_kn=*/true);
   // soup.write("c5g7.xdmf");

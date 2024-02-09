@@ -159,7 +159,7 @@ set(UM2_SOURCES
     "src/gmsh/base_gmsh_api.cpp"
     "src/gmsh/io.cpp"
     "src/gmsh/model.cpp"
-    #    #    "src/gmsh/mesh.cpp"
+    "src/gmsh/mesh.cpp"
     #    #    ##    # visualization
     #    #    ##    "src/visualization/Image2D.cpp"
     "src/um2.cpp"

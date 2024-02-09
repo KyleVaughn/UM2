@@ -3,6 +3,7 @@
 #if UM2_USE_GMSH
 
 #  include <um2/math/stats.hpp>
+#include <um2/physics/cross_section_library.hpp>
 
 namespace um2::gmsh::model::mesh
 {
@@ -32,7 +33,7 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
   gmsh::option::setNumber("Mesh.Smoothing", smooth_iters);
   switch (mesh_type) {
   case MeshType::Tri:
-    Log::info("Generating triangle mesh");
+    log::info("Generating triangle mesh");
     // Delaunay (5) handles large element size gradients better. Maybe use that?
     gmsh::option::setNumber("Mesh.Algorithm", 6);
     gmsh::model::mesh::generate(2);
@@ -42,7 +43,7 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
     //    }
     break;
   case MeshType::Quad:
-    Log::info("Generating quadrilateral mesh");
+    log::info("Generating quadrilateral mesh");
     gmsh::option::setNumber("Mesh.RecombineAll", 1);
     gmsh::option::setNumber("Mesh.Algorithm", 8); // Frontal-Delaunay for quads.
     gmsh::option::setNumber("Mesh.SubdivisionAlgorithm", 1);   // All quads
@@ -55,7 +56,7 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
     //    }
     break;
   case MeshType::QuadraticTri:
-    Log::info("Generating quadratic triangle mesh");
+    log::info("Generating quadratic triangle mesh");
     gmsh::option::setNumber("Mesh.Algorithm", 6);
     gmsh::model::mesh::generate(2);
     gmsh::option::setNumber("Mesh.HighOrderOptimize", 2); // elastic + opt
@@ -67,7 +68,7 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
     //    }
     break;
   case MeshType::QuadraticQuad:
-    Log::info("Generating quadratic quadrilateral mesh");
+    log::info("Generating quadratic quadrilateral mesh");
     gmsh::option::setNumber("Mesh.RecombineAll", 1);
     gmsh::option::setNumber("Mesh.Algorithm", 8); // Frontal-Delaunay for quads.
     gmsh::option::setNumber("Mesh.SubdivisionAlgorithm", 1);   // All quads
@@ -82,7 +83,7 @@ generateMesh(MeshType const mesh_type, int const smooth_iters)
     //    }
     break;
   default:
-    Log::error("Invalid mesh type");
+    log::error("Invalid mesh type");
   }
 }
 
@@ -233,8 +234,14 @@ setMeshFieldFromKnudsenNumber(int const dim, std::vector<Material> const & mater
     LOG_ERROR("Invalid Knudsen number computation strategy");
   }
 
+  // Get the cross section library
+  XSLibrary const lib51(um2::settings::xs::library_path + "/" + um2::mpact::XSLIB_8G);
+
   for (size_t i = 0; i < num_materials; ++i) {
-    double const sigma_t = materials[i].xs().getOneGroupTotalXS(strategy);
+    XSec const xs_1g = lib51.getXS(materials[i]).collapse(strategy);
+    ASSERT(xs_1g.numGroups() == 1);
+    ASSERT(xs_1g.t(0) > 0);
+    double const sigma_t = xs_1g.t(0);
     // The mean chord length of an equilateral triangle with side length l:
     // s = pi * A/ 3l = pi * sqrt(3) * l / 12
     //
@@ -349,8 +356,7 @@ setMeshFieldFromKnudsenNumber(int const dim, std::vector<Material> const & mater
         ASSERT(offset < 0.0);
         std::string const math_expr = fuel_distance_name + " * " + std::to_string(scale) +
                                       " " + std::to_string(offset);
-        LOG_INFO("Creating linear field for " + materials[i].name() + ": " +
-                 String(math_expr.c_str()));
+        LOG_INFO("Creating linear field for ", materials[i].getName(), ": ", math_expr);
         gmsh::model::mesh::field::setString(fid, "F", math_expr);
         int const max_fid = gmsh::model::mesh::field::add("Max");
         std::vector<double> const field_ids_d = {static_cast<double>(field_ids[i]),
