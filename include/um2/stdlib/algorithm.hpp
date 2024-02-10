@@ -40,7 +40,7 @@ clamp(T const & v, T const & lo, T const & hi) noexcept -> T const &
 //==============================================================================
 // std::copy reduces to a memmove when possible. The mechanism for this is
 // pretty complicated, so I would recommend just using std::copy and settling
-// for a less performance copy on device. If you really need to optimize this,
+// for a less performant copy on device. If you really need to optimize this,
 // you could overload for pointers to fundamental types.
 
 #ifndef __CUDA_ARCH__

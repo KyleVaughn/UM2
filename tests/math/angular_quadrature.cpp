@@ -2,22 +2,22 @@
 
 #include "../test_macros.hpp"
 
-F constexpr eps = condCast<F>(1e-6);
+Float constexpr eps = condCast<Float>(1e-6);
 
 HOSTDEV
 TEST_CASE(chebyshev_chebyshev)
 {
-  F constexpr half = static_cast<F>(1) / static_cast<F>(2);
+  Float constexpr half = static_cast<Float>(1) / static_cast<Float>(2);
   auto const type = um2::AngularQuadratureType::Chebyshev;
   um2::ProductAngularQuadrature const q(type, 1, type, 2);
   ASSERT(q.azimuthalDegree() == 1);
   ASSERT(q.polarDegree() == 2);
-  ASSERT_NEAR(q.azimuthalWeights()[0], static_cast<F>(1), eps);
-  ASSERT_NEAR(q.azimuthalAngles()[0], um2::pi_4<F>, eps);
+  ASSERT_NEAR(q.azimuthalWeights()[0], static_cast<Float>(1), eps);
+  ASSERT_NEAR(q.azimuthalAngles()[0], um2::pi_4<Float>, eps);
   ASSERT_NEAR(q.polarWeights()[0], half, eps);
   ASSERT_NEAR(q.polarWeights()[1], half, eps);
-  ASSERT_NEAR(q.polarAngles()[0], um2::pi<F> / static_cast<F>(8), eps);
-  ASSERT_NEAR(q.polarAngles()[1], um2::pi<F> * static_cast<F>(3) / static_cast<F>(8),
+  ASSERT_NEAR(q.polarAngles()[0], um2::pi<Float> / static_cast<Float>(8), eps);
+  ASSERT_NEAR(q.polarAngles()[1], um2::pi<Float> * static_cast<Float>(3) / static_cast<Float>(8),
               eps);
 }
 

@@ -1,5 +1,7 @@
 #include <um2/math/stats.hpp>
 
+#include <um2/stdlib/assert.hpp>
+
 namespace um2
 {
 
@@ -8,11 +10,11 @@ namespace um2
 //=============================================================================
 
 PURE HOSTDEV auto
-mean(F const * begin, F const * end) noexcept -> F
+mean(Float const * begin, Float const * end) noexcept -> Float
 {
   ASSERT_ASSUME(begin != end);
-  F const n = static_cast<F>(end - begin);
-  F result = 0;
+  auto const n = static_cast<Float>(end - begin);
+  Float result = 0;
   while (begin != end) {
     result += *begin;
     ++begin;
@@ -25,7 +27,7 @@ mean(F const * begin, F const * end) noexcept -> F
 //=============================================================================
 
 PURE HOSTDEV auto
-median(F const * begin, F const * end) noexcept -> F
+median(Float const * begin, Float const * end) noexcept -> Float
 {
   ASSERT_ASSUME(begin != end);
   ASSERT(um2::is_sorted(begin, end));
@@ -44,15 +46,15 @@ median(F const * begin, F const * end) noexcept -> F
 //=============================================================================
 
 PURE HOSTDEV auto
-variance(F const * begin, F const * end) noexcept -> F
+variance(Float const * begin, Float const * end) noexcept -> Float
 {
   ASSERT_ASSUME(begin != end);
-  F const n_minus_1 = static_cast<F>(end - begin - 1);
+  auto const n_minus_1 = static_cast<Float>(end - begin - 1);
   ASSERT(n_minus_1 > 0);
   auto const xbar = um2::mean(begin, end);
-  F result = 0;
+  Float result = 0;
   while (begin != end) {
-    F const x_minus_xbar = *begin - xbar;
+    Float const x_minus_xbar = *begin - xbar;
     result += x_minus_xbar * x_minus_xbar;
     ++begin;
   }
@@ -64,7 +66,7 @@ variance(F const * begin, F const * end) noexcept -> F
 //=============================================================================
 
 PURE HOSTDEV auto
-stdDev(F const * begin, F const * end) noexcept -> F
+stdDev(Float const * begin, Float const * end) noexcept -> Float
 {
   return um2::sqrt(um2::variance(begin, end));
 }

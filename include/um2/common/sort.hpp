@@ -1,6 +1,7 @@
 #pragma once
 
 #include <um2/stdlib/algorithm.hpp> // std::sort
+#include <um2/stdlib/assert.hpp>    // ASSERT
 #include <um2/stdlib/numeric.hpp>   // um2::iota
 #include <um2/stdlib/utility.hpp>   // um2::move
 #include <um2/stdlib/vector.hpp>    // um2::Vector
@@ -59,12 +60,12 @@ insertionSort(T * const first, T const * const last) noexcept
 
 template <typename T>
 void
-sortPermutation(T const * const begin, T const * const end, I * const perm_begin) noexcept
+sortPermutation(T const * const begin, T const * const end, Int * const perm_begin) noexcept
 {
   auto const n = end - begin;
   um2::iota(perm_begin, perm_begin + n, 0);
   std::sort(perm_begin, perm_begin + n,
-            [&begin](I const i, I const j) { return begin[i] < begin[j]; });
+            [&begin](Int const i, Int const j) { return begin[i] < begin[j]; });
 }
 
 //==============================================================================
@@ -74,13 +75,13 @@ sortPermutation(T const * const begin, T const * const end, I * const perm_begin
 
 template <typename T>
 void
-applyPermutation(Vector<T> & v, Vector<I> const & perm) noexcept
+applyPermutation(Vector<T> & v, Vector<Int> const & perm) noexcept
 {
   // Verify that perm is a permutation
   // (contains all elements of [0, v.size()) exactly once)
 #if UM2_ENABLE_ASSERTS
   Vector<int8_t> seen(v.size(), 0);
-  for (I const i : perm) {
+  for (Int const i : perm) {
     ASSERT(i < v.size());
     ASSERT(seen[i] == 0);
     seen[i] = 1;
@@ -91,13 +92,13 @@ applyPermutation(Vector<T> & v, Vector<I> const & perm) noexcept
 #endif
   // Apply the permutation in-place by iterating over cycles.
   Vector<int8_t> done(v.size(), 0);
-  for (I i = 0; i < v.size(); ++i) {
+  for (Int i = 0; i < v.size(); ++i) {
     if (done[i] == 1) {
       continue;
     }
     done[i] = 1;
-    I prev_j = i;
-    I j = perm[i];
+    Int prev_j = i;
+    Int j = perm[i];
     while (i != j) {
       um2::swap(v[prev_j], v[j]);
       done[j] = 1;
@@ -113,6 +114,6 @@ applyPermutation(Vector<T> & v, Vector<I> const & perm) noexcept
 // Compute the inverse of the permutation perm and store it in inv_perm.
 
 void
-invertPermutation(Vector<I> const & perm, Vector<I> & inv_perm) noexcept;
+invertPermutation(Vector<Int> const & perm, Vector<Int> & inv_perm) noexcept;
 
 } // namespace um2

@@ -2,15 +2,15 @@
 
 #include "../test_macros.hpp"
 
-template <I M, I N, typename T>
+template <Int M, Int N, typename T>
 HOSTDEV constexpr auto
 makeMat() -> um2::Mat<M, N, T>
 {
   um2::Mat<M, N, T> m;
   T tm = static_cast<T>(M);
-  for (I j = 0; j < N; ++j) {
+  for (Int j = 0; j < N; ++j) {
     T tj = static_cast<T>(j);
-    for (I i = 0; i < M; ++i) {
+    for (Int i = 0; i < M; ++i) {
       T ti = static_cast<T>(i);
       m(i, j) = tj * tm + ti;
     }
@@ -18,13 +18,13 @@ makeMat() -> um2::Mat<M, N, T>
   return m;
 }
 
-template <I M, I N, typename T>
+template <Int M, Int N, typename T>
 HOSTDEV
 TEST_CASE(accessors)
 {
   um2::Mat<M, N, T> m = makeMat<M, N, T>();
-  for (I j = 0; j < N; ++j) {
-    for (I i = 0; i < M; ++i) {
+  for (Int j = 0; j < N; ++j) {
+    for (Int i = 0; i < M; ++i) {
       if constexpr (std::floating_point<T>) {
         ASSERT_NEAR(m.col(j)[i], static_cast<T>(j * M + i), static_cast<T>(1e-6));
       } else {
@@ -32,8 +32,8 @@ TEST_CASE(accessors)
       }
     }
   }
-  for (I j = 0; j < N; ++j) {
-    for (I i = 0; i < M; ++i) {
+  for (Int j = 0; j < N; ++j) {
+    for (Int i = 0; i < M; ++i) {
       if constexpr (std::floating_point<T>) {
         ASSERT_NEAR(m(i, j), static_cast<T>(j * M + i), static_cast<T>(1e-6));
       } else {
@@ -43,19 +43,19 @@ TEST_CASE(accessors)
   }
 }
 
-template <I M, I N, typename T>
+template <Int M, Int N, typename T>
 HOSTDEV
 TEST_CASE(mat_vec)
 {
   um2::Mat<M, N, T> m = makeMat<M, N, T>();
   um2::Vec<N, T> v;
-  for (I i = 0; i < N; ++i) {
+  for (Int i = 0; i < N; ++i) {
     v[i] = static_cast<T>(i);
   }
   um2::Vec<M, T> mv = m * v;
-  for (I i = 0; i < M; ++i) {
+  for (Int i = 0; i < M; ++i) {
     T mv_i = 0;
-    for (I j = 0; j < N; ++j) {
+    for (Int j = 0; j < N; ++j) {
       mv_i += m(i, j) * v[j];
     }
     if constexpr (std::floating_point<T>) {
@@ -67,15 +67,15 @@ TEST_CASE(mat_vec)
 }
 
 #if UM2_USE_CUDA
-template <I M, I N, typename T>
+template <Int M, Int N, typename T>
 MAKE_CUDA_KERNEL(accessors, M, N, T);
 
-template <I M, I N, typename T>
+template <Int M, Int N, typename T>
 MAKE_CUDA_KERNEL(mat_vec, M, N, T);
 
 #endif
 
-template <I M, I N, typename T>
+template <Int M, Int N, typename T>
 TEST_SUITE(Mat)
 {
   TEST_HOSTDEV(accessors, 1, 1, M, N, T);

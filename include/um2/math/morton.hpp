@@ -1,8 +1,6 @@
 #pragma once
 
-#include <um2/config.hpp>
-
-#include <concepts>
+#include <um2/stdlib/assert.hpp>
 
 //==============================================================================
 // MORTON ENCODING/DECODING

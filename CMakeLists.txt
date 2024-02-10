@@ -45,16 +45,16 @@ option(UM2_BUILD_BENCHMARKS "Build benchmarks"                  OFF)
 option(UM2_BUILD_MODELS     "Build models"                      OFF)
 option(UM2_BUILD_TESTS      "Build tests"                       ON)
 option(UM2_BUILD_TUTORIAL   "Build tutorial"                    OFF)
-option(UM2_BUILD_SHARED     "Build UM2 as shared library"       ON)
+option(UM2_BUILD_SHARED_LIB "Build UM2 as shared library"       ON)
 
 # Use external dependencies
-option(UM2_USE_CUDA         "Enable CUDA"                                 OFF)
-option(UM2_USE_GMSH         "Enable Gmsh"                                 ON)
-option(UM2_USE_OPENMP       "Enable OpenMP"                               ON)
-option(UM2_USE_TBB          "Enable Intel TBB"                            ON)
+option(UM2_USE_CUDA         "Enable CUDA"                       OFF)
+option(UM2_USE_GMSH         "Enable Gmsh"                       ON)
+option(UM2_USE_OPENMP       "Enable OpenMP"                     ON)
+option(UM2_USE_TBB          "Enable Intel TBB"                  ON)
 
 # Enable/disable features
-option(UM2_ENABLE_FASTMATH  "Enable fast math"                  ON) # CPU and GPU
+option(UM2_ENABLE_FASTMATH  "Enable fast math optimizations"    ON) # CPU and GPU
 option(UM2_ENABLE_FLOAT64   "Enable 64-bit floating point"      ON)
 option(UM2_ENABLE_INT64     "Enable 64-bit integers"            OFF) # For large meshes
 
@@ -70,7 +70,7 @@ else()
   set(UM2_MIN_LOG_LEVEL 4)
 endif()
 
-# Path to look for MPACT cross section libraries
+# Default path to look for MPACT cross section libraries
 if (NOT MPACT_DATA)
   set(MPACT_DATA "${CMAKE_CURRENT_SOURCE_DIR}/MPACT_Extras/xslibs")
 endif()
@@ -81,13 +81,13 @@ endif()
 
 # If CMAKE_BUILD_TYPE is Release, then turn off assertions by default
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
-  set(IS_DEBUG_BUILD OFF)
+  set(DEFAULT_ASSERTS OFF)
 else()
-  set(IS_DEBUG_BUILD ON)
+  set(DEFAULT_ASSERTS ON)
 endif()
 
 # Enable/disable developer features
-option(UM2_ENABLE_ASSERTS    "Enable assertions"               ${IS_DEBUG_BUILD})
+option(UM2_ENABLE_ASSERTS    "Enable assertions"               ${DEFAULT_ASSERTS})
 option(UM2_DEV_MODE          "Enable development mode"         OFF)
 
 # Use external tools
@@ -148,26 +148,26 @@ set(UM2_SOURCES
     "src/common/sort.cpp"
     "src/math/stats.cpp"
     "src/math/angular_quadrature.cpp"
-    "src/geometry/morton_sort_points.cpp"
-    "src/mesh/polytope_soup.cpp"
-    "src/mesh/face_vertex_mesh.cpp"
-    "src/physics/cross_section.cpp"
-    "src/physics/nuclide.cpp"
-    "src/physics/cross_section_library.cpp"
-    "src/physics/material.cpp"
-    "src/mpact/spatial_partition.cpp"
-    "src/gmsh/base_gmsh_api.cpp"
-    "src/gmsh/io.cpp"
-    "src/gmsh/model.cpp"
-    "src/gmsh/mesh.cpp"
-    #    #    ##    # visualization
-    #    #    ##    "src/visualization/Image2D.cpp"
-    "src/um2.cpp"
+    #    "src/geometry/morton_sort_points.cpp"
+    #    "src/mesh/polytope_soup.cpp"
+    #    "src/mesh/face_vertex_mesh.cpp"
+    #    "src/physics/cross_section.cpp"
+    #    "src/physics/nuclide.cpp"
+    #    "src/physics/cross_section_library.cpp"
+    #    "src/physics/material.cpp"
+    #    "src/mpact/spatial_partition.cpp"
+    #    "src/gmsh/base_gmsh_api.cpp"
+    #    "src/gmsh/io.cpp"
+    #    "src/gmsh/model.cpp"
+    #    "src/gmsh/mesh.cpp"
+    #    #    #    ##    # visualization
+    #    #    #    ##    "src/visualization/Image2D.cpp"
+    #    "src/um2.cpp"
     #    #    "src/um2c.cpp"
   )
 
 
-if (UM2_BUILD_SHARED)
+if (UM2_BUILD_SHARED_LIB)
   if (UM2_USE_CUDA)
     message(WARNING "Shared library is not supported with CUDA." 
       " Building static library instead.")

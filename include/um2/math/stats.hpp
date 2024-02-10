@@ -23,7 +23,7 @@ namespace um2
 // Computes the mean of the values in the range [begin, end).
 
 PURE HOSTDEV auto
-mean(F const * begin, F const * end) noexcept -> F;
+mean(Float const * begin, Float const * end) noexcept -> Float;
 
 //=============================================================================
 // median
@@ -32,7 +32,7 @@ mean(F const * begin, F const * end) noexcept -> F;
 // The range must be sorted.
 
 PURE HOSTDEV auto
-median(F const * begin, F const * end) noexcept -> F;
+median(Float const * begin, Float const * end) noexcept -> Float;
 
 //=============================================================================
 // variance
@@ -40,7 +40,7 @@ median(F const * begin, F const * end) noexcept -> F;
 // Computes the variance of the values in the range [begin, end).
 
 PURE HOSTDEV auto
-variance(F const * begin, F const * end) noexcept -> F;
+variance(Float const * begin, Float const * end) noexcept -> Float;
 
 //=============================================================================
 // stdDev
@@ -48,6 +48,6 @@ variance(F const * begin, F const * end) noexcept -> F;
 // Computes the standard deviation of the values in the range [begin, end).
 
 PURE HOSTDEV auto
-stdDev(F const * begin, F const * end) noexcept -> F;
+stdDev(Float const * begin, Float const * end) noexcept -> Float;
 
 } // namespace um2

@@ -3,33 +3,33 @@
 
 #include "../test_macros.hpp"
 
-F constexpr eps = condCast<F>(1e-6);
+Float constexpr eps = condCast<Float>(1e-6);
 
 HOSTDEV
 TEST_CASE(mean)
 {
-  um2::Vector<F> v = {1, 2, 3, 4, 5};
-  F const m = um2::mean(v.data(), v.data() + v.size());
-  ASSERT_NEAR(m, condCast<F>(3), eps);
+  um2::Vector<Float> v = {1, 2, 3, 4, 5};
+  Float const m = um2::mean(v.data(), v.data() + v.size());
+  ASSERT_NEAR(m, condCast<Float>(3), eps);
 }
 
 HOSTDEV
 TEST_CASE(median)
 {
-  um2::Vector<F> v = {1, 2, 3, 4, 5};
-  F const m = um2::median(v.data(), v.data() + v.size());
-  ASSERT_NEAR(m, condCast<F>(3), eps);
+  um2::Vector<Float> v = {1, 2, 3, 4, 5};
+  Float const m = um2::median(v.data(), v.data() + v.size());
+  ASSERT_NEAR(m, condCast<Float>(3), eps);
   v.push_back(6);
-  F const m2 = um2::median(v.data(), v.data() + v.size());
-  ASSERT_NEAR(m2, condCast<F>(3.5), eps);
+  Float const m2 = um2::median(v.data(), v.data() + v.size());
+  ASSERT_NEAR(m2, condCast<Float>(3.5), eps);
 }
 
 HOSTDEV
 TEST_CASE(variance)
 {
-  um2::Vector<F> v = {1, 2, 3, 4, 5};
-  F const m = um2::variance(v.data(), v.data() + v.size());
-  ASSERT_NEAR(m, condCast<F>(2.5), eps);
+  um2::Vector<Float> v = {1, 2, 3, 4, 5};
+  Float const m = um2::variance(v.data(), v.data() + v.size());
+  ASSERT_NEAR(m, condCast<Float>(2.5), eps);
 }
 
 #if UM2_USE_CUDA

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <um2/stdlib/assert.hpp>    // ASSERT, ASSERT_ASSUME
 #include <um2/stdlib/algorithm.hpp> // copy
 #include <um2/stdlib/math.hpp>      // min
 #include <um2/stdlib/memory.hpp>    // addressof
@@ -19,9 +20,6 @@
 // This should be true for all x86 and Apple processors and both NVIDIA and AMD GPUs.
 //
 // For developers: clang-tidy is a bit overzealous with its warnings in this file.
-//
-// TODO(kcvaughn): Most of LONG_COPY and SHORT_COPY contain the same code. For constructors
-// that use these, try to factor out the common code into a separate macro
 
 namespace um2
 {
@@ -45,7 +43,8 @@ class String
   static uint64_t constexpr long_cap_mask = 0x7FFFFFFFFFFFFFFF;
 
   // The maximum capacity of a short string.
-  // 24 bytes - 1 byte = 23 bytes
+  // 24 byte string - 1 byte for representation flag and size = 23 bytes
+  // This includes the null terminator.
   static uint64_t constexpr min_cap = sizeof(Long) - 1;
 
   // Stack-allocated string representation.
@@ -126,7 +125,7 @@ class String
 
 public:
   // The maximum capacity of a long string.
-  static I constexpr npos = sizeMax();
+  static Int constexpr npos = intMax();
 
   //==============================================================================
   // Constructors
@@ -147,7 +146,7 @@ public:
 
   HOSTDEV constexpr String(char const * begin, char const * end) noexcept;
 
-  HOSTDEV constexpr String(char const * s, I n) noexcept;
+  HOSTDEV constexpr String(char const * s, Int n) noexcept;
 
   template <std::integral T>
   explicit constexpr String(T x) noexcept;
@@ -161,17 +160,9 @@ public:
 
   HOSTDEV constexpr ~String() noexcept
   {
-    // Clang can't figure out that isLong() == true implies that data is initialized.
-#ifndef __clang__
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
     if (isLong()) {
       ::operator delete(_r.l.data);
     }
-#ifndef __clang__
-#  pragma GCC diagnostic pop
-#endif
   }
 
   //==============================================================================
@@ -180,7 +171,7 @@ public:
 
   // Not including the null terminator.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  capacity() const noexcept -> I;
+  capacity() const noexcept -> Int;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   data() noexcept -> char *;
@@ -193,7 +184,7 @@ public:
 
   // Not including the null terminator.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  size() const noexcept -> I;
+  size() const noexcept -> Int;
 
   //==============================================================================
   // Operators
@@ -234,10 +225,10 @@ public:
   operator>=(String const & s) const noexcept -> bool;
 
   PURE HOSTDEV constexpr auto
-  operator[](I i) noexcept -> char &;
+  operator[](Int i) noexcept -> char &;
 
   PURE HOSTDEV constexpr auto
-  operator[](I i) const noexcept -> char const &;
+  operator[](Int i) const noexcept -> char const &;
 
   HOSTDEV constexpr auto
   operator+=(String const & s) noexcept -> String &;
@@ -263,13 +254,13 @@ public:
   ends_with(char const (&s)[N]) const noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  find_last_of(char c) const noexcept -> I;
+  find_last_of(char c) const noexcept -> Int;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   starts_with(String const & s) const noexcept -> bool;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  substr(I pos, I len = npos) const -> String;
+  substr(Int pos, Int len = npos) const -> String;
 
   // NOLINTEND(readability-identifier-naming)
 }; // class String
@@ -307,6 +298,16 @@ toString(T const & t) noexcept -> String;
 // is out of bounds when using std::copy with -O3. Therefore, we write out a basic
 // copy loop instead.
 
+#define COPY_LOOP(first, last, dest)                                                      \
+  auto f = (first);                                                                       \
+  auto l = (last);                                                                        \
+  auto d = (dest);                                                                        \
+  while (f != l) {                                                                        \
+    *d = *f;                                                                              \
+    ++f;                                                                                  \
+    ++d;                                                                                  \
+  }
+
 // mimic allocateAndCopy(char const *, uint64_t)
 #define LONG_ALLOCATE_AND_COPY(ptr, num_elem)                                            \
   char const * ss = (ptr);                                                               \
@@ -316,14 +317,7 @@ toString(T const & t) noexcept -> String;
   _r.l.cap = (nn - 1) & long_cap_mask;                                                   \
   _r.l.size = nn - 1;                                                                    \
   _r.l.data = static_cast<char *>(::operator new(nn));                                   \
-  auto first = ss;                                                                       \
-  auto last = ss + nn;                                                                   \
-  auto dest = _r.l.data;                                                                 \
-  while (first != last) {                                                                \
-    *dest = *first;                                                                      \
-    ++first;                                                                             \
-    ++dest;                                                                              \
-  }
+  COPY_LOOP(ss, ss + nn, _r.l.data);
 
 #define SHORT_COPY(ptr, num_elem)                                                        \
   char const * ss = (ptr);                                                               \
@@ -331,14 +325,7 @@ toString(T const & t) noexcept -> String;
   ASSERT_ASSUME(nn > 0);                                                                 \
   _r.s.is_long = 0;                                                                      \
   _r.s.size = (nn - 1) & short_size_mask;                                                \
-  auto first = ss;                                                                       \
-  auto last = ss + nn;                                                                   \
-  auto dest = addressof(_r.s.data[0]);                                                   \
-  while (first != last) {                                                                \
-    *dest = *first;                                                                      \
-    ++first;                                                                             \
-    ++dest;                                                                              \
-  }
+  COPY_LOOP(ss, ss + nn, _r.s.data);
 
 //==============================================================================
 // Private methods
@@ -508,7 +495,7 @@ HOSTDEV constexpr String::String(char const * s) noexcept
   }
 }
 
-HOSTDEV constexpr String::String(char const * s, I const n) noexcept
+HOSTDEV constexpr String::String(char const * s, Int const n) noexcept
 {
   // Short string
   auto const cap = static_cast<uint64_t>(n);
@@ -594,16 +581,16 @@ String::isLong() const noexcept -> bool
 }
 
 PURE HOSTDEV constexpr auto
-String::size() const noexcept -> I
+String::size() const noexcept -> Int
 {
-  return isLong() ? static_cast<I>(getLongSize()) : static_cast<I>(getShortSize());
+  return isLong() ? static_cast<Int>(getLongSize()) : static_cast<Int>(getShortSize());
 }
 
 // Allocated bytes - 1 for null terminator
 PURE HOSTDEV constexpr auto
-String::capacity() const noexcept -> I
+String::capacity() const noexcept -> Int
 {
-  return isLong() ? static_cast<I>(getLongCap()) : static_cast<I>(getShortCap());
+  return isLong() ? static_cast<Int>(getLongCap()) : static_cast<Int>(getShortCap());
 }
 
 PURE HOSTDEV constexpr auto
@@ -695,14 +682,14 @@ String::operator=(char const (&s)[N]) noexcept -> String &
 PURE HOSTDEV constexpr auto
 String::operator==(String const & s) const noexcept -> bool
 {
-  I const l_size = size();
-  I const r_size = s.size();
+  Int const l_size = size();
+  Int const r_size = s.size();
   if (l_size != r_size) {
     return false;
   }
   char const * l_data = data();
   char const * r_data = s.data();
-  for (I i = 0; i < l_size; ++i) {
+  for (Int i = 0; i < l_size; ++i) {
     // NOLINTNEXTLINE
     if (*l_data != *r_data) {
       return false;
@@ -744,13 +731,13 @@ String::operator>=(String const & s) const noexcept -> bool
 }
 
 PURE HOSTDEV constexpr auto
-String::operator[](I i) noexcept -> char &
+String::operator[](Int i) noexcept -> char &
 {
   return data()[i];
 }
 
 PURE HOSTDEV constexpr auto
-String::operator[](I i) const noexcept -> char const &
+String::operator[](Int i) const noexcept -> char const &
 {
   return data()[i];
 }
@@ -819,12 +806,12 @@ String::operator+=(char const c) noexcept -> String &
 PURE HOSTDEV constexpr auto
 String::compare(String const & s) const noexcept -> int
 {
-  I const l_size = size();
-  I const r_size = s.size();
-  I const min_size = um2::min(l_size, r_size);
+  Int const l_size = size();
+  Int const r_size = s.size();
+  Int const min_size = um2::min(l_size, r_size);
   char const * l_data = data();
   char const * r_data = s.data();
-  for (I i = 0; i < min_size; ++i) {
+  for (Int i = 0; i < min_size; ++i) {
     if (*l_data != *r_data) {
       return static_cast<int>(*l_data) - static_cast<int>(*r_data);
     }
@@ -848,7 +835,7 @@ String::starts_with(String const & s) const noexcept -> bool
   }
   char const * l_data = data();
   char const * r_data = s.data();
-  for (I i = 0; i < s.size(); ++i) {
+  for (Int i = 0; i < s.size(); ++i) {
     if (*l_data != *r_data) {
       return false;
     }
@@ -861,14 +848,14 @@ String::starts_with(String const & s) const noexcept -> bool
 PURE HOSTDEV constexpr auto
 String::ends_with(String const & s) const noexcept -> bool
 {
-  I const l_size = size();
-  I const r_size = s.size();
+  Int const l_size = size();
+  Int const r_size = s.size();
   if (l_size < r_size) {
     return false;
   }
   char const * l_data = data() + l_size - r_size;
   char const * r_data = s.data();
-  for (I i = 0; i < r_size; ++i) {
+  for (Int i = 0; i < r_size; ++i) {
     if (*l_data != *r_data) {
       return false;
     }
@@ -887,7 +874,7 @@ String::ends_with(char const (&s)[N]) const noexcept -> bool
 }
 
 PURE HOSTDEV constexpr auto
-String::substr(I pos, I len) const -> String
+String::substr(Int pos, Int len) const -> String
 {
   ASSERT(pos <= size());
   if (len == npos || pos + len > size()) {
@@ -897,9 +884,9 @@ String::substr(I pos, I len) const -> String
 }
 
 PURE HOSTDEV constexpr auto
-String::find_last_of(char const c) const noexcept -> I
+String::find_last_of(char const c) const noexcept -> Int
 {
-  for (I i = size(); i > 0; --i) {
+  for (Int i = size(); i > 0; --i) {
     if (data()[i - 1] == c) {
       return i - 1;
     }

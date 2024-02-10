@@ -55,10 +55,10 @@ enum class AngularQuadratureType { Chebyshev };
 class ProductAngularQuadrature
 {
 
-  Vector<F> _wazi; // Weights for the azimuthal angles
-  Vector<F> _azi;  // Azimuthal angles, γ ∈ (0, π/2)
-  Vector<F> _wpol; // Weights for the polar angles
-  Vector<F> _pol;  // Polar angles, θ ∈ (0, π/2)
+  Vector<Float> _wazi; // Weights for the azimuthal angles
+  Vector<Float> _azi;  // Azimuthal angles, γ ∈ (0, π/2)
+  Vector<Float> _wpol; // Weights for the polar angles
+  Vector<Float> _pol;  // Polar angles, θ ∈ (0, π/2)
 
 public:
   //============================================================================
@@ -68,45 +68,45 @@ public:
   constexpr ProductAngularQuadrature() noexcept = default;
 
   HOSTDEV
-  ProductAngularQuadrature(AngularQuadratureType azi_form, I azi_degree,
-                           AngularQuadratureType pol_form, I pol_degree) noexcept;
+  ProductAngularQuadrature(AngularQuadratureType azi_form, Int azi_degree,
+                           AngularQuadratureType pol_form, Int pol_degree) noexcept;
 
   //============================================================================
   // Accessors
   //============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  azimuthalDegree() const noexcept -> I
+  azimuthalDegree() const noexcept -> Int
   {
     return _wazi.size();
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  polarDegree() const noexcept -> I
+  polarDegree() const noexcept -> Int
   {
     return _wpol.size();
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  azimuthalWeights() const noexcept -> Vector<F> const &
+  azimuthalWeights() const noexcept -> Vector<Float> const &
   {
     return _wazi;
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  azimuthalAngles() const noexcept -> Vector<F> const &
+  azimuthalAngles() const noexcept -> Vector<Float> const &
   {
     return _azi;
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  polarWeights() const noexcept -> Vector<F> const &
+  polarWeights() const noexcept -> Vector<Float> const &
   {
     return _wpol;
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  polarAngles() const noexcept -> Vector<F> const &
+  polarAngles() const noexcept -> Vector<Float> const &
   {
     return _pol;
   }

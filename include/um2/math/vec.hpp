@@ -20,7 +20,7 @@
 namespace um2
 {
 
-template <I D, class T>
+template <Int D, class T>
 class Vec
 {
 
@@ -32,10 +32,10 @@ public:
   //==============================================================================
 
   PURE HOSTDEV constexpr auto
-  operator[](I i) noexcept -> T &;
+  operator[](Int i) noexcept -> T &;
 
   PURE HOSTDEV constexpr auto
-  operator[](I i) const noexcept -> T const &;
+  operator[](Int i) const noexcept -> T const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   begin() noexcept -> T *;
@@ -50,7 +50,7 @@ public:
   end() const noexcept -> T const *;
 
   PURE HOSTDEV [[nodiscard]] static constexpr auto
-  size() noexcept -> I;
+  size() noexcept -> Int;
 
   //==============================================================================
   // Constructors
@@ -190,55 +190,55 @@ using Vec3d = Vec3<double>;
 // Accessors
 //==============================================================================
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-Vec<D, T>::operator[](I i) noexcept -> T &
+Vec<D, T>::operator[](Int i) noexcept -> T &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
   return _data[i];
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
-Vec<D, T>::operator[](I i) const noexcept -> T const &
+Vec<D, T>::operator[](Int i) const noexcept -> T const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
   return _data[i];
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::begin() noexcept -> T *
 {
   return addressof(_data[0]);
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::begin() const noexcept -> T const *
 {
   return addressof(_data[0]);
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::end() noexcept -> T *
 {
   return addressof(_data[0]) + D;
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::end() const noexcept -> T const *
 {
   return addressof(_data[0]) + D;
 }
 
-template <I D, class T>
+template <Int D, class T>
 CONST HOSTDEV [[nodiscard]] constexpr auto
-Vec<D, T>::size() noexcept -> I
+Vec<D, T>::size() noexcept -> Int
 {
   return D;
 }
@@ -247,7 +247,7 @@ Vec<D, T>::size() noexcept -> I
 // Constructors
 //==============================================================================
 
-template <I D, class T>
+template <Int D, class T>
 template <class... Is>
 requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
          !(std::same_as<T, Is> && ...)) HOSTDEV
@@ -256,7 +256,7 @@ requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
 {
 }
 
-template <I D, class T>
+template <Int D, class T>
 template <class... Ts>
 requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...)) HOSTDEV
     constexpr Vec<D, T>::Vec(Ts const... args) noexcept
@@ -268,12 +268,12 @@ requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...)) HOSTDEV
 // Unary operators
 //==============================================================================
 
-template <I D, class T>
+template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator-() const noexcept -> Vec<D, T>
 {
   Vec<D, T> result;
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     result[i] = -_data[i];
   }
   return result;
@@ -283,85 +283,85 @@ Vec<D, T>::operator-() const noexcept -> Vec<D, T>
 // Binary operators
 //==============================================================================
 
-template <I D, class T>
+template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator+=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     _data[i] += v[i];
   }
   return *this;
 }
 
-template <I D, class T>
+template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator-=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     _data[i] -= v[i];
   }
   return *this;
 }
 
-template <I D, class T>
+template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator*=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     _data[i] *= v[i];
   }
   return *this;
 }
 
-template <I D, class T>
+template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator/=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     _data[i] /= v[i];
   }
   return *this;
 }
 
-template <I D, class T>
+template <Int D, class T>
 template <class S>
 requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
     constexpr auto Vec<D, T>::operator+=(S const & s) noexcept -> Vec<D, T> &
 {
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     _data[i] += static_cast<T>(s);
   }
   return *this;
 }
 
-template <I D, class T>
+template <Int D, class T>
 template <class S>
 requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
     constexpr auto Vec<D, T>::operator-=(S const & s) noexcept -> Vec<D, T> &
 {
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     _data[i] -= static_cast<T>(s);
   }
   return *this;
 }
 
-template <I D, class T>
+template <Int D, class T>
 template <class S>
 requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
     constexpr auto Vec<D, T>::operator*=(S const & s) noexcept -> Vec<D, T> &
 {
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     _data[i] *= static_cast<T>(s);
   }
   return *this;
 }
 
-template <I D, class T>
+template <Int D, class T>
 template <class S>
 requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
     constexpr auto Vec<D, T>::operator/=(S const & s) noexcept -> Vec<D, T> &
 {
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     _data[i] /= static_cast<T>(s);
   }
   return *this;
@@ -371,11 +371,11 @@ requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
 // Non-member operators
 //==============================================================================
 
-template <I D, std::integral T>
+template <Int D, std::integral T>
 PURE HOSTDEV constexpr auto
 operator==(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> bool
 {
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     if (u[i] != v[i]) {
       return false;
     }
@@ -383,61 +383,61 @@ operator==(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> bool
   return true;
 }
 
-template <I D, std::integral T>
+template <Int D, std::integral T>
 PURE HOSTDEV constexpr auto
 operator!=(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> bool
 {
   return !(u == v);
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 operator+(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 {
   return u += v;
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 operator-(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 {
   return u -= v;
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 operator*(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 {
   return u *= v;
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 operator/(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 {
   return u /= v;
 }
 
-template <I D, class T, typename Scalar>
+template <Int D, class T, typename Scalar>
 requires(std::same_as<T, Scalar> || std::integral<Scalar>) PURE HOSTDEV constexpr auto
 operator*(Scalar s, Vec<D, T> u) noexcept -> Vec<D, T>
 {
   return u *= s;
 }
 
-template <I D, class T, typename Scalar>
+template <Int D, class T, typename Scalar>
 requires(std::same_as<T, Scalar> || std::integral<Scalar>) PURE HOSTDEV constexpr auto
 operator/(Vec<D, T> u, Scalar s) noexcept -> Vec<D, T>
 {
   return u /= s;
 }
 
-template <I D, class T, typename Scalar>
+template <Int D, class T, typename Scalar>
 requires(std::same_as<T, Scalar> || std::integral<Scalar>) PURE HOSTDEV constexpr auto
 operator/(Scalar s, Vec<D, T> const & u) noexcept -> Vec<D, T>
 {
   Vec<D, T> result;
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     result[i] = s / u[i];
   }
   return result;
@@ -447,29 +447,29 @@ operator/(Scalar s, Vec<D, T> const & u) noexcept -> Vec<D, T>
 // Methods
 //==============================================================================
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 dot(Vec<D, T> const & u, Vec<D, T> const & v) noexcept -> T
 {
   T result = u[0] * v[0];
-  for (I i = 1; i < D; ++i) {
+  for (Int i = 1; i < D; ++i) {
     result += u[i] * v[i];
   }
   return result;
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 squaredNorm(Vec<D, T> const & v) noexcept -> T
 {
   T result = v[0] * v[0];
-  for (I i = 1; i < D; ++i) {
+  for (Int i = 1; i < D; ++i) {
     result += v[i] * v[i];
   }
   return result;
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 norm(Vec<D, T> const & v) noexcept -> T
 {
@@ -477,7 +477,7 @@ norm(Vec<D, T> const & v) noexcept -> T
   return um2::sqrt(squaredNorm(v));
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 normalized(Vec<D, T> v) noexcept -> Vec<D, T>
 {
@@ -486,55 +486,55 @@ normalized(Vec<D, T> v) noexcept -> Vec<D, T>
   return v;
 }
 
-template <I D, class T>
+template <Int D, class T>
 HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::zero() noexcept -> Vec<D, T>
 {
   return Vec<D, T>{}; // Zero-initialize.
 }
 
-template <I D, class T>
+template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::min(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     _data[i] = um2::min(_data[i], v[i]);
   }
   return *this;
 }
 
-template <I D, class T>
+template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::max(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     _data[i] = um2::max(_data[i], v[i]);
   }
   return *this;
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::dot(Vec<D, T> const & v) const noexcept -> T
 {
   return um2::dot(*this, v);
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::squaredNorm() const noexcept -> T
 {
   return um2::squaredNorm(*this);
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::norm() const noexcept -> T
 {
   return um2::norm(*this);
 }
 
-template <I D, class T>
+template <Int D, class T>
 HOSTDEV constexpr void
 Vec<D, T>::normalize() noexcept
 {
@@ -542,14 +542,14 @@ Vec<D, T>::normalize() noexcept
   *this /= norm();
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::normalized() const noexcept -> Vec<D, T>
 {
   return um2::normalized(*this);
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::cross(Vec2<T> const & v) const noexcept -> T
 {
@@ -558,7 +558,7 @@ Vec<D, T>::cross(Vec2<T> const & v) const noexcept -> T
   return _data[0] * v[1] - _data[1] * v[0];
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::cross(Vec3<T> const & v) const noexcept -> Vec3<T>
 {
@@ -568,20 +568,20 @@ Vec<D, T>::cross(Vec3<T> const & v) const noexcept -> Vec3<T>
           _data[0] * v[1] - _data[1] * v[0]};
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::squaredDistanceTo(Vec<D, T> const & v) const noexcept -> T
 {
   T const d0 = _data[0] - v[0];
   T result = d0 * d0;
-  for (I i = 1; i < D; ++i) {
+  for (Int i = 1; i < D; ++i) {
     T const di = _data[i] - v[i];
     result += di * di;
   }
   return result;
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 Vec<D, T>::distanceTo(Vec<D, T> const & v) const noexcept -> T
 {
@@ -589,14 +589,14 @@ Vec<D, T>::distanceTo(Vec<D, T> const & v) const noexcept -> T
   return um2::sqrt(squaredDistanceTo(v));
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 min(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 {
   return u.min(v);
 }
 
-template <I D, class T>
+template <Int D, class T>
 PURE HOSTDEV constexpr auto
 max(Vec<D, T> u, Vec<D, T> const & v) noexcept -> Vec<D, T>
 {

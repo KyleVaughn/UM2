@@ -203,10 +203,10 @@ addTimestamp(char * buffer_begin) noexcept -> char *
 {
   if (um2::settings::log::timestamped) {
     Duration const elapsed_seconds = Clock::now() - start_time;
-    I const hours = static_cast<I>(elapsed_seconds.count()) / 3600;
-    I const minutes = (static_cast<I>(elapsed_seconds.count()) / 60) % 60;
-    I const seconds = static_cast<I>(elapsed_seconds.count()) % 60;
-    I const milliseconds = static_cast<I>(elapsed_seconds.count() * 1000) % 1000;
+    Int const hours = static_cast<Int>(elapsed_seconds.count()) / 3600;
+    Int const minutes = (static_cast<Int>(elapsed_seconds.count()) / 60) % 60;
+    Int const seconds = static_cast<Int>(elapsed_seconds.count()) % 60;
+    Int const milliseconds = static_cast<Int>(elapsed_seconds.count() * 1000) % 1000;
     buffer_begin[0] = '[';
     if (hours < 10) {
       buffer_begin[1] = '0';

@@ -18,8 +18,8 @@ namespace um2
 // The weights will all be equal to 1/degree.
 // The angles will be evenly spaced in the range (0, π/2).
 HOSTDEV static void
-setChebyshevAngularQuadrature(I degree, um2::Vector<F> & weights,
-                              um2::Vector<F> & angles) noexcept
+setChebyshevAngularQuadrature(Int degree, um2::Vector<Float> & weights,
+                              um2::Vector<Float> & angles) noexcept
 {
   ASSERT_ASSUME(degree > 0);
   // A Chebyshev-type quadrature for a given weight function is a quadrature formula
@@ -27,14 +27,14 @@ setChebyshevAngularQuadrature(I degree, um2::Vector<F> & weights,
 
   // Weights
   weights.resize(degree);
-  F const wt = static_cast<F>(1) / static_cast<F>(degree);
+  Float const wt = static_cast<Float>(1) / static_cast<Float>(degree);
   um2::fill(weights.begin(), weights.end(), wt);
 
   // Angles
   angles.resize(degree);
-  F const pi_deg = pi_4<F> * wt;
-  for (I i = 0; i < degree; ++i) {
-    angles[i] = pi_deg * static_cast<F>(2 * i + 1);
+  Float const pi_deg = pi_4<Float> * wt;
+  for (Int i = 0; i < degree; ++i) {
+    angles[i] = pi_deg * static_cast<Float>(2 * i + 1);
   }
 }
 
@@ -44,9 +44,9 @@ setChebyshevAngularQuadrature(I degree, um2::Vector<F> & weights,
 
 HOSTDEV
 ProductAngularQuadrature::ProductAngularQuadrature(AngularQuadratureType azi_form,
-                                                   I azi_degree,
+                                                   Int azi_degree,
                                                    AngularQuadratureType pol_form,
-                                                   I pol_degree) noexcept
+                                                   Int pol_degree) noexcept
 {
   ASSERT_ASSUME(azi_degree > 0);
   ASSERT_ASSUME(pol_degree > 0);

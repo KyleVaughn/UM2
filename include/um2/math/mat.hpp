@@ -16,7 +16,7 @@
 namespace um2
 {
 
-template <I M, I N, typename T>
+template <Int M, Int N, typename T>
 class Mat
 {
 
@@ -35,16 +35,16 @@ public:
   //==============================================================================
 
   PURE HOSTDEV constexpr auto
-  col(I i) noexcept -> Col &;
+  col(Int i) noexcept -> Col &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  col(I i) const noexcept -> Col const &;
+  col(Int i) const noexcept -> Col const &;
 
   PURE HOSTDEV constexpr auto
-  operator()(I i, I j) noexcept -> T &;
+  operator()(Int i, Int j) noexcept -> T &;
 
   PURE HOSTDEV constexpr auto
-  operator()(I i, I j) const noexcept -> T const &;
+  operator()(Int i, Int j) const noexcept -> T const &;
 
   //==============================================================================
   // Constructors
@@ -70,27 +70,27 @@ using Mat3x3 = Mat<3, 3, T>;
 // Accessors
 //==============================================================================
 
-template <I M, I N, typename T>
+template <Int M, Int N, typename T>
 PURE HOSTDEV constexpr auto
-Mat<M, N, T>::col(I i) noexcept -> typename Mat<M, N, T>::Col &
+Mat<M, N, T>::col(Int i) noexcept -> typename Mat<M, N, T>::Col &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
   return _cols[i];
 }
 
-template <I M, I N, typename T>
+template <Int M, Int N, typename T>
 PURE HOSTDEV constexpr auto
-Mat<M, N, T>::col(I i) const noexcept -> typename Mat<M, N, T>::Col const &
+Mat<M, N, T>::col(Int i) const noexcept -> typename Mat<M, N, T>::Col const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
   return _cols[i];
 }
 
-template <I M, I N, typename T>
+template <Int M, Int N, typename T>
 PURE HOSTDEV constexpr auto
-Mat<M, N, T>::operator()(I i, I j) noexcept -> T &
+Mat<M, N, T>::operator()(Int i, Int j) noexcept -> T &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(0 <= j);
@@ -99,9 +99,9 @@ Mat<M, N, T>::operator()(I i, I j) noexcept -> T &
   return _cols[j][i];
 }
 
-template <I M, I N, typename T>
+template <Int M, Int N, typename T>
 PURE HOSTDEV constexpr auto
-Mat<M, N, T>::operator()(I i, I j) const noexcept -> T const &
+Mat<M, N, T>::operator()(Int i, Int j) const noexcept -> T const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(0 <= j);
@@ -115,7 +115,7 @@ Mat<M, N, T>::operator()(I i, I j) const noexcept -> T const &
 //==============================================================================
 
 // From a list of columns
-template <I M, I N, typename T>
+template <Int M, Int N, typename T>
 template <std::same_as<Vec<M, T>>... Cols>
 requires(sizeof...(Cols) == N) HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... cols) noexcept
     : _cols{cols...}

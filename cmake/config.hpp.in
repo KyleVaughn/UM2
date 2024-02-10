@@ -1,38 +1,37 @@
 #pragma once
 
-#include <cmath>   // abs
-#include <cstdint> // int32_t, int64_t
-#include <cstdio>  // printf
-#include <cstdlib> // exit
+//==============================================================================
+// CMake defines
+//==============================================================================
 
 // Ignore clang-tidy, since these are CMake defines
 // NOLINTBEGIN(modernize-macro-to-enum)
 
-//==============================================================================
-// CMake defines
-//==============================================================================
+// Use external dependencies
+#cmakedefine01 UM2_USE_CUDA
+#cmakedefine01 UM2_USE_GMSH
+#cmakedefine01 UM2_USE_OPENMP
+#cmakedefine01 UM2_USE_TBB
 
 // Enable/disable features
 #cmakedefine01 UM2_ENABLE_ASSERTS
 #cmakedefine01 UM2_ENABLE_FLOAT64
 #cmakedefine01 UM2_ENABLE_INT64
 
-// Use external dependencies
-#cmakedefine01 UM2_USE_CUDA
-#cmakedefine01 UM2_USE_GMSH
-#cmakedefine01 UM2_USE_OPENMP
-#cmakedefine01 UM2_USE_PNG
-#cmakedefine01 UM2_USE_TBB
-
-// Set compile-time filtering of log messages
+// Minimum log level for compile-time filtering of log messages
 #define MIN_LOG_LEVEL @UM2_MIN_LOG_LEVEL@
 
-// MPACT xslibs path
+// Default path to look for MPACT cross section libraries
 #define MPACT_DATA_DIR "@MPACT_DATA@"
+
+// NOLINTEND(modernize-macro-to-enum)
 
 //==============================================================================
 // Includes
 //==============================================================================
+
+#include <concepts> // std::same_as
+#include <cstdint> // int32_t, int64_t
 
 #if UM2_USE_OPENMP
 #  include <omp.h>
@@ -63,6 +62,7 @@
 // TODO(kcvaughn): Once C++23 is supported, we can use [[assume(expr)]] instead.
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1774r8.pdf
 // https://github.com/KyleVaughn/UM2/issues/142
+// For now, each compiler has its own assume implementation (GCC's being the worst).
 #ifdef ASSUME
 #  error "ASSUME already defined"
 #endif
@@ -111,184 +111,51 @@
 
 // Floating point type
 #if UM2_ENABLE_FLOAT64
-using F = double;
+using Float = double;
 #else
-using F = float;
+using Float = float;
 #endif
 
 // Integer type
 #if UM2_ENABLE_INT64
-using I = int64_t;
+using Int = int64_t;
 HOSTDEV consteval auto
-sizeMax() noexcept -> I
+intMax() noexcept -> Int
 {
-  return 0x7FFFFFFFFFFFFFFF;
+  return INT64_MAX;
 }
 #else
-using I = int32_t;
+using Int = int32_t;
 HOSTDEV consteval auto
-sizeMax() noexcept -> I
+intMax() noexcept -> Int
 {
-  return 0x7FFFFFFF;
+  return INT32_MAX;
 }
 #endif
 
 // Integer type for material IDs.
-using MaterialID = int8_t;
+// We don't expect more than 127 materials, so we use int8_t.
+using MatID = int8_t;
+HOSTDEV consteval auto
+matIDMax() noexcept -> MatID
+{
+  return INT8_MAX;
+}
+
+//==============================================================================
+// Functions
+//==============================================================================
 
 // For static_asserts which are always false.
 template <class... T>
 constexpr bool always_false = false;
 
-//==============================================================================
-// Assertions
-//==============================================================================
-//
-// ASSERT(expr) - Asserts that expr is true.
-//  If UM2_ENABLE_ASSERTS is 0, ASSERT does nothing and expr is not evaluated.
-//
-// ASSERT_NEAR(a, b, eps) - Asserts that a and b are within eps of each other.
-//  If UM2_ENABLE_ASSERTS is 0, ASSERT_NEAR does nothing and a, b, and eps are not
-//  evaluated.
-//
-// ASSERT_ASSUME(expr) - Asserts that expr is true, with varying effects.
-//  If UM2_ENABLE_ASSERTS is 1, this is equivalent to ASSERT(expr).
-//  If UM2_ENABLE_ASSERTS is 0, this is equivalent to ASSUME(expr).
-//
-// NOTE: ASSUME(expr) must be able to be evaluated at compile time. If the
-//  assumption does not hold, the program will be ill-formed.
-
-// Overload abs() for host and device code. Must be defined here for ASSERT_NEAR.
-namespace um2
-{
-
-#ifndef __CUDA_ARCH__
-
-template <typename T>
-CONST HOST constexpr auto
-abs(T x) noexcept -> T
-{
-  return std::abs(x);
-}
-
-#else
-
-template <std::integral T>
-CONST DEVICE constexpr auto
-abs(T x) noexcept -> T
-{
-  return ::abs(x);
-}
-
-CONST DEVICE constexpr auto
-abs(float x) noexcept -> float
-{
-  return ::fabsf(x);
-}
-
-CONST DEVICE constexpr auto
-abs(double x) noexcept -> double
-{
-  return ::fabs(x);
-}
-
-#endif
-
-} // namespace um2
-
-#if !UM2_ENABLE_ASSERTS
-#  define ASSERT(expr)
-#  define ASSERT_NEAR(a, b, eps)
-#  define ASSERT_ASSUME(expr) ASSUME(expr)
-#else
-
-// If we are not using CUDA, assertions can be [[noreturn]].
-namespace um2
-{
-
-# ifndef __CUDA_ARCH__
-
-[[noreturn]] inline void
-failedAssert(char const * const file, int const line, char const * const msg) noexcept
-{
-  printf("Assertion failed: %s:%d: %s\n", file, line, msg);
-  exit(1);
-}
-
-[[noreturn]] inline void
-failedAssertNear(char const * const file, int const line, char const * const a,
-                 char const * const b, char const * const eps) noexcept
-{
-  printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b, eps);
-  exit(1);
-}
-
-# else
-
-DEVICE inline void
-failedAssert(char const * const file, int const line, char const * const msg) noexcept
-{
-  printf("Assertion failed: %s:%d: %s\n", file, line, msg);
-  __threadfence();
-  asm("trap;");
-}
-
-DEVICE inline void
-failedAssertNear(char const * const file, int const line, char const * const a,
-                 char const * const b, char const * const eps) noexcept
-{
-  printf("Assertion failed: %s:%d: Expected %s == %s +/- %s\n", file, line, a, b, eps);
-  __threadfence();
-  asm("trap;");
-}
-
-#  endif
-
-} // namespace um2
-
-#  define ASSERT(cond)                                                                   \
-    if (!(cond)) {                                                                       \
-      um2::failedAssert(__FILE__, __LINE__, #cond);                                      \
-    }
-
-#  define ASSERT_NEAR(a, b, eps)                                                         \
-    {                                                                                    \
-      auto const a_eval = (a);                                                           \
-      auto const b_eval = (b);                                                           \
-      auto const diff = um2::abs(a_eval - b_eval);                                       \
-      if (diff > (eps)) {                                                                \
-        um2::failedAssertNear(__FILE__, __LINE__, #a, #b, #eps);                         \
-      }                                                                                  \
-    }
-
-#define ASSERT_ASSUME(expr) ASSERT(expr)
-
-#endif // UM2_ENABLE_ASSERTS
-
-//==============================================================================
-// CUDA error checking
-//==============================================================================
-
-#if UM2_USE_CUDA && UM2_ENABLE_ASSERTS
-#  define CUDA_CHECK_ERROR(status)                                                       \
-    {                                                                                    \
-      if (status != cudaSuccess) {                                                       \
-        printf("CUDA error: %s:%d: %s\n", __FILE__, __LINE__, cudaGetErrorString(status)); \
-        exit(1);                                                                         \
-      }                                                                                  \
-    }
-#else
-#  define CUDA_CHECK_ERROR(status)
-#endif
-
-//==============================================================================
-// Misc
-//==============================================================================
-
-// Conditionally static_cast depending on if it is needed.
-
+// Conditional cast
+// if To and From are the same type, return x
+// otherwise, return static_cast<To>(x)
+// Should result in no-op for same types
 template <typename To, typename From>
-HOSTDEV constexpr auto
+CONST HOSTDEV constexpr auto
 condCast(From const x) noexcept -> To
 {
   if constexpr (std::same_as<To, From>) {
@@ -298,4 +165,21 @@ condCast(From const x) noexcept -> To
   }
 }
 
-// NOLINTEND(modernize-macro-to-enum)
+////==============================================================================
+//// CUDA error checking
+////==============================================================================
+//
+/*
+///#if UM2_USE_CUDA && UM2_ENABLE_ASSERTS
+///#  define CUDA_CHECK_ERROR(status)                                                       \
+///    {                                                                                    \
+///      if (status != cudaSuccess) {                                                       \
+///        printf("CUDA error: %s:%d: %s\n", __FILE__, __LINE__, cudaGetErrorString(status)); \
+///        exit(1);                                                                         \
+///      }                                                                                  \
+///    }
+///#else
+///#  define CUDA_CHECK_ERROR(status)
+///#endif
+*/
+

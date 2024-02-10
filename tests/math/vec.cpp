@@ -2,34 +2,34 @@
 
 #include "../test_macros.hpp"
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV constexpr auto
 makeVec() -> um2::Vec<D, T>
 {
   um2::Vec<D, T> v;
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     v[i] = static_cast<T>(i + 1);
   }
   return v;
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(accessor)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   if constexpr (std::floating_point<T>) {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
     }
   } else {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       assert(v[i] == static_cast<T>(i + 1));
     }
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_add)
 {
@@ -37,17 +37,17 @@ TEST_CASE(compound_add)
   um2::Vec<D, T> const v2 = makeVec<D, T>();
   v += v2;
   if constexpr (std::floating_point<T>) {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v[i], static_cast<T>(2 * (i + 1)), static_cast<T>(1e-6));
     }
   } else {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       assert(v[i] == static_cast<T>(2 * (i + 1)));
     }
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_sub)
 {
@@ -55,17 +55,17 @@ TEST_CASE(compound_sub)
   um2::Vec<D, T> const v2 = makeVec<D, T>();
   v -= v2;
   if constexpr (std::floating_point<T>) {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v[i], 0, static_cast<T>(1e-6));
     }
   } else {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       assert(v[i] == 0);
     }
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_mul)
 {
@@ -73,17 +73,17 @@ TEST_CASE(compound_mul)
   um2::Vec<D, T> const v2 = makeVec<D, T>();
   v *= v2;
   if constexpr (std::floating_point<T>) {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v[i], static_cast<T>((i + 1) * (i + 1)), static_cast<T>(1e-6));
     }
   } else {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       assert(v[i] == static_cast<T>((i + 1) * (i + 1)));
     }
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_div)
 {
@@ -91,127 +91,127 @@ TEST_CASE(compound_div)
   um2::Vec<D, T> const v2 = makeVec<D, T>();
   v /= v2;
   if constexpr (std::floating_point<T>) {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v[i], 1, static_cast<T>(1e-6));
     }
   } else {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       assert(v[i] == 1);
     }
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_scalar_add)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   v += 2;
   if constexpr (std::floating_point<T>) {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v[i], static_cast<T>(i + 3), static_cast<T>(1e-6));
     }
   } else {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       assert(v[i] == static_cast<T>(i + 3));
     }
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_scalar_sub)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   v -= 2;
   if constexpr (std::floating_point<T>) {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v[i], static_cast<T>(i - 1), static_cast<T>(1e-6));
     }
   } else {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       assert(v[i] == static_cast<T>(i - 1));
     }
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_scalar_mul)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   v *= 2;
   if constexpr (std::floating_point<T>) {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v[i], static_cast<T>(2 * (i + 1)), static_cast<T>(1e-6));
     }
   } else {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       assert(v[i] == static_cast<T>(2 * (i + 1)));
     }
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_scalar_div)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
   v /= 2;
   if constexpr (std::floating_point<T>) {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v[i], static_cast<T>(i + 1) / 2, static_cast<T>(1e-6));
     }
   } else {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       assert(v[i] == static_cast<T>(i + 1) / 2);
     }
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(min)
 {
   um2::Vec<D, T> const v0 = makeVec<D, T>();
   um2::Vec<D, T> v1 = makeVec<D, T>();
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     v1[i] += 1;
   }
   v1.min(v0);
   if constexpr (std::floating_point<T>) {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v1[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
     }
   } else {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       assert(v1[i] == static_cast<T>(i + 1));
     }
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(max)
 {
   um2::Vec<D, T> v0 = makeVec<D, T>();
   um2::Vec<D, T> v1 = makeVec<D, T>();
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     v0[i] += 1;
   }
   v1.max(v0);
   if constexpr (std::floating_point<T>) {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v1[i], static_cast<T>(i + 2), static_cast<T>(1e-6));
     }
   } else {
-    for (I i = 0; i < D; ++i) {
+    for (Int i = 0; i < D; ++i) {
       assert(v1[i] == static_cast<T>(i + 2));
     }
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(dot)
 {
@@ -224,7 +224,7 @@ TEST_CASE(dot)
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(cross)
 {
@@ -243,7 +243,7 @@ TEST_CASE(cross)
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(squaredNorm)
 {
@@ -257,7 +257,7 @@ TEST_CASE(squaredNorm)
   }
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(norm)
 {
@@ -267,7 +267,7 @@ TEST_CASE(norm)
   ASSERT_NEAR(norm, ref, static_cast<T>(1e-6));
 }
 
-template <I D, typename T>
+template <Int D, typename T>
 HOSTDEV
 TEST_CASE(normalize)
 {
@@ -284,60 +284,60 @@ TEST_CASE(normalize)
 //=============================================================================
 
 #if UM2_USE_CUDA
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(accessor, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(unary_minus, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(compound_add, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(compound_sub, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(compound_mul, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(compound_div, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(compound_scalar_add, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(compound_scalar_sub, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(compound_scalar_mul, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(compound_scalar_div, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(min, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(max, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(dot, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(cross, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(squaredNorm, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(norm, D, T);
 
-template <I D, typename T>
+template <Int D, typename T>
 MAKE_CUDA_KERNEL(normalize, D, T);
 
 #endif
 
-template <I D, typename T>
+template <Int D, typename T>
 TEST_SUITE(vec)
 {
   TEST_HOSTDEV(accessor, 1, 1, D, T);
