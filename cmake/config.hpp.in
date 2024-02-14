@@ -26,20 +26,20 @@
 
 // NOLINTEND(modernize-macro-to-enum)
 
-//==============================================================================
-// Includes
-//==============================================================================
-
-#include <concepts> // std::same_as
-#include <cstdint> // int32_t, int64_t
-
-#if UM2_USE_OPENMP
-#  include <omp.h>
-#endif
-
-#if UM2_USE_CUDA
-#  include <cuda_runtime.h>
-#endif
+////==============================================================================
+//// Includes
+////==============================================================================
+//
+//#include <concepts> // std::same_as
+//#include <cstdint> // int32_t, int64_t
+//
+//#if UM2_USE_OPENMP
+//#  include <omp.h>
+//#endif
+//
+//#if UM2_USE_CUDA
+//#  include <cuda_runtime.h>
+//#endif
 
 //==============================================================================
 // Attributes
@@ -105,81 +105,80 @@
 #  define GLOBAL
 #endif
 
-//==============================================================================
-// Typedefs
-//==============================================================================
-
-// Floating point type
-#if UM2_ENABLE_FLOAT64
-using Float = double;
-#else
-using Float = float;
-#endif
-
-// Integer type
-#if UM2_ENABLE_INT64
-using Int = int64_t;
-HOSTDEV consteval auto
-intMax() noexcept -> Int
-{
-  return INT64_MAX;
-}
-#else
-using Int = int32_t;
-HOSTDEV consteval auto
-intMax() noexcept -> Int
-{
-  return INT32_MAX;
-}
-#endif
-
-// Integer type for material IDs.
-// We don't expect more than 127 materials, so we use int8_t.
-using MatID = int8_t;
-HOSTDEV consteval auto
-matIDMax() noexcept -> MatID
-{
-  return INT8_MAX;
-}
-
-//==============================================================================
-// Functions
-//==============================================================================
-
-// For static_asserts which are always false.
-template <class... T>
-constexpr bool always_false = false;
-
-// Conditional cast
-// if To and From are the same type, return x
-// otherwise, return static_cast<To>(x)
-// Should result in no-op for same types
-template <typename To, typename From>
-CONST HOSTDEV constexpr auto
-condCast(From const x) noexcept -> To
-{
-  if constexpr (std::same_as<To, From>) {
-    return x;
-  } else {
-    return static_cast<To>(x);
-  }
-}
-
 ////==============================================================================
-//// CUDA error checking
+//// Typedefs
 ////==============================================================================
 //
+//// Floating point type
+//#if UM2_ENABLE_FLOAT64
+//using Float = double;
+//#else
+//using Float = float;
+//#endif
+//
+//// Integer type
+//#if UM2_ENABLE_INT64
+//using Int = int64_t;
+//HOSTDEV consteval auto
+//intMax() noexcept -> Int
+//{
+//  return INT64_MAX;
+//}
+//#else
+//using Int = int32_t;
+//HOSTDEV consteval auto
+//intMax() noexcept -> Int
+//{
+//  return INT32_MAX;
+//}
+//#endif
+//
+//// Integer type for material IDs.
+//// We don't expect more than 127 materials, so we use int8_t.
+//using MatID = int8_t;
+//HOSTDEV consteval auto
+//matIDMax() noexcept -> MatID
+//{
+//  return INT8_MAX;
+//}
+//
+////==============================================================================
+//// Functions
+////==============================================================================
+//
+//// For static_asserts which are always false.
+//template <class... T>
+//constexpr bool always_false = false;
+//
+//// Conditional cast
+//// if To and From are the same type, return x
+//// otherwise, return static_cast<To>(x)
+//// Should result in no-op for same types
+//template <typename To, typename From>
+//CONST HOSTDEV constexpr auto
+//condCast(From const x) noexcept -> To
+//{
+//  if constexpr (std::same_as<To, From>) {
+//    return x;
+//  } else {
+//    return static_cast<To>(x);
+//  }
+//}
+//
+//////==============================================================================
+////// CUDA error checking
+//////==============================================================================
+////
 /*
-///#if UM2_USE_CUDA && UM2_ENABLE_ASSERTS
-///#  define CUDA_CHECK_ERROR(status)                                                       \
-///    {                                                                                    \
-///      if (status != cudaSuccess) {                                                       \
-///        printf("CUDA error: %s:%d: %s\n", __FILE__, __LINE__, cudaGetErrorString(status)); \
-///        exit(1);                                                                         \
-///      }                                                                                  \
-///    }
-///#else
-///#  define CUDA_CHECK_ERROR(status)
-///#endif
+/////#if UM2_USE_CUDA && UM2_ENABLE_ASSERTS
+/////#  define CUDA_CHECK_ERROR(status)                                                       \
+/////    {                                                                                    \
+/////      if (status != cudaSuccess) {                                                       \
+/////        printf("CUDA error: %s:%d: %s\n", __FILE__, __LINE__, cudaGetErrorString(status)); \
+/////        exit(1);                                                                         \
+/////      }                                                                                  \
+/////    }
+/////#else
+/////#  define CUDA_CHECK_ERROR(status)
+/////#endif
 */
-

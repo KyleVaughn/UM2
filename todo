@@ -1,3 +1,6 @@
+Apache 2.0 license
+variadic template expansion
+
 std::isfinite assumes
 Find the conditional jump that depends on uninitialized value in xsec read
 

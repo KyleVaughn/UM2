@@ -144,10 +144,10 @@ endif()
 # Sources
 set(UM2_SOURCES
     "src/common/settings.cpp"
-    "src/common/log.cpp"
-    "src/common/sort.cpp"
-    "src/math/stats.cpp"
-    "src/math/angular_quadrature.cpp"
+    #"src/common/log.cpp"
+    #"src/common/sort.cpp"
+    #"src/math/stats.cpp"
+    #"src/math/angular_quadrature.cpp"
     #    "src/geometry/morton_sort_points.cpp"
     #    "src/mesh/polytope_soup.cpp"
     #    "src/mesh/face_vertex_mesh.cpp"

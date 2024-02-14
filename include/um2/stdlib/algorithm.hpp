@@ -25,60 +25,14 @@ namespace um2
 {
 
 //==============================================================================
-// clamp
-//==============================================================================
-
-template <class T>
-PURE HOSTDEV constexpr auto
-clamp(T const & v, T const & lo, T const & hi) noexcept -> T const &
-{
-  return v < lo ? lo : (hi < v ? hi : v);
-}
-
-//==============================================================================
-// copy
-//==============================================================================
-// std::copy reduces to a memmove when possible. The mechanism for this is
-// pretty complicated, so I would recommend just using std::copy and settling
-// for a less performant copy on device. If you really need to optimize this,
-// you could overload for pointers to fundamental types.
-
-#ifndef __CUDA_ARCH__
-
-template <class InputIt, class OutputIt>
-HOST constexpr auto
-copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
-{
-  return std::copy(first, last, d_first);
-}
-
-#else
-
-// TODO(kcvaughn): Overload this for cases which reduce to a memmove.
-// https://github.com/KyleVaughn/UM2/issues/141
-
-template <class InputIt, class OutputIt>
-DEVICE constexpr auto
-copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
-{
-  while (first != last) {
-    *d_first = *first;
-    ++first;
-    ++d_first;
-  }
-  return d_first;
-}
-
-#endif
-
-//==============================================================================
 // fill_n
 //==============================================================================
+// Reduces to a memset when possible.
 
-template <class OutputIt, class Size, class T>
+template <class T, class Size>
 HOSTDEV constexpr auto
 // NOLINTNEXTLINE(readability-identifier-naming) match std::fill_n
-fill_n(OutputIt first, Size n, T const & value) noexcept -> OutputIt
+fill_n(T * first, Size n, T const & value) noexcept -> T *
 {
   for (; n > 0; ++first, --n) {
     *first = value;
