@@ -10,7 +10,7 @@
 // that UM2_USE_CUDA, a macro defined in all UM2 files, is defined to check this
 // condition.
 
-#include <um2/stdlib/math.hpp> // um2::abs
+#include <um2/stdlib/math/abs.hpp> // um2::abs
 #ifndef UM2_USE_CUDA
 #  error("test_macros.hpp must be included after any UM2 files since it undefs NDEBUG")
 #endif

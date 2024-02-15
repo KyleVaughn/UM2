@@ -1,0 +1,6 @@
+add_um2_test(./abs.cpp)
+add_um2_test(./exponential_functions.cpp)
+add_um2_test(./inverse_hyperbolic_functions.cpp)
+add_um2_test(./roots.cpp)
+add_um2_test(./rounding_functions.cpp)
+add_um2_test(./trigonometric_functions.cpp)

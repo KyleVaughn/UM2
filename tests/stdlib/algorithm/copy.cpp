@@ -53,6 +53,7 @@ TEST_CASE(copy_nontrivial)
     ASSERT(b[i].b == nullptr);
   }
 }
+MAKE_CUDA_KERNEL(copy_nontrivial)
 
 TEST_SUITE(copy) 
 { 

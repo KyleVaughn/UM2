@@ -20,6 +20,7 @@ requires(std::is_trivially_move_constructible_v<T> &&
 }
 
 template <class T, size_t N>
+HOSTDEV
     constexpr void swap(T (&a)[N], T (&b)[N]) noexcept
 {
   for (size_t i = 0; i < N; ++i)

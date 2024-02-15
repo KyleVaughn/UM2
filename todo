@@ -1,3 +1,11 @@
+numeric, string, vector, sto
+
+allocator
+
+typename to class
+
+log in correct namespace?
+
 Apache 2.0 license
 variadic template expansion
 

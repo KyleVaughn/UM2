@@ -7,7 +7,7 @@ namespace um2
 {
 
 template <class T>
-HOSTDEV [[nodiscard]] inline constexpr auto
+PURE HOSTDEV [[nodiscard]] inline constexpr auto
 clamp(T const & v, T const & lo, T const & hi) noexcept -> T const &
 {
   ASSERT(lo <= hi);

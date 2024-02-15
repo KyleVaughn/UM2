@@ -1,9 +1,11 @@
 #pragma once
 
 #include <um2/config.hpp>
+#include <um2/stdlib/assert.hpp>
 
 #include <cstring> // memmove
 #include <cstdio> // printf
+#include <iterator> // std::iterator_traits
 #include <type_traits>
 
 namespace um2
@@ -34,9 +36,9 @@ struct CanLowerCopyToMemmove
                                 !std::is_volatile_v<From> && !std::is_volatile_v<To>;
 };
 
-template <class T>
+template <class It>
 HOSTDEV constexpr auto
-copyLoop(T * first, T * last, T * d_first) noexcept -> T *
+copyLoop(It first, It last, It d_first) noexcept -> It
 {
   while (first != last) {
     *d_first = *first;
@@ -47,21 +49,19 @@ copyLoop(T * first, T * last, T * d_first) noexcept -> T *
 }
 
 // Reduce to memmove if possible.
-template <class T>
-requires (CanLowerCopyToMemmove<T, T>::value)
+template <class It>
 HOSTDEV constexpr auto
-copy(T * first, T * last, T * d_first) noexcept -> T*
+copy(It first, It last, It d_first) noexcept -> It
 {
-  return static_cast<T*>(std::memmove(d_first, first, 
+  using T = typename std::iterator_traits<It>::value_type;
+  if constexpr (CanLowerCopyToMemmove<T, T>::value) {
+    ASSERT(first <= d_first);
+    ASSERT(last <= d_first);
+    return static_cast<It>(memcpy(d_first, first, 
         static_cast<size_t>(last - first) * sizeof(T)));
-}
-
-template <class T>
-requires (!CanLowerCopyToMemmove<T, T>::value)
-HOSTDEV constexpr auto
-copy(T * first, T * last, T * d_first) noexcept -> T*
-{
-  return copyLoop(first, last, d_first);
+  } else {
+    return copyLoop(first, last, d_first);
+  }
 }
 
 } // namespace um2
