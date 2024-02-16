@@ -11,6 +11,12 @@ TEST_CASE(copy_trivial)
   for (int i = 0; i < 10; ++i) {
     ASSERT(a[i] == b[i]);
   }
+
+  // Overlapping ranges
+  um2::copy(&a[1], &a[1] + 4, &a[0]);
+  for (int i = 0; i < 4; ++i) {
+    ASSERT(a[i] == i + 1);
+  }
 }
 MAKE_CUDA_KERNEL(copy_trivial)
 

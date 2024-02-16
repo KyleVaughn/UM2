@@ -1,11 +1,18 @@
 #pragma once
 
-#include <um2/stdlib/algorithm.hpp> // copy
-#include <um2/stdlib/math.hpp>      // max
-#include <um2/stdlib/memory.hpp>    // addressof
-#include <um2/stdlib/utility.hpp>   // move
 
-#include <initializer_list> // std::initializer_list
+#include <um2/stdlib/algorithm/copy.hpp>
+#include <um2/stdlib/algorithm/max.hpp>
+#include <um2/stdlib/assert.hpp>
+#include <um2/stdlib/memory/addressof.hpp>
+#include <um2/stdlib/memory/construct_at.hpp>
+#include <um2/stdlib/utility/move.hpp>
+
+//#include <um2/stdlib/algorithm.hpp> // copy
+//#include <um2/stdlib/math.hpp>      // max
+//#include <um2/stdlib/utility.hpp>   // move
+//
+//#include <initializer_list> // std::initializer_list
 
 //==============================================================================
 // VECTOR
@@ -15,7 +22,7 @@
 namespace um2
 {
 
-template <typename T>
+template <class T>
 class Vector
 {
 
@@ -35,6 +42,11 @@ class Vector
   HOSTDEV constexpr void
   allocate(Int n) noexcept;
 
+  // Assign from a range [first, last), adjusting the size and capacity as needed
+  template <class InputIt>
+  HOSTDEV constexpr void
+  assign(InputIt first, InputIt last) noexcept;
+
   // Construct n default-initialized elements at the end of the vector
   HOSTDEV constexpr void
   construct_at_end(Int n) noexcept;
@@ -43,27 +55,37 @@ class Vector
   HOSTDEV constexpr void
   construct_at_end(Int n, T const & value) noexcept;
 
-  // Destroy elements at the end of the vector until new_last
-  // Does not change capacity
+  // Construct n elements at the end of the vector, copying from [first, last)
+  // Yes, n is redundant.
+  template <class InputIt>
+  HOSTDEV constexpr void
+  construct_at_end(InputIt first, InputIt last, Int n) noexcept;
+
+  // Destroy the elements and deallocate the buffer
+  HOSTDEV constexpr void
+  deallocate() noexcept;
+
+  // Destroy elements at the end of the vector until new_last.
+  // Does not change capacity.
   // _begin <= new_last <= _end
   HOSTDEV constexpr void
   destruct_at_end(Ptr new_last) noexcept;
 
-  // Grow the capacity of the vector by n elements
-  // Retains the values of the elements already in the vector
-  HOSTDEV constexpr void
-  grow(Int n) noexcept;
-
+//  // Grow the capacity of the vector by n elements
+//  // Retains the values of the elements already in the vector
+//  HOSTDEV constexpr void
+//  grow(Int n) noexcept;
+//
   // Return the recommended capacity for a vector of size new_size.
   // Either double the current capacity or use the new_size if it is larger.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   recommend(Int new_size) const noexcept -> Int;
-
-  // Append n default-initialized elements to the end of the vector
-  // Grows the capacity of the vector if necessary
-  // Retains the values of the elements already in the vector
-  HOSTDEV constexpr void
-  append_default(Int n) noexcept;
+//
+//  // Append n default-initialized elements to the end of the vector
+//  // Grows the capacity of the vector if necessary
+//  // Retains the values of the elements already in the vector
+//  HOSTDEV constexpr void
+//  append_default(Int n) noexcept;
 
 public:
   //==============================================================================
@@ -79,11 +101,11 @@ public:
   HOSTDEV constexpr Vector(Vector const & v) noexcept;
 
   HOSTDEV constexpr Vector(Vector && v) noexcept;
-
-  HOSTDEV constexpr Vector(T const * first, T const * last) noexcept;
-
-  HOSTDEV constexpr Vector(std::initializer_list<T> const & list) noexcept;
-
+//
+//  HOSTDEV constexpr Vector(T const * first, T const * last) noexcept;
+//
+//  HOSTDEV constexpr Vector(std::initializer_list<T> const & list) noexcept;
+//
   //==============================================================================
   // Destructor
   //==============================================================================
@@ -143,56 +165,56 @@ public:
   data() const noexcept -> T const *;
 
   //==============================================================================
-  // Methods
+  // Member functions
   //==============================================================================
 
   HOSTDEV constexpr void
   clear() noexcept;
-
-  HOSTDEV constexpr void
-  resize(Int n) noexcept;
-
-  HOSTDEV constexpr void
-  reserve(Int n) noexcept;
-
-  HOSTDEV constexpr void
-  push_back(T const & value) noexcept;
-
-  HOSTDEV constexpr void
-  push_back(T && value) noexcept;
-
-  HOSTDEV constexpr void
-  push_back(Int n, T const & value) noexcept;
-
-  template <typename... Args>
-  HOSTDEV constexpr void
-  emplace_back(Args &&... args) noexcept;
-
-  HOSTDEV constexpr void
-  pop_back() noexcept;
-
+//
+//  HOSTDEV constexpr void
+//  resize(Int n) noexcept;
+//
+//  HOSTDEV constexpr void
+//  reserve(Int n) noexcept;
+//
+//  HOSTDEV constexpr void
+//  push_back(T const & value) noexcept;
+//
+//  HOSTDEV constexpr void
+//  push_back(T && value) noexcept;
+//
+//  HOSTDEV constexpr void
+//  push_back(Int n, T const & value) noexcept;
+//
+//  template <typename... Args>
+//  HOSTDEV constexpr void
+//  emplace_back(Args &&... args) noexcept;
+//
+//  HOSTDEV constexpr void
+//  pop_back() noexcept;
+//
   //==============================================================================
   // Operators
   //==============================================================================
 
-  PURE HOSTDEV constexpr auto
+  PURE HOSTDEV inline constexpr auto
   operator[](Int i) noexcept -> T &;
 
-  PURE HOSTDEV constexpr auto
+  PURE HOSTDEV inline constexpr auto
   operator[](Int i) const noexcept -> T const &;
 
-  HOSTDEV constexpr auto
+  HOSTDEV inline constexpr auto
   operator=(Vector const & v) noexcept -> Vector &;
 
-  HOSTDEV constexpr auto
+  HOSTDEV inline constexpr auto
   operator=(Vector && v) noexcept -> Vector &;
-
-  HOSTDEV constexpr auto
-  operator=(std::initializer_list<T> const & list) noexcept -> Vector &;
-
-  PURE constexpr auto
-  operator==(Vector const & v) const noexcept -> bool;
-
+//
+//  HOSTDEV constexpr auto
+//  operator=(std::initializer_list<T> const & list) noexcept -> Vector &;
+//
+//  PURE constexpr auto
+//  operator==(Vector const & v) const noexcept -> bool;
+//
   // NOLINTEND(readability-identifier-naming)
 }; // class Vector
 
@@ -211,11 +233,35 @@ template <class T>
 HOSTDEV constexpr void
 Vector<T>::allocate(Int n) noexcept
 {
+  ASSERT(0 < n);
   ASSERT(n < max_size());
   ASSERT(_begin == nullptr);
   _begin = static_cast<T *>(::operator new(static_cast<size_t>(n) * sizeof(T)));
   _end = _begin;
   _end_cap = _begin + n;
+}
+
+// Assign from a range [first, last), adjusting the size and capacity as needed
+template <class T>
+template <class InputIt>
+HOSTDEV constexpr void
+Vector<T>::assign(InputIt first, InputIt last) noexcept
+{
+  Int const new_size = static_cast<Int>(last - first);
+  if (new_size <= capacity()) {
+    if (new_size > size()) {
+      InputIt mid = first + size();
+      um2::copy(first, mid, _begin);
+      construct_at_end(mid, last, new_size - size());
+    } else {
+      InputIt m = um2::copy(first, last, _begin); 
+      destruct_at_end(m);
+    }
+  } else {
+    this->deallocate();
+    allocate(recommend(new_size));
+    construct_at_end(first, last, new_size);
+  }
 }
 
 // Construct n default-initialized elements at the end of the vector
@@ -224,10 +270,9 @@ HOSTDEV constexpr void
 Vector<T>::construct_at_end(Int n) noexcept
 {
   Ptr new_end = _end + n;
-  for (Ptr pos = _end; pos != new_end; ++pos) {
-    um2::construct_at(pos);
+  for (; _end != new_end; ++_end) {
+    um2::construct_at(_end);
   }
-  _end = new_end;
 }
 
 // Construct n elements with value at the end of the vector
@@ -236,10 +281,36 @@ HOSTDEV constexpr void
 Vector<T>::construct_at_end(Int n, T const & value) noexcept
 {
   Ptr new_end = _end + n;
-  for (Ptr pos = _end; pos != new_end; ++pos) {
-    um2::construct_at(pos, value);
+  for (; _end != new_end; ++_end) {
+    um2::construct_at(_end, value);
   }
-  _end = new_end;
+}
+
+// Construct n elements at the end of the vector, copying from [first, last)
+template <class T>
+template <class InputIt>
+HOSTDEV constexpr void
+Vector<T>::construct_at_end(InputIt first, InputIt last, Int n) noexcept
+{
+  ASSERT(n >= 0);
+  ASSERT(n == static_cast<Int>(last - first));
+  for (; first != last; ++_end, ++first) {
+    um2::construct_at(_end, *first);
+  }
+}
+
+// Destroy the elements and deallocate the buffer
+template <class T>
+HOSTDEV constexpr void
+Vector<T>::deallocate() noexcept
+{
+  if (_begin != nullptr) {
+    clear();
+    ::operator delete(_begin);
+    _begin = nullptr;
+    _end = nullptr;
+    _end_cap = nullptr;
+  }
 }
 
 // Destroy elements at the end of the vector until new_last
@@ -263,45 +334,45 @@ Vector<T>::recommend(Int new_size) const noexcept -> Int
   return um2::max(2 * capacity(), new_size);
 }
 
-// Grow the vector by n elements
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::grow(Int n) noexcept
-{
-  ASSERT_ASSUME(n > 0);
-  Int const current_size = size();
-  Int const new_size = current_size + n;
-  Int const new_capacity = recommend(new_size);
-  Ptr new_begin =
-      static_cast<T *>(::operator new(static_cast<size_t>(new_capacity) * sizeof(T)));
-  Ptr new_end = new_begin;
-  // Move each old element to the new buffer
-  for (Ptr old_pos = _begin; old_pos != _end; ++old_pos, ++new_end) {
-    um2::construct_at(new_end, um2::move(*old_pos));
-  }
-  // Destroy the old elements
-  destruct_at_end(_begin);
-  // Update the pointers
-  delete _begin;
-  _begin = new_begin;
-  _end = new_end;
-  _end_cap = _begin + new_capacity;
-}
-
-// Append n default-initialized elements to the end of the vector
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::append_default(Int n) noexcept
-{
-  // If we have enough capacity, just construct the new elements
-  // Otherwise, allocate a new buffer and move the elements over
-  if (static_cast<Int>(_end_cap - _end) < n) {
-    grow(n);
-  }
-  // Construct the new elements
-  construct_at_end(n);
-}
-
+//// Grow the vector by n elements
+//template <class T>
+//HOSTDEV constexpr void
+//Vector<T>::grow(Int n) noexcept
+//{
+//  ASSERT_ASSUME(n > 0);
+//  Int const current_size = size();
+//  Int const new_size = current_size + n;
+//  Int const new_capacity = recommend(new_size);
+//  Ptr new_begin =
+//      static_cast<T *>(::operator new(static_cast<size_t>(new_capacity) * sizeof(T)));
+//  Ptr new_end = new_begin;
+//  // Move each old element to the new buffer
+//  for (Ptr old_pos = _begin; old_pos != _end; ++old_pos, ++new_end) {
+//    um2::construct_at(new_end, um2::move(*old_pos));
+//  }
+//  // Destroy the old elements
+//  destruct_at_end(_begin);
+//  // Update the pointers
+//  delete _begin;
+//  _begin = new_begin;
+//  _end = new_end;
+//  _end_cap = _begin + new_capacity;
+//}
+//
+//// Append n default-initialized elements to the end of the vector
+//template <class T>
+//HOSTDEV constexpr void
+//Vector<T>::append_default(Int n) noexcept
+//{
+//  // If we have enough capacity, just construct the new elements
+//  // Otherwise, this->allocate a new buffer and move the elements over
+//  if (static_cast<Int>(_end_cap - _end) < n) {
+//    grow(n);
+//  }
+//  // Construct the new elements
+//  construct_at_end(n);
+//}
+//
 //==============================================================================
 // Constructors
 //==============================================================================
@@ -310,7 +381,7 @@ Vector<T>::append_default(Int n) noexcept
 template <class T>
 HOSTDEV constexpr Vector<T>::Vector(Int const n) noexcept
 {
-  allocate(n);
+  this->allocate(n);
   construct_at_end(n);
 }
 
@@ -318,7 +389,7 @@ HOSTDEV constexpr Vector<T>::Vector(Int const n) noexcept
 template <class T>
 HOSTDEV constexpr Vector<T>::Vector(Int const n, T const & value) noexcept
 {
-  allocate(n);
+  this->allocate(n);
   construct_at_end(n, value);
 }
 
@@ -327,9 +398,9 @@ template <class T>
 HOSTDEV constexpr Vector<T>::Vector(Vector<T> const & v) noexcept
 {
   Int const n = v.size();
-  allocate(n);
+  this->allocate(n);
   construct_at_end(n);
-  copy(v._begin, v._end, _begin);
+  um2::copy(v._begin, v._end, _begin);
 }
 
 // Move construct from a vector
@@ -343,27 +414,27 @@ HOSTDEV constexpr Vector<T>::Vector(Vector<T> && v) noexcept
   v._end = nullptr;
   v._end_cap = nullptr;
 }
-
-template <class T>
-HOSTDEV constexpr Vector<T>::Vector(T const * first, T const * last) noexcept
-{
-  Int const n = static_cast<Int>(last - first);
-  allocate(n);
-  construct_at_end(n);
-  copy(first, last, _begin);
-}
-
-// Construct from an initializer list
-template <class T>
-HOSTDEV constexpr Vector<T>::Vector(std::initializer_list<T> const & list) noexcept
-{
-  // Initializer lists can't be moved from, so we have to copy.
-  Int const n = static_cast<Int>(list.size());
-  allocate(n);
-  construct_at_end(n);
-  copy(list.begin(), list.end(), _begin);
-}
-
+//
+//template <class T>
+//HOSTDEV constexpr Vector<T>::Vector(T const * first, T const * last) noexcept
+//{
+//  Int const n = static_cast<Int>(last - first);
+//  this->allocate(n);
+//  construct_at_end(n);
+//  copy(first, last, _begin);
+//}
+//
+//// Construct from an initializer list
+//template <class T>
+//HOSTDEV constexpr Vector<T>::Vector(std::initializer_list<T> const & list) noexcept
+//{
+//  // Initializer lists can't be moved from, so we have to copy.
+//  Int const n = static_cast<Int>(list.size());
+//  this->allocate(n);
+//  construct_at_end(n);
+//  copy(list.begin(), list.end(), _begin);
+//}
+//
 //==============================================================================-
 // Destructor
 //==============================================================================-
@@ -373,7 +444,7 @@ HOSTDEV constexpr Vector<T>::~Vector() noexcept
 {
   // If the vector is not empty, destroy the elements and deallocate the buffer
   if (_begin != nullptr) {
-    this->destruct_at_end(_begin);
+    clear();
     ::operator delete(_begin);
   }
 }
@@ -443,14 +514,14 @@ template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vector<T>::cbegin() const noexcept -> T const *
 {
-  return begin();
+  return _begin; 
 }
 
 template <class T>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 Vector<T>::cend() const noexcept -> T const *
 {
-  return end();
+  return _end;
 }
 
 template <class T>
@@ -502,7 +573,7 @@ Vector<T>::data() const noexcept -> T const *
 //==============================================================================-
 
 template <class T>
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline constexpr auto
 Vector<T>::operator[](Int const i) noexcept -> T &
 {
   ASSERT_ASSUME(0 <= i);
@@ -511,7 +582,7 @@ Vector<T>::operator[](Int const i) noexcept -> T &
 }
 
 template <class T>
-PURE HOSTDEV constexpr auto
+PURE HOSTDEV inline constexpr auto
 Vector<T>::operator[](Int const i) const noexcept -> T const &
 {
   ASSERT_ASSUME(0 <= i);
@@ -520,30 +591,21 @@ Vector<T>::operator[](Int const i) const noexcept -> T const &
 }
 
 template <class T>
-HOSTDEV constexpr auto
+HOSTDEV inline constexpr auto
 Vector<T>::operator=(Vector<T> const & v) noexcept -> Vector<T> &
 {
   if (this != addressof(v)) {
-    // If the vector is not empty, destroy the elements and deallocate the buffer
-    destruct_at_end(_begin);
-    ::operator delete(_begin);
-    // Allocate a new buffer and copy the elements
-    _begin = nullptr;
-    allocate(v.size());
-    construct_at_end(v.size());
-    copy(v.begin(), v.end(), _begin);
+    assign(v._begin, v._end);
   }
   return *this;
 }
 
 template <class T>
-HOSTDEV constexpr auto
+HOSTDEV inline constexpr auto
 Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
 {
   if (this != addressof(v)) {
-    // If the vector is not empty, destroy the elements and deallocate the buffer
-    destruct_at_end(_begin);
-    ::operator delete(_begin);
+    deallocate();
     // Move the buffer from v
     _begin = v._begin;
     _end = v._end;
@@ -555,118 +617,118 @@ Vector<T>::operator=(Vector<T> && v) noexcept -> Vector<T> &
   return *this;
 }
 
-template <class T>
-HOSTDEV constexpr auto
-Vector<T>::operator=(std::initializer_list<T> const & list) noexcept -> Vector &
-{
-  // If the vector is not empty, destroy the elements and deallocate the buffer
-  destruct_at_end(_begin);
-  ::operator delete(_begin);
-  // Allocate a new buffer and copy the elements
-  _begin = nullptr;
-  allocate(static_cast<Int>(list.size()));
-  construct_at_end(static_cast<Int>(list.size()));
-  copy(list.begin(), list.end(), _begin);
-  return *this;
-}
-
-template <class T>
-PURE constexpr auto
-Vector<T>::operator==(Vector<T> const & v) const noexcept -> bool
-{
-  return size() == v.size() && std::equal(begin(), end(), v.begin());
-}
-
+//template <class T>
+//HOSTDEV constexpr auto
+//Vector<T>::operator=(std::initializer_list<T> const & list) noexcept -> Vector &
+//{
+//  // If the vector is not empty, destroy the elements and deallocate the buffer
+//  destruct_at_end(_begin);
+//  ::operator delete(_begin);
+//  // Allocate a new buffer and copy the elements
+//  _begin = nullptr;
+//  this->allocate(static_cast<Int>(list.size()));
+//  construct_at_end(static_cast<Int>(list.size()));
+//  copy(list.begin(), list.end(), _begin);
+//  return *this;
+//}
+//
+//template <class T>
+//PURE constexpr auto
+//Vector<T>::operator==(Vector<T> const & v) const noexcept -> bool
+//{
+//  return size() == v.size() && std::equal(begin(), end(), v.begin());
+//}
+//
 //==============================================================================
-// Methods
+// Member functions 
 //==============================================================================
 
+// Does not change capacity
 template <class T>
 HOSTDEV constexpr void
 Vector<T>::clear() noexcept
 {
-  um2::destroy(_begin, _end);
-  _end = _begin;
+  destruct_at_end(_begin);
 }
 
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::resize(Int const n) noexcept
-{
-  Int const cs = size();
-  // If we are shrinking, destroy the elements that are no longer needed
-  // If we are growing, default construct the new elements
-  if (cs < n) {
-    append_default(n - cs);
-  } else if (cs > n) {
-    destruct_at_end(_begin + n);
-  }
-}
-
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::reserve(Int const n) noexcept
-{
-  // If we have enough capacity, do nothing.
-  // Otherwise, allocate a new buffer and move the elements over
-  if (n > capacity()) {
-    grow(n - size());
-  }
-}
-
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::push_back(T const & value) noexcept
-{
-  if (_end == _end_cap) {
-    grow(1);
-  }
-  construct_at(_end, value);
-  ++_end;
-}
-
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::push_back(T && value) noexcept
-{
-  if (_end == _end_cap) {
-    grow(1);
-  }
-  um2::construct_at(_end, um2::move(value));
-  ++_end;
-}
-
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::push_back(Int const n, T const & value) noexcept
-{
-  // If we have enough capacity, just construct the new elements
-  // Otherwise, allocate a new buffer and move the elements over
-  if (static_cast<Int>(_end_cap - _end) < n) {
-    grow(n);
-  }
-  // Construct the new elements
-  construct_at_end(n, value);
-}
-
-template <class T>
-template <class... Args>
-HOSTDEV constexpr void
-Vector<T>::emplace_back(Args &&... args) noexcept
-{
-  if (_end == _end_cap) {
-    grow(1);
-  }
-  um2::construct_at(_end, um2::forward<Args>(args)...);
-  ++_end;
-}
-
-template <class T>
-HOSTDEV constexpr void
-Vector<T>::pop_back() noexcept
-{
-  ASSERT(size() > 0);
-  um2::destroy_at(--_end);
-}
+//template <class T>
+//HOSTDEV constexpr void
+//Vector<T>::resize(Int const n) noexcept
+//{
+//  Int const cs = size();
+//  // If we are shrinking, destroy the elements that are no longer needed
+//  // If we are growing, default construct the new elements
+//  if (cs < n) {
+//    append_default(n - cs);
+//  } else if (cs > n) {
+//    destruct_at_end(_begin + n);
+//  }
+//}
+//
+//template <class T>
+//HOSTDEV constexpr void
+//Vector<T>::reserve(Int const n) noexcept
+//{
+//  // If we have enough capacity, do nothing.
+//  // Otherwise, this->allocate a new buffer and move the elements over
+//  if (n > capacity()) {
+//    grow(n - size());
+//  }
+//}
+//
+//template <class T>
+//HOSTDEV constexpr void
+//Vector<T>::push_back(T const & value) noexcept
+//{
+//  if (_end == _end_cap) {
+//    grow(1);
+//  }
+//  construct_at(_end, value);
+//  ++_end;
+//}
+//
+//template <class T>
+//HOSTDEV constexpr void
+//Vector<T>::push_back(T && value) noexcept
+//{
+//  if (_end == _end_cap) {
+//    grow(1);
+//  }
+//  um2::construct_at(_end, um2::move(value));
+//  ++_end;
+//}
+//
+//template <class T>
+//HOSTDEV constexpr void
+//Vector<T>::push_back(Int const n, T const & value) noexcept
+//{
+//  // If we have enough capacity, just construct the new elements
+//  // Otherwise, this->allocate a new buffer and move the elements over
+//  if (static_cast<Int>(_end_cap - _end) < n) {
+//    grow(n);
+//  }
+//  // Construct the new elements
+//  construct_at_end(n, value);
+//}
+//
+//template <class T>
+//template <class... Args>
+//HOSTDEV constexpr void
+//Vector<T>::emplace_back(Args &&... args) noexcept
+//{
+//  if (_end == _end_cap) {
+//    grow(1);
+//  }
+//  um2::construct_at(_end, um2::forward<Args>(args)...);
+//  ++_end;
+//}
+//
+//template <class T>
+//HOSTDEV constexpr void
+//Vector<T>::pop_back() noexcept
+//{
+//  ASSERT(size() > 0);
+//  um2::destroy_at(--_end);
+//}
 
 } // namespace um2

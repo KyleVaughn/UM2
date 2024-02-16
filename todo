@@ -1,4 +1,7 @@
-numeric, string, vector, sto
+variadic template expression for test macros.
+Just assume 1 thread 1 block only and that they will write themselves otherwise
+
+string, vector, sto
 
 allocator
 

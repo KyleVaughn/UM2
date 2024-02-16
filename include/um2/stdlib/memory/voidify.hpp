@@ -6,7 +6,7 @@ namespace um2
 {
 
 template <class T>
-HOSTDEV inline constexpr auto
+HOSTDEV __attribute__((always_inline)) constexpr auto
 voidify(T & from) noexcept -> void *
 {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)

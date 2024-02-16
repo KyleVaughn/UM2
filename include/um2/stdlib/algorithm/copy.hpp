@@ -36,6 +36,7 @@ struct CanLowerCopyToMemmove
                                 !std::is_volatile_v<From> && !std::is_volatile_v<To>;
 };
 
+// Ranges may overlap
 template <class It>
 HOSTDEV constexpr auto
 copyLoop(It first, It last, It d_first) noexcept -> It
@@ -48,33 +49,32 @@ copyLoop(It first, It last, It d_first) noexcept -> It
   return d_first;
 }
 
-// This should technically be allowed to reduce to memmove, but we impose an additional 
-// restriction that the destination range must not overlap with the source range when
-// the memmove optimization is used. This allows us to reduce further to a memcpy.
-//
-// The memcpy should be slightly faster than memmove, but the main reason we use the memcpy
-// is simply because memmove is not allowed in CUDA device code. 
-//
-// If this implementation causes issues, we can always write our own memmove implementation
-// (it's very simple) and use that instead.
+// memmove does not exist on the device, so we just use the copy loop.
+
+#ifndef __CUDA_ARCH__
+
 template <class It>
-HOSTDEV constexpr auto
+HOST constexpr auto
 copy(It first, It last, It d_first) noexcept -> It
 {
   using T = typename std::iterator_traits<It>::value_type;
   if constexpr (CanLowerCopyToMemmove<T, T>::value) {
-    // Ensure that the destination range is not within the source range.
-    // first -------- last
-    //       d_first -------- d_last
-    ASSERT(!(d_first >= first && d_first < last));
-    //        first -------- last
-    // d_first -------- d_last
-    ASSERT(!(first >= d_first && first < d_first + (last - first)));
-    return static_cast<It>(memcpy(d_first, first, 
-        static_cast<size_t>(last - first) * sizeof(T)));
+    auto const n = static_cast<size_t>(last - first);
+    return static_cast<It>(std::memmove(d_first, first, n * sizeof(T))) + n;
   } else {
     return copyLoop(first, last, d_first);
   }
 }
+
+#else
+
+template <class It>
+DEVICE constexpr auto
+copy(It first, It last, It d_first) noexcept -> It
+{
+  return copyLoop(first, last, d_first);
+}
+
+#endif
 
 } // namespace um2
