@@ -140,22 +140,22 @@ TEST_CASE(move_constructor)
 #endif
 }
 
-//template <class T>
-//HOSTDEV
-//TEST_CASE(constructor_initializer_list)
-//{
-//  um2::Vector<T> v{1, 2, 3, 4, 5};
-//  ASSERT(v.size() == 5);
-//  ASSERT(v.capacity() == 5);
-//  for (int i = 0; i < 5; ++i) {
-//    if constexpr (std::floating_point<T>) {
-//      ASSERT_NEAR(v[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
-//    } else {
-//      ASSERT(v[i] == static_cast<T>(i + 1));
-//    }
-//  }
-//}
-//
+template <class T>
+HOSTDEV
+TEST_CASE(constructor_initializer_list)
+{
+  um2::Vector<T> v{1, 2, 3, 4, 5};
+  ASSERT(v.size() == 5);
+  ASSERT(v.capacity() == 5);
+  for (int i = 0; i < 5; ++i) {
+    if constexpr (std::floating_point<T>) {
+      ASSERT_NEAR(v[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
+    } else {
+      ASSERT(v[i] == static_cast<T>(i + 1));
+    }
+  }
+}
+
 //==============================================================================
 // Operators
 //==============================================================================
@@ -244,163 +244,277 @@ TEST_CASE(operator_move)
 #endif
 }
 
-////==============================================================================--
-//// Methods
-////==============================================================================--
-//
-//// NOLINTBEGIN; justification: Just a quick test struct
-//#ifndef __CUDA_ARCH__
-//int count = 0;
-//#else
-//DEVICE int count = 0;
-//#endif
-//struct Counted {
-//  HOSTDEV
-//  Counted() { ++count; }
-//  HOSTDEV
-//  Counted(Counted const &) { ++count; }
-//  HOSTDEV ~Counted() { --count; }
-//  HOSTDEV friend void operator&(Counted) = delete;
-//};
-//// NOLINTEND
-//
-//HOSTDEV
-//TEST_CASE(clear)
-//{
-//  count = 0;
-//  um2::Vector<Counted> v(10);
-//  ASSERT(count == 10);
-//  v.clear();
-//  ASSERT(count == 0);
-//  ASSERT(v.empty());
-//  ASSERT(v.capacity() == 10);
-//}
-//
-//template <class T>
-//HOSTDEV
-//TEST_CASE(resize)
-//{
-//  um2::Vector<T> v;
-//  v.resize(0);
-//  ASSERT(v.empty());
-//  ASSERT(v.capacity() == 0);
-//  ASSERT(v.data() == nullptr);
-//  v.resize(1);
-//  ASSERT(v.size() == 1);
-//  ASSERT(v.capacity() == 1);
-//  ASSERT(v.data() != nullptr);
-//  v.resize(2);
-//  ASSERT(v.size() == 2);
-//  ASSERT(v.capacity() == 2);
-//  ASSERT(v.data() != nullptr);
-//}
-//
-//template <class T>
-//HOSTDEV
-//TEST_CASE(reserve)
-//{
-//
-//  um2::Vector<T> v;
-//  v.reserve(1);
-//  ASSERT(v.empty());
-//  ASSERT(v.capacity() == 1);
-//  ASSERT(v.data() != nullptr);
-//  v.reserve(2);
-//  v.push_back(static_cast<T>(1));
-//  ASSERT(v.size() == 1);
-//  ASSERT(v.capacity() == 2);
-//  ASSERT(v.data() != nullptr);
-//  v.reserve(5);
-//  v.push_back(static_cast<T>(1));
-//  ASSERT(v.size() == 2);
-//  ASSERT(v.capacity() == 5);
-//  ASSERT(v.data() != nullptr);
-//  v.reserve(7);
-//  ASSERT(v.size() == 2);
-//  ASSERT(v.capacity() == 10);
-//  if constexpr (std::floating_point<T>) {
-//    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
-//  } else {
-//    ASSERT(v.data()[0] == static_cast<T>(1));
-//  }
-//}
-//
-//template <class T>
-//HOSTDEV
-//TEST_CASE(push_back)
-//{
-//  um2::Vector<T> v;
-//  v.push_back(1);
-//  ASSERT(v.size() == 1);
-//  ASSERT(v.capacity() == 1);
-//  if constexpr (std::floating_point<T>) {
-//    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
-//  } else {
-//    ASSERT(v.data()[0] == static_cast<T>(1));
-//  }
-//  v.push_back(2);
-//  ASSERT(v.size() == 2);
-//  ASSERT(v.capacity() == 2);
-//  if constexpr (std::floating_point<T>) {
-//    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
-//    ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
-//  } else {
-//    ASSERT(v.data()[0] == static_cast<T>(1));
-//    ASSERT(v.data()[1] == static_cast<T>(2));
-//  }
-//  v.push_back(3);
-//  ASSERT(v.size() == 3);
-//  ASSERT(v.capacity() == 4);
-//  if constexpr (std::floating_point<T>) {
-//    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
-//    ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
-//    ASSERT_NEAR(v.data()[2], static_cast<T>(3), static_cast<T>(1e-6));
-//  } else {
-//    ASSERT(v.data()[0] == static_cast<T>(1));
-//    ASSERT(v.data()[1] == static_cast<T>(2));
-//    ASSERT(v.data()[2] == static_cast<T>(3));
-//  }
-//  v.clear();
-//  v.push_back(1);
-//  v.push_back(2);
-//  v.push_back(3);
-//  v.push_back(4);
-//  v.push_back(5);
-//  ASSERT(v.size() == 5);
-//  ASSERT(v.capacity() == 8);
-//  if constexpr (std::floating_point<T>) {
-//    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
-//    ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
-//    ASSERT_NEAR(v.data()[2], static_cast<T>(3), static_cast<T>(1e-6));
-//    ASSERT_NEAR(v.data()[3], static_cast<T>(4), static_cast<T>(1e-6));
-//    ASSERT_NEAR(v.data()[4], static_cast<T>(5), static_cast<T>(1e-6));
-//  } else {
-//    ASSERT(v.data()[0] == static_cast<T>(1));
-//    ASSERT(v.data()[1] == static_cast<T>(2));
-//    ASSERT(v.data()[2] == static_cast<T>(3));
-//    ASSERT(v.data()[3] == static_cast<T>(4));
-//    ASSERT(v.data()[4] == static_cast<T>(5));
-//  }
-//}
-//
-//template <class T>
-//HOSTDEV
-//TEST_CASE(push_back_rval_ref)
-//{
-//  um2::Vector<T> l_value_vector;
-//  l_value_vector.push_back(static_cast<T>(1));
-//  l_value_vector.push_back(static_cast<T>(2));
-//  um2::Vector<um2::Vector<T>> my_vector;
-//  my_vector.push_back(std::move(l_value_vector));
-//  ASSERT(my_vector.size() == 1);
-//  ASSERT(my_vector.capacity() == 1);
-//  if constexpr (std::floating_point<T>) {
-//    ASSERT_NEAR(my_vector.data()[0].data()[0], static_cast<T>(1), static_cast<T>(1e-6));
-//  } else {
-//    ASSERT(my_vector.data()[0].data()[0] == static_cast<T>(1));
-//  }
-//}
-//
+template <class T>
+HOSTDEV
+TEST_CASE(operator_initializer_list)
+{
+  um2::Vector<T> v = {1, 2, 3, 4, 5};
+  ASSERT(v.size() == 5);
+  ASSERT(v.capacity() == 5);
+  for (int i = 0; i < 5; ++i) {
+    if constexpr (std::floating_point<T>) {
+      ASSERT_NEAR(v[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
+    } else {
+      ASSERT(v[i] == static_cast<T>(i + 1));
+    }
+  }
+}
+
+//==============================================================================--
+// Functions 
+//==============================================================================--
+
+// NOLINTBEGIN; justification: Just a quick test struct
+#ifndef __CUDA_ARCH__
+int count = 0;
+#else
+DEVICE int count = 0;
+#endif
+struct Counted {
+  HOSTDEV
+  Counted() { ++count; }
+  HOSTDEV
+  Counted(Counted const &) { ++count; }
+  HOSTDEV ~Counted() { --count; }
+  HOSTDEV friend void operator&(Counted) = delete;
+};
+// NOLINTEND
+
+HOSTDEV
+TEST_CASE(clear)
+{
+  count = 0;
+  um2::Vector<Counted> v(10);
+  ASSERT(count == 10);
+  v.clear();
+  ASSERT(count == 0);
+  ASSERT(v.empty());
+  ASSERT(v.capacity() == 10);
+}
+
+template <class T>
+HOSTDEV
+TEST_CASE(resize)
+{
+  um2::Vector<T> v;
+  v.resize(0);
+  ASSERT(v.empty());
+  ASSERT(v.capacity() == 0);
+  ASSERT(v.data() == nullptr);
+  v.resize(1);
+  ASSERT(v.size() == 1);
+  ASSERT(v.capacity() == 1);
+  ASSERT(v.data() != nullptr);
+  v.resize(2);
+  ASSERT(v.size() == 2);
+  ASSERT(v.capacity() == 2);
+  ASSERT(v.data() != nullptr);
+
+#if CHECK_STD_VECTOR
+  std::vector<T> stdv;
+  stdv.resize(0);
+  ASSERT(stdv.empty());
+  ASSERT(stdv.capacity() == 0);
+  stdv.resize(1);
+  ASSERT(stdv.size() == 1);
+  ASSERT(stdv.capacity() == 1);
+  stdv.resize(2);
+  ASSERT(stdv.size() == 2);
+  ASSERT(stdv.capacity() == 2);
+#endif
+}
+
+template <class T>
+HOSTDEV
+TEST_CASE(reserve)
+{
+
+  um2::Vector<T> v;
+  v.reserve(1);
+  ASSERT(v.empty());
+  ASSERT(v.capacity() == 1);
+  ASSERT(v.data() != nullptr);
+  v.reserve(2);
+  v.push_back(static_cast<T>(1));
+  ASSERT(v.size() == 1);
+  ASSERT(v.capacity() == 2);
+  ASSERT(v.data() != nullptr);
+  v.reserve(5);
+  v.push_back(static_cast<T>(1));
+  ASSERT(v.size() == 2);
+  ASSERT(v.capacity() == 5);
+  ASSERT(v.data() != nullptr);
+  v.reserve(7);
+  ASSERT(v.size() == 2);
+  ASSERT(v.capacity() == 7);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(v[0], static_cast<T>(1), static_cast<T>(1e-6));
+    ASSERT_NEAR(v[1], static_cast<T>(1), static_cast<T>(1e-6));
+  } else {
+    ASSERT(v[0] == static_cast<T>(1));
+    ASSERT(v[1] == static_cast<T>(1));
+  }
+
+#if CHECK_STD_VECTOR
+  std::vector<T> stdv;
+  stdv.reserve(1);
+  ASSERT(stdv.empty());
+  ASSERT(stdv.capacity() == 1);
+  stdv.reserve(2);
+  stdv.push_back(static_cast<T>(1));
+  ASSERT(stdv.size() == 1);
+  ASSERT(stdv.capacity() == 2);
+  stdv.reserve(5);
+  stdv.push_back(static_cast<T>(1));
+  ASSERT(stdv.size() == 2);
+  ASSERT(stdv.capacity() == 5);
+  stdv.reserve(7);
+  ASSERT(stdv.size() == 2);
+  ASSERT(stdv.capacity() == 7);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(stdv[0], static_cast<T>(1), static_cast<T>(1e-6));
+    ASSERT_NEAR(stdv[1], static_cast<T>(1), static_cast<T>(1e-6));
+  } else {
+    ASSERT(stdv[0] == static_cast<T>(1));
+    ASSERT(stdv[1] == static_cast<T>(1));
+  }
+#endif
+}
+
+template <class T>
+HOSTDEV
+TEST_CASE(push_back)
+{
+  um2::Vector<T> v;
+  v.push_back(1);
+  ASSERT(v.size() == 1);
+  ASSERT(v.capacity() == 1);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
+  } else {
+    ASSERT(v.data()[0] == static_cast<T>(1));
+  }
+  v.push_back(2);
+  ASSERT(v.size() == 2);
+  ASSERT(v.capacity() == 2);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
+  } else {
+    ASSERT(v.data()[0] == static_cast<T>(1));
+    ASSERT(v.data()[1] == static_cast<T>(2));
+  }
+  v.push_back(3);
+  ASSERT(v.size() == 3);
+  ASSERT(v.capacity() == 4);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[2], static_cast<T>(3), static_cast<T>(1e-6));
+  } else {
+    ASSERT(v.data()[0] == static_cast<T>(1));
+    ASSERT(v.data()[1] == static_cast<T>(2));
+    ASSERT(v.data()[2] == static_cast<T>(3));
+  }
+  v.clear();
+  v.push_back(1);
+  v.push_back(2);
+  v.push_back(3);
+  v.push_back(4);
+  v.push_back(5);
+  ASSERT(v.size() == 5);
+  ASSERT(v.capacity() == 8);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(v.data()[0], static_cast<T>(1), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[1], static_cast<T>(2), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[2], static_cast<T>(3), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[3], static_cast<T>(4), static_cast<T>(1e-6));
+    ASSERT_NEAR(v.data()[4], static_cast<T>(5), static_cast<T>(1e-6));
+  } else {
+    ASSERT(v.data()[0] == static_cast<T>(1));
+    ASSERT(v.data()[1] == static_cast<T>(2));
+    ASSERT(v.data()[2] == static_cast<T>(3));
+    ASSERT(v.data()[3] == static_cast<T>(4));
+    ASSERT(v.data()[4] == static_cast<T>(5));
+  }
+
+#if CHECK_STD_VECTOR
+  std::vector<T> stdv;
+  stdv.push_back(1);
+  ASSERT(stdv.size() == 1);
+  ASSERT(stdv.capacity() == 1);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(stdv[0], static_cast<T>(1), static_cast<T>(1e-6));
+  } else {
+    ASSERT(stdv[0] == static_cast<T>(1));
+  }
+  stdv.push_back(2);
+  ASSERT(stdv.size() == 2);
+  ASSERT(stdv.capacity() == 2);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(stdv[0], static_cast<T>(1), static_cast<T>(1e-6));
+    ASSERT_NEAR(stdv[1], static_cast<T>(2), static_cast<T>(1e-6));
+  } else {
+    ASSERT(stdv[0] == static_cast<T>(1));
+    ASSERT(stdv[1] == static_cast<T>(2));
+  }
+  stdv.push_back(3);
+  ASSERT(stdv.size() == 3);
+  ASSERT(stdv.capacity() == 4);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(stdv[0], static_cast<T>(1), static_cast<T>(1e-6));
+    ASSERT_NEAR(stdv[1], static_cast<T>(2), static_cast<T>(1e-6));
+    ASSERT_NEAR(stdv[2], static_cast<T>(3), static_cast<T>(1e-6));
+  } else {
+    ASSERT(stdv[0] == static_cast<T>(1));
+    ASSERT(stdv[1] == static_cast<T>(2));
+    ASSERT(stdv[2] == static_cast<T>(3));
+  }
+  stdv.clear();
+  stdv.push_back(1);
+  stdv.push_back(2);
+  stdv.push_back(3);
+  stdv.push_back(4);
+  stdv.push_back(5);
+  ASSERT(stdv.size() == 5);
+  ASSERT(stdv.capacity() == 8);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(stdv[0], static_cast<T>(1), static_cast<T>(1e-6));
+    ASSERT_NEAR(stdv[1], static_cast<T>(2), static_cast<T>(1e-6));
+    ASSERT_NEAR(stdv[2], static_cast<T>(3), static_cast<T>(1e-6));
+    ASSERT_NEAR(stdv[3], static_cast<T>(4), static_cast<T>(1e-6));
+    ASSERT_NEAR(stdv[4], static_cast<T>(5), static_cast<T>(1e-6));
+  } else {
+    ASSERT(stdv[0] == static_cast<T>(1));
+    ASSERT(stdv[1] == static_cast<T>(2));
+    ASSERT(stdv[2] == static_cast<T>(3));
+    ASSERT(stdv[3] == static_cast<T>(4));
+    ASSERT(stdv[4] == static_cast<T>(5));
+  }
+#endif
+}
+
+template <class T>
+HOSTDEV
+TEST_CASE(push_back_lval_ref)
+{
+  um2::Vector<T> l_value_vector;
+  l_value_vector.push_back(static_cast<T>(1));
+  l_value_vector.push_back(static_cast<T>(2));
+  um2::Vector<um2::Vector<T>> my_vector;
+  my_vector.push_back(l_value_vector);
+  my_vector.push_back(std::move(l_value_vector));
+  ASSERT(my_vector.size() == 2);
+  ASSERT(my_vector.capacity() == 2);
+  if constexpr (std::floating_point<T>) {
+    ASSERT_NEAR(my_vector[0][0], static_cast<T>(1), static_cast<T>(1e-6));
+    ASSERT_NEAR(my_vector[1][0], static_cast<T>(1), static_cast<T>(1e-6));
+  } else {
+    ASSERT(my_vector[0][0] == static_cast<T>(1));
+    ASSERT(my_vector[1][0] == static_cast<T>(1));
+  }
+}
+
 //template <class T>
 //HOSTDEV
 //TEST_CASE(push_back_n)
@@ -497,18 +611,19 @@ TEST_SUITE(Vector)
   TEST_HOSTDEV(constructor_n_value, 1, 1, T)
   TEST_HOSTDEV(copy_constructor, 1, 1, T)
   TEST_HOSTDEV(move_constructor, 1, 1, T)
-//  TEST_HOSTDEV(constructor_initializer_list, 1, 1, T)
-//
+  TEST_HOSTDEV(constructor_initializer_list, 1, 1, T)
+
   // Operators
   TEST_HOSTDEV(operator_copy, 1, 1, T)
   TEST_HOSTDEV(operator_move, 1, 1, T)
-//
-//  // Methods
-//  TEST_HOSTDEV(clear)
-//  TEST_HOSTDEV(resize, 1, 1, T)
-//  TEST_HOSTDEV(reserve, 1, 1, T)
-//  TEST_HOSTDEV(push_back, 1, 1, T)
-//  TEST_HOSTDEV(push_back_rval_ref, 1, 1, T)
+  TEST_HOSTDEV(operator_initializer_list, 1, 1, T)
+
+  // Functions
+  TEST_HOSTDEV(clear)
+  TEST_HOSTDEV(resize, 1, 1, T)
+  TEST_HOSTDEV(reserve, 1, 1, T)
+  TEST_HOSTDEV(push_back, 1, 1, T)
+  TEST_HOSTDEV(push_back_lval_ref, 1, 1, T)
 //  TEST_HOSTDEV(push_back_n, 1, 1, T)
 //  TEST_HOSTDEV(emplace_back)
 }

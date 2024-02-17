@@ -37,9 +37,9 @@ struct CanLowerCopyToMemmove
 };
 
 // Ranges may overlap
-template <class It>
+template <class InputIt, class OutputIt>
 HOSTDEV constexpr auto
-copyLoop(It first, It last, It d_first) noexcept -> It
+copyLoop(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
   while (first != last) {
     *d_first = *first;
@@ -53,14 +53,15 @@ copyLoop(It first, It last, It d_first) noexcept -> It
 
 #ifndef __CUDA_ARCH__
 
-template <class It>
+template <class InputIt, class OutputIt>
 HOST constexpr auto
-copy(It first, It last, It d_first) noexcept -> It
+copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
-  using T = typename std::iterator_traits<It>::value_type;
-  if constexpr (CanLowerCopyToMemmove<T, T>::value) {
+  using InT = typename std::iterator_traits<InputIt>::value_type;
+  using OutT = typename std::iterator_traits<OutputIt>::value_type;
+  if constexpr (CanLowerCopyToMemmove<InT, OutT>::value) {
     auto const n = static_cast<size_t>(last - first);
-    return static_cast<It>(std::memmove(d_first, first, n * sizeof(T))) + n;
+    return static_cast<OutputIt>(std::memmove(d_first, first, n * sizeof(InT))) + n;
   } else {
     return copyLoop(first, last, d_first);
   }
@@ -68,9 +69,9 @@ copy(It first, It last, It d_first) noexcept -> It
 
 #else
 
-template <class It>
+template <class InputIt, class OutputIt>
 DEVICE constexpr auto
-copy(It first, It last, It d_first) noexcept -> It
+copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
   return copyLoop(first, last, d_first);
 }

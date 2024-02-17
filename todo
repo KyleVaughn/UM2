@@ -1,3 +1,8 @@
+check inlining of all functions and private equivalents in vector
+push_back
+  push_back_slow_path
+valgrind and cuda test on laptop
+
 variadic template expression for test macros.
 Just assume 1 thread 1 block only and that they will write themselves otherwise
 
