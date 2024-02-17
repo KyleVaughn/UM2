@@ -1,3 +1,8 @@
+swap buffer adjust pointers
+Go back to reserve
+
+vector push_back(n)
+
 check inlining of all functions and private equivalents in vector
 push_back
   push_back_slow_path

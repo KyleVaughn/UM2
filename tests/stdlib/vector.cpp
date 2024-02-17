@@ -534,29 +534,65 @@ TEST_CASE(push_back_lval_ref)
 //  ASSERT(non_empty_vector.size() == 5);
 //  ASSERT(non_empty_vector.capacity() == 6);
 //}
-//
-//HOSTDEV
-//TEST_CASE(emplace_back)
-//{
-//  struct TestStruct {
-//    int a;
-//    float b;
-//    double c;
-//    HOSTDEV
-//    TestStruct(int ia, float ib, double ic)
-//        : a(ia),
-//          b(ib),
-//          c(ic)
-//    {
-//    }
-//  };
+
+HOSTDEV
+TEST_CASE(emplace_back)
+{
+  struct TestStruct {
+    int a;
+    float b;
+    double c;
+
+    HOSTDEV
+    TestStruct(int ia, float ib, double ic)
+        : a(ia),
+          b(ib),
+          c(ic)
+    {
+    }
+  };
 //  um2::Vector<TestStruct> v;
 //  v.emplace_back(1, 2.0F, 3.0);
 //  ASSERT(v.size() == 1);
 //  ASSERT(v.capacity() == 1);
-//  ASSERT(v.data()[0].a == 1);
-//}
+//  ASSERT(v[0].a == 1);
 //
+//  um2::Vector<int> v2 = {1, 2, 3};
+//  um2::Vector<um2::Vector<int>> v3;
+//  v3.emplace_back(v2);
+//  v3.emplace_back(std::move(v2));
+//  v3.emplace_back({1, 2, 3});
+//  ASSERT(v3.size() == 3);
+//  ASSERT(v3.capacity() == 3);
+//  for (Int i = 0; i < 3; ++i) {
+//    ASSERT(v3[i].size() == 3);
+//    for (Int j = 0; j < 3; ++j) {
+//      ASSERT(v3[i][j] == j + 1);
+//    }
+//  }
+
+#if CHECK_STD_VECTOR
+  std::vector<TestStruct> v_std;
+  v_std.emplace_back(1, 2.0F, 3.0);
+  ASSERT(v_std.size() == 1);
+  ASSERT(v_std.capacity() == 1);
+  ASSERT(v_std[0].a == 1);
+
+  std::vector<int> v2_std = {1, 2, 3};
+  std::vector<std::vector<int>> v3_std;
+  v3_std.emplace_back(v2_std);
+  v3_std.emplace_back(std::move(v2_std));
+  ASSERT(v3_std.size() == 2);
+  ASSERT(v3_std.capacity() == 2);
+  for (size_t i = 0; i < 2; ++i) {
+    ASSERT(v3_std[i].size() == 3);
+    for (size_t j = 0; j < 3; ++j) {
+      ASSERT(v3_std[i][j] == static_cast<int>(j + 1));
+    }
+  }
+#endif
+}
+
 ////==============================================================================
 //// CUDA
 ////==============================================================================
@@ -625,7 +661,7 @@ TEST_SUITE(Vector)
   TEST_HOSTDEV(push_back, 1, 1, T)
   TEST_HOSTDEV(push_back_lval_ref, 1, 1, T)
 //  TEST_HOSTDEV(push_back_n, 1, 1, T)
-//  TEST_HOSTDEV(emplace_back)
+  TEST_HOSTDEV(emplace_back)
 }
 
 auto

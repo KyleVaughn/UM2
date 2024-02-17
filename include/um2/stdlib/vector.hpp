@@ -9,10 +9,6 @@
 #include <um2/stdlib/utility/move.hpp>
 #include <um2/stdlib/utility/swap.hpp>
 
-//#include <um2/stdlib/algorithm.hpp> // copy
-//#include <um2/stdlib/math.hpp>      // max
-//#include <um2/stdlib/utility.hpp>   // move
-
 #include <initializer_list> // std::initializer_list
 
 //==============================================================================
@@ -77,6 +73,10 @@ class Vector
   // _begin <= new_last <= _end
   HOSTDEV constexpr void
   destruct_at_end(Ptr new_last) noexcept;
+
+  template <class... Args>
+  HOSTDEV constexpr auto
+  emplace_back_slow_path(Args &&... args) noexcept -> Ptr;
 
   template <class U>
   HOSTDEV constexpr auto
@@ -191,11 +191,11 @@ public:
 
 //  HOSTDEV constexpr void
 //  push_back(Int n, T const & value) noexcept;
-//
-//  template <typename... Args>
-//  HOSTDEV constexpr void
-//  emplace_back(Args &&... args) noexcept;
-//
+
+  template <typename... Args>
+  HOSTDEV constexpr void
+  emplace_back(Args &&... args) noexcept;
+
 //  HOSTDEV constexpr void
 //  pop_back() noexcept;
 //
@@ -256,8 +256,10 @@ Vector<T>::assign(InputIt first, InputIt last) noexcept
   Int const new_size = static_cast<Int>(last - first);
   if (new_size <= capacity()) {
     if (new_size > size()) {
+      // Overwrite the existing elements
       InputIt mid = first + size();
       um2::copy(first, mid, _begin);
+      // Construct the new elements
       construct_at_end(mid, last, new_size - size());
     } else {
       InputIt m = um2::copy(first, last, _begin); 
@@ -332,16 +334,28 @@ Vector<T>::destruct_at_end(Ptr new_last) noexcept
 }
 
 template <class T>
+template <class... Args>
+HOSTDEV constexpr auto
+Vector<T>::emplace_back_slow_path(Args &&... args) noexcept -> Ptr
+{
+  Vector<T> temp;
+  temp.allocate(recommend(size() + 1));
+  swap_buffers(temp);
+  um2::construct_at(_end, um2::forward<Args>(args)...);
+  ++_end;
+  return _end;
+}
+
+template <class T>
 template <class U>
 HOSTDEV constexpr auto
 Vector<T>::push_back_slow_path(U && value) noexcept -> Ptr
 {
   Vector<T> temp;
   temp.allocate(recommend(size() + 1));
-  temp.construct_at_end(size());
-  um2::construct_at(temp._end, um2::forward<U>(value));
-  ++temp._end;
   swap_buffers(temp);
+  um2::construct_at(_end, um2::forward<U>(value));
+  ++_end;
   return _end;
 }
 
@@ -358,20 +372,34 @@ template <class T>
 HOSTDEV constexpr void
 Vector<T>::swap_buffers(Vector & v) noexcept
 {
-  ASSERT(v.size() >= size());
+  // ASSUMES v IS UNINITIALIZED IN [begin, end)
+  // v may have initialized objects in [end, end_cap), but _end will only be
+  // updated to reflect having size() objects.
+
+
+  // This means we can use the move constructor to move the objects instead
+  // of the move assignment operator.
+  //
+
+  ASSERT(v._begin != nullptr);
+  ASSERT(v.empty());
+
   // Move the objects in the range [first, last) into the front of v
   Ptr pold = _begin;
   Ptr pnew = v._begin;
   for (; pold != _end; ++pold, ++pnew) {
-    *pnew = um2::move(*pold);
+    um2::construct_at(pnew, um2::move(*pold));
   }
   // Swap the pointers
   um2::swap(_begin, v._begin);
   um2::swap(_end, v._end);
   um2::swap(_end_cap, v._end_cap);
+  // Make sure _end reflects the new end of the vector
+  _end = _begin + (v._end - v._begin);
   // v now contains the old buffer, which has invalidated objects due
   // to the move operations. The destructor of v will take care of destroying
   // the objects and deallocating the buffer.
+  ASSERT(size() == v.size());
 }
 
 // Append n default-initialized elements to the end of the vector
@@ -379,18 +407,12 @@ template <class T>
 HOSTDEV constexpr void
 Vector<T>::append(Int n) noexcept
 {
-  // If we have enough capacity, just construct the new elements
-  if (static_cast<Int>(_end_cap - _end) >= n) {
-    construct_at_end(n);
-  } else {
+  if (static_cast<Int>(_end_cap - _end) < n) {
     Vector<T> temp;
     temp.allocate(recommend(size() + n));
-    temp.construct_at_end(size() + n);
     swap_buffers(temp);
-    // temp now contains the old buffer, which has invalidated objects.
-    // The destructor of temp will take care of destroying the objects and
-    // deallocating the buffer.
   }
+  construct_at_end(n);
 }
 
 //==============================================================================
@@ -685,7 +707,6 @@ Vector<T>::reserve(Int const n) noexcept
   if (n > capacity()) {
     Vector<T> temp;
     temp.allocate(n);
-    temp.construct_at_end(size());
     swap_buffers(temp);
   }
 }
@@ -726,19 +747,20 @@ Vector<T>::push_back(T && value) noexcept
 //  // Construct the new elements
 //  construct_at_end(n, value);
 //}
-//
-//template <class T>
-//template <class... Args>
-//HOSTDEV constexpr void
-//Vector<T>::emplace_back(Args &&... args) noexcept
-//{
-//  if (_end == _end_cap) {
-//    grow(1);
-//  }
-//  um2::construct_at(_end, um2::forward<Args>(args)...);
-//  ++_end;
-//}
-//
+
+template <class T>
+template <class... Args>
+HOSTDEV inline constexpr void
+Vector<T>::emplace_back(Args &&... args) noexcept
+{
+  if (_end < _end_cap) {
+    um2::construct_at(_end, um2::forward<Args>(args)...);
+    ++_end;
+  } else {
+    _end = emplace_back_slow_path(um2::forward<Args>(args)...);
+  }
+}
+
 //template <class T>
 //HOSTDEV constexpr void
 //Vector<T>::pop_back() noexcept
