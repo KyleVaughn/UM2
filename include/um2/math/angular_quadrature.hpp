@@ -1,7 +1,5 @@
 #pragma once
 
-#include <um2/stdlib/algorithm.hpp>
-#include <um2/stdlib/math.hpp>
 #include <um2/stdlib/vector.hpp>
 
 //==============================================================================

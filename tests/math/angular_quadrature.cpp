@@ -1,8 +1,10 @@
 #include <um2/math/angular_quadrature.hpp>
+#include <um2/stdlib/numbers.hpp>
+#include <um2/common/cast_if_not.hpp>
 
 #include "../test_macros.hpp"
 
-Float constexpr eps = condCast<Float>(1e-6);
+Float constexpr eps = castIfNot<Float>(1e-6);
 
 HOSTDEV
 TEST_CASE(chebyshev_chebyshev)

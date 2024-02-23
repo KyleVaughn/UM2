@@ -340,23 +340,23 @@ MAKE_CUDA_KERNEL(normalize, D, T);
 template <Int D, typename T>
 TEST_SUITE(vec)
 {
-  TEST_HOSTDEV(accessor, 1, 1, D, T);
-  TEST_HOSTDEV(compound_add, 1, 1, D, T);
-  TEST_HOSTDEV(compound_sub, 1, 1, D, T);
-  TEST_HOSTDEV(compound_mul, 1, 1, D, T);
-  TEST_HOSTDEV(compound_div, 1, 1, D, T);
-  TEST_HOSTDEV(compound_scalar_add, 1, 1, D, T);
-  TEST_HOSTDEV(compound_scalar_sub, 1, 1, D, T);
-  TEST_HOSTDEV(compound_scalar_mul, 1, 1, D, T);
-  TEST_HOSTDEV(compound_scalar_div, 1, 1, D, T);
-  TEST_HOSTDEV(min, 1, 1, D, T);
-  TEST_HOSTDEV(max, 1, 1, D, T);
-  TEST_HOSTDEV(dot, 1, 1, D, T);
-  TEST_HOSTDEV(squaredNorm, 1, 1, D, T);
+  TEST_HOSTDEV(accessor, D, T);
+  TEST_HOSTDEV(compound_add, D, T);
+  TEST_HOSTDEV(compound_sub, D, T);
+  TEST_HOSTDEV(compound_mul, D, T);
+  TEST_HOSTDEV(compound_div, D, T);
+  TEST_HOSTDEV(compound_scalar_add, D, T);
+  TEST_HOSTDEV(compound_scalar_sub, D, T);
+  TEST_HOSTDEV(compound_scalar_mul, D, T);
+  TEST_HOSTDEV(compound_scalar_div, D, T);
+  TEST_HOSTDEV(min, D, T);
+  TEST_HOSTDEV(max, D, T);
+  TEST_HOSTDEV(dot, D, T);
+  TEST_HOSTDEV(squaredNorm, D, T);
   if constexpr (std::floating_point<T>) {
-    TEST_HOSTDEV(cross, 1, 1, D, T);
-    TEST_HOSTDEV(norm, 1, 1, D, T);
-    TEST_HOSTDEV(normalize, 1, 1, D, T);
+    TEST_HOSTDEV(cross, D, T);
+    TEST_HOSTDEV(norm, D, T);
+    TEST_HOSTDEV(normalize, D, T);
   }
 }
 

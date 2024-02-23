@@ -638,24 +638,24 @@ template <class T>
 TEST_SUITE(Vector)
 {
   // Constructors
-  TEST_HOSTDEV(constructor_n, 1, 1, T)
-  TEST_HOSTDEV(constructor_n_value, 1, 1, T)
-  TEST_HOSTDEV(copy_constructor, 1, 1, T)
-  TEST_HOSTDEV(move_constructor, 1, 1, T)
-  TEST_HOSTDEV(constructor_initializer_list, 1, 1, T)
+  TEST_HOSTDEV(constructor_n, T)
+  TEST_HOSTDEV(constructor_n_value, T)
+  TEST_HOSTDEV(copy_constructor, T)
+  TEST_HOSTDEV(move_constructor, T)
+  TEST_HOSTDEV(constructor_initializer_list, T)
 
   // Operators
-  TEST_HOSTDEV(operator_copy, 1, 1, T)
-  TEST_HOSTDEV(operator_move, 1, 1, T)
-  TEST_HOSTDEV(operator_initializer_list, 1, 1, T)
+  TEST_HOSTDEV(operator_copy, T)
+  TEST_HOSTDEV(operator_move, T)
+  TEST_HOSTDEV(operator_initializer_list, T)
   TEST_HOSTDEV(operator_equal)
 
   // Functions
   TEST_HOSTDEV(clear)
-  TEST_HOSTDEV(resize, 1, 1, T)
-  TEST_HOSTDEV(reserve, 1, 1, T)
-  TEST_HOSTDEV(push_back, 1, 1, T)
-  TEST_HOSTDEV(push_back_lval_ref, 1, 1, T)
+  TEST_HOSTDEV(resize, T)
+  TEST_HOSTDEV(reserve, T)
+  TEST_HOSTDEV(push_back, T)
+  TEST_HOSTDEV(push_back_lval_ref, T)
   TEST_HOSTDEV(emplace_back)
 }
 

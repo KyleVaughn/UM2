@@ -3,7 +3,9 @@
 #include <um2/geometry/point.hpp>
 #include <um2/math/morton.hpp>
 
-#include <um2/stdlib/algorithm.hpp>
+//#include <um2/stdlib/algorithm.hpp>
+
+#include <algorithm>
 
 //==============================================================================
 // Morton encoding/decoding
@@ -39,14 +41,14 @@ mortonDecode(MortonCode morton, Point2 & p) noexcept;
 HOSTDEV void
 mortonDecode(MortonCode morton, Point3 & p) noexcept;
 
-template <I D>
+template <Int D>
 PURE HOSTDEV auto
 mortonLess(Point<D> const & lhs, Point<D> const & rhs) noexcept -> bool
 {
   return mortonEncode(lhs) < mortonEncode(rhs);
 }
 
-template <I D>
+template <Int D>
 void
 mortonSort(Point<D> * const begin, Point<D> * const end) noexcept
 {
@@ -61,11 +63,11 @@ mortonSort(Point<D> * const begin, Point<D> * const end) noexcept
 // before sorting. If the argument is not provided, the points are assumed to
 // be in the unit square/cube.
 void
-mortonSortPermutation(Point2 const * begin, Point2 const * end, I * perm_begin,
-                      Vec2<F> const & scale = {0, 0}) noexcept;
+mortonSortPermutation(Point2 const * begin, Point2 const * end, Int * perm_begin,
+                      Vec2<Float> const & scale = {0, 0}) noexcept;
 
 void
-mortonSortPermutation(Point3 const * begin, Point3 const * end, I * perm_begin,
-                      Vec3<F> const & scale = {0, 0, 0}) noexcept;
+mortonSortPermutation(Point3 const * begin, Point3 const * end, Int * perm_begin,
+                      Vec3<Float> const & scale = {0, 0, 0}) noexcept;
 
 } // namespace um2

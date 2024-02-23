@@ -78,8 +78,8 @@ MAKE_CUDA_KERNEL(mat_vec, M, N, T);
 template <Int M, Int N, typename T>
 TEST_SUITE(Mat)
 {
-  TEST_HOSTDEV(accessors, 1, 1, M, N, T);
-  TEST_HOSTDEV(mat_vec, 1, 1, M, N, T);
+  TEST_HOSTDEV(accessors, M, N, T);
+  TEST_HOSTDEV(mat_vec, M, N, T);
 }
 
 auto

@@ -1,5 +1,8 @@
 #include <um2/math/angular_quadrature.hpp>
 
+#include <um2/stdlib/algorithm/fill.hpp> // fill
+#include <um2/stdlib/numbers.hpp> // pi_4
+
 namespace um2
 {
 

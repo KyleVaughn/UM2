@@ -1,36 +1,33 @@
 #pragma once
 
-// This test framework utilizes <cassert> to implement assertions.
-// In order for "assert" to function correctly, NDEBUG cannot be defined.
-// However, NDEBUG is defined for Release builds.
+// We want a test framework with assertions that:
+// - Are active in both Debug and Release builds.
+// - Work for both host and device code.
+// - Work the same, regardless of UM2_ENABLE_ASSERTS.
 //
-// Currently, UM2 does not depend on NDEBUG, but to prevent future issues, we
-// undef NDEBUG in this file. To ensure that this does not affect the UM2 library
-// code, we must include test_macros.hpp after all UM2 files. Therefore, we check
-// that UM2_USE_CUDA, a macro defined in all UM2 files, is defined to check this
-// condition.
+// Therefore, this framework utilizes <cassert> to implement assertions.
+// But, in order for "assert" to function correctly, NDEBUG cannot be defined.
+// Hence, we mandate that all UM2 headers are included after this file so that
+// we can safely undef NDEBUG.
 
-#include <um2/stdlib/math/abs.hpp> // um2::abs
 #ifndef UM2_USE_CUDA
 #  error("test_macros.hpp must be included after any UM2 files since it undefs NDEBUG")
 #endif
 
-#include <cstdio>  // printf
-#include <cstdlib> // exit
-
 #undef NDEBUG
 #include <cassert>
+#include <concepts> // std::same_as
+#include <cstdio>  // printf
+#include <cstdlib> // exit
 
 // Overview:
 // 1. Use TEST_CASE(name) to define a test case containing one or more 'ASSERT'
 // 2. Use MAKE_CUDA_KERNEL(name) to create a CUDA kernel from a test case, provided that
 //      the test case was declared with HOSTDEV.
 // 3. Use TEST_SUITE(name) to define a test suite containing one or more TEST(host_test)
-//      or TEST_CUDA_KERNEL(host_test, blocks, threads).
+//      or TEST_CUDA_KERNEL(host_test).
 //      - It is assumed MAKE_CUDA_KERNEL(host_test) was called before
-//          TEST_CUDA_KERNEL(host_test, ...).
-//      - TEST_CUDA_KERNEL(host_test) defaults to 1 block and 1 thread.
-//      - TEST_CUDA_KERNEL(host_test, threads) defaults to 1 block.
+//          TEST_CUDA_KERNEL(host_test).
 // 4. Use RUN_TESTS(suite) to run a test suite in the main function.
 //
 // Additional notes:
@@ -41,13 +38,19 @@
 
 #define ASSERT(cond) assert(cond)
 
-#define ASSERT_NEAR(a, b, eps)                                                           \
-  {                                                                                      \
-    auto const a_eval = (a);                                                             \
-    auto const b_eval = (b);                                                             \
-    auto const diff = um2::abs(a_eval - b_eval);                                         \
-    assert(diff <= (eps));                                                               \
+template <class A, class B, class EPS>
+inline void
+// NOLINTNEXTLINE(readability-identifier-naming)
+ASSERT_NEAR(A const & a, B const & b, EPS const & eps)
+{
+  A const bb = static_cast<A>(b);
+  auto const diff = a < bb ? bb - a : a - bb;
+  if constexpr (std::same_as<A, EPS>) {
+    assert(diff <= eps);
+  } else {
+    assert(diff <= static_cast<A>(eps));
   }
+}
 
 #define TEST_CASE(name) void name()
 
@@ -88,63 +91,41 @@
       exit(1);                                                                           \
     }
 
-#  define TEST_0TEMPLATE_CUDA_KERNEL(host_test, blocks, threads)                         \
+#  define TEST_CUDA_KERNEL_1_ARGS(host_test)                                             \
     {                                                                                    \
-      printf("Running CUDA test case '%s' with %d blocks and %d threads\n", #host_test,  \
-             blocks, threads);                                                           \
-      host_test##_cuda_kernel<<<(blocks), (threads)>>>();                                \
+      printf("Running CUDA test case '%s'\n", #host_test);                               \
+      host_test##_cuda_kernel<<<1, 1>>>();                                               \
       CUDA_KERNEL_POST_TEST                                                              \
       printf("CUDA test case '%s' finished\n", #host_test);                              \
     }
 
-#  define TEST_1TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T)                      \
+#  define TEST_CUDA_KERNEL_2_ARGS(host_test, T)                                          \
     {                                                                                    \
-      printf("Running CUDA test case '%s<%s>' with %d blocks and %d threads\n",          \
-             #host_test, #T, blocks, threads);                                           \
-      host_test##_cuda_kernel<T><<<(blocks), (threads)>>>();                             \
+      printf("Running CUDA test case '%s<%s>'", #host_test, #T);                         \
+      host_test##_cuda_kernel<T><<<1, 1>>>();                                            \
       CUDA_KERNEL_POST_TEST                                                              \
       printf("CUDA test case '%s<%s>' finished\n", #host_test, #T);                      \
     }
 
-#  define TEST_2TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U)                   \
+#  define TEST_CUDA_KERNEL_3_ARGS(host_test, T, U)                                       \
     {                                                                                    \
-      printf("Running CUDA test case '%s<%s, %s>' with %d blocks and %d threads\n",      \
-             #host_test, #T, #U, blocks, threads);                                       \
-      host_test##_cuda_kernel<T, U><<<(blocks), (threads)>>>();                          \
+      printf("Running CUDA test case '%s<%s, %s>'", #host_test, #T, #U);                 \
+      host_test##_cuda_kernel<T, U><<<1, 1>>>();                                         \
       CUDA_KERNEL_POST_TEST                                                              \
       printf("CUDA test case '%s<%s, %s>' finished\n", #host_test, #T, #U);              \
     }
 
-#  define TEST_3TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U, V)                \
+#  define TEST_CUDA_KERNEL_4_ARGS(host_test, T, U, V)                                    \
     {                                                                                    \
-      printf("Running CUDA test case '%s<%s, %s, %s>' with %d blocks and %d threads\n",  \
-             #host_test, #T, #U, #V, blocks, threads);                                   \
-      host_test##_cuda_kernel<T, U, V><<<(blocks), (threads)>>>();                       \
+      printf("Running CUDA test case '%s<%s, %s, %s>'", #host_test, #T, #U, #V);         \
+      host_test##_cuda_kernel<T, U, V><<<1, 1>>>();                                      \
       CUDA_KERNEL_POST_TEST                                                              \
       printf("CUDA test case '%s<%s, %s, %s>' finished\n", #host_test, #T, #U, #V);      \
     }
 
-#  define TEST_CUDA_KERNEL_1_ARGS(host_test) TEST_0TEMPLATE_CUDA_KERNEL(host_test, 1, 1)
-
-#  define TEST_CUDA_KERNEL_2_ARGS(host_test, threads)                                    \
-    TEST_0TEMPLATE_CUDA_KERNEL(host_test, 1, threads)
-
-#  define TEST_CUDA_KERNEL_3_ARGS(host_test, blocks, threads)                            \
-    TEST_0TEMPLATE_CUDA_KERNEL(host_test, blocks, threads)
-
-#  define TEST_CUDA_KERNEL_4_ARGS(host_test, blocks, threads, T)                         \
-    TEST_1TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T)
-
-#  define TEST_CUDA_KERNEL_5_ARGS(host_test, blocks, threads, T, U)                      \
-    TEST_2TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U)
-
-#  define TEST_CUDA_KERNEL_6_ARGS(host_test, blocks, threads, T, U, V)                   \
-    TEST_3TEMPLATE_CUDA_KERNEL(host_test, blocks, threads, T, U, V)
-
-#  define TEST_CUDA_KERNEL_GET_MACRO(_1, _2, _3, _4, _5, _6, NAME, ...) NAME
+#  define TEST_CUDA_KERNEL_GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
 #  define TEST_CUDA_KERNEL(...)                                                          \
-    TEST_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, TEST_CUDA_KERNEL_6_ARGS,                     \
-                               TEST_CUDA_KERNEL_5_ARGS, TEST_CUDA_KERNEL_4_ARGS,         \
+    TEST_CUDA_KERNEL_GET_MACRO(__VA_ARGS__, TEST_CUDA_KERNEL_4_ARGS,                     \
                                TEST_CUDA_KERNEL_3_ARGS, TEST_CUDA_KERNEL_2_ARGS,         \
                                TEST_CUDA_KERNEL_1_ARGS)                                  \
     (__VA_ARGS__)
@@ -163,30 +144,22 @@
   TEST(host_test);                                                                       \
   TEST_CUDA_KERNEL(host_test);
 
-#define TEST_HOSTDEV_2_ARGS(host_test, threads)                                          \
-  TEST(host_test);                                                                       \
-  TEST_CUDA_KERNEL(host_test, threads);
+#define TEST_HOSTDEV_2_ARGS(host_test, T)                                                \
+  TEST((host_test<T>));                                                                  \
+  TEST_CUDA_KERNEL(host_test, T);
 
-#define TEST_HOSTDEV_3_ARGS(host_test, blocks, threads)                                  \
-  TEST(host_test);                                                                       \
-  TEST_CUDA_KERNEL(host_test, blocks, threads);
-
-#define TEST_HOSTDEV_4_ARGS(host_test, blocks, threads, T)                               \
-  TEST(host_test<T>);                                                                    \
-  TEST_CUDA_KERNEL(host_test, blocks, threads, T);
-
-#define TEST_HOSTDEV_5_ARGS(host_test, blocks, threads, T, U)                            \
+#define TEST_HOSTDEV_3_ARGS(host_test, T, U)                                             \
   TEST((host_test<T, U>));                                                               \
-  TEST_CUDA_KERNEL(host_test, blocks, threads, T, U);
+  TEST_CUDA_KERNEL(host_test, T, U);
 
-#define TEST_HOSTDEV_6_ARGS(host_test, blocks, threads, T, U, V)                         \
+#define TEST_HOSTDEV_4_ARGS(host_test, T, U, V)                                          \
   TEST((host_test<T, U, V>));                                                            \
   TEST_CUDA_KERNEL(host_test, blocks, threads, T, U, V);
 // NOLINTEND(bugprone-macro-parentheses)
 
-#define TEST_HOSTDEV_GET_MACRO(_1, _2, _3, _4, _5, _6, NAME, ...) NAME
+#define TEST_HOSTDEV_GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
 #define TEST_HOSTDEV(...)                                                                \
-  TEST_HOSTDEV_GET_MACRO(__VA_ARGS__, TEST_HOSTDEV_6_ARGS, TEST_HOSTDEV_5_ARGS,          \
+  TEST_HOSTDEV_GET_MACRO(__VA_ARGS__,                                                    \
                          TEST_HOSTDEV_4_ARGS, TEST_HOSTDEV_3_ARGS, TEST_HOSTDEV_2_ARGS,  \
                          TEST_HOSTDEV_1_ARGS)                                            \
   (__VA_ARGS__)

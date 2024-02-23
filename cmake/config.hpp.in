@@ -26,11 +26,10 @@
 
 // NOLINTEND(modernize-macro-to-enum)
 
-////==============================================================================
-//// Includes
-////==============================================================================
-//
-//#include <concepts> // std::same_as
+//==============================================================================
+// Includes
+//==============================================================================
+
 #include <cstdint> // int32_t, int64_t
 //
 //#if UM2_USE_OPENMP
@@ -149,20 +148,6 @@ matIDMax() noexcept -> MatID
 // For static_asserts which are always false.
 template <class... T>
 constexpr bool always_false = false;
-
-// if To and From are the same type, return x
-// otherwise, return static_cast<To>(x)
-// Should result in no-op for same types
-template <typename To, typename From>
-CONST HOSTDEV constexpr auto
-castAsNeeded(From const x) noexcept -> To
-{
-  if constexpr (std::same_as<To, From>) {
-    return x;
-  } else {
-    return static_cast<To>(x);
-  }
-}
 
 //////==============================================================================
 ////// CUDA error checking

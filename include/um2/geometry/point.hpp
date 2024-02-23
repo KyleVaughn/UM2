@@ -1,5 +1,6 @@
 #pragma once
 
+#include <um2/common/cast_if_not.hpp>
 #include <um2/math/vec.hpp>
 
 //==============================================================================
@@ -16,8 +17,8 @@ namespace um2
 // Aliases
 //==============================================================================
 
-template <I D>
-using Point = Vec<D, F>;
+template <Int D>
+using Point = Vec<D, Float>;
 
 using Point1 = Point<1>;
 using Point2 = Point<2>;
@@ -37,15 +38,15 @@ using Point3 = Point<3>;
 //
 // NOTE: fast-math assumes no infinities, so we need inf_distance to be finite.
 
-inline constexpr F eps_distance = condCast<F>(1e-6); // 0.1 micron
-inline constexpr F eps_distance2 = condCast<F>(1e-12);
-inline constexpr F inf_distance = condCast<F>(1e8); // 1000 km
+inline constexpr Float eps_distance = castIfNot<Float>(1e-6); // 0.1 micron
+inline constexpr Float eps_distance2 = castIfNot<Float>(1e-12);
+inline constexpr Float inf_distance = castIfNot<Float>(1e8); // 1000 km
 
 //==============================================================================
 // Methods
 //==============================================================================
 
-template <I D>
+template <Int D>
 PURE HOSTDEV constexpr auto
 midpoint(Point<D> a, Point<D> const & b) noexcept -> Point<D>
 {
@@ -54,7 +55,7 @@ midpoint(Point<D> a, Point<D> const & b) noexcept -> Point<D>
   return a /= 2;
 }
 
-template <I D>
+template <Int D>
 PURE HOSTDEV constexpr auto
 isApprox(Point<D> const & a, Point<D> const & b) noexcept -> bool
 {

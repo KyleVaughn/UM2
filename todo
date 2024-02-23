@@ -101,7 +101,6 @@ Graphics:
     Show the number of intersected faces each time and the speedup
 
 Restore scripts dir
-NOLINTS
 
 PURE CONST
  -> ASSERTS OK? LOG OK?
@@ -116,5 +115,7 @@ Consistent testing of mesh point inside.
    getOrientedEdge -> return bool, pass edge by ref
 
 Binned FVM
+
+Implement very robust testing of ray vs shape intersections
 
 Matplotlib

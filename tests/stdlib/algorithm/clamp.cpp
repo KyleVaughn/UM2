@@ -1,4 +1,5 @@
 #include <um2/stdlib/algorithm/clamp.hpp>
+#include <um2/stdlib/math/abs.hpp>
 
 #include "../../test_macros.hpp"
 

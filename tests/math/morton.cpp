@@ -166,15 +166,15 @@ MAKE_CUDA_KERNEL(mortonDecodeFloat, U, T);
 template <std::unsigned_integral U>
 TEST_SUITE(morton)
 {
-  TEST_HOSTDEV(mortonEncode, 1, 1, U);
-  TEST_HOSTDEV(mortonDecode, 1, 1, U);
+  TEST_HOSTDEV(mortonEncode, U);
+  TEST_HOSTDEV(mortonDecode, U);
 }
 
 template <std::unsigned_integral U, std::floating_point T>
 TEST_SUITE(mortonFloat)
 {
-  TEST_HOSTDEV(mortonEncodeFloat, 1, 1, U, T);
-  TEST_HOSTDEV(mortonDecodeFloat, 1, 1, U, T);
+  TEST_HOSTDEV(mortonEncodeFloat, U, T);
+  TEST_HOSTDEV(mortonDecodeFloat, U, T);
 }
 
 auto
