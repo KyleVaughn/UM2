@@ -1,7 +1,7 @@
 #pragma once
 
-
 #include <um2/stdlib/algorithm/copy.hpp>
+#include <um2/stdlib/algorithm/equal.hpp>
 #include <um2/stdlib/algorithm/max.hpp>
 #include <um2/stdlib/assert.hpp>
 #include <um2/stdlib/memory/addressof.hpp>
@@ -55,7 +55,7 @@ class Vector
   construct_at_end(Int n) noexcept;
 
   // Construct n elements at the end of the vector, each with value
-  HOSTDEV constexpr void
+  HOSTDEV inline constexpr void
   construct_at_end(Int n, T const & value) noexcept;
 
   // Construct n elements at the end of the vector, copying from [first, last)
@@ -75,16 +75,16 @@ class Vector
   destruct_at_end(Ptr new_last) noexcept;
 
   template <class... Args>
-  HOSTDEV constexpr auto
+  HOSTDEV inline constexpr auto
   emplace_back_slow_path(Args &&... args) noexcept -> Ptr;
 
   template <class U>
-  HOSTDEV constexpr auto
+  HOSTDEV inline constexpr auto
   push_back_slow_path(U && value) noexcept -> Ptr;
 
   // Return the recommended capacity for a vector of size new_size.
   // Either double the current capacity or use the new_size if it is larger.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline constexpr auto
   recommend(Int new_size) const noexcept -> Int;
 
   // Relocate the objects in the range [begin, end) into the front of v and
@@ -106,11 +106,11 @@ public:
 
   HOSTDEV constexpr Vector(Vector const & v) noexcept;
 
-  HOSTDEV constexpr Vector(Vector && v) noexcept;
+  HOSTDEV inline constexpr Vector(Vector && v) noexcept;
 
   HOSTDEV constexpr Vector(T const * first, T const * last) noexcept;
 
-  constexpr Vector(std::initializer_list<T> const & list) noexcept;
+  inline constexpr Vector(std::initializer_list<T> const & list) noexcept;
 
   //==============================================================================
   // Destructor
@@ -125,16 +125,16 @@ public:
   PURE HOSTDEV [[nodiscard]] static constexpr auto
   max_size() noexcept -> Int;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline constexpr auto
   begin() noexcept -> T *;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline constexpr auto
   begin() const noexcept -> T const *;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline constexpr auto
   end() noexcept -> T *;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] inline constexpr auto
   end() const noexcept -> T const *;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -189,16 +189,10 @@ public:
   HOSTDEV inline constexpr void
   push_back(T && value) noexcept;
 
-//  HOSTDEV constexpr void
-//  push_back(Int n, T const & value) noexcept;
-
   template <typename... Args>
   HOSTDEV constexpr void
   emplace_back(Args &&... args) noexcept;
 
-//  HOSTDEV constexpr void
-//  pop_back() noexcept;
-//
   //==============================================================================
   // Operators
   //==============================================================================
@@ -218,9 +212,12 @@ public:
   constexpr auto
   operator=(std::initializer_list<T> const & list) noexcept -> Vector &;
 
-//  PURE constexpr auto
-//  operator==(Vector const & v) const noexcept -> bool;
-//
+  HOSTDEV PURE constexpr auto
+  operator==(Vector const & v) const noexcept -> bool;
+
+  HOSTDEV PURE constexpr auto
+  operator!=(Vector const & v) const noexcept -> bool;
+
   // NOLINTEND(readability-identifier-naming)
 }; // class Vector
 
@@ -376,19 +373,21 @@ Vector<T>::swap_buffers(Vector & v) noexcept
   // v may have initialized objects in [end, end_cap), but _end will only be
   // updated to reflect having size() objects.
 
-
-  // This means we can use the move constructor to move the objects instead
-  // of the move assignment operator.
-  //
-
   ASSERT(v._begin != nullptr);
   ASSERT(v.empty());
 
   // Move the objects in the range [first, last) into the front of v
   Ptr pold = _begin;
   Ptr pnew = v._begin;
-  for (; pold != _end; ++pold, ++pnew) {
-    um2::construct_at(pnew, um2::move(*pold));
+  // if T is trivially move-constructible and trivially destructible, then we
+  // can use memcpy to move the objects
+  if constexpr (std::is_trivially_move_constructible_v<T> &&
+                std::is_trivially_destructible_v<T>) {
+    memcpy(pnew, pold, static_cast<size_t>(size()) * sizeof(T)); 
+  } else {
+    for (; pold != _end; ++pold, ++pnew) {
+      um2::construct_at(pnew, um2::move(*pold));
+    }
   }
   // Swap the pointers
   um2::swap(_begin, v._begin);
@@ -667,13 +666,20 @@ Vector<T>::operator=(std::initializer_list<T> const & list) noexcept -> Vector &
   return *this;
 }
 
-//template <class T>
-//PURE constexpr auto
-//Vector<T>::operator==(Vector<T> const & v) const noexcept -> bool
-//{
-//  return size() == v.size() && std::equal(begin(), end(), v.begin());
-//}
-//
+template <class T>
+HOSTDEV constexpr auto
+Vector<T>::operator==(Vector<T> const & v) const noexcept -> bool
+{
+  return size() == v.size() && um2::equal(cbegin(), cend(), v.cbegin());
+}
+
+template <class T>
+HOSTDEV constexpr auto
+Vector<T>::operator!=(Vector<T> const & v) const noexcept -> bool
+{
+  return !(*this == v);
+}
+
 //==============================================================================
 // Member functions 
 //==============================================================================
@@ -735,19 +741,6 @@ Vector<T>::push_back(T && value) noexcept
   }
 }
 
-//template <class T>
-//HOSTDEV constexpr void
-//Vector<T>::push_back(Int const n, T const & value) noexcept
-//{
-//  // If we have enough capacity, just construct the new elements
-//  // Otherwise, this->allocate a new buffer and move the elements over
-//  if (static_cast<Int>(_end_cap - _end) < n) {
-//    grow(n);
-//  }
-//  // Construct the new elements
-//  construct_at_end(n, value);
-//}
-
 template <class T>
 template <class... Args>
 HOSTDEV inline constexpr void
@@ -760,13 +753,5 @@ Vector<T>::emplace_back(Args &&... args) noexcept
     _end = emplace_back_slow_path(um2::forward<Args>(args)...);
   }
 }
-
-//template <class T>
-//HOSTDEV constexpr void
-//Vector<T>::pop_back() noexcept
-//{
-//  ASSERT(size() > 0);
-//  um2::destroy_at(--_end);
-//}
 
 } // namespace um2

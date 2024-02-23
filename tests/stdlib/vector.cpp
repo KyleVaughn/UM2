@@ -3,6 +3,8 @@
 #include <concepts> // std::floating_point
 #include <vector> 
 
+#include <type_traits>
+
 #include "../test_macros.hpp"
 
 #define CHECK_STD_VECTOR 1
@@ -260,6 +262,16 @@ TEST_CASE(operator_initializer_list)
   }
 }
 
+HOSTDEV
+TEST_CASE(operator_equal)
+{
+  um2::Vector<int> const v1 = {1, 2, 3, 4, 5};
+  um2::Vector<int> const v2 = {1, 2, 3, 4, 5};
+  um2::Vector<int> const v3 = {1, 2, 3, 4, 6};
+  ASSERT(v1 == v2);
+  ASSERT(v1 != v3);
+}
+
 //==============================================================================--
 // Functions 
 //==============================================================================--
@@ -515,29 +527,13 @@ TEST_CASE(push_back_lval_ref)
   }
 }
 
-//template <class T>
-//HOSTDEV
-//TEST_CASE(push_back_n)
-//{
-//  um2::Vector<T> empty_vector;
-//  um2::Vector<T> non_empty_vector{1, 2, 3};
-//  empty_vector.push_back(3, static_cast<T>(7));
-//  ASSERT(empty_vector.size() == 3);
-//  for (const auto & i : empty_vector) {
-//    if constexpr (std::floating_point<T>) {
-//      ASSERT_NEAR(i, static_cast<T>(7), static_cast<T>(1e-6));
-//    } else {
-//      ASSERT(i == static_cast<T>(7));
-//    }
-//  }
-//  non_empty_vector.push_back(2, static_cast<T>(5));
-//  ASSERT(non_empty_vector.size() == 5);
-//  ASSERT(non_empty_vector.capacity() == 6);
-//}
-
 HOSTDEV
 TEST_CASE(emplace_back)
 {
+  static_assert(!std::is_trivially_move_constructible_v<um2::Vector<int>>);
+  static_assert(!std::is_trivially_destructible_v<um2::Vector<int>>);
+  static_assert(std::is_trivially_move_constructible_v<int>);
+  static_assert(std::is_trivially_destructible_v<int>);
   struct TestStruct {
     int a;
     float b;
@@ -551,25 +547,24 @@ TEST_CASE(emplace_back)
     {
     }
   };
-//  um2::Vector<TestStruct> v;
-//  v.emplace_back(1, 2.0F, 3.0);
-//  ASSERT(v.size() == 1);
-//  ASSERT(v.capacity() == 1);
-//  ASSERT(v[0].a == 1);
-//
-//  um2::Vector<int> v2 = {1, 2, 3};
-//  um2::Vector<um2::Vector<int>> v3;
-//  v3.emplace_back(v2);
-//  v3.emplace_back(std::move(v2));
-//  v3.emplace_back({1, 2, 3});
-//  ASSERT(v3.size() == 3);
-//  ASSERT(v3.capacity() == 3);
-//  for (Int i = 0; i < 3; ++i) {
-//    ASSERT(v3[i].size() == 3);
-//    for (Int j = 0; j < 3; ++j) {
-//      ASSERT(v3[i][j] == j + 1);
-//    }
-//  }
+  um2::Vector<TestStruct> v;
+  v.emplace_back(1, 2.0F, 3.0);
+  ASSERT(v.size() == 1);
+  ASSERT(v.capacity() == 1);
+  ASSERT(v[0].a == 1);
+
+  um2::Vector<int> v2 = {1, 2, 3};
+  um2::Vector<um2::Vector<int>> v3;
+  v3.emplace_back(v2);
+  v3.emplace_back(std::move(v2));
+  ASSERT(v3.size() == 2);
+  ASSERT(v3.capacity() == 2);
+  for (Int i = 0; i < 2; ++i) {
+    ASSERT(v3[i].size() == 3);
+    for (Int j = 0; j < 3; ++j) {
+      ASSERT(v3[i][j] == j + 1);
+    }
+  }
 
 #if CHECK_STD_VECTOR
   std::vector<TestStruct> v_std;
@@ -653,6 +648,7 @@ TEST_SUITE(Vector)
   TEST_HOSTDEV(operator_copy, 1, 1, T)
   TEST_HOSTDEV(operator_move, 1, 1, T)
   TEST_HOSTDEV(operator_initializer_list, 1, 1, T)
+  TEST_HOSTDEV(operator_equal)
 
   // Functions
   TEST_HOSTDEV(clear)
@@ -660,7 +656,6 @@ TEST_SUITE(Vector)
   TEST_HOSTDEV(reserve, 1, 1, T)
   TEST_HOSTDEV(push_back, 1, 1, T)
   TEST_HOSTDEV(push_back_lval_ref, 1, 1, T)
-//  TEST_HOSTDEV(push_back_n, 1, 1, T)
   TEST_HOSTDEV(emplace_back)
 }
 

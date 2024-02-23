@@ -1,17 +1,13 @@
-swap buffer adjust pointers
-Go back to reserve
+Make string resemble llvm more
 
-vector push_back(n)
+eliminate sto
 
-check inlining of all functions and private equivalents in vector
-push_back
-  push_back_slow_path
+check nolints, prad
+
 valgrind and cuda test on laptop
 
 variadic template expression for test macros.
 Just assume 1 thread 1 block only and that they will write themselves otherwise
-
-string, vector, sto
 
 allocator
 
@@ -104,35 +100,21 @@ Graphics:
       tested faces.
     Show the number of intersected faces each time and the speedup
 
-===============================================================================
-HOUSE KEEPING
-===============================================================================
-1. Restore scripts dir
-2. NOLINTS
+Restore scripts dir
+NOLINTS
 
 PURE CONST
  -> ASSERTS OK? LOG OK?
-3. Old benchmarks: reimplement or place in archive
-4. clean archive
+Old benchmarks: reimplement or place in archive
+clean archive
 
-===============================================================================
-BUGS
-===============================================================================
-2. Point in cell bug for c5g7 mesh
+Point in cell bug for c5g7 mesh
 
-===============================================================================
-ALGORITHMS
-===============================================================================
-1. validate intersect
-3. Consistent testing of mesh point inside.
-      getOrientedEdge -> return bool, pass edge by ref
+validate intersect
 
-===============================================================================
-DATA STRUCTURES
-===============================================================================
-1. Binned FVM
+Consistent testing of mesh point inside.
+   getOrientedEdge -> return bool, pass edge by ref
 
-===============================================================================
-FUTURE
-===============================================================================
-1. Matplotlib
+Binned FVM
+
+Matplotlib

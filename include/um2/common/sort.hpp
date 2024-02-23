@@ -1,10 +1,11 @@
 #pragma once
 
-#include <um2/stdlib/algorithm.hpp> // std::sort
-#include <um2/stdlib/assert.hpp>    // ASSERT
-#include <um2/stdlib/numeric.hpp>   // um2::iota
-#include <um2/stdlib/utility.hpp>   // um2::move
-#include <um2/stdlib/vector.hpp>    // um2::Vector
+#include <um2/config.hpp>
+#include <um2/stdlib/numeric/iota.hpp>
+#include <um2/stdlib/utility/move.hpp>
+#include <um2/stdlib/vector.hpp>
+
+#include <algorithm>
 
 //==============================================================================
 // SORT

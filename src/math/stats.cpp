@@ -1,6 +1,8 @@
 #include <um2/math/stats.hpp>
 
 #include <um2/stdlib/assert.hpp>
+#include <um2/stdlib/math/roots.hpp>
+#include <um2/stdlib/algorithm/is_sorted.hpp>
 
 namespace um2
 {

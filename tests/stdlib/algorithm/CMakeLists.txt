@@ -1,5 +1,6 @@
 add_um2_test(./clamp.cpp)
 add_um2_test(./copy.cpp)
+add_um2_test(./equal.cpp)
 add_um2_test(./fill.cpp)
 add_um2_test(./is_sorted.cpp)
 add_um2_test(./max.cpp)

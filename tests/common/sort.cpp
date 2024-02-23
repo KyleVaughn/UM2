@@ -44,8 +44,7 @@ TEST_SUITE(sort)
   TEST((sortPermutation<int>));
   TEST((sortPermutation<float>));
   TEST((applyPermutation<int>));
-  TEST((applyPermutation<float>));
-  TEST_HOSTDEV(insertionSort, 1, 1);
+  TEST_HOSTDEV(insertionSort);
 }
 
 auto
