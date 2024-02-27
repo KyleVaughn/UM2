@@ -41,19 +41,19 @@ extern bool exit_on_error;
 // CROSS SECTION LIBRARY (XS)
 //==============================================================================
 
-namespace um2::settings::xs
-{
-
-namespace defaults
-{
-const String LIBRARY_PATH = MPACT_DATA_DIR;
-const String LIBRARY_NAME = "mpact51g_71_v4.2m5_12062016_sph.fmt";
-} // namespace defaults
-
-// Global settings
-extern String library_path;
-extern String library_name;
-
-} // namespace um2::settings::xs
+//namespace um2::settings::xs
+//{
+//
+//namespace defaults
+//{
+//const String LIBRARY_PATH = MPACT_DATA_DIR;
+//const String LIBRARY_NAME = "mpact51g_71_v4.2m5_12062016_sph.fmt";
+//} // namespace defaults
+//
+//// Global settings
+//extern String library_path;
+//extern String library_name;
+//
+//} // namespace um2::settings::xs
 
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)

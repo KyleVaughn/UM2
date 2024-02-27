@@ -69,7 +69,7 @@ else()
     " -Wunused"
     " -Wvector-conversion"
     " -Wvla"
-    " -Wzero-as-null-pointer-constant"
+    # " -Wzero-as-null-pointer-constant"
     " -pedantic"
     )
 endif()

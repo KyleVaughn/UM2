@@ -10,14 +10,14 @@ struct A
   int r;
 };
 
-HOSTDEV
+HOSTDEV PURE
 auto
 value(A& a) -> int
 {
   return a.l;
 }
 
-HOSTDEV
+HOSTDEV PURE
 auto
 value(A&& a) -> int
 {

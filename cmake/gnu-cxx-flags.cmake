@@ -16,7 +16,7 @@ if (UM2_USE_CUDA)
     " -Wundef"
     " -Wunused"
     " -Wvla"
-    " -Wzero-as-null-pointer-constant"
+    # " -Wzero-as-null-pointer-constant"
     # " -pedantic"
     )
 else()
@@ -40,7 +40,7 @@ else()
     " -Wunused"
     " -Wuseless-cast"
     " -Wvla"
-    " -Wzero-as-null-pointer-constant"
+    # " -Wzero-as-null-pointer-constant"
     " -pedantic"
     )
 endif()
