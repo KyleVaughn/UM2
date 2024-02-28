@@ -4,8 +4,6 @@
 #include <um2/stdlib/utility/forward.hpp>
 #include <um2/stdlib/utility/move.hpp>
 
-#include <compare>
-
 namespace um2
 {
 
@@ -45,68 +43,58 @@ struct Pair {
 
   HOSTDEV ~Pair() noexcept = default;
 
-  //============================================================================
-  // Relational operators
-  //============================================================================
-
-  // NOLINTNEXTLINE(modernize-use-nullptr)
-  auto operator<=>(Pair const &) const = default;
-
 };
 
 //==============================================================================
 // Non-member functions
 //==============================================================================
 
-//template <class T1, class T2>
-//HOSTDEV constexpr auto
-//operator==(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
-//{
-//  return x.first == y.first && x.second == y.second;
-//}
+template <class T1, class T2>
+HOSTDEV constexpr auto
+operator==(Pair<T1, T2> const & lhs, Pair<T1, T2> const & rhs) noexcept -> bool
+{
+  return lhs.first == rhs.first && lhs.second == rhs.second;
+}
 
-//template <class T1, class T2>
-//HOSTDEV constexpr auto
-//operator<(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
-//{
-//  return x.first < y.first || (!(y.first < x.first) && x.second < y.second);
-//}
-//
-//
-//
-//template <class T1, class T2>
-//HOSTDEV constexpr auto
-//operator!=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
-//{
-//  return !(x == y);
-//}
-//
-//
-//
-//
-//
-//
-//
-//
-//template <class T1, class T2>
-//HOSTDEV constexpr auto
-//operator>(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
-//{
-//  return y < x;
-//}
-//
-//template <class T1, class T2>
-//HOSTDEV constexpr auto
-//operator<=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
-//{
-//  return !(y < x);
-//}
-//
-//template <class T1, class T2>
-//HOSTDEV constexpr auto
-//operator>=(Pair<T1, T2> const & x, Pair<T1, T2> const & y) noexcept -> bool
-//{
-//  return !(x < y);
-//}
+template <class T1, class T2>
+HOSTDEV constexpr auto
+operator<(Pair<T1, T2> const & lhs, Pair<T1, T2> const & rhs) noexcept -> bool
+{
+  return lhs.first < rhs.first || (!(rhs.first < lhs.first) && lhs.second < rhs.second);
+}
+
+// https://en.cppreference.com/w/cpp/language/operators#Comparison_operators
+// lhs != rhs is equivalent to !(lhs == rhs)
+// lhs > rhs is equivalent to rhs < lhs
+// lhs <= rhs is equivalent to !(rhs < lhs)
+// lhs >= rhs is equivalent to !(lhs < rhs)
+
+template <class T1, class T2>
+HOSTDEV constexpr auto
+operator!=(Pair<T1, T2> const & lhs, Pair<T1, T2> const & rhs) noexcept -> bool
+{
+  return !(lhs == rhs);
+} 
+
+template <class T1, class T2>
+HOSTDEV constexpr auto
+operator>(Pair<T1, T2> const & lhs, Pair<T1, T2> const & rhs) noexcept -> bool
+{
+  return rhs < lhs;
+}
+
+template <class T1, class T2>
+HOSTDEV constexpr auto
+operator<=(Pair<T1, T2> const & lhs, Pair<T1, T2> const & rhs) noexcept -> bool
+{
+  return !(rhs < lhs);
+}
+
+template <class T1, class T2>
+HOSTDEV constexpr auto
+operator>=(Pair<T1, T2> const & lhs, Pair<T1, T2> const & rhs) noexcept -> bool
+{
+  return !(lhs < rhs);
+}
 
 } // namespace um2

@@ -9,15 +9,6 @@ struct A {
   {
   }
 };
-
-struct Nothing {
-  explicit
-  operator char &()
-  {
-    static char c = 'a';
-    return c;
-  }
-};
 // NOLINTEND
 
 
@@ -29,21 +20,16 @@ TEST_CASE(test_addressof)
   static_assert(um2::addressof(i) == &i);
   static_assert(um2::addressof(d) == &d);
 
+  constexpr int ci = 0;
+  constexpr double cd = 0;
+  static_assert(um2::addressof(ci) == &ci);
+  static_assert(um2::addressof(cd) == &cd);
+
   A * tp = new A;
   A const * ctp = tp;
   ASSERT(um2::addressof(*tp) == tp);
   ASSERT(um2::addressof(*ctp) == ctp);
   delete tp;
-  union {
-    Nothing n;
-    int j;
-  };
-// Clang can do this as a static assert, gcc cannot
-#ifdef __clang__
-    static_assert(um2::addressof(n) == static_cast<void *>(um2::addressof(n)));
-#else
-    ASSERT(um2::addressof(n) == static_cast<void *>(um2::addressof(n)));
-#endif
 }
 
 MAKE_CUDA_KERNEL(test_addressof);

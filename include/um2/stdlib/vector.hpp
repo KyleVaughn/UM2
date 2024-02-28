@@ -2,12 +2,14 @@
 
 #include <um2/stdlib/algorithm/copy.hpp>
 #include <um2/stdlib/algorithm/equal.hpp>
+#include <um2/stdlib/algorithm/lexicographical_compare.hpp>
 #include <um2/stdlib/algorithm/max.hpp>
 #include <um2/stdlib/assert.hpp>
 #include <um2/stdlib/memory/addressof.hpp>
 #include <um2/stdlib/memory/construct_at.hpp>
 #include <um2/stdlib/utility/move.hpp>
 #include <um2/stdlib/utility/swap.hpp>
+#include <um2/stdlib/utility/is_pointer_in_range.hpp>
 
 #include <initializer_list> // std::initializer_list
 
@@ -45,15 +47,18 @@ class Vector
   append(Int n) noexcept;
 
   // Construct n default-initialized elements at the end of the vector
+  // Assumes that there is enough capacity to hold the new elements
   HOSTDEV constexpr void
   constructAtEnd(Int n) noexcept;
 
   // Construct n elements at the end of the vector, each with value
+  // Assumes that there is enough capacity to hold the new elements
   HOSTDEV inline constexpr void
   constructAtEnd(Int n, T const & value) noexcept;
 
   // Construct n elements at the end of the vector, copying from [first, last)
   // n disambiguates the function from the previous one
+  // Assumes that there is enough capacity to hold the new elements
   template <class InputIt>
   HOSTDEV constexpr void
   constructAtEnd(InputIt first, InputIt last, Int n) noexcept;
@@ -89,7 +94,7 @@ class Vector
 
 public:
   //==============================================================================
-  // Constructors and assignment operators
+  // Constructors and assignment
   //==============================================================================
 
   constexpr Vector() noexcept = default;
@@ -199,6 +204,7 @@ public:
   // Modifiers
   //==============================================================================
 
+  // Doesn't change capacity
   HOSTDEV constexpr void
   clear() noexcept;
 
@@ -218,13 +224,6 @@ public:
   HOSTDEV constexpr void
   resize(Int n) noexcept;
 
-
-  HOSTDEV PURE constexpr auto
-  operator==(Vector const & v) const noexcept -> bool;
-
-  HOSTDEV PURE constexpr auto
-  operator!=(Vector const & v) const noexcept -> bool;
-
 }; // class Vector
 
 // Vector<bool> is a specialization that is not supported
@@ -232,6 +231,34 @@ template <>
 class Vector<bool>
 {
 };
+
+//==============================================================================
+// Relational operators
+//==============================================================================
+
+template <class T>
+HOSTDEV constexpr auto
+operator==(Vector<T> const & l, Vector<T> const & r) noexcept -> bool;
+
+template <class T>
+HOSTDEV constexpr auto
+operator<(Vector<T> const & l, Vector<T> const & r) noexcept -> bool;
+
+template <class T>
+HOSTDEV constexpr auto
+operator!=(Vector<T> const & l, Vector<T> const & r) noexcept -> bool;
+
+template <class T>
+HOSTDEV constexpr auto
+operator>(Vector<T> const & l, Vector<T> const & r) noexcept -> bool;
+
+template <class T>
+HOSTDEV constexpr auto
+operator<=(Vector<T> const & l, Vector<T> const & r) noexcept -> bool;
+
+template <class T>
+HOSTDEV constexpr auto
+operator>=(Vector<T> const & l, Vector<T> const & r) noexcept -> bool;
 
 //==============================================================================
 // Private member functions
@@ -272,9 +299,12 @@ Vector<T>::constructAtEnd(Int n, T const & value) noexcept
   }
 }
 
+
+// Construct n elements at the end of the vector, copying from [first, last)
+// n disambiguates the function from the previous one, but is not used when
+// asserts are disabled
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-// Construct n elements at the end of the vector, copying from [first, last)
 template <class T>
 template <class InputIt>
 HOSTDEV constexpr void
@@ -400,7 +430,7 @@ Vector<T>::append(Int n) noexcept
 }
 
 //==============================================================================
-// Constructors and assignment operators
+// Constructors and assignment
 //==============================================================================
 
 // Default construct n elements
@@ -447,6 +477,8 @@ HOSTDEV constexpr Vector<T>::Vector(T const * first, T const * last) noexcept
   Int const n = static_cast<Int>(last - first);
   this->allocate(n);
   constructAtEnd(n);
+  // Check for aliasing
+  ASSERT(!um2::is_pointer_in_range(first, last, _begin));
   um2::copy(first, last, _begin);
 }
 
@@ -501,6 +533,9 @@ template <class InputIt>
 HOSTDEV constexpr void
 Vector<T>::assign(InputIt first, InputIt last) noexcept
 {
+  // If [first, last) overlaps with the vector, we may have incorrect behavior.
+  // Since first and last are InputIterators and not pointers, we cannot check
+  // for overlap. :(
   Int const new_size = static_cast<Int>(last - first);
   if (new_size <= capacity()) {
     if (new_size > size()) {
@@ -753,96 +788,50 @@ Vector<T>::resize(Int const n) noexcept
   }
 }
 
-
-
-
+//==============================================================================
+// Relational operators
+//==============================================================================
 
 template <class T>
 HOSTDEV constexpr auto
-Vector<T>::operator==(Vector<T> const & v) const noexcept -> bool
+operator==(Vector<T> const & l, Vector<T> const & r) noexcept -> bool
 {
-  return size() == v.size() && um2::equal(cbegin(), cend(), v.cbegin());
+  return l.size() == r.size() && um2::equal(l.cbegin(), l.cend(), r.cbegin());
 }
 
 template <class T>
 HOSTDEV constexpr auto
-Vector<T>::operator!=(Vector<T> const & v) const noexcept -> bool
+operator<(Vector<T> const & l, Vector<T> const & r) noexcept -> bool
 {
-  return !(*this == v);
+  return um2::lexicographical_compare(l.cbegin(), l.cend(), r.cbegin(), r.cend());
 }
 
-//==============================================================================
-// Other public member functions
-//==============================================================================
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+template <class T>
+HOSTDEV constexpr auto
+operator!=(Vector<T> const & l, Vector<T> const & r) noexcept -> bool
+{
+  return !(l == r);
+}
+
+template <class T>
+HOSTDEV constexpr auto
+operator>(Vector<T> const & l, Vector<T> const & r) noexcept -> bool
+{
+  return r < l;
+}
+
+template <class T>
+HOSTDEV constexpr auto
+operator<=(Vector<T> const & l, Vector<T> const & r) noexcept -> bool
+{
+  return !(r < l);
+}
+
+template <class T>
+HOSTDEV constexpr auto
+operator>=(Vector<T> const & l, Vector<T> const & r) noexcept -> bool
+{
+  return !(l < r);
+}
 
 } // namespace um2

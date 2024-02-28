@@ -7,7 +7,11 @@
 
 #include "../test_macros.hpp"
 
+#if UM2_USE_CUDA
+#define CHECK_STD_VECTOR 0
+#else
 #define CHECK_STD_VECTOR 1
+#endif
 
 //==============================================================================
 // Constructors
@@ -15,55 +19,7 @@
 
 template <class T>
 HOSTDEV
-TEST_CASE(constructor_n)
-{
-  um2::Vector<T> const v(10);
-  ASSERT(v.cbegin() != nullptr);
-  ASSERT(v.cend() != nullptr);
-  ASSERT(v.size() == 10);
-  ASSERT(v.capacity() == 10);
-
-#if CHECK_STD_VECTOR
-  std::vector<T> const stdv(10);
-  ASSERT(stdv.size() == 10);
-  ASSERT(stdv.capacity() == 10);
-#endif
-}
-
-template <class T>
-HOSTDEV
-TEST_CASE(constructor_n_value)
-{
-  um2::Vector<T> v(10, 2);
-  ASSERT(v.cbegin() != nullptr);
-  ASSERT(v.cend() != nullptr);
-  ASSERT(v.size() == 10);
-  ASSERT(v.capacity() == 10);
-  for (int i = 0; i < 10; ++i) {
-    if constexpr (std::floating_point<T>) {
-      ASSERT_NEAR(v[i], static_cast<T>(2), static_cast<T>(1e-6));
-    } else {
-      ASSERT(v[i] == 2);
-    }
-  }
-
-#if CHECK_STD_VECTOR
-  std::vector<T> stdv(10, 2);
-  ASSERT(stdv.size() == 10);
-  ASSERT(stdv.capacity() == 10);
-  for (size_t i = 0; i < 10; ++i) {
-    if constexpr (std::floating_point<T>) {
-      ASSERT_NEAR(stdv[i], static_cast<T>(2), static_cast<T>(1e-6));
-    } else {
-      ASSERT(stdv[i] == 2);
-    }
-  }
-#endif
-}
-
-template <class T>
-HOSTDEV
-TEST_CASE(copy_constructor)
+TEST_CASE(constructor_copy)
 {
   um2::Vector<T> v(10);
   for (int i = 0; i < 10; i++) {
@@ -109,7 +65,6 @@ createVector(Int size) -> um2::Vector<T>
   return v;
 }
 
-
 #if CHECK_STD_VECTOR
 template <class T>
 auto
@@ -127,7 +82,7 @@ create_std_vector(Int size) -> std::vector<T>
 
 template <class T>
 HOSTDEV
-TEST_CASE(move_constructor)
+TEST_CASE(constructor_move)
 {
   um2::Vector<T> const v(um2::move(createVector<T>(10)));
   ASSERT(v.cbegin() != nullptr);
@@ -144,6 +99,53 @@ TEST_CASE(move_constructor)
 
 template <class T>
 HOSTDEV
+TEST_CASE(constructor_size)
+{
+  um2::Vector<T> const v(10);
+  ASSERT(v.cbegin() != nullptr);
+  ASSERT(v.cend() != nullptr);
+  ASSERT(v.size() == 10);
+  ASSERT(v.capacity() == 10);
+
+#if CHECK_STD_VECTOR
+  std::vector<T> const stdv(10);
+  ASSERT(stdv.size() == 10);
+  ASSERT(stdv.capacity() == 10);
+#endif
+}
+
+template <class T>
+HOSTDEV
+TEST_CASE(constructor_size_value)
+{
+  um2::Vector<T> v(10, 2);
+  ASSERT(v.cbegin() != nullptr);
+  ASSERT(v.cend() != nullptr);
+  ASSERT(v.size() == 10);
+  ASSERT(v.capacity() == 10);
+  for (int i = 0; i < 10; ++i) {
+    if constexpr (std::floating_point<T>) {
+      ASSERT_NEAR(v[i], static_cast<T>(2), static_cast<T>(1e-6));
+    } else {
+      ASSERT(v[i] == 2);
+    }
+  }
+
+#if CHECK_STD_VECTOR
+  std::vector<T> stdv(10, 2);
+  ASSERT(stdv.size() == 10);
+  ASSERT(stdv.capacity() == 10);
+  for (size_t i = 0; i < 10; ++i) {
+    if constexpr (std::floating_point<T>) {
+      ASSERT_NEAR(stdv[i], static_cast<T>(2), static_cast<T>(1e-6));
+    } else {
+      ASSERT(stdv[i] == 2);
+    }
+  }
+#endif
+}
+
+template <class T>
 TEST_CASE(constructor_initializer_list)
 {
   um2::Vector<T> v{1, 2, 3, 4, 5};
@@ -158,13 +160,9 @@ TEST_CASE(constructor_initializer_list)
   }
 }
 
-//==============================================================================
-// Operators
-//==============================================================================
-
 template <class T>
 HOSTDEV
-TEST_CASE(operator_copy)
+TEST_CASE(assign_copy)
 {
   um2::Vector<T> v(10);
   for (int i = 0; i < 10; i++) {
@@ -229,7 +227,7 @@ TEST_CASE(operator_copy)
 
 template <class T>
 HOSTDEV
-TEST_CASE(operator_move)
+TEST_CASE(assign_move)
 {
   um2::Vector<T> v1;
   v1 = um2::move(createVector<T>(10));
@@ -248,7 +246,7 @@ TEST_CASE(operator_move)
 
 template <class T>
 HOSTDEV
-TEST_CASE(operator_initializer_list)
+TEST_CASE(assign_initializer_list)
 {
   um2::Vector<T> v = {1, 2, 3, 4, 5};
   ASSERT(v.size() == 5);
@@ -262,18 +260,38 @@ TEST_CASE(operator_initializer_list)
   }
 }
 
+//==============================================================================
+// Relational operators
+//==============================================================================
+
 HOSTDEV
-TEST_CASE(operator_equal)
+TEST_CASE(relational_operators)
 {
-  um2::Vector<int> const v1 = {1, 2, 3, 4, 5};
-  um2::Vector<int> const v2 = {1, 2, 3, 4, 5};
-  um2::Vector<int> const v3 = {1, 2, 3, 4, 6};
+  um2::Vector<int> v1(3);
+  um2::Vector<int> v2(3);
+  um2::Vector<int> v3(3);
+  for (Int i = 0; i < 3; ++i) {
+    v1[i] = i;
+    v2[i] = i;
+    v3[i] = i;
+  }
+  v3[2] = 5;
   ASSERT(v1 == v2);
+  ASSERT(v1 <= v2);
+  ASSERT(v1 <= v3);
+  ASSERT(v3 >= v2);
+  ASSERT(v3 > v2);
+  ASSERT(v1 < v3);
   ASSERT(v1 != v3);
+  v2.push_back(4);
+  ASSERT(v1 != v2);
+  ASSERT(v1 <= v2);
+  ASSERT(v3 >= v2);
+  ASSERT(v3 > v2);
 }
 
 //==============================================================================--
-// Functions 
+// Modifiers
 //==============================================================================--
 
 // NOLINTBEGIN; justification: Just a quick test struct
@@ -508,7 +526,7 @@ TEST_CASE(push_back)
 
 template <class T>
 HOSTDEV
-TEST_CASE(push_back_lval_ref)
+TEST_CASE(push_back_rval_ref)
 {
   um2::Vector<T> l_value_vector;
   l_value_vector.push_back(static_cast<T>(1));
@@ -637,25 +655,25 @@ TEST_CASE(emplace_back)
 template <class T>
 TEST_SUITE(Vector)
 {
-  // Constructors
-  TEST_HOSTDEV(constructor_n, T)
-  TEST_HOSTDEV(constructor_n_value, T)
-  TEST_HOSTDEV(copy_constructor, T)
-  TEST_HOSTDEV(move_constructor, T)
-  TEST_HOSTDEV(constructor_initializer_list, T)
+  // Constructors and assignment
+  TEST_HOSTDEV(constructor_copy, T)
+  TEST_HOSTDEV(constructor_move, T)
+  TEST_HOSTDEV(constructor_size, T)
+  TEST_HOSTDEV(constructor_size_value, T)
+  TEST(constructor_initializer_list<T>)
+  TEST_HOSTDEV(assign_copy, T)
+  TEST_HOSTDEV(assign_move, T)
+  TEST(assign_initializer_list<T>)
 
   // Operators
-  TEST_HOSTDEV(operator_copy, T)
-  TEST_HOSTDEV(operator_move, T)
-  TEST_HOSTDEV(operator_initializer_list, T)
-  TEST_HOSTDEV(operator_equal)
+  TEST_HOSTDEV(relational_operators)
 
-  // Functions
+  // Modifiers 
   TEST_HOSTDEV(clear)
   TEST_HOSTDEV(resize, T)
   TEST_HOSTDEV(reserve, T)
   TEST_HOSTDEV(push_back, T)
-  TEST_HOSTDEV(push_back_lval_ref, T)
+  TEST_HOSTDEV(push_back_rval_ref, T)
   TEST_HOSTDEV(emplace_back)
 }
 

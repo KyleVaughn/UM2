@@ -1,15 +1,12 @@
+string functions
+
+init can be simplified to exclude short and long branches
+
+memmove
+
 use cppreference organization scheme for classes
 
-SSO option
-
-
-operator=(String const & s)
-__copy_assign_alloc
-
-
-// Comment all the string methods
-
-Make string resemble llvm more
+strtok for tokens
 
 eliminate sto
 

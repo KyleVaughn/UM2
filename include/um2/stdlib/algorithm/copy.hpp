@@ -3,7 +3,7 @@
 #include <um2/config.hpp>
 #include <um2/stdlib/assert.hpp>
 
-#include <cstring> // memmove
+#include <cstring> // memcpy
 #include <cstdio> // printf
 #include <iterator> // std::iterator_traits
 #include <type_traits>
@@ -36,7 +36,6 @@ struct CanLowerCopyToMemmove
                                 !std::is_volatile_v<From> && !std::is_volatile_v<To>;
 };
 
-// Ranges may overlap
 template <class InputIt, class OutputIt>
 HOSTDEV constexpr auto
 copyLoop(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
@@ -49,33 +48,23 @@ copyLoop(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
   return d_first;
 }
 
-// memmove does not exist on the device, so we just use the copy loop.
-
-#ifndef __CUDA_ARCH__
-
+// Clang takes issue with um2::copy in String.hpp, so we need to suppress the warning.
+// We conditionally call new and delete in String.hpp, but clang is bad at predicting
+// the control flow.
 template <class InputIt, class OutputIt>
-HOST constexpr auto
+HOSTDEV constexpr auto
 copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
 {
   using InT = typename std::iterator_traits<InputIt>::value_type;
   using OutT = typename std::iterator_traits<OutputIt>::value_type;
   if constexpr (CanLowerCopyToMemmove<InT, OutT>::value) {
+    // Since d_first in [first, last) is undefined, we can do better than memmove, 
+    // we can use memcpy.
     auto const n = static_cast<size_t>(last - first);
-    return static_cast<OutputIt>(std::memmove(d_first, first, n * sizeof(InT))) + n;
+    return static_cast<OutputIt>(memcpy(d_first, first, n * sizeof(InT))) + n;
   } else {
     return copyLoop(first, last, d_first);
   }
 }
-
-#else
-
-template <class InputIt, class OutputIt>
-DEVICE constexpr auto
-copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
-{
-  return copyLoop(first, last, d_first);
-}
-
-#endif
 
 } // namespace um2
