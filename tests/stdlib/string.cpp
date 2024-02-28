@@ -414,7 +414,6 @@ TEST_SUITE(String)
 //  TEST(int_float_constructors)
 //
   // Operators
-//  TEST_HOSTDEV(copy_assign)
 //  TEST(std_string_assign_operator)
 //  TEST_HOSTDEV(equals_operator)
 //  TEST_HOSTDEV(comparison)

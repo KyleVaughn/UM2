@@ -1,10 +1,7 @@
 string functions
+string tests
 
-init can be simplified to exclude short and long branches
-
-memmove
-
-use cppreference organization scheme for classes
+string init can be simplified to exclude short and long branches
 
 strtok for tokens
 

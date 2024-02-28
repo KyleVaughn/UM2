@@ -55,315 +55,300 @@ reset() noexcept
 // string
 template <>
 auto
-toBuffer(char * buffer_begin, char const * const & value) noexcept -> char *
+toBuffer(char * buffer_pos, char const * const & value) noexcept -> char *
 {
   char const * p = value;
   while (*p != '\0') {
-    *buffer_begin = *p;
+    *buffer_pos = *p;
     ++p;
-    ++buffer_begin;
+    ++buffer_pos;
   }
-  ASSERT(buffer_begin < buffer_end);
-  return buffer_begin;
-}
-
-// std::string
-template <>
-auto
-toBuffer(char * buffer_begin, std::string const & value) noexcept -> char *
-{
-  return toBuffer(buffer_begin, value.c_str());
+  ASSERT(buffer_pos < buffer_end);
+  return buffer_pos;
 }
 
 // char
 template <>
 auto
-toBuffer(char * buffer_begin, char const & value) noexcept -> char *
+toBuffer(char * buffer_pos, char const & value) noexcept -> char *
 {
-  *buffer_begin = value;
-  ++buffer_begin;
-  ASSERT(buffer_begin < buffer_end);
-  return buffer_begin;
+  *buffer_pos = value;
+  ++buffer_pos;
+  ASSERT(buffer_pos < buffer_end);
+  return buffer_pos;
 }
 
 // Use snprintf to convert the value to a string and store it in the buffer
 template <>
 auto
-toBuffer(char * buffer_begin, int32_t const & value) noexcept -> char *
+toBuffer(char * buffer_pos, int32_t const & value) noexcept -> char *
 {
   int32_t const len = snprintf(nullptr, 0, "%d", value);
   int32_t const written = snprintf(
-      buffer_begin, static_cast<uint64_t>(buffer_end - buffer_begin), "%d", value);
+      buffer_pos, static_cast<uint64_t>(buffer_end - buffer_pos), "%d", value);
   ASSERT(len == written);
-  ASSERT(buffer_begin + len < buffer_end);
-  return buffer_begin + len;
+  ASSERT(buffer_pos + len < buffer_end);
+  return buffer_pos + len;
 }
 
 template <>
 auto
-toBuffer(char * buffer_begin, uint32_t const & value) noexcept -> char *
+toBuffer(char * buffer_pos, uint32_t const & value) noexcept -> char *
 {
   int32_t const len = snprintf(nullptr, 0, "%u", value);
   int32_t const written = snprintf(
-      buffer_begin, static_cast<uint64_t>(buffer_end - buffer_begin), "%u", value);
+      buffer_pos, static_cast<uint64_t>(buffer_end - buffer_pos), "%u", value);
   ASSERT(len == written);
-  ASSERT(buffer_begin + len < buffer_end);
-  return buffer_begin + len;
+  ASSERT(buffer_pos + len < buffer_end);
+  return buffer_pos + len;
 }
 
 template <>
 auto
-toBuffer(char * buffer_begin, int64_t const & value) noexcept -> char *
+toBuffer(char * buffer_pos, int64_t const & value) noexcept -> char *
 {
   int32_t const len = snprintf(nullptr, 0, "%ld", value);
   int32_t const written = snprintf(
-      buffer_begin, static_cast<uint64_t>(buffer_end - buffer_begin), "%ld", value);
+      buffer_pos, static_cast<uint64_t>(buffer_end - buffer_pos), "%ld", value);
   ASSERT(len == written);
-  ASSERT(buffer_begin + len < buffer_end);
-  return buffer_begin + len;
+  ASSERT(buffer_pos + len < buffer_end);
+  return buffer_pos + len;
 }
 
 template <>
 auto
-toBuffer(char * buffer_begin, uint64_t const & value) noexcept -> char *
+toBuffer(char * buffer_pos, uint64_t const & value) noexcept -> char *
 {
   int32_t const len = snprintf(nullptr, 0, "%lu", value);
   int32_t const written = snprintf(
-      buffer_begin, static_cast<uint64_t>(buffer_end - buffer_begin), "%lu", value);
+      buffer_pos, static_cast<uint64_t>(buffer_end - buffer_pos), "%lu", value);
   ASSERT(len == written);
-  ASSERT(buffer_begin + len < buffer_end);
-  return buffer_begin + len;
+  ASSERT(buffer_pos + len < buffer_end);
+  return buffer_pos + len;
 }
 
 template <>
 auto
-toBuffer(char * buffer_begin, double const & value) noexcept -> char *
+toBuffer(char * buffer_pos, double const & value) noexcept -> char *
 {
   int32_t const len = snprintf(nullptr, 0, "%f", value);
   int32_t const written = snprintf(
-      buffer_begin, static_cast<uint64_t>(buffer_end - buffer_begin), "%f", value);
+      buffer_pos, static_cast<uint64_t>(buffer_end - buffer_pos), "%f", value);
   ASSERT(len == written);
-  ASSERT(buffer_begin + len < buffer_end);
-  return buffer_begin + len;
+  ASSERT(buffer_pos + len < buffer_end);
+  return buffer_pos + len;
 }
 
 template <>
 auto
-toBuffer(char * buffer_begin, float const & value) noexcept -> char *
+toBuffer(char * buffer_pos, float const & value) noexcept -> char *
 {
   // snprintf does not support float, so we cast to double
   auto const dvalue = static_cast<double>(value);
-  return toBuffer(buffer_begin, dvalue);
+  return toBuffer(buffer_pos, dvalue);
 }
 
 template <>
 auto
-toBuffer(char * buffer_begin, bool const & value) noexcept -> char *
+toBuffer(char * buffer_pos, bool const & value) noexcept -> char *
 {
   if (value) {
-    buffer_begin[0] = 't';
-    buffer_begin[1] = 'r';
-    buffer_begin[2] = 'u';
-    buffer_begin[3] = 'e';
-    buffer_begin += 4;
+    buffer_pos[0] = 't';
+    buffer_pos[1] = 'r';
+    buffer_pos[2] = 'u';
+    buffer_pos[3] = 'e';
+    buffer_pos += 4;
   } else {
-    buffer_begin[0] = 'f';
-    buffer_begin[1] = 'a';
-    buffer_begin[2] = 'l';
-    buffer_begin[3] = 's';
-    buffer_begin[4] = 'e';
-    buffer_begin += 5;
+    buffer_pos[0] = 'f';
+    buffer_pos[1] = 'a';
+    buffer_pos[2] = 'l';
+    buffer_pos[3] = 's';
+    buffer_pos[4] = 'e';
+    buffer_pos += 5;
   }
-  ASSERT(buffer_begin < buffer_end);
-  return buffer_begin;
+  ASSERT(buffer_pos < buffer_end);
+  return buffer_pos;
 }
 
 template <>
 auto
-toBuffer(char * buffer_begin, String const & value) noexcept -> char *
+toBuffer(char * buffer_pos, String const & value) noexcept -> char *
 {
-  char const * p = value.c_str();
-  while (*p != '\0') {
-    *buffer_begin = *p;
-    ++p;
-    ++buffer_begin;
-  }
-  ASSERT(buffer_begin < buffer_end);
-  return buffer_begin;
+  return toBuffer(buffer_pos, value.cbegin());
 }
 
 // NOLINTEND(clang-analyzer-deadcode.DeadStores,clang-diagnostic-unused-variable)
 #pragma GCC diagnostic pop
 
-//==============================================================================
+////==============================================================================
 
 // Add the timestamp to the buffer if the log is timestamped
 auto
-addTimestamp(char * buffer_begin) noexcept -> char *
+addTimestamp(char * buffer_pos) noexcept -> char *
 {
-  if (um2::settings::log::timestamped) {
+  if (timestamped) {
     Duration const elapsed_seconds = Clock::now() - start_time;
     Int const hours = static_cast<Int>(elapsed_seconds.count()) / 3600;
     Int const minutes = (static_cast<Int>(elapsed_seconds.count()) / 60) % 60;
     Int const seconds = static_cast<Int>(elapsed_seconds.count()) % 60;
     Int const milliseconds = static_cast<Int>(elapsed_seconds.count() * 1000) % 1000;
-    buffer_begin[0] = '[';
+    buffer_pos[0] = '[';
     if (hours < 10) {
-      buffer_begin[1] = '0';
-      buffer_begin[2] = static_cast<char>(hours + '0');
+      buffer_pos[1] = '0';
+      buffer_pos[2] = static_cast<char>(hours + '0');
     } else {
-      buffer_begin[1] = static_cast<char>(hours / 10 + '0');
-      buffer_begin[2] = static_cast<char>(hours % 10 + '0');
+      buffer_pos[1] = static_cast<char>(hours / 10 + '0');
+      buffer_pos[2] = static_cast<char>(hours % 10 + '0');
     }
-    buffer_begin[3] = ':';
+    buffer_pos[3] = ':';
     if (minutes < 10) {
-      buffer_begin[4] = '0';
-      buffer_begin[5] = static_cast<char>(minutes + '0');
+      buffer_pos[4] = '0';
+      buffer_pos[5] = static_cast<char>(minutes + '0');
     } else {
-      buffer_begin[4] = static_cast<char>(minutes / 10 + '0');
-      buffer_begin[5] = static_cast<char>(minutes % 10 + '0');
+      buffer_pos[4] = static_cast<char>(minutes / 10 + '0');
+      buffer_pos[5] = static_cast<char>(minutes % 10 + '0');
     }
-    buffer_begin[6] = ':';
+    buffer_pos[6] = ':';
     if (seconds < 10) {
-      buffer_begin[7] = '0';
-      buffer_begin[8] = static_cast<char>(seconds + '0');
+      buffer_pos[7] = '0';
+      buffer_pos[8] = static_cast<char>(seconds + '0');
     } else {
-      buffer_begin[7] = static_cast<char>(seconds / 10 + '0');
-      buffer_begin[8] = static_cast<char>(seconds % 10 + '0');
+      buffer_pos[7] = static_cast<char>(seconds / 10 + '0');
+      buffer_pos[8] = static_cast<char>(seconds % 10 + '0');
     }
-    buffer_begin[9] = '.';
+    buffer_pos[9] = '.';
     if (milliseconds < 10) {
-      buffer_begin[10] = '0';
-      buffer_begin[11] = '0';
-      buffer_begin[12] = static_cast<char>(milliseconds + '0');
+      buffer_pos[10] = '0';
+      buffer_pos[11] = '0';
+      buffer_pos[12] = static_cast<char>(milliseconds + '0');
     } else if (milliseconds < 100) {
-      buffer_begin[10] = '0';
-      buffer_begin[11] = static_cast<char>(milliseconds / 10 + '0');
-      buffer_begin[12] = static_cast<char>(milliseconds % 10 + '0');
+      buffer_pos[10] = '0';
+      buffer_pos[11] = static_cast<char>(milliseconds / 10 + '0');
+      buffer_pos[12] = static_cast<char>(milliseconds % 10 + '0');
     } else {
-      buffer_begin[10] = static_cast<char>(milliseconds / 100 + '0');
-      buffer_begin[11] = static_cast<char>((milliseconds % 100) / 10 + '0');
-      buffer_begin[12] = static_cast<char>((milliseconds % 100) % 10 + '0');
+      buffer_pos[10] = static_cast<char>(milliseconds / 100 + '0');
+      buffer_pos[11] = static_cast<char>((milliseconds % 100) / 10 + '0');
+      buffer_pos[12] = static_cast<char>((milliseconds % 100) % 10 + '0');
     }
-    buffer_begin[13] = ']';
-    buffer_begin[14] = ' ';
-    buffer_begin += 15;
+    buffer_pos[13] = ']';
+    buffer_pos[14] = ' ';
+    buffer_pos += 15;
   } // timestamped
-  return buffer_begin;
+  return buffer_pos;
 } // addTimestamp
 
 // Add the color to the buffer if the log is colorized
 auto
-addColor(int32_t const msg_level, char * buffer_begin) noexcept -> char *
+addColor(int32_t const msg_level, char * buffer_pos) noexcept -> char *
 {
   if (colorized) {
-    buffer_begin[0] = '\033';
-    buffer_begin[1] = '[';
-    buffer_begin[2] = '1';
-    buffer_begin[3] = ';';
-    buffer_begin[4] = '3';
-    buffer_begin[6] = 'm';
+    buffer_pos[0] = '\033';
+    buffer_pos[1] = '[';
+    buffer_pos[2] = '1';
+    buffer_pos[3] = ';';
+    buffer_pos[4] = '3';
+    buffer_pos[6] = 'm';
     switch (msg_level) {
     case levels::error: // RED
       // \033[1;31m
-      buffer_begin[5] = '1';
+      buffer_pos[5] = '1';
       break;
     case levels::warn: // YELLOW
       // \033[1;33m
-      buffer_begin[5] = '3';
+      buffer_pos[5] = '3';
       break;
     case levels::debug: // MAGENTA
       // \033[1;35m
-      buffer_begin[5] = '5';
+      buffer_pos[5] = '5';
       break;
     default: // NO COLOR
-      buffer_begin -= 7;
+      buffer_pos -= 7;
       break;
     }
-    buffer_begin += 7;
+    buffer_pos += 7;
   } // if (colorized)
-  return buffer_begin;
+  return buffer_pos;
 } // addColor
 
 // Add the level to the buffer
 auto
-addLevel(int32_t const msg_level, char * buffer_begin) noexcept -> char *
+addLevel(int32_t const msg_level, char * buffer_pos) noexcept -> char *
 {
   switch (msg_level) {
   case levels::error:
-    buffer_begin[0] = 'E';
-    buffer_begin[1] = 'R';
-    buffer_begin[2] = 'R';
-    buffer_begin[3] = 'O';
-    buffer_begin[4] = 'R';
-    buffer_begin += 5;
+    buffer_pos[0] = 'E';
+    buffer_pos[1] = 'R';
+    buffer_pos[2] = 'R';
+    buffer_pos[3] = 'O';
+    buffer_pos[4] = 'R';
+    buffer_pos += 5;
     break;
   case levels::warn:
-    buffer_begin[0] = 'W';
-    buffer_begin[1] = 'A';
-    buffer_begin[2] = 'R';
-    buffer_begin[3] = 'N';
-    buffer_begin += 4;
+    buffer_pos[0] = 'W';
+    buffer_pos[1] = 'A';
+    buffer_pos[2] = 'R';
+    buffer_pos[3] = 'N';
+    buffer_pos += 4;
     break;
   case levels::info:
-    buffer_begin[0] = 'I';
-    buffer_begin[1] = 'N';
-    buffer_begin[2] = 'F';
-    buffer_begin[3] = 'O';
-    buffer_begin += 4;
+    buffer_pos[0] = 'I';
+    buffer_pos[1] = 'N';
+    buffer_pos[2] = 'F';
+    buffer_pos[3] = 'O';
+    buffer_pos += 4;
     break;
   case levels::debug:
-    buffer_begin[0] = 'D';
-    buffer_begin[1] = 'E';
-    buffer_begin[2] = 'B';
-    buffer_begin[3] = 'U';
-    buffer_begin[4] = 'G';
-    buffer_begin += 5;
+    buffer_pos[0] = 'D';
+    buffer_pos[1] = 'E';
+    buffer_pos[2] = 'B';
+    buffer_pos[3] = 'U';
+    buffer_pos[4] = 'G';
+    buffer_pos += 5;
     break;
   default:
-    buffer_begin[0] = 'U';
-    buffer_begin[1] = 'N';
-    buffer_begin[2] = 'K';
-    buffer_begin[3] = 'N';
-    buffer_begin[4] = 'O';
-    buffer_begin[5] = 'W';
-    buffer_begin[6] = 'N';
-    buffer_begin += 7;
+    buffer_pos[0] = 'U';
+    buffer_pos[1] = 'N';
+    buffer_pos[2] = 'K';
+    buffer_pos[3] = 'N';
+    buffer_pos[4] = 'O';
+    buffer_pos[5] = 'W';
+    buffer_pos[6] = 'N';
+    buffer_pos += 7;
     break;
   }
-  buffer_begin[0] = ' ';
-  buffer_begin[1] = '-';
-  buffer_begin[2] = ' ';
-  return buffer_begin + 3;
+  buffer_pos[0] = ' ';
+  buffer_pos[1] = '-';
+  buffer_pos[2] = ' ';
+  return buffer_pos + 3;
 } // addLevel
 
 // Set the preamble of the message
 auto
 setPreamble(int32_t const msg_level) noexcept -> char *
 {
-  char * buffer_begin = addressof(buffer[0]);
-  buffer_begin = addColor(msg_level, buffer_begin);
-  buffer_begin = addTimestamp(buffer_begin);
-  buffer_begin = addLevel(msg_level, buffer_begin);
-  return buffer_begin;
+  char * buffer_pos = um2::addressof(buffer[0]);
+  buffer_pos = addColor(msg_level, buffer_pos);
+  buffer_pos = addTimestamp(buffer_pos);
+  buffer_pos = addLevel(msg_level, buffer_pos);
+  return buffer_pos;
 }
 
 // Set the postamble of the message
 void
-setPostamble(char * buffer_begin) noexcept
+setPostamble(char * buffer_pos) noexcept
 {
   // Reset color
   if (colorized) {
-    buffer_begin[0] = '\033';
-    buffer_begin[1] = '[';
-    buffer_begin[2] = '0';
-    buffer_begin[3] = 'm';
-    buffer_begin += 4;
+    buffer_pos[0] = '\033';
+    buffer_pos[1] = '[';
+    buffer_pos[2] = '0';
+    buffer_pos[3] = 'm';
+    buffer_pos += 4;
   }
-  ASSERT(buffer_begin < buffer_end);
+  ASSERT(buffer_pos < buffer_end);
 
   // Ensure null-terminated string
-  buffer_begin[0] = '\0';
+  buffer_pos[0] = '\0';
 }
 
 } // namespace um2::log

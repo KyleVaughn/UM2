@@ -68,28 +68,28 @@ reset() noexcept;
 // Write types to the buffer
 template <class T>
 auto
-toBuffer(char * buffer_begin, T const & value) noexcept -> char *;
+toBuffer(char * buffer_pos, T const & value) noexcept -> char *;
 
 // Handle fixed-size character arrays by treating them as pointer
 template <uint64_t N>
 auto
-toBuffer(char * buffer_begin, char const (&value)[N]) noexcept -> char *
+toBuffer(char * buffer_pos, char const (&value)[N]) noexcept -> char *
 {
   char const * const p = value;
-  return toBuffer(buffer_begin, p);
+  return toBuffer(buffer_pos, p);
 }
 
 // Add the timestamp to the buffer if the log is timestamped
 auto
-addTimestamp(char * buffer_begin) noexcept -> char *;
+addTimestamp(char * buffer_pos) noexcept -> char *;
 
 // Add color to the buffer if the log is colorized
 auto
-addColor(int32_t msg_level, char * buffer_begin) noexcept -> char *;
+addColor(int32_t msg_level, char * buffer_pos) noexcept -> char *;
 
 // Add the log level to the buffer
 auto
-addLevel(int32_t msg_level, char * buffer_begin) noexcept -> char *;
+addLevel(int32_t msg_level, char * buffer_pos) noexcept -> char *;
 
 // Set the preamble of the message
 auto
@@ -97,7 +97,7 @@ setPreamble(int32_t msg_level) noexcept -> char *;
 
 // Set the postamble of the message
 void
-setPostamble(char * buffer_begin) noexcept;
+setPostamble(char * buffer_pos) noexcept;
 
 // Print the message
 template <class... Args>
@@ -105,16 +105,16 @@ void
 printMessage(int32_t const msg_level, Args const &... args) noexcept
 {
   if (msg_level <= level) {
-    char * buffer_begin = setPreamble(msg_level);
+    char * buffer_pos = setPreamble(msg_level);
 
     // Use fold expression to send each argument to the buffer.
-    // We need a lambda function to capture the buffer_begin variable, since it is
+    // We need a lambda function to capture the buffer_pos variable, since it is
     // not a template parameter.
-    ([&buffer_begin](auto const & arg) { buffer_begin = toBuffer(buffer_begin, arg); }(
+    ([&buffer_pos](auto const & arg) { buffer_pos = toBuffer(buffer_pos, arg); }(
          args),
      ...);
 
-    setPostamble(buffer_begin);
+    setPostamble(buffer_pos);
 
     // Print the message
     int fprintf_result = 0;

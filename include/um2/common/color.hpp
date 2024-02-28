@@ -14,10 +14,10 @@ namespace um2
 
 class Color
 {
-  uint8_t _r{};
-  uint8_t _g{};
-  uint8_t _b{};
-  uint8_t _a{255};
+  uint8_t _r = 0;
+  uint8_t _g = 0;
+  uint8_t _b = 0;
+  uint8_t _a = 255;
 
 public:
   //==============================================================================

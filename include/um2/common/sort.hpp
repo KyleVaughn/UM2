@@ -5,7 +5,7 @@
 #include <um2/stdlib/utility/move.hpp>
 #include <um2/stdlib/vector.hpp>
 
-#include <algorithm>
+#include <algorithm> // std::sort
 
 //==============================================================================
 // SORT
@@ -33,7 +33,7 @@ HOSTDEV void
 insertionSort(T * const first, T const * const last) noexcept
 {
   // Not the clearest implementation, but the assembly is much better than
-  // the obvious implementation found on Wikipedia.
+  // the obvious implementation
   if (first == last) {
     return;
   }
@@ -114,7 +114,13 @@ applyPermutation(Vector<T> & v, Vector<Int> const & perm) noexcept
 //==============================================================================
 // Compute the inverse of the permutation perm and store it in inv_perm.
 
-void
-invertPermutation(Vector<Int> const & perm, Vector<Int> & inv_perm) noexcept;
+inline void
+invertPermutation(Vector<Int> const & perm, Vector<Int> & inv_perm) noexcept
+{
+  ASSERT(perm.size() == inv_perm.size());    
+  for (Int i = 0; i < perm.size(); ++i) {    
+    inv_perm[perm[i]] = i;    
+  } 
+}
 
 } // namespace um2

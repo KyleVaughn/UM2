@@ -2,9 +2,6 @@
 
 #include "../test_macros.hpp"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunreachable-code"
-
 // clang-tidy complains that these can be static asserts, but gcc complains when they are
 // NOLINTBEGIN(cert-dcl03-c,misc-static-assert) justified
 HOSTDEV
@@ -114,5 +111,3 @@ main() -> int
   RUN_SUITE(color);
   return 0;
 }
-
-#pragma GCC diagnostic pop
