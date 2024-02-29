@@ -1,6 +1,7 @@
 #pragma once
 
 #include <um2/common/cast_if_not.hpp>
+#include <um2/math/simd.hpp>
 #include <um2/math/vec.hpp>
 
 //==============================================================================
@@ -21,7 +22,12 @@ template <Int D>
 using Point = Vec<D, Float>;
 
 using Point1 = Point<1>;
-using Point2 = Point<2>;
+
+#if UM2_ENABLE_SIMD_P2
+using Point2 = SIMD<2, Float>; 
+#else
+using Point2 = Vec<2, Float>;
+#endif
 using Point3 = Point<3>;
 
 //==============================================================================
@@ -43,8 +49,22 @@ inline constexpr Float eps_distance2 = castIfNot<Float>(1e-12);
 inline constexpr Float inf_distance = castIfNot<Float>(1e8); // 1000 km
 
 //==============================================================================
-// Methods
+// Functions 
 //==============================================================================
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+squaredDistance(Point<D> const & a, Point<D> const & b) noexcept -> Float
+{
+  return squaredNorm(a - b);
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+distance(Point<D> const & a, Point<D> const & b) noexcept -> Float
+{
+  return um2::sqrt(squaredDistance(a, b)); 
+}
 
 template <Int D>
 PURE HOSTDEV constexpr auto
@@ -59,7 +79,7 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 isApprox(Point<D> const & a, Point<D> const & b) noexcept -> bool
 {
-  return a.squaredDistanceTo(b) < eps_distance2;
+  return squaredDistance(a, b) < eps_distance2;
 }
 
 // Are 3 planar points in counter-clockwise order?
@@ -67,12 +87,10 @@ PURE HOSTDEV constexpr auto
 areCCW(Point2 const & a, Point2 const & b, Point2 const & c) noexcept -> bool
 {
   // 2D cross product, of (b - a) and (c - a).
-  auto const ab_x = b[0] - a[0];
-  auto const ab_y = b[1] - a[1];
-  auto const ac_x = c[0] - a[0];
-  auto const ac_y = c[1] - a[1];
+  auto const ab = b - a;
+  auto const ac = c - a;
   // Allow equality, so that we can handle collinear points.
-  return 0 <= (ab_x * ac_y - ab_y * ac_x);
+  return 0 <= cross(ab, ac);
 }
 
 // Are 3 planar points in counter-clockwise order? We allow for a small amount of
@@ -81,11 +99,19 @@ PURE HOSTDEV constexpr auto
 areApproxCCW(Point2 const & a, Point2 const & b, Point2 const & c) noexcept -> bool
 {
   // 2D cross product, of (b - a) and (c - a).
-  auto const ab_x = b[0] - a[0];
-  auto const ab_y = b[1] - a[1];
-  auto const ac_x = c[0] - a[0];
-  auto const ac_y = c[1] - a[1];
-  return -eps_distance <= (ab_x * ac_y - ab_y * ac_x);
+  auto const ab = b - a;
+  auto const ac = c - a;
+  return -eps_distance <= cross(ab, ac); 
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+makePoint(T x, T y) noexcept -> Point2
+{
+  Point2 p;
+  p[0] = x;
+  p[1] = y;
+  return p; 
 }
 
 } // namespace um2

@@ -1,5 +1,6 @@
 add_um2_test(./morton.cpp)
 add_um2_test(./stats.cpp)
+add_um2_test(./simd.cpp)
 add_um2_test(./vec.cpp)
 add_um2_test(./mat.cpp)
 add_um2_test(./angular_quadrature.cpp)

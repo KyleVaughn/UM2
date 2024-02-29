@@ -32,10 +32,10 @@ TEST_CASE(distance)
 {
   um2::Point<D> const p1 = makep1<D>();
   um2::Point<D> const p2 = makep2<D>();
-  Float const d2 = p1.squaredDistanceTo(p2);
+  Float const d2 = um2::squaredDistance(p1, p2);
   ASSERT_NEAR(d2, D, eps);
 
-  Float d = p1.distanceTo(p2);
+  Float d = um2::distance(p1, p2);
   d *= d;
   ASSERT_NEAR(d, static_cast<Float>(D), eps);
 }
@@ -75,9 +75,9 @@ TEST_CASE(isApprox)
 HOSTDEV
 TEST_CASE(areCCW)
 {
-  um2::Point2 const p1(0, 0);
-  um2::Point2 const p2(1, 1);
-  um2::Point2 const p3(2, -4);
+  um2::Point2 const p1 = um2::makePoint(0, 0);
+  um2::Point2 const p2 = um2::makePoint(1, 1);
+  um2::Point2 const p3 = um2::makePoint(2, -4);
   bool b = um2::areCCW(p1, p2, p3);
   ASSERT(!b);
   b = um2::areCCW(p1, p3, p2);
@@ -87,9 +87,9 @@ TEST_CASE(areCCW)
 HOSTDEV
 TEST_CASE(areApproxCCW)
 {
-  um2::Point2 const p1(0, 0);
-  um2::Point2 const p2(1, 1);
-  um2::Point2 p3(2, 2);
+  um2::Point2 const p1 = um2::makePoint(0, 0);
+  um2::Point2 const p2 = um2::makePoint(1, 1);
+  um2::Point2 p3 = um2::makePoint(2, 2);
   bool b = um2::areApproxCCW(p1, p2, p3);
   ASSERT(b);
   b = um2::areApproxCCW(p1, p3, p2);

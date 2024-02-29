@@ -38,19 +38,28 @@
 
 #define ASSERT(cond) assert(cond)
 
-template <class A, class B, class EPS>
-inline void
-// NOLINTNEXTLINE(readability-identifier-naming)
-ASSERT_NEAR(A const & a, B const & b, EPS const & eps)
-{
-  A const bb = static_cast<A>(b);
-  auto const diff = a < bb ? bb - a : a - bb;
-  if constexpr (std::same_as<A, EPS>) {
-    assert(diff <= eps);
-  } else {
-    assert(diff <= static_cast<A>(eps));
-  }
+//template <class A, class B, class EPS>
+//inline void
+//// NOLINTNEXTLINE(readability-identifier-naming)
+//ASSERT_NEAR(A const & a, B const & b, EPS const & eps)
+//{
+//  A const bb = static_cast<A>(b);
+//  auto const diff = a < bb ? bb - a : a - bb;
+//  if constexpr (std::same_as<A, EPS>) {
+//    assert(diff <= eps);
+//  } else {
+//    assert(diff <= static_cast<A>(eps));
+//  }
+//}
+
+#define ASSERT_NEAR(a, b, eps) \
+{                              \
+  auto const a_eval = (a);     \
+  auto const b_eval = (b);     \
+  auto const eps_eval = (eps); \
+  ASSERT(a_eval < b_eval ? b_eval - a_eval <= eps_eval : a_eval - b_eval <= eps_eval); \
 }
+
 
 #define TEST_CASE(name) void name()
 

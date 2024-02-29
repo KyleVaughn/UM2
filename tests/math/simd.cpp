@@ -1,12 +1,17 @@
-#include <um2/math/vec.hpp>
+#include <um2/math/simd.hpp>
 
 #include "../test_macros.hpp"
 
+// We know the ABI will be different based upon if the CPU supports
+// SSE, AVX, etc. or the compiler options.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpsabi"
+
 template <Int D, typename T>
 HOSTDEV constexpr auto
-makeVec() -> um2::Vec<D, T>
+makeSIMD() -> um2::SIMD<D, T>
 {
-  um2::Vec<D, T> v;
+  um2::SIMD<D, T> v;
   for (Int i = 0; i < D; ++i) {
     v[i] = static_cast<T>(i + 1);
   }
@@ -17,7 +22,10 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(accessor)
 {
-  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::SIMD<D, T> v; //= makeSIMD<D, T>();
+  for (Int i = 0; i < D; ++i) {
+    v[i] = static_cast<T>(i + 1);
+  }
   if constexpr (std::floating_point<T>) {
     for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
@@ -33,8 +41,8 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_add)
 {
-  um2::Vec<D, T> v = makeVec<D, T>();
-  um2::Vec<D, T> const v2 = makeVec<D, T>();
+  um2::SIMD<D, T> v = makeSIMD<D, T>();
+  um2::SIMD<D, T> const v2 = makeSIMD<D, T>();
   v += v2;
   if constexpr (std::floating_point<T>) {
     for (Int i = 0; i < D; ++i) {
@@ -51,8 +59,8 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_sub)
 {
-  um2::Vec<D, T> v = makeVec<D, T>();
-  um2::Vec<D, T> const v2 = makeVec<D, T>();
+  um2::SIMD<D, T> v = makeSIMD<D, T>();
+  um2::SIMD<D, T> const v2 = makeSIMD<D, T>();
   v -= v2;
   if constexpr (std::floating_point<T>) {
     for (Int i = 0; i < D; ++i) {
@@ -69,8 +77,8 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_mul)
 {
-  um2::Vec<D, T> v = makeVec<D, T>();
-  um2::Vec<D, T> const v2 = makeVec<D, T>();
+  um2::SIMD<D, T> v = makeSIMD<D, T>();
+  um2::SIMD<D, T> const v2 = makeSIMD<D, T>();
   v *= v2;
   if constexpr (std::floating_point<T>) {
     for (Int i = 0; i < D; ++i) {
@@ -87,8 +95,8 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_div)
 {
-  um2::Vec<D, T> v = makeVec<D, T>();
-  um2::Vec<D, T> const v2 = makeVec<D, T>();
+  um2::SIMD<D, T> v = makeSIMD<D, T>();
+  um2::SIMD<D, T> const v2 = makeSIMD<D, T>();
   v /= v2;
   if constexpr (std::floating_point<T>) {
     for (Int i = 0; i < D; ++i) {
@@ -105,7 +113,7 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_scalar_add)
 {
-  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::SIMD<D, T> v = makeSIMD<D, T>();
   v += 2;
   if constexpr (std::floating_point<T>) {
     for (Int i = 0; i < D; ++i) {
@@ -122,7 +130,7 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_scalar_sub)
 {
-  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::SIMD<D, T> v = makeSIMD<D, T>();
   v -= 2;
   if constexpr (std::floating_point<T>) {
     for (Int i = 0; i < D; ++i) {
@@ -139,7 +147,7 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_scalar_mul)
 {
-  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::SIMD<D, T> v = makeSIMD<D, T>();
   v *= 2;
   if constexpr (std::floating_point<T>) {
     for (Int i = 0; i < D; ++i) {
@@ -156,7 +164,7 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(compound_scalar_div)
 {
-  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::SIMD<D, T> v = makeSIMD<D, T>();
   v /= 2;
   if constexpr (std::floating_point<T>) {
     for (Int i = 0; i < D; ++i) {
@@ -173,12 +181,10 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(min)
 {
-  um2::Vec<D, T> const v0 = makeVec<D, T>();
-  um2::Vec<D, T> v1 = makeVec<D, T>();
-  for (Int i = 0; i < D; ++i) {
-    v1[i] += 1;
-  }
-  v1 = um2::min(v0, v1);
+  um2::SIMD<D, T> const v0 = makeSIMD<D, T>();
+  um2::SIMD<D, T> v1 = makeSIMD<D, T>();
+  v1 += 1;
+  v1 = um2::min<D>(v1, v0);
   if constexpr (std::floating_point<T>) {
     for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v1[i], static_cast<T>(i + 1), static_cast<T>(1e-6));
@@ -194,12 +200,10 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(max)
 {
-  um2::Vec<D, T> v0 = makeVec<D, T>();
-  um2::Vec<D, T> v1 = makeVec<D, T>();
-  for (Int i = 0; i < D; ++i) {
-    v0[i] += 1;
-  }
-  v1 = um2::max(v0, v1);
+  um2::SIMD<D, T> const v0 = makeSIMD<D, T>();
+  um2::SIMD<D, T> v1 = makeSIMD<D, T>();
+  v1 += 1;
+  v1 = um2::max<D>(v0, v1);
   if constexpr (std::floating_point<T>) {
     for (Int i = 0; i < D; ++i) {
       ASSERT_NEAR(v1[i], static_cast<T>(i + 2), static_cast<T>(1e-6));
@@ -215,8 +219,9 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(dot)
 {
-  um2::Vec<D, T> const v = makeVec<D, T>();
-  T dot = um2::dot(v, v);
+  um2::SIMD<D, T> const v = makeSIMD<D, T>();
+  // Compiler has trouble with infering D in the template argument
+  T dot = um2::dot<D>(v, v);
   if constexpr (std::floating_point<T>) {
     ASSERT_NEAR(dot, static_cast<T>(D * (D + 1) * (2 * D + 1)) / 6, static_cast<T>(1e-6));
   } else {
@@ -228,8 +233,8 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(squaredNorm)
 {
-  um2::Vec<D, T> const v = makeVec<D, T>();
-  T norm2 = um2::squaredNorm(v);
+  um2::SIMD<D, T> const v = makeSIMD<D, T>();
+  T norm2 = um2::squaredNorm<D>(v);
   if constexpr (std::floating_point<T>) {
     ASSERT_NEAR(norm2, static_cast<T>(D * (D + 1) * (2 * D + 1)) / 6,
                 static_cast<T>(1e-6));
@@ -242,35 +247,32 @@ template <Int D, typename T>
 HOSTDEV
 TEST_CASE(norm)
 {
-  um2::Vec<D, T> const v = makeVec<D, T>();
+  um2::SIMD<D, T> const v = makeSIMD<D, T>();
   T norm = um2::norm<D>(v);
   T ref = um2::sqrt(static_cast<T>(D * (D + 1) * (2 * D + 1)) / 6);
   ASSERT_NEAR(norm, ref, static_cast<T>(1e-6));
 }
 
-template <Int D, typename T>       
-HOSTDEV    
-TEST_CASE(normalized)                         
-{    
-  um2::Vec<D, T> const v = makeVec<D, T>();    
-  um2::Vec<D, T> const vn = um2::normalized(v);    
-  ASSERT_NEAR(um2::norm(vn), 1, static_cast<T>(1e-6));    
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(normalized)
+{
+  um2::SIMD<D, T> const v = makeSIMD<D, T>();
+  um2::SIMD<D, T> const vn = um2::normalized<D>(v);
+  ASSERT_NEAR(um2::norm<D>(vn), 1, static_cast<T>(1e-6));
 }
 
 template <Int D, typename T>
 HOSTDEV
 TEST_CASE(cross)
 {
-  if constexpr (D == 3) {
-    um2::Vec<D, T> const v0(1, 2, 3);
-    um2::Vec<D, T> const v1(2, 3, 4);
-    um2::Vec<D, T> v = um2::cross(v0, v1);
-    ASSERT_NEAR(v[0], -1, static_cast<T>(1e-6));
-    ASSERT_NEAR(v[1], 2, static_cast<T>(1e-6));
-    ASSERT_NEAR(v[2], -1, static_cast<T>(1e-6));
-  } else if constexpr (D == 2) {
-    um2::Vec2<T> const v0(1, 2);
-    um2::Vec2<T> const v1(3, 4);
+  if constexpr (D == 2) {
+    um2::SIMD<2, T> v0;
+    v0[0] = 1;
+    v0[1] = 2;
+    um2::SIMD<2, T> v1;
+    v1[0] = 3;
+    v1[1] = 4;
     T x = um2::cross(v0, v1);
     ASSERT_NEAR(x, -2, static_cast<T>(1e-6));
   }
@@ -335,7 +337,7 @@ MAKE_CUDA_KERNEL(normalized, D, T);
 #endif
 
 template <Int D, typename T>
-TEST_SUITE(vec)
+TEST_SUITE(simd)
 {
   TEST_HOSTDEV(accessor, D, T);
   TEST_HOSTDEV(compound_add, D, T);
@@ -360,23 +362,22 @@ TEST_SUITE(vec)
 auto
 main() -> int
 {
-  RUN_SUITE((vec<2, Float>));
-  RUN_SUITE((vec<2, Int>));
+  RUN_SUITE((simd<2, Float>));
+  RUN_SUITE((simd<2, Int>));
 
-  RUN_SUITE((vec<3, Float>));
-  RUN_SUITE((vec<3, Int>));
+  RUN_SUITE((simd<4, Float>));
+  RUN_SUITE((simd<4, Int>));
 
-  RUN_SUITE((vec<4, Float>));
-  RUN_SUITE((vec<4, Int>));
+  RUN_SUITE((simd<8, Float>));
+  RUN_SUITE((simd<8, Int>));
 
-  RUN_SUITE((vec<8, Float>));
-  RUN_SUITE((vec<8, Int>));
+  RUN_SUITE((simd<16, Float>));
+  RUN_SUITE((simd<16, Int>));
 
-  RUN_SUITE((vec<16, Float>));
-  RUN_SUITE((vec<16, Int>));
-
-  RUN_SUITE((vec<32, Float>));
-  RUN_SUITE((vec<32, Int>));
+  RUN_SUITE((simd<32, Float>));
+  RUN_SUITE((simd<32, Int>));
 
   return 0;
 }
+
+#pragma clang diagnostic pop

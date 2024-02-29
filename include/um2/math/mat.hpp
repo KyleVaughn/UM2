@@ -11,7 +11,7 @@
 // at compile time. The matrix is stored in column-major order.
 //
 // Anything larger than a very small matrix should be handled using something
-// like OpenBLAS, cuBLAS, Eigen, etc. We currently only use this for 2x2 and 3x3.
+// like OpenBLAS, cuBLAS, Eigen, etc. We currently only use this for 2x2.
 
 namespace um2
 {
@@ -123,7 +123,7 @@ requires(sizeof...(Cols) == N) HOSTDEV constexpr Mat<M, N, T>::Mat(Cols... cols)
 }
 
 //==============================================================================
-// Methods
+// Free functions 
 //==============================================================================
 
 template <typename T>

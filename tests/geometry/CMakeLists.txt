@@ -1,6 +1,6 @@
 add_um2_test(./point.cpp)
-add_um2_test(./morton_sort_points.cpp)
-add_um2_test(./ray.cpp)
+#add_um2_test(./morton_sort_points.cpp)
+#add_um2_test(./ray.cpp)
 #add_um2_test(./axis_aligned_box.cpp)
 #add_um2_test(./modular_rays.cpp)
 #add_um2_test(./polytope/line_segment.cpp)

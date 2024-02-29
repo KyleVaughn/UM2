@@ -27,12 +27,22 @@
 // supported (such as on GPU), then we emulate the BMI2 intrinsics using a
 // portable algorithm.
 //
+// AMD Ryzen CPUs prior to Zen 3 are reported to have poor BMI2 performance.
+// It would be helpful to have a compile time check for problem CPUs, but this
+// is non-trivial.
+//
 // NOTE: We cannot use the BMI2 intrinsics when compiling with CUDA because
 // including <immintrin.h> causes compilation errors due to conflicting
 // definitions for 16-bit types
 // See https://github.com/KyleVaughn/UM2/issues/130
 
-#if defined(__BMI2__) && !UM2_USE_CUDA
+#if defined(__BMI2__) && UM2_ENABLE_BMI2 && !UM2_USE_CUDA
+#define BMI2_SUPPORTED 1
+#else
+#define BMI2_SUPPORTED 0
+#endif
+
+#if BMI2_SUPPORTED
 #  include <immintrin.h> // _pdep_u64, _pext_u64, _pdep_u32, _pext_u32
 #endif
 
@@ -52,8 +62,7 @@ inline constexpr U max_2d_morton_coord = (static_cast<U>(1) << (4 * sizeof(U))) 
 template <std::unsigned_integral U>
 inline constexpr U max_3d_morton_coord = (static_cast<U>(1) << (8 * sizeof(U) / 3)) - 1;
 
-// If BMI2 is supported
-#if defined(__BMI2__) && !UM2_USE_CUDA // && !defined(__CUDA_ARCH__)
+#if BMI2_SUPPORTED 
 
 //==============================================================================
 // BMI2 intrinsics
@@ -146,8 +155,7 @@ mortonDecode(U const morton, U & x, U & y, U & z) noexcept
   z = pext(morton, bmi_3d_z_mask<U>);
 }
 
-// If BMI2 is not supported
-#else // defined(__BMI2__) && !UM2_USE_CUDA
+#else // BMI2_SUPPORTED
 
 //==============================================================================
 // BMI2 intrinsics emulation
@@ -304,7 +312,7 @@ mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y, uint64_t & z) no
   z = pext0x9249249249249249(morton >> 2);
 }
 
-#endif // defined(__BMI2__) && !defined(__CUDA_ARCH__)
+#endif // BMI2_SUPPORTED
 
 //==============================================================================
 // Morton encoding/decoding floats (normalized to [0,1])
