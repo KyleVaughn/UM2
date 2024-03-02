@@ -1,5 +1,6 @@
 #pragma once
 
+#include <um2/stdlib/math/abs.hpp>
 #include <um2/geometry/point.hpp>
 #include <um2/common/cast_if_not.hpp>
 
@@ -16,14 +17,14 @@ class Ray
 {
 
   Point<D> _o;  // origin
-  Vec<D, Float> _d; // direction (unit vector)
+  Point<D> _d; // direction (unit vector)
 
 public:
   //============================================================================
   // Constructors
   //============================================================================
 
-  HOSTDEV constexpr Ray(Point<D> const & origin, Vec<D, Float> const & direction) noexcept
+  HOSTDEV constexpr Ray(Point<D> const & origin, Point<D> const & direction) noexcept
       : _o(origin),
         _d(direction)
   {
@@ -42,13 +43,13 @@ public:
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  direction() const noexcept -> Vec<D, Float> const &
+  direction() const noexcept -> Point<D> const &
   {
     return _d;
   }
 
   //============================================================================
-  // Methods
+  // Other member functions
   //============================================================================
 
   PURE HOSTDEV constexpr auto

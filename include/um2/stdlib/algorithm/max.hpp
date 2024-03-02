@@ -9,12 +9,7 @@ template <class T>
 PURE HOSTDEV [[nodiscard]] inline constexpr auto
 max(T const & a, T const & b) noexcept -> T const &
 {
-  // max should not care about the scope of the arguments
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wreturn-stack-address"
-  // NOLINTNEXTLINE(clang-analyzer-core.StackAddressEscape,clang-diagnostic-return-stack-address)
   return a < b ? b : a;
-#pragma GCC diagnostic pop
 }
 
 } // namespace um2

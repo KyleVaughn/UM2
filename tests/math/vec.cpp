@@ -13,6 +13,28 @@ makeVec() -> um2::Vec<D, T>
   return v;
 }
 
+static consteval auto     
+isPowerOf2(Int x) noexcept -> bool         
+{                                          
+  return (x & (x - 1)) == 0;               
+};                                         
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(isSIMD)
+{
+  um2::Vec<D, T> const v = makeVec<D, T>();
+  if constexpr (isPowerOf2(D)) {
+#if UM2_ENABLE_SIMD_VEC
+    ASSERT(v.isSIMD());
+#else
+    ASSERT(!v.isSIMD());
+#endif
+  } else {
+    ASSERT(!v.isSIMD());
+  } 
+}
+
 template <Int D, typename T>
 HOSTDEV
 TEST_CASE(accessor)
@@ -171,6 +193,22 @@ TEST_CASE(compound_scalar_div)
 
 template <Int D, typename T>
 HOSTDEV
+TEST_CASE(zero)
+{
+  um2::Vec<D, T> const v = um2::Vec<D, T>::zero();
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(v[i], 0, static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(v[i] == 0);
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
 TEST_CASE(min)
 {
   um2::Vec<D, T> const v0 = makeVec<D, T>();
@@ -248,13 +286,13 @@ TEST_CASE(norm)
   ASSERT_NEAR(norm, ref, static_cast<T>(1e-6));
 }
 
-template <Int D, typename T>       
-HOSTDEV    
-TEST_CASE(normalized)                         
-{    
-  um2::Vec<D, T> const v = makeVec<D, T>();    
-  um2::Vec<D, T> const vn = um2::normalized(v);    
-  ASSERT_NEAR(um2::norm(vn), 1, static_cast<T>(1e-6));    
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(normalized)
+{
+  um2::Vec<D, T> const v = makeVec<D, T>();
+  um2::Vec<D, T> const vn = um2::normalized(v);
+  ASSERT_NEAR(um2::norm(vn), 1, static_cast<T>(1e-6));
 }
 
 template <Int D, typename T>
@@ -273,6 +311,169 @@ TEST_CASE(cross)
     um2::Vec2<T> const v1(3, 4);
     T x = um2::cross(v0, v1);
     ASSERT_NEAR(x, -2, static_cast<T>(1e-6));
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(relational)
+{
+  um2::Vec<D, T> const v = makeVec<D, T>();
+  um2::Vec<D, T> v2 = makeVec<D, T>();
+  ASSERT(v == v2);
+  ASSERT(v <= v2);
+  ASSERT(v >= v2);
+  v2[1] += 1;
+  ASSERT(v != v2);
+  ASSERT(v < v2);
+  ASSERT(v <= v2);
+  ASSERT(v2 > v);
+  ASSERT(v2 >= v);
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(add)
+{
+  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::Vec<D, T> const v2 = makeVec<D, T>();
+  v = v + v2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(v[i], static_cast<T>(2 * (i + 1)), static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(v[i] == static_cast<T>(2 * (i + 1)));
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(sub)
+{
+  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::Vec<D, T> const v2 = makeVec<D, T>();
+  v = v - v2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(v[i], 0, static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(v[i] == 0);
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(mul)
+{
+  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::Vec<D, T> const v2 = makeVec<D, T>();
+  v = v * v2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(v[i], static_cast<T>((i + 1) * (i + 1)), static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(v[i] == static_cast<T>((i + 1) * (i + 1)));
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(div)
+{
+  um2::Vec<D, T> v = makeVec<D, T>();
+  um2::Vec<D, T> const v2 = makeVec<D, T>();
+  v = v / v2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(v[i], 1, static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(v[i] == 1);
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(scalar_add)
+{
+  um2::Vec<D, T> const v = makeVec<D, T>();
+  auto const vl = 2 + v;
+  auto const vr = v + 2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(vl[i], static_cast<T>(i + 3), static_cast<T>(1e-6));
+      ASSERT_NEAR(vr[i], static_cast<T>(i + 3), static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(vl[i] == static_cast<T>(i + 3));
+      ASSERT(vr[i] == static_cast<T>(i + 3));
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(scalar_sub)
+{
+  um2::Vec<D, T> const v = makeVec<D, T>();
+  auto const vl = v - 2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(vl[i], static_cast<T>(i - 1), static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(vl[i] == static_cast<T>(i - 1));
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(scalar_mul)
+{
+  um2::Vec<D, T> const v = makeVec<D, T>();
+  auto const vl = 2 * v;
+  auto const vr = v * 2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(vl[i], static_cast<T>(2 * (i + 1)), static_cast<T>(1e-6));
+      ASSERT_NEAR(vr[i], static_cast<T>(2 * (i + 1)), static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(vl[i] == static_cast<T>(2 * (i + 1)));
+      ASSERT(vr[i] == static_cast<T>(2 * (i + 1)));
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(scalar_div)
+{
+  um2::Vec<D, T> const v = makeVec<D, T>();
+  auto const vl = v / 2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(vl[i], static_cast<T>(i + 1) / 2, static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(vl[i] == static_cast<T>(i + 1) / 2);
+    }
   }
 }
 
@@ -337,6 +538,7 @@ MAKE_CUDA_KERNEL(normalized, D, T);
 template <Int D, typename T>
 TEST_SUITE(vec)
 {
+  TEST_HOSTDEV(isSIMD, D, T);
   TEST_HOSTDEV(accessor, D, T);
   TEST_HOSTDEV(compound_add, D, T);
   TEST_HOSTDEV(compound_sub, D, T);
@@ -346,6 +548,7 @@ TEST_SUITE(vec)
   TEST_HOSTDEV(compound_scalar_sub, D, T);
   TEST_HOSTDEV(compound_scalar_mul, D, T);
   TEST_HOSTDEV(compound_scalar_div, D, T);
+  TEST_HOSTDEV(zero, D, T);
   TEST_HOSTDEV(min, D, T);
   TEST_HOSTDEV(max, D, T);
   TEST_HOSTDEV(dot, D, T);
@@ -355,6 +558,17 @@ TEST_SUITE(vec)
     TEST_HOSTDEV(normalized, D, T);
     TEST_HOSTDEV(cross, D, T);
   }
+  if constexpr (std::integral<T>) {
+    TEST_HOSTDEV(relational, D, T);
+  }
+  TEST_HOSTDEV(add, D, T);
+  TEST_HOSTDEV(sub, D, T);
+  TEST_HOSTDEV(mul, D, T);
+  TEST_HOSTDEV(div, D, T);
+  TEST_HOSTDEV(scalar_add, D, T);
+  TEST_HOSTDEV(scalar_sub, D, T);
+  TEST_HOSTDEV(scalar_mul, D, T);
+  TEST_HOSTDEV(scalar_div, D, T);
 }
 
 auto

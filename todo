@@ -1,12 +1,7 @@
-cross
-distanceTo
-squaredDistanceTo
+Generalize SIMD vec concept
 
-conversion from simd to vec
-
-just encapsulate and override warnings on addressing?
-  min, max
-  Otherwise a missed <D> could fuck things
+Change Point2 back to Vec.
+Examine Geometry.
 
 math
 

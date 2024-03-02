@@ -3,8 +3,6 @@
 #include <um2/geometry/point.hpp>
 #include <um2/math/morton.hpp>
 
-//#include <um2/stdlib/algorithm.hpp>
-
 #include <algorithm>
 
 //==============================================================================
@@ -64,10 +62,10 @@ mortonSort(Point<D> * const begin, Point<D> * const end) noexcept
 // be in the unit square/cube.
 void
 mortonSortPermutation(Point2 const * begin, Point2 const * end, Int * perm_begin,
-                      Vec2<Float> const & scale = {0, 0}) noexcept;
+                      Point2 const & scale = Point2(0, 0)) noexcept;
 
 void
 mortonSortPermutation(Point3 const * begin, Point3 const * end, Int * perm_begin,
-                      Vec3<Float> const & scale = {0, 0, 0}) noexcept;
+                      Point3 const & scale = Point3(0, 0, 0)) noexcept;
 
 } // namespace um2

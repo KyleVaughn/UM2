@@ -3,6 +3,8 @@
 #include <um2/geometry/polytope.hpp>
 #include <um2/geometry/ray.hpp>
 #include <um2/math/mat.hpp>
+#include <um2/stdlib/algorithm/clamp.hpp>
+#include <um2/stdlib/math.hpp>
 
 // Need complex for quadratic segments
 #if UM2_USE_CUDA
@@ -15,13 +17,13 @@
 // DION
 //==============================================================================
 // A 1-dimensional polytope, of polynomial order P, represented by the connectivity
-// of its vertices. These N vertices are D-dimensional points of type F.
+// of its vertices. These N vertices are D-dimensional points of type Float.
 //
-// For Dions:
+// Floator Dions:
 //   LineSegment (P = 1, N = 2)
 //   QuadraticSegment (P = 2, N = 3)
 //
-// For quadratic segments, the parametric equation is
+// Floator quadratic segments, the parametric equation is
 //  Q(r) = P₁ + rB + r²A,
 // where
 //  B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]
@@ -34,7 +36,7 @@
 namespace um2
 {
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 class Polytope<1, P, N, D> // Dion<P, N, D>
 {
 
@@ -51,11 +53,11 @@ public:
 
   // Returns the i-th vertex
   PURE HOSTDEV constexpr auto
-  operator[](I i) noexcept -> Vertex &;
+  operator[](Int i) noexcept -> Vertex &;
 
   // Returns the i-th vertex
   PURE HOSTDEV constexpr auto
-  operator[](I i) const noexcept -> Vertex const &;
+  operator[](Int i) const noexcept -> Vertex const &;
 
   // Returns a pointer to the vertex array
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -83,15 +85,15 @@ public:
 
   // Interpolate along the segment.
   // r in [0, 1] are valid values.
-  // F(r) -> (x, y, z)
+  // Float(r) -> (x, y, z)
   template <typename R>
   PURE HOSTDEV constexpr auto
   operator()(R r) const noexcept -> Vertex;
 
-  // dF/dr (r) -> (dx/dr, dy/dr, dz/dr)
+  // dFloat/dr (r) -> (dx/dr, dy/dr, dz/dr)
   template <typename R>
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  jacobian(R r) const noexcept -> Vec<D, F>;
+  jacobian(R r) const noexcept -> Point<D>;
 
   // Get the matrix that rotates the polytope such that the first and l
   // We want to transform the segment so that v[0] is at the origin and v[1]
@@ -99,7 +101,7 @@ public:
   // using a change of basis (rotation) matrix to rotate v[1] onto the x-axis.
   // The rotation matrix is returned.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getRotation() const noexcept -> Mat<D, D, F>
+  getRotation() const noexcept -> Mat<D, D, Float>
   requires(D == 2);
 
   // If a point is to the left of the segment, with the segment oriented from
@@ -109,22 +111,22 @@ public:
 
   // Arc length of the segment
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  length() const noexcept -> F;
+  length() const noexcept -> Float;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox<D>;
 
   // Return the point on the curve that is closest to the given point.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  pointClosestTo(Vertex const & p) const noexcept -> F;
+  pointClosestTo(Vertex const & p) const noexcept -> Float;
 
   // Return the squared distance between the given point and the closest point
   // on the curve.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  squaredDistanceTo(Vertex const & p) const noexcept -> F;
+  squaredDistanceTo(Vertex const & p) const noexcept -> Float;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  distanceTo(Vertex const & p) const noexcept -> F;
+  distanceTo(Vertex const & p) const noexcept -> Float;
 
 }; // Dion
 
@@ -132,10 +134,10 @@ public:
 // Constructors
 //==============================================================================
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 HOSTDEV constexpr Dion<P, N, D>::Polytope(Vec<N, Vertex> const & v) noexcept
 {
-  for (I i = 0; i < N; ++i) {
+  for (Int i = 0; i < N; ++i) {
     _v[i] = v[i];
   }
 }
@@ -144,25 +146,25 @@ HOSTDEV constexpr Dion<P, N, D>::Polytope(Vec<N, Vertex> const & v) noexcept
 // Accessors
 //==============================================================================
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 PURE HOSTDEV constexpr auto
-Dion<P, N, D>::operator[](I i) noexcept -> Vertex &
+Dion<P, N, D>::operator[](Int i) noexcept -> Vertex &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
   return _v[i];
 }
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 PURE HOSTDEV constexpr auto
-Dion<P, N, D>::operator[](I i) const noexcept -> Vertex const &
+Dion<P, N, D>::operator[](Int i) const noexcept -> Vertex const &
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
   return _v[i];
 }
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 PURE HOSTDEV constexpr auto
 Dion<P, N, D>::vertices() const noexcept -> Vertex const *
 {
@@ -173,20 +175,20 @@ Dion<P, N, D>::vertices() const noexcept -> Vertex const *
 // Interpolation
 //==============================================================================
 
-template <I D, typename R>
+template <Int D, typename R>
 PURE HOSTDEV constexpr auto
 interpolate(LineSegment<D> const & l, R const r) noexcept -> Point<D>
 {
   // L(r) = (1 - r) * v0 + r * v1
-  F const rr = static_cast<F>(r);
+  auto const rr = static_cast<Float>(r);
   Point<D> result;
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     result[i] = l[0][i] + rr * (l[1][i] - l[0][i]);
   }
   return result;
 }
 
-template <I D, typename R>
+template <Int D, typename R>
 PURE HOSTDEV constexpr auto
 interpolate(QuadraticSegment<D> const & q, R const r) noexcept -> Point<D>
 {
@@ -194,21 +196,21 @@ interpolate(QuadraticSegment<D> const & q, R const r) noexcept -> Point<D>
   // (2 * r - 1) * (r - 1) * v0 +
   // (2 * r - 1) *  r      * v1 +
   // -4 * r      * (r - 1) * v2
-  F const rr = static_cast<F>(r);
-  F const two_rr_1 = 2 * rr - 1;
-  F const rr_1 = rr - 1;
+  auto const rr = static_cast<Float>(r);
+  Float const two_rr_1 = 2 * rr - 1;
+  Float const rr_1 = rr - 1;
 
-  F const w0 = two_rr_1 * rr_1;
-  F const w1 = two_rr_1 * rr;
-  F const w2 = -4 * rr * rr_1;
+  Float const w0 = two_rr_1 * rr_1;
+  Float const w1 = two_rr_1 * rr;
+  Float const w2 = -4 * rr * rr_1;
   Point<D> result;
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     result[i] = w0 * q[0][i] + w1 * q[1][i] + w2 * q[2][i];
   }
   return result;
 }
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 template <typename R>
 PURE HOSTDEV constexpr auto
 Dion<P, N, D>::operator()(R const r) const noexcept -> Vertex
@@ -220,31 +222,31 @@ Dion<P, N, D>::operator()(R const r) const noexcept -> Vertex
 // jacobian
 //==============================================================================
 
-template <I D, typename R>
+template <Int D, typename R>
 PURE HOSTDEV constexpr auto
-jacobian(LineSegment<D> const & l, R const /*r*/) noexcept -> Vec<D, F>
+jacobian(LineSegment<D> const & l, R const /*r*/) noexcept -> Point<D> 
 {
   return l[1] - l[0];
 }
 
-template <I D, typename R>
+template <Int D, typename R>
 PURE HOSTDEV constexpr auto
-jacobian(QuadraticSegment<D> const & q, R const r) noexcept -> Vec<D, F>
+jacobian(QuadraticSegment<D> const & q, R const r) noexcept -> Point<D> 
 {
   // (4 * r - 3) * (v0 - v2) + (4 * r - 1) * (v1 - v2)
-  F const w0 = 4 * static_cast<F>(r) - 3;
-  F const w1 = 4 * static_cast<F>(r) - 1;
-  Vec<D, F> result;
-  for (I i = 0; i < D; ++i) {
+  Float const w0 = 4 * static_cast<Float>(r) - 3;
+  Float const w1 = 4 * static_cast<Float>(r) - 1;
+  Vec<D, Float> result;
+  for (Int i = 0; i < D; ++i) {
     result[i] = w0 * (q[0][i] - q[2][i]) + w1 * (q[1][i] - q[2][i]);
   }
   return result;
 }
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 template <typename R>
 PURE HOSTDEV constexpr auto
-Dion<P, N, D>::jacobian(R const r) const noexcept -> Vec<D, F>
+Dion<P, N, D>::jacobian(R const r) const noexcept -> Point<D>
 {
   return um2::jacobian(*this, r);
 }
@@ -254,14 +256,14 @@ Dion<P, N, D>::jacobian(R const r) const noexcept -> Vec<D, F>
 //==============================================================================
 
 PURE HOSTDEV constexpr auto
-getRotation(LineSegment2 const & l) noexcept -> Mat2x2<F>
+getRotation(LineSegment2 const & l) noexcept -> Mat2x2<Float>
 {
   // We want to transform the segment so that v[0] is at the origin and v[1]
   // is on the x-axis. We can do this by first translating by -v[0] and then
   // using a change of basis (rotation) matrix to rotate v[1] onto the x-axis.
   // x_old = U * x_new
   //
-  // For 2D:
+  // Floator 2D:
   // Let a = (a₁, a₂) = (P₂ - P₁) / ‖P₂ - P₁‖
   // u₁ = ( a₁,  a₂) = a
   // u₂ = (-a₂,  a₁)
@@ -278,21 +280,21 @@ getRotation(LineSegment2 const & l) noexcept -> Mat2x2<F>
   // U⁻¹ = Uᵗ = |  a₁  a₂ |
   //            | -a₂  a₁ |
   // since U is unitary.
-  Vec2<F> const a = (l[1] - l[0]).normalized();
-  Vec2<F> const col0(a[0], -a[1]);
-  Vec2<F> const col1(a[1], a[0]);
-  return Mat2x2<F>(col0, col1);
+  Point2 const a = (l[1] - l[0]).normalized();
+  Point2 const col0(a[0], -a[1]);
+  Point2 const col1(a[1], a[0]);
+  return Mat2x2<Float>(col0, col1);
 }
 
 PURE HOSTDEV constexpr auto
-getRotation(QuadraticSegment2 const & q) noexcept -> Mat2x2<F>
+getRotation(QuadraticSegment2 const & q) noexcept -> Mat2x2<Float>
 {
   return LineSegment2(q[0], q[1]).getRotation();
 }
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 PURE HOSTDEV constexpr auto
-Dion<P, N, D>::getRotation() const noexcept -> Mat<D, D, F>
+Dion<P, N, D>::getRotation() const noexcept -> Mat<D, D, Float>
 requires(D == 2) { return um2::getRotation(*this); }
 
 //==============================================================================
@@ -301,7 +303,7 @@ requires(D == 2) { return um2::getRotation(*this); }
 // Get the control point for the quadratic Bezier curve that interpolates the
 // given quadratic segment.
 
-template <I D>
+template <Int D>
 PURE HOSTDEV constexpr auto
 getBezierControlPoint(QuadraticSegment<D> const & q) noexcept -> Point<D>
 {
@@ -309,8 +311,8 @@ getBezierControlPoint(QuadraticSegment<D> const & q) noexcept -> Point<D>
   // p2 == v[1]
   // p1 == 2 * v[2] - (v[0] + v[1]) / 2, hence we only need to compute p1
   Point<D> result;
-  for (I i = 0; i < D; ++i) {
-    result[i] = static_cast<F>(2) * q[2][i] - (q[0][i] + q[1][i]) / 2;
+  for (Int i = 0; i < D; ++i) {
+    result[i] = static_cast<Float>(2) * q[2][i] - (q[0][i] + q[1][i]) / 2;
   }
   return result;
 }
@@ -342,10 +344,10 @@ pointIsLeft(QuadraticSegment2 const & q, Point2 const & p) noexcept -> bool
   //    We will check that p is in the triangle by checking that p is right of each edge
   //    of the triangle.
   // We manually perform the check for (v0, v1) since we want to reuse v01 and v0p.
-  Vec2<F> const v01 = q[1] - q[0];
+  Point2 const v01 = q[1] - q[0];
   Point2 const bcp = getBezierControlPoint(q);
-  Vec2<F> const v0b = bcp - q[0];
-  Vec2<F> const v0p = p - q[0];
+  Point2 const v0b = bcp - q[0];
+  Point2 const v0p = p - q[0];
   bool const tri_is_ccw = v01.cross(v0b) >= 0;
   {
     bool const b0 = v01.cross(v0p) >= 0;  // areCCW(v[0], v[1], p) == Left of edge 0
@@ -365,20 +367,20 @@ pointIsLeft(QuadraticSegment2 const & q, Point2 const & p) noexcept -> bool
   // x-axis. We then take note of the sign of the rotated v[2] to determine if the
   // segment curves left or right. We will orient the segment so that it curves right.
   //     Compute the rotation matrix
-  F const v01_norm = v01.norm();
+  Float const v01_norm = v01.norm();
   //     We can avoid a matrix multiplication by using the fact that the y-coordinate of
   //     v1_r is zero.
-  Point2 const v1_r(v01_norm, static_cast<F>(0));
-  Vec2<F> const v01_normalized = v01 / v01_norm;
+  Point2 const v1_r(v01_norm, static_cast<Float>(0));
+  Point2 const v01_normalized = v01 / v01_norm;
   //     NOLINTBEGIN(readability-identifier-naming) matrix notation
-  Mat2x2<F> const R(Vec2<F>(v01_normalized[0], -v01_normalized[1]),
-                    Vec2<F>(v01_normalized[1], v01_normalized[0]));
-  Vec2<F> const v02 = q[2] - q[0];
+  Mat2x2<Float> const R(Point2(v01_normalized[0], -v01_normalized[1]),
+                        Point2(v01_normalized[1], v01_normalized[0]));
+  Point2 const v02 = q[2] - q[0];
   Point2 v2_r = R * v02;
   Point2 p_r = R * (p - q[0]);
   bool const curves_right = v2_r[1] >= 0;
   if (!curves_right) {
-    // Flip the y-coordinates to be greater than or equal to zero
+    // Floatlip the y-coordinates to be greater than or equal to zero
     v2_r[1] = -v2_r[1];
     p_r[1] = -p_r[1];
   }
@@ -417,10 +419,10 @@ pointIsLeft(QuadraticSegment2 const & q, Point2 const & p) noexcept -> bool
   if (p_r[1] < 0) {
     return !curves_right;
   }
-  F const Bx = 4 * v2_r[0] - v1_r[0];
-  F const By = 4 * v2_r[1]; // Positive
-  F const Ax = -Bx + v1_r[0];
-  F const Ay = -By; // Negative
+  Float const Bx = 4 * v2_r[0] - v1_r[0];
+  Float const By = 4 * v2_r[1]; // Positive
+  Float const Ax = -Bx + v1_r[0];
+  Float const Ay = -By; // Negative
   ASSERT_ASSUME(By > 0);
   ASSERT_ASSUME(Ay < 0);
 
@@ -434,29 +436,29 @@ pointIsLeft(QuadraticSegment2 const & q, Point2 const & p) noexcept -> bool
   // This is the expected case.
   if (um2::abs(Ax) < 4 * eps_distance) {
     // This is a linear equation, so there is only one root.
-    F const r = p_r[0] / Bx; // B[0] != 0, otherwise the segment would be degenerate.
+    Float const r = p_r[0] / Bx; // B[0] != 0, otherwise the segment would be degenerate.
     // We know the point is in the AABB of the segment, so we expect r to be in [0, 1]
     ASSERT_ASSUME(0 <= r);
     ASSERT_ASSUME(r <= 1);
-    F const Q_y = r * (By + r * Ay);
+    Float const Q_y = r * (By + r * Ay);
     // if p_r < Q_y, then the point is to the right of the segment
     return (p_r[1] <= Q_y) ? !curves_right : curves_right;
   }
   // Two roots.
-  F const disc = Bx * Bx + 4 * Ax * p_r[0];
+  Float const disc = Bx * Bx + 4 * Ax * p_r[0];
   ASSERT_ASSUME(disc >= 0);
-  F const r1 = (-Bx + um2::sqrt(disc)) / (2 * Ax);
-  F const r2 = (-Bx - um2::sqrt(disc)) / (2 * Ax);
-  F const Q_y1 = r1 * (By + r1 * Ay);
-  F const Q_y2 = r2 * (By + r2 * Ay);
-  F const Q_ymin = um2::min(Q_y1, Q_y2);
-  F const Q_ymax = um2::max(Q_y1, Q_y2);
+  Float const r1 = (-Bx + um2::sqrt(disc)) / (2 * Ax);
+  Float const r2 = (-Bx - um2::sqrt(disc)) / (2 * Ax);
+  Float const Q_y1 = r1 * (By + r1 * Ay);
+  Float const Q_y2 = r2 * (By + r2 * Ay);
+  Float const Q_ymin = um2::min(Q_y1, Q_y2);
+  Float const Q_ymax = um2::max(Q_y1, Q_y2);
   bool const contained_in_curve = Q_ymin <= p_r[1] && p_r[1] <= Q_ymax;
   return contained_in_curve ? !curves_right : curves_right;
   // NOLINTEND(readability-identifier-naming)
 }
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 PURE HOSTDEV constexpr auto
 Dion<P, N, D>::isLeft(Vertex const & p) const noexcept -> bool requires(D == 2)
 {
@@ -467,16 +469,16 @@ Dion<P, N, D>::isLeft(Vertex const & p) const noexcept -> bool requires(D == 2)
 // length
 //==============================================================================
 
-template <I D>
+template <Int D>
 PURE HOSTDEV constexpr auto
-length(LineSegment<D> const & l) noexcept -> F
+length(LineSegment<D> const & l) noexcept -> Float
 {
   return (l[0]).distanceTo(l[1]);
 }
 
-template <I D>
+template <Int D>
 PURE HOSTDEV constexpr auto
-length(QuadraticSegment<D> const & q) noexcept -> F
+length(QuadraticSegment<D> const & q) noexcept -> Float
 {
   // Turn off variable naming convention warning for this function, since we will use
   // capital letters to denote vectors.
@@ -503,10 +505,10 @@ length(QuadraticSegment<D> const & q) noexcept -> F
     return q[0].distanceTo(q[1]);
   }
 
-  Vec<D, F> const v13 = q[2] - q[0];
-  Vec<D, F> const v23 = q[2] - q[1];
-  Vec<D, F> A;
-  for (I i = 0; i < D; ++i) {
+  Vec<D, Float> const v13 = q[2] - q[0];
+  Vec<D, Float> const v23 = q[2] - q[1];
+  Vec<D, Float> A;
+  for (Int i = 0; i < D; ++i) {
     A[i] = -2 * (v13[i] + v23[i]);
   }
 
@@ -516,19 +518,19 @@ length(QuadraticSegment<D> const & q) noexcept -> F
   // b = 4(A ⋅ B)
   // c = B ⋅ B
 
-  Vec<D, F> B;
-  for (I i = 0; i < D; ++i) {
+  Vec<D, Float> B;
+  for (Int i = 0; i < D; ++i) {
     B[i] = 3 * v13[i] + v23[i];
   }
   ASSERT(squaredNorm(A) > eps_distance2);
-  F const a = 4 * squaredNorm(A);
-  F const b = 4 * dot(A, B);
-  F const c = squaredNorm(B);
+  Float const a = 4 * squaredNorm(A);
+  Float const b = 4 * dot(A, B);
+  Float const c = squaredNorm(B);
 
   // √(ar² + br + c) = √a √( (r + b₁)^2 + c₁)
   // where
-  F const b1 = b / (2 * a);
-  F const c1 = (c / a) - (b1 * b1);
+  Float const b1 = b / (2 * a);
+  Float const c1 = (c / a) - (b1 * b1);
   // The step above with division by a is safe, since a ≠ 0.
 
   // Let u = r + b₁, then
@@ -539,37 +541,37 @@ length(QuadraticSegment<D> const & q) noexcept -> F
   // This is an integral that exists in common integral tables.
   // Evaluation of the resultant expression may be simplified by using
 
-  F const lb = b1;
-  F const ub = 1 + b1;
-  F const L = um2::sqrt(c1 + lb * lb);
-  F const U = um2::sqrt(c1 + ub * ub);
+  Float const lb = b1;
+  Float const ub = 1 + b1;
+  Float const L = um2::sqrt(c1 + lb * lb);
+  Float const U = um2::sqrt(c1 + ub * ub);
   // Numerical issues may cause the bounds to be slightly outside the range [-1, 1].
   // If we go too far outside this range, error out as something has gone wrong.
-  F constexpr epsilon = condCast<F>(1e-5);
-  F const lb_l = lb / L;
-  F const ub_u = ub / U;
-  F constexpr clamp_bound = static_cast<F>(1) - epsilon;
+  auto constexpr epsilon = castIfNot<Float>(1e-5);
+  Float const lb_l = lb / L;
+  Float const ub_u = ub / U;
+  Float constexpr clamp_bound = static_cast<Float>(1) - epsilon;
 #if UM2_ENABLE_ASSERTS
-  F constexpr assert_bound = static_cast<F>(1) + epsilon;
+  Float constexpr assert_bound = static_cast<Float>(1) + epsilon;
   ASSERT(-assert_bound <= lb_l);
   ASSERT(lb_l <= assert_bound);
   ASSERT(-assert_bound <= ub_u);
   ASSERT(ub_u <= assert_bound);
 #endif
-  F const arg_l = um2::clamp(lb_l, -clamp_bound, clamp_bound);
-  F const arg_u = um2::clamp(ub_u, -clamp_bound, clamp_bound);
-  F const atanh_l = um2::atanh(arg_l);
-  F const atanh_u = um2::atanh(arg_u);
-  F const result = um2::sqrt(a) * (U + lb * (U - L) + c1 * (atanh_u - atanh_l)) / 2;
+  Float const arg_l = um2::clamp(lb_l, -clamp_bound, clamp_bound);
+  Float const arg_u = um2::clamp(ub_u, -clamp_bound, clamp_bound);
+  Float const atanh_l = um2::atanh(arg_l);
+  Float const atanh_u = um2::atanh(arg_u);
+  Float const result = um2::sqrt(a) * (U + lb * (U - L) + c1 * (atanh_u - atanh_l)) / 2;
   ASSERT(0 <= result);
   ASSERT(result <= inf_distance);
   return result;
   // NOLINTEND(readability-identifier-naming)
 }
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 PURE HOSTDEV constexpr auto
-Dion<P, N, D>::length() const noexcept -> F
+Dion<P, N, D>::length() const noexcept -> Float
 {
   return um2::length(*this);
 }
@@ -581,11 +583,11 @@ Dion<P, N, D>::length() const noexcept -> F
 // Defined in Polytope.hpp for the line segment, since for all linear polytopes
 // the bounding box is simply the bounding box of the vertices.
 
-template <I D>
+template <Int D>
 PURE HOSTDEV constexpr auto
 boundingBox(QuadraticSegment<D> const & q) noexcept -> AxisAlignedBox<D>
 {
-  // Find the extrema by finding dx_i/dr = 0
+  // Floatind the extrema by finding dx_i/dr = 0
   //  Q(r) = P₁ + rB + r²A,
   // where
   //  B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]
@@ -597,25 +599,25 @@ boundingBox(QuadraticSegment<D> const & q) noexcept -> AxisAlignedBox<D>
   // (r_i,...) = -B / (2A)
   // x_i = Q(r_i) = P₁ - B² / (4A)
   // Compare the extrema with the segment's endpoints to find the AABox
-  Vec<D, F> const v02 = q[2] - q[0];
-  Vec<D, F> const v12 = q[2] - q[1];
+  Vec<D, Float> const v02 = q[2] - q[0];
+  Vec<D, Float> const v12 = q[2] - q[1];
   Point<D> minima = um2::min(q[0], q[1]);
   Point<D> maxima = um2::max(q[0], q[1]);
-  for (I i = 0; i < D; ++i) {
-    F const a = -2 * (v02[i] + v12[i]);
+  for (Int i = 0; i < D; ++i) {
+    Float const a = -2 * (v02[i] + v12[i]);
     if (um2::abs(a) < 4 * eps_distance) {
       // The segment is almost a straight line, so the extrema are the endpoints.
       continue;
     }
     // r_i = -B_i / (2A_i)
-    F const half_b = (3 * v02[i] + v12[i]) / 2;
-    F const r = -half_b / a;
+    Float const half_b = (3 * v02[i] + v12[i]) / 2;
+    Float const r = -half_b / a;
     // if r is not in [0, 1], then the extrema are not on the segment, hence
     // the segment's endpoints are the extrema.
     // NOLINTNEXTLINE(misc-redundant-expression) false positive
     if (0 < r && r < 1) {
       // x_i = Q(r_i) = P₁ - B² / (4A) = P₁ + r(B/2)
-      F const x = q[0][i] + r * half_b;
+      Float const x = q[0][i] + r * half_b;
       minima[i] = um2::min(minima[i], x);
       maxima[i] = um2::max(maxima[i], x);
     }
@@ -627,16 +629,16 @@ boundingBox(QuadraticSegment<D> const & q) noexcept -> AxisAlignedBox<D>
 // pointClosestTo
 //==============================================================================
 
-template <I D>
+template <Int D>
 PURE HOSTDEV constexpr auto
-pointClosestTo(LineSegment<D> const & l, Point<D> const & p) noexcept -> F
+pointClosestTo(LineSegment<D> const & l, Point<D> const & p) noexcept -> Float
 {
-  // From Real-Time Collision Detection, Christer Ericson, 2005
+  // Floatrom Real-Time Collision Detection, Christer Ericson, 2005
   // Given segment ab and point c, computes closest point d on ab.
   // Returns t for the position of d, d(r) = a + r*(b - a)
-  Vec<D, F> const ab = l[1] - l[0];
+  Vec<D, Float> const ab = l[1] - l[0];
   // Project c onto ab, computing parameterized position d(r) = a + r*(b − a)
-  F r = (p - l[0]).dot(ab) / ab.squaredNorm();
+  Float r = (p - l[0]).dot(ab) / ab.squaredNorm();
   // If outside segment, clamp r (and therefore d) to the closest endpoint
   if (r < 0) {
     r = 0;
@@ -648,9 +650,9 @@ pointClosestTo(LineSegment<D> const & l, Point<D> const & p) noexcept -> F
 }
 
 // NOLINTBEGIN(readability-identifier-naming) Mathematical notation
-template <I D>
+template <Int D>
 PURE HOSTDEV constexpr auto
-pointClosestTo(QuadraticSegment<D> const & q, Point<D> const & p) noexcept -> F
+pointClosestTo(QuadraticSegment<D> const & q, Point<D> const & p) noexcept -> Float
 {
 
   // We want to use the complex functions in the std or cuda::std namespace
@@ -695,17 +697,17 @@ pointClosestTo(QuadraticSegment<D> const & q, Point<D> const & p) noexcept -> F
   //
   // We can then use Lagrange's method is used to find the roots.
   // (https://en.wikipedia.org/wiki/Cubic_equation#Lagrange's_method)
-  Vec<D, F> const v13 = q[2] - q[0];
-  Vec<D, F> const v23 = q[2] - q[1];
-  Vec<D, F> const A = -2 * (v13 + v23);
-  F const a = 2 * squaredNorm(A);
+  Vec<D, Float> const v13 = q[2] - q[0];
+  Vec<D, Float> const v23 = q[2] - q[1];
+  Vec<D, Float> const A = -2 * (v13 + v23);
+  Float const a = 2 * squaredNorm(A);
   // 0 ≤ a, since a = 2(A ⋅ A)  = 2 ‖A‖², and 0 ≤ ‖A‖²
   // A = 4(midpoint of line - p3) -> a = 32 ‖midpoint of line - p3‖²
   // if a is small, then the segment is almost a straight line, and we should use the
   // line segment method
   if (a < 32 * eps_distance2) {
-    Vec<D, F> const ab = q[1] - q[0];
-    F r = (p - q[0]).dot(ab) / ab.squaredNorm();
+    Vec<D, Float> const ab = q[1] - q[0];
+    Float r = (p - q[0]).dot(ab) / ab.squaredNorm();
     if (r < 0) {
       r = 0;
     }
@@ -714,59 +716,55 @@ pointClosestTo(QuadraticSegment<D> const & q, Point<D> const & p) noexcept -> F
     }
     return r;
   }
-  Vec<D, F> const B = 3 * v13 + v23;
-  F const b = 3 * dot(A, B);
-  Vec<D, F> const W = p - q[0];
-  F const c = squaredNorm(B) - 2 * dot(A, W);
-  F const d = -dot(B, W);
+  Vec<D, Float> const B = 3 * v13 + v23;
+  Float const b = 3 * dot(A, B);
+  Vec<D, Float> const W = p - q[0];
+  Float const c = squaredNorm(B) - 2 * dot(A, W);
+  Float const d = -dot(B, W);
 
   // Lagrange's method
   // Compute the elementary symmetric functions
-  F const e1 = -b / a; // Note for later s0 = e1
-  F const e2 = c / a;
-  F const e3 = -d / a;
+  Float const e1 = -b / a; // Note for later s0 = e1
+  Float const e2 = c / a;
+  Float const e3 = -d / a;
   // Compute the symmetric functions
-  F const P = e1 * e1 - 3 * e2;
-  F const S = 2 * e1 * e1 * e1 - 9 * e1 * e2 + 27 * e3;
+  Float const P = e1 * e1 - 3 * e2;
+  Float const S = 2 * e1 * e1 * e1 - 9 * e1 * e2 + 27 * e3;
   // We solve z^2 - Sz + P^3 = 0
-  F const disc = S * S - 4 * P * P * P;
-#if UM2_ENABLE_FLOAT64
-  F const eps = 1e-7;
-#else
-  F const eps = 1e-7f;
-#endif
+  Float const disc = S * S - 4 * P * P * P;
+  auto const eps = castIfNot<Float>(1e-7);
 
   //  assert(um2::abs(disc) > eps); // 0 single or double root
   //  if (0 < disc) { // One real root
-  //    F const s1 = um2::cbrt((S + um2::sqrt(disc)) / 2);
-  //    F const s2 = (um2::abs(s1) < eps) ? 0 : P / s1;
+  //    Float const s1 = um2::cbrt((S + um2::sqrt(disc)) / 2);
+  //    Float const s2 = (um2::abs(s1) < eps) ? 0 : P / s1;
   //    // Using s0 = e1
   //    return (e1 + s1 + s2) / 3;
   //  }
   // A complex cbrt
-  F constexpr half = static_cast<F>(1) / 2;
-  F constexpr third = static_cast<F>(1) / 3;
-  math::complex<F> const s1 = math::exp(
-      math::log((S + math::sqrt(static_cast<math::complex<F>>(disc))) * half) * third);
-  math::complex<F> const s2 = (abs(s1) < eps) ? 0 : P / s1;
+  Float constexpr half = static_cast<Float>(1) / 2;
+  Float constexpr third = static_cast<Float>(1) / 3;
+  math::complex<Float> const s1 = math::exp(
+      math::log((S + math::sqrt(static_cast<math::complex<Float>>(disc))) * half) * third);
+  math::complex<Float> const s2 = (abs(s1) < eps) ? 0 : P / s1;
   // zeta1 = (-1/2, sqrt(3)/2)
-  math::complex<F> const zeta1(-half, um2::sqrt(static_cast<F>(3)) / 2);
-  math::complex<F> const zeta2(conj(zeta1));
+  math::complex<Float> const zeta1(-half, um2::sqrt(static_cast<Float>(3)) / 2);
+  math::complex<Float> const zeta2(conj(zeta1));
 
-  // Find the real root that minimizes the distance to p
-  F r = 0;
-  F dist = p.squaredDistanceTo(q[0]);
+  // Floatind the real root that minimizes the distance to p
+  Float r = 0;
+  Float dist = p.squaredDistanceTo(q[0]);
   if (p.squaredDistanceTo(q[1]) < dist) {
     r = 1;
     dist = p.squaredDistanceTo(q[1]);
   }
 
-  Vec3<F> const rr((e1 + real(s1 + s2)) / 3, (e1 + real(zeta2 * s1 + zeta1 * s2)) / 3,
+  Vec3<Float> const rr((e1 + real(s1 + s2)) / 3, (e1 + real(zeta2 * s1 + zeta1 * s2)) / 3,
                    (e1 + real(zeta1 * s1 + zeta2 * s2)) / 3);
-  for (I i = 0; i < 3; ++i) {
-    F const rc = rr[i];
+  for (Int i = 0; i < 3; ++i) {
+    Float const rc = rr[i];
     if (0 <= rc && rc <= 1) {
-      F const dc = p.squaredDistanceTo(q(rc));
+      Float const dc = p.squaredDistanceTo(q(rc));
       if (dc < dist) {
         r = rc;
         dist = dc;
@@ -777,9 +775,9 @@ pointClosestTo(QuadraticSegment<D> const & q, Point<D> const & p) noexcept -> F
 }
 // NOLINTEND(readability-identifier-naming)
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 PURE HOSTDEV constexpr auto
-Dion<P, N, D>::pointClosestTo(Vertex const & p) const noexcept -> F
+Dion<P, N, D>::pointClosestTo(Vertex const & p) const noexcept -> Float
 {
   return um2::pointClosestTo(*this, p);
 }
@@ -788,7 +786,7 @@ Dion<P, N, D>::pointClosestTo(Vertex const & p) const noexcept -> F
 // isStraight
 //==============================================================================
 
-template <I D>
+template <Int D>
 PURE HOSTDEV constexpr auto
 isStraight(QuadraticSegment<D> const & q) noexcept -> bool
 {
@@ -796,15 +794,15 @@ isStraight(QuadraticSegment<D> const & q) noexcept -> bool
   // LineSegment(v[0], v[1]).distanceTo(v[2]) < epsilonDistance
   //
   // Compute the point on the line v[0] + r * (v[1] - v[0]) that is closest to v[2]
-  Vec<D, F> const v01 = q[1] - q[0];
-  F const r = (q[2] - q[0]).dot(v01) / v01.squaredNorm();
+  Vec<D, Float> const v01 = q[1] - q[0];
+  Float const r = (q[2] - q[0]).dot(v01) / v01.squaredNorm();
   // If r is outside the range [0, 1], then the segment is not straight
   if (r < 0 || r > 1) {
     return false;
   }
   // Compute the point on the line
-  Vec<D, F> p;
-  for (I i = 0; i < D; ++i) {
+  Vec<D, Float> p;
+  for (Int i = 0; i < D; ++i) {
     p[i] = q[0][i] + r * v01[i];
   }
   // Check if the point is within epsilon distance of v[2]
@@ -816,14 +814,14 @@ isStraight(QuadraticSegment<D> const & q) noexcept -> bool
 //==============================================================================
 
 PURE HOSTDEV constexpr auto
-enclosedArea(QuadraticSegment2 const & q) noexcept -> F
+enclosedArea(QuadraticSegment2 const & q) noexcept -> Float
 {
   // The area bounded by the segment and the line between the endpoints is
   // 4/3 of the area of the triangle formed by the vertices.
   // Assumes that the segment is convex.
-  F constexpr two_thirds = static_cast<F>(2) / static_cast<F>(3);
-  Vec2<F> const v02 = q[2] - q[0];
-  Vec2<F> const v01 = q[1] - q[0];
+  Float constexpr two_thirds = static_cast<Float>(2) / static_cast<Float>(3);
+  Point2 const v02 = q[2] - q[0];
+  Point2 const v01 = q[1] - q[0];
   return two_thirds * v02.cross(v01);
 }
 
@@ -834,7 +832,7 @@ enclosedArea(QuadraticSegment2 const & q) noexcept -> F
 PURE HOSTDEV constexpr auto
 enclosedCentroid(QuadraticSegment2 const & q) noexcept -> Point2
 {
-  // For a quadratic segment, with P₁ = (0, 0), P₂ = (x₂, 0), and P₃ = (x₃, y₃),
+  // Floator a quadratic segment, with P₁ = (0, 0), P₂ = (x₂, 0), and P₃ = (x₃, y₃),
   // where 0 < x₂, if the area bounded by q and the x-axis is convex, it can be
   // shown that the centroid of the area bounded by the segment and x-axis
   // is given by
@@ -866,13 +864,13 @@ enclosedCentroid(QuadraticSegment2 const & q) noexcept -> Point2
   // C = U * Cᵤ + P₁
   // where
   // Cᵤ = (u₁ ⋅ (3(P₂ - P₁) + 4(P₃ - P₁)), 4(u₂ ⋅ (P₃ - P₁))) / 10
-  Vec2<F> const v12 = q[1] - q[0];
-  Vec2<F> const four_v13 = 4 * (q[2] - q[0]);
-  Vec2<F> const u1 = v12.normalized();
-  Vec2<F> const u2(-u1[1], u1[0]);
+  Point2 const v12 = q[1] - q[0];
+  Point2 const four_v13 = 4 * (q[2] - q[0]);
+  Point2 const u1 = v12.normalized();
+  Point2 const u2(-u1[1], u1[0]);
   // NOLINTBEGIN(readability-identifier-naming) capitalize matrix
-  Mat2x2<F> const U(u1, u2);
-  Vec2<F> const Cu(u1.dot((3 * v12 + four_v13)) / 10, u2.dot(four_v13) / 10);
+  Mat2x2<Float> const U(u1, u2);
+  Point2 const Cu(u1.dot((3 * v12 + four_v13)) / 10, u2.dot(four_v13) / 10);
   return U * Cu + q[0];
   // NOLINTEND(readability-identifier-naming)
 }
@@ -907,15 +905,15 @@ enclosedCentroid(QuadraticSegment2 const & q) noexcept -> Point2
 // r = (Y ⋅ Z)/(Z ⋅ Z) = y₃/z₃
 // This result is valid if s ∈ [0, 1]
 PURE HOSTDEV constexpr auto
-intersect(Ray2 const & ray, LineSegment2 const & line) noexcept -> F
+intersect(Ray2 const & ray, LineSegment2 const & line) noexcept -> Float
 {
-  Vec2<F> const v(line[1][0] - line[0][0], line[1][1] - line[0][1]);
-  Vec2<F> const u(ray.origin()[0] - line[0][0], ray.origin()[1] - line[0][1]);
+  Point2 const v(line[1][0] - line[0][0], line[1][1] - line[0][1]);
+  Point2 const u(ray.origin()[0] - line[0][0], ray.origin()[1] - line[0][1]);
 
-  F const z = v.cross(ray.direction());
+  Float const z = v.cross(ray.direction());
 
-  F const s = u.cross(ray.direction()) / z;
-  F r = u.cross(v) / z;
+  Float const s = u.cross(ray.direction()) / z;
+  Float r = u.cross(v) / z;
 
   if (s < 0 || 1 < s) {
     r = inf_distance;
@@ -948,45 +946,45 @@ intersect(Ray2 const & ray, LineSegment2 const & line) noexcept -> F
 // O + rD = P ⟹   r = ((P - O) ⋅ D)/(D ⋅ D)
 
 PURE HOSTDEV constexpr auto
-intersect(Ray2 const & ray, QuadraticSegment2 const & q) noexcept -> Vec2<F>
+intersect(Ray2 const & ray, QuadraticSegment2 const & q) noexcept -> Point2
 {
   // NOLINTBEGIN(readability-identifier-naming) mathematical notation
   // This code is called very frequently so we sacrifice readability for speed.
   // Mainly, we want to ensure temporaries are not created.
-  Vec2<F> const v01(q[1][0] - q[0][0], q[1][1] - q[0][1]); // q[1] - q[0]
-  Vec2<F> const v02(q[2][0] - q[0][0], q[2][1] - q[0][1]); // q[2] - q[0]
-  Vec2<F> const v12(q[2][0] - q[1][0], q[2][1] - q[1][1]); // q[2] - q[1]
+  Point2 const v01(q[1][0] - q[0][0], q[1][1] - q[0][1]); // q[1] - q[0]
+  Point2 const v02(q[2][0] - q[0][0], q[2][1] - q[0][1]); // q[2] - q[0]
+  Point2 const v12(q[2][0] - q[1][0], q[2][1] - q[1][1]); // q[2] - q[1]
 
-  Vec2<F> const A(-2 * (v02[0] + v12[0]), -2 * (v02[1] + v12[1])); // -2(V₁₃ + V₂₃)
-  Vec2<F> const B(3 * v02[0] + v12[0], 3 * v02[1] + v12[1]);       // 3V₁₃ + V₂₃
-  // Vec2<F> const C = q[0];
+  Point2 const A(-2 * (v02[0] + v12[0]), -2 * (v02[1] + v12[1])); // -2(V₁₃ + V₂₃)
+  Point2 const B(3 * v02[0] + v12[0], 3 * v02[1] + v12[1]);       // 3V₁₃ + V₂₃
+  // Point2 const C = q[0];
 
-  // Vec2<F> const D = ray.d;
-  // Vec2<F> const O = ray.o;
+  // Point2 const D = ray.d;
+  // Point2 const O = ray.o;
 
-  Vec2<F> const voc(q[0][0] - ray.origin()[0], q[0][1] - ray.origin()[1]); // C - O
+  Point2 const voc(q[0][0] - ray.origin()[0], q[0][1] - ray.origin()[1]); // C - O
 
-  F const a = A.cross(ray.direction());   // (A × D)ₖ
-  F const b = B.cross(ray.direction());   // (B × D)ₖ
-  F const c = voc.cross(ray.direction()); // ((C - O) × D)ₖ
+  Float const a = A.cross(ray.direction());   // (A × D)ₖ
+  Float const b = B.cross(ray.direction());   // (B × D)ₖ
+  Float const c = voc.cross(ray.direction()); // ((C - O) × D)ₖ
 
-  Vec2<F> result(inf_distance, inf_distance);
-  F constexpr epsilon = condCast<F>(1e-8);
+  Point2 result(inf_distance, inf_distance);
+  auto constexpr epsilon = castIfNot<Float>(1e-8);
   if (um2::abs(a) < epsilon) {
-    F const s = -c / b;
+    Float const s = -c / b;
     if (0 <= s && s <= 1) {
       Point2 const P(s * (s * A[0] + B[0]) + voc[0], s * (s * A[1] + B[1]) + voc[1]);
       result[0] = dot(P, ray.direction()) / ray.direction().squaredNorm();
     }
     return result;
   }
-  F const disc = b * b - 4 * a * c;
+  Float const disc = b * b - 4 * a * c;
   if (disc < 0) {
     return result;
   }
 
-  F const s1 = (-b - um2::sqrt(disc)) / (2 * a);
-  F const s2 = (-b + um2::sqrt(disc)) / (2 * a);
+  Float const s1 = (-b - um2::sqrt(disc)) / (2 * a);
+  Float const s2 = (-b + um2::sqrt(disc)) / (2 * a);
   if (0 <= s1 && s1 <= 1) {
     Point2 const P(s1 * (s1 * A[0] + B[0]) + voc[0], s1 * (s1 * A[1] + B[1]) + voc[1]);
     result[0] = dot(P, ray.direction()) / ray.direction().squaredNorm();
@@ -999,7 +997,7 @@ intersect(Ray2 const & ray, QuadraticSegment2 const & q) noexcept -> Vec2<F>
   return result;
 }
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 PURE HOSTDEV constexpr auto
 Dion<P, N, D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 {
@@ -1010,18 +1008,18 @@ Dion<P, N, D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 // distanceTo
 //==============================================================================
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 PURE HOSTDEV constexpr auto
-Dion<P, N, D>::squaredDistanceTo(Vertex const & p) const noexcept -> F
+Dion<P, N, D>::squaredDistanceTo(Vertex const & p) const noexcept -> Float
 {
-  F const r = pointClosestTo(p);
+  Float const r = pointClosestTo(p);
   Vertex const p_closest = (*this)(r);
   return p_closest.squaredDistanceTo(p);
 }
 
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 PURE HOSTDEV constexpr auto
-Dion<P, N, D>::distanceTo(Vertex const & p) const noexcept -> F
+Dion<P, N, D>::distanceTo(Vertex const & p) const noexcept -> Float
 {
   return um2::sqrt(squaredDistanceTo(p));
 }

@@ -13,23 +13,23 @@ TEST_CASE(mortonSort2D)
       points[i * 4 + j] /= 3;
     }
   }
-  um2::mortonSort(points.begin(), points.end());
-  ASSERT(um2::isApprox(points[0], um2::Point2(0, 0) / 3));
-  ASSERT(um2::isApprox(points[1], um2::Point2(1, 0) / 3));
-  ASSERT(um2::isApprox(points[2], um2::Point2(0, 1) / 3));
-  ASSERT(um2::isApprox(points[3], um2::Point2(1, 1) / 3));
-  ASSERT(um2::isApprox(points[4], um2::Point2(2, 0) / 3));
-  ASSERT(um2::isApprox(points[5], um2::Point2(3, 0) / 3));
-  ASSERT(um2::isApprox(points[6], um2::Point2(2, 1) / 3));
-  ASSERT(um2::isApprox(points[7], um2::Point2(3, 1) / 3));
-  ASSERT(um2::isApprox(points[8], um2::Point2(0, 2) / 3));
-  ASSERT(um2::isApprox(points[9], um2::Point2(1, 2) / 3));
-  ASSERT(um2::isApprox(points[10], um2::Point2(0, 3) / 3));
-  ASSERT(um2::isApprox(points[11], um2::Point2(1, 3) / 3));
-  ASSERT(um2::isApprox(points[12], um2::Point2(2, 2) / 3));
-  ASSERT(um2::isApprox(points[13], um2::Point2(3, 2) / 3));
-  ASSERT(um2::isApprox(points[14], um2::Point2(2, 3) / 3));
-  ASSERT(um2::isApprox(points[15], um2::Point2(3, 3) / 3));
+  um2::mortonSort<2>(points.begin(), points.end());
+  ASSERT(um2::isApprox<2>(points[0], um2::Point2(0, 0) / 3));
+  ASSERT(um2::isApprox<2>(points[1], um2::Point2(1, 0) / 3));
+  ASSERT(um2::isApprox<2>(points[2], um2::Point2(0, 1) / 3));
+  ASSERT(um2::isApprox<2>(points[3], um2::Point2(1, 1) / 3));
+  ASSERT(um2::isApprox<2>(points[4], um2::Point2(2, 0) / 3));
+  ASSERT(um2::isApprox<2>(points[5], um2::Point2(3, 0) / 3));
+  ASSERT(um2::isApprox<2>(points[6], um2::Point2(2, 1) / 3));
+  ASSERT(um2::isApprox<2>(points[7], um2::Point2(3, 1) / 3));
+  ASSERT(um2::isApprox<2>(points[8], um2::Point2(0, 2) / 3));
+  ASSERT(um2::isApprox<2>(points[9], um2::Point2(1, 2) / 3));
+  ASSERT(um2::isApprox<2>(points[10], um2::Point2(0, 3) / 3));
+  ASSERT(um2::isApprox<2>(points[11], um2::Point2(1, 3) / 3));
+  ASSERT(um2::isApprox<2>(points[12], um2::Point2(2, 2) / 3));
+  ASSERT(um2::isApprox<2>(points[13], um2::Point2(3, 2) / 3));
+  ASSERT(um2::isApprox<2>(points[14], um2::Point2(2, 3) / 3));
+  ASSERT(um2::isApprox<2>(points[15], um2::Point2(3, 3) / 3));
 }
 
 TEST_CASE(mortonSort3D)
@@ -44,23 +44,23 @@ TEST_CASE(mortonSort3D)
       }
     }
   }
-  um2::mortonSort(points.begin(), points.end());
-  ASSERT(um2::isApprox(points[0], um2::Point3(0, 0, 0) / 3));
-  ASSERT(um2::isApprox(points[1], um2::Point3(1, 0, 0) / 3));
-  ASSERT(um2::isApprox(points[2], um2::Point3(0, 1, 0) / 3));
-  ASSERT(um2::isApprox(points[3], um2::Point3(1, 1, 0) / 3));
-  ASSERT(um2::isApprox(points[4], um2::Point3(0, 0, 1) / 3));
-  ASSERT(um2::isApprox(points[5], um2::Point3(1, 0, 1) / 3));
-  ASSERT(um2::isApprox(points[6], um2::Point3(0, 1, 1) / 3));
-  ASSERT(um2::isApprox(points[7], um2::Point3(1, 1, 1) / 3));
-  ASSERT(um2::isApprox(points[8], um2::Point3(2, 0, 0) / 3));
-  ASSERT(um2::isApprox(points[9], um2::Point3(3, 0, 0) / 3));
-  ASSERT(um2::isApprox(points[10], um2::Point3(2, 1, 0) / 3));
-  ASSERT(um2::isApprox(points[11], um2::Point3(3, 1, 0) / 3));
-  ASSERT(um2::isApprox(points[12], um2::Point3(2, 0, 1) / 3));
-  ASSERT(um2::isApprox(points[13], um2::Point3(3, 0, 1) / 3));
-  ASSERT(um2::isApprox(points[14], um2::Point3(2, 1, 1) / 3));
-  ASSERT(um2::isApprox(points[15], um2::Point3(3, 1, 1) / 3));
+  um2::mortonSort<3>(points.begin(), points.end());
+  ASSERT(um2::isApprox<3>(points[0], um2::Point3(0, 0, 0) / 3));
+  ASSERT(um2::isApprox<3>(points[1], um2::Point3(1, 0, 0) / 3));
+  ASSERT(um2::isApprox<3>(points[2], um2::Point3(0, 1, 0) / 3));
+  ASSERT(um2::isApprox<3>(points[3], um2::Point3(1, 1, 0) / 3));
+  ASSERT(um2::isApprox<3>(points[4], um2::Point3(0, 0, 1) / 3));
+  ASSERT(um2::isApprox<3>(points[5], um2::Point3(1, 0, 1) / 3));
+  ASSERT(um2::isApprox<3>(points[6], um2::Point3(0, 1, 1) / 3));
+  ASSERT(um2::isApprox<3>(points[7], um2::Point3(1, 1, 1) / 3));
+  ASSERT(um2::isApprox<3>(points[8], um2::Point3(2, 0, 0) / 3));
+  ASSERT(um2::isApprox<3>(points[9], um2::Point3(3, 0, 0) / 3));
+  ASSERT(um2::isApprox<3>(points[10], um2::Point3(2, 1, 0) / 3));
+  ASSERT(um2::isApprox<3>(points[11], um2::Point3(3, 1, 0) / 3));
+  ASSERT(um2::isApprox<3>(points[12], um2::Point3(2, 0, 1) / 3));
+  ASSERT(um2::isApprox<3>(points[13], um2::Point3(3, 0, 1) / 3));
+  ASSERT(um2::isApprox<3>(points[14], um2::Point3(2, 1, 1) / 3));
+  ASSERT(um2::isApprox<3>(points[15], um2::Point3(3, 1, 1) / 3));
 }
 
 TEST_SUITE(mortonSort)

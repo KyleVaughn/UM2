@@ -6,3 +6,4 @@
 #include <um2/stdlib/math/roots.hpp>
 #include <um2/stdlib/math/rounding_functions.hpp>
 #include <um2/stdlib/math/trigonometric_functions.hpp>
+#include <um2/stdlib/math/inverse_trigonometric_functions.hpp>

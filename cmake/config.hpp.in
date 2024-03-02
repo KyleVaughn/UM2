@@ -18,7 +18,7 @@
 #cmakedefine01 UM2_ENABLE_FLOAT64
 #cmakedefine01 UM2_ENABLE_INT64
 #cmakedefine01 UM2_ENABLE_BMI2
-#cmakedefine01 UM2_ENABLE_SIMD_P2
+#cmakedefine01 UM2_ENABLE_SIMD_VEC
 
 // Minimum log level for compile-time filtering of log messages
 #define MIN_LOG_LEVEL @UM2_MIN_LOG_LEVEL@

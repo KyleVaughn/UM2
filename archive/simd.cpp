@@ -4,8 +4,8 @@
 
 // We know the ABI will be different based upon if the CPU supports
 // SSE, AVX, etc. or the compiler options.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpsabi"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wabi"
 
 template <Int D, typename T>
 HOSTDEV constexpr auto
@@ -179,6 +179,22 @@ TEST_CASE(compound_scalar_div)
 
 template <Int D, typename T>
 HOSTDEV
+TEST_CASE(zero)
+{
+  um2::SIMD<D, T> const v = um2::SIMD<D, T>::zero();
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(v[i], 0, static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(v[i] == 0);
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
 TEST_CASE(min)
 {
   um2::SIMD<D, T> const v0 = makeSIMD<D, T>();
@@ -278,6 +294,169 @@ TEST_CASE(cross)
   }
 }
 
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(relational)
+{
+  um2::SIMD<D, T> const v = makeSIMD<D, T>();
+  um2::SIMD<D, T> v2 = makeSIMD<D, T>();
+  ASSERT(v == v2);
+  ASSERT(v <= v2);
+  ASSERT(v >= v2);
+  v2[1] += 1;
+  ASSERT(v != v2);
+  ASSERT(v < v2);
+  ASSERT(v <= v2);
+  ASSERT(v2 > v);
+  ASSERT(v2 >= v);
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(add)
+{
+  um2::SIMD<D, T> v = makeSIMD<D, T>();
+  um2::SIMD<D, T> const v2 = makeSIMD<D, T>();
+  v = v + v2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(v[i], static_cast<T>(2 * (i + 1)), static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(v[i] == static_cast<T>(2 * (i + 1)));
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(sub)
+{
+  um2::SIMD<D, T> v = makeSIMD<D, T>();
+  um2::SIMD<D, T> const v2 = makeSIMD<D, T>();
+  v = v - v2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(v[i], 0, static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(v[i] == 0);
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(mul)
+{
+  um2::SIMD<D, T> v = makeSIMD<D, T>();
+  um2::SIMD<D, T> const v2 = makeSIMD<D, T>();
+  v = v * v2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(v[i], static_cast<T>((i + 1) * (i + 1)), static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(v[i] == static_cast<T>((i + 1) * (i + 1)));
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(div)
+{
+  um2::SIMD<D, T> v = makeSIMD<D, T>();
+  um2::SIMD<D, T> const v2 = makeSIMD<D, T>();
+  v = v / v2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(v[i], 1, static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(v[i] == 1);
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(scalar_add)
+{
+  um2::SIMD<D, T> const v = makeSIMD<D, T>();
+  auto const vl = 2 + v;
+  auto const vr = v + 2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(vl[i], static_cast<T>(i + 3), static_cast<T>(1e-6));
+      ASSERT_NEAR(vr[i], static_cast<T>(i + 3), static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(vl[i] == static_cast<T>(i + 3));
+      ASSERT(vr[i] == static_cast<T>(i + 3));
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(scalar_sub)
+{
+  um2::SIMD<D, T> const v = makeSIMD<D, T>();
+  auto const vl = v - 2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(vl[i], static_cast<T>(i - 1), static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(vl[i] == static_cast<T>(i - 1));
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(scalar_mul)
+{
+  um2::SIMD<D, T> const v = makeSIMD<D, T>();
+  auto const vl = 2 * v;
+  auto const vr = v * 2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(vl[i], static_cast<T>(2 * (i + 1)), static_cast<T>(1e-6));
+      ASSERT_NEAR(vr[i], static_cast<T>(2 * (i + 1)), static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(vl[i] == static_cast<T>(2 * (i + 1)));
+      ASSERT(vr[i] == static_cast<T>(2 * (i + 1)));
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
+TEST_CASE(scalar_div)
+{
+  um2::SIMD<D, T> const v = makeSIMD<D, T>();
+  auto const vl = v / 2;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(vl[i], static_cast<T>(i + 1) / 2, static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(vl[i] == static_cast<T>(i + 1) / 2);
+    }
+  }
+}
+
 //=============================================================================
 // CUDA
 //=============================================================================
@@ -348,6 +527,7 @@ TEST_SUITE(simd)
   TEST_HOSTDEV(compound_scalar_sub, D, T);
   TEST_HOSTDEV(compound_scalar_mul, D, T);
   TEST_HOSTDEV(compound_scalar_div, D, T);
+  TEST_HOSTDEV(zero, D, T);
   TEST_HOSTDEV(min, D, T);
   TEST_HOSTDEV(max, D, T);
   TEST_HOSTDEV(dot, D, T);
@@ -357,6 +537,17 @@ TEST_SUITE(simd)
     TEST_HOSTDEV(normalized, D, T);
     TEST_HOSTDEV(cross, D, T);
   }
+  if constexpr (std::integral<T>) {
+    TEST_HOSTDEV(relational, D, T);
+  }
+  TEST_HOSTDEV(add, D, T);
+  TEST_HOSTDEV(sub, D, T);
+  TEST_HOSTDEV(mul, D, T);
+  TEST_HOSTDEV(div, D, T);
+  TEST_HOSTDEV(scalar_add, D, T);
+  TEST_HOSTDEV(scalar_sub, D, T);
+  TEST_HOSTDEV(scalar_mul, D, T);
+  TEST_HOSTDEV(scalar_div, D, T);
 }
 
 auto
@@ -380,4 +571,4 @@ main() -> int
   return 0;
 }
 
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop

@@ -1,10 +1,8 @@
 #include <um2/geometry/modular_rays.hpp>
 
-#include <um2/common/log.hpp>
-
 #include "../test_macros.hpp"
 
-// Test problem: For a 2 by 2 grid, for a few test angles, ensure that a sample
+// Test problem: Floator a 2 by 2 grid, for a few test angles, ensure that a sample
 // ray is both cyclic and modular.
 //                   r_stop
 // 4 +--------------x-+----------------+
@@ -37,25 +35,25 @@ TEST_CASE(modular_ray_params)
   um2::AxisAlignedBox2 const box11(p32, p64);
   um2::Vector<um2::AxisAlignedBox2> const boxes{box00, box10, box01, box11};
 
-  I const degree = 2; // azimuthal angles per quadrant
-  F const pi_deg = um2::pi_4<F> / degree;
+  Int const degree = 2; // azimuthal angles per quadrant
+  Float const pi_deg = um2::pi_4<Float> / degree;
   // pi/8, 3pi/8, 5pi/8, 7pi/8
-  um2::Vector<F> const angles{pi_deg, 3 * pi_deg, 5 * pi_deg, 7 * pi_deg};
+  um2::Vector<Float> const angles{pi_deg, 3 * pi_deg, 5 * pi_deg, 7 * pi_deg};
 
-  F const s = static_cast<F>(1) / 2; // ray spacing
+  Float const s = static_cast<Float>(1) / 2; // ray spacing
   um2::Vector<um2::ModularRayParams> ray_params(4);
-  for (I i = 0; i < 4; ++i) {
+  for (Int i = 0; i < 4; ++i) {
     ray_params[i] = um2::ModularRayParams(angles[0], s, boxes[i]);
   }
 
   // Ensure that all the ray params have the same num_rays, spacing, and direction.
-  I const nx = ray_params[0].getNumXRays();
-  I const ny = ray_params[0].getNumYRays();
-  for (I i = 1; i < 4; ++i) {
+  Int const nx = ray_params[0].getNumXRays();
+  Int const ny = ray_params[0].getNumYRays();
+  for (Int i = 1; i < 4; ++i) {
     ASSERT(ray_params[i].getNumXRays() == nx);
     ASSERT(ray_params[i].getNumYRays() == ny);
-    ASSERT(um2::isApprox(ray_params[i].getSpacing(), ray_params[0].getSpacing()));
-    ASSERT(um2::isApprox(ray_params[i].getDirection(), ray_params[0].getDirection()));
+    ASSERT(um2::isApprox<2>(ray_params[i].getSpacing(), ray_params[0].getSpacing()));
+    ASSERT(um2::isApprox<2>(ray_params[i].getDirection(), ray_params[0].getDirection()));
   }
 
   // The first ray on the x-axis in box00 should become the first ray on the
@@ -64,12 +62,12 @@ TEST_CASE(modular_ray_params)
   auto const intersection0 = um2::intersect(r00, box00);
   auto const p1 = r00(intersection0[1]);
   auto const r10 = ray_params[1].getRay(nx);
-  ASSERT(um2::isApprox(p1, r10.origin()));
+  ASSERT(um2::isApprox<2>(p1, r10.origin()));
 
   // Check that the complementary angle shares the same ray origin.
   um2::ModularRayParams const params(angles[3], s, boxes[0]);
   auto const ra0 = params.getRay(params.getNumXRays() - 1);
-  ASSERT(um2::isApprox(ra0.origin(), r00.origin()));
+  ASSERT(um2::isApprox<2>(ra0.origin(), r00.origin()));
 }
 
 #if UM2_USE_CUDA

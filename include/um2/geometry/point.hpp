@@ -1,7 +1,6 @@
 #pragma once
 
 #include <um2/common/cast_if_not.hpp>
-#include <um2/math/simd.hpp>
 #include <um2/math/vec.hpp>
 
 //==============================================================================
@@ -21,13 +20,8 @@ namespace um2
 template <Int D>
 using Point = Vec<D, Float>;
 
-using Point1 = Point<1>;
-
-#if UM2_ENABLE_SIMD_P2
-using Point2 = SIMD<2, Float>; 
-#else
-using Point2 = Vec<2, Float>;
-#endif
+using Point1 = Point<1>; 
+using Point2 = Point<2>;
 using Point3 = Point<3>;
 
 //==============================================================================
@@ -54,20 +48,6 @@ inline constexpr Float inf_distance = castIfNot<Float>(1e8); // 1000 km
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-squaredDistance(Point<D> const & a, Point<D> const & b) noexcept -> Float
-{
-  return squaredNorm(a - b);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-distance(Point<D> const & a, Point<D> const & b) noexcept -> Float
-{
-  return um2::sqrt(squaredDistance(a, b)); 
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
 midpoint(Point<D> a, Point<D> const & b) noexcept -> Point<D>
 {
   // (a + b) / 2
@@ -79,7 +59,7 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 isApprox(Point<D> const & a, Point<D> const & b) noexcept -> bool
 {
-  return squaredDistance(a, b) < eps_distance2;
+  return a.squaredDistanceTo(b) < eps_distance2;
 }
 
 // Are 3 planar points in counter-clockwise order?
@@ -90,7 +70,7 @@ areCCW(Point2 const & a, Point2 const & b, Point2 const & c) noexcept -> bool
   auto const ab = b - a;
   auto const ac = c - a;
   // Allow equality, so that we can handle collinear points.
-  return 0 <= cross(ab, ac);
+  return 0 <= ab.cross(ac);
 }
 
 // Are 3 planar points in counter-clockwise order? We allow for a small amount of
@@ -101,17 +81,7 @@ areApproxCCW(Point2 const & a, Point2 const & b, Point2 const & c) noexcept -> b
   // 2D cross product, of (b - a) and (c - a).
   auto const ab = b - a;
   auto const ac = c - a;
-  return -eps_distance <= cross(ab, ac); 
-}
-
-template <typename T>
-PURE HOSTDEV constexpr auto
-makePoint(T x, T y) noexcept -> Point2
-{
-  Point2 p;
-  p[0] = x;
-  p[1] = y;
-  return p; 
+  return -eps_distance <= ab.cross(ac); 
 }
 
 } // namespace um2

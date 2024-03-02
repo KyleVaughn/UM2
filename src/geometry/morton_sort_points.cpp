@@ -31,11 +31,11 @@ mortonDecode(MortonCode const morton, Point3 & p) noexcept
 
 void
 mortonSortPermutation(Point2 const * const begin, Point2 const * const end,
-                      Int * const perm_begin, Vec2<Float> const & scale) noexcept
+                      Int * const perm_begin, Point2 const & scale) noexcept
 {
   auto const n = end - begin;
   um2::iota(perm_begin, perm_begin + n, 0);
-  bool const has_scale = !isApprox(scale, Vec2<Float>::zero());
+  bool const has_scale = !isApprox<2>(scale, Point2::zero());
   if (has_scale) {
     std::sort(perm_begin, perm_begin + n, [&](Int const i, Int const j) {
       return mortonEncode(begin[i] * scale) < mortonEncode(begin[j] * scale);
@@ -49,11 +49,11 @@ mortonSortPermutation(Point2 const * const begin, Point2 const * const end,
 
 void
 mortonSortPermutation(Point3 const * const begin, Point3 const * const end,
-                      Int * const perm_begin, Vec3<Float> const & scale) noexcept
+                      Int * const perm_begin, Point3 const & scale) noexcept
 {
   auto const n = end - begin;
   um2::iota(perm_begin, perm_begin + n, 0);
-  bool const has_scale = !isApprox(scale, Vec3<Float>::zero());
+  bool const has_scale = !isApprox<3>(scale, Point3::zero());
   if (has_scale) {
     std::sort(perm_begin, perm_begin + n, [&](Int const i, Int const j) {
       return mortonEncode(begin[i] * scale) < mortonEncode(begin[j] * scale);

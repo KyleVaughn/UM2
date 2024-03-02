@@ -130,7 +130,11 @@ template <typename T>
 PURE HOSTDEV constexpr auto
 operator*(Mat2x2<T> const & a, Vec2<T> const & x) noexcept -> Vec2<T>
 {
+#if UM2_ENABLE_SIMD_VEC
+  return x[0] * a.col(0) + x[1] * a.col(1);
+#else
   return Vec2<T>{a(0, 0) * x[0] + a(0, 1) * x[1], a(1, 0) * x[0] + a(1, 1) * x[1]};
+#endif
 }
 
 template <typename T>

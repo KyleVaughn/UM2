@@ -3,6 +3,7 @@
 #include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/ray.hpp>
 #include <um2/math/angular_quadrature.hpp>
+#include <um2/stdlib/numbers.hpp>
 #include <um2/stdlib/math.hpp>
 
 //==============================================================================
@@ -13,7 +14,7 @@
 //
 // Note that for a target azimuthal angle γ ∈ (0, π) and ray spacing s, the
 // axis-aligned box (ray tracing module) will likely not be the necessary size
-// to produce cyclic rays at exactly the target angle or spacing. Instead, an
+// to produce cyclic rays at exactly the target angle or spacing. Intnstead, an
 // effective angle and spacing are computed to ensure that the rays are cyclic.
 
 namespace um2
@@ -24,9 +25,9 @@ class ModularRayParams
 {
 
   AxisAlignedBox2 _box;
-  Vec2<I> _num_rays;  // Number of rays spawned on the box's x and y edges
-  Vec2<F> _spacing;   // Spacing between rays in x and y
-  Vec2<F> _direction; // Direction of rays
+  Vec2<Int> _num_rays;  // Number of rays spawned on the box's x and y edges
+  Point2 _spacing;   // Spacing between rays in x and y
+  Point2 _direction; // Direction of rays
 
 public:
   //============================================================================
@@ -37,29 +38,29 @@ public:
 
   // a: Target azimuthal angle γ ∈ (0, π)
   // s: Target ray spacing
-  HOSTDEV constexpr ModularRayParams(F a, F s, AxisAlignedBox2 box) noexcept;
+  HOSTDEV constexpr ModularRayParams(Float a, Float s, AxisAlignedBox2 box) noexcept;
 
   //============================================================================
   // Methods
   //============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getRay(I i) const noexcept -> Ray2;
+  getRay(Int i) const noexcept -> Ray2;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getTotalNumRays() const noexcept -> I;
+  getTotalNumRays() const noexcept -> Int;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getNumXRays() const noexcept -> I;
+  getNumXRays() const noexcept -> Int;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getNumYRays() const noexcept -> I;
+  getNumYRays() const noexcept -> Int;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getSpacing() const noexcept -> Vec2<F>;
+  getSpacing() const noexcept -> Point2;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getDirection() const noexcept -> Vec2<F>;
+  getDirection() const noexcept -> Point2;
 };
 
 //==============================================================================
@@ -70,30 +71,30 @@ public:
 // s: ray spacing
 // w: width of ray tracing module
 // h: height of ray tracing module
-HOSTDEV constexpr ModularRayParams::ModularRayParams(F const a, F const s,
+HOSTDEV constexpr ModularRayParams::ModularRayParams(Float const a, Float const s,
                                                      AxisAlignedBox2 const box) noexcept
     : _box(box)
 {
   ASSERT_ASSUME(0 < a);
-  ASSERT_ASSUME(a < pi<F>);
+  ASSERT_ASSUME(a < um2::pi<Float>);
   ASSERT_ASSUME(0 < s);
 
   auto const w = box.width();
   auto const h = box.height();
 
   // Number of rays in the x and y directions
-  Vec2<F> const num_rays_t(um2::ceil(um2::abs(w * um2::sin(a) / s)),
+  Point2 const num_rays_t(um2::ceil(um2::abs(w * um2::sin(a) / s)),
                            um2::ceil(um2::abs(h * um2::cos(a) / s)));
 
-  _num_rays[0] = static_cast<I>(num_rays_t[0]);
-  _num_rays[1] = static_cast<I>(num_rays_t[1]);
+  _num_rays[0] = static_cast<Int>(num_rays_t[0]);
+  _num_rays[1] = static_cast<Int>(num_rays_t[1]);
   _spacing[0] = w / num_rays_t[0];
   _spacing[1] = h / num_rays_t[1];
 
   // Effective angle to ensure cyclic rays
   auto const a_eff = um2::atan(_spacing[1] / _spacing[0]);
   _direction[0] = um2::cos(a_eff);
-  if (a > pi_2<F>) {
+  if (a > pi_2<Float>) {
     _direction[0] = -_direction[0];
   }
   _direction[1] = um2::sin(a_eff);
@@ -104,7 +105,7 @@ HOSTDEV constexpr ModularRayParams::ModularRayParams(F const a, F const s,
 //==============================================================================
 
 HOSTDEV constexpr auto
-ModularRayParams::getRay(I const i) const noexcept -> Ray2
+ModularRayParams::getRay(Int const i) const noexcept -> Ray2
 {
   // Angle < π/2
   //
@@ -133,20 +134,20 @@ ModularRayParams::getRay(I const i) const noexcept -> Ray2
   int case_id = (i < _num_rays[0]) ? 0 : 1;
   case_id += (_direction[0] < 0) ? 2 : 0;
   Point2 origin = _box.minima();
-  auto const i_half = static_cast<F>(i) + static_cast<F>(1) / 2;
+  auto const i_half = static_cast<Float>(i) + static_cast<Float>(1) / 2;
   switch (case_id) {
   case 0:
     origin[0] = _box.maxima(0) - _spacing[0] * i_half;
     break;
   case 1:
-    origin[1] += _spacing[1] * (i_half - static_cast<F>(_num_rays[0]));
+    origin[1] += _spacing[1] * (i_half - static_cast<Float>(_num_rays[0]));
     break;
   case 2:
     origin[0] += _spacing[0] * i_half;
     break;
   case 3:
     origin[0] = _box.maxima(0);
-    origin[1] += _spacing[1] * (i_half - static_cast<F>(_num_rays[0]));
+    origin[1] += _spacing[1] * (i_half - static_cast<Float>(_num_rays[0]));
     break;
   default:
     __builtin_unreachable();
@@ -156,31 +157,31 @@ ModularRayParams::getRay(I const i) const noexcept -> Ray2
 }
 
 HOSTDEV constexpr auto
-ModularRayParams::getTotalNumRays() const noexcept -> I
+ModularRayParams::getTotalNumRays() const noexcept -> Int
 {
   return _num_rays[0] + _num_rays[1];
 }
 
 HOSTDEV constexpr auto
-ModularRayParams::getNumXRays() const noexcept -> I
+ModularRayParams::getNumXRays() const noexcept -> Int
 {
   return _num_rays[0];
 }
 
 HOSTDEV constexpr auto
-ModularRayParams::getNumYRays() const noexcept -> I
+ModularRayParams::getNumYRays() const noexcept -> Int
 {
   return _num_rays[1];
 }
 
 HOSTDEV constexpr auto
-ModularRayParams::getSpacing() const noexcept -> Vec2<F>
+ModularRayParams::getSpacing() const noexcept -> Point2
 {
   return _spacing;
 }
 
 HOSTDEV constexpr auto
-ModularRayParams::getDirection() const noexcept -> Vec2<F>
+ModularRayParams::getDirection() const noexcept -> Point2
 {
   return _direction;
 }

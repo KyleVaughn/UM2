@@ -22,7 +22,7 @@
 namespace um2
 {
 
-template <I K, I P, I N, I D>
+template <Int K, Int P, Int N, Int D>
 class Polytope
 {
   static_assert(K > 0 && K <= 3, "Polytope dimension must be 1, 2, or 3");
@@ -33,31 +33,31 @@ class Polytope
 // Aliases
 //==============================================================================
 
-template <I K, I N, I D>
+template <Int K, Int N, Int D>
 using LinearPolytope = Polytope<K, 1, N, D>;
 
 // K-Polytopes
 //-----------------------------------------------------------------------------
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 using Dion = Polytope<1, P, N, D>;
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 using Polygon = Polytope<2, P, N, D>;
-template <I P, I N, I D>
+template <Int P, Int N, Int D>
 using Polyhedron = Polytope<3, P, N, D>;
 
 // Dions
 //-----------------------------------------------------------------------------
-template <I D>
+template <Int D>
 using LineSegment = Dion<1, 2, D>;
-template <I D>
+template <Int D>
 using QuadraticSegment = Dion<2, 3, D>;
 
 // Planar dions
-template <I P, I N>
+template <Int P, Int N>
 using PlanarDion = Dion<P, N, 2>;
-template <I N>
+template <Int N>
 using PlanarLineSegment = LineSegment<2>;
-template <I N>
+template <Int N>
 using PlanarQuadraticSegment = QuadraticSegment<2>;
 
 // Dimension specific aliases
@@ -66,37 +66,37 @@ using QuadraticSegment2 = QuadraticSegment<2>;
 
 // Polygons
 //-----------------------------------------------------------------------------
-template <I N, I D>
+template <Int N, Int D>
 using LinearPolygon = Polygon<1, N, D>;
-template <I N, I D>
+template <Int N, Int D>
 using QuadraticPolygon = Polygon<2, N, D>;
 
 // Planar polygons
-template <I P, I N>
+template <Int P, Int N>
 using PlanarPolygon = Polygon<P, N, 2>;
-template <I N>
+template <Int N>
 using PlanarLinearPolygon = LinearPolygon<N, 2>;
-template <I N>
+template <Int N>
 using PlanarQuadraticPolygon = QuadraticPolygon<N, 2>;
 
 // N-vertex polygons
-template <I D>
+template <Int D>
 using Triangle = LinearPolygon<3, D>;
-template <I D>
+template <Int D>
 using Quadrilateral = LinearPolygon<4, D>;
-template <I D>
+template <Int D>
 using QuadraticTriangle = QuadraticPolygon<6, D>;
-template <I D>
+template <Int D>
 using QuadraticQuadrilateral = QuadraticPolygon<8, D>;
 
 // N-vertex polygons (shorthand)
-template <I D>
+template <Int D>
 using Tri = Triangle<D>;
-template <I D>
+template <Int D>
 using Quad = Quadrilateral<D>;
-template <I D>
+template <Int D>
 using Tri6 = QuadraticTriangle<D>;
-template <I D>
+template <Int D>
 using Quad8 = QuadraticQuadrilateral<D>;
 
 // Dimension specific aliases
@@ -111,9 +111,9 @@ using QuadraticQuadrilateral3 = QuadraticQuadrilateral<3>;
 
 // Polyhedrons
 //-----------------------------------------------------------------------------
-template <I N, I D>
+template <Int N, Int D>
 using LinearPolyhedron = Polyhedron<1, N, D>;
-template <I N, I D>
+template <Int N, Int D>
 using QuadraticPolyhedron = Polyhedron<2, N, D>;
 
 // N-vertex polyhedrons
@@ -128,11 +128,11 @@ using QuadraticHexahedron = QuadraticPolyhedron<20, 3>;
 //==============================================================================
 
 // The bounding box of any linear polytope is the bounding box of its vertices.
-template <I K, I N, I D>
+template <Int K, Int N, Int D>
 PURE HOSTDEV constexpr auto
 boundingBox(LinearPolytope<K, N, D> const & polytope) noexcept -> AxisAlignedBox<D>
 {
-  return boundingBox(polytope.vertices(), N);
+  return boundingBox<D>(polytope.vertices(), N);
 }
 
 } // namespace um2

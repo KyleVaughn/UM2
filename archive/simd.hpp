@@ -15,13 +15,13 @@
 // For developers:
 // To wrap or not to wrap? That is the question.
 //
-// If we don't wrap the GCC vector extension in a class, the compiler is 
-// very bad at deducing the size of the SIMD type. It will sometimes silently 
+// If we don't wrap the GCC vector extension in a class, the compiler is
+// very bad at deducing the size of the SIMD type. It will sometimes silently
 // deduce a bad size, leading to subtle bugs. However, if we wrap the
 // GCC vector extension in a class, then the operator[] cannot be used to mutate
-// the data without some trouble. The compiler will complain that a "non-const reference 
-// cannot bind to vector element". Therefore, we have to either use a union or 
-// reinterpret_cast to get a mutable reference to the data. 
+// the data without some trouble. The compiler will complain that a "non-const reference
+// cannot bind to vector element". Therefore, we have to either use a union or
+// reinterpret_cast to get a mutable reference to the data.
 //
 // If we use a union, the compiler tends to throw away all the SIMD instructions.
 // But, if we use reinterpret_cast, then we have to be careful about aliasing.
@@ -31,7 +31,7 @@
 static consteval auto
 isPowerOf2(Int x) noexcept -> bool
 {
-  return (x & (x - 1)) == 0; 
+  return (x & (x - 1)) == 0;
 };
 
 namespace um2
@@ -43,7 +43,10 @@ class SIMD
   static_assert(std::is_arithmetic_v<T>);
   static_assert(isPowerOf2(D));
 
-  using Data = T __attribute__((vector_size(D * sizeof(T))));
+  // GCC complains for using, but is fine with a typedef. Hence we just silence
+  // clang-tidy for the typedef.
+  // NOLINTNEXTLINE
+  typedef T Data __attribute__((vector_size(D * sizeof(T))));
 
   Data _data;
 
@@ -59,31 +62,31 @@ class SIMD
 
 public:
 
-  //==============================================================================    
-  // Element Access    
-  //==============================================================================    
-    
-  PURE HOSTDEV constexpr auto    
-  operator[](Int i) noexcept -> T &;    
-    
-  PURE HOSTDEV constexpr auto    
+  //==============================================================================
+  // Element Access
+  //==============================================================================
+
+  PURE HOSTDEV constexpr auto
+  operator[](Int i) noexcept -> T &;
+
+  PURE HOSTDEV constexpr auto
   operator[](Int i) const noexcept -> T const &;
 
-  //==============================================================================    
-  // Constructors    
-  //==============================================================================    
-    
-  constexpr SIMD() noexcept = default;    
-    
-  // Allow implicit conversion from integral types.    
-  // Otherwise, require explicit conversion to avoid accidental loss of    
-  // precision/performance.    
-  // NOLINTBEGIN(google-explicit-constructor)    
-  template <class... Is>    
-  requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&    
-           !(std::same_as<T, Is> && ...)) HOSTDEV    
-      constexpr SIMD(Is const... args) noexcept;    
-    
+  //==============================================================================
+  // Constructors
+  //==============================================================================
+
+  constexpr SIMD() noexcept = default;
+
+  // Allow implicit conversion from integral types.
+  // Otherwise, require explicit conversion to avoid accidental loss of
+  // precision/performance.
+  // NOLINTBEGIN(google-explicit-constructor)
+  template <class... Is>
+  requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
+           !(std::same_as<T, Is> && ...)) HOSTDEV
+      constexpr SIMD(Is const... args) noexcept;
+
   template <class... Ts>
   requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...)) HOSTDEV
       constexpr SIMD(Ts const... args) noexcept;
@@ -136,30 +139,39 @@ public:
   // Other member functions
   //==============================================================================
 
-  HOSTDEV [[nodiscard]] constexpr auto
-  min(SIMD<D, T> const & v) noexcept -> SIMD<D, T> &;
-
-  HOSTDEV [[nodiscard]] constexpr auto
-  max(SIMD<D, T> const & v) noexcept -> SIMD<D, T> &;
-
-  HOSTDEV [[nodiscard]] constexpr auto
-  dot(SIMD<D, T> const & v) const noexcept -> T;
-
-  HOSTDEV [[nodiscard]] constexpr auto
-  squaredNorm() const noexcept -> T;
-
-  HOSTDEV [[nodiscard]] constexpr auto
-  norm() const noexcept -> T;
+  HOSTDEV [[nodiscard]] static constexpr auto
+  zero() noexcept -> SIMD<D, T>;
 
   HOSTDEV constexpr void 
+  min(SIMD<D, T> const & v) noexcept;
+
+  HOSTDEV constexpr void
+  max(SIMD<D, T> const & v) noexcept;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  dot(SIMD<D, T> const & v) const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  squaredNorm() const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  norm() const noexcept -> T;
+
+  HOSTDEV constexpr void
   normalize() noexcept;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   normalized() const noexcept -> SIMD<D, T>;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   cross(SIMD<2, T> const & v) const noexcept -> T
   requires(D == 2);
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto        
+  squaredDistanceTo(SIMD<D, T> const & v) const noexcept -> T;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  distanceTo(SIMD<D, T> const & v) const noexcept -> T;
 
 }; // class SIMD
 
@@ -190,6 +202,90 @@ norm(SIMD<D, T> const & v) noexcept -> T;
 template <Int D, class T>
 PURE HOSTDEV constexpr auto
 normalized(SIMD<D, T> v) noexcept -> SIMD<D, T>;
+
+//==============================================================================
+// Non-member operators
+//==============================================================================
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator==(SIMD<D, T> const & l, SIMD<D, T> const & r) noexcept -> bool;
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator<(SIMD<D, T> const & l, SIMD<D, T> const & r) noexcept -> bool;
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator!=(SIMD<D, T> const & l, SIMD<D, T> const & r) noexcept -> bool;
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator>(SIMD<D, T> const & l, SIMD<D, T> const & r) noexcept -> bool;
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator<=(SIMD<D, T> const & l, SIMD<D, T> const & r) noexcept -> bool;
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator>=(SIMD<D, T> const & l, SIMD<D, T> const & r) noexcept -> bool;
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator+(SIMD<D, T> u, SIMD<D, T> const & v) noexcept -> SIMD<D, T>;
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator-(SIMD<D, T> u, SIMD<D, T> const & v) noexcept -> SIMD<D, T>;
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator*(SIMD<D, T> u, SIMD<D, T> const & v) noexcept -> SIMD<D, T>;
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator/(SIMD<D, T> u, SIMD<D, T> const & v) noexcept -> SIMD<D, T>;
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator+(Scalar s, SIMD<D, T> u) noexcept -> SIMD<D, T>;
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator+(SIMD<D, T> u, Scalar s) noexcept -> SIMD<D, T>;
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator-(Scalar s, SIMD<D, T> u) noexcept -> SIMD<D, T>;
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator-(SIMD<D, T> u, Scalar s) noexcept -> SIMD<D, T>;
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator*(Scalar s, SIMD<D, T> u) noexcept -> SIMD<D, T>;
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator*(SIMD<D, T> u, Scalar s) noexcept -> SIMD<D, T>;
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator/(SIMD<D, T> u, Scalar s) noexcept -> SIMD<D, T>;
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator/(Scalar s, SIMD<D, T> const & u) noexcept -> SIMD<D, T>;
 
 //==============================================================================
 // Private functions
@@ -235,21 +331,21 @@ SIMD<D, T>::operator[](Int i) const noexcept -> T const &
 // Constructors
 //==============================================================================
 
-template <Int D, class T>    
-template <class... Is>    
-requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&    
-         !(std::same_as<T, Is> && ...)) HOSTDEV    
-    constexpr SIMD<D, T>::SIMD(Is const... args) noexcept    
-    : _data{static_cast<T>(args)...}    
-{    
-}    
-    
-template <Int D, class T>    
-template <class... Ts>    
-requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...)) HOSTDEV    
-    constexpr SIMD<D, T>::SIMD(Ts const... args) noexcept    
-    : _data{args...}    
-{    
+template <Int D, class T>
+template <class... Is>
+requires(sizeof...(Is) == D && (std::integral<Is> && ...) &&
+         !(std::same_as<T, Is> && ...)) HOSTDEV
+    constexpr SIMD<D, T>::SIMD(Is const... args) noexcept
+    : _data{static_cast<T>(args)...}
+{
+}
+
+template <Int D, class T>
+template <class... Ts>
+requires(sizeof...(Ts) == D && (std::same_as<T, Ts> && ...)) HOSTDEV
+    constexpr SIMD<D, T>::SIMD(Ts const... args) noexcept
+    : _data{args...}
+{
 }
 
 //==============================================================================
@@ -340,25 +436,35 @@ requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
 //==============================================================================
 
 template <Int D, class T>
-HOSTDEV constexpr auto
-SIMD<D, T>::min(SIMD<D, T> const & v) noexcept -> SIMD<D, T> &
+HOSTDEV [[nodiscard]] constexpr auto
+SIMD<D, T>::zero() noexcept -> SIMD<D, T>
+{
+  SIMD<D, T> result;
+  // optimized to vxorps xmm0, xmm0, xmm0 or similar
+  for (Int i = 0; i < D; ++i) {
+    result[i] = 0;
+  }
+  return result;
+}
+
+template <Int D, class T>
+HOSTDEV constexpr void
+SIMD<D, T>::min(SIMD<D, T> const & v) noexcept
 {
   // This gets optimized to a single instruction.
   for (Int i = 0; i < D; ++i) {
     _data[i] = um2::min(_data[i], v._data[i]);
   }
-  return *this;
 }
 
 template <Int D, class T>
-HOSTDEV constexpr auto
-SIMD<D, T>::max(SIMD<D, T> const & v) noexcept -> SIMD<D, T> &
+HOSTDEV constexpr void
+SIMD<D, T>::max(SIMD<D, T> const & v) noexcept
 {
   // This gets optimized to a single instruction.
   for (Int i = 0; i < D; ++i) {
     _data[i] = um2::max(_data[i], v._data[i]);
   }
-  return *this;
 }
 
 template <Int D, class T>
@@ -420,71 +526,40 @@ requires(D == 2)
   return _data[0] * v[1] - _data[1] * v[0];
 }
 
-//////==============================================================================
-////// Non-member operators
-//////==============================================================================
-////
-////template <Int D, std::integral T>
-////PURE HOSTDEV constexpr auto
-////operator==(SIMD<D, T> const & u, SIMD<D, T> const & v) noexcept -> bool
-////{
-////  for (Int i = 0; i < D; ++i) {
-////    if (u[i] != v[i]) {
-////      return false;
-////    }
-////  }
-////  return true;
-////}
-////
-////template <Int D, std::integral T>
-////PURE HOSTDEV constexpr auto
-////operator!=(SIMD<D, T> const & u, SIMD<D, T> const & v) noexcept -> bool
-////{
-////  return !(u == v);
-////}
-////
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+SIMD<D, T>::squaredDistanceTo(SIMD<D, T> const & v) const noexcept -> T
+{
+  auto const diff = *this - v;
+  return diff.squaredNorm();
+}
 
-////template <Int D, class T>
-////HOSTDEV [[nodiscard]] constexpr auto
-////SIMD<D, T>::zero() noexcept -> SIMD<D, T>
-////{
-////  return SIMD<D, T>{}; // Zero-initialize.
-////}
-////
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+SIMD<D, T>::distanceTo(SIMD<D, T> const & v) const noexcept -> T
+{
+  static_assert(std::is_floating_point_v<T>);
+  return um2::sqrt(squaredDistanceTo(v));
+}
 
-////template <Int D, class T>
-////PURE HOSTDEV constexpr auto
-////SIMD<D, T>::squaredDistanceTo(SIMD<D, T> const & v) const noexcept -> T
-////{
-////  T const d0 = _data[0] - v[0];
-////  T result = d0 * d0;
-////  for (Int i = 1; i < D; ++i) {
-////    T const di = _data[i] - v[i];
-////    result += di * di;
-////  }
-////  return result;
-////}
-////
-////template <Int D, class T>
-////PURE HOSTDEV constexpr auto
-////SIMD<D, T>::distanceTo(SIMD<D, T> const & v) const noexcept -> T
-////{
-////  static_assert(std::is_floating_point_v<T>);
-////  return um2::sqrt(squaredDistanceTo(v));
-////}
-////
+//==============================================================================
+// Free functions
+//==============================================================================
+
 template <Int D, class T>
 PURE HOSTDEV constexpr auto
 min(SIMD<D, T> u, SIMD<D, T> const & v) noexcept -> SIMD<D, T>
 {
-  return u.min(v);
+  u.min(v);
+  return u;
 }
 
 template <Int D, class T>
 PURE HOSTDEV constexpr auto
 max(SIMD<D, T> u, SIMD<D, T> const & v) noexcept -> SIMD<D, T>
 {
-  return u.max(v);
+  u.max(v);
+  return u; 
 }
 
 template <Int D, class T>
@@ -524,6 +599,161 @@ cross(SIMD<2, T> const & u, SIMD<2, T> const & v) noexcept -> T
 {
   static_assert(std::is_floating_point_v<T>);
   return u.cross(v);
+}
+
+//==============================================================================
+// Non-member operators
+//==============================================================================
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator==(SIMD<D, T> const & l, SIMD<D, T> const & r) noexcept -> bool
+{
+  for (Int i = 0; i < D; ++i) {
+    if (l[i] != r[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator<(SIMD<D, T> const & l, SIMD<D, T> const & r) noexcept -> bool
+{
+  for (Int i = 0; i < D; ++i) {
+    if (l[i] < r[i]) {
+      return true;
+    }
+    if (r[i] < l[i]) {
+      return false;
+    }
+  }
+  return false;
+}
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator!=(SIMD<D, T> const & l, SIMD<D, T> const & r) noexcept -> bool
+{
+  return !(l == r);
+}
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator>(SIMD<D, T> const & l, SIMD<D, T> const & r) noexcept -> bool
+{
+  return r < l;
+}
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator<=(SIMD<D, T> const & l, SIMD<D, T> const & r) noexcept -> bool
+{
+  return !(r < l);
+}
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator>=(SIMD<D, T> const & l, SIMD<D, T> const & r) noexcept -> bool
+{
+  return !(l < r);
+}
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator+(SIMD<D, T> u, SIMD<D, T> const & v) noexcept -> SIMD<D, T>
+{
+  return u += v;
+}
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator-(SIMD<D, T> u, SIMD<D, T> const & v) noexcept -> SIMD<D, T>
+{
+  return u -= v;
+}
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator*(SIMD<D, T> u, SIMD<D, T> const & v) noexcept -> SIMD<D, T>
+{
+  return u *= v;
+}
+
+template <Int D, class T>
+PURE HOSTDEV constexpr auto
+operator/(SIMD<D, T> u, SIMD<D, T> const & v) noexcept -> SIMD<D, T>
+{
+  return u /= v;
+}
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator+(Scalar s, SIMD<D, T> u) noexcept -> SIMD<D, T>
+{
+  return u += s;
+}
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator+(SIMD<D, T> u, Scalar s) noexcept -> SIMD<D, T>
+{
+  return u += s;
+}
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator-(Scalar s, SIMD<D, T> u) noexcept -> SIMD<D, T>
+{
+  return -u += s;
+}
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator-(SIMD<D, T> u, Scalar s) noexcept -> SIMD<D, T>
+{
+  return u -= s;
+}
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator*(Scalar s, SIMD<D, T> u) noexcept -> SIMD<D, T>
+{
+  return u *= s;
+}
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator*(SIMD<D, T> u, Scalar s) noexcept -> SIMD<D, T>
+{
+  return u *= s;
+}
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator/(SIMD<D, T> u, Scalar s) noexcept -> SIMD<D, T>
+{
+  return u /= s;
+}
+
+template <Int D, class T, typename Scalar>
+requires(std::same_as<T, Scalar> || std::integral<Scalar>)
+PURE HOSTDEV constexpr auto
+operator/(Scalar s, SIMD<D, T> const & u) noexcept -> SIMD<D, T>
+{
+  SIMD<D, T> result;
+  for (Int i = 0; i < D; ++i) {
+    result[i] = s / u[i];
+  }
+  return result;
 }
 
 } // namespace um2
