@@ -1,9 +1,8 @@
-Generalize SIMD vec concept
-
+CUDA check
 Change Point2 back to Vec.
+  point
+  dion -> WIP
 Examine Geometry.
-
-math
 
 PURE and ASSERTS/Log messages
 

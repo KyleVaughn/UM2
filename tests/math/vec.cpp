@@ -281,7 +281,7 @@ HOSTDEV
 TEST_CASE(norm)
 {
   um2::Vec<D, T> const v = makeVec<D, T>();
-  T norm = um2::norm<D>(v);
+  T norm = um2::norm(v);
   T ref = um2::sqrt(static_cast<T>(D * (D + 1) * (2 * D + 1)) / 6);
   ASSERT_NEAR(norm, ref, static_cast<T>(1e-6));
 }

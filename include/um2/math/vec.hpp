@@ -13,9 +13,9 @@
 //==============================================================================
 // A D-dimensional vector with data of type T.
 //
-// if UM2_ENABLE_SIMD_VEC, then instead of using an array of T, we use GCC
-// vector extensions to store the data. This allows for automatic vectorization
-// of operations.
+// if UM2_ENABLE_SIMD_VEC, then if D is a power of 2 and T is an arithmetic type,
+// we use GCC's vector extensions to store the data. This allows for automatic
+// vectorization of operations.
 
 namespace um2
 {
@@ -397,11 +397,15 @@ template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator-() const noexcept -> Vec<D, T>
 {
-  Vec<D, T> result;
-  for (Int i = 0; i < D; ++i) {
-    result[i] = -_data[i];
+  if constexpr (is_simd_vec<D, T>) {
+    return -_data;
+  } else {
+    Vec<D, T> result;
+    for (Int i = 0; i < D; ++i) {
+      result[i] = -_data[i];
+    }
+    return result;
   }
-  return result;
 }
 
 //==============================================================================
@@ -412,8 +416,12 @@ template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator+=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  for (Int i = 0; i < D; ++i) {
-    _data[i] += v[i];
+  if constexpr (is_simd_vec<D, T>) {
+    _data += v._data;
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      _data[i] += v[i];
+    }
   }
   return *this;
 }
@@ -422,8 +430,12 @@ template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator-=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  for (Int i = 0; i < D; ++i) {
-    _data[i] -= v[i];
+  if constexpr (is_simd_vec<D, T>) {
+    _data -= v._data;
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      _data[i] -= v[i];
+    }
   }
   return *this;
 }
@@ -432,8 +444,12 @@ template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator*=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  for (Int i = 0; i < D; ++i) {
-    _data[i] *= v[i];
+  if constexpr (is_simd_vec<D, T>) {
+    _data *= v._data;
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      _data[i] *= v[i];
+    }
   }
   return *this;
 }
@@ -442,8 +458,12 @@ template <Int D, class T>
 HOSTDEV constexpr auto
 Vec<D, T>::operator/=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
 {
-  for (Int i = 0; i < D; ++i) {
-    _data[i] /= v[i];
+  if constexpr (is_simd_vec<D, T>) {
+    _data /= v._data;
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      _data[i] /= v[i];
+    }
   }
   return *this;
 }
@@ -453,8 +473,12 @@ template <class S>
 requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
     constexpr auto Vec<D, T>::operator+=(S const & s) noexcept -> Vec<D, T> &
 {
-  for (Int i = 0; i < D; ++i) {
-    _data[i] += static_cast<T>(s);
+  if constexpr (is_simd_vec<D, T>) {
+    _data += static_cast<T>(s);
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      _data[i] += static_cast<T>(s);
+    }
   }
   return *this;
 }
@@ -464,8 +488,12 @@ template <class S>
 requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
     constexpr auto Vec<D, T>::operator-=(S const & s) noexcept -> Vec<D, T> &
 {
-  for (Int i = 0; i < D; ++i) {
-    _data[i] -= static_cast<T>(s);
+  if constexpr (is_simd_vec<D, T>) {
+    _data -= static_cast<T>(s);
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      _data[i] -= static_cast<T>(s);
+    }
   }
   return *this;
 }
@@ -475,8 +503,12 @@ template <class S>
 requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
     constexpr auto Vec<D, T>::operator*=(S const & s) noexcept -> Vec<D, T> &
 {
-  for (Int i = 0; i < D; ++i) {
-    _data[i] *= static_cast<T>(s);
+  if constexpr (is_simd_vec<D, T>) {
+    _data *= static_cast<T>(s);
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      _data[i] *= static_cast<T>(s);
+    }
   }
   return *this;
 }
@@ -486,8 +518,12 @@ template <class S>
 requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
     constexpr auto Vec<D, T>::operator/=(S const & s) noexcept -> Vec<D, T> &
 {
-  for (Int i = 0; i < D; ++i) {
-    _data[i] /= static_cast<T>(s);
+  if constexpr (is_simd_vec<D, T>) {
+    _data /= static_cast<T>(s);
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      _data[i] /= static_cast<T>(s);
+    }
   }
   return *this;
 }
@@ -507,7 +543,11 @@ template <Int D, class T>
 HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::zero() noexcept -> Vec<D, T>
 {
-  return Vec<D, T>{}; // Zero-initialize.
+  Vec<D, T> result;
+  for (Int i = 0; i < D; ++i) {
+    result[i] = static_cast<T>(0);
+  }
+  return result; 
 }
 
 template <Int D, class T>
@@ -515,7 +555,7 @@ HOSTDEV constexpr void
 Vec<D, T>::min(Vec<D, T> const & v) noexcept
 {
   for (Int i = 0; i < D; ++i) {
-    _data[i] = um2::min(_data[i], v[i]);
+    _data[i] = um2::min(_data[i], v._data[i]);
   }
 }
 
@@ -524,7 +564,7 @@ HOSTDEV constexpr void
 Vec<D, T>::max(Vec<D, T> const & v) noexcept
 {
   for (Int i = 0; i < D; ++i) {
-    _data[i] = um2::max(_data[i], v[i]);
+    _data[i] = um2::max(_data[i], v._data[i]);
   }
 }
 
@@ -532,9 +572,9 @@ template <Int D, class T>
 HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::dot(Vec<D, T> const & v) const noexcept -> T
 {
-  T result = _data[0] * v[0];
+  T result = _data[0] * v._data[0];
   for (Int i = 1; i < D; ++i) {
-    result += _data[i] * v[i];
+    result += _data[i] * v._data[i];
   }
   return result;
 }
@@ -693,6 +733,7 @@ operator==(Vec<D, T> const & l, Vec<D, T> const & r) noexcept -> bool
   return true;
 }
 
+// Lexicographical comparison
 template <Int D, class T>
 PURE HOSTDEV constexpr auto
 operator<(Vec<D, T> const & l, Vec<D, T> const & r) noexcept -> bool

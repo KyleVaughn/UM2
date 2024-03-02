@@ -46,7 +46,7 @@ TEST_CASE(midpoint)
 {
   um2::Point<D> const p1 = makep1<D>();
   um2::Point<D> const p2 = makep2<D>();
-  um2::Point<D> m = um2::midpoint<D>(p1, p2);
+  um2::Point<D> m = um2::midpoint(p1, p2);
   Float const three_half = static_cast<Float>(3) / 2;
   for (Int i = 0; i < D; ++i) {
     ASSERT_NEAR(m[i], static_cast<Float>(i) + three_half, eps);
@@ -60,9 +60,9 @@ TEST_CASE(isApprox)
   um2::Point<D> const p1 = makep1<D>();
   um2::Point<D> p2 = makep2<D>();
   // Trivial equality
-  ASSERT(um2::isApprox<D>(p1, p1));
+  ASSERT(um2::isApprox(p1, p1));
   // Trivial inequality
-  ASSERT(!um2::isApprox<D>(p1, p2));
+  ASSERT(!um2::isApprox(p1, p2));
   // Non-trivial equality
   p2 = p1;
   p2[0] += um2::eps_distance / 2;
