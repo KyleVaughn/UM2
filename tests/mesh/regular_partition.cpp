@@ -2,19 +2,19 @@
 
 #include "../test_macros.hpp"
 
-F constexpr eps = condCast<F>(1e-6);
+auto constexpr eps = castIfNot<Float>(1e-6);
 
-template <I D, typename P>
+template <Int D, typename P>
 HOSTDEV constexpr auto
 makePart() -> um2::RegularPartition<D, P>
 {
   static_assert(1 <= D && D <= 3, "D must be in [1, 3]");
   um2::Point<D> minima;
   um2::Point<D> spacing;
-  um2::Vec<D, I> num_cells;
-  for (I i = 0; i < D; ++i) {
-    minima[i] = static_cast<F>(i + 1);
-    spacing[i] = static_cast<F>(i + 1);
+  um2::Vec<D, Int> num_cells;
+  for (Int i = 0; i < D; ++i) {
+    minima[i] = static_cast<Float>(i + 1);
+    spacing[i] = static_cast<Float>(i + 1);
     num_cells[i] = i + 1;
   }
   um2::Vector<P> children;
@@ -30,44 +30,44 @@ makePart() -> um2::RegularPartition<D, P>
   return part;
 }
 
-template <I D, typename P>
+template <Int D, typename P>
 HOSTDEV
 TEST_CASE(accessors)
 {
   um2::RegularPartition<D, P> const part = makePart<D, P>();
   if constexpr (D >= 1) {
-    F const xmin = static_cast<F>(1);
+    auto const xmin = static_cast<Float>(1);
     ASSERT_NEAR(part.grid().xMin(), xmin, eps);
-    F const dx = static_cast<F>(1);
+    auto const dx = static_cast<Float>(1);
     ASSERT_NEAR(part.grid().dx(), dx, eps);
-    I const nx = 1;
+    Int const nx = 1;
     ASSERT(part.grid().numXCells() == nx);
-    ASSERT_NEAR(part.grid().width(), dx * static_cast<F>(nx), eps);
-    ASSERT_NEAR(part.grid().xMax(), xmin + dx * static_cast<F>(nx), eps);
+    ASSERT_NEAR(part.grid().width(), dx * static_cast<Float>(nx), eps);
+    ASSERT_NEAR(part.grid().xMax(), xmin + dx * static_cast<Float>(nx), eps);
   }
   if constexpr (D >= 2) {
-    F const ymin = static_cast<F>(2);
+    auto const ymin = static_cast<Float>(2);
     ASSERT_NEAR(part.grid().yMin(), ymin, eps);
-    F const dy = static_cast<F>(2);
+    auto const dy = static_cast<Float>(2);
     ASSERT_NEAR(part.grid().dy(), dy, eps);
-    I const ny = 2;
+    Int const ny = 2;
     ASSERT(part.grid().numYCells() == ny);
-    ASSERT_NEAR(part.grid().height(), dy * static_cast<F>(ny), eps);
-    ASSERT_NEAR(part.grid().yMax(), ymin + dy * static_cast<F>(ny), eps);
+    ASSERT_NEAR(part.grid().height(), dy * static_cast<Float>(ny), eps);
+    ASSERT_NEAR(part.grid().yMax(), ymin + dy * static_cast<Float>(ny), eps);
   }
   if constexpr (D >= 3) {
-    F const zmin = static_cast<F>(3);
+    auto const zmin = static_cast<Float>(3);
     ASSERT_NEAR(part.grid().zMin(), zmin, eps);
-    F const dz = static_cast<F>(3);
+    auto const dz = static_cast<Float>(3);
     ASSERT_NEAR(part.grid().dz(), dz, eps);
-    I const nz = 3;
+    Int const nz = 3;
     ASSERT(part.grid().numZCells() == nz);
-    ASSERT_NEAR(part.grid().depth(), dz * static_cast<F>(nz), eps);
-    ASSERT_NEAR(part.grid().zMax(), zmin + dz * static_cast<F>(nz), eps);
+    ASSERT_NEAR(part.grid().depth(), dz * static_cast<Float>(nz), eps);
+    ASSERT_NEAR(part.grid().zMax(), zmin + dz * static_cast<Float>(nz), eps);
   }
 }
 
-template <I D, typename P>
+template <Int D, typename P>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
@@ -92,17 +92,17 @@ HOSTDEV
 TEST_CASE(getBox_and_getChild)
 {
   // Declare some variables to avoid a bunch of static casts.
-  F const three = static_cast<F>(3);
-  F const two = static_cast<F>(2);
-  F const one = static_cast<F>(1);
-  F const ahalf = static_cast<F>(1) / static_cast<F>(2);
-  F const forth = static_cast<F>(1) / static_cast<F>(4);
+  auto const three = static_cast<Float>(3);
+  auto const two = static_cast<Float>(2);
+  auto const one = static_cast<Float>(1);
+  auto const ahalf = static_cast<Float>(1) / static_cast<Float>(2);
+  auto const forth = static_cast<Float>(1) / static_cast<Float>(4);
   um2::Point2 const minima = {1, -1};
-  um2::Vec2<F> const spacing = {ahalf, forth};
-  um2::Vec2<I> const num_cells = {4, 8};
+  um2::Vec2<Float> const spacing = {ahalf, forth};
+  um2::Vec2<Int> const num_cells = {4, 8};
   um2::RegularGrid2 const grid(minima, spacing, num_cells);
   um2::Vector<P> children(32);
-  for (I i = 0; i < 32; ++i) {
+  for (Int i = 0; i < 32; ++i) {
     children[i] = static_cast<P>(i);
   }
   um2::RegularPartition<2, P> part(grid, children);
@@ -163,23 +163,23 @@ TEST_CASE(getBox_and_getChild)
 }
 
 #if UM2_USE_CUDA
-template <I D, typename P>
+template <Int D, typename P>
 MAKE_CUDA_KERNEL(accessors, D, P)
 
-template <I D, typename P>
+template <Int D, typename P>
 MAKE_CUDA_KERNEL(boundingBox, D, P)
 
 template <typename P>
 MAKE_CUDA_KERNEL(getBox_and_getChild, P)
 #endif
 
-template <I D, typename P>
+template <Int D, typename P>
 TEST_SUITE(RegularPartition)
 {
-  TEST_HOSTDEV(accessors, 1, 1, D, P);
-  TEST_HOSTDEV(boundingBox, 1, 1, D, P);
+  TEST_HOSTDEV(accessors, D, P);
+  TEST_HOSTDEV(boundingBox, D, P);
   if constexpr (D == 2) {
-    TEST_HOSTDEV(getBox_and_getChild, 1, 1, P);
+    TEST_HOSTDEV(getBox_and_getChild, P);
   }
 }
 

@@ -1,8 +1,15 @@
+look ath the end of getsubmesh with the intersection and beyond.
+Just allocate a buffer of size equal to the elset itself (upper vound)
+then do the set intersection, keeping track of size.
+
+operator Type() -> Convery to type
+
+applyPermutation
+
+is_constexpr -> builtin
+constexpr tests
+
 CUDA check
-Change Point2 back to Vec.
-  point
-  dion -> WIP
-Examine Geometry.
 
 PURE and ASSERTS/Log messages
 

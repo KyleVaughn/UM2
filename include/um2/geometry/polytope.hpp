@@ -132,7 +132,7 @@ template <Int K, Int N, Int D>
 PURE HOSTDEV constexpr auto
 boundingBox(LinearPolytope<K, N, D> const & polytope) noexcept -> AxisAlignedBox<D>
 {
-  return boundingBox<D>(polytope.vertices(), N);
+  return boundingBox(polytope.vertices(), N);
 }
 
 } // namespace um2

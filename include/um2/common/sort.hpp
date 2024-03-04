@@ -76,14 +76,19 @@ sortPermutation(T const * const begin, T const * const end, Int * const perm_beg
 
 template <typename T>
 void
-applyPermutation(Vector<T> & v, Vector<Int> const & perm) noexcept
+applyPermutation(T * const begin, T * const end, Int const * const perm) noexcept
 {
   // Verify that perm is a permutation
-  // (contains all elements of [0, v.size()) exactly once)
+  // (contains all elements of [0, size) exactly once)
+  auto const size = static_cast<Int>(end - begin);
+  if (size == 0) {
+    return;
+  }
 #if UM2_ENABLE_ASSERTS
-  Vector<int8_t> seen(v.size(), 0);
-  for (Int const i : perm) {
-    ASSERT(i < v.size());
+  Vector<int8_t> seen(size, 0);
+  for (Int idx = 0; idx < size; ++idx) {
+    Int const i = perm[idx];
+    ASSERT(i < size);
     ASSERT(seen[i] == 0);
     seen[i] = 1;
   }
@@ -92,8 +97,8 @@ applyPermutation(Vector<T> & v, Vector<Int> const & perm) noexcept
   }
 #endif
   // Apply the permutation in-place by iterating over cycles.
-  Vector<int8_t> done(v.size(), 0);
-  for (Int i = 0; i < v.size(); ++i) {
+  Vector<int8_t> done(size, 0);
+  for (Int i = 0; i < size; ++i) {
     if (done[i] == 1) {
       continue;
     }
@@ -101,12 +106,19 @@ applyPermutation(Vector<T> & v, Vector<Int> const & perm) noexcept
     Int prev_j = i;
     Int j = perm[i];
     while (i != j) {
-      um2::swap(v[prev_j], v[j]);
+      um2::swap(begin[prev_j], begin[j]);
       done[j] = 1;
       prev_j = j;
       j = perm[j];
     }
   }
+}
+
+template <typename T>
+void
+applyPermutation(Vector<T> & v, Vector<Int> const & perm) noexcept
+{
+  applyPermutation(v.begin(), v.end(), perm.cbegin());
 }
 
 //==============================================================================

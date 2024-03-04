@@ -2,9 +2,9 @@
 
 #include "../test_macros.hpp"
 
-F constexpr eps = condCast<F>(1e-6);
+Float constexpr eps = castIfNot<Float>(1e-6);
 
-template <I D>
+template <Int D>
 HOSTDEV constexpr auto
 makeGrid() -> um2::RectilinearGrid<D>
 {
@@ -21,23 +21,23 @@ makeGrid() -> um2::RectilinearGrid<D>
   return grid;
 }
 
-template <I D>
+template <Int D>
 HOSTDEV
 TEST_CASE(clear)
 {
   um2::RectilinearGrid<D> grid = makeGrid<D>();
   grid.clear();
-  for (I i = 0; i < D; ++i) {
+  for (Int i = 0; i < D; ++i) {
     ASSERT(grid.divs(i).empty());
   }
 }
 
-template <I D>
+template <Int D>
 HOSTDEV
 TEST_CASE(accessors)
 {
   um2::RectilinearGrid<D> grid = makeGrid<D>();
-  um2::Vec<D, I> const ncells = grid.numCells();
+  um2::Vec<D, Int> const ncells = grid.numCells();
   if constexpr (D >= 1) {
     auto const nx = 1;
     ASSERT_NEAR(grid.xMin(), grid.divs(0)[0], eps);
@@ -64,7 +64,7 @@ TEST_CASE(accessors)
   }
 }
 
-template <I D>
+template <Int D>
 HOSTDEV
 TEST_CASE(boundingBox)
 {
@@ -88,11 +88,11 @@ HOSTDEV
 TEST_CASE(getBox)
 {
   // Declare some variables to avoid a bunch of static casts.
-  F const three = static_cast<F>(3);
-  F const two = static_cast<F>(2);
-  F const one = static_cast<F>(1);
-  F const half = static_cast<F>(1) / static_cast<F>(2);
-  F const forth = static_cast<F>(1) / static_cast<F>(4);
+  auto const three = static_cast<Float>(3);
+  auto const two = static_cast<Float>(2);
+  auto const one = static_cast<Float>(1);
+  auto const half = static_cast<Float>(1) / static_cast<Float>(2);
+  auto const forth = static_cast<Float>(1) / static_cast<Float>(4);
   um2::RectilinearGrid2 grid;
   grid.divs(0) = {1.0, 1.5, 2.0, 2.5, 3.0};
   grid.divs(1) = {-1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0};
@@ -151,14 +151,14 @@ TEST_CASE(aabb2_constructor)
   um2::RectilinearGrid2 grid(boxes);
 
   ASSERT(grid.divs(0).size() == 3);
-  F const xref[3] = {0, 1, 2};
-  for (I i = 0; i < 3; ++i) {
+  Float const xref[3] = {0, 1, 2};
+  for (Int i = 0; i < 3; ++i) {
     ASSERT_NEAR(grid.divs(0)[i], xref[i], eps);
   }
 
   ASSERT(grid.divs(1).size() == 4);
-  F const yref[4] = {0, 1, 2, 3};
-  for (I i = 0; i < 4; ++i) {
+  Float const yref[4] = {0, 1, 2, 3};
+  for (Int i = 0; i < 4; ++i) {
     ASSERT_NEAR(grid.divs(1)[i], yref[i], eps);
   }
 
@@ -173,12 +173,12 @@ TEST_CASE(aabb2_constructor)
 
 TEST_CASE(id_array_constructor)
 {
-  um2::Vector<um2::Vector<I>> const ids = {
+  um2::Vector<um2::Vector<Int>> const ids = {
       {0, 1, 2, 0},
       {0, 2, 0, 2},
       {0, 1, 0, 1},
   };
-  um2::Vector<um2::Vec2<F>> const dxdy = {
+  um2::Vector<um2::Vec2<Float>> const dxdy = {
       {2, 1},
       {2, 1},
       {2, 1},
@@ -187,35 +187,35 @@ TEST_CASE(id_array_constructor)
   um2::RectilinearGrid2 grid(dxdy, ids);
 
   ASSERT(grid.divs(0).size() == 5);
-  F const xref[5] = {0, 2, 4, 6, 8};
-  for (I i = 0; i < 5; ++i) {
+  Float const xref[5] = {0, 2, 4, 6, 8};
+  for (Int i = 0; i < 5; ++i) {
     ASSERT_NEAR(grid.divs(0)[i], xref[i], eps);
   }
   ASSERT(grid.divs(1).size() == 4);
-  F const yref[4] = {0, 1, 2, 3};
-  for (I i = 0; i < 4; ++i) {
+  Float const yref[4] = {0, 1, 2, 3};
+  for (Int i = 0; i < 4; ++i) {
     ASSERT_NEAR(grid.divs(1)[i], yref[i], eps);
   }
 }
 #if UM2_USE_CUDA
-template <I D>
+template <Int D>
 MAKE_CUDA_KERNEL(clear, D)
 
-template <I D>
+template <Int D>
 MAKE_CUDA_KERNEL(accessors, D)
 
-template <I D>
+template <Int D>
 MAKE_CUDA_KERNEL(boundingBox, D)
 
 MAKE_CUDA_KERNEL(getBox)
 #endif
 
-    template <I D>
+    template <Int D>
     TEST_SUITE(RectilinearGrid)
 {
-  TEST_HOSTDEV(clear, 1, 1, D);
-  TEST_HOSTDEV(accessors, 1, 1, D);
-  TEST_HOSTDEV(boundingBox, 1, 1, D);
+  TEST_HOSTDEV(clear, D);
+  TEST_HOSTDEV(accessors, D);
+  TEST_HOSTDEV(boundingBox, D);
   if constexpr (D == 2) {
     TEST_HOSTDEV(getBox);
     TEST(aabb2_constructor);

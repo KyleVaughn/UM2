@@ -31,7 +31,6 @@ enum class XDMFElemType : int8_t {
   QuadraticEdge = 34,
   QuadraticTriangle = 36,
   QuadraticQuad = 37
-
 };
 
 enum class MeshType : int8_t {
@@ -45,7 +44,7 @@ enum class MeshType : int8_t {
 };
 
 CONST constexpr auto
-verticesPerElem(VTKElemType const type) -> I
+verticesPerElem(VTKElemType const type) -> Int
 {
   switch (type) {
   case VTKElemType::Vertex:
@@ -64,12 +63,12 @@ verticesPerElem(VTKElemType const type) -> I
     return 8;
   default:
     ASSERT(false);
-    return -1;
+    return -1000;
   }
 }
 
 CONST constexpr auto
-verticesPerElem(MeshType const type) -> I
+verticesPerElem(MeshType const type) -> Int
 {
   switch (type) {
   case MeshType::Tri:
@@ -82,7 +81,7 @@ verticesPerElem(MeshType const type) -> I
     return 8;
   default:
     ASSERT(false);
-    return -1;
+    return -1000;
   }
 }
 

@@ -3,6 +3,8 @@
 #include <um2/config.hpp>
 
 #include <um2/stdlib/assert.hpp>
+#include <um2/stdlib/algorithm/min.hpp>
+#include <um2/stdlib/cstring/memcmp.hpp>
 #include <um2/stdlib/cstring/strlen.hpp>
 
 //==============================================================================
@@ -95,7 +97,60 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   empty() const noexcept -> bool;
 
+  //==============================================================================
+  // Operations
+  //==============================================================================
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  compare(StringView sv) const noexcept -> int;
+
 }; // class StringView
+
+//==============================================================================
+// Free functions
+//==============================================================================
+
+PURE HOSTDEV constexpr auto
+operator==(StringView lhs, StringView rhs) noexcept -> bool
+{
+  if (lhs.size() != rhs.size()) {
+    return false;
+  }
+  return lhs.compare(rhs) == 0; 
+}
+
+PURE HOSTDEV constexpr auto
+operator!=(StringView lhs, StringView rhs) noexcept -> bool
+{
+  if (lhs.size() != rhs.size()) {
+    return true;
+  }
+  return lhs.compare(rhs) != 0;
+}
+
+PURE HOSTDEV constexpr auto
+operator<(StringView lhs, StringView rhs) noexcept -> bool
+{
+  return lhs.compare(rhs) < 0;
+}
+
+PURE HOSTDEV constexpr auto
+operator<=(StringView lhs, StringView rhs) noexcept -> bool
+{
+  return lhs.compare(rhs) <= 0;
+}
+
+PURE HOSTDEV constexpr auto
+operator>(StringView lhs, StringView rhs) noexcept -> bool
+{
+  return lhs.compare(rhs) > 0;
+}
+
+PURE HOSTDEV constexpr auto
+operator>=(StringView lhs, StringView rhs) noexcept -> bool
+{
+  return lhs.compare(rhs) >= 0;
+}
 
 //==============================================================================
 // Constructors and assignment
@@ -190,6 +245,22 @@ PURE HOSTDEV constexpr auto
 StringView::empty() const noexcept -> bool
 {
   return _size == 0;
+}
+
+//==============================================================================
+// Operations
+//==============================================================================
+
+PURE HOSTDEV constexpr auto
+StringView::compare(StringView sv) const noexcept -> int
+{
+  auto const min_size = um2::min(size(), sv.size());
+  auto result = um2::memcmp(data(), sv.data(), min_size);
+  // If they compare equal, but are different sizes, the longer one is greater
+  if (result == 0) {
+    result = size() == sv.size() ? 0 : (size() < sv.size() ? -1 : 1);
+  }
+  return result;
 }
 
 } // namespace um2

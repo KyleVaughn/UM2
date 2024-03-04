@@ -523,7 +523,7 @@ template <class T>
 constexpr auto
 Vector<T>::operator=(std::initializer_list<T> const & list) noexcept -> Vector &
 {
-  assign(list.cbegin(), list.cend());
+  assign(list.begin(), list.end());
   return *this;
 }
 
@@ -545,7 +545,7 @@ Vector<T>::assign(InputIt first, InputIt last) noexcept
       // Construct the new elements
       constructAtEnd(mid, last, new_size - size());
     } else {
-      InputIt m = um2::copy(first, last, _begin);
+      T * m = um2::copy(first, last, _begin);
       destructAtEnd(m);
     }
   } else {

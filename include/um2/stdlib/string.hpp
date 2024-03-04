@@ -9,6 +9,8 @@
 #include <um2/stdlib/utility/is_pointer_in_range.hpp>
 #include <um2/stdlib/string_view.hpp>
 
+#include <concepts>
+
 //==============================================================================
 // STRING
 //==============================================================================
@@ -79,7 +81,7 @@ class String
 
   // Assign a short string to the string. Will not allocate memory.
   // n < min_cap
-  HOSTDEV constexpr auto 
+  HOSTDEV constexpr auto
   assignShort(StringView sv) noexcept -> String &;
 
   // Assign a long string to the string. Will allocate memory if necessary.
@@ -169,6 +171,10 @@ public:
   HOSTDEV constexpr auto
   operator=(String && s) noexcept -> String &;
 
+  HOSTDEV constexpr 
+  // NOLINTNEXTLINE(google-explicit-constructor) match std::string
+  operator StringView() const noexcept;
+
   HOSTDEV constexpr auto
   assign(StringView sv) noexcept -> String &;
 
@@ -233,13 +239,63 @@ public:
   // Modifiers
   //==============================================================================
 
+  //==============================================================================
+  // Operations
+  //==============================================================================
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  compare(String const & s) const noexcept -> int;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  compare(StringView sv) const noexcept -> int;
+
 }; // class String
+
+//==============================================================================
+// Free functions
+//==============================================================================
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+operator==(String const & lhs, String const & rhs) -> bool
+{
+  return lhs.compare(rhs) == 0;
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+operator!=(String const & lhs, String const & rhs) -> bool
+{
+  return lhs.compare(rhs) != 0;
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+operator<(String const & lhs, String const & rhs) -> bool
+{
+  return lhs.compare(rhs) < 0;
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+operator<=(String const & lhs, String const & rhs) -> bool
+{
+  return lhs.compare(rhs) <= 0;
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+operator>(String const & lhs, String const & rhs) -> bool
+{
+  return lhs.compare(rhs) > 0;
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+operator>=(String const & lhs, String const & rhs) -> bool
+{
+  return lhs.compare(rhs) >= 0;
+}
 
 //==============================================================================
 // Private functions
 //==============================================================================
 
-HOSTDEV constexpr auto 
+HOSTDEV constexpr auto
 String::assignShort(StringView sv) noexcept -> String &
 {
   uint64_t const n = sv.size();
@@ -252,7 +308,7 @@ String::assignShort(StringView sv) noexcept -> String &
     p = getShortPointer();
     setShortSize(n);
   }
-  ASSERT(!um2::is_pointer_in_range(sv.begin(), sv.end(), p)); 
+  ASSERT(!um2::is_pointer_in_range(sv.begin(), sv.end(), p));
   um2::copy(sv.begin(), sv.end(), p);
   p[n] = '\0';
   return *this;
@@ -465,10 +521,16 @@ String::operator=(String && s) noexcept -> String &
   return *this;
 }
 
+PURE HOSTDEV constexpr
+String::operator StringView() const noexcept
+{
+  return {data(), static_cast<uint64_t>(size())};
+}
+
 HOSTDEV constexpr auto
 String::assign(StringView sv) noexcept -> String &
 {
-  return fitsInShort(sv.size()) ? assignShort(sv) : assignLong(sv); 
+  return fitsInShort(sv.size()) ? assignShort(sv) : assignLong(sv);
 }
 
 HOSTDEV constexpr auto
@@ -573,6 +635,24 @@ String::capacity() const noexcept -> Int
 //==============================================================================
 // Modifiers
 //==============================================================================
+
+//==============================================================================
+// Operations
+//==============================================================================
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+String::compare(String const & s) const noexcept -> int
+{
+  StringView const sv(s);
+  return compare(sv);
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+String::compare(StringView sv) const noexcept -> int
+{
+  StringView const this_sv(*this);
+  return this_sv.compare(sv);
+}
 
 } // namespace um2
 

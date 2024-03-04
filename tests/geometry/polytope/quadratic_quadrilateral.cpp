@@ -2,37 +2,37 @@
 
 #include "../../test_macros.hpp"
 
-F constexpr eps = um2::eps_distance * condCast<F>(10);
+Float constexpr eps = um2::eps_distance * castIfNot<Float>(10);
 
-template <I D>
+template <Int D>
 HOSTDEV constexpr auto
 makeQuad() -> um2::QuadraticQuadrilateral<D>
 {
   um2::QuadraticQuadrilateral<D> this_quad;
-  for (I i = 0; i < 8; ++i) {
-    this_quad[i] = um2::Vec<D, F>::zero();
+  for (Int i = 0; i < 8; ++i) {
+    this_quad[i] = um2::Vec<D, Float>::zero();
   }
-  this_quad[1][0] = condCast<F>(1);
-  this_quad[2][0] = condCast<F>(1);
-  this_quad[2][1] = condCast<F>(1);
-  this_quad[3][1] = condCast<F>(1);
-  this_quad[4][0] = condCast<F>(0.5);
-  this_quad[5][0] = condCast<F>(1);
-  this_quad[5][1] = condCast<F>(0.5);
-  this_quad[6][0] = condCast<F>(0.5);
-  this_quad[6][1] = condCast<F>(1);
-  this_quad[7][1] = condCast<F>(0.5);
+  this_quad[1][0] = castIfNot<Float>(1);
+  this_quad[2][0] = castIfNot<Float>(1);
+  this_quad[2][1] = castIfNot<Float>(1);
+  this_quad[3][1] = castIfNot<Float>(1);
+  this_quad[4][0] = castIfNot<Float>(0.5);
+  this_quad[5][0] = castIfNot<Float>(1);
+  this_quad[5][1] = castIfNot<Float>(0.5);
+  this_quad[6][0] = castIfNot<Float>(0.5);
+  this_quad[6][1] = castIfNot<Float>(1);
+  this_quad[7][1] = castIfNot<Float>(0.5);
   return this_quad;
 }
 
 // P6 = (0.8, 1.5)
-template <I D>
+template <Int D>
 HOSTDEV constexpr auto
 makeQuad2() -> um2::QuadraticQuadrilateral<D>
 {
   um2::QuadraticQuadrilateral<D> this_quad = makeQuad<D>();
-  this_quad[6][0] = condCast<F>(0.8);
-  this_quad[6][1] = condCast<F>(1.5);
+  this_quad[6][0] = castIfNot<Float>(0.8);
+  this_quad[6][1] = castIfNot<Float>(1.5);
   return this_quad;
 }
 
@@ -40,7 +40,7 @@ makeQuad2() -> um2::QuadraticQuadrilateral<D>
 // Interpolation
 //==============================================================================
 
-template <I D>
+template <Int D>
 HOSTDEV
 TEST_CASE(interpolate)
 {
@@ -59,24 +59,24 @@ TEST_CASE(interpolate)
 // jacobian
 //==============================================================================
 
-template <I D>
+template <Int D>
 HOSTDEV
 TEST_CASE(jacobian)
 {
-  // For the reference quad, the Jacobian is constant.
+  // Floator the reference quad, the Jacobian is constant.
   um2::QuadraticQuadrilateral<D> quad = makeQuad<D>();
   auto jac = quad.jacobian(0, 0);
   ASSERT_NEAR((jac(0, 0)), 1, eps);
   ASSERT_NEAR((jac(1, 0)), 0, eps);
   ASSERT_NEAR((jac(0, 1)), 0, eps);
   ASSERT_NEAR((jac(1, 1)), 1, eps);
-  jac = quad.jacobian(condCast<F>(0.2), condCast<F>(0.3));
+  jac = quad.jacobian(castIfNot<Float>(0.2), castIfNot<Float>(0.3));
   ASSERT_NEAR((jac(0, 0)), 1, eps);
   ASSERT_NEAR((jac(1, 0)), 0, eps);
   ASSERT_NEAR((jac(0, 1)), 0, eps);
   ASSERT_NEAR((jac(1, 1)), 1, eps);
   // If we stretch the quad, the Jacobian should change.
-  quad[1][0] = condCast<F>(2);
+  quad[1][0] = castIfNot<Float>(2);
   jac = quad.jacobian(0.5, 0);
   ASSERT_NEAR((jac(0, 0)), 2, eps);
 }
@@ -85,7 +85,7 @@ TEST_CASE(jacobian)
 // edge
 //==============================================================================
 
-template <I D>
+template <Int D>
 HOSTDEV
 TEST_CASE(edge)
 {
@@ -116,15 +116,15 @@ HOSTDEV
 TEST_CASE(contains)
 {
   um2::QuadraticQuadrilateral<2> const quad = makeQuad2<2>();
-  um2::Point2 p = um2::Point2(condCast<F>(0.25), condCast<F>(0.25));
+  um2::Point2 p = um2::Point2(castIfNot<Float>(0.25), castIfNot<Float>(0.25));
   ASSERT(quad.contains(p));
-  p = um2::Point2(condCast<F>(0.5), condCast<F>(0.25));
+  p = um2::Point2(castIfNot<Float>(0.5), castIfNot<Float>(0.25));
   ASSERT(quad.contains(p));
-  p = um2::Point2(condCast<F>(2.25), condCast<F>(0.25));
+  p = um2::Point2(castIfNot<Float>(2.25), castIfNot<Float>(0.25));
   ASSERT(!quad.contains(p));
-  p = um2::Point2(condCast<F>(0.25), condCast<F>(-0.25));
+  p = um2::Point2(castIfNot<Float>(0.25), castIfNot<Float>(-0.25));
   ASSERT(!quad.contains(p));
-  p = um2::Point2(condCast<F>(0.8), condCast<F>(1.3));
+  p = um2::Point2(castIfNot<Float>(0.8), castIfNot<Float>(1.3));
   ASSERT(quad.contains(p));
 }
 
@@ -136,14 +136,14 @@ HOSTDEV
 TEST_CASE(area)
 {
   um2::QuadraticQuadrilateral<2> quad = makeQuad<2>();
-  ASSERT_NEAR(quad.area(), condCast<F>(1), eps);
-  quad[5] = um2::Point2(condCast<F>(1.1), condCast<F>(0.5));
-  quad[7] = um2::Point2(condCast<F>(0.1), condCast<F>(0.5));
-  ASSERT_NEAR(quad.area(), condCast<F>(1), eps);
+  ASSERT_NEAR(quad.area(), castIfNot<Float>(1), eps);
+  quad[5] = um2::Point2(castIfNot<Float>(1.1), castIfNot<Float>(0.5));
+  quad[7] = um2::Point2(castIfNot<Float>(0.1), castIfNot<Float>(0.5));
+  ASSERT_NEAR(quad.area(), castIfNot<Float>(1), eps);
 
   um2::QuadraticQuadrilateral<2> const quad2 = makeQuad2<2>();
   // NOLINTNEXTLINE(cert-dcl03-c,misc-static-assert)
-  ASSERT_NEAR(quad2.area(), condCast<F>(1.3333333), eps);
+  ASSERT_NEAR(quad2.area(), castIfNot<Float>(1.3333333), eps);
 }
 
 //==============================================================================
@@ -155,13 +155,13 @@ TEST_CASE(centroid)
 {
   um2::QuadraticQuadrilateral<2> const quad = makeQuad<2>();
   um2::Point<2> c = quad.centroid();
-  ASSERT_NEAR(c[0], condCast<F>(0.5), eps);
-  ASSERT_NEAR(c[1], condCast<F>(0.5), eps);
+  ASSERT_NEAR(c[0], castIfNot<Float>(0.5), eps);
+  ASSERT_NEAR(c[1], castIfNot<Float>(0.5), eps);
 
   um2::QuadraticQuadrilateral<2> const quad2 = makeQuad2<2>();
   c = quad2.centroid();
-  ASSERT_NEAR(c[0], condCast<F>(0.53), eps);
-  ASSERT_NEAR(c[1], condCast<F>(0.675), eps);
+  ASSERT_NEAR(c[0], castIfNot<Float>(0.53), eps);
+  ASSERT_NEAR(c[1], castIfNot<Float>(0.675), eps);
 }
 
 //==============================================================================
@@ -174,10 +174,10 @@ TEST_CASE(boundingBox)
   um2::QuadraticQuadrilateral<2> const quad = makeQuad2<2>();
   um2::AxisAlignedBox<2> const box = quad.boundingBox();
   // NOLINTBEGIN(cert-dcl03-c,misc-static-assert)
-  ASSERT_NEAR(box.minima()[0], condCast<F>(0), eps);
-  ASSERT_NEAR(box.minima()[1], condCast<F>(0), eps);
-  ASSERT_NEAR(box.maxima()[0], condCast<F>(1.0083333), eps);
-  ASSERT_NEAR(box.maxima()[1], condCast<F>(1.5), eps);
+  ASSERT_NEAR(box.minima()[0], castIfNot<Float>(0), eps);
+  ASSERT_NEAR(box.minima()[1], castIfNot<Float>(0), eps);
+  ASSERT_NEAR(box.maxima()[0], castIfNot<Float>(1.0083333), eps);
+  ASSERT_NEAR(box.maxima()[1], castIfNot<Float>(1.5), eps);
   // NOLINTEND(cert-dcl03-c,misc-static-assert)
 }
 
@@ -204,18 +204,18 @@ HOSTDEV
 TEST_CASE(meanChordLength)
 {
   auto const quad = makeQuad<2>();
-  auto const ref = um2::pi<F> / condCast<F>(4);
-  ASSERT_NEAR(quad.meanChordLength(), ref, condCast<F>(3e-4));
+  auto const ref = um2::pi<Float> / castIfNot<Float>(4);
+  ASSERT_NEAR(quad.meanChordLength(), ref, castIfNot<Float>(3e-4));
 }
 
 #if UM2_USE_CUDA
-template <I D>
+template <Int D>
 MAKE_CUDA_KERNEL(interpolate, D);
 
-template <I D>
+template <Int D>
 MAKE_CUDA_KERNEL(jacobian, D);
 
-template <I D>
+template <Int D>
 MAKE_CUDA_KERNEL(edge, D);
 
 MAKE_CUDA_KERNEL(contains);
@@ -231,12 +231,12 @@ MAKE_CUDA_KERNEL(isCCW_flipFace);
 MAKE_CUDA_KERNEL(meanChordLength);
 #endif
 
-template <I D>
+template <Int D>
 TEST_SUITE(QuadraticQuadrilateral)
 {
-  TEST_HOSTDEV(interpolate, 1, 1, D);
-  TEST_HOSTDEV(jacobian, 1, 1, D);
-  TEST_HOSTDEV(edge, 1, 1, D);
+  TEST_HOSTDEV(interpolate, D);
+  TEST_HOSTDEV(jacobian, D);
+  TEST_HOSTDEV(edge, D);
   if constexpr (D == 2) {
     TEST_HOSTDEV(contains);
     TEST_HOSTDEV(area);

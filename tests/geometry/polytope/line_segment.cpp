@@ -33,8 +33,8 @@ TEST_CASE(interpolate)
   um2::Point<D> const p1 = line(1);
   ASSERT((um2::isApprox<D>(p1, line[1])));
   um2::Point<D> const p05 = um2::interpolate(line, ahalf);
-  um2::Point<D> const mp = um2::midpoint<D>(p0, p1);
-  ASSERT((um2::isApprox<D>(p05, mp)));
+  um2::Point<D> const mp = um2::midpoint(p0, p1);
+  ASSERT((um2::isApprox(p05, mp)));
 }
 
 //=============================================================================
@@ -52,8 +52,8 @@ TEST_CASE(jacobian)
   }
   um2::Vec<D, Float> const j0 = line.jacobian(0);
   um2::Vec<D, Float> const j1 = um2::jacobian(line, 1);
-  ASSERT(um2::isApprox<D>(j0, j_ref));
-  ASSERT(um2::isApprox<D>(j1, j_ref));
+  ASSERT(um2::isApprox(j0, j_ref));
+  ASSERT(um2::isApprox(j1, j_ref));
 }
 
 //=============================================================================

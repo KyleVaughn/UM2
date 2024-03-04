@@ -93,7 +93,7 @@ public:
   // dFloat/dr (r) -> (dx/dr, dy/dr, dz/dr)
   template <typename R>
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  jacobian(R r) const noexcept -> Point<D>;
+  jacobian(R r) const noexcept -> Vec<D, Float>; 
 
   // Get the matrix that rotates the polytope such that the first and l
   // We want to transform the segment so that v[0] is at the origin and v[1]
@@ -179,13 +179,8 @@ template <Int D, typename R>
 PURE HOSTDEV constexpr auto
 interpolate(LineSegment<D> const & l, R const r) noexcept -> Point<D>
 {
-  // L(r) = (1 - r) * v0 + r * v1
   auto const rr = static_cast<Float>(r);
-  Point<D> result;
-  for (Int i = 0; i < D; ++i) {
-    result[i] = l[0][i] + rr * (l[1][i] - l[0][i]);
-  }
-  return result;
+  return l[0] + rr * (l[1] - l[0]);
 }
 
 template <Int D, typename R>
@@ -203,11 +198,7 @@ interpolate(QuadraticSegment<D> const & q, R const r) noexcept -> Point<D>
   Float const w0 = two_rr_1 * rr_1;
   Float const w1 = two_rr_1 * rr;
   Float const w2 = -4 * rr * rr_1;
-  Point<D> result;
-  for (Int i = 0; i < D; ++i) {
-    result[i] = w0 * q[0][i] + w1 * q[1][i] + w2 * q[2][i];
-  }
-  return result;
+  return w0 * q[0] + w1 * q[1] + w2 * q[2];
 }
 
 template <Int P, Int N, Int D>
@@ -236,11 +227,7 @@ jacobian(QuadraticSegment<D> const & q, R const r) noexcept -> Point<D>
   // (4 * r - 3) * (v0 - v2) + (4 * r - 1) * (v1 - v2)
   Float const w0 = 4 * static_cast<Float>(r) - 3;
   Float const w1 = 4 * static_cast<Float>(r) - 1;
-  Vec<D, Float> result;
-  for (Int i = 0; i < D; ++i) {
-    result[i] = w0 * (q[0][i] - q[2][i]) + w1 * (q[1][i] - q[2][i]);
-  }
-  return result;
+  return w0 * (q[0] - q[2]) + w1 * (q[1] - q[2]);
 }
 
 template <Int P, Int N, Int D>
@@ -310,11 +297,7 @@ getBezierControlPoint(QuadraticSegment<D> const & q) noexcept -> Point<D>
   // p0 == v[0]
   // p2 == v[1]
   // p1 == 2 * v[2] - (v[0] + v[1]) / 2, hence we only need to compute p1
-  Point<D> result;
-  for (Int i = 0; i < D; ++i) {
-    result[i] = static_cast<Float>(2) * q[2][i] - (q[0][i] + q[1][i]) / 2;
-  }
-  return result;
+  return 2 * q[2] - (q[0] + q[1]) / 2;
 }
 
 //==============================================================================
@@ -344,10 +327,10 @@ pointIsLeft(QuadraticSegment2 const & q, Point2 const & p) noexcept -> bool
   //    We will check that p is in the triangle by checking that p is right of each edge
   //    of the triangle.
   // We manually perform the check for (v0, v1) since we want to reuse v01 and v0p.
-  Point2 const v01 = q[1] - q[0];
-  Point2 const bcp = getBezierControlPoint(q);
-  Point2 const v0b = bcp - q[0];
-  Point2 const v0p = p - q[0];
+  Vec2<Float> const v01 = q[1] - q[0];
+  Vec2<Float> const bcp = getBezierControlPoint(q);
+  Vec2<Float> const v0b = bcp - q[0];
+  Vec2<Float> const v0p = p - q[0];
   bool const tri_is_ccw = v01.cross(v0b) >= 0;
   {
     bool const b0 = v01.cross(v0p) >= 0;  // areCCW(v[0], v[1], p) == Left of edge 0
@@ -370,14 +353,14 @@ pointIsLeft(QuadraticSegment2 const & q, Point2 const & p) noexcept -> bool
   Float const v01_norm = v01.norm();
   //     We can avoid a matrix multiplication by using the fact that the y-coordinate of
   //     v1_r is zero.
-  Point2 const v1_r(v01_norm, static_cast<Float>(0));
-  Point2 const v01_normalized = v01 / v01_norm;
+  Vec2<Float> const v1_r(v01_norm, static_cast<Float>(0));
+  Vec2<Float> const v01_normalized = v01 / v01_norm;
   //     NOLINTBEGIN(readability-identifier-naming) matrix notation
-  Mat2x2<Float> const R(Point2(v01_normalized[0], -v01_normalized[1]),
-                        Point2(v01_normalized[1], v01_normalized[0]));
-  Point2 const v02 = q[2] - q[0];
-  Point2 v2_r = R * v02;
-  Point2 p_r = R * (p - q[0]);
+  Mat2x2<Float> const R(Vec2<Float>(v01_normalized[0], -v01_normalized[1]),
+                        Vec2<Float>(v01_normalized[1], v01_normalized[0]));
+  Vec2<Float> const v02 = q[2] - q[0];
+  Vec2<Float> v2_r = R * v02;
+  Vec2<Float> p_r = R * (p - q[0]);
   bool const curves_right = v2_r[1] >= 0;
   if (!curves_right) {
     // Floatlip the y-coordinates to be greater than or equal to zero
@@ -507,10 +490,7 @@ length(QuadraticSegment<D> const & q) noexcept -> Float
 
   Vec<D, Float> const v13 = q[2] - q[0];
   Vec<D, Float> const v23 = q[2] - q[1];
-  Vec<D, Float> A;
-  for (Int i = 0; i < D; ++i) {
-    A[i] = -2 * (v13[i] + v23[i]);
-  }
+  Vec<D, Float> const A = -2 * (v13 + v23);
 
   // ‖Q′(r)‖ =  √(4(A ⋅A)r² + 4(A ⋅B)r + B ⋅B) = √(ar² + br + c)
   // where
@@ -518,10 +498,7 @@ length(QuadraticSegment<D> const & q) noexcept -> Float
   // b = 4(A ⋅ B)
   // c = B ⋅ B
 
-  Vec<D, Float> B;
-  for (Int i = 0; i < D; ++i) {
-    B[i] = 3 * v13[i] + v23[i];
-  }
+  Vec<D, Float> const B = 3 * v13 + v23;
   ASSERT(squaredNorm(A) > eps_distance2);
   Float const a = 4 * squaredNorm(A);
   Float const b = 4 * dot(A, B);
@@ -801,10 +778,7 @@ isStraight(QuadraticSegment<D> const & q) noexcept -> bool
     return false;
   }
   // Compute the point on the line
-  Vec<D, Float> p;
-  for (Int i = 0; i < D; ++i) {
-    p[i] = q[0][i] + r * v01[i];
-  }
+  Vec<D, Float> const p = q[0] + r * v01;
   // Check if the point is within epsilon distance of v[2]
   return isApprox(p, q[2]);
 }
@@ -950,19 +924,18 @@ intersect(Ray2 const & ray, QuadraticSegment2 const & q) noexcept -> Point2
 {
   // NOLINTBEGIN(readability-identifier-naming) mathematical notation
   // This code is called very frequently so we sacrifice readability for speed.
-  // Mainly, we want to ensure temporaries are not created.
-  Point2 const v01(q[1][0] - q[0][0], q[1][1] - q[0][1]); // q[1] - q[0]
-  Point2 const v02(q[2][0] - q[0][0], q[2][1] - q[0][1]); // q[2] - q[0]
-  Point2 const v12(q[2][0] - q[1][0], q[2][1] - q[1][1]); // q[2] - q[1]
+  //Point2 const v01 = q[1] - q[0];
+  Point2 const v02 = q[2] - q[0];
+  Point2 const v12 = q[2] - q[1];
 
-  Point2 const A(-2 * (v02[0] + v12[0]), -2 * (v02[1] + v12[1])); // -2(V₁₃ + V₂₃)
-  Point2 const B(3 * v02[0] + v12[0], 3 * v02[1] + v12[1]);       // 3V₁₃ + V₂₃
+  Point2 const A = -2 * (v02 + v12); // -2(V₁₃ + V₂₃)
+  Point2 const B = 3 * v02 + v12;    // 3V₁₃ + V₂₃
   // Point2 const C = q[0];
 
   // Point2 const D = ray.d;
   // Point2 const O = ray.o;
 
-  Point2 const voc(q[0][0] - ray.origin()[0], q[0][1] - ray.origin()[1]); // C - O
+  Point2 const voc = q[0] - ray.origin(); // C - O
 
   Float const a = A.cross(ray.direction());   // (A × D)ₖ
   Float const b = B.cross(ray.direction());   // (B × D)ₖ
@@ -973,7 +946,7 @@ intersect(Ray2 const & ray, QuadraticSegment2 const & q) noexcept -> Point2
   if (um2::abs(a) < epsilon) {
     Float const s = -c / b;
     if (0 <= s && s <= 1) {
-      Point2 const P(s * (s * A[0] + B[0]) + voc[0], s * (s * A[1] + B[1]) + voc[1]);
+      Point2 const P = s * (s * A + B) + voc;
       result[0] = dot(P, ray.direction()) / ray.direction().squaredNorm();
     }
     return result;
@@ -986,11 +959,11 @@ intersect(Ray2 const & ray, QuadraticSegment2 const & q) noexcept -> Point2
   Float const s1 = (-b - um2::sqrt(disc)) / (2 * a);
   Float const s2 = (-b + um2::sqrt(disc)) / (2 * a);
   if (0 <= s1 && s1 <= 1) {
-    Point2 const P(s1 * (s1 * A[0] + B[0]) + voc[0], s1 * (s1 * A[1] + B[1]) + voc[1]);
+    Point2 const P = s1 * (s1 * A + B) + voc;
     result[0] = dot(P, ray.direction()) / ray.direction().squaredNorm();
   }
   if (0 <= s2 && s2 <= 1) {
-    Point2 const P(s2 * (s2 * A[0] + B[0]) + voc[0], s2 * (s2 * A[1] + B[1]) + voc[1]);
+    Point2 const P = s2 * (s2 * A + B) + voc;
     result[1] = dot(P, ray.direction()) / ray.direction().squaredNorm();
   }
   // NOLINTEND(readability-identifier-naming)

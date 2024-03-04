@@ -83,6 +83,22 @@ public:
   operator[](Int i) const noexcept -> T const &;
 
   //==============================================================================
+  // Iterators
+  //==============================================================================
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  begin() noexcept -> T *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  begin() const noexcept -> T const *;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  end() noexcept -> T *;
+  
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  end() const noexcept -> T const *;
+
+  //==============================================================================
   // Constructors
   //==============================================================================
 
@@ -366,6 +382,38 @@ Vec<D, T>::operator[](Int i) const noexcept -> T const &
   } else {
     return _data[i];
   }
+}
+
+//==============================================================================
+// Iterators
+//==============================================================================
+
+template <Int D, class T>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vec<D, T>::begin() noexcept -> T *
+{
+  return getPointer(); 
+}
+
+template <Int D, class T>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vec<D, T>::begin() const noexcept -> T const *
+{
+  return getConstPointer();
+}
+
+template <Int D, class T>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vec<D, T>::end() noexcept -> T *
+{
+  return getPointer() + D;
+}
+
+template <Int D, class T>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vec<D, T>::end() const noexcept -> T const *
+{
+  return getConstPointer() + D;
 }
 
 //==============================================================================

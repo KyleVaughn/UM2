@@ -28,7 +28,7 @@
 namespace um2
 {
 
-template <I D, typename P>
+template <Int D, typename P>
 class RegularPartition
 {
 
@@ -86,7 +86,7 @@ using RegularPartition3 = RegularPartition<3, P>;
 // Constructors
 //==============================================================================
 
-template <I D, typename P>
+template <Int D, typename P>
 constexpr RegularPartition<D, P>::RegularPartition(RegularGrid<D> const & grid,
                                                    Vector<P> const & children) noexcept
     : _grid(grid),
@@ -102,14 +102,14 @@ constexpr RegularPartition<D, P>::RegularPartition(RegularGrid<D> const & grid,
 // Accessors
 //==============================================================================
 
-template <I D, typename P>
+template <Int D, typename P>
 PURE HOSTDEV constexpr auto
 RegularPartition<D, P>::grid() const noexcept -> RegularGrid<D> const &
 {
   return _grid;
 }
 
-template <I D, typename P>
+template <Int D, typename P>
 PURE HOSTDEV constexpr auto
 RegularPartition<D, P>::children() const noexcept -> Vector<P> const &
 {
@@ -120,7 +120,7 @@ RegularPartition<D, P>::children() const noexcept -> Vector<P> const &
 // Methods
 //==============================================================================
 
-template <I D, typename P>
+template <Int D, typename P>
 template <typename... Args>
 requires(sizeof...(Args) == D) PURE HOSTDEV
     constexpr auto RegularPartition<D, P>::getChild(Args... args) noexcept -> P &
@@ -128,7 +128,7 @@ requires(sizeof...(Args) == D) PURE HOSTDEV
   return _children[_grid.getFlatIndex(args...)];
 }
 
-template <I D, typename P>
+template <Int D, typename P>
 template <typename... Args>
 requires(sizeof...(Args) == D) PURE HOSTDEV
     constexpr auto RegularPartition<D, P>::getChild(Args... args) const noexcept

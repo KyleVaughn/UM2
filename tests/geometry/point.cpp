@@ -66,10 +66,10 @@ TEST_CASE(isApprox)
   // Non-trivial equality
   p2 = p1;
   p2[0] += um2::eps_distance / 2;
-  ASSERT(um2::isApprox<D>(p1, p2));
+  ASSERT(um2::isApprox(p1, p2));
   // Non-trivial inequality
   p2[0] += um2::eps_distance;
-  ASSERT(!um2::isApprox<D>(p1, p2));
+  ASSERT(!um2::isApprox(p1, p2));
 }
 
 HOSTDEV

@@ -1,14 +1,14 @@
 #pragma once
 
-#include <um2/geometry/point.hpp>
+#include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/polygon.hpp>
 #include <um2/mesh/element_types.hpp>
 #include <um2/stdlib/string.hpp>
 #include <um2/stdlib/vector.hpp>
-
-// External dependencies
-#include <H5Cpp.h>
-#include <pugixml.hpp>
+//
+//// External dependencies
+//#include <H5Cpp.h>
+//#include <pugixml.hpp>
 
 namespace um2
 {
@@ -39,35 +39,35 @@ class PolytopeSoup
   bool _is_morton_sorted = false;
   Vector<Point3> _vertices;
   Vector<VTKElemType> _element_types;
-  Vector<I> _element_offsets; // A prefix sum of the number of vertices in each element
-  Vector<I> _element_conn;    // Vertex IDs of each element
+  Vector<Int> _element_offsets; // A prefix sum of the number of vertices in each element
+  Vector<Int> _element_conn;    // Vertex IDs of each element
 
   Vector<String> _elset_names;
-  Vector<I> _elset_offsets;      // A prefix sum of the number of elements in each elset
-  Vector<I> _elset_ids;          // Element IDs of each elset
-  Vector<Vector<F>> _elset_data; // Data associated with each elset
+  Vector<Int> _elset_offsets;      // A prefix sum of the number of elements in each elset
+  Vector<Int> _elset_ids;          // Element IDs of each elset
+  Vector<Vector<Float>> _elset_data; // Data associated with each elset
 
-  //==============================================================================
-  // Private Methods
-  //==============================================================================
-
-  void
-  writeXDMFUniformGrid(String const & name, Vector<String> const & material_names,
-                       pugi::xml_node & xdomain, H5::H5File & h5file,
-                       String const & h5filename, String const & h5path) const;
-
-  void
-  writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
-                    String const & h5filename, String const & h5path) const;
-
-  void
-  writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
-                    String const & h5filename, String const & h5path) const;
-
-  void
-  writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group, String const & h5filename,
-                  String const & h5path, Vector<String> const & material_names) const;
-
+//  //==============================================================================
+//  // Private Methods
+//  //==============================================================================
+//
+//  void
+//  writeXDMFUniformGrid(String const & name, Vector<String> const & material_names,
+//                       pugi::xml_node & xdomain, H5::H5File & h5file,
+//                       String const & h5filename, String const & h5path) const;
+//
+//  void
+//  writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
+//                    String const & h5filename, String const & h5path) const;
+//
+//  void
+//  writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
+//                    String const & h5filename, String const & h5path) const;
+//
+//  void
+//  writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group, String const & h5filename,
+//                  String const & h5path, Vector<String> const & material_names) const;
+//
 public:
   //==============================================================================
   // Constructors
@@ -75,50 +75,50 @@ public:
 
   constexpr PolytopeSoup() = default;
 
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  PolytopeSoup(String const & filename);
-
-  //==============================================================================
-  // Methods
-  //==============================================================================
+//  // NOLINTNEXTLINE(google-explicit-constructor)
+//  PolytopeSoup(String const & filename);
+//
+//  //==============================================================================
+//  // Methods
+//  //==============================================================================
+//
+  auto
+  addElement(VTKElemType type, Vector<Int> const & conn) -> Int;
 
   auto
-  addElement(VTKElemType type, Vector<I> const & conn) -> I;
+  addElset(String const & name, Vector<Int> const & ids, Vector<Float> data = {}) -> Int;
 
   auto
-  addElset(String const & name, Vector<I> const & ids, Vector<F> data = {}) -> I;
+  addVertex(Float x, Float y, Float z = 0) -> Int;
 
   auto
-  addVertex(F x, F y, F z = 0) -> I;
-
-  auto
-  addVertex(Point3 const & p) -> I;
+  addVertex(Point3 const & p) -> Int;
 
   PURE [[nodiscard]] auto
-  compareTo(PolytopeSoup const & other) const -> int;
+  compare(PolytopeSoup const & other) const -> int;
 
   void
-  getElement(I i, VTKElemType & type, Vector<I> & conn) const;
+  getElement(Int i, VTKElemType & type, Vector<Int> & conn) const;
 
-  [[nodiscard]] auto
-  getElementBoundingBox(I i) const -> AxisAlignedBox3;
+  PURE [[nodiscard]] auto
+  getElementBoundingBox(Int i) const -> AxisAlignedBox3;
 
-  [[nodiscard]] auto
-  getElementCentroid(I i) const -> Point3;
+  PURE [[nodiscard]] auto
+  getElementCentroid(Int i) const -> Point3;
 
-  [[nodiscard]] constexpr auto
-  getElemTypes() const -> Vector<VTKElemType>;
-
+//  [[nodiscard]] constexpr auto
+//  getElemTypes() const -> Vector<VTKElemType>;
+//
   void
-  getElset(I i, String & name, Vector<I> & ids, Vector<F> & data) const;
+  getElset(Int i, String & name, Vector<Int> & ids, Vector<Float> & data) const;
 
-  void
-  getMaterialIDs(Vector<MaterialID> & material_ids,
-                 Vector<String> const & material_names) const;
-
-  void
-  getMaterialNames(Vector<String> & material_names) const;
-
+//  void
+//  getMaterialIDs(Vector<MaterialID> & material_ids,
+//                 Vector<String> const & material_names) const;
+//
+//  void
+//  getMaterialNames(Vector<String> & material_names) const;
+//
   PURE [[nodiscard]] constexpr auto
   getMeshType() const -> MeshType;
 
@@ -126,7 +126,7 @@ public:
   getSubmesh(String const & elset_name, PolytopeSoup & submesh) const;
 
   PURE [[nodiscard]] constexpr auto
-  getVertex(I i) const -> Point3 const &;
+  getVertex(Int i) const -> Point3 const &;
 
   // Sort the vertices and elements
   void
@@ -139,34 +139,34 @@ public:
   mortonSortVertices();
 
   PURE [[nodiscard]] constexpr auto
-  numElems() const -> I;
+  numElems() const -> Int;
 
   PURE [[nodiscard]] constexpr auto
-  numElsets() const -> I;
+  numElsets() const -> Int;
 
   PURE [[nodiscard]] constexpr auto
-  numVerts() const -> I;
+  numVerts() const -> Int;
+
+//  void
+//  read(String const & filename);
+//
+  void
+  reserveMoreElements(VTKElemType elem_type, Int num_elems);
 
   void
-  read(String const & filename);
-
-  void
-  reserveMoreElements(VTKElemType elem_type, I num_elems);
-
-  void
-  reserveMoreVertices(I num_verts);
+  reserveMoreVertices(Int num_verts);
 
   void
   sortElsets();
 
-  void
-  translate(Point3 const & v);
-
-  void
-  write(String const & filename) const;
-
-  void
-  writeXDMF(String const & filepath) const;
+//  void
+//  translate(Point3 const & v);
+//
+//  void
+//  write(String const & filename) const;
+//
+//  void
+//  writeXDMF(String const & filepath) const;
 
 }; // struct PolytopeSoup
 
@@ -175,48 +175,48 @@ public:
 //==============================================================================
 
 PURE constexpr auto
-PolytopeSoup::numVerts() const -> I
+PolytopeSoup::numVerts() const -> Int
 {
   return _vertices.size();
 }
 
 PURE constexpr auto
-PolytopeSoup::numElsets() const -> I
+PolytopeSoup::numElsets() const -> Int
 {
   return _elset_names.size();
 }
 
 PURE constexpr auto
-PolytopeSoup::numElems() const -> I
+PolytopeSoup::numElems() const -> Int
 {
   return _element_types.size();
 }
 
 PURE constexpr auto
-PolytopeSoup::getVertex(I const i) const -> Point3 const &
+PolytopeSoup::getVertex(Int const i) const -> Point3 const &
 {
   ASSERT(i < _vertices.size());
   return _vertices[i];
 }
 
-constexpr auto
-PolytopeSoup::getElemTypes() const -> Vector<VTKElemType>
-{
-  Vector<VTKElemType> el_types;
-  for (auto const & this_type : _element_types) {
-    bool found = false;
-    for (auto const & that_type : el_types) {
-      if (this_type == that_type) {
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      el_types.push_back(this_type);
-    }
-  }
-  return el_types;
-}
+//constexpr auto
+//PolytopeSoup::getElemTypes() const -> Vector<VTKElemType>
+//{
+//  Vector<VTKElemType> el_types;
+//  for (auto const & this_type : _element_types) {
+//    bool found = false;
+//    for (auto const & that_type : el_types) {
+//      if (this_type == that_type) {
+//        found = true;
+//        break;
+//      }
+//    }
+//    if (!found) {
+//      el_types.push_back(this_type);
+//    }
+//  }
+//  return el_types;
+//}
 
 PURE constexpr auto
 PolytopeSoup::getMeshType() const -> MeshType
