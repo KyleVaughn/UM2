@@ -22,7 +22,6 @@
 namespace um2
 {
 
-// NOLINTNEXTLINE(cppcoreguidelines-special-member-functions)
 class String
 {
 
@@ -171,15 +170,14 @@ public:
   HOSTDEV constexpr auto
   operator=(String && s) noexcept -> String &;
 
+  HOSTDEV explicit constexpr String(StringView sv) noexcept;
+
   HOSTDEV constexpr 
   // NOLINTNEXTLINE(google-explicit-constructor) match std::string
   operator StringView() const noexcept;
 
   HOSTDEV constexpr auto
   assign(StringView sv) noexcept -> String &;
-
-  HOSTDEV constexpr auto
-  assign(char const * s, Int n) noexcept -> String &;
 
   //==============================================================================
   // Destructor
@@ -190,6 +188,18 @@ public:
   //==============================================================================
   // Element access
   //==============================================================================
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  front() noexcept -> char &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  front() const noexcept -> char const &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  back() noexcept -> char &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  back() const noexcept -> char const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   data() noexcept -> Ptr;
@@ -246,8 +256,30 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   compare(String const & s) const noexcept -> int;
 
+  template <std::convertible_to<StringView> T>
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  compare(StringView sv) const noexcept -> int;
+  compare(T const & t) const noexcept -> int;
+
+  // NOLINTBEGIN(readability-identifier-naming) match std::string
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  ends_with(StringView sv) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  ends_with(char c) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  ends_with(char const * s) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  starts_with(StringView sv) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  starts_with(char c) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  starts_with(char const * s) const noexcept -> bool;
+
+  // NOLINTEND(readability-identifier-naming) match std::string
 
 }; // class String
 
@@ -501,7 +533,7 @@ HOSTDEV constexpr auto
 String::operator=(String const & s) noexcept -> String &
 {
   if (this != um2::addressof(s)) {
-    assign(s.data(), s.size());
+    assign(s);
   }
   return *this;
 }
@@ -521,6 +553,11 @@ String::operator=(String && s) noexcept -> String &
   return *this;
 }
 
+HOSTDEV constexpr String::String(StringView sv) noexcept
+{
+  init(sv.data(), sv.size());
+}
+
 PURE HOSTDEV constexpr
 String::operator StringView() const noexcept
 {
@@ -531,15 +568,6 @@ HOSTDEV constexpr auto
 String::assign(StringView sv) noexcept -> String &
 {
   return fitsInShort(sv.size()) ? assignShort(sv) : assignLong(sv);
-}
-
-HOSTDEV constexpr auto
-String::assign(char const * s, Int const n) noexcept -> String &
-{
-  ASSERT(s != nullptr);
-  ASSERT(n > 0);
-  StringView const sv(s, static_cast<uint64_t>(n));
-  return assign(sv);
 }
 
 //==============================================================================
@@ -556,6 +584,30 @@ HOSTDEV inline constexpr String::~String() noexcept
 //==============================================================================
 // Element access
 //==============================================================================
+
+PURE HOSTDEV constexpr auto
+String::front() noexcept -> char &
+{
+  return *begin();
+}
+
+PURE HOSTDEV constexpr auto
+String::front() const noexcept -> char const &
+{
+  return *begin();
+}
+
+PURE HOSTDEV constexpr auto
+String::back() noexcept -> char &
+{
+  return *end(); 
+}
+
+PURE HOSTDEV constexpr auto
+String::back() const noexcept -> char const &
+{
+  return *end();
+}
 
 PURE HOSTDEV constexpr auto
 String::data() noexcept -> Ptr
@@ -643,15 +695,56 @@ String::capacity() const noexcept -> Int
 PURE HOSTDEV [[nodiscard]] constexpr auto
 String::compare(String const & s) const noexcept -> int
 {
-  StringView const sv(s);
-  return compare(sv);
+  StringView const self_sv(data(), static_cast<uint64_t>(size()));
+  StringView const sv(s.data(), static_cast<uint64_t>(s.size()));
+  return self_sv.compare(sv);
+}
+
+template <std::convertible_to<StringView> T>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+String::compare(T const & t) const noexcept -> int
+{
+  StringView const self_sv(data(), static_cast<uint64_t>(size()));
+  StringView const sv(t);
+  return self_sv.compare(sv); 
 }
 
 PURE HOSTDEV [[nodiscard]] constexpr auto
-String::compare(StringView sv) const noexcept -> int
+String::ends_with(StringView sv) const noexcept -> bool
 {
-  StringView const this_sv(*this);
-  return this_sv.compare(sv);
+  StringView const self_sv(data(), static_cast<uint64_t>(size()));
+  return self_sv.ends_with(sv);
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+String::ends_with(char c) const noexcept -> bool
+{
+  return !empty() && back() == c;
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+String::ends_with(char const * s) const noexcept -> bool
+{
+  return ends_with(StringView(s));
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+String::starts_with(StringView sv) const noexcept -> bool
+{
+  StringView const self_sv(data(), static_cast<uint64_t>(size()));
+  return self_sv.starts_with(sv);
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+String::starts_with(char c) const noexcept -> bool
+{
+  return !empty() && front() == c;
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+String::starts_with(char const * s) const noexcept -> bool
+{
+  return starts_with(StringView(s));
 }
 
 } // namespace um2

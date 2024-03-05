@@ -384,102 +384,96 @@ TEST_CASE(getSubmesh)
   ASSERT(elset_data.empty());
 }
 
-//TEST_CASE(getMaterialNames)
-//{
-//  um2::PolytopeSoup tri_ref;
-//  makeReferenceTriPolytopeSoup(tri_ref);
-//  um2::Vector<um2::String> const mat_names_ref = {"Material_H2O", "Material_UO2"};
-//  um2::Vector<um2::String> mat_names;
-//  tri_ref.getMaterialNames(mat_names);
-//  ASSERT(mat_names == mat_names_ref);
-//}
-//
-//TEST_CASE(getMaterialIDs)
-//{
-//  um2::PolytopeSoup tri_ref;
-//  makeReferenceTriPolytopeSoup(tri_ref);
-//  um2::Vector<MaterialID> mat_ids;
-//  tri_ref.getMaterialIDs(mat_ids, {"Material_H2O", "Material_UO2"});
-//  um2::Vector<MaterialID> const mat_ids_ref = {1, 0};
-//  ASSERT(mat_ids == mat_ids_ref);
-//  mat_ids.clear();
-//  tri_ref.getMaterialIDs(mat_ids, {"Material_UO2", "Material_H2O"});
-//  um2::Vector<MaterialID> const mat_ids_ref2 = {0, 1};
-//  ASSERT(mat_ids == mat_ids_ref2);
-//}
-//
-//TEST_CASE(io_abaqus_tri_mesh)
-//{
-//  um2::String const filename = "./mesh_files/tri.inp";
-//  um2::PolytopeSoup mesh_ref;
-//  makeReferenceTriPolytopeSoup(mesh_ref);
-//
-//  um2::PolytopeSoup mesh;
-//  mesh.read(filename);
-//
-//  ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
-//}
-//
-//TEST_CASE(io_abaqus_quad_mesh)
-//{
-//  um2::String const filename = "./mesh_files/quad.inp";
-//  um2::PolytopeSoup mesh_ref;
-//  makeReferenceQuadPolytopeSoup(mesh_ref);
-//
-//  um2::PolytopeSoup mesh;
-//  mesh.read(filename);
-//
-//  ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
-//}
-//
-//TEST_CASE(io_abaqus_tri_quad_mesh)
-//{
-//  um2::String const filename = "./mesh_files/tri_quad.inp";
-//  um2::PolytopeSoup mesh_ref;
-//  makeReferenceTriQuadPolytopeSoup(mesh_ref);
-//
-//  um2::PolytopeSoup mesh;
-//  mesh.read(filename);
-//
-//  ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
-//}
-//
-//TEST_CASE(io_abaqus_tri6_mesh)
-//{
-//  um2::String const filename = "./mesh_files/tri6.inp";
-//  um2::PolytopeSoup mesh_ref;
-//  makeReferenceTri6PolytopeSoup(mesh_ref);
-//
-//  um2::PolytopeSoup mesh;
-//  mesh.read(filename);
-//
-//  ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
-//}
-//
-//TEST_CASE(io_abaqus_quad8_mesh)
-//{
-//  um2::String const filename = "./mesh_files/quad8.inp";
-//  um2::PolytopeSoup mesh_ref;
-//  makeReferenceQuad8PolytopeSoup(mesh_ref);
-//
-//  um2::PolytopeSoup mesh;
-//  mesh.read(filename);
-//
-//  ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
-//}
-//
-//TEST_CASE(io_abaqus_tri6_quad8_mesh)
-//{
-//  um2::String const filename = "./mesh_files/tri6_quad8.inp";
-//  um2::PolytopeSoup mesh_ref;
-//  makeReferenceTri6Quad8PolytopeSoup(mesh_ref);
-//
-//  um2::PolytopeSoup mesh;
-//  mesh.read(filename);
-//
-//  ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
-//}
-//
+TEST_CASE(getMaterialNames)
+{
+  um2::PolytopeSoup tri_ref;
+  makeReferenceTriPolytopeSoup(tri_ref);
+  um2::Vector<um2::String> const mat_names_ref = {"Material_H2O", "Material_UO2"};
+  um2::Vector<um2::String> mat_names;
+  tri_ref.getMaterialNames(mat_names);
+  ASSERT(mat_names == mat_names_ref);
+}
+
+TEST_CASE(getMaterialIDs)
+{
+  um2::PolytopeSoup tri_ref;
+  makeReferenceTriPolytopeSoup(tri_ref);
+  um2::Vector<MatID> mat_ids;
+  tri_ref.getMaterialIDs(mat_ids, {"Material_H2O", "Material_UO2"});
+  um2::Vector<MatID> const mat_ids_ref = {1, 0};
+  ASSERT(mat_ids == mat_ids_ref);
+  mat_ids.clear();
+  tri_ref.getMaterialIDs(mat_ids, {"Material_UO2", "Material_H2O"});
+  um2::Vector<MatID> const mat_ids_ref2 = {0, 1};
+  ASSERT(mat_ids == mat_ids_ref2);
+}
+
+TEST_CASE(io_abaqus_tri_mesh)
+{
+  um2::String const filename = "./mesh_files/tri.inp";
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceTriPolytopeSoup(mesh_ref);
+
+  um2::PolytopeSoup const mesh(filename);
+
+  ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
+}
+
+TEST_CASE(io_abaqus_quad_mesh)
+{
+  um2::String const filename = "./mesh_files/quad.inp";
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceQuadPolytopeSoup(mesh_ref);
+
+  um2::PolytopeSoup const mesh(filename);
+
+  ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
+}
+
+TEST_CASE(io_abaqus_tri_quad_mesh)
+{
+  um2::String const filename = "./mesh_files/tri_quad.inp";
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceTriQuadPolytopeSoup(mesh_ref);
+
+  um2::PolytopeSoup const mesh(filename);
+
+  ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
+}
+
+TEST_CASE(io_abaqus_tri6_mesh)
+{
+  um2::String const filename = "./mesh_files/tri6.inp";
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceTri6PolytopeSoup(mesh_ref);
+
+  um2::PolytopeSoup const mesh(filename);
+
+  ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
+}
+
+TEST_CASE(io_abaqus_quad8_mesh)
+{
+  um2::String const filename = "./mesh_files/quad8.inp";
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceQuad8PolytopeSoup(mesh_ref);
+
+  um2::PolytopeSoup const mesh(filename);
+
+  ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
+}
+
+TEST_CASE(io_abaqus_tri6_quad8_mesh)
+{
+  um2::String const filename = "./mesh_files/tri6_quad8.inp";
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceTri6Quad8PolytopeSoup(mesh_ref);
+
+  um2::PolytopeSoup const mesh(filename);
+
+  ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
+}
+
 //TEST_CASE(io_xdmf_tri_mesh)
 //{
 //  um2::PolytopeSoup mesh_ref;
@@ -593,14 +587,14 @@ TEST_SUITE(PolytopeSoup)
   TEST(mortonSortVertices);
   TEST(mortonSortElements);
   TEST(getSubmesh);
-//  TEST(getMaterialNames);
-//  TEST(getMaterialIDs);
-//  TEST(io_abaqus_tri_mesh);
-//  TEST(io_abaqus_quad_mesh);
-//  TEST(io_abaqus_tri_quad_mesh);
-//  TEST(io_abaqus_tri6_mesh);
-//  TEST(io_abaqus_quad8_mesh);
-//  TEST(io_abaqus_tri6_quad8_mesh);
+  TEST(getMaterialNames);
+  TEST(getMaterialIDs);
+  TEST(io_abaqus_tri_mesh);
+  TEST(io_abaqus_quad_mesh);
+  TEST(io_abaqus_tri_quad_mesh);
+  TEST(io_abaqus_tri6_mesh);
+  TEST(io_abaqus_quad8_mesh);
+  TEST(io_abaqus_tri6_quad8_mesh);
 //  TEST(io_xdmf_tri_mesh);
 //  TEST(io_xdmf_quad_mesh);
 //  TEST(io_xdmf_tri_quad_mesh);

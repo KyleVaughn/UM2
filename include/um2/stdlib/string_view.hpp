@@ -20,6 +20,8 @@ class StringView
   using Ptr = char *;
   using ConstPtr = char const *;
 
+  static constexpr uint64_t npos = static_cast<uint64_t>(-1);
+
   private:
   ConstPtr _data;
   uint64_t _size;
@@ -98,11 +100,55 @@ public:
   empty() const noexcept -> bool;
 
   //==============================================================================
+  // Modifiers
+  //==============================================================================
+
+  HOSTDEV constexpr void
+  // NOLINTBEGIN(readability-identifier-naming) match std::string
+  remove_prefix(uint64_t n) noexcept;
+
+  //==============================================================================
   // Operations
   //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   compare(StringView sv) const noexcept -> int;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  compare(uint64_t pos, uint64_t count, StringView sv) const noexcept -> int;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  ends_with(StringView sv) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  ends_with(char const * s) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  starts_with(StringView sv) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  starts_with(char const * s) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  substr(uint64_t pos, uint64_t count) const noexcept -> StringView;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  find_first_of(char c, uint64_t pos = 0) const noexcept -> uint64_t;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  find_first_not_of(char c, uint64_t pos = 0) const noexcept -> uint64_t;
+
+  // NOLINTEND(readability-identifier-naming) match std::string
+
+  //==============================================================================
+  // Non-standard modifiers 
+  //==============================================================================
+
+  HOSTDEV constexpr void
+  removeLeadingSpaces() noexcept;
+
+  HOSTDEV [[nodiscard]] constexpr auto
+  getTokenAndShrink(char delim = ' ') noexcept -> StringView;
 
 }; // class StringView
 
@@ -248,6 +294,18 @@ StringView::empty() const noexcept -> bool
 }
 
 //==============================================================================
+// Modifiers
+//==============================================================================
+
+HOSTDEV constexpr void
+StringView::remove_prefix(uint64_t n) noexcept
+{
+  ASSERT(n <= _size);
+  _data += n;
+  _size -= n;
+}
+
+//==============================================================================
 // Operations
 //==============================================================================
 
@@ -260,6 +318,117 @@ StringView::compare(StringView sv) const noexcept -> int
   if (result == 0) {
     result = size() == sv.size() ? 0 : (size() < sv.size() ? -1 : 1);
   }
+  return result;
+}
+
+PURE HOSTDEV constexpr auto
+StringView::compare(uint64_t pos, uint64_t count, StringView sv) const noexcept -> int
+{
+  return substr(pos, count).compare(sv); 
+}
+
+PURE HOSTDEV constexpr auto
+StringView::ends_with(StringView sv) const noexcept -> bool
+{
+  return size() >= sv.size() && compare(size() - sv.size(), sv.size(), sv) == 0;
+}
+
+PURE HOSTDEV constexpr auto
+StringView::ends_with(char const * s) const noexcept -> bool
+{
+  return ends_with(StringView(s));
+}
+
+PURE HOSTDEV constexpr auto
+StringView::starts_with(StringView sv) const noexcept -> bool
+{
+  return size() >= sv.size() && compare(0, sv.size(), sv) == 0;
+}
+
+PURE HOSTDEV constexpr auto
+StringView::starts_with(char const * s) const noexcept -> bool
+{
+  return starts_with(StringView(s));
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+StringView::substr(uint64_t pos, uint64_t count) const noexcept -> StringView
+{
+  ASSERT(pos <= size());
+  ASSERT(count  + pos <= size());
+  return {data() + pos, count};
+}
+
+PURE HOSTDEV constexpr auto
+StringView::find_first_of(char c, uint64_t pos) const noexcept -> uint64_t
+{
+  ASSERT(pos <= size());
+  for (uint64_t i = pos; i < size(); ++i) {
+    if (data()[i] == c) {
+      return i;
+    }
+  }
+  return npos;
+}
+
+PURE HOSTDEV constexpr auto
+StringView::find_first_not_of(char c, uint64_t pos) const noexcept -> uint64_t
+{
+  ASSERT(pos <= size());
+  for (uint64_t i = pos; i < size(); ++i) {
+    if (data()[i] != c) {
+      return i;
+    }
+  }
+  return npos;
+}
+
+//==============================================================================
+// Non-standard modifiers
+//==============================================================================
+
+HOSTDEV constexpr void
+StringView::removeLeadingSpaces() noexcept
+{
+  uint64_t const n = find_first_not_of(' ');
+  if (n != npos) {
+    remove_prefix(n);
+  } else {
+    _data = nullptr;
+    _size = 0;
+  }
+}
+
+HOSTDEV [[nodiscard]] constexpr auto
+StringView::getTokenAndShrink(char delim) noexcept -> StringView
+{
+  // Find the first non-delimiter character
+  uint64_t const n = find_first_not_of(delim);
+
+  // If there are no non-delimiter characters, return an empty string
+  // and leave this string unchanged 
+  if (n == npos) {
+    return {};
+  }
+
+  // Find the first delimiter character after the non-delimiter character
+  uint64_t const m = find_first_of(delim, n);
+
+  // If there are no delimiter characters after the non-delimiter character,
+  // return the substring from n to the end of the string and set this string
+  // to an empty string
+  if (m == npos) {
+    auto const result = substr(n, size() - n);
+    _data = nullptr;
+    _size = 0;
+    return result;
+  }
+
+  // Otherwise, return the substring from n to m - n and remove the prefix
+  // of this string of length m
+  auto const result = substr(n, m - n);
+  // Omit the delimiter character
+  remove_prefix(m + 1);
   return result;
 }
 

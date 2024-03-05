@@ -52,19 +52,24 @@ reset() noexcept
 #pragma GCC diagnostic ignored "-Wunused-variable"
 // NOLINTBEGIN(clang-analyzer-deadcode.DeadStores,clang-diagnostic-unused-variable)
 
+static
+auto
+appendStringViewToBuffer(char * buffer_pos, StringView const sv) noexcept -> char *
+{
+  auto * const new_pos = buffer_pos + sv.size();
+  ASSERT(new_pos < buffer_end);
+  um2::copy(sv.begin(), sv.end(), buffer_pos);
+  return new_pos; 
+}
+
 // string
 template <>
 auto
 toBuffer(char * buffer_pos, char const * const & value) noexcept -> char *
 {
   char const * p = value;
-  while (*p != '\0') {
-    *buffer_pos = *p;
-    ++p;
-    ++buffer_pos;
-  }
-  ASSERT(buffer_pos < buffer_end);
-  return buffer_pos;
+  StringView const sv(p);
+  return appendStringViewToBuffer(buffer_pos, sv); 
 }
 
 // char
@@ -172,9 +177,17 @@ toBuffer(char * buffer_pos, bool const & value) noexcept -> char *
 
 template <>
 auto
+toBuffer(char * buffer_pos, StringView const & value) noexcept -> char *
+{
+  return appendStringViewToBuffer(buffer_pos, value);
+}
+
+template <>
+auto
 toBuffer(char * buffer_pos, String const & value) noexcept -> char *
 {
-  return toBuffer(buffer_pos, value.cbegin());
+  StringView const sv(value);
+  return toBuffer(buffer_pos, sv); 
 }
 
 // NOLINTEND(clang-analyzer-deadcode.DeadStores,clang-diagnostic-unused-variable)

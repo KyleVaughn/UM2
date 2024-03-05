@@ -9,7 +9,9 @@
 #include <um2/mesh/element_types.hpp>
 #include <um2/stdlib/assert.hpp>
 #include <um2/stdlib/utility/pair.hpp>
+#include <um2/stdlib/algorithm/fill.hpp>
 #include <um2/stdlib/algorithm/is_sorted.hpp>
+#include <um2/stdlib/strto.hpp>
 //#include <um2/stdlib/memory.hpp>
 //#include <um2/stdlib/sto.hpp>
 //#include <um2/stdlib/string.hpp>
@@ -21,21 +23,23 @@
 //#include <concepts>
 //#include <cstdlib>
 //#include <cstring>
-//#include <fstream>
+#include <fstream>
 //#include <sstream>
 //#include <string>
+
+#include <iostream>
 
 //// TODO (kcvaughn): Alphabetize functions
 
 namespace um2
 {
 
-////==============================================================================
-//// Constructors
-////==============================================================================
-//
-//PolytopeSoup::PolytopeSoup(String const & filename) { read(filename); }
-//
+//==============================================================================
+// Constructors
+//==============================================================================
+
+PolytopeSoup::PolytopeSoup(String const & filename) { read(filename); }
+
 //==============================================================================
 // Methods
 //==============================================================================
@@ -335,7 +339,7 @@ PolytopeSoup::getElset(Int const i, String & name, Vector<Int> & ids, Vector<Flo
 }
 
 //==============================================================================
-// compareTo
+// compare
 //==============================================================================
 
 auto
@@ -417,10 +421,10 @@ PolytopeSoup::compare(PolytopeSoup const & other) const -> int
   return 0;
 }
 
-////==============================================================================
-//// mortonSort
-////==============================================================================
-//
+//==============================================================================
+// mortonSort
+//==============================================================================
+
 void
 PolytopeSoup::mortonSort()
 {
@@ -612,22 +616,22 @@ PolytopeSoup::sortElsets()
 //  }
 //}
 //
-////==============================================================================
-//// getMaterialNames
-////==============================================================================
-//
-//void
-//PolytopeSoup::getMaterialNames(Vector<String> & material_names) const
-//{
-//  material_names.clear();
-//  String const mat_prefix = "Material_";
-//  for (auto const & elset_name : _elset_names) {
-//    if (elset_name.starts_with(mat_prefix)) {
-//      material_names.emplace_back(elset_name);
-//    }
-//  }
-//}
-//
+//==============================================================================
+// getMaterialNames
+//==============================================================================
+
+void
+PolytopeSoup::getMaterialNames(Vector<String> & material_names) const
+{
+  material_names.clear();
+  String const mat_prefix = "Material_";
+  for (auto const & elset_name : _elset_names) {
+    if (elset_name.starts_with(mat_prefix)) {
+      material_names.emplace_back(elset_name);
+    }
+  }
+}
+
 //==============================================================================
 // getSubmesh
 //==============================================================================
@@ -752,8 +756,6 @@ PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) cons
   // element_ids[i] is the old element id, and i is the new element id.
   // The largest possible intersection is the size of the elset itself.
 
-  // TODO(kcvaughn): we don't want to use std::vector here, so we need to write 
-  // our own std::back_inserter
   Int * intersection = new Int[static_cast<size_t>(submesh_num_elements)];
   Int const num_elsets = _elset_names.size();
   for (Int i = 0; i < num_elsets; ++i) {
@@ -803,40 +805,40 @@ PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) cons
   delete[] intersection;
 }
 
-////==============================================================================
-//// getMaterialIDs
-////==============================================================================
-//
-//void
-//PolytopeSoup::getMaterialIDs(Vector<MaterialID> & material_ids,
-//                             Vector<String> const & material_names) const
-//{
-//  material_ids.resize(numElems());
-//  um2::fill(material_ids.begin(), material_ids.end(), static_cast<MaterialID>(-1));
-//  Int const nmats = material_names.size();
-//  for (Int i = 0; i < nmats; ++i) {
-//    String const & mat_name = material_names[i];
-//    for (Int j = 0; j < _elset_names.size(); ++j) {
-//      if (_elset_names[j] == mat_name) {
-//        auto const start = _elset_offsets[j];
-//        auto const end = _elset_offsets[j + 1];
-//        for (Int k = start; k < end; ++k) {
-//          auto const elem = _elset_ids[k];
-//          if (material_ids[elem] != -1) {
-//            log::error("Element ", elem, " has multiple materials");
-//          }
-//          material_ids[elem] = static_cast<MaterialID>(i);
-//        } // for k
-//        break;
-//      } // if elset_names[j] == mat_name
-//    }   // for j
-//  }     // for i
-//  if (std::any_of(material_ids.cbegin(), material_ids.cend(),
-//                  [](MaterialID const mat_id) { return mat_id == -1; })) {
-//    log::error("Some elements have no material");
-//  }
-//}
-//
+//==============================================================================
+// getMaterialIDs
+//==============================================================================
+
+void
+PolytopeSoup::getMaterialIDs(Vector<MatID> & material_ids,
+                             Vector<String> const & material_names) const
+{
+  material_ids.resize(numElems());
+  um2::fill(material_ids.begin(), material_ids.end(), static_cast<MatID>(-1));
+  Int const nmats = material_names.size();
+  for (Int i = 0; i < nmats; ++i) {
+    String const & mat_name = material_names[i];
+    for (Int j = 0; j < _elset_names.size(); ++j) {
+      if (_elset_names[j] == mat_name) {
+        auto const start = _elset_offsets[j];
+        auto const end = _elset_offsets[j + 1];
+        for (Int k = start; k < end; ++k) {
+          auto const elem = _elset_ids[k];
+          if (material_ids[elem] != -1) {
+            log::error("Element ", elem, " has multiple materials");
+          }
+          material_ids[elem] = static_cast<MatID>(i);
+        } // for k
+        break;
+      } // if elset_names[j] == mat_name
+    }   // for j
+  }     // for i
+  if (std::any_of(material_ids.cbegin(), material_ids.cend(),
+                  [](MatID const mat_id) { return mat_id == -1; })) {
+    log::error("Some elements have no material");
+  }
+}
+
 //==============================================================================
 // reserveMoreElements
 //==============================================================================
@@ -869,159 +871,234 @@ PolytopeSoup::reserveMoreVertices(Int const num_verts)
   _vertices.reserve(num_verts + _vertices.size());
 }
 
-////==============================================================================-
-//// IO for ABAQUS files.
-////==============================================================================
-//
-//static void
-//abaqusParseNodes(PolytopeSoup & soup, std::string & line, std::ifstream & file)
-//{
-//  // Would love to use chars_format here, but it bugs out on "0.5" occasionally
-//  while (std::getline(file, line) && line[0] != '*') {
-//    // Format: node_id, x, y, z
-//    // Skip ID
-//    size_t last = line.find(',', 0);
-//    size_t next = line.find(',', last + 2);
-//    // Read coordinates
-//    Float const x = sto<Float>(line.substr(last + 2, next - last - 2));
-//    last = next;
-//    next = line.find(',', last + 2);
-//    Float const y = sto<Float>(line.substr(last + 2, next - last - 2));
-//    Float const z = sto<Float>(line.substr(next + 2));
-//    soup.addVertex(x, y, z);
-//  }
-//} // abaqusParseNodes
-//
-//static void
-//abaqusParseElements(PolytopeSoup & soup, std::string & line, std::ifstream & file)
-//{
-//  //  "*ELEMENT, type=CPS".size() = 18
-//  //  CPS3 is a 3-node triangle
-//  //  CPS4 is a 4-node quadrilateral
-//  //  CPS6 is a 6-node quadratic triangle
-//  //  CPS8 is a 8-node quadratic quadrilateral
-//  //  Hence, line[18] is the offset of the element type
-//  //  ASCIInt code for '0' is 48, so line[18] - 48 is the offset
-//  //  as an integer
-//  //
-//  if (line[15] != 'C' || line[16] != 'P' || line[17] != 'S') {
-//    LOG_ERROR("Only CPS elements are supported");
-//    return;
-//  }
-//  Int const offset = static_cast<Int>(line[18]) - 48;
-//  VTKElemType this_type = VTKElemType::Vertex;
-//  switch (offset) {
-//  case 3:
-//    this_type = VTKElemType::Triangle;
-//    break;
-//  case 4:
-//    this_type = VTKElemType::Quad;
-//    break;
-//  case 6:
-//    this_type = VTKElemType::QuadraticTriangle;
-//    break;
-//  case 8:
-//    this_type = VTKElemType::QuadraticQuad;
-//    break;
-//  default: {
-//    LOG_ERROR("AbaqusCellType CPS", offset, " is not supported");
-//    break;
-//  }
-//  }
-//  Int const verts_per_elem = verticesPerElem(this_type);
-//  Vector<Int> conn(verticesPerElem(this_type));
-//  while (std::getline(file, line) && line[0] != '*') {
-//    std::string_view const line_view = line;
-//    // For each element, read the element ID and the node IDs
-//    // Format: id, n1, n2, n3, n4, n5 ...
-//    // Skip ID
-//    size_t last = line_view.find(',', 0);
-//    size_t next = line_view.find(',', last + 2);
-//    Int id = -1;
-//    // Read the first N-1 node IDs
-//    for (Int i = 0; i < verts_per_elem - 1; ++i) {
-//      std::from_chars(line_view.data() + last + 2, line_view.data() + next, id);
-//      ASSERT(id > 0);
-//      conn[i] = id - 1; // ABAQUS is 1-indexed
-//      last = next;
-//      next = line_view.find(',', last + 2);
-//    }
-//    // Read last node ID
-//    std::from_chars(line_view.data() + last + 2, line_view.data() + line_view.size(), id);
-//    ASSERT(id > 0);
-//    conn[verts_per_elem - 1] = id - 1; // ABAQUS is 1-indexed
-//    soup.addElement(this_type, conn);
-//  }
-//} // abaqusParseElements
-//
-//static void
-//abaqusParseElsets(PolytopeSoup & soup, std::string & line, std::ifstream & file)
-//{
-//  std::string_view line_view = line;
-//  // "*ELSET,ELSET=".size() = 13
-//  std::string const elset_name_std{line_view.substr(13, line_view.size() - 13)};
-//  String const elset_name(elset_name_std.c_str());
-//  Vector<Int> elset_ids;
-//  while (std::getline(file, line) && line[0] != '*') {
-//    line_view = line;
-//    // Add each element ID to the elset
-//    // Format: id, id, id, id, id,
-//    // Note, line ends in ", " or ","
-//    // First ID
-//    size_t last = 0;
-//    size_t next = line_view.find(',');
-//    Int id = -1;
-//    std::from_chars(line_view.data(), line_view.data() + next, id);
-//    ASSERT(id > 0);
-//    elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
-//    last = next;
-//    next = line_view.find(',', last + 1);
-//    while (next != std::string::npos) {
-//      std::from_chars(line_view.data() + last + 2, line_view.data() + next, id);
-//      ASSERT(id > 0);
-//      elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
-//      last = next;
-//      next = line_view.find(',', last + 1);
-//    }
-//  }
-//  ASSERT(um2::is_sorted(elset_ids.cbegin(), elset_ids.cend()));
-//  soup.addElset(elset_name, elset_ids);
-//} // abaqusParseElsets
-//
-//void
-//readAbaqusFile(String const & filename, PolytopeSoup & soup)
-//{
-//  LOG_INFO("Reading Abaqus file: ", filename);
-//
-//  // Open file
-//  std::ifstream file(filename.c_str());
-//  if (!file.is_open()) {
-//    LOG_ERROR("Could not open file: ", filename);
-//    return;
-//  }
-//
-//  // Read file
-//  std::string line;
-//  bool loop_again = false;
-//  while (loop_again || std::getline(file, line)) {
-//    loop_again = false;
-//    // NOLINTNEXTLINE(bugprone-branch-clone)
-//    if (line.starts_with("*NODE")) {
-//      abaqusParseNodes(soup, line, file);
-//      loop_again = true;
-//    } else if (line.starts_with("*ELEMENT")) {
-//      abaqusParseElements(soup, line, file);
-//      loop_again = true;
-//    } else if (line.starts_with("*ELSET")) {
-//      abaqusParseElsets(soup, line, file);
-//      loop_again = true;
-//    }
-//  }
-//  soup.sortElsets();
-//  file.close();
-//  LOG_INFO("Finished reading Abaqus file: ", filename);
-//} // readAbaqusFile
-//
+//==============================================================================-
+// IO for ABAQUS files.
+//==============================================================================
+
+static auto 
+abaqusParseNodes(PolytopeSoup & soup, std::ifstream & file, char * const line, 
+    uint64_t const max_line_length) -> StringView 
+{
+  // line starts with "*NODE"
+  auto const smax_line_length = static_cast<int64_t>(max_line_length);
+  while (file.getline(line, smax_line_length) && line[0] != '*') {
+    StringView line_view(line);
+    // Format: node_id, x, y, z
+    // Skip ID
+    StringView token = line_view.getTokenAndShrink(',');
+    ASSERT(!token.empty());
+
+    char * end = nullptr;
+
+    // x
+    token = line_view.getTokenAndShrink(',');
+    ASSERT(!token.empty());
+    Float const x = strto<Float>(token.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
+
+    token = line_view.getTokenAndShrink(',');
+    ASSERT(!token.empty());
+    Float const y = strto<Float>(token.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
+
+    // Only final token left of the form " zzzz\n"
+    Float const z = strto<Float>(line_view.data(), &end);
+    ASSERT(end != nullptr);
+    soup.addVertex(x, y, z);
+  }
+  if (file.peek() == EOF) {
+    return {};
+  } 
+  return {line};
+} // abaqusParseNodes
+
+static auto 
+abaqusParseElements(PolytopeSoup & soup, std::ifstream & file, char * const line, 
+    uint64_t const max_line_length) -> StringView 
+{
+  //  "*ELEMENT, type=CPS" is 18 characters
+  //  CPS3 is a 3-node triangle
+  //  CPS4 is a 4-node quadrilateral
+  //  CPS6 is a 6-node quadratic triangle
+  //  CPS8 is a 8-node quadratic quadrilateral
+  //  Hence, line[18] is the offset of the element type
+  //  ASCII code for '0' is 48, so line[18] - 48 is the offset
+  //  as an integer
+  //
+#if UM2_ENABLE_ASSERTS
+  StringView const info_line_view(line);
+  ASSERT(info_line_view.starts_with("*ELEMENT, type=CPS"));
+  ASSERT(info_line_view.size() > 18);
+#endif
+  if (line[15] != 'C' || line[16] != 'P' || line[17] != 'S') {
+    LOG_ERROR("Only CPS elements are supported");
+    return {};
+  }
+  Int const offset = static_cast<Int>(line[18]) - 48;
+  VTKElemType this_type = VTKElemType::Vertex;
+  switch (offset) {
+  case 3:
+    this_type = VTKElemType::Triangle;
+    break;
+  case 4:
+    this_type = VTKElemType::Quad;
+    break;
+  case 6:
+    this_type = VTKElemType::QuadraticTriangle;
+    break;
+  case 8:
+    this_type = VTKElemType::QuadraticQuad;
+    break;
+  default: {
+    LOG_ERROR("AbaqusCellType CPS", offset, " is not supported");
+    break;
+  }
+  }
+  Int const verts_per_elem = verticesPerElem(this_type);
+  Vector<Int> conn(verticesPerElem(this_type));
+  auto const smax_line_length = static_cast<int64_t>(max_line_length);
+  while (file.getline(line, smax_line_length) && line[0] != '*') {
+    StringView line_view(line);
+    // For each element, read the element ID and the node IDs
+    // Format: id, n1, n2, n3, n4, n5 ...
+    // Skip ID
+    StringView token = line_view.getTokenAndShrink(',');
+    ASSERT(!token.empty());
+
+    for (Int i = 0; i < verts_per_elem; ++i) {
+      token = line_view.getTokenAndShrink(',');
+      ASSERT(!token.empty());
+      char * end = nullptr;
+      Int const id = strto<Int>(token.data(), &end);
+      ASSERT(end != nullptr);
+      ASSERT(id > 0);
+      conn[i] = id - 1; // ABAQUS is 1-indexed
+    }
+    soup.addElement(this_type, conn);
+  }
+
+  if (file.peek() == EOF) {
+    return {};
+  } 
+  return {line};
+} // abaqusParseElements
+
+static auto 
+abaqusParseElsets(PolytopeSoup & soup, std::ifstream & file, char * const line, 
+    uint64_t const max_line_length) -> StringView 
+{
+  StringView const info_line_view(line);
+  ASSERT(info_line_view.starts_with("*ELSET,ELSET="));
+  ASSERT(info_line_view.size() > 13);
+  String const elset_name(info_line_view.substr(13, info_line_view.size() - 13));
+  Vector<Int> elset_ids;
+  auto const smax_line_length = static_cast<int64_t>(max_line_length);
+  while (file.getline(line, smax_line_length) && line[0] != '*') {
+    StringView line_view(line);
+    // Add each element ID to the elset
+    // Format: id, id, id, id, id,
+    // Note, line ends in ", " or ",", hence a meaningful token is always followed
+    // by a comma and is at least 2 characters long: ex "1," or "1, "
+    uint64_t comma = line_view.find_first_of(',');
+    ASSERT(comma > 0);
+    while (comma != StringView::npos) {
+      // token = "id"
+      StringView const token = line_view.substr(0, comma);
+      char * end = nullptr;
+      Int const id = strto<Int>(token.data(), &end);
+      ASSERT(end != nullptr);
+      ASSERT(id > 0);
+      elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
+
+      // Done if there are not enough characters left for another id
+      if (line_view.size() <= comma + 2) {
+        break;
+      }
+      // Otherwise, remove the token and the comma, and find the next comma
+      line_view.remove_prefix(comma + 1);
+      comma = line_view.find_first_of(',');
+    }
+  }
+  ASSERT(um2::is_sorted(elset_ids.cbegin(), elset_ids.cend()));
+  soup.addElset(elset_name, elset_ids);
+  if (file.peek() == EOF) {
+    return {};
+  }
+  return {line};
+} // abaqusParseElsets
+
+static void
+readAbaqusFile(String const & filename, PolytopeSoup & soup)
+{
+  LOG_INFO("Reading Abaqus file: ", filename);
+
+  uint64_t constexpr max_line_length = 1024;
+  char line[max_line_length];
+
+  // Open file
+  std::ifstream file(filename.data());
+  if (!file.is_open()) {
+    LOG_ERROR("Could not open file: ", filename);
+    return;
+  }
+
+  // General structure of an Abaqus file:
+  // *Heading
+  //  mesh_name
+  // *NODE
+  //  node_id, x, y, z
+  //  ...
+  // *ELEMENT, type=....
+  // id, n1, n2, n3, n4, n5 ...
+  // ...
+  // *ELEMENT, type=....
+  // id, n1, n2, n3, n4, n5 ...
+  // ...
+  // *ELSET,ELSET=....
+  // id, id, id, id, id, ...
+  // ...
+  // *ELSET,ELSET=....
+  // id, id, id, id, id, ...
+  // ...
+  //
+  // Additionally, there may be comments which start with a '*'.
+
+  // Get the first line
+  file.getline(line, max_line_length);
+  StringView line_view(line); 
+
+  // Only get the next line if it does not start with *NODE, *ELEMENT, or *ELSET
+  bool get_next_line = false;
+  while (file.peek() != EOF) {
+    if (get_next_line) {
+      file.getline(line, max_line_length);
+      line_view = StringView(line);
+    }
+    get_next_line = true;
+    while (line_view.starts_with("*NODE")) {
+      line_view = abaqusParseNodes(soup, file, line, max_line_length);
+      get_next_line = false;
+    }
+    while (line_view.starts_with("*ELEMENT")) {
+      line_view = abaqusParseElements(soup, file, line, max_line_length);
+      get_next_line = false;
+    }
+    while (line_view.starts_with("*ELSET")) {
+      line_view = abaqusParseElsets(soup, file, line, max_line_length);
+      get_next_line = false;
+    }
+  }
+
+  if (soup.numElsets() > 0) {
+    soup.sortElsets();
+  }
+ 
+  file.close();
+  LOG_INFO("Finished reading Abaqus file: ", filename);
+} // readAbaqusFile
+
 ////==============================================================================
 //// IO for XDMFloat files
 ////==============================================================================
@@ -1818,22 +1895,22 @@ PolytopeSoup::reserveMoreVertices(Int const num_verts)
 //  log::info("Finished reading XDMFloat file: ", filename);
 //}
 //
-////==============================================================================
-//// IO
-////==============================================================================
-//
-//void
-//PolytopeSoup::read(String const & filename)
-//{
-//  if (filename.ends_with(".inp")) {
-//    readAbaqusFile(filename, *this);
+//==============================================================================
+// IO
+//==============================================================================
+
+void
+PolytopeSoup::read(String const & filename)
+{
+  if (filename.ends_with(".inp")) {
+    readAbaqusFile(filename, *this);
 //  } else if (filename.ends_with(".xdmf")) {
 //    readXDMFFile(filename, *this);
-//  } else {
-//    log::error("Unsupported file format.");
-//  }
-//}
-//
+  } else {
+    log::error("Unsupported file format.");
+  }
+}
+
 //void
 //PolytopeSoup::write(String const & filename) const
 //{

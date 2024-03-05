@@ -75,13 +75,13 @@ public:
 
   constexpr PolytopeSoup() = default;
 
-//  // NOLINTNEXTLINE(google-explicit-constructor)
-//  PolytopeSoup(String const & filename);
-//
-//  //==============================================================================
-//  // Methods
-//  //==============================================================================
-//
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  PolytopeSoup(String const & filename);
+
+  //==============================================================================
+  // Methods
+  //==============================================================================
+
   auto
   addElement(VTKElemType type, Vector<Int> const & conn) -> Int;
 
@@ -112,13 +112,14 @@ public:
   void
   getElset(Int i, String & name, Vector<Int> & ids, Vector<Float> & data) const;
 
-//  void
-//  getMaterialIDs(Vector<MaterialID> & material_ids,
-//                 Vector<String> const & material_names) const;
-//
-//  void
-//  getMaterialNames(Vector<String> & material_names) const;
-//
+  // Get the material ID of each element
+  void
+  getMaterialIDs(Vector<MatID> & material_ids,
+                 Vector<String> const & material_names) const;
+
+  void
+  getMaterialNames(Vector<String> & material_names) const;
+
   PURE [[nodiscard]] constexpr auto
   getMeshType() const -> MeshType;
 
@@ -147,9 +148,9 @@ public:
   PURE [[nodiscard]] constexpr auto
   numVerts() const -> Int;
 
-//  void
-//  read(String const & filename);
-//
+  void
+  read(String const & filename);
+
   void
   reserveMoreElements(VTKElemType elem_type, Int num_elems);
 

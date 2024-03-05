@@ -23,7 +23,6 @@ TEST_CASE(constructor_default)
   ASSERT(s.capacity() == 22);
 }
 MAKE_CUDA_KERNEL(constructor_default);
-// NOLINTEND(cert-dcl03-c, misc-static-assert)
 
 HOSTDEV
 TEST_CASE(constructor_const_char_ptr)
@@ -176,16 +175,50 @@ MAKE_CUDA_KERNEL(assign_move);
 ////}
 //
 
+//==============================================================================
+// Operations
+//==============================================================================
 
+HOSTDEV    
+TEST_CASE(compare)    
+{    
+  char const * const data1 = "Hello, World!";    
+  char const * const data2 = "Hello, Worl!";     
+  char const * const data3 = "Hekko, World!";    
+  um2::String const s1(data1);    
+  um2::String const s2(data2);    
+  um2::String const s3(data3);    
+  ASSERT(s1.compare(s1) == 0);    
+  ASSERT(s1.compare(s2) > 0);    
+  ASSERT(s2.compare(s1) < 0);    
+  ASSERT(s1.compare(s3) > 0);    
+}    
+MAKE_CUDA_KERNEL(compare)
 
+HOSTDEV
+TEST_CASE(starts_with)
+{
+  char const * const data = "Hello, World!";
+  um2::String const s(data);
+  ASSERT(s.starts_with("Hello"));
+  ASSERT(s.starts_with("Hello, World!"));
+  ASSERT(!s.starts_with("Hello, World! "));
+  ASSERT(!s.starts_with("World"));
+}
+MAKE_CUDA_KERNEL(starts_with)
 
+HOSTDEV
+TEST_CASE(end_with)
+{
+  char const * const data = "StringView";
+  um2::String const s(data);
+  ASSERT(s.ends_with("View"));
+  ASSERT(s.ends_with("StringView"));
+  ASSERT(!s.ends_with("String"));
+  ASSERT(!s.ends_with("StringView "));
+}
+MAKE_CUDA_KERNEL(end_with)
 
-
-
-////==============================================================================
-//// Operators
-////==============================================================================
-//
 ////HOSTDEV
 ////TEST_CASE(index_operator)
 ////{
@@ -251,54 +284,6 @@ MAKE_CUDA_KERNEL(assign_move);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
 ////TEST_CASE(std_string_assign_operator)
 ////{
 ////  std::string s0("hello");
@@ -402,6 +387,10 @@ MAKE_CUDA_KERNEL(assign_move);
 ////  ASSERT(s.find_last_of('a') == um2::String::npos);
 ////}
 ////
+
+
+// NOLINTEND(cert-dcl03-c,misc-static-assert)
+
 TEST_SUITE(String)
 {
   // Constructors
@@ -413,7 +402,10 @@ TEST_SUITE(String)
   TEST_HOSTDEV(assign_move)
 //  TEST(int_float_constructors)
 //
-  // Operators
+  // Operations
+  TEST_HOSTDEV(compare)
+  TEST_HOSTDEV(starts_with)
+  TEST_HOSTDEV(end_with)
 //  TEST(std_string_assign_operator)
 //  TEST_HOSTDEV(equals_operator)
 //  TEST_HOSTDEV(comparison)
