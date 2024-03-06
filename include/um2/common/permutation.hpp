@@ -41,9 +41,9 @@ applyPermutation(T * const begin, T * const end, Int const * const perm) noexcep
   }
   for (Int i = 0; i < size - 1; ++i) {
     Int ind = perm[i];
-    ASSERT(0 < ind);
+    ASSERT(0 <= ind);
     while (ind < i) {
-      ASSERT(0 < ind);
+      ASSERT(0 <= ind);
       ASSERT(ind < size);
       ind = perm[ind];
     }

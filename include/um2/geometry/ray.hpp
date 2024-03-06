@@ -52,14 +52,16 @@ public:
   // Other member functions
   //============================================================================
 
-  PURE HOSTDEV constexpr auto
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   operator()(Float r) const noexcept -> Point<D>
   {
-    Point<D> res;
-    for (Int i = 0; i < D; ++i) {
-      res[i] = _o[i] + r * _d[i];
-    }
-    return res;
+    return _o + r * _d;
+  }
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  inverseDirection() const noexcept -> Point<D>
+  {
+    return 1 / _d;
   }
 
 }; // class Ray

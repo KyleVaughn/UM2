@@ -199,13 +199,13 @@ TEST_CASE(boundingBox)
   um2::QuadraticSegment<D> seg1 = makeSeg1<D>();
   um2::AxisAlignedBox<D> const bb1 = seg1.boundingBox();
   um2::AxisAlignedBox<D> const bb_ref(seg1[0], seg1[1]);
-  ASSERT(um2::isApprox(bb1, bb_ref));
+  ASSERT(bb1.isApprox(bb_ref));
 
   um2::QuadraticSegment<D> seg2 = makeSeg2<D>();
   um2::AxisAlignedBox<D> const bb2 = seg2.boundingBox();
   um2::AxisAlignedBox<D> bb_ref2(seg2[0], seg2[1]);
   bb_ref2 += seg2[2];
-  ASSERT(um2::isApprox(bb2, bb_ref2));
+  ASSERT(bb2.isApprox(bb_ref2));
 
   um2::QuadraticSegment<D> const seg8 = makeSeg8<D>();
   um2::AxisAlignedBox<D> const bb8 = seg8.boundingBox();
@@ -214,7 +214,7 @@ TEST_CASE(boundingBox)
   p1[0] = castIfNot<Float>(4.083334);
   p1[1] = castIfNot<Float>(3);
   um2::AxisAlignedBox<D> const bb_ref8(p0, p1);
-  ASSERT(um2::isApprox(bb8, bb_ref8));
+  ASSERT(bb8.isApprox(bb_ref8));
 }
 
 //==============================================================================

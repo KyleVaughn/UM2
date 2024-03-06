@@ -2,6 +2,8 @@
 
 #include "../../test_macros.hpp"
 
+#include <iostream>
+
 Float constexpr eps = um2::eps_distance * castIfNot<Float>(10);
 
 template <Int D>
@@ -205,7 +207,22 @@ TEST_CASE(meanChordLength)
 {
   auto const quad = makeQuad<2>();
   auto const ref = um2::pi<Float> / castIfNot<Float>(4);
-  ASSERT_NEAR(quad.meanChordLength(), ref, castIfNot<Float>(3e-4));
+  auto const val = quad.meanChordLength();
+  auto const err = um2::abs(val - ref) / ref;
+  std::cerr << "val = " << val << std::endl;
+  std::cerr << "ref = " << ref << std::endl;
+  std::cerr << "err = " << err << std::endl;
+  // Relative error should be less than 0.1%.
+  ASSERT(err < castIfNot<Float>(1e-3));
+
+  auto const quad2 = makeQuad2<2>();
+  auto const ref2 = castIfNot<Float>(0.5);
+  auto const val2 = quad2.meanChordLength();
+  auto const err2 = um2::abs(val2 - ref2) / ref2;
+  std::cerr << "val2 = " << val << std::endl;
+  std::cerr << "ref2 = " << ref << std::endl;
+  std::cerr << "err2 = " << err << std::endl;
+  ASSERT(err2 < castIfNot<Float>(1e-3));
 }
 
 #if UM2_USE_CUDA

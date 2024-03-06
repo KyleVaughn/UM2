@@ -10,15 +10,15 @@
 // This file provides functions for mapping to and from Morton codes.
 // https://en.wikipedia.org/wiki/Z-order_curve
 //
+// unsigned ints:
 // mortonEncode(u32, u32) -> u32
 // mortonEncode(u32, u32, u32) -> u32
-//
 // mortonEncode(u64, u64) -> u64
 // mortonEncode(u64, u64, u64) -> u64
 //
+// floating point (normalized to [0,1]):
 // mortonEncode(f32, f32) -> u32
 // mortonEncode(f32, f32, f32) -> u32
-//
 // mortonEncode(f64, f64) -> u64
 // mortonEncode(f64, f64, f64) -> u64
 //

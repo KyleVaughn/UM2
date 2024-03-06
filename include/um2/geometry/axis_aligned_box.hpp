@@ -73,7 +73,7 @@ public:
   operator+=(AxisAlignedBox<D> const & box) noexcept -> AxisAlignedBox<D> &;
 
   //==============================================================================
-  // Other member functions 
+  // Other member functions
   //==============================================================================
 
   // Create an empty box, with minima = inf_distance and maxima = -inf_distance.
@@ -108,6 +108,21 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   contains(Point<D> const & p) const noexcept -> bool;
 
+  // If the minima and maxima are approximately equal according to
+  // um2::isApprox(Point<D>, Point<D>).
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  isApprox(AxisAlignedBox<D> const & other) const noexcept -> bool;
+
+  // Returns the distance along the ray to the intersection point with the box.
+  // r in [0, inf_distance<T>]. A miss is indicated by r = inf_distance<T>.
+  // Note: ray(r) is the intersection point.
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  intersect(Ray<D> const & ray) const noexcept -> Vec2F;
+
+  // Same as above, but with a precomputed inverse direction.
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  intersect(Ray<D> const & ray, Vec<D, Float> const & inv_dir) const noexcept -> Vec2F;
+
 }; // class AxisAlignedBox
 
 //==============================================================================
@@ -118,6 +133,26 @@ public:
 using AxisAlignedBox1 = AxisAlignedBox<1>;
 using AxisAlignedBox2 = AxisAlignedBox<2>;
 using AxisAlignedBox3 = AxisAlignedBox<3>;
+
+//==============================================================================
+// Free functions
+//==============================================================================
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+operator+(AxisAlignedBox<D> a, AxisAlignedBox<D> const & b) noexcept -> AxisAlignedBox<D>;
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+operator+(AxisAlignedBox<D> box, Point<D> const & p) noexcept -> AxisAlignedBox<D>;
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+boundingBox(Point<D> const * begin, Point<D> const * end) noexcept -> AxisAlignedBox<D>;
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+boundingBox(Point<D> const * points, Int n) noexcept -> AxisAlignedBox<D>;
 
 //==============================================================================
 // Accessors
@@ -293,18 +328,53 @@ PURE HOSTDEV constexpr auto
 AxisAlignedBox<D>::contains(Point<D> const & p) const noexcept -> bool
 {
   // Lexicographic comparison.
-  return _min <= p && p <= _max; 
+  return _min <= p && p <= _max;
 }
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-isApprox(AxisAlignedBox<D> const & a, AxisAlignedBox<D> const & b) noexcept -> bool
+AxisAlignedBox<D>::isApprox(AxisAlignedBox<D> const & other) const noexcept -> bool
 {
-  return isApprox<D>(a.minima(), b.minima()) && isApprox<D>(a.maxima(), b.maxima());
+  bool const mins_approx = um2::isApprox<D>(_min, other._min);
+  bool const maxs_approx = um2::isApprox<D>(_max, other._max);
+  return mins_approx && maxs_approx;
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+AxisAlignedBox<D>::intersect(Ray<D> const & ray) const noexcept -> Vec2F
+{
+  // Inspired by https://tavianator.com/2022/ray_box_boundary.html
+  auto tmin = static_cast<Float>(0);
+  Float tmax = inf_distance;
+  Vec<D, Float> const inv_dir = ray.inverseDirection();
+  Vec<D, Float> const vt1 = (minima() - ray.origin()) * inv_dir;
+  Vec<D, Float> const vt2 = (maxima() - ray.origin()) * inv_dir;
+  for (Int i = 0; i < D; ++i) {
+    tmin = um2::min(um2::max(vt1[i], tmin), um2::max(vt2[i], tmin));
+    tmax = um2::max(um2::min(vt1[i], tmax), um2::min(vt2[i], tmax));
+  }
+  return tmin <= tmax ? Vec2F(tmin, tmax) : Vec2F(inf_distance, inf_distance);
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+AxisAlignedBox<D>::intersect(Ray<D> const & ray, Vec<D, Float> const & inv_dir) const noexcept -> Vec2F
+{
+  // Inspired by https://tavianator.com/2022/ray_box_boundary.html
+  auto tmin = static_cast<Float>(0);
+  Float tmax = inf_distance;
+  Vec<D, Float> const vt1 = (minima() - ray.origin()) * inv_dir;
+  Vec<D, Float> const vt2 = (maxima() - ray.origin()) * inv_dir;
+  for (Int i = 0; i < D; ++i) {
+    tmin = um2::min(um2::max(vt1[i], tmin), um2::max(vt2[i], tmin));
+    tmax = um2::max(um2::min(vt1[i], tmax), um2::min(vt2[i], tmax));
+  }
+  return tmin <= tmax ? Vec2F(tmin, tmax) : Vec2F(inf_distance, inf_distance);
 }
 
 //==============================================================================
-// Bounding Box
+// Free functions
 //==============================================================================
 
 template <Int D>
@@ -323,47 +393,22 @@ operator+(AxisAlignedBox<D> box, Point<D> const & p) noexcept -> AxisAlignedBox<
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-boundingBox(Point<D> const * points, Int const n) noexcept -> AxisAlignedBox<D>
+boundingBox(Point<D> const * begin, Point<D> const * end) noexcept -> AxisAlignedBox<D>
 {
-  Point<D> minima = points[0];
-  Point<D> maxima = points[0];
-  for (Int i = 1; i < n; ++i) {
-    minima.min(points[i]);
-    maxima.max(points[i]);
+  Point<D> minima = *begin;
+  Point<D> maxima = *begin;
+  while (++begin != end) {
+    minima.min(*begin);
+    maxima.max(*begin);
   }
-  return AxisAlignedBox<D>(minima, maxima);
+  return {minima, maxima};
 }
 
-template <Int D>
-PURE constexpr auto
-boundingBox(Vector<Point<D>> const & points) noexcept -> AxisAlignedBox<D>
-{
-  return um2::boundingBox<D>(points.data(), points.size());
-}
-
-//==============================================================================
-// intersect
-//==============================================================================
-
-// Returns the distance along the ray to the intersection point with the box.
-// r in [0, inf_distance<T>]
 template <Int D>
 PURE HOSTDEV constexpr auto
-intersect(Ray<D> const & ray, AxisAlignedBox<D> const & box) noexcept -> Point2
+boundingBox(Point<D> const * points, Int const n) noexcept -> AxisAlignedBox<D>
 {
-  // Inspired by https://tavianator.com/2022/ray_box_boundary.html
-  auto tmin = static_cast<Float>(0);
-  Float tmax = inf_distance;
-  Point<D> const inv_dir = static_cast<Float>(1) / ray.direction();
-  Point<D> const vt1 = (box.minima() - ray.origin()) * inv_dir;
-  Point<D> const vt2 = (box.maxima() - ray.origin()) * inv_dir;
-  for (Int i = 0; i < D; ++i) {
-    Float const tmin_i = um2::min(vt1[i], vt2[i]);
-    Float const tmax_i = um2::max(vt1[i], vt2[i]);
-    tmin = um2::max(tmin, tmin_i);
-    tmax = um2::min(tmax, tmax_i);
-  }
-  return tmin <= tmax ? Point2(tmin, tmax) : Point2(inf_distance, inf_distance);
+  return boundingBox(points, points + n);
 }
 
 } // namespace um2

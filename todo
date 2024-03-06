@@ -1,3 +1,45 @@
+mean chord length does not compute gap right
+It must do r0 --- r1  skip... r1 --- r2. But we must deal with the case where
+r0 is approx r1. If so, we skip. BUT) this could lead to counting a big gap area on
+a jagged edged. Should we say this will happen infrequently?
+
+If r0 and r1 are close, maybe we are on a corner. and correct behavior is do r0,r1.
+There should ve an even number of pairs.
+could test midpoint inside the polygon for membership
+  \         /
+   \       /
+    \     /
+     \   /
+      \ /
+
+isConvex to polygon
+  -> if any edges is not approxCCW, then it's not convex.
+  -> Therefore check all edges first
+  -> Then, check the linear edges
+
+Make non-trivial convex quadratic shapes for meanChordLength tests
+Add a "isConvex" to quadratic shapes so we can avoid the MCL routine
+
+meanChordLength is fucked.
+  What is going on here? Need to visualize
+
+dion free functions forward declare
+refactor dion routines to be prettier/better var names?
+
+provide intersection functions with additional argument of inverse direction?
+
+q
+
+Check that casts preserve value from float to int
+-> int over 16 million?
+
+branchless
+
+big ints for float is trouble
+
+line segment
+fix naming in geom
+
 methods
 Harden the mesh IO, testing with files created from different software
 
@@ -6,7 +48,7 @@ VTK output with colors
 polytope soup with data on whole mesh?
 
 Fix MPACT VTK IO
-  POINT_DATA 1 littered everywhere
+  CELL_TYPES ? 4million chars long...
 
 
 VTK IO

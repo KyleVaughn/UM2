@@ -62,10 +62,10 @@ mortonSort(Point<D> * const begin, Point<D> * const end) noexcept
 // be in the unit square/cube.
 void
 mortonSortPermutation(Point2 const * begin, Point2 const * end, Int * perm_begin,
-                      Point2 const & scale = Point2(0, 0)) noexcept;
+                      Vec2F const & scale = Vec2F(0, 0)) noexcept;
 
 void
 mortonSortPermutation(Point3 const * begin, Point3 const * end, Int * perm_begin,
-                      Point3 const & scale = Point3(0, 0, 0)) noexcept;
+                      Vec3F const & scale = Vec3F(0, 0, 0)) noexcept;
 
 } // namespace um2

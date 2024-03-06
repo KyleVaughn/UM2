@@ -71,15 +71,15 @@ TEST_CASE(is_approx)
 {
   um2::AxisAlignedBox<D> const box1 = makeBox<D>();
   um2::AxisAlignedBox<D> box2 = makeBox<D>();
-  ASSERT(isApprox(box1, box2));
+  ASSERT(box1.isApprox(box2));
   um2::Point<D> p = box2.minima();
   for (Int i = 0; i < D; ++i) {
     p[i] = p[i] - eps / static_cast<Float>(10);
   }
   box2 += p;
-  ASSERT(isApprox(box1, box2));
+  ASSERT(box1.isApprox(box2));
   box2 += 10 * p;
-  ASSERT(!isApprox(box1, box2));
+  ASSERT(!box1.isApprox(box2));
 }
 
 template <Int D>
@@ -134,7 +134,7 @@ TEST_CASE(bounding_box_vector)
     points[i][0] = static_cast<Float>(i) / 10;
     points[i][1] = static_cast<Float>(i) / 5;
   }
-  auto const box = um2::boundingBox<2>(points);
+  auto const box = um2::boundingBox<2>(points.begin(), points.end());
   ASSERT_NEAR(box.minima()[0], static_cast<Float>(0), eps);
   ASSERT_NEAR(box.maxima()[0], static_cast<Float>(n - 1) / 10, eps);
   ASSERT_NEAR(box.minima()[1], static_cast<Float>(0), eps);
@@ -147,25 +147,30 @@ TEST_CASE(intersect_ray)
   um2::AxisAlignedBox<2> const box = makeBox<2>();
   auto const ray0 = um2::Ray2(um2::Point2(half, static_cast<Float>(0)), um2::Point2(0, 1));
 
-  auto const intersection0 = um2::intersect(ray0, box);
+  auto const intersection0 = box.intersect(ray0);
   ASSERT_NEAR(intersection0[0], static_cast<Float>(1), eps);
   ASSERT_NEAR(intersection0[1], static_cast<Float>(2), eps);
 
   auto const ray1 = um2::Ray<2>(um2::Point2(-half, half * 3), um2::Point2(1, 0));
-  auto const intersection1 = um2::intersect(ray1, box);
+  auto const intersection1 = box.intersect(ray1);
   ASSERT_NEAR(intersection1[0], half, eps);
   ASSERT_NEAR(intersection1[1], half * 3, eps);
 
   auto const ray2 = um2::Ray<2>(um2::Point2(0, 1), um2::Point2(1, 1).normalized());
-  auto const intersection2 = um2::intersect(ray2, box);
+  auto const intersection2 = box.intersect(ray2);
   ASSERT_NEAR(intersection2[0], static_cast<Float>(0), eps);
   ASSERT_NEAR(intersection2[1], um2::sqrt(static_cast<Float>(2)), eps);
 
   auto const ray3 =
       um2::Ray<2>(um2::Point2(half, half * 3), um2::Point2(1, 1).normalized());
-  auto const intersection3 = um2::intersect(ray3, box);
+  auto const intersection3 = box.intersect(ray3);
   ASSERT_NEAR(intersection3[0], static_cast<Float>(0), eps);
   ASSERT_NEAR(intersection3[1], um2::sqrt(static_cast<Float>(2)) / 2, eps);
+
+  auto const inv_dir = ray3.inverseDirection();
+  auto const intersection4 = box.intersect(ray3, inv_dir);
+  ASSERT_NEAR(intersection4[0], static_cast<Float>(0), eps);
+  ASSERT_NEAR(intersection4[1], um2::sqrt(static_cast<Float>(2)) / 2, eps);
 }
 
 // NOLINTEND(cert-dcl03-c,misc-static-assert)

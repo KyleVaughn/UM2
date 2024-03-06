@@ -59,7 +59,7 @@ TEST_CASE(modular_ray_params)
   // The first ray on the x-axis in box00 should become the first ray on the
   // y-axis of box10
   auto const r00 = ray_params[0].getRay(0);
-  auto const intersection0 = um2::intersect(r00, box00);
+  auto const intersection0 = box00.intersect(r00);
   auto const p1 = r00(intersection0[1]);
   auto const r10 = ray_params[1].getRay(nx);
   ASSERT(um2::isApprox<2>(p1, r10.origin()));

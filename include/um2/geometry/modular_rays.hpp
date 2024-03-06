@@ -26,8 +26,8 @@ class ModularRayParams
 
   AxisAlignedBox2 _box;
   Vec2I _num_rays;   // Number of rays spawned on the box's x and y edges
-  Point2 _spacing;   // Spacing between rays in x and y
-  Point2 _direction; // Direction of rays
+  Vec2F _spacing;   // Spacing between rays in x and y
+  Vec2F _direction; // Direction of rays
 
 public:
   //============================================================================
@@ -57,10 +57,10 @@ public:
   getNumYRays() const noexcept -> Int;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getSpacing() const noexcept -> Point2;
+  getSpacing() const noexcept -> Vec2F;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getDirection() const noexcept -> Point2;
+  getDirection() const noexcept -> Vec2F;
 };
 
 //==============================================================================
@@ -83,8 +83,8 @@ HOSTDEV constexpr ModularRayParams::ModularRayParams(Float const a, Float const 
   auto const h = box.height();
 
   // Number of rays in the x and y directions
-  Point2 const num_rays_t(um2::ceil(um2::abs(w * um2::sin(a) / s)),
-                           um2::ceil(um2::abs(h * um2::cos(a) / s)));
+  Vec2F const num_rays_t(um2::ceil(um2::abs(w * um2::sin(a) / s)),
+                         um2::ceil(um2::abs(h * um2::cos(a) / s)));
 
   _num_rays[0] = static_cast<Int>(num_rays_t[0]);
   _num_rays[1] = static_cast<Int>(num_rays_t[1]);
@@ -175,13 +175,13 @@ ModularRayParams::getNumYRays() const noexcept -> Int
 }
 
 HOSTDEV constexpr auto
-ModularRayParams::getSpacing() const noexcept -> Point2
+ModularRayParams::getSpacing() const noexcept -> Vec2F
 {
   return _spacing;
 }
 
 HOSTDEV constexpr auto
-ModularRayParams::getDirection() const noexcept -> Point2
+ModularRayParams::getDirection() const noexcept -> Vec2F
 {
   return _direction;
 }

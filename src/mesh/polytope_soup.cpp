@@ -1,7 +1,7 @@
 #include <um2/mesh/polytope_soup.hpp>
 
 #include <um2/common/log.hpp>
-#include <um2/common/sort.hpp>
+#include <um2/common/permutation.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/morton_sort_points.hpp>
 #include <um2/geometry/point.hpp>
@@ -472,7 +472,7 @@ PolytopeSoup::mortonSortElements()
   // inv_perm[old_index] = new_index
   // inv_perm[perm[new_index]] = new_index
   Vector<Int> inv_perm(num_elems);
-  invertPermutation(perm, inv_perm);
+  invertPermutation(perm.cbegin(), perm.cend(), inv_perm.begin());
 
   // Sort the element_types according to the permutation vector.
   applyPermutation(_element_types.begin(), _element_types.end(), perm.cbegin());
@@ -531,7 +531,7 @@ PolytopeSoup::mortonSortVertices()
   // inv_perm[old_index] = new_index
   // inv_perm[perm[new_index]] = new_index
   Vector<Int> inv_perm(num_verts);
-  invertPermutation(perm, inv_perm);
+  invertPermutation(perm.cbegin(), perm.cend(), inv_perm.begin());
 
   // Sort the vertices according to the permutation vector.
   applyPermutation(_vertices.begin(), _vertices.end(), perm.cbegin());

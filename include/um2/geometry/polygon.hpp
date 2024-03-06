@@ -22,6 +22,9 @@ namespace um2
 template <Int P, Int N, Int D>
 class Polytope<2, P, N, D> // Polygon<P, N, D>
 {
+  static_assert((P == 1 && N == 3) || (P == 1 && N == 4) || (P == 2 && N == 6) || (P == 2 && N == 8),
+                "Only triangles, quads, quadratic triangles, and quadratic quads are supported.");
+  static_assert(1 < D && D <= 3, "Only 2D, and 3D polygons are supported.");
 
 public:
   using Vertex = Point<D>;
@@ -417,9 +420,9 @@ Polygon<P, N, D>::getEdge(Int i) const noexcept -> Edge
 PURE HOSTDEV constexpr auto
 contains(Triangle2 const & tri, Point2 const & p) noexcept -> bool
 {
-  um2::Vec2<Float> const a = tri[1] - tri[0];
-  um2::Vec2<Float> const b = tri[2] - tri[0];
-  um2::Vec2<Float> const c = p - tri[0];
+  Vec2F const a = tri[1] - tri[0];
+  Vec2F const b = tri[2] - tri[0];
+  Vec2F const c = p - tri[0];
   Float const invdet_ab = 1 / a.cross(b);
   Float const r = c.cross(b) * invdet_ab;
   Float const s = a.cross(c) * invdet_ab;
@@ -466,8 +469,8 @@ Polygon<P, N, D>::contains(Point2 const & p) const noexcept -> bool requires(D =
 PURE HOSTDEV constexpr auto
 area(Triangle2 const & tri) noexcept -> Float
 {
-  Vec2<Float> const v10 = tri[1] - tri[0];
-  Vec2<Float> const v20 = tri[2] - tri[0];
+  Vec2F const v10 = tri[1] - tri[0];
+  Vec2F const v20 = tri[2] - tri[0];
   return v10.cross(v20) / 2; // this is the signed area
 }
 
@@ -484,8 +487,8 @@ area(Quadrilateral2 const & q) noexcept -> Float
 {
   ASSERT(isApproxConvex(q));
   // (v2 - v0).cross(v3 - v1) / 2
-  Vec2<Float> const v20 = q[2] - q[0];
-  Vec2<Float> const v31 = q[3] - q[1];
+  Vec2F const v20 = q[2] - q[0];
+  Vec2F const v31 = q[3] - q[1];
   return v20.cross(v31) / 2;
 }
 
@@ -574,9 +577,9 @@ centroid(Quadrilateral2 const & quad) noexcept -> Point2
   // If the quadrilateral is not convex, then we need to choose the correct
   // two triangles to decompose the quadrilateral into. If the quadrilateral
   // is convex, any two triangles will do.
-  Vec2<Float> const v10 = quad[1] - quad[0];
-  Vec2<Float> const v20 = quad[2] - quad[0];
-  Vec2<Float> const v30 = quad[3] - quad[0];
+  Vec2F const v10 = quad[1] - quad[0];
+  Vec2F const v20 = quad[2] - quad[0];
+  Vec2F const v30 = quad[3] - quad[0];
   // Compute the area of each triangle
   Float const a1 = v10.cross(v20);
   Float const a2 = v20.cross(v30);
@@ -707,7 +710,7 @@ intersect(PlanarQuadraticPolygon<N> const & p, Ray2 const & ray) noexcept -> Vec
 {
   Vec<N, Float> result;
   for (Int i = 0; i < p.numEdges(); ++i) {
-    Vec2<Float> const v = intersect(ray, p.getEdge(i));
+    Vec2F const v = intersect(ray, p.getEdge(i));
     result[2 * i] = v[0];
     result[2 * i + 1] = v[1];
   }
@@ -791,7 +794,7 @@ meanChordLength(PlanarQuadraticPolygon<N> const & p) noexcept -> Float
   // return total_chord_length / total_chords
 
   // Parameters
-  Int constexpr num_angles = 128; // Angles γ ∈ (0, π).
+  Int constexpr num_angles = 64; // Angles γ ∈ (0, π).
   Int constexpr rays_per_longest_edge = 1000;
 
   Int total_chords = 0;
@@ -802,6 +805,8 @@ meanChordLength(PlanarQuadraticPolygon<N> const & p) noexcept -> Float
   Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
   // For each angle
   for (Int ia = 0; ia < num_angles; ++ia) {
+    // Try to avoid floating point error by accumulating the chord length locally
+    Float local_accum = 0;
     Float const angle = pi_deg * static_cast<Float>(2 * ia + 1);
     // Compute modular ray parameters
     ModularRayParams const params(angle, spacing, aabb);
@@ -816,11 +821,12 @@ meanChordLength(PlanarQuadraticPolygon<N> const & p) noexcept -> Float
         if (r1 < um2::inf_distance / 10) {
           ASSERT(r1 - intersections[j] < um2::inf_distance / 100);
           ASSERT(r1 - intersections[j] > 0);
-          total_length += r1 - intersections[j];
+          local_accum += r1 - intersections[j];
           total_chords += 1;
         }
       }
     }
+    total_length += local_accum;
   }
   return total_length / static_cast<Float>(total_chords);
 }
