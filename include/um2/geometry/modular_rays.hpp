@@ -14,7 +14,7 @@
 //
 // Note that for a target azimuthal angle γ ∈ (0, π) and ray spacing s, the
 // axis-aligned box (ray tracing module) will likely not be the necessary size
-// to produce cyclic rays at exactly the target angle or spacing. Intnstead, an
+// to produce cyclic rays at exactly the target angle or spacing. Instead, an
 // effective angle and spacing are computed to ensure that the rays are cyclic.
 
 namespace um2
@@ -25,7 +25,7 @@ class ModularRayParams
 {
 
   AxisAlignedBox2 _box;
-  Vec2<Int> _num_rays;  // Number of rays spawned on the box's x and y edges
+  Vec2I _num_rays;   // Number of rays spawned on the box's x and y edges
   Point2 _spacing;   // Spacing between rays in x and y
   Point2 _direction; // Direction of rays
 

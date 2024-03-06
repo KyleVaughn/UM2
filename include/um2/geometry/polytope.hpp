@@ -26,7 +26,6 @@ template <Int K, Int P, Int N, Int D>
 class Polytope
 {
   static_assert(K > 0 && K <= 3, "Polytope dimension must be 1, 2, or 3");
-  Point<D> _v[N];
 };
 
 //==============================================================================
@@ -124,7 +123,7 @@ using QuadraticTetrahedron = QuadraticPolyhedron<10, 3>;
 using QuadraticHexahedron = QuadraticPolyhedron<20, 3>;
 
 //==============================================================================
-// Methods
+// Functions
 //==============================================================================
 
 // The bounding box of any linear polytope is the bounding box of its vertices.

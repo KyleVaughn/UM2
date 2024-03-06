@@ -221,6 +221,9 @@ using Vec3 = Vec<3, T>;
 template <class T>
 using Vec4 = Vec<4, T>;
 
+using Vec2I = Vec2<Int>;
+using Vec2F = Vec3<Float>;
+
 using Vec2d = Vec2<double>;
 using Vec3d = Vec3<double>;
 

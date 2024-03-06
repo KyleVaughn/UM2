@@ -14,13 +14,11 @@
 //  - colorize messages based on their verbosity level
 //  - exit the program after an error is logged (or not)
 //
-// The logger can be configured at compile time by defining the MIN_LOG_LEVEL macro.
-// The logger is not thread-safe.
-//
-// For developers:
-// The logger is just a fixed-size buffer that is filled with the message and then 
-// printed. The message arguments are converted using the toBuffer function, which
-// is a template that can be specialized for different types.
+// The logger:
+// - can be configured at compile time by defining the MIN_LOG_LEVEL macro.
+// - is not thread-safe.
+// - is just a fixed-size buffer that is filled with the message and then 
+//    printed. The message arguments are converted using the toBuffer function.
 
 namespace um2::log
 {

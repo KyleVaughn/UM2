@@ -34,7 +34,7 @@ TEST_CASE(applyPermutation)
 {
   um2::Vector<T> v = {5, 3, 1, 4, 2};
   um2::Vector<Int> const perm = {2, 4, 1, 3, 0};
-  applyPermutation(v, perm);
+  um2::applyPermutation(v.begin(), v.end(), perm.cbegin());
   um2::Vector<T> const expected_v = {1, 2, 3, 4, 5};
   ASSERT(v == expected_v);
 }

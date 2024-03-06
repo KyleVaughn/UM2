@@ -147,7 +147,7 @@ public:
   HOSTDEV constexpr void
   removeLeadingSpaces() noexcept;
 
-  HOSTDEV [[nodiscard]] constexpr auto
+  HOSTDEV constexpr auto
   getTokenAndShrink(char delim = ' ') noexcept -> StringView;
 
 }; // class StringView
@@ -399,7 +399,7 @@ StringView::removeLeadingSpaces() noexcept
   }
 }
 
-HOSTDEV [[nodiscard]] constexpr auto
+HOSTDEV constexpr auto
 StringView::getTokenAndShrink(char delim) noexcept -> StringView
 {
   // Find the first non-delimiter character

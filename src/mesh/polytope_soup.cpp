@@ -475,7 +475,7 @@ PolytopeSoup::mortonSortElements()
   invertPermutation(perm, inv_perm);
 
   // Sort the element_types according to the permutation vector.
-  applyPermutation(_element_types, perm);
+  applyPermutation(_element_types.begin(), _element_types.end(), perm.cbegin());
 
   // Sort the element connectivity and offsets according to the permutation
   Vector<Int> new_offsets(_element_offsets.size());
@@ -534,7 +534,7 @@ PolytopeSoup::mortonSortVertices()
   invertPermutation(perm, inv_perm);
 
   // Sort the vertices according to the permutation vector.
-  applyPermutation(_vertices, perm);
+  applyPermutation(_vertices.begin(), _vertices.end(), perm.cbegin());
 
   // Map the old vertex indices to the new vertex indices.
   // From: _element_conn[i] = old_index
@@ -590,11 +590,11 @@ PolytopeSoup::sortElsets()
     sortPermutation(elset_ids.begin() + elset_offsets[i],
                     elset_ids.begin() + elset_offsets[i + 1], perm.begin());
     applyPermutation(elset_ids.begin() + elset_offsets[i],
-                     elset_ids.begin() + elset_offsets[i + 1], perm.begin());
+                     elset_ids.begin() + elset_offsets[i + 1], perm.cbegin());
     // Move the old elset data to the new elset data
     elset_data[i] = um2::move(_elset_data[iold]);
     if (!elset_data[i].empty()) {
-      applyPermutation(elset_data[i], perm);
+      applyPermutation(elset_data[i].begin(), elset_data[i].end(), perm.cbegin());
     }
     offset += len;
   }
@@ -897,6 +897,7 @@ abaqusParseNodes(PolytopeSoup & soup, std::ifstream & file, char * const line,
     ASSERT(end != nullptr);
     end = nullptr;
 
+    // y
     token = line_view.getTokenAndShrink(',');
     ASSERT(!token.empty());
     Float const y = strto<Float>(token.data(), &end);
@@ -1063,20 +1064,21 @@ readAbaqusFile(String const & filename, PolytopeSoup & soup)
   // id, id, id, id, id, ...
   // ...
   //
-  // Additionally, there may be comments which start with a '*'.
+  // Additionally, there may be comments which start with "**".
 
   // Get the first line
   file.getline(line, max_line_length);
   StringView line_view(line); 
 
-  // Only get the next line if it does not start with *NODE, *ELEMENT, or *ELSET
   bool get_next_line = false;
   while (file.peek() != EOF) {
+    // Only get the next line if it does not start with *NODE, *ELEMENT, or *ELSET
     if (get_next_line) {
       file.getline(line, max_line_length);
       line_view = StringView(line);
     }
     get_next_line = true;
+    // Unsure if th
     while (line_view.starts_with("*NODE")) {
       line_view = abaqusParseNodes(soup, file, line, max_line_length);
       get_next_line = false;
@@ -1098,6 +1100,116 @@ readAbaqusFile(String const & filename, PolytopeSoup & soup)
   file.close();
   LOG_INFO("Finished reading Abaqus file: ", filename);
 } // readAbaqusFile
+
+//=============================================================================
+// IO for VTK files
+//=============================================================================
+
+//static auto 
+//vtkParseUnstructuredGrid(PolytopeSoup & soup, std::ifstream & file, char * const line, 
+//    uint64_t const max_line_length) -> StringView 
+//{
+////  // line starts with "*NODE"
+////  auto const smax_line_length = static_cast<int64_t>(max_line_length);
+////  while (file.getline(line, smax_line_length) && line[0] != '*') {
+////    StringView line_view(line);
+////    // Format: node_id, x, y, z
+////    // Skip ID
+////    StringView token = line_view.getTokenAndShrink(',');
+////    ASSERT(!token.empty());
+////
+////    char * end = nullptr;
+////
+////    // x
+////    token = line_view.getTokenAndShrink(',');
+////    ASSERT(!token.empty());
+////    Float const x = strto<Float>(token.data(), &end);
+////    ASSERT(end != nullptr);
+////    end = nullptr;
+////
+////    // y
+////    token = line_view.getTokenAndShrink(',');
+////    ASSERT(!token.empty());
+////    Float const y = strto<Float>(token.data(), &end);
+////    ASSERT(end != nullptr);
+////    end = nullptr;
+////
+////    // Only final token left of the form " zzzz\n"
+////    Float const z = strto<Float>(line_view.data(), &end);
+////    ASSERT(end != nullptr);
+////    soup.addVertex(x, y, z);
+////  }
+////  if (file.peek() == EOF) {
+////    return {};
+////  } 
+////  return {line};
+//} // vtkParseUnstructuredGrid 
+
+static void
+readVTKFile(String const & filename, PolytopeSoup & soup)
+{
+  LOG_INFO("Reading VTK file: ", filename);
+
+  uint64_t constexpr max_line_length = 1024;
+  char line[max_line_length];
+
+  // Open file
+  std::ifstream file(filename.data());
+  if (!file.is_open()) {
+    LOG_ERROR("Could not open file: ", filename);
+    return;
+  }
+
+  // General structure of a VTK file:
+  // # vtk DataFile Version 3.0
+  // header
+  // ASCII | BINARY (only support ASCII)
+  // DATASET data_set_type (only support UNSTRUCTURED_GRID)
+  // ...
+  // POINT_DATA num_points
+  // ...
+  // CELL_DATA num_cells
+  // ...
+
+  // Get the first line and check the version
+  file.getline(line, max_line_length);
+  StringView line_view(line); 
+  if (!line_view.starts_with("# vtk DataFile Version 3.0")) {
+    LOG_ERROR("Only VTK files of version 3.0 are supported");
+    return;
+  }
+
+  // Skip the the header
+  file.getline(line, max_line_length);
+
+  // Get the file format
+  file.getline(line, max_line_length);
+  line_view = StringView(line);
+  if (!line_view.starts_with("ASCII")) {
+    LOG_ERROR("Only ASCII VTK files are supported");
+    return;
+  }
+
+  // Get the dataset type
+  file.getline(line, max_line_length);
+  line_view = StringView(line);
+  ASSERT(line_view.starts_with("DATASET"));
+  // getTokenAndShrink() will remove "DATASET " from line_view
+  line_view.getTokenAndShrink();
+  if (line_view.starts_with("UNSTRUCTURED_GRID")) {
+//    line_view = vtkParseUnstructuredGrid(soup, file, line, max_line_length);
+  } else {
+    LOG_ERROR("Unsupported VTK dataset type: ", line_view);
+    return;
+  }
+
+  if (soup.numElsets() > 0) {
+    soup.sortElsets();
+  }
+ 
+  file.close();
+  LOG_INFO("Finished reading VTK file: ", filename);
+} // readVTKFile
 
 ////==============================================================================
 //// IO for XDMFloat files
@@ -1904,6 +2016,8 @@ PolytopeSoup::read(String const & filename)
 {
   if (filename.ends_with(".inp")) {
     readAbaqusFile(filename, *this);
+  } else if (filename.ends_with(".vtk")) {
+    readVTKFile(filename, *this);
 //  } else if (filename.ends_with(".xdmf")) {
 //    readXDMFFile(filename, *this);
   } else {

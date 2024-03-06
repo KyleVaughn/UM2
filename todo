@@ -1,10 +1,17 @@
-look ath the end of getsubmesh with the intersection and beyond.
-Just allocate a buffer of size equal to the elset itself (upper vound)
-then do the set intersection, keeping track of size.
+methods
+Harden the mesh IO, testing with files created from different software
+
+VTK output with colors
+
+polytope soup with data on whole mesh?
+
+Fix MPACT VTK IO
+  POINT_DATA 1 littered everywhere
+
+
+VTK IO
 
 operator Type() -> Convery to type
-
-applyPermutation
 
 is_constexpr -> builtin
 constexpr tests
@@ -17,10 +24,6 @@ string functions
 string tests
 
 string init can be simplified to exclude short and long branches
-
-strtok for tokens
-
-eliminate sto
 
 check nolints, prad
 
@@ -54,9 +57,6 @@ Method to function
 investigate valgrind release build -> UPGRADE to 3.22
 -> PURE, ASSUME
 
-eliminate sto in favor of C functions
-Typically preceded by a substr, which shouldn't alloc
-
 Add scattering matrix to Xsec
 Don't store redundant info? Total
   Optimize to be lower triangular when build without upscatter?
@@ -66,8 +66,6 @@ Move the picture of the model to above the code in the tutorial
 Resolve casts in gmsh API
 
 Add overlap check to face vertex mesh validate routine
-
-Narrowing uint32_t cast
 
 Modify the Gmsh functions so that they are templated where necessary
 

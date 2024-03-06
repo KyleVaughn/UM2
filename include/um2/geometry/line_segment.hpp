@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/geometry/polytope.hpp>
+#include <um2/geometry/dion.hpp>
 #include <um2/geometry/ray.hpp>
 #include <um2/math/mat.hpp>
 #include <um2/stdlib/algorithm/clamp.hpp>

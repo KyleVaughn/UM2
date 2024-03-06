@@ -2,7 +2,6 @@
 
 #include <um2/geometry/point.hpp>
 #include <um2/geometry/ray.hpp>
-//#include <um2/stdlib/numeric.hpp>
 #include <um2/stdlib/vector.hpp>
 
 //==============================================================================
