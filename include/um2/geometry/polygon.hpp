@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/common/sort.hpp> // insertionSort
+#include <um2/common/insertion_sort.hpp>
 #include <um2/geometry/dion.hpp>
 #include <um2/geometry/modular_rays.hpp>
 
