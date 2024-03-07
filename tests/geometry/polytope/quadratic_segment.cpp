@@ -1,4 +1,7 @@
-#include <um2/geometry/dion.hpp>
+#include <um2/geometry/quadratic_segment.hpp>
+#include <um2/geometry/modular_rays.hpp>
+
+#include <iostream>
 
 #include "../../test_macros.hpp"
 
@@ -134,7 +137,7 @@ TEST_CASE(interpolate)
     um2::Point<D> p_ref = um2::Vec<D, Float>::zero();
     p_ref[0] = 2 * r;
     p_ref[1] = 4 * r * (1 - r);
-    ASSERT(um2::isApprox(p, p_ref));
+    ASSERT(p.isApprox(p_ref));
   }
 }
 
@@ -152,15 +155,15 @@ TEST_CASE(jacobian)
   um2::Vec<D, Float> j1 = seg.jacobian(1);
   um2::Vec<D, Float> j_ref = um2::Vec<D, Float>::zero();
   j_ref[0] = castIfNot<Float>(2);
-  ASSERT(um2::isApprox(j0, j_ref));
-  ASSERT(um2::isApprox(j12, j_ref));
-  ASSERT(um2::isApprox(j1, j_ref));
+  ASSERT(j0.isApprox(j_ref));
+  ASSERT(j12.isApprox(j_ref));
+  ASSERT(j1.isApprox(j_ref));
 
   um2::QuadraticSegment<D> const seg2 = makeSeg2<D>();
   j0 = seg2.jacobian(0);
   j12 = seg2.jacobian(ahalf);
   j1 = seg2.jacobian(1);
-  ASSERT_NEAR(j0[0], castIfNot<Float>(2), eps);
+  ASSERT_NEAR(j0[0], static_cast<Float>(2), eps);
   ASSERT(j0[1] > 0);
   ASSERT_NEAR(j12[0], castIfNot<Float>(2), eps);
   ASSERT_NEAR(j12[1], castIfNot<Float>(0), eps);
@@ -462,12 +465,12 @@ TEST_CASE(enclosedCentroid)
   um2::QuadraticSegment2 const seg1 = makeSeg1<2>();
   um2::Point2 centroid = enclosedCentroid(seg1);
   um2::Point2 centroid_ref(1, 0);
-  ASSERT(um2::isApprox(centroid, centroid_ref));
+  ASSERT(centroid.isApprox(centroid_ref));
 
   um2::QuadraticSegment2 seg2 = makeSeg2<2>();
   centroid_ref = um2::Point2(castIfNot<Float>(1), castIfNot<Float>(0.4));
   centroid = enclosedCentroid(seg2);
-  ASSERT(um2::isApprox(centroid, centroid_ref));
+  ASSERT(centroid.isApprox(centroid_ref));
   // Rotated 45 degrees, translated -1 in x
   seg2[0][0] = castIfNot<Float>(-1);
   seg2[1][0] = um2::sqrt(castIfNot<Float>(2)) - 1;
@@ -481,7 +484,58 @@ TEST_CASE(enclosedCentroid)
   um2::Mat2x2<Float> const R(u1, u2);
   centroid_ref = R * centroid_ref + seg2[0];
   centroid = enclosedCentroid(seg2);
-  ASSERT(um2::isApprox(centroid, centroid_ref));
+  ASSERT(centroid.isApprox(centroid_ref));
+}
+
+HOSTDEV
+void
+testEdgeForIntersections(um2::QuadraticSegment2 const & q)
+{
+  // Parameters
+  Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
+  Int constexpr rays_per_longest_edge = 100;
+
+  auto const aabb = q.boundingBox();
+  auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
+  auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
+  Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
+  // For each angle
+  for (Int ia = 0; ia < num_angles; ++ia) {
+    Float const angle = pi_deg * static_cast<Float>(2 * ia + 1);
+    // Compute modular ray parameters
+    um2::ModularRayParams const params(angle, spacing, aabb);
+    Int const num_rays = params.getTotalNumRays();
+    // For each ray
+    for (Int i = 0; i < num_rays; ++i) {
+      auto const ray = params.getRay(i);
+      auto intersections = q.intersect(ray);
+      for (Int j = 0; j < 2; ++j) {
+        Float const r = intersections[j];
+        if (r < um2::inf_distance / 10) {
+          um2::Point2 const p = q(r);
+          Float const d = q.distanceTo(p);
+          if (d > 10 * um2::eps_distance) {
+            std::cerr << "d = " << d << std::endl;
+            std::cerr << "r = " << r << std::endl;
+            std::cerr << "p = (" << p[0] << ", " << p[1] << ")" << std::endl;
+          }
+          ASSERT(d < 10 * um2::eps_distance);
+        }
+      }
+    }
+  }
+}
+
+HOSTDEV
+TEST_CASE(intersect)
+{
+  testEdgeForIntersections(makeSeg2<2>());
+  testEdgeForIntersections(makeSeg3<2>());
+  testEdgeForIntersections(makeSeg4<2>());
+  testEdgeForIntersections(makeSeg5<2>());
+  testEdgeForIntersections(makeSeg6<2>());
+  testEdgeForIntersections(makeSeg7<2>());
+  testEdgeForIntersections(makeSeg8<2>());
 }
 
 #if UM2_USE_CUDA
@@ -518,6 +572,7 @@ TEST_SUITE(QuadraticSegment)
     TEST_HOSTDEV(pointClosestTo);
     TEST_HOSTDEV(enclosedArea);
     TEST_HOSTDEV(enclosedCentroid);
+    TEST_HOSTDEV(intersect);
   }
 }
 

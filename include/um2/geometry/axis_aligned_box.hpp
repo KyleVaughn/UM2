@@ -335,8 +335,8 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D>::isApprox(AxisAlignedBox<D> const & other) const noexcept -> bool
 {
-  bool const mins_approx = um2::isApprox<D>(_min, other._min);
-  bool const maxs_approx = um2::isApprox<D>(_max, other._max);
+  bool const mins_approx = _min.isApprox(other._min);
+  bool const maxs_approx = _max.isApprox(other._max);
   return mins_approx && maxs_approx;
 }
 

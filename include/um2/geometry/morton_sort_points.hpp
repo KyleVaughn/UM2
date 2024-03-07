@@ -2,6 +2,7 @@
 
 #include <um2/geometry/point.hpp>
 #include <um2/math/morton.hpp>
+#include <um2/stdlib/numeric.hpp>
 
 #include <algorithm>
 
@@ -27,17 +28,29 @@ using MortonCode = uint64_t;
 using MortonCode = uint32_t;
 #endif
 
-PURE HOSTDEV auto
-mortonEncode(Point2 const & p) noexcept -> MortonCode;
+PURE HOSTDEV inline auto
+mortonEncode(Point2 p) noexcept -> MortonCode
+{
+  return mortonEncode<MortonCode, Float>(p[0], p[1]);
+}
 
-PURE HOSTDEV auto
-mortonEncode(Point3 const & p) noexcept -> MortonCode;
+PURE HOSTDEV inline auto
+mortonEncode(Point3 const & p) noexcept -> MortonCode
+{
+  return mortonEncode<MortonCode, Float>(p[0], p[1], p[2]);
+}
 
-HOSTDEV void
-mortonDecode(MortonCode morton, Point2 & p) noexcept;
+HOSTDEV inline void
+mortonDecode(MortonCode morton, Point2 & p) noexcept
+{
+  mortonDecode(morton, p[0], p[1]);
+}
 
-HOSTDEV void
-mortonDecode(MortonCode morton, Point3 & p) noexcept;
+HOSTDEV inline void
+mortonDecode(MortonCode morton, Point3 & p) noexcept
+{
+  mortonDecode(morton, p[0], p[1], p[2]);
+}
 
 template <Int D>
 PURE HOSTDEV auto
@@ -60,12 +73,25 @@ mortonSort(Point<D> * const begin, Point<D> * const end) noexcept
 // not modified. scale is used to scale the points to the unit square/cube
 // before sorting. If the argument is not provided, the points are assumed to
 // be in the unit square/cube.
-void
-mortonSortPermutation(Point2 const * begin, Point2 const * end, Int * perm_begin,
-                      Vec2F const & scale = Vec2F(0, 0)) noexcept;
 
+template <Int D>
 void
-mortonSortPermutation(Point3 const * begin, Point3 const * end, Int * perm_begin,
-                      Vec3F const & scale = Vec3F(0, 0, 0)) noexcept;
-
+mortonSortPermutation(Point<D> const * begin,
+                      Point<D> const * end,
+                      Int * perm_begin,
+                      Vec<D, Float> const & scale = Vec<D, Float>::zero()) noexcept
+{
+  auto const n = end - begin;
+  um2::iota(perm_begin, perm_begin + n, 0);
+  bool const has_scale = scale.squaredNorm() > eps_distance2;
+  if (has_scale) {
+    std::sort(perm_begin, perm_begin + n, [&](Int const i, Int const j) {
+      return mortonEncode(begin[i] * scale) < mortonEncode(begin[j] * scale);
+    });
+  } else {
+    std::sort(perm_begin, perm_begin + n, [&](Int const i, Int const j) {
+      return mortonEncode(begin[i]) < mortonEncode(begin[j]);
+    });
+  }
+}
 } // namespace um2

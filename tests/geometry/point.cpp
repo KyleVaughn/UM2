@@ -28,20 +28,6 @@ makep2() -> um2::Point<D>
 
 template <Int D>
 HOSTDEV
-TEST_CASE(distance)
-{
-  um2::Point<D> const p1 = makep1<D>();
-  um2::Point<D> const p2 = makep2<D>();
-  Float const d2 = p1.squaredDistanceTo(p2);
-  ASSERT_NEAR(d2, D, eps);
-
-  Float d = p1.distanceTo(p2);
-  d *= d;
-  ASSERT_NEAR(d, static_cast<Float>(D), eps);
-}
-
-template <Int D>
-HOSTDEV
 TEST_CASE(midpoint)
 {
   um2::Point<D> const p1 = makep1<D>();
@@ -51,25 +37,6 @@ TEST_CASE(midpoint)
   for (Int i = 0; i < D; ++i) {
     ASSERT_NEAR(m[i], static_cast<Float>(i) + three_half, eps);
   }
-}
-
-template <Int D>
-HOSTDEV
-TEST_CASE(isApprox)
-{
-  um2::Point<D> const p1 = makep1<D>();
-  um2::Point<D> p2 = makep2<D>();
-  // Trivial equality
-  ASSERT(um2::isApprox(p1, p1));
-  // Trivial inequality
-  ASSERT(!um2::isApprox(p1, p2));
-  // Non-trivial equality
-  p2 = p1;
-  p2[0] += um2::eps_distance / 2;
-  ASSERT(um2::isApprox(p1, p2));
-  // Non-trivial inequality
-  p2[0] += um2::eps_distance;
-  ASSERT(!um2::isApprox(p1, p2));
 }
 
 HOSTDEV
@@ -108,13 +75,7 @@ TEST_CASE(areApproxCCW)
 
 #if UM2_USE_CUDA
 template <Int D>
-MAKE_CUDA_KERNEL(distance, D);
-
-template <Int D>
 MAKE_CUDA_KERNEL(midpoint, D);
-
-template <Int D>
-MAKE_CUDA_KERNEL(isApprox, D);
 
 MAKE_CUDA_KERNEL(areCCW);
 
@@ -124,9 +85,7 @@ MAKE_CUDA_KERNEL(areApproxCCW);
 template <Int D>
 TEST_SUITE(point)
 {
-  TEST_HOSTDEV(distance, D);
   TEST_HOSTDEV(midpoint, D);
-  TEST_HOSTDEV(isApprox, D);
   if constexpr (D == 2) {
     TEST_HOSTDEV(areCCW);
     TEST_HOSTDEV(areApproxCCW);

@@ -1,3 +1,7 @@
+intersection for quadratic segment
+-> interpolate the ray to get p_ray
+-> get the point closest to the segment and check that p_ray.isApprox(p_closest)
+
 mean chord length does not compute gap right
 It must do r0 --- r1  skip... r1 --- r2. But we must deal with the case where
 r0 is approx r1. If so, we skip. BUT) this could lead to counting a big gap area on
@@ -27,8 +31,6 @@ dion free functions forward declare
 refactor dion routines to be prettier/better var names?
 
 provide intersection functions with additional argument of inverse direction?
-
-q
 
 Check that casts preserve value from float to int
 -> int over 16 million?

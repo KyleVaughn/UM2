@@ -16,8 +16,8 @@ TEST_CASE(constructor_origin_direction)
   direction[1] = static_cast<Float>(1);
 
   um2::Ray<D> const ray(origin, direction);
-  ASSERT(um2::isApprox<D>(ray.origin(), origin));
-  ASSERT(um2::isApprox<D>(ray.direction(), direction));
+  ASSERT(ray.origin().isApprox(origin));
+  ASSERT(ray.direction().isApprox(direction));
 }
 
 //=============================================================================
@@ -34,8 +34,8 @@ TEST_CASE(interpolate)
   direction[1] = static_cast<Float>(1);
 
   um2::Ray<D> const ray(origin, direction);
-  ASSERT(um2::isApprox<D>(ray(static_cast<Float>(0)), origin));
-  ASSERT(um2::isApprox<D>(ray(static_cast<Float>(1)), origin + direction));
+  ASSERT(ray(static_cast<Float>(0)).isApprox(origin));
+  ASSERT(ray(static_cast<Float>(1)).isApprox(origin + direction));
 }
 
 #if UM2_USE_CUDA

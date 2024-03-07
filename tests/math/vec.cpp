@@ -13,11 +13,11 @@ makeVec() -> um2::Vec<D, T>
   return v;
 }
 
-static consteval auto     
-isPowerOf2(Int x) noexcept -> bool         
-{                                          
-  return (x & (x - 1)) == 0;               
-};                                         
+static consteval auto
+isPowerOf2(Int x) noexcept -> bool
+{
+  return (x & (x - 1)) == 0;
+};
 
 template <Int D, typename T>
 HOSTDEV
@@ -32,7 +32,7 @@ TEST_CASE(isSIMD)
 #endif
   } else {
     ASSERT(!v.isSIMD());
-  } 
+  }
 }
 
 template <Int D, typename T>
@@ -314,6 +314,25 @@ TEST_CASE(cross)
   }
 }
 
+template <Int D>
+HOSTDEV
+TEST_CASE(isApprox)
+{
+  um2::Vec<D, Float> const v1 = um2::Vec<D, Float>::zero();
+  um2::Vec<D, Float> v2 = um2::Vec<D, Float>::zero() + 1;
+  // Trivial equality
+  ASSERT(v1.isApprox(v1));
+  // Trivial inequality
+  ASSERT(!v1.isApprox(v2));
+  // Non-trivial equality
+  v2 = v1;
+  v2[0] += um2::eps_distance / 2;
+  ASSERT(v1.isApprox(v2));
+  // Non-trivial inequality
+  v2[0] += um2::eps_distance;
+  ASSERT(!v1.isApprox(v2));
+}
+
 template <Int D, typename T>
 HOSTDEV
 TEST_CASE(relational)
@@ -557,6 +576,7 @@ TEST_SUITE(vec)
     TEST_HOSTDEV(norm, D, T);
     TEST_HOSTDEV(normalized, D, T);
     TEST_HOSTDEV(cross, D, T);
+    TEST_HOSTDEV(isApprox, D);
   }
   if constexpr (std::integral<T>) {
     TEST_HOSTDEV(relational, D, T);

@@ -5,8 +5,35 @@
 #include <um2/stdlib/algorithm/max.hpp>
 #include <um2/stdlib/algorithm/min.hpp>
 #include <um2/stdlib/math/roots.hpp>
+#include <um2/common/cast_if_not.hpp>
 
-#include <concepts> // std::integral, std::same_as
+#include <concepts>
+
+// We alias Vec<D, Float> to Point<D> for D-dimensional points. Hence, we need to
+// define some constants for points in this file.
+
+//==============================================================================    
+// Constants    
+//==============================================================================    
+// eps_distance:    
+//   Distance between two points, below which they are considered to be equal.    
+// eps_distance2:    
+//   Squared distance between two points, below which they are considered to be    
+//   equal.    
+// inf_distance:    
+//  Distance between two points, above which they are considered to be
+//  infinitely far apart. Typically used for invalid points and values.
+//
+// NOTE: fast-math assumes no infinities, so we need inf_distance to be finite.
+
+namespace um2
+{
+
+inline constexpr Float eps_distance = castIfNot<Float>(1e-6); // 0.1 micron
+inline constexpr Float eps_distance2 = castIfNot<Float>(1e-12);
+inline constexpr Float inf_distance = castIfNot<Float>(1e8); // 1000 km
+
+} // namespace um2
 
 //==============================================================================
 // VEC
@@ -205,6 +232,12 @@ public:
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   distanceTo(Vec<D, T> const & v) const noexcept -> T;
+
+  // eps2 is the squared distance below which two points are considered to be
+  // equal.
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  isApprox(Vec<D, T> const & v, T const & eps2 = eps_distance2) const noexcept -> bool
+  requires(std::is_floating_point_v<T>);
 
 }; // class Vec
 
@@ -704,6 +737,14 @@ Vec<D, T>::distanceTo(Vec<D, T> const & v) const noexcept -> T
 {
   static_assert(std::is_floating_point_v<T>);
   return um2::sqrt(squaredDistanceTo(v));
+}
+
+template <Int D, class T>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+Vec<D, T>::isApprox(Vec<D, T> const & v, T const & eps2) const noexcept -> bool
+requires(std::is_floating_point_v<T>)
+{
+  return squaredDistanceTo(v) < eps2; 
 }
 
 //==============================================================================

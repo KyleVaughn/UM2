@@ -1,5 +1,6 @@
-#include <um2/geometry/dion.hpp>
+#include <um2/geometry/line_segment.hpp>
 #include <um2/stdlib/numbers.hpp>
+#include <um2/stdlib/math.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -20,7 +21,7 @@ makeLine() -> um2::LineSegment<D>
 }
 
 //=============================================================================
-// Intnterpolation
+// Interpolation
 //=============================================================================
 
 template <Int D>
@@ -29,12 +30,12 @@ TEST_CASE(interpolate)
 {
   um2::LineSegment<D> line = makeLine<D>();
   um2::Point<D> const p0 = line(0);
-  ASSERT((um2::isApprox<D>(p0, line[0])));
+  ASSERT(p0.isApprox(line[0]));
   um2::Point<D> const p1 = line(1);
-  ASSERT((um2::isApprox<D>(p1, line[1])));
-  um2::Point<D> const p05 = um2::interpolate(line, ahalf);
+  ASSERT(p1.isApprox(line[1]));
+  um2::Point<D> const p05 = line(ahalf);
   um2::Point<D> const mp = um2::midpoint(p0, p1);
-  ASSERT((um2::isApprox(p05, mp)));
+  ASSERT(p05.isApprox(mp));
 }
 
 //=============================================================================
@@ -51,9 +52,9 @@ TEST_CASE(jacobian)
     j_ref[i] = line[1][i] - line[0][i];
   }
   um2::Vec<D, Float> const j0 = line.jacobian(0);
-  um2::Vec<D, Float> const j1 = um2::jacobian(line, 1);
-  ASSERT(um2::isApprox(j0, j_ref));
-  ASSERT(um2::isApprox(j1, j_ref));
+  um2::Vec<D, Float> const j1 = line.jacobian(1);
+  ASSERT(j0.isApprox(j_ref));
+  ASSERT(j1.isApprox(j_ref));
 }
 
 //=============================================================================
@@ -91,7 +92,6 @@ TEST_CASE(length)
   um2::LineSegment<D> line = makeLine<D>();
   Float const len_ref = line[0].distanceTo(line[1]);
   ASSERT_NEAR(line.length(), len_ref, eps);
-  ASSERT_NEAR(um2::length(line), len_ref, eps);
 }
 
 //=============================================================================
@@ -104,11 +104,11 @@ TEST_CASE(boundingBox)
 {
   um2::LineSegment<D> line = makeLine<D>();
   um2::AxisAlignedBox<D> const box = line.boundingBox();
-  ASSERT(um2::isApprox<D>(line[0], box.minima()));
-  ASSERT(um2::isApprox<D>(line[1], box.maxima()));
+  ASSERT(line[0].isApprox(box.minima()));
+  ASSERT(line[1].isApprox(box.maxima()));
   um2::AxisAlignedBox<D> const box2 = um2::boundingBox(line);
-  ASSERT(um2::isApprox<D>(box2.minima(), box.minima()));
-  ASSERT(um2::isApprox<D>(box2.maxima(), box.maxima()));
+  ASSERT(box2.minima().isApprox(box.minima()));
+  ASSERT(box2.maxima().isApprox(box.maxima()));
 }
 
 //=============================================================================
@@ -157,7 +157,7 @@ TEST_CASE(pointClosestTo)
 
   // Repeat for the right end point
   um2::Point<D> p1 = line[1];
-  ASSERT_NEAR(line.pointClosestTo(p1), static_cast<Float>(1), eps);
+  ASSERT_NEAR(line.pointClosestTo(p1), 1, eps);
   p1[0] += static_cast<Float>(1);
   ASSERT_NEAR(line.pointClosestTo(p1), static_cast<Float>(1), eps);
 }
@@ -203,11 +203,11 @@ TEST_CASE(intersect)
 {
   um2::LineSegment2 l(um2::Point2(0, 1), um2::Point2(2, -1));
   um2::Ray2 const ray(um2::Point2(0, -1), um2::normalized(um2::Point2(1, 1)));
-  Float res = um2::intersect(ray, l);
+  Float res = l.intersect(ray);
   ASSERT_NEAR(res, um2::sqrt(static_cast<Float>(2)), eps * 100);
 
   l = um2::LineSegment2(um2::Point2(1, -1), um2::Point2(1, 1));
-  res = um2::intersect(ray, l);
+  res = l.intersect(ray);
   ASSERT_NEAR(res, um2::sqrt(static_cast<Float>(2)), eps * 100);
 }
 

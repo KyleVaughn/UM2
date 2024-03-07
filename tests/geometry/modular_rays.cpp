@@ -52,8 +52,8 @@ TEST_CASE(modular_ray_params)
   for (Int i = 1; i < 4; ++i) {
     ASSERT(ray_params[i].getNumXRays() == nx);
     ASSERT(ray_params[i].getNumYRays() == ny);
-    ASSERT(um2::isApprox<2>(ray_params[i].getSpacing(), ray_params[0].getSpacing()));
-    ASSERT(um2::isApprox<2>(ray_params[i].getDirection(), ray_params[0].getDirection()));
+    ASSERT(ray_params[i].getSpacing().isApprox(ray_params[0].getSpacing()));
+    ASSERT(ray_params[i].getDirection().isApprox(ray_params[0].getDirection()));
   }
 
   // The first ray on the x-axis in box00 should become the first ray on the
@@ -62,12 +62,12 @@ TEST_CASE(modular_ray_params)
   auto const intersection0 = box00.intersect(r00);
   auto const p1 = r00(intersection0[1]);
   auto const r10 = ray_params[1].getRay(nx);
-  ASSERT(um2::isApprox<2>(p1, r10.origin()));
+  ASSERT(p1.isApprox(r10.origin()));
 
   // Check that the complementary angle shares the same ray origin.
   um2::ModularRayParams const params(angles[3], s, boxes[0]);
   auto const ra0 = params.getRay(params.getNumXRays() - 1);
-  ASSERT(um2::isApprox<2>(ra0.origin(), r00.origin()));
+  ASSERT(ra0.origin().isApprox(r00.origin()));
 }
 
 #if UM2_USE_CUDA
