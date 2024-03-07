@@ -1,6 +1,9 @@
 #include <um2/geometry/line_segment.hpp>
 #include <um2/stdlib/numbers.hpp>
 #include <um2/stdlib/math.hpp>
+#include <um2/geometry/modular_rays.hpp>    
+    
+#include <iostream> 
 
 #include "../../test_macros.hpp"
 
@@ -199,6 +202,42 @@ TEST_CASE(distanceTo)
 }
 
 HOSTDEV
+void
+testEdgeForIntersections(um2::LineSegment2 const & l)
+{
+  // Parameters
+  Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
+  Int constexpr rays_per_longest_edge = 100;
+
+  auto const aabb = l.boundingBox();
+  auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
+  auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
+  Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
+  // For each angle
+  for (Int ia = 0; ia < num_angles; ++ia) {
+    Float const angle = pi_deg * static_cast<Float>(2 * ia + 1);
+    // Compute modular ray parameters
+    um2::ModularRayParams const params(angle, spacing, aabb);
+    Int const num_rays = params.getTotalNumRays();
+    // For each ray
+    for (Int i = 0; i < num_rays; ++i) {
+      auto const ray = params.getRay(i);
+      auto const r = l.intersect(ray);
+      if (r < um2::inf_distance / 10) {
+        um2::Point2 const p = ray(r);
+        Float const d = l.distanceTo(p);
+        if (d > 10 * um2::eps_distance) {
+          std::cerr << "d = " << d << std::endl;
+          std::cerr << "r = " << r << std::endl;
+          std::cerr << "p = (" << p[0] << ", " << p[1] << ")" << std::endl;
+        }
+        ASSERT(d < 10 * um2::eps_distance);
+      }
+    }
+  }
+}
+
+HOSTDEV
 TEST_CASE(intersect)
 {
   um2::LineSegment2 l(um2::Point2(0, 1), um2::Point2(2, -1));
@@ -209,6 +248,17 @@ TEST_CASE(intersect)
   l = um2::LineSegment2(um2::Point2(1, -1), um2::Point2(1, 1));
   res = l.intersect(ray);
   ASSERT_NEAR(res, um2::sqrt(static_cast<Float>(2)), eps * 100);
+
+  // Anchor p0 at (0, 0) and rotate p1 around a circle
+  um2::Point2 const p0(0, 0);
+  Float const dang = um2::pi<Float> / 128;
+  Float ang = dang;
+  while (ang < 2 * um2::pi<Float>) {
+    um2::Point2 const p1(um2::cos(ang), um2::sin(ang));
+    um2::LineSegment2 const line(p0, p1);
+    testEdgeForIntersections(line);
+    ang += dang;
+  }
 }
 
 #if UM2_USE_CUDA

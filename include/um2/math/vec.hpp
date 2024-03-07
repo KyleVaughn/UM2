@@ -963,7 +963,7 @@ operator/(Scalar s, Vec<D, T> const & u) noexcept -> Vec<D, T>
 {
   Vec<D, T> result;
   for (Int i = 0; i < D; ++i) {
-    result[i] = s / u[i];
+    result[i] = static_cast<T>(s) / u[i];
   }
   return result;
 }

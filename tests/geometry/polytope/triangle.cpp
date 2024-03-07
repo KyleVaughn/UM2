@@ -1,4 +1,7 @@
-#include <um2/geometry/polygon.hpp>
+#include <um2/geometry/triangle.hpp>
+#include <um2/geometry/modular_rays.hpp>
+
+#include <iostream>
 
 #include "../../test_macros.hpp"
 
@@ -9,11 +12,9 @@ HOSTDEV constexpr auto
 makeTri() -> um2::Triangle<D>
 {
   um2::Triangle<D> this_tri;
-  for (Int i = 0; i < 3; ++i) {
-    for (Int j = 0; j < D; ++j) {
-      this_tri[i][j] = castIfNot<Float>(0);
-    }
-  }
+  this_tri[0] = um2::Point<D>::zero();
+  this_tri[1] = um2::Point<D>::zero();
+  this_tri[2] = um2::Point<D>::zero();
   this_tri[1][0] = castIfNot<Float>(1);
   this_tri[2][1] = castIfNot<Float>(1);
   return this_tri;
@@ -31,9 +32,9 @@ TEST_CASE(interpolate)
   um2::Point<D> const p00 = tri(0, 0);
   um2::Point<D> const p10 = tri(1, 0);
   um2::Point<D> const p01 = tri(0, 1);
-  ASSERT(um2::isApprox(p00, tri[0]));
-  ASSERT(um2::isApprox(p10, tri[1]));
-  ASSERT(um2::isApprox(p01, tri[2]));
+  ASSERT(p00.isApprox(tri[0]));
+  ASSERT(p10.isApprox(tri[1]));
+  ASSERT(p01.isApprox(tri[2]));
 }
 
 //==============================================================================
@@ -75,14 +76,14 @@ TEST_CASE(edge)
 {
   um2::Triangle<D> tri = makeTri<D>();
   um2::LineSegment<D> edge = tri.getEdge(0);
-  ASSERT(um2::isApprox(edge[0], tri[0]));
-  ASSERT(um2::isApprox(edge[1], tri[1]));
+  ASSERT(edge[0].isApprox(tri[0]));
+  ASSERT(edge[1].isApprox(tri[1]));
   edge = tri.getEdge(1);
-  ASSERT(um2::isApprox(edge[0], tri[1]));
-  ASSERT(um2::isApprox(edge[1], tri[2]));
+  ASSERT(edge[0].isApprox(tri[1]));
+  ASSERT(edge[1].isApprox(tri[2]));
   edge = tri.getEdge(2);
-  ASSERT(um2::isApprox(edge[0], tri[2]));
-  ASSERT(um2::isApprox(edge[1], tri[0]));
+  ASSERT(edge[0].isApprox(tri[2]));
+  ASSERT(edge[1].isApprox(tri[0]));
 }
 
 //==============================================================================
@@ -140,7 +141,7 @@ HOSTDEV
 TEST_CASE(centroid)
 {
   um2::Triangle<D> const tri = makeTri<D>();
-  um2::Point<D> c = tri.centroid();
+  um2::Point<D> const c = tri.centroid();
   ASSERT_NEAR(c[0], castIfNot<Float>(1.0 / 3.0), eps);
   ASSERT_NEAR(c[1], castIfNot<Float>(1.0 / 3.0), eps);
 }
@@ -166,14 +167,77 @@ TEST_CASE(boundingBox)
 //==============================================================================
 
 HOSTDEV
-TEST_CASE(isCCW_flipFace)
+TEST_CASE(isCCW_flip)
 {
   um2::Triangle<2> tri = makeTri<2>();
   ASSERT(tri.isCCW());
   um2::swap(tri[1], tri[2]);
   ASSERT(!tri.isCCW());
-  um2::flipFace(tri);
+  tri.flip();
   ASSERT(tri.isCCW());
+}
+
+//==============================================================================
+// intersect
+//=============================================================================
+
+HOSTDEV
+void
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+testTriForIntersections(um2::Triangle<2> const tri)
+{
+  // Parameters
+  Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
+  Int constexpr rays_per_longest_edge = 100;
+
+  auto const aabb = tri.boundingBox();
+  auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
+  auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
+  Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
+  // For each angle
+  for (Int ia = 0; ia < num_angles; ++ia) {
+    Float const angle = pi_deg * static_cast<Float>(2 * ia + 1);
+    // Compute modular ray parameters
+    um2::ModularRayParams const params(angle, spacing, aabb);
+    Int const num_rays = params.getTotalNumRays();
+    // For each ray
+    for (Int i = 0; i < num_rays; ++i) {
+      auto const ray = params.getRay(i);
+      auto const intersections = tri.intersect(ray);
+      // For each intersection coordinate
+      for (auto const & r : intersections) {
+        // If intersection is valid
+        if (r < um2::inf_distance / 10) {
+          um2::Point2 const p = ray(r);
+          // Get the distance to the closest edge
+          Float min_dist = um2::inf_distance;
+          for (Int ie = 0; ie < 3; ++ie) {
+            um2::LineSegment<2> const l = tri.getEdge(ie);
+            Float const d = l.distanceTo(p);
+            if (d < min_dist) {
+              min_dist = d;
+            }
+          }
+          // Check if the distance is close to zero
+          if (min_dist > 10 * um2::eps_distance) {
+            std::cerr << "d = " << min_dist << std::endl;
+            std::cerr << "r = " << r << std::endl;
+            std::cerr << "p = (" << p[0] << ", " << p[1] << ")" << std::endl;
+          }
+          ASSERT(min_dist < 10 * um2::eps_distance);
+        }
+      }
+    }
+  }
+}
+
+HOSTDEV
+TEST_CASE(intersect)
+{
+  um2::Triangle<2> tri = makeTri<2>();
+  testTriForIntersections(tri);
+  tri[1][0] = castIfNot<Float>(2);
+  testTriForIntersections(tri);
 }
 
 //==============================================================================
@@ -226,7 +290,8 @@ TEST_SUITE(Triangle)
   TEST_HOSTDEV(edge, D);
   if constexpr (D == 2) {
     TEST_HOSTDEV(contains);
-    TEST_HOSTDEV(isCCW_flipFace);
+    TEST_HOSTDEV(isCCW_flip);
+    TEST_HOSTDEV(intersect);
     TEST_HOSTDEV(meanChordLength);
   }
   TEST_HOSTDEV(area, D);

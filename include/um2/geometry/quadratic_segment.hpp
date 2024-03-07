@@ -746,6 +746,30 @@ QuadraticSegment<D>::distanceTo(Vertex const & p) const noexcept -> Float
 // intersect
 //==============================================================================
 
+// The ray: R(r) = O + rD
+// The quadratic segment: Q(s) = C + sB + s²A,
+// where
+//  C = P₁
+//  B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]
+//  A = -2(V₁₃ + V₂₃) =  2q[1] + 2q[2] - 4q[3]
+// and
+// V₁₃ = q[3] - q[1]
+// V₂₃ = q[3] - q[2]
+//
+// O + rD = C + sB + s²A                          subtracting C from both sides
+// rD = (C - O) + sB + s²A                        cross product with D (distributive)
+// 0 = (C - O) × D + s(B × D) + s²(A × D)
+// The cross product of two vectors in the plane is a vector of the form (0, 0, k).
+// Let a = (A × D)ₖ, b = (B × D)ₖ, and c = ((C - O) × D)ₖ
+// 0 = as² + bs + c
+// If a = 0
+//   s = -c/b
+// else
+//   s = (-b ± √(b²-4ac))/2a
+// s is invalid if b² < 4ac
+// Once we have a valid s
+// O + rD = P ⟹   r = ((P - O) ⋅ D)/(D ⋅ D)
+
 template <Int D>
 PURE HOSTDEV constexpr auto
 QuadraticSegment<D>::intersect(Ray2 const ray) const noexcept -> Vec2F
@@ -778,7 +802,7 @@ requires(D == 2)
       Vec2F const P = s * (s * A + B) + voc;
       Float const r0 = dot(P, ray.direction());
       // ray direction is a unit vector, no need for / ray.direction().squaredNorm();
-      if (0 <= r0 && r0 <= 1) {
+      if (0 <= r0) {
         result[0] = r0;
       }
     }
@@ -795,7 +819,7 @@ requires(D == 2)
     Vec2F const P = s1 * (s1 * A + B) + voc;
     Float const r0 = dot(P, ray.direction());
     // / ray.direction().squaredNorm();
-    if (0 <= r0 && r0 <= 1) {
+    if (0 <= r0) {
       result[0] = r0;
     }
   }
@@ -803,7 +827,7 @@ requires(D == 2)
     Vec2F const P = s2 * (s2 * A + B) + voc;
     Float const r1 = dot(P, ray.direction());
     /// ray.direction().squaredNorm();
-    if (0 <= r1 && r1 <= 1) {
+    if (0 <= r1) {
       result[1] = r1;
     }
   }

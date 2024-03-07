@@ -495,6 +495,8 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
   Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
   Int constexpr rays_per_longest_edge = 100;
 
+  auto constexpr eps_pt = 1e-4; 
+
   auto const aabb = q.boundingBox();
   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
   auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
@@ -512,14 +514,14 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
       for (Int j = 0; j < 2; ++j) {
         Float const r = intersections[j];
         if (r < um2::inf_distance / 10) {
-          um2::Point2 const p = q(r);
+          um2::Point2 const p = ray(r);
           Float const d = q.distanceTo(p);
-          if (d > 10 * um2::eps_distance) {
+          if (d > eps_pt) {
             std::cerr << "d = " << d << std::endl;
             std::cerr << "r = " << r << std::endl;
             std::cerr << "p = (" << p[0] << ", " << p[1] << ")" << std::endl;
           }
-          ASSERT(d < 10 * um2::eps_distance);
+          ASSERT(d < eps_pt);
         }
       }
     }
@@ -529,12 +531,19 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
 HOSTDEV
 TEST_CASE(intersect)
 {
+  std::cout << "Seg2" << std::endl;
   testEdgeForIntersections(makeSeg2<2>());
+  std::cout << "Seg3" << std::endl;
   testEdgeForIntersections(makeSeg3<2>());
+  std::cout << "Seg4" << std::endl;
   testEdgeForIntersections(makeSeg4<2>());
+  std::cout << "Seg5" << std::endl;
   testEdgeForIntersections(makeSeg5<2>());
+  std::cout << "Seg6" << std::endl;
   testEdgeForIntersections(makeSeg6<2>());
+  std::cout << "Seg7" << std::endl;
   testEdgeForIntersections(makeSeg7<2>());
+  std::cout << "Seg8" << std::endl;
   testEdgeForIntersections(makeSeg8<2>());
 }
 

@@ -1,6 +1,5 @@
-intersection for quadratic segment
--> interpolate the ray to get p_ray
--> get the point closest to the segment and check that p_ray.isApprox(p_closest)
+Float32 quadratic intersection debugging
+Where is the large error coming from?
 
 mean chord length does not compute gap right
 It must do r0 --- r1  skip... r1 --- r2. But we must deal with the case where
