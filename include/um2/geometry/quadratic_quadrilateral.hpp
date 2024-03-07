@@ -2,18 +2,18 @@
 
 #include <um2/common/insertion_sort.hpp>
 #include <um2/geometry/quadratic_segment.hpp>
-#include <um2/geometry/triangle.hpp>
+#include <um2/geometry/quadrilateral.hpp>
 #include <um2/geometry/modular_rays.hpp>
 
 //==============================================================================
-// QUADRATIC TRIANGLE
+// QUADRATIC QUADRILATERAL
 //==============================================================================
 
 namespace um2
 {
 
 template <Int D>
-class Polytope<2, 2, 6, D>
+class Polytope<2, 2, 8, D>
 {
   static_assert(1 < D && D <= 3, "Only 2D, and 3D polygons are supported.");
 
@@ -22,7 +22,7 @@ public:
   using Edge = QuadraticSegment<D>;
 
 private:
-  Vertex _v[6];
+  Vertex _v[8];
 
 public:
   //==============================================================================
@@ -52,21 +52,21 @@ public:
   constexpr Polytope() noexcept = default;
 
   template <class... Pts>
-  requires(sizeof...(Pts) == 6 && (std::same_as<Vertex, Pts> && ...))
+  requires(sizeof...(Pts) == 8 && (std::same_as<Vertex, Pts> && ...))
       // NOLINTNEXTLINE(google-explicit-constructor) implicit conversion is desired
       HOSTDEV constexpr Polytope(Pts const... args) noexcept
       : _v{args...}
   {
   }
 
-  HOSTDEV constexpr explicit Polytope(Vec<6, Vertex> const & v) noexcept;
+  HOSTDEV constexpr explicit Polytope(Vec<8, Vertex> const & v) noexcept;
 
   //==============================================================================
   // Methods
   //==============================================================================
 
   // Interpolate along the surface of the polygon.
-  // For triangles: r in [0, 1], s in [0, 1], constrained by r + s <= 1
+  // For quads: r in [0, 1], s in [0, 1]
   // F(r, s) -> (x, y, z)
   template <typename R, typename S>
   PURE HOSTDEV constexpr auto
@@ -85,7 +85,7 @@ public:
   contains(Point2 const & p) const noexcept -> bool requires(D == 2);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  linearPolygon() const noexcept -> Triangle<D>;
+  linearPolygon() const noexcept -> Quadrilateral<D>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   area() const noexcept -> Float
@@ -110,7 +110,7 @@ public:
   flip() noexcept;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  intersect(Ray2 const & ray) const noexcept -> Vec<6, Float>
+  intersect(Ray2 const & ray) const noexcept -> Vec<8, Float>
   requires(D == 2);
 
   // See the comments in the implementation for details.
@@ -119,16 +119,16 @@ public:
   PURE HOSTDEV [[nodiscard]] auto
   meanChordLength() const noexcept -> Float requires(D == 2);
 
-}; // QuadraticTriangle
+}; // QuadraticQuadrilateral
 
 //==============================================================================
 // Constructors
 //==============================================================================
 
 template <Int D>
-HOSTDEV constexpr QuadraticTriangle<D>::Polytope(Vec<6, Vertex> const & v) noexcept
+HOSTDEV constexpr QuadraticQuadrilateral<D>::Polytope(Vec<8, Vertex> const & v) noexcept
 {
-  for (Int i = 0; i < 6; ++i) {
+  for (Int i = 0; i < 8; ++i) {
     _v[i] = v[i];
   }
 }
@@ -139,32 +139,32 @@ HOSTDEV constexpr QuadraticTriangle<D>::Polytope(Vec<6, Vertex> const & v) noexc
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::numEdges() noexcept -> Int
+QuadraticQuadrilateral<D>::numEdges() noexcept -> Int
 {
-  return 3;
+  return 4;
 }
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::operator[](Int i) noexcept -> Vertex &
+QuadraticQuadrilateral<D>::operator[](Int i) noexcept -> Vertex &
 {
   ASSERT_ASSUME(0 <= i);
-  ASSERT_ASSUME(i < 6);
+  ASSERT_ASSUME(i < 8);
   return _v[i];
 }
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::operator[](Int i) const noexcept -> Point<D> const &
+QuadraticQuadrilateral<D>::operator[](Int i) const noexcept -> Point<D> const &
 {
   ASSERT_ASSUME(0 <= i);
-  ASSERT_ASSUME(i < 6);
+  ASSERT_ASSUME(i < 8);
   return _v[i];
 }
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::vertices() const noexcept -> Point<D> const *
+QuadraticQuadrilateral<D>::vertices() const noexcept -> Point<D> const *
 {
   return _v;
 }
@@ -176,18 +176,22 @@ QuadraticTriangle<D>::vertices() const noexcept -> Point<D> const *
 template <Int D>
 template <typename R, typename S>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::operator()(R const r, S const s) const noexcept -> Point<D>
+QuadraticQuadrilateral<D>::operator()(R const r, S const s) const noexcept -> Point<D>
 {
-  auto const rr = static_cast<Float>(r);
-  auto const ss = static_cast<Float>(s);
-  Float const tt = 1 - rr - ss;
-  Float const w0 = tt * (2 * tt - 1);
-  Float const w1 = rr * (2 * rr - 1);
-  Float const w2 = ss * (2 * ss - 1);
-  Float const w3 = 4 * rr * tt;
-  Float const w4 = 4 * rr * ss;
-  Float const w5 = 4 * ss * tt;
-  return w0 * _v[0] + w1 * _v[1] + w2 * _v[2] + w3 * _v[3] + w4 * _v[4] + w5 * _v[5];
+  Float const xi = 2 * static_cast<Float>(r) - 1;
+  Float const eta = 2 * static_cast<Float>(s) - 1;
+  Float const w[8] = {(1 - xi) * (1 - eta) * (-xi - eta - 1) / 4,
+                  (1 + xi) * (1 - eta) * (xi - eta - 1) / 4,
+                  (1 + xi) * (1 + eta) * (xi + eta - 1) / 4,
+                  (1 - xi) * (1 + eta) * (-xi + eta - 1) / 4,
+                  (1 - xi * xi) * (1 - eta) / 2,
+                  (1 - eta * eta) * (1 + xi) / 2,
+                  (1 - xi * xi) * (1 + eta) / 2,
+                  (1 - eta * eta) * (1 - xi) / 2};
+  return w[0] * _v[0] + w[1] * _v[1] +
+         w[2] * _v[2] + w[3] * _v[3] +
+         w[4] * _v[4] + w[5] * _v[5] +
+         w[6] * _v[6] + w[7] * _v[7];
 }
 
 //==============================================================================
@@ -197,16 +201,34 @@ QuadraticTriangle<D>::operator()(R const r, S const s) const noexcept -> Point<D
 template <Int D>
 template <typename R, typename S>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::jacobian(R r, S s) const noexcept -> Mat<D, 2, Float>
+QuadraticQuadrilateral<D>::jacobian(R r, S s) const noexcept -> Mat<D, 2, Float>
 {
-  auto const rr = static_cast<Float>(4 * r);
-  auto const ss = static_cast<Float>(4 * s);
-  Float const tt = rr + ss - 3;
+  Float const xi = 2 * static_cast<Float>(r) - 1;
+  Float const eta = 2 * static_cast<Float>(s) - 1;
+  Float const xi_eta = xi * eta;
+  Float const xi_xi = xi * xi;
+  Float const eta_eta = eta * eta;
+  Float const w0 = (eta - eta_eta) / 2;
+  Float const w1 = (eta + eta_eta) / 2;
+  Float const w2 = (xi - xi_eta);
+  Float const w3 = (xi + xi_eta);
+  Float const w4 = 1 - eta_eta;
+  Float const w5 = (xi - xi_xi) / 2;
+  Float const w6 = (xi + xi_xi) / 2;
+  Float const w7 = eta - xi_eta;
+  Float const w8 = eta + xi_eta;
+  Float const w9 = 1 - xi_xi;
   return Mat<D, 2, Float>(
-   tt * (_v[0] - _v[3]) + (rr - 1) * (_v[1] - _v[3]) +
-   ss * (_v[4] - _v[5]),
-   tt * (_v[0] - _v[5]) + (ss - 1) * (_v[2] - _v[5]) +
-   rr * (_v[4] - _v[3]));
+    w0 * (_v[0] - _v[1]) +
+    w1 * (_v[2] - _v[3]) +
+    w2 * (_v[0] + _v[1] - 2 * _v[4]) +
+    w3 * (_v[2] + _v[3] - 2 * _v[6]) +
+    w4 * (_v[5] - _v[7]),
+    w5 * (_v[0] - _v[3]) +
+    w6 * (_v[2] - _v[1]) +
+    w7 * (_v[0] + _v[3] - 2 * _v[7]) +
+    w8 * (_v[1] + _v[2] - 2 * _v[5]) +
+    w9 * (_v[6] - _v[4]));
 }
 
 //==============================================================================
@@ -215,12 +237,12 @@ QuadraticTriangle<D>::jacobian(R r, S s) const noexcept -> Mat<D, 2, Float>
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::getEdge(Int i) const noexcept -> Edge
+QuadraticQuadrilateral<D>::getEdge(Int i) const noexcept -> Edge
 {
   ASSERT_ASSUME(0 <= i);
-  ASSERT_ASSUME(i < 3);
-  return (i < 2) ? QuadraticSegment<D>(_v[i], _v[i + 1], _v[i + 3])
-                 : QuadraticSegment<D>(_v[2], _v[0], _v[5]);
+  ASSERT_ASSUME(i < 4);
+  return (i < 3) ? QuadraticSegment<D>(_v[i], _v[i + 1], _v[i + 4])
+                 : QuadraticSegment<D>(_v[3], _v[0], _v[7]);
 }
 
 //==============================================================================
@@ -229,9 +251,9 @@ QuadraticTriangle<D>::getEdge(Int i) const noexcept -> Edge
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::contains(Point2 const & p) const noexcept -> bool requires(D == 2)
+QuadraticQuadrilateral<D>::contains(Point2 const & p) const noexcept -> bool requires(D == 2)
 {
-  for (Int i = 0; i < 3; ++i) {
+  for (Int i = 0; i < 4; ++i) {
     if (!getEdge(i).isLeft(p)) {
       return false;
     }
@@ -245,9 +267,9 @@ QuadraticTriangle<D>::contains(Point2 const & p) const noexcept -> bool requires
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::linearPolygon() const noexcept -> Triangle<D>
+QuadraticQuadrilateral<D>::linearPolygon() const noexcept -> Quadrilateral<D>
 {
-  return Triangle<D>(_v[0], _v[1], _v[2]);
+  return Quadrilateral<D>(_v[0], _v[1], _v[2], _v[3]);
 }
 
 //==============================================================================
@@ -256,13 +278,14 @@ QuadraticTriangle<D>::linearPolygon() const noexcept -> Triangle<D>
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::area() const noexcept -> Float
+QuadraticQuadrilateral<D>::area() const noexcept -> Float
 requires(D == 2)
 {
   Float result = linearPolygon().area();
   result += enclosedArea(getEdge(0));
   result += enclosedArea(getEdge(1));
   result += enclosedArea(getEdge(2));
+  result += enclosedArea(getEdge(3));
   return result;
 }
 
@@ -272,11 +295,12 @@ requires(D == 2)
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::perimeter() const noexcept -> Float
+QuadraticQuadrilateral<D>::perimeter() const noexcept -> Float
 {
   Float result = getEdge(0).length();
   result += getEdge(1).length();
   result += getEdge(2).length();
+  result += getEdge(3).length();
   return result;
 }
 
@@ -286,13 +310,13 @@ QuadraticTriangle<D>::perimeter() const noexcept -> Float
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::centroid() const noexcept -> Point<D>
+QuadraticQuadrilateral<D>::centroid() const noexcept -> Point<D>
 requires(D == 2)
 {
   auto lin_poly = linearPolygon();
   Float area_sum = lin_poly.area();
   Point2 centroid_sum = area_sum * lin_poly.centroid();
-  for (Int i = 0; i < 3; ++i) {
+  for (Int i = 0; i < 4; ++i) {
     auto const e = getEdge(i);
     Float const a = enclosedArea(e);
     area_sum += a;
@@ -307,12 +331,13 @@ requires(D == 2)
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
+QuadraticQuadrilateral<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 requires(D == 2)
 {
   AxisAlignedBox2 box = getEdge(0).boundingBox();
   box += getEdge(1).boundingBox();
   box += getEdge(2).boundingBox();
+  box += getEdge(3).boundingBox();
   return box;
 }
 
@@ -322,7 +347,7 @@ requires(D == 2)
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::isCCW() const noexcept -> bool requires(D == 2)
+QuadraticQuadrilateral<D>::isCCW() const noexcept -> bool requires(D == 2)
 {
   return linearPolygon().isCCW();
 }
@@ -333,10 +358,10 @@ QuadraticTriangle<D>::isCCW() const noexcept -> bool requires(D == 2)
 
 template <Int D>
 HOSTDEV constexpr void
-QuadraticTriangle<D>::flip() noexcept
+QuadraticQuadrilateral<D>::flip() noexcept
 {
-  um2::swap(_v[1], _v[2]);
-  um2::swap(_v[3], _v[5]);
+  um2::swap(_v[1], _v[3]);
+  um2::swap(_v[4], _v[7]);
 }
 
 //==============================================================================
@@ -345,10 +370,10 @@ QuadraticTriangle<D>::flip() noexcept
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::intersect(Ray2 const & ray) const noexcept -> Vec<6, Float>
+QuadraticQuadrilateral<D>::intersect(Ray2 const & ray) const noexcept -> Vec<8, Float>
 requires(D == 2) {
-  Vec<6, Float> result;
-  for (Int i = 0; i < 3; ++i) {
+  Vec<8, Float> result;
+  for (Int i = 0; i < 4; ++i) {
     Vec2F const v = getEdge(i).intersect(ray);
     result[2 * i] = v[0];
     result[2 * i + 1] = v[1];
@@ -368,7 +393,7 @@ requires(D == 2) {
 
 template <Int D>
 PURE HOSTDEV auto
-QuadraticTriangle<D>::meanChordLength() const noexcept -> Float requires(D == 2)
+QuadraticQuadrilateral<D>::meanChordLength() const noexcept -> Float requires(D == 2)
 {
   // Algorithm:
   // For equally spaced angles γ ∈ (0, π)
@@ -410,11 +435,11 @@ QuadraticTriangle<D>::meanChordLength() const noexcept -> Float requires(D == 2)
     // For each ray
     for (Int i = 0; i < num_rays; ++i) {
       auto const ray = params.getRay(i);
-      // 6 intersections
+      // 8 intersections
       auto intersections = intersect(ray);
       um2::insertionSort(intersections.begin(), intersections.end());
       // Each intersection should come in pairs.
-      for (Int j = 0; j < 3; ++j) {
+      for (Int j = 0; j < 4; ++j) {
         Float const r0 = intersections[2 * j];
         Float const r1 = intersections[2 * j + 1];
         if (r1 < um2::inf_distance / 10) {
