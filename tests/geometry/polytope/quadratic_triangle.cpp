@@ -303,6 +303,18 @@ TEST_CASE(meanChordLength)
   std::cerr << "ref2 = " << ref2 << std::endl;
   std::cerr << "err2 = " << err2 << std::endl;
   ASSERT(err2 < castIfNot<Float>(1e-3));
+
+  // A concave triangle
+  um2::QuadraticTriangle<2> tri3 = makeTri<2>();
+  tri3[4][0] = castIfNot<Float>(0.25);
+  tri3[4][1] = castIfNot<Float>(0.25);
+  ASSERT(!tri3.isConvex());
+  auto const val3 = tri3.meanChordLength(); 
+  auto const ref3 = um2::pi<Float> * tri3.area() / tri3.perimeter();
+  auto const err3 = um2::abs(val3 - ref3) / ref3;
+  std::cerr << "val3 = " << val3 << std::endl;
+  std::cerr << "ref3 = " << ref3 << std::endl;
+  std::cerr << "err3 = " << err3 << std::endl;
 }
 
 #if UM2_USE_CUDA

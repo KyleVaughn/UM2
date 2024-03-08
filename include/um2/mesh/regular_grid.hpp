@@ -8,8 +8,7 @@
 // REGULAR GRID
 //==============================================================================
 // A regular grid is a grid with a fixed spacing between points. Each grid cell
-// is a hyperrectangle with the same shape. Note, the grid cells are not
-// necessarily hypercubes.
+// is a hyperrectangle with the same shape.
 
 namespace um2
 {

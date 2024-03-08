@@ -280,7 +280,7 @@ HOSTDEV
 TEST_CASE(meanChordLength)
 {
   auto const quad = makeQuad<2>();
-  auto const ref = um2::pi<Float> * tri2.area() / tri2.perimeter();
+  auto const ref = um2::pi<Float> * quad.area() / quad.perimeter();
   auto const val = quad.meanChordLength();
   auto const err = um2::abs(val - ref) / ref;
   std::cerr << "val = " << val << std::endl;
@@ -297,6 +297,18 @@ TEST_CASE(meanChordLength)
   std::cerr << "ref2 = " << ref << std::endl;
   std::cerr << "err2 = " << err << std::endl;
   ASSERT(err2 < castIfNot<Float>(1e-3));
+
+  // Non-convex quad
+  auto quad3 = makeQuad<2>();
+  quad3[4][0] = castIfNot<Float>(0.7);
+  quad3[4][1] = castIfNot<Float>(0.25);
+  ASSERT(!quad3.isConvex());
+  auto const ref3 = um2::pi<Float> * quad3.area() / quad3.perimeter();
+  auto const val3 = quad3.meanChordLength();
+  auto const err3 = um2::abs(val3 - ref3) / ref3;
+  std::cerr << "val3 = " << val3 << std::endl;
+  std::cerr << "ref3 = " << ref3 << std::endl;
+  std::cerr << "err3 = " << err3 << std::endl;
 }
 
 #if UM2_USE_CUDA

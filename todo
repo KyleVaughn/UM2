@@ -1,19 +1,20 @@
+curvesLeft
+isConvex
+MCL < MCL regular. 
+How to count the chords?
+
+scan vector?
+
+remove the behavior of a regular or rectilinear partition holding one extra element
+
+add testing for gcc 12+ and clang15+
+
+check on gmsh intersect
+
+ray intersect regular grid?
+
 Float32 quadratic intersection debugging
 Where is the large error coming from?
-
-mean chord length does not compute gap right
-It must do r0 --- r1  skip... r1 --- r2. But we must deal with the case where
-r0 is approx r1. If so, we skip. BUT) this could lead to counting a big gap area on
-a jagged edged. Should we say this will happen infrequently?
-
-If r0 and r1 are close, maybe we are on a corner. and correct behavior is do r0,r1.
-There should ve an even number of pairs.
-could test midpoint inside the polygon for membership
-  \         /
-   \       /
-    \     /
-     \   /
-      \ /
 
 isConvex to polygon
   -> if any edges is not approxCCW, then it's not convex.
@@ -51,7 +52,6 @@ polytope soup with data on whole mesh?
 Fix MPACT VTK IO
   CELL_TYPES ? 4million chars long...
 
-
 VTK IO
 
 operator Type() -> Convery to type
@@ -78,8 +78,6 @@ Just assume 1 thread 1 block only and that they will write themselves otherwise
 allocator
 
 typename to class
-
-log in correct namespace?
 
 Apache 2.0 license
 variadic template expansion
@@ -116,6 +114,7 @@ Binned mesh
   Need vis before to verify
 
 Back the rays up by -eps
+  -> or make AABB bigger
 
 Make the mpact tests work for more types
 

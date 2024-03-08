@@ -1,7 +1,10 @@
 #pragma once
 
 #include <um2/geometry/axis_aligned_box.hpp>
-#include <um2/geometry/polygon.hpp>
+#include <um2/geometry/triangle.hpp>
+#include <um2/geometry/quadrilateral.hpp>
+#include <um2/geometry/quadratic_triangle.hpp>
+#include <um2/geometry/quadratic_quadrilateral.hpp>
 #include <um2/mesh/element_types.hpp>
 #include <um2/stdlib/string.hpp>
 #include <um2/stdlib/vector.hpp>
@@ -23,15 +26,20 @@ namespace um2
 // - generate submeshes
 // - perform mesh operations without assumptions about manifoldness, etc.
 //
-// ASSUMES THAT EACH ELEMENT HAS VERTICES IN THE SAME Z-COOORDINATE PLANE.
-// Element 1 and element 2 can have different z-coordinates, but all vertices
-// of element 1 will have the same z-coordinate, and all vertices of element 2
-// will have the same z-coordinate.
-//
 // Note: due to the generality of the data structure, there is effectively a
 // switch statement in every method. This is not ideal for performance.
 // See FaceVertexMesh for a more efficient, but less general, data
 // structure.
+//
+// _is_morton_sorted: A flag indicating whether the vertices and elements are
+//    sorted using the Morton ordering. This is useful for efficient spatial
+//    queries, but it is not required.
+// 
+// _vertices: A list of vertices
+//
+// _element_types: A list of element types
+//
+// _element_offsets: A prefix sum of the number of vertices in each element
 
 class PolytopeSoup
 {

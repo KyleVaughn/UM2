@@ -106,6 +106,9 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isCCW() const noexcept -> bool requires(D == 2);
 
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  isConvex() const noexcept -> bool requires(D == 2);
+
   HOSTDEV constexpr void
   flip() noexcept;
 
@@ -328,6 +331,27 @@ QuadraticTriangle<D>::isCCW() const noexcept -> bool requires(D == 2)
 }
 
 //==============================================================================
+// isConvex
+//==============================================================================
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+QuadraticTriangle<D>::isConvex() const noexcept -> bool requires(D == 2)
+{
+  // If each edge is either straight, or curves left. 
+  // AND the linear polygon polygon is convex.
+  auto const e0 = getEdge(0);
+  auto const e1 = getEdge(1);
+  auto const e2 = getEdge(2);
+  bool const s_or_cl0 = isStraight(e0) || e0.curvesLeft(); 
+  bool const s_or_cl1 = isStraight(e1) || e1.curvesLeft();
+  bool const s_or_cl2 = isStraight(e2) || e2.curvesLeft();
+  bool const edges_ok = s_or_cl0 && s_or_cl1 && s_or_cl2;
+  // The linear polygon (triangle) is always convex.
+  return edges_ok;
+}
+
+//==============================================================================
 // flip
 //==============================================================================
 
@@ -365,11 +389,26 @@ requires(D == 2) {
 // 549-553.
 //
 // For a non-convex polygon, we shoot modular rays from the bounding box and average.
+//
+// It is important to discuss what is meant by "mean chord length" when the polygon is
+// non-convex. More acc
+// \begin{equation}
+//  \overline{s} = 
+//  \dfrac{
+//    \int_S \int_{\mathbf{\Omega} \cdot \mathbf{n} > 0} s(\mathbf{x}, \mathbf{\Omega}) d\Omega dS
+//  }{
+//    \int_S \int_{\mathbf{\Omega} \cdot \mathbf{n} > 0} d\Omega dS
+//  }
+// \end{equation}
 
 template <Int D>
 PURE HOSTDEV auto
 QuadraticTriangle<D>::meanChordLength() const noexcept -> Float requires(D == 2)
 {
+//  if (isConvex()) {
+//    return um2::pi<Float> * area() / perimeter();
+//  }
+
   // Algorithm:
   // For equally spaced angles γ ∈ (0, π)
   //  Compute modular ray parameters
@@ -413,6 +452,10 @@ QuadraticTriangle<D>::meanChordLength() const noexcept -> Float requires(D == 2)
       // 6 intersections
       auto intersections = intersect(ray);
       um2::insertionSort(intersections.begin(), intersections.end());
+      // if there are any valid intersections
+      if (intersections[1] < um2::inf_distance / 10) {
+        total_chords += 1;
+      }
       // Each intersection should come in pairs.
       for (Int j = 0; j < 3; ++j) {
         Float const r0 = intersections[2 * j];
@@ -420,7 +463,7 @@ QuadraticTriangle<D>::meanChordLength() const noexcept -> Float requires(D == 2)
         if (r1 < um2::inf_distance / 10) {
           ASSERT(r1 - r0 < um2::inf_distance / 100);
           local_accum += r1 - r0;
-          total_chords += 1;
+      //    total_chords += 1;
         }
       }
     }

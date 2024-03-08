@@ -106,6 +106,9 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isCCW() const noexcept -> bool requires(D == 2);
 
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  isConvex() const noexcept -> bool requires(D == 2);
+
   HOSTDEV constexpr void
   flip() noexcept;
 
@@ -353,6 +356,29 @@ QuadraticQuadrilateral<D>::isCCW() const noexcept -> bool requires(D == 2)
 }
 
 //==============================================================================
+// isConvex
+//==============================================================================
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+QuadraticQuadrilateral<D>::isConvex() const noexcept -> bool requires(D == 2)
+{
+  // If each edge is either straight, or curves left. 
+  // AND the linear polygon polygon is convex.
+  auto const e0 = getEdge(0);
+  auto const e1 = getEdge(1);
+  auto const e2 = getEdge(2);
+  auto const e3 = getEdge(3);
+  bool const s_or_cl0 = isStraight(e0) || e0.curvesLeft(); 
+  bool const s_or_cl1 = isStraight(e1) || e1.curvesLeft();
+  bool const s_or_cl2 = isStraight(e2) || e2.curvesLeft();
+  bool const s_or_cl3 = isStraight(e3) || e3.curvesLeft();
+  bool const edges_ok = s_or_cl0 && s_or_cl1 && s_or_cl2 && s_or_cl3;
+  bool const lin_ok = linearPolygon().isConvex();
+  return edges_ok && lin_ok;
+}
+
+//==============================================================================
 // flip
 //==============================================================================
 
@@ -395,6 +421,10 @@ template <Int D>
 PURE HOSTDEV auto
 QuadraticQuadrilateral<D>::meanChordLength() const noexcept -> Float requires(D == 2)
 {
+  if (isConvex()) {
+    return um2::pi<Float> * area() / perimeter();
+  }
+
   // Algorithm:
   // For equally spaced angles γ ∈ (0, π)
   //  Compute modular ray parameters

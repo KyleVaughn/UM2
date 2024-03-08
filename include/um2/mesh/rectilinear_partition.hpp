@@ -42,7 +42,7 @@ public:
   constexpr RectilinearPartition() noexcept = default;
 
   // See RectilinearGrid constructor for details on dxdy and ids.
-  constexpr RectilinearPartition(Vector<Vec2<Float>> const & dxdy,
+  constexpr RectilinearPartition(Vector<Vec2F> const & dxdy,
                                  Vector<Vector<Int>> const & ids) noexcept;
 
   HOSTDEV
@@ -98,11 +98,15 @@ constexpr RectilinearPartition<D, P>::RectilinearPartition(
     : _grid(grid),
       _children(children)
 {
+  // Check that the number of children is at least equal to the total number of
+  // cells in the grid. children can be used to store additional data in atypical
+  // use cases, but it must be able to store at least one child per cell.
+  ASSERT(_grid.totalNumCells() <= _children.size());
 }
 
 template <Int D, typename P>
 constexpr RectilinearPartition<D, P>::RectilinearPartition(
-    Vector<Vec2<Float>> const & dxdy, Vector<Vector<Int>> const & ids) noexcept
+    Vector<Vec2F> const & dxdy, Vector<Vector<Int>> const & ids) noexcept
     : _grid(dxdy, ids)
 {
   static_assert(D == 2);

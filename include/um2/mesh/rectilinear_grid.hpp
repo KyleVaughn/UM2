@@ -8,19 +8,18 @@
 //==============================================================================
 // RECTILINEAR GRID
 //==============================================================================
-// A D-dimensional rectilinear grid with data of type T
+// A D-dimensional rectilinear grid
 //
 // Many of the methods do the same thing as RegularGrid, which is commented much
 // more thoroughly. See that file for more details.
-// TODO(kcvaughn): Copy comments from RegularGrid
 
 namespace um2
 {
 
 template <Int D>
-// Odd bug with "declaration uses identifier '__i0', which is a reserved identifier",
-// but obviously RectilinearGrid doesn't use __i0.
-// NOLINTNEXTLINE
+// clang-tidy bug fixed in clang-tidy-17 
+// error: declaration uses identifier '__i0', which is a reserved identifier
+// NOLINTNEXTLINE(bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp, readability-identifier-naming))
 class RectilinearGrid
 {
 
@@ -52,7 +51,7 @@ public:
   //   | 0 2 0 2
   //   | 0 1 0 1
   //   +---------> x
-  constexpr RectilinearGrid(Vector<Vec2<Float>> const & dxdy, Vector<Vector<Int>> const & ids);
+  constexpr RectilinearGrid(Vector<Vec2F> const & dxdy, Vector<Vector<Int>> const & ids);
 
   //==============================================================================
   // Accessors
@@ -112,6 +111,10 @@ public:
   //==============================================================================
   // Methods
   //==============================================================================
+
+  // The total number of cells in the grid.    
+  PURE HOSTDEV [[nodiscard]] constexpr auto    
+  totalNumCells() const noexcept -> Int;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   extents() const noexcept -> Vec<D, Float>;
@@ -174,12 +177,11 @@ constexpr RectilinearGrid<D>::RectilinearGrid(Vector<AxisAlignedBox<D>> const & 
 {
   // Create _divs by finding the unique planar divisions
   Float constexpr eps = eps_distance;
-  for (Int i = 0; i < boxes.size(); ++i) {
-    AxisAlignedBox<D> const & box = boxes[i];
+  for (auto const & box : boxes) {
     for (Int d = 0; d < D; ++d) {
       bool min_found = false;
-      for (Int j = 0; j < _divs[d].size(); ++j) {
-        if (um2::abs(_divs[d][j] - box.minima(d)) < eps) {
+      for (Int i = 0; i < _divs[d].size(); ++i) {
+        if (um2::abs(_divs[d][i] - box.minima(d)) < eps) {
           min_found = true;
           break;
         }
@@ -188,8 +190,8 @@ constexpr RectilinearGrid<D>::RectilinearGrid(Vector<AxisAlignedBox<D>> const & 
         this->_divs[d].emplace_back(box.minima(d));
       }
       bool max_found = false;
-      for (Int j = 0; j < _divs[d].size(); ++j) {
-        if (um2::abs(_divs[d][j] - box.maxima(d)) < eps) {
+      for (Int i = 0; i < _divs[d].size(); ++i) {
+        if (um2::abs(_divs[d][i] - box.maxima(d)) < eps) {
           max_found = true;
           break;
         }
@@ -204,18 +206,20 @@ constexpr RectilinearGrid<D>::RectilinearGrid(Vector<AxisAlignedBox<D>> const & 
     std::sort(_divs[i].begin(), _divs[i].end());
   }
   // Ensure that the boxes completely cover the grid
-  // all num__divs >= 2
-  // n = ∏(num__divs[i] - 1)
+  // all num_divs >= 2
+  // n = ∏(num_divs[i] - 1)
+#if UM2_ENABLE_ASSERTS
   Int ncells_total = 1;
   for (Int i = 0; i < D; ++i) {
     ASSERT(_divs[i].size() >= 2);
     ncells_total *= _divs[i].size() - 1;
   }
   ASSERT(ncells_total == boxes.size());
+#endif
 }
 
 template <Int D>
-constexpr RectilinearGrid<D>::RectilinearGrid(Vector<Vec2<Float>> const & dxdy,
+constexpr RectilinearGrid<D>::RectilinearGrid(Vector<Vec2F> const & dxdy,
                                               Vector<Vector<Int>> const & ids)
 {
   static_assert(D == 2);
@@ -234,17 +238,17 @@ constexpr RectilinearGrid<D>::RectilinearGrid(Vector<Vec2<Float>> const & dxdy,
   // Iterate rows in reverse order
   for (Int i = 0; i < nrows; ++i) {
     Vector<Int> const & row = ids[nrows - i - 1];
-    Vec2<Float> lo(static_cast<Float>(0), y);
+    Vec2F lo(static_cast<Float>(0), y);
     for (Int j = 0; j < ncols; ++j) {
       Int const id = row[j];
-      Vec2<Float> const & dxdy_ij = dxdy[id];
-      Vec2<Float> const hi = lo + dxdy_ij;
+      Vec2F const & dxdy_ij = dxdy[id];
+      Vec2F const hi = lo + dxdy_ij;
       boxes[i * ncols + j] = {lo, hi};
       lo[0] = hi[0];
     }
     y += dxdy[row[0]][1];
   }
-  new (this) RectilinearGrid(boxes);
+  *this = RectilinearGrid(boxes);
 }
 
 //==============================================================================
@@ -404,6 +408,17 @@ RectilinearGrid<D>::numZCells() const noexcept -> Int
 //==============================================================================
 // Methods
 //==============================================================================
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+RectilinearGrid<D>::totalNumCells() const noexcept -> Int
+{
+  Int ncells_total = 1;
+  for (Int i = 0; i < D; ++i) {
+    ncells_total *= numCells(i);
+  }
+  return ncells_total;
+}
 
 template <Int D>
 PURE HOSTDEV constexpr auto

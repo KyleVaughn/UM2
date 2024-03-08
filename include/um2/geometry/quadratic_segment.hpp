@@ -124,6 +124,9 @@ public:
   intersect(Ray2 ray) const noexcept -> Vec2F
   requires(D == 2);
 
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  curvesLeft() const noexcept -> bool requires(D == 2);
+
 }; // QuadraticSegment 
 
 //==============================================================================
@@ -833,6 +836,18 @@ requires(D == 2)
   }
   // NOLINTEND(readability-identifier-naming)
   return result;
+}
+
+//==============================================================================
+// curvesLeft
+//==============================================================================
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+QuadraticSegment<D>::curvesLeft() const noexcept -> bool
+requires (D == 2)
+{
+  return areCCW(_v[0], _v[2], _v[1]);
 }
 
 } // namespace um2

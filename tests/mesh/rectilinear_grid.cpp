@@ -71,8 +71,8 @@ TEST_CASE(boundingBox)
   um2::RectilinearGrid<D> const grid = makeGrid<D>();
   um2::AxisAlignedBox<D> const box = grid.boundingBox();
   if constexpr (D >= 1) {
-    ASSERT_NEAR(box.minima()[0], grid.divs(0)[0], eps);
-    ASSERT_NEAR(box.maxima()[0], grid.divs(0)[1], eps);
+    ASSERT_NEAR(box.minima(0), grid.divs(0)[0], eps);
+    ASSERT_NEAR(box.maxima(0), grid.divs(0)[1], eps);
   }
   if constexpr (D >= 2) {
     ASSERT_NEAR(box.minima()[1], grid.divs(1)[0], eps);
@@ -101,42 +101,42 @@ TEST_CASE(getBox)
       {         1,             -1},
       {one + half, -three * forth}
   };
-  ASSERT(um2::isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = grid.getBox(1, 0);
   //{ { 1.5, -1.0 }, { 2.0, -0.75 } };
   box_ref = {
       {one + half,           -one},
       {       two, -three * forth}
   };
-  ASSERT(um2::isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = grid.getBox(3, 0);
   // box_ref = { { 2.5, -1.0 }, { 3.0, -0.75 } };
   box_ref = {
       {two + half,           -one},
       {     three, -three * forth}
   };
-  ASSERT(um2::isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = grid.getBox(0, 1);
   // box_ref = { { 1.0, -0.75 }, { 1.5, -0.5 } };
   box_ref = {
       {       one, -three * forth},
       {one + half,          -half}
   };
-  ASSERT(um2::isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = grid.getBox(0, 7);
   // box_ref = { { 1.0, 0.75 }, { 1.5, 1.0 } };
   box_ref = {
       {       one, three * forth},
       {one + half,           one}
   };
-  ASSERT(um2::isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = grid.getBox(3, 7);
   // box_ref = { { 2.5, 0.75 }, { 3.0, 1.0 } };
   box_ref = {
       {two + half, three * forth},
       {     three,           one}
   };
-  ASSERT(um2::isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
 }
 
 TEST_CASE(aabb2_constructor)

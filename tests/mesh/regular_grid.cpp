@@ -95,42 +95,42 @@ TEST_CASE(getBox)
       {          1,             -1},
       {one + ahalf, -three * forth}
   };
-  ASSERT(isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = grid.getBox(1, 0);
   //{ { 1.5, -1.0 }, { 2.0, -0.75 } };
   box_ref = {
       {one + ahalf,           -one},
       {        two, -three * forth}
   };
-  ASSERT(isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = grid.getBox(3, 0);
   // box_ref = { { 2.5, -1.0 }, { 3.0, -0.75 } };
   box_ref = {
       {two + ahalf,           -one},
       {      three, -three * forth}
   };
-  ASSERT(isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = grid.getBox(0, 1);
   // box_ref = { { 1.0, -0.75 }, { 1.5, -0.5 } };
   box_ref = {
       {        one, -three * forth},
       {one + ahalf,         -ahalf}
   };
-  ASSERT(isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = grid.getBox(0, 7);
   // box_ref = { { 1.0, 0.75 }, { 1.5, 1.0 } };
   box_ref = {
       {        one, three * forth},
       {one + ahalf,           one}
   };
-  ASSERT(isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = grid.getBox(3, 7);
   // box_ref = { { 2.5, 0.75 }, { 3.0, 1.0 } };
   box_ref = {
       {two + ahalf, three * forth},
       {      three,           one}
   };
-  ASSERT(isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
 }
 
 template <Int D>

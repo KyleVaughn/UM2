@@ -102,42 +102,42 @@ TEST_CASE(getBoxAndChild)
       {         1,             -1},
       {one + half, -three * forth}
   };
-  ASSERT(isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = part.grid().getBox(1, 0);
   //{ { 1.5, -1.0 }, { 2.0, -0.75 } };
   box_ref = {
       {one + half,           -one},
       {       two, -three * forth}
   };
-  ASSERT(isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = part.grid().getBox(3, 0);
   // box_ref = { { 2.5, -1.0 }, { 3.0, -0.75 } };
   box_ref = {
       {two + half,           -one},
       {     three, -three * forth}
   };
-  ASSERT(isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = part.grid().getBox(0, 1);
   // box_ref = { { 1.0, -0.75 }, { 1.5, -0.5 } };
   box_ref = {
       {       one, -three * forth},
       {one + half,          -half}
   };
-  ASSERT(isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = part.grid().getBox(0, 7);
   // box_ref = { { 1.0, 0.75 }, { 1.5, 1.0 } };
   box_ref = {
       {       one, three * forth},
       {one + half,           one}
   };
-  ASSERT(isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
   box = part.grid().getBox(3, 7);
   // box_ref = { { 2.5, 0.75 }, { 3.0, 1.0 } };
   box_ref = {
       {two + half, three * forth},
       {     three,           one}
   };
-  ASSERT(isApprox(box, box_ref));
+  ASSERT(box.isApprox(box_ref));
 
   P child = part.getChild(0, 0);
   ASSERT(child == 0);
