@@ -173,6 +173,22 @@ TEST_CASE(intersect_ray)
   ASSERT_NEAR(intersection4[1], um2::sqrt(static_cast<Float>(2)) / 2, eps);
 }
 
+HOSTDEV
+TEST_CASE(scale)
+{
+  um2::AxisAlignedBox<2> box(um2::Point2(0, 0), um2::Point2(1, 1));
+  box.scale(2);
+  ASSERT_NEAR(box.minima(0), castIfNot<Float>(-0.5), eps);
+  ASSERT_NEAR(box.minima(1), castIfNot<Float>(-0.5), eps);
+  ASSERT_NEAR(box.maxima(0), castIfNot<Float>(1.5), eps);
+  ASSERT_NEAR(box.maxima(1), castIfNot<Float>(1.5), eps);
+  box.scale(castIfNot<Float>(0.5));
+  ASSERT_NEAR(box.minima(0), castIfNot<Float>(0), eps);
+  ASSERT_NEAR(box.minima(1), castIfNot<Float>(0), eps);
+  ASSERT_NEAR(box.maxima(0), castIfNot<Float>(1), eps);
+  ASSERT_NEAR(box.maxima(1), castIfNot<Float>(1), eps);
+}
+
 // NOLINTEND(cert-dcl03-c,misc-static-assert)
 
 #if UM2_USE_CUDA
@@ -212,6 +228,7 @@ TEST_SUITE(aabb)
   if constexpr (D == 2) {
     TEST(bounding_box_vector);
     TEST_HOSTDEV(intersect_ray);
+    TEST_HOSTDEV(scale);
   }
 }
 

@@ -191,10 +191,11 @@ requires(D == 2) {
   //
   // For 2D:
   // Let a = (a₁, a₂) = (P₂ - P₁) / ‖P₂ - P₁‖
+  // Note: a is a unit vector
   // u₁ = ( a₁,  a₂) = a
   // u₂ = (-a₂,  a₁)
   //
-  // 2ote: u₁ and u₂ are orthonormal.
+  // Note: u₁ and u₂ are orthonormal.
   //
   // The transformation from the new basis to the standard basis is given by
   // U = [u₁ u₂] = | a₁ -a₂ |
@@ -329,7 +330,7 @@ requires(D == 2)
   Float const z = v.cross(ray.direction());
   Float const s = u.cross(ray.direction()) / z;
   Float const r = u.cross(v) / z;
-  return (s < 0 || 1 < s) ? inf_distance : r;
+  return (0 <= s && s <= 1) ? r : inf_distance;
 }
 
 } // namespace um2

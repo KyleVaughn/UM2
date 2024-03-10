@@ -1,5 +1,7 @@
 #include <um2/math/mat.hpp>
 
+#include <um2/stdlib/numbers.hpp>
+
 #include "../test_macros.hpp"
 
 template <Int M, Int N, typename T>
@@ -66,6 +68,42 @@ TEST_CASE(mat_vec)
   }
 }
 
+template <typename T> 
+HOSTDEV
+TEST_CASE(rotationMatrix)
+{
+  um2::Vec2<T> const v(1, 0);
+
+  auto const v45 = um2::rotationMatrix(um2::pi_4<T>) * v;
+  T const sqrt2_2 = um2::sqrt(static_cast<T>(2)) / 2;
+  ASSERT_NEAR(v45[0], sqrt2_2, static_cast<T>(1e-6)); 
+  ASSERT_NEAR(v45[1], sqrt2_2, static_cast<T>(1e-6));
+  auto const v90 = um2::rotationMatrix(um2::pi_2<T>) * v;
+  ASSERT_NEAR(v90[0], 0, static_cast<T>(1e-6));
+  ASSERT_NEAR(v90[1], 1, static_cast<T>(1e-6));
+  auto const v180 = um2::rotationMatrix(um2::pi<T>) * v;
+  ASSERT_NEAR(v180[0], -1, static_cast<T>(1e-6));
+  ASSERT_NEAR(v180[1], 0, static_cast<T>(1e-6));
+  auto const v270 = um2::rotationMatrix(um2::pi<T> + um2::pi_2<T>) * v;
+  ASSERT_NEAR(v270[0], 0, static_cast<T>(1e-6));
+  ASSERT_NEAR(v270[1], -1, static_cast<T>(1e-6));
+  auto const v360 = um2::rotationMatrix(um2::pi<T> * 2) * v;
+  ASSERT_NEAR(v360[0], 1, static_cast<T>(1e-6));
+  ASSERT_NEAR(v360[1], 0, static_cast<T>(1e-6));
+  auto const mv45 = um2::rotationMatrix(-um2::pi_4<T>) * v;
+  ASSERT_NEAR(mv45[0], sqrt2_2, static_cast<T>(1e-6));
+  ASSERT_NEAR(mv45[1], -sqrt2_2, static_cast<T>(1e-6));
+  auto const mv90 = um2::rotationMatrix(-um2::pi_2<T>) * v;
+  ASSERT_NEAR(mv90[0], 0, static_cast<T>(1e-6));
+  ASSERT_NEAR(mv90[1], -1, static_cast<T>(1e-6));
+  auto const mv180 = um2::rotationMatrix(-um2::pi<T>) * v;
+  ASSERT_NEAR(mv180[0], -1, static_cast<T>(1e-6));
+  ASSERT_NEAR(mv180[1], 0, static_cast<T>(1e-6));
+  auto const mv270 = um2::rotationMatrix(-um2::pi<T> - um2::pi_2<T>) * v;
+  ASSERT_NEAR(mv270[0], 0, static_cast<T>(1e-6));
+  ASSERT_NEAR(mv270[1], 1, static_cast<T>(1e-6));
+}
+
 #if UM2_USE_CUDA
 template <Int M, Int N, typename T>
 MAKE_CUDA_KERNEL(accessors, M, N, T);
@@ -80,6 +118,9 @@ TEST_SUITE(Mat)
 {
   TEST_HOSTDEV(accessors, M, N, T);
   TEST_HOSTDEV(mat_vec, M, N, T);
+  if constexpr (M == 2 && N == 2 && std::floating_point<T>) { 
+    TEST_HOSTDEV(rotationMatrix, T);
+  }
 }
 
 auto

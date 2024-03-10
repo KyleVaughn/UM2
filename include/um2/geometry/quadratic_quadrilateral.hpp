@@ -410,78 +410,13 @@ requires(D == 2) {
 //==============================================================================
 // meanChordLength
 //==============================================================================
-// For a convex planar polygon, the mean chord length is simply pi * area / perimeter.
-// De Kruijf, W. J. M., and J. L. Kloosterman.
-// "On the average chord length in reactor physics." Annals of Nuclear Energy 30.5 (2003):
-// 549-553.
-//
-// For a non-convex polygon, we shoot modular rays from the bounding box and average.
+// See the lengthy discussion in quadratic_triangle.hpp for details.
 
 template <Int D>
 PURE HOSTDEV auto
 QuadraticQuadrilateral<D>::meanChordLength() const noexcept -> Float requires(D == 2)
 {
-  if (isConvex()) {
-    return um2::pi<Float> * area() / perimeter();
-  }
-
-  // Algorithm:
-  // For equally spaced angles γ ∈ (0, π)
-  //  Compute modular ray parameters
-  //  For each ray
-  //    Compute intersections with edges
-  //    Compute chord length
-  //    total_chord_length += chord_length
-  //    total_chords += 1
-  // return total_chord_length / total_chords
-
-  // Parameters
-  Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
-  Int constexpr rays_per_longest_edge = 1000;
-
-  Int total_chords = 0;
-  Float total_length = 0;
-  auto const small_aabb = boundingBox();
-  // Expand the bounding box to avoid the lack of rays in the corners.
-  auto const width = small_aabb.width();
-  auto const height = small_aabb.height();
-  auto const dx = width / 20;
-  auto const dy = height / 20;
-  auto const vd = Vec2F(dx, dy);
-  auto const min = small_aabb.minima() - vd;
-  auto const max = small_aabb.maxima() + vd;
-  auto const aabb = AxisAlignedBox2(min, max);
-  auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
-  auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
-  Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
-  // For each angle
-  for (Int ia = 0; ia < num_angles; ++ia) {
-    // Try to avoid floating point error by accumulating the chord length locally
-    Float local_accum = 0;
-    Float const angle = pi_deg * static_cast<Float>(2 * ia + 1);
-    // Compute modular ray parameters
-    ModularRayParams const params(angle, spacing, aabb);
-    Int const num_rays = params.getTotalNumRays();
-    // For each ray
-    for (Int i = 0; i < num_rays; ++i) {
-      auto const ray = params.getRay(i);
-      // 8 intersections
-      auto intersections = intersect(ray);
-      um2::insertionSort(intersections.begin(), intersections.end());
-      // Each intersection should come in pairs.
-      for (Int j = 0; j < 4; ++j) {
-        Float const r0 = intersections[2 * j];
-        Float const r1 = intersections[2 * j + 1];
-        if (r1 < um2::inf_distance / 10) {
-          ASSERT(r1 - r0 < um2::inf_distance / 100);
-          local_accum += r1 - r0;
-          total_chords += 1;
-        }
-      }
-    }
-    total_length += local_accum;
-  }
-  return total_length / static_cast<Float>(total_chords);
+  return um2::pi<Float> * area() / perimeter();
 }
 
 } // namespace um2

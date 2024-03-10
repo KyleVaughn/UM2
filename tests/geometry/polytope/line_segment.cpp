@@ -67,21 +67,19 @@ TEST_CASE(jacobian)
 HOSTDEV
 TEST_CASE(getRotation)
 {
-  um2::LineSegment<2> line = makeLine<2>();
-  um2::Mat2x2<Float> rot = line.getRotation();
-  um2::LineSegment<2> line_rot(rot * line[0], rot * line[1]);
-  ASSERT_NEAR(line_rot[0][1], static_cast<Float>(0), eps);
-  ASSERT_NEAR(line_rot[1][1], static_cast<Float>(0), eps);
-  um2::LineSegment<2> line_rot2(um2::Vec2<Float>::zero(), rot * (line[1] - line[0]));
-  ASSERT_NEAR(line_rot2[0][0], static_cast<Float>(0), eps);
-  ASSERT_NEAR(line_rot2[0][1], static_cast<Float>(0), eps);
-  ASSERT_NEAR(line_rot2[1][1], static_cast<Float>(0), eps);
-  line[0][0] = static_cast<Float>(10);
-  rot = line.getRotation();
-  um2::LineSegment<2> line_rot3(um2::Vec2<Float>::zero(), rot * (line[1] - line[0]));
-  ASSERT_NEAR(line_rot3[0][0], static_cast<Float>(0), eps);
-  ASSERT_NEAR(line_rot3[0][1], static_cast<Float>(0), eps);
-  ASSERT_NEAR(line_rot3[1][1], static_cast<Float>(0), eps);
+  // Anchor p0 at (0, 0) and rotate p1 around a circle    
+  um2::Point2 const p0(0, 0);    
+  Float const dang = um2::pi<Float> / 128;    
+  Float ang = dang;    
+  while (ang < 2 * um2::pi<Float>) {    
+    um2::Point2 const p1(um2::cos(ang), um2::sin(ang));    
+    um2::LineSegment2 const line(p0, p1);    
+    auto const r = line.getRotation();
+    auto const p1_rot = r * p1;
+    ASSERT_NEAR(p1_rot[0], 1, eps);
+    ASSERT_NEAR(p1_rot[1], 0, eps);
+    ang += dang;    
+  } 
 }
 
 //=============================================================================
@@ -209,7 +207,8 @@ testEdgeForIntersections(um2::LineSegment2 const & l)
   Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
   Int constexpr rays_per_longest_edge = 100;
 
-  auto const aabb = l.boundingBox();
+  auto aabb = l.boundingBox();
+  aabb.scale(castIfNot<Float>(1.1));
   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
   auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
   Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);

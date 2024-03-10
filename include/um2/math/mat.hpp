@@ -2,6 +2,8 @@
 
 #include <um2/math/vec.hpp>
 
+#include <um2/stdlib/math/trigonometric_functions.hpp>
+
 //==============================================================================
 // MAT
 //==============================================================================
@@ -146,6 +148,15 @@ operator*(Mat3x3<T> const & a, Vec3<T> const & x) noexcept -> Vec3<T>
   return Vec3<T>{a(0, 0) * x[0] + a(0, 1) * x[1] + a(0, 2) * x[2],
                  a(1, 0) * x[0] + a(1, 1) * x[1] + a(1, 2) * x[2],
                  a(2, 0) * x[0] + a(2, 1) * x[1] + a(2, 2) * x[2]};
+}
+
+template <typename T>
+PURE HOSTDEV constexpr auto
+rotationMatrix(T angle) noexcept -> Mat2x2<T>
+{
+  T const c = um2::cos(angle);
+  T const s = um2::sin(angle);
+  return Mat2x2<T>{Vec2<T>{c, s}, Vec2<T>{-s, c}};
 }
 
 } // namespace um2

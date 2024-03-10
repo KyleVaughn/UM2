@@ -3,16 +3,12 @@
 #include <um2/geometry/polytope.hpp>
 #include <um2/geometry/line_segment.hpp>
 #include <um2/stdlib/math.hpp>
+#include <um2/math/cubic_equation.hpp>
 
-// Need complex for quadratic segments
-#if UM2_USE_CUDA
-#  include <cuda/std/complex>
-#else
-#  include <complex>
-#endif
+#include <iostream>
 
 //==============================================================================
-// QUADRATIC SEGMENT 
+// QUADRATIC SEGMENT
 //==============================================================================
 //
 // For quadratic segments, the parametric equation is
@@ -86,7 +82,7 @@ public:
   // dF/dr (r) -> (dx/dr, dy/dr, dz/dr)
   template <typename R>
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  jacobian(R r) const noexcept -> Vec<D, Float>; 
+  jacobian(R r) const noexcept -> Vec<D, Float>;
 
   // We want to transform the segment so that v[0] is at the origin and v[1]
   // is on the x-axis. We can do this by first translating by -v[0] and then
@@ -127,7 +123,12 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   curvesLeft() const noexcept -> bool requires(D == 2);
 
-}; // QuadraticSegment 
+  // Q(r) = C + rB + r²A
+  // returns {C, B, A}
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getPolyCoeffs() const noexcept -> Vec<3, Vertex>;
+
+}; // QuadraticSegment
 
 //==============================================================================
 // Free functions
@@ -219,6 +220,7 @@ template <typename R>
 PURE HOSTDEV constexpr auto
 QuadraticSegment<D>::jacobian(R const r) const noexcept -> Point<D>
 {
+  // Q'(r) = B + 2rA
   // (4 * r - 3) * (v0 - v2) + (4 * r - 1) * (v1 - v2)
   Float const w0 = 4 * static_cast<Float>(r) - 3;
   Float const w1 = 4 * static_cast<Float>(r) - 1;
@@ -396,87 +398,66 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 QuadraticSegment<D>::length() const noexcept -> Float
 {
-  // Turn off variable naming convention warning for this function, since we will use
-  // capital letters to denote vectors.
-  // NOLINTBEGIN(readability-identifier-naming) mathematical convention
-
   // The arc length integral may be reduced to an integral over the square root of a
   // quadratic polynomial using ‖𝘅‖ = √(𝘅 ⋅ 𝘅), which has an analytic solution.
   //              1             1
   // arc length = ∫ ‖Q′(r)‖dr = ∫ √(ar² + br + c) dr
   //              0             0
   //
-  // If a = 0, we need to use a different formula, else the result is NaN.
-  //  Q(r) = C + rB + r²A,
-  // where
-  //  C = P₁
-  //  B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]
-  //  A = -2(V₁₃ + V₂₃) =  2q[1] + 2q[2] - 4q[3]
-  // and
-  // V₁₃ = q[3] - q[1]
-  // V₂₃ = q[3] - q[2]
-  // Q′(r) = B + 2rA,
+  // Q(r) = x0 + r * x1 + r² * x2,
+  // Q′(r) = x1 + 2r * x2,
 
   if (isStraight(*this)) {
     return _v[0].distanceTo(_v[1]);
   }
 
-  Vec<D, Float> const v13 = _v[2] - _v[0];
-  Vec<D, Float> const v23 = _v[2] - _v[1];
-  Vec<D, Float> const A = -2 * (v13 + v23);
+  auto const coeffs = getPolyCoeffs();
+  auto const x1 = coeffs[1];
+  auto const x2 = coeffs[2];
 
-  // ‖Q′(r)‖ =  √(4(A ⋅A)r² + 4(A ⋅B)r + B ⋅B) = √(ar² + br + c)
+  // ‖Q′(r)‖ =  √(4(x2 ⋅x2)r² + 4(x2 ⋅x1)r + x1 ⋅x1) = √(ar² + br + c)
   // where
-  // a = 4(A ⋅ A)
-  // b = 4(A ⋅ B)
-  // c = B ⋅ B
+  // a = 4(x2 ⋅ x2)
+  // b = 4(x2 ⋅ x1)
+  // c = x1 ⋅ x1
 
-  Vec<D, Float> const B = 3 * v13 + v23;
-  ASSERT(squaredNorm(A) > eps_distance2);
-  Float const a = 4 * squaredNorm(A);
-  Float const b = 4 * dot(A, B);
-  Float const c = squaredNorm(B);
+  ASSERT(squaredNorm(x2) > eps_distance2);
+  Float const a = 4 * x2.squaredNorm();
+  Float const b = 4 * x2.dot(x1);
+  Float const c = x1.squaredNorm();
 
-  // √(ar² + br + c) = √a √( (r + b₁)^2 + c₁)
-  // where
-  Float const b1 = b / (2 * a);
-  Float const c1 = (c / a) - (b1 * b1);
-  // The step above with division by a is safe, since a ≠ 0.
-
-  // Let u = r + b₁, then
-  // 1                       1 + b₁
-  // ∫ √(ar² + br + c) dr = √a ∫ √(u² + c₁) du
-  // 0                         b₁
+  // According to Wolfram Alpha, the integral of √(ax² + bx + c) is
+  // ((b + 2 a x) sqrt(c + x (b + a x)))/(4 a)
+  // - ((b^2 - 4 a c) log(b + 2 a x + 2 sqrt(a) sqrt(c + x (b + a x))))/(8 a^(3/2))
+  // + constant
   //
-  // This is an integral that exists in common integral tables.
-  // Evaluation of the resultant expression may be simplified by using
+  // Simplifying the integral:
+  // ((b^2 - 4 a c) (log(2 sqrt(a) sqrt(c) + b) - log(2 sqrt(a) sqrt(a + b + c) + 2 a + b))
+  //  + sqrt(a) (2 (2 a + b) sqrt(a + b + c) - 2 b sqrt(c)))/(8 a^(3/2))
 
-  Float const lb = b1;
-  Float const ub = 1 + b1;
-  Float const L = um2::sqrt(c1 + lb * lb);
-  Float const U = um2::sqrt(c1 + ub * ub);
-  // Numerical issues may cause the bounds to be slightly outside the range [-1, 1].
-  // If we go too far outside this range, error out as something has gone wrong.
-  auto constexpr epsilon = castIfNot<Float>(1e-5);
-  Float const lb_l = lb / L;
-  Float const ub_u = ub / U;
-  Float constexpr clamp_bound = static_cast<Float>(1) - epsilon;
-#if UM2_ENABLE_ASSERTS
-  Float constexpr assert_bound = static_cast<Float>(1) + epsilon;
-  ASSERT(-assert_bound <= lb_l);
-  ASSERT(lb_l <= assert_bound);
-  ASSERT(-assert_bound <= ub_u);
-  ASSERT(ub_u <= assert_bound);
-#endif
-  Float const arg_l = um2::clamp(lb_l, -clamp_bound, clamp_bound);
-  Float const arg_u = um2::clamp(ub_u, -clamp_bound, clamp_bound);
-  Float const atanh_l = um2::atanh(arg_l);
-  Float const atanh_u = um2::atanh(arg_u);
-  Float const result = um2::sqrt(a) * (U + lb * (U - L) + c1 * (atanh_u - atanh_l)) / 2;
+  // sa = sqrt(a)
+  // sb = sqrt(b)
+  // sc = sqrt(c)
+  // sabc = sqrt(a + b + c)
+  // disc = b^2 - 4 a c
+  // a2b = 2 a + b
+
+  // (disc * (log(2 * sa * sc + b)
+  //  - log(2 * sa * sabc + a2b))
+  //  + sa * (2 * (a2b * sabc - b * sc))
+  //  ) / (8 * sa * sa * sa)
+  //
+  Float const sa = um2::sqrt(a);
+  Float const sc = um2::sqrt(c);
+  Float const sabc = um2::sqrt(a + b + c);
+  Float const disc = b * b - 4 * a * c;
+  Float const a2b = 2 * a + b;
+  Float const num = disc * (um2::log(2 * sa * sc + b) - um2::log(2 * sa * sabc + a2b)) + sa * (2 * (a2b * sabc - b * sc));
+  Float const den = 8 * sa * sa * sa;
+  Float const result  = num / den;
   ASSERT(0 <= result);
   ASSERT(result <= inf_distance);
   return result;
-  // NOLINTEND(readability-identifier-naming)
 }
 
 //==============================================================================
@@ -488,34 +469,28 @@ PURE HOSTDEV constexpr auto
 QuadraticSegment<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 {
   // Floatind the extrema by finding dx_i/dr = 0
-  //  Q(r) = P₁ + rB + r²A,
-  // where
-  //  B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]
-  //  A = -2(V₁₃ + V₂₃) =  2q[1] + 2q[2] - 4q[3]
-  // and
-  // V₁₃ = q[3] - q[1]
-  // V₂₃ = q[3] - q[2]
+  // Q(r) = C + rB + r²A,
   // Q′(r) = B + 2rA,
-  // (r_i,...) = -B / (2A)
-  // x_i = Q(r_i) = P₁ - B² / (4A)
+  // 0 = B + 2rA ==> (r_i,...) = -B / (2A)
+  // x_i = Q(r_i) = C + (r_i)B + (r_i)^2 A = C - B² / (4A)
   // Compare the extrema with the segment's endpoints to find the AABox
-  Vec<D, Float> const v02 = _v[2] - _v[0];
-  Vec<D, Float> const v12 = _v[2] - _v[1];
+  auto const coeffs = getPolyCoeffs();
+  auto const b = coeffs[1];
+  auto const a = coeffs[2];
   Point<D> minima = um2::min(_v[0], _v[1]);
   Point<D> maxima = um2::max(_v[0], _v[1]);
   for (Int i = 0; i < D; ++i) {
-    Float const a = -2 * (v02[i] + v12[i]);
-    if (um2::abs(a) < 4 * eps_distance) {
-      // The segment is almost a straight line, so the extrema are the endpoints.
+    // If a[i] is small, then x_i varies linearly with r, so the extrema are the
+    // end points and we can skip the computation.
+    if (um2::abs(a[i]) < 4 * eps_distance) {
       continue;
     }
-    // r_i = -B_i / (2A_i)
-    Float const half_b = (3 * v02[i] + v12[i]) / 2;
-    Float const r = -half_b / a;
+    Float const half_b = b[i] / 2;
+    Float const r = - half_b / a[i];
     // if r is not in [0, 1], then the extrema are not on the segment, hence
     // the segment's endpoints are the extrema.
     if (0 < r && r < 1) {
-      // x_i = Q(r_i) = P₁ - B² / (4A) = P₁ + r(B/2)
+      // x_i = Q(r_i) = C - B² / (4A) = C - r_i(B/2)
       Float const x = _v[0][i] + r * half_b;
       minima[i] = um2::min(minima[i], x);
       maxima[i] = um2::max(maxima[i], x);
@@ -533,108 +508,64 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 QuadraticSegment<D>::pointClosestTo(Vertex const & p) const noexcept -> Float
 {
-  // We want to use the complex functions in the std or cuda::std namespace
-  // depending on if we're using CUDA
-  // NOLINTBEGIN(google-build-using-namespace)
-#if UM2_USE_CUDA
-  namespace math = cuda::std;
-#else
-  namespace math = std;
-#endif
-  // NOLINTEND(google-build-using-namespace)
 
   if (isStraight(*this)) {
     return LineSegment<D>(_v[0], _v[1]).pointClosestTo(p);
   }
 
-  // Note the 1-based indexing in this section
-  //
   // The interpolation function of the quadratic segment is
   // Q(r) = C + rB + r²A,
-  // where
-  // C = P₁
-  // B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]
-  // A = -2(V₁₃ + V₂₃) =  2q[1] + 2q[2] - 4q[3]
-  // V₁₃ = q[3] - q[1]
-  // V₂₃ = q[3] - q[2]
   //
-  // We wish to find r which minimizes ‖P - Q(r)‖.
-  // This r also minimizes ‖P - Q(r)‖².
-  // It can be shown that this is equivalent to finding the minimum of the
-  // quartic function
-  // ‖P - Q(r)‖² = f(r) = a₄r⁴ + a₃r³ + a₂r² + a₁r + a₀
-  // Let W = P - P₁ = P - C
+  // We wish to find r which minimizes ‖Q(r) - P‖.
+  // This r also minimizes ‖Q(r) - P‖².
+  // ‖Q(r) - P‖² = f(r) = a₄r⁴ + a₃r³ + a₂r² + a₁r + a₀
+  // Let W = C - P
   // a₄ = A ⋅ A
   // a₃ = 2(A ⋅ B)
-  // a₂ = -2(A ⋅ W) + (B ⋅ B)
-  // a₁ = -2(B ⋅ W)
+  // a₂ = 2(A ⋅ W) + (B ⋅ B)
+  // a₁ = 2(B ⋅ W)
   // a₀ = W ⋅ W
   //
   // The minimum of f(r) occurs when f′(r) = ar³ + br² + cr + d = 0, where
   // a = 2(A ⋅ A)
   // b = 3(A ⋅ B)
-  // c = (B ⋅ B) - 2(A ⋅W)
-  // d = -(B ⋅ W)
+  // c = (B ⋅ B) + 2(A ⋅W)
+  // d = (B ⋅ W)
   // Note we factored out a 2
-  //
-  // We can then use Lagrange's method is used to find the roots.
-  // (https://en.wikipedia.org/wiki/Cubic_equation#Lagrange's_method)
-  Vec<D, Float> const v13 = _v[2] - _v[0];
-  Vec<D, Float> const v23 = _v[2] - _v[1];
-  Vec<D, Float> const A = -2 * (v13 + v23);
-  Float const a = 2 * squaredNorm(A);
-  Vec<D, Float> const B = 3 * v13 + v23;
-  Float const b = 3 * dot(A, B);
-  Vec<D, Float> const W = p - _v[0];
-  Float const c = squaredNorm(B) - 2 * dot(A, W);
-  Float const d = -dot(B, W);
+  auto const coeffs = getPolyCoeffs();
+  auto const vc = coeffs[0];
+  auto const vb = coeffs[1];
+  auto const va = coeffs[2];
+  auto const vw = vc - p;
+  Float const a = 2 * squaredNorm(va);
+  Float const b = 3 * va.dot(vb);
+  Float const c = squaredNorm(vb) + 2 * va.dot(vw);
+  Float const d = vb.dot(vw);
 
-  // Lagrange's method
-  // Compute the elementary symmetric functions
-  Float const e1 = -b / a; // Note for later s0 = e1
-  Float const e2 = c / a;
-  Float const e3 = -d / a;
-  // Compute the symmetric functions
-  Float const P = e1 * e1 - 3 * e2;
-  Float const S = 2 * e1 * e1 * e1 - 9 * e1 * e2 + 27 * e3;
-  // We solve z^2 - Sz + P^3 = 0
-  Float const disc = S * S - 4 * P * P * P;
-  auto const eps = castIfNot<Float>(1e-7);
+  // Return the real part of the 3 roots of the cubic equation
+  auto const roots = solveCubic(a, b, c, d);
 
-  //  assert(um2::abs(disc) > eps); // 0 single or double root
-  //  if (0 < disc) { // One real root
-  //    Float const s1 = um2::cbrt((S + um2::sqrt(disc)) / 2);
-  //    Float const s2 = (um2::abs(s1) < eps) ? 0 : P / s1;
-  //    // Using s0 = e1
-  //    return (e1 + s1 + s2) / 3;
-  //  }
-  // A complex cbrt
-  Float constexpr half = static_cast<Float>(1) / 2;
-  Float constexpr third = static_cast<Float>(1) / 3;
-  math::complex<Float> const s1 = math::exp(
-      math::log((S + math::sqrt(static_cast<math::complex<Float>>(disc))) * half) * third);
-  math::complex<Float> const s2 = (abs(s1) < eps) ? 0 : P / s1;
-  // zeta1 = (-1/2, sqrt(3)/2)
-  math::complex<Float> const zeta1(-half, um2::sqrt(static_cast<Float>(3)) / 2);
-  math::complex<Float> const zeta2(conj(zeta1));
+  // Find the root which minimizes the squared distance to the point.
+  // If the closest root is less than 0 or greater than 1, it isn't valid.
+  // It's not clear that we can simply clamp the root to [0, 1], so we test
+  // against v[0] and v[1] explicitly.
 
-  // Find the real root that minimizes the distance to p
   Float r = 0;
-  Float dist = p.squaredDistanceTo(_v[0]);
-  if (p.squaredDistanceTo(_v[1]) < dist) {
+  Float sq_dist = p.squaredDistanceTo(_v[0]);
+  Float const sq_dist1 = p.squaredDistanceTo(_v[1]);
+  if (sq_dist1 < sq_dist) {
     r = 1;
-    dist = p.squaredDistanceTo(_v[1]);
+    sq_dist = sq_dist1;
   }
 
-  Vec3<Float> const rr((e1 + real(s1 + s2)) / 3, (e1 + real(zeta2 * s1 + zeta1 * s2)) / 3,
-                   (e1 + real(zeta1 * s1 + zeta2 * s2)) / 3);
-  for (Int i = 0; i < 3; ++i) {
-    Float const rc = rr[i];
-    if (0 <= rc && rc <= 1) {
-      Float const dc = p.squaredDistanceTo((*this)(rc));
-      if (dc < dist) {
-        r = rc;
-        dist = dc;
+  for (auto const rr : roots) {
+    std::cerr << "rr: " << rr << std::endl;
+    if (0 <= rr && rr <= 1) {
+      auto const p_root = (*this)(rr);
+      Float const p_sq_dist = p.squaredDistanceTo(p_root);
+      if (p_sq_dist < sq_dist) {
+        r = rr;
+        sq_dist = p_sq_dist;
       }
     }
   }
@@ -650,13 +581,17 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 isStraight(QuadraticSegment<D> const & q) noexcept -> bool
 {
-  // LineSegment l(v[0], v[1]);
-  // Find the point p on l that is closest to v[2]
-  // if p.squaredDistanceTo(v[2]) < eps_distance2, then we can treat the segment as
-  // straight.
-  LineSegment<D> const l(q[0], q[1]);
-  Point<D> const p = l(l.pointClosestTo(q[2])); 
-  return p.squaredDistanceTo(q[2]) < eps_distance2;
+  // Q(r) = C + rB + r²A,
+  // if A is small, then the segment is straight.
+  // Drop the multiplication by 2
+  Point<D> const a = q[0] + q[1] - 2 * q[2];
+  // a is effectively the 2 * the displacement of the q[2] from the midpoint of
+  // q[0] and q[1]
+  //
+  // Note: we can't just do LineSegment(q[0], q[1]).distanceTo(q[2]) < eps_distance
+  // The curve would not be straight if q[2] were very close to q[0] or q[1],
+  // despite passing the distance test.
+  return squaredNorm(a) < 16 * eps_distance2;
 }
 
 //==============================================================================
@@ -683,7 +618,7 @@ PURE HOSTDEV constexpr auto
 enclosedCentroid(QuadraticSegment2 const & q) noexcept -> Vec2F
 {
   // For a quadratic segment, with P₁ = (0, 0), P₂ = (x₂, 0), and P₃ = (x₃, y₃),
-  // where 0 < x₂, if the area bounded by q and the x-axis is convex, it can be
+  // if the area bounded by q and the x-axis is convex, it can be
   // shown that the centroid of the area bounded by the segment and x-axis
   // is given by
   // C = (3x₂ + 4x₃, 4y₃) / 10
@@ -710,19 +645,33 @@ enclosedCentroid(QuadraticSegment2 const & q) noexcept -> Vec2F
   //            | -v₂  v₁ |
   // since U is unitary.
   //
-  // Therefore, the centroid of the area bounded by the segment is given by
+  // To transfrom the segment to the x-axis, for each point P,
+  // Pᵤ = Uᵗ * (P - P₁)
+  // or
+  // P₁ᵤ = (0, 0)
+  // P₂ᵤ = Uᵗ * (P₂ - P₁)
+  // P₃ᵤ = Uᵗ * (P₃ - P₁)
+  //
+  // P₂ᵤx = u₁ ⋅ (P₂ - P₁)
+  // P₃ᵤx = u₁ ⋅ (P₃ - P₁)
+  // P₃ᵤy = u₂ ⋅ (P₃ - P₁)
+  // Hence, the centroid after the transformation is given by
+  // Cᵤ = (3P₂ᵤx + 4P₃ᵤx, 4P₃ᵤy) / 10
+  //
+  // To transform the centroid back to the standard basis, we use
   // C = U * Cᵤ + P₁
-  // where
-  // Cᵤ = (u₁ ⋅ (3(P₂ - P₁) + 4(P₃ - P₁)), 4(u₂ ⋅ (P₃ - P₁))) / 10
   Vec2F const v12 = q[1] - q[0];
-  Vec2F const four_v13 = 4 * (q[2] - q[0]);
+  Vec2F const v13 = q[2] - q[0];
   Vec2F const u1 = v12.normalized();
   Vec2F const u2(-u1[1], u1[0]);
-  // NOLINTBEGIN(readability-identifier-naming) capitalize matrix
-  Mat2x2F const U(u1, u2);
-  Vec2F const Cu(u1.dot((3 * v12 + four_v13)) / 10, u2.dot(four_v13) / 10);
-  return U * Cu + q[0];
-  // NOLINTEND(readability-identifier-naming)
+  Mat2x2F const u(u1, u2);
+  Float const p2ux = u1.dot(v12);
+  Float const p3ux = u1.dot(v13);
+  Float const p3uy = u2.dot(v13);
+  Vec2F cu(3 * p2ux + 4 * p3ux, 4 * p3uy);
+  Float constexpr tenth = static_cast<Float>(1) / static_cast<Float>(10);
+  cu *= tenth;
+  return u * cu + q[0];
 }
 
 //==============================================================================
@@ -771,7 +720,12 @@ QuadraticSegment<D>::distanceTo(Vertex const & p) const noexcept -> Float
 //   s = (-b ± √(b²-4ac))/2a
 // s is invalid if b² < 4ac
 // Once we have a valid s
-// O + rD = P ⟹   r = ((P - O) ⋅ D)/(D ⋅ D)
+// P = Q(s) = C + sB + s²A
+// O + rD = P ⟹   rD = (C - O) + s(B + sA)
+//            ⟹   r = ([(C - O) + s(B + sA)] ⋅ D)/(D ⋅ D)
+// Since D is a unit vector, we can simplify the above expression to
+// r = [(C - O) + s(B + sA)] ⋅ D
+// r is valid if 0 ≤ r ≤ ∞
 
 template <Int D>
 PURE HOSTDEV constexpr auto
@@ -779,34 +733,31 @@ QuadraticSegment<D>::intersect(Ray2 const ray) const noexcept -> Vec2F
 requires(D == 2)
 {
   // NOLINTBEGIN(readability-identifier-naming) mathematical notation
-  // This code is called very frequently so we sacrifice readability for speed.
   //Vec2F const v01 = q[1] - q[0];
   Vec2F const v02 = _v[2] - _v[0];
   Vec2F const v12 = _v[2] - _v[1];
 
   Vec2F const A = -2 * (v02 + v12); // -2(V₁₃ + V₂₃)
   Vec2F const B = 3 * v02 + v12;    // 3V₁₃ + V₂₃
-  // Vec2F const C = q[0];
+  Vec2F const C = _v[0];
 
-  // Vec2F const D = ray.d;
-  // Vec2F const O = ray.o;
+  Vec2F const DD = ray.direction();
+  Vec2F const O = ray.origin();
 
-  Vec2F const voc = _v[0] - ray.origin(); // C - O
+  Vec2F const voc = C - O; // (C - O)
 
-  Float const a = A.cross(ray.direction());   // (A × D)ₖ
-  Float const b = B.cross(ray.direction());   // (B × D)ₖ
-  Float const c = voc.cross(ray.direction()); // ((C - O) × D)ₖ
+  Float const a = A.cross(DD);   // (A × D)ₖ
+  Float const b = B.cross(DD);   // (B × D)ₖ
+  Float const c = voc.cross(DD); // ((C - O) × D)ₖ
 
   Vec2F result(inf_distance, inf_distance);
   auto constexpr epsilon = castIfNot<Float>(1e-8);
   if (um2::abs(a) < epsilon) {
     Float const s = -c / b;
     if (0 <= s && s <= 1) {
-      Vec2F const P = s * (s * A + B) + voc;
-      Float const r0 = dot(P, ray.direction());
-      // ray direction is a unit vector, no need for / ray.direction().squaredNorm();
-      if (0 <= r0) {
-        result[0] = r0;
+      Float const r = (voc + s * (B + s * A)).dot(DD);
+      if (0 <= r) {
+        result[0] = r;
       }
     }
     return result;
@@ -819,19 +770,15 @@ requires(D == 2)
   Float const s1 = (-b - um2::sqrt(disc)) / (2 * a);
   Float const s2 = (-b + um2::sqrt(disc)) / (2 * a);
   if (0 <= s1 && s1 <= 1) {
-    Vec2F const P = s1 * (s1 * A + B) + voc;
-    Float const r0 = dot(P, ray.direction());
-    // / ray.direction().squaredNorm();
-    if (0 <= r0) {
-      result[0] = r0;
+    Float const r = (voc + s1 * (B + s1 * A)).dot(DD);
+    if (0 <= r) {
+      result[0] = r;
     }
   }
   if (0 <= s2 && s2 <= 1) {
-    Vec2F const P = s2 * (s2 * A + B) + voc;
-    Float const r1 = dot(P, ray.direction());
-    /// ray.direction().squaredNorm();
-    if (0 <= r1) {
-      result[1] = r1;
+    Float const r = (voc + s2 * (B + s2 * A)).dot(DD);
+    if (0 <= r) {
+      result[1] = r;
     }
   }
   // NOLINTEND(readability-identifier-naming)
@@ -848,6 +795,29 @@ QuadraticSegment<D>::curvesLeft() const noexcept -> bool
 requires (D == 2)
 {
   return areCCW(_v[0], _v[2], _v[1]);
+}
+
+//==============================================================================
+// getPolyCoeffs
+//==============================================================================
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+QuadraticSegment<D>::getPolyCoeffs() const noexcept -> Vec<3, Vertex>
+{
+  // For quadratic segments, the parametric equation is
+  //  Q(r) = P₁ + rB + r²A,
+  // where
+  //  B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]
+  //  A = -2(V₁₃ + V₂₃) =  2q[1] + 2q[2] - 4q[3]
+  // and
+  // V₁₃ = q[3] - q[1]
+  // V₂₃ = q[3] - q[2]
+  Vec<D, Float> const v13 = _v[2] - _v[0];
+  Vec<D, Float> const v23 = _v[2] - _v[1];
+  Vec<D, Float> const b = 3 * v13 + v23;
+  Vec<D, Float> const a = -2 * (v13 + v23);
+  return {_v[0], b, a};
 }
 
 } // namespace um2

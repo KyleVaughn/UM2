@@ -1,7 +1,28 @@
-curvesLeft
-isConvex
-MCL < MCL regular. 
-How to count the chords?
+pointClosestTo
+
+remove IOstream
+  tests
+  files
+
+benchmark quadratic segment intersection.
+  Should we do more computation and save branching for a more complex
+  boolean at the end?
+
+QuadraTicSegment
+  isLeft
+  pointClosestTo
+  intersect
+
+  OK: 
+  interp
+  jacobian
+  getRotation
+  length
+  boundingBox
+  enclosedArea
+  enclosedCentroid
+
+test points
 
 scan vector?
 
@@ -62,11 +83,6 @@ constexpr tests
 CUDA check
 
 PURE and ASSERTS/Log messages
-
-string functions
-string tests
-
-string init can be simplified to exclude short and long branches
 
 check nolints, prad
 

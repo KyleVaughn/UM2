@@ -123,6 +123,10 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   intersect(Ray<D> const & ray, Vec<D, Float> const & inv_dir) const noexcept -> Vec2F;
 
+  // Scales the box by s, centered at the centroid.
+  HOSTDEV constexpr void
+  scale(Float s) noexcept;
+
 }; // class AxisAlignedBox
 
 //==============================================================================
@@ -409,6 +413,16 @@ PURE HOSTDEV constexpr auto
 boundingBox(Point<D> const * points, Int const n) noexcept -> AxisAlignedBox<D>
 {
   return boundingBox(points, points + n);
+}
+
+template <Int D>
+HOSTDEV constexpr void
+AxisAlignedBox<D>::scale(Float s) noexcept
+{
+  ASSERT(s >= 0);
+  auto const dxyz = extents() * ((s - 1) / 2);
+  _min -= dxyz;
+  _max += dxyz;
 }
 
 } // namespace um2
