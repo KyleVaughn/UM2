@@ -3,8 +3,6 @@
 #include <um2/stdlib/math.hpp>
 #include <um2/geometry/modular_rays.hpp>    
     
-#include <iostream> 
-
 #include "../../test_macros.hpp"
 
 // CUDA is annoying and defines half, so we have to use ahalf
@@ -225,11 +223,6 @@ testEdgeForIntersections(um2::LineSegment2 const & l)
       if (r < um2::inf_distance / 10) {
         um2::Point2 const p = ray(r);
         Float const d = l.distanceTo(p);
-        if (d > 10 * um2::eps_distance) {
-          std::cerr << "d = " << d << std::endl;
-          std::cerr << "r = " << r << std::endl;
-          std::cerr << "p = (" << p[0] << ", " << p[1] << ")" << std::endl;
-        }
         ASSERT(d < 10 * um2::eps_distance);
       }
     }

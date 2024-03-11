@@ -1,8 +1,6 @@
 #include <um2/geometry/quadratic_segment.hpp>
 #include <um2/geometry/modular_rays.hpp>
 
-#include <iostream>
-
 #include "../../test_macros.hpp"
 
 // Description of the quadratic segments used in test cases
@@ -405,52 +403,82 @@ TEST_CASE(isLeft)
 //==============================================================================
 
 HOSTDEV
+void
+testPoint(um2::QuadraticSegment2 const & q, um2::Point2 const p)
+{
+  auto constexpr dr = castIfNot<Float>(2e-3);
+  Float const r = q.pointClosestTo(p);
+  um2::Point2 const p_closest = q(r);
+  Float const d_closest = p.distanceTo(p_closest);
+
+  if (0 <= (r + dr) && (r + dr) <= 1) {
+    um2::Point2 const p_plus = q(r + dr);
+    Float const d_plus = p.distanceTo(p_plus);
+    ASSERT(d_closest <= d_plus);
+  }
+  if (0 <= (r - dr) && (r - dr) <= 1) {
+    um2::Point2 const p_minus = q(r - dr);
+    Float const d_minus = p.distanceTo(p_minus);
+    ASSERT(d_closest <= d_minus);
+  }
+}
+
+HOSTDEV
+void
+testPCT(um2::QuadraticSegment2 const & q)
+{
+  // For a number of points on the bounding box of the segment,
+  // find the point on the segment that is closest to the point.
+  // Perturb the parametric coordinate of the point in the + and - directions.
+  // If either of the perturbed points is closer to the box point than the
+  // original point, then the test fails.
+  Int constexpr points_per_side = 100;
+
+  auto aabb = q.boundingBox();
+  aabb.scale(castIfNot<Float>(1.1));
+  auto const dx =  aabb.width() / static_cast<Float>(points_per_side - 1);
+  // Bottom side
+  for (Int i = 0; i < points_per_side; ++i) {
+    Float const x = aabb.xMin() + i * dx;
+    Float const y = aabb.yMin();
+    um2::Point2 const p(x, y);
+    testPoint(q, p);
+  }
+  // Top side
+  for (Int i = 0; i < points_per_side; ++i) {
+    Float const x = aabb.xMin() + i * dx;
+    Float const y = aabb.yMax();
+    um2::Point2 const p(x, y);
+    testPoint(q, p);
+  }
+  auto const dy =  aabb.height() / static_cast<Float>(points_per_side - 1);
+  // Left side
+  for (Int i = 0; i < points_per_side; ++i) {
+    Float const x = aabb.xMin();
+    Float const y = aabb.yMin() + i * dy;
+    um2::Point2 const p(x, y);
+    testPoint(q, p);
+  }
+  // Right side
+  for (Int i = 0; i < points_per_side; ++i) {
+    Float const x = aabb.xMax();
+    Float const y = aabb.yMin() + i * dy;
+    um2::Point2 const p(x, y);
+    testPoint(q, p);
+  }
+}
+
+HOSTDEV
 TEST_CASE(pointClosestTo)
 {
-  // Due to difficulty in computing the closest point to a quadratic segment,
-  // we will simply test a point, compute the distance, then perturb the value
-  // in both directions and ensure that the distance increases.
-  um2::Vector<um2::Point2> const test_points = {
-      um2::Point2(castIfNot<Float>(1), castIfNot<Float>(3)),      // always left
-      um2::Point2(castIfNot<Float>(1), castIfNot<Float>(-3)),     // always right
-      um2::Point2(castIfNot<Float>(-1), ahalf),              // always left
-      um2::Point2(castIfNot<Float>(-1), castIfNot<Float>(-0.5)),  // always right
-      um2::Point2(castIfNot<Float>(3), ahalf),               // always left
-      um2::Point2(castIfNot<Float>(3), castIfNot<Float>(-0.5)),   // always right
-      um2::Point2(castIfNot<Float>(0.1), castIfNot<Float>(0.9)),  // always left
-      um2::Point2(castIfNot<Float>(0.1), castIfNot<Float>(-0.9)), // always right
-      um2::Point2(castIfNot<Float>(1.9), castIfNot<Float>(0.9)),  // always left
-      um2::Point2(castIfNot<Float>(1.9), castIfNot<Float>(-0.9)), // always right
-      um2::Point2(castIfNot<Float>(1.1), ahalf),
-      um2::Point2(castIfNot<Float>(2), ahalf),
-      um2::Point2(castIfNot<Float>(2.1), castIfNot<Float>(0.01)),
-      um2::Point2(castIfNot<Float>(2.1), ahalf),
-  };
-  auto const big_eps = castIfNot<Float>(1e-2);
-  um2::Vector<um2::QuadraticSegment2> const segments = {
-      makeSeg1<2>(), makeSeg2<2>(), makeSeg3<2>(), makeSeg4<2>(),
-      makeSeg5<2>(), makeSeg6<2>(), makeSeg7<2>(), makeSeg8<2>(),
-  };
-
-  for (auto const & q : segments) {
-    for (um2::Point2 const & p : test_points) {
-      Float const r0 = q.pointClosestTo(p);
-      Float const d0 = p.distanceTo(q(r0));
-      Float const r1 = r0 - big_eps;
-      Float const d1 = p.distanceTo(q(r1));
-      Float const r2 = r0 + big_eps;
-      Float const d2 = p.distanceTo(q(r2));
-      std::cerr << "r0 = " << r0 << ", r1 = " << r1 << ", r2 = " << r2 << std::endl;
-      std::cerr << "d0 = " << d0 << ", d1 = " << d1 << ", d2 = " << d2 << std::endl;
-      if (0 <= r1 && r1 <= 1) {
-        ASSERT(d0 < d1);
-      }
-      if (0 <= r2 && r2 <= 1) {
-        std::cerr << "d0 = " << d0 << ", d2 = " << d2 << std::endl;
-        ASSERT(d0 < d2);
-      }
-    }
-  }
+  testPCT(makeSeg1<2>());
+  testPCT(makeSeg2<2>());
+  testPCT(makeSeg3<2>());
+  testPCT(makeSeg4<2>());
+  testPCT(makeSeg5<2>());
+  testPCT(makeSeg6<2>());
+  testPCT(makeSeg7<2>());
+  testPCT(makeSeg8<2>());
 }
 
 //==============================================================================----------
@@ -467,7 +495,7 @@ testEnclosedArea(um2::QuadraticSegment2 const & q)
 
   auto aabb = q.boundingBox();
   auto const dx =  aabb.width() / static_cast<Float>(nrays);
-  um2::Vec2F const dir(0, 1); 
+  um2::Vec2F const dir(0, 1);
   um2::Vec2F origin = aabb.minima();
   origin[0] -= dx / 2;
   Float area = 0;
@@ -483,7 +511,7 @@ testEnclosedArea(um2::QuadraticSegment2 const & q)
     if (intersections[1] < um2::inf_distance / 10) {
       auto const p0 = ray(intersections[0]);
       auto const p1 = ray(intersections[1]);
-      auto const d = p0.distanceTo(p1); 
+      auto const d = p0.distanceTo(p1);
       area += d * dx;
     // 1 valid intersection
     } else if (intersections[0] < um2::inf_distance / 10) {
@@ -544,7 +572,7 @@ testEnclosedCentroid(um2::QuadraticSegment2 const & q)
 
   auto aabb = q.boundingBox();
   auto const dx =  aabb.width() / static_cast<Float>(nrays);
-  um2::Vec2F const dir(0, 1); 
+  um2::Vec2F const dir(0, 1);
   um2::Vec2F origin = aabb.minima();
   origin[0] -= dx / 2;
   Float area = 0;
@@ -561,10 +589,10 @@ testEnclosedCentroid(um2::QuadraticSegment2 const & q)
     if (intersections[1] < um2::inf_distance / 10) {
       auto const p0 = ray(intersections[0]);
       auto const p1 = ray(intersections[1]);
-      auto const d = p0.distanceTo(p1); 
+      auto const d = p0.distanceTo(p1);
       auto const p_center = um2::midpoint(p0, p1);
       auto const area_segment = d * dx;
-      area += area_segment; 
+      area += area_segment;
       centroid += area_segment * p_center;
     // 1 valid intersection
     } else if (intersections[0] < um2::inf_distance / 10) {
@@ -616,6 +644,10 @@ TEST_CASE(enclosedCentroid)
   ASSERT(centroid6.isApprox(centroid6_rot));
 }
 
+//==============================================================================
+// intersect
+//==============================================================================
+
 HOSTDEV
 void
 testEdgeForIntersections(um2::QuadraticSegment2 const & q)
@@ -645,16 +677,10 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
         Float const r = intersections[j];
         if (r < um2::inf_distance / 10) {
           um2::Point2 const p = ray(r);
-          Float const d = q.distanceTo(p);
-          if (d > eps_pt) {
-            std::cerr << "j = " << j << std::endl;
-            std::cerr << "ray origin = (" << ray.origin()[0] << ", " << ray.origin()[1] << ")" << std::endl;
-            std::cerr << "ray direction = (" << ray.direction()[0] << ", " << ray.direction()[1] << ")" << std::endl;
-            std::cerr << "d = " << d << std::endl;
-            std::cerr << "r = " << r << std::endl;
-            std::cerr << "p = (" << p[0] << ", " << p[1] << ")" << std::endl;
-          }
-//          ASSERT(d < eps_pt);
+          Float const s = q.pointClosestTo(p);
+          um2::Point2 const q_closest = q(s);
+          Float const d = q_closest.distanceTo(p);
+          ASSERT(d < eps_pt);
         }
       }
     }
@@ -664,21 +690,18 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
 HOSTDEV
 TEST_CASE(intersect)
 {
-  std::cout << "Seg2" << std::endl;
   testEdgeForIntersections(makeSeg2<2>());
-  std::cout << "Seg3" << std::endl;
   testEdgeForIntersections(makeSeg3<2>());
-  std::cout << "Seg4" << std::endl;
   testEdgeForIntersections(makeSeg4<2>());
-  std::cout << "Seg5" << std::endl;
   testEdgeForIntersections(makeSeg5<2>());
-  std::cout << "Seg6" << std::endl;
   testEdgeForIntersections(makeSeg6<2>());
-  std::cout << "Seg7" << std::endl;
   testEdgeForIntersections(makeSeg7<2>());
-  std::cout << "Seg8" << std::endl;
   testEdgeForIntersections(makeSeg8<2>());
 }
+
+//==============================================================================
+// testPolyCoeffs
+//==============================================================================
 
 template <Int D>
 HOSTDEV

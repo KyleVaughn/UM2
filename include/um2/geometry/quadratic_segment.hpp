@@ -2,10 +2,9 @@
 
 #include <um2/geometry/polytope.hpp>
 #include <um2/geometry/line_segment.hpp>
+#include <um2/geometry/triangle.hpp>
 #include <um2/stdlib/math.hpp>
 #include <um2/math/cubic_equation.hpp>
-
-#include <iostream>
 
 //==============================================================================
 // QUADRATIC SEGMENT
@@ -262,132 +261,121 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D == 2)
 {
-  // This routine has previously been a major bottleneck, so some readability
-  // has been sacrificed for performance. Hopefully the extensive comments
-  // will make up for this.
-  //
   // The quadratic segment has an equivalent quadratic Bezier curve.
   // The triangle formed by the control points of the quadratic Bezier curve
   // bound the curve. If p is not in this triangle we can ignore the curvature of the
-  // segment and return based upon areCCW(v[0], v[1], p). If the triangle is CCW oriented,
-  //    We will check that p is in the triangle by checking that p is left of each edge of
-  //    the triangle.
-  // else
-  //    We will check that p is in the triangle by checking that p is right of each edge
-  //    of the triangle.
-  // We manually perform the check for (v0, v1) since we want to reuse v01 and v0p.
-  Vec2F const v01 = _v[1] - _v[0];
+  // segment and return simply based upon areCCW(v[0], v[1], p).
   Vec2F const bcp = getBezierControlPoint(*this);
-  Vec2F const v0b = bcp - _v[0];
-  Vec2F const v0p = p - _v[0];
-  bool const tri_is_ccw = v01.cross(v0b) >= 0;
-  {
-    bool const b0 = v01.cross(v0p) >= 0;  // areCCW(v[0], v[1], p) == Left of edge 0
-    bool const b1 = areCCW(_v[1], bcp, p); // Left of edge 1
-    bool const b2 = areCCW(bcp, _v[0], p); // Left of edge 2
-    // if b0 && b1 && b2, the point is in the triangle, and we must perform further
-    // analysis.
-    // if !(b0 && b1 && b2), the point is outside the triangle, and we may return
-    // b0
-    bool const p_in_tri = tri_is_ccw ? (b0 && b1 && b2) : (!b0 && !b1 && !b2);
-    if (!p_in_tri) {
-      return b0;
-    }
+  Triangle2 tri(_v[0], _v[1], bcp);
+  // precondition for tri.contains(p) is that tri.isCCW()
+  if (!tri.isCCW()) {
+    tri.flip();
+  }
+  ASSERT(tri.isCCW());
+  if (!tri.contains(p)) {
+    return areCCW(_v[0], _v[1], p);
   }
 
-  // We want to rotate the segment so that v[0] is at the origin and v[1] is on the
-  // x-axis. We then take note of the sign of the rotated v[2] to determine if the
-  // segment curves left or right. We will orient the segment so that it curves right.
-  //     Compute the rotation matrix
-  Float const v01_norm = v01.norm();
-  //     We can avoid a matrix multiplication by using the fact that the y-coordinate of
-  //     v1_r is zero.
-  Vec2F const v1_r(v01_norm, static_cast<Float>(0));
-  Vec2F const v01_normalized = v01 / v01_norm;
-  //     NOLINTBEGIN(readability-identifier-naming) matrix notation
-  Mat2x2F const R(Vec2F(v01_normalized[0], -v01_normalized[1]),
-                  Vec2F(v01_normalized[1], v01_normalized[0]));
-  Vec2F const v02 = _v[2] - _v[0];
-  Vec2F v2_r = R * v02;
-  Vec2F p_r = R * (p - _v[0]);
-  bool const curves_right = v2_r[1] >= 0;
+  // The point is in the bounding triangle, so we must perform further analysis.
+  // To make the math easier, we transform the coordinate system so that v[0] is at the
+  // origin and v[1] is on the x-axis. In particular, we want v[1][0] > 0.
+
+  QuadraticSegment2 q(Point2(0, 0), _v[1] - _v[0], _v[2] - _v[0]);
+  Mat2x2F const rot = q.getRotation();
+  q[1] = rot * q[1];
+  q[2] = rot * q[2];
+  ASSERT(um2::abs(q[1][1]) < eps_distance);
+  ASSERT(q[1][0] > 0);
+  auto p_r = rot * (p - _v[0]);
+
+  // Orient the segment so that it curves to the right. (positive y-coordinat for v[2])
+  bool const curves_right = q[2][1] >= 0;
   if (!curves_right) {
     // Flip the y-coordinates to be greater than or equal to zero
-    v2_r[1] = -v2_r[1];
+    q[2][1] = -q[2][1];
     p_r[1] = -p_r[1];
   }
-  // If v2_r[1] < epsilonDistance, then the segment is straight and we can use the cross
-  // product test to return early.
-  bool const is_straight = v2_r[1] <= eps_distance;
-  if (is_straight) {
-    // if !curves_right, we flipped the y-coordinates, so we need to flip the sign of the
-    // cross product.
-    // | positive cross product | curves_right | final result |
-    // |------------------------|--------------|--------------|
-    // | true                   | true         | true         |
-    // | false                  | true         | false        |
-    // | true                   | false        | false        |
-    // | false                  | false        | true         |
-    return (v1_r.cross(p_r) >= 0) ? curves_right : !curves_right;
+  ASSERT(q[1][0] > 0);
+  ASSERT(q[2][1] >= 0);
+
+  // Now, since we may have flipped the y-coordinates, we will always need to
+  // account for this when we return the result.
+  // | isLeft | curves_right | final result |
+  // |--------|--------------|--------------|
+  // | true   | true         | true         |
+  // | false  | true         | false        |
+  // | true   | false        | false        |
+  // | false  | false        | true         |
+  // Or, simply: curves_right ? is_left : !is_left
+
+  // The point must be above the origin if it is in the bounding triangle.
+  ASSERT(p_r[1] >= 0);
+  //  // If the point is below the origin, then the point is right of the segment
+  //  if (p_r[1] < 0) {
+  //    return !curves_right;
+  //  }
+
+  // If q[2][1] < eps_distance, then the segment is straight and we can exit early.
+  // Note q[2][1] is positive.
+  if (q[2][1] <= eps_distance) {
+    // LineSegment2(q[0], q[1]).isLeft(p_r) is equivalent to areCCW(q[0], q[1], p_r)
+    // areCCW(q[0], q[1], p_r) is equivalent to 0 <= (q[1] - q[0]).cross(p_r - q[0])
+    // Since q[0] == (0, 0), we can simplify the cross product to q[1].cross(p_r).
+    // q[1].cross(p_r) is equivalent to q[1][0] * p_r[1] - q[1][1] * p_r[0]
+    // Since q[1][1] == 0, we can simplify the cross product to q[1][0] * p_r[1]
+    // Since q[1][0] > 0, we can simplify further to p_r[1] >= 0
+    bool const is_left = p_r[1] >= 0;
+    return curves_right ? is_left : !is_left;
   }
 
-  // We now wish to compute the bounding box of the segment in order to determine if we
-  // need to treat the segment as a straight line or a curve. If the point is outside the
-  // triangle, then we can treat the segment like a straight line.
-  //  Q(r) = C + rB + r²A
-  // where
-  //  C = (0, 0)
-  //  B =  4 * v2_r - v1_r
-  //  A = -4 * v2_r + 2 * v1_r = -B + v1_r
-  // Q′(r) = B + 2rA,
-  // The stationary points are (r_i,...) = -B / (2A)
-  // Q(r_i) = -B² / (4A) = r_i(B/2)
-  // Since v1_r[1] = 0 and v2_r[1] > 0, we know that:
-  //    B[1] > 0
-  //    A[1] = -B[1], which implies A[1] < 0
-  //    A[1] < 0 implies Q(r_i) is strictly positive
-
-  // If the point is below the origin, then the point is right of the segment
-  if (p_r[1] < 0) {
-    return !curves_right;
-  }
-  Float const Bx = 4 * v2_r[0] - v1_r[0];
-  Float const By = 4 * v2_r[1]; // Positive
-  Float const Ax = -Bx + v1_r[0];
-  Float const Ay = -By; // Negative
-  ASSERT_ASSUME(By > 0);
-  ASSERT_ASSUME(Ay < 0);
-
-  // If the point is in the bounding triangle of the segment,
-  // we will find the point on the segment that shares the same x-coordinate
-  //  Q(r) = C + rB + r²A = P
+  // Otherwise, there is non-trivial curvature in the segment.
+  // Find rx such that Q(rx)[0] = p_r[0].
+  // Use the y-coordinate/coordinates of the point/points to check if the point 
+  // is to the left of the segment.
+  // We must also check that rx is in [0, 1] to ensure that the point is valid.
+  //
+  // Q(r) = C + rB + r²A
+  // In this case: 
+  // C = q[0] = (0, 0)
+  // B = -q[1] + 4q[2]
+  // A = 2q[1] - 4q[2] = -B + q[1]
   // Hence we wish to solve 0 = -P_x + rB_x + r²A_x for r.
   // This is a quadratic equation, which has two potential solutions.
+  // 0 = c + br + ar²
   // r = (-b ± √(b² - 4ac)) / 2a
-  // if A[0] == 0, then we have a well-behaved quadratic segment, and there is one root.
+  // if A_x == 0, then we have a well-behaved quadratic segment, and there is one root.
   // This is the expected case.
-  if (um2::abs(Ax) < 4 * eps_distance) {
-    // This is a linear equation, so there is only one root.
-    Float const r = p_r[0] / Bx; // B[0] != 0, otherwise the segment would be degenerate.
-    // We know the point is in the AABB of the segment, so we expect r to be in [0, 1]
-    ASSERT_ASSUME(0 <= r);
-    ASSERT_ASSUME(r <= 1);
-    Float const Q_y = r * (By + r * Ay);
-    // if p_r < Q_y, then the point is to the right of the segment
-    return (p_r[1] <= Q_y) ? !curves_right : curves_right;
+
+  Float const bx = -q[1][0] + 4 * q[2][0];
+  Float const by = 4 * q[2][1]; // q[1][1] == 0, q[2][1] > 0 implies by > 0
+  Float const ax = -bx + q[1][0]; 
+  Float const ay = -by; // q[1][1] == 0, by > 0 implies ay < 0
+  ASSERT(by > 0);
+
+  if (um2::abs(ax) < 4 * eps_distance) {
+    // Hence we wish to solve 0 = -P_x + rB_x for r.
+    ASSERT(um2::abs(bx) > eps_distance);
+    Float const r = p_r[0] / bx; // bx != 0, otherwise the segment would be degenerate.
+    // We know the point is in the bounding triangle, so we expect r to be in [0, 1]
+    ASSERT(0 <= r);
+    ASSERT(r <= 1);
+    Float const qy = r * (by + r * ay);
+    bool const is_left = p_r[1] >= qy;
+    return curves_right ? is_left : !is_left;
   }
-  // Two roots.
-  Float const disc = Bx * Bx + 4 * Ax * p_r[0];
+
+  // Two roots
+  Float const disc = bx * bx + 4 * ax * p_r[0];
   ASSERT_ASSUME(disc >= 0);
-  Float const r1 = (-Bx + um2::sqrt(disc)) / (2 * Ax);
-  Float const r2 = (-Bx - um2::sqrt(disc)) / (2 * Ax);
-  Float const Q_y1 = r1 * (By + r1 * Ay);
-  Float const Q_y2 = r2 * (By + r2 * Ay);
-  Float const Q_ymin = um2::min(Q_y1, Q_y2);
-  Float const Q_ymax = um2::max(Q_y1, Q_y2);
-  bool const contained_in_curve = Q_ymin <= p_r[1] && p_r[1] <= Q_ymax;
-  return contained_in_curve ? !curves_right : curves_right;
-  // NOLINTEND(readability-identifier-naming)
+  Float const r1 = (-bx + um2::sqrt(disc)) / (2 * ax);
+  Float const r2 = (-bx - um2::sqrt(disc)) / (2 * ax);
+  Float const qy1 = r1 * (by + r1 * ay);
+  Float const qy2 = r2 * (by + r2 * ay);
+  Float const qymin = um2::min(qy1, qy2);
+  Float const qymax = um2::max(qy1, qy2);
+  bool const contained_in_curve = qymin <= p_r[1] && p_r[1] <= qymax;
+  bool const is_left = !contained_in_curve;
+  return curves_right ? is_left : !is_left;
 }
 
 //==============================================================================
@@ -503,7 +491,6 @@ QuadraticSegment<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 // pointClosestTo
 //==============================================================================
 
-// NOLINTBEGIN(readability-identifier-naming) Mathematical notation
 template <Int D>
 PURE HOSTDEV constexpr auto
 QuadraticSegment<D>::pointClosestTo(Vertex const & p) const noexcept -> Float
@@ -559,7 +546,6 @@ QuadraticSegment<D>::pointClosestTo(Vertex const & p) const noexcept -> Float
   }
 
   for (auto const rr : roots) {
-    std::cerr << "rr: " << rr << std::endl;
     if (0 <= rr && rr <= 1) {
       auto const p_root = (*this)(rr);
       Float const p_sq_dist = p.squaredDistanceTo(p_root);
@@ -571,7 +557,6 @@ QuadraticSegment<D>::pointClosestTo(Vertex const & p) const noexcept -> Float
   }
   return r;
 }
-// NOLINTEND(readability-identifier-naming)
 
 //==============================================================================
 // isStraight
@@ -732,30 +717,29 @@ PURE HOSTDEV constexpr auto
 QuadraticSegment<D>::intersect(Ray2 const ray) const noexcept -> Vec2F
 requires(D == 2)
 {
-  // NOLINTBEGIN(readability-identifier-naming) mathematical notation
   //Vec2F const v01 = q[1] - q[0];
   Vec2F const v02 = _v[2] - _v[0];
   Vec2F const v12 = _v[2] - _v[1];
 
-  Vec2F const A = -2 * (v02 + v12); // -2(V₁₃ + V₂₃)
-  Vec2F const B = 3 * v02 + v12;    // 3V₁₃ + V₂₃
-  Vec2F const C = _v[0];
+  Vec2F const va = -2 * (v02 + v12); // -2(V₁₃ + V₂₃)
+  Vec2F const vb = 3 * v02 + v12;    // 3V₁₃ + V₂₃
+  Vec2F const vc = _v[0];
 
-  Vec2F const DD = ray.direction();
-  Vec2F const O = ray.origin();
+  Vec2F const vd = ray.direction();
+  Vec2F const vo = ray.origin();
 
-  Vec2F const voc = C - O; // (C - O)
+  Vec2F const voc = vc - vo; // (C - O)
 
-  Float const a = A.cross(DD);   // (A × D)ₖ
-  Float const b = B.cross(DD);   // (B × D)ₖ
-  Float const c = voc.cross(DD); // ((C - O) × D)ₖ
+  Float const a = va.cross(vd);   // (A × D)ₖ
+  Float const b = vb.cross(vd);   // (B × D)ₖ
+  Float const c = voc.cross(vd); // ((C - O) × D)ₖ
 
   Vec2F result(inf_distance, inf_distance);
   auto constexpr epsilon = castIfNot<Float>(1e-8);
   if (um2::abs(a) < epsilon) {
     Float const s = -c / b;
     if (0 <= s && s <= 1) {
-      Float const r = (voc + s * (B + s * A)).dot(DD);
+      Float const r = (voc + s * (vb + s * va)).dot(vd);
       if (0 <= r) {
         result[0] = r;
       }
@@ -770,18 +754,17 @@ requires(D == 2)
   Float const s1 = (-b - um2::sqrt(disc)) / (2 * a);
   Float const s2 = (-b + um2::sqrt(disc)) / (2 * a);
   if (0 <= s1 && s1 <= 1) {
-    Float const r = (voc + s1 * (B + s1 * A)).dot(DD);
+    Float const r = (voc + s1 * (vb + s1 * va)).dot(vd);
     if (0 <= r) {
       result[0] = r;
     }
   }
   if (0 <= s2 && s2 <= 1) {
-    Float const r = (voc + s2 * (B + s2 * A)).dot(DD);
+    Float const r = (voc + s2 * (vb + s2 * va)).dot(vd);
     if (0 <= r) {
       result[1] = r;
     }
   }
-  // NOLINTEND(readability-identifier-naming)
   return result;
 }
 

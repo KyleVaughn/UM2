@@ -227,6 +227,7 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 Triangle<D>::contains(Point2 const & p) const noexcept -> bool requires(D == 2)
 {
+  ASSERT(isCCW());
   Vec2F const a = _v[1] - _v[0];
   Vec2F const b = _v[2] - _v[0];
   Vec2F const c = p - _v[0];

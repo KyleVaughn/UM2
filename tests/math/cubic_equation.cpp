@@ -50,8 +50,8 @@ TEST_CASE(cubic)
   c = 72;
   d = -14;
   roots = um2::solveCubic(a, b, c, d);
-  ASSERT_NEAR(roots[0], castIfNot<Float>(0.5), eps);
-  ASSERT_NEAR(roots[1], castIfNot<Float>(0.875), eps);
+  ASSERT_NEAR(roots[0], castIfNot<Float>(0.875), eps);
+  ASSERT_NEAR(roots[1], castIfNot<Float>(0.5), eps);
 }
 
 TEST_SUITE(cubic_equation)

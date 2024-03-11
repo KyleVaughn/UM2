@@ -1,8 +1,6 @@
 #include <um2/geometry/quadrilateral.hpp>
 #include <um2/geometry/modular_rays.hpp>
 
-#include <iostream>
-
 #include "../../test_macros.hpp"
 
 Float constexpr eps = um2::eps_distance * castIfNot<Float>(10);
@@ -279,11 +277,6 @@ testQuadForIntersections(um2::Quadrilateral2 const & quad)
             }
           }
           // Check if the distance is close to zero
-          if (min_dist > 10 * um2::eps_distance) {
-            std::cerr << "d = " << min_dist << std::endl;
-            std::cerr << "r = " << r << std::endl;
-            std::cerr << "p = (" << p[0] << ", " << p[1] << ")" << std::endl;
-          }
           ASSERT(min_dist < 10 * um2::eps_distance);
         }
       }

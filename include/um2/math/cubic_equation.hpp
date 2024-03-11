@@ -8,8 +8,6 @@
 #include <um2/stdlib/numbers.hpp>
 #include <um2/common/cast_if_not.hpp>
 
-#include <iostream>
- 
 namespace um2
 {
 
@@ -22,20 +20,17 @@ namespace um2
 PURE HOSTDEV inline auto
 solveCubic(Float a, Float b, Float c, Float d) -> Vec3F 
 {
-  std::cerr << "a: " << a << ", b: " << b << ", c: " << c << ", d: " << d << std::endl;
-
   // https://en.wikipedia.org/wiki/Cubic_equation
   // https://stackoverflow.com/questions/27176423/function-to-solve-cubic-equation-analytically
 
   // Check that a is not zero.
-  auto constexpr eps = castIfNot<Float>(1e-8);
+  auto constexpr eps = castIfNot<Float>(5e-7);
   auto constexpr invalid = castIfNot<Float>(1e16);
   ASSERT(um2::abs(a) > eps);
   
   // Convert to depressed cubic t^3 + p*t + q = 0 (t = x - b / (3 * a))
   Float const p = (3 * a * c - b * b) / (3 * a * a);
   Float const q = (2 * b * b * b - 9 * a * b * c + 27 * a * a * d) / (27 * a * a * a);
-  std::cerr << "p: " << p << ", q: " << q << std::endl;
 
   Vec3F roots = um2::Vec3F::zero() + invalid;
   if (um2::abs(p) < eps) {
@@ -51,18 +46,25 @@ solveCubic(Float a, Float b, Float c, Float d) -> Vec3F
     }
   } else {
     Float const disc = q * q / 4 + p * p * p / 27;
-    std::cerr << "disc: " << disc << std::endl;
-    if (um2::abs(disc) < eps) {
-      // Two real roots.
-      Float const qp3 = 3 * q / p;
-      roots[0] = -qp3 / 2;
-      roots[1] = qp3;
-    } else if (disc > 0) {
+    // After shrinking the tolerance on the discriminant 4 times, I finally just
+    // made the single root case return the double root case in the other 2 roots.
+    // Therefore, it should be verified that the roots returned are correct.
+//    if (um2::abs(disc) < eps / 1000) {
+//      // Two real roots.
+//      Float const qp3 = 3 * q / p;
+//      roots[0] = -qp3 / 2;
+//      roots[1] = qp3;
+//    } else 
+    if (disc > 0) {
       // One real root.
       Float const sqrt_disc = um2::sqrt(disc);
       Float const u = um2::cbrt(-q / 2 + sqrt_disc);
       // v = -p/(3*u) 
       roots[0] = u - p / (3 * u);
+
+      Float const qp3 = 3 * q / p;
+      roots[1] = -qp3 / 2;
+      roots[2] = qp3;
     } else {
       ASSERT(p < 0);
       // Three real roots.

@@ -2,8 +2,6 @@
 
 #include "../../test_macros.hpp"
 
-#include <iostream>
-
 Float constexpr eps = um2::eps_distance * castIfNot<Float>(10);
 
 template <Int D>
@@ -255,12 +253,6 @@ testTriForIntersections(um2::QuadraticTriangle<2> const tri)
               min_dist = d;
             }
           }
-          // Check if the distance is close to zero
-          if (min_dist > 10 * um2::eps_distance) {
-            std::cerr << "d = " << min_dist << std::endl;
-            std::cerr << "r = " << r << std::endl;
-            std::cerr << "p = (" << p[0] << ", " << p[1] << ")" << std::endl;
-          }
           ASSERT(min_dist < 10 * um2::eps_distance);
         }
       }
@@ -289,9 +281,6 @@ TEST_CASE(meanChordLength)
   auto const ref = um2::pi<Float> * tri.area() / tri.perimeter();
   auto const val = tri.meanChordLength();
   auto const err = um2::abs(val - ref) / ref;
-  std::cerr << "val = " << val << std::endl;
-  std::cerr << "ref = " << ref << std::endl;
-  std::cerr << "err = " << err << std::endl;
   // Relative error should be less than 0.1%.
   ASSERT(err < castIfNot<Float>(1e-3));
 
@@ -299,9 +288,6 @@ TEST_CASE(meanChordLength)
   auto const ref2 = um2::pi<Float> * tri2.area() / tri2.perimeter();
   auto const val2 = tri2.meanChordLength();
   auto const err2 = um2::abs(val2 - ref2) / ref2;
-  std::cerr << "val2 = " << val2 << std::endl;
-  std::cerr << "ref2 = " << ref2 << std::endl;
-  std::cerr << "err2 = " << err2 << std::endl;
   ASSERT(err2 < castIfNot<Float>(1e-3));
 
   // A concave triangle
@@ -312,9 +298,6 @@ TEST_CASE(meanChordLength)
   auto const val3 = tri3.meanChordLength(); 
   auto const ref3 = um2::pi<Float> * tri3.area() / tri3.perimeter();
   auto const err3 = um2::abs(val3 - ref3) / ref3;
-  std::cerr << "val3 = " << val3 << std::endl;
-  std::cerr << "ref3 = " << ref3 << std::endl;
-  std::cerr << "err3 = " << err3 << std::endl;
 }
 
 #if UM2_USE_CUDA

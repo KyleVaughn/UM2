@@ -1,5 +1,7 @@
 pointClosestTo
 
+simplify log(a) - log(b) to log(a/b) in length()
+
 remove IOstream
   tests
   files
@@ -10,8 +12,7 @@ benchmark quadratic segment intersection.
 
 QuadraTicSegment
   isLeft
-  pointClosestTo
-  intersect
+    -> Compare with areCCW(v[0], p_closest, p)
 
   OK: 
   interp
@@ -21,8 +22,8 @@ QuadraTicSegment
   boundingBox
   enclosedArea
   enclosedCentroid
-
-test points
+  pointClosestTo
+  intersect
 
 scan vector?
 
@@ -36,17 +37,6 @@ ray intersect regular grid?
 
 Float32 quadratic intersection debugging
 Where is the large error coming from?
-
-isConvex to polygon
-  -> if any edges is not approxCCW, then it's not convex.
-  -> Therefore check all edges first
-  -> Then, check the linear edges
-
-Make non-trivial convex quadratic shapes for meanChordLength tests
-Add a "isConvex" to quadratic shapes so we can avoid the MCL routine
-
-meanChordLength is fucked.
-  What is going on here? Need to visualize
 
 dion free functions forward declare
 refactor dion routines to be prettier/better var names?

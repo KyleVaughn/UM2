@@ -27,8 +27,6 @@
 //#include <sstream>
 //#include <string>
 
-#include <iostream>
-
 //// TODO (kcvaughn): Alphabetize functions
 
 namespace um2
