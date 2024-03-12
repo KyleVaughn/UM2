@@ -1,4 +1,3 @@
-#include <um2/common/log.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
 
 #include "../test_macros.hpp"

@@ -1,8 +1,8 @@
-#include <um2/common/log.hpp>
+#include <um2/common/logger.hpp>
 
 #include <um2/stdlib/string.hpp>
 
-namespace um2::log
+namespace um2::logger
 {
 
 //==============================================================================
@@ -12,10 +12,10 @@ namespace um2::log
 // Suppress warnings for non-const global variables, since this is a global logger
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 
-int32_t & level = um2::settings::log::level;
-bool & timestamped = um2::settings::log::timestamped;
-bool & colorized = um2::settings::log::colorized;
-bool & exit_on_error = um2::settings::log::exit_on_error;
+int32_t & level = um2::settings::logger::level;
+bool & timestamped = um2::settings::logger::timestamped;
+bool & colorized = um2::settings::logger::colorized;
+bool & exit_on_error = um2::settings::logger::exit_on_error;
 
 TimePoint start_time = Clock::now();
 char buffer[buffer_size] = {0};
@@ -31,10 +31,10 @@ void
 reset() noexcept
 {
   // Reset options to default
-  level = um2::settings::log::defaults::level;
-  timestamped = um2::settings::log::defaults::timestamped;
-  colorized = um2::settings::log::defaults::colorized;
-  exit_on_error = um2::settings::log::defaults::exit_on_error;
+  level = um2::settings::logger::defaults::level;
+  timestamped = um2::settings::logger::defaults::timestamped;
+  colorized = um2::settings::logger::defaults::colorized;
+  exit_on_error = um2::settings::logger::defaults::exit_on_error;
 
   // Reset data
   start_time = Clock::now();
@@ -364,4 +364,4 @@ setPostamble(char * buffer_pos) noexcept
   buffer_pos[0] = '\0';
 }
 
-} // namespace um2::log
+} // namespace um2::logger

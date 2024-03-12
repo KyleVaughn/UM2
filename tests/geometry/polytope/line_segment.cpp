@@ -40,25 +40,6 @@ TEST_CASE(interpolate)
 }
 
 //=============================================================================
-// jacobian
-//=============================================================================
-
-template <Int D>
-HOSTDEV
-TEST_CASE(jacobian)
-{
-  um2::LineSegment<D> line = makeLine<D>();
-  um2::Vec<D, Float> j_ref;
-  for (Int i = 0; i < D; ++i) {
-    j_ref[i] = line[1][i] - line[0][i];
-  }
-  um2::Vec<D, Float> const j0 = line.jacobian(0);
-  um2::Vec<D, Float> const j1 = line.jacobian(1);
-  ASSERT(j0.isApprox(j_ref));
-  ASSERT(j1.isApprox(j_ref));
-}
-
-//=============================================================================
 // getRotation
 //=============================================================================
 
@@ -257,9 +238,6 @@ TEST_CASE(intersect)
 template <Int D>
 MAKE_CUDA_KERNEL(interpolate, D);
 
-template <Int D>
-MAKE_CUDA_KERNEL(jacobian, D);
-
 MAKE_CUDA_KERNEL(getRotation);
 
 template <Int D>
@@ -283,7 +261,6 @@ template <Int D>
 TEST_SUITE(LineSegment)
 {
   TEST_HOSTDEV(interpolate, D);
-  TEST_HOSTDEV(jacobian, D);
   TEST_HOSTDEV(length, D);
   TEST_HOSTDEV(boundingBox, D);
   TEST_HOSTDEV(pointClosestTo, D);

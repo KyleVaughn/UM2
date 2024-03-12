@@ -20,7 +20,7 @@
 // - is just a fixed-size buffer that is filled with the message and then 
 //    printed. The message arguments are converted using the toBuffer function.
 
-namespace um2::log
+namespace um2::logger
 {
 
 using Clock = std::chrono::system_clock;
@@ -162,28 +162,28 @@ debug(Args const &... args) noexcept
   printMessage(levels::debug, args...);
 }
 
-} // namespace um2::log
+} // namespace um2::logger
 
 #if MIN_LOG_LEVEL > 0
-#  define LOG_ERROR(...) um2::log::error(__VA_ARGS__)
+#  define LOG_ERROR(...) um2::logger::error(__VA_ARGS__)
 #else
 #  define LOG_ERROR(...)
 #endif
 
 #if MIN_LOG_LEVEL > 1
-#  define LOG_WARN(...) um2::log::warn(__VA_ARGS__)
+#  define LOG_WARN(...) um2::logger::warn(__VA_ARGS__)
 #else
 #  define LOG_WARN(...)
 #endif
 
 #if MIN_LOG_LEVEL > 2
-#  define LOG_INFO(...) um2::log::info(__VA_ARGS__)
+#  define LOG_INFO(...) um2::logger::info(__VA_ARGS__)
 #else
 #  define LOG_INFO(...)
 #endif
 
 #if MIN_LOG_LEVEL > 3
-#  define LOG_DEBUG(...) um2::log::debug(__VA_ARGS__)
+#  define LOG_DEBUG(...) um2::logger::debug(__VA_ARGS__)
 #else
 #  define LOG_DEBUG(...)
 #endif

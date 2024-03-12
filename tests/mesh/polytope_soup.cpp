@@ -4,8 +4,6 @@
 
 #include "../test_macros.hpp"
 
-#include <fstream>
-
 TEST_CASE(addVertex)
 {
   um2::PolytopeSoup soup;
@@ -13,9 +11,9 @@ TEST_CASE(addVertex)
   ASSERT(soup.addVertex(2, 3, 4) == 1);
 
   um2::Point3 const p0 = soup.getVertex(0);
-  ASSERT(um2::isApprox(p0, um2::Point3(1, 2, 3)));
+  ASSERT(p0.isApprox(um2::Point3(1, 2, 3)));
   um2::Point3 const p1 = soup.getVertex(1);
-  ASSERT(um2::isApprox(p1, um2::Point3(2, 3, 4)));
+  ASSERT(p1.isApprox(um2::Point3(2, 3, 4)));
 }
 
 TEST_CASE(addElement)
@@ -179,15 +177,15 @@ TEST_CASE(mortonSortVertices)
   soup.addElement(um2::VTKElemType::Quad, {4, 5, 8, 7});
   soup.addElement(um2::VTKElemType::Quad, {3, 4, 7, 6});
   soup.mortonSortVertices();
-  ASSERT(um2::isApprox(soup.getVertex(0), um2::Point3(0, 0, 0)));
-  ASSERT(um2::isApprox(soup.getVertex(1), um2::Point3(1, 0, 0)));
-  ASSERT(um2::isApprox(soup.getVertex(2), um2::Point3(0, 1, 0)));
-  ASSERT(um2::isApprox(soup.getVertex(3), um2::Point3(1, 1, 0)));
-  ASSERT(um2::isApprox(soup.getVertex(4), um2::Point3(2, 0, 0)));
-  ASSERT(um2::isApprox(soup.getVertex(5), um2::Point3(2, 1, 0)));
-  ASSERT(um2::isApprox(soup.getVertex(6), um2::Point3(0, 2, 0)));
-  ASSERT(um2::isApprox(soup.getVertex(7), um2::Point3(1, 2, 0)));
-  ASSERT(um2::isApprox(soup.getVertex(8), um2::Point3(2, 2, 0)));
+  ASSERT(soup.getVertex(0).isApprox(um2::Point3(0, 0, 0)));
+  ASSERT(soup.getVertex(1).isApprox(um2::Point3(1, 0, 0)));
+  ASSERT(soup.getVertex(2).isApprox(um2::Point3(0, 1, 0)));
+  ASSERT(soup.getVertex(3).isApprox(um2::Point3(1, 1, 0)));
+  ASSERT(soup.getVertex(4).isApprox(um2::Point3(2, 0, 0)));
+  ASSERT(soup.getVertex(5).isApprox(um2::Point3(2, 1, 0)));
+  ASSERT(soup.getVertex(6).isApprox(um2::Point3(0, 2, 0)));
+  ASSERT(soup.getVertex(7).isApprox(um2::Point3(1, 2, 0)));
+  ASSERT(soup.getVertex(8).isApprox(um2::Point3(2, 2, 0)));
   um2::Vector<Int> conn;
   um2::VTKElemType type = um2::VTKElemType::Triangle;
   soup.getElement(0, type, conn);
@@ -225,7 +223,7 @@ TEST_CASE(mortonSortElements)
   p = um2::Point3(third, third, zero);
   ASSERT(type == um2::VTKElemType::Triangle);
   ASSERT(conn == um2::Vector<Int>({0, 1, 3}));
-  ASSERT(um2::isApprox(soup.getElementCentroid(0), p));
+  ASSERT(soup.getElementCentroid(0).isApprox(p));
   type = um2::VTKElemType::None;
   conn.clear();
 
@@ -233,7 +231,7 @@ TEST_CASE(mortonSortElements)
   p = um2::Point3(two_thirds, two_thirds, zero);
   ASSERT(type == um2::VTKElemType::Triangle);
   ASSERT(conn == um2::Vector<Int>({1, 4, 3}));
-  ASSERT(um2::isApprox(soup.getElementCentroid(1), p));
+  ASSERT(soup.getElementCentroid(1).isApprox(p));
   type = um2::VTKElemType::None;
   conn.clear();
 
@@ -241,7 +239,7 @@ TEST_CASE(mortonSortElements)
   p = um2::Point3(third + 1, third + 1, zero);
   ASSERT(type == um2::VTKElemType::Triangle);
   ASSERT(conn == um2::Vector<Int>({4, 5, 7}));
-  ASSERT(um2::isApprox(soup.getElementCentroid(2), p));
+  ASSERT(soup.getElementCentroid(2).isApprox(p));
   type = um2::VTKElemType::None;
   conn.clear();
 
@@ -249,7 +247,7 @@ TEST_CASE(mortonSortElements)
   p = um2::Point3(two_thirds + 1, two_thirds + 1, zero);
   ASSERT(type == um2::VTKElemType::Triangle);
   ASSERT(conn == um2::Vector<Int>({5, 8, 7}));
-  ASSERT(um2::isApprox(soup.getElementCentroid(3), p));
+  ASSERT(soup.getElementCentroid(3).isApprox(p));
   type = um2::VTKElemType::None;
   conn.clear();
 
@@ -257,7 +255,7 @@ TEST_CASE(mortonSortElements)
   p = um2::Point3(castIfNot<Float>(1.5), castIfNot<Float>(0.5), zero);
   ASSERT(type == um2::VTKElemType::Quad);
   ASSERT(conn == um2::Vector<Int>({1, 2, 5, 4}));
-  ASSERT(um2::isApprox(soup.getElementCentroid(4), p));
+  ASSERT(soup.getElementCentroid(4).isApprox(p));
   type = um2::VTKElemType::None;
   conn.clear();
 
@@ -265,7 +263,7 @@ TEST_CASE(mortonSortElements)
   p = um2::Point3(castIfNot<Float>(0.5), castIfNot<Float>(1.5), zero);
   ASSERT(type == um2::VTKElemType::Quad);
   ASSERT(conn == um2::Vector<Int>({3, 4, 7, 6}));
-  ASSERT(um2::isApprox(soup.getElementCentroid(5), p));
+  ASSERT(soup.getElementCentroid(5).isApprox(p));
 
   soup.mortonSortElements();
 
@@ -273,7 +271,7 @@ TEST_CASE(mortonSortElements)
   p = um2::Point3(third, third, zero);
   ASSERT(type == um2::VTKElemType::Triangle);
   ASSERT(conn == um2::Vector<Int>({0, 1, 3}));
-  ASSERT(um2::isApprox(soup.getElementCentroid(0), p));
+  ASSERT(soup.getElementCentroid(0).isApprox(p));
   type = um2::VTKElemType::None;
   conn.clear();
 
@@ -281,7 +279,7 @@ TEST_CASE(mortonSortElements)
   p = um2::Point3(two_thirds, two_thirds, zero);
   ASSERT(type == um2::VTKElemType::Triangle);
   ASSERT(conn == um2::Vector<Int>({1, 4, 3}));
-  ASSERT(um2::isApprox(soup.getElementCentroid(1), p));
+  ASSERT(soup.getElementCentroid(1).isApprox(p));
   type = um2::VTKElemType::None;
   conn.clear();
 
@@ -289,7 +287,7 @@ TEST_CASE(mortonSortElements)
   p = um2::Point3(castIfNot<Float>(1.5), castIfNot<Float>(0.5), zero);
   ASSERT(type == um2::VTKElemType::Quad);
   ASSERT(conn == um2::Vector<Int>({1, 2, 5, 4}));
-  ASSERT(um2::isApprox(soup.getElementCentroid(2), p));
+  ASSERT(soup.getElementCentroid(2).isApprox(p));
   type = um2::VTKElemType::None;
   conn.clear();
 
@@ -297,7 +295,7 @@ TEST_CASE(mortonSortElements)
   p = um2::Point3(castIfNot<Float>(0.5), castIfNot<Float>(1.5), zero);
   ASSERT(type == um2::VTKElemType::Quad);
   ASSERT(conn == um2::Vector<Int>({3, 4, 7, 6}));
-  ASSERT(um2::isApprox(soup.getElementCentroid(3), p));
+  ASSERT(soup.getElementCentroid(3).isApprox(p));
   type = um2::VTKElemType::None;
   conn.clear();
 
@@ -305,7 +303,7 @@ TEST_CASE(mortonSortElements)
   p = um2::Point3(third + 1, third + 1, zero);
   ASSERT(type == um2::VTKElemType::Triangle);
   ASSERT(conn == um2::Vector<Int>({4, 5, 7}));
-  ASSERT(um2::isApprox(soup.getElementCentroid(4), p));
+  ASSERT(soup.getElementCentroid(4).isApprox(p));
   type = um2::VTKElemType::None;
   conn.clear();
 
@@ -313,7 +311,7 @@ TEST_CASE(mortonSortElements)
   p = um2::Point3(two_thirds + 1, two_thirds + 1, zero);
   ASSERT(type == um2::VTKElemType::Triangle);
   ASSERT(conn == um2::Vector<Int>({5, 8, 7}));
-  ASSERT(um2::isApprox(soup.getElementCentroid(5), p));
+  ASSERT(soup.getElementCentroid(5).isApprox(p));
 
   // Check elsets
   um2::String name;
@@ -359,9 +357,9 @@ TEST_CASE(getSubmesh)
 
   // (1,0), (1,1), (2,0)
   ASSERT(tri_quad_h2o.numVerts() == 3);
-  ASSERT(um2::isApprox(tri_quad_h2o.getVertex(0), um2::Point3(1, 0, 0)));
-  ASSERT(um2::isApprox(tri_quad_h2o.getVertex(1), um2::Point3(1, 1, 0)));
-  ASSERT(um2::isApprox(tri_quad_h2o.getVertex(2), um2::Point3(2, 0, 0)));
+  ASSERT(tri_quad_h2o.getVertex(0).isApprox(um2::Point3(1, 0, 0)));
+  ASSERT(tri_quad_h2o.getVertex(1).isApprox(um2::Point3(1, 1, 0)));
+  ASSERT(tri_quad_h2o.getVertex(2).isApprox(um2::Point3(2, 0, 0)));
 
   ASSERT(tri_quad_h2o.numElems() == 1);
   um2::VTKElemType elem_type = um2::VTKElemType::None;
@@ -472,6 +470,132 @@ TEST_CASE(io_abaqus_tri6_quad8_mesh)
   um2::PolytopeSoup const mesh(filename);
 
   ASSERT(mesh.compare(mesh_ref) == 17); // Only missing data
+}
+
+TEST_CASE(io_vtk_tri_mesh)
+{
+  um2::String const filename = "./mesh_files/tri.vtk";
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceTriPolytopeSoup(mesh_ref);
+
+  um2::PolytopeSoup const mesh(filename);
+
+  ASSERT(mesh.compare(mesh_ref) == 10); // Different elsets
+  ASSERT(mesh.numElsets() == 1);
+  um2::String name;
+  um2::Vector<Int> ids;
+  um2::Vector<Float> elset_data;
+  mesh.getElset(0, name, ids, elset_data);
+  ASSERT(name == "flux");
+  ASSERT(ids == um2::Vector<Int>({0, 1}));
+  ASSERT(elset_data.size() == 2);
+  ASSERT_NEAR(elset_data[0], 1, castIfNot<Float>(1e-6));
+  ASSERT_NEAR(elset_data[1], 2, castIfNot<Float>(1e-6));
+}
+
+TEST_CASE(io_vtk_quad_mesh)
+{
+  um2::String const filename = "./mesh_files/quad.vtk";
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceQuadPolytopeSoup(mesh_ref);
+
+  um2::PolytopeSoup const mesh(filename);
+
+  ASSERT(mesh.compare(mesh_ref) == 10); // Different elsets
+  ASSERT(mesh.numElsets() == 1);
+  um2::String name;
+  um2::Vector<Int> ids;
+  um2::Vector<Float> elset_data;
+  mesh.getElset(0, name, ids, elset_data);
+  ASSERT(name == "flux");
+  ASSERT(ids == um2::Vector<Int>({0, 1}));
+  ASSERT(elset_data.size() == 2);
+  ASSERT_NEAR(elset_data[0], 1, castIfNot<Float>(1e-6));
+  ASSERT_NEAR(elset_data[1], 2, castIfNot<Float>(1e-6));
+}
+
+TEST_CASE(io_vtk_tri_quad_mesh)
+{
+  um2::String const filename = "./mesh_files/tri_quad.vtk";
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceTriQuadPolytopeSoup(mesh_ref);
+
+  um2::PolytopeSoup const mesh(filename);
+
+  ASSERT(mesh.compare(mesh_ref) == 10); // Different elsets
+  ASSERT(mesh.numElsets() == 1);
+  um2::String name;
+  um2::Vector<Int> ids;
+  um2::Vector<Float> elset_data;
+  mesh.getElset(0, name, ids, elset_data);
+  ASSERT(name == "flux");
+  ASSERT(ids == um2::Vector<Int>({0, 1}));
+  ASSERT(elset_data.size() == 2);
+  ASSERT_NEAR(elset_data[0], 1, castIfNot<Float>(1e-6));
+  ASSERT_NEAR(elset_data[1], 2, castIfNot<Float>(1e-6));
+}
+
+TEST_CASE(io_vtk_tri6_mesh)
+{
+  um2::String const filename = "./mesh_files/tri6.vtk";
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceTri6PolytopeSoup(mesh_ref);
+
+  um2::PolytopeSoup const mesh(filename);
+
+  ASSERT(mesh.compare(mesh_ref) == 10); // Different elsets
+  ASSERT(mesh.numElsets() == 1);
+  um2::String name;
+  um2::Vector<Int> ids;
+  um2::Vector<Float> elset_data;
+  mesh.getElset(0, name, ids, elset_data);
+  ASSERT(name == "flux");
+  ASSERT(ids == um2::Vector<Int>({0, 1}));
+  ASSERT(elset_data.size() == 2);
+  ASSERT_NEAR(elset_data[0], 1, castIfNot<Float>(1e-6));
+  ASSERT_NEAR(elset_data[1], 2, castIfNot<Float>(1e-6));
+}
+
+TEST_CASE(io_vtk_quad8_mesh)
+{
+  um2::String const filename = "./mesh_files/quad8.vtk";
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceQuad8PolytopeSoup(mesh_ref);
+
+  um2::PolytopeSoup const mesh(filename);
+
+  ASSERT(mesh.compare(mesh_ref) == 10); // Different elsets
+  ASSERT(mesh.numElsets() == 1);
+  um2::String name;
+  um2::Vector<Int> ids;
+  um2::Vector<Float> elset_data;
+  mesh.getElset(0, name, ids, elset_data);
+  ASSERT(name == "flux");
+  ASSERT(ids == um2::Vector<Int>({0, 1}));
+  ASSERT(elset_data.size() == 2);
+  ASSERT_NEAR(elset_data[0], 1, castIfNot<Float>(1e-6));
+  ASSERT_NEAR(elset_data[1], 2, castIfNot<Float>(1e-6));
+}
+
+TEST_CASE(io_vtk_tri6_quad8_mesh)
+{
+  um2::String const filename = "./mesh_files/tri6_quad8.vtk";
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceTri6Quad8PolytopeSoup(mesh_ref);
+
+  um2::PolytopeSoup const mesh(filename);
+
+  ASSERT(mesh.compare(mesh_ref) == 10); // Different elsets
+  ASSERT(mesh.numElsets() == 1);
+  um2::String name;
+  um2::Vector<Int> ids;
+  um2::Vector<Float> elset_data;
+  mesh.getElset(0, name, ids, elset_data);
+  ASSERT(name == "flux");
+  ASSERT(ids == um2::Vector<Int>({0, 1}));
+  ASSERT(elset_data.size() == 2);
+  ASSERT_NEAR(elset_data[0], 1, castIfNot<Float>(1e-6));
+  ASSERT_NEAR(elset_data[1], 2, castIfNot<Float>(1e-6));
 }
 
 //TEST_CASE(io_xdmf_tri_mesh)
@@ -595,6 +719,12 @@ TEST_SUITE(PolytopeSoup)
   TEST(io_abaqus_tri6_mesh);
   TEST(io_abaqus_quad8_mesh);
   TEST(io_abaqus_tri6_quad8_mesh);
+  TEST(io_vtk_tri_mesh);
+  TEST(io_vtk_quad_mesh);
+  TEST(io_vtk_tri_quad_mesh);
+  TEST(io_vtk_tri6_mesh);
+  TEST(io_vtk_quad8_mesh);
+  TEST(io_vtk_tri6_quad8_mesh);
 //  TEST(io_xdmf_tri_mesh);
 //  TEST(io_xdmf_quad_mesh);
 //  TEST(io_xdmf_tri_quad_mesh);

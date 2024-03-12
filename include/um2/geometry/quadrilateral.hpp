@@ -70,11 +70,6 @@ public:
   PURE HOSTDEV constexpr auto
   operator()(R r, S s) const noexcept -> Point<D>;
 
-  // J(r, s) -> [dF/dr, dF/ds]
-  template <typename R, typename S>
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  jacobian(R r, S s) const noexcept -> Mat<D, 2, Float>;
-
   // Get the i-th edge of the polygon.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getEdge(Int i) const noexcept -> Edge;
@@ -192,27 +187,6 @@ Quadrilateral<D>::operator()(R const r, S const s) const noexcept -> Point<D>
   Float const w2 = rr * ss;
   Float const w3 = (1 - rr) * ss;
   return w0 * _v[0] + w1 * _v[1] + w2 * _v[2] + w3 * _v[3];
-}
-
-//==============================================================================
-// jacobian
-//==============================================================================
-
-template <Int D>
-template <typename R, typename S>
-PURE HOSTDEV constexpr auto
-Quadrilateral<D>::jacobian(R r, S s) const noexcept -> Mat<D, 2, Float>
-{
-  // TODO(kcvaughn): Is this correct, or is it transposed?
-  auto const rr = static_cast<Float>(r);
-  auto const ss = static_cast<Float>(s);
-  Float const w0 = 1 - ss;
-  // Float const w1 = ss;
-  Float const w2 = 1 - rr;
-  // Float const w3 = rr;
-  return Mat<D, 2, Float>(
-    w0 * (_v[1] - _v[0]) - ss * (_v[3] - _v[2]),
-    w2 * (_v[3] - _v[0]) - rr * (_v[1] - _v[2]));
 }
 
 //==============================================================================

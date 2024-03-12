@@ -1,11 +1,13 @@
 #include <um2/mesh/polytope_soup.hpp>
 
-#include <um2/common/log.hpp>
+#include <um2/common/logger.hpp>
 #include <um2/common/permutation.hpp>
+#include <um2/geometry/triangle.hpp>
+#include <um2/geometry/quadrilateral.hpp>
+#include <um2/geometry/quadratic_triangle.hpp>
+#include <um2/geometry/quadratic_quadrilateral.hpp>
 #include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/morton_sort_points.hpp>
-#include <um2/geometry/point.hpp>
-#include <um2/geometry/polygon.hpp>
 #include <um2/mesh/element_types.hpp>
 #include <um2/stdlib/assert.hpp>
 #include <um2/stdlib/utility/pair.hpp>
@@ -26,8 +28,6 @@
 #include <fstream>
 //#include <sstream>
 //#include <string>
-
-//// TODO (kcvaughn): Alphabetize functions
 
 namespace um2
 {
@@ -82,6 +82,7 @@ PolytopeSoup::addElset(String const & name, Vector<Int> const & ids, Vector<Floa
     LOG_ERROR("Elset ids", name, " is empty.");
     return -1;
   }
+  ASSERT(um2::is_sorted(ids.cbegin(), ids.cend()));
 
   if (!data.empty() && (data.size() != num_ids)) {
     LOG_ERROR("Elset data size does not match the number of ids.");
@@ -121,7 +122,7 @@ PolytopeSoup::addVertex(Float x, Float y, Float z) -> Int
 auto
 PolytopeSoup::addVertex(Point3 const & p) -> Int
 {
-  _vertices.push_back(p);
+  _vertices.emplace_back(p);
   return _vertices.size() - 1;
 }
 
@@ -170,7 +171,7 @@ PolytopeSoup::getElementBoundingBox(Int const i) const -> AxisAlignedBox3
       pts[j] = _vertices[_element_conn[istart + j]];
     }
     LineSegment<3> const line(pts);
-    box = boundingBox(line);
+    box = line.boundingBox();
     break;
   }
   case VTKElemType::Triangle: {
@@ -179,7 +180,7 @@ PolytopeSoup::getElementBoundingBox(Int const i) const -> AxisAlignedBox3
       pts[j] = _vertices[_element_conn[istart + j]];
     }
     Triangle3 const tri(pts);
-    box = boundingBox(tri);
+    box = tri.boundingBox();
     break;
   }
   case VTKElemType::Quad: {
@@ -191,7 +192,7 @@ PolytopeSoup::getElementBoundingBox(Int const i) const -> AxisAlignedBox3
       ASSERT_NEAR(p[2], z, eps_distance);
     }
     Quadrilateral2 const quad(pts);
-    auto const box2 = boundingBox(quad);
+    auto const box2 = quad.boundingBox();
     Point3 const p0(box2.xMin(), box2.yMin(), z);
     Point3 const p1(box2.xMax(), box2.yMax(), z);
     box = AxisAlignedBox3(p0, p1);
@@ -206,7 +207,7 @@ PolytopeSoup::getElementBoundingBox(Int const i) const -> AxisAlignedBox3
       ASSERT_NEAR(p[2], z, eps_distance);
     }
     QuadraticTriangle2 const tri6(pts);
-    auto const box2 = boundingBox(tri6);
+    auto const box2 = tri6.boundingBox();
     Point3 const p0(box2.xMin(), box2.yMin(), z);
     Point3 const p1(box2.xMax(), box2.yMax(), z);
     box = AxisAlignedBox3(p0, p1);
@@ -221,7 +222,7 @@ PolytopeSoup::getElementBoundingBox(Int const i) const -> AxisAlignedBox3
       ASSERT_NEAR(p[2], z, eps_distance);
     }
     QuadraticQuadrilateral2 const quad8(pts);
-    auto const box2 = boundingBox(quad8);
+    auto const box2 = quad8.boundingBox();
     Point3 const p0(box2.xMin(), box2.yMin(), z);
     Point3 const p1(box2.xMax(), box2.yMax(), z);
     box = AxisAlignedBox3(p0, p1);
@@ -264,7 +265,7 @@ PolytopeSoup::getElementCentroid(Int const i) const -> Point3
       pts[j] = _vertices[_element_conn[istart + j]];
     }
     Triangle3 const tri(pts);
-    c = centroid(tri);
+    c = tri.centroid();
     break;
   }
   case VTKElemType::Quad: {
@@ -276,7 +277,7 @@ PolytopeSoup::getElementCentroid(Int const i) const -> Point3
       ASSERT_NEAR(p[2], z, eps_distance);
     }
     Quadrilateral2 const quad(pts);
-    auto const c2 = centroid(quad);
+    auto const c2 = quad.centroid();
     c[0] = c2[0];
     c[1] = c2[1];
     break;
@@ -290,7 +291,7 @@ PolytopeSoup::getElementCentroid(Int const i) const -> Point3
       ASSERT_NEAR(p[2], z, eps_distance);
     }
     QuadraticTriangle2 const tri6(pts);
-    auto const c2 = centroid(tri6);
+    auto const c2 = tri6.centroid();
     c[0] = c2[0];
     c[1] = c2[1];
     break;
@@ -304,7 +305,7 @@ PolytopeSoup::getElementCentroid(Int const i) const -> Point3
       ASSERT_NEAR(p[2], z, eps_distance);
     }
     QuadraticQuadrilateral2 const quad8(pts);
-    auto const c2 = centroid(quad8);
+    auto const c2 = quad8.centroid();
     c[0] = c2[0];
     c[1] = c2[1];
     break;
@@ -351,7 +352,7 @@ PolytopeSoup::compare(PolytopeSoup const & other) const -> int
     return 2;
   }
   auto const compare = [](Point3 const & a, Point3 const & b) -> bool {
-    return um2::isApprox(a, b);
+    return a.isApprox(b);
   };
   if (!std::equal(_vertices.cbegin(), _vertices.cend(), other._vertices.cbegin(),
                   compare)) {
@@ -448,7 +449,7 @@ PolytopeSoup::mortonSortElements()
   // We need to scale the centroids to the unit cube before we can apply
   // the morton encoding. Therefore we need to find the bounding box of
   // all elements.
-  auto aabb = boundingBox(_vertices);
+  auto aabb = boundingBox(_vertices.cbegin(), _vertices.cend());
   for (Int i = 0; i < num_elems; ++i) {
     aabb += getElementBoundingBox(i);
   }
@@ -509,7 +510,7 @@ PolytopeSoup::mortonSortVertices()
 {
   // We need to scale the vertices to the unit cube before we can apply
   // the morton encoding.
-  auto const aabb = boundingBox(_vertices);
+  auto const aabb = boundingBox(_vertices.cbegin(), _vertices.cend());
   Point3 inv_scale = aabb.extents();
   inv_scale[0] = static_cast<Float>(1) / inv_scale[0];
   inv_scale[1] = static_cast<Float>(1) / inv_scale[1];
@@ -557,10 +558,7 @@ PolytopeSoup::sortElsets()
     elset_name_index_pairs[i] = NameIndexPair(_elset_names[i], i);
   }
   // Sort the vector by the elset names.
-  std::sort(elset_name_index_pairs.begin(), elset_name_index_pairs.end(),
-            [](NameIndexPair const & a, NameIndexPair const & b) -> bool {
-              return a.first < b.first;
-            });
+  std::sort(elset_name_index_pairs.begin(), elset_name_index_pairs.end());
   // Create new offsets, ids, and data vectors to hold the sorted elsets.
   Vector<Int> elset_offsets(_elset_offsets.size());
   Vector<Int> elset_ids(_elset_ids.size());
@@ -754,6 +752,8 @@ PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) cons
   // element_ids[i] is the old element id, and i is the new element id.
   // The largest possible intersection is the size of the elset itself.
 
+  Vector<Int> ids;
+  Vector<Float> elset_data;
   Int * intersection = new Int[static_cast<size_t>(submesh_num_elements)];
   Int const num_elsets = _elset_names.size();
   for (Int i = 0; i < num_elsets; ++i) {
@@ -765,15 +765,16 @@ PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) cons
     auto const * const elset_ids_begin = addressof(_elset_ids[elset_start]);
     auto const * const elset_ids_end = elset_ids_begin + (elset_end - elset_start);
     ASSERT(um2::is_sorted(elset_ids_begin, elset_ids_end));
-    Int * intersection_end = 
+    Int * intersection_end =
       std::set_intersection(element_ids.begin(), element_ids.end(), elset_ids_begin,
                           elset_ids_end, intersection);
+    // No intersection
     if (intersection_end == intersection) {
       continue;
     }
     auto const & name = _elset_names[i];
     auto const num_ids = static_cast<Int>(intersection_end - intersection);
-    Vector<Int> ids(num_ids);
+    ids.resize(num_ids);
     // Remap the element IDs
     for (Int j = 0; j < num_ids; ++j) {
       Int const old_element_id = intersection[j];
@@ -788,7 +789,7 @@ PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) cons
       continue;
     }
     // There is data
-    Vector<Float> elset_data(num_ids);
+    elset_data.resize(num_ids);
     Vector<Float> const & this_elset_data = _elset_data[i];
     for (Int j = 0; j < num_ids; ++j) {
       Int const old_element_id = intersection[j];
@@ -823,7 +824,7 @@ PolytopeSoup::getMaterialIDs(Vector<MatID> & material_ids,
         for (Int k = start; k < end; ++k) {
           auto const elem = _elset_ids[k];
           if (material_ids[elem] != -1) {
-            log::error("Element ", elem, " has multiple materials");
+            logger::error("Element ", elem, " has multiple materials");
           }
           material_ids[elem] = static_cast<MatID>(i);
         } // for k
@@ -833,7 +834,7 @@ PolytopeSoup::getMaterialIDs(Vector<MatID> & material_ids,
   }     // for i
   if (std::any_of(material_ids.cbegin(), material_ids.cend(),
                   [](MatID const mat_id) { return mat_id == -1; })) {
-    log::error("Some elements have no material");
+    logger::error("Some elements have no material");
   }
 }
 
@@ -873,9 +874,9 @@ PolytopeSoup::reserveMoreVertices(Int const num_verts)
 // IO for ABAQUS files.
 //==============================================================================
 
-static auto 
-abaqusParseNodes(PolytopeSoup & soup, std::ifstream & file, char * const line, 
-    uint64_t const max_line_length) -> StringView 
+static auto
+abaqusParseNodes(PolytopeSoup & soup, std::ifstream & file, char * const line,
+    uint64_t const max_line_length) -> StringView
 {
   // line starts with "*NODE"
   auto const smax_line_length = static_cast<int64_t>(max_line_length);
@@ -907,15 +908,13 @@ abaqusParseNodes(PolytopeSoup & soup, std::ifstream & file, char * const line,
     ASSERT(end != nullptr);
     soup.addVertex(x, y, z);
   }
-  if (file.peek() == EOF) {
-    return {};
-  } 
+  ASSERT(file.peek() != EOF);
   return {line};
 } // abaqusParseNodes
 
-static auto 
-abaqusParseElements(PolytopeSoup & soup, std::ifstream & file, char * const line, 
-    uint64_t const max_line_length) -> StringView 
+static auto
+abaqusParseElements(PolytopeSoup & soup, std::ifstream & file, char * const line,
+    uint64_t const max_line_length) -> StringView
 {
   //  "*ELEMENT, type=CPS" is 18 characters
   //  CPS3 is a 3-node triangle
@@ -980,13 +979,13 @@ abaqusParseElements(PolytopeSoup & soup, std::ifstream & file, char * const line
 
   if (file.peek() == EOF) {
     return {};
-  } 
+  }
   return {line};
 } // abaqusParseElements
 
-static auto 
-abaqusParseElsets(PolytopeSoup & soup, std::ifstream & file, char * const line, 
-    uint64_t const max_line_length) -> StringView 
+static auto
+abaqusParseElsets(PolytopeSoup & soup, std::ifstream & file, char * const line,
+    uint64_t const max_line_length) -> StringView
 {
   StringView const info_line_view(line);
   ASSERT(info_line_view.starts_with("*ELSET,ELSET="));
@@ -1066,7 +1065,7 @@ readAbaqusFile(String const & filename, PolytopeSoup & soup)
 
   // Get the first line
   file.getline(line, max_line_length);
-  StringView line_view(line); 
+  StringView line_view(line);
 
   bool get_next_line = false;
   while (file.peek() != EOF) {
@@ -1094,7 +1093,7 @@ readAbaqusFile(String const & filename, PolytopeSoup & soup)
   if (soup.numElsets() > 0) {
     soup.sortElsets();
   }
- 
+
   file.close();
   LOG_INFO("Finished reading Abaqus file: ", filename);
 } // readAbaqusFile
@@ -1103,45 +1102,196 @@ readAbaqusFile(String const & filename, PolytopeSoup & soup)
 // IO for VTK files
 //=============================================================================
 
-//static auto 
-//vtkParseUnstructuredGrid(PolytopeSoup & soup, std::ifstream & file, char * const line, 
-//    uint64_t const max_line_length) -> StringView 
-//{
-////  // line starts with "*NODE"
-////  auto const smax_line_length = static_cast<int64_t>(max_line_length);
-////  while (file.getline(line, smax_line_length) && line[0] != '*') {
-////    StringView line_view(line);
-////    // Format: node_id, x, y, z
-////    // Skip ID
-////    StringView token = line_view.getTokenAndShrink(',');
-////    ASSERT(!token.empty());
-////
-////    char * end = nullptr;
-////
-////    // x
-////    token = line_view.getTokenAndShrink(',');
-////    ASSERT(!token.empty());
-////    Float const x = strto<Float>(token.data(), &end);
-////    ASSERT(end != nullptr);
-////    end = nullptr;
-////
-////    // y
-////    token = line_view.getTokenAndShrink(',');
-////    ASSERT(!token.empty());
-////    Float const y = strto<Float>(token.data(), &end);
-////    ASSERT(end != nullptr);
-////    end = nullptr;
-////
-////    // Only final token left of the form " zzzz\n"
-////    Float const z = strto<Float>(line_view.data(), &end);
-////    ASSERT(end != nullptr);
-////    soup.addVertex(x, y, z);
-////  }
-////  if (file.peek() == EOF) {
-////    return {};
-////  } 
-////  return {line};
-//} // vtkParseUnstructuredGrid 
+static void
+vtkParseUnstructuredGrid(PolytopeSoup & soup, std::ifstream & file, char * const line,
+    uint64_t const max_line_length)
+{
+  // line starts with "UNSTRUCTURED_GRID"
+  auto const smax_line_length = static_cast<int64_t>(max_line_length);
+
+  // Get the number of points
+  file.getline(line, smax_line_length);
+  StringView line_view(line);
+  if (!line_view.starts_with("POINTS")) {
+    LOG_ERROR("Expected POINTS");
+    return;
+  }
+  line_view.getTokenAndShrink(); // Remove "POINTS"
+  StringView token = line_view.getTokenAndShrink();
+  ASSERT(!token.empty());
+  char * end = nullptr;
+  Int const num_points = strto<Int>(token.data(), &end);
+  ASSERT(end != nullptr);
+  end = nullptr;
+  ASSERT(num_points > 0);
+  soup.reserveMoreVertices(num_points);
+
+  // line_view now just contains the data type
+  ASSERT(line_view.starts_with("float") || line_view.starts_with("double"));
+
+  // Read the vertices
+  while (file.getline(line, smax_line_length)) {
+    if (line[0] == '\0') {
+      continue;
+    }
+    line_view = StringView(line);
+    if (line_view.starts_with("CELLS")) {
+      break;
+    }
+    // Format: x y z
+    // x
+    token = line_view.getTokenAndShrink();
+    ASSERT(!token.empty());
+    Float const x = strto<Float>(token.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
+
+    // y
+    token = line_view.getTokenAndShrink();
+    ASSERT(!token.empty());
+    Float const y = strto<Float>(token.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
+
+    // Only final token left of the form " zzzz\n"
+    Float const z = strto<Float>(line_view.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
+    soup.addVertex(x, y, z);
+  }
+
+  // Line starts with "CELLS"
+  ASSERT(line_view.starts_with("CELLS"));
+  line_view.getTokenAndShrink(); // Remove "CELLS"
+  // Get the number of cells and the length of the cell connectivity
+  token = line_view.getTokenAndShrink();
+  ASSERT(!token.empty());
+  Int const num_cells = strto<Int>(token.data(), &end);
+  ASSERT(end != nullptr);
+  end = nullptr;
+  ASSERT(num_cells > 0);
+#if UM2_ENABLE_ASSERTS
+  token = line_view.getTokenAndShrink();
+  ASSERT(!token.empty());
+  Int const cell_conn_len = strto<Int>(token.data(), &end);
+  ASSERT(end != nullptr);
+  end = nullptr;
+  ASSERT(cell_conn_len > 0);
+#else
+  line_view.getTokenAndShrink();
+#endif
+
+  // Read the cells
+  // Since we only accept a few cell types, we try to infer the cell type from the
+  // number of vertices per cell.
+  Vector<Int> conn;
+  for (Int icell = 0; icell < num_cells; ++icell) {
+    file.getline(line, smax_line_length);
+    line_view = StringView(line);
+    // Format: num_verts v1 v2 v3 ...
+    // num_verts
+    token = line_view.getTokenAndShrink();
+    ASSERT(!token.empty());
+    Int const num_verts = strto<Int>(token.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
+    ASSERT(num_verts > 0);
+    conn.resize(num_verts);
+    for (Int i = 0; i < num_verts; ++i) {
+      token = line_view.getTokenAndShrink();
+      ASSERT(!token.empty());
+      Int const id = strto<Int>(token.data(), &end);
+      ASSERT(end != nullptr);
+      ASSERT(id >= 0);
+      ASSERT(id < num_points);
+      conn[i] = id;
+    }
+    VTKElemType const type = inferVTKElemType(num_verts);
+    ASSERT(type != VTKElemType::None);
+    soup.addElement(type, conn);
+  }
+
+  // Skip the blank line
+  file.getline(line, smax_line_length);
+  ASSERT(line[0] == '\0');
+  file.getline(line, smax_line_length);
+  line_view = StringView(line);
+  if (!line_view.starts_with("CELL_TYPES")) {
+    LOG_ERROR("Expected CELL_TYPES"); 
+    return;
+  }
+
+  // Line starts with "CELL_TYPES"
+  // The next line is potentially VERY large, since MPACT outputs the cell type
+  // array with a simple WRITE(*,*) type of statement. We skip it.
+  file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  ASSERT(file.good());
+} // vtkParseUnstructuredGrid
+
+static void
+vtkParseCellData(PolytopeSoup & soup, std::ifstream & file, char * const line,
+    uint64_t const max_line_length)
+{
+  // line starts with "CELL_DATA"
+  auto const smax_line_length = static_cast<int64_t>(max_line_length);
+
+  StringView line_view(line);
+  if (!line_view.starts_with("CELL_DATA")) {
+    LOG_ERROR("Expected CELL_DATA");
+    return;
+  }
+
+  // Get the number of cells in the dataset. It should be
+  // equal to the number of elements in the soup.
+  line_view.getTokenAndShrink(); // Remove "CELL_DATA"
+  char * end = nullptr;
+  Int const num_data = strto<Int>(line_view.data(), &end);
+  ASSERT(end != nullptr);
+  end = nullptr;
+  ASSERT(num_data == soup.numElems());
+
+  // Ensure SCALARS data
+  file.getline(line, smax_line_length);
+  line_view = StringView(line);
+  ASSERT(line_view.starts_with("SCALARS"));
+
+  // Get the name of the data set
+  StringView token = line_view.getTokenAndShrink();
+  token = line_view.getTokenAndShrink();
+  String const data_name(token);
+
+  // Ensure float/double data type
+  if (!line_view.starts_with("float") && !line_view.starts_with("double")) {
+    LOG_WARN("Skipping data set of unsupported type. Name: ", data_name, ", type: ", line_view);
+    return;
+  }
+  ASSERT(line_view.starts_with("float") || line_view.starts_with("double"));
+
+  // Ensure LOOKUP_TABLE
+  file.getline(line, smax_line_length);
+  ASSERT(StringView(line).starts_with("LOOKUP_TABLE"));
+
+  // Read the data
+  Vector<Float> data(num_data);
+  Vector<Int> ids(num_data);
+  um2::iota(ids.begin(), ids.end(), 0);
+  Int data_ctr = 0;
+  while (file.getline(line, smax_line_length) && line[0] != '\0') {
+    line_view = StringView(line);
+    token = line_view.getTokenAndShrink();
+    while (!token.empty()) {
+      Float const value = strto<Float>(token.data(), &end);
+      ASSERT(end != nullptr);
+      end = nullptr;
+      data[data_ctr] = value;
+      ++data_ctr;
+      token = line_view.getTokenAndShrink();
+    }
+  }
+  ASSERT(data_ctr == num_data);
+  // Add elset
+  soup.addElset(data_name, ids, data);
+}
 
 static void
 readVTKFile(String const & filename, PolytopeSoup & soup)
@@ -1171,7 +1321,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 
   // Get the first line and check the version
   file.getline(line, max_line_length);
-  StringView line_view(line); 
+  StringView line_view(line);
   if (!line_view.starts_with("# vtk DataFile Version 3.0")) {
     LOG_ERROR("Only VTK files of version 3.0 are supported");
     return;
@@ -1195,22 +1345,36 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
   // getTokenAndShrink() will remove "DATASET " from line_view
   line_view.getTokenAndShrink();
   if (line_view.starts_with("UNSTRUCTURED_GRID")) {
-//    line_view = vtkParseUnstructuredGrid(soup, file, line, max_line_length);
+    vtkParseUnstructuredGrid(soup, file, line, max_line_length);
   } else {
     LOG_ERROR("Unsupported VTK dataset type: ", line_view);
     return;
   }
 
+  // If there are any lines left, it's data. We only support scalar CELL_DATA of
+  // float or double type
+  if (file.peek() != EOF) {
+    while (file.getline(line, max_line_length)) {
+      if (line[0] == '\0') {
+        continue;
+      }
+      line_view = StringView(line);
+      if (line_view.starts_with("CELL_DATA")) {
+        vtkParseCellData(soup, file, line, max_line_length);
+      }
+    }
+  }
+
   if (soup.numElsets() > 0) {
     soup.sortElsets();
   }
- 
+
   file.close();
   LOG_INFO("Finished reading VTK file: ", filename);
 } // readVTKFile
 
 ////==============================================================================
-//// IO for XDMFloat files
+//// IO for XDMF files
 ////==============================================================================
 //
 //template <typename T>
@@ -1254,7 +1418,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //      std::any_of(_vertices.cbegin(), _vertices.cend(),
 //                  [](auto const & v) { return um2::abs(v[2]) > eps_distance; });
 //  Int const dim = is_3d ? 3 : 2;
-//  // Create XDMFloat Geometry node
+//  // Create XDMF Geometry node
 //  auto xgeom = xgrid.append_child("Geometry");
 //  if (dim == 3) {
 //    xgeom.append_attribute("GeometryType") = "XYZ";
@@ -1262,7 +1426,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //    xgeom.append_attribute("GeometryType") = "XY";
 //  }
 //
-//  // Create XDMFloat DataItem node
+//  // Create XDMF DataItem node
 //  auto xdata = xgeom.append_child("DataItem");
 //  xdata.append_attribute("DataType") = "Float";
 //  xdata.append_attribute("Dimensions") =
@@ -1302,7 +1466,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //PolytopeSoup::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
 //                                String const & h5filename, String const & h5path) const
 //{
-//  // Create XDMFloat Topology node
+//  // Create XDMF Topology node
 //  auto xtopo = xgrid.append_child("Topology");
 //  Int const nelems = numElems();
 //
@@ -1335,7 +1499,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //      nverts = 8;
 //      break;
 //    default:
-//      log::error("Unsupported polytope type");
+//      logger::error("Unsupported polytope type");
 //    }
 //    dimensions = toString(nelems) + " " + toString(nverts);
 //  } else {
@@ -1348,7 +1512,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //    for (Int i = 0; i < nelems; ++i) {
 //      auto const topo_type = static_cast<int8_t>(vtkToXDMFElemType(_element_types[i]));
 //      if (topo_type == -1) {
-//        log::error("Unsupported polytope type");
+//        logger::error("Unsupported polytope type");
 //      }
 //      topology[topo_ctr] = static_cast<Int>(static_cast<uint32_t>(topo_type));
 //      auto const offset = _element_offsets[i];
@@ -1361,7 +1525,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //  }
 //  xtopo.append_attribute("TopologyType") = topology_type.c_str();
 //  xtopo.append_attribute("NumberOfElements") = nelems;
-//  // Create XDMFloat DataItem node
+//  // Create XDMF DataItem node
 //  auto xdata = xtopo.append_child("DataItem");
 //  xdata.append_attribute("DataType") = "Int";
 //  xdata.append_attribute("Dimensions") = dimensions.c_str();
@@ -1411,11 +1575,11 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //    // Write HDF5 data set.
 //    h5dataset.write(&_elset_ids[start], h5type, h5space);
 //
-//    // Create XDMFloat Elset node
+//    // Create XDMF Elset node
 //    auto xelset = xgrid.append_child("Set");
 //    xelset.append_attribute("Name") = name.c_str();
 //    xelset.append_attribute("SetType") = "Cell";
-//    // Create XDMFloat DataItem node
+//    // Create XDMF DataItem node
 //    auto xdata = xelset.append_child("DataItem");
 //    xdata.append_attribute("DataType") = "Int";
 //    xdata.append_attribute("Dimensions") = end - start;
@@ -1430,7 +1594,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //
 //    if (!_elset_data[i].empty()) {
 //      if (_elset_names[i].starts_with("Material_")) {
-//        log::error("Material elsets should not have data");
+//        logger::error("Material elsets should not have data");
 //      }
 //      // Create HDF5 data space
 //      auto const dims_data = static_cast<hsize_t>(_elset_data[i].size());
@@ -1443,11 +1607,11 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //      // Write HDF5 data set
 //      h5dataset_data.write(_elset_data[i].data(), h5type_data, h5space_data);
 //
-//      // Create XDMFloat data node
+//      // Create XDMF data node
 //      auto xatt = xelset.append_child("Attribute");
 //      xatt.append_attribute("Name") = (name + "_data").c_str();
 //      xatt.append_attribute("Center") = "Cell";
-//      // Create XDMFloat DataItem node
+//      // Create XDMF DataItem node
 //      auto xdata2 = xatt.append_child("DataItem");
 //      xdata2.append_attribute("DataType") = "Float";
 //      xdata2.append_attribute("Dimensions") = _elset_data[i].size();
@@ -1469,7 +1633,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //        }
 //      }
 //      if (index == -1) {
-//        log::error("Could not find material name in material_names vector");
+//        logger::error("Could not find material name in material_names vector");
 //      }
 //
 //      // Create HDF5 data space
@@ -1484,11 +1648,11 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //      // Write HDF5 data set
 //      h5dataset_data.write(material_ids.data(), h5type_data, h5space_data);
 //
-//      // Create XDMFloat data node
+//      // Create XDMF data node
 //      auto xatt = xelset.append_child("Attribute");
 //      xatt.append_attribute("Name") = "Material";
 //      xatt.append_attribute("Center") = "Cell";
-//      // Create XDMFloat DataItem node
+//      // Create XDMF DataItem node
 //      auto xdata2 = xatt.append_child("DataItem");
 //      xdata2.append_attribute("DataType") = "Int";
 //      xdata2.append_attribute("Dimensions") = material_ids.size();
@@ -1524,7 +1688,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //void
 //PolytopeSoup::writeXDMF(String const & filepath) const
 //{
-//  log::info("Writing XDMFloat file: " + filepath);
+//  logger::info("Writing XDMF file: " + filepath);
 //
 //  // Setup HDF5 file
 //  // Get the h5 file name
@@ -1541,7 +1705,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //  // Setup XML file
 //  pugi::xml_document xdoc;
 //
-//  // XDMFloat root node
+//  // XDMF root node
 //  pugi::xml_node xroot = xdoc.append_child("Xdmf");
 //  xroot.append_attribute("Version") = "3.0";
 //
@@ -1613,31 +1777,31 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //{
 //  pugi::xml_node const xgeometry = xgrid.child("Geometry");
 //  if (strcmp(xgeometry.name(), "Geometry") != 0) {
-//    log::error("XDMFloat geometry node not found");
+//    logger::error("XDMF geometry node not found");
 //    return;
 //  }
 //  // Get the geometry type
 //  String const geometry_type(xgeometry.attribute("GeometryType").value());
 //  if (geometry_type != "XYZ" && geometry_type != "XY") {
-//    log::error("XDMFloat geometry type not supported: ", geometry_type);
+//    logger::error("XDMF geometry type not supported: ", geometry_type);
 //    return;
 //  }
 //  // Get the DataItem node
 //  pugi::xml_node const xdataitem = xgeometry.child("DataItem");
 //  if (strcmp(xdataitem.name(), "DataItem") != 0) {
-//    log::error("XDMFloat geometry DataItem node not found");
+//    logger::error("XDMF geometry DataItem node not found");
 //    return;
 //  }
 //  // Get the data type
 //  String const data_type(xdataitem.attribute("DataType").value());
 //  if (data_type != "Float") {
-//    log::error("XDMFloat geometry data type not supported: ", data_type);
+//    logger::error("XDMF geometry data type not supported: ", data_type);
 //    return;
 //  }
 //  // Get the precision
 //  std::string const precision(xdataitem.attribute("Precision").value());
 //  if (precision != "4" && precision != "8") {
-//    log::error("XDMFloat geometry precision not supported: ", precision);
+//    logger::error("XDMF geometry precision not supported: ", precision);
 //    return;
 //  }
 //  // Get the dimensions
@@ -1646,17 +1810,17 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //  Int const num_verts = sto<Int>(dimensions.substr(0, split));
 //  Int const num_dimensions = sto<Int>(dimensions.substr(split + 1));
 //  if (geometry_type == "XYZ" && num_dimensions != 3) {
-//    log::error("XDMFloat geometry dimensions not supported: ", dimensions);
+//    logger::error("XDMF geometry dimensions not supported: ", dimensions);
 //    return;
 //  }
 //  if (geometry_type == "XY" && num_dimensions != 2) {
-//    log::error("XDMFloat geometry dimensions not supported: ", dimensions);
+//    logger::error("XDMF geometry dimensions not supported: ", dimensions);
 //    return;
 //  }
 //  // Get the format
 //  String const format(xdataitem.attribute("Format").value());
 //  if (format != "HDF") {
-//    log::error("XDMFloat geometry format not supported: ", format);
+//    logger::error("XDMF geometry format not supported: ", format);
 //    return;
 //  }
 //
@@ -1725,7 +1889,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //    auto const ncells = sto<Int>(dimensions.substr(0, split));
 //    auto const nverts = sto<Int>(dimensions.substr(split + 1));
 //    if (ncells != num_elements) {
-//      log::error("Mismatch in number of elements");
+//      logger::error("Mismatch in number of elements");
 //      return;
 //    }
 //    Vector<T> data_vec(ncells * nverts);
@@ -1740,7 +1904,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //    } else if (topology_type == "Quadrilateral_8") {
 //      elem_type = VTKElemType::QuadraticQuad;
 //    } else {
-//      log::error("Unsupported element type");
+//      logger::error("Unsupported element type");
 //    }
 //    Vector<Int> conn(nverts);
 //    // Add the elements to the soup
@@ -1761,7 +1925,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //{
 //  pugi::xml_node const xtopology = xgrid.child("Topology");
 //  if (strcmp(xtopology.name(), "Topology") != 0) {
-//    log::error("XDMFloat topology node not found");
+//    logger::error("XDMF topology node not found");
 //    return;
 //  }
 //  // Get the topology type
@@ -1771,25 +1935,25 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //  // Get the DataItem node
 //  pugi::xml_node const xdataitem = xtopology.child("DataItem");
 //  if (strcmp(xdataitem.name(), "DataItem") != 0) {
-//    log::error("XDMFloat topology DataItem node not found");
+//    logger::error("XDMF topology DataItem node not found");
 //    return;
 //  }
 //  // Get the data type
 //  String const data_type(xdataitem.attribute("DataType").value());
 //  if (data_type != "Int") {
-//    log::error("XDMFloat topology data type not supported: ", data_type);
+//    logger::error("XDMF topology data type not supported: ", data_type);
 //    return;
 //  }
 //  // Get the precision
 //  std::string const precision(xdataitem.attribute("Precision").value());
 //  if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
-//    log::error("XDMFloat topology precision not supported: ", precision);
+//    logger::error("XDMF topology precision not supported: ", precision);
 //    return;
 //  }
 //  // Get the format
 //  String const format(xdataitem.attribute("Format").value());
 //  if (format != "HDF") {
-//    log::error("XDMFloat geometry format not supported: ", format);
+//    logger::error("XDMF geometry format not supported: ", format);
 //    return;
 //  }
 //  // Get the h5 dataset path
@@ -1828,7 +1992,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //    addElementsToMesh<int64_t>(num_elements, topology_type, dimensions, soup, dataset,
 //                               datatype);
 //  } else {
-//    log::error("Unsupported data type size");
+//    logger::error("Unsupported data type size");
 //  }
 //}
 //
@@ -1858,7 +2022,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
 //               String const & h5filename, PolytopeSoup & soup)
 //{
-//  LOG_DEBUG("Reading XDMFloat elsets");
+//  LOG_DEBUG("Reading XDMF elsets");
 //  // Loop over all nodes to find the elsets
 //  for (pugi::xml_node xelset = xgrid.first_child(); xelset != nullptr;
 //       xelset = xelset.next_sibling()) {
@@ -1868,37 +2032,37 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //    // Get the SetType
 //    String const set_type(xelset.attribute("SetType").value());
 //    if (set_type != "Cell") {
-//      log::error("XDMFloat elset only supports SetType=Cell");
+//      logger::error("XDMF elset only supports SetType=Cell");
 //      return;
 //    }
 //    // Get the name
 //    String const name(xelset.attribute("Name").value());
 //    if (name.size() == 0) {
-//      log::error("XDMFloat elset name not found");
+//      logger::error("XDMF elset name not found");
 //      return;
 //    }
 //    // Get the DataItem node
 //    pugi::xml_node const xdataitem = xelset.child("DataItem");
 //    if (strcmp(xdataitem.name(), "DataItem") != 0) {
-//      log::error("XDMFloat elset DataItem node not found");
+//      logger::error("XDMF elset DataItem node not found");
 //      return;
 //    }
 //    // Get the data type
 //    String const data_type(xdataitem.attribute("DataType").value());
 //    if (data_type != "Int") {
-//      log::error("XDMFloat elset data type not supported: ", data_type);
+//      logger::error("XDMF elset data type not supported: ", data_type);
 //      return;
 //    }
 //    // Get the precision
 //    std::string const precision = xdataitem.attribute("Precision").value();
 //    if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
-//      log::error("XDMFloat elset precision not supported: ", precision);
+//      logger::error("XDMF elset precision not supported: ", precision);
 //      return;
 //    }
 //    // Get the format
 //    String const format(xdataitem.attribute("Format").value());
 //    if (format != "HDF") {
-//      log::error("XDMFloat elset format not supported: ", format);
+//      logger::error("XDMF elset format not supported: ", format);
 //      return;
 //    }
 //    // Get the h5 dataset path
@@ -1959,7 +2123,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //void
 //readXDMFFile(String const & filename, PolytopeSoup & soup)
 //{
-//  log::info("Reading XDMFloat file: " + filename);
+//  logger::info("Reading XDMF file: " + filename);
 //
 //  // Open HDF5 file
 //  Int const h5filepath_end = filename.find_last_of('/') + 1;
@@ -1972,37 +2136,37 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //  pugi::xml_document xdoc;
 //  pugi::xml_parse_result const result = xdoc.load_file(filename.c_str());
 //  if (!result) {
-//    log::error("XDMFloat XML parse error: ", result.description(),
+//    logger::error("XDMF XML parse error: ", result.description(),
 //               ", character pos= ", result.offset);
 //  }
 //  pugi::xml_node const xroot = xdoc.child("Xdmf");
 //  if (strcmp("Xdmf", xroot.name()) != 0) {
-//    log::error("XDMFloat XML root node is not Xdmf");
+//    logger::error("XDMF XML root node is not Xdmf");
 //    return;
 //  }
 //  pugi::xml_node const xdomain = xroot.child("Domain");
 //  if (strcmp("Domain", xdomain.name()) != 0) {
-//    log::error("XDMFloat XML domain node is not Domain");
+//    logger::error("XDMF XML domain node is not Domain");
 //    return;
 //  }
 //
 //  pugi::xml_node const xgrid = xdomain.child("Grid");
 //  if (strcmp("Grid", xgrid.name()) != 0) {
-//    log::error("XDMFloat XML grid node is not Grid");
+//    logger::error("XDMF XML grid node is not Grid");
 //    return;
 //  }
 //  if (strcmp("Uniform", xgrid.attribute("GridType").value()) == 0) {
 //    readXDMFUniformGrid(xgrid, h5file, h5filename, soup);
 //  } else if (strcmp("Tree", xgrid.attribute("GridType").value()) == 0) {
-//    log::error("XDMFloat XML Tree is not supported");
+//    logger::error("XDMF XML Tree is not supported");
 //  } else {
-//    log::error("XDMFloat XML grid type is not Uniform or Tree");
+//    logger::error("XDMF XML grid type is not Uniform or Tree");
 //  }
 //  // Close HDF5 file
 //  h5file.close();
 //  // Close XML file
 //  xdoc.reset();
-//  log::info("Finished reading XDMFloat file: ", filename);
+//  logger::info("Finished reading XDMF file: ", filename);
 //}
 //
 //==============================================================================
@@ -2019,7 +2183,7 @@ PolytopeSoup::read(String const & filename)
 //  } else if (filename.ends_with(".xdmf")) {
 //    readXDMFFile(filename, *this);
   } else {
-    log::error("Unsupported file format.");
+    logger::error("Unsupported file format.");
   }
 }
 
@@ -2029,7 +2193,7 @@ PolytopeSoup::read(String const & filename)
 //  if (filename.ends_with(".xdmf")) {
 //    writeXDMF(filename);
 //  } else {
-//    log::error("Unsupported file format.");
+//    logger::error("Unsupported file format.");
 //  }
 //}
 

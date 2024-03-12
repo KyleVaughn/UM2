@@ -1,31 +1,22 @@
-pointClosestTo
+XDMF IO
+Check VTK with XDMF -> convert and vis
+Extract powered subsets
+-> Morton sort
 
-simplify log(a) - log(b) to log(a/b) in length()
+Add cell type check to VTK after fix in MPACT
 
-remove IOstream
-  tests
-  files
+NOLINT
+  stdlib
+  common
+  math
+  geometry
+
+push_back to emplace_back
+  Make another item with this for later
 
 benchmark quadratic segment intersection.
   Should we do more computation and save branching for a more complex
   boolean at the end?
-
-QuadraTicSegment
-  isLeft
-    -> Compare with areCCW(v[0], p_closest, p)
-
-  OK: 
-  interp
-  jacobian
-  getRotation
-  length
-  boundingBox
-  enclosedArea
-  enclosedCentroid
-  pointClosestTo
-  intersect
-
-scan vector?
 
 remove the behavior of a regular or rectilinear partition holding one extra element
 
@@ -34,12 +25,6 @@ add testing for gcc 12+ and clang15+
 check on gmsh intersect
 
 ray intersect regular grid?
-
-Float32 quadratic intersection debugging
-Where is the large error coming from?
-
-dion free functions forward declare
-refactor dion routines to be prettier/better var names?
 
 provide intersection functions with additional argument of inverse direction?
 
@@ -50,22 +35,12 @@ branchless
 
 big ints for float is trouble
 
-line segment
-fix naming in geom
-
 methods
 Harden the mesh IO, testing with files created from different software
 
 VTK output with colors
 
-polytope soup with data on whole mesh?
-
-Fix MPACT VTK IO
-  CELL_TYPES ? 4million chars long...
-
-VTK IO
-
-operator Type() -> Convery to type
+operator Type() -> Convert to type
 
 is_constexpr -> builtin
 constexpr tests
@@ -73,8 +48,8 @@ constexpr tests
 CUDA check
 
 PURE and ASSERTS/Log messages
-
-check nolints, prad
+  -> ASSERT Ok
+  -> Log no
 
 valgrind and cuda test on laptop
 
@@ -139,11 +114,6 @@ routines for edge, polygon, etc.
 
 GPU ray intersect. Need an easy way to get objects on the device. Maybe toDevice() return
 
-SIMD Vector primitives
-Use std::simd. Want exp(vector), but only implemented by SVML by intel.
-Wait until C++26 or use VCDevel std simd, the implementation that will be in GCC.
-Benchmark
-
 Functions to prevent std::string/std::vector usage in examples and tutorials
   One should bundle functions to hide complexity
 
@@ -168,8 +138,6 @@ Graphics:
 
 Restore scripts dir
 
-PURE CONST
- -> ASSERTS OK? LOG OK?
 Old benchmarks: reimplement or place in archive
 clean archive
 
@@ -181,7 +149,5 @@ Consistent testing of mesh point inside.
    getOrientedEdge -> return bool, pass edge by ref
 
 Binned FVM
-
-Implement very robust testing of ray vs shape intersections
 
 Matplotlib

@@ -56,35 +56,6 @@ TEST_CASE(interpolate)
 }
 
 //==============================================================================
-// jacobian
-//==============================================================================
-
-template <Int D>
-HOSTDEV
-TEST_CASE(jacobian)
-{
-  // Floator the reference quad, the Jacobian is constant.
-  um2::Quadrilateral<D> quad = makeQuad<D>();
-  auto jac = quad.jacobian(0, 0);
-  ASSERT_NEAR((jac(0, 0)), castIfNot<Float>(1), eps);
-  ASSERT_NEAR((jac(1, 0)), castIfNot<Float>(0), eps);
-  ASSERT_NEAR((jac(0, 1)), castIfNot<Float>(0), eps);
-  ASSERT_NEAR((jac(1, 1)), castIfNot<Float>(1), eps);
-  jac = quad.jacobian(castIfNot<Float>(0.2), castIfNot<Float>(0.3));
-  ASSERT_NEAR((jac(0, 0)), castIfNot<Float>(1), eps);
-  ASSERT_NEAR((jac(1, 0)), castIfNot<Float>(0), eps);
-  ASSERT_NEAR((jac(0, 1)), castIfNot<Float>(0), eps);
-  ASSERT_NEAR((jac(1, 1)), castIfNot<Float>(1), eps);
-  quad[1][0] = castIfNot<Float>(2);
-  quad[2][0] = castIfNot<Float>(2);
-  jac = quad.jacobian(castIfNot<Float>(0.2), castIfNot<Float>(0.3));
-  ASSERT_NEAR((jac(0, 0)), castIfNot<Float>(2), eps);
-  ASSERT_NEAR((jac(1, 0)), castIfNot<Float>(0), eps);
-  ASSERT_NEAR((jac(0, 1)), castIfNot<Float>(0), eps);
-  ASSERT_NEAR((jac(1, 1)), castIfNot<Float>(1), eps);
-}
-
-//==============================================================================
 // edge
 //==============================================================================
 
@@ -241,12 +212,11 @@ TEST_CASE(meanChordLength)
 
 HOSTDEV
 void
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 testQuadForIntersections(um2::Quadrilateral2 const & quad)
 {
   // Parameters
   Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
-  Int constexpr rays_per_longest_edge = 100;
+  Int constexpr rays_per_longest_edge = 200;
 
   auto const aabb = quad.boundingBox();
   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
@@ -298,9 +268,6 @@ template <Int D>
 MAKE_CUDA_KERNEL(interpolate, D);
 
 template <Int D>
-MAKE_CUDA_KERNEL(jacobian, D);
-
-template <Int D>
 MAKE_CUDA_KERNEL(edge, D);
 
 MAKE_CUDA_KERNEL(isConvex);
@@ -328,7 +295,6 @@ template <Int D>
 TEST_SUITE(Quadrilateral)
 {
   TEST_HOSTDEV(interpolate, D);
-  TEST_HOSTDEV(jacobian, D);
   TEST_HOSTDEV(edge, D);
   if constexpr (D == 2) {
     TEST_HOSTDEV(isConvex);

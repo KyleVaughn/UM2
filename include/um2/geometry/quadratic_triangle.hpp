@@ -72,11 +72,6 @@ public:
   PURE HOSTDEV constexpr auto
   operator()(R r, S s) const noexcept -> Point<D>;
 
-  // J(r, s) -> [dF/dr, dF/ds]
-  template <typename R, typename S>
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  jacobian(R r, S s) const noexcept -> Mat<D, 2, Float>;
-
   // Get the i-th edge of the polygon.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getEdge(Int i) const noexcept -> Edge;
@@ -191,25 +186,6 @@ QuadraticTriangle<D>::operator()(R const r, S const s) const noexcept -> Point<D
   Float const w4 = 4 * rr * ss;
   Float const w5 = 4 * ss * tt;
   return w0 * _v[0] + w1 * _v[1] + w2 * _v[2] + w3 * _v[3] + w4 * _v[4] + w5 * _v[5];
-}
-
-//==============================================================================
-// jacobian
-//==============================================================================
-
-template <Int D>
-template <typename R, typename S>
-PURE HOSTDEV constexpr auto
-QuadraticTriangle<D>::jacobian(R r, S s) const noexcept -> Mat<D, 2, Float>
-{
-  auto const rr = static_cast<Float>(4 * r);
-  auto const ss = static_cast<Float>(4 * s);
-  Float const tt = rr + ss - 3;
-  return Mat<D, 2, Float>(
-   tt * (_v[0] - _v[3]) + (rr - 1) * (_v[1] - _v[3]) +
-   ss * (_v[4] - _v[5]),
-   tt * (_v[0] - _v[5]) + (ss - 1) * (_v[2] - _v[5]) +
-   rr * (_v[4] - _v[3]));
 }
 
 //==============================================================================

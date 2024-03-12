@@ -1,19 +1,21 @@
 # vtk DataFile Version 3.0
-tri
+quad
 ASCII
 DATASET UNSTRUCTURED_GRID
-POINTS 4 float
+POINTS 6 float
 0 0 0
 1 0 0
 1 1 0
 0 1 0
+2 0 0
+2 1 0
 
-CELLS 2 8
-3 0 1 2
-3 2 3 0
+CELLS 2 10
+4 0 1 2 3
+4 1 4 5 2
 
 CELL_TYPES 2
-5 5
+9 9
 
 CELL_DATA 2
 SCALARS A int
@@ -23,4 +25,5 @@ LOOKUP_TABLE A_table
 CELL_DATA 2
 SCALARS flux float
 LOOKUP_TABLE flux_table
-1.0 2.0
+  1.0 
+  2.0

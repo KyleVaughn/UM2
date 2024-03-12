@@ -32,40 +32,65 @@ enum class VTKElemType : int8_t {
 //  QuadraticTriangle = 36,
 //  QuadraticQuad = 37
 //};
-//
-//enum class MeshType : int8_t {
-//  None = 0,
-//  Tri = 3,
-//  Quad = 4,
-//  TriQuad = 7,
-//  QuadraticTri = 6,
-//  QuadraticQuad = 8,
-//  QuadraticTriQuad = 14
-//};
-//
-//CONST constexpr auto
-//verticesPerElem(VTKElemType const type) -> Int
-//{
-//  switch (type) {
-//  case VTKElemType::Vertex:
-//    return 1;
-//  case VTKElemType::Line:
-//    return 2;
-//  case VTKElemType::Triangle:
-//    return 3;
-//  case VTKElemType::Quad:
-//    return 4;
-//  case VTKElemType::QuadraticEdge:
-//    return 3;
-//  case VTKElemType::QuadraticTriangle:
-//    return 6;
-//  case VTKElemType::QuadraticQuad:
-//    return 8;
-//  default:
-//    ASSERT(false);
-//    return -1000;
-//  }
-//}
+
+enum class MeshType : int8_t {
+  None = 0,
+  Tri = 3,
+  Quad = 4,
+  TriQuad = 7,
+  QuadraticTri = 6,
+  QuadraticQuad = 8,
+  QuadraticTriQuad = 14
+};
+
+CONST constexpr auto
+verticesPerElem(VTKElemType const type) -> Int
+{
+  switch (type) {
+  case VTKElemType::Vertex:
+    return 1;
+  case VTKElemType::Line:
+    return 2;
+  case VTKElemType::Triangle:
+    return 3;
+  case VTKElemType::Quad:
+    return 4;
+  case VTKElemType::QuadraticEdge:
+    return 3;
+  case VTKElemType::QuadraticTriangle:
+    return 6;
+  case VTKElemType::QuadraticQuad:
+    return 8;
+  default:
+    ASSERT(false);
+    return -1000;
+  }
+}
+
+// We only support a few element types, so we can uniquely identify a
+// VTKElemType by its number of vertices.
+CONST constexpr auto
+inferVTKElemType(Int const type) -> VTKElemType
+{
+  switch (type) {
+  case 1:
+    return VTKElemType::Vertex;
+  case 2:
+    return VTKElemType::Line;
+  case 3:
+    return VTKElemType::Triangle;
+  case 4:
+    return VTKElemType::Quad;
+  case 6:
+    return VTKElemType::QuadraticTriangle;
+  case 8:
+    return VTKElemType::QuadraticQuad;
+  default:
+    ASSERT(false);
+    return VTKElemType::None;
+  }
+}
+
 //
 //CONST constexpr auto
 //verticesPerElem(MeshType const type) -> Int

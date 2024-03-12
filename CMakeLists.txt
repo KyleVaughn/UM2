@@ -157,9 +157,9 @@ endif()
 # Sources
 set(UM2_SOURCES
     "src/common/settings.cpp"
-    "src/common/log.cpp"
+    "src/common/logger.cpp"
     "src/math/angular_quadrature.cpp"
-    #"src/mesh/polytope_soup.cpp"
+    "src/mesh/polytope_soup.cpp"
     #    "src/mesh/face_vertex_mesh.cpp"
     #    "src/physics/cross_section.cpp"
     #    "src/physics/nuclide.cpp"

@@ -18,7 +18,7 @@
 // LOG
 //==============================================================================
 
-namespace um2::settings::log
+namespace um2::settings::logger
 {
 
 namespace defaults
@@ -35,7 +35,7 @@ extern bool timestamped;
 extern bool colorized;
 extern bool exit_on_error;
 
-} // namespace um2::settings::log
+} // namespace um2::settings::logger
 
 //==============================================================================
 // CROSS SECTION LIBRARY (XS)

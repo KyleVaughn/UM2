@@ -72,11 +72,6 @@ public:
   PURE HOSTDEV constexpr auto
   operator()(R r, S s) const noexcept -> Point<D>;
 
-  // J(r, s) -> [dF/dr, dF/ds]
-  template <typename R, typename S>
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  jacobian(R r, S s) const noexcept -> Mat<D, 2, Float>;
-
   // Get the i-th edge of the polygon.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getEdge(Int i) const noexcept -> Edge;
@@ -195,43 +190,6 @@ QuadraticQuadrilateral<D>::operator()(R const r, S const s) const noexcept -> Po
          w[2] * _v[2] + w[3] * _v[3] +
          w[4] * _v[4] + w[5] * _v[5] +
          w[6] * _v[6] + w[7] * _v[7];
-}
-
-//==============================================================================
-// jacobian
-//==============================================================================
-
-template <Int D>
-template <typename R, typename S>
-PURE HOSTDEV constexpr auto
-QuadraticQuadrilateral<D>::jacobian(R r, S s) const noexcept -> Mat<D, 2, Float>
-{
-  Float const xi = 2 * static_cast<Float>(r) - 1;
-  Float const eta = 2 * static_cast<Float>(s) - 1;
-  Float const xi_eta = xi * eta;
-  Float const xi_xi = xi * xi;
-  Float const eta_eta = eta * eta;
-  Float const w0 = (eta - eta_eta) / 2;
-  Float const w1 = (eta + eta_eta) / 2;
-  Float const w2 = (xi - xi_eta);
-  Float const w3 = (xi + xi_eta);
-  Float const w4 = 1 - eta_eta;
-  Float const w5 = (xi - xi_xi) / 2;
-  Float const w6 = (xi + xi_xi) / 2;
-  Float const w7 = eta - xi_eta;
-  Float const w8 = eta + xi_eta;
-  Float const w9 = 1 - xi_xi;
-  return Mat<D, 2, Float>(
-    w0 * (_v[0] - _v[1]) +
-    w1 * (_v[2] - _v[3]) +
-    w2 * (_v[0] + _v[1] - 2 * _v[4]) +
-    w3 * (_v[2] + _v[3] - 2 * _v[6]) +
-    w4 * (_v[5] - _v[7]),
-    w5 * (_v[0] - _v[3]) +
-    w6 * (_v[2] - _v[1]) +
-    w7 * (_v[0] + _v[3] - 2 * _v[7]) +
-    w8 * (_v[1] + _v[2] - 2 * _v[5]) +
-    w9 * (_v[6] - _v[4]));
 }
 
 //==============================================================================
@@ -365,6 +323,10 @@ QuadraticQuadrilateral<D>::isConvex() const noexcept -> bool requires(D == 2)
 {
   // If each edge is either straight, or curves left. 
   // AND the linear polygon polygon is convex.
+  bool const lin_ok = linearPolygon().isConvex();
+  if (!lin_ok) {
+    return false;
+  }
   auto const e0 = getEdge(0);
   auto const e1 = getEdge(1);
   auto const e2 = getEdge(2);
@@ -374,8 +336,7 @@ QuadraticQuadrilateral<D>::isConvex() const noexcept -> bool requires(D == 2)
   bool const s_or_cl2 = isStraight(e2) || e2.curvesLeft();
   bool const s_or_cl3 = isStraight(e3) || e3.curvesLeft();
   bool const edges_ok = s_or_cl0 && s_or_cl1 && s_or_cl2 && s_or_cl3;
-  bool const lin_ok = linearPolygon().isConvex();
-  return edges_ok && lin_ok;
+  return edges_ok;
 }
 
 //==============================================================================

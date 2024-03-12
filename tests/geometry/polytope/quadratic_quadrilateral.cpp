@@ -56,32 +56,6 @@ TEST_CASE(interpolate)
 }
 
 //==============================================================================
-// jacobian
-//==============================================================================
-
-template <Int D>
-HOSTDEV
-TEST_CASE(jacobian)
-{
-  // Floator the reference quad, the Jacobian is constant.
-  um2::QuadraticQuadrilateral<D> quad = makeQuad<D>();
-  auto jac = quad.jacobian(0, 0);
-  ASSERT_NEAR((jac(0, 0)), 1, eps);
-  ASSERT_NEAR((jac(1, 0)), 0, eps);
-  ASSERT_NEAR((jac(0, 1)), 0, eps);
-  ASSERT_NEAR((jac(1, 1)), 1, eps);
-  jac = quad.jacobian(castIfNot<Float>(0.2), castIfNot<Float>(0.3));
-  ASSERT_NEAR((jac(0, 0)), 1, eps);
-  ASSERT_NEAR((jac(1, 0)), 0, eps);
-  ASSERT_NEAR((jac(0, 1)), 0, eps);
-  ASSERT_NEAR((jac(1, 1)), 1, eps);
-  // If we stretch the quad, the Jacobian should change.
-  quad[1][0] = castIfNot<Float>(2);
-  jac = quad.jacobian(0.5, 0);
-  ASSERT_NEAR((jac(0, 0)), 2, eps);
-}
-
-//==============================================================================
 // edge
 //==============================================================================
 
@@ -293,14 +267,12 @@ TEST_CASE(meanChordLength)
   auto const ref3 = um2::pi<Float> * quad3.area() / quad3.perimeter();
   auto const val3 = quad3.meanChordLength();
   auto const err3 = um2::abs(val3 - ref3) / ref3;
+  ASSERT(err3 < castIfNot<Float>(1e-3));
 }
 
 #if UM2_USE_CUDA
 template <Int D>
 MAKE_CUDA_KERNEL(interpolate, D);
-
-template <Int D>
-MAKE_CUDA_KERNEL(jacobian, D);
 
 template <Int D>
 MAKE_CUDA_KERNEL(edge, D);
@@ -322,7 +294,6 @@ template <Int D>
 TEST_SUITE(QuadraticQuadrilateral)
 {
   TEST_HOSTDEV(interpolate, D);
-  TEST_HOSTDEV(jacobian, D);
   TEST_HOSTDEV(edge, D);
   if constexpr (D == 2) {
     TEST_HOSTDEV(contains);

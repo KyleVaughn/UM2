@@ -70,11 +70,6 @@ public:
   PURE HOSTDEV constexpr auto
   operator()(R r, S s) const noexcept -> Point<D>;
 
-  // J(r, s) -> [dF/dr, dF/ds]
-  template <typename R, typename S>
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  jacobian(R r, S s) const noexcept -> Mat<D, 2, Float>;
-
   // Get the i-th edge of the polygon.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getEdge(Int i) const noexcept -> Edge;
@@ -184,18 +179,6 @@ Triangle<D>::operator()(R const r, S const s) const noexcept -> Point<D>
 }
 
 //==============================================================================
-// jacobian
-//==============================================================================
-
-template <Int D>
-template <typename R, typename S>
-PURE HOSTDEV constexpr auto
-Triangle<D>::jacobian(R /*r*/, S /*s*/) const noexcept -> Mat<D, 2, Float>
-{
-  return Mat<D, 2, Float>(_v[1] - _v[0], _v[2] - _v[0]);
-}
-
-//==============================================================================
 // getEdge
 //==============================================================================
 
@@ -248,6 +231,7 @@ Triangle<D>::area() const noexcept -> Float
   Vec<D, Float> const v10 = _v[1] - _v[0];
   Vec<D, Float> const v20 = _v[2] - _v[0];
   if constexpr (D == 2) {
+    ASSERT(isCCW());
     return v10.cross(v20) / 2; // this is the signed area
   } else {
     return v10.cross(v20).norm() / 2; // this is the unsigned area
@@ -339,6 +323,7 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 Triangle<D>::meanChordLength() const noexcept -> Float requires(D == 2)
 {
+  ASSERT(isConvex());
   return um2::pi<Float> * area() / perimeter();
 }
 

@@ -1,10 +1,6 @@
 #pragma once
 
 #include <um2/geometry/axis_aligned_box.hpp>
-#include <um2/geometry/triangle.hpp>
-#include <um2/geometry/quadrilateral.hpp>
-#include <um2/geometry/quadratic_triangle.hpp>
-#include <um2/geometry/quadratic_quadrilateral.hpp>
 #include <um2/mesh/element_types.hpp>
 #include <um2/stdlib/string.hpp>
 #include <um2/stdlib/vector.hpp>
@@ -52,7 +48,7 @@ class PolytopeSoup
 
   Vector<String> _elset_names;
   Vector<Int> _elset_offsets;      // A prefix sum of the number of elements in each elset
-  Vector<Int> _elset_ids;          // Element IDs of each elset
+  Vector<Int> _elset_ids;          // Element IDs of each elset (must be sorted)
   Vector<Vector<Float>> _elset_data; // Data associated with each elset
 
 //  //==============================================================================
@@ -247,6 +243,7 @@ PolytopeSoup::getMeshType() const -> MeshType
     if (type2 == this_type) {
       continue;
     }
+    // third type found. Not valid!
     return MeshType::None;
   }
   // Determine the mesh type from the 1 or 2 VTK elem types.

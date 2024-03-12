@@ -78,11 +78,6 @@ public:
   PURE HOSTDEV constexpr auto
   operator()(R r) const noexcept -> Vertex;
 
-  // dF/dr (r) -> (dx/dr, dy/dr, dz/dr)
-  template <typename R>
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  jacobian(R r) const noexcept -> Vec<D, Float>;
-
   // We want to transform the segment so that v[0] is at the origin and v[1]
   // is on the x-axis. We can do this by first translating by -v[0] and then
   // using a change of basis (rotation) matrix to rotate v[1] onto the x-axis.
@@ -211,22 +206,6 @@ QuadraticSegment<D>::operator()(R const r) const noexcept -> Vertex
 }
 
 //==============================================================================
-// jacobian
-//==============================================================================
-
-template <Int D>
-template <typename R>
-PURE HOSTDEV constexpr auto
-QuadraticSegment<D>::jacobian(R const r) const noexcept -> Point<D>
-{
-  // Q'(r) = B + 2rA
-  // (4 * r - 3) * (v0 - v2) + (4 * r - 1) * (v1 - v2)
-  Float const w0 = 4 * static_cast<Float>(r) - 3;
-  Float const w1 = 4 * static_cast<Float>(r) - 1;
-  return w0 * (_v[0] - _v[2]) + w1 * (_v[1] - _v[2]);
-}
-
-//==============================================================================
 // getRotation
 //==============================================================================
 
@@ -330,12 +309,12 @@ QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D 
 
   // Otherwise, there is non-trivial curvature in the segment.
   // Find rx such that Q(rx)[0] = p_r[0].
-  // Use the y-coordinate/coordinates of the point/points to check if the point 
+  // Use the y-coordinate/coordinates of the point/points to check if the point
   // is to the left of the segment.
   // We must also check that rx is in [0, 1] to ensure that the point is valid.
   //
   // Q(r) = C + rB + r²A
-  // In this case: 
+  // In this case:
   // C = q[0] = (0, 0)
   // B = -q[1] + 4q[2]
   // A = 2q[1] - 4q[2] = -B + q[1]
@@ -348,7 +327,7 @@ QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D 
 
   Float const bx = -q[1][0] + 4 * q[2][0];
   Float const by = 4 * q[2][1]; // q[1][1] == 0, q[2][1] > 0 implies by > 0
-  Float const ax = -bx + q[1][0]; 
+  Float const ax = -bx + q[1][0];
   Float const ay = -by; // q[1][1] == 0, by > 0 implies ay < 0
   ASSERT(by > 0);
 
@@ -440,7 +419,7 @@ QuadraticSegment<D>::length() const noexcept -> Float
   Float const sabc = um2::sqrt(a + b + c);
   Float const disc = b * b - 4 * a * c;
   Float const a2b = 2 * a + b;
-  Float const num = disc * (um2::log(2 * sa * sc + b) - um2::log(2 * sa * sabc + a2b)) + sa * (2 * (a2b * sabc - b * sc));
+  Float const num = disc * um2::log((2 * sa * sc + b) / (2 * sa * sabc + a2b)) + sa * (2 * (a2b * sabc - b * sc));
   Float const den = 8 * sa * sa * sa;
   Float const result  = num / den;
   ASSERT(0 <= result);

@@ -57,35 +57,6 @@ TEST_CASE(interpolate)
 }
 
 //==============================================================================
-// jacobian
-//==============================================================================
-
-template <Int D>
-HOSTDEV
-TEST_CASE(jacobian)
-{
-  // Floator the reference triangle, the Jacobian is constant.
-  um2::QuadraticTriangle<D> tri = makeTri<D>();
-  auto jac = tri.jacobian(0, 0);
-  ASSERT_NEAR((jac(0, 0)), 1, eps);
-  ASSERT_NEAR((jac(1, 0)), 0, eps);
-  ASSERT_NEAR((jac(0, 1)), 0, eps);
-  ASSERT_NEAR((jac(1, 1)), 1, eps);
-  jac = tri.jacobian(castIfNot<Float>(0.2), castIfNot<Float>(0.3));
-  ASSERT_NEAR((jac(0, 0)), 1, eps);
-  ASSERT_NEAR((jac(1, 0)), 0, eps);
-  ASSERT_NEAR((jac(0, 1)), 0, eps);
-  ASSERT_NEAR((jac(1, 1)), 1, eps);
-  // If we stretch the triangle, the Jacobian should change.
-  tri[1][0] = castIfNot<Float>(2);
-  jac = tri.jacobian(0.5, 0);
-  ASSERT_NEAR((jac(0, 0)), 2, eps);
-  ASSERT_NEAR((jac(1, 0)), 0, eps);
-  ASSERT_NEAR((jac(0, 1)), 0, eps);
-  ASSERT_NEAR((jac(1, 1)), 1, eps);
-}
-
-//==============================================================================
 // edge
 //==============================================================================
 
@@ -218,7 +189,6 @@ TEST_CASE(isCCW_flip)
 
 HOSTDEV
 void
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 testTriForIntersections(um2::QuadraticTriangle<2> const tri)
 {
   // Parameters
@@ -267,12 +237,17 @@ TEST_CASE(intersect)
   testTriForIntersections(tri);
   tri = makeTri2<2>();
   testTriForIntersections(tri);
+  tri[4][0] = castIfNot<Float>(0.3);
+  tri[4][1] = castIfNot<Float>(0.25);
+  testTriForIntersections(tri);
 }
 
 //==============================================================================
 // meanChordLength
 //==============================================================================
 
+// This test used to be more meaningful, since the mean chord length was
+// computed numerically.
 HOSTDEV
 TEST_CASE(meanChordLength)
 {
@@ -298,14 +273,12 @@ TEST_CASE(meanChordLength)
   auto const val3 = tri3.meanChordLength(); 
   auto const ref3 = um2::pi<Float> * tri3.area() / tri3.perimeter();
   auto const err3 = um2::abs(val3 - ref3) / ref3;
+  ASSERT(err3 < castIfNot<Float>(1e-3));
 }
 
 #if UM2_USE_CUDA
 template <Int D>
 MAKE_CUDA_KERNEL(interpolate, D);
-
-template <Int D>
-MAKE_CUDA_KERNEL(jacobian, D);
 
 template <Int D>
 MAKE_CUDA_KERNEL(edge, D);
@@ -327,7 +300,6 @@ template <Int D>
 TEST_SUITE(QuadraticTriangle)
 {
   TEST_HOSTDEV(interpolate, D);
-  TEST_HOSTDEV(jacobian, D);
   TEST_HOSTDEV(edge, D);
   if constexpr (D == 2) {
     TEST_HOSTDEV(contains);

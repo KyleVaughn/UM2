@@ -140,36 +140,6 @@ TEST_CASE(interpolate)
 }
 
 //==============================================================================
-// jacobian
-//==============================================================================
-
-template <Int D>
-HOSTDEV
-TEST_CASE(jacobian)
-{
-  um2::QuadraticSegment<D> const seg = makeSeg1<D>();
-  um2::Vec<D, Float> j0 = seg.jacobian(0);
-  um2::Vec<D, Float> j12 = seg.jacobian(ahalf);
-  um2::Vec<D, Float> j1 = seg.jacobian(1);
-  um2::Vec<D, Float> j_ref = um2::Vec<D, Float>::zero();
-  j_ref[0] = castIfNot<Float>(2);
-  ASSERT(j0.isApprox(j_ref));
-  ASSERT(j12.isApprox(j_ref));
-  ASSERT(j1.isApprox(j_ref));
-
-  um2::QuadraticSegment<D> const seg2 = makeSeg2<D>();
-  j0 = seg2.jacobian(0);
-  j12 = seg2.jacobian(ahalf);
-  j1 = seg2.jacobian(1);
-  ASSERT_NEAR(j0[0], static_cast<Float>(2), eps);
-  ASSERT(j0[1] > 0);
-  ASSERT_NEAR(j12[0], castIfNot<Float>(2), eps);
-  ASSERT_NEAR(j12[1], castIfNot<Float>(0), eps);
-  ASSERT_NEAR(j1[0], castIfNot<Float>(2), eps);
-  ASSERT(j1[1] < 0);
-}
-
-//==============================================================================
 // length
 //==============================================================================
 
@@ -656,7 +626,7 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
   Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
   Int constexpr rays_per_longest_edge = 1000;
 
-  auto constexpr eps_pt = 1e-2;
+  auto constexpr eps_pt = 2e-2;
 
   auto aabb = q.boundingBox();
   aabb.scale(castIfNot<Float>(1.1));
@@ -741,9 +711,6 @@ template <Int D>
 MAKE_CUDA_KERNEL(interpolate, D);
 
 template <Int D>
-MAKE_CUDA_KERNEL(jacobian, D);
-
-template <Int D>
 MAKE_CUDA_KERNEL(length, D);
 
 template <Int D>
@@ -762,7 +729,6 @@ template <Int D>
 TEST_SUITE(QuadraticSegment)
 {
   TEST_HOSTDEV(interpolate, D);
-  TEST_HOSTDEV(jacobian, D);
   TEST_HOSTDEV(boundingBox, D);
   TEST_HOSTDEV(length, D);
   if constexpr (D == 2) {

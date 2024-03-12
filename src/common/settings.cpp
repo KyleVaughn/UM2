@@ -8,13 +8,13 @@
 // LOG
 //==============================================================================
 
-namespace um2::settings::log
+namespace um2::settings::logger
 {
 int32_t level = defaults::level;
 bool timestamped = defaults::timestamped;
 bool colorized = defaults::colorized;
 bool exit_on_error = defaults::exit_on_error;
-} // namespace um2::settings::log
+} // namespace um2::settings::logger
 
 //==============================================================================
 // CROSS SECTION LIBRARY (XS)

@@ -68,11 +68,6 @@ public:
   PURE HOSTDEV constexpr auto
   operator()(R r) const noexcept -> Vertex;
 
-  // dF/dr (r) -> (dx/dr, dy/dr, dz/dr)
-  template <typename R>
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  jacobian(R /*r*/) const noexcept -> Vec<D, Float>;
-
   // We want to transform the segment so that v[0] is at the origin and v[1]
   // is on the x-axis. We can do this by first translating by -v[0] and then
   // using a change of basis (rotation) matrix to rotate v[1] onto the x-axis.
@@ -162,18 +157,6 @@ LineSegment<D>::operator()(R const r) const noexcept -> Vertex
 {
   auto const rr = static_cast<Float>(r);
   return _v[0] + rr * (_v[1] - _v[0]);
-}
-
-//==============================================================================
-// jacobian
-//==============================================================================
-
-template <Int D>
-template <typename R>
-PURE HOSTDEV constexpr auto
-LineSegment<D>::jacobian(R const /*r*/) const noexcept -> Point<D>
-{
-  return _v[1] - _v[0]; 
 }
 
 //==============================================================================
