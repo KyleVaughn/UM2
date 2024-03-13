@@ -2,6 +2,8 @@
 
 #include "./helpers/setup_polytope_soup.hpp"
 
+#include <iostream>
+
 #include "../test_macros.hpp"
 
 TEST_CASE(addVertex)
@@ -598,107 +600,107 @@ TEST_CASE(io_vtk_tri6_quad8_mesh)
   ASSERT_NEAR(elset_data[1], 2, castIfNot<Float>(1e-6));
 }
 
-//TEST_CASE(io_xdmf_tri_mesh)
-//{
-//  um2::PolytopeSoup mesh_ref;
-//  makeReferenceTriPolytopeSoup(mesh_ref);
-//  mesh_ref.write("./tri.xdmf");
-//
-//  um2::PolytopeSoup mesh;
-//  mesh.read("./tri.xdmf");
-//
-//  ASSERT(mesh.compare(mesh_ref) == 17); // Don't read elset data
-//
-//  int stat = std::remove("./tri.xdmf");
-//  ASSERT(stat == 0);
-//  stat = std::remove("./tri.h5");
-//  ASSERT(stat == 0);
-//}
-//
-//TEST_CASE(io_xdmf_quad_mesh)
-//{
-//  um2::PolytopeSoup mesh_ref;
-//  makeReferenceQuadPolytopeSoup(mesh_ref);
-//  mesh_ref.write("./quad.xdmf");
-//
-//  um2::PolytopeSoup mesh;
-//  mesh.read("./quad.xdmf");
-//
-//  ASSERT(mesh.compare(mesh_ref) == 17); // Don't read elset data
-//
-//  int stat = std::remove("./quad.xdmf");
-//  ASSERT(stat == 0);
-//  stat = std::remove("./quad.h5");
-//  ASSERT(stat == 0);
-//}
-//
-//TEST_CASE(io_xdmf_tri_quad_mesh)
-//{
-//  um2::PolytopeSoup mesh_ref;
-//  makeReferenceTriQuadPolytopeSoup(mesh_ref);
-//  mesh_ref.write("./tri_quad.xdmf");
-//
-//  um2::PolytopeSoup mesh;
-//  mesh.read("./tri_quad.xdmf");
-//
-//  ASSERT(mesh.compare(mesh_ref) == 17); // Don't read elset data
-//
-//  int stat = std::remove("./tri_quad.xdmf");
-//  ASSERT(stat == 0);
-//  stat = std::remove("./tri_quad.h5");
-//  ASSERT(stat == 0);
-//}
-//
-//TEST_CASE(io_xdmf_tri6_mesh)
-//{
-//  um2::PolytopeSoup mesh_ref;
-//  makeReferenceTri6PolytopeSoup(mesh_ref);
-//  mesh_ref.write("./tri6.xdmf");
-//
-//  um2::PolytopeSoup mesh;
-//  mesh.read("./tri6.xdmf");
-//
-//  ASSERT(mesh.compare(mesh_ref) == 17); // Don't read elset data
-//
-//  int stat = std::remove("./tri6.xdmf");
-//  ASSERT(stat == 0);
-//  stat = std::remove("./tri6.h5");
-//  ASSERT(stat == 0);
-//}
-//
-//TEST_CASE(io_xdmf_quad8_mesh)
-//{
-//  um2::PolytopeSoup mesh_ref;
-//  makeReferenceQuad8PolytopeSoup(mesh_ref);
-//  mesh_ref.write("./quad8.xdmf");
-//
-//  um2::PolytopeSoup mesh;
-//  mesh.read("./quad8.xdmf");
-//
-//  ASSERT(mesh.compare(mesh_ref) == 17); // Don't read elset data
-//
-//  int stat = std::remove("./quad8.xdmf");
-//  ASSERT(stat == 0);
-//  stat = std::remove("./quad8.h5");
-//  ASSERT(stat == 0);
-//}
-//
-//TEST_CASE(io_xdmf_tri6_quad8_mesh)
-//{
-//  um2::PolytopeSoup mesh_ref;
-//  makeReferenceTri6Quad8PolytopeSoup(mesh_ref);
-//  mesh_ref.write("./tri6_quad8.xdmf");
-//
-//  um2::PolytopeSoup mesh;
-//  mesh.read("./tri6_quad8.xdmf");
-//
-//  ASSERT(mesh.compare(mesh_ref) == 17); // Don't read elset data
-//
-//  int stat = std::remove("./tri6_quad8.xdmf");
-//  ASSERT(stat == 0);
-//  stat = std::remove("./tri6_quad8.h5");
-//  ASSERT(stat == 0);
-//}
+TEST_CASE(io_xdmf_tri_mesh)
+{
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceTriPolytopeSoup(mesh_ref);
+  mesh_ref.write("./tri.xdmf");
+
+  um2::PolytopeSoup mesh;
+  mesh.read("./tri.xdmf");
+
+  ASSERT(mesh.compare(mesh_ref) == 0);
+
+  int stat = std::remove("./tri.xdmf");
+  ASSERT(stat == 0);
+  stat = std::remove("./tri.h5");
+  ASSERT(stat == 0);
+}
+
+TEST_CASE(io_xdmf_quad_mesh)
+{
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceQuadPolytopeSoup(mesh_ref);
+  mesh_ref.write("./quad.xdmf");
+
+  um2::PolytopeSoup mesh;
+  mesh.read("./quad.xdmf");
+
+  ASSERT(mesh.compare(mesh_ref) == 0);
+
+  int stat = std::remove("./quad.xdmf");
+  ASSERT(stat == 0);
+  stat = std::remove("./quad.h5");
+  ASSERT(stat == 0);
+}
+
+TEST_CASE(io_xdmf_tri_quad_mesh)
+{
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceTriQuadPolytopeSoup(mesh_ref);
+  mesh_ref.write("./tri_quad.xdmf");
+
+  um2::PolytopeSoup mesh;
+  mesh.read("./tri_quad.xdmf");
+
+  ASSERT(mesh.compare(mesh_ref) == 0);
+
+  int stat = std::remove("./tri_quad.xdmf");
+  ASSERT(stat == 0);
+  stat = std::remove("./tri_quad.h5");
+  ASSERT(stat == 0);
+}
+
+TEST_CASE(io_xdmf_tri6_mesh)
+{
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceTri6PolytopeSoup(mesh_ref);
+  mesh_ref.write("./tri6.xdmf");
+
+  um2::PolytopeSoup mesh;
+  mesh.read("./tri6.xdmf");
+
+  ASSERT(mesh.compare(mesh_ref) == 0);
+
+  int stat = std::remove("./tri6.xdmf");
+  ASSERT(stat == 0);
+  stat = std::remove("./tri6.h5");
+  ASSERT(stat == 0);
+}
+
+TEST_CASE(io_xdmf_quad8_mesh)
+{
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceQuad8PolytopeSoup(mesh_ref);
+  mesh_ref.write("./quad8.xdmf");
+
+  um2::PolytopeSoup mesh;
+  mesh.read("./quad8.xdmf");
+
+  ASSERT(mesh.compare(mesh_ref) == 0);
+
+  int stat = std::remove("./quad8.xdmf");
+  ASSERT(stat == 0);
+  stat = std::remove("./quad8.h5");
+  ASSERT(stat == 0);
+}
+
+TEST_CASE(io_xdmf_tri6_quad8_mesh)
+{
+  um2::PolytopeSoup mesh_ref;
+  makeReferenceTri6Quad8PolytopeSoup(mesh_ref);
+  mesh_ref.write("./tri6_quad8.xdmf");
+
+  um2::PolytopeSoup mesh;
+  mesh.read("./tri6_quad8.xdmf");
+
+  ASSERT(mesh.compare(mesh_ref) == 0);
+
+  int stat = std::remove("./tri6_quad8.xdmf");
+  ASSERT(stat == 0);
+  stat = std::remove("./tri6_quad8.h5");
+  ASSERT(stat == 0);
+}
 
 TEST_SUITE(PolytopeSoup)
 {
@@ -725,12 +727,12 @@ TEST_SUITE(PolytopeSoup)
   TEST(io_vtk_tri6_mesh);
   TEST(io_vtk_quad8_mesh);
   TEST(io_vtk_tri6_quad8_mesh);
-//  TEST(io_xdmf_tri_mesh);
-//  TEST(io_xdmf_quad_mesh);
-//  TEST(io_xdmf_tri_quad_mesh);
-//  TEST(io_xdmf_tri6_mesh);
-//  TEST(io_xdmf_quad8_mesh);
-//  TEST(io_xdmf_tri6_quad8_mesh);
+  TEST(io_xdmf_tri_mesh);
+  TEST(io_xdmf_quad_mesh);
+  TEST(io_xdmf_tri_quad_mesh);
+  TEST(io_xdmf_tri6_mesh);
+  TEST(io_xdmf_quad8_mesh);
+  TEST(io_xdmf_tri6_quad8_mesh);
 }
 
 auto

@@ -233,56 +233,6 @@ MAKE_CUDA_KERNEL(end_with)
 ////}
 ////MAKE_CUDA_KERNEL(index_operator);
 ////
-////HOSTDEV
-////TEST_CASE(addition_operator)
-////{
-////  um2::String s0("hi");
-////  um2::String const s1(" there");
-////  s0 += s1;
-////  ASSERT(s0.size() == 8);
-////  ASSERT(s0[0] == 'h');
-////  ASSERT(s0[1] == 'i');
-////  ASSERT(s0[2] == ' ');
-////  ASSERT(s0[3] == 't');
-////  ASSERT(s0[4] == 'h');
-////  ASSERT(s0[5] == 'e');
-////  ASSERT(s0[6] == 'r');
-////  ASSERT(s0[7] == 'e');
-////  s0 = "hi";
-////  ASSERT(s0.size() == 2);
-////  s0 += " there";
-////  ASSERT(s0.size() == 8);
-////  ASSERT(s0[0] == 'h');
-////  ASSERT(s0[1] == 'i');
-////  ASSERT(s0[2] == ' ');
-////  ASSERT(s0[3] == 't');
-////  ASSERT(s0[4] == 'h');
-////  ASSERT(s0[5] == 'e');
-////  ASSERT(s0[6] == 'r');
-////  ASSERT(s0[7] == 'e');
-////  s0 = "hi";
-////  ASSERT(s0.size() == 2);
-////  um2::String s2 = s0 + s1;
-////  ASSERT(s2.size() == 8);
-////  ASSERT(s2[0] == 'h');
-////  ASSERT(s2[1] == 'i');
-////  ASSERT(s2[2] == ' ');
-////  ASSERT(s2[3] == 't');
-////}
-////MAKE_CUDA_KERNEL(addition_operator);
-//
-
-
-
-
-
-
-
-
-
-
-
-
 
 ////TEST_CASE(std_string_assign_operator)
 ////{
@@ -325,29 +275,21 @@ MAKE_CUDA_KERNEL(end_with)
 ////  ASSERT(s4.data()[0] == 'T');
 ////}
 ////
-////HOSTDEV
-////TEST_CASE(equals_operator)
-////{
-////  um2::String const s0("hello");
-////  um2::String const s1("helo");
-////  um2::String const s2("hello");
-////  ASSERT(s0 == s0);
-////  ASSERT(s0 == s2);
-////  ASSERT(s0 != s1);
-////}
 ////MAKE_CUDA_KERNEL(equals_operator);
 ////
-////HOSTDEV
-////TEST_CASE(comparison)
-////{
-////  ASSERT(um2::String("Ant") < um2::String("Zebra"));
-////  ASSERT(um2::String("Zebra") > um2::String("Ant"));
-////  ASSERT(um2::String("Zebra") <= um2::String("ant"));
-////  ASSERT(um2::String("ant") >= um2::String("Zebra"));
-////  ASSERT(um2::String("Zebra") <= um2::String("Zebra"));
-////  ASSERT(um2::String("Zebra") >= um2::String("Zebra"));
-////}
-////MAKE_CUDA_KERNEL(comparison);
+HOSTDEV
+TEST_CASE(relational_operators)
+{
+  um2::String const s0("Ant");
+  um2::String const s1("Zebra");
+  ASSERT(s0 < s1);
+  ASSERT(s1 > s0);
+  ASSERT(s0 <= s1);
+  ASSERT(s1 >= s0);
+  ASSERT(s0 <= s0);
+  ASSERT(s0 >= s0);
+}
+MAKE_CUDA_KERNEL(relational_operators);
 ////
 ////HOSTDEV
 ////TEST_CASE(starts_ends_with)
@@ -360,34 +302,65 @@ MAKE_CUDA_KERNEL(end_with)
 ////}
 ////MAKE_CUDA_KERNEL(starts_ends_with);
 ////
-////HOSTDEV
-////TEST_CASE(substr)
-////{
-////  um2::String const s("hello");
-////  um2::String const s0 = s.substr(1);
-////  ASSERT(s0.size() == 4);
-////  ASSERT(s0[0] == 'e');
-////  ASSERT(s0[1] == 'l');
-////  ASSERT(s0[2] == 'l');
-////  ASSERT(s0[3] == 'o');
-////  um2::String const s1 = s.substr(1, 2);
-////  ASSERT(s1.size() == 2);
-////  ASSERT(s1[0] == 'e');
-////  ASSERT(s1[1] == 'l');
-////}
-////MAKE_CUDA_KERNEL(substr);
-////
-////HOSTDEV
-////TEST_CASE(find_last_of)
-////{
-////  um2::String const s("hello");
-////  ASSERT(s.find_last_of('l') == 3);
-////  ASSERT(s.find_last_of('o') == 4);
-////  ASSERT(s.find_last_of('h') == 0);
-////  ASSERT(s.find_last_of('a') == um2::String::npos);
-////}
-////
+HOSTDEV
+TEST_CASE(substr)
+{
+  um2::String const s("hello");
+  um2::String const s0 = s.substr(1);
+  ASSERT(s0.size() == 4);
+  ASSERT(s0.data()[0] == 'e');
+  ASSERT(s0.data()[1] == 'l');
+  ASSERT(s0.data()[2] == 'l');
+  ASSERT(s0.data()[3] == 'o');
+  um2::String const s1 = s.substr(1, 2);
+  ASSERT(s1.size() == 2);
+  ASSERT(s1.data()[0] == 'e');
+  ASSERT(s1.data()[1] == 'l');
+  um2::String const s2 = s.substr(0, 0);
+  ASSERT(s2.empty());
+  um2::String const s3 = s.substr(0, 100);
+  ASSERT(s3.size() == 5);
+  ASSERT(s3.data()[0] == 'h');
+  ASSERT(s3.data()[1] == 'e');
+  ASSERT(s3.data()[2] == 'l');
+  ASSERT(s3.data()[3] == 'l');
+  ASSERT(s3.data()[4] == 'o');
+}
+MAKE_CUDA_KERNEL(substr);
 
+HOSTDEV    
+TEST_CASE(find_last_of)    
+{    
+  char const * const data = "Hello, World!";    
+  um2::String const s(data);    
+  ASSERT(s.find_last_of('H') == 0);    
+  ASSERT(s.find_last_of('W') == 7);    
+  ASSERT(s.find_last_of('!') == 12);    
+  ASSERT(s.find_last_of('z') == um2::String::npos);    
+  ASSERT(s.find_last_of('l') == 10);    
+  ASSERT(s.find_last_of('o', 4) == 4);    
+  ASSERT(s.find_last_of('o', 3) == um2::String::npos);    
+} 
+
+HOSTDEV
+TEST_CASE(compound_addition)
+{
+  // Start with a small string
+  um2::String s("hello");
+  ASSERT(s.size() == 5);
+  ASSERT(s.capacity() == 22);
+  // Add a small string
+  // This should not change the capacity
+  s += um2::String(" there");
+  ASSERT(s.size() == 11);
+  ASSERT(s.capacity() == 22);
+
+  // Add a small string which will exceed the capacity
+  // and force a reallocation
+  s += " ... General Kenobi";
+  ASSERT(s.size() == 30);
+  ASSERT(s.capacity() == 44);
+}
 
 // NOLINTEND(cert-dcl03-c,misc-static-assert)
 
@@ -407,14 +380,15 @@ TEST_SUITE(String)
   TEST_HOSTDEV(starts_with)
   TEST_HOSTDEV(end_with)
 //  TEST(std_string_assign_operator)
-//  TEST_HOSTDEV(equals_operator)
-//  TEST_HOSTDEV(comparison)
+  TEST_HOSTDEV(relational_operators)
 //  TEST_HOSTDEV(index_operator)
 //  TEST_HOSTDEV(addition_operator)
 //
-//  // Methods
+  // Methods
 //  TEST(starts_ends_with)
-//  TEST_HOSTDEV(substr)
+  TEST_HOSTDEV(substr)
+  TEST_HOSTDEV(find_last_of)
+  TEST_HOSTDEV(compound_addition)
 }
 
 auto

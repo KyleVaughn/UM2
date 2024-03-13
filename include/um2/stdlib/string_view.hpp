@@ -138,6 +138,9 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   find_first_not_of(char c, uint64_t pos = 0) const noexcept -> uint64_t;
 
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  find_last_of(char c, uint64_t pos = npos) const noexcept -> uint64_t;
+
   // NOLINTEND(readability-identifier-naming) match std::string
 
   //==============================================================================
@@ -362,7 +365,6 @@ StringView::substr(uint64_t pos, uint64_t count) const noexcept -> StringView
 PURE HOSTDEV constexpr auto
 StringView::find_first_of(char c, uint64_t pos) const noexcept -> uint64_t
 {
-  ASSERT(pos <= size());
   for (uint64_t i = pos; i < size(); ++i) {
     if (data()[i] == c) {
       return i;
@@ -374,10 +376,25 @@ StringView::find_first_of(char c, uint64_t pos) const noexcept -> uint64_t
 PURE HOSTDEV constexpr auto
 StringView::find_first_not_of(char c, uint64_t pos) const noexcept -> uint64_t
 {
-  ASSERT(pos <= size());
   for (uint64_t i = pos; i < size(); ++i) {
     if (data()[i] != c) {
       return i;
+    }
+  }
+  return npos;
+}
+
+PURE HOSTDEV constexpr auto
+StringView::find_last_of(char c, uint64_t pos) const noexcept -> uint64_t
+{
+  if (pos < size()) {
+    ++pos;
+  } else {
+    pos = size();
+  }
+  for (ConstPtr p = data() + pos; p != begin();) {
+    if (*--p == c) {
+      return static_cast<uint64_t>(p - begin());
     }
   }
   return npos;

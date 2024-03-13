@@ -1,4 +1,14 @@
+Need to pass material names?
+  -> set that gets
+
+makeMaterialsElset
+  -> convert Material_ to Material with elset data
+
+strcmp??
+
+
 XDMF IO
+-> look for an opportunity to make non-private
 Check VTK with XDMF -> convert and vis
 Extract powered subsets
 -> Morton sort

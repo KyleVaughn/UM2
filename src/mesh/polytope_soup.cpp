@@ -14,11 +14,7 @@
 #include <um2/stdlib/algorithm/fill.hpp>
 #include <um2/stdlib/algorithm/is_sorted.hpp>
 #include <um2/stdlib/strto.hpp>
-//#include <um2/stdlib/memory.hpp>
-//#include <um2/stdlib/sto.hpp>
-//#include <um2/stdlib/string.hpp>
-//#include <um2/stdlib/vector.hpp>
-//
+
 #include <algorithm> // std::sort, std::set_intersection
 
 //#include <charconv>
@@ -241,6 +237,9 @@ PolytopeSoup::getElementCentroid(Int const i) const -> Point3
 {
   ASSERT(i < _element_types.size());
 
+  // Must assume that the vertices of most elements have the same z-coordinate.
+  // Otherwise computing the centroid would VERY expensive.
+
   auto const elem_type = _element_types[i];
   auto const istart = _element_offsets[i];
 
@@ -430,6 +429,7 @@ PolytopeSoup::mortonSort()
   LOG_DEBUG("Sorting vertices and elements using morton encoding");
   mortonSortVertices();
   mortonSortElements();
+  sortElsets();
   _is_morton_sorted = true;
 }
 
@@ -1373,256 +1373,255 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
   LOG_INFO("Finished reading VTK file: ", filename);
 } // readVTKFile
 
-////==============================================================================
-//// IO for XDMF files
-////==============================================================================
-//
-//template <typename T>
-//static inline auto
-//getH5DataType() -> H5::PredType
-//{
-//  // NOLINTNEXTLINE(bugprone-branch-clone)
-//  if constexpr (std::same_as<T, float>) {
-//    return H5::PredType::NATIVE_FLOAT;
-//  } else if constexpr (std::same_as<T, double>) {
-//    return H5::PredType::NATIVE_DOUBLE;
-//  } else if constexpr (std::same_as<T, int8_t>) {
-//    return H5::PredType::NATIVE_INT8;
-//  } else if constexpr (std::same_as<T, int16_t>) {
-//    return H5::PredType::NATIVE_INT16;
-//  } else if constexpr (std::same_as<T, int32_t>) {
-//    return H5::PredType::NATIVE_INT32;
-//  } else if constexpr (std::same_as<T, int64_t>) {
-//    return H5::PredType::NATIVE_INT64;
-//  } else if constexpr (std::same_as<T, uint8_t>) {
-//    return H5::PredType::NATIVE_UINT8;
-//  } else if constexpr (std::same_as<T, uint16_t>) {
-//    return H5::PredType::NATIVE_UINT16;
-//  } else if constexpr (std::same_as<T, uint32_t>) {
-//    return H5::PredType::NATIVE_UINT32;
-//  } else if constexpr (std::same_as<T, uint64_t>) {
-//    return H5::PredType::NATIVE_UINT64;
-//  } else {
-//    static_assert(always_false<T>, "Unsupported type");
-//    return H5::PredType::NATIVE_FLOAT;
-//  }
-//}
-//
-//void
-//PolytopeSoup::writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
-//                                String const & h5filename, String const & h5path) const
-//
-//{
-//  Int const num_verts = _vertices.size();
-//  bool const is_3d =
-//      std::any_of(_vertices.cbegin(), _vertices.cend(),
-//                  [](auto const & v) { return um2::abs(v[2]) > eps_distance; });
-//  Int const dim = is_3d ? 3 : 2;
-//  // Create XDMF Geometry node
-//  auto xgeom = xgrid.append_child("Geometry");
-//  if (dim == 3) {
-//    xgeom.append_attribute("GeometryType") = "XYZ";
-//  } else { // (dim == 2)
-//    xgeom.append_attribute("GeometryType") = "XY";
-//  }
-//
-//  // Create XDMF DataItem node
-//  auto xdata = xgeom.append_child("DataItem");
-//  xdata.append_attribute("DataType") = "Float";
-//  xdata.append_attribute("Dimensions") =
-//      (toString(num_verts) + " " + toString(dim)).c_str();
-//  xdata.append_attribute("Precision") = sizeof(F);
-//  xdata.append_attribute("Format") = "HDF";
-//  String const h5geompath = h5filename + ":" + h5path + "/Geometry";
-//  xdata.append_child(pugi::node_pcdata).set_value(h5geompath.c_str());
-//
-//  // Create HDF5 data space
-//  hsize_t dims[2] = {static_cast<hsize_t>(num_verts), static_cast<hsize_t>(dim)};
-//  H5::DataSpace const h5space(2, dims);
-//  // Create HDF5 data type
-//  H5::DataType const h5type = getH5DataType<Float>();
-//  // Create HDF5 data set
-//  H5::DataSet const h5dataset = h5group.createDataSet("Geometry", h5type, h5space);
-//  // Create an xy or xyz array
-//  Vector<Float> xyz(num_verts * dim);
-//  if (dim == 2) {
-//    for (Int i = 0; i < num_verts; ++i) {
-//      xyz[2 * i] = _vertices[i][0];
-//      xyz[2 * i + 1] = _vertices[i][1];
-//    }
-//  } else { // dim == 3
-//    for (Int i = 0; i < num_verts; ++i) {
-//      xyz[3 * i] = _vertices[i][0];
-//      xyz[3 * i + 1] = _vertices[i][1];
-//      xyz[3 * i + 2] = _vertices[i][2];
-//    }
-//  }
-//  // Write HDF5 data set
-//  h5dataset.write(xyz.data(), h5type, h5space);
-//  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
-//} // writeXDMFgeometry
-//
-//void
-//PolytopeSoup::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
-//                                String const & h5filename, String const & h5path) const
-//{
-//  // Create XDMF Topology node
-//  auto xtopo = xgrid.append_child("Topology");
-//  Int const nelems = numElems();
-//
-//  Vector<Int> topology;
-//  String topology_type;
-//  String dimensions;
-//  Int nverts = 0;
-//  auto const elem_type = getElemTypes();
-//  bool ishomogeneous = true;
-//  if (elem_type.size() == 1) {
-//    switch (elem_type[0]) {
-//    case VTKElemType::Triangle:
-//      topology_type = "Triangle";
-//      nverts = 3;
-//      break;
-//    case VTKElemType::Quad:
-//      topology_type = "Quadrilateral";
-//      nverts = 4;
-//      break;
-//    case VTKElemType::QuadraticEdge:
-//      topology_type = "Edge_3";
-//      nverts = 3;
-//      break;
-//    case VTKElemType::QuadraticTriangle:
-//      topology_type = "Triangle_6";
-//      nverts = 6;
-//      break;
-//    case VTKElemType::QuadraticQuad:
-//      topology_type = "Quadrilateral_8";
-//      nverts = 8;
-//      break;
-//    default:
-//      logger::error("Unsupported polytope type");
-//    }
-//    dimensions = toString(nelems) + " " + toString(nverts);
-//  } else {
-//    topology_type = "Mixed";
-//    ishomogeneous = false;
-//    dimensions = toString(nelems + _element_conn.size());
-//    topology.resize(nelems + _element_conn.size());
-//    // Create the topology array (type id + node ids)
-//    Int topo_ctr = 0;
-//    for (Int i = 0; i < nelems; ++i) {
-//      auto const topo_type = static_cast<int8_t>(vtkToXDMFElemType(_element_types[i]));
-//      if (topo_type == -1) {
-//        logger::error("Unsupported polytope type");
-//      }
-//      topology[topo_ctr] = static_cast<Int>(static_cast<uint32_t>(topo_type));
-//      auto const offset = _element_offsets[i];
-//      auto const npts = _element_offsets[i + 1] - _element_offsets[i];
-//      for (Int j = 0; j < npts; ++j) {
-//        topology[topo_ctr + j + 1] = _element_conn[offset + j];
-//      }
-//      topo_ctr += npts + 1;
-//    }
-//  }
-//  xtopo.append_attribute("TopologyType") = topology_type.c_str();
-//  xtopo.append_attribute("NumberOfElements") = nelems;
-//  // Create XDMF DataItem node
-//  auto xdata = xtopo.append_child("DataItem");
-//  xdata.append_attribute("DataType") = "Int";
-//  xdata.append_attribute("Dimensions") = dimensions.c_str();
-//  xdata.append_attribute("Precision") = sizeof(I);
-//  xdata.append_attribute("Format") = "HDF";
-//  String const h5topopath = h5filename + ":" + h5path + "/Topology";
-//  xdata.append_child(pugi::node_pcdata).set_value(h5topopath.c_str());
-//
-//  // Create HDF5 data type
-//  H5::DataType const h5type = getH5DataType<Int>();
-//  if (ishomogeneous) {
-//    // Create HDF5 data space
-//    hsize_t dims[2] = {static_cast<hsize_t>(nelems), static_cast<hsize_t>(nverts)};
-//    H5::DataSpace const h5space(2, dims);
-//    // Create HDF5 data set
-//    H5::DataSet const h5dataset = h5group.createDataSet("Topology", h5type, h5space);
-//    // Write HDF5 data set
-//    h5dataset.write(_element_conn.data(), h5type, h5space);
-//  } else {
-//    // Create HDF5 data space
-//    auto const dims = static_cast<hsize_t>(topology.size());
-//    H5::DataSpace const h5space(1, &dims);
-//    // Create HDF5 data set
-//    H5::DataSet const h5dataset = h5group.createDataSet("Topology", h5type, h5space);
-//    // Write HDF5 data set
-//    h5dataset.write(topology.data(), h5type, h5space);
-//  }
-//  // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
-//} // writeXDMFTopology
-//
-//void
-//PolytopeSoup::writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
-//                              String const & h5filename, String const & h5path,
-//                              Vector<String> const & material_names) const
-//{
-//  for (Int i = 0; i < _elset_names.size(); ++i) {
-//    String const name = _elset_names[i];
-//    auto const start = _elset_offsets[i];
-//    auto const end = _elset_offsets[i + 1];
-//    // Create HDF5 data space
-//    auto dims = static_cast<hsize_t>(end - start);
-//    H5::DataSpace const h5space(1, &dims);
-//    // Create HDF5 data type
-//    H5::DataType const h5type = getH5DataType<Int>();
-//    // Create HDF5 data set
-//    H5::DataSet const h5dataset = h5group.createDataSet(name.c_str(), h5type, h5space);
-//    // Write HDF5 data set.
-//    h5dataset.write(&_elset_ids[start], h5type, h5space);
-//
-//    // Create XDMF Elset node
-//    auto xelset = xgrid.append_child("Set");
-//    xelset.append_attribute("Name") = name.c_str();
-//    xelset.append_attribute("SetType") = "Cell";
-//    // Create XDMF DataItem node
-//    auto xdata = xelset.append_child("DataItem");
-//    xdata.append_attribute("DataType") = "Int";
-//    xdata.append_attribute("Dimensions") = end - start;
-//    xdata.append_attribute("Precision") = sizeof(I);
-//    xdata.append_attribute("Format") = "HDF";
-//    String h5elsetpath = h5filename;
-//    h5elsetpath += ':';
-//    h5elsetpath += h5path;
-//    h5elsetpath += '/';
-//    h5elsetpath += name;
-//    xdata.append_child(pugi::node_pcdata).set_value(h5elsetpath.c_str());
-//
-//    if (!_elset_data[i].empty()) {
-//      if (_elset_names[i].starts_with("Material_")) {
-//        logger::error("Material elsets should not have data");
-//      }
-//      // Create HDF5 data space
-//      auto const dims_data = static_cast<hsize_t>(_elset_data[i].size());
-//      H5::DataSpace const h5space_data(1, &dims_data);
-//      // Create HDF5 data type
-//      H5::DataType const h5type_data = getH5DataType<Float>();
-//      // Create HDF5 data set
-//      H5::DataSet const h5dataset_data =
-//          h5group.createDataSet((name + "_data").c_str(), h5type_data, h5space_data);
-//      // Write HDF5 data set
-//      h5dataset_data.write(_elset_data[i].data(), h5type_data, h5space_data);
-//
-//      // Create XDMF data node
-//      auto xatt = xelset.append_child("Attribute");
-//      xatt.append_attribute("Name") = (name + "_data").c_str();
-//      xatt.append_attribute("Center") = "Cell";
-//      // Create XDMF DataItem node
-//      auto xdata2 = xatt.append_child("DataItem");
-//      xdata2.append_attribute("DataType") = "Float";
-//      xdata2.append_attribute("Dimensions") = _elset_data[i].size();
-//      xdata2.append_attribute("Precision") = sizeof(F);
-//      xdata2.append_attribute("Format") = "HDF";
-//
-//      String const h5elsetdatapath = h5elsetpath + "_data";
-//      xdata2.append_child(pugi::node_pcdata).set_value(h5elsetdatapath.c_str());
-//    }
-//
-//    // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
+//==============================================================================
+// IO for XDMF files
+//==============================================================================
+
+template <typename T>
+static inline auto
+getH5DataType() -> H5::PredType
+{
+  if constexpr (std::same_as<T, float>) {
+    return H5::PredType::NATIVE_FLOAT;
+  } 
+  if constexpr (std::same_as<T, double>) {
+    return H5::PredType::NATIVE_DOUBLE;
+  } 
+  if constexpr (std::same_as<T, int8_t>) {
+    return H5::PredType::NATIVE_INT8;
+  } 
+  if constexpr (std::same_as<T, int16_t>) {
+    return H5::PredType::NATIVE_INT16;
+  }
+  if constexpr (std::same_as<T, int32_t>) {
+    return H5::PredType::NATIVE_INT32;
+  }
+  if constexpr (std::same_as<T, int64_t>) {
+    return H5::PredType::NATIVE_INT64;
+  }
+  if constexpr (std::same_as<T, uint8_t>) {
+    return H5::PredType::NATIVE_UINT8;
+  }
+  if constexpr (std::same_as<T, uint16_t>) {
+    return H5::PredType::NATIVE_UINT16;
+  } 
+  if constexpr (std::same_as<T, uint32_t>) {
+    return H5::PredType::NATIVE_UINT32;
+  }
+  if constexpr (std::same_as<T, uint64_t>) {
+    return H5::PredType::NATIVE_UINT64;
+  } 
+  ASSERT(false);
+  return H5::PredType::NATIVE_FLOAT;
+}
+
+void
+PolytopeSoup::writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
+                                String const & h5filename, String const & h5path) const
+
+{
+  Int const num_verts = _vertices.size();
+  bool const is_3d =
+      std::any_of(_vertices.cbegin(), _vertices.cend(),
+                  [](auto const & v) { return um2::abs(v[2]) > eps_distance; });
+  Int const dim = is_3d ? 3 : 2;
+  // Create XDMF Geometry node
+  auto xgeom = xgrid.append_child("Geometry");
+  if (dim == 3) {
+    xgeom.append_attribute("GeometryType") = "XYZ";
+  } else { // (dim == 2)
+    xgeom.append_attribute("GeometryType") = "XY";
+  }
+
+  // Create XDMF DataItem node
+  auto xdata = xgeom.append_child("DataItem");
+  xdata.append_attribute("DataType") = "Float";
+  xdata.append_attribute("Dimensions") =
+      (String(num_verts) + " " + String(dim)).data();
+  xdata.append_attribute("Precision") = sizeof(Float);
+  xdata.append_attribute("Format") = "HDF";
+  String const h5geompath = h5filename + ":" + h5path + "/Geometry";
+  xdata.append_child(pugi::node_pcdata).set_value(h5geompath.data());
+
+  // Create HDF5 data space
+  hsize_t dims[2] = {static_cast<hsize_t>(num_verts), static_cast<hsize_t>(dim)};
+  H5::DataSpace const h5space(2, dims);
+  // Create HDF5 data type
+  H5::DataType const h5type = getH5DataType<Float>();
+  // Create HDF5 data set
+  H5::DataSet const h5dataset = h5group.createDataSet("Geometry", h5type, h5space);
+  // Create an xy or xyz array
+  Vector<Float> xyz(num_verts * dim);
+  if (dim == 2) {
+    for (Int i = 0; i < num_verts; ++i) {
+      xyz[2 * i] = _vertices[i][0];
+      xyz[2 * i + 1] = _vertices[i][1];
+    }
+  } else { // dim == 3
+    for (Int i = 0; i < num_verts; ++i) {
+      xyz[3 * i] = _vertices[i][0];
+      xyz[3 * i + 1] = _vertices[i][1];
+      xyz[3 * i + 2] = _vertices[i][2];
+    }
+  }
+  // Write HDF5 data set
+  h5dataset.write(xyz.data(), h5type, h5space);
+} // writeXDMFgeometry
+
+void
+PolytopeSoup::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
+                                String const & h5filename, String const & h5path) const
+{
+  // Create XDMF Topology node
+  auto xtopo = xgrid.append_child("Topology");
+  Int const nelems = numElems();
+
+  Vector<Int> topology;
+  String topology_type;
+  String dimensions;
+  Int nverts = 0;
+  auto const elem_type = getElemTypes();
+  bool ishomogeneous = true;
+  if (elem_type.size() == 1) {
+    switch (elem_type[0]) {
+    case VTKElemType::Triangle:
+      topology_type = "Triangle";
+      nverts = 3;
+      break;
+    case VTKElemType::Quad:
+      topology_type = "Quadrilateral";
+      nverts = 4;
+      break;
+    case VTKElemType::QuadraticEdge:
+      topology_type = "Edge_3";
+      nverts = 3;
+      break;
+    case VTKElemType::QuadraticTriangle:
+      topology_type = "Triangle_6";
+      nverts = 6;
+      break;
+    case VTKElemType::QuadraticQuad:
+      topology_type = "Quadrilateral_8";
+      nverts = 8;
+      break;
+    default:
+      logger::error("Unsupported polytope type");
+    }
+    dimensions = String(nelems) + " " + String(nverts);
+  } else {
+    topology_type = "Mixed";
+    ishomogeneous = false;
+    dimensions = String(nelems + _element_conn.size());
+    topology.resize(nelems + _element_conn.size());
+    // Create the topology array (type id + node ids)
+    Int topo_ctr = 0;
+    for (Int i = 0; i < nelems; ++i) {
+      auto const topo_type = static_cast<int8_t>(vtkToXDMFElemType(_element_types[i]));
+      if (topo_type == static_cast<int8_t>(XDMFElemType::None)) { 
+        logger::error("Unsupported polytope type");
+      }
+      ASSERT(topo_type > 0);
+      topology[topo_ctr] = static_cast<Int>(static_cast<uint32_t>(topo_type));
+      auto const offset = _element_offsets[i];
+      auto const npts = _element_offsets[i + 1] - _element_offsets[i];
+      for (Int j = 0; j < npts; ++j) {
+        topology[topo_ctr + j + 1] = _element_conn[offset + j];
+      }
+      topo_ctr += npts + 1;
+    }
+  }
+  xtopo.append_attribute("TopologyType") = topology_type.data();
+  xtopo.append_attribute("NumberOfElements") = nelems;
+  // Create XDMF DataItem node
+  auto xdata = xtopo.append_child("DataItem");
+  xdata.append_attribute("DataType") = "Int";
+  xdata.append_attribute("Dimensions") = dimensions.data();
+  xdata.append_attribute("Precision") = sizeof(Int);
+  xdata.append_attribute("Format") = "HDF";
+  String const h5topopath = h5filename + ":" + h5path + "/Topology";
+  xdata.append_child(pugi::node_pcdata).set_value(h5topopath.data());
+
+  // Create HDF5 data type
+  H5::DataType const h5type = getH5DataType<Int>();
+  if (ishomogeneous) {
+    // Create HDF5 data space
+    hsize_t dims[2] = {static_cast<hsize_t>(nelems), static_cast<hsize_t>(nverts)};
+    H5::DataSpace const h5space(2, dims);
+    // Create HDF5 data set
+    H5::DataSet const h5dataset = h5group.createDataSet("Topology", h5type, h5space);
+    // Write HDF5 data set
+    h5dataset.write(_element_conn.data(), h5type, h5space);
+  } else {
+    // Create HDF5 data space
+    auto const dims = static_cast<hsize_t>(topology.size());
+    H5::DataSpace const h5space(1, &dims);
+    // Create HDF5 data set
+    H5::DataSet const h5dataset = h5group.createDataSet("Topology", h5type, h5space);
+    // Write HDF5 data set
+    h5dataset.write(topology.data(), h5type, h5space);
+  }
+} // writeXDMFTopology
+
+void
+PolytopeSoup::writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
+                              String const & h5filename, String const & h5path
+                              //Vector<String> const & material_names
+                              ) const
+{
+  for (Int i = 0; i < _elset_names.size(); ++i) {
+    String const name = _elset_names[i];
+    auto const start = _elset_offsets[i];
+    auto const end = _elset_offsets[i + 1];
+    // Create HDF5 data space
+    auto dims = static_cast<hsize_t>(end - start);
+    H5::DataSpace const h5space(1, &dims);
+    // Create HDF5 data type
+    H5::DataType const h5type = getH5DataType<Int>();
+    // Create HDF5 data set
+    H5::DataSet const h5dataset = h5group.createDataSet(name.data(), h5type, h5space);
+    // Write HDF5 data set.
+    h5dataset.write(&_elset_ids[start], h5type, h5space);
+
+    // Create XDMF Elset node
+    auto xelset = xgrid.append_child("Set");
+    xelset.append_attribute("Name") = name.data();
+    xelset.append_attribute("SetType") = "Cell";
+    // Create XDMF DataItem node
+    auto xdata = xelset.append_child("DataItem");
+    xdata.append_attribute("DataType") = "Int";
+    xdata.append_attribute("Dimensions") = end - start;
+    xdata.append_attribute("Precision") = sizeof(Int);
+    xdata.append_attribute("Format") = "HDF";
+    String const h5elsetpath = h5filename + ":" + h5path + "/" + name;
+    xdata.append_child(pugi::node_pcdata).set_value(h5elsetpath.data());
+
+    if (!_elset_data[i].empty()) {
+      // Create HDF5 data space
+      auto const dims_data = static_cast<hsize_t>(_elset_data[i].size());
+      H5::DataSpace const h5space_data(1, &dims_data);
+      // Create HDF5 data type
+      H5::DataType const h5type_data = getH5DataType<Float>();
+      // Create HDF5 data set
+      H5::DataSet const h5dataset_data =
+          h5group.createDataSet((name + "_data").data(), h5type_data, h5space_data);
+      // Write HDF5 data set
+      h5dataset_data.write(_elset_data[i].data(), h5type_data, h5space_data);
+
+      // Create XDMF data node
+      auto xatt = xelset.append_child("Attribute");
+      xatt.append_attribute("Name") = (name + "_data").data();
+      xatt.append_attribute("Center") = "Cell";
+      // Create XDMF DataItem node
+      auto xdata2 = xatt.append_child("DataItem");
+      xdata2.append_attribute("DataType") = "Float";
+      xdata2.append_attribute("Dimensions") = _elset_data[i].size();
+      xdata2.append_attribute("Precision") = sizeof(Float);
+      xdata2.append_attribute("Format") = "HDF";
+
+      String const h5elsetdatapath = h5elsetpath + "_data";
+      xdata2.append_child(pugi::node_pcdata).set_value(h5elsetdatapath.data());
+    }
+
 //    if (name.starts_with("Material_")) {
 //      // Get the index of the material in the material_names vector
 //      Int index = -1;
@@ -1643,7 +1642,7 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //      H5::DataType const h5type_data = getH5DataType<int>();
 //      // Create HDF5 data set
 //      H5::DataSet const h5dataset_data =
-//          h5group.createDataSet((name + "_data").c_str(), h5type_data, h5space_data);
+//          h5group.createDataSet((name + "_data").data(), h5type_data, h5space_data);
 //      Vector<int> material_ids(end - start, index);
 //      // Write HDF5 data set
 //      h5dataset_data.write(material_ids.data(), h5type_data, h5space_data);
@@ -1660,58 +1659,67 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //      xdata2.append_attribute("Format") = "HDF";
 //
 //      String const h5elsetdatapath = h5elsetpath + "_data";
-//      xdata2.append_child(pugi::node_pcdata).set_value(h5elsetdatapath.c_str());
+//      xdata2.append_child(pugi::node_pcdata).set_value(h5elsetdatapath.data());
 //    }
-//  }
-//} // writeXDMFelsets
-//
-//void
-//PolytopeSoup::writeXDMFUniformGrid(String const & name,
-//                                   Vector<String> const & material_names,
-//                                   pugi::xml_node & xdomain, H5::H5File & h5file,
-//                                   String const & h5filename, String const & h5path) const
-//{
-//  // Grid
-//  pugi::xml_node xgrid = xdomain.append_child("Grid");
-//  xgrid.append_attribute("Name") = name.c_str();
-//  xgrid.append_attribute("GridType") = "Uniform";
-//
-//  // h5
-//  String const h5grouppath = h5path + "/" + name;
-//  H5::Group h5group = h5file.createGroup(h5grouppath.c_str());
-//
-//  writeXDMFGeometry(xgrid, h5group, h5filename, h5grouppath);
-//  writeXDMFTopology(xgrid, h5group, h5filename, h5grouppath);
+  }
+} // writeXDMFelsets
+
+void
+PolytopeSoup::writeXDMFUniformGrid(String const & name,
+                             //      Vector<String> const & /*material_names*/,
+                                   pugi::xml_node & xdomain, H5::H5File & h5file,
+                                   String const & h5filename, String const & h5path) const
+{
+  // Grid
+  pugi::xml_node xgrid = xdomain.append_child("Grid");
+  xgrid.append_attribute("Name") = name.data();
+  xgrid.append_attribute("GridType") = "Uniform";
+
+  // h5
+  String const h5grouppath = h5path + "/" + name;
+  H5::Group h5group = h5file.createGroup(h5grouppath.data());
+
+  writeXDMFGeometry(xgrid, h5group, h5filename, h5grouppath);
+  writeXDMFTopology(xgrid, h5group, h5filename, h5grouppath);
+  writeXDMFElsets(xgrid, h5group, h5filename, h5grouppath);
 //  writeXDMFElsets(xgrid, h5group, h5filename, h5grouppath, material_names);
-//} // writeXDMFUniformGrid
-//
-//void
-//PolytopeSoup::writeXDMF(String const & filepath) const
-//{
-//  logger::info("Writing XDMF file: " + filepath);
-//
-//  // Setup HDF5 file
-//  // Get the h5 file name
-//  Int last_slash = filepath.find_last_of('/');
-//  if (last_slash == String::npos) {
-//    last_slash = 0;
-//  }
-//  Int const h5filepath_end = last_slash == 0 ? 0 : last_slash + 1;
-//  String const h5filename =
-//      filepath.substr(h5filepath_end, filepath.size() - 5 - h5filepath_end) + ".h5";
-//  String const h5filepath = filepath.substr(0, h5filepath_end);
-//  H5::H5File h5file((h5filepath + h5filename).c_str(), H5F_ACC_TRUNC);
-//
-//  // Setup XML file
-//  pugi::xml_document xdoc;
-//
-//  // XDMF root node
-//  pugi::xml_node xroot = xdoc.append_child("Xdmf");
-//  xroot.append_attribute("Version") = "3.0";
-//
-//  // Domain node
-//  pugi::xml_node xdomain = xroot.append_child("Domain");
-//
+} // writeXDMFUniformGrid
+
+void
+PolytopeSoup::writeXDMF(String const & filepath) const
+{
+  LOG_INFO("Writing XDMF file: ",  filepath);
+  ASSERT(filepath.ends_with(".xdmf"));
+
+  // Setup HDF5 file
+  // Get the h5 file name and path separately
+  Int last_slash = filepath.find_last_of('/');
+  if (last_slash == String::npos) {
+    last_slash = 0;
+  }
+  // If there is no slash, the file name and path are the same
+  // If there is a slash, the file name is everything after the last slash
+  // and the path is everything before and including the last slash
+  Int const h5filepath_end = last_slash == 0 ? 0 : last_slash + 1;
+  ASSERT(h5filepath_end < filepath.size());
+  // /some/path/foobar.xdmf -> foobar.h5
+  String const h5filename =
+      filepath.substr(h5filepath_end, filepath.size() - 5 - h5filepath_end) + ".h5";
+  // /some/path/foobar.xdmf -> /some/path/
+  String const h5filepath = filepath.substr(0, h5filepath_end);
+  String const h5fullpath = h5filepath + h5filename;
+  H5::H5File h5file(h5fullpath.data(), H5F_ACC_TRUNC);
+
+  // Setup XML file
+  pugi::xml_document xdoc;
+
+  // XDMF root node
+  pugi::xml_node xroot = xdoc.append_child("Xdmf");
+  xroot.append_attribute("Version") = "3.0";
+
+  // Domain node
+  pugi::xml_node xdomain = xroot.append_child("Domain");
+
 //  // Get the material names from elset names, in alphabetical order.
 //  Vector<String> material_names;
 //  getMaterialNames(material_names);
@@ -1730,445 +1738,598 @@ readVTKFile(String const & filename, PolytopeSoup & soup)
 //        materials += ", ";
 //      }
 //    }
-//    xinfo.append_child(pugi::node_pcdata).set_value(materials.c_str());
+//    xinfo.append_child(pugi::node_pcdata).set_value(materials.data());
 //  }
-//
-//  // Add a uniform grid
-//  String const h5path;
-//  String const name = h5filename.substr(0, h5filename.size() - 3);
+
+  // Add a uniform grid
+  String const h5path;
+  String const name = h5filename.substr(0, h5filename.size() - 3);
 //  writeXDMFUniformGrid(name, material_names, xdomain, h5file, h5filename, h5path);
-//
-//  // Write the XML file
-//  xdoc.save_file(filepath.c_str(), "  ");
-//
-//  // Close the HDF5 file
-//  h5file.close();
-//} // writeXDMF
-//
-//template <std::floating_point T>
-//static void
-//addNodesToMesh(PolytopeSoup & mesh, Int const num_verts, Int const num_dimensions,
-//               H5::DataSet const & dataset, H5::FloatType const & datatype,
-//               bool const xyz)
-//{
-//  Vector<T> data_vec(num_verts * num_dimensions);
-//  dataset.read(data_vec.data(), datatype);
-//  // Add the nodes to the mesh
-//  mesh.reserveMoreVertices(num_verts);
-//  if (xyz) {
-//    for (Int i = 0; i < num_verts; ++i) {
-//      auto const x = static_cast<Float>(data_vec[i * 3]);
-//      auto const y = static_cast<Float>(data_vec[i * 3 + 1]);
-//      auto const z = static_cast<Float>(data_vec[i * 3 + 2]);
-//      mesh.addVertex(x, y, z);
-//    }
-//  } else { // XY
-//    for (Int i = 0; i < num_verts; ++i) {
-//      auto const x = static_cast<Float>(data_vec[i * 2]);
-//      auto const y = static_cast<Float>(data_vec[i * 2 + 1]);
-//      mesh.addVertex(x, y);
-//    }
-//  }
-//} // addNodesToMesh
-//
-//static void
-//readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
-//                 String const & h5filename, PolytopeSoup & soup)
-//{
-//  pugi::xml_node const xgeometry = xgrid.child("Geometry");
-//  if (strcmp(xgeometry.name(), "Geometry") != 0) {
-//    logger::error("XDMF geometry node not found");
-//    return;
-//  }
-//  // Get the geometry type
-//  String const geometry_type(xgeometry.attribute("GeometryType").value());
-//  if (geometry_type != "XYZ" && geometry_type != "XY") {
-//    logger::error("XDMF geometry type not supported: ", geometry_type);
-//    return;
-//  }
-//  // Get the DataItem node
-//  pugi::xml_node const xdataitem = xgeometry.child("DataItem");
-//  if (strcmp(xdataitem.name(), "DataItem") != 0) {
-//    logger::error("XDMF geometry DataItem node not found");
-//    return;
-//  }
-//  // Get the data type
-//  String const data_type(xdataitem.attribute("DataType").value());
-//  if (data_type != "Float") {
-//    logger::error("XDMF geometry data type not supported: ", data_type);
-//    return;
-//  }
-//  // Get the precision
-//  std::string const precision(xdataitem.attribute("Precision").value());
-//  if (precision != "4" && precision != "8") {
-//    logger::error("XDMF geometry precision not supported: ", precision);
-//    return;
-//  }
-//  // Get the dimensions
-//  std::string const dimensions(xdataitem.attribute("Dimensions").value());
-//  size_t const split = dimensions.find_last_of(' ');
-//  Int const num_verts = sto<Int>(dimensions.substr(0, split));
-//  Int const num_dimensions = sto<Int>(dimensions.substr(split + 1));
-//  if (geometry_type == "XYZ" && num_dimensions != 3) {
-//    logger::error("XDMF geometry dimensions not supported: ", dimensions);
-//    return;
-//  }
-//  if (geometry_type == "XY" && num_dimensions != 2) {
-//    logger::error("XDMF geometry dimensions not supported: ", dimensions);
-//    return;
-//  }
-//  // Get the format
-//  String const format(xdataitem.attribute("Format").value());
-//  if (format != "HDF") {
-//    logger::error("XDMF geometry format not supported: ", format);
-//    return;
-//  }
-//
-//  // Get the h5 dataset path
-//  String const h5dataset(xdataitem.child_value());
-//  // Read the data
-//  H5::DataSet const dataset =
-//      h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
-//#if UM2_ENABLE_ASSERTS
-//  H5T_class_t const type_class = dataset.getTypeClass();
-//  ASSERT(type_class == H5T_FLOAT);
-//#endif
-//  H5::FloatType const datatype = dataset.getFloatType();
-//  size_t const datatype_size = datatype.getSize();
-//#if UM2_ENABLE_ASSERTS
-//  ASSERT(datatype_size == std::stoul(precision));
-//  H5::DataSpace const dataspace = dataset.getSpace();
-//  int const rank = dataspace.getSimpleExtentNdims();
-//  ASSERT(rank == 2);
-//  hsize_t dims[2];
-//  int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
-//  ASSERT(ndims == 2);
-//  ASSERT(dims[0] == static_cast<hsize_t>(num_verts));
-//  ASSERT(dims[1] == static_cast<hsize_t>(num_dimensions));
-//#endif
-//  if (datatype_size == 4) {
-//    addNodesToMesh<float>(soup, num_verts, num_dimensions, dataset, datatype,
-//                          geometry_type == "XYZ");
-//  } else if (datatype_size == 8) {
-//    addNodesToMesh<double>(soup, num_verts, num_dimensions, dataset, datatype,
-//                           geometry_type == "XYZ");
-//  }
-//}
-//
-//template <std::signed_integral T>
-//static void
-//addElementsToMesh(Int const num_elements, String const & topology_type,
-//                  std::string const & dimensions, PolytopeSoup & soup,
-//                  H5::DataSet const & dataset, H5::IntType const & datatype)
-//{
-//  if (topology_type == "Mixed") {
-//    // Expect dims to be one number
-//    auto const conn_length = sto<Int>(dimensions);
-//    Vector<T> data_vec(conn_length);
-//    dataset.read(data_vec.data(), datatype);
-//    // Add the elements to the soup
-//    Int position = 0;
-//    Int num_vertices = 0;
-//    Vector<Int> conn;
-//    for (Int i = 0; i < num_elements; ++i) {
-//      auto const element_type = static_cast<int8_t>(data_vec[position]);
-//      VTKElemType const elem_type = xdmfToVTKElemType(element_type);
-//      auto const npoints = verticesPerElem(elem_type);
-//      if (npoints != num_vertices) {
-//        conn.resize(npoints);
-//        num_vertices = npoints;
-//      }
-//      for (Int j = 0; j < npoints; ++j) {
-//        conn[j] = static_cast<Int>(data_vec[position + j + 1]);
-//      }
-//      position += npoints + 1;
-//      soup.addElement(elem_type, conn);
-//    }
-//  } else {
-//    size_t const split = dimensions.find_last_of(' ');
-//    auto const ncells = sto<Int>(dimensions.substr(0, split));
-//    auto const nverts = sto<Int>(dimensions.substr(split + 1));
-//    if (ncells != num_elements) {
-//      logger::error("Mismatch in number of elements");
-//      return;
-//    }
-//    Vector<T> data_vec(ncells * nverts);
-//    dataset.read(data_vec.data(), datatype);
-//    VTKElemType elem_type = VTKElemType::None;
-//    if (topology_type == "Triangle") {
-//      elem_type = VTKElemType::Triangle;
-//    } else if (topology_type == "Quadrilateral") {
-//      elem_type = VTKElemType::Quad;
-//    } else if (topology_type == "Triangle_6") {
-//      elem_type = VTKElemType::QuadraticTriangle;
-//    } else if (topology_type == "Quadrilateral_8") {
-//      elem_type = VTKElemType::QuadraticQuad;
-//    } else {
-//      logger::error("Unsupported element type");
-//    }
-//    Vector<Int> conn(nverts);
-//    // Add the elements to the soup
-//    soup.reserveMoreElements(elem_type, ncells);
-//    for (Int i = 0; i < ncells; ++i) {
-//      for (Int j = 0; j < nverts; ++j) {
-//        // NOLINTNEXTLINE
-//        conn[j] = static_cast<Int>(data_vec[i * nverts + j]);
-//      }
-//      soup.addElement(elem_type, conn);
-//    }
-//  }
-//}
-//
-//static void
-//readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
-//                 String const & h5filename, PolytopeSoup & soup)
-//{
-//  pugi::xml_node const xtopology = xgrid.child("Topology");
-//  if (strcmp(xtopology.name(), "Topology") != 0) {
-//    logger::error("XDMF topology node not found");
-//    return;
-//  }
-//  // Get the topology type
-//  String const topology_type(xtopology.attribute("TopologyType").value());
-//  // Get the number of elements
-//  Int const num_elements = sto<Int>(xtopology.attribute("NumberOfElements").value());
-//  // Get the DataItem node
-//  pugi::xml_node const xdataitem = xtopology.child("DataItem");
-//  if (strcmp(xdataitem.name(), "DataItem") != 0) {
-//    logger::error("XDMF topology DataItem node not found");
-//    return;
-//  }
-//  // Get the data type
-//  String const data_type(xdataitem.attribute("DataType").value());
-//  if (data_type != "Int") {
-//    logger::error("XDMF topology data type not supported: ", data_type);
-//    return;
-//  }
-//  // Get the precision
-//  std::string const precision(xdataitem.attribute("Precision").value());
-//  if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
-//    logger::error("XDMF topology precision not supported: ", precision);
-//    return;
-//  }
-//  // Get the format
-//  String const format(xdataitem.attribute("Format").value());
-//  if (format != "HDF") {
-//    logger::error("XDMF geometry format not supported: ", format);
-//    return;
-//  }
-//  // Get the h5 dataset path
-//  String const h5dataset(xdataitem.child_value());
-//  // Read the data
-//  H5::DataSet const dataset =
-//      h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
-//#if UM2_ENABLE_ASSERTS
-//  H5T_class_t const type_class = dataset.getTypeClass();
-//  ASSERT(type_class == H5T_INTEGER);
-//#endif
-//  H5::IntType const datatype = dataset.getIntType();
-//  size_t const datatype_size = datatype.getSize();
-//#if UM2_ENABLE_ASSERTS
-//  ASSERT(datatype_size == std::stoul(precision));
-//  H5::DataSpace const dataspace = dataset.getSpace();
-//  int const rank = dataspace.getSimpleExtentNdims();
-//  if (topology_type == "Mixed") {
-//    ASSERT(rank == 1);
-//    hsize_t dims[1];
-//    int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
-//    ASSERT(ndims == 1);
-//  } else {
-//    ASSERT(rank == 2);
-//    hsize_t dims[2];
-//    int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
-//    ASSERT(ndims == 2);
-//  }
-//#endif
-//  // Get the dimensions
-//  std::string const dimensions = xdataitem.attribute("Dimensions").value();
-//  if (datatype_size == 4) {
-//    addElementsToMesh<int32_t>(num_elements, topology_type, dimensions, soup, dataset,
-//                               datatype);
-//  } else if (datatype_size == 8) {
-//    addElementsToMesh<int64_t>(num_elements, topology_type, dimensions, soup, dataset,
-//                               datatype);
-//  } else {
-//    logger::error("Unsupported data type size");
-//  }
-//}
-//
-////==============================================================================
-//// addElsetToMesh
-////==============================================================================
-//
-//template <std::signed_integral T>
-//static void
-//addElsetToMesh(PolytopeSoup & soup, Int const num_elements, H5::DataSet const & dataset,
-//               H5::IntType const & datatype, String const & elset_name)
-//{
-//  Vector<T> data_vec(num_elements);
-//  dataset.read(data_vec.data(), datatype);
-//  Vector<Int> elset_ids(num_elements);
-//  for (Int i = 0; i < num_elements; ++i) {
-//    elset_ids[i] = static_cast<Int>(data_vec[i]);
-//  }
-//  soup.addElset(elset_name, elset_ids);
-//}
-//
-////==============================================================================
-//// readXDMFElsets
-////==============================================================================
-//
-//static void
-//readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
-//               String const & h5filename, PolytopeSoup & soup)
-//{
-//  LOG_DEBUG("Reading XDMF elsets");
-//  // Loop over all nodes to find the elsets
-//  for (pugi::xml_node xelset = xgrid.first_child(); xelset != nullptr;
-//       xelset = xelset.next_sibling()) {
-//    if (strcmp(xelset.name(), "Set") != 0) {
-//      continue;
-//    }
-//    // Get the SetType
-//    String const set_type(xelset.attribute("SetType").value());
-//    if (set_type != "Cell") {
-//      logger::error("XDMF elset only supports SetType=Cell");
-//      return;
-//    }
-//    // Get the name
-//    String const name(xelset.attribute("Name").value());
-//    if (name.size() == 0) {
-//      logger::error("XDMF elset name not found");
-//      return;
-//    }
-//    // Get the DataItem node
-//    pugi::xml_node const xdataitem = xelset.child("DataItem");
-//    if (strcmp(xdataitem.name(), "DataItem") != 0) {
-//      logger::error("XDMF elset DataItem node not found");
-//      return;
-//    }
-//    // Get the data type
-//    String const data_type(xdataitem.attribute("DataType").value());
-//    if (data_type != "Int") {
-//      logger::error("XDMF elset data type not supported: ", data_type);
-//      return;
-//    }
-//    // Get the precision
-//    std::string const precision = xdataitem.attribute("Precision").value();
-//    if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
-//      logger::error("XDMF elset precision not supported: ", precision);
-//      return;
-//    }
-//    // Get the format
-//    String const format(xdataitem.attribute("Format").value());
-//    if (format != "HDF") {
-//      logger::error("XDMF elset format not supported: ", format);
-//      return;
-//    }
-//    // Get the h5 dataset path
-//    String const h5dataset(xdataitem.child_value());
-//    // Read the data
-//    H5::DataSet const dataset =
-//        h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).c_str());
-//#if UM2_ENABLE_ASSERTS
-//    H5T_class_t const type_class = dataset.getTypeClass();
-//    ASSERT(type_class == H5T_INTEGER);
-//#endif
-//    H5::IntType const datatype = dataset.getIntType();
-//    size_t const datatype_size = datatype.getSize();
-//    ASSERT(datatype_size == std::stoul(precision));
-//    H5::DataSpace const dataspace = dataset.getSpace();
-//#if UM2_ENABLE_ASSERTS
-//    int const rank = dataspace.getSimpleExtentNdims();
-//    ASSERT(rank == 1);
-//#endif
-//
-//    hsize_t dims[1];
-//#if UM2_ENABLE_ASSERTS
-//    int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
-//    ASSERT(ndims == 1);
-//    std::string const dimensions = xdataitem.attribute("Dimensions").value();
-//#else
-//    dataspace.getSimpleExtentDims(dims, nullptr);
-//#endif
-//    auto const num_elements = static_cast<Int>(dims[0]);
-//    ASSERT(num_elements == sto<Int>(dimensions));
-//
-//    // Get the dimensions
-//    if (datatype_size == 4) {
-//      addElsetToMesh<int32_t>(soup, num_elements, dataset, datatype, name);
-//    } else if (datatype_size == 8) {
-//      addElsetToMesh<int64_t>(soup, num_elements, dataset, datatype, name);
-//    }
-//  }
-//}
-//
-////==============================================================================
-//// readXDMFUniformGrid
-////==============================================================================
-//
-//void
-//readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file,
-//                    String const & h5filename, PolytopeSoup & mesh)
-//{
-//  readXDMFGeometry(xgrid, h5file, h5filename, mesh);
-//  readXDMFTopology(xgrid, h5file, h5filename, mesh);
-//  readXDMFElsets(xgrid, h5file, h5filename, mesh);
-//}
-//
-////==============================================================================
-//// readXDMFFile
-////==============================================================================
-//
-//void
-//readXDMFFile(String const & filename, PolytopeSoup & soup)
-//{
-//  logger::info("Reading XDMF file: " + filename);
-//
-//  // Open HDF5 file
-//  Int const h5filepath_end = filename.find_last_of('/') + 1;
-//  String const h5filename =
-//      filename.substr(h5filepath_end, filename.size() - 4 - h5filepath_end) + "h5";
-//  String const h5filepath = filename.substr(0, h5filepath_end);
-//  H5::H5File h5file((h5filepath + h5filename).c_str(), H5F_ACC_RDONLY);
-//
-//  // Setup XML file
-//  pugi::xml_document xdoc;
-//  pugi::xml_parse_result const result = xdoc.load_file(filename.c_str());
-//  if (!result) {
-//    logger::error("XDMF XML parse error: ", result.description(),
-//               ", character pos= ", result.offset);
-//  }
-//  pugi::xml_node const xroot = xdoc.child("Xdmf");
-//  if (strcmp("Xdmf", xroot.name()) != 0) {
-//    logger::error("XDMF XML root node is not Xdmf");
-//    return;
-//  }
-//  pugi::xml_node const xdomain = xroot.child("Domain");
-//  if (strcmp("Domain", xdomain.name()) != 0) {
-//    logger::error("XDMF XML domain node is not Domain");
-//    return;
-//  }
-//
-//  pugi::xml_node const xgrid = xdomain.child("Grid");
-//  if (strcmp("Grid", xgrid.name()) != 0) {
-//    logger::error("XDMF XML grid node is not Grid");
-//    return;
-//  }
-//  if (strcmp("Uniform", xgrid.attribute("GridType").value()) == 0) {
-//    readXDMFUniformGrid(xgrid, h5file, h5filename, soup);
-//  } else if (strcmp("Tree", xgrid.attribute("GridType").value()) == 0) {
-//    logger::error("XDMF XML Tree is not supported");
-//  } else {
-//    logger::error("XDMF XML grid type is not Uniform or Tree");
-//  }
-//  // Close HDF5 file
-//  h5file.close();
-//  // Close XML file
-//  xdoc.reset();
-//  logger::info("Finished reading XDMF file: ", filename);
-//}
-//
+  writeXDMFUniformGrid(name, xdomain, h5file, h5filename, h5path);
+  // Write the XML file
+  xdoc.save_file(filepath.data(), "  ");
+
+  // Close the HDF5 file
+  h5file.close();
+} // writeXDMF
+
+template <std::floating_point T>
+static void
+addNodesToSoup(PolytopeSoup & mesh, Int const num_verts, Int const num_dimensions,
+               H5::DataSet const & dataset, H5::FloatType const & datatype,
+               bool const xyz)
+{
+  Vector<T> data_vec(num_verts * num_dimensions);
+  dataset.read(data_vec.data(), datatype);
+  // Add the nodes to the mesh
+  mesh.reserveMoreVertices(num_verts);
+  if (xyz) {
+    for (Int i = 0; i < num_verts; ++i) {
+      auto const x = static_cast<Float>(data_vec[i * 3]);
+      auto const y = static_cast<Float>(data_vec[i * 3 + 1]);
+      auto const z = static_cast<Float>(data_vec[i * 3 + 2]);
+      mesh.addVertex(x, y, z);
+    }
+  } else { // XY
+    for (Int i = 0; i < num_verts; ++i) {
+      auto const x = static_cast<Float>(data_vec[i * 2]);
+      auto const y = static_cast<Float>(data_vec[i * 2 + 1]);
+      mesh.addVertex(x, y);
+    }
+  }
+} // addNodesToSoup
+
+static void
+readXDMFGeometry(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+                 String const & h5filename, PolytopeSoup & soup)
+{
+  pugi::xml_node const xgeometry = xgrid.child("Geometry");
+  if (strcmp(xgeometry.name(), "Geometry") != 0) {
+    logger::error("XDMF geometry node not found");
+    return;
+  }
+  // Get the geometry type
+  String const geometry_type(xgeometry.attribute("GeometryType").value());
+  if (geometry_type != "XYZ" && geometry_type != "XY") {
+    logger::error("XDMF geometry type not supported: ", geometry_type);
+    return;
+  }
+  // Get the DataItem node
+  pugi::xml_node const xdataitem = xgeometry.child("DataItem");
+  if (strcmp(xdataitem.name(), "DataItem") != 0) {
+    logger::error("XDMF geometry DataItem node not found");
+    return;
+  }
+  // Get the data type
+  String const data_type(xdataitem.attribute("DataType").value());
+  if (data_type != "Float") {
+    logger::error("XDMF geometry data type not supported: ", data_type);
+    return;
+  }
+  // Get the precision
+  String const precision(xdataitem.attribute("Precision").value());
+  if (precision != "4" && precision != "8") {
+    logger::error("XDMF geometry precision not supported: ", precision);
+    return;
+  }
+  // Get the dimensions
+  String const dimensions(xdataitem.attribute("Dimensions").value());
+  Int const split = dimensions.find_last_of(' ');
+  char * end = nullptr;
+  Int const num_verts = strto<Int>(dimensions.substr(0, split).data(), &end);
+  ASSERT(end != nullptr);
+  end = nullptr;
+  Int const num_dimensions = strto<Int>(dimensions.substr(split + 1).data(), &end);
+  ASSERT(end != nullptr);
+  end = nullptr;
+  if (geometry_type == "XYZ" && num_dimensions != 3) {
+    logger::error("XDMF geometry dimensions not supported: ", dimensions);
+    return;
+  }
+  if (geometry_type == "XY" && num_dimensions != 2) {
+    logger::error("XDMF geometry dimensions not supported: ", dimensions);
+    return;
+  }
+  // Get the format
+  String const format(xdataitem.attribute("Format").value());
+  if (format != "HDF") {
+    logger::error("XDMF geometry format not supported: ", format);
+    return;
+  }
+
+  // Get the h5 dataset path
+  String const h5dataset(xdataitem.child_value());
+  // Read the data
+  H5::DataSet const dataset =
+      h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).data());
+#if UM2_ENABLE_ASSERTS
+  H5T_class_t const type_class = dataset.getTypeClass();
+  ASSERT(type_class == H5T_FLOAT);
+#endif
+  H5::FloatType const datatype = dataset.getFloatType();
+  size_t const datatype_size = datatype.getSize();
+#if UM2_ENABLE_ASSERTS
+  ASSERT(datatype_size == strto<size_t>(precision.data(), &end));
+  ASSERT(end != nullptr);
+  end = nullptr;
+  H5::DataSpace const dataspace = dataset.getSpace();
+  int const rank = dataspace.getSimpleExtentNdims();
+  ASSERT(rank == 2);
+  hsize_t dims[2];
+  int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
+  ASSERT(ndims == 2);
+  ASSERT(dims[0] == static_cast<hsize_t>(num_verts));
+  ASSERT(dims[1] == static_cast<hsize_t>(num_dimensions));
+#endif
+  if (datatype_size == 4) {
+    addNodesToSoup<float>(soup, num_verts, num_dimensions, dataset, datatype,
+                          geometry_type == "XYZ");
+  } else if (datatype_size == 8) {
+    addNodesToSoup<double>(soup, num_verts, num_dimensions, dataset, datatype,
+                           geometry_type == "XYZ");
+  }
+}
+
+template <std::signed_integral T>
+static void
+addElementsToSoup(Int const num_elements, String const & topology_type,
+                  String const & dimensions, PolytopeSoup & soup,
+                  H5::DataSet const & dataset, H5::IntType const & datatype)
+{
+  if (topology_type == "Mixed") {
+    // Expect dims to be one number
+    char * end = nullptr;
+    auto const conn_length = strto<Int>(dimensions.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
+    Vector<T> data_vec(conn_length);
+    dataset.read(data_vec.data(), datatype);
+    // Add the elements to the soup
+    Int position = 0;
+    Vector<Int> conn;
+    for (Int i = 0; i < num_elements; ++i) {
+      auto const element_type = static_cast<int8_t>(data_vec[position]);
+      VTKElemType const elem_type = xdmfToVTKElemType(element_type);
+      auto const npoints = verticesPerElem(elem_type);
+      conn.resize(npoints);
+      for (Int j = 0; j < npoints; ++j) {
+        conn[j] = static_cast<Int>(data_vec[position + j + 1]);
+      }
+      position += npoints + 1;
+      soup.addElement(elem_type, conn);
+    }
+  } else {
+    Int const split = dimensions.find_last_of(' ');
+    char * end = nullptr;
+    auto const ncells = strto<Int>(dimensions.substr(0, split).data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
+    auto const nverts = strto<Int>(dimensions.substr(split + 1).data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
+    if (ncells != num_elements) {
+      logger::error("Mismatch in number of elements");
+      return;
+    }
+    Vector<T> data_vec(ncells * nverts);
+    dataset.read(data_vec.data(), datatype);
+    VTKElemType elem_type = VTKElemType::None;
+    if (topology_type == "Triangle") {
+      elem_type = VTKElemType::Triangle;
+    } else if (topology_type == "Quadrilateral") {
+      elem_type = VTKElemType::Quad;
+    } else if (topology_type == "Triangle_6") {
+      elem_type = VTKElemType::QuadraticTriangle;
+    } else if (topology_type == "Quadrilateral_8") {
+      elem_type = VTKElemType::QuadraticQuad;
+    } else {
+      logger::error("Unsupported element type");
+    }
+    Vector<Int> conn(nverts);
+    // Add the elements to the soup
+    soup.reserveMoreElements(elem_type, ncells);
+    for (Int i = 0; i < ncells; ++i) {
+      for (Int j = 0; j < nverts; ++j) {
+        conn[j] = static_cast<Int>(data_vec[i * nverts + j]);
+      }
+      soup.addElement(elem_type, conn);
+    }
+  }
+}
+
+static void
+readXDMFTopology(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+                 String const & h5filename, PolytopeSoup & soup)
+{
+  pugi::xml_node const xtopology = xgrid.child("Topology");
+  if (strcmp(xtopology.name(), "Topology") != 0) {
+    logger::error("XDMF topology node not found");
+    return;
+  }
+  // Get the topology type
+  String const topology_type(xtopology.attribute("TopologyType").value());
+  // Get the number of elements
+  char * end = nullptr;
+  Int const num_elements = strto<Int>(xtopology.attribute("NumberOfElements").value(), &end);
+  ASSERT(end != nullptr);
+  end = nullptr;
+  // Get the DataItem node
+  pugi::xml_node const xdataitem = xtopology.child("DataItem");
+  if (strcmp(xdataitem.name(), "DataItem") != 0) {
+    logger::error("XDMF topology DataItem node not found");
+    return;
+  }
+  // Get the data type
+  String const data_type(xdataitem.attribute("DataType").value());
+  if (data_type != "Int") {
+    logger::error("XDMF topology data type not supported: ", data_type);
+    return;
+  }
+  // Get the precision
+  String const precision(xdataitem.attribute("Precision").value());
+  if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
+    logger::error("XDMF topology precision not supported: ", precision);
+    return;
+  }
+  // Get the format
+  String const format(xdataitem.attribute("Format").value());
+  if (format != "HDF") {
+    logger::error("XDMF geometry format not supported: ", format);
+    return;
+  }
+  // Get the h5 dataset path
+  String const h5dataset(xdataitem.child_value());
+  // Read the data
+  H5::DataSet const dataset =
+      h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).data());
+#if UM2_ENABLE_ASSERTS
+  H5T_class_t const type_class = dataset.getTypeClass();
+  ASSERT(type_class == H5T_INTEGER);
+#endif
+  H5::IntType const datatype = dataset.getIntType();
+  size_t const datatype_size = datatype.getSize();
+#if UM2_ENABLE_ASSERTS
+  ASSERT(datatype_size == strto<size_t>(precision.data(), &end));
+  ASSERT(end != nullptr);
+  end = nullptr;
+  H5::DataSpace const dataspace = dataset.getSpace();
+  int const rank = dataspace.getSimpleExtentNdims();
+  if (topology_type == "Mixed") {
+    ASSERT(rank == 1);
+    hsize_t dims[1];
+    int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
+    ASSERT(ndims == 1);
+  } else {
+    ASSERT(rank == 2);
+    hsize_t dims[2];
+    int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
+    ASSERT(ndims == 2);
+  }
+#endif
+  // Get the dimensions
+  String const dimensions(xdataitem.attribute("Dimensions").value());
+  if (datatype_size == 4) {
+    addElementsToSoup<int32_t>(num_elements, topology_type, dimensions, soup, dataset,
+                               datatype);
+  } else if (datatype_size == 8) {
+    addElementsToSoup<int64_t>(num_elements, topology_type, dimensions, soup, dataset,
+                               datatype);
+  } else {
+    logger::error("Unsupported data type size");
+  }
+}
+
+//==============================================================================
+// addElsetToSoup
+//==============================================================================
+
+template <std::signed_integral T, std::floating_point U>
+static void
+addElsetToSoup(PolytopeSoup & soup, Int const num_elements, H5::DataSet const & dataset,
+               H5::IntType const & datatype, String const & elset_name,
+               bool const has_attribute,
+               H5::DataSet const & attribute_dataset,
+               H5::FloatType const & attribute_datatype)
+{
+  Vector<T> data_vec(num_elements);
+  dataset.read(data_vec.data(), datatype);
+  Vector<Int> elset_ids(num_elements);
+  for (Int i = 0; i < num_elements; ++i) {
+    elset_ids[i] = static_cast<Int>(data_vec[i]);
+  }
+  if (!has_attribute) {
+    soup.addElset(elset_name, elset_ids);
+    return;
+  }
+  Vector<U> attribute_data_vec;
+  attribute_data_vec.resize(num_elements);
+  attribute_dataset.read(attribute_data_vec.data(), attribute_datatype);
+  Vector<Float> elset_data(num_elements);
+  for (Int i = 0; i < num_elements; ++i) {
+    elset_data[i] = static_cast<Float>(attribute_data_vec[i]);
+  }
+  soup.addElset(elset_name, elset_ids, elset_data);
+}
+
+//==============================================================================
+// readXDMFElsets
+//==============================================================================
+
+static void
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+               String const & h5filename, PolytopeSoup & soup)
+{
+  LOG_DEBUG("Reading XDMF elsets");
+  // Loop over all nodes to find the elsets
+  for (pugi::xml_node xelset = xgrid.first_child(); xelset != nullptr;
+       xelset = xelset.next_sibling()) {
+    if (strcmp(xelset.name(), "Set") != 0) {
+      continue;
+    }
+    // Get the SetType
+    String const set_type(xelset.attribute("SetType").value());
+    if (set_type != "Cell") {
+      logger::error("XDMF elset only supports SetType=Cell");
+      return;
+    }
+    // Get the name
+    String const name(xelset.attribute("Name").value());
+    if (name.empty()) {
+      logger::error("XDMF elset name not found");
+      return;
+    }
+    // Get the DataItem node
+    pugi::xml_node const xdataitem = xelset.child("DataItem");
+    if (strcmp(xdataitem.name(), "DataItem") != 0) {
+      logger::error("XDMF elset DataItem node not found");
+      return;
+    }
+    // Get the data type
+    String const data_type(xdataitem.attribute("DataType").value());
+    if (data_type != "Int") {
+      logger::error("XDMF elset data type not supported: ", data_type);
+      return;
+    }
+    // Get the precision
+    String const precision(xdataitem.attribute("Precision").value());
+    if (precision != "1" && precision != "2" && precision != "4" && precision != "8") {
+      logger::error("XDMF elset precision not supported: ", precision);
+      return;
+    }
+    // Get the format
+    String const format(xdataitem.attribute("Format").value());
+    if (format != "HDF") {
+      logger::error("XDMF elset format not supported: ", format);
+      return;
+    }
+    // Get the h5 dataset path
+    String const h5dataset(xdataitem.child_value());
+    // Read the data
+    H5::DataSet const dataset =
+        h5file.openDataSet(h5dataset.substr(h5filename.size() + 1).data());
+#if UM2_ENABLE_ASSERTS
+    H5T_class_t const type_class = dataset.getTypeClass();
+    ASSERT(type_class == H5T_INTEGER);
+#endif
+    char * end = nullptr;
+    H5::IntType const datatype = dataset.getIntType();
+    size_t const datatype_size = datatype.getSize();
+    ASSERT(datatype_size == strto<size_t>(precision.data(), &end)); 
+    ASSERT(end != nullptr);
+    end = nullptr;
+    H5::DataSpace const dataspace = dataset.getSpace();
+#if UM2_ENABLE_ASSERTS
+    int const rank = dataspace.getSimpleExtentNdims();
+    ASSERT(rank == 1);
+#endif
+
+    hsize_t dims[1];
+#if UM2_ENABLE_ASSERTS
+    int const ndims = dataspace.getSimpleExtentDims(dims, nullptr);
+    ASSERT(ndims == 1);
+    String const dimensions(xdataitem.attribute("Dimensions").value());
+#else
+    dataspace.getSimpleExtentDims(dims, nullptr);
+#endif
+    auto const num_elements = static_cast<Int>(dims[0]);
+    ASSERT(num_elements == strto<Int>(dimensions.data(), &end));
+    ASSERT(end != nullptr);
+    end = nullptr;
+
+    // Check if there is an associated data set
+    // Get the Attribute node
+    bool has_attribute = false;
+    size_t att_datatype_size = sizeof(Float);
+    H5::DataSet att_dataset;
+    H5::FloatType att_datatype;
+    pugi::xml_node const xattribute = xelset.child("Attribute");
+    if (strcmp(xattribute.name(), "Attribute") == 0) {
+      LOG_INFO("Found data associated with elset: ", name);
+      has_attribute = true;
+
+      // Ensure Center="Cell"
+      String const center(xattribute.attribute("Center").value());
+      if (center != "Cell") {
+        logger::error("Only elset attribute data with Center=Cell is supported");
+        return;
+      }
+
+      // Get the DataItem node
+      pugi::xml_node const xattdataitem = xattribute.child("DataItem");
+      if (strcmp(xattdataitem.name(), "DataItem") != 0) {
+        logger::error("XDMF elset attribute DataItem node not found");
+        return;
+      }
+
+      // Get the data type
+      String const att_data_type(xattdataitem.attribute("DataType").value());
+      if (att_data_type != "Float") {
+        logger::warn("XDMF elset attribute data type not supported: ", att_data_type);
+        has_attribute = false;
+        // If there's a better way to skip the rest of the if block,
+        // do so.
+        // NOLINTNEXTLINE(cppcoreguidelines-avoid-goto
+        goto label_xdmf_elset_return;
+      }
+      
+      // Get the precision
+      String const att_precision(xattdataitem.attribute("Precision").value());
+      if (att_precision != "4" && att_precision != "8") {
+        logger::warn("XDMF elset attribute precision not supported: ", att_precision);
+        has_attribute = false;
+        // If there's a better way to skip the rest of the if block,
+        // do so.
+        // NOLINTNEXTLINE(cppcoreguidelines-avoid-goto
+        goto label_xdmf_elset_return;
+      }
+
+      // Get the format
+      String const att_format(xattdataitem.attribute("Format").value());
+      if (att_format != "HDF") {
+        logger::warn("XDMF elset attribute format not supported: ", att_format);
+        has_attribute = false;
+        // If there's a better way to skip the rest of the if block,
+        // do so.
+        // NOLINTNEXTLINE(cppcoreguidelines-avoid-goto
+        goto label_xdmf_elset_return;
+      }
+
+      // Get the h5 dataset path
+      String const h5attdataset(xattdataitem.child_value());
+      // Read the data
+      att_dataset =
+          h5file.openDataSet(h5attdataset.substr(h5filename.size() + 1).data());
+#if UM2_ENABLE_ASSERTS
+      H5T_class_t const att_type_class = att_dataset.getTypeClass();
+      ASSERT(att_type_class == H5T_FLOAT);
+#endif
+      char * att_end = nullptr;
+      att_datatype = att_dataset.getFloatType();
+      att_datatype_size = att_datatype.getSize();
+      ASSERT(att_datatype_size == strto<size_t>(att_precision.data(), &att_end)); 
+      ASSERT(att_end != nullptr);
+      att_end = nullptr;
+      H5::DataSpace const att_dataspace = att_dataset.getSpace();
+#if UM2_ENABLE_ASSERTS
+      int const att_rank = att_dataspace.getSimpleExtentNdims();
+      ASSERT(att_rank == 1);
+#endif
+
+      hsize_t att_dims[1];
+#if UM2_ENABLE_ASSERTS
+      int const att_ndims = att_dataspace.getSimpleExtentDims(att_dims, nullptr);
+      ASSERT(att_ndims == 1);
+      String const att_dimensions(xattdataitem.attribute("Dimensions").value());
+#else
+      att_dataspace.getSimpleExtentDims(att_dims, nullptr);
+#endif
+      auto const att_num_elements = static_cast<Int>(dims[0]);
+      ASSERT(att_num_elements == strto<Int>(att_dimensions.data(), &att_end));
+      ASSERT(att_end != nullptr);
+      att_end = nullptr;
+      ASSERT(att_num_elements == num_elements);
+    } // if (strcmp(xattribute.name(), "Attribute") == 0)
+
+label_xdmf_elset_return:
+    LOG_DEBUG("has_attribute: ", has_attribute);
+
+    if (datatype_size == 4) {
+      if (att_datatype_size == 4) {
+        addElsetToSoup<int32_t, float>(soup, num_elements, dataset, datatype, name,
+               has_attribute, att_dataset, att_datatype);
+      } else if (att_datatype_size == 8) {
+        addElsetToSoup<int32_t, double>(soup, num_elements, dataset, datatype, name,
+               has_attribute, att_dataset, att_datatype);
+      } else {
+        logger::error("Unsupported attribute data type size");
+      }
+    } else if (datatype_size == 8) {
+      if (att_datatype_size == 4) {
+        addElsetToSoup<int64_t, float>(soup, num_elements, dataset, datatype, name,
+               has_attribute, att_dataset, att_datatype);
+      } else if (att_datatype_size == 8) {
+        addElsetToSoup<int64_t, double>(soup, num_elements, dataset, datatype, name,
+               has_attribute, att_dataset, att_datatype);
+      } else {
+        logger::error("Unsupported attribute data type size");
+      }
+    }
+  }
+}
+
+//==============================================================================
+// readXDMFUniformGrid
+//==============================================================================
+
+static void
+readXDMFUniformGrid(pugi::xml_node const & xgrid, H5::H5File const & h5file,
+                    String const & h5filename, PolytopeSoup & soup)
+{
+  readXDMFGeometry(xgrid, h5file, h5filename, soup);
+  readXDMFTopology(xgrid, h5file, h5filename, soup);
+  readXDMFElsets(xgrid, h5file, h5filename, soup);
+}
+
+//==============================================================================
+// readXDMFFile
+//==============================================================================
+
+static void
+readXDMFFile(String const & filename, PolytopeSoup & soup)
+{
+  logger::info("Reading XDMF file: " + filename);
+
+  // Open HDF5 file
+  Int last_slash = filename.find_last_of('/');
+  if (last_slash == String::npos) {
+    last_slash = 0;
+  }
+  Int const h5filepath_end = last_slash == 0 ? 0 : last_slash + 1; 
+  ASSERT(h5filepath_end < filename.size());
+  String const h5filename =
+      filename.substr(h5filepath_end, filename.size() - 5 - h5filepath_end) + ".h5";
+  String const h5filepath = filename.substr(0, h5filepath_end);
+  String const h5fullpath = h5filepath + h5filename;
+  H5::H5File h5file(h5fullpath.data(), H5F_ACC_RDONLY);
+
+  // Setup XML file
+  pugi::xml_document xdoc;
+  pugi::xml_parse_result const result = xdoc.load_file(filename.data());
+  if (!result) {
+    logger::error("XDMF XML parse error: ", result.description(),
+               ", character pos= ", result.offset);
+  }
+  pugi::xml_node const xroot = xdoc.child("Xdmf");
+  if (strcmp("Xdmf", xroot.name()) != 0) {
+    logger::error("XDMF XML root node is not Xdmf");
+    return;
+  }
+  pugi::xml_node const xdomain = xroot.child("Domain");
+  if (strcmp("Domain", xdomain.name()) != 0) {
+    logger::error("XDMF XML domain node is not Domain");
+    return;
+  }
+
+  pugi::xml_node const xgrid = xdomain.child("Grid");
+  if (strcmp("Grid", xgrid.name()) != 0) {
+    logger::error("XDMF XML grid node is not Grid");
+    return;
+  }
+  if (strcmp("Uniform", xgrid.attribute("GridType").value()) == 0) {
+    readXDMFUniformGrid(xgrid, h5file, h5filename, soup);
+  } else if (strcmp("Tree", xgrid.attribute("GridType").value()) == 0) {
+    logger::error("XDMF XML Tree is not supported");
+  } else {
+    logger::error("XDMF XML grid type is not Uniform or Tree");
+  }
+  // Close HDF5 file
+  h5file.close();
+  // Close XML file
+  xdoc.reset();
+  logger::info("Finished reading XDMF file: ", filename);
+}
+
 //==============================================================================
 // IO
 //==============================================================================
@@ -2180,21 +2341,21 @@ PolytopeSoup::read(String const & filename)
     readAbaqusFile(filename, *this);
   } else if (filename.ends_with(".vtk")) {
     readVTKFile(filename, *this);
-//  } else if (filename.ends_with(".xdmf")) {
-//    readXDMFFile(filename, *this);
+  } else if (filename.ends_with(".xdmf")) {
+    readXDMFFile(filename, *this);
   } else {
     logger::error("Unsupported file format.");
   }
 }
 
-//void
-//PolytopeSoup::write(String const & filename) const
-//{
-//  if (filename.ends_with(".xdmf")) {
-//    writeXDMF(filename);
-//  } else {
-//    logger::error("Unsupported file format.");
-//  }
-//}
+void
+PolytopeSoup::write(String const & filename) const
+{
+  if (filename.ends_with(".xdmf")) {
+    writeXDMF(filename);
+  } else {
+    logger::error("Unsupported file format.");
+  }
+}
 
 } // namespace um2

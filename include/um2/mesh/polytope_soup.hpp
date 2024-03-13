@@ -4,10 +4,10 @@
 #include <um2/mesh/element_types.hpp>
 #include <um2/stdlib/string.hpp>
 #include <um2/stdlib/vector.hpp>
-//
-//// External dependencies
-//#include <H5Cpp.h>
-//#include <pugixml.hpp>
+
+// External dependencies
+#include <H5Cpp.h>
+#include <pugixml.hpp>
 
 namespace um2
 {
@@ -51,27 +51,30 @@ class PolytopeSoup
   Vector<Int> _elset_ids;          // Element IDs of each elset (must be sorted)
   Vector<Vector<Float>> _elset_data; // Data associated with each elset
 
-//  //==============================================================================
-//  // Private Methods
-//  //==============================================================================
-//
-//  void
-//  writeXDMFUniformGrid(String const & name, Vector<String> const & material_names,
-//                       pugi::xml_node & xdomain, H5::H5File & h5file,
-//                       String const & h5filename, String const & h5path) const;
-//
-//  void
-//  writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
-//                    String const & h5filename, String const & h5path) const;
-//
-//  void
-//  writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
-//                    String const & h5filename, String const & h5path) const;
-//
-//  void
-//  writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group, String const & h5filename,
-//                  String const & h5path, Vector<String> const & material_names) const;
-//
+  //==============================================================================
+  // Private Methods
+  //==============================================================================
+
+  void
+  writeXDMF(String const & filepath) const;
+
+  void
+  writeXDMFUniformGrid(String const & name, //Vector<String> const & material_names,
+                       pugi::xml_node & xdomain, H5::H5File & h5file,
+                       String const & h5filename, String const & h5path) const;
+
+  void
+  writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
+                    String const & h5filename, String const & h5path) const;
+
+  void
+  writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
+                    String const & h5filename, String const & h5path) const;
+
+  void
+  writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group, String const & h5filename,
+                  String const & h5path) const; //Vector<String> const & material_names) const;
+
 public:
   //==============================================================================
   // Constructors
@@ -110,9 +113,9 @@ public:
   PURE [[nodiscard]] auto
   getElementCentroid(Int i) const -> Point3;
 
-//  [[nodiscard]] constexpr auto
-//  getElemTypes() const -> Vector<VTKElemType>;
-//
+  [[nodiscard]] constexpr auto
+  getElemTypes() const -> Vector<VTKElemType>;
+
   void
   getElset(Int i, String & name, Vector<Int> & ids, Vector<Float> & data) const;
 
@@ -167,11 +170,8 @@ public:
 //  void
 //  translate(Point3 const & v);
 //
-//  void
-//  write(String const & filename) const;
-//
-//  void
-//  writeXDMF(String const & filepath) const;
+  void
+  write(String const & filename) const;
 
 }; // struct PolytopeSoup
 
@@ -204,24 +204,24 @@ PolytopeSoup::getVertex(Int const i) const -> Point3 const &
   return _vertices[i];
 }
 
-//constexpr auto
-//PolytopeSoup::getElemTypes() const -> Vector<VTKElemType>
-//{
-//  Vector<VTKElemType> el_types;
-//  for (auto const & this_type : _element_types) {
-//    bool found = false;
-//    for (auto const & that_type : el_types) {
-//      if (this_type == that_type) {
-//        found = true;
-//        break;
-//      }
-//    }
-//    if (!found) {
-//      el_types.push_back(this_type);
-//    }
-//  }
-//  return el_types;
-//}
+constexpr auto
+PolytopeSoup::getElemTypes() const -> Vector<VTKElemType>
+{
+  Vector<VTKElemType> el_types;
+  for (auto const & this_type : _element_types) {
+    bool found = false;
+    for (auto const & that_type : el_types) {
+      if (this_type == that_type) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      el_types.push_back(this_type);
+    }
+  }
+  return el_types;
+}
 
 PURE constexpr auto
 PolytopeSoup::getMeshType() const -> MeshType

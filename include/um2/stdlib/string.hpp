@@ -4,6 +4,7 @@
 
 #include <um2/stdlib/assert.hpp>
 #include <um2/stdlib/algorithm/copy.hpp>
+#include <um2/stdlib/algorithm/max.hpp>
 #include <um2/stdlib/memory/addressof.hpp>
 #include <um2/stdlib/utility/move.hpp>
 #include <um2/stdlib/utility/is_pointer_in_range.hpp>
@@ -147,6 +148,13 @@ class String
   HOSTDEV constexpr void
   setShortSize(uint64_t size) noexcept;
 
+  HOSTDEV constexpr void
+  setSize(uint64_t size) noexcept;
+
+  HOSTDEV inline void
+  growByAndReplace(uint64_t old_cap, uint64_t delta_cap, uint64_t old_sz, uint64_t n_copy,
+                   uint64_t n_del, uint64_t n_add, char const * s) noexcept;
+
 public:
   // The maximum capacity of a long string.
   static Int constexpr npos = intMax();
@@ -164,6 +172,14 @@ public:
   // NOLINTNEXTLINE(google-explicit-constructor) match std::string
   HOSTDEV constexpr String(char const * s) noexcept;
 
+  HOSTDEV constexpr String(String const & s, Int pos, Int count = npos) noexcept;
+
+  template <std::integral T>
+  explicit String(T t) noexcept;
+
+  template <std::floating_point T>
+  explicit String(T t) noexcept;
+
   HOSTDEV constexpr auto
   operator=(String const & s) noexcept -> String &;
 
@@ -172,7 +188,7 @@ public:
 
   HOSTDEV explicit constexpr String(StringView sv) noexcept;
 
-  HOSTDEV constexpr 
+  HOSTDEV constexpr
   // NOLINTNEXTLINE(google-explicit-constructor) match std::string
   operator StringView() const noexcept;
 
@@ -249,6 +265,15 @@ public:
   // Modifiers
   //==============================================================================
 
+  HOSTDEV constexpr auto
+  append(char const * s, Int n) -> String &;
+
+  HOSTDEV constexpr auto
+  operator+=(char const * s) -> String &;
+
+  HOSTDEV constexpr auto
+  operator+=(String const & s) -> String &;
+
   //==============================================================================
   // Operations
   //==============================================================================
@@ -278,6 +303,12 @@ public:
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   starts_with(char const * s) const noexcept -> bool;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  find_last_of(char c, Int pos = npos ) const noexcept -> Int;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  substr(Int pos, Int count = npos) const noexcept -> String;
 
   // NOLINTEND(readability-identifier-naming) match std::string
 
@@ -321,6 +352,22 @@ PURE HOSTDEV [[nodiscard]] constexpr auto
 operator>=(String const & lhs, String const & rhs) -> bool
 {
   return lhs.compare(rhs) >= 0;
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+operator+(String const & lhs, String const & rhs) -> String
+{
+  String result(lhs);
+  result += rhs;
+  return result;
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+operator+(String const & lhs, char const * rhs) -> String
+{
+  String result(lhs);
+  result += rhs;
+  return result;
 }
 
 //==============================================================================
@@ -486,6 +533,58 @@ String::setShortSize(uint64_t size) noexcept
   _r.s.is_long = false;
 }
 
+HOSTDEV constexpr void
+String::setSize(uint64_t size) noexcept
+{
+  if (isLong()) {
+    setLongSize(size);
+  } else {
+    setShortSize(size);
+  }
+}
+
+HOSTDEV inline void
+String::growByAndReplace(uint64_t old_cap, uint64_t delta_cap, uint64_t old_sz, uint64_t n_copy,
+                         uint64_t n_del, uint64_t n_add, char const * s) noexcept
+{
+  // Haven't planned around massive strings yet. Assert that we don't overflow.
+  ASSERT(delta_cap < static_cast<uint64_t>(intMax()));
+  ASSERT(old_cap + delta_cap < static_cast<uint64_t>(intMax())); 
+  ASSERT(2 * old_cap < static_cast<uint64_t>(intMax()));
+  Ptr old_p = getPointer();
+  uint64_t const cap = um2::max(old_cap + delta_cap, 2 * old_cap);
+  Ptr p = static_cast<Ptr>(::operator new(cap + 1)); // + 1 for null terminator 
+  if (n_copy != 0) {
+    // to: p
+    // from: old_p
+    // n: n_copy
+    um2::copy(old_p, old_p + n_copy, p);
+  }
+  if (n_add != 0) {
+    // to: p + __n_copy
+    // from: s
+    // n: n_add
+    um2::copy(s, s + n_add, p + n_copy);
+  }
+  uint64_t const sec_cp_sz = old_sz - n_del - n_copy; 
+  if (sec_cp_sz != 0) {
+    // to: p + n_copy + n_add
+    // from: old_p + n_copy + n_del
+    // n: sec_cp_sz
+    // old_p + n_copy + n_del + sec_cp_sz == old_p + old_sz
+    um2::copy(old_p + n_copy + n_del, old_p + old_sz, p + n_copy + n_add);
+  }
+  // If the old string was not short, deallocate the memory.
+  if (old_cap + 1 != min_cap) {
+    ::operator delete(old_p);
+  }
+  setLongPointer(p);
+  setLongCap(cap + 1); // + 1 for null terminator
+  old_sz = n_copy + n_add + sec_cp_sz;
+  setLongSize(old_sz);
+  p[old_sz] = '\0';
+}
+
 //==============================================================================
 // Constructors and assignment
 //==============================================================================
@@ -527,6 +626,60 @@ HOSTDEV constexpr String::String(char const * s) noexcept
   auto const n = strlen(s);
   ASSERT(n > 0);
   init(s, n);
+}
+
+HOSTDEV constexpr String::String(String const & s, Int pos, Int count) noexcept
+{
+  Int const str_size = s.size();
+  ASSERT(pos >= 0);
+  ASSERT(pos <= str_size);
+  Int const n = um2::min(count, str_size - pos);
+  init(s.data() + pos, static_cast<uint64_t>(n));
+}
+
+template <>
+inline
+String::String(int32_t t) noexcept
+{
+  char buf[32];
+  int32_t const len = snprintf(nullptr, 0, "%d", t);
+  int32_t const written = snprintf(buf, sizeof(buf), "%d", t);
+  ASSERT(written == len);
+  init(addressof(buf[0]), static_cast<uint64_t>(len));
+}
+
+template <>
+inline
+String::String(int64_t t) noexcept
+{
+  char buf[32];
+  int32_t const len = snprintf(nullptr, 0, "%ld", t);
+  int32_t const written = snprintf(buf, sizeof(buf), "%ld", t);
+  ASSERT(written == len);
+  init(addressof(buf[0]), static_cast<uint64_t>(len));
+}
+
+template <>
+inline
+String::String(float t) noexcept
+{
+  char buf[32];
+  auto const d = static_cast<double>(t);
+  int32_t const len = snprintf(nullptr, 0, "%f", d);
+  int32_t const written = snprintf(buf, sizeof(buf), "%f", d);
+  ASSERT(written == len);
+  init(addressof(buf[0]), static_cast<uint64_t>(len));
+}
+
+template <>
+inline
+String::String(double t) noexcept
+{
+  char buf[32];
+  int32_t const len = snprintf(nullptr, 0, "%f", t);
+  int32_t const written = snprintf(buf, sizeof(buf), "%f", t);
+  ASSERT(written == len);
+  init(addressof(buf[0]), static_cast<uint64_t>(len));
 }
 
 HOSTDEV constexpr auto
@@ -600,7 +753,7 @@ String::front() const noexcept -> char const &
 PURE HOSTDEV constexpr auto
 String::back() noexcept -> char &
 {
-  return *end(); 
+  return *end();
 }
 
 PURE HOSTDEV constexpr auto
@@ -688,6 +841,42 @@ String::capacity() const noexcept -> Int
 // Modifiers
 //==============================================================================
 
+HOSTDEV constexpr auto
+String::append(char const * s, Int n) -> String &
+{
+  ASSERT(s != nullptr);
+  ASSERT(n > 0);
+  Int const cap = capacity(); // not including null terminator
+  Int sz = size();
+  Int const remaining = cap - sz;
+  // If the remaining capacity is greater than or equal to n, there is no need to
+  // reallocate
+  if (remaining >= n) {
+    Ptr p = getPointer();
+    um2::copy(s, s + n, p + sz);
+    sz += n;
+    setSize(static_cast<uint64_t>(sz));
+    p[sz] = '\0';
+  } else {
+    growByAndReplace(static_cast<uint64_t>(cap), static_cast<uint64_t>(n - remaining), 
+        static_cast<uint64_t>(sz), static_cast<uint64_t>(sz), 0, 
+        static_cast<uint64_t>(n), s);
+  }
+  return *this;
+}
+
+HOSTDEV constexpr auto
+String::operator+=(char const * s) -> String &
+{
+  return append(s, static_cast<Int>(strlen(s)));
+}
+
+HOSTDEV constexpr auto
+String::operator+=(String const & s) -> String &
+{
+  return append(s.data(), s.size());
+}
+
 //==============================================================================
 // Operations
 //==============================================================================
@@ -706,7 +895,7 @@ String::compare(T const & t) const noexcept -> int
 {
   StringView const self_sv(data(), static_cast<uint64_t>(size()));
   StringView const sv(t);
-  return self_sv.compare(sv); 
+  return self_sv.compare(sv);
 }
 
 PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -745,6 +934,21 @@ PURE HOSTDEV [[nodiscard]] constexpr auto
 String::starts_with(char const * s) const noexcept -> bool
 {
   return starts_with(StringView(s));
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+String::find_last_of(char c, Int pos) const noexcept -> Int
+{
+  ASSERT(pos >= 0);
+  StringView const self_sv(data(), static_cast<uint64_t>(size()));
+  uint64_t const result = self_sv.find_last_of(c, static_cast<uint64_t>(pos));
+  return result == StringView::npos ? npos : static_cast<Int>(result);
+}
+
+PURE HOSTDEV [[nodiscard]] constexpr auto
+String::substr(Int pos, Int count) const noexcept -> String
+{
+  return {*this, pos, count};
 }
 
 } // namespace um2

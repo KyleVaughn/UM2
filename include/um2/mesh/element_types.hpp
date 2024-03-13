@@ -21,17 +21,17 @@ enum class VTKElemType : int8_t {
   QuadraticQuad = 23
 };
 
-//// Element IDs for XDMF
-//enum class XDMFElemType : int8_t {
-//  None = 0,
-//  Vertex = 1,
-//  Line = 2,
-//  Triangle = 4,
-//  Quad = 5,
-//  QuadraticEdge = 34,
-//  QuadraticTriangle = 36,
-//  QuadraticQuad = 37
-//};
+// Element IDs for XDMF
+enum class XDMFElemType : int8_t {
+  None = 0,
+  Vertex = 1,
+  Line = 2,
+  Triangle = 4,
+  Quad = 5,
+  QuadraticEdge = 34,
+  QuadraticTriangle = 36,
+  QuadraticQuad = 37
+};
 
 enum class MeshType : int8_t {
   None = 0,
@@ -110,52 +110,52 @@ inferVTKElemType(Int const type) -> VTKElemType
 //  }
 //}
 //
-//CONST constexpr auto
-//xdmfToVTKElemType(int8_t x) -> VTKElemType
-//{
-//  switch (x) {
-//  case static_cast<int8_t>(XDMFElemType::Vertex):
-//    return VTKElemType::Vertex;
-//  case static_cast<int8_t>(XDMFElemType::Line):
-//    return VTKElemType::Line;
-//  case static_cast<int8_t>(XDMFElemType::Triangle):
-//    return VTKElemType::Triangle;
-//  case static_cast<int8_t>(XDMFElemType::Quad):
-//    return VTKElemType::Quad;
-//  case static_cast<int8_t>(XDMFElemType::QuadraticEdge):
-//    return VTKElemType::QuadraticEdge;
-//  case static_cast<int8_t>(XDMFElemType::QuadraticTriangle):
-//    return VTKElemType::QuadraticTriangle;
-//  case static_cast<int8_t>(XDMFElemType::QuadraticQuad):
-//    return VTKElemType::QuadraticQuad;
-//  default:
-//    ASSERT(false);
-//    return VTKElemType::None;
-//  }
-//}
-//
-//CONST constexpr auto
-//vtkToXDMFElemType(VTKElemType x) -> XDMFElemType
-//{
-//  switch (x) {
-//  case VTKElemType::Vertex:
-//    return XDMFElemType::Vertex;
-//  case VTKElemType::Line:
-//    return XDMFElemType::Line;
-//  case VTKElemType::Triangle:
-//    return XDMFElemType::Triangle;
-//  case VTKElemType::Quad:
-//    return XDMFElemType::Quad;
-//  case VTKElemType::QuadraticEdge:
-//    return XDMFElemType::QuadraticEdge;
-//  case VTKElemType::QuadraticTriangle:
-//    return XDMFElemType::QuadraticTriangle;
-//  case VTKElemType::QuadraticQuad:
-//    return XDMFElemType::QuadraticQuad;
-//  default:
-//    ASSERT(false);
-//    return XDMFElemType::None;
-//  }
-//}
+CONST constexpr auto
+xdmfToVTKElemType(int8_t x) -> VTKElemType
+{
+  switch (x) {
+  case static_cast<int8_t>(XDMFElemType::Vertex):
+    return VTKElemType::Vertex;
+  case static_cast<int8_t>(XDMFElemType::Line):
+    return VTKElemType::Line;
+  case static_cast<int8_t>(XDMFElemType::Triangle):
+    return VTKElemType::Triangle;
+  case static_cast<int8_t>(XDMFElemType::Quad):
+    return VTKElemType::Quad;
+  case static_cast<int8_t>(XDMFElemType::QuadraticEdge):
+    return VTKElemType::QuadraticEdge;
+  case static_cast<int8_t>(XDMFElemType::QuadraticTriangle):
+    return VTKElemType::QuadraticTriangle;
+  case static_cast<int8_t>(XDMFElemType::QuadraticQuad):
+    return VTKElemType::QuadraticQuad;
+  default:
+    ASSERT(false);
+    return VTKElemType::None;
+  }
+}
+
+CONST constexpr auto
+vtkToXDMFElemType(VTKElemType x) -> XDMFElemType
+{
+  switch (x) {
+  case VTKElemType::Vertex:
+    return XDMFElemType::Vertex;
+  case VTKElemType::Line:
+    return XDMFElemType::Line;
+  case VTKElemType::Triangle:
+    return XDMFElemType::Triangle;
+  case VTKElemType::Quad:
+    return XDMFElemType::Quad;
+  case VTKElemType::QuadraticEdge:
+    return XDMFElemType::QuadraticEdge;
+  case VTKElemType::QuadraticTriangle:
+    return XDMFElemType::QuadraticTriangle;
+  case VTKElemType::QuadraticQuad:
+    return XDMFElemType::QuadraticQuad;
+  default:
+    ASSERT(false);
+    return XDMFElemType::None;
+  }
+}
 
 } // namespace um2

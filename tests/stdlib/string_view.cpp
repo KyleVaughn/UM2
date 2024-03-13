@@ -114,6 +114,42 @@ TEST_CASE(starts_with)
 }
 MAKE_CUDA_KERNEL(starts_with)
 
+HOSTDEV
+TEST_CASE(find_first_of)
+{
+  char const * const data = "Hello, World!";
+  um2::StringView const s(data, 13);
+  ASSERT(s.find_first_of('H') == 0);
+  ASSERT(s.find_first_of('W') == 7);
+  ASSERT(s.find_first_of('!') == 12);
+  ASSERT(s.find_first_of('z') == um2::StringView::npos);
+  ASSERT(s.find_first_of('l', 4) == 10);
+  ASSERT(s.find_first_of('l', 20) == um2::StringView::npos);
+}
+
+HOSTDEV
+TEST_CASE(find_first_not_of)
+{
+  char const * const data = "Hello, World!";
+  um2::StringView const s(data, 13);
+  ASSERT(s.find_first_not_of('H') == 1);
+  ASSERT(s.find_first_not_of('l', 2) == 4);
+  ASSERT(s.find_first_not_of('l', 20) == um2::StringView::npos); 
+}
+
+HOSTDEV
+TEST_CASE(find_last_of)
+{
+  char const * const data = "Hello, World!";
+  um2::StringView const s(data, 13);
+  ASSERT(s.find_last_of('H') == 0);
+  ASSERT(s.find_last_of('W') == 7);
+  ASSERT(s.find_last_of('!') == 12);
+  ASSERT(s.find_last_of('z') == um2::StringView::npos);
+  ASSERT(s.find_last_of('l') == 10);
+  ASSERT(s.find_last_of('o', 4) == 4);
+  ASSERT(s.find_last_of('o', 3) == um2::StringView::npos);
+}
 
 HOSTDEV
 TEST_CASE(end_with)
@@ -205,6 +241,9 @@ TEST_SUITE(StringView)
   TEST_HOSTDEV(substr)
   TEST_HOSTDEV(starts_with)
   TEST_HOSTDEV(end_with)
+  TEST_HOSTDEV(find_first_of)
+  TEST_HOSTDEV(find_first_not_of)
+  TEST_HOSTDEV(find_last_of)
 
   // Non-standard modifiers
   TEST_HOSTDEV(removeLeadingSpaces)

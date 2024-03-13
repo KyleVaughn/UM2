@@ -47,4 +47,18 @@ strto<int64_t>(char const * str, char ** endptr) noexcept -> int64_t
   return std::strtol(str, endptr, 10);
 }
 
+template <>
+inline auto
+strto<uint32_t>(char const * str, char ** endptr) noexcept -> uint32_t
+{
+  return static_cast<uint32_t>(std::strtoul(str, endptr, 10));
+}
+
+template <>
+inline auto
+strto<uint64_t>(char const * str, char ** endptr) noexcept -> uint64_t
+{
+  return std::strtoul(str, endptr, 10);
+}
+
 } // namespace um2
