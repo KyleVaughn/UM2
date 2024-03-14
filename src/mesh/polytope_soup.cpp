@@ -24,8 +24,6 @@
 #include <fstream>
 //#include <sstream>
 
-#include <iostream>
-
 namespace um2
 {
 
@@ -2471,6 +2469,7 @@ auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 getPowerRegions(PolytopeSoup & soup) -> Vector<Pair<Float, Point3>>
 {
+  LOG_INFO("Computing power and centroid of disjoint regions with non-zero power");
   Vector<Pair<Float, Point3>> subset_pc;
   Vector<Int> ids;
   Vector<Float> data;
@@ -2521,7 +2520,6 @@ getPowerRegions(PolytopeSoup & soup) -> Vector<Pair<Float, Point3>>
   soup.addElset("nonzero_power", nonzero_ids, nonzero_power);
 
   // Now we wist to sort the ids into connected subsets
-  LOG_WARN("Sorting power regions");
   Vector<Vector<Int>> subset_ids;
   Vector<AxisAlignedBox2> subset_aabbs;
   for (auto const i : nonzero_ids) {
@@ -2555,17 +2553,14 @@ getPowerRegions(PolytopeSoup & soup) -> Vector<Pair<Float, Point3>>
 
   // We must now merge adjacent subsets
   // We keep iterating until no more merges are possible
-  LOG_WARN("Merging power regions");
   Vector<Vector<Int>> subset_ids_copy = subset_ids;
   bool done_merging = false; 
   Int merge_count = 0;
   while (!done_merging && merge_count < 10000) {
     done_merging = true;
     for (Int i = 0; i < subset_ids_copy.size(); ++i) {
-//      std::cerr << "i: " << i << std::endl;
       auto const & i_aabb = subset_aabbs[i];
       for (Int j = i + 1; j < subset_ids_copy.size(); ++j) {
-//        std::cerr << "j: " << j << std::endl;
         auto const & j_aabb = subset_aabbs[j];
         // If the bounding box of a subset does not intersect the bounding box
         // of another subset, then the two subsets cannot be neighbors
@@ -2573,9 +2568,7 @@ getPowerRegions(PolytopeSoup & soup) -> Vector<Pair<Float, Point3>>
           continue;
         }
         for (auto const i_id : subset_ids_copy[i]) {
-//          std::cerr << "   i_id: " << i_id << std::endl;
           for (auto const j_id : subset_ids_copy[j]) {
-//            std::cerr << "   j_id: " << j_id << std::endl;
             if (soup.elementsShareVertex(i_id, j_id)) {
               // Merge the subsets
               Int const set_i_size = subset_ids_copy[i].size();
@@ -2594,7 +2587,6 @@ getPowerRegions(PolytopeSoup & soup) -> Vector<Pair<Float, Point3>>
               subset_ids_copy[j].clear();
               subset_ids_copy.emplace_back(um2::move(merged_subset));
               subset_aabbs.emplace_back(i_aabb + j_aabb);
-              LOG_WARN("Merged subsets ", i, " and ", j);
               goto next_merge;
             }
           } // for j_id
@@ -2603,7 +2595,6 @@ getPowerRegions(PolytopeSoup & soup) -> Vector<Pair<Float, Point3>>
     } // for i
     next_merge:
     ++merge_count;
-    LOG_WARN("Merge count: ", merge_count);
   } // while
 
   // We will now remove empty subsets and place the merged subsets in the
@@ -2634,7 +2625,6 @@ getPowerRegions(PolytopeSoup & soup) -> Vector<Pair<Float, Point3>>
 //    ++subset_count;
 //  }
 
-  LOG_WARN("Computing region power and centroids");
   subset_pc.reserve(subset_ids.size());
   for (auto const & subset : subset_ids) {
     Float total_power = 0;

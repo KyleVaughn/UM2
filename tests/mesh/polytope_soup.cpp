@@ -3,8 +3,6 @@
 
 #include "./helpers/setup_polytope_soup.hpp"
 
-#include <iostream>
-
 #include "../test_macros.hpp"
 
 TEST_CASE(addVertex)
@@ -771,16 +769,6 @@ TEST_CASE(getPowerRegions)
   ASSERT_NEAR(subset_pc[2].first, 4, eps); 
   ASSERT_NEAR(subset_pc[2].second[0], castIfNot<Float>(5) / castIfNot<Float>(6), eps);
   ASSERT_NEAR(subset_pc[2].second[1], castIfNot<Float>(19) / castIfNot<Float>(6), eps);
-
-
-  um2::PolytopeSoup soup;
-  soup.read("/home/kcvaughn/work/c5g7/kn8/c5g7_2D_core_FSRmesh.vtk");
-  soup.mortonSort();
-  auto const subset_pc2 = um2::getPowerRegions(soup);
-  std:: cerr << "Power, x, y, z" << std::endl;
-  for (auto const pc : subset_pc2) {
-    std::cerr << pc.first << ", " << pc.second[0] << ", " << pc.second[1] <<  ", " << pc.second[2] << std::endl;
-  }
 }
 
 TEST_SUITE(PolytopeSoup)
