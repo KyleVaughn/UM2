@@ -127,6 +127,9 @@ public:
   HOSTDEV constexpr void
   scale(Float s) noexcept;
 
+  HOSTDEV [[nodiscard]] constexpr auto
+  intersects(AxisAlignedBox<D> const & other) const noexcept -> bool;
+
 }; // class AxisAlignedBox
 
 //==============================================================================
@@ -423,6 +426,18 @@ AxisAlignedBox<D>::scale(Float s) noexcept
   auto const dxyz = extents() * ((s - 1) / 2);
   _min -= dxyz;
   _max += dxyz;
+}
+
+template <Int D>
+HOSTDEV constexpr auto
+AxisAlignedBox<D>::intersects(AxisAlignedBox<D> const & other) const noexcept -> bool
+{
+  for (Int i = 0; i < D; ++i) {
+    if (_max[i] < other._min[i] || _min[i] > other._max[i]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 } // namespace um2

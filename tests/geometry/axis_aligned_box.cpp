@@ -188,6 +188,25 @@ TEST_CASE(scale)
   ASSERT_NEAR(box.maxima(1), castIfNot<Float>(1), eps);
 }
 
+HOSTDEV
+TEST_CASE(intersects_box)
+{
+  // Simple intersection
+  um2::AxisAlignedBox<2> a(um2::Point2(0, 0), um2::Point2(2, 2)); 
+  um2::AxisAlignedBox<2> const b(um2::Point2(1, 1), um2::Point2(3, 3));
+  ASSERT(a.intersects(b));
+  ASSERT(b.intersects(a));
+  a += um2::Point2(-1, -1);
+  a += um2::Point2(4, 4);
+  // a encompasses b
+  ASSERT(a.intersects(b));
+  ASSERT(b.intersects(a));
+  um2::AxisAlignedBox<2> const c(um2::Point2(1, 4), um2::Point2(3, 5));
+  // c is directly above b
+  ASSERT(!b.intersects(c));
+  ASSERT(!c.intersects(b));
+}
+
 // NOLINTEND(cert-dcl03-c,misc-static-assert)
 
 #if UM2_USE_CUDA
@@ -228,6 +247,7 @@ TEST_SUITE(aabb)
     TEST(bounding_box_vector);
     TEST_HOSTDEV(intersect_ray);
     TEST_HOSTDEV(scale);
+    TEST_HOSTDEV(intersects_box);
   }
 }
 

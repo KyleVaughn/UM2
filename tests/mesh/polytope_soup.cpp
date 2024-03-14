@@ -775,11 +775,8 @@ TEST_CASE(getPowerRegions)
 
   um2::PolytopeSoup soup;
   soup.read("/home/kcvaughn/work/c5g7/kn8/c5g7_2D_core_FSRmesh.vtk");
-  std::cerr << "Morton sorting" << std::endl;
   soup.mortonSort();
-  std::cerr << "Done morton sorting" << std::endl;
   auto const subset_pc2 = um2::getPowerRegions(soup);
-  soup.write("c5g7_2D_core_FSRmesh_sorted.xdmf");
   std:: cerr << "Power, x, y, z" << std::endl;
   for (auto const pc : subset_pc2) {
     std::cerr << pc.first << ", " << pc.second[0] << ", " << pc.second[1] <<  ", " << pc.second[2] << std::endl;
