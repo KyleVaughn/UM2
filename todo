@@ -1,10 +1,19 @@
+improve power regions algorithm
+-> MERGE subsets
+
+Power make const ref
+
+getElset(Name, ids, data)
+determine the set of ids which have power
+  power ->
+
 Need to pass material names?
   -> set that gets
 
 makeMaterialsElset
   -> convert Material_ to Material with elset data
 
-strcmp??
+Delete material related comments after verifying read/write w/o 
 
 
 XDMF IO

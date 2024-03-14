@@ -1,4 +1,5 @@
 #include <um2/mesh/polytope_soup.hpp>
+#include <um2/stdlib/numeric/iota.hpp>
 
 #include "./helpers/setup_polytope_soup.hpp"
 
@@ -702,6 +703,89 @@ TEST_CASE(io_xdmf_tri6_quad8_mesh)
   ASSERT(stat == 0);
 }
 
+TEST_CASE(getPowerRegions)
+{
+  //      Face ID                Power
+  // -----------------    -----------------
+  // | 0 | 1 | 2 | 3 |    | 2 | 1 | 0 | 0 |
+  // -----------------    -----------------
+  // | 4 | 5 | 6 | 7 |    | 1 | 0 | 0 | 0 |
+  // ----------------- -> -----------------
+  // | 8 | 9 |10 |11 |    | 0 | 0 | 1 | 1 |
+  // -----------------    -----------------
+  // |12 |13 |14 |15 |    | 4 | 0 | 1 | 1 |
+  // -----------------    -----------------
+
+  // This should yield 3 regions with
+  // Power    |   Centroid
+  // ---------------------
+  // 4        | (1/2, 1/2)
+  // 4        | (3, 1)
+  // 4        | (5/6, 19/6)
+  
+  um2::PolytopeSoup mesh;
+  for (Int j = 0; j < 5; ++j) {
+    for (Int i = 0; i < 5; ++i) {
+      mesh.addVertex(um2::Point3(i, j, 0));
+    }
+  }
+
+  um2::Vector<Int> conn(4);
+  um2::VTKElemType const type = um2::VTKElemType::Quad;
+  for (Int j = 0; j < 4; ++j) {
+    for (Int i = 0; i < 4; ++i) {
+      conn[0] = i + j * 5;
+      conn[1] = i + 1 + j * 5;
+      conn[2] = i + 1 + (j + 1) * 5;
+      conn[3] = i + (j + 1) * 5;
+      mesh.addElement(type, conn);
+    }
+  }
+
+  um2::Vector<Float> powers(16);
+  powers[0] = 4;
+  powers[2] = 1;
+  powers[3] = 1;
+  powers[6] = 1;
+  powers[7] = 1;
+  powers[8] = 1;
+  powers[12] = 2;
+  powers[13] = 1;
+  um2::Vector<Int> faces(16);
+  um2::iota(faces.begin(), faces.end(), 0);
+  mesh.addElset("power", faces, powers);
+
+  auto const subset_pc = um2::getPowerRegions(mesh);
+  // Print the results
+  ASSERT(subset_pc.size() == 3);
+  auto const eps = castIfNot<Float>(1e-6);
+
+  ASSERT_NEAR(subset_pc[0].first, 4, eps);
+  ASSERT_NEAR(subset_pc[0].second[0], castIfNot<Float>(1) / castIfNot<Float>(2), eps);
+  ASSERT_NEAR(subset_pc[0].second[1], castIfNot<Float>(1) / castIfNot<Float>(2), eps);
+
+  ASSERT_NEAR(subset_pc[1].first, 4, eps);
+  ASSERT_NEAR(subset_pc[1].second[0], 3, eps);
+  ASSERT_NEAR(subset_pc[1].second[1], 1, eps);
+
+  ASSERT_NEAR(subset_pc[2].first, 4, eps); 
+  ASSERT_NEAR(subset_pc[2].second[0], castIfNot<Float>(5) / castIfNot<Float>(6), eps);
+  ASSERT_NEAR(subset_pc[2].second[1], castIfNot<Float>(19) / castIfNot<Float>(6), eps);
+
+
+  um2::PolytopeSoup soup;
+  soup.read("/home/kcvaughn/work/c5g7/kn8/c5g7_2D_core_FSRmesh.vtk");
+  std::cerr << "Morton sorting" << std::endl;
+  soup.mortonSort();
+  std::cerr << "Done morton sorting" << std::endl;
+  auto const subset_pc2 = um2::getPowerRegions(soup);
+  soup.write("c5g7_2D_core_FSRmesh_sorted.xdmf");
+  std:: cerr << "Power, x, y, z" << std::endl;
+  for (auto const pc : subset_pc2) {
+    std::cerr << pc.first << ", " << pc.second[0] << ", " << pc.second[1] <<  ", " << pc.second[2] << std::endl;
+  }
+}
+
 TEST_SUITE(PolytopeSoup)
 {
   TEST(addVertex);
@@ -733,6 +817,7 @@ TEST_SUITE(PolytopeSoup)
   TEST(io_xdmf_tri6_mesh);
   TEST(io_xdmf_quad8_mesh);
   TEST(io_xdmf_tri6_quad8_mesh);
+  TEST(getPowerRegions);
 }
 
 auto

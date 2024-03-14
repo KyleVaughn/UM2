@@ -2,6 +2,7 @@
 
 #include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/mesh/element_types.hpp>
+#include <um2/stdlib/utility/pair.hpp>
 #include <um2/stdlib/string.hpp>
 #include <um2/stdlib/vector.hpp>
 
@@ -104,11 +105,17 @@ public:
   PURE [[nodiscard]] auto
   compare(PolytopeSoup const & other) const -> int;
 
+  PURE [[nodiscard]] auto
+  elementsShareVertex(Int i, Int j) const -> bool;
+
   void
   getElement(Int i, VTKElemType & type, Vector<Int> & conn) const;
 
   PURE [[nodiscard]] auto
   getElementBoundingBox(Int i) const -> AxisAlignedBox3;
+
+  PURE [[nodiscard]] auto
+  getElementArea(Int i) const -> Float;
 
   PURE [[nodiscard]] auto
   getElementCentroid(Int i) const -> Point3;
@@ -118,6 +125,9 @@ public:
 
   void
   getElset(Int i, String & name, Vector<Int> & ids, Vector<Float> & data) const;
+
+  void
+  getElset(String const & name, Vector<Int> & ids, Vector<Float> & data) const;
 
   // Get the material ID of each element
   void
@@ -174,6 +184,16 @@ public:
   write(String const & filename) const;
 
 }; // struct PolytopeSoup
+
+//==============================================================================
+// Free Functions
+//==============================================================================
+
+// Get the power of each pin, plate, or other connected subset of elements.
+// Soup must have an elset called "power" with elset data for each element.
+// Assumes a manifold mesh.
+auto
+getPowerRegions(PolytopeSoup & soup) -> Vector<Pair<Float, Point3>>;
 
 //==============================================================================
 // Methods

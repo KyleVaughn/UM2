@@ -486,6 +486,8 @@ String::init(ConstPtr s, uint64_t size) noexcept
 {
   ASSERT(s != nullptr);
   Ptr p = nullptr;
+  // GCC warns about wraparound here, but it should not be possible
+  ASSERT_ASSUME(size < INT32_MAX); 
   if (fitsInShort(size)) {
     setShortSize(size);
     p = getShortPointer();
@@ -637,6 +639,10 @@ HOSTDEV constexpr String::String(String const & s, Int pos, Int count) noexcept
   init(s.data() + pos, static_cast<uint64_t>(n));
 }
 
+// written is only read in debug mode
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+// NOLINTBEGIN(clang-analyzer-deadcode.DeadStores, clang-diagnostic-unused-variable)
 template <>
 inline
 String::String(int32_t t) noexcept
@@ -681,6 +687,9 @@ String::String(double t) noexcept
   ASSERT(written == len);
   init(addressof(buf[0]), static_cast<uint64_t>(len));
 }
+
+#pragma GCC diagnostic pop
+// NOLINTEND(clang-analyzer-deadcode.DeadStores,clang-diagnostic-unused-variable)
 
 HOSTDEV constexpr auto
 String::operator=(String const & s) noexcept -> String &
