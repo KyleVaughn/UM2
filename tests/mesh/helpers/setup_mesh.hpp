@@ -7,7 +7,7 @@ makeTriReferenceMesh() -> um2::TriFVM
       {1, 1},
       {0, 1}
   };
-  um2::Vector<um2::Vec<3, I>> const fv = {
+  um2::Vector<um2::Vec<3, Int>> const fv = {
       {0, 1, 2},
       {2, 3, 0}
   };
@@ -27,7 +27,7 @@ makeQuadReferenceMesh() -> um2::QuadFVM
       {2, 0},
       {2, 1}
   };
-  um2::Vector<um2::Vec<4, I>> const fv = {
+  um2::Vector<um2::Vec<4, Int>> const fv = {
       {0, 1, 2, 3},
       {1, 4, 5, 2}
   };
@@ -36,7 +36,7 @@ makeQuadReferenceMesh() -> um2::QuadFVM
   return {v, fv};
 }
 ////
-//// template <std::floating_point T, std::signed_integral I>
+//// template <std::floating_point T, std::signed_integral Int>
 //// HOSTDEV void makeTriQuadReferenceMesh(um2::TriQuadMesh & mesh)
 ////{
 ////   mesh.vertices = {
@@ -59,14 +59,14 @@ makeTri6ReferenceMesh() -> um2::Tri6FVM
       {               0,                0},
       {               1,                0},
       {               0,                1},
-      {condCast<F>(0.5), condCast<F>(0.0)},
-      {condCast<F>(0.7), condCast<F>(0.5)},
-      {condCast<F>(0.0), condCast<F>(0.5)},
+      {castIfNot<Float>(0.5), castIfNot<Float>(0.0)},
+      {castIfNot<Float>(0.7), castIfNot<Float>(0.5)},
+      {castIfNot<Float>(0.0), castIfNot<Float>(0.5)},
       {               1,                1},
-      {condCast<F>(1.0), condCast<F>(0.5)},
-      {condCast<F>(0.5), condCast<F>(1.0)}
+      {castIfNot<Float>(1.0), castIfNot<Float>(0.5)},
+      {castIfNot<Float>(0.5), castIfNot<Float>(1.0)}
   };
-  um2::Vector<um2::Vec<6, I>> const fv = {
+  um2::Vector<um2::Vec<6, Int>> const fv = {
       {0, 1, 2, 3, 4, 5},
       {1, 6, 2, 7, 8, 4}
   };
@@ -79,21 +79,21 @@ HOSTDEV inline auto
 makeQuad8ReferenceMesh() -> um2::Quad8FVM
 {
   um2::Vector<um2::Point2> const v = {
-      {condCast<F>(0.0), condCast<F>(0.0)},
-      {condCast<F>(1.0), condCast<F>(0.0)},
-      {condCast<F>(1.0), condCast<F>(1.0)},
-      {condCast<F>(0.0), condCast<F>(1.0)},
-      {condCast<F>(2.0), condCast<F>(0.0)},
-      {condCast<F>(2.0), condCast<F>(1.0)},
-      {condCast<F>(0.5), condCast<F>(0.0)},
-      {condCast<F>(1.1), condCast<F>(0.6)},
-      {condCast<F>(0.5), condCast<F>(1.0)},
-      {condCast<F>(0.0), condCast<F>(0.5)},
-      {condCast<F>(1.5), condCast<F>(0.0)},
-      {condCast<F>(2.0), condCast<F>(0.5)},
-      {condCast<F>(1.5), condCast<F>(1.0)}
+      {castIfNot<Float>(0.0), castIfNot<Float>(0.0)},
+      {castIfNot<Float>(1.0), castIfNot<Float>(0.0)},
+      {castIfNot<Float>(1.0), castIfNot<Float>(1.0)},
+      {castIfNot<Float>(0.0), castIfNot<Float>(1.0)},
+      {castIfNot<Float>(2.0), castIfNot<Float>(0.0)},
+      {castIfNot<Float>(2.0), castIfNot<Float>(1.0)},
+      {castIfNot<Float>(0.5), castIfNot<Float>(0.0)},
+      {castIfNot<Float>(1.1), castIfNot<Float>(0.6)},
+      {castIfNot<Float>(0.5), castIfNot<Float>(1.0)},
+      {castIfNot<Float>(0.0), castIfNot<Float>(0.5)},
+      {castIfNot<Float>(1.5), castIfNot<Float>(0.0)},
+      {castIfNot<Float>(2.0), castIfNot<Float>(0.5)},
+      {castIfNot<Float>(1.5), castIfNot<Float>(1.0)}
   };
-  um2::Vector<um2::Vec<8, I>> const fv = {
+  um2::Vector<um2::Vec<8, Int>> const fv = {
       {0, 1, 2, 3,  6,  7,  8, 9},
       {1, 4, 5, 2, 10, 11, 12, 7}
   };
@@ -102,22 +102,22 @@ makeQuad8ReferenceMesh() -> um2::Quad8FVM
   return {v, fv};
 }
 
-// template <std::floating_point T, std::signed_integral I>
+// template <std::floating_point T, std::signed_integral Int>
 // HOSTDEV void makeTri6Quad8ReferenceMesh(um2::QuadraticTriQuadMesh &
 // mesh)
 //{
 //   mesh.vertices = {
-//       {condCast<F>(0.0), condCast<F>(0.0)},
-//       {condCast<F>(1.0), condCast<F>(0.0)},
-//       {condCast<F>(1.0), condCast<F>(1.0)},
-//       {condCast<F>(0.0), condCast<F>(1.0)},
-//       {condCast<F>(2.0), condCast<F>(0.0)},
-//       {condCast<F>(0.5), condCast<F>(0.0)},
-//       {condCast<F>(0.7), condCast<F>(0.6)},
-//       {condCast<F>(0.5), condCast<F>(1.0)},
-//       {condCast<F>(0.0), condCast<F>(0.5)},
-//       {condCast<F>(1.5), condCast<F>(0.0)},
-//       {condCast<F>(1.5), condCast<F>(0.5)}
+//       {castIfNot<Float>(0.0), castIfNot<Float>(0.0)},
+//       {castIfNot<Float>(1.0), castIfNot<Float>(0.0)},
+//       {castIfNot<Float>(1.0), castIfNot<Float>(1.0)},
+//       {castIfNot<Float>(0.0), castIfNot<Float>(1.0)},
+//       {castIfNot<Float>(2.0), castIfNot<Float>(0.0)},
+//       {castIfNot<Float>(0.5), castIfNot<Float>(0.0)},
+//       {castIfNot<Float>(0.7), castIfNot<Float>(0.6)},
+//       {castIfNot<Float>(0.5), castIfNot<Float>(1.0)},
+//       {castIfNot<Float>(0.0), castIfNot<Float>(0.5)},
+//       {castIfNot<Float>(1.5), castIfNot<Float>(0.0)},
+//       {castIfNot<Float>(1.5), castIfNot<Float>(0.5)}
 //   };
 //   mesh.fv_offsets = {0, 8, 14};
 //   mesh.fv = {0, 1, 2, 3, 5, 6, 7, 8, 1, 4, 2, 9, 10, 6};

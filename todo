@@ -1,14 +1,12 @@
-improve power regions algorithm
--> MERGE subsets
+tighten epsilon on intersection for quadratic segment/faces
 
-Power make const ref
+more robust testing for mesh functions
+-> faceContaining 
+-> intersect
+-> validate
 
-getElset(Name, ids, data)
-determine the set of ids which have power
-  power ->
+getEdge
 
-Need to pass material names?
-  -> set that gets
 
 makeMaterialsElset
   -> convert Material_ to Material with elset data
@@ -43,6 +41,8 @@ add testing for gcc 12+ and clang15+
 
 check on gmsh intersect
 
+look for ASSUME opportunities, especially around ternary statements
+
 ray intersect regular grid?
 
 provide intersection functions with additional argument of inverse direction?
@@ -51,8 +51,6 @@ Check that casts preserve value from float to int
 -> int over 16 million?
 
 branchless
-
-big ints for float is trouble
 
 methods
 Harden the mesh IO, testing with files created from different software
@@ -80,7 +78,6 @@ allocator
 typename to class
 
 Apache 2.0 license
-variadic template expansion
 
 std::isfinite assumes
 Find the conditional jump that depends on uninitialized value in xsec read

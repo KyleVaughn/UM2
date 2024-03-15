@@ -1668,7 +1668,6 @@ PolytopeSoup::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
 void
 PolytopeSoup::writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
                               String const & h5filename, String const & h5path
-                              //Vector<String> const & material_names
                               ) const
 {
   for (Int i = 0; i < _elset_names.size(); ++i) {
@@ -1724,52 +1723,11 @@ PolytopeSoup::writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
       String const h5elsetdatapath = h5elsetpath + "_data";
       xdata2.append_child(pugi::node_pcdata).set_value(h5elsetdatapath.data());
     }
-
-//    if (name.starts_with("Material_")) {
-//      // Get the index of the material in the material_names vector
-//      Int index = -1;
-//      for (Int j = 0; j < material_names.size(); ++j) {
-//        if (name == material_names[j]) {
-//          index = j;
-//          break;
-//        }
-//      }
-//      if (index == -1) {
-//        logger::error("Could not find material name in material_names vector");
-//      }
-//
-//      // Create HDF5 data space
-//      auto const dims_data = static_cast<hsize_t>(end - start);
-//      H5::DataSpace const h5space_data(1, &dims_data);
-//      // Create HDF5 data type
-//      H5::DataType const h5type_data = getH5DataType<int>();
-//      // Create HDF5 data set
-//      H5::DataSet const h5dataset_data =
-//          h5group.createDataSet((name + "_data").data(), h5type_data, h5space_data);
-//      Vector<int> material_ids(end - start, index);
-//      // Write HDF5 data set
-//      h5dataset_data.write(material_ids.data(), h5type_data, h5space_data);
-//
-//      // Create XDMF data node
-//      auto xatt = xelset.append_child("Attribute");
-//      xatt.append_attribute("Name") = "Material";
-//      xatt.append_attribute("Center") = "Cell";
-//      // Create XDMF DataItem node
-//      auto xdata2 = xatt.append_child("DataItem");
-//      xdata2.append_attribute("DataType") = "Int";
-//      xdata2.append_attribute("Dimensions") = material_ids.size();
-//      xdata2.append_attribute("Precision") = sizeof(int);
-//      xdata2.append_attribute("Format") = "HDF";
-//
-//      String const h5elsetdatapath = h5elsetpath + "_data";
-//      xdata2.append_child(pugi::node_pcdata).set_value(h5elsetdatapath.data());
-//    }
   }
 } // writeXDMFelsets
 
 void
 PolytopeSoup::writeXDMFUniformGrid(String const & name,
-                             //      Vector<String> const & /*material_names*/,
                                    pugi::xml_node & xdomain, H5::H5File & h5file,
                                    String const & h5filename, String const & h5path) const
 {
@@ -1785,7 +1743,6 @@ PolytopeSoup::writeXDMFUniformGrid(String const & name,
   writeXDMFGeometry(xgrid, h5group, h5filename, h5grouppath);
   writeXDMFTopology(xgrid, h5group, h5filename, h5grouppath);
   writeXDMFElsets(xgrid, h5group, h5filename, h5grouppath);
-//  writeXDMFElsets(xgrid, h5group, h5filename, h5grouppath, material_names);
 } // writeXDMFUniformGrid
 
 void
@@ -1823,31 +1780,9 @@ PolytopeSoup::writeXDMF(String const & filepath) const
   // Domain node
   pugi::xml_node xdomain = xroot.append_child("Domain");
 
-//  // Get the material names from elset names, in alphabetical order.
-//  Vector<String> material_names;
-//  getMaterialNames(material_names);
-//  std::sort(material_names.begin(), material_names.end());
-//
-//  // If there are any materials, add an information node listing them
-//  if (!material_names.empty()) {
-//    pugi::xml_node xinfo = xdomain.append_child("Information");
-//    xinfo.append_attribute("Name") = "Materials";
-//    String materials;
-//    for (Int i = 0; i < material_names.size(); ++i) {
-//      auto const & mat_name = material_names[i];
-//      String const short_name = mat_name.substr(9, mat_name.size() - 9);
-//      materials += short_name;
-//      if (i + 1 < material_names.size()) {
-//        materials += ", ";
-//      }
-//    }
-//    xinfo.append_child(pugi::node_pcdata).set_value(materials.data());
-//  }
-
   // Add a uniform grid
   String const h5path;
   String const name = h5filename.substr(0, h5filename.size() - 3);
-//  writeXDMFUniformGrid(name, material_names, xdomain, h5file, h5filename, h5path);
   writeXDMFUniformGrid(name, xdomain, h5file, h5filename, h5path);
   // Write the XML file
   xdoc.save_file(filepath.data(), "  ");
@@ -2467,7 +2402,7 @@ PolytopeSoup::write(String const & filename) const
 
 auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-getPowerRegions(PolytopeSoup & soup) -> Vector<Pair<Float, Point3>>
+getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
 {
   LOG_INFO("Computing power and centroid of disjoint regions with non-zero power");
   Vector<Pair<Float, Point3>> subset_pc;
@@ -2517,7 +2452,7 @@ getPowerRegions(PolytopeSoup & soup) -> Vector<Pair<Float, Point3>>
     return subset_pc;
   }
   // Add the nonzero power data to the soup
-  soup.addElset("nonzero_power", nonzero_ids, nonzero_power);
+//  soup.addElset("nonzero_power", nonzero_ids, nonzero_power);
 
   // Now we wist to sort the ids into connected subsets
   Vector<Vector<Int>> subset_ids;

@@ -193,7 +193,7 @@ public:
 // Soup must have an elset called "power" with elset data for each element.
 // Assumes a manifold mesh.
 auto
-getPowerRegions(PolytopeSoup & soup) -> Vector<Pair<Float, Point3>>;
+getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>;
 
 //==============================================================================
 // Methods

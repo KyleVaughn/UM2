@@ -89,65 +89,6 @@ FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup)
 }
 
 //==============================================================================
-// addVertex
-//==============================================================================
-
-template <I P, I N>
-void
-FaceVertexMesh<P, N>::addVertex(Point2 const & v) noexcept
-{
-  _v.push_back(v);
-}
-
-//==============================================================================
-// addFace
-//==============================================================================
-
-template <I P, I N>
-void
-FaceVertexMesh<P, N>::addFace(FaceConn const & conn) noexcept
-{
-  _fv.push_back(conn);
-}
-
-//==============================================================================
-// boundingBox
-//==============================================================================
-
-template <I P, I N>
-PURE [[nodiscard]] auto
-FaceVertexMesh<P, N>::boundingBox() const noexcept -> AxisAlignedBox2
-{
-  if constexpr (P == 1) {
-    return um2::boundingBox(_v);
-  } else if constexpr (P == 2) {
-    auto box = getFace(0).boundingBox();
-    for (I i = 1; i < numFaces(); ++i) {
-      box += getFace(i).boundingBox();
-    }
-    return box;
-  } else {
-    __builtin_unreachable();
-  }
-}
-
-//==============================================================================
-// faceContaining
-//==============================================================================
-
-template <I P, I N>
-PURE [[nodiscard]] auto
-FaceVertexMesh<P, N>::faceContaining(Point2 const & p) const noexcept -> I
-{
-  for (I i = 0; i < numFaces(); ++i) {
-    if (getFace(i).contains(p)) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-//==============================================================================
 // flipFace
 //==============================================================================
 

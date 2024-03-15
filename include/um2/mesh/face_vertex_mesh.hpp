@@ -1,6 +1,10 @@
 #pragma once
 
 #include <um2/mesh/polytope_soup.hpp>
+#include <um2/geometry/triangle.hpp>
+#include <um2/geometry/quadrilateral.hpp>
+#include <um2/geometry/quadratic_triangle.hpp>
+#include <um2/geometry/quadratic_quadrilateral.hpp>
 
 //=============================================================================
 // FACE-VERTEX MESH
@@ -13,7 +17,7 @@
 //  - P = 2, N = 6: Quadratic triangular mesh
 //  - P = 2, N = 8: Quadratic quadrilateral mesh
 //
-// Let I be the signed integer type used to index vertices and faces.
+// Let Int be the signed integer type used to index vertices and faces.
 // We will use some simple meshes to explain the data structure. A more detailed
 // explanation of each member follows.
 //  - A TriMesh (FaceVertexMesh<1, 3>) with two triangles:
@@ -38,23 +42,23 @@
 namespace um2
 {
 
-template <I P, I N>
+template <Int P, Int N>
 class FaceVertexMesh
 {
 
 public:
-  using FaceConn = Vec<N, I>;
+  using FaceConn = Vec<N, Int>;
   using Face = Polygon<P, N, 2>;
   using Edge = typename Polygon<P, N, 2>::Edge;
 
 private:
   bool _is_morton_sorted = false;
   bool _has_vf = false;
-  Vector<Point2> _v;     // vertices
-  Vector<FaceConn> _fv;  // face-vertex connectivity
-  Vector<I> _vf_offsets; // A prefix sum of the number of faces to which each
-                         // vertex belongs. size = num_vertices + 1
-  Vector<I> _vf;         // vertex-face connectivity
+  Vector<Point2> _v;        // vertices
+  Vector<FaceConn> _fv;     // face-vertex connectivity
+  Vector<Int> _vf_offsets;  // A prefix sum of the number of faces to which each
+                            // vertex belongs. size = num_vertices + 1
+  Vector<Int> _vf;          // vertex-face connectivity
 
 public:
   //===========================================================================
@@ -67,35 +71,35 @@ public:
   constexpr FaceVertexMesh(Vector<Point2> const & v,
                            Vector<FaceConn> const & fv) noexcept;
 
-  explicit FaceVertexMesh(PolytopeSoup const & soup);
+//  explicit FaceVertexMesh(PolytopeSoup const & soup);
 
   //==============================================================================
   // Accessors
   //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numVertices() const noexcept -> I;
+  numVertices() const noexcept -> Int;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numFaces() const noexcept -> I;
+  numFaces() const noexcept -> Int;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getVertex(I i) const noexcept -> Point2;
+  getVertex(Int i) const noexcept -> Point2;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   vertices() noexcept -> Vector<Point2> &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getEdge(I iface, I iedge) const noexcept -> Edge;
+  getEdge(Int iface, Int iedge) const noexcept -> Edge;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getFace(I i) const noexcept -> Face;
+  getFace(Int i) const noexcept -> Face;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  vertexFaceOffsets() const noexcept -> Vector<I> const &;
+  vertexFaceOffsets() const noexcept -> Vector<Int> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  vertexFaceConn() const noexcept -> Vector<I> const &;
+  vertexFaceConn() const noexcept -> Vector<Int> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   faceVertexConn() const noexcept -> Vector<FaceConn> const &;
@@ -104,54 +108,54 @@ public:
   // Methods
   //===========================================================================
 
-  void
+  constexpr void
   addVertex(Point2 const & v) noexcept;
 
-  void
+  constexpr void
   addFace(FaceConn const & conn) noexcept;
 
-  PURE [[nodiscard]] auto
+  PURE [[nodiscard]] constexpr auto
   boundingBox() const noexcept -> AxisAlignedBox2;
 
-  PURE [[nodiscard]] auto
-  faceContaining(Point2 const & p) const noexcept -> I;
+  PURE [[nodiscard]] constexpr auto
+  faceContaining(Point2 const & p) const noexcept -> Int;
 
-  void
-  flipFace(I i) noexcept;
-
-  void
-  mortonSort();
-
-  void
-  mortonSortFaces();
-
-  void
-  mortonSortVertices();
-
-  void
-  populateVF() noexcept;
-
-  void
-  validate();
-
-  //  //  void
-  //  //  toPolytopeSoup(PolytopeSoup & soup) const noexcept;
-
-  void
-  intersect(Ray2 const & ray, Vector<F> & intersections) const noexcept;
+//  void
+//  flipFace(Int i) noexcept;
+//
+//  void
+//  mortonSort();
+//
+//  void
+//  mortonSortFaces();
+//
+//  void
+//  mortonSortVertices();
+//
+//  void
+//  populateVF() noexcept;
+//
+//  void
+//  validate();
+//
+//  //  //  void
+//  //  //  toPolytopeSoup(PolytopeSoup & soup) const noexcept;
+//
+//  void
+//  intersect(Ray2 const & ray, Vector<F> & intersections) const noexcept;
 };
 
 //==============================================================================
 // Aliases
 //==============================================================================
 
-template <I P, I N>
+template <Int P, Int N>
 using FVM = FaceVertexMesh<P, N>;
 
 // Polynomial order
-template <I N>
+template <Int N>
 using LinearFVM = FVM<1, N>;
-template <I N>
+template <Int N>
 using QuadraticFVM = FVM<2, N>;
 
 // Number of vertices per face
@@ -164,7 +168,7 @@ using Quad8FVM = QuadraticFVM<8>;
 // Constructors
 //==============================================================================
 
-template <I P, I N>
+template <Int P, Int N>
 constexpr FaceVertexMesh<P, N>::FaceVertexMesh(Vector<Point2> const & v,
                                                Vector<FaceConn> const & fv) noexcept
     : _v(v),
@@ -176,54 +180,65 @@ constexpr FaceVertexMesh<P, N>::FaceVertexMesh(Vector<Point2> const & v,
 // Accessors
 //==============================================================================
 
-template <I P, I N>
+template <Int P, Int N>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-FaceVertexMesh<P, N>::numVertices() const noexcept -> I
+FaceVertexMesh<P, N>::numVertices() const noexcept -> Int
 {
   return _v.size();
 }
 
-template <I P, I N>
+template <Int P, Int N>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-FaceVertexMesh<P, N>::numFaces() const noexcept -> I
+FaceVertexMesh<P, N>::numFaces() const noexcept -> Int
 {
   return _fv.size();
 }
 
-template <I P, I N>
+template <Int P, Int N>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-FaceVertexMesh<P, N>::getVertex(I i) const noexcept -> Point2
+FaceVertexMesh<P, N>::getVertex(Int i) const noexcept -> Point2
 {
   return _v[i];
 }
 
-template <I P, I N>
+template <Int P, Int N>
 HOSTDEV [[nodiscard]] constexpr auto
 FaceVertexMesh<P, N>::vertices() noexcept -> Vector<Point2> &
 {
   return _v;
 }
 
-template <I P, I N>
+template <Int P, Int N>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-FaceVertexMesh<P, N>::getEdge(I const iface, I const iedge) const noexcept -> Edge
+FaceVertexMesh<P, N>::getEdge(Int const iface, Int const iedge) const noexcept -> Edge
 {
+  ASSERT_ASSUME(0 <= iface);
   ASSERT(iface < numFaces());
   if constexpr (P == 1) {
-    return LineSegment2(_v[_fv[iface][iedge]], _v[_fv[iface][(iedge + 1) % N]]);
+    ASSERT_ASSUME(0 <= iedge);
+    ASSERT_ASSUME(iedge < N);
+    return (iedge < N - 1) ? LineSegment2(_v[_fv[iface][iedge]], _v[_fv[iface][iedge + 1]]) :
+                             LineSegment2(_v[_fv[iface][N - 1]], _v[_fv[iface][0]]);
   } else if constexpr (P == 2) {
-    I constexpr m = N / 2;
-    return QuadraticSegment2(_v[_fv[iface][iedge]], _v[_fv[iface][(iedge + 1) % N]],
-                             _v[_fv[iface][iedge + m]]);
+    Int constexpr m = N / 2;
+    ASSERT_ASSUME(0 <= iedge);
+    ASSERT_ASSUME(iedge < m);
+    return (iedge < m - 1) ? QuadraticSegment2(_v[_fv[iface][iedge]],
+                                               _v[_fv[iface][iedge + 1]],
+                                               _v[_fv[iface][iedge + m]]) :
+                             QuadraticSegment2(_v[_fv[iface][m - 1]],
+                                               _v[_fv[iface][0]],
+                                               _v[_fv[iface][N - 1]]);
   } else {
     __builtin_unreachable();
   }
 }
 
-template <I P, I N>
+template <Int P, Int N>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-FaceVertexMesh<P, N>::getFace(I i) const noexcept -> Face
+FaceVertexMesh<P, N>::getFace(Int i) const noexcept -> Face
 {
+  ASSERT_ASSUME(0 <= i);
   ASSERT(i < numFaces());
   if constexpr (P == 1 && N == 3) {
     return Triangle2(_v[_fv[i][0]], _v[_fv[i][1]], _v[_fv[i][2]]);
@@ -241,25 +256,74 @@ FaceVertexMesh<P, N>::getFace(I i) const noexcept -> Face
   }
 }
 
-template <I P, I N>
+template <Int P, Int N>
 PURE HOSTDEV constexpr auto
-FaceVertexMesh<P, N>::vertexFaceOffsets() const noexcept -> Vector<I> const &
+FaceVertexMesh<P, N>::vertexFaceOffsets() const noexcept -> Vector<Int> const &
 {
   return _vf_offsets;
 }
 
-template <I P, I N>
+template <Int P, Int N>
 PURE HOSTDEV constexpr auto
-FaceVertexMesh<P, N>::vertexFaceConn() const noexcept -> Vector<I> const &
+FaceVertexMesh<P, N>::vertexFaceConn() const noexcept -> Vector<Int> const &
 {
   return _vf;
 }
 
-template <I P, I N>
+template <Int P, Int N>
 PURE HOSTDEV constexpr auto
 FaceVertexMesh<P, N>::faceVertexConn() const noexcept -> Vector<FaceConn> const &
 {
   return _fv;
+}
+
+//==============================================================================
+// Methods
+//==============================================================================
+
+template <Int P, Int N>
+constexpr void
+FaceVertexMesh<P, N>::addVertex(Point2 const & v) noexcept
+{
+  _v.push_back(v);
+}
+
+template <Int P, Int N>
+constexpr void
+FaceVertexMesh<P, N>::addFace(FaceConn const & conn) noexcept
+{
+  _fv.push_back(conn);
+}
+
+template <Int P, Int N>
+PURE constexpr auto
+FaceVertexMesh<P, N>::boundingBox() const noexcept -> AxisAlignedBox2
+{
+  if constexpr (P == 1) {
+    return um2::boundingBox(_v.cbegin(), _v.cend());
+  } else if constexpr (P == 2) {
+    auto box = getFace(0).boundingBox();
+    for (Int i = 1; i < numFaces(); ++i) {
+      box += getFace(i).boundingBox();
+    }
+    return box;
+  } else {
+    __builtin_unreachable();
+  }
+}
+
+template <Int P, Int N>
+PURE constexpr auto
+FaceVertexMesh<P, N>::faceContaining(Point2 const & p) const noexcept -> Int
+{
+  // Orient all edges such that 
+  static_assert(false));
+  for (Int i = 0; i < numFaces(); ++i) {
+    if (getFace(i).contains(p)) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 } // namespace um2
