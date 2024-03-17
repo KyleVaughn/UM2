@@ -1,14 +1,21 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-ninterp = 100
+ninterp = 1000
 
 p0 = np.array([0, 0])
 p1 = np.array([2, 0])
-p2 = np.array([0, 1])
+p2 = np.array([4, 3])
 
-origin = np.array([-0.3625, 0.5])
-direction = np.array([0.672188, 0.740381])
+origin = np.array([-0.204166666666667, 1.33403790087464])
+direction = np.array([0.933051977273537, 0.359741584621439])
+
+# Point on ray
+p = np.array([4.06257201747618, 2.97909452449846])
+plt.scatter(p[0], p[1], c='k')
+# Point on quadratic segment
+q_closest = np.array([4.0625, 2.97916666666667])
+plt.scatter(q_closest[0], q_closest[1], c='g')
 
 def quadratic_segment_interp(p0, p1, p2, r):
     w0 = (2 * r - 1) * (r - 1)
@@ -20,10 +27,12 @@ def ray_interp(origin, direction, r):
     return origin + r * direction
 
 rr = np.linspace(0, 1, ninterp)
+tt = np.linspace(0, 5, ninterp)
 
 qpoints_x = np.zeros(ninterp)
 qpoints_y = np.zeros(ninterp)
 for i in range(ninterp):
+    #points = quadratic_segment_interp(a, b, c, rr[i])
     points = quadratic_segment_interp(p0, p1, p2, rr[i])
     qpoints_x[i] = points[0]
     qpoints_y[i] = points[1]
@@ -31,7 +40,7 @@ for i in range(ninterp):
 rpoints_x = np.zeros(ninterp)
 rpoints_y = np.zeros(ninterp)
 for i in range(ninterp):
-    points = ray_interp(origin, direction, rr[i])
+    points = ray_interp(origin, direction, tt[i])
     rpoints_x[i] = points[0]
     rpoints_y[i] = points[1]
 

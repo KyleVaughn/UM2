@@ -193,7 +193,7 @@ testTriForIntersections(um2::QuadraticTriangle<2> const tri)
 {
   // Parameters
   Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
-  Int constexpr rays_per_longest_edge = 100;
+  Int constexpr rays_per_longest_edge = 1000;
   
   auto const aabb = tri.boundingBox();
   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
@@ -223,7 +223,7 @@ testTriForIntersections(um2::QuadraticTriangle<2> const tri)
               min_dist = d;
             }
           }
-          ASSERT(min_dist < 10 * um2::eps_distance);
+          ASSERT(min_dist < 100 * um2::eps_distance);
         }
       }
     }

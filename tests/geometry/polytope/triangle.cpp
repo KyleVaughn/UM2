@@ -155,8 +155,8 @@ void
 testTriForIntersections(um2::Triangle<2> const tri)
 {
   // Parameters
-  Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
-  Int constexpr rays_per_longest_edge = 200;
+  Int constexpr num_angles = 64; // Angles γ ∈ (0, π).
+  Int constexpr rays_per_longest_edge = 1000;
 
   auto aabb = tri.boundingBox();
   aabb.scale(castIfNot<Float>(1.1));

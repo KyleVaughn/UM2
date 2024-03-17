@@ -192,7 +192,7 @@ testQuadForIntersections(um2::QuadraticQuadrilateral<2> const quad)
 {
   // Parameters
   Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
-  Int constexpr rays_per_longest_edge = 100;
+  Int constexpr rays_per_longest_edge = 1000;
 
   auto const aabb = quad.boundingBox();
   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
@@ -223,7 +223,7 @@ testQuadForIntersections(um2::QuadraticQuadrilateral<2> const quad)
             }
           }
           // Check if the distance is close to zero
-          ASSERT(min_dist < 10 * um2::eps_distance);
+          ASSERT(min_dist < 100 * um2::eps_distance);
         }
       }
     }

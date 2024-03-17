@@ -29,6 +29,8 @@
 namespace um2
 {
 
+// NOTE: If you change these 3 values, you had better find every instance
+// of them in the code and tests and make sure the values are appropriate.
 inline constexpr Float eps_distance = castIfNot<Float>(1e-6); // 0.1 micron
 inline constexpr Float eps_distance2 = castIfNot<Float>(1e-12);
 inline constexpr Float inf_distance = castIfNot<Float>(1e8); // 1000 km

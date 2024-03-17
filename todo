@@ -1,3 +1,5 @@
+Check polygon tests for rigor
+
 tighten epsilon on intersection for quadratic segment/faces
 
 more robust testing for mesh functions

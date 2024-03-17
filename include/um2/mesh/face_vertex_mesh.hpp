@@ -317,7 +317,7 @@ PURE constexpr auto
 FaceVertexMesh<P, N>::faceContaining(Point2 const & p) const noexcept -> Int
 {
   // Orient all edges such that 
-  static_assert(false));
+  //static_assert(false));
   for (Int i = 0; i < numFaces(); ++i) {
     if (getFace(i).contains(p)) {
       return i;

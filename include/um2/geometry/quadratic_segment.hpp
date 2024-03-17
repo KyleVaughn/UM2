@@ -664,13 +664,6 @@ QuadraticSegment<D>::distanceTo(Vertex const & p) const noexcept -> Float
 
 // The ray: R(r) = O + rD
 // The quadratic segment: Q(s) = C + sB + s²A,
-// where
-//  C = P₁
-//  B = 3V₁₃ + V₂₃    = -3q[1] -  q[2] + 4q[3]
-//  A = -2(V₁₃ + V₂₃) =  2q[1] + 2q[2] - 4q[3]
-// and
-// V₁₃ = q[3] - q[1]
-// V₂₃ = q[3] - q[2]
 //
 // O + rD = C + sB + s²A                          subtracting C from both sides
 // rD = (C - O) + sB + s²A                        cross product with D (distributive)
@@ -696,13 +689,11 @@ PURE HOSTDEV constexpr auto
 QuadraticSegment<D>::intersect(Ray2 const ray) const noexcept -> Vec2F
 requires(D == 2)
 {
-  //Vec2F const v01 = q[1] - q[0];
-  Vec2F const v02 = _v[2] - _v[0];
-  Vec2F const v12 = _v[2] - _v[1];
+  auto const coeffs = getPolyCoeffs();
 
-  Vec2F const va = -2 * (v02 + v12); // -2(V₁₃ + V₂₃)
-  Vec2F const vb = 3 * v02 + v12;    // 3V₁₃ + V₂₃
-  Vec2F const vc = _v[0];
+  Vec2F const vc = coeffs[0];
+  Vec2F const vb = coeffs[1];
+  Vec2F const va = coeffs[2];
 
   Vec2F const vd = ray.direction();
   Vec2F const vo = ray.origin();

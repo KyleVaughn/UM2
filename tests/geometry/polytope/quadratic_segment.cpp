@@ -623,16 +623,20 @@ void
 testEdgeForIntersections(um2::QuadraticSegment2 const & q)
 {
   // Parameters
+  // Tested up to 128, 10000 with
+  // um2::abs(p) < 3e-6 || um2::abs(q_over_p) > 1500
+  // on the cubic equation single root case
   Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
   Int constexpr rays_per_longest_edge = 1000;
 
-  auto constexpr eps_pt = 2e-2;
+  auto constexpr eps_pt = 1e-4;
 
   auto aabb = q.boundingBox();
   aabb.scale(castIfNot<Float>(1.1));
   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
   auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
   Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
+//  uint64_t tested_rays = 0;
   // For each angle
   for (Int ia = 0; ia < num_angles; ++ia) {
     Float const angle = pi_deg * static_cast<Float>(2 * ia + 1);
@@ -641,6 +645,7 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
     Int const num_rays = params.getTotalNumRays();
     // For each ray
     for (Int i = 0; i < num_rays; ++i) {
+//      ++tested_rays; 
       auto const ray = params.getRay(i);
       auto intersections = q.intersect(ray);
       for (Int j = 0; j < 2; ++j) {
@@ -687,7 +692,7 @@ testPolyCoeffs(um2::QuadraticSegment<D> const & q)
   for (Int i = 0; i < num_points; ++i) {
     Float const r = static_cast<Float>(i) / static_cast<Float>(num_points - 1);
     auto const p_ref = q(r);
-    auto const p = c + r * b + (r * r) * a;
+    auto const p = c + r * (b + r * a);
     ASSERT(p.isApprox(p_ref));
   }
 }

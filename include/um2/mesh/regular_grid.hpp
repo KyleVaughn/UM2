@@ -386,7 +386,8 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::maxima(Int const i) const noexcept -> Float
 {
-  ASSERT_ASSUME(0 <= i && i < D);
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < D);
   return _minima[i] + _spacing[i] * static_cast<Float>(_num_cells[i]);
 }
 
