@@ -333,7 +333,7 @@ PolytopeSoup::getElementArea(Int const i) const -> Float
   default:
     LOG_ERROR("Unsupported element type");
   }
-  return -1000000; 
+  return -1000000;
 }
 
 auto
@@ -418,6 +418,77 @@ PolytopeSoup::getElementCentroid(Int const i) const -> Point3
   }
   ASSERT_NEAR(c[2], z, eps_distance);
   return c;
+}
+
+auto
+PolytopeSoup::getElementMeanChordLength(Int const i) const -> Float
+{
+  ASSERT(i < _element_types.size());
+
+  // Must assume that the vertices of the elements have the same z-coordinate.
+
+  auto const elem_type = _element_types[i];
+  auto const istart = _element_offsets[i];
+
+  // The z-coordinate should be the same for all vertices of the element.
+  Float mcl = 0;
+#if UM2_ENABLE_ASSERTS
+  Float const z = _vertices[_element_conn[istart]][2];
+#endif
+
+  switch (elem_type) {
+  case VTKElemType::Triangle: {
+    Vec<3, Point2> pts;
+    for (Int j = 0; j < 3; ++j) {
+      auto const p = _vertices[_element_conn[istart + j]];
+      pts[j][0] = p[0];
+      pts[j][1] = p[1];
+      ASSERT_NEAR(p[2], z, eps_distance);
+    }
+    Triangle2 const tri(pts);
+    mcl = tri.meanChordLength();
+    break;
+  }
+  case VTKElemType::Quad: {
+    Vec<4, Point2> pts;
+    for (Int j = 0; j < 4; ++j) {
+      auto const p = _vertices[_element_conn[istart + j]];
+      pts[j][0] = p[0];
+      pts[j][1] = p[1];
+      ASSERT_NEAR(p[2], z, eps_distance);
+    }
+    Quadrilateral2 const quad(pts);
+    mcl = quad.meanChordLength();
+    break;
+  }
+  case VTKElemType::QuadraticTriangle: {
+    Vec<6, Point2> pts;
+    for (Int j = 0; j < 6; ++j) {
+      auto const p = _vertices[_element_conn[istart + j]];
+      pts[j][0] = p[0];
+      pts[j][1] = p[1];
+      ASSERT_NEAR(p[2], z, eps_distance);
+    }
+    QuadraticTriangle2 const tri6(pts);
+    mcl = tri6.meanChordLength();
+    break;
+  }
+  case VTKElemType::QuadraticQuad: {
+    Vec<8, Point2> pts;
+    for (Int j = 0; j < 8; ++j) {
+      auto const p = _vertices[_element_conn[istart + j]];
+      pts[j][0] = p[0];
+      pts[j][1] = p[1];
+      ASSERT_NEAR(p[2], z, eps_distance);
+    }
+    QuadraticQuadrilateral2 const quad8(pts);
+    mcl = quad8.meanChordLength();
+    break;
+  }
+  default:
+    LOG_ERROR("Unsupported element type");
+  }
+  return mcl;
 }
 
 //==============================================================================
@@ -1341,7 +1412,7 @@ vtkParseUnstructuredGrid(PolytopeSoup & soup, std::ifstream & file, char * const
   file.getline(line, smax_line_length);
   line_view = StringView(line);
   if (!line_view.starts_with("CELL_TYPES")) {
-    LOG_ERROR("Expected CELL_TYPES"); 
+    LOG_ERROR("Expected CELL_TYPES");
     return;
   }
 
@@ -1507,13 +1578,13 @@ getH5DataType() -> H5::PredType
 {
   if constexpr (std::same_as<T, float>) {
     return H5::PredType::NATIVE_FLOAT;
-  } 
+  }
   if constexpr (std::same_as<T, double>) {
     return H5::PredType::NATIVE_DOUBLE;
-  } 
+  }
   if constexpr (std::same_as<T, int8_t>) {
     return H5::PredType::NATIVE_INT8;
-  } 
+  }
   if constexpr (std::same_as<T, int16_t>) {
     return H5::PredType::NATIVE_INT16;
   }
@@ -1528,13 +1599,13 @@ getH5DataType() -> H5::PredType
   }
   if constexpr (std::same_as<T, uint16_t>) {
     return H5::PredType::NATIVE_UINT16;
-  } 
+  }
   if constexpr (std::same_as<T, uint32_t>) {
     return H5::PredType::NATIVE_UINT32;
   }
   if constexpr (std::same_as<T, uint64_t>) {
     return H5::PredType::NATIVE_UINT64;
-  } 
+  }
   ASSERT(false);
   return H5::PredType::NATIVE_FLOAT;
 }
@@ -1641,7 +1712,7 @@ PolytopeSoup::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
     Int topo_ctr = 0;
     for (Int i = 0; i < nelems; ++i) {
       auto const topo_type = static_cast<int8_t>(vtkToXDMFElemType(_element_types[i]));
-      if (topo_type == static_cast<int8_t>(XDMFElemType::None)) { 
+      if (topo_type == static_cast<int8_t>(XDMFElemType::None)) {
         logger::error("Unsupported polytope type");
       }
       ASSERT(topo_type > 0);
@@ -2174,7 +2245,7 @@ readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
 #endif
     H5::IntType const datatype = dataset.getIntType();
     size_t const datatype_size = datatype.getSize();
-    ASSERT(datatype_size == strto<size_t>(precision.data(), &end)); 
+    ASSERT(datatype_size == strto<size_t>(precision.data(), &end));
     ASSERT(end != nullptr);
     H5::DataSpace const dataspace = dataset.getSpace();
 #if UM2_ENABLE_ASSERTS
@@ -2231,7 +2302,7 @@ readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
         // NOLINTNEXTLINE(cppcoreguidelines-avoid-goto
         goto label_xdmf_elset_return;
       }
-      
+
       // Get the precision
       String const att_precision(xattdataitem.attribute("Precision").value());
       if (att_precision != "4" && att_precision != "8") {
@@ -2266,7 +2337,7 @@ readXDMFElsets(pugi::xml_node const & xgrid, H5::H5File const & h5file,
 #endif
       att_datatype = att_dataset.getFloatType();
       att_datatype_size = att_datatype.getSize();
-      ASSERT(att_datatype_size == strto<size_t>(att_precision.data(), &att_end)); 
+      ASSERT(att_datatype_size == strto<size_t>(att_precision.data(), &att_end));
       ASSERT(att_end != nullptr);
       H5::DataSpace const att_dataspace = att_dataset.getSpace();
 #if UM2_ENABLE_ASSERTS
@@ -2344,7 +2415,7 @@ readXDMFFile(String const & filename, PolytopeSoup & soup)
   if (last_slash == String::npos) {
     last_slash = 0;
   }
-  Int const h5filepath_end = last_slash == 0 ? 0 : last_slash + 1; 
+  Int const h5filepath_end = last_slash == 0 ? 0 : last_slash + 1;
   ASSERT(h5filepath_end < filename.size());
   String const h5filename =
       filename.substr(h5filepath_end, filename.size() - 5 - h5filepath_end) + ".h5";
@@ -2448,22 +2519,20 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
   }
   Int const num_elems = soup.numElems();
   Vector<Int> nonzero_ids;
-  Vector<Float> nonzero_power;
   // Only compute non-zero aabbs, but allocate for all
   // elements so that we don't have to find the indices
   Vector<AxisAlignedBox2> aabbs(num_elems);
+
   nonzero_ids.reserve(num_elems);
-  nonzero_power.reserve(num_elems);
   for (Int i = 0; i < num_elems; ++i) {
     if (data[i] > 0.0) {
       nonzero_ids.push_back(i);
-      nonzero_power.push_back(data[i]);
       AxisAlignedBox3 const aabb = soup.getElementBoundingBox(i);
       Point2 const minima(aabb.xMin(), aabb.yMin());
       Point2 const maxima(aabb.xMax(), aabb.yMax());
       aabbs[i] = AxisAlignedBox2(minima, maxima);
       // Scale the box up by 1% to avoid intersection issues
-      auto constexpr scale = castIfNot<Float>(1.01); 
+      auto constexpr scale = castIfNot<Float>(1.01);
       aabbs[i].scale(scale);
       ASSERT(ids[i] == i);
     }
@@ -2472,8 +2541,6 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
     logger::error("No nonzero power data found");
     return subset_pc;
   }
-  // Add the nonzero power data to the soup
-//  soup.addElset("nonzero_power", nonzero_ids, nonzero_power);
 
   LOG_DEBUG("Grouping faces into subsets");
   // Now we wist to sort the ids into connected subsets
@@ -2494,7 +2561,7 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
             subset_aabb += i_aabb;
             is_neighbor = true;
             goto next_element;
-          } 
+          }
         } // for j
       } // intersects
     } // for iset
@@ -2512,7 +2579,7 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
   // We must now merge adjacent subsets
   // We keep iterating until no more merges are possible
   Vector<Vector<Int>> subset_ids_copy = subset_ids;
-  bool done_merging = false; 
+  bool done_merging = false;
   Int merge_count = 0;
   while (!done_merging) {
     done_merging = true;
@@ -2574,7 +2641,7 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
   //    subset_power.push_back(data[i]);
   //  }
   //  String subset_count_str(subset_count);
-  //  String subset_name("power_region_"); 
+  //  String subset_name("power_region_");
   //  // pad with zeros until 5 digits
   //  while (subset_count_str.size() < 5) {
   //    subset_count_str = "0" + subset_count_str;
@@ -2595,11 +2662,12 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
       Point3 const c = soup.getElementCentroid(iface);
       area += a;
       centroid += (a * c);
-      total_power += data[iface];
+      // The power from MPACT is actually power density... Weight by area
+      total_power += data[iface] * a;
       ASSERT(data[iface] > 0);
     }
     centroid /= area;
-    subset_pc.emplace_back(total_power, centroid); 
+    subset_pc.emplace_back(total_power, centroid);
   }
   return subset_pc;
 }

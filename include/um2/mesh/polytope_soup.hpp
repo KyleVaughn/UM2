@@ -126,6 +126,9 @@ public:
   PURE [[nodiscard]] auto
   getElementCentroid(Int i) const -> Point3;
 
+  PURE [[nodiscard]] auto
+  getElementMeanChordLength(Int i) const -> Float;
+
   [[nodiscard]] constexpr auto
   getElemTypes() const -> Vector<VTKElemType>;
 
