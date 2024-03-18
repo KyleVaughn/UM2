@@ -105,8 +105,14 @@ public:
   PURE [[nodiscard]] auto
   compare(PolytopeSoup const & other) const -> int;
 
+  // If each element has a vertex with the same ID
   PURE [[nodiscard]] auto
   elementsShareVertex(Int i, Int j) const -> bool;
+
+  // If each element has a vertex in approximately the same position.
+  // Useful when comparing non-manifold meshes.
+  PURE [[nodiscard]] auto
+  elementsShareVertexApprox(Int i, Int j) const -> bool;
 
   void
   getElement(Int i, VTKElemType & type, Vector<Int> & conn) const;

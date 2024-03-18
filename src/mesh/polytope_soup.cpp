@@ -144,6 +144,27 @@ PolytopeSoup::elementsShareVertex(Int const i, Int const j) const -> bool
   return false;
 }
 
+auto
+PolytopeSoup::elementsShareVertexApprox(Int const i, Int const j) const -> bool
+{
+  ASSERT(i < _element_types.size());
+  ASSERT(j < _element_types.size());
+  auto const istart = _element_offsets[i];
+  auto const iend = _element_offsets[i + 1];
+  auto const jstart = _element_offsets[j];
+  auto const jend = _element_offsets[j + 1];
+  for (Int k = istart; k < iend; ++k) {
+    auto const & vk = _vertices[_element_conn[k]];
+    for (Int l = jstart; l < jend; ++l) {
+      auto const & vl = _vertices[_element_conn[l]];
+      if (vk.isApprox(vl)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 //==============================================================================
 // getElement
 //==============================================================================
@@ -2441,8 +2462,8 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
       Point2 const minima(aabb.xMin(), aabb.yMin());
       Point2 const maxima(aabb.xMax(), aabb.yMax());
       aabbs[i] = AxisAlignedBox2(minima, maxima);
-      // Scale the box up by 1/1000 to avoid numerical issues
-      auto constexpr scale = castIfNot<Float>(1.001); 
+      // Scale the box up by 1% to avoid intersection issues
+      auto constexpr scale = castIfNot<Float>(1.01); 
       aabbs[i].scale(scale);
       ASSERT(ids[i] == i);
     }
@@ -2454,6 +2475,7 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
   // Add the nonzero power data to the soup
 //  soup.addElset("nonzero_power", nonzero_ids, nonzero_power);
 
+  LOG_DEBUG("Grouping faces into subsets");
   // Now we wist to sort the ids into connected subsets
   Vector<Vector<Int>> subset_ids;
   Vector<AxisAlignedBox2> subset_aabbs;
@@ -2467,7 +2489,7 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
       // current element, then the current element may be a neighbor
       if (i_aabb.intersects(subset_aabb)) {
         for (auto const j : subset) {
-          if (soup.elementsShareVertex(i, j)) {
+          if (soup.elementsShareVertexApprox(i, j)) {
             subset.push_back(i);
             subset_aabb += i_aabb;
             is_neighbor = true;
@@ -2486,12 +2508,13 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
     }
   } // for i
 
+  LOG_DEBUG("Merging subsets");
   // We must now merge adjacent subsets
   // We keep iterating until no more merges are possible
   Vector<Vector<Int>> subset_ids_copy = subset_ids;
   bool done_merging = false; 
   Int merge_count = 0;
-  while (!done_merging && merge_count < 10000) {
+  while (!done_merging) {
     done_merging = true;
     for (Int i = 0; i < subset_ids_copy.size(); ++i) {
       auto const & i_aabb = subset_aabbs[i];
@@ -2504,7 +2527,7 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
         }
         for (auto const i_id : subset_ids_copy[i]) {
           for (auto const j_id : subset_ids_copy[j]) {
-            if (soup.elementsShareVertex(i_id, j_id)) {
+            if (soup.elementsShareVertexApprox(i_id, j_id)) {
               // Merge the subsets
               Int const set_i_size = subset_ids_copy[i].size();
               Int const set_j_size = subset_ids_copy[j].size();
@@ -2531,6 +2554,7 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
     next_merge:
     ++merge_count;
   } // while
+  um2::logger::debug("Merged ", merge_count, " subsets");
 
   // We will now remove empty subsets and place the merged subsets in the
   // original subset_ids vector
@@ -2541,25 +2565,26 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
     }
   }
 
-//  // Add each subset to the soup
-//  Int subset_count = 0;
-//  for (auto const & subset : subset_ids) {
-//    Vector<Float> subset_power;
-//    subset_power.reserve(subset.size());
-//    for (auto const i : subset) {
-//      subset_power.push_back(data[i]);
-//    }
-//    String subset_count_str(subset_count);
-//    String subset_name("power_region_"); 
-//    // pad with zeros until 5 digits
-//    while (subset_count_str.size() < 5) {
-//      subset_count_str = "0" + subset_count_str;
-//    }
-//    subset_name += subset_count_str;
-//    soup.addElset(subset_name, subset, subset_power);
-//    ++subset_count;
-//  }
+  //// Add each subset to the soup
+  //Int subset_count = 0;
+  //for (auto const & subset : subset_ids) {
+  //  Vector<Float> subset_power;
+  //  subset_power.reserve(subset.size());
+  //  for (auto const i : subset) {
+  //    subset_power.push_back(data[i]);
+  //  }
+  //  String subset_count_str(subset_count);
+  //  String subset_name("power_region_"); 
+  //  // pad with zeros until 5 digits
+  //  while (subset_count_str.size() < 5) {
+  //    subset_count_str = "0" + subset_count_str;
+  //  }
+  //  subset_name += subset_count_str;
+  //  soup.addElset(subset_name, subset, subset_power);
+  //  ++subset_count;
+  //}
 
+  LOG_DEBUG("Computing total powers and centroids");
   subset_pc.reserve(subset_ids.size());
   for (auto const & subset : subset_ids) {
     Float total_power = 0;

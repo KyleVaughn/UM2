@@ -1,6 +1,8 @@
-Check polygon tests for rigor
-
-tighten epsilon on intersection for quadratic segment/faces
+Random points in scaled bounding box
+-> QuadraticSegment isLeft
+  Verify using pointClosestTo(p), then use the vector from p_closest
+  to p along with the tangent vector (jacobian) at p_closest to determin if left or right
+-> QuadraticTriangle an QuadraticQuad contains
 
 more robust testing for mesh functions
 -> faceContaining 

@@ -24,7 +24,9 @@ solveCubic(Float a, Float b, Float c, Float d) -> Vec3F
   // https://stackoverflow.com/questions/27176423/function-to-solve-cubic-equation-analytically
 
   // Check that a is not zero.
+#if UM2_ENABLE_ASSERTS
   auto constexpr eps = castIfNot<Float>(2e-7);
+#endif
   auto constexpr invalid = castIfNot<Float>(1e16);
   ASSERT(um2::abs(a) > eps);
   
