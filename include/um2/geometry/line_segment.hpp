@@ -314,7 +314,7 @@ requires(D == 2)
   Float const z = v.cross(ray.direction());
   Float const s = u.cross(ray.direction()) / z;
   Float const r = u.cross(v) / z;
-  return (0 <= s && s <= 1) ? (0 <= r ? r : inf_distance) : inf_distance;
+  return (0 <= s && s <= 1 && 0 <= r) ? r : -1; // -1 is used to indicate no intersection
 }
 
 } // namespace um2

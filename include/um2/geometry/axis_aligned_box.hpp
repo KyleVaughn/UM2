@@ -114,7 +114,7 @@ public:
   isApprox(AxisAlignedBox<D> const & other) const noexcept -> bool;
 
   // Returns the distance along the ray to the intersection point with the box.
-  // r in [0, inf_distance<T>]. A miss is indicated by r = inf_distance<T>.
+  // r in [0, inf_distance<T>]. A miss is indicated by r = -1 
   // Note: ray(r) is the intersection point.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   intersect(Ray<D> const & ray) const noexcept -> Vec2F;
@@ -371,7 +371,7 @@ AxisAlignedBox<D>::intersect(Ray<D> const & ray) const noexcept -> Vec2F
     tmin = um2::min(um2::max(vt1[i], tmin), um2::max(vt2[i], tmin));
     tmax = um2::max(um2::min(vt1[i], tmax), um2::min(vt2[i], tmax));
   }
-  return tmin <= tmax ? Vec2F(tmin, tmax) : Vec2F(inf_distance, inf_distance);
+  return tmin <= tmax ? Vec2F(tmin, tmax) : Vec2F(-1, -1); // -1 indicates a miss
 }
 
 template <Int D>
@@ -387,7 +387,7 @@ AxisAlignedBox<D>::intersect(Ray<D> const & ray, Vec<D, Float> const & inv_dir) 
     tmin = um2::min(um2::max(vt1[i], tmin), um2::max(vt2[i], tmin));
     tmax = um2::max(um2::min(vt1[i], tmax), um2::min(vt2[i], tmax));
   }
-  return tmin <= tmax ? Vec2F(tmin, tmax) : Vec2F(inf_distance, inf_distance);
+  return tmin <= tmax ? Vec2F(tmin, tmax) : Vec2F(-1, -1); // -1 indicates a miss
 }
 
 //==============================================================================

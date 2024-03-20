@@ -152,8 +152,8 @@ TEST_CASE(intersect_ray)
 
   auto const ray0_miss = um2::Ray2(um2::Point2(20, 0), um2::Point2(0, -1));
   auto const intersection0_miss = box.intersect(ray0_miss);
-  ASSERT(intersection0_miss[0] > 1000);
-  ASSERT(intersection0_miss[1] > 1000);
+  ASSERT(intersection0_miss[0] < 0 );
+  ASSERT(intersection0_miss[1] < 0 );
 
   // right
   auto const ray1 = um2::Ray<2>(um2::Point2(-half, half * 3), um2::Point2(1, 0));
@@ -163,8 +163,8 @@ TEST_CASE(intersect_ray)
 
   auto const ray1_miss = um2::Ray<2>(um2::Point2(0, 20), um2::Point2(-1, 0));
   auto const intersection1_miss = box.intersect(ray1_miss);
-  ASSERT(intersection1_miss[0] > 1000);
-  ASSERT(intersection1_miss[1] > 1000);
+  ASSERT(intersection1_miss[0] < 0);
+  ASSERT(intersection1_miss[1] < 0);
 
   // 45 degrees
   auto const ray2 = um2::Ray<2>(um2::Point2(0, 1), um2::Point2(1, 1).normalized());
@@ -174,8 +174,8 @@ TEST_CASE(intersect_ray)
 
   auto const ray2_miss = um2::Ray<2>(um2::Point2(0, 20), um2::Point2(-1, -1).normalized());
   auto const intersection2_miss = box.intersect(ray2_miss);
-  ASSERT(intersection2_miss[0] > 1000);
-  ASSERT(intersection2_miss[1] > 1000);
+  ASSERT(intersection2_miss[0] < 0);
+  ASSERT(intersection2_miss[1] < 0);
 
   auto const ray3 =
       um2::Ray<2>(um2::Point2(half, half * 3), um2::Point2(1, 1).normalized());

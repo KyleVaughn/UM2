@@ -2,7 +2,8 @@
 OVERVIEW
 ===============================================================================
 This directory contains various geometry related classes and functions. Most of
-the classes are straight forward, but some deserve a bit of explanation.
+the classes and functions are straight forward, but some deserve a bit of 
+explanation.
 
 Point
 ------
@@ -36,3 +37,10 @@ See "The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th
 
 - Tetrahedron             (K = 3, P = 1, N = 4)
 ... etc.
+
+intersect(Ray)
+--------------
+Any geometric objects which have a function Object.intersect(Ray) return the parametric
+coordinate/coordinates such that Ray(r) = origin + r*direction gives the point/points
+of intersection. r must be in range [0, inf). If r is negative, or there is no intersection,
+then the function returns -1 as the coordinate.

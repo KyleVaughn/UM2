@@ -524,9 +524,9 @@ TEST_CASE(pointClosestTo)
   testPCT(makeSeg8<2>());
 }
 
-//==============================================================================----------
+//==============================================================================
 // enclosedArea
-//==============================================================================----------
+//==============================================================================
 
 HOSTDEV
 void
@@ -546,18 +546,18 @@ testEnclosedArea(um2::QuadraticSegment2 const & q)
     origin[0] += dx;
     um2::Ray2 const ray(origin, dir);
     auto intersections = q.intersect(ray);
-    // Sort intersections
-    if (intersections[0] > intersections[1]) {
+    // Sort intersections biggest to smallest
+    if (intersections[0] < intersections[1]) {
       um2::swap(intersections[0], intersections[1]);
     }
     // Two valid intersections
-    if (intersections[1] < um2::inf_distance / 10) {
+    if (0 < intersections[1]) {
       auto const p0 = ray(intersections[0]);
       auto const p1 = ray(intersections[1]);
       auto const d = p0.distanceTo(p1);
       area += d * dx;
     // 1 valid intersection
-    } else if (intersections[0] < um2::inf_distance / 10) {
+    } else if (0 < intersections[0]) {
       auto const p0 = ray.origin();
       auto const p1 = ray(intersections[0]);
       auto const d = p0.distanceTo(p1);
@@ -600,9 +600,9 @@ TEST_CASE(enclosedArea)
   // NOLINTEND(cert-dcl03-c,misc-static-assert)
 }
 
-//==============================================================================----------
+//==============================================================================
 // enclosedCentroid
-//==============================================================================----------
+//==============================================================================
 
 HOSTDEV
 void
@@ -624,12 +624,12 @@ testEnclosedCentroid(um2::QuadraticSegment2 const & q)
     origin[0] += dx;
     um2::Ray2 const ray(origin, dir);
     auto intersections = q.intersect(ray);
-    // Sort intersections
-    if (intersections[0] > intersections[1]) {
+    // Sort intersections biggest to smallest
+    if (intersections[0] < intersections[1]) {
       um2::swap(intersections[0], intersections[1]);
     }
     // Two valid intersections
-    if (intersections[1] < um2::inf_distance / 10) {
+    if (0 < intersections[1]) {
       auto const p0 = ray(intersections[0]);
       auto const p1 = ray(intersections[1]);
       auto const d = p0.distanceTo(p1);
@@ -638,7 +638,7 @@ testEnclosedCentroid(um2::QuadraticSegment2 const & q)
       area += area_segment;
       centroid += area_segment * p_center;
     // 1 valid intersection
-    } else if (intersections[0] < um2::inf_distance / 10) {
+    } else if (0 < intersections[0]) {
       auto const p0 = ray.origin();
       auto const p1 = ray(intersections[0]);
       auto const d = p0.distanceTo(p1);
@@ -723,7 +723,7 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
       auto intersections = q.intersect(ray);
       for (Int j = 0; j < 2; ++j) {
         Float const r = intersections[j];
-        if (r < um2::inf_distance / 10) {
+        if (0 <= r) {
           um2::Point2 const p = ray(r);
           Float const s = q.pointClosestTo(p);
           um2::Point2 const q_closest = q(s);

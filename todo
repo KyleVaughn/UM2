@@ -1,3 +1,40 @@
+PRIOTIRY: intersect test for quadratic
+
+solveCubic see where wer get cancel
+
+
+optimalEps test, rotate the quadratic segments
+
+replace infinite distance with -1 in intersection and such
+
+Anywhere there is an epsilon there should be a routine for testing it over the parameter space
+  find epsilons in the code
+  Do parametric study
+  Create a directory for them
+  bisection method?
+    _> ask thomas about multivariate optimization
+
+
+  quadratic_segment
+    isLeft -> Solves quadratic
+    boundingBox -> A < eps
+    pointClosestTo 0-> cubic
+
+  math
+    cubic_equation
+
+    quadratic equation epsilon
+
+  solve quadratic
+
+check on all quadratic functions:
+  isLeft
+    - replace ax < eps with solveQuadratic
+  boundingBox
+    - address "streaight" ax
+  intersect
+    - replace logic with solveQuadratic
+
 test for max error over a range of cubic equation parameters
   -> isLeft
   -> pointClosestTo
@@ -13,8 +50,7 @@ heavy tests for all functions
       intersect
         -> um2::abs(a) < epsilon
 
-
-Floatind, Floator
+Check linear and quadratic functions for epsilons
 
 pointClosestTo more random
 make All computational geom tests use random

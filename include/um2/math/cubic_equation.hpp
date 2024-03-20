@@ -1,12 +1,8 @@
 #pragma once
 
-#include <um2/config.hpp>
-
-#include <um2/stdlib/assert.hpp>
-#include <um2/math/vec.hpp>
-#include <um2/stdlib/math.hpp>
-#include <um2/stdlib/numbers.hpp>
-#include <um2/common/cast_if_not.hpp>
+#include <um2/math/quadratic_equation.hpp>
+#include <um2/stdlib/math/trigonometric_functions.hpp>
+#include <um2/stdlib/math/inverse_trigonometric_functions.hpp>
 
 namespace um2
 {
@@ -23,22 +19,28 @@ solveCubic(Float a, Float b, Float c, Float d) -> Vec3F
   // https://en.wikipedia.org/wiki/Cubic_equation
   // https://stackoverflow.com/questions/27176423/function-to-solve-cubic-equation-analytically
 
-  // Check that a is not zero.
-#if UM2_ENABLE_ASSERTS
-  auto constexpr eps = castIfNot<Float>(2e-7);
-#endif
   auto constexpr invalid = castIfNot<Float>(1e16);
-  ASSERT(um2::abs(a) > eps);
+  Vec3F roots;
+  roots[0] = invalid;
+  roots[1] = invalid;
+  roots[2] = invalid;
+
+  auto constexpr eps = castIfNot<Float>(1e-8);
+  if (um2::abs(a) < eps) {
+    auto const quadratic_roots = solveQuadratic(b, c, d);
+    roots[0] = quadratic_roots[0];
+    roots[1] = quadratic_roots[1];
+    return roots;
+  }
   
   // Convert to depressed cubic t^3 + p*t + q = 0 (t = x - b / (3 * a))
   Float const p = (3 * a * c - b * b) / (3 * a * a);
   Float const q = (2 * b * b * b - 9 * a * b * c + 27 * a * a * d) / (27 * a * a * a);
   Float const q_over_p = q / p;
 
-  Vec3F roots = um2::Vec3F::zero() + invalid;
   // This is a check for the case when p is either small, or insignificant compared to q.
   // This is important, since we divide by p in the general case.
-  if (um2::abs(p) < 3e-6 || um2::abs(q_over_p) > 1500) {
+  if (um2::abs(p) < 5e-7 || um2::abs(q_over_p) > 1590) {
     // p = 0 -> t^3 = -q -> t = -q^(1/3)
     ASSERT(um2::abs(q) > eps);
     roots[0] = um2::cbrt(-q);

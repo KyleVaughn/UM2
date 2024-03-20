@@ -196,13 +196,11 @@ QuadraticSegment<D>::operator()(R const r) const noexcept -> Vertex
   // (2 * r - 1) *  r      * v1 +
   // -4 * r      * (r - 1) * v2
   auto const rr = static_cast<Float>(r);
-  Float const two_rr_1 = 2 * rr - 1;
-  Float const rr_1 = rr - 1;
+  return
+  (2 * rr - 1) * (rr - 1) * _v[0] +
+  (2 * rr - 1) *  rr      * _v[1] +
+  -4 * rr      * (rr - 1) * _v[2];
 
-  Float const w0 = two_rr_1 * rr_1;
-  Float const w1 = two_rr_1 * rr;
-  Float const w2 = -4 * rr * rr_1;
-  return w0 * _v[0] + w1 * _v[1] + w2 * _v[2];
 }
 
 //==============================================================================
@@ -240,6 +238,12 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D == 2)
 {
+  // If the segment is straight, then we can use the line segment's isLeft method.
+  // Note: LineSegment.isLeft(p) is equivalent to areCCW(v[0], v[1], p)
+  if (isStraight(*this)) {
+    return areCCW(_v[0], _v[1], p);
+  }
+
   // The quadratic segment has an equivalent quadratic Bezier curve.
   // The triangle formed by the control points of the quadratic Bezier curve
   // bound the curve. If p is not in this triangle we can ignore the curvature of the
@@ -258,11 +262,11 @@ QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D 
   // The point is in the bounding triangle, so we must perform further analysis.
   // To make the math easier, we transform the coordinate system so that v[0] is at the
   // origin and v[1] is on the x-axis. In particular, we want v[1][0] > 0.
-
   QuadraticSegment2 q(Point2(0, 0), _v[1] - _v[0], _v[2] - _v[0]);
   Mat2x2F const rot = q.getRotation();
   q[1] = rot * q[1];
   q[2] = rot * q[2];
+  // Successful rotation implies that q[1][1] == 0 and q[1][0] > 0.
   ASSERT(um2::abs(q[1][1]) < eps_distance);
   ASSERT(q[1][0] > 0);
   auto p_r = rot * (p - _v[0]);
@@ -274,8 +278,10 @@ QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D 
     q[2][1] = -q[2][1];
     p_r[1] = -p_r[1];
   }
-  ASSERT(q[1][0] > 0);
   ASSERT(q[2][1] >= 0);
+  // The point must be above the origin if it was in the bounding triangle.
+  ASSERT(p_r[1] >= 0);
+
 
   // Now, since we may have flipped the y-coordinates, we will always need to
   // account for this when we return the result.
@@ -286,26 +292,7 @@ QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D 
   // | true   | false        | false        |
   // | false  | false        | true         |
   // Or, simply: curves_right ? is_left : !is_left
-
-  // The point must be above the origin if it is in the bounding triangle.
-  ASSERT(p_r[1] >= 0);
-  //  // If the point is below the origin, then the point is right of the segment
-  //  if (p_r[1] < 0) {
-  //    return !curves_right;
-  //  }
-
-//  // If q[2][1] < eps_distance, then the segment is straight and we can exit early.
-//  // Note q[2][1] is positive.
-//  if (q[2][1] <= eps_distance) {
-//    // LineSegment2(q[0], q[1]).isLeft(p_r) is equivalent to areCCW(q[0], q[1], p_r)
-//    // areCCW(q[0], q[1], p_r) is equivalent to 0 <= (q[1] - q[0]).cross(p_r - q[0])
-//    // Since q[0] == (0, 0), we can simplify the cross product to q[1].cross(p_r).
-//    // q[1].cross(p_r) is equivalent to q[1][0] * p_r[1] - q[1][1] * p_r[0]
-//    // Since q[1][1] == 0, we can simplify the cross product to q[1][0] * p_r[1]
-//    // Since q[1][0] > 0, we can simplify further to p_r[1] >= 0
-//    bool const is_left = p_r[1] >= 0;
-//    return curves_right ? is_left : !is_left;
-//  }
+  // This is a negated logical XOR operation.
 
   // Now that the segment is aligned with the x-axis, the bounding box of the segment
   // if fairly tight. If the point is not in the bounding box, then it is left of the
@@ -315,11 +302,11 @@ QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D 
     return curves_right;
   }
 
-  // Otherwise, there is non-trivial curvature in the segment.
+  // At this point, we know that the segment has non-trivial curvature and that the point
+  // is in both the bounding triangle and the bounding box. Hence, we wish to determine
+  // if the point is under the curve to determine if it is to the left of the segment.
+  //
   // Find rx such that Q(rx)[0] = p_r[0].
-  // Use the y-coordinate/coordinates of the point/points to check if the point
-  // is to the left of the segment.
-  // We must also check that rx is in [0, 1] to ensure that the point is valid.
   //
   // Q(r) = C + rB + r²A
   // In this case:
@@ -339,6 +326,7 @@ QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D 
   Float const ay = -by; // q[1][1] == 0, by > 0 implies ay < 0
   ASSERT(by > 0);
 
+  // If ax is small, then we solve a linear equation.
   if (um2::abs(ax) < 4 * eps_distance) {
     // Hence we wish to solve 0 = -P_x + rB_x for r.
     ASSERT(um2::abs(bx) > eps_distance);
@@ -353,6 +341,8 @@ QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D 
 
   // Two roots
   Float const disc = bx * bx + 4 * ax * p_r[0];
+  // disc < 0 implies that the point is not in the bounding box, which we have already
+  // checked for.
   ASSERT_ASSUME(disc >= 0);
   Float const r1 = (-bx + um2::sqrt(disc)) / (2 * ax);
   Float const r2 = (-bx - um2::sqrt(disc)) / (2 * ax);
@@ -443,7 +433,7 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 QuadraticSegment<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 {
-  // Floatind the extrema by finding dx_i/dr = 0
+  // Find the extrema by finding dx_i/dr = 0
   // Q(r) = C + rB + r²A,
   // Q′(r) = B + 2rA,
   // 0 = B + 2rA ==> (r_i,...) = -B / (2A)
@@ -554,16 +544,24 @@ PURE HOSTDEV constexpr auto
 isStraight(QuadraticSegment<D> const & q) noexcept -> bool
 {
   // Q(r) = C + rB + r²A,
-  // if A is small, then the segment is straight.
-  // Drop the multiplication by 2
-  Point<D> const a = q[0] + q[1] - 2 * q[2];
-  // a is effectively the 2 * the displacement of the q[2] from the midpoint of
-  // q[0] and q[1]
+  // L(r) = P0 + r(P1 - P0) 
+  // Let D = P1 - P0. Note C = P0. 
+  // Q(r) - L(r) = r(B - D + rA)
+  // Note: B - D = -A
+  // Hence, Q(r) - L(r) = r(-A + rA) = r(r-1)A
+  // We see that r(r-1) achieves its maximum at r = 0.5, where it is 0.25.
+  // Hence, Q(r) achieves its maximum distance from L(r) at r = 0.5, and this
+  // distance is exactly ‖A‖ / 4.
+  // Hence, if ‖A‖ / 4 < eps_distance, then no point on the segment is more than
+  // eps_distance from the line segment.
   //
-  // Note: we can't just do LineSegment(q[0], q[1]).distanceTo(q[2]) < eps_distance
-  // The curve would not be straight if q[2] were very close to q[0] or q[1],
-  // despite passing the distance test.
-  return squaredNorm(a) < 16 * eps_distance2;
+  // For ease of computation, we use the squared norm.
+  // If ‖A‖² < 16 * eps_distance², then the segment is straight.
+  //
+  // Drop the multiplication by 2
+  Point<D> const half_a = q[0] + q[1] - 2 * q[2];
+  // ‖A / 2‖² == ‖A‖² / 4 
+  return half_a.squaredNorm() < 4 * eps_distance2;
 }
 
 //==============================================================================
@@ -590,8 +588,7 @@ PURE HOSTDEV constexpr auto
 enclosedCentroid(QuadraticSegment2 const & q) noexcept -> Vec2F
 {
   // For a quadratic segment, with P₁ = (0, 0), P₂ = (x₂, 0), and P₃ = (x₃, y₃),
-  // if the area bounded by q and the x-axis is convex, it can be
-  // shown that the centroid of the area bounded by the segment and x-axis
+  // it can be shown that the centroid of the area bounded by the segment and x-axis
   // is given by
   // C = (3x₂ + 4x₃, 4y₃) / 10
   //
@@ -712,35 +709,15 @@ requires(D == 2)
   Float const b = vb.cross(vd);   // (B × D)ₖ
   Float const c = voc.cross(vd); // ((C - O) × D)ₖ
 
-  Vec2F result(inf_distance, inf_distance);
-  auto constexpr epsilon = castIfNot<Float>(3e-6);
-  if (um2::abs(a) < epsilon) {
-    Float const s = -c / b;
+  Vec2F const s1s2 = solveQuadratic(a, b, c);
+  Vec2F result(-1, -1);
+  for (Int i = 0; i < 2; ++i) {
+    Float const s = s1s2[i];
     if (0 <= s && s <= 1) {
       Float const r = (voc + s * (vb + s * va)).dot(vd);
       if (0 <= r) {
-        result[0] = r;
+        result[i] = r;
       }
-    }
-    return result;
-  }
-  Float const disc = b * b - 4 * a * c;
-  if (disc < 0) {
-    return result;
-  }
-
-  Float const s1 = (-b - um2::sqrt(disc)) / (2 * a);
-  Float const s2 = (-b + um2::sqrt(disc)) / (2 * a);
-  if (0 <= s1 && s1 <= 1) {
-    Float const r = (voc + s1 * (vb + s1 * va)).dot(vd);
-    if (0 <= r) {
-      result[0] = r;
-    }
-  }
-  if (0 <= s2 && s2 <= 1) {
-    Float const r = (voc + s2 * (vb + s2 * va)).dot(vd);
-    if (0 <= r) {
-      result[1] = r;
     }
   }
   return result;

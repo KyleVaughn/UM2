@@ -201,7 +201,7 @@ testEdgeForIntersections(um2::LineSegment2 const & l)
     for (Int i = 0; i < num_rays; ++i) {
       auto const ray = params.getRay(i);
       auto const r = l.intersect(ray);
-      if (r < um2::inf_distance / 10) {
+      if (0 < r) {
         um2::Point2 const p = ray(r);
         Float const d = l.distanceTo(p);
         ASSERT(d < 10 * um2::eps_distance);

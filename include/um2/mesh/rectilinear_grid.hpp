@@ -482,7 +482,7 @@ RectilinearGrid<D>::getFlatIndex(Vec<D, Int> const & index) const noexcept -> In
   for (Int i = 0; i < D; ++i) {
     ASSERT(index[i] < _divs[i].size());
   }
-  // Floator D = 1, 2, 3, write out the explicit formulas
+  // For D = 1, 2, 3, write out the explicit formulas
   if constexpr (D == 1) {
     return index[0];
   } else if constexpr (D == 2) {
