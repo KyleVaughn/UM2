@@ -11,6 +11,7 @@ TEST_CASE(test_equal)
 
   ASSERT(um2::equal(a, a + 3, b));
   ASSERT(!um2::equal(a, a + 3, c));
+  static_assert(um2::equal(a,a,c));
 }
 
 MAKE_CUDA_KERNEL(test_equal);

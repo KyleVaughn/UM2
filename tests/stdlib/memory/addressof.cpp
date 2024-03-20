@@ -2,6 +2,8 @@
 
 #include "../../test_macros.hpp"
 
+// addressof(x) must return the same value as &x, even if operator& is overloaded
+
 // NOLINTBEGIN justification: Just simple test code
 struct A {
   void

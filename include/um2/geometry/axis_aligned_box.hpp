@@ -225,6 +225,8 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D>::minima(Int i) const noexcept -> Float
 {
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < D);
   return _min[i];
 }
 
@@ -232,6 +234,8 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D>::maxima(Int i) const noexcept -> Float
 {
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < D);
   return _max[i];
 }
 
@@ -299,6 +303,8 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D>::extents(Int i) const noexcept -> Float
 {
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < D);
   return _max[i] - _min[i];
 }
 
@@ -334,8 +340,12 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 AxisAlignedBox<D>::contains(Point<D> const & p) const noexcept -> bool
 {
-  // Lexicographic comparison.
-  return _min <= p && p <= _max;
+  for (Int i = 0; i < D; ++i) {
+    if (p[i] < _min[i] || p[i] > _max[i]) {
+      return false;
+    }
+  }
+  return true; 
 }
 
 template <Int D>

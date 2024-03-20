@@ -39,7 +39,7 @@ log(float x) noexcept -> float
 
 template <>
 CONST DEVICE [[nodiscard]] constexpr auto
-cbrt(double x) noexcept -> double
+log(double x) noexcept -> double
 {
   return ::log(x);
 }

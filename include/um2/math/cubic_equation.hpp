@@ -80,7 +80,7 @@ solveCubic(Float a, Float b, Float c, Float d) -> Vec3F
       ASSERT(3 * q / (2 * p * sqrt_p3) <= 1);
       ASSERT(3 * q / (2 * p * sqrt_p3) >= -1);
       Float const theta = um2::acos(3 * q_over_p / (2 * sqrt_p3)) / 3;
-      Float const shift = 2 * um2::pi<Float> / 3;
+      Float constexpr shift = 2 * um2::pi<Float> / 3;
       for (Int i = 0; i < 3; ++i) {
         roots[i] = 2 * sqrt_p3 * um2::cos(theta - i * shift);
       }

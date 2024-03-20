@@ -2,9 +2,9 @@
 
 #include <um2/config.hpp>
 #include <um2/stdlib/assert.hpp>
+#include <um2/stdlib/utility/is_pointer_in_range.hpp>
 
 #include <cstring> // memcpy
-#include <cstdio> // printf
 #include <iterator> // std::iterator_traits
 #include <type_traits>
 
@@ -12,7 +12,6 @@ namespace um2
 {
 
 // Define a few type traits to check if we can use memmove or if we need to use a loop.
-
 // https://github.com/llvm/llvm-project/blob/main/libcxx/include/__type_traits/is_always_bitcastable.h
 template <class From, class To>
 struct IsAlwaysBitcastable
@@ -48,9 +47,6 @@ copyLoop(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
   return d_first;
 }
 
-// Clang takes issue with um2::copy in String.hpp, so we need to suppress the warning.
-// We conditionally call new and delete in String.hpp, but clang is bad at predicting
-// the control flow.
 template <class InputIt, class OutputIt>
 HOSTDEV constexpr auto
 copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
@@ -61,6 +57,8 @@ copy(InputIt first, InputIt last, OutputIt d_first) noexcept -> OutputIt
     // Since d_first in [first, last) is undefined, we can do better than memmove, 
     // we can use memcpy.
     auto const n = static_cast<size_t>(last - first);
+    ASSERT(!is_pointer_in_range(first, last, d_first));
+    ASSERT(!is_pointer_in_range(first, last, d_first + n));
     return static_cast<OutputIt>(memcpy(d_first, first, n * sizeof(InT))) + n;
   } else {
     return copyLoop(first, last, d_first);

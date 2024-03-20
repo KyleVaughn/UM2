@@ -2,6 +2,7 @@
 
 #include <um2/stdlib/algorithm/clamp.hpp>
 #include <um2/stdlib/algorithm/copy.hpp>
+#include <um2/stdlib/algorithm/equal.hpp>
 #include <um2/stdlib/algorithm/fill.hpp>
 #include <um2/stdlib/algorithm/is_sorted.hpp>
 #include <um2/stdlib/algorithm/lexicographical_compare.hpp>

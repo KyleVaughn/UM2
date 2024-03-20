@@ -267,7 +267,7 @@ QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D 
   ASSERT(q[1][0] > 0);
   auto p_r = rot * (p - _v[0]);
 
-  // Orient the segment so that it curves to the right. (positive y-coordinat for v[2])
+  // Orient the segment so that it curves to the right. (positive y-coordinate for v[2])
   bool const curves_right = q[2][1] >= 0;
   if (!curves_right) {
     // Flip the y-coordinates to be greater than or equal to zero
@@ -294,17 +294,25 @@ QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D 
   //    return !curves_right;
   //  }
 
-  // If q[2][1] < eps_distance, then the segment is straight and we can exit early.
-  // Note q[2][1] is positive.
-  if (q[2][1] <= eps_distance) {
-    // LineSegment2(q[0], q[1]).isLeft(p_r) is equivalent to areCCW(q[0], q[1], p_r)
-    // areCCW(q[0], q[1], p_r) is equivalent to 0 <= (q[1] - q[0]).cross(p_r - q[0])
-    // Since q[0] == (0, 0), we can simplify the cross product to q[1].cross(p_r).
-    // q[1].cross(p_r) is equivalent to q[1][0] * p_r[1] - q[1][1] * p_r[0]
-    // Since q[1][1] == 0, we can simplify the cross product to q[1][0] * p_r[1]
-    // Since q[1][0] > 0, we can simplify further to p_r[1] >= 0
-    bool const is_left = p_r[1] >= 0;
-    return curves_right ? is_left : !is_left;
+//  // If q[2][1] < eps_distance, then the segment is straight and we can exit early.
+//  // Note q[2][1] is positive.
+//  if (q[2][1] <= eps_distance) {
+//    // LineSegment2(q[0], q[1]).isLeft(p_r) is equivalent to areCCW(q[0], q[1], p_r)
+//    // areCCW(q[0], q[1], p_r) is equivalent to 0 <= (q[1] - q[0]).cross(p_r - q[0])
+//    // Since q[0] == (0, 0), we can simplify the cross product to q[1].cross(p_r).
+//    // q[1].cross(p_r) is equivalent to q[1][0] * p_r[1] - q[1][1] * p_r[0]
+//    // Since q[1][1] == 0, we can simplify the cross product to q[1][0] * p_r[1]
+//    // Since q[1][0] > 0, we can simplify further to p_r[1] >= 0
+//    bool const is_left = p_r[1] >= 0;
+//    return curves_right ? is_left : !is_left;
+//  }
+
+  // Now that the segment is aligned with the x-axis, the bounding box of the segment
+  // if fairly tight. If the point is not in the bounding box, then it is left of the
+  // segment.
+  auto const q_bb = q.boundingBox();
+  if (!q_bb.contains(p_r)) {
+    return curves_right;
   }
 
   // Otherwise, there is non-trivial curvature in the segment.
@@ -705,7 +713,7 @@ requires(D == 2)
   Float const c = voc.cross(vd); // ((C - O) × D)ₖ
 
   Vec2F result(inf_distance, inf_distance);
-  auto constexpr epsilon = castIfNot<Float>(1e-8);
+  auto constexpr epsilon = castIfNot<Float>(3e-6);
   if (um2::abs(a) < epsilon) {
     Float const s = -c / b;
     if (0 <= s && s <= 1) {

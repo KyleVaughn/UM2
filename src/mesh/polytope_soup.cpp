@@ -2,6 +2,7 @@
 
 #include <um2/common/logger.hpp>
 #include <um2/common/permutation.hpp>
+#include <um2/common/strto.hpp>
 #include <um2/geometry/triangle.hpp>
 #include <um2/geometry/quadrilateral.hpp>
 #include <um2/geometry/quadratic_triangle.hpp>
@@ -13,7 +14,6 @@
 #include <um2/stdlib/utility/pair.hpp>
 #include <um2/stdlib/algorithm/fill.hpp>
 #include <um2/stdlib/algorithm/is_sorted.hpp>
-#include <um2/stdlib/strto.hpp>
 
 #include <algorithm> // std::sort, std::set_intersection
 

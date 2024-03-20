@@ -923,7 +923,11 @@ requires(std::same_as<T, Scalar> || std::integral<Scalar>)
 PURE HOSTDEV constexpr auto
 operator-(Scalar s, Vec<D, T> u) noexcept -> Vec<D, T>
 {
-  return -u += s;
+  Vec<D, T> result;
+  for (Int i = 0; i < D; ++i) {
+    result[i] = static_cast<T>(s) - u[i];
+  }
+  return result;
 }
 
 template <Int D, class T, typename Scalar>

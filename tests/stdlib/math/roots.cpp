@@ -12,6 +12,7 @@ TEST_CASE(cbrt_float)
   ASSERT_NEAR(um2::cbrt(8.0F), 2.0F, 1e-6F);
   ASSERT_NEAR(um2::cbrt(0.0F), 0.0F, 1e-6F);
   ASSERT_NEAR(um2::cbrt(1.0F), 1.0F, 1e-6F);
+  ASSERT_NEAR(um2::cbrt(-8.0F), -2.0F, 1e-6F);
 }
 MAKE_CUDA_KERNEL(cbrt_float);
 

@@ -11,6 +11,10 @@ TEST_CASE(iota_int)
   for (int i = 0; i < n; ++i) {
     ASSERT(a[i] == i + 1);
   }
+  um2::iota(a, a + n, 0);
+  for (int i = 0; i < n; ++i) {
+    ASSERT(a[i] == i);
+  }
 }
 MAKE_CUDA_KERNEL(iota_int);
 

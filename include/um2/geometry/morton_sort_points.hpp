@@ -2,7 +2,7 @@
 
 #include <um2/geometry/point.hpp>
 #include <um2/math/morton.hpp>
-#include <um2/stdlib/numeric.hpp>
+#include <um2/stdlib/numeric/iota.hpp>
 
 #include <algorithm>
 

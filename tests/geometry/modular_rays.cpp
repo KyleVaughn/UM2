@@ -2,7 +2,7 @@
 
 #include "../test_macros.hpp"
 
-// Test problem: Floator a 2 by 2 grid, for a few test angles, ensure that a sample
+// Test problem: For a 2 by 2 grid, for a few test angles, ensure that a sample
 // ray is both cyclic and modular.
 //                   r_stop
 // 4 +--------------x-+----------------+
@@ -35,8 +35,8 @@ TEST_CASE(modular_ray_params)
   um2::AxisAlignedBox2 const box11(p32, p64);
   um2::Vector<um2::AxisAlignedBox2> const boxes{box00, box10, box01, box11};
 
-  Int const degree = 2; // azimuthal angles per quadrant
-  Float const pi_deg = um2::pi_4<Float> / degree;
+  Int const degree = 4; // azimuthal angles per quadrant
+  Float const pi_deg = um2::pi_2<Float> / degree;
   // pi/8, 3pi/8, 5pi/8, 7pi/8
   um2::Vector<Float> const angles{pi_deg, 3 * pi_deg, 5 * pi_deg, 7 * pi_deg};
 

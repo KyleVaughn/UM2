@@ -144,21 +144,38 @@ HOSTDEV
 TEST_CASE(intersect_ray)
 {
   um2::AxisAlignedBox<2> const box = makeBox<2>();
+  // up
   auto const ray0 = um2::Ray2(um2::Point2(half, static_cast<Float>(0)), um2::Point2(0, 1));
-
   auto const intersection0 = box.intersect(ray0);
   ASSERT_NEAR(intersection0[0], static_cast<Float>(1), eps);
   ASSERT_NEAR(intersection0[1], static_cast<Float>(2), eps);
 
+  auto const ray0_miss = um2::Ray2(um2::Point2(20, 0), um2::Point2(0, -1));
+  auto const intersection0_miss = box.intersect(ray0_miss);
+  ASSERT(intersection0_miss[0] > 1000);
+  ASSERT(intersection0_miss[1] > 1000);
+
+  // right
   auto const ray1 = um2::Ray<2>(um2::Point2(-half, half * 3), um2::Point2(1, 0));
   auto const intersection1 = box.intersect(ray1);
   ASSERT_NEAR(intersection1[0], half, eps);
   ASSERT_NEAR(intersection1[1], half * 3, eps);
 
+  auto const ray1_miss = um2::Ray<2>(um2::Point2(0, 20), um2::Point2(-1, 0));
+  auto const intersection1_miss = box.intersect(ray1_miss);
+  ASSERT(intersection1_miss[0] > 1000);
+  ASSERT(intersection1_miss[1] > 1000);
+
+  // 45 degrees
   auto const ray2 = um2::Ray<2>(um2::Point2(0, 1), um2::Point2(1, 1).normalized());
   auto const intersection2 = box.intersect(ray2);
   ASSERT_NEAR(intersection2[0], static_cast<Float>(0), eps);
   ASSERT_NEAR(intersection2[1], um2::sqrt(static_cast<Float>(2)), eps);
+
+  auto const ray2_miss = um2::Ray<2>(um2::Point2(0, 20), um2::Point2(-1, -1).normalized());
+  auto const intersection2_miss = box.intersect(ray2_miss);
+  ASSERT(intersection2_miss[0] > 1000);
+  ASSERT(intersection2_miss[1] > 1000);
 
   auto const ray3 =
       um2::Ray<2>(um2::Point2(half, half * 3), um2::Point2(1, 1).normalized());
@@ -181,11 +198,13 @@ TEST_CASE(scale)
   ASSERT_NEAR(box.minima(1), castIfNot<Float>(-0.5), eps);
   ASSERT_NEAR(box.maxima(0), castIfNot<Float>(1.5), eps);
   ASSERT_NEAR(box.maxima(1), castIfNot<Float>(1.5), eps);
+  ASSERT_NEAR(box.width() * box.height(), castIfNot<Float>(4), eps);
   box.scale(castIfNot<Float>(0.5));
   ASSERT_NEAR(box.minima(0), castIfNot<Float>(0), eps);
   ASSERT_NEAR(box.minima(1), castIfNot<Float>(0), eps);
   ASSERT_NEAR(box.maxima(0), castIfNot<Float>(1), eps);
   ASSERT_NEAR(box.maxima(1), castIfNot<Float>(1), eps);
+  ASSERT_NEAR(box.width() * box.height(), castIfNot<Float>(1), eps);
 }
 
 HOSTDEV

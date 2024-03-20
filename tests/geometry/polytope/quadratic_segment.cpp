@@ -3,6 +3,9 @@
 
 #include "../../test_macros.hpp"
 
+#include <random>
+#include <iostream>
+
 // Description of the quadratic segments used in test cases
 // --------------------------------------------------------
 // All segment have P0 = (0, 0) and P1 = (2, 0)
@@ -212,6 +215,68 @@ TEST_CASE(boundingBox)
 //==============================================================================
 
 HOSTDEV
+void
+testIsLeft(um2::QuadraticSegment2 const & q)
+{
+  Int constexpr num_points = 10000;
+
+  auto const aabb_tight = q.boundingBox();
+  auto aabb = q.boundingBox();
+  aabb.scale(2);
+  auto const width = aabb.width();
+  auto const height = aabb.height();
+  uint32_t constexpr seed = 0x08FA9A20;
+  // We want a fixed seed for reproducibility
+  // NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp)
+  std::mt19937 gen(seed);
+  std::uniform_real_distribution<Float> dis(0, 1);
+
+  auto const coeffs = q.getPolyCoeffs();
+  auto const b = coeffs[1];
+  auto const a = coeffs[2];
+  for (Int i = 0; i < num_points; ++i) {
+    Float const x = aabb.xMin() + dis(gen) * width;
+    Float const y = aabb.yMin() + dis(gen) * height;
+    um2::Point2 const p(x, y);
+    // Check if the point is to the left or right of the segment
+    bool const is_left = q.isLeft(p);
+    // If the point is in the tight bounding box, then to confirm, 
+    // get the point on the segment that is closest to p.
+    // Then, check if the cross product of the tangent vector at p_closest
+    // and the vector from p_closest to p is positive or negative.
+    // If it is positive, then p is to the left of the segment.
+    //
+    // If the point is not in the tight bounding box, then we simply check
+    // (p1 - p0) x (p - p0) > 0
+    if (aabb_tight.contains(p)) {
+      Float const r = q.pointClosestTo(p);
+      um2::Point2 const p_closest = q(r);
+      // Q(r) = C + rB + r^2A -> Q'(r) = B + 2rA
+      um2::Vec2F const vtan = b + (2 * r) * a;
+      bool const is_left_ref = vtan.cross(p - p_closest) >= 0; 
+      if (is_left != is_left_ref) {
+        std::cerr << "q[0] = (" << q[0][0] << ", " << q[0][1] << ")\n";
+        std::cerr << "q[1] = (" << q[1][0] << ", " << q[1][1] << ")\n";
+        std::cerr << "q[2] = (" << q[2][0] << ", " << q[2][1] << ")\n";
+        std::cerr << "aabb_tight = (" << aabb_tight.xMin() << ", " << aabb_tight.yMin() << ", " << aabb_tight.xMax() << ", " << aabb_tight.yMax() << ")\n";
+        std::cerr << "p = (" << p[0] << ", " << p[1] << ")\n";
+        std::cerr << "r = " << r << "\n";
+        std::cerr << "p_closest = (" << p_closest[0] << ", " << p_closest[1] << ")\n";
+        std::cerr << "vtan = (" << vtan[0] << ", " << vtan[1] << ")\n";
+        std::cerr << "p - p_closest = (" << p[0] - p_closest[0] << ", " << p[1] - p_closest[1] << ")\n";
+        std::cerr << "is_left = " << is_left << "\n";
+        std::cerr << "is_left_ref = " << is_left_ref << "\n";
+        std::cerr << "vtan.cross(p - p_closest) = " << vtan.cross(p - p_closest) << "\n";
+      }
+      ASSERT(is_left == is_left_ref);
+    } else {
+      bool const is_left_ref = (q[1] - q[0]).cross(p - q[0]) > 0;
+      ASSERT(is_left == is_left_ref);
+    }
+  }
+}
+
+HOSTDEV
 TEST_CASE(isLeft)
 {
   um2::Vector<um2::Point2> const test_points = {
@@ -366,6 +431,14 @@ TEST_CASE(isLeft)
   ASSERT(!q8.isLeft(test_points[11]));
   ASSERT(q8.isLeft(test_points[12]));
   ASSERT(!q8.isLeft(test_points[13]));
+
+  testIsLeft(q2);
+  testIsLeft(q3);
+  testIsLeft(q4);
+  testIsLeft(q5);
+  testIsLeft(q6);
+  testIsLeft(q7);
+  testIsLeft(q8);
 }
 
 //==============================================================================
@@ -376,7 +449,7 @@ HOSTDEV
 void
 testPoint(um2::QuadraticSegment2 const & q, um2::Point2 const p)
 {
-  auto constexpr dr = castIfNot<Float>(2e-3);
+  auto constexpr dr = castIfNot<Float>(1e-4);
   Float const r = q.pointClosestTo(p);
   um2::Point2 const p_closest = q(r);
   Float const d_closest = p.distanceTo(p_closest);
@@ -604,7 +677,7 @@ TEST_CASE(enclosedCentroid)
   um2::QuadraticSegment2 seg6 = makeSeg6<2>();
   auto centroid6 = enclosedCentroid(seg6);
   // Rotated 240 degrees + translated by (1, 1)
-  um2::Mat2x2F const rot = um2::rotationMatrix(4 * um2::pi<Float> / 3);
+  um2::Mat2x2F const rot = um2::makeRotationMatrix(4 * um2::pi<Float> / 3);
   um2::Vec2F const trans = um2::Vec2F(1, 1);
   seg6[0] = rot * seg6[0] + trans;
   seg6[1] = rot * seg6[1] + trans;

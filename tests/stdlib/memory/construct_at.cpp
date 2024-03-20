@@ -2,7 +2,6 @@
 
 #include "../../test_macros.hpp"
 
-
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 // Count the number of instances of Counted.
 #ifndef __CUDA_ARCH__

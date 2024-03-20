@@ -299,7 +299,6 @@ Vector<T>::constructAtEnd(Int n, T const & value) noexcept
   }
 }
 
-
 // Construct n elements at the end of the vector, copying from [first, last)
 // n disambiguates the function from the previous one, but is not used when
 // asserts are disabled

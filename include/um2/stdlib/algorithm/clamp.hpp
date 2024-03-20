@@ -10,7 +10,7 @@ template <class T>
 PURE HOSTDEV [[nodiscard]] inline constexpr auto
 clamp(T const & v, T const & lo, T const & hi) noexcept -> T const &
 {
-  ASSERT(lo <= hi);
+  ASSERT_ASSUME(lo <= hi);
   return v < lo ? lo : (hi < v ? hi : v);
 }
 

@@ -303,6 +303,7 @@ LineSegment<D>::distanceTo(Vertex const & p) const noexcept -> Float
 // r = (Y ⋅ Z)/(Z ⋅ Z) = y₃/z₃
 // This result is valid if s ∈ [0, 1]
 
+// r in [0, inf_distance) is returned.
 template <Int D>
 PURE HOSTDEV constexpr auto
 LineSegment<D>::intersect(Ray2 const ray) const noexcept -> Float
@@ -313,7 +314,7 @@ requires(D == 2)
   Float const z = v.cross(ray.direction());
   Float const s = u.cross(ray.direction()) / z;
   Float const r = u.cross(v) / z;
-  return (0 <= s && s <= 1) ? r : inf_distance;
+  return (0 <= s && s <= 1) ? (0 <= r ? r : inf_distance) : inf_distance;
 }
 
 } // namespace um2

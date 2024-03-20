@@ -150,9 +150,10 @@ operator*(Mat3x3<T> const & a, Vec3<T> const & x) noexcept -> Vec3<T>
                  a(2, 0) * x[0] + a(2, 1) * x[1] + a(2, 2) * x[2]};
 }
 
+// angle in radians
 template <typename T>
 PURE HOSTDEV constexpr auto
-rotationMatrix(T angle) noexcept -> Mat2x2<T>
+makeRotationMatrix(T angle) noexcept -> Mat2x2<T>
 {
   T const c = um2::cos(angle);
   T const s = um2::sin(angle);

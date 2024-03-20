@@ -2,7 +2,6 @@
 
 #include <um2/geometry/axis_aligned_box.hpp>
 #include <um2/geometry/ray.hpp>
-#include <um2/math/angular_quadrature.hpp>
 #include <um2/stdlib/numbers.hpp>
 #include <um2/stdlib/math.hpp>
 
@@ -88,6 +87,8 @@ HOSTDEV constexpr ModularRayParams::ModularRayParams(Float const a, Float const 
 
   _num_rays[0] = static_cast<Int>(num_rays_t[0]);
   _num_rays[1] = static_cast<Int>(num_rays_t[1]);
+  ASSERT(_num_rays[0] > 0);
+  ASSERT(_num_rays[1] > 0);
   _spacing[0] = w / num_rays_t[0];
   _spacing[1] = h / num_rays_t[1];
 

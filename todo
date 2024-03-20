@@ -1,3 +1,30 @@
+test for max error over a range of cubic equation parameters
+  -> isLeft
+  -> pointClosestTo
+
+heavy tests for all functions
+  geometry
+    quadraticSegment 
+      isLeft
+        -> um2::abs(ax) < 4 * eps_distance
+      boundingBox
+        -> um2::abs(a[i]) < 4 * eps_distance
+      pointClosestTo
+      intersect
+        -> um2::abs(a) < epsilon
+
+
+Floatind, Floator
+
+pointClosestTo more random
+make All computational geom tests use random
+Float32
+Int64
+
+organze archive into many dirs with notes on what is there any why we keep
+angular quadrature to archive
+enable openMP /TBB
+
 Random points in scaled bounding box
 -> QuadraticSegment isLeft
   Verify using pointClosestTo(p), then use the vector from p_closest
@@ -11,12 +38,10 @@ more robust testing for mesh functions
 
 getEdge
 
-
 makeMaterialsElset
   -> convert Material_ to Material with elset data
 
 Delete material related comments after verifying read/write w/o 
-
 
 XDMF IO
 -> look for an opportunity to make non-private

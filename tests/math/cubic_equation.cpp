@@ -43,6 +43,13 @@ TEST_CASE(cubic)
   roots = um2::solveCubic(a, b, c, d);
   ASSERT_NEAR(roots[0], castIfNot<Float>(1.2240), eps);
 
+  // p approx 0
+  // a: 1, b: 3.000001, c: 3, d: -10
+  b = castIfNot<Float>(3.0001);
+  c = 3;
+  roots = um2::solveCubic(a, b, c, d);
+  ASSERT_NEAR(roots[0], castIfNot<Float>(1.22398), eps);
+
   // disc = 0
   // a: 64, b: -120, c: 72, d: -14
   a = 64;
