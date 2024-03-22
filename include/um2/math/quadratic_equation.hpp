@@ -4,7 +4,8 @@
 
 #include <um2/stdlib/assert.hpp>
 #include <um2/math/vec.hpp>
-#include <um2/stdlib/math/abs.hpp>
+#include <um2/stdlib/math/copysign.hpp>
+#include <um2/stdlib/math/fma.hpp>
 #include <um2/stdlib/math/roots.hpp>
 #include <um2/stdlib/numbers.hpp>
 #include <um2/common/cast_if_not.hpp>
@@ -17,45 +18,85 @@ namespace um2
 //=============================================================================
 // Solves the quadratic equation a*x^2 + b*x + c = 0. 
 // Returns 1e16 for roots that are not real. 
+// We use 1e16 instead of NaN, since we want consistent behavior using -ffast-math.
 //
 // References:
 // The Ins and Outs of Solving Quadratic Equations with Floating-Point Arithmetic
 // by Frédéric Goualard
+//
+// Cases:
+// ---------------------------------------------
+//     a   |  b   |  c   |  roots            
+// ---------------------------------------------
+// Cases where a = 0:
+// 1.  0   |  0   |  0   |  invalid, invalid (infinite solutions)
+// 2.  0   |  0   |  !=0 |  invalid, invalid (no solution)
+// 3.  0   |  !=0 |  0   |  0, invalid
+// 4.  0   |  !=0 |  !=0 |  -c/b, invalid
+//
+// Cases where b = 0, a != 0: 
+// 5.  !=0 |  0   |  0   |  0, 0
+// 6.  ac > 0, b = 0     |  invalid, invalid (complex roots)
+// 7.  ac < 0, b = 0     |  -sqrt(-c/a), sqrt(-c/a)
+//
+// Cases where c = 0, a != 0, b != 0:
+// 8.  !=0 |  !=0 |  0   |  -b/a, 0
+//
+// 
+// We do not handle cases: 1, 2
 
+// Handle discriminant with Kahan's algorithm, with fma.
 PURE HOSTDEV inline auto
-solveQuadratic(Float a, Float b, Float c) -> Vec2F 
+quadraticDiscriminant(Float const a, Float const b, Float const c) -> Float
 {
-  // Ensure that a is not zero.
+  Float const w = 4 * a * c;
+  Float const e = um2::fma(-c, 4 * a, w);
+  Float const f = um2::fma(b, b, -w);
+  return f + e;
+}
 
+// We want exact float comparison here.
+// NOLINTBEGIN(clang-diagnostic-float-equal)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+PURE HOSTDEV inline auto
+solveQuadratic(Float const a, Float const b, Float const c) -> Vec2F 
+{
   auto constexpr invalid = castIfNot<Float>(1e16);
   Vec2F roots;
   roots[0] = invalid;
   roots[1] = invalid;
 
-  auto constexpr eps = castIfNot<Float>(1e-8);
-  if (um2::abs(a) < eps) {
+  if (a == 0) {
+    // Case 3 or 4. Assert that b != 0, so not case 1 or 2.
+    ASSERT(b != 0);
     roots[0] = -c / b;
     return roots;
   }
 
-  auto const disc = b * b - 4 * a * c;
+  if (b == 0) {
+    Float const x0_sq = -c / a;
+    if (x0_sq < 0) {
+      return roots;
+    }
+    Float const x0 = um2::sqrt(x0_sq);
+    roots[0] = -x0;
+    roots[1] = x0;
+    return roots;
+  }
+
+  auto const disc = quadraticDiscriminant(a, b, c);
 
   if (disc < 0) {
     return roots;
   }
 
-  auto const sqrt_disc = um2::sqrt(disc);
-
-  // Compute one root with high precision, avoiding catastrophic cancellation.
-  // Then use the fact that r1 * r2 = c / a to compute the other root, without
-  // loss of precision.
-  if (b >= 0) {
-    roots[0] = (-b - sqrt_disc) / (2 * a);
-  } else {
-    roots[0] = (-b + sqrt_disc) / (2 * a);
-  }
-  roots[1] = (c / a) / roots[0];
+  Float const q = -(b + um2::copysign(um2::sqrt(disc), b)) / 2;
+  roots[0] = q / a;
+  roots[1] = c / q;
   return roots; 
 }
+#pragma GCC diagnostic pop
+// NOLINTEND(clang-diagnostic-float-equal)
 
 } // namespace um2

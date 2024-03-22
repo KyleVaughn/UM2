@@ -1,6 +1,7 @@
 #pragma once
 
 #include <um2/math/quadratic_equation.hpp>
+#include <um2/stdlib/math/abs.hpp>
 #include <um2/stdlib/math/trigonometric_functions.hpp>
 #include <um2/stdlib/math/inverse_trigonometric_functions.hpp>
 

@@ -1,5 +1,7 @@
 add_um2_test(./abs.cpp)
+add_um2_test(./copysign.cpp)
 add_um2_test(./exponential_functions.cpp)
+add_um2_test(./fma.cpp)
 add_um2_test(./inverse_hyperbolic_functions.cpp)
 add_um2_test(./inverse_trigonometric_functions.cpp)
 add_um2_test(./logarithms.cpp)
