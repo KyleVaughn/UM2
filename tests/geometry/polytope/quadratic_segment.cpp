@@ -4,7 +4,6 @@
 #include "../../test_macros.hpp"
 
 #include <random>
-#include <iostream>
 
 // Description of the quadratic segments used in test cases
 // --------------------------------------------------------
@@ -254,20 +253,6 @@ testIsLeft(um2::QuadraticSegment2 const & q)
       // Q(r) = C + rB + r^2A -> Q'(r) = B + 2rA
       um2::Vec2F const vtan = b + (2 * r) * a;
       bool const is_left_ref = vtan.cross(p - p_closest) >= 0; 
-      if (is_left != is_left_ref) {
-        std::cerr << "q[0] = (" << q[0][0] << ", " << q[0][1] << ")\n";
-        std::cerr << "q[1] = (" << q[1][0] << ", " << q[1][1] << ")\n";
-        std::cerr << "q[2] = (" << q[2][0] << ", " << q[2][1] << ")\n";
-        std::cerr << "aabb_tight = (" << aabb_tight.xMin() << ", " << aabb_tight.yMin() << ", " << aabb_tight.xMax() << ", " << aabb_tight.yMax() << ")\n";
-        std::cerr << "p = (" << p[0] << ", " << p[1] << ")\n";
-        std::cerr << "r = " << r << "\n";
-        std::cerr << "p_closest = (" << p_closest[0] << ", " << p_closest[1] << ")\n";
-        std::cerr << "vtan = (" << vtan[0] << ", " << vtan[1] << ")\n";
-        std::cerr << "p - p_closest = (" << p[0] - p_closest[0] << ", " << p[1] - p_closest[1] << ")\n";
-        std::cerr << "is_left = " << is_left << "\n";
-        std::cerr << "is_left_ref = " << is_left_ref << "\n";
-        std::cerr << "vtan.cross(p - p_closest) = " << vtan.cross(p - p_closest) << "\n";
-      }
       ASSERT(is_left == is_left_ref);
     } else {
       bool const is_left_ref = (q[1] - q[0]).cross(p - q[0]) > 0;
@@ -702,14 +687,12 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
   Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
   Int constexpr rays_per_longest_edge = 1000;
 
-  auto constexpr eps_pt = 1e-4;
-
   auto aabb = q.boundingBox();
   aabb.scale(castIfNot<Float>(1.1));
   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
   auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
   Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
-//  uint64_t tested_rays = 0;
+  Float max_err = 0;
   // For each angle
   for (Int ia = 0; ia < num_angles; ++ia) {
     Float const angle = pi_deg * static_cast<Float>(2 * ia + 1);
@@ -718,7 +701,6 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
     Int const num_rays = params.getTotalNumRays();
     // For each ray
     for (Int i = 0; i < num_rays; ++i) {
-//      ++tested_rays; 
       auto const ray = params.getRay(i);
       auto intersections = q.intersect(ray);
       for (Int j = 0; j < 2; ++j) {
@@ -728,7 +710,8 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
           Float const s = q.pointClosestTo(p);
           um2::Point2 const q_closest = q(s);
           Float const d = q_closest.distanceTo(p);
-          ASSERT(d < eps_pt);
+          max_err = um2::max(max_err, d);
+          ASSERT(d < eps);
         }
       }
     }

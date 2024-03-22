@@ -1,54 +1,17 @@
-solveCubic see where wer get cancel
+eliminate epsilons
 
+Tighter eps_distance?
+  Ensure all epsilons in geometry are based on eps_distance
 
-optimalEps test, rotate the quadratic segments
+use std::print -> bump to C++23? Support in 12, 15?)
+
+Test cases with multiple roots
+
+gsl permutaitons vs mine?
+
+more efficient str to -> print?
 
 replace infinite distance with -1 in intersection and such
-
-Anywhere there is an epsilon there should be a routine for testing it over the parameter space
-  find epsilons in the code
-  Do parametric study
-  Create a directory for them
-  bisection method?
-    _> ask thomas about multivariate optimization
-
-
-  quadratic_segment
-    isLeft -> Solves quadratic
-    boundingBox -> A < eps
-    pointClosestTo 0-> cubic
-
-  math
-    cubic_equation
-
-    quadratic equation epsilon
-
-  solve quadratic
-
-check on all quadratic functions:
-  isLeft
-    - replace ax < eps with solveQuadratic
-  boundingBox
-    - address "streaight" ax
-  intersect
-    - replace logic with solveQuadratic
-
-test for max error over a range of cubic equation parameters
-  -> isLeft
-  -> pointClosestTo
-
-heavy tests for all functions
-  geometry
-    quadraticSegment 
-      isLeft
-        -> um2::abs(ax) < 4 * eps_distance
-      boundingBox
-        -> um2::abs(a[i]) < 4 * eps_distance
-      pointClosestTo
-      intersect
-        -> um2::abs(a) < epsilon
-
-Check linear and quadratic functions for epsilons
 
 pointClosestTo more random
 make All computational geom tests use random
@@ -59,10 +22,6 @@ organze archive into many dirs with notes on what is there any why we keep
 angular quadrature to archive
 enable openMP /TBB
 
-Random points in scaled bounding box
--> QuadraticSegment isLeft
-  Verify using pointClosestTo(p), then use the vector from p_closest
-  to p along with the tangent vector (jacobian) at p_closest to determin if left or right
 -> QuadraticTriangle an QuadraticQuad contains
 
 more robust testing for mesh functions

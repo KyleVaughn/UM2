@@ -318,7 +318,6 @@ QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D 
   // 0 = c + br + ar²
   // r = (-b ± √(b² - 4ac)) / 2a
   // if A_x == 0, then we have a well-behaved quadratic segment, and there is one root.
-  // This is the expected case.
 
   Float const bx = -q[1][0] + 4 * q[2][0];
   Float const by = 4 * q[2][1]; // q[1][1] == 0, q[2][1] > 0 implies by > 0
@@ -326,30 +325,22 @@ QuadraticSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D 
   Float const ay = -by; // q[1][1] == 0, by > 0 implies ay < 0
   ASSERT(by > 0);
 
-  // If ax is small, then we solve a linear equation.
-  if (um2::abs(ax) < 4 * eps_distance) {
-    // Hence we wish to solve 0 = -P_x + rB_x for r.
-    ASSERT(um2::abs(bx) > eps_distance);
-    Float const r = p_r[0] / bx; // bx != 0, otherwise the segment would be degenerate.
+  auto constexpr invalid_root = castIfNot<Float>(1e15);
+  auto const roots = solveQuadratic(ax, bx, -p_r[0]);
+  // Only one root
+  if (roots[1] > invalid_root) {
     // We know the point is in the bounding triangle, so we expect r to be in [0, 1]
-    ASSERT(0 <= r);
-    ASSERT(r <= 1);
-    Float const qy = r * (by + r * ay);
+    ASSERT(0 <= roots[0]);
+    ASSERT(roots[0] <= 1);
+    Float const qy = roots[0] * (by + roots[0] * ay);
     bool const is_left = p_r[1] >= qy;
     return curves_right ? is_left : !is_left;
   }
 
-  // Two roots
-  Float const disc = bx * bx + 4 * ax * p_r[0];
-  // disc < 0 implies that the point is not in the bounding box, which we have already
-  // checked for.
-  ASSERT_ASSUME(disc >= 0);
-  Float const r1 = (-bx + um2::sqrt(disc)) / (2 * ax);
-  Float const r2 = (-bx - um2::sqrt(disc)) / (2 * ax);
-  Float const qy1 = r1 * (by + r1 * ay);
-  Float const qy2 = r2 * (by + r2 * ay);
-  Float const qymin = um2::min(qy1, qy2);
-  Float const qymax = um2::max(qy1, qy2);
+  Float const qy0 = roots[0] * (by + roots[0] * ay);
+  Float const qy1 = roots[1] * (by + roots[1] * ay);
+  Float const qymin = um2::min(qy0, qy1);
+  Float const qymax = um2::max(qy0, qy1);
   bool const contained_in_curve = qymin <= p_r[1] && p_r[1] <= qymax;
   bool const is_left = !contained_in_curve;
   return curves_right ? is_left : !is_left;
@@ -415,7 +406,7 @@ QuadraticSegment<D>::length() const noexcept -> Float
   Float const sa = um2::sqrt(a);
   Float const sc = um2::sqrt(c);
   Float const sabc = um2::sqrt(a + b + c);
-  Float const disc = b * b - 4 * a * c;
+  Float const disc = quadraticDiscriminant(a, b, c); 
   Float const a2b = 2 * a + b;
   Float const num = disc * um2::log((2 * sa * sc + b) / (2 * sa * sabc + a2b)) + sa * (2 * (a2b * sabc - b * sc));
   Float const den = 8 * sa * sa * sa;
@@ -445,11 +436,13 @@ QuadraticSegment<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
   Point<D> minima = um2::min(_v[0], _v[1]);
   Point<D> maxima = um2::max(_v[0], _v[1]);
   for (Int i = 0; i < D; ++i) {
-    // If a[i] is small, then x_i varies linearly with r, so the extrema are the
-    // end points and we can skip the computation.
-    if (um2::abs(a[i]) < 4 * eps_distance) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+    // NOLINTNEXTLINE(clang-diagnostic-float-equal)
+    if (a[i] == 0) {
       continue;
     }
+#pragma GCC diagnostic pop
     Float const half_b = b[i] / 2;
     Float const r = - half_b / a[i];
     // if r is not in [0, 1], then the extrema are not on the segment, hence

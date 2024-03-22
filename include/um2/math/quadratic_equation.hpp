@@ -9,6 +9,7 @@
 #include <um2/stdlib/math/roots.hpp>
 #include <um2/stdlib/numbers.hpp>
 #include <um2/common/cast_if_not.hpp>
+#include <um2/stdlib/utility/swap.hpp>
 
 namespace um2
 {
@@ -94,6 +95,9 @@ solveQuadratic(Float const a, Float const b, Float const c) -> Vec2F
   Float const q = -(b + um2::copysign(um2::sqrt(disc), b)) / 2;
   roots[0] = q / a;
   roots[1] = c / q;
+  if (roots[0] > roots[1]) {
+    um2::swap(roots[0], roots[1]);
+  }
   return roots; 
 }
 #pragma GCC diagnostic pop
