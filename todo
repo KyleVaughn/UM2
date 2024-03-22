@@ -1,3 +1,5 @@
+learn more floating point
+
 eliminate epsilons
 
 Tighter eps_distance?
@@ -13,8 +15,6 @@ more efficient str to -> print?
 
 replace infinite distance with -1 in intersection and such
 
-pointClosestTo more random
-make All computational geom tests use random
 Float32
 Int64
 
