@@ -6,6 +6,8 @@
 #include <um2/stdlib/math/trigonometric_functions.hpp>
 #include <um2/stdlib/math/inverse_trigonometric_functions.hpp>
 
+#include <iostream>
+
 namespace um2
 {
 
@@ -103,12 +105,15 @@ solveCubic(Float a, Float const b, Float const c, Float const d) -> Vec3F
     }
   } while (s * x0 > s * x);
   
+  std::cerr << "x: " << x << std::endl;
+
   if (um2::abs(a) * x * x > um2::abs(d / x)) {
     c2 = -d / x;
     b1 = (c2 - c) / x;
   }
 
 fin:
+  std::cerr << "a, b1, c2: " << a << ", " << b1 << ", " << c2 << std::endl;
   auto const quadratic_roots = solveQuadratic(a, b1, c2);
   roots[0] = quadratic_roots[0];
   roots[1] = quadratic_roots[1];

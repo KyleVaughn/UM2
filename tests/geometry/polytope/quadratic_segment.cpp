@@ -467,14 +467,14 @@ testPCT(um2::QuadraticSegment2 const & q)
   auto const dx =  aabb.width() / static_cast<Float>(points_per_side - 1);
   // Bottom side
   for (Int i = 0; i < points_per_side; ++i) {
-    Float const x = aabb.xMin() + i * dx;
+    Float const x = aabb.xMin() + static_cast<Float>(i) * dx;
     Float const y = aabb.yMin();
     um2::Point2 const p(x, y);
     testPoint(q, p);
   }
   // Top side
   for (Int i = 0; i < points_per_side; ++i) {
-    Float const x = aabb.xMin() + i * dx;
+    Float const x = aabb.xMin() + static_cast<Float>(i) * dx;
     Float const y = aabb.yMax();
     um2::Point2 const p(x, y);
     testPoint(q, p);
@@ -483,14 +483,14 @@ testPCT(um2::QuadraticSegment2 const & q)
   // Left side
   for (Int i = 0; i < points_per_side; ++i) {
     Float const x = aabb.xMin();
-    Float const y = aabb.yMin() + i * dy;
+    Float const y = aabb.yMin() + static_cast<Float>(i) * dy;
     um2::Point2 const p(x, y);
     testPoint(q, p);
   }
   // Right side
   for (Int i = 0; i < points_per_side; ++i) {
     Float const x = aabb.xMax();
-    Float const y = aabb.yMin() + i * dy;
+    Float const y = aabb.yMin() + static_cast<Float>(i) * dy;
     um2::Point2 const p(x, y);
     testPoint(q, p);
   }
@@ -558,7 +558,7 @@ testEnclosedArea(um2::QuadraticSegment2 const & q)
   auto const area_computed = -enclosedArea(q);
   auto const err = um2::abs(area_computed - area) / area;
   // Less than 1% error
-  ASSERT(err < 1e-2);
+  ASSERT(err < castIfNot<Float>(1e-2));
 }
 
 HOSTDEV
@@ -638,8 +638,8 @@ testEnclosedCentroid(um2::QuadraticSegment2 const & q)
   auto const err_x = um2::abs(centroid_computed[0] - centroid[0]) / centroid[0];
   auto const err_y = um2::abs(centroid_computed[1] - centroid[1]) / centroid[1];
   // Less than 1% error
-  ASSERT(err_x < 1e-2);
-  ASSERT(err_y < 1e-2);
+  ASSERT(err_x < castIfNot<Float>(1e-2));
+  ASSERT(err_y < castIfNot<Float>(1e-2));
 }
 
 HOSTDEV

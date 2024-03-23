@@ -88,6 +88,7 @@ TEST_CASE(degenerate_cases)
   c = 72;
   d = -14;
   roots = um2::solveCubic(a, b, c, d);
+  std::cerr << "Roots: " << roots[0] << ", " << roots[1] << ", " << roots[2] << std::endl;
   ASSERT_NEAR(roots[0], castIfNot<Float>(0.5), eps);
   ASSERT_NEAR(roots[1], castIfNot<Float>(0.5), eps);
   ASSERT_NEAR(roots[2], castIfNot<Float>(0.875), eps);

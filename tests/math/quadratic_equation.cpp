@@ -133,8 +133,8 @@ TEST_CASE(fibonacci)
     Int const fn_1 = fib(n - 1);
     Int const fn_2 = fib(n - 2);
     Int const fn = fn_1 + fn_2;  // by definition
-    Float x1 = static_cast<Float>(fn_1 + 1) / fn;
-    Float x2 = static_cast<Float>(fn_1 - 1) / fn;
+    Float x1 = static_cast<Float>(fn_1 + 1) / static_cast<Float>(fn);
+    Float x2 = static_cast<Float>(fn_1 - 1) / static_cast<Float>(fn);
     if (x1 < x2) {
       um2::swap(x1, x2);
     }
@@ -143,9 +143,9 @@ TEST_CASE(fibonacci)
       if (m == 0) {
         m = 1;
       }
-      Float const a = static_cast<Float>(m) * fn;
-      Float const b = static_cast<Float>(m) * fn_1 * -2;
-      Float const c = static_cast<Float>(m) * fn_2;
+      Float const a = static_cast<Float>(m) * static_cast<Float>(fn);
+      Float const b = static_cast<Float>(m) * static_cast<Float>(fn_1) * -2;
+      Float const c = static_cast<Float>(m) * static_cast<Float>(fn_2);
       auto roots = um2::solveQuadratic(a, b, c);
       if (roots[0] < roots[1]) {
         um2::swap(roots[0], roots[1]);
@@ -168,8 +168,8 @@ TEST_CASE(numerical)
   if (roots[0] > roots[1]) {
     um2::swap(roots[0], roots[1]);
   }
-  Float const x1 = 1.223991125e-3;
-  Float const x2 = 1.633998776e3;
+  auto const x1 = castIfNot<Float>(1.223991125e-3);
+  auto const x2 = castIfNot<Float>(1.633998776e3);
   ASSERT_NEAR(roots[0], x1, eps);
   ASSERT_NEAR(roots[1], x2, eps);
 }
@@ -177,7 +177,11 @@ TEST_CASE(numerical)
 TEST_CASE(random_coeff)
 {
   auto constexpr invalid = castIfNot<Float>(1e15);
-  auto constexpr eps = castIfNot<Float>(1e-6);
+#if UM2_ENABLE_FLOAT64
+  auto constexpr eps = 1e-6; 
+#else
+  auto constexpr eps = 1e-3F;
+#endif
   Int constexpr num_random_tests = 100000;
   // Check for random values
   uint32_t constexpr seed = 0x08FA9A20;
@@ -197,13 +201,18 @@ TEST_CASE(random_coeff)
       ASSERT(roots[1] > invalid);
     } else {
       // Compute residuals
+      // Get the largest coefficient and largest root
+      // to compute the relative error
+      auto const largest_coeff = um2::max(um2::abs(a), um2::max(um2::abs(b), um2::abs(c)));
       if (roots[0] < invalid) {
+        auto const rel_eps = eps * um2::max(um2::abs(roots[0]), largest_coeff); 
         Float const res1 = c + roots[0] * (b + roots[0] * a);
-        ASSERT_NEAR(res1, 0, eps);
+        ASSERT_NEAR(res1, 0, rel_eps);
       }
       if (roots[1] < invalid) {
+        auto const rel_eps = eps * um2::max(um2::abs(roots[1]), largest_coeff);
         Float const res2 = c + roots[1] * (b + roots[1] * a);
-        ASSERT_NEAR(res2, 0, eps);
+        ASSERT_NEAR(res2, 0, rel_eps);
       }
     }
   }
