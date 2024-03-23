@@ -2,7 +2,7 @@
 
 #include "../test_macros.hpp"
 
-Float constexpr eps = castIfNot<Float>(1e-6);
+Float constexpr eps = um2::eps_distance;
 
 template <Int D>
 HOSTDEV constexpr auto

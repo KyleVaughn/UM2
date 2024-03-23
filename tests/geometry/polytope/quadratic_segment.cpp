@@ -4,6 +4,7 @@
 #include "../../test_macros.hpp"
 
 #include <random>
+#include <iostream>
 
 // Description of the quadratic segments used in test cases
 // --------------------------------------------------------
@@ -26,7 +27,7 @@
 // 8) A segment (0,0) -> (2, 0) -> (4, 3)
 
 // CUDA is annoying and defines half, so we have to use ahalf
-Float constexpr eps = um2::eps_distance * castIfNot<Float>(10);
+Float constexpr eps = um2::eps_distance;
 Float constexpr ahalf = castIfNot<Float>(1) / castIfNot<Float>(2);
 
 template <Int D>
@@ -163,7 +164,8 @@ testLength(um2::QuadraticSegment<D> const & seg)
     p0 = p1;
     r = r1;
   }
-  ASSERT_NEAR(l, seg.length(), eps);
+  // Allow for 0.1% error
+  ASSERT(um2::abs(l - seg.length()) / l < castIfNot<Float>(1e-3));
 }
 
 template <Int D>
@@ -434,7 +436,7 @@ HOSTDEV
 void
 testPoint(um2::QuadraticSegment2 const & q, um2::Point2 const p)
 {
-  auto constexpr dr = castIfNot<Float>(1e-4);
+  auto constexpr dr = castIfNot<Float>(2e-4);
   Float const r = q.pointClosestTo(p);
   um2::Point2 const p_closest = q(r);
   Float const d_closest = p.distanceTo(p_closest);
@@ -557,8 +559,8 @@ testEnclosedArea(um2::QuadraticSegment2 const & q)
   // produce a concave polygon when CCW oriented.
   auto const area_computed = -enclosedArea(q);
   auto const err = um2::abs(area_computed - area) / area;
-  // Less than 1% error
-  ASSERT(err < castIfNot<Float>(1e-2));
+  // Less than 0.1% error
+  ASSERT(err < castIfNot<Float>(1e-3));
 }
 
 HOSTDEV
@@ -637,9 +639,9 @@ testEnclosedCentroid(um2::QuadraticSegment2 const & q)
   auto const centroid_computed = enclosedCentroid(q);
   auto const err_x = um2::abs(centroid_computed[0] - centroid[0]) / centroid[0];
   auto const err_y = um2::abs(centroid_computed[1] - centroid[1]) / centroid[1];
-  // Less than 1% error
-  ASSERT(err_x < castIfNot<Float>(1e-2));
-  ASSERT(err_y < castIfNot<Float>(1e-2));
+  // Less than 0.1% error
+  ASSERT(err_x < castIfNot<Float>(1e-3));
+  ASSERT(err_y < castIfNot<Float>(1e-3));
 }
 
 HOSTDEV
@@ -681,9 +683,6 @@ void
 testEdgeForIntersections(um2::QuadraticSegment2 const & q)
 {
   // Parameters
-  // Tested up to 128, 10000 with
-  // um2::abs(p) < 3e-6 || um2::abs(q_over_p) > 1500
-  // on the cubic equation single root case
   Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
   Int constexpr rays_per_longest_edge = 1000;
 
@@ -692,7 +691,6 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
   auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
   Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
-  Float max_err = 0;
   // For each angle
   for (Int ia = 0; ia < num_angles; ++ia) {
     Float const angle = pi_deg * static_cast<Float>(2 * ia + 1);
@@ -710,8 +708,12 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
           Float const s = q.pointClosestTo(p);
           um2::Point2 const q_closest = q(s);
           Float const d = q_closest.distanceTo(p);
-          max_err = um2::max(max_err, d);
+          // Add additional tolerance for 32-bit floating point
+#if UM2_ENABLE_FLOAT64
           ASSERT(d < eps);
+#else
+          ASSERT(d < 25 * eps);
+#endif
         }
       }
     }

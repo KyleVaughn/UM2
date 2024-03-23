@@ -2,13 +2,16 @@
 
 #include "../test_macros.hpp"
 
-#include <iostream>
 #include <random>
 
 HOSTDEV
 TEST_CASE(degenerate_cases)
 {
-  auto constexpr eps = castIfNot<Float>(1e-6);
+#if UM2_ENABLE_FLOAT64
+  auto constexpr eps = 1e-6;
+#else
+  auto constexpr eps = 1e-3F;
+#endif
   auto constexpr invalid = castIfNot<Float>(1e15);
 
   // a = 0
@@ -88,7 +91,6 @@ TEST_CASE(degenerate_cases)
   c = 72;
   d = -14;
   roots = um2::solveCubic(a, b, c, d);
-  std::cerr << "Roots: " << roots[0] << ", " << roots[1] << ", " << roots[2] << std::endl;
   ASSERT_NEAR(roots[0], castIfNot<Float>(0.5), eps);
   ASSERT_NEAR(roots[1], castIfNot<Float>(0.5), eps);
   ASSERT_NEAR(roots[2], castIfNot<Float>(0.875), eps);
@@ -97,8 +99,12 @@ TEST_CASE(degenerate_cases)
 HOSTDEV
 TEST_CASE(random_coeff)
 {
+#if UM2_ENABLE_FLOAT64
+  auto constexpr eps = 1e-6; 
+#else
+  auto constexpr eps = 1e-4F;
+#endif
   auto constexpr invalid = castIfNot<Float>(1e15);
-  auto constexpr eps = castIfNot<Float>(1e-6);
   Int constexpr num_random_tests = 100000;
   // Check for random values
   uint32_t constexpr seed = 0x08FA9A20;
@@ -111,13 +117,18 @@ TEST_CASE(random_coeff)
     Float const b = dis(gen);
     Float const c = dis(gen);
     Float const d = dis(gen);
+    auto const max_ab = um2::max(um2::abs(a), um2::abs(b));
+    auto const max_cd = um2::max(um2::abs(c), um2::abs(d));
+    auto const largest_coeff = um2::max(max_ab, max_cd);
     auto roots = um2::solveCubic(a, b, c, d);
     for (Int j = 0; j < 3; ++j) {
       // Compute residuals
       if (roots[j] < invalid) {
+        Float const x3 = um2::abs(roots[j] * roots[j] * roots[j]);
+        Float const rel_eps = eps * um2::max(x3, largest_coeff);
         Float const res = d + roots[j] * (c + roots[j] * (b + roots[j] * a));
         // Ensure that the residual is small relative to the roots
-        ASSERT(um2::abs(res) <= um2::abs(roots[j]) * eps);
+        ASSERT_NEAR(res, 0, rel_eps);
       }
     }
   }

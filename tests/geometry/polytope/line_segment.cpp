@@ -6,8 +6,8 @@
 #include "../../test_macros.hpp"
 
 // CUDA is annoying and defines half, so we have to use ahalf
-Float constexpr eps = um2::eps_distance * static_cast<Float>(10);
-Float constexpr ahalf = static_cast<Float>(1) / static_cast<Float>(2);
+Float constexpr eps = um2::eps_distance; 
+Float constexpr ahalf = 1 / static_cast<Float>(2);
 
 template <Int D>
 HOSTDEV constexpr auto
@@ -15,7 +15,7 @@ makeLine() -> um2::LineSegment<D>
 {
   um2::LineSegment<D> line;
   for (Int i = 0; i < D; ++i) {
-    line[0][i] = static_cast<Float>(1);
+    line[0][i] = 1;
     line[1][i] = static_cast<Float>(2);
   }
   return line;
@@ -101,8 +101,8 @@ TEST_CASE(isLeft)
   um2::LineSegment2 line = makeLine<2>();
   um2::Point2 p0 = line[0];
   um2::Point2 p1 = line[1];
-  p0[1] -= static_cast<Float>(1); // (1, 0)
-  p1[1] += static_cast<Float>(1); // (2, 3)
+  p0[1] -= 1; // (1, 0)
+  p1[1] += 1; // (2, 3)
   ASSERT(!line.isLeft(p0));
   ASSERT(line.isLeft(p1));
   p0[1] += static_cast<Float>(2); // (1, 2)
@@ -125,10 +125,10 @@ TEST_CASE(pointClosestTo)
 
   // The left end point
   um2::Point<D> p0 = line[0];
-  ASSERT_NEAR(line.pointClosestTo(p0), static_cast<Float>(0), eps);
+  ASSERT_NEAR(line.pointClosestTo(p0), 0, eps);
   // A point to the left of the left end point
-  p0[0] -= static_cast<Float>(1);
-  ASSERT_NEAR(line.pointClosestTo(p0), static_cast<Float>(0), eps);
+  p0[0] -= 1;
+  ASSERT_NEAR(line.pointClosestTo(p0), 0, eps);
   // A point to the right of the left end point
   p0 = line(ahalf);
   p0[0] -= static_cast<Float>(1) / 10;
@@ -138,8 +138,8 @@ TEST_CASE(pointClosestTo)
   // Repeat for the right end point
   um2::Point<D> p1 = line[1];
   ASSERT_NEAR(line.pointClosestTo(p1), 1, eps);
-  p1[0] += static_cast<Float>(1);
-  ASSERT_NEAR(line.pointClosestTo(p1), static_cast<Float>(1), eps);
+  p1[0] += 1;
+  ASSERT_NEAR(line.pointClosestTo(p1), 1, eps);
 }
 
 //=============================================================================
@@ -154,10 +154,10 @@ TEST_CASE(distanceTo)
 
   // The left end point
   um2::Point<D> p0 = line[0];
-  ASSERT_NEAR(line.distanceTo(p0), static_cast<Float>(0), eps);
+  ASSERT_NEAR(line.distanceTo(p0), 0, eps);
   // A point to the left of the left end point
-  p0[0] -= static_cast<Float>(1);
-  ASSERT_NEAR(line.distanceTo(p0), static_cast<Float>(1), eps);
+  p0[0] -= 1;
+  ASSERT_NEAR(line.distanceTo(p0), 1, eps);
   // A point to the right of the left end point
   p0[0] += ahalf * 3;
   Float ref = 0;
@@ -171,9 +171,9 @@ TEST_CASE(distanceTo)
 
   // Repeat for the right end point
   um2::Point<D> p1 = line[1];
-  ASSERT_NEAR(line.distanceTo(p1), static_cast<Float>(0), eps);
-  p1[0] += static_cast<Float>(1);
-  ASSERT_NEAR(line.distanceTo(p1), static_cast<Float>(1), eps);
+  ASSERT_NEAR(line.distanceTo(p1), 0, eps);
+  p1[0] += 1;
+  ASSERT_NEAR(line.distanceTo(p1), 1, eps);
   p1[0] -= ahalf * 3;
   ASSERT_NEAR(line.distanceTo(p1), ref, eps);
 }
@@ -204,7 +204,7 @@ testEdgeForIntersections(um2::LineSegment2 const & l)
       if (0 < r) {
         um2::Point2 const p = ray(r);
         Float const d = l.distanceTo(p);
-        ASSERT(d < 10 * um2::eps_distance);
+        ASSERT(d < um2::eps_distance);
       }
     }
   }
@@ -216,11 +216,11 @@ TEST_CASE(intersect)
   um2::LineSegment2 l(um2::Point2(0, 1), um2::Point2(2, -1));
   um2::Ray2 const ray(um2::Point2(0, -1), um2::normalized(um2::Point2(1, 1)));
   Float res = l.intersect(ray);
-  ASSERT_NEAR(res, um2::sqrt(static_cast<Float>(2)), eps * 100);
+  ASSERT_NEAR(res, um2::sqrt(static_cast<Float>(2)), eps);
 
   l = um2::LineSegment2(um2::Point2(1, -1), um2::Point2(1, 1));
   res = l.intersect(ray);
-  ASSERT_NEAR(res, um2::sqrt(static_cast<Float>(2)), eps * 100);
+  ASSERT_NEAR(res, um2::sqrt(static_cast<Float>(2)), eps);
 
   // Anchor p0 at (0, 0) and rotate p1 around a circle
   um2::Point2 const p0(0, 0);
