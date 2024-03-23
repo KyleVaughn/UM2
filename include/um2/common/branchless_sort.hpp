@@ -39,4 +39,24 @@ sort3(T * const x, T * const y, T * const z) noexcept
   }
 }
 
+//==============================================================================
+// sort4
+//==============================================================================
+
+template <typename T>
+HOSTDEV constexpr void
+sort4(T * const x1, T * const x2, T * const x3, T * const x4) noexcept
+{
+  um2::sort3(x1, x2, x3);
+  if (*x4 < *x3) {
+    um2::swap(*x3, *x4);
+    if (*x3 < *x2) {
+      um2::swap(*x2, *x3);
+      if (*x2 < *x1) {
+        um2::swap(*x1, *x2);
+      }
+    }
+  }
+}
+
 } // namespace um2

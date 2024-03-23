@@ -1,3 +1,17 @@
+update variabce/summation with Kahan/Welford
+  -> mean, variance
+
+more efficient bounding box from equations for tri6, quad8?
+more efficient intersection by computing if the ray even intersects the 1D line
+made in 2D
+
+revive benchmarks
+m
+ake the ray the x-axis. Can only have intersection if a vertex within eps
+  fast fail for polygon intersection
+
+add um2::is_sorted to quadratic segment, tri, quad, tri6. nad quad8 intersection tests
+
 remove iostream
 
 Replace epsilons with eps_distance
@@ -32,8 +46,6 @@ more robust testing for mesh functions
 -> faceContaining 
 -> intersect
 -> validate
-
-getEdge
 
 makeMaterialsElset
   -> convert Material_ to Material with elset data
@@ -95,9 +107,6 @@ PURE and ASSERTS/Log messages
   -> Log no
 
 valgrind and cuda test on laptop
-
-variadic template expression for test macros.
-Just assume 1 thread 1 block only and that they will write themselves otherwise
 
 allocator
 

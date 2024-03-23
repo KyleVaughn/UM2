@@ -4,6 +4,7 @@
 #include <um2/stdlib/assert.hpp>
 #include <um2/stdlib/algorithm/max.hpp>
 #include <um2/stdlib/algorithm/min.hpp>
+#include <um2/stdlib/math/fma.hpp>
 #include <um2/stdlib/math/roots.hpp>
 #include <um2/common/cast_if_not.hpp>
 
@@ -705,13 +706,28 @@ Vec<D, T>::normalized() const noexcept -> Vec<D, T>
   return result;
 }
 
+template <class T>
+HOSTDEV [[nodiscard]] inline constexpr auto
+det2x2(T const a, T const b, T const c, T const d) noexcept -> T
+{
+  // Kahan's algorithm for accurate 2 x 2 determinants.
+  // Returns a * d - b * c, but more accurately.
+  T const w = b * c;
+  T const e = um2::fma(-b, c, w);
+  T const f = um2::fma(a, d, -w);
+  return f + e; 
+}
+
 template <Int D, class T>
 HOSTDEV [[nodiscard]] constexpr auto
 Vec<D, T>::cross(Vec<2, T> const & v) const noexcept -> T
 requires(D == 2)
 {
   static_assert(std::is_floating_point_v<T>);
-  return _data[0] * v[1] - _data[1] * v[0];
+  // It's important to use the slightly slower, but much more accurate Kahan's
+  // algorithm for the 2 x 2 determinant here, since the sign of the result is
+  // used in many geometric algorithms.
+  return det2x2(_data[0], _data[1], v[0], v[1]);
 }
 
 template <Int D, class T>
@@ -720,9 +736,9 @@ Vec<D, T>::cross(Vec<3, T> const & v) const noexcept -> Vec<3, T>
 requires(D == 3)
 {
   static_assert(std::is_floating_point_v<T>);
-  return {(_data[1] * v[2]) - (_data[2] * v[1]),
-          (_data[2] * v[0]) - (_data[0] * v[2]),
-          (_data[0] * v[1]) - (_data[1] * v[0])};
+  return {det2x2(_data[1], _data[2], v[1], v[2]),
+          det2x2(_data[2], _data[0], v[2], v[0]),
+          det2x2(_data[0], _data[1], v[0], v[1])};
 }
 
 template <Int D, class T>

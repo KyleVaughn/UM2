@@ -2,6 +2,7 @@
 
 #include <um2/geometry/line_segment.hpp>
 #include <um2/stdlib/numbers.hpp>
+#include <um2/common/branchless_sort.hpp>
 
 //==============================================================================
 // TRIANGLE
@@ -211,13 +212,10 @@ PURE HOSTDEV constexpr auto
 Triangle<D>::contains(Point2 const & p) const noexcept -> bool requires(D == 2)
 {
   ASSERT(isCCW());
-  Vec2F const a = _v[1] - _v[0];
-  Vec2F const b = _v[2] - _v[0];
-  Vec2F const c = p - _v[0];
-  Float const invdet_ab = 1 / a.cross(b);
-  Float const r = c.cross(b) * invdet_ab;
-  Float const s = a.cross(c) * invdet_ab;
-  return (r >= 0) && (s >= 0) && (r + s <= 1);
+  bool const b0 = areCCW(_v[0], _v[1], p);
+  bool const b1 = areCCW(_v[1], _v[2], p);
+  bool const b2 = areCCW(_v[2], _v[0], p);
+  return b0 && b1 && b2;
 }
 
 //==============================================================================
@@ -297,6 +295,7 @@ requires(D == 2) {
   result[0] = Edge(_v[0], _v[1]).intersect(ray);
   result[1] = Edge(_v[1], _v[2]).intersect(ray);
   result[2] = Edge(_v[2], _v[0]).intersect(ray);
+  um2::sort3(&result[0], &result[1], &result[2]);
   return result;
 }
 

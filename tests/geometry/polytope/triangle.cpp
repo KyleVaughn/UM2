@@ -3,7 +3,7 @@
 
 #include "../../test_macros.hpp"
 
-Float constexpr eps = um2::eps_distance * castIfNot<Float>(10);
+Float constexpr eps = um2::eps_distance;
 
 template <Int D>
 HOSTDEV constexpr auto
@@ -176,7 +176,7 @@ testTriForIntersections(um2::Triangle<2> const tri)
       // For each intersection coordinate
       for (auto const & r : intersections) {
         // If intersection is valid
-        if (r < um2::inf_distance / 10) {
+        if (0 <= r) {
           um2::Point2 const p = ray(r);
           // Get the distance to the closest edge
           Float min_dist = um2::inf_distance;
@@ -187,8 +187,7 @@ testTriForIntersections(um2::Triangle<2> const tri)
               min_dist = d;
             }
           }
-          // Check if the distance is close to zero
-          ASSERT(min_dist < 10 * um2::eps_distance);
+          ASSERT(min_dist < um2::eps_distance);
         }
       }
     }

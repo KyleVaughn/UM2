@@ -2,6 +2,7 @@
 
 #include <um2/geometry/line_segment.hpp>
 #include <um2/stdlib/numbers.hpp>
+#include <um2/common/branchless_sort.hpp>
 
 //==============================================================================
 // QUADRILATERAL
@@ -353,6 +354,7 @@ requires(D == 2) {
   result[1] = Edge(_v[1], _v[2]).intersect(ray);
   result[2] = Edge(_v[2], _v[3]).intersect(ray);
   result[3] = Edge(_v[3], _v[0]).intersect(ray);
+  um2::sort4(&result[0], &result[1], &result[2], &result[3]);
   return result;
 }
 

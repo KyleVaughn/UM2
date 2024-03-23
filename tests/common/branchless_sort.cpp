@@ -2,7 +2,6 @@
 #include <um2/stdlib/algorithm/is_sorted.hpp>
 
 #include "../test_macros.hpp"
-#include <iostream>
 
 #define TEST_SORT3(X, Y, Z) \
 { \
@@ -14,12 +13,24 @@
   ASSERT(*y <= *z); \
 }
 
+#define TEST_SORT4(X1, X2, X3, X4) \
+{ \
+  *x1 = X1; \
+  *x2 = X2; \
+  *x3 = X3; \
+  *x4 = X4; \
+  um2::sort4(x1, x2, x3, x4); \
+  ASSERT(*x1 <= *x2); \
+  ASSERT(*x2 <= *x3); \
+  ASSERT(*x3 <= *x4); \
+}
+
 template <typename T>
 HOSTDEV
 TEST_CASE(sort3)
 {
   T arr[3];
-  T * const x = &arr[0]; 
+  T * const x = &arr[0];
   T * const y = &arr[1];
   T * const z = &arr[2];
   // All permutations of 1, 2, 3
@@ -32,9 +43,46 @@ TEST_CASE(sort3)
 }
 
 template <typename T>
+HOSTDEV
+TEST_CASE(sort4)
+{
+  T arr[4];
+  T * const x1 = &arr[0];
+  T * const x2 = &arr[1];
+  T * const x3 = &arr[2];
+  T * const x4 = &arr[3];
+  // All permutations of 1, 2, 3, 4
+  TEST_SORT4(1, 2, 3, 4);
+  TEST_SORT4(1, 2, 4, 3);
+  TEST_SORT4(1, 3, 2, 4);
+  TEST_SORT4(1, 3, 4, 2);
+  TEST_SORT4(1, 4, 2, 3);
+  TEST_SORT4(1, 4, 3, 2);
+  TEST_SORT4(2, 1, 3, 4);
+  TEST_SORT4(2, 1, 4, 3);
+  TEST_SORT4(2, 3, 1, 4);
+  TEST_SORT4(2, 3, 4, 1);
+  TEST_SORT4(2, 4, 1, 3);
+  TEST_SORT4(2, 4, 3, 1);
+  TEST_SORT4(3, 1, 2, 4);
+  TEST_SORT4(3, 1, 4, 2);
+  TEST_SORT4(3, 2, 1, 4);
+  TEST_SORT4(3, 2, 4, 1);
+  TEST_SORT4(3, 4, 1, 2);
+  TEST_SORT4(3, 4, 2, 1);
+  TEST_SORT4(4, 1, 2, 3);
+  TEST_SORT4(4, 1, 3, 2);
+  TEST_SORT4(4, 2, 1, 3);
+  TEST_SORT4(4, 2, 3, 1);
+  TEST_SORT4(4, 3, 1, 2);
+  TEST_SORT4(4, 3, 2, 1);
+}
+
+template <typename T>
 TEST_SUITE(branchless_sort)
 {
   TEST_HOSTDEV(sort3, T)
+  TEST_HOSTDEV(sort4, T)
 }
 
 auto

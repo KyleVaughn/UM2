@@ -2,7 +2,7 @@
 
 #include "../../test_macros.hpp"
 
-Float constexpr eps = um2::eps_distance * castIfNot<Float>(10);
+Float constexpr eps = um2::eps_distance;
 
 template <Int D>
 HOSTDEV constexpr auto
@@ -187,7 +187,6 @@ TEST_CASE(isCCW_flip)
 
 HOSTDEV
 void
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 testQuadForIntersections(um2::QuadraticQuadrilateral<2> const quad)
 {
   // Parameters
@@ -211,7 +210,7 @@ testQuadForIntersections(um2::QuadraticQuadrilateral<2> const quad)
       // For each intersection coordinate
       for (auto const & r : intersections) {
         // If intersection is valid
-        if (r < um2::inf_distance / 10) {
+        if (0 <= r) {
           um2::Point2 const p = ray(r);
           // Get the distance to the closest edge
           Float min_dist = um2::inf_distance;
@@ -223,7 +222,7 @@ testQuadForIntersections(um2::QuadraticQuadrilateral<2> const quad)
             }
           }
           // Check if the distance is close to zero
-          ASSERT(min_dist < 100 * um2::eps_distance);
+          ASSERT(min_dist < um2::eps_distance);
         }
       }
     }

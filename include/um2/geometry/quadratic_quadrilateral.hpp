@@ -365,6 +365,7 @@ requires(D == 2) {
     result[2 * i] = v[0];
     result[2 * i + 1] = v[1];
   }
+  um2::insertionSort(result.begin(), result.end());
   return result;
 }
 
