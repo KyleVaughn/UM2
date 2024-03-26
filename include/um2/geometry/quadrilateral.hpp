@@ -318,13 +318,20 @@ Quadrilateral<D>::centroid() const noexcept -> Point<D>
 // boundingBox
 //==============================================================================
 
-// Defined in Polytope.hpp for linear polygons, since for all linear polytopes
-// the bounding box is simply the bounding box of the vertices.
-
 template <Int D>
 PURE HOSTDEV constexpr auto
 Quadrilateral<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 {
+  // The bounding box of a 3D quadrilateral is non-trivial to compute.
+  // Assert that all the z-coordinates are the same.
+#if UM2_ENABLE_ASSERTS
+  if constexpr (D == 3) {
+    Float const z0 = _v[0][2];
+    for (Int i = 1; i < 4; ++i) {
+      ASSERT_NEAR(_v[i][2], z0, eps_distance);
+    }
+  }
+#endif
   return um2::boundingBox(*this);
 }
 

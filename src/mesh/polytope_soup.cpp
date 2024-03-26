@@ -14,15 +14,10 @@
 #include <um2/stdlib/utility/pair.hpp>
 #include <um2/stdlib/algorithm/fill.hpp>
 #include <um2/stdlib/algorithm/is_sorted.hpp>
+#include <um2/math/stats.hpp>
 
 #include <algorithm> // std::sort, std::set_intersection
-
-//#include <charconv>
-//#include <concepts>
-//#include <cstdlib>
-//#include <cstring>
 #include <fstream>
-//#include <sstream>
 
 namespace um2
 {
@@ -34,24 +29,20 @@ namespace um2
 PolytopeSoup::PolytopeSoup(String const & filename) { read(filename); }
 
 //==============================================================================
-// Methods
-//==============================================================================
-
-//==============================================================================
 // addElement
 //==============================================================================
 
 auto
 PolytopeSoup::addElement(VTKElemType const type, Vector<Int> const & conn) -> Int
 {
-  _element_types.push_back(type);
+  _element_types.emplace_back(type);
   if (_element_offsets.empty()) {
-    _element_offsets.push_back(0);
+    _element_offsets.emplace_back(0);
   }
-  _element_offsets.push_back(_element_offsets.back() + conn.size());
+  _element_offsets.emplace_back(_element_offsets.back() + conn.size());
   for (auto const & id : conn) {
     ASSERT(id < _vertices.size());
-    _element_conn.push_back(id);
+    _element_conn.emplace_back(id);
   }
   return _element_types.size() - 1;
 }
@@ -86,12 +77,12 @@ PolytopeSoup::addElset(String const & name, Vector<Int> const & ids, Vector<Floa
 
   _elset_names.emplace_back(name);
   if (_elset_offsets.empty()) {
-    _elset_offsets.push_back(0);
+    _elset_offsets.emplace_back(0);
   }
 
   Int const old_num_ids = _elset_ids.size();
   Int const new_num_ids = old_num_ids + num_ids;
-  _elset_offsets.push_back(new_num_ids);
+  _elset_offsets.emplace_back(new_num_ids);
   _elset_ids.resize(new_num_ids);
   um2::copy(ids.begin(), ids.end(), _elset_ids.data() + old_num_ids);
 #if UM2_ENABLE_ASSERTS
@@ -178,7 +169,6 @@ PolytopeSoup::getElement(Int const i, VTKElemType & type, Vector<Int> & conn) co
   auto const iend = _element_offsets[i + 1];
   auto const n = iend - istart;
   conn.resize(n);
-  // n is typically small, so we can use a simple loop instead of um2::copy
   for (Int j = 0; j < n; ++j) {
     conn[j] = _element_conn[istart + j];
   }
@@ -194,48 +184,35 @@ PolytopeSoup::getElementBoundingBox(Int const i) const -> AxisAlignedBox3
 
   // The minimum and maximum z-coordinates of the box should
   // be the same.
-  AxisAlignedBox3 box;
   // Get the z-coordinate of the first vertex
   Float const z = _vertices[_element_conn[istart]][2];
 
   switch (elem_type) {
   case VTKElemType::Vertex: {
     Point3 const p0 = _vertices[_element_conn[istart]];
-    box = AxisAlignedBox3(p0, p0);
-    break;
+    return {p0, p0};
   }
   case VTKElemType::Line: {
     Vec<2, Point3> pts;
     for (Int j = 0; j < 2; ++j) {
       pts[j] = _vertices[_element_conn[istart + j]];
     }
-    LineSegment<3> const line(pts);
-    box = line.boundingBox();
-    break;
+    return um2::boundingBox(pts.begin(), pts.end());
   }
   case VTKElemType::Triangle: {
     Vec<3, Point3> pts;
     for (Int j = 0; j < 3; ++j) {
       pts[j] = _vertices[_element_conn[istart + j]];
     }
-    Triangle3 const tri(pts);
-    box = tri.boundingBox();
-    break;
+    return um2::boundingBox(pts.begin(), pts.end());
   }
   case VTKElemType::Quad: {
-    Vec<4, Point2> pts;
+    Vec<4, Point3> pts;
     for (Int j = 0; j < 4; ++j) {
-      auto const p = _vertices[_element_conn[istart + j]];
-      pts[j][0] = p[0];
-      pts[j][1] = p[1];
-      ASSERT_NEAR(p[2], z, eps_distance);
+      pts[j] = _vertices[_element_conn[istart + j]];
+      ASSERT_NEAR(pts[j][2], z, eps_distance);
     }
-    Quadrilateral2 const quad(pts);
-    auto const box2 = quad.boundingBox();
-    Point3 const p0(box2.xMin(), box2.yMin(), z);
-    Point3 const p1(box2.xMax(), box2.yMax(), z);
-    box = AxisAlignedBox3(p0, p1);
-    break;
+    return um2::boundingBox(pts.begin(), pts.end());
   }
   case VTKElemType::QuadraticTriangle: {
     Vec<6, Point2> pts;
@@ -249,8 +226,7 @@ PolytopeSoup::getElementBoundingBox(Int const i) const -> AxisAlignedBox3
     auto const box2 = tri6.boundingBox();
     Point3 const p0(box2.xMin(), box2.yMin(), z);
     Point3 const p1(box2.xMax(), box2.yMax(), z);
-    box = AxisAlignedBox3(p0, p1);
-    break;
+    return {p0, p1};
   }
   case VTKElemType::QuadraticQuad: {
     Vec<8, Point2> pts;
@@ -264,15 +240,12 @@ PolytopeSoup::getElementBoundingBox(Int const i) const -> AxisAlignedBox3
     auto const box2 = quad8.boundingBox();
     Point3 const p0(box2.xMin(), box2.yMin(), z);
     Point3 const p1(box2.xMax(), box2.yMax(), z);
-    box = AxisAlignedBox3(p0, p1);
-    break;
+    return {p0, p1};
   }
   default:
     LOG_ERROR("Unsupported element type");
   }
-  // Ensure the z-coordinates are the same
-  ASSERT_NEAR(box.zMin(), box.zMax(), eps_distance);
-  return box;
+  return AxisAlignedBox3::empty();
 }
 
 auto
@@ -333,7 +306,7 @@ PolytopeSoup::getElementArea(Int const i) const -> Float
   default:
     LOG_ERROR("Unsupported element type");
   }
-  return -1000000;
+  return -100000;
 }
 
 auto
@@ -350,17 +323,17 @@ PolytopeSoup::getElementCentroid(Int const i) const -> Point3
   // The z-coordinate should be the same for all vertices of the element.
   Point3 c;
   Float const z = _vertices[_element_conn[istart]][2];
+  c[0] = -100000;
+  c[1] = -100000;
   c[2] = z;
 
   switch (elem_type) {
   case VTKElemType::Vertex:
-    c = _vertices[_element_conn[istart]];
-    break;
+    return _vertices[_element_conn[istart]];
   case VTKElemType::Line: {
     auto const p0 = _vertices[_element_conn[istart]];
     auto const p1 = _vertices[_element_conn[istart + 1]];
-    c = midpoint(p0, p1);
-    break;
+    return midpoint(p0, p1);
   }
   case VTKElemType::Triangle: {
     Vec<3, Point3> pts;
@@ -368,8 +341,7 @@ PolytopeSoup::getElementCentroid(Int const i) const -> Point3
       pts[j] = _vertices[_element_conn[istart + j]];
     }
     Triangle3 const tri(pts);
-    c = tri.centroid();
-    break;
+    return tri.centroid();
   }
   case VTKElemType::Quad: {
     Vec<4, Point2> pts;
@@ -383,7 +355,7 @@ PolytopeSoup::getElementCentroid(Int const i) const -> Point3
     auto const c2 = quad.centroid();
     c[0] = c2[0];
     c[1] = c2[1];
-    break;
+    return c;
   }
   case VTKElemType::QuadraticTriangle: {
     Vec<6, Point2> pts;
@@ -397,7 +369,7 @@ PolytopeSoup::getElementCentroid(Int const i) const -> Point3
     auto const c2 = tri6.centroid();
     c[0] = c2[0];
     c[1] = c2[1];
-    break;
+    return c;
   }
   case VTKElemType::QuadraticQuad: {
     Vec<8, Point2> pts;
@@ -411,12 +383,11 @@ PolytopeSoup::getElementCentroid(Int const i) const -> Point3
     auto const c2 = quad8.centroid();
     c[0] = c2[0];
     c[1] = c2[1];
-    break;
+    return c;
   }
   default:
     LOG_ERROR("Unsupported element type");
   }
-  ASSERT_NEAR(c[2], z, eps_distance);
   return c;
 }
 
@@ -431,7 +402,6 @@ PolytopeSoup::getElementMeanChordLength(Int const i) const -> Float
   auto const istart = _element_offsets[i];
 
   // The z-coordinate should be the same for all vertices of the element.
-  Float mcl = 0;
 #if UM2_ENABLE_ASSERTS
   Float const z = _vertices[_element_conn[istart]][2];
 #endif
@@ -446,8 +416,7 @@ PolytopeSoup::getElementMeanChordLength(Int const i) const -> Float
       ASSERT_NEAR(p[2], z, eps_distance);
     }
     Triangle2 const tri(pts);
-    mcl = tri.meanChordLength();
-    break;
+    return tri.meanChordLength();
   }
   case VTKElemType::Quad: {
     Vec<4, Point2> pts;
@@ -458,8 +427,7 @@ PolytopeSoup::getElementMeanChordLength(Int const i) const -> Float
       ASSERT_NEAR(p[2], z, eps_distance);
     }
     Quadrilateral2 const quad(pts);
-    mcl = quad.meanChordLength();
-    break;
+    return quad.meanChordLength();
   }
   case VTKElemType::QuadraticTriangle: {
     Vec<6, Point2> pts;
@@ -470,8 +438,7 @@ PolytopeSoup::getElementMeanChordLength(Int const i) const -> Float
       ASSERT_NEAR(p[2], z, eps_distance);
     }
     QuadraticTriangle2 const tri6(pts);
-    mcl = tri6.meanChordLength();
-    break;
+    return tri6.meanChordLength();
   }
   case VTKElemType::QuadraticQuad: {
     Vec<8, Point2> pts;
@@ -482,13 +449,12 @@ PolytopeSoup::getElementMeanChordLength(Int const i) const -> Float
       ASSERT_NEAR(p[2], z, eps_distance);
     }
     QuadraticQuadrilateral2 const quad8(pts);
-    mcl = quad8.meanChordLength();
-    break;
+    return quad8.meanChordLength();
   }
   default:
     LOG_ERROR("Unsupported element type");
   }
-  return mcl;
+  return -100000;
 }
 
 //==============================================================================
@@ -824,14 +790,14 @@ PolytopeSoup::getMaterialNames(Vector<String> & material_names) const
 }
 
 //==============================================================================
-// getSubmesh
+// getSubset
 //==============================================================================
 
 void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) const
+PolytopeSoup::getSubset(String const & elset_name, PolytopeSoup & subset) const
 {
-  LOG_DEBUG("Extracting submesh: ", elset_name);
+  LOG_DEBUG("Extracting subset: ", elset_name);
 
   // Find the elset with the given name.
   Int elset_index = 0;
@@ -844,33 +810,33 @@ PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) cons
     }
   }
   if (!found) {
-    LOG_ERROR("getSubmesh: Elset '", elset_name, "' not found");
+    LOG_ERROR("getSubset: Elset '", elset_name, "' not found");
     return;
   }
 
-  // Get the element ids of the submesh.
-  auto const submesh_elset_start = _elset_offsets[elset_index];
-  auto const submesh_elset_end = _elset_offsets[elset_index + 1];
-  auto const submesh_num_elements = submesh_elset_end - submesh_elset_start;
-  Vector<Int> const element_ids(_elset_ids.cbegin() + submesh_elset_start,
-                          _elset_ids.cbegin() + submesh_elset_end);
+  // Get the element ids of the subset.
+  auto const subset_elset_start = _elset_offsets[elset_index];
+  auto const subset_elset_end = _elset_offsets[elset_index + 1];
+  auto const subset_num_elements = subset_elset_end - subset_elset_start;
+  Vector<Int> const element_ids(_elset_ids.cbegin() + subset_elset_start,
+                          _elset_ids.cbegin() + subset_elset_end);
   if (!um2::is_sorted(element_ids.cbegin(), element_ids.cend())) {
-    LOG_ERROR("getSubmesh: Elset IDs are not sorted. Use sortElsets() to correct this.");
+    LOG_ERROR("getSubset: Elset IDs are not sorted. Use sortElsets() to correct this.");
   }
 
-  // Get the length of the submesh element connectivity as well as the number of each
+  // Get the length of the subset element connectivity as well as the number of each
   // element type.
-  Vector<um2::Pair<VTKElemType, Int>> submesh_elem_type_counts;
-  Int submesh_element_conn_len = 0;
-  for (Int i = 0; i < submesh_num_elements; ++i) {
+  Vector<um2::Pair<VTKElemType, Int>> subset_elem_type_counts;
+  Int subset_element_conn_len = 0;
+  for (Int i = 0; i < subset_num_elements; ++i) {
     auto const element_id = element_ids[i];
     auto const element_start = _element_offsets[element_id];
     auto const element_end = _element_offsets[element_id + 1];
     auto const element_len = element_end - element_start;
-    submesh_element_conn_len += element_len;
+    subset_element_conn_len += element_len;
     auto const element_type = _element_types[element_id];
     found = false;
-    for (auto & type_count : submesh_elem_type_counts) {
+    for (auto & type_count : subset_elem_type_counts) {
       auto const type = type_count.first;
       if (type == element_type) {
         ++type_count.second;
@@ -879,50 +845,50 @@ PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) cons
       }
     }
     if (!found) {
-      submesh_elem_type_counts.emplace_back(element_type, 1);
+      subset_elem_type_counts.emplace_back(element_type, 1);
     }
   }
 
-  // Get the vertex ids of the submesh.
+  // Get the vertex ids of the subset.
   Vector<Int> vertex_ids;
-  vertex_ids.reserve(submesh_element_conn_len);
-  for (Int i = 0; i < submesh_num_elements; ++i) {
+  vertex_ids.reserve(subset_element_conn_len);
+  for (Int i = 0; i < subset_num_elements; ++i) {
     auto const element_id = element_ids[i];
     auto const element_start = _element_offsets[element_id];
     auto const element_end = _element_offsets[element_id + 1];
     auto const element_len = element_end - element_start;
     for (Int j = 0; j < element_len; ++j) {
       Int const vertex_id = _element_conn[element_start + j];
-      vertex_ids.push_back(vertex_id);
+      vertex_ids.emplace_back(vertex_id);
     }
   }
 
-  // Get the unique vertex ids of the submesh.
+  // Get the unique vertex ids of the subset.
   std::sort(vertex_ids.begin(), vertex_ids.end());
   Vector<Int> unique_vertex_ids = vertex_ids;
   auto const * const last =
       std::unique(unique_vertex_ids.begin(), unique_vertex_ids.end());
   auto const num_unique_verts = static_cast<Int>(last - unique_vertex_ids.cbegin());
 
-  // Add each of the unique vertices to the submesh.
-  submesh.reserveMoreVertices(num_unique_verts);
+  // Add each of the unique vertices to the subset.
+  subset.reserveMoreVertices(num_unique_verts);
   for (Int i = 0; i < num_unique_verts; ++i) {
     auto const vertex_id = unique_vertex_ids[i];
     auto const & vertex = _vertices[vertex_id];
-    submesh.addVertex(vertex);
+    subset.addVertex(vertex);
   }
 
   // Reserve space for elements
-  for (auto const & type_count : submesh_elem_type_counts) {
+  for (auto const & type_count : subset_elem_type_counts) {
     VTKElemType const type = type_count.first;
     Int const count = type_count.second;
-    submesh.reserveMoreElements(type, count);
+    subset.reserveMoreElements(type, count);
   }
 
-  // For each element, add it to the submesh, remapping the vertex IDs
+  // For each element, add it to the subset, remapping the vertex IDs
   // unique_vertex_ids[new_id] = old_id
   Vector<Int> conn;
-  for (Int i = 0; i < submesh_num_elements; ++i) {
+  for (Int i = 0; i < subset_num_elements; ++i) {
     auto const element_id = element_ids[i];
     auto const element_type = _element_types[element_id];
     auto const element_start = _element_offsets[element_id];
@@ -937,7 +903,7 @@ PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) cons
       ASSERT(*it == old_vertex_id);
       conn[j] = new_vertex_id;
     }
-    submesh.addElement(element_type, conn);
+    subset.addElement(element_type, conn);
   }
 
   // If the intersection of this elset and another elset is non-empty, then we need to
@@ -949,7 +915,7 @@ PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) cons
 
   Vector<Int> ids;
   Vector<Float> elset_data;
-  Int * intersection = new Int[static_cast<size_t>(submesh_num_elements)];
+  Int * intersection = new Int[static_cast<size_t>(subset_num_elements)];
   Int const num_elsets = _elset_names.size();
   for (Int i = 0; i < num_elsets; ++i) {
     if (i == elset_index) {
@@ -980,7 +946,7 @@ PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) cons
       ids[j] = new_element_id;
     }
     if (_elset_data[i].empty()) {
-      submesh.addElset(name, ids);
+      subset.addElset(name, ids);
       continue;
     }
     // There is data
@@ -994,7 +960,7 @@ PolytopeSoup::getSubmesh(String const & elset_name, PolytopeSoup & submesh) cons
       auto const idx = static_cast<Int>(it - elset_ids_begin);
       elset_data[j] = this_elset_data[idx];
     }
-    submesh.addElset(name, ids, elset_data);
+    subset.addElset(name, ids, elset_data);
   }
   delete[] intersection;
 }
@@ -1203,7 +1169,7 @@ abaqusParseElsets(PolytopeSoup & soup, std::ifstream & file, char * const line,
       Int const id = strto<Int>(token.data(), &end);
       ASSERT(end != nullptr);
       ASSERT(id > 0);
-      elset_ids.push_back(id - 1); // ABAQUS is 1-indexed
+      elset_ids.emplace_back(id - 1); // ABAQUS is 1-indexed
 
       // Done if there are not enough characters left for another id
       if (line_view.size() <= comma + 2) {
@@ -2525,8 +2491,8 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
 
   nonzero_ids.reserve(num_elems);
   for (Int i = 0; i < num_elems; ++i) {
-    if (data[i] > 0.0) {
-      nonzero_ids.push_back(i);
+    if (data[i] > 0) {
+      nonzero_ids.emplace_back(i);
       AxisAlignedBox3 const aabb = soup.getElementBoundingBox(i);
       Point2 const minima(aabb.xMin(), aabb.yMin());
       Point2 const maxima(aabb.xMax(), aabb.yMax());
@@ -2557,7 +2523,7 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
       if (i_aabb.intersects(subset_aabb)) {
         for (auto const j : subset) {
           if (soup.elementsShareVertexApprox(i, j)) {
-            subset.push_back(i);
+            subset.emplace_back(i);
             subset_aabb += i_aabb;
             is_neighbor = true;
             goto next_element;
@@ -2632,42 +2598,41 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
     }
   }
 
-  //// Add each subset to the soup
-  //Int subset_count = 0;
-  //for (auto const & subset : subset_ids) {
-  //  Vector<Float> subset_power;
-  //  subset_power.reserve(subset.size());
-  //  for (auto const i : subset) {
-  //    subset_power.push_back(data[i]);
-  //  }
-  //  String subset_count_str(subset_count);
-  //  String subset_name("power_region_");
-  //  // pad with zeros until 5 digits
-  //  while (subset_count_str.size() < 5) {
-  //    subset_count_str = "0" + subset_count_str;
-  //  }
-  //  subset_name += subset_count_str;
-  //  soup.addElset(subset_name, subset, subset_power);
-  //  ++subset_count;
-  //}
-
   LOG_DEBUG("Computing total powers and centroids");
+  // We care about the numerical accuracy of the power and centroid.
+  // Therefore, we will avoid using the naive algorithm in favor of 
+  // um2::sum, which better handles floating point error.
+  // However, we have to do extra memory allocations to store
+  // intermediate results.
   subset_pc.reserve(subset_ids.size());
+  Vector<Float> areas;
+  Vector<Point3> area_weighted_centroids;
+  Vector<Float> area_weighted_powers; // data[i] is power density, so data[i] * a
   for (auto const & subset : subset_ids) {
-    Float total_power = 0;
-    Float area = 0;
-    Point3 centroid = Point3::zero();
-    for (auto const iface : subset) {
+    Int const n = subset.size();
+    areas.resize(n);
+    area_weighted_centroids.resize(n);
+    area_weighted_powers.resize(n);
+    // Get the area, area-weighted centroid, and area-weighted power
+    for (Int i = 0; i < n; ++i) {
+      Int const iface = subset[i];
       Float const a = soup.getElementArea(iface);
       Point3 const c = soup.getElementCentroid(iface);
-      area += a;
-      centroid += (a * c);
-      // The power from MPACT is actually power density... Weight by area
-      total_power += data[iface] * a;
+      areas[i] = a;
+      area_weighted_centroids[i] = a * c;
+      area_weighted_powers[i] = data[iface] * a;
       ASSERT(data[iface] > 0);
     }
-    centroid /= area;
-    subset_pc.emplace_back(total_power, centroid);
+    Float const area_sum = um2::sum(areas.cbegin(), areas.cend());
+    Point3 centroid_sum = um2::sum(area_weighted_centroids.cbegin(),
+                                        area_weighted_centroids.cend());
+    Float const total_power = um2::sum(area_weighted_powers.cbegin(),
+                                       area_weighted_powers.cend());
+
+    // Compute the centroid of the set from geometric decomposition
+    // c = sum_i (a_i * c_i) / sum_i a_i
+    centroid_sum /= area_sum;
+    subset_pc.emplace_back(total_power, centroid_sum);
   }
   return subset_pc;
 }

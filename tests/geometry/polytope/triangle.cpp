@@ -1,5 +1,6 @@
 #include <um2/geometry/triangle.hpp>
 #include <um2/geometry/modular_rays.hpp>
+#include <um2/stdlib/algorithm/is_sorted.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -173,6 +174,7 @@ testTriForIntersections(um2::Triangle<2> const tri)
     for (Int i = 0; i < num_rays; ++i) {
       auto const ray = params.getRay(i);
       auto const intersections = tri.intersect(ray);
+      ASSERT(um2::is_sorted(intersections.begin(), intersections.end()));
       // For each intersection coordinate
       for (auto const & r : intersections) {
         // If intersection is valid

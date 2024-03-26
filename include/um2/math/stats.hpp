@@ -21,22 +21,62 @@ namespace um2
 {
 
 //=============================================================================
+// sum
+//=============================================================================
+// For small n, computes the naive sum of the values. For large n, uses
+// pairwise summation to reduce error.
+
+
+namespace sum_detail
+{
+
+template <class T>
+PURE HOSTDEV constexpr auto
+naiveSum(T const * begin, T const * end) noexcept -> T
+{
+  T result = *begin;
+  while (++begin != end) {
+    result += *begin;
+  }
+  return result;
+}
+
+template <class T>
+PURE HOSTDEV constexpr auto
+// NOLINTNEXTLINE(misc-no-recursion)
+pairwiseSum(T const * begin, T const * end) noexcept -> T
+{
+  auto const n = end - begin;
+  ASSERT_ASSUME(n > 0);
+  if (n <= 1024) {
+    return naiveSum(begin, end);
+  }
+  auto const m = n / 2;
+  return pairwiseSum(begin, begin + m) + pairwiseSum(begin + m, end);
+}
+
+} // namespace sum_detail
+
+template <class T>
+PURE HOSTDEV constexpr auto
+sum(T const * begin, T const * end) noexcept -> T
+{
+  return sum_detail::pairwiseSum(begin, end);
+}
+
+//=============================================================================
 // mean
 //=============================================================================
 // Computes the mean of the values in the range [begin, end).
 
-template <std::floating_point T>
+template <class T>
 PURE HOSTDEV constexpr auto
 mean(T const * begin, T const * end) noexcept -> T
 {
   ASSERT_ASSUME(begin != end);
   auto const n = static_cast<T>(end - begin);
-  T result = 0;
-  while (begin != end) {
-    result += *begin;
-    ++begin;
-  }
-  return result / n;
+  T const vec_sum = um2::sum(begin, end);
+  return vec_sum / n;
 }
 
 //=============================================================================
@@ -66,21 +106,25 @@ median(T const * begin, T const * end) noexcept -> T
 //=============================================================================
 // Computes the variance of the values in the range [begin, end).
 
+// Use Welford's algorithm to compute the variance.
 template <std::floating_point T>
 PURE HOSTDEV constexpr auto
 variance(T const * begin, T const * end) noexcept -> T
 {
   ASSERT_ASSUME(begin != end);
-  auto const n_minus_1 = static_cast<T>(end - begin - 1);
-  ASSERT(n_minus_1 > 0);
-  auto const xbar = um2::mean(begin, end);
-  T result = 0;
+  Int n = 0;
+  Float mean = 0;
+  Float m2 = 0;
+
   while (begin != end) {
-    T const x_minus_xbar = *begin - xbar;
-    result += x_minus_xbar * x_minus_xbar;
+    ++n;
+    Float const delta = *begin - mean;
+    mean += delta / static_cast<Float>(n);
+    m2 += delta * (*begin - mean);
     ++begin;
   }
-  return result / n_minus_1;
+  ASSERT(n > 1);
+  return m2 / static_cast<T>(n - 1); 
 }
 
 //=============================================================================

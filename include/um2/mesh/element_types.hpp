@@ -91,7 +91,7 @@ inferVTKElemType(Int const type) -> VTKElemType
   }
 }
 
-//
+
 //CONST constexpr auto
 //verticesPerElem(MeshType const type) -> Int
 //{
@@ -109,7 +109,7 @@ inferVTKElemType(Int const type) -> VTKElemType
 //    return -1000;
 //  }
 //}
-//
+
 CONST constexpr auto
 xdmfToVTKElemType(int8_t x) -> VTKElemType
 {

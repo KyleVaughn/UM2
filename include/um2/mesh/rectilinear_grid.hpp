@@ -488,7 +488,7 @@ RectilinearGrid<D>::getFlatIndex(Vec<D, Int> const & index) const noexcept -> In
   } else if constexpr (D == 2) {
     return index[0] + index[1] * numXCells();
   } else if constexpr (D == 3) {
-    return index[0] + index[1] * numXCells() + index[2] * numXCells() * numYCells();
+    return index[0] + numXCells() * (index[1] + index[2] * numYCells());
   } else { // General case
     // [0, nx, nx*ny, nx*ny*nz, ...]
     Vec<D, Int> exclusive_scan_prod;

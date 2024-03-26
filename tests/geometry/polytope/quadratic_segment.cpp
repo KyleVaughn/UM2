@@ -1,10 +1,10 @@
 #include <um2/geometry/quadratic_segment.hpp>
 #include <um2/geometry/modular_rays.hpp>
+#include <um2/stdlib/algorithm/is_sorted.hpp>
 
 #include "../../test_macros.hpp"
 
 #include <random>
-#include <iostream>
 
 // Description of the quadratic segments used in test cases
 // --------------------------------------------------------
@@ -701,6 +701,7 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
     for (Int i = 0; i < num_rays; ++i) {
       auto const ray = params.getRay(i);
       auto intersections = q.intersect(ray);
+      ASSERT(um2::is_sorted(intersections.begin(), intersections.end()));
       for (Int j = 0; j < 2; ++j) {
         Float const r = intersections[j];
         if (0 <= r) {

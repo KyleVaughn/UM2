@@ -20,7 +20,7 @@ namespace um2
 // associated with the polytopes. This data structure can be used to:
 // - read/write a mesh and its data from/to a file
 // - convert between mesh data structures
-// - generate submeshes
+// - generate subsetes
 // - perform mesh operations without assumptions about manifoldness, etc.
 //
 // Note: due to the generality of the data structure, there is effectively a
@@ -150,7 +150,7 @@ public:
   getMeshType() const -> MeshType;
 
   void
-  getSubmesh(String const & elset_name, PolytopeSoup & submesh) const;
+  getSubset(String const & elset_name, PolytopeSoup & subset) const;
 
   PURE [[nodiscard]] constexpr auto
   getVertex(Int i) const -> Point3 const &;
@@ -246,7 +246,7 @@ PolytopeSoup::getElemTypes() const -> Vector<VTKElemType>
       }
     }
     if (!found) {
-      el_types.push_back(this_type);
+      el_types.emplace_back(this_type);
     }
   }
   return el_types;

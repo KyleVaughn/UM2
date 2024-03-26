@@ -329,13 +329,13 @@ TEST_CASE(mortonSortElements)
   ASSERT(elset_data.empty());
 }
 
-TEST_CASE(getSubmesh)
+TEST_CASE(getSubset)
 {
   um2::PolytopeSoup tri_quad;
   makeReferenceTriQuadPolytopeSoup(tri_quad);
   um2::PolytopeSoup tri_quad_a;
 
-  tri_quad.getSubmesh("A", tri_quad_a);
+  tri_quad.getSubset("A", tri_quad_a);
   ASSERT(tri_quad.compare(tri_quad_a) == 10);
   um2::String name;
   um2::Vector<Int> ids;
@@ -354,7 +354,7 @@ TEST_CASE(getSubmesh)
   ASSERT(elset_data.empty());
 
   um2::PolytopeSoup tri_quad_h2o;
-  tri_quad.getSubmesh("Material_H2O", tri_quad_h2o);
+  tri_quad.getSubset("Material_H2O", tri_quad_h2o);
 
   // (1,0), (1,1), (2,0)
   ASSERT(tri_quad_h2o.numVerts() == 3);
@@ -718,13 +718,19 @@ TEST_CASE(getPowerRegions)
   // Power    |   Centroid
   // ---------------------
   // 4        | (1/2, 1/2)
-  // 4        | (3, 1)
+  // 3        | (11/4, 1)
   // 4        | (5/6, 19/6)
   
   um2::PolytopeSoup mesh;
   for (Int j = 0; j < 5; ++j) {
     for (Int i = 0; i < 5; ++i) {
-      mesh.addVertex(um2::Point3(i, j, 0));
+      if (i == 4) {
+        auto const x = castIfNot<Float>(3.5);
+        auto const y = castIfNot<Float>(j);
+        mesh.addVertex(x, y);
+      } else {
+        mesh.addVertex(um2::Point3(i, j, 0));
+      }
     }
   }
 
@@ -762,8 +768,8 @@ TEST_CASE(getPowerRegions)
   ASSERT_NEAR(subset_pc[0].second[0], castIfNot<Float>(1) / castIfNot<Float>(2), eps);
   ASSERT_NEAR(subset_pc[0].second[1], castIfNot<Float>(1) / castIfNot<Float>(2), eps);
 
-  ASSERT_NEAR(subset_pc[1].first, 4, eps);
-  ASSERT_NEAR(subset_pc[1].second[0], 3, eps);
+  ASSERT_NEAR(subset_pc[1].first, 3, eps);
+  ASSERT_NEAR(subset_pc[1].second[0], castIfNot<Float>(11) / castIfNot<Float>(4), eps);
   ASSERT_NEAR(subset_pc[1].second[1], 1, eps);
 
   ASSERT_NEAR(subset_pc[2].first, 4, eps); 
@@ -781,7 +787,7 @@ TEST_SUITE(PolytopeSoup)
   TEST(sortElsets);
   TEST(mortonSortVertices);
   TEST(mortonSortElements);
-  TEST(getSubmesh);
+  TEST(getSubset);
   TEST(getMaterialNames);
   TEST(getMaterialIDs);
   TEST(io_abaqus_tri_mesh);

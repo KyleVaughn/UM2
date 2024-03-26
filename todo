@@ -1,18 +1,12 @@
-update variabce/summation with Kahan/Welford
-  -> mean, variance
+setup vf
 
-more efficient bounding box from equations for tri6, quad8?
-more efficient intersection by computing if the ray even intersects the 1D line
-made in 2D
+binned face vertex mesh fixes everything
+-> Output ratio of areas of cells
 
-revive benchmarks
-m
-ake the ray the x-axis. Can only have intersection if a vertex within eps
-  fast fail for polygon intersection
+validate intersect
 
-add um2::is_sorted to quadratic segment, tri, quad, tri6. nad quad8 intersection tests
-
-remove iostream
+manifold/watertight check
+  edges with one face. Ensure edges are all connected
 
 Replace epsilons with eps_distance
 
@@ -25,22 +19,16 @@ Tighter eps_distance?
 
 use std::print -> bump to C++23? Support in 12, 15?)
 
-Test cases with multiple roots
-
 gsl permutaitons vs mine?
 
 more efficient str to -> print?
 
 replace infinite distance with -1 in intersection and such
 
-Float32
 Int64
 
 organze archive into many dirs with notes on what is there any why we keep
-angular quadrature to archive
 enable openMP /TBB
-
--> QuadraticTriangle an QuadraticQuad contains
 
 more robust testing for mesh functions
 -> faceContaining 
@@ -50,16 +38,6 @@ more robust testing for mesh functions
 makeMaterialsElset
   -> convert Material_ to Material with elset data
 
-Delete material related comments after verifying read/write w/o 
-
-XDMF IO
--> look for an opportunity to make non-private
-Check VTK with XDMF -> convert and vis
-Extract powered subsets
--> Morton sort
-
-Add cell type check to VTK after fix in MPACT
-
 NOLINT
   stdlib
   common
@@ -68,10 +46,6 @@ NOLINT
 
 push_back to emplace_back
   Make another item with this for later
-
-benchmark quadratic segment intersection.
-  Should we do more computation and save branching for a more complex
-  boolean at the end?
 
 remove the behavior of a regular or rectilinear partition holding one extra element
 
@@ -87,8 +61,6 @@ provide intersection functions with additional argument of inverse direction?
 
 Check that casts preserve value from float to int
 -> int over 16 million?
-
-branchless
 
 methods
 Harden the mesh IO, testing with files created from different software
@@ -189,7 +161,6 @@ Graphics:
 
 Restore scripts dir
 
-Old benchmarks: reimplement or place in archive
 clean archive
 
 Point in cell bug for c5g7 mesh

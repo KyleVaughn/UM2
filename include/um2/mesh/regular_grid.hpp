@@ -238,6 +238,8 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::minima(Int const i) const noexcept -> Float
 {
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < D);
   return _minima[i];
 }
 
@@ -252,6 +254,8 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::spacing(Int const i) const noexcept -> Float
 {
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < D);
   return _spacing[i];
 }
 
@@ -266,6 +270,8 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::numCells(Int const i) const noexcept -> Int
 {
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < D);
   return _num_cells[i];
 }
 
@@ -368,6 +374,8 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::extents(Int const i) const noexcept -> Float
 {
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < D);
   return _spacing[i] * static_cast<Float>(_num_cells[i]);
 }
 
@@ -388,7 +396,7 @@ RegularGrid<D>::maxima(Int const i) const noexcept -> Float
 {
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
-  return _minima[i] + _spacing[i] * static_cast<Float>(_num_cells[i]);
+  return minima(i) + extents(i);
 }
 
 template <Int D>
@@ -441,7 +449,7 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 RegularGrid<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 {
-  return AxisAlignedBox<D>(_minima, maxima());
+  return AxisAlignedBox<D>(minima(), maxima());
 }
 
 template <Int D>
@@ -474,7 +482,7 @@ RegularGrid<D>::getFlatIndex(Vec<D, Int> const & index) const noexcept -> Int
   } else if constexpr (D == 2) {
     return index[0] + index[1] * numXCells();
   } else if constexpr (D == 3) {
-    return index[0] + index[1] * numXCells() + index[2] * numXCells() * numYCells();
+    return index[0] + numXCells() * (index[1] + index[2] * numYCells());
   } else { // General case
     // [0, nx, nx*ny, nx*ny*nz, ...]
     Vec<D, Int> exclusive_scan_prod;

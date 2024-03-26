@@ -1,4 +1,5 @@
 #include <um2/geometry/quadratic_quadrilateral.hpp>
+#include <um2/stdlib/algorithm/is_sorted.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -207,6 +208,7 @@ testQuadForIntersections(um2::QuadraticQuadrilateral<2> const quad)
     for (Int i = 0; i < num_rays; ++i) {
       auto const ray = params.getRay(i);
       auto const intersections = quad.intersect(ray);
+      ASSERT(um2::is_sorted(intersections.begin(), intersections.end()));
       // For each intersection coordinate
       for (auto const & r : intersections) {
         // If intersection is valid

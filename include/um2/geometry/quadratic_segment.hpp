@@ -713,6 +713,9 @@ requires(D == 2)
       }
     }
   }
+  if (result[0] > result[1]) {
+    um2::swap(result[0], result[1]);
+  }
   return result;
 }
 

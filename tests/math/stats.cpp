@@ -1,10 +1,32 @@
 #include <um2/math/stats.hpp>
 #include <um2/stdlib/vector.hpp>
+#include <um2/stdlib/math/abs.hpp>
 #include <um2/common/cast_if_not.hpp>
 
 #include "../test_macros.hpp"
 
+#include <random>
+#include <algorithm>
+#include <numeric>
+
 Float constexpr eps = castIfNot<Float>(1e-6);
+
+TEST_CASE(sum)
+{
+  Int const n = 16384;
+  Int const soln = (n / 2) * (n + 1);
+  um2::Vector<Float> v(n);
+  for (Int i = 0; i < n; ++i) {
+    v[i] = static_cast<Float>(i + 1);
+  }
+  std::random_device rd;
+  std::mt19937 g(rd());
+  std::shuffle(v.begin(), v.end(), g);
+  Float const vsum = um2::sum(v.cbegin(), v.cend());
+  // Assert that no meaningful rounding error has occurred
+  // Note this is not the case for a naive implementation
+  ASSERT(um2::abs(vsum - static_cast<Float>(soln)) < 1);
+}
 
 HOSTDEV
 TEST_CASE(mean)
@@ -43,6 +65,7 @@ MAKE_CUDA_KERNEL(variance);
 
 TEST_SUITE(stats)
 {
+  TEST(sum);
   TEST_HOSTDEV(mean);
   TEST_HOSTDEV(median);
   TEST_HOSTDEV(variance);
