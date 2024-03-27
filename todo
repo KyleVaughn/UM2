@@ -1,12 +1,16 @@
-setup vf
+mortonSort & test
+intersect
+validate intersect
+validate
+  manifold/watertight
+    edges with one face, ensure edges with one face are connected
+  repeated vertices
+  CCW
+  convexity
+toPolytopeSoup
 
 binned face vertex mesh fixes everything
 -> Output ratio of areas of cells
-
-validate intersect
-
-manifold/watertight check
-  edges with one face. Ensure edges are all connected
 
 Replace epsilons with eps_distance
 
@@ -126,12 +130,6 @@ SIMD versions of routines for mesh.
   point in 4 AABB
   ray intersect 4 lines, etc.
 
-face overlap using connectivity
-  - identify boundary edges which are not on the exterior
-
-Use connectivity for ray tracing
-  -> Vertex, not edge
-
 SIMD ray/mesh intersection. Can do many at once. Make RayPacket class. Write intersection
 routines for edge, polygon, etc.
 
@@ -164,8 +162,6 @@ Restore scripts dir
 clean archive
 
 Point in cell bug for c5g7 mesh
-
-validate intersect
 
 Consistent testing of mesh point inside.
    getOrientedEdge -> return bool, pass edge by ref

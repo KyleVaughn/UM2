@@ -199,43 +199,52 @@ FaceVertexMesh<P, N>::flipFace(Int i) noexcept
 //  // Invalidate vertex-face connectivity
 //  _has_vf = false;
 //}
-//
-////==============================================================================
-//// populateVF
-////==============================================================================
-//
-//template <Int P, Int N>
-//void
-//FaceVertexMesh<P, N>::populateVF() noexcept
-//{
-//  // Make no assumption about _vf_offsets and _vf being empty.
-//  Int const num_vertices = numVertices();
-//  Int const num_faces = numFaces();
-//
-//  // -- Vertex/Face connectivity --
-//  Vector<I> vert_counts(num_vertices, 0);
-//  for (Int i = 0; i < num_faces; ++i) {
-//    for (Int j = 0; j < N; ++j) {
-//      ++vert_counts[_fv[i][j]];
-//    }
-//  }
-//  _vf_offsets.resize(num_vertices + 1);
-//  _vf_offsets[0] = 0;
-//  std::inclusive_scan(vert_counts.cbegin(), vert_counts.cend(), _vf_offsets.begin() + 1);
-//  _vf.resize(_vf_offsets[num_vertices]);
-//  // Copy vf_offsets to vert_offsets
-//  Vector<I> vert_offsets = _vf_offsets;
-//  for (Int i = 0; i < num_faces; ++i) {
-//    auto const & face = _fv[i];
-//    for (Int j = 0; j < N; ++j) {
-//      auto const vert = face[j];
-//      _vf[vert_offsets[vert]] = i;
-//      ++vert_offsets[vert];
-//    }
-//  }
-//  _has_vf = true;
-//}
-//
+
+//==============================================================================
+// populateVF
+//==============================================================================
+
+template <Int P, Int N>
+void
+FaceVertexMesh<P, N>::populateVF() noexcept
+{
+  // Make no assumption about _vf_offsets and _vf being empty.
+  Int const num_vertices = numVertices();
+  Int const num_faces = numFaces();
+
+  // -- Vertex/Face connectivity --
+  // Count the occurrences of each vertex in the face-vertex list.
+  Vector<Int> vert_counts(num_vertices, 0);
+  for (Int i = 0; i < num_faces; ++i) {
+    for (Int j = 0; j < N; ++j) {
+      ++vert_counts[_fv[i][j]];
+    }
+  }
+
+  // Compute the offsets
+  _vf_offsets.resize(num_vertices + 1);
+  _vf_offsets[0] = 0;
+  std::inclusive_scan(vert_counts.cbegin(), vert_counts.cend(), _vf_offsets.begin() + 1);
+
+  // Populate the vertex-face list
+  // For each face, for each vertex, add the add the face to the vertex-face list.
+  _vf.resize(_vf_offsets[num_vertices]);
+  // Copy vf_offsets to vert_offsets
+  Vector<Int> vert_offsets = _vf_offsets;
+  for (Int i = 0; i < num_faces; ++i) {
+    auto const & face = _fv[i];
+    for (Int j = 0; j < N; ++j) {
+      auto const vert = face[j];
+      // vert_offsets[vert] is the index where the next face will be added.
+      _vf[vert_offsets[vert]] = i;
+      ++vert_offsets[vert];
+    }
+  }
+  // Note: Since the faces were added in order, the vertex-face list is sorted at
+  // each vertex.
+  _has_vf = true;
+}
+
 //////// //==============================================================================
 //////// // toPolytopeSoup
 //////// //==============================================================================
@@ -453,23 +462,23 @@ FaceVertexMesh<P, N>::validate()
 //  }
 //#endif
 //
-//  // Check that the vertices are in counter-clockwise order.
-//  Int const num_faces = numFaces();
-//  for (Int i = 0; i < num_faces; ++i) {
-//    if (!getFace(i).isCCW()) {
-//      log::warn("Face ", i, " has vertices in clockwise order. Reordering");
-//      flipFace(i);
-//    }
-//  }
-//
-//  // Convexity check
-//  if constexpr (N == 4) {
-//    for (Int i = 0; i < num_faces; ++i) {
-//      if (!isApproxConvex(getFace(i))) {
-//        log::warn("Face ", i, " is not convex");
-//      }
-//    }
-//  }
+  // Check that the vertices are in counter-clockwise order.
+  Int const num_faces = numFaces();
+  for (Int i = 0; i < num_faces; ++i) {
+    if (!getFace(i).isCCW()) {
+      log::warn("Face ", i, " has vertices in clockwise order. Reordering");
+      flipFace(i);
+    }
+  }
+
+  // Convexity check
+  if constexpr (N == 4) {
+    for (Int i = 0; i < num_faces; ++i) {
+      if (!isApproxConvex(getFace(i))) {
+        logger::warn("Face ", i, " is not convex");
+      }
+    }
+  }
 }
 
 //==============================================================================

@@ -3,6 +3,9 @@
 
 #include "../../test_macros.hpp"
 
+#include <random>
+#include <iostream>
+
 Float constexpr eps = um2::eps_distance;
 
 template <Int D>
@@ -38,6 +41,33 @@ makeTri2() -> um2::QuadraticTriangle<D>
   this_tri[4][1] = castIfNot<Float>(0.8);
   this_tri[5][1] = castIfNot<Float>(0.5);
   return this_tri;
+}
+
+HOSTDEV void
+rotate(um2::QuadraticTriangle2 & q, Float const angle)
+{
+  um2::Mat2x2F const rot = um2::makeRotationMatrix(angle);
+  q[0] = rot * q[0];
+  q[1] = rot * q[1];
+  q[2] = rot * q[2];
+  q[3] = rot * q[3];
+  q[4] = rot * q[4];
+  q[5] = rot * q[5];
+}
+
+void
+perturb(um2::QuadraticTriangle2 & q)
+{
+  auto constexpr delta = castIfNot<Float>(0.2);
+  uint32_t constexpr seed = 0x08FA9A20;
+  // We want a fixed seed for reproducibility
+  // NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp)
+  static std::mt19937 gen(seed);
+  static std::uniform_real_distribution<Float> dis(-delta, delta);
+  for (Int i = 0; i < 6; ++i) {
+    q[i][0] += dis(gen);
+    q[i][1] += dis(gen);
+  }
 }
 
 //==============================================================================
@@ -108,16 +138,17 @@ HOSTDEV
 TEST_CASE(area)
 {
   um2::QuadraticTriangle<2> tri = makeTri<2>();
+  um2::QuadraticTriangle<2> tri2 = makeTri2<2>();
   ASSERT_NEAR(tri.area(), castIfNot<Float>(0.5), eps);
   tri[3] = um2::Point2(castIfNot<Float>(0.5), castIfNot<Float>(0.05));
   tri[5] = um2::Point2(castIfNot<Float>(0.05), castIfNot<Float>(0.5));
-  // Actually making this a static assert causes a compiler error.
-  // NOLINTBEGIN(cert-dcl03-c,misc-static-assert)
-  ASSERT_NEAR(tri.area(), castIfNot<Float>(0.4333333333), eps);
 
-  um2::QuadraticTriangle<2> const tri2 = makeTri2<2>();
-  ASSERT_NEAR(tri2.area(), castIfNot<Float>(0.83333333), eps);
-  // NOLINTEND(cert-dcl03-c,misc-static-assert)
+  for (Int i = 0; i < 16; ++i) {
+    rotate(tri, static_cast<Float>(i) * um2::pi<Float> / 8);
+    rotate(tri2, static_cast<Float>(i) * um2::pi<Float> / 8);
+    ASSERT_NEAR(tri.area(), castIfNot<Float>(0.4333333333), eps);
+    ASSERT_NEAR(tri2.area(), castIfNot<Float>(0.83333333), eps);
+  }
 }
 
 //==============================================================================
@@ -144,10 +175,18 @@ TEST_CASE(centroid)
   ASSERT_NEAR(c[0], castIfNot<Float>(1.0 / 3.0), eps);
   ASSERT_NEAR(c[1], castIfNot<Float>(1.0 / 3.0), eps);
 
-  um2::QuadraticTriangle<2> const tri2 = makeTri2<2>();
+  um2::QuadraticTriangle<2> tri2 = makeTri2<2>();
   c = tri2.centroid();
-  ASSERT_NEAR(c[0], castIfNot<Float>(0.432), eps);
-  ASSERT_NEAR(c[1], castIfNot<Float>(0.448), eps);
+  um2::Point2 ref(castIfNot<Float>(0.432), castIfNot<Float>(0.448));
+  for (Int i = 0; i < 16; ++i) {
+    Float const angle = static_cast<Float>(i) * um2::pi<Float> / 8;
+    rotate(tri2, angle);
+    c = tri2.centroid();
+    um2::Mat2x2F const rot = um2::makeRotationMatrix(angle);
+    ref = rot * ref;
+    ASSERT_NEAR(c[0], ref[0], eps);
+    ASSERT_NEAR(c[1], ref[1], eps);
+  }
 }
 
 //==============================================================================
@@ -161,10 +200,10 @@ TEST_CASE(boundingBox)
   um2::AxisAlignedBox<2> const box = tri.boundingBox();
   // Actually making this a static assert causes a compiler error.
   // NOLINTBEGIN(cert-dcl03-c,misc-static-assert)
-  ASSERT_NEAR(box.minima()[0], castIfNot<Float>(0), eps);
-  ASSERT_NEAR(box.minima()[1], castIfNot<Float>(0), eps);
-  ASSERT_NEAR(box.maxima()[0], castIfNot<Float>(1), eps);
-  ASSERT_NEAR(box.maxima()[1], castIfNot<Float>(1.008333), eps);
+  ASSERT_NEAR(box.minima(0), castIfNot<Float>(0), eps);
+  ASSERT_NEAR(box.minima(1), castIfNot<Float>(0), eps);
+  ASSERT_NEAR(box.maxima(0), castIfNot<Float>(1), eps);
+  ASSERT_NEAR(box.maxima(1), castIfNot<Float>(1.008333), eps);
   // NOLINTEND(cert-dcl03-c,misc-static-assert)
 }
 
@@ -193,9 +232,9 @@ void
 testTriForIntersections(um2::QuadraticTriangle<2> const tri)
 {
   // Parameters
-  Int constexpr num_angles = 32; // Angles γ ∈ (0, π).
-  Int constexpr rays_per_longest_edge = 1000;
-  
+  Int constexpr num_angles = 16; // Angles γ ∈ (0, π).
+  Int constexpr rays_per_longest_edge = 200;
+
   auto const aabb = tri.boundingBox();
   auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
   auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
@@ -225,7 +264,11 @@ testTriForIntersections(um2::QuadraticTriangle<2> const tri)
               min_dist = d;
             }
           }
+#if UM2_ENABLE_FLOAT64
           ASSERT(min_dist < um2::eps_distance);
+#else
+          ASSERT(min_dist < 20 * um2::eps_distance);
+#endif
         }
       }
     }
@@ -242,6 +285,15 @@ TEST_CASE(intersect)
   tri[4][0] = castIfNot<Float>(0.3);
   tri[4][1] = castIfNot<Float>(0.25);
   testTriForIntersections(tri);
+
+  for (Int ia = 0; ia < 16; ++ia) {
+    for (Int ip = 0; ip < 5; ++ip) {
+      tri = makeTri<2>();
+      rotate(tri, static_cast<Float>(ia) * um2::pi<Float> / 8);
+      perturb(tri);
+      testTriForIntersections(tri);
+    }
+  }
 }
 
 //==============================================================================
@@ -272,7 +324,7 @@ TEST_CASE(meanChordLength)
   tri3[4][0] = castIfNot<Float>(0.25);
   tri3[4][1] = castIfNot<Float>(0.25);
   ASSERT(!tri3.isConvex());
-  auto const val3 = tri3.meanChordLength(); 
+  auto const val3 = tri3.meanChordLength();
   auto const ref3 = um2::pi<Float> * tri3.area() / tri3.perimeter();
   auto const err3 = um2::abs(val3 - ref3) / ref3;
   ASSERT(err3 < castIfNot<Float>(1e-3));

@@ -10,6 +10,10 @@
 
 // Create a square mesh 2 * N^2 triangles
 // +------+------+
+// |\   5 |\   7 |
+// |  \   |  \   |
+// | 4  \ | 6  \ |
+// +------+------+
 // |\   1 |\   3 |
 // |  \   |  \   |
 // | 0  \ | 2  \ |
@@ -17,7 +21,7 @@
 
 HOSTDEV
 void
-makeTriangleMesh(um2::TriFVM & mesh, Int n) 
+makeTriangleMesh(um2::TriFVM & mesh, Int n)
 {
   // Create N + 1 vertices in each direction
   for (Int i = 0; i < n + 1; ++i) {
@@ -35,7 +39,7 @@ makeTriangleMesh(um2::TriFVM & mesh, Int n)
       // v0-----v1
       Int const v0 = i * (n + 1) + j;
       Int const v1 = v0 + 1;
-      Int const v2 = v0 + n + 1; 
+      Int const v2 = v0 + n + 1;
       Int const v3 = v2 + 1;
       mesh.addFace({v0, v1, v2});
       mesh.addFace({v3, v2, v1});
@@ -43,6 +47,22 @@ makeTriangleMesh(um2::TriFVM & mesh, Int n)
   }
   ASSERT(mesh.numVertices() == (n + 1) * (n + 1));
   ASSERT(mesh.numFaces() == 2 * n * n);
+}
+
+void
+perturb(um2::TriFVM & mesh)
+{
+  auto constexpr delta = castIfNot<Float>(0.1);
+  uint32_t constexpr seed = 0x08FA9A20;
+  // We want a fixed seed for reproducibility
+  // NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp)
+  static std::mt19937 gen(seed);
+  static std::uniform_real_distribution<Float> dis(-delta, delta);
+  um2::Vector<um2::Point2> & verts = mesh.vertices();
+  for (um2::Point2 & v : verts) {
+    v[0] += dis(gen);
+    v[1] += dis(gen);
+  }
 }
 
 auto constexpr eps = castIfNot<Float>(1e-6);
@@ -59,7 +79,7 @@ TEST_CASE(accessors)
   // getVertex
   ASSERT(mesh.getVertex(0).isApprox(um2::Point2(0, 0)));
   ASSERT(mesh.getVertex(1).isApprox(um2::Point2(1, 0)));
-  
+
   // getFace
   um2::Triangle<2> tri0_ref(mesh.getVertex(0), mesh.getVertex(1), mesh.getVertex(2));
   auto const tri0 = mesh.getFace(0);
@@ -155,42 +175,49 @@ TEST_CASE(faceContaining)
   p = um2::Point2(castIfNot<Float>(0.5), castIfNot<Float>(0.75));
   ASSERT(mesh.faceContaining(p) == 1);
 
-  Int const ntri = 10;
-  Int const npoints = 10000;
+  Int const ntri = 5; // 2 * ntri * ntri triangles
+  // The min coord is 0 and max coord is ntri
+  Int const npoints = 1000;
+
+  um2::Point2 const pmin(castIfNot<Float>(0.11), castIfNot<Float>(0.11)); 
+  um2::Point2 const pmax(castIfNot<Float>(ntri - 0.11), castIfNot<Float>(ntri - 0.11));
+  um2::AxisAlignedBox2 const box(pmin, pmax);
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_real_distribution<Float> dis(-1, ntri + 1);
-  um2::TriFVM mesh2;
-  makeTriangleMesh(mesh2, ntri);
-  auto const box = mesh2.boundingBox();
-  for (Int i = 0; i < npoints; ++i) {
-    um2::Point2 const pt(dis(gen), dis(gen));
-    Int const iface = mesh2.faceContaining(pt);
-    if (iface == -1) {
-      ASSERT(!box.contains(pt));
-    } else {
-      auto const tri = mesh2.getFace(iface);
-      auto const a = tri.area();
-      auto const a0 = um2::Triangle<2>(tri[0], tri[1], pt).area();
-      auto const a1 = um2::Triangle<2>(tri[1], tri[2], pt).area();
-      auto const a2 = um2::Triangle<2>(tri[2], tri[0], pt).area();
-      ASSERT_NEAR(a, a0 + a1 + a2, eps);
+  std::uniform_real_distribution<Float> dis(pmin[0], pmax[0]);
+  for (Int ip = 0; ip < 10; ++ip) {
+    um2::TriFVM mesh2;
+    makeTriangleMesh(mesh2, ntri);
+    perturb(mesh2); // maximum perturbation is 0.1
+    for (Int i = 0; i < npoints; ++i) {
+      um2::Point2 const pt(dis(gen), dis(gen));
+      Int const iface = mesh2.faceContaining(pt);
+      if (iface == -1) {
+        ASSERT(!box.contains(pt));
+      } else {
+        auto const tri = mesh2.getFace(iface);
+        auto const a = tri.area();
+        auto const a0 = um2::Triangle<2>(tri[0], tri[1], pt).area();
+        auto const a1 = um2::Triangle<2>(tri[1], tri[2], pt).area();
+        auto const a2 = um2::Triangle<2>(tri[2], tri[0], pt).area();
+        ASSERT_NEAR(a, a0 + a1 + a2, eps);
+      }
     }
   }
 }
-//
-////TEST_CASE(populateVF)
-////{
-////  um2::TriFVM mesh = makeTriReferenceMesh();
-////  ASSERT(mesh.vertexFaceOffsets().empty());
-////  ASSERT(mesh.vertexFaceConn().empty());
-////  mesh.populateVF();
-////  um2::Vector<I> const vf_offsets_ref = {0, 2, 3, 5, 6};
-////  um2::Vector<I> const vf_ref = {0, 1, 0, 0, 1, 1};
-////  ASSERT(mesh.vertexFaceOffsets() == vf_offsets_ref);
-////  ASSERT(mesh.vertexFaceConn() == vf_ref);
-////}
-////
+
+TEST_CASE(populateVF)
+{
+  um2::TriFVM mesh = makeTriReferenceMesh();
+  ASSERT(mesh.vertexFaceOffsets().empty());
+  ASSERT(mesh.vertexFaceConn().empty());
+  mesh.populateVF();
+  um2::Vector<Int> const vf_offsets_ref = {0, 2, 3, 5, 6};
+  um2::Vector<Int> const vf_ref = {0, 1, 0, 0, 1, 1};
+  ASSERT(mesh.vertexFaceOffsets() == vf_offsets_ref);
+  ASSERT(mesh.vertexFaceConn() == vf_ref);
+}
+
 ////TEST_CASE(intersect)
 ////{
 ////  um2::TriFVM const mesh = makeTriReferenceMesh();
@@ -228,7 +255,7 @@ TEST_SUITE(TriFVM)
   TEST(boundingBox);
   TEST(PolytopeSoup_constructor);
   TEST(faceContaining);
-//  TEST(populateVF);
+  TEST(populateVF);
 //  TEST(intersect);
   //  TEST((toPolytopeSoup<T, I>));
 }

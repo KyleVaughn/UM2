@@ -12,12 +12,12 @@ import numpy as np
 ninterp = 1000
 
 # Quadratic segment vertices
-p0 = np.array([0, 0])
-p1 = np.array([2, 0])
-p2 = np.array([2, 1])
+p0 = np.array([0.145971, -0.189085])
+p1 = np.array([2.1813, 0.149129])
+p2 = np.array([1.99619, 0.801471])
 
 # The point of interest
-p = np.array([1.97473, -0.100964])
+p = np.array([2.23815, -0.174686])
 plt.scatter(p[0], p[1], c='b')
 
 # parametric coordinate of the closest point on the quadratic segment 

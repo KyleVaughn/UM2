@@ -9,20 +9,20 @@ import numpy as np
 ninterp = 1000
 
 # Quadratic segment vertices
-p0 = np.array([0, 0])
-p1 = np.array([2, 0])
-p2 = np.array([4, 3])
+p0 = np.array([-0.215672, 0.0637669])
+p1 = np.array([2.13615, -0.179838])
+p2 = np.array([3.78916, 2.91062])
 
 # Ray
-origin = np.array([-0.204166666666667, 1.33403790087464])
-direction = np.array([0.933051977273537, 0.359741584621439])
+origin = np.array([1.20349, -0.334424])
+direction = np.array([0.637189, 0.770707])
 
 # The point on ray where the quadratic segment intersects
-p = np.array([4.06257201747618, 2.97909452449846])
+p = np.array([3.86361, 2.8831])
 plt.scatter(p[0], p[1], c='k')
 
 # Point on quadratic segment closest to p
-q_closest = np.array([4.0625, 2.97916666666667])
+q_closest = np.array([3.86364, 2.88308])
 plt.scatter(q_closest[0], q_closest[1], c='g')
 
 def quadratic_segment_interp(p0, p1, p2, r):

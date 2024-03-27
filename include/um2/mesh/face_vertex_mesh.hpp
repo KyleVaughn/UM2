@@ -89,17 +89,17 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getFace(Int i) const noexcept -> Face;
 
-//  PURE HOSTDEV [[nodiscard]] constexpr auto
-//  vertices() noexcept -> Vector<Point2> &;
-//
-//  PURE HOSTDEV [[nodiscard]] constexpr auto
-//  faceVertexConn() const noexcept -> Vector<FaceConn> const &;
-//
-//  PURE HOSTDEV [[nodiscard]] constexpr auto
-//  vertexFaceOffsets() const noexcept -> Vector<Int> const &;
-//
-//  PURE HOSTDEV [[nodiscard]] constexpr auto
-//  vertexFaceConn() const noexcept -> Vector<Int> const &;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  vertices() noexcept -> Vector<Point2> &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  faceVertexConn() const noexcept -> Vector<FaceConn> const &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  vertexFaceOffsets() const noexcept -> Vector<Int> const &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  vertexFaceConn() const noexcept -> Vector<Int> const &;
 
   //===========================================================================
   // Methods
@@ -128,9 +128,9 @@ public:
 //
 //  void
 //  mortonSortVertices();
-//
-//  void
-//  populateVF() noexcept;
+
+  void
+  populateVF() noexcept;
 
   void
   validate();
@@ -198,13 +198,6 @@ FaceVertexMesh<P, N>::getVertex(Int i) const noexcept -> Point2
   return _v[i];
 }
 
-//template <Int P, Int N>
-//HOSTDEV [[nodiscard]] constexpr auto
-//FaceVertexMesh<P, N>::vertices() noexcept -> Vector<Point2> &
-//{
-//  return _v;
-//}
-
 template <Int P, Int N>
 PURE HOSTDEV [[nodiscard]] constexpr auto
 FaceVertexMesh<P, N>::getFace(Int i) const noexcept -> Face
@@ -227,26 +220,33 @@ FaceVertexMesh<P, N>::getFace(Int i) const noexcept -> Face
   }
 }
 
-//template <Int P, Int N>
-//PURE HOSTDEV constexpr auto
-//FaceVertexMesh<P, N>::vertexFaceOffsets() const noexcept -> Vector<Int> const &
-//{
-//  return _vf_offsets;
-//}
-//
-//template <Int P, Int N>
-//PURE HOSTDEV constexpr auto
-//FaceVertexMesh<P, N>::vertexFaceConn() const noexcept -> Vector<Int> const &
-//{
-//  return _vf;
-//}
-//
-//template <Int P, Int N>
-//PURE HOSTDEV constexpr auto
-//FaceVertexMesh<P, N>::faceVertexConn() const noexcept -> Vector<FaceConn> const &
-//{
-//  return _fv;
-//}
+template <Int P, Int N>
+HOSTDEV [[nodiscard]] constexpr auto
+FaceVertexMesh<P, N>::vertices() noexcept -> Vector<Point2> &
+{
+  return _v;
+}
+
+template <Int P, Int N>
+PURE HOSTDEV constexpr auto
+FaceVertexMesh<P, N>::vertexFaceOffsets() const noexcept -> Vector<Int> const &
+{
+  return _vf_offsets;
+}
+
+template <Int P, Int N>
+PURE HOSTDEV constexpr auto
+FaceVertexMesh<P, N>::vertexFaceConn() const noexcept -> Vector<Int> const &
+{
+  return _vf;
+}
+
+template <Int P, Int N>
+PURE HOSTDEV constexpr auto
+FaceVertexMesh<P, N>::faceVertexConn() const noexcept -> Vector<FaceConn> const &
+{
+  return _fv;
+}
 
 //==============================================================================
 // Methods
