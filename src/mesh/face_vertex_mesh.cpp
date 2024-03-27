@@ -426,55 +426,29 @@ FaceVertexMesh<P, N>::populateVF() noexcept
 //==============================================================================
 
 // Check for:
-// - Repeated vertices (warn)
 // - Counter-clockwise faces (warn and fix)
 // - Convexity (warn, quad mesh only)
 template <Int P, Int N>
 void
-FaceVertexMesh<P, N>::validate()
+FaceVertexMesh<P, N>::validate() 
 {
-//#if UM2_ENABLE_ASSERTS
-//  // Check for repeated vertices.
-//  // This is not technically an error, but it is a sign that the mesh may
-//  // cause problems for some algorithms. Hence, we warn the user.
-//  auto const bbox = boundingBox();
-//  auto const minima = bbox.minima();
-//  auto const maxima = bbox.maxima();
-//  Vec2<F> normalization;
-//  normalization[0] = static_cast<F>(1) / (maxima[0] - minima[0]);
-//  normalization[1] = static_cast<F>(1) / (maxima[1] - minima[1]);
-//  Vector<Point2> vertices_copy = _v;
-//  // Transform the points to be in the unit cube
-//  for (auto & v : vertices_copy) {
-//    v -= minima;
-//    v *= normalization;
-//  }
-//  um2::mortonSort(vertices_copy.begin(), vertices_copy.end());
-//  // Revert the scaling
-//  for (auto & v : vertices_copy) {
-//    v /= normalization;
-//  }
-//  Int const num_vertices = numVertices();
-//  for (Int i = 0; i < num_vertices - 1; ++i) {
-//    if (isApprox(vertices_copy[i], vertices_copy[i + 1])) {
-//      log::warn("Vertex ", i, " and ", i + 1, " are effectively equivalent");
-//    }
-//  }
-//#endif
-//
   // Check that the vertices are in counter-clockwise order.
   Int const num_faces = numFaces();
+  bool faces_flipped = false;
   for (Int i = 0; i < num_faces; ++i) {
     if (!getFace(i).isCCW()) {
-      log::warn("Face ", i, " has vertices in clockwise order. Reordering");
       flipFace(i);
+      faces_flipped = true;
     }
+  }
+  if (faces_flipped) {
+    logger::warn("Some faces were flipped to ensure counter-clockwise order");
   }
 
   // Convexity check
   if constexpr (N == 4) {
     for (Int i = 0; i < num_faces; ++i) {
-      if (!isApproxConvex(getFace(i))) {
+      if (!getFace(i).isApproxConvex()) {
         logger::warn("Face ", i, " is not convex");
       }
     }

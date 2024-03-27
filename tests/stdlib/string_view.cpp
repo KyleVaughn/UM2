@@ -2,6 +2,8 @@
 
 #include "../test_macros.hpp"
 
+#include <iostream>
+
 //==============================================================================
 // Constructors and assignment
 //==============================================================================
@@ -125,6 +127,12 @@ TEST_CASE(find_first_of)
   ASSERT(s.find_first_of('z') == um2::StringView::npos);
   ASSERT(s.find_first_of('l', 4) == 10);
   ASSERT(s.find_first_of('l', 20) == um2::StringView::npos);
+
+  um2::StringView const s2(data + 4, 9);
+  ASSERT(s.find_first_of(s2) == 4);
+  ASSERT(s.find_first_of(s2, 5) == um2::StringView::npos); 
+  ASSERT(s.find_first_of("ello") == 1);
+  ASSERT(s.find_first_of("ello", 6) == um2::StringView::npos);
 }
 
 HOSTDEV

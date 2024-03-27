@@ -1,4 +1,5 @@
 #include <um2/mesh/face_vertex_mesh.hpp>
+#include <um2/common/logger.hpp>
 
 #include "../helpers/setup_mesh.hpp"
 #include "../helpers/setup_polytope_soup.hpp"
@@ -148,6 +149,70 @@ TEST_CASE(boundingBox)
   ASSERT_NEAR(box3.yMax(), castIfNot<Float>(3), eps);
 }
 
+TEST_CASE(validate)
+{
+  // Check that clockwise faces are fixed
+  // 2 ---- 3
+  // | \    |
+  // |    \ |
+  // 0 ---- 1
+  // F0 = {0, 1, 2}
+  // F1 = {2, 3, 1}
+  um2::TriFVM mesh_ccw;
+  mesh_ccw.addVertex({0, 0});
+  mesh_ccw.addVertex({1, 0});
+  mesh_ccw.addVertex({0, 1});
+  mesh_ccw.addVertex({1, 1});
+  mesh_ccw.addFace({0, 1, 2});
+  mesh_ccw.addFace({2, 3, 1});
+  ASSERT(mesh_ccw.getFace(0).isCCW());
+  ASSERT(!mesh_ccw.getFace(1).isCCW());
+  mesh_ccw.validate();
+  ASSERT(mesh_ccw.getFace(0).isCCW());
+  ASSERT(mesh_ccw.getFace(1).isCCW());
+  auto sv = um2::logger::getLastMessage();
+  std::cerr << sv.data() << std::endl;
+  ASSERT(sv.find_first_of("Some faces were flipped to ensure counter-clockwise order") != um2::StringView::npos);
+
+  // Check that the mesh's boundary edges form a single closed loop
+  // This should account for:
+  //  1. Holes
+  //  2. Overlap
+
+  // Mesh with a hole
+  // 8------9-----10-----11
+  // |\   6 |\   8 |\  10 |
+  // |  \   |  \   |  \   |
+  // | 5  \ | 7  \ | 9  \ |
+  // 4------5------6------7
+  // |\   1 |\ HOLE|\   4 |
+  // |  \   |  \   |  \   |
+  // | 0  \ | 2  \ | 3  \ |
+  // 0------1------2------3
+  um2::logger::exit_on_error = false;
+  um2::TriFVM mesh;
+  for (Int j = 0; j < 3; ++j) { 
+    for (Int i = 0; i <= 3; ++i) {
+      mesh.addVertex({i, j});
+    }
+  }
+  mesh.addFace({0, 1, 4});
+  mesh.addFace({1, 5, 4});
+  mesh.addFace({1, 2, 5});
+  mesh.addFace({2, 3, 6});
+  mesh.addFace({3, 7, 6});
+  mesh.addFace({4, 5, 8});
+  mesh.addFace({5, 9, 8});
+  mesh.addFace({5, 6, 9});
+  mesh.addFace({6, 10, 9});
+  mesh.addFace({6, 7, 10});
+  mesh.addFace({7, 11, 10});
+  mesh.validate();
+  sv = um2::logger::getLastMessage();
+  ASSERT(sv.find_first_of("boundary edges do not form a single closed loop") != um2::StringView::npos);
+  um2::logger::exit_on_error = true;
+}
+
 TEST_CASE(PolytopeSoup_constructor)
 {
   um2::PolytopeSoup poly_soup;
@@ -253,6 +318,7 @@ TEST_SUITE(TriFVM)
   TEST_HOSTDEV(accessors);
   TEST(addVertex_addFace);
   TEST(boundingBox);
+  TEST(validate);
   TEST(PolytopeSoup_constructor);
   TEST(faceContaining);
   TEST(populateVF);

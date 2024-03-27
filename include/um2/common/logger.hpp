@@ -59,6 +59,12 @@ extern char const * const buffer_end; // 1 past the last valid character in the 
 // Functions
 //==============================================================================
 
+PURE constexpr auto
+getLastMessage() noexcept -> StringView
+{
+  return {buffer}; 
+}
+
 // Reset the logger to its default state
 void
 reset() noexcept;

@@ -14,6 +14,10 @@
 namespace um2
 {
 
+//==============================================================================
+// Helper functions
+//==============================================================================
+
 class StringView
 {
   public:
@@ -133,7 +137,16 @@ public:
   substr(uint64_t pos, uint64_t count) const noexcept -> StringView;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
+  find_first_of(StringView sv, uint64_t pos = 0) const noexcept -> uint64_t;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   find_first_of(char c, uint64_t pos = 0) const noexcept -> uint64_t;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  find_first_of(char const * s, uint64_t pos, uint64_t count) const noexcept -> uint64_t;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  find_first_of(char const * s, uint64_t pos = 0) const noexcept -> uint64_t;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   find_first_not_of(char c, uint64_t pos = 0) const noexcept -> uint64_t;
@@ -398,6 +411,39 @@ StringView::find_last_of(char c, uint64_t pos) const noexcept -> uint64_t
     }
   }
   return npos;
+}
+
+PURE HOSTDEV constexpr auto
+StringView::find_first_of(StringView const sv, uint64_t pos) const noexcept -> uint64_t
+{
+  // Check valid pos
+  if (pos > size()) {
+    return npos;
+  }
+
+  StringView this_substr(data() + pos, size() - pos);
+
+  while (this_substr.size() >= sv.size()) {
+    if (um2::memcmp(this_substr.data(), sv.data(), sv.size()) == 0) {
+      return pos;
+    }
+    ++pos;
+    this_substr.remove_prefix(1);
+  }
+
+  return npos;
+}
+
+PURE HOSTDEV constexpr auto
+StringView::find_first_of(char const * s, uint64_t pos, uint64_t count) const noexcept -> uint64_t
+{
+  return find_first_of(StringView(s, count), pos);
+}
+
+PURE HOSTDEV constexpr auto
+StringView::find_first_of(char const * s, uint64_t pos) const noexcept -> uint64_t
+{
+  return find_first_of(StringView(s), pos);
 }
 
 //==============================================================================

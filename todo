@@ -1,11 +1,15 @@
+test error conditions by checking the last logger message after turning the logger settings
+to not exit on error
+  check for logger calls elsewhere
+
+mesh with hole test
+
 mortonSort & test
 intersect
 validate intersect
 validate
   manifold/watertight
     edges with one face, ensure edges with one face are connected
-  repeated vertices
-  CCW
   convexity
 toPolytopeSoup
 
