@@ -322,7 +322,6 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 Triangle<D>::meanChordLength() const noexcept -> Float requires(D == 2)
 {
-  ASSERT(isConvex());
   return um2::pi<Float> * area() / perimeter();
 }
 

@@ -453,6 +453,20 @@ FaceVertexMesh<P, N>::validate()
       }
     }
   }
+
+  // Ensure that the mesh doesn't have any holes or self-intersections.
+  // Algorithm:
+  //  - For each face, get the edges as represented by the vertex indices.
+  //  - Sort the faces by the smallest vertex index (for quadratic edges, use the
+  //      linear vertex index).
+  //  - Count the number of times each edge/orientation occurs.
+  //    - If edge (i, j) occurs more than once, then the mesh has overlapping faces.
+  //    - If edge (i, j) and edge (j, i) occue exactly once, then the edge is an
+  //        interior edge.
+  //    - If edge (i, j) occurs exactly once, then the edge is a boundary edge.
+  //  - If the mesh does not have any holes, then the number of boundary edges should
+  //    by able to form a single closed loop.
+  //  - Determine the number of closed loops.
 }
 
 //==============================================================================

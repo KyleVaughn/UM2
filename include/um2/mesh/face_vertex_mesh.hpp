@@ -48,6 +48,7 @@ class FaceVertexMesh
 
 public:
   using FaceConn = Vec<N, Int>;
+  using EdgeConn = Vec<P + 1, Int>;
   using Face = Polygon<P, N, 2>;
   using Edge = typename Polygon<P, N, 2>::Edge;
 
@@ -77,6 +78,9 @@ public:
   // Accessors
   //==============================================================================
 
+  PURE HOSTDEV static constexpr auto
+  edgesPerFace() noexcept -> Int;
+
   PURE HOSTDEV [[nodiscard]] constexpr auto
   numVertices() const noexcept -> Int;
 
@@ -84,10 +88,22 @@ public:
   numFaces() const noexcept -> Int;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
+  numEdges() const noexcept -> Int;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   getVertex(Int i) const noexcept -> Point2;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getFace(Int i) const noexcept -> Face;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getFaceConn(Int i) const noexcept -> FaceConn;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getEdge(Int iface, Int iedge) const noexcept -> Edge;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  getEdgeConn(Int iface, Int iedge) const noexcept -> EdgeConn; 
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   vertices() noexcept -> Vector<Point2> &;
@@ -215,6 +231,69 @@ FaceVertexMesh<P, N>::getFace(Int i) const noexcept -> Face
     return QuadraticQuadrilateral2(_v[_fv[i][0]], _v[_fv[i][1]], _v[_fv[i][2]],
                                    _v[_fv[i][3]], _v[_fv[i][4]], _v[_fv[i][5]],
                                    _v[_fv[i][6]], _v[_fv[i][7]]);
+  } else {
+    __builtin_unreachable();
+  }
+}
+
+template <Int P, Int N>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+FaceVertexMesh<P, N>::getFaceConn(Int i) const noexcept -> FaceConn
+{
+  ASSERT_ASSUME(0 <= i);
+  ASSERT(i < numFaces());
+  return _fv[i];
+}
+
+template <Int P, Int N>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+FaceVertexMesh<P, N>::getEdge(Int iface, Int iedge) const noexcept -> Edge
+{
+  ASSERT_ASSUME(0 <= iface);
+  ASSERT(iface < numFaces());
+  ASSERT_ASSUME(0 <= iedge);
+  auto const & conn = _fv[iface];
+  if constexpr (P == 1 && N == 3) {
+    ASSERT_ASSUME(iedge < 3);
+    return (iedge < 2) ? Edge(_v[conn[iedge]], _v[conn[iedge + 1]]) 
+                       : Edge(_v[conn[2]], _v[conn[0]]);
+  } else if constexpr (P == 1 && N == 4) {
+    ASSERT_ASSUME(iedge < 4);
+    return (iedge < 3) ? Edge(_v[conn[iedge]], _v[conn[iedge + 1]]) 
+                       : Edge(_v[conn[3]], _v[conn[0]]);
+  } else if constexpr (P == 2 && N == 6) {
+    ASSERT_ASSUME(iedge < 3);
+      return (iedge < 2) ? Edge(_v[conn[iedge]], _v[conn[iedge + 1]], _v[conn[iedge + 3]])    
+                         : Edge(_v[conn[2]], _v[conn[0]], _v[conn[5]]);
+  } else if constexpr (P == 2 && N == 8) {
+      return (iedge < 3) ? Edge(_v[iedge], _v[iedge + 1], _v[iedge + 4])    
+                         : Edge(_v[3], _v[0], _v[7]);
+  } else {
+    __builtin_unreachable();
+  }
+}
+
+template <Int P, Int N>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+FaceVertexMesh<P, N>::getEdgeConn(Int iface, Int iedge) const noexcept -> EdgeConn
+{
+  ASSERT_ASSUME(0 <= iface);
+  ASSERT(iface < numFaces());
+  ASSERT_ASSUME(0 <= iedge);
+  auto const & conn = _fv[iface];
+  if constexpr (P == 1 && N == 3) {
+    ASSERT_ASSUME(iedge < 3);
+    return (iedge < 2) ? EdgeConn(iedge, iedge + 1) : EdgeConn(2, 0);
+  } else if constexpr (P == 1 && N == 4) {
+    ASSERT_ASSUME(iedge < 4);
+    return (iedge < 3) ? EdgeConn(iedge, iedge + 1) : EdgeConn(3, 0);
+  } else if constexpr (P == 2 && N == 6) {
+    ASSERT_ASSUME(iedge < 3);
+      return (iedge < 2) ? EdgeConn(iedge, iedge + 1, iedge + 3)    
+                         : EdgeConn(2, 0, 5);
+  } else if constexpr (P == 2 && N == 8) {
+      return (iedge < 3) ? EdgeConn(iedge, iedge + 1, iedge + 4)    
+                         : EdgeConn(3, 0, 7);
   } else {
     __builtin_unreachable();
   }

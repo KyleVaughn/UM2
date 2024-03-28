@@ -26,7 +26,6 @@ namespace um2
 // For small n, computes the naive sum of the values. For large n, uses
 // pairwise summation to reduce error.
 
-
 namespace sum_detail
 {
 

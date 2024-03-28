@@ -298,8 +298,8 @@ testIsLeft(um2::QuadraticSegment2 const & q)
 
   auto aabb = q.boundingBox();
   aabb.scale(2);
-  auto const width = aabb.width();
-  auto const height = aabb.height();
+  auto const width = aabb.extents(0);
+  auto const height = aabb.extents(1);
   uint32_t constexpr seed = 0x08FA9A20;
   // We want a fixed seed for reproducibility
   // NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp)
@@ -310,8 +310,8 @@ testIsLeft(um2::QuadraticSegment2 const & q)
   auto const b = coeffs[1];
   auto const a = coeffs[2];
   for (Int i = 0; i < num_points; ++i) {
-    Float const x = aabb.xMin() + dis(gen) * width;
-    Float const y = aabb.yMin() + dis(gen) * height;
+    Float const x = aabb.minima(0) + dis(gen) * width;
+    Float const y = aabb.minima(1) + dis(gen) * height;
     um2::Point2 const p(x, y);
     // Check if the point is to the left or right of the segment
     bool const is_left = q.isLeft(p);
@@ -546,8 +546,8 @@ testPCT(um2::QuadraticSegment2 const & q)
   aabb.scale(castIfNot<Float>(1.1));
   // NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp)
   std::mt19937 gen(0x08FA9A20);
-  std::uniform_real_distribution<Float> dis_x(aabb.xMin(), aabb.xMax());
-  std::uniform_real_distribution<Float> dis_y(aabb.yMin(), aabb.yMax());
+  std::uniform_real_distribution<Float> dis_x(aabb.minima(0), aabb.maxima(0));
+  std::uniform_real_distribution<Float> dis_y(aabb.minima(1), aabb.maxima(1));
   for (Int i = 0; i < num_points; ++i) {
     um2::Point2 const p(dis_x(gen), dis_y(gen));
     testPoint(q, p);
@@ -584,7 +584,7 @@ testEnclosedArea(um2::QuadraticSegment2 const & q)
   Int constexpr nrays = 1000;
 
   auto aabb = q.boundingBox();
-  auto const dx =  aabb.width() / static_cast<Float>(nrays);
+  auto const dx =  aabb.extents(0) / static_cast<Float>(nrays);
   um2::Vec2F const dir(0, 1);
   um2::Vec2F origin = aabb.minima();
   origin[0] -= dx / 2;
@@ -661,7 +661,7 @@ testEnclosedCentroid(um2::QuadraticSegment2 const & q)
   Int constexpr nrays = 1000;
 
   auto aabb = q.boundingBox();
-  auto const dx =  aabb.width() / static_cast<Float>(nrays);
+  auto const dx =  aabb.extents(0) / static_cast<Float>(nrays);
   um2::Vec2F const dir(0, 1);
   um2::Vec2F origin = aabb.minima();
   origin[0] -= dx / 2;
@@ -748,7 +748,7 @@ testEdgeForIntersections(um2::QuadraticSegment2 const & q)
 
   auto aabb = q.boundingBox();
   aabb.scale(castIfNot<Float>(1.1));
-  auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
+  auto const longest_edge = aabb.extents(0) > aabb.extents(1) ? aabb.extents(0) : aabb.extents(1);
   auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
   Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(intersect_num_angles);
   // For each angle

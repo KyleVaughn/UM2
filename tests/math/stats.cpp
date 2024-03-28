@@ -19,13 +19,20 @@ TEST_CASE(sum)
   for (Int i = 0; i < n; ++i) {
     v[i] = static_cast<Float>(i + 1);
   }
-  std::random_device rd;
-  std::mt19937 g(rd());
+  uint32_t constexpr seed = 0x08FA9A20;
+  // We want a fixed seed for reproducibility
+  // NOLINTNEXTLINE(cert-msc32-c,cert-msc51-cpp)
+  std::mt19937 g(seed);
   std::shuffle(v.begin(), v.end(), g);
   Float const vsum = um2::sum(v.cbegin(), v.cend());
   // Assert that no meaningful rounding error has occurred
-  // Note this is not the case for a naive implementation
+  // Note this is not the case for a naive implementation or
+  // for fast math optimizations, which may reorder operations
+#if !UM2_ENABLE_FASTMATH
   ASSERT(um2::abs(vsum - static_cast<Float>(soln)) < 1);
+#else
+  ASSERT(um2::abs(vsum - static_cast<Float>(soln)) < 100);
+#endif
 }
 
 HOSTDEV

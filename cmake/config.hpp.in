@@ -15,6 +15,7 @@
 
 // Enable/disable features
 #cmakedefine01 UM2_ENABLE_ASSERTS
+#cmakedefine01 UM2_ENABLE_FASTMATH
 #cmakedefine01 UM2_ENABLE_FLOAT64
 #cmakedefine01 UM2_ENABLE_INT64
 #cmakedefine01 UM2_ENABLE_BMI2

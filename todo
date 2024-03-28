@@ -25,11 +25,7 @@ eliminate epsilons
 Tighter eps_distance?
   Ensure all epsilons in geometry are based on eps_distance
 
-use std::print -> bump to C++23? Support in 12, 15?)
-
 gsl permutaitons vs mine?
-
-more efficient str to -> print?
 
 replace infinite distance with -1 in intersection and such
 
@@ -173,3 +169,7 @@ Consistent testing of mesh point inside.
 Binned FVM
 
 Matplotlib
+
+ModularRayParams to 3D
+CAD/CSG
+Vis (openGL)

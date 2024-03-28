@@ -23,17 +23,11 @@ makeBox() -> um2::AxisAlignedBox<D>
 
 template <Int D>
 HOSTDEV
-TEST_CASE(lengths)
+TEST_CASE(extents)
 {
   um2::AxisAlignedBox<D> const box = makeBox<D>();
-  if constexpr (D >= 1) {
-    ASSERT_NEAR(box.width(), 1, eps);
-  }
-  if constexpr (D >= 2) {
-    ASSERT_NEAR(box.height(), 1, eps);
-  }
-  if constexpr (D >= 3) {
-    ASSERT_NEAR(box.depth(), 1, eps);
+  for (Int i = 0; i < D; ++i) {
+    ASSERT_NEAR(box.extents(i), 1, eps);
   }
 }
 
@@ -198,13 +192,13 @@ TEST_CASE(scale)
   ASSERT_NEAR(box.minima(1), castIfNot<Float>(-0.5), eps);
   ASSERT_NEAR(box.maxima(0), castIfNot<Float>(1.5), eps);
   ASSERT_NEAR(box.maxima(1), castIfNot<Float>(1.5), eps);
-  ASSERT_NEAR(box.width() * box.height(), castIfNot<Float>(4), eps);
+  ASSERT_NEAR(box.extents(0) * box.extents(1), castIfNot<Float>(4), eps);
   box.scale(castIfNot<Float>(0.5));
   ASSERT_NEAR(box.minima(0), castIfNot<Float>(0), eps);
   ASSERT_NEAR(box.minima(1), castIfNot<Float>(0), eps);
   ASSERT_NEAR(box.maxima(0), castIfNot<Float>(1), eps);
   ASSERT_NEAR(box.maxima(1), castIfNot<Float>(1), eps);
-  ASSERT_NEAR(box.width() * box.height(), castIfNot<Float>(1), eps);
+  ASSERT_NEAR(box.extents(0) * box.extents(1), castIfNot<Float>(1), eps);
 }
 
 HOSTDEV
@@ -233,7 +227,7 @@ template <Int D>
 MAKE_CUDA_KERNEL(accessors, D);
 
 template <Int D>
-MAKE_CUDA_KERNEL(lengths, D);
+MAKE_CUDA_KERNEL(extents, D);
 
 template <Int D>
 MAKE_CUDA_KERNEL(centroid, D);
@@ -256,7 +250,7 @@ MAKE_CUDA_KERNEL(intersect_ray);
 template <Int D>
 TEST_SUITE(aabb)
 {
-  TEST_HOSTDEV(lengths, D);
+  TEST_HOSTDEV(extents, D);
   TEST_HOSTDEV(centroid, D);
   TEST_HOSTDEV(contains, D);
   TEST_HOSTDEV(is_approx, D);

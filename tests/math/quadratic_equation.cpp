@@ -91,7 +91,7 @@ TEST_CASE(degenerate_cases)
 // x = (F_(n-1) pm sqrt(-1^n)) / F_n
 //
 // To get real solutions, we consider even n.
-auto
+PURE auto
 fib(Int n) -> Int
 {
   // Arbitray cutoff for max number, since at some point they will overflow

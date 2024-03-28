@@ -224,8 +224,8 @@ PolytopeSoup::getElementBoundingBox(Int const i) const -> AxisAlignedBox3
     }
     QuadraticTriangle2 const tri6(pts);
     auto const box2 = tri6.boundingBox();
-    Point3 const p0(box2.xMin(), box2.yMin(), z);
-    Point3 const p1(box2.xMax(), box2.yMax(), z);
+    Point3 const p0(box2.minima(0), box2.minima(1), z);
+    Point3 const p1(box2.maxima(0), box2.maxima(1), z);
     return {p0, p1};
   }
   case VTKElemType::QuadraticQuad: {
@@ -238,8 +238,8 @@ PolytopeSoup::getElementBoundingBox(Int const i) const -> AxisAlignedBox3
     }
     QuadraticQuadrilateral2 const quad8(pts);
     auto const box2 = quad8.boundingBox();
-    Point3 const p0(box2.xMin(), box2.yMin(), z);
-    Point3 const p1(box2.xMax(), box2.yMax(), z);
+    Point3 const p0(box2.minima(0), box2.minima(1), z);
+    Point3 const p1(box2.maxima(0), box2.maxima(1), z);
     return {p0, p1};
   }
   default:
@@ -2494,8 +2494,8 @@ getPowerRegions(PolytopeSoup const & soup) -> Vector<Pair<Float, Point3>>
     if (data[i] > 0) {
       nonzero_ids.emplace_back(i);
       AxisAlignedBox3 const aabb = soup.getElementBoundingBox(i);
-      Point2 const minima(aabb.xMin(), aabb.yMin());
-      Point2 const maxima(aabb.xMax(), aabb.yMax());
+      Point2 const minima(aabb.minima(0), aabb.minima(1));
+      Point2 const maxima(aabb.maxima(0), aabb.maxima(1));
       aabbs[i] = AxisAlignedBox2(minima, maxima);
       // Scale the box up by 1% to avoid intersection issues
       auto constexpr scale = castIfNot<Float>(1.01);

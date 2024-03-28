@@ -78,19 +78,18 @@ HOSTDEV constexpr ModularRayParams::ModularRayParams(Float const a, Float const 
   ASSERT_ASSUME(a < um2::pi<Float>);
   ASSERT_ASSUME(0 < s);
 
-  auto const w = box.width();
-  auto const h = box.height();
+  // width and height of the box
+  auto const wh = box.extents();
 
   // Number of rays in the x and y directions
-  Vec2F const num_rays_t(um2::ceil(um2::abs(w * um2::sin(a) / s)),
-                         um2::ceil(um2::abs(h * um2::cos(a) / s)));
+  Vec2F const num_rays_t(um2::ceil(um2::abs(wh[0] * um2::sin(a) / s)),
+                         um2::ceil(um2::abs(wh[1] * um2::cos(a) / s)));
 
   _num_rays[0] = static_cast<Int>(num_rays_t[0]);
   _num_rays[1] = static_cast<Int>(num_rays_t[1]);
   ASSERT(_num_rays[0] > 0);
   ASSERT(_num_rays[1] > 0);
-  _spacing[0] = w / num_rays_t[0];
-  _spacing[1] = h / num_rays_t[1];
+  _spacing = wh / num_rays_t;
 
   // Effective angle to ensure cyclic rays
   auto const a_eff = um2::atan(_spacing[1] / _spacing[0]);

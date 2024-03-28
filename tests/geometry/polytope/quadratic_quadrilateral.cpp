@@ -195,7 +195,7 @@ testQuadForIntersections(um2::QuadraticQuadrilateral<2> const quad)
   Int constexpr rays_per_longest_edge = 1000;
 
   auto const aabb = quad.boundingBox();
-  auto const longest_edge = aabb.width() > aabb.height() ? aabb.width() : aabb.height();
+  auto const longest_edge = aabb.extents(0) > aabb.extents(1) ? aabb.extents(0) : aabb.extents(1);
   auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
   Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
   // For each angle

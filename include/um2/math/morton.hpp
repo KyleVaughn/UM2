@@ -118,6 +118,7 @@ inline static constexpr U bmi_3d_z_mask = static_cast<U>(0x4924924924924924);
 // Morton encoding/decoding
 //==============================================================================
 
+// Encode 2D coordinate to morton code
 template <std::unsigned_integral U>
 CONST inline auto
 mortonEncode(U const x, U const y) noexcept -> U
@@ -127,6 +128,7 @@ mortonEncode(U const x, U const y) noexcept -> U
   return pdep(x, bmi_2d_x_mask<U>) | pdep(y, bmi_2d_y_mask<U>);
 }
 
+// Encode 3D coordinate to morton code
 template <std::unsigned_integral U>
 CONST inline auto
 mortonEncode(U const x, U const y, U const z) noexcept -> U
@@ -138,6 +140,7 @@ mortonEncode(U const x, U const y, U const z) noexcept -> U
          pdep(z, bmi_3d_z_mask<U>);
 }
 
+// Decode the morton code to 2D coordinates
 template <std::unsigned_integral U>
 inline void
 mortonDecode(U const morton, U & x, U & y) noexcept
@@ -146,6 +149,7 @@ mortonDecode(U const morton, U & x, U & y) noexcept
   y = pext(morton, bmi_2d_y_mask<U>);
 }
 
+// Decode the morton code to 3D coordinates
 template <std::unsigned_integral U>
 inline void
 mortonDecode(U const morton, U & x, U & y, U & z) noexcept
@@ -161,6 +165,7 @@ mortonDecode(U const morton, U & x, U & y, U & z) noexcept
 // BMI2 intrinsics emulation
 //==============================================================================
 
+// Emulate pdep_u32(x, 0x55555555) using portable bit manipulation
 CONST HOSTDEV static constexpr auto
 pdep0x55555555(uint32_t x) noexcept -> uint32_t
 {
@@ -172,6 +177,7 @@ pdep0x55555555(uint32_t x) noexcept -> uint32_t
   return x;
 }
 
+// Emulate pdep_u64(x, 0x5555555555555555) using portable bit manipulation
 CONST HOSTDEV static constexpr auto
 pdep0x5555555555555555(uint64_t x) noexcept -> uint64_t
 {
@@ -184,6 +190,7 @@ pdep0x5555555555555555(uint64_t x) noexcept -> uint64_t
   return x;
 }
 
+// Emulate pdep_u32(x, 0x55555555) using portable bit manipulation
 CONST HOSTDEV constexpr static auto
 pext0x55555555(uint32_t x) noexcept -> uint32_t
 {
@@ -195,6 +202,7 @@ pext0x55555555(uint32_t x) noexcept -> uint32_t
   return x;
 }
 
+// Emulate pext_u64(x, 0x5555555555555555) using portable bit manipulation
 CONST HOSTDEV constexpr static auto
 pext0x5555555555555555(uint64_t x) noexcept -> uint64_t
 {
@@ -207,6 +215,7 @@ pext0x5555555555555555(uint64_t x) noexcept -> uint64_t
   return x;
 }
 
+// Emulate pdep_u32(x, 0x92492492) using portable bit manipulation
 CONST HOSTDEV static constexpr auto
 pdep0x92492492(uint32_t x) noexcept -> uint32_t
 {
@@ -218,6 +227,7 @@ pdep0x92492492(uint32_t x) noexcept -> uint32_t
   return x;
 }
 
+// Emulate pdep_u64(x, 0x9249249249249249) using portable bit manipulation
 CONST HOSTDEV static constexpr auto
 pdep0x9249249249249249(uint64_t x) noexcept -> uint64_t
 {
@@ -230,6 +240,7 @@ pdep0x9249249249249249(uint64_t x) noexcept -> uint64_t
   return x;
 }
 
+// Emulate pext_u32(x, 0x92492492) using portable bit manipulation
 CONST HOSTDEV constexpr static auto
 pext0x92492492(uint32_t x) noexcept -> uint32_t
 {
@@ -241,6 +252,7 @@ pext0x92492492(uint32_t x) noexcept -> uint32_t
   return x;
 }
 
+// Emulate pext_u64(x, 0x9249249249249249) using portable bit manipulation
 CONST HOSTDEV constexpr static auto
 pext0x9249249249249249(uint64_t x) noexcept -> uint64_t
 {
@@ -257,18 +269,21 @@ pext0x9249249249249249(uint64_t x) noexcept -> uint64_t
 // Morton encoding/decoding
 //==============================================================================
 
+// Encode 2D coordinate to morton code
 CONST HOSTDEV constexpr auto
 mortonEncode(uint32_t const x, uint32_t const y) noexcept -> uint32_t
 {
   return pdep0x55555555(x) | (pdep0x55555555(y) << 1);
 }
 
+// Encode 2D coordinate to morton code 
 CONST HOSTDEV constexpr auto
 mortonEncode(uint64_t const x, uint64_t const y) noexcept -> uint64_t
 {
   return pdep0x5555555555555555(x) | (pdep0x5555555555555555(y) << 1);
 }
 
+// Decode the morton code to 2D coordinates
 HOSTDEV constexpr void
 mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y) noexcept
 {
@@ -276,6 +291,7 @@ mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y) noexcept
   y = pext0x55555555(morton >> 1);
 }
 
+// Decode the morton code to 2D coordinates
 HOSTDEV constexpr void
 mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y) noexcept
 {
@@ -283,12 +299,14 @@ mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y) noexcept
   y = pext0x5555555555555555(morton >> 1);
 }
 
+// Encode 3D coordinate to morton code 
 HOSTDEV CONST constexpr auto
 mortonEncode(uint32_t const x, uint32_t const y, uint32_t const z) noexcept -> uint32_t
 {
   return pdep0x92492492(x) | (pdep0x92492492(y) << 1) | (pdep0x92492492(z) << 2);
 }
 
+// Encode 3D coordinate to morton code
 HOSTDEV CONST constexpr auto
 mortonEncode(uint64_t const x, uint64_t const y, uint64_t const z) noexcept -> uint64_t
 {
@@ -296,6 +314,7 @@ mortonEncode(uint64_t const x, uint64_t const y, uint64_t const z) noexcept -> u
          (pdep0x9249249249249249(z) << 2);
 }
 
+// Decode the morton code to 3D coordinates
 HOSTDEV constexpr void
 mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y, uint32_t & z) noexcept
 {
@@ -304,6 +323,7 @@ mortonDecode(uint32_t const morton, uint32_t & x, uint32_t & y, uint32_t & z) no
   z = pext0x92492492(morton >> 2);
 }
 
+// Decode the morton code to 3D coordinates
 HOSTDEV constexpr void
 mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y, uint64_t & z) noexcept
 {
@@ -318,6 +338,7 @@ mortonDecode(uint64_t const morton, uint64_t & x, uint64_t & y, uint64_t & z) no
 // Morton encoding/decoding floats (normalized to [0,1])
 //==============================================================================
 
+// Encode 2D floating point coordinate in [0,1] x [0,1] to U morton code
 template <std::unsigned_integral U, std::floating_point T>
 CONST HOSTDEV auto
 mortonEncode(T const x, T const y) noexcept -> U
@@ -334,6 +355,7 @@ mortonEncode(T const x, T const y) noexcept -> U
   return mortonEncode(x_m, y_m);
 }
 
+// Decode U morton code to a 2D floating point coordinate in [0,1] x [0,1]
 template <std::unsigned_integral U, std::floating_point T>
 HOSTDEV void
 mortonDecode(U const morton, T & x, T & y) noexcept
@@ -345,6 +367,7 @@ mortonDecode(U const morton, T & x, T & y) noexcept
   y = static_cast<T>(y_m) / static_cast<T>(max_2d_morton_coord<U>);
 }
 
+// Encode 3D floating point coordinate in [0,1] x [0,1] x [0,1] to U morton code
 template <std::unsigned_integral U, std::floating_point T>
 CONST HOSTDEV auto
 mortonEncode(T const x, T const y, T const z) noexcept -> U
@@ -361,6 +384,7 @@ mortonEncode(T const x, T const y, T const z) noexcept -> U
   return mortonEncode(x_m, y_m, z_m);
 }
 
+// Decode U morton code to a 3D floating point coordinate in [0,1] x [0,1] x [0,1]
 template <std::unsigned_integral U, std::floating_point T>
 HOSTDEV void
 mortonDecode(U const morton, T & x, T & y, T & z) noexcept

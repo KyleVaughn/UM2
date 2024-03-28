@@ -33,24 +33,6 @@ public:
   //==============================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  xMin() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  yMin() const noexcept -> Float requires(D >= 2);
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  zMin() const noexcept -> Float requires(D >= 3);
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  xMax() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  yMax() const noexcept -> Float requires(D >= 2);
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  zMax() const noexcept -> Float requires(D >= 3);
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
   minima() const noexcept -> Point<D> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -89,18 +71,6 @@ public:
   // The extent of the box in the i-th dimension.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   extents(Int i) const noexcept -> Float;
-
-  // The x-extent of the box.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  width() const noexcept -> Float;
-
-  // The y-extent of the box.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  height() const noexcept -> Float requires(D >= 2);
-
-  // The z-extent of the box.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  depth() const noexcept -> Float requires(D >= 3);
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   centroid() const noexcept -> Point<D>;
@@ -164,48 +134,6 @@ boundingBox(Point<D> const * points, Int n) noexcept -> AxisAlignedBox<D>;
 //==============================================================================
 // Accessors
 //==============================================================================
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::xMin() const noexcept -> Float
-{
-  return _min[0];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::yMin() const noexcept -> Float requires(D >= 2)
-{
-  return _min[1];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::zMin() const noexcept -> Float requires(D >= 3)
-{
-  return _min[2];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::xMax() const noexcept -> Float
-{
-  return _max[0];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::yMax() const noexcept -> Float requires(D >= 2)
-{
-  return _max[1];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::zMax() const noexcept -> Float requires(D >= 3)
-{
-  return _max[2];
-}
 
 template <Int D>
 PURE HOSTDEV constexpr auto
@@ -306,27 +234,6 @@ AxisAlignedBox<D>::extents(Int i) const noexcept -> Float
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < D);
   return _max[i] - _min[i];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::width() const noexcept -> Float
-{
-  return extents(0);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::height() const noexcept -> Float requires(D >= 2)
-{
-  return extents(1);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-AxisAlignedBox<D>::depth() const noexcept -> Float requires(D >= 3)
-{
-  return extents(2);
 }
 
 template <Int D>
