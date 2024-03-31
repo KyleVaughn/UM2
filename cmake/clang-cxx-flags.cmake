@@ -34,6 +34,7 @@ if (UM2_USE_CUDA)
     " -Wvla"
     #  " -Wzero-as-null-pointer-constant"
     #  " -pedantic"
+    " -fno-math-errno"
     )
 else()
   string(CONCAT UM2_CLANG_FLAGS 
@@ -71,5 +72,6 @@ else()
     " -Wvla"
     # " -Wzero-as-null-pointer-constant"
     " -pedantic"
+    " -fno-math-errno"
     )
 endif()

@@ -125,6 +125,23 @@ TEST_CASE(compound_div)
 
 template <Int D, typename T>
 HOSTDEV
+TEST_CASE(scalar_assign)
+{
+  um2::Vec<D, T> v = makeVec<D, T>();
+  v = 11;
+  if constexpr (std::floating_point<T>) {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT_NEAR(v[i], static_cast<T>(11), static_cast<T>(1e-6));
+    }
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      ASSERT(v[i] == static_cast<T>(11));
+    }
+  }
+}
+
+template <Int D, typename T>
+HOSTDEV
 TEST_CASE(compound_scalar_add)
 {
   um2::Vec<D, T> v = makeVec<D, T>();
@@ -563,6 +580,7 @@ TEST_SUITE(vec)
   TEST_HOSTDEV(compound_sub, D, T);
   TEST_HOSTDEV(compound_mul, D, T);
   TEST_HOSTDEV(compound_div, D, T);
+  TEST_HOSTDEV(scalar_assign, D, T);
   TEST_HOSTDEV(compound_scalar_add, D, T);
   TEST_HOSTDEV(compound_scalar_sub, D, T);
   TEST_HOSTDEV(compound_scalar_mul, D, T);

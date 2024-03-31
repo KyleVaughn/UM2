@@ -1,6 +1,15 @@
-test error conditions by checking the last logger message after turning the logger settings
-to not exit on error
-  check for logger calls elsewhere
+intersect non-pure
+tagged union/variant for tri/quad mesh
+
+mortonSort
+Vec = int
+linesegment test
+linesegment function reordering
+
+make free functions for polygons, etc
+
+use free functions to make member functions
+refactor intersection routine
 
 mesh with hole test
 

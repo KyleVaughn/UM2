@@ -7,7 +7,7 @@
 // POLYTOPE
 //==============================================================================
 // A K-dimensional polytope, of polynomial order P, represented by the connectivity
-// of its vertices. These N vertices are D-dimensional points of type F.
+// of its vertices. These N vertices are D-dimensional points.
 //
 // This struct only supports the shapes found in "The Visualization Toolkit:
 // An Object-Oriented Approach to 3D Graphics, 4th Edition, Chapter 8, Advanced
@@ -29,7 +29,7 @@ class Polytope
 };
 
 //==============================================================================
-// Aliases
+// Aliases/Specializations
 //==============================================================================
 
 template <Int K, Int N, Int D>

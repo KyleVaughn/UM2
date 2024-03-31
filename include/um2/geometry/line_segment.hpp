@@ -19,10 +19,14 @@ class Polytope<1, 1, 2, D>
   static_assert(0 < D && D <= 3, "Only 1D, 2D, and 3D segments are supported.");
 
 public:
+  // NOLINTBEGIN(readability-identifier-naming)
+  static constexpr Int N = 2; // Number of vertices 
+  // NOLINTEND(readability-identifier-naming)
+
   using Vertex = Point<D>;
 
 private:
-  Vertex _v[2];
+  Vertex _v[N];
 
 public:
   //==============================================================================
@@ -48,30 +52,53 @@ public:
   constexpr Polytope() noexcept = default;
 
   template <class... Pts>
-  requires(sizeof...(Pts) == 2 && (std::same_as<Vertex, Pts> && ...))
+  requires(sizeof...(Pts) == N && (std::same_as<Vertex, Pts> && ...))
       // NOLINTNEXTLINE(google-explicit-constructor) implicit conversion is desired
       HOSTDEV constexpr Polytope(Pts const... args) noexcept
       : _v{args...}
   {
   }
 
-  HOSTDEV constexpr explicit Polytope(Vec<2, Vertex> const & v) noexcept;
-
   //==============================================================================
   // Methods
   //==============================================================================
 
   // Interpolate along the segment.
-  // r in [0, 1] are valid values.
-  // F(r) -> (x, y, z)
-  template <typename R>
+  // r in [0, 1], F(r) -> R^D
   PURE HOSTDEV constexpr auto
-  operator()(R r) const noexcept -> Vertex;
+  operator()(Float r) const noexcept -> Point<D>;
 
-  // We want to transform the segment so that v[0] is at the origin and v[1]
-  // is on the x-axis. We can do this by first translating by -v[0] and then
-  // using a change of basis (rotation) matrix to rotate v[1] onto the x-axis.
-  // The rotation matrix is returned.
+  // Jacobian of the segment (Column vector).
+  // dF/dr -> R^D
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  jacobian(Float /*r*/) const noexcept -> Vec<D, Float>;
+
+  // Arc length of the segment
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  length() const noexcept -> Float;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  boundingBox() const noexcept -> AxisAlignedBox<D>;
+
+  // Return the parametric coordinate (r) of the point on the line that is closest to p.
+  // r such that ||F(r) - p|| is minimized, r in [0, 1]
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  pointClosestTo(Vertex const & p) const noexcept -> Float;
+
+  // Return the squared distance from the point p to the segment.
+  // This is faster than distanceTo() as it avoids the square root operation.
+  // return ||pointClosestTo(p) - p||^2
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  squaredDistanceTo(Vertex const & p) const noexcept -> Float;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  distanceTo(Vertex const & p) const noexcept -> Float;
+
+  // 2D only
+  //---------------------------------------------------------------------------
+
+  // If the line is translated by -v0, then the first vertex is at the origin.
+  // Get the rotation matrix that aligns the line with the x-axis.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getRotation() const noexcept -> Mat2x2F
   requires(D == 2);
@@ -81,41 +108,14 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   isLeft(Vertex const & p) const noexcept -> bool requires(D == 2);
 
-  // Arc length of the segment
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  length() const noexcept -> Float;
+  // Intersect the ray with the segment.
+  // Returns the number of valid intersections.
+  // The ray coordinates r, such that R(r) = o + r*d is an intersection point are
+  // stored in the buffer, sorted from closest to farthest. r in [0, inf)
+  HOSTDEV [[nodiscard]] constexpr auto
+  intersect(Ray2 ray, Float * buffer) const noexcept -> Int requires(D == 2);
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  boundingBox() const noexcept -> AxisAlignedBox<D>;
-
-  // Return the point on the curve that is closest to the given point.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  pointClosestTo(Vertex const & p) const noexcept -> Float;
-
-  // Return the squared distance between the given point and the closest point
-  // on the curve.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  squaredDistanceTo(Vertex const & p) const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  distanceTo(Vertex const & p) const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  intersect(Ray2 ray) const noexcept -> Float
-  requires(D == 2);
-
-}; // LineSegment 
-
-//==============================================================================
-// Constructors
-//==============================================================================
-
-template <Int D>
-HOSTDEV constexpr LineSegment<D>::Polytope(Vec<2, Vertex> const & v) noexcept
-{
-  _v[0] = v[0];
-  _v[1] = v[1];
-}
+}; // LineSegment
 
 //==============================================================================
 // Accessors
@@ -126,7 +126,7 @@ PURE HOSTDEV constexpr auto
 LineSegment<D>::operator[](Int i) noexcept -> Vertex &
 {
   ASSERT_ASSUME(0 <= i);
-  ASSERT_ASSUME(i < 2);
+  ASSERT_ASSUME(i < N);
   return _v[i];
 }
 
@@ -135,7 +135,7 @@ PURE HOSTDEV constexpr auto
 LineSegment<D>::operator[](Int i) const noexcept -> Vertex const &
 {
   ASSERT_ASSUME(0 <= i);
-  ASSERT_ASSUME(i < 2);
+  ASSERT_ASSUME(i < N);
   return _v[i];
 }
 
@@ -151,12 +151,121 @@ LineSegment<D>::vertices() const noexcept -> Vertex const *
 //==============================================================================
 
 template <Int D>
-template <typename R>
 PURE HOSTDEV constexpr auto
-LineSegment<D>::operator()(R const r) const noexcept -> Vertex
+interpolate(LineSegment<D> const & l, Float const r) noexcept -> Point<D>
 {
-  auto const rr = static_cast<Float>(r);
-  return _v[0] + rr * (_v[1] - _v[0]);
+  return l[0] + r * (l[1] - l[0]);
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+LineSegment<D>::operator()(Float const r) const noexcept -> Vertex
+{
+  return interpolate(*this, r); 
+}
+
+//==============================================================================
+// jacobian
+//==============================================================================
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+jacobian(LineSegment<D> const & l) noexcept -> Point<D>
+{
+  return l[1] - l[0];
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+LineSegment<D>::jacobian(Float const /*r*/) const noexcept -> Point<D>
+{
+  return um2::jacobian(*this);
+}
+
+//==============================================================================
+// length
+//==============================================================================
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+length(LineSegment<D> const & l) noexcept -> Float
+{
+  return l[0].distanceTo(l[1]);
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+LineSegment<D>::length() const noexcept -> Float
+{
+  return um2::length(*this);
+}
+
+//==============================================================================
+// boundingBox
+//==============================================================================
+// Defined in polytope.hpp , since for all linear polytopes
+// the bounding box is simply the bounding box of the vertices.
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+LineSegment<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
+{
+  return um2::boundingBox(*this);
+}
+
+//==============================================================================
+// pointClosestTo
+//==============================================================================
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+pointClosestTo(LineSegment<D> const & l, Point<D> const & p) noexcept -> Float
+{
+  // From Real-Time Collision Detection, Christer Ericson, 2005
+  // Given segment ab and point c, computes closest point d on ab.
+  // Returns t for the position of d, d(r) = a + r*(b - a)
+  Point<D> const ab = l[1] - l[0];
+  // Project c onto ab, computing parameterized position d(r) = a + r*(b − a)
+  Float r = (p - l[0]).dot(ab) / ab.squaredNorm();
+  // If outside segment, clamp r (and therefore d) to the closest endpoint
+  Float constexpr lower = 0;
+  Float constexpr upper = 1;
+  r = um2::clamp(r, lower, upper);
+  return um2::clamp(r, lower, upper);
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+LineSegment<D>::pointClosestTo(Point<D> const & p) const noexcept -> Float
+{
+  return um2::pointClosestTo(*this, p);
+}
+
+//==============================================================================
+// distanceTo
+//==============================================================================
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+squaredDistanceTo(LineSegment<D> const & l, Point<D> const & p) noexcept -> Float
+{
+  Float const r = l.pointClosestTo(p);
+  Point<D> const p_closest = l(r);
+  return p_closest.squaredDistanceTo(p);
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+LineSegment<D>::squaredDistanceTo(Point<D> const & p) const noexcept -> Float
+{
+  return um2::squaredDistanceTo(*this, p);
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+LineSegment<D>::distanceTo(Point<D> const & p) const noexcept -> Float
+{
+  return um2::sqrt(squaredDistanceTo(p));
 }
 
 //==============================================================================
@@ -166,7 +275,7 @@ LineSegment<D>::operator()(R const r) const noexcept -> Vertex
 template <Int D>
 PURE HOSTDEV constexpr auto
 LineSegment<D>::getRotation() const noexcept -> Mat2x2F
-requires(D == 2) { 
+requires(D == 2) {
   // We want to transform the segment so that v[0] is at the origin and v[1]
   // is on the x-axis. We can do this by first translating by -v[0] and then
   // using a change of basis (rotation) matrix to rotate v[1] onto the x-axis.
@@ -208,72 +317,6 @@ LineSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D == 2)
 }
 
 //==============================================================================
-// length
-//==============================================================================
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-LineSegment<D>::length() const noexcept -> Float
-{
-  return _v[0].distanceTo(_v[1]); 
-}
-
-//==============================================================================
-// boundingBox
-//==============================================================================
-
-// Defined in Polytope.hpp for the line segment, since for all linear polytopes
-// the bounding box is simply the bounding box of the vertices.
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-LineSegment<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
-{
-  return um2::boundingBox(*this);
-}
-
-//==============================================================================
-// pointClosestTo
-//==============================================================================
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-LineSegment<D>::pointClosestTo(Vertex const & p) const noexcept -> Float
-{
-  // From Real-Time Collision Detection, Christer Ericson, 2005
-  // Given segment ab and point c, computes closest point d on ab.
-  // Returns t for the position of d, d(r) = a + r*(b - a)
-  Vec<D, Float> const ab = _v[1] - _v[0];
-  // Project c onto ab, computing parameterized position d(r) = a + r*(b − a)
-  Float r = (p - _v[0]).dot(ab) / ab.squaredNorm();
-  // If outside segment, clamp r (and therefore d) to the closest endpoint
-  Float constexpr lower = 0;
-  Float constexpr upper = 1;
-  r = um2::clamp(r, lower, upper);
-  return um2::clamp(r, lower, upper);
-}
-
-//==============================================================================
-// distanceTo
-//==============================================================================
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-LineSegment<D>::squaredDistanceTo(Vertex const & p) const noexcept -> Float
-{
-  Float const r = pointClosestTo(p);
-  Vertex const p_closest = (*this)(r);
-  return p_closest.squaredDistanceTo(p);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-LineSegment<D>::distanceTo(Vertex const & p) const noexcept -> Float
-{
-  return um2::sqrt(squaredDistanceTo(p));
-}
-
-//==============================================================================
 // intersect
 //==============================================================================
 
@@ -303,18 +346,18 @@ LineSegment<D>::distanceTo(Vertex const & p) const noexcept -> Float
 // r = (Y ⋅ Z)/(Z ⋅ Z) = y₃/z₃
 // This result is valid if s ∈ [0, 1]
 
-// r in [0, inf_distance) is returned.
 template <Int D>
-PURE HOSTDEV constexpr auto
-LineSegment<D>::intersect(Ray2 const ray) const noexcept -> Float
+HOSTDEV constexpr auto    
+LineSegment<D>::intersect(Ray2 const ray, Float * buffer) const noexcept -> Int    
 requires(D == 2)
-{
-  Vec2F const v = _v[1] - _v[0];
-  Vec2F const u = ray.origin() - _v[0];
-  Float const z = v.cross(ray.direction());
-  Float const s = u.cross(ray.direction()) / z;
-  Float const r = u.cross(v) / z;
-  return (0 <= s && s <= 1 && 0 <= r) ? r : -1; // -1 is used to indicate no intersection
+{    
+  Vec2F const v = _v[1] - _v[0];    
+  Vec2F const u = ray.origin() - _v[0];    
+  Float const z = v.cross(ray.direction());    
+  Float const s = u.cross(ray.direction()) / z;    
+  Float const r = u.cross(v) / z;    
+  *buffer = r;    
+  return (0 <= s && s <= 1 && 0 <= r) ? 1 : 0;    
 }
 
 } // namespace um2

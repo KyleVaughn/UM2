@@ -1,6 +1,5 @@
 #include <um2/geometry/triangle.hpp>
 #include <um2/geometry/modular_rays.hpp>
-#include <um2/stdlib/algorithm/is_sorted.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -11,16 +10,16 @@ HOSTDEV constexpr auto
 makeTri() -> um2::Triangle<D>
 {
   um2::Triangle<D> this_tri;
-  this_tri[0] = um2::Point<D>::zero();
-  this_tri[1] = um2::Point<D>::zero();
-  this_tri[2] = um2::Point<D>::zero();
+  this_tri[0] = 0; 
+  this_tri[1] = 0; 
+  this_tri[2] = 0; 
   this_tri[1][0] = castIfNot<Float>(1);
   this_tri[2][1] = castIfNot<Float>(1);
   return this_tri;
 }
 
 //==============================================================================
-// Interpolation
+// interpolation
 //==============================================================================
 
 template <Int D>
@@ -37,12 +36,12 @@ TEST_CASE(interpolate)
 }
 
 //==============================================================================
-// edge
+// getEdge
 //==============================================================================
 
 template <Int D>
 HOSTDEV
-TEST_CASE(edge)
+TEST_CASE(getEdge)
 {
   um2::Triangle<D> tri = makeTri<D>();
   um2::LineSegment<D> edge = tri.getEdge(0);
@@ -54,6 +53,79 @@ TEST_CASE(edge)
   edge = tri.getEdge(2);
   ASSERT(edge[0].isApprox(tri[2]));
   ASSERT(edge[1].isApprox(tri[0]));
+}
+
+//==============================================================================
+// perimeter
+//==============================================================================
+
+template <Int D>
+HOSTDEV
+TEST_CASE(perimeter)
+{
+  um2::Triangle<D> const tri = makeTri<D>();
+  auto const two = castIfNot<Float>(2);
+  Float const ref = two + um2::sqrt(two);
+  ASSERT_NEAR(tri.perimeter(), ref, eps);
+}
+
+//==============================================================================
+// boundingBox
+//==============================================================================
+
+template <Int D>
+HOSTDEV
+TEST_CASE(boundingBox)
+{
+  um2::Triangle<D> const tri = makeTri<D>();
+  um2::AxisAlignedBox<D> const box = tri.boundingBox();
+  ASSERT_NEAR(box.minima()[0], castIfNot<Float>(0), eps);
+  ASSERT_NEAR(box.minima()[1], castIfNot<Float>(0), eps);
+  ASSERT_NEAR(box.maxima()[0], castIfNot<Float>(1), eps);
+  ASSERT_NEAR(box.maxima()[1], castIfNot<Float>(1), eps);
+}
+
+//==============================================================================
+// area
+//==============================================================================
+
+template <Int D>
+HOSTDEV
+TEST_CASE(area)
+{
+  um2::Triangle<D> tri = makeTri<D>();
+  ASSERT_NEAR(tri.area(), castIfNot<Float>(0.5), eps);
+  tri[1][0] = castIfNot<Float>(2);
+  ASSERT_NEAR(tri.area(), castIfNot<Float>(1), eps);
+}
+
+//==============================================================================
+// centroid
+//==============================================================================
+
+template <Int D>
+HOSTDEV
+TEST_CASE(centroid)
+{
+  um2::Triangle<D> const tri = makeTri<D>();
+  um2::Point<D> const c = tri.centroid();
+  ASSERT_NEAR(c[0], castIfNot<Float>(1.0 / 3.0), eps);
+  ASSERT_NEAR(c[1], castIfNot<Float>(1.0 / 3.0), eps);
+}
+
+//==============================================================================
+// isCCW
+//==============================================================================
+
+HOSTDEV
+TEST_CASE(isCCW_flip)
+{
+  um2::Triangle<2> tri = makeTri<2>();
+  ASSERT(tri.isCCW());
+  um2::swap(tri[1], tri[2]);
+  ASSERT(!tri.isCCW());
+  tri.flip();
+  ASSERT(tri.isCCW());
 }
 
 //==============================================================================
@@ -75,76 +147,16 @@ TEST_CASE(contains)
 }
 
 //==============================================================================
-// area
+// meanChordLength
 //==============================================================================
 
-template <Int D>
 HOSTDEV
-TEST_CASE(area)
+TEST_CASE(meanChordLength)
 {
-  um2::Triangle<D> tri = makeTri<D>();
-  ASSERT_NEAR(tri.area(), castIfNot<Float>(0.5), eps);
-  tri[1][0] = castIfNot<Float>(2);
-  ASSERT_NEAR(tri.area(), castIfNot<Float>(1), eps);
-}
-
-//==============================================================================
-// perimeter
-//==============================================================================
-
-template <Int D>
-HOSTDEV
-TEST_CASE(perimeter)
-{
-  um2::Triangle<D> const tri = makeTri<D>();
+  um2::Triangle<2> const tri = makeTri<2>();
   auto const two = castIfNot<Float>(2);
-  Float const ref = two + um2::sqrt(two);
-  ASSERT_NEAR(tri.perimeter(), ref, eps);
-}
-
-//==============================================================================
-// centroid
-//==============================================================================
-
-template <Int D>
-HOSTDEV
-TEST_CASE(centroid)
-{
-  um2::Triangle<D> const tri = makeTri<D>();
-  um2::Point<D> const c = tri.centroid();
-  ASSERT_NEAR(c[0], castIfNot<Float>(1.0 / 3.0), eps);
-  ASSERT_NEAR(c[1], castIfNot<Float>(1.0 / 3.0), eps);
-}
-
-//==============================================================================
-// boundingBox
-//==============================================================================
-
-template <Int D>
-HOSTDEV
-TEST_CASE(boundingBox)
-{
-  um2::Triangle<D> const tri = makeTri<D>();
-  um2::AxisAlignedBox<D> const box = tri.boundingBox();
-  ASSERT_NEAR(box.minima()[0], castIfNot<Float>(0), eps);
-  ASSERT_NEAR(box.minima()[1], castIfNot<Float>(0), eps);
-  ASSERT_NEAR(box.maxima()[0], castIfNot<Float>(1), eps);
-  ASSERT_NEAR(box.maxima()[1], castIfNot<Float>(1), eps);
-}
-
-//==============================================================================
-// isCCW
-//==============================================================================
-
-HOSTDEV
-TEST_CASE(isCCW_flip)
-{
-  um2::Triangle<2> tri = makeTri<2>();
-  ASSERT(tri.isCCW());
-  um2::swap(tri[1], tri[2]);
-  ASSERT(!tri.isCCW());
-  tri.flip();
-  ASSERT(tri.isCCW());
+  auto const ref = um2::pi<Float> / (two * (two + um2::sqrt(two)));
+  ASSERT_NEAR(tri.meanChordLength(), ref, eps);
 }
 
 //==============================================================================
@@ -173,24 +185,21 @@ testTriForIntersections(um2::Triangle<2> const tri)
     // For each ray
     for (Int i = 0; i < num_rays; ++i) {
       auto const ray = params.getRay(i);
-      auto const intersections = tri.intersect(ray);
-      ASSERT(um2::is_sorted(intersections.begin(), intersections.end()));
+      Float buf[3];
+      auto const hits = tri.intersect(ray, buf);
       // For each intersection coordinate
-      for (auto const & r : intersections) {
-        // If intersection is valid
-        if (0 <= r) {
-          um2::Point2 const p = ray(r);
-          // Get the distance to the closest edge
-          Float min_dist = um2::inf_distance;
-          for (Int ie = 0; ie < 3; ++ie) {
-            um2::LineSegment<2> const l = tri.getEdge(ie);
-            Float const d = l.distanceTo(p);
-            if (d < min_dist) {
-              min_dist = d;
-            }
+      for (Int ihit = 0; ihit < hits; ++ihit) {
+        um2::Point2 const p = ray(buf[ihit]);
+        // Get the distance to the closest edge
+        Float min_dist = um2::inf_distance;
+        for (Int ie = 0; ie < 3; ++ie) {
+          um2::LineSegment<2> const l = tri.getEdge(ie);
+          Float const d = l.distanceTo(p);
+          if (d < min_dist) {
+            min_dist = d;
           }
-          ASSERT(min_dist < um2::eps_distance);
         }
+        ASSERT(min_dist < um2::eps_distance);
       }
     }
   }
@@ -205,60 +214,21 @@ TEST_CASE(intersect)
   testTriForIntersections(tri);
 }
 
-//==============================================================================
-// meanChordLength
-//==============================================================================
-
-HOSTDEV
-TEST_CASE(meanChordLength)
-{
-  um2::Triangle<2> const tri = makeTri<2>();
-  auto const two = castIfNot<Float>(2);
-  auto const ref = um2::pi<Float> / (two * (two + um2::sqrt(two)));
-  ASSERT_NEAR(tri.meanChordLength(), ref, eps);
-}
-
-#if UM2_USE_CUDA
-template <Int D>
-MAKE_CUDA_KERNEL(interpolate, D);
-
-template <Int D>
-MAKE_CUDA_KERNEL(edge, D);
-
-MAKE_CUDA_KERNEL(contains);
-
-template <Int D>
-MAKE_CUDA_KERNEL(area, D);
-
-template <Int D>
-MAKE_CUDA_KERNEL(perimeter, D);
-
-template <Int D>
-MAKE_CUDA_KERNEL(centroid, D);
-
-template <Int D>
-MAKE_CUDA_KERNEL(boundingBox, D);
-
-MAKE_CUDA_KERNEL(isCCW_flipFace);
-
-MAKE_CUDA_KERNEL(meanChordLength);
-#endif
-
 template <Int D>
 TEST_SUITE(Triangle)
 {
   TEST_HOSTDEV(interpolate, D);
-  TEST_HOSTDEV(edge, D);
-  if constexpr (D == 2) {
-    TEST_HOSTDEV(contains);
-    TEST_HOSTDEV(isCCW_flip);
-    TEST_HOSTDEV(intersect);
-    TEST_HOSTDEV(meanChordLength);
-  }
-  TEST_HOSTDEV(area, D);
+  TEST_HOSTDEV(getEdge, D);
   TEST_HOSTDEV(perimeter, D);
-  TEST_HOSTDEV(centroid, D);
   TEST_HOSTDEV(boundingBox, D);
+  TEST_HOSTDEV(area, D);
+  TEST_HOSTDEV(centroid, D);
+  if constexpr (D == 2) {
+    TEST_HOSTDEV(isCCW_flip);
+    TEST_HOSTDEV(contains);
+    TEST_HOSTDEV(meanChordLength);
+    TEST_HOSTDEV(intersect);
+  }
 }
 
 auto

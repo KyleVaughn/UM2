@@ -78,20 +78,28 @@ template <Int D>
 void
 mortonSortPermutation(Point<D> const * begin,
                       Point<D> const * end,
-                      Int * perm_begin,
-                      Vec<D, Float> const & scale = Vec<D, Float>::zero()) noexcept
+                      Int * perm_begin) noexcept
+                      
 {
   auto const n = end - begin;
   um2::iota(perm_begin, perm_begin + n, 0);
-  bool const has_scale = scale.squaredNorm() > eps_distance2;
-  if (has_scale) {
-    std::sort(perm_begin, perm_begin + n, [&](Int const i, Int const j) {
-      return mortonEncode(begin[i] * scale) < mortonEncode(begin[j] * scale);
-    });
-  } else {
-    std::sort(perm_begin, perm_begin + n, [&](Int const i, Int const j) {
-      return mortonEncode(begin[i]) < mortonEncode(begin[j]);
-    });
-  }
+  std::sort(perm_begin, perm_begin + n, [&](Int const i, Int const j) {
+    return mortonEncode(begin[i]) < mortonEncode(begin[j]);
+  });
+}
+
+template <Int D>
+void
+mortonSortPermutation(Point<D> const * begin,
+                      Point<D> const * end,
+                      Int * perm_begin,
+                      Vec<D, Float> const scale) noexcept
+{
+  auto const n = end - begin;
+  um2::iota(perm_begin, perm_begin + n, 0);
+  ASSERT(scale.squaredNorm() > eps_distance2);
+  std::sort(perm_begin, perm_begin + n, [&](Int const i, Int const j) {
+    return mortonEncode(begin[i] * scale) < mortonEncode(begin[j] * scale);
+  });
 }
 } // namespace um2

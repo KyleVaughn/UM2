@@ -175,6 +175,11 @@ public:
   // Element-wise operators with scalars
   // Require that the scalar type is either the same as the vector type or an
   // integral type.
+
+  template <class S>
+  requires(std::same_as<T, S> || std::integral<S>) HOSTDEV constexpr auto
+  operator=(S const & s) noexcept -> Vec<D, T> &;
+
   template <class S>
   requires(std::same_as<T, S> || std::integral<S>) HOSTDEV constexpr auto
   operator+=(S const & s) noexcept -> Vec<D, T> &;
@@ -553,6 +558,21 @@ Vec<D, T>::operator/=(Vec<D, T> const & v) noexcept -> Vec<D, T> &
   } else {
     for (Int i = 0; i < D; ++i) {
       _data[i] /= v[i];
+    }
+  }
+  return *this;
+}
+
+template <Int D, class T>
+template <class S>
+requires(std::same_as<T, S> || std::integral<S>) HOSTDEV
+    constexpr auto Vec<D, T>::operator=(S const & s) noexcept -> Vec<D, T> &
+{
+  if constexpr (is_simd_vec<D, T>) {
+    _data = static_cast<T>(s);
+  } else {
+    for (Int i = 0; i < D; ++i) {
+      _data[i] = static_cast<T>(s);
     }
   }
   return *this;

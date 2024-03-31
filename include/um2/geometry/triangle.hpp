@@ -1,8 +1,8 @@
 #pragma once
 
 #include <um2/geometry/line_segment.hpp>
+#include <um2/geometry/polygon.hpp>
 #include <um2/stdlib/numbers.hpp>
-#include <um2/common/branchless_sort.hpp>
 
 //==============================================================================
 // TRIANGLE
@@ -17,20 +17,24 @@ class Polytope<2, 1, 3, D>
   static_assert(1 < D && D <= 3, "Only 2D, and 3D polygons are supported.");
 
 public:
+  // NOLINTBEGIN(readability-identifier-naming)
+  static constexpr Int N = 3; // Number of vertices
+  // NOLINTEND(readability-identifier-naming)
+
   using Vertex = Point<D>;
   using Edge = LineSegment<D>;
 
 private:
-  Vertex _v[3];
+  Vertex _v[N];
 
 public:
   //==============================================================================
   // Accessors
   //==============================================================================
 
-  // Returns the number of edges in the polygon.
-  PURE HOSTDEV static constexpr auto
-  numEdges() noexcept -> Int;
+//  // Returns the number of edges in the polygon.
+//  PURE HOSTDEV static constexpr auto
+//  numEdges() noexcept -> Int;
 
   // Returns the i-th vertex of the polygon.
   PURE HOSTDEV constexpr auto
@@ -51,14 +55,12 @@ public:
   constexpr Polytope() noexcept = default;
 
   template <class... Pts>
-  requires(sizeof...(Pts) == 3 && (std::same_as<Vertex, Pts> && ...))
+  requires(sizeof...(Pts) == N && (std::same_as<Vertex, Pts> && ...))
       // NOLINTNEXTLINE(google-explicit-constructor) implicit conversion is desired
       HOSTDEV constexpr Polytope(Pts const... args) noexcept
       : _v{args...}
   {
   }
-
-  HOSTDEV constexpr explicit Polytope(Vec<3, Vertex> const & v) noexcept;
 
   //==============================================================================
   // Methods
@@ -67,32 +69,27 @@ public:
   // Interpolate along the surface of the polygon.
   // For triangles: r in [0, 1], s in [0, 1], constrained by r + s <= 1
   // F(r, s) -> (x, y, z)
-  template <typename R, typename S>
   PURE HOSTDEV constexpr auto
-  operator()(R r, S s) const noexcept -> Point<D>;
+  operator()(Float r, Float s) const noexcept -> Point<D>;
 
   // Get the i-th edge of the polygon.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getEdge(Int i) const noexcept -> Edge;
 
-  // Get the i-th edge of the polygon.
-  PURE HOSTDEV [[nodiscard]] static constexpr auto
-  isConvex() noexcept -> bool;
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  perimeter() const noexcept -> Float;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  contains(Point2 const & p) const noexcept -> bool requires(D == 2);
+  boundingBox() const noexcept -> AxisAlignedBox<D>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   area() const noexcept -> Float;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  perimeter() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
   centroid() const noexcept -> Point<D>;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  boundingBox() const noexcept -> AxisAlignedBox<D>;
+  // 2D only
+  //--------------------------------------------------------------------------
 
   // If the polygon is counterclockwise oriented, returns true.
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -101,47 +98,38 @@ public:
   HOSTDEV constexpr void
   flip() noexcept;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  intersect(Ray2 ray) const noexcept -> Vec<3, Float>
-  requires(D == 2);
+  PURE HOSTDEV [[nodiscard]] static constexpr auto
+  isConvex() noexcept -> bool;
 
-  // See the comments in the implementation for details.
-  // meanChordLength has multiple definitions. Make sure you read the comments to
-  // determine it's the one you want.
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  contains(Point2 const & p) const noexcept -> bool requires(D == 2);
+
   PURE HOSTDEV [[nodiscard]] constexpr auto
   meanChordLength() const noexcept -> Float requires(D == 2);
 
+  HOSTDEV [[nodiscard]] constexpr auto
+  intersect(Ray2 ray, Float * buffer) const noexcept -> Int 
+  requires(D == 2);
+
 }; // Triangle
-
-//==============================================================================
-// Constructors
-//==============================================================================
-
-template <Int D>
-HOSTDEV constexpr Triangle<D>::Polytope(Vec<3, Vertex> const & v) noexcept
-{
-  _v[0] = v[0];
-  _v[1] = v[1];
-  _v[2] = v[2];
-}
 
 //==============================================================================
 // Accessors
 //==============================================================================
 
-template <Int D>
-PURE HOSTDEV constexpr auto
-Triangle<D>::numEdges() noexcept -> Int
-{
-  return 3;
-}
+//template <Int D>
+//PURE HOSTDEV constexpr auto
+//Triangle<D>::numEdges() noexcept -> Int
+//{
+//  return N;
+//}
 
 template <Int D>
 PURE HOSTDEV constexpr auto
 Triangle<D>::operator[](Int i) noexcept -> Vertex &
 {
   ASSERT_ASSUME(0 <= i);
-  ASSERT_ASSUME(i < 3);
+  ASSERT_ASSUME(i < N);
   return _v[i];
 }
 
@@ -150,7 +138,7 @@ PURE HOSTDEV constexpr auto
 Triangle<D>::operator[](Int i) const noexcept -> Point<D> const &
 {
   ASSERT_ASSUME(0 <= i);
-  ASSERT_ASSUME(i < 3);
+  ASSERT_ASSUME(i < N);
   return _v[i];
 }
 
@@ -166,30 +154,131 @@ Triangle<D>::vertices() const noexcept -> Point<D> const *
 //==============================================================================
 
 template <Int D>
-template <typename R, typename S>
 PURE HOSTDEV constexpr auto
-Triangle<D>::operator()(R const r, S const s) const noexcept -> Point<D>
+Triangle<D>::operator()(Float const r, Float const s) const noexcept -> Point<D>
 {
   // T(r, s) = (1 - r - s) v0 + r v1 + s v2
-  auto const rr = static_cast<Float>(r);
-  auto const ss = static_cast<Float>(s);
-  Float const w0 = 1 - rr - ss;
-  // Float const w1 = rr;
-  // Float const w2 = ss;
-  return w0 * _v[0] + rr * _v[1] + ss * _v[2];
+  Float const w0 = 1 - r - s;
+  // Float const w1 = r;
+  // Float const w2 = s;
+  return w0 * _v[0] + r * _v[1] + s * _v[2];
 }
 
 //==============================================================================
 // getEdge
 //==============================================================================
+// Defined in polygon.hpp, since the procedure is the same for all linear polygons.
 
 template <Int D>
 PURE HOSTDEV constexpr auto
 Triangle<D>::getEdge(Int i) const noexcept -> Edge
 {
-  ASSERT_ASSUME(0 <= i);
-  ASSERT_ASSUME(i < 3);
-  return (i < 2) ? Edge(_v[i], _v[i + 1]) : Edge(_v[2], _v[0]);
+  return um2::getEdge(*this, i);
+}
+
+//==============================================================================
+// perimeter
+//==============================================================================
+// Defined in polygon.hpp, since the procedure is the same for all linear polygons.
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+Triangle<D>::perimeter() const noexcept -> Float
+{
+  return um2::perimeter(*this);
+}
+
+//==============================================================================
+// boundingBox
+//==============================================================================
+// Defined in polytope.hpp, since for all linear polytopes
+// the bounding box is simply the bounding box of the vertices.
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+Triangle<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
+{
+  return um2::boundingBox(*this);
+}
+
+//==============================================================================
+// area
+//==============================================================================
+
+PURE HOSTDEV constexpr auto
+area(Triangle<3> const & tri) noexcept -> Float
+{
+  Vec3F const v10 = tri[1] - tri[0];
+  Vec3F const v20 = tri[2] - tri[0];
+  return v10.cross(v20).norm() / 2; // this is the unsigned area
+}
+
+PURE HOSTDEV constexpr auto
+area(Triangle<2> const & tri) noexcept -> Float
+{
+  ASSERT(tri.isCCW());
+  Vec2F const v10 = tri[1] - tri[0];
+  Vec2F const v20 = tri[2] - tri[0];
+  return v10.cross(v20) / 2; // this is the signed area
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+Triangle<D>::area() const noexcept -> Float
+{
+  return um2::area(*this);
+}
+
+//==============================================================================
+// centroid
+//==============================================================================
+// Specialize on D to disambiguate from the planar linear polygon function.
+
+PURE HOSTDEV constexpr auto
+centroid(Triangle2 const & tri) noexcept -> Point2
+{
+  return (tri[0] + tri[1] + tri[2]) / 3;
+}
+
+PURE HOSTDEV constexpr auto
+centroid(Triangle3 const & tri) noexcept -> Point3
+{
+  return (tri[0] + tri[1] + tri[2]) / 3;
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+Triangle<D>::centroid() const noexcept -> Point<D>
+{
+  return um2::centroid(*this);
+}
+
+//==============================================================================
+// isCCW
+//==============================================================================
+
+PURE HOSTDEV constexpr auto
+isCCW(Triangle2 const & tri) noexcept -> bool
+{
+  return areCCW(tri[0], tri[1], tri[2]);
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+Triangle<D>::isCCW() const noexcept -> bool requires(D == 2)
+{
+  return um2::isCCW(*this);
+}
+
+//==============================================================================
+// flip
+//==============================================================================
+
+template <Int D>
+HOSTDEV constexpr void
+Triangle<D>::flip() noexcept
+{
+  um2::swap(_v[1], _v[2]);
 }
 
 //==============================================================================
@@ -211,6 +300,8 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 Triangle<D>::contains(Point2 const & p) const noexcept -> bool requires(D == 2)
 {
+  // Benchmarking shows that it is faster to compute all if the point is left
+  // of all edges, rather than short-circuiting.
   ASSERT(isCCW());
   bool const b0 = areCCW(_v[0], _v[1], p);
   bool const b1 = areCCW(_v[1], _v[2], p);
@@ -219,110 +310,27 @@ Triangle<D>::contains(Point2 const & p) const noexcept -> bool requires(D == 2)
 }
 
 //==============================================================================
-// area
-//==============================================================================
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-Triangle<D>::area() const noexcept -> Float
-{
-  Vec<D, Float> const v10 = _v[1] - _v[0];
-  Vec<D, Float> const v20 = _v[2] - _v[0];
-  if constexpr (D == 2) {
-    ASSERT(isCCW());
-    return v10.cross(v20) / 2; // this is the signed area
-  } else {
-    return v10.cross(v20).norm() / 2; // this is the unsigned area
-  }
-}
-
-//==============================================================================
-// perimeter
-//==============================================================================
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-Triangle<D>::perimeter() const noexcept -> Float
-{
-  return _v[0].distanceTo(_v[1]) + _v[1].distanceTo(_v[2]) + _v[2].distanceTo(_v[0]);
-}
-
-//==============================================================================
-// centroid
-//==============================================================================
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-Triangle<D>::centroid() const noexcept -> Point<D>
-{
-  return (_v[0] + _v[1] + _v[2]) / 3;
-}
-
-//==============================================================================
-// boundingBox
-//==============================================================================
-
-// Defined in Polytope.hpp for linear polygons, since for all linear polytopes
-// the bounding box is simply the bounding box of the vertices.
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-Triangle<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
-{
-  return um2::boundingBox(*this);
-}
-
-//==============================================================================
-// isCCW
-//==============================================================================
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-Triangle<D>::isCCW() const noexcept -> bool requires(D == 2)
-{
-  return areCCW(_v[0], _v[1], _v[2]);
-}
-
-//==============================================================================
-// intersect
-//==============================================================================
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-Triangle<D>::intersect(Ray2 const ray) const noexcept -> Vec3F
-requires(D == 2) {
-  Vec3F result;
-  result[0] = Edge(_v[0], _v[1]).intersect(ray);
-  result[1] = Edge(_v[1], _v[2]).intersect(ray);
-  result[2] = Edge(_v[2], _v[0]).intersect(ray);
-  um2::sort3(&result[0], &result[1], &result[2]);
-  return result;
-}
-
-//==============================================================================
-// flip
-//==============================================================================
-
-template <Int D>
-HOSTDEV constexpr void
-Triangle<D>::flip() noexcept
-{
-  um2::swap(_v[1], _v[2]);
-}
-
-//==============================================================================
 // meanChordLength
 //==============================================================================
-// For a convex planar polygon, the mean chord length is simply pi * area / perimeter.
-// De Kruijf, W. J. M., and J. L. Kloosterman.
-// "On the average chord length in reactor physics." Annals of Nuclear Energy 30.5 (2003):
-// 549-553.
+// Defined in polygon.hpp, since the procedure is the same for all planar polygons.
 
 template <Int D>
 PURE HOSTDEV constexpr auto
 Triangle<D>::meanChordLength() const noexcept -> Float requires(D == 2)
 {
-  return um2::pi<Float> * area() / perimeter();
+  return um2::meanChordLength(*this);
+}
+
+//==============================================================================
+// intersect
+//==============================================================================
+// Defined in polygon.hpp, since the procedure is the same for all planar polygons.
+
+template <Int D>
+HOSTDEV constexpr auto
+Triangle<D>::intersect(Ray2 const ray, Float * buffer) const noexcept -> Int
+requires(D == 2) {
+  return um2::intersect(*this, ray, buffer); 
 }
 
 } // namespace um2
