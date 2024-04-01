@@ -20,7 +20,7 @@ class Polytope<1, 1, 2, D>
 
 public:
   // NOLINTBEGIN(readability-identifier-naming)
-  static constexpr Int N = 2; // Number of vertices 
+  static constexpr Int N = 2; // Number of vertices
   // NOLINTEND(readability-identifier-naming)
 
   using Vertex = Point<D>;
@@ -106,7 +106,7 @@ public:
   // If a point is to the left of the segment, with the segment oriented from
   // r = 0 to r = 1.
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  isLeft(Vertex const & p) const noexcept -> bool requires(D == 2);
+  isLeft(Point2 p) const noexcept -> bool requires(D == 2);
 
   // Intersect the ray with the segment.
   // Returns the number of valid intersections.
@@ -161,7 +161,7 @@ template <Int D>
 PURE HOSTDEV constexpr auto
 LineSegment<D>::operator()(Float const r) const noexcept -> Vertex
 {
-  return interpolate(*this, r); 
+  return interpolate(*this, r);
 }
 
 //==============================================================================
@@ -311,7 +311,7 @@ requires(D == 2) {
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-LineSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D == 2)
+LineSegment<D>::isLeft(Point2 const p) const noexcept -> bool requires(D == 2)
 {
   return areCCW(_v[0], _v[1], p);
 }
@@ -347,17 +347,17 @@ LineSegment<D>::isLeft(Vertex const & p) const noexcept -> bool requires(D == 2)
 // This result is valid if s ∈ [0, 1]
 
 template <Int D>
-HOSTDEV constexpr auto    
-LineSegment<D>::intersect(Ray2 const ray, Float * buffer) const noexcept -> Int    
+HOSTDEV constexpr auto
+LineSegment<D>::intersect(Ray2 const ray, Float * const buffer) const noexcept -> Int
 requires(D == 2)
-{    
-  Vec2F const v = _v[1] - _v[0];    
-  Vec2F const u = ray.origin() - _v[0];    
-  Float const z = v.cross(ray.direction());    
-  Float const s = u.cross(ray.direction()) / z;    
-  Float const r = u.cross(v) / z;    
-  *buffer = r;    
-  return (0 <= s && s <= 1 && 0 <= r) ? 1 : 0;    
+{
+  Vec2F const v = _v[1] - _v[0];
+  Vec2F const u = ray.origin() - _v[0];
+  Float const z = v.cross(ray.direction());
+  Float const s = u.cross(ray.direction()) / z;
+  Float const r = u.cross(v) / z;
+  *buffer = r;
+  return (0 <= s && s <= 1 && 0 <= r) ? 1 : 0;
 }
 
 } // namespace um2

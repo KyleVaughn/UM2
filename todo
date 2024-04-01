@@ -1,3 +1,9 @@
+jacobian
+  tri
+  quad
+  tri6
+  quad8
+
 intersect non-pure
 tagged union/variant for tri/quad mesh
 

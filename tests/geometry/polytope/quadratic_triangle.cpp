@@ -1,10 +1,9 @@
 #include <um2/geometry/quadratic_triangle.hpp>
-#include <um2/stdlib/algorithm/is_sorted.hpp>
+#include <um2/geometry/modular_rays.hpp>
 
 #include "../../test_macros.hpp"
 
 #include <random>
-#include <iostream>
 
 Float constexpr eps = um2::eps_distance;
 
@@ -14,7 +13,7 @@ makeTri() -> um2::QuadraticTriangle<D>
 {
   um2::QuadraticTriangle<D> this_tri;
   for (Int i = 0; i < 6; ++i) {
-    this_tri[i] = um2::Vec<D, Float>::zero();
+    this_tri[i] = 0;
   }
   this_tri[1][0] = castIfNot<Float>(1);
   this_tri[2][1] = castIfNot<Float>(1);
@@ -32,7 +31,7 @@ makeTri2() -> um2::QuadraticTriangle<D>
 {
   um2::QuadraticTriangle<D> this_tri;
   for (Int i = 0; i < 6; ++i) {
-    this_tri[i] = um2::Vec<D, Float>::zero();
+    this_tri[i] = 0; 
   }
   this_tri[1][0] = castIfNot<Float>(1);
   this_tri[2][1] = castIfNot<Float>(1);
@@ -88,14 +87,45 @@ TEST_CASE(interpolate)
 }
 
 //==============================================================================
-// edge
+// jacobian
 //==============================================================================
 
 template <Int D>
 HOSTDEV
-TEST_CASE(edge)
+TEST_CASE(jacobian)
 {
-  um2::QuadraticTriangle<D> tri = makeTri2<D>();
+  // For the reference triangle, the Jacobian is constant.
+  um2::QuadraticTriangle<D> tri = makeTri<D>();
+  auto jac = tri.jacobian(0, 0);
+  ASSERT_NEAR((jac(0, 0)), 1, eps);
+  ASSERT_NEAR((jac(1, 0)), 0, eps);
+  ASSERT_NEAR((jac(0, 1)), 0, eps);
+  ASSERT_NEAR((jac(1, 1)), 1, eps);
+
+  jac = tri.jacobian(static_cast<Float>(0.2), static_cast<Float>(0.3));
+  ASSERT_NEAR((jac(0, 0)), 1, eps);
+  ASSERT_NEAR((jac(1, 0)), 0, eps);
+  ASSERT_NEAR((jac(0, 1)), 0, eps);
+  ASSERT_NEAR((jac(1, 1)), 1, eps);
+
+  // If we stretch the triangle, the Jacobian should change.
+  tri[1][0] = static_cast<Float>(2);
+  jac = tri.jacobian(0.5, 0);
+  ASSERT_NEAR((jac(0, 0)), 2, eps);
+  ASSERT_NEAR((jac(1, 0)), 0, eps);
+  ASSERT_NEAR((jac(0, 1)), 0, eps);
+  ASSERT_NEAR((jac(1, 1)), 1, eps);
+}
+
+//==============================================================================
+// getEdge
+//==============================================================================
+
+template <Int D>
+HOSTDEV
+TEST_CASE(getEdge)
+{
+  um2::QuadraticTriangle<D> const tri = makeTri2<D>();
   um2::QuadraticSegment<D> edge = tri.getEdge(0);
   ASSERT(edge[0].isApprox(tri[0]));
   ASSERT(edge[1].isApprox(tri[1]));
@@ -111,23 +141,34 @@ TEST_CASE(edge)
 }
 
 //==============================================================================
-// contains
+// perimeter
+//==============================================================================
+
+template <Int D>
+HOSTDEV
+TEST_CASE(perimeter)
+{
+  um2::QuadraticTriangle<D> const tri = makeTri<D>();
+  // 1 + 1 + sqrt(2)
+  ASSERT_NEAR(tri.perimeter(), castIfNot<Float>(3.41421356), eps);
+}
+
+//==============================================================================
+// boundingBox
 //==============================================================================
 
 HOSTDEV
-TEST_CASE(contains)
+TEST_CASE(boundingBox)
 {
-  um2::QuadraticTriangle<2> const tri = makeTri2<2>();
-  um2::Point2 p = um2::Point2(castIfNot<Float>(0.25), castIfNot<Float>(0.25));
-  ASSERT(tri.contains(p));
-  p = um2::Point2(castIfNot<Float>(0.5), castIfNot<Float>(0.25));
-  ASSERT(tri.contains(p));
-  p = um2::Point2(castIfNot<Float>(1.25), castIfNot<Float>(0.25));
-  ASSERT(!tri.contains(p));
-  p = um2::Point2(castIfNot<Float>(0.25), castIfNot<Float>(-0.25));
-  ASSERT(!tri.contains(p));
-  p = um2::Point2(castIfNot<Float>(0.6), castIfNot<Float>(0.6));
-  ASSERT(tri.contains(p));
+  um2::QuadraticTriangle2 const tri = makeTri2<2>();
+  auto const box = tri.boundingBox();
+  // Actually making this a static assert causes a compiler error.
+  // NOLINTBEGIN(cert-dcl03-c,misc-static-assert)
+  ASSERT_NEAR(box.minima(0), castIfNot<Float>(0), eps);
+  ASSERT_NEAR(box.minima(1), castIfNot<Float>(0), eps);
+  ASSERT_NEAR(box.maxima(0), castIfNot<Float>(1), eps);
+  ASSERT_NEAR(box.maxima(1), castIfNot<Float>(1.008333), eps);
+  // NOLINTEND(cert-dcl03-c,misc-static-assert)
 }
 
 //==============================================================================
@@ -149,18 +190,6 @@ TEST_CASE(area)
     ASSERT_NEAR(tri.area(), castIfNot<Float>(0.4333333333), eps);
     ASSERT_NEAR(tri2.area(), castIfNot<Float>(0.83333333), eps);
   }
-}
-
-//==============================================================================
-// perimeter
-//==============================================================================
-
-HOSTDEV
-TEST_CASE(perimeter)
-{
-  um2::QuadraticTriangle<2> const tri = makeTri<2>();
-  // 1 + 1 + sqrt(2)
-  ASSERT_NEAR(tri.perimeter(), castIfNot<Float>(3.41421356), eps);
 }
 
 //==============================================================================
@@ -190,24 +219,6 @@ TEST_CASE(centroid)
 }
 
 //==============================================================================
-// boundingBox
-//==============================================================================
-
-HOSTDEV
-TEST_CASE(boundingBox)
-{
-  um2::QuadraticTriangle<2> const tri = makeTri2<2>();
-  um2::AxisAlignedBox<2> const box = tri.boundingBox();
-  // Actually making this a static assert causes a compiler error.
-  // NOLINTBEGIN(cert-dcl03-c,misc-static-assert)
-  ASSERT_NEAR(box.minima(0), castIfNot<Float>(0), eps);
-  ASSERT_NEAR(box.minima(1), castIfNot<Float>(0), eps);
-  ASSERT_NEAR(box.maxima(0), castIfNot<Float>(1), eps);
-  ASSERT_NEAR(box.maxima(1), castIfNot<Float>(1.008333), eps);
-  // NOLINTEND(cert-dcl03-c,misc-static-assert)
-}
-
-//==============================================================================
 // isCCW
 //==============================================================================
 
@@ -224,76 +235,23 @@ TEST_CASE(isCCW_flip)
 }
 
 //==============================================================================
-// intersect
-//=============================================================================
+// contains
+//==============================================================================
 
 HOSTDEV
-void
-testTriForIntersections(um2::QuadraticTriangle<2> const tri)
+TEST_CASE(contains)
 {
-  // Parameters
-  Int constexpr num_angles = 16; // Angles γ ∈ (0, π).
-  Int constexpr rays_per_longest_edge = 200;
-
-  auto const aabb = tri.boundingBox();
-  auto const longest_edge = aabb.extents(0) > aabb.extents(1) ? aabb.extents(0) : aabb.extents(1);
-  auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
-  Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
-  // For each angle
-  for (Int ia = 0; ia < num_angles; ++ia) {
-    Float const angle = pi_deg * static_cast<Float>(2 * ia + 1);
-    // Compute modular ray parameters
-    um2::ModularRayParams const params(angle, spacing, aabb);
-    Int const num_rays = params.getTotalNumRays();
-    // For each ray
-    for (Int i = 0; i < num_rays; ++i) {
-      auto const ray = params.getRay(i);
-      auto const intersections = tri.intersect(ray);
-      ASSERT(um2::is_sorted(intersections.begin(), intersections.end()));
-      // For each intersection coordinate
-      for (auto const & r : intersections) {
-        // If intersection is valid
-        if (0 <= r) {
-          um2::Point2 const p = ray(r);
-          // Get the distance to the closest edge
-          Float min_dist = um2::inf_distance;
-          for (Int ie = 0; ie < 3; ++ie) {
-            um2::QuadraticSegment<2> const q = tri.getEdge(ie);
-            Float const d = q.distanceTo(p);
-            if (d < min_dist) {
-              min_dist = d;
-            }
-          }
-#if UM2_ENABLE_FLOAT64
-          ASSERT(min_dist < um2::eps_distance);
-#else
-          ASSERT(min_dist < 20 * um2::eps_distance);
-#endif
-        }
-      }
-    }
-  }
-}
-
-HOSTDEV
-TEST_CASE(intersect)
-{
-  auto tri = makeTri<2>();
-  testTriForIntersections(tri);
-  tri = makeTri2<2>();
-  testTriForIntersections(tri);
-  tri[4][0] = castIfNot<Float>(0.3);
-  tri[4][1] = castIfNot<Float>(0.25);
-  testTriForIntersections(tri);
-
-  for (Int ia = 0; ia < 16; ++ia) {
-    for (Int ip = 0; ip < 5; ++ip) {
-      tri = makeTri<2>();
-      rotate(tri, static_cast<Float>(ia) * um2::pi<Float> / 8);
-      perturb(tri);
-      testTriForIntersections(tri);
-    }
-  }
+  um2::QuadraticTriangle<2> const tri = makeTri2<2>();
+  um2::Point2 p = um2::Point2(castIfNot<Float>(0.25), castIfNot<Float>(0.25));
+  ASSERT(tri.contains(p));
+  p = um2::Point2(castIfNot<Float>(0.5), castIfNot<Float>(0.25));
+  ASSERT(tri.contains(p));
+  p = um2::Point2(castIfNot<Float>(1.25), castIfNot<Float>(0.25));
+  ASSERT(!tri.contains(p));
+  p = um2::Point2(castIfNot<Float>(0.25), castIfNot<Float>(-0.25));
+  ASSERT(!tri.contains(p));
+  p = um2::Point2(castIfNot<Float>(0.6), castIfNot<Float>(0.6));
+  ASSERT(tri.contains(p));
 }
 
 //==============================================================================
@@ -323,47 +281,96 @@ TEST_CASE(meanChordLength)
   um2::QuadraticTriangle<2> tri3 = makeTri<2>();
   tri3[4][0] = castIfNot<Float>(0.25);
   tri3[4][1] = castIfNot<Float>(0.25);
-  ASSERT(!tri3.isConvex());
   auto const val3 = tri3.meanChordLength();
   auto const ref3 = um2::pi<Float> * tri3.area() / tri3.perimeter();
   auto const err3 = um2::abs(val3 - ref3) / ref3;
   ASSERT(err3 < castIfNot<Float>(1e-3));
 }
 
-#if UM2_USE_CUDA
-template <Int D>
-MAKE_CUDA_KERNEL(interpolate, D);
+//==============================================================================
+// intersect
+//=============================================================================
 
-template <Int D>
-MAKE_CUDA_KERNEL(edge, D);
+HOSTDEV
+void
+testTriForIntersections(um2::QuadraticTriangle<2> const tri)
+{
+  // Parameters
+  Int constexpr num_angles = 16; // Angles γ ∈ (0, π).
+  Int constexpr rays_per_longest_edge = 200;
 
-MAKE_CUDA_KERNEL(contains);
+  auto const aabb = tri.boundingBox();
+  auto const longest_edge = aabb.extents(0) > aabb.extents(1) ? aabb.extents(0) : aabb.extents(1);
+  auto const spacing = longest_edge / static_cast<Float>(rays_per_longest_edge);
+  Float const pi_deg = um2::pi_2<Float> / static_cast<Float>(num_angles);
+  // For each angle
+  for (Int ia = 0; ia < num_angles; ++ia) {
+    Float const angle = pi_deg * static_cast<Float>(2 * ia + 1);
+    // Compute modular ray parameters
+    um2::ModularRayParams const params(angle, spacing, aabb);
+    Int const num_rays = params.getTotalNumRays();
+    Float buf[6];
+    // For each ray
+    for (Int i = 0; i < num_rays; ++i) {
+      auto const ray = params.getRay(i);
+      auto const hits = tri.intersect(ray, buf);
+      for (Int ihit = 0; ihit < hits; ++ihit) {
+        um2::Point2 const p = ray(buf[ihit]);
+        // Get the distance to the closest edge
+        Float min_dist = um2::inf_distance;
+        for (Int ie = 0; ie < 3; ++ie) {
+          um2::QuadraticSegment<2> const q = tri.getEdge(ie);
+          Float const d = q.distanceTo(p);
+          if (d < min_dist) {
+            min_dist = d;
+          }
+        }
+#if UM2_ENABLE_FLOAT64
+        ASSERT(min_dist < um2::eps_distance);
+#else
+        ASSERT(min_dist < 20 * um2::eps_distance);
+#endif
+      }
+    }
+  }
+}
 
-MAKE_CUDA_KERNEL(area);
+HOSTDEV
+TEST_CASE(intersect)
+{
+  auto tri = makeTri<2>();
+  testTriForIntersections(tri);
+  tri = makeTri2<2>();
+  testTriForIntersections(tri);
+  tri[4][0] = castIfNot<Float>(0.3);
+  tri[4][1] = castIfNot<Float>(0.25);
+  testTriForIntersections(tri);
 
-MAKE_CUDA_KERNEL(centroid);
-
-MAKE_CUDA_KERNEL(boundingBox);
-
-MAKE_CUDA_KERNEL(isCCW_flipFace);
-
-MAKE_CUDA_KERNEL(meanChordLength);
-#endif // UM2_USE_CUDA
+  for (Int ia = 0; ia < 16; ++ia) {
+    for (Int ip = 0; ip < 5; ++ip) {
+      tri = makeTri<2>();
+      rotate(tri, static_cast<Float>(ia) * um2::pi<Float> / 8);
+      perturb(tri);
+      testTriForIntersections(tri);
+    }
+  }
+}
 
 template <Int D>
 TEST_SUITE(QuadraticTriangle)
 {
   TEST_HOSTDEV(interpolate, D);
-  TEST_HOSTDEV(edge, D);
+  TEST_HOSTDEV(jacobian, D);
+  TEST_HOSTDEV(getEdge, D);
+  TEST_HOSTDEV(perimeter, D);
   if constexpr (D == 2) {
-    TEST_HOSTDEV(contains);
-    TEST_HOSTDEV(area);
-    TEST_HOSTDEV(perimeter);
-    TEST_HOSTDEV(centroid);
     TEST_HOSTDEV(boundingBox);
+    TEST_HOSTDEV(area);
+    TEST_HOSTDEV(centroid);
     TEST_HOSTDEV(isCCW_flip);
-    TEST_HOSTDEV(intersect);
+    TEST_HOSTDEV(contains);
     TEST_HOSTDEV(meanChordLength);
+    TEST_HOSTDEV(intersect);
   }
 }
 

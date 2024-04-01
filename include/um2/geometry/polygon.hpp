@@ -4,9 +4,9 @@
 #include <um2/stdlib/numbers.hpp>
 
 //==============================================================================
-// POLYGON 
+// POLYGON
 //==============================================================================
-// Functions that are common to all polygons: 
+// Functions that are common to all polygons:
 //  - getEdge
 //  - perimeter
 //  - boundingBox
@@ -26,25 +26,63 @@ namespace um2
 {
 
 //==============================================================================
+// polygonNumEdges
+//==============================================================================
+
+template <Int P, Int N>
+CONST HOSTDEV [[nodiscard]] constexpr auto
+polygonNumEdges() noexcept -> Int
+{
+  return N / P;
+}
+
+//==============================================================================
+// linearPolygon
+//==============================================================================
+
+template <Int N, Int D>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+linearPolygon(QuadraticPolygon<N, D> const & p) noexcept -> LinearPolygon<N / 2, D>
+{
+  LinearPolygon<N / 2, D> result;
+  for (Int i = 0; i < N / 2; ++i) {
+    result[i] = p[i];
+  }
+  return result; 
+}
+
+//==============================================================================
 // getEdge
 //==============================================================================
 // Return the i-th edge of the polygon.
 
 template <Int N, Int D>
 PURE HOSTDEV [[nodiscard]] constexpr auto
-getEdge(LinearPolygon<N, D> const & lp, Int const i) noexcept -> LineSegment<D> 
+getEdge(LinearPolygon<N, D> const & lp, Int const i) noexcept -> LineSegment<D>
 {
   STATIC_ASSERT_VALID_POLYGON;
   ASSERT_ASSUME(0 <= i);
   ASSERT_ASSUME(i < N);
-  return (i < N - 1) ? LineSegment<D>(lp[i], lp[i + 1]) 
+  return (i < N - 1) ? LineSegment<D>(lp[i], lp[i + 1])
                      : LineSegment<D>(lp[N - 1], lp[0]);
+}
+
+template <Int N, Int D>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+getEdge(QuadraticPolygon<N, D> const & qp, Int const i) noexcept -> QuadraticSegment<D>
+{
+  STATIC_ASSERT_VALID_POLYGON;
+  Int constexpr m = polygonNumEdges<2, N>();
+  ASSERT_ASSUME(0 <= i);
+  ASSERT_ASSUME(i < m);
+  return (i < m - 1) ? QuadraticSegment<D>(qp[i], qp[i + 1], qp[i + m])
+                     : QuadraticSegment<D>(qp[m - 1], qp[0], qp[N - 1]);
 }
 
 //==============================================================================
 // perimeter
 //==============================================================================
-// The perimeter of a polygon is the sum of the lengths of its edges.
+// The perimeter of a polygon is the sum of th lengths of its edges.
 // For a linear polygon, we can simply sum the distances between consecutive
 // vertices.
 
@@ -61,9 +99,34 @@ perimeter(LinearPolygon<N, D> const & p) noexcept -> Float
   return result;
 }
 
+template <Int N, Int D>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+perimeter(QuadraticPolygon<N, D> const & p) noexcept -> Float
+{
+  STATIC_ASSERT_VALID_POLYGON;
+  Int constexpr m = polygonNumEdges<2, N>();
+  Float result = p.getEdge(0).length();
+  for (Int i = 1; i < m; ++i) {
+    result += p.getEdge(i).length();
+  }
+  return result;
+}
+
 //==============================================================================
 // boundingBox
 //==============================================================================
+
+template <Int N>
+PURE HOSTDEV [[nodiscard]] constexpr auto
+boundingBox(PlanarQuadraticPolygon<N> const & p) noexcept -> AxisAlignedBox2
+{
+  Int constexpr m = polygonNumEdges<2, N>();
+  AxisAlignedBox2 result = p.getEdge(0).boundingBox();
+  for (Int i = 1; i < m; ++i) {
+    result += p.getEdge(i).boundingBox();
+  }
+  return result;
+}
 
 //==============================================================================
 // area
@@ -72,18 +135,6 @@ perimeter(LinearPolygon<N, D> const & p) noexcept -> Float
 // The exception is when the polygon is planar (or a triangle).
 // Note: convex quadrilaterals and triangles use a more efficient formula.
 
-//template <typename T>
-//PURE HOSTDEV constexpr auto
-//area(Quadrilateral2<T> const & q) noexcept -> T
-//{
-//  assert(isConvex(q));
-//  // (v2 - v0).cross(v3 - v1) / 2
-//  Vec2<T> const v20 = q[2] - q[0];
-//  Vec2<T> const v31 = q[3] - q[1];
-//  return v20.cross(v31) / 2;
-//}
-//
-// Area of a planar linear polygon
 template <Int N>
 PURE HOSTDEV constexpr auto
 area(PlanarLinearPolygon<N> const & p) noexcept -> Float
@@ -97,18 +148,20 @@ area(PlanarLinearPolygon<N> const & p) noexcept -> Float
   return sum / 2;
 }
 
-//template <Size N, typename T>
-//PURE HOSTDEV constexpr auto
-//area(PlanarQuadraticPolygon<N, T> const & q) noexcept -> T
-//{
-//  T result = area(linearPolygon(q));
-//  Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges();
-//  for (Size i = 0; i < num_edges; ++i) {
-//    result += enclosedArea(getEdge(q, i));
-//  }
-//  return result;
-//}
-//
+template <Int N>
+PURE HOSTDEV constexpr auto
+area(PlanarQuadraticPolygon<N> const & q) noexcept -> Float
+{
+  // Geometric decomposition:
+  // Area of the linear polygon plus the area enclosed by the quadratic edges.
+  // Note, the enclosed area is not necessarily positive.
+  Float result = area(linearPolygon(q));
+  Int constexpr num_edges = polygonNumEdges<2, N>(); 
+  for (Int i = 0; i < num_edges; ++i) {
+    result += enclosedArea(q.getEdge(i));
+  }
+  return result;
+}
 
 //==============================================================================
 // centroid
@@ -130,48 +183,55 @@ centroid(PlanarLinearPolygon<N> const & p) noexcept -> Point2
   return centroid_sum / (static_cast<Float>(3) * area_sum);
 }
 
-//template <Size N, typename T>
-//PURE HOSTDEV constexpr auto
-//centroid(PlanarQuadraticPolygon<N, T> const & q) noexcept -> Point2<T>
-//{
-//  auto lin_poly = linearPolygon(q);
-//  T area_sum = lin_poly.area();
-//  Point2<T> centroid_sum = area_sum * centroid(lin_poly);
-//  Size constexpr num_edges = PlanarQuadraticPolygon<N, T>::numEdges();
-//  for (Size i = 0; i < num_edges; ++i) {
-//    auto const e = getEdge(q, i);
-//    T const a = enclosedArea(e);
-//    area_sum += a;
-//    centroid_sum += a * enclosedCentroid(e);
-//  }
-//  return centroid_sum / area_sum;
-//}
+template <Int N>
+PURE HOSTDEV constexpr auto
+centroid(PlanarQuadraticPolygon<N> const & q) noexcept -> Point2
+{
+  auto lin_poly = linearPolygon(q);
+  Float area_sum = lin_poly.area();
+  Point2 centroid_sum = area_sum * lin_poly.centroid();
+  Int constexpr num_edges = polygonNumEdges<2, N>(); 
+  for (Int i = 0; i < num_edges; ++i) {
+    auto const e = q.getEdge(i);
+    Float const a = enclosedArea(e);
+    area_sum += a;
+    centroid_sum += a * enclosedCentroid(e);
+  }
+  return centroid_sum / area_sum;
+}
 
 //==============================================================================
-// contains 
+// contains
 //==============================================================================
 
-//template <Int N>
-//PURE HOSTDEV constexpr auto
-//contains(PlanarLinearPolygon<N> const & poly, Point2 const p) noexcept -> bool
-//{
-//
-//}
+template <Int N>
+PURE HOSTDEV constexpr auto
+contains(PlanarQuadraticPolygon<N> const & poly, Point2 const p) noexcept -> bool
+{
+  Int constexpr m = polygonNumEdges<2, N>();
+  // The point is inside the polygon if it is left of all the edges.
+  for (Int i = 0; i < m; ++i) {
+    if (!poly.getEdge(i).isLeft(p)) {
+      return false;
+    }
+  }
+  return true;
+}
 
-//==============================================================================    
-// meanChordLength    
-//==============================================================================    
-// For a convex planar polygon, the mean chord length is simply pi * area / perimeter.    
-// De Kruijf, W. J. M., and J. L. Kloosterman.    
-// "On the average chord length in reactor physics." Annals of Nuclear Energy 30.5 (2003):    
-// 549-553.    
-    
-template <Int P, Int N>    
-PURE HOSTDEV constexpr auto    
+//==============================================================================
+// meanChordLength
+//==============================================================================
+// For a convex planar polygon, the mean chord length is simply pi * area / perimeter.
+// De Kruijf, W. J. M., and J. L. Kloosterman.
+// "On the average chord length in reactor physics." Annals of Nuclear Energy 30.5 (2003):
+// 549-553.
+
+template <Int P, Int N>
+PURE HOSTDEV constexpr auto
 meanChordLength(PlanarPolygon<P, N> const & p) noexcept -> Float
-{    
-  return um2::pi<Float> * p.area() / p.perimeter();    
-} 
+{
+  return um2::pi<Float> * p.area() / p.perimeter();
+}
 
 //==============================================================================
 // intersect
@@ -179,10 +239,11 @@ meanChordLength(PlanarPolygon<P, N> const & p) noexcept -> Float
 
 template <Int P, Int N>
 HOSTDEV constexpr auto
-intersect(PlanarPolygon<P, N> const & poly, Ray2 const & ray, Float * buffer) noexcept -> Int
+intersect(PlanarPolygon<P, N> const & poly, Ray2 const & ray, Float * const buffer) noexcept -> Int
 {
+  Int constexpr m = polygonNumEdges<P, N>();
   Int hits = 0;
-  for (Int i = 0; i < N; ++i) {
+  for (Int i = 0; i < m; ++i) {
     hits += poly.getEdge(i).intersect(ray, buffer + hits);
   }
   return hits;

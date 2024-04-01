@@ -36,6 +36,35 @@ TEST_CASE(interpolate)
 }
 
 //==============================================================================
+// jacobian
+//==============================================================================
+
+template <Int D>
+HOSTDEV
+TEST_CASE(jacobian)
+{
+  // For the reference triangle, the Jacobian is constant.
+  um2::Triangle<D> tri = makeTri<D>();
+  auto jac = tri.jacobian(0, 0);
+  ASSERT_NEAR((jac(0, 0)), 1, eps);
+  ASSERT_NEAR((jac(1, 0)), 0, eps);
+  ASSERT_NEAR((jac(0, 1)), 0, eps);
+  ASSERT_NEAR((jac(1, 1)), 1, eps);
+  jac = tri.jacobian(static_cast<Float>(0.2), static_cast<Float>(0.3));
+  ASSERT_NEAR((jac(0, 0)), 1, eps);
+  ASSERT_NEAR((jac(1, 0)), 0, eps);
+  ASSERT_NEAR((jac(0, 1)), 0, eps);
+  ASSERT_NEAR((jac(1, 1)), 1, eps);
+  // If we stretch the triangle, the Jacobian should change.
+  tri[1][0] = static_cast<Float>(2);
+  jac = tri.jacobian(0.5, 0);
+  ASSERT_NEAR((jac(0, 0)), 2, eps);
+  ASSERT_NEAR((jac(1, 0)), 0, eps);
+  ASSERT_NEAR((jac(0, 1)), 0, eps);
+  ASSERT_NEAR((jac(1, 1)), 1, eps);
+}
+
+//==============================================================================
 // getEdge
 //==============================================================================
 
@@ -218,6 +247,7 @@ template <Int D>
 TEST_SUITE(Triangle)
 {
   TEST_HOSTDEV(interpolate, D);
+  TEST_HOSTDEV(jacobian, D);
   TEST_HOSTDEV(getEdge, D);
   TEST_HOSTDEV(perimeter, D);
   TEST_HOSTDEV(boundingBox, D);

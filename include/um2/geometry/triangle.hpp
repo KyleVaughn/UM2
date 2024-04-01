@@ -32,10 +32,6 @@ public:
   // Accessors
   //==============================================================================
 
-//  // Returns the number of edges in the polygon.
-//  PURE HOSTDEV static constexpr auto
-//  numEdges() noexcept -> Int;
-
   // Returns the i-th vertex of the polygon.
   PURE HOSTDEV constexpr auto
   operator[](Int i) noexcept -> Vertex &;
@@ -68,9 +64,14 @@ public:
 
   // Interpolate along the surface of the polygon.
   // For triangles: r in [0, 1], s in [0, 1], constrained by r + s <= 1
-  // F(r, s) -> (x, y, z)
+  // F(r, s) -> R^D 
   PURE HOSTDEV constexpr auto
   operator()(Float r, Float s) const noexcept -> Point<D>;
+
+  // Jacobian of the surface of the polygon. 
+  // [dF/dr, dF/ds]
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  jacobian(Float /*r*/, Float /*s*/) const noexcept -> Mat<D, 2, Float>;
 
   // Get the i-th edge of the polygon.
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -117,13 +118,6 @@ public:
 // Accessors
 //==============================================================================
 
-//template <Int D>
-//PURE HOSTDEV constexpr auto
-//Triangle<D>::numEdges() noexcept -> Int
-//{
-//  return N;
-//}
-
 template <Int D>
 PURE HOSTDEV constexpr auto
 Triangle<D>::operator[](Int i) noexcept -> Vertex &
@@ -162,6 +156,24 @@ Triangle<D>::operator()(Float const r, Float const s) const noexcept -> Point<D>
   // Float const w1 = r;
   // Float const w2 = s;
   return w0 * _v[0] + r * _v[1] + s * _v[2];
+}
+
+//==============================================================================
+// jacobian
+//==============================================================================
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+jacobian(Triangle<D> const & tri) noexcept -> Mat<D, 2, Float>
+{
+  return Mat<D, 2, Float>(tri[1] - tri[0], tri[2] - tri[0]);
+}
+
+template <Int D>
+PURE HOSTDEV constexpr auto
+Triangle<D>::jacobian(Float const /*r*/, Float const /*s*/) const noexcept -> Mat<D, 2, Float>
+{
+  return um2::jacobian(*this);
 }
 
 //==============================================================================
