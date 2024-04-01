@@ -68,7 +68,7 @@ public:
   PURE HOSTDEV constexpr auto
   operator()(Float r, Float s) const noexcept -> Point<D>;
 
-  // Jacobian of the surface of the polygon. 
+  // Jacobian of the interpolation function.
   // [dF/dr, dF/ds]
   PURE HOSTDEV [[nodiscard]] constexpr auto
   jacobian(Float /*r*/, Float /*s*/) const noexcept -> Mat<D, 2, Float>;

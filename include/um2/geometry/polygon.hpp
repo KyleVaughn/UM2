@@ -225,6 +225,8 @@ contains(PlanarQuadraticPolygon<N> const & poly, Point2 const p) noexcept -> boo
 // De Kruijf, W. J. M., and J. L. Kloosterman.
 // "On the average chord length in reactor physics." Annals of Nuclear Energy 30.5 (2003):
 // 549-553.
+//
+// It can be shown that this is also true for a concave polygon.
 
 template <Int P, Int N>
 PURE HOSTDEV constexpr auto

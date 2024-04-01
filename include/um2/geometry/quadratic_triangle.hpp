@@ -67,7 +67,7 @@ public:
   PURE HOSTDEV constexpr auto
   operator()(Float r, Float s) const noexcept -> Point<D>;
 
-  // Jacobian of the surface of the polygon.
+  // Jacobian of the interpolation function. 
   // [dF/dr, dF/ds]
   PURE HOSTDEV [[nodiscard]] constexpr auto
   jacobian(Float r, Float s) const noexcept -> Mat<D, 2, Float>;
@@ -237,6 +237,7 @@ QuadraticTriangle<D>::flip() noexcept
 //==============================================================================
 // boundingBox
 //==============================================================================
+// Defined in polygon.hpp
 
 template <Int D>
 PURE HOSTDEV constexpr auto
@@ -249,6 +250,7 @@ requires(D == 2)
 //==============================================================================
 // area
 //==============================================================================
+// Defined in polygon.hpp
 
 template <Int D>
 PURE HOSTDEV constexpr auto
@@ -261,6 +263,7 @@ requires(D == 2)
 //==============================================================================
 // centroid
 //==============================================================================
+// Defined in polygon.hpp
 
 template <Int D>
 PURE HOSTDEV constexpr auto
@@ -284,6 +287,7 @@ QuadraticTriangle<D>::isCCW() const noexcept -> bool requires(D == 2)
 //==============================================================================
 // contains
 //==============================================================================
+// Defined in polygon.hpp
 
 template <Int D>
 PURE HOSTDEV constexpr auto
@@ -295,6 +299,7 @@ QuadraticTriangle<D>::contains(Point2 p) const noexcept -> bool requires(D == 2)
 //==============================================================================
 // meanChordLength
 //==============================================================================
+// Defined in polygon.hpp
 
 template <Int D>
 PURE HOSTDEV constexpr auto
@@ -306,6 +311,7 @@ QuadraticTriangle<D>::meanChordLength() const noexcept -> Float requires(D == 2)
 //==============================================================================
 // intersect
 //==============================================================================
+// Defined in polygon.hpp
 
 template <Int D>
 HOSTDEV constexpr auto

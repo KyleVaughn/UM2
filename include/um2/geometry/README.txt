@@ -17,7 +17,7 @@ not only typical polygons with straight edges, but also polygons with curved
 polynomial edges. Hence, we use the polytope as a useful abstraction which is
 specialized via template parameters to triangles, line segments, etc. A
 K-dimensional polytope, of polynomial order P, represented by the connectivity
-of its vertices. These N vertices are D-dimensional points of type F.
+of its vertices. These N vertices are D-dimensional points.
 
 See https://en.wikipedia.org/wiki/Polytope for help with terminology.
 See "The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th
@@ -37,10 +37,3 @@ See "The Visualization Toolkit: An Object-Oriented Approach to 3D Graphics, 4th
 
 - Tetrahedron             (K = 3, P = 1, N = 4)
 ... etc.
-
-intersect(Ray)
---------------
-Any geometric objects which have a function Object.intersect(Ray) return the parametric
-coordinate/coordinates such that Ray(r) = origin + r*direction gives the point/points
-of intersection. r must be in range [0, inf). If r is negative, or there is no intersection,
-then the function returns -1 as the coordinate.

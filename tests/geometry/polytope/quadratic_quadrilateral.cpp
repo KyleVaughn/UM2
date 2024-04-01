@@ -1,5 +1,5 @@
 #include <um2/geometry/quadratic_quadrilateral.hpp>
-#include <um2/stdlib/algorithm/is_sorted.hpp>
+#include <um2/geometry/modular_rays.hpp>
 
 #include "../../test_macros.hpp"
 
@@ -11,7 +11,7 @@ makeQuad() -> um2::QuadraticQuadrilateral<D>
 {
   um2::QuadraticQuadrilateral<D> this_quad;
   for (Int i = 0; i < 8; ++i) {
-    this_quad[i] = um2::Vec<D, Float>::zero();
+    this_quad[i] = 0;  
   }
   this_quad[1][0] = castIfNot<Float>(1);
   this_quad[2][0] = castIfNot<Float>(1);
@@ -57,12 +57,44 @@ TEST_CASE(interpolate)
 }
 
 //==============================================================================
-// edge
+// jacobian
 //==============================================================================
 
 template <Int D>
 HOSTDEV
-TEST_CASE(edge)
+TEST_CASE(jacobian)
+{
+  // For the reference quad, the Jacobian is constant.
+  um2::QuadraticQuadrilateral<D> quad = makeQuad<D>();
+  auto jac = quad.jacobian(0, 0);
+  ASSERT_NEAR((jac(0, 0)), 1, eps);
+  ASSERT_NEAR((jac(1, 0)), 0, eps);
+  ASSERT_NEAR((jac(0, 1)), 0, eps);
+  ASSERT_NEAR((jac(1, 1)), 1, eps);
+
+  jac = quad.jacobian(static_cast<Float>(0.2), static_cast<Float>(0.3));
+  ASSERT_NEAR((jac(0, 0)), 1, eps);
+  ASSERT_NEAR((jac(1, 0)), 0, eps);
+  ASSERT_NEAR((jac(0, 1)), 0, eps);
+  ASSERT_NEAR((jac(1, 1)), 1, eps);
+  // If we stretch the quad, the Jacobian should change.
+  quad[1][0] = static_cast<Float>(2);
+  quad[2][0] = static_cast<Float>(2);
+  quad[5][0] = static_cast<Float>(2);
+  jac = quad.jacobian(0.5, 0);
+  ASSERT_NEAR((jac(0, 0)), 2, eps); 
+  ASSERT_NEAR((jac(1, 0)), 0, eps);
+  ASSERT_NEAR((jac(0, 1)), 0, eps);
+  ASSERT_NEAR((jac(1, 1)), 1, eps);
+}
+
+//==============================================================================
+// getEdge
+//==============================================================================
+
+template <Int D>
+HOSTDEV
+TEST_CASE(getEdge)
 {
   um2::QuadraticQuadrilateral<D> quad = makeQuad2<D>();
   um2::QuadraticSegment<D> edge = quad.getEdge(0);
@@ -81,6 +113,86 @@ TEST_CASE(edge)
   ASSERT(edge[0].isApprox(quad[3]));
   ASSERT(edge[1].isApprox(quad[0]));
   ASSERT(edge[2].isApprox(quad[7]));
+}
+
+//==============================================================================
+// perimeter
+//==============================================================================
+
+template <Int D>
+HOSTDEV
+TEST_CASE(perimeter)
+{
+  um2::QuadraticQuadrilateral<D> const quad = makeQuad<D>();
+  ASSERT_NEAR(quad.perimeter(), castIfNot<Float>(4), eps);
+}
+
+//==============================================================================
+// boundingBox
+//==============================================================================
+
+HOSTDEV
+TEST_CASE(boundingBox)
+{
+  um2::QuadraticQuadrilateral<2> const quad = makeQuad2<2>();
+  um2::AxisAlignedBox<2> const box = quad.boundingBox();
+  // NOLINTBEGIN(cert-dcl03-c,misc-static-assert)
+  ASSERT_NEAR(box.minima(0), castIfNot<Float>(0), eps);
+  ASSERT_NEAR(box.minima(1), castIfNot<Float>(0), eps);
+  ASSERT_NEAR(box.maxima(0), castIfNot<Float>(1.0083333), eps);
+  ASSERT_NEAR(box.maxima(1), castIfNot<Float>(1.5), eps);
+  // NOLINTEND(cert-dcl03-c,misc-static-assert)
+}
+
+//==============================================================================
+// area
+//==============================================================================
+
+HOSTDEV
+TEST_CASE(area)
+{
+  um2::QuadraticQuadrilateral<2> quad = makeQuad<2>();
+  ASSERT_NEAR(quad.area(), castIfNot<Float>(1), eps);
+  quad[5] = um2::Point2(castIfNot<Float>(1.1), castIfNot<Float>(0.5));
+  quad[7] = um2::Point2(castIfNot<Float>(0.1), castIfNot<Float>(0.5));
+  ASSERT_NEAR(quad.area(), castIfNot<Float>(1), eps);
+
+  um2::QuadraticQuadrilateral<2> const quad2 = makeQuad2<2>();
+  // NOLINTNEXTLINE(cert-dcl03-c,misc-static-assert)
+  ASSERT_NEAR(quad2.area(), castIfNot<Float>(1.3333333), eps);
+}
+
+//==============================================================================
+// centroid
+//==============================================================================
+
+HOSTDEV
+TEST_CASE(centroid)
+{
+  um2::QuadraticQuadrilateral<2> const quad = makeQuad<2>();
+  um2::Point<2> c = quad.centroid();
+  ASSERT_NEAR(c[0], castIfNot<Float>(0.5), eps);
+  ASSERT_NEAR(c[1], castIfNot<Float>(0.5), eps);
+
+  um2::QuadraticQuadrilateral<2> const quad2 = makeQuad2<2>();
+  c = quad2.centroid();
+  ASSERT_NEAR(c[0], castIfNot<Float>(0.53), eps);
+  ASSERT_NEAR(c[1], castIfNot<Float>(0.675), eps);
+}
+
+//==============================================================================
+// isCCW
+//==============================================================================
+
+HOSTDEV
+TEST_CASE(isCCW_flip)
+{
+  auto quad = makeQuad<2>();
+  ASSERT(quad.isCCW());
+  um2::swap(quad[1], quad[3]);
+  ASSERT(!quad.isCCW());
+  quad.flip();
+  ASSERT(quad.isCCW());
 }
 
 //==============================================================================
@@ -104,82 +216,33 @@ TEST_CASE(contains)
 }
 
 //==============================================================================
-// area
+// meanChordLength
 //==============================================================================
 
 HOSTDEV
-TEST_CASE(area)
+TEST_CASE(meanChordLength)
 {
-  um2::QuadraticQuadrilateral<2> quad = makeQuad<2>();
-  ASSERT_NEAR(quad.area(), castIfNot<Float>(1), eps);
-  quad[5] = um2::Point2(castIfNot<Float>(1.1), castIfNot<Float>(0.5));
-  quad[7] = um2::Point2(castIfNot<Float>(0.1), castIfNot<Float>(0.5));
-  ASSERT_NEAR(quad.area(), castIfNot<Float>(1), eps);
+  auto const quad = makeQuad<2>();
+  auto const ref = um2::pi<Float> * quad.area() / quad.perimeter();
+  auto const val = quad.meanChordLength();
+  auto const err = um2::abs(val - ref) / ref;
+  // Relative error should be less than 0.1%.
+  ASSERT(err < castIfNot<Float>(1e-3));
 
-  um2::QuadraticQuadrilateral<2> const quad2 = makeQuad2<2>();
-  // NOLINTNEXTLINE(cert-dcl03-c,misc-static-assert)
-  ASSERT_NEAR(quad2.area(), castIfNot<Float>(1.3333333), eps);
-}
+  auto const quad2 = makeQuad2<2>();
+  auto const ref2 = um2::pi<Float> * quad2.area() / quad2.perimeter();
+  auto const val2 = quad2.meanChordLength();
+  auto const err2 = um2::abs(val2 - ref2) / ref2;
+  ASSERT(err2 < castIfNot<Float>(1e-3));
 
-//==============================================================================
-// perimeter
-//==============================================================================
-
-HOSTDEV
-TEST_CASE(perimeter)
-{
-  um2::QuadraticQuadrilateral<2> const quad = makeQuad<2>();
-  ASSERT_NEAR(quad.perimeter(), castIfNot<Float>(4), eps);
-}
-
-//==============================================================================
-// centroid
-//==============================================================================
-
-HOSTDEV
-TEST_CASE(centroid)
-{
-  um2::QuadraticQuadrilateral<2> const quad = makeQuad<2>();
-  um2::Point<2> c = quad.centroid();
-  ASSERT_NEAR(c[0], castIfNot<Float>(0.5), eps);
-  ASSERT_NEAR(c[1], castIfNot<Float>(0.5), eps);
-
-  um2::QuadraticQuadrilateral<2> const quad2 = makeQuad2<2>();
-  c = quad2.centroid();
-  ASSERT_NEAR(c[0], castIfNot<Float>(0.53), eps);
-  ASSERT_NEAR(c[1], castIfNot<Float>(0.675), eps);
-}
-
-//==============================================================================
-// boundingBox
-//==============================================================================
-
-HOSTDEV
-TEST_CASE(boundingBox)
-{
-  um2::QuadraticQuadrilateral<2> const quad = makeQuad2<2>();
-  um2::AxisAlignedBox<2> const box = quad.boundingBox();
-  // NOLINTBEGIN(cert-dcl03-c,misc-static-assert)
-  ASSERT_NEAR(box.minima()[0], castIfNot<Float>(0), eps);
-  ASSERT_NEAR(box.minima()[1], castIfNot<Float>(0), eps);
-  ASSERT_NEAR(box.maxima()[0], castIfNot<Float>(1.0083333), eps);
-  ASSERT_NEAR(box.maxima()[1], castIfNot<Float>(1.5), eps);
-  // NOLINTEND(cert-dcl03-c,misc-static-assert)
-}
-
-//==============================================================================
-// isCCW
-//==============================================================================
-
-HOSTDEV
-TEST_CASE(isCCW_flip)
-{
-  auto quad = makeQuad<2>();
-  ASSERT(quad.isCCW());
-  um2::swap(quad[1], quad[3]);
-  ASSERT(!quad.isCCW());
-  quad.flip();
-  ASSERT(quad.isCCW());
+  // Non-convex quad
+  auto quad3 = makeQuad<2>();
+  quad3[4][0] = castIfNot<Float>(0.7);
+  quad3[4][1] = castIfNot<Float>(0.25);
+  auto const ref3 = um2::pi<Float> * quad3.area() / quad3.perimeter();
+  auto const val3 = quad3.meanChordLength();
+  auto const err3 = um2::abs(val3 - ref3) / ref3;
+  ASSERT(err3 < castIfNot<Float>(1e-3));
 }
 
 //==============================================================================
@@ -207,25 +270,22 @@ testQuadForIntersections(um2::QuadraticQuadrilateral<2> const quad)
     // For each ray
     for (Int i = 0; i < num_rays; ++i) {
       auto const ray = params.getRay(i);
-      auto const intersections = quad.intersect(ray);
-      ASSERT(um2::is_sorted(intersections.begin(), intersections.end()));
+      Float buf[8];
+      auto const hits = quad.intersect(ray, buf);
       // For each intersection coordinate
-      for (auto const & r : intersections) {
-        // If intersection is valid
-        if (0 <= r) {
-          um2::Point2 const p = ray(r);
-          // Get the distance to the closest edge
-          Float min_dist = um2::inf_distance;
-          for (Int ie = 0; ie < 4; ++ie) {
-            um2::QuadraticSegment<2> const q = quad.getEdge(ie);
-            Float const d = q.distanceTo(p);
-            if (d < min_dist) {
-              min_dist = d;
-            }
+      for (Int ihit = 0; ihit < hits; ++ihit) {
+        um2::Point2 const p = ray(buf[ihit]);
+        // Get the distance to the closest edge
+        Float min_dist = um2::inf_distance;
+        for (Int ie = 0; ie < 4; ++ie) {
+          um2::QuadraticSegment<2> const q = quad.getEdge(ie);
+          Float const d = q.distanceTo(p);
+          if (d < min_dist) {
+            min_dist = d;
           }
-          // Check if the distance is close to zero
-          ASSERT(min_dist < um2::eps_distance);
         }
+        // Check if the distance is close to zero
+        ASSERT(min_dist < um2::eps_distance);
       }
     }
   }
@@ -240,71 +300,21 @@ TEST_CASE(intersect)
   testQuadForIntersections(quad);
 }
 
-//==============================================================================
-// meanChordLength
-//==============================================================================
-
-HOSTDEV
-TEST_CASE(meanChordLength)
-{
-  auto const quad = makeQuad<2>();
-  auto const ref = um2::pi<Float> * quad.area() / quad.perimeter();
-  auto const val = quad.meanChordLength();
-  auto const err = um2::abs(val - ref) / ref;
-  // Relative error should be less than 0.1%.
-  ASSERT(err < castIfNot<Float>(1e-3));
-
-  auto const quad2 = makeQuad2<2>();
-  auto const ref2 = um2::pi<Float> * quad2.area() / quad2.perimeter();
-  auto const val2 = quad2.meanChordLength();
-  auto const err2 = um2::abs(val2 - ref2) / ref2;
-  ASSERT(err2 < castIfNot<Float>(1e-3));
-
-  // Non-convex quad
-  auto quad3 = makeQuad<2>();
-  quad3[4][0] = castIfNot<Float>(0.7);
-  quad3[4][1] = castIfNot<Float>(0.25);
-  ASSERT(!quad3.isConvex());
-  auto const ref3 = um2::pi<Float> * quad3.area() / quad3.perimeter();
-  auto const val3 = quad3.meanChordLength();
-  auto const err3 = um2::abs(val3 - ref3) / ref3;
-  ASSERT(err3 < castIfNot<Float>(1e-3));
-}
-
-#if UM2_USE_CUDA
-template <Int D>
-MAKE_CUDA_KERNEL(interpolate, D);
-
-template <Int D>
-MAKE_CUDA_KERNEL(edge, D);
-
-MAKE_CUDA_KERNEL(contains);
-
-MAKE_CUDA_KERNEL(area);
-
-MAKE_CUDA_KERNEL(centroid);
-
-MAKE_CUDA_KERNEL(boundingBox);
-
-MAKE_CUDA_KERNEL(isCCW_flipFace);
-
-MAKE_CUDA_KERNEL(meanChordLength);
-#endif
-
 template <Int D>
 TEST_SUITE(QuadraticQuadrilateral)
 {
   TEST_HOSTDEV(interpolate, D);
-  TEST_HOSTDEV(edge, D);
+  TEST_HOSTDEV(jacobian, D);
+  TEST_HOSTDEV(getEdge, D);
+  TEST_HOSTDEV(perimeter, D);
   if constexpr (D == 2) {
-    TEST_HOSTDEV(contains);
-    TEST_HOSTDEV(area);
-    TEST_HOSTDEV(perimeter);
-    TEST_HOSTDEV(centroid);
     TEST_HOSTDEV(boundingBox);
+    TEST_HOSTDEV(area);
+    TEST_HOSTDEV(centroid);
     TEST_HOSTDEV(isCCW_flip);
-    TEST_HOSTDEV(intersect);
+    TEST_HOSTDEV(contains);
     TEST_HOSTDEV(meanChordLength);
+    TEST_HOSTDEV(intersect);
   }
 }
 
