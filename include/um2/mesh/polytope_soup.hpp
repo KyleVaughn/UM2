@@ -52,30 +52,6 @@ class PolytopeSoup
   Vector<Int> _elset_ids;          // Element IDs of each elset (must be sorted)
   Vector<Vector<Float>> _elset_data; // Data associated with each elset
 
-  //==============================================================================
-  // Private Methods
-  //==============================================================================
-
-  void
-  writeXDMF(String const & filepath) const;
-
-  void
-  writeXDMFUniformGrid(String const & name, //Vector<String> const & material_names,
-                       pugi::xml_node & xdomain, H5::H5File & h5file,
-                       String const & h5filename, String const & h5path) const;
-
-  void
-  writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
-                    String const & h5filename, String const & h5path) const;
-
-  void
-  writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
-                    String const & h5filename, String const & h5path) const;
-
-  void
-  writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group, String const & h5filename,
-                  String const & h5path) const; //Vector<String> const & material_names) const;
-
 public:
   //==============================================================================
   // Constructors
@@ -104,6 +80,27 @@ public:
 
   PURE [[nodiscard]] auto
   compare(PolytopeSoup const & other) const -> int;
+
+  PURE [[nodiscard]] constexpr auto
+  elementConnectivity() const -> Vector<Int> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  elementOffsets() const -> Vector<Int> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  elementTypes() const -> Vector<VTKElemType> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  elsetNames() const -> Vector<String> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  elsetOffsets() const -> Vector<Int> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  elsetIDs() const -> Vector<Int> const &;
+
+  PURE [[nodiscard]] constexpr auto
+  elsetData() const -> Vector<Vector<Float>> const &;
 
 //  // If each element has a vertex with the same ID
 //  PURE [[nodiscard]] auto
@@ -166,10 +163,10 @@ public:
 //  mortonSortVertices();
 
   PURE [[nodiscard]] constexpr auto
-  numVerts() const -> Int;
+  numVertices() const -> Int;
 
   PURE [[nodiscard]] constexpr auto
-  numElems() const -> Int;
+  numElements() const -> Int;
 
   PURE [[nodiscard]] constexpr auto
   numElsets() const -> Int;
@@ -189,6 +186,10 @@ public:
 ////  void
 ////  translate(Point3 const & v);
 ////
+
+  PURE [[nodiscard]] constexpr auto
+  vertices() const -> Vector<Point3> const &;
+  
   void
   write(String const & filename) const;
 
@@ -209,13 +210,13 @@ public:
 //==============================================================================
 
 PURE constexpr auto
-PolytopeSoup::numVerts() const -> Int
+PolytopeSoup::numVertices() const -> Int
 {
   return _vertices.size();
 }
 
 PURE constexpr auto
-PolytopeSoup::numElems() const -> Int
+PolytopeSoup::numElements() const -> Int
 {
   return _element_types.size();
 }
@@ -225,6 +226,7 @@ PolytopeSoup::numElsets() const -> Int
 {
   return _elset_names.size();
 }
+
 
 PURE constexpr auto
 PolytopeSoup::getVertex(Int const i) const -> Point3 const &
@@ -250,6 +252,54 @@ PolytopeSoup::getElemTypes() const -> Vector<VTKElemType>
     }
   }
   return el_types;
+}
+
+PURE constexpr auto
+PolytopeSoup::elementConnectivity() const -> Vector<Int> const &
+{
+  return _element_conn;
+}
+
+PURE constexpr auto
+PolytopeSoup::elementOffsets() const -> Vector<Int> const &
+{
+  return _element_offsets;
+}
+
+PURE constexpr auto
+PolytopeSoup::elementTypes() const -> Vector<VTKElemType> const &
+{
+  return _element_types;
+}
+
+PURE constexpr auto
+PolytopeSoup::elsetNames() const -> Vector<String> const &
+{
+  return _elset_names;
+}
+
+PURE constexpr auto
+PolytopeSoup::elsetOffsets() const -> Vector<Int> const &
+{
+  return _elset_offsets;
+}
+
+PURE constexpr auto
+PolytopeSoup::elsetIDs() const -> Vector<Int> const &
+{
+  return _elset_ids;
+}
+
+PURE constexpr auto
+PolytopeSoup::elsetData() const -> Vector<Vector<Float>> const &
+{
+  return _elset_data;
+}
+
+PURE constexpr auto
+PolytopeSoup::vertices() const -> Vector<Point3> const &
+{
+  return _vertices;
 }
 
 //PURE constexpr auto

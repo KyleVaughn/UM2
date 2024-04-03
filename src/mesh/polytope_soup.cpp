@@ -599,7 +599,7 @@ PolytopeSoup::compare(PolytopeSoup const & other) const -> int
 //PolytopeSoup::mortonSortElements()
 //{
 //  // We will sort the centroid of each element using the morton encoding.
-//  Int const num_elems = numElems();
+//  Int const num_elems = numElements();
 //  Vector<Point3> centroids(num_elems);
 //  for (Int i = 0; i < num_elems; ++i) {
 //    centroids[i] = getElementCentroid(i);
@@ -970,7 +970,7 @@ PolytopeSoup::sortElsets()
 //PolytopeSoup::getMaterialIDs(Vector<MatID> & material_ids,
 //                             Vector<String> const & material_names) const
 //{
-//  material_ids.resize(numElems());
+//  material_ids.resize(numElements());
 //  um2::fill(material_ids.begin(), material_ids.end(), static_cast<MatID>(-1));
 //  Int const nmats = material_names.size();
 //  for (Int i = 0; i < nmats; ++i) {
@@ -1406,7 +1406,7 @@ vtkParseCellData(PolytopeSoup & soup, std::ifstream & file, char * const line,
   Int const num_data = strto<Int>(line_view.data(), &end);
   ASSERT(end != nullptr);
   end = nullptr;
-  ASSERT(num_data == soup.numElems());
+  ASSERT(num_data == soup.numElements());
 
   // Ensure SCALARS data
   file.getline(line, smax_line_length);
@@ -1573,14 +1573,15 @@ getH5DataType() -> H5::PredType
   return H5::PredType::NATIVE_FLOAT;
 }
 
-void
-PolytopeSoup::writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
-                                String const & h5filename, String const & h5path) const
-
+static void
+writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
+                  String const & h5filename, String const & h5path,
+                  PolytopeSoup const & soup)
 {
-  Int const num_verts = _vertices.size();
+  Int const num_verts = soup.numVertices(); 
+  auto const & vertices = soup.vertices();
   bool const is_3d =
-      std::any_of(_vertices.cbegin(), _vertices.cend(),
+      std::any_of(vertices.cbegin(), vertices.cend(),
                   [](auto const & v) { return um2::abs(v[2]) > eps_distance; });
   Int const dim = is_3d ? 3 : 2;
   // Create XDMF Geometry node
@@ -1612,33 +1613,34 @@ PolytopeSoup::writeXDMFGeometry(pugi::xml_node & xgrid, H5::Group & h5group,
   Vector<Float> xyz(num_verts * dim);
   if (dim == 2) {
     for (Int i = 0; i < num_verts; ++i) {
-      xyz[2 * i] = _vertices[i][0];
-      xyz[2 * i + 1] = _vertices[i][1];
+      xyz[2 * i] = vertices[i][0];
+      xyz[2 * i + 1] = vertices[i][1];
     }
   } else { // dim == 3
     for (Int i = 0; i < num_verts; ++i) {
-      xyz[3 * i] = _vertices[i][0];
-      xyz[3 * i + 1] = _vertices[i][1];
-      xyz[3 * i + 2] = _vertices[i][2];
+      xyz[3 * i] = vertices[i][0];
+      xyz[3 * i + 1] = vertices[i][1];
+      xyz[3 * i + 2] = vertices[i][2];
     }
   }
   // Write HDF5 data set
   h5dataset.write(xyz.data(), h5type, h5space);
 } // writeXDMFgeometry
 
-void
-PolytopeSoup::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
-                                String const & h5filename, String const & h5path) const
+static void
+writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
+                  String const & h5filename, String const & h5path,
+                  PolytopeSoup const & soup)
 {
   // Create XDMF Topology node
   auto xtopo = xgrid.append_child("Topology");
-  Int const nelems = numElems();
+  Int const nelems = soup.numElements();
 
   Vector<Int> topology;
   String topology_type;
   String dimensions;
   Int nverts = 0;
-  auto const elem_type = getElemTypes();
+  auto const elem_type = soup.getElemTypes();
   bool ishomogeneous = true;
   if (elem_type.size() == 1) {
     switch (elem_type[0]) {
@@ -1670,22 +1672,25 @@ PolytopeSoup::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
   } else {
     topology_type = "Mixed";
     ishomogeneous = false;
-    dimensions = String(nelems + _element_conn.size());
-    topology.resize(nelems + _element_conn.size());
+    auto const & element_conn = soup.elementConnectivity();
+    auto const & element_offsets = soup.elementOffsets();
+    auto const & element_types = soup.elementTypes();
+    dimensions = String(nelems + element_conn.size());
+    topology.resize(nelems + element_conn.size());
     // Create the topology array (type id + node ids)
     Int topo_ctr = 0;
     for (Int i = 0; i < nelems; ++i) {
-      auto const topo_type = static_cast<int8_t>(vtkToXDMFElemType(_element_types[i]));
+      auto const topo_type = static_cast<int8_t>(vtkToXDMFElemType(element_types[i]));
       if (topo_type == static_cast<int8_t>(XDMFElemType::None)) {
         logger::error("Unsupported polytope type");
         return;
       }
       ASSERT(topo_type > 0);
       topology[topo_ctr] = static_cast<Int>(static_cast<uint32_t>(topo_type));
-      auto const offset = _element_offsets[i];
-      auto const npts = _element_offsets[i + 1] - _element_offsets[i];
+      auto const offset = element_offsets[i];
+      auto const npts = element_offsets[i + 1] - element_offsets[i];
       for (Int j = 0; j < npts; ++j) {
-        topology[topo_ctr + j + 1] = _element_conn[offset + j];
+        topology[topo_ctr + j + 1] = element_conn[offset + j];
       }
       topo_ctr += npts + 1;
     }
@@ -1710,7 +1715,7 @@ PolytopeSoup::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
     // Create HDF5 data set
     H5::DataSet const h5dataset = h5group.createDataSet("Topology", h5type, h5space);
     // Write HDF5 data set
-    h5dataset.write(_element_conn.data(), h5type, h5space);
+    h5dataset.write(soup.elementConnectivity().data(), h5type, h5space);
   } else {
     // Create HDF5 data space
     auto const dims = static_cast<hsize_t>(topology.size());
@@ -1722,15 +1727,20 @@ PolytopeSoup::writeXDMFTopology(pugi::xml_node & xgrid, H5::Group & h5group,
   }
 } // writeXDMFTopology
 
-void
-PolytopeSoup::writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
-                              String const & h5filename, String const & h5path
-                              ) const
+static void
+writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
+                              String const & h5filename, String const & h5path,
+                              PolytopeSoup const & soup
+                              ) 
 {
-  for (Int i = 0; i < _elset_names.size(); ++i) {
-    String const name = _elset_names[i];
-    auto const start = _elset_offsets[i];
-    auto const end = _elset_offsets[i + 1];
+  auto const & elset_names = soup.elsetNames();
+  auto const & elset_offsets = soup.elsetOffsets();
+  auto const & elset_ids = soup.elsetIDs();
+  auto const & elset_data = soup.elsetData();
+  for (Int i = 0; i < elset_names.size(); ++i) {
+    String const & name = elset_names[i];
+    auto const start = elset_offsets[i];
+    auto const end = elset_offsets[i + 1];
     // Create HDF5 data space
     auto dims = static_cast<hsize_t>(end - start);
     H5::DataSpace const h5space(1, &dims);
@@ -1739,7 +1749,7 @@ PolytopeSoup::writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
     // Create HDF5 data set
     H5::DataSet const h5dataset = h5group.createDataSet(name.data(), h5type, h5space);
     // Write HDF5 data set.
-    h5dataset.write(&_elset_ids[start], h5type, h5space);
+    h5dataset.write(&(elset_ids[start]), h5type, h5space);
 
     // Create XDMF Elset node
     auto xelset = xgrid.append_child("Set");
@@ -1754,9 +1764,9 @@ PolytopeSoup::writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
     String const h5elsetpath = h5filename + ":" + h5path + "/" + name;
     xdata.append_child(pugi::node_pcdata).set_value(h5elsetpath.data());
 
-    if (!_elset_data[i].empty()) {
+    if (!elset_data[i].empty()) {
       // Create HDF5 data space
-      auto const dims_data = static_cast<hsize_t>(_elset_data[i].size());
+      auto const dims_data = static_cast<hsize_t>(elset_data[i].size());
       H5::DataSpace const h5space_data(1, &dims_data);
       // Create HDF5 data type
       H5::DataType const h5type_data = getH5DataType<Float>();
@@ -1764,7 +1774,7 @@ PolytopeSoup::writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
       H5::DataSet const h5dataset_data =
           h5group.createDataSet((name + "_data").data(), h5type_data, h5space_data);
       // Write HDF5 data set
-      h5dataset_data.write(_elset_data[i].data(), h5type_data, h5space_data);
+      h5dataset_data.write(elset_data[i].data(), h5type_data, h5space_data);
 
       // Create XDMF data node
       auto xatt = xelset.append_child("Attribute");
@@ -1773,7 +1783,7 @@ PolytopeSoup::writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
       // Create XDMF DataItem node
       auto xdata2 = xatt.append_child("DataItem");
       xdata2.append_attribute("DataType") = "Float";
-      xdata2.append_attribute("Dimensions") = _elset_data[i].size();
+      xdata2.append_attribute("Dimensions") = elset_data[i].size();
       xdata2.append_attribute("Precision") = sizeof(Float);
       xdata2.append_attribute("Format") = "HDF";
 
@@ -1783,10 +1793,12 @@ PolytopeSoup::writeXDMFElsets(pugi::xml_node & xgrid, H5::Group & h5group,
   }
 } // writeXDMFelsets
 
-void
-PolytopeSoup::writeXDMFUniformGrid(String const & name,
-                                   pugi::xml_node & xdomain, H5::H5File & h5file,
-                                   String const & h5filename, String const & h5path) const
+static void
+writeXDMFUniformGrid(String const & name,
+                     pugi::xml_node & xdomain, H5::H5File & h5file,
+                     String const & h5filename, String const & h5path,
+                     PolytopeSoup const & soup
+                     )
 {
   // Grid
   pugi::xml_node xgrid = xdomain.append_child("Grid");
@@ -1797,13 +1809,13 @@ PolytopeSoup::writeXDMFUniformGrid(String const & name,
   String const h5grouppath = h5path + "/" + name;
   H5::Group h5group = h5file.createGroup(h5grouppath.data());
 
-  writeXDMFGeometry(xgrid, h5group, h5filename, h5grouppath);
-  writeXDMFTopology(xgrid, h5group, h5filename, h5grouppath);
-  writeXDMFElsets(xgrid, h5group, h5filename, h5grouppath);
+  writeXDMFGeometry(xgrid, h5group, h5filename, h5grouppath, soup);
+  writeXDMFTopology(xgrid, h5group, h5filename, h5grouppath, soup);
+  writeXDMFElsets(xgrid, h5group, h5filename, h5grouppath, soup);
 } // writeXDMFUniformGrid
 
-void
-PolytopeSoup::writeXDMF(String const & filepath) const
+static void
+writeXDMFFile(String const & filepath, PolytopeSoup const & soup)
 {
   LOG_INFO("Writing XDMF file: ",  filepath);
   ASSERT(filepath.ends_with(".xdmf"));
@@ -1840,13 +1852,13 @@ PolytopeSoup::writeXDMF(String const & filepath) const
   // Add a uniform grid
   String const h5path;
   String const name = h5filename.substr(0, h5filename.size() - 3);
-  writeXDMFUniformGrid(name, xdomain, h5file, h5filename, h5path);
+  writeXDMFUniformGrid(name, xdomain, h5file, h5filename, h5path, soup);
   // Write the XML file
   xdoc.save_file(filepath.data(), "  ");
 
   // Close the HDF5 file
   h5file.close();
-} // writeXDMF
+} // writeXDMFFile
 
 template <std::floating_point T>
 static void
@@ -2440,7 +2452,7 @@ void
 PolytopeSoup::write(String const & filename) const
 {
   if (filename.ends_with(".xdmf")) {
-    writeXDMF(filename);
+    writeXDMFFile(filename, *this);
   } else {
     logger::error("Unsupported file format.");
   }
@@ -2467,7 +2479,7 @@ PolytopeSoup::write(String const & filename) const
 //    logger::error("No power data found");
 //    return subset_pc;
 //  }
-//  if (ids.size() != soup.numElems()) {
+//  if (ids.size() != soup.numElements()) {
 //    logger::error("Mismatch in number of ids and elements");
 //    return subset_pc;
 //  }
@@ -2475,7 +2487,7 @@ PolytopeSoup::write(String const & filename) const
 //    logger::error("Ids are not sorted");
 //    return subset_pc;
 //  }
-//  Int const num_elems = soup.numElems();
+//  Int const num_elems = soup.numElements();
 //  Vector<Int> nonzero_ids;
 //  // Only compute non-zero aabbs, but allocate for all
 //  // elements so that we don't have to find the indices

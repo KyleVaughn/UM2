@@ -11,10 +11,10 @@
 namespace um2
 {
 
-////==============================================================================
-//// Constructors
-////==============================================================================
-//
+//==============================================================================
+// Constructors
+//==============================================================================
+
 //// Return true if the MeshType and P, N are compatible.
 //template <Int P, Int N>
 //static constexpr auto
@@ -32,64 +32,63 @@ namespace um2
 //  return false;
 //}
 //
-//template <Int P, Int N>
-//static constexpr auto
-//getVTKElemType() -> VTKElemType
-//{
-//  if constexpr (P == 1 && N == 3) {
-//    return VTKElemType::Triangle;
-//  } else if constexpr (P == 1 && N == 4) {
-//    return VTKElemType::Quad;
-//  } else if constexpr (P == 2 && N == 6) {
-//    return VTKElemType::QuadraticTriangle;
-//  } else if constexpr (P == 2 && N == 8) {
-//    return VTKElemType::QuadraticQuad;
-//  }
-//  ASSERT(false);
-//  return VTKElemType::None;
-//}
-//
+template <Int P, Int N>
+static constexpr auto
+getVTKElemType() -> VTKElemType
+{
+  if constexpr (P == 1 && N == 3) {
+    return VTKElemType::Triangle;
+  } else if constexpr (P == 1 && N == 4) {
+    return VTKElemType::Quad;
+  } else if constexpr (P == 2 && N == 6) {
+    return VTKElemType::QuadraticTriangle;
+  } else if constexpr (P == 2 && N == 8) {
+    return VTKElemType::QuadraticQuad;
+  }
+  return VTKElemType::None;
+}
+
 //template <Int P, Int N>
 //FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup)
 //{
-//  auto const num_vertices = soup.numVerts();
+//  auto const num_vertices = soup.numVertices();
 //  auto const num_faces = soup.numElems();
 //  ASSERT(num_vertices > 0);
 //  ASSERT(num_faces > 0);
-//  MeshType const meshtype = soup.getMeshType();
-//  if (!validateMeshType<P, N>(meshtype)) {
-//    logger::error("Attempted to construct a FaceVertexMesh from an incompatible polytope soup");
+//  auto const elem_types = soup.getElemTypes();
+//  if (elem_types.size() != 1) { 
+//    logger::error("Attempted to construct a FaceVertexMesh from a non-homogeneous PolytopeSoup");
+//  }
+//  if (elem_types[0] != getVTKElemType<P, N>()) {
+//    logger::error("Attempted to construct a FaceVertexMesh from a PolytopeSoup with an incompatible element type");
 //  }
 //
 //  // -- Vertices --
 //  // Ensure each of the vertices has approximately the same z
 //  _v.resize(num_vertices);
-//#if UM2_ENABLE_ASSERTS
 //  Float const z = soup.getVertex(0)[2];
-//  for (Int i = 1; i < num_vertices; ++i) {
-//    ASSERT(um2::abs(soup.getVertex(i)[2] - z) < eps_distance);
-//  }
-//#endif
 //  for (Int i = 0; i < num_vertices; ++i) {
-//    auto const p = soup.getVertex(i);
+//    auto const & p = soup.getVertex(i);
 //    _v[i][0] = p[0];
 //    _v[i][1] = p[1];
+//    if (um2::abs(p[2] - z) > eps_distance) {
+//      logger::warn("Constructing a FaceVertexMesh from a PolytopeSoup with non-planar vertices");
+//      break;
+//    }
 //  }
 //
 //  // -- Face/Vertex connectivity --
-//  Vector<Int> conn(N);
-//  VTKElemType elem_type = VTKElemType::None;
 //  _fv.resize(num_faces);
-//  for (Int i = 0; i < num_faces; ++i) {
-//    soup.getElement(i, elem_type, conn);
-//    ASSERT(elem_type == (getVTKElemType<P, N>()));
-//    for (Int j = 0; j < N; ++j) {
-//      _fv[i][j] = conn[j];
-//    }
-//  }
+////  auto const & soup_conn = soup.getConnectivity();
+////  for (Int i = 0; i < num_faces; ++i) {
+////    soup.getElement(i, elem_type, conn);
+////    ASSERT(elem_type == (getVTKElemType<P, N>()));
+////    for (Int j = 0; j < N; ++j) {
+////      _fv[i][j] = conn[j];
+////    }
+////  }
 //  validate();
 //}
-//
 
 //==============================================================================
 // mortonSort

@@ -67,8 +67,7 @@ private:
   bool _has_vf = false;
   Vector<Vertex> _v;        // vertices
   Vector<FaceConn> _fv;     // face-vertex connectivity
-  Vector<Int> _vf_offsets;  // A prefix sum of the number of faces to which each
-                            // vertex belongs. size = num_vertices + 1
+  Vector<Int> _vf_offsets;  // index into _vf 
   Vector<Int> _vf;          // vertex-face connectivity
 
 public:
@@ -83,7 +82,7 @@ public:
                            Vector<FaceConn> const & fv) noexcept;
 
 //  explicit FaceVertexMesh(PolytopeSoup const & soup);
-//
+
   //==============================================================================
   // Methods
   //==============================================================================
@@ -176,7 +175,6 @@ public:
   auto
   intersect(Ray2 ray, Float * coords, Int * RESTRICT offsets, Int * RESTRICT faces) const noexcept -> Vec2I;
 
-//
 ////  //  //  void
 ////  //  //  toPolytopeSoup(PolytopeSoup & soup) const noexcept;
 ////

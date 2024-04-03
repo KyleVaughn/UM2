@@ -1,8 +1,4 @@
-mortonSortFaces
-
 FVM 
-  intersect + test
-  validate intersect + test
   construct poly
   to poly
 
@@ -27,15 +23,7 @@ Vec = int
 linesegment test
 linesegment function reordering
 
-refactor intersection routine
-
 mortonSort & test
-intersect
-validate intersect
-validate
-  manifold/watertight
-    edges with one face, ensure edges with one face are connected
-  convexity
 toPolytopeSoup
 
 binned face vertex mesh fixes everything
@@ -52,8 +40,6 @@ Tighter eps_distance?
 
 gsl permutaitons vs mine?
 
-replace infinite distance with -1 in intersection and such
-
 Int64
 
 organze archive into many dirs with notes on what is there any why we keep
@@ -61,7 +47,6 @@ enable openMP /TBB
 
 more robust testing for mesh functions
 -> faceContaining 
--> intersect
 -> validate
 
 makeMaterialsElset
@@ -136,8 +121,6 @@ Move the picture of the model to above the code in the tutorial
 
 Resolve casts in gmsh API
 
-Add overlap check to face vertex mesh validate routine
-
 Modify the Gmsh functions so that they are templated where necessary
 
 Binned mesh
@@ -167,9 +150,6 @@ Scripts to install gcc
 reserve elements/vertices for submesh and read: FVM.toPolytopesoup, spatial_part.toPolytopeSoup
 
 parallelize
-
-VALIDATE RAY TRACING DATA
-  intersect which also returns face IDS
 
 Graphics:
   Highlight the intersected cells
