@@ -51,7 +51,8 @@ public:
   //   | 0 2 0 2
   //   | 0 1 0 1
   //   +---------> x
-  constexpr RectilinearGrid(Vector<Vec2F> const & dxdy, Vector<Vector<Int>> const & ids);
+  constexpr RectilinearGrid(Vector<Vec2F> const & dxdy, Vector<Vector<Int>> const & ids)
+    requires(D == 2);
 
   //==============================================================================
   // Accessors
@@ -81,36 +82,13 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   numCells(Int i) const noexcept -> Int;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  xMin() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  yMin() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  zMin() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  xMax() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  yMax() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  zMax() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  numXCells() const noexcept -> Int;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  numYCells() const noexcept -> Int;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  numZCells() const noexcept -> Int;
-
   //==============================================================================
   // Methods
   //==============================================================================
+
+  // Empty the grid
+  HOSTDEV constexpr void
+  clear() noexcept;
 
   // The total number of cells in the grid.    
   PURE HOSTDEV [[nodiscard]] constexpr auto    
@@ -123,13 +101,7 @@ public:
   extents(Int i) const noexcept -> Float;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  width() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  height() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  depth() const noexcept -> Float;
+  boundingBox() const noexcept -> AxisAlignedBox<D>;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getFlatIndex(Vec<D, Int> const & index) const noexcept -> Int;
@@ -143,12 +115,6 @@ public:
       [[nodiscard]] constexpr auto getBox(Args... args) const noexcept
       -> AxisAlignedBox<D>;
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  boundingBox() const noexcept -> AxisAlignedBox<D>;
-
-  // Empty the grid
-  HOSTDEV constexpr void
-  clear() noexcept;
 }; // RectilinearGrid
 
 //==============================================================================
@@ -167,8 +133,8 @@ template <Int D>
 constexpr RectilinearGrid<D>::RectilinearGrid(AxisAlignedBox<D> const & box)
 {
   for (Int i = 0; i < D; ++i) {
-    ASSERT(box.minima(i) < box.maxima(i));
     _divs[i] = {box.minima(i), box.maxima(i)};
+    ASSERT(box.minima(i) < box.maxima(i));
   }
 }
 
@@ -205,24 +171,14 @@ constexpr RectilinearGrid<D>::RectilinearGrid(Vector<AxisAlignedBox<D>> const & 
   for (Int i = 0; i < D; ++i) {
     std::sort(_divs[i].begin(), _divs[i].end());
   }
-  // Ensure that the boxes completely cover the grid
-  // all num_divs >= 2
-  // n = ∏(num_divs[i] - 1)
-#if UM2_ENABLE_ASSERTS
-  Int ncells_total = 1;
-  for (Int i = 0; i < D; ++i) {
-    ASSERT(_divs[i].size() >= 2);
-    ncells_total *= _divs[i].size() - 1;
-  }
-  ASSERT(ncells_total == boxes.size());
-#endif
+  ASSERT(totalNumCells() == boxes.size());
 }
 
 template <Int D>
 constexpr RectilinearGrid<D>::RectilinearGrid(Vector<Vec2F> const & dxdy,
                                               Vector<Vector<Int>> const & ids)
+  requires(D == 2)
 {
-  static_assert(D == 2);
   // Convert the dxdy to AxisAlignedBoxes
   Int const nrows = ids.size();
   Int const ncols = ids[0].size();
@@ -335,79 +291,18 @@ RectilinearGrid<D>::numCells(Int i) const noexcept -> Int
   return _divs[i].size() - 1;
 }
 
-template <Int D>
-PURE HOSTDEV constexpr auto
-RectilinearGrid<D>::xMin() const noexcept -> Float
-{
-  return minima(0);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RectilinearGrid<D>::yMin() const noexcept -> Float
-{
-  static_assert(2 <= D);
-  return minima(1);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RectilinearGrid<D>::zMin() const noexcept -> Float
-{
-  static_assert(3 <= D);
-  return minima(2);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RectilinearGrid<D>::xMax() const noexcept -> Float
-{
-  return maxima(0);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RectilinearGrid<D>::yMax() const noexcept -> Float
-{
-  static_assert(2 <= D);
-  return maxima(1);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RectilinearGrid<D>::zMax() const noexcept -> Float
-{
-  static_assert(3 <= D);
-  return maxima(2);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RectilinearGrid<D>::numXCells() const noexcept -> Int
-{
-  static_assert(1 <= D);
-  return numCells(0);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RectilinearGrid<D>::numYCells() const noexcept -> Int
-{
-  static_assert(2 <= D);
-  return numCells(1);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RectilinearGrid<D>::numZCells() const noexcept -> Int
-{
-  static_assert(3 <= D);
-  return numCells(2);
-}
-
 //==============================================================================
 // Methods
 //==============================================================================
+
+template <Int D>
+HOSTDEV constexpr void
+RectilinearGrid<D>::clear() noexcept
+{
+  for (Int i = 0; i < D; ++i) {
+    _divs[i].clear();
+  }
+}
 
 template <Int D>
 PURE HOSTDEV constexpr auto
@@ -438,38 +333,6 @@ RectilinearGrid<D>::extents(Int i) const noexcept -> Float
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-RectilinearGrid<D>::width() const noexcept -> Float
-{
-  return extents(0);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RectilinearGrid<D>::height() const noexcept -> Float
-{
-  static_assert(2 <= D);
-  return extents(1);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RectilinearGrid<D>::depth() const noexcept -> Float
-{
-  static_assert(3 <= D);
-  return extents(2);
-}
-
-template <Int D>
-HOSTDEV constexpr void
-RectilinearGrid<D>::clear() noexcept
-{
-  for (Int i = 0; i < D; ++i) {
-    _divs[i].clear();
-  }
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
 RectilinearGrid<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 {
   return {minima(), maxima()};
@@ -486,9 +349,9 @@ RectilinearGrid<D>::getFlatIndex(Vec<D, Int> const & index) const noexcept -> In
   if constexpr (D == 1) {
     return index[0];
   } else if constexpr (D == 2) {
-    return index[0] + index[1] * numXCells();
+    return index[0] + index[1] * numCells(0); 
   } else if constexpr (D == 3) {
-    return index[0] + numXCells() * (index[1] + index[2] * numYCells());
+    return index[0] + numCells(0) * (index[1] + numCells(1) * index[2]);
   } else { // General case
     // [0, nx, nx*ny, nx*ny*nz, ...]
     Vec<D, Int> exclusive_scan_prod;

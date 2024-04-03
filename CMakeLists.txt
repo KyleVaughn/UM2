@@ -158,8 +158,8 @@ endif()
 set(UM2_SOURCES
     "src/common/settings.cpp"
     "src/common/logger.cpp"
-    #"src/mesh/polytope_soup.cpp"
-    #"src/mesh/face_vertex_mesh.cpp"
+    "src/mesh/polytope_soup.cpp"
+    "src/mesh/face_vertex_mesh.cpp"
     #    "src/physics/cross_section.cpp"
     #    "src/physics/nuclide.cpp"
     #    "src/physics/cross_section_library.cpp"

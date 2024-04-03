@@ -82,6 +82,11 @@
 #  define ASSUME(expr)
 #endif
 
+#ifdef RESTRICT
+#  error "RESTRICT already defined"
+#endif
+#define RESTRICT __restrict__
+
 // CUDA
 #ifdef HOST
 #  error "HOST already defined"

@@ -114,7 +114,7 @@ public:
   PURE HOSTDEV [[nodiscard]] constexpr auto
   meanChordLength() const noexcept -> Float requires(D == 2);
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  HOSTDEV [[nodiscard]] constexpr auto
   intersect(Ray2 ray, Float * buffer) const noexcept -> Int
   requires(D == 2);
 

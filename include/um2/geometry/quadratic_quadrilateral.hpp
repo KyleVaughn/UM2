@@ -109,7 +109,7 @@ public:
   PURE HOSTDEV [[nodiscard]] auto
   meanChordLength() const noexcept -> Float requires(D == 2);
 
-  PURE HOSTDEV [[nodiscard]] constexpr auto
+  HOSTDEV [[nodiscard]] constexpr auto
   intersect(Ray2 ray, Float * buffer) const noexcept -> Int
   requires(D == 2);
 
@@ -336,7 +336,7 @@ QuadraticQuadrilateral<D>::meanChordLength() const noexcept -> Float requires(D 
 // Defined in polygon.hpp
 
 template <Int D>
-PURE HOSTDEV constexpr auto
+HOSTDEV constexpr auto
 QuadraticQuadrilateral<D>::intersect(Ray2 const ray, Float * const buffer) const noexcept -> Int 
 requires(D == 2) {
   return um2::intersect(*this, ray, buffer); 

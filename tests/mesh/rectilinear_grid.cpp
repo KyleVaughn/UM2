@@ -36,31 +36,12 @@ template <Int D>
 HOSTDEV
 TEST_CASE(accessors)
 {
-  um2::RectilinearGrid<D> grid = makeGrid<D>();
-  um2::Vec<D, Int> const ncells = grid.numCells();
-  if constexpr (D >= 1) {
-    auto const nx = 1;
-    ASSERT_NEAR(grid.xMin(), grid.divs(0)[0], eps);
-    ASSERT_NEAR(grid.xMax(), grid.divs(0)[nx], eps);
-    ASSERT(grid.numXCells() == nx);
-    ASSERT(ncells[0] == nx);
-    ASSERT_NEAR(grid.width(), grid.divs(0)[nx] - grid.divs(0)[0], eps);
-  }
-  if constexpr (D >= 2) {
-    auto const ny = 2;
-    ASSERT_NEAR(grid.yMin(), grid.divs(1)[0], eps);
-    ASSERT_NEAR(grid.yMax(), grid.divs(1)[ny], eps);
-    ASSERT(grid.numYCells() == ny);
-    ASSERT(ncells[1] == ny);
-    ASSERT_NEAR(grid.height(), grid.divs(1)[ny] - grid.divs(1)[0], eps);
-  }
-  if constexpr (D >= 3) {
-    auto const nz = 3;
-    ASSERT_NEAR(grid.zMin(), grid.divs(2)[0], eps);
-    ASSERT_NEAR(grid.zMax(), grid.divs(2)[nz], eps);
-    ASSERT(grid.numZCells() == nz);
-    ASSERT(ncells[2] == nz);
-    ASSERT_NEAR(grid.depth(), grid.divs(2)[nz] - grid.divs(2)[0], eps);
+  um2::RectilinearGrid<D> const grid = makeGrid<D>();
+  for (Int i = 0; i < D; ++i) {
+    ASSERT_NEAR(grid.minima(i), 0, eps);
+    ASSERT_NEAR(grid.maxima(i), static_cast<Float>(i + 1), eps);
+    ASSERT(grid.numCells(i) == i + 1);
+    ASSERT_NEAR(grid.extents(i), static_cast<Float>(i + 1), eps);
   }
 }
 
@@ -70,17 +51,9 @@ TEST_CASE(boundingBox)
 {
   um2::RectilinearGrid<D> const grid = makeGrid<D>();
   um2::AxisAlignedBox<D> const box = grid.boundingBox();
-  if constexpr (D >= 1) {
-    ASSERT_NEAR(box.minima(0), grid.divs(0)[0], eps);
-    ASSERT_NEAR(box.maxima(0), grid.divs(0)[1], eps);
-  }
-  if constexpr (D >= 2) {
-    ASSERT_NEAR(box.minima()[1], grid.divs(1)[0], eps);
-    ASSERT_NEAR(box.maxima()[1], grid.divs(1)[2], eps);
-  }
-  if constexpr (D >= 3) {
-    ASSERT_NEAR(box.minima()[2], grid.divs(2)[0], eps);
-    ASSERT_NEAR(box.maxima()[2], grid.divs(2)[3], eps);
+  ASSERT(box.minima().isApprox(um2::Point<D>::zero()));
+  for (Int i = 0; i < D; ++i) {
+    ASSERT_NEAR(box.maxima(i), static_cast<Float>(i + 1), eps);
   }
 }
 
@@ -139,7 +112,7 @@ TEST_CASE(getBox)
   ASSERT(box.isApprox(box_ref));
 }
 
-TEST_CASE(aabb2_constructor)
+TEST_CASE(aabb_constructor)
 {
   um2::AxisAlignedBox2 const b00(um2::Point2(0, 0), um2::Point2(1, 1));
   um2::AxisAlignedBox2 const b10(um2::Point2(1, 0), um2::Point2(2, 1));
@@ -197,28 +170,16 @@ TEST_CASE(id_array_constructor)
     ASSERT_NEAR(grid.divs(1)[i], yref[i], eps);
   }
 }
-#if UM2_USE_CUDA
-template <Int D>
-MAKE_CUDA_KERNEL(clear, D)
 
 template <Int D>
-MAKE_CUDA_KERNEL(accessors, D)
-
-template <Int D>
-MAKE_CUDA_KERNEL(boundingBox, D)
-
-MAKE_CUDA_KERNEL(getBox)
-#endif
-
-    template <Int D>
-    TEST_SUITE(RectilinearGrid)
+TEST_SUITE(RectilinearGrid)
 {
   TEST_HOSTDEV(clear, D);
   TEST_HOSTDEV(accessors, D);
   TEST_HOSTDEV(boundingBox, D);
   if constexpr (D == 2) {
     TEST_HOSTDEV(getBox);
-    TEST(aabb2_constructor);
+    TEST(aabb_constructor);
     TEST(id_array_constructor);
   }
 }

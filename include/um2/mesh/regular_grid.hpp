@@ -37,7 +37,7 @@ public:
   HOSTDEV constexpr RegularGrid(Point<D> const & minima, Vec<D, Float> const & spacing,
                                 Vec<D, Int> const & num_cells) noexcept;
 
-  //  HOSTDEV constexpr explicit RegularGrid(AxisAlignedBox<D> const & box) noexcept;
+  HOSTDEV constexpr explicit RegularGrid(AxisAlignedBox<D> const & box) noexcept;
 
   //==============================================================================
   // Accessors
@@ -60,39 +60,6 @@ public:
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   numCells(Int i) const noexcept -> Int;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  xMin() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  yMin() const noexcept -> Float;
-
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  zMin() const noexcept -> Float;
-
-  // The Δx of the grid cells.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  dx() const noexcept -> Float;
-
-  // The Δy of the grid cells.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  dy() const noexcept -> Float;
-
-  // The Δz of the grid cells.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  dz() const noexcept -> Float;
-
-  // The number of cells in the x direction.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  numXCells() const noexcept -> Int;
-
-  // The number of cells in the y direction.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  numYCells() const noexcept -> Int;
-
-  // The number of cells in the z direction.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  numZCells() const noexcept -> Int;
 
   //==============================================================================
   // Methods
@@ -117,30 +84,6 @@ public:
   // The maximum value of the grid in the i-th dimension.
   PURE HOSTDEV [[nodiscard]] constexpr auto
   maxima(Int i) const noexcept -> Float;
-
-  // The x-extent of the grid.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  width() const noexcept -> Float;
-
-  // The y-extent of the grid.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  height() const noexcept -> Float;
-
-  // The z-extent of the grid.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  depth() const noexcept -> Float;
-
-  // The maximum x-value of the grid.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  xMax() const noexcept -> Float;
-
-  // The maximum y-value of the grid.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  yMax() const noexcept -> Float;
-
-  // The maximum z-value of the grid.
-  PURE HOSTDEV [[nodiscard]] constexpr auto
-  zMax() const noexcept -> Float;
 
   // Get the bounding box of the grid.
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -211,17 +154,16 @@ HOSTDEV constexpr RegularGrid<D>::RegularGrid(Point<D> const & minima,
   }
 }
 
-// template <Int D>
-// HOSTDEV constexpr RegularGrid<D>::RegularGrid(
-//     AxisAlignedBox<D> const & box) noexcept
-//     : minima(box.minima),
-//       spacing(box.maxima)
-//{
-//   spacing -= minima;
-//   for (Int i = 0; i < D; ++i) {
-//     num_cells[i] = 1;
-//   }
-// }
+template <Int D>
+HOSTDEV constexpr RegularGrid<D>::RegularGrid(
+    AxisAlignedBox<D> const & box) noexcept
+    : _minima(box.minima),
+      _spacing(box.maxima - box.minima)
+{
+  for (Int i = 0; i < D; ++i) {
+    _num_cells[i] = 1;
+  }
+}
 
 //==============================================================================
 // Accessors
@@ -275,74 +217,9 @@ RegularGrid<D>::numCells(Int const i) const noexcept -> Int
   return _num_cells[i];
 }
 
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::xMin() const noexcept -> Float
-{
-  return _minima[0];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::yMin() const noexcept -> Float
-{
-  static_assert(2 <= D);
-  return _minima[1];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::zMin() const noexcept -> Float
-{
-  static_assert(3 <= D);
-  return _minima[2];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::dx() const noexcept -> Float
-{
-  return _spacing[0];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::dy() const noexcept -> Float
-{
-  static_assert(2 <= D);
-  return _spacing[1];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::dz() const noexcept -> Float
-{
-  static_assert(3 <= D);
-  return _spacing[2];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::numXCells() const noexcept -> Int
-{
-  return _num_cells[0];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::numYCells() const noexcept -> Int
-{
-  static_assert(2 <= D);
-  return _num_cells[1];
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::numZCells() const noexcept -> Int
-{
-  static_assert(3 <= D);
-  return _num_cells[2];
-}
+//==============================================================================
+// Methods
+//==============================================================================
 
 template <Int D>
 PURE HOSTDEV constexpr auto
@@ -354,10 +231,6 @@ RegularGrid<D>::totalNumCells() const noexcept -> Int
   }
   return num_total_cells;
 }
-
-//==============================================================================
-// Methods
-//==============================================================================
 
 template <Int D>
 PURE HOSTDEV constexpr auto
@@ -401,52 +274,6 @@ RegularGrid<D>::maxima(Int const i) const noexcept -> Float
 
 template <Int D>
 PURE HOSTDEV constexpr auto
-RegularGrid<D>::width() const noexcept -> Float
-{
-  return extents(0);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::height() const noexcept -> Float
-{
-  static_assert(2 <= D);
-  return extents(1);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::depth() const noexcept -> Float
-{
-  static_assert(3 <= D);
-  return extents(2);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::xMax() const noexcept -> Float
-{
-  return maxima(0);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::yMax() const noexcept -> Float
-{
-  static_assert(2 <= D);
-  return maxima(1);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
-RegularGrid<D>::zMax() const noexcept -> Float
-{
-  static_assert(3 <= D);
-  return maxima(2);
-}
-
-template <Int D>
-PURE HOSTDEV constexpr auto
 RegularGrid<D>::boundingBox() const noexcept -> AxisAlignedBox<D>
 {
   return AxisAlignedBox<D>(minima(), maxima());
@@ -480,9 +307,9 @@ RegularGrid<D>::getFlatIndex(Vec<D, Int> const & index) const noexcept -> Int
   if constexpr (D == 1) {
     return index[0];
   } else if constexpr (D == 2) {
-    return index[0] + index[1] * numXCells();
+    return index[0] + index[1] * _num_cells[0];
   } else if constexpr (D == 3) {
-    return index[0] + numXCells() * (index[1] + index[2] * numYCells());
+    return index[0] + _num_cells[0] * (index[1] + index[2] * _num_cells[1]);
   } else { // General case
     // [0, nx, nx*ny, nx*ny*nz, ...]
     Vec<D, Int> exclusive_scan_prod;

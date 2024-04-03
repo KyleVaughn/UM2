@@ -69,7 +69,7 @@ verticesPerElem(VTKElemType const type) -> Int
 
 // We only support a few element types, so we can uniquely identify a
 // VTKElemType by its number of vertices.
-CONST constexpr auto
+constexpr auto
 inferVTKElemType(Int const type) -> VTKElemType
 {
   switch (type) {
@@ -90,7 +90,6 @@ inferVTKElemType(Int const type) -> VTKElemType
     return VTKElemType::None;
   }
 }
-
 
 //CONST constexpr auto
 //verticesPerElem(MeshType const type) -> Int

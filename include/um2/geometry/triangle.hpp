@@ -58,6 +58,11 @@ public:
   {
   }
 
+  HOSTDEV constexpr Polytope(Vec<N, Int> const & indices, Vertex const * vertices) noexcept
+      : _v{vertices[indices[0]], vertices[indices[1]], vertices[indices[2]]}
+  {
+  }
+
   //==============================================================================
   // Methods
   //==============================================================================

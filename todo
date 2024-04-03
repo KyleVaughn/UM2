@@ -1,10 +1,25 @@
-jacobian
-  tri
-  quad
-  tri6
-  quad8
+mortonSortFaces
 
-intersect non-pure
+FVM 
+  intersect + test
+  validate intersect + test
+  construct poly
+  to poly
+
+faceContaining find closest vertex, then test neighboring faces
+  - speed up for linear vs quadratic
+  - speed up for about 100 vs 1000 elems
+  - can use VERY WIDE SIMD to compure distance
+  - algroithmica argmin https://en.algorithmica.org/hpc/algorithms/argmin/
+
+FVM 
+  warn about vertices that are within eps
+
+convenience functions for FVM
+
+polytopeSoup compare numbers
+reduce polytopesoup scope
+
 tagged union/variant for tri/quad mesh
 
 mortonSort
@@ -12,12 +27,7 @@ Vec = int
 linesegment test
 linesegment function reordering
 
-make free functions for polygons, etc
-
-use free functions to make member functions
 refactor intersection routine
-
-mesh with hole test
 
 mortonSort & test
 intersect
@@ -66,8 +76,6 @@ NOLINT
 push_back to emplace_back
   Make another item with this for later
 
-remove the behavior of a regular or rectilinear partition holding one extra element
-
 add testing for gcc 12+ and clang15+
 
 check on gmsh intersect
@@ -81,7 +89,6 @@ provide intersection functions with additional argument of inverse direction?
 Check that casts preserve value from float to int
 -> int over 16 million?
 
-methods
 Harden the mesh IO, testing with files created from different software
 
 VTK output with colors
@@ -184,6 +191,8 @@ Consistent testing of mesh point inside.
 Binned FVM
 
 Matplotlib
+Setup performance tracking of key functions
+  -> Track regression
 
 ModularRayParams to 3D
 CAD/CSG

@@ -2,7 +2,7 @@
 
 #include "../test_macros.hpp"
 
-Float constexpr eps = castIfNot<Float>(1e-6);
+Float constexpr eps = um2::eps_distance;
 
 template <Int D>
 HOSTDEV constexpr auto
@@ -20,40 +20,33 @@ makeGrid() -> um2::RegularGrid<D>
   return {minima, spacing, num_cells};
 }
 
+PURE HOSTDEV auto
+factorial(Int n) -> Int
+{
+  Int result = 1;
+  for (Int i = 1; i <= n; ++i) {
+    result *= i;
+  }
+  return result;
+}
+
 template <Int D>
 HOSTDEV
 TEST_CASE(accessors)
 {
   um2::RegularGrid<D> const grid = makeGrid<D>();
-  if constexpr (D >= 1) {
-    Float const xmin = grid.minima()[0];
-    ASSERT_NEAR(grid.xMin(), xmin, eps);
-    Float const dx = grid.spacing()[0];
-    ASSERT_NEAR(grid.dx(), dx, eps);
-    auto const nx = grid.numCells()[0];
-    ASSERT(grid.numXCells() == nx);
-    ASSERT_NEAR(grid.width(), dx * castIfNot<Float>(nx), eps);
-    ASSERT_NEAR(grid.xMax(), xmin + dx * castIfNot<Float>(nx), eps);
+  for (Int i = 0; i < D; ++i) {
+    ASSERT_NEAR(grid.minima(i), castIfNot<Float>(i + 1), eps);
+    ASSERT_NEAR(grid.spacing(i), castIfNot<Float>(i + 1), eps);
+    ASSERT(grid.numCells(i) == i + 1);
   }
-  if constexpr (D >= 2) {
-    Float const ymin = grid.minima()[1];
-    ASSERT_NEAR(grid.yMin(), ymin, eps);
-    Float const dy = grid.spacing()[1];
-    ASSERT_NEAR(grid.dy(), dy, eps);
-    auto const ny = grid.numCells()[1];
-    ASSERT(grid.numYCells() == ny);
-    ASSERT_NEAR(grid.height(), dy * castIfNot<Float>(ny), eps);
-    ASSERT_NEAR(grid.yMax(), ymin + dy * castIfNot<Float>(ny), eps);
-  }
-  if constexpr (D >= 3) {
-    Float const zmin = grid.minima()[2];
-    ASSERT_NEAR(grid.zMin(), zmin, eps);
-    Float const dz = grid.spacing()[2];
-    ASSERT_NEAR(grid.dz(), dz, eps);
-    auto const nz = grid.numCells()[2];
-    ASSERT(grid.numZCells() == nz);
-    ASSERT_NEAR(grid.depth(), dz * castIfNot<Float>(nz), eps);
-    ASSERT_NEAR(grid.zMax(), zmin + dz * castIfNot<Float>(nz), eps);
+  ASSERT(grid.totalNumCells() == factorial(D));
+
+  for (Int i = 0; i < D; ++i) {
+    auto const i_1 = castIfNot<Float>(i + 1);
+    auto const i_1_sq = i_1 * i_1; 
+    ASSERT_NEAR(grid.extents(i), i_1_sq, eps);
+    ASSERT_NEAR(grid.maxima(i), i_1_sq + i_1, eps);
   }
 }
 
@@ -63,17 +56,22 @@ TEST_CASE(boundingBox)
 {
   um2::RegularGrid<D> const grid = makeGrid<D>();
   um2::AxisAlignedBox<D> const box = grid.boundingBox();
-  if constexpr (D >= 1) {
-    ASSERT_NEAR(box.minima()[0], grid.xMin(), eps);
-    ASSERT_NEAR(box.maxima()[0], grid.xMax(), eps);
+  ASSERT(box.minima().isApprox(grid.minima()));
+  ASSERT(box.maxima().isApprox(grid.maxima()));
+}
+
+template <Int D>
+HOSTDEV
+TEST_CASE(getCellCentroid)
+{
+  um2::RegularGrid<D> const grid = makeGrid<D>();
+  if constexpr (D == 1) {
+    auto const x = grid.getCellCentroid(0);
+    ASSERT_NEAR(x[0], grid.minima(0) + grid.spacing(0) / castIfNot<Float>(2), eps);
   }
-  if constexpr (D >= 2) {
-    ASSERT_NEAR(box.minima()[1], grid.yMin(), eps);
-    ASSERT_NEAR(box.maxima()[1], grid.yMax(), eps);
-  }
-  if constexpr (D >= 3) {
-    ASSERT_NEAR(box.minima()[2], grid.zMin(), eps);
-    ASSERT_NEAR(box.maxima()[2], grid.zMax(), eps);
+  if constexpr (D == 2) {
+    auto const xy = grid.getCellCentroid(0, 0);
+    ASSERT_NEAR(xy[1], grid.minima(1) + grid.spacing(1) / castIfNot<Float>(2), eps);
   }
 }
 
@@ -131,21 +129,6 @@ TEST_CASE(getBox)
       {      three,           one}
   };
   ASSERT(box.isApprox(box_ref));
-}
-
-template <Int D>
-HOSTDEV
-TEST_CASE(getCellCentroid)
-{
-  um2::RegularGrid<D> const grid = makeGrid<D>();
-  if constexpr (D == 1) {
-    auto const x = grid.getCellCentroid(0);
-    ASSERT_NEAR(x[0], grid.minima()[0] + grid.spacing()[0] / castIfNot<Float>(2), eps);
-  }
-  if constexpr (D == 2) {
-    auto const y = grid.getCellCentroid(0, 0);
-    ASSERT_NEAR(y[1], grid.minima()[1] + grid.spacing()[1] / castIfNot<Float>(2), eps);
-  }
 }
 
 HOSTDEV
@@ -210,28 +193,8 @@ TEST_CASE(getCellIndexContaining)
   ASSERT(id[1] == 3);
 }
 
-#if UM2_USE_CUDA
 template <Int D>
-MAKE_CUDA_KERNEL(constructor, D)
-
-template <Int D>
-MAKE_CUDA_KERNEL(accessors, D)
-
-template <Int D>
-MAKE_CUDA_KERNEL(boundingBox, D)
-
-template <Int D>
-MAKE_CUDA_KERNEL(getCellCentroid, D)
-
-MAKE_CUDA_KERNEL(getBox)
-
-    MAKE_CUDA_KERNEL(getCellIndicesIntersecting)
-
-        MAKE_CUDA_KERNEL(getCellIndexContaining)
-#endif
-
-            template <Int D>
-            TEST_SUITE(RegularGrid)
+TEST_SUITE(RegularGrid)
 {
   TEST_HOSTDEV(accessors, D);
   TEST_HOSTDEV(boundingBox, D);

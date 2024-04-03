@@ -19,10 +19,6 @@
 //  *--------> i
 //
 //  * is where grid.minima is located.
-//
-// NOTE: in some use cases, the number of children may be greater than the
-// number of cells in the grid. This is allowed, but the user must ensure that
-// the number of children is at least equal to the number of cells in the grid.
 
 namespace um2
 {
@@ -98,10 +94,7 @@ constexpr RectilinearPartition<D, P>::RectilinearPartition(
     : _grid(grid),
       _children(children)
 {
-  // Check that the number of children is at least equal to the total number of
-  // cells in the grid. children can be used to store additional data in atypical
-  // use cases, but it must be able to store at least one child per cell.
-  ASSERT(_grid.totalNumCells() <= _children.size());
+  ASSERT(_grid.totalNumCells() == _children.size());
 }
 
 template <Int D, typename P>
@@ -112,8 +105,8 @@ constexpr RectilinearPartition<D, P>::RectilinearPartition(
   static_assert(D == 2);
   // Flatten the ids to get the children
   // The rows are in reverse order
-  Int const nx = _grid.numXCells();
-  Int const ny = _grid.numYCells();
+  Int const nx = _grid.numCells(0);
+  Int const ny = _grid.numCells(1);
   _children.resize(nx * ny);
   for (Int i = 0; i < ny; ++i) {
     for (Int j = 0; j < nx; ++j) {

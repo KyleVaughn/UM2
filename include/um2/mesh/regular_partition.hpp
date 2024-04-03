@@ -20,10 +20,6 @@
 //  *--------> i
 //
 //  * is where grid.minima is located.
-//
-// NOTE: in some use cases, the number of children may be greater than the
-// number of cells in the grid. This is allowed, but the user must ensure that
-// the number of children is at least equal to the number of cells in the grid.
 
 namespace um2
 {
@@ -92,10 +88,7 @@ constexpr RegularPartition<D, P>::RegularPartition(RegularGrid<D> const & grid,
     : _grid(grid),
       _children(children)
 {
-  // Check that the number of children is at least equal to the total number of
-  // cells in the grid. children can be used to store additional data in atypical
-  // use cases, but it must be able to store at least one child per cell.
-  ASSERT(_grid.totalNumCells() <= _children.size());
+  ASSERT(_grid.totalNumCells() == _children.size());
 }
 
 //==============================================================================
