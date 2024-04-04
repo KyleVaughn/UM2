@@ -1,4 +1,4 @@
 # Copy the mesh files to the built test directory
 file(COPY ${PROJECT_SOURCE_DIR}/tests/mpact/mpact_mesh_files DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-add_um2_test(./spatial_partition.cpp)
+add_um2_test(./mpact_model.cpp)

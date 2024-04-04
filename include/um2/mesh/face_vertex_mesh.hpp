@@ -81,7 +81,7 @@ public:
   constexpr FaceVertexMesh(Vector<Vertex> const & v,
                            Vector<FaceConn> const & fv) noexcept;
 
-//  explicit FaceVertexMesh(PolytopeSoup const & soup);
+  explicit FaceVertexMesh(PolytopeSoup const & soup);
 
   //==============================================================================
   // Methods
@@ -121,6 +121,9 @@ public:
   vertices() const noexcept -> Vector<Vertex> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
+  faceVertexConn() noexcept -> Vector<FaceConn> &;
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
   faceVertexConn() const noexcept -> Vector<FaceConn> const &;
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
@@ -153,6 +156,9 @@ public:
   void
   mortonSortVertices() noexcept;
 
+  // NOLINTNEXTLINE(google-explicit-constructor) match std::string    
+  operator PolytopeSoup() const noexcept; 
+
   void
   populateVF() noexcept;
 
@@ -174,10 +180,6 @@ public:
   // Return the (number of intersections, number of faces).
   auto
   intersect(Ray2 ray, Float * coords, Int * RESTRICT offsets, Int * RESTRICT faces) const noexcept -> Vec2I;
-
-////  //  //  void
-////  //  //  toPolytopeSoup(PolytopeSoup & soup) const noexcept;
-////
 
 };
 
@@ -381,6 +383,13 @@ PURE HOSTDEV constexpr auto
 FaceVertexMesh<P, N>::vertexFaceConn() const noexcept -> Vector<Int> const &
 {
   return _vf;
+}
+
+template <Int P, Int N>
+PURE HOSTDEV constexpr auto
+FaceVertexMesh<P, N>::faceVertexConn() noexcept -> Vector<FaceConn> &
+{
+  return _fv;
 }
 
 template <Int P, Int N>

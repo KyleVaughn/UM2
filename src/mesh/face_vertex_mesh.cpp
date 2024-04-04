@@ -15,23 +15,6 @@ namespace um2
 // Constructors
 //==============================================================================
 
-//// Return true if the MeshType and P, N are compatible.
-//template <Int P, Int N>
-//static constexpr auto
-//validateMeshType(MeshType const type) -> bool
-//{
-//  if constexpr (P == 1 && N == 3) {
-//    return type == MeshType::Tri;
-//  } else if constexpr (P == 1 && N == 4) {
-//    return type == MeshType::Quad;
-//  } else if constexpr (P == 2 && N == 6) {
-//    return type == MeshType::QuadraticTri;
-//  } else if constexpr (P == 2 && N == 8) {
-//    return type == MeshType::QuadraticQuad;
-//  }
-//  return false;
-//}
-//
 template <Int P, Int N>
 static constexpr auto
 getVTKElemType() -> VTKElemType
@@ -48,47 +31,45 @@ getVTKElemType() -> VTKElemType
   return VTKElemType::None;
 }
 
-//template <Int P, Int N>
-//FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup)
-//{
-//  auto const num_vertices = soup.numVertices();
-//  auto const num_faces = soup.numElems();
-//  ASSERT(num_vertices > 0);
-//  ASSERT(num_faces > 0);
-//  auto const elem_types = soup.getElemTypes();
-//  if (elem_types.size() != 1) { 
-//    logger::error("Attempted to construct a FaceVertexMesh from a non-homogeneous PolytopeSoup");
-//  }
-//  if (elem_types[0] != getVTKElemType<P, N>()) {
-//    logger::error("Attempted to construct a FaceVertexMesh from a PolytopeSoup with an incompatible element type");
-//  }
-//
-//  // -- Vertices --
-//  // Ensure each of the vertices has approximately the same z
-//  _v.resize(num_vertices);
-//  Float const z = soup.getVertex(0)[2];
-//  for (Int i = 0; i < num_vertices; ++i) {
-//    auto const & p = soup.getVertex(i);
-//    _v[i][0] = p[0];
-//    _v[i][1] = p[1];
-//    if (um2::abs(p[2] - z) > eps_distance) {
-//      logger::warn("Constructing a FaceVertexMesh from a PolytopeSoup with non-planar vertices");
-//      break;
-//    }
-//  }
-//
-//  // -- Face/Vertex connectivity --
-//  _fv.resize(num_faces);
-////  auto const & soup_conn = soup.getConnectivity();
-////  for (Int i = 0; i < num_faces; ++i) {
-////    soup.getElement(i, elem_type, conn);
-////    ASSERT(elem_type == (getVTKElemType<P, N>()));
-////    for (Int j = 0; j < N; ++j) {
-////      _fv[i][j] = conn[j];
-////    }
-////  }
-//  validate();
-//}
+template <Int P, Int N>
+FaceVertexMesh<P, N>::FaceVertexMesh(PolytopeSoup const & soup)
+{
+  auto const num_vertices = soup.numVertices();
+  auto const num_faces = soup.numElements();
+  ASSERT(num_vertices > 0);
+  ASSERT(num_faces > 0);
+  auto const elem_types = soup.getElemTypes();
+  if (elem_types.size() != 1) { 
+    logger::error("Attempted to construct a FaceVertexMesh from a non-homogeneous PolytopeSoup");
+  }
+  if (elem_types[0] != getVTKElemType<P, N>()) {
+    logger::error("Attempted to construct a FaceVertexMesh from a PolytopeSoup with an incompatible element type");
+  }
+
+  // -- Vertices --
+  // Ensure each of the vertices has approximately the same z
+  _v.resize(num_vertices);
+  Float const z = soup.getVertex(0)[2];
+  for (Int i = 0; i < num_vertices; ++i) {
+    auto const & p = soup.getVertex(i);
+    _v[i][0] = p[0];
+    _v[i][1] = p[1];
+    if (um2::abs(p[2] - z) > eps_distance) {
+      logger::warn("Constructing a FaceVertexMesh from a PolytopeSoup with non-planar vertices");
+      break;
+    }
+  }
+
+  // -- Face/Vertex connectivity --
+  _fv.resize(num_faces);
+  auto const & soup_conn = soup.elementConnectivity();
+  for (Int i = 0; i < num_faces; ++i) {
+    for (Int j = 0; j < N; ++j) {
+      _fv[i][j] = soup_conn[i * N + j];
+    }
+  }
+  validate();
+}
 
 //==============================================================================
 // mortonSort
@@ -223,46 +204,33 @@ FaceVertexMesh<P, N>::populateVF() noexcept
   _has_vf = true;
 }
 
-////////// //==============================================================================
-////////// // toPolytopeSoup
-////////// //==============================================================================
-//////////
-//////////  template <Int P, Int N>
-////////// void
-////////// toPolytopeSoup(FaceVertexMesh<P, N> const & mesh,
-//////////                PolytopeSoup & soup) noexcept
-////////// {
-//////////   // Vertices
-//////////   if constexpr (D == 3) {
-//////////     for (Int i = 0; i < mesh.numVertices(); ++i) {
-//////////       soup.addVertex(mesh.vertices[i]);
-//////////     }
-//////////   } else {
-//////////     for (Int i = 0; i < mesh.numVertices(); ++i) {
-//////////       auto const & p = mesh.vertices[i];
-//////////       soup.addVertex(p[0], p[1]);
-//////////     }
-//////////   }
-//////////
-//////////   // Faces
-//////////   auto const nfaces = mesh.numFaces();
-//////////   VTKElemType const elem_type = getVTKElemType<P, N>();
-//////////   Vector<I> conn(N);
-//////////   for (Int i = 0; i < nfaces; ++i) {
-//////////     for (Int j = 0; j < N; ++j) {
-//////////       conn[j] = mesh.fv[i][j];
-//////////     }
-//////////     soup.addElement(elem_type, conn);
-//////////   }
-////////// }
-//////////
-//////////  template <Int P, Int N>
-////////// void
-////////// FaceVertexMesh<P, N>::toPolytopeSoup(PolytopeSoup & soup) const noexcept
-////////// {
-//////////   um2::toPolytopeSoup(*this, soup);
-////////// }
-//////////
+//==============================================================================
+// operator PolytopeSoup 
+//==============================================================================
+
+template <Int P, Int N>
+FaceVertexMesh<P, N>::operator PolytopeSoup() const noexcept
+{
+  PolytopeSoup soup;
+
+  // Vertices
+  soup.reserveMoreVertices(numVertices());
+  for (Int i = 0; i < numVertices(); ++i) {
+    soup.addVertex(_v[i][0], _v[i][1]);
+  }
+
+  // Faces
+  VTKElemType const elem_type = getVTKElemType<P, N>();
+  Vector<Int> conn(N);
+  soup.reserveMoreElements(elem_type, numFaces());
+  for (Int i = 0; i < numFaces(); ++i) {
+    for (Int j = 0; j < N; ++j) {
+      conn[j] = _fv[i][j];
+    }
+    soup.addElement(elem_type, conn);
+  }
+  return soup;
+}
 
 //==============================================================================
 // validate
@@ -510,7 +478,7 @@ sortRayMeshIntersections(
 //==============================================================================
 
 template class FaceVertexMesh<1, 3>; // TriFVM
-//template class FaceVertexMesh<1, 4>; // QuadFVM
+template class FaceVertexMesh<1, 4>; // QuadFVM
 //template class FaceVertexMesh<2, 6>; // Tri6FVM
 //template class FaceVertexMesh<2, 8>; // Quad8FVM
 

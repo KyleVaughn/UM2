@@ -25,8 +25,8 @@ const String XSLIB_51G = "mpact51g_71_v4.2m5_12062016_sph.fmt";
 class XSLibrary
 {
 
-  Vector<F> _group_bounds; // Energy bounds. size = numGroups()
-  Vector<F> _chi;          // Fission spectrum. size = numGroups()
+  Vector<Float> _group_bounds; // Energy bounds. size = numGroups()
+  Vector<Float> _chi;          // Fission spectrum. size = numGroups()
   Vector<Nuclide> _nuclides;
 
 public:
@@ -44,25 +44,25 @@ public:
   //======================================================================
 
   PURE [[nodiscard]] constexpr auto
-  groupBounds() noexcept -> Vector<F> &
+  groupBounds() noexcept -> Vector<Float> &
   {
     return _group_bounds;
   }
 
   PURE [[nodiscard]] constexpr auto
-  groupBounds() const noexcept -> Vector<F> const &
+  groupBounds() const noexcept -> Vector<Float> const &
   {
     return _group_bounds;
   }
 
   PURE [[nodiscard]] constexpr auto
-  chi() noexcept -> Vector<F> &
+  chi() noexcept -> Vector<Float> &
   {
     return _chi;
   }
 
   PURE [[nodiscard]] constexpr auto
-  chi() const noexcept -> Vector<F> const &
+  chi() const noexcept -> Vector<Float> const &
   {
     return _chi;
   }
@@ -80,7 +80,7 @@ public:
   }
 
   PURE [[nodiscard]] constexpr auto
-  numGroups() const noexcept -> I
+  numGroups() const noexcept -> Int
   {
     return _group_bounds.size();
   }
@@ -90,7 +90,7 @@ public:
   //===========================================================================
 
   PURE [[nodiscard]] auto
-  getNuclide(I zaid) const noexcept -> Nuclide const &;
+  getNuclide(Int zaid) const noexcept -> Nuclide const &;
 
   PURE [[nodiscard]] auto
   getXS(Material const & material) const noexcept -> XSec;

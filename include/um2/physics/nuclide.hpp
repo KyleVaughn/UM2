@@ -14,9 +14,6 @@
 // _temperatures: the temperatures at which the microscopic cross section data
 //               is defined.
 // _xs: the microscopic cross section data at each temperature.
-//
-// NOTE: _xs is basically a 2D array. We should use a better data structure if
-//  performance becomes an issue.
 
 namespace um2
 {
@@ -24,9 +21,9 @@ namespace um2
 class Nuclide
 {
   bool _is_fissile = false;
-  I _zaid{};
-  F _mass{};
-  Vector<F> _temperatures;
+  Int _zaid{};
+  Float _mass{};
+  Vector<Float> _temperatures;
   Vector<XSec> _xs;
 
 public:
@@ -53,49 +50,49 @@ public:
   }
 
   PURE [[nodiscard]] constexpr auto
-  zaid() noexcept -> I &
+  zaid() noexcept -> Int &
   {
     return _zaid;
   }
 
   PURE [[nodiscard]] constexpr auto
-  zaid() const noexcept -> I const &
+  zaid() const noexcept -> Int const &
   {
     return _zaid;
   }
 
   PURE [[nodiscard]] constexpr auto
-  mass() noexcept -> F &
+  mass() noexcept -> Float &
   {
     return _mass;
   }
 
   PURE [[nodiscard]] constexpr auto
-  mass() const noexcept -> F const &
+  mass() const noexcept -> Float const &
   {
     return _mass;
   }
 
   PURE [[nodiscard]] constexpr auto
-  temperatures() noexcept -> Vector<F> &
+  temperatures() noexcept -> Vector<Float> &
   {
     return _temperatures;
   }
 
   PURE [[nodiscard]] constexpr auto
-  temperatures() const noexcept -> Vector<F> const &
+  temperatures() const noexcept -> Vector<Float> const &
   {
     return _temperatures;
   }
 
   PURE [[nodiscard]] constexpr auto
-  temperatures(I i) noexcept -> F &
+  temperatures(Int i) noexcept -> Float &
   {
     return _temperatures[i];
   }
 
   PURE [[nodiscard]] constexpr auto
-  temperatures(I i) const noexcept -> F
+  temperatures(Int i) const noexcept -> Float
   {
     return _temperatures[i];
   }
@@ -113,13 +110,13 @@ public:
   }
 
   PURE [[nodiscard]] constexpr auto
-  xs(I i) noexcept -> XSec &
+  xs(Int i) noexcept -> XSec &
   {
     return _xs[i];
   }
 
   PURE [[nodiscard]] constexpr auto
-  xs(I i) const noexcept -> XSec const &
+  xs(Int i) const noexcept -> XSec const &
   {
     return _xs[i];
   }
@@ -135,7 +132,7 @@ public:
   validate() const noexcept;
 
   PURE [[nodiscard]] auto
-  interpXS(F temperature) const noexcept -> XSec;
+  interpXS(Float temperature) const noexcept -> XSec;
 
 }; // class Nuclide
 
@@ -145,6 +142,6 @@ public:
 
 // Convert from a string, like "U-235", to a ZAID.
 auto
-toZAID(String str) -> I;
+toZAID(String const & str) -> Int;
 
 } // namespace um2

@@ -177,7 +177,7 @@ TEST_CASE(faceContaining)
   // The min coord is 0 and max coord is ntri
   Int const npoints = 1000;
 
-  um2::Point2 const pmin(castIfNot<Float>(0.11), castIfNot<Float>(0.11)); 
+  um2::Point2 const pmin(castIfNot<Float>(0.11), castIfNot<Float>(0.11));
   um2::Point2 const pmax(castIfNot<Float>(ntri - 0.11), castIfNot<Float>(ntri - 0.11));
   um2::AxisAlignedBox2 const box(pmin, pmax);
   std::random_device rd;
@@ -227,7 +227,7 @@ TEST_CASE(validate)
   ASSERT(mesh_ccw.getFace(1).isCCW());
   auto sv = um2::logger::getLastMessage();
   // Check warning message
-  ASSERT(sv.find_first_of("Some faces were flipped to ensure counter-clockwise order") 
+  ASSERT(sv.find_first_of("Some faces were flipped to ensure counter-clockwise order")
       != um2::StringView::npos);
 
   // Check that the mesh's boundary edges form a single closed loop
@@ -246,12 +246,12 @@ TEST_CASE(validate)
   // | 0  \ | 2  \ | 3  \ |
   // 0------1------2------3
   //
-  // Boundary: (0, 1), (1, 2), (2, 3), (3, 7), (7, 11), (11, 10), (10, 9), 
-  //           (9, 8), (8, 4), (4, 0) 
+  // Boundary: (0, 1), (1, 2), (2, 3), (3, 7), (7, 11), (11, 10), (10, 9),
+  //           (9, 8), (8, 4), (4, 0)
   // Interior boundary: (6, 2), (5, 6), (2, 5)
   um2::logger::exit_on_error = false;
   um2::TriFVM mesh;
-  for (Int j = 0; j < 3; ++j) { 
+  for (Int j = 0; j < 3; ++j) {
     for (Int i = 0; i <= 3; ++i) {
       mesh.addVertex({i, j});
     }
@@ -271,7 +271,7 @@ TEST_CASE(validate)
   sv = um2::logger::getLastMessage();
   ASSERT(sv.find_first_of("Mesh has a hole on its boundary") != um2::StringView::npos);
 
-  // Mesh with an hole in the interior 
+  // Mesh with an hole in the interior
   // 12-----13----14-----15
   // |\   12|\   14|\  16 |
   // |  \   |  \   |  \   |
@@ -287,7 +287,7 @@ TEST_CASE(validate)
   // 0------1------2------3
   //
   um2::TriFVM mesh2;
-  for (Int j = 0; j <= 3; ++j) { 
+  for (Int j = 0; j <= 3; ++j) {
     for (Int i = 0; i <= 3; ++i) {
       mesh2.addVertex({i, j});
     }
@@ -327,8 +327,8 @@ TEST_CASE(populateVF)
   ASSERT(mesh.vertexFaceConn() == vf_ref);
 }
 
-TEST_CASE(mortonSortVertices)    
-{    
+TEST_CASE(mortonSortVertices)
+{
   um2::TriFVM mesh;
   makeTriangleMesh(mesh, 2);
   um2::Vec<3, Int> face_conn = mesh.getFaceConn(0);
@@ -339,16 +339,16 @@ TEST_CASE(mortonSortVertices)
   ASSERT(face_conn[0] == 4);
   ASSERT(face_conn[1] == 3);
   ASSERT(face_conn[2] == 1);
-  mesh.mortonSortVertices();    
-  ASSERT(mesh.getVertex(0).isApprox(um2::Point2(0, 0)));    
-  ASSERT(mesh.getVertex(1).isApprox(um2::Point2(1, 0)));    
-  ASSERT(mesh.getVertex(2).isApprox(um2::Point2(0, 1)));    
-  ASSERT(mesh.getVertex(3).isApprox(um2::Point2(1, 1)));    
-  ASSERT(mesh.getVertex(4).isApprox(um2::Point2(2, 0)));    
-  ASSERT(mesh.getVertex(5).isApprox(um2::Point2(2, 1)));    
-  ASSERT(mesh.getVertex(6).isApprox(um2::Point2(0, 2)));    
-  ASSERT(mesh.getVertex(7).isApprox(um2::Point2(1, 2)));    
-  ASSERT(mesh.getVertex(8).isApprox(um2::Point2(2, 2)));    
+  mesh.mortonSortVertices();
+  ASSERT(mesh.getVertex(0).isApprox(um2::Point2(0, 0)));
+  ASSERT(mesh.getVertex(1).isApprox(um2::Point2(1, 0)));
+  ASSERT(mesh.getVertex(2).isApprox(um2::Point2(0, 1)));
+  ASSERT(mesh.getVertex(3).isApprox(um2::Point2(1, 1)));
+  ASSERT(mesh.getVertex(4).isApprox(um2::Point2(2, 0)));
+  ASSERT(mesh.getVertex(5).isApprox(um2::Point2(2, 1)));
+  ASSERT(mesh.getVertex(6).isApprox(um2::Point2(0, 2)));
+  ASSERT(mesh.getVertex(7).isApprox(um2::Point2(1, 2)));
+  ASSERT(mesh.getVertex(8).isApprox(um2::Point2(2, 2)));
   face_conn = mesh.getFaceConn(0);
   ASSERT(face_conn[0] == 0);
   ASSERT(face_conn[1] == 1);
@@ -469,7 +469,7 @@ TEST_CASE(intersect)
     ASSERT(faces[i] == i);
   }
   ASSERT(offsets[4] == 8);
-  
+
   origin[0] = castIfNot<Float>(3);
   origin[1] = castIfNot<Float>(0.5);
   dir[0] = -1;
@@ -505,8 +505,8 @@ TEST_CASE(intersect)
   Int sorted_offsets[24];
   Int sorted_faces[24];
   Int perm[24];
-  um2::sortRayMeshIntersections(coords, offsets, faces, 
-                                sorted_coords, sorted_offsets, sorted_faces, 
+  um2::sortRayMeshIntersections(coords, offsets, faces,
+                                sorted_coords, sorted_offsets, sorted_faces,
                                 perm, hits_faces2);
   ASSERT(sorted_faces[0] == 3);
   ASSERT(sorted_faces[1] == 2);
@@ -526,37 +526,33 @@ TEST_CASE(intersect)
 
 }
 
-///// template <std::floating_point T, std::signed_integral I>
-///// TEST_CASE(toPolytopeSoup)
-/////{
-/////   um2::TriFVM const tri_mesh = makeTriReferenceMesh();
-/////   um2::PolytopeSoup<T, I> tri_poly_soup_ref;
-/////   makeReferenceTriPolytopeSoup(tri_poly_soup_ref);
-/////   um2::PolytopeSoup<T, I> tri_poly_soup;
-/////   tri_mesh.toPolytopeSoup(tri_poly_soup);
-/////   ASSERT(tri_poly_soup.compareTo(tri_poly_soup_ref) == 10);
-/////   ASSERT(tri_poly_soup.getMeshType() == um2::MeshType::Tri);
-///// }
-/////
+TEST_CASE(operator_PolytopeSoup)
+{
+   um2::TriFVM const tri_mesh = makeTriReferenceMesh();
+   um2::PolytopeSoup tri_poly_soup_ref;
+   makeReferenceTriPolytopeSoup(tri_poly_soup_ref);
+   um2::PolytopeSoup const tri_poly_soup = tri_mesh;
+   ASSERT(tri_poly_soup.compare(tri_poly_soup_ref) == 10);
+}
 
-//TEST_CASE(PolytopeSoup_constructor)
-//{
-//  um2::PolytopeSoup poly_soup;
-//  makeReferenceTriPolytopeSoup(poly_soup);
-//  um2::TriFVM const mesh_ref = makeTriReferenceMesh();
-//  um2::TriFVM const mesh(poly_soup);
-//  ASSERT(mesh.numVertices() == mesh_ref.numVertices());
-//  for (Int i = 0; i < mesh.numVertices(); ++i) {
-//    ASSERT(mesh.getVertex(i).isApprox(mesh_ref.getVertex(i)));
-//  }
-//  for (Int i = 0; i < mesh.numFaces(); ++i) {
-//    auto const face = mesh.getFace(i);
-//    auto const face_ref = mesh_ref.getFace(i);
-//    for (Int j = 0; j < 3; ++j) {
-//      ASSERT(face[j].isApprox(face_ref[j]));
-//    }
-//  }
-//}
+TEST_CASE(PolytopeSoup_constructor)
+{
+  um2::PolytopeSoup soup;
+  makeReferenceTriPolytopeSoup(soup);
+  um2::TriFVM const mesh_ref = makeTriReferenceMesh();
+  um2::TriFVM const mesh(soup);
+  ASSERT(mesh.numVertices() == mesh_ref.numVertices());
+  for (Int i = 0; i < mesh.numVertices(); ++i) {
+    ASSERT(mesh.getVertex(i).isApprox(mesh_ref.getVertex(i)));
+  }
+  for (Int i = 0; i < mesh.numFaces(); ++i) {
+    auto const face = mesh.getFace(i);
+    auto const face_ref = mesh_ref.getFace(i);
+    for (Int j = 0; j < 3; ++j) {
+      ASSERT(face[j].isApprox(face_ref[j]));
+    }
+  }
+}
 
 TEST_SUITE(TriFVM)
 {
@@ -569,8 +565,8 @@ TEST_SUITE(TriFVM)
   TEST(mortonSortVertices);
   TEST(mortonSortFaces);
   TEST(intersect);
-//  TEST(PolytopeSoup_constructor);
-  //  TEST((toPolytopeSoup<T, I>));
+  TEST(operator_PolytopeSoup);
+  TEST(PolytopeSoup_constructor);
 }
 
 auto

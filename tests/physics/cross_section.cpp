@@ -1,10 +1,11 @@
 #include <um2/physics/cross_section.hpp>
+#include <um2/common/cast_if_not.hpp>
 
 #include "../test_macros.hpp"
 
 TEST_CASE(collapse)
 {
-  F constexpr eps = condCast<F>(1e-6);
+  auto constexpr eps = castIfNot<Float>(1e-6);
   um2::XSec xsec;
   xsec.t() = {2, 11, 5, 3, 4};
   xsec.validate();

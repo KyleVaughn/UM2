@@ -1,5 +1,9 @@
 #include <um2/physics/cross_section.hpp>
 
+#include <um2/common/logger.hpp>
+#include <um2/math/stats.hpp>
+#include <um2/stdlib/algorithm/max_element.hpp>
+
 namespace um2
 {
 

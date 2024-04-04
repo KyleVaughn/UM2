@@ -1,4 +1,5 @@
 #include <um2/physics/nuclide.hpp>
+#include <um2/common/cast_if_not.hpp>
 
 #include "../test_macros.hpp"
 
@@ -17,7 +18,7 @@ TEST_CASE(toZAID)
 
 TEST_CASE(interpXS)
 {
-  F constexpr eps = condCast<F>(1e-4);
+  auto constexpr eps = castIfNot<Float>(1e-4);
   um2::Nuclide nuc;
   nuc.temperatures() = {300, 600, 900};
   um2::XSec xs0;
@@ -61,8 +62,8 @@ TEST_CASE(interpXS)
   ASSERT_NEAR(xs.t(2), 9, eps);
 
   // Linear interpolation over sqrt of temperature
-  F constexpr temp = 450;
-  F constexpr v0 = condCast<F>(2.62774);
+  Float constexpr temp = 450;
+  auto constexpr v0 = castIfNot<Float>(2.62774);
   xs = nuc.interpXS(temp);
   ASSERT_NEAR(xs.t(0), v0, eps);
   ASSERT_NEAR(xs.t(1), v0 + 1, eps);

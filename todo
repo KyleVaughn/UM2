@@ -1,6 +1,15 @@
-FVM 
-  construct poly
-  to poly
+FVM tests
+
+polytope soup elset_names sorted.
+write materials with
+  material data equal to num materials 
+
+Material as an integer set?
+
+move on to next dir and save powers and such for spatial partition
+
+min_element, max_element using
+  - algroithmica argmin https://en.algorithmica.org/hpc/algorithms/argmin/
 
 faceContaining find closest vertex, then test neighboring faces
   - speed up for linear vs quadratic
@@ -14,17 +23,8 @@ FVM
 convenience functions for FVM
 
 polytopeSoup compare numbers
-reduce polytopesoup scope
 
 tagged union/variant for tri/quad mesh
-
-mortonSort
-Vec = int
-linesegment test
-linesegment function reordering
-
-mortonSort & test
-toPolytopeSoup
 
 binned face vertex mesh fixes everything
 -> Output ratio of areas of cells
@@ -44,10 +44,6 @@ Int64
 
 organze archive into many dirs with notes on what is there any why we keep
 enable openMP /TBB
-
-more robust testing for mesh functions
--> faceContaining 
--> validate
 
 makeMaterialsElset
   -> convert Material_ to Material with elset data
@@ -77,8 +73,6 @@ Check that casts preserve value from float to int
 Harden the mesh IO, testing with files created from different software
 
 VTK output with colors
-
-operator Type() -> Convert to type
 
 is_constexpr -> builtin
 constexpr tests
@@ -169,11 +163,10 @@ Consistent testing of mesh point inside.
    getOrientedEdge -> return bool, pass edge by ref
 
 Binned FVM
-
 Matplotlib
 Setup performance tracking of key functions
   -> Track regression
-
 ModularRayParams to 3D
 CAD/CSG
 Vis (openGL)
+toBuffer for geometry

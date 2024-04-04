@@ -21,10 +21,10 @@ class Material
 {
   String _name{};
   Color _color{};
-  F _temperature{};       // [K]
-  F _density{};           // [g/cm^3]
-  Vector<F> _num_density; // [atoms/b-cm]
-  Vector<I> _zaid;        // ZZAAA
+  Float _temperature{};       // [K]
+  Float _density{};           // [g/cm^3]
+  Vector<Float> _num_density; // [atoms/b-cm]
+  Vector<Int> _zaid;        // ZZAAA
 
 public:
   //======================================================================
@@ -38,13 +38,17 @@ public:
   //======================================================================
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numNuclides() const noexcept -> I
+  numNuclides() const noexcept -> Int
   {
     return _zaid.size();
   }
 
-  void
-  setName(String const & name) noexcept;
+  constexpr void
+  setName(String const & name) noexcept
+  {    
+    ASSERT(!name.empty());
+    _name = name;    
+  }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
   getName() const noexcept -> String const &
@@ -59,13 +63,13 @@ public:
   }
 
   constexpr void
-  setTemperature(F temperature) noexcept
+  setTemperature(Float temperature) noexcept
   {
     _temperature = temperature;
   }
 
   constexpr void
-  setDensity(F density) noexcept
+  setDensity(Float density) noexcept
   {
     _density = density;
   }
@@ -77,61 +81,61 @@ public:
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getTemperature() const noexcept -> F
+  getTemperature() const noexcept -> Float
   {
     return _temperature;
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  getDensity() const noexcept -> F
+  getDensity() const noexcept -> Float
   {
     return _density;
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numDensities() noexcept -> Vector<F> &
+  numDensities() noexcept -> Vector<Float> &
   {
     return _num_density;
   }
   
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numDensities() const noexcept -> Vector<F> const &
+  numDensities() const noexcept -> Vector<Float> const &
   {
     return _num_density;
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numDensity(I i) noexcept -> F &
+  numDensity(Int i) noexcept -> Float &
   {
     return _num_density[i];
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  numDensity(I i) const noexcept -> F const &
+  numDensity(Int i) const noexcept -> Float 
   {
     return _num_density[i];
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  zaids() noexcept -> Vector<I> &
+  zaids() noexcept -> Vector<Int> &
   {
     return _zaid;
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  zaids() const noexcept -> Vector<I> const &
+  zaids() const noexcept -> Vector<Int> const &
   {
     return _zaid;
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  zaid(I i) noexcept -> I &
+  zaid(Int i) noexcept -> Int &
   {
     return _zaid[i];
   }
 
   PURE HOSTDEV [[nodiscard]] constexpr auto
-  zaid(I i) const noexcept -> I const &
+  zaid(Int i) const noexcept -> Int
   {
     return _zaid[i];
   }
@@ -144,10 +148,10 @@ public:
   validate() const noexcept;
 
   void
-  addNuclide(I zaid, F num_density) noexcept;
+  addNuclide(Int zaid, Float num_density) noexcept;
 
   void
-  addNuclide(String const & symbol, F num_density) noexcept;
+  addNuclide(String const & symbol, Float num_density) noexcept;
 };
 
 } // namespace um2

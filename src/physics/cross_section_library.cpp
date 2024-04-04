@@ -1,5 +1,8 @@
 #include <um2/physics/cross_section_library.hpp>
-#include <um2/stdlib/sto.hpp>
+#include <um2/common/cast_if_not.hpp>
+#include <um2/common/logger.hpp>
+#include <um2/common/strto.hpp>
+#include <um2/stdlib/math/abs.hpp>
 
 #include <fstream>
 
@@ -13,58 +16,33 @@ isSpace(char c) -> bool
 }
 
 static void
-getNextToken(char const *& token_start, char const *& token_end)
-{
-  while (isSpace(*token_start) && *token_start != '\0') {
-    ++token_start;
-  }
-  token_end = token_start;
-  while (!isSpace(*token_end) && *token_end != '\0') {
-    ++token_end;
-  }
-}
-
-static auto
-getNumTokens(char const * start) -> I
-{
-  I num_tokens = 0;
-  char const * token_start = start;
-  char const * token_end = token_start;
-  while (*token_start != '\0') {
-    getNextToken(token_start, token_end);
-    if (token_start == token_end) {
-      break;
-    }
-    ++num_tokens;
-    token_start = token_end;
-  }
-  return num_tokens;
-}
-
-static void
 // NOLINTNEXTLINE
 readMPACTLibrary(String const & filename, XSLibrary & lib)
 {
   LOG_INFO("Reading MPACT cross section library: ", filename);
 
   // Open file
-  std::ifstream file(filename.c_str());
+  std::ifstream file(filename.data());
   if (!file.is_open()) {
     LOG_ERROR("Could not open file: ", filename);
     return;
   }
 
+  uint64_t const max_line_length = 1024;
+  char line[max_line_length];
+
   // %VER
   // -----------------------------------------------------------
-  std::string line;
-  std::getline(file, line);
-  if (!line.starts_with("%VER:")) {
+  file.getline(line, max_line_length);
+  StringView line_view(line);
+  if (!line_view.starts_with("%VER:")) {
     LOG_ERROR("Invalid MPACT library file: ", filename);
     return;
   }
   // Make sure that the first non-whitespace character is a 4 (major version)
-  std::getline(file, line);
-  for (auto c : line) {
+  file.getline(line, max_line_length);
+  line_view = StringView(line);
+  for (auto c : line_view) {
     if (isSpace(c)) {
       continue;
     }
@@ -77,12 +55,14 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
 
   // %DIM
   // -----------------------------------------------------------
-  std::getline(file, line);
-  if (!line.starts_with("%DIM:")) {
+  file.getline(line, max_line_length);
+  line_view = StringView(line);
+  if (!line_view.starts_with("%DIM:")) {
     LOG_ERROR("Invalid MPACT library file: ", filename);
     return;
   }
-  std::getline(file, line);
+  file.getline(line, max_line_length);
+  line_view = StringView(line);
   // Parse 10 integers:
   //  num_groups: The number of energy groups
   //  num_fast_groups: The number of fast groups
@@ -95,75 +75,104 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
   //  num_subgroup_lvls: The number of subgroup levels
   //  num_flux_lvls: The number of subgroup flux levels
 
-  Vector<I> dims(10, 0);
-  char const * token_start = line.data();
-  char const * token_end = token_start;
-  for (I idim = 0; idim < 10; ++idim) {
-    getNextToken(token_start, token_end);
-    dims[idim] = sto<I>(std::string(token_start, token_end));
+  line_view.removeLeadingSpaces();
+  Vector<Int> dims(10, 0);
+  char * end = nullptr;
+  for (Int idim = 0; idim < 10; ++idim) {
+    StringView const token = line_view.getTokenAndShrink();
+    dims[idim] = strto<Int>(token.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
     ASSERT(dims[idim] >= 0);
-    token_start = token_end;
   }
 
-  I const num_groups = dims[0];
-  LOG_INFO("Number of energy groups: ", num_groups); 
-  I const num_nuclides = dims[4];
+  Int const num_groups = dims[0];
+  LOG_INFO("Number of energy groups: ", num_groups);
+  Int const num_nuclides = dims[4];
 
   // %GRP
   //-------------------------------------------------------------
   // Get the energy bounds of the groups
-  std::getline(file, line);
-  if (!line.starts_with("%GRP:")) {
+  file.getline(line, max_line_length);
+  line_view = StringView(line);
+  if (!line_view.starts_with("%GRP:")) {
     LOG_ERROR("Invalid MPACT library file: ", filename);
     return;
   }
-  std::getline(file, line);
+  file.getline(line, max_line_length);
+  line_view = StringView(line);
+  line_view.removeLeadingSpaces();
   auto & group_bounds = lib.groupBounds();
   group_bounds.resize(num_groups);
-  token_start = line.data();
-  for (I ig = 0; ig < num_groups; ++ig) {
-    getNextToken(token_start, token_end);
-    group_bounds[ig] = sto<F>(std::string(token_start, token_end));
+  for (Int ig = 0; ig < num_groups; ++ig) {
+    StringView token = line_view.getTokenAndShrink();
+
+    // If the token is empty, we have reached the end of the line
+    if (token.empty()) {
+      bool const one_more_token = !line_view.empty();
+      if (one_more_token) {
+        token = line_view;
+      }
+      // If this is the last group, we don't need to read another line
+      file.getline(line, max_line_length);
+      line_view = StringView(line);
+      line_view.removeLeadingSpaces();
+      if (!one_more_token) {
+        token = line_view.getTokenAndShrink();
+      }
+    }
+
+    group_bounds[ig] = strto<Float>(token.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
     ASSERT(group_bounds[ig] >= 0);
     if (ig > 0) {
       ASSERT(group_bounds[ig] < group_bounds[ig - 1]);
-    }
-    token_start = token_end;
-    // If end of line before all groups are read, then go to the next line
-    if (*token_start == '\0' && ig < num_groups - 1) {
-      std::getline(file, line);
-      token_start = line.data();
     }
   }
 
   // %CHI
   //-------------------------------------------------------------
   // Get the fission spectrum
-  std::getline(file, line);
-  if (!line.starts_with("%CHI:")) {
+  file.getline(line, max_line_length);
+  line_view = StringView(line);
+  if (!line_view.starts_with("%CHI:")) {
     LOG_ERROR("Invalid MPACT library file: ", filename);
     return;
   }
-  std::getline(file, line);
+  file.getline(line, max_line_length);
+  line_view = StringView(line);
   auto & chi = lib.chi();
   chi.resize(num_groups);
-  token_start = line.data();
-  for (I ig = 0; ig < num_groups; ++ig) {
-    getNextToken(token_start, token_end);
-    chi[ig] = sto<F>(std::string(token_start, token_end));
-    ASSERT(group_bounds[ig] >= 0);
-    token_start = token_end;
-    // If end of line before all groups are read, then go to the next line
-    if (*token_start == '\0' && ig < num_groups - 1) {
-      std::getline(file, line);
-      token_start = line.data();
+  for (Int ig = 0; ig < num_groups; ++ig) {
+    StringView token = line_view.getTokenAndShrink();
+
+    // If the token is empty, we have reached the end of the line
+    if (token.empty()) {
+      bool const one_more_token = !line_view.empty();
+      if (one_more_token) {
+        token = line_view;
+      }
+      // If this is the last group, we don't need to read another line
+      file.getline(line, max_line_length);
+      line_view = StringView(line);
+      line_view.removeLeadingSpaces();
+      if (!one_more_token) {
+        token = line_view.getTokenAndShrink();
+      }
     }
+
+    chi[ig] = strto<Float>(token.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
+    ASSERT(chi[ig] >= 0);
   }
 
   // %DIR
   //--------------------------------------------------------------------
-  std::getline(file, line);
-  if (!line.starts_with("%DIR:")) {
+  file.getline(line, max_line_length);
+  line_view = StringView(line);
+  if (!line_view.starts_with("%DIR:")) {
     LOG_ERROR("Invalid MPACT library file: ", filename);
     return;
   }
@@ -171,13 +180,15 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
   // We don't read these values since they're redundant
   // Skip to the first %NUC line
   int ctr = 0;
-  while (std::getline(file, line)) {
-    if (line.starts_with("%NUC")) {
+  while (file.getline(line, max_line_length)) {
+    line_view = StringView(line);
+    if (line_view.starts_with("%NUC")) {
       break;
     }
     ++ctr;
     if (ctr > 10000) {
       LOG_ERROR("Invalid MPACT library file: ", filename);
+      return;
     }
   }
 
@@ -193,60 +204,72 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
   // 6. ??
   // 7. num temp
   // 8+. don't use
-  I nuclide_ctr = 0;
+  Int nuclide_ctr = 0;
   auto & nuclides = lib.nuclides();
   nuclides.resize(num_nuclides);
-  while (!line.starts_with("%END")) {
-    token_start = line.data() + 5; // Skip the %NUC
-    getNextToken(token_start, token_end);
+  while (!line_view.starts_with("%END")) {
+    // Skip the %NUC token
+    StringView token = line_view.getTokenAndShrink();
 
     // Get the index of the nuclide
-    I const index = sto<I>(std::string(token_start, token_end));
+    token = line_view.getTokenAndShrink();
+    Int const index = strto<Int>(token.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
     ASSERT(index == nuclide_ctr + 1);
     auto & nuclide = nuclides[nuclide_ctr];
 
     // Get the ZAID of the nuclide
-    token_start = token_end;
-    getNextToken(token_start, token_end);
-    I const zaid = sto<I>(std::string(token_start, token_end));
+    token = line_view.getTokenAndShrink();
+    Int const zaid = strto<Int>(token.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
     ASSERT(zaid > 0);
     nuclide.zaid() = zaid;
 
     // Get the atomic mass of the nuclide
-    token_start = token_end;
-    getNextToken(token_start, token_end);
-    F const atomic_mass = sto<F>(std::string(token_start, token_end));
+    token = line_view.getTokenAndShrink();
+    Float const atomic_mass = strto<Float>(token.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
     ASSERT(atomic_mass > 0);
     nuclide.mass() = atomic_mass;
 
     // Skip the next 4 numbers
-    for (I i = 0; i < 5; ++i) {
-      token_start = token_end;
-      getNextToken(token_start, token_end);
+    for (Int i = 0; i < 4; ++i) {
+      token = line_view.getTokenAndShrink();
     }
 
     // Get the number of temperatures
-    I const num_temps = sto<I>(std::string(token_start, token_end));
+    token = line_view.getTokenAndShrink();
+    Int const num_temps = strto<Int>(token.data(), &end);
+    ASSERT(end != nullptr);
+    end = nullptr;
     ASSERT(num_temps > 0);
     nuclide.temperatures().resize(num_temps);
     nuclide.xs().resize(num_temps);
-    for (I itemp = 0; itemp < num_temps; ++itemp) {
+    for (Int itemp = 0; itemp < num_temps; ++itemp) {
       nuclide.xs(itemp).t().resize(num_groups);
     }
 
     // Read the temperature data
-    std::getline(file, line);
-    token_start = line.data();
-    getNextToken(token_start, token_end);
-    ASSERT(String(token_start, token_end) == "TP1+");
-    std::getline(file, line);
-    token_start = line.data();
-    for (I itemp = 0; itemp < num_temps; ++itemp) {
-      getNextToken(token_start, token_end);
-      F const temp = sto<F>(std::string(token_start, token_end));
+    file.getline(line, max_line_length);
+    line_view = StringView(line);
+    line_view.removeLeadingSpaces();
+    ASSERT(line_view.starts_with("TP1+"));
+    file.getline(line, max_line_length);
+    line_view = StringView(line);
+    line_view.removeLeadingSpaces();
+    for (Int itemp = 0; itemp < num_temps; ++itemp) {
+      token = line_view.getTokenAndShrink();
+      if (token.empty()) {
+        token = line_view;
+      }
+      Float const temp = strto<Float>(token.data(), &end);
+      ASSERT(end != nullptr);
+      end = nullptr;
       ASSERT(temp > 0);
       nuclide.temperatures()[itemp] = temp;
-      token_start = token_end;
     }
 
     // Read the cross section data
@@ -258,65 +281,72 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
     // 5. transport
     // 6. total scattering
     // 7+. scatter data we don't use
-    std::getline(file, line);
-    token_start = line.data();
-    getNextToken(token_start, token_end);
-    ASSERT(String(token_start, token_end) == "XSD+");
-    for (I ig = 0; ig < num_groups; ++ig) {
-      for (I itemp = 0; itemp < num_temps; ++itemp) {
-        std::getline(file, line);
-        // Get the number of tokens on the line
-        // If num tokens == 3, then only absorption is given
-        I const num_tokens = getNumTokens(line.data());
+    file.getline(line, max_line_length);
+    line_view = StringView(line);
+    line_view.removeLeadingSpaces();
+    ASSERT(line_view.starts_with("XSD+"));
+    for (Int ig = 0; ig < num_groups; ++ig) {
+      for (Int itemp = 0; itemp < num_temps; ++itemp) {
+        file.getline(line, max_line_length);
+        line_view = StringView(line);
+        line_view.removeLeadingSpaces();
 
         // Group index
-        token_start = line.data();
-        getNextToken(token_start, token_end);
-        I const group_index = sto<I>(std::string(token_start, token_end));
+        token = line_view.getTokenAndShrink();
+        Int const group_index = strto<Int>(token.data(), &end);
+        ASSERT(end != nullptr);
+        end = nullptr;
         ASSERT(group_index == ig + 1);
 
         // Temperature index
-        token_start = token_end;
-        getNextToken(token_start, token_end);
-        I const temp_index = sto<I>(std::string(token_start, token_end));
+        token = line_view.getTokenAndShrink();
+        Int const temp_index = strto<Int>(token.data(), &end);
+        ASSERT(end != nullptr);
+        end = nullptr;
         ASSERT(temp_index == itemp + 1);
 
         // Absorption
-        token_start = token_end;
-        getNextToken(token_start, token_end);
-        F const absorption = sto<F>(std::string(token_start, token_end));
+        token = line_view.getTokenAndShrink();
+        Float const absorption = strto<Float>(token.data(), &end);
+        ASSERT(end != nullptr);
+        end = nullptr;
         if (absorption < 0) {
           LOG_WARN("Nuclide with ZAID ", zaid,
                     " has negative absorption cross section at group ", ig,
                     " and temperature ", itemp);
         }
 
-        if (num_tokens == 3) {
+        // If this token is empty, only absorption is given
+        token = line_view.getTokenAndShrink();
+        bool const absorption_only = token.empty();
+        if (absorption_only) {
           nuclide.xs(itemp).t(ig) = absorption;
         } else {
           // Fission
-          token_start = token_end;
-          getNextToken(token_start, token_end);
-          F const fission = sto<F>(std::string(token_start, token_end));
-          if (um2::abs(fission) > condCast<F>(1e-10)) {
+          Float const fission = strto<Float>(token.data(), &end);
+          ASSERT(end != nullptr);
+          end = nullptr;
+          if (um2::abs(fission) > castIfNot<Float>(1e-10)) {
             nuclide.isFissile() = true;
           }
 
           // Skip nu-fission and transport
-          for (I i = 0; i < 3; ++i) {
-            token_start = token_end;
-            getNextToken(token_start, token_end);
+          for (Int i = 0; i < 2; ++i) {
+            token = line_view.getTokenAndShrink();
           }
 
           // Total scattering
-          F const total_scatter = sto<F>(std::string(token_start, token_end));
+          token = line_view.getTokenAndShrink();
+          Float const total_scatter = strto<Float>(token.data(), &end);
+          ASSERT(end != nullptr);
+          end = nullptr;
           if (total_scatter < 0) {
             LOG_WARN("Nuclide with ZAID ", zaid,
                       " has negative P0 scattering cross section at group ", ig,
                       " and temperature ", itemp);
           }
 
-          F const total = absorption + total_scatter;
+          Float const total = absorption + total_scatter;
           if (total < 0) {
             LOG_WARN("Nuclide with ZAID ", zaid,
                       " has negative total cross section at group ", ig,
@@ -324,15 +354,17 @@ readMPACTLibrary(String const & filename, XSLibrary & lib)
           }
 
           nuclide.xs(itemp).t(ig) = total;
-        } // if (num_tokens == 3)
-      }   // for (I itemp = 0; itemp < num_temps; ++itemp)
-    }     // for (I ig = 0; ig < num_groups; ++ig)
+        } // if (absorption_only)
+      }   // for (Int itemp = 0; itemp < num_temps; ++itemp)
+    }     // for (Int ig = 0; ig < num_groups; ++ig)
 
     nuclide.validate();
 
     // Skip the other sections until we find the next nuclide or the end of the file
-    while (std::getline(file, line)) {
-      if (line.starts_with("%NUC") || line.starts_with("%END")) {
+    while (file.getline(line, max_line_length)) {
+      line_view = StringView(line);
+      line_view.removeLeadingSpaces();
+      if (line_view.starts_with("%NUC") || line_view.starts_with("%END")) {
         break;
       }
     }
@@ -351,7 +383,7 @@ XSLibrary::XSLibrary(String const & filename)
 }
 
 PURE [[nodiscard]] auto
-XSLibrary::getNuclide(I zaid) const noexcept -> Nuclide const &
+XSLibrary::getNuclide(Int zaid) const noexcept -> Nuclide const &
 {
   for (auto const & nuclide : _nuclides) {
     if (nuclide.zaid() == zaid) {
@@ -368,23 +400,24 @@ XSLibrary::getXS(Material const & material) const noexcept -> XSec
   material.validate();
   XSec xs;
   xs.isMacro() = true;
-  I const num_groups = numGroups();
+  Int const num_groups = numGroups();
   xs.t().resize(num_groups);
   // For each nuclide in the material:
   //  find the corresponding nuclide in the library
   //  interpolate the cross sections to the temperature of the material
   //  scale the cross sections by the atom density of the nuclide
   //  reduce
-  I const num_nuclides = material.numNuclides();
-  for (I inuc = 0; inuc < num_nuclides; ++inuc) {
+  Int const num_nuclides = material.numNuclides();
+  for (Int inuc = 0; inuc < num_nuclides; ++inuc) {
     auto const zaid = material.zaid(inuc);
     auto const & lib_nuc = getNuclide(zaid);
     auto const xs_nuc = lib_nuc.interpXS(material.getTemperature());
     auto const atom_density = material.numDensity(inuc);
-    for (I ig = 0; ig < num_groups; ++ig) {
+    for (Int ig = 0; ig < num_groups; ++ig) {
       xs.t(ig) += xs_nuc.t(ig) * atom_density;
     }
   }
+  xs.validate();
   return xs;
 }
 } // namespace um2

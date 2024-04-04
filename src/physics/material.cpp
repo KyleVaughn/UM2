@@ -8,16 +8,9 @@ namespace um2
 //==============================================================================
 
 void
-Material::setName(String const & name) noexcept
-{
-  ASSERT(name.size() > 0);
-  _name = name;
-}
-
-void
 Material::validate() const noexcept
 {
-  ASSERT(_name.size() > 0);
+  ASSERT(!_name.empty());
   ASSERT(_temperature > 0);
   ASSERT(_density > 0);
   ASSERT(!_num_density.empty());
@@ -31,7 +24,7 @@ Material::validate() const noexcept
 }
 
 void
-Material::addNuclide(I zaid, F num_density) noexcept
+Material::addNuclide(Int zaid, Float num_density) noexcept
 {
   ASSERT(zaid > 0);
   ASSERT(num_density >= 0);
@@ -39,14 +32,14 @@ Material::addNuclide(I zaid, F num_density) noexcept
   for (auto const & z : _zaid) {
     ASSERT(z != zaid);
   }
-  _zaid.push_back(zaid);
-  _num_density.push_back(num_density);
+  _zaid.emplace_back(zaid);
+  _num_density.emplace_back(num_density);
 }
 
 void
-Material::addNuclide(String const & symbol, F num_density) noexcept
+Material::addNuclide(String const & symbol, Float num_density) noexcept
 {
-  ASSERT(symbol.size() > 0);
+  ASSERT(!symbol.empty());
   addNuclide(toZAID(symbol), num_density);
 }
 

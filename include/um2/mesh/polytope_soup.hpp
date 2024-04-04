@@ -20,23 +20,23 @@ namespace um2
 //// associated with the polytopes. This data structure can be used to:
 //// - read/write a mesh and its data from/to a file
 //// - convert between mesh data structures
-//// - generate subsetes
+//// - generate subsets
 //// - perform mesh operations without assumptions about manifoldness, etc.
 ////
-//// Note: due to the generality of the data structure, there is effectively a
-//// switch statement in every method. This is not ideal for performance.
-//// See FaceVertexMesh for a more efficient, but less general, data
-//// structure.
-////
-//// _is_morton_sorted: A flag indicating whether the vertices and elements are
-////    sorted using the Morton ordering. This is useful for efficient spatial
-////    queries, but it is not required.
-//// 
-//// _vertices: A list of vertices
-////
-//// _element_types: A list of element types
-////
-//// _element_offsets: A prefix sum of the number of vertices in each element
+//////// Note: due to the generality of the data structure, there is effectively a
+//////// switch statement in every method. This is not ideal for performance.
+//////// See FaceVertexMesh for a more efficient, but less general, data
+//////// structure.
+////////
+//////// _is_morton_sorted: A flag indicating whether the vertices and elements are
+////////    sorted using the Morton ordering. This is useful for efficient spatial
+////////    queries, but it is not required.
+//////// 
+//////// _vertices: A list of vertices
+////////
+//////// _element_types: A list of element types
+////////
+//////// _element_offsets: A prefix sum of the number of vertices in each element
 
 class PolytopeSoup
 {

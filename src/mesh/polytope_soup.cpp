@@ -1233,7 +1233,6 @@ readAbaqusFile(String const & filename, PolytopeSoup & soup)
       line_view = StringView(line);
     }
     get_next_line = true;
-    // Unsure if th
     while (line_view.starts_with("*NODE")) {
       line_view = abaqusParseNodes(soup, file, line, max_line_length);
       get_next_line = false;

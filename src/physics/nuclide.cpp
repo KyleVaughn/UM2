@@ -1,5 +1,8 @@
 #include <um2/physics/nuclide.hpp>
-#include <um2/stdlib/sto.hpp>
+#include <um2/common/logger.hpp>
+#include <um2/common/strto.hpp>
+#include <um2/stdlib/algorithm/is_sorted.hpp>
+#include <um2/stdlib/math/roots.hpp>
 
 #include <cctype> // std::isalpha, std::isdigit
 
@@ -13,6 +16,7 @@ namespace um2
 void
 Nuclide::clear() noexcept
 {
+  _is_fissile = false;
   _zaid = 0;
   _mass = 0;
   _temperatures.clear();
@@ -36,7 +40,7 @@ Nuclide::validate() const noexcept
 }
 
 PURE [[nodiscard]] auto
-Nuclide::interpXS(F const temperature) const noexcept -> XSec
+Nuclide::interpXS(Float const temperature) const noexcept -> XSec
 {
   // Linearly interpolate the cross sections over the sqrt of temperature
   //
@@ -57,26 +61,26 @@ Nuclide::interpXS(F const temperature) const noexcept -> XSec
 
   // Find the temperature range that contains the requested temperature
   // We know it's in the range, so we don't need to check for that
-  I i = 0;
+  Int i = 0;
   while (temperature >= _temperatures[i]) {
     ++i;
   }
   // Now i is the index of the upper temperature
-  I const i0 = i - 1;
-  I const i1 = i;
-  F const t0 = _temperatures[i0];
-  F const t1 = _temperatures[i1];
-  F const sqrt_t0 = um2::sqrt(t0);
-  F const sqrt_t1 = um2::sqrt(t1);
-  F const sqrt_t = um2::sqrt(temperature);
-  F const d = (sqrt_t - sqrt_t0) / (sqrt_t1 - sqrt_t0);
+  Int const i0 = i - 1;
+  Int const i1 = i;
+  Float const t0 = _temperatures[i0];
+  Float const t1 = _temperatures[i1];
+  Float const sqrt_t0 = um2::sqrt(t0);
+  Float const sqrt_t1 = um2::sqrt(t1);
+  Float const sqrt_t = um2::sqrt(temperature);
+  Float const d = (sqrt_t - sqrt_t0) / (sqrt_t1 - sqrt_t0);
   XSec const & xs0 = _xs[i0];
   XSec const & xs1 = _xs[i1];
   XSec xs;
-  I const n = xs0.t().size();
+  Int const n = xs0.t().size();
   ASSERT(n == xs1.t().size());
   xs.t().resize(n);
-  for (I j = 0; j < n; ++j) {
+  for (Int j = 0; j < n; ++j) {
     xs.t(j) = xs0.t(j) + d * (xs1.t(j) - xs0.t(j));
   }
   return xs;
@@ -118,24 +122,30 @@ isDigit(char c) -> bool
 
 // Convert from a string, like "U235", to a ZAID.
 auto
-toZAID(String str) -> I
+toZAID(String const & str) -> Int
 {
   ASSERT(str.size() >= 2);
   ASSERT(str.size() <= 6);
 
+  StringView const s(str);
+
   // Extract the chemical symbol
-  String symbol;
-  for (I i = 0; i < str.size(); ++i) {
-    if (isAlpha(str[i])) {
-      symbol += str[i];
+  ASSERT(isAlpha(s[0]));
+  // Count the number of characters in the symbol
+  Int n = 1;
+  for (Int i = 1; i < str.size(); ++i) {
+    if (isAlpha(s[i])) {
+      ++n;
+    } else {
+      break;
     }
   }
-  ASSERT(symbol.size() > 0);
+  String const symbol = str.substr(0, n);
 
   // Get the atomic number from the symbol
-  I z = 0;
+  Int z = 0;
   bool found = false;
-  for (I i = 0; i < ELEMENTS.size(); ++i) {
+  for (Int i = 0; i < ELEMENTS.size(); ++i) {
     if (symbol == ELEMENTS[i]) {
       z = i + 1;
       found = true;
@@ -144,19 +154,24 @@ toZAID(String str) -> I
   }
   if (!found) {
     LOG_ERROR("Invalid chemical symbol: " + symbol);
+    return -1;
   }
 
   // Extract the mass number
-  String mass;
-  for (I i = 0; i < str.size(); ++i) {
-    if (isDigit(str[i])) {
-      mass += str[i];
+  // Find the first digit
+  Int m = n;
+  for (Int i = n; i < str.size(); ++i) {
+    if (isDigit(s[i])) {
+      m = i;
+      break; 
     }
   }
-  ASSERT(mass.size() > 0);
+  String const mass = str.substr(m);
 
   // Convert the mass number to an integer
-  I const a = sto<I>(std::string(mass.c_str()));
+  char * end = nullptr;
+  Int const a = strto<Int>(mass.data(), &end);
+  ASSERT(end != nullptr);
   ASSERT(a > 0);
 
   return 1000 * z + a;

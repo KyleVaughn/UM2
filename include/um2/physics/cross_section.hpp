@@ -1,7 +1,5 @@
 #pragma once
 
-#include <um2/common/log.hpp>
-#include <um2/math/stats.hpp>
 #include <um2/stdlib/vector.hpp>
 
 //======================================================================
@@ -28,7 +26,7 @@ class XSec
 {
 
   bool _is_macroscopic = false;
-  Vector<F> _t; // Total cross section
+  Vector<Float> _t; // Total cross section
 
 public:
   //======================================================================
@@ -54,31 +52,31 @@ public:
   }
 
   PURE [[nodiscard]] constexpr auto
-  t() noexcept -> Vector<F> &
+  t() noexcept -> Vector<Float> &
   {
     return _t;
   }
 
   PURE [[nodiscard]] constexpr auto
-  t() const noexcept -> Vector<F> const &
+  t() const noexcept -> Vector<Float> const &
   {
     return _t;
   }
 
   PURE [[nodiscard]] constexpr auto
-  t(I g) noexcept -> F &
+  t(Int g) noexcept -> Float &
   {
     return _t[g];
   }
 
   PURE [[nodiscard]] constexpr auto
-  t(I g) const noexcept -> F
+  t(Int g) const noexcept -> Float
   {
     return _t[g];
   }
 
   PURE [[nodiscard]] constexpr auto
-  numGroups() const noexcept -> I
+  numGroups() const noexcept -> Int
   {
     return _t.size();
   }
