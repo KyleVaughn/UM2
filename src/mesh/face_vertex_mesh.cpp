@@ -479,7 +479,7 @@ sortRayMeshIntersections(
 
 template class FaceVertexMesh<1, 3>; // TriFVM
 template class FaceVertexMesh<1, 4>; // QuadFVM
-//template class FaceVertexMesh<2, 6>; // Tri6FVM
-//template class FaceVertexMesh<2, 8>; // Quad8FVM
+template class FaceVertexMesh<2, 6>; // Tri6FVM
+template class FaceVertexMesh<2, 8>; // Quad8FVM
 
 } // namespace um2

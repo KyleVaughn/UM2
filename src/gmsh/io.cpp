@@ -1,12 +1,18 @@
 #include <um2/gmsh/io.hpp>
 
 #include <um2/common/color.hpp>
-#include <um2/common/log.hpp>
-#include <um2/stdlib/sto.hpp>
+#include <um2/common/logger.hpp>
 
 #include <algorithm> // std::sort
-#include <fstream>   // std::ofstream, std::ifstream
-#include <vector>    // std::vector
+#include <fstream>
+#include <vector>
+#include <string>
+
+// Personally, I despise using std:string and std::getline for file I/O due to
+// the potential for memory allocation and deallocation. I prefer to use C-style
+// file I/O, but we only expect these routines to be called once, and only for
+// a few thousand lines at most, so it's not worth the refactoring effort.
+// - Kyle
 
 #if UM2_USE_GMSH
 
@@ -20,7 +26,7 @@ namespace um2::gmsh
 void
 write(std::string const & filename, bool const extra_info)
 {
-  log::info("Writing file: ", filename);
+  LOG_INFO("Writing file: ", filename.c_str());
   gmsh::write(filename);
   if (!extra_info) {
     return;
@@ -29,7 +35,7 @@ write(std::string const & filename, bool const extra_info)
       filename.substr(0, filename.find_last_of('.')) + ".info";
   std::ofstream info_file(info_filename);
   if (!info_file.is_open()) {
-    log::error("Could not open file ", info_filename);
+    LOG_ERROR("Could not open file ", info_filename.c_str());
     return;
   }
   //==============================================================================
@@ -86,12 +92,12 @@ write(std::string const & filename, bool const extra_info)
     Color const color(r, g, b, a);
     auto it = std::find(colors.begin(), colors.end(), color);
     if (it == colors.end()) {
-      colors.push_back(color);
+      colors.emplace_back(color);
       dimtags_by_color.emplace_back();
-      dimtags_by_color.back().push_back(dimtag);
+      dimtags_by_color.back().emplace_back(dimtag);
     } else {
       size_t const index = static_cast<size_t>(it - colors.begin());
-      dimtags_by_color[index].push_back(dimtag);
+      dimtags_by_color[index].emplace_back(dimtag);
     }
   }
   for (auto & color_dimtags : dimtags_by_color) {
@@ -136,7 +142,7 @@ write(std::string const & filename, bool const extra_info)
   }
   // Finished. Close file.
   info_file.close();
-}
+} // write
 
 namespace
 {
@@ -149,15 +155,15 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
   std::string line;
   std::getline(info_file, line);
   if (!line.starts_with("PHYSICAL_GROUPS")) {
-    log::error("Could not read PHYSICAL_GROUPS from ", info_filename);
+    LOG_ERROR("Could not read PHYSICAL_GROUPS from ", info_filename.c_str());
     return;
   }
-  size_t const num_groups = sto<size_t>(line.substr(16));
+  size_t const num_groups = std::stoul(line.substr(16));
   std::vector<int> tags;
   for (size_t i = 0; i < num_groups; ++i) {
     std::getline(info_file, line);
     if (!line.starts_with("PHYSICAL_GROUP")) {
-      log::error("Could not read PHYSICAL_GROUP from ", info_filename);
+      LOG_ERROR("Could not read PHYSICAL_GROUP from ", info_filename.c_str());
       return;
     }
     size_t const name_start = line.find('"') + 1;
@@ -165,12 +171,12 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
     std::string const name = line.substr(name_start, name_end - name_start);
     // dim is 1, 2, or 3 and is 2 characters after the end of the name.
     size_t const dim_start = name_end + 2;
-    int const dim = sto<int>(line.substr(dim_start, 1));
+    int const dim = std::stoi(line.substr(dim_start, 1));
     ASSERT(dim > 0);
     ASSERT(dim < 4);
 
     size_t const num_tags_start = dim_start + 2;
-    size_t const num_tags = sto<size_t>(line.substr(num_tags_start));
+    size_t const num_tags = std::stoul(line.substr(num_tags_start));
     tags.resize(num_tags);
     size_t const num_full_lines = num_tags / 8;
     size_t const num_remaining_tags = num_tags % 8;
@@ -179,11 +185,11 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
       size_t token_start = 0;
       size_t token_end = line.find(' ');
       for (size_t k = 0; k < 7; ++k) {
-        tags[8 * j + k] = sto<int>(line.substr(token_start, token_end - token_start));
+        tags[8 * j + k] = std::stoi(line.substr(token_start, token_end - token_start));
         token_start = token_end + 1;
         token_end = line.find(' ', token_start);
       }
-      tags[8 * j + 7] = sto<int>(line.substr(token_start));
+      tags[8 * j + 7] = std::stoi(line.substr(token_start));
     }
     if (num_remaining_tags != 0) {
       std::getline(info_file, line);
@@ -191,11 +197,11 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
       for (size_t k = 0; k + 1 < num_remaining_tags; ++k) {
         size_t const token_end = line.find(' ', token_start);
         tags[num_full_lines * 8 + k] =
-            sto<int>(line.substr(token_start, token_end - token_start));
+            std::stoi(line.substr(token_start, token_end - token_start));
         token_start = token_end + 1;
       }
       tags[num_full_lines * 8 + num_remaining_tags - 1] =
-          sto<int>(line.substr(token_start));
+          std::stoi(line.substr(token_start));
     }
     gmsh::model::addPhysicalGroup(dim, tags, -1, name);
   }
@@ -209,12 +215,13 @@ addPhysicalGroups(std::ifstream & info_file, std::string const & info_filename)
 void
 open(std::string const & filename, bool const extra_info)
 {
-  log::info("Opening file: ", filename);
+  LOG_INFO("Opening file: ", filename.c_str());
   // Warn if the file doesn't exist, because Gmsh doesn't...
   {
     std::ifstream const file(filename);
     if (!file.good()) {
-      log::error("File ", filename, " does not exist.");
+      LOG_ERROR("File ", filename.c_str(), " does not exist.");
+      return;
     }
   }
   gmsh::open(filename);
@@ -226,7 +233,7 @@ open(std::string const & filename, bool const extra_info)
       filename.substr(0, filename.find_last_of('.')) + ".info";
   std::ifstream info_file(info_filename);
   if (!info_file.is_open()) {
-    log::error("Could not open file ", info_filename);
+    LOG_ERROR("Could not open file ", info_filename.c_str());
     return;
   }
   //==============================================================================
@@ -241,30 +248,30 @@ open(std::string const & filename, bool const extra_info)
     std::string line;
     std::getline(info_file, line);
     if (!line.starts_with("ENTITY_COLORS")) {
-      log::error("Could not read ENTITY_COLORS from ", info_filename);
+      LOG_ERROR("Could not read ENTITY_COLORS from ", info_filename.c_str());
       return;
     }
-    size_t const num_colors = sto<size_t>(line.substr(14));
+    size_t const num_colors = std::stoul(line.substr(14));
     for (size_t i = 0; i < num_colors; ++i) {
       std::getline(info_file, line);
       if (!line.starts_with("ENTITY_COLOR")) {
-        log::error("Could not read ENTITY_COLOR from ", info_filename);
+        LOG_ERROR("Could not read ENTITY_COLOR from ", info_filename.c_str());
         return;
       }
       size_t token_start = 13;
       size_t token_end = line.find(' ', token_start);
-      int const r = sto<int>(line.substr(token_start, token_end - token_start));
+      int const r = std::stoi(line.substr(token_start, token_end - token_start));
       token_start = token_end + 1;
       token_end = line.find(' ', token_start);
-      int const g = sto<int>(line.substr(token_start, token_end - token_start));
+      int const g = std::stoi(line.substr(token_start, token_end - token_start));
       token_start = token_end + 1;
       token_end = line.find(' ', token_start);
-      int const b = sto<int>(line.substr(token_start, token_end - token_start));
+      int const b = std::stoi(line.substr(token_start, token_end - token_start));
       token_start = token_end + 1;
       token_end = line.find(' ', token_start);
-      int const a = sto<int>(line.substr(token_start, token_end - token_start));
+      int const a = std::stoi(line.substr(token_start, token_end - token_start));
       token_start = token_end + 1;
-      size_t const num_dimtags = sto<size_t>(line.substr(token_start));
+      size_t const num_dimtags = std::stoul(line.substr(token_start));
       gmsh::vectorpair dimtags(num_dimtags);
       size_t const num_full_lines = num_dimtags / 8;
       size_t const num_remaining_dimtags = num_dimtags % 8;
@@ -275,19 +282,19 @@ open(std::string const & filename, bool const extra_info)
           // Dim
           token_end = line.find(' ', token_start);
           dimtags[8 * j + k].first =
-              sto<int>(line.substr(token_start, token_end - token_start));
+              std::stoi(line.substr(token_start, token_end - token_start));
           token_start = token_end + 1;
           // Tag
           token_end = line.find(' ', token_start);
           dimtags[8 * j + k].second =
-              sto<int>(line.substr(token_start, token_end - token_start));
+              std::stoi(line.substr(token_start, token_end - token_start));
           token_start = token_end + 1;
         }
         token_end = line.find(' ', token_start);
         dimtags[8 * j + 7].first =
-            sto<int>(line.substr(token_start, token_end - token_start));
+            std::stoi(line.substr(token_start, token_end - token_start));
         token_start = token_end + 1;
-        dimtags[8 * j + 7].second = sto<int>(line.substr(token_start));
+        dimtags[8 * j + 7].second = std::stoi(line.substr(token_start));
       }
       if (num_remaining_dimtags != 0) {
         std::getline(info_file, line);
@@ -296,20 +303,20 @@ open(std::string const & filename, bool const extra_info)
           // Dim
           token_end = line.find(' ', token_start);
           dimtags[num_full_lines * 8 + k].first =
-              sto<int>(line.substr(token_start, token_end - token_start));
+              std::stoi(line.substr(token_start, token_end - token_start));
           token_start = token_end + 1;
           // Tag
           token_end = line.find(' ', token_start);
           dimtags[num_full_lines * 8 + k].second =
-              sto<int>(line.substr(token_start, token_end - token_start));
+              std::stoi(line.substr(token_start, token_end - token_start));
           token_start = token_end + 1;
         }
         token_end = line.find(' ', token_start);
         dimtags[num_full_lines * 8 + num_remaining_dimtags - 1].first =
-            sto<int>(line.substr(token_start, token_end - token_start));
+            std::stoi(line.substr(token_start, token_end - token_start));
         token_start = token_end + 1;
         dimtags[num_full_lines * 8 + num_remaining_dimtags - 1].second =
-            sto<int>(line.substr(token_start));
+            std::stoi(line.substr(token_start));
       }
       gmsh::model::setColor(dimtags, r, g, b, a);
     }

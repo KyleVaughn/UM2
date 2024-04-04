@@ -3,9 +3,8 @@
 #include <um2/config.hpp>
 
 #if UM2_USE_GMSH
-#  include <um2/geometry/point.hpp>
 #  include <um2/gmsh/base_gmsh_api.hpp>
-#  include <um2/mpact/spatial_partition.hpp>
+#  include <um2/mpact/model.hpp>
 #  include <um2/physics/material.hpp>
 
 namespace um2::gmsh::model
@@ -21,11 +20,13 @@ getMaterials(std::vector<Material> & materials);
 namespace occ
 {
 
-// A gmsh::model::occ::fragment that preserves the model's physical groups
-//
-// In the event that two overlapping entities have material physical groups, the
-// optional material hierarchy is used to choose a single material for the resultant
-// overlapping entity/entities.
+// A gmsh::model::occ::fragment that preserves the model's D-dimensional physical       
+// groups when fragmenting D-dimensional entities. All other physical groups are       
+// destroyed.       
+//       
+// In the event that two overlapping entities have material physical groups, the       
+// optional material hierarchy is used to choose a single material for the       
+// resultant overlapping entity/entities.   
 void
 groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
                         gmsh::vectorpair const & tool_dimtags,
@@ -48,33 +49,33 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
                          int tag = -1, bool remove_object = true,
                          bool remove_tool = true);
 
-auto
-addCylindricalPin2D(Vec2d const & center, std::vector<double> const & radii,
-                    std::vector<Material> const & materials) -> std::vector<int>;
-
-auto
-addCylindricalPin2D(Vec2d const & center, Vector<double> const & radii,
-                    Vector<Material> const & materials) -> um2::Vector<int>;
-auto
-addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
-                           std::vector<std::vector<Material>> const & materials,
-                           std::vector<Vec2d> const & dxdy,
-                           std::vector<std::vector<int>> const & pin_ids,
-                           Vec2d const & offset = {0.0, 0.0}) -> std::vector<int>;
-
-auto
-addCylindricalPin(Vec3d const & center, double height, std::vector<double> const & radii,
-                  std::vector<Material> const & materials) -> std::vector<int>;
-
-auto
-addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
-                         std::vector<std::vector<Material>> const & materials,
-                         double height, std::vector<Vec2d> const & dxdy,
-                         std::vector<std::vector<int>> const & pin_ids,
-                         Vec3d const & offset = {0.0, 0.0, 0.0}) -> std::vector<int>;
+//auto
+//addCylindricalPin2D(Vec2d const & center, std::vector<double> const & radii,
+//                    std::vector<Material> const & materials) -> std::vector<int>;
+//
+//auto
+//addCylindricalPin2D(Vec2d const & center, Vector<double> const & radii,
+//                    Vector<Material> const & materials) -> um2::Vector<int>;
+//auto
+//addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
+//                           std::vector<std::vector<Material>> const & materials,
+//                           std::vector<Vec2d> const & dxdy,
+//                           std::vector<std::vector<int>> const & pin_ids,
+//                           Vec2d const & offset = {0.0, 0.0}) -> std::vector<int>;
+//
+//auto
+//addCylindricalPin(Vec3d const & center, double height, std::vector<double> const & radii,
+//                  std::vector<Material> const & materials) -> std::vector<int>;
+//
+//auto
+//addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
+//                         std::vector<std::vector<Material>> const & materials,
+//                         double height, std::vector<Vec2d> const & dxdy,
+//                         std::vector<std::vector<int>> const & pin_ids,
+//                         Vec3d const & offset = {0.0, 0.0, 0.0}) -> std::vector<int>;
 
 void
-overlaySpatialPartition(mpact::SpatialPartition const & partition,
+overlayCoarseGrid(mpact::Model const & model,
                         std::string const & fill_material_name = "Moderator",
                         Color fill_material_color = royalblue);
 } // namespace occ

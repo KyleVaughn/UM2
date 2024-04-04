@@ -98,6 +98,15 @@ toBuffer(char * buffer_pos, int32_t const & value) noexcept -> char *
 
 template <>
 auto
+toBuffer(char * buffer_pos, int8_t const & value) noexcept -> char *
+{
+  // NOLINTNEXTLINE(bugprone-signed-char-misuse,cert-str34-c)
+  auto const val32 = static_cast<int32_t>(value); 
+  return toBuffer(buffer_pos, val32); 
+}
+
+template <>
+auto
 toBuffer(char * buffer_pos, uint32_t const & value) noexcept -> char *
 {
   int32_t const len = snprintf(nullptr, 0, "%u", value);

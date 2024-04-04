@@ -2,10 +2,13 @@
 
 #if UM2_USE_GMSH
 
-#  include <um2/geometry/axis_aligned_box.hpp>
-#  include <um2/mesh/rectilinear_grid.hpp>
-
+#include <um2/common/logger.hpp>
+//#  include <um2/geometry/axis_aligned_box.hpp>
+//#  include <um2/mesh/rectilinear_grid.hpp>
+//
 #  include <iomanip>
+
+#include <um2/stdlib/algorithm/is_sorted.hpp>
 
 namespace um2::gmsh::model
 {
@@ -18,7 +21,7 @@ void
 addToPhysicalGroup(int const dim, std::vector<int> const & tags, int const tag,
                    std::string const & name)
 {
-  log::debug("Adding entities to physical group \"", String(name.c_str()), "\"");
+  LOG_DEBUG("Adding entities to physical group \"", name.c_str(), "\"");
   ASSERT(um2::is_sorted(tags.begin(), tags.end()));
   gmsh::vectorpair dimtags;
   gmsh::model::getPhysicalGroups(dimtags, dim);
@@ -107,7 +110,7 @@ colorMaterialPhysicalGroupEntities(std::vector<Material> const & materials)
   size_t const num_materials = materials.size();
   std::vector<std::string> material_names(num_materials);
   for (size_t i = 0; i < num_materials; ++i) {
-    material_names[i] = "Material_" + std::string(materials[i].getName().c_str());
+    material_names[i] = "Material_" + std::string(materials[i].getName().data());
   }
   std::vector<int> ptags(num_materials, -1);
   gmsh::vectorpair dimtags;
@@ -131,7 +134,8 @@ colorMaterialPhysicalGroupEntities(std::vector<Material> const & materials)
     }
   }
   // Color in reverse order so that the highest priority materials
-  // overwrite the lower priority materials when they overlap.
+  // overwrite the lower priority materials. This is mainly for the
+  // lower dimensional entities that are colored recursively.
   for (size_t i = num_materials; i > 0; --i) {
     int const tag = ptags[i - 1];
     if (tag != -1) {
@@ -159,25 +163,30 @@ groupPreservingInputChecking(gmsh::vectorpair const & object_dimtags,
 {
   // Ensure that the dimtags are non-empty and sorted.
   if (object_dimtags.empty() || tool_dimtags.empty()) {
-    log::error("object_dimtags or tool_dimtags is empty");
+    LOG_ERROR("object_dimtags or tool_dimtags is empty");
+    return -1;
   }
   if (!std::is_sorted(object_dimtags.begin(), object_dimtags.end())) {
-    log::error("object_dimtags is not sorted");
+    LOG_ERROR("object_dimtags is not sorted");
+    return -1;
   }
   if (!std::is_sorted(tool_dimtags.begin(), tool_dimtags.end())) {
-    log::error("tool_dimtags is not sorted");
+    LOG_ERROR("tool_dimtags is not sorted");
+    return -1;
   }
 
   // Ensure that the dimtags are unique. Since they are sorted, we can just
   // check that element i != element i + 1.
   for (size_t i = 0; i < object_dimtags.size() - 1; ++i) {
     if (object_dimtags[i] == object_dimtags[i + 1]) {
-      log::error("object_dimtags are not unique");
+      LOG_ERROR("object_dimtags are not unique");
+      return -1;
     }
   }
   for (size_t i = 0; i < tool_dimtags.size() - 1; ++i) {
     if (tool_dimtags[i] == tool_dimtags[i + 1]) {
-      log::error("tool_dimtags are not unique");
+      LOG_ERROR("tool_dimtags are not unique");
+      return -1;
     }
   }
 
@@ -185,7 +194,8 @@ groupPreservingInputChecking(gmsh::vectorpair const & object_dimtags,
   int const object_dim_front = object_dimtags.front().first;
   int const object_dim_back = object_dimtags.back().first;
   if (object_dim_front != object_dim_back) {
-    log::error("object_dimtags contains entities of mixed dimension");
+    LOG_ERROR("object_dimtags contains entities of mixed dimension");
+    return -1;
   }
   int const object_dim = object_dim_front;
 
@@ -193,15 +203,18 @@ groupPreservingInputChecking(gmsh::vectorpair const & object_dimtags,
   int const tool_dim_front = tool_dimtags.front().first;
   int const tool_dim_back = tool_dimtags.back().first;
   if (tool_dim_front != tool_dim_back) {
-    log::error("tool_dimtags contains entities of mixed dimension");
+    LOG_ERROR("tool_dimtags contains entities of mixed dimension");
+    return -1;
   }
   int const tool_dim = tool_dim_front;
 
   if (object_dim != tool_dim) {
-    log::error("object_dimtags and tool_dimtags are not the same dimension");
+    LOG_ERROR("object_dimtags and tool_dimtags are not the same dimension");
+    return -1;
   }
   if (object_dim != 2 && object_dim != 3) {
-    log::error("object_dimtags and tool_dimtags are not 2D or 3D");
+    LOG_ERROR("object_dimtags and tool_dimtags are not 2D or 3D");
+    return -1;
   }
   return object_dim;
 }
@@ -298,6 +311,7 @@ getNewPhysicalGroups(gmsh::vectorpair const & object_dimtags,
         // The entity is in the object or tool, so add the fragment children
         // to the new physical group.
         for (auto const & child : out_dimtags_map[idx]) {
+          // If the child is not in the new physical group, add it.
           auto const child_it =
               std::lower_bound(new_tags.begin(), new_tags.end(), child.second);
           if (child_it == new_tags.end() || *child_it != child.second) {
@@ -315,7 +329,7 @@ getNewPhysicalGroups(gmsh::vectorpair const & object_dimtags,
     } // end for (int const etag : tags)
     // Insert the physical group, keeping the vector sorted by name
     post_physical_group_ent_tags[i] = new_tags;
-  } // end for (size_t i = 0; i < physical_group_names.size(); ++i)
+  } // end for (size_t i = 0; i < num_groups; ++i)
 }
 
 //=============================================================================
@@ -327,10 +341,11 @@ processMaterialHierarchy(std::vector<Material> const & material_hierarchy,
                          std::vector<std::string> const & physical_group_names,
                          std::vector<std::vector<int>> & post_physical_group_ent_tags)
 {
+  ASSERT(um2::is_sorted(physical_group_names.begin(), physical_group_names.end()));
   // Process the material hierarchy, if it exists, so that each entity has one or
   // fewer materials.
   if (!material_hierarchy.empty()) {
-    log::info("Processing material hierarchy");
+    LOG_INFO("Processing material hierarchy");
     // Let i in [1, nmats]
     // For each material i,
     //     If {material i} ∩ {material j} ≠ ∅ ,
@@ -340,11 +355,11 @@ processMaterialHierarchy(std::vector<Material> const & material_hierarchy,
     std::vector<size_t> mat_indices(nmats, guard);
     for (size_t i = 0; i < nmats; ++i) {
       Material const & mat = material_hierarchy[i];
-      std::string const & mat_name = "Material_" + std::string(mat.getName().c_str());
+      std::string const & mat_name = "Material_" + std::string(mat.getName().data());
       auto const it = std::lower_bound(physical_group_names.begin(),
                                        physical_group_names.end(), mat_name);
       if (it == physical_group_names.end() || *it != mat_name) {
-        log::warn("'Material_", mat.getName(), "' not found in model");
+        LOG_WARN("'Material_", mat.getName(), "' not found in model");
       } else {
         mat_indices[i] = static_cast<size_t>(it - physical_group_names.begin());
       }
@@ -376,7 +391,7 @@ processMaterialHierarchy(std::vector<Material> const & material_hierarchy,
 }
 
 } // namespace
-
+//
 //=============================================================================
 // groupPreservingFragment
 //=============================================================================
@@ -418,7 +433,7 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
   size_t const nobject = object_dimtags.size();
   size_t const ntool = tool_dimtags.size();
 
-  log::info("Fragmenting ", nobject, " object entities and ", ntool, " tool entities");
+  LOG_INFO("Fragmenting ", nobject, " object entities and ", ntool, " tool entities");
   gmsh::model::removePhysicalGroups();
 
   gmsh::model::occ::fragment(object_dimtags, tool_dimtags, out_dimtags, out_dimtags_map,
@@ -428,7 +443,7 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
   //==============================================================================
   // Create the new physical groups
   //==============================================================================
-  log::info("Processing physical group changes");
+  LOG_INFO("Processing physical group changes");
   std::vector<std::vector<int>> post_physical_group_ent_tags(num_groups);
   getNewPhysicalGroups(object_dimtags, tool_dimtags, num_groups,
                        pre_physical_group_ent_tags, out_dimtags_map,
@@ -462,7 +477,7 @@ groupPreservingFragment(gmsh::vectorpair const & object_dimtags,
 
   // Apply material colors.
   if (!material_hierarchy.empty()) {
-    log::info("Applying material colors");
+    LOG_INFO("Applying material colors");
     colorMaterialPhysicalGroupEntities(material_hierarchy);
   }
 } // groupPreservingFragment
@@ -507,7 +522,7 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
   size_t const num_groups = physical_group_names.size();
   size_t const nobject = object_dimtags.size();
   size_t const ntool = tool_dimtags.size();
-  log::info("Intersecting ", nobject, " object entities and ", ntool, " tool entities");
+  LOG_INFO("Intersecting ", nobject, " object entities and ", ntool, " tool entities");
   gmsh::model::removePhysicalGroups();
   gmsh::model::occ::intersect(object_dimtags, tool_dimtags, out_dimtags, out_dimtags_map,
                               tag, remove_object, remove_tool);
@@ -516,7 +531,7 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
   //==============================================================================
   // Create the new physical groups
   //==============================================================================
-  log::info("Processing physical group changes");
+  LOG_INFO("Processing physical group changes");
   std::vector<std::vector<int>> post_physical_group_ent_tags(num_groups);
   getNewPhysicalGroups(object_dimtags, tool_dimtags, num_groups,
                        pre_physical_group_ent_tags, out_dimtags_map,
@@ -550,459 +565,459 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
 
   // Apply material colors.
   if (!material_hierarchy.empty()) {
-    log::info("Applying material colors");
+    LOG_INFO("Applying material colors");
     colorMaterialPhysicalGroupEntities(material_hierarchy);
   }
 } // groupPreservingIntersect
 
-//=============================================================================
-// addCylindricalPin2D
-//=============================================================================
+////=============================================================================
+//// addCylindricalPin2D
+////=============================================================================
+//
+//auto
+//addCylindricalPin2D(Vec2d const & center, std::vector<double> const & radii,
+//                    std::vector<Material> const & materials) -> std::vector<int>
+//{
+//  LOG_INFO("Adding 2D cylindrical pin");
+//  // Input checking
+//  size_t const nradii = radii.size();
+//  if (nradii == 0) {
+//    LOG_ERROR("radii must not be empty");
+//  }
+//  if (nradii > materials.size()) {
+//    LOG_ERROR("Number of radii must be <= number of materials");
+//  }
+//  if (radii[0] <= 0.0) {
+//    LOG_ERROR("radii must be positive");
+//  }
+//  for (size_t i = 1; i < nradii; ++i) {
+//    if (radii[i] <= radii[i - 1]) {
+//      LOG_ERROR("radii must be strictly increasing");
+//    }
+//  }
+//  // Create the pin geometry
+//  std::vector<int> out_tags;
+//  out_tags.reserve(nradii);
+//  double const x = center[0];
+//  double const y = center[1];
+//  // Do the innermost disk
+//  int const circle0_tag = gmsh::model::occ::addCircle(x, y, 0.0, radii[0]);
+//  int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
+//  int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
+//  out_tags.emplace_back(disk_tag);
+//  // Do the annuli
+//  int prev_loop_tag = loop0_tag;
+//  for (size_t i = 1; i < nradii; ++i) {
+//    int const circle_tag = gmsh::model::occ::addCircle(x, y, 0.0, radii[i]);
+//    int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
+//    int const annulus_tag = gmsh::model::occ::addPlaneSurface({loop_tag, prev_loop_tag});
+//    out_tags.emplace_back(annulus_tag);
+//    prev_loop_tag = loop_tag;
+//  }
+//  gmsh::model::occ::synchronize();
+//  // Add materials
+//  for (size_t i = 0; i < nradii; ++i) {
+//    addToPhysicalGroup(2, {out_tags[i]}, -1,
+//                       "Material_" + std::string(materials[i].getName().c_str()));
+//    // Color entities according to materials
+//    Color const color = materials[i].getColor();
+//    gmsh::model::setColor(
+//        {
+//            {2, out_tags[i]}
+//    }, // Entities to color
+//        static_cast<int>(color.r()), static_cast<int>(color.g()),
+//        static_cast<int>(color.b()), static_cast<int>(color.a()),
+//        /*recursive=*/true);
+//  }
+//  return out_tags;
+//}
+//
+//auto
+//addCylindricalPin2D(Vec2d const & center, Vector<double> const & radii,
+//                    Vector<Material> const & materials) -> um2::Vector<int>
+//{
+//  std::vector<double> radii_vec(static_cast<size_t>(radii.size()));
+//  std::vector<Material> materials_vec(static_cast<size_t>(materials.size()));
+//  for (size_t i = 0; i < radii_vec.size(); ++i) {
+//    radii_vec[i] = radii[static_cast<I>(i)];
+//    materials_vec[i] = materials[static_cast<I>(i)];
+//  }
+//  std::vector<int> out_tags = addCylindricalPin2D(center, radii_vec, materials_vec);
+//  um2::Vector<int> out_tags_um2(static_cast<I>(out_tags.size()));
+//  for (Int i = 0; i < out_tags_um2.size(); ++i) {
+//    out_tags_um2[i] = out_tags[static_cast<size_t>(i)];
+//  }
+//  return out_tags_um2;
+//}
+//
+////=============================================================================
+//// addCylindricalPinLattice2D
+////=============================================================================
+//
+//auto
+//// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+//addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
+//                           std::vector<std::vector<Material>> const & materials,
+//                           std::vector<Vec2d> const & dxdy,
+//                           std::vector<std::vector<int>> const & pin_ids,
+//                           Vec2d const & offset) -> std::vector<int>
+//{
+//  LOG_INFO("Adding 2D cylindrical pin lattice");
+//  // Input checking
+//  size_t const nunique_pins = radii.size();
+//  if (nunique_pins == 0) {
+//    LOG_ERROR("radii must not be empty");
+//  }
+//  if (nunique_pins != materials.size()) {
+//    LOG_ERROR("Number of radii vectors must be equal to number of material vectors");
+//  }
+//  if (nunique_pins != dxdy.size()) {
+//    LOG_ERROR("Number of radii vectors must be equal to number of dxdy pairs");
+//  }
+//  // Ensure each row of pin_ids has the same length
+//  size_t const ncol = pin_ids[0].size();
+//  for (auto const & row : pin_ids) {
+//    if (row.size() != ncol) {
+//      LOG_ERROR("Each row of pin_ids must have the same length");
+//    }
+//  }
+//  // Ensure all pin_ids are in range 0:nunique_pins - 1.
+//  for (auto const & row : pin_ids) {
+//    for (auto const & id : row) {
+//      if (id < 0 || static_cast<size_t>(id) >= nunique_pins) {
+//        LOG_ERROR("pin_ids must be in range [0, nunique_pins - 1]");
+//      }
+//    }
+//  }
+//  size_t const nrow = pin_ids.size();
+//  size_t const npins = nrow * ncol;
+//  // Reverse the ordering of the rows of pin_ids, so the vector ordering matches the
+//  // spatial ordering.
+//  std::vector<std::vector<int>> pin_ids_rev(nrow);
+//  for (size_t i = 0; i < nrow; ++i) {
+//    pin_ids_rev[i] = pin_ids[nrow - i - 1];
+//  }
+//  // Construct a RectilinearGrid object using the vector of AxisAlignedBox constructor.
+//  Vector<AxisAlignedBox2> boxes(static_cast<I>(npins));
+//  double ymin = 0.0;
+//  for (size_t i = 0; i < nrow; ++i) {
+//    double xmin = 0.0;
+//    std::vector<int> const & row = pin_ids_rev[i];
+//    auto pin_idx = static_cast<size_t>(row[0]);
+//    double const ymax = ymin + dxdy[pin_idx][1];
+//    for (size_t j = 0; j < ncol; ++j) {
+//      pin_idx = static_cast<size_t>(row[j]);
+//      double const xmax = xmin + dxdy[pin_idx][0];
+//      boxes[static_cast<I>(i * ncol + j)] =
+//          AxisAlignedBox2(Point2(condCast<F>(xmin), condCast<F>(ymin)),
+//                          Point2(condCast<F>(xmax), condCast<F>(ymax)));
+//
+//      xmin = xmax;
+//    }
+//    ymin = ymax;
+//  }
+//
+//  RectilinearGrid2 const grid(boxes);
+//
+//  std::vector<int> out_tags;
+//  // For each unique pin, loop through the pin_ids_rev array and add the pins.
+//  for (size_t pin_id = 0; pin_id < nunique_pins; ++pin_id) {
+//    size_t const nrad = radii[pin_id].size();
+//    if (nrad == 0) {
+//      continue;
+//    }
+//    std::vector<std::vector<int>> material_ids(nrad);
+//    for (size_t i = 0; i < nrow; ++i) {
+//      std::vector<int> const & row = pin_ids_rev[i];
+//      for (size_t j = 0; j < ncol; ++j) {
+//        if (row[j] == static_cast<int>(pin_id)) {
+//          AxisAlignedBox2 const box = grid.getBox(j, i);
+//          double const x = 0.5 * condCast<double>(box.xMin() + box.xMax()) + offset[0];
+//          double const y = 0.5 * condCast<double>(box.yMin() + box.yMax()) + offset[1];
+//          // Do the innermost disk
+//          double const r0 = radii[pin_id][0];
+//          int const circle0_tag = gmsh::model::occ::addCircle(x, y, 0.0, r0);
+//          int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
+//          int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
+//          material_ids[0].emplace_back(disk_tag);
+//          out_tags.emplace_back(disk_tag);
+//          // Do the annuli
+//          int prev_loop_tag = loop0_tag;
+//          for (size_t k = 1; k < nrad; ++k) {
+//            double const r = radii[pin_id][k];
+//            int const circle_tag = gmsh::model::occ::addCircle(x, y, 0.0, r);
+//            int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
+//            int const annulus_tag =
+//                gmsh::model::occ::addPlaneSurface({loop_tag, prev_loop_tag});
+//            material_ids[k].emplace_back(annulus_tag);
+//            out_tags.emplace_back(annulus_tag);
+//            prev_loop_tag = loop_tag;
+//          }
+//        }
+//      }
+//    }
+//    gmsh::model::occ::synchronize();
+//    // Add materials
+//    for (size_t i = 0; i < nrad; ++i) {
+//      size_t const nents = material_ids[i].size();
+//      if (nents == 0) {
+//        continue;
+//      }
+//      addToPhysicalGroup(
+//          2,                                                                // dim
+//          material_ids[i],                                                  // tags
+//          -1,                                                               // tag
+//          "Material_" + std::string(materials[pin_id][i].getName().c_str()) // name
+//      );
+//      // Color entities according to materials
+//      gmsh::vectorpair mat_dimtags(nents);
+//      for (size_t j = 0; j < nents; ++j) {
+//        mat_dimtags[j] = std::make_pair(2, material_ids[i][j]);
+//      }
+//      Color const color = materials[pin_id][i].getColor();
+//      gmsh::model::setColor(mat_dimtags, static_cast<int>(color.r()),
+//                            static_cast<int>(color.g()), static_cast<int>(color.b()),
+//                            static_cast<int>(color.a()), /*recursive=*/true);
+//    }
+//  } // end loop over unique pins
+//  return out_tags;
+//
+//} // addCylindricalPinLattice2D
+//
+////==============================================================================
+//// addCylindricalPin
+////==============================================================================
+//
+//auto
+//addCylindricalPin(Vec3d const & center, double const height,
+//                  std::vector<double> const & radii,
+//                  std::vector<Material> const & materials) -> std::vector<int>
+//{
+//  LOG_INFO("Adding cylindrical pin");
+//  // Input checking
+//  size_t const nradii = radii.size();
+//  if (height <= 0.0) {
+//    LOG_ERROR("height must be positive");
+//  }
+//  if (nradii == 0) {
+//    LOG_ERROR("radii must not be empty");
+//  }
+//  if (nradii > materials.size()) {
+//    LOG_ERROR("Number of radii must be <= number of materials");
+//  }
+//  if (radii[0] <= 0.0) {
+//    LOG_ERROR("radii must be positive");
+//  }
+//  if (!std::is_sorted(radii.cbegin(), radii.cend())) {
+//    LOG_ERROR("radii must be strictly increasing");
+//  }
+//  // Create the pin geometry
+//  gmsh::vectorpair dimtags_2d;
+//  double const x = center[0];
+//  double const y = center[1];
+//  double const z = center[2];
+//  // Do the innermost disk
+//  int const circle0_tag = gmsh::model::occ::addCircle(x, y, z, radii[0]);
+//  int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
+//  int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
+//  dimtags_2d.emplace_back(2, disk_tag);
+//  // Do the annuli
+//  int prev_loop_tag = loop0_tag;
+//  for (size_t i = 1; i < nradii; ++i) {
+//    int const circle_tag = gmsh::model::occ::addCircle(x, y, z, radii[i]);
+//    int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
+//    int const annulus_tag = gmsh::model::occ::addPlaneSurface({loop_tag, prev_loop_tag});
+//    dimtags_2d.emplace_back(2, annulus_tag);
+//    prev_loop_tag = loop_tag;
+//  }
+//  gmsh::vectorpair out_dimtags;
+//  // NOLINTNEXTLINE(readability-suspicious-call-argument) justification: this is wrong
+//  gmsh::model::occ::extrude(dimtags_2d, 0.0, 0.0, height, out_dimtags);
+//  gmsh::model::occ::synchronize();
+//  std::vector<int> out_tags;
+//  out_tags.reserve(nradii);
+//  for (auto const & dt : out_dimtags) {
+//    if (dt.first == 3) {
+//      out_tags.emplace_back(dt.second);
+//    }
+//  }
+//  // Add materials
+//  for (size_t i = 0; i < nradii; ++i) {
+//    addToPhysicalGroup(3, {out_tags[i]}, -1,
+//                       "Material_" + std::string(materials[i].getName().c_str()));
+//    // Color entities according to materials
+//    Color const color = materials[i].getColor();
+//    gmsh::model::setColor(
+//        {
+//            {3, out_tags[i]}
+//    }, // Entities to color
+//        static_cast<int>(color.r()), static_cast<int>(color.g()),
+//        static_cast<int>(color.b()), static_cast<int>(color.a()),
+//        /*recursive=*/true);
+//  }
+//  return out_tags;
+//} // addCylindricalPin
+//
+//auto
+//// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+//addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
+//                         std::vector<std::vector<Material>> const & materials,
+//                         double const height, std::vector<Vec2d> const & dxdy,
+//                         std::vector<std::vector<int>> const & pin_ids,
+//                         Vec3d const & offset) -> std::vector<int>
+//{
+//  LOG_INFO("Adding 2D cylindrical pin lattice");
+//  // Input checking
+//  size_t const nunique_pins = radii.size();
+//  if (nunique_pins == 0) {
+//    LOG_ERROR("radii must not be empty");
+//  }
+//  if (nunique_pins != materials.size()) {
+//    LOG_ERROR("Number of radii vectors must be equal to number of material vectors");
+//  }
+//  if (nunique_pins != dxdy.size()) {
+//    LOG_ERROR("Number of radii vectors must be equal to number of dxdy pairs");
+//  }
+//  if (height <= 0.0) {
+//    LOG_ERROR("height must be positive");
+//  }
+//  // Ensure each row of pin_ids has the same length
+//  size_t const ncol = pin_ids[0].size();
+//  for (auto const & row : pin_ids) {
+//    if (row.size() != ncol) {
+//      LOG_ERROR("Each row of pin_ids must have the same length");
+//    }
+//  }
+//  // Ensure all pin_ids are in range 0:nunique_pins - 1.
+//  for (auto const & row : pin_ids) {
+//    for (auto const & id : row) {
+//      if (id < 0 || static_cast<size_t>(id) >= nunique_pins) {
+//        LOG_ERROR("pin_ids must be in range [0, nunique_pins - 1]");
+//      }
+//    }
+//  }
+//  size_t const nrow = pin_ids.size();
+//  size_t const npins = nrow * ncol;
+//  // Reverse the ordering of the rows of pin_ids, so the vector ordering matches the
+//  // spatial ordering.
+//  std::vector<std::vector<int>> pin_ids_rev(nrow);
+//  for (size_t i = 0; i < nrow; ++i) {
+//    pin_ids_rev[i] = pin_ids[nrow - i - 1];
+//  }
+//  // Construct a RectilinearGrid object using the vector of AxisAlignedBox constructor.
+//  Vector<AxisAlignedBox2> boxes(static_cast<I>(npins));
+//  double ymin = 0.0;
+//  for (size_t i = 0; i < nrow; ++i) {
+//    double xmin = 0.0;
+//    std::vector<int> const & row = pin_ids_rev[i];
+//    auto pin_idx = static_cast<size_t>(row[0]);
+//    double const ymax = ymin + dxdy[pin_idx][1];
+//    for (size_t j = 0; j < ncol; ++j) {
+//      pin_idx = static_cast<size_t>(row[j]);
+//      double const xmax = xmin + dxdy[pin_idx][0];
+//      boxes[static_cast<I>(i * ncol + j)] =
+//          AxisAlignedBox2(Point2(condCast<F>(xmin), condCast<F>(ymin)),
+//                          Point2(condCast<F>(xmax), condCast<F>(ymax)));
+//      xmin = xmax;
+//    }
+//    ymin = ymax;
+//  }
+//
+//  RectilinearGrid2 const grid(boxes);
+//
+//  std::vector<int> out_tags;
+//  // For each unique pin, loop through the pin_ids_rev array and add the pins.
+//  for (size_t pin_id = 0; pin_id < nunique_pins; ++pin_id) {
+//    size_t const nrad = radii[pin_id].size();
+//    if (nrad == 0) {
+//      continue;
+//    }
+//    std::vector<std::vector<int>> material_ids(nrad);
+//    for (size_t i = 0; i < nrow; ++i) {
+//      std::vector<int> const & row = pin_ids_rev[i];
+//      for (size_t j = 0; j < ncol; ++j) {
+//        if (row[j] == static_cast<int>(pin_id)) {
+//          AxisAlignedBox2 const box = grid.getBox(j, i);
+//          double const x = 0.5 * condCast<double>(box.xMin() + box.xMax()) + offset[0];
+//          double const y = 0.5 * condCast<double>(box.yMin() + box.yMax()) + offset[1];
+//          double const z = offset[2];
+//          // Do the innermost disk
+//          double const r0 = radii[pin_id][0];
+//          int const circle0_tag = gmsh::model::occ::addCircle(x, y, z, r0);
+//          int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
+//          int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
+//          material_ids[0].emplace_back(disk_tag);
+//          out_tags.emplace_back(disk_tag);
+//          // Do the annuli
+//          int prev_loop_tag = loop0_tag;
+//          for (size_t k = 1; k < nrad; ++k) {
+//            double const r = radii[pin_id][k];
+//            int const circle_tag = gmsh::model::occ::addCircle(x, y, z, r);
+//            int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
+//            int const annulus_tag =
+//                gmsh::model::occ::addPlaneSurface({loop_tag, prev_loop_tag});
+//            material_ids[k].emplace_back(annulus_tag);
+//            out_tags.emplace_back(annulus_tag);
+//            prev_loop_tag = loop_tag;
+//          }
+//        }
+//      }
+//    }
+//    gmsh::model::occ::synchronize();
+//    // Extrude and add materials
+//    for (size_t i = 0; i < nrad; ++i) {
+//      size_t const nents = material_ids[i].size();
+//      if (nents == 0) {
+//        continue;
+//      }
+//      gmsh::vectorpair out_dimtags;
+//      gmsh::vectorpair in_dimtags(nents);
+//      for (size_t j = 0; j < nents; ++j) {
+//        in_dimtags[j] = std::make_pair(2, material_ids[i][j]);
+//      }
+//      gmsh::model::occ::extrude(in_dimtags, 0.0, 0.0, height, out_dimtags);
+//      gmsh::model::occ::synchronize();
+//      // Overwrite the material ids with the extruded tags.
+//      size_t ctr = 0;
+//      for (auto const & dimtag : out_dimtags) {
+//        if (dimtag.first == 3) {
+//          material_ids[i][ctr] = dimtag.second;
+//          out_tags.emplace_back(dimtag.second);
+//          ++ctr;
+//        }
+//      }
+//      ASSERT(ctr == nents);
+//      addToPhysicalGroup(
+//          3,                                                                // dim
+//          material_ids[i],                                                  // tags
+//          -1,                                                               // tag
+//          "Material_" + std::string(materials[pin_id][i].getName().c_str()) // name
+//      );
+//      // Color entities according to materials
+//      gmsh::vectorpair mat_dimtags(nents);
+//      for (size_t j = 0; j < nents; ++j) {
+//        mat_dimtags[j] = std::make_pair(3, material_ids[i][j]);
+//      }
+//      Color const color = materials[pin_id][i].getColor();
+//      gmsh::model::setColor(mat_dimtags, static_cast<int>(color.r()),
+//                            static_cast<int>(color.g()), static_cast<int>(color.b()),
+//                            static_cast<int>(color.a()), /*recursive=*/true);
+//    }
+//  } // end loop over unique pins
+//  return out_tags;
+//} // end function
+//
+//==============================================================================
+// overlayCoarseGrid
+//==============================================================================
 
-auto
-addCylindricalPin2D(Vec2d const & center, std::vector<double> const & radii,
-                    std::vector<Material> const & materials) -> std::vector<int>
-{
-  log::info("Adding 2D cylindrical pin");
-  // Input checking
-  size_t const nradii = radii.size();
-  if (nradii == 0) {
-    log::error("radii must not be empty");
-  }
-  if (nradii > materials.size()) {
-    log::error("Number of radii must be <= number of materials");
-  }
-  if (radii[0] <= 0.0) {
-    log::error("radii must be positive");
-  }
-  for (size_t i = 1; i < nradii; ++i) {
-    if (radii[i] <= radii[i - 1]) {
-      log::error("radii must be strictly increasing");
-    }
-  }
-  // Create the pin geometry
-  std::vector<int> out_tags;
-  out_tags.reserve(nradii);
-  double const x = center[0];
-  double const y = center[1];
-  // Do the innermost disk
-  int const circle0_tag = gmsh::model::occ::addCircle(x, y, 0.0, radii[0]);
-  int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
-  int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
-  out_tags.emplace_back(disk_tag);
-  // Do the annuli
-  int prev_loop_tag = loop0_tag;
-  for (size_t i = 1; i < nradii; ++i) {
-    int const circle_tag = gmsh::model::occ::addCircle(x, y, 0.0, radii[i]);
-    int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
-    int const annulus_tag = gmsh::model::occ::addPlaneSurface({loop_tag, prev_loop_tag});
-    out_tags.emplace_back(annulus_tag);
-    prev_loop_tag = loop_tag;
-  }
-  gmsh::model::occ::synchronize();
-  // Add materials
-  for (size_t i = 0; i < nradii; ++i) {
-    addToPhysicalGroup(2, {out_tags[i]}, -1,
-                       "Material_" + std::string(materials[i].getName().c_str()));
-    // Color entities according to materials
-    Color const color = materials[i].getColor();
-    gmsh::model::setColor(
-        {
-            {2, out_tags[i]}
-    }, // Entities to color
-        static_cast<int>(color.r()), static_cast<int>(color.g()),
-        static_cast<int>(color.b()), static_cast<int>(color.a()),
-        /*recursive=*/true);
-  }
-  return out_tags;
-}
-
-auto
-addCylindricalPin2D(Vec2d const & center, Vector<double> const & radii,
-                    Vector<Material> const & materials) -> um2::Vector<int>
-{
-  std::vector<double> radii_vec(static_cast<size_t>(radii.size()));
-  std::vector<Material> materials_vec(static_cast<size_t>(materials.size()));
-  for (size_t i = 0; i < radii_vec.size(); ++i) {
-    radii_vec[i] = radii[static_cast<I>(i)];
-    materials_vec[i] = materials[static_cast<I>(i)];
-  }
-  std::vector<int> out_tags = addCylindricalPin2D(center, radii_vec, materials_vec);
-  um2::Vector<int> out_tags_um2(static_cast<I>(out_tags.size()));
-  for (I i = 0; i < out_tags_um2.size(); ++i) {
-    out_tags_um2[i] = out_tags[static_cast<size_t>(i)];
-  }
-  return out_tags_um2;
-}
-
-//=============================================================================
-// addCylindricalPinLattice2D
-//=============================================================================
-
-auto
+void
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
-addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
-                           std::vector<std::vector<Material>> const & materials,
-                           std::vector<Vec2d> const & dxdy,
-                           std::vector<std::vector<int>> const & pin_ids,
-                           Vec2d const & offset) -> std::vector<int>
-{
-  log::info("Adding 2D cylindrical pin lattice");
-  // Input checking
-  size_t const nunique_pins = radii.size();
-  if (nunique_pins == 0) {
-    log::error("radii must not be empty");
-  }
-  if (nunique_pins != materials.size()) {
-    log::error("Number of radii vectors must be equal to number of material vectors");
-  }
-  if (nunique_pins != dxdy.size()) {
-    log::error("Number of radii vectors must be equal to number of dxdy pairs");
-  }
-  // Ensure each row of pin_ids has the same length
-  size_t const ncol = pin_ids[0].size();
-  for (auto const & row : pin_ids) {
-    if (row.size() != ncol) {
-      log::error("Each row of pin_ids must have the same length");
-    }
-  }
-  // Ensure all pin_ids are in range 0:nunique_pins - 1.
-  for (auto const & row : pin_ids) {
-    for (auto const & id : row) {
-      if (id < 0 || static_cast<size_t>(id) >= nunique_pins) {
-        log::error("pin_ids must be in range [0, nunique_pins - 1]");
-      }
-    }
-  }
-  size_t const nrow = pin_ids.size();
-  size_t const npins = nrow * ncol;
-  // Reverse the ordering of the rows of pin_ids, so the vector ordering matches the
-  // spatial ordering.
-  std::vector<std::vector<int>> pin_ids_rev(nrow);
-  for (size_t i = 0; i < nrow; ++i) {
-    pin_ids_rev[i] = pin_ids[nrow - i - 1];
-  }
-  // Construct a RectilinearGrid object using the vector of AxisAlignedBox constructor.
-  Vector<AxisAlignedBox2> boxes(static_cast<I>(npins));
-  double ymin = 0.0;
-  for (size_t i = 0; i < nrow; ++i) {
-    double xmin = 0.0;
-    std::vector<int> const & row = pin_ids_rev[i];
-    auto pin_idx = static_cast<size_t>(row[0]);
-    double const ymax = ymin + dxdy[pin_idx][1];
-    for (size_t j = 0; j < ncol; ++j) {
-      pin_idx = static_cast<size_t>(row[j]);
-      double const xmax = xmin + dxdy[pin_idx][0];
-      boxes[static_cast<I>(i * ncol + j)] =
-          AxisAlignedBox2(Point2(condCast<F>(xmin), condCast<F>(ymin)),
-                          Point2(condCast<F>(xmax), condCast<F>(ymax)));
-
-      xmin = xmax;
-    }
-    ymin = ymax;
-  }
-
-  RectilinearGrid2 const grid(boxes);
-
-  std::vector<int> out_tags;
-  // For each unique pin, loop through the pin_ids_rev array and add the pins.
-  for (size_t pin_id = 0; pin_id < nunique_pins; ++pin_id) {
-    size_t const nrad = radii[pin_id].size();
-    if (nrad == 0) {
-      continue;
-    }
-    std::vector<std::vector<int>> material_ids(nrad);
-    for (size_t i = 0; i < nrow; ++i) {
-      std::vector<int> const & row = pin_ids_rev[i];
-      for (size_t j = 0; j < ncol; ++j) {
-        if (row[j] == static_cast<int>(pin_id)) {
-          AxisAlignedBox2 const box = grid.getBox(j, i);
-          double const x = 0.5 * condCast<double>(box.xMin() + box.xMax()) + offset[0];
-          double const y = 0.5 * condCast<double>(box.yMin() + box.yMax()) + offset[1];
-          // Do the innermost disk
-          double const r0 = radii[pin_id][0];
-          int const circle0_tag = gmsh::model::occ::addCircle(x, y, 0.0, r0);
-          int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
-          int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
-          material_ids[0].emplace_back(disk_tag);
-          out_tags.emplace_back(disk_tag);
-          // Do the annuli
-          int prev_loop_tag = loop0_tag;
-          for (size_t k = 1; k < nrad; ++k) {
-            double const r = radii[pin_id][k];
-            int const circle_tag = gmsh::model::occ::addCircle(x, y, 0.0, r);
-            int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
-            int const annulus_tag =
-                gmsh::model::occ::addPlaneSurface({loop_tag, prev_loop_tag});
-            material_ids[k].emplace_back(annulus_tag);
-            out_tags.emplace_back(annulus_tag);
-            prev_loop_tag = loop_tag;
-          }
-        }
-      }
-    }
-    gmsh::model::occ::synchronize();
-    // Add materials
-    for (size_t i = 0; i < nrad; ++i) {
-      size_t const nents = material_ids[i].size();
-      if (nents == 0) {
-        continue;
-      }
-      addToPhysicalGroup(
-          2,                                                                // dim
-          material_ids[i],                                                  // tags
-          -1,                                                               // tag
-          "Material_" + std::string(materials[pin_id][i].getName().c_str()) // name
-      );
-      // Color entities according to materials
-      gmsh::vectorpair mat_dimtags(nents);
-      for (size_t j = 0; j < nents; ++j) {
-        mat_dimtags[j] = std::make_pair(2, material_ids[i][j]);
-      }
-      Color const color = materials[pin_id][i].getColor();
-      gmsh::model::setColor(mat_dimtags, static_cast<int>(color.r()),
-                            static_cast<int>(color.g()), static_cast<int>(color.b()),
-                            static_cast<int>(color.a()), /*recursive=*/true);
-    }
-  } // end loop over unique pins
-  return out_tags;
-
-} // addCylindricalPinLattice2D
-
-//==============================================================================
-// addCylindricalPin
-//==============================================================================
-
-auto
-addCylindricalPin(Vec3d const & center, double const height,
-                  std::vector<double> const & radii,
-                  std::vector<Material> const & materials) -> std::vector<int>
-{
-  LOG_INFO("Adding cylindrical pin");
-  // Input checking
-  size_t const nradii = radii.size();
-  if (height <= 0.0) {
-    log::error("height must be positive");
-  }
-  if (nradii == 0) {
-    log::error("radii must not be empty");
-  }
-  if (nradii > materials.size()) {
-    log::error("Number of radii must be <= number of materials");
-  }
-  if (radii[0] <= 0.0) {
-    log::error("radii must be positive");
-  }
-  if (!std::is_sorted(radii.cbegin(), radii.cend())) {
-    log::error("radii must be strictly increasing");
-  }
-  // Create the pin geometry
-  gmsh::vectorpair dimtags_2d;
-  double const x = center[0];
-  double const y = center[1];
-  double const z = center[2];
-  // Do the innermost disk
-  int const circle0_tag = gmsh::model::occ::addCircle(x, y, z, radii[0]);
-  int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
-  int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
-  dimtags_2d.emplace_back(2, disk_tag);
-  // Do the annuli
-  int prev_loop_tag = loop0_tag;
-  for (size_t i = 1; i < nradii; ++i) {
-    int const circle_tag = gmsh::model::occ::addCircle(x, y, z, radii[i]);
-    int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
-    int const annulus_tag = gmsh::model::occ::addPlaneSurface({loop_tag, prev_loop_tag});
-    dimtags_2d.emplace_back(2, annulus_tag);
-    prev_loop_tag = loop_tag;
-  }
-  gmsh::vectorpair out_dimtags;
-  // NOLINTNEXTLINE(readability-suspicious-call-argument) justification: this is wrong
-  gmsh::model::occ::extrude(dimtags_2d, 0.0, 0.0, height, out_dimtags);
-  gmsh::model::occ::synchronize();
-  std::vector<int> out_tags;
-  out_tags.reserve(nradii);
-  for (auto const & dt : out_dimtags) {
-    if (dt.first == 3) {
-      out_tags.emplace_back(dt.second);
-    }
-  }
-  // Add materials
-  for (size_t i = 0; i < nradii; ++i) {
-    addToPhysicalGroup(3, {out_tags[i]}, -1,
-                       "Material_" + std::string(materials[i].getName().c_str()));
-    // Color entities according to materials
-    Color const color = materials[i].getColor();
-    gmsh::model::setColor(
-        {
-            {3, out_tags[i]}
-    }, // Entities to color
-        static_cast<int>(color.r()), static_cast<int>(color.g()),
-        static_cast<int>(color.b()), static_cast<int>(color.a()),
-        /*recursive=*/true);
-  }
-  return out_tags;
-} // addCylindricalPin
-
-auto
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
-addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
-                         std::vector<std::vector<Material>> const & materials,
-                         double const height, std::vector<Vec2d> const & dxdy,
-                         std::vector<std::vector<int>> const & pin_ids,
-                         Vec3d const & offset) -> std::vector<int>
-{
-  log::info("Adding 2D cylindrical pin lattice");
-  // Input checking
-  size_t const nunique_pins = radii.size();
-  if (nunique_pins == 0) {
-    log::error("radii must not be empty");
-  }
-  if (nunique_pins != materials.size()) {
-    log::error("Number of radii vectors must be equal to number of material vectors");
-  }
-  if (nunique_pins != dxdy.size()) {
-    log::error("Number of radii vectors must be equal to number of dxdy pairs");
-  }
-  if (height <= 0.0) {
-    log::error("height must be positive");
-  }
-  // Ensure each row of pin_ids has the same length
-  size_t const ncol = pin_ids[0].size();
-  for (auto const & row : pin_ids) {
-    if (row.size() != ncol) {
-      log::error("Each row of pin_ids must have the same length");
-    }
-  }
-  // Ensure all pin_ids are in range 0:nunique_pins - 1.
-  for (auto const & row : pin_ids) {
-    for (auto const & id : row) {
-      if (id < 0 || static_cast<size_t>(id) >= nunique_pins) {
-        log::error("pin_ids must be in range [0, nunique_pins - 1]");
-      }
-    }
-  }
-  size_t const nrow = pin_ids.size();
-  size_t const npins = nrow * ncol;
-  // Reverse the ordering of the rows of pin_ids, so the vector ordering matches the
-  // spatial ordering.
-  std::vector<std::vector<int>> pin_ids_rev(nrow);
-  for (size_t i = 0; i < nrow; ++i) {
-    pin_ids_rev[i] = pin_ids[nrow - i - 1];
-  }
-  // Construct a RectilinearGrid object using the vector of AxisAlignedBox constructor.
-  Vector<AxisAlignedBox2> boxes(static_cast<I>(npins));
-  double ymin = 0.0;
-  for (size_t i = 0; i < nrow; ++i) {
-    double xmin = 0.0;
-    std::vector<int> const & row = pin_ids_rev[i];
-    auto pin_idx = static_cast<size_t>(row[0]);
-    double const ymax = ymin + dxdy[pin_idx][1];
-    for (size_t j = 0; j < ncol; ++j) {
-      pin_idx = static_cast<size_t>(row[j]);
-      double const xmax = xmin + dxdy[pin_idx][0];
-      boxes[static_cast<I>(i * ncol + j)] =
-          AxisAlignedBox2(Point2(condCast<F>(xmin), condCast<F>(ymin)),
-                          Point2(condCast<F>(xmax), condCast<F>(ymax)));
-      xmin = xmax;
-    }
-    ymin = ymax;
-  }
-
-  RectilinearGrid2 const grid(boxes);
-
-  std::vector<int> out_tags;
-  // For each unique pin, loop through the pin_ids_rev array and add the pins.
-  for (size_t pin_id = 0; pin_id < nunique_pins; ++pin_id) {
-    size_t const nrad = radii[pin_id].size();
-    if (nrad == 0) {
-      continue;
-    }
-    std::vector<std::vector<int>> material_ids(nrad);
-    for (size_t i = 0; i < nrow; ++i) {
-      std::vector<int> const & row = pin_ids_rev[i];
-      for (size_t j = 0; j < ncol; ++j) {
-        if (row[j] == static_cast<int>(pin_id)) {
-          AxisAlignedBox2 const box = grid.getBox(j, i);
-          double const x = 0.5 * condCast<double>(box.xMin() + box.xMax()) + offset[0];
-          double const y = 0.5 * condCast<double>(box.yMin() + box.yMax()) + offset[1];
-          double const z = offset[2];
-          // Do the innermost disk
-          double const r0 = radii[pin_id][0];
-          int const circle0_tag = gmsh::model::occ::addCircle(x, y, z, r0);
-          int const loop0_tag = gmsh::model::occ::addCurveLoop({circle0_tag});
-          int const disk_tag = gmsh::model::occ::addPlaneSurface({loop0_tag});
-          material_ids[0].emplace_back(disk_tag);
-          out_tags.emplace_back(disk_tag);
-          // Do the annuli
-          int prev_loop_tag = loop0_tag;
-          for (size_t k = 1; k < nrad; ++k) {
-            double const r = radii[pin_id][k];
-            int const circle_tag = gmsh::model::occ::addCircle(x, y, z, r);
-            int const loop_tag = gmsh::model::occ::addCurveLoop({circle_tag});
-            int const annulus_tag =
-                gmsh::model::occ::addPlaneSurface({loop_tag, prev_loop_tag});
-            material_ids[k].emplace_back(annulus_tag);
-            out_tags.emplace_back(annulus_tag);
-            prev_loop_tag = loop_tag;
-          }
-        }
-      }
-    }
-    gmsh::model::occ::synchronize();
-    // Extrude and add materials
-    for (size_t i = 0; i < nrad; ++i) {
-      size_t const nents = material_ids[i].size();
-      if (nents == 0) {
-        continue;
-      }
-      gmsh::vectorpair out_dimtags;
-      gmsh::vectorpair in_dimtags(nents);
-      for (size_t j = 0; j < nents; ++j) {
-        in_dimtags[j] = std::make_pair(2, material_ids[i][j]);
-      }
-      gmsh::model::occ::extrude(in_dimtags, 0.0, 0.0, height, out_dimtags);
-      gmsh::model::occ::synchronize();
-      // Overwrite the material ids with the extruded tags.
-      size_t ctr = 0;
-      for (auto const & dimtag : out_dimtags) {
-        if (dimtag.first == 3) {
-          material_ids[i][ctr] = dimtag.second;
-          out_tags.emplace_back(dimtag.second);
-          ++ctr;
-        }
-      }
-      ASSERT(ctr == nents);
-      addToPhysicalGroup(
-          3,                                                                // dim
-          material_ids[i],                                                  // tags
-          -1,                                                               // tag
-          "Material_" + std::string(materials[pin_id][i].getName().c_str()) // name
-      );
-      // Color entities according to materials
-      gmsh::vectorpair mat_dimtags(nents);
-      for (size_t j = 0; j < nents; ++j) {
-        mat_dimtags[j] = std::make_pair(3, material_ids[i][j]);
-      }
-      Color const color = materials[pin_id][i].getColor();
-      gmsh::model::setColor(mat_dimtags, static_cast<int>(color.r()),
-                            static_cast<int>(color.g()), static_cast<int>(color.b()),
-                            static_cast<int>(color.a()), /*recursive=*/true);
-    }
-  } // end loop over unique pins
-  return out_tags;
-} // end function
-
-//==============================================================================
-// overlaySpatialPartition
-//==============================================================================
-
- void
-// NOLINTNEXTLINE(readability-function-cognitive-complexity)
- overlaySpatialPartition(mpact::SpatialPartition const & partition,
+overlayCoarseGrid(mpact::Model const & model,
                          std::string const & fill_material_name,
                          Color const fill_material_color)
 {
-   log::info("Overlaying MPACT spatial partition");
+   LOG_INFO("Overlaying MPACT coarse grid"); 
    // Algorithm:
    //  1. Get the lower left corner of each unique 2D coarse cell rectangle that
    //      will cut the model.
@@ -1025,24 +1040,24 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
      model_dim = 2;
    }
    // Get the unique coarse cell lower left corners
-   I const num_cc = partition.numCoarseCells();
+   Int const num_cc = model.numCoarseCells();
    Vector<Point3> cc_lower_lefts(num_cc); // Of the cut-plane
-   Vector<Vec3<F>> cc_extents(num_cc);
+   Vector<Vec3F>  cc_extents(num_cc);
    Vector<int8_t> cc_found(num_cc, 0);
-   Vector<int8_t> rtm_found(partition.numRTMs(), 0);
-   Vector<int8_t> lat_found(partition.numLattices(), 0);
-   Vector<int8_t> asy_found(partition.numAssemblies(), 0);
+   Vector<int8_t> rtm_found(model.numRTMs(), 0);
+   Vector<int8_t> lat_found(model.numLattices(), 0);
+   Vector<int8_t> asy_found(model.numAssemblies(), 0);
 
-   auto const & core = partition.getCore();
+   auto const & core = model.getCore();
    if (core.children().empty()) {
-     log::error("Core has no children");
+     LOG_ERROR("Core has no children");
      return;
    }
    // For each assembly
-   I const nyasy = core.grid().numYCells();
-   I const nxasy = core.grid().numXCells();
-   for (I iyasy = 0; iyasy < nyasy; ++iyasy) {
-     for (I ixasy = 0; ixasy < nxasy; ++ixasy) {
+   Int const nyasy = core.grid().numCells(1);
+   Int const nxasy = core.grid().numCells(0);
+   for (Int iyasy = 0; iyasy < nyasy; ++iyasy) {
+     for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
        auto const asy_id = core.getChild(ixasy, iyasy);
        if (asy_found[asy_id] == 1) {
          continue;
@@ -1050,34 +1065,34 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
        asy_found[asy_id] = 1;
        AxisAlignedBox2 const asy_bb = core.grid().getBox(ixasy, iyasy);
        Point2 const asy_ll = asy_bb.minima(); // Lower left corner
-       auto const & assembly = partition.getAssembly(asy_id);
+       auto const & assembly = model.getAssembly(asy_id);
        if (assembly.children().empty()) {
-         log::error("Assembly has no children");
+         LOG_ERROR("Assembly has no children");
          return;
        }
        // For each lattice
-       I const nzlat = assembly.grid().numXCells();
-       for (I izlat = 0; izlat < nzlat; ++izlat) {
+       Int const nzlat = assembly.grid().numCells(0);
+       for (Int izlat = 0; izlat < nzlat; ++izlat) {
          auto const lat_id = assembly.getChild(izlat);
          if (lat_found[lat_id] == 1) {
            continue;
          }
          lat_found[lat_id] = 1;
-         double const low_z = assembly.grid().divs(0)[izlat];
-         double const high_z = assembly.grid().divs(0)[izlat + 1];
+         auto const low_z = castIfNot<double>(assembly.grid().divs(0)[izlat]);
+         auto const high_z = castIfNot<double>(assembly.grid().divs(0)[izlat + 1]);
          double const z_cut = (low_z + high_z) / 2;
          // Only half the thickness, since we want to cut at the midpoint
          double const dz = (high_z - low_z) / 2;
-         auto const & lattice = partition.getLattice(lat_id);
+         auto const & lattice = model.getLattice(lat_id);
          if (lattice.children().empty()) {
-           log::error("Lattice has no children");
+           LOG_ERROR("Lattice has no children");
            return;
          }
          // For each RTM
-         I const nyrtm = lattice.grid().numYCells();
-         I const nxrtm = lattice.grid().numXCells();
-         for (I iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
-           for (I ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
+         Int const nyrtm = lattice.grid().numCells(1);
+         Int const nxrtm = lattice.grid().numCells(0);
+         for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
+           for (Int ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
              auto const rtm_id = lattice.getChild(ixrtm, iyrtm);
              if (rtm_found[rtm_id] == 1) {
                continue;
@@ -1085,16 +1100,16 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
              rtm_found[rtm_id] = 1;
              AxisAlignedBox2 const rtm_bb = lattice.grid().getBox(ixrtm, iyrtm);
              Point2 const rtm_ll = rtm_bb.minima(); // Lower left corner
-             auto const & rtm = partition.getRTM(rtm_id);
+             auto const & rtm = model.getRTM(rtm_id);
              if (rtm.children().empty()) {
-               log::error("RTM has no children");
+               LOG_ERROR("RTM has no children");
                return;
              }
              // For each coarse cell
-             I const nycells = rtm.grid().numYCells();
-             I const nxcells = rtm.grid().numXCells();
-             for (I iycell = 0; iycell < nycells; ++iycell) {
-               for (I ixcell = 0; ixcell < nxcells; ++ixcell) {
+             Int const nycells = rtm.grid().numCells(1);
+             Int const nxcells = rtm.grid().numCells(0);
+             for (Int iycell = 0; iycell < nycells; ++iycell) {
+               for (Int ixcell = 0; ixcell < nxcells; ++ixcell) {
                  auto const cell_id = rtm.getChild(ixcell, iycell);
                  if (cc_found[cell_id] == 1) {
                    continue;
@@ -1102,8 +1117,12 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
                  cc_found[cell_id] = 1;
                  AxisAlignedBox2 const cell_bb = rtm.grid().getBox(ixcell, iycell);
                  Point2 const ll = asy_ll + rtm_ll + cell_bb.minima();
-                 cc_lower_lefts[cell_id] = {ll[0], ll[1], z_cut};
-                 cc_extents[cell_id] = {cell_bb.width(), cell_bb.height(), dz};
+                 cc_lower_lefts[cell_id][0] = ll[0]; 
+                 cc_lower_lefts[cell_id][1] = ll[1];
+                 cc_lower_lefts[cell_id][2] = castIfNot<Float>(z_cut);
+                 cc_extents[cell_id][0] = cell_bb.extents(0);
+                 cc_extents[cell_id][1] = cell_bb.extents(1);
+                 cc_extents[cell_id][2] = castIfNot<Float>(dz); 
                } // cell
              }   // cell
            }     // rtm
@@ -1120,13 +1139,13 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
    bool fill_exists = false;
    size_t const num_materials = materials.size();
    for (size_t i = 0; i < num_materials; ++i) {
-     std::string const name(materials[i].getName().c_str());
+     std::string const name(materials[i].getName().data());
      if (name == fill_material_name) {
        // Move the material to the end of the list to ensure
        // it is the fill material
        std::swap(materials[i], materials[num_materials - 1]);
        fill_exists = true;
-       log::debug("Found fill material: ", fill_material_name);
+       LOG_DEBUG("Found fill material: ", fill_material_name.c_str());
        break;
      }
    }
@@ -1134,25 +1153,37 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
      Material tmp_mat;
      tmp_mat.setName(String(fill_material_name.c_str()));
      tmp_mat.setColor(fill_material_color);
-     materials.push_back(um2::move(tmp_mat));
+     materials.emplace_back(um2::move(tmp_mat));
    }
    std::vector<int> cc_tags(static_cast<size_t>(num_cc));
+   // Potential for float promotion here
    namespace factory = gmsh::model::occ;
    if (model_dim == 2) {
      // Create rectangles
-     for (I i = 0; i < num_cc; ++i) {
+     for (Int i = 0; i < num_cc; ++i) {
        auto const & ll = cc_lower_lefts[i];
        auto const & ext = cc_extents[i];
        cc_tags[static_cast<size_t>(i)] =
-           factory::addRectangle(ll[0], ll[1], ll[2], ext[0], ext[1]);
+           factory::addRectangle(
+               castIfNot<double>(ll[0]), 
+               castIfNot<double>(ll[1]), 
+               castIfNot<double>(ll[2]), 
+               castIfNot<double>(ext[0]), 
+               castIfNot<double>(ext[1]));
      }
    } else {
      // Create boxes
-     for (I i = 0; i < num_cc; ++i) {
+     for (Int i = 0; i < num_cc; ++i) {
        auto const & ll = cc_lower_lefts[i];
        auto const & ext = cc_extents[i];
        cc_tags[static_cast<size_t>(i)] =
-           factory::addBox(ll[0], ll[1], ll[2], ext[0], ext[1], ext[2]);
+           factory::addBox(
+               castIfNot<double>(ll[0]), 
+               castIfNot<double>(ll[1]), 
+               castIfNot<double>(ll[2]), 
+               castIfNot<double>(ext[0]), 
+               castIfNot<double>(ext[1]), 
+               castIfNot<double>(ext[2]));
      }
    }
    factory::synchronize();
@@ -1163,7 +1194,7 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
    addToPhysicalGroup(model_dim, cc_tags, -1, fill_mat_full_name);
    // Add a physical group for each coarse cell
    std::stringstream ss;
-   for (I i = 0; i < num_cc; ++i) {
+   for (Int i = 0; i < num_cc; ++i) {
      ss.str("");
      ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << i;
      gmsh::model::addPhysicalGroup(model_dim, {cc_tags[static_cast<size_t>(i)]}, -1,
@@ -1210,7 +1241,7 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
        dont_remove_dimtags.emplace_back(model_dim, dont_remove[i]);
      }
    }
-   log::info("Removing unneeded entities");
+   LOG_INFO("Removing unneeded entities");
    gmsh::vectorpair to_remove_dimtags;
    gmsh::vectorpair all_dimtags;
    gmsh::model::getEntities(
@@ -1257,11 +1288,16 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
      gmsh::model::getEntities(model_dimtags_2d, 2);
      std::vector<int> cc_tags_2d(static_cast<size_t>(num_cc));
      // Create rectangles
-     for (I i = 0; i < num_cc; ++i) {
+     for (Int i = 0; i < num_cc; ++i) {
        auto const & ll = cc_lower_lefts[i];
        auto const & ext = cc_extents[i];
        cc_tags_2d[static_cast<size_t>(i)] =
-           factory::addRectangle(ll[0], ll[1], ll[2], ext[0], ext[1]);
+           factory::addRectangle(
+               castIfNot<double>(ll[0]), 
+               castIfNot<double>(ll[1]), 
+               castIfNot<double>(ll[2]), 
+               castIfNot<double>(ext[0]), 
+               castIfNot<double>(ext[1]));
      }
      factory::synchronize();
      // Don't need to add coarse cell physical groups to the 2D grid. The model
@@ -1312,7 +1348,7 @@ addCylindricalPinLattice(std::vector<std::vector<double>> const & radii,
      gmsh::model::removeEntities(to_remove_dimtags_2d, /*recursive=*/true);
      gmsh::model::occ::synchronize();
    }
- }
+}
 
 } // namespace occ
 } // namespace um2::gmsh::model

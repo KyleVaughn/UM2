@@ -1,15 +1,15 @@
 #pragma once
 
 #include <um2/mesh/face_vertex_mesh.hpp>
-//#include <um2/mesh/rectilinear_partition.hpp>
-//#include <um2/mesh/regular_partition.hpp>
-//#include <um2/physics/material.hpp>
+#include <um2/mesh/rectilinear_partition.hpp>
+#include <um2/mesh/regular_partition.hpp>
+#include <um2/physics/material.hpp>
 
 namespace um2::mpact
 {
 
 //==============================================================================
-// MPACT MODEL 
+// MPACT MODEL
 //==============================================================================
 ///// An equivalent representation to the various mesh hierarchies in an MPACT model.
 /////
@@ -55,44 +55,44 @@ namespace um2::mpact
 /////          arbitrary geometry.
 /////
 
-class Model 
+class Model
 {
 
 public:
-//  struct CoarseCell {
-//    Vec2<F> dxdy; // dx, dy
-//    MeshType mesh_type = MeshType::None;
-//    Int mesh_id = -1;               // index into the corresponding mesh array
-//    Vector<MaterialID> material_ids; // size = mesh.numFaces()
-//
-//    PURE [[nodiscard]] constexpr auto
-//    numFaces() const noexcept -> Int
-//    {
-//      return material_ids.size();
-//    }
-//  };
-//
-//  using RTM = RectilinearPartition2<I>;
-//  using Lattice = RegularPartition2<I>;
-//  using Assembly = RectilinearPartition1<I>;
-//  using Core = RectilinearPartition2<I>;
-//
+  struct CoarseCell {
+    Vec2F xy_extents;
+    MeshType mesh_type = MeshType::None;
+    Int mesh_id = -1;                 // index into the corresponding mesh array
+    Vector<MatID> material_ids;  // size = mesh.numFaces()
+
+    PURE [[nodiscard]] constexpr auto
+    numFaces() const noexcept -> Int
+    {
+      return material_ids.size();
+    }
+  };
+
+  using RTM = RectilinearPartition2<Int>;
+  using Lattice = RegularPartition2<Int>;
+  using Assembly = RectilinearPartition1<Int>;
+  using Core = RectilinearPartition2<Int>;
+
 private:
-//  // The children IDs are used to index the corresponding array.
-//  // Child ID = -1 indicates that the child does not exist. This is used
-//  // for when the child should be generated automatically.
-//
-//  Core _core;
-//  Vector<Assembly> _assemblies;
-//  Vector<Lattice> _lattices;
-//  Vector<RTM> _rtms;
-//  Vector<CoarseCell> _coarse_cells;
-//
-//  Vector<Material> _materials;
-//
-//  Vector<TriFVM> _tris;
+
+  // Spatial hierarchy
+  Core _core;
+  Vector<Assembly> _assemblies;
+  Vector<Lattice> _lattices;
+  Vector<RTM> _rtms;
+  Vector<CoarseCell> _coarse_cells;
+
+  // Global materials
+  Vector<Material> _materials;
+
+  // pin meshes
+  Vector<TriFVM> _tris;
   Vector<QuadFVM> _quads;
-//  Vector<Tri6FVM> _tri6s;
+  Vector<Tri6FVM> _tri6s;
   Vector<Quad8FVM> _quad8s;
 
 public:
@@ -102,97 +102,95 @@ public:
 
   constexpr Model() noexcept = default;
 
-//  //============================================================================
-//  // Accessors
-//  //============================================================================
-//
+  //============================================================================
+  // Accessors
+  //============================================================================
+
 //  PURE [[nodiscard]] constexpr auto
 //  numCoarseMeshes() const noexcept -> Int;
 //
-//  PURE [[nodiscard]] constexpr auto
-//  numCoarseCells() const noexcept -> Int;
-//
-//  PURE [[nodiscard]] constexpr auto
-//  numRTMs() const noexcept -> Int;
-//
-//  PURE [[nodiscard]] constexpr auto
-//  numLattices() const noexcept -> Int;
-//
-//  PURE [[nodiscard]] constexpr auto
-//  numAssemblies() const noexcept -> Int;
-//
-//  PURE [[nodiscard]] constexpr auto
-//  getCoarseCell(Int cc_id) const noexcept -> CoarseCell const &;
-//
-//  PURE [[nodiscard]] constexpr auto
-//  getRTM(Int rtm_id) const noexcept -> RTM const &;
-//
-//  PURE [[nodiscard]] constexpr auto
-//  getLattice(Int lat_id) const noexcept -> Lattice const &;
-//
-//  PURE [[nodiscard]] constexpr auto
-//  getAssembly(Int asy_id) const noexcept -> Assembly const &;
-//
-//  PURE [[nodiscard]] constexpr auto
-//  getCore() const noexcept -> Core const &;
-//
-//  PURE [[nodiscard]] auto
-//  getTriMesh(Int mesh_id) const noexcept -> TriFVM const &;
-//
+  PURE [[nodiscard]] constexpr auto
+  numCoarseCells() const noexcept -> Int;
+
+  PURE [[nodiscard]] constexpr auto
+  numRTMs() const noexcept -> Int;
+
+  PURE [[nodiscard]] constexpr auto
+  numLattices() const noexcept -> Int;
+
+  PURE [[nodiscard]] constexpr auto
+  numAssemblies() const noexcept -> Int;
+
+  PURE [[nodiscard]] constexpr auto
+  getCoarseCell(Int cc_id) const noexcept -> CoarseCell const &;
+
+  PURE [[nodiscard]] constexpr auto
+  getRTM(Int rtm_id) const noexcept -> RTM const &;
+
+  PURE [[nodiscard]] constexpr auto
+  getLattice(Int lat_id) const noexcept -> Lattice const &;
+
+  PURE [[nodiscard]] constexpr auto
+  getAssembly(Int asy_id) const noexcept -> Assembly const &;
+
+  PURE [[nodiscard]] constexpr auto
+  getCore() const noexcept -> Core const &;
+
+  PURE [[nodiscard]] constexpr auto
+  getTriMesh(Int mesh_id) const noexcept -> TriFVM const &;
+
   PURE [[nodiscard]] constexpr auto
   getQuadMesh(Int mesh_id) const noexcept -> QuadFVM const &;
 
-//  PURE [[nodiscard]] auto
-//  getTri6Mesh(Int mesh_id) const noexcept -> Tri6FVM const &;
+  PURE [[nodiscard]] constexpr auto
+  getTri6Mesh(Int mesh_id) const noexcept -> Tri6FVM const &;
 
   PURE [[nodiscard]] constexpr auto
   getQuad8Mesh(Int mesh_id) const noexcept -> Quad8FVM const &;
 
-//  //============================================================================
-//  // Methods
-//  //============================================================================
-//
-//  HOSTDEV void
-//  clear() noexcept;
-//
-//  void
-//  checkMeshExists(MeshType mesh_type, Int mesh_id) const;
-//
-//  auto
-//  addMaterial(Material const & material) -> Int;
-//
+  //============================================================================
+  // Methods
+  //============================================================================
+
+  HOSTDEV void
+  clear() noexcept;
+
   auto
-  addCylindricalPinMesh(Float pitch, 
-                        Vector<Float> const & radii, 
+  addMaterial(Material const & material) -> Int;
+
+  auto
+  addCylindricalPinMesh(Float pitch,
+                        Vector<Float> const & radii,
                         Vector<Int> const & num_rings,
-                        Int num_azimuthal, 
+                        Int num_azimuthal,
                         Int mesh_order = 1) -> Int;
 
   auto
   addRectangularPinMesh(Vec2F xy_extents, Int nx_faces, Int ny_faces) -> Int;
-//
-//  auto
-//  addCoarseCell(Vec2<F> dxdy, MeshType mesh_type = MeshType::None, Int mesh_id = -1,
-//                 Vector<MaterialID> const & material_ids = {}) -> Int;
-//
-//  auto
-//  addRTM(Vector<Vector<I>> const & cc_ids) -> Int;
-//
-//  auto
-//  addLattice(Vector<Vector<I>> const & rtm_ids) -> Int;
-//  //
-//  //  //  auto
-//  //  //  stdMakeLattice(std::vector<std::vector<I>> const & rtm_ids) -> Int;
-//  //
-//  auto
-//  addAssembly(Vector<I> const & lat_ids, Vector<F> const & z = {-1, 1}) -> Int;
-//
-//  auto
-//  addCore(Vector<Vector<I>> const & asy_ids) -> Int;
-//  //
-//  //  //  auto
-//  //  //  stdMakeCore(std::vector<std::vector<I>> const & asy_ids) -> Int;
-//
+
+  auto
+  addCoarseCell(Vec2F xy_extents,
+      MeshType mesh_type = MeshType::None,
+      Int mesh_id = -1,
+      Vector<MatID> const & material_ids = {}) -> Int;
+
+  auto
+  addRTM(Vector<Vector<Int>> const & cc_ids) -> Int;
+
+  auto
+  addLattice(Vector<Vector<Int>> const & rtm_ids) -> Int;
+
+#if UM2_ENABLE_FLOAT64
+  auto
+  addAssembly(Vector<Int> const & lat_ids, Vector<Float> const & z = {-0.5, 0.5}) -> Int;
+#else
+  auto
+  addAssembly(Vector<Int> const & lat_ids, Vector<Float> const & z = {-0.5F, 0.5F}) -> Int;
+#endif
+
+  auto
+  addCore(Vector<Vector<Int>> const & asy_ids) -> Int;
+
 //  // Import coarse cells and pin meshes from a file.
 //  void
 //  importCoarseCells(String const & filename);
@@ -215,75 +213,86 @@ public:
 //  //  //
 }; // struct Model
 //
-////=============================================================================
-//// Accessors
-////=============================================================================
-//
+//=============================================================================
+// Accessors
+//=============================================================================
+
 //PURE [[nodiscard]] constexpr auto
 //Model::numCoarseMeshes() const noexcept -> Int
 //{
 //  return _tris.size() + _quads.size() + _tri6s.size() + _quad8s.size();
 //}
-//
-//PURE [[nodiscard]] constexpr auto
-//Model::numCoarseCells() const noexcept -> Int
-//{
-//  return _coarse_cells.size();
-//}
-//
-//PURE [[nodiscard]] constexpr auto
-//Model::numRTMs() const noexcept -> Int
-//{
-//  return _rtms.size();
-//}
-//
-//PURE [[nodiscard]] constexpr auto
-//Model::numLattices() const noexcept -> Int
-//{
-//  return _lattices.size();
-//}
-//
-//PURE [[nodiscard]] constexpr auto
-//Model::numAssemblies() const noexcept -> Int
-//{
-//  return _assemblies.size();
-//}
-//
-//PURE [[nodiscard]] constexpr auto
-//Model::getCoarseCell(Int cc_id) const noexcept -> CoarseCell const &
-//{
-//  return _coarse_cells[cc_id];
-//}
-//
-//PURE [[nodiscard]] constexpr auto
-//Model::getRTM(Int rtm_id) const noexcept -> RTM const &
-//{
-//  return _rtms[rtm_id];
-//}
-//
-//PURE [[nodiscard]] constexpr auto
-//Model::getLattice(Int lat_id) const noexcept -> Lattice const &
-//{
-//  return _lattices[lat_id];
-//}
-//
-//PURE [[nodiscard]] constexpr auto
-//Model::getAssembly(Int asy_id) const noexcept -> Assembly const &
-//{
-//  return _assemblies[asy_id];
-//}
-//
-//PURE [[nodiscard]] constexpr auto
-//Model::getCore() const noexcept -> Core const &
-//{
-//  return _core;
-//}
 
+PURE [[nodiscard]] constexpr auto
+Model::numCoarseCells() const noexcept -> Int
+{
+  return _coarse_cells.size();
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::numRTMs() const noexcept -> Int
+{
+  return _rtms.size();
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::numLattices() const noexcept -> Int
+{
+  return _lattices.size();
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::numAssemblies() const noexcept -> Int
+{
+  return _assemblies.size();
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::getCoarseCell(Int cc_id) const noexcept -> CoarseCell const &
+{
+  return _coarse_cells[cc_id];
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::getRTM(Int rtm_id) const noexcept -> RTM const &
+{
+  return _rtms[rtm_id];
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::getLattice(Int lat_id) const noexcept -> Lattice const &
+{
+  return _lattices[lat_id];
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::getAssembly(Int asy_id) const noexcept -> Assembly const &
+{
+  return _assemblies[asy_id];
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::getCore() const noexcept -> Core const &
+{
+  return _core;
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::getTriMesh(Int const mesh_id) const noexcept -> TriFVM const &
+{
+  return _tris[mesh_id];
+}
 
 PURE [[nodiscard]] constexpr auto
 Model::getQuadMesh(Int const mesh_id) const noexcept -> QuadFVM const &
 {
   return _quads[mesh_id];
+}
+
+PURE [[nodiscard]] constexpr auto
+Model::getTri6Mesh(Int const mesh_id) const noexcept -> Tri6FVM const &
+{
+  return _tri6s[mesh_id];
 }
 
 PURE [[nodiscard]] constexpr auto

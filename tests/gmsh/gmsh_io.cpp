@@ -1,4 +1,4 @@
-#include <um2/common/log.hpp>
+#include <um2/common/logger.hpp>
 
 #if UM2_USE_GMSH
 #  include <um2/gmsh/io.hpp>
@@ -70,7 +70,7 @@ auto
 main() -> int
 {
 #if UM2_USE_GMSH
-  um2::log::level = um2::log::levels::error;
+  um2::logger::level = um2::logger::levels::error;
   RUN_SUITE(gmsh_io);
 #endif
   return 0;

@@ -1,117 +1,79 @@
 #include <um2/mpact/model.hpp>
 
 #include <um2/common/logger.hpp>
+#include <um2/stdlib/algorithm/is_sorted.hpp>
 
 //#include <iomanip> // std::setw
 #include <algorithm> // std::any_of
 #include <numeric> // std::reduce
 
+#include <iostream> // std::cout
+
 namespace um2::mpact
 {
 
-////=============================================================================
-//// checkMeshExists
-////=============================================================================
+//=============================================================================
+// flattenLattice
+//=============================================================================
+//  um2::Vector<um2::Vector<Int>> const ids = {
+//      {2, 3},
+//      {0, 1}
+//  };
 //
-//void
-//Model::checkMeshExists(MeshType mesh_type, Int mesh_id) const
-//{
-//  switch (mesh_type) {
-//  case MeshType::Tri:
-//    if (0 > mesh_id || mesh_id >= this->_tris.size()) {
-//      logger::error("Tri mesh ", mesh_id, " does not exist");
-//    }
-//    break;
-//  case MeshType::Quad:
-//    if (0 > mesh_id || mesh_id >= this->_quads.size()) {
-//      logger::error("Quad mesh ", mesh_id, " does not exist");
-//    }
-//    break;
-//  case MeshType::QuadraticTri:
-//    if (0 > mesh_id || mesh_id >= this->_tri6s.size()) {
-//      logger::error("Quadratic tri mesh ", mesh_id, " does not exist");
-//    }
-//    break;
-//  case MeshType::QuadraticQuad:
-//    if (0 > mesh_id || mesh_id >= this->_quad8s.size()) {
-//      logger::error("Quadratic quad mesh ", mesh_id, " does not exist");
-//    }
-//    break;
-//  default:
-//    logger::error("Invalid mesh type");
-//  }
-//}
-//
-//#if UM2_ENABLE_ASSERTS
-//#  define CHECK_MESH_EXISTS(mesh_type, mesh_id) checkMeshExists(mesh_type, mesh_id)
-//#else
-//#  define CHECK_MESH_EXISTS(mesh_type, mesh_id)
-//#endif
-//
-////=============================================================================
-//// Accessors
-////=============================================================================
-//
-//PURE [[nodiscard]] auto
-//Model::getTriMesh(Int mesh_id) const noexcept -> TriFVM const &
-//{
-//  CHECK_MESH_EXISTS(MeshType::Tri, mesh_id);
-//  return _tris[mesh_id];
-//}
-//
-//PURE [[nodiscard]] auto
-//Model::getQuadMesh(Int mesh_id) const noexcept -> QuadFVM const &
-//{
-//  CHECK_MESH_EXISTS(MeshType::Quad, mesh_id);
-//  return _quads[mesh_id];
-//}
-//
-//PURE [[nodiscard]] auto
-//Model::getTri6Mesh(Int mesh_id) const noexcept -> Tri6FVM const &
-//{
-//  CHECK_MESH_EXISTS(MeshType::QuadraticTri, mesh_id);
-//  return _tri6s[mesh_id];
-//}
-//
-//PURE [[nodiscard]] auto
-//Model::getQuad8Mesh(Int mesh_id) const noexcept -> Quad8FVM const &
-//{
-//  CHECK_MESH_EXISTS(MeshType::QuadraticQuad, mesh_id);
-//  return _quad8s[mesh_id];
-//}
-//
-////=============================================================================
-//// clear
-////=============================================================================
-//
-//HOSTDEV void
-//Model::clear() noexcept
-//{
-//  _core.clear();
-//  _assemblies.clear();
-//  _lattices.clear();
-//  _rtms.clear();
-//  _coarse_cells.clear();
-//
-//  _materials.clear();
-//
-//  _tris.clear();
-//  _quads.clear();
-//  _tri6s.clear();
-//  _quad8s.clear();
-//}
-//
-////=============================================================================
-//// addMaterial
-////=============================================================================
-//
-//auto
-//Model::addMaterial(Material const & material) -> Int
-//{
-//  _materials.push_back(material);
-//  return _materials.size() - 1;
-//}
-//
+//  -> um2::Vector<Int> flat_ids = {0, 1, 2, 3};
+template <typename T, typename U>
+static void
+flattenLattice(Vector<Vector<T>> const & ids, Vector<U> & flat_ids)
+{
+  Int const num_rows = ids.size();
+  Int const num_cols = ids[0].size();
+  // Ensure all rows have the same number of columns
+  for (Int i = 1; i < num_rows; ++i) {
+    if (ids[i].size() != num_cols) {
+      logger::error("Each row must have the same number of columns");
+    }
+  }
+  flat_ids.resize(num_rows * num_cols);
+  for (Int i = 0; i < num_rows; ++i) {
+    for (Int j = 0; j < num_cols; ++j) {
+      flat_ids[i * num_cols + j] = static_cast<T>(ids[num_rows - 1 - i][j]);
+    }
+  }
+}
+
+//=============================================================================
+// clear
+//=============================================================================
+
+HOSTDEV void
+Model::clear() noexcept
+{
+  _core.clear();
+  _assemblies.clear();
+  _lattices.clear();
+  _rtms.clear();
+  _coarse_cells.clear();
+
+  _materials.clear();
+
+  _tris.clear();
+  _quads.clear();
+  _tri6s.clear();
+  _quad8s.clear();
+}
+
+//=============================================================================
+// addMaterial
+//=============================================================================
+
+auto    
+Model::addMaterial(Material const & material) -> Int    
+{    
+  material.validate();    
+  _materials.emplace_back(material);    
+  return _materials.size() - 1;    
+} 
+
 //=============================================================================
 // addCylindricalPinMesh
 //=============================================================================
@@ -120,12 +82,12 @@ auto
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 Model::addCylindricalPinMesh(
     Float const pitch,
-    Vector<Float> const & radii, 
+    Vector<Float> const & radii,
     Vector<Int> const & num_rings,
-    Int const num_azimuthal, 
+    Int const num_azimuthal,
     Int const mesh_order) -> Int
 {
-  
+
   Int mesh_id = -1;
   if (mesh_order == 1) {
     mesh_id = this->_quads.size();
@@ -159,7 +121,7 @@ Model::addCylindricalPinMesh(
   }
 
   Float constexpr eps = eps_distance;
-  Float constexpr big_eps = 100 * eps; 
+  Float constexpr big_eps = 100 * eps;
 
   // radial region = region containing different materials (rings + outside of
   // the last radius)
@@ -682,301 +644,282 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
   return mesh_id;
 }
 
-////=============================================================================
-//// addCoarseCell
-////=============================================================================
-//
-//auto
-//Model::addCoarseCell(Vec2<Float> const dxdy, MeshType const mesh_type,
-//                                 Int const mesh_id,
-//                                 Vector<MaterialID> const & material_ids) -> Int
-//{
-//  Int const cc_id = _coarse_cells.size();
-//  logger::info("Making coarse cell ", cc_id);
-//  // Ensure dx and dy are positive
-//  if (dxdy[0] <= 0 || dxdy[1] <= 0) {
-//    logger::error("dx and dy must be positive");
-//    return -1;
-//  }
-//  // Ensure that the mesh exists
-//  if (mesh_id != -1) {
-//    checkMeshExists(mesh_type, mesh_id);
-//    // Make sure materials are specified
-//    if (material_ids.empty()) {
-//      logger::error("No materials specified");
-//      return -1;
-//    }
-//  }
-//
-//  // Create the coarse cell
-//  _coarse_cells.push_back(CoarseCell{dxdy, mesh_type, mesh_id, material_ids});
-//  return cc_id;
-//}
-//
-////=============================================================================
-//// addRTM
-////=============================================================================
-//
-//auto
-//Model::addRTM(Vector<Vector<I>> const & cc_ids) -> Int
-//{
-//  Int const rtm_id = _rtms.size();
-//  logger::info("Making ray tracing module ", rtm_id);
-//  Vector<I> unique_cc_ids;
-//  Vector<Vec2<Float>> dxdy;
-//  // Ensure that all coarse cells exist
-//  Int const num_cc = _coarse_cells.size();
-//  for (auto const & cc_ids_row : cc_ids) {
-//    for (auto const & id : cc_ids_row) {
-//      if (id < 0 || id >= num_cc) {
-//        logger::error("Coarse cell ", id, " does not exist");
-//        return -1;
-//      }
-//      auto * const it = std::find(unique_cc_ids.begin(), unique_cc_ids.end(), id);
-//      if (it == unique_cc_ids.end()) {
-//        unique_cc_ids.push_back(id);
-//        // We know id > 0, so subtracting 1 is safe
-//        dxdy.push_back(_coarse_cells[id].dxdy);
-//      }
-//    }
-//  }
-//  // For a max pin ID N, the RectilinearGrid constructor needs all dxdy from 0 to N.
-//  // To get around this requirement, we will renumber the coarse cells to be 0, 1, 2,
-//  // 3, ..., and then use the renumbered IDs to create the RectilinearGrid.
-//  Vector<Vector<I>> cc_ids_renumbered(cc_ids.size());
-//  for (Int i = 0; i < cc_ids.size(); ++i) {
-//    cc_ids_renumbered[i].resize(cc_ids[i].size());
-//    for (Int j = 0; j < cc_ids[i].size(); ++j) {
-//      auto * const it =
-//          std::find(unique_cc_ids.begin(), unique_cc_ids.end(), cc_ids[i][j]);
-//      ASSERT(it != unique_cc_ids.cend());
-//      cc_ids_renumbered[i][j] = static_cast<I>(it - unique_cc_ids.begin());
-//    }
-//  }
-//  // Create the rectilinear grid
-//  RectilinearGrid2 const grid(dxdy, cc_ids_renumbered);
-//  // Ensure the grid has the same dxdy as all other RTMs
-//  if (!_rtms.empty()) {
-//    auto constexpr eps = eps_distance;
-//    if (um2::abs(grid.width() - _rtms[0].grid().width()) > eps ||
-//        um2::abs(grid.height() - _rtms[0].grid().height()) > eps) {
-//      logger::error("All RTMs must have the same dxdy");
-//      return -1;
-//    }
-//  }
-//  // Flatten the coarse cell IDs (rows are reversed)
-//  Int const num_rows = cc_ids.size();
-//  Int const num_cols = cc_ids[0].size();
-//  Vector<I> cc_ids_flat(num_rows * num_cols);
-//  for (Int i = 0; i < num_rows; ++i) {
-//    for (Int j = 0; j < num_cols; ++j) {
-//      cc_ids_flat[i * num_cols + j] = static_cast<I>(cc_ids[num_rows - 1 - i][j]);
-//    }
-//  }
-//  RTM rtm(grid, cc_ids_flat);
-//  _rtms.push_back(um2::move(rtm));
-//  return rtm_id;
-//}
-//
-////=============================================================================
-//// addLattice
-////=============================================================================
-//////
-////// template <std::floating_point T, std::integral I>
-////// auto
-////// Model::stdMakeLattice(std::vector<std::vector<I>> const & rtm_ids)
-//////    -> Int
-//////{
-//////  // Convert to um2::Vector
-//////  Vector<Vector<I>> rtm_ids_um2(static_cast<I>(rtm_ids.size()));
-//////  for (size_t i = 0; i < rtm_ids.size(); ++i) {
-//////    rtm_ids_um2[static_cast<I>(i)].resize(static_cast<I>(rtm_ids[i].size()));
-//////    for (size_t j = 0; j < rtm_ids[i].size(); ++j) {
-//////      rtm_ids_um2[static_cast<I>(i)][static_cast<I>(j)] =
-//////          static_cast<I>(rtm_ids[i][j]);
-//////    }
-//////  }
-//////  return addLattice(rtm_ids_um2);
-//////}
-//
-//auto
-//Model::addLattice(Vector<Vector<I>> const & rtm_ids) -> Int
-//{
-//  Int const lat_id = _lattices.size();
-//  logger::info("Making lattice ", lat_id);
-//  // Ensure that all RTMs exist
-//  Int const num_rtm = _rtms.size();
-//  for (auto const & rtm_ids_row : rtm_ids) {
-//    auto const * const it =
-//        std::find_if(rtm_ids_row.begin(), rtm_ids_row.end(),
-//                     [num_rtm](Int const id) { return id < 0 || id >= num_rtm; });
-//    if (it != rtm_ids_row.cend()) {
-//      logger::error("RTM ", *it, " does not exist");
-//      return -1;
-//    }
-//  }
-//  // Create the lattice
-//  // Ensure each row has the same number of columns
-//  Point2 const minima(0, 0);
-//  Vec2<Float> const spacing = _rtms[0].grid().extents();
-//  Int const num_rows = rtm_ids.size();
-//  Int const num_cols = rtm_ids[0].size();
-//  for (Int i = 1; i < num_rows; ++i) {
-//    if (rtm_ids[i].size() != num_cols) {
-//      logger::error("Each row must have the same number of columns");
-//      return -1;
-//    }
-//  }
-//  Vec2<I> const num_cells(num_cols, num_rows);
-//  RegularGrid2 const grid(minima, spacing, num_cells);
-//  // Flatten the RTM IDs (rows are reversed)
-//  Vector<I> rtm_ids_flat(num_rows * num_cols);
-//  for (Int i = 0; i < num_rows; ++i) {
-//    for (Int j = 0; j < num_cols; ++j) {
-//      rtm_ids_flat[i * num_cols + j] = static_cast<I>(rtm_ids[num_rows - 1 - i][j]);
-//    }
-//  }
-//  Lattice lat(grid, rtm_ids_flat);
-//  _lattices.push_back(um2::move(lat));
-//  return lat_id;
-//}
-//
-////=============================================================================
-//// addAssembly
-////=============================================================================
-//
-//auto
-//Model::addAssembly(Vector<I> const & lat_ids, Vector<Float> const & z) -> Int
-//{
-//  Int const asy_id = _assemblies.size();
-//  logger::info("Making assembly ", asy_id);
-//  // Ensure that all lattices exist
-//  Int const num_lat = _lattices.size();
-//  {
-//    auto const * const it =
-//        std::find_if(lat_ids.cbegin(), lat_ids.cend(),
-//                     [num_lat](Int const id) { return id < 0 || id >= num_lat; });
-//    if (it != lat_ids.end()) {
-//      logger::error("Lattice " , *it, " does not exist");
-//      return -1;
-//    }
-//  }
-//  // Ensure the number of lattices is 1 less than the number of z-planes
-//  if (lat_ids.size() + 1 != z.size()) {
-//    logger::error("The number of lattices must be 1 less than the number of z-planes");
-//    return -1;
-//  }
-//  // Ensure all z-planes are in ascending order
-//  if (!um2::is_sorted(z.begin(), z.end())) {
-//    logger::error("The z-planes must be in ascending order");
-//    return -1;
-//  }
-//  // Ensure this assembly is the same height as all other assemblies
-//  if (!_assemblies.empty()) {
-//    auto constexpr eps = eps_distance;
-//    auto const assem_top = _assemblies[0].grid().xMax();
-//    auto const assem_bot = _assemblies[0].grid().xMin();
-//    if (um2::abs(z.back() - assem_top) > eps || um2::abs(z.front() - assem_bot) > eps) {
-//      logger::error("All assemblies must have the same height");
-//      return -1;
-//    }
-//  }
-//  // Ensure the lattices all have the same dimensions. Since they are composed of RTMs,
-//  // it is sufficient to check numXCells and numYCells.
-//  {
-//    Int const num_xcells = _lattices[lat_ids[0]].grid().numXCells();
-//    Int const num_ycells = _lattices[lat_ids[0]].grid().numYCells();
-//    auto const * const it = std::find_if(
-//        lat_ids.cbegin(), lat_ids.cend(), [num_xcells, num_ycells, this](Int const id) {
-//          return this->_lattices[id].grid().numXCells() != num_xcells ||
-//                 this->_lattices[id].grid().numYCells() != num_ycells;
-//        });
-//    if (it != lat_ids.end()) {
-//      logger::error("All lattices must have the same xy-dimensions");
-//      return -1;
-//    }
-//  }
-//
-//  Vector<I> lat_ids_i(lat_ids.size());
-//  for (Int i = 0; i < lat_ids.size(); ++i) {
-//    lat_ids_i[i] = static_cast<I>(lat_ids[i]);
-//  }
-//
-//  RectilinearGrid1 grid;
-//  grid.divs(0).resize(z.size());
-//  um2::copy(z.cbegin(), z.cend(), grid.divs(0).begin());
-//  Assembly asy(grid, lat_ids_i);
-//  _assemblies.push_back(um2::move(asy));
-//  return asy_id;
-//}
-//
-////=============================================================================
-//// addCore
-////=============================================================================
-//
-//// template <std::floating_point T, std::integral I>
-//// auto
-//// Model::stdMakeCore(std::vector<std::vector<I>> const & asy_ids)
-////    -> Int
-////{
-////  // Convert to um2::Vector
-////  Vector<Vector<I>> asy_ids_um2(static_cast<I>(asy_ids.size()));
-////  for (size_t i = 0; i < asy_ids.size(); ++i) {
-////    asy_ids_um2[static_cast<I>(i)].resize(static_cast<I>(asy_ids[i].size()));
-////    for (size_t j = 0; j < asy_ids[i].size(); ++j) {
-////      asy_ids_um2[static_cast<I>(i)][static_cast<I>(j)] =
-////          static_cast<I>(asy_ids[i][j]);
-////    }
-////  }
-////  return addCore(asy_ids_um2);
-////}
-//
-//auto
-//Model::addCore(Vector<Vector<I>> const & asy_ids) -> Int
-//{
-//  logger::info("Making core");
-//  // Ensure it is not already made
-//  if (!_core.children().empty()) {
-//    logger::error("The core has already been made");
-//    return -1;
-//  }
-//
-//  // Ensure that all assemblies exist
-//  Int const num_asy = _assemblies.size();
-//  for (auto const & asy_ids_row : asy_ids) {
-//    auto const * const it =
-//        std::find_if(asy_ids_row.cbegin(), asy_ids_row.cend(),
-//                     [num_asy](Int const id) { return id < 0 || id >= num_asy; });
-//    if (it != asy_ids_row.end()) {
-//      logger::error("Assembly ", *it, " does not exist");
-//      return -1;
-//    }
-//  }
-//  Vector<Vec2<Float>> dxdy(num_asy);
-//  for (Int i = 0; i < num_asy; ++i) {
-//    auto const lat_id = _assemblies[i].getChild(0);
-//    dxdy[i] = _lattices[lat_id].grid().extents();
-//  }
-//  // Create the rectilinear grid
-//  RectilinearGrid2 const grid(dxdy, asy_ids);
-//  // Flatten the assembly IDs (rows are reversed)
-//  Int const num_rows = asy_ids.size();
-//  Int const num_cols = asy_ids[0].size();
-//  Vector<I> asy_ids_flat(num_rows * num_cols);
-//  for (Int i = 0; i < num_rows; ++i) {
-//    if (asy_ids[i].size() != num_cols) {
-//      logger::error("Each row must have the same number of columns");
-//      return -1;
-//    }
-//    for (Int j = 0; j < num_cols; ++j) {
-//      asy_ids_flat[i * num_cols + j] = static_cast<I>(asy_ids[num_rows - 1 - i][j]);
-//    }
-//  }
-//  Core core(grid, asy_ids_flat);
-//  _core = um2::move(core);
-//  return 0;
-//}
-//
+//=============================================================================
+// addCoarseCell
+//=============================================================================
+
+auto
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+Model::addCoarseCell(Vec2F const xy_extents,
+    MeshType const mesh_type,
+    Int const mesh_id,
+    Vector<MatID> const & material_ids) -> Int
+{
+  Int const cc_id = _coarse_cells.size();
+  logger::info("Adding coarse cell ", cc_id);
+  // Ensure extents are positive
+  if (xy_extents[0] <= 0 || xy_extents[1] <= 0) {
+    logger::error("Coarse cell dimensions must be positive");
+    return -1;
+  }
+  // Ensure that the mesh exists and the material IDs are valid
+  if (mesh_id != -1) {
+    switch (mesh_type) {
+    case MeshType::Tri:
+      if (0 < mesh_id || mesh_id >= _tris.size()) {
+        logger::error("Tri mesh ", mesh_id, " does not exist");
+        return -1;
+      }
+      if (_tris[mesh_id].numFaces() != material_ids.size()) {
+        logger::error("Mismatch between number of faces and provided materials");
+        return -1;
+      }
+      break;
+    case MeshType::Quad:
+      if (0 > mesh_id || mesh_id >= _quads.size()) {
+        logger::error("Quad mesh ", mesh_id, " does not exist");
+        return -1;
+      }
+      if (_quads[mesh_id].numFaces() != material_ids.size()) {
+        logger::error("Mismatch between number of faces and provided materials");
+        return -1;
+      }
+      break;
+    case MeshType::QuadraticTri:
+      if (0 > mesh_id || mesh_id >= _tri6s.size()) {
+        logger::error("Quadratic tri mesh ", mesh_id, " does not exist");
+        return -1;
+      }
+      if (_tri6s[mesh_id].numFaces() != material_ids.size()) {
+        logger::error("Mismatch between number of faces and provided materials");
+        return -1;
+      }
+      break;
+    case MeshType::QuadraticQuad:
+      if (0 > mesh_id || mesh_id >= _quad8s.size()) {
+        logger::error("Quadratic quad mesh ", mesh_id, " does not exist");
+        return -1;
+      }
+      if (_quad8s[mesh_id].numFaces() != material_ids.size()) {
+        logger::error("Mismatch between number of faces and provided materials");
+        return -1;
+      }
+      break;
+    default:
+      logger::error("Invalid mesh type");
+      return -1;
+    }
+    // Check that the material IDs are valid
+    for (auto const & mat_id : material_ids) {
+      if (mat_id < 0 || mat_id >= _materials.size()) {
+        logger::error("Material ", mat_id, " does not exist");
+        return -1;
+      }
+    }
+  }
+  // Create the coarse cell
+  CoarseCell cc;
+  cc.xy_extents = xy_extents;
+  cc.mesh_type = mesh_type;
+  cc.mesh_id = mesh_id;
+  cc.material_ids = material_ids;
+  _coarse_cells.emplace_back(um2::move(cc));
+  return cc_id;
+}
+
+//=============================================================================
+// addRTM
+//=============================================================================
+
+auto
+Model::addRTM(Vector<Vector<Int>> const & cc_ids) -> Int
+{
+  Int const rtm_id = _rtms.size();
+  logger::info("Adding ray tracing module ", rtm_id);
+  Vector<Int> unique_cc_ids;
+  Vector<Vec2F> xy_extents;
+  // Ensure that all coarse cells exist
+  Int const num_cc = _coarse_cells.size();
+  for (auto const & cc_ids_row : cc_ids) {
+    for (auto const & id : cc_ids_row) {
+      if (id < 0 || id >= num_cc) {
+        logger::error("Coarse cell ", id, " does not exist");
+        return -1;
+      }
+      auto * const it = std::find(unique_cc_ids.begin(), unique_cc_ids.end(), id);
+      if (it == unique_cc_ids.end()) {
+        unique_cc_ids.emplace_back(id);
+        xy_extents.emplace_back(_coarse_cells[id].xy_extents);
+      }
+    }
+  }
+  // For a max pin ID N, the RectilinearGrid constructor needs all dxdy from 0 to N.
+  // To get around this requirement, we will renumber the coarse cells to be 0, 1, 2,
+  // 3, ..., and then use the renumbered IDs to create the RectilinearGrid.
+  Vector<Vector<Int>> cc_ids_renumbered(cc_ids.size());
+  for (Int i = 0; i < cc_ids.size(); ++i) {
+    cc_ids_renumbered[i].resize(cc_ids[i].size());
+    for (Int j = 0; j < cc_ids[i].size(); ++j) {
+      auto * const it =
+          std::find(unique_cc_ids.begin(), unique_cc_ids.end(), cc_ids[i][j]);
+      ASSERT(it != unique_cc_ids.cend());
+      cc_ids_renumbered[i][j] = static_cast<Int>(it - unique_cc_ids.begin());
+    }
+  }
+  // Create the rectilinear grid
+  RectilinearGrid2 const grid(xy_extents, cc_ids_renumbered);
+  // Ensure the grid has the same extents as all other RTMs
+  if (!_rtms.empty()) {
+    if (!_rtms[0].grid().extents().isApprox(grid.extents())) {
+      logger::error("All RTMs must have the same extents"); 
+      return -1;
+    }
+  }
+  // Flatten the coarse cell IDs (rows are reversed)
+  Vector<Int> cc_ids_flat;
+  flattenLattice(cc_ids, cc_ids_flat);
+  RTM rtm(grid, cc_ids_flat);
+  _rtms.push_back(um2::move(rtm));
+  return rtm_id;
+}
+
+//=============================================================================
+// addLattice
+//=============================================================================
+
+auto
+Model::addLattice(Vector<Vector<Int>> const & rtm_ids) -> Int
+{
+  Int const lat_id = _lattices.size();
+  logger::info("Adding lattice ", lat_id);
+  // Ensure that all RTMs exist
+  Int const num_rtm = _rtms.size();
+  for (auto const & rtm_ids_row : rtm_ids) {
+    for (auto const & id : rtm_ids_row) {
+      if (id < 0 || id >= num_rtm) {
+        logger::error("RTM ", id, " does not exist");
+        return -1;
+      }
+    }
+  }
+  // Create the lattice
+  // Ensure each row has the same number of columns
+  Point2 const minima(0, 0);
+  Vec2F const spacing = _rtms[0].grid().extents();
+  Int const num_rows = rtm_ids.size();
+  Int const num_cols = rtm_ids[0].size();
+  for (Int i = 1; i < num_rows; ++i) {
+    if (rtm_ids[i].size() != num_cols) {
+      logger::error("Each row must have the same number of columns");
+      return -1;
+    }
+  }
+  Vec2I const num_cells(num_cols, num_rows);
+  RegularGrid2 const grid(minima, spacing, num_cells);
+  // Flatten the RTM IDs (rows are reversed)
+  Vector<Int> rtm_ids_flat;
+  flattenLattice(rtm_ids, rtm_ids_flat);
+  Lattice lat(grid, rtm_ids_flat);
+  _lattices.push_back(um2::move(lat));
+  return lat_id;
+}
+
+//=============================================================================
+// addAssembly
+//=============================================================================
+
+auto
+Model::addAssembly(Vector<Int> const & lat_ids, Vector<Float> const & z) -> Int
+{
+  Int const asy_id = _assemblies.size();
+  logger::info("Adding assembly ", asy_id);
+  // Ensure that all lattices exist
+  Int const num_lat = _lattices.size();
+  for (auto const & id : lat_ids) {
+    if (id < 0 || id >= num_lat) {
+      logger::error("Lattice ", id, " does not exist");
+      return -1;
+    }
+  }
+  // Ensure the number of lattices is 1 less than the number of z-planes
+  if (lat_ids.size() + 1 != z.size()) {
+    logger::error("The number of lattices must be 1 less than the number of z-planes");
+    return -1;
+  }
+  // Ensure all z-planes are in ascending order
+  if (!um2::is_sorted(z.begin(), z.end())) {
+    logger::error("The z-planes must be in ascending order");
+    return -1;
+  }
+  // Ensure this assembly is the same height as all other assemblies
+  if (!_assemblies.empty()) {
+    auto const assem_top = _assemblies[0].grid().maxima(0);
+    auto const assem_bot = _assemblies[0].grid().minima(0);
+    if (um2::abs(z.back() - assem_top) > eps_distance ||
+        um2::abs(z.front() - assem_bot) > eps_distance) {
+      logger::error("All assemblies must have the same height");
+      return -1;
+    }
+  }
+  // Ensure the lattices all have the same dimensions. Since they are composed of RTMs,
+  // it is sufficient to check numCells(0) and numCells(1).
+  Int const num_xcells = _lattices[lat_ids[0]].grid().numCells(0);
+  Int const num_ycells = _lattices[lat_ids[0]].grid().numCells(1);
+  for (auto const lat_it : lat_ids) {
+    if (_lattices[lat_it].grid().numCells(0) != num_xcells ||
+        _lattices[lat_it].grid().numCells(1) != num_ycells) {
+      logger::error("All lattices in the assembly must have the same xy-dimensions");
+      return -1;
+    }
+  }
+
+  RectilinearGrid1 grid;
+  grid.divs(0).resize(z.size());
+  um2::copy(z.cbegin(), z.cend(), grid.divs(0).begin());
+  Assembly asy(grid, lat_ids);
+  _assemblies.emplace_back(um2::move(asy));
+  return asy_id;
+}
+
+//=============================================================================
+// addCore
+//=============================================================================
+
+auto
+Model::addCore(Vector<Vector<Int>> const & asy_ids) -> Int
+{
+  logger::info("Adding core");
+  // Ensure it is not already made
+  if (!_core.children().empty()) {
+    logger::error("The core has already been made");
+    return -1;
+  }
+
+  // Ensure that all assemblies exist
+  Int const num_asy = _assemblies.size();
+  for (auto const & asy_ids_row : asy_ids) {
+    for (auto const & id : asy_ids_row) {
+      if (id < 0 || id >= num_asy) {
+        logger::error("Assembly ", id, " does not exist");
+        return -1;
+      }
+    }
+  }
+  Vector<Vec2F> xy_extents(num_asy);
+  for (Int i = 0; i < num_asy; ++i) {
+    auto const lat_id = _assemblies[i].getChild(0);
+    xy_extents[i] = _lattices[lat_id].grid().extents();
+  }
+  // Create the rectilinear grid
+  RectilinearGrid2 const grid(xy_extents, asy_ids);
+  // Flatten the assembly IDs (rows are reversed)
+  Vector<Int> asy_ids_flat;
+  flattenLattice(asy_ids, asy_ids_flat);
+  Core core(grid, asy_ids_flat);
+  _core = um2::move(core);
+  return 0;
+}
+
 ////=============================================================================
 //// importCoarseCells
 ////=============================================================================
@@ -1011,8 +954,8 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //    MeshType const mesh_type = cc_submesh.getMeshType();
 //    CoarseCell & cc = _coarse_cells[i];
 //    cc.mesh_type = mesh_type;
-//    Vector<MaterialID> mat_ids;
-//    cc_submesh.getMaterialIDs(mat_ids, material_names);
+//    Vector<MatID> mat_ids;
+//    cc_submesh.getMatIDs(mat_ids, material_names);
 //    cc.material_ids.resize(mat_ids.size());
 //    um2::copy(mat_ids.cbegin(), mat_ids.cend(), cc.material_ids.begin());
 //
@@ -1134,15 +1077,15 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////     return;
 //////   }
 //////   // Allocate counters for each assembly, lattice, etc.
-//////   Vector<I> asy_found(assemblies.size(), -1);
-//////   Vector<I> lat_found(lattices.size(), -1);
-//////   Vector<I> rtm_found(rtms.size(), -1);
-//////   Vector<I> cc_found(coarse_cells.size(), -1);
+//////   Vector<Int> asy_found(assemblies.size(), -1);
+//////   Vector<Int> lat_found(lattices.size(), -1);
+//////   Vector<Int> rtm_found(rtms.size(), -1);
+//////   Vector<Int> cc_found(coarse_cells.size(), -1);
 //////
 //////   std::stringstream ss;
 //////   Int total_num_faces = 0;
 //////   LOG_DEBUG("materials.size() = " + toString(materials.size()));
-//////   Vector<Vector<I>> material_elsets(materials.size());
+//////   Vector<Vector<Int>> material_elsets(materials.size());
 //////   Vector<Float> kn_max;
 //////   Vector<Float> kn_mean;
 //////   Vector<Vector<Float>> cc_kns_max(coarse_cells.size());
@@ -1156,7 +1099,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////   for (Int iyasy = 0; iyasy < nyasy; ++iyasy) {
 //////     for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
 //////       Int const asy_faces_prev = total_num_faces;
-//////       auto const asy_id = static_cast<I>(core.getChild(ixasy, iyasy));
+//////       auto const asy_id = static_cast<Int>(core.getChild(ixasy, iyasy));
 //////       Int const asy_id_ctr = ++asy_found[asy_id];
 //////       // Get elset name
 //////       ss.str("");
@@ -1178,7 +1121,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////       Int const nzlat = assembly.numXCells();
 //////       for (Int izlat = 0; izlat < nzlat; ++izlat) {
 //////         Int const lat_faces_prev = total_num_faces;
-//////         auto const lat_id = static_cast<I>(assembly.getChild(izlat));
+//////         auto const lat_id = static_cast<Int>(assembly.getChild(izlat));
 //////         Int const lat_id_ctr = ++lat_found[lat_id];
 //////         // Get elset name
 //////         ss.str("");
@@ -1205,7 +1148,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////         for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
 //////           for (Int ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
 //////             Int const rtm_faces_prev = total_num_faces;
-//////             auto const rtm_id = static_cast<I>(lattice.getChild(ixrtm, iyrtm));
+//////             auto const rtm_id = static_cast<Int>(lattice.getChild(ixrtm, iyrtm));
 //////             Int const rtm_id_ctr = ++rtm_found[rtm_id];
 //////             ss.str("");
 //////             ss << "RTM_" << std::setw(5) << std::setfill('0') << rtm_id << "_"
@@ -1228,7 +1171,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////             for (Int iycell = 0; iycell < nycells; ++iycell) {
 //////               for (Int ixcell = 0; ixcell < nxcells; ++ixcell) {
 //////                 Int const cell_faces_prev = total_num_faces;
-//////                 auto const & cell_id = static_cast<I>(rtm.getChild(ixcell,
+//////                 auto const & cell_id = static_cast<Int>(rtm.getChild(ixcell,
 ///// iycell)); /                 Int const cell_id_ctr = ++cc_found[cell_id]; / ss.str(""); /
 ///// ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id / << "_" <<
 ///// std::setw(5) << std::setfill('0') << cell_id_ctr; /                 String const
@@ -1242,14 +1185,14 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////                 Int const mesh_id = coarse_cells[cell_id].mesh_id;
 //////                 LOG_DEBUG("mesh_id = " + toString(mesh_id));
 //////                 // Add to material elsets
-//////                 Vector<MaterialID> const & cell_materials =
+//////                 Vector<MatID> const & cell_materials =
 //////                     coarse_cells[cell_id].material_ids;
 //////                 LOG_DEBUG("cell_materials.size() = " +
 //////                 toString(cell_materials.size())); for (Int iface = 0; iface <
 //////                 cell_materials.size(); ++iface) {
 //////                   auto const mat_id =
-////// static_cast<I>(static_cast<uint32_t>(cell_materials[iface])); /
-///// material_elsets[mat_id].push_back( /                       static_cast<I>(iface +
+////// static_cast<Int>(static_cast<uint32_t>(cell_materials[iface])); /
+///// material_elsets[mat_id].push_back( /                       static_cast<Int>(iface +
 ///// cell_faces_prev)); /                 }
 //////
 //////                 Point2 const * fvm_vertices_begin = nullptr;
@@ -1282,7 +1225,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////
 //////                 // Add each vertex to the PolytopeSoup, offsetting by the
 //////                 // global xyz offset
-//////                 auto const num_verts_prev = static_cast<I>(soup.numVerts());
+//////                 auto const num_verts_prev = static_cast<Int>(soup.numVerts());
 //////                 Point2 const xy_offset = cell_ll + rtm_ll + asy_ll;
 //////                 for (auto it = fvm_vertices_begin; it != fvm_vertices_end; ++it) {
 //////                   Point2 const p = *it + xy_offset;
@@ -1295,7 +1238,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////                 case MeshType::Tri: {
 //////                   Int const verts_per_face = 3;
 //////                   VTKElemType const elem_type = VTKElemType::Triangle;
-//////                   Vector<I> conn(verts_per_face);
+//////                   Vector<Int> conn(verts_per_face);
 //////                   LOG_DEBUG("tri[mesh_id].fv.size() = " +
 //////                             toString(tri[mesh_id].fv.size()));
 //////                   for (Int iface = 0; iface < tri[mesh_id].fv.size(); ++iface) {
@@ -1310,7 +1253,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////                       LOG_DEBUG("Computing Knudsen numbers");
 //////                       for (Int iface = 0; iface < tri[mesh_id].fv.size(); ++iface) {
 //////                         Float const mcl = tri[mesh_id].getFace(iface).meanChordLength();
-//////                         auto const mat_id = static_cast<I>(
+//////                         auto const mat_id = static_cast<Int>(
 //////                             static_cast<uint32_t>(cell_materials[iface]));
 //////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
 //////                             XSReductionStrategy::Max);
@@ -1332,7 +1275,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////                 case MeshType::Quad: {
 //////                   Int const verts_per_face = 4;
 //////                   VTKElemType const elem_type = VTKElemType::Quad;
-//////                   Vector<I> conn(verts_per_face);
+//////                   Vector<Int> conn(verts_per_face);
 //////                   for (Int iface = 0; iface < quad[mesh_id].fv.size(); ++iface) {
 //////                     auto const & face_conn = quad[mesh_id].fv[iface];
 //////                     for (Int i = 0; i < verts_per_face; ++i) {
@@ -1348,7 +1291,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 /////+ " /                         " + / toString(quad[mesh_id].fv[iface][1]) + " " + /
 ///// toString(quad[mesh_id].fv[iface][2]) + " " + / toString(quad[mesh_id].fv[iface][3]));
 //////                         Float const mcl = quad[mesh_id].getFace(iface).meanChordLength();
-//////                         auto const mat_id = static_cast<I>(
+//////                         auto const mat_id = static_cast<Int>(
 //////                             static_cast<uint32_t>(cell_materials[iface]));
 //////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
 //////                             XSReductionStrategy::Max);
@@ -1370,7 +1313,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////                 case MeshType::QuadraticTri: {
 //////                   Int const verts_per_face = 6;
 //////                   VTKElemType const elem_type = VTKElemType::QuadraticTriangle;
-//////                   Vector<I> conn(verts_per_face);
+//////                   Vector<Int> conn(verts_per_face);
 //////                   for (Int iface = 0; iface < quadratic_tri[mesh_id].fv.size();
 //////                        ++iface) {
 //////                     auto const & face_conn = quadratic_tri[mesh_id].fv[iface];
@@ -1386,7 +1329,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////                            ++iface) {
 //////                         Float const mcl =
 //////                             quadratic_tri[mesh_id].getFace(iface).meanChordLength();
-//////                         auto const mat_id = static_cast<I>(
+//////                         auto const mat_id = static_cast<Int>(
 //////                             static_cast<uint32_t>(cell_materials[iface]));
 //////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
 //////                             XSReductionStrategy::Max);
@@ -1408,7 +1351,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////                 case MeshType::QuadraticQuad: {
 //////                   Int const verts_per_face = 8;
 //////                   VTKElemType const elem_type = VTKElemType::QuadraticQuad;
-//////                   Vector<I> conn(verts_per_face);
+//////                   Vector<Int> conn(verts_per_face);
 //////                   for (Int iface = 0; iface < quadratic_quad[mesh_id].fv.size();
 //////                        ++iface) {
 //////                     auto const & face_conn = quadratic_quad[mesh_id].fv[iface];
@@ -1424,7 +1367,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////                            ++iface) {
 //////                         Float const mcl =
 //////                             quadratic_quad[mesh_id].getFace(iface).meanChordLength();
-//////                         auto const mat_id = static_cast<I>(
+//////                         auto const mat_id = static_cast<Int>(
 //////                             static_cast<uint32_t>(cell_materials[iface]));
 //////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
 //////                             XSReductionStrategy::Max);
@@ -1450,9 +1393,9 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////                 Int const num_faces = soup.numElems() - cell_faces_prev;
 //////
 //////                 // Add an elset for the cell
-//////                 Vector<I> cell_ids(num_faces);
+//////                 Vector<Int> cell_ids(num_faces);
 //////                 um2::iota(cell_ids.begin(), cell_ids.end(),
-//////                           static_cast<I>(cell_faces_prev));
+//////                           static_cast<Int>(cell_faces_prev));
 //////                 soup.addElset(cell_name, cell_ids);
 //////                 total_num_faces += num_faces;
 //////
@@ -1460,20 +1403,20 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////             }   // for (iycell)
 //////
 //////             // Add the RTM elset
-//////             Vector<I> rtm_ids(total_num_faces - rtm_faces_prev);
+//////             Vector<Int> rtm_ids(total_num_faces - rtm_faces_prev);
 //////             um2::iota(rtm_ids.begin(), rtm_ids.end(),
-///// static_cast<I>(rtm_faces_prev)); /             soup.addElset(rtm_name, rtm_ids); / }
+///// static_cast<Int>(rtm_faces_prev)); /             soup.addElset(rtm_name, rtm_ids); / }
 ///// // for (ixrtm) /         }   // for (iyrtm)
 //////
 //////         // Add the lattice elset
-//////         Vector<I> lat_ids(total_num_faces - lat_faces_prev);
-//////         um2::iota(lat_ids.begin(), lat_ids.end(), static_cast<I>(lat_faces_prev));
+//////         Vector<Int> lat_ids(total_num_faces - lat_faces_prev);
+//////         um2::iota(lat_ids.begin(), lat_ids.end(), static_cast<Int>(lat_faces_prev));
 //////         soup.addElset(lat_name, lat_ids);
 //////       } // for (izlat)
 //////
 //////       // Add the assembly elset
-//////       Vector<I> asy_ids(total_num_faces - asy_faces_prev);
-//////       um2::iota(asy_ids.begin(), asy_ids.end(), static_cast<I>(asy_faces_prev));
+//////       Vector<Int> asy_ids(total_num_faces - asy_faces_prev);
+//////       um2::iota(asy_ids.begin(), asy_ids.end(), static_cast<Int>(asy_faces_prev));
 //////       soup.addElset(asy_name, asy_ids);
 //////     } // for (ixasy)
 //////   }   // for (iyasy)
@@ -1484,8 +1427,8 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////     soup.addElset(mat_name, material_elsets[imat]);
 //////   }
 //////
-//////   Vector<I> all_ids(total_num_faces);
-//////   um2::iota(all_ids.begin(), all_ids.end(), static_cast<I>(0));
+//////   Vector<Int> all_ids(total_num_faces);
+//////   um2::iota(all_ids.begin(), all_ids.end(), static_cast<Int>(0));
 //////   // Add the knudsen number elsets
 //////   if (write_kn) {
 //////     soup.addElset("Knudsen_Max", all_ids, kn_max);
@@ -1581,10 +1524,10 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////   String const h5core_grouppath = "/" + name;
 //////
 //////   // Allocate counters for each assembly, lattice, etc.
-//////   Vector<I> asy_found(assemblies.size(), -1);
-//////   Vector<I> lat_found(lattices.size(), -1);
-//////   Vector<I> rtm_found(rtms.size(), -1);
-//////   Vector<I> cc_found(coarse_cells.size(), -1);
+//////   Vector<Int> asy_found(assemblies.size(), -1);
+//////   Vector<Int> lat_found(lattices.size(), -1);
+//////   Vector<Int> rtm_found(rtms.size(), -1);
+//////   Vector<Int> cc_found(coarse_cells.size(), -1);
 //////
 //////   std::stringstream ss;
 //////   Vector<PolytopeSoup> soups(coarse_cells.size());
@@ -1605,7 +1548,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////   // For each assembly
 //////   for (Int iyasy = 0; iyasy < nyasy; ++iyasy) {
 //////     for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
-//////       auto const asy_id = static_cast<I>(core.getChild(ixasy, iyasy));
+//////       auto const asy_id = static_cast<Int>(core.getChild(ixasy, iyasy));
 //////       Int const asy_id_ctr = ++asy_found[asy_id];
 //////       // Get elset name
 //////       ss.str("");
@@ -1642,7 +1585,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////
 //////       // For each lattice
 //////       for (Int izlat = 0; izlat < nzlat; ++izlat) {
-//////         auto const lat_id = static_cast<I>(assembly.getChild(izlat));
+//////         auto const lat_id = static_cast<Int>(assembly.getChild(izlat));
 //////         Int const lat_id_ctr = ++lat_found[lat_id];
 //////         // Get elset name
 //////         ss.str("");
@@ -1691,7 +1634,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////         // For each RTM
 //////         for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
 //////           for (Int ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
-//////             auto const rtm_id = static_cast<I>(lattice.getChild(ixrtm, iyrtm));
+//////             auto const rtm_id = static_cast<Int>(lattice.getChild(ixrtm, iyrtm));
 //////             Int const rtm_id_ctr = ++rtm_found[rtm_id];
 //////             ss.str("");
 //////             ss << "RTM_" << std::setw(5) << std::setfill('0') << rtm_id << "_"
@@ -1730,7 +1673,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////
 //////             for (Int iycell = 0; iycell < nycells; ++iycell) {
 //////               for (Int ixcell = 0; ixcell < nxcells; ++ixcell) {
-//////                 auto const & cell_id = static_cast<I>(rtm.getChild(ixcell,
+//////                 auto const & cell_id = static_cast<Int>(rtm.getChild(ixcell,
 ///// iycell)); /                 Int const cell_id_ctr = ++cc_found[cell_id]; / ss.str(""); /
 ///// ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id / << "_" <<
 ///// std::setw(5) << std::setfill('0') << cell_id_ctr; /                 String const
@@ -1744,7 +1687,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////                 Int const mesh_id = coarse_cells[cell_id].mesh_id;
 //////                 LOG_DEBUG("mesh_id = " + toString(mesh_id));
 //////                 // Add to material elsets
-//////                 Vector<MaterialID> const & cell_materials =
+//////                 Vector<MatID> const & cell_materials =
 //////                     coarse_cells[cell_id].material_ids;
 //////                 LOG_DEBUG("cell_materials.size() = " +
 //////                 toString(cell_materials.size()));
@@ -1764,7 +1707,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////                         for (Int iface = 0; iface < tri[mesh_id].fv.size(); ++iface)
 /////{ /                           Float const mcl =
 ///// tri[mesh_id].getFace(iface).meanChordLength(); /                           auto const
-///// mat_id = static_cast<I>( / static_cast<uint32_t>(cell_materials[iface])); / Float const
+///// mat_id = static_cast<Int>( / static_cast<uint32_t>(cell_materials[iface])); / Float const
 ///// t_max = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Max); / F
 ///// const t_mean = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Mean);
 ///// / cc_kns_max[cell_id][iface] = static_cast<Float>(1) / (t_max * / mcl);
@@ -1778,7 +1721,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 /////(Int iface = 0; iface < quad[mesh_id].fv.size(); ++iface) /                         {
 //////                           Float const mcl =
 ///// quad[mesh_id].getFace(iface).meanChordLength(); /                           auto const
-///// mat_id = static_cast<I>( / static_cast<uint32_t>(cell_materials[iface])); / Float const
+///// mat_id = static_cast<Int>( / static_cast<uint32_t>(cell_materials[iface])); / Float const
 ///// t_max = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Max); / F
 ///// const t_mean = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Mean);
 ///// / cc_kns_max[cell_id][iface] = static_cast<Float>(1) / (t_max * / mcl);
@@ -1792,7 +1735,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 ///// cc_kns_mean[cell_id].resize(quadratic_tri[mesh_id].fv.size()); / for (Int iface = 0;
 ///// iface < quadratic_tri[mesh_id].fv.size(); /                              ++iface) { /
 ///// Float const mcl = / quadratic_tri[mesh_id].getFace(iface).meanChordLength(); / auto const
-///// mat_id = static_cast<I>( / static_cast<uint32_t>(cell_materials[iface])); / Float const
+///// mat_id = static_cast<Int>( / static_cast<uint32_t>(cell_materials[iface])); / Float const
 ///// t_max = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Max); / F
 ///// const t_mean = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Mean);
 ///// / cc_kns_max[cell_id][iface] = static_cast<Float>(1) / (t_max * / mcl);
@@ -1806,7 +1749,7 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 ///// cc_kns_mean[cell_id].resize(quadratic_quad[mesh_id].fv.size()); / for (Int iface = 0;
 ///// iface < quadratic_quad[mesh_id].fv.size(); /                              ++iface) { /
 ///// Float const mcl = / quadratic_quad[mesh_id].getFace(iface).meanChordLength(); / auto const
-///// mat_id = static_cast<I>( / static_cast<uint32_t>(cell_materials[iface])); / Float const
+///// mat_id = static_cast<Int>( / static_cast<uint32_t>(cell_materials[iface])); / Float const
 ///// t_max = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Max); / F
 ///// const t_mean = materials[mat_id].xs.getOneGroupTotalXS( / XSReductionStrategy::Mean);
 ///// / cc_kns_max[cell_id][iface] = static_cast<Float>(1) / (t_max * / mcl);
@@ -1817,40 +1760,40 @@ Model::addRectangularPinMesh(Vec2F const xy_extents, Int const nx_faces, Int con
 //////
 //////                   // add Material elsets
 //////                   Int const cc_nfaces = cell_materials.size();
-//////                   Vector<I> cc_mats(cc_nfaces);
+//////                   Vector<Int> cc_mats(cc_nfaces);
 //////                   for (Int i = 0; i < cc_nfaces; ++i) {
 //////                     cc_mats[i] =
-//////                     static_cast<I>(static_cast<uint32_t>(cell_materials[i]));
+//////                     static_cast<Int>(static_cast<uint32_t>(cell_materials[i]));
 //////                   }
 //////                   // Get the unique material ids
-//////                   Vector<I> cc_mats_sorted = cc_mats;
+//////                   Vector<Int> cc_mats_sorted = cc_mats;
 //////                   std::sort(cc_mats_sorted.begin(), cc_mats_sorted.end());
 //////                   auto * it = std::unique(cc_mats_sorted.begin(),
-//////                   cc_mats_sorted.end()); Int const cc_nunique = static_cast<I>(it
-/////- /                   cc_mats_sorted.begin()); Vector<I> cc_mats_unique(cc_nunique);
+//////                   cc_mats_sorted.end()); Int const cc_nunique = static_cast<Int>(it
+/////- /                   cc_mats_sorted.begin()); Vector<Int> cc_mats_unique(cc_nunique);
 ///// for /                   (Int i = 0; i < cc_nunique; ++i) { / cc_mats_unique[i] =
 ///// cc_mats_sorted[i]; /                   } /                   // Create a vector with
-///// the face ids for each material /                   Vector<Vector<I>>
+///// the face ids for each material /                   Vector<Vector<Int>>
 ///// cc_mats_split(cc_nunique); /                   for (Int i = 0; i < cc_nfaces; ++i) {
 //////                     Int const mat_id = cc_mats[i];
 //////                     auto * mat_it =
 //////                         std::find(cc_mats_unique.begin(), cc_mats_unique.end(),
 //////                         mat_id);
 //////                     Int const mat_idx =
-//////                         static_cast<I>(mat_it - cc_mats_unique.begin());
+//////                         static_cast<Int>(mat_it - cc_mats_unique.begin());
 //////                     cc_mats_split[mat_idx].push_back(i);
 //////                   }
 //////                   // add each material elset
 //////                   for (Int i = 0; i < cc_nunique; ++i) {
 //////                     Int const mat_id = cc_mats_unique[i];
-//////                     Vector<I> const & mat_faces = cc_mats_split[i];
+//////                     Vector<Int> const & mat_faces = cc_mats_split[i];
 //////                     String const mat_name =
 //////                         "Material_" + String(materials[mat_id].name.data());
 //////                     soup.addElset(mat_name, mat_faces);
 //////                   }
 //////
 //////                   if (write_kn) {
-//////                     Vector<I> all_faces(cc_nfaces);
+//////                     Vector<Int> all_faces(cc_nfaces);
 //////                     um2::iota(all_faces.begin(), all_faces.end(), 0);
 //////                     soup.addElset("Knudsen_Max", all_faces, cc_kns_max[cell_id]);
 //////                     soup.addElset("Knudsen_Mean", all_faces, cc_kns_mean[cell_id]);

@@ -436,6 +436,7 @@ Vector<T>::append(Int n) noexcept
 template <class T>
 HOSTDEV constexpr Vector<T>::Vector(Int const n) noexcept
 {
+  ASSERT(n > 0);
   this->allocate(n);
   constructAtEnd(n);
 }
@@ -444,6 +445,7 @@ HOSTDEV constexpr Vector<T>::Vector(Int const n) noexcept
 template <class T>
 HOSTDEV constexpr Vector<T>::Vector(Int const n, T const & value) noexcept
 {
+  ASSERT(n > 0);
   this->allocate(n);
   constructAtEnd(n, value);
 }
@@ -453,6 +455,9 @@ template <class T>
 HOSTDEV constexpr Vector<T>::Vector(Vector<T> const & v) noexcept
 {
   Int const n = v.size();
+  if (n == 0) {
+    return;
+  }
   this->allocate(n);
   constructAtEnd(n);
   um2::copy(v._begin, v._end, _begin);
@@ -474,6 +479,9 @@ template <class T>
 HOSTDEV constexpr Vector<T>::Vector(T const * first, T const * last) noexcept
 {
   Int const n = static_cast<Int>(last - first);
+  if (n == 0) {
+    return;
+  }
   this->allocate(n);
   constructAtEnd(n);
   // Check for aliasing
@@ -486,6 +494,7 @@ template <class T>
 constexpr Vector<T>::Vector(std::initializer_list<T> const & list) noexcept
 {
   Int const n = static_cast<Int>(list.size());
+  ASSERT(n > 0);
   this->allocate(n);
   constructAtEnd(n);
   um2::copy(list.begin(), list.end(), _begin);

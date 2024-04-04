@@ -1,3 +1,15 @@
+add XS to material
+make material depend on XSlibrary
+move getXS
+
+Vector versions of gmsh funcinos
+
+getNewPhysicalGroups
+  -> Don't use insert in order, just emplace_back and sort at end
+
+Refactor gmsh functions to be more memory efficient
+-> unnecesary allocations
+
 FVM tests
 
 polytope soup elset_names sorted.
@@ -32,13 +44,6 @@ binned face vertex mesh fixes everything
 Replace epsilons with eps_distance
 
 learn more floating point
-
-eliminate epsilons
-
-Tighter eps_distance?
-  Ensure all epsilons in geometry are based on eps_distance
-
-gsl permutaitons vs mine?
 
 Int64
 
@@ -141,7 +146,7 @@ Re-add the requirements non-spack installed
 
 Scripts to install gcc
 
-reserve elements/vertices for submesh and read: FVM.toPolytopesoup, spatial_part.toPolytopeSoup
+reserve elements/vertices for submesh and read: spatial_part.toPolytopeSoup
 
 parallelize
 
@@ -163,10 +168,15 @@ Consistent testing of mesh point inside.
    getOrientedEdge -> return bool, pass edge by ref
 
 Binned FVM
+  check ray tracing by intersecting the binned and non-binned versions.
+  The ray tracing info should be the same.
+  Can robustly test this using modular rays
+
+toBuffer for geometry
+
 Matplotlib
 Setup performance tracking of key functions
   -> Track regression
 ModularRayParams to 3D
 CAD/CSG
 Vis (openGL)
-toBuffer for geometry
