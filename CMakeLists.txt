@@ -162,13 +162,13 @@ set(UM2_SOURCES
     "src/mesh/face_vertex_mesh.cpp"
     "src/physics/cross_section.cpp"
     "src/physics/nuclide.cpp"
-    "src/physics/material.cpp"
     "src/physics/cross_section_library.cpp"
+    "src/physics/material.cpp"
     "src/mpact/model.cpp"
     "src/gmsh/base_gmsh_api.cpp"
     "src/gmsh/io.cpp"
     "src/gmsh/model.cpp"
-    #    "src/gmsh/mesh.cpp"
+    "src/gmsh/mesh.cpp"
     #    #    #    ##    # visualization
     #    #    #    ##    "src/visualization/Image2D.cpp"
     "src/um2.cpp"
@@ -346,7 +346,6 @@ endif()
 # Optional subdirectories
 #===============================================================================
 
-# Benchmarks
 if (UM2_BUILD_BENCHMARKS)
   find_package(benchmark REQUIRED)
   add_subdirectory(benchmarks)
@@ -356,13 +355,11 @@ if (UM2_BUILD_MODELS)
   add_subdirectory(models)
 endif()
 
-# Tests
 if (UM2_BUILD_TESTS)
   include(CTest)
   add_subdirectory(tests)
 endif()
 
-# Tutorial
 if (UM2_BUILD_TUTORIAL)
   add_subdirectory(tutorial)
 endif()

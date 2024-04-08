@@ -1,16 +1,26 @@
-add XS to material
-make material depend on XSlibrary
+sort PolytopeSoup fujnctions
+  accessors
+
+TESTS:
+  gmsh
+    model
+      fragment 3d
+        Copy the 2D tests
+      intersect 3d
+        Copy the 2D tests
+      overlayCoarseGrid
+        Check physical group names and entities.
+        Check 2D and 3D models
+  FVM
+    quad
+    tri6
+    quad8
+
+gmsh io no allocations
+
 move getXS
 
 Vector versions of gmsh funcinos
-
-getNewPhysicalGroups
-  -> Don't use insert in order, just emplace_back and sort at end
-
-Refactor gmsh functions to be more memory efficient
--> unnecesary allocations
-
-FVM tests
 
 polytope soup elset_names sorted.
 write materials with
@@ -30,7 +40,6 @@ faceContaining find closest vertex, then test neighboring faces
   - algroithmica argmin https://en.algorithmica.org/hpc/algorithms/argmin/
 
 FVM 
-  warn about vertices that are within eps
 
 convenience functions for FVM
 
@@ -174,9 +183,29 @@ Binned FVM
 
 toBuffer for geometry
 
+write mpact model to make mpact input
+  -> materials
+
 Matplotlib
-Setup performance tracking of key functions
-  -> Track regression
+
+Setup performance tracking of key functions. 
+  Run benchmarks and track times
+  Track regression
+
 ModularRayParams to 3D
+
 CAD/CSG
-Vis (openGL)
+  Add 
+
+Interactive visualization (openGL)
+  Implement like old Julia Makie
+  Decompose to lines and triangles
+
+FVM
+  -> Implement edge to edge intersection
+  -> Implement faceContaining by finding the vertex closest to the point first
+  -> Warn about vertices that are within eps in "validate()"
+
+bump gmsh version
+
+eliminate stringstring setw(5) Coarse_Cell

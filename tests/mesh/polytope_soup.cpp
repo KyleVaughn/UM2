@@ -329,60 +329,60 @@ TEST_CASE(sortElsets)
 //  ASSERT(elset_data.empty());
 //}
 //
-//TEST_CASE(getSubset)
-//{
-//  um2::PolytopeSoup tri_quad;
-//  makeReferenceTriQuadPolytopeSoup(tri_quad);
-//  um2::PolytopeSoup tri_quad_a;
-//
-//  tri_quad.getSubset("A", tri_quad_a);
-//  ASSERT(tri_quad.compare(tri_quad_a) == 10);
-//  um2::String name;
-//  um2::Vector<Int> ids;
-//  um2::Vector<Float> elset_data;
-//  tri_quad_a.getElset(0, name, ids, elset_data);
-//  ASSERT(name == "B");
-//  ASSERT(ids == um2::Vector<Int>({1}));
-//  ASSERT(elset_data.empty());
-//  tri_quad_a.getElset(1, name, ids, elset_data);
-//  ASSERT(name == "Material_H2O");
-//  ASSERT(ids == um2::Vector<Int>({1}));
-//  ASSERT(elset_data.empty());
-//  tri_quad_a.getElset(2, name, ids, elset_data);
-//  ASSERT(name == "Material_UO2");
-//  ASSERT(ids == um2::Vector<Int>({0}));
-//  ASSERT(elset_data.empty());
-//
-//  um2::PolytopeSoup tri_quad_h2o;
-//  tri_quad.getSubset("Material_H2O", tri_quad_h2o);
-//
-//  // (1,0), (1,1), (2,0)
-//  ASSERT(tri_quad_h2o.numVerts() == 3);
-//  ASSERT(tri_quad_h2o.getVertex(0).isApprox(um2::Point3(1, 0, 0)));
-//  ASSERT(tri_quad_h2o.getVertex(1).isApprox(um2::Point3(1, 1, 0)));
-//  ASSERT(tri_quad_h2o.getVertex(2).isApprox(um2::Point3(2, 0, 0)));
-//
-//  ASSERT(tri_quad_h2o.numElems() == 1);
-//  um2::VTKElemType elem_type = um2::VTKElemType::None;
-//  um2::Vector<Int> conn;
-//  tri_quad_h2o.getElement(0, elem_type, conn);
-//  ASSERT(elem_type == um2::VTKElemType::Triangle);
-//  ASSERT(conn == um2::Vector<Int>({0, 2, 1}));
-//
-//  ASSERT(tri_quad_h2o.numElsets() == 2);
-//  tri_quad_h2o.getElset(0, name, ids, elset_data);
-//  ASSERT(name == "A");
-//  ASSERT(ids == um2::Vector<Int>({0}));
-//  ASSERT(elset_data.size() == 1);
-//  ASSERT_NEAR(elset_data[0], 2, castIfNot<Float>(1e-6));
-//
-//  elset_data.clear();
-//  tri_quad_h2o.getElset(1, name, ids, elset_data);
-//  ASSERT(name == "B");
-//  ASSERT(ids == um2::Vector<Int>({0}));
-//  ASSERT(elset_data.empty());
-//}
-//
+TEST_CASE(getSubset)
+{
+  um2::PolytopeSoup tri_quad;
+  makeReferenceTriQuadPolytopeSoup(tri_quad);
+  um2::PolytopeSoup tri_quad_a;
+
+  tri_quad.getSubset("A", tri_quad_a);
+  ASSERT(tri_quad.compare(tri_quad_a) == 10);
+  um2::String name;
+  um2::Vector<Int> ids;
+  um2::Vector<Float> elset_data;
+  tri_quad_a.getElset(0, name, ids, elset_data);
+  ASSERT(name == "B");
+  ASSERT(ids == um2::Vector<Int>({1}));
+  ASSERT(elset_data.empty());
+  tri_quad_a.getElset(1, name, ids, elset_data);
+  ASSERT(name == "Material_H2O");
+  ASSERT(ids == um2::Vector<Int>({1}));
+  ASSERT(elset_data.empty());
+  tri_quad_a.getElset(2, name, ids, elset_data);
+  ASSERT(name == "Material_UO2");
+  ASSERT(ids == um2::Vector<Int>({0}));
+  ASSERT(elset_data.empty());
+
+  um2::PolytopeSoup tri_quad_h2o;
+  tri_quad.getSubset("Material_H2O", tri_quad_h2o);
+
+  // (1,0), (1,1), (2,0)
+  ASSERT(tri_quad_h2o.numVertices() == 3);
+  ASSERT(tri_quad_h2o.getVertex(0).isApprox(um2::Point3(1, 0, 0)));
+  ASSERT(tri_quad_h2o.getVertex(1).isApprox(um2::Point3(1, 1, 0)));
+  ASSERT(tri_quad_h2o.getVertex(2).isApprox(um2::Point3(2, 0, 0)));
+
+  ASSERT(tri_quad_h2o.numElements() == 1);
+  um2::VTKElemType elem_type = um2::VTKElemType::None;
+  um2::Vector<Int> conn;
+  tri_quad_h2o.getElement(0, elem_type, conn);
+  ASSERT(elem_type == um2::VTKElemType::Triangle);
+  ASSERT(conn == um2::Vector<Int>({0, 2, 1}));
+
+  ASSERT(tri_quad_h2o.numElsets() == 2);
+  tri_quad_h2o.getElset(0, name, ids, elset_data);
+  ASSERT(name == "A");
+  ASSERT(ids == um2::Vector<Int>({0}));
+  ASSERT(elset_data.size() == 1);
+  ASSERT_NEAR(elset_data[0], 2, castIfNot<Float>(1e-6));
+
+  elset_data.clear();
+  tri_quad_h2o.getElset(1, name, ids, elset_data);
+  ASSERT(name == "B");
+  ASSERT(ids == um2::Vector<Int>({0}));
+  ASSERT(elset_data.empty());
+}
+
 //TEST_CASE(getMaterialNames)
 //{
 //  um2::PolytopeSoup tri_ref;
@@ -406,7 +406,165 @@ TEST_CASE(sortElsets)
 //  um2::Vector<MatID> const mat_ids_ref2 = {0, 1};
 //  ASSERT(mat_ids == mat_ids_ref2);
 //}
-//
+
+TEST_CASE(operator_plus_equal)
+{
+  um2::PolytopeSoup soup;
+  soup.addVertex(0, 0);
+  soup.addVertex(1, 0);
+  soup.addVertex(1, 1);
+  soup.addVertex(0, 1);
+  soup.addElement(um2::VTKElemType::Triangle, {0, 1, 3});
+  soup.addElement(um2::VTKElemType::Triangle, {1, 2, 3});
+  soup.addElset("A", {0, 1});
+  soup.addElset("C", {1}, {11});
+
+  um2::PolytopeSoup soup2;
+  soup2.addVertex(1, 0);
+  soup2.addVertex(2, 0);
+  soup2.addVertex(3, 0);
+  soup2.addVertex(2, 1);
+  soup2.addVertex(1, 1);
+  soup2.addElement(um2::VTKElemType::Quad, {0, 1, 3, 4});
+  soup2.addElement(um2::VTKElemType::Triangle, {1, 2, 3});
+  soup2.addElset("B", {0, 1});
+  soup2.addElset("C", {0, 1}, {22, 33});
+
+  soup += soup2;
+  // Check vertices
+  ASSERT(soup.numVertices() == 9);
+  ASSERT(soup.getVertex(0).isApprox(um2::Point3(0, 0, 0)));
+  ASSERT(soup.getVertex(1).isApprox(um2::Point3(1, 0, 0)));
+  ASSERT(soup.getVertex(2).isApprox(um2::Point3(1, 1, 0)));
+  ASSERT(soup.getVertex(3).isApprox(um2::Point3(0, 1, 0)));
+  ASSERT(soup.getVertex(4).isApprox(um2::Point3(1, 0, 0)));
+  ASSERT(soup.getVertex(5).isApprox(um2::Point3(2, 0, 0)));
+  ASSERT(soup.getVertex(6).isApprox(um2::Point3(3, 0, 0)));
+  ASSERT(soup.getVertex(7).isApprox(um2::Point3(2, 1, 0)));
+  ASSERT(soup.getVertex(8).isApprox(um2::Point3(1, 1, 0)));
+  // Check elements
+  ASSERT(soup.numElements() == 4);
+  um2::Vector<Int> conn;
+  um2::VTKElemType type = um2::VTKElemType::None;
+
+  soup.getElement(0, type, conn);
+  ASSERT(type == um2::VTKElemType::Triangle);
+  ASSERT(conn == um2::Vector<Int>({0, 1, 3}));
+  type = um2::VTKElemType::None;
+  conn.clear();
+
+  soup.getElement(1, type, conn);
+  ASSERT(type == um2::VTKElemType::Triangle);
+  ASSERT(conn == um2::Vector<Int>({1, 2, 3}));
+  type = um2::VTKElemType::None;
+  conn.clear();
+
+  soup.getElement(2, type, conn);
+  ASSERT(type == um2::VTKElemType::Quad);
+  ASSERT(conn == um2::Vector<Int>({4, 5, 7, 8}));
+  type = um2::VTKElemType::None;
+  conn.clear();
+
+  soup.getElement(3, type, conn);
+  ASSERT(type == um2::VTKElemType::Triangle);
+  ASSERT(conn == um2::Vector<Int>({5, 6, 7}));
+
+  // Check elsets
+  ASSERT(soup.numElsets() == 3);
+  um2::String name;
+  um2::Vector<Int> ids;
+  um2::Vector<Float> elset_data;
+  soup.getElset(0, name, ids, elset_data);
+  ASSERT(name == "A");
+  ASSERT(ids == um2::Vector<Int>({0, 1}));
+  ASSERT(elset_data.empty());
+  ids.clear();
+  elset_data.clear();
+  
+  soup.getElset(1, name, ids, elset_data);
+  ASSERT(name == "B");
+  ASSERT(ids == um2::Vector<Int>({2, 3}));
+  ASSERT(elset_data.empty());
+  ids.clear();
+  elset_data.clear();
+
+  soup.getElset(2, name, ids, elset_data);
+  ASSERT(name == "C");
+  ASSERT(ids == um2::Vector<Int>({1, 2, 3}));
+  ASSERT(elset_data.size() == 3);
+  auto constexpr eps = castIfNot<Float>(1e-6);
+  ASSERT_NEAR(elset_data[0], 11, eps);
+  ASSERT_NEAR(elset_data[1], 22, eps);
+  ASSERT_NEAR(elset_data[2], 33, eps);
+  ids.clear();
+  elset_data.clear();
+
+
+  um2::PolytopeSoup soup3;
+  soup3 += soup;
+  // Check vertices
+  ASSERT(soup3.numVertices() == 9);
+  ASSERT(soup3.getVertex(0).isApprox(um2::Point3(0, 0, 0)));
+  ASSERT(soup3.getVertex(1).isApprox(um2::Point3(1, 0, 0)));
+  ASSERT(soup3.getVertex(2).isApprox(um2::Point3(1, 1, 0)));
+  ASSERT(soup3.getVertex(3).isApprox(um2::Point3(0, 1, 0)));
+  ASSERT(soup3.getVertex(4).isApprox(um2::Point3(1, 0, 0)));
+  ASSERT(soup3.getVertex(5).isApprox(um2::Point3(2, 0, 0)));
+  ASSERT(soup3.getVertex(6).isApprox(um2::Point3(3, 0, 0)));
+  ASSERT(soup3.getVertex(7).isApprox(um2::Point3(2, 1, 0)));
+  ASSERT(soup3.getVertex(8).isApprox(um2::Point3(1, 1, 0)));
+  // Check elements
+  ASSERT(soup3.numElements() == 4);
+
+  soup3.getElement(0, type, conn);
+  ASSERT(type == um2::VTKElemType::Triangle);
+  ASSERT(conn == um2::Vector<Int>({0, 1, 3}));
+  type = um2::VTKElemType::None;
+  conn.clear();
+
+  soup3.getElement(1, type, conn);
+  ASSERT(type == um2::VTKElemType::Triangle);
+  ASSERT(conn == um2::Vector<Int>({1, 2, 3}));
+  type = um2::VTKElemType::None;
+  conn.clear();
+
+  soup3.getElement(2, type, conn);
+  ASSERT(type == um2::VTKElemType::Quad);
+  ASSERT(conn == um2::Vector<Int>({4, 5, 7, 8}));
+  type = um2::VTKElemType::None;
+  conn.clear();
+
+  soup3.getElement(3, type, conn);
+  ASSERT(type == um2::VTKElemType::Triangle);
+  ASSERT(conn == um2::Vector<Int>({5, 6, 7}));
+
+  // Check elsets
+  ASSERT(soup3.numElsets() == 3);
+  soup3.getElset(0, name, ids, elset_data);
+  ASSERT(name == "A");
+  ASSERT(ids == um2::Vector<Int>({0, 1}));
+  ASSERT(elset_data.empty());
+  ids.clear();
+  elset_data.clear();
+  
+  soup3.getElset(1, name, ids, elset_data);
+  ASSERT(name == "B");
+  ASSERT(ids == um2::Vector<Int>({2, 3}));
+  ASSERT(elset_data.empty());
+  ids.clear();
+  elset_data.clear();
+
+  soup3.getElset(2, name, ids, elset_data);
+  ASSERT(name == "C");
+  ASSERT(ids == um2::Vector<Int>({1, 2, 3}));
+  ASSERT(elset_data.size() == 3);
+  ASSERT_NEAR(elset_data[0], 11, eps);
+  ASSERT_NEAR(elset_data[1], 22, eps);
+  ASSERT_NEAR(elset_data[2], 33, eps);
+  ids.clear();
+  elset_data.clear();
+}
+
 TEST_CASE(io_abaqus_tri_mesh)
 {
   um2::String const filename = "./mesh_files/tri.inp";
@@ -787,9 +945,10 @@ TEST_SUITE(PolytopeSoup)
   TEST(sortElsets);
 //  TEST(mortonSortVertices);
 //  TEST(mortonSortElements);
-//  TEST(getSubset);
+  TEST(getSubset);
 //  TEST(getMaterialNames);
 //  TEST(getMaterialIDs);
+  TEST(operator_plus_equal);
   TEST(io_abaqus_tri_mesh);
   TEST(io_abaqus_quad_mesh);
   TEST(io_abaqus_tri_quad_mesh);

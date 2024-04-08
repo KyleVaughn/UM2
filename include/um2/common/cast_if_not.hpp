@@ -7,7 +7,7 @@
 // if To and From are the same type, return x
 // otherwise, return static_cast<To>(x)
 // Should result in no-op for same types
-template <typename To, typename From>
+template <class To, class From>
 CONST HOSTDEV constexpr auto
 castIfNot(From const x) noexcept -> To
 {

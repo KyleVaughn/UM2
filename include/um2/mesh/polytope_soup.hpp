@@ -129,6 +129,9 @@ public:
   [[nodiscard]] constexpr auto
   getElemTypes() const -> Vector<VTKElemType>;
 
+  inline void
+  getElsetName(Int i, String & name) const;
+
   void
   getElset(Int i, String & name, Vector<Int> & ids, Vector<Float> & data) const;
 
@@ -145,10 +148,10 @@ public:
 //
 //  PURE [[nodiscard]] constexpr auto
 //  getMeshType() const -> MeshType;
-//
-//  void
-//  getSubset(String const & elset_name, PolytopeSoup & subset) const;
-//
+
+  void
+  getSubset(String const & elset_name, PolytopeSoup & subset) const;
+
   PURE [[nodiscard]] constexpr auto
   getVertex(Int i) const -> Point3 const &;
 
@@ -170,6 +173,9 @@ public:
 
   PURE [[nodiscard]] constexpr auto
   numElsets() const -> Int;
+
+  auto
+  operator+=(PolytopeSoup const & other) noexcept -> PolytopeSoup &;
 
   void
   read(String const & filename);
@@ -302,51 +308,11 @@ PolytopeSoup::vertices() const -> Vector<Point3> const &
   return _vertices;
 }
 
-//PURE constexpr auto
-//PolytopeSoup::getMeshType() const -> MeshType
-//{
-//  // Loop through the element types to determine which 1 or 2 mesh types are
-//  // present.
-//  VTKElemType type1 = VTKElemType::None;
-//  VTKElemType type2 = VTKElemType::None;
-//  for (auto const & this_type : _element_types) {
-//    if (type1 == VTKElemType::None) {
-//      type1 = this_type;
-//    }
-//    if (type1 == this_type) {
-//      continue;
-//    }
-//    if (type2 == VTKElemType::None) {
-//      type2 = this_type;
-//    }
-//    if (type2 == this_type) {
-//      continue;
-//    }
-//    // third type found. Not valid!
-//    return MeshType::None;
-//  }
-//  // Determine the mesh type from the 1 or 2 VTK elem types.
-//  if (type1 == VTKElemType::Triangle && type2 == VTKElemType::None) {
-//    return MeshType::Tri;
-//  }
-//  if (type1 == VTKElemType::Quad && type2 == VTKElemType::None) {
-//    return MeshType::Quad;
-//  }
-//  if ((type1 == VTKElemType::Triangle && type2 == VTKElemType::Quad) ||
-//      (type2 == VTKElemType::Triangle && type1 == VTKElemType::Quad)) {
-//    return MeshType::TriQuad;
-//  }
-//  if (type1 == VTKElemType::QuadraticTriangle && type2 == VTKElemType::None) {
-//    return MeshType::QuadraticTri;
-//  }
-//  if (type1 == VTKElemType::QuadraticQuad && type2 == VTKElemType::None) {
-//    return MeshType::QuadraticQuad;
-//  }
-//  if ((type1 == VTKElemType::QuadraticTriangle && type2 == VTKElemType::QuadraticQuad) ||
-//      (type2 == VTKElemType::QuadraticTriangle && type1 == VTKElemType::QuadraticQuad)) {
-//    return MeshType::QuadraticTriQuad;
-//  }
-//  return MeshType::None;
-//}
+void
+PolytopeSoup::getElsetName(Int const i, String & name) const
+{
+  ASSERT(i < _elset_names.size());
+  name = _elset_names[i];
+}
 
 } // namespace um2

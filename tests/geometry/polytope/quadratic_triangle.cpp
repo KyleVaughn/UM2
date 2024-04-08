@@ -102,14 +102,14 @@ TEST_CASE(jacobian)
   ASSERT_NEAR((jac(0, 1)), 0, eps);
   ASSERT_NEAR((jac(1, 1)), 1, eps);
 
-  jac = tri.jacobian(static_cast<Float>(0.2), static_cast<Float>(0.3));
+  jac = tri.jacobian(castIfNot<Float>(0.2), castIfNot<Float>(0.3));
   ASSERT_NEAR((jac(0, 0)), 1, eps);
   ASSERT_NEAR((jac(1, 0)), 0, eps);
   ASSERT_NEAR((jac(0, 1)), 0, eps);
   ASSERT_NEAR((jac(1, 1)), 1, eps);
 
   // If we stretch the triangle, the Jacobian should change.
-  tri[1][0] = static_cast<Float>(2);
+  tri[1][0] = castIfNot<Float>(2);
   jac = tri.jacobian(0.5, 0);
   ASSERT_NEAR((jac(0, 0)), 2, eps);
   ASSERT_NEAR((jac(1, 0)), 0, eps);

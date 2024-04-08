@@ -1,6 +1,6 @@
 #pragma once
 
-#include <um2/config.hpp>
+#include <um2/stdlib/vector.hpp>
 
 namespace um2
 {
@@ -155,6 +155,39 @@ vtkToXDMFElemType(VTKElemType x) -> XDMFElemType
     ASSERT(false);
     return XDMFElemType::None;
   }
+}
+
+PURE constexpr auto
+getMeshType(Vector<VTKElemType> const & elem_types) noexcept -> MeshType
+{
+  if (elem_types.size() == 1) {
+    switch (elem_types[0]) {
+    case VTKElemType::Triangle:
+      return MeshType::Tri;
+    case VTKElemType::Quad:
+      return MeshType::Quad;
+    case VTKElemType::QuadraticTriangle:
+      return MeshType::QuadraticTri;
+    case VTKElemType::QuadraticQuad:
+      return MeshType::QuadraticQuad;
+    default:
+      return MeshType::None;
+    }
+  }
+  if (elem_types.size() == 2) {
+    VTKElemType e0 = elem_types[0];
+    VTKElemType e1 = elem_types[1];
+    if (static_cast<int>(e0) > static_cast<int>(e1)) {
+      um2::swap(e0, e1);
+    }
+    if (e0 == VTKElemType::Triangle && e1 == VTKElemType::Quad) {
+      return MeshType::TriQuad;
+    }
+    if (e0 == VTKElemType::QuadraticTriangle && e1 == VTKElemType::QuadraticQuad) {
+      return MeshType::QuadraticTriQuad;
+    }
+  }
+  return MeshType::None;
 }
 
 } // namespace um2

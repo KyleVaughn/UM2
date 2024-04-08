@@ -2,12 +2,11 @@
 
 #include <um2/common/logger.hpp>
 #include <um2/stdlib/algorithm/is_sorted.hpp>
+#include <um2/stdlib/algorithm/fill.hpp>
 
-//#include <iomanip> // std::setw
 #include <algorithm> // std::any_of
 #include <numeric> // std::reduce
-
-#include <iostream> // std::cout
+#include <iomanip> // std::setw
 
 namespace um2::mpact
 {
@@ -66,13 +65,13 @@ Model::clear() noexcept
 // addMaterial
 //=============================================================================
 
-auto    
-Model::addMaterial(Material const & material) -> Int    
-{    
-  material.validate();    
-  _materials.emplace_back(material);    
-  return _materials.size() - 1;    
-} 
+auto
+Model::addMaterial(Material const & material) -> Int
+{
+  material.validate();
+  _materials.emplace_back(material);
+  return _materials.size() - 1;
+}
 
 //=============================================================================
 // addCylindricalPinMesh
@@ -771,7 +770,7 @@ Model::addRTM(Vector<Vector<Int>> const & cc_ids) -> Int
   // Ensure the grid has the same extents as all other RTMs
   if (!_rtms.empty()) {
     if (!_rtms[0].grid().extents().isApprox(grid.extents())) {
-      logger::error("All RTMs must have the same extents"); 
+      logger::error("All RTMs must have the same extents");
       return -1;
     }
   }
@@ -920,91 +919,202 @@ Model::addCore(Vector<Vector<Int>> const & asy_ids) -> Int
   return 0;
 }
 
-////=============================================================================
-//// importCoarseCells
-////=============================================================================
-//
-//void
-//Model::importCoarseCells(String const & filename)
-//{
-//  logger::info("Importing coarse cells from ", filename);
-//  PolytopeSoup mesh_file;
-//  mesh_file.read(filename);
-//
-//  // Get the materials
-//  Vector<String> material_names;
-//  mesh_file.getMaterialNames(material_names);
-//  _materials.resize(material_names.size());
-//  for (Int i = 0; i < material_names.size(); ++i) {
-//    _materials[i].setName(material_names[i].substr(9));
-//  }
-//
-//  // For each coarse cell
-//  std::stringstream ss;
-//  Int const num_coarse_cells = numCoarseCells();
-//  for (Int i = 0; i < num_coarse_cells; ++i) {
-//    // Get the submesh for the coarse cell
-//    ss.str("");
-//    ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << i;
-//    String const cc_name(ss.str().c_str());
-//    PolytopeSoup cc_submesh;
-//    mesh_file.getSubmesh(cc_name, cc_submesh);
-//
-//    // Get the mesh type and material IDs
-//    MeshType const mesh_type = cc_submesh.getMeshType();
-//    CoarseCell & cc = _coarse_cells[i];
-//    cc.mesh_type = mesh_type;
-//    Vector<MatID> mat_ids;
-//    cc_submesh.getMatIDs(mat_ids, material_names);
-//    cc.material_ids.resize(mat_ids.size());
-//    um2::copy(mat_ids.cbegin(), mat_ids.cend(), cc.material_ids.begin());
-//
-//    // Create the FaceVertexMesh and shift it from global coordinates to local
-//    // coordinates, with the bottom left corner of the AABB at the origin
-//    AxisAlignedBox2 bb = AxisAlignedBox2::empty();
-//    Point2 * vertices = nullptr;
-//    Int const num_verts = cc_submesh.numVerts();
-//    switch (mesh_type) {
-//    case MeshType::Tri:
-//      cc.mesh_id = _tris.size();
-//      _tris.push_back(um2::move(TriFVM(cc_submesh)));
-//      bb = _tris.back().boundingBox();
-//      vertices = _tris.back().vertices().data();
-//      break;
-//    case MeshType::Quad:
-//      cc.mesh_id = _quads.size();
-//      _quads.push_back(um2::move(QuadFVM(cc_submesh)));
-//      bb = _quads.back().boundingBox();
-//      vertices = _quads.back().vertices().data();
-//      break;
-//    case MeshType::QuadraticTri:
-//      cc.mesh_id = _tri6s.size();
-//      _tri6s.push_back(um2::move(Tri6FVM(cc_submesh)));
-//      bb = _tri6s.back().boundingBox();
-//      vertices = _tri6s.back().vertices().data();
-//      break;
-//    case MeshType::QuadraticQuad:
-//      cc.mesh_id = _quad8s.size();
-//      _quad8s.push_back(um2::move(Quad8FVM(cc_submesh)));
-//      bb = _quad8s.back().boundingBox();
-//      vertices = _quad8s.back().vertices().data();
-//      break;
-//    default:
-//      logger::error("Mesh type not supported");
-//    }
-//
-//    // Shift the points so that the min point is at the origin.
-//    Point2 const min_point = bb.minima();
-//    for (Int ip = 0; ip < num_verts; ++ip) {
-//      vertices[ip] -= min_point;
-//    }
-//#if UM2_ENABLE_ASSERTS
-//    Point2 const dxdy = bb.maxima() - bb.minima();
-//    ASSERT(isApprox(dxdy, cc.dxdy));
-//#endif
-//  }
-//}
-//
+//=============================================================================
+// addCoarseGrid
+//=============================================================================
+
+void
+Model::addCoarseGrid(Vec2F const xy_extents, Vec2I const xy_num_cells)
+{
+  LOG_INFO("Adding an ", xy_num_cells[0], " x ", xy_num_cells[1], " coarse grid");
+  if (xy_extents[0] <= 0 || xy_extents[1] <= 0) {
+    logger::error("Grid dimensions must be positive");
+    return;
+  }
+
+  if (xy_num_cells[0] <= 0 || xy_num_cells[1] <= 0) {
+    logger::error("Number of cells must be positive");
+    return;
+  }
+
+  // Ensure that the model is empty
+  ASSERT(_coarse_cells.empty());
+  ASSERT(_rtms.empty());
+  ASSERT(_lattices.empty());
+  ASSERT(_assemblies.empty());
+
+  Float const dx = xy_extents[0] / static_cast<Float>(xy_num_cells[0]);
+  Float const dy = xy_extents[1] / static_cast<Float>(xy_num_cells[1]);
+  Vec2F const dxdy(dx, dy);
+  Int const nx = xy_num_cells[0];
+  Int const ny = xy_num_cells[1];
+
+  // Add a coarse cell for each cell in the grid
+  for (Int iy = 0; iy < ny; ++iy) {
+    for (Int ix = 0; ix < nx; ++ix) {
+      addCoarseCell(dxdy);
+    }
+  }
+
+  // Add an RTM for each coarse cell
+  Vector<Vector<Int>> ids = {{0}};
+  for (Int i = 0; i < nx * ny; ++i) {
+    ids[0][0] = i;
+    addRTM(ids);
+  }
+
+  // Add a single lattice with all the RTMs
+  // The ids in the rows are reversed, so we start from max row
+  ids.resize(ny);
+  for (Int iy = ny - 1; iy >= 0; --iy) {
+    ids[iy].resize(nx);
+    for (Int ix = 0; ix < nx; ++ix) {
+      ids[iy][ix] = (ny - 1 - iy) * nx + ix;
+    }
+  }
+  addLattice(ids);
+
+  // Add a single assembly with the lattice
+  addAssembly({0});
+
+  // Add the core with the assembly
+  addCore({{0}});
+
+}
+
+//=============================================================================
+// importCoarseCellMeshes
+//=============================================================================
+
+void
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+Model::importCoarseCellMeshes(String const & filename)
+{
+  LOG_INFO("Importing coarse cells from ", filename);
+  ASSERT(!_materials.empty());
+
+  PolytopeSoup const soup(filename);
+
+  // For each coarse cell
+  Int const num_coarse_cells = numCoarseCells();
+  for (Int icc = 0; icc < num_coarse_cells; ++icc) {
+    // Get the subset named "Coarse_Cell_XXXXX"
+    int32_t constexpr buf_size = 8;
+    char buffer[buf_size];
+    for (char & c : buffer) {
+      c = '0';
+    }
+    int32_t const len = snprintf(nullptr, 0, "%d", icc);
+    int32_t const ret = snprintf(buffer + (5 - len), static_cast<uint64_t>(len + 1), "%d", icc);
+    ASSERT(ret == len);
+    String cc_name("Coarse_Cell_");
+    cc_name.append(buffer, 5);
+
+    // Get the mesh for the coarse cell
+    PolytopeSoup cc_mesh;
+    soup.getSubset(cc_name, cc_mesh);
+
+    // Get the mesh type and material IDs
+    MeshType const mesh_type = getMeshType(cc_mesh.getElemTypes());
+    ASSERT(mesh_type != MeshType::None);
+    ASSERT(mesh_type != MeshType::TriQuad);
+    ASSERT(mesh_type != MeshType::QuadraticTriQuad);
+    CoarseCell & cc = _coarse_cells[icc];
+    cc.mesh_type = mesh_type;
+    cc.material_ids.resize(cc_mesh.numElements());
+    um2::fill(cc.material_ids.begin(), cc.material_ids.end(), static_cast<MatID>(-1));
+    // For each elset in the cc_mesh, test if it is a material.
+    // If so, set all the elements in the elset to the corresponding material ID.
+    for (Int iset = 0; iset < cc_mesh.numElsets(); ++iset) {
+      String elset_name;
+      cc_mesh.getElsetName(iset, elset_name);
+      if (elset_name.starts_with("Material_")) {
+        String const mat_name = elset_name.substr(9);
+        // Get the material ID (index into the materials vector)
+        bool mat_found = false;
+        for (Int imat = 0; imat < _materials.size(); ++imat) {
+          if (_materials[imat].getName() == mat_name) {
+            mat_found = true;
+            Vector<Int> ids;
+            Vector<Float> data;
+            cc_mesh.getElset(elset_name, ids, data);
+            ASSERT(!ids.empty());
+            for (Int const & id : ids) {
+              ASSERT(id >= 0);
+              ASSERT(id < cc_mesh.numElements());
+              cc.material_ids[id] = static_cast<MatID>(imat);
+            }
+            break;
+          }
+        }
+        if (!mat_found) {
+          logger::error("Material ", elset_name, " not found");
+          return;
+        }
+      }
+    }
+    // Check that no material IDs are -1
+    for (auto const & id : cc.material_ids) {
+      if (id == -1) {
+        logger::error("mesh does not have a material ID for each face");
+        return;
+      }
+    }
+    // Create the FaceVertexMesh and shift it from global coordinates to local
+    // coordinates, with the bottom left corner of the AABB at the origin
+    AxisAlignedBox2 bb = AxisAlignedBox2::empty();
+    Point2 * vertices = nullptr;
+    Int const num_verts = cc_mesh.numVertices();
+    switch (mesh_type) {
+    case MeshType::Tri:
+      cc.mesh_id = _tris.size();
+      _tris.emplace_back(cc_mesh);
+      bb = _tris.back().boundingBox();
+      vertices = _tris.back().vertices().data();
+      break;
+    case MeshType::Quad:
+      cc.mesh_id = _quads.size();
+      _quads.emplace_back(cc_mesh);
+      bb = _quads.back().boundingBox();
+      vertices = _quads.back().vertices().data();
+      break;
+    case MeshType::QuadraticTri:
+      cc.mesh_id = _tri6s.size();
+      _tri6s.emplace_back(cc_mesh);
+      bb = _tri6s.back().boundingBox();
+      vertices = _tri6s.back().vertices().data();
+      break;
+    case MeshType::QuadraticQuad:
+      cc.mesh_id = _quad8s.size();
+      _quad8s.emplace_back(cc_mesh);
+      bb = _quad8s.back().boundingBox();
+      vertices = _quad8s.back().vertices().data();
+      break;
+    default:
+      logger::error("Mesh type not supported");
+    }
+
+    // Shift the points so that the min point is at the origin.
+    Point2 const min_point = bb.minima();
+    for (Int ip = 0; ip < num_verts; ++ip) {
+      vertices[ip] -= min_point;
+    }
+#if UM2_ENABLE_ASSERTS
+    Point2 const dxdy = bb.maxima() - bb.minima();
+    ASSERT(dxdy.isApprox(cc.xy_extents));
+#endif
+  }
+} // importCoarseCellMeshes
+
+
+
+
+
+
+
+
+
+
 ////=============================================================================
 //// fillHierarchy
 ////=============================================================================
@@ -1060,384 +1170,395 @@ Model::addCore(Vector<Vector<Int>> const & asy_ids) -> Int
 //    }
 //  }
 //}
-//////
-////////=============================================================================
-//////// toPolytopeSoup
-////////=============================================================================
-//////
-////// template <std::floating_point T, std::integral I>
-////// void
-//////// NOLINTNEXTLINE(readability-function-cognitive-complexity)
-////// Model::toPolytopeSoup(PolytopeSoup & soup, bool write_kn) const
-//////{
-//////   LOG_DEBUG("Converting spatial partition to polytope soup");
-//////
-//////   if (core.children.empty()) {
-//////     logger::error("Core has no children");
-//////     return;
-//////   }
-//////   // Allocate counters for each assembly, lattice, etc.
-//////   Vector<Int> asy_found(assemblies.size(), -1);
-//////   Vector<Int> lat_found(lattices.size(), -1);
-//////   Vector<Int> rtm_found(rtms.size(), -1);
-//////   Vector<Int> cc_found(coarse_cells.size(), -1);
-//////
-//////   std::stringstream ss;
-//////   Int total_num_faces = 0;
-//////   LOG_DEBUG("materials.size() = " + toString(materials.size()));
-//////   Vector<Vector<Int>> material_elsets(materials.size());
-//////   Vector<Float> kn_max;
-//////   Vector<Float> kn_mean;
-//////   Vector<Vector<Float>> cc_kns_max(coarse_cells.size());
-//////   Vector<Vector<Float>> cc_kns_mean(coarse_cells.size());
-//////
-//////   // We will encode the M by N dimensions of each assembly, lattice,
-//////   // etc. as elset data.
-//////   // For each assembly
-//////   Int const nyasy = core.numYCells();
-//////   Int const nxasy = core.numXCells();
-//////   for (Int iyasy = 0; iyasy < nyasy; ++iyasy) {
-//////     for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
-//////       Int const asy_faces_prev = total_num_faces;
-//////       auto const asy_id = static_cast<Int>(core.getChild(ixasy, iyasy));
-//////       Int const asy_id_ctr = ++asy_found[asy_id];
-//////       // Get elset name
-//////       ss.str("");
-//////       ss << "Assembly_" << std::setw(5) << std::setfill('0') << asy_id << "_"
-//////          << std::setw(5) << std::setfill('0') << asy_id_ctr;
-//////       String const asy_name(ss.str().c_str());
-//////       LOG_DEBUG("Assembly name: " + asy_name);
-//////       // Get the assembly offset (lower left corner)
-//////       AxisAlignedBox2<Float> const asy_bb = core.getBox(ixasy, iyasy);
-//////       Point2 const asy_ll = asy_bb.minima; // Lower left corner
-//////
-//////       auto const & assembly = assemblies[asy_id];
-//////       if (assembly.children.empty()) {
-//////         logger::error("Assembly has no children");
-//////         return;
-//////       }
-//////
-//////       // For each lattice
-//////       Int const nzlat = assembly.numXCells();
-//////       for (Int izlat = 0; izlat < nzlat; ++izlat) {
-//////         Int const lat_faces_prev = total_num_faces;
-//////         auto const lat_id = static_cast<Int>(assembly.getChild(izlat));
-//////         Int const lat_id_ctr = ++lat_found[lat_id];
-//////         // Get elset name
-//////         ss.str("");
-//////         ss << "Lattice_" << std::setw(5) << std::setfill('0') << lat_id << "_"
-//////            << std::setw(5) << std::setfill('0') << lat_id_ctr;
-//////         String const lat_name(ss.str().c_str());
-//////         LOG_DEBUG("Lattice name: " + lat_name);
-//////         // Get the lattice offset (z direction)
-//////         // The midplane is the location that the geometry was sampled at.
-//////         Float const low_z = assembly.grid.divs[0][izlat];
-//////         Float const high_z = assembly.grid.divs[0][izlat + 1];
-//////         Float const lat_z = (low_z + high_z) / 2;
-//////
-//////         // Get the lattice
-//////         auto const & lattice = lattices[lat_id];
-//////         if (lattice.children.empty()) {
-//////           logger::error("Lattice has no children");
-//////           return;
-//////         }
-//////
-//////         // For each RTM
-//////         Int const nyrtm = lattice.numYCells();
-//////         Int const nxrtm = lattice.numXCells();
-//////         for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
-//////           for (Int ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
-//////             Int const rtm_faces_prev = total_num_faces;
-//////             auto const rtm_id = static_cast<Int>(lattice.getChild(ixrtm, iyrtm));
-//////             Int const rtm_id_ctr = ++rtm_found[rtm_id];
-//////             ss.str("");
-//////             ss << "RTM_" << std::setw(5) << std::setfill('0') << rtm_id << "_"
-//////                << std::setw(5) << std::setfill('0') << rtm_id_ctr;
-//////             String const rtm_name(ss.str().c_str());
-//////             LOG_DEBUG("RTM name: " + rtm_name);
-//////             // Get the RTM offset (lower left corner)
-//////             auto const rtm_bb = lattice.getBox(ixrtm, iyrtm);
-//////             Point2 const rtm_ll = rtm_bb.minima; // Lower left corner
-//////
-//////             // Get the rtm
-//////             auto const & rtm = rtms[rtm_id];
-//////             if (rtm.children.empty()) {
-//////               logger::error("RTM has no children");
-//////               return;
-//////             }
-//////
-//////             Int const nycells = rtm.numYCells();
-//////             Int const nxcells = rtm.numXCells();
-//////             for (Int iycell = 0; iycell < nycells; ++iycell) {
-//////               for (Int ixcell = 0; ixcell < nxcells; ++ixcell) {
-//////                 Int const cell_faces_prev = total_num_faces;
-//////                 auto const & cell_id = static_cast<Int>(rtm.getChild(ixcell,
-///// iycell)); /                 Int const cell_id_ctr = ++cc_found[cell_id]; / ss.str(""); /
-///// ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id / << "_" <<
-///// std::setw(5) << std::setfill('0') << cell_id_ctr; /                 String const
-///// cell_name(ss.str().c_str()); /                 LOG_DEBUG("Coarse cell name: " +
-///// cell_name); /                 // Get the cell offset (lower left corner) / auto const
-///// cell_bb = rtm.getBox(ixcell, iycell); /                 Point2 const cell_ll =
-///// cell_bb.minima; // Lower left corner
-//////
-//////                 // Get the mesh type and id of the coarse cell.
-//////                 MeshType const mesh_type = coarse_cells[cell_id].mesh_type;
-//////                 Int const mesh_id = coarse_cells[cell_id].mesh_id;
-//////                 LOG_DEBUG("mesh_id = " + toString(mesh_id));
-//////                 // Add to material elsets
-//////                 Vector<MatID> const & cell_materials =
-//////                     coarse_cells[cell_id].material_ids;
-//////                 LOG_DEBUG("cell_materials.size() = " +
-//////                 toString(cell_materials.size())); for (Int iface = 0; iface <
-//////                 cell_materials.size(); ++iface) {
-//////                   auto const mat_id =
-////// static_cast<Int>(static_cast<uint32_t>(cell_materials[iface])); /
-///// material_elsets[mat_id].push_back( /                       static_cast<Int>(iface +
-///// cell_faces_prev)); /                 }
-//////
-//////                 Point2 const * fvm_vertices_begin = nullptr;
-//////                 Point2 const * fvm_vertices_end = nullptr;
-//////                 switch (mesh_type) {
-//////                 case MeshType::Tri:
-//////                   LOG_DEBUG("Mesh type: Tri");
-//////                   fvm_vertices_begin = tri[mesh_id].vertices.begin();
-//////                   fvm_vertices_end = tri[mesh_id].vertices.end();
-//////                   break;
-//////                 case MeshType::Quad:
-//////                   LOG_DEBUG("Mesh type: Quad");
-//////                   fvm_vertices_begin = quad[mesh_id].vertices.begin();
-//////                   fvm_vertices_end = quad[mesh_id].vertices.end();
-//////                   break;
-//////                 case MeshType::QuadraticTri:
-//////                   LOG_DEBUG("Mesh type: QuadraticTri");
-//////                   fvm_vertices_begin = quadratic_tri[mesh_id].vertices.begin();
-//////                   fvm_vertices_end = quadratic_tri[mesh_id].vertices.end();
-//////                   break;
-//////                 case MeshType::QuadraticQuad:
-//////                   LOG_DEBUG("Mesh type: QuadraticQuad");
-//////                   fvm_vertices_begin = quadratic_quad[mesh_id].vertices.begin();
-//////                   fvm_vertices_end = quadratic_quad[mesh_id].vertices.end();
-//////                   break;
-//////                 default:
-//////                   logger::error("Unsupported mesh type");
-//////                   return;
-//////                 } // switch (mesh_type)
-//////
-//////                 // Add each vertex to the PolytopeSoup, offsetting by the
-//////                 // global xyz offset
-//////                 auto const num_verts_prev = static_cast<Int>(soup.numVerts());
-//////                 Point2 const xy_offset = cell_ll + rtm_ll + asy_ll;
-//////                 for (auto it = fvm_vertices_begin; it != fvm_vertices_end; ++it) {
-//////                   Point2 const p = *it + xy_offset;
-//////                   soup.addVertex(p[0], p[1], lat_z);
-//////                 }
-//////
-//////                 // Add each face to the PolytopeSoup, offsetting by num_verts_prev
-//////                 LOG_DEBUG("Adding faces to PolytopeSoup");
-//////                 switch (mesh_type) {
-//////                 case MeshType::Tri: {
-//////                   Int const verts_per_face = 3;
-//////                   VTKElemType const elem_type = VTKElemType::Triangle;
-//////                   Vector<Int> conn(verts_per_face);
-//////                   LOG_DEBUG("tri[mesh_id].fv.size() = " +
-//////                             toString(tri[mesh_id].fv.size()));
-//////                   for (Int iface = 0; iface < tri[mesh_id].fv.size(); ++iface) {
-//////                     auto const & face_conn = tri[mesh_id].fv[iface];
-//////                     for (Int i = 0; i < verts_per_face; ++i) {
-//////                       conn[i] = face_conn[i] + num_verts_prev;
-//////                     }
-//////                     soup.addElement(elem_type, conn);
-//////                   }
-//////                   if (write_kn) {
-//////                     if (cc_kns_max[cell_id].empty()) {
-//////                       LOG_DEBUG("Computing Knudsen numbers");
-//////                       for (Int iface = 0; iface < tri[mesh_id].fv.size(); ++iface) {
-//////                         Float const mcl = tri[mesh_id].getFace(iface).meanChordLength();
-//////                         auto const mat_id = static_cast<Int>(
-//////                             static_cast<uint32_t>(cell_materials[iface]));
-//////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-//////                             XSReductionStrategy::Max);
-//////                         Float const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-//////                             XSReductionStrategy::Mean);
-//////                         cc_kns_max[cell_id].push_back(static_cast<Float>(1) / (t_max *
-//////                         mcl)); cc_kns_mean[cell_id].push_back(static_cast<Float>(1) /
-//////                                                        (t_mean * mcl));
-//////                       }
-//////                     }
-//////                     for (auto const & kn : cc_kns_max[cell_id]) {
-//////                       kn_max.push_back(kn);
-//////                     }
-//////                     for (auto const & kn : cc_kns_mean[cell_id]) {
-//////                       kn_mean.push_back(kn);
-//////                     }
-//////                   }
-//////                 } break;
-//////                 case MeshType::Quad: {
-//////                   Int const verts_per_face = 4;
-//////                   VTKElemType const elem_type = VTKElemType::Quad;
-//////                   Vector<Int> conn(verts_per_face);
-//////                   for (Int iface = 0; iface < quad[mesh_id].fv.size(); ++iface) {
-//////                     auto const & face_conn = quad[mesh_id].fv[iface];
-//////                     for (Int i = 0; i < verts_per_face; ++i) {
-//////                       conn[i] = face_conn[i] + num_verts_prev;
-//////                     }
-//////                     soup.addElement(elem_type, conn);
-//////                   }
-//////                   if (write_kn) {
-//////                     if (cc_kns_max[cell_id].empty()) {
-//////                       LOG_DEBUG("Computing Knudsen numbers");
-//////                       for (Int iface = 0; iface < quad[mesh_id].fv.size(); ++iface)
-/////{ /                         LOG_DEBUG("face = " + toString(quad[mesh_id].fv[iface][0])
-/////+ " /                         " + / toString(quad[mesh_id].fv[iface][1]) + " " + /
-///// toString(quad[mesh_id].fv[iface][2]) + " " + / toString(quad[mesh_id].fv[iface][3]));
-//////                         Float const mcl = quad[mesh_id].getFace(iface).meanChordLength();
-//////                         auto const mat_id = static_cast<Int>(
-//////                             static_cast<uint32_t>(cell_materials[iface]));
-//////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-//////                             XSReductionStrategy::Max);
-//////                         Float const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-//////                             XSReductionStrategy::Mean);
-//////                         cc_kns_max[cell_id].push_back(static_cast<Float>(1) / (t_max *
-//////                         mcl)); cc_kns_mean[cell_id].push_back(static_cast<Float>(1) /
-//////                                                        (t_mean * mcl));
-//////                       }
-//////                     }
-//////                     for (auto const & kn : cc_kns_max[cell_id]) {
-//////                       kn_max.push_back(kn);
-//////                     }
-//////                     for (auto const & kn : cc_kns_mean[cell_id]) {
-//////                       kn_mean.push_back(kn);
-//////                     }
-//////                   }
-//////                 } break;
-//////                 case MeshType::QuadraticTri: {
-//////                   Int const verts_per_face = 6;
-//////                   VTKElemType const elem_type = VTKElemType::QuadraticTriangle;
-//////                   Vector<Int> conn(verts_per_face);
-//////                   for (Int iface = 0; iface < quadratic_tri[mesh_id].fv.size();
-//////                        ++iface) {
-//////                     auto const & face_conn = quadratic_tri[mesh_id].fv[iface];
-//////                     for (Int i = 0; i < verts_per_face; ++i) {
-//////                       conn[i] = face_conn[i] + num_verts_prev;
-//////                     }
-//////                     soup.addElement(elem_type, conn);
-//////                   }
-//////                   if (write_kn) {
-//////                     if (cc_kns_max[cell_id].empty()) {
-//////                       LOG_DEBUG("Computing Knudsen numbers");
-//////                       for (Int iface = 0; iface < quadratic_tri[mesh_id].fv.size();
-//////                            ++iface) {
-//////                         Float const mcl =
-//////                             quadratic_tri[mesh_id].getFace(iface).meanChordLength();
-//////                         auto const mat_id = static_cast<Int>(
-//////                             static_cast<uint32_t>(cell_materials[iface]));
-//////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-//////                             XSReductionStrategy::Max);
-//////                         Float const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-//////                             XSReductionStrategy::Mean);
-//////                         cc_kns_max[cell_id].push_back(static_cast<Float>(1) / (t_max *
-//////                         mcl)); cc_kns_mean[cell_id].push_back(static_cast<Float>(1) /
-//////                                                        (t_mean * mcl));
-//////                       }
-//////                     }
-//////                     for (auto const & kn : cc_kns_max[cell_id]) {
-//////                       kn_max.push_back(kn);
-//////                     }
-//////                     for (auto const & kn : cc_kns_mean[cell_id]) {
-//////                       kn_mean.push_back(kn);
-//////                     }
-//////                   }
-//////                 } break;
-//////                 case MeshType::QuadraticQuad: {
-//////                   Int const verts_per_face = 8;
-//////                   VTKElemType const elem_type = VTKElemType::QuadraticQuad;
-//////                   Vector<Int> conn(verts_per_face);
-//////                   for (Int iface = 0; iface < quadratic_quad[mesh_id].fv.size();
-//////                        ++iface) {
-//////                     auto const & face_conn = quadratic_quad[mesh_id].fv[iface];
-//////                     for (Int i = 0; i < verts_per_face; ++i) {
-//////                       conn[i] = face_conn[i] + num_verts_prev;
-//////                     }
-//////                     soup.addElement(elem_type, conn);
-//////                   }
-//////                   if (write_kn) {
-//////                     if (cc_kns_max[cell_id].empty()) {
-//////                       LOG_DEBUG("Computing Knudsen numbers");
-//////                       for (Int iface = 0; iface < quadratic_quad[mesh_id].fv.size();
-//////                            ++iface) {
-//////                         Float const mcl =
-//////                             quadratic_quad[mesh_id].getFace(iface).meanChordLength();
-//////                         auto const mat_id = static_cast<Int>(
-//////                             static_cast<uint32_t>(cell_materials[iface]));
-//////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
-//////                             XSReductionStrategy::Max);
-//////                         Float const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
-//////                             XSReductionStrategy::Mean);
-//////                         cc_kns_max[cell_id].push_back(static_cast<Float>(1) / (t_max *
-//////                         mcl)); cc_kns_mean[cell_id].push_back(static_cast<Float>(1) /
-//////                                                        (t_mean * mcl));
-//////                       }
-//////                     }
-//////                     for (auto const & kn : cc_kns_max[cell_id]) {
-//////                       kn_max.push_back(kn);
-//////                     }
-//////                     for (auto const & kn : cc_kns_mean[cell_id]) {
-//////                       kn_mean.push_back(kn);
-//////                     }
-//////                   }
-//////                 } break;
-//////                 default:
-//////                   logger::error("Unsupported mesh type");
-//////                   return;
-//////                 } // switch (mesh_type)
-//////                 Int const num_faces = soup.numElems() - cell_faces_prev;
-//////
-//////                 // Add an elset for the cell
-//////                 Vector<Int> cell_ids(num_faces);
-//////                 um2::iota(cell_ids.begin(), cell_ids.end(),
-//////                           static_cast<Int>(cell_faces_prev));
-//////                 soup.addElset(cell_name, cell_ids);
-//////                 total_num_faces += num_faces;
-//////
-//////               } // for (ixcell)
-//////             }   // for (iycell)
-//////
-//////             // Add the RTM elset
-//////             Vector<Int> rtm_ids(total_num_faces - rtm_faces_prev);
-//////             um2::iota(rtm_ids.begin(), rtm_ids.end(),
-///// static_cast<Int>(rtm_faces_prev)); /             soup.addElset(rtm_name, rtm_ids); / }
-///// // for (ixrtm) /         }   // for (iyrtm)
-//////
-//////         // Add the lattice elset
-//////         Vector<Int> lat_ids(total_num_faces - lat_faces_prev);
-//////         um2::iota(lat_ids.begin(), lat_ids.end(), static_cast<Int>(lat_faces_prev));
-//////         soup.addElset(lat_name, lat_ids);
-//////       } // for (izlat)
-//////
-//////       // Add the assembly elset
-//////       Vector<Int> asy_ids(total_num_faces - asy_faces_prev);
-//////       um2::iota(asy_ids.begin(), asy_ids.end(), static_cast<Int>(asy_faces_prev));
-//////       soup.addElset(asy_name, asy_ids);
-//////     } // for (ixasy)
-//////   }   // for (iyasy)
-//////
-//////   // Add the material elsets
-//////   for (Int imat = 0; imat < materials.size(); ++imat) {
-//////     String const mat_name = "Material_" + String(materials[imat].name.data());
-//////     soup.addElset(mat_name, material_elsets[imat]);
-//////   }
-//////
-//////   Vector<Int> all_ids(total_num_faces);
-//////   um2::iota(all_ids.begin(), all_ids.end(), static_cast<Int>(0));
-//////   // Add the knudsen number elsets
-//////   if (write_kn) {
-//////     soup.addElset("Knudsen_Max", all_ids, kn_max);
-//////     soup.addElset("Knudsen_Mean", all_ids, kn_mean);
-//////   }
-//////
-//////   soup.sortElsets();
-////// } // toPolytopeSoup
-//////
+
+//=============================================================================
+// operator PolytopeSoup
+//=============================================================================
+
+//Model::operator PolytopeSoup() const noexcept
+//{
+//  LOG_DEBUG("Converting MPACT model to PolytopeSoup");
+//
+//  PolytopeSoup soup;
+//
+//  if (core.children().empty()) {
+//    logger::error("Core has no children");
+//    return soup;
+//  }
+//
+//  // Allocate counters for each assembly, lattice, etc.
+//  Vector<Int> asy_found(_assemblies.size(), -1);
+//  Vector<Int> lat_found(_lattices.size(), -1);
+//  Vector<Int> rtm_found(_rtms.size(), -1);
+//  Vector<Int> cc_found(_coarse_cells.size(), -1);
+//
+//  // Keep track of the total number of faces, since we have to
+//  // increment the face ID for each assembly, lattice, etc.
+//  Int total_num_faces = 0;
+//
+//  // Keep track of the material
+//  std::stringstream ss;
+//  
+//  // For each assembly
+//  Int const nyasy = core.numCells(1);
+//  Int const nxasy = core.numCells(0);
+//  for (Int iyasy = 0; iyasy < nyasy; ++iyasy) {
+//    for (Int ixasy = 0; ixasy < nxasy; ++ixasy) {
+//      // Get the number of faces before this assembly
+//      Int const asy_faces_prev = total_num_faces;
+//
+//      // Get the assembly ID
+//      auto const asy_id = core.getChild(ixasy, iyasy);
+//      ASSERT(asy_id >= 0);
+//      ASSERT(asy_id < _assemblies.size());
+//
+//      // Increment the number of times we have seen this assembly
+//      Int const asy_id_ctr = ++asy_found[asy_id];
+//
+//      // Get the assembly name 
+//      ss.str("");
+//      ss << "Assembly_" << std::setw(5) << std::setfill('0') << asy_id << "_"
+//         << std::setw(5) << std::setfill('0') << asy_id_ctr;
+//      String const asy_name(ss.str().c_str());
+//      LOG_DEBUG("Assembly name: ", asy_name);
+//
+//      // Get the assembly offset (lower left corner)
+//      Point2 const asy_ll = core.getBox(ixasy, iyasy).minima(); 
+//
+//      // Get the assembly
+//      auto const & assembly = assemblies[asy_id];
+//      if (assembly.children().empty()) {
+//        logger::error("Assembly has no children");
+//        return soup;
+//      }
+//
+//      // For each lattice
+//      Int const nzlat = assembly.numCells(0);
+//      for (Int izlat = 0; izlat < nzlat; ++izlat) {
+//        // Get the number of faces before this lattice
+//        Int const lat_faces_prev = total_num_faces;
+//
+//        // Get the lattice ID
+//        auto const lat_id = assembly.getChild(izlat);
+//        ASSERT(lat_id >= 0);
+//        ASSERT(lat_id < lattices.size());
+//
+//        // Increment the number of times we have seen this lattice
+//        Int const lat_id_ctr = ++lat_found[lat_id];
+//
+//        // Get the lattice name
+//        ss.str("");
+//        ss << "Lattice_" << std::setw(5) << std::setfill('0') << lat_id << "_"
+//           << std::setw(5) << std::setfill('0') << lat_id_ctr;
+//        String const lat_name(ss.str().c_str());
+//        LOG_DEBUG("Lattice name: ", lat_name);
+//
+//        // Get the lattice offset (z direction)
+//        // The midplane is the location that the geometry was sampled at.
+//        Float const low_z = assembly.grid().divs(0)[izlat];
+//        Float const high_z = assembly.grid().divs(0)[izlat + 1];
+//        Float const lat_z = (low_z + high_z) / 2;
+//
+//        // Get the lattice
+//        auto const & lattice = lattices[lat_id];
+//        if (lattice.children().empty()) {
+//          logger::error("Lattice has no children");
+//          return soup;
+//        }
+//
+//        // For each RTM
+//        Int const nyrtm = lattice.numCells(1);
+//        Int const nxrtm = lattice.numCells(0);
+//        for (Int iyrtm = 0; iyrtm < nyrtm; ++iyrtm) {
+//          for (Int ixrtm = 0; ixrtm < nxrtm; ++ixrtm) {
+//            // Get the number of faces before this RTM
+//            Int const rtm_faces_prev = total_num_faces;
+//
+//            // Get the RTM ID
+//            auto const rtm_id = lattice.getChild(ixrtm, iyrtm);
+//            ASSERT(rtm_id >= 0);
+//            ASSERT(rtm_id < rtms.size());
+//
+//            // Increment the number of times we have seen this RTM
+//            Int const rtm_id_ctr = ++rtm_found[rtm_id];
+//
+//            // Get the RTM name
+//            ss.str("");
+//            ss << "RTM_" << std::setw(5) << std::setfill('0') << rtm_id << "_"
+//               << std::setw(5) << std::setfill('0') << rtm_id_ctr;
+//            String const rtm_name(ss.str().c_str());
+//            LOG_DEBUG("RTM name: ", rtm_name);
+//
+//            // Get the RTM offset (lower left corner)
+//            Point2 const rtm_ll = lattice.getBox(ixrtm, iyrtm).minima();
+//
+//            // Get the rtm
+//            auto const & rtm = rtms[rtm_id];
+//            if (rtm.children().empty()) {
+//              logger::error("RTM has no children");
+//              return soup;
+//            }
+//
+//            // For each coarse cell
+//            Int const nycells = rtm.numCells(1);
+//            Int const nxcells = rtm.numCells(0);
+//            for (Int iycell = 0; iycell < nycells; ++iycell) {
+//              for (Int ixcell = 0; ixcell < nxcells; ++ixcell) {
+//                // Get the number of faces before this coarse cell
+//                Int const cell_faces_prev = total_num_faces;
+//
+//                // Get the coarse cell ID
+//                auto const & cell_id = rtm.getChild(ixcell, iycell);
+//                ASSERT(cell_id >= 0);
+//                ASSERT(cell_id < coarse_cells.size());
+//
+//                // Increment the number of times we have seen this coarse cell
+//                Int const cell_id_ctr = ++cc_found[cell_id];
+//
+//                // Get the coarse cell name
+//                ss.str("");
+//                ss << "Coarse_Cell_" << std::setw(5) << std::setfill('0') << cell_id << "_" 
+//                   << std::setw(5) << std::setfill('0') << cell_id_ctr;
+//                String const cell_name(ss.str().c_str());
+//                LOG_DEBUG("Coarse cell name: ", cell_name);
+//
+//                // Get the cell offset (lower left corner)
+//                Point2 const cell_ll = rtm.getBox(ixcell, iycell).minima();
+//
+//                // Get the coarse cell
+//                auto const & coarse_cell = _coarse_cells[cell_id];
+//
+//                // Get the mesh type and id of the coarse cell.
+//                MeshType const mesh_type = coarse_cell.mesh_type;
+//                Int const mesh_id = coarse_cell.mesh_id;
+////                Vector<MatID> const & cell_materials = coarse_cell.material_ids;
+////                for (Int iface = 0; iface < cell_materials.size(); ++iface) {
+////                  auto const mat_id = static_cast<Int>(cell_materials[iface]);
+////                  material_elsets[mat_id].push_back(static_cast<Int>(iface + cell_faces_prev));
+////                }
+//                // Add the vertices and faces to the PolytopeSoup
+//
+//                // Get pointers to the vertices of the mesh
+//                Point2 const * fvm_vertices_begin = nullptr;
+//                Point2 const * fvm_vertices_end = nullptr;
+//                switch (mesh_type) {
+//                case MeshType::Tri:
+//                  LOG_DEBUG("Mesh type: Tri");
+//                  fvm_vertices_begin = _tris[mesh_id].vertices().cbegin();
+//                  fvm_vertices_end = _tris[mesh_id].vertices().cend();
+//                  break;
+//                case MeshType::Quad:
+//                  LOG_DEBUG("Mesh type: Quad");
+//                  fvm_vertices_begin = _quads[mesh_id].vertices().cbegin();
+//                  fvm_vertices_end = _quads[mesh_id].vertices().cend();
+//                  break;
+//                case MeshType::QuadraticTri:
+//                  LOG_DEBUG("Mesh type: QuadraticTri");
+//                  fvm_vertices_begin = _tri6s[mesh_id].vertices().cbegin();
+//                  fvm_vertices_end = _tri6s[mesh_id].vertices().cend();
+//                  break;
+//                case MeshType::QuadraticQuad:
+//                  LOG_DEBUG("Mesh type: QuadraticQuad");
+//                  fvm_vertices_begin = _quad8s[mesh_id].vertices().begin();
+//                  fvm_vertices_end = _quad8s[mesh_id].vertices().end();
+//                  break;
+//                default:
+//                  logger::error("Unsupported mesh type");
+//                  return soup;
+//                } // switch (mesh_type)
+//
+//                // Add each vertex to the PolytopeSoup, translating by the
+//                // global xyz offset
+//                auto const num_verts_prev = soup.numVertices();
+//                soup.reserveMoreVertices(static_cast<Int>(fvm_vertices_end - fvm_vertices_begin));
+//                Point2 const xy_offset = cell_ll + rtm_ll + asy_ll;
+//                for (auto it = fvm_vertices_begin; it != fvm_vertices_end; ++it) {
+//                  Point2 const p = *it + xy_offset;
+//                  soup.addVertex(p[0], p[1], lat_z);
+//                }
+//
+//                // Add each face to the PolytopeSoup, offsetting the vertex IDs 
+//                // by num_verts_prev
+//                LOG_DEBUG("Adding faces to PolytopeSoup");
+//                switch (mesh_type) {
+//                case MeshType::Tri: {
+//                  VTKElemType const elem_type = VTKElemType::Triangle;
+//                  Vector<Int> conn(verts_per_face);
+//                  auto const & mesh = _tris[mesh_id];
+//                  for (Int iface = 0; iface < mesh.numFaces(); ++iface) {
+//                    auto const & face_conn = mesh.getFaceConn(iface);
+//                    for (Int i = 0; i < verts_per_face; ++i) {
+//                      conn[i] = face_conn[i] + num_verts_prev;
+//                    }
+//                    soup.addElement(elem_type, conn);
+//                  }
+//                } break;
+//                case MeshType::Quad: {
+////////                   Int const verts_per_face = 4;
+////////                   VTKElemType const elem_type = VTKElemType::Quad;
+////////                   Vector<Int> conn(verts_per_face);
+////////                   for (Int iface = 0; iface < quad[mesh_id].fv.size(); ++iface) {
+////////                     auto const & face_conn = quad[mesh_id].fv[iface];
+////////                     for (Int i = 0; i < verts_per_face; ++i) {
+////////                       conn[i] = face_conn[i] + num_verts_prev;
+////////                     }
+////////                     soup.addElement(elem_type, conn);
+////////                   }
+////////                   if (write_kn) {
+////////                     if (cc_kns_max[cell_id].empty()) {
+////////                       LOG_DEBUG("Computing Knudsen numbers");
+////////                       for (Int iface = 0; iface < quad[mesh_id].fv.size(); ++iface)
+///////{ /                         LOG_DEBUG("face = " + toString(quad[mesh_id].fv[iface][0])
+///////+ " /                         " + / toString(quad[mesh_id].fv[iface][1]) + " " + /
+/////// toString(quad[mesh_id].fv[iface][2]) + " " + / toString(quad[mesh_id].fv[iface][3]));
+////////                         Float const mcl = quad[mesh_id].getFace(iface).meanChordLength();
+////////                         auto const mat_id = static_cast<Int>(
+////////                             static_cast<uint32_t>(cell_materials[iface]));
+////////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
+////////                             XSReductionStrategy::Max);
+////////                         Float const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
+////////                             XSReductionStrategy::Mean);
+////////                         cc_kns_max[cell_id].push_back(static_cast<Float>(1) / (t_max *
+////////                         mcl)); cc_kns_mean[cell_id].push_back(static_cast<Float>(1) /
+////////                                                        (t_mean * mcl));
+////////                       }
+////////                     }
+////////                     for (auto const & kn : cc_kns_max[cell_id]) {
+////////                       kn_max.push_back(kn);
+////////                     }
+////////                     for (auto const & kn : cc_kns_mean[cell_id]) {
+////////                       kn_mean.push_back(kn);
+////////                     }
+////////                   }
+////////                 } break;
+////////                 case MeshType::QuadraticTri: {
+////////                   Int const verts_per_face = 6;
+////////                   VTKElemType const elem_type = VTKElemType::QuadraticTriangle;
+////////                   Vector<Int> conn(verts_per_face);
+////////                   for (Int iface = 0; iface < quadratic_tri[mesh_id].fv.size();
+////////                        ++iface) {
+////////                     auto const & face_conn = quadratic_tri[mesh_id].fv[iface];
+////////                     for (Int i = 0; i < verts_per_face; ++i) {
+////////                       conn[i] = face_conn[i] + num_verts_prev;
+////////                     }
+////////                     soup.addElement(elem_type, conn);
+////////                   }
+////////                   if (write_kn) {
+////////                     if (cc_kns_max[cell_id].empty()) {
+////////                       LOG_DEBUG("Computing Knudsen numbers");
+////////                       for (Int iface = 0; iface < quadratic_tri[mesh_id].fv.size();
+////////                            ++iface) {
+////////                         Float const mcl =
+////////                             quadratic_tri[mesh_id].getFace(iface).meanChordLength();
+////////                         auto const mat_id = static_cast<Int>(
+////////                             static_cast<uint32_t>(cell_materials[iface]));
+////////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
+////////                             XSReductionStrategy::Max);
+////////                         Float const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
+////////                             XSReductionStrategy::Mean);
+////////                         cc_kns_max[cell_id].push_back(static_cast<Float>(1) / (t_max *
+////////                         mcl)); cc_kns_mean[cell_id].push_back(static_cast<Float>(1) /
+////////                                                        (t_mean * mcl));
+////////                       }
+////////                     }
+////////                     for (auto const & kn : cc_kns_max[cell_id]) {
+////////                       kn_max.push_back(kn);
+////////                     }
+////////                     for (auto const & kn : cc_kns_mean[cell_id]) {
+////////                       kn_mean.push_back(kn);
+////////                     }
+////////                   }
+////////                 } break;
+////////                 case MeshType::QuadraticQuad: {
+////////                   Int const verts_per_face = 8;
+////////                   VTKElemType const elem_type = VTKElemType::QuadraticQuad;
+////////                   Vector<Int> conn(verts_per_face);
+////////                   for (Int iface = 0; iface < quadratic_quad[mesh_id].fv.size();
+////////                        ++iface) {
+////////                     auto const & face_conn = quadratic_quad[mesh_id].fv[iface];
+////////                     for (Int i = 0; i < verts_per_face; ++i) {
+////////                       conn[i] = face_conn[i] + num_verts_prev;
+////////                     }
+////////                     soup.addElement(elem_type, conn);
+////////                   }
+////////                   if (write_kn) {
+////////                     if (cc_kns_max[cell_id].empty()) {
+////////                       LOG_DEBUG("Computing Knudsen numbers");
+////////                       for (Int iface = 0; iface < quadratic_quad[mesh_id].fv.size();
+////////                            ++iface) {
+////////                         Float const mcl =
+////////                             quadratic_quad[mesh_id].getFace(iface).meanChordLength();
+////////                         auto const mat_id = static_cast<Int>(
+////////                             static_cast<uint32_t>(cell_materials[iface]));
+////////                         Float const t_max = materials[mat_id].xs.getOneGroupTotalXS(
+////////                             XSReductionStrategy::Max);
+////////                         Float const t_mean = materials[mat_id].xs.getOneGroupTotalXS(
+////////                             XSReductionStrategy::Mean);
+////////                         cc_kns_max[cell_id].push_back(static_cast<Float>(1) / (t_max *
+////////                         mcl)); cc_kns_mean[cell_id].push_back(static_cast<Float>(1) /
+////////                                                        (t_mean * mcl));
+////////                       }
+////////                     }
+////////                     for (auto const & kn : cc_kns_max[cell_id]) {
+////////                       kn_max.push_back(kn);
+////////                     }
+////////                     for (auto const & kn : cc_kns_mean[cell_id]) {
+////////                       kn_mean.push_back(kn);
+////////                     }
+////////                   }
+////////                 } break;
+////////                 default:
+////////                   logger::error("Unsupported mesh type");
+////////                   return;
+////////                 } // switch (mesh_type)
+////////                 Int const num_faces = soup.numElems() - cell_faces_prev;
+////////
+////////                 // Add an elset for the cell
+////////                 Vector<Int> cell_ids(num_faces);
+////////                 um2::iota(cell_ids.begin(), cell_ids.end(),
+////////                           static_cast<Int>(cell_faces_prev));
+////////                 soup.addElset(cell_name, cell_ids);
+////////                 total_num_faces += num_faces;
+////////
+////////               } // for (ixcell)
+////////             }   // for (iycell)
+////////
+////////             // Add the RTM elset
+////////             Vector<Int> rtm_ids(total_num_faces - rtm_faces_prev);
+////////             um2::iota(rtm_ids.begin(), rtm_ids.end(),
+/////// static_cast<Int>(rtm_faces_prev)); /             soup.addElset(rtm_name, rtm_ids); / }
+/////// // for (ixrtm) /         }   // for (iyrtm)
+////////
+////////         // Add the lattice elset
+////////         Vector<Int> lat_ids(total_num_faces - lat_faces_prev);
+////////         um2::iota(lat_ids.begin(), lat_ids.end(), static_cast<Int>(lat_faces_prev));
+////////         soup.addElset(lat_name, lat_ids);
+////////       } // for (izlat)
+////////
+////////       // Add the assembly elset
+////////       Vector<Int> asy_ids(total_num_faces - asy_faces_prev);
+////////       um2::iota(asy_ids.begin(), asy_ids.end(), static_cast<Int>(asy_faces_prev));
+////////       soup.addElset(asy_name, asy_ids);
+//    } // for (ixasy)
+//  }   // for (iyasy)
+////////
+////////   // Add the material elsets
+////////   for (Int imat = 0; imat < materials.size(); ++imat) {
+////////     String const mat_name = "Material_" + String(materials[imat].name.data());
+////////     soup.addElset(mat_name, material_elsets[imat]);
+////////   }
+////////
+////////   Vector<Int> all_ids(total_num_faces);
+////////   um2::iota(all_ids.begin(), all_ids.end(), static_cast<Int>(0));
+////////   // Add the knudsen number elsets
+////////   if (write_kn) {
+////////     soup.addElset("Knudsen_Max", all_ids, kn_max);
+////////     soup.addElset("Knudsen_Mean", all_ids, kn_mean);
+////////   }
+////////
+//  soup.sortElsets();
+//} // operator PolytopeSoup
+
 ////////==============================================================================
 //////// getMaterialNames
 ////////==============================================================================

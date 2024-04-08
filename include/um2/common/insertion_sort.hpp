@@ -10,10 +10,10 @@ namespace um2
 // insertionSort
 //==============================================================================
 // Use the insertion sort algorithm to sort [first, last) in-place.
-// This should be used for small arrays (size < 20) or when the array is
+// This should be used for small arrays (size <= 24) or when the array is
 // already mostly sorted.
 
-template <typename T>
+template <class T>
 HOSTDEV void
 insertionSort(T * const first, T const * const last) noexcept
 {

@@ -11,15 +11,21 @@ void
 Material::validate() const noexcept
 {
   ASSERT(!_name.empty());
-  ASSERT(_temperature > 0);
-  ASSERT(_density > 0);
-  ASSERT(!_num_density.empty());
-  ASSERT(_num_density.size() == _zaid.size());
-  for (auto const & num_density : _num_density) {
-    ASSERT(num_density >= 0);
-  }
-  for (auto const & zaid : _zaid) {
-    ASSERT(zaid > 0);
+  // If the cross section is non-empty, disregard physical properties
+  if (!_xsec.t().empty()) {
+    _xsec.validate();
+    ASSERT(_xsec.isMacro());
+  } else {
+    ASSERT(_temperature > 0);
+    ASSERT(_density > 0);
+    ASSERT(!_num_density.empty());
+    ASSERT(_num_density.size() == _zaid.size());
+    for (auto const & num_density : _num_density) {
+      ASSERT(num_density >= 0);
+    }
+    for (auto const & zaid : _zaid) {
+      ASSERT(zaid > 0);
+    }
   }
 }
 

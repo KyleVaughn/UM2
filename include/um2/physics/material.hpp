@@ -2,6 +2,7 @@
 
 #include <um2/common/color.hpp>
 #include <um2/physics/nuclide.hpp>
+#include <um2/physics/cross_section_library.hpp>
 #include <um2/stdlib/string.hpp>
 
 //======================================================================
@@ -25,6 +26,7 @@ class Material
   Float _density{};           // [g/cm^3]
   Vector<Float> _num_density; // [atoms/b-cm]
   Vector<Int> _zaid;        // ZZAAA
+  XSec _xsec;
 
 public:
   //======================================================================
@@ -138,6 +140,18 @@ public:
   zaid(Int i) const noexcept -> Int
   {
     return _zaid[i];
+  }
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  xsec() noexcept -> XSec &
+  {
+    return _xsec;
+  }
+
+  PURE HOSTDEV [[nodiscard]] constexpr auto
+  xsec() const noexcept -> XSec const &
+  {
+    return _xsec;
   }
 
   //======================================================================

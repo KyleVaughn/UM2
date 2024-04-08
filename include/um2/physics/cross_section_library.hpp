@@ -92,9 +92,6 @@ public:
   PURE [[nodiscard]] auto
   getNuclide(Int zaid) const noexcept -> Nuclide const &;
 
-  PURE [[nodiscard]] auto
-  getXS(Material const & material) const noexcept -> XSec;
-
 };
 
 } // namespace um2

@@ -10,7 +10,7 @@ namespace um2
 // sort3 
 //==============================================================================
 
-template <typename T>
+template <class T>
 HOSTDEV constexpr void
 sort3(T * const x, T * const y, T * const z) noexcept
 {
@@ -43,7 +43,7 @@ sort3(T * const x, T * const y, T * const z) noexcept
 // sort4
 //==============================================================================
 
-template <typename T>
+template <class T>
 HOSTDEV constexpr void
 sort4(T * const x1, T * const x2, T * const x3, T * const x4) noexcept
 {

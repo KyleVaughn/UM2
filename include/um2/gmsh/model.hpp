@@ -49,20 +49,27 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
                          int tag = -1, bool remove_object = true,
                          bool remove_tool = true);
 
+
+//==============================================================================
+// Functions for user-level API. These functions should take um2::Vector, um2::String,
+// etc. Not std::vector, std::string, etc.
+//==============================================================================
+
 //auto
 //addCylindricalPin2D(Vec2d const & center, std::vector<double> const & radii,
 //                    std::vector<Material> const & materials) -> std::vector<int>;
-//
+
 //auto
 //addCylindricalPin2D(Vec2d const & center, Vector<double> const & radii,
 //                    Vector<Material> const & materials) -> um2::Vector<int>;
-//auto
-//addCylindricalPinLattice2D(std::vector<std::vector<double>> const & radii,
-//                           std::vector<std::vector<Material>> const & materials,
-//                           std::vector<Vec2d> const & dxdy,
-//                           std::vector<std::vector<int>> const & pin_ids,
-//                           Vec2d const & offset = {0.0, 0.0}) -> std::vector<int>;
-//
+
+auto
+addCylindricalPinLattice2D(Vector<Vector<Int>> const & pin_ids,
+                           Vector<Vec2F> const & xy_extents,
+                           Vector<Vector<Float>> const & radii,
+                           Vector<Vector<Material>> const & materials,
+                           Vec2F const & offset = {0, 0}) -> Vector<Int>;
+
 //auto
 //addCylindricalPin(Vec3d const & center, double height, std::vector<double> const & radii,
 //                  std::vector<Material> const & materials) -> std::vector<int>;
@@ -75,9 +82,7 @@ groupPreservingIntersect(gmsh::vectorpair const & object_dimtags,
 //                         Vec3d const & offset = {0.0, 0.0, 0.0}) -> std::vector<int>;
 
 void
-overlayCoarseGrid(mpact::Model const & model,
-                        std::string const & fill_material_name = "Moderator",
-                        Color fill_material_color = royalblue);
+overlayCoarseGrid(mpact::Model const & model, Material const & fill_material);
 } // namespace occ
 } // namespace um2::gmsh::model
 #endif // UM2_USE_GMSH

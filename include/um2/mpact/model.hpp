@@ -191,17 +191,20 @@ public:
   auto
   addCore(Vector<Vector<Int>> const & asy_ids) -> Int;
 
-//  // Import coarse cells and pin meshes from a file.
-//  void
-//  importCoarseCells(String const & filename);
-//
+  // A convenience function to cover an area with a regular grid of coarse cells.
+  // This method maps each coarse cell to a unique RTM and places all the RTMs in a lattice.
+  void
+  addCoarseGrid(Vec2F xy_extents, Vec2I xy_num_cells);
+
+  void
+  importCoarseCellMeshes(String const & filename);
+
 //  // Assume everything fits in one of the next highest hierarchy levels.
 //  void
 //  fillHierarchy();
-//
-//  //  //  void
-//  //  //  toPolytopeSoup(PolytopeSoup & soup, bool write_kn = false) const;
-//  //  //
+
+//  explicit operator PolytopeSoup() const noexcept;
+
 //  //  //  void
 //  //  //  getMaterialNames(Vector<String> & material_names) const;
 //  //  //

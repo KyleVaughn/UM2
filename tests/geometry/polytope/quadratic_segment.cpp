@@ -195,11 +195,11 @@ TEST_CASE(jacobian)
   // Straight segment
   um2::QuadraticSegment<D> const seg = makeSeg1<D>();
   um2::Vec<D, Float> j0 = seg.jacobian(0);
-  um2::Vec<D, Float> j12 = seg.jacobian(static_cast<Float>(0.5));
+  um2::Vec<D, Float> j12 = seg.jacobian(castIfNot<Float>(0.5));
   um2::Vec<D, Float> j1 = seg.jacobian(1);
   um2::Vec<D, Float> j_ref;
   j_ref = 0; 
-  j_ref[0] = static_cast<Float>(2);
+  j_ref[0] = castIfNot<Float>(2);
 
   ASSERT(j0.isApprox(j_ref));
   ASSERT(j12.isApprox(j_ref));
@@ -207,7 +207,7 @@ TEST_CASE(jacobian)
 
   um2::QuadraticSegment<D> const seg2 = makeSeg2<D>();
   j0 = seg2.jacobian(0);
-  j12 = seg2.jacobian(static_cast<Float>(0.5));
+  j12 = seg2.jacobian(castIfNot<Float>(0.5));
   j1 = seg2.jacobian(1);
   ASSERT_NEAR(j0[0], 2, eps); 
   ASSERT(j0[1] > 0);

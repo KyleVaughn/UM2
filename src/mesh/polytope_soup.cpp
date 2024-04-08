@@ -18,6 +18,8 @@
 //#include <algorithm> // std::sort, std::set_intersection
 #include <fstream>
 
+#include <iostream>
+
 namespace um2
 {
 
@@ -786,182 +788,184 @@ PolytopeSoup::sortElsets()
 //  }
 //}
 //
-////==============================================================================
-//// getSubset
-////==============================================================================
-//
-//void
-//// NOLINTNEXTLINE(readability-function-cognitive-complexity)
-//PolytopeSoup::getSubset(String const & elset_name, PolytopeSoup & subset) const
-//{
-//  LOG_DEBUG("Extracting subset: ", elset_name);
-//
-//  // Find the elset with the given name.
-//  Int elset_index = 0;
-//  bool found = false;
-//  for (Int i = 0; i < _elset_names.size(); ++i) {
-//    if (_elset_names[i] == elset_name) {
-//      elset_index = i;
-//      found = true;
-//      break;
-//    }
-//  }
-//  if (!found) {
-//    LOG_ERROR("getSubset: Elset '", elset_name, "' not found");
-//    return;
-//  }
-//
-//  // Get the element ids of the subset.
-//  auto const subset_elset_start = _elset_offsets[elset_index];
-//  auto const subset_elset_end = _elset_offsets[elset_index + 1];
-//  auto const subset_num_elements = subset_elset_end - subset_elset_start;
-//  Vector<Int> const element_ids(_elset_ids.cbegin() + subset_elset_start,
-//                          _elset_ids.cbegin() + subset_elset_end);
-//  if (!um2::is_sorted(element_ids.cbegin(), element_ids.cend())) {
-//    LOG_ERROR("getSubset: Elset IDs are not sorted. Use sortElsets() to correct this.");
-//  }
-//
-//  // Get the length of the subset element connectivity as well as the number of each
-//  // element type.
-//  Vector<um2::Pair<VTKElemType, Int>> subset_elem_type_counts;
-//  Int subset_element_conn_len = 0;
-//  for (Int i = 0; i < subset_num_elements; ++i) {
-//    auto const element_id = element_ids[i];
-//    auto const element_start = _element_offsets[element_id];
-//    auto const element_end = _element_offsets[element_id + 1];
-//    auto const element_len = element_end - element_start;
-//    subset_element_conn_len += element_len;
-//    auto const element_type = _element_types[element_id];
-//    found = false;
-//    for (auto & type_count : subset_elem_type_counts) {
-//      auto const type = type_count.first;
-//      if (type == element_type) {
-//        ++type_count.second;
-//        found = true;
-//        break;
-//      }
-//    }
-//    if (!found) {
-//      subset_elem_type_counts.emplace_back(element_type, 1);
-//    }
-//  }
-//
-//  // Get the vertex ids of the subset.
-//  Vector<Int> vertex_ids;
-//  vertex_ids.reserve(subset_element_conn_len);
-//  for (Int i = 0; i < subset_num_elements; ++i) {
-//    auto const element_id = element_ids[i];
-//    auto const element_start = _element_offsets[element_id];
-//    auto const element_end = _element_offsets[element_id + 1];
-//    auto const element_len = element_end - element_start;
-//    for (Int j = 0; j < element_len; ++j) {
-//      Int const vertex_id = _element_conn[element_start + j];
-//      vertex_ids.emplace_back(vertex_id);
-//    }
-//  }
-//
-//  // Get the unique vertex ids of the subset.
-//  std::sort(vertex_ids.begin(), vertex_ids.end());
-//  Vector<Int> unique_vertex_ids = vertex_ids;
-//  auto const * const last =
-//      std::unique(unique_vertex_ids.begin(), unique_vertex_ids.end());
-//  auto const num_unique_verts = static_cast<Int>(last - unique_vertex_ids.cbegin());
-//
-//  // Add each of the unique vertices to the subset.
-//  subset.reserveMoreVertices(num_unique_verts);
-//  for (Int i = 0; i < num_unique_verts; ++i) {
-//    auto const vertex_id = unique_vertex_ids[i];
-//    auto const & vertex = _vertices[vertex_id];
-//    subset.addVertex(vertex);
-//  }
-//
-//  // Reserve space for elements
-//  for (auto const & type_count : subset_elem_type_counts) {
-//    VTKElemType const type = type_count.first;
-//    Int const count = type_count.second;
-//    subset.reserveMoreElements(type, count);
-//  }
-//
-//  // For each element, add it to the subset, remapping the vertex IDs
-//  // unique_vertex_ids[new_id] = old_id
-//  Vector<Int> conn;
-//  for (Int i = 0; i < subset_num_elements; ++i) {
-//    auto const element_id = element_ids[i];
-//    auto const element_type = _element_types[element_id];
-//    auto const element_start = _element_offsets[element_id];
-//    auto const element_end = _element_offsets[element_id + 1];
-//    auto const element_len = element_end - element_start;
-//    conn.resize(element_len);
-//    for (Int j = 0; j < element_len; ++j) {
-//      Int const old_vertex_id = _element_conn[element_start + j];
-//      auto const * const it =
-//          std::lower_bound(unique_vertex_ids.cbegin(), last, old_vertex_id);
-//      auto const new_vertex_id = static_cast<Int>(it - unique_vertex_ids.cbegin());
-//      ASSERT(*it == old_vertex_id);
-//      conn[j] = new_vertex_id;
-//    }
-//    subset.addElement(element_type, conn);
-//  }
-//
-//  // If the intersection of this elset and another elset is non-empty, then we need to
-//  // add the itersection as an elset and remap the elset IDs using the element_ids
-//  // vector.
-//  //
-//  // element_ids[i] is the old element id, and i is the new element id.
-//  // The largest possible intersection is the size of the elset itself.
-//
-//  Vector<Int> ids;
-//  Vector<Float> elset_data;
-//  Int * intersection = new Int[static_cast<size_t>(subset_num_elements)];
-//  Int const num_elsets = _elset_names.size();
-//  for (Int i = 0; i < num_elsets; ++i) {
-//    if (i == elset_index) {
-//      continue;
-//    }
-//    auto const elset_start = _elset_offsets[i];
-//    auto const elset_end = _elset_offsets[i + 1];
-//    auto const * const elset_ids_begin = addressof(_elset_ids[elset_start]);
-//    auto const * const elset_ids_end = elset_ids_begin + (elset_end - elset_start);
-//    ASSERT(um2::is_sorted(elset_ids_begin, elset_ids_end));
-//    Int * intersection_end =
-//      std::set_intersection(element_ids.begin(), element_ids.end(), elset_ids_begin,
-//                          elset_ids_end, intersection);
-//    // No intersection
-//    if (intersection_end == intersection) {
-//      continue;
-//    }
-//    auto const & name = _elset_names[i];
-//    auto const num_ids = static_cast<Int>(intersection_end - intersection);
-//    ids.resize(num_ids);
-//    // Remap the element IDs
-//    for (Int j = 0; j < num_ids; ++j) {
-//      Int const old_element_id = intersection[j];
-//      auto const * const it =
-//          std::lower_bound(element_ids.cbegin(), element_ids.cend(), old_element_id);
-//      auto const new_element_id = static_cast<Int>(it - element_ids.cbegin());
-//      ASSERT(*it == old_element_id);
-//      ids[j] = new_element_id;
-//    }
-//    if (_elset_data[i].empty()) {
-//      subset.addElset(name, ids);
-//      continue;
-//    }
-//    // There is data
-//    elset_data.resize(num_ids);
-//    Vector<Float> const & this_elset_data = _elset_data[i];
-//    for (Int j = 0; j < num_ids; ++j) {
-//      Int const old_element_id = intersection[j];
-//      auto const * const it =
-//          std::lower_bound(elset_ids_begin, elset_ids_end, old_element_id);
-//      ASSERT(*it == old_element_id);
-//      auto const idx = static_cast<Int>(it - elset_ids_begin);
-//      elset_data[j] = this_elset_data[idx];
-//    }
-//    subset.addElset(name, ids, elset_data);
-//  }
-//  delete[] intersection;
-//}
-//
+//==============================================================================
+// getSubset
+//==============================================================================
+
+void
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+PolytopeSoup::getSubset(String const & elset_name, PolytopeSoup & subset) const
+{
+  LOG_DEBUG("Extracting subset: ", elset_name);
+
+  // Find the elset with the given name.
+  Int elset_index = 0;
+  bool found = false;
+  for (Int i = 0; i < _elset_names.size(); ++i) {
+    if (_elset_names[i] == elset_name) {
+      elset_index = i;
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    LOG_ERROR("getSubset: Elset '", elset_name, "' not found");
+    return;
+  }
+
+  // Get the element ids of the subset.
+  auto const subset_elset_start = _elset_offsets[elset_index];
+  auto const subset_elset_end = _elset_offsets[elset_index + 1];
+  auto const subset_num_elements = subset_elset_end - subset_elset_start;
+  Vector<Int> const element_ids(_elset_ids.cbegin() + subset_elset_start,
+                          _elset_ids.cbegin() + subset_elset_end);
+
+  if (!um2::is_sorted(element_ids.cbegin(), element_ids.cend())) {
+    LOG_ERROR("getSubset: Elset IDs are not sorted. Use sortElsets() to correct this.");
+    return;
+  }
+
+  // Get the length of the subset element connectivity as well as the number of each
+  // element type.
+  Vector<um2::Pair<VTKElemType, Int>> subset_elem_type_counts;
+  Int subset_element_conn_len = 0;
+  for (Int i = 0; i < subset_num_elements; ++i) {
+    auto const element_id = element_ids[i];
+    auto const element_start = _element_offsets[element_id];
+    auto const element_end = _element_offsets[element_id + 1];
+    auto const element_len = element_end - element_start;
+    subset_element_conn_len += element_len;
+    auto const element_type = _element_types[element_id];
+    found = false;
+    for (auto & type_count : subset_elem_type_counts) {
+      auto const type = type_count.first;
+      if (type == element_type) {
+        ++type_count.second;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      subset_elem_type_counts.emplace_back(element_type, 1);
+    }
+  }
+
+  // Get the vertex ids of the subset.
+  Vector<Int> vertex_ids;
+  vertex_ids.reserve(subset_element_conn_len);
+  for (Int i = 0; i < subset_num_elements; ++i) {
+    auto const element_id = element_ids[i];
+    auto const element_start = _element_offsets[element_id];
+    auto const element_end = _element_offsets[element_id + 1];
+    auto const element_len = element_end - element_start;
+    for (Int j = 0; j < element_len; ++j) {
+      Int const vertex_id = _element_conn[element_start + j];
+      vertex_ids.emplace_back(vertex_id);
+    }
+  }
+
+  // Get the unique vertex ids of the subset.
+  std::sort(vertex_ids.begin(), vertex_ids.end());
+  Vector<Int> unique_vertex_ids = vertex_ids;
+  auto const * const last =
+      std::unique(unique_vertex_ids.begin(), unique_vertex_ids.end());
+  auto const num_unique_verts = static_cast<Int>(last - unique_vertex_ids.cbegin());
+
+  // Add each of the unique vertices to the subset.
+  subset.reserveMoreVertices(num_unique_verts);
+  for (Int i = 0; i < num_unique_verts; ++i) {
+    auto const vertex_id = unique_vertex_ids[i];
+    auto const & vertex = _vertices[vertex_id];
+    subset.addVertex(vertex);
+  }
+
+  // Reserve space for elements
+  for (auto const & type_count : subset_elem_type_counts) {
+    VTKElemType const type = type_count.first;
+    Int const count = type_count.second;
+    subset.reserveMoreElements(type, count);
+  }
+
+  // For each element, add it to the subset, remapping the vertex IDs
+  // unique_vertex_ids[new_id] = old_id
+  Vector<Int> conn;
+  for (Int i = 0; i < subset_num_elements; ++i) {
+    auto const element_id = element_ids[i];
+    auto const element_type = _element_types[element_id];
+    auto const element_start = _element_offsets[element_id];
+    auto const element_end = _element_offsets[element_id + 1];
+    auto const element_len = element_end - element_start;
+    conn.resize(element_len);
+    for (Int j = 0; j < element_len; ++j) {
+      Int const old_vertex_id = _element_conn[element_start + j];
+      auto const * const it =
+          std::lower_bound(unique_vertex_ids.cbegin(), last, old_vertex_id);
+      auto const new_vertex_id = static_cast<Int>(it - unique_vertex_ids.cbegin());
+      ASSERT(*it == old_vertex_id);
+      conn[j] = new_vertex_id;
+    }
+    subset.addElement(element_type, conn);
+  }
+
+  // If the intersection of this elset and another elset is non-empty, then we need to
+  // add the itersection as an elset and remap the elset IDs using the element_ids
+  // vector.
+  //
+  // element_ids[i] is the old element id, and i is the new element id.
+  // The largest possible intersection is the size of the elset itself.
+
+  Vector<Int> ids;
+  Vector<Float> elset_data;
+  Int * intersection = new Int[static_cast<size_t>(subset_num_elements)];
+  Int const num_elsets = _elset_names.size();
+  for (Int i = 0; i < num_elsets; ++i) {
+    if (i == elset_index) {
+      continue;
+    }
+    auto const elset_start = _elset_offsets[i];
+    auto const elset_end = _elset_offsets[i + 1];
+    auto const * const elset_ids_begin = addressof(_elset_ids[elset_start]);
+    auto const * const elset_ids_end = elset_ids_begin + (elset_end - elset_start);
+    ASSERT(um2::is_sorted(elset_ids_begin, elset_ids_end));
+    Int * intersection_end =
+      std::set_intersection(element_ids.begin(), element_ids.end(), elset_ids_begin,
+                          elset_ids_end, intersection);
+    // No intersection
+    if (intersection_end == intersection) {
+      continue;
+    }
+    auto const & name = _elset_names[i];
+    auto const num_ids = static_cast<Int>(intersection_end - intersection);
+    ids.resize(num_ids);
+    // Remap the element IDs
+    for (Int j = 0; j < num_ids; ++j) {
+      Int const old_element_id = intersection[j];
+      auto const * const it =
+          std::lower_bound(element_ids.cbegin(), element_ids.cend(), old_element_id);
+      auto const new_element_id = static_cast<Int>(it - element_ids.cbegin());
+      ASSERT(*it == old_element_id);
+      ids[j] = new_element_id;
+    }
+    if (_elset_data[i].empty()) {
+      subset.addElset(name, ids);
+      continue;
+    }
+    // There is data
+    elset_data.resize(num_ids);
+    Vector<Float> const & this_elset_data = _elset_data[i];
+    for (Int j = 0; j < num_ids; ++j) {
+      Int const old_element_id = intersection[j];
+      auto const * const it =
+          std::lower_bound(elset_ids_begin, elset_ids_end, old_element_id);
+      ASSERT(*it == old_element_id);
+      auto const idx = static_cast<Int>(it - elset_ids_begin);
+      elset_data[j] = this_elset_data[idx];
+    }
+    subset.addElset(name, ids, elset_data);
+  }
+  delete[] intersection;
+}
+
 ////==============================================================================
 //// getMaterialIDs
 ////==============================================================================
@@ -995,7 +999,126 @@ PolytopeSoup::sortElsets()
 //    logger::error("Some elements have no material");
 //  }
 //}
-//
+
+
+
+//==============================================================================
+// operator +=
+//==============================================================================
+
+auto
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+PolytopeSoup::operator+=(PolytopeSoup const & other) noexcept -> PolytopeSoup &
+{
+  // Vertices
+  auto const this_num_verts = numVertices();
+  auto const other_num_verts = other.numVertices();
+  _vertices.resize(this_num_verts + other_num_verts);
+  um2::copy(other._vertices.cbegin(), other._vertices.cend(),
+            _vertices.begin() + this_num_verts);
+
+  // Elements types
+  auto const this_num_elems = numElements();
+  auto const other_num_elems = other.numElements();
+  _element_types.resize(this_num_elems + other_num_elems);
+  um2::copy(other._element_types.cbegin(), other._element_types.cend(),
+            _element_types.begin() + this_num_elems);
+
+  // Element offsets
+  Int const last_offset = _element_offsets.empty() ? 0 : _element_offsets.back();
+  _element_offsets.resize(this_num_elems + other_num_elems + 1);
+  for (Int i = 0; i < other_num_elems + 1; ++i) {
+    _element_offsets[this_num_elems + i] = other._element_offsets[i] + last_offset;
+  }
+
+  // Element connectivity
+  auto const this_conn_size = _element_conn.size();
+  auto const other_conn_size = other._element_conn.size();
+  _element_conn.resize(this_conn_size + other_conn_size);
+  for (Int i = 0; i < other_conn_size; ++i) {
+    _element_conn[this_conn_size + i] = other._element_conn[i] + this_num_verts;
+  }
+
+  // Elsets
+  if (other._elset_names.empty()) {
+    return *this;
+  }
+
+  // Elset names
+  auto const this_num_elsets = _elset_names.size();
+  auto const other_num_elsets = other._elset_names.size();
+  Vector<String> new_elset_names = _elset_names;
+  new_elset_names.reserve(this_num_elsets + other_num_elsets);
+  ASSERT(um2::is_sorted(_elset_names.cbegin(), _elset_names.cend()));
+  ASSERT(um2::is_sorted(other._elset_names.cbegin(), other._elset_names.cend()));
+  for (auto const & name : other._elset_names) {
+    bool name_exists = false;
+    for (auto const & this_name : _elset_names) {
+      if (name == this_name) {
+        name_exists = true;
+        break;
+      }
+    }
+    if (!name_exists) {
+      new_elset_names.emplace_back(name);
+    }
+  }
+  std::sort(new_elset_names.begin(), new_elset_names.end());
+
+  // Elset offsets, ids, and data
+  Vector<Int> new_elset_offsets(new_elset_names.size() + 1);
+  new_elset_offsets[0] = 0;
+  Vector<Int> new_elset_ids;
+  new_elset_ids.reserve(_elset_ids.size() + other._elset_ids.size());
+  Vector<Vector<Float>> new_elset_data;
+  // For each elset
+  for (Int i = 0; i < new_elset_names.size(); ++i) {
+    auto const & name = new_elset_names[i];
+    // Get the number of elements, ids, and data
+    Int num_elements = 0;
+    Vector<Float> data;
+    // Loop over this elsets
+    for (Int j = 0; j < this_num_elsets; ++j) { 
+      if (_elset_names[j] == name) {
+        num_elements += _elset_offsets[j + 1] - _elset_offsets[j]; 
+        for (Int k = _elset_offsets[j]; k < _elset_offsets[j + 1]; ++k) {
+          new_elset_ids.emplace_back(_elset_ids[k]);
+        }
+        if (!_elset_data[j].empty()) {
+          data = _elset_data[j];
+        }
+      }
+    }
+    // Loop over other elsets
+    for (Int j = 0; j < other_num_elsets; ++j) {
+      if (other._elset_names[j] == name) {
+        num_elements += other._elset_offsets[j + 1] - other._elset_offsets[j];
+        for (Int k = other._elset_offsets[j]; k < other._elset_offsets[j + 1]; ++k) {
+          new_elset_ids.emplace_back(other._elset_ids[k] + this_num_elems);
+        }
+        auto const & other_data = other._elset_data[j];
+        if (!other_data.empty()) {
+          Int const old_size = data.size();
+          data.resize(data.size() + other_data.size());
+          um2::copy(other_data.cbegin(), other_data.cend(),
+                    data.begin() + old_size); 
+        }
+      }
+    }
+    new_elset_offsets[i + 1] = new_elset_offsets[i] + num_elements;
+    // Ids should already be sorted
+    ASSERT(um2::is_sorted(new_elset_ids.cbegin() + new_elset_offsets[i],
+                          new_elset_ids.cend()));
+    new_elset_data.emplace_back(data);
+  }
+
+  _elset_names = um2::move(new_elset_names);
+  _elset_offsets = um2::move(new_elset_offsets);
+  _elset_ids = um2::move(new_elset_ids);
+  _elset_data = um2::move(new_elset_data);
+  return *this;
+}
+
 //==============================================================================
 // reserveMoreElements
 //==============================================================================

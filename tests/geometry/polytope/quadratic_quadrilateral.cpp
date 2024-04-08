@@ -72,7 +72,7 @@ TEST_CASE(jacobian)
   ASSERT_NEAR((jac(0, 1)), 0, eps);
   ASSERT_NEAR((jac(1, 1)), 1, eps);
 
-  jac = quad.jacobian(static_cast<Float>(0.2), static_cast<Float>(0.3));
+  jac = quad.jacobian(castIfNot<Float>(0.2), castIfNot<Float>(0.3));
   ASSERT_NEAR((jac(0, 0)), 1, eps);
   ASSERT_NEAR((jac(1, 0)), 0, eps);
   ASSERT_NEAR((jac(0, 1)), 0, eps);

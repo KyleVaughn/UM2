@@ -313,83 +313,136 @@ TEST_CASE(addCore)
   ASSERT_NEAR(core.grid().divs(1)[1], 1, eps);
   ASSERT_NEAR(core.grid().divs(1)[2], 2, eps);
 }
-//
-//TEST_CASE(importCoarseCells)
-//{
-//  using CoarseCell = typename um2::mpact::Model::CoarseCell;
-//  um2::mpact::Model model;
-//  model.addCoarseCell({1, 1});
-//  model.addCoarseCell({1, 1});
-//  model.addCoarseCell({1, 1});
-//  model.addRTM({
-//      {2, 2},
-//      {0, 1}
-//  });
-//  model.addLattice({{0}});
-//  model.addAssembly({0});
-//  model.addCore({{0}});
-//  model.importCoarseCells("./mpact_mesh_files/coarse_cells.inp");
-//
-//  ASSERT(model.numAssemblies() == 1);
-//  ASSERT(model.numLattices() == 1);
-//  ASSERT(model.numRTMs() == 1);
-//  ASSERT(model.numCoarseCells() == 3);
-//
-//  CoarseCell const & cell = model.getCoarseCell(0);
-//  ASSERT(cell.mesh_type == um2::MeshType::Tri);
-//  ASSERT(cell.mesh_id == 0);
-//  ASSERT(cell.material_ids.size() == 2);
-//  ASSERT(cell.material_ids[0] == 1);
-//  ASSERT(cell.material_ids[1] == 2);
-//  auto const & tri_mesh = model.getTriMesh(0);
-//  ASSERT(tri_mesh.numVertices() == 4);
-//  ASSERT(um2::isApprox(tri_mesh.getVertex(0), {0, 0}));
-//  ASSERT(um2::isApprox(tri_mesh.getVertex(1), {1, 0}));
-//  ASSERT(um2::isApprox(tri_mesh.getVertex(2), {1, 1}));
-//  ASSERT(um2::isApprox(tri_mesh.getVertex(3), {0, 1}));
-//  ASSERT(tri_mesh.faceVertexConn()[0][0] == 0);
-//  ASSERT(tri_mesh.faceVertexConn()[0][1] == 1);
-//  ASSERT(tri_mesh.faceVertexConn()[0][2] == 2);
-//  ASSERT(tri_mesh.faceVertexConn()[1][0] == 2);
-//  ASSERT(tri_mesh.faceVertexConn()[1][1] == 3);
-//  ASSERT(tri_mesh.faceVertexConn()[1][2] == 0);
-//
-//  CoarseCell const & cell1 = model.getCoarseCell(1);
-//  ASSERT(cell1.mesh_type == um2::MeshType::Tri);
-//  ASSERT(cell1.mesh_id == 1);
-//  ASSERT(cell1.material_ids.size() == 2);
-//  ASSERT(cell1.material_ids[0] == 1);
-//  ASSERT(cell1.material_ids[1] == 0);
-//  auto const & tri_mesh1 = model.getTriMesh(1);
-//  ASSERT(tri_mesh1.numVertices() == 4);
-//  ASSERT(um2::isApprox(tri_mesh1.getVertex(0), {0, 0}));
-//  ASSERT(um2::isApprox(tri_mesh1.getVertex(1), {0, 1}));
-//  ASSERT(um2::isApprox(tri_mesh1.getVertex(2), {1, 0}));
-//  ASSERT(um2::isApprox(tri_mesh1.getVertex(3), {1, 1}));
-//  ASSERT(tri_mesh1.faceVertexConn()[0][0] == 0);
-//  ASSERT(tri_mesh1.faceVertexConn()[0][1] == 2);
-//  ASSERT(tri_mesh1.faceVertexConn()[0][2] == 1);
-//  ASSERT(tri_mesh1.faceVertexConn()[1][0] == 2);
-//  ASSERT(tri_mesh1.faceVertexConn()[1][1] == 3);
-//  ASSERT(tri_mesh1.faceVertexConn()[1][2] == 1);
-//
-//  CoarseCell const & cell2 = model.getCoarseCell(2);
-//  ASSERT(cell2.mesh_type == um2::MeshType::Quad);
-//  ASSERT(cell2.mesh_id == 0);
-//  ASSERT(cell2.material_ids.size() == 1);
-//  ASSERT(cell2.material_ids[0] == 0);
-//  auto const & quad_mesh = model.getQuadMesh(0);
-//  ASSERT(quad_mesh.numVertices() == 4);
-//  ASSERT(um2::isApprox(quad_mesh.getVertex(0), {1, 0}));
-//  ASSERT(um2::isApprox(quad_mesh.getVertex(1), {0, 0}));
-//  ASSERT(um2::isApprox(quad_mesh.getVertex(2), {1, 1}));
-//  ASSERT(um2::isApprox(quad_mesh.getVertex(3), {0, 1}));
-//  ASSERT(quad_mesh.faceVertexConn().size() == 1);
-//  ASSERT(quad_mesh.faceVertexConn()[0][0] == 1);
-//  ASSERT(quad_mesh.faceVertexConn()[0][1] == 0);
-//  ASSERT(quad_mesh.faceVertexConn()[0][2] == 2);
-//  ASSERT(quad_mesh.faceVertexConn()[0][3] == 3);
-//}
+
+TEST_CASE(addCoarseGrid)
+{
+  um2::mpact::Model model;
+  um2::Vec2F const dxdy(4, 3);
+  um2::Vec2I const nxny(2, 3);
+  model.addCoarseGrid(dxdy, nxny);
+  ASSERT(model.numCoarseCells() == 6);
+  ASSERT(model.numRTMs() == 6);
+  ASSERT(model.numLattices() == 1);
+  ASSERT(model.numAssemblies() == 1);
+
+  auto const & cc0 = model.getCoarseCell(0);
+  ASSERT(cc0.xy_extents.isApprox(um2::Vec2F(2, 1)));
+  ASSERT(cc0.mesh_type == um2::MeshType::None);
+  ASSERT(cc0.mesh_id == -1);
+  ASSERT(cc0.material_ids.empty());
+  auto const & cc1 = model.getCoarseCell(1);
+  ASSERT(cc1.xy_extents.isApprox(um2::Vec2F(2, 1)));
+  ASSERT(cc1.mesh_type == um2::MeshType::None);
+  ASSERT(cc1.mesh_id == -1);
+  ASSERT(cc1.material_ids.empty());
+
+  auto const & lat = model.getLattice(0);
+  ASSERT(lat.grid().numCells(0) == 2);
+  ASSERT(lat.grid().numCells(1) == 3);
+  ASSERT(lat.getChild(0, 0) == 0);
+  ASSERT(lat.getChild(1, 0) == 1);
+  ASSERT(lat.getChild(0, 1) == 2);
+  ASSERT(lat.getChild(1, 1) == 3);
+  ASSERT(lat.getChild(0, 2) == 4);
+  ASSERT(lat.getChild(1, 2) == 5);
+}
+
+TEST_CASE(importCoarseCellMeshes)
+{
+  using CoarseCell = typename um2::mpact::Model::CoarseCell;
+  um2::mpact::Model model;
+
+  um2::Material clad;
+  clad.setName("Clad");
+  clad.xsec().isMacro() = true;
+  clad.xsec().t() = {1};
+
+  um2::Material h2o;
+  h2o.setName("H2O");
+  h2o.xsec().isMacro() = true;
+  h2o.xsec().t() = {1};
+
+  um2::Material uo2;
+  uo2.setName("UO2");
+  uo2.xsec().isMacro() = true;
+  uo2.xsec().t() = {1};
+
+  model.addMaterial(clad);
+  model.addMaterial(h2o);
+  model.addMaterial(uo2);
+
+  model.addCoarseCell({1, 1});
+  model.addCoarseCell({1, 1});
+  model.addCoarseCell({1, 1});
+  model.addRTM({
+      {2, 2},
+      {0, 1}
+  });
+  model.addLattice({{0}});
+  model.addAssembly({0});
+  model.addCore({{0}});
+  model.importCoarseCellMeshes("./mpact_mesh_files/coarse_cells.inp");
+
+  ASSERT(model.numAssemblies() == 1);
+  ASSERT(model.numLattices() == 1);
+  ASSERT(model.numRTMs() == 1);
+  ASSERT(model.numCoarseCells() == 3);
+
+  CoarseCell const & cell = model.getCoarseCell(0);
+  ASSERT(cell.mesh_type == um2::MeshType::Tri);
+  ASSERT(cell.mesh_id == 0);
+  ASSERT(cell.material_ids.size() == 2);
+  ASSERT(cell.material_ids[0] == 1);
+  ASSERT(cell.material_ids[1] == 2);
+  auto const & tri_mesh = model.getTriMesh(0);
+  ASSERT(tri_mesh.numVertices() == 4);
+  ASSERT(tri_mesh.getVertex(0).isApprox(um2::Point2(0, 0)));
+  ASSERT(tri_mesh.getVertex(1).isApprox(um2::Point2(1, 0)));
+  ASSERT(tri_mesh.getVertex(2).isApprox(um2::Point2(1, 1)));
+  ASSERT(tri_mesh.getVertex(3).isApprox(um2::Point2(0, 1)));
+  ASSERT(tri_mesh.faceVertexConn()[0][0] == 0);
+  ASSERT(tri_mesh.faceVertexConn()[0][1] == 1);
+  ASSERT(tri_mesh.faceVertexConn()[0][2] == 2);
+  ASSERT(tri_mesh.faceVertexConn()[1][0] == 2);
+  ASSERT(tri_mesh.faceVertexConn()[1][1] == 3);
+  ASSERT(tri_mesh.faceVertexConn()[1][2] == 0);
+
+  CoarseCell const & cell1 = model.getCoarseCell(1);
+  ASSERT(cell1.mesh_type == um2::MeshType::Tri);
+  ASSERT(cell1.mesh_id == 1);
+  ASSERT(cell1.material_ids.size() == 2);
+  ASSERT(cell1.material_ids[0] == 1);
+  ASSERT(cell1.material_ids[1] == 0);
+  auto const & tri_mesh1 = model.getTriMesh(1);
+  ASSERT(tri_mesh1.numVertices() == 4);
+  ASSERT(tri_mesh1.getVertex(0).isApprox(um2::Point2(0, 0)));
+  ASSERT(tri_mesh1.getVertex(1).isApprox(um2::Point2(0, 1)));
+  ASSERT(tri_mesh1.getVertex(2).isApprox(um2::Point2(1, 0)));
+  ASSERT(tri_mesh1.getVertex(3).isApprox(um2::Point2(1, 1)));
+  ASSERT(tri_mesh1.faceVertexConn()[0][0] == 0);
+  ASSERT(tri_mesh1.faceVertexConn()[0][1] == 2);
+  ASSERT(tri_mesh1.faceVertexConn()[0][2] == 1);
+  ASSERT(tri_mesh1.faceVertexConn()[1][0] == 2);
+  ASSERT(tri_mesh1.faceVertexConn()[1][1] == 3);
+  ASSERT(tri_mesh1.faceVertexConn()[1][2] == 1);
+
+  CoarseCell const & cell2 = model.getCoarseCell(2);
+  ASSERT(cell2.mesh_type == um2::MeshType::Quad);
+  ASSERT(cell2.mesh_id == 0);
+  ASSERT(cell2.material_ids.size() == 1);
+  ASSERT(cell2.material_ids[0] == 0);
+  auto const & quad_mesh = model.getQuadMesh(0);
+  ASSERT(quad_mesh.numVertices() == 4);
+  ASSERT(quad_mesh.getVertex(0).isApprox(um2::Point2(1, 0)));
+  ASSERT(quad_mesh.getVertex(1).isApprox(um2::Point2(0, 0)));
+  ASSERT(quad_mesh.getVertex(2).isApprox(um2::Point2(1, 1)));
+  ASSERT(quad_mesh.getVertex(3).isApprox(um2::Point2(0, 1)));
+  ASSERT(quad_mesh.faceVertexConn().size() == 1);
+  ASSERT(quad_mesh.faceVertexConn()[0][0] == 1);
+  ASSERT(quad_mesh.faceVertexConn()[0][1] == 0);
+  ASSERT(quad_mesh.faceVertexConn()[0][2] == 2);
+  ASSERT(quad_mesh.faceVertexConn()[0][3] == 3);
+}
 ////////
 //////// template <typename T, typename I>
 //////// TEST_CASE(toPolytopeSoup)
@@ -406,7 +459,7 @@ TEST_CASE(addCore)
 ////////   model_out.addLattice({{0}});
 ////////   model_out.addAssembly({0});
 ////////   model_out.addCore({{0}});
-////////   model_out.importCoarseCells("./mpact_mesh_files/coarse_cells.inp");
+////////   model_out.importCoarseCellMeshes("./mpact_mesh_files/coarse_cells.inp");
 ////////   um2::PolytopeSoup soup;
 ////////   model_out.toPolytopeSoup(soup);
 ////////   soup.write("./mpact_export_test_model.xdmf");
@@ -597,7 +650,8 @@ TEST_SUITE(mpact_Model)
   TEST(addAssembly);
   TEST(addAssembly_2d);
   TEST(addCore);
-//  TEST(importCoarseCells);
+  TEST(addCoarseGrid);
+  TEST(importCoarseCellMeshes);
 //  //  TEST((toPolytopeSoup));
 //  //    TEST_CASE("coarse_cell_face_areas", (test_coarse_cell_face_areas));
 //  //    TEST_CASE("coarse_cell_find_face", (test_coarse_cell_find_face));
